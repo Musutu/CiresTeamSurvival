@@ -1,4 +1,6 @@
 #include "CireBalanceLab.h"
+#include "CireShopFixtures.h" // progression-shop
+#include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
 #include "CireEnvironmentGallery.h"
 #include "CireBatchArtGallery.h"
@@ -184,6 +186,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireFeedbackPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireNPCPackPreview::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
     CireNPCNetProbe::InitializeServer(this);
 #endif
     if(!bFeedbackPreview)SpawnPacks();
@@ -282,29 +285,12 @@ void ACireGameMode::SpawnWave() {
         Monsters.Add(M);
     }
     UE_LOG(LogCire,Display,TEXT("CIRE WAVE SPAWN round=%d wave=%d cycle=%d/%d"),S->Round,S->Wave,CycleWavesSpawned,S->WavesPerCycle);
+    CireProgression::OnWaveSpawned(this,CycleWavesSpawned); // progression-shop: mid-cycle challenge unlocks
 }
 void ACireGameMode::SpawnPacks() {
-    // Challenge packs: one elite of each authored member archetype plus a boss-classified
-    // Pack Leader from leaderFromTier. Rewards stay on the existing whole-pack rule.
-    const int R=Clock.Round();
-    const auto& NPCs=CireNPCArchetypes::Get();
-    const int32 Wave=GetGameState<ACireGameState>()->Wave;
-    for(int Team=0;Team<2;++Team) for(int Tier=1;Tier<=3;++Tier) {
-        const FVector Center=CireLanePath::ChallengePosition(GetWorld(),Team,Tier);
-        const int32 Members=NPCs.PackMembers.Num();
-        const bool bLeader=Tier>=NPCs.PackLeaderFromTier;
-        for(int I=0;I<Members+(bLeader?1:0);++I) {
-            const bool bIsLeader=I==Members;
-            FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-            const FVector P=Center+(bIsLeader?FVector(260,0,40):FVector((I-(Members-1)*.5f)*110,0,0));
-            auto* M=GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),P,FRotator::ZeroRotator,Params);
-            if(!M) {UE_LOG(LogCire,Error,TEXT("Challenge pack spawn failed"));continue;}
-            M->Lane=Team; M->Tier=Tier; M->PackId=R*100+Team*10+Tier; M->SpawnPosition=P;
-            CireNPCCombat::ConfigureArchetype(M,bIsLeader?NPCs.PackLeader:NPCs.PackMembers[I],Wave,Tier,R);
-            M->MonsterName=FString::Printf(TEXT("Challenge %d | %s"),Tier,*M->MonsterName);
-            Monsters.Add(M);
-        }
-    }
+    // progression-shop: challenge packs are progression content. Bays unlock by round/wave
+    // (LootTables.json packSchedule), deeper bays hold higher tiers, and tiers rise in later cycles.
+    CireProgression::SpawnPacks(this,1);
 }
 void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
     for(auto* H:Heroes) if(IsValid(H)&&H->TeamId==Team) { H->GrantExperience(XP); H->Gold+=GoldAmount; }
@@ -312,23 +298,15 @@ void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
 void ACireGameMode::MonsterKilled(ACireMonster* M,ACireHero* Killer) {
     if(!IsValid(M)||!IsValid(Killer)||Killer->TeamId!=M->Lane) return;
     AwardTeam(M->Lane,45+GetGameState<ACireGameState>()->Round*4,FMath::RoundToInt(12*Loot(M->Lane)));
+    // progression-shop: pack completion, Pack Leaders and lane bosses roll data-driven loot tables
+    // into a glowing auto-pickup chest (CireLoot). The old flat stat/rare reward is replaced.
+    bool bPackCompleted=false;
     if(M->PackId>=0&&!RewardedPacks.Contains(M->PackId)) {
         bool Remaining=false;
         for(auto* Other:Monsters) if(IsValid(Other)&&Other!=M&&Other->PackId==M->PackId&&Other->Health>0) {Remaining=true;break;}
-        if(!Remaining) {
-            RewardedPacks.Add(M->PackId);
-            const auto Reward=Cires::RollChallengeReward(M->Tier,Loot(M->Lane),static_cast<uint64>(M->PackId*7919));
-            AwardTeam(M->Lane,Reward.Experience,Reward.Gold);
-            for(auto* H:Heroes) if(IsValid(H)&&H->TeamId==M->Lane) {
-                H->Progression.Stats.Strength+=Reward.StatTomePoints;
-                H->Progression.Stats.Agility+=Reward.StatTomePoints;
-                H->Progression.Stats.Intelligence+=Reward.StatTomePoints;
-                if(Reward.RareDrop) {++H->GearRank; H->CDR=FMath::Min(.6f,H->CDR+.02f);}
-                H->Recalculate(false);
-                H->Notice=FString::Printf(TEXT("Challenge cleared: %d gold, %d XP%s%s"),Reward.Gold,Reward.Experience,Reward.GreaterStatTome?TEXT(" | GREATER TOME"):TEXT(""),Reward.RareDrop?TEXT(" | RARE RELIC"):TEXT(""));
-            }
-        }
+        if(!Remaining) {RewardedPacks.Add(M->PackId);bPackCompleted=true;}
     }
+    CireLoot::OnMonsterKilled(this,M,Killer,bPackCompleted);
     Monsters.Remove(M);
 }
 void ACireGameMode::Leak(ACireMonster* M) {
@@ -364,6 +342,7 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
     for(auto* H:Heroes)if(IsValid(H))H->PendingAttackTarget.Reset();
     auto* S=GetGameState<ACireGameState>(); S->Phase=NewPhase;
     S->SecondsLeft=static_cast<float>(Clock.RemainingSeconds()); S->Round=Clock.Round();
+    CireProgression::OnPhaseChanged(this,NewPhase); // progression-shop: end shop visits, cancel teleports, auto-collect loot on prep
     S->NextWaveSeconds=0;
 #if !UE_BUILD_SHIPPING
     if(bSmoke) SmokePhaseMask|=1<<NewPhase;
@@ -377,7 +356,7 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
             UE_LOG(LogCire,Display,TEXT("CIRE_SMOKE_CLEAR wave_alive=%d optional_alive=%d cleared=%d"),WaveAlive,PacksAlive,S->CycleWavesDone);
         }
 #endif
-        S->Announcement=TEXT("THE QUIET MINUTE | Return to town. Buy gear and tomes.");
+        S->Announcement=TEXT("THE QUIET MINUTE | Monsters are dormant. Shop anywhere: press B.");
         int32 TownSlot[2]={0,0};
         for(auto* H:Heroes) if(IsValid(H)) {
             H->Target=nullptr;
@@ -438,6 +417,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireArtPreview::Tick(this)) return;
     if(CireFeedbackPreview::Tick(this)) return;
     if(CireNPCPackPreview::Tick(this)) return;
+    if(CireShopFixtures::Tick(this)) return; // progression-shop
     if(CireNPCNetProbe::TickServer(this)) return;
     if(CireExpansionNetProbe::TickServer(this)) return;
     if(CireInterfaceProbe::TickServer(this)) return;

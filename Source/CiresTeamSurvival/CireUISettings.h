@@ -93,6 +93,8 @@ public:
     bool bCameraAutoFollow = true;
     /** After the hostile target dies, Tab-select the nearest hostile in front of the camera. */
     bool bAutoReacquireTarget = false;
+    /** progression-shop: show the compact character stats window (toggle: C). */
+    bool bShowStats = true;
     // --- end WoW camera / targeting preferences ---
     /** feat/camera-movement: keybindings + action-bar placements, section [CireUI.Keybindings]. */
     FCireKeybindings Keybindings;

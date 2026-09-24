@@ -1,4 +1,5 @@
 #include "CireNPCCombat.h"
+#include "CireLoot.h" // progression-shop: NPC pause
 #include "CireGame.h"
 #include "CireThreat.h"
 #include "CireNPCState.h"
@@ -444,11 +445,14 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     if(!M->HasAuthority()||!Mode||M->Health<=0)return;
     auto* Movement=M->GetCharacterMovement();
     auto* S=St(M);const auto* A=Arch(M);
+    // progression-shop: outside the survival phase every NPC is paused: no movement, attacks or
+    // casts, and its cooldown/buff/slow/cast timers freeze and resume exactly (CireProgression).
     if(Mode->Clock.Phase()!=Cires::MatchPhase::Survival||M->Damage<=0)
     {
-        if(!M->CastingAbility.IsEmpty())Interrupt(M);
+        CireProgression::PauseNPC(M,M->GetWorld()->GetTimeSeconds());
         Movement->StopMovementImmediately();return;
     }
+    CireProgression::ResumeNPC(M,M->GetWorld()->GetTimeSeconds());
     if(!FMath::IsFinite(Delta)||Delta<0)return;
     const float Now=M->GetWorld()->GetTimeSeconds();
     if(M->BaseMoveSpeed<=0)M->BaseMoveSpeed=Movement->MaxWalkSpeed;

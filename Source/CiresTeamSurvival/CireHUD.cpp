@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireShopUI.h" // progression-shop
 #include "CireKeybindings.h"
 #include "CireLanePath.h"
 #include "CireGame.h"
@@ -529,6 +530,7 @@ void ACireHUD::DrawHUD()
     if(Controller&&(IsValid(Controller->FocusTarget)||bEditLayout))DrawUnit(Controller->FocusTarget,TEXT("FOCUS / CLICK TO TARGET"),true);
     DrawBossFrames(Hero,Controller);DrawThreatMeter(Hero,Controller);
     DrawActionBars(Hero,Controller);DrawChat(Controller);DrawMeters(Hero,Controller);DrawPet(Hero,Controller);
+    ResetTransform();CireShopUI::DrawHUDElements(*this,Hero,Controller,State); // progression-shop: bag bar, teleport, stats window
     if(!bModal&&!bSettings)DrawCombatText(Hero,Controller);
     ResetTransform();
     if(!bModal&&!bSettings)DrawAlert();
@@ -558,6 +560,7 @@ void ACireHUD::DrawHUD()
         for(int32 I=0;I<5;++I)Label(Rows[I],ViewW*.5f-198,ViewH*.5f-58+I*25,12,I==4?Gold:Muted);
     }
     if(bModal)DrawModal(Hero,Controller,State);
+    ResetTransform();CireShopUI::DrawOverlay(*this,Hero,Controller); // progression-shop: purchase/loot toasts, teleport channel
     if(bEditLayout){VisiblePanels.AddUnique(TEXT("Tooltip"));VisiblePanels.AddUnique(TEXT("Threat"));VisiblePanels.AddUnique(TEXT("Boss"));}
     if(!bModal&&!bSettings&&!bEditLayout)UpdateHoverUnit(Hero);else HoverUnit.Reset();
     UpdateQuickKeybind();DrawQuickKeybind();
@@ -577,7 +580,7 @@ void ACireHUD::DrawModal(ACireHero* Hero,ACireController* Controller,ACireGameSt
     auto Action=[&](int32 Type,int32 Value){if(Clicked&&Controller&&!bSettings&&!bEditLayout){Controller->ServerAction(Type,Value,nullptr);Clicked=false;}};
     if (ModalOpen)
     {
-        Panel(0, 135, W, H - 330, FLinearColor(0.004f, 0.008f, 0.011f, .78f));
+        if (!ShopOpen) Panel(0, 135, W, H - 330, FLinearColor(0.004f, 0.008f, 0.011f, .78f)); // progression-shop: the shop draws its own backdrop
         if (DraftOpen)
         {
             DrawDraftRoster(Hero,Controller);
@@ -608,28 +611,8 @@ void ACireHUD::DrawModal(ACireHero* Hero,ACireController* Controller,ACireGameSt
         }
         else if (ShopOpen)
         {
-            const float X = W / 2 - 395;
-            Panel(X, 173, 790, 333, Ink);
-            Panel(X, 173, 790, 2, Gold);
-            Label(TEXT("THE QUARTERMASTER"), X + 23, 191, 23, Parchment);
-            Label(State && State->Phase == 1 ? TEXT("Town preparation / spend wisely before the portal opens.") : State && State->Phase == 4 ? TEXT("Town recovery / resupply before the next wave cycle.") : TEXT("Purchases require town preparation or recovery at your base."), X + 24, 229, 12, Muted);
-            Label(TEXT("B  CLOSE"), X + 687, 197, 11, Gold);
-            // Indices and visible prices are mirrored from ACireHero::Purchase.
-            const TCHAR* Names[] = { TEXT("TOME OF EXPERIENCE"), TEXT("TOME OF PRIMARY STAT"), TEXT("FIELD EQUIPMENT"), TEXT("FOCUS RELIC") };
-            const TCHAR* Details[] = { TEXT("Gain 300 experience toward your next level."), TEXT("Gain +3 to your primary attribute this match."), TEXT("Gain +4 to your primary attribute and a gear rank."), TEXT("Gain 5% pure cooldown reduction. Maximum 60%.") };
-            const int32 Prices[] = { 100, 120, 180, 160 };
-            for (int32 I = 0; I < 4; ++I)
-            {
-                const float CX = X + 24 + (I % 2) * 374;
-                const float CY = 265 + (I / 2) * 109;
-                const bool Over = Hit(CX, CY, 365, 96);
-                Panel(CX, CY, 365, 96, Over ? Hover : Card);
-                Label(Names[I], CX + 14, CY + 13, 15, Parchment);
-                Wrapped(Details[I], CX + 14, CY + 40, 335, 11, Muted, 2);
-                Label(FString::Printf(TEXT("%d GOLD  /  PURCHASE >"), Prices[I]), CX + 14, CY + 76, 10, Hero->Gold >= Prices[I] ? Gold : Red);
-                Tip(Names[I],FString(Details[I])+FString::Printf(TEXT(" Costs %d gold. Purchases are validated at your own town during preparation or recovery."),Prices[I]),CX,CY,365,96);
-                if (Over) Action(4, I);
-            }
+            // progression-shop: League-style item shop (CireShopUI.cpp).
+            CireShopUI::DrawShop(*this,Hero,Controller,State);
         }
     }
 
