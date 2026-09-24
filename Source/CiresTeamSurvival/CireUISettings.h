@@ -119,6 +119,10 @@ public:
     /** Golden level-up burst, banner and chime; WoW-style boss frames. */
     bool bLevelUpEffect = true;
     bool bShowBossFrames = true;
+    /** Extra WoW action bars (bar 1 is always shown) and the drag lock (Shift-drag when locked). */
+    bool bShowActionBar2 = true;
+    bool bShowActionBar3 = false;
+    bool bLockActionBars = false;
 
     /** The resolved interface multiplier for a viewport height in pixels. */
     float ResolveUIScale(float ViewportHeightPixels) const;

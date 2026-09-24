@@ -42,7 +42,7 @@ FCireBannerSpec CireBanners::DefaultSpec(ECireBanner Type)
     case ECireBanner::BossSpawned: S.Kicker = TEXT("BOSS INCOMING"); S.Color = FLinearColor(1.f, .22f, .16f, 1); S.Duration = 4.f; break;
     case ECireBanner::Victory: S.Kicker = TEXT("THE BATTLE IS DECIDED"); S.Color = FLinearColor(1.f, .84f, .3f, 1); S.Duration = 5.f; break;
     case ECireBanner::Defeat: S.Kicker = TEXT("THE BATTLE IS DECIDED"); S.Color = FLinearColor(.75f, .3f, .3f, 1); S.Duration = 5.f; break;
-    default: break;
+    default: S.Color = FLinearColor(1.f, .9f, .62f, 1); S.Duration = 3.f; break; // zone text
     }
     return S;
 }
@@ -71,7 +71,7 @@ void CireBanners::Show(ECireBanner Type, const FString& Title, const FString& Su
     }
 }
 
-bool CireBanners::Draw(const FCireUIPainter& Painter, float ViewW, float ViewH, ECireBanner& OutStarted)
+bool CireBanners::Draw(const FCireUIPainter& Painter, float ViewW, float ViewH, ECireBanner& OutStarted, float Y)
 {
     const double Now = FPlatformTime::Seconds();
     bool bStarted = false;
@@ -84,7 +84,7 @@ bool CireBanners::Draw(const FCireUIPainter& Painter, float ViewW, float ViewH, 
         GActive = GQueue[Best]; GQueue.RemoveAt(Best); GHasActive = true; GActiveStart = Now;
         OutStarted = GActive.Type; bStarted = true;
     }
-    if (GHasActive) CireUIStyle::Banner(Painter, ViewW, ViewH * .15f, GActive.Spec, static_cast<float>(Now - GActiveStart));
+    if (GHasActive) CireUIStyle::Banner(Painter, ViewW, Y >= 0.f ? Y : ViewH * .15f, GActive.Spec, static_cast<float>(Now - GActiveStart));
     return bStarted;
 }
 

@@ -70,3 +70,32 @@ pages, without saving to the player's profile. The gallery also exercises actual
 developer Apply/Restore and isolated profile persistence. Key remapping, gamepad
 navigation and named multi-profile sharing are
 not implemented in this pass.
+
+## WoW-style interface pass (September 24)
+
+Options pages now use the style kit (`Docs/UIStyle.md`).
+
+| Page | Additions |
+| --- | --- |
+| Controls / Camera | Camera sliders and toggles (camera-movement pass), quick ground cast. |
+| Controls / Keybindings | Replaces the static key list. Categories (Movement, Combat, Targeting, Interface, Bar 1-3), primary and secondary columns; click a cell and press a key or Shift/Ctrl/Alt chord; Esc cancels, Backspace/Delete clears. Keys already used elsewhere are swapped (the result is shown), conflicting cells are red with a tooltip. Reset to defaults, Quick Keybind mode, reset this champion's bar layout. Mouse wheel scrolls long lists. |
+| Interface / Combat text | Misses/dodges, crit pop, school colours, AoE merging, scroll direction (up/down/fountain), speed, display time. |
+| Interface / Tooltips | Position (cursor, fixed, radial, WoW corner anchor = default), unit tooltips, keep clear of reticle/aim, opacity, delay, size, move anchor (F10). |
+| Interface / Status & chat | Chat, status filters, layout editing. |
+| Interface / Scale & threat | Interface scale (auto or .64-1.15, applied on slider release), level-up effect, boss frames, action bars 2/3, lock bars, threat meter, aggro warnings, sounds, warning threshold. |
+
+**Action bars.** The main bar (panel `Skills`) holds auto attack and 12 slots (`ActionBar1_Slot1..12`:
+1-6 actives, 7 passive, 8 ultimate, 9-12), an XP bar, stats, gold and a micro menu (Shop, Options,
+Layout, Keybinds, Help). Bars 2 and 3 (`Bar2`, `Bar3`) are optional 12-slot bars (Shift+1-6 / Alt+1-6
+by default). Every button shows its icon, key label, radial cooldown with countdown, blue tint when
+mana/energy is short, red tint when the hostile target is out of range, a press flash, an animated
+proc glow (ultimate ready, interrupt available against an interruptible cast, just came off
+cooldown), charges, passive (octagon) and ultimate (gold) frames. Hover shows a WoW ability tooltip
+(name, type, cost, range, cast/telegraph, cooldown after CDR, tags, description). Drag an ability to
+another slot to swap (saved per champion), drop it on the world to clear the slot; with
+**Lock action bars** on, hold Shift to drag. Clicking casts. Keys and dispatch come from
+`CireKeybindings` (camera-movement pass).
+
+**Quick Keybind mode** (micro-menu KEYBINDS, or the Keybindings page): the world dims, hover any
+action button (or auto attack) and press a key or chord to bind it; Backspace/Delete unbinds,
+Esc leaves the mode. Swaps are reported on the instruction card.

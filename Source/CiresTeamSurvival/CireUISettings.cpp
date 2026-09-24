@@ -66,6 +66,9 @@ void FCireUISettings::Reset()
     Add(TEXT("Pet"), 20.f, 426.f, 250.f, 90.f);
     Add(TEXT("Threat"), 1040.f, 398.f, 220.f, 124.f);
     Add(TEXT("Boss"), 1040.f, 242.f, 220.f, 150.f);
+    // Extra action bars stack above the main bar (panel "Skills").
+    Add(TEXT("Bar2"), 368.f, 492.f, 536.f, 48.f);
+    Add(TEXT("Bar3"), 368.f, 440.f, 536.f, 48.f);
 
     bLayoutLocked = true;
     bShowChat = true;
@@ -94,6 +97,7 @@ void FCireUISettings::Reset()
     UIScale=1.f; bAutoUIScale=true; TooltipOpacity=.94f; TooltipDelay=.12f; bTooltipAvoidCenter=true; bUnitTooltips=true;
     bShowMisses=true; bCritPop=true; bSchoolColors=true; bMergeAoE=true; SCTDirection=0; SCTSpeed=1.f; SCTFadeSeconds=3.2f;
     bShowThreatMeter=true; bThreatWarnings=true; bThreatSound=true; ThreatWarningPercent=90.f; bLevelUpEffect=true; bShowBossFrames=true;
+    bShowActionBar2=true; bShowActionBar3=false; bLockActionBars=false;
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
 }
 
@@ -244,6 +248,7 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bAutoUIScale); CIRE_LOAD_BOOL(bTooltipAvoidCenter); CIRE_LOAD_BOOL(bUnitTooltips); CIRE_LOAD_BOOL(bShowMisses);
     CIRE_LOAD_BOOL(bCritPop); CIRE_LOAD_BOOL(bSchoolColors); CIRE_LOAD_BOOL(bMergeAoE); CIRE_LOAD_BOOL(bShowThreatMeter);
     CIRE_LOAD_BOOL(bThreatWarnings); CIRE_LOAD_BOOL(bThreatSound); CIRE_LOAD_BOOL(bLevelUpEffect); CIRE_LOAD_BOOL(bShowBossFrames);
+    CIRE_LOAD_BOOL(bShowActionBar2); CIRE_LOAD_BOOL(bShowActionBar3); CIRE_LOAD_BOOL(bLockActionBars);
     CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
 #undef CIRE_LOAD_BOOL
     Config.GetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
@@ -314,6 +319,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bAutoUIScale); CIRE_SAVE_BOOL(bTooltipAvoidCenter); CIRE_SAVE_BOOL(bUnitTooltips); CIRE_SAVE_BOOL(bShowMisses);
     CIRE_SAVE_BOOL(bCritPop); CIRE_SAVE_BOOL(bSchoolColors); CIRE_SAVE_BOOL(bMergeAoE); CIRE_SAVE_BOOL(bShowThreatMeter);
     CIRE_SAVE_BOOL(bThreatWarnings); CIRE_SAVE_BOOL(bThreatSound); CIRE_SAVE_BOOL(bLevelUpEffect); CIRE_SAVE_BOOL(bShowBossFrames);
+    CIRE_SAVE_BOOL(bShowActionBar2); CIRE_SAVE_BOOL(bShowActionBar3); CIRE_SAVE_BOOL(bLockActionBars);
     CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
 #undef CIRE_SAVE_BOOL
     Config.SetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
