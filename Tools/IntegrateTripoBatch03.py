@@ -23,6 +23,8 @@ SMS = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem)
 STATICS = {
     "CTS_Town_CastleKeep": ("Town", "CastleKeep", 24.0, "complex"),
     "CTS_Town_CastleGate": ("Town", "CastleGate", 22.0, "complex"),
+    "CTS_Town_CastleGateV2": ("Town", "CastleGateV2", 22.0, "complex"),
+    "CTS_Town_GatehouseV2": ("Town", "GatehouseV2", 20.0, "complex"),
     "CTS_Town_WallSection": ("Town", "WallSection", 10.5, "complex"),
     "CTS_Town_HouseA": ("Town", "HouseA", 11.0, "complex"),
     "CTS_Town_HouseB": ("Town", "HouseB", 13.0, "complex"),
@@ -61,6 +63,14 @@ TEXTURE_PARAMS = {"_basecolor": "BaseColorTex", "_normal": "NormalTex",
                   "_roughness": "RoughnessTex", "_metallic": "MetallicTex"}
 
 report = {"statics": {}, "skeletal": {}, "moved": [], "errors": []}
+if REPORT.exists():  # keep entries for exports integrated by earlier runs (their packages are committed/read-only)
+    previous = json.loads(REPORT.read_text(encoding="utf-8"))
+    report["statics"].update(previous.get("statics", {}))
+    report["skeletal"].update(previous.get("skeletal", {}))
+
+
+def pending(export):
+    return EAL.does_directory_exist("/Game/TripoModels/" + export)
 
 
 def assets_in(folder, recursive=True):
@@ -212,11 +222,15 @@ def integrate_skeletal(export, name, role, archetypes):
 
 def run():
     for export, (category, name, scale, collision) in STATICS.items():
+        if not pending(export) and name in report["statics"]:
+            continue
         try:
             integrate_static(export, category, name, scale, collision)
         except Exception as exc:
             report["errors"].append("%s: %s\n%s" % (export, exc, traceback.format_exc()))
     for export, (name, role, archetypes) in SKELETAL.items():
+        if not pending(export) and name in report["skeletal"]:
+            continue
         try:
             integrate_skeletal(export, name, role, archetypes)
         except Exception as exc:
