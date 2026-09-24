@@ -20,6 +20,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CireBuffs.h" // aura-vfx
 #include "CireMonsterArt.h" // creature-anim
+#include "CireWaves.h" // wave-director
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireNPCCombat,Log,All);
 
@@ -311,8 +312,10 @@ void ReleaseCast(ACireMonster* M,ACireGameMode* Mode)
 }
 float DesiredScale(const ACireMonster* M)
 {
-    if(M->bArmoredEscort)return 1.45f;
     const auto* A=Arch(M);const auto* S=St(M);
+    // wave-director: director-spawned units use their archetype scale times the wave row's size.
+    if(const float Size=CireWaveDirector::SizeScale(M);Size>0)return (A?A->Scale:1.f)*Size*(S&&S->bEnraged?1.08f:1.f);
+    if(M->bArmoredEscort)return 1.45f;
     if(!A)return M->bBoss?1.35f:M->Tier>0?1.08f+M->Tier*.09f:1.f;
     float Scale=A->Scale;
     if(M->Tier>0&&A->Classification!=ECireNPCClass::Boss)Scale*=1.f+M->Tier*.06f;
@@ -465,10 +468,22 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     M->AttackTimer=FMath::Max(0.f,M->AttackTimer-Delta);M->AbilityTimer=FMath::Max(0.f,M->AbilityTimer-Delta);
     if(M->MonsterArt)M->MonsterArt->ReleaseSwing(Now); // creature-anim: a committed swing lands on its contact frame
     if(S)S->RefreshStatusFlags(Now);
-    if(M->bArmoredEscort)
+    // wave-director: neutral challenge packs stand at their camp and never pick a fight;
+    // a player's attack (CireWaveDirector::AllowDamage) turns the whole pack hostile.
+    if(M->bNeutral)
+    {
+        if(!M->Threat.IsEmpty()||M->Victim)CireThreat::Clear(M);
+        M->bEngaged=false;M->LeashTimer=0;
+        if(FVector::DistSquared2D(M->GetActorLocation(),M->SpawnPosition)>FMath::Square(90.f))M->AddMovementInput((M->SpawnPosition-M->GetActorLocation()).GetSafeNormal2D());
+        else Movement->StopMovementImmediately();
+        return;
+    }
+    // wave-director: the stall failsafe's forced march behaves like an armored marcher.
+    if(M->bArmoredEscort||CireWaveDirector::IsForcedMarch(M))
     {
         if(!M->CastingAbility.IsEmpty())Interrupt(M);
-        CireThreat::Clear(M);M->bEngaged=false;
+        if(!M->Threat.IsEmpty()||M->Victim)CireThreat::Clear(M);
+        M->bEngaged=false;
         CireLanePath::RefreshEscortCollision(M);MarchLane(M,Mode);return;
     }
     // No distance leash: packs keep their threat and chase until they or every threat holder dies.
@@ -485,6 +500,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         else
         {
             M->LeashTimer=0;M->Health=M->MaxHealth;Movement->StopMovementImmediately();
+            CireWaveDirector::OnPackReset(M); // wave-director: a reset pack is neutral again
             if(S){const FName Id=S->ArchetypeId;const ECireNPCRole Role=S->Role;const ECireNPCClass Class=S->Classification;
                 S->ResetRuntime();S->ArchetypeId=Id;S->Role=Role;S->Classification=Class;}
             if(A)M->BaseMoveSpeed=A->MoveSpeed;
@@ -502,7 +518,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     }
     CireThreat::Tick(M,Delta);
     CireThreat::Select(M);
-    if(!M->Victim&&M->Threat.IsEmpty())
+    if(!M->Victim&&M->Threat.IsEmpty()&&!CireWaveDirector::AggroSuppressed(M)) // wave-director: dropped/unreachable targets
     {
         ACireHero* Closest=nullptr;double Best=FMath::Square(700.f);
         for(TActorIterator<ACireHero> It(M->GetWorld());It;++It)
@@ -562,6 +578,16 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         return;
     }
     if(M->PackId>=0){if(M->bEngaged)StartLeash(M);return;}
+    // wave-director: escort guards walk beside their escortee instead of racing ahead.
+    if(const ACireMonster* Charge=CireWaveDirector::EscortCharge(M))
+    {
+        const FVector Offset=FVector(0,(M->GetUniqueID()%2?1.f:-1.f)*170.f,0);
+        const FVector Beside=Charge->GetActorLocation()+Offset;
+        if(FVector::DistSquared2D(M->GetActorLocation(),Beside)>FMath::Square(260.f)){M->AddMovementInput((Beside-M->GetActorLocation()).GetSafeNormal2D());return;}
+        const UWorld* World=M->GetWorld();
+        if(CireLanePath::RouteProgress(World,M->Lane,M->GetActorLocation())>CireLanePath::RouteProgress(World,Charge->Lane,Charge->GetActorLocation())+.01f)
+        {Movement->StopMovementImmediately();return;}
+    }
     MarchLane(M,Mode);
 }
 

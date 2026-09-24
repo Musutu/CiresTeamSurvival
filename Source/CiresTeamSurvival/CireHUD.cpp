@@ -305,8 +305,15 @@ void ACireHUD::DrawMatch(ACireGameState* State)
     Label(FString::Printf(TEXT("%02d"),State->EmberLives),14,19,21,Gold);Label(TEXT("EMBER"),13,44,8,Muted);
     const FString Dusk=FString::Printf(TEXT("%02d"),State->DuskLives);
     Label(Dusk,236-TextWidth(Dusk,21),19,21,Blue);Label(TEXT("DUSK"),236-TextWidth(TEXT("DUSK"),8),44,8,Muted);
-    const FString Sub=State->Phase==0?FString::Printf(TEXT("WAVE %d / CYCLE CLEARS"),State->Wave):FString::Printf(TEXT("ROUND %d  /  WAVE %d"),State->Round,State->Wave);
+    // wave-director: current and next wave from the authoritative director (replicated labels).
+    FString Sub=State->Phase==0?FString::Printf(TEXT("WAVE %d / CYCLE CLEARS"),State->Wave):FString::Printf(TEXT("ROUND %d  /  WAVE %d"),State->Round,State->Wave);
+    if(State->Phase==0&&!State->WaveLabel.IsEmpty())Sub=State->WaveLabel.ToUpper();
+    Sub=Painter().Fit(Sub,8,226,ECireFont::Heading);
     Label(Sub,(250-TextWidth(Sub,8))/2,54,8,Muted);
+    if(State->Phase==0&&!State->NextWaveLabel.IsEmpty()) {
+        const FString NextWave=Painter().Fit(FString(TEXT("NEXT: "))+State->NextWaveLabel.ToUpper(),8,240,ECireFont::Heading);
+        Label(NextWave,(250-TextWidth(NextWave,8))/2,90,8,Muted);
+    }
     if(State->Phase==0&&FMath::IsFinite(State->NextWaveSeconds)&&State->NextWaveSeconds>.05f&&State->NextWaveSeconds<3600.f) {
         const FString Next=FString::Printf(TEXT("NEXT WAVE IN %ds"),FMath::CeilToInt(State->NextWaveSeconds));
         Label(Next,(250-TextWidth(Next,9))/2,76,9,Gold);

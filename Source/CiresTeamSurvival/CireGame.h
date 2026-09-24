@@ -38,6 +38,9 @@ public:
     UPROPERTY(Replicated) int32 DuskWins = 0;
     UPROPERTY(Replicated) int32 ArenaIndex = 0;
     UPROPERTY(Replicated) FString Announcement;
+    // wave-director: current / next wave for the match plate (CireWaves.h).
+    UPROPERTY(Replicated) FString WaveLabel;
+    UPROPERTY(Replicated) FString NextWaveLabel;
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) FVector LaneBounds = FVector(-2350,13000,1120);
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) TArray<FVector2D> LanePoints0;
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) TArray<FVector2D> LanePoints1;
@@ -173,6 +176,8 @@ public:
     UPROPERTY(Replicated) int32 PackId = -1;
     UPROPERTY(Replicated) bool bBoss = false;
     UPROPERTY(Replicated) bool bArmoredEscort = false;
+    // wave-director: neutral challenge pack (yellow nameplate) until a player attacks it (CireWaves.h).
+    UPROPERTY(Replicated) bool bNeutral = false;
     UPROPERTY(Replicated) int32 LeakCostOverride = 0;
     uint32 LaneRouteRevision = 0;
     int32 LaneWaypointIndex = 0;
@@ -255,6 +260,7 @@ public:
     bool bSmoke = false;
     float SmokeElapsed = 0;
     int32 ArenaIndex = 0;
+    bool bCyclesComplete = false; // wave-director: finite Waves.json cycle count reached
     TSet<int32> RewardedPacks;
     void SpawnBots();
     void SpawnWave();

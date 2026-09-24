@@ -40,6 +40,7 @@
 #include "CireNPCNetProbe.h"
 #include "CireArenas.h" // arenas
 #include "CireArenaGallery.h" // arenas
+#include "CireWaves.h" // wave-director
 
 DEFINE_LOG_CATEGORY_STATIC(LogCire, Log, All);
 
@@ -128,6 +129,7 @@ void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireGameState,EmberLives); DOREPLIFETIME(ACireGameState,DuskLives);
     DOREPLIFETIME(ACireGameState,EmberWins); DOREPLIFETIME(ACireGameState,DuskWins);
     DOREPLIFETIME(ACireGameState,ArenaIndex); DOREPLIFETIME(ACireGameState,Announcement);
+    DOREPLIFETIME(ACireGameState,WaveLabel); DOREPLIFETIME(ACireGameState,NextWaveLabel); // wave-director
     DOREPLIFETIME(ACireGameState,LaneBounds); DOREPLIFETIME(ACireGameState,LanePoints0);
     DOREPLIFETIME(ACireGameState,LanePoints1); DOREPLIFETIME(ACireGameState,LaneRouteVersion);
 }
@@ -177,6 +179,7 @@ void ACireGameMode::BeginPlay() {
     }
     auto* S=GetGameState<ACireGameState>();
     S->SecondsLeft=-1; S->CycleWavesDone=0; S->WavesPerCycle=FMath::Clamp(S->WavesPerCycle,1,10);
+    CireWaveDirector::Initialize(this); // wave-director: Waves.json drives composition, waves per cycle and breather
     S->NextWaveSeconds=WaveTimer;
     S->Announcement=TEXT("Hold the gates. Challenge the outposts. Survive together.");
     bool bFeedbackPreview = false;
@@ -198,6 +201,7 @@ void ACireGameMode::BeginPlay() {
 #endif
     if(!bFeedbackPreview)SpawnPacks();
     if(!bFeedbackPreview)CireBalanceLab::Initialize(this);
+    if(!bFeedbackPreview)CireWaveDirector::InitializeSoak(this); // wave-director
     UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / 60s prep / 90s arena / %.0fs recovery | server authority"),S->WavesPerCycle,RecoverySeconds);
 #if !UE_BUILD_SHIPPING
     if(ServerProbe.Enabled)UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_READY dedicated=1 timeout=40"));
@@ -250,48 +254,10 @@ void ACireGameMode::SpawnBots() {
     bBotsFilled=true;
 }
 void ACireGameMode::SpawnWave() {
+    // wave-director: composition, types, spawn pacing and scaling come from Waves.json (CireWaves.h).
+    if(!CireWaveDirector::StartWave(this)) return;
     auto* S=GetGameState<ACireGameState>();
-    if(!S||Clock.Phase()!=Cires::MatchPhase::Survival||CycleWavesSpawned>=S->WavesPerCycle) return;
-    ++S->Wave;
-    ++CycleWavesSpawned;
-    S->NextWaveSeconds=0;
-    S->Announcement=FString::Printf(TEXT("DEFEND THE GATES | Wave %d of %d this cycle"),CycleWavesSpawned,S->WavesPerCycle);
-    Monsters.RemoveAll([](auto* M){return !IsValid(M);});
-    const auto& Dev=CireDeveloperTools::Get(GetWorld());
-    const bool bEscortWave=CireLanePath::ShouldSpawnEscort(GetWorld(),S->Wave);
-    const auto& Routes=CireLanePath::Get(GetWorld());
-    const int32 UnitCount=Dev.bEnabled&&Dev.WaveUnitsOverride>0?Dev.WaveUnitsOverride:
-        bEscortWave?Routes.EscortCount:4+FMath::Min(S->Round,8);
-    const bool bFinalWave=!bEscortWave&&CycleWavesSpawned==S->WavesPerCycle;
-    if(bEscortWave)S->Announcement=TEXT("ARMORED ESCORT | They ignore combat. Break their armor before they reach town!");
-    for(int Team=0;Team<2;++Team) for(int I=0;I<UnitCount+(bFinalWave?1:0);++I) {
-        int ActiveInLane=0;
-        for(auto* Existing:Monsters) if(IsValid(Existing)&&Existing->Lane==Team&&Existing->PackId<0)++ActiveInLane;
-        if(ActiveInLane>=80) {
-            int32& Lives=Team==0?S->EmberLives:S->DuskLives;
-            Lives=FMath::Max(0,Lives-(bEscortWave?Routes.EscortLeakCost:bFinalWave&&I==UnitCount?10:1));
-            if(Lives==0) {EndSurvival(1-Team);return;}
-            continue;
-        }
-        FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        const FVector Start=CireLanePath::SpawnPosition(GetWorld(),Team);
-        const FVector DefaultSpawn=CireLanePath::ClampToLane(GetWorld(),Team,Start+FVector((I/2)*100,(I%2==0?-180:180),0),80);
-        const FVector Position=CireDeveloperTools::SpawnPosition(GetWorld(),Team,I,DefaultSpawn);
-        auto* M=GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),Position,FRotator(0,180,0),Params);
-        if(!M) {UE_LOG(LogCire,Error,TEXT("Wave monster spawn failed"));continue;}
-        M->Lane=Team;
-        // Wave composition is data-driven (NPCArchetypes.json): every unit has a role;
-        // the final wave of a cycle adds the lane boss, which costs its leakCost (10).
-        const auto& NPCs=CireNPCArchetypes::Get();
-        if(bEscortWave)CireNPCCombat::Configure(M,1,S->Wave);
-        else if(bFinalWave&&I==UnitCount)CireNPCCombat::ConfigureArchetype(M,NPCs.WaveBoss,S->Wave,0,1,true);
-        else CireNPCCombat::ConfigureArchetype(M,NPCs.WaveComposition[I%NPCs.WaveComposition.Num()],S->Wave);
-        M->SpawnPosition=Position;
-        if(bEscortWave)CireLanePath::ConfigureEscort(M);
-        CireLanePath::InitializeProgress(M);
-        Monsters.Add(M);
-    }
-    UE_LOG(LogCire,Display,TEXT("CIRE WAVE SPAWN round=%d wave=%d cycle=%d/%d"),S->Round,S->Wave,CycleWavesSpawned,S->WavesPerCycle);
+    UE_LOG(LogCire,Display,TEXT("CIRE WAVE SPAWN round=%d wave=%d cycle=%d/%d type=%s"),S->Round,S->Wave,CycleWavesSpawned,S->WavesPerCycle,*CireWaveDirector::CurrentWaveType(this));
     CireProgression::OnWaveSpawned(this,CycleWavesSpawned); // progression-shop: mid-cycle challenge unlocks
 }
 void ACireGameMode::SpawnPacks() {
@@ -304,7 +270,8 @@ void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
 }
 void ACireGameMode::MonsterKilled(ACireMonster* M,ACireHero* Killer) {
     if(!IsValid(M)||!IsValid(Killer)||Killer->TeamId!=M->Lane) return;
-    AwardTeam(M->Lane,45+GetGameState<ACireGameState>()->Round*4,FMath::RoundToInt(12*Loot(M->Lane)));
+    const float Reward=M->PackId<0?CireWaveDirector::RewardMultiplier(M):1.f; // wave-director: per-wave reward multiplier
+    AwardTeam(M->Lane,FMath::RoundToInt((45+GetGameState<ACireGameState>()->Round*4)*Reward),FMath::RoundToInt(12*Loot(M->Lane)*Reward));
     // progression-shop: pack completion, Pack Leaders and lane bosses roll data-driven loot tables
     // into a glowing auto-pickup chest (CireLoot). The old flat stat/rare reward is replaced.
     bool bPackCompleted=false;
@@ -314,6 +281,7 @@ void ACireGameMode::MonsterKilled(ACireMonster* M,ACireHero* Killer) {
         if(!Remaining) {RewardedPacks.Add(M->PackId);bPackCompleted=true;}
     }
     CireLoot::OnMonsterKilled(this,M,Killer,bPackCompleted);
+    CireWaveDirector::Forget(M); // wave-director
     Monsters.Remove(M);
 }
 void ACireGameMode::Leak(ACireMonster* M) {
@@ -323,9 +291,10 @@ void ACireGameMode::Leak(ACireMonster* M) {
     if(!S) return;
     // Remove first: overlapping collision components must not debit the same creep twice.
     Monsters.Remove(M);
+    CireWaveDirector::Forget(M); // wave-director
     int32& Lives=M->Lane==0?S->EmberLives:S->DuskLives;
     Lives=FMath::Max(0,Lives-(M->LeakCostOverride>0?M->LeakCostOverride:M->bBoss?10:1));
-    if(M->bArmoredEscort)S->Announcement=FString::Printf(TEXT("%s GATE BREACHED | Armored escort cost %d lives"),M->Lane==0?TEXT("EMBER"):TEXT("DUSK"),FMath::Max(1,M->LeakCostOverride));
+    if(M->bArmoredEscort)S->Announcement=FString::Printf(TEXT("%s GATE BREACHED | %s cost %d lives"),M->Lane==0?TEXT("EMBER"):TEXT("DUSK"),*M->GetNPCDisplayName(),FMath::Max(1,M->LeakCostOverride));
     if(M->bBoss) S->Announcement=FString::Printf(TEXT("%s GATE BREACHED | Siegebreaker cost 10 lives"),M->Lane==0?TEXT("EMBER"):TEXT("DUSK"));
     const int LosingTeam=M->Lane;
     M->Destroy();
@@ -340,6 +309,8 @@ void ACireGameMode::EndSurvival(int32 Winner) {
     Clock.Finish(); auto* S=GetGameState<ACireGameState>(); S->Phase=3;
     S->SecondsLeft=0; S->NextWaveSeconds=0;
     S->Announcement=Winner==0?TEXT("EMBER VICTORIOUS - Dusk's gate has fallen"):TEXT("DUSK VICTORIOUS - Ember's gate has fallen");
+    // wave-director: a finite Waves.json cycle count ends the match on lives (-1 = drawn).
+    if(bCyclesComplete)S->Announcement=Winner<0?FString(TEXT("MATCH DRAWN - both gates held to the last cycle")):FString::Printf(TEXT("%s VICTORIOUS - more lives after the final cycle"),Winner==0?TEXT("EMBER"):TEXT("DUSK"));
     UE_LOG(LogCire,Display,TEXT("CIRE MATCH COMPLETE winner=%d"),Winner);
 }
 void ACireGameMode::ChangePhase(int32 NewPhase) {
@@ -350,6 +321,7 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
     auto* S=GetGameState<ACireGameState>(); S->Phase=NewPhase;
     S->SecondsLeft=static_cast<float>(Clock.RemainingSeconds()); S->Round=Clock.Round();
     CireProgression::OnPhaseChanged(this,NewPhase); // progression-shop: end shop visits, cancel teleports, auto-collect loot on prep
+    CireWaveDirector::OnPhaseChanged(this,NewPhase); // wave-director: clears spawn queues, publishes next wave
     S->NextWaveSeconds=0;
 #if !UE_BUILD_SHIPPING
     if(bSmoke) SmokePhaseMask|=1<<NewPhase;
@@ -395,6 +367,14 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
         for(int I=Monsters.Num()-1;I>=0;--I) if(IsValid(Monsters[I])&&Monsters[I]->PackId>=0) {Monsters[I]->Destroy();Monsters.RemoveAt(I);}
         RewardedPacks.Reset();
         SpawnPacks(); WaveTimer=0;
+        // wave-director: the first wave's authored delay, and the finite cycle count.
+        const auto& Waves=CireWaveDirector::Config(GetWorld());
+        if(!bSmoke&&!Waves.Waves.IsEmpty())WaveTimer=CireWaveDirector::ResolveWave(Waves,0,Clock.Round()-1).DelayBefore;
+        if(Waves.Cycles>0&&Clock.Round()>Waves.Cycles) {
+            bCyclesComplete=true;
+            EndSurvival(S->EmberLives==S->DuskLives?-1:S->EmberLives>S->DuskLives?0:1);
+            return;
+        }
     }
     if(NewPhase!=1&&NewPhase!=2)CireArenas::Sync(GetWorld()); // arenas: recovery/survival/finish clean the arena up
     UE_LOG(LogCire,Display,TEXT("CIRE PHASE %d ROUND %d HEROES %d"),NewPhase,Clock.Round(),Heroes.Num());
@@ -435,6 +415,8 @@ void ACireGameMode::Tick(float Dt) {
     if(CireExpansionNetProbe::TickServer(this)) return;
     if(CireInterfaceProbe::TickServer(this)) return;
     TickServerProbe(this);
+    CireWaveDirector::TickSoak(this,Dt); // wave-director: headless soak bookkeeping
+    CireWaveDirector::TickGallery(this); // wave-director: -CireWaveGallery captures
 #endif
     auto* S=GetGameState<ACireGameState>(); if(!S) return;
     if(!bSmoke&&GetNetMode()==NM_Standalone) {
@@ -460,8 +442,11 @@ void ACireGameMode::Tick(float Dt) {
     S->Phase=static_cast<int32>(Clock.Phase()); S->SecondsLeft=static_cast<float>(Clock.RemainingSeconds()); S->Round=Clock.Round();
     if(S->Phase==0) {
         Monsters.RemoveAll([](auto* M){return !IsValid(M);});
-        bool bWaveAlive=false;
-        for(auto* M:Monsters) if(M->PackId<0&&M->Health>0) {bWaveAlive=true;break;}
+        // wave-director: spawn queue, stuck detection and the stall failsafe run before the
+        // clear rule, so a wave can never hold the cycle forever (Docs/Waves.md).
+        CireWaveDirector::TickSurvival(this,Dt);
+        const bool bWaveAlive=CireWaveDirector::IsWaveActive(this);
+        const bool bBlocking=CireWaveDirector::BlocksNextWave(this);
 #if !UE_BUILD_SHIPPING
         // Exercise actual town-zone entry and despawn while optional packs stay alive.
         if(bSmoke&&bWaveAlive) {
@@ -476,17 +461,21 @@ void ACireGameMode::Tick(float Dt) {
             }
         }
 #endif
-        if(!bWaveAlive) {
+        if(!bBlocking) {
             if(CycleWavesSpawned>S->CycleWavesDone) {
                 S->CycleWavesDone=CycleWavesSpawned;
-                WaveTimer=WaveBreatherSeconds;
+                // wave-director: breather plus the next wave's authored delay.
+                const auto& Waves=CireWaveDirector::Config(GetWorld());
+                WaveTimer=WaveBreatherSeconds+(bSmoke||Waves.Waves.IsEmpty()?0.f:CireWaveDirector::ResolveWave(Waves,CycleWavesSpawned,Clock.Round()-1).DelayBefore);
 #if !UE_BUILD_SHIPPING
                 if(bSmoke)++SmokeClearedWaves;
 #endif
                 UE_LOG(LogCire,Display,TEXT("CIRE WAVE CLEAR round=%d cleared=%d/%d"),S->Round,S->CycleWavesDone,S->WavesPerCycle);
             }
             if(S->CycleWavesDone>=S->WavesPerCycle) {
-                if(Clock.BeginIntermission()) ChangePhase(1);
+                // Prep waits for every wave unit, including non-blocking ones, to die or leak.
+                if(!bWaveAlive&&Clock.BeginIntermission()) ChangePhase(1);
+                else S->NextWaveSeconds=0;
             } else {
                 WaveTimer=FMath::Max(0.f,WaveTimer-Dt);
                 S->NextWaveSeconds=WaveTimer;
@@ -501,9 +490,11 @@ void ACireGameMode::Tick(float Dt) {
 #if !UE_BUILD_SHIPPING
     if(bSmoke) {
         SmokeElapsed+=Dt;
-        if(S->Round>=2||SmokeElapsed>20) {
+        if(S->Round>=2||SmokeElapsed>40) { // wave-director: five authored waves per cycle
+            // wave-director: expected losses come from what the director actually spawned (Waves.json).
+            int32 Leak0=0,Leak1=0,Bosses=0; CireWaveDirector::SmokeCounters(this,Leak0,Leak1,Bosses);
             const bool Pass=Heroes.Num()==10&&S->Round>=2&&SmokeClearedWaves>=S->WavesPerCycle&&(SmokePhaseMask&23)==23
-                &&SmokeCycleClearValid&&SmokeBossLeaks==2&&S->EmberLives==75&&S->DuskLives==75;
+                &&SmokeCycleClearValid&&SmokeBossLeaks==Bosses&&Bosses>0&&S->EmberLives==FMath::Max(0,100-Leak0)&&S->DuskLives==FMath::Max(0,100-Leak1);
             UE_LOG(LogCire,Display,TEXT("CIRE_SMOKE_%s heroes=%d round=%d phase=%d cleared=%d phase_mask=%d boss_leaks=%d lives=%d/%d"),Pass?TEXT("PASS"):TEXT("FAIL"),Heroes.Num(),S->Round,S->Phase,SmokeClearedWaves,SmokePhaseMask,SmokeBossLeaks,S->EmberLives,S->DuskLives);
             FPlatformMisc::RequestExitWithStatus(false,Pass?0:1);
         }

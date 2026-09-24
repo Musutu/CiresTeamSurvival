@@ -18,6 +18,7 @@
 #include "CireSummon.h"
 #include "CireThreat.h"
 #include "CireNPCCombat.h"
+#include "CireWaves.h" // wave-director
 #include "CireNPCState.h"
 #include "CireStatusVisual.h"
 #include "CireBuffs.h" // aura-vfx
@@ -720,6 +721,16 @@ void ACireHero::BotThink(float DeltaSeconds)
         return;
     }
     if (!Mode->IsCombatPhase()) return;
+    // wave-director: survival bots defend the lane first, never open on neutral packs,
+    // and fall back to regroup when low instead of fighting to the death (CireWaves.h).
+    const bool bSurvival = Mode->Clock.Phase() == Cires::MatchPhase::Survival;
+    if (bSurvival && CireWaveDirector::ShouldBotRetreat(this))
+    {
+        Target = nullptr; bAutoAttack = false;
+        FVector Fallback;
+        if (CireWaveDirector::BotDestination(this, Fallback)) AddMovementInput(CireWaveDirector::BotSteer(this, Fallback));
+        return;
+    }
     BotDecisionTimer -= DeltaSeconds;
     if (BotDecisionTimer <= 0 || !IsHostile(Target))
     {
@@ -737,17 +748,7 @@ void ACireHero::BotThink(float DeltaSeconds)
             for (auto* Enemy : Mode->Heroes)
                 if (IsValid(Enemy)) Consider(Enemy, Enemy->TauntUntil > GetWorld()->GetTimeSeconds() ? -100000000.0 : 0.0);
         }
-        else
-        {
-            bool bWaveThreat = false;
-            for (auto* Monster : Mode->Monsters)
-                if (IsValid(Monster) && Monster->Lane == TeamId && Monster->Health > 0 && Monster->PackId < 0) bWaveThreat = true;
-            for (auto* Monster : Mode->Monsters)
-            {
-                if (!IsValid(Monster) || (bWaveThreat && Monster->PackId >= 0 && !Monster->bEngaged)) continue;
-                Consider(Monster, Monster->PackId >= 0 ? 500000.0 : 0.0);
-            }
-        }
+        else Best = CireWaveDirector::ChooseBotTarget(this); // wave-director: lane-defence priorities
         Target = Best;
         if (Target)
         {
@@ -788,11 +789,17 @@ void ACireHero::BotThink(float DeltaSeconds)
     {
         const float Distance = FVector::Dist2D(GetActorLocation(), Target->GetActorLocation());
         const FVector Direction = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal2D();
-        if (Distance > BasicRange(this) * 0.85f || !ClearSight(this, Target)) AddMovementInput(Direction);
+        if (Distance > BasicRange(this) * 0.85f || !ClearSight(this, Target)) AddMovementInput(CireWaveDirector::BotSteer(this, Target->GetActorLocation())); // wave-director: detours around props
         else SetActorRotation(Direction.Rotation());
         bAutoAttack = true;
     }
-    else bAutoAttack = false;
+    else
+    {
+        bAutoAttack = false;
+        // wave-director: with nothing to fight, hold the castle approach instead of idling where the last fight ended.
+        FVector Hold;
+        if (bSurvival && CireWaveDirector::BotDestination(this, Hold)) AddMovementInput(CireWaveDirector::BotSteer(this, Hold));
+    }
 }
 
 void ACireHero::MulticastCombatFx_Implementation(FVector From, FVector To, FLinearColor Color)
@@ -883,6 +890,7 @@ void ACireMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ACireMonster, PackId);
     DOREPLIFETIME(ACireMonster, bBoss);
     DOREPLIFETIME(ACireMonster, bArmoredEscort);
+    DOREPLIFETIME(ACireMonster, bNeutral); // wave-director
     DOREPLIFETIME(ACireMonster, LeakCostOverride);
     DOREPLIFETIME(ACireMonster, Health);
     DOREPLIFETIME(ACireMonster, MaxHealth);
@@ -896,6 +904,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
     auto* Attacker = ::Cast<ACireHero>(Causer);
     if (!HasAuthority() || !Mode || !Attacker || !Attacker->IsHostile(this) || Health <= 0 ||
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
+    if (!CireWaveDirector::AllowDamage(this, Attacker)) return 0; // wave-director: neutral packs ignore bots; a player's hit aggroes the pack
     Amount = CireNPCCombat::ModifyIncomingDamage(this, Attacker, Amount); // npc-boss: armor/guard/shield wall/provoke
     if (Amount <= 0 || Health <= 0) return 0;
     const float Taken = FMath::Min(Health, Amount);
@@ -903,6 +912,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
     CireCombat::BroadcastDamage(Causer, this, Taken, Event);
     bEngaged = true;
     CireThreat::Damage(this,Attacker,Taken);
+    CireWaveDirector::OnMonsterDamaged(this, Attacker); // wave-director: escort guards defend their escortee
     if (PackId >= 0)
         for (auto* Companion : Mode->Monsters)
             if (IsValid(Companion) && Companion->PackId == PackId && Companion->Lane == Lane)

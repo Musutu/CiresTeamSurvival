@@ -6,6 +6,7 @@
 #include "CireDeveloperTools.h"
 #include "CireMobility.h"
 #include "CireUIStyle.h"
+#include "CireWaves.h" // wave-director
 #include "CireHUD.generated.h"
 
 class ACireHero;
@@ -173,6 +174,11 @@ private:
     void PlayUIFeedback();
     void DrawDiagnostics();
     void DrawDeveloperPanel(float X,float Y);
+    // wave-director: F8 > Waves live wave composer (CireWaveEditor.cpp).
+    void DrawWaveEditor(float X,float Y);
+    FCireWaveConfig WaveDraft;
+    bool bWaveDraftLoaded=false;
+    int32 WaveSelected=0,WaveListScroll=0;
     void DrawDeveloperLauncher();
     FCireUIRect DeveloperLauncherRect() const;
     FCireUIRect PanelRect(FName Id) const;
