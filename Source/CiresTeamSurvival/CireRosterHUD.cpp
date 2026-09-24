@@ -6,6 +6,7 @@
 #include "CireChampionProfiles.h"
 #include "CireDraftStage.h"
 #include "CireAbilityIcons.h"
+#include "CireClassTraits.h"
 #include "CireUIStyle.h"
 #include "CireGame.h"
 #include "CireSummon.h"
@@ -411,6 +412,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         for(const Cires::RoleMask Bit:{Cires::RoleTank,Cires::RoleDamage,Cires::RoleSupport})
             if((CireChampionProfiles::ProfileRoleMask(P)&Bit)&&RoleForBit(Bit)!=Primary)TipBody+=FString(TEXT(" + "))+RoleName(RoleForBit(Bit));
         if(Taker)TipBody+=FString::Printf(TEXT(". Picked by %s%s"),*(*Taker)->HeroName,(*Taker)->bBot?TEXT(" (bot; still available)"):TEXT(""));
+        TipBody+=TEXT(". Class trait: ")+CireClassTraits::Info(Primary).Name+TEXT(" (")+CireClassTraits::Info(Primary).Summary+TEXT(")");
         Tip(P.DisplayName,TipBody+TEXT(". Click to preview; double-click or Space to lock in."),T.X,T.Y,T.W,T.H);
     }
 
@@ -494,6 +496,20 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             Label(bVariant?Shown->ClassType+TEXT("  |  ")+Shown->Variant:Shown->ClassType,IX+12,Y,10,Gold);Y+=20;
         }
         if(!Shown->Lore.IsEmpty()){Wrapped(TEXT("\"")+Shown->Lore+TEXT("\""),IX+12,Y,IW-24,9.5f,SRGB(196,188,170),3);Y+=42;}
+        // Class baseline trait (always active, by main role).
+        {
+            const FCireClassTrait Trait=CireClassTraits::Info(ShownPrimary);
+            if(!Trait.Id.IsEmpty())
+            {
+                Panel(IX+10,Y-2,IW-20,40,Tint(Trait.Color,.18f,.85f));Panel(IX+10,Y-2,3,40,Trait.Color);
+                FCireIconSlot Slot;Slot.IconId=Trait.Id;Slot.IconTexture=CireAbilityIcons::Texture(Trait.Id);Slot.Tint=Trait.Color;Slot.Kind=ECireSlotKind::Passive;
+                CireUIStyle::IconSlot(Painter(),IX+18,Y+2,30,Slot,Now);
+                Label(TEXT("CLASS TRAIT  |  ")+Trait.Name.ToUpper(),IX+56,Y+2,9.5f,Trait.Color);
+                Wrapped(Trait.Summary,IX+56,Y+16,IW-72,8.5f,Text,2);
+                Tip(Trait.Name+TEXT("  (class trait)"),Trait.Tooltip,IX+10,Y-2,IW-20,40);
+                Y+=46;
+            }
+        }
         Panel(IX+12,Y,IW-24,1,Faint);Y+=8;
         Label(TEXT("SIGNATURE KIT"),IX+12,Y,10,Gold);
         FString PoolNote=FString(RoleName(ShownPrimary));

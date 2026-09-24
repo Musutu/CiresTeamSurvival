@@ -40,6 +40,14 @@ int PassiveCount(const AugmentOffer& offer)
         [](const SkillDefinition& skill) { return skill.Kind == SkillKind::Passive; }));
 }
 
+// Learn the opening (level 1) skill so later offers follow the normal rules.
+Progression Opened(Progression p, const std::vector<SkillDefinition>& pool, std::uint64_t seed)
+{
+    const auto offer = GenerateAugmentOffer(p, pool, seed);
+    if (offer.IsValid()) LearnSkill(p, offer, offer.Choices[static_cast<std::size_t>(seed % offer.Choices.size())].Id);
+    return p;
+}
+
 void StatRules()
 {
     CombatTuning tuning;
@@ -82,7 +90,23 @@ void StatRules()
 void DraftRules()
 {
     const auto pool = StarterSkillPool();
-    Progression initial;
+    // One starting skill point: the opening offer is due at level 1 (actives only).
+    Progression start;
+    CHECK(start.Level == 1 && HasPendingAugment(start));
+    CHECK(BreakpointForSkill(0) == 1 && BreakpointForSkill(1) == 3 && BreakpointForSkill(2) == 6 && BreakpointForSkill(7) == 21);
+    {
+        auto reversedPool = pool;
+        std::reverse(reversedPool.begin(), reversedPool.end());
+        for (std::uint64_t seed = 0; seed < 300; ++seed)
+        {
+            const auto opening = GenerateAugmentOffer(start, pool, seed);
+            CHECK(opening.IsValid() && opening.BreakpointLevel == 1 && opening.Choices.size() == 4);
+            CHECK(Signature(opening) == Signature(GenerateAugmentOffer(start, reversedPool, seed)));
+            for (const auto& option : opening.Choices) CHECK(option.Kind == SkillKind::Active);
+        }
+    }
+    Progression initial = Opened(start, pool, 3);
+    CHECK(initial.LearnedSkills.size() == 1 && initial.NextAugmentLevel == 3);
     CHECK(!HasPendingAugment(initial));
     CHECK(!GenerateAugmentOffer(initial, pool, 0).IsValid());
     CHECK(GainLevels(initial, 2));
@@ -125,11 +149,11 @@ void DraftRules()
             const auto offer = GenerateAugmentOffer(progression, pool, seed * 31 + slot);
             CHECK(offer.IsValid());
             if (!offer.IsValid()) break;
-            CHECK(offer.BreakpointLevel == 3 * (slot + 1));
+            CHECK(offer.BreakpointLevel == BreakpointForSkill(slot));
             CHECK(Signature(offer) == Signature(GenerateAugmentOffer(progression, reversed, seed * 31 + slot)));
             const auto passiveCount = PassiveCount(offer);
             const bool onlyPassive = CountSkills(progression, SkillKind::Active) == MaxActiveSkills && HasUltimate(progression);
-            CHECK(onlyPassive ? passiveCount == 4 : (HasPassive(progression) ? passiveCount == 0 : (passiveCount >= 1 && passiveCount <= 2)));
+            CHECK(slot == 0 ? passiveCount == 0 : onlyPassive ? passiveCount == 4 : (HasPassive(progression) ? passiveCount == 0 : (passiveCount >= 1 && passiveCount <= 2)));
             CHECK(offer.Choices.size() == 4);
             for (const auto& option : offer.Choices)
             {
@@ -162,7 +186,7 @@ void DraftRules()
     // Skip-level XP grants queue every missed breakpoint rather than dropping choices.
     Progression skipped;
     CHECK(GainLevels(skipped, 9));
-    for (int breakpoint : {3, 6, 9})
+    for (int breakpoint : {1, 3, 6, 9})
     {
         const auto offer = GenerateAugmentOffer(skipped, pool, static_cast<std::uint64_t>(breakpoint));
         CHECK(offer.BreakpointLevel == breakpoint);
@@ -188,7 +212,7 @@ void DraftRules()
     auto badOffer = GenerateAugmentOffer(initial, pool, 1);
     badOffer.Choices[1] = badOffer.Choices[0];
     CHECK(!LearnSkill(initial, badOffer, badOffer.Choices.front().Id));
-    CHECK(initial.LearnedSkills.empty());
+    CHECK(initial.LearnedSkills.size() == 1);
 
     // A shortened offer never satisfies the four-choice rule.
     const auto passive = std::find_if(pool.begin(), pool.end(), [](const SkillDefinition& skill) { return skill.Kind == SkillKind::Passive; });
@@ -197,7 +221,7 @@ void DraftRules()
     shortOffer.Choices = {*passive};
     CHECK(!shortOffer.IsValid());
     CHECK(!LearnSkill(initial, shortOffer, passive->Id));
-    CHECK(initial.LearnedSkills.empty());
+    CHECK(initial.LearnedSkills.size() == 1);
 
     // Full-category entries invalidate the whole offer, even if the selected
     // entry would fit. Offers are server-owned; malformed cached data is atomic.
@@ -205,7 +229,7 @@ void DraftRules()
     CHECK(GainLevels(oneUltimate, 5));
     const auto ultimate = std::find_if(pool.begin(), pool.end(), [](const SkillDefinition& skill) { return skill.Kind == SkillKind::Ultimate; });
     oneUltimate.LearnedSkills.push_back(*ultimate);
-    oneUltimate.NextAugmentLevel = 6;
+    oneUltimate.NextAugmentLevel = 3;
     auto forged = GenerateAugmentOffer(oneUltimate, pool, 88);
     const auto otherUltimate = std::find_if(pool.begin(), pool.end(), [&](const SkillDefinition& skill) { return skill.Kind == SkillKind::Ultimate && skill.Id != ultimate->Id; });
     const auto replaced = std::find_if(forged.Choices.begin(), forged.Choices.end(), [](const SkillDefinition& skill) { return skill.Kind == SkillKind::Active; });
@@ -214,7 +238,7 @@ void DraftRules()
     const auto selectedPassive = std::find_if(forged.Choices.begin(), forged.Choices.end(), [](const SkillDefinition& skill) { return skill.Kind == SkillKind::Passive; });
     CHECK(selectedPassive != forged.Choices.end());
     if (selectedPassive != forged.Choices.end()) CHECK(!LearnSkill(oneUltimate, forged, selectedPassive->Id));
-    CHECK(oneUltimate.LearnedSkills.size() == 1 && oneUltimate.NextAugmentLevel == 6);
+    CHECK(oneUltimate.LearnedSkills.size() == 1 && oneUltimate.NextAugmentLevel == 3);
 
     Progression finalPassive;
     CHECK(GainLevels(finalPassive, 23));
@@ -222,7 +246,7 @@ void DraftRules()
         if (skill.Kind == SkillKind::Active && CountSkills(finalPassive, skill.Kind) < MaxActiveSkills)
             finalPassive.LearnedSkills.push_back(skill);
     finalPassive.LearnedSkills.push_back(*ultimate);
-    finalPassive.NextAugmentLevel = 24;
+    finalPassive.NextAugmentLevel = BreakpointForSkill(7);
     const auto finalOffer = GenerateAugmentOffer(finalPassive, pool, 12);
     CHECK(finalOffer.IsValid() && finalOffer.Choices.size() == 4);
     CHECK(PassiveCount(finalOffer) == static_cast<int>(finalOffer.Choices.size()));
@@ -242,7 +266,7 @@ void SkillCapacityRules()
     const auto pool = StarterSkillPool();
     Progression full;
     full.Level = 24;
-    full.NextAugmentLevel = 27;
+    full.NextAugmentLevel = BreakpointForSkill(8);
     for (const auto& skill : pool)
     {
         const int capacity = skill.Kind == SkillKind::Active ? MaxActiveSkills : 1;
@@ -305,7 +329,7 @@ void RoleDraftRules()
                 CHECK(offer.IsValid());if(!offer.IsValid())break;
                 CHECK(Signature(offer)==Signature(GenerateAugmentOffer(p,reversed,seed*29+slot)));
                 const bool finalPassive=CountSkills(p,SkillKind::Active)==6&&HasUltimate(p);
-                CHECK(finalPassive?PassiveCount(offer)==4:HasPassive(p)?PassiveCount(offer)==0:PassiveCount(offer)>=1&&PassiveCount(offer)<=2);
+                CHECK(slot==0?PassiveCount(offer)==0:finalPassive?PassiveCount(offer)==4:HasPassive(p)?PassiveCount(offer)==0:PassiveCount(offer)>=1&&PassiveCount(offer)<=2);
                 for(const auto& option:offer.Choices)
                 {
                     CHECK(IsSkillAllowedForRole(option.Id,role));
@@ -330,7 +354,7 @@ void RoleDraftRules()
     {
         *active={"restoring_light","Restoring Light",SkillKind::Active};
         CHECK(!LearnSkill(tank,forged,"restoring_light"));
-        CHECK(tank.LearnedSkills.empty()&&tank.NextAugmentLevel==3);
+        CHECK(tank.LearnedSkills.empty()&&tank.NextAugmentLevel==1);
     }
     CHECK(!IsSkillAllowedForRole("unknown_recipe",SkillDraftRole::Tank));
     CHECK(StarterSkillPool(static_cast<SkillDraftRole>(99)).empty());
@@ -399,7 +423,7 @@ void RoleTagRules()
                 const auto offer=GenerateAugmentOffer(p,catalog,seed*131+static_cast<std::uint64_t>(slot*7+r));
                 CHECK(offer.IsValid());if(!offer.IsValid())break;
                 const bool finalPassive=CountSkills(p,SkillKind::Active)==MaxActiveSkills&&HasUltimate(p);
-                CHECK(finalPassive?PassiveCount(offer)==4:HasPassive(p)?PassiveCount(offer)==0:PassiveCount(offer)>=1&&PassiveCount(offer)<=2);
+                CHECK(slot==0?PassiveCount(offer)==0:finalPassive?PassiveCount(offer)==4:HasPassive(p)?PassiveCount(offer)==0:PassiveCount(offer)>=1&&PassiveCount(offer)<=2);
                 for(const auto& option:offer.Choices)
                 {
                     seen.insert(option.Id);
@@ -438,7 +462,7 @@ void RoleTagRules()
     {
         for(std::uint64_t seed=0;seed<400;++seed)
         {
-            Progression p;p.DraftRole=role;p.SecondaryRoles=secondary;GainLevels(p,2);
+            Progression p;p.DraftRole=role;p.SecondaryRoles=secondary;p=Opened(p,catalog,seed);GainLevels(p,2);
             const auto offer=GenerateAugmentOffer(p,catalog,seed);
             for(const auto& option:offer.Choices)if(option.Id==id)return true;
         }
@@ -461,7 +485,7 @@ void RoleTagRules()
     // Server-side LearnSkill applies the same mask to a forged offer.
     for(const RoleMask secondary:{RoleNone,RoleDamage,RoleSupport})
     {
-        Progression p;p.DraftRole=SkillDraftRole::Tank;p.SecondaryRoles=secondary;CHECK(GainLevels(p,2));
+        Progression p;p.DraftRole=SkillDraftRole::Tank;p.SecondaryRoles=secondary;p=Opened(p,catalog,1);CHECK(GainLevels(p,2));
         auto forged=GenerateAugmentOffer(p,catalog,5);
         auto active=std::find_if(forged.Choices.begin(),forged.Choices.end(),[](const SkillDefinition& s){return s.Kind==SkillKind::Active;});
         CHECK(active!=forged.Choices.end());if(active==forged.Choices.end())continue;
@@ -469,6 +493,112 @@ void RoleTagRules()
         if(!present)*active={"purify","Purify",SkillKind::Active};
         CHECK(LearnSkill(p,forged,"purify")==(secondary==RoleSupport));
     }
+}
+
+// Eric's rulings: one starting point with a role-specific, non-passive opening
+// offer (hybrids open in their primary role), then normal offers; class traits.
+void OpeningAndTraitRules()
+{
+    const auto catalog=StarterSkillPool();
+    const SkillDraftRole roles[]={SkillDraftRole::Tank,SkillDraftRole::Damage,SkillDraftRole::Support};
+    const RoleMask bits[]={RoleTank,RoleDamage,RoleSupport};
+    for(int r=0;r<3;++r)
+    {
+        const auto pool=OpeningSkillPool(roles[r]);
+        CHECK(pool.size()>=4);
+        for(const auto& s:pool){CHECK(s.Kind==SkillKind::Active);CHECK((SkillRoleTags(s.Id)&bits[r])!=0);}
+        for(int secondaryValue=0;secondaryValue<=RoleAll;++secondaryValue)
+        for(std::uint64_t seed=0;seed<200;++seed)
+        {
+            Progression p;p.DraftRole=roles[r];p.SecondaryRoles=static_cast<RoleMask>(secondaryValue&~bits[r]);
+            CHECK(HasPendingAugment(p)&&IsOpeningOffer(p));
+            const auto offer=GenerateAugmentOffer(p,catalog,seed);
+            CHECK(offer.IsValid()&&offer.BreakpointLevel==1&&offer.Choices.size()==4);
+            CHECK(PassiveCount(offer)==0);
+            for(const auto& o:offer.Choices)
+            {
+                CHECK(o.Kind==SkillKind::Active);
+                CHECK(IsOpeningSkill(o.Id,roles[r]));
+                // Hybrids draw their opening from the primary role only.
+                CHECK((SkillRoleTags(o.Id)&bits[r])!=0);
+                Progression alt=p;CHECK(LearnSkill(alt,offer,o.Id));
+                CHECK(alt.NextAugmentLevel==3&&!HasPendingAugment(alt));
+            }
+            // Then the normal flow resumes at level 3: four choices with one or two passives.
+            Progression next=Opened(p,catalog,seed);CHECK(GainLevels(next,2));
+            const auto second=GenerateAugmentOffer(next,catalog,seed+17);
+            CHECK(second.IsValid()&&second.BreakpointLevel==3&&PassiveCount(second)>=1&&PassiveCount(second)<=2);
+        }
+    }
+    // Role-defining opening pools.
+    for(const auto* id:{"shield_slam","war_cry","iron_guard"})CHECK(IsOpeningSkill(id,SkillDraftRole::Tank));
+    for(const auto* id:{"restoring_light","sanctuary","purify"})CHECK(IsOpeningSkill(id,SkillDraftRole::Support));
+    for(const auto* id:{"restoring_light","sanctuary","purify","chain_spark","frost_bind"})CHECK(!IsOpeningSkill(id,SkillDraftRole::Tank));
+    for(const auto* id:{"chain_spark","ember_lance","piercing_shot","war_cry"})CHECK(!IsOpeningSkill(id,SkillDraftRole::Support));
+    for(const auto* id:{"restoring_light","sanctuary","purify","war_cry","iron_guard","second_wind"})CHECK(!IsOpeningSkill(id,SkillDraftRole::Damage));
+    for(const auto* id:{"stone_skin","cataclysm","bastion_of_dawn"}){for(const auto role:roles){const auto op=OpeningSkillPool(role);CHECK(std::none_of(op.begin(),op.end(),[&](const SkillDefinition& s){return s.Id==id;}));}}
+    // Server validation rejects forged opening offers (passive, ultimate, off-pool active).
+    {
+        Progression tank;tank.DraftRole=SkillDraftRole::Tank;
+        const auto good=GenerateAugmentOffer(tank,catalog,4);
+        const SkillDefinition forgedChoices[]={{"stone_skin","Stone Skin",SkillKind::Passive},{"last_stand","Last Stand",SkillKind::Ultimate},{"frost_bind","Frost Bind",SkillKind::Active}};
+        for(const auto& f:forgedChoices)
+        {
+            auto forged=good;forged.Choices[0]=f;
+            Progression t=tank;CHECK(!LearnSkill(t,forged,f.Id));CHECK(t.LearnedSkills.empty());
+            CHECK(!LearnSkill(t,forged,forged.Choices[1].Id));
+        }
+    }
+    // Bots take the same path: every role completes a full build from level 1
+    // with an automatic first-choice picker (the in-engine bot uses Learn(Pick)).
+    for(int r=0;r<3;++r)for(std::uint64_t seed=0;seed<64;++seed)
+    {
+        Progression bot;bot.DraftRole=roles[r];
+        const auto first=GenerateAugmentOffer(bot,catalog,seed);
+        CHECK(first.IsValid()&&LearnSkill(bot,first,first.Choices.front().Id));
+        CHECK(bot.LearnedSkills.size()==1&&bot.Level==1&&IsOpeningSkill(bot.LearnedSkills.front().Id,roles[r]));
+        CHECK(GainLevels(bot,20));
+        while(HasPendingAugment(bot)){const auto o=GenerateAugmentOffer(bot,catalog,seed*7+bot.LearnedSkills.size());CHECK(o.IsValid());if(!o.IsValid()||!LearnSkill(bot,o,o.Choices.front().Id))break;}
+        CHECK(bot.LearnedSkills.size()==8&&bot.Level==21&&HasPassive(bot)&&HasUltimate(bot));
+    }
+
+    // Class traits.
+    using namespace Traits;
+    CHECK(Near(OutgoingDamageMultiplier(SkillDraftRole::Support),.8));
+    CHECK(Near(OutgoingDamageMultiplier(SkillDraftRole::Tank),1)&&Near(OutgoingDamageMultiplier(SkillDraftRole::Damage),1));
+    CHECK(Near(AttackSpeedBonus(SkillDraftRole::Support),.1));
+    CHECK(Near(AttackSpeedBonus(SkillDraftRole::Tank),0)&&Near(AttackSpeedBonus(SkillDraftRole::Damage),0));
+    CHECK(Near(ApplyIncomingFlatReduction(25,SkillDraftRole::Tank),15));
+    CHECK(Near(ApplyIncomingFlatReduction(10,SkillDraftRole::Tank),0));
+    CHECK(Near(ApplyIncomingFlatReduction(4,SkillDraftRole::Tank),0));
+    CHECK(Near(ApplyIncomingFlatReduction(0,SkillDraftRole::Tank),0));
+    CHECK(Near(ApplyIncomingFlatReduction(-5,SkillDraftRole::Tank),0));
+    CHECK(Near(ApplyIncomingFlatReduction(std::numeric_limits<double>::quiet_NaN(),SkillDraftRole::Tank),0));
+    CHECK(Near(ApplyIncomingFlatReduction(25,SkillDraftRole::Damage),25)&&Near(ApplyIncomingFlatReduction(25,SkillDraftRole::Support),25));
+    for(int k=0;k<500;++k){const double a=k*.37;CHECK(ApplyIncomingFlatReduction(a,SkillDraftRole::Tank)>=0&&ApplyIncomingFlatReduction(a,SkillDraftRole::Tank)<=a);}
+    CHECK(Near(BaseCriticalChance(SkillDraftRole::Damage,.05),.10));
+    CHECK(Near(BaseCriticalChance(SkillDraftRole::Damage,.25),.25));
+    CHECK(Near(BaseCriticalChance(SkillDraftRole::Tank,.05),.05)&&Near(BaseCriticalChance(SkillDraftRole::Support,.05),.05));
+    CHECK(Near(BaseCriticalChance(SkillDraftRole::Damage,std::numeric_limits<double>::quiet_NaN()),.10));
+    CHECK(Near(MendingHealAmount(40,SkillDraftRole::Support),20));
+    CHECK(Near(MendingHealAmount(40,SkillDraftRole::Damage),0)&&Near(MendingHealAmount(40,SkillDraftRole::Tank),0));
+    CHECK(Near(MendingHealAmount(-5,SkillDraftRole::Support),0));
+    // Support damage after the -20% still feeds 50% of the dealt amount back as healing.
+    CHECK(Near(MendingHealAmount(100*OutgoingDamageMultiplier(SkillDraftRole::Support),SkillDraftRole::Support),40));
+    // Mending target: lowest % health among living members, the healer included.
+    std::vector<PartyMember> party={{1,50,100,true},{2,30,100,true},{3,1,100,false},{4,60,200,true},{5,80,80,true}};
+    CHECK(SelectMendingTarget(party)==1);               // 30% ties with 60/200; lower absolute health wins
+    party[1].Health=60;                                 // now 60% vs 30% (60/200)
+    CHECK(SelectMendingTarget(party)==3);
+    party={{7,40,100,true},{3,40,100,true}};             // exact tie: lowest Id
+    CHECK(SelectMendingTarget(party)==1);
+    party={{1,20,100,true},{2,90,100,true}};             // the healer itself is lowest
+    CHECK(SelectMendingTarget(party)==0);
+    party={{1,0,100,true},{2,5,100,false},{3,10,0,true}};// zero-health, dead, invalid max: nobody
+    CHECK(SelectMendingTarget(party)==-1);
+    CHECK(SelectMendingTarget({})==-1);
+    party={{1,150,100,true},{2,100,100,true}};           // overhealth counts as full
+    CHECK(SelectMendingTarget(party)==1);
 }
 
 void ClockRules()
@@ -634,6 +764,7 @@ int main()
     SkillCapacityRules();
     RoleDraftRules();
     RoleTagRules();
+    OpeningAndTraitRules();
     ClockRules();
     RewardRules();
     std::cout << Assertions << " assertions; " << Failures << " failures\n";

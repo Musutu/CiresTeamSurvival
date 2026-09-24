@@ -3,6 +3,8 @@
 // placement and dispatch come from CireKeybindings (Docs/Keybindings.md); this file
 // only draws and edits them.
 #include "CireHUD.h"
+#include "CireClassTraits.h"
+#include "CireAbilityIcons.h"
 #include "CireGame.h"
 #include "CireKeybindings.h"
 #include "CireTargeting.h"
@@ -221,6 +223,16 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
     P.Text(FString::Printf(TEXT("CDR %.0f%%"), Hero->CDR * 100), 84, 80, 10, Parchment, ECireFont::Heading);
     P.Text(FString::Printf(TEXT("CRIT %.0f%%"), Hero->CriticalChance * 100), 156, 80, 10, Parchment, ECireFont::Heading);
     P.Text(FString::Printf(TEXT("LEVEL %d"), Hero->Level), 234, 80, 10, FLinearColor(.75f, .6f, 1.f, 1), ECireFont::Heading);
+    // champion-draft: class baseline trait (icon + name, passive-style tooltip).
+    {
+        const FCireClassTrait Trait = CireClassTraits::Info(CireClassTraits::Role(Hero));
+        if (!Trait.Id.IsEmpty())
+        {
+            CireAbilityIcons::Draw(P, Trait.Id, 300, 77, 14);
+            P.Text(Trait.Name.ToUpper(), 318, 80, 9, Trait.Color, ECireFont::Heading);
+            if (Hit(298, 75, 160, 18) && !bModal) { TooltipTitle = Trait.Name + TEXT("  (class trait)"); TooltipBody = Trait.Tooltip; }
+        }
+    }
     if (const auto& A = CireUIStyle::Assets(); A.Gem) P.Tex(A.Gem, 470, 79, 12, 12, FLinearColor(1.f, .8f, .25f, 1));
     P.Text(FString::Printf(TEXT("%d"), Hero->Gold), 488, 78, 12, FLinearColor(1.f, .85f, .35f, 1), ECireFont::Numbers);
     P.Text(TEXT("GOLD"), 530, 80, 9, Muted, ECireFont::Heading);

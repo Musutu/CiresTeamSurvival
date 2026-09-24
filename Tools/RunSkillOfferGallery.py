@@ -19,7 +19,7 @@ import time
 
 ROOT = Path(__file__).resolve().parent.parent
 FAILURE = re.compile(r"CIRE_SKILL_OFFER\S*FAIL|Fatal error:|Assertion failed:")
-EXPECTED = ["01_normal_offer_hover", "02_ultimate_offer", "03_passive_only_offer", "04_deferred_reminder", "05_pick_animation"]
+EXPECTED = ["01_normal_offer_hover", "02_ultimate_offer", "03_passive_only_offer", "04_deferred_reminder", "05_pick_animation", "06_opening_offer_tank", "07_opening_offer_support"]
 
 
 def png_size(path: Path) -> tuple[int, int]:
