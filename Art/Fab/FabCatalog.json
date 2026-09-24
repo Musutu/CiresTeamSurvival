@@ -17,10 +17,9 @@
       "formats": "FBX / glTF (Megascans 3D)",
       "unrealVersions": "n/a (FBX)",
       "slots": [
-        "wall_section",
-        "castle_keep"
+        "low_wall"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 400
     },
     {
@@ -37,10 +36,9 @@
       "formats": "FBX / glTF (Megascans 3D)",
       "unrealVersions": "n/a (FBX)",
       "slots": [
-        "castle_gate",
-        "gatehouse"
+        "low_wall"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 400
     },
     {
@@ -57,10 +55,9 @@
       "formats": "FBX / glTF (Megascans 3D)",
       "unrealVersions": "n/a (FBX)",
       "slots": [
-        "castle_stairs",
-        "watchtower"
+        "castle_stairs"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 300
     },
     {
@@ -77,9 +74,9 @@
       "formats": "FBX / glTF (Megascans 3D)",
       "unrealVersions": "n/a (FBX)",
       "slots": [
-        "shrine"
+        "ruin_stones"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 300
     },
     {
@@ -96,9 +93,9 @@
       "formats": "FBX / glTF (Megascans 3D)",
       "unrealVersions": "n/a (FBX)",
       "slots": [
-        "town_square_floor"
+        "square_paving"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 300
     },
     {
@@ -115,10 +112,9 @@
       "formats": "FBX / glTF (Megascans 3D)",
       "unrealVersions": "n/a (FBX)",
       "slots": [
-        "well",
-        "fountain"
+        "well"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 250
     },
     {
@@ -137,7 +133,7 @@
       "slots": [
         "barrel"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 120
     },
     {
@@ -154,9 +150,9 @@
       "formats": "FBX / glTF (Megascans 3D)",
       "unrealVersions": "n/a (FBX)",
       "slots": [
-        "barrel_stand"
+        "barrel_wine"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 150
     },
     {
@@ -175,7 +171,7 @@
       "slots": [
         "crate"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 120
     },
     {
@@ -192,10 +188,9 @@
       "formats": "FBX / glTF (Megascans 3D)",
       "unrealVersions": "n/a (FBX)",
       "slots": [
-        "crate_tarped",
-        "market_goods"
+        "crate_long"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 150
     },
     {
@@ -212,9 +207,9 @@
       "formats": "FBX / glTF (Megascans 3D)",
       "unrealVersions": "n/a (FBX)",
       "slots": [
-        "cart"
+        "wheelbarrow"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 200
     },
     {
@@ -233,7 +228,7 @@
       "slots": [
         "cart_wheel"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 150
     },
     {
@@ -252,7 +247,7 @@
       "slots": [
         "barricade"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 400
     },
     {
@@ -271,7 +266,7 @@
       "slots": [
         "beam"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 400
     },
     {
@@ -288,9 +283,9 @@
       "formats": "FBX / glTF (Megascans 3D)",
       "unrealVersions": "n/a (FBX)",
       "slots": [
-        "shrine_statue"
+        "statuette"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "expectedMaxCm": 100
     },
     {
@@ -309,7 +304,7 @@
       "slots": [
         "cobblestone_material"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "tiling": 1.0,
       "collision": false
     },
@@ -329,7 +324,7 @@
       "slots": [
         "plaster_material"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "tiling": 1.0,
       "collision": false
     },
@@ -349,7 +344,7 @@
       "slots": [
         "plaster_clean_material"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "tiling": 1.0,
       "collision": false
     },
@@ -367,9 +362,9 @@
       "formats": "Texture set / glTF (Megascans surface)",
       "unrealVersions": "n/a (textures)",
       "slots": [
-        "castle_stone_material"
+        "castle_material"
       ],
-      "libraryStatus": "not_added_signin_blocked",
+      "libraryStatus": "added",
       "tiling": 1.0,
       "collision": false
     },
@@ -380,18 +375,17 @@
       "uid": "75f4d553-a080-41c7-a57b-98e31c6209be",
       "author": "Snit",
       "license": "CC-BY 4.0 (credit: Snit)",
-      "delivery": "download",
+      "delivery": "rejected",
       "category": "Decor",
       "folder": "BarbarianBanners",
       "kind": "mesh",
       "formats": "FBX",
       "unrealVersions": "n/a (FBX)",
-      "slots": [
-        "banner"
-      ],
-      "libraryStatus": "not_added_signin_blocked",
+      "slots": [],
+      "libraryStatus": "added",
       "expectedMaxCm": 400,
-      "collision": false
+      "collision": false,
+      "note": "In library, but hand-painted/stylized (seen in the download dialog preview); clashes with the realistic town. Not imported."
     },
     {
       "id": "medieval_village_sample",
@@ -414,7 +408,7 @@
         "market_stall_b",
         "lamp"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "dark_ruins_sample",
@@ -434,7 +428,7 @@
         "gatehouse",
         "watchtower"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "medieval_banquet",
@@ -453,7 +447,7 @@
         "market_goods",
         "table"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "modular_wall_f01",
@@ -472,7 +466,7 @@
         "house_a",
         "house_b"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "modular_wall_f02",
@@ -490,7 +484,7 @@
       "slots": [
         "house_c"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "modular_roof_front_01",
@@ -508,7 +502,7 @@
       "slots": [
         "house_roof"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "advanced_village_pack",
@@ -529,7 +523,7 @@
         "house_c",
         "market_stall_a"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "medieval_dungeon",
@@ -549,7 +543,7 @@
         "castle_gate",
         "torch"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "dead_pine",
@@ -567,7 +561,7 @@
       "slots": [
         "tree_dead"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "m5_fire_flames",
@@ -586,7 +580,7 @@
         "vfx_fire",
         "vfx_torch_flame"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "fx_variety_pack",
@@ -605,7 +599,7 @@
         "vfx_spell_cast",
         "vfx_spell_impact"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "monster_survival_pbr",
@@ -623,7 +617,7 @@
       "slots": [
         "creature_ghoul"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "dragon_boss_pbr",
@@ -641,7 +635,7 @@
       "slots": [
         "creature_boss_dragon"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "skeleton_necromancer",
@@ -659,7 +653,7 @@
       "slots": [
         "creature_necromancer"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "khornes_monster",
@@ -677,7 +671,7 @@
       "slots": [
         "creature_brute"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     },
     {
       "id": "quadruped_fantasy_creatures",
@@ -695,7 +689,7 @@
       "slots": [
         "creature_beast"
       ],
-      "libraryStatus": "not_added_signin_blocked"
+      "libraryStatus": "added"
     }
   ]
 }

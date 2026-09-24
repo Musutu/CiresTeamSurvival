@@ -1,75 +1,35 @@
 {
   "schemaVersion": 1,
-  "description": "Fab asset slots for the town world. Use a slot only when status == 'imported' and mesh/material is non-null; otherwise keep the existing prototype art. Tools/ImportFabAssets.py fills mesh/material and flips status after a successful import.",
-  "requiredSlots": [
-    "gatehouse",
-    "watchtower",
-    "shrine",
-    "castle_keep",
-    "castle_gate",
-    "wall_section",
-    "house_a",
-    "house_b",
-    "house_c",
-    "market_stall_a",
-    "market_stall_b",
-    "fountain",
-    "well",
-    "cart",
-    "lamp",
-    "banner",
-    "barricade"
-  ],
+  "priority": 20,
+  "source": "fab",
+  "description": "Fab overlay for the medieval town (see Docs/EnvironmentProps.md). Only entries with status 'imported' are used by CireEnvironmentProps; the rest document planned sources. Tools/ImportFabAssets.py fills mesh/material and flips status after a successful import. Gate slots would additionally need \"passage\": true.",
   "slots": {
-    "wall_section": {
-      "type": "mesh",
+    "low_wall": {
+      "kind": "mesh",
       "catalogId": "castle_wall_a",
       "source": "Castle Wall",
       "url": "https://www.fab.com/listings/cf0a6982-f96f-4aef-97e6-7dc24b3a639c",
       "plannedPath": "/Game/Fab/Architecture/CastleWallA/SM_CastleWallA.SM_CastleWallA",
-      "mesh": null,
-      "status": "pending_download"
-    },
-    "castle_keep": {
-      "type": "mesh",
-      "catalogId": "castle_wall_a",
-      "source": "Castle Wall",
-      "url": "https://www.fab.com/listings/cf0a6982-f96f-4aef-97e6-7dc24b3a639c",
-      "plannedPath": "/Game/Fab/Architecture/CastleWallA/SM_CastleWallA.SM_CastleWallA",
-      "mesh": null,
-      "status": "pending_download",
+      "mesh": "/Game/Fab/Architecture/CastleWallA/SM_CastleWallA.SM_CastleWallA",
+      "status": "imported",
       "alternates": [
-        "dark_ruins_sample"
+        "castle_wall_b"
       ],
-      "note": "Compose from Castle Wall pieces until Dark Ruins sample is migrated."
-    },
-    "castle_gate": {
-      "type": "mesh",
-      "catalogId": "castle_wall_b",
-      "source": "Castle Wall (variant)",
-      "url": "https://www.fab.com/listings/b8cfda6a-6514-4242-820d-fdeced558ce3",
-      "plannedPath": "/Game/Fab/Architecture/CastleWallB/SM_CastleWallB.SM_CastleWallB",
-      "mesh": null,
-      "status": "pending_download",
-      "alternates": [
-        "medieval_dungeon"
-      ]
-    },
-    "gatehouse": {
-      "type": "mesh",
-      "catalogId": "castle_wall_b",
-      "source": "Castle Wall (variant)",
-      "url": "https://www.fab.com/listings/b8cfda6a-6514-4242-820d-fdeced558ce3",
-      "plannedPath": "/Game/Fab/Architecture/CastleWallB/SM_CastleWallB.SM_CastleWallB",
-      "mesh": null,
-      "status": "pending_download",
-      "alternates": [
-        "dark_ruins_sample"
+      "fit": "none",
+      "scale": [
+        1.4,
+        1.4,
+        1.4
       ],
-      "note": "Compose from Castle Wall pieces until Dark Ruins sample is migrated."
+      "offset": [
+        -1.8,
+        4.7,
+        12.8
+      ],
+      "note": "Megascans Castle Wall, uniform 1.4x so stones are not stretched; centred and seated at Z=0."
     },
     "castle_stairs": {
-      "type": "mesh",
+      "kind": "mesh",
       "catalogId": "castle_stairs",
       "source": "Castle Stairs",
       "url": "https://www.fab.com/listings/bb6f516f-48b5-4343-8884-1c300330ff95",
@@ -77,21 +37,8 @@
       "mesh": null,
       "status": "pending_download"
     },
-    "watchtower": {
-      "type": "mesh",
-      "catalogId": "castle_stairs",
-      "source": "Castle Stairs",
-      "url": "https://www.fab.com/listings/bb6f516f-48b5-4343-8884-1c300330ff95",
-      "plannedPath": "/Game/Fab/Architecture/CastleStairs/SM_CastleStairs.SM_CastleStairs",
-      "mesh": null,
-      "status": "pending_download",
-      "alternates": [
-        "dark_ruins_sample"
-      ],
-      "note": "Compose from Castle Stairs + Castle Wall until Dark Ruins sample is migrated."
-    },
-    "shrine": {
-      "type": "mesh",
+    "ruin_stones": {
+      "kind": "mesh",
       "catalogId": "ancient_temple_stones",
       "source": "Ancient Temple Stones",
       "url": "https://www.fab.com/listings/1a117f26-677e-4ad9-ab4b-f2177b6cda9c",
@@ -99,8 +46,8 @@
       "mesh": null,
       "status": "pending_download"
     },
-    "town_square_floor": {
-      "type": "mesh",
+    "square_paving": {
+      "kind": "mesh",
       "catalogId": "roman_stone_floor",
       "source": "Roman Stone Floor",
       "url": "https://www.fab.com/listings/e195504c-3230-4505-ba2a-71d89d33c085",
@@ -109,7 +56,7 @@
       "status": "pending_download"
     },
     "well": {
-      "type": "mesh",
+      "kind": "mesh",
       "catalogId": "old_stone_well",
       "source": "Old Stone Well",
       "url": "https://www.fab.com/listings/41c8f2a3-71c0-4a42-922c-db4ec1c429a1",
@@ -117,18 +64,8 @@
       "mesh": null,
       "status": "pending_download"
     },
-    "fountain": {
-      "type": "mesh",
-      "catalogId": "old_stone_well",
-      "source": "Old Stone Well",
-      "url": "https://www.fab.com/listings/41c8f2a3-71c0-4a42-922c-db4ec1c429a1",
-      "plannedPath": "/Game/Fab/Props/OldStoneWell/SM_OldStoneWell.SM_OldStoneWell",
-      "mesh": null,
-      "status": "pending_download",
-      "note": "No free realistic fountain found on Fab on 2026-09-24; Old Stone Well is the stand-in."
-    },
     "barrel": {
-      "type": "mesh",
+      "kind": "mesh",
       "catalogId": "wooden_barrel",
       "source": "Wooden Barrel",
       "url": "https://www.fab.com/listings/a9d0d237-ef5b-47f3-b153-f6b4ab9733f1",
@@ -136,8 +73,8 @@
       "mesh": null,
       "status": "pending_download"
     },
-    "barrel_stand": {
-      "type": "mesh",
+    "barrel_wine": {
+      "kind": "mesh",
       "catalogId": "barrel_on_stand",
       "source": "Barrel On Stand",
       "url": "https://www.fab.com/listings/3655c9b4-706d-4189-a821-b35ee3a6c632",
@@ -146,7 +83,7 @@
       "status": "pending_download"
     },
     "crate": {
-      "type": "mesh",
+      "kind": "mesh",
       "catalogId": "wooden_crate",
       "source": "Wooden Crate",
       "url": "https://www.fab.com/listings/ae4d047d-f585-413c-9440-69e1af3935a5",
@@ -154,8 +91,8 @@
       "mesh": null,
       "status": "pending_download"
     },
-    "crate_tarped": {
-      "type": "mesh",
+    "crate_long": {
+      "kind": "mesh",
       "catalogId": "tarped_crate",
       "source": "Tarped Crate",
       "url": "https://www.fab.com/listings/8aa1f000-e6b2-48dc-b33d-e233fdf59956",
@@ -163,20 +100,8 @@
       "mesh": null,
       "status": "pending_download"
     },
-    "market_goods": {
-      "type": "mesh",
-      "catalogId": "tarped_crate",
-      "source": "Tarped Crate",
-      "url": "https://www.fab.com/listings/8aa1f000-e6b2-48dc-b33d-e233fdf59956",
-      "plannedPath": "/Game/Fab/Props/TarpedCrate/SM_TarpedCrate.SM_TarpedCrate",
-      "mesh": null,
-      "status": "pending_download",
-      "alternates": [
-        "medieval_banquet"
-      ]
-    },
-    "cart": {
-      "type": "mesh",
+    "wheelbarrow": {
+      "kind": "mesh",
       "catalogId": "wooden_wheelbarrow",
       "source": "Wooden Wheelbarrow",
       "url": "https://www.fab.com/listings/8f945fbe-00e4-4fc3-b363-81cdc4ad1653",
@@ -185,7 +110,7 @@
       "status": "pending_download"
     },
     "cart_wheel": {
-      "type": "mesh",
+      "kind": "mesh",
       "catalogId": "wooden_wheel",
       "source": "Wooden Wheel",
       "url": "https://www.fab.com/listings/9ce45851-50b2-49a0-8cf8-d527e41aa2b4",
@@ -194,7 +119,7 @@
       "status": "pending_download"
     },
     "barricade": {
-      "type": "mesh",
+      "kind": "mesh",
       "catalogId": "trench_wall_wood_low",
       "source": "Military Trenches Wall Wood Low 04",
       "url": "https://www.fab.com/listings/3bd57e7e-feab-46b3-a67f-18287199159c",
@@ -203,7 +128,7 @@
       "status": "pending_download"
     },
     "beam": {
-      "type": "mesh",
+      "kind": "mesh",
       "catalogId": "wooden_beam",
       "source": "Wooden Beam",
       "url": "https://www.fab.com/listings/6b7559aa-79c4-4e8d-931a-6be7ab22c1a9",
@@ -211,8 +136,8 @@
       "mesh": null,
       "status": "pending_download"
     },
-    "shrine_statue": {
-      "type": "mesh",
+    "statuette": {
+      "kind": "mesh",
       "catalogId": "decorative_statuettes",
       "source": "Decorative Statuettes Pack",
       "url": "https://www.fab.com/listings/e581059c-6146-4d34-83b2-e963d41dc6f0",
@@ -221,7 +146,7 @@
       "status": "pending_download"
     },
     "cobblestone_material": {
-      "type": "material",
+      "kind": "material",
       "catalogId": "mossy_cobblestone_path",
       "source": "Mossy Cobblestone Path",
       "url": "https://www.fab.com/listings/cae0b8c6-aead-486f-9da2-896dd8eb8fd5",
@@ -230,7 +155,7 @@
       "status": "pending_download"
     },
     "plaster_material": {
-      "type": "material",
+      "kind": "material",
       "catalogId": "damaged_wall_plaster",
       "source": "Damaged Wall Plaster",
       "url": "https://www.fab.com/listings/c16498bb-264a-4376-8b39-401a3a7b4bd1",
@@ -239,7 +164,7 @@
       "status": "pending_download"
     },
     "plaster_clean_material": {
-      "type": "material",
+      "kind": "material",
       "catalogId": "fresh_wall_plaster",
       "source": "Fresh Wall Plaster",
       "url": "https://www.fab.com/listings/b427a11b-5d79-41bc-af42-3cd3aadae25c",
@@ -247,8 +172,8 @@
       "material": null,
       "status": "pending_download"
     },
-    "castle_stone_material": {
-      "type": "material",
+    "castle_material": {
+      "kind": "material",
       "catalogId": "castle_wall_surface",
       "source": "Castle Wall (surface)",
       "url": "https://www.fab.com/listings/c7bacf7e-8073-4f4f-aaf9-ef9fa357c11c",
@@ -256,21 +181,11 @@
       "material": null,
       "status": "pending_download"
     },
-    "banner": {
-      "type": "mesh",
-      "catalogId": "barbarian_banners",
-      "source": "Barbarian Banners",
-      "url": "https://www.fab.com/listings/75f4d553-a080-41c7-a57b-98e31c6209be",
-      "plannedPath": "/Game/Fab/Decor/BarbarianBanners/SM_BarbarianBanners.SM_BarbarianBanners",
-      "mesh": null,
-      "status": "pending_download"
-    },
     "house_a": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "medieval_village_sample",
       "source": "Medieval Village Megascans Sample",
       "url": "https://www.fab.com/listings/2e11a225-a6ea-4781-a3e1-fe975b461894",
-      "packFolderHint": "Content/MedievalVillageSample (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_create_project_and_migrate",
       "alternates": [
@@ -279,11 +194,10 @@
       ]
     },
     "house_b": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "medieval_village_sample",
       "source": "Medieval Village Megascans Sample",
       "url": "https://www.fab.com/listings/2e11a225-a6ea-4781-a3e1-fe975b461894",
-      "packFolderHint": "Content/MedievalVillageSample (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_create_project_and_migrate",
       "alternates": [
@@ -292,11 +206,10 @@
       ]
     },
     "house_c": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "medieval_village_sample",
       "source": "Medieval Village Megascans Sample",
       "url": "https://www.fab.com/listings/2e11a225-a6ea-4781-a3e1-fe975b461894",
-      "packFolderHint": "Content/MedievalVillageSample (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_create_project_and_migrate",
       "alternates": [
@@ -305,11 +218,10 @@
       ]
     },
     "market_stall_a": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "medieval_village_sample",
       "source": "Medieval Village Megascans Sample",
       "url": "https://www.fab.com/listings/2e11a225-a6ea-4781-a3e1-fe975b461894",
-      "packFolderHint": "Content/MedievalVillageSample (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_create_project_and_migrate",
       "alternates": [
@@ -317,140 +229,165 @@
       ]
     },
     "market_stall_b": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "medieval_village_sample",
       "source": "Medieval Village Megascans Sample",
       "url": "https://www.fab.com/listings/2e11a225-a6ea-4781-a3e1-fe975b461894",
-      "packFolderHint": "Content/MedievalVillageSample (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_create_project_and_migrate"
     },
     "lamp": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "medieval_village_sample",
       "source": "Medieval Village Megascans Sample",
       "url": "https://www.fab.com/listings/2e11a225-a6ea-4781-a3e1-fe975b461894",
-      "packFolderHint": "Content/MedievalVillageSample (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_create_project_and_migrate",
       "alternates": [
         "medieval_dungeon"
       ]
     },
-    "table": {
-      "type": "pack",
+    "castle_keep": {
+      "kind": "mesh",
+      "catalogId": "dark_ruins_sample",
+      "source": "Dark Ruins Megascans Sample",
+      "url": "https://www.fab.com/listings/836ed2f8-e2d6-49be-98d3-59d104bd351e",
+      "mesh": null,
+      "status": "pending_launcher_create_project_and_migrate"
+    },
+    "gatehouse": {
+      "kind": "mesh",
+      "catalogId": "dark_ruins_sample",
+      "source": "Dark Ruins Megascans Sample",
+      "url": "https://www.fab.com/listings/836ed2f8-e2d6-49be-98d3-59d104bd351e",
+      "mesh": null,
+      "status": "pending_launcher_create_project_and_migrate"
+    },
+    "watchtower": {
+      "kind": "mesh",
+      "catalogId": "dark_ruins_sample",
+      "source": "Dark Ruins Megascans Sample",
+      "url": "https://www.fab.com/listings/836ed2f8-e2d6-49be-98d3-59d104bd351e",
+      "mesh": null,
+      "status": "pending_launcher_create_project_and_migrate"
+    },
+    "market_goods": {
+      "kind": "mesh",
       "catalogId": "medieval_banquet",
       "source": "Medieval Banquet",
       "url": "https://www.fab.com/listings/d422ac6c-ce50-4273-8d4a-2ac594a3a2b2",
-      "packFolderHint": "Content/MedievalBanquet (actual folder chosen by the pack; confirm after Add to Project)",
+      "mesh": null,
+      "status": "pending_launcher_add_to_project"
+    },
+    "table": {
+      "kind": "mesh",
+      "catalogId": "medieval_banquet",
+      "source": "Medieval Banquet",
+      "url": "https://www.fab.com/listings/d422ac6c-ce50-4273-8d4a-2ac594a3a2b2",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "house_roof": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "modular_roof_front_01",
       "source": "Medieval Modular Roof Front 01 - Plaster & Wood | Nanite Ready",
       "url": "https://www.fab.com/listings/1c718658-3c00-4dc5-809a-5da60b7313cf",
-      "packFolderHint": "Content/ModularRoofFront01 (actual folder chosen by the pack; confirm after Add to Project)",
+      "mesh": null,
+      "status": "pending_launcher_add_to_project"
+    },
+    "castle_gate": {
+      "kind": "mesh",
+      "catalogId": "medieval_dungeon",
+      "source": "Medieval Dungeon",
+      "url": "https://www.fab.com/listings/c13bd0dc-ac4d-4595-b284-f81386b2e6ef",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "torch": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "medieval_dungeon",
       "source": "Medieval Dungeon",
       "url": "https://www.fab.com/listings/c13bd0dc-ac4d-4595-b284-f81386b2e6ef",
-      "packFolderHint": "Content/MedievalDungeon (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "tree_dead": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "dead_pine",
       "source": "Megaplants: Dead Pine",
       "url": "https://www.fab.com/listings/bc9e4e89-fcf4-4be6-b0f0-8b37395a72de",
-      "packFolderHint": "Content/MegaplantsDeadPine (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "vfx_fire": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "m5_fire_flames",
       "source": "M5 VFX Vol2. Fire and Flames(Niagara)",
       "url": "https://www.fab.com/listings/c5b0270a-a295-4644-a4be-42cb1e56a197",
-      "packFolderHint": "Content/M5FireAndFlames (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "vfx_torch_flame": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "m5_fire_flames",
       "source": "M5 VFX Vol2. Fire and Flames(Niagara)",
       "url": "https://www.fab.com/listings/c5b0270a-a295-4644-a4be-42cb1e56a197",
-      "packFolderHint": "Content/M5FireAndFlames (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "vfx_spell_cast": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "fx_variety_pack",
       "source": "FX Variety Pack",
       "url": "https://www.fab.com/listings/53531e17-369f-4bba-b493-8588f0dec07b",
-      "packFolderHint": "Content/FXVarietyPack (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "vfx_spell_impact": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "fx_variety_pack",
       "source": "FX Variety Pack",
       "url": "https://www.fab.com/listings/53531e17-369f-4bba-b493-8588f0dec07b",
-      "packFolderHint": "Content/FXVarietyPack (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "creature_ghoul": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "monster_survival_pbr",
       "source": "Monster for Survival Game PBR Polyart",
       "url": "https://www.fab.com/listings/9fdd1645-600d-460f-be4b-0b6421b7cf38",
-      "packFolderHint": "Content/MonsterSurvivalPBR (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "creature_boss_dragon": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "dragon_boss_pbr",
       "source": "Dragon for Boss Monster : PBR",
       "url": "https://www.fab.com/listings/6c4bd321-0263-44fe-a3d9-82599eeee12c",
-      "packFolderHint": "Content/DragonBossPBR (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "creature_necromancer": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "skeleton_necromancer",
       "source": "Skeleton Necromancer",
       "url": "https://www.fab.com/listings/8e5c5f8f-993a-4c76-b53c-b48bac9766ee",
-      "packFolderHint": "Content/SkeletonNecromancer (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "creature_brute": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "khornes_monster",
       "source": "Monster",
       "url": "https://www.fab.com/listings/6fc1668f-c5d9-4146-8da1-ee3d7f958026",
-      "packFolderHint": "Content/KhornesMonster (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     },
     "creature_beast": {
-      "type": "pack",
+      "kind": "mesh",
       "catalogId": "quadruped_fantasy_creatures",
       "source": "Quadruped Fantasy Creatures",
       "url": "https://www.fab.com/listings/52d686b6-1180-4f26-901f-ce3c69a14767",
-      "packFolderHint": "Content/QuadrupedFantasyCreatures (actual folder chosen by the pack; confirm after Add to Project)",
       "mesh": null,
       "status": "pending_launcher_add_to_project"
     }

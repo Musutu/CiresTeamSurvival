@@ -190,6 +190,8 @@ def import_in_editor(u) -> None:
                     # Linear colour matches the master's LINEAR_COLOR samplers and the linear white default.
                     tex.set_editor_property("compression_settings", u.TextureCompressionSettings.TC_DEFAULT)
                     tex.set_editor_property("srgb", False)
+                # Budget (Docs/AssetPipeline.md): 2K in game; the source resolution stays in the package.
+                tex.set_editor_property("max_texture_size", 2048)
                 lib.save_loaded_asset(tex, only_if_is_dirty=False)
                 textures[role] = tex
             mi_name = f"MI_{job['folder']}"
@@ -215,9 +217,14 @@ def import_in_editor(u) -> None:
                     size = mesh_size(mesh)
                 for index in range(len(mesh.get_editor_property("static_materials"))):
                     mesh.set_material(index, mi)
+                # With Nanite on, LOD0 render data is the Nanite fallback, so measure with Nanite off first
+                # (a re-import keeps the previous Nanite setting).
+                settings = mesh.get_editor_property("nanite_settings")
+                if settings.get_editor_property("enabled"):
+                    settings.set_editor_property("enabled", False)
+                    mesh.set_editor_property("nanite_settings", settings)
                 tri = mesh_triangles(u, mesh)
                 nanite = tri > NANITE_TRIANGLES
-                settings = mesh.get_editor_property("nanite_settings")
                 settings.set_editor_property("enabled", nanite)
                 mesh.set_editor_property("nanite_settings", settings)
                 if job["collision"] and collision_count(mesh) == 0:
@@ -225,6 +232,7 @@ def import_in_editor(u) -> None:
                 if job["collision"] and collision_count(mesh) == 0:
                     raise RuntimeError("mesh has no simple collision after import and box fallback")
                 lib.save_loaded_asset(mesh, only_if_is_dirty=False)
+                b = mesh.get_bounds(); entry["boundsOriginCm"] = [round(b.origin.x, 2), round(b.origin.y, 2), round(b.origin.z, 2)]
                 entry.update(mesh=mesh.get_path_name(), importScale=scale, sizeCm=size,
                              vertices=int(mesh.get_num_vertices(0)), triangles=tri, nanite=nanite,
                              simpleCollisions=collision_count(mesh))
@@ -392,7 +400,7 @@ def refresh_slots(catalog: dict, results: list[dict]) -> None:
     for slot_id, slot in document.get("slots", {}).items():
         imported = by_id.get(slot.get("catalogId"))
         if imported:
-            key = "material" if slot.get("type") == "material" else "mesh"
+            key = "material" if slot.get("kind", slot.get("type")) == "material" else "mesh"
             if imported.get(key):
                 slot[key] = imported[key]
                 slot["status"] = "imported"
