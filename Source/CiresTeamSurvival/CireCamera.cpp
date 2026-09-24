@@ -10,6 +10,11 @@
 #include "GameFramework/PlayerInput.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputCoreTypes.h"
+#if !UE_BUILD_SHIPPING
+#include "Components/BoxComponent.h"
+#include "Engine/World.h"
+#include "Misc/ScopeExit.h"
+#endif
 
 namespace
 {
@@ -235,6 +240,65 @@ bool CireCamera::RunSmoke()
     Check(Near(800 * DegreesPerCount, 56.f), TEXT("default sensitivity mapping"));
     Check(MinPitch < -60 && MaxPitch > 0, TEXT("pitch range allows looking up from below"));
     UE_LOG(LogTemp, Display, TEXT("CIRE_CAMERA_%s checks=%d"), Pass ? TEXT("PASS") : TEXT("FAIL"), Count);
+    return Pass;
+}
+
+bool CireCamera::RunRuntimeSmoke(ACireGameMode* Mode)
+{
+    if(!IsValid(Mode))return false;
+    auto* C=Cast<ACireController>(Mode->GetWorld()->GetFirstPlayerController());
+    if(!C||!C->IsLocalController())return false;
+    bool Pass=true;int32 Count=0;
+    auto Check=[&](bool Value,const TCHAR* Name){++Count;Pass&=Value;if(!Value)UE_LOG(LogTemp,Error,TEXT("CIRE_CAMERA_RUNTIME_ASSERT %s"),Name);};
+    APawn* SavedPawn=C->GetPawn();const FRotator SavedRotation=C->GetControlRotation();
+    TArray<AActor*> Actors;
+    ON_SCOPE_EXIT
+    {
+        Cleanup(C);C->UnPossess();if(IsValid(SavedPawn))C->Possess(SavedPawn);C->SetControlRotation(SavedRotation);
+        for(AActor* A:Actors)if(IsValid(A))A->Destroy();
+    };
+    FActorSpawnParameters Params;Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    const FVector Origin(0,-9000,9000);
+    auto* H=Mode->GetWorld()->SpawnActor<ACireHero>(Origin,FRotator::ZeroRotator,Params);
+    if(!H)return false;Actors.Add(H);H->SetActorTickEnabled(false);H->GetCharacterMovement()->SetComponentTickEnabled(false);
+    H->TeamId=0;H->bDrafted=true;H->ChampionProfileId=TEXT("camera_fixture");H->ProfileRoles={TEXT("damage")};
+    Cleanup(C);C->Possess(H);C->SetControlRotation(FRotator(-20,0,0));
+    FCireUISettings Options;Options.CameraDistance=650.f;Options.bCameraAutoFollow=true;
+    FFrame Frame;Frame.bSteeringAllowed=true;Frame.Options=&Options;
+    auto Run=[&](int32 Frames){for(int32 I=0;I<Frames;++I){Tick(C,H,1.f/60,Frame);Frame.WheelSteps=0;H->Arm->TickComponent(1.f/60,LEVELTICK_All,nullptr);}};
+    Run(90);
+    Check(!H->Arm->bUsePawnControlRotation&&H->Arm->IsUsingAbsoluteRotation()&&FMath::IsNearlyEqual(H->Arm->TargetArmLength,650.f,5.f),TEXT("rig owns an absolute boom at the preferred distance"));
+    Check(FMath::IsNearlyEqual(static_cast<float>(H->Arm->GetComponentRotation().Pitch),-20.f,.5f)&&H->Mobility&&!H->Mobility->bFaceControl,TEXT("idle rig keeps pitch and does not steer the character"));
+    Frame.WheelSteps=1;Run(1);
+    Check(Options.CameraDistance<650.f&&Options.CameraDistance>=300.f,TEXT("wheel up zooms in within the options range"));
+    const float Zoomed=Options.CameraDistance;Run(120);
+    Check(FMath::IsNearlyEqual(H->Arm->TargetArmLength,Zoomed,5.f),TEXT("zoom eases to the new distance"));
+    // A wall between the character and the camera pulls the boom in immediately...
+    auto* Wall=Mode->GetWorld()->SpawnActor<AActor>(Origin-FVector(260,0,0),FRotator::ZeroRotator,Params);
+    if(Wall)
+    {
+        Actors.Add(Wall);auto* Box=NewObject<UBoxComponent>(Wall);Wall->SetRootComponent(Box);Wall->AddInstanceComponent(Box);
+        Box->SetBoxExtent(FVector(20,400,400));Box->SetCollisionResponseToAllChannels(ECR_Block);Box->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        Box->RegisterComponent();Wall->SetActorLocation(Origin-FVector(260,0,0));
+    }
+    Run(2);
+    const float Blocked=static_cast<float>(FVector::Dist(H->Arm->GetComponentLocation()+H->Arm->TargetOffset,H->Camera->GetComponentLocation()));
+    Check(Wall&&Blocked<300.f,TEXT("camera collision pulls the boom in front of the wall"));
+    // ...and eases back out instead of snapping when the obstruction clears.
+    if(Wall)Wall->SetActorEnableCollision(false);
+    Run(2);
+    const float Released=H->Arm->TargetArmLength;
+    Check(Released<Zoomed-50.f,TEXT("boom does not snap back out in one frame"));
+    Run(180);
+    Check(FMath::IsNearlyEqual(H->Arm->TargetArmLength,Zoomed,8.f),TEXT("boom eases back to the preferred distance"));
+    // Tanks: taller pivot and proportionally longer boom.
+    H->ProfileRoles={TEXT("tank")};CireMovement::ApplyToHero(*H);Run(150);
+    Check(FMath::IsNearlyEqual(H->Arm->TargetArmLength,Zoomed*CireMovement::Tuning().TankBodyScale,8.f)&&
+        FMath::IsNearlyEqual(static_cast<float>(H->Arm->TargetOffset.Z),static_cast<float>(H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight())*.85f,.5f),TEXT("tank boom and pivot scale with the body"));
+    // Rotations set by previews/possession are adopted instead of fought.
+    C->SetControlRotation(FRotator(-30,90,0));Run(1);
+    Check(FMath::IsNearlyEqual(static_cast<float>(H->Arm->GetComponentRotation().Yaw),90.f,.5f),TEXT("external control rotation is adopted by the camera"));
+    UE_LOG(LogTemp,Display,TEXT("CIRE_CAMERA_RUNTIME_%s checks=%d zoom=%.0f blocked=%.0f released=%.0f"),Pass?TEXT("PASS"):TEXT("FAIL"),Count,Zoomed,Blocked,Released);
     return Pass;
 }
 #endif

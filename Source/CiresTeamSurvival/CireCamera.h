@@ -3,6 +3,7 @@
 
 class ACireController;
 class ACireHero;
+class ACireGameMode;
 class FCireUISettings;
 
 /**
@@ -51,5 +52,7 @@ namespace CireCamera
 #if !UE_BUILD_SHIPPING
     /** Native checks for the pure steering math (turn rate, backpedal, sensitivity mapping). */
     CIRESTEAMSURVIVAL_API bool RunSmoke();
+    /** Runtime rig checks on the local controller: boom, zoom, tank pivot, collision easing, adoption. */
+    CIRESTEAMSURVIVAL_API bool RunRuntimeSmoke(ACireGameMode* Mode);
 #endif
 }

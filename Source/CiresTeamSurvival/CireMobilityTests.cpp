@@ -55,6 +55,7 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
         Check(Apply(V,Error),TEXT("restore fixture tuning after disk reload"));
     }
     Check(CireCamera::RunSmoke(),TEXT("WoW steering key mapping"));
+    Check(CireCamera::RunRuntimeSmoke(Mode),TEXT("WoW camera rig zoom, collision easing and tank pivot"));
     Check(UCireCreatureArt::RunGaitSmoke(Mode->GetWorld()),TEXT("bear gait keeps planted paws and bends the right rear leg"));
 
     UWorld* World=Mode->GetWorld();const FVector Ground(2000,-2100,3000);

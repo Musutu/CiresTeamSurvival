@@ -10,14 +10,18 @@ Open `PlayTripoPreview.cmd`. Select a champion from the roster. For a quick full
 
 | Action | Control |
 |---|---|
-| Move | WASD |
-| Turn camera and face/strafe | Hold right mouse |
+| Move forward / backpedal | W / S |
+| Turn character (strafe while right mouse held) | A / D |
+| Orbit camera without turning | Hold left mouse and drag |
+| Steer: camera and character turn together | Hold right mouse and drag |
+| Run forward | Hold both mouse buttons |
+| Zoom camera | Mouse wheel (over the world) |
 | Jump | E |
 | Dodge roll | Ctrl |
 | Walk/run | Caps Lock |
-| Select unit | Left click its body or unit frame |
+| Select unit | Left click (without dragging) its body or unit frame |
 | Select yourself | F1 |
-| Cycle enemies / allies | Tab / F |
+| Cycle enemies (in front of camera, nearest first) / reverse / allies | Tab / Shift+Tab / F |
 | Toggle auto attack | Space |
 | Learned abilities / ultimate | 1–6 / Q |
 | Confirm aimed ground skill | Left click valid ground |
