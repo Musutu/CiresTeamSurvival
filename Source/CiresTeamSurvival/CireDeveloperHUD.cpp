@@ -20,7 +20,7 @@ void ACireHUD::DrawDeveloperLauncher()
 {
     if(!CireDeveloperTools::CanEdit(GetWorld())||bEditLayout||bSettings)return;
     ResetTransform();const auto R=DeveloperLauncherRect();const bool Over=Hit(R.X,R.Y,R.W,R.H);
-    Frame(R.X,R.Y,R.W,R.H,Over?Teal:Gold);Label(TEXT("DEVELOPER TOOLS  [F8]"),R.X+14,R.Y+8,12,Over?Parchment:Gold);
+    Frame(R.X,R.Y,R.W,R.H,Over?Teal:Gold);Label(TEXT("DEVELOPER TOOLS  [")+UISettings.Keybindings.Label(TEXT("ToggleDeveloperTools"))+TEXT("]"),R.X+14,R.Y+8,12,Over?Parchment:Gold);
     Tip(TEXT("Developer tools / F8"),TEXT("Quick test kit, weapons, movement, wave controls, effect tuning, match simulations and replays. Opening this panel does not change match settings."),R.X,R.Y,R.W,R.H);
     if(Over&&Clicked){Clicked=false;ToggleDeveloperTools();PlayUIFeedback();}
 }
@@ -150,21 +150,21 @@ void ACireHUD::DrawDeveloperPanel(float X,float Y)
         if(Button(TEXT("OPEN MATCH SIMULATOR"),R,T+208,285))DeveloperPage=3;
         if(Button(TEXT("OPEN MOVEMENT / DODGE TUNING"),L,T+251,285))DeveloperPage=6;
         if(Button(TEXT("OPEN SAVED REPLAYS"),R,T+251,285))DeveloperPage=4;
-        Wrapped(TEXT("Movement: E jump, Ctrl dodge, Caps Lock walk/run. Hold RMB to face and strafe. F1 selects yourself. F8 closes developer tools."),L,T+306,594,12,Parchment,3);
+        Wrapped(FString::Printf(TEXT("Movement: %s jump, %s/%s strafe, %s dodge, %s walk/run. Hold RMB to steer. %s selects yourself. %s closes developer tools."),*UISettings.Keybindings.FullLabel(TEXT("Jump")),*UISettings.Keybindings.Label(TEXT("StrafeLeft")),*UISettings.Keybindings.Label(TEXT("StrafeRight")),*UISettings.Keybindings.Label(TEXT("DodgeRoll")),*UISettings.Keybindings.FullLabel(TEXT("ToggleWalk")),*UISettings.Keybindings.Label(TEXT("TargetSelf")),*UISettings.Keybindings.Label(TEXT("ToggleDeveloperTools"))),L,T+306,594,12,Parchment,3);
     }
     else if(DeveloperPage==6)
     {
         if(!bMovementLoaded){MovementDraft=CireMovement::Tuning();bMovementLoaded=true;}
         Slider(TEXT("Run speed (cm/s)"),MovementDraft.RunSpeed,300,800,10,L,T,TEXT("Normal character run speed. Applies live."));
         Slider(TEXT("Walk speed (cm/s)"),MovementDraft.WalkSpeed,100,520,10,R,T,TEXT("Caps Lock toggles walking. Must not exceed run speed."));
-        Slider(TEXT("Jump velocity"),MovementDraft.JumpVelocity,200,650,10,L,T+49,TEXT("Initial upward speed for E jump. Uses normal collision and gravity."));
+        Slider(TEXT("Jump velocity"),MovementDraft.JumpVelocity,200,650,10,L,T+49,TEXT("Initial upward speed for a jump. Uses normal collision and gravity."));
         Slider(TEXT("Roll speed (cm/s)"),MovementDraft.RollSpeed,300,1400,20,R,T+49,TEXT("Server-authorized roll uses character movement sweeps; walls and units still block it."));
         Slider(TEXT("Roll duration (s)"),MovementDraft.RollDuration,.25f,.9f,.05f,L,T+98,TEXT("Total dodge movement/animation duration. Attacks cannot be cast during the roll."));
         Slider(TEXT("Roll cooldown (s)"),MovementDraft.RollCooldown,1,15,.25f,R,T+98,TEXT("Time between successful rolls. Failed attempts consume no energy."));
         Slider(TEXT("Roll energy cost"),MovementDraft.RollEnergy,5,80,5,L,T+147,TEXT("Energy spent only when the server starts the roll."));
         Slider(TEXT("Invulnerability starts (s)"),MovementDraft.InvulnerableStart,0,.5f,.01f,R,T+147,TEXT("Time from roll start until damage avoidance begins."));
         Slider(TEXT("Invulnerability ends (s)"),MovementDraft.InvulnerableEnd,.05f,.9f,.01f,L,T+196,TEXT("Must fit within roll duration, last at most 0.4 seconds, and follow its start. Avoided hits display DODGE."));
-        Wrapped(TEXT("E jump / Ctrl dodge / Caps Lock walk. Apply changes for this session; Save defaults writes MovementTuning.json. Existing rolls retain their original timing."),R,T+200,282,11,Muted,5);
+        Wrapped(TEXT("Jump / dodge / walk use your keybindings. Apply changes for this session; Save defaults writes MovementTuning.json. Existing rolls retain their original timing."),R,T+200,282,11,Muted,5);
         if(Button(TEXT("APPLY MOVEMENT"),L,T+282,190))DeveloperMessage=CireMovement::Apply(MovementDraft,Error)?TEXT("Movement tuning applied."):Error;
         if(Button(TEXT("SAVE DEFAULTS"),L+202,T+282,190))DeveloperMessage=CireMovement::Apply(MovementDraft,Error)&&CireMovement::Save(Error)?TEXT("Movement defaults saved."):Error;
         if(Button(TEXT("RELOAD DEFAULTS"),L+404,T+282,190)){const bool OK=CireMovement::Reload(Error);if(OK)MovementDraft=CireMovement::Tuning();DeveloperMessage=OK?TEXT("Movement defaults reloaded."):Error;}

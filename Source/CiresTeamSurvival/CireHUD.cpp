@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireKeybindings.h"
 #include "CireLanePath.h"
 #include "CireGame.h"
 #include "CireConstruct.h"
@@ -404,10 +405,10 @@ void ACireHUD::DrawSkills(ACireHero* Hero,ACireController* Controller)
     Label(Stats,106,11,9,Muted);
     const bool Interactive=!bModal&&!bEditLayout&&!bSettings;
     Frame(12,33,66,78,Hero->bAutoAttack?Teal:Gold);
-    Icon(TEXT("basic"),19,40,50,Gold);Panel(14,92,62,17,Card);Label(TEXT("SPACE"),26,94,9,Parchment);
+    Icon(TEXT("basic"),19,40,50,Gold);Panel(14,92,62,17,Card);Label(UISettings.Keybindings.Label(TEXT("ToggleAutoAttack")).ToUpper(),26,94,9,Parchment); // key labels: feat/camera-movement keybindings
     Label(TEXT("ATTACK"),23,118,9,Hero->bAutoAttack?Teal:Muted);
     if(Clicked&&Interactive&&Hit(12,33,66,78)&&Controller){Controller->ServerAction(1,0,nullptr);Clicked=false;}
-    Tip(TEXT("Basic attack / Space"),FString::Printf(TEXT("ENEMY target / %.1fm range / %s. "),Hero->BasicAttackRange()/100,*Hero->BasicAttackStyle())+(Hero->IsRangedBasicAttack()?TEXT("Targeted shots follow the selected enemy. Shooting uphill increases miss chance."):TEXT("Toggle close-range auto attacks against the selected enemy."))+TEXT(" Hits show damage; misses and dodges show combat text. The selected unit's outer ring marks its attack range."),12,33,66,78);
+    Tip(TEXT("Basic attack / ")+UISettings.Keybindings.FullLabel(TEXT("ToggleAutoAttack")),FString::Printf(TEXT("ENEMY target / %.1fm range / %s. "),Hero->BasicAttackRange()/100,*Hero->BasicAttackStyle())+(Hero->IsRangedBasicAttack()?TEXT("Targeted shots follow the selected enemy. Shooting uphill increases miss chance."):TEXT("Toggle close-range auto attacks against the selected enemy."))+TEXT(" Hits show damage; misses and dodges show combat text. The selected unit's outer ring marks its attack range."),12,33,66,78);
     int32 Hovered=INDEX_NONE,PassiveSlot=INDEX_NONE,UltimateSlot=INDEX_NONE;bool HoverEmpty=false;
     TArray<int32> ActiveSlots;
     for(int32 I=0;I<Hero->Skills.Num();++I) {
@@ -429,7 +430,7 @@ void ACireHUD::DrawSkills(ACireHero* Hero,ACireController* Controller)
             Panel(X+3,Y+3,47,47,FLinearColor(0,0,0,.58f));
             const FString CD=FString::Printf(TEXT("%.1f"),Cooldown);Label(CD,X+(53-TextWidth(CD,18))/2,Y+17,18,Parchment);
         }
-        if(Learned){Panel(X+38,Y+1,14,15,Ink);Label(FString::FromInt(Position+1),X+41,Y+1,10,Gold);}
+        if(Learned){const FString KeyText=UISettings.Keybindings.Label(CireKeybindings::SlotAction(1,Position+1));const float KW=FMath::Max(14.f,TextWidth(KeyText,10)+6);Panel(X+52-KW,Y+1,KW,15,Ink);Label(KeyText,X+55-KW,Y+1,10,Gold);}
         if(Learned){const auto D=CireTargeting::Describe(Id);const TCHAR* Tag=D.Kind==ECireTargetKind::Self?TEXT("SELF"):D.Kind==ECireTargetKind::Friendly?TEXT("ALLY"):D.Kind==ECireTargetKind::Ground?TEXT("AIM"):TEXT("ENEMY");Panel(X+3,Y+41,47,10,Ink);Label(Tag,X+6,Y+41,7,D.Kind==ECireTargetKind::Friendly?Teal:Gold);}
         if(Over){Hovered=Slot;HoverEmpty=!Learned;if(Clicked&&Learned&&Controller){Controller->RequestCast(Slot);Clicked=false;}}
     }
@@ -442,14 +443,14 @@ void ACireHUD::DrawSkills(ACireHero* Hero,ACireController* Controller)
     const float UltimateCD=Hero->Cooldowns.IsValidIndex(UltimateSlot)?Hero->Cooldowns[UltimateSlot]:0.f;
     Frame(390,34,59,59,HasUltimate?Gold:Muted*.4f);
     Icon(HasUltimate?Hero->Skills[UltimateSlot]:FString(),395,39,49,HasUltimate?Gold:Muted*.35f);
-    if(HasUltimate){Panel(434,35,14,15,Ink);Label(TEXT("Q"),436,35,10,Gold);}
+    if(HasUltimate){const FString KeyText=UISettings.Keybindings.Label(CireKeybindings::SlotAction(1,8));const float KW=FMath::Max(14.f,TextWidth(KeyText,10)+6);Panel(448-KW,35,KW,15,Ink);Label(KeyText,451-KW,35,10,Gold);}
     if(HasUltimate){const auto D=CireTargeting::Describe(Hero->Skills[UltimateSlot]);const TCHAR* Tag=D.Kind==ECireTargetKind::Self?TEXT("SELF"):D.Kind==ECireTargetKind::Friendly?TEXT("ALLY"):D.Kind==ECireTargetKind::Ground?TEXT("AIM"):TEXT("ENEMY");Panel(394,78,49,11,Ink);Label(Tag,398,79,7,D.Kind==ECireTargetKind::Friendly?Teal:Gold);}
     if(UltimateCD>.05f){Panel(393,37,53,53,FLinearColor(0,0,0,.58f));const FString CD=FString::Printf(TEXT("%.0f"),UltimateCD);Label(CD,419-TextWidth(CD,18)/2,54,18,Parchment);}
-    Label(TEXT("ULTIMATE"),391,103,9,HasUltimate?Gold:Muted);Label(HasUltimate?(UltimateCD>.05f?TEXT("COOLDOWN"):TEXT("READY / Q")):TEXT("UNBOUND"),394,120,8,HasUltimate?Gold:Muted);
+    Label(TEXT("ULTIMATE"),391,103,9,HasUltimate?Gold:Muted);Label(HasUltimate?(UltimateCD>.05f?FString(TEXT("COOLDOWN")):TEXT("READY / ")+UISettings.Keybindings.Label(CireKeybindings::SlotAction(1,8))):FString(TEXT("UNBOUND")),394,120,8,HasUltimate?Gold:Muted);
     if(Hit(390,34,59,59)&&Interactive&&HasUltimate){Hovered=UltimateSlot;if(Clicked&&Controller){Controller->RequestCast(UltimateSlot);Clicked=false;}}
-    Frame(466,34,103,59,Gold*.65f);Label(TEXT("TOWN SHOP"),477,46,11,Gold);Label(TEXT("[ B ]"),498,69,11,Muted);
+    Frame(466,34,103,59,Gold*.65f);Label(TEXT("TOWN SHOP"),477,46,11,Gold);Label(TEXT("[ ")+UISettings.Keybindings.Label(TEXT("ToggleShop"))+TEXT(" ]"),498,69,11,Muted);
     if(Hit(466,34,103,59)&&Clicked&&Interactive&&Controller){Controller->bShop=!Controller->bShop;Clicked=false;}
-    Label(TEXT("F9  UI OPTIONS"),468,105,9,Muted);Label(TEXT("F10  EDIT LAYOUT"),468,123,9,Muted);
+    Label(UISettings.Keybindings.Label(TEXT("ToggleOptions"))+TEXT("  UI OPTIONS"),468,105,9,Muted);Label(UISettings.Keybindings.Label(TEXT("ToggleLayoutEditor"))+TEXT("  EDIT LAYOUT"),468,123,9,Muted);
     if(Hit(465,101,108,20)&&Clicked&&Interactive){ToggleSettings();Clicked=false;}
     if(Hit(465,122,108,20)&&Clicked&&Interactive){ToggleLayoutEditor();Clicked=false;}
     Tip(TEXT("Town shop / B"),TEXT("Buy experience, primary-stat tomes, gear and cooldown reduction. Purchases require preparation or recovery at your own town."),466,34,103,59);
@@ -462,7 +463,7 @@ void ACireHUD::DrawSkills(ACireHero* Hero,ACireController* Controller)
         if(Learned){const auto D=CireTargeting::Describe(Hero->Skills[Hovered]);TooltipBody=TEXT("TARGET: ")+D.Label+(D.Range>0?FString::Printf(TEXT(" / %.1fm range. "),D.Range/100):TEXT(". "))+TooltipBody;}
     }
     if(Hit(390,34,59,59)&&Interactive&&!HasUltimate) {
-        TooltipTitle=TEXT("Ultimate slot");TooltipBody=TEXT("Your chosen ultimate appears here. Press Q to use it. You can learn only one ultimate in a completed build.");
+        TooltipTitle=TEXT("Ultimate slot");TooltipBody=TEXT("Your chosen ultimate appears here. Press ")+UISettings.Keybindings.FullLabel(CireKeybindings::SlotAction(1,8))+TEXT(" to use it. You can learn only one ultimate in a completed build.");
     }
 }
 void ACireHUD::DrawChat(ACireController* Controller)
@@ -707,7 +708,7 @@ void ACireHUD::DrawHUD()
     {
         const auto Aim=CireTargeting::Snapshot(Controller);
         if(Aim.bActive){const FString Text=ACireHero::SkillName(Aim.SkillId)+TEXT(" | ")+Aim.Message;const float W=FMath::Min(750.f,TextWidth(Text,12)+28);Frame((ViewW-W)/2,ViewH-248,W,31,Aim.bValid?Teal:Red);Label(Text,(ViewW-W)/2+14,ViewH-240,12,Aim.bValid?Parchment:Red);}
-        if(Hero->Mobility){const float CD=Hero->Mobility->CooldownRemaining();const FString Move=FString::Printf(TEXT("[E] JUMP   [CTRL] DODGE %s   [CAPS] %s"),CD>0?*FString::Printf(TEXT("%.1fs"),CD):TEXT("READY"),Hero->Mobility->bWalking?TEXT("WALK"):TEXT("RUN"));Label(Move,(ViewW-TextWidth(Move,9))/2,ViewH-185,9,Hero->Mobility->IsInvulnerable()?Teal:Muted);}
+        if(Hero->Mobility){const float CD=Hero->Mobility->CooldownRemaining();const FString Move=FString::Printf(TEXT("[%s] JUMP   [%s] DODGE %s   [%s] %s"),*UISettings.Keybindings.Label(TEXT("Jump")).ToUpper(),*UISettings.Keybindings.Label(TEXT("DodgeRoll")).ToUpper(),CD>0?*FString::Printf(TEXT("%.1fs"),CD):TEXT("READY"),*UISettings.Keybindings.Label(TEXT("ToggleWalk")).ToUpper(),Hero->Mobility->bWalking?TEXT("WALK"):TEXT("RUN"));Label(Move,(ViewW-TextWidth(Move,9))/2,ViewH-185,9,Hero->Mobility->IsInvulnerable()?Teal:Muted);}
     }
     if(!Hero->Notice.IsEmpty()&&!bModal) {
         const FString Notice=ShortName(Hero->Notice,88);
@@ -716,7 +717,13 @@ void ACireHUD::DrawHUD()
     if(Hero->bDead&&!bModal)Label(TEXT("FALLEN / Await your return"),ViewW*.5f-126,ViewH*.5f,18,Red);
     if(Controller&&Controller->bHelp&&!bModal&&!bEditLayout&&!bSettings) {
         Frame(ViewW*.5f-216,ViewH*.5f-108,432,186,Gold);Label(TEXT("BATTLEFIELD CONTROLS"),ViewW*.5f-198,ViewH*.5f-93,16,Parchment);
-        const TCHAR* Rows[]={TEXT("WASD Move / RMB Strafe / E Jump / Ctrl Dodge"),TEXT("F1 Self / F Ally / Tab Enemy / Space Attack"),TEXT("1-6 Skills / Q Ultimate / Click ground to place"),TEXT("B Shop / R Recall / Enter Chat / Caps Walk"),TEXT("F8 Dev tools / F9 Options / F10 Layout / H Help")};
+        const auto& B=UISettings.Keybindings;const auto L=[&B](const TCHAR* A){return B.Label(A);};
+        const FString Rows[]={
+            FString::Printf(TEXT("%s%s Move / %s%s Turn / %s%s Strafe / %s Jump / %s Dodge"),*L(TEXT("MoveForward")),*L(TEXT("MoveBackward")),*L(TEXT("TurnLeft")),*L(TEXT("TurnRight")),*L(TEXT("StrafeLeft")),*L(TEXT("StrafeRight")),*L(TEXT("Jump")),*L(TEXT("DodgeRoll"))),
+            FString::Printf(TEXT("%s Self / %s Ally / %s Enemy / %s Attack"),*L(TEXT("TargetSelf")),*L(TEXT("TargetNextAlly")),*L(TEXT("TargetNextEnemy")),*L(TEXT("ToggleAutoAttack"))),
+            FString::Printf(TEXT("%s-%s Skills / %s Ultimate / Click ground to place"),*L(*CireKeybindings::SlotAction(1,1).ToString()),*L(*CireKeybindings::SlotAction(1,6).ToString()),*L(*CireKeybindings::SlotAction(1,8).ToString())),
+            FString::Printf(TEXT("%s Shop / %s Recall / %s Chat / %s Walk"),*L(TEXT("ToggleShop")),*L(TEXT("RecallToTown")),*L(TEXT("OpenChat")),*L(TEXT("ToggleWalk"))),
+            FString::Printf(TEXT("%s Dev tools / %s Options / %s Layout / %s Help"),*L(TEXT("ToggleDeveloperTools")),*L(TEXT("ToggleOptions")),*L(TEXT("ToggleLayoutEditor")),*L(TEXT("ToggleHelp")))};
         for(int32 I=0;I<5;++I)Label(Rows[I],ViewW*.5f-198,ViewH*.5f-58+I*25,12,I==4?Gold:Muted);
     }
     if(bModal)DrawModal(Hero,Controller,State);
