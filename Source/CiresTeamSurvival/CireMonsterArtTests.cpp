@@ -10,6 +10,8 @@
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
 #include "CireThreat.h"
+#include "CireFootsteps.h"
+#include "Materials/MaterialInterface.h"
 #include "Animation/AnimSequence.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -147,6 +149,19 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
                     if (Found) Check(FMath::IsNearlyEqual(Found->GetComponentScale().X, Want, .05f * Want),
                         FString::Printf(TEXT("%s prop %s world scale %.2f (want %.2f)"), *Tag, *Prop.Bone.ToString(), Found->GetComponentScale().X, Want));
                 }
+            }
+            // Aura sockets, footstep feet and the armour class resolve on the animated body.
+            for (const TCHAR* Bone : {TEXT("hand_l"), TEXT("hand_r"), TEXT("spine_03"), TEXT("head"), TEXT("foot_l"), TEXT("foot_r")})
+                Check(M->GetMesh()->GetBoneIndex(Bone) != INDEX_NONE, Tag + TEXT(" has aura/footstep bone ") + Bone);
+            Check(CireFootsteps::ForCharacter(M).Class == CireFootsteps::ForMonster(Pair.Key.ToString()).Class, Tag + TEXT(" footstep armour class"));
+            // Selection highlight: an overlay swapped in and out leaves the body's own overlay (elite/boss rim) in place.
+            {
+                UMaterialInterface* Before = M->GetMesh()->GetOverlayMaterial();
+                UMaterialInterface* Highlight = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Art/Materials/M_SelectionEdge.M_SelectionEdge"));
+                M->GetMesh()->SetOverlayMaterial(Highlight);
+                const bool bShown = M->GetMesh()->GetOverlayMaterial() == Highlight;
+                M->GetMesh()->SetOverlayMaterial(Before);
+                Check(bShown && M->GetMesh()->GetOverlayMaterial() == Before, Tag + TEXT(" selection overlay round trip"));
             }
             // Idle: feet on the capsule bottom, head at the authored height.
             Check(Presentation->PoseForTest(TEXT("idle"), .3f), Tag + TEXT(" idle pose evaluates"));

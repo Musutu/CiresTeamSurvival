@@ -671,7 +671,11 @@ void UCireMonsterArt::UpdatePresentation(float DeltaTime)
         if (Current.Windup <= KINDA_SMALL_NUMBER)
             Time = W.Contact - .12f * W.RecoverRate + static_cast<float>(Elapsed) * W.RecoverRate;
         else if (Elapsed < Current.Windup)
-            Time = W.Start + (W.Contact - W.Start) * static_cast<float>(FMath::Max(0.0, Elapsed) / Current.Windup);
+        {
+            // Short windups skip the slow start of the raise rather than racing through it (at most 2.6x).
+            const float From = FMath::Max(W.Start, W.Contact - Current.Windup * 2.6f);
+            Time = From + (W.Contact - From) * static_cast<float>(FMath::Max(0.0, Elapsed) / Current.Windup);
+        }
         else
             Time = W.Contact + static_cast<float>(Elapsed - Current.Windup) * W.RecoverRate;
         const float FadeIn = Smooth01(static_cast<float>(Elapsed) / .12f);
