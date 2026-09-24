@@ -17,7 +17,10 @@
 #include "CireSummon.h"
 #include "CireThreat.h"
 #include "CireNPCCombat.h"
+#include "CireNPCState.h"
 #include "CireStatusVisual.h"
+#include "CireBuffs.h" // aura-vfx
+#include "CireItems.h" // progression-shop
 #include "EngineUtils.h"
 
 #include "Camera/CameraComponent.h"
@@ -68,6 +71,8 @@ ACireHero::ACireHero()
     PrimaryActorTick.bCanEverTick = true;
     ChampionArt = CreateDefaultSubobject<UCireChampionArt>(TEXT("ChampionArt"));
     Mobility = CreateDefaultSubobject<UCireMobility>(TEXT("Mobility"));
+    CreateDefaultSubobject<UCireBuffState>(TEXT("BuffState")); // aura-vfx: replicated named-effect records for signature visuals
+    Inventory = CreateDefaultSubobject<UCireInventory>(TEXT("Inventory")); // progression-shop
     bReplicates = true;
     SetReplicateMovement(true);
     GetCapsuleComponent()->InitCapsuleSize(40.f, 92.f);
@@ -210,16 +215,20 @@ void ACireHero::Recalculate(bool bFill)
     CriticalChance=CireSkillTuning::Get().CritChance;
     CriticalMultiplier=CireSkillTuning::Get().CritMultiplier;
     Level = Progression.Level;
-    Strength = Progression.Stats.Strength;
-    Agility = Progression.Stats.Agility;
-    Intelligence = Progression.Stats.Intelligence;
+    // progression-shop: equipment attributes, health/mana, CDR and crit join the single stat pipeline.
+    Cires::StatBlock Attributes = Progression.Stats;
+    CireItems::AddAttributes(this, Attributes);
+    Strength = Attributes.Strength;
+    Agility = Attributes.Agility;
+    Intelligence = Attributes.Intelligence;
     Cires::CombatTuning Tuning;
     Tuning.WeaponDamage = 12;
-    Tuning.PureCooldownReduction = CDR;
-    const auto Stats = Cires::CalculateStats(Progression.Stats, Progression.Primary, Tuning);
+    Tuning.PureCooldownReduction = CireItems::CooldownReductionFor(this, CDR);
+    const auto Stats = Cires::CalculateStats(Attributes, Progression.Primary, Tuning);
     MaxHealth = static_cast<float>(Stats.MaxHealth);
     MaxMana = static_cast<float>(Stats.MaxMana);
     CDR = static_cast<float>(1.0 - Stats.CooldownMultiplier);
+    CireItems::ApplyDerived(this); // progression-shop: +health, +mana, +crit
     Health = bFill ? MaxHealth : FMath::Clamp(Health + MaxHealth - OldMaxHealth, 0.f, MaxHealth);
     Mana = bFill ? MaxMana : FMath::Clamp(Mana + MaxMana - OldMaxMana, 0.f, MaxMana);
     if (bFill) Energy = 100;
@@ -252,7 +261,9 @@ void ACireHero::RefreshOffer()
         (static_cast<std::uint64_t>(GetUniqueID()) << 32) ^
         static_cast<std::uint64_t>(Progression.NextAugmentLevel);
     Progression.DraftRole = CireChampionProfiles::DraftRole(this);
-    CurrentOffer = Cires::GenerateAugmentOffer(Progression, Cires::StarterSkillPool(Progression.DraftRole), Seed);
+    // champion-draft: hybrids draw from primary + secondary role tags; the rules filter the full catalog.
+    Progression.SecondaryRoles = CireChampionProfiles::SecondaryRoles(this);
+    CurrentOffer = Cires::GenerateAugmentOffer(Progression, Cires::StarterSkillPool(), Seed);
     if (!CurrentOffer.IsValid())
     {
         Notice = UTF8_TO_TCHAR(CurrentOffer.Error.c_str());
@@ -338,7 +349,7 @@ float ACireHero::AttackDamage() const
         if (const auto* State = GetWorld()->GetGameState<ACireGameState>())
             Power += FMath::Min(TeamId == 0 ? State->EmberWins : State->DuskWins, 4) * 0.03f;
     }
-    return static_cast<float>(Stats.BasicAttackDamage) * Power;
+    return (static_cast<float>(Stats.BasicAttackDamage) + CireItems::AttackDamageBonus(this)) * Power; // progression-shop: item attack damage
 }
 
 void ACireHero::BasicAttack()
@@ -348,7 +359,7 @@ void ACireHero::BasicAttack()
     if (!HasAuthority() || !Mode || !Mode->IsCombatPhase() || bDead || !bDrafted || BasicTimer > 0 ||
         !IsHostile(Target) || !InRange(Target, BasicRange(this)) || !ClearSight(this, Target)) return;
     const float PassiveSpeed = HasSkill(TEXT("battle_rhythm")) ? 1.20f : 1.f;
-    BasicTimer = BaseAttackSeconds() / ((1.f + Agility * 0.01f) * PassiveSpeed);
+    BasicTimer = BaseAttackSeconds() / ((1.f + Agility * 0.01f + CireItems::AttackSpeedBonus(this)) * PassiveSpeed); // progression-shop: item attack speed
     AttackDuration = FMath::Min(.65f, BasicTimer);
     AttackReleaseTimer = AttackDuration * (.25f / .65f);
     PendingAttackTarget = Target;
@@ -416,17 +427,17 @@ void ACireHero::Cast(int32 Slot)
     };
     if (Id == TEXT("iron_guard"))
     {
-        ShieldUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f);
+        ShieldUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f); CireBuffs::Apply(this,TEXT("iron_guard"),CireDeveloperTools::EffectSeconds(GetWorld(),8.f),this); // aura-vfx
     }
     else if (Id == TEXT("shield_slam"))
     {
-        Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),2.f));
-        if (auto* Monster = ::Cast<ACireMonster>(Target)) { CireThreat::Taunt(Monster,this,3);CireNPCCombat::Interrupt(Monster); }
+        Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),2.f)); CireBuffs::Apply(Target,TEXT("shield_slam"),CireDeveloperTools::EffectSeconds(GetWorld(),2.f),this); // aura-vfx
+        if (auto* Monster = ::Cast<ACireMonster>(Target)) { CireThreat::Taunt(Monster,this,3);CireNPCCombat::InterruptCast(Monster,this); }
         Hit(Target, 35 + (12 + Strength) * 1.25f, FLinearColor(0.4f, 0.7f, 1.f));
     }
     else if (Id == TEXT("war_cry"))
     {
-        TauntUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),6.f);
+        TauntUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),6.f); CireBuffs::Apply(this,TEXT("war_cry"),CireDeveloperTools::EffectSeconds(GetWorld(),6.f),this); // aura-vfx
         ShieldUntil = FMath::Max(ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),3.f));
         for (auto* Monster : Mode->Monsters)
             if (IsHostile(Monster) && InRange(Monster, 850)) CireThreat::Taunt(Monster,this,6);
@@ -449,7 +460,7 @@ void ACireHero::Cast(int32 Slot)
     else if (Id == TEXT("ember_lance")) Hit(Target, 65 + Intelligence * 2.f, FLinearColor(1.f, 0.25f, 0.05f));
     else if (Id == TEXT("frost_bind"))
     {
-        Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),4.f));
+        Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),4.f)); CireBuffs::Apply(Target,TEXT("frost_bind"),CireDeveloperTools::EffectSeconds(GetWorld(),4.f),this); // aura-vfx
         Hit(Target, 30 + Intelligence, FLinearColor(0.2f, 0.85f, 1.f));
     }
     else if (Id == TEXT("cleaving_strike"))
@@ -474,7 +485,7 @@ void ACireHero::Cast(int32 Slot)
             if (IsValid(Friend) && !Friend->bDead && Friend->TeamId == TeamId && InRange(Friend, 600) && ClearSight(this, Friend))
             {
                 CireCombat::ApplyHealing(this, Friend, (45 + Intelligence * 1.5f) * Power, SkillName(Id));
-                Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),3.f));
+                Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),3.f)); CireBuffs::Apply(Friend,TEXT("sanctuary"),CireDeveloperTools::EffectSeconds(GetWorld(),3.f),this); // aura-vfx
             }
     }
     else if (Id == TEXT("purify"))
@@ -489,10 +500,10 @@ void ACireHero::Cast(int32 Slot)
             if (IsValid(Friend) && Friend->bDrafted && !Friend->bDead && Friend->TeamId == TeamId &&
                 InRange(Friend, 650) && ClearSight(this, Friend))
             {
-                Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f));
+                Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f)); CireBuffs::Apply(Friend,TEXT("bastion_of_dawn"),CireDeveloperTools::EffectSeconds(GetWorld(),8.f),this); // aura-vfx
             }
         // A caster is guarded even if its roster entry is temporarily being assigned.
-        ShieldUntil = FMath::Max(ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f));
+        ShieldUntil = FMath::Max(ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f)); CireBuffs::Apply(this,TEXT("bastion_of_dawn"),CireDeveloperTools::EffectSeconds(GetWorld(),8.f),this); // aura-vfx
     }
     else if (Id == TEXT("cataclysm"))
     {
@@ -552,9 +563,13 @@ float ACireHero::TakeDamage(float Amount, FDamageEvent const& Event, AController
     }
     if (HasSkill(TEXT("stone_skin"))) Amount *= 0.90f;
     if (ShieldUntil > GetWorld()->GetTimeSeconds()) Amount *= 0.60f;
+    // progression-shop: armor (basic attacks) / spell ward (abilities) and item barriers.
+    const FString IncomingName = Event.IsOfType(FCireDamageEvent::CireClassID) ? static_cast<const FCireDamageEvent&>(Event).AbilityName : TEXT("Basic attack");
+    Amount = CireItems::ModifyIncomingDamage(this, Causer, IncomingName, Amount);
     const float Taken = FMath::Min(Health, Amount);
     Health -= Taken;
     CireCombat::BroadcastDamage(Causer, this, Taken, Event);
+    CireItems::OnHeroDamaged(this, Causer, IncomingName, Taken); // progression-shop: teleport interrupt, thorns, Unbroken
     if (Health <= 0)
     {
         bDead = true;
@@ -575,29 +590,11 @@ float ACireHero::TakeDamage(float Amount, FDamageEvent const& Event, AController
 
 void ACireHero::Purchase(int32 Item)
 {
-    const auto* Mode = ModeFor(this);
-    if (!HasAuthority() || !Mode || !bDrafted || bDead || (Mode->Clock.Phase() != Cires::MatchPhase::Intermission && Mode->Clock.Phase() != Cires::MatchPhase::Recovery) ||
-        FVector::DistSquared2D(GetActorLocation(), Mode->BasePosition(TeamId)) > FMath::Square(700.f))
-    { Notice = TEXT("Shop at your base during prep intermission or recovery."); return; }
-    const int32 Prices[] = {100, 120, 180, 160};
-    if (Item < 0 || Item > 3) return;
-    if (Gold < Prices[Item]) { Notice = TEXT("Not enough gold."); return; }
-    if (Item == 3 && CDR >= static_cast<float>(Cires::MaxCooldownReduction) - KINDA_SMALL_NUMBER)
-    { Notice = TEXT("Pure cooldown reduction is capped at 60%."); return; }
-    Gold -= Prices[Item];
-    if (Item == 0) GrantExperience(300);
-    else if (Item == 3) CDR = FMath::Min(0.60f, CDR + 0.05f);
-    else
-    {
-        const int32 Bonus = Item == 1 ? 3 : 4;
-        if (PrimaryStat() == Cires::PrimaryStat::Strength) Progression.Stats.Strength += Bonus;
-        if (PrimaryStat() == Cires::PrimaryStat::Agility) Progression.Stats.Agility += Bonus;
-        if (PrimaryStat() == Cires::PrimaryStat::Intelligence) Progression.Stats.Intelligence += Bonus;
-        if (Item == 2) ++GearRank;
-    }
-    Recalculate(false);
-    Notice = Item == 0 ? TEXT("Experience tome: +300 XP.") : Item == 1 ? TEXT("Stat tome: +3 primary stat.") :
-        Item == 2 ? TEXT("Gear improved: +4 primary stat.") : TEXT("Pure cooldown reduction: +5 percentage points.");
+    // progression-shop: legacy indices 0..3 (XP tome, primary tome, longsword, sandglass) buy
+    // catalog items through the authoritative inventory; rules and messages live in CireItems.
+    if (!HasAuthority() || !Inventory) return;
+    FString Message;
+    Inventory->Buy(CireItems::LegacyItem(Item), Message);
 }
 
 void ACireHero::ReviveAt(FVector Location)
@@ -609,7 +606,7 @@ void ACireHero::ReviveAt(FVector Location)
     PendingAttackTarget.Reset();
     bDead = false;
     RespawnTimer = 0;
-    ShieldUntil = 0;
+    ShieldUntil = 0; CireBuffs::ClearAll(this); // aura-vfx
     TauntUntil = 0;
     SlowUntil = 0;
     BasicTimer = 0;
@@ -634,9 +631,7 @@ void ACireHero::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
     if(Mobility)
     {
-        GetCharacterMovement()->JumpZVelocity=CireMovement::Tuning().JumpVelocity;
-        GetCharacterMovement()->bOrientRotationToMovement=!Mobility->bStrafing&&!Mobility->IsRolling();
-        bUseControllerRotationYaw=Mobility->bStrafing&&!Mobility->IsRolling();
+        CireMovement::ApplyToHero(*this); // tuning, facing mode and tank body scale
         if(bDead)Mobility->CancelRoll();
     }
     if (ChampionArt) ChampionArt->UpdateVisuals(*this, DeltaSeconds);
@@ -648,6 +643,7 @@ void ACireHero::Tick(float DeltaSeconds)
         const auto* State = GetWorld()->GetGameState<ACireGameState>();
         const double ServerTime = State ? State->GetServerWorldTimeSeconds() : GetWorld()->GetTimeSeconds();
         GetCharacterMovement()->MaxWalkSpeed = Mobility?Mobility->MovementSpeed(SlowUntil>ServerTime):(SlowUntil>ServerTime?338.f:520.f);
+        GetCharacterMovement()->MaxWalkSpeed *= CireItems::MoveSpeedMultiplier(this); // progression-shop
         return;
     }
     auto* Mode = ModeFor(this);
@@ -675,6 +671,7 @@ void ACireHero::Tick(float DeltaSeconds)
     const float Regen = HasSkill(TEXT("deep_reserves")) ? 1.5f : 1.f;
     Mana = FMath::Min(MaxMana, Mana + DeltaSeconds * MaxMana * 0.015f * Regen);
     Energy = FMath::Min(100.f, Energy + DeltaSeconds * 9.f * Regen);
+    CireItems::ApplyRegen(this, DeltaSeconds); // progression-shop: item health/mana/energy regeneration
     if ((Mode->Clock.Phase() == Cires::MatchPhase::Intermission || Mode->Clock.Phase() == Cires::MatchPhase::Recovery) &&
         FVector::DistSquared2D(GetActorLocation(), Mode->BasePosition(TeamId)) < FMath::Square(750.f))
     {
@@ -682,6 +679,7 @@ void ACireHero::Tick(float DeltaSeconds)
         Mana = FMath::Min(MaxMana, Mana + DeltaSeconds * MaxMana * 0.15f);
     }
     GetCharacterMovement()->MaxWalkSpeed = Mobility?Mobility->MovementSpeed(SlowUntil>GetWorld()->GetTimeSeconds()):(SlowUntil>GetWorld()->GetTimeSeconds()?338.f:520.f);
+    GetCharacterMovement()->MaxWalkSpeed *= CireItems::MoveSpeedMultiplier(this); // progression-shop
     if (bBot) BotThink(DeltaSeconds);
     if (bAutoAttack) BasicAttack();
 }
@@ -712,7 +710,7 @@ void ACireHero::BotThink(float DeltaSeconds)
         if (BotDecisionTimer <= 0)
         {
             BotDecisionTimer = 2;
-            if (Gold >= 180) Purchase(Level < 6 ? 0 : 2);
+            CireItems::BotShop(this); // progression-shop: bots follow their role's recommended build
         }
         return;
     }
@@ -860,6 +858,8 @@ ACireMonster::ACireMonster()
         TEXT("/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed"));
     if (Animation.Succeeded()) GetMesh()->SetAnimInstanceClass(Animation.Class);
     GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    NPCState = CreateDefaultSubobject<UCireNPCState>(TEXT("NPCState")); // npc-boss: role/boss/threat state
+    CreateDefaultSubobject<UCireBuffState>(TEXT("BuffState")); // aura-vfx: replicated named-effect records for signature visuals
 }
 
 void ACireMonster::BeginPlay()
@@ -890,6 +890,8 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
     auto* Attacker = ::Cast<ACireHero>(Causer);
     if (!HasAuthority() || !Mode || !Attacker || !Attacker->IsHostile(this) || Health <= 0 ||
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
+    Amount = CireNPCCombat::ModifyIncomingDamage(this, Attacker, Amount); // npc-boss: armor/guard/shield wall/provoke
+    if (Amount <= 0 || Health <= 0) return 0;
     const float Taken = FMath::Min(Health, Amount);
     Health -= Taken;
     CireCombat::BroadcastDamage(Causer, this, Taken, Event);

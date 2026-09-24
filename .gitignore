@@ -25,3 +25,6 @@ Art/Downloads/
 # Local-only
 *.log
 .env
+
+# Fab import staging (isolated ContentBuilder output; results are copied to Content/Fab)
+Tools/ContentBuilder/Content/Fab/

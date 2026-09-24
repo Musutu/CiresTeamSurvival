@@ -22,3 +22,25 @@ PvE events stay within the observing hero's team; opposing engagements remain pr
 ## Verification
 
 The telemetry fixture checks actual applied amounts, per-recipient identity, killing blows, impact positions, buffer limits, and privacy. The two-client interface fixture includes a server-spawned monster killed before it can replicate; only its attacking team should receive the hit snapshot. The dev-only `-CireFeedbackPreview` fixture produces real single-target, area, incoming, healing, and lethal events and captures rendered screenshots. See `Validation.md` for the latest executed results; fixture existence alone is not evidence of a pass.
+
+## WoW-style combat text (September 24)
+
+Text is drawn with the kit's TTF fonts at pixel size (outlined numbers). Outgoing damage is coloured by
+school when **Colour by spell school** is on (derived from the ability name: gold physical, orange fire,
+pale blue frost, green poison/nature, purple shadow, yellow holy, blue storm, pink arcane); incoming
+damage stays red, healing green, avoidance grey ("Miss"/"Dodge"). Criticals "pop" (start ~2.2x and
+settle at 1.3x) when **Critical pop** is on, with a rotating starburst in the scrolling lanes. Options:
+misses on/off, AoE merging on/off, scroll direction up / down / fountain, speed .5-2 and display time
+1.5-5 s (floating numbers last two thirds of it). A small school-coloured pip precedes each lane's
+ability line.
+
+## Threat and aggro feedback
+
+The threat meter (panel `Threat`), target-frame threat badge, boss frames, nameplate glows and alerts read
+the replicated `UCireNPCState` threat table (`Docs/NPCs.md`), so they work on LAN clients.
+Damage dealers/healers: a red "AGGRO!" alert with screen-edge pulse and alarm when an enemy turns on
+them, an orange "THREAT n%" warning when their pull progress (110% melee / 130% ranged rule) passes the
+threshold, red nameplate glow + diamond while an enemy targets them, orange glow when close to pulling.
+Tanks: "LOST AGGRO" with the new victim and a knock sound, orange nameplate glow for engaged enemies not
+on them, "TAUNTED"/"AGGRO GAINED" confirmations for elites/bosses. Player and party frames glow red with
+an "AGGRO xN" count while enemies attack that member.

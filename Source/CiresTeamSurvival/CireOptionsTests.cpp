@@ -15,7 +15,9 @@ bool CireOptions::RunSettingsSmoke()
     const FString File=FPaths::Combine(Directory,TEXT("profile-")+FGuid::NewGuid().ToString()+TEXT(".ini"));
     FCireUISettings A;A.Load(File);
     Check(A.CameraYawSensitivity==1&&A.CameraPitchSensitivity==1&&A.CameraDistance==650,TEXT("camera defaults"));
-    Check(A.TooltipMode==0&&A.StatusFilter==0&&A.bShowCriticalSymbol,TEXT("interface defaults"));
+    // Schema 4: the WoW corner anchor (mode 3) is the default tooltip position.
+    Check(A.TooltipMode==3&&A.StatusFilter==0&&A.bShowCriticalSymbol,TEXT("interface defaults"));
+    Check(A.bAutoUIScale&&FMath::IsNearlyEqual(A.UIScale,1.f)&&A.bUnitTooltips&&A.bShowThreatMeter&&A.bThreatWarnings&&A.bLevelUpEffect,TEXT("wow ui defaults"));
     Check(FMath::IsNearlyEqual(A.TooltipScale,.8f),TEXT("compact tooltip default"));
     Check(!A.bQuickGroundCast,TEXT("ground aiming requires confirmation by default"));A.bQuickGroundCast=true;
     A.CameraYawSensitivity=2.3f;A.CameraPitchSensitivity=.45f;A.bInvertMouseY=true;A.CameraDistance=950;A.CameraFOV=92;
@@ -41,9 +43,9 @@ bool CireOptions::RunSettingsSmoke()
     B.MasterVolume=-4;B.SFXVolume=9;B.UIVolume=std::numeric_limits<float>::quiet_NaN();B.TooltipMode=99;B.StatusFilter=-1;
     B.TooltipScale=99;B.TooltipAngleDegrees=999;B.TooltipDistance=-1;Check(B.Save(),TEXT("sanitize save"));
     FCireUISettings C;C.Load(File);
-    Check(C.CameraYawSensitivity==1&&C.CameraPitchSensitivity==3&&C.CameraDistance==300&&C.CameraFOV==105,TEXT("camera finite clamp"));
+    Check(C.CameraYawSensitivity==1&&C.CameraPitchSensitivity==5&&C.CameraDistance==300&&C.CameraFOV==105,TEXT("camera finite clamp"));
     Check(C.MasterVolume==0&&C.SFXVolume==1&&FMath::IsNearlyEqual(C.UIVolume,.7f),TEXT("audio finite clamp"));
-    Check(C.TooltipMode==2&&C.StatusFilter==0&&C.TooltipAngleDegrees==360&&C.TooltipDistance==16,TEXT("interface bounded"));
+    Check(C.TooltipMode==3&&C.StatusFilter==0&&C.TooltipAngleDegrees==360&&C.TooltipDistance==16,TEXT("interface bounded"));
     Check(FMath::IsNearlyEqual(C.TooltipScale,1.4f),TEXT("oversized tooltip scale clamped on save"));
     const FString SmallTooltip=TEXT("[CireUI.Preferences]\nVersion=3\nTooltipScale=-1\nbShowChat=False\nCameraDistance=950\n");
     Check(FFileHelper::SaveStringToFile(SmallTooltip,*File),TEXT("small tooltip fixture write"));
@@ -65,11 +67,32 @@ bool CireOptions::RunSettingsSmoke()
     Check(FFileHelper::SaveStringToFile(V2,*File),TEXT("legacy fixture write"));
     FCireUISettings D;D.Load(File);
     Check(!D.bShowFloatingNumbers&&D.bShowScrollingText&&!D.bShowChat&&D.WorldNumberFontSize==34,TEXT("v2 preferences preserved"));
-    Check(D.CameraYawSensitivity==1&&D.MasterVolume==.85f&&D.TooltipMode==0&&FMath::IsNearlyEqual(D.TooltipScale,.8f),TEXT("v2 new defaults migrated"));
+    // A pre-schema-4 profile never chose a tooltip mode, so it gets the new corner-anchor default.
+    Check(D.CameraYawSensitivity==1&&D.MasterVolume==.85f&&D.TooltipMode==3&&FMath::IsNearlyEqual(D.TooltipScale,.8f),TEXT("v2 new defaults migrated"));
     const auto Legacy=D.GetRect(TEXT("Player"),FVector2D(1280,720));Check(FMath::IsNearlyEqual(Legacy.X,128.f)&&FMath::IsNearlyEqual(Legacy.Y,144.f)&&D.IsPanelLocked(TEXT("Player")),TEXT("v2 custom panel preserved"));
     Check(D.GetPanelIds().Contains(TEXT("Tooltip"))&&D.GetPanelIds().Contains(TEXT("Pet")),TEXT("new panels available after migration"));
+    // Schema 3 -> 4: cursor mode (the old default) moves to the corner anchor; radial choice is kept.
+    const FString OldCursor=TEXT("[CireUI.Preferences]\nVersion=3\nTooltipMode=0\nbShowChat=False\n");
+    Check(FFileHelper::SaveStringToFile(OldCursor,*File),TEXT("v3 cursor fixture write"));
+    FCireUISettings E;E.Load(File);
+    Check(E.TooltipMode==3&&!E.bShowChat&&E.bAutoUIScale,TEXT("v3 cursor tooltip migrated to WoW anchor"));
+    // Schema 4 roundtrip: interface scale, SCT, threat, tooltip extras and panel anchors.
+    E.bAutoUIScale=false;E.UIScale=.72f;E.TooltipOpacity=.5f;E.TooltipDelay=.4f;E.SCTDirection=2;E.SCTSpeed=1.6f;E.SCTFadeSeconds=4.2f;
+    E.bSchoolColors=false;E.bThreatSound=false;E.ThreatWarningPercent=75;E.bShowBossFrames=false;E.bLayoutLocked=false;
+    Check(E.SetRect(TEXT("Minimap"),{1000,30,220,178},FVector2D(1280,720)),TEXT("anchored panel movable"));
+    Check(E.Save(),TEXT("save v4"));
+    FCireUISettings F;F.Load(File);
+    Check(!F.bAutoUIScale&&FMath::IsNearlyEqual(F.UIScale,.72f)&&FMath::IsNearlyEqual(F.TooltipOpacity,.5f)&&FMath::IsNearlyEqual(F.TooltipDelay,.4f),TEXT("v4 scale/tooltip roundtrip"));
+    Check(F.SCTDirection==2&&FMath::IsNearlyEqual(F.SCTSpeed,1.6f)&&FMath::IsNearlyEqual(F.SCTFadeSeconds,4.2f)&&!F.bSchoolColors,TEXT("v4 sct roundtrip"));
+    Check(!F.bThreatSound&&F.ThreatWarningPercent==75&&!F.bShowBossFrames,TEXT("v4 threat roundtrip"));
+    // A right-anchored panel keeps its distance from the right edge when the logical viewport grows (UI scale < 1).
+    const auto Wide=F.GetRect(TEXT("Minimap"),FVector2D(1828,1028));
+    Check(FMath::IsNearlyEqual(Wide.X+Wide.W,1828.f-60.f,.6f)&&FMath::IsNearlyEqual(Wide.W,220.f,.6f),TEXT("v4 right anchor preserved"));
+    F.UIScale=9;F.TooltipOpacity=-2;F.SCTDirection=7;F.ThreatWarningPercent=5;Check(F.Save(),TEXT("v4 sanitize save"));
+    FCireUISettings G;G.Load(File);
+    Check(FMath::IsNearlyEqual(G.UIScale,1.15f)&&FMath::IsNearlyEqual(G.TooltipOpacity,.3f)&&G.SCTDirection==2&&G.ThreatWarningPercent==60,TEXT("v4 bounds"));
     Check(IFileManager::Get().Delete(*File),TEXT("isolated fixture cleanup"));
-    UE_LOG(LogTemp,Display,TEXT("CIRE_OPTIONS_SETTINGS_%s checks=%d schema=3"),Pass?TEXT("PASS"):TEXT("FAIL"),Count);
+    UE_LOG(LogTemp,Display,TEXT("CIRE_OPTIONS_SETTINGS_%s checks=%d schema=4"),Pass?TEXT("PASS"):TEXT("FAIL"),Count);
     return Pass;
 }
 #endif

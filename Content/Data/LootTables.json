@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "_comment": "progression-shop: challenge-pack gating and bonus-drop tables (design proposal). Chances are per entry and independent; gold/XP grow +25% per tier above 1, chances +8% relative per tier, then x team loot bonus. See Docs/Progression.md.",
+  "scaling": { "goldPerTier": 0.25, "chancePerTier": 0.08, "maxChance": 0.95 },
+  "packSchedule": {
+    "_comment": "Bay 1 is nearest town; deeper bays sit toward the monster spawn. A bay's tier = bay number, +1 at promotionStartRound and +1 every promotionEveryRounds after.",
+    "bays": [
+      { "bay": 1, "unlockRound": 1, "unlockWave": 1 },
+      { "bay": 2, "unlockRound": 2, "unlockWave": 1 },
+      { "bay": 3, "unlockRound": 3, "unlockWave": 2 }
+    ],
+    "promotionStartRound": 4,
+    "promotionEveryRounds": 2,
+    "maxTier": 8
+  },
+  "pickup": { "radius": 320, "autoCollectOnPrep": true },
+  "sources": {
+    "packCompletion": [ { "minTier": 1, "table": "pack_minor" }, { "minTier": 3, "table": "pack_major" }, { "minTier": 5, "table": "pack_elite" } ],
+    "packLeader": [ { "minTier": 1, "table": "leader_minor" }, { "minTier": 4, "table": "leader_major" } ],
+    "laneBoss": [ { "minRound": 1, "table": "boss_early" }, { "minRound": 4, "table": "boss_late" } ]
+  },
+  "tables": {
+    "pack_minor": {
+      "label": "Outpost cache",
+      "entries": [
+        { "type": "gold", "chance": 1, "min": 45, "max": 65 },
+        { "type": "experience", "chance": 0.6, "min": 120, "max": 120 },
+        { "type": "primaryTome", "chance": 0.3, "min": 1, "max": 1 },
+        { "type": "item", "chance": 0.45, "pool": ["vial_of_crimson", "aether_phial", "watchers_lantern"] },
+        { "type": "item", "chance": 0.18, "pool": ["rusted_longsword", "bone_dagger", "ashwood_wand", "bloodstone_shard", "boiled_jerkin", "hexweave_cloak", "pilgrims_idol", "gravemoss_pendant"] }
+      ]
+    },
+    "pack_major": {
+      "label": "Outpost strongbox",
+      "entries": [
+        { "type": "gold", "chance": 1, "min": 70, "max": 100 },
+        { "type": "experience", "chance": 0.7, "min": 200, "max": 200 },
+        { "type": "primaryTome", "chance": 0.4, "min": 1, "max": 2 },
+        { "type": "primaryTome", "chance": 0.12, "min": 3, "max": 4 },
+        { "type": "item", "chance": 0.35, "pool": ["rusted_longsword", "bone_dagger", "ashwood_wand", "bloodstone_shard", "boiled_jerkin", "hexweave_cloak", "vampire_fang", "ravens_eye", "sandglass_charm", "road_worn_boots"] },
+        { "type": "item", "chance": 0.12, "pool": ["serrated_cleaver", "grimoire_of_whispers", "chainmail_of_the_fallen", "bloodletter", "mantle_of_ash"] }
+      ]
+    },
+    "pack_elite": {
+      "label": "Warlord's reliquary",
+      "entries": [
+        { "type": "gold", "chance": 1, "min": 110, "max": 150 },
+        { "type": "experience", "chance": 0.8, "min": 300, "max": 300 },
+        { "type": "primaryTome", "chance": 0.5, "min": 2, "max": 3 },
+        { "type": "primaryTome", "chance": 0.2, "min": 3, "max": 5 },
+        { "type": "item", "chance": 0.35, "pool": ["serrated_cleaver", "grimoire_of_whispers", "chainmail_of_the_fallen", "bloodletter", "mantle_of_ash"] },
+        { "type": "item", "chance": 0.08, "pool": ["nightfall_reaver", "sanguine_sabre", "crown_of_cinders", "gravewarden_bulwark", "censer_of_dawn", "stoneheart"] }
+      ]
+    },
+    "leader_minor": {
+      "label": "Gravemaw's trophy",
+      "entries": [
+        { "type": "gold", "chance": 1, "min": 30, "max": 45 },
+        { "type": "primaryTome", "chance": 0.25, "min": 1, "max": 1 },
+        { "type": "item", "chance": 0.5, "pool": ["vial_of_crimson", "aether_phial", "elixir_of_iron", "elixir_of_wrath", "elixir_of_black_sorcery"] },
+        { "type": "item", "chance": 0.25, "pool": ["gauntlet_of_the_ox", "band_of_the_fox", "circlet_of_the_owl", "nightglass_shard", "road_worn_boots"] }
+      ]
+    },
+    "leader_major": {
+      "label": "Gravemaw's hoard",
+      "entries": [
+        { "type": "gold", "chance": 1, "min": 60, "max": 80 },
+        { "type": "primaryTome", "chance": 0.35, "min": 2, "max": 2 },
+        { "type": "item", "chance": 0.35, "pool": ["vampire_fang", "ravens_eye", "sandglass_charm", "gravemoss_pendant", "pilgrims_idol"] },
+        { "type": "item", "chance": 0.2, "pool": ["serrated_cleaver", "grimoire_of_whispers", "chainmail_of_the_fallen", "bloodletter", "mantle_of_ash"] }
+      ]
+    },
+    "boss_early": {
+      "label": "Siegebreaker's plunder",
+      "entries": [
+        { "type": "gold", "chance": 1, "min": 80, "max": 110 },
+        { "type": "experience", "chance": 0.8, "min": 250, "max": 250 },
+        { "type": "primaryTome", "chance": 0.5, "min": 1, "max": 2 },
+        { "type": "item", "chance": 0.6, "pool": ["vial_of_crimson", "aether_phial", "watchers_lantern", "elixir_of_iron", "elixir_of_wrath", "elixir_of_black_sorcery"] },
+        { "type": "item", "chance": 0.5, "pool": ["rusted_longsword", "bone_dagger", "ashwood_wand", "bloodstone_shard", "boiled_jerkin", "hexweave_cloak", "vampire_fang", "ravens_eye", "sandglass_charm", "road_worn_boots"] }
+      ]
+    },
+    "boss_late": {
+      "label": "Siegebreaker's war-chest",
+      "entries": [
+        { "type": "gold", "chance": 1, "min": 140, "max": 190 },
+        { "type": "experience", "chance": 0.9, "min": 400, "max": 400 },
+        { "type": "primaryTome", "chance": 0.6, "min": 2, "max": 4 },
+        { "type": "item", "chance": 0.45, "pool": ["serrated_cleaver", "grimoire_of_whispers", "chainmail_of_the_fallen", "bloodletter", "mantle_of_ash"] },
+        { "type": "item", "chance": 0.12, "pool": ["nightfall_reaver", "sanguine_sabre", "crown_of_cinders", "gravewarden_bulwark", "censer_of_dawn", "stoneheart", "voidglass_orb", "aegis_of_the_last_oath"] }
+      ]
+    }
+  }
+}

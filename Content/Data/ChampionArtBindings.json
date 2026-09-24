@@ -131,7 +131,7 @@
     },
     {
       "profileId": "bear",
-      "mesh": "/Game/Art/Characters/CreatureSurfaces02/SK_Bear.SK_Bear",
+      "mesh": "/Game/Art/Characters/Motion03/SK_BearMotion.SK_BearMotion",
       "heightCm": 148,
       "motion": "quadruped_procedural",
       "status": "custom_ready"

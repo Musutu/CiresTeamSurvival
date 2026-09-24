@@ -1,4 +1,6 @@
 #include "CireCombatExpansionProbe.h"
+#include "CireAudio.h" // audio:
+#include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
 #include "CireChampionRoster.h"
 #include "CireChampionProfiles.h"
@@ -21,6 +23,7 @@
 #include "CireTargeting.h"
 #include "Engine/World.h"
 #include "Misc/ScopeExit.h"
+#include "CireAuraVisuals.h" // aura-vfx
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireExpansion,Log,All);
@@ -42,7 +45,8 @@ bool CireThreat::RunSmoke(ACireGameMode* Mode){
     const auto& T=CireSkillTuning::Get();
     Damage(Enemy,Tank,10);Check(Enemy->Victim==Tank&&FMath::IsNearlyEqual(Enemy->Threat.FindRef(Tank),10*T.TankDamageThreatMultiplier),TEXT("tank damage threat multiplier"));
     Damage(Enemy,DPS,40);Check(Enemy->Victim==Tank,TEXT("DPS stays below tank threat"));
-    Damage(Enemy,DPS,11);Check(Enemy->Victim==DPS,TEXT("DPS overtakes tank"));
+    Damage(Enemy,DPS,11);Check(Enemy->Victim==Tank,TEXT("DPS above 100% but under the 110% melee pull threshold keeps the tank"));
+    Damage(Enemy,DPS,5);Check(Enemy->Victim==DPS,TEXT("DPS overtakes tank past 110% in melee"));
     Taunt(Enemy,Tank,3);Damage(Enemy,DPS,100);Check(Enemy->Victim==Tank,TEXT("active taunt forces target"));
     Enemy->ForcedVictimUntil=0;Check(Select(Enemy)==DPS,TEXT("expired taunt returns to highest threat"));
     Engage(Second,Tank);Tank->Health=500;
@@ -80,6 +84,9 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireDeveloperTools::RunValidationSmoke()&&Good;
     Good=CireReplay::RunReplaySmoke(Mode->GetWorld())&&Good;
     Good=CireSpellPresentation::RunSmoke(Mode->GetWorld())&&Good;
+    Good=CireAudio::RunAudioSmoke(Mode->GetWorld())&&Good; // audio: settings, buses, data, armour classes, music, cadence
+    Good=CireAuraVisuals::RunSmoke(Mode)&&Good; // aura-vfx
+    Good=CireProgression::RunSmoke(Mode)&&Good; // progression-shop: items, shop, loot, gating, teleport, NPC pause
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }
 #endif

@@ -1,41 +1,118 @@
-# Authored battlefield props
+# The medieval town (battlefield environment)
 
-`Content/Data/EnvironmentPlacements.json` defines eight original supplementary
-models and 80 placement rows, mirrored across the two PvE lanes. Anchors can follow
-the town, monster spawn, challenge tiers, perimeter or outer skyline. All transforms
-and asset paths are validated, with limits of 32 models and 256 rows.
+Status September 24: the flat "ash city" lane with pillars and a skyline of box houses was replaced by a
+walled medieval town that monsters invade. It is a working prototype with real PBR materials, not finished
+AA art: see "Honest limits" at the end.
 
-The original meshes include separate barrel staves and iron hoops, framed supply
-crates, forged brazier ribs and coals, wedge-stone arches, bevelled courtyard stairs,
-branching dead oaks, oath obelisks and watch lanterns. They reuse the project's
-authored masonry, timber, slate, metal and warm emissive materials. Sources are in
-`Art/Environment/Props01Sources`; `Tools/BuildWorldProps.py` imports only into
-`/Game/Art/Environment/Props01` in an isolated builder. Source packages from Tripo
-are not modified.
+## What a realm looks like now
 
-`CireEnvironmentProps` uses hierarchical instances and source-mesh materials. Every
-placement is checked against the current world's route, spawn, challenge positions
-and defended town entrance. A conflicting prop is omitted. The checks run again
-when a developer edits the route; the existing privacy wall and route geometry
-remain intact. Blocking props use their mesh collision away from protected travel
-and spawn areas; distant trees are decorative.
+Both private PvE realms get the same town (realm-local layout), separated by the **Sundering Cliff**, an
+opaque 34 m rock face that replaced the old grey divider slab. Monsters march from the breach to the castle:
 
-Tripo town-gate, watchtower and challenge-shrine requests remain explicitly pending
-in the data until their actual imported packages can be bound. These authored props
-are supplementary environment detail, not finished AAA environment art.
+1. **The Breach Fields** (X > 11550): dead fields, rocks, fallen trunks, a gibbet and watch fires around a
+   burning rift where waves spawn. The **town wall and twin-towered gatehouse** (timber hoarding,
+   machicolations, vaulted 8 m passage) stand at X 11400.
+2. **Gate Road**: narrow street past a watchtower, barricades and crates.
+3. **Market District**: open cobbled square, covered timber market hall, rows of red and blue awning
+   stalls lining the road, a well, carts, barrels, baskets and wares.
+4. **Cooper's Lanes** (residential): an S-bend between timber-framed houses, cottages, fences, woodpiles,
+   gardens and gnarled trees.
+5. **Town Square**: paved square with the shrine/fountain centrepiece, stone chapel with bell tower,
+   well, statue, tables and banners.
+6. **Castle Approach**: banner-lined causeway with braziers, low walls and barricades.
+7. **Castle**: gatehouse (vaulted 9 m passage, portcullis, heraldic banners) = the defended leak zone;
+   inner bailey with braziers, stores and statues where heroes spawn/recover; curtain walls, round
+   towers and a four-towered keep beyond the realm edge.
 
-Asset generation passed: eight meshes imported and saved, then transferred from
-the isolated builder with byte-identical SHA-256 checks. `Saved/WorldPropsBuild.json`
-records the package paths and triangle counts. Native build/render validation passed.
-`Tools/RunEnvironmentGallery.py`
-now requires more than 40 modeled prop instances, validates their clearances, runs
-the original route capsule sweeps and captures four environment views for review.
+Street edges are lined with houses on both sides; each team's outer side gets a second, taller row and
+the outer town wall, then rocky hills and dead trees as backdrop.
 
-September 24 result: 44 checks and all four captures passed at
-`Saved/EnvironmentGalleryChecks/20260924T053403053686Z/report.json`. All four images
-were reviewed: town clutter, challenge arches, perimeter lights and skyline props
-are visible; the defended town entry and winding road remain readable and clear.
-Runtime placed 156 instances and suppressed four for route clearance. The generator
-now wraps tree yaw to 0..359 degrees and validates every numeric field before saving,
-after the first render exposed out-of-range rotations. The three generated Tripo
-landmarks remain import-pending and were not represented as completed environment art.
+## Data files
+
+- `Content/Data/TownAssetSlots.json` - slot id -> mesh (or material) plus `fallback`, optional `parts`
+  (multi-piece props sharing one pivot), `fit: "footprint"` with a `footprint` [depth X, width Y, height Z]
+  cm, `collision`, `clearance` (`route` default, `bays`, `none`), `light` (point light per instance) and
+  `materialOverride`. Buildings face +X (their street facade).
+- **Overlay manifests** `Content/Data/TownAssetSlots.<source>.json` (e.g. `.tripo.json`, `.fab.json`) are
+  merged automatically, same schema, by `priority` (defaults: tripo 10, fab 20, base 0, fallback -1). The
+  highest-priority candidate that actually loads wins; otherwise the base mesh; otherwise the fallback.
+  Overlay entries with a `status` other than `"imported"` are ignored (the Fab manifest's
+  `pending_download` entries stay inert). `"type"` is accepted as an alias of `"kind"`. Overlay meshes
+  are fitted into the slot footprint by default (`"fit": "none"` opts out), so Tripo/Fab art of any scale
+  drops in centred and seated on the ground. Gate slots (`gatehouse`, `castle_gate`) have
+  `requiresPassage`: an overlay is only used if it also sets `"passage": true`, i.e. its author confirms
+  an open road passage along local X at Y = 0. The gallery's capsule sweep then verifies it.
+- Material slots (`cobblestone_material`, `plaza_material`, `ground_material`, `plaster_material`,
+  `timber_material`, `roof_slate_material`, `castle_material`, ...). Those with a `meshSlot` swap that
+  material slot on every town mesh (e.g. a Fab plaster replaces `Plaster` everywhere). Those without are
+  used on the scaled world geometry in `ACireWorld` and must be world-aligned or they will stretch.
+- `Content/Data/TownLayout.json` - districts (for `DistrictAt`) and the placement rows in realm-local cm.
+  `mode: "outer"` rows are mirrored onto each team's outer side. Generated by
+  `Tools/AuthorTownLayout.py`, which applies the same clearance rules as the runtime and prints anything
+  it had to drop.
+
+Slot ids shared with the other agents' manifests: `gatehouse`, `watchtower`, `shrine`, `castle_keep`,
+`castle_gate`, `wall_section`, `house_a`, `house_b`, `house_c`, `market_stall_a`, `market_stall_b`,
+`fountain`, `well`, `cart`, `lamp`, `banner`, `barricade`, `crate`, `barrel`, `cobblestone_material`,
+`plaster_material` - plus `castle_wall`, `castle_tower`, `wall_tower`, `chapel`, `market_hall`, `tavern`,
+`house_shop`, `house_planks`, `cottage_thatch`, `cottage_slate`, `townhouse_row(_b)`, `warehouse`, and
+props (`crate_long`, `barrel_wine`, `barrel_stack`, `bucket`, `basket`, `table`, `stool`, `fire_pit`,
+`statue`, `hanging_lantern`, `wall_lantern`, `tree`, `shrub_1..4`, `rock_1..6`, `boulder`, ...).
+The three generated Tripo landmarks map to `gatehouse`, `watchtower` and `shrine`.
+
+## Runtime (`CireEnvironmentProps`)
+
+`ACireWorld::BeginPlay` reloads the manifests, builds one hierarchical instanced component per slot
+(and per part), and places every row in both realms. Each placement's footprint box is checked against
+the live route (330 cm from the centreline; road half-width 260 + escort capsule), the three challenge
+bays (450 cm, room for the 1.7x Pack Leader), the breach spawn (420 cm) and the realm divider (60 cm);
+conflicting pieces are omitted, never moved. The check reruns whenever a developer live-edits the route
+(`cire.Routes reload`). `HasSafeClearance` re-verifies what was placed. Slot lights are capped at 56 per
+realm and never cast shadows. Road, kerbs, plazas, ground, cliff and arenas are scaled engine cubes with
+world-aligned triplanar materials, so they never stretch.
+
+## Content pipeline (all reproducible)
+
+1. `Tools/FetchTownAssets.py` - downloads Poly Haven CC0 models (glTF), 2k PBR textures and a dusk HDRI
+   into `Saved/TownSources` (not committed), verifies MD5s, writes
+   `Art/Environment/Town/SourceManifest.json` and `Art/Environment/Town/PROVENANCE.md`.
+2. `Tools/BuildTownMeshes.py` - authors the original town kit (36 meshes, ~41k triangles total) as OBJ in
+   `Art/Environment/Town/Meshes` with metre UVs and named material slots.
+3. `Tools/ImportTownContent.py` - unattended editor commandlet: imports textures, builds
+   `M_TownSurface` (UV), `M_TownWorld` (world triplanar with OpenGL-normal handling), `M_TownFlat`
+   (glass/flame/water with flicker) and all instances, the sky dome material/cubemap, the OBJ kit (Nanite
+   on meshes >= 1500 triangles, per-poly collision) and the Poly Haven props. Everything lands under
+   `/Game/Environment/Town`; `Art/Environment/Town/ImportReport.json` lists every asset. `--only
+   textures,materials,meshes,props,sky` limits the pass. (Committed packages are LFS-lockable and
+   therefore read-only; the launcher makes them writable first.)
+4. `Tools/AuthorTownLayout.py` - writes the two JSON files above.
+5. `Tools/RunEnvironmentGallery.py` - seven rendered views plus the checks listed in
+   `Docs/BattlefieldRoutes.md`.
+
+## Lighting
+
+Dusk: HDRI sky dome (Belfast Sunset, CC0), real-time captured sky light, warm low sun setting straight
+down both lanes (so the cliff never shades one realm more than the other), volumetric height fog, warm
+street lamps, braziers, wall lanterns and lit windows. The legacy `EnvironmentPlacements.json` /
+`Props01` props are no longer placed; their meshes remain as slot fallbacks.
+
+## Evidence
+
+- Environment gallery PASS 68 checks, 7 captures (`Saved/EnvironmentGalleryChecks/<stamp>/report.json`,
+  images in `Saved/EnvironmentGallery/<stamp>/`), reviewed by eye on every iteration.
+- Native expansion suite PASS including `CIRE_LANE_SMOKE_PASS checks=31` and the NPC suites; two-client
+  expansion network probe PASS (route replication, PvE privacy); dedicated-server network smoke PASS;
+  NPC pack preview PASS.
+
+## Honest limits
+
+- The town kit is procedurally modelled and textured with tiling CC0 materials: convincing at gameplay
+  distance, but no bespoke sculpting, no decals, no trims or baked detail, and some repeated silhouettes.
+  Buildings have no interiors.
+- The Poly Haven tree has no convincing leaves at 1k resolution; it is deliberately re-materialed as a
+  dark, near-leafless town tree. Backdrop hills are scaled rock scans and read as blobs from above.
+- The Sundering Cliff is a textured box with a stepped top, not a sculpted cliff.
+- Monsters and bots still move in straight lines between points (no navmesh); the town keeps the marching
+  corridor clear, but a bot chasing a target on the far side of a house can slide along a wall briefly.
+- Performance was not profiled against a budget: several hundred instances per realm, Nanite on
+  buildings, up to 56 unshadowed lights per realm, volumetric fog and Lumen. Profile before shipping.

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CireKeybindings.h" // feat/camera-movement: action -> key map stored in this profile
 
 /** A rectangle in the HUD's logical coordinate system, before its DPI scale. */
 struct FCireUIRect
@@ -66,12 +67,18 @@ public:
     float SFXVolume = .85f;
     float UIVolume = .7f;
     bool bMuteAudio = false;
+    // audio: music / ambience buses, music switch and the heavy-footstep camera shake (Docs/Audio.md).
+    float MusicVolume = .6f;
+    float AmbienceVolume = .8f;
+    bool bMusicEnabled = true;
+    bool bFootstepCameraShake = false;
+    // audio: end
     bool bShowFPS = false;
     bool bShowNetwork = true;
     bool bTooltips = true;
     bool bQuickGroundCast = false;
     float TooltipScale = .8f;
-    int32 TooltipMode = 0; // cursor, fixed panel, radial cursor offset
+    int32 TooltipMode = 3; // 0 cursor, 1 fixed panel (top-left), 2 radial cursor offset, 3 WoW anchor (grows from the panel's lower-right)
     float TooltipAngleDegrees = 45.f;
     float TooltipDistance = 40.f;
     bool bTooltipOffsetLocked = true;
@@ -81,6 +88,57 @@ public:
     bool bShowCriticalSymbol = true;
     bool bBloom = true;
     bool bMotionBlur = false;
+    // --- WoW camera / targeting preferences (feat/camera-movement) ---
+    /** Swing the camera back behind the character while it moves and no mouse button is held. */
+    bool bCameraAutoFollow = true;
+    /** After the hostile target dies, Tab-select the nearest hostile in front of the camera. */
+    bool bAutoReacquireTarget = false;
+    /** progression-shop: show the compact character stats window (toggle: C). */
+    bool bShowStats = true;
+    // --- end WoW camera / targeting preferences ---
+    /** feat/camera-movement: keybindings + action-bar placements, section [CireUI.Keybindings]. */
+    FCireKeybindings Keybindings;
+
+    // ---- Schema 4: WoW-style interface (scale, tooltips, SCT, threat, level-up) ----
+    /** Global interface scale multiplier on top of the resolution fit (WoW range .64-1.15). */
+    float UIScale = 1.f;
+    /** Pick the multiplier from the resolution instead of UIScale. */
+    bool bAutoUIScale = true;
+    /** Tooltip background opacity (.3-1) and hover delay in seconds (0-1.5). */
+    float TooltipOpacity = .94f;
+    float TooltipDelay = .12f;
+    /** Keep tooltips away from the screen centre (reticle) and the ground-aim area. */
+    bool bTooltipAvoidCenter = true;
+    /** WoW unit tooltips when hovering characters in the world. */
+    bool bUnitTooltips = true;
+    /** Scrolling combat text extras. Direction: 0 up, 1 down, 2 fountain (arc). */
+    bool bShowMisses = true;
+    bool bCritPop = true;
+    bool bSchoolColors = true;
+    bool bMergeAoE = true;
+    int32 SCTDirection = 0;
+    float SCTSpeed = 1.f;
+    float SCTFadeSeconds = 3.2f;
+    /** Threat meter, nameplate aggro colouring and aggro alerts. */
+    bool bShowThreatMeter = true;
+    bool bThreatWarnings = true;
+    bool bThreatSound = true;
+    float ThreatWarningPercent = 90.f;
+    /** Golden level-up burst, banner and chime; WoW-style boss frames. */
+    bool bLevelUpEffect = true;
+    bool bShowBossFrames = true;
+    /** aura-vfx: buff/aura/attack-modifier visuals on other units (0 = minimal marks, 1 = full). Your own are always full. */
+    float OtherEffectsIntensity = 1.f;
+    /** Extra WoW action bars (bar 1 is always shown) and the drag lock (Shift-drag when locked). */
+    bool bShowActionBar2 = true;
+    bool bShowActionBar3 = false;
+    bool bLockActionBars = false;
+    /** Compact right-column panels can fold down to their header (click the header). */
+    bool bMeterCollapsed = false;
+    bool bThreatCollapsed = false;
+
+    /** The resolved interface multiplier for a viewport height in pixels. */
+    float ResolveUIScale(float ViewportHeightPixels) const;
 
 private:
     struct FPanelLayout
@@ -88,12 +146,15 @@ private:
         FCireUIRect Normalized;
         FVector2D MinimumSize = FVector2D(60.f, 36.f);
         bool bLocked = false;
+        /** Horizontal (0 left, 1 centre, 2 right) + 3 * vertical (0 top, 1 centre, 2 bottom). */
+        int32 Anchor = 0;
     };
     FString ConfigFilename;
     TMap<FName, FPanelLayout> Panels;
     TArray<FName> PanelIds;
 
     void SanitizePreferences();
+    static int32 AnchorFor(float Left, float Top, float Right, float Bottom);
     static FCireUIRect ClampRect(const FCireUIRect& Rect, const FVector2D& Viewport,
         const FVector2D& MinimumSize);
 };

@@ -60,6 +60,8 @@ bool ValidProgression(const Progression& progression)
 {
     if (progression.DraftRole != SkillDraftRole::Any && progression.DraftRole != SkillDraftRole::Tank &&
         progression.DraftRole != SkillDraftRole::Damage && progression.DraftRole != SkillDraftRole::Support) return false;
+    if ((progression.SecondaryRoles & ~RoleAll) != 0 ||
+        (progression.DraftRole == SkillDraftRole::Any && progression.SecondaryRoles != RoleNone)) return false;
     const auto count = static_cast<int>(progression.LearnedSkills.size());
     if (count > MaxSkills || progression.Level < 1 ||
         progression.NextAugmentLevel != 3 * (count + 1) ||
@@ -83,6 +85,14 @@ bool AlreadyLearned(const Progression& progression, const std::string& id)
 {
     return std::any_of(progression.LearnedSkills.begin(), progression.LearnedSkills.end(),
         [&](const SkillDefinition& skill) { return skill.Id == id; });
+}
+
+// Any is the legacy unrestricted catalog mode (custom fixture pools included);
+// every explicit role set filters through the authoritative tag table.
+bool AllowedForProgression(const Progression& progression, const std::string& id)
+{
+    return progression.DraftRole == SkillDraftRole::Any ||
+        IsSkillAllowedForRoles(id, EffectiveRoleMask(progression));
 }
 
 int Capacity(SkillKind kind)
@@ -203,7 +213,7 @@ AugmentOffer GenerateAugmentOffer(const Progression& progression,
             offer.Error = "Skill catalog has an empty, duplicate, or invalid definition.";
             return offer;
         }
-        if (!IsSkillAllowedForRole(skill.Id, progression.DraftRole) ||
+        if (!AllowedForProgression(progression, skill.Id) ||
             AlreadyLearned(progression, skill.Id) || !HasCapacity(progression, skill.Kind)) continue;
         (skill.Kind == SkillKind::Passive ? passive : active).push_back(skill);
     }
@@ -260,7 +270,7 @@ bool LearnSkill(Progression& progression, const AugmentOffer& offer,
     int passives = 0;
     for (const auto& skill : offer.Choices)
     {
-        if (skill.Id.empty() || !IsSkillAllowedForRole(skill.Id, progression.DraftRole) ||
+        if (skill.Id.empty() || !AllowedForProgression(progression, skill.Id) ||
             !HasCapacity(progression, skill.Kind) || AlreadyLearned(progression, skill.Id) ||
             !ids.insert(skill.Id).second) return false;
         if (skill.Kind == SkillKind::Passive) ++passives;
@@ -455,28 +465,71 @@ const char* DraftRoleName(SkillDraftRole role)
     }
 }
 
+RoleMask SkillRoleTags(const std::string& id)
+{
+    // One table is the single source of truth for draft filtering, the HUD role
+    // badges, and the AstraAbilities.json "roles" mirror (checked by tests).
+    // Tank healing stays self-only; ally heals/cleanses are Support-only; DPS
+    // receives no monster taunts. Passives are universal so every role keeps
+    // four alternatives for the final passive-only offer.
+    struct Entry { const char* Id; RoleMask Roles; };
+    static const Entry table[] = {
+        {"iron_guard", RoleAll}, {"shield_slam", RoleTank}, {"war_cry", RoleTank},
+        {"chain_spark", RoleDamage | RoleSupport}, {"ember_lance", RoleDamage | RoleSupport},
+        {"venom_ground", RoleDamage}, {"cinder_cone", RoleDamage}, {"grave_line", RoleDamage},
+        {"ashen_square", RoleDamage}, {"blight_sigil", RoleDamage},
+        {"frost_bind", RoleAll}, {"cleaving_strike", RoleTank | RoleDamage},
+        {"piercing_shot", RoleDamage}, {"shadow_step", RoleTank | RoleDamage},
+        {"restoring_light", RoleSupport}, {"sanctuary", RoleSupport}, {"purify", RoleSupport},
+        {"summoned_wall", RoleAll}, {"protection_dome", RoleAll}, {"oathbound_guardian", RoleAll},
+        {"spectral_pack", RoleDamage}, {"second_wind", RoleAll},
+        {"stone_skin", RoleAll}, {"battle_rhythm", RoleAll}, {"deep_reserves", RoleAll}, {"soul_conduit", RoleAll},
+        {"bastion_of_dawn", RoleTank | RoleSupport}, {"cataclysm", RoleDamage},
+        {"executioners_verdict", RoleDamage}, {"renewal", RoleSupport},
+        {"last_stand", RoleTank}, {"challenge_of_iron", RoleTank}, {"seismic_reprisal", RoleTank},
+        {"starfall", RoleDamage}, {"spectral_hunt", RoleDamage},
+        {"mass_aegis", RoleSupport}, {"wellspring", RoleSupport}};
+    for (const auto& entry : table)
+        if (id == entry.Id) return entry.Roles;
+    return RoleNone;
+}
+
+RoleMask RoleBit(SkillDraftRole role)
+{
+    switch (role)
+    {
+    case SkillDraftRole::Tank: return RoleTank;
+    case SkillDraftRole::Damage: return RoleDamage;
+    case SkillDraftRole::Support: return RoleSupport;
+    case SkillDraftRole::Any: return RoleAll;
+    default: return RoleNone;
+    }
+}
+
+RoleMask EffectiveRoleMask(const Progression& progression)
+{
+    if (progression.DraftRole == SkillDraftRole::Any) return RoleAll;
+    return static_cast<RoleMask>((RoleBit(progression.DraftRole) | progression.SecondaryRoles) & RoleAll);
+}
+
+bool IsSkillAllowedForRoles(const std::string& id, RoleMask roles)
+{
+    return (SkillRoleTags(id) & roles & RoleAll) != 0;
+}
+
 bool IsSkillAllowedForRole(const std::string& id, SkillDraftRole role)
 {
+    // Any keeps legacy "unrestricted" semantics, including for unknown IDs.
     if (role == SkillDraftRole::Any) return true;
-    // These passives improve the owner's defenses, attacks, resources, or
-    // healing (including Second Wind). Four are required for a final passive slot.
-    static const std::set<std::string> shared = {"stone_skin", "battle_rhythm", "deep_reserves", "soul_conduit"};
-    static const std::set<std::string> tank = {
-        "iron_guard", "shield_slam", "war_cry", "cleaving_strike", "frost_bind", "shadow_step",
-        "summoned_wall", "protection_dome", "oathbound_guardian", "second_wind",
-        "bastion_of_dawn", "last_stand", "challenge_of_iron", "seismic_reprisal"};
-    static const std::set<std::string> damage = {
-        "iron_guard", "chain_spark", "ember_lance", "venom_ground", "cinder_cone", "grave_line",
-        "ashen_square", "blight_sigil", "frost_bind", "cleaving_strike", "piercing_shot", "shadow_step",
-        "summoned_wall", "protection_dome", "oathbound_guardian", "spectral_pack", "second_wind",
-        "cataclysm", "executioners_verdict", "starfall", "spectral_hunt"};
-    static const std::set<std::string> support = {
-        "restoring_light", "sanctuary", "purify", "iron_guard", "chain_spark", "ember_lance", "frost_bind",
-        "summoned_wall", "protection_dome", "oathbound_guardian", "second_wind",
-        "renewal", "bastion_of_dawn", "mass_aegis", "wellspring"};
-    const auto* pool = role == SkillDraftRole::Tank ? &tank : role == SkillDraftRole::Damage ? &damage :
-        role == SkillDraftRole::Support ? &support : nullptr;
-    return pool && (shared.count(id) != 0 || pool->count(id) != 0);
+    return IsSkillAllowedForRoles(id, RoleBit(role));
+}
+
+std::vector<SkillDefinition> StarterSkillPoolForRoles(RoleMask roles)
+{
+    auto pool = StarterSkillPool();
+    pool.erase(std::remove_if(pool.begin(), pool.end(), [roles](const SkillDefinition& skill)
+        { return !IsSkillAllowedForRoles(skill.Id, roles); }), pool.end());
+    return pool;
 }
 
 std::vector<SkillDefinition> StarterSkillPool(SkillDraftRole role)

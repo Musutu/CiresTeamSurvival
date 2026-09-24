@@ -14,6 +14,8 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Net/UnrealNetwork.h"
+#include "CireBuffs.h" // aura-vfx
+#include "CireAuraVisuals.h" // aura-vfx
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireExpansionNet, Log, All);
 
@@ -128,9 +130,10 @@ bool CireExpansionNetProbe::TickServer(ACireGameMode* Mode)
         if (Mode->GetNetMode() != NM_DedicatedServer) { Abort(TEXT("requires dedicated server")); return true; }
         Mode->bBotsFilled = true;
         for (auto* Monster : Mode->Monsters) if (IsValid(Monster)) Monster->Destroy(); Mode->Monsters.Reset();
-        UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_EXPANSION_NET_SERVER_READY clients=2 timeout=85"));
+        UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_EXPANSION_NET_SERVER_READY clients=2 timeout=240"));
     }
-    if (Now - Server.Started > 85) { Abort(TEXT("stage acknowledgement timeout")); return true; }
+    // Generous: clients can take >60s to boot while other editors compile on the same machine.
+    if (Now - Server.Started > 240) { Abort(TEXT("stage acknowledgement timeout")); return true; }
     ACireHero* Players[2] = {nullptr, nullptr}; ACireController* Controllers[2] = {nullptr, nullptr};
     for (auto It = Mode->GetWorld()->GetPlayerControllerIterator(); It; ++It)
     {
@@ -143,6 +146,7 @@ bool CireExpansionNetProbe::TickServer(ACireGameMode* Mode)
         for (int32 Team = 0; Team < 2; ++Team)
         {
             const FVector Ground(0, Team == 0 ? -2100 : 2100, 3000); Platform(Mode->GetWorld(), Ground); FreezeProbeHero(Players[Team], Ground + FVector(0, 0, 92));
+            CireBuffs::Apply(Players[Team], TEXT("blood_rage"), 600, Players[Team]); // aura-vfx: replicated record + client aura
             FActorSpawnParameters P; P.Owner = Controllers[Team];
             auto* Channel = Mode->GetWorld()->SpawnActor<ACireExpansionProbeChannel>(P);
             if (!Channel) { Abort(TEXT("owner-only probe channel did not spawn")); return true; }
@@ -192,6 +196,7 @@ bool CireExpansionNetProbe::TickServer(ACireGameMode* Mode)
         FCireSkillshotSpec Shot; Shot.Speed = 1800; Shot.Radius = 20; Shot.MaxRange = 1800; Shot.WarningSeconds = 0; Shot.Damage = 30; Shot.bCanCrit = false;
         Server.CombatShot = ACireSkillshot::Spawn(Players[0], Shot, Players[1]->GetActorLocation(), TEXT("CIRE_EXP_PVP_SKILLSHOT"));
         if (!Server.CombatShot.IsValid()) { Abort(TEXT("arena combat projectile did not launch")); return true; }
+        CireBuffs::Apply(Players[1], TEXT("bastion_of_dawn"), 600, Players[1]); // aura-vfx
         Players[0]->ForceNetUpdate(); Players[1]->ForceNetUpdate(); Stage(5);
     }
     else if (Server.Stage == 5 && Server.Acks == 3)
@@ -280,6 +285,10 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
         if (!bWallReady) return true;
         if (!Client.FirstShotAt) { Client.FirstShotAt = Now; Client.FirstShotPosition = Counts.OwnShot->GetActorLocation(); }
         if (Now - Client.FirstShotAt < .6) return true;
+        // aura-vfx: the survival buff record replicates to its own client and drives the local aura; opponents never render one.
+        if (!CireBuffs::IsActive(Hero, TEXT("blood_rage"))) return true;
+        if (const auto* Aura = Hero->FindComponentByClass<UCireAuraComponent>(); !Aura || !Aura->Instances.ContainsByPredicate([](const FCireAuraInstance& I) { return I.Id == TEXT("blood_rage"); })) return true;
+        for (TActorIterator<ACireHero> It(Controller->GetWorld()); It; ++It) if (It->TeamId == Enemy) if (const auto* Aura = It->FindComponentByClass<UCireAuraComponent>(); Aura && Aura->CountVertices() > 0) { Abort(TEXT("opposing hero aura rendered outside the arena")); return true; }
         if (FVector::Dist2D(Counts.OwnShot->GetActorLocation(), Client.FirstShotPosition) < 20) return true;
         Ack();
     }
@@ -295,11 +304,11 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
     }
     else if (Client.Stage == 3)
     {
-        if ((Team == 0 && Hero->bDead && Counts.Wall[0] == 0 && Counts.Shot[0] == 0 && Counts.Summon[0] == 0) ||
+        if ((Team == 0 && Hero->bDead && CireBuffs::Get(Hero) && CireBuffs::Get(Hero)->Buffs.IsEmpty() /* aura-vfx */ && Counts.Wall[0] == 0 && Counts.Shot[0] == 0 && Counts.Summon[0] == 0) ||
             (Team == 1 && Counts.Wall[1] == 1 && Counts.Shot[1] == 1 && Counts.Summon[1] == 1)) Ack();
     }
     else if (Client.Stage == 4 && State->Phase == 2)
-    { if (Counts.Wall[0] == 1 && Counts.Wall[1] == 1 && Counts.Shot[0] == 1 && Counts.Shot[1] == 1 && Counts.Summon[0] == 1 && Counts.Summon[1] == 1) Ack(); }
+    { if (Counts.Wall[0] == 1 && Counts.Wall[1] == 1 && Counts.Shot[0] == 1 && Counts.Shot[1] == 1 && Counts.Summon[0] == 1 && Counts.Summon[1] == 1 && CireBuffs::Get(Hero) && CireBuffs::Get(Hero)->Buffs.IsEmpty() /* aura-vfx: phase change drops records */) Ack(); }
     else if (Client.Stage == 5)
     {
         const auto* Critical = Event(TEXT("CIRE_EXP_PVP_CRIT")); const auto* Impact = Event(TEXT("CIRE_EXP_PVP_SKILLSHOT"));
@@ -308,6 +317,9 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
             Impact->bLocalSource != (Team == 0) || Impact->bLocalTarget != (Team == 1)) { Abort(TEXT("PvP critical/projectile telemetry payload mismatch")); return true; }
         bool bHealth = false;
         for (TActorIterator<ACireHero> It(Controller->GetWorld()); It; ++It) if (!Cast<ACireSummon>(*It) && It->TeamId == 1 && It->Health == 950) bHealth = true;
+        // aura-vfx: an arena buff record on the team-1 hero reaches both clients (opponents are observable in the arena).
+        bool bArenaBuff = false; for (TActorIterator<ACireHero> It(Controller->GetWorld()); It; ++It) if (!Cast<ACireSummon>(*It) && It->TeamId == 1 && CireBuffs::IsActive(*It, TEXT("bastion_of_dawn"))) bArenaBuff = true;
+        if (!bArenaBuff) return true;
         if (bHealth && Counts.Wall[0] == 0 && Counts.Wall[1] == 1 && Counts.FirstSummon && Counts.FirstSummon->Health == 90) Ack();
     }
     else if(Client.Stage==8||Client.Stage==9)

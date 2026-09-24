@@ -10,6 +10,14 @@ namespace Cires
 enum class PrimaryStat : std::uint8_t { Strength, Agility, Intelligence };
 enum class SkillKind : std::uint8_t { Active, Passive, Ultimate };
 enum class SkillDraftRole : std::uint8_t { Any, Tank, Damage, Support };
+// Skill role tags and champion role sets are bit masks so hybrids/cross-class
+// skills can belong to several roles. RoleNone is never a valid tag set.
+using RoleMask = std::uint8_t;
+constexpr RoleMask RoleNone = 0;
+constexpr RoleMask RoleTank = 1;
+constexpr RoleMask RoleDamage = 2;
+constexpr RoleMask RoleSupport = 4;
+constexpr RoleMask RoleAll = RoleTank | RoleDamage | RoleSupport;
 enum class MatchPhase : std::uint8_t { Survival = 0, Intermission = 1, Arena = 2, Finished = 3, Recovery = 4 };
 
 struct StatBlock
@@ -54,6 +62,9 @@ struct Progression
     int Level = 1;
     PrimaryStat Primary = PrimaryStat::Strength;
     SkillDraftRole DraftRole = SkillDraftRole::Any;
+    // Additional roles a hybrid champion fills (subset of RoleAll). Offers draw
+    // from every skill tagged with the primary role or any secondary role.
+    RoleMask SecondaryRoles = RoleNone;
     StatBlock Stats;
     int NextAugmentLevel = 3;
     std::vector<SkillDefinition> LearnedSkills;
@@ -169,4 +180,11 @@ std::vector<SkillDefinition> StarterSkillPool();
 std::vector<SkillDefinition> StarterSkillPool(SkillDraftRole role);
 bool IsSkillAllowedForRole(const std::string& id, SkillDraftRole role);
 const char* DraftRoleName(SkillDraftRole role);
+// Authoritative per-skill role tags. Unknown IDs return RoleNone (fail closed).
+RoleMask SkillRoleTags(const std::string& id);
+RoleMask RoleBit(SkillDraftRole role);
+// Any -> RoleAll (catalog inspection); otherwise primary bit | secondary roles.
+RoleMask EffectiveRoleMask(const Progression& progression);
+bool IsSkillAllowedForRoles(const std::string& id, RoleMask roles);
+std::vector<SkillDefinition> StarterSkillPoolForRoles(RoleMask roles);
 } // namespace Cires

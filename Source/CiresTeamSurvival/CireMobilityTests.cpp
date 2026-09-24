@@ -1,5 +1,8 @@
 #include "CireMobility.h"
 #include "CireGame.h"
+#include "CireCamera.h"
+#include "CireKeybindings.h"
+#include "CireCreatureArt.h"
 
 #if !UE_BUILD_SHIPPING
 #include "CireCombatEvents.h"
@@ -42,6 +45,20 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
     Check(!Apply(Bad,Error)&&Tuning().InvulnerableEnd==V.InvulnerableEnd,TEXT("invalid invulnerability rejected transactionally"));
     Bad=V;Bad.RollEnergy=-1;
     Check(!Apply(Bad,Error)&&Tuning().RollEnergy==V.RollEnergy,TEXT("negative resource cost rejected"));
+    Bad=V;Bad.TankBodyScale=3;
+    Check(!Apply(Bad,Error)&&Tuning().TankBodyScale==V.TankBodyScale,TEXT("oversized tank body scale rejected"));
+    Bad=V;Bad.BackpedalScale=0;
+    Check(!Apply(Bad,Error),TEXT("zero backpedal speed rejected"));
+    {
+        FCireMovementTuning Disk;FString DiskError;
+        Check(Reload(DiskError)&&Tuning().Acceleration>=2048&&Tuning().BrakingDeceleration>=2048&&
+            Tuning().KeyboardTurnRate>=90&&FMath::IsNearlyEqual(Tuning().TankBodyScale,1.15f),TEXT("MovementTuning.json responsiveness, turn rate and tank scale load"));
+        Check(Apply(V,Error),TEXT("restore fixture tuning after disk reload"));
+    }
+    Check(CireCamera::RunSmoke(),TEXT("WoW steering key mapping"));
+    Check(CireKeybindings::RunSmoke(),TEXT("keybinding defaults, rebinding, conflicts, capture and profile migration"));
+    Check(CireCamera::RunRuntimeSmoke(Mode),TEXT("WoW camera rig zoom, collision easing and tank pivot"));
+    Check(UCireCreatureArt::RunGaitSmoke(Mode->GetWorld()),TEXT("bear gait keeps planted paws and bends the right rear leg"));
 
     UWorld* World=Mode->GetWorld();const FVector Ground(2000,-2100,3000);
     auto* Floor=World->SpawnActor<AActor>();
@@ -133,7 +150,50 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
     Check(!Mobility->IsRolling()&&!Mobility->IsInvulnerable()&&
         (!Remaining||Remaining->Status.HasFlag(ERootMotionSourceStatusFlags::MarkedForRemoval))&&Mobility->ReadyAt==ReadyBeforeRevive,
         TEXT("revive cancels root motion and invulnerability without resetting dodge cooldown"));
-    UE_LOG(LogCireMovementTests,Display,TEXT("CIRE_MOVEMENT_%s checks=%d wall_travel=%.1f controls=E_jump_Ctrl_roll_CapsLock_walk_RMB_strafe"),
+    {
+        // Action-bar slots: automatic bar-1 layout, then explicit per-champion placement.
+        FCireKeybindings Keys;const FName S1=CireKeybindings::SlotAction(1,1),S7=CireKeybindings::SlotAction(1,7),S8=CireKeybindings::SlotAction(1,8),B2=CireKeybindings::SlotAction(2,1);
+        const auto SavedSkills=Hero->Skills;const FString SavedProfile=Hero->ChampionProfileId;
+        Hero->ChampionProfileId=TEXT("slot_fixture");Hero->Skills={TEXT("shield_slam"),TEXT("iron_guard")};
+        FString Passive,Ultimate;
+        for(const FString& Id:{TEXT("battle_rhythm"),TEXT("deep_reserves")})if(ACireHero::IsPassive(Id)){Passive=Id;break;}
+        for(const FString& Id:{TEXT("bastion_of_dawn"),TEXT("cataclysm")})if(ACireHero::IsUltimate(Id)){Ultimate=Id;break;}
+        if(!Passive.IsEmpty())Hero->Skills.Add(Passive);if(!Ultimate.IsEmpty())Hero->Skills.Add(Ultimate);
+        Check(CireKeybindings::ResolveSlot(Keys,*Hero,S1)==0&&CireKeybindings::ResolveSlot(Keys,*Hero,CireKeybindings::SlotAction(1,2))==1&&
+            CireKeybindings::ResolveSlot(Keys,*Hero,CireKeybindings::SlotAction(1,3))==INDEX_NONE,TEXT("bar 1 slots 1..6 default to actives in learn order"));
+        Check(Ultimate.IsEmpty()||CireKeybindings::ResolveSlot(Keys,*Hero,S8)==Hero->Skills.IndexOfByKey(Ultimate),TEXT("bar 1 slot 8 (R) defaults to the ultimate"));
+        Check(Passive.IsEmpty()||(CireKeybindings::SlotAbilityId(Keys,*Hero,S7)==Passive&&CireKeybindings::ResolveSlot(Keys,*Hero,S7)==INDEX_NONE),TEXT("slot 7 shows the passive but never casts it"));
+        Keys.AssignSlot(Hero->ChampionProfileId,B2,TEXT("iron_guard"));Keys.ClearSlot(Hero->ChampionProfileId,S1);
+        Check(CireKeybindings::ResolveSlot(Keys,*Hero,B2)==1&&CireKeybindings::ResolveSlot(Keys,*Hero,S1)==INDEX_NONE,TEXT("explicit placement moves an ability to bar 2 and empties slot 1"));
+        Keys.AssignSlot(Hero->ChampionProfileId,S1,TEXT("not_learned"));
+        Check(CireKeybindings::ResolveSlot(Keys,*Hero,S1)==INDEX_NONE,TEXT("placed but unlearned ability does not cast"));
+        Keys.ResetSlot(Hero->ChampionProfileId,S1);Check(CireKeybindings::ResolveSlot(Keys,*Hero,S1)==0,TEXT("reset slot restores the automatic default"));
+        Hero->Skills=SavedSkills;Hero->ChampionProfileId=SavedProfile;
+    }
+    // WoW keyboard steering: the replicated face-control flag makes the body follow the controller yaw.
+    Hero->ReviveAt(Ground+FVector(-300,0,94));Mobility->CancelRoll();
+    Hero->ChampionProfileId=TEXT("movement_fixture_tank");Hero->ProfileRoles={TEXT("damage")};
+    Mobility->ServerSetFaceControl(true);ApplyToHero(*Hero);
+    Check(Mobility->bFaceControl&&Hero->bUseControllerRotationYaw&&!Move->bOrientRotationToMovement,TEXT("face-control RPC faces controller yaw"));
+    Mobility->ServerSetFaceControl(false);ApplyToHero(*Hero);
+    Check(!Hero->bUseControllerRotationYaw&&Move->bOrientRotationToMovement,TEXT("idle players and bots turn toward movement"));
+    Check(FMath::IsNearlyEqual(Move->MaxAcceleration,V.Acceleration)&&FMath::IsNearlyEqual(Move->BrakingDecelerationWalking,V.BrakingDeceleration)&&
+        FMath::IsNearlyEqual(Move->GroundFriction,V.GroundFriction),TEXT("responsiveness tuning applied to character movement"));
+    // Tank body scale: capsule, mesh and feet stay consistent.
+    Move->SetMovementMode(MOVE_Walking);Move->bForceNextFloorCheck=true;Move->TickComponent(.01f,LEVELTICK_All,nullptr);
+    const double FeetBefore=Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    Hero->ProfileRoles={TEXT("tank")};Hero->ChampionProfileId=TEXT("movement_fixture_tank");
+    Check(FMath::IsNearlyEqual(BodyScaleFor(*Hero),V.TankBodyScale),TEXT("tank role uses tank body scale"));
+    ApplyToHero(*Hero);
+    const double FeetAfter=Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    Check(FMath::IsNearlyEqual(static_cast<float>(Hero->GetActorScale3D().Z),V.TankBodyScale)&&
+        FMath::IsNearlyEqual(Hero->GetCapsuleComponent()->GetScaledCapsuleRadius(),40.f*V.TankBodyScale,.01f)&&
+        FMath::Abs(FeetAfter-FeetBefore)<1.0,TEXT("tank scale grows capsule around planted feet"));
+    Hero->ProfileRoles={TEXT("damage")};ApplyToHero(*Hero);
+    Check(FMath::IsNearlyEqual(static_cast<float>(Hero->GetActorScale3D().Z),1.f)&&
+        FMath::Abs(Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()-FeetBefore)<1.0,TEXT("damage role returns to base scale"));
+    Hero->ProfileRoles.Reset();Hero->ChampionProfileId.Reset();
+    UE_LOG(LogCireMovementTests,Display,TEXT("CIRE_MOVEMENT_%s checks=%d wall_travel=%.1f controls=keymap_Space_jump_QE_strafe_Ctrl_roll_CapsLock_walk"),
         Passed?TEXT("PASS"):TEXT("FAIL"),Checks,Moved);
     return Passed;
 #endif

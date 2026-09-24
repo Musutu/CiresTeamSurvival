@@ -8,5 +8,13 @@
   "RollCooldown": 3.5,
   "RollEnergy": 25,
   "InvulnerableStart": 0.08,
-  "InvulnerableEnd": 0.32
+  "InvulnerableEnd": 0.32,
+  "Acceleration": 3072,
+  "BrakingDeceleration": 3584,
+  "GroundFriction": 10,
+  "RotationRate": 900,
+  "AirControl": 0.35,
+  "KeyboardTurnRate": 180,
+  "BackpedalScale": 0.65,
+  "TankBodyScale": 1.15
 }

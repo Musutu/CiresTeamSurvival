@@ -11,6 +11,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "KismetProceduralMeshLibrary.h"
+#if WITH_EDITOR
+#include "SkinnedAssetCompiler.h"
+#endif
 
 namespace
 {
@@ -37,35 +40,59 @@ float AttackPulse(float Progress)
     if(Progress<0||Progress>1)return 0;
     return FMath::Sin(PI*FMath::Clamp((Progress-.08f)/.70f,0.f,1.f));
 }
+/** 0..1 gait cycle: first half is stance (paw planted, linear sweep back), second half swing. */
+void GaitSample(float Phase01,float Amplitude,float& OutAngle,float& OutLift)
+{
+    const float P=Phase01-FMath::FloorToFloat(Phase01);
+    if(P<.5f){OutAngle=Amplitude*(1.f-4.f*P);OutLift=0.f;return;}
+    const float Q=(P-.5f)*2.f;
+    OutAngle=-Amplitude+2.f*Amplitude*(.5f-.5f*FMath::Cos(PI*Q));OutLift=FMath::Sin(PI*Q);
+}
 struct FBearProxy : FAnimInstanceProxy
 {
     explicit FBearProxy(UAnimInstance* In):FAnimInstanceProxy(In){}
-    float Phase=0,Stride=0,Attack=0,Time=0,Air=0,Roll=0;
+    float Phase=0,Stride=0,Attack=0,Time=0,Air=0,Roll=0,Amplitude=0,LegUnits=34;
     virtual void PreUpdate(UAnimInstance* Instance,float Delta) override
     {
         FAnimInstanceProxy::PreUpdate(Instance,Delta);const auto* A=CastChecked<UCireBearAnimInstance>(Instance);
-        Phase=A->Phase;Stride=A->Stride;Attack=A->Attack;Time=A->Time;Air=A->Air;Roll=A->Roll;
+        Phase=A->Phase;Stride=A->Stride;Attack=A->Attack;Time=A->Time;Air=A->Air;Roll=A->Roll;Amplitude=A->Amplitude;LegUnits=A->LegUnits;
     }
     virtual bool Evaluate(FPoseContext& Output) override
     {
         Output.ResetToRefPose();auto& Pose=Output.Pose;
-        // Diagonal pairs advance together. Preserve every imported bone scale and translation.
-        const float Swing=FMath::Sin(Phase)*15.f*Stride*(1-Air);
-        const float Pulse=AttackPulse(Attack);
-        RotateBone(Pose,TEXT("0_Left_Limb_0"),FVector(1,0,0),Swing-Pulse*28+Air*20);
-        RotateBone(Pose,TEXT("0_Right_Limb_0"),FVector(1,0,0),-Swing+Air*20);
-        RotateBone(Pose,TEXT("1_Left_Limb_0"),FVector(1,0,0),-Swing*.82f-Air*12);
-        // The imported right rear limb has only one weighted hip; keep that limb a rigid swing.
-        RotateBone(Pose,TEXT("1_Right_Limb_0"),FVector(1,0,0),Swing*.82f-Air*12);
-        RotateBone(Pose,TEXT("0_Left_Limb_2"),FVector(1,0,0),FMath::Max(0.f,Swing)*.85f+Pulse*24);
-        RotateBone(Pose,TEXT("0_Right_Limb_2"),FVector(1,0,0),FMath::Max(0.f,-Swing)*.85f);
-        RotateBone(Pose,TEXT("1_Left_Limb_1"),FVector(1,0,0),-FMath::Max(0.f,-Swing)*.55f);
-        RotateBone(Pose,TEXT("Spine_0"),FVector(0,1,0),FMath::Sin(Phase)*Stride*1.5f);
-        RotateBone(Pose,TEXT("Head_0"),FVector(1,0,0),FMath::Sin(Time*1.8f)*1.1f+Pulse*11+Roll*7);
+        // Diagonal trot: front-left pairs with rear-right. Stance legs sweep back linearly so the
+        // planted paw travels with the ground (phase rate is derived from leg length and speed).
+        const float Cycle=Phase/(2*PI);const float Ground=1-Air;const float Pulse=AttackPulse(Attack);
+        float A1,L1,A2,L2;GaitSample(Cycle,Amplitude*Ground,A1,L1);GaitSample(Cycle+.5f,Amplitude*Ground,A2,L2);
+        L1*=Stride*Ground;L2*=Stride*Ground;
+        const FVector X(1,0,0);
+        // Front legs: shoulder swing, elbow/wrist fold while the paw is in the air.
+        RotateBone(Pose,TEXT("0_Left_Limb_0"),X,A1-Pulse*28+Air*20);
+        RotateBone(Pose,TEXT("0_Left_Limb_2"),X,L1*30+Pulse*24);
+        RotateBone(Pose,TEXT("0_Left_Limb_3"),X,-L1*22);
+        RotateBone(Pose,TEXT("0_Right_Limb_0"),X,A2+Air*20);
+        RotateBone(Pose,TEXT("0_Right_Limb_2"),X,L2*30);
+        RotateBone(Pose,TEXT("0_Right_Limb_3"),X,-L2*22);
+        // Rear legs (diagonal partners): hip swing, knee/hock fold during swing.
+        RotateBone(Pose,TEXT("1_Left_Limb_0"),X,A2-Air*12);
+        RotateBone(Pose,TEXT("1_Left_Limb_1"),X,-L2*26);
+        RotateBone(Pose,TEXT("1_Left_Limb_2"),X,L2*20);
+        RotateBone(Pose,TEXT("1_Right_Limb_0"),X,A1-Air*12);
+        // Motion03 rig adds the missing right-rear knee/hock; the original import keeps a rigid swing.
+        RotateBone(Pose,TEXT("1_Right_Limb_1"),X,-L1*26);
+        RotateBone(Pose,TEXT("1_Right_Limb_2"),X,L1*20);
+        RotateBone(Pose,TEXT("Spine_0"),FVector(0,1,0),FMath::Sin(Phase*2)*Stride*1.2f);
+        RotateBone(Pose,TEXT("Spine_1"),X,FMath::Sin(Time*1.6f)*.6f*(1-Stride));
+        RotateBone(Pose,TEXT("Head_0"),X,FMath::Sin(Time*1.8f)*1.1f*(1-Stride)+FMath::Sin(Phase*2)*Stride*2.f+Pulse*11+Roll*7);
         RotateBone(Pose,TEXT("Head_1"),FVector(0,0,1),-Pulse*9);
-        // Modest body clearance compensates planted-paw rotation; no root-motion translation.
+        // A straight leg at angle a is shorter vertically by L(1-cos a): lower the body so the
+        // stance paws stay planted instead of floating at the ends of each stride.
         const auto Root=BoneIndex(Pose,TEXT("Root"));
-        if(Root.IsValid())Pose[Root].AddToTranslation(FVector(0,0,Stride*FMath::Abs(FMath::Sin(Phase))*1.1f));
+        if(Root.IsValid())
+        {
+            const float Stance=FMath::Min(FMath::Cos(FMath::DegreesToRadians(A1)),FMath::Cos(FMath::DegreesToRadians(A2)));
+            Pose[Root].AddToTranslation(FVector(0,0,-LegUnits*(1-Stance)*Ground));
+        }
         return true;
     }
 };
@@ -81,7 +108,7 @@ UMeshComponent* UCireCreatureArt::VisualMesh() const{return Bear?static_cast<UMe
 void UCireCreatureArt::Clear()
 {
     if(StaticBody)StaticBody->DestroyComponent();if(Centaur)Centaur->DestroyComponent();StaticBody=nullptr;Centaur=nullptr;Bear=nullptr;
-    Sections.Reset();SourceAsset=nullptr;Kind.Reset();Phase=0;SmoothedSpeed=0;AnimationTime=0;UpdateBudget=0;
+    Sections.Reset();SourceAsset=nullptr;Kind.Reset();Phase=0;SmoothedSpeed=0;AnimationTime=0;UpdateBudget=0;bHasLastYaw=false;
 }
 bool UCireCreatureArt::Apply(ACireHero& Hero,const FString& Profile,const FString& MeshPath,float HeightCm)
 {
@@ -94,6 +121,15 @@ bool UCireCreatureArt::Apply(ACireHero& Hero,const FString& Profile,const FStrin
         const auto Bounds=Mesh->GetImportedBounds();const float Height=static_cast<float>(Bounds.BoxExtent.Z*2);
         if(Height<20||Height>1000||Mesh->GetRefSkeleton().FindBoneIndex(TEXT("0_Left_Limb_0"))==INDEX_NONE)return false;
         const float Scale=HeightCm/Height;Parent->SetSkeletalMesh(Mesh);Parent->SetRelativeScale3D(FVector(Scale));
+        MeshScale=Scale;LegUnits=34;
+        {
+            // Hip-to-paw height from the reference skeleton (component space) drives stride length.
+            const auto& Ref=Mesh->GetRefSkeleton();
+            const auto Global=[&Ref](const TCHAR* Name){int32 I=Ref.FindBoneIndex(Name);FTransform T=FTransform::Identity;
+                while(I!=INDEX_NONE){T=T*Ref.GetRefBonePose()[I];I=Ref.GetParentIndex(I);}return T.GetLocation();};
+            if(Ref.FindBoneIndex(TEXT("1_Left_Limb_0"))!=INDEX_NONE&&Ref.FindBoneIndex(TEXT("1_Left_Limb_3"))!=INDEX_NONE)
+            {const float Leg=static_cast<float>(Global(TEXT("1_Left_Limb_0")).Z-Global(TEXT("1_Left_Limb_3")).Z);if(FMath::IsFinite(Leg)&&Leg>5)LegUnits=Leg;}
+        }
         BasePosition=FVector(0,0,-Capsule-(Bounds.Origin.Z-Bounds.BoxExtent.Z)*Scale);
         Parent->SetRelativeLocation(BasePosition);Parent->SetRelativeRotation(FRotator(0,-90,0));
         Parent->SetAnimInstanceClass(UCireBearAnimInstance::StaticClass());Bear=Parent;SourceAsset=Mesh;
@@ -180,8 +216,27 @@ void UCireCreatureArt::Update(ACireHero& Hero,float Delta)
     if(Kind.IsEmpty())return;const float Dt=FMath::Clamp(Delta,0.f,.1f);
     const float Speed=Hero.bDead?0.f:static_cast<float>(Hero.GetVelocity().Size2D());
     SmoothedSpeed=FMath::FInterpTo(SmoothedSpeed,Speed,Dt,10.f);AnimationTime+=Dt;
-    const float Stride=FMath::Clamp(SmoothedSpeed/280.f,0.f,1.f);
-    Phase=FMath::Fmod(Phase+Dt*SmoothedSpeed/(Kind==TEXT("bear")?175.f:220.f)*2*PI,2*PI);
+    float Stride=FMath::Clamp(SmoothedSpeed/280.f,0.f,1.f);
+    if(Kind==TEXT("bear"))
+    {
+        // Turning in place still steps: treat the yaw rate at the paws (40% of leg length out) as travel.
+        const float Yaw=static_cast<float>(Hero.GetActorRotation().Yaw);
+        const float YawRate=bHasLastYaw&&Dt>0?FMath::Abs(FRotator::NormalizeAxis(Yaw-LastYaw))/Dt:0.f;LastYaw=Yaw;bHasLastYaw=true;
+        const float World=MeshScale*static_cast<float>(Hero.GetActorScale3D().Z);
+        const float LegCm=FMath::Max(10.f,LegUnits*World);
+        const float TurnTravel=FMath::DegreesToRadians(FMath::Min(YawRate,360.f))*LegCm*.4f;
+        const float Travel=Hero.bDead?0.f:FMath::Max(SmoothedSpeed,TurnTravel);
+        Stride=FMath::Clamp(Travel/140.f,0.f,1.f);
+        // Walk about 15 degrees, run/charge up to about 30 degrees of hip swing.
+        const float Amplitude=FMath::Lerp(15.f,30.f,FMath::Clamp((Travel-150.f)/370.f,0.f,1.f))*Stride;
+        // A planted paw sweeps 2*L*sin(a) per half cycle, so one full cycle covers 4*L*sin(a).
+        const float CycleCm=FMath::Max(20.f,4.f*LegCm*FMath::Sin(FMath::DegreesToRadians(FMath::Max(Amplitude,4.f))));
+        const float Forward=static_cast<float>(FVector::DotProduct(Hero.GetVelocity(),Hero.GetActorForwardVector()));
+        const float Direction=Forward<-20.f&&-Forward>SmoothedSpeed*.5f?-1.f:1.f; // backpedal reverses the cycle
+        Phase=FMath::Fmod(Phase+Direction*Dt*Travel/CycleCm*2*PI+2*PI,2*PI);
+        if(auto* A=Bear?Cast<UCireBearAnimInstance>(Bear->GetAnimInstance()):nullptr){A->Amplitude=Amplitude;A->LegUnits=LegUnits;}
+    }
+    else Phase=FMath::Fmod(Phase+Dt*SmoothedSpeed/220.f*2*PI,2*PI);
     const auto* State=Hero.GetWorld()->GetGameState();const double Now=State?State->GetServerWorldTimeSeconds():Hero.GetWorld()->GetTimeSeconds();
     const float Elapsed=static_cast<float>(Now-Hero.AttackStartedServerTime);
     const float Attack=!Hero.bDead&&Hero.AttackSerial>0&&Elapsed>=0&&Elapsed<Hero.AttackDuration?Elapsed/FMath::Max(.01f,Hero.AttackDuration):-1.f;
@@ -206,3 +261,74 @@ void UCireCreatureArt::Update(ACireHero& Hero,float Delta)
         Centaur->SetOverlayMaterial(Hero.GetMesh()->GetOverlayMaterial());
     }
 }
+
+#if !UE_BUILD_SHIPPING
+bool UCireCreatureArt::RunGaitSmoke(UWorld* World)
+{
+    if(!World)return false;
+    bool Pass=true;int32 Checks=0;
+    auto Check=[&](bool Value,const FString& Why){++Checks;if(!Value){Pass=false;UE_LOG(LogTemp,Error,TEXT("CIRE_BEAR_GAIT_FAIL %s"),*Why);}};
+    const TCHAR* MeshPath=TEXT("/Game/Art/Characters/Motion03/SK_BearMotion.SK_BearMotion");
+    FActorSpawnParameters Params;Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    auto* Hero=World->SpawnActor<ACireHero>(FVector(0,-9000,9000),FRotator::ZeroRotator,Params);
+    if(!Hero){Check(false,TEXT("fixture hero spawned"));return false;}
+    Hero->SetActorTickEnabled(false);Hero->SetActorEnableCollision(false);Hero->GetCharacterMovement()->SetComponentTickEnabled(false);
+    Hero->GetCharacterMovement()->SetMovementMode(MOVE_Walking); // grounded gait, not the airborne pose
+    auto* Art=NewObject<UCireCreatureArt>(Hero,TEXT("GaitFixture"));Art->RegisterComponent();
+    const bool bApplied=Art->Apply(*Hero,TEXT("bear"),MeshPath,148.f);
+    Check(bApplied&&Art->Bear!=nullptr,TEXT("Motion03 bear body applies"));
+    if(!bApplied||!Art->Bear){Hero->Destroy();return false;}
+    auto* Mesh=Art->Bear.Get();Mesh->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+    // The body may finish async compilation after Apply; rebuild the pose state before sampling.
+#if WITH_EDITOR
+    // Editor builds compile skinned assets asynchronously; animation does not tick until that finishes.
+    if(auto* Asset=Mesh->GetSkeletalMeshAsset();Asset&&Asset->IsCompiling())FSkinnedAssetCompilingManager::Get().FinishCompilation({Asset});
+#endif
+    Mesh->bEnableUpdateRateOptimizations=false;Mesh->InitAnim(true); // never rendered here: evaluate every step
+    for(const TCHAR* Bone:{TEXT("1_Right_Limb_1"),TEXT("1_Right_Limb_2"),TEXT("1_Right_Limb_3")})
+        Check(Mesh->GetBoneIndex(Bone)!=INDEX_NONE,FString::Printf(TEXT("right rear leg bone %s exists"),Bone));
+    const TCHAR* Paws[]={TEXT("0_Left_Limb_4"),TEXT("0_Right_Limb_4"),TEXT("1_Left_Limb_3"),TEXT("1_Right_Limb_3")};
+    FString Summary;
+    for(const float Speed:{240.f,520.f})
+    {
+        Hero->SetActorLocation(FVector(0,-9000,9000));Art->Phase=0;Art->SmoothedSpeed=Speed;Art->bHasLastYaw=false;
+        Hero->GetCharacterMovement()->Velocity=FVector(Speed,0,0);
+        const float Dt=1.f/120.f;const int32 Frames=240;
+        TArray<TArray<FVector>> Track;Track.SetNum(UE_ARRAY_COUNT(Paws));
+        TArray<float> KneeRange;KneeRange.Init(0,2);float KneeMin[2]={1e9f,1e9f},KneeMax[2]={-1e9f,-1e9f};
+        for(int32 F=0;F<Frames;++F)
+        {
+            Hero->SetActorLocation(Hero->GetActorLocation()+FVector(Speed*Dt,0,0));
+            Art->Update(*Hero,Dt);Mesh->TickAnimation(Dt,false);Mesh->RefreshBoneTransforms(nullptr);Mesh->FinalizeBoneTransform();
+            if(F<60)continue; // settle smoothing
+            for(int32 P=0;P<UE_ARRAY_COUNT(Paws);++P)Track[P].Add(Mesh->GetBoneLocation(Paws[P],EBoneSpaces::WorldSpace));
+            // Knee-to-paw vector relative to hip: a rigid leg keeps the knee angle constant.
+            for(int32 Side=0;Side<2;++Side)
+            {
+                const FVector Hip=Mesh->GetBoneLocation(Side?TEXT("1_Right_Limb_0"):TEXT("1_Left_Limb_0"),EBoneSpaces::WorldSpace);
+                const FVector Knee=Mesh->GetBoneLocation(Side?TEXT("1_Right_Limb_1"):TEXT("1_Left_Limb_1"),EBoneSpaces::WorldSpace);
+                const FVector Paw=Mesh->GetBoneLocation(Side?TEXT("1_Right_Limb_3"):TEXT("1_Left_Limb_3"),EBoneSpaces::WorldSpace);
+                const float Angle=FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct((Knee-Hip).GetSafeNormal(),(Paw-Knee).GetSafeNormal()),-1.0,1.0)));
+                KneeMin[Side]=FMath::Min(KneeMin[Side],Angle);KneeMax[Side]=FMath::Max(KneeMax[Side],Angle);
+            }
+        }
+        for(int32 P=0;P<UE_ARRAY_COUNT(Paws);++P)
+        {
+            const auto& T=Track[P];double MinZ=TNumericLimits<double>::Max();
+            for(const FVector& V:T)MinZ=FMath::Min(MinZ,V.Z);
+            // Stance frames: the paw is within 1.5 cm of its lowest point. Measure its horizontal ground speed there.
+            double Slip=0;int32 N=0;
+            for(int32 I=1;I<T.Num();++I)if(T[I].Z<MinZ+1.5&&T[I-1].Z<MinZ+1.5){Slip+=FVector::Dist2D(T[I],T[I-1])/Dt;++N;}
+            const float Ratio=N?static_cast<float>(Slip/N/Speed):1.f;
+            Summary+=FString::Printf(TEXT(" %s@%.0f=%.2f(n%d)"),Paws[P],Speed,Ratio,N);
+            Check(N>=6,FString::Printf(TEXT("%s has stance frames at %.0f cm/s"),Paws[P],Speed));
+            Check(Ratio<.3f,FString::Printf(TEXT("%s planted-paw slip %.2f of body speed at %.0f cm/s"),Paws[P],Ratio,Speed));
+        }
+        Summary+=FString::Printf(TEXT(" knee_range_l=%.1f knee_range_r=%.1f"),KneeMax[0]-KneeMin[0],KneeMax[1]-KneeMin[1]);
+        Check(KneeMax[1]-KneeMin[1]>8.f,FString::Printf(TEXT("right rear knee bends while walking at %.0f cm/s"),Speed));
+    }
+    Hero->Destroy();
+    UE_LOG(LogTemp,Display,TEXT("CIRE_BEAR_GAIT_%s checks=%d%s"),Pass?TEXT("PASS"):TEXT("FAIL"),Checks,*Summary);
+    return Pass;
+}
+#endif

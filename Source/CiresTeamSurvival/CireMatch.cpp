@@ -1,4 +1,6 @@
 #include "CireBalanceLab.h"
+#include "CireShopFixtures.h" // progression-shop
+#include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
 #include "CireEnvironmentGallery.h"
 #include "CireBatchArtGallery.h"
@@ -29,8 +31,12 @@
 #include "CireConstruct.h"
 #include "CireSummon.h"
 #include "CireSpellGallery.h"
+#include "CireAuraGallery.h" // aura-vfx
 #include "CireOptionsGallery.h"
 #include "CireCombatExpansionProbe.h"
+#include "CireNPCArchetypes.h"
+#include "CireNPCPackPreview.h"
+#include "CireNPCNetProbe.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCire, Log, All);
 
@@ -177,9 +183,13 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireEnvironmentGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireOptionsGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireSpellGallery::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireAuraGallery::Initialize(this); // aura-vfx
     if(!bFeedbackPreview)bFeedbackPreview = CireCombatArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireFeedbackPreview::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireNPCPackPreview::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
+    CireNPCNetProbe::InitializeServer(this);
 #endif
     if(!bFeedbackPreview)SpawnPacks();
     if(!bFeedbackPreview)CireBalanceLab::Initialize(this);
@@ -265,32 +275,24 @@ void ACireGameMode::SpawnWave() {
         auto* M=GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),Position,FRotator(0,180,0),Params);
         if(!M) {UE_LOG(LogCire,Error,TEXT("Wave monster spawn failed"));continue;}
         M->Lane=Team;
-        CireNPCCombat::Configure(M,bEscortWave?1:I%4,S->Wave,bFinalWave&&I==UnitCount);
-        M->GetCharacterMovement()->MaxWalkSpeed=145+FMath::Min(S->Wave*2,85);
+        // Wave composition is data-driven (NPCArchetypes.json): every unit has a role;
+        // the final wave of a cycle adds the lane boss, which costs its leakCost (10).
+        const auto& NPCs=CireNPCArchetypes::Get();
+        if(bEscortWave)CireNPCCombat::Configure(M,1,S->Wave);
+        else if(bFinalWave&&I==UnitCount)CireNPCCombat::ConfigureArchetype(M,NPCs.WaveBoss,S->Wave,0,1,true);
+        else CireNPCCombat::ConfigureArchetype(M,NPCs.WaveComposition[I%NPCs.WaveComposition.Num()],S->Wave);
         M->SpawnPosition=Position;
-        if(bFinalWave&&I==UnitCount) {
-            M->bBoss=true; M->MonsterName=TEXT("Hollow Siegebreaker");
-            M->GetCharacterMovement()->MaxWalkSpeed*=.8f;
-            M->SetActorScale3D(FVector(1.35f));
-        }
         if(bEscortWave)CireLanePath::ConfigureEscort(M);
         CireLanePath::InitializeProgress(M);
         Monsters.Add(M);
     }
     UE_LOG(LogCire,Display,TEXT("CIRE WAVE SPAWN round=%d wave=%d cycle=%d/%d"),S->Round,S->Wave,CycleWavesSpawned,S->WavesPerCycle);
+    CireProgression::OnWaveSpawned(this,CycleWavesSpawned); // progression-shop: mid-cycle challenge unlocks
 }
 void ACireGameMode::SpawnPacks() {
-    const int R=Clock.Round();
-    for(int Team=0;Team<2;++Team) for(int Tier=1;Tier<=3;++Tier) for(int I=0;I<3;++I) {
-        FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        FVector P=CireLanePath::ChallengePosition(GetWorld(),Team,Tier)+FVector((I-1)*110,0,0);
-        auto* M=GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),P,FRotator::ZeroRotator,Params);
-        M->Lane=Team; M->Tier=Tier; M->PackId=R*100+Team*10+Tier; M->SpawnPosition=P;
-        CireNPCCombat::Configure(M,1+I%3,GetGameState<ACireGameState>()->Wave,false,Tier,R);
-        M->MonsterName=FString::Printf(TEXT("Challenge %d | %s"),Tier,*M->MonsterName);
-        M->GetCharacterMovement()->MaxWalkSpeed=230;
-        M->SetActorScale3D(FVector(1.08f+Tier*.09f)); Monsters.Add(M);
-    }
+    // progression-shop: challenge packs are progression content. Bays unlock by round/wave
+    // (LootTables.json packSchedule), deeper bays hold higher tiers, and tiers rise in later cycles.
+    CireProgression::SpawnPacks(this,1);
 }
 void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
     for(auto* H:Heroes) if(IsValid(H)&&H->TeamId==Team) { H->GrantExperience(XP); H->Gold+=GoldAmount; }
@@ -298,23 +300,15 @@ void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
 void ACireGameMode::MonsterKilled(ACireMonster* M,ACireHero* Killer) {
     if(!IsValid(M)||!IsValid(Killer)||Killer->TeamId!=M->Lane) return;
     AwardTeam(M->Lane,45+GetGameState<ACireGameState>()->Round*4,FMath::RoundToInt(12*Loot(M->Lane)));
+    // progression-shop: pack completion, Pack Leaders and lane bosses roll data-driven loot tables
+    // into a glowing auto-pickup chest (CireLoot). The old flat stat/rare reward is replaced.
+    bool bPackCompleted=false;
     if(M->PackId>=0&&!RewardedPacks.Contains(M->PackId)) {
         bool Remaining=false;
         for(auto* Other:Monsters) if(IsValid(Other)&&Other!=M&&Other->PackId==M->PackId&&Other->Health>0) {Remaining=true;break;}
-        if(!Remaining) {
-            RewardedPacks.Add(M->PackId);
-            const auto Reward=Cires::RollChallengeReward(M->Tier,Loot(M->Lane),static_cast<uint64>(M->PackId*7919));
-            AwardTeam(M->Lane,Reward.Experience,Reward.Gold);
-            for(auto* H:Heroes) if(IsValid(H)&&H->TeamId==M->Lane) {
-                H->Progression.Stats.Strength+=Reward.StatTomePoints;
-                H->Progression.Stats.Agility+=Reward.StatTomePoints;
-                H->Progression.Stats.Intelligence+=Reward.StatTomePoints;
-                if(Reward.RareDrop) {++H->GearRank; H->CDR=FMath::Min(.6f,H->CDR+.02f);}
-                H->Recalculate(false);
-                H->Notice=FString::Printf(TEXT("Challenge cleared: %d gold, %d XP%s%s"),Reward.Gold,Reward.Experience,Reward.GreaterStatTome?TEXT(" | GREATER TOME"):TEXT(""),Reward.RareDrop?TEXT(" | RARE RELIC"):TEXT(""));
-            }
-        }
+        if(!Remaining) {RewardedPacks.Add(M->PackId);bPackCompleted=true;}
     }
+    CireLoot::OnMonsterKilled(this,M,Killer,bPackCompleted);
     Monsters.Remove(M);
 }
 void ACireGameMode::Leak(ACireMonster* M) {
@@ -350,6 +344,7 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
     for(auto* H:Heroes)if(IsValid(H))H->PendingAttackTarget.Reset();
     auto* S=GetGameState<ACireGameState>(); S->Phase=NewPhase;
     S->SecondsLeft=static_cast<float>(Clock.RemainingSeconds()); S->Round=Clock.Round();
+    CireProgression::OnPhaseChanged(this,NewPhase); // progression-shop: end shop visits, cancel teleports, auto-collect loot on prep
     S->NextWaveSeconds=0;
 #if !UE_BUILD_SHIPPING
     if(bSmoke) SmokePhaseMask|=1<<NewPhase;
@@ -363,7 +358,7 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
             UE_LOG(LogCire,Display,TEXT("CIRE_SMOKE_CLEAR wave_alive=%d optional_alive=%d cleared=%d"),WaveAlive,PacksAlive,S->CycleWavesDone);
         }
 #endif
-        S->Announcement=TEXT("THE QUIET MINUTE | Return to town. Buy gear and tomes.");
+        S->Announcement=TEXT("THE QUIET MINUTE | Monsters are dormant. Shop anywhere: press B.");
         int32 TownSlot[2]={0,0};
         for(auto* H:Heroes) if(IsValid(H)) {
             H->Target=nullptr;
@@ -420,9 +415,13 @@ void ACireGameMode::Tick(float Dt) {
     if(CireBalanceLab::Tick(this,Dt)) return;
     if(CireOptionsGallery::Tick(this)) return;
     if(CireSpellGallery::Tick(this)) return;
+    if(CireAuraGallery::Tick(this)) return; // aura-vfx
     if(CireCombatArtPreview::Tick(this)) return;
     if(CireArtPreview::Tick(this)) return;
     if(CireFeedbackPreview::Tick(this)) return;
+    if(CireNPCPackPreview::Tick(this)) return;
+    if(CireShopFixtures::Tick(this)) return; // progression-shop
+    if(CireNPCNetProbe::TickServer(this)) return;
     if(CireExpansionNetProbe::TickServer(this)) return;
     if(CireInterfaceProbe::TickServer(this)) return;
     TickServerProbe(this);

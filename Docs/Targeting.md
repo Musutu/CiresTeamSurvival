@@ -16,3 +16,23 @@ That run also passed all 28 role-skill checks, including Starfall's direct-cast
 LOS regression. The earlier `20260924T024718203141Z` batch passed network
 expansion. These checks establish the tested native behavior, not a completed
 visual inspection of the cursor preview.
+
+## Tab targeting (WoW style)
+
+`CireSelection::NextTarget` implements unit cycling. **Tab** picks the nearest living, observable
+hostile inside the camera's horizontal view cone (half the FOV + 15 degrees, capped at 85), then cycles
+outward by distance without repeating until every candidate in view has been visited, then restarts
+from the nearest. **Shift+Tab** walks back through that tab history (then continues from the farthest).
+The chain resets after 3 s without Tab or when the target changes by other means. If nothing hostile
+is in view, the nearest hostile around the hero is chosen. Candidates must be within 2,500 cm, not
+hidden, alive and pass `CireRealm::CanObserve`, so the other team's realm is never selected.
+**F** cycles living allies by distance; **F1** selects yourself.
+
+When a hostile target dies (or is destroyed) the selection is cleared. The optional
+*Auto-target next enemy* preference (F9 → Controls, `bAutoReacquireTarget`, default off) instead
+selects the next Tab target. Left click selects on button release only when the mouse did not drag
+the camera, so a left drag can orbit the camera without dropping the target.
+
+The runtime smoke adds 9 checks: cone preference over a closer hostile behind the camera, outward
+cycling, wrap-around, Shift+Tab history, other-realm exclusion, all-around fallback, clear on death and
+auto-reacquire. Latest run: 27/27 runtime checks passed (`Saved/ExpansionChecks/20260924T084431773010Z`).

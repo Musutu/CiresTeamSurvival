@@ -6,10 +6,18 @@
 #include "CireWeaponPresentation.h"
 #include "Engine/World.h"
 #include "InputCoreTypes.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 
 namespace
 {
 const FLinearColor Card(.034f,.046f,.055f,.98f),Hover(.075f,.106f,.116f,1),Gold(.77f,.61f,.34f,1),Parchment(.91f,.9f,.83f,1),Muted(.5f,.57f,.59f,1),Teal(.2f,.71f,.59f,1);
+}
+bool ACireHUD::IsDeveloperLauncherVisible() const
+{
+    // Hidden in normal play: revealed by F8 (ToggleDeveloperTools) or the -dev command-line flag.
+    static const bool bDevFlag=FParse::Param(FCommandLine::Get(),TEXT("dev"));
+    return CireDeveloperTools::CanEdit(GetWorld())&&(bShowDevLauncher||bDevFlag);
 }
 FCireUIRect ACireHUD::DeveloperLauncherRect()const
 {
@@ -18,9 +26,9 @@ FCireUIRect ACireHUD::DeveloperLauncherRect()const
 }
 void ACireHUD::DrawDeveloperLauncher()
 {
-    if(!CireDeveloperTools::CanEdit(GetWorld())||bEditLayout||bSettings)return;
+    if(!IsDeveloperLauncherVisible()||bEditLayout||bSettings||bModal)return; // hidden over the draft screen, shop and offers
     ResetTransform();const auto R=DeveloperLauncherRect();const bool Over=Hit(R.X,R.Y,R.W,R.H);
-    Frame(R.X,R.Y,R.W,R.H,Over?Teal:Gold);Label(TEXT("DEVELOPER TOOLS  [F8]"),R.X+14,R.Y+8,12,Over?Parchment:Gold);
+    Frame(R.X,R.Y,R.W,R.H,Over?Teal:Gold);Label(TEXT("DEVELOPER TOOLS  [")+UISettings.Keybindings.Label(TEXT("ToggleDeveloperTools"))+TEXT("]"),R.X+14,R.Y+8,12,Over?Parchment:Gold);
     Tip(TEXT("Developer tools / F8"),TEXT("Quick test kit, weapons, movement, wave controls, effect tuning, match simulations and replays. Opening this panel does not change match settings."),R.X,R.Y,R.W,R.H);
     if(Over&&Clicked){Clicked=false;ToggleDeveloperTools();PlayUIFeedback();}
 }
@@ -31,21 +39,28 @@ void ACireHUD::DrawDeveloperPanel(float X,float Y)
     if(!bDeveloperLoaded){DeveloperDraft=CireDeveloperTools::Get(GetWorld());bDeveloperLoaded=true;}
     auto Button=[&](const FString& Title,float BX,float BY,float W,const FString& Help=FString())
     {
-        const bool Over=Hit(BX,BY,W,25);Panel(BX,BY,W,25,Over?Hover:Card);Label(Title,BX+7,BY+5,10,Over?Parchment:Gold);
+        const bool Over=Hit(BX,BY,W,25);CireUIStyle::Button(Painter(),BX,BY,W,25,Title,Over?ECireButtonState::Hover:ECireButtonState::Normal,Gold,9.5f);
         Tip(Title,Help.IsEmpty()?Title:Help,BX,BY,W,25);
         if(Over&&Clicked){Clicked=false;PlayUIFeedback();return true;}return false;
     };
     auto Slider=[&](const FString& Title,float& Value,float Min,float Max,float Step,float BX,float BY,const FString& Help)
     {
         Label(Title,BX,BY,10,Parchment);Label(FString::Printf(TEXT("%.2f"),Value),BX+230,BY,10,Gold);
-        Panel(BX,BY+21,282,4,Card);const float T=FMath::Clamp((Value-Min)/(Max-Min),0.f,1.f);Panel(BX,BY+21,282*T,4,Gold);Panel(BX+278*T,BY+16,5,14,Parchment);
+        CireUIStyle::Slider(Painter(),BX,BY+19,282,FMath::Clamp((Value-Min)/(Max-Min),0.f,1.f),true,Hit(BX,BY+12,285,25));
         Tip(Title,Help,BX,BY,285,34);
         if(Hit(BX,BY+12,285,25)&&PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton)){Value=FMath::Clamp(FMath::RoundToFloat((Min+(Max-Min)*FMath::Clamp((MX-BX)/282,0.f,1.f))/Step)*Step,Min,Max);Clicked=false;}
     };
     auto Integer=[&](const FString& Title,int32& Value,int32 Min,int32 Max,float BX,float BY,const FString& Help)
     {float V=Value;Slider(Title,V,Min,Max,1,BX,BY,Help);Value=FMath::RoundToInt(V);};
     auto Toggle=[&](const FString& Title,bool& Value,float BX,float BY,const FString& Help)
-    {if(Button(FString(Value?TEXT("[ON] "):TEXT("[OFF] "))+Title,BX,BY,285,Help))Value=!Value;};
+    {
+        // Style-kit toggle button: lit gem when on.
+        const bool Over=Hit(BX,BY,285,25);
+        CireUIStyle::Button(Painter(),BX,BY,285,25,Title,Value?ECireButtonState::Selected:Over?ECireButtonState::Hover:ECireButtonState::Normal,Value?CireUIColors::Teal:CireUIColors::Gold,9.5f);
+        if(const auto& Kit=CireUIStyle::Assets();Kit.Gem)Painter().Tex(Kit.Gem,BX+8,BY+6,13,13,Value?FLinearColor(.4f,1.f,.6f,1):FLinearColor(.35f,.35f,.35f,1));
+        Tip(Title,Help.IsEmpty()?Title:Help,BX,BY,285,25);
+        if(Over&&Clicked){Clicked=false;PlayUIFeedback();Value=!Value;}
+    };
     const TCHAR* Pages[]={TEXT("Quick start"),TEXT("Match"),TEXT("Spawn/stats"),TEXT("Effects"),TEXT("Movement"),TEXT("Balance lab"),TEXT("Replays")};
     const int32 PageIds[]={5,0,1,2,6,3,4};
     for(int32 I=0;I<7;++I){if(DeveloperPage==PageIds[I])Panel(X+I*87-2,Y-3,87,31,Hover);if(Button(Pages[I],X+I*87,Y,83))DeveloperPage=PageIds[I];}
@@ -150,21 +165,21 @@ void ACireHUD::DrawDeveloperPanel(float X,float Y)
         if(Button(TEXT("OPEN MATCH SIMULATOR"),R,T+208,285))DeveloperPage=3;
         if(Button(TEXT("OPEN MOVEMENT / DODGE TUNING"),L,T+251,285))DeveloperPage=6;
         if(Button(TEXT("OPEN SAVED REPLAYS"),R,T+251,285))DeveloperPage=4;
-        Wrapped(TEXT("Movement: E jump, Ctrl dodge, Caps Lock walk/run. Hold RMB to face and strafe. F1 selects yourself. F8 closes developer tools."),L,T+306,594,12,Parchment,3);
+        Wrapped(FString::Printf(TEXT("Movement: %s jump, %s/%s strafe, %s dodge, %s walk/run. Hold RMB to steer. %s selects yourself. %s closes developer tools."),*UISettings.Keybindings.FullLabel(TEXT("Jump")),*UISettings.Keybindings.Label(TEXT("StrafeLeft")),*UISettings.Keybindings.Label(TEXT("StrafeRight")),*UISettings.Keybindings.Label(TEXT("DodgeRoll")),*UISettings.Keybindings.FullLabel(TEXT("ToggleWalk")),*UISettings.Keybindings.Label(TEXT("TargetSelf")),*UISettings.Keybindings.Label(TEXT("ToggleDeveloperTools"))),L,T+306,594,12,Parchment,3);
     }
     else if(DeveloperPage==6)
     {
         if(!bMovementLoaded){MovementDraft=CireMovement::Tuning();bMovementLoaded=true;}
         Slider(TEXT("Run speed (cm/s)"),MovementDraft.RunSpeed,300,800,10,L,T,TEXT("Normal character run speed. Applies live."));
         Slider(TEXT("Walk speed (cm/s)"),MovementDraft.WalkSpeed,100,520,10,R,T,TEXT("Caps Lock toggles walking. Must not exceed run speed."));
-        Slider(TEXT("Jump velocity"),MovementDraft.JumpVelocity,200,650,10,L,T+49,TEXT("Initial upward speed for E jump. Uses normal collision and gravity."));
+        Slider(TEXT("Jump velocity"),MovementDraft.JumpVelocity,200,650,10,L,T+49,TEXT("Initial upward speed for a jump. Uses normal collision and gravity."));
         Slider(TEXT("Roll speed (cm/s)"),MovementDraft.RollSpeed,300,1400,20,R,T+49,TEXT("Server-authorized roll uses character movement sweeps; walls and units still block it."));
         Slider(TEXT("Roll duration (s)"),MovementDraft.RollDuration,.25f,.9f,.05f,L,T+98,TEXT("Total dodge movement/animation duration. Attacks cannot be cast during the roll."));
         Slider(TEXT("Roll cooldown (s)"),MovementDraft.RollCooldown,1,15,.25f,R,T+98,TEXT("Time between successful rolls. Failed attempts consume no energy."));
         Slider(TEXT("Roll energy cost"),MovementDraft.RollEnergy,5,80,5,L,T+147,TEXT("Energy spent only when the server starts the roll."));
         Slider(TEXT("Invulnerability starts (s)"),MovementDraft.InvulnerableStart,0,.5f,.01f,R,T+147,TEXT("Time from roll start until damage avoidance begins."));
         Slider(TEXT("Invulnerability ends (s)"),MovementDraft.InvulnerableEnd,.05f,.9f,.01f,L,T+196,TEXT("Must fit within roll duration, last at most 0.4 seconds, and follow its start. Avoided hits display DODGE."));
-        Wrapped(TEXT("E jump / Ctrl dodge / Caps Lock walk. Apply changes for this session; Save defaults writes MovementTuning.json. Existing rolls retain their original timing."),R,T+200,282,11,Muted,5);
+        Wrapped(TEXT("Jump / dodge / walk use your keybindings. Apply changes for this session; Save defaults writes MovementTuning.json. Existing rolls retain their original timing."),R,T+200,282,11,Muted,5);
         if(Button(TEXT("APPLY MOVEMENT"),L,T+282,190))DeveloperMessage=CireMovement::Apply(MovementDraft,Error)?TEXT("Movement tuning applied."):Error;
         if(Button(TEXT("SAVE DEFAULTS"),L+202,T+282,190))DeveloperMessage=CireMovement::Apply(MovementDraft,Error)&&CireMovement::Save(Error)?TEXT("Movement defaults saved."):Error;
         if(Button(TEXT("RELOAD DEFAULTS"),L+404,T+282,190)){const bool OK=CireMovement::Reload(Error);if(OK)MovementDraft=CireMovement::Tuning();DeveloperMessage=OK?TEXT("Movement defaults reloaded."):Error;}
@@ -201,7 +216,7 @@ bool ACireHUD::DrawReplayScreen()
     Frame(X,Y,720,93,Gold);
     Label(FString::Printf(TEXT("REPLAY   %.1f / %.1fs   %.2fx"),Replay->CurrentSeconds(),Replay->DurationSeconds(),Replay->PlaybackSpeed()),X+14,Y+10,14,Parchment);
     Bar(X+14,Y+34,692,4,Replay->DurationSeconds()>0?Replay->CurrentSeconds()/Replay->DurationSeconds():0,Gold);
-    auto Button=[&](const FString& Text,float BX,float W){const bool Over=Hit(BX,Y+49,W,27);Panel(BX,Y+49,W,27,Over?Hover:Card);Label(Text,BX+8,Y+55,11,Gold);if(Clicked&&Over&&!bSettings){Clicked=false;PlayUIFeedback();return true;}return false;};
+    auto Button=[&](const FString& Text,float BX,float W){const bool Over=Hit(BX,Y+49,W,27);CireUIStyle::Button(Painter(),BX,Y+49,W,27,Text,Over?ECireButtonState::Hover:ECireButtonState::Normal);if(Clicked&&Over&&!bSettings){Clicked=false;PlayUIFeedback();return true;}return false;};
     if(Button(Replay->IsPaused()?TEXT("RESUME"):TEXT("PAUSE"),X+14,113))Replay->SetPaused(!Replay->IsPaused());
     if(Button(TEXT("-10 SECONDS"),X+138,127))Replay->Seek(FMath::Max(0.f,Replay->CurrentSeconds()-10));
     if(Button(TEXT("+10 SECONDS"),X+276,127))Replay->Seek(FMath::Min(Replay->DurationSeconds(),Replay->CurrentSeconds()+10));

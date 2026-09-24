@@ -337,6 +337,140 @@ void RoleDraftRules()
     tank.DraftRole=static_cast<SkillDraftRole>(99);CHECK(!GainLevels(tank,1));
 }
 
+// Role tags: every skill is tagged Tank/DPS/Support (bit mask; hybrids carry
+// several). Offers only ever contain skills sharing a role with the champion's
+// primary + secondary roles, and every role set can finish a full build.
+void RoleTagRules()
+{
+    const auto catalog=StarterSkillPool();
+    const RoleMask roleBits[]={RoleTank,RoleDamage,RoleSupport};
+    const SkillDraftRole roles[]={SkillDraftRole::Tank,SkillDraftRole::Damage,SkillDraftRole::Support};
+    CHECK(SkillRoleTags("unknown_recipe")==RoleNone);
+    CHECK(SkillRoleTags("")==RoleNone);
+    CHECK(!IsSkillAllowedForRoles("unknown_recipe",RoleAll));
+    CHECK(StarterSkillPoolForRoles(RoleNone).empty());
+    CHECK(StarterSkillPoolForRoles(RoleAll).size()==catalog.size());
+    for(const auto& skill:catalog)
+    {
+        const RoleMask tags=SkillRoleTags(skill.Id);
+        CHECK(tags!=RoleNone);
+        CHECK((tags&~RoleAll)==0);
+        if(skill.Kind==SkillKind::Passive)CHECK(tags==RoleAll);
+        for(int r=0;r<3;++r)CHECK(IsSkillAllowedForRole(skill.Id,roles[r])==((tags&roleBits[r])!=0));
+    }
+    // Documented exclusive tags (Docs/RoleDrafts.md).
+    for(const auto* id:{"restoring_light","sanctuary","purify","renewal","mass_aegis","wellspring"})CHECK(SkillRoleTags(id)==RoleSupport);
+    for(const auto* id:{"shield_slam","war_cry","last_stand","challenge_of_iron","seismic_reprisal"})CHECK(SkillRoleTags(id)==RoleTank);
+    for(const auto* id:{"venom_ground","cinder_cone","grave_line","ashen_square","blight_sigil","piercing_shot","spectral_pack","cataclysm","executioners_verdict","starfall","spectral_hunt"})CHECK(SkillRoleTags(id)==RoleDamage);
+    // Cross-class skills carry several tags.
+    CHECK(SkillRoleTags("chain_spark")==(RoleDamage|RoleSupport));
+    CHECK(SkillRoleTags("ember_lance")==(RoleDamage|RoleSupport));
+    CHECK(SkillRoleTags("cleaving_strike")==(RoleTank|RoleDamage));
+    CHECK(SkillRoleTags("shadow_step")==(RoleTank|RoleDamage));
+    CHECK(SkillRoleTags("bastion_of_dawn")==(RoleTank|RoleSupport));
+    for(const auto* id:{"iron_guard","frost_bind","summoned_wall","protection_dome","oathbound_guardian","second_wind"})CHECK(SkillRoleTags(id)==RoleAll);
+    int hybridSkills=0;
+    for(const auto& skill:catalog){const RoleMask t=SkillRoleTags(skill.Id);if(t!=RoleTank&&t!=RoleDamage&&t!=RoleSupport)++hybridSkills;}
+    CHECK(hybridSkills>=10);
+
+    // Validation of the role set itself.
+    Progression bad;bad.DraftRole=SkillDraftRole::Tank;bad.SecondaryRoles=8;CHECK(!GainLevels(bad,2));
+    bad.SecondaryRoles=RoleSupport;bad.DraftRole=SkillDraftRole::Any;CHECK(!GainLevels(bad,2));
+    bad.DraftRole=SkillDraftRole::Tank;CHECK(GainLevels(bad,2));CHECK(EffectiveRoleMask(bad)==(RoleTank|RoleSupport));
+    Progression any;CHECK(EffectiveRoleMask(any)==RoleAll);
+
+    // Exhaustive primary x secondary role sets: offers stay inside the role set,
+    // every allowed skill (including hybrids) is actually reachable, no path ever
+    // runs dry, and the confirmed offer shape (4 choices; 1-2 passives until one
+    // is learned; four passives for a final passive-only slot) is preserved.
+    std::uint64_t pathCount=0;
+    for(int r=0;r<3;++r)
+    for(int secondaryValue=0;secondaryValue<=RoleAll;++secondaryValue)
+    {
+        const RoleMask secondary=static_cast<RoleMask>(secondaryValue);
+        const RoleMask mask=static_cast<RoleMask>(roleBits[r]|secondary);
+        std::set<std::string> seen;
+        for(std::uint64_t seed=0;seed<96;++seed)
+        for(int strategy=0;strategy<4;++strategy)
+        {
+            Progression p;p.DraftRole=roles[r];p.SecondaryRoles=secondary;CHECK(GainLevels(p,23));
+            for(int slot=0;slot<MaxSkills;++slot)
+            {
+                const auto offer=GenerateAugmentOffer(p,catalog,seed*131+static_cast<std::uint64_t>(slot*7+r));
+                CHECK(offer.IsValid());if(!offer.IsValid())break;
+                const bool finalPassive=CountSkills(p,SkillKind::Active)==MaxActiveSkills&&HasUltimate(p);
+                CHECK(finalPassive?PassiveCount(offer)==4:HasPassive(p)?PassiveCount(offer)==0:PassiveCount(offer)>=1&&PassiveCount(offer)<=2);
+                for(const auto& option:offer.Choices)
+                {
+                    seen.insert(option.Id);
+                    const RoleMask tags=SkillRoleTags(option.Id);
+                    CHECK((tags&mask)!=0);
+                    // A pure Tank (no Support secondary) is never offered a Support-only
+                    // skill, and likewise for every exclusive tag outside the role set.
+                    for(const RoleMask exclusive:{RoleTank,RoleDamage,RoleSupport})
+                        if(tags==exclusive)CHECK((mask&exclusive)!=0);
+                    Progression alternate=p;CHECK(LearnSkill(alternate,offer,option.Id));
+                    CHECK(!HasPendingAugment(alternate)||GenerateAugmentOffer(alternate,catalog,seed+static_cast<std::uint64_t>(slot)).IsValid());
+                }
+                auto pick=offer.Choices.begin()+static_cast<std::ptrdiff_t>((seed+static_cast<std::uint64_t>(slot))%4);
+                const SkillKind special=strategy<2?SkillKind::Passive:SkillKind::Ultimate;
+                const bool preferSpecial=strategy%2==0;
+                const auto preferred=std::find_if(offer.Choices.begin(),offer.Choices.end(),[&](const SkillDefinition& s){return (s.Kind==special)==preferSpecial;});
+                if(preferred!=offer.Choices.end())pick=preferred;
+                CHECK(LearnSkill(p,offer,pick->Id));
+            }
+            CHECK(CountSkills(p,SkillKind::Active)==MaxActiveSkills&&HasPassive(p)&&HasUltimate(p)&&p.LearnedSkills.size()==8);
+            for(const auto& learned:p.LearnedSkills)CHECK((SkillRoleTags(learned.Id)&mask)!=0);
+            ++pathCount;
+        }
+        // Every skill allowed for this role set was offered at least once; nothing else was.
+        const auto allowed=StarterSkillPoolForRoles(mask);
+        CHECK(seen.size()==allowed.size());
+        for(const auto& skill:allowed)CHECK(seen.count(skill.Id)==1);
+        // Pools are deep enough for any order of special-slot picks.
+        const auto count=[&](SkillKind kind){return std::count_if(allowed.begin(),allowed.end(),[kind](const SkillDefinition& s){return s.Kind==kind;});};
+        CHECK(count(SkillKind::Active)>=9&&count(SkillKind::Passive)>=4&&count(SkillKind::Ultimate)>=4);
+    }
+    CHECK(pathCount==3u*8u*96u*4u);
+
+    // Hybrids receive both roles' exclusive skills; single roles never do.
+    const auto offeredSomewhere=[&](SkillDraftRole role,RoleMask secondary,const char* id)
+    {
+        for(std::uint64_t seed=0;seed<400;++seed)
+        {
+            Progression p;p.DraftRole=role;p.SecondaryRoles=secondary;GainLevels(p,2);
+            const auto offer=GenerateAugmentOffer(p,catalog,seed);
+            for(const auto& option:offer.Choices)if(option.Id==id)return true;
+        }
+        return false;
+    };
+    CHECK(offeredSomewhere(SkillDraftRole::Tank,RoleSupport,"restoring_light"));
+    CHECK(offeredSomewhere(SkillDraftRole::Tank,RoleSupport,"shield_slam"));
+    CHECK(!offeredSomewhere(SkillDraftRole::Tank,RoleNone,"restoring_light"));
+    CHECK(!offeredSomewhere(SkillDraftRole::Tank,RoleDamage,"sanctuary"));
+    CHECK(offeredSomewhere(SkillDraftRole::Damage,RoleSupport,"purify"));
+    CHECK(!offeredSomewhere(SkillDraftRole::Damage,RoleNone,"purify"));
+    CHECK(!offeredSomewhere(SkillDraftRole::Damage,RoleNone,"war_cry"));
+    CHECK(offeredSomewhere(SkillDraftRole::Damage,RoleTank,"war_cry"));
+    CHECK(!offeredSomewhere(SkillDraftRole::Support,RoleNone,"piercing_shot"));
+    CHECK(offeredSomewhere(SkillDraftRole::Support,RoleNone,"chain_spark"));
+    CHECK(offeredSomewhere(SkillDraftRole::Damage,RoleNone,"chain_spark"));
+    CHECK(offeredSomewhere(SkillDraftRole::Tank,RoleNone,"cleaving_strike"));
+    CHECK(offeredSomewhere(SkillDraftRole::Damage,RoleNone,"cleaving_strike"));
+
+    // Server-side LearnSkill applies the same mask to a forged offer.
+    for(const RoleMask secondary:{RoleNone,RoleDamage,RoleSupport})
+    {
+        Progression p;p.DraftRole=SkillDraftRole::Tank;p.SecondaryRoles=secondary;CHECK(GainLevels(p,2));
+        auto forged=GenerateAugmentOffer(p,catalog,5);
+        auto active=std::find_if(forged.Choices.begin(),forged.Choices.end(),[](const SkillDefinition& s){return s.Kind==SkillKind::Active;});
+        CHECK(active!=forged.Choices.end());if(active==forged.Choices.end())continue;
+        const bool present=std::any_of(forged.Choices.begin(),forged.Choices.end(),[](const SkillDefinition& s){return s.Id=="purify";});
+        if(!present)*active={"purify","Purify",SkillKind::Active};
+        CHECK(LearnSkill(p,forged,"purify")==(secondary==RoleSupport));
+    }
+}
+
 void ClockRules()
 {
     MatchClock clock;
@@ -499,6 +633,7 @@ int main()
     DraftRules();
     SkillCapacityRules();
     RoleDraftRules();
+    RoleTagRules();
     ClockRules();
     RewardRules();
     std::cout << Assertions << " assertions; " << Failures << " failures\n";

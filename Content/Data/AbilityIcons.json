@@ -1,0 +1,607 @@
+{
+  "schemaVersion": 1,
+  "generator": "Tools/BuildAbilityIcons.py",
+  "texturePath": "/Game/UI/Abilities/T_<id>",
+  "icons": {
+    "ashen_square": {
+      "school": "ash",
+      "glyph": "square_ward",
+      "accent": "#e6783c",
+      "pool": true
+    },
+    "bastion_of_dawn": {
+      "school": "holy",
+      "glyph": "bastion",
+      "accent": "#ffc45a",
+      "pool": true
+    },
+    "battle_rhythm": {
+      "school": "war",
+      "glyph": "rhythm",
+      "accent": "#f0503c",
+      "pool": true
+    },
+    "bear_ancient_hide": {
+      "school": "primal",
+      "glyph": "claw",
+      "accent": "#e69646",
+      "pool": false
+    },
+    "bear_charge": {
+      "school": "primal",
+      "glyph": "dash",
+      "accent": "#e69646",
+      "pool": false
+    },
+    "bear_colossus": {
+      "school": "primal",
+      "glyph": "mountain",
+      "accent": "#e69646",
+      "pool": false
+    },
+    "bear_hibernate": {
+      "school": "nature",
+      "glyph": "slumber",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "bear_maul": {
+      "school": "primal",
+      "glyph": "bear_head",
+      "accent": "#e69646",
+      "pool": false
+    },
+    "bear_roar": {
+      "school": "primal",
+      "glyph": "horn",
+      "accent": "#e69646",
+      "pool": false
+    },
+    "behemoth_ancestral_weight": {
+      "school": "earth",
+      "glyph": "hourglass",
+      "accent": "#dca050",
+      "pool": false
+    },
+    "behemoth_stampede": {
+      "school": "earth",
+      "glyph": "hooves",
+      "accent": "#dca050",
+      "pool": false
+    },
+    "behemoth_totem_bulwark": {
+      "school": "earth",
+      "glyph": "shield",
+      "accent": "#dca050",
+      "pool": false
+    },
+    "behemoth_totem_sweep": {
+      "school": "earth",
+      "glyph": "totem",
+      "accent": "#dca050",
+      "pool": false
+    },
+    "behemoth_tusk_line": {
+      "school": "earth",
+      "glyph": "tusk",
+      "accent": "#dca050",
+      "pool": false
+    },
+    "blight_sigil": {
+      "school": "venom",
+      "glyph": "sigil",
+      "accent": "#96f03c",
+      "pool": true
+    },
+    "cataclysm": {
+      "school": "fire",
+      "glyph": "cataclysm",
+      "accent": "#ff781e",
+      "pool": true
+    },
+    "centaur_grove_javelin": {
+      "school": "nature",
+      "glyph": "javelin",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "centaur_herd_call": {
+      "school": "nature",
+      "glyph": "horn",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "centaur_spring_march": {
+      "school": "nature",
+      "glyph": "feather",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "centaur_steady_gait": {
+      "school": "nature",
+      "glyph": "hooves",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "centaur_trailblaze": {
+      "school": "nature",
+      "glyph": "trail",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "chain_spark": {
+      "school": "arcane",
+      "glyph": "chain_spark",
+      "accent": "#6eaaff",
+      "pool": true
+    },
+    "challenge_of_iron": {
+      "school": "steel",
+      "glyph": "challenge",
+      "accent": "#aac8e6",
+      "pool": true
+    },
+    "chieftain_axe_hook": {
+      "school": "war",
+      "glyph": "hook",
+      "accent": "#f0503c",
+      "pool": false
+    },
+    "chieftain_banner": {
+      "school": "war",
+      "glyph": "banner",
+      "accent": "#f0503c",
+      "pool": false
+    },
+    "chieftain_courage": {
+      "school": "war",
+      "glyph": "crown",
+      "accent": "#f0503c",
+      "pool": false
+    },
+    "chieftain_earthshout": {
+      "school": "war",
+      "glyph": "horn",
+      "accent": "#f0503c",
+      "pool": false
+    },
+    "cinder_cone": {
+      "school": "fire",
+      "glyph": "cinder_cone",
+      "accent": "#ff781e",
+      "pool": true
+    },
+    "cleaving_strike": {
+      "school": "steel",
+      "glyph": "cleave",
+      "accent": "#aac8e6",
+      "pool": true
+    },
+    "deep_reserves": {
+      "school": "arcane",
+      "glyph": "reserves",
+      "accent": "#6eaaff",
+      "pool": true
+    },
+    "drakish_ancient_pact": {
+      "school": "dragon",
+      "glyph": "dragon_eye",
+      "accent": "#ff9628",
+      "pool": false
+    },
+    "drakish_dragon_oath": {
+      "school": "dragon",
+      "glyph": "spiral",
+      "accent": "#ff9628",
+      "pool": false
+    },
+    "drakish_ember_memory": {
+      "school": "dragon",
+      "glyph": "flame",
+      "accent": "#ff9628",
+      "pool": false
+    },
+    "drakish_scale_guard": {
+      "school": "dragon",
+      "glyph": "shield",
+      "accent": "#ff9628",
+      "pool": false
+    },
+    "drakish_wing_rebuke": {
+      "school": "dragon",
+      "glyph": "wing",
+      "accent": "#ff9628",
+      "pool": false
+    },
+    "dryad_green_covenant": {
+      "school": "nature",
+      "glyph": "leaf",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "dryad_grove_renewal": {
+      "school": "nature",
+      "glyph": "renewal",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "dryad_root_snare": {
+      "school": "nature",
+      "glyph": "roots",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "dryad_seed_mend": {
+      "school": "nature",
+      "glyph": "seed",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "dryad_thorn_line": {
+      "school": "nature",
+      "glyph": "thorn_vine",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "ember_lance": {
+      "school": "fire",
+      "glyph": "ember_lance",
+      "accent": "#ff781e",
+      "pool": true
+    },
+    "executioners_verdict": {
+      "school": "blood",
+      "glyph": "verdict",
+      "accent": "#e62832",
+      "pool": true
+    },
+    "frost_bind": {
+      "school": "frost",
+      "glyph": "frost_bind",
+      "accent": "#78c8ff",
+      "pool": true
+    },
+    "golem_construct_core": {
+      "school": "ether",
+      "glyph": "gear",
+      "accent": "#5abeff",
+      "pool": false
+    },
+    "golem_ether_anchor": {
+      "school": "ether",
+      "glyph": "rune_circle",
+      "accent": "#5abeff",
+      "pool": false
+    },
+    "golem_ether_furnace": {
+      "school": "fel",
+      "glyph": "gear",
+      "accent": "#78ff3c",
+      "pool": false
+    },
+    "golem_fel_fist": {
+      "school": "fel",
+      "glyph": "fist",
+      "accent": "#78ff3c",
+      "pool": false
+    },
+    "golem_granite_fist": {
+      "school": "stone",
+      "glyph": "fist",
+      "accent": "#c8b48c",
+      "pool": false
+    },
+    "golem_living_granite": {
+      "school": "nature",
+      "glyph": "fist",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "golem_moss_bloom": {
+      "school": "nature",
+      "glyph": "seed",
+      "accent": "#82e664",
+      "pool": false
+    },
+    "golem_worldstone": {
+      "school": "ether",
+      "glyph": "mountain",
+      "accent": "#5abeff",
+      "pool": false
+    },
+    "grave_line": {
+      "school": "shadow",
+      "glyph": "grave_line",
+      "accent": "#a05aff",
+      "pool": true
+    },
+    "iron_guard": {
+      "school": "steel",
+      "glyph": "iron_guard",
+      "accent": "#aac8e6",
+      "pool": true
+    },
+    "keeper_beacon": {
+      "school": "light",
+      "glyph": "tower",
+      "accent": "#ffe28c",
+      "pool": false
+    },
+    "keeper_dawn_beam": {
+      "school": "light",
+      "glyph": "beam",
+      "accent": "#ffe28c",
+      "pool": false
+    },
+    "keeper_lantern_ward": {
+      "school": "light",
+      "glyph": "lantern",
+      "accent": "#ffe28c",
+      "pool": false
+    },
+    "keeper_last_light": {
+      "school": "light",
+      "glyph": "lantern",
+      "accent": "#ffe28c",
+      "pool": false
+    },
+    "keeper_sunrise": {
+      "school": "light",
+      "glyph": "sun",
+      "accent": "#ffe28c",
+      "pool": false
+    },
+    "last_stand": {
+      "school": "war",
+      "glyph": "last_stand",
+      "accent": "#f0503c",
+      "pool": true
+    },
+    "mass_aegis": {
+      "school": "light",
+      "glyph": "aegis",
+      "accent": "#ffe28c",
+      "pool": true
+    },
+    "miner_faultline": {
+      "school": "stone",
+      "glyph": "seismic",
+      "accent": "#c8b48c",
+      "pool": false
+    },
+    "miner_lantern": {
+      "school": "ember",
+      "glyph": "lantern",
+      "accent": "#ff8c32",
+      "pool": false
+    },
+    "miner_mountain": {
+      "school": "stone",
+      "glyph": "mountain",
+      "accent": "#c8b48c",
+      "pool": false
+    },
+    "miner_orehide": {
+      "school": "stone",
+      "glyph": "stone_skin",
+      "accent": "#c8b48c",
+      "pool": false
+    },
+    "miner_pickfall": {
+      "school": "stone",
+      "glyph": "pick",
+      "accent": "#c8b48c",
+      "pool": false
+    },
+    "oathbound_guardian": {
+      "school": "spectral",
+      "glyph": "guardian",
+      "accent": "#5ae6d2",
+      "pool": true
+    },
+    "paladin_holy_flail": {
+      "school": "holy",
+      "glyph": "lantern",
+      "accent": "#ffc45a",
+      "pool": false
+    },
+    "paladin_pilgrim_light": {
+      "school": "holy",
+      "glyph": "sun",
+      "accent": "#ffc45a",
+      "pool": false
+    },
+    "paladin_relic_vow": {
+      "school": "holy",
+      "glyph": "cross",
+      "accent": "#ffc45a",
+      "pool": false
+    },
+    "paladin_righteous_flail": {
+      "school": "holy",
+      "glyph": "cleave",
+      "accent": "#ffc45a",
+      "pool": false
+    },
+    "piercing_shot": {
+      "school": "steel",
+      "glyph": "piercing",
+      "accent": "#aac8e6",
+      "pool": true
+    },
+    "protection_dome": {
+      "school": "ether",
+      "glyph": "dome",
+      "accent": "#5abeff",
+      "pool": true
+    },
+    "purify": {
+      "school": "spirit",
+      "glyph": "purify",
+      "accent": "#a0ffd2",
+      "pool": true
+    },
+    "renewal": {
+      "school": "nature",
+      "glyph": "renewal",
+      "accent": "#82e664",
+      "pool": true
+    },
+    "restoring_light": {
+      "school": "holy",
+      "glyph": "restoring",
+      "accent": "#ffc45a",
+      "pool": true
+    },
+    "sanctuary": {
+      "school": "light",
+      "glyph": "sanctuary",
+      "accent": "#ffe28c",
+      "pool": true
+    },
+    "second_wind": {
+      "school": "nature",
+      "glyph": "wind",
+      "accent": "#82e664",
+      "pool": true
+    },
+    "seismic_reprisal": {
+      "school": "earth",
+      "glyph": "seismic",
+      "accent": "#dca050",
+      "pool": true
+    },
+    "shadow_step": {
+      "school": "shadow",
+      "glyph": "shadow_step",
+      "accent": "#a05aff",
+      "pool": true
+    },
+    "shield_slam": {
+      "school": "holy",
+      "glyph": "shield_slam",
+      "accent": "#ffc45a",
+      "pool": true
+    },
+    "soul_conduit": {
+      "school": "holy",
+      "glyph": "conduit",
+      "accent": "#ffc45a",
+      "pool": true
+    },
+    "spectral_hunt": {
+      "school": "spectral",
+      "glyph": "hunt",
+      "accent": "#5ae6d2",
+      "pool": true
+    },
+    "spectral_pack": {
+      "school": "spectral",
+      "glyph": "pack",
+      "accent": "#5ae6d2",
+      "pool": true
+    },
+    "starfall": {
+      "school": "arcane",
+      "glyph": "starfall",
+      "accent": "#6eaaff",
+      "pool": true
+    },
+    "stone_skin": {
+      "school": "stone",
+      "glyph": "stone_skin",
+      "accent": "#c8b48c",
+      "pool": true
+    },
+    "summoned_wall": {
+      "school": "stone",
+      "glyph": "wall",
+      "accent": "#c8b48c",
+      "pool": true
+    },
+    "troll_axe_frenzy": {
+      "school": "blood",
+      "glyph": "axe",
+      "accent": "#e62832",
+      "pool": false
+    },
+    "troll_blood_leap": {
+      "school": "blood",
+      "glyph": "dash",
+      "accent": "#e62832",
+      "pool": false
+    },
+    "troll_hunger": {
+      "school": "blood",
+      "glyph": "skull",
+      "accent": "#e62832",
+      "pool": false
+    },
+    "troll_red_moon": {
+      "school": "blood",
+      "glyph": "moon",
+      "accent": "#e62832",
+      "pool": false
+    },
+    "troll_returning_axes": {
+      "school": "blood",
+      "glyph": "spiral",
+      "accent": "#e62832",
+      "pool": false
+    },
+    "troll_twin_throw": {
+      "school": "blood",
+      "glyph": "axe",
+      "accent": "#e62832",
+      "pool": false
+    },
+    "venom_ground": {
+      "school": "venom",
+      "glyph": "venom",
+      "accent": "#96f03c",
+      "pool": true
+    },
+    "war_cry": {
+      "school": "war",
+      "glyph": "war_cry",
+      "accent": "#f0503c",
+      "pool": true
+    },
+    "wellspring": {
+      "school": "frost",
+      "glyph": "wellspring",
+      "accent": "#78c8ff",
+      "pool": true
+    },
+    "whisp_constellation": {
+      "school": "spirit",
+      "glyph": "constellation",
+      "accent": "#a0ffd2",
+      "pool": false
+    },
+    "whisp_fey_trail": {
+      "school": "spirit",
+      "glyph": "trail",
+      "accent": "#a0ffd2",
+      "pool": false
+    },
+    "whisp_guiding_mote": {
+      "school": "spirit",
+      "glyph": "orb",
+      "accent": "#a0ffd2",
+      "pool": false
+    },
+    "whisp_lantern_soul": {
+      "school": "spirit",
+      "glyph": "lantern",
+      "accent": "#a0ffd2",
+      "pool": false
+    },
+    "whisp_spirit_tether": {
+      "school": "spirit",
+      "glyph": "chains",
+      "accent": "#a0ffd2",
+      "pool": false
+    }
+  }
+}

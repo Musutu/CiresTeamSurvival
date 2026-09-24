@@ -1,4 +1,5 @@
 #include "CireTargeting.h"
+#include "CireSelection.h"
 #include "CireGame.h"
 #include "CireHUD.h"
 #include "CireDeveloperTools.h"
@@ -248,7 +249,7 @@ bool CireTargeting::Tick(ACireController* C)
     auto* S=States.Find(TWeakObjectPtr<ACireController>(C));if(!S)return false;
     auto* H=Cast<ACireHero>(C->GetPawn());auto* HUD=Cast<ACireHUD>(C->GetHUD());
     if(H!=S->Hero.Get()||!H||H->bDead||!H->bDrafted||!H->Skills.IsValidIndex(S->View.Slot)||H->Skills[S->View.Slot]!=S->View.SkillId||
-        S->Phase!=CireSkillRuntime::Phase(C->GetWorld())||C->bShop||C->bChatInput||H->Offers.Num()>0||(HUD&&HUD->IsBlockingGameplayInput())){Cancel(C);return false;}
+        S->Phase!=CireSkillRuntime::Phase(C->GetWorld())||C->bShop||C->bChatInput||(H->Offers.Num()>0&&(!HUD||HUD->IsSkillOfferOpen()))||(HUD&&HUD->IsBlockingGameplayInput())){Cancel(C);return false;}
     if(C->WasInputKeyJustPressed(EKeys::Escape)||C->WasInputKeyJustPressed(EKeys::RightMouseButton)){Cancel(C);return true;}
     const auto D=RuntimeDescriptor(C->GetWorld(),S->View.SkillId);FVector Center=FVector::ZeroVector;FRotator Heading=FRotator::ZeroRotator;
     const bool bGround=CursorGround(C,S->View.Point);S->View.bValid=bGround&&ValidateGround(H,S->View.SkillId,S->View.Point,Center,Heading,S->View.Message);
@@ -363,6 +364,42 @@ bool CireTargeting::RunRuntimeSmoke(ACireGameMode* Mode)
         if(!It->IsActorBeingDestroyed()&&FVector::DistSquared2D(It->GetActorLocation(),Aim)<1&&FMath::Abs(It->GetActorLocation().Z-Aim.Z)<20)
         {Found=true;Check(!It->IsActive(),TEXT("confirmed ground effect remains harmless during warning"));}
     Check(Found,TEXT("ground actor appears at confirmed cursor location"));
+    {
+        // WoW tab targeting: camera cone first, outward by distance, Shift reverses, dead/other-realm excluded.
+        auto Monster=[&](FVector Offset,int32 Lane){auto* M=Mode->GetWorld()->SpawnActor<ACireMonster>(Ground+Offset+FVector(0,0,90),FRotator::ZeroRotator,Spawn);
+            if(M){Actors.Add(M);M->SetActorTickEnabled(false);M->Lane=Lane;M->Health=M->MaxHealth=100;}return M;};
+        auto* Near=Monster(FVector(300,0,0),0);auto* Far=Monster(FVector(700,40,0),0);auto* Behind=Monster(FVector(-250,0,0),0);
+        auto* OtherRealm=Monster(FVector(350,0,0),1);
+        const FTransform Front(FRotator::ZeroRotator,Ground+FVector(-100,0,300));const FTransform Side(FRotator(0,90,0),Ground+FVector(-100,0,300));
+        Check(Near&&Far&&Behind&&OtherRealm,TEXT("tab fixture monsters spawned"));
+        // Park unrelated world monsters in the other realm for the duration of the tab fixture.
+        TArray<TPair<TWeakObjectPtr<ACireMonster>,int32>> Parked;
+        for(TActorIterator<ACireMonster> It(Mode->GetWorld());It;++It)
+            if(*It!=Near&&*It!=Far&&*It!=Behind&&*It!=OtherRealm&&It->Lane==0){Parked.Add({*It,It->Lane});It->Lane=1;}
+        ON_SCOPE_EXIT{for(auto& Entry:Parked)if(Entry.Key.IsValid())Entry.Key->Lane=Entry.Value;};
+        if(Near&&Far&&Behind&&OtherRealm)
+        {
+            Hero->Target=nullptr;
+            AActor* T=CireSelection::NextTarget(Controller,false,false,&Front);Hero->Target=T;
+            Check(T==Near,TEXT("tab picks nearest hostile in front of the camera, not the closer one behind"));
+            T=CireSelection::NextTarget(Controller,false,false,&Front);Hero->Target=T;
+            Check(T==Far,TEXT("second tab cycles outward by distance"));
+            T=CireSelection::NextTarget(Controller,false,false,&Front);Hero->Target=T;
+            Check(T==Near,TEXT("tab wraps to the nearest after visiting every front candidate"));
+            T=CireSelection::NextTarget(Controller,false,true,&Front);Hero->Target=T;
+            Check(T==Far,TEXT("shift-tab walks back through the tab history"));
+            T=CireSelection::NextTarget(Controller,false,false,&Side);Hero->Target=T;
+            Check(T!=OtherRealm&&T!=nullptr,TEXT("other-realm monster never tab-selected"));
+            Hero->Target=nullptr;Behind->Health=0;
+            T=CireSelection::NextTarget(Controller,false,false,&Side);
+            Check(T==Near,TEXT("no candidate in view falls back to nearest living hostile around the hero"));
+            Behind->Health=100;
+            Hero->Target=Near;CireSelection::HandleTargetLoss(Controller,false);Near->Health=0;CireSelection::HandleTargetLoss(Controller,false);
+            Check(Hero->Target==nullptr,TEXT("target clears when the hostile target dies"));
+            Hero->Target=Far;CireSelection::HandleTargetLoss(Controller,true);Far->Health=0;CireSelection::HandleTargetLoss(Controller,true);
+            Check(Hero->Target==Behind,TEXT("optional auto-reacquire selects the next living hostile"));
+        }
+    }
     UE_LOG(LogTemp,Display,TEXT("CIRE_TARGETING_RUNTIME_%s checks=%d"),Pass?TEXT("PASS"):TEXT("FAIL"),Checks);return Pass;
 }
 #endif

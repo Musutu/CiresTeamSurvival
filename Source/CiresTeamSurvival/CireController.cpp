@@ -1,4 +1,6 @@
 #include "CireGame.h"
+#include "CireShopFixtures.h" // progression-shop
+#include "CireItems.h" // progression-shop
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -15,7 +17,10 @@
 #include "CireCombatEvents.h"
 #include "CireMobility.h"
 #include "CireTargeting.h"
+#include "CireChampionProfiles.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "CireCamera.h"
+#include "CireKeybindings.h"
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireNetClient, Log, All);
@@ -27,6 +32,8 @@ struct FCireClientProbe {
     int32 Gold = 0;
     bool Done = false;
     FVector MovementOrigin=FVector::ZeroVector;
+    bool bStrafeStarted=false;
+    float StrafeYaw=0;
     TWeakObjectPtr<ACireMonster> Selected;
 };
 FCireClientProbe ClientProbe;
@@ -64,11 +71,25 @@ bool TickClientProbe(ACireController* Controller) {
         Probe.Step=5;Probe.StepStarted=Now;
         UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_DRAFT_PASS archetype=%d hp=%.0f mana=%.0f"),Hero->Archetype,Hero->MaxHealth,Hero->MaxMana);
     } else if(Probe.Step==5) {
-        if(Now-Probe.StepStarted<0.75) Hero->AddMovementInput(FVector(0,1,0));
+        // WoW strafe (StrafeRight): face-control keeps the heading while input goes along the right vector.
+        const FRotator Heading(0,Probe.StrafeYaw,0);
+        if(!Probe.bStrafeStarted) {
+            Probe.bStrafeStarted=true;Probe.StrafeYaw=static_cast<float>(Hero->GetActorRotation().Yaw);
+            Controller->SetControlRotation(FRotator(-20,Probe.StrafeYaw,0));
+            if(Hero->Mobility){Hero->Mobility->bFaceControl=true;Hero->Mobility->ServerSetFaceControl(true);}
+            Probe.MovementOrigin=Hero->GetActorLocation();
+        }
+        if(Now-Probe.StepStarted<0.75) Hero->AddMovementInput(FRotationMatrix(FRotator(0,Probe.StrafeYaw,0)).GetUnitAxis(EAxis::Y));
         else {
-            const double Displacement=FVector::Dist2D(Probe.MovementOrigin,Hero->GetActorLocation());
-            if(Displacement<100) {Fail(TEXT("remote character movement did not advance"));return true;}
-            UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_MOVEMENT_PASS distance_cm=%.1f"),Displacement);
+            const FVector Delta=Hero->GetActorLocation()-Probe.MovementOrigin;
+            const double Lateral=FVector::DotProduct(Delta,FRotationMatrix(Heading).GetUnitAxis(EAxis::Y));
+            const double Forward=FVector::DotProduct(Delta,FRotationMatrix(Heading).GetUnitAxis(EAxis::X));
+            const float Turned=FMath::Abs(FRotator::NormalizeAxis(static_cast<float>(Hero->GetActorRotation().Yaw)-Probe.StrafeYaw));
+            if(Lateral<100||FMath::Abs(Forward)>Lateral*.2||Turned>3.f) {
+                UE_LOG(LogCireNetClient,Error,TEXT("CIRE_NET_CLIENT_STRAFE lateral=%.1f forward=%.1f turned=%.1f"),Lateral,Forward,Turned);
+                Fail(TEXT("remote strafe did not move sideways without rotating"));return true;}
+            if(Hero->Mobility){Hero->Mobility->bFaceControl=false;Hero->Mobility->ServerSetFaceControl(false);}
+            UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_MOVEMENT_PASS distance_cm=%.1f strafe_lateral_cm=%.1f forward_cm=%.1f yaw_change=%.2f"),Delta.Size2D(),Lateral,Forward,Turned);
             Probe.Step=6;Probe.StepStarted=Now;
         }
     } else if(Probe.Step==6) {
@@ -119,33 +140,35 @@ void ACireController::BeginPlay() {
 void ACireController::EndPlay(const EEndPlayReason::Type EndPlayReason) {
     CireTargeting::Cleanup(this);
     CireSelection::Cleanup(this);
+    CireCamera::Cleanup(this);
     Super::EndPlay(EndPlayReason);
 }
-void ACireController::CycleTarget(bool bFriendly) {
-    auto* H=Cast<ACireHero>(GetPawn()); if(!H){CireTargeting::Cleanup(this);return;}
-    TArray<AActor*> Candidates;
-    for(TActorIterator<ACireMonster> It(GetWorld());It;++It) if(!bFriendly&&H->IsHostile(*It)&&H->InRange(*It,2500))Candidates.Add(*It);
-    for(TActorIterator<ACireHero> It(GetWorld());It;++It) if(!It->bDead&&*It!=H&&H->InRange(*It,2500)&&((bFriendly&&It->TeamId==H->TeamId)||(!bFriendly&&H->IsHostile(*It))))Candidates.Add(*It);
-    Candidates.Sort([H](const AActor& A,const AActor& B){return FVector::DistSquared(H->GetActorLocation(),A.GetActorLocation())<FVector::DistSquared(H->GetActorLocation(),B.GetActorLocation());});
-    if(Candidates.Num()) {int I=Candidates.IndexOfByKey(H->Target);ServerAction(0,(I+1)%Candidates.Num(),Candidates[(I+1)%Candidates.Num()]);}
+namespace {
+void CycleTargetDirected(ACireController* C,bool bFriendly,bool bReverse) {
+    auto* H=Cast<ACireHero>(C->GetPawn()); if(!H){CireTargeting::Cleanup(C);return;}
+    // WoW tab targeting: camera cone first, nearest outward; TargetPreviousEnemy walks the tab history back.
+    if(AActor* Next=CireSelection::NextTarget(C,bFriendly,bReverse);Next&&Next!=H->Target)C->ServerAction(0,0,Next);
 }
+}
+void ACireController::CycleTarget(bool bFriendly) {CycleTargetDirected(this,bFriendly,false);}
 void ACireController::PlayerTick(float Dt) {
     Super::PlayerTick(Dt); if(!IsLocalController())return;
 #if !UE_BUILD_SHIPPING
     if(CireExpansionNetProbe::TickClient(this))return;
     if(CireInterfaceProbe::TickClient(this))return;
     if(TickClientProbe(this))return;
+    if(CireShopFixtures::TickClient(this))return; // progression-shop
 #endif
     auto* H=Cast<ACireHero>(GetPawn()); if(!H){CireTargeting::Cleanup(this);return;}
     auto* Interface=Cast<ACireHUD>(GetHUD());
+    // Every gameplay key comes from the rebindable action map (CireKeybindings.h).
+    FCireKeybindings* MutableKeys=Interface?&Interface->UISettings.Keybindings:nullptr;
+    const FCireKeybindings& Keys=MutableKeys?*MutableKeys:CireKeybindings::Defaults();
     // Release state even if a menu/chat consumes the rest of this frame.
-    if(WasInputKeyJustReleased(EKeys::E))H->StopJumping();
-    if(H->Mobility&&H->Mobility->bStrafing&&!IsInputKeyDown(EKeys::RightMouseButton))
-    {H->Mobility->bStrafing=false;H->Mobility->ServerSetStrafe(false);}
+    if(Keys.WasReleased(this,TEXT("Jump")))H->StopJumping();
     if(Interface) {
         const auto& Options=Interface->UISettings;
         H->Camera->SetFieldOfView(Options.CameraFOV);
-        H->Arm->TargetArmLength=Options.CameraDistance;
         H->Camera->PostProcessSettings.bOverride_BloomIntensity=true;
         H->Camera->PostProcessSettings.BloomIntensity=Options.bBloom?.65f:0.f;
         H->Camera->PostProcessSettings.bOverride_MotionBlurAmount=true;
@@ -154,6 +177,27 @@ void ACireController::PlayerTick(float Dt) {
     CireSelection::Update(this);
     const bool bAimInputConsumed=CireTargeting::Tick(this);
     if(!IsValid(FocusTarget)||!CireRealm::CanObserve(H,FocusTarget))FocusTarget=nullptr;
+    // WoW camera/steering runs every frame so the boom, zoom and facing stay consistent in menus.
+    const bool bBlockingUI=Interface&&Interface->IsBlockingGameplayInput();
+    const bool bOverUI=Interface&&Interface->IsPointerOverInterface();
+    CireCamera::FFrame CameraFrame;
+    CameraFrame.bMouseAllowed=!bBlockingUI;
+    CameraFrame.bSteeringAllowed=!bChatInput&&!bBlockingUI&&H->bDrafted&&!H->bDead&&!bShop;
+    CameraFrame.bPressEligible=!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive&&!bSummonMoveTargeting&&
+        !IsInputKeyDown(EKeys::LeftShift)&&!IsInputKeyDown(EKeys::RightShift);
+    CameraFrame.bPointerOverInterface=bOverUI;
+    if(!bOverUI&&!bBlockingUI)CameraFrame.WheelSteps=(WasInputKeyJustPressed(EKeys::MouseScrollUp)?1.f:0.f)-(WasInputKeyJustPressed(EKeys::MouseScrollDown)?1.f:0.f);
+    CameraFrame.Options=Interface?&Interface->UISettings:nullptr;
+    CameraFrame.Bindings=&Keys;
+    // Rebinding capture (keybinding screen) owns the keyboard until it binds, unbinds or cancels.
+    if(MutableKeys&&MutableKeys->IsCapturing())CameraFrame.bSteeringAllowed=false;
+    const auto Camera=CireCamera::Tick(this,H,Dt,CameraFrame);
+    if(MutableKeys&&MutableKeys->IsCapturing()) {
+        FCireCaptureResult Captured;
+        if(MutableKeys->TickCapture(this,Captured)&&(Captured.Kind==FCireCaptureResult::Bound||Captured.Kind==FCireCaptureResult::Unbound))Interface->UISettings.Save();
+        return;
+    }
+    CireSelection::HandleTargetLoss(this,Interface&&Interface->UISettings.bAutoReacquireTarget);
     if(bChatInput) {
         CireTargeting::Cancel(this);
         if(WasInputKeyJustPressed(EKeys::Escape))CancelChat();
@@ -162,10 +206,10 @@ void ACireController::PlayerTick(float Dt) {
         else if(WasInputKeyJustPressed(EKeys::BackSpace)&&!ChatDraft.IsEmpty())ChatDraft.LeftChopInline(1);
         return;
     }
-    if(WasInputKeyJustPressed(EKeys::Enter)) {CireTargeting::Cancel(this);BeginChat();return;}
-    if(WasInputKeyJustPressed(EKeys::F10)&&Interface)Interface->ToggleLayoutEditor();
-    if(WasInputKeyJustPressed(EKeys::F9)&&Interface)Interface->ToggleSettings();
-    if(WasInputKeyJustPressed(EKeys::F8)&&Interface)Interface->ToggleDeveloperTools();
+    if(Keys.WasPressed(this,TEXT("OpenChat"))) {CireTargeting::Cancel(this);BeginChat();return;}
+    if(Keys.WasPressed(this,TEXT("ToggleLayoutEditor"))&&Interface)Interface->ToggleLayoutEditor();
+    if(Keys.WasPressed(this,TEXT("ToggleOptions"))&&Interface)Interface->ToggleSettings();
+    if(Keys.WasPressed(this,TEXT("ToggleDeveloperTools"))&&Interface)Interface->ToggleDeveloperTools();
     if(WasInputKeyJustPressed(EKeys::Escape)) {
         if(bAimInputConsumed)return;
         if(bSummonMoveTargeting){bSummonMoveTargeting=false;H->Notice=TEXT("Summon order cancelled.");return;}
@@ -173,68 +217,75 @@ void ACireController::PlayerTick(float Dt) {
         bShop=false;bHelp=false;
     }
     if(Interface) {
-        if(WasInputKeyJustPressed(EKeys::MouseScrollUp))Interface->HandleMouseWheel(1);
-        if(WasInputKeyJustPressed(EKeys::MouseScrollDown))Interface->HandleMouseWheel(-1);
+        // Wheel over HUD panels scrolls them (chat); over the world it zooms the camera (CireCamera).
+        if(bOverUI&&WasInputKeyJustPressed(EKeys::MouseScrollUp))Interface->HandleMouseWheel(1);
+        if(bOverUI&&WasInputKeyJustPressed(EKeys::MouseScrollDown))Interface->HandleMouseWheel(-1);
         if(Interface->IsBlockingGameplayInput()){CireTargeting::Cancel(this);return;}
     }
-    if(WasInputKeyJustPressed(EKeys::H))bHelp=!bHelp;
-    if(WasInputKeyJustPressed(EKeys::B))bShop=!bShop;
-    if(WasInputKeyJustPressed(EKeys::Tab))CycleTarget(false);
-    if(WasInputKeyJustPressed(EKeys::F))CycleTarget(true);
-    if(WasInputKeyJustPressed(EKeys::F1))ServerAction(0,0,H);
-    if(WasInputKeyJustPressed(EKeys::SpaceBar))ServerAction(1,0,nullptr);
-    if(WasInputKeyJustPressed(EKeys::R))ServerAction(8,0,nullptr);
-    if(WasInputKeyJustPressed(EKeys::Q)&&H->bDrafted&&H->Offers.IsEmpty()&&!bShop) {
-        const int32 Slot=H->UltimateSkillSlot();if(Slot!=INDEX_NONE)RequestCast(Slot);
+    if(Keys.WasPressed(this,TEXT("ToggleHelp")))bHelp=!bHelp;
+    if(Keys.WasPressed(this,TEXT("ToggleShop")))bShop=!bShop;
+    if(Keys.WasPressed(this,TEXT("TargetNextEnemy")))CycleTargetDirected(this,false,false);
+    if(Keys.WasPressed(this,TEXT("TargetPreviousEnemy")))CycleTargetDirected(this,false,true);
+    if(Keys.WasPressed(this,TEXT("TargetNextAlly")))CycleTarget(true);
+    if(Keys.WasPressed(this,TEXT("TargetSelf")))ServerAction(0,0,H);
+    if(Keys.WasPressed(this,TEXT("ToggleAutoAttack")))ServerAction(1,0,nullptr);
+    if(Keys.WasPressed(this,TEXT("RecallToTown")))ServerAction(8,0,nullptr); // progression-shop: Teleport to Base (hearthstone channel)
+    // progression-shop: stats window, consumable belt and item-use keys (CireItems / CireShopUI).
+    if(Keys.WasPressed(this,TEXT("ToggleStats"))&&Interface){Interface->UISettings.bShowStats=!Interface->UISettings.bShowStats;Interface->UISettings.Save();}
+    if(H->bDrafted&&H->Inventory&&H->Offers.IsEmpty()) {
+        for(int32 Index=0;Index<3;++Index)if(Keys.WasPressed(this,CireItems::BeltAction(Index)))H->Inventory->ServerUse(Index,true);
+        for(int32 Index=0;Index<6;++Index)if(Keys.WasPressed(this,CireItems::ItemAction(Index)))H->Inventory->ServerUse(Index,false);
     }
-    const FKey Keys[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six};
     if(!H->bDrafted&&Interface) {
-        if(WasInputKeyJustPressed(EKeys::Left)||WasInputKeyJustPressed(EKeys::PageUp))Interface->ChangeDraftRosterPage(-1);
-        if(WasInputKeyJustPressed(EKeys::Right)||WasInputKeyJustPressed(EKeys::PageDown))Interface->ChangeDraftRosterPage(1);
+        if(Keys.WasPressed(this,TEXT("RosterPreviousPage")))Interface->ChangeDraftRosterPage(-1);
+        if(Keys.WasPressed(this,TEXT("RosterNextPage")))Interface->ChangeDraftRosterPage(1);
     }
-    for(int I=0;I<6;++I)if(WasInputKeyJustPressed(Keys[I])) {
-        if(!H->bDrafted) {if(Interface)Interface->DraftRosterSlot(I);else if(I<5)ServerAction(5,I,nullptr);}
-        else if(H->Offers.Num()>0&&I<4)ServerAction(3,I,nullptr);
-        else if(H->Offers.IsEmpty()&&!bShop) {const int32 Slot=H->ActiveSkillSlot(I);if(Slot!=INDEX_NONE)RequestCast(Slot);}
-    }
-    if(H->bDrafted&&!bShop&&H->Offers.IsEmpty()&&WasInputKeyJustPressed(EKeys::LeftMouseButton)
-        &&!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive
-        &&!IsInputKeyDown(EKeys::RightMouseButton)&&(!Interface||!Interface->IsPointerOverInterface())) {
-        if(bSummonMoveTargeting||IsInputKeyDown(EKeys::LeftShift)||IsInputKeyDown(EKeys::RightShift)) {
-            ServerSummonCommand(1,nullptr,CursorAim());bSummonMoveTargeting=false;return;
+    // Action bars: bar 1 slots 1..6 also pick draft roster entries and augment offers.
+    for(int32 Bar=1;Bar<=FCireKeybindings::NumBars;++Bar)for(int32 Index=1;Index<=FCireKeybindings::SlotsPerBar;++Index) {
+        const FName Slot=CireKeybindings::SlotAction(Bar,Index);
+        if(!Keys.WasPressed(this,Slot))continue;
+        const int32 I=Index-1;
+        if(!H->bDrafted) {if(Bar==1&&I<6){if(Interface)Interface->DraftRosterSlot(I);else if(I<5)ServerAction(5,I,nullptr);}}
+        else if(H->Offers.Num()>0&&(!Interface||Interface->IsSkillOfferOpen())) {if(Bar==1&&I<4)ServerAction(3,I,nullptr);} // champion-draft: deferred offers keep casting
+        else if(!bShop) {
+            // progression-shop: an action-bar slot may hold an active item ("item:<id>").
+            const int32 Item=CireItems::ResolveItemSlot(Keys,*H,Slot);
+            if(Item!=INDEX_NONE){if(H->Inventory)H->Inventory->ServerUse(Item,false);continue;}
+            const int32 Skill=CireKeybindings::ResolveSlot(Keys,*H,Slot);if(Skill!=INDEX_NONE)RequestCast(Skill);
         }
+    }
+    const bool bOfferModal=H->Offers.Num()>0&&(!Interface||Interface->IsSkillOfferOpen()); // champion-draft
+    if(H->bDrafted&&!bShop&&!bOfferModal&&WasInputKeyJustPressed(EKeys::LeftMouseButton)
+        &&!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive&&(!Interface||!Interface->IsPointerOverInterface())
+        &&(bSummonMoveTargeting||IsInputKeyDown(EKeys::LeftShift)||IsInputKeyDown(EKeys::RightShift))) {
+        ServerSummonCommand(1,nullptr,CursorAim());bSummonMoveTargeting=false;return;
+    }
+    // WoW: a left click (released without dragging the camera) selects; a left drag only orbits.
+    if(Camera.bClick&&H->bDrafted&&!bShop&&!bOfferModal&&!CireTargeting::Snapshot(this).bActive
+        &&!IsInputKeyDown(EKeys::RightMouseButton)) {
         FHitResult CursorHit;
-        if(GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1),false,CursorHit)) {
+        if(GetHitResultAtScreenPosition(Camera.ClickPosition,UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1),false,CursorHit)) {
             AActor* Selected=CursorHit.GetActor();
             if((Cast<ACireHero>(Selected)||Cast<ACireMonster>(Selected)||Cast<ACireConstruct>(Selected))&&CireRealm::CanObserve(H,Selected))ServerAction(0,0,Selected);
             else ServerAction(6,0,nullptr);
         }
     }
     if(H->bDead||!H->bDrafted||bShop)return;
-    if(WasInputKeyJustPressed(EKeys::E))H->Jump();
+    if(Keys.WasPressed(this,TEXT("Jump")))H->Jump();
     if(H->Mobility)
     {
-        if(WasInputKeyJustPressed(EKeys::CapsLock)){H->Mobility->bWalking=!H->Mobility->bWalking;H->Mobility->ServerSetWalk(H->Mobility->bWalking);}
-        const bool Strafe=IsInputKeyDown(EKeys::RightMouseButton);
-        if(H->Mobility->bStrafing!=Strafe){H->Mobility->bStrafing=Strafe;H->Mobility->ServerSetStrafe(Strafe);}
-        if(WasInputKeyJustPressed(EKeys::LeftControl)||WasInputKeyJustPressed(EKeys::RightControl))
+        if(Keys.WasPressed(this,TEXT("ToggleWalk"))){H->Mobility->bWalking=!H->Mobility->bWalking;H->Mobility->ServerSetWalk(H->Mobility->bWalking);}
+        if(Keys.WasPressed(this,TEXT("DodgeRoll")))
         {
             const FRotator Facing(0,GetControlRotation().Yaw,0);
-            const FVector Move=FRotationMatrix(Facing).GetUnitAxis(EAxis::X)*((IsInputKeyDown(EKeys::W)?1.f:0.f)-(IsInputKeyDown(EKeys::S)?1.f:0.f))+
-                FRotationMatrix(Facing).GetUnitAxis(EAxis::Y)*((IsInputKeyDown(EKeys::D)?1.f:0.f)-(IsInputKeyDown(EKeys::A)?1.f:0.f));
+            const auto Held=[&](const TCHAR* A){return Keys.IsDown(this,A)?1.f:0.f;};
+            const float Side=FMath::Clamp(Held(TEXT("StrafeRight"))+Held(TEXT("TurnRight"))-Held(TEXT("StrafeLeft"))-Held(TEXT("TurnLeft")),-1.f,1.f);
+            const FVector Move=FRotationMatrix(Facing).GetUnitAxis(EAxis::X)*(Held(TEXT("MoveForward"))-Held(TEXT("MoveBackward")))+
+                FRotationMatrix(Facing).GetUnitAxis(EAxis::Y)*Side;
             H->Mobility->ServerRoll(Move.IsNearlyZero()?H->GetActorForwardVector():Move.GetSafeNormal());
         }
     }
-    if(IsInputKeyDown(EKeys::RightMouseButton)) {
-        float X,Y; GetInputMouseDelta(X,Y);
-        const float YawSpeed=Interface?Interface->UISettings.CameraYawSensitivity:1.f;
-        const float PitchSpeed=Interface?Interface->UISettings.CameraPitchSensitivity:1.f;
-        const float Invert=Interface&&Interface->UISettings.bInvertMouseY?-1.f:1.f;
-        auto R=GetControlRotation(); R.Yaw+=X*.24f*YawSpeed; R.Pitch=FMath::Clamp(FRotator::NormalizeAxis(R.Pitch)-Y*.2f*PitchSpeed*Invert,-65.f,-5.f);SetControlRotation(R);
-    }
-    const FRotator Yaw(0,GetControlRotation().Yaw,0);
-    H->AddMovementInput(FRotationMatrix(Yaw).GetUnitAxis(EAxis::X),(IsInputKeyDown(EKeys::W)?1.f:0.f)-(IsInputKeyDown(EKeys::S)?1.f:0.f));
-    H->AddMovementInput(FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y),(IsInputKeyDown(EKeys::D)?1.f:0.f)-(IsInputKeyDown(EKeys::A)?1.f:0.f));
+    // Movement input itself is applied by CireCamera::Tick (W/S drive, A/D turn or strafe).
 }
 void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActor* Selected) {
     auto* H=Cast<ACireHero>(GetPawn()); auto* M=GetWorld()->GetAuthGameMode<ACireGameMode>();if(!H||!M)return;
@@ -252,7 +303,9 @@ void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActo
         case 1: H->bAutoAttack=!H->bAutoAttack;H->Notice=H->bAutoAttack?TEXT("Basic attack enabled"):TEXT("Basic attack stopped");break;
         case 2: if(Value>=0&&Value<Cires::MaxSkills&&H->Skills.IsValidIndex(Value)&&CireTargeting::Describe(H->Skills[Value]).Kind!=ECireTargetKind::Ground)H->Cast(Value);break;
         case 4: if(Value>=0&&Value<4)H->Purchase(Value);break;
-        case 8: if(M->Clock.Phase()==Cires::MatchPhase::Intermission||M->Clock.Phase()==Cires::MatchPhase::Recovery)H->ReviveAt(M->BasePosition(H->TeamId));else H->Notice=TEXT("Town recall is available during prep or recovery.");break;
+        // progression-shop: town recall merged into Teleport to Base: instant during prep/recovery,
+        // a 6 s hearthstone channel during waves (damage or moving cancels), 120 s cooldown.
+        case 8: CireItems::RequestTeleport(H);break;
         default: break;
     }
 }
@@ -262,6 +315,8 @@ void ACireController::ServerDraftProfile_Implementation(const FString& ProfileId
     auto* M=GetWorld()->GetAuthGameMode<ACireGameMode>();
     if(!H||!M||H->bDrafted||H->bDead||ProfileId.IsEmpty()||ProfileId.Len()>64||
         M->Clock.Phase()==Cires::MatchPhase::Finished)return;
+    // champion-draft: a champion locked by a human teammate cannot be locked again (bots never block).
+    if(const ACireHero* Taken=CireChampionProfiles::PickedByTeammate(H,ProfileId,true)){H->Notice=Taken->HeroName+TEXT(" already locked that champion.");return;}
     H->DraftProfile(ProfileId);
 }
 
