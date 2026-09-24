@@ -1,5 +1,6 @@
 #include "CireNPCState.h"
 #include "CireGame.h"
+#include "CireMonsterArt.h" // creature-anim
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -167,6 +168,9 @@ void UCireNPCState::ApplyVisuals()
     VisualParts.Reset();
     if(StaticBody){StaticBody->DestroyComponent();StaticBody=nullptr;}
     const auto* A=Archetype();if(!A)return;
+    // creature-anim: animated Tripo body (UCireMonsterArt). The mannequin path below stays the fallback.
+    if(M->MonsterArt&&M->MonsterArt->ApplyBody(*A,VisualParts))return;
+    // end creature-anim
     USkeletalMeshComponent* Body=M->GetMesh();
     // Mesh slot: static or skeletal model when present, otherwise the mannequin.
     if(auto* Skeletal=LoadIfPresent<USkeletalMesh>(A->MeshPath))

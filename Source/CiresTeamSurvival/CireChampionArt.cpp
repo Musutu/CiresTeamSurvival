@@ -2,6 +2,8 @@
 #include "CireGame.h"
 #include "CireWeaponPresentation.h"
 #include "CireCreatureArt.h"
+#include "CireChampionActions.h" // creature-anim
+#include "CireMonsterAnim.h" // creature-anim
 #include "CireMobility.h"
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
@@ -81,6 +83,7 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
     UAnimSequence* AttackSequence = nullptr;
     float AttackTime = 0.f;
     float AttackWeight = 0.f;
+    float AttackLowerBody = 1.f; // creature-anim
     float AirWeight = 0.f, RollProgress = -1.f;
     FVector MotionPitchAxis=FVector(1,0,0);
     virtual void PreUpdate(UAnimInstance* Instance, float DeltaSeconds) override
@@ -90,6 +93,7 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
         AttackSequence = Combat->AttackSequence;
         AttackTime = Combat->AttackTime;
         AttackWeight = Combat->AttackWeight;
+        AttackLowerBody = FMath::Clamp(Combat->AttackLowerBody, 0.f, 1.f); // creature-anim
         AirWeight=Combat->AirWeight;RollProgress=Combat->RollProgress;MotionPitchAxis=Combat->MotionPitchAxis;
     }
     virtual bool Evaluate(FPoseContext& Output) override
@@ -100,8 +104,15 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
             FPoseContext AttackPose(Output);
             FAnimationPoseData AttackData(AttackPose);
             AttackSequence->GetAnimationPose(AttackData, FAnimExtractContext(static_cast<double>(AttackTime), false));
-            FAnimationPoseData OutputData(Output);
-            FAnimationRuntime::BlendTwoPosesTogetherInPlace(OutputData, AttackData, 1.f - AttackWeight);
+            // creature-anim: per-bone blend so a champion can swing or cast while its legs keep walking.
+            TArray<float> Weights;
+            CireAnimClips::UpperBodyMask(Output.Pose, Weights);
+            for (float& W : Weights) W = AttackWeight * (W + (1.f - W) * AttackLowerBody);
+            FPoseContext Blended(Output);
+            FAnimationPoseData OutputData(Output), BlendedData(Blended);
+            FAnimationRuntime::BlendTwoPosesTogetherPerBone(OutputData, AttackData, Weights, BlendedData);
+            Output.Pose.CopyBonesFrom(Blended.Pose);
+            Output.Curve.CopyFrom(Blended.Curve);
         }
         if(bEvaluated)ApplyMobilityPose(Output.Pose,AirWeight,RollProgress,MotionPitchAxis);
         return bEvaluated;
@@ -397,6 +408,9 @@ void UCireChampionArt::UpdateVisuals(ACireHero& Hero, float DeltaSeconds)
         const float InWeight = FMath::Clamp(AuthoredElapsed / .07f, 0.f, 1.f);
         const float OutWeight = FMath::Clamp((.65f - AuthoredElapsed) / .16f, 0.f, 1.f);
         Combat->AttackWeight = bAttacking ? FMath::SmoothStep(0.f, 1.f, FMath::Min(InWeight, OutWeight)) : 0.f;
+        Combat->AttackLowerBody = 1.f;
+        // creature-anim: Tripo action clips (ChampionAttacks02) replace the prototype attack when the body has them.
+        CireChampionActions::Apply(Hero, *Combat, DeltaSeconds, SmoothedSpeed);
         if (Hero.AttackSerial != LastAttackSerial)
         {
             LastAttackSerial = Hero.AttackSerial;

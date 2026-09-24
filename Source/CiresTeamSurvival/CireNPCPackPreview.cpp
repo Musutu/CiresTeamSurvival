@@ -5,6 +5,7 @@
 #include "CireNPCState.h"
 #include "CireNPCArchetypes.h"
 #include "CireAreaEffects.h"
+#include "CireMonsterArt.h" // creature-anim
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -98,7 +99,8 @@ bool Build(ACireGameMode& Mode,ACireController& Controller)
         UE_LOG(LogCireNPCPackPreview,Display,TEXT("CIRE_NPC_PACK_UNIT id=%s role=%s class=%s scale=%.2f health=%.0f props=%d abilities=%d"),*A->Id.ToString(),
             *CireNPCArchetypes::RoleLabel(A->Role),*CireNPCArchetypes::ClassLabel(M->GetNPCClassification()),M->GetActorScale3D().X,M->MaxHealth,
             M->NPCState->VisualParts.Num(),A->Abilities.Num());
-        Preview.bChecks&=M->NPCState->VisualParts.Num()>0;
+        // creature-anim: an animated Tripo body may carry its weapon in the mesh (duplicate props are dropped).
+        Preview.bChecks&=M->NPCState->VisualParts.Num()>0||(M->MonsterArt&&M->MonsterArt->IsTripoApplied());
     }
     // Show the leader's Sundering Cleave telegraph (long warning, no damage in the fixture).
     if(auto* Leader=Preview.Leader.Get())

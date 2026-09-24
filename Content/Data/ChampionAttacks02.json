@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "description": "Champion action clips transferred from the Tripo motion library by Tools/RetargetChampionAttacks.py into /Game/Art/Characters/ChampionAttacks02/<folder>/A_<folder>_<clip>. CireChampionActions picks the clip by weapon motion (WeaponLoadouts.json) and skill, and times it to the server's attack release. Presentation only.",
+  "bodies": {
+    "/Game/TripoModels/medieval_knight_armor_3d_model/medieval_knight_armor_3d_model.medieval_knight_armor_3d_model": "Warden",
+    "/Game/TripoModels/armored_archer_3d_model/armored_archer_3d_model.armored_archer_3d_model": "Ranger",
+    "/Game/TripoModels/battlefield_healer_3d_model/battlefield_healer_3d_model.battlefield_healer_3d_model": "Scholar",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/lancer/SK_lancer.SK_lancer": "lancer",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/summoner/SK_summoner.SK_summoner": "summoner",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/drakish_footman/SK_drakish_footman.SK_drakish_footman": "drakish_footman",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/dryad/SK_dryad.SK_dryad": "dryad",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/dwarf_miner/SK_dwarf_miner.SK_dwarf_miner": "dwarf_miner",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/ether_golem_bruiser/SK_ether_golem_bruiser.SK_ether_golem_bruiser": "ether_golem_bruiser",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/ether_golem_support/SK_ether_golem_support.SK_ether_golem_support": "ether_golem_support",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/ether_golem_tank/SK_ether_golem_tank.SK_ether_golem_tank": "ether_golem_tank",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/keeper_of_light/SK_keeper_of_light.SK_keeper_of_light": "keeper_of_light",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/orc_chieftain/SK_orc_chieftain.SK_orc_chieftain": "orc_chieftain",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/paladin_holy/SK_paladin_holy.SK_paladin_holy": "paladin_holy",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/totemic_behemoth/SK_totemic_behemoth.SK_totemic_behemoth": "totemic_behemoth",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/troll_berserker_melee/SK_troll_berserker_melee.SK_troll_berserker_melee": "troll_berserker_melee",
+    "/Game/Art/Characters/TripoBatch/Batch01/Bodies/wizard/SK_wizard.SK_wizard": "wizard"
+  },
+  "windows": {
+    "slash":           { "start": 0.00, "contact": 1.30, "end": 2.45, "recoverRate": 1.5 },
+    "cast_a_spell":    { "start": 0.30, "contact": 2.40, "end": 3.40, "recoverRate": 1.5 },
+    "war_cry":         { "start": 0.10, "contact": 1.60, "end": 2.90, "recoverRate": 1.2 },
+    "attack_bow":      { "start": 0.00, "contact": 0.92, "end": 1.80, "recoverRate": 1.4 },
+    "attack_crossbow": { "start": 0.00, "contact": 0.70, "end": 1.45, "recoverRate": 1.3 }
+  },
+  "maxWindupRate": 2.4,
+  "motions": {
+    "melee":    { "attack": "slash",           "ability": "slash",           "spell": "cast_a_spell" },
+    "throw":    { "attack": "slash",           "ability": "slash",           "spell": "cast_a_spell" },
+    "none":     { "attack": "slash",           "ability": "slash",           "spell": "cast_a_spell" },
+    "bow":      { "attack": "attack_bow",      "ability": "attack_bow",      "spell": "cast_a_spell" },
+    "crossbow": { "attack": "attack_crossbow", "ability": "attack_crossbow", "spell": "cast_a_spell" },
+    "cast":     { "attack": "cast_a_spell",    "ability": "cast_a_spell",    "spell": "cast_a_spell" }
+  },
+  "shoutSkills": ["war_cry", "iron_guard", "second_wind", "bastion_of_dawn", "bear_roar", "paladin_relic_vow", "chieftain_courage",
+                  "chieftain_earthshout", "chieftain_banner", "drakish_dragon_oath", "drakish_ancient_pact", "troll_hunger", "troll_red_moon",
+                  "behemoth_totem_bulwark", "miner_mountain", "golem_living_granite", "centaur_herd_call"],
+  "spellSkills": ["restoring_light", "sanctuary", "purify", "renewal", "protection_dome", "chain_spark", "ember_lance", "cataclysm",
+                  "frost_bind", "venom_ground", "spectral_pack", "grave_line", "summoned_wall", "oathbound_guardian", "ashen_square",
+                  "cinder_cone", "paladin_pilgrim_light", "keeper_beacon", "keeper_dawn_beam", "keeper_lantern_ward", "keeper_last_light",
+                  "keeper_sunrise", "dryad_green_covenant", "dryad_grove_renewal", "dryad_root_snare", "dryad_seed_mend", "dryad_thorn_line",
+                  "golem_moss_bloom", "golem_ether_anchor", "drakish_ember_memory"]
+}
