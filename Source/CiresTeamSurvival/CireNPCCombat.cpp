@@ -697,6 +697,7 @@ bool CireNPCCombat::RunSmoke(ACireGameMode* Mode)
     bPassed=CireThreat::RunRulesSmoke(Mode)&&bPassed;
     bPassed=RunRolesSmoke(Mode)&&bPassed;
     bPassed=CireMonsterArt::RunSmoke(Mode)&&bPassed; // creature-anim
+    bPassed=CireRaces::RunSmoke(Mode)&&bPassed; // monster-races
     return bPassed;
 }
 #endif

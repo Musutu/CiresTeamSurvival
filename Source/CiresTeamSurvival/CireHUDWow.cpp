@@ -9,6 +9,7 @@
 #include "CireSummon.h"
 #include "CireTargeting.h"
 #include "CireNPCState.h"
+#include "CireRaces.h" // monster-races: rank colours, race names
 #include "CireUIStyle.h"
 #include "CireBanners.h"
 #include "CireEnvironmentProps.h"
@@ -54,6 +55,10 @@ struct FInsight
     float CastProgress = 0, CastRemaining = 0;
     bool bInterruptible = false;
     TArray<FAbility> Abilities;
+    // monster-races: rank colour (0 = normal) and race of monsters.
+    int32 Rank = 0;
+    FLinearColor RankColor = FLinearColor::White;
+    FString RankLabel, RaceName;
 };
 FString Short(const FString& Name,int32 Max=22) { return Name.Len()>Max ? Name.Left(Max-2)+TEXT("..") : Name; }
 float Frac(float A,float B) { return B>0.f?FMath::Clamp(A/B,0.f,1.f):0.f; }
@@ -84,6 +89,7 @@ ERole NpcRole(const ACireMonster* M)
     case ECireNPCRole::Tank:return ERole::Tank;
     case ECireNPCRole::Caster:return ERole::Caster;
     case ECireNPCRole::Ranged:return ERole::Ranged;
+    case ECireNPCRole::Support:return ERole::Healer; // monster-races: supports heal and ward
     default:return ERole::Bruiser;
     }
 }
@@ -201,6 +207,20 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
         const TCHAR* ClassWords[]={TEXT(""),TEXT("Armored "),TEXT("Elite "),TEXT("Boss ")};
         U.ClassName=FString(ClassWords[U.Class])+U.RoleName+(M->Tier>0?FString::Printf(TEXT(" (Tier %d)"),M->Tier):FString());
         U.Subtitle=M->IsLaneBoss()?TEXT("<Siege Host>"):U.Class==3?TEXT("<Pack Leader>"):M->bArmoredEscort?TEXT("<Armored Escort>"):M->PackId>=0?TEXT("<Roaming Pack>"):TEXT("<Breach Horde>");
+        // monster-races: rank colour and label, race in the subtitle, skill tier in the class line.
+        {
+            const ECireNPCRank Rank=CireRaces::RankOf(M);const FCireRankStyle& Style=CireRaces::Rank(Rank);
+            U.Rank=static_cast<int32>(Rank);U.RankColor=Style.Color;U.RankLabel=Style.Label;
+            const FCireNPCArchetype* A=M->NPCState?M->NPCState->Archetype():nullptr;
+            if(const FCireRace* Race=A?CireRaces::FindRace(A->RaceId):nullptr)
+            {
+                U.RaceName=Race->Name;
+                U.Subtitle=FString::Printf(TEXT("<%s | %s>"),*Race->Short,*U.Subtitle.Mid(1,U.Subtitle.Len()-2));
+            }
+            if(Rank!=ECireNPCRank::Normal&&Rank!=ECireNPCRank::Warlord&&U.Class!=1)U.ClassName=Style.Label+TEXT(" ")+U.RoleName+(M->Tier>0?FString::Printf(TEXT(" (Tier %d)"),M->Tier):FString());
+            if(M->NPCState&&M->NPCState->SkillTier>0)U.ClassName+=FString::Printf(TEXT("  |  Skills%s"),M->NPCState->SkillTier>1?*CireRaces::TierSuffix(M->NPCState->SkillTier):TEXT(" I"));
+            else if(M->NPCState&&M->NPCState->bLoadoutSet)U.ClassName+=TEXT("  |  No skills yet");
+        }
         U.Victim=M->Victim;
         if(IsValid(M->Victim))U.VictimLine=M->Victim==Self?TEXT("You"):M->Victim->HeroName;
         else U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the pack"):M->bArmoredEscort?TEXT("Marching on your keep"):M->LeashTimer>0?TEXT("Returning to camp"):TEXT("Advancing toward town"); // wave-director
@@ -301,7 +321,7 @@ void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
 {
     const auto* Self=Cast<ACireHero>(PlayerOwner?PlayerOwner->GetPawn():nullptr);
     const FInsight U=Describe(GetWorld(),Actor,Self);
-    const FLinearColor Trim=U.Class==1?Silver:U.Class>=2?WowGold:Gold*.9f;
+    const FLinearColor Trim=U.bMonster&&U.Rank>0&&U.Reaction!=1?U.RankColor:U.Class==1?Silver:U.Class>=2?WowGold:Gold*.9f; // monster-races: rank colour
     // Elite/rare "dragon": a swept wing of feathered blades on the portrait's right
     // side, longest at the top (WoW's elite dragon silhouette), plus a dark outline.
     if(U.Class>=1)
@@ -371,15 +391,17 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     const FInsight U=Describe(GetWorld(),Actor,Self);
     const auto* Mob=Cast<ACireMonster>(Actor);
     const FLinearColor React=ReactionColor(U);
-    Backdrop(U.Class==3?Hostile:U.Class==2?WowGold:U.Class==1?Silver:bFocus?Gold:React*.8f);
+    const bool bRankFrame=U.bMonster&&U.Rank>0&&U.Reaction!=1; // monster-races: the border shows the rank colour (neutral packs stay yellow)
+    Backdrop(bRankFrame?U.RankColor:U.Class==3?Hostile:U.Class==2?WowGold:U.Class==1?Silver:bFocus?Gold:React*.8f);
     UnitTip(Actor,0,0,W,H);
     const float PR=bFocus?26.f:33.f,PCX=W-10-PR,PCY=bFocus?44.f:50.f,BW=PCX-PR-18;
     // Header: classification and role; threat % badge on hostile NPCs.
     FString Header=bFocus?TEXT("FOCUS  "):FString();
     if(U.bMonster)Header+=(U.Class==3?(Mob&&Mob->IsLaneBoss()?FString(TEXT("BOSS  /  10 LIVES AT RISK")):TEXT("BOSS  /  ")+U.RoleName.ToUpper()):U.Class==2?TEXT("ELITE  /  ")+U.RoleName.ToUpper():U.Class==1?TEXT("ARMORED  /  ")+U.RoleName.ToUpper():U.RoleName.ToUpper());
+    if(U.bMonster&&U.Rank>0&&U.Class!=1&&!(U.Class==3&&Mob&&Mob->IsLaneBoss()))Header=(bFocus?TEXT("FOCUS  "):TEXT(""))+U.RankLabel.ToUpper()+TEXT("  /  ")+U.RoleName.ToUpper(); // monster-races
     else if(U.bHero)Header+=(U.bSelf?TEXT("YOU"):U.Reaction==2?TEXT("ALLY"):TEXT("ENEMY"))+FString(TEXT("  /  "))+U.RoleName.ToUpper();
     else Header+=TEXT("CONSTRUCT");
-    Label(Painter().Fit(Header,bFocus?8.f:9.f,BW-(Mob&&!bFocus?40.f:0.f),ECireFont::Heading),10,4,bFocus?8.f:9.f,U.Class==3?Hostile:U.Class>=1?WowGold:Muted);
+    Label(Painter().Fit(Header,bFocus?8.f:9.f,BW-(Mob&&!bFocus?40.f:0.f),ECireFont::Heading),10,4,bFocus?8.f:9.f,bRankFrame?U.RankColor:U.Class==3?Hostile:U.Class>=1?WowGold:Muted);
     bool bKnown=false;const float Threat=Mob&&Self?ThreatPercent(Mob,Self,bKnown):0.f;
     if(Mob&&bKnown&&!bFocus)
     {
@@ -1147,9 +1169,13 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         if(Selected||Dist<1700.f||Glow.A>0)
         {
             const FString Label=Short(Name,Selected?26:20);
-            TextFx(Label,X-TextWidthFont(Label,NS,ECireFont::Bold)*.5f,Y-NS-5.f,NS,(Selected?FLinearColor::White:Color)*FLinearColor(1,1,1,Fade),ECireFont::Bold,true,false);
+            // monster-races: ranked monsters show their name in the rank colour (neutral packs stay yellow).
+            const FLinearColor NameColor=Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob)*.8f+FLinearColor(.2f,.2f,.2f,.2f):Color;
+            TextFx(Label,X-TextWidthFont(Label,NS,ECireFont::Bold)*.5f,Y-NS-5.f,NS,(Selected?FLinearColor::White:NameColor)*FLinearColor(1,1,1,Fade),ECireFont::Bold,true,false);
         }
         if(Glow.A>0){const float G=Selected?3.f:2.f;Panel(PX-G,Y-G,PW+2*G,PH+2*G,Glow*FLinearColor(1,1,1,.55f+.35f*Pulse));}
+        // monster-races: a rank-coloured frame around the plate of veteran and higher monsters (neutral packs stay yellow).
+        if(Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal){const FLinearColor RC=CireRaces::RankColor(Mob);Panel(PX-2.5f,Y-2.5f,PW+5,PH+5,RC*FLinearColor(1,1,1,Fade));}
         Panel(PX-1,Y-1,PW+2,PH+2,FLinearColor(0,0,0,.9f*Fade));
         const float HF=Frac(HP,MaxHP);
         Panel(PX,Y,PW*HF,PH,Color*FLinearColor(1,1,1,Fade));Panel(PX,Y,PW*HF,PH*.4f,FLinearColor(1,1,1,.14f*Fade));
@@ -1171,7 +1197,7 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
             // Elite / boss marker on the right end of the plate.
             if(IsEliteOrBoss(Mob))
             {
-                const FLinearColor D=IsBossClass(Mob)?Hostile:WowGold;const float EX=PX+PW+3.f;
+                const FLinearColor D=!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob):IsBossClass(Mob)?Hostile:WowGold;const float EX=PX+PW+3.f; // monster-races
                 Tri(FVector2D(EX,Y-3),FVector2D(EX+7,Y+PH*.5f),FVector2D(EX,Y+PH+3),D);
             }
             if(Mob->Victim==Hero&&!bTank)

@@ -435,6 +435,63 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     return Out + TEXT("\n");
 }
 
+// monster-races: F8 editor operations (also used by the native tests).
+void CireWaveDirector::CycleWaveRace(FCireWaveDef& W)
+{
+    const TArray<FName>& Order = CireRaces::Get().Order;
+    if (Order.IsEmpty()) { W.Race = NAME_None; return; }
+    const int32 Index = W.Race.IsNone() ? -1 : Order.IndexOfByKey(W.Race);
+    W.Race = Index + 1 >= Order.Num() ? NAME_None : Order[Index + 1];
+}
+void CireWaveDirector::CycleRowUnit(FCireWaveUnit& U, FName Race)
+{
+    const FCireRace* R = CireRaces::FindRace(Race.IsNone() ? FName(TEXT("hollow")) : Race);
+    const TArray<FName>& Slots = CireRaces::SlotNames();
+    const FName Hollow(TEXT("hollow"));
+    auto SetSlot = [&](FName Slot)
+    {
+        U.Slot = Slot;
+        const FName Id = CireRaces::UnitFor(R ? R->Id : Hollow, Slot, 0);
+        if (!Id.IsNone()) U.Archetype = Id;
+        U.bBoss = Slot == TEXT("warlord") || Slot == TEXT("colossus") || Slot == TEXT("boss");
+        if (U.bBoss) { U.bNonAttacking = false; U.bEscortee = false; }
+    };
+    if (!U.Slot.IsNone())
+    {
+        const int32 Index = Slots.IndexOfByKey(U.Slot);
+        if (Index + 1 < Slots.Num()) { SetSlot(Slots[Index + 1]); return; }
+        // After the slots: explicit units of the race, starting with its first unit.
+        U.Slot = NAME_None;
+        if (R && !R->Units.IsEmpty()) { U.Archetype = R->Units[0]; U.bBoss = CireNPCArchetypes::Find(U.Archetype) && CireNPCArchetypes::Find(U.Archetype)->Classification == ECireNPCClass::Boss; }
+        return;
+    }
+    const int32 Index = R ? R->Units.IndexOfByKey(U.Archetype) : INDEX_NONE;
+    if (R && Index != INDEX_NONE && Index + 1 < R->Units.Num())
+    {
+        U.Archetype = R->Units[Index + 1];
+        const auto* A = CireNPCArchetypes::Find(U.Archetype);
+        U.bBoss = A && A->Classification == ECireNPCClass::Boss;
+        if (U.bBoss) { U.bNonAttacking = false; U.bEscortee = false; }
+        return;
+    }
+    SetSlot(Slots[0]);
+}
+void CireWaveDirector::CycleRowRank(FCireWaveUnit& U)
+{
+    U.Rank = static_cast<ECireNPCRank>((static_cast<int32>(U.Rank) + 1) % static_cast<int32>(ECireNPCRank::Count));
+    U.bElite = false; // the rank replaces the legacy flag
+}
+FString CireWaveDirector::RowUnitLabel(const FCireWaveUnit& U, FName Race, int32 Cycle)
+{
+    const FName Id = U.Slot.IsNone() ? U.Archetype : CireRaces::UnitFor(Race.IsNone() ? FName(TEXT("hollow")) : Race, U.Slot, Cycle);
+    const auto* A = CireNPCArchetypes::Find(Id.IsNone() ? U.Archetype : Id);
+    FString Name = A ? A->DisplayName : U.Archetype.ToString();
+    Name.ReplaceInline(TEXT(", Pack Leader"), TEXT(""));
+    if (U.Slot.IsNone()) return Name;
+    FString Slot = U.Slot.ToString(); Slot[0] = FChar::ToUpper(Slot[0]);
+    return Slot + TEXT(": ") + Name;
+}
+
 FString CireWaveDirector::DataPath() { return FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir() / TEXT("Data/Waves.json")); }
 
 bool CireWaveDirector::LoadFile(FCireWaveConfig& Out, FString* Error, const FString& Path)

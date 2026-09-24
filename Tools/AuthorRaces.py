@@ -1267,6 +1267,23 @@ def main() -> int:
     outputs[DATA / "BuffVisuals.json"] = vis_text2
     for text in (cue_text2, vis_text2):
         json.loads(text)  # must stay valid JSON
+    # ChampionRoster.json: every champion profile names its player race (shown on the draft screen).
+    roster_path = DATA / "ChampionRoster.json"
+    roster_lines = roster_path.read_text(encoding="utf-8").split(chr(10))
+    out_lines, current = [], None
+    for line in roster_lines:
+        m = re.match(r'^(\s*)"id": "([a-z_]+)",$', line)
+        if m and len(m.group(1)) == 6:
+            current = m.group(2)
+        if re.match(r'^\s*"race": ', line) and current in PLAYER_RACE:
+            continue  # re-written below
+        out_lines.append(line)
+        fm = re.match(r'^(\s*)"familyId": "[^"]*",$', line)
+        if fm and current in PLAYER_RACE:
+            out_lines.append(f'{fm.group(1)}"race": "{PLAYER_RACE[current][0]}",')
+    roster_text = chr(10).join(out_lines)
+    assert all(c.get("race") for c in json.loads(roster_text)["champions"]), "every champion needs a race"
+    outputs[roster_path] = roster_text
     stale = []
     for path, text in outputs.items():
         old = path.read_text(encoding="utf-8") if path.exists() else None

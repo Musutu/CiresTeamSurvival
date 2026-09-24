@@ -162,6 +162,14 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API FString RaceLabel(const FCireWaveConfig& Config, const FCireWaveDef& Wave, int32 Cycle);
     /** A summoned unit joins its summoner's wave bookkeeping (clear rule, failsafe, size). */
     CIRESTEAMSURVIVAL_API void AdoptSummon(ACireGameMode* Mode, ACireMonster* Summon, ACireMonster* Parent);
+    /** F8 editor: next race of a wave (campaign rotation, then every race in Races.json order). */
+    CIRESTEAMSURVIVAL_API void CycleWaveRace(FCireWaveDef& Wave);
+    /** F8 editor: next unit of a row: the race slots (line..special, warlord, colossus, boss), then each unit of Race explicitly. */
+    CIRESTEAMSURVIVAL_API void CycleRowUnit(FCireWaveUnit& Row, FName Race);
+    /** F8 editor: next rank (normal, veteran, elite, champion, warlord, mythic). */
+    CIRESTEAMSURVIVAL_API void CycleRowRank(FCireWaveUnit& Row);
+    /** F8 editor: short label of a row's unit ("Caster: Tidecaller" or "Tidecaller"). */
+    CIRESTEAMSURVIVAL_API FString RowUnitLabel(const FCireWaveUnit& Row, FName Race, int32 Cycle = 0);
 
     // ---- neutral challenge packs ----
     /** Challenge-pack units start neutral; a player's attack turns the whole pack hostile. */

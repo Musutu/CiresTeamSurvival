@@ -5,6 +5,7 @@
 #include "CireGame.h"
 #include "CireWaves.h"
 #include "CireNPCArchetypes.h"
+#include "CireRaces.h" // monster-races
 #include "CireBalanceLab.h"
 #include "CireDeveloperTools.h"
 #include "Engine/World.h"
@@ -91,7 +92,10 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         if (bSel) Painter().Rect(ListX + 2, RY, 3, RowH - 2, Gold);
         const bool bInCycle = I < WaveDraft.WavesPerCycle;
         Label(Painter().Fit(FString::Printf(TEXT("%d. %s"), I + 1, *W.Label), 9.5f, ListW - 16, ECireFont::Bold), ListX + 10, RY + 2, 9.5f, bInCycle ? Parchment : Muted);
-        Label(Painter().Fit(FString::Printf(TEXT("%s  |  %d/lane"), *CireWaveDirector::TypeLabel(W.Type), W.UnitsPerLane()), 8, ListW - 16, ECireFont::Body), ListX + 10, RY + 15, 8, bInCycle ? Gold : Muted);
+        // monster-races: the wave's race (or the rotation's race for the live cycle).
+        const int32 ListCycle = State ? FMath::Max(0, State->Round - 1) : 0;
+        const FString RaceText = W.Race.IsNone() ? CireWaveDirector::RaceLabel(WaveDraft, W, ListCycle) + TEXT("*") : CireWaveDirector::RaceLabel(WaveDraft, W, ListCycle);
+        Label(Painter().Fit(FString::Printf(TEXT("%s  |  %d/lane  |  %s"), *CireWaveDirector::TypeLabel(W.Type), W.UnitsPerLane(), *RaceText), 8, ListW - 16, ECireFont::Body), ListX + 10, RY + 15, 8, bInCycle ? Gold : Muted);
         Tip(W.Label, bInCycle ? TEXT("Select to edit. This wave is inside the cycle.") : TEXT("Beyond waves-per-cycle: kept in the list but not played until the cycle grows."), ListX + 2, RY, ListW - 4, RowH - 2);
         if (Over && Clicked) { Clicked = false; PlayUIFeedback(); WaveSelected = I; }
     }
@@ -118,12 +122,22 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     const float EX = L + 190, EW = 410;
     CireUIStyle::Header(Painter(), EX, T + 16, EW, FString::Printf(TEXT("WAVE %d  |  %s"), WaveSelected + 1, *W.Label.ToUpper()), Gold, 10.f);
     const float R1 = T + 42;
-    if (Button(FString(TEXT("TYPE: ")) + CireWaveDirector::TypeLabel(W.Type), EX, R1, 170, 22,
+    if (Button(FString(TEXT("TYPE: ")) + CireWaveDirector::TypeLabel(W.Type), EX, R1, 128, 22,
         TEXT("Cycle the wave type label. Use APPLY TEMPLATE to replace the composition with that type's template.")))
         W.Type = static_cast<ECireWaveType>((static_cast<int32>(W.Type) + 1) % static_cast<int32>(ECireWaveType::Count));
-    if (Button(TEXT("APPLY TEMPLATE"), EX + 176, R1, 120, 22, TEXT("Replace this wave's rows, pacing and label with the template for its type (Armored Escort = 1 non-attacking tank + 4 defenders).")))
-    { const ECireWaveType Type = W.Type; W = CireWaveDirector::Template(Type); }
-    if (Button(W.bMustClear ? TEXT("MUST CLEAR") : TEXT("OVERLAPS NEXT"), EX + 302, R1, 108, 22,
+    if (Button(TEXT("TEMPLATE"), EX + 132, R1, 74, 22, TEXT("Replace this wave's rows, pacing and label with the template for its type (Armored Escort = 1 non-attacking tank + 4 defenders). Template rows follow the wave's race.")))
+    { const ECireWaveType Type = W.Type; const FName Race = W.Race; W = CireWaveDirector::Template(Type); W.Race = Race; }
+    // monster-races: the wave's race. Rotation = Waves.json campaign.raceRotation for the cycle being played.
+    const int32 EditCycle = State ? FMath::Max(0, State->Round - 1) : 0;
+    {
+        const FCireRace* Race = CireRaces::FindRace(W.Race);
+        const FString Title = Race ? FString(TEXT("RACE: ")) + Race->Short.ToUpper() : FString(TEXT("RACE: ROTATION"));
+        FString Help = Race ? Race->Name + TEXT(". ") + Race->Lore : FString::Printf(TEXT("Follows the campaign rotation: this cycle fields %s. Click to pick a race for this wave."),
+            *CireWaveDirector::RaceLabel(WaveDraft, W, EditCycle));
+        Help += TEXT(" Rows marked with a slot (Line, Caster, ...) take that race's unit; explicit units stay as chosen.");
+        if (Button(Title, EX + 210, R1, 104, 22, Help, true, Race != nullptr, Teal)) CireWaveDirector::CycleWaveRace(W);
+    }
+    if (Button(W.bMustClear ? TEXT("MUST CLEAR") : TEXT("OVERLAPS NEXT"), EX + 318, R1, 92, 22,
         TEXT("Must clear: the next wave waits for this one to die or leak. Overlaps: the next wave's timer starts once this one has fully spawned."), true, W.bMustClear, W.bMustClear ? Teal : Gold))
         W.bMustClear = !W.bMustClear;
     const float R2 = R1 + 42;
@@ -134,8 +148,9 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
 
     // Composition rows.
     const float CY = R2 + 30;
-    Label(TEXT("ARCHETYPE"), EX, CY, 8, Muted); Label(TEXT("E M T B"), EX + 93, CY, 8, Muted); Label(TEXT("COUNT"), EX + 136, CY, 8, Muted); Label(TEXT("HEALTH x"), EX + 196, CY, 8, Muted);
-    Label(TEXT("DAMAGE x"), EX + 262, CY, 8, Muted); Label(TEXT("SIZE"), EX + 328, CY, 8, Muted);
+    // monster-races: UNIT follows the race by slot; R = rank colour (click cycles), SK = skill tier override.
+    Label(TEXT("UNIT (SLOT: RACE UNIT)"), EX, CY, 8, Muted); Label(TEXT("R M T B"), EX + 100, CY, 8, Muted); Label(TEXT("COUNT"), EX + 146, CY, 8, Muted); Label(TEXT("HEALTH x"), EX + 200, CY, 8, Muted);
+    Label(TEXT("DAMAGE x"), EX + 260, CY, 8, Muted); Label(TEXT("SIZE"), EX + 320, CY, 8, Muted); Label(TEXT("SK"), EX + 369, CY, 8, Muted);
     const TArray<FName> Ids = ArchetypeIds();
     int32 RemoveRow = INDEX_NONE;
     for (int32 I = 0; I < W.Units.Num() && I < 8; ++I)
@@ -143,36 +158,59 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         auto& U = W.Units[I];
         const float RY = CY + 13 + I * 25;
         Painter().Rect(EX, RY - 1, EW, 23, I % 2 ? FLinearColor(0, 0, 0, .18f) : FLinearColor(0, 0, 0, .3f));
-        const int32 Index = FMath::Max(0, Ids.IndexOfByKey(U.Archetype));
-        if (Button(Painter().Fit(ShortArchetype(U.Archetype), 8.5f, 84, ECireFont::Bold), EX + 1, RY, 88, 21, TEXT("Click to cycle the NPC archetype (NPCArchetypes.json).")) && Ids.Num() > 0)
-            U.Archetype = Ids[(Index + 1) % Ids.Num()];
-        StepI(FString(), U.Count, 1, 20, EX + 136, RY, 58, TEXT("Units of this row per lane (1-20)."));
-        StepF(FString(), U.HealthScale, .05f, .1f, 20, EX + 196, RY, 64, 2, TEXT(""), TEXT("Health multiplier on top of wave/round scaling."));
-        StepF(FString(), U.DamageScale, .05f, .05f, 10, EX + 262, RY, 64, 2, TEXT(""), TEXT("Damage multiplier."));
-        StepF(FString(), U.SizeScale, .05f, .5f, 3, EX + 328, RY, 50, 2, TEXT(""), TEXT("Body size multiplier."));
-        // Flags: Elite, Non-attacking marcher, Escortee, Boss.
-        const float FX = EX + 330 + 50;
-        if (Button(TEXT("x"), FX + 12, RY, 18, 21, TEXT("Remove this row."), W.Units.Num() > 1, false, Red)) RemoveRow = I;
-        const TCHAR* Flags[] = {TEXT("E"), TEXT("M"), TEXT("T"), TEXT("B")};
-        bool* Values[] = {&U.bElite, &U.bNonAttacking, &U.bEscortee, &U.bBoss};
-        const TCHAR* Help[] = {TEXT("Elite: x1.6 health, x1.25 damage, gold elite marker."), TEXT("Marcher: never attacks, walks through heroes, must be stopped."),
-            TEXT("Escortee: the protected tank of an escort wave (implies marcher); attackers in the wave defend it."), TEXT("Lane boss: leaks for 10 lives (archetype leak cost).")};
-        // Flag toggles: Elite, Marcher (non-attacking), escorTee, Boss.
-        for (int32 F = 0; F < 4; ++F)
+        (void)Ids;
+        const FName RowRace = CireWaveDirector::RaceFor(WaveDraft, W, EditCycle, I);
+        if (Button(Painter().Fit(CireWaveDirector::RowUnitLabel(U, RowRace, EditCycle), 8.5f, 92, ECireFont::Bold), EX + 1, RY, 96, 21,
+            TEXT("Click to cycle: the race slots (Line, Bruiser, Tank, Caster, Ranged, Special, Warlord, Colossus, Boss = colossus/warlord by cycle), then this race's units by name. Slot rows follow the wave's race.")))
+            CireWaveDirector::CycleRowUnit(U, RowRace);
+        StepI(FString(), U.Count, 1, 20, EX + 146, RY, 52, TEXT("Units of this row per lane (1-20)."));
+        StepF(FString(), U.HealthScale, .05f, .1f, 20, EX + 200, RY, 58, 2, TEXT(""), TEXT("Health multiplier on top of wave/round scaling."));
+        StepF(FString(), U.DamageScale, .05f, .05f, 10, EX + 260, RY, 58, 2, TEXT(""), TEXT("Damage multiplier."));
+        StepF(FString(), U.SizeScale, .05f, .5f, 3, EX + 320, RY, 46, 2, TEXT(""), TEXT("Body size multiplier."));
         {
-            const float BX = EX + 92 + F * 11;
+            // Skill tier override: A = the wave schedule, 1..3 = force tier I..III, 0 skills with "-".
+            const FString Tier = U.SkillCount == 0 ? FString(TEXT("-")) : U.SkillTier > 0 ? FString::FromInt(U.SkillTier) : FString(TEXT("A"));
+            if (Button(Tier, EX + 368, RY, 22, 21, TEXT("Skills: A = the wave schedule (none before Waves.json firstSkillWave, then more and stronger). 1-3 forces tier I-III. - = no skills."),
+                true, U.SkillTier > 0 || U.SkillCount == 0, Teal))
+            {
+                if (U.SkillCount == 0) { U.SkillCount = -1; U.SkillTier = 0; }
+                else if (U.SkillTier >= 3) { U.SkillTier = 0; U.SkillCount = 0; }
+                else ++U.SkillTier;
+            }
+        }
+        if (Button(TEXT("x"), EX + 392, RY, 18, 21, TEXT("Remove this row."), W.Units.Num() > 1, false, Red)) RemoveRow = I;
+        // Rank (colour + strength): click cycles normal, veteran, elite, champion, warlord, mythic.
+        {
+            const ECireNPCRank Rank = U.EffectiveRank();
+            const FCireRankStyle& Style = CireRaces::Rank(Rank);
+            const float BX = EX + 99;
+            const bool Over = Hit(BX, RY, 10, 21);
+            Painter().Rect(BX, RY, 10, 21, Rank == ECireNPCRank::Normal ? FLinearColor(.12f, .12f, .12f, .9f) : Style.Color);
+            Label(Style.Label.Left(1), BX + 1.5f, RY + 5, 8, Rank == ECireNPCRank::Normal ? Muted : FLinearColor::Black);
+            Tip(Style.Label + TEXT(" rank"), FString::Printf(TEXT("x%.2g health, x%.2g damage, x%.2g size, +%d skills. Click to cycle normal / veteran (green) / elite (blue) / champion (purple) / warlord (orange) / mythic (red)."),
+                Style.Health, Style.Damage, Style.Size, Style.SkillBonus), BX, RY, 10, 21);
+            if (Over && Clicked) { Clicked = false; PlayUIFeedback(); if (U.bElite && U.Rank < ECireNPCRank::Elite) U.Rank = ECireNPCRank::Elite; CireWaveDirector::CycleRowRank(U); }
+        }
+        const TCHAR* Flags[] = {TEXT("M"), TEXT("T"), TEXT("B")};
+        bool* Values[] = {&U.bNonAttacking, &U.bEscortee, &U.bBoss};
+        const TCHAR* Help[] = {TEXT("Marcher: never attacks, walks through heroes, must be stopped."),
+            TEXT("Escortee: the protected tank of an escort wave (implies marcher); attackers in the wave defend it."), TEXT("Lane boss: leaks for 10 lives (archetype leak cost).")};
+        // Flag toggles: Marcher (non-attacking), escorTee, Boss.
+        for (int32 F = 0; F < 3; ++F)
+        {
+            const float BX = EX + 110 + F * 11;
             const bool bOn = *Values[F];
             const bool Over = Hit(BX, RY, 10, 21);
-            Painter().Rect(BX, RY, 10, 21, bOn ? (F == 3 ? Red : Teal) : FLinearColor(.12f, .12f, .12f, .9f));
+            Painter().Rect(BX, RY, 10, 21, bOn ? (F == 2 ? Red : Teal) : FLinearColor(.12f, .12f, .12f, .9f));
             Label(Flags[F], BX + 1.5f, RY + 5, 8, bOn ? FLinearColor::Black : Muted);
             Tip(FString(Flags[F]), Help[F], BX, RY, 10, 21);
-            if (Over && Clicked) { Clicked = false; PlayUIFeedback(); *Values[F] = !bOn; if (F == 2 && *Values[F]) U.bNonAttacking = true; if (F == 3 && *Values[F]) { U.bNonAttacking = false; U.bEscortee = false; } }
+            if (Over && Clicked) { Clicked = false; PlayUIFeedback(); *Values[F] = !bOn; if (F == 1 && *Values[F]) U.bNonAttacking = true; if (F == 2 && *Values[F]) { U.bNonAttacking = false; U.bEscortee = false; } }
         }
     }
     if (RemoveRow != INDEX_NONE && W.Units.Num() > 1) W.Units.RemoveAt(RemoveRow);
     const float AddY = CY + 13 + FMath::Min(W.Units.Num(), 8) * 25 + 2;
     if (W.Units.Num() < 8 && Button(TEXT("+ ROW"), EX, AddY, 70, 20, TEXT("Add a composition row (max 8).")))
-    { FCireWaveUnit U; U.Archetype = TEXT("hollow_infantry"); U.Count = 1; W.Units.Add(U); }
+    { FCireWaveUnit U; U.Archetype = TEXT("hollow_infantry"); U.Slot = TEXT("line"); U.Count = 1; W.Units.Add(U); } // monster-races: follows the race
 
     // ---- globals ---------------------------------------------------------------------
     const float GY = Y + 318;
