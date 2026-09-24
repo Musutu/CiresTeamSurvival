@@ -5,6 +5,8 @@
 #include "CireChampionRoster.h"
 #include "CireChampionProfiles.h"
 #include "CireDraftStage.h"
+#include "CireAbilityIcons.h"
+#include "CireUIStyle.h"
 #include "CireGame.h"
 #include "CireSummon.h"
 #include "Engine/Canvas.h"
@@ -15,6 +17,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/PlayerState.h"
 #include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
 #include "ImageUtils.h"
 #include "InputCoreTypes.h"
 #include "Misc/CommandLine.h"
@@ -99,7 +102,8 @@ struct FTile
 struct FPortraitFixture
 {
     bool bActive=false,bDone=false,bPass=true;
-    TArray<FString> Ids;TArray<FString> Files;int32 Index=-1;uint64 StreamedFrame=0;
+    TArray<FString> Ids;TArray<FString> Files;int32 Index=-1;uint64 StreamedFrame=0;int32 Attempt=0;
+    TMap<FString,float> Exposure;
     TStrongObjectPtr<UTextureRenderTarget2D> Target;
     FString Directory;double Started=0;
 };
@@ -240,7 +244,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
 
     // ---------- Tiles: primary role first, then hybrids flagged in their other columns ----------
     S.Tiles.Reset();
-    const float GridX=X0+20,GridY=112,ColW=198,ColGap=11,TileW=58,TileH=74,TileGap=7;
+    const float GridX=X0+20,GridY=112,ColW=198,ColGap=11,TileW=58,TileH=82,TileGap=6;
     for(int32 C=0;C<3;++C)
     {
         int32 N=0;
@@ -307,8 +311,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     {
         const float CX=GridX+C*(ColW+ColGap),CY=GridY-30;
         const FLinearColor Col=Columns[C].Color;
-        Panel(CX,CY,ColW,ViewH-CY-86,Tint(Col,.075f));
-        Panel(CX,CY,ColW,2,Col);
+        CireUIStyle::Frame(Painter(),CX,CY,ColW,ViewH-CY-86,Col,ECireFrame::Panel);
+        Panel(CX+3,CY+3,ColW-6,ViewH-CY-92,Tint(Col,.30f,.10f));
         Icon(Columns[C].Sigil,CX+8,CY+9,26,Col);
         Label(Columns[C].Title,CX+40,CY+8,17,Text);
         int32 Primary=0,Hybrid=0;for(const FTile& T:S.Tiles)if(T.Column==C){Primary+=!T.bSecondary;Hybrid+=T.bSecondary;}
@@ -329,15 +333,15 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         }
         const float PY=GridY+52+3*(TileH+TileGap)+14,PW=ColW-16;
         Panel(CX+8,PY,PW,1,Tint(Col,.45f));
-        Label(TEXT("ROLE SKILL POOL"),CX+10,PY+8,8.5f,Col);
+        Label(TEXT("ROLE SKILL POOL"),CX+10,PY+4,8.5f,Col);
         const FString Counts=FString::Printf(TEXT("%d actives  |  %d passives  |  %d ultimates"),Actives,Passives,Ultimates);
-        Label(Counts,CX+10,PY+22,8.5f,Text);
-        Label(TEXT("ONLY THIS ROLE"),CX+10,PY+42,7.5f,Muted);
-        Wrapped(Exclusive,CX+10,PY+54,PW-4,8.5f,SRGB(206,200,186),4);
-        Label(TEXT("SHARED WITH ANOTHER ROLE"),CX+10,PY+104,7.5f,Muted);
-        Wrapped(Shared,CX+10,PY+116,PW-4,8.5f,SRGB(170,166,156),3);
-        Label(TEXT("UNIVERSAL"),CX+10,PY+160,7.5f,Muted);
-        Wrapped(Universal+TEXT(" + all passives"),CX+10,PY+172,PW-4,8.5f,SRGB(150,148,140),3);
+        Label(Counts,CX+10,PY+17,8.5f,Text);
+        Label(TEXT("ONLY THIS ROLE"),CX+10,PY+34,7.5f,Muted);
+        Wrapped(Exclusive,CX+10,PY+45,PW-4,8.5f,SRGB(206,200,186),3);
+        Label(TEXT("SHARED WITH ANOTHER ROLE"),CX+10,PY+86,7.5f,Muted);
+        Wrapped(Shared,CX+10,PY+97,PW-4,8.5f,SRGB(170,166,156),2);
+        Label(TEXT("UNIVERSAL"),CX+10,PY+126,7.5f,Muted);
+        Wrapped(Universal+TEXT(" + all passives"),CX+10,PY+137,PW-4,8.5f,SRGB(150,148,140),3);
     }
     for(int32 I=0;I<S.Tiles.Num();++I)
     {
@@ -361,16 +365,29 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         }
         // Name strip.
         Panel(T.X,T.Y+T.W,T.W,T.H-T.W,bCursor||bShown?CardHi:Ink);
-        // Variants sharing a name (Ether Golem x3, Relic Paladin x2, Red-Moon Berserker x2) show their variant word.
-        FString Name=P.DisplayName;
+        // Full champion name, balanced over up to two lines (variants are told apart by portrait and pips).
         {
-            int32 Same=0;for(const auto& Other:CireChampionRoster::All())Same+=Other.DisplayName==P.DisplayName;
-            TArray<FString> W;
-            if(Same>1){P.Variant.ParseIntoArrayWS(W);if(W.Num()>0)Name=W[0];}
-            else {Name.ParseIntoArrayWS(W);if(W.Num()>1&&TextWidth(Name,8)>T.W-4)Name=W.Last();}
+            const float NameSize=7.5f;TArray<FString> Lines;
+            if(TextWidth(P.DisplayName,NameSize)<=T.W-4)Lines.Add(P.DisplayName);
+            else
+            {
+                TArray<FString> W;P.DisplayName.ParseIntoArrayWS(W);
+                int32 Best=1;float BestWidth=MAX_flt;
+                for(int32 Split=1;Split<W.Num();++Split)
+                {
+                    FString A,B;for(int32 K=0;K<W.Num();++K)(K<Split?A:B)+=(K<Split?(A.IsEmpty()?TEXT(""):TEXT(" ")):(B.IsEmpty()?TEXT(""):TEXT(" ")))+W[K];
+                    const float Wd=FMath::Max(TextWidth(A,NameSize),TextWidth(B,NameSize));if(Wd<BestWidth){BestWidth=Wd;Best=Split;}
+                }
+                FString A,B;for(int32 K=0;K<W.Num();++K)(K<Best?A:B)+=(K<Best?(A.IsEmpty()?TEXT(""):TEXT(" ")):(B.IsEmpty()?TEXT(""):TEXT(" ")))+W[K];
+                Lines.Add(A);if(!B.IsEmpty())Lines.Add(B);
+            }
+            const float LineY=T.Y+T.W+(Lines.Num()>1?2.f:7.f);
+            for(int32 L=0;L<Lines.Num();++L)
+            {
+                FString Row=Lines[L];while(Row.Len()>3&&TextWidth(Row,NameSize)>T.W-2)Row.LeftChopInline(1);
+                Label(Row,T.X+(T.W-TextWidth(Row,NameSize))*.5f,LineY+L*10.5f,NameSize,bCursor?Gold:Text);
+            }
         }
-        while(Name.Len()>3&&TextWidth(Name,8)>T.W-4)Name.LeftChopInline(1);
-        Label(Name,T.X+(T.W-TextWidth(Name,8))*.5f,T.Y+T.W+3,8,bCursor?Gold:Text);
         // Hybrid pips: every other role this champion also fills.
         float PipX=T.X+T.W-8;
         for(const Cires::RoleMask Bit:{Cires::RoleSupport,Cires::RoleDamage,Cires::RoleTank})
@@ -399,7 +416,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
 
     // ---------- Live preview ----------
     const float PVX=X0+650,PVY=82,PVW=300,PVH=400;
-    Panel(PVX-2,PVY-2,PVW+4,PVH+4,GoldDim);Panel(PVX,PVY,PVW,PVH,Backdrop);
+    CireUIStyle::Frame(Painter(),PVX-5,PVY-5,PVW+10,PVH+10,ShownColor,ECireFrame::Inset);Panel(PVX,PVY,PVW,PVH,Backdrop);
     if(Stage&&!S.Portraits.bActive&&Stage->GetProfileId()==Shown->Id&&Stage->IsPreviewReady())
     {
         DrawTexture(Stage->GetRenderTarget(),PX(PVX),PX(PVY),PX(PVW),PX(PVH),0,0,1,1,FLinearColor::White,BLEND_Opaque);
@@ -430,7 +447,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     // ---------- Attributes / basic attack under the preview ----------
     {
         const float AX=PVX,AY=PVY+PVH+12,AW=PVW;
-        Panel(AX,AY,AW,ViewH-AY-86,Ink);Panel(AX,AY,AW,1,GoldDim);
+        CireUIStyle::Frame(Painter(),AX-5,AY,AW+10,ViewH-AY-86,Gold,ECireFrame::Panel);
         Label(TEXT("PRIMARY ATTRIBUTE"),AX+10,AY+8,8,Muted);
         Label(PrimaryName(Shown->PrimaryStat),AX+10,AY+20,13,Gold);
         Label(TEXT("DIFFICULTY"),AX+AW-92,AY+8,8,Muted);
@@ -453,7 +470,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     // ---------- Info panel: roles, lore, signature kit ----------
     {
         const float IX=PVX+PVW+14,IY=PVY-2,IW=X0+DesignW-20-IX;
-        Panel(IX,IY,IW,ViewH-IY-86,Ink);Panel(IX,IY,IW,2,ShownColor);
+        CireUIStyle::Frame(Painter(),IX,IY-3,IW,ViewH-IY-83,ShownColor,ECireFrame::Panel);
         float Y=IY+10;
         float ChipX=IX+12;
         const auto Chip=[&](Cires::SkillDraftRole ChipRole,bool bPrimaryRole)
@@ -470,14 +487,13 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             if((CireChampionProfiles::ProfileRoleMask(*Shown)&Bit)&&RoleForBit(Bit)!=ShownPrimary)Chip(RoleForBit(Bit),false);
         Y+=28;
         Label(Shown->DisplayName,IX+12,Y,20,Text);Y+=28;
-        Label(Shown->ClassType+TEXT("  |  ")+Shown->Variant,IX+12,Y,10,Gold);Y+=20;
-        if(!Shown->Lore.IsEmpty()){Wrapped(TEXT("\"")+Shown->Lore+TEXT("\""),IX+12,Y,IW-24,9.5f,SRGB(196,188,170),3);Y+=42;}
-        // Keep the kit clear of the developer-tools launcher (it floats under the minimap).
-        if(CireDeveloperTools::CanEdit(World))
         {
-            const auto R=DeveloperLauncherRect();
-            if(R.X<IX+IW&&R.X+R.W>IX&&R.Y+R.H>Y-4&&R.Y<Y+40)Y=R.Y+R.H+8;
+            // The variant adds information only when it is not generic or a repeat of the class caption.
+            const bool bVariant=!Shown->Variant.IsEmpty()&&!Shown->ClassType.Contains(Shown->Variant)&&
+                Shown->Variant!=TEXT("Damage")&&Shown->Variant!=TEXT("Healer")&&Shown->Variant!=TEXT("Support");
+            Label(bVariant?Shown->ClassType+TEXT("  |  ")+Shown->Variant:Shown->ClassType,IX+12,Y,10,Gold);Y+=20;
         }
+        if(!Shown->Lore.IsEmpty()){Wrapped(TEXT("\"")+Shown->Lore+TEXT("\""),IX+12,Y,IW-24,9.5f,SRGB(196,188,170),3);Y+=42;}
         Panel(IX+12,Y,IW-24,1,Faint);Y+=8;
         Label(TEXT("SIGNATURE KIT"),IX+12,Y,10,Gold);
         FString PoolNote=FString(RoleName(ShownPrimary));
@@ -495,8 +511,13 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             const bool bRowOver=Interactive&&Hit(IX+8,Y-2,IW-16,RowH);
             if(bRowOver)Panel(IX+8,Y-2,IW-16,RowH,Card);
             const FLinearColor Accent=bUlt?Gold:bPassive?SRGB(170,130,222):ShownColor;
-            Panel(IX+12,Y,24,24,Backdrop);Panel(IX+12,Y+23,24,1,Accent);
-            Icon(SkillSigil(Skill),IX+14,Y+2,20,bPlanned?FLinearColor(Accent.R,Accent.G,Accent.B,.55f):Accent);
+            {
+                FCireIconSlot Slot;Slot.IconId=Skill.Id;Slot.IconTexture=CireAbilityIcons::Texture(Skill.Id);Slot.Tint=CireAbilityIcons::Accent(Skill.Id);
+                if(!Slot.IconTexture)Slot.IconId=SkillSigil(Skill);
+                Slot.Kind=bUlt?ECireSlotKind::Ultimate:bPassive?ECireSlotKind::Passive:ECireSlotKind::Normal;
+                CireUIStyle::IconSlot(Painter(),IX+12,Y-1,26,Slot,Now);
+                if(bPlanned)Panel(IX+14,Y+1,22,22,FLinearColor(0,0,0,.35f));
+            }
             Label(Skill.DisplayName,IX+44,Y,10.5f,bPlanned?Muted:Text);
             float TagX=IX+44+TextWidth(Skill.DisplayName,10.5f)+8;
             const auto Tag=[&](const TCHAR* TagText,FLinearColor Col)
@@ -524,7 +545,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         {
             const ACireHero* M=Mates[I];const auto* MP=M->bDrafted?CireChampionRoster::Find(M->ChampionProfileId):nullptr;
             const float BX=X0+22+I*152,BY=FY+16;
-            Panel(BX,BY,144,44,Card);
+            CireUIStyle::Frame(Painter(),BX,BY,144,44,MP?RoleColor(CireChampionProfiles::PrimaryRole(*MP)):Faint,ECireFrame::Card);
             if(MP)Panel(BX,BY,144,1,RoleColor(CireChampionProfiles::PrimaryRole(*MP)));
             if(UTexture2D* Face=MP?Portrait(MP->Id):nullptr)DrawTexture(Face,PX(BX+2),PX(BY+2),PX(40),PX(40),.15f,.08f,.70f,.70f,FLinearColor::White,BLEND_Opaque);
             else {Panel(BX+2,BY+2,40,40,Backdrop);if(MP)Icon(RoleSigil(CireChampionProfiles::PrimaryRole(*MP)),BX+8,BY+8,28,RoleColor(CireChampionProfiles::PrimaryRole(*MP)));}
@@ -542,12 +563,10 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         const bool bPending=S.LockRequestedId==Selected->Id&&Now-S.LockRequestedAt<2.0;
         const float BW=286,BH=46,BX=X0+DesignW-20-BW,BY=FY+12;
         const bool bOver=Interactive&&!bBlocked&&Hit(BX,BY,BW,BH);
-        Panel(BX-1,BY-1,BW+2,BH+2,bBlocked?Faint:Gold);
-        Panel(BX,BY,BW,BH,bBlocked?Card:bOver?SRGB(120,84,36):SRGB(78,54,24));
-        for(int32 I=0;I<4&&!bBlocked;++I)Panel(BX,BY+I*4,BW,4,SRGB(255,210,140,uint8(10*(4-I))));
         FString Button=bBlocked?FString(TEXT("TAKEN BY ")+(*Taker)->HeroName).ToUpper():bPending?FString(TEXT("LOCKING IN...")):FString(TEXT("LOCK IN  ")+Selected->DisplayName.ToUpper());
         while(Button.Len()>6&&TextWidth(Button,14)>BW-20)Button.LeftChopInline(1);
-        Label(Button,BX+(BW-TextWidth(Button,14))*.5f,BY+14,14,bBlocked?Muted:Text);
+        if(!bBlocked)CireUIStyle::Glow(Painter(),BX-6,BY-6,BW+12,BH+12,FLinearColor(1.f,.75f,.3f,.18f+.10f*FMath::Sin(static_cast<float>(Now)*3.f)));
+        CireUIStyle::Button(Painter(),BX,BY,BW,BH,Button,bBlocked?ECireButtonState::Disabled:bOver?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
         bool bLock=false;
         if(bOver&&Clicked){bLock=true;Clicked=false;}
         if(Interactive&&PlayerOwner&&PlayerOwner->WasInputKeyJustPressed(EKeys::SpaceBar))bLock=true;
@@ -585,9 +604,20 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             TArray<FColor> Pixels;
             FTextureRenderTargetResource* Resource=F.Target->GameThread_GetRenderTargetResource();
             bool bOk=Resource&&Resource->ReadPixels(Pixels)&&Pixels.Num()==512*512;
-            double Luma=0;int32 Bright=0;
-            for(FColor& Pixel:Pixels){Pixel.A=255;const double L=.2126*Pixel.R+.7152*Pixel.G+.0722*Pixel.B;Luma+=L;Bright+=L>40;}
+            double Luma=0;int32 Bright=0,Clipped=0;
+            for(FColor& Pixel:Pixels){Pixel.A=255;const double L=.2126*Pixel.R+.7152*Pixel.G+.0722*Pixel.B;Luma+=L;Bright+=L>40;Clipped+=L>236;}
             if(bOk){Luma/=Pixels.Num();bOk=Luma>6&&Bright>512*512/40;}
+            // Auto exposure trim: pale stone/fel bodies clip under the key light. Step down
+            // (or up for very dark bodies) and re-render; the result is stored for the live preview.
+            const float ClipShare=Bright>0?static_cast<float>(Clipped)/Bright:0.f,SubjectLuma=Bright>0?static_cast<float>(Luma*Pixels.Num()/Bright):0.f;
+            if(bOk&&F.Attempt<3&&((ClipShare>.15f&&Stage->GetExposureOffset()>-1.5f)||(SubjectLuma<45.f&&Stage->GetExposureOffset()<1.f)))
+            {
+                const float Step=ClipShare>.15f?-FMath::Clamp(ClipShare*3.f,.3f,.8f):.4f;
+                ++F.Attempt;Stage->SetExposureOffset(Stage->GetExposureOffset()+Step);
+                UE_LOG(LogCireDraft,Display,TEXT("CIRE_DRAFT_PORTRAIT_EXPOSURE id=%s clipped=%.3f subject=%.1f offset=%.2f"),*F.Ids[F.Index],ClipShare,SubjectLuma,Stage->GetExposureOffset());
+                F.StreamedFrame=GFrameCounter;return;
+            }
+            F.Exposure.Add(F.Ids[F.Index],Stage->GetExposureOffset());F.Attempt=0;
             const FString File=FPaths::Combine(F.Directory,F.Ids[F.Index]+TEXT(".png"));
             bOk=bOk&&FImageUtils::SaveImageByExtension(*File,FImageView(Pixels.GetData(),512,512));
             UE_LOG(LogCireDraft,Display,TEXT("CIRE_DRAFT_PORTRAIT %s id=%s luma=%.1f file=%s"),bOk?TEXT("PASS"):TEXT("FAIL"),*F.Ids[F.Index],Luma,*File);
@@ -602,6 +632,12 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         if(F.Index>=F.Ids.Num()||Now-F.Started>240)
         {
             F.bDone=true;F.bPass&=F.Index>=F.Ids.Num()&&F.Files.Num()==F.Ids.Num();
+            {
+                FString Json=TEXT("{\n");int32 N=0;
+                for(const auto& Pair:F.Exposure)Json+=FString::Printf(TEXT("%s  \"%s\": %.2f"),N++?TEXT(",\n"):TEXT(""),*Pair.Key,Pair.Value);
+                Json+=TEXT("\n}\n");
+                FFileHelper::SaveStringToFile(Json,*FPaths::Combine(F.Directory,TEXT("Exposure.json")));
+            }
             UE_LOG(LogCireDraft,Display,TEXT("CIRE_DRAFT_PORTRAITS_%s count=%d directory=%s"),F.bPass?TEXT("PASS"):TEXT("FAIL"),F.Files.Num(),*F.Directory);
             FPlatformMisc::RequestExitWithStatus(false,F.bPass?0:1);
         }

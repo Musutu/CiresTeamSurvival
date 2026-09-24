@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "notes": "Footsteps by armour weight (CireFootsteps). Every champion profile (ChampionRoster.json) and NPC archetype (NPCArchetypes.json) maps to a class; the native audio smoke fails if one is missing. Steps are synced to the body's real foot contacts: humanoid skeletons by foot-bone height (foot_l/foot_r), Bear and Centaur by their gait phase (UCireCreatureArt::MotionPhase, two diagonal contacts per cycle); bodies with neither fall back to a speed cadence (stride grows from strideWalk to strideRun cm between speedWalk and speedRun cm/s). Each layer picks a random member (surface-specific 'stone' / 'dirt' sets or 'any'), with random pitch, volume jitter and chance. The surface is traced under the foot: town meshes and the route road are stone, everything else is dirt; the Breach Fields default to dirt. cameraShake (cm) only applies to the local player's own body and only when Options > Audio > 'Heavy footstep camera shake' is on.",
+  "maxDistance": 2800,
+  "maxStepsPerSecond": 36,
+  "volumeJitter": 0.15,
+  "speedWalk": 250,
+  "speedRun": 600,
+  "classes": {
+    "plate": {
+      "volume": 0.85, "strideWalk": 85, "strideRun": 150,
+      "layers": [
+        { "stone": "Footsteps/FS_Plate_Stone_{01..08}", "dirt": "Footsteps/FS_Plate_Dirt_{01..05}", "volume": 1.0, "pitch": [0.93, 1.05] },
+        { "any": "Footsteps/FS_ArmorRattle_{01..08}", "volume": 0.5, "pitch": [0.9, 1.1], "chance": 0.9 }
+      ]
+    },
+    "plate_heavy": {
+      "volume": 1.0, "strideWalk": 95, "strideRun": 150,
+      "layers": [
+        { "stone": "Footsteps/FS_Plate_Stone_{01..08}", "dirt": "Footsteps/FS_Plate_Dirt_{01..05}", "volume": 1.0, "pitch": [0.8, 0.9] },
+        { "any": "Footsteps/FS_Thump_{01..05}", "volume": 0.45, "pitch": [0.95, 1.05] },
+        { "any": "Footsteps/FS_ArmorRattle_{01..08}", "volume": 0.6, "pitch": [0.82, 0.95], "chance": 0.95 }
+      ]
+    },
+    "mail": {
+      "volume": 0.75, "strideWalk": 80, "strideRun": 145,
+      "layers": [
+        { "stone": "Footsteps/FS_Leather_Stone_{01..08}", "dirt": "Footsteps/FS_Leather_Dirt_{01..08}", "volume": 1.0, "pitch": [0.94, 1.06] },
+        { "any": "Footsteps/FS_ArmorRattle_{01..08}", "volume": 0.3, "pitch": [1.0, 1.15], "chance": 0.55 },
+        { "any": "Footsteps/FS_LeatherCreak_{01..04}", "volume": 0.3, "pitch": [0.95, 1.1], "chance": 0.3 }
+      ]
+    },
+    "leather": {
+      "volume": 0.7, "strideWalk": 78, "strideRun": 145,
+      "layers": [
+        { "stone": "Footsteps/FS_Leather_Stone_{01..08}", "dirt": "Footsteps/FS_Leather_Dirt_{01..08}", "volume": 1.0, "pitch": [0.95, 1.08] },
+        { "any": "Footsteps/FS_LeatherCreak_{01..04}", "volume": 0.4, "pitch": [0.92, 1.1], "chance": 0.45 }
+      ]
+    },
+    "cloth": {
+      "volume": 0.55, "strideWalk": 75, "strideRun": 140,
+      "layers": [
+        { "stone": "Footsteps/FS_Soft_Stone_{01..05}", "dirt": "Footsteps/FS_Soft_Dirt_{01..05}", "volume": 1.0, "pitch": [0.97, 1.1] },
+        { "any": "Footsteps/FS_Cloth_{01..04}", "volume": 0.35, "pitch": [0.95, 1.1], "chance": 0.4 }
+      ]
+    },
+    "bark": {
+      "volume": 0.55, "strideWalk": 75, "strideRun": 140,
+      "layers": [
+        { "stone": "Footsteps/FS_Soft_Stone_{01..05}", "dirt": "Footsteps/FS_Soft_Dirt_{01..05}", "volume": 1.0, "pitch": [0.85, 0.95] },
+        { "any": "Footsteps/FS_LeatherCreak_{01..04}", "volume": 0.35, "pitch": [0.7, 0.85], "chance": 0.35 }
+      ]
+    },
+    "bear": {
+      "volume": 1.0, "strideWalk": 110, "strideRun": 170, "cameraShake": 1.4,
+      "layers": [
+        { "stone": "Footsteps/FS_Beast_Stone_{01..06}", "dirt": "Footsteps/FS_Beast_Dirt_{01..06}", "volume": 0.9, "pitch": [0.85, 1.0] },
+        { "any": "Footsteps/FS_Thump_{01..05}", "volume": 0.8, "pitch": [0.85, 1.0] }
+      ]
+    },
+    "behemoth": {
+      "volume": 1.1, "strideWalk": 130, "strideRun": 190, "cameraShake": 2.2,
+      "layers": [
+        { "stone": "Footsteps/FS_Beast_Stone_{01..06}", "dirt": "Footsteps/FS_Beast_Dirt_{01..06}", "volume": 0.9, "pitch": [0.7, 0.8] },
+        { "any": "Footsteps/FS_Thump_{01..05}", "volume": 1.0, "pitch": [0.72, 0.84] }
+      ]
+    },
+    "beast": {
+      "volume": 1.0, "strideWalk": 120, "strideRun": 180,
+      "layers": [
+        { "stone": "Footsteps/FS_Beast_Stone_{01..06}", "dirt": "Footsteps/FS_Beast_Dirt_{01..06}", "volume": 1.0, "pitch": [0.78, 0.9] },
+        { "any": "Footsteps/FS_Thump_{01..05}", "volume": 0.6, "pitch": [0.8, 0.95] }
+      ]
+    },
+    "golem": {
+      "volume": 1.0, "strideWalk": 110, "strideRun": 165, "cameraShake": 1.6,
+      "layers": [
+        { "any": "Footsteps/FS_Golem_{01..05}", "volume": 1.0, "pitch": [0.85, 1.0] }
+      ]
+    },
+    "hooves": {
+      "volume": 0.85, "strideWalk": 70, "strideRun": 120,
+      "layers": [
+        { "stone": "Footsteps/FS_Hoof_Stone_{01..08}", "dirt": "Footsteps/FS_Hoof_Dirt_{01..06}", "volume": 1.0, "pitch": [0.92, 1.06] },
+        { "stone": "Footsteps/FS_Hoof_Stone_{01..08}", "dirt": "Footsteps/FS_Hoof_Dirt_{01..06}", "volume": 0.7, "pitch": [0.9, 1.04], "delay": 0.07 }
+      ]
+    },
+    "whisp": {
+      "volume": 0.3, "strideWalk": 320, "strideRun": 420,
+      "layers": [
+        { "any": "Footsteps/FS_Shimmer_{01..02}", "volume": 1.0, "pitch": [0.95, 1.12], "chance": 0.7 }
+      ]
+    }
+  },
+  "profiles": {
+    "knight": { "class": "plate" },
+    "ranger": { "class": "leather" },
+    "scholar": { "class": "cloth" },
+    "lancer": { "class": "mail" },
+    "summoner": { "class": "cloth" },
+    "bear": { "class": "bear" },
+    "paladin_righteous": { "class": "plate" },
+    "paladin_holy": { "class": "mail" },
+    "dwarf_miner": { "class": "plate", "pitch": 0.9, "volume": 1.05 },
+    "ether_golem_tank": { "class": "golem", "pitch": 0.9 },
+    "ether_golem_support": { "class": "golem", "pitch": 1.05, "volume": 0.85 },
+    "ether_golem_bruiser": { "class": "golem" },
+    "orc_chieftain": { "class": "plate_heavy" },
+    "totemic_behemoth": { "class": "behemoth" },
+    "drakish_footman": { "class": "mail" },
+    "wizard": { "class": "cloth" },
+    "troll_berserker_melee": { "class": "leather", "pitch": 0.92 },
+    "troll_berserker_ranged": { "class": "leather", "pitch": 0.92 },
+    "dryad": { "class": "bark" },
+    "whisp": { "class": "whisp" },
+    "evergrove_centaur": { "class": "hooves" },
+    "keeper_of_light": { "class": "cloth", "pitch": 0.95 }
+  },
+  "monsters": {
+    "hollow_infantry": { "class": "mail" },
+    "ironbound_bruiser": { "class": "plate", "pitch": 0.92 },
+    "hollow_shieldbearer": { "class": "plate" },
+    "blight_caster": { "class": "cloth" },
+    "barbed_hunter": { "class": "leather" },
+    "hollow_siegebreaker": { "class": "plate_heavy" },
+    "gravemaw_pack_leader": { "class": "beast" }
+  },
+  "runtimeArchetypes": ["plate", "leather", "cloth", "mail", "cloth"],
+  "fallback": { "hero": "leather", "monster": "mail" }
+}

@@ -534,7 +534,7 @@ void ACireHUD::DrawHUD()
     MX=MY=-100;float MouseX=0,MouseY=0;if(PlayerOwner->GetMousePosition(MouseX,MouseY)){MX=MouseX/Scale;MY=MouseY/Scale;}
     Clicked=PlayerOwner->WasInputKeyJustPressed(EKeys::LeftMouseButton)&&!PlayerOwner->IsInputKeyDown(EKeys::RightMouseButton);
     auto* Controller=Cast<ACireController>(PlayerOwner);auto* Hero=Cast<ACireHero>(PlayerOwner->GetPawn());auto* State=GetWorld()->GetGameState<ACireGameState>();
-    bModal=Hero&&((!Hero->bDrafted||Hero->Offers.Num()>0||(Controller&&Controller->bShop))||(State&&State->Phase==3));
+    bModal=Hero&&((!Hero->bDrafted||(Hero->Offers.Num()>0&&IsSkillOfferOpen())||(Controller&&Controller->bShop))||(State&&State->Phase==3));
     TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();TooltipAbility.Reset();
     LastPanelBoxes.Reset();
     for(FName Id:VisiblePanels)if(Id!=TEXT("CombatText")&&Id!=TEXT("Tooltip")){const FCireUIRect R=PanelRect(Id);LastPanelBoxes.Emplace(FVector2D(R.X,R.Y),FVector2D(R.X+R.W,R.Y+R.H));}
@@ -581,6 +581,7 @@ void ACireHUD::DrawHUD()
     }
     if(bModal)DrawModal(Hero,Controller,State);
     ResetTransform();CireShopUI::DrawOverlay(*this,Hero,Controller); // progression-shop: purchase/loot toasts, teleport channel
+    DrawSkillOfferExtras(Hero,Controller); // champion-draft: deferred-offer reminder + pick animation
     if(bEditLayout){VisiblePanels.AddUnique(TEXT("Tooltip"));VisiblePanels.AddUnique(TEXT("Threat"));VisiblePanels.AddUnique(TEXT("Boss"));}
     if(!bModal&&!bSettings&&!bEditLayout)UpdateHoverUnit(Hero);else HoverUnit.Reset();
     UpdateQuickKeybind();DrawQuickKeybind();
@@ -593,7 +594,7 @@ void ACireHUD::DrawModal(ACireHero* Hero,ACireController* Controller,ACireGameSt
     ResetTransform(); const float W=ViewW,H=ViewH;
     const bool MatchFinished=State&&State->Phase==3;
     const bool DraftOpen=Hero&&!Hero->bDrafted&&!MatchFinished;
-    const bool OfferOpen=Hero&&Hero->bDrafted&&Hero->Offers.Num()>0&&!MatchFinished;
+    const bool OfferOpen=Hero&&Hero->bDrafted&&Hero->Offers.Num()>0&&IsSkillOfferOpen()&&!MatchFinished;
     const bool ShopOpen=Controller&&Controller->bShop&&!DraftOpen&&!OfferOpen&&!MatchFinished;
     const bool ModalOpen=DraftOpen||OfferOpen||ShopOpen;
     auto Center=[&](const FString& Text,float Y,float Size,FLinearColor Color){Label(Text,(W-TextWidth(Text,Size))*.5f,Y,Size,Color);};
@@ -607,27 +608,7 @@ void ACireHUD::DrawModal(ACireHero* Hero,ACireController* Controller,ACireGameSt
         }
         else if (OfferOpen)
         {
-            const float X = W / 2 - 512;
-            Panel(X, 168, 1024, 338, Ink);
-            Panel(X, 168, 1024, 2, Gold);
-            Label(FString(TEXT("POWER TAKES SHAPE  /  "))+UTF8_TO_TCHAR(Cires::DraftRoleName(CireChampionProfiles::DraftRole(Hero))), X + 22, 187, 24, Parchment);
-            Label(TEXT("Choose one skill. Your final build has six active skills, one passive and one ultimate."), X + 23, 226, 12, Muted);
-            for (int32 I = 0; I < FMath::Min(4, Hero->Offers.Num()); ++I)
-            {
-                const float CX = X + 22 + I * 247.f;
-                const bool Over = Hit(CX, 258, 237, 222);
-                const FString& Id = Hero->Offers[I];
-                const bool Passive = ACireHero::IsPassive(Id);
-                const bool Ultimate = ACireHero::IsUltimate(Id);
-                Panel(CX, 258, 237, 222, Over ? Hover : Card);
-                Panel(CX, 258, 237, 3, Ultimate ? Gold : Passive ? Purple : Teal);
-                Label(Ultimate ? TEXT("ULTIMATE / ONE ONLY") : Passive ? TEXT("PASSIVE / ONE ONLY") : TEXT("ACTIVE ABILITY"), CX + 15, 274, 10, Ultimate ? Gold : Passive ? Purple : Teal);
-                Wrapped(ACireHero::SkillName(Id), CX + 15, 303, 208, 18, Parchment, 2);
-                Wrapped(ACireHero::SkillDescription(Id), CX + 15, 355, 205, 12, Muted, 4);
-                Label(FString::Printf(TEXT("[%d] CLAIM ABILITY >"), I + 1), CX + 15, 451, 12, Over ? Parchment : Gold);
-                Tip(ACireHero::SkillName(Id),ACireHero::SkillDescription(Id),CX,258,237,222);
-                if (Over) Action(3, I);
-            }
+            DrawSkillOffer(Hero,Controller); // champion-draft: CireSkillOfferHUD.cpp
         }
         else if (ShopOpen)
         {

@@ -14,6 +14,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "Materials/MaterialInterface.h"
+#include "Dom/JsonObject.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireDraftStage,Log,All);
 
@@ -204,6 +209,7 @@ void ACireDraftStage::ShowProfile(const FString& Id)
     Hero->GetMesh()->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
     Hero->ChampionArt->UpdateVisuals(*Hero,.016f);
     Preview=Hero;Capture->ShowOnlyActors.AddUnique(Hero);
+    SetExposureOffset(StoredExposure(Id));
     // Ask the streamer for full-resolution body/weapon textures immediately (the preview is a close-up).
     Hero->PrestreamTextures(20.f,true);
     // Stand on the dais: the capsule bottom sits on its top face.
@@ -229,6 +235,23 @@ FBox ACireDraftStage::BodyBounds() const
 
 bool ACireDraftStage::IsPreviewReady() const {return IsValid(Preview)&&bFramed&&SecondsShown()>.35f&&FramesShown()>6;}
 float ACireDraftStage::SecondsShown() const {return ProfileId.IsEmpty()?0.f:static_cast<float>(FPlatformTime::Seconds()-ShownAt);}
+float ACireDraftStage::StoredExposure(const FString& Id)
+{
+    static TMap<FString,float> Table;static bool bLoaded=false;
+    if(!bLoaded)
+    {
+        bLoaded=true;FString Json;TSharedPtr<FJsonObject> Root;
+        if(FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("UI/Draft/Portraits/Exposure.json")))&&
+            FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),Root)&&Root.IsValid())
+            for(const auto& Pair:Root->Values){double V=0;if(Pair.Value->TryGetNumber(V)&&FMath::IsFinite(V))Table.Add(FString(Pair.Key),FMath::Clamp(static_cast<float>(V),-3.f,2.f));}
+    }
+    const float* Found=Table.Find(Id);return Found?*Found:0.f;
+}
+void ACireDraftStage::SetExposureOffset(float Stops)
+{
+    ExposureOffset=FMath::Clamp(Stops,-3.f,2.f);
+    if(Capture){Capture->PostProcessSettings.AutoExposureBias=-1.5f+ExposureOffset;}
+}
 void ACireDraftStage::SetTurntable(bool bInSpin,float FixedYaw){bSpin=bInSpin;if(!bSpin)Yaw=FixedYaw;}
 
 void ACireDraftStage::FrameCamera(float DeltaSeconds,bool bSnap)

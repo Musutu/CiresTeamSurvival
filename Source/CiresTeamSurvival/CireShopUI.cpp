@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Misc/PackageName.h"
 #include "Sound/SoundBase.h"
+#include "CireAudio.h" // audio:
 
 namespace CI = Cires::Items;
 using namespace CireUIColors;
@@ -87,6 +88,7 @@ void Play(ACireHUD& HUD, const TCHAR* Name, float Volume = 1.f)
 {
     const auto& O = HUD.UISettings;
     if (O.bMuteAudio) return;
+    if (CireAudio::PlayShopSound(&HUD, Name, Volume)) return; // audio: recorded CC0 cue (AudioCues.json shopLegacy)
     if (USoundBase* Sound = ShopSound(Name)) UGameplayStatics::PlaySound2D(&HUD, Sound, O.MasterVolume * O.UIVolume * Volume);
     else HUD.PlayInterfaceSound(1, .6f * Volume);
 }

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "notes": "State-driven score (CireMusic). Town = warm-up, breathers, prep and recovery; Combat = an advancing lane wave or an engaged challenge pack; Boss = a lane boss or engaged Pack Leader; Arena = PvP; the match end plays a victory or defeat stinger and then silence. Each state rotates through its tracks on every entry. holdSeconds keep Combat/Boss alive briefly after the last threat so short gaps do not flip the score. All tracks: Kevin MacLeod (incompetech.com), CC BY 4.0 - see Art/Audio/PROVENANCE.md and the in-game Options > Audio credits.",
+  "crossfadeSeconds": 3.0,
+  "stingerDuckSeconds": 1.0,
+  "combatHoldSeconds": 6.0,
+  "bossHoldSeconds": 9.0,
+  "combatRadius": 4200,
+  "bossRadius": 6500,
+  "states": {
+    "town":   { "tracks": ["MUS_ThePyre", "MUS_OppressiveGloom"], "volume": 0.5 },
+    "combat": { "tracks": ["MUS_FiveArmies", "MUS_Crusade"], "volume": 0.55 },
+    "boss":   { "tracks": ["MUS_Killers", "MUS_BlackVortex"], "volume": 0.6 },
+    "arena":  { "tracks": ["MUS_DeathandAxes"], "volume": 0.58 }
+  },
+  "stingers": {
+    "victory": { "track": "MUS_HeroTheme", "volume": 0.75 },
+    "defeat":  { "track": "MUS_GretaSting", "volume": 0.75 }
+  },
+  "titles": {
+    "MUS_ThePyre": "The Pyre", "MUS_OppressiveGloom": "Oppressive Gloom", "MUS_FiveArmies": "Five Armies",
+    "MUS_Crusade": "Crusade", "MUS_Killers": "Killers", "MUS_BlackVortex": "Black Vortex",
+    "MUS_DeathandAxes": "Death and Axes", "MUS_HeroTheme": "Hero Theme", "MUS_GretaSting": "Greta Sting"
+  },
+  "credits": [
+    "Music by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0 - http://creativecommons.org/licenses/by/4.0/",
+    "\"The Pyre\", \"Oppressive Gloom\", \"Five Armies\", \"Crusade\", \"Killers\", \"Black Vortex\", \"Death and Axes\", \"Hero Theme\", \"Greta Sting\"",
+    "Sound effects: CC0 recordings from Freesound.org contributors and Kenney (kenney.nl). Full list in Art/Audio/PROVENANCE.md"
+  ]
+}

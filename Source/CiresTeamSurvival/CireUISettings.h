@@ -67,6 +67,12 @@ public:
     float SFXVolume = .85f;
     float UIVolume = .7f;
     bool bMuteAudio = false;
+    // audio: music / ambience buses, music switch and the heavy-footstep camera shake (Docs/Audio.md).
+    float MusicVolume = .6f;
+    float AmbienceVolume = .8f;
+    bool bMusicEnabled = true;
+    bool bFootstepCameraShake = false;
+    // audio: end
     bool bShowFPS = false;
     bool bShowNetwork = true;
     bool bTooltips = true;
