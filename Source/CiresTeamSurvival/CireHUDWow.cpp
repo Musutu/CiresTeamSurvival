@@ -195,7 +195,7 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
     else if(const auto* M=Cast<ACireMonster>(Actor))
     {
         U.bMonster=true;U.Name=M->GetNPCDisplayName();U.HP=M->Health;U.MaxHP=M->MaxHealth;U.bDead=M->Health<=0;U.Tier=M->Tier;
-        U.Reaction=0;U.Role=NpcRole(M);U.RoleName=RoleLabel(U.Role);
+        U.Reaction=M->bNeutral?1:0;U.Role=NpcRole(M);U.RoleName=RoleLabel(U.Role); // wave-director: neutral packs read yellow
         const ECireNPCClass Class=M->GetNPCClassification();
         U.Class=Class==ECireNPCClass::Boss?3:Class==ECireNPCClass::Elite?2:M->bArmoredEscort?1:0;
         const TCHAR* ClassWords[]={TEXT(""),TEXT("Armored "),TEXT("Elite "),TEXT("Boss ")};
@@ -203,7 +203,7 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
         U.Subtitle=M->IsLaneBoss()?TEXT("<Siege Host>"):U.Class==3?TEXT("<Pack Leader>"):M->bArmoredEscort?TEXT("<Armored Escort>"):M->PackId>=0?TEXT("<Roaming Pack>"):TEXT("<Breach Horde>");
         U.Victim=M->Victim;
         if(IsValid(M->Victim))U.VictimLine=M->Victim==Self?TEXT("You"):M->Victim->HeroName;
-        else U.VictimLine=M->bArmoredEscort?TEXT("Marching on your keep"):M->LeashTimer>0?TEXT("Returning to camp"):TEXT("Advancing toward town");
+        else U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the pack"):M->bArmoredEscort?TEXT("Marching on your keep"):M->LeashTimer>0?TEXT("Returning to camp"):TEXT("Advancing toward town"); // wave-director
         if(M->NPCState)
         {
             const FCireNPCCastInfo Cast=M->NPCState->CastInfo();
@@ -1195,7 +1195,7 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
     for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(bArena||It->TeamId==Hero->TeamId)
         Plate(*It,It->HeroName,It->Health,It->MaxHealth,It->TeamId==Hero->TeamId?Friendly*.85f:Hostile,120,nullptr);
     for(TActorIterator<ACireMonster> It(GetWorld());It;++It)if(!bArena&&It->Lane==Hero->TeamId)
-        Plate(*It,It->GetNPCDisplayName(),It->Health,It->MaxHealth,It->bArmoredEscort?Silver*.8f:Hostile*.9f,100,*It);
+        Plate(*It,It->GetNPCDisplayName(),It->Health,It->MaxHealth,It->bNeutral?Neutral*.95f:It->bArmoredEscort?Silver*.8f:Hostile*.9f,100,*It); // wave-director: neutral = yellow
     for(TActorIterator<ACireConstruct> It(GetWorld());It;++It)if(It->CanObserve(PlayerOwner))
         Plate(*It,It->GetDisplayName(),It->Health,It->MaxHealth,It->OriginTeam==Hero->TeamId?Friendly*.85f:Hostile,It->ConstructSpec.Height*.5f+25,nullptr);
 }

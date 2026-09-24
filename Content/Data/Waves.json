@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "_comment": "Wave composer data (Docs/Waves.md). Edited live with F8 > Waves; counts are per lane.",
+  "breatherSeconds": 8,
+  "wavesPerCycle": 5,
+  "cycles": 0,
+  "cycleScaling": {
+    "healthGrowth": 0.3,
+    "damageGrowth": 0.12,
+    "extraUnits": 1
+  },
+  "failsafe": {
+    "enabled": true,
+    "maxWaveSeconds": 210,
+    "action": "march",
+    "graceSeconds": 45,
+    "stuckSeconds": 5
+  },
+  "waves": [
+    {
+      "label": "Breach Vanguard",
+      "type": "normal",
+      "spawnInterval": 0.6,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "hollow_infantry",
+          "count": 3,
+          "health": 1,
+          "damage": 1.15,
+          "size": 1
+        },
+        {
+          "archetype": "ironbound_bruiser",
+          "count": 1,
+          "health": 1,
+          "damage": 1.15,
+          "size": 1
+        },
+        {
+          "archetype": "barbed_hunter",
+          "count": 1,
+          "health": 1,
+          "damage": 1.15,
+          "size": 1
+        },
+        {
+          "archetype": "blight_caster",
+          "count": 1,
+          "health": 1,
+          "damage": 1.15,
+          "size": 1
+        }
+      ]
+    },
+    {
+      "label": "Hollow Column",
+      "type": "normal",
+      "spawnInterval": 0.6,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "hollow_infantry",
+          "count": 3,
+          "health": 1.1,
+          "damage": 1.2,
+          "size": 1
+        },
+        {
+          "archetype": "ironbound_bruiser",
+          "count": 2,
+          "health": 1.1,
+          "damage": 1.2,
+          "size": 1
+        },
+        {
+          "archetype": "barbed_hunter",
+          "count": 1,
+          "health": 1.1,
+          "damage": 1.2,
+          "size": 1
+        },
+        {
+          "archetype": "blight_caster",
+          "count": 1,
+          "health": 1.1,
+          "damage": 1.2,
+          "size": 1
+        }
+      ]
+    },
+    {
+      "label": "Iron Procession",
+      "type": "armored",
+      "spawnInterval": 1.2,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "hollow_shieldbearer",
+          "count": 4,
+          "health": 1.3,
+          "damage": 1,
+          "size": 1.2,
+          "nonAttacking": true,
+          "leakCost": 2
+        }
+      ]
+    },
+    {
+      "label": "Armored Escort",
+      "type": "armored_escort",
+      "spawnInterval": 0.5,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1.25,
+      "units": [
+        {
+          "archetype": "hollow_shieldbearer",
+          "count": 1,
+          "health": 5,
+          "damage": 1,
+          "size": 1.45,
+          "nonAttacking": true,
+          "escortee": true,
+          "leakCost": 5
+        },
+        {
+          "archetype": "hollow_infantry",
+          "count": 2,
+          "health": 1.1,
+          "damage": 1.2,
+          "size": 1
+        },
+        {
+          "archetype": "ironbound_bruiser",
+          "count": 1,
+          "health": 1.1,
+          "damage": 1.2,
+          "size": 1
+        },
+        {
+          "archetype": "barbed_hunter",
+          "count": 1,
+          "health": 1.1,
+          "damage": 1.2,
+          "size": 1
+        }
+      ]
+    },
+    {
+      "label": "Siege Host",
+      "type": "boss",
+      "spawnInterval": 0.7,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1.5,
+      "units": [
+        {
+          "archetype": "hollow_infantry",
+          "count": 2,
+          "health": 1.25,
+          "damage": 1.2,
+          "size": 1
+        },
+        {
+          "archetype": "ironbound_bruiser",
+          "count": 2,
+          "health": 1.25,
+          "damage": 1.2,
+          "size": 1
+        },
+        {
+          "archetype": "blight_caster",
+          "count": 1,
+          "health": 1.25,
+          "damage": 1.2,
+          "size": 1
+        },
+        {
+          "archetype": "hollow_siegebreaker",
+          "count": 1,
+          "health": 1,
+          "damage": 1,
+          "size": 1,
+          "boss": true
+        }
+      ]
+    }
+  ]
+}
