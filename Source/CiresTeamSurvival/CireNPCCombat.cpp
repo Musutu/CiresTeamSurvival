@@ -461,7 +461,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         CireThreat::Clear(M);M->bEngaged=false;
         CireLanePath::RefreshEscortCollision(M);MarchLane(M,Mode);return;
     }
-    if(M->PackId>=0&&M->LeashTimer<=0&&FVector::DistSquared2D(M->GetActorLocation(),M->SpawnPosition)>FMath::Square(1700.f))StartLeash(M);
+    // No distance leash: packs keep their threat and chase until they or every threat holder dies.
     if(M->LeashTimer>0)
     {
         CireThreat::Clear(M);
@@ -617,8 +617,13 @@ bool CireNPCCombat::RunSmoke(ACireGameMode* Mode)
     if(Wall)Actors.Add(Wall);const float HeroBefore=Tank->Health;Tick(M,.01f);
     Check(Wall&&Wall->Health<Wall->MaxHealth&&Tank->Health==HeroBefore,TEXT("blocked monster damages wall before victim"));
     M->PackId=999;M->Health=1;M->SetActorLocation(M->SpawnPosition+FVector(1800,0,0));Tick(M,.01f);
-    Check(M->Victim==nullptr&&M->Threat.IsEmpty()&&M->LeashTimer>0,TEXT("pack leash clears threat"));
-    M->SetActorLocation(M->SpawnPosition);Tick(M,.01f);Check(M->Health==M->MaxHealth&&M->LeashTimer==0,TEXT("pack heals only on return home"));
+    Check(M->Victim==Tank&&M->Threat.Contains(Tank)&&M->LeashTimer==0,TEXT("pack keeps threat and chases at any distance"));
+    // Park the other fixture hero out of proximity-aggro range so only the threat rule is tested.
+    Dps->SetActorLocation(M->GetActorLocation()+FVector(0,2000,0));M->Health=1;Tick(M,.01f);
+    Check(M->Victim==Tank&&M->Threat.Contains(Tank),TEXT("threat survives idle ticks and distance"));
+    Tank->bDead=true;CireThreat::Remove(Tank);Tick(M,.01f);
+    Check(M->Victim==nullptr&&M->Threat.IsEmpty()&&M->LeashTimer>0,TEXT("pack returns home once every threat holder is dead"));
+    M->SetActorLocation(M->SpawnPosition);Tick(M,.01f);Check(M->Health==M->MaxHealth&&M->LeashTimer==0,TEXT("pack heals only on return home"));Tank->bDead=false;
     }
     UE_LOG(LogCireNPCCombat,Display,TEXT("CIRE_NPC_SMOKE_%s checks=%d"),bPassed?TEXT("PASS"):TEXT("FAIL"),Checks);
     // Role, boss and WoW threat-rule suites run with the legacy NPC smoke so the

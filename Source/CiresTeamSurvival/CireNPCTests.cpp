@@ -113,11 +113,21 @@ bool CireThreat::RunRulesSmoke(ACireGameMode* Mode)
         Clear(M);Damage(M,Tank,100);Damage(M,Dps,100);const float T0=M->Threat.FindRef(Tank),D0=M->Threat.FindRef(Dps);
         Transfer(M,Dps,Tank,.5f);Check(FMath::IsNearlyEqual(M->Threat.FindRef(Dps),D0*.5f)&&FMath::IsNearlyEqual(M->Threat.FindRef(Tank),T0+D0*.5f),TEXT("transfer moves a fraction of threat"));
         Scale(M,Dps,.5f);Check(FMath::IsNearlyEqual(M->Threat.FindRef(Dps),D0*.25f),TEXT("scale multiplies a hero's threat"));
-        // Idle decay skips the current target.
+        // Threat never decays while both units live.
         M->NPCState->LastThreatAt.FindOrAdd(Dps)=Now(M)-60.f;M->NPCState->LastThreatAt.FindOrAdd(Tank)=Now(M)-60.f;
         const float DBefore=M->Threat.FindRef(Dps),TBefore=M->Threat.FindRef(Tank);
         Tick(M,1.f);
-        Check(M->Threat.FindRef(Dps)<DBefore&&FMath::IsNearlyEqual(M->Threat.FindRef(Tank),TBefore),TEXT("idle threat decays but the current target's does not"));
+        Check(FMath::IsNearlyEqual(M->Threat.FindRef(Dps),DBefore)&&FMath::IsNearlyEqual(M->Threat.FindRef(Tank),TBefore),TEXT("idle threat does not decay"));
+        {
+            // Distance never drops threat: both heroes 40 m away keep their rows and the tank keeps aggro.
+            const FVector TankAt=Tank->GetActorLocation(),DpsAt=Dps->GetActorLocation();
+            Tank->SetActorLocation(F.Ground+FVector(4000,0,92));Dps->SetActorLocation(F.Ground+FVector(-4000,0,92));
+            for(int32 I=0;I<20;++I)Tick(M,.5f);Select(M);
+            Check(M->Victim==Tank&&FMath::IsNearlyEqual(M->Threat.FindRef(Tank),TBefore)&&FMath::IsNearlyEqual(M->Threat.FindRef(Dps),DBefore),TEXT("threat is kept at any distance"));
+            const float Far=M->Threat.FindRef(Dps);Damage(M,Dps,1000);
+            Check(FMath::IsNearlyEqual(M->Threat.FindRef(Dps),Far),TEXT("out-of-range heroes cannot gain new threat"));
+            Tank->SetActorLocation(TankAt);Dps->SetActorLocation(DpsAt);
+        }
         // Replicated table + UI percentages.
         M->NPCState->PublishThreat(true);
         Check(M->NPCState->ThreatTable.Num()==2&&M->NPCState->ThreatTable[0].Hero==Tank&&M->NPCState->ThreatTable[0].Threat>=M->NPCState->ThreatTable[1].Threat,TEXT("threat table is sorted for the meter"));

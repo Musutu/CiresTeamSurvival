@@ -224,10 +224,10 @@ bool CireNPCArchetypes::ParseJson(const FString& Json,FCireNPCDatabase& Out,FStr
     {Error=TEXT("waveBoss and pack leader must be boss classification");return false;}
     if(const TSharedPtr<FJsonObject>* T=nullptr;Root->TryGetObjectField(TEXT("threat"),T))
     {
+        if((*T)->HasField(TEXT("decayPerSecond"))||(*T)->HasField(TEXT("decayDelaySeconds"))){Error=TEXT("threat decay was removed by design: threat is lost only on death or explicit abilities");return false;}
         auto& R=D.Threat;const FString W=TEXT("threat");
         if(!(Number(*T,TEXT("meleePullRatio"),R.MeleePullRatio,1,3,Error,W)&&Number(*T,TEXT("rangedPullRatio"),R.RangedPullRatio,1,3,Error,W)&&
-            Number(*T,TEXT("meleeRangeCm"),R.MeleeRangeCm,50,1500,Error,W)&&Number(*T,TEXT("decayDelaySeconds"),R.DecayDelaySeconds,0,120,Error,W)&&
-            Number(*T,TEXT("decayPerSecond"),R.DecayPerSecond,0,1,Error,W)&&Number(*T,TEXT("publishInterval"),R.PublishInterval,.05f,5,Error,W)&&
+            Number(*T,TEXT("meleeRangeCm"),R.MeleeRangeCm,50,1500,Error,W)&&Number(*T,TEXT("publishInterval"),R.PublishInterval,.05f,5,Error,W)&&
             Number(*T,TEXT("tauntMaxSeconds"),R.TauntMaxSeconds,.5f,30,Error,W)))return false;
     }
     Out=MoveTemp(D);return true;
@@ -313,6 +313,8 @@ bool CireNPCArchetypes::RunValidationSmoke()
     for(const FName Id:D.WaveComposition)if(const auto* A=D.Archetypes.Find(Id))Check(A->Classification==ECireNPCClass::Normal,TEXT("wave composition uses normal units"));
     FCireNPCDatabase Rejected;
     Check(!ParseJson(TEXT("{\"schemaVersion\":2}"),Rejected,Error),TEXT("rejects unknown schema"));
+    const FString Decay=Json.Replace(TEXT("\"meleeRangeCm\": 300,"),TEXT("\"meleeRangeCm\": 300, \"decayPerSecond\": 0.05,"));
+    Check(Decay!=Json&&!ParseJson(Decay,Rejected,Error),TEXT("rejects threat decay (threat is lost only on death or explicit abilities)"));
     const FString Bad=Json.Replace(TEXT("\"role\": \"tank\""),TEXT("\"role\": \"healer\""));
     Check(Bad==Json||!ParseJson(Bad,Rejected,Error),TEXT("rejects unknown role"));
     const FString Traversal=Json.Replace(TEXT("\"asset\": \"/Game/"),TEXT("\"asset\": \"/Game/../"));

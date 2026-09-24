@@ -9,8 +9,9 @@ class ACireGameMode;
 // - a monster keeps its current target until a challenger exceeds 110% of that
 //   target's threat inside melee range or 130% outside it;
 // - taunt raises the taunter to the top threat and forces the target for its duration;
-// - idle threat (no new threat for decayDelaySeconds) decays by decayPerSecond;
-// - Transfer/Scale support misdirect/fade style effects.
+// - threat is never lost to time or distance: only unit death (hero or monster) or an
+//   explicit ability (Transfer/Scale: misdirect, fade, "drop X% threat") removes it.
+//   Exceptions: armored escorts ignore threat; the arena/recovery phase change clears all.
 // Every target change is published through UCireNPCState::OnAggroChanged().
 namespace CireThreat {
 void Damage(ACireMonster* Monster, ACireHero* Source, float EffectiveDamage);

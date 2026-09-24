@@ -56,10 +56,23 @@ it still costs **10 lives** on reaching town (`leakCost`).
   melee range (`meleeRangeCm` 300) or **130%** outside it.
 - **Taunt:** raises the taunter to the top threat (+1) and forces the target for the duration (max 10s); afterwards the
   normal pull rule applies, so the taunter keeps aggro unless outpaced by 110/130%.
-- **Decay:** threat that has not grown for `decayDelaySeconds` (10s) decays by `decayPerSecond` (5%/s). The current
-  target never decays. Set `decayPerSecond` to 0 for strict WoW behaviour.
-- **Transfer/Scale:** `CireThreat::Transfer(M, From, To, Fraction)` (misdirect) and `CireThreat::Scale(M, Hero, x)` (fade).
-- Death, despawn, range (22m), leash, phase change and monster death remove threat and publish an event.
+- **No threat loss until death (Eric's ruling).** Threat never decays with time and is never dropped for distance.
+  A row is removed only when the hero dies/despawns (`CireThreat::Remove`, also on revive/respawn) or the monster
+  dies — or when an ability explicitly says so: `CireThreat::Transfer(M, From, To, Fraction)` (misdirect) and
+  `CireThreat::Scale(M, Hero, x)` (fade / "drop 50% threat"). The loader rejects the old `decayPerSecond` /
+  `decayDelaySeconds` keys.
+- Range (22 m) only gates **gaining** threat (damage, healing, proximity pull). A held target keeps aggro at any
+  distance and monsters chase it; there is no distance leash any more.
+- **When every threat holder is dead** a challenge-pack unit walks back to its spawn (8s leash state, cannot acquire
+  new targets on the way), then heals to full and resets its buffs/cooldowns. Wave units resume marching on the route.
+  A living hero within 7 m (line of sight) can still pull a monster with an empty table (proximity aggro).
+- **Exceptions (the only non-death clears):**
+  1. **Phase change** to intermission/arena/recovery: `ACireGameMode::ChangePhase` clears all threat because every hero
+     leaves the lane (teleport to town/arena).
+  2. **Armored escorts** are aggro-immune by design and never hold threat.
+  3. **Fall-out-of-world rescue** during survival teleports the hero to town via `ReviveAt`, which drops their threat
+     (a geometry failsafe, treated like a death).
+  Configuring/spawning a monster starts with an empty table.
 
 ## UI read API (server and clients)
 
@@ -102,7 +115,7 @@ HUD range readout keeps working.
   "waveComposition": ["hollow_infantry", "...", "hollow_shieldbearer"], // cycled by wave spawn slot
   "waveBoss": "hollow_siegebreaker",
   "challengePacks": { "members": ["hollow_shieldbearer","blight_caster","barbed_hunter"], "leader": "gravemaw_pack_leader", "leaderFromTier": 1 },
-  "threat": { "meleePullRatio": 1.1, "rangedPullRatio": 1.3, "meleeRangeCm": 300, "decayDelaySeconds": 10, "decayPerSecond": 0.05, "publishInterval": 0.25, "tauntMaxSeconds": 10 },
+  "threat": { "meleePullRatio": 1.1, "rangedPullRatio": 1.3, "meleeRangeCm": 300, "publishInterval": 0.25, "tauntMaxSeconds": 10 },
   "archetypes": {
     "gravemaw_pack_leader": {
       "displayName": "Gravemaw, Pack Leader", "role": "bruiser", "classification": "boss",
@@ -158,8 +171,8 @@ two functions need to point at its route API.
 ## Verification
 
 - `python Tools/RunNPCChecks.py` → `Saved/NPCChecks/<stamp>/report.json`:
-  - native: `-CireCombatExpansionProbe` incl. `CIRE_NPC_SMOKE` (12), `CIRE_NPC_DATA_SMOKE` (38),
-    `CIRE_THREAT_RULES` (22), `CIRE_NPC_ROLES` (55) and all pre-existing suites;
+  - native: `-CireCombatExpansionProbe` incl. `CIRE_NPC_SMOKE` (14), `CIRE_NPC_DATA_SMOKE` (39),
+    `CIRE_THREAT_RULES` (24), `CIRE_NPC_ROLES` (55) and all pre-existing suites;
   - preview: `-CireNPCPackPreview` two 1920x1080 captures of a tier-2 pack with its leader and a cleave telegraph;
   - network: dedicated server + remote client verify replicated role, boss classification, ability list, cast bar,
     threat table, victim and the client-side aggro event.
@@ -175,4 +188,5 @@ two functions need to point at its route API.
 - Rally/enrage/guard/provoke have no dedicated VFX yet — they are exposed as status flags for the UI.
 - The fifth wave unit is now a Shieldbearer (2.2x health) and every challenge pack gains a leader; these make
   PvE harder and have **not** been balance-simulated (simulations are paused by request).
-- Threat decay is a mild, documented deviation from strict WoW (disable with `decayPerSecond: 0`).
+- With no distance leash, a kited pack follows its threat holders anywhere (including toward town) until they die,
+  the pack dies, or the phase changes. That is intended by the ruling but untested for exploits.

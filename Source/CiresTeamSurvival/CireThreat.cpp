@@ -11,6 +11,10 @@ bool Eligible(const ACireMonster* M,const ACireHero* H) {
     return IsValid(M)&&!M->bArmoredEscort&&M->Health>0&&IsValid(H)&&!H->bDead&&H->bDrafted&&H->TeamId==M->Lane&&
         FVector::DistSquared2D(M->GetActorLocation(),H->GetActorLocation())<=FMath::Square(2200.f);
 }
+// Holding threat has no range limit: threat is only lost when a unit dies or an ability explicitly drops it.
+bool CanHold(const ACireMonster* M,const ACireHero* H) {
+    return IsValid(M)&&!M->bArmoredEscort&&M->Health>0&&IsValid(H)&&!H->bDead&&H->bDrafted&&H->TeamId==M->Lane;
+}
 void Touch(ACireMonster* M,ACireHero* H){
     if(M->NPCState&&M->GetWorld())M->NPCState->LastThreatAt.FindOrAdd(H)=M->GetWorld()->GetTimeSeconds();
 }
@@ -65,26 +69,17 @@ float CireThreat::PullRatio(const ACireMonster* M,const ACireHero* H){
 }
 void CireThreat::Tick(ACireMonster* M,float Delta){
     if(!M||!M->HasAuthority()||!M->GetWorld()||!FMath::IsFinite(Delta)||Delta<=0)return;
-    const auto& R=Rules();
-    if(R.DecayPerSecond>0&&M->NPCState)
-    {
-        const float Now=M->GetWorld()->GetTimeSeconds();const float Keep=FMath::Max(0.f,1.f-R.DecayPerSecond*Delta);
-        for(auto& Pair:M->Threat)
-        {
-            // The current target never decays: holding aggro must not erode while tanking.
-            if(Pair.Key.Get()==M->Victim)continue;
-            const float* Last=M->NPCState->LastThreatAt.Find(Pair.Key);
-            if(!Last||Now-*Last>=R.DecayDelaySeconds)Pair.Value*=Keep;
-        }
-    }
+    // Design ruling: threat never decays with time or distance. It is lost only when the
+    // monster or the hero dies, or through an explicit ability (Transfer/Scale).
     if(M->NPCState)M->NPCState->PublishThreat(false);
 }
 ACireHero* CireThreat::Select(ACireMonster* M){
     if(!M||!M->HasAuthority())return nullptr;
-    for(auto It=M->Threat.CreateIterator();It;++It)if(!Eligible(M,It.Key().Get()))It.RemoveCurrent();
+    for(auto It=M->Threat.CreateIterator();It;++It)if(!CanHold(M,It.Key().Get()))It.RemoveCurrent();
     ACireHero* Old=M->Victim;
     const bool bWasForced=M->NPCState&&M->NPCState->bForcedLastSelect;
-    ACireHero* Current=Eligible(M,M->Victim)&&M->Threat.Contains(M->Victim)?M->Victim:nullptr;
+    // The current target keeps aggro at any distance; the 22 m range only gates gaining threat.
+    ACireHero* Current=CanHold(M,M->Victim)&&M->Threat.Contains(M->Victim)?M->Victim:nullptr;
     ACireHero* Best=Current;bool bForced=false;
     if(Eligible(M,M->ForcedVictim.Get())&&M->ForcedVictimUntil>M->GetWorld()->GetTimeSeconds()){Best=M->ForcedVictim.Get();bForced=true;}
     else {
