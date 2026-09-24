@@ -55,6 +55,10 @@ public:
     FCireUISettings UISettings;
     void RevertVideoPreview();
     bool DraftRosterSlot(int32 Slot);
+    // champion-draft: level-up skill offer (CireSkillOfferHUD.cpp). Open = cards shown and
+    // action-bar keys 1-4 pick; collapsed/deferred = a pulsing reminder, combat keys cast.
+    bool IsSkillOfferOpen() const;
+    void SetSkillOfferOpen(bool bOpen);
     void ChangeDraftRosterPage(int32 Delta);
     FString DraftRosterIdForSlot(int32 Slot) const;
     int32 DraftRosterPageCount() const;
@@ -103,6 +107,8 @@ private:
     void DrawSettings();
     void DrawModal(ACireHero* Hero, ACireController* Controller, ACireGameState* State);
     void DrawDraftRoster(ACireHero* Hero, ACireController* Controller);
+    void DrawSkillOffer(ACireHero* Hero, ACireController* Controller);        // champion-draft: modal cards
+    void DrawSkillOfferExtras(ACireHero* Hero, ACireController* Controller);  // champion-draft: reminder, pick animation, toggle key
     void DrawPlayer(ACireHero* Hero);
     void DrawParty(ACireHero* Hero, ACireController* Controller);
     void DrawUnit(AActor* Actor, const FString& Caption, bool bFocus);

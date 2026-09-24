@@ -2,7 +2,7 @@
 
 CIRE_UI_TEXTURE_DEST and CIRE_UI_TEXTURE_PREFIX override the destination
 (default /Game/UI/Draft/Portraits, T_Portrait_); Tools/RunAbilityIcons.py uses
-/Game/UI/Abilities with T_Ability_.
+/Game/UI/Abilities with T_.
 
 Run inside UnrealEditor-Cmd with -run=pythonscript (Tools/RunDraftPortraits.py does
 this). Reads CIRE_DRAFT_PORTRAIT_DIR, imports every <profile_id>.png as

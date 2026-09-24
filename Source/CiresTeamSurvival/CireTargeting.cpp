@@ -249,7 +249,7 @@ bool CireTargeting::Tick(ACireController* C)
     auto* S=States.Find(TWeakObjectPtr<ACireController>(C));if(!S)return false;
     auto* H=Cast<ACireHero>(C->GetPawn());auto* HUD=Cast<ACireHUD>(C->GetHUD());
     if(H!=S->Hero.Get()||!H||H->bDead||!H->bDrafted||!H->Skills.IsValidIndex(S->View.Slot)||H->Skills[S->View.Slot]!=S->View.SkillId||
-        S->Phase!=CireSkillRuntime::Phase(C->GetWorld())||C->bShop||C->bChatInput||H->Offers.Num()>0||(HUD&&HUD->IsBlockingGameplayInput())){Cancel(C);return false;}
+        S->Phase!=CireSkillRuntime::Phase(C->GetWorld())||C->bShop||C->bChatInput||(H->Offers.Num()>0&&(!HUD||HUD->IsSkillOfferOpen()))||(HUD&&HUD->IsBlockingGameplayInput())){Cancel(C);return false;}
     if(C->WasInputKeyJustPressed(EKeys::Escape)||C->WasInputKeyJustPressed(EKeys::RightMouseButton)){Cancel(C);return true;}
     const auto D=RuntimeDescriptor(C->GetWorld(),S->View.SkillId);FVector Center=FVector::ZeroVector;FRotator Heading=FRotator::ZeroRotator;
     const bool bGround=CursorGround(C,S->View.Point);S->View.bValid=bGround&&ValidateGround(H,S->View.SkillId,S->View.Point,Center,Heading,S->View.Message);

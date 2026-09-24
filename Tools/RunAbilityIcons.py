@@ -27,7 +27,8 @@ def main() -> int:
     args = parser.parse_args()
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out = ROOT / "Saved/AbilityIcons" / stamp
-    build = [sys.executable, str(ROOT / "Tools/BuildAbilityIcons.py"), "--out", str(out), "--sheet", str(out / "contact-sheet.png")]
+    build = [sys.executable, str(ROOT / "Tools/BuildAbilityIcons.py"), "--out", str(out), "--sheet", str(out / "contact-sheet.png"),
+             "--data", str(ROOT / "Content/Data/AbilityIcons.json")]
     if args.pylib:
         build += ["--pylib", str(args.pylib)]
     if args.ids:
@@ -35,7 +36,9 @@ def main() -> int:
     subprocess.run(build, check=True, cwd=ROOT)
     (out / "contact-sheet.png").rename(out.parent / f"{stamp}-contact-sheet.png")
     log = out.parent / f"{stamp}-import.log"
-    env = dict(os.environ, CIRE_DRAFT_PORTRAIT_DIR=str(out), CIRE_UI_TEXTURE_DEST="/Game/UI/Abilities", CIRE_UI_TEXTURE_PREFIX="T_Ability_")
+    for existing in (ROOT / "Content/UI/Abilities").glob("*.uasset"):
+        os.chmod(existing, 0o666)  # LFS-lockable assets check out read-only
+    env = dict(os.environ, CIRE_DRAFT_PORTRAIT_DIR=str(out), CIRE_UI_TEXTURE_DEST="/Game/UI/Abilities", CIRE_UI_TEXTURE_PREFIX="T_")
     code = subprocess.run([str(args.editor), str(args.project.resolve()), "-run=pythonscript", f"-script={ROOT / 'Tools/ImportDraftPortraits.py'}",
                            "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding", "-stdout", f"-abslog={log}"],
                           cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=900,
@@ -43,7 +46,7 @@ def main() -> int:
     text = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""
     match = re.search(r"CIRE_DRAFT_PORTRAIT_IMPORT_PASS imported=(\d+)", text)
     expected = len(list(out.glob("*.png")))
-    missing = [p.stem for p in out.glob("*.png") if not (ROOT / "Content/UI/Abilities" / f"T_Ability_{p.stem}.uasset").is_file()]
+    missing = [p.stem for p in out.glob("*.png") if not (ROOT / "Content/UI/Abilities" / f"T_{p.stem}.uasset").is_file()]
     passed = code == 0 and match is not None and int(match.group(1)) == expected and not missing
     print(json.dumps(dict(passed=passed, exitCode=code, icons=expected, imported=int(match.group(1)) if match else 0,
                           missing=missing, directory=str(out), log=str(log)), indent=2))

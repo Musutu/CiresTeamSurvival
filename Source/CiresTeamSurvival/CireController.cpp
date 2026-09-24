@@ -237,16 +237,17 @@ void ACireController::PlayerTick(float Dt) {
         if(!Keys.WasPressed(this,Slot))continue;
         const int32 I=Index-1;
         if(!H->bDrafted) {if(Bar==1&&I<6){if(Interface)Interface->DraftRosterSlot(I);else if(I<5)ServerAction(5,I,nullptr);}}
-        else if(H->Offers.Num()>0) {if(Bar==1&&I<4)ServerAction(3,I,nullptr);}
+        else if(H->Offers.Num()>0&&(!Interface||Interface->IsSkillOfferOpen())) {if(Bar==1&&I<4)ServerAction(3,I,nullptr);} // champion-draft: deferred offers keep casting
         else if(!bShop) {const int32 Skill=CireKeybindings::ResolveSlot(Keys,*H,Slot);if(Skill!=INDEX_NONE)RequestCast(Skill);}
     }
-    if(H->bDrafted&&!bShop&&H->Offers.IsEmpty()&&WasInputKeyJustPressed(EKeys::LeftMouseButton)
+    const bool bOfferModal=H->Offers.Num()>0&&(!Interface||Interface->IsSkillOfferOpen()); // champion-draft
+    if(H->bDrafted&&!bShop&&!bOfferModal&&WasInputKeyJustPressed(EKeys::LeftMouseButton)
         &&!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive&&(!Interface||!Interface->IsPointerOverInterface())
         &&(bSummonMoveTargeting||IsInputKeyDown(EKeys::LeftShift)||IsInputKeyDown(EKeys::RightShift))) {
         ServerSummonCommand(1,nullptr,CursorAim());bSummonMoveTargeting=false;return;
     }
     // WoW: a left click (released without dragging the camera) selects; a left drag only orbits.
-    if(Camera.bClick&&H->bDrafted&&!bShop&&H->Offers.IsEmpty()&&!CireTargeting::Snapshot(this).bActive
+    if(Camera.bClick&&H->bDrafted&&!bShop&&!bOfferModal&&!CireTargeting::Snapshot(this).bActive
         &&!IsInputKeyDown(EKeys::RightMouseButton)) {
         FHitResult CursorHit;
         if(GetHitResultAtScreenPosition(Camera.ClickPosition,UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1),false,CursorHit)) {

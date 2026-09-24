@@ -4,7 +4,7 @@ Every skill in the native draft pool plus every planned roster skill gets a
 256x256 icon: a school-colored painted backdrop (radial light, grain, vignette)
 and a distinct glyph with dark outline, rim highlight and glow. Output PNGs go
 to --out (default Saved/AbilityIcons/<stamp>); Tools/RunAbilityIcons.py imports
-them as /Game/UI/Abilities/T_Ability_<id>. Requires Pillow (pip install pillow;
+them as /Game/UI/Abilities/T_<id> (the CireUIStyle::FindAbilityIcon convention). Requires Pillow (pip install pillow;
 --pylib adds a directory holding it to sys.path).
 """
 from __future__ import annotations
@@ -854,6 +854,7 @@ def main() -> int:
     parser.add_argument('--pylib', type=Path, help='Directory containing Pillow')
     parser.add_argument('--ids', help='Comma-separated subset')
     parser.add_argument('--sheet', type=Path, help='Also write a labelled contact sheet PNG')
+    parser.add_argument('--data', type=Path, help='Write the runtime school/accent table (Content/Data/AbilityIcons.json)')
     args = parser.parse_args()
     if args.pylib:
         sys.path.insert(0, str(args.pylib))
@@ -887,6 +888,11 @@ def main() -> int:
         paint(glyph, pal, hash(sid) & 0xffff if False else sum(map(ord, sid)), kw).save(out / f'{sid}.png')
     manifest = {sid: dict(glyph=g, palette=p, pool=sid in POOL) for sid, (g, p, _) in jobs.items()}
     (out / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+    if args.data and not args.ids:
+        rows = {sid: dict(school=p, glyph=g, accent='#%02x%02x%02x' % PALETTES[p][3], pool=sid in POOL)
+                for sid, (g, p, _) in sorted(jobs.items())}
+        args.data.write_text(json.dumps(dict(schemaVersion=1, generator='Tools/BuildAbilityIcons.py',
+                                             texturePath='/Game/UI/Abilities/T_<id>', icons=rows), indent=2) + chr(10), encoding='utf-8')
     if args.sheet:
         ids = sorted(jobs)
         cols = 10

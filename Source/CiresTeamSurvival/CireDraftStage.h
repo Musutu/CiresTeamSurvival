@@ -32,6 +32,12 @@ public:
     bool IsPreviewReady() const;
     float SecondsShown() const;
     void SetTurntable(bool bSpin, float FixedYaw = -28.f);
+    // Per-champion exposure trim (stops). Bright albedo bodies (granite, felfire) are
+    // measured by the portrait tool and stored in Content/UI/Draft/Portraits/Exposure.json;
+    // ShowProfile applies the stored value automatically.
+    void SetExposureOffset(float Stops);
+    float GetExposureOffset() const { return ExposureOffset; }
+    static float StoredExposure(const FString& ProfileId);
     // Non-null: frame a head-and-shoulders bust into this square target every frame
     // (portrait generation). Null returns to the full-body draft preview.
     void SetPortraitTarget(UTextureRenderTarget2D* Into);
@@ -74,4 +80,5 @@ private:
     FVector CameraFocus = FVector::ZeroVector;
     float CameraDistance = 600.f;
     float BodyHeight = 180.f;
+    float ExposureOffset = 0.f;
 };
