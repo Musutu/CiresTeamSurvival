@@ -22,6 +22,7 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "CireNav.h" // nav-paths
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireArenas, Log, All);
 
@@ -899,6 +900,7 @@ void UCireArenaSubsystem::Apply(int32 Index, bool bShow)
         S = World->SpawnActor<ACireArenaStage>(ACireArenaStage::StaticClass(), CireArenas::Origin(), FRotator::ZeroRotator, Params);
         if (!S) { UE_LOG(LogCireArenas, Error, TEXT("CIRE_ARENA_ERROR stage spawn failed")); return; }
         S->BuildArena(Index, World->GetNetMode() != NM_DedicatedServer);
+        CireNav::RefreshActor(S); // nav-paths: the collision proxies carve the arena navmesh (server)
         S->SetShown(false);
         Stage = S; ++BuildCount;
     }

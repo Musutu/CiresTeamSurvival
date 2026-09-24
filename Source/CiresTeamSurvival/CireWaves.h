@@ -135,6 +135,10 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API bool IsForcedMarch(const ACireMonster* Monster);
     /** Escort guard: the escortee this unit defends (null when none/dead). */
     CIRESTEAMSURVIVAL_API ACireMonster* EscortCharge(const ACireMonster* Monster);
+    /** nav-paths: the unit may not acquire victims for Seconds (its victim was unreachable on the navmesh). */
+    CIRESTEAMSURVIVAL_API void SuppressAggro(ACireMonster* Monster, float Seconds);
+    /** nav-paths: stuck nudges, failsafe marches and failsafe despawns so far in this world. */
+    CIRESTEAMSURVIVAL_API void RescueCounts(const ACireGameMode* Mode, int32& Nudges, int32& Marches, int32& Despawns);
     /** Clears the director's per-monster bookkeeping (death/leak/despawn). */
     CIRESTEAMSURVIVAL_API void Forget(const ACireMonster* Monster);
 
@@ -155,8 +159,8 @@ namespace CireWaveDirector
     /** Where an idle / retreating bot should stand during survival. Returns false if it should stay put. */
     CIRESTEAMSURVIVAL_API bool BotDestination(ACireHero* Bot, FVector& Out);
     CIRESTEAMSURVIVAL_API bool ShouldBotRetreat(ACireHero* Bot);
-    /** Survival movement for a bot heading to Goal: the straight line, or a detour along the
-     *  prop-free road when the bot has stopped making progress (bots have no navmesh). */
+    /** Survival movement for a bot heading to Goal: the navmesh path (nav-paths, every phase); without
+     *  a navmesh the straight line, or a detour along the prop-free road when the bot stops making progress. */
     CIRESTEAMSURVIVAL_API FVector BotSteer(ACireHero* Bot, const FVector& Goal);
 
     // ---- HUD ----

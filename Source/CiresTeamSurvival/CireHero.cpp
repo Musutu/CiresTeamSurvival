@@ -19,6 +19,7 @@
 #include "CireThreat.h"
 #include "CireNPCCombat.h"
 #include "CireWaves.h" // wave-director
+#include "CireNav.h" // nav-paths
 #include "CireNPCState.h"
 #include "CireStatusVisual.h"
 #include "CireBuffs.h" // aura-vfx
@@ -711,7 +712,7 @@ void ACireHero::BotThink(float DeltaSeconds)
         bAutoAttack = false;
         const FVector Destination = HomePosition;
         if (FVector::DistSquared2D(GetActorLocation(), Destination) > FMath::Square(160.f))
-            AddMovementInput((Destination - GetActorLocation()).GetSafeNormal2D());
+            AddMovementInput(CireWaveDirector::BotSteer(this, Destination)); // nav-paths: walk home on the navmesh
         BotDecisionTimer -= DeltaSeconds;
         if (BotDecisionTimer <= 0)
         {
@@ -789,7 +790,15 @@ void ACireHero::BotThink(float DeltaSeconds)
     {
         const float Distance = FVector::Dist2D(GetActorLocation(), Target->GetActorLocation());
         const FVector Direction = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal2D();
-        if (Distance > BasicRange(this) * 0.85f || !ClearSight(this, Target)) AddMovementInput(CireWaveDirector::BotSteer(this, Target->GetActorLocation())); // wave-director: detours around props
+        const bool bSight = ClearSight(this, Target);
+        if (Distance > BasicRange(this) * 0.85f || !bSight)
+        {
+            // nav-paths: path to the target; a ranged bot without line of sight walks to the nearest
+            // navmesh point that can see it (within range) instead of walking into the blocker.
+            FVector Goal = Target->GetActorLocation(), Firing;
+            if (!bSight && IsRangedBasicAttack() && CireNav::FiringPosition(this, Target, BasicRange(this) * 0.8f, Firing)) Goal = Firing;
+            AddMovementInput(CireWaveDirector::BotSteer(this, Goal));
+        }
         else SetActorRotation(Direction.Rotation());
         bAutoAttack = true;
     }

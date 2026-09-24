@@ -1,6 +1,7 @@
 #include "CireEnvironmentProps.h"
 #include "CireGame.h"
 #include "CireLanePath.h"
+#include "CireNav.h" // nav-paths
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Dom/JsonObject.h"
@@ -17,7 +18,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogCireTown,Log,All);
 
 namespace
 {
-constexpr float RouteMargin=330.f;   // road half-width (260) + escort capsule clearance
+// nav-paths: the route margin follows the editable lane width: half the road (default 520 -> 260) + 70 cm escort capsule clearance = 330.
+float RouteMarginFor(const UWorld* World){return CireLanePath::LaneWidth(World)*.5f+70.f;}
 constexpr float BayMargin=450.f;     // challenge pack arena around each bay centre
 constexpr float SpawnMargin=420.f;
 constexpr float DividerMargin=60.f;  // nothing may cross into the gap between the two realms
@@ -269,6 +271,7 @@ bool Safe(const UWorld* World,int32 Team,const FBox& Box,const FTransform& T,ECl
     {
         const FVector2D A(Points[I-1].X,Points[I-1].Y+CY),B(Points[I].X,Points[I].Y+CY);
         const int32 Steps=FMath::Max(1,FMath::CeilToInt(FVector2D::Distance(A,B)/40.f));
+        const float RouteMargin=RouteMarginFor(World);
         for(int32 S=0;S<=Steps;++S)if(BoxHitsPoint(Box,T,FMath::Lerp(A,B,S/static_cast<double>(Steps)),RouteMargin))return false;
     }
     return true;
@@ -298,7 +301,8 @@ void CireEnvironmentProps::Build(ACireWorld* WorldActor)
         C->SetupAttachment(WorldActor->GetRootComponent());C->SetStaticMesh(Meshes[Index]);C->SetMobility(EComponentMobility::Movable);
         C->SetCollisionObjectType(ECC_WorldStatic);C->SetCollisionResponseToAllChannels(ECR_Block);
         C->SetCollisionEnabled(Slot.bCollision?ECollisionEnabled::QueryAndPhysics:ECollisionEnabled::NoCollision);
-        C->SetGenerateOverlapEvents(false);C->SetCanEverAffectNavigation(false);C->SetCastShadow(Slot.bShadow);
+        // nav-paths: colliding town pieces (houses, walls, the shrine, stalls, crates) carve the navmesh.
+        C->SetGenerateOverlapEvents(false);C->SetCanEverAffectNavigation(Slot.bCollision);C->SetCastShadow(Slot.bShadow);
         C->ComponentTags.Add(TEXT("CireWorldProp"));C->ComponentTags.Add(TEXT("CireTown"));C->ComponentTags.Add(Slot.Id);
         for(const FSlot* M:MaterialOverrides)C->SetMaterialByName(M->MeshSlot,M->Material.Get());
         if(Slot.MeshMaterial.IsValid())for(int32 I=0;I<C->GetNumMaterials();++I)C->SetMaterial(I,Slot.MeshMaterial.Get());
@@ -336,6 +340,7 @@ void CireEnvironmentProps::Refresh(ACireWorld* WorldActor)
         }
     }
     for(auto& Pair:Batches)for(auto& C:Data->Components[Pair.Key])if(C.IsValid())C->AddInstances(Pair.Value,false,true);
+    CireNav::RefreshActor(WorldActor); // nav-paths: re-placed pieces carve the navmesh (live route edits)
     UE_LOG(LogCireTown,Display,TEXT("CIRE_ENVIRONMENT_PROPS_READY instances=%d suppressed_for_route_clearance=%d slots=%d lights=%d"),
         Data->Visible,Data->Suppressed,Data->Components.Num(),Data->Lights.Num());
 }
@@ -350,6 +355,48 @@ bool CireEnvironmentProps::HasSafeClearance(const ACireWorld* WorldActor)
     const auto* Data=Worlds.Find(TWeakObjectPtr<ACireWorld>(const_cast<ACireWorld*>(WorldActor)));if(!Data)return false;
     for(const auto& P:Data->Placed)if(!Safe(WorldActor->GetWorld(),P.Team,P.Box,P.Transform,P.Clearance))return false;
     return true;
+}
+// nav-paths: path-editor validation and navigation tests.
+int32 CireEnvironmentProps::RouteConflicts(const UWorld* World,int32 Team,const FVector2D& LocalA,const FVector2D& LocalB,float LaneWidth,TArray<FName>* Slots)
+{
+    if(!LoadTown()||Team<0||Team>1)return 0;
+    const float CY=CireLanePath::CenterY(Team),Margin=LaneWidth*.5f+70.f;
+    const FVector2D A(LocalA.X,LocalA.Y+CY),B(LocalB.X,LocalB.Y+CY);
+    const int32 Steps=FMath::Max(1,FMath::CeilToInt(FVector2D::Distance(A,B)/40.f));
+    int32 Count=0;
+    for(const FPlacement& P:Town.Placements)
+    {
+        const FSlot& Slot=Town.Slots[P.Slot];
+        if(Slot.bMaterial||!Slot.Mesh.IsValid()||Slot.Clearance!=EClearance::Route)continue;
+        const FTransform T=WorldTransform(P,Team);
+        for(int32 S=0;S<=Steps;++S)if(BoxHitsPoint(Slot.LocalBox,T,FMath::Lerp(A,B,S/static_cast<double>(Steps)),Margin))
+        {++Count;if(Slots)Slots->AddUnique(P.Slot);break;}
+    }
+    return Count;
+}
+int32 CireEnvironmentProps::BayConflicts(const UWorld* World,int32 Team,const FVector2D& LocalBay,TArray<FName>* Slots)
+{
+    if(!LoadTown()||Team<0||Team>1)return 0;
+    const FVector2D Bay(LocalBay.X,LocalBay.Y+CireLanePath::CenterY(Team));
+    int32 Count=0;
+    for(const FPlacement& P:Town.Placements)
+    {
+        const FSlot& Slot=Town.Slots[P.Slot];
+        if(Slot.bMaterial||!Slot.Mesh.IsValid()||Slot.Clearance==EClearance::None)continue;
+        if(BoxHitsPoint(Slot.LocalBox,WorldTransform(P,Team),Bay,BayMargin)){++Count;if(Slots)Slots->AddUnique(P.Slot);}
+    }
+    return Count;
+}
+TArray<CireEnvironmentProps::FPlacedProp> CireEnvironmentProps::PlacedProps(const ACireWorld* WorldActor)
+{
+    TArray<FPlacedProp> Out;
+    const auto* Data=Worlds.Find(TWeakObjectPtr<ACireWorld>(const_cast<ACireWorld*>(WorldActor)));if(!Data)return Out;
+    for(const auto& P:Data->Placed)
+    {
+        const FSlot* Slot=Town.Slots.Find(P.Slot);
+        Out.Add({P.Team,P.Slot,P.Transform,P.Box,Slot&&Slot->bCollision});
+    }
+    return Out;
 }
 const TArray<CireEnvironmentProps::FTownDistrict>& CireEnvironmentProps::Districts(){LoadTown();return Town.Districts;}
 FName CireEnvironmentProps::DistrictAt(const UWorld* World,int32 Team,const FVector& Location)
