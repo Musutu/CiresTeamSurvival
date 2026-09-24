@@ -190,6 +190,7 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     Check(Orb != INDEX_NONE && !Inv->UseSlot(Orb, false, Message) && Inv->Equipment[Orb].ReadyAt <= 0, TEXT("active without a target fails and keeps its cooldown"));
     Hero->Target = Target;
     Check(Inv->UseSlot(Orb, false, Message) && Target->Health < 5000 && Near->Health < 5000, TEXT("Void Rupture damages the target and nearby enemies"));
+    if (Orb == INDEX_NONE) { Check(false, TEXT("orb slot")); return false; }
     Check(Inv->Equipment[Orb].ReadyAt > Inv->Now() + 40 && !Inv->UseSlot(Orb, false, Message) && Message.Contains(TEXT("recharging")), TEXT("active item cooldown enforced"));
     // ---- armor / ward mitigation and lifesteal
     for (auto& Cell : Inv->Equipment) Cell = FCireItemSlot();

@@ -669,6 +669,7 @@ void UCireInventory::EndShopVisit()
 
 bool UCireInventory::Buy(FName ItemId, FString& Message)
 {
+    Message.Reset();
     ACireHero* Owner = Hero();
     if (!Owner || !Owner->HasAuthority() || !Owner->bDrafted) return false;
     const auto& D = CireItems::Get();
@@ -713,6 +714,7 @@ bool UCireInventory::Buy(FName ItemId, FString& Message)
 
 bool UCireInventory::SellSlot(int32 Index, bool bBeltSlot, FString& Message)
 {
+    Message.Reset();
     ACireHero* Owner = Hero();
     if (!Owner || !Owner->HasAuthority()) return false;
     const auto& D = CireItems::Get();
@@ -744,6 +746,7 @@ bool UCireInventory::SellSlot(int32 Index, bool bBeltSlot, FString& Message)
 
 bool UCireInventory::UndoLast(FString& Message)
 {
+    Message.Reset();
     ACireHero* Owner = Hero();
     if (!Owner || !Owner->HasAuthority()) return false;
     Inventory Rules = ToRules();
@@ -960,6 +963,7 @@ bool UCireInventory::ApplyEffect(const Effect& Use, FName ItemId, FString& Messa
 
 bool UCireInventory::UseSlot(int32 Index, bool bBeltSlot, FString& Message)
 {
+    Message.Reset();
     ACireHero* Owner = Hero();
     if (!Owner || !Owner->HasAuthority()) return false;
     const TArray<FCireItemSlot>& Slots = bBeltSlot ? Belt : Equipment;
