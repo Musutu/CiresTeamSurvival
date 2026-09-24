@@ -177,6 +177,13 @@ float FCireUIPainter::TextWidth(const FString& Text,float Size,ECireFont Font) c
     const float Points=FMath::Max(4.f,FMath::RoundToFloat(Size*CireUIStyle::Assets().Calibration[Index]*KS));
     return static_cast<float>(Measure->Measure(Text,FSlateFontInfo(Resolved,Points),1.f).X)/KS;
 }
+FString FCireUIPainter::Fit(const FString& In,float Size,float MaxWidth,ECireFont Font) const
+{
+    if(TextWidth(In,Size,Font)<=MaxWidth)return In;
+    FString S=In;
+    while(S.Len()>1&&TextWidth(S+TEXT(".."),Size,Font)>MaxWidth)S.LeftChopInline(1);
+    return S.TrimEnd()+TEXT("..");
+}
 int32 FCireUIPainter::Wrapped(const FString& Body,float X,float Y,float Width,float Size,FLinearColor Color,int32 MaxLines,ECireFont Font,float LineGap) const
 {
     TArray<FString> Words;Body.ParseIntoArrayWS(Words);FString Row;int32 Count=0;
@@ -236,6 +243,21 @@ void CireUIStyle::Frame(const FCireUIPainter& P,float X,float Y,float W,float H,
         const float G=6.5f;P.Tex(A.Gem,X+W*.5f-G,Y-G+1,2*G,2*G,Accent*1.15f+FLinearColor(.05f,.05f,.05f,0));
     }
 }
+void CireUIStyle::Slider(const FCireUIPainter& P,float X,float Y,float W,float Fraction,bool bEnabled,bool bHover)
+{
+    const FAssets& A=Assets();Fraction=FMath::Clamp(Fraction,0.f,1.f);
+    Frame(P,X,Y,W,8,Gold,ECireFrame::Inset);
+    const FLinearColor Fill=bEnabled?FLinearColor(1.1f,.85f,.4f,1):Muted;
+    if(A.Gloss)P.Tex(A.Gloss,X+1,Y+1,(W-2)*Fraction,6,Fill);else P.Rect(X+1,Y+1,(W-2)*Fraction,6,Fill);
+    if(bHover&&bEnabled)Glow(P,X+(W-2)*Fraction-8,Y-4,16,16,FLinearColor(1.f,.85f,.5f,.4f));
+    if(A.Gem)P.Tex(A.Gem,X+(W-2)*Fraction-8,Y-4,16,16,bEnabled?FLinearColor(1.f,.85f,.45f,1):Muted);
+    else P.Rect(X+(W-4)*Fraction,Y-4,5,16,bEnabled?Parchment:Muted);
+}
+void CireUIStyle::Chevron(const FCireUIPainter& P,float X,float Y,float S,bool bCollapsed,FLinearColor Color)
+{
+    if(bCollapsed)P.Tri(FVector2D(X+S*.3f,Y+S*.15f),FVector2D(X+S*.3f,Y+S*.85f),FVector2D(X+S*.85f,Y+S*.5f),Color);
+    else P.Tri(FVector2D(X+S*.15f,Y+S*.3f),FVector2D(X+S*.85f,Y+S*.3f),FVector2D(X+S*.5f,Y+S*.85f),Color);
+}
 void CireUIStyle::Header(const FCireUIPainter& P,float X,float Y,float W,const FString& Caption,FLinearColor Color,float Size)
 {
     const FAssets& A=Assets();
@@ -245,8 +267,14 @@ void CireUIStyle::Header(const FCireUIPainter& P,float X,float Y,float W,const F
 }
 void CireUIStyle::Glow(const FCireUIPainter& P,float X,float Y,float W,float H,FLinearColor Color)
 {
-    if(const FAssets& A=Assets();A.Glow)P.Tex(A.Glow,X-W*.25f,Y-H*.25f,W*1.5f,H*1.5f,Color,0,0,1,1,true);
-    else P.Rect(X,Y,W,H,Color*FLinearColor(1,1,1,.25f));
+    // Procedural halo: stacked translucent fills growing outward. No texture blend
+    // mode involved, so it can never render as an opaque square (Color.A = strength).
+    const float Spread=FMath::Clamp(FMath::Min(W,H)*.18f,2.f,10.f);
+    for(int32 Ring=4;Ring>=1;--Ring)
+    {
+        const float O=Ring*Spread*.5f;
+        P.Rect(X-O,Y-O,W+2*O,H+2*O,FLinearColor(Color.R,Color.G,Color.B,Color.A*.14f));
+    }
 }
 void CireUIStyle::Button(const FCireUIPainter& P,float X,float Y,float W,float H,const FString& Label,ECireButtonState State,FLinearColor Accent,float TextSize)
 {
@@ -324,7 +352,7 @@ void CireUIStyle::IconSlot(const FCireUIPainter& P,float X,float Y,float S,const
             float D=FMath::Fmod(T+I*Per/4,Per);FVector2D Pt;
             if(D<S)Pt=FVector2D(X+D,Y);else if(D<2*S)Pt=FVector2D(X+S,Y+D-S);else if(D<3*S)Pt=FVector2D(X+S-(D-2*S),Y+S);else Pt=FVector2D(X,Y+S-(D-3*S));
             P.Disc(Pt.X,Pt.Y+Dy,S*.07f,FLinearColor(1.f,.95f,.7f,.95f),10);
-            if(A.Glow)P.Tex(A.Glow,Pt.X-S*.2f,Pt.Y-S*.2f+Dy,S*.4f,S*.4f,FLinearColor(1.f,.8f,.3f,.9f),0,0,1,1,true);
+            P.Disc(Pt.X,Pt.Y+Dy,S*.14f,FLinearColor(1.f,.8f,.3f,.35f),12);
         }
         P.Line(X,Y+Dy,X+S,Y+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);P.Line(X,Y+S+Dy,X+S,Y+S+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);
         P.Line(X,Y+Dy,X,Y+S+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);P.Line(X+S,Y+Dy,X+S,Y+S+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);
@@ -356,8 +384,13 @@ UTexture2D* CireUIStyle::FindAbilityIcon(const FString& Id)
     static TMap<FString,TWeakObjectPtr<UTexture2D>> Found;static TSet<FString> Missing;
     if(Id.IsEmpty()||Missing.Contains(Id))return nullptr;
     if(const auto* Hit=Found.Find(Id);Hit&&Hit->IsValid())return Hit->Get();
-    const FString Path=FString::Printf(TEXT("/Game/UI/Abilities/T_%s.T_%s"),*Id,*Id);
-    UTexture2D* T=FPackageName::DoesPackageExist(FString::Printf(TEXT("/Game/UI/Abilities/T_%s"),*Id))?LoadObject<UTexture2D>(nullptr,*Path,nullptr,LOAD_NoWarn|LOAD_Quiet):nullptr;
+    // Champion-draft icon set names its textures T_Ability_<id>; T_<id> is also accepted.
+    UTexture2D* T=nullptr;
+    for(const TCHAR* Prefix:{TEXT("T_Ability_"),TEXT("T_")})
+    {
+        const FString Name=FString(Prefix)+Id,Package=TEXT("/Game/UI/Abilities/")+Name;
+        if(FPackageName::DoesPackageExist(Package)){T=LoadObject<UTexture2D>(nullptr,*(Package+TEXT(".")+Name),nullptr,LOAD_NoWarn|LOAD_Quiet);if(T)break;}
+    }
     if(T){T->AddToRoot();Found.Add(Id,T);}else Missing.Add(Id);
     return T;
 }
@@ -437,7 +470,8 @@ void CireUIStyle::Banner(const FCireUIPainter& P,float ViewW,float Y,const FCire
     const float TW=Q.TextWidth(Spec.Title,TS,ECireFont::Heading);
     const float BandW=FMath::Max(TW+220.f,440.f)*(.6f+.4f*Ease),BandX=(ViewW-BandW)*.5f,BandH=TS+(Spec.Subtitle.IsEmpty()?34.f:54.f);
     // Dark band that fades at both ends, gold rules above and below.
-    for(int32 I=0;I<8;++I){const float Inset=I*BandW*.06f;Q.Rect(BandX+Inset,Y-16,BandW-2*Inset,BandH,FLinearColor(0,0,0,.09f));}
+    for(int32 I=0;I<8;++I){const float Inset=I*BandW*.06f;Q.Rect(BandX+Inset,Y-16,BandW-2*Inset,BandH,FLinearColor(0,0,0,.13f));}
+    if(const FAssets& A=Assets();A.Gloss)Q.Tex(A.Gloss,BandX+BandW*.2f,Y-16,BandW*.6f,BandH*.5f,Spec.Color*FLinearColor(1,1,1,.06f));
     const FLinearColor Rule=Spec.Color*FLinearColor(1,1,1,.85f);
     Q.Line(BandX+BandW*.12f,Y-16,BandX+BandW*.88f,Y-16,Rule,1.5f);Q.Line(BandX+BandW*.12f,Y-16+BandH,BandX+BandW*.88f,Y-16+BandH,Rule,1.5f);
     // Wings: tapered blades pointing outward from the title.

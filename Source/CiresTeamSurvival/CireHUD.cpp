@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireShopUI.h" // progression-shop
 #include "CireKeybindings.h"
 #include "CireLanePath.h"
 #include "CireGame.h"
@@ -61,8 +62,22 @@ FCireUIRect ACireHUD::PanelRect(FName Id) const
         if(R.X+R.W*.5f<O.X+O.W*.5f){const float W=O.X-6-R.X;if(W>=MinW)R.W=W;}
         else{const float Right=R.X+R.W,X=O.X+O.W+6;if(Right-X>=MinW){R.X=X;R.W=Right-X;}}
     };
-    if(Id==TEXT("Chat")||Id==TEXT("Meter")||Id==TEXT("CombatLog"))GiveWay(TEXT("Skills"));
-    if(Id==TEXT("Focus")){GiveWay(TEXT("Target"));GiveWay(TEXT("Minimap"));}
+    if(Id==TEXT("Chat")||Id==TEXT("Meter")||Id==TEXT("CombatLog"))
+    {
+        GiveWay(TEXT("Skills"));
+        if(UISettings.bShowActionBar2)GiveWay(TEXT("Bar2"));
+        if(UISettings.bShowActionBar3)GiveWay(TEXT("Bar3"));
+    }
+    if(Id==TEXT("Focus"))
+    {
+        GiveWay(TEXT("Target"));GiveWay(TEXT("Minimap"));
+        // No room beside the target frame: tuck the focus frame under it instead.
+        const FCireUIRect T=UISettings.GetRect(TEXT("Target"),View);
+        if(Overlap(R,T)){R.X=FMath::Clamp(T.X+T.W-R.W,0.f,ViewW-R.W);R.Y=FMath::Min(T.Y+T.H+6,ViewH-R.H);}
+    }
+    // Collapsed compact panels only occupy their header (for clicks and layout).
+    if(((Id==TEXT("Meter")&&UISettings.bMeterCollapsed)||(Id==TEXT("Threat")&&UISettings.bThreatCollapsed))&&!bEditLayout)
+        R.H=FMath::Min(R.H,20.f*R.W/220.f);
     if(Id==TEXT("Boss"))
     {
         const FCireUIRect T=UISettings.GetRect(TEXT("Threat"),View);
@@ -72,9 +87,16 @@ FCireUIRect ACireHUD::PanelRect(FName Id) const
 }
 void ACireHUD::UsePanel(FName Id,float W,float H)
 {
+    PanelAlpha=1.f;
     FCireUIRect R=PanelRect(Id);
+    // New target: the frame fades and slides in (WoW-like), 0.18s.
+    if(Id==TEXT("Target")&&!bEditLayout)
+    {
+        const float T=FMath::Clamp(static_cast<float>(GetWorld()->GetRealTimeSeconds()-TargetChangedAt)/.18f,0.f,1.f);
+        const float Ease=1.f-FMath::Square(1.f-T);R.Y-=(1.f-Ease)*12.f;PanelAlpha=.25f+.75f*Ease;
+    }
     // Height-trimmed panels (boss frames) keep their scale and simply show fewer rows.
-    if(Id==TEXT("Boss"))R.H=UISettings.GetRect(Id,FVector2D(ViewW,ViewH)).H;
+    if(Id==TEXT("Boss")||Id==TEXT("Meter")||Id==TEXT("Threat"))R.H=UISettings.GetRect(Id,FVector2D(ViewW,ViewH)).H;
     Origin=FVector2D(R.X,R.Y); Stretch=FVector2D(R.W/W,R.H/H);
     VisiblePanels.AddUnique(Id);
     static const TMap<FName,FString> Help={
@@ -138,7 +160,7 @@ bool ACireHUD::IsPointerOverInterface() const
     float CursorX=0,CursorY=0;
     if(!PlayerOwner||!PlayerOwner->GetMousePosition(CursorX,CursorY))return true;
     CursorX/=Scale;CursorY/=Scale;
-    if(CireDeveloperTools::CanEdit(GetWorld())){const auto R=DeveloperLauncherRect();if(CursorX>=R.X&&CursorX<=R.X+R.W&&CursorY>=R.Y&&CursorY<=R.Y+R.H)return true;}
+    if(IsDeveloperLauncherVisible()){const auto R=DeveloperLauncherRect();if(CursorX>=R.X&&CursorX<=R.X+R.W&&CursorY>=R.Y&&CursorY<=R.Y+R.H)return true;}
     for(FName Id:VisiblePanels) {
         if(Id==TEXT("CombatText")||Id==TEXT("Tooltip"))continue;
         const auto R=PanelRect(Id);
@@ -151,13 +173,15 @@ void ACireHUD::ToggleSettings() { if(bSettings)RevertVideoPreview();bSettings=!b
 void ACireHUD::ToggleDeveloperTools()
 {
     if(!CireDeveloperTools::CanEdit(GetWorld()))return;
+    bShowDevLauncher=true; // F8 reveals the Developer Tools button for the rest of the session
     if(bSettings&&OptionsTab==5){ToggleSettings();return;}
     if(bEditLayout)ToggleLayoutEditor();
     RevertVideoPreview();bSettings=true;OptionsTab=5;DeveloperPage=5;bVideoLoaded=false;
 }
-bool ACireHUD::HandleEscape() { if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
+bool ACireHUD::HandleEscape() { if(bQuickKeybind){ToggleQuickKeybind();return true;}if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
 void ACireHUD::HandleMouseWheel(float Delta)
 {
+    if(bSettings&&OptionsTab==0&&ControlsPage==1){KeybindScroll=FMath::Max(0,KeybindScroll+(Delta>0?-2:2));return;}
     const auto R=PanelRect(TEXT("Chat"));
     if(MX>=R.X&&MX<=R.X+R.W&&MY>=R.Y&&MY<=R.Y+R.H)ChatScroll=FMath::Clamp(ChatScroll+(Delta>0?2:-2),0,100);
 }
@@ -233,34 +257,34 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
 }
 void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
 {
-    UsePanel(TEXT("Party"),250,248);
+    UsePanel(TEXT("Party"),210,248);
     Label(Hero->TeamId==0?TEXT("EMBER COMPANY"):TEXT("DUSK COMPANY"),1,0,10,Gold);
-    Label(TEXT("PARTY / 5"),183,0,9,Muted);
+    Label(TEXT("PARTY / 5"),152,0,9,Muted);
     TArray<ACireHero*> Allies;
     for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(*It!=Hero&&It->TeamId==Hero->TeamId&&!Cast<ACireSummon>(*It))Allies.Add(*It);
     Allies.Sort([](const ACireHero& A,const ACireHero& B){return A.GetName()<B.GetName();});
     for(int32 I=0;I<FMath::Min(Allies.Num(),4);++I) {
         ACireHero* Ally=Allies[I]; const float Y=20+I*56;
         const bool Selected=Hero->Target==Ally, Focus=Controller&&Controller->FocusTarget==Ally;
-        const bool Over=Hit(0,Y,250,50)&&!bModal&&!bEditLayout&&!bSettings;
+        const bool Over=Hit(0,Y,210,50)&&!bModal&&!bEditLayout&&!bSettings;
         const int32 AllyAggro=Ally->bDead?0:AggroCount(GetWorld(),Ally);
-        if(AllyAggro>0)Panel(-2,Y-2,254,54,FLinearColor(.9f,.08f,.05f,.4f));
-        Frame(0,Y,250,50,Selected?Parchment:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):RoleColor(Ally->Archetype)*.65f);
-        if(Over)Panel(1,Y+1,248,48,FLinearColor(.3f,.45f,.48f,.12f));
+        if(AllyAggro>0)Panel(-2,Y-2,214,54,FLinearColor(.9f,.08f,.05f,.4f));
+        Frame(0,Y,210,50,Selected?Parchment:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):RoleColor(Ally->Archetype)*.65f);
+        if(Over)Panel(1,Y+1,208,48,FLinearColor(.3f,.45f,.48f,.12f));
         Icon(FString::Printf(TEXT("role%d"),Ally->Archetype),4,Y+10,29,Ally->bDead?Muted:RoleColor(Ally->Archetype));
-        Label(ShortName(Ally->HeroName,22),39,Y+4,11,Ally->bDead?Muted:Parchment);
-        Label(FString::FromInt(Ally->Level),183,Y+4,10,Gold);
-        Bar(39,Y+21,161,13,Fraction(Ally->Health,Ally->MaxHealth),Ally->bDead?Muted:LifeGreen);
+        Label(ShortName(Ally->HeroName,18),39,Y+4,11,Ally->bDead?Muted:Parchment);
+        Label(FString::FromInt(Ally->Level),158,Y+4,10,Gold);
+        Bar(39,Y+21,130,13,Fraction(Ally->Health,Ally->MaxHealth),Ally->bDead?Muted:LifeGreen);
         Label(Ally->bDead?TEXT("FALLEN"):FString::Printf(TEXT("%.0f%%"),Fraction(Ally->Health,Ally->MaxHealth)*100),42,Y+20,9,Parchment);
         const int32 Poisoned=PoisonCount(Ally);
-        Bar(39,Y+37,Poisoned>0?66:161,5,Fraction(Ally->Mana,Ally->MaxMana),Blue);
-        if(Poisoned>0)Label(PoisonLabel(Poisoned),112,Y+35,8,Poison);
-        Panel(226,Y+3,20,17,Focus?Gold:Card);Label(Focus?TEXT("*"):TEXT("+"),231,Y+2,13,Focus?Ink:Gold);
-        UnitTip(Ally,0,Y,222,49);
-        Tip(TEXT("Focus teammate"),TEXT("Keep a second persistent unit frame for this teammate. Click the focus frame to make them your current target."),226,Y+3,20,17);
-        DrawStatuses(Ally,205,Y+24,17,2);
+        Bar(39,Y+37,Poisoned>0?60:130,5,Fraction(Ally->Mana,Ally->MaxMana),Blue);
+        if(Poisoned>0)Label(PoisonLabel(Poisoned),104,Y+35,8,Poison);
+        Panel(186,Y+3,20,17,Focus?Gold:Card);Label(Focus?TEXT("*"):TEXT("+"),191,Y+2,13,Focus?Ink:Gold);
+        UnitTip(Ally,0,Y,184,49);
+        Tip(TEXT("Focus teammate"),TEXT("Keep a second persistent unit frame for this teammate. Click the focus frame to make them your current target."),186,Y+3,20,17);
+        DrawStatuses(Ally,172,Y+24,15,2);
         if(Over&&Clicked&&Controller) {
-            if(Hit(222,Y,28,23))Controller->SetFocusTarget(Focus?nullptr:Ally);
+            if(Hit(182,Y,28,23))Controller->SetFocusTarget(Focus?nullptr:Ally);
             else Controller->ServerAction(0,0,Ally);
             Clicked=false;
         }
@@ -268,19 +292,24 @@ void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
 }
 void ACireHUD::DrawMatch(ACireGameState* State)
 {
-    if(!State)return;UsePanel(TEXT("Match"),320,74);Frame(0,0,320,74,Gold);
+    // Compact top-centre match plate (250x70 design).
+    if(!State)return;UsePanel(TEXT("Match"),250,70);Frame(0,0,250,70,Gold);
     const TCHAR* Phases[]={TEXT("SURVIVAL"),TEXT("TOWN PREPARATION"),TEXT("PORTAL ARENA"),TEXT("MATCH COMPLETE"),TEXT("RECOVERY")};
     const FString Phase=Phases[FMath::Clamp(State->Phase,0,4)];
-    Label(Phase,(320-TextWidth(Phase,10))/2,8,10,State->Phase==2?Red:Teal);
-    const int32 Seconds=FMath::Max(0,FMath::CeilToInt(State->SecondsLeft));
-    const FString Time=State->Phase==0?FString::Printf(TEXT("%d / %d"),State->CycleWavesDone,State->WavesPerCycle):FString::Printf(TEXT("%02d:%02d"),Seconds/60,Seconds%60);
-    Label(Time,(320-TextWidth(Time,25))/2,26,25,Parchment);
-    Label(FString::Printf(TEXT("%02d"),State->EmberLives),18,23,24,Gold);
-    Label(TEXT("EMBER"),17,52,9,Muted);Label(FString::Printf(TEXT("%02d"),State->DuskLives),269,23,24,Blue);Label(TEXT("DUSK"),269,52,9,Muted);
-    Label(State->Phase==0?FString::Printf(TEXT("WAVE %d / CYCLE CLEARS"),State->Wave):FString::Printf(TEXT("ROUND %d   /   WAVE %d"),State->Round,State->Wave),88,59,9,Muted);
-    if(State->Phase==0&&State->NextWaveSeconds>.05f) {
+    Label(Phase,(250-TextWidth(Phase,9))/2,7,9,State->Phase==2?Red:Teal);
+    // Sentinel / frozen clocks (huge or non-finite) show as "--:--" instead of leaking.
+    const bool bClockValid=FMath::IsFinite(State->SecondsLeft)&&State->SecondsLeft<100*60;
+    const int32 Seconds=bClockValid?FMath::Max(0,FMath::CeilToInt(State->SecondsLeft)):0;
+    const FString Time=State->Phase==0?FString::Printf(TEXT("%d / %d"),State->CycleWavesDone,State->WavesPerCycle):bClockValid?FString::Printf(TEXT("%02d:%02d"),Seconds/60,Seconds%60):FString(TEXT("--:--"));
+    Label(Time,(250-TextWidth(Time,22))/2,20,22,Parchment);
+    Label(FString::Printf(TEXT("%02d"),State->EmberLives),14,19,21,Gold);Label(TEXT("EMBER"),13,44,8,Muted);
+    const FString Dusk=FString::Printf(TEXT("%02d"),State->DuskLives);
+    Label(Dusk,236-TextWidth(Dusk,21),19,21,Blue);Label(TEXT("DUSK"),236-TextWidth(TEXT("DUSK"),8),44,8,Muted);
+    const FString Sub=State->Phase==0?FString::Printf(TEXT("WAVE %d / CYCLE CLEARS"),State->Wave):FString::Printf(TEXT("ROUND %d  /  WAVE %d"),State->Round,State->Wave);
+    Label(Sub,(250-TextWidth(Sub,8))/2,54,8,Muted);
+    if(State->Phase==0&&FMath::IsFinite(State->NextWaveSeconds)&&State->NextWaveSeconds>.05f&&State->NextWaveSeconds<3600.f) {
         const FString Next=FString::Printf(TEXT("NEXT WAVE IN %ds"),FMath::CeilToInt(State->NextWaveSeconds));
-        Label(Next,(320-TextWidth(Next,9))/2,80,9,Gold);
+        Label(Next,(250-TextWidth(Next,9))/2,76,9,Gold);
     }
 }
 void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
@@ -420,8 +449,8 @@ void ACireHUD::DrawChat(ACireController* Controller)
     Label(TEXT("CHAT"),12,8,10,Parchment);
     const bool Interactive=!bModal&&!bEditLayout&&!bSettings;
     const bool Team=Controller&&Controller->bChatTeamOnly;
-    Panel(179,5,52,19,Team?Hover:Card);Label(TEXT("PARTY"),187,8,9,Team?Teal:Muted);
-    Panel(236,5,58,19,!Team?Hover:Card);Label(TEXT("EVERYONE"),240,8,8,!Team?Gold:Muted);
+    CireUIStyle::Button(Painter(),179,5,54,19,TEXT("PARTY"),Team?ECireButtonState::Selected:Hit(179,5,54,19)?ECireButtonState::Hover:ECireButtonState::Normal,Teal,8.f);
+    CireUIStyle::Button(Painter(),236,5,60,19,TEXT("EVERYONE"),!Team?ECireButtonState::Selected:Hit(236,5,60,19)?ECireButtonState::Hover:ECireButtonState::Normal,Gold,8.f);
     if(Controller&&Clicked&&Interactive&&Hit(174,4,121,22)){Controller->bChatTeamOnly=Hit(174,4,60,22);Clicked=false;}
     if(Controller) {
         const float Font=UISettings.ChatFontSize,LineH=Font+4;
@@ -450,22 +479,33 @@ void ACireHUD::DrawChat(ACireController* Controller)
 void ACireHUD::DrawMeters(ACireHero* Hero,ACireController* Controller)
 {
     if(UISettings.bShowMeter||bEditLayout) {
-        UsePanel(TEXT("Meter"),304,174);Frame(0,0,304,174,Gold*.65f);
+        // Compact, collapsible meter (220x134 design). Click the header to fold it.
+        const bool Collapsed=UISettings.bMeterCollapsed&&!bEditLayout;
+        UsePanel(TEXT("Meter"),220,134);
         const bool Heal=UISettings.MeterMode==1,Interactive=!bModal&&!bSettings&&!bEditLayout;
-        Label(Heal?TEXT("HEALING DONE"):TEXT("DAMAGE DONE"),12,10,11,Parchment);
-        Label(TEXT("TOTAL / MATCH"),198,12,8,Muted);
-        Panel(12,30,75,18,Heal?Card:Hover);Label(TEXT("DAMAGE"),23,32,9,Heal?Muted:Gold);
-        Panel(93,30,77,18,Heal?Hover:Card);Label(TEXT("HEALING"),104,32,9,Heal?Teal:Muted);
-        if(Clicked&&Interactive&&Hit(12,30,159,19)){UISettings.MeterMode=Hit(12,30,75,19)?0:1;UISettings.Save();Clicked=false;}
-        TArray<ACireHero*> Party;for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(It->TeamId==Hero->TeamId)Party.Add(*It);
-        Party.Sort([Heal](const ACireHero& A,const ACireHero& B){return Heal?A.HealingDone>B.HealingDone:A.DamageDone>B.DamageDone;});
-        float Total=0,Max=1;for(auto* H:Party){float V=Heal?H->HealingDone:H->DamageDone;Total+=V;Max=FMath::Max(Max,V);}
-        for(int32 I=0;I<FMath::Min(Party.Num(),5);++I) {
-            auto* H=Party[I];const float Value=Heal?H->HealingDone:H->DamageDone,Y=54+I*22;
-            Bar(12,Y,280,18,Value/Max,(Heal?Teal:RoleColor(H->Archetype))*.4f);
-            Label(FString::Printf(TEXT("%d  %s"),I+1,*ShortName(H==Hero?TEXT("You"):H->HeroName,20)),18,Y+2,10,H==Hero?Parchment:Muted);
-            const FString Amount=FString::Printf(TEXT("%.0f  %.0f%%"),Value,Fraction(Value,Total)*100);
-            Label(Amount,287-TextWidth(Amount,9),Y+3,9,Parchment);
+        FCireUIPainter P=Painter();
+        if(!Collapsed)CireUIStyle::Frame(P,0,0,220,134,Gold*.65f,ECireFrame::Card);
+        P.Rect(0,0,220,20,FLinearColor(.12f,.08f,.03f,.9f));P.Line(0,20,220,20,Gold*.6f,1.f);
+        CireUIStyle::Chevron(P,5,5,10,Collapsed);
+        P.Text(Heal?TEXT("HEALING"):TEXT("DAMAGE"),19,4,9.5f,Parchment,ECireFont::Heading);
+        CireUIStyle::Button(P,118,2,48,16,TEXT("DMG"),!Heal?ECireButtonState::Selected:Hit(118,2,48,16)?ECireButtonState::Hover:ECireButtonState::Normal,Gold,7.5f);
+        CireUIStyle::Button(P,168,2,48,16,TEXT("HEAL"),Heal?ECireButtonState::Selected:Hit(168,2,48,16)?ECireButtonState::Hover:ECireButtonState::Normal,Teal,7.5f);
+        Tip(TEXT("Damage / healing meter"),TEXT("Effective team damage or healing this match. Click the title to collapse or expand; DMG / HEAL switches the ranking."),0,0,116,20);
+        if(Clicked&&Interactive&&Hit(118,2,98,16)){UISettings.MeterMode=Hit(118,2,48,16)?0:1;UISettings.Save();Clicked=false;}
+        else if(Clicked&&Interactive&&Hit(0,0,116,20)){UISettings.bMeterCollapsed=!UISettings.bMeterCollapsed;UISettings.Save();Clicked=false;}
+        if(!Collapsed)
+        {
+            TArray<ACireHero*> Party;for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(It->TeamId==Hero->TeamId&&!Cast<ACireSummon>(*It))Party.Add(*It);
+            Party.Sort([Heal](const ACireHero& A,const ACireHero& B){return Heal?A.HealingDone>B.HealingDone:A.DamageDone>B.DamageDone;});
+            float Total=0,Max=1;for(auto* H:Party){float V=Heal?H->HealingDone:H->DamageDone;Total+=V;Max=FMath::Max(Max,V);}
+            for(int32 I=0;I<FMath::Min(Party.Num(),5);++I) {
+                auto* H=Party[I];const float Value=Heal?H->HealingDone:H->DamageDone,Y=25+I*21.5f;
+                Bar(5,Y,210,18,Value/Max,(Heal?Teal:RoleColor(H->Archetype))*.45f);
+                const FString Amount=FString::Printf(TEXT("%.0f (%.0f%%)"),Value,Fraction(Value,Total)*100);
+                const float AW=P.TextWidth(Amount,8.5f,ECireFont::Numbers);
+                P.Text(P.Fit(FString::Printf(TEXT("%d. %s"),I+1,*(H==Hero?FString(TEXT("You")):H->HeroName)),9.5f,200-AW-12,ECireFont::Bold),10,Y+2,9.5f,H==Hero?FLinearColor::White:Parchment,ECireFont::Bold,true,false);
+                P.Text(Amount,210-AW,Y+3,8.5f,Parchment,ECireFont::Numbers,true,false);
+            }
         }
     }
     if(UISettings.bShowCombatLog||bEditLayout) {
@@ -496,20 +536,23 @@ void ACireHUD::DrawHUD()
     MX=MY=-100;float MouseX=0,MouseY=0;if(PlayerOwner->GetMousePosition(MouseX,MouseY)){MX=MouseX/Scale;MY=MouseY/Scale;}
     Clicked=PlayerOwner->WasInputKeyJustPressed(EKeys::LeftMouseButton)&&!PlayerOwner->IsInputKeyDown(EKeys::RightMouseButton);
     auto* Controller=Cast<ACireController>(PlayerOwner);auto* Hero=Cast<ACireHero>(PlayerOwner->GetPawn());auto* State=GetWorld()->GetGameState<ACireGameState>();
-    bModal=Hero&&((!Hero->bDrafted||Hero->Offers.Num()>0||(Controller&&Controller->bShop))||(State&&State->Phase==3));
-    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();
+    bModal=Hero&&((!Hero->bDrafted||(Hero->Offers.Num()>0&&IsSkillOfferOpen())||(Controller&&Controller->bShop))||(State&&State->Phase==3));
+    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();TooltipAbility.Reset();TooltipRegion={0,0,0,0};
+    LastPanelBoxes.Reset();
+    for(FName Id:VisiblePanels)if(Id!=TEXT("CombatText")&&Id!=TEXT("Tooltip")){const FCireUIRect R=PanelRect(Id);LastPanelBoxes.Emplace(FVector2D(R.X,R.Y),FVector2D(R.X+R.W,R.Y+R.H));}
     LayoutInteraction();VisiblePanels.Reset();ResetTransform();
     if(DrawReplayScreen()){DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();return;}
     if(!Hero){Label(TEXT("Joining the battlefield..."),ViewW*.5f-130,ViewH*.5f,20,Parchment);return;}
     UpdateLevelUps(Hero);UpdateThreatAlerts(Hero);UpdateBanners(Hero,State);
-    if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;}
+    if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;TargetChangedAt=GetWorld()->GetRealTimeSeconds();}
     if(!bModal)DrawNameplates(Hero);
     if(!bModal)DrawLevelUps(Hero);
     DrawPlayer(Hero);DrawParty(Hero,Controller);DrawMatch(State);DrawMinimap(Hero,State);
     if(IsValid(Hero->Target)||bEditLayout)DrawUnit(Hero->Target,TEXT("TARGET"),false);
-    if(Controller&&(IsValid(Controller->FocusTarget)||bEditLayout))DrawUnit(Controller->FocusTarget,TEXT("FOCUS / CLICK TO TARGET"),true);
+    if(Controller&&((IsValid(Controller->FocusTarget)&&!IsInBossFrames(Controller->FocusTarget))||bEditLayout))DrawUnit(Controller->FocusTarget,TEXT("FOCUS / CLICK TO TARGET"),true);
     DrawBossFrames(Hero,Controller);DrawThreatMeter(Hero,Controller);
-    DrawSkills(Hero,Controller);DrawChat(Controller);DrawMeters(Hero,Controller);DrawPet(Hero,Controller);
+    DrawActionBars(Hero,Controller);DrawChat(Controller);DrawMeters(Hero,Controller);DrawPet(Hero,Controller);
+    ResetTransform();CireShopUI::DrawHUDElements(*this,Hero,Controller,State); // progression-shop: bag bar, teleport, stats window
     if(!bModal&&!bSettings)DrawCombatText(Hero,Controller);
     ResetTransform();
     if(!bModal&&!bSettings)DrawAlert();
@@ -519,7 +562,8 @@ void ACireHUD::DrawHUD()
     {
         const auto Aim=CireTargeting::Snapshot(Controller);
         if(Aim.bActive){const FString Text=ACireHero::SkillName(Aim.SkillId)+TEXT(" | ")+Aim.Message;const float W=FMath::Min(750.f,TextWidth(Text,12)+28);Frame((ViewW-W)/2,ViewH-248,W,31,Aim.bValid?Teal:Red);Label(Text,(ViewW-W)/2+14,ViewH-240,12,Aim.bValid?Parchment:Red);}
-        if(Hero->Mobility){const float CD=Hero->Mobility->CooldownRemaining();const FString Move=FString::Printf(TEXT("[%s] JUMP   [%s] DODGE %s   [%s] %s"),*UISettings.Keybindings.Label(TEXT("Jump")).ToUpper(),*UISettings.Keybindings.Label(TEXT("DodgeRoll")).ToUpper(),CD>0?*FString::Printf(TEXT("%.1fs"),CD):TEXT("READY"),*UISettings.Keybindings.Label(TEXT("ToggleWalk")).ToUpper(),Hero->Mobility->bWalking?TEXT("WALK"):TEXT("RUN"));Label(Move,(ViewW-TextWidth(Move,9))/2,ViewH-185,9,Hero->Mobility->IsInvulnerable()?Teal:Muted);}
+        if(Hero->Mobility){const float CD=Hero->Mobility->CooldownRemaining();const FString Move=FString::Printf(TEXT("[%s] JUMP   [%s] DODGE %s   [%s] %s"),*UISettings.Keybindings.Label(TEXT("Jump")).ToUpper(),*UISettings.Keybindings.Label(TEXT("DodgeRoll")).ToUpper(),CD>0?*FString::Printf(TEXT("%.1fs"),CD):TEXT("READY"),*UISettings.Keybindings.Label(TEXT("ToggleWalk")).ToUpper(),Hero->Mobility->bWalking?TEXT("WALK"):TEXT("RUN"));float HintY=ViewH-185;for(const TCHAR* BarId:{TEXT("Bar2"),TEXT("Bar3")})if(VisiblePanels.Contains(FName(BarId)))HintY=FMath::Min(HintY,PanelRect(FName(BarId)).Y-14);
+            Label(Move,(ViewW-TextWidth(Move,9))/2,HintY,9,Hero->Mobility->IsInvulnerable()?Teal:Muted);}
     }
     if(!Hero->Notice.IsEmpty()&&!bModal) {
         const FString Notice=ShortName(Hero->Notice,88);
@@ -538,8 +582,11 @@ void ACireHUD::DrawHUD()
         for(int32 I=0;I<5;++I)Label(Rows[I],ViewW*.5f-198,ViewH*.5f-58+I*25,12,I==4?Gold:Muted);
     }
     if(bModal)DrawModal(Hero,Controller,State);
+    ResetTransform();CireShopUI::DrawOverlay(*this,Hero,Controller); // progression-shop: purchase/loot toasts, teleport channel
+    DrawSkillOfferExtras(Hero,Controller); // champion-draft: deferred-offer reminder + pick animation
     if(bEditLayout){VisiblePanels.AddUnique(TEXT("Tooltip"));VisiblePanels.AddUnique(TEXT("Threat"));VisiblePanels.AddUnique(TEXT("Boss"));}
     if(!bModal&&!bSettings&&!bEditLayout)UpdateHoverUnit(Hero);else HoverUnit.Reset();
+    UpdateQuickKeybind();DrawQuickKeybind();
     DrawLayoutEditor();DrawDeveloperLauncher();DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();
 }
 
@@ -549,66 +596,26 @@ void ACireHUD::DrawModal(ACireHero* Hero,ACireController* Controller,ACireGameSt
     ResetTransform(); const float W=ViewW,H=ViewH;
     const bool MatchFinished=State&&State->Phase==3;
     const bool DraftOpen=Hero&&!Hero->bDrafted&&!MatchFinished;
-    const bool OfferOpen=Hero&&Hero->bDrafted&&Hero->Offers.Num()>0&&!MatchFinished;
+    const bool OfferOpen=Hero&&Hero->bDrafted&&Hero->Offers.Num()>0&&IsSkillOfferOpen()&&!MatchFinished;
     const bool ShopOpen=Controller&&Controller->bShop&&!DraftOpen&&!OfferOpen&&!MatchFinished;
     const bool ModalOpen=DraftOpen||OfferOpen||ShopOpen;
     auto Center=[&](const FString& Text,float Y,float Size,FLinearColor Color){Label(Text,(W-TextWidth(Text,Size))*.5f,Y,Size,Color);};
     auto Action=[&](int32 Type,int32 Value){if(Clicked&&Controller&&!bSettings&&!bEditLayout){Controller->ServerAction(Type,Value,nullptr);Clicked=false;}};
     if (ModalOpen)
     {
-        Panel(0, 135, W, H - 330, FLinearColor(0.004f, 0.008f, 0.011f, .78f));
+        if (!ShopOpen) Panel(0, 135, W, H - 330, FLinearColor(0.004f, 0.008f, 0.011f, .78f)); // progression-shop: the shop draws its own backdrop
         if (DraftOpen)
         {
             DrawDraftRoster(Hero,Controller);
         }
         else if (OfferOpen)
         {
-            const float X = W / 2 - 512;
-            Panel(X, 168, 1024, 338, Ink);
-            Panel(X, 168, 1024, 2, Gold);
-            Label(FString(TEXT("POWER TAKES SHAPE  /  "))+UTF8_TO_TCHAR(Cires::DraftRoleName(CireChampionProfiles::DraftRole(Hero))), X + 22, 187, 24, Parchment);
-            Label(TEXT("Choose one skill. Your final build has six active skills, one passive and one ultimate."), X + 23, 226, 12, Muted);
-            for (int32 I = 0; I < FMath::Min(4, Hero->Offers.Num()); ++I)
-            {
-                const float CX = X + 22 + I * 247.f;
-                const bool Over = Hit(CX, 258, 237, 222);
-                const FString& Id = Hero->Offers[I];
-                const bool Passive = ACireHero::IsPassive(Id);
-                const bool Ultimate = ACireHero::IsUltimate(Id);
-                Panel(CX, 258, 237, 222, Over ? Hover : Card);
-                Panel(CX, 258, 237, 3, Ultimate ? Gold : Passive ? Purple : Teal);
-                Label(Ultimate ? TEXT("ULTIMATE / ONE ONLY") : Passive ? TEXT("PASSIVE / ONE ONLY") : TEXT("ACTIVE ABILITY"), CX + 15, 274, 10, Ultimate ? Gold : Passive ? Purple : Teal);
-                Wrapped(ACireHero::SkillName(Id), CX + 15, 303, 208, 18, Parchment, 2);
-                Wrapped(ACireHero::SkillDescription(Id), CX + 15, 355, 205, 12, Muted, 4);
-                Label(FString::Printf(TEXT("[%d] CLAIM ABILITY >"), I + 1), CX + 15, 451, 12, Over ? Parchment : Gold);
-                Tip(ACireHero::SkillName(Id),ACireHero::SkillDescription(Id),CX,258,237,222);
-                if (Over) Action(3, I);
-            }
+            DrawSkillOffer(Hero,Controller); // champion-draft: CireSkillOfferHUD.cpp
         }
         else if (ShopOpen)
         {
-            const float X = W / 2 - 395;
-            Panel(X, 173, 790, 333, Ink);
-            Panel(X, 173, 790, 2, Gold);
-            Label(TEXT("THE QUARTERMASTER"), X + 23, 191, 23, Parchment);
-            Label(State && State->Phase == 1 ? TEXT("Town preparation / spend wisely before the portal opens.") : State && State->Phase == 4 ? TEXT("Town recovery / resupply before the next wave cycle.") : TEXT("Purchases require town preparation or recovery at your base."), X + 24, 229, 12, Muted);
-            Label(TEXT("B  CLOSE"), X + 687, 197, 11, Gold);
-            // Indices and visible prices are mirrored from ACireHero::Purchase.
-            const TCHAR* Names[] = { TEXT("TOME OF EXPERIENCE"), TEXT("TOME OF PRIMARY STAT"), TEXT("FIELD EQUIPMENT"), TEXT("FOCUS RELIC") };
-            const TCHAR* Details[] = { TEXT("Gain 300 experience toward your next level."), TEXT("Gain +3 to your primary attribute this match."), TEXT("Gain +4 to your primary attribute and a gear rank."), TEXT("Gain 5% pure cooldown reduction. Maximum 60%.") };
-            const int32 Prices[] = { 100, 120, 180, 160 };
-            for (int32 I = 0; I < 4; ++I)
-            {
-                const float CX = X + 24 + (I % 2) * 374;
-                const float CY = 265 + (I / 2) * 109;
-                const bool Over = Hit(CX, CY, 365, 96);
-                Panel(CX, CY, 365, 96, Over ? Hover : Card);
-                Label(Names[I], CX + 14, CY + 13, 15, Parchment);
-                Wrapped(Details[I], CX + 14, CY + 40, 335, 11, Muted, 2);
-                Label(FString::Printf(TEXT("%d GOLD  /  PURCHASE >"), Prices[I]), CX + 14, CY + 76, 10, Hero->Gold >= Prices[I] ? Gold : Red);
-                Tip(Names[I],FString(Details[I])+FString::Printf(TEXT(" Costs %d gold. Purchases are validated at your own town during preparation or recovery."),Prices[I]),CX,CY,365,96);
-                if (Over) Action(4, I);
-            }
+            // progression-shop: League-style item shop (CireShopUI.cpp).
+            CireShopUI::DrawShop(*this,Hero,Controller,State);
         }
     }
 

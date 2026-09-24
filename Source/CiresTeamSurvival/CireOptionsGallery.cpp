@@ -8,6 +8,8 @@
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
 #include "CireRealm.h"
+#include "CireBanners.h"
+#include "CireKeybindings.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HAL/FileManager.h"
@@ -95,7 +97,8 @@ const FStage Stages[]={
     {TEXT("01_hud_target_tank")},{TEXT("02_unit_tooltip_npc")},{TEXT("03_unit_tooltip_boss_cursor_avoid")},{TEXT("04_text_tooltip_avoid_center")},
     {TEXT("05_sct_schools_crits")},{TEXT("06_aggro_alert_dps")},{TEXT("07_threat_warning_dps")},{TEXT("08_lost_aggro_tank")},
     {TEXT("09_level_up")},{TEXT("10_scale_070")},{TEXT("11_scale_115")},{TEXT("12_options_scale_threat")},
-    {TEXT("13_options_combat_text")},{TEXT("14_options_tooltips")},{TEXT("15_layout_editor")}};
+    {TEXT("13_options_combat_text")},{TEXT("14_options_tooltips")},{TEXT("15_layout_editor")},
+    {TEXT("16_action_bars_states")},{TEXT("17_quick_keybind")},{TEXT("18_keybindings_page")},{TEXT("19_banner_wave")},{TEXT("20_ability_tooltip")}};
 constexpr int32 StageCount=UE_ARRAY_COUNT(Stages);
 struct FState
 {
@@ -109,7 +112,7 @@ struct FState
     TArray<FString> Files,Failures;
     double Start=0,Ready=-1;
     int32 Stage=-1,Captured=-1,Checks=0;
-    bool bDone=false,bLevelFired=false,bEditing=false;
+    bool bDone=false,bLevelFired=false,bEditing=false,bSweepSet=false;
 } W;
 void Check(bool bValue,const FString& Why){++W.Checks;if(!bValue){W.Failures.Add(Why);UE_LOG(LogTemp,Error,TEXT("CIRE_WOWUI_CHECK_FAIL %s"),*Why);}}
 void Finish()
@@ -162,7 +165,7 @@ bool Setup(ACireGameMode* Mode,ACireController* PC,ACireHUD* HUD)
     W.Elite->PackId=3;W.Bruiser->PackId=3;W.Leader->PackId=3;
     Check(W.Leader->GetNPCClassification()==ECireNPCClass::Boss&&W.Elite->GetNPCClassification()==ECireNPCClass::Elite,TEXT("classification read API"));
     Check(W.Elite->GetNPCRole()==ECireNPCRole::Caster&&W.Hunter->GetNPCRole()==ECireNPCRole::Ranged&&W.Boss->IsLaneBoss(),TEXT("role read API"));
-    PC->FocusTarget=W.Boss.Get();H->Target=W.Elite.Get();
+    PC->FocusTarget=W.Allies[1].Get();H->Target=W.Elite.Get();
     Check(HUD->DebugFontsReady(),TEXT("OFL font faces loaded and runtime fonts built"));
     W.Ready=FPlatformTime::Seconds();return true;
 }
@@ -178,8 +181,10 @@ void Configure(int32 Stage)
     auto* HUD=W.HUD.Get();auto* H=W.Hero.Get();auto* PC=W.PC.Get();auto* E=W.Elite.Get();auto* B=W.Boss.Get();
     auto* Tank=H;auto* Ranger=W.Allies[0].Get();auto* Scholar=W.Allies[1].Get();
     const float Now=W.Mode->GetWorld()->GetTimeSeconds();
-    HUD->DebugTooltipClear();HUD->DebugUnitTooltip(nullptr,FVector2D::ZeroVector);HUD->DebugOptionsPage(0,0,false);
+    HUD->DebugTooltipClear();HUD->DebugUnitTooltip(nullptr,FVector2D::ZeroVector);HUD->DebugAbilityTooltip(FString(),FVector2D::ZeroVector);HUD->DebugOptionsPage(0,0,false);
     if(W.bEditing){HUD->ToggleLayoutEditor();W.bEditing=false;}
+    if(HUD->IsQuickKeybind()){HUD->UISettings.Keybindings.CancelCapture();HUD->ToggleQuickKeybind();}
+    W.Hero->Mana=300;W.Hero->Energy=100;W.Hero->Cooldowns.Init(0,W.Hero->Skills.Num());
     HUD->UISettings.bAutoUIScale=true;HUD->UISettings.TooltipMode=3;
     H->ProfileThreatRole=TEXT("tank");H->Target=E;PC->CombatEvents.Reset();
     SetThreat(E,Ranger,{{Tank,880.f},{Ranger,1000.f},{Scholar,420.f}});
@@ -226,6 +231,20 @@ void Configure(int32 Stage)
     case 12: HUD->DebugOptionsPage(1,0,true);break;
     case 13: HUD->DebugOptionsPage(1,1,true);break;
     case 14: HUD->ToggleLayoutEditor();W.bEditing=true;break;
+    case 15: case 19:
+    {
+        // Bar 2 content, cooldowns (sweep set up in Tick), low mana, out-of-range target, ready ultimate.
+        const FString Profile=H->ChampionProfileId;auto& K=HUD->UISettings.Keybindings;
+        K.AssignSlot(Profile,CireKeybindings::SlotAction(2,1),TEXT("frost_bind"));K.AssignSlot(Profile,CireKeybindings::SlotAction(2,2),TEXT("restoring_light"));
+        K.AssignSlot(Profile,CireKeybindings::SlotAction(2,3),TEXT("ember_lance"));K.AssignSlot(Profile,CireKeybindings::SlotAction(2,4),TEXT("war_cry"));
+        H->Mana=30;H->Target=W.Hunter.Get();
+        for(int32 I=0;I<H->Skills.Num();++I)H->Cooldowns[I]=I==0?9.f:I==2?12.f:I==3?30.f:0.f;
+        W.bSweepSet=false;
+        break;
+    }
+    case 16: HUD->ToggleQuickKeybind();HUD->UISettings.Keybindings.BeginCapture(CireKeybindings::SlotAction(1,3),0);break;
+    case 17: HUD->DebugKeybindCategory(4);HUD->DebugOptionsPage(0,1,true);break;
+    case 18: CireBanners::Show(ECireBanner::WaveIncoming,TEXT("Wave 5"),TEXT("Incoming in 5 seconds."));break;
     default: break;
     }
     W.Stage=Stage;
@@ -237,6 +256,21 @@ void Capture(int32 Stage)
     const FVector2D View=HUD->DebugTooltipViewport();
     const float Expected=Stage==9?1.5f*.7f:Stage==10?1.5f*1.15f:1.5f;
     Check(FMath::IsNearlyEqual(HUD->DebugScale(),Expected,.01f),FString::Printf(TEXT("%s: interface scale %.3f (expected %.3f)"),Stages[Stage].Name,HUD->DebugScale(),Expected));
+    if(Stage==0)
+    {
+        // Default WoW layout: the main frames never overlap each other at 1080p.
+        const TCHAR* Ids[]={TEXT("Player"),TEXT("Party"),TEXT("Target"),TEXT("Focus"),TEXT("Match"),TEXT("Minimap"),TEXT("Boss"),TEXT("Threat"),
+            TEXT("Meter"),TEXT("Skills"),TEXT("Chat"),TEXT("Inventory"),TEXT("Bar2"),TEXT("Pet"),TEXT("Stats")};
+        for(int32 A=0;A<UE_ARRAY_COUNT(Ids);++A)for(int32 B=A+1;B<UE_ARRAY_COUNT(Ids);++B)
+        {
+            const FCireUIRect RA=HUD->UISettings.GetRect(Ids[A],View),RB=HUD->UISettings.GetRect(Ids[B],View);
+            const bool bOverlap=RA.X<RB.X+RB.W-.5f&&RB.X<RA.X+RA.W-.5f&&RA.Y<RB.Y+RB.H-.5f&&RB.Y<RA.Y+RA.H-.5f;
+            Check(!bOverlap,FString::Printf(TEXT("default panels %s and %s do not overlap"),Ids[A],Ids[B]));
+        }
+        // The centre of the screen (character and the ground around it) stays clear.
+        const FBox2D Centre(FVector2D(View.X*.5f-130,View.Y*.5f-130),FVector2D(View.X*.5f+130,View.Y*.5f+120));
+        for(const TCHAR* Id:Ids){const FCireUIRect R=HUD->UISettings.GetRect(Id,View);Check(!FBox2D(FVector2D(R.X,R.Y),FVector2D(R.X+R.W,R.Y+R.H)).Intersect(Centre),FString(TEXT("centre clear of "))+Id);}
+    }
     if(Stage==9||Stage==10)
     {
         const FCireUIRect Map=HUD->UISettings.GetRect(TEXT("Minimap"),View),Chat=HUD->UISettings.GetRect(TEXT("Chat"),View),Skills=HUD->UISettings.GetRect(TEXT("Skills"),View);
@@ -290,6 +324,9 @@ bool Tick(ACireGameMode* Mode)
     if(W.Elite->CastEndsAt<Now+.5f){W.Elite->CastStartedAt=Now-.9f;W.Elite->CastEndsAt=Now+1.1f;}
     if(W.Boss->CastEndsAt<Now+.3f){W.Boss->CastStartedAt=Now-.5f;W.Boss->CastEndsAt=Now+.8f;}
     if(Stage==8&&!W.bLevelFired&&Age>=5+Stage*3-.8){W.Hero->Level=13;W.HUD->DebugLevelUp(W.Hero.Get(),true);W.bLevelFired=true;}
+    // Partial cooldown sweeps: the HUD learns each full cooldown when it starts, then we advance it.
+    if((Stage==15||Stage==19)&&!W.bSweepSet&&Age>=4+Stage*3){for(int32 I=0;I<W.Hero->Skills.Num();++I)if(W.Hero->Cooldowns[I]>0)W.Hero->Cooldowns[I]*=I==3?.8f:.4f;W.bSweepSet=true;}
+    if(Stage==19&&Age>=4.5+Stage*3&&Age<4.6+Stage*3)W.HUD->DebugAbilityTooltip(W.Hero->Skills[0],FVector2D(600,500));
     if(Age>=5+Stage*3&&Stage>W.Captured)Capture(Stage);
     if(Age>=5+StageCount*3)Finish();
     return true;

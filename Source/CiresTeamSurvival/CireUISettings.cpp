@@ -8,7 +8,16 @@ namespace
 constexpr float ReferenceWidth = 1280.f;
 constexpr float ReferenceHeight = 720.f;
 // 4: interface scale, per-panel anchors, WoW tooltip/SCT/threat/level-up preferences.
-constexpr int32 LayoutVersion = 4;
+// 5: WoW default layout (target beside the player, focus left-middle, boss/threat/meter
+//    stacked on the right); unmoved panels of older profiles adopt it.
+constexpr int32 LayoutVersion = 5;
+struct FOldDefault { const TCHAR* Id; float X, Y, W, H; };
+// Reference-unit defaults before schema 5, for "the user never moved this" detection.
+const FOldDefault OldDefaults[] = {
+    {TEXT("Party"), 20, 166, 250, 248}, {TEXT("Match"), 480, 18, 320, 74}, {TEXT("Target"), 482, 111, 300, 140},
+    {TEXT("Focus"), 796, 111, 218, 123}, {TEXT("Boss"), 1040, 242, 220, 150}, {TEXT("Threat"), 1040, 398, 220, 124},
+    {TEXT("Meter"), 956, 526, 304, 174}, {TEXT("Pet"), 20, 426, 250, 90}, {TEXT("CombatLog"), 956, 362, 304, 150},
+    {TEXT("Stats"), 282, 166, 176, 238}};
 const TCHAR* PreferencesSection = TEXT("CireUI.Preferences");
 
 float SafeFloat(float Value, float Default, float Minimum, float Maximum)
@@ -49,23 +58,32 @@ void FCireUISettings::Reset()
         Panels.Add(FName(Id), Layout);
         PanelIds.Add(FName(Id));
     };
+    // WoW layout: player top-left, target to its right, focus on the left at mid height;
+    // the screen centre and the ground around the character stay clear.
     Add(TEXT("Player"), 20.f, 20.f, 260.f, 132.f);
-    Add(TEXT("Party"), 20.f, 166.f, 250.f, 248.f);
-    Add(TEXT("Match"), 480.f, 18.f, 320.f, 74.f);
-    Add(TEXT("Target"), 482.f, 111.f, 300.f, 140.f);
-    Add(TEXT("Focus"), 796.f, 111.f, 218.f, 123.f);
+    Add(TEXT("Party"), 20.f, 166.f, 210.f, 248.f);
+    Add(TEXT("Match"), 540.f, 16.f, 250.f, 70.f);
+    Add(TEXT("Target"), 290.f, 20.f, 240.f, 140.f);
+    Add(TEXT("Focus"), 290.f, 176.f, 218.f, 123.f);
     Add(TEXT("Minimap"), 1040.f, 20.f, 220.f, 178.f);
     Add(TEXT("Chat"), 20.f, 528.f, 306.f, 172.f);
     Add(TEXT("Skills"), 344.f, 545.f, 584.f, 155.f);
-    Add(TEXT("Meter"), 956.f, 526.f, 304.f, 174.f);
-    Add(TEXT("CombatLog"), 956.f, 362.f, 304.f, 150.f);
+    Add(TEXT("Meter"), 1040.f, 566.f, 220.f, 134.f);
+    Add(TEXT("CombatLog"), 1040.f, 412.f, 220.f, 140.f);
     Add(TEXT("CombatText"), 425.f, 240.f, 430.f, 220.f);
     // The WoW-style default tooltip grows up/left from this panel's lower-right
     // corner: right of the reticle, above the action bar and meter.
     Add(TEXT("Tooltip"), 690.f, 368.f, 340.f, 150.f);
-    Add(TEXT("Pet"), 20.f, 426.f, 250.f, 90.f);
-    Add(TEXT("Threat"), 1040.f, 398.f, 220.f, 124.f);
-    Add(TEXT("Boss"), 1040.f, 242.f, 220.f, 150.f);
+    Add(TEXT("Pet"), 290.f, 306.f, 210.f, 90.f); // under the focus frame; the bag bar owns 20,420
+    // Right column under the minimap: boss frames, then threat, then the damage meter.
+    Add(TEXT("Boss"), 1040.f, 208.f, 220.f, 150.f);
+    Add(TEXT("Threat"), 1040.f, 372.f, 220.f, 124.f);
+    // Extra action bars stack above the main bar (panel "Skills").
+    Add(TEXT("Bar2"), 368.f, 492.f, 536.f, 48.f);
+    Add(TEXT("Bar3"), 368.f, 440.f, 536.f, 48.f);
+    // progression-shop: bag/belt/teleport bar and the compact stats window (CireShopUI).
+    Add(TEXT("Inventory"), 20.f, 420.f, 306.f, 102.f);
+    Add(TEXT("Stats"), 858.f, 208.f, 176.f, 238.f); // wow-ui: beside the right column, clear of focus/party
 
     bLayoutLocked = true;
     bShowChat = true;
@@ -87,6 +105,7 @@ void FCireUISettings::Reset()
     CameraYawSensitivity=CameraPitchSensitivity=1.f; bInvertMouseY=false;
     CameraDistance=650.f; CameraFOV=80.f;
     MasterVolume=.85f; SFXVolume=.85f; UIVolume=.7f; bMuteAudio=false;
+    MusicVolume=.6f; AmbienceVolume=.8f; bMusicEnabled=true; bFootstepCameraShake=false; // audio:
     bShowFPS=false; bShowNetwork=true; bTooltips=true; bQuickGroundCast=false;
     TooltipScale=.8f; TooltipMode=3; TooltipAngleDegrees=45.f; TooltipDistance=40.f; bTooltipOffsetLocked=true;
     StatusFilter=0; bDispellableOnly=false; bShowStatusDurations=true; bShowCriticalSymbol=true;
@@ -94,7 +113,10 @@ void FCireUISettings::Reset()
     UIScale=1.f; bAutoUIScale=true; TooltipOpacity=.94f; TooltipDelay=.12f; bTooltipAvoidCenter=true; bUnitTooltips=true;
     bShowMisses=true; bCritPop=true; bSchoolColors=true; bMergeAoE=true; SCTDirection=0; SCTSpeed=1.f; SCTFadeSeconds=3.2f;
     bShowThreatMeter=true; bThreatWarnings=true; bThreatSound=true; ThreatWarningPercent=90.f; bLevelUpEffect=true; bShowBossFrames=true;
+    bShowActionBar2=true; bShowActionBar3=false; bLockActionBars=false; bMeterCollapsed=false; bThreatCollapsed=false;
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
+    OtherEffectsIntensity=1.f; // aura-vfx
+    bShowStats=false; // progression-shop; wow-ui: closed by default (C toggles) to keep the screen clean
 }
 
 int32 FCireUISettings::AnchorFor(float Left, float Top, float Right, float Bottom)
@@ -199,6 +221,7 @@ void FCireUISettings::SanitizePreferences()
     CameraYawSensitivity=SafeFloat(CameraYawSensitivity,1,.05f,5); CameraPitchSensitivity=SafeFloat(CameraPitchSensitivity,1,.05f,5); // camera-movement: widened
     CameraDistance=SafeFloat(CameraDistance,650,300,1200); CameraFOV=SafeFloat(CameraFOV,80,55,105);
     MasterVolume=SafeFloat(MasterVolume,.85f,0,1); SFXVolume=SafeFloat(SFXVolume,.85f,0,1); UIVolume=SafeFloat(UIVolume,.7f,0,1);
+    MusicVolume=SafeFloat(MusicVolume,.6f,0,1); AmbienceVolume=SafeFloat(AmbienceVolume,.8f,0,1); // audio:
     StatusFilter=FMath::Clamp(StatusFilter,0,2);
     TooltipScale=SafeFloat(TooltipScale,.8f,.6f,1.4f);
     TooltipAngleDegrees=SafeFloat(TooltipAngleDegrees,45,0,360); TooltipDistance=SafeFloat(TooltipDistance,40,16,240);
@@ -207,6 +230,7 @@ void FCireUISettings::SanitizePreferences()
     TooltipDelay=SafeFloat(TooltipDelay,.12f,0.f,1.5f); SCTDirection=FMath::Clamp(SCTDirection,0,2);
     SCTSpeed=SafeFloat(SCTSpeed,1.f,.5f,2.f); SCTFadeSeconds=SafeFloat(SCTFadeSeconds,3.2f,1.5f,5.f);
     ThreatWarningPercent=SafeFloat(ThreatWarningPercent,90.f,60.f,100.f);
+    OtherEffectsIntensity=SafeFloat(OtherEffectsIntensity,1.f,0.f,1.f); // aura-vfx
 }
 
 void FCireUISettings::Load(const FString& Filename)
@@ -244,7 +268,11 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bAutoUIScale); CIRE_LOAD_BOOL(bTooltipAvoidCenter); CIRE_LOAD_BOOL(bUnitTooltips); CIRE_LOAD_BOOL(bShowMisses);
     CIRE_LOAD_BOOL(bCritPop); CIRE_LOAD_BOOL(bSchoolColors); CIRE_LOAD_BOOL(bMergeAoE); CIRE_LOAD_BOOL(bShowThreatMeter);
     CIRE_LOAD_BOOL(bThreatWarnings); CIRE_LOAD_BOOL(bThreatSound); CIRE_LOAD_BOOL(bLevelUpEffect); CIRE_LOAD_BOOL(bShowBossFrames);
+    CIRE_LOAD_BOOL(bShowActionBar2); CIRE_LOAD_BOOL(bShowActionBar3); CIRE_LOAD_BOOL(bLockActionBars);
+    CIRE_LOAD_BOOL(bMeterCollapsed); CIRE_LOAD_BOOL(bThreatCollapsed);
     CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
+    CIRE_LOAD_BOOL(bMusicEnabled); CIRE_LOAD_BOOL(bFootstepCameraShake); // audio: absent keys keep the defaults
+    CIRE_LOAD_BOOL(bShowStats); // progression-shop
 #undef CIRE_LOAD_BOOL
     Config.GetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
     Config.GetFloat(PreferencesSection, TEXT("ChatColorR"), ChatColor.R);
@@ -257,9 +285,11 @@ void FCireUISettings::Load(const FString& Filename)
 #define CIRE_LOAD_FLOAT(Field) Config.GetFloat(PreferencesSection,TEXT(#Field),Field)
     CIRE_LOAD_FLOAT(CameraYawSensitivity); CIRE_LOAD_FLOAT(CameraPitchSensitivity); CIRE_LOAD_FLOAT(CameraDistance); CIRE_LOAD_FLOAT(CameraFOV);
     CIRE_LOAD_FLOAT(MasterVolume); CIRE_LOAD_FLOAT(SFXVolume); CIRE_LOAD_FLOAT(UIVolume);
+    CIRE_LOAD_FLOAT(MusicVolume); CIRE_LOAD_FLOAT(AmbienceVolume); // audio:
     CIRE_LOAD_FLOAT(TooltipScale); CIRE_LOAD_FLOAT(TooltipAngleDegrees); CIRE_LOAD_FLOAT(TooltipDistance);
     CIRE_LOAD_FLOAT(UIScale); CIRE_LOAD_FLOAT(TooltipOpacity); CIRE_LOAD_FLOAT(TooltipDelay); CIRE_LOAD_FLOAT(SCTSpeed);
     CIRE_LOAD_FLOAT(SCTFadeSeconds); CIRE_LOAD_FLOAT(ThreatWarningPercent);
+    CIRE_LOAD_FLOAT(OtherEffectsIntensity); // aura-vfx: absent in older profiles, keeps the default
 #undef CIRE_LOAD_FLOAT
     Config.GetInt(PreferencesSection,TEXT("TooltipMode"),TooltipMode); Config.GetInt(PreferencesSection,TEXT("StatusFilter"),StatusFilter);
     Config.GetInt(PreferencesSection,TEXT("SCTDirection"),SCTDirection);
@@ -287,6 +317,16 @@ void FCireUISettings::Load(const FString& Filename)
         int32 Anchor = AnchorFor(R.X, R.Y, R.X + R.W, R.Y + R.H);
         if (Version >= 4) Config.GetInt(*Section, TEXT("Anchor"), Anchor);
         Entry.Value.Anchor = FMath::Clamp(Anchor, 0, 8);
+        // Schema 5 moved several defaults; adopt them only where the saved rectangle is
+        // still the old default (the player never moved that panel).
+        if (Version < 5)
+            for (const FOldDefault& Old : OldDefaults)
+                if (Entry.Key == FName(Old.Id) && FMath::IsNearlyEqual(R.X, Old.X / ReferenceWidth, .002f) && FMath::IsNearlyEqual(R.Y, Old.Y / ReferenceHeight, .002f)
+                    && FMath::IsNearlyEqual(R.W, Old.W / ReferenceWidth, .002f) && FMath::IsNearlyEqual(R.H, Old.H / ReferenceHeight, .002f))
+                {
+                    R = Default;
+                    Entry.Value.Anchor = AnchorFor(R.X, R.Y, R.X + R.W, R.Y + R.H);
+                }
     }
 }
 
@@ -314,7 +354,11 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bAutoUIScale); CIRE_SAVE_BOOL(bTooltipAvoidCenter); CIRE_SAVE_BOOL(bUnitTooltips); CIRE_SAVE_BOOL(bShowMisses);
     CIRE_SAVE_BOOL(bCritPop); CIRE_SAVE_BOOL(bSchoolColors); CIRE_SAVE_BOOL(bMergeAoE); CIRE_SAVE_BOOL(bShowThreatMeter);
     CIRE_SAVE_BOOL(bThreatWarnings); CIRE_SAVE_BOOL(bThreatSound); CIRE_SAVE_BOOL(bLevelUpEffect); CIRE_SAVE_BOOL(bShowBossFrames);
+    CIRE_SAVE_BOOL(bShowActionBar2); CIRE_SAVE_BOOL(bShowActionBar3); CIRE_SAVE_BOOL(bLockActionBars);
+    CIRE_SAVE_BOOL(bMeterCollapsed); CIRE_SAVE_BOOL(bThreatCollapsed);
     CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
+    CIRE_SAVE_BOOL(bMusicEnabled); CIRE_SAVE_BOOL(bFootstepCameraShake); // audio:
+    CIRE_SAVE_BOOL(bShowStats); // progression-shop
 #undef CIRE_SAVE_BOOL
     Config.SetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
     Config.SetFloat(PreferencesSection, TEXT("ChatColorR"), ChatColor.R);
@@ -327,9 +371,11 @@ bool FCireUISettings::Save()
 #define CIRE_SAVE_FLOAT(Field) Config.SetFloat(PreferencesSection,TEXT(#Field),Field)
     CIRE_SAVE_FLOAT(CameraYawSensitivity); CIRE_SAVE_FLOAT(CameraPitchSensitivity); CIRE_SAVE_FLOAT(CameraDistance); CIRE_SAVE_FLOAT(CameraFOV);
     CIRE_SAVE_FLOAT(MasterVolume); CIRE_SAVE_FLOAT(SFXVolume); CIRE_SAVE_FLOAT(UIVolume);
+    CIRE_SAVE_FLOAT(MusicVolume); CIRE_SAVE_FLOAT(AmbienceVolume); // audio:
     CIRE_SAVE_FLOAT(TooltipScale); CIRE_SAVE_FLOAT(TooltipAngleDegrees); CIRE_SAVE_FLOAT(TooltipDistance);
     CIRE_SAVE_FLOAT(UIScale); CIRE_SAVE_FLOAT(TooltipOpacity); CIRE_SAVE_FLOAT(TooltipDelay); CIRE_SAVE_FLOAT(SCTSpeed);
     CIRE_SAVE_FLOAT(SCTFadeSeconds); CIRE_SAVE_FLOAT(ThreatWarningPercent);
+    CIRE_SAVE_FLOAT(OtherEffectsIntensity); // aura-vfx
 #undef CIRE_SAVE_FLOAT
     Config.SetString(PreferencesSection,TEXT("SCTDirection"),*FString::FromInt(SCTDirection));
     Config.SetString(PreferencesSection,TEXT("TooltipMode"),*FString::FromInt(TooltipMode));

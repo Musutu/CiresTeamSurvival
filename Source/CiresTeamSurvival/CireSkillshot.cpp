@@ -10,6 +10,7 @@
 #include "EngineUtils.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Net/UnrealNetwork.h"
+#include "CireBuffs.h" // aura-vfx
 
 ACireSkillshot::ACireSkillshot()
 {
@@ -203,6 +204,7 @@ void ACireSkillshot::Travel(float Distance)
                     const float Until=GetWorld()->GetTimeSeconds()+CireDeveloperTools::EffectSeconds(GetWorld(),4.f);
                     if(auto* Hero=Cast<ACireHero>(Target)){Hero->SlowUntil=FMath::Max(Hero->SlowUntil,Until);Hero->ForceNetUpdate();}
                     if(auto* Monster=Cast<ACireMonster>(Target)){Monster->SlowUntil=FMath::Max(Monster->SlowUntil,Until);Monster->ForceNetUpdate();}
+                    CireBuffs::Apply(Target,TEXT("frost_bind"),Until-GetWorld()->GetTimeSeconds(),SourceActor); // aura-vfx
                 }
                 if (HitCount >= ShotSpec.HitLimit) { Destroy(); return; }
             }

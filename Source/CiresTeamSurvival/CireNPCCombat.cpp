@@ -1,4 +1,5 @@
 #include "CireNPCCombat.h"
+#include "CireLoot.h" // progression-shop: NPC pause
 #include "CireGame.h"
 #include "CireThreat.h"
 #include "CireNPCState.h"
@@ -17,6 +18,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "CireBuffs.h" // aura-vfx
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireNPCCombat,Log,All);
 
@@ -283,7 +285,7 @@ void ReleaseCast(ACireMonster* M,ACireGameMode* Mode)
         for(TActorIterator<ACireHero> It(M->GetWorld());It;++It)
         {
             auto* H=*It;if(!HeroTargetable(M,H)||FVector::DistSquared2D(M->GetActorLocation(),H->GetActorLocation())>FMath::Square(A->Radius))continue;
-            S->ProvokedUntil.FindOrAdd(H)=Now+A->Duration;
+            S->ProvokedUntil.FindOrAdd(H)=Now+A->Duration; CireBuffs::Apply(H,TEXT("npc_tank_provoke_debuff"),A->Duration,M); // aura-vfx
             if(H->bBot)H->Target=M; // bots obey the taunt; human input is never forced
         }
         break;
@@ -444,11 +446,14 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     if(!M->HasAuthority()||!Mode||M->Health<=0)return;
     auto* Movement=M->GetCharacterMovement();
     auto* S=St(M);const auto* A=Arch(M);
+    // progression-shop: outside the survival phase every NPC is paused: no movement, attacks or
+    // casts, and its cooldown/buff/slow/cast timers freeze and resume exactly (CireProgression).
     if(Mode->Clock.Phase()!=Cires::MatchPhase::Survival||M->Damage<=0)
     {
-        if(!M->CastingAbility.IsEmpty())Interrupt(M);
+        CireProgression::PauseNPC(M,M->GetWorld()->GetTimeSeconds());
         Movement->StopMovementImmediately();return;
     }
+    CireProgression::ResumeNPC(M,M->GetWorld()->GetTimeSeconds());
     if(!FMath::IsFinite(Delta)||Delta<0)return;
     const float Now=M->GetWorld()->GetTimeSeconds();
     if(M->BaseMoveSpeed<=0)M->BaseMoveSpeed=Movement->MaxWalkSpeed;

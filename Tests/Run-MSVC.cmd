@@ -20,5 +20,13 @@ if errorlevel 1 (
 )
 build\CiresRulesTests.exe
 set "CIRES_RESULT=%ERRORLEVEL%"
+rem progression-shop: item, shop, loot, pack-gating, teleport and NPC-pause rules.
+cl /nologo /std:c++17 /EHsc /W4 /WX /permissive- /O2 /I"..\Source\CiresTeamSurvival\Rules" ItemRulesTests.cpp ..\Source\CiresTeamSurvival\Rules\CireItemRules.cpp /Fo"build\\" /Fe"build\CireItemRulesTests.exe"
+if errorlevel 1 (
+    popd
+    exit /b 1
+)
+build\CireItemRulesTests.exe
+if errorlevel 1 set "CIRES_RESULT=1"
 popd
 exit /b %CIRES_RESULT%

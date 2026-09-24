@@ -98,7 +98,7 @@ bool HasTripoChampionArt(const ACireHero* Hero, FString& Reason) {
     const double CapsuleFeet=Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     const double Height=2.0*Bounds.BoxExtent.Z*Mesh->GetComponentScale().Z;
     if(Mesh->GetComponentTransform().ContainsNaN()||Feet.ContainsNaN()||!FMath::IsFinite(CapsuleFeet)||
-        !FMath::IsNearlyEqual(Feet.Z,CapsuleFeet,3.0)||!FMath::IsNearlyEqual(Height,static_cast<double>(Heights[Hero->Archetype]),0.5))
+        !FMath::IsNearlyEqual(Feet.Z,CapsuleFeet,3.0)||!FMath::IsNearlyEqual(Height,static_cast<double>(Heights[Hero->Archetype])*Hero->GetActorScale3D().Z,0.5)) // tank body scale (MovementTuning TankBodyScale) enlarges mesh and capsule together
         return Reject(TEXT("Tripo feet or height do not align with the unchanged capsule"));
     if(Mesh->GetNumMaterials()!=Asset->GetMaterials().Num())return Reject(TEXT("Tripo material slots changed"));
     for(int32 Index=0;Index<Asset->GetMaterials().Num();++Index)

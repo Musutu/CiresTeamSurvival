@@ -45,7 +45,10 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void DrawHUD() override;
     bool IsEditingLayout() const { return bEditLayout; }
-    bool IsBlockingGameplayInput() const { return bEditLayout || bSettings; }
+    bool IsBlockingGameplayInput() const { return bEditLayout || bSettings || bQuickKeybind; }
+    /** WoW Quick Keybind mode: hover an action button and press a key to bind it. */
+    void ToggleQuickKeybind();
+    bool IsQuickKeybind() const { return bQuickKeybind; }
     bool IsPointerOverInterface() const;
     bool HandleEscape();
     void ToggleLayoutEditor();
@@ -55,11 +58,16 @@ public:
     FCireUISettings UISettings;
     void RevertVideoPreview();
     bool DraftRosterSlot(int32 Slot);
+    // champion-draft: level-up skill offer (CireSkillOfferHUD.cpp). Open = cards shown and
+    // action-bar keys 1-4 pick; collapsed/deferred = a pulsing reminder, combat keys cast.
+    bool IsSkillOfferOpen() const;
+    void SetSkillOfferOpen(bool bOpen);
     void ChangeDraftRosterPage(int32 Delta);
     FString DraftRosterIdForSlot(int32 Slot) const;
     int32 DraftRosterPageCount() const;
 #if !UE_BUILD_SHIPPING
-    void DebugOptionsPage(int32 Tab,int32 Page,bool bOpen=true) { OptionsTab=Tab;InterfacePage=Page;if(Tab==5)DeveloperPage=Page;bSettings=bOpen;bVideoLoaded=false; }
+    void DebugOptionsPage(int32 Tab,int32 Page,bool bOpen=true) { OptionsTab=Tab;InterfacePage=Page;if(Tab==0)ControlsPage=Page;if(Tab==5)DeveloperPage=Page;bSettings=bOpen;bVideoLoaded=false; }
+    void DebugKeybindCategory(int32 Category) { KeybindCategory=Category; }
     void DebugDraftRosterPage(int32 Page) { RosterPage=FMath::Clamp(Page,0,DraftRosterPageCount()-1); }
     void DebugTooltip(const FString& Title,const FString& Body,FVector2D Cursor);
     void DebugTooltipClear() { bDebugTooltip=false; }
@@ -69,12 +77,26 @@ public:
     FVector2D DebugTooltipViewport() const { return FVector2D(ViewW,ViewH); }
     /** WoW UI gallery hooks: force a unit tooltip, a level-up burst or an alert. */
     void DebugUnitTooltip(AActor* Unit,FVector2D Cursor) { DebugHoverUnit=Unit;DebugHoverCursor=Cursor; }
+    void DebugAbilityTooltip(const FString& Id,FVector2D Cursor) { DebugAbilityId=Id;DebugHoverCursor=Cursor; }
     void DebugLevelUp(ACireHero* Hero,bool bLocal);
     void DebugAlert(const FString& Title,const FString& Subtitle,FLinearColor Color) { ShowAlert(Title,Subtitle,Color,false); }
     float DebugScale() const { return Scale; }
     FCireUIRect PanelRectForTest(FName Id) const { return PanelRect(Id); }
     bool DebugFontsReady() const { return CireUIStyle::Assets().bFonts; }
 #endif
+    // progression-shop: hooks for CireShopUI (shop, bag/belt/teleport bar, stats window, loot toasts).
+    FCireUIPainter ScreenPainter() const { FCireUIPainter P; P.Canvas=Canvas; P.Scale=Scale; return P; }
+    FVector2D LogicalViewport() const { return FVector2D(ViewW,ViewH); }
+    FVector2D LogicalMouse() const { return FVector2D(MX,MY); }
+    bool HasClick() const { return Clicked; }
+    bool TakeClick() { const bool bWasClicked=Clicked; Clicked=false; return bWasClicked; }
+    bool IsInteractive() const { return !bEditLayout&&!bSettings; }
+    bool IsModalOpen() const { return bModal; }
+    void RegisterPanel(FName Id) { VisiblePanels.AddUnique(Id); }
+    FCireUIRect LayoutRect(FName Id) const { return PanelRect(Id); }
+    void SetTooltip(const FString& Title,const FString& Body) { TooltipTitle=Title; TooltipBody=Body; }
+    void PlayInterfaceSound(int32 Index,float Volume=1.f) { PlayWowSound(Index,Volume); }
+    // progression-shop: end
 private:
     void Panel(float X, float Y, float W, float H, FLinearColor Color);
     void Label(const FString& Text, float X, float Y, float Size, FLinearColor Color=FLinearColor::White);
@@ -103,6 +125,8 @@ private:
     void DrawSettings();
     void DrawModal(ACireHero* Hero, ACireController* Controller, ACireGameState* State);
     void DrawDraftRoster(ACireHero* Hero, ACireController* Controller);
+    void DrawSkillOffer(ACireHero* Hero, ACireController* Controller);        // champion-draft: modal cards
+    void DrawSkillOfferExtras(ACireHero* Hero, ACireController* Controller);  // champion-draft: reminder, pick animation, toggle key
     void DrawPlayer(ACireHero* Hero);
     void DrawParty(ACireHero* Hero, ACireController* Controller);
     void DrawUnit(AActor* Actor, const FString& Caption, bool bFocus);
@@ -126,6 +150,14 @@ private:
     void DrawMatch(ACireGameState* State);
     void DrawMinimap(ACireHero* Hero, ACireGameState* State);
     void DrawSkills(ACireHero* Hero, ACireController* Controller);
+    // ---- action bars / keybinding (CireHUDActionBars.cpp) ----
+    void DrawActionBars(ACireHero* Hero, ACireController* Controller);
+    bool DrawActionButton(ACireHero* Hero, ACireController* Controller, int32 Bar, int32 Index, float X, float Y, float Size);
+    void DrawAbilityTooltip(const FString& Id, FVector2D Cursor);
+    void UpdateQuickKeybind();
+    void DrawQuickKeybind();
+    void DrawKeybindingsPage(float L, float Top);
+    FString QuickActionName(FName Action) const;
     void DrawChat(ACireController* Controller);
     void DrawMeters(ACireHero* Hero, ACireController* Controller);
     void DrawCombatText(ACireHero* Hero, ACireController* Controller);
@@ -140,6 +172,15 @@ private:
     void DrawDeveloperLauncher();
     FCireUIRect DeveloperLauncherRect() const;
     FCireUIRect PanelRect(FName Id) const;
+    /** Top edge of the highest visible action bar (for reminders placed above the bars). */
+    float ActionBarsTop() const;
+    /** Centre X of the free band between side frames (banners, alerts). */
+    float CentreGapX(float Top, float Bottom) const;
+    bool IsDeveloperLauncherVisible() const;
+    bool IsInBossFrames(const AActor* Actor) const;
+    bool bShowDevLauncher = false;
+    TArray<FBox2D> LastPanelBoxes;
+    TArray<TWeakObjectPtr<AActor>> BossFrameUnits;
     FCireMovementTuning MovementDraft;
     bool bMovementLoaded=false;
     bool DrawReplayScreen();
@@ -149,12 +190,24 @@ private:
     float LabSeconds=60;
     FString DeveloperMessage;
     FString TooltipTitle,TooltipBody;
+    FString TooltipAbility;
+    FCireUIRect TooltipRegion; // logical rect of the element whose Tip() won this frame
+    FName TooltipAbilitySlot, HoverSlot, DragSlot, QuickHold;
+    FString DragAbility, QuickMessage;
+    FVector2D DragStart = FVector2D::ZeroVector;
+    bool bBarDragging = false, bBarPressCandidate = false, bQuickKeybind = false, bQuickCapturing = false, KeybindWheelArmed = false;
+    double QuickMessageAt = -100.0;
+    int32 KeybindCategory = 4, KeybindScroll = 0, ControlsPage = 1;
+    TMap<FString, float> LastCooldown, CooldownMax;
+    TMap<FString, double> PressFlashAt, ReadyFlashAt;
     // WoW interface state.
     UPROPERTY() TArray<TObjectPtr<UObject>> WowAssetRefs;
     TMap<uint64, FCireBarTrail> BarTrails;
     float PanelAlpha = 1.f;
     int32 BannerSeenPhase = -1, BannerSeenWave = 0, BannerSeenCleared = 0, BannerCountdownWave = 0, BannerSeenChallengeTier = 0;
     TSet<TWeakObjectPtr<ACireMonster>> BannerSeenBosses;
+    FName BannerPendingDistrict, BannerShownDistrict;
+    double BannerDistrictSince = 0.0, TargetChangedAt = -100.0;
     UPROPERTY() TArray<TObjectPtr<USoundBase>> WowSounds;
     ECireFont NextFont = ECireFont::Auto;
     TWeakObjectPtr<AActor> HoverUnit, TooltipUnit, LastTargetSeen;
@@ -167,6 +220,7 @@ private:
     double TooltipHoverStart = 0.0;
     float PendingUIScale = -1.f;
     TWeakObjectPtr<AActor> DebugHoverUnit;
+    FString DebugAbilityId;
     FVector2D DebugHoverCursor = FVector2D::ZeroVector;
 #if !UE_BUILD_SHIPPING
     bool bDebugTooltip=false;

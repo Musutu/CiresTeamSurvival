@@ -62,6 +62,8 @@ public:
     UPROPERTY(VisibleAnywhere) UCameraComponent* Camera;
     UPROPERTY(VisibleAnywhere) TObjectPtr<UCireChampionArt> ChampionArt;
     UPROPERTY(VisibleAnywhere) TObjectPtr<UCireMobility> Mobility;
+    // progression-shop: replicated items, belt, elixirs and teleport-to-base (CireItems.h).
+    UPROPERTY(VisibleAnywhere) TObjectPtr<class UCireInventory> Inventory;
     UPROPERTY(Replicated) int32 TeamId = -1;
     UPROPERTY(Replicated) int32 Archetype = 0;
     // Server-authored gameplay snapshot; Archetype remains the fallback body.

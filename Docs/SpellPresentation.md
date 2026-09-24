@@ -58,3 +58,7 @@ explicit pass markers, finite vertices and UVs, mesh budgets, material assignmen
 collision state, viewport inclusion and screenshot dimensions. Visual review of
 the rendered images remains necessary; a technical pass is not an art-quality
 rating.
+
+Buff, aura and empowered-attack signatures (Blood Frenzy, guards, taunts, slows,
+poison, item-ready buffs) are a separate data-driven system; see
+[BuffVisuals.md](BuffVisuals.md).

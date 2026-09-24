@@ -3,6 +3,7 @@
 #include "CireGame.h"
 #include "CireHUD.h"
 #include "CireChampionRoster.h"
+#include "CireAuraVisuals.h" // aura-vfx
 #include "Components/AudioComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Engine/World.h"
@@ -659,6 +660,9 @@ void ACireSpellVisual::Rebuild()
 
 ACireSpellVisual* CireSpellPresentation::Play(UWorld* World,FName SkillId,FVector From,FVector To,ECireSpellCue Cue,float Scale,bool bSound)
 {
+    // aura-vfx: monster melee cues carry no source actor; the aura system finds an empowered attacker at From.
+    if(World&&World->GetNetMode()!=NM_DedicatedServer&&Cue==ECireSpellCue::Impact&&!From.ContainsNaN()&&!To.ContainsNaN())
+        if(auto* Auras=CireAuraVisuals::Get(World))Auras->NotifyAttackCue(SkillId,From,To);
     if(!World || World->GetNetMode()==NM_DedicatedServer || From.ContainsNaN() || To.ContainsNaN() ||
         !FMath::IsFinite(Scale) || Scale<=0 || static_cast<uint8>(Cue)>static_cast<uint8>(ECireSpellCue::Protection) || !Capacity(World)) return nullptr;
     FActorSpawnParameters P; P.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
