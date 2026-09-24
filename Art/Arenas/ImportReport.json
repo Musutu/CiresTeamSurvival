@@ -116,29 +116,23 @@
       "/Game/Arenas/Textures/withered_grass/T_withered_grass_ARM.T_withered_grass_ARM"
     ]
   },
-  "materials": [
-    "/Game/Arenas/Materials/M_ArenaSurface.M_ArenaSurface",
-    "/Game/Arenas/Materials/M_ArenaWorld.M_ArenaWorld",
-    "/Game/Arenas/Materials/M_ArenaBlend.M_ArenaBlend",
-    "/Game/Arenas/Materials/M_ArenaFlat.M_ArenaFlat",
-    "/Game/Arenas/Materials/M_ArenaWheat.M_ArenaWheat",
-    "/Game/Arenas/Materials/M_ArenaKelp.M_ArenaKelp",
-    "/Game/Arenas/Materials/M_ArenaMotes.M_ArenaMotes",
-    "/Game/Arenas/Materials/M_ArenaShaft.M_ArenaShaft",
-    "/Game/Arenas/Materials/M_ArenaCaustics.M_ArenaCaustics",
-    "/Game/Arenas/Sky/M_ArenaSkyProcedural.M_ArenaSkyProcedural",
-    "/Game/Arenas/Sky/M_ArenaSky.M_ArenaSky",
-    "/Game/Arenas/Materials/M_ArenaWater.M_ArenaWater",
-    "/Game/Arenas/Materials/M_ArenaFoliage.M_ArenaFoliage",
-    "/Game/Arenas/Materials/M_ArenaHazard.M_ArenaHazard"
-  ],
+  "materials": [],
   "sky": {
     "Fields": "/Game/Arenas/Sky/T_Sky_Fields",
     "Iceland": "/Game/Arenas/Sky/T_Sky_Iceland",
     "Moab": "/Game/Arenas/Sky/T_Sky_Moab",
     "Hornbeam": "/Game/Arenas/Sky/T_Sky_Hornbeam"
   },
-  "meshes": {},
+  "meshes": {
+    "SM_Arena_CanyonWall": {
+      "triangles": 2363,
+      "extent": [
+        400,
+        1500,
+        1007
+      ]
+    }
+  },
   "props": {
     "rusted_spade_01": [
       {

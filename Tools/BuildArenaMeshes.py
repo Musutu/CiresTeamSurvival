@@ -626,7 +626,8 @@ def SM_Arena_Hoodoo():
 def SM_Arena_SandstoneBlock():
     """Fallen angular sandstone block (300 x 240 x 210)."""
     m = Mesh("SM_Arena_SandstoneBlock")
-    superellipsoid(m, "Sandstone", (0, 0, 100), (300, 240, 220), e=0.28, amp=0.12, level=4, seed=231, rot=rot_z(8))
+    superellipsoid(m, "Sandstone", (0, 0, 100), (300, 240, 220), e=0.14, amp=0.07, level=4, seed=231, rot=rot_z(8))
+    superellipsoid(m, "Sandstone", (60, -30, 222), (170, 150, 60), e=0.12, amp=0.05, level=3, seed=232, rot=mm(rot_z(-14), rot_x(4)))
     return m
 
 
@@ -659,13 +660,20 @@ def SM_Arena_CanyonWall():
     for i in range(cols):  # flat mesa top
         a, b = top[i], top[i + 1]
         m.poly("Sandstone", [a, b, (350, b[1], b[2]), (350, a[1], a[2])])
+    def outward(pts, centre):
+        # orient each closing polygon away from the volume centre
+        nrm = cross(sub(pts[1], pts[0]), sub(pts[2], pts[0]))
+        c = mul(add(add(pts[0], pts[1]), pts[2]), 1 / 3.0)
+        return dot(nrm, sub(c, centre)) < 0
+    centre = (100.0, 0.0, H * 0.4)
     for i in range(cols):  # back face (so the wall never reads as a paper shell from behind)
         y0, y1 = -L / 2 + L * i / cols, -L / 2 + L * (i + 1) / cols
-        m.poly("Sandstone", [(350, y1, 0), (350, y0, 0), (350, y0, top[i][2]), (350, y1, top[i + 1][2])])
+        pts = [(350, y1, 0), (350, y0, 0), (350, y0, top[i][2]), (350, y1, top[i + 1][2])]
+        m.poly("Sandstone", pts, flip=outward(pts, centre))
     for s, idx in ((-1, 0), (1, cols)):  # end caps
         col = [r[idx] for r in rows]
         pts = [(350, col[0][1], 0)] + col + [(350, col[-1][1], col[-1][2])]
-        m.poly("Sandstone", pts, flip=(s > 0))
+        m.poly("Sandstone", pts, flip=outward(pts, (centre[0], col[0][1] - s * 500, centre[2])))
     return m
 
 

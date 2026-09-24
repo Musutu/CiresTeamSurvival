@@ -423,7 +423,7 @@ ARENAS.append(a)
 a = Arena("hornbeam_glade", "Hornbeam Glade", "European hornbeam forest clearing, dappled light",
           "A clearing in the hornbeam wood. Fallen trunks and old roots hide the flanks.")
 H = a.half
-for (x, y, s, r) in ((-1350, 1250, 2.9, 20), (-1300, -1300, 3.1, -35)):
+for (x, y, s, r) in ((-1350, 1250, 3.9, 20), (-1300, -1300, 4.2, -35)):
     a.pair("glade_tree", x, y, yaw=r, scale=s)
     a.pair("trunk_proxy", x, y, blocker=True)
 a.pair("moss_boulder", -560, 480, yaw=25, blocker=True)
@@ -441,8 +441,8 @@ a.add("forest_log", 250, 1500, yaw=100)
 a.add("forest_log", -260, -1550, yaw=80)
 a.add("root_bank", 0, 1650, yaw=0)
 # The wood: a dense ring of trees, undergrowth and dead wood
-a.scatter("glade_tree", (-9000, -9000, 9000, 9000), 150, 41, scale=(2.4, 3.6), outside=True, margin=700)
-a.scatter("glade_tree_young", (-8000, -8000, 8000, 8000), 120, 42, scale=(2.0, 3.0), outside=True, margin=350)
+a.scatter("glade_tree", (-10000, -10000, 10000, 10000), 240, 41, scale=(3.4, 5.0), outside=True, margin=900)
+a.scatter("glade_tree_young", (-8000, -8000, 8000, 8000), 160, 42, scale=(2.6, 3.8), outside=True, margin=450)
 a.scatter("forest_shrub", (-7000, -7000, 7000, 7000), 260, 43, scale=(0.8, 1.6), outside=True, margin=120)
 a.scatter("forest_shrub", (-6000, -6000, 6000, 6000), 400, 44, scale=(0.5, 1.1), outside=True, margin=40)
 a.scatter("grass_tuft", (-H[0], -H[1], H[0], H[1]), 900, 46, scale=(1.5, 3.0), clearance=80)

@@ -58,7 +58,7 @@ WORLD = {
     "FieldGrass": ("sparse_grass", 3.0, (0.95, 0.85, 0.52), 1.0, 1.0, 0.5, 0.9),
     "FieldStone": ("rock_face_03", 1.2, (0.78, 0.72, 0.64), 1.0, 1.2, 0.3, 0.5),
     "BlackGravel": ("rock_ground", 2.4, (0.40, 0.40, 0.42), 1.0, 1.2, 0.5, 0.4),
-    "BlackSand": ("coast_sand_01", 3.5, (0.26, 0.26, 0.27), 0.9, 1.1, 0.55, 0.25),
+    "BlackSand": ("coast_sand_01", 3.5, (0.20, 0.20, 0.21), 0.85, 1.3, 0.6, 0.25),
     "RedSoil": ("red_laterite_soil_stones", 3.0, (1.08, 0.78, 0.60), 1.0, 1.0, 0.5, 1.0),
     "RedSand": ("red_sand", 3.5, (1.15, 0.72, 0.48), 1.0, 0.9, 0.45, 1.0),
     "SandstoneCap": ("sandstone_cracks", 2.5, (0.62, 0.38, 0.26), 1.0, 1.2, 0.35, 1.0),
@@ -73,8 +73,8 @@ WORLD = {
 # ---- two-layer blend (triplanar base + top layer on up-facing surfaces, optional strata bands)
 # slot -> (base tex, base m, base tint, top tex, top m, top tint, top amount, sharpness, strata strength, strata cm, strata colour)
 BLEND = {
-    "Lava": ("dark_rock_02", 2.2, (0.30, 0.31, 0.33), "mossy_rock", 1.4, (0.55, 0.72, 0.40), 0.26, 6.0, 0.0, 100.0, (1, 1, 1)),
-    "Sandstone": ("sandstone_cracks", 3.0, (0.95, 0.52, 0.34), "red_sand", 3.0, (1.1, 0.72, 0.5), 0.18, 7.0, 0.35, 160.0, (0.72, 0.42, 0.30)),
+    "Lava": ("dark_rock_02", 2.2, (0.28, 0.29, 0.31), "mossy_rock", 1.4, (0.30, 0.38, 0.21), 0.15, 7.0, 0.0, 100.0, (1, 1, 1)),
+    "Sandstone": ("sandstone_cracks", 2.4, (0.90, 0.48, 0.31), "red_sand", 3.0, (1.1, 0.72, 0.5), 0.18, 7.0, 0.55, 140.0, (0.62, 0.34, 0.24)),
     "ForestRock": ("rock_face_03", 2.4, (0.55, 0.56, 0.52), "mossy_rock", 1.4, (0.62, 0.80, 0.45), 0.32, 5.0, 0.0, 100.0, (1, 1, 1)),
     "Ruin": ("coral_fort_wall_01", 2.0, (0.78, 0.82, 0.80), "coral_gravel", 1.6, (0.55, 0.75, 0.55), 0.32, 5.0, 0.0, 100.0, (1, 1, 1)),
     "RuinBlock": ("coral_stone_wall", 2.2, (0.75, 0.80, 0.78), "coral_gravel", 1.6, (0.55, 0.72, 0.55), 0.35, 5.0, 0.0, 100.0, (1, 1, 1)),
@@ -763,7 +763,7 @@ return normalize(float3(-g.x,-g.y,1));""", [("P", pos), ("T", t)])
                     texs = {"LeafMap": texmap["leaves_diff"], "AlphaMap": texmap["leaves_alpha"]}
                     if "leaves_nor_gl" in texmap:
                         texs["LeafNormal"] = texmap["leaves_nor_gl"]
-                    setp(mi, {"WindAmplitude": 2.0, "UseAlpha": 1.0, "InstanceVariation": 0.25}, {"LeafTint": (1.75, 2.1, 1.25), "Backlight": (0.42, 0.62, 0.14)}, texs)
+                    setp(mi, {"WindAmplitude": 2.0, "UseAlpha": 1.0, "InstanceVariation": 0.25}, {"LeafTint": (1.3, 1.55, 0.95), "Backlight": (0.40, 0.58, 0.13)}, texs)
                     return mi
                 prefix = {"branch": "branch_", "branches": "branches_"}.get(kind, "")
                 mi = instance(f"MI_Arena_Bark_{aid}_{kind}", masters["M_ArenaSurface"], "Trees")

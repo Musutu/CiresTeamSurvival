@@ -134,6 +134,19 @@ Required attribution (also shown in game):
 | aura_gong | Deep Gong Tolling.mp3 | Yin_Yang_Jake007 | https://freesound.org/people/Yin_Yang_Jake007/sounds/415200/ | AUR_Gong |
 | aura_warcry | Battle Cry | mellotrix9898 | https://freesound.org/people/mellotrix9898/sounds/771323/ | AUR_WarCry |
 | aura_whoosh | Whoosh | qubodup | https://freesound.org/people/qubodup/sounds/60013/ | AUR_Whoosh |
+| arena_wheat_wind | Wheat in the Wind | bdvictor | https://freesound.org/people/bdvictor/sounds/240914/ | - |
+| arena_field | Wheat Field Ambience | florianreichelt | https://freesound.org/people/florianreichelt/sounds/447810/ | - |
+| arena_skylark | skylark.wav | squashy555 | https://freesound.org/people/squashy555/sounds/244357/ | - |
+| arena_sea | Sound of the Sea | florianreichelt | https://freesound.org/people/florianreichelt/sounds/450752/ | - |
+| arena_gulls | Seagull on beach | squashy555 | https://freesound.org/people/squashy555/sounds/353416/ | - |
+| arena_desert_wind | desertwind1FINAL.wav | slugzilla | https://freesound.org/people/slugzilla/sounds/112296/ | - |
+| arena_canyon_wind | Windy Canyon.wav | ciccarelli | https://freesound.org/people/ciccarelli/sounds/135447/ | - |
+| arena_woodland | Quiet Spring Woodland Ambience.wav | ecfike | https://freesound.org/people/ecfike/sounds/160893/ | - |
+| arena_dawn_chorus | Dawn Chorus Birdsong | squashy555 | https://freesound.org/people/squashy555/sounds/573080/ | - |
+| arena_underwater | Underwater Ambience | Fission9 | https://freesound.org/people/Fission9/sounds/504641/ | - |
+| arena_deep_sea | Deep Sea Ambience | jhumbucker | https://freesound.org/people/jhumbucker/sounds/193822/ | - |
+| arena_ship_hum | ambient spacecraft hum | AlaskaRobotics | https://freesound.org/people/AlaskaRobotics/sounds/221570/ | - |
+| arena_station_drone | Space Station Drone | db3005 | https://freesound.org/people/db3005/sounds/686237/ | - |
 
 ## Kenney (www.kenney.nl), CC0 1.0
 

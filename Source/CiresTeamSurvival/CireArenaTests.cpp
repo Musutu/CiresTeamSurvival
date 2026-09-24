@@ -2,6 +2,8 @@
 #include "CireArenas.h"
 #if !UE_BUILD_SHIPPING
 #include "CireGame.h"
+#include "CireAmbience.h"
+#include "CireMusic.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/DirectionalLight.h"
@@ -60,6 +62,9 @@ bool CireArenas::RunSmoke(ACireGameMode* Mode)
             Check(Tall >= 6, FString::Printf(TEXT("%s has at least six line-of-sight blockers (has %d)"), *A.Id.ToString(), Tall));
             Check(!A.Lighting.SkyMaterial.IsEmpty(), FString::Printf(TEXT("%s has its own sky"), *A.Id.ToString()));
             Check(!A.Ambience.IsNone() && A.Ambience != TEXT("arena"), FString::Printf(TEXT("%s names its own ambience"), *A.Id.ToString()));
+            const CireAmbience::FDistrict* District = CireAmbience::Data().Districts.Find(A.Ambience);
+            Check(District && District->Beds.Num() > 0, FString::Printf(TEXT("%s ambience district %s exists with beds"), *A.Id.ToString(), *A.Ambience.ToString()));
+            Check(A.Music.IsEmpty() || CireMusic::Data().Titles.Contains(A.Music), FString::Printf(TEXT("%s music override %s is a known track"), *A.Id.ToString(), *A.Music));
         }
         UE_LOG(LogCireArenaTests, Display, TEXT("CIRE_ARENA_DATA id=%s name=\"%s\" blockers=%d pieces=%d scatter=%d reachable=%.3f errors=%d"),
             *A.Id.ToString(), *A.Name, Blockers.Num(), A.Pieces.Num(), A.Scatter.Num(), Reachable, Errors.Num());
