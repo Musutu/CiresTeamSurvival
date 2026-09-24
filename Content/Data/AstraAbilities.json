@@ -8,6 +8,9 @@
     {
       "id": "venom_ground",
       "name": "Venom Ground",
+      "roles": [
+        "damage"
+      ],
       "sourceAbilityId": "cire-ue583-venom_ground",
       "manaCost": 35,
       "energyCost": 0,
@@ -75,6 +78,9 @@
     {
       "id": "cinder_cone",
       "name": "Cinder Cone",
+      "roles": [
+        "damage"
+      ],
       "sourceAbilityId": "cire-ue583-cinder_cone",
       "manaCost": 35,
       "energyCost": 0,
@@ -142,6 +148,9 @@
     {
       "id": "grave_line",
       "name": "Grave Line",
+      "roles": [
+        "damage"
+      ],
       "sourceAbilityId": "cire-ue583-grave_line",
       "manaCost": 35,
       "energyCost": 0,
@@ -209,6 +218,9 @@
     {
       "id": "ashen_square",
       "name": "Ashen Ward",
+      "roles": [
+        "damage"
+      ],
       "sourceAbilityId": "cire-ue583-ashen_square",
       "manaCost": 35,
       "energyCost": 0,
@@ -276,6 +288,9 @@
     {
       "id": "blight_sigil",
       "name": "Blight Sigil",
+      "roles": [
+        "damage"
+      ],
       "sourceAbilityId": "cire-ue583-blight_sigil",
       "manaCost": 35,
       "energyCost": 0,

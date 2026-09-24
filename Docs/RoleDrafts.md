@@ -6,39 +6,59 @@ passive, and one ultimate. Before a passive is learned, offers contain one or
 two passives; a final passive-only slot presents four passives. Role filtering
 never reduces the number of choices or borrows another role's healing spells.
 
-The server snapshots a `Cires::SkillDraftRole` in progression. It follows the
-selected profile's gameplay role, not its body or primary attribute:
+## Role tags (Tank / DPS / Support)
 
-| Bucket | Profiles |
+Every skill in the pool carries a role **tag set** (bit mask; hybrids and
+cross-class skills carry several). `Cires::SkillRoleTags(id)` in
+`Source/CiresTeamSurvival/Rules/CiresRules.cpp` is the single source of truth;
+unknown IDs have no tags and fail closed. `Content/Data/AstraAbilities.json`
+mirrors the tags as `"roles"` for the Astra-authored skills (checked by
+`Tools/TestSkillRoles.py`; the game still reads the native table).
+
+| Tags | Skills |
 |---|---|
-| Tank | Knight, Bear, Righteous Paladin, Dwarf Miner, Granite Golem, Orc Chieftain, Totemic Behemoth, Drakish Footman |
-| DPS | Ranger, Lancer, Summoner, Felfire Golem, damage Wizard, both Troll variants |
-| Support / Healer | Scholar, Holy Paladin, Verdant Golem, Dryad, Whisp, Evergrove Centaur, Keeper of the Light |
+| Tank only | Shield Slam, War Cry; ultimates Last Stand, Challenge of Iron, Seismic Reprisal |
+| DPS only | Venom Ground, Cinder Cone, Grave Line, Ashen Ward, Blight Sigil, Piercing Shot, Spectral Pack; ultimates Cataclysm, Executioner's Verdict, Starfall, Spectral Hunt |
+| Support only | Restoring Light, Sanctuary, Purify; ultimates Renewal, Mass Aegis, Wellspring |
+| Tank + DPS | Cleaving Strike, Shadow Step |
+| DPS + Support | Chain Spark, Ember Lance |
+| Tank + Support | Bastion of Dawn (ultimate) |
+| All roles | Iron Guard, Frost Bind, Runestone Wall, Aegis Dome, Oathbound Guardian, Second Wind; passives Stone Skin, Battle Rhythm, Deep Reserves, Soul Conduit |
 
-Tank actives (10): Iron Guard, Shield Slam, War Cry, Cleaving Strike, Frost Bind,
-Shadow Step, Summoned Wall, Protection Dome, Oathbound Guardian, Second Wind.
-Tank ultimates: Bastion of Dawn, Last Stand, Challenge of Iron, Seismic Reprisal.
-Tank healing is self-only: Second Wind, Last Stand, and Bastion. Bastion also
-guards teammates but does not heal them. Ally-targeted Restoring Light/Purify,
-group Sanctuary/Renewal, and Wellspring are excluded from Tank and DPS offers.
+Per role: Tank 10 actives / 4 passives / 4 ultimates, DPS 17 / 4 / 4, Support
+11 / 4 / 4. Tank healing stays self-only (Second Wind, Last Stand, Bastion's
+self-heal); ally heals, cleanses and group heals are Support-only; DPS gets no
+monster taunts. Passives are universal so every role keeps the four
+alternatives the final passive-only offer needs.
 
-DPS actives (17): Iron Guard, Chain Spark, Ember Lance, Venom Ground, Cinder Cone,
-Grave Line, Ashen Ward, Blight Sigil, Frost Bind, Cleaving Strike, Piercing Shot,
-Shadow Step, Summoned Wall, Protection Dome, Oathbound Guardian, Spectral Pack,
-Second Wind. DPS ultimates: Cataclysm, Executioner's Verdict, Starfall,
-Spectral Hunt. DPS receives no monster-taunt skills.
+## Champion roles and offers
 
-Support actives (11): Restoring Light, Sanctuary, Purify, Iron Guard, Chain
-Spark, Ember Lance, Frost Bind, Summoned Wall, Protection Dome, Oathbound
-Guardian, Second Wind. Support ultimates: Renewal, Bastion of Dawn, Mass Aegis,
-Wellspring. Offensive options let healers contribute between healing needs.
+The server snapshots the champion's roles into `Cires::Progression` at draft:
+`DraftRole` is the primary bucket (from the profile's `threatRole`) and
+`SecondaryRoles` is the mask of any other roles in its `roles` list
+(`CireChampionProfiles::DraftRole` / `SecondaryRoles`). An offer draws only from
+skills whose tags intersect *primary | secondary*; `LearnSkill` re-applies the
+same mask to the server-stored offer, so a forged support skill is rejected for
+a pure tank. `DraftRole == Any` remains the legacy unrestricted catalog mode
+used by old fixtures.
 
-All buckets share Stone Skin, Battle Rhythm, Deep Reserves, and Soul Conduit.
-These affect the owner's defenses, attacks, resources, or healing; Soul Conduit
-also benefits self-healing. Keeping four passive alternatives is necessary for
-the four-choice final passive offer. Each bucket has at least nine actives and
-four ultimates, so taking either special slot first or last cannot strand a
-build. Unknown recipes and other-role skills fail closed in role-filtered drafts.
+| Bucket | Profiles (primary) | Hybrids also drafting this pool |
+|---|---|---|
+| Tank | Knight, Bear, Righteous Paladin, Dwarf Miner, Granite Golem, Orc Chieftain, Totemic Behemoth, Drakish Footman | Felfire Golem |
+| DPS | Ranger, Lancer, Summoner, Felfire Golem, Cinder Arcanist, both Troll variants | Evergrove Centaur |
+| Support / Healer | Scholar, Holy Paladin, Verdant Golem, Dryad, Whisp, Evergrove Centaur, Keeper of the Light | Cinder Arcanist, Orc Chieftain |
+
+So the Cinder Arcanist (DPS + Support) can be offered Restoring Light, the Clan
+Warlord (Tank + Support) can be offered Sanctuary or Renewal, and the Felfire
+Golem (DPS + Tank) can be offered War Cry; single-role champions never see
+another role's exclusive skills. Hybrids are deliberately a design choice made
+in the roster (`roles`), not inferred from bodies or primary attributes.
+
+The confirmed offer rules are unchanged: four unique choices per three-level
+breakpoint; one or two passives until one is learned; four passives when only
+the passive slot remains; six actives + one passive + one ultimate. Each role
+set has at least nine actives and four ultimates, so taking either special slot
+first or last cannot strand a build, and role filtering never shrinks an offer.
 
 ## New native abilities and tuning
 
@@ -87,11 +107,20 @@ recipes. `CireRoleSkills::RunSmoke` is the separate in-engine check for self vs
 ally healing, failed-cast payment, taunt/guard, and telegraph damage timing.
 Offline rule/authoring tests do not establish runtime balance or rendering.
 
-Recorded verification for this pass: 608,488 offline rules assertions with no
-failures, eight roster tests, seven tuning-import tests, and native role smoke
-28 checks after the successful rebuild. The native run includes Starfall LOS
-and Spectral Hunt duration regressions and is recorded in
-`Saved/ExpansionChecks/20260924T053213951677Z/report.json`.
+Recorded verification (September 24, 2026, champion-draft pass):
+**1,930,816 native rules assertions, 0 failures** (MSVC `/W4 /WX /O2`). The new
+`RoleTagRules` suite checks every skill's tags, the documented exclusive and
+cross-role tags, all 3 primary x 8 secondary role sets over 384 full build
+paths each (every alternative learnable, offers never leave the role set, a
+pure tank never sees a Support-only skill, every allowed skill including
+hybrids is actually offered, pools never run dry), hybrid-only reachability
+(e.g. Tank+Support gets Restoring Light, Tank alone never does) and forged-offer
+rejection. `Tools/TestSkillRoles.py` (5 tests) keeps the Astra mirror, roster
+examples and role buckets consistent; `Tools/TestChampionRoster.py` 8 tests.
+In-engine `CireChampionProfiles::RunSmoke` passed 250 checks (including that
+each drafted hero snapshots primary + hybrid roles) and role-skill smoke 28
+checks in `Saved/ExpansionChecks/20260924T090219703895Z/report.json`.
+
 Detailed measured findings and the user's stop status are in
 [BalanceFindings.md](BalanceFindings.md).
 
