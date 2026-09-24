@@ -10,6 +10,7 @@
 #include "CireNPCState.h"
 #include "CireUIStyle.h"
 #include "CireBanners.h"
+#include "CireEnvironmentProps.h"
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -337,7 +338,7 @@ void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
     }
     else
     {
-        const FString Level=U.bHero?FString::FromInt(U.Level):U.Tier>0?FString::Printf(TEXT("T%d"),U.Tier):U.bConstruct?TEXT("-"):TEXT("??");
+        const FString Level=U.bHero?FString::FromInt(U.Level):U.Tier>0?FString::Printf(TEXT("T%d"),U.Tier):FString();
         const float LS=bSmall?8.5f:10.f;
         TextFx(Level,BX-TextWidthFont(Level,LS,ECireFont::Numbers)*.5f,BY-LS*.62f,LS,U.Tier>0?WowGold:Neutral,ECireFont::Numbers,true,false);
     }
@@ -637,7 +638,9 @@ void ACireHUD::DrawAlert()
     // Raid-warning position: just under the target frame (or at 24% height), never
     // covering the frame the player is reading.
     const FCireUIRect Target=PanelRect(TEXT("Target"));
-    const float TS=28.f*Pop,Y=FMath::Clamp(FMath::Max(ViewH*.24f,Target.Y+Target.H+30.f),40.f,ViewH*.42f);
+    float Y=FMath::Clamp(FMath::Max(ViewH*.24f,Target.Y+Target.H+30.f),40.f,ViewH*.42f);
+    if(CireBanners::IsShowing())Y+=96.f; // stack under an active banner
+    const float TS=28.f*Pop;
     const float BandW=FMath::Max(TextWidthFont(Alert.Title,28.f,ECireFont::Heading),TextWidthFont(Alert.Subtitle,12,ECireFont::Body))+80.f;
     for(int32 I=0;I<6;++I){const float Inset=I*BandW*.07f;Panel((ViewW-BandW)*.5f+Inset,Y-24,BandW-2*Inset,62,FLinearColor(0,0,0,.09f*A));}
     FLinearColor C=Alert.Color;C.A=A;
@@ -1221,6 +1224,15 @@ void ACireHUD::UpdateBanners(ACireHero* Hero,ACireGameState* State)
             CireBanners::Show(ECireBanner::WaveCleared,TEXT("Wave Cleared"),FString::Printf(TEXT("%d of %d waves this cycle."),State->CycleWavesDone,State->WavesPerCycle));
     }
     BannerSeenPhase=State->Phase;BannerSeenWave=State->Wave;BannerSeenCleared=State->CycleWavesDone;
+    // Zone text: entering a town district ("Market District"), once it has been held for a moment.
+    const FName District=CireEnvironmentProps::DistrictAt(GetWorld(),Hero->TeamId,Hero->GetActorLocation());
+    const double Now=GetWorld()->GetRealTimeSeconds();
+    if(District!=BannerPendingDistrict){BannerPendingDistrict=District;BannerDistrictSince=Now;}
+    if(!District.IsNone()&&District!=BannerShownDistrict&&Now-BannerDistrictSince>.8)
+    {
+        if(!BannerShownDistrict.IsNone()||!bFirst)CireBanners::Show(ECireBanner::Custom,CireEnvironmentProps::DistrictName(District),FString(),TEXT("ENTERING"));
+        BannerShownDistrict=District;
+    }
     // Bosses and challenge tiers appearing in your lane.
     for(auto It=BannerSeenBosses.CreateIterator();It;++It)if(!It->IsValid())It.RemoveCurrent();
     for(TActorIterator<ACireMonster> It(GetWorld());It;++It)
@@ -1240,7 +1252,10 @@ void ACireHUD::DrawBanners()
 {
     ResetTransform();
     ECireBanner Started=ECireBanner::Custom;
-    if(CireBanners::Draw(Painter(),ViewW,ViewH,Started))
+    // Banners sit just below the target frame so they never cover the frame being read.
+    const FCireUIRect Target=PanelRect(TEXT("Target"));
+    const float Y=FMath::Clamp(FMath::Max(ViewH*.15f,Target.Y+Target.H+34.f),40.f,ViewH*.42f);
+    if(CireBanners::Draw(Painter(),ViewW,ViewH,Started,Y))
     {
         if(!UISettings.bMuteAudio&&CireAudio::PlayBanner(this,static_cast<uint8>(Started)))return; // audio: horn / bell / war drums
         switch(Started)

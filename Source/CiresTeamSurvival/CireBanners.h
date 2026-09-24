@@ -17,7 +17,7 @@ namespace CireBanners
     CIRESTEAMSURVIVAL_API void Show(ECireBanner Type, const FString& Title, const FString& Subtitle = FString(), const FString& Kicker = FString());
     /** Draws the active banner (starting the next queued one when free). Returns true and sets
      *  OutStarted when a banner began this frame, so the caller can play its sound. */
-    CIRESTEAMSURVIVAL_API bool Draw(const FCireUIPainter& Painter, float ViewW, float ViewH, ECireBanner& OutStarted);
+    CIRESTEAMSURVIVAL_API bool Draw(const FCireUIPainter& Painter, float ViewW, float ViewH, ECireBanner& OutStarted, float Y = -1.f);
     CIRESTEAMSURVIVAL_API void Clear();
     CIRESTEAMSURVIVAL_API int32 QueuedCount();
     CIRESTEAMSURVIVAL_API bool IsShowing();

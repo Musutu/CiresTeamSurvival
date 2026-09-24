@@ -245,7 +245,8 @@ void CireUIStyle::Header(const FCireUIPainter& P,float X,float Y,float W,const F
 }
 void CireUIStyle::Glow(const FCireUIPainter& P,float X,float Y,float W,float H,FLinearColor Color)
 {
-    if(const FAssets& A=Assets();A.Glow)P.Tex(A.Glow,X-W*.25f,Y-H*.25f,W*1.5f,H*1.5f,Color,0,0,1,1,true);
+    // Translucent (not additive): the glow texture's alpha shapes the falloff.
+    if(const FAssets& A=Assets();A.Glow)P.Tex(A.Glow,X-W*.25f,Y-H*.25f,W*1.5f,H*1.5f,Color);
     else P.Rect(X,Y,W,H,Color*FLinearColor(1,1,1,.25f));
 }
 void CireUIStyle::Button(const FCireUIPainter& P,float X,float Y,float W,float H,const FString& Label,ECireButtonState State,FLinearColor Accent,float TextSize)
@@ -324,7 +325,7 @@ void CireUIStyle::IconSlot(const FCireUIPainter& P,float X,float Y,float S,const
             float D=FMath::Fmod(T+I*Per/4,Per);FVector2D Pt;
             if(D<S)Pt=FVector2D(X+D,Y);else if(D<2*S)Pt=FVector2D(X+S,Y+D-S);else if(D<3*S)Pt=FVector2D(X+S-(D-2*S),Y+S);else Pt=FVector2D(X,Y+S-(D-3*S));
             P.Disc(Pt.X,Pt.Y+Dy,S*.07f,FLinearColor(1.f,.95f,.7f,.95f),10);
-            if(A.Glow)P.Tex(A.Glow,Pt.X-S*.2f,Pt.Y-S*.2f+Dy,S*.4f,S*.4f,FLinearColor(1.f,.8f,.3f,.9f),0,0,1,1,true);
+            if(A.Glow)P.Tex(A.Glow,Pt.X-S*.2f,Pt.Y-S*.2f+Dy,S*.4f,S*.4f,FLinearColor(1.f,.8f,.3f,.9f));
         }
         P.Line(X,Y+Dy,X+S,Y+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);P.Line(X,Y+S+Dy,X+S,Y+S+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);
         P.Line(X,Y+Dy,X,Y+S+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);P.Line(X+S,Y+Dy,X+S,Y+S+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);
@@ -437,7 +438,8 @@ void CireUIStyle::Banner(const FCireUIPainter& P,float ViewW,float Y,const FCire
     const float TW=Q.TextWidth(Spec.Title,TS,ECireFont::Heading);
     const float BandW=FMath::Max(TW+220.f,440.f)*(.6f+.4f*Ease),BandX=(ViewW-BandW)*.5f,BandH=TS+(Spec.Subtitle.IsEmpty()?34.f:54.f);
     // Dark band that fades at both ends, gold rules above and below.
-    for(int32 I=0;I<8;++I){const float Inset=I*BandW*.06f;Q.Rect(BandX+Inset,Y-16,BandW-2*Inset,BandH,FLinearColor(0,0,0,.09f));}
+    for(int32 I=0;I<8;++I){const float Inset=I*BandW*.06f;Q.Rect(BandX+Inset,Y-16,BandW-2*Inset,BandH,FLinearColor(0,0,0,.13f));}
+    if(const FAssets& A=Assets();A.Gloss)Q.Tex(A.Gloss,BandX+BandW*.2f,Y-16,BandW*.6f,BandH*.5f,Spec.Color*FLinearColor(1,1,1,.06f));
     const FLinearColor Rule=Spec.Color*FLinearColor(1,1,1,.85f);
     Q.Line(BandX+BandW*.12f,Y-16,BandX+BandW*.88f,Y-16,Rule,1.5f);Q.Line(BandX+BandW*.12f,Y-16+BandH,BandX+BandW*.88f,Y-16+BandH,Rule,1.5f);
     // Wings: tapered blades pointing outward from the title.

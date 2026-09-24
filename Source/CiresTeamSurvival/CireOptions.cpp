@@ -44,18 +44,21 @@ void ACireHUD::DrawTooltip()
     LastTooltipRect={};LastTooltipBodyLines=0;LastTooltipBodyFontSize=0;
     if(bDebugTooltip){TooltipTitle=DebugTooltipTitle;TooltipBody=DebugTooltipBody;Cursor=DebugTooltipCursor;bDebug=true;}
     if(DebugHoverUnit.IsValid()&&TooltipTitle.IsEmpty()){TooltipUnit=DebugHoverUnit;Cursor=DebugHoverCursor;bDebug=true;}
+    if(!DebugAbilityId.IsEmpty()&&TooltipTitle.IsEmpty()){TooltipAbility=DebugAbilityId;Cursor=DebugHoverCursor;bDebug=true;}
 #endif
     if(!UISettings.bTooltips || bEditLayout) return;
     // Specific hovers (skills, statuses, controls) win over a unit; then world hover.
     AActor* Unit=nullptr;
-    if(TooltipTitle.IsEmpty()&&UISettings.bUnitTooltips)Unit=TooltipUnit.IsValid()?TooltipUnit.Get():HoverUnit.Get();
-    if(TooltipTitle.IsEmpty()&&!Unit){TooltipHoverKey.Reset();return;}
+    const bool bAbility=TooltipTitle.IsEmpty()&&!TooltipAbility.IsEmpty()&&!bBarDragging;
+    if(TooltipTitle.IsEmpty()&&!bAbility&&UISettings.bUnitTooltips)Unit=TooltipUnit.IsValid()?TooltipUnit.Get():HoverUnit.Get();
+    if(TooltipTitle.IsEmpty()&&!Unit&&!bAbility){TooltipHoverKey.Reset();return;}
     // Hover delay: the tooltip appears once the pointer rests on the same element.
-    const FString Key=Unit?Unit->GetName():TooltipTitle;
+    const FString Key=bAbility?TooltipAbility:Unit?Unit->GetName():TooltipTitle;
     const double Now=GetWorld()->GetRealTimeSeconds();
     if(Key!=TooltipHoverKey){TooltipHoverKey=Key;TooltipHoverStart=Now;}
     if(!bDebug&&Now-TooltipHoverStart<UISettings.TooltipDelay)return;
     ResetTransform();
+    if(bAbility){DrawAbilityTooltip(TooltipAbility,Cursor);return;}
     if(Unit){DrawUnitTooltip(Unit,Cursor);return;}
     const float Size=FMath::Clamp(UISettings.TooltipScale,.6f,1.4f);
     const float Padding=12*Size,TitleFont=15*Size,BodyFont=11*Size,Gap=6*Size;
@@ -138,22 +141,30 @@ void ACireHUD::DrawSettings()
     const float X=(ViewW-840)/2,Y=(ViewH-590)/2,L=X+188,R=X+506,Top=Y+90;
     Frame(X,Y,840,590,Gold);Label(TEXT("OPTIONS"),X+23,Y+17,24,Parchment);
     Label(TEXT("CIRE'S TEAM SURVIVAL"),X+188,Y+23,12,Gold);
-    Label(TEXT("Local preferences save automatically. Video changes need confirmation."),L,Y+53,11,Muted);
+    if(OptionsTab!=0)Label(TEXT("Local preferences save automatically. Video changes need confirmation."),L,Y+53,11,Muted);
     auto Button=[&](const FString& Caption,float BX,float BY,float BW,const FString& Help=FString()) {
-        const bool Over=Hit(BX,BY,BW,27);Panel(BX,BY,BW,27,Over?Hover:Card);Label(Caption,BX+9,BY+6,11,Over?Parchment:Gold);
+        const bool Over=Hit(BX,BY,BW,27);
+        CireUIStyle::Button(Painter(),BX,BY,BW,27,Caption,Over?(PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton)?ECireButtonState::Pressed:ECireButtonState::Hover):ECireButtonState::Normal,Gold,10.5f);
         Tip(Caption,Help.IsEmpty()?Caption:Help,BX,BY,BW,27);
         if(Over&&Clicked){Clicked=false;PlayUIFeedback();return true;}return false;
     };
     auto Toggle=[&](const FString& Caption,bool& Value,float BX,float BY,const FString& Help) {
-        Panel(BX,BY,17,17,Value?Teal:Card);if(Value)Label(TEXT("+"),BX+4,BY-2,15,Ink);
-        Label(Caption,BX+26,BY,11,Parchment);Tip(Caption,Help,BX,BY,290,22);
+        // Style-kit checkbox: recessed well, gold check with a soft glow when on.
+        const bool OverToggle=Hit(BX,BY,290,22);
+        CireUIStyle::Frame(Painter(),BX,BY,17,17,Gold,ECireFrame::Inset);
+        if(OverToggle)CireUIStyle::Glow(Painter(),BX,BY,17,17,FLinearColor(1.f,.85f,.5f,.25f));
+        if(Value){CireUIStyle::Glow(Painter(),BX,BY,17,17,FLinearColor(1.f,.8f,.3f,.35f));Line(BX+3.5f,BY+9,BX+7,BY+13,FLinearColor(1.f,.84f,.35f,1),2.4f);Line(BX+7,BY+13,BX+14,BY+3.5f,FLinearColor(1.f,.84f,.35f,1),2.4f);}
+        Label(Caption,BX+26,BY,11,OverToggle?FLinearColor(1.f,.95f,.82f,1):Parchment);Tip(Caption,Help,BX,BY,290,22);
         if(Clicked&&Hit(BX,BY,290,22)){Value=!Value;UISettings.Save();Clicked=false;PlayUIFeedback();}
     };
     auto Slider=[&](const FString& Caption,float& Value,float Min,float Max,float Step,float BX,float BY,const FString& Help,bool Enabled=true,bool SaveChange=true) {
         Label(Caption,BX,BY,11,Enabled?Parchment:Muted);
         Label(FString::Printf(TEXT("%.2f"),Value),BX+235,BY,10,Gold);
-        Panel(BX,BY+24,286,4,Card);Panel(BX,BY+24,286*FMath::Clamp((Value-Min)/(Max-Min),0.f,1.f),4,Enabled?Gold:Muted);
-        Panel(BX+282*FMath::Clamp((Value-Min)/(Max-Min),0.f,1.f),BY+18,5,16,Enabled?Parchment:Muted);
+        const float Knob=FMath::Clamp((Value-Min)/(Max-Min),0.f,1.f);
+        CireUIStyle::Frame(Painter(),BX,BY+22,286,8,Gold,ECireFrame::Inset);
+        if(const auto& Kit=CireUIStyle::Assets();Kit.Gloss)Painter().Tex(Kit.Gloss,BX+1,BY+23,284*Knob,6,Enabled?FLinearColor(1.1f,.85f,.4f,1):Muted);
+        if(const auto& Kit=CireUIStyle::Assets();Kit.Gem)Painter().Tex(Kit.Gem,BX+284*Knob-8,BY+18,16,16,Enabled?FLinearColor(1.f,.85f,.45f,1):Muted);
+        else Panel(BX+282*Knob,BY+18,5,16,Enabled?Parchment:Muted);
         Tip(Caption,Help,BX,BY,290,37);
         if(Enabled&&Hit(BX,BY+12,290,27)&&PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton))
         {
@@ -172,19 +183,22 @@ void ACireHUD::DrawSettings()
     Line(X+168,Y+77,X+168,Y+531,Gold*.35f);
     if(OptionsTab==0)
     {
-        Label(TEXT("CAMERA / LEFT DRAG ORBIT, RIGHT DRAG STEER"),L,Top,12,Gold);
-        Slider(TEXT("Horizontal sensitivity"),UISettings.CameraYawSensitivity,.05f,5,.05f,L,Top+34,TEXT("Multiplies horizontal mouse camera rotation while dragging with either mouse button. Movement input is unaffected."));
-        Slider(TEXT("Vertical sensitivity"),UISettings.CameraPitchSensitivity,.05f,5,.05f,R,Top+34,TEXT("Multiplies vertical mouse camera rotation independently from horizontal sensitivity."));
-        Toggle(TEXT("Invert vertical camera"),UISettings.bInvertMouseY,L,Top+88,TEXT("Reverse pitch direction while dragging the camera. Off: moving the mouse up looks up."));
-        // feat/camera-movement: WoW camera follow and target reacquire preferences.
-        Toggle(TEXT("Camera follows movement"),UISettings.bCameraAutoFollow,R,Top+88,TEXT("While moving with no mouse button held, the camera swings back behind your character."));
-        Toggle(TEXT("Auto-target next enemy"),UISettings.bAutoReacquireTarget,R,Top+111,TEXT("When your hostile target dies, select the nearest hostile in front of the camera."));
-        Slider(TEXT("Camera distance (cm)"),UISettings.CameraDistance,300,1200,25,L,Top+134,TEXT("Preferred third-person camera boom length. World collision can pull the camera closer near walls. The mouse wheel zooms within this range."));
-        Slider(TEXT("Field of view"),UISettings.CameraFOV,55,105,1,R,Top+134,TEXT("Horizontal camera field of view in degrees. A wider view shows more surroundings."));
-        Label(TEXT("BATTLEFIELD KEYS"),L,Top+203,12,Gold);
-        const TCHAR* Keys[]={TEXT("W S   Move    A D   Turn (strafe with RMB)    LMB drag   Orbit    RMB drag   Steer"),TEXT("E   Jump       Ctrl   Dodge roll       Caps Lock   Walk / run"),TEXT("Left click   Select       F1   Self       F   Ally       Tab / Shift+Tab   Enemy"),TEXT("Space   Auto attack       1-6   Skills       Q   Ultimate"),TEXT("B   Shop       R   Recall       Enter   Chat       H   Help"),TEXT("F8   Developer tools       F9   Options       F10   Edit layout"),TEXT("Ground skills: press key, aim, click to cast; RMB / Esc cancels")};
-        for(int32 I=0;I<7;++I)Label(Keys[I],L,Top+232+I*23,11,I%2?Muted:Parchment);
-        Toggle(TEXT("Quick cast ground skills at cursor"),UISettings.bQuickGroundCast,L,Top+408,TEXT("Off: preview the real footprint, then left click to confirm. On: cast immediately at the cursor. Server range, line-of-sight and resource checks always apply."));
+        const TCHAR* ControlPages[]={TEXT("Camera"),TEXT("Keybindings")};
+        for(int32 I=0;I<2;++I){if(ControlsPage==I)Panel(L+I*155,Top-40,146,27,Hover);if(Button(ControlPages[I],L+I*155,Top-40,146))ControlsPage=I;}
+        if(ControlsPage==0)
+        {
+            Label(TEXT("CAMERA / LEFT DRAG ORBIT, RIGHT DRAG STEER"),L,Top+4,12,Gold);
+            Slider(TEXT("Horizontal sensitivity"),UISettings.CameraYawSensitivity,.05f,5,.05f,L,Top+34,TEXT("Multiplies horizontal mouse camera rotation while dragging with either mouse button. Movement input is unaffected."));
+            Slider(TEXT("Vertical sensitivity"),UISettings.CameraPitchSensitivity,.05f,5,.05f,R,Top+34,TEXT("Multiplies vertical mouse camera rotation independently from horizontal sensitivity."));
+            Toggle(TEXT("Invert vertical camera"),UISettings.bInvertMouseY,L,Top+88,TEXT("Reverse pitch direction while dragging the camera. Off: moving the mouse up looks up."));
+            // feat/camera-movement: WoW camera follow and target reacquire preferences.
+            Toggle(TEXT("Camera follows movement"),UISettings.bCameraAutoFollow,R,Top+88,TEXT("While moving with no mouse button held, the camera swings back behind your character."));
+            Toggle(TEXT("Auto-target next enemy"),UISettings.bAutoReacquireTarget,R,Top+111,TEXT("When your hostile target dies, select the nearest hostile in front of the camera."));
+            Slider(TEXT("Camera distance (cm)"),UISettings.CameraDistance,300,1200,25,L,Top+134,TEXT("Preferred third-person camera boom length. World collision can pull the camera closer near walls. The mouse wheel zooms within this range."));
+            Slider(TEXT("Field of view"),UISettings.CameraFOV,55,105,1,R,Top+134,TEXT("Horizontal camera field of view in degrees. A wider view shows more surroundings."));
+            Toggle(TEXT("Quick cast ground skills at cursor"),UISettings.bQuickGroundCast,L,Top+210,TEXT("Off: preview the real footprint, then left click to confirm. On: cast immediately at the cursor. Server range, line-of-sight and resource checks always apply."));
+        }
+        else DrawKeybindingsPage(L,Top-40);
     }
     else if(OptionsTab==1)
     {
@@ -262,7 +276,10 @@ void ACireHUD::DrawSettings()
             Label(FString::Printf(TEXT("Current: %.0f%%%s"),UISettings.ResolveUIScale(Canvas?Canvas->ClipY:1080.f)*100,UISettings.bAutoUIScale?TEXT(" (automatic)"):TEXT("")),L,B+84,10,Muted);
             Toggle(TEXT("Level-up burst and banner"),UISettings.bLevelUpEffect,L,B+120,TEXT("Golden pillar of light, rising motes, a LEVEL banner and chime when a hero levels up."));
             Toggle(TEXT("Boss / pack leader frames"),UISettings.bShowBossFrames,L,B+155,TEXT("Large health frames for bosses and elite pack leaders in your lane, with cast bars and your threat."));
-            if(Button(TEXT("MOVE THREAT / BOSS FRAMES [F10]"),L,B+200,286))ToggleLayoutEditor();
+            if(Button(TEXT("MOVE BARS / THREAT / BOSS [F10]"),L,B+200,286))ToggleLayoutEditor();
+            Toggle(TEXT("Action bar 2 (Shift+1-6)"),UISettings.bShowActionBar2,L,B+245,TEXT("A second 12-slot bar above the main bar. Drag abilities onto it; keys are set in Controls > Keybindings."));
+            Toggle(TEXT("Action bar 3 (Alt+1-6)"),UISettings.bShowActionBar3,L,B+280,TEXT("A third 12-slot bar above bar 2."));
+            Toggle(TEXT("Lock action bars"),UISettings.bLockActionBars,L,B+315,TEXT("Prevents accidental drags. Hold Shift to move an ability while locked."));
             Toggle(TEXT("Threat meter"),UISettings.bShowThreatMeter,R,B,TEXT("Lists who is on your target's threat table with % bars. The aggro holder is 100%."));
             Toggle(TEXT("Aggro warnings"),UISettings.bThreatWarnings,R,B+35,TEXT("Damage dealers and healers: warns when you pull an enemy or approach its tank's threat. Tanks: warns when an enemy leaves you for an ally."));
             Toggle(TEXT("Warning sounds"),UISettings.bThreatSound,R,B+70,TEXT("Plays an alarm when you gain (or, as a tank, lose) aggro and a soft ping on the threat warning."));
