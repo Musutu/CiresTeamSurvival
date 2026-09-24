@@ -44,7 +44,11 @@ struct FOrder
     bool bMustClear = true;
     float Reward = 1;
 };
-struct FBotState { bool bRetreating = false; float RetreatUntil = 0; };
+struct FBotState
+{
+    bool bRetreating = false; float RetreatUntil = 0;
+    FVector Anchor = FVector::ZeroVector; float AnchorAt = 0, DetourUntil = 0; FVector Detour = FVector::ZeroVector; int32 Side = 1;
+};
 struct FRuntime
 {
     FCireWaveConfig Config;
@@ -379,7 +383,7 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
                 T.bForcedMarch = true; T.ForcedAt = Time;
                 CireNPCCombat::Interrupt(M); CireThreat::Clear(M); M->bEngaged = false;
                 NoteFailsafe(FString::Printf(TEXT("march %s lane=%d age=%.0f"), *M->GetNPCDisplayName(), M->Lane, Age));
-                UE_LOG(LogCireWaves, Warning, TEXT("CIRE_WAVES_FAILSAFE_MARCH %s lane=%d age=%.0f"), *M->GetNPCDisplayName(), M->Lane, Age);
+                UE_LOG(LogCireWaves, Warning, TEXT("CIRE_WAVES_RESCUE_MARCH %s lane=%d age=%.0f"), *M->GetNPCDisplayName(), M->Lane, Age);
             }
         }
         if (T.bForcedMarch) Ghost(M, T);
@@ -419,7 +423,7 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
     }
     for (ACireMonster* M : Despawn)
     {
-        UE_LOG(LogCireWaves, Warning, TEXT("CIRE_WAVES_FAILSAFE_DESPAWN %s lane=%d"), *M->GetNPCDisplayName(), M->Lane);
+        UE_LOG(LogCireWaves, Warning, TEXT("CIRE_WAVES_RESCUE_DESPAWN %s lane=%d"), *M->GetNPCDisplayName(), M->Lane);
         NoteFailsafe(FString::Printf(TEXT("despawn %s lane=%d"), *M->GetNPCDisplayName(), M->Lane));
         Forget(M); Mode->Monsters.Remove(M); CireThreat::Clear(M); CireNPCCombat::Interrupt(M); M->Destroy();
     }
@@ -557,6 +561,42 @@ bool CireWaveDirector::ShouldBotRetreat(ACireHero* Bot)
     return B.bRetreating;
 }
 
+FVector CireWaveDirector::BotSteer(ACireHero* Bot, const FVector& Goal)
+{
+    const FVector Straight = IsValid(Bot) ? (Goal - Bot->GetActorLocation()).GetSafeNormal2D() : FVector::ZeroVector;
+    auto* Mode = IsValid(Bot) ? Bot->GetWorld()->GetAuthGameMode<ACireGameMode>() : nullptr;
+    if (!Mode || Mode->Clock.Phase() != Cires::MatchPhase::Survival) return Straight;
+    FRuntime& R = Get(Mode);
+    FBotState& B = R.Bots.FindOrAdd(Bot);
+    const float Time = Now(Bot);
+    const FVector P = Bot->GetActorLocation();
+    if (B.DetourUntil > Time)
+    {
+        const FVector Dir = (B.Detour - P).GetSafeNormal2D();
+        if (FVector::DistSquared2D(B.Detour, P) > FMath::Square(60.f) && !Dir.IsNearlyZero()) return Dir;
+        B.DetourUntil = 0;
+    }
+    // Progress check every 1.2 s while the bot is trying to move somewhere.
+    if (FVector::DistSquared2D(P, B.Anchor) > FMath::Square(45.f) || Time - B.AnchorAt > 30.f) { B.Anchor = P; B.AnchorAt = Time; return Straight; }
+    if (Time - B.AnchorAt < 1.2f) return Straight;
+    // Stuck on geometry: detour along the road (routes are kept clear of props), heading toward
+    // the goal's side of the route; if already on the road, sidestep.
+    UWorld* World = Bot->GetWorld();
+    const int32 Team = FMath::Clamp(Bot->TeamId, 0, 1);
+    const float Length = FMath::Max(1.f, CireLanePath::RouteLength(World, Team));
+    const float Mine = CireLanePath::RouteProgress(World, Team, P), Theirs = CireLanePath::RouteProgress(World, Team, Goal);
+    const FVector OnRoad = CireLanePath::PointAlongRoute(World, Team, Mine, P.Z);
+    if (FVector::DistSquared2D(OnRoad, P) > FMath::Square(140.f))
+        B.Detour = CireLanePath::PointAlongRoute(World, Team, FMath::Clamp(Mine + FMath::Sign(Theirs - Mine) * 250.f / Length, 0.f, 1.f), P.Z);
+    else
+    {
+        B.Side = -B.Side;
+        B.Detour = P + FVector::CrossProduct(Straight, FVector::UpVector) * 260.f * B.Side + Straight * 80.f;
+    }
+    B.DetourUntil = Time + 1.6f; B.Anchor = P; B.AnchorAt = Time;
+    return (B.Detour - P).GetSafeNormal2D();
+}
+
 AActor* CireWaveDirector::ChooseBotTarget(ACireHero* Bot)
 {
     if (!IsValid(Bot)) return nullptr;
@@ -638,3 +678,18 @@ FCireWaveSummary CireWaveDirector::Summary(const ACireGameMode* Mode)
     else Out.Next = TEXT("Preparation");
     return Out;
 }
+
+#if !UE_BUILD_SHIPPING
+void CireWaveDirector::DebugAge(ACireGameMode* Mode, float Seconds)
+{
+    if (!Mode) return;
+    FRuntime& R = Get(Mode);
+    for (auto& Pair : R.Records) { Pair.Value.StartedAt -= Seconds; Pair.Value.LastSpawnAt -= Seconds; }
+    for (auto& Pair : R.Tracks)
+    {
+        auto& T = Pair.Value;
+        T.SpawnedAt -= Seconds; T.SampleAt -= Seconds; T.ForcedAt -= Seconds; T.SuppressUntil -= Seconds; T.GhostRefreshAt -= Seconds;
+    }
+    for (auto& Pair : R.Bots) { Pair.Value.AnchorAt -= Seconds; Pair.Value.DetourUntil -= Seconds; Pair.Value.RetreatUntil -= Seconds; }
+}
+#endif

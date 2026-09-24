@@ -70,8 +70,8 @@ FCireWaveDef CireWaveDirector::Template(ECireWaveType Type)
     {
     case ECireWaveType::Normal:
         W.Label = TEXT("Breach Vanguard");
-        W.Units = {Unit(TEXT("hollow_infantry"), 3, 1.f, 1.15f), Unit(TEXT("ironbound_bruiser"), 1, 1.f, 1.15f),
-                   Unit(TEXT("barbed_hunter"), 1, 1.f, 1.15f), Unit(TEXT("blight_caster"), 1, 1.f, 1.15f)};
+        W.Units = {Unit(TEXT("hollow_infantry"), 3, 1.1f, 1.25f), Unit(TEXT("ironbound_bruiser"), 2, 1.1f, 1.25f),
+                   Unit(TEXT("barbed_hunter"), 1, 1.1f, 1.25f), Unit(TEXT("blight_caster"), 1, 1.1f, 1.25f)};
         break;
     case ECireWaveType::Armored:
     {
@@ -126,8 +126,8 @@ FCireWaveConfig CireWaveDirector::Defaults()
     FCireWaveDef One = Template(ECireWaveType::Normal);
     FCireWaveDef Two = Template(ECireWaveType::Normal);
     Two.Label = TEXT("Hollow Column");
-    Two.Units = {Unit(TEXT("hollow_infantry"), 3, 1.1f, 1.2f), Unit(TEXT("ironbound_bruiser"), 2, 1.1f, 1.2f),
-                 Unit(TEXT("barbed_hunter"), 1, 1.1f, 1.2f), Unit(TEXT("blight_caster"), 1, 1.1f, 1.2f)};
+    Two.Units = {Unit(TEXT("hollow_infantry"), 3, 1.15f, 1.3f), Unit(TEXT("ironbound_bruiser"), 2, 1.15f, 1.3f),
+                 Unit(TEXT("barbed_hunter"), 2, 1.15f, 1.3f), Unit(TEXT("blight_caster"), 1, 1.15f, 1.3f)};
     C.Waves = {One, Two, Template(ECireWaveType::Armored), Template(ECireWaveType::ArmoredEscort), Template(ECireWaveType::Boss)};
     C.WavesPerCycle = C.Waves.Num();
     return C;
@@ -140,8 +140,8 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
     C.BreatherSeconds = ClampF(C.BreatherSeconds, 0, 120, 8);
     C.WavesPerCycle = FMath::Clamp(C.WavesPerCycle, 1, 10);
     C.Cycles = FMath::Clamp(C.Cycles, 0, 50);
-    C.CycleHealthGrowth = ClampF(C.CycleHealthGrowth, 0, 2, .3f);
-    C.CycleDamageGrowth = ClampF(C.CycleDamageGrowth, 0, 2, .12f);
+    C.CycleHealthGrowth = ClampF(C.CycleHealthGrowth, 0, 2, .15f);
+    C.CycleDamageGrowth = ClampF(C.CycleDamageGrowth, 0, 2, .1f);
     C.CycleExtraUnits = FMath::Clamp(C.CycleExtraUnits, 0, 5);
     C.MaxWaveSeconds = ClampF(C.MaxWaveSeconds, 30, 900, 210);
     C.FailsafeGraceSeconds = ClampF(C.FailsafeGraceSeconds, 5, 300, 45);

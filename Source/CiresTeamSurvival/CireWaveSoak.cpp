@@ -76,7 +76,7 @@ void CireWaveDirector::NoteFailsafe(const FString& What)
 {
     if (!Soak.bEnabled) return;
     ++Soak.Failsafes;
-    Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_FAILSAFE %s"), *What));
+    Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_RESCUE %s"), *What));
 }
 
 void CireWaveDirector::DumpWave(ACireGameMode* Mode, const TCHAR* Reason)
@@ -176,7 +176,7 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
         Soak.bDone = true;
         const bool bPass = bCyclesDone && !bFinished && Soak.WavesCleared >= Soak.TargetCycles * FMath::Max(1, S->WavesPerCycle);
         FString Types; for (const auto& Pair : Soak.TypeCounts) Types += FString::Printf(TEXT("%s:%d "), *Pair.Key, Pair.Value);
-        Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_%s rounds=%d spawned=%d cleared=%d transitions=%d longest_wave=%.1f stall_dumps=%d failsafes=%d lives=%d/%d t=%.0f types=%s"),
+        Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_%s rounds=%d spawned=%d cleared=%d transitions=%d longest_wave=%.1f stall_dumps=%d rescues=%d lives=%d/%d t=%.0f types=%s"),
             bPass ? TEXT("PASS") : TEXT("FAIL"), S->Round - 1, Soak.WavesSpawned, Soak.WavesCleared, Soak.Transitions, Soak.LongestWave, Soak.StallDumps, Soak.Failsafes,
             S->EmberLives, S->DuskLives, Now, *Types.TrimEnd()));
         FString Path;

@@ -62,7 +62,7 @@ struct CIRESTEAMSURVIVAL_API FCireWaveConfig
     /** 0 = loop cycles forever with scaling; N = the match ends after cycle N (most lives wins). */
     int32 Cycles = 0;
     /** Per completed cycle: health/damage multiplier growth and extra units per composition row. */
-    float CycleHealthGrowth = .30f, CycleDamageGrowth = .12f;
+    float CycleHealthGrowth = .15f, CycleDamageGrowth = .10f;
     int32 CycleExtraUnits = 1;
     /** Stall failsafe: a wave older than this (seconds after its last spawn) has its leftovers march, then despawn. */
     bool bStallFailsafe = true;
@@ -155,6 +155,9 @@ namespace CireWaveDirector
     /** Where an idle / retreating bot should stand during survival. Returns false if it should stay put. */
     CIRESTEAMSURVIVAL_API bool BotDestination(ACireHero* Bot, FVector& Out);
     CIRESTEAMSURVIVAL_API bool ShouldBotRetreat(ACireHero* Bot);
+    /** Survival movement for a bot heading to Goal: the straight line, or a detour along the
+     *  prop-free road when the bot has stopped making progress (bots have no navmesh). */
+    CIRESTEAMSURVIVAL_API FVector BotSteer(ACireHero* Bot, const FVector& Goal);
 
     // ---- HUD ----
     CIRESTEAMSURVIVAL_API FCireWaveSummary Summary(const ACireGameMode* Mode);
@@ -167,5 +170,7 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API void DumpWave(ACireGameMode* Mode, const TCHAR* Reason);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunTests(ACireGameMode* Mode);
+    /** Tests only: pretend Seconds more have passed for every tracked wave/unit timer. */
+    CIRESTEAMSURVIVAL_API void DebugAge(ACireGameMode* Mode, float Seconds);
 #endif
 }

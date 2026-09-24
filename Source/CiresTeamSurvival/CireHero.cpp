@@ -724,7 +724,7 @@ void ACireHero::BotThink(float DeltaSeconds)
     {
         Target = nullptr; bAutoAttack = false;
         FVector Fallback;
-        if (CireWaveDirector::BotDestination(this, Fallback)) AddMovementInput((Fallback - GetActorLocation()).GetSafeNormal2D());
+        if (CireWaveDirector::BotDestination(this, Fallback)) AddMovementInput(CireWaveDirector::BotSteer(this, Fallback));
         return;
     }
     BotDecisionTimer -= DeltaSeconds;
@@ -785,7 +785,7 @@ void ACireHero::BotThink(float DeltaSeconds)
     {
         const float Distance = FVector::Dist2D(GetActorLocation(), Target->GetActorLocation());
         const FVector Direction = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal2D();
-        if (Distance > BasicRange(this) * 0.85f || !ClearSight(this, Target)) AddMovementInput(Direction);
+        if (Distance > BasicRange(this) * 0.85f || !ClearSight(this, Target)) AddMovementInput(CireWaveDirector::BotSteer(this, Target->GetActorLocation())); // wave-director: detours around props
         else SetActorRotation(Direction.Rotation());
         bAutoAttack = true;
     }
@@ -794,7 +794,7 @@ void ACireHero::BotThink(float DeltaSeconds)
         bAutoAttack = false;
         // wave-director: with nothing to fight, hold the castle approach instead of idling where the last fight ended.
         FVector Hold;
-        if (bSurvival && CireWaveDirector::BotDestination(this, Hold)) AddMovementInput((Hold - GetActorLocation()).GetSafeNormal2D());
+        if (bSurvival && CireWaveDirector::BotDestination(this, Hold)) AddMovementInput(CireWaveDirector::BotSteer(this, Hold));
     }
 }
 

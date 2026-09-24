@@ -61,9 +61,11 @@ void ACireHUD::DrawDeveloperPanel(float X,float Y)
         Tip(Title,Help.IsEmpty()?Title:Help,BX,BY,285,25);
         if(Over&&Clicked){Clicked=false;PlayUIFeedback();Value=!Value;}
     };
-    const TCHAR* Pages[]={TEXT("Quick start"),TEXT("Match"),TEXT("Spawn/stats"),TEXT("Effects"),TEXT("Movement"),TEXT("Balance lab"),TEXT("Replays")};
-    const int32 PageIds[]={5,0,1,2,6,3,4};
-    for(int32 I=0;I<7;++I){if(DeveloperPage==PageIds[I])Panel(X+I*87-2,Y-3,87,31,Hover);if(Button(Pages[I],X+I*87,Y,83))DeveloperPage=PageIds[I];}
+    // wave-director: an eighth "Waves" page (id 7) hosts the live wave composer.
+    const TCHAR* Pages[]={TEXT("Quick start"),TEXT("Match"),TEXT("Spawn/stats"),TEXT("Waves"),TEXT("Effects"),TEXT("Movement"),TEXT("Balance lab"),TEXT("Replays")};
+    const int32 PageIds[]={5,0,1,7,2,6,3,4};
+    for(int32 I=0;I<8;++I){if(DeveloperPage==PageIds[I])Panel(X+I*76-2,Y-3,76,31,Hover);if(Button(Pages[I],X+I*76,Y,72))DeveloperPage=PageIds[I];}
+    if(DeveloperPage==7){DrawWaveEditor(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+418,595,10,Gold,2);return;}
     const float L=X,R=X+310,T=Y+48;
     FString Error;
     if(DeveloperPage<3)
