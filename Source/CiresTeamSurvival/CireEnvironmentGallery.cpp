@@ -195,12 +195,12 @@ bool CireEnvironmentGallery::Tick(ACireGameMode* Mode)
         TEXT("04  TOWN SQUARE"),TEXT("05  CASTLE GATE / DEFENDED LEAK ZONE"),TEXT("06  PRIVATE REALM / FULL TOWN OVERVIEW"),TEXT("07  ARMORED ESCORT ON THE MARCH ROAD")};
     switch(Stage)
     {
-    case 0: Target=FVector(11350,Y,520);View=FVector(13350,Y+950,640);break;
+    case 0: Target=FVector(11200,Y,560);View=FVector(14700,Y+1350,980);break;
     case 1: Target=FVector(6900,Y+150,120);View=FVector(8900,Y-950,820);break;
     case 2: Target=FVector(3900,Y-350,260);View=FVector(5750,Y+500,720);break;
     case 3: Target=FVector(1650,Y-150,230);View=FVector(3500,Y+1000,900);break;
-    case 4: Target=FVector(-1050,Y,780);View=FVector(1250,Y-650,560);break;
-    case 5: Target=FVector((Routes.MinX+Routes.MaxX)*.5,Y,0);View=Target+FVector(-9800,-5200,7400);break;
+    case 4: Target=FVector(-1150,Y,820);View=FVector(1650,Y+750,760);break;
+    case 5: Target=FVector(6200,Y,0);View=FVector(-5200,Y-3400,6200);break;
     default:
         if(!Gallery.bEscortMoving){Gallery.Escort->SetActorTickEnabled(true);Gallery.bEscortMoving=true;}
         Target=Gallery.Escort->GetActorLocation()+FVector(0,0,30);View=Target+FVector(-530,-550,240);

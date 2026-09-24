@@ -35,10 +35,8 @@ MODELS = {
     "wooden_bucket_01": ("1k", "well and yard bucket"),
     "wicker_basket_01": ("1k", "market produce basket"),
     "wicker_basket_02": ("1k", "market produce basket, variant"),
-    "Lantern_01": ("1k", "hanging / post lantern head"),
     "wooden_lantern_01": ("1k", "stall and doorway lantern"),
     "large_castle_door": ("2k", "castle gate and house doors"),
-    "modular_fort_01": ("2k", "stone fortification kit: town wall, castle curtain, towers"),
     "gothic_statue": ("1k", "castle / square statuary"),
     "stone_fire_pit": ("1k", "watch fires and braziers"),
     "WoodenTable_01": ("1k", "market stall counters"),
@@ -124,7 +122,40 @@ def author(asset_id: str) -> str:
     return ", ".join(info.get("authors", {}).keys()), info.get("name", asset_id)
 
 
+PROVENANCE = ROOT / "Art/Environment/Town/PROVENANCE.md"
+
+
+def write_provenance() -> None:
+    data = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    lines = ["# Town environment asset provenance", "",
+             "Every third-party asset used by the medieval town comes from **Poly Haven** (https://polyhaven.com) and is",
+             "released under **CC0 1.0 Universal** (public domain dedication, https://polyhaven.com/license): no attribution",
+             "is required, commercial use and modification are allowed. Credits are listed anyway. Files were fetched",
+             "with plain HTTPS downloads from the public API (`api.polyhaven.com` / `dl.polyhaven.org`) by",
+             "`Tools/FetchTownAssets.py`; nothing downloaded was executed. Raw downloads live in `Saved/TownSources`",
+             "(not committed; re-run the script to restore them, MD5s are verified). Exact file URLs and hashes:",
+             "`Art/Environment/Town/SourceManifest.json`.", "",
+             f"Fetched: {data['fetched']}", "",
+             "| Kind | Asset | Authors | Res | Used for | Source page | License |",
+             "| --- | --- | --- | --- | --- | --- | --- |"]
+    for a in data["assets"]:
+        lines.append(f"| {a['kind']} | {a['name']} (`{a['id']}`) | {a['authors']} | {a['resolution']} | {a['purpose']} | {a['page']} | CC0 1.0 |")
+    lines += ["", "## Original (non-third-party) content", "",
+              "- `Art/Environment/Town/Meshes/*.obj` -> `/Game/Environment/Town/Meshes`: houses, tavern, chapel, market hall,",
+              "  stalls, cart, well, fountain, lamps, banners, fences, barricades, gibbet, town gatehouse and walls, castle",
+              "  gatehouse, curtain walls, towers and keep. Authored procedurally by `Tools/BuildTownMeshes.py` for this",
+              "  project (no third-party geometry).",
+              "- `/Game/Environment/Town/Materials`: master materials (`M_TownSurface`, `M_TownWorld`, `M_TownFlat`) and",
+              "  instances written by `Tools/ImportTownContent.py`; they sample the CC0 textures above.",
+              "- `/Game/Environment/Town/Sky/M_TownSky`: sky dome material sampling the CC0 HDRI above.",
+              "- Legacy fallbacks (`/Game/Art/Environment/Props01`) are this project's earlier original props.", ""]
+    PROVENANCE.write_text(chr(10).join(lines), encoding="utf-8")
+
+
 def main() -> int:
+    if "--provenance-only" in sys.argv:
+        write_provenance()
+        return 0
     records = []
     for asset_id, (res, purpose) in MODELS.items():
         files = get_json(f"{API}/files/{asset_id}")["gltf"][res]["gltf"]
@@ -158,6 +189,7 @@ def main() -> int:
     MANIFEST.write_text(json.dumps({"source": "Poly Haven public API (api.polyhaven.com)", "license": LICENSE,
                                     "fetched": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "assets": records}, indent=2) + "\n",
                         encoding="utf-8")
+    write_provenance()
     print(f"CIRE_TOWN_FETCH_PASS assets={len(records)} manifest={MANIFEST}")
     return 0
 

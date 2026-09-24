@@ -375,7 +375,7 @@ return normalize(Nn+(px*w.x+py*w.y+pz*w.z)*Strength);""", [("P", pos), ("N", nrm
                                       "nanite": tris >= NANITE_MIN_TRIS}
 
     # ------------------------------------------------------------ Poly Haven models
-    importing = "props" in only or not lib.does_directory_exist(f"{PKG}/Props/modular_fort_01")
+    importing = "props" in only or not lib.does_directory_exist(f"{PKG}/Props/Barrel_01")
     manifest = json.loads((ROOT / "Art/Environment/Town/SourceManifest.json").read_text())
     for asset in manifest["assets"]:
             if asset["kind"] != "model":
@@ -406,6 +406,11 @@ return normalize(Nn+(px*w.x+py*w.y+pz*w.z)*Strength);""", [("P", pos), ("N", nrm
 
 # ------------------------------------------------------------------ launcher
 def launch(args):
+    # LFS 'lockable' checkouts are read-only; the importer must be able to overwrite its own packages.
+    import stat
+    for path in (ROOT / "Content/Environment/Town").rglob("*"):
+        if path.is_file():
+            path.chmod(path.stat().st_mode | stat.S_IWRITE)
     log = ROOT / "Saved/Logs/TownImport.log"
     log.parent.mkdir(parents=True, exist_ok=True)
     only = args[args.index("--only") + 1] if "--only" in args else ""

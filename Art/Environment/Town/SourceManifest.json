@@ -385,49 +385,6 @@
     },
     {
       "kind": "model",
-      "id": "Lantern_01",
-      "name": "Lantern 01",
-      "authors": "Rajil Jose Macatangay",
-      "resolution": "1k",
-      "purpose": "hanging / post lantern head",
-      "page": "https://polyhaven.com/a/Lantern_01",
-      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
-      "entry": "Saved/TownSources/Models/Lantern_01/Lantern_01_1k.gltf",
-      "files": [
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/Lantern_01/Lantern_01_1k.gltf",
-          "file": "Saved/TownSources/Models/Lantern_01/Lantern_01_1k.gltf",
-          "bytes": 4866,
-          "md5": "61fbf9f6e215ab4ff1123d6cbfd337a6"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Lantern_01/Lantern_01_brass_arm_1k.jpg",
-          "file": "Saved/TownSources/Models/Lantern_01/textures/Lantern_01_brass_arm_1k.jpg",
-          "bytes": 229054,
-          "md5": "cad411a300663678f546ed8b1c9b97f1"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/Lantern_01/Lantern_01.bin",
-          "file": "Saved/TownSources/Models/Lantern_01/Lantern_01.bin",
-          "bytes": 864852,
-          "md5": "857a868798e7e5f40d78c2d09e6f8ea0"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Lantern_01/Lantern_01_brass_nor_gl_1k.jpg",
-          "file": "Saved/TownSources/Models/Lantern_01/textures/Lantern_01_brass_nor_gl_1k.jpg",
-          "bytes": 180646,
-          "md5": "6d6805ac7932d9927f7ec817db77b5d5"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Lantern_01/Lantern_01_brass_diff_1k.jpg",
-          "file": "Saved/TownSources/Models/Lantern_01/textures/Lantern_01_brass_diff_1k.jpg",
-          "bytes": 140998,
-          "md5": "e8abf88b7ac60649c54c8d0a639f0713"
-        }
-      ]
-    },
-    {
-      "kind": "model",
       "id": "wooden_lantern_01",
       "name": "Wooden Lantern 01",
       "authors": "James Ray Cock",
@@ -527,85 +484,6 @@
           "file": "Saved/TownSources/Models/large_castle_door/textures/large_castle_door_arm_2k.jpg",
           "bytes": 3723833,
           "md5": "5b31d5e2057371f82158bd56dbe19588"
-        }
-      ]
-    },
-    {
-      "kind": "model",
-      "id": "modular_fort_01",
-      "name": "Modular Fort 01",
-      "authors": "Rico Cilliers",
-      "resolution": "2k",
-      "purpose": "stone fortification kit: town wall, castle curtain, towers",
-      "page": "https://polyhaven.com/a/modular_fort_01",
-      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
-      "entry": "Saved/TownSources/Models/modular_fort_01/modular_fort_01_2k.gltf",
-      "files": [
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/modular_fort_01/modular_fort_01_2k.gltf",
-          "file": "Saved/TownSources/Models/modular_fort_01/modular_fort_01_2k.gltf",
-          "bytes": 71433,
-          "md5": "7a5643907025247da6bb71c7c906afbc"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/modular_fort_01/modular_fort_01_wall_arm_2k.jpg",
-          "file": "Saved/TownSources/Models/modular_fort_01/textures/modular_fort_01_wall_arm_2k.jpg",
-          "bytes": 3485850,
-          "md5": "b29de501a6e18585292efac7967b4975"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/modular_fort_01/modular_fort_01_wall_diff_2k.jpg",
-          "file": "Saved/TownSources/Models/modular_fort_01/textures/modular_fort_01_wall_diff_2k.jpg",
-          "bytes": 3768092,
-          "md5": "6d2fef7d56387ea281ceaf6d3238e048"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/modular_fort_01/modular_fort_01_plaster_nor_gl_2k.jpg",
-          "file": "Saved/TownSources/Models/modular_fort_01/textures/modular_fort_01_plaster_nor_gl_2k.jpg",
-          "bytes": 5682493,
-          "md5": "8c6661544a1026516c9a2b79c920e75f"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/modular_fort_01/modular_fort_01.bin",
-          "file": "Saved/TownSources/Models/modular_fort_01/modular_fort_01.bin",
-          "bytes": 1288144,
-          "md5": "49bfa2a55e65c997840799099ad6ffa5"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/modular_fort_01/modular_fort_01_trim_diff_2k.jpg",
-          "file": "Saved/TownSources/Models/modular_fort_01/textures/modular_fort_01_trim_diff_2k.jpg",
-          "bytes": 3625475,
-          "md5": "7b268cb5e99b0996692de51f35a6d143"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/modular_fort_01/modular_fort_01_wall_nor_gl_2k.jpg",
-          "file": "Saved/TownSources/Models/modular_fort_01/textures/modular_fort_01_wall_nor_gl_2k.jpg",
-          "bytes": 4606374,
-          "md5": "c5089c914d025813fda4bf0ab8f83d61"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/modular_fort_01/modular_fort_01_trim_nor_gl_2k.jpg",
-          "file": "Saved/TownSources/Models/modular_fort_01/textures/modular_fort_01_trim_nor_gl_2k.jpg",
-          "bytes": 4416453,
-          "md5": "3b4821393db63c42eb2a4e612359d2be"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/modular_fort_01/modular_fort_01_trim_arm_2k.jpg",
-          "file": "Saved/TownSources/Models/modular_fort_01/textures/modular_fort_01_trim_arm_2k.jpg",
-          "bytes": 3141428,
-          "md5": "da5039183054c9185c2b6812a40967b0"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/modular_fort_01/modular_fort_01_plaster_arm_2k.jpg",
-          "file": "Saved/TownSources/Models/modular_fort_01/textures/modular_fort_01_plaster_arm_2k.jpg",
-          "bytes": 3449190,
-          "md5": "3c9029f8ba67132323ee9b20cce42e18"
-        },
-        {
-          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/modular_fort_01/modular_fort_01_plaster_diff_2k.jpg",
-          "file": "Saved/TownSources/Models/modular_fort_01/textures/modular_fort_01_plaster_diff_2k.jpg",
-          "bytes": 4140924,
-          "md5": "657317dc7450232f71bde5fd71ad57b6"
         }
       ]
     },

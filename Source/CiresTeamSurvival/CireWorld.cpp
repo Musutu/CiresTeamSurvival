@@ -82,7 +82,7 @@ void ACireWorld::BeginPlay() {
         Add(Cliff,FVector(X,0,H*.5f),FVector(900+FMath::Fmod(X*.13f,500.f),190,H),FRotator(0,0,0));
     }
     // A distant plain under the dusk sky so high cameras never see the edge of the world.
-    Add(Field,FVector(CentreX,0,-3),FVector(Length+60000,60000,2));
+    Add(Earth,FVector(CentreX,0,-3),FVector(Length+60000,60000,2));
     RouteRoad=Make(TEXT("CireRouteRoad"),Cube,Mat(TEXT("cobblestone_material"),RoadMaterial),false,false);
     RouteEdge=Make(TEXT("CireRouteEdge"),Cube,Mat(TEXT("castle_material"),CastleMaterial),false,false);
     RouteArrows=Make(TEXT("CireRouteArrows"),Cube,Mat(TEXT("stone_material"),StoneMaterial),false,false);
@@ -129,9 +129,19 @@ void ACireWorld::BeginPlay() {
         }
         const FVector Spawn=CireLanePath::SpawnPosition(GetWorld(),Team,0);
         // The breach: a glowing rift in the dead fields beyond the town gate.
-        Add(Rift,Spawn+FVector(420,0,260),FVector(30,90,520),FRotator(0,0,0));
-        Add(Rift,Spawn+FVector(425,-70,200),FVector(24,60,300),FRotator(0,0,14));
-        Add(Rift,Spawn+FVector(425,80,300),FVector(24,50,260),FRotator(0,0,-18));
+        // A jagged, burning crack hanging in the air: narrow zig-zag shards rather than a slab.
+        {
+            FVector Prev=Spawn+FVector(430,0,20);
+            const float Offsets[]={-38,46,-22,58,-50,30,-12,40,-26,8};
+            for(int32 K=0;K<10;++K)
+            {
+                const FVector Next=Spawn+FVector(430,Offsets[K],80+K*62);
+                const FVector Mid=(Prev+Next)*.5f,Dir=(Next-Prev);
+                const float Width=K<2||K>7?10.f:22.f-FMath::Abs(K-4.5f)*2.f;
+                Add(Rift,Mid,FVector(8,Width,Dir.Size()+6),FRotator(0,0,FMath::RadiansToDegrees(FMath::Atan2(Dir.Y,Dir.Z))));
+                Prev=Next;
+            }
+        }
         Light(Spawn+FVector(300,0,220),FLinearColor(1.f,.25f,.08f),16000,1400);
         Text(TEXT("THE BREACH"),Spawn+FVector(380,0,560),60,FColor(228,155,137));
     }
