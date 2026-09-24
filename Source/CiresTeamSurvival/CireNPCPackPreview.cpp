@@ -68,7 +68,7 @@ bool Build(ACireGameMode& Mode,ACireController& Controller)
 {
     UWorld* World=Mode.GetWorld();
     if(auto* Player=Cast<ACireHero>(Controller.GetPawn()))
-    {Player->SetActorHiddenInGame(true);Player->SetActorEnableCollision(false);Player->SetActorTickEnabled(false);}
+    {Player->TeamId=0;Player->bDrafted=true;Player->SetActorHiddenInGame(true);Player->SetActorEnableCollision(false);Player->SetActorTickEnabled(false);}
     Controller.SetIgnoreMoveInput(true);Controller.SetIgnoreLookInput(true);Controller.bShowMouseCursor=false;
     if(Controller.GetHUD())Controller.GetHUD()->bShowHUD=false;
     for(TActorIterator<ASkyLight> It(World);It;++It){It->GetLightComponent()->SetIntensity(1.f);}

@@ -33,6 +33,7 @@
 #include "CireCombatExpansionProbe.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCPackPreview.h"
+#include "CireNPCNetProbe.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCire, Log, All);
 
@@ -183,6 +184,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireFeedbackPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireNPCPackPreview::Initialize(this);
+    CireNPCNetProbe::InitializeServer(this);
 #endif
     if(!bFeedbackPreview)SpawnPacks();
     if(!bFeedbackPreview)CireBalanceLab::Initialize(this);
@@ -436,6 +438,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireArtPreview::Tick(this)) return;
     if(CireFeedbackPreview::Tick(this)) return;
     if(CireNPCPackPreview::Tick(this)) return;
+    if(CireNPCNetProbe::TickServer(this)) return;
     if(CireExpansionNetProbe::TickServer(this)) return;
     if(CireInterfaceProbe::TickServer(this)) return;
     TickServerProbe(this);

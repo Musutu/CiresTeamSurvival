@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "notes": "Monster archetypes. role: bruiser|tank|caster|ranged. classification: normal|elite|boss (wave units become elite inside challenge packs). Health = wave/challenge base x healthMultiplier (or the CombatTuning factor named by tuningKind; lane bosses also x bossHealthMultiplier). Damage is fixed per archetype (tier/wave scale health only). mesh.path is an optional /Game/ soft path (static or skeletal mesh); empty or missing falls back to the mannequin body. See Docs/NPCs.md.",
+  "notes": "Monster archetypes. role: bruiser|tank|caster|ranged. classification: normal|elite|boss (wave units become elite inside challenge packs). Health = wave/challenge base x healthMultiplier (or the CombatTuning factor named by tuningKind; lane bosses also x bossHealthMultiplier). Damage is fixed per archetype (tier/wave scale health only). mesh.path is an optional /Game/ soft path (static or skeletal mesh); empty or missing falls back to the mannequin body tinted with mesh.tint. mesh.material only applies to static bodies. See Docs/NPCs.md.",
   "legacyKinds": ["hollow_infantry", "ironbound_bruiser", "blight_caster", "barbed_hunter"],
   "waveComposition": ["hollow_infantry", "ironbound_bruiser", "blight_caster", "barbed_hunter", "hollow_shieldbearer"],
   "waveBoss": "hollow_siegebreaker",
@@ -28,7 +28,7 @@
       "attackRange": 170,
       "attackInterval": 1.8,
       "scale": 1.0,
-      "mesh": { "slot": "npc_infantry", "path": "" },
+      "mesh": { "slot": "npc_infantry", "path": "", "tint": [0.62, 0.56, 0.44] },
       "props": [ { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_Dagger.SM_Dagger", "bone": "hand_r", "scale": 1.0 } ],
       "abilities": [
         { "id": "npc_melee", "name": "Rusted Blade", "description": "A plain weapon swing at its current target.", "type": "melee", "basic": true, "range": 170 },
@@ -44,7 +44,7 @@
       "attackRange": 170,
       "attackInterval": 1.8,
       "scale": 1.1,
-      "mesh": { "slot": "npc_bruiser", "path": "", "material": "/Game/Art/Materials/M_Stone.M_Stone" },
+      "mesh": { "slot": "npc_bruiser", "path": "", "tint": [0.62, 0.28, 0.12] },
       "props": [ { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_WarAxe.SM_WarAxe", "bone": "hand_r", "scale": 1.0 } ],
       "abilities": [
         { "id": "npc_melee", "name": "Maul", "description": "A heavy weapon swing at its current target.", "type": "melee", "basic": true, "range": 170 },
@@ -64,7 +64,7 @@
       "attackRange": 170,
       "attackInterval": 2.0,
       "scale": 1.12,
-      "mesh": { "slot": "npc_shieldbearer", "path": "", "material": "/Game/Art/Materials/M_Metal.M_Metal" },
+      "mesh": { "slot": "npc_shieldbearer", "path": "", "tint": [0.32, 0.45, 0.68] },
       "props": [
         { "asset": "/Game/Art/Weapons/CombatPrototype01/SM_PrototypeShield.SM_PrototypeShield", "bone": "hand_l", "scale": 1.0 },
         { "asset": "/Game/Art/Weapons/CombatPrototype01/SM_PrototypeSword.SM_PrototypeSword", "bone": "hand_r", "scale": 1.0 }
@@ -87,7 +87,7 @@
       "kiteRange": 320,
       "attackInterval": 2.2,
       "scale": 1.0,
-      "mesh": { "slot": "npc_caster", "path": "", "material": "/Game/Art/Materials/M_Dusk.M_Dusk" },
+      "mesh": { "slot": "npc_caster", "path": "", "tint": [0.45, 0.18, 0.62] },
       "props": [ { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_RiftStaff.SM_RiftStaff", "bone": "hand_r", "scale": 1.0 } ],
       "abilities": [
         { "id": "npc_shadow_bolt", "name": "Shadow Bolt", "description": "Interruptible cast. Fires a shadow bolt in a fixed direction when the cast bar completes.", "type": "projectile", "basic": true, "interruptible": true, "skillshot": "npc_shadow_bolt", "castTime": 1.4, "range": 650 },
@@ -106,7 +106,7 @@
       "kiteRange": 300,
       "attackInterval": 2.2,
       "scale": 1.0,
-      "mesh": { "slot": "npc_hunter", "path": "", "material": "/Game/Art/Materials/M_Slate.M_Slate" },
+      "mesh": { "slot": "npc_hunter", "path": "", "tint": [0.25, 0.45, 0.2] },
       "props": [ { "asset": "/Game/Art/Weapons/CombatPrototype01/SM_PrototypeBow.SM_PrototypeBow", "bone": "hand_l", "scale": 1.0 } ],
       "abilities": [
         { "id": "npc_barbed_shot", "name": "Barbed Shot", "description": "Short aim, then an arrow in a fixed direction. Keeps its distance and backs away from melee.", "type": "projectile", "basic": true, "skillshot": "npc_barbed_shot", "castTime": 0.6, "range": 650 },
@@ -127,7 +127,7 @@
       "attackInterval": 2.2,
       "scale": 1.35,
       "leakCost": 10,
-      "mesh": { "slot": "boss_siegebreaker", "path": "", "material": "/Game/Art/Materials/M_Metal.M_Metal", "tint": [0.35, 0.3, 0.28] },
+      "mesh": { "slot": "boss_siegebreaker", "path": "", "tint": [0.28, 0.24, 0.22] },
       "props": [ { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_WarHammer.SM_WarHammer", "bone": "hand_r", "scale": 1.2 } ],
       "abilities": [
         { "id": "npc_melee", "name": "Siege Hammer", "description": "A crushing hammer blow at its current target.", "type": "melee", "basic": true, "range": 190 },
@@ -148,7 +148,7 @@
       "attackRange": 210,
       "attackInterval": 2.0,
       "scale": 1.7,
-      "mesh": { "slot": "boss_pack_leader", "path": "", "material": "/Game/Art/Materials/M_Gold.M_Gold", "tint": [0.55, 0.12, 0.08] },
+      "mesh": { "slot": "boss_pack_leader", "path": "", "tint": [0.7, 0.1, 0.06] },
       "props": [
         { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_WarAxe.SM_WarAxe", "bone": "hand_r", "scale": 1.25 },
         { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_Totem.SM_Totem", "bone": "spine_03", "x": -18, "z": 10, "scale": 0.8 }

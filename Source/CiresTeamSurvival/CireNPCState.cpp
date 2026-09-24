@@ -183,15 +183,22 @@ void UCireNPCState::ApplyVisuals()
         StaticBody->SetRelativeRotation(FRotator(0,A->MeshYaw,0));StaticBody->SetRelativeScale3D(FVector(A->MeshScale));
         StaticBody->RegisterComponent();Body->SetVisibility(false,false);
     }
-    if(auto* Material=LoadIfPresent<UMaterialInterface>(A->MaterialPath))
+    if(StaticBody)
     {
-        UMeshComponent* Target=StaticBody?static_cast<UMeshComponent*>(StaticBody):Body;
-        if(!StaticBody)for(int32 I=0;I<Target->GetNumMaterials();++I)
-        {
-            auto* Dynamic=UMaterialInstanceDynamic::Create(Material,M);
-            Dynamic->SetVectorParameterValue(TEXT("Color"),A->Tint);Dynamic->SetVectorParameterValue(TEXT("BaseColor"),A->Tint);
-            Target->SetMaterial(I,Dynamic);
-        }
+        // Static bodies may take an explicit material override (skeletal bodies keep
+        // their own materials: a static-only material would render as the default grid).
+        if(auto* Material=LoadIfPresent<UMaterialInterface>(A->MaterialPath))
+            for(int32 I=0;I<StaticBody->GetNumMaterials();++I)StaticBody->SetMaterial(I,Material);
+    }
+    else if(A->Tint!=FLinearColor::White)
+    {
+        // Role colour on the body's own materials (mannequin: "Paint Tint"/"Global BaseColor").
+        for(int32 I=0;I<Body->GetNumMaterials();++I)
+            if(auto* Dynamic=Body->CreateDynamicMaterialInstance(I))
+            {
+                Dynamic->SetVectorParameterValue(TEXT("Paint Tint"),A->Tint);Dynamic->SetVectorParameterValue(TEXT("LogoTint"),A->Tint);
+                Dynamic->SetVectorParameterValue(TEXT("Global BaseColor"),A->Tint);Dynamic->SetVectorParameterValue(TEXT("Tint"),A->Tint);
+            }
     }
     if(!StaticBody&&Body->GetSkeletalMeshAsset())
         for(const auto& Prop:A->Props)
