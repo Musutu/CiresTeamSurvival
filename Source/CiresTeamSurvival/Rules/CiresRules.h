@@ -66,7 +66,8 @@ struct Progression
     // from every skill tagged with the primary role or any secondary role.
     RoleMask SecondaryRoles = RoleNone;
     StatBlock Stats;
-    int NextAugmentLevel = 3;
+    // Every champion starts with one skill point: the opening choice is due at level 1.
+    int NextAugmentLevel = 1;
     std::vector<SkillDefinition> LearnedSkills;
 };
 
@@ -76,6 +77,12 @@ constexpr int MaxPassives = 1;
 constexpr int MaxUltimates = 1;
 constexpr int MaxSkills = MaxActiveSkills + MaxPassives + MaxUltimates;
 constexpr double MaxCooldownReduction = 0.60;
+// Level at which the Nth learned skill (0-based) is offered: 1 (opening point), then 3, 6 ... 21.
+int BreakpointForSkill(int learnedCount);
+// The opening offer (no skills learned yet) is four ACTIVE, non-ultimate skills from
+// the champion's PRIMARY role only (hybrids open in their primary role).
+bool IsOpeningSkill(const std::string& id, SkillDraftRole primary);
+bool IsOpeningOffer(const Progression& progression);
 bool GainLevels(Progression& progression, int count = 1);
 bool HasPassive(const Progression& progression);
 bool HasUltimate(const Progression& progression);
@@ -186,5 +193,27 @@ RoleMask RoleBit(SkillDraftRole role);
 // Any -> RoleAll (catalog inspection); otherwise primary bit | secondary roles.
 RoleMask EffectiveRoleMask(const Progression& progression);
 bool IsSkillAllowedForRoles(const std::string& id, RoleMask roles);
+std::vector<SkillDefinition> OpeningSkillPool(SkillDraftRole primary);
+
+// Class baseline traits, by main (primary) role. Engine code applies them through
+// the authoritative damage / stat pipeline; these functions are the maths.
+namespace Traits
+{
+    constexpr double SupportDamageMultiplier = 0.80;  // Support: -20% damage to enemies
+    constexpr double SupportAttackSpeedBonus = 0.10;  // Support: +10% attack speed
+    constexpr double SupportMendingShare = 0.50;      // Support: 50% of damage dealt heals the lowest ally
+    constexpr double TankFlatReduction = 10.0;        // Tank: -10 per incoming instance, after armor, floor 0
+    constexpr double DpsBaseCriticalChance = 0.10;    // DPS: 10% base critical chance
+    double OutgoingDamageMultiplier(SkillDraftRole primary);
+    double AttackSpeedBonus(SkillDraftRole primary);
+    // Tank natural defense, applied last (after guard, armor and spell ward). Nonfinite -> 0.
+    double ApplyIncomingFlatReduction(double amount, SkillDraftRole primary);
+    double BaseCriticalChance(SkillDraftRole primary, double tuningBase);
+    double MendingHealAmount(double damageDealt, SkillDraftRole primary);
+    struct PartyMember { int Id = 0; double Health = 0; double MaxHealth = 0; bool Alive = true; };
+    // Lowest health fraction among living members (MaxHealth > 0), the healer included.
+    // Ties go to the lowest absolute health, then the lowest Id. -1 when nobody qualifies.
+    int SelectMendingTarget(const std::vector<PartyMember>& party);
+}
 std::vector<SkillDefinition> StarterSkillPoolForRoles(RoleMask roles);
 } // namespace Cires

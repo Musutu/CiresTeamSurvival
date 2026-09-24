@@ -64,8 +64,8 @@ bool ValidProgression(const Progression& progression)
         (progression.DraftRole == SkillDraftRole::Any && progression.SecondaryRoles != RoleNone)) return false;
     const auto count = static_cast<int>(progression.LearnedSkills.size());
     if (count > MaxSkills || progression.Level < 1 ||
-        progression.NextAugmentLevel != 3 * (count + 1) ||
-        progression.Level < 3 * count || progression.Stats.Strength < 0 ||
+        progression.NextAugmentLevel != BreakpointForSkill(count) ||
+        (count > 0 && progression.Level < BreakpointForSkill(count - 1)) || progression.Stats.Strength < 0 ||
         progression.Stats.Agility < 0 || progression.Stats.Intelligence < 0 ||
         (progression.Primary != PrimaryStat::Strength &&
          progression.Primary != PrimaryStat::Agility &&
@@ -183,7 +183,7 @@ bool HasPendingAugment(const Progression& progression)
 
 bool AugmentOffer::IsValid() const
 {
-    if (!Error.empty() || BreakpointLevel < 3 || BreakpointLevel % 3 != 0 ||
+    if (!Error.empty() || BreakpointLevel < 1 || (BreakpointLevel != 1 && BreakpointLevel % 3 != 0) ||
         Choices.size() != 4) return false;
     std::set<std::string> ids;
     for (const auto& choice : Choices)
@@ -203,6 +203,31 @@ AugmentOffer GenerateAugmentOffer(const Progression& progression,
         return offer;
     }
     offer.BreakpointLevel = progression.NextAugmentLevel;
+    if (IsOpeningOffer(progression))
+    {
+        // Opening point: four actives from the primary role's opening pool, never passives/ultimates.
+        std::vector<SkillDefinition> opening;
+        std::set<std::string> seen;
+        for (const auto& skill : pool)
+        {
+            if (skill.Id.empty() || !ValidKind(skill.Kind) || !seen.insert(skill.Id).second)
+            {
+                offer.Error = "Skill catalog has an empty, duplicate, or invalid definition.";
+                return offer;
+            }
+            if (skill.Kind == SkillKind::Active && IsOpeningSkill(skill.Id, progression.DraftRole)) opening.push_back(skill);
+        }
+        if (opening.size() < 4)
+        {
+            offer.Error = "Need four opening actives for this role.";
+            return offer;
+        }
+        std::sort(opening.begin(), opening.end(), [](const SkillDefinition& a, const SkillDefinition& b) { return a.Id < b.Id; });
+        StableRandom openingRandom(seed);
+        Shuffle(opening, openingRandom);
+        offer.Choices.assign(opening.begin(), opening.begin() + 4);
+        return offer;
+    }
     std::vector<SkillDefinition> active;
     std::vector<SkillDefinition> passive;
     std::set<std::string> ids;
@@ -265,6 +290,7 @@ bool LearnSkill(Progression& progression, const AugmentOffer& offer,
     if (!HasPendingAugment(progression) || !offer.IsValid() ||
         offer.BreakpointLevel != progression.NextAugmentLevel) return false;
     const bool passiveOnly = OnlyPassiveRemains(progression);
+    const bool opening = IsOpeningOffer(progression);
     std::set<std::string> ids;
     const SkillDefinition* selected = nullptr;
     int passives = 0;
@@ -273,14 +299,15 @@ bool LearnSkill(Progression& progression, const AugmentOffer& offer,
         if (skill.Id.empty() || !AllowedForProgression(progression, skill.Id) ||
             !HasCapacity(progression, skill.Kind) || AlreadyLearned(progression, skill.Id) ||
             !ids.insert(skill.Id).second) return false;
+        if (opening && (skill.Kind != SkillKind::Active || !IsOpeningSkill(skill.Id, progression.DraftRole))) return false;
         if (skill.Kind == SkillKind::Passive) ++passives;
         if (skill.Id == selectedId) selected = &skill;
     }
-    if (!selected || (passiveOnly ? passives != 4 :
+    if (!selected || (opening ? passives != 0 : passiveOnly ? passives != 4 :
         (HasPassive(progression) ? passives != 0 : (passives < 1 || passives > 2))))
         return false;
     progression.LearnedSkills.push_back(*selected);
-    progression.NextAugmentLevel += 3;
+    progression.NextAugmentLevel = BreakpointForSkill(static_cast<int>(progression.LearnedSkills.size()));
     return true;
 }
 
@@ -493,6 +520,86 @@ RoleMask SkillRoleTags(const std::string& id)
         if (id == entry.Id) return entry.Roles;
     return RoleNone;
 }
+
+int BreakpointForSkill(int learnedCount)
+{
+    return learnedCount <= 0 ? 1 : 3 * learnedCount;
+}
+
+bool IsOpeningOffer(const Progression& progression)
+{
+    return progression.LearnedSkills.empty();
+}
+
+bool IsOpeningSkill(const std::string& id, SkillDraftRole primary)
+{
+    // Role-defining actives. Tanks: threat, guard, cleave, wall. Supports: heals,
+    // cleanse and the protective dome. DPS: every damage-tagged active that is not
+    // universal. Legacy "Any" progressions may open with any non-ultimate active.
+    static const std::set<std::string> tank = {"shield_slam", "war_cry", "iron_guard", "cleaving_strike", "summoned_wall"};
+    static const std::set<std::string> support = {"restoring_light", "sanctuary", "purify", "protection_dome"};
+    if (primary == SkillDraftRole::Any) return !id.empty();
+    const RoleMask tags = SkillRoleTags(id);
+    if (tags == RoleNone) return false;
+    switch (primary)
+    {
+    case SkillDraftRole::Tank: return tank.count(id) != 0;
+    case SkillDraftRole::Support: return support.count(id) != 0;
+    case SkillDraftRole::Damage: return (tags & RoleDamage) != 0 && tags != RoleAll;
+    default: return false;
+    }
+}
+
+std::vector<SkillDefinition> OpeningSkillPool(SkillDraftRole primary)
+{
+    auto pool = StarterSkillPool();
+    pool.erase(std::remove_if(pool.begin(), pool.end(), [primary](const SkillDefinition& skill)
+        { return skill.Kind != SkillKind::Active || !IsOpeningSkill(skill.Id, primary); }), pool.end());
+    return pool;
+}
+
+namespace Traits
+{
+double OutgoingDamageMultiplier(SkillDraftRole primary)
+{
+    return primary == SkillDraftRole::Support ? SupportDamageMultiplier : 1.0;
+}
+double AttackSpeedBonus(SkillDraftRole primary)
+{
+    return primary == SkillDraftRole::Support ? SupportAttackSpeedBonus : 0.0;
+}
+double ApplyIncomingFlatReduction(double amount, SkillDraftRole primary)
+{
+    if (!std::isfinite(amount) || amount <= 0) return 0.0;
+    return primary == SkillDraftRole::Tank ? std::max(0.0, amount - TankFlatReduction) : amount;
+}
+double BaseCriticalChance(SkillDraftRole primary, double tuningBase)
+{
+    const double base = std::isfinite(tuningBase) ? std::clamp(tuningBase, 0.0, 1.0) : 0.0;
+    return primary == SkillDraftRole::Damage ? std::max(base, DpsBaseCriticalChance) : base;
+}
+double MendingHealAmount(double damageDealt, SkillDraftRole primary)
+{
+    if (primary != SkillDraftRole::Support || !std::isfinite(damageDealt) || damageDealt <= 0) return 0.0;
+    return damageDealt * SupportMendingShare;
+}
+int SelectMendingTarget(const std::vector<PartyMember>& party)
+{
+    int best = -1;
+    double bestFraction = 0, bestHealth = 0;
+    for (int i = 0; i < static_cast<int>(party.size()); ++i)
+    {
+        const auto& m = party[i];
+        if (!m.Alive || !std::isfinite(m.Health) || !std::isfinite(m.MaxHealth) || m.MaxHealth <= 0 || m.Health <= 0) continue;
+        const double fraction = std::min(1.0, m.Health / m.MaxHealth);
+        const bool better = best < 0 || fraction < bestFraction - 1e-12 ||
+            (std::abs(fraction - bestFraction) <= 1e-12 && (m.Health < bestHealth - 1e-9 ||
+             (std::abs(m.Health - bestHealth) <= 1e-9 && m.Id < party[best].Id)));
+        if (better) { best = i; bestFraction = fraction; bestHealth = m.Health; }
+    }
+    return best;
+}
+} // namespace Traits
 
 RoleMask RoleBit(SkillDraftRole role)
 {

@@ -6,6 +6,7 @@
 #include "CireChampionArt.h"
 #include "CireMobility.h"
 #include "CireChampionProfiles.h"
+#include "CireClassTraits.h"
 #include "CireAttackSystem.h"
 #include "CireAreaEffects.h"
 #include "CireAbilityLibrary.h"
@@ -206,7 +207,8 @@ void ACireHero::Draft(int32 Choice)
     HeroName = Choice == 0 ? TEXT("Iron Warden") : Choice == 1 ? TEXT("Ash Ranger") : Choice == 3 ? TEXT("Lancer") : Choice==4?TEXT("Rift Summoner"):TEXT("Veil Scholar");
     bDrafted = true;
     Recalculate(true);
-    Notice = TEXT("Champion bound. First skill choice at level 3.");
+    Notice = TEXT("Champion bound. Choose your opening ability.");
+    RefreshOffer(); // champion-draft: one starting skill point
 }
 
 void ACireHero::Recalculate(bool bFill)
@@ -215,6 +217,7 @@ void ACireHero::Recalculate(bool bFill)
     const float OldMaxHealth = MaxHealth;
     const float OldMaxMana = MaxMana;
     CriticalChance=CireSkillTuning::Get().CritChance;
+    CriticalChance=CireClassTraits::CriticalChance(this,CriticalChance); // champion-draft: DPS class trait (10% base crit)
     CriticalMultiplier=CireSkillTuning::Get().CritMultiplier;
     Level = Progression.Level;
     // progression-shop: equipment attributes, health/mana, CDR and crit join the single stat pipeline.
@@ -361,7 +364,7 @@ void ACireHero::BasicAttack()
     if (!HasAuthority() || !Mode || !Mode->IsCombatPhase() || bDead || !bDrafted || BasicTimer > 0 ||
         !IsHostile(Target) || !InRange(Target, BasicRange(this)) || !ClearSight(this, Target)) return;
     const float PassiveSpeed = HasSkill(TEXT("battle_rhythm")) ? 1.20f : 1.f;
-    BasicTimer = BaseAttackSeconds() / ((1.f + Agility * 0.01f + CireItems::AttackSpeedBonus(this)) * PassiveSpeed); // progression-shop: item attack speed
+    BasicTimer = BaseAttackSeconds() / ((1.f + Agility * 0.01f + CireItems::AttackSpeedBonus(this) + CireClassTraits::AttackSpeedBonus(this)) * PassiveSpeed); // progression-shop: item attack speed; champion-draft: Support +10%
     AttackDuration = FMath::Min(.65f, BasicTimer);
     AttackReleaseTimer = AttackDuration * (.25f / .65f);
     PendingAttackTarget = Target;
@@ -568,6 +571,7 @@ float ACireHero::TakeDamage(float Amount, FDamageEvent const& Event, AController
     // progression-shop: armor (basic attacks) / spell ward (abilities) and item barriers.
     const FString IncomingName = Event.IsOfType(FCireDamageEvent::CireClassID) ? static_cast<const FCireDamageEvent&>(Event).AbilityName : TEXT("Basic attack");
     Amount = CireItems::ModifyIncomingDamage(this, Causer, IncomingName, Amount);
+    Amount = CireClassTraits::ModifyIncomingDamage(this, Amount); // champion-draft: Tank Natural Defense, flat 10 after armor, floor 0
     const float Taken = FMath::Min(Health, Amount);
     Health -= Taken;
     CireCombat::BroadcastDamage(Causer, this, Taken, Event);

@@ -519,6 +519,24 @@
       "accent": "#c8b48c",
       "pool": true
     },
+    "trait_keen_edge": {
+      "school": "blood",
+      "glyph": "sword",
+      "accent": "#e62832",
+      "pool": false
+    },
+    "trait_mending_strikes": {
+      "school": "spirit",
+      "glyph": "heart",
+      "accent": "#a0ffd2",
+      "pool": false
+    },
+    "trait_natural_defense": {
+      "school": "earth",
+      "glyph": "shield",
+      "accent": "#dca050",
+      "pool": false
+    },
     "troll_axe_frenzy": {
       "school": "blood",
       "glyph": "axe",

@@ -194,7 +194,7 @@ void ACireController::PlayerTick(float Dt) {
     const auto Camera=CireCamera::Tick(this,H,Dt,CameraFrame);
     if(MutableKeys&&MutableKeys->IsCapturing()) {
         FCireCaptureResult Captured;
-        if(MutableKeys->TickCapture(this,Captured)&&(Captured.Kind==FCireCaptureResult::Bound||Captured.Kind==FCireCaptureResult::Unbound))Interface->UISettings.Save();
+        if(MutableKeys->TickCapture(this,Captured,ECireBindPolicy::UnbindOther)/* wow-ui: conflicts leave the other action unbound */&&(Captured.Kind==FCireCaptureResult::Bound||Captured.Kind==FCireCaptureResult::Unbound))Interface->UISettings.Save();
         return;
     }
     CireSelection::HandleTargetLoss(this,Interface&&Interface->UISettings.bAutoReacquireTarget);

@@ -1,4 +1,5 @@
 #include "CireCombatEvents.h"
+#include "CireClassTraits.h"
 #include "CireItems.h" // progression-shop
 #include "CireGame.h"
 #include "CireThreat.h"
@@ -157,9 +158,11 @@ float CireCombat::ApplyDamage(AActor* Source, AActor* Target, float Amount, cons
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
     // progression-shop: spell power, execute, every-Nth-hit and lantern marks scale outgoing damage.
     Amount = CireItems::ModifyOutgoingDamage(Source, Target, Amount, AbilityName);
+    Amount = CireClassTraits::ModifyOutgoingDamage(Source, Amount); // champion-draft: Support -20% damage
     const FCireDamageEvent Event(AbilityName,bCritical);
     const float Applied = Target->TakeDamage(Amount, Event, Source->GetInstigatorController(), Source);
     CireItems::OnDamageDealt(Source, Target, Applied, AbilityName); // progression-shop: lifesteal
+    CireClassTraits::OnDamageDealt(Source, Target, Applied); // champion-draft: Support Mending Strikes
     return Applied;
 }
 

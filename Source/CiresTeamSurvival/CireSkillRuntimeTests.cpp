@@ -1,4 +1,5 @@
 #include "CireSkillshot.h"
+#include "CireClassTraits.h" // champion-draft: class-trait-aware expectations
 #include "CireConstruct.h"
 #include "CireSummon.h"
 #include "CireSkillCasting.h"
@@ -154,10 +155,10 @@ bool CireSkillshots::RunSkillshotSmoke(ACireGameMode* Mode)
     F.Move(Hero, FVector(-500, 0, 0)); F.Move(Other, FVector(300, 0, 0));
     S.WarningSeconds = 0; Hero->Health = Other->Health = 1000;
     auto* PvP = Shoot(Hero, S, Other->GetActorLocation()); if (PvP) PvP->Tick(.2f);
-    T.Check(PvP && PvP->CanObserve(Other) && Other->Health == 950, TEXT("arena projectile visible to and damages opposing player"));
+    T.Check(PvP && PvP->CanObserve(Other) && Other->Health == 1000 - CireClassTraits::ModifyIncomingDamage(Other, CireClassTraits::ModifyOutgoingDamage(Hero, 50)), TEXT("arena projectile visible to and damages opposing player"));
     S.PlayerCollision = ECireProjectileCollision::Ignore;
     auto* IgnorePlayer = Shoot(Hero, S, Other->GetActorLocation()); if (IgnorePlayer) IgnorePlayer->Tick(.2f);
-    T.Check(IgnorePlayer && Other->Health == 950, TEXT("player ignore policy causes no damage"));
+    T.Check(IgnorePlayer && Other->Health == 1000 - CireClassTraits::ModifyIncomingDamage(Other, CireClassTraits::ModifyOutgoingDamage(Hero, 50)), TEXT("player ignore policy causes no damage"));
     return T.Finish(TEXT("SKILLSHOT"));
 }
 

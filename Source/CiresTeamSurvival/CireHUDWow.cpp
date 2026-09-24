@@ -555,7 +555,6 @@ void ACireHUD::DrawThreatMeter(ACireHero* Hero,ACireController* Controller)
     if(!Source){if(!(UISettings.bThreatCollapsed&&!bEditLayout))TextFx(TEXT("No enemy engaged"),8,26,10,Muted,ECireFont::Body,false);return;}
     TextFx(Painter().Fit(Source->GetNPCDisplayName(),9.5f,150,ECireFont::Bold),66,2.5f,9.5f,WowGold,ECireFont::Bold,true,false);
     if(UISettings.bThreatCollapsed&&!bEditLayout)return;
-    Tip(TEXT("Threat meter"),TEXT("Who this enemy wants to attack. The top row holds aggro (100%). Others show their threat relative to it; reaching 100% or more pulls the enemy. Damage and healing both add threat; tanks generate extra."),0,0,220,18);
     TArray<TPair<ACireHero*,float>> Rows;
     ThreatRows(Source,Rows);
     float Top=0;for(const auto& Row:Rows)if(Row.Key==Source->Victim)Top=Row.Value;

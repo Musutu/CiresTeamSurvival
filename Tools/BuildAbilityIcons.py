@@ -764,6 +764,8 @@ POOL = {
     'starfall': ('starfall', 'arcane'), 'spectral_hunt': ('hunt', 'spectral'), 'mass_aegis': ('aegis', 'light'),
     'wellspring': ('wellspring', 'frost'),
 }
+# Class baseline traits (CireClassTraits): Support / Tank / DPS.
+TRAITS = {'trait_mending_strikes': ('heart', 'spirit'), 'trait_natural_defense': ('shield', 'earth'), 'trait_keen_edge': ('sword', 'blood')}
 # Planned roster skills: keyword -> glyph, falling back to the delivery shape.
 KEYWORDS = [
     ('javelin', 'javelin'), ('grove_renewal', 'renewal'), ('spring_march', 'feather'), ('dragon_oath', 'spiral'), ('ancient_pact', 'dragon_eye'),
@@ -867,6 +869,8 @@ def main() -> int:
     roster = json.loads((ROOT / 'Content/Data/ChampionRoster.json').read_text(encoding='utf-8'))
     jobs = {}
     for sid, (glyph, pal) in POOL.items():
+        jobs[sid] = (glyph, pal, None)
+    for sid, (glyph, pal) in TRAITS.items():
         jobs[sid] = (glyph, pal, None)
     for c in roster['champions']:
         for s in c['actives'] + [c['passive'], c['ultimate']]:

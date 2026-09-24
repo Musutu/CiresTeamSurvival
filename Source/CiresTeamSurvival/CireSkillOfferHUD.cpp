@@ -7,6 +7,7 @@
 #include "CireHUD.h"
 #include "CireAbilityIcons.h"
 #include "CireChampionProfiles.h"
+#include "CireClassTraits.h"
 #include "CireGame.h"
 #include "CireKeybindings.h"
 #include "CireRoleSkills.h"
@@ -320,14 +321,18 @@ void ACireHUD::DrawSkillOffer(ACireHero* Hero,ACireController* Controller)
         FCireUIPainter H=P;H.Alpha=Fade*FMath::Clamp(static_cast<float>(Now-BannerClearAt)/.3f,0.f,1.f);
         const FString Kicker=FString::Printf(TEXT("NEW ABILITY  |  SKILL %d OF 8  |  LEVEL %d"),SlotNumber,Hero->Level);
         H.Text(Kicker,(ViewW-H.TextWidth(Kicker,10,ECireFont::Heading))*.5f,Y0-66,10,FLinearColor(1.f,.9f,.7f,1),ECireFont::Heading,true,true);
-        const FString Title=bFinalPassive?TEXT("Choose Your Passive"):TEXT("Choose Your Power");
+        const bool bOpening=Learned.IsEmpty();
+        const auto Primary=CireChampionProfiles::DraftRole(Hero);
+        const TCHAR* PrimaryWord=Primary==Cires::SkillDraftRole::Tank?TEXT("Tank"):Primary==Cires::SkillDraftRole::Support?TEXT("Support"):TEXT("DPS");
+        const FString Title=bOpening?FString::Printf(TEXT("Choose Your Opening %s Ability"),PrimaryWord):bFinalPassive?FString(TEXT("Choose Your Passive")):FString(TEXT("Choose Your Power"));
         const float TW=H.TextWidth(Title,24,ECireFont::Heading);
         H.Line((ViewW-TW)*.5f-150,Y0-38,(ViewW-TW)*.5f-16,Y0-38,Gold*FLinearColor(1,1,1,.8f),1.2f);
         H.Line((ViewW+TW)*.5f+16,Y0-38,(ViewW+TW)*.5f+150,Y0-38,Gold*FLinearColor(1,1,1,.8f),1.2f);
         H.Text(Title,(ViewW-TW)*.5f,Y0-52,24,BrightGold,ECireFont::Heading,true,true);
         const float Sweep=FMath::Clamp((Age-.2f)/.8f,0.f,1.f);
         if(Sweep>0&&Sweep<1)CireUIStyle::Glow(H,(ViewW-TW)*.5f-30+Sweep*(TW+60)-25,Y0-54,50,30,FLinearColor(1.f,.95f,.8f,.45f*(1.f-FMath::Abs(Sweep*2-1))));
-        const FString Rule=bFinalPassive?TEXT("Final slot: all four choices are passives. Your passive shapes the whole build."):
+        const FString Rule=bOpening?FString::Printf(TEXT("Your starting skill point: four %s actives that define your role. Passives and ultimates are offered from level 3."),*FString(PrimaryWord).ToUpper()):
+            bFinalPassive?FString(TEXT("Final slot: all four choices are passives. Your passive shapes the whole build.")):
             !bHasPassive?FString::Printf(TEXT("Drawn from your %s pool. One or two passives appear until you take one."),*Pool):
             FString::Printf(TEXT("Drawn from your %s pool. Six actives, one passive and one ultimate."),*Pool);
         H.Text(Rule,(ViewW-H.TextWidth(Rule,10,ECireFont::Body))*.5f,Y0-22,10,Parchment*FLinearColor(1,1,1,.85f),ECireFont::Body,true,true);
@@ -576,15 +581,16 @@ void ACireHUD::DrawSkillOfferExtras(ACireHero* Hero,ACireController* Controller)
             const auto Pool=Cires::StarterSkillPool();
             const auto Def=[&](const TCHAR* Id){for(const auto& D:Pool)if(FString(UTF8_TO_TCHAR(D.Id.c_str()))==Id)return D;return Cires::SkillDefinition{};};
             for(const TCHAR* Id:LearnedIds){Hero->Skills.Add(Id);Hero->Cooldowns.Add(0);Hero->Progression.LearnedSkills.push_back(Def(Id));}
-            Hero->Progression.Level=FMath::Max(Hero->Progression.Level,3*(Hero->Skills.Num()+1));
-            Hero->Progression.NextAugmentLevel=3*(Hero->Skills.Num()+1);Hero->Recalculate(true);
+            Hero->Progression.Level=Hero->Skills.Num()==0?1:FMath::Max(Hero->Progression.Level,Cires::BreakpointForSkill(Hero->Skills.Num()));
+            Hero->Progression.NextAugmentLevel=Cires::BreakpointForSkill(Hero->Skills.Num());Hero->Recalculate(true);
             Hero->Offers.Reset();Hero->CurrentOffer={};Hero->CurrentOffer.BreakpointLevel=Hero->Progression.NextAugmentLevel;
             for(const TCHAR* Id:OfferIds){Hero->Offers.Add(Id);Hero->CurrentOffer.Choices.push_back(Def(Id));}
             Hero->bBot=false;Hero->bAutoAttack=false;
         };
         struct FShot{const TCHAR* Name;int32 Hover;bool bCollapse;bool bPick;};
         static const FShot Shots[]={{TEXT("01_normal_offer_hover"),1,false,false},{TEXT("02_ultimate_offer"),0,false,false},
-            {TEXT("03_passive_only_offer"),2,false,false},{TEXT("04_deferred_reminder"),-1,true,false},{TEXT("05_pick_animation"),-1,false,true}};
+            {TEXT("03_passive_only_offer"),2,false,false},{TEXT("04_deferred_reminder"),-1,true,false},{TEXT("05_pick_animation"),-1,false,true},
+            {TEXT("06_opening_offer_tank"),0,false,false},{TEXT("07_opening_offer_support"),-1,false,false}};
         if(S.GalleryStage<0)
         {
             S.GalleryStage=0;S.GalleryAt=S.GalleryStarted=Now;
@@ -601,6 +607,8 @@ void ACireHUD::DrawSkillOfferExtras(ACireHero* Hero,ACireController* Controller)
             case 2: Setup(TEXT("keeper_of_light"),{TEXT("restoring_light"),TEXT("sanctuary"),TEXT("purify"),TEXT("chain_spark"),TEXT("iron_guard"),TEXT("frost_bind"),TEXT("renewal")},
                         {TEXT("soul_conduit"),TEXT("stone_skin"),TEXT("battle_rhythm"),TEXT("deep_reserves")});break;
             case 3: Setup(TEXT("ranger"),{TEXT("piercing_shot")},{TEXT("shadow_step"),TEXT("venom_ground"),TEXT("battle_rhythm"),TEXT("grave_line")});break;
+            case 5: Setup(TEXT("knight"),{},{TEXT("shield_slam"),TEXT("war_cry"),TEXT("iron_guard"),TEXT("summoned_wall")});break;
+            case 6: Setup(TEXT("scholar"),{},{TEXT("restoring_light"),TEXT("sanctuary"),TEXT("purify"),TEXT("protection_dome")});break;
             default: Setup(TEXT("ranger"),{TEXT("piercing_shot")},{TEXT("shadow_step"),TEXT("venom_ground"),TEXT("battle_rhythm"),TEXT("grave_line")});break;
             }
             S.Key.Reset();
