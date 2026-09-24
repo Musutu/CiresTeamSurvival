@@ -2,6 +2,7 @@
 #include "CireGame.h"
 #include "CireMobility.h"
 #include "CireUISettings.h"
+#include "CireKeybindings.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/GameViewportClient.h"
@@ -14,6 +15,7 @@
 #include "Components/BoxComponent.h"
 #include "Engine/World.h"
 #include "Misc/ScopeExit.h"
+#include "InputKeyEventArgs.h"
 #endif
 
 namespace
@@ -32,6 +34,7 @@ struct FCameraState
     FVector2D LeftPress = FVector2D::ZeroVector;
     double LastManualOrbit = -100.0;
     bool bFaceSent = false;
+    bool bAutoRun = false;
 };
 TMap<TWeakObjectPtr<ACireController>, FCameraState> States;
 
@@ -45,15 +48,21 @@ struct FSteer
     float Right = 0.f;     // strafe, scaled like Forward
     float Turn = 0.f;      // -1 left .. +1 right keyboard turning
 };
-/** Pure WoW key mapping: W/S drive, A/D turn unless mouselook converts them to strafe. */
-FSteer MapSteering(bool W, bool S, bool A, bool D, bool bMouselook, bool bBothButtons, float Backpedal)
+struct FSteerKeys
+{
+    bool Forward = false, Back = false, TurnLeft = false, TurnRight = false, StrafeLeft = false, StrafeRight = false;
+    bool bMouselook = false, bBothButtons = false, bAutoRun = false;
+};
+/** Pure WoW key mapping: forward/back drive, turn keys turn unless mouselook converts them to
+ *  strafe, strafe keys always strafe (never rotate). */
+FSteer MapSteering(const FSteerKeys& K, float Backpedal)
 {
     FSteer Out;
-    float F = (W ? 1.f : 0.f) - (S ? 1.f : 0.f);
-    if (bBothButtons && !S) F = 1.f;
-    const float Side = (D ? 1.f : 0.f) - (A ? 1.f : 0.f);
-    float R = 0.f;
-    if (bMouselook) R = Side; else Out.Turn = Side;
+    float F = (K.Forward ? 1.f : 0.f) - (K.Back ? 1.f : 0.f);
+    if ((K.bBothButtons || K.bAutoRun) && !K.Back) F = 1.f;
+    const float TurnSide = (K.TurnRight ? 1.f : 0.f) - (K.TurnLeft ? 1.f : 0.f);
+    float R = FMath::Clamp((K.StrafeRight ? 1.f : 0.f) - (K.StrafeLeft ? 1.f : 0.f) + (K.bMouselook ? TurnSide : 0.f), -1.f, 1.f);
+    if (!K.bMouselook) Out.Turn = TurnSide;
     const float Length = FMath::Sqrt(F * F + R * R);
     if (Length > KINDA_SMALL_NUMBER)
     {
@@ -135,9 +144,20 @@ CireCamera::FResult CireCamera::Tick(ACireController* C, ACireHero* H, float Dt,
     const bool bBoth = bMouselook && bLeftHeld;
     const auto& Tuning = CireMovement::Tuning();
     FSteer Steer;
-    if (Frame.bSteeringAllowed)
-        Steer = MapSteering(C->IsInputKeyDown(EKeys::W), C->IsInputKeyDown(EKeys::S), C->IsInputKeyDown(EKeys::A),
-            C->IsInputKeyDown(EKeys::D), bMouselook, bBoth, Tuning.BackpedalScale);
+    const FCireKeybindings& Keys = Frame.Bindings ? *Frame.Bindings : CireKeybindings::Defaults();
+    if (!Frame.bSteeringAllowed) S.bAutoRun = false;
+    else
+    {
+        if (Keys.WasPressed(C, TEXT("ToggleAutoRun"))) S.bAutoRun = !S.bAutoRun;
+        FSteerKeys K;
+        K.Forward = Keys.IsDown(C, TEXT("MoveForward")); K.Back = Keys.IsDown(C, TEXT("MoveBackward"));
+        K.TurnLeft = Keys.IsDown(C, TEXT("TurnLeft")); K.TurnRight = Keys.IsDown(C, TEXT("TurnRight"));
+        K.StrafeLeft = Keys.IsDown(C, TEXT("StrafeLeft")); K.StrafeRight = Keys.IsDown(C, TEXT("StrafeRight"));
+        // WoW: pressing forward/back (or running with both buttons) cancels autorun.
+        if (S.bAutoRun && (Keys.WasPressed(C, TEXT("MoveForward")) || Keys.WasPressed(C, TEXT("MoveBackward")) || bBoth)) S.bAutoRun = false;
+        K.bMouselook = bMouselook; K.bBothButtons = bBoth; K.bAutoRun = S.bAutoRun;
+        Steer = MapSteering(K, Tuning.BackpedalScale);
+    }
     FRotator Heading = C->GetControlRotation();
     const bool bFace = Frame.bSteeringAllowed && (bMouselook || Steer.Turn != 0.f || Steer.Forward != 0.f || Steer.Right != 0.f);
     if (bMouselook) Heading.Yaw = S.Yaw;
@@ -222,20 +242,30 @@ bool CireCamera::RunSmoke()
     bool Pass = true; int32 Count = 0;
     auto Check = [&](bool Value, const TCHAR* Name) { ++Count; Pass &= Value; if (!Value) UE_LOG(LogTemp, Error, TEXT("CIRE_CAMERA_ASSERT %s"), Name); };
     auto Near = [](float A, float B) { return FMath::IsNearlyEqual(A, B, .001f); };
-    FSteer V = MapSteering(true, false, false, false, false, false, .65f);
+    auto Keys = [](bool W, bool S, bool A, bool D, bool Q, bool E, bool Look, bool Both, bool Auto = false)
+    { FSteerKeys K; K.Forward = W; K.Back = S; K.TurnLeft = A; K.TurnRight = D; K.StrafeLeft = Q; K.StrafeRight = E; K.bMouselook = Look; K.bBothButtons = Both; K.bAutoRun = Auto; return K; };
+    FSteer V = MapSteering(Keys(true, false, false, false, false, false, false, false), .65f);
     Check(Near(V.Forward, 1) && Near(V.Right, 0) && Near(V.Turn, 0), TEXT("W runs forward"));
-    V = MapSteering(false, true, false, false, false, false, .65f);
+    V = MapSteering(Keys(false, true, false, false, false, false, false, false), .65f);
     Check(Near(V.Forward, -.65f) && Near(V.Turn, 0), TEXT("S backpedals at the tuned fraction"));
-    V = MapSteering(false, false, true, false, false, false, .65f);
+    V = MapSteering(Keys(false, false, true, false, false, false, false, false), .65f);
     Check(Near(V.Forward, 0) && Near(V.Right, 0) && Near(V.Turn, -1), TEXT("A turns left without a mouse button"));
-    V = MapSteering(false, false, false, true, true, false, .65f);
+    V = MapSteering(Keys(false, false, false, true, false, false, true, false), .65f);
     Check(Near(V.Right, 1) && Near(V.Turn, 0), TEXT("D strafes while mouselooking"));
-    V = MapSteering(true, false, true, false, true, false, .65f);
+    V = MapSteering(Keys(false, false, false, false, true, false, false, false), .65f);
+    Check(Near(V.Right, -1) && Near(V.Turn, 0) && Near(V.Forward, 0), TEXT("Q strafes left without turning"));
+    V = MapSteering(Keys(false, false, false, false, false, true, false, false), .65f);
+    Check(Near(V.Right, 1) && Near(V.Turn, 0), TEXT("E strafes right without turning"));
+    V = MapSteering(Keys(false, false, true, false, false, true, false, false), .65f);
+    Check(Near(V.Right, 1) && Near(V.Turn, -1), TEXT("strafe and keyboard turn combine"));
+    V = MapSteering(Keys(true, false, true, false, false, false, true, false), .65f);
     Check(Near(V.Forward, UE_INV_SQRT_2) && Near(V.Right, -UE_INV_SQRT_2), TEXT("diagonal strafe is normalized"));
-    V = MapSteering(false, false, false, false, true, true, .65f);
+    V = MapSteering(Keys(false, false, false, false, false, false, true, true), .65f);
     Check(Near(V.Forward, 1), TEXT("both mouse buttons run forward"));
-    V = MapSteering(true, true, false, false, false, false, .65f);
+    V = MapSteering(Keys(true, true, false, false, false, false, false, false), .65f);
     Check(Near(V.Forward, 0) && Near(V.Right, 0), TEXT("W+S cancel"));
+    V = MapSteering(Keys(false, false, false, false, false, false, false, false, true), .65f);
+    Check(Near(V.Forward, 1), TEXT("autorun runs forward"));
     // 800 counts (about one inch at 800 DPI) turns 56 degrees at default sensitivity.
     Check(Near(800 * DegreesPerCount, 56.f), TEXT("default sensitivity mapping"));
     Check(MinPitch < -60 && MaxPitch > 0, TEXT("pitch range allows looking up from below"));
@@ -295,6 +325,30 @@ bool CireCamera::RunRuntimeSmoke(ACireGameMode* Mode)
     H->ProfileRoles={TEXT("tank")};CireMovement::ApplyToHero(*H);Run(150);
     Check(FMath::IsNearlyEqual(H->Arm->TargetArmLength,Zoomed*CireMovement::Tuning().TankBodyScale,8.f)&&
         FMath::IsNearlyEqual(static_cast<float>(H->Arm->TargetOffset.Z),static_cast<float>(H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight())*.85f,.5f),TEXT("tank boom and pivot scale with the body"));
+    // Real strafe through the default action map: E (StrafeRight) moves sideways and never rotates.
+    H->ProfileRoles={TEXT("damage")};CireMovement::ApplyToHero(*H);
+    C->SetControlRotation(FRotator(-20,0,0));Run(1);
+    const float YawBefore=static_cast<float>(H->GetActorRotation().Yaw);
+    // Simulated key event, then let PlayerInput evaluate its key state exactly as a frame would.
+    const auto Process=[C](){TArray<UInputComponent*> Stack;C->PlayerInput->ProcessInputStack(Stack,1.f/60,false);};
+    C->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::E,IE_Pressed,1.f));Process();
+    Check(CireKeybindings::Defaults().IsDown(C,TEXT("StrafeRight"))&&!CireKeybindings::Defaults().IsDown(C,TEXT("TurnRight")),TEXT("E held reads as StrafeRight, not a turn"));
+    H->GetCharacterMovement()->SetMovementMode(MOVE_Flying);H->GetCharacterMovement()->MaxFlySpeed=520.f;
+    const FVector StrafeStart=H->GetActorLocation();
+    for(int32 I=0;I<30;++I)
+    {
+        Tick(C,H,1.f/60,Frame);CireMovement::ApplyToHero(*H);
+        if(I==0)Check(H->GetPendingMovementInputVector().GetSafeNormal().Equals(FVector(0,1,0),.01)&&H->Mobility&&H->Mobility->bFaceControl&&
+            !H->GetCharacterMovement()->bOrientRotationToMovement,TEXT("strafe input is along the right vector with face-control on"));
+        H->GetCharacterMovement()->TickComponent(1.f/60,LEVELTICK_All,nullptr);
+    }
+    C->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::E,IE_Released,0.f));Process();Run(1);
+    const FVector Strafed=H->GetActorLocation()-StrafeStart;
+    const float YawChange=FMath::Abs(FRotator::NormalizeAxis(static_cast<float>(H->GetActorRotation().Yaw)-YawBefore));
+    Check(Strafed.Y>60.f&&FMath::Abs(Strafed.X)<Strafed.Y*.05f&&YawChange<.5f&&FMath::IsNearlyEqual(static_cast<float>(C->GetControlRotation().Yaw),0.f,.5f),
+        TEXT("strafe moves sideways with no rotation of body or heading"));
+    H->GetCharacterMovement()->StopMovementImmediately();H->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+    UE_LOG(LogTemp,Display,TEXT("CIRE_CAMERA_STRAFE lateral=%.1f forward=%.1f yaw_change=%.2f"),Strafed.Y,Strafed.X,YawChange);
     // Rotations set by previews/possession are adopted instead of fought.
     C->SetControlRotation(FRotator(-30,90,0));Run(1);
     Check(FMath::IsNearlyEqual(static_cast<float>(H->Arm->GetComponentRotation().Yaw),90.f,.5f),TEXT("external control rotation is adopted by the camera"));
