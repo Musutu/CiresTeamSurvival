@@ -1,4 +1,8 @@
-"""Unreal editor script: import draft portrait PNGs as UI textures.
+"""Unreal editor script: import draft portrait / ability icon PNGs as UI textures.
+
+CIRE_UI_TEXTURE_DEST and CIRE_UI_TEXTURE_PREFIX override the destination
+(default /Game/UI/Draft/Portraits, T_Portrait_); Tools/RunAbilityIcons.py uses
+/Game/UI/Abilities with T_Ability_.
 
 Run inside UnrealEditor-Cmd with -run=pythonscript (Tools/RunDraftPortraits.py does
 this). Reads CIRE_DRAFT_PORTRAIT_DIR, imports every <profile_id>.png as
@@ -12,7 +16,8 @@ import re
 import unreal
 
 SOURCE = os.environ.get("CIRE_DRAFT_PORTRAIT_DIR", "")
-DESTINATION = "/Game/UI/Draft/Portraits"
+DESTINATION = os.environ.get("CIRE_UI_TEXTURE_DEST", "/Game/UI/Draft/Portraits")
+PREFIX = os.environ.get("CIRE_UI_TEXTURE_PREFIX", "T_Portrait_")
 
 
 def main():
@@ -28,14 +33,14 @@ def main():
             task = unreal.AssetImportTask()
             task.filename = os.path.join(SOURCE, name)
             task.destination_path = DESTINATION
-            task.destination_name = "T_Portrait_" + match.group(1)
+            task.destination_name = PREFIX + match.group(1)
             task.replace_existing = True
             task.automated = True
             task.save = False
             tasks.append((match.group(1), task))
         unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks([t for _, t in tasks])
         for profile, task in tasks:
-            path = f"{DESTINATION}/T_Portrait_{profile}"
+            path = f"{DESTINATION}/{PREFIX}{profile}"
             texture = unreal.EditorAssetLibrary.load_asset(path)
             if not isinstance(texture, unreal.Texture2D):
                 report["errors"].append("Import failed: " + profile)
