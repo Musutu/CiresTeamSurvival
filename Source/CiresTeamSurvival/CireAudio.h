@@ -37,6 +37,8 @@ namespace CireAudio
     /** The local player's preferences (the HUD profile), or defaults when there is no local HUD. */
     CIRESTEAMSURVIVAL_API const FCireUISettings& LocalSettings(const UObject* WorldContext);
 
+    /** Where the local player hears from (the audio device listener; the camera as a fallback). */
+    CIRESTEAMSURVIVAL_API FTransform ListenerTransform(const UObject* WorldContext);
     CIRESTEAMSURVIVAL_API bool HasCue(FName CueId);
     CIRESTEAMSURVIVAL_API bool PlayCue(const UObject* WorldContext, FName CueId, FVector Location, float VolumeScale = 1.f);
     CIRESTEAMSURVIVAL_API bool PlayCue2D(const UObject* WorldContext, FName CueId, float VolumeScale = 1.f);

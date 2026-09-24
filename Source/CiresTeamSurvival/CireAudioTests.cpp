@@ -11,6 +11,7 @@
 #include "Misc/DateTime.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Guid.h"
+#include "Misc/App.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
@@ -19,6 +20,7 @@
 #include "Serialization/JsonWriter.h"
 #include "Sound/SoundBase.h"
 #include "Sound/SoundSubmix.h"
+#include "Sound/AudioSettings.h"
 #include "UObject/StrongObjectPtr.h"
 #include <limits>
 
@@ -289,6 +291,15 @@ void UCireAudioSubsystem::TickProbe(float DeltaTime)
                 P.Muted.Emplace(S);
                 if(FString(Name) != TEXT("SMX_UI") && FString(Name) != TEXT("SMX_Voice")) { S->StartRecordingOutput(World, 60.f); P.Record.Emplace(S); }
             }
+        // The engine's main submix too, so gameplay sounds outside the Cire buses stay silent as well.
+        if(USoundSubmix* Main = Cast<USoundSubmix>(GetDefault<UAudioSettings>()->MasterSubmix.TryLoad()))
+        {
+            Main->SetSubmixOutputVolume(World, 0.f);
+            P.Muted.Emplace(Main);
+        }
+        // An unattended run has no focused window, and BaseEngine.ini silences unfocused apps
+        // (UnfocusedVolumeMultiplier=0). Lift it for the probe; the speakers stay muted above.
+        FApp::SetUnfocusedVolumeMultiplier(1.f);
         // Loud, known settings regardless of the local profile.
         static FCireUISettings Loud; Loud.MasterVolume = 1.f; Loud.MusicVolume = 1.f; Loud.SFXVolume = 1.f; Loud.AmbienceVolume = 1.f; Loud.UIVolume = 1.f;
         Loud.bMuteAudio = false; Loud.bMusicEnabled = true;
@@ -302,8 +313,8 @@ void UCireAudioSubsystem::TickProbe(float DeltaTime)
     const float R = P.T - P.RecordStart;
     const FCireUISettings& Settings = CireAudio::LocalSettings(World);
     APlayerController* PC = World->GetFirstPlayerController();
-    const FVector Listener = PC && PC->PlayerCameraManager ? PC->PlayerCameraManager->GetCameraLocation() : FVector::ZeroVector;
-    const FVector Forward = PC && PC->PlayerCameraManager ? PC->PlayerCameraManager->GetCameraRotation().Vector() : FVector::ForwardVector;
+    const FTransform Ear = CireAudio::ListenerTransform(World);
+    const FVector Listener = Ear.GetLocation(), Forward = Ear.GetRotation().GetForwardVector();
 
     // Music: town 0-8, combat 8-16, boss 16-24, arena 24-32, victory stinger 32-40.
     static const ECireMusicState States[] = {ECireMusicState::Town, ECireMusicState::Combat, ECireMusicState::Boss, ECireMusicState::Arena};

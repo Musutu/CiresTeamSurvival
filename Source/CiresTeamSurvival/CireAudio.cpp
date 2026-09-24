@@ -191,6 +191,18 @@ const FCireUISettings& CireAudio::LocalSettings(const UObject* WorldContext)
 
 bool CireAudio::HasCue(FName CueId) { return Cues().Cues.Contains(CueId); }
 
+FTransform CireAudio::ListenerTransform(const UObject* WorldContext)
+{
+    UWorld* World = WorldOf(WorldContext);
+    if(!World) return FTransform::Identity;
+    FTransform T;
+    if(FAudioDeviceHandle Device = World->GetAudioDevice(); Device.IsValid() && Device->GetListenerTransform(0, T)) return T;
+    APlayerController* PC = World->GetFirstPlayerController();
+    if(PC && PC->PlayerCameraManager) return FTransform(PC->PlayerCameraManager->GetCameraRotation(), PC->PlayerCameraManager->GetCameraLocation());
+    if(const APawn* Pawn = PC ? PC->GetPawn() : nullptr) return Pawn->GetActorTransform();
+    return FTransform::Identity;
+}
+
 bool CireAudio::PlayCue(const UObject* WorldContext, FName CueId, FVector Location, float VolumeScale)
 {
     const FCue* Cue = Cues().Cues.Find(CueId);
@@ -361,8 +373,7 @@ void UCireAudioSubsystem::Tick(float DeltaTime)
     APlayerController* PC = World->GetFirstPlayerController();
     const ACireHero* Hero = PC ? Cast<ACireHero>(PC->GetPawn()) : nullptr;
     const ACireGameState* State = World->GetGameState<ACireGameState>();
-    FVector Listener = Hero ? Hero->GetActorLocation() : FVector::ZeroVector;
-    if(PC && PC->PlayerCameraManager) Listener = PC->PlayerCameraManager->GetCameraLocation();
+    const FVector Listener = CireAudio::ListenerTransform(World).GetLocation();
     const FVector Body = Hero ? Hero->GetActorLocation() : Listener;
     const int32 Team = Hero ? Hero->TeamId : 0;
 
