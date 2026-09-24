@@ -31,6 +31,16 @@ namespace CireLanePath
     CIRESTEAMSURVIVAL_API FVector SpawnPosition(int32 Team, float Z = 110);
     CIRESTEAMSURVIVAL_API FVector SpawnPosition(const UWorld* World, int32 Team, float Z = 110);
     CIRESTEAMSURVIVAL_API FVector ChallengePosition(const UWorld* World, int32 Team, int32 Tier, float Z = 110);
+    // Route queries for wave/boss/HUD code (world space, current replicated route of that world).
+    /** Ordered marching waypoints from the breach spawn to the castle gate. */
+    CIRESTEAMSURVIVAL_API TArray<FVector> RoutePoints(const UWorld* World, int32 Team, float Z = 0);
+    CIRESTEAMSURVIVAL_API float RouteLength(const UWorld* World, int32 Team);
+    /** Point at Fraction (0 = breach spawn, 1 = castle gate) of the route's path length. */
+    CIRESTEAMSURVIVAL_API FVector PointAlongRoute(const UWorld* World, int32 Team, float Fraction, float Z = 110);
+    /** Path progress 0..1 of the route position nearest to Location (1 = at the castle gate). */
+    CIRESTEAMSURVIVAL_API float RouteProgress(const UWorld* World, int32 Team, const FVector& Location);
+    /** Centre of the defended castle-gate leak zone (the route's final point). */
+    CIRESTEAMSURVIVAL_API FVector GoalPosition(const UWorld* World, int32 Team, float Z = 110);
     CIRESTEAMSURVIVAL_API void InitializeProgress(ACireMonster* Monster);
     CIRESTEAMSURVIVAL_API FVector NextWaypoint(ACireMonster* Monster);
     CIRESTEAMSURVIVAL_API bool ShouldSpawnEscort(int32 Wave);
