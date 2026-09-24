@@ -124,7 +124,8 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
             UCireMonsterArt* Presentation = M->MonsterArt;
             ++Bodies;
             Check(Presentation->IsTripoApplied() && Presentation->GetAppliedVariant() == Body.Variant, Tag + TEXT(" resolves its Tripo body"));
-            Check(M->GetMesh()->GetSkeletalMeshAsset() && M->GetMesh()->GetSkeletalMeshAsset()->GetPathName() == Body.MeshPath, Tag + TEXT(" mesh asset"));
+            Check(M->GetMesh()->GetSkeletalMeshAsset() && (M->GetMesh()->GetSkeletalMeshAsset()->GetPathName() == Body.MeshPath || M->GetMesh()->GetSkeletalMeshAsset()->GetPathName() == Body.MeshOverride), Tag + TEXT(" mesh asset"));
+            if (!Body.MeshOverride.IsEmpty()) Check(M->GetMesh()->GetSkeletalMeshAsset()->GetPathName() == Body.MeshOverride, Tag + TEXT(" uses its re-skinned weapon copy"));
             Check(Presentation->GetMonsterAnim() != nullptr, Tag + TEXT(" native anim instance (no mannequin AnimBP)"));
             for (const TCHAR* Role : {TEXT("idle"), TEXT("walk"), TEXT("run"), TEXT("attack"), TEXT("hit"), TEXT("death")})
                 Check(Presentation->HasRoleClip(Role), Tag + TEXT(" clip ") + Role);
@@ -141,8 +142,9 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
                 else
                 {
                     Check(Found != nullptr, Tag + TEXT(" keeps prop on ") + Prop.Bone.ToString());
-                    if (Found) Check(FMath::IsNearlyEqual(Found->GetComponentScale().X, Prop.Scale * Scale, .05f * Prop.Scale * Scale),
-                        FString::Printf(TEXT("%s prop %s world scale %.2f (want %.2f)"), *Tag, *Prop.Bone.ToString(), Found->GetComponentScale().X, Prop.Scale * Scale));
+                    const float Want = Prop.Scale * (Body.PropScale.Contains(Prop.Bone) ? Body.PropScale[Prop.Bone] : 1.f) * Scale;
+                    if (Found) Check(FMath::IsNearlyEqual(Found->GetComponentScale().X, Want, .05f * Want),
+                        FString::Printf(TEXT("%s prop %s world scale %.2f (want %.2f)"), *Tag, *Prop.Bone.ToString(), Found->GetComponentScale().X, Want));
                 }
             }
             // Idle: feet on the capsule bottom, head at the authored height.

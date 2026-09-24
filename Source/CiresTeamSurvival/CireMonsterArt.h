@@ -34,6 +34,12 @@ namespace CireMonsterArt
         /** Every clip of the body by its Tripo name (slash, war_cry, cast_a_spell...). */
         TMap<FString, FString> Clips;
         TSet<FName> DropPropBones;
+        /** Optional re-skinned copy (MonsterArt.json "mesh"); same skeleton, so the original clips play on it. */
+        FString MeshOverride;
+        /** Per-bone prop adjustments on this body: scale multiplier and a replacement offset (cm, character frame). */
+        TMap<FName, float> PropScale;
+        TMap<FName, FVector> PropOffset;
+        TMap<FName, FRotator> PropRotation;
     };
     struct FArchetypeArt
     {

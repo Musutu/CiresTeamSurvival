@@ -172,8 +172,28 @@ void Load()
             CireMonsterArt::FBody Body = Pair.Value[Name];
             const TSharedPtr<FJsonObject>* BodyRule = nullptr;
             const TArray<TSharedPtr<FJsonValue>>* Drops = nullptr;
-            if (ArtBodies && (*ArtBodies)->TryGetObjectField(Name, BodyRule) && (*BodyRule)->TryGetArrayField(TEXT("dropPropBones"), Drops))
-                for (const auto& Value : *Drops) { FString Bone; if (Value->TryGetString(Bone)) Body.DropPropBones.Add(FName(*Bone)); }
+            if (ArtBodies && (*ArtBodies)->TryGetObjectField(Name, BodyRule))
+            {
+                if ((*BodyRule)->TryGetArrayField(TEXT("dropPropBones"), Drops))
+                    for (const auto& Value : *Drops) { FString Bone; if (Value->TryGetString(Bone)) Body.DropPropBones.Add(FName(*Bone)); }
+                FString Override;
+                if ((*BodyRule)->TryGetStringField(TEXT("mesh"), Override) && Override.StartsWith(TEXT("/Game/"))) Body.MeshOverride = Override;
+                const TSharedPtr<FJsonObject>* Adjust = nullptr;
+                if ((*BodyRule)->TryGetObjectField(TEXT("props"), Adjust))
+                    for (const auto& Prop : (*Adjust)->Values)
+                    {
+                        const TSharedPtr<FJsonObject>* Row = nullptr; double Scale = 1;
+                        if (!Prop.Value->TryGetObject(Row)) continue;
+                        const FName Bone(FString(Prop.Key.ToView()));
+                        if ((*Row)->TryGetNumberField(TEXT("scale"), Scale) && Scale > .05 && Scale < 10) Body.PropScale.Add(Bone, Scale);
+                        const TArray<TSharedPtr<FJsonValue>>* Offset = nullptr;
+                        if ((*Row)->TryGetArrayField(TEXT("offsetCm"), Offset) && Offset->Num() == 3)
+                            Body.PropOffset.Add(Bone, FVector((*Offset)[0]->AsNumber(), (*Offset)[1]->AsNumber(), (*Offset)[2]->AsNumber()));
+                        const TArray<TSharedPtr<FJsonValue>>* Rotation = nullptr;
+                        if ((*Row)->TryGetArrayField(TEXT("rotation"), Rotation) && Rotation->Num() == 3)
+                            Body.PropRotation.Add(Bone, FRotator((*Rotation)[0]->AsNumber(), (*Rotation)[1]->AsNumber(), (*Rotation)[2]->AsNumber()));
+                    }
+            }
             Entry.Bodies.Add(MoveTemp(Body));
         }
         if (!Entry.Bodies.IsEmpty()) Candidate.Archetypes.Add(Pair.Key, MoveTemp(Entry));
@@ -354,7 +374,10 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
     if (!Art || Art->Bodies.IsEmpty()) { RestoreFallback(); return false; }
     const int32 Index = (ForcedVariant >= 0 ? ForcedVariant : static_cast<int32>(BodySeed)) % Art->Bodies.Num();
     const CireMonsterArt::FBody& Body = Art->Bodies[Index];
-    USkeletalMesh* Asset = LoadIfPresent<USkeletalMesh>(Body.MeshPath);
+    USkeletalMesh* Original = LoadIfPresent<USkeletalMesh>(Body.MeshPath);
+    USkeletalMesh* Asset = LoadIfPresent<USkeletalMesh>(Body.MeshOverride);
+    // The override must share the original skeleton, or the original clips would not play on it.
+    if (!Asset || !Original || Asset->GetSkeleton() != Original->GetSkeleton()) Asset = Original;
     TMap<FString, TObjectPtr<UAnimSequence>> Loaded, Named;
     if (Asset)
     {
@@ -430,7 +453,25 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
         const bool bHand = Prop.Bone == TEXT("hand_r") || Prop.Bone == TEXT("hand_l");
         if (bHand) Part->ComponentTags.AddUnique(TEXT("CireWeaponProp"));
         const FTransform Bone = ReferenceBone(Reference, Prop.Bone);
-        Part->SetRelativeRotation(Bone.GetRotation().Inverse() * Upright * Prop.Rotation.Quaternion());
+        FQuat Frame = Upright;
+        if (bHand)
+        {
+            // Grip frame from the bind-pose hand: the handle runs across the palm (pinky -> index), so the
+            // blade / bow limb / shield top leaves on the thumb side (+Z) and the prop's face (+X) is the back
+            // of the hand. Held that way, a sword points ahead of a lowered arm instead of out to the side.
+            const TCHAR* Side = Prop.Bone == TEXT("hand_l") ? TEXT("_l") : TEXT("_r");
+            const FVector Hand = Bone.GetLocation();
+            const FVector Middle = ReferenceBone(Reference, FName(FString(TEXT("middle_01")) + Side)).GetLocation();
+            const FVector IndexFinger = ReferenceBone(Reference, FName(FString(TEXT("index_01")) + Side)).GetLocation();
+            const FVector Pinky = ReferenceBone(Reference, FName(FString(TEXT("pinky_01")) + Side)).GetLocation();
+            const FVector Arm = (Middle - Hand).GetSafeNormal();
+            FVector Across = IndexFinger - Pinky; Across = (Across - Arm * FVector::DotProduct(Across, Arm)).GetSafeNormal();
+            FVector Back = FVector::UpVector - Arm * FVector::DotProduct(FVector::UpVector, Arm) - Across * FVector::DotProduct(FVector::UpVector, Across);
+            Back = Back.GetSafeNormal();
+            if (!Arm.IsNearlyZero() && !Across.IsNearlyZero() && !Back.IsNearlyZero()) Frame = FRotationMatrix::MakeFromXZ(Back, Across).ToQuat();
+        }
+        const FRotator* Turn = Body.PropRotation.Find(Prop.Bone);
+        Part->SetRelativeRotation(Bone.GetRotation().Inverse() * Frame * (Turn ? *Turn : Prop.Rotation).Quaternion());
         FVector Grip = FVector::ZeroVector;
         if (bHand)
         {
@@ -438,11 +479,13 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
             if (Reference.FindBoneIndex(Knuckle) != INDEX_NONE)
                 Grip = Bone.InverseTransformPosition((Bone.GetLocation() + ReferenceBone(Reference, Knuckle).GetLocation()) * .5);
         }
-        Grip += Bone.InverseTransformVector(Upright.RotateVector(Prop.Offset) / Body.MeshScale);
+        const FVector* Offset = Body.PropOffset.Find(Prop.Bone);
+        Grip += Bone.InverseTransformVector(Upright.RotateVector(Offset ? *Offset : Prop.Offset) / Body.MeshScale);
         Part->SetRelativeLocation(Grip);
         // Bone transforms inherit the imported root scale (100): props are authored in real centimetres.
         const float BoneScale = static_cast<float>(Bone.GetScale3D().GetAbsMax()) * Body.MeshScale;
-        Part->SetRelativeScale3D(FVector(BoneScale > UE_SMALL_NUMBER ? Prop.Scale / BoneScale : Prop.Scale));
+        const float PropScale = Prop.Scale * (Body.PropScale.Contains(Prop.Bone) ? Body.PropScale[Prop.Bone] : 1.f);
+        Part->SetRelativeScale3D(FVector(BoneScale > UE_SMALL_NUMBER ? PropScale / BoneScale : PropScale));
         Part->RegisterComponent();
         OutParts.Add(Part);
     }

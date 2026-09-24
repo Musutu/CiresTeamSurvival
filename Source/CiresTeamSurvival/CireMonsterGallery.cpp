@@ -192,7 +192,7 @@ void Attack(const TCHAR* Id)
     const FCireNPCArchetype* A = Arch(Id);
     const float Scale = A ? A->Scale : 1.f;
     const FVector C = G.Studio;
-    const float Spacing = 250.f * FMath::Max(1.f, Scale);
+    const float Spacing = 175.f * FMath::Max(1.f, Scale);
     TArray<ACireMonster*> Bodies;
     for (int32 I = 0; I < 4; ++I) Bodies.Add(Spawn(FName(Id), 0, C + FVector(0, (I - 1.5f) * Spacing, 0), 0));
     if (Bodies.Contains(nullptr)) return;
@@ -211,7 +211,7 @@ void Attack(const TCHAR* Id)
         Label(Bodies[I]->GetActorLocation() + FVector(0, 0, Bodies[I]->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 40),
             I < 3 ? FString(Titles[I]) : Special, FColor(246, 219, 155), 14.f * FMath::Max(1.f, Scale * .8f), 0);
     Label(C + FVector(0, 0, 300 * Scale + 120), (A ? A->DisplayName : FString(Id)) + TEXT("  |  ") + VariantName(Bodies[0]), FColor::White, 24.f * FMath::Max(1.f, Scale * .8f), 0);
-    Look(C + FVector(1350, -800, 420) * FMath::Max(1.f, Scale * .85f), C + FVector(0, 0, 120 * Scale), 50);
+    Look(C + FVector(820, -560, 230) * FMath::Max(1.f, Scale * .9f), C + FVector(0, 0, 105 * Scale), 50);
 }
 
 void Variants()
@@ -393,7 +393,7 @@ bool CireMonsterGallery::Initialize(ACireGameMode* Mode)
     if (!FParse::Param(FCommandLine::Get(), TEXT("CireMonsterGallery"))) return false;
     G.Mode = Mode; G.Started = FPlatformTime::Seconds();
     FString Only;
-    if (FParse::Value(FCommandLine::Get(), TEXT("CireMonsterGalleryOnly="), Only)) Only.ParseIntoArray(G.Only, TEXT(","), true);
+    if (FParse::Value(FCommandLine::Get(), TEXT("CireMonsterGalleryOnly="), Only, false)) Only.ParseIntoArray(G.Only, TEXT(","), true);
     G.Directory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("MonsterGallery"), FDateTime::UtcNow().ToString(TEXT("%Y%m%d-%H%M%S"))));
     if (!Mode || Mode->GetNetMode() != NM_Standalone || !IFileManager::Get().MakeDirectory(*G.Directory, true)) { Fail(TEXT("standalone match and capture directory")); Finish(); return true; }
     Mode->bBotsFilled = true; Mode->BotFillTimer = MAX_flt; Mode->WaveTimer = MAX_flt;
