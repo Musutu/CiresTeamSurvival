@@ -80,6 +80,19 @@ public:
     FCireUIRect PanelRectForTest(FName Id) const { return PanelRect(Id); }
     bool DebugFontsReady() const { return CireUIStyle::Assets().bFonts; }
 #endif
+    // progression-shop: hooks for CireShopUI (shop, bag/belt/teleport bar, stats window, loot toasts).
+    FCireUIPainter ScreenPainter() const { FCireUIPainter P; P.Canvas=Canvas; P.Scale=Scale; return P; }
+    FVector2D LogicalViewport() const { return FVector2D(ViewW,ViewH); }
+    FVector2D LogicalMouse() const { return FVector2D(MX,MY); }
+    bool HasClick() const { return Clicked; }
+    bool TakeClick() { const bool bWasClicked=Clicked; Clicked=false; return bWasClicked; }
+    bool IsInteractive() const { return !bEditLayout&&!bSettings; }
+    bool IsModalOpen() const { return bModal; }
+    void RegisterPanel(FName Id) { VisiblePanels.AddUnique(Id); }
+    FCireUIRect LayoutRect(FName Id) const { return PanelRect(Id); }
+    void SetTooltip(const FString& Title,const FString& Body) { TooltipTitle=Title; TooltipBody=Body; }
+    void PlayInterfaceSound(int32 Index,float Volume=1.f) { PlayWowSound(Index,Volume); }
+    // progression-shop: end
 private:
     void Panel(float X, float Y, float W, float H, FLinearColor Color);
     void Label(const FString& Text, float X, float Y, float Size, FLinearColor Color=FLinearColor::White);
