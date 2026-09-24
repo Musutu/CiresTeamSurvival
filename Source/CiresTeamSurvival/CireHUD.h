@@ -10,12 +10,38 @@
 class ACireHero;
 class ACireController;
 class ACireGameState;
+class ACireMonster;
+class UFont;
+class UFontFace;
+class USoundBase;
+
+/** Font hierarchy of the WoW-style interface. Auto picks by text content and size. */
+enum class ECireFont : uint8 { Auto, Body, Heading, Bold, Numbers };
+
+/** A transient WoW-style centre-screen alert (aggro, threat, level). */
+struct FCireHUDAlert
+{
+    FString Title, Subtitle;
+    FLinearColor Color = FLinearColor::White;
+    double Start = -100.0;
+    float Duration = 2.6f;
+};
+
+/** A running level-up burst on one hero. */
+struct FCireLevelBurst
+{
+    TWeakObjectPtr<ACireHero> Hero;
+    int32 Level = 0;
+    double Start = 0.0;
+    bool bLocal = false;
+};
 
 UCLASS()
 class CIRESTEAMSURVIVAL_API ACireHUD : public AHUD
 {
     GENERATED_BODY()
 public:
+    ACireHUD();
     virtual void BeginPlay() override;
     virtual void DrawHUD() override;
     bool IsEditingLayout() const { return bEditLayout; }
@@ -41,10 +67,27 @@ public:
     int32 DebugTooltipBodyLines() const { return LastTooltipBodyLines; }
     float DebugTooltipBodyFontSize() const { return LastTooltipBodyFontSize; }
     FVector2D DebugTooltipViewport() const { return FVector2D(ViewW,ViewH); }
+    /** WoW UI gallery hooks: force a unit tooltip, a level-up burst or an alert. */
+    void DebugUnitTooltip(AActor* Unit,FVector2D Cursor) { DebugHoverUnit=Unit;DebugHoverCursor=Cursor; }
+    void DebugLevelUp(ACireHero* Hero,bool bLocal);
+    void DebugAlert(const FString& Title,const FString& Subtitle,FLinearColor Color) { ShowAlert(Title,Subtitle,Color,false); }
+    float DebugScale() const { return Scale; }
+    bool DebugFontsReady() const { return WowFonts.Num()==4; }
 #endif
 private:
     void Panel(float X, float Y, float W, float H, FLinearColor Color);
     void Label(const FString& Text, float X, float Y, float Size, FLinearColor Color=FLinearColor::White);
+    /** Crisp TTF text at its rendered pixel size with an optional 1px outline and drop shadow. */
+    void TextFx(const FString& Text, float X, float Y, float Size, FLinearColor Color, ECireFont Font, bool bOutline, bool bShadow=true);
+    float TextWidthFont(const FString& Text, float Size, ECireFont Font) const;
+    UFont* ResolveFont(ECireFont Font, const FString& Text, float Size) const;
+    float FontPoints(ECireFont Font, float Size) const;
+    void BuildFonts();
+    /** Filled circle / ring / triangle in panel space. */
+    void Disc(float X, float Y, float R, FLinearColor Color, int32 Sides=28);
+    void Circle(float X, float Y, float R, FLinearColor Color, float Width=1.f, int32 Sides=36);
+    void Tri(FVector2D A, FVector2D B, FVector2D C, FLinearColor Color);
+    void PlayWowSound(int32 Index, float Volume=1.f);
     void Bar(float X, float Y, float W, float H, float Fraction, FLinearColor Color);
     void Line(float X1, float Y1, float X2, float Y2, FLinearColor Color, float Width=1.f);
     void Frame(float X, float Y, float W, float H, FLinearColor Accent);
@@ -62,6 +105,20 @@ private:
     void DrawPlayer(ACireHero* Hero);
     void DrawParty(ACireHero* Hero, ACireController* Controller);
     void DrawUnit(AActor* Actor, const FString& Caption, bool bFocus);
+    // ---- WoW-style frames and feedback (CireHUDWow.cpp) ----
+    void DrawPortrait(AActor* Actor, float CX, float CY, float R, bool bSmall);
+    void DrawBossFrames(ACireHero* Hero, ACireController* Controller);
+    void DrawThreatMeter(ACireHero* Hero, ACireController* Controller);
+    void UpdateThreatAlerts(ACireHero* Hero);
+    void DrawAlert();
+    void ShowAlert(const FString& Title, const FString& Subtitle, FLinearColor Color, bool bSound, int32 SoundIndex=1);
+    void UpdateLevelUps(ACireHero* Hero);
+    void DrawLevelUps(ACireHero* Hero);
+    void UpdateHoverUnit(ACireHero* Hero);
+    bool DrawUnitTooltip(AActor* Unit, FVector2D Cursor);
+    void UnitTip(AActor* Unit, float X, float Y, float W, float H);
+    FCireUIRect PlaceTooltip(float W, float H, FVector2D Cursor) const;
+    void TooltipBox(float X, float Y, float W, float H, FLinearColor Border);
     void DrawMatch(ACireGameState* State);
     void DrawMinimap(ACireHero* Hero, ACireGameState* State);
     void DrawSkills(ACireHero* Hero, ACireController* Controller);
@@ -78,6 +135,7 @@ private:
     void DrawDeveloperPanel(float X,float Y);
     void DrawDeveloperLauncher();
     FCireUIRect DeveloperLauncherRect() const;
+    FCireUIRect PanelRect(FName Id) const;
     FCireMovementTuning MovementDraft;
     bool bMovementLoaded=false;
     bool DrawReplayScreen();
@@ -87,6 +145,23 @@ private:
     float LabSeconds=60;
     FString DeveloperMessage;
     FString TooltipTitle,TooltipBody;
+    // WoW interface state.
+    UPROPERTY(Transient) TArray<TObjectPtr<UFont>> WowFonts;
+    UPROPERTY() TArray<TObjectPtr<UFontFace>> WowFontFaces;
+    UPROPERTY() TArray<TObjectPtr<USoundBase>> WowSounds;
+    ECireFont NextFont = ECireFont::Auto;
+    TArray<float> FontCalibration;
+    TWeakObjectPtr<AActor> HoverUnit, TooltipUnit, LastTargetSeen;
+    TMap<TWeakObjectPtr<ACireMonster>, TWeakObjectPtr<ACireHero>> AggroMemory;
+    TMap<TWeakObjectPtr<ACireHero>, int32> SeenLevels;
+    TArray<FCireLevelBurst> LevelBursts;
+    FCireHUDAlert Alert;
+    double LastThreatWarning = -100.0;
+    FString TooltipHoverKey;
+    double TooltipHoverStart = 0.0;
+    float PendingUIScale = -1.f;
+    TWeakObjectPtr<AActor> DebugHoverUnit;
+    FVector2D DebugHoverCursor = FVector2D::ZeroVector;
 #if !UE_BUILD_SHIPPING
     bool bDebugTooltip=false;
     FString DebugTooltipTitle,DebugTooltipBody;

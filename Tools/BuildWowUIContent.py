@@ -107,7 +107,7 @@ def build(unreal):
         asset = library.load_asset(path)
         if not asset or not isinstance(asset, unreal.FontFace):
             raise RuntimeError("Font face import failed: " + path)
-        asset.set_editor_property("hinting", unreal.FontHinting.AUTO)
+        asset.set_editor_property("hinting", unreal.FontHinting.AUTO_LIGHT)
         asset.set_editor_property("loading_policy", unreal.FontLoadingPolicy.INLINE)
         library.save_loaded_asset(asset, only_if_is_dirty=False)
     for wav in SOUND_SRC.glob("*.wav"):
@@ -147,7 +147,10 @@ if __name__ == "__main__":
             destination = ROOT / "Content/UI/WowUI" / sub
             destination.mkdir(parents=True, exist_ok=True)
             for asset in source.glob("*.uasset"):
-                shutil.copy2(asset, destination / asset.name)
+                target = destination / asset.name
+                if target.exists():
+                    os.chmod(target, 0o666)  # LFS 'lockable' files are checked out read-only
+                shutil.copy2(asset, target)
                 print(f"CIRE_WOWUI_COPIED {destination / asset.name}")
     else:
         run_in_editor(unreal)
