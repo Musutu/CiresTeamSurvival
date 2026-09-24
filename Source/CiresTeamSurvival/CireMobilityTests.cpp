@@ -1,5 +1,6 @@
 #include "CireMobility.h"
 #include "CireGame.h"
+#include "CireCamera.h"
 
 #if !UE_BUILD_SHIPPING
 #include "CireCombatEvents.h"
@@ -42,6 +43,17 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
     Check(!Apply(Bad,Error)&&Tuning().InvulnerableEnd==V.InvulnerableEnd,TEXT("invalid invulnerability rejected transactionally"));
     Bad=V;Bad.RollEnergy=-1;
     Check(!Apply(Bad,Error)&&Tuning().RollEnergy==V.RollEnergy,TEXT("negative resource cost rejected"));
+    Bad=V;Bad.TankBodyScale=3;
+    Check(!Apply(Bad,Error)&&Tuning().TankBodyScale==V.TankBodyScale,TEXT("oversized tank body scale rejected"));
+    Bad=V;Bad.BackpedalScale=0;
+    Check(!Apply(Bad,Error),TEXT("zero backpedal speed rejected"));
+    {
+        FCireMovementTuning Disk;FString DiskError;
+        Check(Reload(DiskError)&&Tuning().Acceleration>=2048&&Tuning().BrakingDeceleration>=2048&&
+            Tuning().KeyboardTurnRate>=90&&FMath::IsNearlyEqual(Tuning().TankBodyScale,1.15f),TEXT("MovementTuning.json responsiveness, turn rate and tank scale load"));
+        Check(Apply(V,Error),TEXT("restore fixture tuning after disk reload"));
+    }
+    Check(CireCamera::RunSmoke(),TEXT("WoW steering key mapping"));
 
     UWorld* World=Mode->GetWorld();const FVector Ground(2000,-2100,3000);
     auto* Floor=World->SpawnActor<AActor>();
@@ -133,6 +145,29 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
     Check(!Mobility->IsRolling()&&!Mobility->IsInvulnerable()&&
         (!Remaining||Remaining->Status.HasFlag(ERootMotionSourceStatusFlags::MarkedForRemoval))&&Mobility->ReadyAt==ReadyBeforeRevive,
         TEXT("revive cancels root motion and invulnerability without resetting dodge cooldown"));
+    // WoW keyboard steering: the replicated face-control flag makes the body follow the controller yaw.
+    Hero->ReviveAt(Ground+FVector(-300,0,94));Mobility->CancelRoll();
+    Hero->ChampionProfileId=TEXT("movement_fixture_tank");Hero->ProfileRoles={TEXT("damage")};
+    Mobility->ServerSetFaceControl(true);ApplyToHero(*Hero);
+    Check(Mobility->bFaceControl&&Hero->bUseControllerRotationYaw&&!Move->bOrientRotationToMovement,TEXT("face-control RPC faces controller yaw"));
+    Mobility->ServerSetFaceControl(false);ApplyToHero(*Hero);
+    Check(!Hero->bUseControllerRotationYaw&&Move->bOrientRotationToMovement,TEXT("idle players and bots turn toward movement"));
+    Check(FMath::IsNearlyEqual(Move->MaxAcceleration,V.Acceleration)&&FMath::IsNearlyEqual(Move->BrakingDecelerationWalking,V.BrakingDeceleration)&&
+        FMath::IsNearlyEqual(Move->GroundFriction,V.GroundFriction),TEXT("responsiveness tuning applied to character movement"));
+    // Tank body scale: capsule, mesh and feet stay consistent.
+    Move->SetMovementMode(MOVE_Walking);Move->bForceNextFloorCheck=true;Move->TickComponent(.01f,LEVELTICK_All,nullptr);
+    const double FeetBefore=Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    Hero->ProfileRoles={TEXT("tank")};Hero->ChampionProfileId=TEXT("movement_fixture_tank");
+    Check(FMath::IsNearlyEqual(BodyScaleFor(*Hero),V.TankBodyScale),TEXT("tank role uses tank body scale"));
+    ApplyToHero(*Hero);
+    const double FeetAfter=Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    Check(FMath::IsNearlyEqual(static_cast<float>(Hero->GetActorScale3D().Z),V.TankBodyScale)&&
+        FMath::IsNearlyEqual(Hero->GetCapsuleComponent()->GetScaledCapsuleRadius(),40.f*V.TankBodyScale,.01f)&&
+        FMath::Abs(FeetAfter-FeetBefore)<1.0,TEXT("tank scale grows capsule around planted feet"));
+    Hero->ProfileRoles={TEXT("damage")};ApplyToHero(*Hero);
+    Check(FMath::IsNearlyEqual(static_cast<float>(Hero->GetActorScale3D().Z),1.f)&&
+        FMath::Abs(Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()-FeetBefore)<1.0,TEXT("damage role returns to base scale"));
+    Hero->ProfileRoles.Reset();Hero->ChampionProfileId.Reset();
     UE_LOG(LogCireMovementTests,Display,TEXT("CIRE_MOVEMENT_%s checks=%d wall_travel=%.1f controls=E_jump_Ctrl_roll_CapsLock_walk_RMB_strafe"),
         Passed?TEXT("PASS"):TEXT("FAIL"),Checks,Moved);
     return Passed;

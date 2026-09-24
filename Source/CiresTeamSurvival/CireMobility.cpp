@@ -1,6 +1,7 @@
 #include "CireMobility.h"
 #include "CireGame.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/RootMotionSource.h"
 #include "Net/UnrealNetwork.h"
 #include "Dom/JsonObject.h"
@@ -19,7 +20,10 @@ bool Valid(const FCireMovementTuning& V)
     return In(V.RunSpeed,300,800)&&In(V.WalkSpeed,100,V.RunSpeed)&&In(V.JumpVelocity,200,650)&&
         In(V.RollSpeed,300,1400)&&In(V.RollDuration,.25f,.9f)&&In(V.RollCooldown,1,15)&&
         In(V.RollEnergy,5,80)&&In(V.InvulnerableStart,0,V.RollDuration)&&
-        In(V.InvulnerableEnd,V.InvulnerableStart,V.RollDuration)&&V.InvulnerableEnd-V.InvulnerableStart<=.4f;
+        In(V.InvulnerableEnd,V.InvulnerableStart,V.RollDuration)&&V.InvulnerableEnd-V.InvulnerableStart<=.4f&&
+        In(V.Acceleration,500,10000)&&In(V.BrakingDeceleration,200,10000)&&In(V.GroundFriction,0,30)&&
+        In(V.RotationRate,90,2000)&&In(V.AirControl,0,1)&&In(V.KeyboardTurnRate,45,720)&&
+        In(V.BackpedalScale,.3f,1)&&In(V.TankBodyScale,1,1.5f);
 }
 }
 const FCireMovementTuning& CireMovement::Tuning(){if(!Loaded){Loaded=true;FString Error;Reload(Error);}return MovementValues;}
@@ -38,6 +42,12 @@ bool CireMovement::Reload(FString& Error)
     CIRE_READ_MOVE(RunSpeed);CIRE_READ_MOVE(WalkSpeed);CIRE_READ_MOVE(JumpVelocity);CIRE_READ_MOVE(RollSpeed);
     CIRE_READ_MOVE(RollDuration);CIRE_READ_MOVE(RollCooldown);CIRE_READ_MOVE(RollEnergy);CIRE_READ_MOVE(InvulnerableStart);CIRE_READ_MOVE(InvulnerableEnd);
 #undef CIRE_READ_MOVE
+    // Responsiveness/turning/body-scale fields are optional so older data files keep loading.
+#define CIRE_READ_OPTIONAL(Name) {double N=0;if(O->TryGetNumberField(TEXT(#Name),N))V.Name=N;}
+    CIRE_READ_OPTIONAL(Acceleration);CIRE_READ_OPTIONAL(BrakingDeceleration);CIRE_READ_OPTIONAL(GroundFriction);
+    CIRE_READ_OPTIONAL(RotationRate);CIRE_READ_OPTIONAL(AirControl);CIRE_READ_OPTIONAL(KeyboardTurnRate);
+    CIRE_READ_OPTIONAL(BackpedalScale);CIRE_READ_OPTIONAL(TankBodyScale);
+#undef CIRE_READ_OPTIONAL
     return Apply(V,Error);
 }
 bool CireMovement::Save(FString& Error)
@@ -46,6 +56,8 @@ bool CireMovement::Save(FString& Error)
 #define CIRE_WRITE_MOVE(Name) O->SetNumberField(TEXT(#Name),Tuning().Name)
     CIRE_WRITE_MOVE(RunSpeed);CIRE_WRITE_MOVE(WalkSpeed);CIRE_WRITE_MOVE(JumpVelocity);CIRE_WRITE_MOVE(RollSpeed);
     CIRE_WRITE_MOVE(RollDuration);CIRE_WRITE_MOVE(RollCooldown);CIRE_WRITE_MOVE(RollEnergy);CIRE_WRITE_MOVE(InvulnerableStart);CIRE_WRITE_MOVE(InvulnerableEnd);
+    CIRE_WRITE_MOVE(Acceleration);CIRE_WRITE_MOVE(BrakingDeceleration);CIRE_WRITE_MOVE(GroundFriction);CIRE_WRITE_MOVE(RotationRate);
+    CIRE_WRITE_MOVE(AirControl);CIRE_WRITE_MOVE(KeyboardTurnRate);CIRE_WRITE_MOVE(BackpedalScale);CIRE_WRITE_MOVE(TankBodyScale);
 #undef CIRE_WRITE_MOVE
     FString Text;if(!FJsonSerializer::Serialize(O,TJsonWriterFactory<>::Create(&Text))||!FFileHelper::SaveStringToFile(Text,*Filename())){Error=TEXT("Cannot save movement tuning");return false;}return true;
 }
@@ -53,7 +65,7 @@ UCireMobility::UCireMobility(){SetIsReplicatedByDefault(true);PrimaryComponentTi
 void UCireMobility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(UCireMobility,bWalking);DOREPLIFETIME(UCireMobility,bStrafing);DOREPLIFETIME(UCireMobility,RollStartedAt);
+    DOREPLIFETIME(UCireMobility,bWalking);DOREPLIFETIME(UCireMobility,bStrafing);DOREPLIFETIME(UCireMobility,bFaceControl);DOREPLIFETIME(UCireMobility,RollStartedAt);
     DOREPLIFETIME(UCireMobility,RollDuration);DOREPLIFETIME(UCireMobility,ReadyAt);DOREPLIFETIME(UCireMobility,RollDirection);
     DOREPLIFETIME(UCireMobility,InvulnerableFrom);DOREPLIFETIME(UCireMobility,InvulnerableUntil);
 }
@@ -65,6 +77,36 @@ float UCireMobility::CooldownRemaining()const{return FMath::Max(0.f,static_cast<
 float UCireMobility::MovementSpeed(bool bSlowed)const{return (bWalking?CireMovement::Tuning().WalkSpeed:CireMovement::Tuning().RunSpeed)*(bSlowed?.65f:1.f);}
 void UCireMobility::ServerSetWalk_Implementation(bool Walking){bWalking=Walking;}
 void UCireMobility::ServerSetStrafe_Implementation(bool Strafing){bStrafing=Strafing;}
+void UCireMobility::ServerSetFaceControl_Implementation(bool Face){bFaceControl=Face;}
+float CireMovement::BodyScaleFor(const ACireHero& Hero)
+{
+    return Hero.bDrafted&&Hero.HasChampionRole(TEXT("tank"))?Tuning().TankBodyScale:1.f;
+}
+void CireMovement::ApplyToHero(ACireHero& Hero)
+{
+    const auto& V=Tuning();auto* Move=Hero.GetCharacterMovement();
+    Move->JumpZVelocity=V.JumpVelocity;Move->MaxAcceleration=V.Acceleration;
+    Move->BrakingDecelerationWalking=V.BrakingDeceleration;Move->GroundFriction=V.GroundFriction;
+    Move->BrakingFrictionFactor=1.f;Move->RotationRate=FRotator(0,V.RotationRate,0);Move->AirControl=V.AirControl;
+    if(const auto* Mobility=Hero.Mobility.Get())
+    {
+        // RMB mouselook (bStrafing) and WoW keyboard steering (bFaceControl) face the controller yaw;
+        // otherwise (bots, idle players, rolls) the body turns toward its velocity.
+        const bool bFaceController=(Mobility->bStrafing||Mobility->bFaceControl)&&!Mobility->IsRolling();
+        Move->bOrientRotationToMovement=!bFaceController&&!Mobility->IsRolling();
+        Hero.bUseControllerRotationYaw=bFaceController;
+    }
+    // Tanks are physically larger: actor scale keeps mesh, capsule, selection ring and camera pivot consistent.
+    const float Scale=BodyScaleFor(Hero);
+    if(!FMath::IsNearlyEqual(static_cast<float>(Hero.GetActorScale3D().Z),Scale,.001f))
+    {
+        const double OldHalfHeight=Hero.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+        Hero.SetActorScale3D(FVector(Scale));
+        // Keep the feet planted: grow/shrink around the floor instead of the capsule centre.
+        if(Hero.HasAuthority()||Hero.IsLocallyControlled())
+            Hero.AddActorWorldOffset(FVector(0,0,Hero.GetCapsuleComponent()->GetScaledCapsuleHalfHeight()-OldHalfHeight));
+    }
+}
 void UCireMobility::ServerRoll_Implementation(FVector_NetQuantizeNormal Direction){StartRoll(Direction);}
 bool UCireMobility::StartRoll(FVector Direction)
 {
