@@ -6,7 +6,7 @@ Source of truth: `Art/Fab/FabCatalog.json`. Licenses and credits: `Art/Fab/PROVE
 
 ## 0. Blocker: Fab sign-in (Eric)
 
-Clicking **Sign in** on fab.com redirects to `https://www.epicgames.com/id/authorize?...` (Epic account login). The Claude in Chrome extension has no permission on epicgames.com (`Permission denied for this action on this domain`), and agents must not enter credentials in any case. So **nothing has been added to My Library yet** and no website downloads were possible.
+Rechecked 2026-09-24 after the Fab plugin fix: Chrome is still signed out of fab.com (`/i/users/me` returns 401). Clicking **Sign in** on fab.com redirects to `https://www.epicgames.com/id/authorize?...` (Epic account login). The Claude in Chrome extension has no permission on epicgames.com (`Permission denied for this action on this domain`), and agents must not enter credentials in any case. So **nothing has been added to My Library yet** and no website downloads were possible.
 
 To unblock: sign in to https://www.fab.com yourself in Chrome. After that, either:
 - click **Add to My Library** on each link below yourself (about 36 clicks, all free), or
@@ -16,7 +16,7 @@ To unblock: sign in to https://www.fab.com yourself in Chrome. After that, eithe
 
 Target project: `C:\Users\Eric\Documents\GitHub\cts-fab-assets\CiresTeamSurvival.uproject`
 
-In the Launcher go to **Unreal Engine → Library → Fab Library**, search for the exact name, then choose **Add to Project → CiresTeamSurvival**. If the project isn't listed because the pack doesn't declare 5.8, tick **Show all projects** and pick the newest listed engine version. Content-only packs from 5.4 to 5.7 normally load in 5.8, but check them once they open. The Fab editor plugin stays disabled in the .uproject; the Launcher route doesn't need it.
+In the Launcher go to **Unreal Engine → Library → Fab Library**, search for the exact name, then choose **Add to Project → CiresTeamSurvival**. If the project isn't listed because the pack doesn't declare 5.8, tick **Show all projects** and pick the newest listed engine version. Content-only packs from 5.4 to 5.7 normally load in 5.8, but check them once they open. Alternatively, since f977dae the Fab plugin is re-enabled in the .uproject (Smart App Control no longer blocks it): open the project in the editor, open **Window → Fab**, sign in, and use **Add to Project** on the same items from inside the editor.
 
 | Done | Exact Fab name | Author | Declared UE versions | Declares 5.8 | Use in town | Link |
 |---|---|---|---|---|---|---|
