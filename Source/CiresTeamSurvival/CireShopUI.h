@@ -42,6 +42,8 @@ namespace CireShopUI
     CIRESTEAMSURVIVAL_API void DebugReset();
     // Virtual pointer for offscreen captures (logical units); (-1,-1) clears.
     CIRESTEAMSURVIVAL_API void DebugMouse(FVector2D Logical);
+    // Freezes UI animation time at (latest feedback event + Age); Age < 0 unfreezes.
+    CIRESTEAMSURVIVAL_API void DebugFreezeAfterLastEvent(float Age);
     CIRESTEAMSURVIVAL_API FVector2D DebugGridPos(FName ItemId);
 #endif
     // Pointer in logical units (the capture fixture's virtual pointer when set).

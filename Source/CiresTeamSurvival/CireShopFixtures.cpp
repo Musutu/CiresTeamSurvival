@@ -110,8 +110,8 @@ void Capture(const TCHAR* Name)
 // Each stage: prepare at entry, capture after Delay seconds, move on after Delay + .6 s.
 struct FStage { const TCHAR* Name; float Delay; };
 const FStage Stages[] = {
-    {TEXT("shop_all_items_hover"), 2.2f}, {TEXT("shop_recommended"), 1.2f}, {TEXT("shop_buy_feedback"), .24f},
-    {TEXT("shop_error_shake"), .12f}, {TEXT("shop_sell_feedback"), .3f}, {TEXT("hud_stats_window_hover"), 1.2f},
+    {TEXT("shop_all_items_hover"), 2.2f}, {TEXT("shop_recommended"), 1.2f}, {TEXT("shop_buy_feedback"), .8f},
+    {TEXT("shop_error_shake"), .8f}, {TEXT("shop_sell_feedback"), .8f}, {TEXT("hud_stats_window_hover"), 1.2f},
     {TEXT("loot_chest_drop"), 1.6f}, {TEXT("loot_chest_opened"), .9f}, {TEXT("teleport_channel"), 2.2f}, {TEXT("teleport_cooldown"), 1.0f}};
 constexpr int32 StageCount = UE_ARRAY_COUNT(Stages);
 
@@ -123,6 +123,8 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
     ACireController* PC = G.PC.Get();
     FString Message;
     HUD->DebugTooltipClear();
+    CireShopUI::DebugFreezeAfterLastEvent(-1);
+    HUD->UISettings.bTooltips = Stage == 0 || Stage == 5; // only the hover shots show a tooltip
     CireShopUI::DebugMouse(FVector2D(-1, -1));
     CireShopUI::DebugHoverStat(-1);
     switch (Stage)
@@ -207,6 +209,9 @@ bool TickGallery(ACireGameMode* Mode)
         const FVector2D Pos = CireShopUI::DebugGridPos(TEXT("sanguine_sabre"));
         if (Pos.X >= 0) CireShopUI::DebugMouse(Pos);
     }
+    // Feedback shots freeze the UI clock mid-animation so the capture shows the moment itself.
+    if (G.Stage >= 2 && G.Stage <= 4 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f)
+        CireShopUI::DebugFreezeAfterLastEvent(G.Stage == 2 ? .26f : G.Stage == 3 ? .09f : .3f);
     if (!G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay)
     {
         int32 W = 0, H = 0;

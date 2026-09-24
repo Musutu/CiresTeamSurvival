@@ -57,6 +57,7 @@ struct FShopState
     double DebugNow = -1;
 };
 FShopState State;
+bool bSuppressFlash = false;
 
 double Now() { return State.DebugNow >= 0 ? State.DebugNow : FPlatformTime::Seconds(); }
 FVector2D VirtualPointer(-1, -1);
@@ -261,7 +262,7 @@ void DrawGoldCounter(const FCireUIPainter& P, ACireHero* Hero, float X, float Y,
     P.Text(TEXT("g"), CX - R * .38f, CY - R * .95f, R * 1.4f, FLinearColor(.55f, .36f, .06f, 1), ECireFont::Bold, false, false);
     const FLinearColor Color = bFalling ? FLinearColor(1.f, .45f, .35f, 1) : bRising ? FLinearColor(.55f, 1.f, .5f, 1) : BrightGold;
     P.Text(Text, Left + R * 2 + Size * .25f, Y, Size, Color, ECireFont::Numbers, true, true);
-    State.GoldPos = P.Origin + FVector2D(CX, CY);
+    State.GoldPos = P.Origin + FVector2D(CX, CY) * P.Stretch;
 }
 
 void UpdateGold(ACireHero* Hero)
@@ -283,6 +284,43 @@ float ServerTime(const ACireHUD& HUD)
     return GameState ? static_cast<float>(GameState->GetServerWorldTimeSeconds()) : HUD.GetWorld()->GetTimeSeconds();
 }
 
+
+// Soft halo: stacked translucent fills that grow outward (draw it behind the icon).
+void SoftGlow(const FCireUIPainter& P, float X, float Y, float W, float H, FLinearColor Color)
+{
+    for (int32 Ring = 4; Ring >= 1; --Ring)
+    {
+        const float O = Ring * 2.5f;
+        P.Rect(X - O, Y - O, W + 2 * O, H + 2 * O, FLinearColor(Color.R, Color.G, Color.B, Color.A * .16f));
+    }
+}
+void Border(const FCireUIPainter& P, float X, float Y, float W, float H, FLinearColor Color, float Width)
+{
+    P.Line(X, Y, X + W, Y, Color, Width); P.Line(X, Y + H, X + W, Y + H, Color, Width);
+    P.Line(X, Y, X, Y + H, Color, Width); P.Line(X + W, Y, X + W, Y + H, Color, Width);
+}
+void HoverFrame(const FCireUIPainter& P, float X, float Y, float S, FLinearColor Color)
+{
+    Border(P, X - 2, Y - 2, S + 4, S + 4, Color * FLinearColor(1, 1, 1, .35f), 1.f);
+    Border(P, X, Y, S, S, Color, 2.f);
+    P.Rect(X + 2, Y + 2, S - 4, S - 4, FLinearColor(1.f, .95f, .8f, .07f));
+}
+void FlashOver(const FCireUIPainter& P, float X, float Y, float S, float Amount)
+{
+    if (Amount <= 0) return;
+    P.Rect(X + 2, Y + 2, S - 4, S - 4, FLinearColor(1.f, .92f, .65f, .38f * Amount * Amount));
+    Border(P, X - 1, Y - 1, S + 2, S + 2, FLinearColor(1.f, .9f, .5f, Amount), 2.5f);
+    P.Circle(X + S * .5f, Y + S * .5f, S * (.5f + (1.f - Amount) * .45f), FLinearColor(1.f, .85f, .45f, .7f * Amount), 1.5f);
+}
+// Kit button with this screen's hover/selection treatment (flat highlight + gold rule).
+void ShopButton(const FCireUIPainter& P, float X, float Y, float W, float H, const FString& Label, bool bHover, bool bSelected, bool bDisabled, FLinearColor Accent, float Size)
+{
+    CireUIStyle::Button(P, X, Y, W, H, Label, bDisabled ? ECireButtonState::Disabled : ECireButtonState::Normal, Accent, Size);
+    if (bDisabled) return;
+    if (bHover || bSelected) P.Rect(X + 3, Y + 3, W - 6, H - 6, FLinearColor(1.f, .92f, .7f, bSelected ? .10f : .06f));
+    if (bSelected) { P.Rect(X + 6, Y + H - 4, W - 12, 2, BrightGold); P.Line(X + 6, Y + 3, X + W - 6, Y + 3, Gold * FLinearColor(1, 1, 1, .6f), 1.f); }
+    else if (bHover) P.Rect(X + 10, Y + H - 4, W - 20, 1.5f, Accent);
+}
 // Hand-drawn glyph for the teleport button: a hearth-portal arch with a rising spark.
 void DrawTeleportGlyph(const FCireUIPainter& P, float X, float Y, float S, FLinearColor Color)
 {
@@ -356,9 +394,9 @@ void CireShopUI::DrawItemIcon(const FCireUIPainter& P, FName ItemId, float X, fl
     Slot.CooldownFraction = CooldownFraction;
     Slot.CooldownRemaining = CooldownRemaining;
     Slot.Charges = Charges;
-    Slot.bHover = bHover;
-    Slot.Flash = FlashAmount(ItemId);
     CireUIStyle::IconSlot(P, X, Y, Size, Slot, Now());
+    if (bHover) HoverFrame(P, X, Y, Size, FLinearColor(1.f, .88f, .5f, 1));
+    if (!bSuppressFlash) FlashOver(P, X, Y, Size, FlashAmount(ItemId));
     if (bDim) P.Rect(X + 2, Y + 2, Size - 4, Size - 4, FLinearColor(0, 0, 0, .55f));
 }
 
@@ -434,10 +472,10 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
         const CI::ItemDef* Item = CireItems::Find(Cell.Id);
         Slot.Tint = Item ? TierColor(static_cast<int32>(Item->Tier)) : Muted;
         Slot.KeyLabel = Key; Slot.CooldownFraction = Fraction; Slot.CooldownRemaining = Remaining;
-        Slot.Charges = bBelt ? Cell.Charges : 0; Slot.bHover = bOver;
-        Slot.Flash = FlashAmount(NAME_None, Index, bBelt);
+        Slot.Charges = bBelt ? Cell.Charges : 0;
         CireUIStyle::IconSlot(P, X + Shake, Y, S, Slot, Now());
-        if (bBelt && Cell.Charges > 1) P.Text(FString::FromInt(Cell.Charges), X + S - 10, Y + S - 13, 10, Parchment, ECireFont::Numbers, true);
+        if (bOver) HoverFrame(P, X + Shake, Y, S, FLinearColor(1.f, .88f, .5f, 1));
+        FlashOver(P, X + Shake, Y, S, FlashAmount(NAME_None, Index, bBelt));
         State.HudSlotPos[Index + (bBelt ? 6 : 0)] = P.Origin + FVector2D(X, Y) * P.Stretch;
         if (bOver && Item)
         {
@@ -488,7 +526,7 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
         if (Inv->IsChanneling())
         {
             const float T = FMath::Clamp((STime - Inv->TeleportChannelStart) / FMath::Max(.1f, Inv->TeleportChannelEnd - Inv->TeleportChannelStart), 0.f, 1.f);
-            CireUIStyle::Glow(P, X - 2, Y - 2, S + 4, S + 4, FLinearColor(.4f, .9f, 1.f, .5f + .3f * FMath::Sin(Now() * 8.f)));
+            Border(P, X - 2, Y - 2, S + 4, S + 4, FLinearColor(.45f, .92f, 1.f, .6f + .4f * FMath::Sin(Now() * 8.f)), 2.f);
             P.Rect(X + 3, Y + S - 7, (S - 6) * T, 4, FLinearColor(.5f, .95f, 1.f, 1));
         }
         if (Remaining > 0 && !bFree)
@@ -499,7 +537,7 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
         const FString Key = KeyLabel(HUD, TEXT("RecallToTown"));
         P.Text(Key, X + S - 4 - P.TextWidth(Key, 9, ECireFont::Numbers), Y + 2, 9, Parchment, ECireFont::Numbers, true, false);
         P.Text(TEXT("TELEPORT"), X - 3, Y - 12, 8, bFree ? Teal : Gold, ECireFont::Heading);
-        if (bOver) CireUIStyle::Glow(P, X, Y, S, S, FLinearColor(.5f, .9f, 1.f, .3f));
+        if (bOver) HoverFrame(P, X, Y, S, FLinearColor(.55f, .92f, 1.f, 1));
         if (bOver)
         {
             HoverTitle = FString::Printf(TEXT("Teleport to Base  [%s]"), *Key);
@@ -572,7 +610,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     DrawGoldCounter(P, Hero, X + W - 70, Y + 13, 20, true);
     {
         const bool bOver = In(M, X + W - 60, Y + 12, 44, 24);
-        CireUIStyle::Button(P, X + W - 60, Y + 12, 44, 24, KeyLabel(HUD, TEXT("ToggleShop")).IsEmpty() ? TEXT("X") : KeyLabel(HUD, TEXT("ToggleShop")), bOver ? ECireButtonState::Hover : ECireButtonState::Normal, Gold, 10);
+        ShopButton(P, X + W - 60, Y + 12, 44, 24, KeyLabel(HUD, TEXT("ToggleShop")).IsEmpty() ? TEXT("X") : KeyLabel(HUD, TEXT("ToggleShop")), bOver, false, false, Gold, 10);
         if (Click(X + W - 60, Y + 12, 44, 24) && Controller) Controller->bShop = false;
     }
     CireUIStyle::Header(P, X + 14, Y + 42, W - 28, TEXT(""), Gold, 1);
@@ -586,7 +624,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     {
         const float BY = LY + Index * 30;
         const bool bOver = In(M, LX, BY, 150, 26);
-        CireUIStyle::Button(P, LX, BY, 150, 26, Categories[Index], State.Category == Index ? ECireButtonState::Selected : bOver ? ECireButtonState::Hover : ECireButtonState::Normal, Gold, 10);
+        ShopButton(P, LX, BY, 150, 26, Categories[Index], bOver, State.Category == Index, false, Gold, 10);
         if (Click(LX, BY, 150, 26)) { State.Category = Index; Play(HUD, TEXT("S_ShopTab"), .4f); }
     }
     P.Text(TEXT("FILTER BY STAT"), LX + 2, LY + 70, 9, Gold, ECireFont::Heading);
@@ -605,14 +643,14 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     {
         const float BY = LY + 86 + FilterCount * 23 + 4;
         const bool bOver = In(M, LX, BY, 150, 22);
-        CireUIStyle::Button(P, LX, BY, 150, 22, TEXT("CLEAR FILTERS"), bOver ? ECireButtonState::Hover : ECireButtonState::Normal, Muted, 9);
+        ShopButton(P, LX, BY, 150, 22, TEXT("CLEAR FILTERS"), bOver, false, false, Muted, 9);
         if (Click(LX, BY, 150, 22)) State.Filters = 0;
     }
 
     // Centre: item grid by tier (or the recommended build), with prices and affordability.
     const float GX = X + 176, GY = Y + 56, GW = 470;
-    CireUIStyle::Frame(P, GX - 4, GY - 4, GW + 8, H - 136, Gold * .6f, ECireFrame::Inset);
-    constexpr float Icon = 42, Step = 51, RowH = 62;
+    CireUIStyle::Frame(P, GX - 4, GY - 4, GW + 8, H - 144, Gold * .6f, ECireFrame::Inset);
+    constexpr float Icon = 42, Step = 51, RowH = 60;
     const int32 PerRow = FMath::FloorToInt((GW - 8) / Step);
     FName HoverId;
     FVector2D HoverPos;
@@ -641,8 +679,9 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
             const int32 Price = PriceFor(Hero, Id);
             const bool bAffordable = Hero->Gold >= Price;
             const bool bOwned = Rules.CountOf(Item->Id) > 0;
-            if (State.Selected == Id) CireUIStyle::Glow(P, IX - 3, IY - 3, Icon + 6, Icon + 6, FLinearColor(1.f, .85f, .4f, .55f));
+            if (State.Selected == Id) SoftGlow(P, IX - 3, IY - 3, Icon + 6, Icon + 6, FLinearColor(1.f, .85f, .4f, .55f));
             DrawItemIcon(P, Id, IX, IY, Icon, bOver, 0, 0, 0, FString(), !bAffordable);
+            if (ShakeOffset(Id) != 0.f) { P.Rect(IX + 2, IY + 2, Icon - 4, Icon - 4, FLinearColor(.9f, .1f, .08f, .25f)); Border(P, IX - 1, IY - 1, Icon + 2, Icon + 2, FLinearColor(1.f, .25f, .2f, 1), 2.5f); }
             if (bOwned)
             {
                 P.Disc(IX + Icon - 6, IY + Icon - 6, 6, FLinearColor(.08f, .4f, .15f, 1), 12);
@@ -693,7 +732,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     if (!HoverId.IsNone()) Tip(HUD, CireItems::DisplayName(HoverId), ItemTooltip(HoverId, PriceFor(Hero, HoverId)));
 
     // Right: selected item detail with build path tree.
-    const float DX = X + 660, DY = Y + 52, DWd = 336, DHt = H - 132;
+    const float DX = X + 660, DY = Y + 52, DWd = 336, DHt = H - 140;
     CireUIStyle::Frame(P, DX, DY, DWd, DHt, Gold * .6f, ECireFrame::Inset);
     FName Shown = State.Selected;
     int32 SellSlot = -1; bool bSellBelt = false;
@@ -792,7 +831,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
             const CI::Slot SlotRule = {Utf8(Shown), bSellBelt ? Hero->Inventory->Belt[SellSlot].Charges : 1, 0};
             const int32 Value = CI::SellValue(D.Catalog, SlotRule, D.Shop);
             const bool bOver = In(M, DX + 12, BY, DWd - 24, 34);
-            CireUIStyle::Button(P, DX + 12 + ShakeOffset(NAME_None, SellSlot, bSellBelt), BY, DWd - 24, 34, FString::Printf(TEXT("SELL  +%dg"), Value), bOver ? ECireButtonState::Hover : ECireButtonState::Normal, Orange, 13);
+            ShopButton(P, DX + 12 + ShakeOffset(NAME_None, SellSlot, bSellBelt), BY, DWd - 24, 34, FString::Printf(TEXT("SELL  +%dg"), Value), bOver, false, false, Orange, 13);
             if (Click(DX + 12, BY, DWd - 24, 34)) RequestSell(HUD, Hero, GameState, SellSlot, bSellBelt);
         }
         else if (Item->Purchasable)
@@ -800,14 +839,14 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
             const CI::PurchasePlan Plan = CI::PlanPurchase(D.Catalog, Rules, Item->Id, Hero->Gold);
             const bool bOver = In(M, DX + 12, BY, DWd - 24, 34);
             const FString Label = Plan.Ok ? FString::Printf(TEXT("BUY  %dg"), Plan.Cost) : FString::Printf(TEXT("BUY  %dg  |  %s"), Price, Plan.Error.find("gold") != std::string::npos ? TEXT("NEED GOLD") : TEXT("UNAVAILABLE"));
-            CireUIStyle::Button(P, DX + 12 + ShakeOffset(Shown), BY, DWd - 24, 34, Label, !Plan.Ok ? ECireButtonState::Disabled : bOver ? ECireButtonState::Hover : ECireButtonState::Normal, BrightGold, 13);
+            ShopButton(P, DX + 12 + ShakeOffset(Shown), BY, DWd - 24, 34, Label, bOver, false, !Plan.Ok, BrightGold, 13);
             if (Click(DX + 12, BY, DWd - 24, 34)) RequestBuy(HUD, Hero, GameState, Shown, State.DetailIconPos);
         }
         else P.Text(TEXT("Loot only: drops from challenge chests and bosses."), DX + 12, BY + 10, 10, Muted);
     }
 
     // Bottom strip: bag + belt, undo, hotkeys.
-    const float BX = X + 176, BYs = Y + H - 70;
+    const float BX = X + 176, BYs = Y + H - 78;
     CireUIStyle::Frame(P, X + 14, BYs - 4, W - 28, 62, Gold * .6f, ECireFrame::Inset);
     P.Text(TEXT("YOUR BAG"), X + 26, BYs + 4, 9, Gold, ECireFont::Heading);
     P.Text(TEXT("RIGHT-CLICK: SELL"), X + 26, BYs + 20, 8, Muted, ECireFont::Heading);
@@ -823,16 +862,16 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         const float IX = BX + (bBelt ? 6 * 52 + 22 + SlotIndex * 46 : Index * 52) + ShakeOffset(NAME_None, SlotIndex, bBelt), IY = BYs + (bBelt ? 5 : 2);
         const bool bOver = bInteractive && In(M, IX, IY, S, S);
         const float Remaining = FMath::Max(0.f, Cell.ReadyAt - STime);
-        if (State.SelectedSlot == SlotIndex && State.bSelectedBelt == bBelt) CireUIStyle::Glow(P, IX - 3, IY - 3, S + 6, S + 6, FLinearColor(1.f, .6f, .2f, .6f));
+        if (State.SelectedSlot == SlotIndex && State.bSelectedBelt == bBelt) SoftGlow(P, IX - 3, IY - 3, S + 6, S + 6, FLinearColor(1.f, .6f, .2f, .6f));
         FCireIconSlot Slot;
         Slot.bEmpty = Cell.Id.IsNone(); Slot.IconTexture = FindItemIcon(Cell.Id); Slot.IconId = Cell.Id.ToString();
         if (const CI::ItemDef* Item = CireItems::Find(Cell.Id)) Slot.Tint = TierColor(static_cast<int32>(Item->Tier));
-        Slot.bHover = bOver; Slot.Charges = bBelt ? Cell.Charges : 0;
+        Slot.Charges = bBelt ? Cell.Charges : 0;
         Slot.CooldownRemaining = Remaining; Slot.CooldownFraction = Cell.Cooldown > 0 ? FMath::Clamp(Remaining / Cell.Cooldown, 0.f, 1.f) : 0.f;
-        Slot.Flash = FlashAmount(NAME_None, SlotIndex, bBelt);
         Slot.KeyLabel = bBelt ? KeyLabel(HUD, CireItems::BeltAction(SlotIndex)) : KeyLabel(HUD, CireItems::ItemAction(SlotIndex));
         CireUIStyle::IconSlot(P, IX, IY, S, Slot, Now());
-        if (bBelt && Cell.Charges > 1) P.Text(FString::FromInt(Cell.Charges), IX + S - 11, IY + S - 14, 11, Parchment, ECireFont::Numbers, true);
+        if (bOver) HoverFrame(P, IX, IY, S, FLinearColor(1.f, .88f, .5f, 1));
+        FlashOver(P, IX, IY, S, FlashAmount(NAME_None, SlotIndex, bBelt));
         State.SlotPos[Index] = FVector2D(IX, IY);
         if (!bOver || Cell.Id.IsNone()) continue;
         const CI::Slot SlotRule = {Utf8(Cell.Id), Cell.Charges, 0};
@@ -846,7 +885,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         const float UX = BX + 6 * 52 + 22 + 3 * 46 + 12, UY = BYs + 8;
         const bool bCan = Hero->Inventory->UndoDepth > 0;
         const bool bOver = In(M, UX, UY, 118, 34);
-        CireUIStyle::Button(P, UX, UY, 118, 34, bCan ? FString::Printf(TEXT("UNDO (%d)"), Hero->Inventory->UndoDepth) : TEXT("UNDO"), !bCan ? ECireButtonState::Disabled : bOver ? ECireButtonState::Hover : ECireButtonState::Normal, Teal, 11);
+        ShopButton(P, UX, UY, 118, 34, bCan ? FString::Printf(TEXT("UNDO (%d)"), Hero->Inventory->UndoDepth) : TEXT("UNDO"), bOver, false, !bCan, Teal, 11);
         if (Click(UX, UY, 118, 34)) { if (bCan) Hero->Inventory->ServerUndo(); else ShowError(HUD, NAME_None, -1, false, TEXT("Nothing to undo in this shop visit.")); }
         if (bOver) Tip(HUD, TEXT("Undo  [Ctrl+Z]"), TEXT("Reverts your last purchase or sale in this shop visit, refunding the full price. The visit ends when you close the shop, leave town, use an item, or the phase changes."));
     }
@@ -875,13 +914,18 @@ void CireShopUI::DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Co
         if (K < 1.f)
         {
             FCireUIPainter Q = P; Q.Alpha = Fly.bSell ? 1.f - .6f * K : 1.f;
-            for (int32 Trail = 1; Trail <= 3; ++Trail)
+            // Ghost trail: fading copies of the icon along the arc.
+            bSuppressFlash = true;
+            for (int32 Trail = 3; Trail >= 1; --Trail)
             {
-                const float TK = FMath::Max(0.f, K - Trail * .06f), TE = 1.f - FMath::Pow(1.f - TK, 3.f);
+                const float TK = FMath::Max(0.f, K - Trail * .07f), TE = 1.f - FMath::Pow(1.f - TK, 3.f);
                 FVector2D TP = FMath::Lerp(Fly.From, Fly.To, TE); TP.Y -= FMath::Sin(TK * PI) * 70.f;
-                CireUIStyle::Glow(Q, TP.X, TP.Y, Size, Size, FLinearColor(1.f, .8f, .35f, .25f / Trail));
+                FCireUIPainter Ghost = Q; Ghost.Alpha *= .28f / Trail;
+                DrawItemIcon(Ghost, Fly.Id, TP.X, TP.Y, Size * (1.f - .08f * Trail), false);
             }
-            DrawItemIcon(Q, Fly.Id, Pos.X, Pos.Y, Size, false);
+            bSuppressFlash = false;
+            SoftGlow(Q, Pos.X, Pos.Y, Size, Size, FLinearColor(1.f, .8f, .35f, .5f));
+            bSuppressFlash = true; DrawItemIcon(Q, Fly.Id, Pos.X, Pos.Y, Size, false); bSuppressFlash = false;
         }
         else
         {
@@ -901,7 +945,8 @@ void CireShopUI::DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Co
         Q.Text(F.Text, F.Pos.X + 12, F.Pos.Y - 12 - Age * 36, 16, F.Color, ECireFont::Numbers, true);
     }
     // Toasts (right edge).
-    float TY = View.Y * .30f;
+    const bool bShopTop = Controller && Controller->bShop;
+    float TY = bShopTop ? 4.f : View.Y * .28f;
     for (int32 Index = State.Toasts.Num() - 1; Index >= 0; --Index)
     {
         const FToast& Toast = State.Toasts[Index];
@@ -909,7 +954,13 @@ void CireShopUI::DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Co
         if (Age > Toast.Life) { State.Toasts.RemoveAt(Index); continue; }
         const float In = FMath::Clamp(Age / .25f, 0.f, 1.f), Out = FMath::Clamp((Toast.Life - Age) / .5f, 0.f, 1.f);
         FCireUIPainter Q = P; Q.Alpha = FMath::Min(In, Out);
-        const float W = 300, X = View.X - W - 16 + (1.f - (1.f - FMath::Square(1.f - In))) * 60.f;
+        // Right of centre, over the world view (clear of the minimap/boss/threat column).
+        // Shop open: over the empty middle of the title bar (newest two); otherwise right of centre.
+        const bool bShopOpen = Controller && Controller->bShop;
+        if (bShopOpen && TY > 60.f) break;
+        const float ShopX = FMath::RoundToFloat((View.X - 1010) * .5f);
+        const float BaseX = bShopOpen ? ShopX + 600 : FMath::Min(View.X - 316, View.X * .5f + 230);
+        const float W = 300, X = BaseX + (1.f - (1.f - FMath::Square(1.f - In))) * 60.f;
         const bool bLong = Toast.Body.Len() > 46;
         const float H = bLong ? 56 : 46;
         CireUIStyle::Frame(Q, X, TY, W, H, Toast.Accent, ECireFrame::Card);
@@ -920,7 +971,7 @@ void CireShopUI::DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Co
             FCireIconSlot Slot; Slot.IconId = Toast.Icon.IsNone() ? TEXT("role2") : TEXT("role4"); Slot.Tint = Toast.Accent;
             CireUIStyle::IconSlot(Q, X + 6, TY + 6, 34, Slot, T);
         }
-        else DrawItemIcon(Q, Toast.Icon, X + 6, TY + 6, 34, false);
+        else { bSuppressFlash = true; DrawItemIcon(Q, Toast.Icon, X + 6, TY + 6, 34, false); bSuppressFlash = false; }
         Q.Text(Toast.Title, X + 48, TY + 6, 11, Toast.Accent * 1.15f, ECireFont::Bold, false, true);
         Q.Wrapped(Toast.Body, X + 48, TY + 22, W - 56, 9, Parchment, 3, ECireFont::Body, 2.f);
         TY += H + 6;
@@ -970,6 +1021,15 @@ void CireShopUI::DebugSellMoment(FName ItemId, int32 Slot, int32 Value, float Ag
     State.Floaters.Add(Floater);
     AddToast(TEXT("Sold"), FString::Printf(TEXT("%s   +%dg"), *CireItems::DisplayName(ItemId), Value), ItemId, Gold, 3.f);
     State.Toasts.Last().Start = Base;
+}
+void CireShopUI::DebugFreezeAfterLastEvent(float Age)
+{
+    if (Age < 0) { State.DebugNow = -1; return; }
+    double Latest = -1;
+    for (const auto& Fly : State.Flies) Latest = FMath::Max(Latest, Fly.Start);
+    for (const auto& Toast : State.Toasts) Latest = FMath::Max(Latest, Toast.Start);
+    Latest = FMath::Max(Latest, State.Shake.Start);
+    if (Latest > 0) State.DebugNow = Latest + Age;
 }
 void CireShopUI::DebugMouse(FVector2D Logical) { VirtualPointer = Logical; }
 FVector2D CireShopUI::DebugGridPos(FName ItemId) { const FVector2D* P = State.GridPos.Find(ItemId); return P ? *P + FVector2D(21, 21) : FVector2D(-1, -1); }

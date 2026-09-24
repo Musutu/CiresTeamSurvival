@@ -67,7 +67,7 @@ void FCireUISettings::Reset()
     Add(TEXT("Threat"), 1040.f, 398.f, 220.f, 124.f);
     Add(TEXT("Boss"), 1040.f, 242.f, 220.f, 150.f);
     // progression-shop: bag/belt/teleport bar and the compact stats window (CireShopUI).
-    Add(TEXT("Inventory"), 956.f, 466.f, 304.f, 56.f);
+    Add(TEXT("Inventory"), 20.f, 420.f, 306.f, 102.f);
     Add(TEXT("Stats"), 282.f, 166.f, 176.f, 238.f);
 
     bLayoutLocked = true;
