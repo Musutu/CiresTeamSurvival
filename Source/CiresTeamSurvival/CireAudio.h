@@ -58,6 +58,8 @@ namespace CireAudio
     CIRESTEAMSURVIVAL_API bool PlayHudSound(const UObject* WorldContext, int32 LegacyIndex, float Volume);
     /** Banner type (ECireBanner as uint8) -> cue; false keeps the legacy horn/chime. */
     CIRESTEAMSURVIVAL_API bool PlayBanner(const UObject* WorldContext, uint8 Banner);
+    /** CireShopUI sound name -> cue (AudioCues.json shopLegacy); false keeps the shop's own sound. */
+    CIRESTEAMSURVIVAL_API bool PlayShopSound(const UObject* WorldContext, const TCHAR* LegacyName, float Volume);
     /** A hovered interactive element (one call per frame while hovered); plays ui_hover on entry. */
     CIRESTEAMSURVIVAL_API void NoteHover(const UObject* WorldContext, float X, float Y);
 
@@ -120,7 +122,6 @@ private:
     // event detection state
     TSet<TWeakObjectPtr<AActor>> RoaredBosses;
     TMap<TWeakObjectPtr<AActor>, FString> BossCasting;
-    int32 LastGold = INDEX_NONE;
     FVector LastHeroLocation = FVector::ZeroVector;
     bool bHasLastHeroLocation = false;
     float ShakeTime = 0.f, ShakeAmplitude = 0.f;

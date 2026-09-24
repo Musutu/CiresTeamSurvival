@@ -113,6 +113,8 @@ bool CireAudio::RunAudioSmoke(UWorld* World)
             }
         else Check(false, TEXT("AudioCues.json parses"));
     }
+    Check(PlayShopSound(World, TEXT("S_ShopBuy"), 0.f) && PlayShopSound(World, TEXT("S_TeleportChannel"), 0.f) && !PlayShopSound(World, TEXT("S_ShopError"), 0.f),
+        TEXT("shop sounds: buy mapped, channel covered by the loop, error keeps the shop tone"));
     const CireMusic::FData& Music = CireMusic::Data(true);
     Check(Music.bValid && Music.Credits.Num() > 0, TEXT("music data: four states + CC-BY credits"));
     for(const auto& Pair : Music.States) for(const FString& Track : Pair.Value.Tracks) Check(SoundExists(TEXT("Music/") + Track), TEXT("music track ") + Track);

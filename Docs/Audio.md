@@ -30,7 +30,8 @@ Older profiles without the keys keep the defaults. No schema bump was needed.
 
 Shared-file hooks are small and marked `// audio:`: `CireUISettings` (fields), `CireOptions.cpp` (click cue, hover
 cue, Audio tab), `CireHUDWow.cpp` (`PlayWowSound` and banner sounds route through cues first; the old synthesized
-tones remain the fallback), `CireCombatExpansionProbe.cpp` (runs the audio smoke).
+tones remain the fallback), `CireShopUI.cpp` (shop sound names route to recorded cues first),
+`CireCombatExpansionProbe.cpp` (runs the audio smoke).
 
 ### Mix
 
@@ -120,9 +121,8 @@ and the town is stone. Your own steps play 15% quieter.
 | `banner_wave` / `banner_boss` / `banner_challenge` | war horn / distant horn on wave, boss and challenge banners |
 | `banner_prep` / `banner_cleared` / `banner_recovery` | church bell tolls |
 | `banner_arena` | war drums |
-| `coins_buy` | automatically when your gold goes down; the shop can call it too (a same-frame repeat is dropped) |
-| `coins_sell`, `loot_pickup` | for the shop / loot code to call |
-| `teleport_channel` | loop on your body for the last 3.5 s of prep before the arena transfer |
+| `coins_buy`, `coins_sell`, `loot_pickup`, `ui_open` | the shop (`CireShopUI`) buy, sell, loot and open sounds, through `CireAudio::PlayShopSound` (`shopLegacy` map); its error/undo/tab tones stay its own |
+| `teleport_channel` | loop on your body while the shop's Teleport to Base channel runs (`UCireInventory::IsChanneling`) and for the last 3.5 s of prep before the arena transfer |
 | `teleport_arrive` | when your body jumps more than 15 m (arena transfer, recall, recovery) |
 | `pack_leader_roar` / `pack_leader_growl` | a Pack Leader or lane boss first engages or appears / starts each cast |
 | `aura_apply`, `aura_heal` | generic buff sounds for the aura/VFX work |

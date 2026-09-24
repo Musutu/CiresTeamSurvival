@@ -3,6 +3,7 @@
 #include "CireHUD.h"
 #include "CireUISettings.h"
 #include "CireNPCState.h"
+#include "CireItems.h"
 #include "AudioDevice.h"
 #include "Camera/CameraComponent.h"
 #include "Camera/PlayerCameraManager.h"
@@ -41,6 +42,7 @@ struct FCueData
     TMap<FName, FCue> Cues;
     TMap<int32, FName> HudLegacy;
     TMap<FString, FName> Banners;
+    TMap<FString, FName> Shop;
 };
 FCueData GCueData;
 bool GCueLoaded = false;
@@ -93,6 +95,9 @@ const FCueData& Cues()
     const TSharedPtr<FJsonObject>* Banners = nullptr;
     if(Root->TryGetObjectField(TEXT("banners"), Banners))
         for(const auto& Pair : (*Banners)->Values) if(FString(*Pair.Key) != TEXT("notes")) GCueData.Banners.Add(FString(*Pair.Key), FName(*Pair.Value->AsString()));
+    const TSharedPtr<FJsonObject>* Shop = nullptr;
+    if(Root->TryGetObjectField(TEXT("shopLegacy"), Shop))
+        for(const auto& Pair : (*Shop)->Values) if(FString(*Pair.Key) != TEXT("notes")) GCueData.Shop.Add(FString(*Pair.Key), FName(*Pair.Value->AsString()));
     GCueData.bValid = !GCueData.Cues.IsEmpty();
     return GCueData;
 }
@@ -247,6 +252,14 @@ bool CireAudio::PlayHudSound(const UObject* WorldContext, int32 LegacyIndex, flo
     if(!Cue || !HasCue(*Cue)) return false;
     PlayCue2D(WorldContext, *Cue, FMath::Clamp(Volume, 0.f, 2.f));
     return true; // handled even when rate-limited, so the legacy tone never doubles it
+}
+
+bool CireAudio::PlayShopSound(const UObject* WorldContext, const TCHAR* LegacyName, float Volume)
+{
+    const FName* Cue = Cues().Shop.Find(LegacyName);
+    if(!Cue || (!Cue->IsNone() && !HasCue(*Cue))) return false;
+    if(!Cue->IsNone()) PlayCue2D(WorldContext, *Cue, FMath::Clamp(Volume, 0.f, 2.f));
+    return true;
 }
 
 bool CireAudio::PlayBanner(const UObject* WorldContext, uint8 Banner)
@@ -454,16 +467,17 @@ void UCireAudioSubsystem::DetectEvents(float Dt)
     for(auto It = RoaredBosses.CreateIterator(); It; ++It) if(!It->IsValid()) It.RemoveCurrent();
     for(auto It = BossCasting.CreateIterator(); It; ++It) if(!It->Key.IsValid()) It.RemoveCurrent();
 
-    if(!Hero) { LastGold = INDEX_NONE; bHasLastHeroLocation = false; return; }
-    // Purchases: gold only goes down when the player buys something (the shop can also call coins_buy itself).
-    if(LastGold != INDEX_NONE && Hero->Gold < LastGold && !Hero->bDead) CireAudio::PlayCue2D(this, TEXT("coins_buy"));
-    LastGold = Hero->Gold;
+    if(!Hero) { bHasLastHeroLocation = false; return; }
+    // Purchases/sales/loot play from the shop UI through PlayShopSound (AudioCues.json shopLegacy).
     // Teleports (arena transfer, recall, recovery): a discontinuous jump of the local body.
     const FVector Location = Hero->GetActorLocation();
     if(bHasLastHeroLocation && FVector::Dist(Location, LastHeroLocation) > 1500.f) CireAudio::PlayCue2D(this, TEXT("teleport_arrive"));
     LastHeroLocation = Location; bHasLastHeroLocation = true;
-    // Teleport channel: the last seconds of prep before the arena transfer.
-    const bool bChannel = State && State->Phase == 1 && State->SecondsLeft > 0.f && State->SecondsLeft <= 3.5f && !Hero->bDead;
+    // Teleport channel: the shop's Teleport to Base channel (replicated on UCireInventory), and the last
+    // seconds of prep before the arena transfer.
+    const UCireInventory* Inventory = Hero->FindComponentByClass<UCireInventory>();
+    const bool bChannel = !Hero->bDead && ((Inventory && Inventory->IsChanneling())
+        || (State && State->Phase == 1 && State->SecondsLeft > 0.f && State->SecondsLeft <= 3.5f));
     if(bChannel && !TeleportHum)
     {
         TeleportHum = CireAudio::PlayAttached(TEXT("teleport_channel"), Hero->GetRootComponent());

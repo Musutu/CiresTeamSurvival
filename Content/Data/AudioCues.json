@@ -22,7 +22,7 @@
     "coins_sell":         { "sounds": ["SFX/SFX_CoinsSell"], "volume": 0.8, "pitch": [0.96, 1.04], "cooldown": 0.08 },
     "loot_pickup":        { "sounds": ["SFX/SFX_LootPickup"], "volume": 0.75, "pitch": [0.95, 1.05], "cooldown": 0.08 },
     "teleport_channel":   { "sounds": ["SFX/SFX_TeleportChannel"], "volume": 0.55, "loop": true },
-    "teleport_arrive":    { "sounds": ["SFX/SFX_TeleportArrive"], "volume": 0.6, "cooldown": 0.5 },
+    "teleport_arrive":    { "sounds": ["SFX/SFX_TeleportArrive"], "volume": 0.6, "cooldown": 1.5 },
     "pack_leader_roar":   { "sounds": ["SFX/SFX_PackLeaderRoar"], "volume": 1.0, "pitch": [0.94, 1.02], "cooldown": 4.0 },
     "pack_leader_growl":  { "sounds": ["SFX/SFX_PackLeaderGrowl"], "volume": 0.8, "pitch": [0.9, 1.0], "cooldown": 3.0 },
 
@@ -52,6 +52,15 @@
     "notes": "ACireHUD::PlayWowSound index -> cue. Unlisted indices keep the original synthesized UI sound.",
     "0": "level_up",
     "1": "aggro_taken"
+  },
+  "shopLegacy": {
+    "notes": "CireShopUI sound name -> cue (recorded CC0 replaces the synthesized shop tone). An empty cue means the audio system already covers it (the teleport channel loop follows UCireInventory's replicated channel). Unlisted names keep the shop's own sound.",
+    "S_ShopBuy": "coins_buy",
+    "S_ShopSell": "coins_sell",
+    "S_LootPickup": "loot_pickup",
+    "S_TeleportArrive": "teleport_arrive",
+    "S_TeleportChannel": "",
+    "S_ShopOpen": "ui_open"
   },
   "banners": {
     "notes": "ECireBanner name -> cue. Victory/Defeat are handled by the music stingers.",
