@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "notes": "Named one-shot / loop cues for CireAudio::PlayCue, PlayCue2D and PlayAttached. Sound names resolve to /Game/Audio/<Folder>/<Name>; {01..04} expands to a numbered set and one member is picked at random (never the same twice in a row). volume is linear before the bus volume; pitch and volumeJitter randomise every play; cooldown drops repeats of the same cue within that many seconds. Bus routing, attenuation and concurrency come from the imported SoundWave (Tools/BuildAudioContent.py). See Docs/Audio.md.",
+  "cues": {
+    "ui_click":           { "sounds": ["UI/UI_Click_{01..03}"], "volume": 0.55, "pitch": [0.97, 1.04], "cooldown": 0.04 },
+    "ui_hover":           { "sounds": ["UI/UI_Hover_{01..04}"], "volume": 0.35, "pitch": [0.98, 1.05], "cooldown": 0.06 },
+    "ui_open":            { "sounds": ["UI/UI_Open"], "volume": 0.5, "cooldown": 0.1 },
+    "ui_close":           { "sounds": ["UI/UI_Close"], "volume": 0.5, "cooldown": 0.1 },
+    "ui_confirm":         { "sounds": ["UI/UI_Confirm"], "volume": 0.5, "cooldown": 0.1 },
+
+    "level_up":           { "sounds": ["SFX/SFX_LevelUp"], "volume": 0.75, "cooldown": 1.0 },
+    "aggro_taken":        { "sounds": ["SFX/SFX_AggroWarning"], "volume": 0.7, "pitch": [0.98, 1.02], "cooldown": 1.0 },
+    "banner_wave":        { "sounds": ["SFX/SFX_WarHorn"], "volume": 0.75, "cooldown": 2.0 },
+    "banner_boss":        { "sounds": ["SFX/SFX_WarHornDistant"], "volume": 0.85, "cooldown": 2.0 },
+    "banner_challenge":   { "sounds": ["SFX/SFX_WarHornDistant"], "volume": 0.6, "pitch": [1.04, 1.08], "cooldown": 2.0 },
+    "banner_prep":        { "sounds": ["SFX/SFX_PrepBell"], "volume": 0.7, "cooldown": 2.0 },
+    "banner_arena":       { "sounds": ["SFX/SFX_WarDrums"], "volume": 0.85, "cooldown": 2.0 },
+    "banner_cleared":     { "sounds": ["Ambience/AMB_Bell_{01..03}"], "volume": 0.6, "cooldown": 2.0 },
+    "banner_recovery":    { "sounds": ["Ambience/AMB_Bell_{01..03}"], "volume": 0.5, "pitch": [0.9, 0.94], "cooldown": 2.0 },
+
+    "coins_buy":          { "sounds": ["SFX/SFX_CoinsBuy"], "volume": 0.8, "pitch": [0.96, 1.04], "cooldown": 0.08 },
+    "coins_sell":         { "sounds": ["SFX/SFX_CoinsSell"], "volume": 0.8, "pitch": [0.96, 1.04], "cooldown": 0.08 },
+    "loot_pickup":        { "sounds": ["SFX/SFX_LootPickup"], "volume": 0.75, "pitch": [0.95, 1.05], "cooldown": 0.08 },
+    "teleport_channel":   { "sounds": ["SFX/SFX_TeleportChannel"], "volume": 0.55, "loop": true },
+    "teleport_arrive":    { "sounds": ["SFX/SFX_TeleportArrive"], "volume": 0.6, "cooldown": 1.5 },
+    "pack_leader_roar":   { "sounds": ["SFX/SFX_PackLeaderRoar"], "volume": 1.0, "pitch": [0.94, 1.02], "cooldown": 4.0 },
+    "pack_leader_growl":  { "sounds": ["SFX/SFX_PackLeaderGrowl"], "volume": 0.8, "pitch": [0.9, 1.0], "cooldown": 3.0 },
+
+    "amb_crow":           { "sounds": ["Ambience/AMB_Crow_{01..05}"], "volume": 0.5, "pitch": [0.92, 1.06] },
+    "amb_chains":         { "sounds": ["Ambience/AMB_Chains_{01..04}"], "volume": 0.4, "pitch": [0.9, 1.05] },
+    "amb_gate_creak":     { "sounds": ["Ambience/AMB_GateCreak_{01..02}"], "volume": 0.45, "pitch": [0.85, 1.0] },
+    "amb_merchant":       { "sounds": ["Ambience/AMB_MerchantCall_{01..04}"], "volume": 0.35, "pitch": [0.95, 1.03] },
+    "amb_cart":           { "sounds": ["Ambience/AMB_Cart_{01..02}"], "volume": 0.4, "pitch": [0.95, 1.03] },
+    "amb_dog":            { "sounds": ["Ambience/AMB_Dog_{01..04}"], "volume": 0.4, "pitch": [0.93, 1.05] },
+    "amb_door":           { "sounds": ["Ambience/AMB_Door_{01..04}"], "volume": 0.45, "pitch": [0.92, 1.05] },
+    "amb_chop":           { "sounds": ["Ambience/AMB_Chop_01"], "volume": 0.4, "pitch": [0.9, 1.08] },
+    "amb_bell":           { "sounds": ["Ambience/AMB_Bell_{01..03}"], "volume": 0.55, "pitch": [0.96, 1.0] },
+    "amb_bell_distant":   { "sounds": ["Ambience/AMB_BellDistant_01"], "volume": 0.4 },
+    "amb_anvil":          { "sounds": ["Ambience/AMB_Anvil_{01..04}"], "volume": 0.4, "pitch": [0.95, 1.05] },
+    "amb_blacksmith":     { "sounds": ["Ambience/AMB_Blacksmith_01"], "volume": 0.45 },
+    "amb_guards":         { "sounds": ["Ambience/AMB_GuardsMarch_01"], "volume": 0.45 },
+
+    "aura_apply":         { "sounds": ["CireCombat/S_Ward"], "volume": 0.4, "pitch": [0.96, 1.04], "cooldown": 0.1 },
+    "aura_heal":          { "sounds": ["CireCombat/S_Heal"], "volume": 0.4, "pitch": [0.96, 1.04], "cooldown": 0.1 },
+
+    "emt_fountain":       { "sounds": ["Ambience/EMT_Fountain"], "volume": 0.8, "loop": true },
+    "emt_fire":           { "sounds": ["Ambience/EMT_FireCrackle"], "volume": 0.7, "loop": true },
+    "emt_hearth":         { "sounds": ["Ambience/EMT_Hearth"], "volume": 0.6, "loop": true },
+    "emt_well":           { "sounds": ["Ambience/EMT_Well"], "volume": 0.6 }
+  },
+  "hudLegacy": {
+    "notes": "ACireHUD::PlayWowSound index -> cue. Unlisted indices keep the original synthesized UI sound.",
+    "0": "level_up",
+    "1": "aggro_taken"
+  },
+  "shopLegacy": {
+    "notes": "CireShopUI sound name -> cue (recorded CC0 replaces the synthesized shop tone). An empty cue means the audio system already covers it (the teleport channel loop follows UCireInventory's replicated channel). Unlisted names keep the shop's own sound.",
+    "S_ShopBuy": "coins_buy",
+    "S_ShopSell": "coins_sell",
+    "S_LootPickup": "loot_pickup",
+    "S_TeleportArrive": "teleport_arrive",
+    "S_TeleportChannel": "",
+    "S_ShopOpen": "ui_open"
+  },
+  "banners": {
+    "notes": "ECireBanner name -> cue. Victory/Defeat are handled by the music stingers.",
+    "WaveIncoming": "banner_wave",
+    "WaveCleared": "banner_cleared",
+    "PrepPhase": "banner_prep",
+    "Arena": "banner_arena",
+    "Recovery": "banner_recovery",
+    "ChallengeUnlocked": "banner_challenge",
+    "BossSpawned": "banner_boss",
+    "Victory": "",
+    "Defeat": ""
+  }
+}

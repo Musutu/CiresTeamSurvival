@@ -23,6 +23,7 @@ drawn by the HUD (wow-ui) on top of the API below.
 | | RecallToTown (moved off R) | G |
 | | ToggleOptions, ToggleLayoutEditor, ToggleDeveloperTools | F9, F10, F8 |
 | | RosterPreviousPage / RosterNextPage (draft screen) | Page Up, Left / Page Down, Right |
+| | ToggleSkillOffer (open / defer the level-up skill choice) | N |
 | Action bar 1 | ActionBar1_Slot1..6 | 1..6 (active skills in learn order) |
 | | ActionBar1_Slot7 | unbound (passive, display only) |
 | | ActionBar1_Slot8 | R (ultimate) |

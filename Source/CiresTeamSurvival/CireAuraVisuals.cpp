@@ -8,6 +8,7 @@
 #include "CireSkillRuntime.h"
 #include "CireAttackSystem.h"
 #include "CireItems.h"
+#include "CireAudio.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -773,9 +774,22 @@ UCireAuraComponent* CireAuraVisuals::Attach(AActor* Unit)
 }
 void CireAuraVisuals::PlaySoundCue(const FString& CueId,AActor* Unit)
 {
-    // Data hook for the audio pass: ids come from BuffVisuals.json "sound".
-    if(CueId.IsEmpty()||!IsValid(Unit))return;
-    UE_LOG(LogCireAura,Verbose,TEXT("CIRE_AURA_SOUND %s %s"),*CueId,*Unit->GetName());
+    // Ids come from BuffVisuals.json "sound". A cue registered in AudioCues.json plays as is;
+    // otherwise start cues fall back to the shared aura_apply / aura_heal cues and the rest stay silent.
+    if(CueId.IsEmpty()||!IsValid(Unit)||Unit->IsHidden()||Unit->GetNetMode()==NM_DedicatedServer)return;
+    const APlayerController* PC=Unit->GetWorld()->GetFirstPlayerController();
+    if(!PC||!CireRealm::CanObserve(PC,Unit))return; // realm privacy: never hear an unobservable unit
+    FName Cue(*CueId);
+    if(!CireAudio::HasCue(Cue))
+    {
+        if(!CueId.EndsWith(TEXT(".start")))return;
+        static const TCHAR* Healing[]={TEXT("regeneration"),TEXT("wellspring"),TEXT("mana_restore"),TEXT("sanctuary")};
+        bool bHeal=false;for(const TCHAR* Word:Healing)bHeal|=CueId.Contains(Word);
+        Cue=bHeal?FName(TEXT("aura_heal")):FName(TEXT("aura_apply"));
+    }
+    const float Volume=Unit==PC->GetPawn()?1.f:.4f+.6f*OtherIntensity(Unit->GetWorld());
+    CireAudio::PlayCue(Unit,Cue,Unit->GetActorLocation(),Volume);
+    UE_LOG(LogCireAura,Verbose,TEXT("CIRE_AURA_SOUND %s -> %s %s"),*CueId,*Cue.ToString(),*Unit->GetName());
 }
 
 #if !UE_BUILD_SHIPPING

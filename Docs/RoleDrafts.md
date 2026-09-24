@@ -60,6 +60,43 @@ the passive slot remains; six actives + one passive + one ultimate. Each role
 set has at least nine actives and four ultimates, so taking either special slot
 first or last cannot strand a build, and role filtering never shrinks an offer.
 
+## Level-up skill offer (the four cards)
+
+`Source/CiresTeamSurvival/CireSkillOfferHUD.cpp` draws the offer in the same
+visual language as the draft screen (style kit + shared ability icons):
+
+- **Cards.** Painted icon in its action-bar frame (ultimate = gold frame, gold
+  outer trim and marching glow; passive = octagon frame, violet clipped-corner
+  card; active = school-coloured trim), name, role tags (TANK / DPS / SUPPORT,
+  HYBRID for cross-role, ANY ROLE for universal), type ribbon, a stats row
+  (cost in MP/EN, cooldown, range, target SELF / ALLY / ENEMY / AIM / PASSIVE),
+  the numeric description, a synergy line against the learned kit (e.g. slows
+  + area skills, taunts + guards, Soul Conduit + your heals, Deep Reserves + the
+  mana/energy your kit spends; school match as fallback), and the slot it
+  fills ("ACTIVE SLOT 3 / 6", "PASSIVE SLOT", "ULTIMATE SLOT"). Hover lifts the
+  card and shows the full tooltip. The header states skill N of 8, the role
+  pool(s) and the active rule (1-2 passives until one is learned; final slot =
+  four passives).
+- **Kit strip.** The eight learned slots (six actives, passive, ultimate); the
+  hovered card's destination slot glows.
+- **Pick.** Click or the action-bar 1-4 keys (labels come from the keybinding
+  map). The learned card bursts, its icon flies into its kit slot and
+  `S_SkillLearned` plays; hover ticks and the open chime are `S_SkillHover` /
+  `S_SkillOffer` (`Tools/BuildDraftSounds.py`, original synthesized audio).
+- **Never blocks combat.** A new offer opens only when you have not dealt or
+  taken damage for ~1.5 s; otherwise it waits as a pulsing "NEW ABILITY READY"
+  reminder above the action bar. `ToggleSkillOffer` (N) or DECIDE LATER hides
+  it; N or a click reopens it. While hidden, action-bar keys cast, clicks
+  target and ground aiming works (controller/targeting honour
+  `ACireHUD::IsSkillOfferOpen`). The shared Level Up banner plays first; the
+  offer header fades in after it.
+
+Verification: `python Tools/RunSkillOfferGallery.py` renders five 1920x1080
+states (normal offer with a hovered card, ultimate offer, passive-only final
+offer, deferred reminder, pick animation) into `Saved/SkillOfferGallery/<stamp>`.
+Offer contents and rules still come from the server (`GenerateAugmentOffer`);
+the fixture only stages known offers for the captures.
+
 ## New native abilities and tuning
 
 `Content/Data/CombatTuning.json` adds optional `roleSkills` entries. Missing

@@ -1,4 +1,5 @@
 #include "CireCombatExpansionProbe.h"
+#include "CireAudio.h" // audio:
 #include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
 #include "CireChampionRoster.h"
@@ -84,6 +85,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireReplay::RunReplaySmoke(Mode->GetWorld())&&Good;
     Good=CireSpellPresentation::RunSmoke(Mode->GetWorld())&&Good;
     Good=CireAuraVisuals::RunSmoke(Mode)&&Good; // aura-vfx
+    Good=CireAudio::RunAudioSmoke(Mode->GetWorld())&&Good; // audio: settings, buses, data, armour classes, music, cadence
     Good=CireProgression::RunSmoke(Mode)&&Good; // progression-shop: items, shop, loot, gating, teleport, NPC pause
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }

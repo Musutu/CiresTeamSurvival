@@ -130,9 +130,10 @@ bool CireExpansionNetProbe::TickServer(ACireGameMode* Mode)
         if (Mode->GetNetMode() != NM_DedicatedServer) { Abort(TEXT("requires dedicated server")); return true; }
         Mode->bBotsFilled = true;
         for (auto* Monster : Mode->Monsters) if (IsValid(Monster)) Monster->Destroy(); Mode->Monsters.Reset();
-        UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_EXPANSION_NET_SERVER_READY clients=2 timeout=85"));
+        UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_EXPANSION_NET_SERVER_READY clients=2 timeout=240"));
     }
-    if (Now - Server.Started > 85) { Abort(TEXT("stage acknowledgement timeout")); return true; }
+    // Generous: clients can take >60s to boot while other editors compile on the same machine.
+    if (Now - Server.Started > 240) { Abort(TEXT("stage acknowledgement timeout")); return true; }
     ACireHero* Players[2] = {nullptr, nullptr}; ACireController* Controllers[2] = {nullptr, nullptr};
     for (auto It = Mode->GetWorld()->GetPlayerControllerIterator(); It; ++It)
     {

@@ -10,6 +10,7 @@
 #include "Sound/SoundWave.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "CireAudio.h" // audio: UI cues, Options > Audio buses and music credits
 
 namespace
 {
@@ -19,11 +20,13 @@ const FLinearColor Gold(.77f,.61f,.34f,1),Parchment(.91f,.9f,.83f,1),Muted(.50f,
 void ACireHUD::PlayUIFeedback()
 {
     if(UISettings.bMuteAudio || UISettings.MasterVolume*UISettings.UIVolume<=0) return;
+    if(CireAudio::PlayCue2D(this,TEXT("ui_click"))) return; // audio: recorded CC0 click; legacy tone below is the fallback
     if(auto* Sound=LoadObject<USoundWave>(nullptr,TEXT("/Game/Audio/CireCombat/S_Critical.S_Critical")))
         UGameplayStatics::PlaySound2D(this,Sound,UISettings.MasterVolume*UISettings.UIVolume*.12f,1.5f);
 }
 void ACireHUD::Tip(const FString& Title,const FString& Body,float X,float Y,float W,float H)
 {
+    if(bSettings && Hit(X,Y,W,H)) CireAudio::NoteHover(this,X,Y); // audio: hover tick on Options controls
     if(UISettings.bTooltips && Hit(X,Y,W,H)) { TooltipTitle=Title; TooltipBody=Body; }
 }
 #if !UE_BUILD_SHIPPING
@@ -319,13 +322,24 @@ void ACireHUD::DrawSettings()
     }
     else if(OptionsTab==3)
     {
-        Label(TEXT("COMBAT / INTERFACE SOUND"),L,Top,12,Gold);
-        Toggle(TEXT("Mute all game cues"),UISettings.bMuteAudio,L,Top+39,TEXT("Mutes combat presentation and interface feedback without changing combat text."));
-        Slider(TEXT("Master volume"),UISettings.MasterVolume,0,1,.02f,L,Top+93,TEXT("Overall level for all currently implemented sound cues."));
-        Slider(TEXT("Combat effects"),UISettings.SFXVolume,0,1,.02f,R,Top+93,TEXT("Weapon swings, shots, spell casts and confirmed-hit audio. Combat sounds are spatially attenuated."));
-        Slider(TEXT("Interface feedback"),UISettings.UIVolume,0,1,.02f,L,Top+157,TEXT("Options clicks and interface feedback. This level multiplies the master volume."));
-        if(Button(TEXT("TEST INTERFACE CUE"),R,Top+177,286))PlayUIFeedback();
-        Wrapped(TEXT("Misses and dodges display text without a successful-impact sound. The launch or swing is still audible. Combat sound uses a shared 16-voice limit so large fights remain controlled."),L,Top+248,595,12,Muted,5);
+        // audio: five buses, music switch, heavy-step shake and the CC-BY music credits (Docs/Audio.md).
+        Label(TEXT("SOUND"),L,Top,12,Gold);
+        Toggle(TEXT("Mute all game sound"),UISettings.bMuteAudio,L,Top+30,TEXT("Silences music, ambience, combat, footsteps and interface sound. Combat text is unaffected."));
+        Toggle(TEXT("Play music"),UISettings.bMusicEnabled,R,Top+30,TEXT("Turns the score on or off. It fades out immediately and resumes with the current state (town, combat, Pack Leader, arena)."));
+        Toggle(TEXT("Heavy footstep camera shake"),UISettings.bFootstepCameraShake,L,Top+56,TEXT("A slight camera bump on each footfall when you play a heavy body (Bear, Behemoth, Ether Golem). Off by default."));
+        if(const UCireAudioSubsystem* Audio=UCireAudioSubsystem::Get(this))
+            Label(FString::Printf(TEXT("Score: %s   %s"),*CireAudio::MusicStateName(this),*Audio->Music.CurrentTitle()),R,Top+58,10,Muted);
+        const bool bSound=!UISettings.bMuteAudio;
+        Slider(TEXT("Master volume"),UISettings.MasterVolume,0,1,.02f,L,Top+92,TEXT("Overall level; every bus below multiplies it."),bSound);
+        Slider(TEXT("Music"),UISettings.MusicVolume,0,1,.02f,R,Top+92,TEXT("Orchestral score. Cross-fades between town, combat, Pack Leader and arena themes."),bSound&&UISettings.bMusicEnabled);
+        Slider(TEXT("Combat effects"),UISettings.SFXVolume,0,1,.02f,L,Top+146,TEXT("Weapon swings, spells, hits, footsteps, horns and roars. Spatially attenuated."),bSound);
+        Slider(TEXT("Ambience"),UISettings.AmbienceVolume,0,1,.02f,R,Top+146,TEXT("District soundscapes (wind, market crowd, dogs, fountain, church bell, forge) and nearby fires or wells. Ducks under combat."),bSound);
+        Slider(TEXT("Interface feedback"),UISettings.UIVolume,0,1,.02f,L,Top+200,TEXT("Clicks, hovers, level-up, aggro and phase banners."),bSound);
+        if(Button(TEXT("TEST INTERFACE CUE"),R,Top+208,286))PlayUIFeedback();
+        Wrapped(TEXT("Misses and dodges show text without an impact sound. Footsteps follow each body's armour (plate, leather, cloth, hooves, heavy beasts) and the ground under it."),L,Top+252,595,11,Muted,3);
+        Label(TEXT("MUSIC CREDITS (CC BY 4.0)"),L,Top+310,11,Gold);
+        Wrapped(FString::Join(CireAudio::Credits(),TEXT("  ")),L,Top+330,595,10,Muted,7);
+        // audio: end
     }
     else if(OptionsTab==4)
     {

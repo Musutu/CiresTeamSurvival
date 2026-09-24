@@ -72,6 +72,7 @@ TArray<FCireActionInfo> BuildActions()
     for(int32 Item=1;Item<=6;++Item)
         Add(*FString::Printf(TEXT("UseItem%d"),Item),FText::Format(LOCTEXT("UseItem","Use item in bag slot {0}"),Item),C::Combat,FCireKeyChord());
     // progression-shop: end
+    Add(TEXT("ToggleSkillOffer"),LOCTEXT("ToggleSkillOffer","New skill choice: open / decide later"),C::Interface,EKeys::N);
     const FKey Digits[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight,EKeys::Nine,EKeys::Zero};
     for(int32 Bar=1;Bar<=FCireKeybindings::NumBars;++Bar)for(int32 Slot=1;Slot<=FCireKeybindings::SlotsPerBar;++Slot)
     {
@@ -392,7 +393,7 @@ bool CireKeybindings::RunSmoke()
     Check(B.Get(TEXT("TurnLeft"),0)==FCireKeyChord(EKeys::A)&&B.Get(TEXT("TargetPreviousEnemy"),0)==FCireKeyChord(EKeys::Tab,true),TEXT("A turn, Shift+Tab previous enemy"));
     Check(B.Get(SlotAction(1,1),0)==FCireKeyChord(EKeys::One)&&B.Get(SlotAction(2,3),0)==FCireKeyChord(EKeys::Three,true)&&
         B.Get(SlotAction(3,6),0)==FCireKeyChord(EKeys::Six,false,false,true)&&!B.Get(SlotAction(1,7),0).IsBound()&&!B.Get(SlotAction(3,12),0).IsBound(),TEXT("action bar defaults"));
-    Check(Actions().Num()==24+10/*progression-shop: stats, 3 belt, 6 item*/+FCireKeybindings::NumBars*FCireKeybindings::SlotsPerBar,TEXT("action list size"));
+    Check(Actions().Num()==25+10/*progression-shop: stats, 3 belt, 6 item; champion-draft: +1 skill offer toggle*/+FCireKeybindings::NumBars*FCireKeybindings::SlotsPerBar,TEXT("action list size"));
     {
         TSet<FString> Seen;bool Unique=true;
         for(const auto& I:Actions())for(int32 K=0;K<2;++K)if(I.Default[K].IsBound()){const FString Id=I.Default[K].ToString();Unique&=!Seen.Contains(Id);Seen.Add(Id);}

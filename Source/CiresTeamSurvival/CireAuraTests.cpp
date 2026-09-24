@@ -4,6 +4,7 @@
 #include "CireBuffs.h"
 #include "CireGame.h"
 #include "CireItems.h"
+#include "CireAudio.h"
 #include "CireNPCState.h"
 #include "CireSkillRuntime.h"
 #include "CireUISettings.h"
@@ -53,6 +54,7 @@ bool CireAuraVisuals::RunSmoke(ACireGameMode* Mode)
         Check(!CireAuraData::Parse(TEXT("{\"schemaVersion\":1,\"buffs\":{\"x\":{\"name\":\"X\",\"kind\":\"buff\",\"palette\":{\"primary\":[3,0,0],\"secondary\":[1,0,0],\"core\":[1,1,1]},\"layers\":[{\"shape\":\"ring\",\"attach\":\"ground\"}]}}}"),Scratch,Limits,Why),TEXT("rejects out-of-range colour"));
         Check(!CireAuraData::Parse(TEXT("{\"schemaVersion\":1,\"buffs\":{\"x\":{\"name\":\"X\",\"kind\":\"buff\",\"palette\":{\"primary\":[1,0,0],\"secondary\":[1,0,0],\"core\":[1,1,1]},\"layers\":[{\"shape\":\"ring\",\"attach\":\"ground\"}],\"sound\":{\"start\":\"Bad Cue!\"}}}}"),Scratch,Limits,Why),TEXT("rejects unsafe sound cue id"));
         Check(CireAuraData::Find(TEXT("blood_rage"))!=nullptr,TEXT("rejected parses keep the loaded data"));
+        Check(CireAudio::HasCue(TEXT("aura_apply"))&&CireAudio::HasCue(TEXT("aura_heal")),TEXT("aura sound fallbacks exist in AudioCues.json"));
     }
     // ---- World fixtures -----------------------------------------------------
     auto* Auras=CireAuraVisuals::Get(World);Check(Auras!=nullptr,TEXT("aura subsystem exists in game worlds"));

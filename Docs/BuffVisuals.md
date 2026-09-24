@@ -171,12 +171,17 @@ would sit in the camera's sightline); its body/ground layers always render.
 
 ## Sound hooks
 
-Each row's `sound` block carries cue ids for the audio pass: `start`, `loop`,
-`end`, `hit` (for example `stance.blood_frenzy.start`, `buff.blood_rage.hit`).
-`CireAuraVisuals::PlaySoundCue` is called on start, end and confirmed empowered
-hits. Until `CireAudio::PlayCue/PlayAttached` lands it only logs (Verbose,
-`LogCireAura`). Loop cues are declared but not yet started; wire them when the
-audio API exposes attached looping sounds.
+Each row's `sound` block carries cue ids: `start`, `loop`, `end`, `hit` (for
+example `stance.blood_frenzy.start`, `buff.blood_rage.hit`).
+`CireAuraVisuals::PlaySoundCue` plays them through `CireAudio::PlayCue` at the
+unit on effect start, end and confirmed empowered hits. A cue id registered in
+`Content/Data/AudioCues.json` plays as authored; until then every `.start` falls
+back to the shared `aura_apply` cue (`aura_heal` for Regeneration, Wellspring,
+Aether Phial and Sanctuary) and other ids stay silent. Sounds obey realm privacy
+(unobservable or hidden units are silent) and other units play at
+`0.4 + 0.6 x OtherEffectsIntensity`. To give an effect its own sound, add an
+AudioCues.json entry whose id matches the row's cue id (license-safe source,
+recorded in Art/Audio/PROVENANCE.md). Loop cues are declared but not started yet.
 
 ## Adding an effect (items, new skills)
 
@@ -219,4 +224,4 @@ clear records on clients, and that arena records reach both teams.
 * `-CireNoAuras` on the command line disables the renderer (performance A/B).
 * Summons do not receive records yet (they inherit the component but no skill
   writes to them).
-* Loop sound cues are data only until the audio API is available.
+* Loop sound cues are declared but not started; per-buff one-shots fall back to two shared aura cues until distinct sounds are authored.
