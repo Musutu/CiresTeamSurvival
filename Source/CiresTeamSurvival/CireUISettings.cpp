@@ -199,7 +199,7 @@ void FCireUISettings::SanitizePreferences()
     CameraYawSensitivity=SafeFloat(CameraYawSensitivity,1,.05f,5); CameraPitchSensitivity=SafeFloat(CameraPitchSensitivity,1,.05f,5); // camera-movement: widened
     CameraDistance=SafeFloat(CameraDistance,650,300,1200); CameraFOV=SafeFloat(CameraFOV,80,55,105);
     MasterVolume=SafeFloat(MasterVolume,.85f,0,1); SFXVolume=SafeFloat(SFXVolume,.85f,0,1); UIVolume=SafeFloat(UIVolume,.7f,0,1);
-    TooltipMode=FMath::Clamp(TooltipMode,0,2); StatusFilter=FMath::Clamp(StatusFilter,0,2);
+    StatusFilter=FMath::Clamp(StatusFilter,0,2);
     TooltipScale=SafeFloat(TooltipScale,.8f,.6f,1.4f);
     TooltipAngleDegrees=SafeFloat(TooltipAngleDegrees,45,0,360); TooltipDistance=SafeFloat(TooltipDistance,40,16,240);
     TooltipMode=FMath::Clamp(TooltipMode,0,3);
