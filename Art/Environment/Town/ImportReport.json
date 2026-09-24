@@ -1,0 +1,1720 @@
+{
+  "textures": {
+    "brown_mud_leaves_01": [
+      "/Game/Environment/Town/Textures/brown_mud_leaves_01/T_brown_mud_leaves_01_D.T_brown_mud_leaves_01_D",
+      "/Game/Environment/Town/Textures/brown_mud_leaves_01/T_brown_mud_leaves_01_N.T_brown_mud_leaves_01_N",
+      "/Game/Environment/Town/Textures/brown_mud_leaves_01/T_brown_mud_leaves_01_ARM.T_brown_mud_leaves_01_ARM"
+    ],
+    "castle_brick_07": [
+      "/Game/Environment/Town/Textures/castle_brick_07/T_castle_brick_07_D.T_castle_brick_07_D",
+      "/Game/Environment/Town/Textures/castle_brick_07/T_castle_brick_07_N.T_castle_brick_07_N",
+      "/Game/Environment/Town/Textures/castle_brick_07/T_castle_brick_07_ARM.T_castle_brick_07_ARM"
+    ],
+    "clay_roof_tiles_02": [
+      "/Game/Environment/Town/Textures/clay_roof_tiles_02/T_clay_roof_tiles_02_D.T_clay_roof_tiles_02_D",
+      "/Game/Environment/Town/Textures/clay_roof_tiles_02/T_clay_roof_tiles_02_N.T_clay_roof_tiles_02_N",
+      "/Game/Environment/Town/Textures/clay_roof_tiles_02/T_clay_roof_tiles_02_ARM.T_clay_roof_tiles_02_ARM"
+    ],
+    "cobblestone_floor_08": [
+      "/Game/Environment/Town/Textures/cobblestone_floor_08/T_cobblestone_floor_08_D.T_cobblestone_floor_08_D",
+      "/Game/Environment/Town/Textures/cobblestone_floor_08/T_cobblestone_floor_08_N.T_cobblestone_floor_08_N",
+      "/Game/Environment/Town/Textures/cobblestone_floor_08/T_cobblestone_floor_08_ARM.T_cobblestone_floor_08_ARM"
+    ],
+    "cobblestone_large_01": [
+      "/Game/Environment/Town/Textures/cobblestone_large_01/T_cobblestone_large_01_D.T_cobblestone_large_01_D",
+      "/Game/Environment/Town/Textures/cobblestone_large_01/T_cobblestone_large_01_N.T_cobblestone_large_01_N",
+      "/Game/Environment/Town/Textures/cobblestone_large_01/T_cobblestone_large_01_ARM.T_cobblestone_large_01_ARM"
+    ],
+    "fabric_pattern_05": [
+      "/Game/Environment/Town/Textures/fabric_pattern_05/T_fabric_pattern_05_D.T_fabric_pattern_05_D",
+      "/Game/Environment/Town/Textures/fabric_pattern_05/T_fabric_pattern_05_N.T_fabric_pattern_05_N",
+      "/Game/Environment/Town/Textures/fabric_pattern_05/T_fabric_pattern_05_ARM.T_fabric_pattern_05_ARM"
+    ],
+    "fabric_pattern_07": [
+      "/Game/Environment/Town/Textures/fabric_pattern_07/T_fabric_pattern_07_D.T_fabric_pattern_07_D",
+      "/Game/Environment/Town/Textures/fabric_pattern_07/T_fabric_pattern_07_N.T_fabric_pattern_07_N",
+      "/Game/Environment/Town/Textures/fabric_pattern_07/T_fabric_pattern_07_ARM.T_fabric_pattern_07_ARM"
+    ],
+    "medieval_blocks_02": [
+      "/Game/Environment/Town/Textures/medieval_blocks_02/T_medieval_blocks_02_D.T_medieval_blocks_02_D",
+      "/Game/Environment/Town/Textures/medieval_blocks_02/T_medieval_blocks_02_N.T_medieval_blocks_02_N",
+      "/Game/Environment/Town/Textures/medieval_blocks_02/T_medieval_blocks_02_ARM.T_medieval_blocks_02_ARM"
+    ],
+    "monastery_stone_floor": [
+      "/Game/Environment/Town/Textures/monastery_stone_floor/T_monastery_stone_floor_D.T_monastery_stone_floor_D",
+      "/Game/Environment/Town/Textures/monastery_stone_floor/T_monastery_stone_floor_N.T_monastery_stone_floor_N",
+      "/Game/Environment/Town/Textures/monastery_stone_floor/T_monastery_stone_floor_ARM.T_monastery_stone_floor_ARM"
+    ],
+    "rocky_trail": [
+      "/Game/Environment/Town/Textures/rocky_trail/T_rocky_trail_D.T_rocky_trail_D",
+      "/Game/Environment/Town/Textures/rocky_trail/T_rocky_trail_N.T_rocky_trail_N",
+      "/Game/Environment/Town/Textures/rocky_trail/T_rocky_trail_ARM.T_rocky_trail_ARM"
+    ],
+    "roof_slates_02": [
+      "/Game/Environment/Town/Textures/roof_slates_02/T_roof_slates_02_D.T_roof_slates_02_D",
+      "/Game/Environment/Town/Textures/roof_slates_02/T_roof_slates_02_N.T_roof_slates_02_N",
+      "/Game/Environment/Town/Textures/roof_slates_02/T_roof_slates_02_ARM.T_roof_slates_02_ARM"
+    ],
+    "rough_wood": [
+      "/Game/Environment/Town/Textures/rough_wood/T_rough_wood_D.T_rough_wood_D",
+      "/Game/Environment/Town/Textures/rough_wood/T_rough_wood_N.T_rough_wood_N",
+      "/Game/Environment/Town/Textures/rough_wood/T_rough_wood_ARM.T_rough_wood_ARM"
+    ],
+    "rust_coarse_01": [
+      "/Game/Environment/Town/Textures/rust_coarse_01/T_rust_coarse_01_D.T_rust_coarse_01_D",
+      "/Game/Environment/Town/Textures/rust_coarse_01/T_rust_coarse_01_N.T_rust_coarse_01_N",
+      "/Game/Environment/Town/Textures/rust_coarse_01/T_rust_coarse_01_ARM.T_rust_coarse_01_ARM"
+    ],
+    "thatch_roof_angled": [
+      "/Game/Environment/Town/Textures/thatch_roof_angled/T_thatch_roof_angled_D.T_thatch_roof_angled_D",
+      "/Game/Environment/Town/Textures/thatch_roof_angled/T_thatch_roof_angled_N.T_thatch_roof_angled_N",
+      "/Game/Environment/Town/Textures/thatch_roof_angled/T_thatch_roof_angled_ARM.T_thatch_roof_angled_ARM"
+    ],
+    "weathered_planks": [
+      "/Game/Environment/Town/Textures/weathered_planks/T_weathered_planks_D.T_weathered_planks_D",
+      "/Game/Environment/Town/Textures/weathered_planks/T_weathered_planks_N.T_weathered_planks_N",
+      "/Game/Environment/Town/Textures/weathered_planks/T_weathered_planks_ARM.T_weathered_planks_ARM"
+    ],
+    "white_rough_plaster": [
+      "/Game/Environment/Town/Textures/white_rough_plaster/T_white_rough_plaster_D.T_white_rough_plaster_D",
+      "/Game/Environment/Town/Textures/white_rough_plaster/T_white_rough_plaster_N.T_white_rough_plaster_N",
+      "/Game/Environment/Town/Textures/white_rough_plaster/T_white_rough_plaster_ARM.T_white_rough_plaster_ARM"
+    ]
+  },
+  "materials": {
+    "masters": [
+      "(kept)"
+    ],
+    "instances": [
+      "BannerCloth",
+      "Canvas",
+      "CanvasAlt",
+      "Castle",
+      "Ember",
+      "Flame",
+      "GlassDark",
+      "GlassLit",
+      "Iron",
+      "LogEnd",
+      "Planks",
+      "Plaster",
+      "RoofClay",
+      "RoofSlate",
+      "Sack",
+      "Stone",
+      "Thatch",
+      "Timber",
+      "W_CastleW",
+      "W_Cobble",
+      "W_Field",
+      "W_Flagstone",
+      "W_Ground",
+      "W_PlanksW",
+      "W_Plaza",
+      "W_StoneW",
+      "W_TimberW",
+      "Water"
+    ]
+  },
+  "meshes": {},
+  "props": {
+    "Barrel_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/Barrel_01/Barrel_01_1k/StaticMeshes/Barrel_01_1k.Barrel_01_1k",
+          "triangles": 1009,
+          "extent": [
+            28,
+            28,
+            44
+          ],
+          "origin": [
+            0,
+            0,
+            43
+          ]
+        }
+      ]
+    },
+    "wine_barrel_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01.wine_barrel_01",
+          "triangles": 2219,
+          "extent": [
+            37,
+            37,
+            44
+          ],
+          "origin": [
+            0,
+            0,
+            44
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_base.wine_barrel_01_base",
+          "triangles": 224,
+          "extent": [
+            29,
+            29,
+            1
+          ],
+          "origin": [
+            0,
+            0,
+            4
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_bung.wine_barrel_01_bung",
+          "triangles": 168,
+          "extent": [
+            3,
+            2,
+            3
+          ],
+          "origin": [
+            0,
+            36,
+            44
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_Lid.wine_barrel_01_Lid",
+          "triangles": 224,
+          "extent": [
+            29,
+            29,
+            1
+          ],
+          "origin": [
+            0,
+            0,
+            83
+          ]
+        }
+      ]
+    },
+    "wooden_barrels_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_barrel01.wooden_barrels_01_barrel01",
+          "triangles": 4734,
+          "extent": [
+            37,
+            37,
+            46
+          ],
+          "origin": [
+            148,
+            -156,
+            46
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_barrel02.wooden_barrels_01_barrel02",
+          "triangles": 4899,
+          "extent": [
+            37,
+            37,
+            46
+          ],
+          "origin": [
+            -94,
+            -156,
+            46
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece01.wooden_barrels_01_piece01",
+          "triangles": 2238,
+          "extent": [
+            37,
+            44,
+            18
+          ],
+          "origin": [
+            -75,
+            -1,
+            17
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece02.wooden_barrels_01_piece02",
+          "triangles": 1292,
+          "extent": [
+            28,
+            44,
+            9
+          ],
+          "origin": [
+            -205,
+            0,
+            10
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece03.wooden_barrels_01_piece03",
+          "triangles": 1302,
+          "extent": [
+            29,
+            44,
+            10
+          ],
+          "origin": [
+            36,
+            0,
+            10
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece04.wooden_barrels_01_piece04",
+          "triangles": 198,
+          "extent": [
+            4,
+            44,
+            5
+          ],
+          "origin": [
+            147,
+            0,
+            5
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece05.wooden_barrels_01_piece05",
+          "triangles": 202,
+          "extent": [
+            3,
+            44,
+            5
+          ],
+          "origin": [
+            176,
+            0,
+            5
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece06.wooden_barrels_01_piece06",
+          "triangles": 206,
+          "extent": [
+            4,
+            35,
+            5
+          ],
+          "origin": [
+            207,
+            9,
+            5
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece07.wooden_barrels_01_piece07",
+          "triangles": 150,
+          "extent": [
+            4,
+            16,
+            4
+          ],
+          "origin": [
+            119,
+            -32,
+            4
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece08.wooden_barrels_01_piece08",
+          "triangles": 456,
+          "extent": [
+            28,
+            20,
+            3
+          ],
+          "origin": [
+            74,
+            102,
+            -1
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece09.wooden_barrels_01_piece09",
+          "triangles": 92,
+          "extent": [
+            19,
+            4,
+            1
+          ],
+          "origin": [
+            74,
+            137,
+            -1
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece10.wooden_barrels_01_piece10",
+          "triangles": 64,
+          "extent": [
+            20,
+            4,
+            1
+          ],
+          "origin": [
+            -44,
+            69,
+            4
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece11.wooden_barrels_01_piece11",
+          "triangles": 40,
+          "extent": [
+            29,
+            5,
+            1
+          ],
+          "origin": [
+            -44,
+            110,
+            4
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece12.wooden_barrels_01_piece12",
+          "triangles": 58,
+          "extent": [
+            19,
+            4,
+            1
+          ],
+          "origin": [
+            -45,
+            134,
+            4
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece13.wooden_barrels_01_piece13",
+          "triangles": 62,
+          "extent": [
+            27,
+            5,
+            1
+          ],
+          "origin": [
+            -138,
+            62,
+            4
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece14.wooden_barrels_01_piece14",
+          "triangles": 32,
+          "extent": [
+            29,
+            5,
+            1
+          ],
+          "origin": [
+            -138,
+            95,
+            4
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece15.wooden_barrels_01_piece15",
+          "triangles": 68,
+          "extent": [
+            3,
+            14,
+            1
+          ],
+          "origin": [
+            125,
+            107,
+            0
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece16.wooden_barrels_01_piece16",
+          "triangles": 84,
+          "extent": [
+            5,
+            20,
+            1
+          ],
+          "origin": [
+            146,
+            107,
+            0
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece17.wooden_barrels_01_piece17",
+          "triangles": 116,
+          "extent": [
+            7,
+            25,
+            2
+          ],
+          "origin": [
+            163,
+            107,
+            0
+          ]
+        }
+      ]
+    },
+    "wooden_crate_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_crate_01/wooden_crate_01_1k/StaticMeshes/wooden_crate_01.wooden_crate_01",
+          "triangles": 1803,
+          "extent": [
+            41,
+            20,
+            16
+          ],
+          "origin": [
+            0,
+            1,
+            15
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_crate_01/wooden_crate_01_1k/StaticMeshes/wooden_crate_01_latch.wooden_crate_01_latch",
+          "triangles": 368,
+          "extent": [
+            1,
+            4,
+            5
+          ],
+          "origin": [
+            0,
+            17,
+            29
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_crate_01/wooden_crate_01_1k/StaticMeshes/wooden_crate_01_lid.wooden_crate_01_lid",
+          "triangles": 374,
+          "extent": [
+            35,
+            20,
+            2
+          ],
+          "origin": [
+            0,
+            0,
+            32
+          ]
+        }
+      ]
+    },
+    "wooden_crate_02": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_crate_02/wooden_crate_02_1k/StaticMeshes/wooden_crate_02_crate.wooden_crate_02_crate",
+          "triangles": 1132,
+          "extent": [
+            26,
+            58,
+            22
+          ],
+          "origin": [
+            0,
+            0,
+            21
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_crate_02/wooden_crate_02_1k/StaticMeshes/wooden_crate_02_lid.wooden_crate_02_lid",
+          "triangles": 256,
+          "extent": [
+            24,
+            52,
+            3
+          ],
+          "origin": [
+            0,
+            0,
+            42
+          ]
+        }
+      ]
+    },
+    "wooden_bucket_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_bucket_01/wooden_bucket_01_1k/StaticMeshes/wooden_bucket_01.wooden_bucket_01",
+          "triangles": 1686,
+          "extent": [
+            17,
+            17,
+            17
+          ],
+          "origin": [
+            0,
+            0,
+            17
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_bucket_01/wooden_bucket_01_1k/StaticMeshes/wooden_bucket_01_handle.wooden_bucket_01_handle",
+          "triangles": 364,
+          "extent": [
+            18,
+            0,
+            12
+          ],
+          "origin": [
+            0,
+            0,
+            43
+          ]
+        }
+      ]
+    },
+    "wicker_basket_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wicker_basket_01/wicker_basket_01_1k/StaticMeshes/wicker_basket_01_1k.wicker_basket_01_1k",
+          "triangles": 17088,
+          "extent": [
+            19,
+            15,
+            6
+          ],
+          "origin": [
+            0,
+            0,
+            6
+          ]
+        }
+      ]
+    },
+    "wicker_basket_02": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wicker_basket_02/wicker_basket_02_1k/StaticMeshes/wicker_basket_02_base.wicker_basket_02_base",
+          "triangles": 2014,
+          "extent": [
+            11,
+            11,
+            10
+          ],
+          "origin": [
+            0,
+            0,
+            10
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wicker_basket_02/wicker_basket_02_1k/StaticMeshes/wicker_basket_02_lid.wicker_basket_02_lid",
+          "triangles": 1184,
+          "extent": [
+            8,
+            11,
+            10
+          ],
+          "origin": [
+            16,
+            -3,
+            10
+          ]
+        }
+      ]
+    },
+    "Lantern_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/Lantern_01/Lantern_01_1k/StaticMeshes/Lantern_01.Lantern_01",
+          "triangles": 4361,
+          "extent": [
+            6,
+            5,
+            15
+          ],
+          "origin": [
+            0,
+            0,
+            15
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/Lantern_01/Lantern_01_1k/StaticMeshes/Lantern_01_glass.Lantern_01_glass",
+          "triangles": 760,
+          "extent": [
+            4,
+            4,
+            3
+          ],
+          "origin": [
+            0,
+            0,
+            10
+          ]
+        }
+      ]
+    },
+    "wooden_lantern_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_lantern_01/wooden_lantern_01_1k/StaticMeshes/wooden_lantern_01.wooden_lantern_01",
+          "triangles": 2498,
+          "extent": [
+            11,
+            11,
+            20
+          ],
+          "origin": [
+            0,
+            0,
+            19
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_lantern_01/wooden_lantern_01_1k/StaticMeshes/wooden_lantern_01_door.wooden_lantern_01_door",
+          "triangles": 1110,
+          "extent": [
+            7,
+            2,
+            16
+          ],
+          "origin": [
+            0,
+            10,
+            17
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_lantern_01/wooden_lantern_01_1k/StaticMeshes/wooden_lantern_01_handle.wooden_lantern_01_handle",
+          "triangles": 420,
+          "extent": [
+            9,
+            1,
+            9
+          ],
+          "origin": [
+            0,
+            0,
+            43
+          ]
+        }
+      ]
+    },
+    "large_castle_door": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/large_castle_door/large_castle_door_2k/StaticMeshes/large_castle_door_frame.large_castle_door_frame",
+          "triangles": 255,
+          "extent": [
+            101,
+            6,
+            148
+          ],
+          "origin": [
+            -4,
+            -2,
+            145
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/large_castle_door/large_castle_door_2k/StaticMeshes/large_castle_door_left.large_castle_door_left",
+          "triangles": 684,
+          "extent": [
+            48,
+            8,
+            140
+          ],
+          "origin": [
+            -53,
+            2,
+            143
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/large_castle_door/large_castle_door_2k/StaticMeshes/large_castle_door_right.large_castle_door_right",
+          "triangles": 496,
+          "extent": [
+            48,
+            13,
+            140
+          ],
+          "origin": [
+            43,
+            8,
+            143
+          ]
+        }
+      ]
+    },
+    "modular_fort_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_tower_round.modular_fort_01_tower_round",
+          "triangles": 1457,
+          "extent": [
+            792,
+            792,
+            675
+          ],
+          "origin": [
+            4012,
+            -2603,
+            675
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_stairs_straight_01.modular_fort_01_wall_stairs_straight_01",
+          "triangles": 442,
+          "extent": [
+            177,
+            741,
+            377
+          ],
+          "origin": [
+            4677,
+            -659,
+            377
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thick_corner_01.modular_fort_01_wall_thick_corner_01",
+          "triangles": 374,
+          "extent": [
+            292,
+            292,
+            426
+          ],
+          "origin": [
+            2130,
+            1145,
+            426
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thick_corner_02.modular_fort_01_wall_thick_corner_02",
+          "triangles": 406,
+          "extent": [
+            354,
+            286,
+            426
+          ],
+          "origin": [
+            1360,
+            2269,
+            426
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thick_end_01.modular_fort_01_wall_thick_end_01",
+          "triangles": 256,
+          "extent": [
+            209,
+            242,
+            390
+          ],
+          "origin": [
+            3846,
+            2245,
+            390
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thick_end_02.modular_fort_01_wall_thick_end_02",
+          "triangles": 255,
+          "extent": [
+            209,
+            242,
+            426
+          ],
+          "origin": [
+            5046,
+            2264,
+            426
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thick_straight_01.modular_fort_01_wall_thick_straight_01",
+          "triangles": 582,
+          "extent": [
+            209,
+            728,
+            426
+          ],
+          "origin": [
+            1209,
+            -2672,
+            426
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thick_straight_02.modular_fort_01_wall_thick_straight_02",
+          "triangles": 1278,
+          "extent": [
+            211,
+            728,
+            426
+          ],
+          "origin": [
+            2811,
+            -672,
+            426
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thick_thin_transition_01.modular_fort_01_wall_thick_thin_transition_01",
+          "triangles": 256,
+          "extent": [
+            209,
+            178,
+            428
+          ],
+          "origin": [
+            2530,
+            2215,
+            428
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thin_corner_01.modular_fort_01_wall_thin_corner_01",
+          "triangles": 365,
+          "extent": [
+            228,
+            228,
+            430
+          ],
+          "origin": [
+            4087,
+            3510,
+            430
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thin_corner_02.modular_fort_01_wall_thin_corner_02",
+          "triangles": 353,
+          "extent": [
+            267,
+            267,
+            430
+          ],
+          "origin": [
+            1327,
+            3286,
+            430
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thin_corner_03.modular_fort_01_wall_thin_corner_03",
+          "triangles": 292,
+          "extent": [
+            323,
+            249,
+            430
+          ],
+          "origin": [
+            2789,
+            3303,
+            430
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thin_gate_01.modular_fort_01_wall_thin_gate_01",
+          "triangles": 568,
+          "extent": [
+            134,
+            371,
+            431
+          ],
+          "origin": [
+            1141,
+            1091,
+            430
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thin_straight_01.modular_fort_01_wall_thin_straight_01",
+          "triangles": 371,
+          "extent": [
+            127,
+            741,
+            430
+          ],
+          "origin": [
+            2027,
+            -659,
+            430
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thin_straight_02.modular_fort_01_wall_thin_straight_02",
+          "triangles": 754,
+          "extent": [
+            128,
+            741,
+            430
+          ],
+          "origin": [
+            1128,
+            -659,
+            430
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thin_straight_03.modular_fort_01_wall_thin_straight_03",
+          "triangles": 256,
+          "extent": [
+            127,
+            371,
+            390
+          ],
+          "origin": [
+            4203,
+            1091,
+            390
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_thin_straight_04.modular_fort_01_wall_thin_straight_04",
+          "triangles": 270,
+          "extent": [
+            127,
+            371,
+            430
+          ],
+          "origin": [
+            3281,
+            1091,
+            430
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_walkway_corner_01.modular_fort_01_wall_walkway_corner_01",
+          "triangles": 140,
+          "extent": [
+            384,
+            384,
+            377
+          ],
+          "origin": [
+            4243,
+            3354,
+            377
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_walkway_corner_02.modular_fort_01_wall_walkway_corner_02",
+          "triangles": 94,
+          "extent": [
+            139,
+            139,
+            354
+          ],
+          "origin": [
+            1455,
+            3159,
+            354
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_walkway_end_01.modular_fort_01_wall_walkway_end_01",
+          "triangles": 76,
+          "extent": [
+            156,
+            242,
+            377
+          ],
+          "origin": [
+            5111,
+            1198,
+            377
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_walkway_straight_01.modular_fort_01_wall_walkway_straight_01",
+          "triangles": 474,
+          "extent": [
+            168,
+            728,
+            385
+          ],
+          "origin": [
+            3668,
+            -672,
+            368
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/modular_fort_01/modular_fort_01_2k/StaticMeshes/modular_fort_01_wall_walkway_straight_02.modular_fort_01_wall_walkway_straight_02",
+          "triangles": 76,
+          "extent": [
+            156,
+            728,
+            377
+          ],
+          "origin": [
+            2056,
+            -2672,
+            377
+          ]
+        }
+      ]
+    },
+    "gothic_statue": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/gothic_statue/gothic_statue_1k/StaticMeshes/gothic_statue_1k.gothic_statue_1k",
+          "triangles": 6681,
+          "extent": [
+            74,
+            78,
+            87
+          ],
+          "origin": [
+            -4,
+            -41,
+            85
+          ]
+        }
+      ]
+    },
+    "stone_fire_pit": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/stone_fire_pit/stone_fire_pit_1k/StaticMeshes/stone_fire_pit_1k.stone_fire_pit_1k",
+          "triangles": 1994,
+          "extent": [
+            72,
+            72,
+            19
+          ],
+          "origin": [
+            -1,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "WoodenTable_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/WoodenTable_01/WoodenTable_01_1k/StaticMeshes/WoodenTable_01_1k.WoodenTable_01_1k",
+          "triangles": 532,
+          "extent": [
+            90,
+            33,
+            27
+          ],
+          "origin": [
+            0,
+            0,
+            27
+          ]
+        }
+      ]
+    },
+    "wooden_stool_02": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_stool_02/wooden_stool_02_1k/StaticMeshes/wooden_stool_02_1k.wooden_stool_02_1k",
+          "triangles": 1320,
+          "extent": [
+            13,
+            9,
+            9
+          ],
+          "origin": [
+            0,
+            0,
+            9
+          ]
+        }
+      ]
+    },
+    "dead_tree_trunk_02": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/dead_tree_trunk_02/dead_tree_trunk_02_1k/StaticMeshes/dead_tree_trunk_02_1k.dead_tree_trunk_02_1k",
+          "triangles": 5788,
+          "extent": [
+            203,
+            53,
+            53
+          ],
+          "origin": [
+            10,
+            3,
+            20
+          ]
+        }
+      ]
+    },
+    "tree_stump_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/tree_stump_01/tree_stump_01_1k/StaticMeshes/tree_stump_01_1k.tree_stump_01_1k",
+          "triangles": 5497,
+          "extent": [
+            71,
+            80,
+            29
+          ],
+          "origin": [
+            -7,
+            3,
+            9
+          ]
+        }
+      ]
+    },
+    "rock_moss_set_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock01.rock_moss_set_01_rock01",
+          "triangles": 3350,
+          "extent": [
+            112,
+            168,
+            74
+          ],
+          "origin": [
+            -280,
+            -214,
+            8
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock02.rock_moss_set_01_rock02",
+          "triangles": 2548,
+          "extent": [
+            133,
+            163,
+            63
+          ],
+          "origin": [
+            5,
+            -214,
+            17
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock03.rock_moss_set_01_rock03",
+          "triangles": 1930,
+          "extent": [
+            105,
+            104,
+            55
+          ],
+          "origin": [
+            304,
+            -211,
+            14
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock04.rock_moss_set_01_rock04",
+          "triangles": 2482,
+          "extent": [
+            106,
+            98,
+            88
+          ],
+          "origin": [
+            -259,
+            167,
+            22
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock05.rock_moss_set_01_rock05",
+          "triangles": 2168,
+          "extent": [
+            91,
+            150,
+            60
+          ],
+          "origin": [
+            20,
+            163,
+            3
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock06.rock_moss_set_01_rock06",
+          "triangles": 2236,
+          "extent": [
+            106,
+            138,
+            63
+          ],
+          "origin": [
+            266,
+            148,
+            10
+          ]
+        }
+      ]
+    },
+    "rock_moss_set_02": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_02/rock_moss_set_02_1k/StaticMeshes/rock_moss_set_02_rock07.rock_moss_set_02_rock07",
+          "triangles": 1988,
+          "extent": [
+            85,
+            61,
+            37
+          ],
+          "origin": [
+            -296,
+            72,
+            28
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_02/rock_moss_set_02_1k/StaticMeshes/rock_moss_set_02_rock08.rock_moss_set_02_rock08",
+          "triangles": 3072,
+          "extent": [
+            60,
+            49,
+            26
+          ],
+          "origin": [
+            -90,
+            78,
+            25
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_02/rock_moss_set_02_1k/StaticMeshes/rock_moss_set_02_rock09.rock_moss_set_02_rock09",
+          "triangles": 2208,
+          "extent": [
+            81,
+            51,
+            30
+          ],
+          "origin": [
+            89,
+            71,
+            27
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_02/rock_moss_set_02_1k/StaticMeshes/rock_moss_set_02_rock10.rock_moss_set_02_rock10",
+          "triangles": 2338,
+          "extent": [
+            110,
+            78,
+            38
+          ],
+          "origin": [
+            337,
+            72,
+            36
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_02/rock_moss_set_02_1k/StaticMeshes/rock_moss_set_02_rock11.rock_moss_set_02_rock11",
+          "triangles": 2860,
+          "extent": [
+            98,
+            76,
+            66
+          ],
+          "origin": [
+            -213,
+            -115,
+            40
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_02/rock_moss_set_02_1k/StaticMeshes/rock_moss_set_02_rock12.rock_moss_set_02_rock12",
+          "triangles": 3474,
+          "extent": [
+            79,
+            72,
+            37
+          ],
+          "origin": [
+            19,
+            -97,
+            34
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/rock_moss_set_02/rock_moss_set_02_1k/StaticMeshes/rock_moss_set_02_rock13.rock_moss_set_02_rock13",
+          "triangles": 2912,
+          "extent": [
+            105,
+            57,
+            63
+          ],
+          "origin": [
+            263,
+            -112,
+            31
+          ]
+        }
+      ]
+    },
+    "boulder_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/boulder_01/boulder_01_1k/StaticMeshes/boulder_01_1k.boulder_01_1k",
+          "triangles": 16330,
+          "extent": [
+            64,
+            92,
+            50
+          ],
+          "origin": [
+            -11,
+            -3,
+            43
+          ]
+        }
+      ]
+    },
+    "shrub_02": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/shrub_02/shrub_02_1k/StaticMeshes/shrub_02_a.shrub_02_a",
+          "triangles": 1478,
+          "extent": [
+            66,
+            82,
+            84
+          ],
+          "origin": [
+            -144,
+            -6,
+            83
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/shrub_02/shrub_02_1k/StaticMeshes/shrub_02_b.shrub_02_b",
+          "triangles": 1224,
+          "extent": [
+            56,
+            64,
+            75
+          ],
+          "origin": [
+            1,
+            12,
+            75
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/shrub_02/shrub_02_1k/StaticMeshes/shrub_02_c.shrub_02_c",
+          "triangles": 1659,
+          "extent": [
+            88,
+            114,
+            66
+          ],
+          "origin": [
+            171,
+            1,
+            64
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/shrub_02/shrub_02_1k/StaticMeshes/shrub_02_d.shrub_02_d",
+          "triangles": 1182,
+          "extent": [
+            54,
+            55,
+            61
+          ],
+          "origin": [
+            342,
+            -10,
+            59
+          ]
+        }
+      ]
+    },
+    "shrub_04": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/shrub_04/shrub_04_1k/StaticMeshes/shrub_04_1k.shrub_04_1k",
+          "triangles": 3601,
+          "extent": [
+            29,
+            7,
+            11
+          ],
+          "origin": [
+            27,
+            0,
+            10
+          ]
+        }
+      ]
+    },
+    "fern_02": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/fern_02/fern_02_1k/StaticMeshes/fern_02_a.fern_02_a",
+          "triangles": 517,
+          "extent": [
+            28,
+            31,
+            14
+          ],
+          "origin": [
+            -2,
+            100,
+            11
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/fern_02/fern_02_1k/StaticMeshes/fern_02_b.fern_02_b",
+          "triangles": 1096,
+          "extent": [
+            49,
+            45,
+            21
+          ],
+          "origin": [
+            -3,
+            2,
+            18
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/fern_02/fern_02_1k/StaticMeshes/fern_02_c.fern_02_c",
+          "triangles": 1321,
+          "extent": [
+            44,
+            38,
+            17
+          ],
+          "origin": [
+            101,
+            -3,
+            15
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/fern_02/fern_02_1k/StaticMeshes/fern_02_d.fern_02_d",
+          "triangles": 537,
+          "extent": [
+            29,
+            30,
+            11
+          ],
+          "origin": [
+            100,
+            94,
+            9
+          ]
+        }
+      ]
+    },
+    "kite_shield": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/kite_shield/kite_shield_1k/StaticMeshes/kite_shield_body.kite_shield_body",
+          "triangles": 430,
+          "extent": [
+            27,
+            6,
+            68
+          ],
+          "origin": [
+            0,
+            1,
+            -4
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/kite_shield/kite_shield_1k/StaticMeshes/kite_shield_clamps_and_bolts.kite_shield_clamps_and_bolts",
+          "triangles": 552,
+          "extent": [
+            26,
+            3,
+            61
+          ],
+          "origin": [
+            0,
+            -1,
+            -11
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/kite_shield/kite_shield_1k/StaticMeshes/kite_shield_metal_trim.kite_shield_metal_trim",
+          "triangles": 368,
+          "extent": [
+            27,
+            6,
+            70
+          ],
+          "origin": [
+            0,
+            2,
+            -5
+          ]
+        }
+      ]
+    },
+    "wooden_axe": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_axe/wooden_axe_1k/StaticMeshes/wooden_axe_1k.wooden_axe_1k",
+          "triangles": 722,
+          "extent": [
+            2,
+            11,
+            32
+          ],
+          "origin": [
+            0,
+            7,
+            10
+          ]
+        }
+      ]
+    },
+    "jug_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/jug_01/jug_01_1k/StaticMeshes/jug_01_1k.jug_01_1k",
+          "triangles": 1242,
+          "extent": [
+            14,
+            8,
+            11
+          ],
+          "origin": [
+            -1,
+            0,
+            11
+          ]
+        }
+      ]
+    },
+    "ceramic_pot": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/ceramic_pot/ceramic_pot_1k/StaticMeshes/ceramic_pot_1k.ceramic_pot_1k",
+          "triangles": 1338,
+          "extent": [
+            33,
+            25,
+            19
+          ],
+          "origin": [
+            0,
+            0,
+            18
+          ]
+        }
+      ]
+    },
+    "food_apple_01": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/food_apple_01/food_apple_01_1k/StaticMeshes/food_apple_01_1k.food_apple_01_1k",
+          "triangles": 1032,
+          "extent": [
+            5,
+            5,
+            4
+          ],
+          "origin": [
+            0,
+            0,
+            4
+          ]
+        }
+      ]
+    },
+    "wooden_ladder": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_ladder/wooden_ladder_1k/StaticMeshes/wooden_ladder_steps.wooden_ladder_steps",
+          "triangles": 256,
+          "extent": [
+            29,
+            25,
+            67
+          ],
+          "origin": [
+            -20,
+            0,
+            67
+          ]
+        },
+        {
+          "asset": "/Game/Environment/Town/Props/wooden_ladder/wooden_ladder_1k/StaticMeshes/wooden_ladder_supports.wooden_ladder_supports",
+          "triangles": 251,
+          "extent": [
+            24,
+            25,
+            61
+          ],
+          "origin": [
+            23,
+            0,
+            61
+          ]
+        }
+      ]
+    },
+    "island_tree_02": {
+      "imported": 0,
+      "meshes": [
+        {
+          "asset": "/Game/Environment/Town/Props/island_tree_02/island_tree_02_1k/StaticMeshes/island_tree_02_1k.island_tree_02_1k",
+          "triangles": 4152,
+          "extent": [
+            210,
+            204,
+            170
+          ],
+          "origin": [
+            5,
+            92,
+            169
+          ]
+        }
+      ]
+    }
+  },
+  "sky": {}
+}

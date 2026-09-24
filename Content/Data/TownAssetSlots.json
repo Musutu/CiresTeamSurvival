@@ -1,0 +1,700 @@
+{
+ "schemaVersion": 1,
+ "priority": 0,
+ "source": "base",
+ "description": "Slot id -> mesh/material for the medieval town. Overlay manifests Content/Data/TownAssetSlots.<source>.json (same schema, higher 'priority'; defaults tripo=10, fab=20) are merged at load: the highest-priority candidate that loads wins, then this base mesh, then 'fallback'. Use \"fit\": \"footprint\" for meshes of unknown scale; they are centred and uniformly scaled into this slot's footprint [depth X, width Y, height Z] cm. Buildings face +X (their street facade). Written by Tools/AuthorTownLayout.py.",
+ "slots": {
+  "gatehouse": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Gatehouse.SM_Town_Gatehouse",
+   "footprint": [
+    1060,
+    2003,
+    1834
+   ],
+   "clearance": "none",
+   "note": "Town gate over the march road. Replacement meshes need an 8 m wide, 5.5 m high passage centred on local Y=0."
+  },
+  "castle_gate": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Castle_Gatehouse.SM_Castle_Gatehouse",
+   "footprint": [
+    1380,
+    2132,
+    2378
+   ],
+   "clearance": "none",
+   "note": "Castle gatehouse = defended leak zone entrance. Replacement needs a 9 m wide, 6 m high passage on local Y=0."
+  },
+  "castle_keep": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Castle_Keep.SM_Castle_Keep",
+   "footprint": [
+    2120,
+    2111,
+    4080
+   ],
+   "clearance": "none"
+  },
+  "castle_wall": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Castle_Curtain.SM_Castle_Curtain",
+   "footprint": [
+    426,
+    1000,
+    1175
+   ],
+   "clearance": "none"
+  },
+  "castle_tower": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Castle_Tower.SM_Castle_Tower",
+   "footprint": [
+    874,
+    911,
+    2698
+   ],
+   "clearance": "bays"
+  },
+  "wall_section": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_WallSegment.SM_Town_WallSegment",
+   "footprint": [
+    360,
+    1000,
+    855
+   ],
+   "clearance": "none"
+  },
+  "wall_tower": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_WallTower.SM_Town_WallTower",
+   "footprint": [
+    722,
+    751,
+    1930
+   ],
+   "clearance": "bays"
+  },
+  "watchtower": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Watchtower.SM_Town_Watchtower",
+   "footprint": [
+    610,
+    610,
+    1480
+   ]
+  },
+  "shrine": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Fountain.SM_Town_Fountain",
+   "fallback": "/Game/Art/Environment/Props01/SM_OathObelisk.SM_OathObelisk",
+   "footprint": [
+    840,
+    840,
+    458
+   ],
+   "note": "Town-square centrepiece; the Tripo Dawnwell shrine drops in here."
+  },
+  "chapel": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Chapel.SM_Town_Chapel",
+   "footprint": [
+    1745,
+    940,
+    2905
+   ]
+  },
+  "market_hall": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_MarketHall.SM_Town_MarketHall",
+   "footprint": [
+    1390,
+    893,
+    853
+   ]
+  },
+  "house_a": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_HouseTimberA.SM_Town_HouseTimberA",
+   "footprint": [
+    757,
+    898,
+    1093
+   ]
+  },
+  "house_b": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_HouseTimberB.SM_Town_HouseTimberB",
+   "footprint": [
+    895,
+    680,
+    1295
+   ]
+  },
+  "house_c": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_HouseTimberC.SM_Town_HouseTimberC",
+   "footprint": [
+    777,
+    1018,
+    1126
+   ]
+  },
+  "house_shop": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_HouseShop.SM_Town_HouseShop",
+   "footprint": [
+    871,
+    938,
+    1148
+   ]
+  },
+  "tavern": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Tavern.SM_Town_Tavern",
+   "footprint": [
+    971,
+    1268,
+    1480
+   ]
+  },
+  "house_planks": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_HousePlanks.SM_Town_HousePlanks",
+   "footprint": [
+    663,
+    758,
+    1017
+   ]
+  },
+  "cottage_thatch": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_CottageStone.SM_Town_CottageStone",
+   "footprint": [
+    653,
+    900,
+    829
+   ]
+  },
+  "cottage_slate": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_CottageStoneSlate.SM_Town_CottageStoneSlate",
+   "footprint": [
+    693,
+    780,
+    907
+   ]
+  },
+  "townhouse_row": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_TownhouseRow.SM_Town_TownhouseRow",
+   "footprint": [
+    837,
+    1538,
+    1342
+   ]
+  },
+  "townhouse_row_b": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_TownhouseRowB.SM_Town_TownhouseRowB",
+   "footprint": [
+    837,
+    1398,
+    1399
+   ]
+  },
+  "warehouse": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Warehouse.SM_Town_Warehouse",
+   "footprint": [
+    912,
+    1000,
+    884
+   ]
+  },
+  "market_stall_a": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_MarketStallRed.SM_Town_MarketStallRed",
+   "footprint": [
+    312,
+    420,
+    300
+   ]
+  },
+  "market_stall_b": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_MarketStallBlue.SM_Town_MarketStallBlue",
+   "footprint": [
+    332,
+    360,
+    300
+   ]
+  },
+  "fountain": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Fountain.SM_Town_Fountain",
+   "footprint": [
+    840,
+    840,
+    458
+   ]
+  },
+  "well": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Well.SM_Town_Well",
+   "footprint": [
+    286,
+    330,
+    439
+   ]
+  },
+  "cart": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Cart.SM_Town_Cart",
+   "footprint": [
+    511,
+    189,
+    170
+   ]
+  },
+  "lamp": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_LampPost.SM_Town_LampPost",
+   "fallback": "/Game/Art/Environment/Props01/SM_WatchLantern.SM_WatchLantern",
+   "footprint": [
+    115,
+    50,
+    360
+   ],
+   "light": {
+    "offset": [
+     70,
+     0,
+     262
+    ],
+    "color": [
+     1.0,
+     0.56,
+     0.24
+    ],
+    "intensity": 5200,
+    "radius": 950
+   }
+  },
+  "wall_lantern": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_WallLantern.SM_Town_WallLantern",
+   "collision": false,
+   "clearance": "bays",
+   "light": {
+    "offset": [
+     40,
+     0,
+     -26
+    ],
+    "color": [
+     1.0,
+     0.56,
+     0.24
+    ],
+    "intensity": 2600,
+    "radius": 650
+   }
+  },
+  "banner": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_BannerPole.SM_Town_BannerPole",
+   "footprint": [
+    60,
+    180,
+    682
+   ]
+  },
+  "barricade": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Barricade.SM_Town_Barricade",
+   "footprint": [
+    153,
+    600,
+    194
+   ]
+  },
+  "fence": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Fence.SM_Town_Fence"
+  },
+  "low_wall": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_LowWall.SM_Town_LowWall"
+  },
+  "woodpile": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Woodpile.SM_Town_Woodpile"
+  },
+  "hay_sacks": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_HaySacks.SM_Town_HaySacks"
+  },
+  "gibbet": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Town_Gibbet.SM_Town_Gibbet"
+  },
+  "castle_stairs": {
+   "mesh": "/Game/Environment/Town/Meshes/SM_Castle_Stairs.SM_Castle_Stairs",
+   "clearance": "bays"
+  },
+  "crate": {
+   "mesh": "/Game/Environment/Town/Props/wooden_crate_01/wooden_crate_01_1k/StaticMeshes/wooden_crate_01.wooden_crate_01",
+   "parts": [
+    "/Game/Environment/Town/Props/wooden_crate_01/wooden_crate_01_1k/StaticMeshes/wooden_crate_01_lid.wooden_crate_01_lid",
+    "/Game/Environment/Town/Props/wooden_crate_01/wooden_crate_01_1k/StaticMeshes/wooden_crate_01_latch.wooden_crate_01_latch"
+   ],
+   "fallback": "/Game/Art/Environment/Props01/SM_BracedSupplyCrate.SM_BracedSupplyCrate"
+  },
+  "crate_long": {
+   "mesh": "/Game/Environment/Town/Props/wooden_crate_02/wooden_crate_02_1k/StaticMeshes/wooden_crate_02_crate.wooden_crate_02_crate",
+   "parts": [
+    "/Game/Environment/Town/Props/wooden_crate_02/wooden_crate_02_1k/StaticMeshes/wooden_crate_02_lid.wooden_crate_02_lid"
+   ],
+   "fallback": "/Game/Art/Environment/Props01/SM_BracedSupplyCrate.SM_BracedSupplyCrate"
+  },
+  "barrel": {
+   "mesh": "/Game/Environment/Town/Props/Barrel_01/Barrel_01_1k/StaticMeshes/Barrel_01_1k.Barrel_01_1k",
+   "fallback": "/Game/Art/Environment/Props01/SM_CooperedBarrel.SM_CooperedBarrel"
+  },
+  "barrel_wine": {
+   "mesh": "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01.wine_barrel_01",
+   "parts": [
+    "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_base.wine_barrel_01_base",
+    "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_bung.wine_barrel_01_bung",
+    "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_Lid.wine_barrel_01_Lid"
+   ],
+   "fallback": "/Game/Art/Environment/Props01/SM_CooperedBarrel.SM_CooperedBarrel"
+  },
+  "barrel_stack": {
+   "mesh": "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_barrel01.wooden_barrels_01_barrel01",
+   "parts": [
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_barrel02.wooden_barrels_01_barrel02",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece01.wooden_barrels_01_piece01",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece02.wooden_barrels_01_piece02",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece03.wooden_barrels_01_piece03",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece04.wooden_barrels_01_piece04",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece05.wooden_barrels_01_piece05",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece06.wooden_barrels_01_piece06",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece07.wooden_barrels_01_piece07",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece08.wooden_barrels_01_piece08",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece09.wooden_barrels_01_piece09",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece10.wooden_barrels_01_piece10",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece11.wooden_barrels_01_piece11",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece12.wooden_barrels_01_piece12",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece13.wooden_barrels_01_piece13",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece14.wooden_barrels_01_piece14",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece15.wooden_barrels_01_piece15",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece16.wooden_barrels_01_piece16",
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_piece17.wooden_barrels_01_piece17"
+   ],
+   "fallback": "/Game/Art/Environment/Props01/SM_CooperedBarrel.SM_CooperedBarrel"
+  },
+  "bucket": {
+   "mesh": "/Game/Environment/Town/Props/wooden_bucket_01/wooden_bucket_01_1k/StaticMeshes/wooden_bucket_01.wooden_bucket_01",
+   "parts": [
+    "/Game/Environment/Town/Props/wooden_bucket_01/wooden_bucket_01_1k/StaticMeshes/wooden_bucket_01_handle.wooden_bucket_01_handle"
+   ],
+   "collision": false
+  },
+  "basket": {
+   "mesh": "/Game/Environment/Town/Props/wicker_basket_01/wicker_basket_01_1k/StaticMeshes/wicker_basket_01_1k.wicker_basket_01_1k",
+   "collision": false
+  },
+  "basket_lidded": {
+   "mesh": "/Game/Environment/Town/Props/wicker_basket_02/wicker_basket_02_1k/StaticMeshes/wicker_basket_02_base.wicker_basket_02_base",
+   "parts": [
+    "/Game/Environment/Town/Props/wicker_basket_02/wicker_basket_02_1k/StaticMeshes/wicker_basket_02_lid.wicker_basket_02_lid"
+   ],
+   "collision": false
+  },
+  "table": {
+   "mesh": "/Game/Environment/Town/Props/WoodenTable_01/WoodenTable_01_1k/StaticMeshes/WoodenTable_01_1k.WoodenTable_01_1k"
+  },
+  "stool": {
+   "mesh": "/Game/Environment/Town/Props/wooden_stool_02/wooden_stool_02_1k/StaticMeshes/wooden_stool_02_1k.wooden_stool_02_1k",
+   "collision": false
+  },
+  "fire_pit": {
+   "mesh": "/Game/Environment/Town/Props/stone_fire_pit/stone_fire_pit_1k/StaticMeshes/stone_fire_pit_1k.stone_fire_pit_1k",
+   "fallback": "/Game/Art/Environment/Props01/SM_ForgedBrazier.SM_ForgedBrazier",
+   "light": {
+    "offset": [
+     0,
+     0,
+     80
+    ],
+    "color": [
+     1.0,
+     0.45,
+     0.16
+    ],
+    "intensity": 9000,
+    "radius": 1100
+   }
+  },
+  "statue": {
+   "mesh": "/Game/Environment/Town/Props/gothic_statue/gothic_statue_1k/StaticMeshes/gothic_statue_1k.gothic_statue_1k",
+   "fit": "footprint",
+   "footprint": [
+    150,
+    160,
+    175
+   ]
+  },
+  "hanging_lantern": {
+   "mesh": "/Game/Environment/Town/Props/wooden_lantern_01/wooden_lantern_01_1k/StaticMeshes/wooden_lantern_01.wooden_lantern_01",
+   "parts": [
+    "/Game/Environment/Town/Props/wooden_lantern_01/wooden_lantern_01_1k/StaticMeshes/wooden_lantern_01_door.wooden_lantern_01_door",
+    "/Game/Environment/Town/Props/wooden_lantern_01/wooden_lantern_01_1k/StaticMeshes/wooden_lantern_01_handle.wooden_lantern_01_handle"
+   ],
+   "collision": false,
+   "clearance": "bays",
+   "light": {
+    "offset": [
+     0,
+     0,
+     22
+    ],
+    "color": [
+     1.0,
+     0.56,
+     0.24
+    ],
+    "intensity": 1600,
+    "radius": 500
+   }
+  },
+  "castle_door": {
+   "mesh": "/Game/Environment/Town/Props/large_castle_door/large_castle_door_2k/StaticMeshes/large_castle_door_frame.large_castle_door_frame",
+   "parts": [
+    "/Game/Environment/Town/Props/large_castle_door/large_castle_door_2k/StaticMeshes/large_castle_door_left.large_castle_door_left",
+    "/Game/Environment/Town/Props/large_castle_door/large_castle_door_2k/StaticMeshes/large_castle_door_right.large_castle_door_right"
+   ],
+   "clearance": "bays"
+  },
+  "shield": {
+   "mesh": "/Game/Environment/Town/Props/kite_shield/kite_shield_1k/StaticMeshes/kite_shield_body.kite_shield_body",
+   "parts": [
+    "/Game/Environment/Town/Props/kite_shield/kite_shield_1k/StaticMeshes/kite_shield_clamps_and_bolts.kite_shield_clamps_and_bolts",
+    "/Game/Environment/Town/Props/kite_shield/kite_shield_1k/StaticMeshes/kite_shield_metal_trim.kite_shield_metal_trim"
+   ],
+   "collision": false,
+   "clearance": "bays"
+  },
+  "axe": {
+   "mesh": "/Game/Environment/Town/Props/wooden_axe/wooden_axe_1k/StaticMeshes/wooden_axe_1k.wooden_axe_1k",
+   "collision": false
+  },
+  "jug": {
+   "mesh": "/Game/Environment/Town/Props/jug_01/jug_01_1k/StaticMeshes/jug_01_1k.jug_01_1k",
+   "collision": false
+  },
+  "pot": {
+   "mesh": "/Game/Environment/Town/Props/ceramic_pot/ceramic_pot_1k/StaticMeshes/ceramic_pot_1k.ceramic_pot_1k",
+   "collision": false
+  },
+  "apple": {
+   "mesh": "/Game/Environment/Town/Props/food_apple_01/food_apple_01_1k/StaticMeshes/food_apple_01_1k.food_apple_01_1k",
+   "collision": false
+  },
+  "ladder": {
+   "mesh": "/Game/Environment/Town/Props/wooden_ladder/wooden_ladder_1k/StaticMeshes/wooden_ladder_steps.wooden_ladder_steps",
+   "parts": [
+    "/Game/Environment/Town/Props/wooden_ladder/wooden_ladder_1k/StaticMeshes/wooden_ladder_supports.wooden_ladder_supports"
+   ],
+   "collision": false
+  },
+  "fallen_log": {
+   "mesh": "/Game/Environment/Town/Props/dead_tree_trunk_02/dead_tree_trunk_02_1k/StaticMeshes/dead_tree_trunk_02_1k.dead_tree_trunk_02_1k"
+  },
+  "stump": {
+   "mesh": "/Game/Environment/Town/Props/tree_stump_01/tree_stump_01_1k/StaticMeshes/tree_stump_01_1k.tree_stump_01_1k"
+  },
+  "boulder": {
+   "mesh": "/Game/Environment/Town/Props/boulder_01/boulder_01_1k/StaticMeshes/boulder_01_1k.boulder_01_1k",
+   "fit": "footprint",
+   "footprint": [
+    128,
+    184,
+    100
+   ]
+  },
+  "rock_1": {
+   "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock01.rock_moss_set_01_rock01",
+   "fit": "footprint",
+   "footprint": [
+    224,
+    336,
+    148
+   ]
+  },
+  "rock_2": {
+   "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock02.rock_moss_set_01_rock02",
+   "fit": "footprint",
+   "footprint": [
+    266,
+    326,
+    126
+   ]
+  },
+  "rock_3": {
+   "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock03.rock_moss_set_01_rock03",
+   "fit": "footprint",
+   "footprint": [
+    210,
+    208,
+    110
+   ]
+  },
+  "rock_4": {
+   "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock04.rock_moss_set_01_rock04",
+   "fit": "footprint",
+   "footprint": [
+    212,
+    196,
+    176
+   ]
+  },
+  "rock_5": {
+   "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock05.rock_moss_set_01_rock05",
+   "fit": "footprint",
+   "footprint": [
+    182,
+    300,
+    120
+   ]
+  },
+  "rock_6": {
+   "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock06.rock_moss_set_01_rock06",
+   "fit": "footprint",
+   "footprint": [
+    212,
+    276,
+    126
+   ]
+  },
+  "shrub_1": {
+   "mesh": "/Game/Environment/Town/Props/shrub_02/shrub_02_1k/StaticMeshes/shrub_02_a.shrub_02_a",
+   "fit": "footprint",
+   "footprint": [
+    132,
+    164,
+    168
+   ],
+   "collision": false,
+   "clearance": "bays"
+  },
+  "shrub_2": {
+   "mesh": "/Game/Environment/Town/Props/shrub_02/shrub_02_1k/StaticMeshes/shrub_02_b.shrub_02_b",
+   "fit": "footprint",
+   "footprint": [
+    112,
+    128,
+    150
+   ],
+   "collision": false,
+   "clearance": "bays"
+  },
+  "shrub_3": {
+   "mesh": "/Game/Environment/Town/Props/shrub_02/shrub_02_1k/StaticMeshes/shrub_02_c.shrub_02_c",
+   "fit": "footprint",
+   "footprint": [
+    176,
+    228,
+    132
+   ],
+   "collision": false,
+   "clearance": "bays"
+  },
+  "shrub_4": {
+   "mesh": "/Game/Environment/Town/Props/shrub_02/shrub_02_1k/StaticMeshes/shrub_02_d.shrub_02_d",
+   "fit": "footprint",
+   "footprint": [
+    108,
+    110,
+    122
+   ],
+   "collision": false,
+   "clearance": "bays"
+  },
+  "fern_1": {
+   "mesh": "/Game/Environment/Town/Props/fern_02/fern_02_1k/StaticMeshes/fern_02_b.fern_02_b",
+   "fit": "footprint",
+   "footprint": [
+    98,
+    90,
+    42
+   ],
+   "collision": false,
+   "clearance": "bays"
+  },
+  "fern_2": {
+   "mesh": "/Game/Environment/Town/Props/fern_02/fern_02_1k/StaticMeshes/fern_02_c.fern_02_c",
+   "fit": "footprint",
+   "footprint": [
+    88,
+    76,
+    34
+   ],
+   "collision": false,
+   "clearance": "bays"
+  },
+  "tree": {
+   "mesh": "/Game/Environment/Town/Props/island_tree_02/island_tree_02_1k/StaticMeshes/island_tree_02_1k.island_tree_02_1k",
+   "fit": "footprint",
+   "footprint": [
+    420,
+    410,
+    340
+   ],
+   "collision": false,
+   "clearance": "bays"
+  },
+  "cobblestone_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_TownW_Cobble.MI_TownW_Cobble",
+   "note": "world-aligned surface on scaled cubes"
+  },
+  "plaza_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_TownW_Plaza.MI_TownW_Plaza",
+   "note": "world-aligned surface on scaled cubes"
+  },
+  "ground_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_TownW_Ground.MI_TownW_Ground",
+   "note": "world-aligned surface on scaled cubes"
+  },
+  "field_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_TownW_Field.MI_TownW_Field",
+   "note": "world-aligned surface on scaled cubes"
+  },
+  "flagstone_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_TownW_Flagstone.MI_TownW_Flagstone",
+   "note": "world-aligned surface on scaled cubes"
+  },
+  "castle_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_TownW_CastleW.MI_TownW_CastleW",
+   "note": "world-aligned surface on scaled cubes"
+  },
+  "stone_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_TownW_StoneW.MI_TownW_StoneW",
+   "note": "world-aligned surface on scaled cubes"
+  },
+  "plaster_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_Town_Plaster.MI_Town_Plaster",
+   "meshSlot": "Plaster"
+  },
+  "timber_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_Town_Timber.MI_Town_Timber",
+   "meshSlot": "Timber"
+  },
+  "planks_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_Town_Planks.MI_Town_Planks",
+   "meshSlot": "Planks"
+  },
+  "roof_slate_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_Town_RoofSlate.MI_Town_RoofSlate",
+   "meshSlot": "RoofSlate"
+  },
+  "roof_clay_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_Town_RoofClay.MI_Town_RoofClay",
+   "meshSlot": "RoofClay"
+  },
+  "thatch_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_Town_Thatch.MI_Town_Thatch",
+   "meshSlot": "Thatch"
+  },
+  "masonry_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_Town_Stone.MI_Town_Stone",
+   "meshSlot": "Stone"
+  },
+  "castle_masonry_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_Town_Castle.MI_Town_Castle",
+   "meshSlot": "Castle"
+  }
+ }
+}

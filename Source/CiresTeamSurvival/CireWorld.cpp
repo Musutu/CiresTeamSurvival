@@ -2,6 +2,7 @@
 #include "CireLanePath.h"
 #include "CireEnvironmentProps.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/PointLightComponent.h"
@@ -15,6 +16,20 @@
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
 
+namespace
+{
+// Town surfaces. Material slots in TownAssetSlots.json may replace any of these without code changes.
+const TCHAR* const RoadMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Cobble.MI_TownW_Cobble");
+const TCHAR* const PlazaMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Plaza.MI_TownW_Plaza");
+const TCHAR* const GroundMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Ground.MI_TownW_Ground");
+const TCHAR* const FieldMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Field.MI_TownW_Field");
+const TCHAR* const FlagstoneMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Flagstone.MI_TownW_Flagstone");
+const TCHAR* const CastleMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_CastleW.MI_TownW_CastleW");
+const TCHAR* const StoneMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_StoneW.MI_TownW_StoneW");
+const TCHAR* const RiftMaterial=TEXT("/Game/Environment/Town/Materials/MI_Town_Ember.MI_Town_Ember");
+const TCHAR* const SkyMaterial=TEXT("/Game/Environment/Town/Sky/M_TownSky.M_TownSky");
+}
+
 ACireWorld::ACireWorld() {
     bReplicates=true; bAlwaysRelevant=true;
     PrimaryActorTick.bCanEverTick=true; PrimaryActorTick.TickInterval=.25f;
@@ -23,37 +38,45 @@ ACireWorld::ACireWorld() {
 void ACireWorld::BeginPlay() {
     Super::BeginPlay();
     // Built identically on each peer; gameplay actors are replicated independently.
+    CireEnvironmentProps::Reload();
     auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
     auto* Cylinder=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
     auto* Sphere=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-    auto Make=[&](const TCHAR* Name,UStaticMesh* Mesh,const TCHAR* Material,bool Collision) {
+    auto Make=[&](const TCHAR* Name,UStaticMesh* Mesh,UMaterialInterface* Material,bool Collision,bool Shadow=true) {
         auto* C=NewObject<UInstancedStaticMeshComponent>(this,FName(Name));
         C->SetNetAddressable();
         C->SetupAttachment(RootComponent); C->SetStaticMesh(Mesh);
-        C->SetMaterial(0,LoadObject<UMaterialInterface>(nullptr,Material));
+        C->SetMaterial(0,Material);
         C->SetCollisionObjectType(ECC_WorldStatic);
         C->SetCollisionEnabled(Collision?ECollisionEnabled::QueryAndPhysics:ECollisionEnabled::NoCollision);
-        C->SetCollisionResponseToAllChannels(ECR_Block); C->RegisterComponent(); AddInstanceComponent(C); return C;
+        C->SetCollisionResponseToAllChannels(ECR_Block); C->SetCastShadow(Shadow);
+        C->RegisterComponent(); AddInstanceComponent(C); return C;
     };
-    auto* Stone=Make(TEXT("Stone"),Cube,TEXT("/Game/Art/Environment/Materials/M_AshenMasonry.M_AshenMasonry"),true);
-    auto* Slate=Make(TEXT("Slate"),Cube,TEXT("/Game/Art/Environment/Materials/M_RoofSlate.M_RoofSlate"),false);
-    auto* Earth=Make(TEXT("CourtyardGround"),Cube,TEXT("/Game/Art/Environment/Materials/M_WornEarth.M_WornEarth"),true);
-    auto* Timber=Make(TEXT("Timber"),Cube,TEXT("/Game/Art/Environment/Materials/M_OldTimber.M_OldTimber"),false);
-    auto* Windows=Make(TEXT("WarmWindows"),Cube,TEXT("/Game/Art/Environment/Materials/M_WindowGlow.M_WindowGlow"),false);
-    auto* Metal=Make(TEXT("Metal"),Cube,TEXT("/Game/Art/Materials/M_Metal.M_Metal"),false);
-    auto* Gold=Make(TEXT("Gold"),Cube,TEXT("/Game/Art/Materials/M_Gold.M_Gold"),false);
-    auto* Teal=Make(TEXT("Ember"),Cube,TEXT("/Game/Art/Materials/M_Ember.M_Ember"),false);
-    auto* Red=Make(TEXT("Dusk"),Cube,TEXT("/Game/Art/Materials/M_Dusk.M_Dusk"),false);
-    auto* Pillar=Make(TEXT("Columns"),Cylinder,TEXT("/Game/Art/Environment/Materials/M_AshenMasonry.M_AshenMasonry"),true);
-    auto* Orbs=Make(TEXT("Braziers"),Sphere,TEXT("/Game/Art/Materials/M_Gold.M_Gold"),false);
+    auto Mat=[](const TCHAR* Slot,const TCHAR* Path){return CireEnvironmentProps::SurfaceMaterial(Slot,Path);};
+    auto Legacy=[](const TCHAR* Path){return LoadObject<UMaterialInterface>(nullptr,Path);};
+    auto* Castle=Make(TEXT("CastleMasonry"),Cube,Mat(TEXT("castle_material"),CastleMaterial),true);
+    auto* Stone=Make(TEXT("Stone"),Cube,Mat(TEXT("stone_material"),StoneMaterial),true);
+    auto* Earth=Make(TEXT("CourtyardGround"),Cube,Mat(TEXT("ground_material"),GroundMaterial),true,false);
+    auto* Field=Make(TEXT("FieldGround"),Cube,Mat(TEXT("field_material"),FieldMaterial),false,false);
+    auto* Plaza=Make(TEXT("PlazaPaving"),Cube,Mat(TEXT("plaza_material"),PlazaMaterial),false,false);
+    auto* Flagstone=Make(TEXT("Flagstones"),Cube,Mat(TEXT("flagstone_material"),FlagstoneMaterial),false,false);
+    auto* Disc=Make(TEXT("ChallengeDais"),Cylinder,Mat(TEXT("flagstone_material"),FlagstoneMaterial),false,false);
+    auto* Rift=Make(TEXT("BreachRift"),Cube,Legacy(RiftMaterial),false,false);
+    auto* Teal=Make(TEXT("Ember"),Cube,Legacy(TEXT("/Game/Art/Materials/M_Ember.M_Ember")),false,false);
+    auto* Red=Make(TEXT("Dusk"),Cube,Legacy(TEXT("/Game/Art/Materials/M_Dusk.M_Dusk")),false,false);
+    auto* Pillar=Make(TEXT("Columns"),Cylinder,Mat(TEXT("castle_material"),CastleMaterial),true);
+    auto* Orbs=Make(TEXT("Braziers"),Sphere,Legacy(TEXT("/Game/Art/Materials/M_Gold.M_Gold")),false);
     auto Add=[](UInstancedStaticMeshComponent* C,FVector P,FVector Size,FRotator R=FRotator::ZeroRotator){C->AddInstance(FTransform(R,P,Size/100.f));};
-    // Opaque divider keeps the two PvE realms visually separate even from elevated cameras.
     const auto& Routes=CireLanePath::Get(GetWorld());
-    const float CentreX=(Routes.MinX+Routes.MaxX)*.5f,Length=Routes.MaxX-Routes.MinX+1100;
-    Add(Stone,FVector(CentreX,0,1600),FVector(Length+500,1100,3400));
-    RouteRoad=Make(TEXT("CireRouteRoad"),Cube,TEXT("/Game/Art/Environment/Materials/M_BasaltRoad.M_BasaltRoad"),false);
-    RouteEdge=Make(TEXT("CireRouteEdge"),Cube,TEXT("/Game/Art/Environment/Materials/M_AshenMasonry.M_AshenMasonry"),false);
-    RouteArrows=Make(TEXT("CireRouteArrows"),Cube,TEXT("/Game/Art/Materials/M_Gold.M_Gold"),false);
+    const float HW=Routes.HalfWidth;
+    // The Sundering Wall: an opaque, very tall rampart keeps the two PvE realms visually separate even
+    // from elevated cameras. Town pieces are clipped 60 cm short of it on both sides.
+    const float WallMinX=Routes.MinX-3200,WallMaxX=Routes.MaxX+3000,CentreX=(WallMinX+WallMaxX)*.5f,Length=WallMaxX-WallMinX;
+    Add(Castle,FVector(CentreX,0,1600),FVector(Length,200,3400));
+    Add(Castle,FVector(CentreX,0,3330),FVector(Length,300,60));
+    RouteRoad=Make(TEXT("CireRouteRoad"),Cube,Mat(TEXT("cobblestone_material"),RoadMaterial),false,false);
+    RouteEdge=Make(TEXT("CireRouteEdge"),Cube,Mat(TEXT("stone_material"),StoneMaterial),false,false);
+    RouteArrows=Make(TEXT("CireRouteArrows"),Cube,Mat(TEXT("stone_material"),StoneMaterial),false,false);
     RefreshRouteVisuals();
     auto Text=[&](const FString& Str,FVector P,float Size,FColor Color,FRotator Rotation=FRotator(0,180,0)) {
         auto* T=NewObject<UTextRenderComponent>(this); T->SetupAttachment(RootComponent);
@@ -68,119 +91,50 @@ void ACireWorld::BeginPlay() {
         L->PointLightComponent->SetAttenuationRadius(Radius);
         L->PointLightComponent->SetCastShadows(false);
     };
-    for(int Team=0;Team<2;++Team) {
-        const float Y=Team==0?-2100:2100; auto* Accent=Team==0?Teal:Red;
+    for(int32 Team=0;Team<2;++Team) {
+        const float Y=CireLanePath::CenterY(Team);
+        const float Outer=Team==0?-1.f:1.f;  // realm side away from the Sundering Wall
         const FColor Color=Team==0?FColor(71,208,189):FColor(233,111,83);
-        Add(Earth,FVector(CentreX,Y,-70),FVector(Length,3600,140));
-        Add(Stone,FVector(Routes.MaxX+140,Y,360),FVector(140,2500,860));
-        for(int Side:{-1,1}) {
-            Add(Stone,FVector(CentreX,Y+Side*(Routes.HalfWidth+100),130),FVector(Length,90,310));
-            Add(Metal,FVector(CentreX,Y+Side*(Routes.HalfWidth+100),290),FVector(Length,115,22));
-            for(int X=-2500;X<=Routes.MaxX;X+=1250) {
-                Add(Pillar,FVector(X,Y+Side*1190,380),FVector(170,170,900));
-                Add(Stone,FVector(X,Y+Side*1190,850),FVector(205,205,80));
-                Add(Accent,FVector(X-85,Y+Side*1180,430),FVector(10,20,230));
-            }
-            for(int X=-800;X<=Routes.MaxX-500;X+=2200) {
-                const float StreetY=Y+Side*(Routes.HalfWidth+65);
-                Add(Pillar,FVector(X,StreetY,145),FVector(45,45,290));
-                Add(Metal,FVector(X,StreetY,305),FVector(75,75,15));
-                Add(Orbs,FVector(X,StreetY,332),FVector(42));
-                Light(FVector(X,StreetY-Side*65,350),FLinearColor(1.f,.63f,.32f),4500,580);
-            }
-            // Modular fortified houses form a skyline outside the playable lane.
-            // Their colliders never intersect the editable route rectangle.
-            for(int N=0;N<12;++N) {
-                const float X=-500+N*1050.f;
-                if(X>Routes.MaxX-800)break;
-                const float B=Y+Side*(Routes.HalfWidth+450),H=440+(N%3)*90;
-                const float W=650+(N%2)*110,D=510;
-                Add(Stone,FVector(X,B,H*.5f),FVector(W,D,H));
-                Add(Stone,FVector(X,B,28),FVector(W+70,D+60,56));
-                Add(Timber,FVector(X,B,H*.52f),FVector(W+18,D+18,28));
-                Add(Timber,FVector(X,B,H-12),FVector(W+35,D+35,28));
-                for(int Edge:{-1,1}) {
-                    Add(Timber,FVector(X+Edge*(W*.5f-25),B-Side*(D*.5f+8),H*.5f),FVector(35,26,H));
-                    // Two inclined slabs and a ridge cap create a gabled roof.
-                    Add(Slate,FVector(X,B+Edge*D*.26f,H+D*.23f),FVector(W+110,D*.74f,30),FRotator(0,0,Edge*42));
-                }
-                Add(Metal,FVector(X,B,H+D*.50f),FVector(W+125,28,28));
-                Add(Stone,FVector(X+W*.28f,B+Side*65,H+D*.37f),FVector(90,110,260));
-                Add(Stone,FVector(X+W*.28f,B+Side*65,H+D*.37f+145),FVector(120,140,36));
-                for(int Floor=0;Floor<2;++Floor)for(int Win:{-1,1}) {
-                    const FVector P(X+Win*W*.26f,B-Side*(D*.5f+3),140+Floor*(H*.48f));
-                    Add(Timber,P,FVector(98,18,136));
-                    Add(Windows,P-FVector(0,Side*11,0),FVector(71,6,106));
-                    Add(Metal,P-FVector(0,Side*16,0),FVector(8,5,110));
-                    Add(Metal,P-FVector(0,Side*16,0),FVector(74,5,7));
-                }
-                Add(Timber,FVector(X,B-Side*(D*.5f+8),96),FVector(110,25,192));
-                Add(Metal,FVector(X,B-Side*(D*.5f+23),65),FVector(110,5,12));
-                Add(Metal,FVector(X,B-Side*(D*.5f+23),133),FVector(110,5,12));
-            }
-        }
-        // Protected courtyard and a giant luminous gate behind the defended line.
-        Add(Stone,FVector(-2600,Y,500),FVector(130,2450,1100));
-        for(int Side:{-1,1}) {
-            Add(Stone,FVector(-2450,Y+Side*430,375),FVector(240,220,750));
-            Add(Metal,FVector(-2450,Y+Side*430,750),FVector(280,250,60));
-        }
-        Add(Stone,FVector(-2450,Y,810),FVector(240,1080,130));
-        Add(Accent,FVector(-2470,Y,390),FVector(30,640,680));
-        Add(Gold,FVector(-2370,Y,48),FVector(30,1700,8));
-        Text(Team==0?TEXT("EMBER KEEP"):TEXT("DUSK KEEP"),FVector(-2310,Y,890),80,Color,FRotator::ZeroRotator);
-        Text(TEXT("TOWN  |  TOMES & RELICS"),FVector(-1850,Y-720,250),36,FColor(218,189,122),FRotator(0,90,0));
-        Light(FVector(-2200,Y,420),FLinearColor(Color),60000,1300);
-        // Original town-defense landmark. Its footprint matches ACireTownGoal exactly:
-        // x [-2300,-1400], y [team centre-900,team centre+900]. The entry is unobstructed.
-        Add(Metal,FVector(-1850,Y,5),FVector(900,1800,8));
-        for(int Side:{-1,1}) {
-            Add(Gold,FVector(-1850,Y+Side*895,12),FVector(900,12,8));
-            Add(Accent,FVector(-1850,Y+Side*877,14),FVector(876,10,8));
-            Add(Pillar,FVector(-1400,Y+Side*1010,260),FVector(150,150,520));
-            Add(Stone,FVector(-1400,Y+Side*1010,530),FVector(215,215,70));
-            Add(Accent,FVector(-1318,Y+Side*1010,310),FVector(12,55,245));
-            Add(Accent,FVector(-1482,Y+Side*1010,310),FVector(12,55,245));
-            Add(Orbs,FVector(-1400,Y+Side*1010,595),FVector(50));
-        }
-        Add(Gold,FVector(-2300,Y,12),FVector(16,1800,8));
-        Add(Gold,FVector(-1400,Y,13),FVector(70,1800,12));
-        Add(Accent,FVector(-1400,Y,22),FVector(28,1790,8));
-        for(int I=-4;I<=4;++I)Add(Gold,FVector(-1490,Y+I*175,15),FVector(34,88,8),FRotator(0,45,0));
-        Add(Stone,FVector(-1400,Y,560),FVector(100,2160,100));
-        // Opaque sign backing hides the reverse-facing text instead of letting both faces overlap.
-        Add(Stone,FVector(-1400,Y,535),FVector(90,1400,190));
-        Add(Metal,FVector(-1400,Y,625),FVector(140,2220,35));
-        Add(Gold,FVector(-1346,Y,593),FVector(8,1970,8));
-        Add(Gold,FVector(-1454,Y,593),FVector(8,1970,8));
-        // The cap projects to x=-1330/-1470. Put lettering beyond those faces
-        // and below its gold trim so elevated approach cameras cannot mask it.
-        // These are presentation offsets only; the defended footprint is unchanged.
-        const FColor SignColor=Team==0?FColor(178,233,219):FColor(243,188,164);
-        Text(TEXT("DEFEND THE TOWN"),FVector(-1312,Y,535),53,SignColor,FRotator::ZeroRotator);
-        Text(TEXT("DEFEND THE TOWN"),FVector(-1488,Y,535),53,SignColor,FRotator(0,180,0));
-        Text(TEXT("LAST LINE  |  BREACH = LOST LIVES"),FVector(-1310,Y,470),25,FColor(229,190,123),FRotator::ZeroRotator);
-        Text(TEXT("LAST LINE  |  BREACH = LOST LIVES"),FVector(-1490,Y,470),25,FColor(229,190,123),FRotator(0,180,0));
-        Light(FVector(-1380,Y,300),FLinearColor(Color),15000,1050);
-        for(int Tier=1;Tier<=3;++Tier) {
-            FVector P=CireLanePath::ChallengePosition(GetWorld(),Team,Tier,20);
-            Add(Metal,P,FVector(420,430,35)); Add(Gold,P+FVector(0,0,21),FVector(440,440,6));
-            Text(FString::Printf(TEXT("CHALLENGE  %d"),Tier),P+FVector(0,0,370),40,FColor(220,171,75));
+        // Collision floor: from beyond the castle keep to past the breach, clipped at the divider.
+        const float InnerY=Outer*100.f,OuterY=Y+Outer*(HW+2600);
+        const float FloorMinX=Routes.MinX-3100,FloorMaxX=Routes.MaxX+2800;
+        Add(Earth,FVector((FloorMinX+FloorMaxX)*.5f,(InnerY+OuterY)*.5f,-70),FVector(FloorMaxX-FloorMinX,FMath::Abs(OuterY-InnerY),140));
+        // Surface districts (visual only, stacked a few millimetres apart to avoid z-fighting).
+        Add(Field,FVector((11550+FloorMaxX)*.5f,(InnerY+OuterY)*.5f,.6f),FVector(FloorMaxX-11550,FMath::Abs(OuterY-InnerY)-4,1));
+        Add(Plaza,FVector(7250,Y,.9f),FVector(3300,2*HW-60,1));   // market square
+        Add(Plaza,FVector(1650,Y,.9f),FVector(2700,2*HW-60,1));   // town square
+        Add(Flagstone,FVector(-500,Y,1.2f),FVector(1600,1900,1));  // castle approach
+        Add(Flagstone,FVector(-2600,Y,1.2f),FVector(3000,2*HW+500,1)); // inner bailey
+        // Private-realm edge for the castle ward: players may not leave the realm.
+        Add(Castle,FVector(FloorMinX-60,(InnerY+OuterY)*.5f,700),FVector(120,FMath::Abs(OuterY-InnerY),1400));
+        // Team identity above the castle gate and the breach rift.
+        Text(Team==0?TEXT("EMBER KEEP"):TEXT("DUSK KEEP"),FVector(-150,Y,1260),72,Color,FRotator::ZeroRotator);
+        Text(TEXT("HOLD THE CASTLE GATE"),FVector(-150,Y,1185),28,FColor(229,190,123),FRotator::ZeroRotator);
+        Light(FVector(-2000,Y,520),FLinearColor(Color),26000,1500);
+        for(int32 Tier=1;Tier<=3;++Tier) {
+            FVector P=CireLanePath::ChallengePosition(GetWorld(),Team,Tier,0);
+            Add(Disc,P+FVector(0,0,1),FVector(470,470,6));
+            Add(Stone,P+FVector(0,0,3),FVector(40,40,6));
+            Text(FString::Printf(TEXT("CHALLENGE  %d"),Tier),P+FVector(0,0,380),40,FColor(220,171,75));
+            Light(P+FVector(0,0,300),FLinearColor(1.f,.55f,.25f),5000,700);
         }
         const FVector Spawn=CireLanePath::SpawnPosition(GetWorld(),Team,0);
-        for(int Side:{-1,1})Add(Pillar,Spawn+FVector(240,Side*580,340),FVector(240,240,680));
-        Add(Red,Spawn+FVector(490,0,250),FVector(60,850,480));
-        Text(TEXT("THE BREACH"),Spawn+FVector(200,0,730),65,FColor(228,155,137));
+        // The breach: a glowing rift in the dead fields beyond the town gate.
+        Add(Rift,Spawn+FVector(420,0,230),FVector(40,700,440),FRotator(0,0,0));
+        Add(Team==0?Teal:Red,Spawn+FVector(440,0,230),FVector(10,760,470));
+        Light(Spawn+FVector(300,0,220),FLinearColor(1.f,.25f,.08f),16000,1400);
+        Text(TEXT("THE BREACH"),Spawn+FVector(380,0,560),60,FColor(228,155,137));
     }
     const TCHAR* Names[]={TEXT("THE SUNDERED COURT"),TEXT("ASHEN CIRCLE"),TEXT("THE LAST TRIBUNAL")};
+    auto* ArenaFloor=Make(TEXT("ArenaFloor"),Cube,Mat(TEXT("flagstone_material"),FlagstoneMaterial),true,false);
+    auto* ArenaTiles=Make(TEXT("ArenaTiles"),Cube,Mat(TEXT("plaza_material"),PlazaMaterial),false,false);
     for(int Arena=0;Arena<3;++Arena) {
         const float Y=10000+Arena*6000;
-        Add(Stone,FVector(0,Y,-80),FVector(3400,3200,160));
-        for(int X=-1400;X<=1400;X+=280)for(int Z=-1400;Z<=1400;Z+=280)
-            Add(Slate,FVector(X,Y+Z,2),FVector(274,274,12));
+        Add(ArenaFloor,FVector(0,Y,-80),FVector(3400,3200,160));
+        Add(ArenaTiles,FVector(0,Y,1),FVector(1300,1300,1));
         for(int Side:{-1,1}) {
-            Add(Stone,FVector(Side*1650,Y,190),FVector(120,3250,380));
-            Add(Stone,FVector(0,Y+Side*1580,190),FVector(3400,100,380));
+            Add(Castle,FVector(Side*1650,Y,190),FVector(120,3250,380));
+            Add(Castle,FVector(0,Y+Side*1580,190),FVector(3400,100,380));
             Add(Side<0?Teal:Red,FVector(Side*1450,Y,24),FVector(15,2700,15));
             for(int X=-1400;X<=1400;X+=700) {
                 Add(Pillar,FVector(X,Y+Side*1500,350),FVector(150,150,700+Arena*180));
@@ -190,21 +144,37 @@ void ACireWorld::BeginPlay() {
         // Clear centre for deterministic bot navigation; different perimeter silhouettes.
         for(int N=0;N<32;++N) {
             const float A=N*2*PI/32;
-            Add(Gold,FVector(FMath::Cos(A)*550,Y+FMath::Sin(A)*550,15),FVector(110,12,8),FRotator(0,FMath::RadiansToDegrees(A)+90,0));
+            Add(Stone,FVector(FMath::Cos(A)*550,Y+FMath::Sin(A)*550,2),FVector(110,12,4),FRotator(0,FMath::RadiansToDegrees(A)+90,0));
         }
         Text(Names[Arena],FVector(0,Y+1500,920+Arena*180),64,FColor(219,188,130),FRotator(0,-90,0));
         Light(FVector(-800,Y,400),FLinearColor(.2f,.7f,.65f),50000,1600);
         Light(FVector(800,Y,400),FLinearColor(1.f,.25f,.15f),50000,1600);
     }
-    auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,3000),FRotator(-48,-30,0));
-    Sun->GetLightComponent()->SetIntensity(3.5f); Sun->GetLightComponent()->SetLightColor(FLinearColor(.66f,.75f,1.f));
+    // Dusk: low warm sun under a sunset sky dome, cool sky fill, thick valley fog.
+    if(auto* SkyMat=LoadObject<UMaterialInterface>(nullptr,SkyMaterial)) {
+        auto* Dome=NewObject<UStaticMeshComponent>(this,TEXT("SkyDome"));
+        Dome->SetupAttachment(RootComponent);Dome->SetStaticMesh(Sphere);Dome->SetMaterial(0,SkyMat);
+        Dome->SetWorldLocation(FVector(5000,0,-2000));Dome->SetWorldScale3D(FVector(1600));
+        Dome->SetCollisionEnabled(ECollisionEnabled::NoCollision);Dome->SetCastShadow(false);
+        Dome->bAffectDistanceFieldLighting=false;Dome->SetVisibleInRayTracing(false);Dome->bAffectDynamicIndirectLighting=false;
+        Dome->RegisterComponent();AddInstanceComponent(Dome);
+    }
+    auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,3000),FRotator(-14,-148,0));
+    Sun->GetLightComponent()->SetIntensity(4.2f); Sun->GetLightComponent()->SetLightColor(FLinearColor(1.f,.62f,.38f));
     auto* Sky=GetWorld()->SpawnActor<ASkyLight>();
-    Sky->GetLightComponent()->SetIntensity(.8f);
-    Sky->GetLightComponent()->SetLightColor(FLinearColor(.35f,.45f,.6f));
+    Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable);
+    Sky->GetLightComponent()->bRealTimeCapture=true;
+    Sky->GetLightComponent()->SetIntensity(1.1f);
+    Sky->GetLightComponent()->SetLightColor(FLinearColor(.72f,.78f,1.f));
+    Sky->GetLightComponent()->RecaptureSky();
     auto* Fog=GetWorld()->SpawnActor<AExponentialHeightFog>();
-    Fog->GetComponent()->SetFogDensity(.009f);
-    Fog->GetComponent()->SetFogInscatteringColor(FLinearColor(.035f,.045f,.068f));
-    Fog->GetComponent()->SetStartDistance(800.f);
+    Fog->GetComponent()->SetFogDensity(.018f);
+    Fog->GetComponent()->SetFogHeightFalloff(.35f);
+    Fog->GetComponent()->SetFogInscatteringColor(FLinearColor(.16f,.11f,.09f));
+    Fog->GetComponent()->SetStartDistance(1200.f);
+    Fog->GetComponent()->SetVolumetricFog(true);
+    Fog->GetComponent()->SetVolumetricFogScatteringDistribution(.45f);
+    Fog->GetComponent()->SetVolumetricFogExtinctionScale(.8f);
     CireEnvironmentProps::Build(this);
 }
 
@@ -217,22 +187,21 @@ void ACireWorld::RefreshRouteVisuals() {
     RouteRoad->ClearInstances();RouteEdge->ClearInstances();RouteArrows->ClearInstances();
     const auto& R=CireLanePath::Get(GetWorld());
     auto Add=[](UInstancedStaticMeshComponent* C,FVector P,FVector Size,FRotator Rot=FRotator::ZeroRotator){C->AddInstance(FTransform(Rot,P,Size/100.f));};
+    constexpr float RoadWidth=520.f;
     for(int Team=0;Team<2;++Team) {
         const auto& Points=R.LocalPoints[Team];
         for(int I=1;I<Points.Num();++I) {
             const FVector A(Points[I-1].X,Points[I-1].Y+CireLanePath::CenterY(Team),0);
             const FVector B(Points[I].X,Points[I].Y+CireLanePath::CenterY(Team),0);
             const FVector D=(B-A).GetSafeNormal(),N(-D.Y,D.X,0);
-            const float L=FVector::Dist2D(A,B);const FRotator Rot=D.Rotation();
-            Add(RouteRoad,(A+B)*.5f+FVector(0,0,2),FVector(L+20,410,4),Rot);
-            for(int Side:{-1,1})Add(RouteEdge,(A+B)*.5f+N*Side*215+FVector(0,0,4),FVector(L,18,8),Rot);
-            // Inlaid chevrons indicate travel toward the town without collision.
-            for(float T=180;T<L-90;T+=650) {
-                const FVector P=A+D*T+FVector(0,0,7);
-                for(int Side:{-1,1})Add(RouteArrows,P-D*17+N*Side*17,FVector(52,6,2),FRotator(0,Rot.Yaw-Side*45,0));
-            }
-            // Fill bends with the same world-aligned paving; no raised step.
-            Add(RouteRoad,B+FVector(0,0,2.1f),FVector(410,410,4),Rot);
+            const float L=FVector2D::Distance(FVector2D(A),FVector2D(B));const FRotator Rot=D.Rotation();
+            // Cobbled marching road, flush with the ground (top at +3 cm), readable against mud and plazas.
+            Add(RouteRoad,(A+B)*.5f+FVector(0,0,1.5f),FVector(L+RoadWidth*.5f,RoadWidth,3),Rot);
+            // Low kerb stones (visual only) mark the road edges without tripping units.
+            for(int Side:{-1,1})Add(RouteEdge,(A+B)*.5f+N*Side*(RoadWidth*.5f+10)+FVector(0,0,3),FVector(FMath::Max(10.f,L-RoadWidth*.5f),20,6),Rot);
+            // Worn setts every few metres hint the marching direction without gamey arrows.
+            for(float T=260;T<L-160;T+=780)Add(RouteArrows,A+D*T+FVector(0,0,3.3f),FVector(70,RoadWidth-80,.6f),Rot);
+            Add(RouteRoad,B+FVector(0,0,1.6f),FVector(RoadWidth,RoadWidth,3),Rot);
         }
     }
     RenderedRouteRevision=CireLanePath::Revision(GetWorld());
