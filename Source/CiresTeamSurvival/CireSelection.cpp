@@ -11,6 +11,30 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Camera/PlayerCameraManager.h"
+#include "EngineUtils.h"
+
+namespace
+{
+struct FTabState
+{
+    TArray<TWeakObjectPtr<AActor>> History;
+    double LastTab = -100.0;
+    TWeakObjectPtr<AActor> LastHostile;
+    TWeakObjectPtr<AActor> ClearRequested;
+};
+TMap<TWeakObjectPtr<ACireController>,FTabState> TabStates;
+
+bool IsLivingUnit(const AActor* Actor)
+{
+    if(!IsValid(Actor)||Actor->IsActorBeingDestroyed())return false;
+    if(const auto* Hero=Cast<ACireHero>(Actor))return !Hero->bDead&&Hero->Health>0;
+    if(const auto* Monster=Cast<ACireMonster>(Actor))return Monster->Health>0;
+    if(const auto* Construct=Cast<ACireConstruct>(Actor))return Construct->Health>0;
+    return false;
+}
+}
+
 
 namespace
 {
@@ -66,6 +90,7 @@ void CreateRing(ACireController* Controller,FSelectionState& State)
 void CireSelection::Cleanup(ACireController* Controller)
 {
     const TWeakObjectPtr<ACireController> Key(Controller);
+    TabStates.Remove(Key);
     if(auto* State=Selections.Find(Key)){Restore(*State);if(State->Ring.IsValid())State->Ring->Destroy();Selections.Remove(Key);}
 }
 
@@ -133,3 +158,98 @@ void CireSelection::Update(ACireController* Controller)
     if(Visual.Highlight.IsValid())Visual.Highlight->SetVectorParameterValue(TEXT("SelectionTint"),Tint);
 }
 
+
+AActor* CireSelection::NextTarget(ACireController* Controller,bool bFriendly,bool bReverse,const FTransform* ViewOverride)
+{
+    auto* Self=Controller?Cast<ACireHero>(Controller->GetPawn()):nullptr;
+    if(!Self||!Controller->GetWorld())return nullptr;
+    const FVector Origin=Self->GetActorLocation();
+    TArray<AActor*> All;
+    const auto Consider=[&](AActor* Actor)
+    {
+        if(!IsLivingUnit(Actor)||Actor==Self||Actor->IsHidden()||!CireRealm::CanObserve(Self,Actor)||!Self->InRange(Actor,TabRange))return;
+        All.Add(Actor);
+    };
+    if(bFriendly)
+    {
+        for(TActorIterator<ACireHero> It(Controller->GetWorld());It;++It)if(It->TeamId==Self->TeamId)Consider(*It);
+    }
+    else
+    {
+        for(TActorIterator<ACireMonster> It(Controller->GetWorld());It;++It)if(Self->IsHostile(*It))Consider(*It);
+        for(TActorIterator<ACireHero> It(Controller->GetWorld());It;++It)if(Self->IsHostile(*It))Consider(*It);
+    }
+    All.Sort([&Origin](const AActor& A,const AActor& B){return FVector::DistSquared(Origin,A.GetActorLocation())<FVector::DistSquared(Origin,B.GetActorLocation());});
+    if(All.IsEmpty())return nullptr;
+    AActor* Current=Self->Target;
+    if(bFriendly)
+    {
+        const int32 I=All.IndexOfByKey(Current);
+        return All[bReverse?(I<=0?All.Num()-1:I-1):(I+1)%All.Num()];
+    }
+    // Candidates in front of the camera (horizontal cone slightly wider than the view).
+    TArray<AActor*> Front;
+    const auto* View=Controller->PlayerCameraManager.Get();
+    if(View||ViewOverride)
+    {
+        const FVector Eye=ViewOverride?ViewOverride->GetLocation():View->GetCameraLocation();
+        const FVector Forward=(ViewOverride?ViewOverride->GetRotation().Rotator():View->GetCameraRotation()).Vector().GetSafeNormal2D();
+        const float Half=FMath::Min(85.f,(View?View->GetFOVAngle():80.f)*.5f+15.f);const float MinDot=FMath::Cos(FMath::DegreesToRadians(Half));
+        for(AActor* Actor:All)
+        {
+            const FVector To=(Actor->GetActorLocation()-Eye).GetSafeNormal2D();
+            if(To.IsNearlyZero()||FVector::DotProduct(To,Forward)>=MinDot)Front.Add(Actor);
+        }
+    }
+    const TArray<AActor*>& Pool=Front.IsEmpty()?All:Front;
+    auto& State=TabStates.FindOrAdd(TWeakObjectPtr<ACireController>(Controller));
+    const double Now=Controller->GetWorld()->GetRealTimeSeconds();
+    State.History.RemoveAll([](const TWeakObjectPtr<AActor>& A){return !IsLivingUnit(A.Get());});
+    const bool bFresh=Now-State.LastTab>TabHistorySeconds||!IsValid(Current)||State.History.IsEmpty()||State.History.Last().Get()!=Current;
+    if(bFresh){State.History.Reset();if(IsLivingUnit(Current)&&Self->IsHostile(Current))State.History.Add(Current);}
+    State.LastTab=Now;
+    AActor* Pick=nullptr;
+    if(bReverse)
+    {
+        // Walk back through the tab chain, then continue from the farthest candidate.
+        while(State.History.Num()>1&&!Pick)
+        {
+            State.History.Pop();AActor* Previous=State.History.Last().Get();
+            if(Pool.Contains(Previous)||All.Contains(Previous))Pick=Previous;
+        }
+        if(!Pick)for(int32 I=Pool.Num()-1;I>=0&&!Pick;--I)if(Pool[I]!=Current)Pick=Pool[I];
+        if(Pick&&(State.History.IsEmpty()||State.History.Last().Get()!=Pick))State.History.Add(Pick);
+        return Pick?Pick:Current;
+    }
+    for(AActor* Actor:Pool)if(Actor!=Current&&!State.History.Contains(Actor)){Pick=Actor;break;}
+    if(!Pick)
+    {
+        // Everything in front was visited: restart the cycle from the nearest.
+        State.History.Reset();if(IsValid(Current))State.History.Add(Current);
+        for(AActor* Actor:Pool)if(Actor!=Current){Pick=Actor;break;}
+    }
+    if(Pick)State.History.Add(Pick);
+    return Pick?Pick:(IsValid(Current)?Current:Pool[0]);
+}
+
+void CireSelection::HandleTargetLoss(ACireController* Controller,bool bAutoReacquire)
+{
+    auto* Self=Controller?Cast<ACireHero>(Controller->GetPawn()):nullptr;
+    if(!Self)return;
+    auto& State=TabStates.FindOrAdd(TWeakObjectPtr<ACireController>(Controller));
+    AActor* Target=Self->Target;
+    const bool bHostileAlive=IsLivingUnit(Target)&&Self->IsHostile(Target);
+    if(bHostileAlive){State.LastHostile=Target;State.ClearRequested.Reset();return;}
+    const bool bDeadTarget=IsValid(Target)&&!IsLivingUnit(Target);
+    // A hostile target died (still replicated as dead) or was destroyed since last frame.
+    const bool bLost=bDeadTarget||(!IsValid(Target)&&State.LastHostile.IsStale(true));
+    if(!bLost){if(!IsValid(Target))State.LastHostile.Reset();return;}
+    const bool bWasHostile=bDeadTarget?(Cast<ACireMonster>(Target)||(Cast<ACireHero>(Target)&&Cast<ACireHero>(Target)->TeamId!=Self->TeamId)):true;
+    State.LastHostile.Reset();
+    if(bAutoReacquire&&bWasHostile&&Self->bDrafted&&!Self->bDead)
+    {
+        State.History.Reset();State.LastTab=-100;
+        if(AActor* Next=NextTarget(Controller,false,false);Next&&Next!=Target){Controller->ServerAction(0,0,Next);State.ClearRequested.Reset();return;}
+    }
+    if(bDeadTarget&&State.ClearRequested.Get()!=Target){State.ClearRequested=Target;Controller->ServerAction(6,0,nullptr);}
+}
