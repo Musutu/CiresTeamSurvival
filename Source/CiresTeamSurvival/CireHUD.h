@@ -153,6 +153,11 @@ private:
     void DrawDeveloperLauncher();
     FCireUIRect DeveloperLauncherRect() const;
     FCireUIRect PanelRect(FName Id) const;
+    bool IsDeveloperLauncherVisible() const;
+    bool IsInBossFrames(const AActor* Actor) const;
+    bool bShowDevLauncher = false;
+    TArray<FBox2D> LastPanelBoxes;
+    TArray<TWeakObjectPtr<AActor>> BossFrameUnits;
     FCireMovementTuning MovementDraft;
     bool bMovementLoaded=false;
     bool DrawReplayScreen();

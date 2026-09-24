@@ -158,10 +158,7 @@ void ACireHUD::DrawSettings()
         Label(Caption,BX,BY,11,Enabled?Parchment:Muted);
         Label(FString::Printf(TEXT("%.2f"),Value),BX+235,BY,10,Gold);
         const float Knob=FMath::Clamp((Value-Min)/(Max-Min),0.f,1.f);
-        CireUIStyle::Frame(Painter(),BX,BY+22,286,8,Gold,ECireFrame::Inset);
-        if(const auto& Kit=CireUIStyle::Assets();Kit.Gloss)Painter().Tex(Kit.Gloss,BX+1,BY+23,284*Knob,6,Enabled?FLinearColor(1.1f,.85f,.4f,1):Muted);
-        if(const auto& Kit=CireUIStyle::Assets();Kit.Gem)Painter().Tex(Kit.Gem,BX+284*Knob-8,BY+18,16,16,Enabled?FLinearColor(1.f,.85f,.45f,1):Muted);
-        else Panel(BX+282*Knob,BY+18,5,16,Enabled?Parchment:Muted);
+        CireUIStyle::Slider(Painter(),BX,BY+22,286,Knob,Enabled,Hit(BX,BY+12,290,27));
         Tip(Caption,Help,BX,BY,290,37);
         if(Enabled&&Hit(BX,BY+12,290,27)&&PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton))
         {

@@ -6,10 +6,18 @@
 #include "CireWeaponPresentation.h"
 #include "Engine/World.h"
 #include "InputCoreTypes.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 
 namespace
 {
 const FLinearColor Card(.034f,.046f,.055f,.98f),Hover(.075f,.106f,.116f,1),Gold(.77f,.61f,.34f,1),Parchment(.91f,.9f,.83f,1),Muted(.5f,.57f,.59f,1),Teal(.2f,.71f,.59f,1);
+}
+bool ACireHUD::IsDeveloperLauncherVisible() const
+{
+    // Hidden in normal play: revealed by F8 (ToggleDeveloperTools) or the -dev command-line flag.
+    static const bool bDevFlag=FParse::Param(FCommandLine::Get(),TEXT("dev"));
+    return CireDeveloperTools::CanEdit(GetWorld())&&(bShowDevLauncher||bDevFlag);
 }
 FCireUIRect ACireHUD::DeveloperLauncherRect()const
 {
@@ -18,7 +26,7 @@ FCireUIRect ACireHUD::DeveloperLauncherRect()const
 }
 void ACireHUD::DrawDeveloperLauncher()
 {
-    if(!CireDeveloperTools::CanEdit(GetWorld())||bEditLayout||bSettings||bModal)return; // hidden over the draft screen, shop and offers
+    if(!IsDeveloperLauncherVisible()||bEditLayout||bSettings||bModal)return; // hidden over the draft screen, shop and offers
     ResetTransform();const auto R=DeveloperLauncherRect();const bool Over=Hit(R.X,R.Y,R.W,R.H);
     Frame(R.X,R.Y,R.W,R.H,Over?Teal:Gold);Label(TEXT("DEVELOPER TOOLS  [")+UISettings.Keybindings.Label(TEXT("ToggleDeveloperTools"))+TEXT("]"),R.X+14,R.Y+8,12,Over?Parchment:Gold);
     Tip(TEXT("Developer tools / F8"),TEXT("Quick test kit, weapons, movement, wave controls, effect tuning, match simulations and replays. Opening this panel does not change match settings."),R.X,R.Y,R.W,R.H);
@@ -38,14 +46,21 @@ void ACireHUD::DrawDeveloperPanel(float X,float Y)
     auto Slider=[&](const FString& Title,float& Value,float Min,float Max,float Step,float BX,float BY,const FString& Help)
     {
         Label(Title,BX,BY,10,Parchment);Label(FString::Printf(TEXT("%.2f"),Value),BX+230,BY,10,Gold);
-        Panel(BX,BY+21,282,4,Card);const float T=FMath::Clamp((Value-Min)/(Max-Min),0.f,1.f);Panel(BX,BY+21,282*T,4,Gold);Panel(BX+278*T,BY+16,5,14,Parchment);
+        CireUIStyle::Slider(Painter(),BX,BY+19,282,FMath::Clamp((Value-Min)/(Max-Min),0.f,1.f),true,Hit(BX,BY+12,285,25));
         Tip(Title,Help,BX,BY,285,34);
         if(Hit(BX,BY+12,285,25)&&PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton)){Value=FMath::Clamp(FMath::RoundToFloat((Min+(Max-Min)*FMath::Clamp((MX-BX)/282,0.f,1.f))/Step)*Step,Min,Max);Clicked=false;}
     };
     auto Integer=[&](const FString& Title,int32& Value,int32 Min,int32 Max,float BX,float BY,const FString& Help)
     {float V=Value;Slider(Title,V,Min,Max,1,BX,BY,Help);Value=FMath::RoundToInt(V);};
     auto Toggle=[&](const FString& Title,bool& Value,float BX,float BY,const FString& Help)
-    {if(Button(FString(Value?TEXT("[ON] "):TEXT("[OFF] "))+Title,BX,BY,285,Help))Value=!Value;};
+    {
+        // Style-kit toggle button: lit gem when on.
+        const bool Over=Hit(BX,BY,285,25);
+        CireUIStyle::Button(Painter(),BX,BY,285,25,Title,Value?ECireButtonState::Selected:Over?ECireButtonState::Hover:ECireButtonState::Normal,Value?CireUIColors::Teal:CireUIColors::Gold,9.5f);
+        if(const auto& Kit=CireUIStyle::Assets();Kit.Gem)Painter().Tex(Kit.Gem,BX+8,BY+6,13,13,Value?FLinearColor(.4f,1.f,.6f,1):FLinearColor(.35f,.35f,.35f,1));
+        Tip(Title,Help.IsEmpty()?Title:Help,BX,BY,285,25);
+        if(Over&&Clicked){Clicked=false;PlayUIFeedback();Value=!Value;}
+    };
     const TCHAR* Pages[]={TEXT("Quick start"),TEXT("Match"),TEXT("Spawn/stats"),TEXT("Effects"),TEXT("Movement"),TEXT("Balance lab"),TEXT("Replays")};
     const int32 PageIds[]={5,0,1,2,6,3,4};
     for(int32 I=0;I<7;++I){if(DeveloperPage==PageIds[I])Panel(X+I*87-2,Y-3,87,31,Hover);if(Button(Pages[I],X+I*87,Y,83))DeveloperPage=PageIds[I];}

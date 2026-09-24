@@ -177,6 +177,13 @@ float FCireUIPainter::TextWidth(const FString& Text,float Size,ECireFont Font) c
     const float Points=FMath::Max(4.f,FMath::RoundToFloat(Size*CireUIStyle::Assets().Calibration[Index]*KS));
     return static_cast<float>(Measure->Measure(Text,FSlateFontInfo(Resolved,Points),1.f).X)/KS;
 }
+FString FCireUIPainter::Fit(const FString& In,float Size,float MaxWidth,ECireFont Font) const
+{
+    if(TextWidth(In,Size,Font)<=MaxWidth)return In;
+    FString S=In;
+    while(S.Len()>1&&TextWidth(S+TEXT(".."),Size,Font)>MaxWidth)S.LeftChopInline(1);
+    return S.TrimEnd()+TEXT("..");
+}
 int32 FCireUIPainter::Wrapped(const FString& Body,float X,float Y,float Width,float Size,FLinearColor Color,int32 MaxLines,ECireFont Font,float LineGap) const
 {
     TArray<FString> Words;Body.ParseIntoArrayWS(Words);FString Row;int32 Count=0;
@@ -235,6 +242,21 @@ void CireUIStyle::Frame(const FCireUIPainter& P,float X,float Y,float W,float H,
     {
         const float G=6.5f;P.Tex(A.Gem,X+W*.5f-G,Y-G+1,2*G,2*G,Accent*1.15f+FLinearColor(.05f,.05f,.05f,0));
     }
+}
+void CireUIStyle::Slider(const FCireUIPainter& P,float X,float Y,float W,float Fraction,bool bEnabled,bool bHover)
+{
+    const FAssets& A=Assets();Fraction=FMath::Clamp(Fraction,0.f,1.f);
+    Frame(P,X,Y,W,8,Gold,ECireFrame::Inset);
+    const FLinearColor Fill=bEnabled?FLinearColor(1.1f,.85f,.4f,1):Muted;
+    if(A.Gloss)P.Tex(A.Gloss,X+1,Y+1,(W-2)*Fraction,6,Fill);else P.Rect(X+1,Y+1,(W-2)*Fraction,6,Fill);
+    if(bHover&&bEnabled)Glow(P,X+(W-2)*Fraction-8,Y-4,16,16,FLinearColor(1.f,.85f,.5f,.4f));
+    if(A.Gem)P.Tex(A.Gem,X+(W-2)*Fraction-8,Y-4,16,16,bEnabled?FLinearColor(1.f,.85f,.45f,1):Muted);
+    else P.Rect(X+(W-4)*Fraction,Y-4,5,16,bEnabled?Parchment:Muted);
+}
+void CireUIStyle::Chevron(const FCireUIPainter& P,float X,float Y,float S,bool bCollapsed,FLinearColor Color)
+{
+    if(bCollapsed)P.Tri(FVector2D(X+S*.3f,Y+S*.15f),FVector2D(X+S*.3f,Y+S*.85f),FVector2D(X+S*.85f,Y+S*.5f),Color);
+    else P.Tri(FVector2D(X+S*.15f,Y+S*.3f),FVector2D(X+S*.85f,Y+S*.3f),FVector2D(X+S*.5f,Y+S*.85f),Color);
 }
 void CireUIStyle::Header(const FCireUIPainter& P,float X,float Y,float W,const FString& Caption,FLinearColor Color,float Size)
 {
@@ -357,8 +379,13 @@ UTexture2D* CireUIStyle::FindAbilityIcon(const FString& Id)
     static TMap<FString,TWeakObjectPtr<UTexture2D>> Found;static TSet<FString> Missing;
     if(Id.IsEmpty()||Missing.Contains(Id))return nullptr;
     if(const auto* Hit=Found.Find(Id);Hit&&Hit->IsValid())return Hit->Get();
-    const FString Path=FString::Printf(TEXT("/Game/UI/Abilities/T_%s.T_%s"),*Id,*Id);
-    UTexture2D* T=FPackageName::DoesPackageExist(FString::Printf(TEXT("/Game/UI/Abilities/T_%s"),*Id))?LoadObject<UTexture2D>(nullptr,*Path,nullptr,LOAD_NoWarn|LOAD_Quiet):nullptr;
+    // Champion-draft icon set names its textures T_Ability_<id>; T_<id> is also accepted.
+    UTexture2D* T=nullptr;
+    for(const TCHAR* Prefix:{TEXT("T_Ability_"),TEXT("T_")})
+    {
+        const FString Name=FString(Prefix)+Id,Package=TEXT("/Game/UI/Abilities/")+Name;
+        if(FPackageName::DoesPackageExist(Package)){T=LoadObject<UTexture2D>(nullptr,*(Package+TEXT(".")+Name),nullptr,LOAD_NoWarn|LOAD_Quiet);if(T)break;}
+    }
     if(T){T->AddToRoot();Found.Add(Id,T);}else Missing.Add(Id);
     return T;
 }

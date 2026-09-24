@@ -71,6 +71,8 @@ struct CIRESTEAMSURVIVAL_API FCireUIPainter
     void Text(const FString& Text, float X, float Y, float Size, FLinearColor Color, ECireFont Font = ECireFont::Auto,
         bool bOutline = false, bool bShadow = true) const;
     float TextWidth(const FString& Text, float Size, ECireFont Font = ECireFont::Auto) const;
+    /** Text shortened with ".." so it fits MaxWidth (logical units). */
+    FString Fit(const FString& Text, float Size, float MaxWidth, ECireFont Font = ECireFont::Auto) const;
     /** Word-wrapped text; returns the number of lines drawn. */
     int32 Wrapped(const FString& Text, float X, float Y, float Width, float Size, FLinearColor Color, int32 MaxLines,
         ECireFont Font = ECireFont::Body, float LineGap = 4.f) const;
@@ -134,6 +136,10 @@ namespace CireUIStyle
     CIRESTEAMSURVIVAL_API void Frame(const FCireUIPainter& P, float X, float Y, float W, float H,
         FLinearColor Accent = CireUIColors::Gold, ECireFrame Kind = ECireFrame::Panel);
     /** Header strip with a gold filigree underline and a caption. */
+    /** Slider track + gem knob (Fraction 0..1). Caller handles the drag. */
+    CIRESTEAMSURVIVAL_API void Slider(const FCireUIPainter& P, float X, float Y, float W, float Fraction, bool bEnabled = true, bool bHover = false);
+    /** Small collapse chevron (pointing down when expanded, right when collapsed). */
+    CIRESTEAMSURVIVAL_API void Chevron(const FCireUIPainter& P, float X, float Y, float Size, bool bCollapsed, FLinearColor Color = CireUIColors::Gold);
     CIRESTEAMSURVIVAL_API void Header(const FCireUIPainter& P, float X, float Y, float W, const FString& Caption,
         FLinearColor Color = CireUIColors::Gold, float Size = 10.f);
     CIRESTEAMSURVIVAL_API void Button(const FCireUIPainter& P, float X, float Y, float W, float H, const FString& Label,
