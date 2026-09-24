@@ -150,7 +150,7 @@ def main():
     command = [EDITOR, str(STAGING / "ItemContentBuilder.uproject"), "-unattended", "-RenderOffscreen", "-nosplash", "-nosound",
                "-nop4", "-NoLiveCoding", f"-ExecutePythonScript={Path(__file__).resolve()}", f"-abslog={log}"]
     with (logs / "ShopContent-console.log").open("w", encoding="utf-8") as output:
-        subprocess.run(command, stdout=output, stderr=subprocess.STDOUT, timeout=900,
+        subprocess.run(command, stdout=output, stderr=subprocess.STDOUT, timeout=3600,
                        creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
     if "CIRE_SHOP_CONTENT_PASS" not in log.read_text(encoding="utf-8", errors="replace"):
         raise SystemExit(f"Shop content import failed: {log}")

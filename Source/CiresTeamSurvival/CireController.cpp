@@ -1,4 +1,6 @@
 #include "CireGame.h"
+#include "CireShopFixtures.h" // progression-shop
+#include "CireItems.h" // progression-shop
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -155,6 +157,7 @@ void ACireController::PlayerTick(float Dt) {
     if(CireExpansionNetProbe::TickClient(this))return;
     if(CireInterfaceProbe::TickClient(this))return;
     if(TickClientProbe(this))return;
+    if(CireShopFixtures::TickClient(this))return; // progression-shop
 #endif
     auto* H=Cast<ACireHero>(GetPawn()); if(!H){CireTargeting::Cleanup(this);return;}
     auto* Interface=Cast<ACireHUD>(GetHUD());
@@ -226,7 +229,13 @@ void ACireController::PlayerTick(float Dt) {
     if(Keys.WasPressed(this,TEXT("TargetNextAlly")))CycleTarget(true);
     if(Keys.WasPressed(this,TEXT("TargetSelf")))ServerAction(0,0,H);
     if(Keys.WasPressed(this,TEXT("ToggleAutoAttack")))ServerAction(1,0,nullptr);
-    if(Keys.WasPressed(this,TEXT("RecallToTown")))ServerAction(8,0,nullptr);
+    if(Keys.WasPressed(this,TEXT("RecallToTown")))ServerAction(8,0,nullptr); // progression-shop: Teleport to Base (hearthstone channel)
+    // progression-shop: stats window, consumable belt and item-use keys (CireItems / CireShopUI).
+    if(Keys.WasPressed(this,TEXT("ToggleStats"))&&Interface){Interface->UISettings.bShowStats=!Interface->UISettings.bShowStats;Interface->UISettings.Save();}
+    if(H->bDrafted&&H->Inventory&&H->Offers.IsEmpty()) {
+        for(int32 Index=0;Index<3;++Index)if(Keys.WasPressed(this,CireItems::BeltAction(Index)))H->Inventory->ServerUse(Index,true);
+        for(int32 Index=0;Index<6;++Index)if(Keys.WasPressed(this,CireItems::ItemAction(Index)))H->Inventory->ServerUse(Index,false);
+    }
     if(!H->bDrafted&&Interface) {
         if(Keys.WasPressed(this,TEXT("RosterPreviousPage")))Interface->ChangeDraftRosterPage(-1);
         if(Keys.WasPressed(this,TEXT("RosterNextPage")))Interface->ChangeDraftRosterPage(1);
@@ -238,7 +247,12 @@ void ACireController::PlayerTick(float Dt) {
         const int32 I=Index-1;
         if(!H->bDrafted) {if(Bar==1&&I<6){if(Interface)Interface->DraftRosterSlot(I);else if(I<5)ServerAction(5,I,nullptr);}}
         else if(H->Offers.Num()>0) {if(Bar==1&&I<4)ServerAction(3,I,nullptr);}
-        else if(!bShop) {const int32 Skill=CireKeybindings::ResolveSlot(Keys,*H,Slot);if(Skill!=INDEX_NONE)RequestCast(Skill);}
+        else if(!bShop) {
+            // progression-shop: an action-bar slot may hold an active item ("item:<id>").
+            const int32 Item=CireItems::ResolveItemSlot(Keys,*H,Slot);
+            if(Item!=INDEX_NONE){if(H->Inventory)H->Inventory->ServerUse(Item,false);continue;}
+            const int32 Skill=CireKeybindings::ResolveSlot(Keys,*H,Slot);if(Skill!=INDEX_NONE)RequestCast(Skill);
+        }
     }
     if(H->bDrafted&&!bShop&&H->Offers.IsEmpty()&&WasInputKeyJustPressed(EKeys::LeftMouseButton)
         &&!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive&&(!Interface||!Interface->IsPointerOverInterface())
@@ -288,7 +302,9 @@ void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActo
         case 1: H->bAutoAttack=!H->bAutoAttack;H->Notice=H->bAutoAttack?TEXT("Basic attack enabled"):TEXT("Basic attack stopped");break;
         case 2: if(Value>=0&&Value<Cires::MaxSkills&&H->Skills.IsValidIndex(Value)&&CireTargeting::Describe(H->Skills[Value]).Kind!=ECireTargetKind::Ground)H->Cast(Value);break;
         case 4: if(Value>=0&&Value<4)H->Purchase(Value);break;
-        case 8: if(M->Clock.Phase()==Cires::MatchPhase::Intermission||M->Clock.Phase()==Cires::MatchPhase::Recovery)H->ReviveAt(M->BasePosition(H->TeamId));else H->Notice=TEXT("Town recall is available during prep or recovery.");break;
+        // progression-shop: town recall merged into Teleport to Base: instant during prep/recovery,
+        // a 6 s hearthstone channel during waves (damage or moving cancels), 120 s cooldown.
+        case 8: CireItems::RequestTeleport(H);break;
         default: break;
     }
 }
