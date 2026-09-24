@@ -21,6 +21,7 @@
 #include "CireBuffs.h" // aura-vfx
 #include "CireMonsterArt.h" // creature-anim
 #include "CireWaves.h" // wave-director
+#include "CireRaces.h" // monster-races
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireNPCCombat,Log,All);
 
@@ -122,8 +123,10 @@ bool SpawnArea(ACireMonster* M,const FCireNPCAbility& A,ECireAreaShape Shape,FVe
     S.WarningSeconds=A.CastTime;S.TickInterval=.5f;
     const bool bPool=A.DamagePerSecond>0&&A.Duration>0;
     S.bPersistent=bPool;S.bPoison=bPool;S.DurationSeconds=bPool?A.Duration:.3f;
-    S.DamagePerSecond=bPool?A.DamagePerSecond:0.f;
-    S.BurstDamage=bPool?0.f:FMath::Min(CireNPCCombat::EffectiveDamage(M)*A.DamageMultiplier,10000.f);
+    // monster-races: skill tiers II/III hit harder.
+    const float Tier=CireRaces::TierDamage(M);
+    S.DamagePerSecond=bPool?A.DamagePerSecond*Tier:0.f;
+    S.BurstDamage=bPool?0.f:FMath::Min(CireNPCCombat::EffectiveDamage(M)*A.DamageMultiplier*Tier,10000.f);
     S.Color=A.Color;S.AbilityName=A.Name.Left(80);
     return ACireAreaEffect::Spawn(M,S,Ground,Heading)!=nullptr;
 }
@@ -164,7 +167,7 @@ ACireMonster* AllyAt(ACireMonster* M,ACireGameMode* Mode,FVector Point)
 void Committed(ACireMonster* M,const FCireNPCAbility& A)
 {
     auto* S=St(M);const float Now=NowOf(M);
-    if(S)S->ReadyAt.FindOrAdd(A.Id)=Now+A.CastTime+A.Cooldown;
+    if(S)S->ReadyAt.FindOrAdd(A.Id)=Now+A.CastTime+A.Cooldown*CireRaces::TierCooldown(M); // monster-races: tiers shorten cooldowns
     M->AbilityTimer=A.CastTime+1.5f;M->AttackTimer=FMath::Max(M->AttackTimer,A.CastTime+.7f);
 }
 bool StartAbility(ACireMonster* M,ACireGameMode* Mode,const FCireNPCAbility& A,ACireHero* Victim,float Distance,bool bSight)
@@ -234,6 +237,19 @@ bool StartAbility(ACireMonster* M,ACireGameMode* Mode,const FCireNPCAbility& A,A
         CireCombat::PlayCue(M,Victim,A.Id,M->GetActorLocation(),M->GetActorLocation()+Away*A.Length,ECireSpellCue::Cast,.8f,true);
         S->ReadyAt.FindOrAdd(A.Id)=Now+A.Cooldown;M->AbilityTimer=FMath::Max(M->AbilityTimer,.8f);return true;
     }
+    // monster-races: pull (line telegraph, champions in it are dragged in on release) and summon (interruptible cast).
+    case ECireNPCAbilityKind::Pull:
+    {
+        ACireHero* Target=A.Targeting==TEXT("farthest")?FarthestHero(M,A):(bInRange&&bSight?Victim:nullptr);
+        if(!Target)return false;
+        const FVector From=M->GetActorLocation(),Direction=(Target->GetActorLocation()-From).GetSafeNormal2D();
+        const float Length=FMath::Min(A.Length,static_cast<float>(FVector::Dist2D(From,Target->GetActorLocation()))+150.f);
+        if(Direction.IsNearlyZero()||!SpawnArea(M,A,ECireAreaShape::Line,Feet(M),Direction.Rotation(),Length))return false;
+        BeginCast(M,A,Target->GetActorLocation(),false);break;
+    }
+    case ECireNPCAbilityKind::Summon:
+        if(!Victim||!CireRaces::CanSummon(M,A))return false;
+        BeginCast(M,A,M->GetActorLocation()+M->GetActorForwardVector()*100,false);break;
     default:return false;
     }
     Committed(M,A);return true;
@@ -246,6 +262,7 @@ bool TryAbilities(ACireMonster* M,ACireGameMode* Mode,ACireHero* Victim,float Di
     for(const auto& Ability:A->Abilities)
     {
         if(Ability.bBasic||S->ReadyAt.FindRef(Ability.Id)>Now)continue;
+        if(!S->IsAbilityActive(Ability.Id))continue; // monster-races: only this monster's drawn, unlocked skills
         if(M->AbilityTimer>0&&Ability.Kind!=ECireNPCAbilityKind::Enrage)continue;
         if(StartAbility(M,Mode,Ability,Victim,Distance,bSight))return true;
     }
@@ -307,6 +324,7 @@ void ReleaseCast(ACireMonster* M,ACireGameMode* Mode)
         S->ShieldWallUntil=Now+A->Duration;S->ShieldWallReduction=A->Magnitude;break;
     default:break;
     }
+    if(A)CireRaces::OnAbilityReleased(M,*A,M->PendingAim); // monster-races: root/silence/slow/knockback riders, pulls, summons
     if(S)S->RefreshStatusFlags(Now);
     ClearCast(M);
 }
@@ -314,15 +332,15 @@ float DesiredScale(const ACireMonster* M)
 {
     const auto* A=Arch(M);const auto* S=St(M);
     // wave-director: director-spawned units use their archetype scale times the wave row's size.
-    if(const float Size=CireWaveDirector::SizeScale(M);Size>0)return (A?A->Scale:1.f)*Size*(S&&S->bEnraged?1.08f:1.f);
+    if(const float Size=CireWaveDirector::SizeScale(M);Size>0)return (A?A->Scale:1.f)*Size*(S&&S->bEnraged?1.08f:1.f)*CireRaces::RankSize(M); // monster-races: rank size
     if(M->bArmoredEscort)return 1.45f;
     if(!A)return M->bBoss?1.35f:M->Tier>0?1.08f+M->Tier*.09f:1.f;
     float Scale=A->Scale;
     if(M->Tier>0&&A->Classification!=ECireNPCClass::Boss)Scale*=1.f+M->Tier*.06f;
     if(S&&S->bEnraged)Scale*=1.08f;
-    return Scale;
+    return Scale*(M->Tier>0?1.f:CireRaces::RankSize(M)); // monster-races: rank size (packs already grow by tier)
 }
-bool UsesProjectiles(const FCireNPCArchetype* A){return A&&(A->Role==ECireNPCRole::Caster||A->Role==ECireNPCRole::Ranged);}
+bool UsesProjectiles(const FCireNPCArchetype* A){return A&&CireNPCArchetypes::IsRangedRole(A->Role);} // monster-races: supports
 }
 
 float CireNPCCombat::EffectiveDamage(const ACireMonster* M)
@@ -360,19 +378,23 @@ bool CireNPCCombat::ConfigureArchetype(ACireMonster* M,FName Id,int32 Wave,int32
     if(M->bArmoredEscort)M->GetCapsuleComponent()->ClearMoveIgnoreActors();
     M->bArmoredEscort=false;M->LeakCostOverride=bLaneBoss?A->LeakCost:0;
     M->bBoss=bLaneBoss;M->Tier=Tier;
-    M->CombatArchetype=A->Role==ECireNPCRole::Caster?2:A->Role==ECireNPCRole::Ranged?3:A->Role==ECireNPCRole::Bruiser?1:0;
+    M->CombatArchetype=A->Role==ECireNPCRole::Caster||A->Role==ECireNPCRole::Support?2:A->Role==ECireNPCRole::Ranged?3:
+        A->Role==ECireNPCRole::Bruiser||A->Role==ECireNPCRole::Swarm?1:0; // monster-races
     // Legacy archetypes read their health factor and damage from CombatTuning.json
     // so the existing balance knobs stay the single source of truth.
     const float TuningHealth[]={T.BasicHealthMultiplier,T.BruiserHealthMultiplier,T.CasterHealthMultiplier,T.RangedHealthMultiplier};
     const float TuningDamage[]={T.NormalMonsterDamage,T.BruiserMonsterDamage,T.CasterMonsterDamage,T.RangedMonsterDamage};
     const bool bTuned=A->TuningKind>=0&&A->TuningKind<4;
-    const float HealthFactor=(bTuned?TuningHealth[A->TuningKind]:A->HealthMultiplier)*(bLaneBoss?T.BossHealthMultiplier:1.f);
+    // monster-races: per-unit health scale, and an explicit lane-boss factor for bosses authored as pack leaders.
+    const float HealthFactor=bLaneBoss&&A->LaneBossHealthMultiplier>0?A->LaneBossHealthMultiplier*T.BossHealthMultiplier*A->HealthScale:
+        (bTuned?TuningHealth[A->TuningKind]:A->HealthMultiplier)*(bLaneBoss?T.BossHealthMultiplier:1.f)*A->HealthScale;
     const double Base=Tier>0?T.ChallengeHealthBase*Cires::ChallengeHealthMultiplier(Tier,FMath::Clamp(Round,1,100)):
         T.WaveHealthBase+T.WaveHealthPerWave*FMath::Clamp(Wave,1,10000);
     M->MaxHealth=M->Health=static_cast<float>(FMath::Clamp(Base*HealthFactor,1.,1.e9));
     const bool bBossClass=A->Classification==ECireNPCClass::Boss;
     M->Damage=bLaneBoss?T.BossMonsterDamage:bBossClass?A->Damage:Tier>0?T.ChallengeMonsterDamage*A->EliteDamageMultiplier:
         bTuned?TuningDamage[A->TuningKind]:A->Damage;
+    M->Damage*=A->DamageScale; // monster-races
     M->BaseMoveSpeed=A->MoveSpeed;M->GetCharacterMovement()->MaxWalkSpeed=M->BaseMoveSpeed;
     const ECireNPCClass Class=bBossClass?ECireNPCClass::Boss:Tier>0?ECireNPCClass::Elite:A->Classification;
     M->MonsterName=Class==ECireNPCClass::Boss?FString::Printf(TEXT("BOSS | %s"),*A->DisplayName):
@@ -382,6 +404,9 @@ bool CireNPCCombat::ConfigureArchetype(ACireMonster* M,FName Id,int32 Wave,int32
     if(auto* S=St(M))
     {
         S->ResetRuntime();S->ArchetypeId=A->Id;S->Role=A->Role;S->Classification=Class;
+        // monster-races: default rank from classification, base palette, every authored ability (the wave
+        // director and pack spawner then apply the drawn, wave-gated loadout with CireRaces::ApplyLoadout).
+        S->Rank=static_cast<uint8>(CireRaces::RankFromClass(Class));S->PaletteIndex=0;S->SkillTier=0;S->bLoadoutSet=false;S->Loadout.Reset();
         const float Now=NowOf(M);
         for(const auto& Ability:A->Abilities)if(Ability.InitialCooldown>0)S->ReadyAt.Add(Ability.Id,Now+Ability.InitialCooldown);
         S->ApplyVisuals();

@@ -19,6 +19,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "HAL/IConsoleManager.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "CireRaces.h" // monster-races
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
 #include "Misc/Paths.h"
@@ -111,6 +112,37 @@ void Load()
                     if (Value->TryGetObject(Alt) && ParseBody(*Alt, AltBody)) ByArchetype.FindOrAdd(Id).Add(AltBody.Variant, AltBody);
                 }
         }
+    // monster-races: RaceMeshes.tripo.json (tripo-races agent) overlays real race art by priority: a unit listed
+    // there replaces any NPCMeshes body, and all of its alternates become variants.
+    TSet<FName> RaceArt;
+    {
+        TSharedPtr<FJsonObject> RaceMeshes;
+        const TSharedPtr<FJsonObject>* RaceUnits = nullptr;
+        if (ReadFile(TEXT("RaceMeshes.tripo.json"), RaceMeshes) && (RaceMeshes->TryGetObjectField(TEXT("archetypes"), RaceUnits) || RaceMeshes->TryGetObjectField(TEXT("units"), RaceUnits)))
+            for (const auto& Pair : (*RaceUnits)->Values)
+            {
+                const TSharedPtr<FJsonObject>* Entry = nullptr;
+                if (!Pair.Value->TryGetObject(Entry)) continue;
+                const FName Id(FString(Pair.Key.ToView()));
+                TMap<FString, CireMonsterArt::FBody> Bodies;
+                CireMonsterArt::FBody Body;
+                if ((*Entry)->HasField(TEXT("variant")) || (*Entry)->TryGetStringField(TEXT("mesh"), Body.MeshPath))
+                {
+                    if (!(*Entry)->HasField(TEXT("variant"))) (*Entry)->SetStringField(TEXT("variant"), FString(Pair.Key.ToView()));
+                    if (ParseBody(*Entry, Body)) Bodies.Add(Body.Variant, Body);
+                }
+                const TArray<TSharedPtr<FJsonValue>>* Alternates = nullptr;
+                if ((*Entry)->TryGetArrayField(TEXT("alternates"), Alternates))
+                    for (const auto& Value : *Alternates)
+                    {
+                        const TSharedPtr<FJsonObject>* Alt = nullptr; CireMonsterArt::FBody AltBody;
+                        if (Value->TryGetObject(Alt) && ParseBody(*Alt, AltBody)) Bodies.Add(AltBody.Variant, AltBody);
+                    }
+                if (Bodies.IsEmpty()) continue;
+                ByArchetype.Add(Id, Bodies); RaceArt.Add(Id);
+                if (!Recommended.Contains(Id) || !Bodies.Contains(Recommended[Id])) { TArray<FString> Keys; Bodies.GetKeys(Keys); Recommended.Add(Id, Keys[0]); }
+            }
+    }
     const TSharedPtr<FJsonObject>* ArtArchetypes = nullptr;
     const TSharedPtr<FJsonObject>* ArtBodies = nullptr;
     if (Art)
@@ -167,6 +199,7 @@ void Load()
                 }
         }
         if (Variants.IsEmpty() && Recommended.Contains(Pair.Key)) Variants.Add(Recommended[Pair.Key]);
+        if (RaceArt.Contains(Pair.Key)) for (const auto& Body : Pair.Value) Variants.AddUnique(Body.Key); // monster-races
         for (const FString& Name : Variants)
         {
             CireMonsterArt::FBody Body = Pair.Value[Name];
@@ -223,8 +256,12 @@ const CireMonsterArt::FData& CireMonsterArt::Data(bool bReload)
 
 const CireMonsterArt::FArchetypeArt* CireMonsterArt::Find(FName ArchetypeId)
 {
-    return Data().Archetypes.Find(ArchetypeId);
+    if (const FArchetypeArt* Own = Data().Archetypes.Find(ArchetypeId)) return Own;
+    // monster-races: a race unit without its own art borrows its fallback archetype's body (reskinned by CireRaces).
+    const FCireNPCArchetype* Archetype = CireNPCArchetypes::Find(ArchetypeId);
+    return Archetype && !Archetype->FallbackBody.IsNone() && Archetype->FallbackBody != ArchetypeId ? Data().Archetypes.Find(Archetype->FallbackBody) : nullptr;
 }
+bool CireMonsterArt::HasOwnBody(FName ArchetypeId) { return Data().Archetypes.Contains(ArchetypeId); }
 
 CireMonsterArt::FClipWindow CireMonsterArt::Window(const UAnimSequence* Sequence)
 {
@@ -510,6 +547,7 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
     bTripoApplied = true; AppliedArchetype = Archetype.Id; AppliedVariant = Body.Variant; AppliedMeshScale = Body.MeshScale;
     Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = -1.f; // a cast already under way is picked up mid-bar
     LastHealth = Monster->Health; Phase = FMath::FRand(); IdleTime = FMath::FRand() * 5.f;
+    CireRaces::ApplySkin(Monster); // monster-races: race palette + rank colours on the body's own textures
     UpdateRim();
     SetComponentTickEnabled(true);
     UE_LOG(LogCireMonsterArt, Verbose, TEXT("CIRE_MONSTER_ART_APPLIED archetype=%s variant=%s scale=%.3f"), *Archetype.Id.ToString(), *Body.Variant, Body.MeshScale);
@@ -551,7 +589,11 @@ void UCireMonsterArt::UpdateRim()
     const auto& D = CireMonsterArt::Data();
     const ECireNPCClass Class = Monster->GetNPCClassification();
     const bool bEnraged = Monster->NPCState && Monster->NPCState->HasStatus(CireNPCStatus::Enraged);
-    const FLinearColor Want = bEnraged ? D.EnragedRim : Class == ECireNPCClass::Boss ? D.BossRim : Class == ECireNPCClass::Elite ? D.EliteRim : FLinearColor::Transparent;
+    // monster-races: the race skin carries the rank rim itself; without it the overlay rim shows the rank colour.
+    const ECireNPCRank RankValue = CireRaces::RankOf(Monster);
+    const FLinearColor Want = bEnraged ? D.EnragedRim : CireRaces::HasSkin(Monster) ? FLinearColor::Transparent :
+        RankValue != ECireNPCRank::Normal ? CireRaces::RankColor(Monster) * 1.2f :
+        Class == ECireNPCClass::Boss ? D.BossRim : Class == ECireNPCClass::Elite ? D.EliteRim : FLinearColor::Transparent;
     if (Want == AppliedRimColor) return;
     AppliedRimColor = Want;
     auto* Mesh = Monster->GetMesh();
@@ -654,7 +696,7 @@ void UCireMonsterArt::UpdatePresentation(float DeltaTime)
         SeenSwingSerial = SwingSerial;
         if (UAnimSequence* Attack = RoleClip(TEXT("attack")))
         {
-            const bool bRanged = Monster->GetNPCRole() == ECireNPCRole::Caster || Monster->GetNPCRole() == ECireNPCRole::Ranged;
+            const bool bRanged = CireNPCArchetypes::IsRangedRole(Monster->GetNPCRole()); // monster-races: supports shoot too
             if (!bRanged) StartAction(Attack, SwingStartedAt, SwingWindup, 1.f, 1.f, false);
         }
     }
@@ -663,6 +705,7 @@ void UCireMonsterArt::UpdatePresentation(float DeltaTime)
         SeenCastStartedAt = Monster->CastStartedAt;
         const FName Ability = Monster->NPCState && !Monster->NPCState->CastAbilityId.IsNone() ? Monster->NPCState->CastAbilityId : FName(*Monster->CastingAbility);
         StartAction(ClipForAbility(Ability), Monster->CastStartedAt, FMath::Max(.05f, Monster->CastEndsAt - Monster->CastStartedAt), 1.f, 1.f, true);
+        CireRaces::OnCastPresented(Monster, Ability); // monster-races: the ability's audio cue
     }
     if (Current.bCast && !Current.bInterrupted && Monster->CastingAbility.IsEmpty() && Now < Current.StartedAt + Current.Windup - .1)
     {

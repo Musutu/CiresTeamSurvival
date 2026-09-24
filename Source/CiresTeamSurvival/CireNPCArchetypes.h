@@ -7,7 +7,8 @@
 
 // Every monster has exactly one combat role; the role selects movement policy.
 UENUM(BlueprintType)
-enum class ECireNPCRole : uint8 { Bruiser, Tank, Caster, Ranged };
+// monster-races: Support (ranged healer/warder, caster movement) and Swarm (small fast melee, bruiser movement).
+enum class ECireNPCRole : uint8 { Bruiser, Tank, Caster, Ranged, Support, Swarm };
 
 // Classification drives the UI frame (normal / elite dragon / boss frame).
 UENUM(BlueprintType)
@@ -29,7 +30,10 @@ enum class ECireNPCAbilityKind : uint8
     Enrage,       // one-shot trigger at a health threshold
     HealAlly,     // interruptible heal on the most injured ally
     ShieldWall,   // self damage reduction below a health threshold
-    Disengage     // leap away from a victim in melee range
+    Disengage,    // leap away from a victim in melee range
+    // monster-races: generic race-skill behaviours (riders root/silence/slow/knockback work on every telegraph)
+    Pull,         // telegraphed line to the victim (or farthest champion); champions in it are dragged to the caster
+    Summon        // interruptible cast; spawns Count units of SummonId beside the caster (joins its wave)
 };
 
 struct CIRESTEAMSURVIVAL_API FCireNPCAbility
@@ -57,6 +61,17 @@ struct CIRESTEAMSURVIVAL_API FCireNPCAbility
     float HealthThreshold = 0.f;   // Enrage/ShieldWall/HealAlly trigger fraction
     float InitialCooldown = 0.f;
     FLinearColor Color = FLinearColor(.8f,.24f,.06f,.35f);
+    // monster-races: riders applied to champions inside the telegraph when it lands, plus presentation ids.
+    float Root = 0.f;              // seconds rooted (cannot move)
+    float Silence = 0.f;           // seconds silenced (cannot cast skills)
+    float Slow = 0.f;              // seconds slowed (existing slow)
+    float Knockback = 0.f;         // cm pushed away from the caster / circle centre
+    FName SummonId;                // Summon: archetype id
+    int32 Count = 1;               // Summon: units per cast
+    FName Buff;                    // BuffVisuals.json id shown on champions hit (or allies buffed)
+    FName Cue;                     // AudioCues.json id played when the cast starts
+    bool bCore = false;            // always in the kit once skills unlock (never drawn out of the pool)
+    bool HasRiders() const { return Root>0||Silence>0||Slow>0||Knockback>0||!Buff.IsNone(); }
 };
 
 struct CIRESTEAMSURVIVAL_API FCireNPCProp
@@ -98,6 +113,15 @@ struct CIRESTEAMSURVIVAL_API FCireNPCArchetype
     FLinearColor Tint = FLinearColor::White;
     TArray<FCireNPCProp> Props;
     TArray<FCireNPCAbility> Abilities;
+    // monster-races: per-unit stat scaling on top of tuning, lane-boss health override and race membership.
+    float HealthScale = 1.f;
+    float DamageScale = 1.f;
+    float LaneBossHealthMultiplier = 0.f; // >0 replaces health factor x bossHealthMultiplier for lane bosses
+    FName RaceId;
+    FName Slot;                     // line|bruiser|tank|caster|ranged|special|warlord|colossus
+    FName FallbackBody;             // archetype whose Tripo body is drawn until the unit has its own art
+    int32 PoolDraw = 99;            // pool skills a normal-rank unit may draw per match
+    FString Look;                   // Tripo art prompt (Docs/Races.md)
     const FCireNPCAbility* FindAbility(FName AbilityId) const;
     const FCireNPCAbility* BasicAttack() const;
 };
@@ -135,6 +159,11 @@ namespace CireNPCArchetypes
     CIRESTEAMSURVIVAL_API FString ClassLabel(ECireNPCClass Class);
     // Player-facing ability type label: Attack, Cast, Telegraph, Buff, Passive...
     CIRESTEAMSURVIVAL_API FString KindLabel(const FCireNPCAbility& Ability);
+    // monster-races: shared parsers so Races.json units use the exact NPCArchetypes.json schema.
+    CIRESTEAMSURVIVAL_API bool ParseArchetypeObject(const FString& Key, const TSharedPtr<class FJsonObject>& Object, FCireNPCArchetype& Out, FString& Error);
+    CIRESTEAMSURVIVAL_API bool ParseAbilityObject(const TSharedPtr<class FJsonObject>& Object, FCireNPCAbility& Out, FString& Error, const FString& Where);
+    /** Casters, rangers and supports keep their distance and shoot projectile basics. */
+    CIRESTEAMSURVIVAL_API bool IsRangedRole(ECireNPCRole Role);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunValidationSmoke();
 #endif

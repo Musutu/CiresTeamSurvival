@@ -1,5 +1,6 @@
 #include "CireNPCArchetypes.h"
 #include "CireSkillTuning.h"
+#include "CireRaces.h" // monster-races
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -17,7 +18,8 @@ bool bLoaded=false;
 bool ParseEnum(const FString& Text,ECireNPCRole& Out)
 {
     if(Text==TEXT("bruiser"))Out=ECireNPCRole::Bruiser;else if(Text==TEXT("tank"))Out=ECireNPCRole::Tank;
-    else if(Text==TEXT("caster"))Out=ECireNPCRole::Caster;else if(Text==TEXT("ranged"))Out=ECireNPCRole::Ranged;else return false;
+    else if(Text==TEXT("caster"))Out=ECireNPCRole::Caster;else if(Text==TEXT("ranged"))Out=ECireNPCRole::Ranged;
+    else if(Text==TEXT("support"))Out=ECireNPCRole::Support;else if(Text==TEXT("swarm"))Out=ECireNPCRole::Swarm;else return false; // monster-races
     return true;
 }
 bool ParseEnum(const FString& Text,ECireNPCClass& Out)
@@ -35,7 +37,8 @@ bool ParseEnum(const FString& Text,ECireNPCAbilityKind& Out)
         {TEXT("guard"),ECireNPCAbilityKind::Guard},{TEXT("provoke"),ECireNPCAbilityKind::Provoke},
         {TEXT("rally"),ECireNPCAbilityKind::Rally},{TEXT("enrage"),ECireNPCAbilityKind::Enrage},
         {TEXT("healAlly"),ECireNPCAbilityKind::HealAlly},{TEXT("shieldWall"),ECireNPCAbilityKind::ShieldWall},
-        {TEXT("disengage"),ECireNPCAbilityKind::Disengage}};
+        {TEXT("disengage"),ECireNPCAbilityKind::Disengage},
+        {TEXT("pull"),ECireNPCAbilityKind::Pull},{TEXT("summon"),ECireNPCAbilityKind::Summon}}; // monster-races
     if(const auto* Found=Kinds.Find(Text)){Out=*Found;return true;}
     return false;
 }
@@ -93,10 +96,24 @@ bool ParseAbility(const TSharedPtr<FJsonObject>& O,FCireNPCAbility& A,FString& E
         Number(O,TEXT("healthThreshold"),A.HealthThreshold,0,1,Error,Where)&&Number(O,TEXT("initialCooldown"),A.InitialCooldown,0,600,Error,Where)&&
         Color(O,TEXT("color"),A.Color,Error,Where);
     if(!bNumbers)return false;
+    // monster-races: riders, summons and presentation ids.
+    {
+        float Count=1;FString Text;
+        if(!(Number(O,TEXT("root"),A.Root,0,10,Error,Where)&&Number(O,TEXT("silence"),A.Silence,0,10,Error,Where)&&
+            Number(O,TEXT("slow"),A.Slow,0,15,Error,Where)&&Number(O,TEXT("knockback"),A.Knockback,0,1500,Error,Where)&&
+            Number(O,TEXT("count"),Count,1,6,Error,Where)))return false;
+        A.Count=FMath::RoundToInt(Count);
+        if(O->TryGetStringField(TEXT("summon"),Text)&&!Text.IsEmpty())A.SummonId=FName(*Text);
+        if(O->TryGetStringField(TEXT("buff"),Text)&&!Text.IsEmpty())A.Buff=FName(*Text);
+        if(O->TryGetStringField(TEXT("cue"),Text)&&!Text.IsEmpty())A.Cue=FName(*Text);
+        O->TryGetBoolField(TEXT("core"),A.bCore);
+        if(A.Kind==ECireNPCAbilityKind::Summon&&(A.SummonId.IsNone()||A.CastTime<.2f)){Error=Where+TEXT(" summon needs a summon archetype id and castTime >= 0.2s");return false;}
+        if(A.bBasic&&(A.HasRiders()||A.bCore)){Error=Where+TEXT(" basic attacks cannot carry riders or be core");return false;}
+    }
     if(A.MinRange>A.Range){Error=Where+TEXT(".minRange exceeds range");return false;}
     if(A.Kind==ECireNPCAbilityKind::Projectile&&A.Skillshot.IsEmpty()){Error=Where+TEXT(" projectile needs a skillshot id");return false;}
     if((A.Kind==ECireNPCAbilityKind::Cone||A.Kind==ECireNPCAbilityKind::TargetCircle||A.Kind==ECireNPCAbilityKind::SelfCircle||
-        A.Kind==ECireNPCAbilityKind::Charge)&&A.CastTime<.2f){Error=Where+TEXT(" telegraphed abilities need castTime >= 0.2s");return false;}
+        A.Kind==ECireNPCAbilityKind::Charge||A.Kind==ECireNPCAbilityKind::Pull)&&A.CastTime<.2f){Error=Where+TEXT(" telegraphed abilities need castTime >= 0.2s");return false;}
     if((A.Kind==ECireNPCAbilityKind::Enrage||A.Kind==ECireNPCAbilityKind::ShieldWall)&&A.HealthThreshold<=0)
     {Error=Where+TEXT(" needs healthThreshold");return false;}
     if((A.Kind==ECireNPCAbilityKind::Guard||A.Kind==ECireNPCAbilityKind::Provoke||A.Kind==ECireNPCAbilityKind::Rally||
@@ -110,7 +127,7 @@ bool ParseArchetype(const FString& Key,const TSharedPtr<FJsonObject>& O,FCireNPC
     if(!O->TryGetStringField(TEXT("displayName"),A.DisplayName)||A.DisplayName.IsEmpty()||
         !O->TryGetStringField(TEXT("role"),Role)||!ParseEnum(Role,A.Role)||
         !O->TryGetStringField(TEXT("classification"),Class)||!ParseEnum(Class,A.Classification))
-    {Error=Where+TEXT(" needs displayName, role (bruiser|tank|caster|ranged) and classification (normal|elite|boss)");return false;}
+    {Error=Where+TEXT(" needs displayName, role (bruiser|tank|caster|ranged|support|swarm) and classification (normal|elite|boss)");return false;}
     A.Id=FName(*Key);
     FString Tuning;
     if(O->TryGetStringField(TEXT("tuningKind"),Tuning))
@@ -125,7 +142,10 @@ bool ParseArchetype(const FString& Key,const TSharedPtr<FJsonObject>& O,FCireNPC
         Number(O,TEXT("eliteDamageMultiplier"),A.EliteDamageMultiplier,0,20,Error,Where)&&Number(O,TEXT("moveSpeed"),A.MoveSpeed,50,1200,Error,Where)&&
         Number(O,TEXT("armor"),A.Armor,0,.8f,Error,Where)&&Number(O,TEXT("attackRange"),A.AttackRange,80,2500,Error,Where)&&
         Number(O,TEXT("attackInterval"),A.AttackInterval,.3f,10,Error,Where)&&Number(O,TEXT("preferredRange"),A.PreferredRange,0,2500,Error,Where)&&
-        Number(O,TEXT("kiteRange"),A.KiteRange,0,2000,Error,Where)&&Number(O,TEXT("scale"),A.Scale,.4f,3,Error,Where)))return false;
+        Number(O,TEXT("kiteRange"),A.KiteRange,0,2000,Error,Where)&&Number(O,TEXT("scale"),A.Scale,.4f,3,Error,Where)&&
+        // monster-races
+        Number(O,TEXT("healthScale"),A.HealthScale,.05f,20,Error,Where)&&Number(O,TEXT("damageScale"),A.DamageScale,.05f,20,Error,Where)&&
+        Number(O,TEXT("laneBossHealthMultiplier"),A.LaneBossHealthMultiplier,0,100,Error,Where)))return false;
     if(const TSharedPtr<FJsonObject>* Mesh=nullptr;O->TryGetObjectField(TEXT("mesh"),Mesh))
     {
         (*Mesh)->TryGetStringField(TEXT("slot"),A.MeshSlot);(*Mesh)->TryGetStringField(TEXT("path"),A.MeshPath);
@@ -161,8 +181,8 @@ bool ParseArchetype(const FString& Key,const TSharedPtr<FJsonObject>& O,FCireNPC
     if(Basics!=1){Error=Where+TEXT(" needs exactly one basic attack");return false;}
     const auto* Basic=A.BasicAttack();
     if(Basic->Kind!=ECireNPCAbilityKind::Melee&&Basic->Kind!=ECireNPCAbilityKind::Projectile){Error=Where+TEXT(" basic attack must be melee or projectile");return false;}
-    const bool bRangedRole=A.Role==ECireNPCRole::Caster||A.Role==ECireNPCRole::Ranged;
-    if(bRangedRole!=(Basic->Kind==ECireNPCAbilityKind::Projectile)){Error=Where+TEXT(" casters/ranged use projectile basics; tanks/bruisers use melee");return false;}
+    const bool bRangedRole=CireNPCArchetypes::IsRangedRole(A.Role); // monster-races: supports shoot too
+    if(bRangedRole!=(Basic->Kind==ECireNPCAbilityKind::Projectile)){Error=Where+TEXT(" casters/ranged/supports use projectile basics; tanks/bruisers/swarms use melee");return false;}
     if(bRangedRole&&(A.PreferredRange<=A.KiteRange||A.PreferredRange>A.AttackRange)){Error=Where+TEXT(" needs kiteRange < preferredRange <= attackRange");return false;}
     return true;
 }
@@ -184,6 +204,19 @@ const FCireNPCAbility* FCireNPCArchetype::FindAbility(FName AbilityId) const
 const FCireNPCAbility* FCireNPCArchetype::BasicAttack() const
 {
     return Abilities.FindByPredicate([](const FCireNPCAbility& A){return A.bBasic;});
+}
+// monster-races: shared parsers for Races.json.
+bool CireNPCArchetypes::ParseArchetypeObject(const FString& Key,const TSharedPtr<FJsonObject>& O,FCireNPCArchetype& Out,FString& Error)
+{
+    return O.IsValid()&&ParseArchetype(Key,O,Out,Error);
+}
+bool CireNPCArchetypes::ParseAbilityObject(const TSharedPtr<FJsonObject>& O,FCireNPCAbility& Out,FString& Error,const FString& Where)
+{
+    return O.IsValid()&&ParseAbility(O,Out,Error,Where);
+}
+bool CireNPCArchetypes::IsRangedRole(ECireNPCRole Role)
+{
+    return Role==ECireNPCRole::Caster||Role==ECireNPCRole::Ranged||Role==ECireNPCRole::Support;
 }
 
 bool CireNPCArchetypes::ParseJson(const FString& Json,FCireNPCDatabase& Out,FString& Error)
@@ -239,6 +272,13 @@ bool CireNPCArchetypes::Reload(FString* OutError)
     FCireNPCDatabase Candidate;
     if(!FFileHelper::LoadFileToString(Json,*Path))Error=TEXT("Cannot read Content/Data/NPCArchetypes.json");
     else ParseJson(Json,Candidate,Error);
+    // monster-races: Races.json adds the race units and extends existing archetypes. A bad race file is
+    // reported loudly but never takes the authored hollow archetypes down with it.
+    if(Error.IsEmpty())
+    {
+        FString RaceError;
+        if(!CireRaces::MergeInto(Candidate,RaceError))UE_LOG(LogCireNPCData,Error,TEXT("CIRE_RACE_DATA_ERROR %s"),*RaceError);
+    }
     if(!Error.IsEmpty())
     {
         UE_LOG(LogCireNPCData,Error,TEXT("CIRE_NPC_DATA_ERROR %s"),*Error);
@@ -264,7 +304,8 @@ FName CireNPCArchetypes::LegacyKind(int32 Kind)
 FString CireNPCArchetypes::RoleLabel(ECireNPCRole Role)
 {
     switch(Role){case ECireNPCRole::Tank:return TEXT("Tank");case ECireNPCRole::Caster:return TEXT("Caster");
-    case ECireNPCRole::Ranged:return TEXT("Ranged");default:return TEXT("Bruiser");}
+    case ECireNPCRole::Ranged:return TEXT("Ranged");case ECireNPCRole::Support:return TEXT("Support");
+    case ECireNPCRole::Swarm:return TEXT("Swarm");default:return TEXT("Bruiser");} // monster-races
 }
 FString CireNPCArchetypes::ClassLabel(ECireNPCClass Class)
 {
@@ -276,7 +317,9 @@ FString CireNPCArchetypes::KindLabel(const FCireNPCAbility& A)
     switch(A.Kind)
     {
     case ECireNPCAbilityKind::Projectile:case ECireNPCAbilityKind::HealAlly:return A.bInterruptible?TEXT("Cast (interruptible)"):TEXT("Cast");
-    case ECireNPCAbilityKind::Cone:case ECireNPCAbilityKind::TargetCircle:case ECireNPCAbilityKind::SelfCircle:case ECireNPCAbilityKind::Charge:return TEXT("Telegraph");
+    case ECireNPCAbilityKind::Cone:case ECireNPCAbilityKind::TargetCircle:case ECireNPCAbilityKind::SelfCircle:case ECireNPCAbilityKind::Charge:
+    case ECireNPCAbilityKind::Pull:return TEXT("Telegraph"); // monster-races
+    case ECireNPCAbilityKind::Summon:return TEXT("Summon (interruptible)");
     case ECireNPCAbilityKind::Guard:case ECireNPCAbilityKind::Rally:case ECireNPCAbilityKind::ShieldWall:return TEXT("Buff");
     case ECireNPCAbilityKind::Provoke:return TEXT("Taunt");
     case ECireNPCAbilityKind::Enrage:return TEXT("Enrage");
@@ -296,7 +339,7 @@ bool CireNPCArchetypes::RunValidationSmoke()
     FString Json,Error;FCireNPCDatabase D;
     Check(FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/NPCArchetypes.json")))&&ParseJson(Json,D,Error),TEXT("authored NPCArchetypes.json parses"));
     if(!Error.IsEmpty())UE_LOG(LogCireNPCData,Error,TEXT("CIRE_NPC_DATA_CHECK_FAIL parse: %s"),*Error);
-    bool Roles[4]={false,false,false,false};int32 Bosses=0;
+    bool Roles[6]={false,false,false,false,false,false};int32 Bosses=0; // monster-races: six roles
     for(const auto& Pair:D.Archetypes)
     {
         const auto& A=Pair.Value;Roles[static_cast<int32>(A.Role)]=true;Bosses+=A.Classification==ECireNPCClass::Boss;

@@ -6,6 +6,7 @@
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
+#include "CireRaces.h" // monster-races
 #include "CireSummon.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -381,6 +382,7 @@ void CireProgression::SpawnBay(ACireGameMode* Mode, int32 Team, int32 Bay, int32
         if (!M) { UE_LOG(LogCireLoot, Error, TEXT("Challenge pack spawn failed")); continue; }
         M->Lane = Team; M->Tier = Tier; M->PackId = PackId; M->SpawnPosition = P;
         CireNPCCombat::ConfigureArchetype(M, bIsLeader ? NPCs.PackLeader : NPCs.PackMembers[I], Wave, Tier, Round);
+        CireRaces::ApplyPackUnit(M, Tier, bIsLeader, Wave); // monster-races: elite/champion/warlord colours and drawn skills
         M->MonsterName = FString::Printf(TEXT("Challenge %d | %s"), Tier, *M->MonsterName);
         Mode->Monsters.Add(M);
     }

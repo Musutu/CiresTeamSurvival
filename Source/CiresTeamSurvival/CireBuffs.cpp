@@ -118,6 +118,10 @@ const TArray<FName>& CireBuffs::KnownIds()
         // Data-ready ids for item actives and future skills.
         TEXT("blood_rage"),TEXT("frost_weapon"),TEXT("blessing"),TEXT("regeneration"),TEXT("stunned"),
         // Item actives and consumables (progression-shop): records and inventory timed buffs.
-        TEXT("oathshield"),TEXT("toll_of_the_grave"),TEXT("borrowed_time"),TEXT("scatter"),TEXT("mana_restore")};
+        TEXT("oathshield"),TEXT("toll_of_the_grave"),TEXT("borrowed_time"),TEXT("scatter"),TEXT("mana_restore"),
+        // monster-races: race-skill riders and themed marks (CireRaces::OnAbilityReleased).
+        TEXT("npc_rooted"),TEXT("npc_silenced"),TEXT("npc_tide"),TEXT("npc_ink"),TEXT("npc_mind"),TEXT("npc_thorns"),TEXT("npc_spores"),
+        TEXT("npc_bloodlust"),TEXT("npc_sundered"),TEXT("npc_dragonfire"),TEXT("npc_scaleward"),TEXT("npc_runic"),TEXT("npc_feral"),
+        TEXT("npc_profane"),TEXT("npc_void")};
     return Ids;
 }

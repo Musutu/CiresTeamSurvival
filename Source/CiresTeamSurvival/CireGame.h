@@ -41,6 +41,9 @@ public:
     // wave-director: current / next wave for the match plate (CireWaves.h).
     UPROPERTY(Replicated) FString WaveLabel;
     UPROPERTY(Replicated) FString NextWaveLabel;
+    // monster-races: this match's monster skill seed (CireRaces.h) and the race of the current wave.
+    UPROPERTY(Replicated) int32 MonsterSkillSeed = 0;
+    UPROPERTY(Replicated) FName WaveRace;
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) FVector LaneBounds = FVector(-2350,13000,1120);
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) TArray<FVector2D> LanePoints0;
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) TArray<FVector2D> LanePoints1;

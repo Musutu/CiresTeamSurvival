@@ -56,7 +56,10 @@ namespace CireMonsterArt
         float DeathHoldSeconds = 2.6f, DeathSinkSeconds = 1.4f, DeathSinkCm = 70.f;
     };
     CIRESTEAMSURVIVAL_API const FData& Data(bool bReload = false);
+    /** Art for an archetype; race units without their own art resolve their fallback body (monster-races). */
     CIRESTEAMSURVIVAL_API const FArchetypeArt* Find(FName ArchetypeId);
+    /** monster-races: true when the archetype has its own art (NPCMeshes/RaceMeshes), not a borrowed fallback body. */
+    CIRESTEAMSURVIVAL_API bool HasOwnBody(FName ArchetypeId);
     /** Timing window of a clip by its Tripo name ("slash"); falls back to the whole clip. */
     CIRESTEAMSURVIVAL_API FClipWindow Window(const UAnimSequence* Sequence);
 #if !UE_BUILD_SHIPPING

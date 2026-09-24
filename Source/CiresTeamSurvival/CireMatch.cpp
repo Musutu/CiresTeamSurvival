@@ -126,6 +126,7 @@ void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireGameState,Round); DOREPLIFETIME(ACireGameState,Wave);
     DOREPLIFETIME(ACireGameState,CycleWavesDone); DOREPLIFETIME(ACireGameState,WavesPerCycle);
     DOREPLIFETIME(ACireGameState,NextWaveSeconds);
+    DOREPLIFETIME(ACireGameState,MonsterSkillSeed); DOREPLIFETIME(ACireGameState,WaveRace); // monster-races
     DOREPLIFETIME(ACireGameState,EmberLives); DOREPLIFETIME(ACireGameState,DuskLives);
     DOREPLIFETIME(ACireGameState,EmberWins); DOREPLIFETIME(ACireGameState,DuskWins);
     DOREPLIFETIME(ACireGameState,ArenaIndex); DOREPLIFETIME(ACireGameState,Announcement);

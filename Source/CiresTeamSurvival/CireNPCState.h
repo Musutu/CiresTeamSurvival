@@ -101,6 +101,13 @@ public:
     UPROPERTY(Replicated) bool bCastInterruptible = false;
     UPROPERTY(Replicated) TArray<FCireThreatEntry> ThreatTable;
     UPROPERTY(ReplicatedUsing=OnRep_Aggro) FCireAggroState Aggro;
+    // monster-races: rank colour, palette reskin and this monster's drawn skills (CireRaces.h).
+    UPROPERTY(ReplicatedUsing=OnRep_Look) uint8 Rank = 0;          // ECireNPCRank
+    UPROPERTY(ReplicatedUsing=OnRep_Look) uint8 PaletteIndex = 0;  // race palette variant
+    UPROPERTY(Replicated) uint8 SkillTier = 0;                     // 0 none, 1..3 = I..III
+    UPROPERTY(Replicated) bool bLoadoutSet = false;                // false = every authored ability (legacy/tests)
+    UPROPERTY(Replicated) TArray<FName> Loadout;                   // active non-basic abilities when bLoadoutSet
+    bool IsAbilityActive(FName AbilityId) const;
 
     // ---- read API (valid on server and clients) ----
     const FCireNPCArchetype* Archetype() const;
@@ -145,4 +152,5 @@ public:
 private:
     UFUNCTION() void OnRep_Archetype();
     UFUNCTION() void OnRep_Aggro();
+    UFUNCTION() void OnRep_Look(); // monster-races
 };
