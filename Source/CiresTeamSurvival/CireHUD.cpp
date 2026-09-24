@@ -75,6 +75,9 @@ FCireUIRect ACireHUD::PanelRect(FName Id) const
         const FCireUIRect T=UISettings.GetRect(TEXT("Target"),View);
         if(Overlap(R,T)){R.X=FMath::Clamp(T.X+T.W-R.W,0.f,ViewW-R.W);R.Y=FMath::Min(T.Y+T.H+6,ViewH-R.H);}
     }
+    // Collapsed compact panels only occupy their header (for clicks and layout).
+    if(((Id==TEXT("Meter")&&UISettings.bMeterCollapsed)||(Id==TEXT("Threat")&&UISettings.bThreatCollapsed))&&!bEditLayout)
+        R.H=FMath::Min(R.H,20.f*R.W/220.f);
     if(Id==TEXT("Boss"))
     {
         const FCireUIRect T=UISettings.GetRect(TEXT("Threat"),View);
@@ -93,7 +96,7 @@ void ACireHUD::UsePanel(FName Id,float W,float H)
         const float Ease=1.f-FMath::Square(1.f-T);R.Y-=(1.f-Ease)*12.f;PanelAlpha=.25f+.75f*Ease;
     }
     // Height-trimmed panels (boss frames) keep their scale and simply show fewer rows.
-    if(Id==TEXT("Boss"))R.H=UISettings.GetRect(Id,FVector2D(ViewW,ViewH)).H;
+    if(Id==TEXT("Boss")||Id==TEXT("Meter")||Id==TEXT("Threat"))R.H=UISettings.GetRect(Id,FVector2D(ViewW,ViewH)).H;
     Origin=FVector2D(R.X,R.Y); Stretch=FVector2D(R.W/W,R.H/H);
     VisiblePanels.AddUnique(Id);
     static const TMap<FName,FString> Help={
@@ -157,7 +160,7 @@ bool ACireHUD::IsPointerOverInterface() const
     float CursorX=0,CursorY=0;
     if(!PlayerOwner||!PlayerOwner->GetMousePosition(CursorX,CursorY))return true;
     CursorX/=Scale;CursorY/=Scale;
-    if(CireDeveloperTools::CanEdit(GetWorld())){const auto R=DeveloperLauncherRect();if(CursorX>=R.X&&CursorX<=R.X+R.W&&CursorY>=R.Y&&CursorY<=R.Y+R.H)return true;}
+    if(IsDeveloperLauncherVisible()){const auto R=DeveloperLauncherRect();if(CursorX>=R.X&&CursorX<=R.X+R.W&&CursorY>=R.Y&&CursorY<=R.Y+R.H)return true;}
     for(FName Id:VisiblePanels) {
         if(Id==TEXT("CombatText")||Id==TEXT("Tooltip"))continue;
         const auto R=PanelRect(Id);
@@ -170,6 +173,7 @@ void ACireHUD::ToggleSettings() { if(bSettings)RevertVideoPreview();bSettings=!b
 void ACireHUD::ToggleDeveloperTools()
 {
     if(!CireDeveloperTools::CanEdit(GetWorld()))return;
+    bShowDevLauncher=true; // F8 reveals the Developer Tools button for the rest of the session
     if(bSettings&&OptionsTab==5){ToggleSettings();return;}
     if(bEditLayout)ToggleLayoutEditor();
     RevertVideoPreview();bSettings=true;OptionsTab=5;DeveloperPage=5;bVideoLoaded=false;
@@ -253,34 +257,34 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
 }
 void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
 {
-    UsePanel(TEXT("Party"),250,248);
+    UsePanel(TEXT("Party"),210,248);
     Label(Hero->TeamId==0?TEXT("EMBER COMPANY"):TEXT("DUSK COMPANY"),1,0,10,Gold);
-    Label(TEXT("PARTY / 5"),183,0,9,Muted);
+    Label(TEXT("PARTY / 5"),152,0,9,Muted);
     TArray<ACireHero*> Allies;
     for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(*It!=Hero&&It->TeamId==Hero->TeamId&&!Cast<ACireSummon>(*It))Allies.Add(*It);
     Allies.Sort([](const ACireHero& A,const ACireHero& B){return A.GetName()<B.GetName();});
     for(int32 I=0;I<FMath::Min(Allies.Num(),4);++I) {
         ACireHero* Ally=Allies[I]; const float Y=20+I*56;
         const bool Selected=Hero->Target==Ally, Focus=Controller&&Controller->FocusTarget==Ally;
-        const bool Over=Hit(0,Y,250,50)&&!bModal&&!bEditLayout&&!bSettings;
+        const bool Over=Hit(0,Y,210,50)&&!bModal&&!bEditLayout&&!bSettings;
         const int32 AllyAggro=Ally->bDead?0:AggroCount(GetWorld(),Ally);
-        if(AllyAggro>0)Panel(-2,Y-2,254,54,FLinearColor(.9f,.08f,.05f,.4f));
-        Frame(0,Y,250,50,Selected?Parchment:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):RoleColor(Ally->Archetype)*.65f);
-        if(Over)Panel(1,Y+1,248,48,FLinearColor(.3f,.45f,.48f,.12f));
+        if(AllyAggro>0)Panel(-2,Y-2,214,54,FLinearColor(.9f,.08f,.05f,.4f));
+        Frame(0,Y,210,50,Selected?Parchment:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):RoleColor(Ally->Archetype)*.65f);
+        if(Over)Panel(1,Y+1,208,48,FLinearColor(.3f,.45f,.48f,.12f));
         Icon(FString::Printf(TEXT("role%d"),Ally->Archetype),4,Y+10,29,Ally->bDead?Muted:RoleColor(Ally->Archetype));
-        Label(ShortName(Ally->HeroName,22),39,Y+4,11,Ally->bDead?Muted:Parchment);
-        Label(FString::FromInt(Ally->Level),183,Y+4,10,Gold);
-        Bar(39,Y+21,161,13,Fraction(Ally->Health,Ally->MaxHealth),Ally->bDead?Muted:LifeGreen);
+        Label(ShortName(Ally->HeroName,18),39,Y+4,11,Ally->bDead?Muted:Parchment);
+        Label(FString::FromInt(Ally->Level),158,Y+4,10,Gold);
+        Bar(39,Y+21,130,13,Fraction(Ally->Health,Ally->MaxHealth),Ally->bDead?Muted:LifeGreen);
         Label(Ally->bDead?TEXT("FALLEN"):FString::Printf(TEXT("%.0f%%"),Fraction(Ally->Health,Ally->MaxHealth)*100),42,Y+20,9,Parchment);
         const int32 Poisoned=PoisonCount(Ally);
-        Bar(39,Y+37,Poisoned>0?66:161,5,Fraction(Ally->Mana,Ally->MaxMana),Blue);
-        if(Poisoned>0)Label(PoisonLabel(Poisoned),112,Y+35,8,Poison);
-        Panel(226,Y+3,20,17,Focus?Gold:Card);Label(Focus?TEXT("*"):TEXT("+"),231,Y+2,13,Focus?Ink:Gold);
-        UnitTip(Ally,0,Y,222,49);
-        Tip(TEXT("Focus teammate"),TEXT("Keep a second persistent unit frame for this teammate. Click the focus frame to make them your current target."),226,Y+3,20,17);
-        DrawStatuses(Ally,205,Y+24,17,2);
+        Bar(39,Y+37,Poisoned>0?60:130,5,Fraction(Ally->Mana,Ally->MaxMana),Blue);
+        if(Poisoned>0)Label(PoisonLabel(Poisoned),104,Y+35,8,Poison);
+        Panel(186,Y+3,20,17,Focus?Gold:Card);Label(Focus?TEXT("*"):TEXT("+"),191,Y+2,13,Focus?Ink:Gold);
+        UnitTip(Ally,0,Y,184,49);
+        Tip(TEXT("Focus teammate"),TEXT("Keep a second persistent unit frame for this teammate. Click the focus frame to make them your current target."),186,Y+3,20,17);
+        DrawStatuses(Ally,172,Y+24,15,2);
         if(Over&&Clicked&&Controller) {
-            if(Hit(222,Y,28,23))Controller->SetFocusTarget(Focus?nullptr:Ally);
+            if(Hit(182,Y,28,23))Controller->SetFocusTarget(Focus?nullptr:Ally);
             else Controller->ServerAction(0,0,Ally);
             Clicked=false;
         }
@@ -288,19 +292,24 @@ void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
 }
 void ACireHUD::DrawMatch(ACireGameState* State)
 {
-    if(!State)return;UsePanel(TEXT("Match"),320,74);Frame(0,0,320,74,Gold);
+    // Compact top-centre match plate (250x70 design).
+    if(!State)return;UsePanel(TEXT("Match"),250,70);Frame(0,0,250,70,Gold);
     const TCHAR* Phases[]={TEXT("SURVIVAL"),TEXT("TOWN PREPARATION"),TEXT("PORTAL ARENA"),TEXT("MATCH COMPLETE"),TEXT("RECOVERY")};
     const FString Phase=Phases[FMath::Clamp(State->Phase,0,4)];
-    Label(Phase,(320-TextWidth(Phase,10))/2,8,10,State->Phase==2?Red:Teal);
-    const int32 Seconds=FMath::Max(0,FMath::CeilToInt(State->SecondsLeft));
-    const FString Time=State->Phase==0?FString::Printf(TEXT("%d / %d"),State->CycleWavesDone,State->WavesPerCycle):FString::Printf(TEXT("%02d:%02d"),Seconds/60,Seconds%60);
-    Label(Time,(320-TextWidth(Time,25))/2,26,25,Parchment);
-    Label(FString::Printf(TEXT("%02d"),State->EmberLives),18,23,24,Gold);
-    Label(TEXT("EMBER"),17,52,9,Muted);Label(FString::Printf(TEXT("%02d"),State->DuskLives),269,23,24,Blue);Label(TEXT("DUSK"),269,52,9,Muted);
-    Label(State->Phase==0?FString::Printf(TEXT("WAVE %d / CYCLE CLEARS"),State->Wave):FString::Printf(TEXT("ROUND %d   /   WAVE %d"),State->Round,State->Wave),88,59,9,Muted);
-    if(State->Phase==0&&State->NextWaveSeconds>.05f) {
+    Label(Phase,(250-TextWidth(Phase,9))/2,7,9,State->Phase==2?Red:Teal);
+    // Sentinel / frozen clocks (huge or non-finite) show as "--:--" instead of leaking.
+    const bool bClockValid=FMath::IsFinite(State->SecondsLeft)&&State->SecondsLeft<100*60;
+    const int32 Seconds=bClockValid?FMath::Max(0,FMath::CeilToInt(State->SecondsLeft)):0;
+    const FString Time=State->Phase==0?FString::Printf(TEXT("%d / %d"),State->CycleWavesDone,State->WavesPerCycle):bClockValid?FString::Printf(TEXT("%02d:%02d"),Seconds/60,Seconds%60):FString(TEXT("--:--"));
+    Label(Time,(250-TextWidth(Time,22))/2,20,22,Parchment);
+    Label(FString::Printf(TEXT("%02d"),State->EmberLives),14,19,21,Gold);Label(TEXT("EMBER"),13,44,8,Muted);
+    const FString Dusk=FString::Printf(TEXT("%02d"),State->DuskLives);
+    Label(Dusk,236-TextWidth(Dusk,21),19,21,Blue);Label(TEXT("DUSK"),236-TextWidth(TEXT("DUSK"),8),44,8,Muted);
+    const FString Sub=State->Phase==0?FString::Printf(TEXT("WAVE %d / CYCLE CLEARS"),State->Wave):FString::Printf(TEXT("ROUND %d  /  WAVE %d"),State->Round,State->Wave);
+    Label(Sub,(250-TextWidth(Sub,8))/2,54,8,Muted);
+    if(State->Phase==0&&FMath::IsFinite(State->NextWaveSeconds)&&State->NextWaveSeconds>.05f&&State->NextWaveSeconds<3600.f) {
         const FString Next=FString::Printf(TEXT("NEXT WAVE IN %ds"),FMath::CeilToInt(State->NextWaveSeconds));
-        Label(Next,(320-TextWidth(Next,9))/2,80,9,Gold);
+        Label(Next,(250-TextWidth(Next,9))/2,76,9,Gold);
     }
 }
 void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
@@ -470,22 +479,33 @@ void ACireHUD::DrawChat(ACireController* Controller)
 void ACireHUD::DrawMeters(ACireHero* Hero,ACireController* Controller)
 {
     if(UISettings.bShowMeter||bEditLayout) {
-        UsePanel(TEXT("Meter"),304,174);Frame(0,0,304,174,Gold*.65f);
+        // Compact, collapsible meter (220x134 design). Click the header to fold it.
+        const bool Collapsed=UISettings.bMeterCollapsed&&!bEditLayout;
+        UsePanel(TEXT("Meter"),220,134);
         const bool Heal=UISettings.MeterMode==1,Interactive=!bModal&&!bSettings&&!bEditLayout;
-        Label(Heal?TEXT("HEALING DONE"):TEXT("DAMAGE DONE"),12,10,11,Parchment);
-        Label(TEXT("TOTAL / MATCH"),198,12,8,Muted);
-        CireUIStyle::Button(Painter(),12,30,75,19,TEXT("DAMAGE"),!Heal?ECireButtonState::Selected:Hit(12,30,75,19)?ECireButtonState::Hover:ECireButtonState::Normal,Gold,8.5f);
-        CireUIStyle::Button(Painter(),93,30,77,19,TEXT("HEALING"),Heal?ECireButtonState::Selected:Hit(93,30,77,19)?ECireButtonState::Hover:ECireButtonState::Normal,Teal,8.5f);
-        if(Clicked&&Interactive&&Hit(12,30,159,19)){UISettings.MeterMode=Hit(12,30,75,19)?0:1;UISettings.Save();Clicked=false;}
-        TArray<ACireHero*> Party;for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(It->TeamId==Hero->TeamId)Party.Add(*It);
-        Party.Sort([Heal](const ACireHero& A,const ACireHero& B){return Heal?A.HealingDone>B.HealingDone:A.DamageDone>B.DamageDone;});
-        float Total=0,Max=1;for(auto* H:Party){float V=Heal?H->HealingDone:H->DamageDone;Total+=V;Max=FMath::Max(Max,V);}
-        for(int32 I=0;I<FMath::Min(Party.Num(),5);++I) {
-            auto* H=Party[I];const float Value=Heal?H->HealingDone:H->DamageDone,Y=54+I*22;
-            Bar(12,Y,280,18,Value/Max,(Heal?Teal:RoleColor(H->Archetype))*.4f);
-            Label(FString::Printf(TEXT("%d  %s"),I+1,*ShortName(H==Hero?TEXT("You"):H->HeroName,20)),18,Y+2,10,H==Hero?Parchment:Muted);
-            const FString Amount=FString::Printf(TEXT("%.0f  %.0f%%"),Value,Fraction(Value,Total)*100);
-            Label(Amount,287-TextWidth(Amount,9),Y+3,9,Parchment);
+        FCireUIPainter P=Painter();
+        if(!Collapsed)CireUIStyle::Frame(P,0,0,220,134,Gold*.65f,ECireFrame::Card);
+        P.Rect(0,0,220,20,FLinearColor(.12f,.08f,.03f,.9f));P.Line(0,20,220,20,Gold*.6f,1.f);
+        CireUIStyle::Chevron(P,5,5,10,Collapsed);
+        P.Text(Heal?TEXT("HEALING"):TEXT("DAMAGE"),19,4,9.5f,Parchment,ECireFont::Heading);
+        CireUIStyle::Button(P,118,2,48,16,TEXT("DMG"),!Heal?ECireButtonState::Selected:Hit(118,2,48,16)?ECireButtonState::Hover:ECireButtonState::Normal,Gold,7.5f);
+        CireUIStyle::Button(P,168,2,48,16,TEXT("HEAL"),Heal?ECireButtonState::Selected:Hit(168,2,48,16)?ECireButtonState::Hover:ECireButtonState::Normal,Teal,7.5f);
+        Tip(TEXT("Damage / healing meter"),TEXT("Effective team damage or healing this match. Click the title to collapse or expand; DMG / HEAL switches the ranking."),0,0,116,20);
+        if(Clicked&&Interactive&&Hit(118,2,98,16)){UISettings.MeterMode=Hit(118,2,48,16)?0:1;UISettings.Save();Clicked=false;}
+        else if(Clicked&&Interactive&&Hit(0,0,116,20)){UISettings.bMeterCollapsed=!UISettings.bMeterCollapsed;UISettings.Save();Clicked=false;}
+        if(!Collapsed)
+        {
+            TArray<ACireHero*> Party;for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(It->TeamId==Hero->TeamId&&!Cast<ACireSummon>(*It))Party.Add(*It);
+            Party.Sort([Heal](const ACireHero& A,const ACireHero& B){return Heal?A.HealingDone>B.HealingDone:A.DamageDone>B.DamageDone;});
+            float Total=0,Max=1;for(auto* H:Party){float V=Heal?H->HealingDone:H->DamageDone;Total+=V;Max=FMath::Max(Max,V);}
+            for(int32 I=0;I<FMath::Min(Party.Num(),5);++I) {
+                auto* H=Party[I];const float Value=Heal?H->HealingDone:H->DamageDone,Y=25+I*21.5f;
+                Bar(5,Y,210,18,Value/Max,(Heal?Teal:RoleColor(H->Archetype))*.45f);
+                const FString Amount=FString::Printf(TEXT("%.0f (%.0f%%)"),Value,Fraction(Value,Total)*100);
+                const float AW=P.TextWidth(Amount,8.5f,ECireFont::Numbers);
+                P.Text(P.Fit(FString::Printf(TEXT("%d. %s"),I+1,*(H==Hero?FString(TEXT("You")):H->HeroName)),9.5f,200-AW-12,ECireFont::Bold),10,Y+2,9.5f,H==Hero?FLinearColor::White:Parchment,ECireFont::Bold,true,false);
+                P.Text(Amount,210-AW,Y+3,8.5f,Parchment,ECireFont::Numbers,true,false);
+            }
         }
     }
     if(UISettings.bShowCombatLog||bEditLayout) {
@@ -517,7 +537,9 @@ void ACireHUD::DrawHUD()
     Clicked=PlayerOwner->WasInputKeyJustPressed(EKeys::LeftMouseButton)&&!PlayerOwner->IsInputKeyDown(EKeys::RightMouseButton);
     auto* Controller=Cast<ACireController>(PlayerOwner);auto* Hero=Cast<ACireHero>(PlayerOwner->GetPawn());auto* State=GetWorld()->GetGameState<ACireGameState>();
     bModal=Hero&&((!Hero->bDrafted||(Hero->Offers.Num()>0&&IsSkillOfferOpen())||(Controller&&Controller->bShop))||(State&&State->Phase==3));
-    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();TooltipAbility.Reset();
+    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();TooltipAbility.Reset();TooltipRegion={0,0,0,0};
+    LastPanelBoxes.Reset();
+    for(FName Id:VisiblePanels)if(Id!=TEXT("CombatText")&&Id!=TEXT("Tooltip")){const FCireUIRect R=PanelRect(Id);LastPanelBoxes.Emplace(FVector2D(R.X,R.Y),FVector2D(R.X+R.W,R.Y+R.H));}
     LayoutInteraction();VisiblePanels.Reset();ResetTransform();
     if(DrawReplayScreen()){DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();return;}
     if(!Hero){Label(TEXT("Joining the battlefield..."),ViewW*.5f-130,ViewH*.5f,20,Parchment);return;}
@@ -527,7 +549,7 @@ void ACireHUD::DrawHUD()
     if(!bModal)DrawLevelUps(Hero);
     DrawPlayer(Hero);DrawParty(Hero,Controller);DrawMatch(State);DrawMinimap(Hero,State);
     if(IsValid(Hero->Target)||bEditLayout)DrawUnit(Hero->Target,TEXT("TARGET"),false);
-    if(Controller&&(IsValid(Controller->FocusTarget)||bEditLayout))DrawUnit(Controller->FocusTarget,TEXT("FOCUS / CLICK TO TARGET"),true);
+    if(Controller&&((IsValid(Controller->FocusTarget)&&!IsInBossFrames(Controller->FocusTarget))||bEditLayout))DrawUnit(Controller->FocusTarget,TEXT("FOCUS / CLICK TO TARGET"),true);
     DrawBossFrames(Hero,Controller);DrawThreatMeter(Hero,Controller);
     DrawActionBars(Hero,Controller);DrawChat(Controller);DrawMeters(Hero,Controller);DrawPet(Hero,Controller);
     ResetTransform();CireShopUI::DrawHUDElements(*this,Hero,Controller,State); // progression-shop: bag bar, teleport, stats window

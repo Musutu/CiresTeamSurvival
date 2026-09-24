@@ -165,7 +165,7 @@ bool Setup(ACireGameMode* Mode,ACireController* PC,ACireHUD* HUD)
     W.Elite->PackId=3;W.Bruiser->PackId=3;W.Leader->PackId=3;
     Check(W.Leader->GetNPCClassification()==ECireNPCClass::Boss&&W.Elite->GetNPCClassification()==ECireNPCClass::Elite,TEXT("classification read API"));
     Check(W.Elite->GetNPCRole()==ECireNPCRole::Caster&&W.Hunter->GetNPCRole()==ECireNPCRole::Ranged&&W.Boss->IsLaneBoss(),TEXT("role read API"));
-    PC->FocusTarget=W.Boss.Get();H->Target=W.Elite.Get();
+    PC->FocusTarget=W.Allies[1].Get();H->Target=W.Elite.Get();
     Check(HUD->DebugFontsReady(),TEXT("OFL font faces loaded and runtime fonts built"));
     W.Ready=FPlatformTime::Seconds();return true;
 }
@@ -256,6 +256,21 @@ void Capture(int32 Stage)
     const FVector2D View=HUD->DebugTooltipViewport();
     const float Expected=Stage==9?1.5f*.7f:Stage==10?1.5f*1.15f:1.5f;
     Check(FMath::IsNearlyEqual(HUD->DebugScale(),Expected,.01f),FString::Printf(TEXT("%s: interface scale %.3f (expected %.3f)"),Stages[Stage].Name,HUD->DebugScale(),Expected));
+    if(Stage==0)
+    {
+        // Default WoW layout: the main frames never overlap each other at 1080p.
+        const TCHAR* Ids[]={TEXT("Player"),TEXT("Party"),TEXT("Target"),TEXT("Focus"),TEXT("Match"),TEXT("Minimap"),TEXT("Boss"),TEXT("Threat"),
+            TEXT("Meter"),TEXT("Skills"),TEXT("Chat"),TEXT("Inventory"),TEXT("Bar2"),TEXT("Pet"),TEXT("Stats")};
+        for(int32 A=0;A<UE_ARRAY_COUNT(Ids);++A)for(int32 B=A+1;B<UE_ARRAY_COUNT(Ids);++B)
+        {
+            const FCireUIRect RA=HUD->UISettings.GetRect(Ids[A],View),RB=HUD->UISettings.GetRect(Ids[B],View);
+            const bool bOverlap=RA.X<RB.X+RB.W-.5f&&RB.X<RA.X+RA.W-.5f&&RA.Y<RB.Y+RB.H-.5f&&RB.Y<RA.Y+RA.H-.5f;
+            Check(!bOverlap,FString::Printf(TEXT("default panels %s and %s do not overlap"),Ids[A],Ids[B]));
+        }
+        // The centre of the screen (character and the ground around it) stays clear.
+        const FBox2D Centre(FVector2D(View.X*.5f-130,View.Y*.5f-130),FVector2D(View.X*.5f+130,View.Y*.5f+120));
+        for(const TCHAR* Id:Ids){const FCireUIRect R=HUD->UISettings.GetRect(Id,View);Check(!FBox2D(FVector2D(R.X,R.Y),FVector2D(R.X+R.W,R.Y+R.H)).Intersect(Centre),FString(TEXT("centre clear of "))+Id);}
+    }
     if(Stage==9||Stage==10)
     {
         const FCireUIRect Map=HUD->UISettings.GetRect(TEXT("Minimap"),View),Chat=HUD->UISettings.GetRect(TEXT("Chat"),View),Skills=HUD->UISettings.GetRect(TEXT("Skills"),View);

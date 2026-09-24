@@ -10,6 +10,8 @@
 #include "CireSkillTuning.h"
 #include "CireNPCState.h"
 #include "CireUIStyle.h"
+#include "CireItems.h"
+#include "CireShopUI.h"
 #include "Engine/Canvas.h"
 #include "Engine/World.h"
 #include "InputCoreTypes.h"
@@ -68,10 +70,47 @@ FName MainSlot(int32 Index) { return CireKeybindings::SlotAction(1, Index + 1); 
 // ---------------------------------------------------------------------------
 // Action bars
 // ---------------------------------------------------------------------------
+float ACireHUD::ActionBarsTop() const
+{
+    float Top = PanelRect(TEXT("Skills")).Y;
+    if (VisiblePanels.Contains(FName(TEXT("Bar2")))) Top = FMath::Min(Top, PanelRect(TEXT("Bar2")).Y);
+    if (VisiblePanels.Contains(FName(TEXT("Bar3")))) Top = FMath::Min(Top, PanelRect(TEXT("Bar3")).Y);
+    return Top;
+}
 bool ACireHUD::DrawActionButton(ACireHero* Hero, ACireController* Controller, int32 Bar, int32 Index, float X, float Y, float S)
 {
     const FName Action = CireKeybindings::SlotAction(Bar, Index + 1);
     const FString Id = CireKeybindings::SlotAbilityId(UISettings.Keybindings, *Hero, Action);
+    // progression-shop: a slot may hold an active item ("item:<id>"), drawn with the shop's icon.
+    FName ItemId;
+    if (CireItems::ParseItemSlotId(Id, ItemId))
+    {
+        const bool bOverItem = Hit(X, Y, S, S) && (!bModal && !bSettings && !bEditLayout || bQuickKeybind);
+        int32 Cell = INDEX_NONE;
+        if (Hero->Inventory) Cell = Hero->Inventory->Equipment.IndexOfByPredicate([&](const FCireItemSlot& C) { return C.Id == ItemId; });
+        float Remaining = 0.f, Fraction = 0.f; int32 Charges = 0;
+        if (Cell != INDEX_NONE)
+        {
+            const FCireItemSlot& C = Hero->Inventory->Equipment[Cell];
+            const auto* State = GetWorld()->GetGameState<ACireGameState>();
+            const float Now = State ? State->GetServerWorldTimeSeconds() : GetWorld()->GetTimeSeconds();
+            Remaining = FMath::Max(0.f, C.ReadyAt - Now); Fraction = C.Cooldown > 0 ? FMath::Clamp(Remaining / C.Cooldown, 0.f, 1.f) : 0.f; Charges = C.Charges;
+        }
+        FCireUIPainter P = Painter();
+        if (bBarDragging && DragSlot == Action) P.Alpha *= .35f;
+        CireShopUI::DrawItemIcon(P, ItemId, X, Y, S, bOverItem, Fraction, Remaining, Charges, UISettings.Keybindings.Label(Action), Cell == INDEX_NONE);
+        if (bOverItem)
+        {
+            HoverSlot = Action;
+            TooltipTitle = CireItems::DisplayName(ItemId) + TEXT("  (") + UISettings.Keybindings.FullLabel(Action) + TEXT(")");
+            TooltipBody = CireShopUI::ItemTooltip(ItemId) + (Cell == INDEX_NONE ? TEXT("\nNot in your bag.") : TEXT(""));
+            if (!bQuickKeybind && Clicked && !bModal && !bSettings && !bEditLayout)
+            {
+                DragSlot = Action; DragAbility = Id; DragStart = FVector2D(MX, MY); bBarDragging = false; bBarPressCandidate = true; Clicked = false;
+            }
+        }
+        return bOverItem;
+    }
     const int32 Skill = Id.IsEmpty() ? INDEX_NONE : Hero->Skills.IndexOfByKey(Id);
     const bool bLearned = Skill != INDEX_NONE;
     const bool bInteractive = !bModal && !bSettings && !bEditLayout;
@@ -165,6 +204,16 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
     }
     for (int32 I = 0; I < FCireKeybindings::SlotsPerBar; ++I) DrawActionButton(Hero, Controller, 1, I, 60.f + I * 42.6f, 24.f, 40.f);
     P.Line(12, 72, 572, 72, Gold * FLinearColor(1, 1, 1, .35f), 1.f);
+    // Slot captions under the passive and ultimate buttons (the old Arsenal panel's state).
+    {
+        const FString Ult = CireKeybindings::SlotAbilityId(UISettings.Keybindings, *Hero, MainSlot(7));
+        const int32 UltSkill = Ult.IsEmpty() ? INDEX_NONE : Hero->Skills.IndexOfByKey(Ult);
+        const float UltCD = Hero->Cooldowns.IsValidIndex(UltSkill) ? Hero->Cooldowns[UltSkill] : 0.f;
+        const FString UltText = Ult.IsEmpty() ? FString(TEXT("NO ULT")) : UltCD > .05f ? FString(TEXT("ULT CD")) : FString(TEXT("ULT READY"));
+        const FString PasText = CireKeybindings::SlotAbilityId(UISettings.Keybindings, *Hero, MainSlot(6)).IsEmpty() ? FString(TEXT("NO PASSIVE")) : FString(TEXT("PASSIVE"));
+        P.Text(PasText, 60 + 6 * 42.6f + 20 - P.TextWidth(PasText, 6.5f, ECireFont::Heading) * .5f, 64.5f, 6.5f, FLinearColor(.75f, .65f, 1.f, 1), ECireFont::Heading, true, false);
+        P.Text(UltText, 60 + 7 * 42.6f + 20 - P.TextWidth(UltText, 6.5f, ECireFont::Heading) * .5f, 64.5f, 6.5f, UltCD > .05f || Ult.IsEmpty() ? Muted : BrightGold, ECireFont::Heading, true, false);
+    }
     // Stats and gold.
     P.Text(FString::Printf(TEXT("ATK %.0f"), Hero->AttackDamage()), 14, 80, 10, Parchment, ECireFont::Heading);
     P.Text(FString::Printf(TEXT("CDR %.0f%%"), Hero->CDR * 100), 84, 80, 10, Parchment, ECireFont::Heading);
@@ -176,7 +225,7 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
     // Micro menu.
     struct FMicro { const TCHAR* Caption; FName Action; const TCHAR* Help; };
     const FMicro Micro[] = {
-        {TEXT("SHOP"), TEXT("ToggleShop"), TEXT("Buy experience, primary-stat tomes, gear and cooldown reduction at your town.")},
+        {TEXT("SHOP"), TEXT("ToggleShop"), TEXT("Open the shop. During Prep Phase you can buy anywhere; otherwise at your town. Buy gear, tomes and consumables.")},
         {TEXT("OPTIONS"), TEXT("ToggleOptions"), TEXT("Camera, keybindings, interface scale, tooltips, combat text, threat, video and audio.")},
         {TEXT("LAYOUT"), TEXT("ToggleLayoutEditor"), TEXT("Move and resize every interface panel, including the action bars.")},
         {TEXT("KEYBINDS"), NAME_None, TEXT("Quick Keybind mode: hover any action button and press a key to bind it. Backspace/Delete unbinds, Esc exits.")},
@@ -228,10 +277,15 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
     }
     if (bBarDragging)
     {
-        FCireIconSlot Ghost; Ghost.IconId = DragAbility; Ghost.IconTexture = CireUIStyle::FindAbilityIcon(DragAbility);
-        Ghost.Tint = SchoolTint(DragAbility, ACireHero::SkillName(DragAbility));
         FCireUIPainter G = Painter(); G.Alpha = .85f;
-        CireUIStyle::IconSlot(G, MX - 20, MY - 20, 40, Ghost, Now);
+        FName GhostItem;
+        if (CireItems::ParseItemSlotId(DragAbility, GhostItem)) CireShopUI::DrawItemIcon(G, GhostItem, MX - 20, MY - 20, 40, false);
+        else
+        {
+            FCireIconSlot Ghost; Ghost.IconId = DragAbility; Ghost.IconTexture = CireUIStyle::FindAbilityIcon(DragAbility);
+            Ghost.Tint = SchoolTint(DragAbility, ACireHero::SkillName(DragAbility));
+            CireUIStyle::IconSlot(G, MX - 20, MY - 20, 40, Ghost, Now);
+        }
     }
     if (bBarPressCandidate && !bDown)
     {
@@ -250,8 +304,10 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
         }
         else if (HoverSlot == DragSlot && Controller && !bModal && !bSettings)
         {
+            const int32 Item = CireItems::ResolveItemSlot(UISettings.Keybindings, *Hero, DragSlot);
             const int32 Skill = CireKeybindings::ResolveSlot(UISettings.Keybindings, *Hero, DragSlot);
-            if (Skill != INDEX_NONE) Controller->RequestCast(Skill);
+            if (Item != INDEX_NONE) { if (Hero->Inventory) Hero->Inventory->ServerUse(Item, false); }
+            else if (Skill != INDEX_NONE) Controller->RequestCast(Skill);
             PressFlashAt.Add(DragAbility, Now);
         }
         bBarPressCandidate = false; bBarDragging = false; DragSlot = NAME_None; DragAbility.Reset();

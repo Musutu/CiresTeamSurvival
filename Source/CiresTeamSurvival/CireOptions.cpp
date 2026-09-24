@@ -27,7 +27,7 @@ void ACireHUD::PlayUIFeedback()
 void ACireHUD::Tip(const FString& Title,const FString& Body,float X,float Y,float W,float H)
 {
     if(bSettings && Hit(X,Y,W,H)) CireAudio::NoteHover(this,X,Y); // audio: hover tick on Options controls
-    if(UISettings.bTooltips && Hit(X,Y,W,H)) { TooltipTitle=Title; TooltipBody=Body; }
+    if(UISettings.bTooltips && Hit(X,Y,W,H)) { TooltipTitle=Title; TooltipBody=Body; TooltipRegion={float(Origin.X+X*Stretch.X),float(Origin.Y+Y*Stretch.Y),float(W*Stretch.X),float(H*Stretch.Y)}; }
 }
 #if !UE_BUILD_SHIPPING
 void ACireHUD::DebugTooltip(const FString& Title,const FString& Body,FVector2D Cursor)
@@ -100,7 +100,16 @@ void ACireHUD::DrawTooltip()
     const int32 MaxBodyLines=FMath::Max(1,FMath::FloorToInt((ViewH-8-2*Padding-TitleHeight-Gap)/BodyStep));
     if(BodyLines.Num()>MaxBodyLines){BodyLines.SetNum(MaxBodyLines);BodyLines.Last()=BodyLines.Last().LeftChop(3)+TEXT("...");}
     const float H=2*Padding+TitleHeight+(BodyLines.IsEmpty()?0:Gap+BodyLines.Num()*BodyStep);
-    const FCireUIRect Box=PlaceTooltip(W,H,Cursor);
+    FCireUIRect Box=PlaceTooltip(W,H,Cursor);
+    // Large hover targets (cards, big buttons): put the tooltip below (else above) the hovered
+    // region so it never covers the card itself or its neighbours in the row.
+    if(TooltipRegion.W*TooltipRegion.H>=150.f*150.f&&!bDebug)
+    {
+        const float TX=FMath::Clamp(TooltipRegion.X,4.f,FMath::Max(4.f,ViewW-W-4));
+        if(TooltipRegion.Y+TooltipRegion.H+6+H<=ViewH-4)Box={TX,TooltipRegion.Y+TooltipRegion.H+6,W,H};
+        else if(TooltipRegion.Y-6-H>=4)Box={TX,TooltipRegion.Y-6-H,W,H};
+        else {TooltipHoverKey.Reset();return;} // the card already shows its full text
+    }
     const float X=Box.X,Y=Box.Y;
     TooltipBox(X,Y,W,H,FLinearColor(.55f,.58f,.64f,1));
     for(int32 I=0;I<TitleLines.Num();++I){NextFont=ECireFont::Bold;Label(TitleLines[I],X+Padding,Y+Padding+I*(TitleFont+4*Size),TitleFont,FLinearColor(1.f,.86f,.3f,1));}
@@ -161,10 +170,7 @@ void ACireHUD::DrawSettings()
         Label(Caption,BX,BY,11,Enabled?Parchment:Muted);
         Label(FString::Printf(TEXT("%.2f"),Value),BX+235,BY,10,Gold);
         const float Knob=FMath::Clamp((Value-Min)/(Max-Min),0.f,1.f);
-        CireUIStyle::Frame(Painter(),BX,BY+22,286,8,Gold,ECireFrame::Inset);
-        if(const auto& Kit=CireUIStyle::Assets();Kit.Gloss)Painter().Tex(Kit.Gloss,BX+1,BY+23,284*Knob,6,Enabled?FLinearColor(1.1f,.85f,.4f,1):Muted);
-        if(const auto& Kit=CireUIStyle::Assets();Kit.Gem)Painter().Tex(Kit.Gem,BX+284*Knob-8,BY+18,16,16,Enabled?FLinearColor(1.f,.85f,.45f,1):Muted);
-        else Panel(BX+282*Knob,BY+18,5,16,Enabled?Parchment:Muted);
+        CireUIStyle::Slider(Painter(),BX,BY+22,286,Knob,Enabled,Hit(BX,BY+12,290,27));
         Tip(Caption,Help,BX,BY,290,37);
         if(Enabled&&Hit(BX,BY+12,290,27)&&PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton))
         {

@@ -172,6 +172,15 @@ private:
     void DrawDeveloperLauncher();
     FCireUIRect DeveloperLauncherRect() const;
     FCireUIRect PanelRect(FName Id) const;
+    /** Top edge of the highest visible action bar (for reminders placed above the bars). */
+    float ActionBarsTop() const;
+    /** Centre X of the free band between side frames (banners, alerts). */
+    float CentreGapX(float Top, float Bottom) const;
+    bool IsDeveloperLauncherVisible() const;
+    bool IsInBossFrames(const AActor* Actor) const;
+    bool bShowDevLauncher = false;
+    TArray<FBox2D> LastPanelBoxes;
+    TArray<TWeakObjectPtr<AActor>> BossFrameUnits;
     FCireMovementTuning MovementDraft;
     bool bMovementLoaded=false;
     bool DrawReplayScreen();
@@ -182,6 +191,7 @@ private:
     FString DeveloperMessage;
     FString TooltipTitle,TooltipBody;
     FString TooltipAbility;
+    FCireUIRect TooltipRegion; // logical rect of the element whose Tip() won this frame
     FName TooltipAbilitySlot, HoverSlot, DragSlot, QuickHold;
     FString DragAbility, QuickMessage;
     FVector2D DragStart = FVector2D::ZeroVector;

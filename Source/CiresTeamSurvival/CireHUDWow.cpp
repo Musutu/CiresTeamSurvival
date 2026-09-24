@@ -355,7 +355,7 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
 {
     if(!IsValid(Actor)&&!bEditLayout)return;
     auto* Self=Cast<ACireHero>(PlayerOwner->GetPawn());
-    const float W=bFocus?218:300,H=bFocus?123:140;
+    const float W=bFocus?218:240,H=bFocus?123:140;
     UsePanel(bFocus?TEXT("Focus"):TEXT("Target"),W,H);
     auto Backdrop=[&](FLinearColor Border)
     {
@@ -378,7 +378,7 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     if(U.bMonster)Header+=(U.Class==3?(Mob&&Mob->IsLaneBoss()?FString(TEXT("BOSS  /  10 LIVES AT RISK")):TEXT("BOSS  /  ")+U.RoleName.ToUpper()):U.Class==2?TEXT("ELITE  /  ")+U.RoleName.ToUpper():U.Class==1?TEXT("ARMORED  /  ")+U.RoleName.ToUpper():U.RoleName.ToUpper());
     else if(U.bHero)Header+=(U.bSelf?TEXT("YOU"):U.Reaction==2?TEXT("ALLY"):TEXT("ENEMY"))+FString(TEXT("  /  "))+U.RoleName.ToUpper();
     else Header+=TEXT("CONSTRUCT");
-    Label(Short(Header,bFocus?26:34),10,4,bFocus?8.f:9.f,U.Class==3?Hostile:U.Class>=1?WowGold:Muted);
+    Label(Painter().Fit(Header,bFocus?8.f:9.f,BW-(Mob&&!bFocus?40.f:0.f),ECireFont::Heading),10,4,bFocus?8.f:9.f,U.Class==3?Hostile:U.Class>=1?WowGold:Muted);
     bool bKnown=false;const float Threat=Mob&&Self?ThreatPercent(Mob,Self,bKnown):0.f;
     if(Mob&&bKnown&&!bFocus)
     {
@@ -392,7 +392,7 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     // Name band in reaction colour, then the green health bar with value and percent.
     const float NY=bFocus?17.f:19.f,NH=bFocus?15.f:18.f;
     Panel(10,NY,BW,NH,React*FLinearColor(.42f,.42f,.42f,.92f));Panel(10,NY,BW,NH*.45f,FLinearColor(1,1,1,.07f));
-    TextFx(Short(U.Name,bFocus?20:26),14,NY+(bFocus?1.f:1.5f),bFocus?11.f:13.f,FLinearColor::White,ECireFont::Bold,true,false);
+    TextFx(Painter().Fit(U.Name,bFocus?11.f:13.f,BW-8,ECireFont::Bold),14,NY+(bFocus?1.f:1.5f),bFocus?11.f:13.f,FLinearColor::White,ECireFont::Bold,true,false);
     const float HY=NY+NH+2,HH=bFocus?13.f:18.f;
     Panel(10,HY,BW,HH,FLinearColor(0,0,0,.85f));
     const float HF=Frac(U.HP,U.MaxHP);
@@ -408,7 +408,7 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     const bool bOnMe=U.Victim&&U.Victim==Self;
     TextFx(TEXT(">"),10,Y,9,bOnMe?Hostile:Muted,ECireFont::Bold,false);
     const FString Tot=(U.bMonster&&!IsValid(U.Victim)?FString():FString(TEXT("Target: ")))+(U.VictimLine.IsEmpty()?TEXT("none"):U.VictimLine);
-    TextFx(Short(Tot,bFocus?24:30),19,Y,9,bOnMe?Hostile:Parchment,ECireFont::Body,false);
+    TextFx(Painter().Fit(Tot,9,BW-(bFocus?12.f:68.f),ECireFont::Body),19,Y,9,bOnMe?Hostile:Parchment,ECireFont::Body,false);
     if(const auto* Victim=Cast<ACireHero>(U.Victim);Victim&&!bFocus)
     {
         Panel(10+BW-52,Y+3,52,6,FLinearColor(0,0,0,.85f));Panel(11+BW-52,Y+4,50*Frac(Victim->Health,Victim->MaxHealth),4,HealthGreen);
@@ -416,10 +416,11 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     if(IsValid(U.Victim))Tip(TEXT("Target of target"),bOnMe?TEXT("This unit is attacking YOU."):TEXT("Who this unit is currently targeting or attacking."),10,Y,BW,12);
     // Statuses (left) and the unit's abilities (right), each with hover explanations.
     const float RowY=bFocus?H-38:H-50;
-    DrawStatuses(Actor,10,RowY,bFocus?16.f:18.f,bFocus?5:6);
+    const int32 AbilityCount=!bFocus&&(U.bMonster||U.Reaction==0)?FMath::Min(U.Abilities.Num(),4):0;
+    DrawStatuses(Actor,10,RowY,bFocus?16.f:17.f,bFocus?5:FMath::Max(1,(static_cast<int32>(W)-24-AbilityCount*22)/21));
     if(!bFocus&&U.Abilities.Num()>0&&(U.bMonster||U.Reaction==0))
     {
-        const float S=19;const int32 Count=FMath::Min(U.Abilities.Num(),5);
+        const float S=19;const int32 Count=AbilityCount;
         for(int32 I=0;I<Count;++I)
         {
             const float AX=W-10-(Count-I)*(S+3);
@@ -433,12 +434,13 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     if(!U.Casting.IsEmpty())
     {
         // WoW convention: gold bar = interruptible, grey bar with a shield = cannot be interrupted.
-        const FLinearColor Bar=U.bInterruptible?CastGold:FLinearColor(.58f,.6f,.66f,1);
+        const FLinearColor Bar=U.bInterruptible?CastGold:FLinearColor(.40f,.42f,.48f,1);
         Panel(10,CY,W-20,CH,FLinearColor(0,0,0,.85f));Panel(11,CY+1,(W-22)*U.CastProgress,CH-2,Bar);Panel(11,CY+1,(W-22)*U.CastProgress,(CH-2)*.4f,FLinearColor(1,1,1,.25f));
         if(!U.bInterruptible){Panel(4,CY+1,5,CH-2,FLinearColor(.75f,.77f,.82f,1));}
-        TextFx(Short(U.Casting,24),15,CY+.5f,bFocus?8.5f:9.5f,FLinearColor::White,ECireFont::Bold,true,false);
         const FString Rem=FString::Printf(TEXT("%.1f"),U.CastRemaining);
-        TextFx(Rem,W-14-TextWidthFont(Rem,9,ECireFont::Numbers),CY+.5f,9,FLinearColor::White,ECireFont::Numbers,true,false);
+        const float RemW=TextWidthFont(Rem,9,ECireFont::Numbers);
+        TextFx(Painter().Fit(U.Casting,bFocus?8.5f:9.5f,W-34-RemW,ECireFont::Bold),15,CY+.5f,bFocus?8.5f:9.5f,FLinearColor::White,ECireFont::Bold,true,false);
+        TextFx(Rem,W-14-RemW,CY+.5f,9,FLinearColor::White,ECireFont::Numbers,true,false);
         Tip(TEXT("Enemy cast: ")+U.Casting,U.bInterruptible?TEXT("Gold bar: this cast can be interrupted (Shield Slam). Otherwise leave its ground warning or projectile path."):
             TEXT("Grey bar: this cast cannot be interrupted. Leave its ground warning or projectile path before the bar completes."),10,CY,W-20,CH);
     }
@@ -470,6 +472,8 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
     Units.Sort([&](const ACireMonster& A,const ACireMonster& B){
         if(A.IsLaneBoss()!=B.IsLaneBoss())return A.IsLaneBoss();
         return FVector::DistSquared(A.GetActorLocation(),Hero->GetActorLocation())<FVector::DistSquared(B.GetActorLocation(),Hero->GetActorLocation());});
+    BossFrameUnits.Reset();
+    for(int32 I=0;I<FMath::Min(Units.Num(),3);++I)BossFrameUnits.Add(Units[I]);
     if(Units.IsEmpty()&&!bEditLayout)return;
     UsePanel(TEXT("Boss"),220,150);
     if(Units.IsEmpty()){Panel(0,0,220,150,FLinearColor(0,0,0,.4f));Label(TEXT("BOSS FRAMES"),8,6,9,Muted);Label(TEXT("Bosses and pack leaders appear here"),8,22,9,Muted);return;}
@@ -488,8 +492,11 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
         Disc(15,Y+15,9.5f,FLinearColor(.07f,.06f,.04f,1));Circle(15,Y+15,9.5f,bSkull?Hostile:WowGold,1.2f,20);
         if(bSkull){Disc(15,Y+13.5f,5.2f,Parchment);Panel(12,Y+16.5f,6,3,Parchment);Disc(13,Y+13.5f,1.4f,FLinearColor(0,0,0,1),8);Disc(17,Y+13.5f,1.4f,FLinearColor(0,0,0,1),8);}
         else TextFx(FString::Printf(TEXT("T%d"),M->Tier),9.5f,Y+9.5f,8.5f,WowGold,ECireFont::Numbers,true,false);
-        TextFx(Short(M->GetNPCDisplayName(),24),30,Y+3,10.5f,bSkull?FLinearColor(1.f,.45f,.35f,1):WowGold,ECireFont::Bold,true,false);
-        if(M->NPCState&&M->NPCState->HasStatus(CireNPCStatus::Enraged))TextFx(TEXT("ENRAGED"),160,Y+4,8,Hostile,ECireFont::Heading,true,false);
+        const bool bEnraged=M->NPCState&&M->NPCState->HasStatus(CireNPCStatus::Enraged);
+        const bool bIsFocus=Controller&&Controller->FocusTarget==M;
+        TextFx(Painter().Fit(M->GetNPCDisplayName(),10.5f,bEnraged||bIsFocus?118.f:150.f,ECireFont::Bold),30,Y+3,10.5f,bSkull?FLinearColor(1.f,.45f,.35f,1):WowGold,ECireFont::Bold,true,false);
+        if(bEnraged)TextFx(TEXT("ENRAGED"),152,Y+4.5f,7.5f,Hostile,ECireFont::Heading,true,false);
+        else if(bIsFocus)TextFx(TEXT("FOCUS"),156,Y+4.5f,7.5f,FLinearColor(.4f,.8f,1.f,1),ECireFont::Heading,true,false);
         bool bKnown=false;const float Threat=ThreatPercent(M,Hero,bKnown);
         if(bKnown&&(IsValid(M->Victim)||Threat>0))
         {
@@ -504,8 +511,11 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
         const FCireNPCCastInfo Cast=M->NPCState?M->NPCState->CastInfo():FCireNPCCastInfo();
         if(Cast.bCasting&&Cast.Remaining>0)
         {
-            Panel(30,Y+35,184,9,FLinearColor(0,0,0,.85f));Panel(31,Y+36,182*Cast.Progress,7,Cast.bInterruptible?CastGold:FLinearColor(.58f,.6f,.66f,1));
-            TextFx(Short(Cast.Name,26),34,Y+33.5f,7.5f,FLinearColor::White,ECireFont::Bold,true,false);
+            // Cast bar tall enough to hold its label inside; remaining time on the right.
+            Panel(30,Y+34,184,12,FLinearColor(0,0,0,.85f));Panel(31,Y+35,182*Cast.Progress,10,Cast.bInterruptible?CastGold:FLinearColor(.40f,.42f,.48f,1));
+            const FString Rem=FString::Printf(TEXT("%.1f"),Cast.Remaining);const float RemW=TextWidthFont(Rem,7.5f,ECireFont::Numbers);
+            TextFx(Painter().Fit(Cast.Name,7.5f,176-RemW-8,ECireFont::Bold),34,Y+34.2f,7.5f,FLinearColor::White,ECireFont::Bold,true,false);
+            TextFx(Rem,210-RemW,Y+34.2f,7.5f,FLinearColor::White,ECireFont::Numbers,true,false);
         }
         else
         {
@@ -534,11 +544,16 @@ void ACireHUD::DrawThreatMeter(ACireHero* Hero,ACireController* Controller)
     }
     if(!Source&&!bEditLayout)return;
     UsePanel(TEXT("Threat"),220,124);
-    Panel(2,3,220,124,FLinearColor(0,0,0,.3f));Panel(0,0,220,124,FLinearColor(.012f,.014f,.02f,.8f));
-    Panel(0,0,220,18,FLinearColor(.3f,.05f,.04f,.75f));Line(0,0,220,0,Hostile*.8f,1.2f);
-    TextFx(TEXT("THREAT"),7,2,9.5f,Parchment,ECireFont::Heading,true,false);
-    if(!Source){TextFx(TEXT("No enemy engaged"),8,26,10,Muted,ECireFont::Body,false);return;}
-    TextFx(Short(Source->GetNPCDisplayName(),22),62,2.5f,9.5f,WowGold,ECireFont::Bold,true,false);
+    if(!(UISettings.bThreatCollapsed&&!bEditLayout)){Panel(2,3,220,124,FLinearColor(0,0,0,.3f));Panel(0,0,220,124,FLinearColor(.012f,.014f,.02f,.8f));}
+    const bool bCollapsed=UISettings.bThreatCollapsed&&!bEditLayout;
+    if(bCollapsed){/* header only */}
+    Panel(0,0,220,18,FLinearColor(.3f,.05f,.04f,.85f));Line(0,0,220,0,Hostile*.8f,1.2f);
+    CireUIStyle::Chevron(Painter(),4,4,10,bCollapsed,Parchment);
+    TextFx(TEXT("THREAT"),17,2,9.5f,Parchment,ECireFont::Heading,true,false);
+    if(Clicked&&Hit(0,0,220,18)&&!bModal&&!bSettings&&!bEditLayout){UISettings.bThreatCollapsed=!UISettings.bThreatCollapsed;UISettings.Save();Clicked=false;}
+    if(!Source){if(!(UISettings.bThreatCollapsed&&!bEditLayout))TextFx(TEXT("No enemy engaged"),8,26,10,Muted,ECireFont::Body,false);return;}
+    TextFx(Painter().Fit(Source->GetNPCDisplayName(),9.5f,150,ECireFont::Bold),66,2.5f,9.5f,WowGold,ECireFont::Bold,true,false);
+    if(UISettings.bThreatCollapsed&&!bEditLayout)return;
     Tip(TEXT("Threat meter"),TEXT("Who this enemy wants to attack. The top row holds aggro (100%). Others show their threat relative to it; reaching 100% or more pulls the enemy. Damage and healing both add threat; tanks generate extra."),0,0,220,18);
     TArray<TPair<ACireHero*,float>> Rows;
     ThreatRows(Source,Rows);
@@ -642,11 +657,12 @@ void ACireHUD::DrawAlert()
     if(CireBanners::IsShowing())Y+=96.f; // stack under an active banner
     const float TS=28.f*Pop;
     const float BandW=FMath::Max(TextWidthFont(Alert.Title,28.f,ECireFont::Heading),TextWidthFont(Alert.Subtitle,12,ECireFont::Body))+80.f;
-    for(int32 I=0;I<6;++I){const float Inset=I*BandW*.07f;Panel((ViewW-BandW)*.5f+Inset,Y-24,BandW-2*Inset,62,FLinearColor(0,0,0,.09f*A));}
+    const float CW=2.f*CentreGapX(Y-30,Y+50); // centre in the gap between side frames
+    for(int32 I=0;I<6;++I){const float Inset=I*BandW*.07f;Panel((CW-BandW)*.5f+Inset,Y-24,BandW-2*Inset,62,FLinearColor(0,0,0,.09f*A));}
     FLinearColor C=Alert.Color;C.A=A;
-    TextFx(Alert.Title,(ViewW-TextWidthFont(Alert.Title,TS,ECireFont::Heading))*.5f,Y-TS*.5f,TS,C,ECireFont::Heading,true,true);
+    TextFx(Alert.Title,(CW-TextWidthFont(Alert.Title,TS,ECireFont::Heading))*.5f,Y-TS*.5f,TS,C,ECireFont::Heading,true,true);
     FLinearColor S=Parchment;S.A=A;
-    TextFx(Alert.Subtitle,(ViewW-TextWidthFont(Alert.Subtitle,12,ECireFont::Body))*.5f,Y+TS*.55f+4,12,S,ECireFont::Body,true,true);
+    TextFx(Alert.Subtitle,(CW-TextWidthFont(Alert.Subtitle,12,ECireFont::Body))*.5f,Y+TS*.55f+4,12,S,ECireFont::Body,true,true);
 }
 
 // ---------------------------------------------------------------------------
@@ -1111,6 +1127,8 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         if(!Selected&&(Count>=32||Dist>2400.f))return;
         FVector2D Screen;if(!PlayerOwner->ProjectWorldLocationToScreen(Actor->GetActorLocation()+FVector(0,0,Lift),Screen,false))return;
         const float X=Screen.X/Scale,Y=Screen.Y/Scale;if(X<35||X>ViewW-35||Y<105||Y>ViewH-185)return;
+        // A plate that would sit under a HUD frame is hidden rather than drawn through it.
+        {const FBox2D Plate(FVector2D(X-80,Y-26),FVector2D(X+80,Y+16));for(const FBox2D& Box:LastPanelBoxes)if(Plate.Intersect(Box))return;}
         ++Count;
         // Aggro state: DPS/healers are warned when an enemy is on them or about to be;
         // tanks are warned when an engaged enemy is NOT on them.
@@ -1166,8 +1184,8 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
             if(Cast.bCasting&&Cast.Remaining>0)
             {
                 const float CY=Y+PH+3.f,CH=Selected?7.f:4.f;
-                Panel(PX-1,CY-1,PW+2,CH+2,FLinearColor(0,0,0,.9f));Panel(PX,CY,PW*Cast.Progress,CH,Cast.bInterruptible?CastGold:FLinearColor(.58f,.6f,.66f,1));
-                if(Selected)TextFx(Short(Cast.Name,22),PX+2,CY+CH-1,8,FLinearColor::White,ECireFont::Bold,true,false);
+                Panel(PX-1,CY-1,PW+2,CH+2,FLinearColor(0,0,0,.9f));Panel(PX,CY,PW*Cast.Progress,CH,Cast.bInterruptible?CastGold:FLinearColor(.40f,.42f,.48f,1));
+                if(Selected)TextFx(Painter().Fit(Cast.Name,8,PW-4,ECireFont::Bold),PX+2,CY+CH+1,8,FLinearColor::White,ECireFont::Bold,true,false);
             }
         }
         const int32 Poisoned=Mob?Mob->PoisonAreaCount:0;
@@ -1255,7 +1273,8 @@ void ACireHUD::DrawBanners()
     // Banners sit just below the target frame so they never cover the frame being read.
     const FCireUIRect Target=PanelRect(TEXT("Target"));
     const float Y=FMath::Clamp(FMath::Max(ViewH*.15f,Target.Y+Target.H+34.f),40.f,ViewH*.42f);
-    if(CireBanners::Draw(Painter(),ViewW,ViewH,Started,Y))
+    // Centre the banner in the free gap between the left frames and the right column.
+    if(CireBanners::Draw(Painter(),2.f*CentreGapX(Y-20,Y+110),ViewH,Started,Y))
     {
         if(!UISettings.bMuteAudio&&CireAudio::PlayBanner(this,static_cast<uint8>(Started)))return; // audio: horn / bell / war drums
         switch(Started)
@@ -1267,4 +1286,29 @@ void ACireHUD::DrawBanners()
         default:PlayWowSound(5,.9f);break;
         }
     }
+}
+
+bool ACireHUD::IsInBossFrames(const AActor* Actor) const
+{
+    // The boss frames already show this unit (and mark it FOCUS); no duplicate focus frame.
+    if(!UISettings.bShowBossFrames||!Actor)return false;
+    for(const auto& Unit:BossFrameUnits)if(Unit.Get()==Actor)return true;
+    return false;
+}
+
+float ACireHUD::CentreGapX(float Top,float Bottom) const
+{
+    // Horizontal centre of the free space between visible left-side and right-side frames
+    // in the band [Top,Bottom] (logical units). Falls back to the screen centre.
+    float Left=0.f,Right=ViewW;
+    for(FName Id:VisiblePanels)
+    {
+        if(Id==TEXT("CombatText")||Id==TEXT("Tooltip")||Id==TEXT("Match"))continue;
+        const FCireUIRect R=PanelRect(Id);
+        if(R.Y>Bottom||R.Y+R.H<Top)continue;
+        const float C=R.X+R.W*.5f;
+        if(C<ViewW*.5f)Left=FMath::Max(Left,R.X+R.W+8.f);else Right=FMath::Min(Right,R.X-8.f);
+    }
+    if(Right-Left<360.f)return ViewW*.5f;
+    return (Left+Right)*.5f;
 }

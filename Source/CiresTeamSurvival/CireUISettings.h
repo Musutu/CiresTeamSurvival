@@ -133,6 +133,9 @@ public:
     bool bShowActionBar2 = true;
     bool bShowActionBar3 = false;
     bool bLockActionBars = false;
+    /** Compact right-column panels can fold down to their header (click the header). */
+    bool bMeterCollapsed = false;
+    bool bThreatCollapsed = false;
 
     /** The resolved interface multiplier for a viewport height in pixels. */
     float ResolveUIScale(float ViewportHeightPixels) const;
