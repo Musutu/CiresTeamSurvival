@@ -75,3 +75,12 @@ T_ButtonPassive, T_Glow, T_Gloss, T_IconBg, T_Gem, T_Header` (procedural, genera
 `Tools/BuildWowUITextures.py`), sounds (synthesized). Rebuild everything with
 `Tools/BuildWowUIContent.py`. Licenses: `Content/UI/WowUI/LICENSES.md`.
 `CireUIStyle::AssetPaths()` lists them for hard references so they cook.
+
+## Verification
+
+`Tools/RunWowUIGallery.py` renders 20 deterministic 1080p captures (`-CireWowUIGallery`, isolated
+profile) to `Saved/WowUIGallery/<utc>/`: target/focus/boss frames, NPC and boss unit tooltips, tooltip
+avoidance, SCT, aggro/threat/lost-aggro alerts, level-up, 0.7 and 1.15 interface scale, options pages,
+layout editor, action-bar states, Quick Keybind mode, Keybindings page, a wave banner and an ability
+tooltip. Native checks cover fonts loading, the interface scale, anchoring, tooltip placement and the
+NPC read API; the images still need a human look.

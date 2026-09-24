@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireShopUI.h" // progression-shop
 #include "CireKeybindings.h"
 #include "CireLanePath.h"
 #include "CireGame.h"
@@ -61,8 +62,19 @@ FCireUIRect ACireHUD::PanelRect(FName Id) const
         if(R.X+R.W*.5f<O.X+O.W*.5f){const float W=O.X-6-R.X;if(W>=MinW)R.W=W;}
         else{const float Right=R.X+R.W,X=O.X+O.W+6;if(Right-X>=MinW){R.X=X;R.W=Right-X;}}
     };
-    if(Id==TEXT("Chat")||Id==TEXT("Meter")||Id==TEXT("CombatLog"))GiveWay(TEXT("Skills"));
-    if(Id==TEXT("Focus")){GiveWay(TEXT("Target"));GiveWay(TEXT("Minimap"));}
+    if(Id==TEXT("Chat")||Id==TEXT("Meter")||Id==TEXT("CombatLog"))
+    {
+        GiveWay(TEXT("Skills"));
+        if(UISettings.bShowActionBar2)GiveWay(TEXT("Bar2"));
+        if(UISettings.bShowActionBar3)GiveWay(TEXT("Bar3"));
+    }
+    if(Id==TEXT("Focus"))
+    {
+        GiveWay(TEXT("Target"));GiveWay(TEXT("Minimap"));
+        // No room beside the target frame: tuck the focus frame under it instead.
+        const FCireUIRect T=UISettings.GetRect(TEXT("Target"),View);
+        if(Overlap(R,T)){R.X=FMath::Clamp(T.X+T.W-R.W,0.f,ViewW-R.W);R.Y=FMath::Min(T.Y+T.H+6,ViewH-R.H);}
+    }
     if(Id==TEXT("Boss"))
     {
         const FCireUIRect T=UISettings.GetRect(TEXT("Threat"),View);
@@ -72,7 +84,14 @@ FCireUIRect ACireHUD::PanelRect(FName Id) const
 }
 void ACireHUD::UsePanel(FName Id,float W,float H)
 {
+    PanelAlpha=1.f;
     FCireUIRect R=PanelRect(Id);
+    // New target: the frame fades and slides in (WoW-like), 0.18s.
+    if(Id==TEXT("Target")&&!bEditLayout)
+    {
+        const float T=FMath::Clamp(static_cast<float>(GetWorld()->GetRealTimeSeconds()-TargetChangedAt)/.18f,0.f,1.f);
+        const float Ease=1.f-FMath::Square(1.f-T);R.Y-=(1.f-Ease)*12.f;PanelAlpha=.25f+.75f*Ease;
+    }
     // Height-trimmed panels (boss frames) keep their scale and simply show fewer rows.
     if(Id==TEXT("Boss"))R.H=UISettings.GetRect(Id,FVector2D(ViewW,ViewH)).H;
     Origin=FVector2D(R.X,R.Y); Stretch=FVector2D(R.W/W,R.H/H);
@@ -155,9 +174,10 @@ void ACireHUD::ToggleDeveloperTools()
     if(bEditLayout)ToggleLayoutEditor();
     RevertVideoPreview();bSettings=true;OptionsTab=5;DeveloperPage=5;bVideoLoaded=false;
 }
-bool ACireHUD::HandleEscape() { if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
+bool ACireHUD::HandleEscape() { if(bQuickKeybind){ToggleQuickKeybind();return true;}if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
 void ACireHUD::HandleMouseWheel(float Delta)
 {
+    if(bSettings&&OptionsTab==0&&ControlsPage==1){KeybindScroll=FMath::Max(0,KeybindScroll+(Delta>0?-2:2));return;}
     const auto R=PanelRect(TEXT("Chat"));
     if(MX>=R.X&&MX<=R.X+R.W&&MY>=R.Y&&MY<=R.Y+R.H)ChatScroll=FMath::Clamp(ChatScroll+(Delta>0?2:-2),0,100);
 }
@@ -420,8 +440,8 @@ void ACireHUD::DrawChat(ACireController* Controller)
     Label(TEXT("CHAT"),12,8,10,Parchment);
     const bool Interactive=!bModal&&!bEditLayout&&!bSettings;
     const bool Team=Controller&&Controller->bChatTeamOnly;
-    Panel(179,5,52,19,Team?Hover:Card);Label(TEXT("PARTY"),187,8,9,Team?Teal:Muted);
-    Panel(236,5,58,19,!Team?Hover:Card);Label(TEXT("EVERYONE"),240,8,8,!Team?Gold:Muted);
+    CireUIStyle::Button(Painter(),179,5,54,19,TEXT("PARTY"),Team?ECireButtonState::Selected:Hit(179,5,54,19)?ECireButtonState::Hover:ECireButtonState::Normal,Teal,8.f);
+    CireUIStyle::Button(Painter(),236,5,60,19,TEXT("EVERYONE"),!Team?ECireButtonState::Selected:Hit(236,5,60,19)?ECireButtonState::Hover:ECireButtonState::Normal,Gold,8.f);
     if(Controller&&Clicked&&Interactive&&Hit(174,4,121,22)){Controller->bChatTeamOnly=Hit(174,4,60,22);Clicked=false;}
     if(Controller) {
         const float Font=UISettings.ChatFontSize,LineH=Font+4;
@@ -454,8 +474,8 @@ void ACireHUD::DrawMeters(ACireHero* Hero,ACireController* Controller)
         const bool Heal=UISettings.MeterMode==1,Interactive=!bModal&&!bSettings&&!bEditLayout;
         Label(Heal?TEXT("HEALING DONE"):TEXT("DAMAGE DONE"),12,10,11,Parchment);
         Label(TEXT("TOTAL / MATCH"),198,12,8,Muted);
-        Panel(12,30,75,18,Heal?Card:Hover);Label(TEXT("DAMAGE"),23,32,9,Heal?Muted:Gold);
-        Panel(93,30,77,18,Heal?Hover:Card);Label(TEXT("HEALING"),104,32,9,Heal?Teal:Muted);
+        CireUIStyle::Button(Painter(),12,30,75,19,TEXT("DAMAGE"),!Heal?ECireButtonState::Selected:Hit(12,30,75,19)?ECireButtonState::Hover:ECireButtonState::Normal,Gold,8.5f);
+        CireUIStyle::Button(Painter(),93,30,77,19,TEXT("HEALING"),Heal?ECireButtonState::Selected:Hit(93,30,77,19)?ECireButtonState::Hover:ECireButtonState::Normal,Teal,8.5f);
         if(Clicked&&Interactive&&Hit(12,30,159,19)){UISettings.MeterMode=Hit(12,30,75,19)?0:1;UISettings.Save();Clicked=false;}
         TArray<ACireHero*> Party;for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(It->TeamId==Hero->TeamId)Party.Add(*It);
         Party.Sort([Heal](const ACireHero& A,const ACireHero& B){return Heal?A.HealingDone>B.HealingDone:A.DamageDone>B.DamageDone;});
@@ -497,19 +517,20 @@ void ACireHUD::DrawHUD()
     Clicked=PlayerOwner->WasInputKeyJustPressed(EKeys::LeftMouseButton)&&!PlayerOwner->IsInputKeyDown(EKeys::RightMouseButton);
     auto* Controller=Cast<ACireController>(PlayerOwner);auto* Hero=Cast<ACireHero>(PlayerOwner->GetPawn());auto* State=GetWorld()->GetGameState<ACireGameState>();
     bModal=Hero&&((!Hero->bDrafted||Hero->Offers.Num()>0||(Controller&&Controller->bShop))||(State&&State->Phase==3));
-    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();
+    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();TooltipAbility.Reset();
     LayoutInteraction();VisiblePanels.Reset();ResetTransform();
     if(DrawReplayScreen()){DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();return;}
     if(!Hero){Label(TEXT("Joining the battlefield..."),ViewW*.5f-130,ViewH*.5f,20,Parchment);return;}
     UpdateLevelUps(Hero);UpdateThreatAlerts(Hero);UpdateBanners(Hero,State);
-    if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;}
+    if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;TargetChangedAt=GetWorld()->GetRealTimeSeconds();}
     if(!bModal)DrawNameplates(Hero);
     if(!bModal)DrawLevelUps(Hero);
     DrawPlayer(Hero);DrawParty(Hero,Controller);DrawMatch(State);DrawMinimap(Hero,State);
     if(IsValid(Hero->Target)||bEditLayout)DrawUnit(Hero->Target,TEXT("TARGET"),false);
     if(Controller&&(IsValid(Controller->FocusTarget)||bEditLayout))DrawUnit(Controller->FocusTarget,TEXT("FOCUS / CLICK TO TARGET"),true);
     DrawBossFrames(Hero,Controller);DrawThreatMeter(Hero,Controller);
-    DrawSkills(Hero,Controller);DrawChat(Controller);DrawMeters(Hero,Controller);DrawPet(Hero,Controller);
+    DrawActionBars(Hero,Controller);DrawChat(Controller);DrawMeters(Hero,Controller);DrawPet(Hero,Controller);
+    ResetTransform();CireShopUI::DrawHUDElements(*this,Hero,Controller,State); // progression-shop: bag bar, teleport, stats window
     if(!bModal&&!bSettings)DrawCombatText(Hero,Controller);
     ResetTransform();
     if(!bModal&&!bSettings)DrawAlert();
@@ -519,7 +540,8 @@ void ACireHUD::DrawHUD()
     {
         const auto Aim=CireTargeting::Snapshot(Controller);
         if(Aim.bActive){const FString Text=ACireHero::SkillName(Aim.SkillId)+TEXT(" | ")+Aim.Message;const float W=FMath::Min(750.f,TextWidth(Text,12)+28);Frame((ViewW-W)/2,ViewH-248,W,31,Aim.bValid?Teal:Red);Label(Text,(ViewW-W)/2+14,ViewH-240,12,Aim.bValid?Parchment:Red);}
-        if(Hero->Mobility){const float CD=Hero->Mobility->CooldownRemaining();const FString Move=FString::Printf(TEXT("[%s] JUMP   [%s] DODGE %s   [%s] %s"),*UISettings.Keybindings.Label(TEXT("Jump")).ToUpper(),*UISettings.Keybindings.Label(TEXT("DodgeRoll")).ToUpper(),CD>0?*FString::Printf(TEXT("%.1fs"),CD):TEXT("READY"),*UISettings.Keybindings.Label(TEXT("ToggleWalk")).ToUpper(),Hero->Mobility->bWalking?TEXT("WALK"):TEXT("RUN"));Label(Move,(ViewW-TextWidth(Move,9))/2,ViewH-185,9,Hero->Mobility->IsInvulnerable()?Teal:Muted);}
+        if(Hero->Mobility){const float CD=Hero->Mobility->CooldownRemaining();const FString Move=FString::Printf(TEXT("[%s] JUMP   [%s] DODGE %s   [%s] %s"),*UISettings.Keybindings.Label(TEXT("Jump")).ToUpper(),*UISettings.Keybindings.Label(TEXT("DodgeRoll")).ToUpper(),CD>0?*FString::Printf(TEXT("%.1fs"),CD):TEXT("READY"),*UISettings.Keybindings.Label(TEXT("ToggleWalk")).ToUpper(),Hero->Mobility->bWalking?TEXT("WALK"):TEXT("RUN"));float HintY=ViewH-185;for(const TCHAR* BarId:{TEXT("Bar2"),TEXT("Bar3")})if(VisiblePanels.Contains(FName(BarId)))HintY=FMath::Min(HintY,PanelRect(FName(BarId)).Y-14);
+            Label(Move,(ViewW-TextWidth(Move,9))/2,HintY,9,Hero->Mobility->IsInvulnerable()?Teal:Muted);}
     }
     if(!Hero->Notice.IsEmpty()&&!bModal) {
         const FString Notice=ShortName(Hero->Notice,88);
@@ -538,8 +560,10 @@ void ACireHUD::DrawHUD()
         for(int32 I=0;I<5;++I)Label(Rows[I],ViewW*.5f-198,ViewH*.5f-58+I*25,12,I==4?Gold:Muted);
     }
     if(bModal)DrawModal(Hero,Controller,State);
+    ResetTransform();CireShopUI::DrawOverlay(*this,Hero,Controller); // progression-shop: purchase/loot toasts, teleport channel
     if(bEditLayout){VisiblePanels.AddUnique(TEXT("Tooltip"));VisiblePanels.AddUnique(TEXT("Threat"));VisiblePanels.AddUnique(TEXT("Boss"));}
     if(!bModal&&!bSettings&&!bEditLayout)UpdateHoverUnit(Hero);else HoverUnit.Reset();
+    UpdateQuickKeybind();DrawQuickKeybind();
     DrawLayoutEditor();DrawDeveloperLauncher();DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();
 }
 
@@ -556,7 +580,7 @@ void ACireHUD::DrawModal(ACireHero* Hero,ACireController* Controller,ACireGameSt
     auto Action=[&](int32 Type,int32 Value){if(Clicked&&Controller&&!bSettings&&!bEditLayout){Controller->ServerAction(Type,Value,nullptr);Clicked=false;}};
     if (ModalOpen)
     {
-        Panel(0, 135, W, H - 330, FLinearColor(0.004f, 0.008f, 0.011f, .78f));
+        if (!ShopOpen) Panel(0, 135, W, H - 330, FLinearColor(0.004f, 0.008f, 0.011f, .78f)); // progression-shop: the shop draws its own backdrop
         if (DraftOpen)
         {
             DrawDraftRoster(Hero,Controller);
@@ -587,28 +611,8 @@ void ACireHUD::DrawModal(ACireHero* Hero,ACireController* Controller,ACireGameSt
         }
         else if (ShopOpen)
         {
-            const float X = W / 2 - 395;
-            Panel(X, 173, 790, 333, Ink);
-            Panel(X, 173, 790, 2, Gold);
-            Label(TEXT("THE QUARTERMASTER"), X + 23, 191, 23, Parchment);
-            Label(State && State->Phase == 1 ? TEXT("Town preparation / spend wisely before the portal opens.") : State && State->Phase == 4 ? TEXT("Town recovery / resupply before the next wave cycle.") : TEXT("Purchases require town preparation or recovery at your base."), X + 24, 229, 12, Muted);
-            Label(TEXT("B  CLOSE"), X + 687, 197, 11, Gold);
-            // Indices and visible prices are mirrored from ACireHero::Purchase.
-            const TCHAR* Names[] = { TEXT("TOME OF EXPERIENCE"), TEXT("TOME OF PRIMARY STAT"), TEXT("FIELD EQUIPMENT"), TEXT("FOCUS RELIC") };
-            const TCHAR* Details[] = { TEXT("Gain 300 experience toward your next level."), TEXT("Gain +3 to your primary attribute this match."), TEXT("Gain +4 to your primary attribute and a gear rank."), TEXT("Gain 5% pure cooldown reduction. Maximum 60%.") };
-            const int32 Prices[] = { 100, 120, 180, 160 };
-            for (int32 I = 0; I < 4; ++I)
-            {
-                const float CX = X + 24 + (I % 2) * 374;
-                const float CY = 265 + (I / 2) * 109;
-                const bool Over = Hit(CX, CY, 365, 96);
-                Panel(CX, CY, 365, 96, Over ? Hover : Card);
-                Label(Names[I], CX + 14, CY + 13, 15, Parchment);
-                Wrapped(Details[I], CX + 14, CY + 40, 335, 11, Muted, 2);
-                Label(FString::Printf(TEXT("%d GOLD  /  PURCHASE >"), Prices[I]), CX + 14, CY + 76, 10, Hero->Gold >= Prices[I] ? Gold : Red);
-                Tip(Names[I],FString(Details[I])+FString::Printf(TEXT(" Costs %d gold. Purchases are validated at your own town during preparation or recovery."),Prices[I]),CX,CY,365,96);
-                if (Over) Action(4, I);
-            }
+            // progression-shop: League-style item shop (CireShopUI.cpp).
+            CireShopUI::DrawShop(*this,Hero,Controller,State);
         }
     }
 

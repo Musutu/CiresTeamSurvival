@@ -116,6 +116,8 @@ const TArray<FName>& CireBuffs::KnownIds()
         // Passives with a visible state.
         TEXT("battle_rhythm"),TEXT("soul_conduit"),
         // Data-ready ids for item actives and future skills.
-        TEXT("blood_rage"),TEXT("frost_weapon"),TEXT("blessing"),TEXT("regeneration"),TEXT("stunned")};
+        TEXT("blood_rage"),TEXT("frost_weapon"),TEXT("blessing"),TEXT("regeneration"),TEXT("stunned"),
+        // Item actives and consumables (progression-shop): records and inventory timed buffs.
+        TEXT("oathshield"),TEXT("toll_of_the_grave"),TEXT("borrowed_time"),TEXT("scatter"),TEXT("mana_restore")};
     return Ids;
 }

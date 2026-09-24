@@ -12,6 +12,12 @@
     "cullCm": 9000
   },
   "allegiance": { "friendly": [0.2, 0.85, 1.0], "hostile": [1.0, 0.22, 0.1] },
+  "itemBuffs": {
+    "vial_of_crimson": "regeneration",
+    "aether_phial": "mana_restore",
+    "hourglass_of_ages": "borrowed_time",
+    "ravenfeather_mantle": "scatter"
+  },
   "buffs": {
     "iron_guard": {
       "name": "Iron Guard", "kind": "buff", "school": "steel", "source": "champion active: 40% damage reduction for 8s",
@@ -290,6 +296,62 @@
       "lifecycle": { "burstSeconds": 0, "fadeSeconds": 0.3 },
       "intensity": { "expiringSeconds": 0 },
       "sound": {}
+    },
+    "borrowed_time": {
+      "name": "Borrowed Time", "kind": "buff", "school": "time", "source": "Hourglass of Ages active: 60% less damage for 4s and a 10% heal",
+      "palette": { "primary": [1.0, 0.8, 0.42], "secondary": [0.55, 0.42, 0.9], "core": [1.0, 0.97, 0.85] },
+      "priority": 72, "light": 0.4,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "hourglass" },
+        { "shape": "motes", "attach": "body", "style": "drop", "count": 12, "speed": 0.7, "size": 0.7 },
+        { "shape": "ring", "attach": "ground", "style": "runes", "count": 10, "speed": 0.8, "secondary": true }
+      ],
+      "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.35 },
+      "sound": { "start": "item.borrowed_time.start", "end": "item.borrowed_time.end" }
+    },
+    "scatter": {
+      "name": "Scatter", "kind": "buff", "school": "wind", "source": "Ravenfeather Mantle active: +40% move speed for 3s, slows removed",
+      "palette": { "primary": [0.62, 0.55, 0.95], "secondary": [0.2, 0.16, 0.34], "core": [0.92, 0.9, 1.0] },
+      "priority": 66,
+      "layers": [
+        { "shape": "motes", "attach": "body", "style": "leaf", "count": 14, "speed": 2.4, "secondary": true },
+        { "shape": "ring", "attach": "ground", "style": "dashed", "count": 7, "speed": 3.0, "size": 0.9 }
+      ],
+      "lifecycle": { "burstSeconds": 0.3, "fadeSeconds": 0.3 },
+      "sound": { "start": "item.scatter.start" }
+    },
+    "mana_restore": {
+      "name": "Aether Phial", "kind": "buff", "school": "arcane", "source": "Aether Phial: restores mana over 10s",
+      "palette": { "primary": [0.38, 0.55, 1.0], "secondary": [0.58, 0.4, 1.0], "core": [0.85, 0.92, 1.0] },
+      "priority": 44,
+      "layers": [
+        { "shape": "motes", "attach": "body", "style": "bubble", "count": 8, "speed": 0.6, "secondary": true },
+        { "shape": "ring", "attach": "ground", "count": 0, "speed": 0.4, "alpha": 0.7 }
+      ],
+      "lifecycle": { "burstSeconds": 0.35, "fadeSeconds": 0.4 },
+      "sound": { "start": "item.mana_restore.start", "loop": "item.mana_restore.loop", "end": "item.mana_restore.end" }
+    },
+    "oathshield": {
+      "name": "Oathshield", "kind": "buff", "school": "steel", "source": "Aegis of the Last Oath active: you and allies within 7m take 40% less damage for 3s",
+      "palette": { "primary": [0.9, 0.78, 0.45], "secondary": [0.45, 0.62, 0.95], "core": [1.0, 0.98, 0.9] },
+      "priority": 74, "light": 0.3,
+      "layers": [
+        { "shape": "aegis", "attach": "body", "count": 1, "speed": 1.2, "size": 1.4 },
+        { "shape": "ring", "attach": "ground", "style": "runes", "count": 6, "speed": 0.8 }
+      ],
+      "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.3 },
+      "sound": { "start": "item.oathshield.start", "end": "item.oathshield.end" }
+    },
+    "toll_of_the_grave": {
+      "name": "Toll of the Grave", "kind": "stance", "school": "death", "source": "Gravebell active: every monster within 8m must attack you for 3s",
+      "palette": { "primary": [0.6, 0.85, 0.72], "secondary": [0.2, 0.32, 0.28], "core": [0.9, 1.0, 0.94] },
+      "priority": 76,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "bell" },
+        { "shape": "ripple", "attach": "ground", "speed": 1.5 }
+      ],
+      "lifecycle": { "burstSeconds": 0.45, "fadeSeconds": 0.3 },
+      "sound": { "start": "item.toll_of_the_grave.start" }
     },
     "blood_rage": {
       "name": "Blood Rage", "kind": "buff", "school": "blood", "source": "data-ready for item actives and future skills (CireBuffs::Apply(unit, \"blood_rage\", seconds))",

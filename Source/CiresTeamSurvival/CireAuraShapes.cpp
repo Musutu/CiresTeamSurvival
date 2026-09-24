@@ -227,6 +227,26 @@ void Glyph(FBuild& M,const FContext& C,const FCireAuraLayer& L,float A)
         for(int32 I=0;I<10;++I){const float Ang=C.Time*.6f+I*Tau/10;const FVector2D D(FMath::Cos(Ang),FMath::Sin(Ang));
             M.Line2(Center,D*G*.62f,D*G*(I%2?.95f:1.2f),W*.9f,P);}
     }
+    else if(Style==TEXT("hourglass"))
+    {
+        M.Line2(Center,{-G*.62f,G*.92f},{G*.62f,G*.92f},W*1.4f,K);M.Line2(Center,{-G*.62f,-G*.92f},{G*.62f,-G*.92f},W*1.4f,K);
+        M.Fill2(Center,{-G*.5f,G*.8f},{G*.5f,G*.8f},{0,0},Col(C.Secondary,A*.35f));
+        M.Line2(Center,{-G*.5f,G*.8f},{0,0},W,P);M.Line2(Center,{G*.5f,G*.8f},{0,0},W,P);
+        M.Line2(Center,{0,0},{-G*.5f,-G*.8f},W,P);M.Line2(Center,{0,0},{G*.5f,-G*.8f},W,P);
+        const float Sand=.25f+.75f*Fract(C.Time*.3f);
+        M.Fill2(Center,{-G*.45f*Sand,-G*.8f},{G*.45f*Sand,-G*.8f},{0,-G*.8f+G*.55f*Sand},Col(C.Core,A*.85f));
+        M.Line2(Center,{0,-G*.05f},{0,-G*.75f},W*.35f,Col(C.Core,A*.7f));
+    }
+    else if(Style==TEXT("bell"))
+    {
+        const float Swing=FMath::Sin(C.Time*4.2f)*.28f,Cs=FMath::Cos(Swing),Sn=FMath::Sin(Swing);
+        auto Rot=[&](FVector2D P){const FVector2D Q=P-FVector2D(0,G*.95f);return FVector2D(Q.X*Cs-Q.Y*Sn,Q.X*Sn+Q.Y*Cs)+FVector2D(0,G*.95f);};
+        const FVector2D Outline[]={{-G*.78f,-G*.55f},{-G*.55f,-G*.2f},{-G*.45f,G*.3f},{-G*.25f,G*.7f},{0,G*.82f},{G*.25f,G*.7f},{G*.45f,G*.3f},{G*.55f,-G*.2f},{G*.78f,-G*.55f}};
+        for(int32 I=0;I+1<UE_ARRAY_COUNT(Outline);++I){M.Line2(Center,Rot(Outline[I]),Rot(Outline[I+1]),W*1.1f,P);M.Fill2(Center,Rot({0,G*.1f}),Rot(Outline[I]),Rot(Outline[I+1]),Col(C.Secondary,A*.3f));}
+        M.Line2(Center,Rot(Outline[0]),Rot(Outline[8]),W*1.3f,K);
+        const FVector2D Clapper=Rot({0,-G*.72f});M.Diamond(Center+M.R*Clapper.X+M.U*Clapper.Y,G*.14f,Col(C.Core,A));
+        for(int32 I=0;I<2;++I){const float Ph=Fract(C.Time*1.1f+I*.5f);M.BillRing(Center-M.U*G*.2f,G*(.9f+Ph*.9f),W*(1.1f-Ph*.6f),Col(C.Primary,A*(1-Ph)*.7f),16,PI*1.1f,PI*.8f);}
+    }
     else // drop
     {
         for(int32 I=0;I<14;++I)

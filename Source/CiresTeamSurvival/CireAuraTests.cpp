@@ -3,6 +3,7 @@
 #include "CireAuraShapes.h"
 #include "CireBuffs.h"
 #include "CireGame.h"
+#include "CireItems.h"
 #include "CireNPCState.h"
 #include "CireSkillRuntime.h"
 #include "CireUISettings.h"
@@ -121,6 +122,18 @@ bool CireAuraVisuals::RunSmoke(ACireGameMode* Mode)
     Check(Poison&&Poison->Stacks==3&&Has(TEXT("slowed")),TEXT("poison stacks and generic slow come from replicated state"));
     CireBuffs::Apply(Hero,TEXT("frost_bind"),10,Observer);Clock+=.1f;Auras->UpdateNow(Clock);
     Check(Has(TEXT("frost_bind"))&&Fading(TEXT("slowed")),TEXT("a named slow replaces the generic slow"));
+    // ---- Item actives and consumables (replicated inventory timed buffs) ----
+    for(const TCHAR* Item:{TEXT("vial_of_crimson"),TEXT("aether_phial"),TEXT("hourglass_of_ages"),TEXT("ravenfeather_mantle")})
+        Check(CireAuraData::ItemBuffs().Contains(FName(Item)),FString(TEXT("timed item buff has a signature: "))+Item);
+    if(Hero->Inventory)
+    {
+        FCireTimedBuff Timed;Timed.Id=TEXT("hourglass_of_ages");Timed.Duration=4;Timed.EndsAt=CireBuffs::ServerNow(World)+4;
+        Hero->Inventory->Buffs.Add(Timed);Clock+=.1f;Auras->UpdateNow(Clock);
+        Check(Has(TEXT("borrowed_time")),TEXT("Hourglass of Ages shows Borrowed Time from the replicated inventory"));
+        Hero->Inventory->Buffs.Reset();Clock+=.1f;Auras->UpdateNow(Clock);
+        Check(Fading(TEXT("borrowed_time")),TEXT("expired item buff fades"));
+    }
+    else Check(false,TEXT("hero has an inventory"));
     // ---- Death cleanup -----------------------------------------------------
     CireBuffs::Apply(Hero,TEXT("blood_rage"),30,Hero);Clock+=.1f;Auras->UpdateNow(Clock);Check(Has(TEXT("blood_rage")),TEXT("blood rage visible while alive"));
     Hero->bDead=true;Clock+=.1f;Auras->UpdateNow(Clock);

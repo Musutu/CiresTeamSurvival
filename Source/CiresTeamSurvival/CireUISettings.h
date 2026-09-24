@@ -87,6 +87,8 @@ public:
     bool bCameraAutoFollow = true;
     /** After the hostile target dies, Tab-select the nearest hostile in front of the camera. */
     bool bAutoReacquireTarget = false;
+    /** progression-shop: show the compact character stats window (toggle: C). */
+    bool bShowStats = true;
     // --- end WoW camera / targeting preferences ---
     /** feat/camera-movement: keybindings + action-bar placements, section [CireUI.Keybindings]. */
     FCireKeybindings Keybindings;
@@ -121,6 +123,10 @@ public:
     bool bShowBossFrames = true;
     /** aura-vfx: buff/aura/attack-modifier visuals on other units (0 = minimal marks, 1 = full). Your own are always full. */
     float OtherEffectsIntensity = 1.f;
+    /** Extra WoW action bars (bar 1 is always shown) and the drag lock (Shift-drag when locked). */
+    bool bShowActionBar2 = true;
+    bool bShowActionBar3 = false;
+    bool bLockActionBars = false;
 
     /** The resolved interface multiplier for a viewport height in pixels. */
     float ResolveUIScale(float ViewportHeightPixels) const;

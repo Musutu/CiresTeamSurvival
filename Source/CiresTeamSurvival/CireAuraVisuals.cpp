@@ -7,6 +7,7 @@
 #include "CireRealm.h"
 #include "CireSkillRuntime.h"
 #include "CireAttackSystem.h"
+#include "CireItems.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -31,6 +32,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogCireAura,Log,All);
 namespace
 {
 TMap<FName,FCireAuraDef> GDefs;
+TMap<FName,FName> GItemBuffs;
 FCireAuraLimits GLimits;
 bool GLoaded=false;
 
@@ -64,7 +66,7 @@ const TSet<FString>& Attaches(){static const TSet<FString> S={TEXT("ground"),TEX
 const TSet<FString>& Kinds(){static const TSet<FString> S={TEXT("buff"),TEXT("debuff"),TEXT("aura"),TEXT("stance"),TEXT("passive")};return S;}
 }
 
-bool CireAuraData::Parse(const FString& Text,TMap<FName,FCireAuraDef>& Out,FCireAuraLimits& OutLimits,FString& Error)
+bool CireAuraData::Parse(const FString& Text,TMap<FName,FCireAuraDef>& Out,FCireAuraLimits& OutLimits,FString& Error,TMap<FName,FName>* OutItemBuffs)
 {
     auto Bad=[&](const FString& Why){Error=Why;return false;};
     TSharedPtr<FJsonObject> Root;const auto Reader=TJsonReaderFactory<>::Create(Text);
@@ -148,19 +150,27 @@ bool CireAuraData::Parse(const FString& Text,TMap<FName,FCireAuraDef>& Out,FCire
         }
         Candidate.Add(D.Id,MoveTemp(D));
     }
-    Out=MoveTemp(Candidate);OutLimits=Limits;Error.Reset();return true;
+    TMap<FName,FName> Items;const TSharedPtr<FJsonObject>* ItemRows=nullptr;
+    if(Root->TryGetObjectField(TEXT("itemBuffs"),ItemRows))for(const auto& Pair:(*ItemRows)->Values)
+    {
+        FString Target;const FString Key(Pair.Key.ToView());
+        if(Key.IsEmpty()||!Pair.Value->TryGetString(Target)||!Candidate.Contains(FName(*Target)))return Bad(TEXT("itemBuffs entry must name a known visual: ")+Key);
+        Items.Add(FName(*Key),FName(*Target));
+    }
+    Out=MoveTemp(Candidate);OutLimits=Limits;if(OutItemBuffs)*OutItemBuffs=MoveTemp(Items);Error.Reset();return true;
 }
 bool CireAuraData::Reload(FString& Error)
 {
     FString Text;const FString Path=FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/BuffVisuals.json"));
     if(!FFileHelper::LoadFileToString(Text,*Path)||Text.Len()>400000){Error=TEXT("Missing or oversized BuffVisuals.json");return false;}
-    TMap<FName,FCireAuraDef> Candidate;FCireAuraLimits Limits;
-    if(!Parse(Text,Candidate,Limits,Error))return false;
-    GDefs=MoveTemp(Candidate);GLimits=Limits;GLoaded=true;return true;
+    TMap<FName,FCireAuraDef> Candidate;FCireAuraLimits Limits;TMap<FName,FName> Items;
+    if(!Parse(Text,Candidate,Limits,Error,&Items))return false;
+    GDefs=MoveTemp(Candidate);GLimits=Limits;GItemBuffs=MoveTemp(Items);GLoaded=true;return true;
 }
 const FCireAuraDef* CireAuraData::Find(FName Id){EnsureLoaded();return GDefs.Find(Id);}
 const FCireAuraLimits& CireAuraData::Limits(){EnsureLoaded();return GLimits;}
 const TMap<FName,FCireAuraDef>& CireAuraData::All(){EnsureLoaded();return GDefs;}
+const TMap<FName,FName>& CireAuraData::ItemBuffs(){EnsureLoaded();return GItemBuffs;}
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -308,8 +318,8 @@ void UCireAuraComponent::Synchronize(float ServerNow,float LocalNow)
         const auto* Hero=Cast<ACireHero>(Unit);const auto* Monster=Cast<ACireMonster>(Unit);
         const float Shield=Hero?Hero->ShieldUntil:0,Taunt=Hero?Hero->TauntUntil:0,Slow=Hero?Hero->SlowUntil:Monster?Monster->SlowUntil:0;
         const int32 Poison=Hero?Hero->PoisonAreaCount:Monster?Monster->PoisonAreaCount:0;
-        static const TSet<FName> GuardIds={TEXT("iron_guard"),TEXT("challenge_of_iron"),TEXT("sanctuary"),TEXT("bastion_of_dawn"),TEXT("mass_aegis"),TEXT("wellspring")};
-        static const TSet<FName> TauntIds={TEXT("war_cry"),TEXT("challenge_of_iron")};
+        static const TSet<FName> GuardIds={TEXT("iron_guard"),TEXT("challenge_of_iron"),TEXT("sanctuary"),TEXT("bastion_of_dawn"),TEXT("mass_aegis"),TEXT("wellspring"),TEXT("oathshield")};
+        static const TSet<FName> TauntIds={TEXT("war_cry"),TEXT("challenge_of_iron"),TEXT("toll_of_the_grave")};
         static const TSet<FName> SlowIds={TEXT("frost_bind"),TEXT("shield_slam")};
         bool bGuardNamed=false,bTauntNamed=false,bSlowNamed=false;
         if(const auto* State=CireBuffs::Get(Unit))for(const auto& E:State->Buffs)
@@ -330,6 +340,10 @@ void UCireAuraComponent::Synchronize(float ServerNow,float LocalNow)
         {
             if(Hero->HasSkill(TEXT("battle_rhythm")))Want(Desired,TEXT("battle_rhythm"),0,0,1,nullptr);
             if(Hero->HasSkill(TEXT("soul_conduit")))Want(Desired,TEXT("soul_conduit"),0,0,1,nullptr);
+            // Item actives and consumables: replicated inventory timed buffs, mapped by "itemBuffs".
+            if(const auto* Bag=Hero->Inventory.Get())for(const auto& Timed:Bag->Buffs)
+                if(Timed.EndsAt>ServerNow)if(const FName* Visual=CireAuraData::ItemBuffs().Find(Timed.Id))
+                    Want(Desired,*Visual,Timed.EndsAt-Timed.Duration,Timed.EndsAt,1,nullptr);
         }
         if(Monster&&Monster->NPCState)
         {

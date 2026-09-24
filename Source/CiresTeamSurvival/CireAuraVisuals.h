@@ -61,10 +61,12 @@ struct FCireAuraLimits
 namespace CireAuraData
 {
     CIRESTEAMSURVIVAL_API bool Reload(FString& Error);
-    CIRESTEAMSURVIVAL_API bool Parse(const FString& Text,TMap<FName,FCireAuraDef>& Out,FCireAuraLimits& OutLimits,FString& Error);
+    CIRESTEAMSURVIVAL_API bool Parse(const FString& Text,TMap<FName,FCireAuraDef>& Out,FCireAuraLimits& OutLimits,FString& Error,TMap<FName,FName>* OutItemBuffs=nullptr);
     CIRESTEAMSURVIVAL_API const FCireAuraDef* Find(FName Id);
     CIRESTEAMSURVIVAL_API const FCireAuraLimits& Limits();
     CIRESTEAMSURVIVAL_API const TMap<FName,FCireAuraDef>& All();
+    /** Replicated item timed-buff id (UCireInventory::Buffs) -> visual id, from "itemBuffs" in the JSON. */
+    CIRESTEAMSURVIVAL_API const TMap<FName,FName>& ItemBuffs();
 }
 
 // One visible effect on a unit, from the start burst through the fade-out.

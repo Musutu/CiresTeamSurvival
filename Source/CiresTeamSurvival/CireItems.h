@@ -1,0 +1,224 @@
+#pragma once
+// progression-shop: data-driven items (Content/Data/Items.json), the replicated
+// hero inventory, item actives/consumables, teleport-to-base, and the small
+// combat hooks the hero/combat code calls. Rules live in Rules/CireItemRules.*.
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "GameFramework/Actor.h"
+#include "Rules/CiresRules.h"
+#include "Rules/CireItemRules.h"
+#include "CireItems.generated.h"
+
+class ACireHero;
+class ACireGameMode;
+class FCireKeybindings;
+class UStaticMeshComponent;
+class UPointLightComponent;
+
+struct CIRESTEAMSURVIVAL_API FCireItemData
+{
+    Cires::Items::Catalog Catalog;
+    Cires::Items::ShopRules Shop;
+    Cires::Items::TeleportRules Teleport;
+    // role key (tank/physical/caster/support) -> [starting, core, situational]
+    TMap<FString, TArray<TArray<FName>>> Recommended;
+    TMap<FName, FString> UseText;
+    TMap<FName, TArray<FString>> PassiveText;
+    TArray<FName> Order; // catalog order for the shop grid
+    FString Error;
+    bool bValid = false;
+};
+
+namespace CireItems
+{
+    CIRESTEAMSURVIVAL_API const FCireItemData& Get();
+    CIRESTEAMSURVIVAL_API bool Reload();
+    CIRESTEAMSURVIVAL_API bool ParseJson(const FString& Json, FCireItemData& Out, FString& Error);
+    CIRESTEAMSURVIVAL_API const Cires::Items::ItemDef* Find(FName Id);
+    CIRESTEAMSURVIVAL_API FString DisplayName(FName Id);
+    // Recommended-build key for a champion: tank, physical, caster or support.
+    CIRESTEAMSURVIVAL_API FString RoleKey(const ACireHero* Hero);
+    // Legacy ServerAction(4, 0..3) purchases map onto catalog items.
+    CIRESTEAMSURVIVAL_API FName LegacyItem(int32 Index);
+    CIRESTEAMSURVIVAL_API class UCireInventory* InventoryOf(const AActor* Actor);
+    CIRESTEAMSURVIVAL_API Cires::Items::Totals TotalsOf(const ACireHero* Hero);
+    CIRESTEAMSURVIVAL_API bool IsBasicAttack(const AActor* Source, const FString& AbilityName);
+
+    // ---- stat pipeline hooks (ACireHero::Recalculate / AttackDamage / BasicAttack / Tick) ----
+    CIRESTEAMSURVIVAL_API void AddAttributes(const ACireHero* Hero, Cires::StatBlock& Attributes);
+    // Returns the pure cooldown reduction to feed CalculateStats (base + items, capped).
+    CIRESTEAMSURVIVAL_API double CooldownReductionFor(ACireHero* Hero, float CurrentCDR);
+    CIRESTEAMSURVIVAL_API void ApplyDerived(ACireHero* Hero);
+    CIRESTEAMSURVIVAL_API float AttackDamageBonus(const ACireHero* Hero);
+    CIRESTEAMSURVIVAL_API float AttackSpeedBonus(const ACireHero* Hero);   // fraction (0.12 = +12%)
+    CIRESTEAMSURVIVAL_API float MoveSpeedMultiplier(const ACireHero* Hero);
+    CIRESTEAMSURVIVAL_API void ApplyRegen(ACireHero* Hero, float DeltaSeconds);
+
+    // ---- combat hooks (CireCombatEvents / ACireHero::TakeDamage) ----
+    CIRESTEAMSURVIVAL_API float ModifyOutgoingDamage(AActor* Source, AActor* Target, float Amount, const FString& AbilityName);
+    CIRESTEAMSURVIVAL_API void OnDamageDealt(AActor* Source, AActor* Target, float Applied, const FString& AbilityName);
+    CIRESTEAMSURVIVAL_API float ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FString& AbilityName, float Amount);
+    CIRESTEAMSURVIVAL_API void OnHeroDamaged(ACireHero* Hero, AActor* Causer, const FString& AbilityName, float Taken);
+    CIRESTEAMSURVIVAL_API float HealingMultiplier(const ACireHero* Source);
+
+    // ---- shop access / teleport (ServerAction 4 and 8) ----
+    CIRESTEAMSURVIVAL_API Cires::Items::ShopAccess ShopAccessFor(const ACireHero* Hero);
+    CIRESTEAMSURVIVAL_API void RequestTeleport(ACireHero* Hero);
+    CIRESTEAMSURVIVAL_API void BotShop(ACireHero* Hero);
+    // ---- key map (CireKeybindings) ----
+    CIRESTEAMSURVIVAL_API FName BeltAction(int32 Index);   // "UseBelt1".."UseBelt3"
+    CIRESTEAMSURVIVAL_API FName ItemAction(int32 Index);   // "UseItem1".."UseItem6"
+    // Action-bar entries "item:<id>" resolve to the equipment slot holding that item.
+    CIRESTEAMSURVIVAL_API FString ItemSlotId(FName ItemId);
+    CIRESTEAMSURVIVAL_API bool ParseItemSlotId(const FString& SlotId, FName& OutItem);
+    // Automatic bar-1 slots 9..12 (keys 7,8,9,0): the owned active items in bag order.
+    CIRESTEAMSURVIVAL_API FString AutoActionBarItem(const ACireHero& Hero, int32 Ordinal);
+    CIRESTEAMSURVIVAL_API int32 ResolveItemSlot(const FCireKeybindings& Bindings, const ACireHero& Hero, FName Slot);
+    // Phase change: cancel channels and end every shop visit.
+    CIRESTEAMSURVIVAL_API void OnPhaseChanged(ACireGameMode* Mode, int32 NewPhase);
+#if !UE_BUILD_SHIPPING
+    CIRESTEAMSURVIVAL_API bool RunSmoke(ACireGameMode* Mode);
+#endif
+}
+
+USTRUCT()
+struct CIRESTEAMSURVIVAL_API FCireItemSlot
+{
+    GENERATED_BODY()
+    UPROPERTY() FName Id;
+    UPROPERTY() int32 Charges = 0;
+    UPROPERTY() float ReadyAt = 0;     // server world time
+    UPROPERTY() float Cooldown = 0;    // full duration of the last cooldown (UI sweep)
+};
+
+USTRUCT()
+struct CIRESTEAMSURVIVAL_API FCireTimedBuff
+{
+    GENERATED_BODY()
+    UPROPERTY() FName Id;
+    UPROPERTY() float EndsAt = 0;
+    UPROPERTY() float Duration = 0;
+};
+
+UENUM()
+enum class ECireShopAction : uint8 { Buy, Sell, Undo, Use, Loot, Teleport, Swap, Announce };
+
+USTRUCT()
+struct CIRESTEAMSURVIVAL_API FCireShopFeedback
+{
+    GENERATED_BODY()
+    UPROPERTY() ECireShopAction Action = ECireShopAction::Buy;
+    UPROPERTY() bool bOk = false;
+    UPROPERTY() FName ItemId;
+    UPROPERTY() int32 Slot = -1;
+    UPROPERTY() bool bBelt = false;
+    UPROPERTY() int32 GoldDelta = 0;
+    UPROPERTY() FString Message;
+};
+
+// Server-side heal/mana over time from potions; not replicated (health/mana are).
+struct FCireRestore
+{
+    float PerSecond = 0;
+    float EnergyPerSecond = 0;
+    float Remaining = 0;
+    bool bMana = false;
+};
+
+UCLASS(ClassGroup=(Cire))
+class CIRESTEAMSURVIVAL_API UCireInventory : public UActorComponent
+{
+    GENERATED_BODY()
+public:
+    UCireInventory();
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+    // ---- replicated state ----
+    UPROPERTY(ReplicatedUsing=OnRep_Items) TArray<FCireItemSlot> Equipment;
+    UPROPERTY(ReplicatedUsing=OnRep_Items) TArray<FCireItemSlot> Belt;
+    UPROPERTY(Replicated) TArray<FCireTimedBuff> Buffs;
+    UPROPERTY(Replicated) float TeleportChannelStart = -1;
+    UPROPERTY(Replicated) float TeleportChannelEnd = -1;
+    UPROPERTY(Replicated) float TeleportReadyAt = 0;
+    UPROPERTY(Replicated) int32 PrimaryTomePoints = 0;   // stats-window derivation
+    UPROPERTY(Replicated) int32 LootScore = 0;
+    UPROPERTY(Replicated) int32 UndoDepth = 0;
+    UPROPERTY(Replicated) bool bShopVisit = false;
+
+    // ---- client requests (owning client only) ----
+    UFUNCTION(Server, Reliable) void ServerBuy(FName ItemId);
+    UFUNCTION(Server, Reliable) void ServerSell(int32 Index, bool bBeltSlot);
+    UFUNCTION(Server, Reliable) void ServerUndo();
+    UFUNCTION(Server, Reliable) void ServerUse(int32 Index, bool bBeltSlot);
+    UFUNCTION(Server, Reliable) void ServerSwap(int32 From, int32 To);
+    UFUNCTION(Server, Reliable) void ServerShopOpen(bool bOpen);
+    UFUNCTION(Client, Reliable) void ClientFeedback(const FCireShopFeedback& Feedback);
+
+    // ---- authoritative operations (also used by bots, loot and tests) ----
+    bool Buy(FName ItemId, FString& Message);
+    bool SellSlot(int32 Index, bool bBeltSlot, FString& Message);
+    bool UndoLast(FString& Message);
+    bool UseSlot(int32 Index, bool bBeltSlot, FString& Message);
+    bool SwapSlots(int32 From, int32 To);
+    // Loot: places an item (or converts it to gold if there is no room). Returns false when converted.
+    bool GrantItem(FName ItemId, int32& ConvertedGold);
+    bool HasRoomFor(FName ItemId) const;
+    void BeginShopVisit(bool bOpen);
+    void EndShopVisit();
+    void Teleport();
+    void InterruptTeleport(const TCHAR* Reason);
+    void CompleteTeleportNow(); // tests
+    bool IsChanneling() const { return TeleportChannelEnd >= 0; }
+    float TeleportCooldownRemaining() const;
+    void ApplyPrimaryTome(int32 Points);
+
+    Cires::Items::Inventory ToRules() const;
+    void FromRules(const Cires::Items::Inventory& Rules);
+    const Cires::Items::Totals& Totals() const;
+    void Invalidate() { bTotalsDirty = true; }
+    ACireHero* Hero() const;
+    double Now() const;
+
+    // Local (client) feedback queue consumed by the shop UI.
+    TArray<FCireShopFeedback> PendingFeedback;
+    // Server-only runtime
+    float ItemCDRApplied = 0;
+    int32 BasicHitCounter = 0;
+    float LowHealthReadyAt = 0;
+    float BarrierUntil = 0, BarrierReduction = 0;
+    float HasteUntil = 0, HasteAmount = 0;
+    TArray<FCireRestore> Restores;
+    // Sends a feedback line to the owning player (toast / banner in the shop UI).
+    void SendFeedback(ECireShopAction Action, bool bOk, FName ItemId, int32 Slot, bool bBeltSlot, int32 GoldDelta, const FString& Message);
+private:
+    UFUNCTION() void OnRep_Items();
+    void AfterChange();
+    bool ApplyEffect(const Cires::Items::Effect& Effect, FName ItemId, FString& Message);
+    Cires::Items::ShopSession Session;
+    FVector ChannelOrigin = FVector::ZeroVector;
+    mutable Cires::Items::Totals CachedTotals;
+    mutable bool bTotalsDirty = true;
+    float AuraTimer = 0;
+};
+
+// Lantern ward from Watcher's Lantern: slows and marks monsters of its lane.
+UCLASS()
+class CIRESTEAMSURVIVAL_API ACireLanternWard : public AActor
+{
+    GENERATED_BODY()
+public:
+    ACireLanternWard();
+    virtual void Tick(float DeltaSeconds) override;
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+    virtual bool IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const override;
+    UPROPERTY(Replicated) int32 TeamId = -1;
+    UPROPERTY(Replicated) float Radius = 700;
+    UPROPERTY(Replicated) float ExpiresAt = 0;
+    float SlowPercent = 20, MarkPercent = 10;
+    UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> Post;
+    UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> Flame;
+    UPROPERTY(VisibleAnywhere) TObjectPtr<UPointLightComponent> Light;
+    // Damage bonus against a monster standing inside any of the team's wards.
+    static float MarkBonus(const AActor* Target, int32 AttackerTeam);
+};

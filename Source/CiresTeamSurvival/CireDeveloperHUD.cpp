@@ -31,7 +31,7 @@ void ACireHUD::DrawDeveloperPanel(float X,float Y)
     if(!bDeveloperLoaded){DeveloperDraft=CireDeveloperTools::Get(GetWorld());bDeveloperLoaded=true;}
     auto Button=[&](const FString& Title,float BX,float BY,float W,const FString& Help=FString())
     {
-        const bool Over=Hit(BX,BY,W,25);Panel(BX,BY,W,25,Over?Hover:Card);Label(Title,BX+7,BY+5,10,Over?Parchment:Gold);
+        const bool Over=Hit(BX,BY,W,25);CireUIStyle::Button(Painter(),BX,BY,W,25,Title,Over?ECireButtonState::Hover:ECireButtonState::Normal,Gold,9.5f);
         Tip(Title,Help.IsEmpty()?Title:Help,BX,BY,W,25);
         if(Over&&Clicked){Clicked=false;PlayUIFeedback();return true;}return false;
     };
@@ -201,7 +201,7 @@ bool ACireHUD::DrawReplayScreen()
     Frame(X,Y,720,93,Gold);
     Label(FString::Printf(TEXT("REPLAY   %.1f / %.1fs   %.2fx"),Replay->CurrentSeconds(),Replay->DurationSeconds(),Replay->PlaybackSpeed()),X+14,Y+10,14,Parchment);
     Bar(X+14,Y+34,692,4,Replay->DurationSeconds()>0?Replay->CurrentSeconds()/Replay->DurationSeconds():0,Gold);
-    auto Button=[&](const FString& Text,float BX,float W){const bool Over=Hit(BX,Y+49,W,27);Panel(BX,Y+49,W,27,Over?Hover:Card);Label(Text,BX+8,Y+55,11,Gold);if(Clicked&&Over&&!bSettings){Clicked=false;PlayUIFeedback();return true;}return false;};
+    auto Button=[&](const FString& Text,float BX,float W){const bool Over=Hit(BX,Y+49,W,27);CireUIStyle::Button(Painter(),BX,Y+49,W,27,Text,Over?ECireButtonState::Hover:ECireButtonState::Normal);if(Clicked&&Over&&!bSettings){Clicked=false;PlayUIFeedback();return true;}return false;};
     if(Button(Replay->IsPaused()?TEXT("RESUME"):TEXT("PAUSE"),X+14,113))Replay->SetPaused(!Replay->IsPaused());
     if(Button(TEXT("-10 SECONDS"),X+138,127))Replay->Seek(FMath::Max(0.f,Replay->CurrentSeconds()-10));
     if(Button(TEXT("+10 SECONDS"),X+276,127))Replay->Seek(FMath::Min(Replay->DurationSeconds(),Replay->CurrentSeconds()+10));
