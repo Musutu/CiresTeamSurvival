@@ -1,0 +1,420 @@
+{
+  "schemaVersion": 1,
+  "notes": "Signature visuals for every buff, debuff, aura and stance. Presentation only: gameplay lives in the skills, NPC states and statuses that produce these ids (see Docs/BuffVisuals.md). Colours are 0..1 and are boosted by the aura materials. shape: ring|ripple|crystals|pool|cracks|swirl|shell|plates|aegis|flames|motes|drips|chains|halo|hands|weapon|glyph|tether|tower. attach: ground|body|hands|weapon|overhead|link|front. attack.swipe: blood|frost|holy|ember|gold|steel|rhythm|venom|arcane; attack.onHit: splash|shatter|glint|sparks|ripple|none. sound ids are hooks for the audio pass (empty = silent).",
+  "limits": {
+    "maxUnits": 32,
+    "maxLayersPerUnit": 5,
+    "maxLights": 6,
+    "maxStrikes": 24,
+    "maxVerticesPerUnit": 9000,
+    "fullDetailCm": 2800,
+    "reducedDetailCm": 5500,
+    "cullCm": 9000
+  },
+  "allegiance": { "friendly": [0.2, 0.85, 1.0], "hostile": [1.0, 0.22, 0.1] },
+  "itemBuffs": {
+    "vial_of_crimson": "regeneration",
+    "aether_phial": "mana_restore",
+    "hourglass_of_ages": "borrowed_time",
+    "ravenfeather_mantle": "scatter"
+  },
+  "buffs": {
+    "iron_guard": {
+      "name": "Iron Guard", "kind": "buff", "school": "steel", "source": "champion active: 40% damage reduction for 8s",
+      "palette": { "primary": [0.66, 0.76, 0.9], "secondary": [0.24, 0.3, 0.4], "core": [0.95, 0.97, 1.0] },
+      "priority": 60,
+      "layers": [
+        { "shape": "plates", "attach": "body", "count": 5, "speed": 0.8 },
+        { "shape": "ring", "attach": "ground", "style": "runes", "count": 8, "speed": 0.5 }
+      ],
+      "lifecycle": { "burstSeconds": 0.45, "fadeSeconds": 0.4 },
+      "intensity": { "expiringSeconds": 1.5 },
+      "sound": { "start": "buff.iron_guard.start", "end": "buff.iron_guard.end" }
+    },
+    "war_cry": {
+      "name": "War Cry", "kind": "stance", "school": "war", "source": "champion active: taunt nearby enemies 6s, guard 3s",
+      "palette": { "primary": [1.0, 0.45, 0.12], "secondary": [0.72, 0.14, 0.05], "core": [1.0, 0.86, 0.45] },
+      "priority": 75, "light": 0.5,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "crown", "size": 1.1 },
+        { "shape": "ripple", "attach": "ground", "style": "shock", "speed": 1.2, "size": 1.1 }
+      ],
+      "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.35 },
+      "attack": { "swipe": "gold", "onHit": "sparks", "primary": [1.0, 0.5, 0.15], "core": [1.0, 0.92, 0.55] },
+      "sound": { "start": "buff.war_cry.start", "end": "buff.war_cry.end", "hit": "buff.war_cry.hit" }
+    },
+    "challenge_of_iron": {
+      "name": "Challenge of Iron", "kind": "stance", "school": "steel", "source": "champion ultimate: taunt and 12s guard",
+      "palette": { "primary": [0.8, 0.82, 0.88], "secondary": [0.55, 0.08, 0.06], "core": [1.0, 0.95, 0.82] },
+      "priority": 80, "light": 0.4,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "spikes", "size": 1.1 },
+        { "shape": "chains", "attach": "body", "count": 16, "speed": 0.7 },
+        { "shape": "ring", "attach": "ground", "style": "dashed", "count": 6, "speed": 0.4, "secondary": true }
+      ],
+      "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.45 },
+      "attack": { "swipe": "steel", "onHit": "sparks", "primary": [0.75, 0.8, 0.9], "core": [1.0, 1.0, 0.95] },
+      "sound": { "start": "buff.challenge_of_iron.start", "end": "buff.challenge_of_iron.end", "hit": "buff.challenge_of_iron.hit" }
+    },
+    "sanctuary": {
+      "name": "Sanctuary", "kind": "buff", "school": "holy", "source": "support active: group heal and 3s guard",
+      "palette": { "primary": [1.0, 0.86, 0.48], "secondary": [0.92, 0.7, 0.32], "core": [1.0, 1.0, 0.9] },
+      "priority": 55, "light": 0.4,
+      "layers": [
+        { "shape": "shell", "attach": "body", "style": "dome", "speed": 0.6 },
+        { "shape": "motes", "attach": "body", "style": "glint", "count": 10, "speed": 0.8 }
+      ],
+      "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.35 },
+      "sound": { "start": "buff.sanctuary.start", "end": "buff.sanctuary.end" }
+    },
+    "bastion_of_dawn": {
+      "name": "Bastion of Dawn", "kind": "aura", "school": "holy", "source": "tank/support ultimate: self heal, allies guarded 8s",
+      "palette": { "primary": [1.0, 0.68, 0.22], "secondary": [1.0, 0.86, 0.52], "core": [1.0, 1.0, 0.86] },
+      "priority": 85, "light": 0.8,
+      "layers": [
+        { "shape": "halo", "attach": "overhead", "count": 18, "speed": 1.0 },
+        { "shape": "ring", "attach": "ground", "style": "runes", "count": 12, "speed": 0.35, "size": 1.15 },
+        { "shape": "motes", "attach": "body", "style": "glint", "count": 8, "speed": 0.7 }
+      ],
+      "lifecycle": { "burstSeconds": 0.6, "fadeSeconds": 0.5 },
+      "intensity": { "expiringSeconds": 2.0 },
+      "attack": { "swipe": "holy", "onHit": "glint" },
+      "sound": { "start": "buff.bastion_of_dawn.start", "loop": "buff.bastion_of_dawn.loop", "end": "buff.bastion_of_dawn.end", "hit": "buff.bastion_of_dawn.hit" }
+    },
+    "mass_aegis": {
+      "name": "Mass Aegis", "kind": "buff", "school": "arcane ward", "source": "support ultimate: cleanse slows, 12s guard",
+      "palette": { "primary": [0.55, 0.8, 1.0], "secondary": [0.78, 0.9, 1.0], "core": [1.0, 1.0, 1.0] },
+      "priority": 70, "light": 0.5,
+      "layers": [
+        { "shape": "aegis", "attach": "body", "count": 3, "speed": 0.7, "size": 1.3 },
+        { "shape": "shell", "attach": "body", "style": "hex", "alpha": 0.28, "speed": 0.4 }
+      ],
+      "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
+      "intensity": { "expiringSeconds": 2.0 },
+      "sound": { "start": "buff.mass_aegis.start", "end": "buff.mass_aegis.end" }
+    },
+    "wellspring": {
+      "name": "Wellspring", "kind": "buff", "school": "water", "source": "support ultimate: big heal and 5s guard",
+      "palette": { "primary": [0.22, 0.92, 0.86], "secondary": [0.12, 0.45, 0.75], "core": [0.86, 1.0, 1.0] },
+      "priority": 65, "light": 0.5,
+      "layers": [
+        { "shape": "swirl", "attach": "body", "count": 2, "speed": 0.7 },
+        { "shape": "ripple", "attach": "ground", "speed": 0.8 },
+        { "shape": "motes", "attach": "body", "style": "bubble", "count": 8, "speed": 0.9 }
+      ],
+      "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
+      "sound": { "start": "buff.wellspring.start", "end": "buff.wellspring.end" }
+    },
+    "frost_bind": {
+      "name": "Frost Bind", "kind": "debuff", "school": "frost", "source": "skillshot: 35% slow for 4s",
+      "palette": { "primary": [0.45, 0.86, 1.0], "secondary": [0.2, 0.45, 0.92], "core": [0.93, 0.98, 1.0] },
+      "priority": 70, "light": 0.3,
+      "layers": [
+        { "shape": "crystals", "attach": "ground", "count": 9 },
+        { "shape": "motes", "attach": "body", "style": "snow", "count": 10, "speed": 0.6 }
+      ],
+      "lifecycle": { "burstSeconds": 0.35, "fadeSeconds": 0.45 },
+      "sound": { "start": "debuff.frost_bind.start", "end": "debuff.frost_bind.end" }
+    },
+    "shield_slam": {
+      "name": "Shield Slam daze", "kind": "debuff", "school": "steel", "source": "champion active: 2s slow and interrupt",
+      "palette": { "primary": [1.0, 0.9, 0.38], "secondary": [0.62, 0.72, 0.92], "core": [1.0, 1.0, 0.9] },
+      "priority": 72,
+      "layers": [ { "shape": "glyph", "attach": "overhead", "style": "stars", "size": 1.0 } ],
+      "lifecycle": { "burstSeconds": 0.3, "fadeSeconds": 0.3 },
+      "intensity": { "expiringSeconds": 0 },
+      "sound": { "start": "debuff.shield_slam.start" }
+    },
+    "taunted": {
+      "name": "Taunted", "kind": "debuff", "school": "war", "source": "monster forced onto a champion by Shield Slam, War Cry or Challenge of Iron",
+      "palette": { "primary": [1.0, 0.52, 0.12], "secondary": [0.8, 0.22, 0.05], "core": [1.0, 0.9, 0.62] },
+      "priority": 68, "allegianceRim": false,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "eye", "size": 0.95 },
+        { "shape": "tether", "attach": "link", "style": "beam", "burstOnly": true }
+      ],
+      "lifecycle": { "burstSeconds": 0.7, "fadeSeconds": 0.3 },
+      "sound": { "start": "debuff.taunted.start" }
+    },
+    "npc_tank_provoke_debuff": {
+      "name": "Challenging Roar (provoked)", "kind": "debuff", "school": "steel", "source": "Hollow Shieldbearer: 35% less damage to anything but the Shieldbearer for 6s",
+      "palette": { "primary": [0.38, 0.58, 1.0], "secondary": [0.16, 0.26, 0.62], "core": [0.86, 0.92, 1.0] },
+      "priority": 66,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "chevron_down" },
+        { "shape": "tether", "attach": "link", "style": "chain", "alpha": 0.5 }
+      ],
+      "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.3 },
+      "sound": { "start": "debuff.provoked.start", "end": "debuff.provoked.end" }
+    },
+    "guarded": {
+      "name": "Guarded", "kind": "buff", "school": "ward", "source": "any other 40% guard (developer tools, summons, legacy paths)",
+      "palette": { "primary": [0.42, 0.72, 1.0], "secondary": [0.2, 0.4, 0.8], "core": [0.9, 0.95, 1.0] },
+      "priority": 40,
+      "layers": [ { "shape": "shell", "attach": "body", "style": "dome", "alpha": 0.8, "speed": 0.5 } ],
+      "lifecycle": { "burstSeconds": 0.35, "fadeSeconds": 0.35 },
+      "sound": { "start": "buff.guarded.start", "end": "buff.guarded.end" }
+    },
+    "taunting": {
+      "name": "Commanding presence", "kind": "stance", "school": "war", "source": "any other champion taunt state",
+      "palette": { "primary": [1.0, 0.62, 0.22], "secondary": [0.7, 0.3, 0.08], "core": [1.0, 0.92, 0.66] },
+      "priority": 45,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "exclamation" },
+        { "shape": "ring", "attach": "ground", "style": "dashed", "count": 8, "speed": 0.8 }
+      ],
+      "lifecycle": { "burstSeconds": 0.35, "fadeSeconds": 0.3 },
+      "sound": { "start": "buff.taunting.start" }
+    },
+    "slowed": {
+      "name": "Slowed", "kind": "debuff", "school": "hindrance", "source": "any other slow",
+      "palette": { "primary": [0.66, 0.52, 0.86], "secondary": [0.32, 0.26, 0.48], "core": [0.88, 0.84, 0.98] },
+      "priority": 35,
+      "layers": [
+        { "shape": "motes", "attach": "body", "style": "chevron_down", "count": 8, "speed": 0.6 },
+        { "shape": "ring", "attach": "ground", "style": "dashed", "count": 10, "speed": 0.25, "size": 0.85 }
+      ],
+      "lifecycle": { "burstSeconds": 0.3, "fadeSeconds": 0.3 },
+      "sound": { "start": "debuff.slowed.start" }
+    },
+    "poisoned": {
+      "name": "Poisoned", "kind": "debuff", "school": "poison", "source": "standing in Venom Ground, Blight Sigil or Blight Pool (stacks per area)",
+      "palette": { "primary": [0.45, 0.95, 0.16], "secondary": [0.2, 0.5, 0.05], "core": [0.86, 1.0, 0.52] },
+      "priority": 50,
+      "layers": [
+        { "shape": "motes", "attach": "body", "style": "bubble", "count": 10, "speed": 0.8 },
+        { "shape": "glyph", "attach": "overhead", "style": "skull", "alpha": 0.9, "size": 0.9 },
+        { "shape": "pool", "attach": "ground", "size": 0.7, "alpha": 0.8, "speed": 0.6 },
+        { "shape": "drips", "attach": "body", "count": 5, "speed": 0.8 }
+      ],
+      "intensity": { "base": 0.8, "perStack": 0.35, "maxStacks": 4, "expiringSeconds": 0 },
+      "lifecycle": { "burstSeconds": 0.3, "fadeSeconds": 0.5 },
+      "sound": { "start": "debuff.poisoned.start", "loop": "debuff.poisoned.loop", "end": "debuff.poisoned.end" }
+    },
+    "boss_leader_frenzy": {
+      "name": "Blood Frenzy", "kind": "stance", "school": "blood", "source": "Gravemaw, Pack Leader below 30% health: +50% damage, faster attacks and movement",
+      "palette": { "primary": [0.86, 0.04, 0.04], "secondary": [0.34, 0.0, 0.02], "core": [1.0, 0.32, 0.2] },
+      "priority": 95, "light": 0.9,
+      "layers": [
+        { "shape": "swirl", "attach": "body", "count": 3, "speed": 1.3 },
+        { "shape": "pool", "attach": "ground", "speed": 1.0 },
+        { "shape": "drips", "attach": "body", "count": 8, "speed": 1.0 },
+        { "shape": "glyph", "attach": "overhead", "style": "drop", "size": 1.1 }
+      ],
+      "lifecycle": { "burstSeconds": 0.8, "fadeSeconds": 0.6 },
+      "attack": { "swipe": "blood", "onHit": "splash" },
+      "sound": { "start": "stance.blood_frenzy.start", "loop": "stance.blood_frenzy.loop", "end": "stance.blood_frenzy.end", "hit": "stance.blood_frenzy.hit" }
+    },
+    "boss_siege_fury": {
+      "name": "Siege Fury", "kind": "stance", "school": "fire", "source": "Hollow Siegebreaker below 30% health: +40% damage, faster attacks",
+      "palette": { "primary": [0.95, 0.27, 0.03], "secondary": [0.62, 0.07, 0.02], "core": [1.0, 0.72, 0.3] },
+      "priority": 92, "light": 0.9,
+      "layers": [
+        { "shape": "flames", "attach": "body", "count": 9, "speed": 1.0 },
+        { "shape": "cracks", "attach": "ground", "count": 7, "speed": 1.0 },
+        { "shape": "weapon", "attach": "weapon", "style": "ember" },
+        { "shape": "motes", "attach": "body", "style": "ember", "count": 12, "speed": 1.2 }
+      ],
+      "lifecycle": { "burstSeconds": 0.8, "fadeSeconds": 0.6 },
+      "attack": { "swipe": "ember", "onHit": "sparks" },
+      "sound": { "start": "stance.siege_fury.start", "loop": "stance.siege_fury.loop", "end": "stance.siege_fury.end", "hit": "stance.siege_fury.hit" }
+    },
+    "enraged": {
+      "name": "Enraged", "kind": "stance", "school": "rage", "source": "any other monster enrage ability",
+      "palette": { "primary": [0.95, 0.22, 0.1], "secondary": [0.5, 0.06, 0.03], "core": [1.0, 0.7, 0.45] },
+      "priority": 90, "light": 0.6,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "spikes", "secondary": true },
+        { "shape": "motes", "attach": "body", "style": "ember", "count": 14, "speed": 1.4 },
+        { "shape": "hands", "attach": "hands", "size": 0.9 }
+      ],
+      "lifecycle": { "burstSeconds": 0.7, "fadeSeconds": 0.5 },
+      "attack": { "swipe": "ember", "onHit": "sparks", "primary": [0.95, 0.25, 0.1] },
+      "sound": { "start": "stance.enraged.start", "end": "stance.enraged.end", "hit": "stance.enraged.hit" }
+    },
+    "rallied": {
+      "name": "Rallied", "kind": "buff", "school": "war", "source": "Rallying Roar / Rallying Bellow: +25% damage and attack speed",
+      "palette": { "primary": [1.0, 0.78, 0.26], "secondary": [0.82, 0.46, 0.1], "core": [1.0, 0.96, 0.72] },
+      "priority": 70, "light": 0.35,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "chevron_up" },
+        { "shape": "motes", "attach": "body", "style": "chevron_up", "count": 8, "speed": 1.2 },
+        { "shape": "ring", "attach": "ground", "count": 0, "speed": 0.6, "size": 0.9 }
+      ],
+      "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
+      "attack": { "swipe": "gold", "onHit": "sparks" },
+      "sound": { "start": "buff.rallied.start", "end": "buff.rallied.end", "hit": "buff.rallied.hit" }
+    },
+    "npc_tank_wall": {
+      "name": "Shield Wall", "kind": "stance", "school": "steel", "source": "Hollow Shieldbearer below 50% health: 50% less damage for 6s",
+      "palette": { "primary": [0.42, 0.64, 1.0], "secondary": [0.18, 0.3, 0.62], "core": [0.9, 0.95, 1.0] },
+      "priority": 85, "light": 0.4,
+      "layers": [
+        { "shape": "tower", "attach": "front" },
+        { "shape": "ring", "attach": "ground", "style": "runes", "count": 4, "speed": 0.2, "size": 0.9 }
+      ],
+      "lifecycle": { "burstSeconds": 0.45, "fadeSeconds": 0.4 },
+      "sound": { "start": "stance.shield_wall.start", "end": "stance.shield_wall.end" }
+    },
+    "npc_tank_guard": {
+      "name": "Guardian's Oath", "kind": "buff", "school": "steel", "source": "Hollow Shieldbearer: a guardian takes 40% of this ally's damage for 8s",
+      "palette": { "primary": [0.48, 0.76, 1.0], "secondary": [0.26, 0.42, 0.76], "core": [0.9, 1.0, 1.0] },
+      "priority": 60,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "shield", "size": 0.95 },
+        { "shape": "ring", "attach": "ground", "style": "runes", "count": 6, "speed": 0.6 }
+      ],
+      "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.35 },
+      "sound": { "start": "buff.guardians_oath.start", "end": "buff.guardians_oath.end" }
+    },
+    "npc_tank_provoke": {
+      "name": "Challenging Roar", "kind": "aura", "school": "steel", "source": "Hollow Shieldbearer while its provoke is active",
+      "palette": { "primary": [0.36, 0.56, 1.0], "secondary": [0.2, 0.3, 0.72], "core": [0.9, 0.95, 1.0] },
+      "priority": 75,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "horn" },
+        { "shape": "ripple", "attach": "ground", "style": "shock", "speed": 0.9 }
+      ],
+      "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.35 },
+      "sound": { "start": "aura.challenging_roar.start", "end": "aura.challenging_roar.end" }
+    },
+    "battle_rhythm": {
+      "name": "Battle Rhythm", "kind": "passive", "school": "war", "source": "passive: 20% faster basic attacks",
+      "palette": { "primary": [1.0, 0.72, 0.3], "secondary": [0.72, 0.4, 0.1], "core": [1.0, 0.95, 0.76] },
+      "priority": 10, "allegianceRim": false,
+      "layers": [ { "shape": "hands", "attach": "hands", "size": 0.65, "alpha": 0.4, "speed": 1.4 } ],
+      "lifecycle": { "burstSeconds": 0, "fadeSeconds": 0.3 },
+      "intensity": { "expiringSeconds": 0 },
+      "attack": { "swipe": "rhythm", "onHit": "sparks" },
+      "sound": { "hit": "passive.battle_rhythm.hit" }
+    },
+    "soul_conduit": {
+      "name": "Soul Conduit", "kind": "passive", "school": "spirit", "source": "passive: 25% more healing done",
+      "palette": { "primary": [0.46, 0.92, 0.96], "secondary": [0.52, 0.42, 0.96], "core": [0.9, 1.0, 1.0] },
+      "priority": 5, "allegianceRim": false,
+      "layers": [ { "shape": "motes", "attach": "body", "style": "plus", "count": 4, "alpha": 0.45, "speed": 0.5 } ],
+      "lifecycle": { "burstSeconds": 0, "fadeSeconds": 0.3 },
+      "intensity": { "expiringSeconds": 0 },
+      "sound": {}
+    },
+    "borrowed_time": {
+      "name": "Borrowed Time", "kind": "buff", "school": "time", "source": "Hourglass of Ages active: 60% less damage for 4s and a 10% heal",
+      "palette": { "primary": [1.0, 0.8, 0.42], "secondary": [0.55, 0.42, 0.9], "core": [1.0, 0.97, 0.85] },
+      "priority": 72, "light": 0.4,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "hourglass", "size": 1.25 },
+        { "shape": "motes", "attach": "body", "style": "drop", "count": 16, "speed": 0.7, "size": 1.3 },
+        { "shape": "ring", "attach": "ground", "style": "runes", "count": 10, "speed": 0.8, "secondary": true }
+      ],
+      "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.35 },
+      "sound": { "start": "item.borrowed_time.start", "end": "item.borrowed_time.end" }
+    },
+    "scatter": {
+      "name": "Scatter", "kind": "buff", "school": "wind", "source": "Ravenfeather Mantle active: +40% move speed for 3s, slows removed",
+      "palette": { "primary": [0.62, 0.55, 0.95], "secondary": [0.2, 0.16, 0.34], "core": [0.92, 0.9, 1.0] },
+      "priority": 66,
+      "layers": [
+        { "shape": "motes", "attach": "body", "style": "leaf", "count": 16, "speed": 2.4, "size": 1.7, "alpha": 1.2 },
+        { "shape": "ring", "attach": "ground", "style": "dashed", "count": 7, "speed": 3.0, "size": 0.9 }
+      ],
+      "lifecycle": { "burstSeconds": 0.3, "fadeSeconds": 0.3 },
+      "sound": { "start": "item.scatter.start" }
+    },
+    "mana_restore": {
+      "name": "Aether Phial", "kind": "buff", "school": "arcane", "source": "Aether Phial: restores mana over 10s",
+      "palette": { "primary": [0.38, 0.55, 1.0], "secondary": [0.58, 0.4, 1.0], "core": [0.85, 0.92, 1.0] },
+      "priority": 44,
+      "layers": [
+        { "shape": "motes", "attach": "body", "style": "bubble", "count": 10, "speed": 0.6, "size": 1.5, "secondary": true },
+        { "shape": "ring", "attach": "ground", "count": 0, "speed": 0.4, "alpha": 0.7 }
+      ],
+      "lifecycle": { "burstSeconds": 0.35, "fadeSeconds": 0.4 },
+      "sound": { "start": "item.mana_restore.start", "loop": "item.mana_restore.loop", "end": "item.mana_restore.end" }
+    },
+    "oathshield": {
+      "name": "Oathshield", "kind": "buff", "school": "steel", "source": "Aegis of the Last Oath active: you and allies within 7m take 40% less damage for 3s",
+      "palette": { "primary": [0.9, 0.78, 0.45], "secondary": [0.45, 0.62, 0.95], "core": [1.0, 0.98, 0.9] },
+      "priority": 74, "light": 0.3,
+      "layers": [
+        { "shape": "aegis", "attach": "body", "count": 3, "speed": 1.2, "size": 1.1 },
+        { "shape": "ring", "attach": "ground", "style": "runes", "count": 6, "speed": 0.8 }
+      ],
+      "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.3 },
+      "sound": { "start": "item.oathshield.start", "end": "item.oathshield.end" }
+    },
+    "toll_of_the_grave": {
+      "name": "Toll of the Grave", "kind": "stance", "school": "death", "source": "Gravebell active: every monster within 8m must attack you for 3s",
+      "palette": { "primary": [0.6, 0.85, 0.72], "secondary": [0.2, 0.32, 0.28], "core": [0.9, 1.0, 0.94] },
+      "priority": 76,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "bell", "size": 1.25 },
+        { "shape": "ripple", "attach": "ground", "speed": 1.5 }
+      ],
+      "lifecycle": { "burstSeconds": 0.45, "fadeSeconds": 0.3 },
+      "sound": { "start": "item.toll_of_the_grave.start" }
+    },
+    "blood_rage": {
+      "name": "Blood Rage", "kind": "buff", "school": "blood", "source": "data-ready for item actives and future skills (CireBuffs::Apply(unit, \"blood_rage\", seconds))",
+      "palette": { "primary": [0.92, 0.06, 0.05], "secondary": [0.42, 0.0, 0.03], "core": [1.0, 0.3, 0.18] },
+      "priority": 90, "light": 0.8,
+      "layers": [
+        { "shape": "swirl", "attach": "body", "count": 3, "speed": 1.5 },
+        { "shape": "hands", "attach": "hands", "size": 1.1, "speed": 1.3 },
+        { "shape": "pool", "attach": "ground", "size": 0.85 },
+        { "shape": "motes", "attach": "body", "style": "ember", "count": 10, "speed": 1.3 }
+      ],
+      "lifecycle": { "burstSeconds": 0.7, "fadeSeconds": 0.5 },
+      "attack": { "swipe": "blood", "onHit": "splash" },
+      "sound": { "start": "buff.blood_rage.start", "loop": "buff.blood_rage.loop", "end": "buff.blood_rage.end", "hit": "buff.blood_rage.hit" }
+    },
+    "frost_weapon": {
+      "name": "Frost Weapon", "kind": "buff", "school": "frost", "source": "data-ready for item actives and future skills",
+      "palette": { "primary": [0.52, 0.88, 1.0], "secondary": [0.25, 0.5, 0.95], "core": [0.95, 1.0, 1.0] },
+      "priority": 78, "light": 0.5,
+      "layers": [
+        { "shape": "weapon", "attach": "weapon", "style": "frost" },
+        { "shape": "motes", "attach": "body", "style": "snow", "count": 7, "speed": 0.5, "size": 0.8 }
+      ],
+      "lifecycle": { "burstSeconds": 0.45, "fadeSeconds": 0.45 },
+      "attack": { "swipe": "frost", "onHit": "shatter" },
+      "sound": { "start": "buff.frost_weapon.start", "end": "buff.frost_weapon.end", "hit": "buff.frost_weapon.hit" }
+    },
+    "blessing": {
+      "name": "Blessing", "kind": "buff", "school": "holy", "source": "data-ready for item actives and future skills",
+      "palette": { "primary": [1.0, 0.84, 0.4], "secondary": [1.0, 0.95, 0.7], "core": [1.0, 1.0, 0.95] },
+      "priority": 62, "light": 0.5,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "sun" },
+        { "shape": "hands", "attach": "hands", "size": 0.9 },
+        { "shape": "motes", "attach": "body", "style": "glint", "count": 6, "speed": 0.9 }
+      ],
+      "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
+      "attack": { "swipe": "holy", "onHit": "glint" },
+      "sound": { "start": "buff.blessing.start", "end": "buff.blessing.end", "hit": "buff.blessing.hit" }
+    },
+    "regeneration": {
+      "name": "Regeneration", "kind": "buff", "school": "nature", "source": "heal-over-time; data-ready for item actives and future skills",
+      "palette": { "primary": [0.46, 0.95, 0.4], "secondary": [0.92, 0.86, 0.32], "core": [0.9, 1.0, 0.82] },
+      "priority": 45,
+      "layers": [
+        { "shape": "motes", "attach": "body", "style": "leaf", "count": 10, "speed": 0.7 },
+        { "shape": "ring", "attach": "ground", "count": 0, "speed": 0.3, "alpha": 0.7 },
+        { "shape": "motes", "attach": "body", "style": "plus", "count": 4, "speed": 0.6, "secondary": true }
+      ],
+      "intensity": { "perStack": 0.25, "maxStacks": 3 },
+      "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.4 },
+      "sound": { "start": "buff.regeneration.start", "loop": "buff.regeneration.loop", "end": "buff.regeneration.end" }
+    },
+    "stunned": {
+      "name": "Stunned", "kind": "debuff", "school": "control", "source": "data-ready; no current ability stuns",
+      "palette": { "primary": [1.0, 0.95, 0.42], "secondary": [0.9, 0.7, 0.2], "core": [1.0, 1.0, 0.9] },
+      "priority": 88,
+      "layers": [
+        { "shape": "glyph", "attach": "overhead", "style": "stars", "size": 1.2 },
+        { "shape": "ring", "attach": "ground", "style": "dashed", "count": 5, "speed": 1.5, "size": 0.8 }
+      ],
+      "lifecycle": { "burstSeconds": 0.3, "fadeSeconds": 0.25 },
+      "sound": { "start": "debuff.stunned.start", "end": "debuff.stunned.end" }
+    }
+  }
+}

@@ -11,6 +11,7 @@
 #include "CireTargeting.h"
 #include "EngineUtils.h"
 #include "Components/PrimitiveComponent.h"
+#include "CireBuffs.h" // aura-vfx
 
 namespace
 {
@@ -132,18 +133,18 @@ bool CireRoleSkills::Cast(ACireHero* Hero,int32 Slot,const FString& Id)
     }
     else if(Id==TEXT("challenge_of_iron"))
     {
-        Hero->ShieldUntil=FMath::Max(Hero->ShieldUntil,Now+Duration);Hero->TauntUntil=FMath::Max(Hero->TauntUntil,Now+Duration);
+        Hero->ShieldUntil=FMath::Max(Hero->ShieldUntil,Now+Duration);Hero->TauntUntil=FMath::Max(Hero->TauntUntil,Now+Duration); CireBuffs::Apply(Hero,TEXT("challenge_of_iron"),Duration,Hero); // aura-vfx
         for(TActorIterator<ACireMonster> It(Hero->GetWorld());It;++It)
             if(Hero->IsHostile(*It)&&Hero->InRange(*It,S.Radius)&&ClearSight(Hero,*It))CireThreat::Taunt(*It,Hero,Duration);
     }
     else if(Id==TEXT("mass_aegis"))
     {
         for(TActorIterator<ACireHero> It(Hero->GetWorld());It;++It)if(Friendly(Hero,*It,S.Radius))
-        {It->SlowUntil=0;It->ShieldUntil=FMath::Max(It->ShieldUntil,Now+Duration);It->ForceNetUpdate();}
+        {It->SlowUntil=0;It->ShieldUntil=FMath::Max(It->ShieldUntil,Now+Duration);It->ForceNetUpdate();CireBuffs::Apply(*It,TEXT("mass_aegis"),Duration,Hero);} // aura-vfx
     }
     else if(Id==TEXT("wellspring"))
     {
-        CireCombat::ApplyHealing(Hero,Ally,Amount,Name(Id));Ally->ShieldUntil=FMath::Max(Ally->ShieldUntil,Now+Duration);Ally->ForceNetUpdate();
+        CireCombat::ApplyHealing(Hero,Ally,Amount,Name(Id));Ally->ShieldUntil=FMath::Max(Ally->ShieldUntil,Now+Duration);Ally->ForceNetUpdate(); CireBuffs::Apply(Ally,TEXT("wellspring"),Duration,Hero); // aura-vfx
     }
     Hero->Mana-=S.ManaCost;Hero->Energy-=S.EnergyCost;
     Hero->Cooldowns[Slot]=static_cast<float>(Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(Hero->GetWorld(),S.CooldownSeconds),Hero->CDR));

@@ -4,6 +4,7 @@
 #include "CireSkillTuning.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "CireBuffs.h" // aura-vfx
 
 namespace {
 const FCireNPCThreatRules& Rules(){return CireNPCArchetypes::Get().Threat;}
@@ -49,6 +50,7 @@ void CireThreat::Taunt(ACireMonster* M,ACireHero* H,float Seconds){
     ACireHero* Old=M->Victim;
     M->ForcedVictim=H;M->ForcedVictimUntil=M->GetWorld()->GetTimeSeconds()+FMath::Min(Seconds,Rules().TauntMaxSeconds);
     M->Victim=H;M->bEngaged=true;M->ForceNetUpdate();
+    CireBuffs::Apply(M,TEXT("taunted"),M->ForcedVictimUntil-M->GetWorld()->GetTimeSeconds(),H); // aura-vfx: overhead mark + tether to the taunter
     if(M->NPCState){M->NPCState->bForcedLastSelect=true;if(Old!=H)M->NPCState->SetAggro(H,Old,ECireAggroReason::Taunted);else M->NPCState->PublishThreat(true);}
 }
 void CireThreat::Transfer(ACireMonster* M,ACireHero* From,ACireHero* To,float Fraction){

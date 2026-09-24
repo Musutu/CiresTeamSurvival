@@ -18,6 +18,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "CireBuffs.h" // aura-vfx
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireNPCCombat,Log,All);
 
@@ -284,7 +285,7 @@ void ReleaseCast(ACireMonster* M,ACireGameMode* Mode)
         for(TActorIterator<ACireHero> It(M->GetWorld());It;++It)
         {
             auto* H=*It;if(!HeroTargetable(M,H)||FVector::DistSquared2D(M->GetActorLocation(),H->GetActorLocation())>FMath::Square(A->Radius))continue;
-            S->ProvokedUntil.FindOrAdd(H)=Now+A->Duration;
+            S->ProvokedUntil.FindOrAdd(H)=Now+A->Duration; CireBuffs::Apply(H,TEXT("npc_tank_provoke_debuff"),A->Duration,M); // aura-vfx
             if(H->bBot)H->Target=M; // bots obey the taunt; human input is never forced
         }
         break;

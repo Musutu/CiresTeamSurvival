@@ -103,6 +103,7 @@ void FCireUISettings::Reset()
     bShowThreatMeter=true; bThreatWarnings=true; bThreatSound=true; ThreatWarningPercent=90.f; bLevelUpEffect=true; bShowBossFrames=true;
     bShowActionBar2=true; bShowActionBar3=false; bLockActionBars=false;
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
+    OtherEffectsIntensity=1.f; // aura-vfx
     bShowStats=true; // progression-shop
 }
 
@@ -217,6 +218,7 @@ void FCireUISettings::SanitizePreferences()
     TooltipDelay=SafeFloat(TooltipDelay,.12f,0.f,1.5f); SCTDirection=FMath::Clamp(SCTDirection,0,2);
     SCTSpeed=SafeFloat(SCTSpeed,1.f,.5f,2.f); SCTFadeSeconds=SafeFloat(SCTFadeSeconds,3.2f,1.5f,5.f);
     ThreatWarningPercent=SafeFloat(ThreatWarningPercent,90.f,60.f,100.f);
+    OtherEffectsIntensity=SafeFloat(OtherEffectsIntensity,1.f,0.f,1.f); // aura-vfx
 }
 
 void FCireUISettings::Load(const FString& Filename)
@@ -274,6 +276,7 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_FLOAT(TooltipScale); CIRE_LOAD_FLOAT(TooltipAngleDegrees); CIRE_LOAD_FLOAT(TooltipDistance);
     CIRE_LOAD_FLOAT(UIScale); CIRE_LOAD_FLOAT(TooltipOpacity); CIRE_LOAD_FLOAT(TooltipDelay); CIRE_LOAD_FLOAT(SCTSpeed);
     CIRE_LOAD_FLOAT(SCTFadeSeconds); CIRE_LOAD_FLOAT(ThreatWarningPercent);
+    CIRE_LOAD_FLOAT(OtherEffectsIntensity); // aura-vfx: absent in older profiles, keeps the default
 #undef CIRE_LOAD_FLOAT
     Config.GetInt(PreferencesSection,TEXT("TooltipMode"),TooltipMode); Config.GetInt(PreferencesSection,TEXT("StatusFilter"),StatusFilter);
     Config.GetInt(PreferencesSection,TEXT("SCTDirection"),SCTDirection);
@@ -348,6 +351,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_FLOAT(TooltipScale); CIRE_SAVE_FLOAT(TooltipAngleDegrees); CIRE_SAVE_FLOAT(TooltipDistance);
     CIRE_SAVE_FLOAT(UIScale); CIRE_SAVE_FLOAT(TooltipOpacity); CIRE_SAVE_FLOAT(TooltipDelay); CIRE_SAVE_FLOAT(SCTSpeed);
     CIRE_SAVE_FLOAT(SCTFadeSeconds); CIRE_SAVE_FLOAT(ThreatWarningPercent);
+    CIRE_SAVE_FLOAT(OtherEffectsIntensity); // aura-vfx
 #undef CIRE_SAVE_FLOAT
     Config.SetString(PreferencesSection,TEXT("SCTDirection"),*FString::FromInt(SCTDirection));
     Config.SetString(PreferencesSection,TEXT("TooltipMode"),*FString::FromInt(TooltipMode));

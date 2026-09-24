@@ -1,4 +1,5 @@
 #include "CireItems.h"
+#include "CireBuffs.h" // aura-vfx
 // progression-shop: see CireItems.h, Docs/Items.md.
 #include "CireGame.h"
 #include "CireCombatEvents.h"
@@ -923,7 +924,7 @@ bool UCireInventory::ApplyEffect(const Effect& Use, FName ItemId, FString& Messa
     case EffectKind::ShieldAllies:
         for (ACireHero* Ally : Mode->Heroes)
             if (IsValid(Ally) && !Ally->bDead && Ally->bDrafted && Ally->TeamId == Owner->TeamId && Owner->InRange(Ally, static_cast<float>(Use.Radius)))
-                Ally->ShieldUntil = FMath::Max(Ally->ShieldUntil, NowTime + static_cast<float>(Use.Duration));
+                { Ally->ShieldUntil = FMath::Max(Ally->ShieldUntil, NowTime + static_cast<float>(Use.Duration)); CireBuffs::Apply(Ally, TEXT("oathshield"), static_cast<float>(Use.Duration), Owner); } // aura-vfx
         CireCombat::PlayCue(Owner, Owner, TEXT("bastion_of_dawn"), Owner->GetActorLocation(), Owner->GetActorLocation(), ECireSpellCue::Impact);
         Message = EffectName;
         return true;
@@ -934,6 +935,7 @@ bool UCireInventory::ApplyEffect(const Effect& Use, FName ItemId, FString& Messa
             if (Owner->IsHostile(Monster) && Owner->InRange(Monster, static_cast<float>(Use.Radius)))
             { CireThreat::Taunt(Monster, Owner, static_cast<float>(Use.Duration)); ++Taunted; }
         Owner->TauntUntil = FMath::Max(Owner->TauntUntil, NowTime + static_cast<float>(Use.Duration));
+        CireBuffs::Apply(Owner, TEXT("toll_of_the_grave"), static_cast<float>(Use.Duration), Owner); // aura-vfx
         CireCombat::PlayCue(Owner, Owner, TEXT("war_cry"), Owner->GetActorLocation(), Owner->GetActorLocation(), ECireSpellCue::Impact);
         Message = FString::Printf(TEXT("%s: %d taunted"), *EffectName, Taunted);
         return true;

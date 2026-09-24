@@ -19,6 +19,7 @@
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
 #include "CireStatusVisual.h"
+#include "CireBuffs.h" // aura-vfx
 #include "CireItems.h" // progression-shop
 #include "EngineUtils.h"
 
@@ -70,6 +71,7 @@ ACireHero::ACireHero()
     PrimaryActorTick.bCanEverTick = true;
     ChampionArt = CreateDefaultSubobject<UCireChampionArt>(TEXT("ChampionArt"));
     Mobility = CreateDefaultSubobject<UCireMobility>(TEXT("Mobility"));
+    CreateDefaultSubobject<UCireBuffState>(TEXT("BuffState")); // aura-vfx: replicated named-effect records for signature visuals
     Inventory = CreateDefaultSubobject<UCireInventory>(TEXT("Inventory")); // progression-shop
     bReplicates = true;
     SetReplicateMovement(true);
@@ -425,17 +427,17 @@ void ACireHero::Cast(int32 Slot)
     };
     if (Id == TEXT("iron_guard"))
     {
-        ShieldUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f);
+        ShieldUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f); CireBuffs::Apply(this,TEXT("iron_guard"),CireDeveloperTools::EffectSeconds(GetWorld(),8.f),this); // aura-vfx
     }
     else if (Id == TEXT("shield_slam"))
     {
-        Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),2.f));
+        Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),2.f)); CireBuffs::Apply(Target,TEXT("shield_slam"),CireDeveloperTools::EffectSeconds(GetWorld(),2.f),this); // aura-vfx
         if (auto* Monster = ::Cast<ACireMonster>(Target)) { CireThreat::Taunt(Monster,this,3);CireNPCCombat::InterruptCast(Monster,this); }
         Hit(Target, 35 + (12 + Strength) * 1.25f, FLinearColor(0.4f, 0.7f, 1.f));
     }
     else if (Id == TEXT("war_cry"))
     {
-        TauntUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),6.f);
+        TauntUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),6.f); CireBuffs::Apply(this,TEXT("war_cry"),CireDeveloperTools::EffectSeconds(GetWorld(),6.f),this); // aura-vfx
         ShieldUntil = FMath::Max(ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),3.f));
         for (auto* Monster : Mode->Monsters)
             if (IsHostile(Monster) && InRange(Monster, 850)) CireThreat::Taunt(Monster,this,6);
@@ -458,7 +460,7 @@ void ACireHero::Cast(int32 Slot)
     else if (Id == TEXT("ember_lance")) Hit(Target, 65 + Intelligence * 2.f, FLinearColor(1.f, 0.25f, 0.05f));
     else if (Id == TEXT("frost_bind"))
     {
-        Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),4.f));
+        Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),4.f)); CireBuffs::Apply(Target,TEXT("frost_bind"),CireDeveloperTools::EffectSeconds(GetWorld(),4.f),this); // aura-vfx
         Hit(Target, 30 + Intelligence, FLinearColor(0.2f, 0.85f, 1.f));
     }
     else if (Id == TEXT("cleaving_strike"))
@@ -483,7 +485,7 @@ void ACireHero::Cast(int32 Slot)
             if (IsValid(Friend) && !Friend->bDead && Friend->TeamId == TeamId && InRange(Friend, 600) && ClearSight(this, Friend))
             {
                 CireCombat::ApplyHealing(this, Friend, (45 + Intelligence * 1.5f) * Power, SkillName(Id));
-                Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),3.f));
+                Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),3.f)); CireBuffs::Apply(Friend,TEXT("sanctuary"),CireDeveloperTools::EffectSeconds(GetWorld(),3.f),this); // aura-vfx
             }
     }
     else if (Id == TEXT("purify"))
@@ -498,10 +500,10 @@ void ACireHero::Cast(int32 Slot)
             if (IsValid(Friend) && Friend->bDrafted && !Friend->bDead && Friend->TeamId == TeamId &&
                 InRange(Friend, 650) && ClearSight(this, Friend))
             {
-                Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f));
+                Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f)); CireBuffs::Apply(Friend,TEXT("bastion_of_dawn"),CireDeveloperTools::EffectSeconds(GetWorld(),8.f),this); // aura-vfx
             }
         // A caster is guarded even if its roster entry is temporarily being assigned.
-        ShieldUntil = FMath::Max(ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f));
+        ShieldUntil = FMath::Max(ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f)); CireBuffs::Apply(this,TEXT("bastion_of_dawn"),CireDeveloperTools::EffectSeconds(GetWorld(),8.f),this); // aura-vfx
     }
     else if (Id == TEXT("cataclysm"))
     {
@@ -604,7 +606,7 @@ void ACireHero::ReviveAt(FVector Location)
     PendingAttackTarget.Reset();
     bDead = false;
     RespawnTimer = 0;
-    ShieldUntil = 0;
+    ShieldUntil = 0; CireBuffs::ClearAll(this); // aura-vfx
     TauntUntil = 0;
     SlowUntil = 0;
     BasicTimer = 0;
@@ -857,6 +859,7 @@ ACireMonster::ACireMonster()
     if (Animation.Succeeded()) GetMesh()->SetAnimInstanceClass(Animation.Class);
     GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     NPCState = CreateDefaultSubobject<UCireNPCState>(TEXT("NPCState")); // npc-boss: role/boss/threat state
+    CreateDefaultSubobject<UCireBuffState>(TEXT("BuffState")); // aura-vfx: replicated named-effect records for signature visuals
 }
 
 void ACireMonster::BeginPlay()
