@@ -50,11 +50,6 @@
       "/Game/Arenas/Textures/forest_floor/T_forest_floor_N.T_forest_floor_N",
       "/Game/Arenas/Textures/forest_floor/T_forest_floor_ARM.T_forest_floor_ARM"
     ],
-    "forest_leaves_02": [
-      "/Game/Arenas/Textures/forest_leaves_02/T_forest_leaves_02_D.T_forest_leaves_02_D",
-      "/Game/Arenas/Textures/forest_leaves_02/T_forest_leaves_02_N.T_forest_leaves_02_N",
-      "/Game/Arenas/Textures/forest_leaves_02/T_forest_leaves_02_ARM.T_forest_leaves_02_ARM"
-    ],
     "hangar_concrete_floor": [
       "/Game/Arenas/Textures/hangar_concrete_floor/T_hangar_concrete_floor_D.T_hangar_concrete_floor_D",
       "/Game/Arenas/Textures/hangar_concrete_floor/T_hangar_concrete_floor_N.T_hangar_concrete_floor_N",
@@ -100,11 +95,6 @@
       "/Game/Arenas/Textures/sandstone_cracks/T_sandstone_cracks_N.T_sandstone_cracks_N",
       "/Game/Arenas/Textures/sandstone_cracks/T_sandstone_cracks_ARM.T_sandstone_cracks_ARM"
     ],
-    "sparse_grass": [
-      "/Game/Arenas/Textures/sparse_grass/T_sparse_grass_D.T_sparse_grass_D",
-      "/Game/Arenas/Textures/sparse_grass/T_sparse_grass_N.T_sparse_grass_N",
-      "/Game/Arenas/Textures/sparse_grass/T_sparse_grass_ARM.T_sparse_grass_ARM"
-    ],
     "stacked_stone_wall": [
       "/Game/Arenas/Textures/stacked_stone_wall/T_stacked_stone_wall_D.T_stacked_stone_wall_D",
       "/Game/Arenas/Textures/stacked_stone_wall/T_stacked_stone_wall_N.T_stacked_stone_wall_N",
@@ -116,7 +106,22 @@
       "/Game/Arenas/Textures/withered_grass/T_withered_grass_ARM.T_withered_grass_ARM"
     ]
   },
-  "materials": [],
+  "materials": [
+    "/Game/Arenas/Materials/M_ArenaSurface.M_ArenaSurface",
+    "/Game/Arenas/Materials/M_ArenaWorld.M_ArenaWorld",
+    "/Game/Arenas/Materials/M_ArenaBlend.M_ArenaBlend",
+    "/Game/Arenas/Materials/M_ArenaFlat.M_ArenaFlat",
+    "/Game/Arenas/Materials/M_ArenaWheat.M_ArenaWheat",
+    "/Game/Arenas/Materials/M_ArenaKelp.M_ArenaKelp",
+    "/Game/Arenas/Materials/M_ArenaMotes.M_ArenaMotes",
+    "/Game/Arenas/Materials/M_ArenaShaft.M_ArenaShaft",
+    "/Game/Arenas/Materials/M_ArenaCaustics.M_ArenaCaustics",
+    "/Game/Arenas/Sky/M_ArenaSkyProcedural.M_ArenaSkyProcedural",
+    "/Game/Arenas/Sky/M_ArenaSky.M_ArenaSky",
+    "/Game/Arenas/Materials/M_ArenaWater.M_ArenaWater",
+    "/Game/Arenas/Materials/M_ArenaFoliage.M_ArenaFoliage",
+    "/Game/Arenas/Materials/M_ArenaHazard.M_ArenaHazard"
+  ],
   "sky": {
     "Fields": "/Game/Arenas/Sky/T_Sky_Fields",
     "Iceland": "/Game/Arenas/Sky/T_Sky_Iceland",
@@ -136,28 +141,6 @@
         ]
       }
     ],
-    "hatchet": [
-      {
-        "asset": "/Game/Arenas/Props/hatchet/hatchet_1k/StaticMeshes/hatchet_1k.hatchet_1k",
-        "triangles": 5250,
-        "size": [
-          3,
-          10,
-          29
-        ]
-      }
-    ],
-    "coast_rocks_01": [
-      {
-        "asset": "/Game/Arenas/Props/coast_rocks_01/coast_rocks_01_1k/StaticMeshes/coast_rocks_01_1k.coast_rocks_01_1k",
-        "triangles": 4907,
-        "size": [
-          5951,
-          4252,
-          329
-        ]
-      }
-    ],
     "coast_rocks_05": [
       {
         "asset": "/Game/Arenas/Props/coast_rocks_05/coast_rocks_05_1k/StaticMeshes/coast_rocks_05_1k.coast_rocks_05_1k",
@@ -166,17 +149,6 @@
           404,
           375,
           133
-        ]
-      }
-    ],
-    "coastal_cliff_02": [
-      {
-        "asset": "/Game/Arenas/Props/coastal_cliff_02/coastal_cliff_02_1k/StaticMeshes/coastal_cliff_02_1k.coastal_cliff_02_1k",
-        "triangles": 12179,
-        "size": [
-          4093,
-          865,
-          1005
         ]
       }
     ],
@@ -191,116 +163,6 @@
         ]
       }
     ],
-    "moss_01": [
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_a_LOD0.moss_01_a_LOD0",
-        "triangles": 24,
-        "size": [
-          1,
-          2,
-          3
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_b_LOD0.moss_01_b_LOD0",
-        "triangles": 16,
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_c_LOD0.moss_01_c_LOD0",
-        "triangles": 24,
-        "size": [
-          2,
-          1,
-          3
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_d_LOD0.moss_01_d_LOD0",
-        "triangles": 16,
-        "size": [
-          1,
-          2,
-          3
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_e_LOD0.moss_01_e_LOD0",
-        "triangles": 20,
-        "size": [
-          1,
-          1,
-          2
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_f_LOD0.moss_01_f_LOD0",
-        "triangles": 20,
-        "size": [
-          1,
-          1,
-          3
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_g_LOD0.moss_01_g_LOD0",
-        "triangles": 16,
-        "size": [
-          1,
-          1,
-          2
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_h_LOD0.moss_01_h_LOD0",
-        "triangles": 6,
-        "size": [
-          1,
-          1,
-          2
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_i_LOD0.moss_01_i_LOD0",
-        "triangles": 6,
-        "size": [
-          2,
-          1,
-          1
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_j_LOD0.moss_01_j_LOD0",
-        "triangles": 8,
-        "size": [
-          2,
-          2,
-          1
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_tall_a_LOD0.moss_01_tall_a_LOD0",
-        "triangles": 24,
-        "size": [
-          2,
-          1,
-          3
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/moss_01/moss_01_1k/StaticMeshes/moss_01_tall_b_LOD0.moss_01_tall_b_LOD0",
-        "triangles": 24,
-        "size": [
-          2,
-          1,
-          4
-        ]
-      }
-    ],
     "sand_rocks_small_01": [
       {
         "asset": "/Game/Arenas/Props/sand_rocks_small_01/sand_rocks_small_01_1k/StaticMeshes/sand_rocks_small_01_1k.sand_rocks_small_01_1k",
@@ -309,28 +171,6 @@
           463,
           388,
           53
-        ]
-      }
-    ],
-    "namaqualand_cliff_01": [
-      {
-        "asset": "/Game/Arenas/Props/namaqualand_cliff_01/namaqualand_cliff_01_1k/StaticMeshes/namaqualand_cliff_01_1k.namaqualand_cliff_01_1k",
-        "triangles": 4457,
-        "size": [
-          828,
-          439,
-          496
-        ]
-      }
-    ],
-    "namaqualand_cliff_02": [
-      {
-        "asset": "/Game/Arenas/Props/namaqualand_cliff_02/namaqualand_cliff_02_1k/StaticMeshes/namaqualand_cliff_02_1k.namaqualand_cliff_02_1k",
-        "triangles": 5766,
-        "size": [
-          2023,
-          659,
-          718
         ]
       }
     ],
@@ -353,64 +193,6 @@
           136,
           75,
           54
-        ]
-      }
-    ],
-    "namaqualand_boulders_01": [
-      {
-        "asset": "/Game/Arenas/Props/namaqualand_boulders_01/namaqualand_boulders_01_1k/StaticMeshes/namaqualand_rocks_01_a.namaqualand_rocks_01_a",
-        "triangles": 2154,
-        "size": [
-          36,
-          55,
-          25
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/namaqualand_boulders_01/namaqualand_boulders_01_1k/StaticMeshes/namaqualand_rocks_01_b.namaqualand_rocks_01_b",
-        "triangles": 6496,
-        "size": [
-          34,
-          59,
-          21
-        ]
-      }
-    ],
-    "namaqualand_rocks_01": [
-      {
-        "asset": "/Game/Arenas/Props/namaqualand_rocks_01/namaqualand_rocks_01_1k/StaticMeshes/namaqualand_rocks_02_a.namaqualand_rocks_02_a",
-        "triangles": 5038,
-        "size": [
-          23,
-          22,
-          15
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/namaqualand_rocks_01/namaqualand_rocks_01_1k/StaticMeshes/namaqualand_rocks_02_b.namaqualand_rocks_02_b",
-        "triangles": 5766,
-        "size": [
-          22,
-          16,
-          8
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/namaqualand_rocks_01/namaqualand_rocks_01_1k/StaticMeshes/namaqualand_rocks_02_c.namaqualand_rocks_02_c",
-        "triangles": 5018,
-        "size": [
-          21,
-          17,
-          9
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/namaqualand_rocks_01/namaqualand_rocks_01_1k/StaticMeshes/namaqualand_rocks_02_d.namaqualand_rocks_02_d",
-        "triangles": 5788,
-        "size": [
-          20,
-          16,
-          12
         ]
       }
     ],
@@ -461,17 +243,6 @@
         ]
       }
     ],
-    "dead_quiver_branch_01": [
-      {
-        "asset": "/Game/Arenas/Props/dead_quiver_branch_01/dead_quiver_branch_01_1k/StaticMeshes/dead_quiver_branch_01_1k.dead_quiver_branch_01_1k",
-        "triangles": 2622,
-        "size": [
-          25,
-          23,
-          44
-        ]
-      }
-    ],
     "dead_tree_trunk": [
       {
         "asset": "/Game/Arenas/Props/dead_tree_trunk/dead_tree_trunk_1k/StaticMeshes/dead_tree_trunk_1k.dead_tree_trunk_1k",
@@ -502,17 +273,6 @@
           152,
           139,
           52
-        ]
-      }
-    ],
-    "shrub_01": [
-      {
-        "asset": "/Game/Arenas/Props/shrub_01/shrub_01_1k/StaticMeshes/shrub_01_1k.shrub_01_1k",
-        "triangles": 1820,
-        "size": [
-          259,
-          22,
-          40
         ]
       }
     ],
@@ -954,98 +714,6 @@
         ]
       }
     ],
-    "old_military_crate": [
-      {
-        "asset": "/Game/Arenas/Props/old_military_crate/old_military_crate_1k/StaticMeshes/old_military_crate_a.old_military_crate_a",
-        "triangles": 4705,
-        "size": [
-          80,
-          45,
-          26
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/old_military_crate/old_military_crate_1k/StaticMeshes/old_military_crate_b.old_military_crate_b",
-        "triangles": 4705,
-        "size": [
-          80,
-          45,
-          26
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/old_military_crate/old_military_crate_1k/StaticMeshes/old_military_crate_cloth_a.old_military_crate_cloth_a",
-        "triangles": 1806,
-        "size": [
-          72,
-          50,
-          21
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/old_military_crate/old_military_crate_1k/StaticMeshes/old_military_crate_cloth_b.old_military_crate_cloth_b",
-        "triangles": 1806,
-        "size": [
-          72,
-          50,
-          21
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/old_military_crate/old_military_crate_1k/StaticMeshes/old_military_crate_latch_a.old_military_crate_latch_a",
-        "triangles": 1128,
-        "size": [
-          42,
-          2,
-          11
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/old_military_crate/old_military_crate_1k/StaticMeshes/old_military_crate_latch_b.old_military_crate_latch_b",
-        "triangles": 1128,
-        "size": [
-          42,
-          2,
-          11
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/old_military_crate/old_military_crate_1k/StaticMeshes/old_military_crate_lid_a.old_military_crate_lid_a",
-        "triangles": 2177,
-        "size": [
-          77,
-          46,
-          6
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/old_military_crate/old_military_crate_1k/StaticMeshes/old_military_crate_lid_b.old_military_crate_lid_b",
-        "triangles": 2177,
-        "size": [
-          77,
-          45,
-          13
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/old_military_crate/old_military_crate_1k/StaticMeshes/old_military_crate_loop_a.old_military_crate_loop_a",
-        "triangles": 660,
-        "size": [
-          44,
-          1,
-          6
-        ]
-      },
-      {
-        "asset": "/Game/Arenas/Props/old_military_crate/old_military_crate_1k/StaticMeshes/old_military_crate_loop_b.old_military_crate_loop_b",
-        "triangles": 660,
-        "size": [
-          44,
-          3,
-          6
-        ]
-      }
-    ],
     "industrial_storage_cart": [
       {
         "asset": "/Game/Arenas/Props/industrial_storage_cart/industrial_storage_cart_1k/StaticMeshes/industrial_storage_cart_1k.industrial_storage_cart_1k",
@@ -1054,17 +722,6 @@
           160,
           110,
           138
-        ]
-      }
-    ],
-    "portable_searchlight": [
-      {
-        "asset": "/Game/Arenas/Props/portable_searchlight/portable_searchlight_1k/StaticMeshes/portable_searchlight_1k.portable_searchlight_1k",
-        "triangles": 3550,
-        "size": [
-          17,
-          25,
-          19
         ]
       }
     ],
@@ -1097,17 +754,6 @@
         ]
       }
     ],
-    "concrete_road_barrier": [
-      {
-        "asset": "/Game/Arenas/Props/concrete_road_barrier/concrete_road_barrier_1k/StaticMeshes/concrete_road_barrier_1k.concrete_road_barrier_1k",
-        "triangles": 60928,
-        "size": [
-          155,
-          64,
-          83
-        ]
-      }
-    ],
     "metal_jerrycan": [
       {
         "asset": "/Game/Arenas/Props/metal_jerrycan/metal_jerrycan_1k/StaticMeshes/metal_jerrycan_1k.metal_jerrycan_1k",
@@ -1116,28 +762,6 @@
           35,
           17,
           46
-        ]
-      }
-    ],
-    "island_tree_01": [
-      {
-        "asset": "/Game/Arenas/Props/island_tree_01/island_tree_01_1k/StaticMeshes/island_tree_01_1k.island_tree_01_1k",
-        "triangles": 3913,
-        "size": [
-          476,
-          482,
-          503
-        ]
-      }
-    ],
-    "tree_small_02": [
-      {
-        "asset": "/Game/Arenas/Props/tree_small_02/tree_small_02_1k/StaticMeshes/tree_small_02_1k.tree_small_02_1k",
-        "triangles": 2377,
-        "size": [
-          292,
-          429,
-          456
         ]
       }
     ]
@@ -1162,8 +786,6 @@
     "Emissive",
     "EmissiveAmber",
     "EngineGlow",
-    "FarmSoil",
-    "FieldGrass",
     "FieldStone",
     "ForestFloor",
     "ForestRock",
@@ -1176,17 +798,14 @@
     "Iron",
     "Kelp",
     "Lava",
-    "LeafPath",
     "LogEnd",
     "MillStone",
     "Mote",
     "Planks",
     "Pollen",
     "PortalRing",
-    "RedSand",
     "RedSoil",
     "RootEarth",
-    "Rubble",
     "Ruin",
     "RuinBlock",
     "RuinStone",
@@ -1206,8 +825,7 @@
     "Track",
     "Twine",
     "Water",
-    "Wheat",
-    "Windrow"
+    "Wheat"
   ],
   "treeMeshes": {
     "island_tree_01": {
@@ -1228,9 +846,5 @@
         456
       ]
     }
-  },
-  "leaves": {
-    "island_tree_01": 1,
-    "tree_small_02": 1
   }
 }

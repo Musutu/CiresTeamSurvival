@@ -26,8 +26,8 @@ REPORT = ROOT / "Art/Arenas/ImportReport.json"
 
 # ---- surface instances on UV-mapped meshes (metre UVs): slot -> (texture, metres/repeat, tint, rough mul, normal, macro, saturation)
 SURFACES = {
-    "Hay": ("thatch_roof_angled", 1.1, (1.45, 1.16, 0.64), 1.0, 1.2, 0.25, 1.1),
-    "HayEnd": ("thatch_roof_angled", 0.7, (1.30, 1.02, 0.55), 1.0, 1.3, 0.15, 1.05),
+    "Hay": ("thatch_roof_angled", 1.1, (1.75, 1.40, 0.76), 1.0, 1.2, 0.2, 1.1),
+    "HayEnd": ("thatch_roof_angled", 0.7, (1.60, 1.26, 0.68), 1.0, 1.3, 0.15, 1.05),
     "Straw": ("thatch_roof_angled", 0.8, (1.45, 1.18, 0.68), 1.0, 1.1, 0.2, 1.05),
     "Ears": ("thatch_roof_angled", 0.5, (1.50, 1.08, 0.52), 1.0, 1.2, 0.15, 1.15),
     "Twine": ("fabric_pattern_05", 0.4, (0.40, 0.30, 0.20), 1.0, 0.6, 0.0, 0.4),
@@ -503,10 +503,15 @@ return col*B;""", [("C", cam), ("T", t), ("Zen", zen), ("Hor", hor), ("Gnd", gnd
         deep, shallow = vector(mat, "Deep", (0.01, 0.025, 0.03)), vector(mat, "Foam", (0.6, 0.65, 0.66))
         nrm = custom(mat, """float2 p=P.xy;
 float2 g=float2(0,0);
-float2 dirs[4]={float2(1,0.2),float2(0.3,1),float2(-0.7,0.6),float2(0.9,-0.5)};
-float fr[4]={0.0018,0.0031,0.0057,0.011};
-for(int k=0;k<4;k++){ float2 d=normalize(dirs[k]); float ph=dot(p,d)*fr[k]*6.2831+T*(0.6+k*0.35); g+=d*cos(ph)*0.35/(1+k); }
-return normalize(float3(-g.x,-g.y,1));""", [("P", pos), ("T", t)])
+// twelve Gerstner-like slope terms with irrational direction/frequency steps: no visible period
+for(int k=0;k<12;k++){
+  float a=k*2.39996+0.4; float2 d=float2(cos(a),sin(a));
+  float f=0.0011*pow(1.37,k); float amp=0.55/pow(1.28,k);
+  float ph=dot(p,d)*f*6.2831+T*sqrt(f*9.81*6.2831*100.0)*0.35+k*1.7;
+  g+=d*cos(ph)*amp;
+}
+g*=Choppy;
+return normalize(float3(-g.x,-g.y,1));""", [("P", pos), ("T", t), ("Choppy", scalar(mat, "Choppiness", 0.55))])
         prop(mat, "MP_BASE_COLOR", deep)
         prop(mat, "MP_NORMAL", nrm)
         prop(mat, "MP_ROUGHNESS", scalar(mat, "Roughness", 0.06))

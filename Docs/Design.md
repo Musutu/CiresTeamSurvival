@@ -2,7 +2,7 @@
 
 Status: first playable design, 23 September 2026. This document defines intended behavior; it is not a claim that every system below has been implemented. The user selected **5 versus 5** and requested the most recent Warcraft III Reforged Enfo version as reference. Unreal Engine **5.8.3** was verified locally by the coordinating agent. Final platform, minimum PC specification, match length, content count, and the exact reference binary remain open; current release findings are in `EnfoParity.md`.
 
-The initial source build uses engine mannequins, a battlefield assembled from primitive geometry, and debug combat effects. Its three arena variants share one clear fighting footprint with different perimeter treatments. They are playtest spaces, not three finished competitive maps or final AA art. The playable prototype archetypes are Iron Warden (STR 20 / AGI 10 / INT 10), Ash Ranger (10 / 20 / 10), and Veil Scholar (10 / 10 / 20); future original Tripo hero briefs are separate art work.
+The initial source build uses engine mannequins, a battlefield assembled from primitive geometry, and debug combat effects. Arena battles now use a pool of six themed, mirror-symmetric arenas (The Sunlit Fields, The Black Shore, Redrock Canyon, Hornbeam Glade, The Drowned Sanctum, Star Station Hangar); one is picked at random each arena phase, never the same twice in a row, and the original court remains as the fallback (see `Arenas.md`). They are playable prototype spaces, not final AA art. The playable prototype archetypes are Iron Warden (STR 20 / AGI 10 / INT 10), Ash Ranger (10 / 20 / 10), and Veil Scholar (10 / 10 / 20); future original Tripo hero briefs are separate art work.
 
 ## Identity and player promise
 

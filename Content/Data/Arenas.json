@@ -668,7 +668,10 @@
     106.4
    ],
    "fit": "footprint",
-   "shape": "box"
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_Arena_Basalt.MI_Arena_Basalt"
+   }
   },
   "lava_cluster": {
    "candidates": [
@@ -2788,6 +2791,36 @@
      "tilt": true
     },
     {
+     "slot": "wheat",
+     "region": [
+      -26000,
+      -26000,
+      26000,
+      26000
+     ],
+     "count": 9000,
+     "seed": 16,
+     "scale": [
+      1.5,
+      2.2
+     ],
+     "outside": true,
+     "margin": 90,
+     "clearance": 0,
+     "exclude": [
+      [
+       -14000,
+       -14000,
+       14000,
+       14000
+      ]
+     ],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
      "slot": "stubble",
      "region": [
       -2600,
@@ -2870,8 +2903,8 @@
     "shaftThreshold": 3.0,
     "volumetricScattering": 1.6,
     "skyMaterial": "/Game/Arenas/Sky/MI_Sky_Fields.MI_Sky_Fields",
-    "skyYaw": 0.0,
-    "skyBrightness": 0.5,
+    "skyYaw": 18.0,
+    "skyBrightness": 0.7,
     "skyTint": [
      1.05,
      0.95,
@@ -2883,11 +2916,11 @@
      0.34
     ],
     "skyHazeStrength": 0.8,
-    "skyLightIntensity": 1.35,
+    "skyLightIntensity": 1.8,
     "skyLightColor": [
      1.0,
-     0.86,
-     0.7
+     0.88,
+     0.74
     ],
     "fogDensity": 0.006,
     "fogFalloff": 0.2,
@@ -3467,146 +3500,146 @@
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      -9000,
      4250,
-     -30,
+     -20,
      0.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      -7100,
      4410,
-     -30,
+     -20,
      53.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      -6000,
      4570,
-     -30,
+     -20,
      106.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      -4100,
      4250,
-     -30,
+     -20,
      159.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      -3000,
      4410,
-     -30,
+     -20,
      212.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      -1100,
      4570,
-     -30,
+     -20,
      265.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      0,
      4250,
-     -30,
+     -20,
      318.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      1900,
      4410,
-     -30,
+     -20,
      371.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      3000,
      4570,
-     -30,
+     -20,
      424.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      4900,
      4250,
-     -30,
+     -20,
      477.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      6000,
      4410,
-     -30,
+     -20,
      530.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      7900,
      4570,
-     -30,
+     -20,
      583.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [
-     "lava_outcrop",
+     "lava_cluster",
      9000,
      4250,
-     -30,
+     -20,
      636.0,
-     1.6,
-     1.2,
-     0.9,
+     2.2,
+     1.8,
+     1.4,
      0
     ],
     [

@@ -644,6 +644,7 @@ void ACireArenaStage::BuildArena(int32 Index, bool bWithVisuals)
     const FArena* A = CireArenas::Get(Index);
     if (!A) return;
     ArenaIndex = Index; bVisuals = bWithVisuals;
+    const double BuildStarted = FPlatformTime::Seconds();
     const FVector O = GetActorLocation();
     TSet<FName> Skip; // development: -CireArenaSkip=slot,slot hides slots to isolate art problems
 #if !UE_BUILD_SHIPPING
@@ -777,8 +778,8 @@ void ACireArenaStage::BuildArena(int32 Index, bool bWithVisuals)
             InstanceCount += Batch.Num();
         }
     }
-    UE_LOG(LogCireArenas, Display, TEXT("CIRE_ARENA_BUILD id=%s blockers=%d instances=%d components=%d fallback_slots=%d visuals=%d"),
-        *A->Id.ToString(), BlockerCount, InstanceCount, GetComponents().Num(), FallbackSlots, bWithVisuals ? 1 : 0);
+    UE_LOG(LogCireArenas, Display, TEXT("CIRE_ARENA_BUILD id=%s blockers=%d instances=%d components=%d fallback_slots=%d visuals=%d ms=%.1f"),
+        *A->Id.ToString(), BlockerCount, InstanceCount, GetComponents().Num(), FallbackSlots, bWithVisuals ? 1 : 0, (FPlatformTime::Seconds() - BuildStarted) * 1000.0);
 }
 
 void ACireArenaStage::SetShown(bool bShow)

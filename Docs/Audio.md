@@ -56,7 +56,7 @@ Created by `Tools/BuildAudioContent.py` under `/Game/Audio/Mix`:
 | town | warm-up, breathers between waves, prep, recovery | The Pyre / Oppressive Gloom |
 | combat | an advancing lane wave, or a challenge pack fighting near you; held 6 s after the last threat | Five Armies / Crusade |
 | boss | a lane boss alive in your realm, or a Pack Leader engaged near you; held 9 s | Killers / Black Vortex |
-| arena | PvP arena phase | Death and Axes |
+| arena | PvP arena phase | Death and Axes (each themed arena may override it: `music` in `Content/Data/Arenas.json`) |
 | finish | match over: one stinger, then silence | Hero Theme (victory) / Greta Sting (defeat) |
 
 States rotate through their tracks on each entry and crossfade over 3 s. The director is pure and unit-tested
@@ -76,6 +76,7 @@ A night layer (crickets, tawny owl) plays everywhere. During combat, boss and ar
 | square | fountain, pigeons, murmur | church bell phrases, distant funeral bell |
 | approach / castle | banners flapping, wind | anvil strikes, blacksmith, guards marching |
 | arena | cold wind | crows |
+| arena_fields / _iceland / _moab / _hornbeam / _underwater / _station (arenas) | wind through wheat / surf + cold wind / desert and canyon wind / woodland + bird chorus / underwater hum + deep drone / ship hum + station drone | skylarks / gulls / crows / - / - / - |
 
 **Prop emitters**: the nearest 8 town props within 26 m play positional loops: `fire_pit`, `brazier`, `lamp`, `wall_lantern`
 (fire crackle), `tavern` (hearth), `fountain` (water), `well` (winch and bucket every 14-26 s). They are found from the town

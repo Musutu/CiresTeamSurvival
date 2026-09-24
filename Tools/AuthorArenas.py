@@ -144,7 +144,7 @@ slot("basalt_stack", [kit("SM_Arena_BasaltStack")], shadow=True)
 slot("basalt_cliff", [kit("SM_Arena_BasaltCliff")], shadow=True)
 slot("lava_large", [kit("SM_Arena_LavaRockLarge")], essential=True)
 slot("lava_medium", [kit("SM_Arena_LavaRockMedium")])
-slot("lava_outcrop", [kit("SM_Arena_LavaOutcrop")])
+slot("lava_outcrop", [kit("SM_Arena_LavaOutcrop")], materials={"0": M("MI_Arena_Basalt")})
 slot("lava_cluster", [prop("coast_rocks_05_1k")], footprint=(404, 375, 133), materials=mat_all(M("MI_ArenaB_Lava")))
 slot("lava_ridge", [prop("coast_land_rocks_02_1k")], footprint=(489, 1045, 140), materials=mat_all(M("MI_ArenaB_Lava")))
 slot("beach_pebbles", [prop("sand_rocks_small_01_1k")], footprint=(463, 388, 53), materials=mat_all(M("MI_ArenaW_BlackGravel")), shadow=False)
@@ -317,6 +317,8 @@ a.scatter("wheat", (-7000, -6500, 7000, 6500), 21000, 11, scale=(0.85, 1.25), ou
 a.scatter("wheat", (-14000, -14000, 14000, 14000), 21000, 12, scale=(0.9, 1.3), outside=True, margin=90, tilt=True,
           exclude=[(-7000, -6500, 7000, 6500), (-9200, -5400, -4600, -800), (7000, 2800, 8700, 4400)])
 a.add("patch_track", -6900, -3100, z=-1.3, yaw=20, scale=(42, 34, 1))  # the barnyard
+a.scatter("wheat", (-26000, -26000, 26000, 26000), 9000, 16, scale=(1.5, 2.2), outside=True, margin=90,
+          exclude=[(-14000, -14000, 14000, 14000)])  # sparse, larger clumps out to the horizon
 # Stubble inside the harvested fight area and around the fences
 a.scatter("stubble", (-H[0], -H[1], H[0], H[1]), 5200, 13, scale=(0.8, 1.4), clearance=40)
 a.scatter("stubble", (-3100, -2250, 3100, 2250), 1800, 14, scale=(0.8, 1.4), outside=True)
@@ -324,9 +326,9 @@ a.set(ground="ground_stubble", groundSize=56000, ambience="arena_fields", music=
       minimap={"ground": [0.30, 0.22, 0.09], "blocker": [0.86, 0.66, 0.30], "accent": [1.0, 0.82, 0.42]},
       lighting={"sunPitch": -10.0, "sunYaw": 90.0, "sunIntensity": 7.5, "sunColor": [1.0, 0.70, 0.42], "sunSourceAngle": 1.2,
                 "lightShafts": True, "shaftBloomScale": 0.3, "shaftThreshold": 3.0, "volumetricScattering": 1.6,
-                "skyMaterial": SKY("MI_Sky_Fields"), "skyYaw": 0.0, "skyBrightness": 0.5, "skyTint": [1.05, 0.95, 0.85],
+                "skyMaterial": SKY("MI_Sky_Fields"), "skyYaw": 18.0, "skyBrightness": 0.7, "skyTint": [1.05, 0.95, 0.85],
                 "skyHaze": [0.78, 0.56, 0.34], "skyHazeStrength": 0.8,
-                "skyLightIntensity": 1.35, "skyLightColor": [1.0, 0.86, 0.70],
+                "skyLightIntensity": 1.8, "skyLightColor": [1.0, 0.88, 0.74],
                 "fogDensity": 0.006, "fogFalloff": 0.2, "fogColor": [0.50, 0.36, 0.22], "fogStart": 1500, "fogHeight": -100,
                 "volumetricFog": True, "volumetricDistribution": 0.8, "volumetricExtinction": 0.25, "volumetricAlbedo": [1.0, 0.84, 0.62],
                 "exposureBias": 0.0, "saturation": 1.1, "contrast": 1.05, "temperature": 5900, "bloom": 0.8, "vignette": 0.4,
@@ -357,7 +359,7 @@ for k, (x, y, s, r) in enumerate(((-4200, 13000, 1.4, 20), (1500, 17000, 1.9, -3
 for k, x in enumerate(range(-15000, 15001, 1950)):  # a black basalt column cliff behind the lava field to the south
     a.add("basalt_cliff", x, -6400 - (k % 3) * 180, z=-20, yaw=-90 + ((k * 7) % 11 - 5), scale=(1.0, 1.0, 0.9 + 0.15 * ((k * 5) % 4)))
 for k, x in enumerate(range(-9000, 9001, 1500)):  # the waterline: low lava shelves half in the sea
-    a.add("lava_outcrop", x + (k % 2) * 400, 4250 + (k % 3) * 160, z=-30, yaw=k * 53.0, scale=(1.6, 1.2, 0.9))
+    a.add("lava_cluster", x + (k % 2) * 400, 4250 + (k % 3) * 160, z=-20, yaw=k * 53.0, scale=(2.2, 1.8, 1.4))
 a.pair("lava_ridge", -4200, -2600, yaw=25, scale=1.4)
 a.pair("lava_cluster", -3300, 1600, yaw=10, scale=1.6)
 a.add("lava_outcrop", -4600, 600, yaw=30, scale=1.5)
