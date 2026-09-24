@@ -70,6 +70,13 @@ FName MainSlot(int32 Index) { return CireKeybindings::SlotAction(1, Index + 1); 
 // ---------------------------------------------------------------------------
 // Action bars
 // ---------------------------------------------------------------------------
+float ACireHUD::ActionBarsTop() const
+{
+    float Top = PanelRect(TEXT("Skills")).Y;
+    if (VisiblePanels.Contains(FName(TEXT("Bar2")))) Top = FMath::Min(Top, PanelRect(TEXT("Bar2")).Y);
+    if (VisiblePanels.Contains(FName(TEXT("Bar3")))) Top = FMath::Min(Top, PanelRect(TEXT("Bar3")).Y);
+    return Top;
+}
 bool ACireHUD::DrawActionButton(ACireHero* Hero, ACireController* Controller, int32 Bar, int32 Index, float X, float Y, float S)
 {
     const FName Action = CireKeybindings::SlotAction(Bar, Index + 1);

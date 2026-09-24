@@ -297,15 +297,17 @@ void ACireHUD::DrawMatch(ACireGameState* State)
     const TCHAR* Phases[]={TEXT("SURVIVAL"),TEXT("TOWN PREPARATION"),TEXT("PORTAL ARENA"),TEXT("MATCH COMPLETE"),TEXT("RECOVERY")};
     const FString Phase=Phases[FMath::Clamp(State->Phase,0,4)];
     Label(Phase,(250-TextWidth(Phase,9))/2,7,9,State->Phase==2?Red:Teal);
-    const int32 Seconds=FMath::Max(0,FMath::CeilToInt(State->SecondsLeft));
-    const FString Time=State->Phase==0?FString::Printf(TEXT("%d / %d"),State->CycleWavesDone,State->WavesPerCycle):FString::Printf(TEXT("%02d:%02d"),Seconds/60,Seconds%60);
+    // Sentinel / frozen clocks (huge or non-finite) show as "--:--" instead of leaking.
+    const bool bClockValid=FMath::IsFinite(State->SecondsLeft)&&State->SecondsLeft<100*60;
+    const int32 Seconds=bClockValid?FMath::Max(0,FMath::CeilToInt(State->SecondsLeft)):0;
+    const FString Time=State->Phase==0?FString::Printf(TEXT("%d / %d"),State->CycleWavesDone,State->WavesPerCycle):bClockValid?FString::Printf(TEXT("%02d:%02d"),Seconds/60,Seconds%60):FString(TEXT("--:--"));
     Label(Time,(250-TextWidth(Time,22))/2,20,22,Parchment);
     Label(FString::Printf(TEXT("%02d"),State->EmberLives),14,19,21,Gold);Label(TEXT("EMBER"),13,44,8,Muted);
     const FString Dusk=FString::Printf(TEXT("%02d"),State->DuskLives);
     Label(Dusk,236-TextWidth(Dusk,21),19,21,Blue);Label(TEXT("DUSK"),236-TextWidth(TEXT("DUSK"),8),44,8,Muted);
     const FString Sub=State->Phase==0?FString::Printf(TEXT("WAVE %d / CYCLE CLEARS"),State->Wave):FString::Printf(TEXT("ROUND %d  /  WAVE %d"),State->Round,State->Wave);
     Label(Sub,(250-TextWidth(Sub,8))/2,54,8,Muted);
-    if(State->Phase==0&&State->NextWaveSeconds>.05f) {
+    if(State->Phase==0&&FMath::IsFinite(State->NextWaveSeconds)&&State->NextWaveSeconds>.05f&&State->NextWaveSeconds<3600.f) {
         const FString Next=FString::Printf(TEXT("NEXT WAVE IN %ds"),FMath::CeilToInt(State->NextWaveSeconds));
         Label(Next,(250-TextWidth(Next,9))/2,76,9,Gold);
     }
@@ -535,7 +537,7 @@ void ACireHUD::DrawHUD()
     Clicked=PlayerOwner->WasInputKeyJustPressed(EKeys::LeftMouseButton)&&!PlayerOwner->IsInputKeyDown(EKeys::RightMouseButton);
     auto* Controller=Cast<ACireController>(PlayerOwner);auto* Hero=Cast<ACireHero>(PlayerOwner->GetPawn());auto* State=GetWorld()->GetGameState<ACireGameState>();
     bModal=Hero&&((!Hero->bDrafted||(Hero->Offers.Num()>0&&IsSkillOfferOpen())||(Controller&&Controller->bShop))||(State&&State->Phase==3));
-    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();TooltipAbility.Reset();
+    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();TooltipAbility.Reset();TooltipRegion={0,0,0,0};
     LastPanelBoxes.Reset();
     for(FName Id:VisiblePanels)if(Id!=TEXT("CombatText")&&Id!=TEXT("Tooltip")){const FCireUIRect R=PanelRect(Id);LastPanelBoxes.Emplace(FVector2D(R.X,R.Y),FVector2D(R.X+R.W,R.Y+R.H));}
     LayoutInteraction();VisiblePanels.Reset();ResetTransform();

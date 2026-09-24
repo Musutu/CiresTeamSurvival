@@ -37,7 +37,7 @@ namespace CireUIColors
     inline const FLinearColor Mana(.12f,.36f,.95f,1.f);
     inline const FLinearColor Energy(.95f,.78f,.18f,1.f);
     inline const FLinearColor Cast(1.f,.70f,.05f,1.f);        // interruptible cast
-    inline const FLinearColor CastLocked(.58f,.60f,.66f,1.f); // uninterruptible cast
+    inline const FLinearColor CastLocked(.40f,.42f,.48f,1.f); // uninterruptible cast
     inline const FLinearColor Silver(.76f,.80f,.86f,1.f);
     inline const FLinearColor Orange(1.f,.55f,.10f,1.f);
 }

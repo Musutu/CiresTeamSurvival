@@ -541,7 +541,7 @@ void ACireHUD::DrawSkillOfferExtras(ACireHero* Hero,ACireController* Controller)
     if(Hero->Offers.Num()>0&&!S.bOpen&&!bSettings)
     {
         const auto Bar=PanelRect(TEXT("Skills"));
-        const float W=330,H=52,X=(ViewW-W)*.5f,Y=FMath::Clamp(Bar.Y-H-34,60.f,ViewH-H-10);
+        const float W=330,H=52,X=(ViewW-W)*.5f,Y=FMath::Clamp(FMath::Min(Bar.Y,ActionBarsTop())-H-30,60.f,ViewH-H-10); // wow-ui: above the extra bars and movement hint
         const float Pulse=.5f+.5f*FMath::Sin(static_cast<float>(Now)*4.f);
         CireUIStyle::Glow(P,X-10,Y-10,W+20,H+20,FLinearColor(1.f,.78f,.25f,.25f+.35f*Pulse));
         const bool bOver=!bEditLayout&&Hit(X,Y,W,H);

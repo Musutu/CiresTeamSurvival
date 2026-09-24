@@ -50,3 +50,19 @@ Keybindings and per-champion action-bar placements live in the same file
 
 `CireOptions::RunSettingsSmoke` (run by `RunExpansionChecks.py --only native`) covers the
 schema-4 defaults, v3 migration, roundtrip, bounds and right-anchor preservation.
+
+## Schema 5 (WoW default layout)
+
+`LayoutVersion` is 5. Default layout (1280x720 reference): player top-left (20,20), target to its right
+(290,20, 240x140; target-of-target inside), focus left-middle under the target (290,176), party 210 wide,
+compact match plate top-centre (540,16, 250x70), right column minimap / boss frames (1040,208) / threat
+(1040,372) / damage meter (1040,566, 220x134), bag bar above chat (20,420), pet frame under focus
+(290,306), stats window beside the right column (858,208, closed by default; C toggles). The screen centre
+stays clear (checked by the WoW UI gallery, along with no overlaps between the default frames).
+
+Profiles older than 5 adopt these defaults **only for panels still at their old default rectangle**;
+panels the player moved keep their saved place. New keys: `bMeterCollapsed`, `bThreatCollapsed` (click
+the header to fold these panels). The Developer Tools [F8] button is hidden in normal play until F8 is
+pressed (or the game runs with `-dev`). A focus target that already has a boss frame is shown there
+(tagged FOCUS) instead of a second frame. Transition banners and aggro alerts centre in the free gap
+between the left frames and the right column.

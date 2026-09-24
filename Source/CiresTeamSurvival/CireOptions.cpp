@@ -27,7 +27,7 @@ void ACireHUD::PlayUIFeedback()
 void ACireHUD::Tip(const FString& Title,const FString& Body,float X,float Y,float W,float H)
 {
     if(bSettings && Hit(X,Y,W,H)) CireAudio::NoteHover(this,X,Y); // audio: hover tick on Options controls
-    if(UISettings.bTooltips && Hit(X,Y,W,H)) { TooltipTitle=Title; TooltipBody=Body; }
+    if(UISettings.bTooltips && Hit(X,Y,W,H)) { TooltipTitle=Title; TooltipBody=Body; TooltipRegion={float(Origin.X+X*Stretch.X),float(Origin.Y+Y*Stretch.Y),float(W*Stretch.X),float(H*Stretch.Y)}; }
 }
 #if !UE_BUILD_SHIPPING
 void ACireHUD::DebugTooltip(const FString& Title,const FString& Body,FVector2D Cursor)
@@ -100,7 +100,16 @@ void ACireHUD::DrawTooltip()
     const int32 MaxBodyLines=FMath::Max(1,FMath::FloorToInt((ViewH-8-2*Padding-TitleHeight-Gap)/BodyStep));
     if(BodyLines.Num()>MaxBodyLines){BodyLines.SetNum(MaxBodyLines);BodyLines.Last()=BodyLines.Last().LeftChop(3)+TEXT("...");}
     const float H=2*Padding+TitleHeight+(BodyLines.IsEmpty()?0:Gap+BodyLines.Num()*BodyStep);
-    const FCireUIRect Box=PlaceTooltip(W,H,Cursor);
+    FCireUIRect Box=PlaceTooltip(W,H,Cursor);
+    // Large hover targets (cards, big buttons): put the tooltip below (else above) the hovered
+    // region so it never covers the card itself or its neighbours in the row.
+    if(TooltipRegion.W*TooltipRegion.H>=150.f*150.f&&!bDebug)
+    {
+        const float TX=FMath::Clamp(TooltipRegion.X,4.f,FMath::Max(4.f,ViewW-W-4));
+        if(TooltipRegion.Y+TooltipRegion.H+6+H<=ViewH-4)Box={TX,TooltipRegion.Y+TooltipRegion.H+6,W,H};
+        else if(TooltipRegion.Y-6-H>=4)Box={TX,TooltipRegion.Y-6-H,W,H};
+        else {TooltipHoverKey.Reset();return;} // the card already shows its full text
+    }
     const float X=Box.X,Y=Box.Y;
     TooltipBox(X,Y,W,H,FLinearColor(.55f,.58f,.64f,1));
     for(int32 I=0;I<TitleLines.Num();++I){NextFont=ECireFont::Bold;Label(TitleLines[I],X+Padding,Y+Padding+I*(TitleFont+4*Size),TitleFont,FLinearColor(1.f,.86f,.3f,1));}

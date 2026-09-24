@@ -434,7 +434,7 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     if(!U.Casting.IsEmpty())
     {
         // WoW convention: gold bar = interruptible, grey bar with a shield = cannot be interrupted.
-        const FLinearColor Bar=U.bInterruptible?CastGold:FLinearColor(.58f,.6f,.66f,1);
+        const FLinearColor Bar=U.bInterruptible?CastGold:FLinearColor(.40f,.42f,.48f,1);
         Panel(10,CY,W-20,CH,FLinearColor(0,0,0,.85f));Panel(11,CY+1,(W-22)*U.CastProgress,CH-2,Bar);Panel(11,CY+1,(W-22)*U.CastProgress,(CH-2)*.4f,FLinearColor(1,1,1,.25f));
         if(!U.bInterruptible){Panel(4,CY+1,5,CH-2,FLinearColor(.75f,.77f,.82f,1));}
         const FString Rem=FString::Printf(TEXT("%.1f"),U.CastRemaining);
@@ -512,7 +512,7 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
         if(Cast.bCasting&&Cast.Remaining>0)
         {
             // Cast bar tall enough to hold its label inside; remaining time on the right.
-            Panel(30,Y+34,184,12,FLinearColor(0,0,0,.85f));Panel(31,Y+35,182*Cast.Progress,10,Cast.bInterruptible?CastGold:FLinearColor(.58f,.6f,.66f,1));
+            Panel(30,Y+34,184,12,FLinearColor(0,0,0,.85f));Panel(31,Y+35,182*Cast.Progress,10,Cast.bInterruptible?CastGold:FLinearColor(.40f,.42f,.48f,1));
             const FString Rem=FString::Printf(TEXT("%.1f"),Cast.Remaining);const float RemW=TextWidthFont(Rem,7.5f,ECireFont::Numbers);
             TextFx(Painter().Fit(Cast.Name,7.5f,176-RemW-8,ECireFont::Bold),34,Y+34.2f,7.5f,FLinearColor::White,ECireFont::Bold,true,false);
             TextFx(Rem,210-RemW,Y+34.2f,7.5f,FLinearColor::White,ECireFont::Numbers,true,false);
@@ -657,11 +657,12 @@ void ACireHUD::DrawAlert()
     if(CireBanners::IsShowing())Y+=96.f; // stack under an active banner
     const float TS=28.f*Pop;
     const float BandW=FMath::Max(TextWidthFont(Alert.Title,28.f,ECireFont::Heading),TextWidthFont(Alert.Subtitle,12,ECireFont::Body))+80.f;
-    for(int32 I=0;I<6;++I){const float Inset=I*BandW*.07f;Panel((ViewW-BandW)*.5f+Inset,Y-24,BandW-2*Inset,62,FLinearColor(0,0,0,.09f*A));}
+    const float CW=2.f*CentreGapX(Y-30,Y+50); // centre in the gap between side frames
+    for(int32 I=0;I<6;++I){const float Inset=I*BandW*.07f;Panel((CW-BandW)*.5f+Inset,Y-24,BandW-2*Inset,62,FLinearColor(0,0,0,.09f*A));}
     FLinearColor C=Alert.Color;C.A=A;
-    TextFx(Alert.Title,(ViewW-TextWidthFont(Alert.Title,TS,ECireFont::Heading))*.5f,Y-TS*.5f,TS,C,ECireFont::Heading,true,true);
+    TextFx(Alert.Title,(CW-TextWidthFont(Alert.Title,TS,ECireFont::Heading))*.5f,Y-TS*.5f,TS,C,ECireFont::Heading,true,true);
     FLinearColor S=Parchment;S.A=A;
-    TextFx(Alert.Subtitle,(ViewW-TextWidthFont(Alert.Subtitle,12,ECireFont::Body))*.5f,Y+TS*.55f+4,12,S,ECireFont::Body,true,true);
+    TextFx(Alert.Subtitle,(CW-TextWidthFont(Alert.Subtitle,12,ECireFont::Body))*.5f,Y+TS*.55f+4,12,S,ECireFont::Body,true,true);
 }
 
 // ---------------------------------------------------------------------------
@@ -1183,7 +1184,7 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
             if(Cast.bCasting&&Cast.Remaining>0)
             {
                 const float CY=Y+PH+3.f,CH=Selected?7.f:4.f;
-                Panel(PX-1,CY-1,PW+2,CH+2,FLinearColor(0,0,0,.9f));Panel(PX,CY,PW*Cast.Progress,CH,Cast.bInterruptible?CastGold:FLinearColor(.58f,.6f,.66f,1));
+                Panel(PX-1,CY-1,PW+2,CH+2,FLinearColor(0,0,0,.9f));Panel(PX,CY,PW*Cast.Progress,CH,Cast.bInterruptible?CastGold:FLinearColor(.40f,.42f,.48f,1));
                 if(Selected)TextFx(Painter().Fit(Cast.Name,8,PW-4,ECireFont::Bold),PX+2,CY+CH+1,8,FLinearColor::White,ECireFont::Bold,true,false);
             }
         }
@@ -1272,7 +1273,8 @@ void ACireHUD::DrawBanners()
     // Banners sit just below the target frame so they never cover the frame being read.
     const FCireUIRect Target=PanelRect(TEXT("Target"));
     const float Y=FMath::Clamp(FMath::Max(ViewH*.15f,Target.Y+Target.H+34.f),40.f,ViewH*.42f);
-    if(CireBanners::Draw(Painter(),ViewW,ViewH,Started,Y))
+    // Centre the banner in the free gap between the left frames and the right column.
+    if(CireBanners::Draw(Painter(),2.f*CentreGapX(Y-20,Y+110),ViewH,Started,Y))
     {
         if(!UISettings.bMuteAudio&&CireAudio::PlayBanner(this,static_cast<uint8>(Started)))return; // audio: horn / bell / war drums
         switch(Started)
@@ -1292,4 +1294,21 @@ bool ACireHUD::IsInBossFrames(const AActor* Actor) const
     if(!UISettings.bShowBossFrames||!Actor)return false;
     for(const auto& Unit:BossFrameUnits)if(Unit.Get()==Actor)return true;
     return false;
+}
+
+float ACireHUD::CentreGapX(float Top,float Bottom) const
+{
+    // Horizontal centre of the free space between visible left-side and right-side frames
+    // in the band [Top,Bottom] (logical units). Falls back to the screen centre.
+    float Left=0.f,Right=ViewW;
+    for(FName Id:VisiblePanels)
+    {
+        if(Id==TEXT("CombatText")||Id==TEXT("Tooltip")||Id==TEXT("Match"))continue;
+        const FCireUIRect R=PanelRect(Id);
+        if(R.Y>Bottom||R.Y+R.H<Top)continue;
+        const float C=R.X+R.W*.5f;
+        if(C<ViewW*.5f)Left=FMath::Max(Left,R.X+R.W+8.f);else Right=FMath::Min(Right,R.X-8.f);
+    }
+    if(Right-Left<360.f)return ViewW*.5f;
+    return (Left+Right)*.5f;
 }
