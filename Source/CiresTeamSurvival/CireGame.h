@@ -204,6 +204,8 @@ public:
     // Replicated role, classification, cast, status and threat-table state lives
     // in NPCState; these accessors are safe on server and clients.
     UPROPERTY(VisibleAnywhere) TObjectPtr<class UCireNPCState> NPCState;
+    // creature-anim: animated Tripo body, swing timing and death presentation (CireMonsterArt.h).
+    UPROPERTY(VisibleAnywhere) TObjectPtr<class UCireMonsterArt> MonsterArt;
     ECireNPCRole GetNPCRole() const;
     ECireNPCClass GetNPCClassification() const;
     FString GetNPCDisplayName() const;

@@ -21,6 +21,7 @@
 #include "CireStatusVisual.h"
 #include "CireBuffs.h" // aura-vfx
 #include "CireItems.h" // progression-shop
+#include "CireMonsterArt.h" // creature-anim
 #include "EngineUtils.h"
 
 #include "Camera/CameraComponent.h"
@@ -860,6 +861,7 @@ ACireMonster::ACireMonster()
     GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     NPCState = CreateDefaultSubobject<UCireNPCState>(TEXT("NPCState")); // npc-boss: role/boss/threat state
     CreateDefaultSubobject<UCireBuffState>(TEXT("BuffState")); // aura-vfx: replicated named-effect records for signature visuals
+    MonsterArt = CreateDefaultSubobject<UCireMonsterArt>(TEXT("MonsterArt")); // creature-anim: Tripo body, swing timing, death
 }
 
 void ACireMonster::BeginPlay()
@@ -907,6 +909,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
         ACireAreaEffect::ClearForActor(this);
         GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Mode->MonsterKilled(this, Attacker);
+        if (MonsterArt) MonsterArt->MulticastDeath(); // creature-anim: clients keep a falling corpse after the actor goes
         if (!IsActorBeingDestroyed()) Destroy();
     }
     return Taken;
