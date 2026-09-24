@@ -635,9 +635,7 @@ void ACireHero::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
     if(Mobility)
     {
-        GetCharacterMovement()->JumpZVelocity=CireMovement::Tuning().JumpVelocity;
-        GetCharacterMovement()->bOrientRotationToMovement=!Mobility->bStrafing&&!Mobility->IsRolling();
-        bUseControllerRotationYaw=Mobility->bStrafing&&!Mobility->IsRolling();
+        CireMovement::ApplyToHero(*this); // tuning, facing mode and tank body scale
         if(bDead)Mobility->CancelRoll();
     }
     if (ChampionArt) ChampionArt->UpdateVisuals(*this, DeltaSeconds);

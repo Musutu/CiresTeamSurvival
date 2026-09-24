@@ -6,10 +6,10 @@ humanoid body for these profiles if loading fails. Their gameplay capsules,
 movement, targeting and replication remain owned by the hero. Presentation is
 local, collision-free, and inherits the existing realm visibility parent.
 
-* Bear uses the actual 45-bone Tripo quadruped, scaled to 148 cm. Native local-pose
-  evaluation drives diagonal gait pairs, head movement and a front-paw swipe.
-  The import has only a hip bone on its right rear leg, so that leg has a rigid
-  swing. This is a known rig limitation, not a completed production quadruped rig.
+* Bear uses the Tripo quadruped, scaled to 148 cm (x1.15 in game as a Tank). Since
+  September 24 (camera-movement pass) it binds `/Game/Art/Characters/Motion03/SK_BearMotion`,
+  a 49-bone copy whose right rear leg has a real knee/hock/paw chain (see below).
+  Native local-pose evaluation drives a diagonal trot, head movement and a front-paw swipe.
 * Whisp uses the actual lantern-spirit mesh at 85 cm plus a 65 cm hover offset,
   with floating motion, travel lean and a cast surge.
 * Centaur uses a generated CPU-readable copy of the original static model,
@@ -59,3 +59,32 @@ Centaur has its textured armor/body; Whisp retains its pale green source appeara
 Humanoid weapon grips, Bear's incomplete rear-leg rig and Centaur's spatial skin
 remain prototype limitations. This is suitable for the current playtest, not final
 animation acceptance. Detailed evidence is in `Docs/WorldCreatureVisualReview-20260924.md`.
+
+## Bear gait pass (Motion03, September 24)
+
+The user reported that the Bear "moves incorrectly". Findings and fixes:
+
+* **Rigid right rear leg.** The import only had `1_Right_Limb_0` on that leg. `Tools/BuildBearMotion03.py`
+  (run in an isolated CreatureBuilder copy with GeometryScripting + MeshModelingToolset) duplicates
+  SK_Bear and its skeleton into `Content/Art/Characters/Motion03/`, mirrors `1_Left_Limb_1..4` onto the
+  right hip and copies the mirrored left-rear skin weights to 1,226 right-rear vertices (mean mirror
+  distance 0.7 units, max 2.4). Originals are untouched; `ChampionArtBindings.json` now points at the copy.
+  The animation code only rotates bones that exist, so the old body still works.
+* **Foot sliding.** The old phase advanced one cycle per 175 cm with a +/-15 degree sinusoidal swing, so a
+  planted paw covered roughly half the body travel. The phase rate is now derived from the leg length
+  (reference skeleton hip-to-paw height x mesh scale x actor scale) and the swing amplitude: one cycle
+  covers `4 * L * sin(a)`. Stance is a linear back-sweep, swing an eased return with knee/hock and
+  elbow/wrist fold, and the body is lowered by `L(1-cos a)` so planted paws stay on the floor.
+* **Idle/walk/run blend.** Amplitude scales from 15 degrees (walk) to 30 degrees (run) with speed; idle keeps
+  a breathing/head sway that fades out while moving. Backpedalling runs the cycle in reverse and
+  turning in place steps the legs.
+* **Facing** was verified correct: the skeleton's head is +Y, the mesh is yawed -90 so it faces actor +X.
+
+Evidence: the native movement suite now includes `UCireCreatureArt::RunGaitSmoke`, which walks the real
+Motion03 rig at 240 and 520 cm/s and measures planted-paw ground speed as a fraction of body speed.
+Result (`Saved/ExpansionChecks/20260924T084431773010Z`): front paws 0.18/0.22 at walk and 0.14/0.15 at run,
+rear paws 0.17/0.17 at walk and 0.02/0.02 at run (1.0 = paw dragged with the body; the old stride math
+was roughly 0.5); both rear knees now bend through 28 degrees (right rear was 0). Rendered captures:
+`Saved/BatchArtGallery/20260924-084521-FE24EA` (idle, walk, attack, airborne, roll; Bear, Centaur, Whisp).
+Limits: still procedural animation on an auto-generated rig; no authored gallop, no IK on slopes, and
+lateral strafing slides the paws.
