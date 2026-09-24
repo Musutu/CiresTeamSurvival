@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireArenas.h" // arenas
 #include "CireShopUI.h" // progression-shop
 #include "CireKeybindings.h"
 #include "CireLanePath.h"
@@ -316,12 +317,18 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
 {
     UsePanel(TEXT("Minimap"),220,178);Frame(0,0,220,178,Gold);
     const bool Arena=State&&State->Phase==2;
-    Label(Arena?TEXT("PORTAL BATTLEFIELD"):TEXT("THE TWIN CITADELS"),12,9,10,Parchment);
+    // arenas: the picked arena's name, bounds and blocker layout (Content/Data/Arenas.json)
+    const CireArenas::FArena* ArenaDef=Arena?CireArenas::Current(GetWorld()):nullptr;
+    const FVector ArenaCentre=CireArenas::Center(GetWorld());
+    const FVector2D ArenaHalf=CireArenas::HalfExtents(GetWorld());
+    const float ArenaScale=FMath::Min(184.f/(2*ArenaHalf.X),106.f/(2*ArenaHalf.Y));
+    Label(Arena?(ArenaDef?ArenaDef->Name.ToUpper():FString(TEXT("PORTAL BATTLEFIELD"))):FString(TEXT("THE TWIN CITADELS")),12,9,10,Parchment);
     Label(TEXT("N"),204,9,9,Gold);Panel(9,28,202,125,FLinearColor(.032f,.044f,.039f,1));
     auto Map=[&](FVector P,int32 Team)->FVector2D {
         if(Arena) {
-            const float ArenaY=10000+(State?State->ArenaIndex:0)*6000;
-            return FVector2D(16+FMath::Clamp((P.Y-ArenaY+1600)/3200.f,0.f,1.f)*188,145-FMath::Clamp((P.X+1700)/3400.f,0.f,1.f)*109);
+            // arenas: Ember (west, -X) on the left, Dusk on the right, north up; aspect preserved.
+            const float LX=FMath::Clamp(static_cast<float>(P.X-ArenaCentre.X),-ArenaHalf.X,ArenaHalf.X),LY=FMath::Clamp(static_cast<float>(P.Y-ArenaCentre.Y),-ArenaHalf.Y,ArenaHalf.Y);
+            return FVector2D(110+LX*ArenaScale,91-LY*ArenaScale);
         }
         const auto& R=CireLanePath::Get(GetWorld());
         const float CenterY=CireLanePath::CenterY(Team);
@@ -329,9 +336,26 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
             145-FMath::Clamp((P.X-R.MinX)/(R.MaxX-R.MinX),0.f,1.f)*111);
     };
     if(Arena) {
-        Line(18,37,202,37,Muted);Line(18,145,202,145,Muted);Line(18,37,18,145,Muted);Line(202,37,202,145,Muted);
-        for(int32 I=0;I<24;++I) {float A=I*PI/12,B=(I+1)*PI/12;Line(110+FMath::Cos(A)*29,91+FMath::Sin(A)*19,110+FMath::Cos(B)*29,91+FMath::Sin(B)*19,Gold*.6f);}
-        Line(20,120,200,120,Teal*.5f);Line(20,62,200,62,Red*.5f);
+        // arenas: themed ground, blocker footprints, spawn edges.
+        const float W=2*ArenaHalf.X*ArenaScale,H=2*ArenaHalf.Y*ArenaScale,L=110-W*.5f,T=91-H*.5f;
+        Panel(L,T,W,H,ArenaDef?ArenaDef->MinimapGround:FLinearColor(.05f,.05f,.05f,1));
+        Line(L,T,L+W,T,Muted);Line(L,T+H,L+W,T+H,Muted);Line(L,T,L,T+H,Muted);Line(L+W,T,L+W,T+H,Muted);
+        if(ArenaDef) for(const auto& F:CireArenas::Footprints(*ArenaDef,CireArenas::Pool())) {
+            const FVector2D C(110+F.Center.X*ArenaScale,91-F.Center.Y*ArenaScale);
+            const FLinearColor Fill=ArenaDef->MinimapBlocker;
+            if(F.bRound) {
+                const float R=FMath::Max(1.5f,static_cast<float>(F.Extent.X)*ArenaScale);
+                for(float Y=-R;Y<=R;Y+=1.f){const float Half=FMath::Sqrt(FMath::Max(0.f,R*R-Y*Y));Line(C.X-Half,C.Y+Y,C.X+Half,C.Y+Y,Fill,1.2f);}
+                continue;
+            }
+            const float Yaw=FMath::DegreesToRadians(F.Yaw),Cs=FMath::Cos(Yaw),Sn=FMath::Sin(Yaw);
+            const FVector2D AX(Cs*F.Extent.X*ArenaScale,-Sn*F.Extent.X*ArenaScale),AY(-Sn*F.Extent.Y*ArenaScale,-Cs*F.Extent.Y*ArenaScale);
+            const float Along=FMath::Max(1.f,static_cast<float>(2*F.Extent.Y*ArenaScale));
+            for(float S=-1;S<=1.001f;S+=1.f/Along){const FVector2D A=C+AY*S-AX,B=C+AY*S+AX;Line(A.X,A.Y,B.X,B.Y,Fill,1.4f);}
+        }
+        const FLinearColor Accent=ArenaDef?ArenaDef->MinimapAccent:Gold;
+        Line(L+2,T+2,L+2,T+H-2,Teal*.8f,2);Line(L+W-2,T+2,L+W-2,T+H-2,Red*.8f,2);
+        Line(110,T+1,110,T+H-1,Accent*.35f);
     } else {
         for(int32 Team=0;Team<2;++Team) {
             const float X=Team*101+12;const bool Visible=Team==Hero->TeamId;

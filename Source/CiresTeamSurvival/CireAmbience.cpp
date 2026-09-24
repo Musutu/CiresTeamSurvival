@@ -2,6 +2,7 @@
 #include "CireAudio.h"
 #include "CireEnvironmentProps.h"
 #include "CireGame.h"
+#include "CireArenas.h" // arenas
 #include "Components/AudioComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -61,6 +62,7 @@ const CireAmbience::FData& CireAmbience::Data(bool bReload)
             FDistrict D;
             const TArray<TSharedPtr<FJsonValue>>* List = nullptr;
             if(O->TryGetArrayField(TEXT("beds"), List)) for(const auto& V : *List) if(V->AsObject()) D.Beds.Add(ReadBed(V->AsObject()));
+            O->TryGetBoolField(TEXT("noNight"), D.bNoNight); // arenas
             if(O->TryGetArrayField(TEXT("oneShots"), List))
                 for(const auto& V : *List)
                 {
@@ -93,7 +95,12 @@ const CireAmbience::FData& CireAmbience::Data(bool bReload)
 FName CireAmbience::ResolveDistrict(const UWorld* World, int32 Team, const FVector& Location, bool bArena)
 {
     const FData& D = Data();
-    if(bArena && D.Districts.Contains(TEXT("arena"))) return TEXT("arena");
+    if(bArena) // arenas: each themed arena names its own district (wind over wheat, gulls, forest birds...)
+    {
+        const FName Themed = CireArenas::ActiveAmbience(World);
+        if(!Themed.IsNone() && D.Districts.Contains(Themed)) return Themed;
+        if(D.Districts.Contains(TEXT("arena"))) return TEXT("arena");
+    }
     const FName Id = World ? CireEnvironmentProps::DistrictAt(World, FMath::Clamp(Team, 0, 1), Location) : NAME_None;
     return !Id.IsNone() && D.Districts.Contains(Id) ? Id : FName(TEXT("outskirts"));
 }
@@ -133,8 +140,8 @@ void FCireAmbiencePlayer::Tick(UCireAudioSubsystem& Audio, const FVector& Listen
 
     // ---- beds: weight toward this district's layers (plus the night layer), keyed by sound ----
     TMap<FString, float> Targets;
-    if(!Data.Night.Sound.IsEmpty()) Targets.Add(Data.Night.Sound, Data.Night.Volume);
     const CireAmbience::FDistrict* Def = Data.Districts.Find(District);
+    if(!Data.Night.Sound.IsEmpty() && !(Def && Def->bNoNight)) Targets.Add(Data.Night.Sound, Data.Night.Volume);
     if(Def) for(const auto& Bed : Def->Beds) { float& T = Targets.FindOrAdd(Bed.Sound); T = FMath::Max(T, Bed.Volume); }
     for(const auto& Pair : Targets) Beds.FindOrAdd(Pair.Key);
     const float Rate = 1.f / Data.FadeSeconds;

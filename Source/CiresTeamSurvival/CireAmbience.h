@@ -11,7 +11,7 @@ namespace CireAmbience
 {
     struct FBed { FString Sound; float Volume = .5f; };
     struct FOneShot { FName Cue; FVector2D Interval = FVector2D(8, 16), Distance = FVector2D(800, 2400), Height = FVector2D(0, 300); };
-    struct FDistrict { TArray<FBed> Beds; TArray<FOneShot> OneShots; };
+    struct FDistrict { TArray<FBed> Beds; TArray<FOneShot> OneShots; bool bNoNight = false; /* arenas: e.g. underwater */ };
     struct FEmitter { FName Cue; FVector Offset = FVector::ZeroVector; float Volume = 1.f; FVector2D Interval = FVector2D::ZeroVector; };
     struct FData
     {

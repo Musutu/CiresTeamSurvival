@@ -105,6 +105,20 @@ FREESOUND = {
     "aura_gong": (415200, "Yin_Yang_Jake007", "Toll of the Grave"),
     "aura_warcry": (771323, "mellotrix9898", "War Cry / Rallied shout"),
     "aura_whoosh": (60013, "qubodup", "Scatter wind rush"),
+    # arenas: per-arena ambience beds and one-shots (Docs/Arenas.md)
+    "arena_wheat_wind": (240914, "bdvictor", "Sunlit Fields: wind through the wheat"),
+    "arena_field": (447810, "florianreichelt", "Sunlit Fields: open field ambience"),
+    "arena_skylark": (244357, "squashy555", "Sunlit Fields: skylark song"),
+    "arena_sea": (450752, "florianreichelt", "Black Shore: surf on the beach"),
+    "arena_gulls": (353416, "squashy555", "Black Shore: gull calls"),
+    "arena_desert_wind": (112296, "slugzilla", "Redrock Canyon: dry desert wind"),
+    "arena_canyon_wind": (135447, "ciccarelli", "Redrock Canyon: wind in the canyon"),
+    "arena_woodland": (160893, "ecfike", "Hornbeam Glade: spring woodland"),
+    "arena_dawn_chorus": (573080, "squashy555", "Hornbeam Glade: bird chorus"),
+    "arena_underwater": (504641, "Fission9", "Drowned Sanctum: underwater ambience"),
+    "arena_deep_sea": (193822, "jhumbucker", "Drowned Sanctum: deep-sea drone"),
+    "arena_ship_hum": (221570, "AlaskaRobotics", "Star Station: spacecraft hum"),
+    "arena_station_drone": (686237, "db3005", "Star Station: station drone"),
 }
 
 KENNEY = {

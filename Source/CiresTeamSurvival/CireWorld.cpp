@@ -64,10 +64,6 @@ void ACireWorld::BeginPlay() {
     auto* Flagstone=Make(TEXT("Flagstones"),Cube,Mat(TEXT("flagstone_material"),FlagstoneMaterial),false,false);
     auto* Disc=Make(TEXT("ChallengeDais"),Cylinder,Mat(TEXT("flagstone_material"),FlagstoneMaterial),false,false);
     auto* Rift=Make(TEXT("BreachRift"),Cube,Legacy(RiftMaterial),false,false);
-    auto* Teal=Make(TEXT("Ember"),Cube,Legacy(TEXT("/Game/Art/Materials/M_Ember.M_Ember")),false,false);
-    auto* Red=Make(TEXT("Dusk"),Cube,Legacy(TEXT("/Game/Art/Materials/M_Dusk.M_Dusk")),false,false);
-    auto* Pillar=Make(TEXT("Columns"),Cylinder,Mat(TEXT("castle_material"),CastleMaterial),true);
-    auto* Orbs=Make(TEXT("Braziers"),Sphere,Legacy(TEXT("/Game/Art/Materials/M_Gold.M_Gold")),false);
     auto Add=[](UInstancedStaticMeshComponent* C,FVector P,FVector Size,FRotator R=FRotator::ZeroRotator){C->AddInstance(FTransform(R,P,Size/100.f));};
     const auto& Routes=CireLanePath::Get(GetWorld());
     const float HW=Routes.HalfWidth;
@@ -145,31 +141,9 @@ void ACireWorld::BeginPlay() {
         Light(Spawn+FVector(300,0,220),FLinearColor(1.f,.25f,.08f),16000,1400);
         Text(TEXT("THE BREACH"),Spawn+FVector(380,0,560),60,FColor(228,155,137));
     }
-    const TCHAR* Names[]={TEXT("THE SUNDERED COURT"),TEXT("ASHEN CIRCLE"),TEXT("THE LAST TRIBUNAL")};
-    auto* ArenaFloor=Make(TEXT("ArenaFloor"),Cube,Mat(TEXT("flagstone_material"),FlagstoneMaterial),true,false);
-    auto* ArenaTiles=Make(TEXT("ArenaTiles"),Cube,Mat(TEXT("plaza_material"),PlazaMaterial),false,false);
-    for(int Arena=0;Arena<3;++Arena) {
-        const float Y=10000+Arena*6000;
-        Add(ArenaFloor,FVector(0,Y,-80),FVector(3400,3200,160));
-        Add(ArenaTiles,FVector(0,Y,1),FVector(1300,1300,1));
-        for(int Side:{-1,1}) {
-            Add(Castle,FVector(Side*1650,Y,190),FVector(120,3250,380));
-            Add(Castle,FVector(0,Y+Side*1580,190),FVector(3400,100,380));
-            Add(Side<0?Teal:Red,FVector(Side*1450,Y,24),FVector(15,2700,15));
-            for(int X=-1400;X<=1400;X+=700) {
-                Add(Pillar,FVector(X,Y+Side*1500,350),FVector(150,150,700+Arena*180));
-                Add(Orbs,FVector(X,Y+Side*1500,740+Arena*180),FVector(55));
-            }
-        }
-        // Clear centre for deterministic bot navigation; different perimeter silhouettes.
-        for(int N=0;N<32;++N) {
-            const float A=N*2*PI/32;
-            Add(Stone,FVector(FMath::Cos(A)*550,Y+FMath::Sin(A)*550,2),FVector(110,12,4),FRotator(0,FMath::RadiansToDegrees(A)+90,0));
-        }
-        Text(Names[Arena],FVector(0,Y+1500,920+Arena*180),64,FColor(219,188,130),FRotator(0,-90,0));
-        Light(FVector(-800,Y,400),FLinearColor(.2f,.7f,.65f),50000,1600);
-        Light(FVector(800,Y,400),FLinearColor(1.f,.25f,.15f),50000,1600);
-    }
+    // arenas: the PvP arenas are no longer pre-built here. CireArenas (Content/Data/Arenas.json) builds the
+    // randomly picked arena on every peer during prep, shows it for the fight and destroys it in recovery.
+    // The old three-court build lives on as its built-in fallback ("The Sundered Court").
     // Dusk: low warm sun under a sunset sky dome, cool sky fill, thick valley fog.
     if(auto* SkyMat=LoadObject<UMaterialInterface>(nullptr,SkyMaterial)) {
         auto* Dome=NewObject<UStaticMeshComponent>(this,TEXT("SkyDome"));

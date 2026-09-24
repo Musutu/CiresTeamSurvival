@@ -94,3 +94,29 @@ Because it is on the UE5 skeleton, the existing Manny locomotion and attack clip
 ## 5. After adding packs
 
 Launcher packs land in their own top-level Content folder, named by the pack. Record the real mesh paths in `Content/Data/TownAssetSlots.fab.json` (set `mesh` and `status: "imported"`) so the town-world agent picks them up. Slots stay on prototype art until their status is `imported`.
+
+## Arenas
+
+Checked on 2026-09-24 in Eric's Fab library (fab.com, signed in). The five packs Eric named for the themed PvP arenas are **all Unreal-format only**: Fab lists no FBX/GLB download for them, so they cannot come in through `Tools/ImportFabAssets.py` and need **Add to Project**. Nothing was bought; the two paid packs are already owned by Eric.
+
+Target project: `C:\Users\Eric\Documents\GitHub\cts-arenas\CiresTeamSurvival.uproject`
+
+Every arena is already finished and playable without them (CC0 Poly Haven art plus an original mesh kit, see `Docs/Arenas.md` and `Art/Arenas/PROVENANCE.md`). The packs are upgrades.
+
+| Done | Exact Fab name | Author | In library | Formats | Arena it upgrades | Slots in `Tools/AuthorArenas.py` `FAB_OVERRIDES` | Link |
+|---|---|---|---|---|---|---|---|
+| [ ] | **Moab Desert Collections** | Quixel Megascans | yes (unlisted, still downloadable from the library) | Unreal Engine only | Redrock Canyon | `arch`, `hoodoo`, `canyon_wall` | [library](https://www.fab.com/library/assets/2c0a2fe4-1ab9-4c49-8055-9aa053c46457) |
+| [ ] | **Iceland Collections** | Quixel Megascans | yes (unlisted) | Unreal Engine only | The Black Shore | `basalt_tall`, `lava_large` | [library](https://www.fab.com/library/assets/765f63b0-1994-493e-af8d-33ad1c2dc10c) |
+| [ ] | **European Hornbeam** | Quixel Megascans | yes (free) | Unreal Engine only | Hornbeam Glade | `glade_tree`, `glade_tree_young` | [listing](https://www.fab.com/listings/c6f917b6-ffcb-4b86-9d9f-5274ba7f6a8e) |
+| [ ] | **Underwater World / 70 Assets** | PackDev | yes (owned) | Unreal Engine, Unity | The Drowned Sanctum | `column`, `ruin_arch`, `kelp` | [listing](https://www.fab.com/listings/e2cdf1ba-c517-4b8e-b5ce-0828bbc44eab) |
+| [ ] | **Big Star Station** | Akairo | yes (owned) | Unreal Engine only | Star Station Hangar | `container`, `cargo_crate`, `bulkhead` | [listing](https://www.fab.com/listings/9cff72cf-bd72-4f4b-bab0-ec556a25e37d) |
+
+Notes:
+- The two Megascans collections are **Packed Level Actor assemblies** ("Each Packed Level Actor Blueprint is a set dressed assembly"). The arena builder places static meshes, so use the individual static meshes inside the collection (rocks, arches, basalt columns), not the Blueprints.
+- Megascans collections are several GB. **Window → Fab** in the editor can also add them and choose a quality.
+- Big Star Station is a sci-fi kit, an intentional stylistic contrast (Eric asked for it). Its Lumen showcase level is not needed.
+
+After adding a pack:
+1. Find the mesh object paths in the Content Browser (right-click → Copy Reference), for example `/Game/Megascans/3D_Assets/.../SM_xxx.SM_xxx`.
+2. Put them in `FAB_OVERRIDES` in `Tools/AuthorArenas.py` for the slots in the table, then run `python Tools/AuthorArenas.py`. Candidates are tried in order and fitted into the slot's footprint, so collision, symmetry and the gameplay layout do not change.
+3. Run `python Tools/RunArenaGallery.py --only <arena_id>` and check the renders, then the native checks (`Tools/RunExpansionChecks.py --only native`).

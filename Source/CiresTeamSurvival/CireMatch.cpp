@@ -38,6 +38,8 @@
 #include "CireNPCPackPreview.h"
 #include "CireMonsterGallery.h" // creature-anim
 #include "CireNPCNetProbe.h"
+#include "CireArenas.h" // arenas
+#include "CireArenaGallery.h" // arenas
 
 DEFINE_LOG_CATEGORY_STATIC(LogCire, Log, All);
 
@@ -139,7 +141,7 @@ ACireGameMode::ACireGameMode() {
 }
 FVector ACireGameMode::BasePosition(int32 Team) const { return FVector(-1700,Team==0?-2100:2100,110); }
 FVector ACireGameMode::ArenaPosition(int32 Team,int32 Slot) const {
-    return FVector(Team==0?-700:700,10000+ArenaIndex*6000+(Slot-2)*200,110);
+    return CireArenas::SpawnLocation(ArenaIndex,Team,Slot); // arenas: the picked arena's authored, mirrored spawns
 }
 float ACireGameMode::Power(int32 Team) const { return Team>=0&&Team<2?static_cast<float>(Rewards[Team].PowerMultiplier):1.f; }
 float ACireGameMode::Loot(int32 Team) const { return Team>=0&&Team<2?static_cast<float>(Rewards[Team].LootMultiplier):1.f; }
@@ -182,6 +184,7 @@ void ACireGameMode::BeginPlay() {
     bFeedbackPreview = CireTooltipGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireBatchArtGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireEnvironmentGallery::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireArenaGallery::Initialize(this); // arenas
     if(!bFeedbackPreview)bFeedbackPreview = CireOptionsGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireSpellGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireAuraGallery::Initialize(this); // aura-vfx
@@ -361,6 +364,7 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
         }
 #endif
         S->Announcement=TEXT("THE QUIET MINUTE | Monsters are dormant. Shop anywhere: press B.");
+        CireArenas::ServerPrepare(this); // arenas: pick the next arena now so every peer prebuilds it (hidden)
         int32 TownSlot[2]={0,0};
         for(auto* H:Heroes) if(IsValid(H)) {
             H->Target=nullptr;
@@ -370,8 +374,9 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
             }
         }
     } else if(NewPhase==2) {
-        ArenaIndex=FMath::RandRange(0,2); S->ArenaIndex=ArenaIndex;
-        S->Announcement=TEXT("PORTAL CLASH | Defeat the opposing team for power and loot.");
+        // arenas: random themed arena (never the previous one), built before anyone is teleported
+        CireArenas::ServerBegin(this);
+        S->Announcement=FString::Printf(TEXT("ARENA | %s | Defeat the opposing team for power and loot."),*CireArenas::DisplayName(ArenaIndex));
         int Slot[2]={0,0};
         for(auto* H:Heroes) if(IsValid(H)) {
             if(!H->bDrafted)H->Draft(H->Archetype);
@@ -391,6 +396,7 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
         RewardedPacks.Reset();
         SpawnPacks(); WaveTimer=0;
     }
+    if(NewPhase!=1&&NewPhase!=2)CireArenas::Sync(GetWorld()); // arenas: recovery/survival/finish clean the arena up
     UE_LOG(LogCire,Display,TEXT("CIRE PHASE %d ROUND %d HEROES %d"),NewPhase,Clock.Round(),Heroes.Num());
 }
 void ACireGameMode::ResolveArena() {
@@ -414,6 +420,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireTooltipGallery::Tick(this)) return;
     if(CireBatchArtGallery::Tick(this)) return;
     if(CireEnvironmentGallery::Tick(this)) return;
+    if(CireArenaGallery::Tick(this)) return; // arenas
     if(CireBalanceLab::Tick(this,Dt)) return;
     if(CireOptionsGallery::Tick(this)) return;
     if(CireSpellGallery::Tick(this)) return;

@@ -64,6 +64,36 @@
     "arena": {
       "beds": [ { "sound": "Ambience/AMB_WindHowl", "volume": 0.35 } ],
       "oneShots": [ { "cue": "amb_crow", "interval": [14, 28], "distance": [2000, 4000], "height": [500, 1200] } ]
+    },
+    "arena_fields": {
+      "noNight": true,
+      "beds": [ { "sound": "Arenas/AMB_ArenaWheatWind", "volume": 0.6 }, { "sound": "Arenas/AMB_ArenaField", "volume": 0.4 } ],
+      "oneShots": [ { "cue": "amb_skylark", "interval": [5, 12], "distance": [1500, 3500], "height": [900, 2000] } ]
+    },
+    "arena_iceland": {
+      "noNight": true,
+      "beds": [ { "sound": "Arenas/AMB_ArenaSurf", "volume": 0.6 }, { "sound": "Ambience/AMB_WindHowl", "volume": 0.3 } ],
+      "oneShots": [ { "cue": "amb_gull", "interval": [4, 11], "distance": [1500, 4000], "height": [400, 1500] } ]
+    },
+    "arena_moab": {
+      "noNight": true,
+      "beds": [ { "sound": "Arenas/AMB_ArenaDesertWind", "volume": 0.55 }, { "sound": "Arenas/AMB_ArenaCanyonWind", "volume": 0.35 } ],
+      "oneShots": [ { "cue": "amb_crow", "interval": [18, 34], "distance": [2500, 4500], "height": [900, 1800] } ]
+    },
+    "arena_hornbeam": {
+      "noNight": true,
+      "beds": [ { "sound": "Arenas/AMB_ArenaWoodland", "volume": 0.55 }, { "sound": "Arenas/AMB_ArenaBirdsong", "volume": 0.4 } ],
+      "oneShots": []
+    },
+    "arena_underwater": {
+      "noNight": true,
+      "beds": [ { "sound": "Arenas/AMB_ArenaUnderwater", "volume": 0.6 }, { "sound": "Arenas/AMB_ArenaDeepSea", "volume": 0.45 } ],
+      "oneShots": []
+    },
+    "arena_station": {
+      "noNight": true,
+      "beds": [ { "sound": "Arenas/AMB_ArenaShipHum", "volume": 0.5 }, { "sound": "Arenas/AMB_ArenaStationDrone", "volume": 0.35 } ],
+      "oneShots": []
     }
   },
   "emitters": {

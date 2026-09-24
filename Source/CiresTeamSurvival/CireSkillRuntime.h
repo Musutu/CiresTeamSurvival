@@ -2,6 +2,7 @@
 #include "CireGame.h"
 #include "Engine/World.h"
 #include "CireLanePath.h"
+#include "CireArenas.h" // arenas
 
 // Shared scope rules for transient spell actors. They never cross a match phase.
 namespace CireSkillRuntime
@@ -39,8 +40,7 @@ inline bool InRealmBounds(const ACireGameMode* Mode, int32 TeamId, const FVector
     if (!Mode || Point.ContainsNaN() || TeamId < 0 || TeamId > 1) return false;
     if (Mode->Clock.Phase() == Cires::MatchPhase::Arena)
     {
-        const float ArenaY = Mode->ArenaPosition(0, 2).Y;
-        return FMath::Abs(Point.X) <= 2100.f - Margin && FMath::Abs(Point.Y - ArenaY) <= 1450.f - Margin;
+        return CireArenas::InBounds(Mode->GetWorld(), Point, Margin); // arenas: the picked arena's playable bounds
     }
     return CireLanePath::Contains(Mode->GetWorld(),TeamId,Point,Margin);
 }

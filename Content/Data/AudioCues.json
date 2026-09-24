@@ -27,6 +27,8 @@
     "pack_leader_growl":  { "sounds": ["SFX/SFX_PackLeaderGrowl"], "volume": 0.8, "pitch": [0.9, 1.0], "cooldown": 3.0 },
 
     "amb_crow":           { "sounds": ["Ambience/AMB_Crow_{01..05}"], "volume": 0.5, "pitch": [0.92, 1.06] },
+    "amb_skylark":        { "sounds": ["Arenas/AMB_ArenaSkylark_{01..03}"], "volume": 0.45, "pitch": [0.96, 1.05] },
+    "amb_gull":           { "sounds": ["Arenas/AMB_ArenaGull_{01..04}"], "volume": 0.5, "pitch": [0.92, 1.08] },
     "amb_chains":         { "sounds": ["Ambience/AMB_Chains_{01..04}"], "volume": 0.4, "pitch": [0.9, 1.05] },
     "amb_gate_creak":     { "sounds": ["Ambience/AMB_GateCreak_{01..02}"], "volume": 0.45, "pitch": [0.85, 1.0] },
     "amb_merchant":       { "sounds": ["Ambience/AMB_MerchantCall_{01..04}"], "volume": 0.35, "pitch": [0.95, 1.03] },

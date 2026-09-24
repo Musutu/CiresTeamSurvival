@@ -376,10 +376,33 @@ def build_auras():
     save("AUR_Whoosh", normalize(fade(mono(load("aura_whoosh")), .003, .15), peak_db=-3), cat, **one)
 
 
+# arenas: per-arena ambience -> Content/Audio/Arenas (stereo 2D beds, mono positional one-shots).
+def build_arenas():
+    cat = "Arenas"
+    bed = lambda key, name, rms, seconds=60, xfade=3.0, start=2.0: save(name, normalize(stereo(loop(load(key), seconds, xfade, start=start)), rms_db=rms), cat, loop=True)
+    bed("arena_wheat_wind", "AMB_ArenaWheatWind", -24)
+    bed("arena_field", "AMB_ArenaField", -28)
+    bed("arena_sea", "AMB_ArenaSurf", -23)
+    bed("arena_desert_wind", "AMB_ArenaDesertWind", -25, seconds=40)
+    bed("arena_canyon_wind", "AMB_ArenaCanyonWind", -28, seconds=40)
+    bed("arena_woodland", "AMB_ArenaWoodland", -25)
+    bed("arena_dawn_chorus", "AMB_ArenaBirdsong", -29)
+    save("AMB_ArenaUnderwater", normalize(stereo(lowpass(loop(load("arena_underwater"), 50, 3.0, start=2.0), 1400)), rms_db=-24), cat, loop=True)
+    save("AMB_ArenaDeepSea", normalize(stereo(lowpass(loop(load("arena_deep_sea"), 50, 3.0, start=2.0), 900)), rms_db=-28), cat, loop=True)
+    bed("arena_ship_hum", "AMB_ArenaShipHum", -27, seconds=40)
+    bed("arena_station_drone", "AMB_ArenaStationDrone", -29, seconds=40)
+    # One-shots placed around the listener by the ambience scheduler.
+    lark = mono(load("arena_skylark"))
+    series("AMB_ArenaSkylark", [fade(cut(lark, a, a + 5.5), .4, 1.2) for a in (0.5, 7.0, 14.0) if a + 5.5 <= lark.seconds] or [fade(lark, .4, 1.2)], cat, rms_db=-24)
+    gulls = mono(load("arena_gulls"))
+    series("AMB_ArenaGull", slices(gulls, 4, max_len=2.2, min_len=.4, tail=.35, refractory=1.0, rise=2.2), cat, rms_db=-21)
+
+
 def main():
     random.seed(7)
     only = set(sys.argv[1:])
-    for name, fn in (("ambience", build_ambience), ("footsteps", build_footsteps), ("events", build_events), ("ui", build_ui), ("auras", build_auras)):
+    for name, fn in (("ambience", build_ambience), ("footsteps", build_footsteps), ("events", build_events), ("ui", build_ui), ("auras", build_auras),
+                     ("arenas", build_arenas)):
         if not only or name in only:
             fn()
             print("built", name)

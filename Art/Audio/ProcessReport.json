@@ -620,6 +620,233 @@
    "positional": true
   },
   {
+   "name": "AMB_ArenaBirdsong",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaBirdsong.wav",
+   "seconds": 60.0,
+   "channels": 2,
+   "rmsDb": -29.0,
+   "peakDb": -5.1,
+   "sources": [
+    "arena_dawn_chorus"
+   ],
+   "loop": true
+  },
+  {
+   "name": "AMB_ArenaCanyonWind",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaCanyonWind.wav",
+   "seconds": 9.515,
+   "channels": 2,
+   "rmsDb": -28.0,
+   "peakDb": -2.5,
+   "sources": [
+    "arena_canyon_wind"
+   ],
+   "loop": true
+  },
+  {
+   "name": "AMB_ArenaDeepSea",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaDeepSea.wav",
+   "seconds": 50.0,
+   "channels": 2,
+   "rmsDb": -28.0,
+   "peakDb": -10.5,
+   "sources": [
+    "arena_deep_sea"
+   ],
+   "loop": true
+  },
+  {
+   "name": "AMB_ArenaDesertWind",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaDesertWind.wav",
+   "seconds": 14.974,
+   "channels": 2,
+   "rmsDb": -25.0,
+   "peakDb": -10.8,
+   "sources": [
+    "arena_desert_wind"
+   ],
+   "loop": true
+  },
+  {
+   "name": "AMB_ArenaField",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaField.wav",
+   "seconds": 56.0,
+   "channels": 2,
+   "rmsDb": -28.0,
+   "peakDb": -8.3,
+   "sources": [
+    "arena_field"
+   ],
+   "loop": true
+  },
+  {
+   "name": "AMB_ArenaGull_01",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaGull_01.wav",
+   "seconds": 0.953,
+   "channels": 1,
+   "rmsDb": -21.0,
+   "peakDb": -8.9,
+   "sources": [
+    "arena_gulls"
+   ]
+  },
+  {
+   "name": "AMB_ArenaGull_02",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaGull_02.wav",
+   "seconds": 1.043,
+   "channels": 1,
+   "rmsDb": -21.0,
+   "peakDb": -7.9,
+   "sources": [
+    "arena_gulls"
+   ]
+  },
+  {
+   "name": "AMB_ArenaGull_03",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaGull_03.wav",
+   "seconds": 2.183,
+   "channels": 1,
+   "rmsDb": -21.0,
+   "peakDb": -4.1,
+   "sources": [
+    "arena_gulls"
+   ]
+  },
+  {
+   "name": "AMB_ArenaGull_04",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaGull_04.wav",
+   "seconds": 1.723,
+   "channels": 1,
+   "rmsDb": -21.0,
+   "peakDb": -6.6,
+   "sources": [
+    "arena_gulls"
+   ]
+  },
+  {
+   "name": "AMB_ArenaShipHum",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaShipHum.wav",
+   "seconds": 12.818,
+   "channels": 2,
+   "rmsDb": -27.0,
+   "peakDb": -14.6,
+   "sources": [
+    "arena_ship_hum"
+   ],
+   "loop": true
+  },
+  {
+   "name": "AMB_ArenaSkylark_01",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaSkylark_01.wav",
+   "seconds": 5.5,
+   "channels": 1,
+   "rmsDb": -23.8,
+   "peakDb": -7.3,
+   "sources": [
+    "arena_skylark"
+   ]
+  },
+  {
+   "name": "AMB_ArenaSkylark_02",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaSkylark_02.wav",
+   "seconds": 5.5,
+   "channels": 1,
+   "rmsDb": -24.0,
+   "peakDb": -6.8,
+   "sources": [
+    "arena_skylark"
+   ]
+  },
+  {
+   "name": "AMB_ArenaSkylark_03",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaSkylark_03.wav",
+   "seconds": 5.5,
+   "channels": 1,
+   "rmsDb": -23.8,
+   "peakDb": -7.9,
+   "sources": [
+    "arena_skylark"
+   ]
+  },
+  {
+   "name": "AMB_ArenaStationDrone",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaStationDrone.wav",
+   "seconds": 40.0,
+   "channels": 2,
+   "rmsDb": -29.0,
+   "peakDb": -14.5,
+   "sources": [
+    "arena_station_drone"
+   ],
+   "loop": true
+  },
+  {
+   "name": "AMB_ArenaSurf",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaSurf.wav",
+   "seconds": 32.489,
+   "channels": 2,
+   "rmsDb": -23.0,
+   "peakDb": -3.2,
+   "sources": [
+    "arena_sea"
+   ],
+   "loop": true
+  },
+  {
+   "name": "AMB_ArenaUnderwater",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaUnderwater.wav",
+   "seconds": 41.865,
+   "channels": 2,
+   "rmsDb": -24.0,
+   "peakDb": -12.2,
+   "sources": [
+    "arena_underwater"
+   ],
+   "loop": true
+  },
+  {
+   "name": "AMB_ArenaWheatWind",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaWheatWind.wav",
+   "seconds": 60.0,
+   "channels": 2,
+   "rmsDb": -25.1,
+   "peakDb": -1.0,
+   "sources": [
+    "arena_wheat_wind"
+   ],
+   "loop": true
+  },
+  {
+   "name": "AMB_ArenaWoodland",
+   "category": "Arenas",
+   "file": "Art/Downloads/Audio/processed/Arenas/AMB_ArenaWoodland.wav",
+   "seconds": 54.061,
+   "channels": 2,
+   "rmsDb": -25.0,
+   "peakDb": -7.0,
+   "sources": [
+    "arena_woodland"
+   ],
+   "loop": true
+  },
+  {
    "name": "AUR_BloodSplat_01",
    "category": "Auras",
    "file": "Art/Downloads/Audio/processed/Auras/AUR_BloodSplat_01.wav",

@@ -1,0 +1,7893 @@
+{
+ "schemaVersion": 1,
+ "notes": "Randomised PvP arena pool (CireArenas, Docs/Arenas.md). Written by Tools/AuthorArenas.py - edit that script, not this file. All arenas share the footprint at 'origin'; arena-local X runs from Ember (west) to Dusk (east). Piece rows: [slot, x, y, z, yaw, scaleX, scaleY, scaleZ, blocker]. Blockers get an invisible collision proxy matching the slot footprint and must be mirror-symmetric; slots list candidates in priority order (Fab packs, then CC0/original, then an engine shape).",
+ "origin": [
+  0,
+  60000,
+  0
+ ],
+ "slots": {
+  "proxy_box": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "hidden": true
+  },
+  "proxy_round": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "fit": "footprint",
+   "shape": "round",
+   "hidden": true
+  },
+  "patch_track": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_Track.MI_ArenaW_Track",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "patch_hangar": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_HangarFloor.MI_ArenaW_HangarFloor",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "ground_stubble": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_Stubble.MI_ArenaW_Stubble",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "ground_blacksand": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_BlackSand.MI_ArenaW_BlackSand",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "ground_redsoil": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_RedSoil.MI_ArenaW_RedSoil",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "ground_forest": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_ForestFloor.MI_ArenaW_ForestFloor",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "ground_seabed": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_Seabed.MI_ArenaW_Seabed",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "ground_deck": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_Deck.MI_ArenaW_Deck",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "sea": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_Arena_Water.MI_Arena_Water",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "glow_strip": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaF_Emissive.MI_ArenaF_Emissive",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "glow_amber": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaF_EmissiveAmber.MI_ArenaF_EmissiveAmber",
+   "footprint": [
+    100.0,
+    100.0,
+    2.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "hay_round": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_HayBaleRound.SM_Arena_HayBaleRound"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    160.9,
+    156.4,
+    160.9
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "hay_square": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_HayBaleSquare.SM_Arena_HayBaleSquare"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    111.2,
+    57.7,
+    47.5
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "hay_stack": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_HayStack.SM_Arena_HayStack"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    122.2,
+    339.9,
+    227.5
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "hay_pyramid": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_HayPyramid.SM_Arena_HayPyramid"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    325.3,
+    163.4,
+    301.5
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "stook": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Stook.SM_Arena_Stook"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    80.8,
+    120.8,
+    153.2
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "scarecrow": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Scarecrow.SM_Arena_Scarecrow"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    68.0,
+    190.2,
+    236.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "stone_wall": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_StoneWall.SM_Arena_StoneWall"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    76.2,
+    400.7,
+    147.8
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "ruin_wall": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_RuinWall.SM_Arena_RuinWall"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    172.1,
+    500.0,
+    251.9
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "hay_wagon": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_HayWagon.SM_Arena_HayWagon"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    556.7,
+    240.4,
+    275.6
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "well": {
+   "candidates": [
+    "/Game/Environment/Town/Meshes/SM_Town_Well.SM_Town_Well"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    286.0,
+    330.0,
+    439.0
+   ],
+   "fit": "footprint",
+   "shape": "round"
+  },
+  "fence": {
+   "candidates": [
+    "/Game/Environment/Town/Meshes/SM_Town_Fence.SM_Town_Fence"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    13.0,
+    413.0,
+    110.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "cart": {
+   "candidates": [
+    "/Game/Environment/Town/Meshes/SM_Town_Cart.SM_Town_Cart"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    511.0,
+    189.0,
+    170.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "hay_sacks": {
+   "candidates": [
+    "/Game/Environment/Town/Meshes/SM_Town_HaySacks.SM_Town_HaySacks"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    228.0,
+    182.0,
+    100.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "woodpile": {
+   "candidates": [
+    "/Game/Environment/Town/Meshes/SM_Town_Woodpile.SM_Town_Woodpile"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    252.0,
+    370.0,
+    286.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "windmill": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Windmill.SM_Arena_Windmill"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    870.0,
+    860.0,
+    1700.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "windmill_sails": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_WindmillSails.SM_Arena_WindmillSails"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    60.0,
+    2226.3,
+    2226.3
+   ],
+   "fit": "none",
+   "shape": "box",
+   "spin": -11.0,
+   "shadow": true
+  },
+  "barn": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Barn.SM_Arena_Barn"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    1500.0,
+    1040.0,
+    998.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "wheat": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_WheatClump.SM_Arena_WheatClump"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    100.0,
+    100.0,
+    128.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "wpo": true,
+   "wpoDistance": 4500,
+   "essential": true
+  },
+  "stubble": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_StubbleTuft.SM_Arena_StubbleTuft"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    40.0,
+    40.0,
+    20.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": false,
+   "cull": 9000
+  },
+  "oak": {
+   "candidates": [
+    "/Game/Arenas/Trees/island_tree_01/SM_island_tree_01.SM_island_tree_01"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    476.0,
+    482.0,
+    503.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "young_tree": {
+   "candidates": [
+    "/Game/Arenas/Trees/tree_small_02/SM_tree_small_02.SM_tree_small_02"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    292.0,
+    429.0,
+    456.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "bucket": {
+   "candidates": [
+    "/Game/Environment/Town/Props/wooden_bucket_01/wooden_bucket_01_1k/StaticMeshes/wooden_bucket_01.wooden_bucket_01|/Game/Environment/Town/Props/wooden_bucket_01/wooden_bucket_01_1k/StaticMeshes/wooden_bucket_01_handle.wooden_bucket_01_handle"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    34.0,
+    34.0,
+    36.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": true
+  },
+  "barrels": {
+   "candidates": [
+    "/Game/Environment/Town/Props/wooden_barrels_01/wooden_barrels_01_1k/StaticMeshes/wooden_barrels_01_barrel01.wooden_barrels_01_barrel01"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    74.0,
+    74.0,
+    92.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "spade": {
+   "candidates": [
+    "/Game/Arenas/Props/rusted_spade_01/rusted_spade_01_1k/StaticMeshes/rusted_spade_01_1k.rusted_spade_01_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    17.0,
+    5.0,
+    110.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "tree_stump": {
+   "candidates": [
+    "/Game/Environment/Town/Props/tree_stump_01/tree_stump_01_1k/StaticMeshes/tree_stump_01_1k.tree_stump_01_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    142.0,
+    160.0,
+    58.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "field_rock": {
+   "candidates": [
+    "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock02.rock_moss_set_01_rock02"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    266.0,
+    326.0,
+    126.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "basalt_tall": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_BasaltTall.SM_Arena_BasaltTall"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    288.0,
+    251.2,
+    355.8
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "basalt_steps": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_BasaltSteps.SM_Arena_BasaltSteps"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    322.8,
+    326.7,
+    157.2
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "basalt_wall": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_BasaltWall.SM_Arena_BasaltWall"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    136.4,
+    576.5,
+    298.2
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "basalt_stack": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_BasaltStack.SM_Arena_BasaltStack"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    1088.5,
+    819.0,
+    2448.3
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": true
+  },
+  "basalt_cliff": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_BasaltCliff.SM_Arena_BasaltCliff"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    610.8,
+    2037.4,
+    1226.7
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": true
+  },
+  "lava_large": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_LavaRockLarge.SM_Arena_LavaRockLarge"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    472.5,
+    352.5,
+    251.3
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "lava_medium": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_LavaRockMedium.SM_Arena_LavaRockMedium"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    250.6,
+    181.5,
+    148.4
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "lava_outcrop": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_LavaOutcrop.SM_Arena_LavaOutcrop"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    652.3,
+    471.3,
+    106.4
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_Arena_Basalt.MI_Arena_Basalt"
+   }
+  },
+  "lava_cluster": {
+   "candidates": [
+    "/Game/Arenas/Props/coast_rocks_05/coast_rocks_05_1k/StaticMeshes/coast_rocks_05_1k.coast_rocks_05_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    404.0,
+    375.0,
+    133.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_ArenaB_Lava.MI_ArenaB_Lava"
+   }
+  },
+  "lava_ridge": {
+   "candidates": [
+    "/Game/Arenas/Props/coast_land_rocks_02/coast_land_rocks_02_1k/StaticMeshes/coast_land_rocks_02_1k.coast_land_rocks_02_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    489.0,
+    1045.0,
+    140.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_ArenaB_Lava.MI_ArenaB_Lava"
+   }
+  },
+  "beach_pebbles": {
+   "candidates": [
+    "/Game/Arenas/Props/sand_rocks_small_01/sand_rocks_small_01_1k/StaticMeshes/sand_rocks_small_01_1k.sand_rocks_small_01_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    463.0,
+    388.0,
+    53.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_ArenaW_BlackGravel.MI_ArenaW_BlackGravel"
+   },
+   "shadow": false
+  },
+  "lyme_grass": {
+   "candidates": [
+    "/Game/Arenas/Props/grass_medium_02/grass_medium_02_1k/StaticMeshes/grass_medium_02_e.grass_medium_02_e"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    72.0,
+    86.0,
+    80.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": false
+  },
+  "driftwood": {
+   "candidates": [
+    "/Game/Arenas/Props/dead_tree_trunk/dead_tree_trunk_1k/StaticMeshes/dead_tree_trunk_1k.dead_tree_trunk_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    610.0,
+    56.0,
+    58.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_Arena_Bark.MI_Arena_Bark"
+   }
+  },
+  "arch": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_SandstoneArch.SM_Arena_SandstoneArch"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    1273.5,
+    398.2,
+    827.9
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "arch_leg": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    330.0,
+    330.0,
+    540.0
+   ],
+   "fit": "footprint",
+   "shape": "round",
+   "hidden": true
+  },
+  "hoodoo": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Hoodoo.SM_Arena_Hoodoo"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    291.5,
+    268.9,
+    671.1
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "sandstone_block": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_SandstoneBlock.SM_Arena_SandstoneBlock"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    336.7,
+    283.3,
+    272.5
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "canyon_wall": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_CanyonWall.SM_Arena_CanyonWall"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    799.9,
+    3000.0,
+    2014.8
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": true
+  },
+  "red_boulder": {
+   "candidates": [
+    "/Game/Arenas/Props/namaqualand_boulder_03/namaqualand_boulder_03_1k/StaticMeshes/namaqualand_boulder_03_1k.namaqualand_boulder_03_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    241.0,
+    307.0,
+    147.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_ArenaB_Sandstone.MI_ArenaB_Sandstone"
+   }
+  },
+  "red_boulder_small": {
+   "candidates": [
+    "/Game/Arenas/Props/namaqualand_boulder_05/namaqualand_boulder_05_1k/StaticMeshes/namaqualand_boulder_05_1k.namaqualand_boulder_05_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    136.0,
+    75.0,
+    54.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_ArenaB_Sandstone.MI_ArenaB_Sandstone"
+   }
+  },
+  "scrub_0": {
+   "candidates": [
+    "/Game/Arenas/Props/wild_rooibos_bush/wild_rooibos_bush_1k/StaticMeshes/wild_rooibos_bush_a.wild_rooibos_bush_a"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    70.0,
+    84.0,
+    54.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": true
+  },
+  "scrub_1": {
+   "candidates": [
+    "/Game/Arenas/Props/wild_rooibos_bush/wild_rooibos_bush_1k/StaticMeshes/wild_rooibos_bush_b.wild_rooibos_bush_b"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    52.0,
+    47.0,
+    54.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": true
+  },
+  "scrub_2": {
+   "candidates": [
+    "/Game/Arenas/Props/wild_rooibos_bush/wild_rooibos_bush_1k/StaticMeshes/wild_rooibos_bush_c.wild_rooibos_bush_c"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    43.0,
+    47.0,
+    45.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": true
+  },
+  "dead_log": {
+   "candidates": [
+    "/Game/Arenas/Props/dead_tree_trunk/dead_tree_trunk_1k/StaticMeshes/dead_tree_trunk_1k.dead_tree_trunk_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    305.0,
+    28.0,
+    29.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "glade_tree": {
+   "candidates": [
+    "/Game/Arenas/Trees/island_tree_01/SM_island_tree_01.SM_island_tree_01"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    476.0,
+    482.0,
+    503.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "essential": true
+  },
+  "glade_tree_young": {
+   "candidates": [
+    "/Game/Arenas/Trees/tree_small_02/SM_tree_small_02.SM_tree_small_02"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    292.0,
+    429.0,
+    456.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "trunk_proxy": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    130.0,
+    130.0,
+    900.0
+   ],
+   "fit": "footprint",
+   "shape": "round",
+   "hidden": true
+  },
+  "fallen_log": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_FallenLog.SM_Arena_FallenLog"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    207.2,
+    723.1,
+    126.7
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "root_plate": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_RootPlate.SM_Arena_RootPlate"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    135.1,
+    457.0,
+    429.5
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "moss_boulder": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_MossBoulder.SM_Arena_MossBoulder"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    412.9,
+    307.5,
+    277.1
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "stump": {
+   "candidates": [
+    "/Game/Arenas/Props/tree_stump_02/tree_stump_02_1k/StaticMeshes/tree_stump_02_1k.tree_stump_02_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    152.0,
+    139.0,
+    52.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "root_bank": {
+   "candidates": [
+    "/Game/Arenas/Props/root_cluster_01/root_cluster_01_1k/StaticMeshes/root_cluster_01_1k.root_cluster_01_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    412.0,
+    268.0,
+    151.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "forest_shrub": {
+   "candidates": [
+    "/Game/Environment/Town/Props/shrub_02/shrub_02_1k/StaticMeshes/shrub_02_c.shrub_02_c"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    176.0,
+    228.0,
+    132.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "sapling": {
+   "candidates": [
+    "/Game/Arenas/Props/shrub_03/shrub_03_1k/StaticMeshes/shrub_03_a.shrub_03_a"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    20.0,
+    15.0,
+    40.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": false
+  },
+  "grass_tuft": {
+   "candidates": [
+    "/Game/Arenas/Props/grass_medium_02/grass_medium_02_1k/StaticMeshes/grass_medium_02_c.grass_medium_02_c"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    26.0,
+    25.0,
+    23.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": false,
+   "cull": 7000
+  },
+  "forest_log": {
+   "candidates": [
+    "/Game/Arenas/Props/dead_tree_trunk/dead_tree_trunk_1k/StaticMeshes/dead_tree_trunk_1k.dead_tree_trunk_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    610.0,
+    56.0,
+    58.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "forest_rock": {
+   "candidates": [
+    "/Game/Environment/Town/Props/rock_moss_set_02/rock_moss_set_02_1k/StaticMeshes/rock_moss_set_02_rock10.rock_moss_set_02_rock10"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    220.0,
+    156.0,
+    76.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "column": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Column.SM_Arena_Column"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    148.8,
+    148.8,
+    620.0
+   ],
+   "fit": "footprint",
+   "shape": "round",
+   "essential": true
+  },
+  "column_broken": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_ColumnBroken.SM_Arena_ColumnBroken"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    139.2,
+    139.2,
+    350.3
+   ],
+   "fit": "footprint",
+   "shape": "round",
+   "essential": true
+  },
+  "column_fallen": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_ColumnFallen.SM_Arena_ColumnFallen"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    111.1,
+    437.9,
+    90.2
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "ruin_arch": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_RuinArch.SM_Arena_RuinArch"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    775.0,
+    160.0,
+    682.3
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "pier_proxy": {
+   "candidates": [],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    140.0,
+    150.0,
+    460.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "hidden": true
+  },
+  "sunken_wall": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_RuinWall.SM_Arena_RuinWall"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    172.1,
+    500.0,
+    251.9
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_ArenaB_RuinBlock.MI_ArenaB_RuinBlock",
+    "1": "/Game/Arenas/Materials/MI_ArenaB_RuinBlock.MI_ArenaB_RuinBlock"
+   }
+  },
+  "plinth": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Plinth.SM_Arena_Plinth"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    170.0,
+    170.0,
+    180.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "statue": {
+   "candidates": [
+    "/Game/Environment/Town/Props/gothic_statue/gothic_statue_1k/StaticMeshes/gothic_statue_1k.gothic_statue_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    148.0,
+    156.0,
+    174.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "bust": {
+   "candidates": [
+    "/Game/Arenas/Props/marble_bust_01/marble_bust_01_1k/StaticMeshes/marble_bust_01_1k.marble_bust_01_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    54.0,
+    60.0,
+    102.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "lion_head": {
+   "candidates": [
+    "/Game/Arenas/Props/lion_head/lion_head_1k/StaticMeshes/lion_head_1k.lion_head_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    64.0,
+    42.0,
+    88.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "whale_statue": {
+   "candidates": [
+    "/Game/Arenas/Props/bronze_whale_statue/bronze_whale_statue_1k/StaticMeshes/bronze_whale_statue_1k.bronze_whale_statue_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    186.0,
+    274.0,
+    214.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "sea_rock": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_SeaRock.SM_Arena_SeaRock"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    374.2,
+    322.2,
+    227.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "kelp": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Kelp.SM_Arena_Kelp"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    102.0,
+    70.0,
+    916.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "wpo": true,
+   "wpoDistance": 6000
+  },
+  "coral": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_CoralBranch.SM_Arena_CoralBranch"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    132.1,
+    140.7,
+    119.3
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "coral_violet": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_CoralBranch.SM_Arena_CoralBranch"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    132.1,
+    140.7,
+    119.3
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_ArenaF_CoralViolet.MI_ArenaF_CoralViolet"
+   }
+  },
+  "coral_gold": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_CoralBranch.SM_Arena_CoralBranch"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    132.1,
+    140.7,
+    119.3
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_ArenaF_CoralGold.MI_ArenaF_CoralGold"
+   }
+  },
+  "motes": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Mote.SM_Arena_Mote"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    2.0,
+    2.0,
+    2.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": false,
+   "wpo": true,
+   "wpoDistance": 8000,
+   "cull": 6000
+  },
+  "pollen": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Mote.SM_Arena_Mote"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    2.0,
+    2.0,
+    2.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": false,
+   "wpo": true,
+   "wpoDistance": 6000,
+   "cull": 5000,
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_Arena_Pollen.MI_Arena_Pollen"
+   }
+  },
+  "light_shaft": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_LightShaft.SM_Arena_LightShaft"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    520.0,
+    520.0,
+    3200.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "shadow": false
+  },
+  "chest": {
+   "candidates": [
+    "/Game/Arenas/Props/treasure_chest/treasure_chest_1k/StaticMeshes/treasure_chest_bottom.treasure_chest_bottom|/Game/Arenas/Props/treasure_chest/treasure_chest_1k/StaticMeshes/treasure_chest_lid.treasure_chest_lid"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    96.0,
+    52.0,
+    60.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": true
+  },
+  "cannon": {
+   "candidates": [
+    "/Game/Arenas/Props/cannon_01/cannon_01_1k/StaticMeshes/cannon_01_frame.cannon_01_frame"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    94.0,
+    138.0,
+    59.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "wreck": {
+   "candidates": [
+    "/Game/Arenas/Props/ship_pinnace/ship_pinnace_1k/StaticMeshes/ship_pinnace_hull.ship_pinnace_hull|/Game/Arenas/Props/ship_pinnace/ship_pinnace_1k/StaticMeshes/ship_pinnace_deck.ship_pinnace_deck|/Game/Arenas/Props/ship_pinnace/ship_pinnace_1k/StaticMeshes/ship_pinnace_aft.ship_pinnace_aft|/Game/Arenas/Props/ship_pinnace/ship_pinnace_1k/StaticMeshes/ship_pinnace_details.ship_pinnace_details|/Game/Arenas/Props/ship_pinnace/ship_pinnace_1k/StaticMeshes/ship_pinnace_rigging.ship_pinnace_rigging|/Game/Arenas/Props/ship_pinnace/ship_pinnace_1k/StaticMeshes/ship_pinnace_sails.ship_pinnace_sails"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    953.0,
+    3979.0,
+    2747.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "shell": {
+   "candidates": [
+    "/Game/Arenas/Props/lambis_shell/lambis_shell_1k/StaticMeshes/lambis_shell_1k.lambis_shell_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    28.0,
+    14.0,
+    10.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": false
+  },
+  "container": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Container.SM_Arena_Container"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    259.0,
+    611.5,
+    260.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "container_rust": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Container.SM_Arena_Container"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    259.0,
+    611.5,
+    260.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_Arena_ContainerRust.MI_Arena_ContainerRust"
+   }
+  },
+  "cargo_crate": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_CargoCrate.SM_Arena_CargoCrate"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    154.0,
+    154.0,
+    150.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "pylon": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Pillar.SM_Arena_Pillar"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    170.0,
+    170.0,
+    1400.0
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "deck_barrier": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Barrier.SM_Arena_Barrier"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    70.0,
+    300.0,
+    122.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "bulkhead": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Bulkhead.SM_Arena_Bulkhead"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    85.0,
+    1040.0,
+    1200.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "dropship": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_Dropship.SM_Arena_Dropship"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    1310.0,
+    940.0,
+    522.1
+   ],
+   "fit": "footprint",
+   "shape": "box",
+   "essential": true
+  },
+  "station_tower": {
+   "candidates": [
+    "/Game/Arenas/Meshes/SM_Arena_StationTower.SM_Arena_StationTower"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    1602.0,
+    1602.0,
+    7000.0
+   ],
+   "fit": "footprint",
+   "shape": "box"
+  },
+  "generator": {
+   "candidates": [
+    "/Game/Arenas/Props/portable_generator/portable_generator_1k/StaticMeshes/portable_generator.portable_generator"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    164.0,
+    112.0,
+    116.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "tool_chest": {
+   "candidates": [
+    "/Game/Arenas/Props/metal_tool_chest/metal_tool_chest_1k/StaticMeshes/metal_tool_chest_chest.metal_tool_chest_chest|/Game/Arenas/Props/metal_tool_chest/metal_tool_chest_1k/StaticMeshes/metal_tool_chest_lid.metal_tool_chest_lid"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    69.0,
+    32.0,
+    70.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "gas_bottle": {
+   "candidates": [
+    "/Game/Arenas/Props/propane_tank/propane_tank_1k/StaticMeshes/propane_tank_1k.propane_tank_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    34.0,
+    34.0,
+    55.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "cargo_cart": {
+   "candidates": [
+    "/Game/Arenas/Props/industrial_storage_cart/industrial_storage_cart_1k/StaticMeshes/industrial_storage_cart_1k.industrial_storage_cart_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    160.0,
+    110.0,
+    138.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "gantry": {
+   "candidates": [
+    "/Game/Arenas/Props/overhead_crane/overhead_crane_1k/StaticMeshes/overhead_crane.overhead_crane|/Game/Arenas/Props/overhead_crane/overhead_crane_1k/StaticMeshes/overhead_crane_winch.overhead_crane_winch"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    1222.0,
+    400.0,
+    454.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  },
+  "jerrycan": {
+   "candidates": [
+    "/Game/Arenas/Props/metal_jerrycan/metal_jerrycan_1k/StaticMeshes/metal_jerrycan_1k.metal_jerrycan_1k"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    35.0,
+    17.0,
+    46.0
+   ],
+   "fit": "uniform",
+   "shape": "box"
+  }
+ },
+ "arenas": [
+  {
+   "id": "sunlit_fields",
+   "name": "The Sunlit Fields",
+   "theme": "Golden wheat field at harvest, golden hour",
+   "subtitle": "A harvest field at golden hour. Bales, stooks and the old wagon break the sightlines.",
+   "enabled": true,
+   "weight": 1.0,
+   "halfExtents": [
+    2600,
+    2000
+   ],
+   "spawns": {
+    "ember": [
+     [
+      -2250,
+      -600
+     ],
+     [
+      -2250,
+      -300
+     ],
+     [
+      -2250,
+      0
+     ],
+     [
+      -2250,
+      300
+     ],
+     [
+      -2250,
+      600
+     ]
+    ],
+    "dusk": [
+     [
+      2250,
+      -600
+     ],
+     [
+      2250,
+      -300
+     ],
+     [
+      2250,
+      0
+     ],
+     [
+      2250,
+      300
+     ],
+     [
+      2250,
+      600
+     ]
+    ]
+   },
+   "pieces": [
+    [
+     "hay_stack",
+     -1500,
+     850,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_stack",
+     1500,
+     850,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_stack",
+     -1500,
+     -850,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_stack",
+     1500,
+     -850,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_pyramid",
+     0,
+     460,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_pyramid",
+     0,
+     -460,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_wagon",
+     0,
+     1330,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "well",
+     0,
+     -1340,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "ruin_wall",
+     -800,
+     1620,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "ruin_wall",
+     800,
+     1620,
+     0.0,
+     90.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_stack",
+     -820,
+     -1620,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_stack",
+     820,
+     -1620,
+     0.0,
+     90.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_round",
+     -1130,
+     380,
+     0.0,
+     12,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_round",
+     1130,
+     380,
+     0.0,
+     168.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_round",
+     -1150,
+     -400,
+     0.0,
+     -8,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_round",
+     1150,
+     -400,
+     0.0,
+     188.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_round",
+     -470,
+     1020,
+     0.0,
+     70,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_round",
+     470,
+     1020,
+     0.0,
+     110.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_round",
+     -500,
+     -980,
+     0.0,
+     -65,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hay_round",
+     500,
+     -980,
+     0.0,
+     245.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stook",
+     -720,
+     640,
+     0.0,
+     10,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stook",
+     720,
+     640,
+     0.0,
+     170.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stook",
+     -690,
+     -700,
+     0.0,
+     -15,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stook",
+     690,
+     -700,
+     0.0,
+     195.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stook",
+     -1950,
+     1480,
+     0.0,
+     30,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stook",
+     1950,
+     1480,
+     0.0,
+     150.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stook",
+     -1950,
+     -1480,
+     0.0,
+     -30,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stook",
+     1950,
+     -1480,
+     0.0,
+     210.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stook",
+     -320,
+     1700,
+     0.0,
+     5,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stook",
+     320,
+     1700,
+     0.0,
+     175.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stone_wall",
+     -2050,
+     1250,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stone_wall",
+     2050,
+     1250,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stone_wall",
+     -2050,
+     -1250,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stone_wall",
+     2050,
+     -1250,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "scarecrow",
+     -1180,
+     1020,
+     0.0,
+     -20,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "scarecrow",
+     1200,
+     -1040,
+     0.0,
+     160,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "spade",
+     -1080,
+     470,
+     0,
+     40,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bucket",
+     150,
+     -1180,
+     0.0,
+     10,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "hay_sacks",
+     190,
+     1620,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "hay_square",
+     -1330,
+     1060,
+     0.0,
+     15,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "hay_square",
+     1360,
+     -1040,
+     0.0,
+     -20,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     -2720,
+     -1850,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     2720,
+     -1850,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     -2720,
+     -1438,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     2720,
+     -1438,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     -2720,
+     -1026,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     2720,
+     -1026,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     -2720,
+     -614,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     2720,
+     -614,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     -2720,
+     -202,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     2720,
+     -202,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     -2720,
+     210,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     2720,
+     210,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     -2720,
+     622,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     2720,
+     622,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     -2720,
+     1034,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     2720,
+     1034,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     -2720,
+     1446,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "fence",
+     2720,
+     1446,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "windmill",
+     7800,
+     3600,
+     0.0,
+     200.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "windmill_sails",
+     7386.5,
+     3449.5,
+     1460,
+     200.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "barn",
+     -7400,
+     -3800,
+     0.0,
+     20,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "hay_pyramid",
+     -5600,
+     -2900,
+     0.0,
+     20,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "hay_round",
+     -5000,
+     -3300,
+     0.0,
+     70,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "hay_wagon",
+     -6200,
+     -1500,
+     0.0,
+     -30,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "cart",
+     5200,
+     -3600,
+     0.0,
+     35,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "woodpile",
+     -8600,
+     -2600,
+     0.0,
+     70,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "barrels",
+     -6400,
+     -3000,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "young_tree",
+     -8800,
+     3500,
+     0.0,
+     0.0,
+     3.4,
+     3.4,
+     3.4,
+     0
+    ],
+    [
+     "oak",
+     -9400,
+     1200,
+     0.0,
+     47.0,
+     3.0,
+     3.0,
+     3.0,
+     0
+    ],
+    [
+     "oak",
+     -9000,
+     -2600,
+     0.0,
+     94.0,
+     3.6,
+     3.6,
+     3.6,
+     0
+    ],
+    [
+     "young_tree",
+     -9600,
+     -5200,
+     0.0,
+     141.0,
+     2.8,
+     2.8,
+     2.8,
+     0
+    ],
+    [
+     "oak",
+     9000,
+     4200,
+     0.0,
+     188.0,
+     3.2,
+     3.2,
+     3.2,
+     0
+    ],
+    [
+     "oak",
+     9600,
+     1500,
+     0.0,
+     235.0,
+     2.9,
+     2.9,
+     2.9,
+     0
+    ],
+    [
+     "young_tree",
+     9300,
+     -1900,
+     0.0,
+     282.0,
+     3.5,
+     3.5,
+     3.5,
+     0
+    ],
+    [
+     "oak",
+     8800,
+     -4500,
+     0.0,
+     329.0,
+     3.0,
+     3.0,
+     3.0,
+     0
+    ],
+    [
+     "oak",
+     -3600,
+     11200,
+     0.0,
+     376.0,
+     3.6,
+     3.6,
+     3.6,
+     0
+    ],
+    [
+     "young_tree",
+     1800,
+     11800,
+     0.0,
+     423.0,
+     3.3,
+     3.3,
+     3.3,
+     0
+    ],
+    [
+     "oak",
+     6200,
+     10600,
+     0.0,
+     470.0,
+     3.8,
+     3.8,
+     3.8,
+     0
+    ],
+    [
+     "oak",
+     -7600,
+     9200,
+     0.0,
+     517.0,
+     3.0,
+     3.0,
+     3.0,
+     0
+    ],
+    [
+     "young_tree",
+     2500,
+     -12000,
+     0.0,
+     564.0,
+     3.5,
+     3.5,
+     3.5,
+     0
+    ],
+    [
+     "oak",
+     -3800,
+     -11200,
+     0.0,
+     611.0,
+     3.2,
+     3.2,
+     3.2,
+     0
+    ],
+    [
+     "oak",
+     7800,
+     -10200,
+     0.0,
+     658.0,
+     3.6,
+     3.6,
+     3.6,
+     0
+    ],
+    [
+     "field_rock",
+     -3400,
+     2800,
+     0.0,
+     40,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "field_rock",
+     3600,
+     2500,
+     0.0,
+     -20,
+     0.8,
+     0.8,
+     0.8,
+     0
+    ],
+    [
+     "tree_stump",
+     -3900,
+     -2300,
+     0.0,
+     10,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "patch_track",
+     -6900,
+     -3100,
+     -1.3,
+     20,
+     42,
+     34,
+     1,
+     0
+    ]
+   ],
+   "scatter": [
+    {
+     "slot": "pollen",
+     "region": [
+      -4200,
+      -3600,
+      4200,
+      3600
+     ],
+     "count": 3200,
+     "seed": 15,
+     "scale": [
+      1.5,
+      3.0
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 0,
+     "exclude": [],
+     "z": 330,
+     "zJitter": 320,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "wheat",
+     "region": [
+      -7000,
+      -6500,
+      7000,
+      6500
+     ],
+     "count": 21000,
+     "seed": 11,
+     "scale": [
+      0.85,
+      1.25
+     ],
+     "outside": true,
+     "margin": 90,
+     "clearance": 0,
+     "exclude": [
+      [
+       -3100,
+       -2250,
+       3100,
+       2250
+      ],
+      [
+       -9200,
+       -5400,
+       -4600,
+       -800
+      ],
+      [
+       7000,
+       2800,
+       8700,
+       4400
+      ]
+     ],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": true
+    },
+    {
+     "slot": "wheat",
+     "region": [
+      -14000,
+      -14000,
+      14000,
+      14000
+     ],
+     "count": 21000,
+     "seed": 12,
+     "scale": [
+      0.9,
+      1.3
+     ],
+     "outside": true,
+     "margin": 90,
+     "clearance": 0,
+     "exclude": [
+      [
+       -7000,
+       -6500,
+       7000,
+       6500
+      ],
+      [
+       -9200,
+       -5400,
+       -4600,
+       -800
+      ],
+      [
+       7000,
+       2800,
+       8700,
+       4400
+      ]
+     ],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": true
+    },
+    {
+     "slot": "wheat",
+     "region": [
+      -26000,
+      -26000,
+      26000,
+      26000
+     ],
+     "count": 9000,
+     "seed": 16,
+     "scale": [
+      1.5,
+      2.2
+     ],
+     "outside": true,
+     "margin": 90,
+     "clearance": 0,
+     "exclude": [
+      [
+       -14000,
+       -14000,
+       14000,
+       14000
+      ]
+     ],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "stubble",
+     "region": [
+      -2600,
+      -2000,
+      2600,
+      2000
+     ],
+     "count": 5200,
+     "seed": 13,
+     "scale": [
+      0.8,
+      1.4
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 40,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "stubble",
+     "region": [
+      -3100,
+      -2250,
+      3100,
+      2250
+     ],
+     "count": 1800,
+     "seed": 14,
+     "scale": [
+      0.8,
+      1.4
+     ],
+     "outside": true,
+     "margin": 0,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    }
+   ],
+   "ground": "ground_stubble",
+   "groundSize": 56000,
+   "ambience": "arena_fields",
+   "music": "MUS_Crusade",
+   "minimap": {
+    "ground": [
+     0.3,
+     0.22,
+     0.09
+    ],
+    "blocker": [
+     0.86,
+     0.66,
+     0.3
+    ],
+    "accent": [
+     1.0,
+     0.82,
+     0.42
+    ]
+   },
+   "lighting": {
+    "sunPitch": -10.0,
+    "sunYaw": 90.0,
+    "sunIntensity": 7.5,
+    "sunColor": [
+     1.0,
+     0.7,
+     0.42
+    ],
+    "sunSourceAngle": 1.2,
+    "lightShafts": true,
+    "shaftBloomScale": 0.3,
+    "shaftThreshold": 3.0,
+    "volumetricScattering": 1.6,
+    "skyMaterial": "/Game/Arenas/Sky/MI_Sky_Fields.MI_Sky_Fields",
+    "skyYaw": 18.0,
+    "skyBrightness": 0.7,
+    "skyTint": [
+     1.05,
+     0.95,
+     0.85
+    ],
+    "skyHaze": [
+     0.78,
+     0.56,
+     0.34
+    ],
+    "skyHazeStrength": 0.8,
+    "skyLightIntensity": 1.8,
+    "skyLightColor": [
+     1.0,
+     0.88,
+     0.74
+    ],
+    "fogDensity": 0.006,
+    "fogFalloff": 0.2,
+    "fogColor": [
+     0.5,
+     0.36,
+     0.22
+    ],
+    "fogStart": 1500,
+    "fogHeight": -100,
+    "volumetricFog": true,
+    "volumetricDistribution": 0.8,
+    "volumetricExtinction": 0.25,
+    "volumetricAlbedo": [
+     1.0,
+     0.84,
+     0.62
+    ],
+    "exposureBias": 0.0,
+    "saturation": 1.1,
+    "contrast": 1.05,
+    "temperature": 5900,
+    "bloom": 0.8,
+    "vignette": 0.4,
+    "gain": [
+     1.03,
+     1.0,
+     0.95
+    ],
+    "shadowTint": [
+     1.03,
+     0.97,
+     0.92
+    ]
+   }
+  },
+  {
+   "id": "black_shore",
+   "name": "The Black Shore",
+   "theme": "Icelandic black-sand beach: basalt columns, moss-covered lava, sea mist",
+   "subtitle": "Black sand, basalt columns and mossy lava under a North Atlantic overcast.",
+   "enabled": true,
+   "weight": 1.0,
+   "halfExtents": [
+    2600,
+    2000
+   ],
+   "spawns": {
+    "ember": [
+     [
+      -2250,
+      -600
+     ],
+     [
+      -2250,
+      -300
+     ],
+     [
+      -2250,
+      0
+     ],
+     [
+      -2250,
+      300
+     ],
+     [
+      -2250,
+      600
+     ]
+    ],
+    "dusk": [
+     [
+      2250,
+      -600
+     ],
+     [
+      2250,
+      -300
+     ],
+     [
+      2250,
+      0
+     ],
+     [
+      2250,
+      300
+     ],
+     [
+      2250,
+      600
+     ]
+    ]
+   },
+   "pieces": [
+    [
+     "basalt_tall",
+     -1450,
+     820,
+     0.0,
+     15,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "basalt_tall",
+     1450,
+     820,
+     0.0,
+     165.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "basalt_tall",
+     -1450,
+     -820,
+     0.0,
+     -20,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "basalt_tall",
+     1450,
+     -820,
+     0.0,
+     200.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "basalt_wall",
+     0,
+     1180,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "basalt_wall",
+     0,
+     -1180,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "lava_large",
+     -520,
+     460,
+     0.0,
+     20,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "lava_large",
+     520,
+     460,
+     0.0,
+     160.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "lava_large",
+     -540,
+     -470,
+     0.0,
+     -35,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "lava_large",
+     540,
+     -470,
+     0.0,
+     215.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "basalt_wall",
+     -1000,
+     1620,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "basalt_wall",
+     1000,
+     1620,
+     0.0,
+     90.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "basalt_steps",
+     -900,
+     -1560,
+     0.0,
+     10,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "basalt_steps",
+     900,
+     -1560,
+     0.0,
+     170.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "lava_medium",
+     -1260,
+     0,
+     0.0,
+     40,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "lava_medium",
+     1260,
+     0,
+     0.0,
+     140.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "lava_medium",
+     -2000,
+     1350,
+     0.0,
+     -30,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "lava_medium",
+     2000,
+     1350,
+     0.0,
+     210.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "lava_medium",
+     -2000,
+     -1350,
+     0.0,
+     60,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "lava_medium",
+     2000,
+     -1350,
+     0.0,
+     120.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "basalt_steps",
+     -300,
+     1650,
+     0.0,
+     -25,
+     0.7,
+     0.7,
+     0.7,
+     1
+    ],
+    [
+     "basalt_steps",
+     300,
+     1650,
+     0.0,
+     205.0,
+     0.7,
+     0.7,
+     0.7,
+     1
+    ],
+    [
+     "sea",
+     0,
+     24400,
+     4,
+     0.0,
+     700,
+     400,
+     1,
+     0
+    ],
+    [
+     "basalt_stack",
+     -4200,
+     13000,
+     -60,
+     20,
+     1.4,
+     1.4,
+     1.4,
+     0
+    ],
+    [
+     "basalt_stack",
+     1500,
+     17000,
+     -60,
+     -35,
+     1.9,
+     1.9,
+     1.9,
+     0
+    ],
+    [
+     "basalt_stack",
+     7800,
+     12500,
+     -60,
+     70,
+     1.2,
+     1.2,
+     1.2,
+     0
+    ],
+    [
+     "basalt_stack",
+     -10500,
+     16000,
+     -60,
+     5,
+     1.6,
+     1.6,
+     1.6,
+     0
+    ],
+    [
+     "basalt_stack",
+     12500,
+     20000,
+     -60,
+     40,
+     2.2,
+     2.2,
+     2.2,
+     0
+    ],
+    [
+     "basalt_cliff",
+     -15000,
+     -6400,
+     -20,
+     -95,
+     1.0,
+     1.0,
+     0.9,
+     0
+    ],
+    [
+     "basalt_cliff",
+     -13050,
+     -6580,
+     -20,
+     -88,
+     1.0,
+     1.0,
+     1.05,
+     0
+    ],
+    [
+     "basalt_cliff",
+     -11100,
+     -6760,
+     -20,
+     -92,
+     1.0,
+     1.0,
+     1.2,
+     0
+    ],
+    [
+     "basalt_cliff",
+     -9150,
+     -6400,
+     -20,
+     -85,
+     1.0,
+     1.0,
+     1.35,
+     0
+    ],
+    [
+     "basalt_cliff",
+     -7200,
+     -6580,
+     -20,
+     -89,
+     1.0,
+     1.0,
+     0.9,
+     0
+    ],
+    [
+     "basalt_cliff",
+     -5250,
+     -6760,
+     -20,
+     -93,
+     1.0,
+     1.0,
+     1.05,
+     0
+    ],
+    [
+     "basalt_cliff",
+     -3300,
+     -6400,
+     -20,
+     -86,
+     1.0,
+     1.0,
+     1.2,
+     0
+    ],
+    [
+     "basalt_cliff",
+     -1350,
+     -6580,
+     -20,
+     -90,
+     1.0,
+     1.0,
+     1.35,
+     0
+    ],
+    [
+     "basalt_cliff",
+     600,
+     -6760,
+     -20,
+     -94,
+     1.0,
+     1.0,
+     0.9,
+     0
+    ],
+    [
+     "basalt_cliff",
+     2550,
+     -6400,
+     -20,
+     -87,
+     1.0,
+     1.0,
+     1.05,
+     0
+    ],
+    [
+     "basalt_cliff",
+     4500,
+     -6580,
+     -20,
+     -91,
+     1.0,
+     1.0,
+     1.2,
+     0
+    ],
+    [
+     "basalt_cliff",
+     6450,
+     -6760,
+     -20,
+     -95,
+     1.0,
+     1.0,
+     1.35,
+     0
+    ],
+    [
+     "basalt_cliff",
+     8400,
+     -6400,
+     -20,
+     -88,
+     1.0,
+     1.0,
+     0.9,
+     0
+    ],
+    [
+     "basalt_cliff",
+     10350,
+     -6580,
+     -20,
+     -92,
+     1.0,
+     1.0,
+     1.05,
+     0
+    ],
+    [
+     "basalt_cliff",
+     12300,
+     -6760,
+     -20,
+     -85,
+     1.0,
+     1.0,
+     1.2,
+     0
+    ],
+    [
+     "basalt_cliff",
+     14250,
+     -6400,
+     -20,
+     -89,
+     1.0,
+     1.0,
+     1.35,
+     0
+    ],
+    [
+     "lava_cluster",
+     -9000,
+     4250,
+     -20,
+     0.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     -7100,
+     4410,
+     -20,
+     53.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     -6000,
+     4570,
+     -20,
+     106.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     -4100,
+     4250,
+     -20,
+     159.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     -3000,
+     4410,
+     -20,
+     212.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     -1100,
+     4570,
+     -20,
+     265.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     0,
+     4250,
+     -20,
+     318.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     1900,
+     4410,
+     -20,
+     371.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     3000,
+     4570,
+     -20,
+     424.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     4900,
+     4250,
+     -20,
+     477.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     6000,
+     4410,
+     -20,
+     530.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     7900,
+     4570,
+     -20,
+     583.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     9000,
+     4250,
+     -20,
+     636.0,
+     2.2,
+     1.8,
+     1.4,
+     0
+    ],
+    [
+     "lava_ridge",
+     -4200,
+     -2600,
+     0.0,
+     25,
+     1.4,
+     1.4,
+     1.4,
+     0
+    ],
+    [
+     "lava_ridge",
+     4200,
+     -2600,
+     0.0,
+     155.0,
+     1.4,
+     1.4,
+     1.4,
+     0
+    ],
+    [
+     "lava_cluster",
+     -3300,
+     1600,
+     0.0,
+     10,
+     1.6,
+     1.6,
+     1.6,
+     0
+    ],
+    [
+     "lava_cluster",
+     3300,
+     1600,
+     0.0,
+     170.0,
+     1.6,
+     1.6,
+     1.6,
+     0
+    ],
+    [
+     "lava_outcrop",
+     -4600,
+     600,
+     0.0,
+     30,
+     1.5,
+     1.5,
+     1.5,
+     0
+    ],
+    [
+     "lava_outcrop",
+     4700,
+     -900,
+     0.0,
+     -40,
+     1.7,
+     1.7,
+     1.7,
+     0
+    ],
+    [
+     "basalt_tall",
+     -4200,
+     -900,
+     0.0,
+     5,
+     1.6,
+     1.6,
+     1.6,
+     0
+    ],
+    [
+     "basalt_tall",
+     4400,
+     1200,
+     0.0,
+     40,
+     1.8,
+     1.8,
+     1.8,
+     0
+    ],
+    [
+     "driftwood",
+     1800,
+     3200,
+     0.0,
+     20,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "driftwood",
+     -2600,
+     3500,
+     0.0,
+     -60,
+     0.8,
+     0.8,
+     0.8,
+     0
+    ]
+   ],
+   "scatter": [
+    {
+     "slot": "lava_medium",
+     "region": [
+      -9000,
+      -8000,
+      9000,
+      2400
+     ],
+     "count": 180,
+     "seed": 21,
+     "scale": [
+      0.35,
+      1.2
+     ],
+     "outside": true,
+     "margin": 300,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "lava_outcrop",
+     "region": [
+      -10000,
+      -9000,
+      10000,
+      1800
+     ],
+     "count": 60,
+     "seed": 22,
+     "scale": [
+      0.5,
+      1.4
+     ],
+     "outside": true,
+     "margin": 500,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "lava_ridge",
+     "region": [
+      -11000,
+      -5800,
+      11000,
+      -2600
+     ],
+     "count": 26,
+     "seed": 27,
+     "scale": [
+      0.8,
+      1.6
+     ],
+     "outside": true,
+     "margin": 400,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "beach_pebbles",
+     "region": [
+      -8000,
+      2100,
+      8000,
+      4200
+     ],
+     "count": 70,
+     "seed": 23,
+     "scale": [
+      0.6,
+      1.2
+     ],
+     "outside": true,
+     "margin": 60,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "lyme_grass",
+     "region": [
+      -9000,
+      2150,
+      9000,
+      3000
+     ],
+     "count": 900,
+     "seed": 24,
+     "scale": [
+      0.8,
+      1.6
+     ],
+     "outside": true,
+     "margin": 80,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "lyme_grass",
+     "region": [
+      -9000,
+      -6000,
+      9000,
+      -2150
+     ],
+     "count": 500,
+     "seed": 25,
+     "scale": [
+      0.7,
+      1.3
+     ],
+     "outside": true,
+     "margin": 80,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "beach_pebbles",
+     "region": [
+      -2600,
+      -2000,
+      2600,
+      2000
+     ],
+     "count": 26,
+     "seed": 26,
+     "scale": [
+      0.25,
+      0.5
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 80,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    }
+   ],
+   "ground": "ground_blacksand",
+   "groundSize": 56000,
+   "ambience": "arena_iceland",
+   "music": "MUS_OppressiveGloom",
+   "minimap": {
+    "ground": [
+     0.07,
+     0.08,
+     0.09
+    ],
+    "blocker": [
+     0.42,
+     0.48,
+     0.44
+    ],
+    "accent": [
+     0.62,
+     0.8,
+     0.58
+    ]
+   },
+   "lighting": {
+    "sunPitch": -38.0,
+    "sunYaw": 90.0,
+    "sunIntensity": 4.2,
+    "sunColor": [
+     0.86,
+     0.92,
+     1.0
+    ],
+    "sunSourceAngle": 6.0,
+    "volumetricScattering": 0.6,
+    "skyMaterial": "/Game/Arenas/Sky/MI_Sky_Iceland.MI_Sky_Iceland",
+    "skyYaw": 0.0,
+    "skyBrightness": 0.95,
+    "skyLightIntensity": 1.55,
+    "skyLightColor": [
+     0.86,
+     0.92,
+     1.0
+    ],
+    "fogDensity": 0.022,
+    "fogFalloff": 0.12,
+    "fogColor": [
+     0.44,
+     0.49,
+     0.54
+    ],
+    "fogStart": 1400,
+    "fogHeight": 0,
+    "skyHaze": [
+     0.62,
+     0.66,
+     0.7
+    ],
+    "skyHazeStrength": 0.6,
+    "volumetricFog": true,
+    "volumetricDistribution": 0.2,
+    "volumetricExtinction": 0.6,
+    "volumetricAlbedo": [
+     0.9,
+     0.95,
+     1.0
+    ],
+    "exposureBias": 0.45,
+    "saturation": 0.88,
+    "contrast": 1.08,
+    "temperature": 7200,
+    "bloom": 0.6,
+    "vignette": 0.5,
+    "gain": [
+     0.97,
+     1.0,
+     1.03
+    ]
+   }
+  },
+  {
+   "id": "redrock_canyon",
+   "name": "Redrock Canyon",
+   "theme": "Moab desert: red sandstone canyon, natural arch, harsh sun",
+   "subtitle": "A red sandstone canyon under a hard desert sun. Fight beneath the arch.",
+   "enabled": true,
+   "weight": 1.0,
+   "halfExtents": [
+    2600,
+    2000
+   ],
+   "spawns": {
+    "ember": [
+     [
+      -2250,
+      -600
+     ],
+     [
+      -2250,
+      -300
+     ],
+     [
+      -2250,
+      0
+     ],
+     [
+      -2250,
+      300
+     ],
+     [
+      -2250,
+      600
+     ]
+    ],
+    "dusk": [
+     [
+      2250,
+      -600
+     ],
+     [
+      2250,
+      -300
+     ],
+     [
+      2250,
+      0
+     ],
+     [
+      2250,
+      300
+     ],
+     [
+      2250,
+      600
+     ]
+    ]
+   },
+   "pieces": [
+    [
+     "arch",
+     0,
+     0,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "arch_leg",
+     0,
+     440,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "arch_leg",
+     0,
+     -440,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hoodoo",
+     -1350,
+     950,
+     0.0,
+     20,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hoodoo",
+     1350,
+     950,
+     0.0,
+     160.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "hoodoo",
+     -1400,
+     -1050,
+     0.0,
+     -40,
+     0.85,
+     0.85,
+     0.85,
+     1
+    ],
+    [
+     "hoodoo",
+     1400,
+     -1050,
+     0.0,
+     220.0,
+     0.85,
+     0.85,
+     0.85,
+     1
+    ],
+    [
+     "sandstone_block",
+     -620,
+     1420,
+     0.0,
+     15,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "sandstone_block",
+     620,
+     1420,
+     0.0,
+     165.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "sandstone_block",
+     -700,
+     -1380,
+     0.0,
+     -25,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "sandstone_block",
+     700,
+     -1380,
+     0.0,
+     205.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "sandstone_block",
+     -1950,
+     1400,
+     0.0,
+     40,
+     0.8,
+     0.8,
+     0.8,
+     1
+    ],
+    [
+     "sandstone_block",
+     1950,
+     1400,
+     0.0,
+     140.0,
+     0.8,
+     0.8,
+     0.8,
+     1
+    ],
+    [
+     "sandstone_block",
+     -1950,
+     -1420,
+     0.0,
+     -10,
+     0.8,
+     0.8,
+     0.8,
+     1
+    ],
+    [
+     "sandstone_block",
+     1950,
+     -1420,
+     0.0,
+     190.0,
+     0.8,
+     0.8,
+     0.8,
+     1
+    ],
+    [
+     "red_boulder",
+     -1020,
+     330,
+     0.0,
+     30,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "red_boulder",
+     1020,
+     330,
+     0.0,
+     150.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "red_boulder",
+     -1060,
+     -360,
+     0.0,
+     -50,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "red_boulder",
+     1060,
+     -360,
+     0.0,
+     230.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "red_boulder",
+     -350,
+     1000,
+     0.0,
+     80,
+     0.8,
+     0.8,
+     0.8,
+     1
+    ],
+    [
+     "red_boulder",
+     350,
+     1000,
+     0.0,
+     100.0,
+     0.8,
+     0.8,
+     0.8,
+     1
+    ],
+    [
+     "red_boulder",
+     -380,
+     -1000,
+     0.0,
+     10,
+     0.8,
+     0.8,
+     0.8,
+     1
+    ],
+    [
+     "red_boulder",
+     380,
+     -1000,
+     0.0,
+     170.0,
+     0.8,
+     0.8,
+     0.8,
+     1
+    ],
+    [
+     "canyon_wall",
+     -7400,
+     2850,
+     0.0,
+     90,
+     1.0,
+     1.02,
+     0.97,
+     0
+    ],
+    [
+     "canyon_wall",
+     -4500,
+     2940,
+     0.0,
+     90,
+     1.0,
+     1.02,
+     1.0899999999999999,
+     0
+    ],
+    [
+     "canyon_wall",
+     -1500,
+     2850,
+     0.0,
+     90,
+     1.0,
+     1.02,
+     0.85,
+     0
+    ],
+    [
+     "canyon_wall",
+     1500,
+     2940,
+     0.0,
+     90,
+     1.0,
+     1.02,
+     0.97,
+     0
+    ],
+    [
+     "canyon_wall",
+     4500,
+     2850,
+     0.0,
+     90,
+     1.0,
+     1.02,
+     1.0899999999999999,
+     0
+    ],
+    [
+     "canyon_wall",
+     7400,
+     2940,
+     0.0,
+     90,
+     1.0,
+     1.02,
+     0.85,
+     0
+    ],
+    [
+     "canyon_wall",
+     -7400,
+     -2850,
+     0.0,
+     -90,
+     1.0,
+     1.02,
+     1.0899999999999999,
+     0
+    ],
+    [
+     "canyon_wall",
+     -4500,
+     -2940,
+     0.0,
+     -90,
+     1.0,
+     1.02,
+     0.85,
+     0
+    ],
+    [
+     "canyon_wall",
+     -1500,
+     -2850,
+     0.0,
+     -90,
+     1.0,
+     1.02,
+     0.97,
+     0
+    ],
+    [
+     "canyon_wall",
+     1500,
+     -2940,
+     0.0,
+     -90,
+     1.0,
+     1.02,
+     1.0899999999999999,
+     0
+    ],
+    [
+     "canyon_wall",
+     4500,
+     -2850,
+     0.0,
+     -90,
+     1.0,
+     1.02,
+     0.85,
+     0
+    ],
+    [
+     "canyon_wall",
+     7400,
+     -2940,
+     0.0,
+     -90,
+     1.0,
+     1.02,
+     0.97,
+     0
+    ],
+    [
+     "canyon_wall",
+     -12500,
+     1800,
+     0.0,
+     180,
+     1.0,
+     1.4,
+     1.2,
+     0
+    ],
+    [
+     "canyon_wall",
+     -13500,
+     -3800,
+     0.0,
+     190,
+     1.0,
+     1.4,
+     0.9,
+     0
+    ],
+    [
+     "canyon_wall",
+     12500,
+     -1200,
+     0.0,
+     0,
+     1.0,
+     1.4,
+     1.1,
+     0
+    ],
+    [
+     "canyon_wall",
+     13800,
+     4200,
+     0.0,
+     -10,
+     1.0,
+     1.4,
+     0.8,
+     0
+    ],
+    [
+     "hoodoo",
+     -6200,
+     800,
+     0.0,
+     10,
+     1.4,
+     1.4,
+     1.4,
+     0
+    ],
+    [
+     "hoodoo",
+     6400,
+     -900,
+     0.0,
+     70,
+     1.6,
+     1.6,
+     1.6,
+     0
+    ],
+    [
+     "arch",
+     -9000,
+     -600,
+     0.0,
+     60,
+     1.5,
+     1.5,
+     1.5,
+     0
+    ],
+    [
+     "dead_log",
+     -1800,
+     1750,
+     0.0,
+     30,
+     1.2,
+     1.2,
+     1.2,
+     0
+    ],
+    [
+     "dead_log",
+     1700,
+     -1760,
+     0.0,
+     200,
+     1.1,
+     1.1,
+     1.1,
+     0
+    ]
+   ],
+   "scatter": [
+    {
+     "slot": "red_boulder_small",
+     "region": [
+      -2600,
+      -2000,
+      2600,
+      2000
+     ],
+     "count": 36,
+     "seed": 31,
+     "scale": [
+      0.5,
+      1.2
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 60,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "scrub_0",
+     "region": [
+      -9000,
+      -2700,
+      9000,
+      2700
+     ],
+     "count": 160,
+     "seed": 32,
+     "scale": [
+      1.0,
+      1.8
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 100,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "scrub_1",
+     "region": [
+      -9000,
+      -2700,
+      9000,
+      2700
+     ],
+     "count": 160,
+     "seed": 33,
+     "scale": [
+      1.0,
+      1.8
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 100,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "scrub_2",
+     "region": [
+      -9000,
+      -2700,
+      9000,
+      2700
+     ],
+     "count": 140,
+     "seed": 34,
+     "scale": [
+      1.0,
+      1.8
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 100,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "red_boulder",
+     "region": [
+      -12000,
+      -2700,
+      12000,
+      2700
+     ],
+     "count": 70,
+     "seed": 36,
+     "scale": [
+      0.4,
+      1.3
+     ],
+     "outside": true,
+     "margin": 250,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    }
+   ],
+   "ground": "ground_redsoil",
+   "groundSize": 56000,
+   "ambience": "arena_moab",
+   "music": "MUS_FiveArmies",
+   "minimap": {
+    "ground": [
+     0.3,
+     0.13,
+     0.07
+    ],
+    "blocker": [
+     0.82,
+     0.42,
+     0.24
+    ],
+    "accent": [
+     1.0,
+     0.62,
+     0.35
+    ]
+   },
+   "lighting": {
+    "sunPitch": -52.0,
+    "sunYaw": 90.0,
+    "sunIntensity": 11.0,
+    "sunColor": [
+     1.0,
+     0.93,
+     0.82
+    ],
+    "sunSourceAngle": 0.55,
+    "volumetricScattering": 0.8,
+    "skyMaterial": "/Game/Arenas/Sky/MI_Sky_Moab.MI_Sky_Moab",
+    "skyYaw": 0.0,
+    "skyBrightness": 1.0,
+    "skyLightIntensity": 1.0,
+    "skyLightColor": [
+     0.95,
+     0.92,
+     1.0
+    ],
+    "fogDensity": 0.006,
+    "fogFalloff": 0.3,
+    "fogColor": [
+     0.78,
+     0.55,
+     0.42
+    ],
+    "fogStart": 1500,
+    "fogHeight": -200,
+    "volumetricFog": false,
+    "exposureBias": 0.0,
+    "saturation": 1.06,
+    "contrast": 1.12,
+    "temperature": 6100,
+    "bloom": 0.7,
+    "vignette": 0.4,
+    "gain": [
+     1.03,
+     1.0,
+     0.96
+    ]
+   }
+  },
+  {
+   "id": "hornbeam_glade",
+   "name": "Hornbeam Glade",
+   "theme": "European hornbeam forest clearing, dappled light",
+   "subtitle": "A clearing in the hornbeam wood. Fallen trunks and old roots hide the flanks.",
+   "enabled": true,
+   "weight": 1.0,
+   "halfExtents": [
+    2600,
+    2000
+   ],
+   "spawns": {
+    "ember": [
+     [
+      -2250,
+      -600
+     ],
+     [
+      -2250,
+      -300
+     ],
+     [
+      -2250,
+      0
+     ],
+     [
+      -2250,
+      300
+     ],
+     [
+      -2250,
+      600
+     ]
+    ],
+    "dusk": [
+     [
+      2250,
+      -600
+     ],
+     [
+      2250,
+      -300
+     ],
+     [
+      2250,
+      0
+     ],
+     [
+      2250,
+      300
+     ],
+     [
+      2250,
+      600
+     ]
+    ]
+   },
+   "pieces": [
+    [
+     "glade_tree",
+     -1350,
+     1250,
+     0.0,
+     20,
+     3.9,
+     3.9,
+     3.9,
+     0
+    ],
+    [
+     "glade_tree",
+     1350,
+     1250,
+     0.0,
+     160.0,
+     3.9,
+     3.9,
+     3.9,
+     0
+    ],
+    [
+     "trunk_proxy",
+     -1350,
+     1250,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "trunk_proxy",
+     1350,
+     1250,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "glade_tree",
+     -1300,
+     -1300,
+     0.0,
+     -35,
+     4.2,
+     4.2,
+     4.2,
+     0
+    ],
+    [
+     "glade_tree",
+     1300,
+     -1300,
+     0.0,
+     215.0,
+     4.2,
+     4.2,
+     4.2,
+     0
+    ],
+    [
+     "trunk_proxy",
+     -1300,
+     -1300,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "trunk_proxy",
+     1300,
+     -1300,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "moss_boulder",
+     -560,
+     480,
+     0.0,
+     25,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "moss_boulder",
+     560,
+     480,
+     0.0,
+     155.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "moss_boulder",
+     -600,
+     -500,
+     0.0,
+     -40,
+     0.9,
+     0.9,
+     0.9,
+     1
+    ],
+    [
+     "moss_boulder",
+     600,
+     -500,
+     0.0,
+     220.0,
+     0.9,
+     0.9,
+     0.9,
+     1
+    ],
+    [
+     "root_plate",
+     0,
+     1260,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "root_plate",
+     0,
+     -1260,
+     0.0,
+     -90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "fallen_log",
+     -760,
+     1180,
+     0.0,
+     62,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "fallen_log",
+     760,
+     1180,
+     0.0,
+     118.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "fallen_log",
+     -800,
+     -1200,
+     0.0,
+     -58,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "fallen_log",
+     800,
+     -1200,
+     0.0,
+     238.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "fallen_log",
+     -1650,
+     20,
+     0.0,
+     0,
+     1.0,
+     0.75,
+     1.0,
+     1
+    ],
+    [
+     "fallen_log",
+     1650,
+     20,
+     0.0,
+     180.0,
+     1.0,
+     0.75,
+     1.0,
+     1
+    ],
+    [
+     "stump",
+     -1000,
+     650,
+     0.0,
+     20,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stump",
+     1000,
+     650,
+     0.0,
+     160.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stump",
+     -1030,
+     -700,
+     0.0,
+     70,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "stump",
+     1030,
+     -700,
+     0.0,
+     110.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "moss_boulder",
+     -2050,
+     1450,
+     0.0,
+     60,
+     0.55,
+     0.55,
+     0.55,
+     1
+    ],
+    [
+     "moss_boulder",
+     2050,
+     1450,
+     0.0,
+     120.0,
+     0.55,
+     0.55,
+     0.55,
+     1
+    ],
+    [
+     "moss_boulder",
+     -2050,
+     -1450,
+     0.0,
+     -10,
+     0.55,
+     0.55,
+     0.55,
+     1
+    ],
+    [
+     "moss_boulder",
+     2050,
+     -1450,
+     0.0,
+     190.0,
+     0.55,
+     0.55,
+     0.55,
+     1
+    ],
+    [
+     "forest_log",
+     250,
+     1500,
+     0.0,
+     100,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "forest_log",
+     -260,
+     -1550,
+     0.0,
+     80,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "root_bank",
+     0,
+     1650,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ]
+   ],
+   "scatter": [
+    {
+     "slot": "glade_tree",
+     "region": [
+      -10000,
+      -10000,
+      10000,
+      10000
+     ],
+     "count": 240,
+     "seed": 41,
+     "scale": [
+      3.4,
+      5.0
+     ],
+     "outside": true,
+     "margin": 900,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "glade_tree_young",
+     "region": [
+      -8000,
+      -8000,
+      8000,
+      8000
+     ],
+     "count": 160,
+     "seed": 42,
+     "scale": [
+      2.6,
+      3.8
+     ],
+     "outside": true,
+     "margin": 450,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "forest_shrub",
+     "region": [
+      -7000,
+      -7000,
+      7000,
+      7000
+     ],
+     "count": 260,
+     "seed": 43,
+     "scale": [
+      0.8,
+      1.6
+     ],
+     "outside": true,
+     "margin": 120,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "forest_shrub",
+     "region": [
+      -6000,
+      -6000,
+      6000,
+      6000
+     ],
+     "count": 400,
+     "seed": 44,
+     "scale": [
+      0.5,
+      1.1
+     ],
+     "outside": true,
+     "margin": 40,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "grass_tuft",
+     "region": [
+      -2600,
+      -2000,
+      2600,
+      2000
+     ],
+     "count": 900,
+     "seed": 46,
+     "scale": [
+      1.5,
+      3.0
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 80,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "sapling",
+     "region": [
+      -7000,
+      -7000,
+      7000,
+      7000
+     ],
+     "count": 400,
+     "seed": 47,
+     "scale": [
+      2.0,
+      4.0
+     ],
+     "outside": true,
+     "margin": 60,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "forest_log",
+     "region": [
+      -8000,
+      -8000,
+      8000,
+      8000
+     ],
+     "count": 40,
+     "seed": 48,
+     "scale": [
+      0.7,
+      1.3
+     ],
+     "outside": true,
+     "margin": 250,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "forest_rock",
+     "region": [
+      -8000,
+      -8000,
+      8000,
+      8000
+     ],
+     "count": 60,
+     "seed": 49,
+     "scale": [
+      0.6,
+      1.5
+     ],
+     "outside": true,
+     "margin": 200,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    }
+   ],
+   "ground": "ground_forest",
+   "groundSize": 56000,
+   "ambience": "arena_hornbeam",
+   "music": "MUS_DeathandAxes",
+   "minimap": {
+    "ground": [
+     0.09,
+     0.13,
+     0.06
+    ],
+    "blocker": [
+     0.4,
+     0.48,
+     0.3
+    ],
+    "accent": [
+     0.62,
+     0.86,
+     0.42
+    ]
+   },
+   "lighting": {
+    "sunPitch": -40.0,
+    "sunYaw": 90.0,
+    "sunIntensity": 7.0,
+    "sunColor": [
+     1.0,
+     0.94,
+     0.8
+    ],
+    "sunSourceAngle": 0.8,
+    "lightShafts": true,
+    "shaftBloomScale": 0.2,
+    "shaftThreshold": 6.0,
+    "volumetricScattering": 1.8,
+    "skyMaterial": "/Game/Arenas/Sky/MI_Sky_Hornbeam.MI_Sky_Hornbeam",
+    "skyYaw": 0.0,
+    "skyBrightness": 0.85,
+    "skyLightIntensity": 1.0,
+    "skyLightColor": [
+     0.9,
+     1.0,
+     0.86
+    ],
+    "fogDensity": 0.014,
+    "fogFalloff": 0.2,
+    "fogColor": [
+     0.36,
+     0.44,
+     0.3
+    ],
+    "fogStart": 400,
+    "volumetricFog": true,
+    "volumetricDistribution": 0.7,
+    "volumetricExtinction": 0.45,
+    "volumetricAlbedo": [
+     0.85,
+     1.0,
+     0.8
+    ],
+    "exposureBias": 0.55,
+    "saturation": 1.05,
+    "contrast": 1.05,
+    "temperature": 6300,
+    "bloom": 0.8,
+    "vignette": 0.5,
+    "lightFunction": "/Game/Arenas/Materials/MI_Arena_Dapple.MI_Arena_Dapple",
+    "lightFunctionScale": 900.0
+   }
+  },
+  {
+   "id": "drowned_sanctum",
+   "name": "The Drowned Sanctum",
+   "theme": "A sunken temple on the seabed: caustics, kelp and drifting motes",
+   "subtitle": "A temple lost beneath the sea. Columns and arches break the sightlines; kelp sways overhead.",
+   "enabled": true,
+   "weight": 1.0,
+   "halfExtents": [
+    2600,
+    2000
+   ],
+   "spawns": {
+    "ember": [
+     [
+      -2250,
+      -600
+     ],
+     [
+      -2250,
+      -300
+     ],
+     [
+      -2250,
+      0
+     ],
+     [
+      -2250,
+      300
+     ],
+     [
+      -2250,
+      600
+     ]
+    ],
+    "dusk": [
+     [
+      2250,
+      -600
+     ],
+     [
+      2250,
+      -300
+     ],
+     [
+      2250,
+      0
+     ],
+     [
+      2250,
+      300
+     ],
+     [
+      2250,
+      600
+     ]
+    ]
+   },
+   "pieces": [
+    [
+     "ruin_arch",
+     0,
+     0,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "pier_proxy",
+     0,
+     300,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "pier_proxy",
+     0,
+     -300,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column",
+     -1300,
+     900,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column",
+     1300,
+     900,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column",
+     -1300,
+     -900,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column",
+     1300,
+     -900,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column",
+     -620,
+     1520,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column",
+     620,
+     1520,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column",
+     -620,
+     -1520,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column",
+     620,
+     -1520,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column_broken",
+     -880,
+     420,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column_broken",
+     880,
+     420,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column_broken",
+     -880,
+     -420,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column_broken",
+     880,
+     -420,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "sunken_wall",
+     -1650,
+     1580,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "sunken_wall",
+     1650,
+     1580,
+     0.0,
+     90.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "sunken_wall",
+     -1650,
+     -1580,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "sunken_wall",
+     1650,
+     -1580,
+     0.0,
+     90.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "plinth",
+     -1500,
+     0,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "plinth",
+     1500,
+     0,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "statue",
+     -1500,
+     0,
+     180,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "statue",
+     1500,
+     0,
+     180,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "sea_rock",
+     -380,
+     1150,
+     0.0,
+     30,
+     0.85,
+     0.85,
+     0.85,
+     1
+    ],
+    [
+     "sea_rock",
+     380,
+     1150,
+     0.0,
+     150.0,
+     0.85,
+     0.85,
+     0.85,
+     1
+    ],
+    [
+     "sea_rock",
+     -400,
+     -1160,
+     0.0,
+     -50,
+     0.85,
+     0.85,
+     0.85,
+     1
+    ],
+    [
+     "sea_rock",
+     400,
+     -1160,
+     0.0,
+     230.0,
+     0.85,
+     0.85,
+     0.85,
+     1
+    ],
+    [
+     "column_fallen",
+     -950,
+     1150,
+     0.0,
+     35,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column_fallen",
+     950,
+     1150,
+     0.0,
+     145.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column_fallen",
+     -980,
+     -1180,
+     0.0,
+     -30,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "column_fallen",
+     980,
+     -1180,
+     0.0,
+     210.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "bust",
+     -240,
+     700,
+     0.0,
+     40,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "lion_head",
+     260,
+     -720,
+     0.0,
+     200,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "whale_statue",
+     0,
+     1650,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "chest",
+     1800,
+     1700,
+     0.0,
+     -30,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "cannon",
+     -1900,
+     -1780,
+     0.0,
+     70,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "wreck",
+     3800,
+     7600,
+     -420,
+     25,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "wreck",
+     -9000,
+     -9500,
+     -600,
+     -70,
+     0.8,
+     0.8,
+     0.8,
+     0
+    ],
+    [
+     "column_broken",
+     -3600,
+     3400,
+     0.0,
+     0.0,
+     1.3,
+     1.3,
+     1.3,
+     0
+    ],
+    [
+     "column",
+     4200,
+     -3800,
+     0.0,
+     40.0,
+     1.3,
+     1.3,
+     1.3,
+     0
+    ],
+    [
+     "column_broken",
+     -5200,
+     -2600,
+     0.0,
+     80.0,
+     1.3,
+     1.3,
+     1.3,
+     0
+    ],
+    [
+     "column",
+     5600,
+     2200,
+     0.0,
+     120.0,
+     1.3,
+     1.3,
+     1.3,
+     0
+    ],
+    [
+     "column_broken",
+     0,
+     -5200,
+     0.0,
+     160.0,
+     1.3,
+     1.3,
+     1.3,
+     0
+    ],
+    [
+     "column",
+     -1500,
+     6000,
+     0.0,
+     200.0,
+     1.3,
+     1.3,
+     1.3,
+     0
+    ],
+    [
+     "sunken_wall",
+     -4200,
+     0,
+     0.0,
+     10,
+     1.4,
+     1.4,
+     1.4,
+     0
+    ],
+    [
+     "sunken_wall",
+     4400,
+     400,
+     0.0,
+     -15,
+     1.5,
+     1.5,
+     1.5,
+     0
+    ],
+    [
+     "light_shaft",
+     -700,
+     -1700,
+     40,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "light_shaft",
+     800,
+     1720,
+     40,
+     30.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "light_shaft",
+     -2100,
+     700,
+     40,
+     60.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "light_shaft",
+     2150,
+     -650,
+     40,
+     90.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "light_shaft",
+     -150,
+     0,
+     40,
+     120.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "light_shaft",
+     1300,
+     300,
+     40,
+     150.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "light_shaft",
+     -1250,
+     -300,
+     40,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ]
+   ],
+   "scatter": [
+    {
+     "slot": "kelp",
+     "region": [
+      -9000,
+      -9000,
+      9000,
+      9000
+     ],
+     "count": 520,
+     "seed": 51,
+     "scale": [
+      0.6,
+      1.2
+     ],
+     "outside": true,
+     "margin": 150,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "kelp",
+     "region": [
+      -2600,
+      -2000,
+      2600,
+      2000
+     ],
+     "count": 26,
+     "seed": 52,
+     "scale": [
+      0.35,
+      0.6
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 250,
+     "exclude": [
+      [
+       -2300,
+       -800,
+       2300,
+       800
+      ]
+     ],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "coral",
+     "region": [
+      -7000,
+      -7000,
+      7000,
+      7000
+     ],
+     "count": 260,
+     "seed": 53,
+     "scale": [
+      0.8,
+      1.8
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 120,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "coral_violet",
+     "region": [
+      -7000,
+      -7000,
+      7000,
+      7000
+     ],
+     "count": 200,
+     "seed": 54,
+     "scale": [
+      0.8,
+      1.6
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 120,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "coral_gold",
+     "region": [
+      -7000,
+      -7000,
+      7000,
+      7000
+     ],
+     "count": 160,
+     "seed": 55,
+     "scale": [
+      0.8,
+      1.6
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 120,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "sea_rock",
+     "region": [
+      -10000,
+      -10000,
+      10000,
+      10000
+     ],
+     "count": 90,
+     "seed": 56,
+     "scale": [
+      0.4,
+      1.4
+     ],
+     "outside": true,
+     "margin": 400,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "shell",
+     "region": [
+      -2600,
+      -2000,
+      2600,
+      2000
+     ],
+     "count": 60,
+     "seed": 57,
+     "scale": [
+      1.0,
+      2.0
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 60,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "motes",
+     "region": [
+      -5000,
+      -5000,
+      5000,
+      5000
+     ],
+     "count": 6000,
+     "seed": 58,
+     "scale": [
+      1.2,
+      2.6
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 0,
+     "exclude": [],
+     "z": 450,
+     "zJitter": 440,
+     "randomYaw": true,
+     "tilt": false
+    }
+   ],
+   "ground": "ground_seabed",
+   "groundSize": 56000,
+   "ambience": "arena_underwater",
+   "music": "MUS_BlackVortex",
+   "minimap": {
+    "ground": [
+     0.03,
+     0.1,
+     0.12
+    ],
+    "blocker": [
+     0.4,
+     0.58,
+     0.56
+    ],
+    "accent": [
+     0.45,
+     0.92,
+     0.9
+    ]
+   },
+   "lighting": {
+    "sunPitch": -72.0,
+    "sunYaw": 90.0,
+    "sunIntensity": 5.5,
+    "sunColor": [
+     0.62,
+     0.92,
+     0.95
+    ],
+    "sunSourceAngle": 2.0,
+    "lightShafts": false,
+    "volumetricScattering": 2.5,
+    "skyMaterial": "/Game/Arenas/Sky/MI_Sky_Underwater.MI_Sky_Underwater",
+    "skyBrightness": 1.0,
+    "skyLightIntensity": 1.1,
+    "skyLightColor": [
+     0.55,
+     0.85,
+     0.9
+    ],
+    "fogDensity": 0.05,
+    "fogFalloff": 0.02,
+    "fogColor": [
+     0.04,
+     0.22,
+     0.26
+    ],
+    "fogStart": 700,
+    "fogHeight": 0,
+    "fogMaxOpacity": 0.97,
+    "volumetricFog": true,
+    "volumetricDistribution": 0.6,
+    "volumetricExtinction": 1.2,
+    "volumetricAlbedo": [
+     0.55,
+     0.9,
+     0.95
+    ],
+    "exposureBias": 0.6,
+    "saturation": 0.95,
+    "contrast": 1.06,
+    "temperature": 7600,
+    "bloom": 1.1,
+    "vignette": 0.6,
+    "gain": [
+     0.88,
+     1.0,
+     1.02
+    ],
+    "lightFunction": "/Game/Arenas/Materials/MI_Arena_Caustics.MI_Arena_Caustics",
+    "lightFunctionScale": 700.0,
+    "lights": [
+     {
+      "at": [
+       0,
+       0,
+       700
+      ],
+      "color": [
+       0.4,
+       0.9,
+       1.0
+      ],
+      "intensity": 30000,
+      "radius": 2600
+     }
+    ]
+   }
+  },
+  {
+   "id": "star_station",
+   "name": "Star Station Hangar",
+   "theme": "An orbital hangar deck above a blue planet",
+   "subtitle": "Hangar Bay 7, high above a blue world. Cargo and dropships are your cover.",
+   "enabled": true,
+   "weight": 1.0,
+   "halfExtents": [
+    2600,
+    2000
+   ],
+   "spawns": {
+    "ember": [
+     [
+      -2250,
+      -600
+     ],
+     [
+      -2250,
+      -300
+     ],
+     [
+      -2250,
+      0
+     ],
+     [
+      -2250,
+      300
+     ],
+     [
+      -2250,
+      600
+     ]
+    ],
+    "dusk": [
+     [
+      2250,
+      -600
+     ],
+     [
+      2250,
+      -300
+     ],
+     [
+      2250,
+      0
+     ],
+     [
+      2250,
+      300
+     ],
+     [
+      2250,
+      600
+     ]
+    ]
+   },
+   "pieces": [
+    [
+     "container",
+     0,
+     660,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "container",
+     0,
+     -660,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "container_rust",
+     0,
+     660,
+     260,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "container",
+     -950,
+     1520,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "container",
+     950,
+     1520,
+     0.0,
+     90.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "container_rust",
+     -950,
+     -1520,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "container_rust",
+     950,
+     -1520,
+     0.0,
+     90.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "dropship",
+     -1500,
+     420,
+     0.0,
+     90,
+     0.62,
+     0.62,
+     0.62,
+     1
+    ],
+    [
+     "dropship",
+     1500,
+     420,
+     0.0,
+     90.0,
+     0.62,
+     0.62,
+     0.62,
+     1
+    ],
+    [
+     "proxy_box",
+     -1500,
+     -700,
+     0.0,
+     0.0,
+     2.5,
+     2.5,
+     3.0,
+     1
+    ],
+    [
+     "proxy_box",
+     1500,
+     -700,
+     0.0,
+     180.0,
+     2.5,
+     2.5,
+     3.0,
+     1
+    ],
+    [
+     "cargo_crate",
+     -1540,
+     -660,
+     0.0,
+     5,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "cargo_crate",
+     1540,
+     -660,
+     0.0,
+     175.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "cargo_crate",
+     -1460,
+     -740,
+     150,
+     20,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "cargo_crate",
+     1460,
+     -740,
+     150,
+     160.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "cargo_crate",
+     -620,
+     970,
+     0.0,
+     10,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "cargo_crate",
+     620,
+     970,
+     0.0,
+     170.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "cargo_crate",
+     -680,
+     -1000,
+     0.0,
+     -15,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "cargo_crate",
+     680,
+     -1000,
+     0.0,
+     195.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "deck_barrier",
+     -1000,
+     -300,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "deck_barrier",
+     1000,
+     -300,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "deck_barrier",
+     -2050,
+     1350,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "deck_barrier",
+     2050,
+     1350,
+     0.0,
+     90.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "deck_barrier",
+     -2050,
+     -1350,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "deck_barrier",
+     2050,
+     -1350,
+     0.0,
+     90.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "pylon",
+     -400,
+     1880,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "pylon",
+     400,
+     1880,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "pylon",
+     -400,
+     -1880,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "pylon",
+     400,
+     -1880,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     1
+    ],
+    [
+     "generator",
+     -1200,
+     1250,
+     0.0,
+     30,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "tool_chest",
+     1250,
+     -1250,
+     0.0,
+     200,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "gas_bottle",
+     -1100,
+     1300,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "gas_bottle",
+     1150,
+     -1320,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "cargo_cart",
+     1300,
+     1250,
+     0.0,
+     -40,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "jerrycan",
+     -1250,
+     -1150,
+     0.0,
+     60,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "glow_strip",
+     -2600,
+     0,
+     0.3,
+     0.0,
+     2.2,
+     0.06,
+     1,
+     0
+    ],
+    [
+     "glow_strip",
+     -1950,
+     0,
+     0.3,
+     0.0,
+     2.2,
+     0.06,
+     1,
+     0
+    ],
+    [
+     "glow_strip",
+     -1300,
+     0,
+     0.3,
+     0.0,
+     2.2,
+     0.06,
+     1,
+     0
+    ],
+    [
+     "glow_strip",
+     -650,
+     0,
+     0.3,
+     0.0,
+     2.2,
+     0.06,
+     1,
+     0
+    ],
+    [
+     "glow_strip",
+     0,
+     0,
+     0.3,
+     0.0,
+     2.2,
+     0.06,
+     1,
+     0
+    ],
+    [
+     "glow_strip",
+     650,
+     0,
+     0.3,
+     0.0,
+     2.2,
+     0.06,
+     1,
+     0
+    ],
+    [
+     "glow_strip",
+     1300,
+     0,
+     0.3,
+     0.0,
+     2.2,
+     0.06,
+     1,
+     0
+    ],
+    [
+     "glow_strip",
+     1950,
+     0,
+     0.3,
+     0.0,
+     2.2,
+     0.06,
+     1,
+     0
+    ],
+    [
+     "glow_strip",
+     2600,
+     0,
+     0.3,
+     0.0,
+     2.2,
+     0.06,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     1140.2,
+     150.1,
+     0.3,
+     97.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     1062.5,
+     440.1,
+     0.3,
+     112.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     912.4,
+     700.1,
+     0.3,
+     127.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     700.1,
+     912.4,
+     0.3,
+     142.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     440.1,
+     1062.5,
+     0.3,
+     157.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     150.1,
+     1140.2,
+     0.3,
+     172.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -150.1,
+     1140.2,
+     0.3,
+     187.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -440.1,
+     1062.5,
+     0.3,
+     202.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -700.1,
+     912.4,
+     0.3,
+     217.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -912.4,
+     700.1,
+     0.3,
+     232.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -1062.5,
+     440.1,
+     0.3,
+     247.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -1140.2,
+     150.1,
+     0.3,
+     262.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -1140.2,
+     -150.1,
+     0.3,
+     277.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -1062.5,
+     -440.1,
+     0.3,
+     292.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -912.4,
+     -700.1,
+     0.3,
+     307.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -700.1,
+     -912.4,
+     0.3,
+     322.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -440.1,
+     -1062.5,
+     0.3,
+     337.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -150.1,
+     -1140.2,
+     0.3,
+     352.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     150.1,
+     -1140.2,
+     0.3,
+     367.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     440.1,
+     -1062.5,
+     0.3,
+     382.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     700.1,
+     -912.4,
+     0.3,
+     397.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     912.4,
+     -700.1,
+     0.3,
+     412.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     1062.5,
+     -440.1,
+     0.3,
+     427.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     1140.2,
+     -150.1,
+     0.3,
+     442.5,
+     2.6,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_strip",
+     0,
+     -1990,
+     0.3,
+     0.0,
+     52,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_strip",
+     0,
+     1990,
+     0.3,
+     0.0,
+     52,
+     0.08,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     -2590,
+     0,
+     0.3,
+     0.0,
+     0.08,
+     40,
+     1,
+     0
+    ],
+    [
+     "glow_amber",
+     2590,
+     0,
+     0.3,
+     0.0,
+     0.08,
+     40,
+     1,
+     0
+    ],
+    [
+     "patch_hangar",
+     -2200,
+     0,
+     -0.5,
+     0.0,
+     9,
+     40,
+     1,
+     0
+    ],
+    [
+     "patch_hangar",
+     2200,
+     0,
+     -0.5,
+     0.0,
+     9,
+     40,
+     1,
+     0
+    ],
+    [
+     "bulkhead",
+     -2980,
+     -2500,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     2980,
+     -2500,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     -2980,
+     -1500,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     2980,
+     -1500,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     -2980,
+     -500,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     2980,
+     -500,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     -2980,
+     500,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     2980,
+     500,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     -2980,
+     1500,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     2980,
+     1500,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     -2980,
+     2500,
+     0.0,
+     0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "bulkhead",
+     2980,
+     2500,
+     0.0,
+     180,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -2400,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -2400,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -2100,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -2100,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -1800,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -1800,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -1500,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -1500,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -1200,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -1200,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -900,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -900,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -600,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -600,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -300,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     -300,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     0,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     0,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     300,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     300,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     600,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     600,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     900,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     900,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     1200,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     1200,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     1500,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     1500,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     1800,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     1800,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     2100,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     2100,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     2400,
+     2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "deck_barrier",
+     2400,
+     -2150,
+     0.0,
+     90,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "gantry",
+     0,
+     0,
+     1250,
+     0,
+     4.6,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "station_tower",
+     -9000,
+     14000,
+     -3000,
+     0,
+     1.2,
+     1.2,
+     1.2,
+     0
+    ],
+    [
+     "station_tower",
+     7000,
+     17000,
+     -3000,
+     30,
+     1.5,
+     1.5,
+     1.5,
+     0
+    ],
+    [
+     "station_tower",
+     15000,
+     6000,
+     -3000,
+     60,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "station_tower",
+     -16000,
+     -3000,
+     -3000,
+     10,
+     1.3,
+     1.3,
+     1.3,
+     0
+    ],
+    [
+     "station_tower",
+     4000,
+     -16000,
+     -3000,
+     45,
+     1.6,
+     1.6,
+     1.6,
+     0
+    ],
+    [
+     "pylon",
+     -2400,
+     2350,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "pylon",
+     2400,
+     2350,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "pylon",
+     -2400,
+     -2350,
+     0.0,
+     0.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "pylon",
+     2400,
+     -2350,
+     0.0,
+     180.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ]
+   ],
+   "scatter": [],
+   "ground": "ground_deck",
+   "groundSize": 7400,
+   "ambience": "arena_station",
+   "music": "MUS_Killers",
+   "minimap": {
+    "ground": [
+     0.06,
+     0.08,
+     0.11
+    ],
+    "blocker": [
+     0.35,
+     0.55,
+     0.75
+    ],
+    "accent": [
+     0.35,
+     0.85,
+     1.0
+    ]
+   },
+   "lighting": {
+    "sunPitch": -34.0,
+    "sunYaw": 90.0,
+    "sunIntensity": 8.5,
+    "sunColor": [
+     1.0,
+     0.96,
+     0.9
+    ],
+    "sunSourceAngle": 0.4,
+    "volumetricScattering": 0.5,
+    "skyMaterial": "/Game/Arenas/Sky/MI_Sky_Space.MI_Sky_Space",
+    "skyBrightness": 1.0,
+    "skyLightIntensity": 0.5,
+    "skyLightColor": [
+     0.6,
+     0.72,
+     1.0
+    ],
+    "fogDensity": 0.0,
+    "fogFalloff": 0.2,
+    "fogColor": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "fogStart": 30000,
+    "volumetricFog": false,
+    "exposureBias": 0.6,
+    "saturation": 1.05,
+    "contrast": 1.1,
+    "temperature": 7000,
+    "bloom": 1.2,
+    "vignette": 0.5,
+    "lights": [
+     {
+      "at": [
+       0,
+       0,
+       900
+      ],
+      "color": [
+       0.55,
+       0.8,
+       1.0
+      ],
+      "intensity": 60000,
+      "radius": 3200
+     },
+     {
+      "at": [
+       -1800,
+       0,
+       500
+      ],
+      "color": [
+       1.0,
+       0.7,
+       0.4
+      ],
+      "intensity": 25000,
+      "radius": 1800
+     },
+     {
+      "at": [
+       1800,
+       0,
+       500
+      ],
+      "color": [
+       1.0,
+       0.7,
+       0.4
+      ],
+      "intensity": 25000,
+      "radius": 1800
+     }
+    ]
+   }
+  }
+ ]
+}

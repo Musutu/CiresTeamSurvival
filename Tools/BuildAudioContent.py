@@ -27,7 +27,7 @@ STAGING = ROOT / "Tools" / "ContentBuilder"
 PROCESSED = ROOT / "Art" / "Downloads" / "Audio" / "processed"
 MUSIC = ROOT / "Art" / "Downloads" / "Audio" / "music"
 REPORT = ROOT / "Art" / "Audio" / "ProcessReport.json"
-FOLDERS = ("Mix", "Music", "Ambience", "Footsteps", "SFX", "UI", "Auras")
+FOLDERS = ("Mix", "Music", "Ambience", "Footsteps", "SFX", "UI", "Auras", "Arenas")  # arenas: Content/Audio/Arenas
 # aura-vfx: CIRE_AUDIO_FOLDERS=Auras rebuilds and copies only those folders (the mix is rebuilt in
 # staging for references but not copied, so shipped assets outside the subset are never touched).
 SUBSET = tuple(f for f in os.environ.get("CIRE_AUDIO_FOLDERS", "").split(",") if f)
@@ -196,6 +196,11 @@ def run_inside_unreal():
             elif name.startswith("AMB_") and not looping:
                 setp(wave, "attenuation_settings", att["Ambient"])
                 setp(wave, "concurrency_set", [conc["AmbienceOneShot"]])
+        elif category == "Arenas":  # arenas: ambience beds (2D loops) and positional one-shots, ambience bus
+            setp(wave, "sound_class_object", classes["Ambience"])
+            if not looping:
+                setp(wave, "attenuation_settings", att["Ambient"])
+                setp(wave, "concurrency_set", [conc["AmbienceOneShot"]])
         elif category == "Auras":  # aura-vfx: buff sounds, positional at the unit, event concurrency
             setp(wave, "sound_class_object", classes["SFX"])
             setp(wave, "concurrency_set", [conc["Events"]])
@@ -206,7 +211,7 @@ def run_inside_unreal():
             if meta.get("positional"):
                 setp(wave, "attenuation_settings", att["Large"])
         # Route explicitly as well as through the class default, so each bus can be recorded/metered.
-        bus = {"Music": "Music", "UI": "UI", "Footsteps": "SFX", "Ambience": "Ambience"}.get(category, "SFX")
+        bus = {"Music": "Music", "UI": "UI", "Footsteps": "SFX", "Ambience": "Ambience", "Arenas": "Ambience"}.get(category, "SFX")
         setp(wave, "sound_submix_object", submixes[bus])
         library.save_loaded_asset(wave, only_if_is_dirty=False)
         count += 1

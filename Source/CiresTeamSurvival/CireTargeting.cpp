@@ -1,6 +1,7 @@
 #include "CireTargeting.h"
 #include "CireSelection.h"
 #include "CireGame.h"
+#include "CireArenas.h" // arenas
 #include "CireHUD.h"
 #include "CireDeveloperTools.h"
 #include "CireSkillTuning.h"
@@ -45,7 +46,7 @@ bool InRealm(ACireHero* H,FVector P,float Margin=0)
     if(!H||P.ContainsNaN()||H->TeamId<0||H->TeamId>1)return false;
     if(auto* M=H->GetWorld()->GetAuthGameMode<ACireGameMode>())return CireSkillRuntime::InRealmBounds(M,H->TeamId,P,Margin);
     const auto* S=H->GetWorld()->GetGameState<ACireGameState>();if(!S)return false;
-    if(S->Phase==2)return FMath::Abs(P.X)<=2100-Margin&&FMath::Abs(P.Y-(10000+S->ArenaIndex*6000))<=1450-Margin;
+    if(S->Phase==2)return CireArenas::InBounds(H->GetWorld(),P,Margin); // arenas
     return S->Phase==0&&CireLanePath::Contains(H->GetWorld(),H->TeamId,P,Margin);
 }
 bool FloorAt(ACireHero* H,FVector P,FVector& Ground,float Tolerance=700,float MinNormal=.8f)
