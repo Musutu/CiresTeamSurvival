@@ -193,3 +193,10 @@ core build one component at a time and keep a health potion.
   suite also runs inside `Tools/RunExpansionChecks.py --only native`.
 - Icons: 48 original procedural icons from `Tools/BuildItemIcons.py` (licenses in
   `Content/UI/Items/LICENSES.md`); contact sheet via `Tools/ItemIconSheet.py`.
+
+### Evidence (24 September 2026, after merging main with the town world)
+
+- Native rules: 1,930,816 + 45,777 item assertions, 0 failures (`Tests/Run-MSVC.cmd`).
+- In-engine: `CIRE_ITEMS_PASS checks=45`, `CIRE_PROGRESSION_PASS checks=26`; `RunExpansionChecks --only native` and `--only network` PASS; `RunNetworkSmoke.py` PASS; `RunNPCChecks.py` PASS; `-CireSmoke` full cycle PASS (cycle 2 unlocks the tier-2 bay).
+- Shop network probe (dedicated server + client): prep purchase 30 m from town, recipe, sell, undo, invalid item, potion, survival rejection, teleport channel and cooldown all replicated: `Saved/ProgressionChecks/20260924T105835834752Z/report.json`.
+- Captures (1920x1080, reviewed): `Saved/ShopGallery/20260924-110101/` (shop browsing + hover, recommended, buy flight, error shake, sell, stats hover, loot chest drop/opened, teleport channel/cooldown).
