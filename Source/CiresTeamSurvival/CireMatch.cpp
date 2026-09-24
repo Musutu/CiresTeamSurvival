@@ -31,6 +31,9 @@
 #include "CireSpellGallery.h"
 #include "CireOptionsGallery.h"
 #include "CireCombatExpansionProbe.h"
+#include "CireNPCArchetypes.h"
+#include "CireNPCPackPreview.h"
+#include "CireNPCNetProbe.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCire, Log, All);
 
@@ -180,6 +183,8 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireCombatArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireFeedbackPreview::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireNPCPackPreview::Initialize(this);
+    CireNPCNetProbe::InitializeServer(this);
 #endif
     if(!bFeedbackPreview)SpawnPacks();
     if(!bFeedbackPreview)CireBalanceLab::Initialize(this);
@@ -265,14 +270,13 @@ void ACireGameMode::SpawnWave() {
         auto* M=GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),Position,FRotator(0,180,0),Params);
         if(!M) {UE_LOG(LogCire,Error,TEXT("Wave monster spawn failed"));continue;}
         M->Lane=Team;
-        CireNPCCombat::Configure(M,bEscortWave?1:I%4,S->Wave,bFinalWave&&I==UnitCount);
-        M->GetCharacterMovement()->MaxWalkSpeed=145+FMath::Min(S->Wave*2,85);
+        // Wave composition is data-driven (NPCArchetypes.json): every unit has a role;
+        // the final wave of a cycle adds the lane boss, which costs its leakCost (10).
+        const auto& NPCs=CireNPCArchetypes::Get();
+        if(bEscortWave)CireNPCCombat::Configure(M,1,S->Wave);
+        else if(bFinalWave&&I==UnitCount)CireNPCCombat::ConfigureArchetype(M,NPCs.WaveBoss,S->Wave,0,1,true);
+        else CireNPCCombat::ConfigureArchetype(M,NPCs.WaveComposition[I%NPCs.WaveComposition.Num()],S->Wave);
         M->SpawnPosition=Position;
-        if(bFinalWave&&I==UnitCount) {
-            M->bBoss=true; M->MonsterName=TEXT("Hollow Siegebreaker");
-            M->GetCharacterMovement()->MaxWalkSpeed*=.8f;
-            M->SetActorScale3D(FVector(1.35f));
-        }
         if(bEscortWave)CireLanePath::ConfigureEscort(M);
         CireLanePath::InitializeProgress(M);
         Monsters.Add(M);
@@ -280,16 +284,26 @@ void ACireGameMode::SpawnWave() {
     UE_LOG(LogCire,Display,TEXT("CIRE WAVE SPAWN round=%d wave=%d cycle=%d/%d"),S->Round,S->Wave,CycleWavesSpawned,S->WavesPerCycle);
 }
 void ACireGameMode::SpawnPacks() {
+    // Challenge packs: one elite of each authored member archetype plus a boss-classified
+    // Pack Leader from leaderFromTier. Rewards stay on the existing whole-pack rule.
     const int R=Clock.Round();
-    for(int Team=0;Team<2;++Team) for(int Tier=1;Tier<=3;++Tier) for(int I=0;I<3;++I) {
-        FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        FVector P=CireLanePath::ChallengePosition(GetWorld(),Team,Tier)+FVector((I-1)*110,0,0);
-        auto* M=GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),P,FRotator::ZeroRotator,Params);
-        M->Lane=Team; M->Tier=Tier; M->PackId=R*100+Team*10+Tier; M->SpawnPosition=P;
-        CireNPCCombat::Configure(M,1+I%3,GetGameState<ACireGameState>()->Wave,false,Tier,R);
-        M->MonsterName=FString::Printf(TEXT("Challenge %d | %s"),Tier,*M->MonsterName);
-        M->GetCharacterMovement()->MaxWalkSpeed=230;
-        M->SetActorScale3D(FVector(1.08f+Tier*.09f)); Monsters.Add(M);
+    const auto& NPCs=CireNPCArchetypes::Get();
+    const int32 Wave=GetGameState<ACireGameState>()->Wave;
+    for(int Team=0;Team<2;++Team) for(int Tier=1;Tier<=3;++Tier) {
+        const FVector Center=CireLanePath::ChallengePosition(GetWorld(),Team,Tier);
+        const int32 Members=NPCs.PackMembers.Num();
+        const bool bLeader=Tier>=NPCs.PackLeaderFromTier;
+        for(int I=0;I<Members+(bLeader?1:0);++I) {
+            const bool bIsLeader=I==Members;
+            FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+            const FVector P=Center+(bIsLeader?FVector(260,0,40):FVector((I-(Members-1)*.5f)*110,0,0));
+            auto* M=GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),P,FRotator::ZeroRotator,Params);
+            if(!M) {UE_LOG(LogCire,Error,TEXT("Challenge pack spawn failed"));continue;}
+            M->Lane=Team; M->Tier=Tier; M->PackId=R*100+Team*10+Tier; M->SpawnPosition=P;
+            CireNPCCombat::ConfigureArchetype(M,bIsLeader?NPCs.PackLeader:NPCs.PackMembers[I],Wave,Tier,R);
+            M->MonsterName=FString::Printf(TEXT("Challenge %d | %s"),Tier,*M->MonsterName);
+            Monsters.Add(M);
+        }
     }
 }
 void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
@@ -423,6 +437,8 @@ void ACireGameMode::Tick(float Dt) {
     if(CireCombatArtPreview::Tick(this)) return;
     if(CireArtPreview::Tick(this)) return;
     if(CireFeedbackPreview::Tick(this)) return;
+    if(CireNPCPackPreview::Tick(this)) return;
+    if(CireNPCNetProbe::TickServer(this)) return;
     if(CireExpansionNetProbe::TickServer(this)) return;
     if(CireInterfaceProbe::TickServer(this)) return;
     TickServerProbe(this);
