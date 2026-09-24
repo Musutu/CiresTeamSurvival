@@ -183,3 +183,5 @@ shows the replicated current and next wave.
   failsafe, dumps each unit's state when a wave outlives 150 s, and ends with
   `CIRE_WAVE_SOAK_PASS|FAIL`.
 - `-CireSmoke` now computes its expected lives and boss leaks from what the director spawned.
+- Captures: `-CireWaveGallery -RenderOffscreen -ForceRes -windowed -ResX=1920 -ResY=1080` writes the
+  Waves editor, a neutral (yellow) pack and the same pack provoked to `Saved/WaveGallery/<stamp>/`.
