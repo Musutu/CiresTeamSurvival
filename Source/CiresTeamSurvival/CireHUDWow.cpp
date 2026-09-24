@@ -24,6 +24,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Sound/SoundBase.h"
+#include "CireAudio.h" // audio: recorded cues for level-up, aggro and phase banners
 #include "UObject/ConstructorHelpers.h"
 
 namespace
@@ -284,7 +285,9 @@ void ACireHUD::Circle(float X,float Y,float R,FLinearColor Color,float Width,int
 void ACireHUD::Tri(FVector2D A,FVector2D B,FVector2D C,FLinearColor Color) { Painter().Tri(A,B,C,Color); }
 void ACireHUD::PlayWowSound(int32 Index,float Volume)
 {
-    if(UISettings.bMuteAudio||!WowSounds.IsValidIndex(Index)||!WowSounds[Index])return;
+    if(UISettings.bMuteAudio)return;
+    if(CireAudio::PlayHudSound(this,Index,Volume))return; // audio: data-driven cue (AudioCues.json hudLegacy); else the synthesized tone
+    if(!WowSounds.IsValidIndex(Index)||!WowSounds[Index])return;
     const float Level=UISettings.MasterVolume*UISettings.UIVolume*Volume;
     if(Level>0.f)UGameplayStatics::PlaySound2D(this,WowSounds[Index],Level);
 }
@@ -1239,6 +1242,7 @@ void ACireHUD::DrawBanners()
     ECireBanner Started=ECireBanner::Custom;
     if(CireBanners::Draw(Painter(),ViewW,ViewH,Started))
     {
+        if(!UISettings.bMuteAudio&&CireAudio::PlayBanner(this,static_cast<uint8>(Started)))return; // audio: horn / bell / war drums
         switch(Started)
         {
         case ECireBanner::LevelUp:break; // the level-up burst plays its own chime

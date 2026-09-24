@@ -66,10 +66,34 @@
    "name": "AMB_Bell_01",
    "category": "Ambience",
    "file": "Art/Downloads/Audio/processed/Ambience/AMB_Bell_01.wav",
-   "seconds": 4.508,
+   "seconds": 4.25,
    "channels": 1,
    "rmsDb": -18.0,
-   "peakDb": -2.9,
+   "peakDb": -2.8,
+   "sources": [
+    "bell_short"
+   ]
+  },
+  {
+   "name": "AMB_Bell_02",
+   "category": "Ambience",
+   "file": "Art/Downloads/Audio/processed/Ambience/AMB_Bell_02.wav",
+   "seconds": 4.25,
+   "channels": 1,
+   "rmsDb": -18.0,
+   "peakDb": -2.6,
+   "sources": [
+    "bell_short"
+   ]
+  },
+  {
+   "name": "AMB_Bell_03",
+   "category": "Ambience",
+   "file": "Art/Downloads/Audio/processed/Ambience/AMB_Bell_03.wav",
+   "seconds": 4.25,
+   "channels": 1,
+   "rmsDb": -18.0,
+   "peakDb": -2.7,
    "sources": [
     "bell_short"
    ]
@@ -1812,9 +1836,9 @@
    "name": "SFX_PrepBell",
    "category": "SFX",
    "file": "Art/Downloads/Audio/processed/SFX/SFX_PrepBell.wav",
-   "seconds": 9.016,
+   "seconds": 7.8,
    "channels": 1,
-   "rmsDb": -18.3,
+   "rmsDb": -18.5,
    "peakDb": -3.0,
    "sources": [
     "bell_short"

@@ -1,4 +1,5 @@
 #include "CireCombatExpansionProbe.h"
+#include "CireAudio.h" // audio:
 #include "CireLanePath.h"
 #include "CireChampionRoster.h"
 #include "CireChampionProfiles.h"
@@ -81,6 +82,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireDeveloperTools::RunValidationSmoke()&&Good;
     Good=CireReplay::RunReplaySmoke(Mode->GetWorld())&&Good;
     Good=CireSpellPresentation::RunSmoke(Mode->GetWorld())&&Good;
+    Good=CireAudio::RunAudioSmoke(Mode->GetWorld())&&Good; // audio: settings, buses, data, armour classes, music, cadence
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }
 #endif

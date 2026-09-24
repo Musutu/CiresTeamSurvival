@@ -87,6 +87,7 @@ void FCireUISettings::Reset()
     CameraYawSensitivity=CameraPitchSensitivity=1.f; bInvertMouseY=false;
     CameraDistance=650.f; CameraFOV=80.f;
     MasterVolume=.85f; SFXVolume=.85f; UIVolume=.7f; bMuteAudio=false;
+    MusicVolume=.6f; AmbienceVolume=.8f; bMusicEnabled=true; bFootstepCameraShake=false; // audio:
     bShowFPS=false; bShowNetwork=true; bTooltips=true; bQuickGroundCast=false;
     TooltipScale=.8f; TooltipMode=3; TooltipAngleDegrees=45.f; TooltipDistance=40.f; bTooltipOffsetLocked=true;
     StatusFilter=0; bDispellableOnly=false; bShowStatusDurations=true; bShowCriticalSymbol=true;
@@ -199,6 +200,7 @@ void FCireUISettings::SanitizePreferences()
     CameraYawSensitivity=SafeFloat(CameraYawSensitivity,1,.05f,5); CameraPitchSensitivity=SafeFloat(CameraPitchSensitivity,1,.05f,5); // camera-movement: widened
     CameraDistance=SafeFloat(CameraDistance,650,300,1200); CameraFOV=SafeFloat(CameraFOV,80,55,105);
     MasterVolume=SafeFloat(MasterVolume,.85f,0,1); SFXVolume=SafeFloat(SFXVolume,.85f,0,1); UIVolume=SafeFloat(UIVolume,.7f,0,1);
+    MusicVolume=SafeFloat(MusicVolume,.6f,0,1); AmbienceVolume=SafeFloat(AmbienceVolume,.8f,0,1); // audio:
     StatusFilter=FMath::Clamp(StatusFilter,0,2);
     TooltipScale=SafeFloat(TooltipScale,.8f,.6f,1.4f);
     TooltipAngleDegrees=SafeFloat(TooltipAngleDegrees,45,0,360); TooltipDistance=SafeFloat(TooltipDistance,40,16,240);
@@ -245,6 +247,7 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bCritPop); CIRE_LOAD_BOOL(bSchoolColors); CIRE_LOAD_BOOL(bMergeAoE); CIRE_LOAD_BOOL(bShowThreatMeter);
     CIRE_LOAD_BOOL(bThreatWarnings); CIRE_LOAD_BOOL(bThreatSound); CIRE_LOAD_BOOL(bLevelUpEffect); CIRE_LOAD_BOOL(bShowBossFrames);
     CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
+    CIRE_LOAD_BOOL(bMusicEnabled); CIRE_LOAD_BOOL(bFootstepCameraShake); // audio: absent keys keep the defaults
 #undef CIRE_LOAD_BOOL
     Config.GetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
     Config.GetFloat(PreferencesSection, TEXT("ChatColorR"), ChatColor.R);
@@ -257,6 +260,7 @@ void FCireUISettings::Load(const FString& Filename)
 #define CIRE_LOAD_FLOAT(Field) Config.GetFloat(PreferencesSection,TEXT(#Field),Field)
     CIRE_LOAD_FLOAT(CameraYawSensitivity); CIRE_LOAD_FLOAT(CameraPitchSensitivity); CIRE_LOAD_FLOAT(CameraDistance); CIRE_LOAD_FLOAT(CameraFOV);
     CIRE_LOAD_FLOAT(MasterVolume); CIRE_LOAD_FLOAT(SFXVolume); CIRE_LOAD_FLOAT(UIVolume);
+    CIRE_LOAD_FLOAT(MusicVolume); CIRE_LOAD_FLOAT(AmbienceVolume); // audio:
     CIRE_LOAD_FLOAT(TooltipScale); CIRE_LOAD_FLOAT(TooltipAngleDegrees); CIRE_LOAD_FLOAT(TooltipDistance);
     CIRE_LOAD_FLOAT(UIScale); CIRE_LOAD_FLOAT(TooltipOpacity); CIRE_LOAD_FLOAT(TooltipDelay); CIRE_LOAD_FLOAT(SCTSpeed);
     CIRE_LOAD_FLOAT(SCTFadeSeconds); CIRE_LOAD_FLOAT(ThreatWarningPercent);
@@ -315,6 +319,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bCritPop); CIRE_SAVE_BOOL(bSchoolColors); CIRE_SAVE_BOOL(bMergeAoE); CIRE_SAVE_BOOL(bShowThreatMeter);
     CIRE_SAVE_BOOL(bThreatWarnings); CIRE_SAVE_BOOL(bThreatSound); CIRE_SAVE_BOOL(bLevelUpEffect); CIRE_SAVE_BOOL(bShowBossFrames);
     CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
+    CIRE_SAVE_BOOL(bMusicEnabled); CIRE_SAVE_BOOL(bFootstepCameraShake); // audio:
 #undef CIRE_SAVE_BOOL
     Config.SetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
     Config.SetFloat(PreferencesSection, TEXT("ChatColorR"), ChatColor.R);
@@ -327,6 +332,7 @@ bool FCireUISettings::Save()
 #define CIRE_SAVE_FLOAT(Field) Config.SetFloat(PreferencesSection,TEXT(#Field),Field)
     CIRE_SAVE_FLOAT(CameraYawSensitivity); CIRE_SAVE_FLOAT(CameraPitchSensitivity); CIRE_SAVE_FLOAT(CameraDistance); CIRE_SAVE_FLOAT(CameraFOV);
     CIRE_SAVE_FLOAT(MasterVolume); CIRE_SAVE_FLOAT(SFXVolume); CIRE_SAVE_FLOAT(UIVolume);
+    CIRE_SAVE_FLOAT(MusicVolume); CIRE_SAVE_FLOAT(AmbienceVolume); // audio:
     CIRE_SAVE_FLOAT(TooltipScale); CIRE_SAVE_FLOAT(TooltipAngleDegrees); CIRE_SAVE_FLOAT(TooltipDistance);
     CIRE_SAVE_FLOAT(UIScale); CIRE_SAVE_FLOAT(TooltipOpacity); CIRE_SAVE_FLOAT(TooltipDelay); CIRE_SAVE_FLOAT(SCTSpeed);
     CIRE_SAVE_FLOAT(SCTFadeSeconds); CIRE_SAVE_FLOAT(ThreatWarningPercent);

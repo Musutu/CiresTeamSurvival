@@ -18,6 +18,7 @@ Inputs come from Tools/FetchAudioSources.py -> DecodeAudioSources.py -> ProcessA
 import json
 import os
 import shutil
+import stat
 import subprocess
 from pathlib import Path
 
@@ -195,6 +196,9 @@ def run_inside_unreal():
             setp(wave, "concurrency_set", [conc["Events"]])
             if meta.get("positional"):
                 setp(wave, "attenuation_settings", att["Large"])
+        # Route explicitly as well as through the class default, so each bus can be recorded/metered.
+        bus = {"Music": "Music", "UI": "UI", "Footsteps": "SFX", "Ambience": "Ambience"}.get(category, "SFX")
+        setp(wave, "sound_submix_object", submixes[bus])
         library.save_loaded_asset(wave, only_if_is_dirty=False)
         count += 1
     for p in problems:
@@ -202,11 +206,20 @@ def run_inside_unreal():
     unreal.log("CIRE_AUDIO_CONTENT_PASS sounds=%d classes=%d submixes=%d problems=%d" % (count, len(classes), len(submixes), len(problems)))
 
 
+def remove_tree(path):
+    """rmtree that also clears read-only flags (Git LFS 'lockable' checkouts are read-only)."""
+    def clear(func, target, _):
+        os.chmod(target, stat.S_IWRITE)
+        func(target)
+    if Path(path).exists():
+        shutil.rmtree(path, onerror=clear)
+
+
 def launch():
     log = STAGING / "Saved" / "Logs" / "AudioContent.log"
     log.parent.mkdir(parents=True, exist_ok=True)
     for folder in FOLDERS:  # rebuild cleanly so renamed/removed sounds do not linger
-        shutil.rmtree(STAGING / "Content" / "Audio" / folder, ignore_errors=True)
+        remove_tree(STAGING / "Content" / "Audio" / folder)
     command = ["F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe", str(STAGING / "ContentBuilder.uproject"),
                "-unattended", "-nullrhi", "-nosplash", "-nosound", "-nop4", "-run=pythonscript",
                "-script=%s" % Path(__file__).resolve(), "-stdout", "-FullStdOutLogOutput", "-abslog=%s" % log]
@@ -221,8 +234,9 @@ def launch():
             print(line.split("LogPython: ")[-1])
     for folder in FOLDERS:
         source, destination = STAGING / "Content" / "Audio" / folder, ROOT / "Content" / "Audio" / folder
-        shutil.rmtree(destination, ignore_errors=True)
+        remove_tree(destination)
         shutil.copytree(source, destination)
+        remove_tree(source)  # the staging copy is not versioned; Content/Audio is the source of truth
     print("copied", ", ".join(FOLDERS), "into Content/Audio")
 
 

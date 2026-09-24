@@ -273,7 +273,8 @@ def build_ambience():
         save("AMB_Door_%02d" % i, normalize(mono(kenney(n)), rms_db=-22), cat)
     save("AMB_Chop_01", normalize(mono(kenney("chop")), rms_db=-21), cat)
     bell = mono(load("bell_short"))
-    series("AMB_Bell", slices(bell, 3, max_len=4.5, min_len=1.5, tail=1.2, refractory=2.5), cat, rms_db=-18)
+    # The recording tolls every ~1.4 s with overlapping decays, so each one-shot is a natural three-toll phrase.
+    series("AMB_Bell", [fade(cut(bell, a - .05, a + 4.2), .01, 1.4) for a in (0.86, 6.48, 12.14)], cat, rms_db=-18)
     save("AMB_BellDistant_01", normalize(fade(mono(load("bell_funeral")), .05, 3.0), rms_db=-21), cat)
     anvil = mono(load("anvil"))
     series("AMB_Anvil", slices(anvil, 4, max_len=1.4, min_len=.3, tail=.5, refractory=.5), cat, rms_db=-20)
@@ -321,8 +322,7 @@ def build_events():
     save("SFX_WarHornDistant", normalize(fade(cut(load("war_horn_distant"), 0, 11), .05, 2.5), peak_db=-3), cat)
     save("SFX_WarDrums", normalize(fade(cut(load("war_drums"), 0, 9.5), .01, 2.0), peak_db=-2), cat)
     bell = mono(load("bell_short"))
-    first = slices(bell, 1, max_len=4.5, min_len=1.5, tail=1.5, refractory=2.5, spread=False)[0]
-    save("SFX_PrepBell", normalize(concat(first, first), peak_db=-3), cat)
+    save("SFX_PrepBell", normalize(fade(cut(bell, .8, 8.6), .01, 1.8), peak_db=-3), cat)  # five tolls
     save("SFX_PackLeaderRoar", normalize(fade(mix(mono(load("roar")), pitch(mono(load("roar_growl")), .85), gains=[1, .45]), .005, .6), peak_db=-1.5), cat, positional=True)
     save("SFX_PackLeaderGrowl", normalize(fade(mono(load("roar_growl")), .01, .6), peak_db=-3), cat, positional=True)
     save("SFX_TeleportArrive", normalize(fade(cut(load("teleport"), 0, 4.5), .01, 1.5), peak_db=-3), cat)

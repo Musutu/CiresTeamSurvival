@@ -1,0 +1,467 @@
+#include "CireAudio.h"
+#include "CireGame.h"
+#include "CireHUD.h"
+#include "CireUISettings.h"
+#include "CireNPCState.h"
+#include "AudioDevice.h"
+#include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
+#include "Components/AudioComponent.h"
+#include "Dom/JsonObject.h"
+#include "Engine/Engine.h"
+#include "Engine/World.h"
+#include "EngineUtils.h"
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
+#include "Misc/App.h"
+#include "Misc/CommandLine.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Parse.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "Sound/ReverbEffect.h"
+#include "Sound/SoundBase.h"
+#include "Sound/SoundClass.h"
+#include "Sound/SoundMix.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogCireAudio, Log, All);
+
+namespace
+{
+struct FCue
+{
+    TArray<FString> Sounds;
+    float Volume = 1.f, PitchMin = 1.f, PitchMax = 1.f, Jitter = .08f, Cooldown = 0.f;
+    bool bLoop = false;
+};
+struct FCueData
+{
+    bool bValid = false;
+    TMap<FName, FCue> Cues;
+    TMap<int32, FName> HudLegacy;
+    TMap<FString, FName> Banners;
+};
+FCueData GCueData;
+bool GCueLoaded = false;
+TMap<FName, double> GLastCuePlay;
+TMap<FName, int32> GLastCuePick;
+#if !UE_BUILD_SHIPPING
+const FCireUISettings* GSettingsOverride = nullptr;
+#endif
+
+TSharedPtr<FJsonObject> ReadJson(const TCHAR* File)
+{
+    FString Text;
+    if(!FFileHelper::LoadFileToString(Text, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data"), File))) return nullptr;
+    TSharedPtr<FJsonObject> Root;
+    const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Text);
+    return FJsonSerializer::Deserialize(Reader, Root) ? Root : nullptr;
+}
+
+void ReadRange(const TSharedPtr<FJsonObject>& O, const TCHAR* Field, float& Min, float& Max)
+{
+    const TArray<TSharedPtr<FJsonValue>>* A = nullptr;
+    if(O->TryGetArrayField(Field, A) && A->Num() == 2) { Min = (*A)[0]->AsNumber(); Max = (*A)[1]->AsNumber(); if(Max < Min) Swap(Min, Max); }
+}
+
+const FCueData& Cues()
+{
+    if(GCueLoaded) return GCueData;
+    GCueLoaded = true; GCueData = FCueData();
+    const TSharedPtr<FJsonObject> Root = ReadJson(TEXT("AudioCues.json"));
+    if(!Root) { UE_LOG(LogCireAudio, Warning, TEXT("AudioCues.json missing or invalid")); return GCueData; }
+    const TSharedPtr<FJsonObject>* CueMap = nullptr;
+    if(Root->TryGetObjectField(TEXT("cues"), CueMap))
+        for(const auto& Pair : (*CueMap)->Values)
+        {
+            const TSharedPtr<FJsonObject> O = Pair.Value->AsObject(); if(!O) continue;
+            FCue Cue;
+            const TArray<TSharedPtr<FJsonValue>>* Sounds = nullptr;
+            if(O->TryGetArrayField(TEXT("sounds"), Sounds)) for(const auto& S : *Sounds) Cue.Sounds.Append(CireAudio::ExpandSoundNames(S->AsString()));
+            double N = 0;
+            if(O->TryGetNumberField(TEXT("volume"), N)) Cue.Volume = FMath::Clamp(static_cast<float>(N), 0.f, 4.f);
+            if(O->TryGetNumberField(TEXT("volumeJitter"), N)) Cue.Jitter = FMath::Clamp(static_cast<float>(N), 0.f, .9f);
+            if(O->TryGetNumberField(TEXT("cooldown"), N)) Cue.Cooldown = FMath::Max(0.f, static_cast<float>(N));
+            ReadRange(O, TEXT("pitch"), Cue.PitchMin, Cue.PitchMax);
+            O->TryGetBoolField(TEXT("loop"), Cue.bLoop);
+            if(!Cue.Sounds.IsEmpty()) GCueData.Cues.Add(FName(*Pair.Key), Cue);
+        }
+    const TSharedPtr<FJsonObject>* Hud = nullptr;
+    if(Root->TryGetObjectField(TEXT("hudLegacy"), Hud))
+        for(const auto& Pair : (*Hud)->Values) if(FString(*Pair.Key).IsNumeric()) GCueData.HudLegacy.Add(FCString::Atoi(*Pair.Key), FName(*Pair.Value->AsString()));
+    const TSharedPtr<FJsonObject>* Banners = nullptr;
+    if(Root->TryGetObjectField(TEXT("banners"), Banners))
+        for(const auto& Pair : (*Banners)->Values) if(FString(*Pair.Key) != TEXT("notes")) GCueData.Banners.Add(FString(*Pair.Key), FName(*Pair.Value->AsString()));
+    GCueData.bValid = !GCueData.Cues.IsEmpty();
+    return GCueData;
+}
+
+UWorld* WorldOf(const UObject* Context)
+{
+    return GEngine && Context ? GEngine->GetWorldFromContextObject(Context, EGetWorldErrorMode::ReturnNull) : nullptr;
+}
+
+/** Picks a cue member (never the previous one when there is a choice) and computes volume/pitch. */
+USoundBase* Prepare(UCireAudioSubsystem& Audio, FName Id, const FCue& Cue, float Scale, float& OutVolume, float& OutPitch)
+{
+    int32 Index = Cue.Sounds.Num() == 1 ? 0 : FMath::RandRange(0, Cue.Sounds.Num() - 1);
+    if(Cue.Sounds.Num() > 1) if(const int32* Last = GLastCuePick.Find(Id); Last && *Last == Index) Index = (Index + 1) % Cue.Sounds.Num();
+    GLastCuePick.Add(Id, Index);
+    OutVolume = Cue.Volume * Scale * (1.f - FMath::FRand() * Cue.Jitter);
+    OutPitch = FMath::FRandRange(Cue.PitchMin, Cue.PitchMax);
+    return Audio.ResolveSound(Cue.Sounds[Index]);
+}
+
+bool CooldownReady(FName Id, const FCue& Cue)
+{
+    const double Now = FPlatformTime::Seconds();
+    if(const double* Last = GLastCuePlay.Find(Id); Last && Now - *Last < Cue.Cooldown) return false;
+    GLastCuePlay.Add(Id, Now);
+    return true;
+}
+
+UAudioComponent* Spawn(const UObject* Context, FName Id, const FVector* Location, USceneComponent* Attach, FName Socket, float Scale)
+{
+    UWorld* World = WorldOf(Context ? Context : Attach);
+    UCireAudioSubsystem* Audio = UCireAudioSubsystem::Get(World);
+    const FCue* Cue = Cues().Cues.Find(Id);
+    if(!Audio || !Cue || CireAudio::LocalSettings(World).bMuteAudio || !CooldownReady(Id, *Cue)) return nullptr;
+    float Volume = 1.f, Pitch = 1.f;
+    USoundBase* Sound = Prepare(*Audio, Id, *Cue, Scale, Volume, Pitch);
+    if(!Sound || Volume <= 0.f) return nullptr;
+    UAudioComponent* Component = nullptr;
+    if(Attach) Component = UGameplayStatics::SpawnSoundAttached(Sound, Attach, Socket, FVector::ZeroVector, EAttachLocation::KeepRelativeOffset, true, Volume, Pitch);
+    else if(Location) Component = UGameplayStatics::SpawnSoundAtLocation(World, Sound, *Location, FRotator::ZeroRotator, Volume, Pitch);
+    else Component = UGameplayStatics::SpawnSound2D(World, Sound, Volume, Pitch);
+    return Component;
+}
+}
+
+// ---------------------------------------------------------------------------------------------
+TArray<FString> CireAudio::ExpandSoundNames(const FString& Pattern)
+{
+    TArray<FString> Out;
+    int32 Open = INDEX_NONE, Close = INDEX_NONE;
+    if(Pattern.FindChar(TEXT('{'), Open) && Pattern.FindChar(TEXT('}'), Close) && Close > Open)
+    {
+        FString Range = Pattern.Mid(Open + 1, Close - Open - 1), A, B;
+        if(Range.Split(TEXT(".."), &A, &B) && A.IsNumeric() && B.IsNumeric())
+        {
+            const int32 From = FCString::Atoi(*A), To = FCString::Atoi(*B), Width = A.Len();
+            for(int32 I = From; I <= To && I - From < 64; ++I)
+            {
+                FString Number = FString::FromInt(I);
+                while(Number.Len() < Width) Number = TEXT("0") + Number;
+                Out.Add(Pattern.Left(Open) + Number + Pattern.Mid(Close + 1));
+            }
+            return Out;
+        }
+    }
+    Out.Add(Pattern);
+    return Out;
+}
+
+float CireAudio::BusGain(const FCireUISettings& S, ECireAudioBus Bus)
+{
+    if(S.bMuteAudio) return 0.f;
+    const float Master = FMath::Clamp(S.MasterVolume, 0.f, 1.f);
+    switch(Bus)
+    {
+    case ECireAudioBus::Music: return S.bMusicEnabled ? Master * FMath::Clamp(S.MusicVolume, 0.f, 1.f) : 0.f;
+    case ECireAudioBus::SFX: return Master * FMath::Clamp(S.SFXVolume, 0.f, 1.f);
+    case ECireAudioBus::Ambience: return Master * FMath::Clamp(S.AmbienceVolume, 0.f, 1.f);
+    case ECireAudioBus::UI: return Master * FMath::Clamp(S.UIVolume, 0.f, 1.f);
+    case ECireAudioBus::Voice: return Master * FMath::Clamp(S.SFXVolume, 0.f, 1.f);
+    }
+    return Master;
+}
+
+const FCireUISettings& CireAudio::LocalSettings(const UObject* WorldContext)
+{
+    static const FCireUISettings Defaults;
+#if !UE_BUILD_SHIPPING
+    if(GSettingsOverride) return *GSettingsOverride;
+#endif
+    if(UWorld* World = WorldOf(WorldContext))
+        if(APlayerController* PC = World->GetFirstPlayerController())
+            if(const ACireHUD* HUD = Cast<ACireHUD>(PC->GetHUD())) return HUD->UISettings;
+    return Defaults;
+}
+
+bool CireAudio::HasCue(FName CueId) { return Cues().Cues.Contains(CueId); }
+
+bool CireAudio::PlayCue(const UObject* WorldContext, FName CueId, FVector Location, float VolumeScale)
+{
+    const FCue* Cue = Cues().Cues.Find(CueId);
+    if(!Cue) return false;
+    UAudioComponent* C = Spawn(WorldContext, CueId, &Location, nullptr, NAME_None, VolumeScale);
+    if(C && Cue->bLoop) { UE_LOG(LogCireAudio, Warning, TEXT("Loop cue %s played as one-shot; use PlayAttached"), *CueId.ToString()); C->Stop(); return false; }
+    return C != nullptr;
+}
+
+bool CireAudio::PlayCue2D(const UObject* WorldContext, FName CueId, float VolumeScale)
+{
+    const FCue* Cue = Cues().Cues.Find(CueId);
+    if(!Cue) return false;
+    UAudioComponent* C = Spawn(WorldContext, CueId, nullptr, nullptr, NAME_None, VolumeScale);
+    if(C && Cue->bLoop) { C->Stop(); return false; }
+    return C != nullptr;
+}
+
+UAudioComponent* CireAudio::SpawnCueAtLocation(const UObject* WorldContext, FName CueId, FVector Location, float VolumeScale)
+{
+    return Spawn(WorldContext, CueId, &Location, nullptr, NAME_None, VolumeScale);
+}
+
+UAudioComponent* CireAudio::PlayAttached(FName CueId, USceneComponent* AttachTo, FName Socket, float VolumeScale)
+{
+    return AttachTo ? Spawn(AttachTo, CueId, nullptr, AttachTo, Socket, VolumeScale) : nullptr;
+}
+
+void CireAudio::ReloadData()
+{
+    GCueLoaded = false; Cues();
+    CireMusic::Data(true); CireAmbience::Data(true); CireFootsteps::Data(true);
+}
+
+const TArray<FString>& CireAudio::Credits() { return CireMusic::Data().Credits; }
+
+bool CireAudio::PlayHudSound(const UObject* WorldContext, int32 LegacyIndex, float Volume)
+{
+    const FName* Cue = Cues().HudLegacy.Find(LegacyIndex);
+    if(!Cue || !HasCue(*Cue)) return false;
+    PlayCue2D(WorldContext, *Cue, FMath::Clamp(Volume, 0.f, 2.f));
+    return true; // handled even when rate-limited, so the legacy tone never doubles it
+}
+
+bool CireAudio::PlayBanner(const UObject* WorldContext, uint8 Banner)
+{
+    static const TCHAR* Names[] = {TEXT("LevelUp"), TEXT("WaveIncoming"), TEXT("WaveCleared"), TEXT("PrepPhase"), TEXT("Arena"),
+        TEXT("Recovery"), TEXT("ChallengeUnlocked"), TEXT("BossSpawned"), TEXT("Victory"), TEXT("Defeat"), TEXT("Custom")};
+    if(Banner >= UE_ARRAY_COUNT(Names)) return false;
+    const FName* Cue = Cues().Banners.Find(Names[Banner]);
+    if(!Cue) return false;
+    if(!Cue->IsNone()) PlayCue2D(WorldContext, *Cue);
+    return true;
+}
+
+void CireAudio::NoteHover(const UObject* WorldContext, float X, float Y)
+{
+    static uint64 LastFrame = 0;
+    static FVector2D LastKey(-1e6, -1e6);
+    const FVector2D Key(X, Y);
+    const bool bNew = GFrameCounter > LastFrame + 2 || !Key.Equals(LastKey, 1.f);
+    if(GFrameCounter != LastFrame || bNew) { LastFrame = GFrameCounter; }
+    if(bNew) { LastKey = Key; PlayCue2D(WorldContext, TEXT("ui_hover")); }
+}
+
+FString CireAudio::MusicStateName(const UObject* WorldContext)
+{
+    const UCireAudioSubsystem* Audio = UCireAudioSubsystem::Get(WorldContext);
+    return Audio ? FCireMusicDirector::Name(Audio->Director.State) : TEXT("none");
+}
+
+#if !UE_BUILD_SHIPPING
+void CireAudio::SetSettingsOverride(const FCireUISettings* Settings) { GSettingsOverride = Settings; }
+#endif
+
+// ---------------------------------------------------------------------------------------------
+bool UCireAudioSubsystem::ShouldCreateSubsystem(UObject* Outer) const
+{
+    const UWorld* World = Cast<UWorld>(Outer);
+    return World && World->IsGameWorld() && Super::ShouldCreateSubsystem(Outer);
+}
+
+void UCireAudioSubsystem::Initialize(FSubsystemCollectionBase& Collection) { Super::Initialize(Collection); }
+
+void UCireAudioSubsystem::Deinitialize()
+{
+    Music.Reset(); Ambience.Reset(); Footsteps.Reset();
+    if(TeleportHum) TeleportHum->Stop();
+    for(UAudioComponent* C : Owned) if(IsValid(C)) C->Stop();
+    Owned.Reset(); SoundCache.Reset(); TeleportHum = nullptr; bStarted = false;
+    FinishProbe();
+    Super::Deinitialize();
+}
+
+UCireAudioSubsystem* UCireAudioSubsystem::Get(const UObject* WorldContext)
+{
+    UWorld* World = WorldOf(WorldContext);
+    return World ? World->GetSubsystem<UCireAudioSubsystem>() : nullptr;
+}
+
+TStatId UCireAudioSubsystem::GetStatId() const { RETURN_QUICK_DECLARE_CYCLE_STAT(UCireAudioSubsystem, STATGROUP_Tickables); }
+
+USoundBase* UCireAudioSubsystem::ResolveSound(const FString& ShortPath)
+{
+    if(TObjectPtr<USoundBase>* Found = SoundCache.Find(ShortPath)) return *Found;
+    FString Folder, Name;
+    if(!ShortPath.Split(TEXT("/"), &Folder, &Name, ESearchCase::IgnoreCase, ESearchDir::FromEnd)) { Name = ShortPath; Folder.Reset(); }
+    const FString Path = FString::Printf(TEXT("/Game/Audio/%s%s%s.%s"), *Folder, Folder.IsEmpty() ? TEXT("") : TEXT("/"), *Name, *Name);
+    USoundBase* Sound = LoadObject<USoundBase>(nullptr, *Path, nullptr, LOAD_NoWarn | LOAD_Quiet);
+    if(!Sound) UE_LOG(LogCireAudio, Warning, TEXT("Missing sound %s"), *Path);
+    SoundCache.Add(ShortPath, Sound);
+    return Sound;
+}
+
+void UCireAudioSubsystem::Keep(UAudioComponent* Component)
+{
+    if(!Component) return;
+    Owned.RemoveAll([](const TObjectPtr<UAudioComponent>& C) { return !IsValid(C); });
+    Owned.AddUnique(Component);
+}
+
+void UCireAudioSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+    Super::OnWorldBeginPlay(InWorld);
+    if(InWorld.GetNetMode() == NM_DedicatedServer || FParse::Param(FCommandLine::Get(), TEXT("CireNoAudio"))) return;
+    bStarted = true;
+    Director.CombatHoldSeconds = CireMusic::Data().CombatHold;
+    Director.BossHoldSeconds = CireMusic::Data().BossHold;
+    static const TCHAR* ClassNames[] = {TEXT("SCL_Music"), TEXT("SCL_SFX"), TEXT("SCL_Ambience"), TEXT("SCL_UI"), TEXT("SCL_Voice")};
+    BusClasses.Reset();
+    for(const TCHAR* Name : ClassNames)
+        BusClasses.Add(LoadObject<USoundClass>(nullptr, *FString::Printf(TEXT("/Game/Audio/Mix/%s.%s"), Name, Name), nullptr, LOAD_NoWarn | LOAD_Quiet));
+    VolumeMix = NewObject<USoundMix>(this, TEXT("CireUserVolumes"));
+    UGameplayStatics::PushSoundMixModifier(&InWorld, VolumeMix);
+    if(UReverbEffect* Reverb = LoadObject<UReverbEffect>(nullptr, TEXT("/Game/Audio/Mix/REV_StoneStreets.REV_StoneStreets"), nullptr, LOAD_NoWarn | LOAD_Quiet))
+    {
+        UGameplayStatics::ActivateReverbEffect(&InWorld, Reverb, TEXT("CireStoneStreets"), 0.f, .55f, 2.f);
+        bReverbActive = true;
+    }
+    for(float& G : AppliedGain) G = -1.f;
+    if(FParse::Param(FCommandLine::Get(), TEXT("CireAudioProbe"))) TickProbe(0.f);
+    UE_LOG(LogCireAudio, Display, TEXT("CIRE_AUDIO_READY classes=%d cues=%d reverb=%d device=%d"),
+        BusClasses.FilterByPredicate([](const TObjectPtr<USoundClass>& C) { return C != nullptr; }).Num(),
+        Cues().Cues.Num(), bReverbActive ? 1 : 0, InWorld.GetAudioDevice().IsValid() ? 1 : 0);
+}
+
+void UCireAudioSubsystem::ApplyBusVolumes(const FCireUISettings& Settings)
+{
+    UWorld* World = GetWorld();
+    for(int32 Bus = 0; Bus < 5 && Bus < BusClasses.Num(); ++Bus)
+    {
+        const float Gain = CireAudio::BusGain(Settings, static_cast<ECireAudioBus>(Bus));
+        if(FMath::Abs(Gain - AppliedGain[Bus]) < .002f || !BusClasses[Bus]) continue;
+        AppliedGain[Bus] = Gain;
+        UGameplayStatics::SetSoundMixClassOverride(World, VolumeMix, BusClasses[Bus], Gain, 1.f, .12f, true);
+    }
+}
+
+void UCireAudioSubsystem::Tick(float DeltaTime)
+{
+    UWorld* World = GetWorld();
+    if(!bStarted || !World) return;
+    const float Dt = FMath::Clamp(DeltaTime, 0.f, .25f);
+    ++FramesTicked;
+    const FCireUISettings& Settings = CireAudio::LocalSettings(World);
+    ApplyBusVolumes(Settings);
+    if(Probe) { TickProbe(Dt); return; }
+    APlayerController* PC = World->GetFirstPlayerController();
+    const ACireHero* Hero = PC ? Cast<ACireHero>(PC->GetPawn()) : nullptr;
+    const ACireGameState* State = World->GetGameState<ACireGameState>();
+    FVector Listener = Hero ? Hero->GetActorLocation() : FVector::ZeroVector;
+    if(PC && PC->PlayerCameraManager) Listener = PC->PlayerCameraManager->GetCameraLocation();
+    const FVector Body = Hero ? Hero->GetActorLocation() : Listener;
+    const int32 Team = Hero ? Hero->TeamId : 0;
+
+    // ---- music ----
+    const CireMusic::FData& MusicData = CireMusic::Data();
+    FCireMusicInputs In;
+    In.Phase = State ? State->Phase : 0;
+    for(TActorIterator<ACireMonster> It(World); It; ++It)
+    {
+        const ACireMonster* M = *It;
+        if(!IsValid(M) || M->Health <= 0.f || (Team >= 0 && M->Lane >= 0 && M->Lane != Team)) continue;
+        const float Distance = FVector::Dist2D(M->GetActorLocation(), Body);
+        const bool bEngaged = M->Victim != nullptr;
+        if(M->IsLaneBoss() || (M->GetNPCClassification() == ECireNPCClass::Boss && bEngaged && Distance < MusicData.BossRadius)) In.bBoss = true;
+        if(M->PackId < 0 || (bEngaged && Distance < MusicData.CombatRadius)) In.bCombat = true;
+    }
+    if(State && In.Phase == 3)
+    {
+        const int32 Mine = Team == 1 ? State->DuskLives : State->EmberLives, Theirs = Team == 1 ? State->EmberLives : State->DuskLives;
+        const int32 MyWins = Team == 1 ? State->DuskWins : State->EmberWins, TheirWins = Team == 1 ? State->EmberWins : State->DuskWins;
+        In.bLocalTeamWon = Mine > 0 && (Theirs <= 0 || MyWins >= TheirWins);
+    }
+    ECireMusicStinger Stinger = ECireMusicStinger::None;
+    Director.Update(In, Dt, Stinger);
+    Music.Tick(*this, Settings, Director.State, Stinger, Dt);
+
+    // ---- ambience, footsteps, events ----
+    Ambience.Tick(*this, Listener, Team, In.Phase == 2, FCireMusicDirector::IsCombatState(Director.State), Dt);
+    Footsteps.Tick(*this, Listener, Hero, Settings.bFootstepCameraShake, Dt);
+    DetectEvents(Dt);
+    UpdateShake(Dt);
+}
+
+void UCireAudioSubsystem::DetectEvents(float Dt)
+{
+    UWorld* World = GetWorld();
+    APlayerController* PC = World->GetFirstPlayerController();
+    ACireHero* Hero = PC ? Cast<ACireHero>(PC->GetPawn()) : nullptr;
+    const ACireGameState* State = World->GetGameState<ACireGameState>();
+    const FVector Body = Hero ? Hero->GetActorLocation() : FVector::ZeroVector;
+
+    // Pack Leader / lane boss: roar when it first engages (or first appears, for lane bosses); growl on each cast.
+    for(TActorIterator<ACireMonster> It(World); It; ++It)
+    {
+        ACireMonster* M = *It;
+        if(!IsValid(M) || M->Health <= 0.f || M->GetNPCClassification() != ECireNPCClass::Boss) continue;
+        if(Hero && FVector::Dist(M->GetActorLocation(), Body) > 6000.f) continue;
+        const TWeakObjectPtr<AActor> Key(M);
+        if(!RoaredBosses.Contains(Key) && (M->Victim != nullptr || M->IsLaneBoss()))
+        {
+            RoaredBosses.Add(Key);
+            CireAudio::PlayCue(this, TEXT("pack_leader_roar"), M->GetActorLocation() + FVector(0, 0, 120));
+        }
+        FString& Last = BossCasting.FindOrAdd(Key);
+        if(!M->CastingAbility.IsEmpty() && Last != M->CastingAbility)
+            CireAudio::PlayCue(this, TEXT("pack_leader_growl"), M->GetActorLocation() + FVector(0, 0, 120));
+        Last = M->CastingAbility;
+    }
+    for(auto It = RoaredBosses.CreateIterator(); It; ++It) if(!It->IsValid()) It.RemoveCurrent();
+    for(auto It = BossCasting.CreateIterator(); It; ++It) if(!It->Key.IsValid()) It.RemoveCurrent();
+
+    if(!Hero) { LastGold = INDEX_NONE; bHasLastHeroLocation = false; return; }
+    // Purchases: gold only goes down when the player buys something (the shop can also call coins_buy itself).
+    if(LastGold != INDEX_NONE && Hero->Gold < LastGold && !Hero->bDead) CireAudio::PlayCue2D(this, TEXT("coins_buy"));
+    LastGold = Hero->Gold;
+    // Teleports (arena transfer, recall, recovery): a discontinuous jump of the local body.
+    const FVector Location = Hero->GetActorLocation();
+    if(bHasLastHeroLocation && FVector::Dist(Location, LastHeroLocation) > 1500.f) CireAudio::PlayCue2D(this, TEXT("teleport_arrive"));
+    LastHeroLocation = Location; bHasLastHeroLocation = true;
+    // Teleport channel: the last seconds of prep before the arena transfer.
+    const bool bChannel = State && State->Phase == 1 && State->SecondsLeft > 0.f && State->SecondsLeft <= 3.5f && !Hero->bDead;
+    if(bChannel && !TeleportHum)
+    {
+        TeleportHum = CireAudio::PlayAttached(TEXT("teleport_channel"), Hero->GetRootComponent());
+        if(TeleportHum) TeleportHum->FadeIn(.6f, 1.f);
+    }
+    else if(!bChannel && TeleportHum)
+    {
+        if(IsValid(TeleportHum)) TeleportHum->FadeOut(.4f, 0.f);
+        TeleportHum = nullptr;
+    }
+}
+
+void UCireAudioSubsystem::AddLocalShake(float Amplitude)
+{
+    ShakeAmplitude = FMath::Max(ShakeAmplitude * FMath::Exp(-ShakeTime * 10.f), Amplitude);
+    ShakeTime = 0.f;
+}
+
+void UCireAudioSubsystem::UpdateShake(float Dt)
+{
+    APlayerController* PC = GetWorld()->GetFirstPlayerController();
+    ACireHero* Hero = PC ? Cast<ACireHero>(PC->GetPawn()) : nullptr;
+    if(!Hero || !Hero->Camera) return;
+    if(ShakeAmplitude <= 0.f) return;
+    ShakeTime += Dt;
+    const float Envelope = ShakeAmplitude * FMath::Exp(-ShakeTime * 10.f);
+    Hero->Camera->ClearAdditiveOffset();
+    if(Envelope < .02f) { ShakeAmplitude = 0.f; return; }
+    const FVector Offset(0.f, FMath::Sin(ShakeTime * 47.f) * Envelope * .35f, -FMath::Abs(FMath::Sin(ShakeTime * 38.f)) * Envelope);
+    Hero->Camera->AddAdditiveOffset(FTransform(Offset), 0.f);
+}
