@@ -174,6 +174,19 @@ bool CireAuraVisuals::RunSmoke(ACireGameMode* Mode)
     CireBuffs::Apply(Hero,TEXT("battle_rhythm"),30,Hero);CireBuffs::Apply(Hero,TEXT("blood_rage"),30,Hero);Clock+=.1f;Auras->UpdateNow(Clock);
     const FCireAuraDef* Mod=Aura->AttackModifier(CireBuffs::ServerNow(World));
     Check(Mod&&Mod->Id==TEXT("blood_rage")&&Mod->Attack.Swipe==TEXT("blood")&&Mod->Attack.OnHit==TEXT("splash"),TEXT("highest-priority buff owns the attack modifier (bloody swipe and splash)"));
+    {
+        // End to end: a replicated attack serial released while empowered spawns exactly one swipe; an unbuffed swing spawns none.
+        Auras->UpdateNow();const int32 Before=Auras->SpawnedStrikes;const float ServerNow=CireBuffs::ServerNow(World);
+        Hero->AttackAimLocation=Hero->GetActorLocation()+FVector(150,0,0);Hero->AttackDuration=.65f;Hero->AttackStartedServerTime=ServerNow-.5f;
+        if(++Hero->AttackSerial==0)++Hero->AttackSerial;
+        Auras->UpdateNow();Auras->UpdateNow();
+        Check(Auras->SpawnedStrikes==Before+1,TEXT("empowered basic attack spawns its signature swipe once at release"));
+        CireBuffs::ClearAll(Hero);Auras->UpdateNow();Auras->UpdateNow(Auras->LastLocalNow+5);
+        const int32 Plain=Auras->SpawnedStrikes;Hero->AttackStartedServerTime=CireBuffs::ServerNow(World)-.5f;if(++Hero->AttackSerial==0)++Hero->AttackSerial;
+        Auras->UpdateNow();Auras->UpdateNow();
+        Check(Auras->SpawnedStrikes==Plain,TEXT("an unbuffed attack has no empowered swipe"));
+        for(TActorIterator<ACireAuraStrike> It(World);It;++It)It->Destroy();
+    }
     CireBuffs::ClearAll(Hero);
     // ---- Other-player intensity setting -------------------------------------
     {

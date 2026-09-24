@@ -147,10 +147,10 @@ const FIco& Ico()
 
 void Glyph(FBuild& M,const FContext& C,const FCireAuraLayer& L,float A)
 {
-    const float S=C.Unit;const float G=FMath::Max(9.f,11.f*S)*L.Size*C.Pop;
+    const float S=C.Unit;const float G=FMath::Max(12.f,14.f*S)*L.Size*C.Pop;
     const FVector Center(0,0,C.Top+26*S*L.Height+FMath::Sin(C.Time*2.2f)*2*S);
     const FLinearColor P=Col(L.bSecondary?C.Secondary:C.Primary,A),K=Col(C.Core,A),Dim=Col(C.Secondary,A*.7f);
-    M.Glow(Center,G*2.3f,Col(C.Primary,A*.45f));
+    M.Glow(Center,G*1.7f,Col(C.Primary,A*.3f));
     const FString Style=L.Style.ToString();const float W=G*.12f;
     if(Style==TEXT("crown")||Style==TEXT("spikes"))
     {
@@ -179,8 +179,8 @@ void Glyph(FBuild& M,const FContext& C,const FCireAuraLayer& L,float A)
     {
         for(int32 I=0;I<4;++I)
         {
-            const float Ang=C.Time*3.2f+I*Tau/4;const FVector Pos=Center+FVector(FMath::Cos(Ang)*G*1.5f,FMath::Sin(Ang)*G*1.5f,FMath::Sin(Ang*2)*G*.15f-G*.4f);
-            M.Star(Pos,G*.42f,K,5,C.Time*4+I);M.Glow(Pos,G*.7f,Col(C.Primary,A*.5f));
+            const float Ang=C.Time*3.2f+I*Tau/4;const FVector Pos=Center+FVector(FMath::Cos(Ang)*G*1.35f,FMath::Sin(Ang)*G*1.35f,FMath::Sin(Ang*2)*G*.15f-G*.4f);
+            M.Star(Pos,G*.62f,K,5,C.Time*4+I);M.Glow(Pos,G*.75f,Col(C.Primary,A*.35f));
         }
     }
     else if(Style==TEXT("eye"))
@@ -256,15 +256,15 @@ void Motes(FBuild& M,const FContext& C,const FCireAuraLayer& L,float A)
         const float Sz=S*(.8f+.5f*H1)*L.Size;
         if(Style==TEXT("bubble"))
         {
-            M.BillRing(Pos,3.6f*Sz*(.6f+Ph),.9f*Sz,Col(P,Fade),10);M.Diamond(Pos+M.U*1.4f*Sz+M.R*1.2f*Sz,.8f*Sz,Col(C.Core,Fade));
+            M.BillRing(Pos,5.f*Sz*(.6f+Ph),1.3f*Sz,Col(P,Fade),12);M.Diamond(Pos+M.U*1.4f*Sz+M.R*1.2f*Sz,.8f*Sz,Col(C.Core,Fade));
             M.Glow(Pos,6*Sz,Col(P,Fade*.25f));
         }
         else if(Style==TEXT("glint"))
         {M.Star(Pos,5.5f*Sz,Col(C.Core,Fade),4,C.Time*2+K);M.Glow(Pos,7*Sz,Col(P,Fade*.45f));}
         else if(Style==TEXT("chevron_up")||Style==TEXT("chevron_down"))
         {
-            const float D=bDown?-1.f:1.f;const FVector Tip=Pos+FVector(0,0,D*4*Sz);
-            M.Ribbon(Pos-M.R*5*Sz,Tip,1.4f*Sz,Col(P,Fade));M.Ribbon(Tip,Pos+M.R*5*Sz,1.4f*Sz,Col(P,Fade));
+            const float D=bDown?-1.f:1.f;const FVector Tip=Pos+FVector(0,0,D*6*Sz);
+            M.Ribbon(Pos-M.R*7.5f*Sz,Tip,2.f*Sz,Col(P,Fade));M.Ribbon(Tip,Pos+M.R*7.5f*Sz,2.f*Sz,Col(P,Fade));
             M.Glow(Pos,6*Sz,Col(P,Fade*.3f));
         }
         else if(Style==TEXT("leaf"))
@@ -430,7 +430,7 @@ void DrawLayer(const FCireAuraLayer& L,const FContext& C,FBuffers& B)
                 const float Flow=.45f+.55f*FMath::Pow(.5f+.5f*FMath::Sin(U*13-T*7+Sd*2),2.f);
                 const float Env=FMath::Pow(FMath::Sin(U*PI),.7f);
                 const FVector Wv=FVector(0,0,1)*(3.5f+4.5f*Env)*S+Polar(1.5f*S,Ang);
-                const FLinearColor Cc=Col(Mix(Sec,P,U*1.6f),A*Env*Flow),Kk=Col(Mix(P,K,Flow),A*Env*Flow);
+                const FLinearColor Cc=Col(Mix(Sec,P,U*1.6f),A*Env*Flow),Kk=Col(Mix(P,K,Flow*.45f),A*Env*Flow*.7f);
                 if(J>0){M.Band(Prev,Pt,PrevW,Wv,PrevC,Cc);M.Band(Prev,Pt,PrevW*.3f,Wv*.3f,PrevK,Kk);}
                 Prev=Pt;PrevW=Wv;PrevC=Cc;PrevK=Kk;
             }
@@ -451,7 +451,7 @@ void DrawLayer(const FCireAuraLayer& L,const FContext& C,FBuffers& B)
         {
             const FVector A0=World(I.V[E.X]),A1=World(I.V[E.Y]);const FVector Mid=(A0+A1)*.5f;
             const float F=M.Fresnel(Mid,Mid-Ctr);if(bHex&&((E.X+E.Y)%3==0))continue;
-            M.Tube(A0,A1,(bHex?1.1f:.8f)*S,Col(Mix(P,K,F*F),A*(.12f+.78f*F*F)),3);
+            M.Tube(A0,A1,(bHex?1.1f:.8f)*S,Col(Mix(P,K,F*F*.45f),A*(.12f+.78f*F*F)),3);
         }
         if(Detail>1)for(const auto& Fc:I.F)
         {
@@ -489,10 +489,10 @@ void DrawLayer(const FCireAuraLayer& L,const FContext& C,FBuffers& B)
             for(int32 J=0;J<5;++J)
             {
                 M.Tri(Ctr+Nrm*2*S,Pts[J],Pts[(J+1)%5],Col(K,A*.2f),Col(Sec,A*(.18f+.3f*F)),Col(Sec,A*(.18f+.3f*F)));
-                M.Tube(Pts[J],Pts[(J+1)%5],1.4f*S,Col(K,A*.95f));
+                M.Tube(Pts[J],Pts[(J+1)%5],1.9f*S,Col(K,A*.95f));
             }
             M.Tube(Ctr+Up*G*.7f+Nrm*2*S,Ctr-Up*G*.95f+Nrm*2*S,1.1f*S,Col(P,A*.9f));M.Tube(Ctr-Tan*G*.5f+Up*G*.3f+Nrm*2*S,Ctr+Tan*G*.5f+Up*G*.3f+Nrm*2*S,1.1f*S,Col(P,A*.9f));
-            M.Glow(Ctr,G*1.7f,Col(P,A*.28f));
+            M.Glow(Ctr,G*1.8f,Col(P,A*.38f));
         }
         break;
     }
@@ -503,14 +503,16 @@ void DrawLayer(const FCireAuraLayer& L,const FContext& C,FBuffers& B)
         {
             const float H1=Hash(C.Seed,I+100);const float Ang=I*Tau/N+FMath::Sin(C.Time*.8f+I)*.2f;
             const FVector Base=Polar(Rad*1.05f*L.Size,Ang,C.Feet+2);const FVector Tan=Polar(1,Ang+PI*.5f),Rd=Polar(1,Ang);
-            const float Fh=H*(.3f+.22f*H1)*L.Height*(.82f+.18f*FMath::Sin(C.Time*7.3f+I*3))*C.Pop;const float Fw=(8+4*H1)*S*L.Size;
+            const float Fh=H*(.3f+.22f*H1)*L.Height*(.82f+.18f*FMath::Sin(C.Time*7.3f+I*3))*C.Pop;const float Fw=(6+3*H1)*S*L.Size;
             FVector Prev=Base;
             for(int32 J=1;J<=Steps;++J)
             {
                 const float U0=(J-1)/float(Steps),U=J/float(Steps);
-                const FVector Pt=Base+FVector(0,0,U*Fh)+Tan*FMath::Sin(U*4+T*8.5f+I)*5*S*U-Rd*U*7*S;
-                const FLinearColor C0=Col(U0<.3f?K:Mix(P,Sec,U0),A*(1-U0*.8f)),C1=Col(U<.3f?K:Mix(P,Sec,U),A*(1-U)*.9f);
-                M.Ribbon(Prev,Pt,Fw*FMath::Pow(1-U0,.8f),Fw*FMath::Pow(1-U,.8f),C0,C1);Prev=Pt;
+                const FVector Pt=Base+FVector(0,0,U*Fh)+Tan*FMath::Sin(U*5+T*8.5f+I)*9*S*U-Rd*U*9*S;
+                const FLinearColor C0=Col(Mix(P,Sec,U0),A*FMath::Pow(1-U0,1.3f)*.42f),C1=Col(Mix(P,Sec,U),A*FMath::Pow(1-U,1.3f)*.38f);
+                auto Tongue=[](float V){return FMath::Pow(FMath::Sin((V*.85f+.15f)*PI),.8f);};
+                M.Ribbon(Prev,Pt,Fw*Tongue(U0),Fw*Tongue(U),C0,C1);
+                M.Ribbon(Prev,Pt,Fw*.32f*Tongue(U0),Fw*.32f*Tongue(U),Col(Mix(K,P,U0*1.6f),A*(1-U0)*.6f),Col(Mix(K,P,U*1.6f),A*(1-U)*.5f));Prev=Pt;
             }
         }
         const int32 Embers=Detail>1?8:3;
@@ -576,8 +578,8 @@ void DrawLayer(const FCireAuraLayer& L,const FContext& C,FBuffers& B)
         if(bWeapon)
         {
             const FVector W0=C.Weapon[0],W1=C.Weapon[1];
-            for(int32 I=0;I<=5;++I){const FVector Pt=FMath::Lerp(W0,W1,I/5.f);M.Glow(Pt,(8+3*FMath::Sin(C.Time*6+I))*S*L.Size,Col(P,A*.45f));}
-            M.Ribbon(W0,W1,2.6f*S,1.2f*S,Col(K,A*.75f),Col(K,A*.95f));
+            for(int32 I=0;I<=5;++I){const FVector Pt=FMath::Lerp(W0,W1,I/5.f);M.Glow(Pt,(12+4*FMath::Sin(C.Time*6+I))*S*L.Size,Col(P,A*.6f));}
+            M.Ribbon(W0,W1,3.4f*S,1.8f*S,Col(K,A*.85f),Col(K,A));M.Ribbon(W0,W1,8.f*S,4.f*S,Col(P,A*.35f),Col(P,A*.45f));
             for(int32 I=0;I<(Detail>1?6:2);++I)
             {
                 const float Ph=Fract(T*1.2f+Hash(C.Seed,I+300));const FVector Pt=FMath::Lerp(W0,W1,Hash(C.Seed,I+310))+FVector(0,0,Ph*16*S)+Polar(Ph*6*S,Hash(C.Seed,I+320)*Tau);
@@ -590,7 +592,7 @@ void DrawLayer(const FCireAuraLayer& L,const FContext& C,FBuffers& B)
         for(int32 Hn=0;Hn<Pts.Num();++Hn)
         {
             const FVector Pt=Pts[Hn];const float Hs=S*L.Size;
-            M.Glow(Pt,13*Hs,Col(P,A*.55f));M.Glow(Pt,5.5f*Hs,Col(K,A*.7f));
+            M.Glow(Pt,16*Hs,Col(P,A*.65f));M.Glow(Pt,6.5f*Hs,Col(K,A*.75f));
             for(int32 Rg=0;Rg<2;++Rg)
             {
                 const float Tilt=T*(Rg?2.6f:-2.1f)+Hn;const FVector Ax=FVector(FMath::Cos(Tilt),FMath::Sin(Tilt),.8f).GetSafeNormal();FVector X,Y;Ax.FindBestAxisVectors(X,Y);
@@ -681,18 +683,18 @@ void DrawSwipe(const FCireAuraAttack& A,float Age,float Scale,float Mirror,FVect
     const FVector Side=FVector::CrossProduct(FVector::UpVector,F);const float Tilt=FMath::DegreesToRadians(30.f)*Mirror;
     const FVector Sp=(Side*FMath::Cos(Tilt)+FVector::UpVector*FMath::Sin(Tilt)).GetSafeNormal();
     const FVector Normal=FVector::CrossProduct(F,Sp).GetSafeNormal();
-    const float Rr=62*S,Sweep=.17f;const float Head=-1.4f+2.8f*FMath::Clamp(Age/Sweep,0.f,1.f);
+    const float Rr=70*S,Sweep=.17f;const float Head=-1.4f+2.8f*FMath::Clamp(Age/Sweep,0.f,1.f);
     const float Fade=1-FMath::SmoothStep(Sweep,.42f,Age);const float Tail=FMath::Max(-1.4f,Head-2.2f);
     const FString Style=A.Swipe.ToString();const int32 Steps=26;
-    auto Arc=[&](float Th,float Rad){return (F*FMath::Cos(Th)+Sp*FMath::Sin(Th)*Mirror)*Rad;};
+    auto Arc=[&](float Th,float Rad){return F*14*S+(F*FMath::Cos(Th)+Sp*FMath::Sin(Th)*Mirror)*Rad;};
     for(int32 J=0;J<Steps;++J)
     {
         const float U0=J/float(Steps),U1=(J+1)/float(Steps);const float T0=FMath::Lerp(Tail,Head,U0),T1=FMath::Lerp(Tail,Head,U1);
-        const float W0=(3+15*U0*U0)*S,W1=(3+15*U1*U1)*S;
-        const FLinearColor C0=Col(HitColor(A,U0*U0),Fade*FMath::Pow(U0,1.4f)),C1=Col(HitColor(A,U1*U1),Fade*FMath::Pow(U1,1.4f));
+        const float W0=(5+19*FMath::Pow(U0,1.5f))*S,W1=(5+19*FMath::Pow(U1,1.5f))*S;
+        const FLinearColor Dark=A.Primary*.45f;const FLinearColor C0=Col(Mix(Dark,A.Primary,U0*1.4f),Fade*(.2f+.8f*U0)),C1=Col(Mix(Dark,A.Primary,U1*1.4f),Fade*(.2f+.8f*U1));
         M.Quad(Arc(T0,Rr-W0),Arc(T1,Rr-W1),Arc(T1,Rr+W1*.35f),Arc(T0,Rr+W0*.35f),C0,C1,C1,C0);
-        const FLinearColor E0=Col(A.Core,Fade*U0),E1=Col(A.Core,Fade*U1);
-        M.Quad(Arc(T0,Rr+W0*.25f),Arc(T1,Rr+W1*.25f),Arc(T1,Rr+W1*.45f),Arc(T0,Rr+W0*.45f),E0,E1,E1,E0);
+        const FLinearColor E0=Col(A.Core,Fade*U0*U0),E1=Col(A.Core,Fade*U1*U1);if(J%3==0)M.Glow(Arc((T0+T1)*.5f,Rr),W1*1.5f+6*S,Col(A.Primary,Fade*U1*.4f));
+        M.Quad(Arc(T0,Rr+W0*.3f),Arc(T1,Rr+W1*.3f),Arc(T1,Rr+W1*.42f),Arc(T0,Rr+W0*.42f),E0,E1,E1,E0);
         if(Style==TEXT("rhythm")&&J%8==7)M.Quad(Arc(T0,Rr-W0*1.3f),Arc(T1,Rr-W1*1.3f),Arc(T1,Rr+W1*.6f),Arc(T0,Rr+W0*.6f),Col(A.Core,Fade),Col(A.Core,Fade),Col(A.Core,Fade),Col(A.Core,Fade));
     }
     M.Glow(Arc(Head,Rr),18*S,Col(A.Primary,Fade*.6f));M.Glow(Arc(Head,Rr),8*S,Col(A.Core,Fade*.7f));
@@ -710,14 +712,14 @@ void DrawHit(const FCireAuraAttack& A,float Age,float Scale,const FContext& Came
 {
     FBuild M(B,Camera);const float S=Scale;const FString Hit=A.OnHit.ToString();const float Life=FMath::Clamp(1-Age/.55f,0.f,1.f);
     const float Flash=FMath::Clamp(1-Age/.18f,0.f,1.f);
-    M.Glow(FVector::ZeroVector,(26+30*Age)*S,Col(A.Primary,Life*.55f));M.Glow(FVector::ZeroVector,14*S,Col(A.Core,Flash*.8f));
+    M.Glow(FVector::ZeroVector,(26+30*Age)*S,Col(A.Primary,Life*.55f));M.Glow(FVector::ZeroVector,22*S,Col(A.Core,Flash*.85f));
     if(Hit==TEXT("splash"))
     {
         for(int32 I=0;I<16;++I)
         {
             const float H1=Hash(I,91),H2=Hash(I,92);const FVector Vel=(Polar(1,H1*Tau)*(.6f+.8f*H2)+FVector(0,0,.9f+.6f*H2))*180*S;
             const FVector P=Vel*Age+FVector(0,0,-520*Age*Age*S);const FVector Dir=Vel+FVector(0,0,-1040*Age*S);
-            M.Shard(P,Dir,(6+5*H2)*S,(1.6f+.8f*H1)*S,Col(A.Primary,Life),Col(A.Core,Life),H1*6);
+            M.Shard(P,Dir,(8+6*H2)*S,(2.1f+1.f*H1)*S,Col(A.Primary,Life),Col(A.Core,Life),H1*6);
         }
         M.BillRing(FVector::ZeroVector,(10+70*Age)*S,3*S*Life,Col(A.Primary,Life*.8f),22);
     }
@@ -726,7 +728,7 @@ void DrawHit(const FCireAuraAttack& A,float Age,float Scale,const FContext& Came
         for(int32 I=0;I<12;++I)
         {
             const float H1=Hash(I,71),H2=Hash(I,72);const FVector Dir=(Polar(1,H1*Tau)+FVector(0,0,H2*1.2f-.2f)).GetSafeNormal();
-            M.Shard(Dir*(8+150*Age)*S,Dir,(9+6*H2)*S*Life,2.4f*S,Col(A.Primary,Life),Col(A.Core,Life),H1*5);
+            M.Shard(Dir*(8+150*Age)*S,Dir,(12+8*H2)*S*Life,3.f*S,Col(A.Primary,Life),Col(A.Core,Life),H1*5);
         }
         M.BillRing(FVector::ZeroVector,(14+60*Age)*S,2.2f*S,Col(A.Core,Life),24);
     }
@@ -734,7 +736,7 @@ void DrawHit(const FCireAuraAttack& A,float Age,float Scale,const FContext& Came
     {
         M.Star(FVector::ZeroVector,(20+12*Flash)*S,Col(A.Core,Life),4,Age*2,.12f);
         for(int32 I=0;I<7;++I){const FVector Dir=(Polar(1,I*Tau/7+Age*2)+FVector(0,0,.35f)).GetSafeNormal();
-            M.Star(Dir*(10+80*Age)*S,6*S,Col(A.Core,Life),4,Age*5+I);M.Glow(Dir*(10+80*Age)*S,8*S,Col(A.Primary,Life*.5f));}
+            M.Star(Dir*(10+80*Age)*S,8.5f*S,Col(A.Core,Life),4,Age*5+I);M.Glow(Dir*(10+80*Age)*S,8*S,Col(A.Primary,Life*.5f));}
     }
     else if(Hit==TEXT("ripple"))
     {

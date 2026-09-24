@@ -80,8 +80,8 @@
       "palette": { "primary": [0.55, 0.8, 1.0], "secondary": [0.78, 0.9, 1.0], "core": [1.0, 1.0, 1.0] },
       "priority": 70, "light": 0.5,
       "layers": [
-        { "shape": "aegis", "attach": "body", "count": 3, "speed": 0.7 },
-        { "shape": "shell", "attach": "body", "style": "hex", "alpha": 0.55, "speed": 0.4 }
+        { "shape": "aegis", "attach": "body", "count": 3, "speed": 0.7, "size": 1.3 },
+        { "shape": "shell", "attach": "body", "style": "hex", "alpha": 0.28, "speed": 0.4 }
       ],
       "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
       "intensity": { "expiringSeconds": 2.0 },
@@ -177,8 +177,9 @@
       "priority": 50,
       "layers": [
         { "shape": "motes", "attach": "body", "style": "bubble", "count": 10, "speed": 0.8 },
-        { "shape": "drips", "attach": "body", "count": 5, "speed": 0.8 },
-        { "shape": "glyph", "attach": "overhead", "style": "skull", "alpha": 0.85, "size": 0.85 }
+        { "shape": "glyph", "attach": "overhead", "style": "skull", "alpha": 0.9, "size": 0.9 },
+        { "shape": "pool", "attach": "ground", "size": 0.7, "alpha": 0.8, "speed": 0.6 },
+        { "shape": "drips", "attach": "body", "count": 5, "speed": 0.8 }
       ],
       "intensity": { "base": 0.8, "perStack": 0.35, "maxStacks": 4, "expiringSeconds": 0 },
       "lifecycle": { "burstSeconds": 0.3, "fadeSeconds": 0.5 },
@@ -186,7 +187,7 @@
     },
     "boss_leader_frenzy": {
       "name": "Blood Frenzy", "kind": "stance", "school": "blood", "source": "Gravemaw, Pack Leader below 30% health: +50% damage, faster attacks and movement",
-      "palette": { "primary": [0.88, 0.05, 0.05], "secondary": [0.36, 0.0, 0.02], "core": [1.0, 0.46, 0.36] },
+      "palette": { "primary": [0.86, 0.04, 0.04], "secondary": [0.34, 0.0, 0.02], "core": [1.0, 0.32, 0.2] },
       "priority": 95, "light": 0.9,
       "layers": [
         { "shape": "swirl", "attach": "body", "count": 3, "speed": 1.3 },
@@ -292,7 +293,7 @@
     },
     "blood_rage": {
       "name": "Blood Rage", "kind": "buff", "school": "blood", "source": "data-ready for item actives and future skills (CireBuffs::Apply(unit, \"blood_rage\", seconds))",
-      "palette": { "primary": [0.92, 0.07, 0.06], "secondary": [0.45, 0.0, 0.03], "core": [1.0, 0.56, 0.42] },
+      "palette": { "primary": [0.92, 0.06, 0.05], "secondary": [0.42, 0.0, 0.03], "core": [1.0, 0.3, 0.18] },
       "priority": 90, "light": 0.8,
       "layers": [
         { "shape": "swirl", "attach": "body", "count": 3, "speed": 1.5 },

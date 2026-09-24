@@ -452,6 +452,7 @@ int32 UCireAuraComponent::Render(float LocalNow,float Anim,float ServerNow,int32
             // Reduced detail keeps the two leading layers; minimal keeps only overhead marks.
             if(Detail==1&&Drawn>=2)break;
             if(Detail==0&&Layer.Shape!=ECireAuraShape::Glyph)continue;
+            if(bLocalView&&Layer.Shape==ECireAuraShape::Glyph)continue;
             float LayerAlpha=1;
             if(Layer.bBurstOnly){const float Window=FMath::Max(Def->Burst,.2f)+.5f;if(Age>Window)continue;LayerAlpha=1-Age/Window;}
             C.Alpha=Alpha*LayerAlpha;
@@ -636,11 +637,11 @@ void UCireAuraSubsystem::HandleAttacks(UCireAuraComponent* Aura,float ServerNow,
         if(Hero->AttackSerial!=0&&Aura->AttackModifier(ServerNow))
         {
             // Release matches ACireHero::BasicAttack: .25 of the .65s reference clip.
-            Aura->PendingStrikeServer=Hero->AttackStartedServerTime+Hero->AttackDuration*(.25f/.65f);Aura->PendingAim=Hero->AttackAimLocation;
+            Aura->bStrikePending=true;Aura->PendingStrikeServer=Hero->AttackStartedServerTime+Hero->AttackDuration*(.25f/.65f);Aura->PendingAim=Hero->AttackAimLocation;
         }
     }
-    if(Aura->PendingStrikeServer<0||ServerNow<Aura->PendingStrikeServer)return;
-    const bool bStale=ServerNow-Aura->PendingStrikeServer>1.f;Aura->PendingStrikeServer=-1;
+    if(!Aura->bStrikePending||ServerNow<Aura->PendingStrikeServer)return;
+    const bool bStale=ServerNow-Aura->PendingStrikeServer>1.f;Aura->bStrikePending=false;
     const FCireAuraDef* Mod=Aura->AttackModifier(ServerNow);if(bStale||!Mod)return;
     const float Scale=UnitScale(Hero);const FVector Chest=Hero->GetActorLocation()+FVector(0,0,18*Scale);
     const bool bRanged=Hero->IsRangedBasicAttack();
@@ -710,7 +711,7 @@ void UCireAuraSubsystem::UpdateNow(float LocalOverride)
         Aura->Synchronize(ServerNow,LocalNow);
         // Realm privacy: the same rule as replication and body visibility.
         const bool bObservable=Unit&&!Unit->IsHidden()&&Observer&&CireRealm::CanObserve(Observer,Unit);
-        if(!bObservable||Aura->Instances.IsEmpty()){Aura->HideAll();Aura->PendingStrikeServer=-1;continue;}
+        if(!bObservable||Aura->Instances.IsEmpty()){Aura->HideAll();Aura->bStrikePending=false;continue;}
         const float Distance=static_cast<float>(FVector::Dist(CamLoc,Unit->GetActorLocation()));
         int32 Priority=0;for(const auto& I:Aura->Instances)if(const auto* Def=CireAuraData::Find(I.Id))Priority=FMath::Max(Priority,Def->Priority);
         const bool bLocal=Unit==LocalPawn;
@@ -731,6 +732,7 @@ void UCireAuraSubsystem::UpdateNow(float LocalOverride)
         if(Detail<2&&Aura->CountVertices()>0&&(++Aura->FrameSkip&1)&&LocalOverride<0){++RenderedUnits;RenderedLayers+=Aura->CountLayers();LitUnits+=Aura->IsLightOn();continue;}
         const bool bLight=LitUnits<Limits.MaxLights&&Detail==2;
         const float Shown=Entry.bLocal?1.f:FMath::Max(.25f,Intensity);
+        Aura->bLocalView=Entry.bLocal;
         Aura->Render(LocalNow,Anim,ServerNow,Detail,Limits.MaxLayersPerUnit,bLight,Shown,CamLoc,CamRot);
         if(Aura->CountVertices()>0){++RenderedUnits;RenderedLayers+=Aura->CountLayers();LitUnits+=Aura->IsLightOn();}
     }

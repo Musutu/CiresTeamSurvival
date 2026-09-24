@@ -104,10 +104,13 @@ public:
     /** Gallery/tests: pretend every current effect started this many seconds ago. */
     void AgeForPreview(float Seconds);
     bool bRenderedThisFrame=false;
+    /** The local player's own unit: overhead marks are skipped (the HUD buff bar covers them and they would sit in the camera's sightline). */
+    bool bLocalView=false;
     // Attack bookkeeping (subsystem).
     uint32 LastAttackSerial=0;
     bool bAttackPrimed=false;
-    float PendingStrikeServer=-1;
+    float PendingStrikeServer=0;
+    bool bStrikePending=false;
     float LastStrikeLocal=-10;
     FVector PendingAim=FVector::ZeroVector;
     float Score=0;
