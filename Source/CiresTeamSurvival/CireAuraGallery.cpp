@@ -4,6 +4,7 @@
 #include "CireBuffs.h"
 #include "CireChampionArt.h"
 #include "CireGame.h"
+#include "CireItems.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
@@ -37,6 +38,7 @@ struct FUnit
     bool bMonster=false;
     FName Body;                 // champion profile id or NPC archetype id
     TArray<FName> Buffs;        // records applied with CireBuffs::Apply
+    TArray<FName> Items;        // replicated inventory timed buffs (item actives, consumables)
     uint8 Flags=0;              // NPC status flags
     int32 Poison=0;
     int32 Link=INDEX_NONE;      // unit index used as the record source (tethers)
@@ -125,6 +127,12 @@ void BuildPages()
         TArray<FUnit> U={Hero(TEXT("troll_berserker_melee"),{TEXT("blood_rage")},TEXT("BLOOD RAGE")),Monster(TEXT("hollow_infantry"),0,TEXT(""))};
         U[0].AttackTarget=1;U[0].Yaw=90;U[1].Yaw=-90;
         const int32 Index=Add(TEXT("CLOSE-UP: BLOOD RAGE ATTACK"),TEXT("closeup_blood_rage"),U);G.Pages[Index].Spacing=230;G.Pages[Index].Distance=620;G.Pages[Index].Pitch=-14;G.Pages[Index].bCloseUp=true;
+    }
+    {
+        TArray<FUnit> U={Hero(TEXT("ranger"),{},TEXT("BORROWED TIME (HOURGLASS)")),Hero(TEXT("knight"),{TEXT("oathshield")},TEXT("OATHSHIELD (AEGIS OF THE LAST OATH)")),
+            Hero(TEXT("dwarf_miner"),{TEXT("toll_of_the_grave")},TEXT("TOLL OF THE GRAVE (GRAVEBELL)")),Hero(TEXT("summoner"),{},TEXT("SCATTER (RAVENFEATHER)")),Hero(TEXT("scholar"),{},TEXT("AETHER PHIAL (MANA)"))};
+        U[0].Items={TEXT("hourglass_of_ages")};U[3].Items={TEXT("ravenfeather_mantle")};U[4].Items={TEXT("aether_phial")};
+        const int32 Index=Add(TEXT("ITEM ACTIVES + CONSUMABLES"),TEXT("item_actives"),U);G.Pages[Index].Spacing=320;G.Pages[Index].Distance=1650;
     }
     {
         // Gameplay camera: 650 cm boom behind the player, looking into a lane skirmish.
@@ -237,8 +245,8 @@ void MakePage(int32 Index)
             H->ShieldUntil=H->TauntUntil=H->SlowUntil=0;H->PoisonAreaCount=0;
             for(const FName Id:U.Buffs)
             {
-                if(Id==TEXT("iron_guard")||Id==TEXT("sanctuary")||Id==TEXT("bastion_of_dawn")||Id==TEXT("mass_aegis")||Id==TEXT("wellspring")||Id==TEXT("challenge_of_iron")||Id==TEXT("war_cry"))H->ShieldUntil=Now+600;
-                if(Id==TEXT("war_cry")||Id==TEXT("challenge_of_iron"))H->TauntUntil=Now+600;
+                if(Id==TEXT("oathshield")||Id==TEXT("iron_guard")||Id==TEXT("sanctuary")||Id==TEXT("bastion_of_dawn")||Id==TEXT("mass_aegis")||Id==TEXT("wellspring")||Id==TEXT("challenge_of_iron")||Id==TEXT("war_cry"))H->ShieldUntil=Now+600;
+                if(Id==TEXT("war_cry")||Id==TEXT("challenge_of_iron")||Id==TEXT("toll_of_the_grave"))H->TauntUntil=Now+600;
                 if(Id==TEXT("frost_bind")||Id==TEXT("shield_slam"))H->SlowUntil=Now+600;
                 G.bChecks&=CireBuffs::Apply(H,Id,600,Link);
             }
@@ -246,6 +254,7 @@ void MakePage(int32 Index)
             if(U.Poison==-2)H->SlowUntil=Now+600;
             if(U.Poison==-3)H->TauntUntil=Now+600;
             if(U.Poison>0){H->PoisonAreaCount=U.Poison;H->PoisonEndsAt=Now+600;}
+            if(H->Inventory)for(const FName Item:U.Items){FCireTimedBuff Timed;Timed.Id=Item;Timed.Duration=600;Timed.EndsAt=Now+600;H->Inventory->Buffs.Add(Timed);}
         }
         else if(auto* M=Cast<ACireMonster>(Unit))
         {

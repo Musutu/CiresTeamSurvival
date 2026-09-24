@@ -14,7 +14,7 @@ import struct
 import subprocess
 import time
 
-EXPECTED = 11
+EXPECTED = 12
 
 
 def main():

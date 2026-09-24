@@ -18,7 +18,7 @@ It never changes damage, collision, targeting, AI or relevancy.
 | Geometry | `CireAuraShapes.h/.cpp` | 19 procedural layer shapes plus swipe / on-hit / projectile-trail / muzzle strike geometry. |
 | Materials | `Content/Art/FX/Auras/M_AuraCore`, `M_AuraSoft` | Additive, unlit, depth-tested. Core: vertex colour x `Boost` (3.0) with a slow rising world-space shimmer. Soft: radial-falloff glows. Rebuild with `Tools/BuildAuraMaterials.py` (see header). Falls back to the spell-polish materials if missing. |
 | Tests | `CireAuraTests.cpp` | `CireAuraVisuals::RunSmoke`, run by the native expansion probe. |
-| Gallery | `CireAuraGallery.cpp`, `Tools/RunAuraGallery.py` | 11 offscreen 1920x1080 pages on real champion and monster bodies. |
+| Gallery | `CireAuraGallery.cpp`, `Tools/RunAuraGallery.py` | 12 offscreen 1920x1080 pages on real champion and monster bodies. |
 
 ### Where records come from (server)
 
@@ -83,6 +83,19 @@ Layers are listed in draw priority. "Rim" = thin allegiance ring at the feet
 | `blessing` | Blessing | buff | small sun mark; golden hands; glints | gold | holy glints |
 | `regeneration` | Regeneration (heal over time) | buff | rising leaves and "+" motes; soft ring | leaf green | - |
 | `stunned` | Stunned | debuff | large star orbit; fast dashed ring | yellow | - |
+| `borrowed_time` | Borrowed Time (Hourglass of Ages) | buff | hourglass mark overhead; falling golden sand; violet rune ring | gold / violet | - |
+| `scatter` | Scatter (Ravenfeather Mantle) | buff | swirling pale feathers; fast dashed ring | lavender | - |
+| `mana_restore` | Aether Phial | buff | rising violet bubbles; soft ring | arcane blue | - |
+| `oathshield` | Oathshield (Aegis of the Last Oath) | buff | 3 gold-rimmed kite shields orbiting; rune ring (no hex ward, unlike Mass Aegis) | gold / blue | - |
+| `toll_of_the_grave` | Toll of the Grave (Gravebell) | stance | swinging bell mark with sound arcs; grave-green ripples | grave green | - |
+
+Item actives and consumables (progression-shop) reuse the system two ways:
+Oathshield and Toll of the Grave record named buffs in `CireItems.cpp`, and the
+replicated inventory timed buffs map through the `itemBuffs` table in the JSON
+(`vial_of_crimson` -> `regeneration`, `aether_phial` -> `mana_restore`,
+`hourglass_of_ages` -> `borrowed_time`, `ravenfeather_mantle` -> `scatter`).
+The three 180-second stat elixirs intentionally have no aura (three minutes of
+permanent glow would be noise); add an `itemBuffs` row to give them one.
 
 `blood_rage`, `frost_weapon`, `blessing`, `regeneration` and `stunned` are
 data-ready for item actives and future skills; no current ability produces them.
@@ -179,7 +192,7 @@ audio API exposes attached looping sounds.
 ```powershell
 # Native (includes CIRE_AURA_SMOKE_PASS), replay, and two-client network checks
 F:/UE_5.8/Engine/Binaries/ThirdParty/Python3/Win64/python.exe Tools/RunExpansionChecks.py
-# Offscreen gallery (11 pages, Saved/AuraGallery/<stamp>)
+# Offscreen gallery (12 pages, Saved/AuraGallery/<stamp>)
 F:/UE_5.8/Engine/Binaries/ThirdParty/Python3/Win64/python.exe Tools/RunAuraGallery.py
 ```
 
@@ -203,6 +216,7 @@ clear records on clients, and that arena records reach both teams.
   chest-side points. The weapon line uses the largest hand-held prop's bounds.
 * Monster empowered swipes are driven by the melee impact cue, so they appear at
   impact time rather than at a wind-up; monster ranged attacks are not empowered.
+* `-CireNoAuras` on the command line disables the renderer (performance A/B).
 * Summons do not receive records yet (they inherit the component but no skill
   writes to them).
 * Loop sound cues are data only until the audio API is available.

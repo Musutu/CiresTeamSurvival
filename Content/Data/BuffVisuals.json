@@ -302,8 +302,8 @@
       "palette": { "primary": [1.0, 0.8, 0.42], "secondary": [0.55, 0.42, 0.9], "core": [1.0, 0.97, 0.85] },
       "priority": 72, "light": 0.4,
       "layers": [
-        { "shape": "glyph", "attach": "overhead", "style": "hourglass" },
-        { "shape": "motes", "attach": "body", "style": "drop", "count": 12, "speed": 0.7, "size": 0.7 },
+        { "shape": "glyph", "attach": "overhead", "style": "hourglass", "size": 1.25 },
+        { "shape": "motes", "attach": "body", "style": "drop", "count": 16, "speed": 0.7, "size": 1.3 },
         { "shape": "ring", "attach": "ground", "style": "runes", "count": 10, "speed": 0.8, "secondary": true }
       ],
       "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.35 },
@@ -314,7 +314,7 @@
       "palette": { "primary": [0.62, 0.55, 0.95], "secondary": [0.2, 0.16, 0.34], "core": [0.92, 0.9, 1.0] },
       "priority": 66,
       "layers": [
-        { "shape": "motes", "attach": "body", "style": "leaf", "count": 14, "speed": 2.4, "secondary": true },
+        { "shape": "motes", "attach": "body", "style": "leaf", "count": 16, "speed": 2.4, "size": 1.7, "alpha": 1.2 },
         { "shape": "ring", "attach": "ground", "style": "dashed", "count": 7, "speed": 3.0, "size": 0.9 }
       ],
       "lifecycle": { "burstSeconds": 0.3, "fadeSeconds": 0.3 },
@@ -325,7 +325,7 @@
       "palette": { "primary": [0.38, 0.55, 1.0], "secondary": [0.58, 0.4, 1.0], "core": [0.85, 0.92, 1.0] },
       "priority": 44,
       "layers": [
-        { "shape": "motes", "attach": "body", "style": "bubble", "count": 8, "speed": 0.6, "secondary": true },
+        { "shape": "motes", "attach": "body", "style": "bubble", "count": 10, "speed": 0.6, "size": 1.5, "secondary": true },
         { "shape": "ring", "attach": "ground", "count": 0, "speed": 0.4, "alpha": 0.7 }
       ],
       "lifecycle": { "burstSeconds": 0.35, "fadeSeconds": 0.4 },
@@ -336,7 +336,7 @@
       "palette": { "primary": [0.9, 0.78, 0.45], "secondary": [0.45, 0.62, 0.95], "core": [1.0, 0.98, 0.9] },
       "priority": 74, "light": 0.3,
       "layers": [
-        { "shape": "aegis", "attach": "body", "count": 1, "speed": 1.2, "size": 1.4 },
+        { "shape": "aegis", "attach": "body", "count": 3, "speed": 1.2, "size": 1.1 },
         { "shape": "ring", "attach": "ground", "style": "runes", "count": 6, "speed": 0.8 }
       ],
       "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.3 },
@@ -347,7 +347,7 @@
       "palette": { "primary": [0.6, 0.85, 0.72], "secondary": [0.2, 0.32, 0.28], "core": [0.9, 1.0, 0.94] },
       "priority": 76,
       "layers": [
-        { "shape": "glyph", "attach": "overhead", "style": "bell" },
+        { "shape": "glyph", "attach": "overhead", "style": "bell", "size": 1.25 },
         { "shape": "ripple", "attach": "ground", "speed": 1.5 }
       ],
       "lifecycle": { "burstSeconds": 0.45, "fadeSeconds": 0.3 },
