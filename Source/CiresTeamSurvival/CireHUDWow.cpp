@@ -7,6 +7,7 @@
 #include "CireConstruct.h"
 #include "CireSummon.h"
 #include "CireTargeting.h"
+#include "CireNPCState.h"
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -46,6 +47,7 @@ struct FInsight
     AActor* Victim = nullptr;
     FString VictimLine, Casting, Status;
     float CastProgress = 0, CastRemaining = 0;
+    bool bInterruptible = false;
     TArray<FAbility> Abilities;
 };
 FString Short(const FString& Name,int32 Max=22) { return Name.Len()>Max ? Name.Left(Max-2)+TEXT("..") : Name; }
@@ -67,14 +69,18 @@ ERole HeroRole(const ACireHero* H)
     if(H->Archetype==3&&H->ProfileThreatRole.IsEmpty())return ERole::Caster;
     return H->IsRangedBasicAttack()?ERole::Ranged:ERole::Bruiser;
 }
-// Hook for the NPC-combat pass: when ACireMonster gains an explicit combat role,
-// read it here. Until then the role is derived from the replicated CombatArchetype
-// (0 infantry, 1 bruiser, 2 caster, 3 ranged) and armored escorts count as tanks.
+/// NPC role, classification, abilities, casts and threat come from the replicated
+// UCireNPCState read API (Docs/NPCs.md); valid on the server and on LAN clients.
 ERole NpcRole(const ACireMonster* M)
 {
     if(!M)return ERole::None;
-    if(M->bArmoredEscort)return ERole::Tank;
-    return M->CombatArchetype==2?ERole::Caster:M->CombatArchetype==3?ERole::Ranged:ERole::Bruiser;
+    switch(M->GetNPCRole())
+    {
+    case ECireNPCRole::Tank:return ERole::Tank;
+    case ECireNPCRole::Caster:return ERole::Caster;
+    case ECireNPCRole::Ranged:return ERole::Ranged;
+    default:return ERole::Bruiser;
+    }
 }
 const TCHAR* RoleLabel(ERole R)
 {
@@ -96,15 +102,34 @@ FString RoleExplain(ERole R,bool bNpc)
 {
     switch(R)
     {
-    case ERole::Tank:return bNpc?TEXT("Armored: ignores threat and taunts, marches on your keep and breaches walls."):TEXT("Tank: holds enemy attention. Losing aggro is the tank's warning.");
-    case ERole::Bruiser:return bNpc?TEXT("Bruiser: melee damage dealer. Keeps its tank busy; dangerous to casters it reaches."):TEXT("Melee damage dealer.");
-    case ERole::Caster:return bNpc?TEXT("Caster: stays at range, casts spells with a visible cast bar and places ground hazards."):TEXT("Spellcaster.");
-    case ERole::Ranged:return bNpc?TEXT("Ranged: shoots from up to 6.5m. Aimed shots fly where you stood; step sideways."):TEXT("Ranged damage dealer.");
+    case ERole::Tank:return bNpc?TEXT("Tank: armored and slow. Provokes champions and guards injured allies; kill its pack or ignore it."):TEXT("Tank: holds enemy attention. Losing aggro is the tank's warning.");
+    case ERole::Bruiser:return bNpc?TEXT("Bruiser: melee damage dealer. Charges distant targets and slams in telegraphed cones."):TEXT("Melee damage dealer.");
+    case ERole::Caster:return bNpc?TEXT("Caster: keeps its distance, casts with a visible cast bar. Interrupt its heals and bolts."):TEXT("Spellcaster.");
+    case ERole::Ranged:return bNpc?TEXT("Ranged: shoots from range and leaps away from melee. Aimed shots fly where you stood."):TEXT("Ranged damage dealer.");
     case ERole::Healer:return TEXT("Healer: restores allies. Healing generates threat on engaged enemies.");
     default:return FString();
     }
 }
-// Hook for per-NPC ability data (NPC-combat pass). Mirrors CireNPCCombat behaviour.
+const TCHAR* AbilityIcon(ECireNPCAbilityKind Kind,ERole Role)
+{
+    switch(Kind)
+    {
+    case ECireNPCAbilityKind::Melee:return TEXT("basic");
+    case ECireNPCAbilityKind::Projectile:return Role==ERole::Ranged?TEXT("piercing_shot"):TEXT("role_caster");
+    case ECireNPCAbilityKind::Cone:return TEXT("cleaving_strike");
+    case ECireNPCAbilityKind::TargetCircle:return TEXT("venom_ground");
+    case ECireNPCAbilityKind::SelfCircle:return TEXT("cataclysm");
+    case ECireNPCAbilityKind::Charge:return TEXT("shadow_step");
+    case ECireNPCAbilityKind::Guard:return TEXT("iron_guard");
+    case ECireNPCAbilityKind::Provoke:return TEXT("war_cry");
+    case ECireNPCAbilityKind::Rally:return TEXT("battle_rhythm");
+    case ECireNPCAbilityKind::Enrage:return TEXT("executioners_verdict");
+    case ECireNPCAbilityKind::HealAlly:return TEXT("restoring_light");
+    case ECireNPCAbilityKind::ShieldWall:return TEXT("stone_skin");
+    case ECireNPCAbilityKind::Disengage:return TEXT("chain_spark");
+    default:return TEXT("basic");
+    }
+}
 TArray<FAbility> NpcAbilities(const ACireMonster* M)
 {
     TArray<FAbility> Out;
@@ -114,17 +139,33 @@ TArray<FAbility> NpcAbilities(const ACireMonster* M)
         Out.Add({TEXT("runic_wall"),TEXT("Armored March"),TEXT("Ignores threat and taunts. Marches to your keep, breaching summoned walls. Kill it before it leaks.")});
         return Out;
     }
-    if(M->bBoss)Out.Add({TEXT("war_cry"),TEXT("Siegebreaker"),TEXT("Boss. If it reaches your keep it costs 10 lives instead of 1. Heavy hits: let your tank hold it.")});
-    if(M->CombatArchetype<=1)Out.Add({TEXT("basic"),TEXT("Melee Strike"),TEXT("Strikes its threat target every 1.8s within 1.7m. Attacks can miss or be dodged.")});
-    if(M->CombatArchetype==1)Out.Add({TEXT("cleaving_strike"),TEXT("Bruiser Slam"),TEXT("1.1s wind-up, then an 80 degree cone (3.6m) for 2.5x damage. Step out of the red cone. About every 8s.")});
-    if(M->CombatArchetype==2)
+    const ERole Role=NpcRole(M);
+    if(M->NPCState)for(const FCireNPCAbilityInfo& A:M->NPCState->Abilities())
     {
-        Out.Add({TEXT("npc_shadow_bolt"),TEXT("Shadow Bolt"),TEXT("1s cast, then a bolt at its target from up to 6.5m. Needs line of sight; sidestep the projectile.")});
-        Out.Add({TEXT("npc_blight_pool"),TEXT("Blight Pool"),TEXT("1.2s warning, then a 2.2m poison pool under its target: 12 damage/s for 5s. Leave the pool. About every 12s.")});
+        FString Facts=A.TypeLabel;
+        if(A.CastTime>0)Facts+=FString::Printf(TEXT(", %.1fs cast"),A.CastTime);
+        if(A.Cooldown>0)Facts+=FString::Printf(TEXT(", %.0fs cooldown"),A.Cooldown);
+        Out.Add({AbilityIcon(A.Kind,Role),A.Name,Facts+TEXT(". ")+A.Description});
     }
-    if(M->CombatArchetype==3)Out.Add({TEXT("piercing_shot"),TEXT("Barbed Shot"),TEXT("1s aimed shot from up to 6.5m. The arrow flies where you stood when the cast finished.")});
+    if(M->IsLaneBoss())Out.Add({TEXT("war_cry"),TEXT("Siege Boss"),TEXT("If it reaches your keep it costs 10 lives instead of 1.")});
     if(M->PackId>=0)Out.Add({TEXT("shadow_step"),TEXT("Pack Leash"),TEXT("Pulled more than 17m from its camp, the pack resets to full health.")});
     return Out;
+}
+FString NpcStatus(const ACireMonster* M,float Now)
+{
+    TArray<FString> Parts;
+    if(const UCireNPCState* S=M?M->NPCState.Get():nullptr)
+    {
+        if(S->HasStatus(CireNPCStatus::Enraged))Parts.Add(TEXT("ENRAGED"));
+        if(S->HasStatus(CireNPCStatus::Rallied))Parts.Add(TEXT("Rallied (+25% damage)"));
+        if(S->HasStatus(CireNPCStatus::ShieldWall))Parts.Add(TEXT("Shield Wall"));
+        if(S->HasStatus(CireNPCStatus::Guarded))Parts.Add(TEXT("Guarded by an ally"));
+        if(S->HasStatus(CireNPCStatus::Provoking))Parts.Add(TEXT("Provoking"));
+        if(S->HasStatus(CireNPCStatus::Charging))Parts.Add(TEXT("Charging"));
+    }
+    if(M&&M->SlowUntil>Now)Parts.Add(TEXT("Slowed"));
+    if(M&&M->PoisonAreaCount>0)Parts.Add(FString::Printf(TEXT("Poisoned x%d"),M->PoisonAreaCount));
+    return FString::Join(Parts,TEXT(", "));
 }
 FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
 {
@@ -140,7 +181,7 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
         U.ClassName=FString::Printf(TEXT("Level %d %s"),H->Level,*U.RoleName);
         U.Victim=H->Target;
         if(const auto* T=Cast<ACireHero>(H->Target))U.VictimLine=T==Self?TEXT("You"):T->HeroName;
-        else if(const auto* M=Cast<ACireMonster>(H->Target))U.VictimLine=M->MonsterName;
+        else if(const auto* M=Cast<ACireMonster>(H->Target))U.VictimLine=M->GetNPCDisplayName();
         if(U.bDead)U.Status=TEXT("Fallen");
         else if(H->TauntUntil>Now)U.Status=TEXT("Commanding presence (taunting)");
         else if(H->ShieldUntil>Now)U.Status=TEXT("Guarded: 40% damage reduction");
@@ -148,26 +189,27 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
     }
     else if(const auto* M=Cast<ACireMonster>(Actor))
     {
-        U.bMonster=true;U.Name=M->MonsterName;U.HP=M->Health;U.MaxHP=M->MaxHealth;U.bDead=M->Health<=0;U.Tier=M->Tier;
+        U.bMonster=true;U.Name=M->GetNPCDisplayName();U.HP=M->Health;U.MaxHP=M->MaxHealth;U.bDead=M->Health<=0;U.Tier=M->Tier;
         U.Reaction=0;U.Role=NpcRole(M);U.RoleName=RoleLabel(U.Role);
-        U.Class=M->bBoss?3:M->Tier>0?2:M->bArmoredEscort?1:0;
+        const ECireNPCClass Class=M->GetNPCClassification();
+        U.Class=Class==ECireNPCClass::Boss?3:Class==ECireNPCClass::Elite?2:M->bArmoredEscort?1:0;
         const TCHAR* ClassWords[]={TEXT(""),TEXT("Armored "),TEXT("Elite "),TEXT("Boss ")};
         U.ClassName=FString(ClassWords[U.Class])+U.RoleName+(M->Tier>0?FString::Printf(TEXT(" (Tier %d)"),M->Tier):FString());
-        U.Subtitle=M->bBoss?TEXT("<Siegebreaker Host>"):M->bArmoredEscort?TEXT("<Armored Escort>"):M->PackId>=0?TEXT("<Roaming Pack>"):TEXT("<Breach Horde>");
+        U.Subtitle=M->IsLaneBoss()?TEXT("<Siege Host>"):U.Class==3?TEXT("<Pack Leader>"):M->bArmoredEscort?TEXT("<Armored Escort>"):M->PackId>=0?TEXT("<Roaming Pack>"):TEXT("<Breach Horde>");
         U.Victim=M->Victim;
         if(IsValid(M->Victim))U.VictimLine=M->Victim==Self?TEXT("You"):M->Victim->HeroName;
         else U.VictimLine=M->bArmoredEscort?TEXT("Marching on your keep"):M->LeashTimer>0?TEXT("Returning to camp"):TEXT("Advancing toward town");
-        if(M->CastEndsAt>Now&&!M->CastingAbility.IsEmpty())
+        if(M->NPCState)
         {
-            U.Casting=ACireHero::SkillName(M->CastingAbility);
-            if(U.Casting.IsEmpty()||U.Casting==M->CastingAbility)
-            {
-                for(const auto& A:NpcAbilities(M))if(A.Id==M->CastingAbility)U.Casting=A.Name;
-            }
-            U.CastRemaining=M->CastEndsAt-Now;U.CastProgress=1.f-Frac(M->CastEndsAt-Now,M->CastEndsAt-M->CastStartedAt);
+            const FCireNPCCastInfo Cast=M->NPCState->CastInfo();
+            if(Cast.bCasting&&Cast.Remaining>0){U.Casting=Cast.Name;U.CastProgress=Cast.Progress;U.CastRemaining=Cast.Remaining;U.bInterruptible=Cast.bInterruptible;}
         }
-        if(M->SlowUntil>Now)U.Status=TEXT("Slowed");
-        if(M->PoisonAreaCount>0)U.Status+=(U.Status.IsEmpty()?TEXT(""):TEXT(", "))+FString::Printf(TEXT("Poisoned x%d"),M->PoisonAreaCount);
+        else if(M->CastEndsAt>Now&&!M->CastingAbility.IsEmpty())
+        {
+            U.Casting=ACireHero::SkillName(M->CastingAbility);U.CastRemaining=M->CastEndsAt-Now;
+            U.CastProgress=1.f-Frac(M->CastEndsAt-Now,M->CastEndsAt-M->CastStartedAt);U.bInterruptible=true;
+        }
+        U.Status=NpcStatus(M,Now);
         U.Abilities=NpcAbilities(M);
     }
     else if(const auto* C=Cast<ACireConstruct>(Actor))
@@ -179,33 +221,32 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
     return U;
 }
 FLinearColor ReactionColor(const FInsight& U) { return U.Reaction==2?Friendly:U.Reaction==1?Neutral:Hostile; }
-// Threat is server-authoritative and not replicated: the table is readable on the
-// host / standalone process only. LAN clients see the replicated victim instead.
+/** Sorted threat rows from the replicated table (server and clients). */
 bool ThreatRows(const ACireMonster* M,TArray<TPair<ACireHero*,float>>& Rows)
 {
     Rows.Reset();
-    if(!IsValid(M)||!M->HasAuthority())return false;
-    for(const auto& Pair:M->Threat)if(Pair.Key.IsValid()&&Pair.Value>0.f)Rows.Emplace(Pair.Key.Get(),Pair.Value);
+    if(!IsValid(M)||!M->NPCState)return false;
+    for(const FCireThreatEntry& Row:M->NPCState->ThreatTable)if(IsValid(Row.Hero)&&Row.Threat>0.f)Rows.Emplace(Row.Hero.Get(),Row.Threat);
     Rows.Sort([](const TPair<ACireHero*,float>& A,const TPair<ACireHero*,float>& B){return A.Value>B.Value;});
     return true;
 }
-/** WoW threat %: 100 means you hold aggro; otherwise your threat relative to the current victim's. */
+/** WoW threat %: 100 means you hold aggro; otherwise your threat relative to the current target's. */
 float ThreatPercent(const ACireMonster* M,const ACireHero* Hero,bool& bKnown)
 {
     bKnown=false;
     if(!IsValid(M)||!Hero)return 0.f;
     if(M->Victim==Hero){bKnown=true;return 100.f;}
-    if(!M->HasAuthority())return 0.f;
+    if(!M->NPCState||M->NPCState->ThreatTable.IsEmpty())return 0.f;
     bKnown=true;
-    float Mine=0,Top=0;
-    for(const auto& Pair:M->Threat)
-    {
-        if(Pair.Key.Get()==Hero)Mine=Pair.Value;
-        if(Pair.Key.Get()==M->Victim)Top=Pair.Value;
-    }
-    if(Top<=0)for(const auto& Pair:M->Threat)Top=FMath::Max(Top,Pair.Value);
-    return Top>0?FMath::Clamp(Mine/Top*100.f,0.f,999.f):0.f;
+    return FMath::Clamp(M->NPCState->ThreatPercent(Hero),0.f,999.f);
 }
+/** Progress toward pulling aggro, 100 = pulls (WoW 110% melee / 130% ranged rule). */
+float PullPercent(const ACireMonster* M,const ACireHero* Hero)
+{
+    return IsValid(M)&&Hero&&M->NPCState?M->NPCState->PullPercent(Hero):0.f;
+}
+bool IsBossClass(const ACireMonster* M) { return M&&M->GetNPCClassification()==ECireNPCClass::Boss; }
+bool IsEliteOrBoss(const ACireMonster* M) { return M&&M->GetNPCClassification()!=ECireNPCClass::Normal; }
 FLinearColor ThreatColor(float Percent)
 {
     return Percent>=100.f?Hostile:Percent>=80.f?Orange:Percent>=50.f?Neutral:FLinearColor(.75f,.78f,.8f,1);
@@ -414,7 +455,7 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     const float PR=bFocus?26.f:33.f,PCX=W-10-PR,PCY=bFocus?44.f:50.f,BW=PCX-PR-18;
     // Header: classification and role; threat % badge on hostile NPCs.
     FString Header=bFocus?TEXT("FOCUS  "):FString();
-    if(U.bMonster)Header+=(U.Class==3?TEXT("BOSS  /  10 LIVES AT RISK"):U.Class==2?TEXT("ELITE  /  ")+U.RoleName.ToUpper():U.Class==1?TEXT("ARMORED  /  ")+U.RoleName.ToUpper():U.RoleName.ToUpper());
+    if(U.bMonster)Header+=(U.Class==3?(Mob&&Mob->IsLaneBoss()?FString(TEXT("BOSS  /  10 LIVES AT RISK")):TEXT("BOSS  /  ")+U.RoleName.ToUpper()):U.Class==2?TEXT("ELITE  /  ")+U.RoleName.ToUpper():U.Class==1?TEXT("ARMORED  /  ")+U.RoleName.ToUpper():U.RoleName.ToUpper());
     else if(U.bHero)Header+=(U.bSelf?TEXT("YOU"):U.Reaction==2?TEXT("ALLY"):TEXT("ENEMY"))+FString(TEXT("  /  "))+U.RoleName.ToUpper();
     else Header+=TEXT("CONSTRUCT");
     Label(Short(Header,bFocus?26:34),10,4,bFocus?8.f:9.f,U.Class==3?Hostile:U.Class>=1?WowGold:Muted);
@@ -471,14 +512,18 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     const float CY=H-(bFocus?17.f:21.f),CH=bFocus?13.f:15.f;
     if(!U.Casting.IsEmpty())
     {
-        Panel(10,CY,W-20,CH,FLinearColor(0,0,0,.85f));Panel(11,CY+1,(W-22)*U.CastProgress,CH-2,CastGold);Panel(11,CY+1,(W-22)*U.CastProgress,(CH-2)*.4f,FLinearColor(1,1,1,.25f));
+        // WoW convention: gold bar = interruptible, grey bar with a shield = cannot be interrupted.
+        const FLinearColor Bar=U.bInterruptible?CastGold:FLinearColor(.58f,.6f,.66f,1);
+        Panel(10,CY,W-20,CH,FLinearColor(0,0,0,.85f));Panel(11,CY+1,(W-22)*U.CastProgress,CH-2,Bar);Panel(11,CY+1,(W-22)*U.CastProgress,(CH-2)*.4f,FLinearColor(1,1,1,.25f));
+        if(!U.bInterruptible){Panel(4,CY+1,5,CH-2,FLinearColor(.75f,.77f,.82f,1));}
         TextFx(Short(U.Casting,24),15,CY+.5f,bFocus?8.5f:9.5f,FLinearColor::White,ECireFont::Bold,true,false);
         const FString Rem=FString::Printf(TEXT("%.1f"),U.CastRemaining);
         TextFx(Rem,W-14-TextWidthFont(Rem,9,ECireFont::Numbers),CY+.5f,9,FLinearColor::White,ECireFont::Numbers,true,false);
-        Tip(TEXT("Enemy cast: ")+U.Casting,TEXT("Reposition away from its ground warning or projectile path before the bar completes."),10,CY,W-20,CH);
+        Tip(TEXT("Enemy cast: ")+U.Casting,U.bInterruptible?TEXT("Gold bar: this cast can be interrupted (Shield Slam). Otherwise leave its ground warning or projectile path."):
+            TEXT("Grey bar: this cast cannot be interrupted. Leave its ground warning or projectile path before the bar completes."),10,CY,W-20,CH);
     }
     else if(!U.Status.IsEmpty())TextFx(Short(U.Status,bFocus?30:44),10,CY+1,8.5f,U.bDead?Hostile:Neutral*.9f,ECireFont::Body,false);
-    else if(Mob&&Mob->bBoss)TextFx(TEXT("A leak costs 10 lives"),10,CY+1,8.5f,Hostile*.9f,ECireFont::Body,false);
+    else if(Mob&&Mob->IsLaneBoss())TextFx(TEXT("A leak costs 10 lives"),10,CY+1,8.5f,Hostile*.9f,ECireFont::Body,false);
     DrawPortrait(Actor,PCX,PCY,PR,bFocus);
     if(bFocus&&Clicked&&Hit(0,0,W,H)&&!bEditLayout&&!bModal&&!bSettings)
     {
@@ -498,17 +543,12 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
     {
         ACireMonster* M=*It;if(bArena||M->Health<=0||M->Lane!=Hero->TeamId)continue;
         const float Dist=FVector::Dist2D(M->GetActorLocation(),Hero->GetActorLocation());
-        if(M->bBoss){Units.Add(M);continue;}
-        // Pack leader: the largest elite of each pack, once it is near or engaged.
-        if(M->Tier>0&&M->PackId>=0&&(Dist<3600.f||IsValid(M->Victim)))
-        {
-            ACireMonster*& Leader=PackLeaders.FindOrAdd(M->PackId);
-            if(!Leader||M->MaxHealth>Leader->MaxHealth)Leader=M;
-        }
+        // Lane bosses always; boss-classified pack leaders once near or engaged.
+        if(M->IsLaneBoss()){Units.Add(M);continue;}
+        if(IsBossClass(M)&&(Dist<3600.f||IsValid(M->Victim)))Units.Add(M);
     }
-    for(const auto& Pair:PackLeaders)Units.Add(Pair.Value);
     Units.Sort([&](const ACireMonster& A,const ACireMonster& B){
-        if(A.bBoss!=B.bBoss)return A.bBoss;
+        if(A.IsLaneBoss()!=B.IsLaneBoss())return A.IsLaneBoss();
         return FVector::DistSquared(A.GetActorLocation(),Hero->GetActorLocation())<FVector::DistSquared(B.GetActorLocation(),Hero->GetActorLocation());});
     if(Units.IsEmpty()&&!bEditLayout)return;
     UsePanel(TEXT("Boss"),220,150);
@@ -522,12 +562,14 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
         ACireMonster* M=Units[I];const float Y=I*50.f;
         const bool bSelected=Hero->Target==M;
         Panel(2,Y+3,220,46,FLinearColor(0,0,0,.3f));Panel(0,Y,220,46,FLinearColor(.012f,.014f,.02f,.86f));
-        Line(0,Y,220,Y,M->bBoss?Hostile:WowGold,bSelected?2.f:1.f);if(bSelected){Line(0,Y+46,220,Y+46,Parchment,1.5f);}
+        const bool bSkull=IsBossClass(M);
+        Line(0,Y,220,Y,bSkull?Hostile:WowGold,bSelected?2.f:1.f);if(bSelected){Line(0,Y+46,220,Y+46,Parchment,1.5f);}
         // Mini skull / dragon badge.
-        Disc(15,Y+15,9.5f,FLinearColor(.07f,.06f,.04f,1));Circle(15,Y+15,9.5f,M->bBoss?Hostile:WowGold,1.2f,20);
-        if(M->bBoss){Disc(15,Y+13.5f,5.2f,Parchment);Panel(12,Y+16.5f,6,3,Parchment);Disc(13,Y+13.5f,1.4f,FLinearColor(0,0,0,1),8);Disc(17,Y+13.5f,1.4f,FLinearColor(0,0,0,1),8);}
+        Disc(15,Y+15,9.5f,FLinearColor(.07f,.06f,.04f,1));Circle(15,Y+15,9.5f,bSkull?Hostile:WowGold,1.2f,20);
+        if(bSkull){Disc(15,Y+13.5f,5.2f,Parchment);Panel(12,Y+16.5f,6,3,Parchment);Disc(13,Y+13.5f,1.4f,FLinearColor(0,0,0,1),8);Disc(17,Y+13.5f,1.4f,FLinearColor(0,0,0,1),8);}
         else TextFx(FString::Printf(TEXT("T%d"),M->Tier),9.5f,Y+9.5f,8.5f,WowGold,ECireFont::Numbers,true,false);
-        TextFx(Short(M->MonsterName,24),30,Y+3,10.5f,M->bBoss?FLinearColor(1.f,.45f,.35f,1):WowGold,ECireFont::Bold,true,false);
+        TextFx(Short(M->GetNPCDisplayName(),24),30,Y+3,10.5f,bSkull?FLinearColor(1.f,.45f,.35f,1):WowGold,ECireFont::Bold,true,false);
+        if(M->NPCState&&M->NPCState->HasStatus(CireNPCStatus::Enraged))TextFx(TEXT("ENRAGED"),160,Y+4,8,Hostile,ECireFont::Heading,true,false);
         bool bKnown=false;const float Threat=ThreatPercent(M,Hero,bKnown);
         if(bKnown&&(IsValid(M->Victim)||Threat>0))
         {
@@ -539,10 +581,11 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
         const FString HP=FString::Printf(TEXT("%.0f / %.0f"),M->Health,M->MaxHealth),Pct=FString::Printf(TEXT("%.0f%%"),HF*100);
         TextFx(HP,35,Y+19,9.5f,FLinearColor::White,ECireFont::Numbers,true,false);
         TextFx(Pct,210-TextWidthFont(Pct,9.5f,ECireFont::Numbers),Y+19,9.5f,FLinearColor::White,ECireFont::Numbers,true,false);
-        if(M->CastEndsAt>Now&&!M->CastingAbility.IsEmpty())
+        const FCireNPCCastInfo Cast=M->NPCState?M->NPCState->CastInfo():FCireNPCCastInfo();
+        if(Cast.bCasting&&Cast.Remaining>0)
         {
-            const float P=1.f-Frac(M->CastEndsAt-Now,M->CastEndsAt-M->CastStartedAt);
-            Panel(30,Y+35,184,8,FLinearColor(0,0,0,.85f));Panel(31,Y+36,182*P,6,CastGold);
+            Panel(30,Y+35,184,9,FLinearColor(0,0,0,.85f));Panel(31,Y+36,182*Cast.Progress,7,Cast.bInterruptible?CastGold:FLinearColor(.58f,.6f,.66f,1));
+            TextFx(Short(Cast.Name,26),34,Y+33.5f,7.5f,FLinearColor::White,ECireFont::Bold,true,false);
         }
         else
         {
@@ -575,23 +618,19 @@ void ACireHUD::DrawThreatMeter(ACireHero* Hero,ACireController* Controller)
     Panel(0,0,220,18,FLinearColor(.3f,.05f,.04f,.75f));Line(0,0,220,0,Hostile*.8f,1.2f);
     TextFx(TEXT("THREAT"),7,2,9.5f,Parchment,ECireFont::Heading,true,false);
     if(!Source){TextFx(TEXT("No enemy engaged"),8,26,10,Muted,ECireFont::Body,false);return;}
-    TextFx(Short(Source->MonsterName,22),62,2.5f,9.5f,WowGold,ECireFont::Bold,true,false);
+    TextFx(Short(Source->GetNPCDisplayName(),22),62,2.5f,9.5f,WowGold,ECireFont::Bold,true,false);
     Tip(TEXT("Threat meter"),TEXT("Who this enemy wants to attack. The top row holds aggro (100%). Others show their threat relative to it; reaching 100% or more pulls the enemy. Damage and healing both add threat; tanks generate extra."),0,0,220,18);
     TArray<TPair<ACireHero*,float>> Rows;
-    if(!ThreatRows(Source,Rows))
-    {
-        // Client without the server table: show the replicated aggro holder only.
-        TextFx(TEXT("Aggro: ")+(IsValid(Source->Victim)?(Source->Victim==Hero?FString(TEXT("YOU")):Source->Victim->HeroName):FString(TEXT("none"))),8,26,10,Source->Victim==Hero?Hostile:Parchment,ECireFont::Bold,true);
-        TextFx(TEXT("Full threat table is host-only"),8,46,9,Muted,ECireFont::Body,false);return;
-    }
+    ThreatRows(Source,Rows);
     float Top=0;for(const auto& Row:Rows)if(Row.Key==Source->Victim)Top=Row.Value;
     if(Top<=0&&Rows.Num())Top=Rows[0].Value;
-    if(Rows.IsEmpty())TextFx(TEXT("No threat yet"),8,26,10,Muted,ECireFont::Body,false);
+    if(Rows.IsEmpty())TextFx(IsValid(Source->Victim)?TEXT("Aggro: ")+Source->Victim->HeroName:FString(TEXT("No threat yet")),8,26,10,Muted,ECireFont::Body,false);
     // Aggro holder first, then by threat.
     Rows.StableSort([&](const TPair<ACireHero*,float>& A,const TPair<ACireHero*,float>& B){return (A.Key==Source->Victim)>(B.Key==Source->Victim);});
     for(int32 I=0;I<FMath::Min(Rows.Num(),5);++I)
     {
         ACireHero* H=Rows[I].Key;const float Pct=Top>0?Rows[I].Value/Top*100.f:0.f;const float Y=21+I*20.f;
+        const float Pull=PullPercent(Source,H);
         const bool bMe=H==Hero,bAggro=H==Source->Victim;
         const ERole R=HeroRole(H);
         Panel(4,Y,212,18,FLinearColor(0,0,0,.6f));
@@ -600,7 +639,7 @@ void ACireHUD::DrawThreatMeter(ACireHero* Hero,ACireController* Controller)
         Icon(RoleIcon(R),7,Y+2,14,RoleTint(R)*1.2f);
         TextFx(FString::Printf(TEXT("%d. %s"),I+1,*Short(bMe?TEXT("You"):H->HeroName,15)),25,Y+1.5f,9.5f,bMe?FLinearColor::White:Parchment,ECireFont::Bold,true,false);
         const FString Value=bAggro?TEXT("AGGRO"):FString::Printf(TEXT("%.0f%%"),Pct);
-        TextFx(Value,212-TextWidthFont(Value,9.5f,bAggro?ECireFont::Heading:ECireFont::Numbers),Y+1.5f,9.5f,bAggro?Hostile:ThreatColor(Pct),bAggro?ECireFont::Heading:ECireFont::Numbers,true,false);
+        TextFx(Value,212-TextWidthFont(Value,9.5f,bAggro?ECireFont::Heading:ECireFont::Numbers),Y+1.5f,9.5f,bAggro?Hostile:ThreatColor(Pull),bAggro?ECireFont::Heading:ECireFont::Numbers,true,false);
     }
 }
 
@@ -614,38 +653,51 @@ void ACireHUD::ShowAlert(const FString& Title,const FString& Subtitle,FLinearCol
 }
 void ACireHUD::UpdateThreatAlerts(ACireHero* Hero)
 {
-    for(auto It=AggroMemory.CreateIterator();It;++It)if(!It.Key().IsValid())It.RemoveCurrent();
-    if(!Hero||!UISettings.bThreatWarnings)return;
-    const bool bTank=IsTank(Hero);const double Now=GetWorld()->GetRealTimeSeconds();
+    // Aggro changes arrive through UCireNPCState::OnAggroChanged (OnAggroEvent).
+    // This poll only raises the "about to pull" warning for damage dealers/healers,
+    // using the WoW pull rule (110% of the target's threat in melee, 130% at range).
+    if(!Hero||!UISettings.bThreatWarnings||IsTank(Hero))return;
+    const double Now=GetWorld()->GetRealTimeSeconds();
+    if(Now-LastThreatWarning<5.0)return;
     for(TActorIterator<ACireMonster> It(GetWorld());It;++It)
     {
         ACireMonster* M=*It;
-        if(M->Health<=0||M->Lane!=Hero->TeamId||M->bArmoredEscort){AggroMemory.Remove(M);continue;}
-        ACireHero* Victim=IsValid(M->Victim)?M->Victim:nullptr;
-        TWeakObjectPtr<ACireHero>* Previous=AggroMemory.Find(M);
-        if(!Previous){AggroMemory.Add(M,Victim);continue;} // first sight: no alert
-        ACireHero* Before=Previous->Get();*Previous=Victim;
-        const bool bImportant=M->bBoss||M->Tier>0;
-        if(Before!=Victim)
+        if(M->Health<=0||M->Lane!=Hero->TeamId||M->bArmoredEscort||!IsValid(M->Victim)||M->Victim==Hero)continue;
+        const float Pull=PullPercent(M,Hero);
+        if(Pull>=UISettings.ThreatWarningPercent&&Pull<100.f)
         {
-            if(Victim==Hero&&!bTank)
-                ShowAlert(TEXT("AGGRO!"),M->MonsterName+TEXT(" is attacking you. Stop and let your tank take it back."),Hostile,true,1);
-            else if(Victim==Hero&&bTank&&bImportant)
-                ShowAlert(TEXT("AGGRO GAINED"),M->MonsterName+TEXT(" is on you."),Friendly,false);
-            else if(Before==Hero&&bTank&&Victim)
-                ShowAlert(TEXT("LOST AGGRO"),M->MonsterName+TEXT(" is attacking ")+Victim->HeroName+TEXT(". Taunt it back!"),Orange,true,3);
-            continue;
-        }
-        if(!bTank&&Victim&&Victim!=Hero&&Now-LastThreatWarning>5.0)
-        {
-            bool bKnown=false;const float Pct=ThreatPercent(M,Hero,bKnown);
-            if(bKnown&&Pct>=UISettings.ThreatWarningPercent&&Pct<100.f)
-            {
-                LastThreatWarning=Now;
-                ShowAlert(FString::Printf(TEXT("THREAT %.0f%%"),Pct),TEXT("Ease off ")+M->MonsterName+TEXT(" or you will pull it."),Orange,true,2);
-            }
+            LastThreatWarning=Now;
+            ShowAlert(FString::Printf(TEXT("THREAT %.0f%%"),Pull),TEXT("Ease off ")+M->GetNPCDisplayName()+TEXT(" or you will pull it from ")+M->Victim->HeroName+TEXT("."),Orange,true,2);
+            return;
         }
     }
+}
+void ACireHUD::OnAggroEvent(const FCireAggroEvent& Event)
+{
+    auto* Hero=Cast<ACireHero>(PlayerOwner?PlayerOwner->GetPawn():nullptr);
+    ACireMonster* M=Event.Monster.Get();
+    if(!Hero||!M||!UISettings.bThreatWarnings||M->Lane!=Hero->TeamId||M->bArmoredEscort)return;
+    ACireHero* NewTarget=Event.NewTarget.Get();ACireHero* OldTarget=Event.OldTarget.Get();
+    const bool bTank=IsTank(Hero),bBig=IsEliteOrBoss(M);const FString Name=M->GetNPCDisplayName();
+    if(NewTarget==Hero&&OldTarget!=Hero)
+    {
+        if(bTank)
+        {
+            if(Event.Reason==ECireAggroReason::Taunted)ShowAlert(TEXT("TAUNTED"),Name+TEXT(" is locked on you."),Friendly,false);
+            else if(bBig)ShowAlert(TEXT("AGGRO GAINED"),Name+TEXT(" is on you."),Friendly,false);
+        }
+        else if(Event.Reason==ECireAggroReason::Pulled||Event.Reason==ECireAggroReason::Acquired||Event.Reason==ECireAggroReason::TargetLost)
+            ShowAlert(TEXT("AGGRO!"),Name+(Event.Reason==ECireAggroReason::Pulled?TEXT(" turned on you. Stop and let your tank take it back."):TEXT(" is attacking you. Run to your tank.")),Hostile,true,1);
+    }
+    else if(OldTarget==Hero&&NewTarget&&NewTarget!=Hero&&bTank&&Event.Reason!=ECireAggroReason::Reset)
+    {
+        ShowAlert(TEXT("LOST AGGRO"),Name+TEXT(" is attacking ")+NewTarget->HeroName+TEXT(". Taunt it back!"),Orange,true,3);
+    }
+}
+void ACireHUD::EndPlay(const EEndPlayReason::Type Reason)
+{
+    UCireNPCState::OnAggroChanged().Remove(AggroHandle);AggroHandle.Reset();
+    Super::EndPlay(Reason);
 }
 void ACireHUD::DrawAlert()
 {
@@ -915,7 +967,8 @@ bool ACireHUD::DrawUnitTooltip(AActor* Unit,FVector2D Cursor)
     if(const auto* M=Cast<ACireMonster>(Unit);M&&Self)
     {
         bool bKnown=false;const float Pct=ThreatPercent(M,Self,bKnown);
-        if(bKnown&&(IsValid(M->Victim)||Pct>0))Rows.Add({M->Victim==Self?FString(TEXT("You have aggro (100%)")):FString::Printf(TEXT("Your threat: %.0f%%"),Pct),10.5f*S,ThreatColor(Pct),ECireFont::Bold});
+        if(bKnown&&(IsValid(M->Victim)||Pct>0))Rows.Add({M->Victim==Self?FString(TEXT("You have aggro (100%)")):
+            FString::Printf(TEXT("Your threat: %.0f%%  (pull: %.0f%%)"),Pct,PullPercent(M,Self)),10.5f*S,ThreatColor(PullPercent(M,Self)),ECireFont::Bold});
     }
     if(U.Abilities.Num()>0&&(U.bMonster||U.Reaction==0))
     {
@@ -1159,10 +1212,10 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         FLinearColor Glow(0,0,0,0);
         if(Mob&&IsValid(Mob->Victim))
         {
-            bool bKnown=false;const float Pct=ThreatPercent(Mob,Hero,bKnown);
+            const float Pull=PullPercent(Mob,Hero);
             if(Mob->Victim==Hero)Glow=bTank?Friendly*FLinearColor(1,1,1,.55f):Hostile;
             else if(bTank)Glow=Orange;
-            else if(bKnown&&Pct>=UISettings.ThreatWarningPercent)Glow=Orange*FLinearColor(1,1,1,.85f);
+            else if(Pull>=UISettings.ThreatWarningPercent)Glow=Orange*FLinearColor(1,1,1,.85f);
         }
         const float Fade=Selected?1.f:FMath::Clamp(1.4f-Dist/2400.f,.55f,1.f);
         const float PW=Selected?150.f:70.f,PH=Selected?11.f:6.f,PX=X-PW*.5f;
@@ -1193,9 +1246,9 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         if(Mob)
         {
             // Elite / boss marker on the right end of the plate.
-            if(Mob->bBoss||Mob->Tier>0)
+            if(IsEliteOrBoss(Mob))
             {
-                const FLinearColor D=Mob->bBoss?Hostile:WowGold;const float EX=PX+PW+3.f;
+                const FLinearColor D=IsBossClass(Mob)?Hostile:WowGold;const float EX=PX+PW+3.f;
                 Tri(FVector2D(EX,Y-3),FVector2D(EX+7,Y+PH*.5f),FVector2D(EX,Y+PH+3),D);
             }
             if(Mob->Victim==Hero&&!bTank)
@@ -1204,10 +1257,12 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
                 const float DX=PX-(Selected?24.f:8.f),DY=Y+PH*.5f;
                 Tri(FVector2D(DX,DY-6),FVector2D(DX+5,DY),FVector2D(DX-5,DY),Hostile);Tri(FVector2D(DX,DY+6),FVector2D(DX+5,DY),FVector2D(DX-5,DY),Hostile);
             }
-            if(Mob->CastEndsAt>Now&&!Mob->CastingAbility.IsEmpty())
+            const FCireNPCCastInfo Cast=Mob->NPCState?Mob->NPCState->CastInfo():FCireNPCCastInfo();
+            if(Cast.bCasting&&Cast.Remaining>0)
             {
-                const float P=1.f-Frac(Mob->CastEndsAt-Now,Mob->CastEndsAt-Mob->CastStartedAt);const float CY=Y+PH+3.f,CH=Selected?6.f:4.f;
-                Panel(PX-1,CY-1,PW+2,CH+2,FLinearColor(0,0,0,.9f));Panel(PX,CY,PW*P,CH,CastGold);
+                const float CY=Y+PH+3.f,CH=Selected?7.f:4.f;
+                Panel(PX-1,CY-1,PW+2,CH+2,FLinearColor(0,0,0,.9f));Panel(PX,CY,PW*Cast.Progress,CH,Cast.bInterruptible?CastGold:FLinearColor(.58f,.6f,.66f,1));
+                if(Selected)TextFx(Short(Cast.Name,22),PX+2,CY+CH-1,8,FLinearColor::White,ECireFont::Bold,true,false);
             }
         }
         const int32 Poisoned=Mob?Mob->PoisonAreaCount:0;
@@ -1216,7 +1271,7 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
     for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(bArena||It->TeamId==Hero->TeamId)
         Plate(*It,It->HeroName,It->Health,It->MaxHealth,It->TeamId==Hero->TeamId?Friendly*.85f:Hostile,120,nullptr);
     for(TActorIterator<ACireMonster> It(GetWorld());It;++It)if(!bArena&&It->Lane==Hero->TeamId)
-        Plate(*It,It->MonsterName,It->Health,It->MaxHealth,It->bArmoredEscort?Silver*.8f:Hostile*.9f,100,*It);
+        Plate(*It,It->GetNPCDisplayName(),It->Health,It->MaxHealth,It->bArmoredEscort?Silver*.8f:Hostile*.9f,100,*It);
     for(TActorIterator<ACireConstruct> It(GetWorld());It;++It)if(It->CanObserve(PlayerOwner))
         Plate(*It,It->GetDisplayName(),It->Health,It->MaxHealth,It->OriginTeam==Hero->TeamId?Friendly*.85f:Hostile,It->ConstructSpec.Height*.5f+25,nullptr);
 }

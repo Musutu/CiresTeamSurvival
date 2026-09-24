@@ -43,6 +43,7 @@ class CIRESTEAMSURVIVAL_API ACireHUD : public AHUD
 public:
     ACireHUD();
     virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void DrawHUD() override;
     bool IsEditingLayout() const { return bEditLayout; }
     bool IsBlockingGameplayInput() const { return bEditLayout || bSettings; }
@@ -72,6 +73,7 @@ public:
     void DebugLevelUp(ACireHero* Hero,bool bLocal);
     void DebugAlert(const FString& Title,const FString& Subtitle,FLinearColor Color) { ShowAlert(Title,Subtitle,Color,false); }
     float DebugScale() const { return Scale; }
+    FCireUIRect PanelRectForTest(FName Id) const { return PanelRect(Id); }
     bool DebugFontsReady() const { return WowFonts.Num()==4; }
 #endif
 private:
@@ -110,6 +112,7 @@ private:
     void DrawBossFrames(ACireHero* Hero, ACireController* Controller);
     void DrawThreatMeter(ACireHero* Hero, ACireController* Controller);
     void UpdateThreatAlerts(ACireHero* Hero);
+    void OnAggroEvent(const struct FCireAggroEvent& Event);
     void DrawAlert();
     void ShowAlert(const FString& Title, const FString& Subtitle, FLinearColor Color, bool bSound, int32 SoundIndex=1);
     void UpdateLevelUps(ACireHero* Hero);
@@ -152,7 +155,7 @@ private:
     ECireFont NextFont = ECireFont::Auto;
     TArray<float> FontCalibration;
     TWeakObjectPtr<AActor> HoverUnit, TooltipUnit, LastTargetSeen;
-    TMap<TWeakObjectPtr<ACireMonster>, TWeakObjectPtr<ACireHero>> AggroMemory;
+    FDelegateHandle AggroHandle;
     TMap<TWeakObjectPtr<ACireHero>, int32> SeenLevels;
     TArray<FCireLevelBurst> LevelBursts;
     FCireHUDAlert Alert;

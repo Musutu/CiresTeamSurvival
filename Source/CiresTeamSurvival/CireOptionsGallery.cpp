@@ -5,6 +5,9 @@
 #include "CireUISettings.h"
 #include "CireDeveloperTools.h"
 #include "CireChampionRoster.h"
+#include "CireNPCCombat.h"
+#include "CireNPCState.h"
+#include "CireRealm.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HAL/FileManager.h"
@@ -101,7 +104,7 @@ struct FState
     TWeakObjectPtr<ACireController> PC;
     TWeakObjectPtr<ACireHero> Hero;
     TArray<TWeakObjectPtr<ACireHero>> Allies;
-    TWeakObjectPtr<ACireMonster> Elite,Boss,Bruiser,Hunter;
+    TWeakObjectPtr<ACireMonster> Elite,Boss,Bruiser,Hunter,Leader;
     FString Directory;
     TArray<FString> Files,Failures;
     double Start=0,Ready=-1;
@@ -118,13 +121,16 @@ void Finish()
     UE_LOG(LogTemp,Display,TEXT("CIRE_WOWUI_GALLERY_%s captures=%d checks=%d directory=%s"),bPass?TEXT("PASS"):TEXT("FAIL"),W.Files.Num(),W.Checks,*W.Directory);
     FPlatformMisc::RequestExitWithStatus(false,bPass?0:1);
 }
-ACireMonster* Spawn(ACireGameMode* Mode,FVector At,const TCHAR* Name,int32 Kind,float HP,float Max)
+ACireMonster* Spawn(ACireGameMode* Mode,FVector At,const TCHAR* Archetype,int32 Tier,bool bLaneBoss,float HealthFraction)
 {
     FActorSpawnParameters Params;Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     auto* M=Mode->GetWorld()->SpawnActor<ACireMonster>(At,FRotator(0,180,0),Params);
     if(!M)return nullptr;
-    M->SetActorTickEnabled(false);M->GetCharacterMovement()->DisableMovement();M->Damage=0;
-    M->MonsterName=Name;M->CombatArchetype=Kind;M->Health=HP;M->MaxHealth=Max;M->Lane=W.Hero->TeamId;
+    M->Lane=W.Hero->TeamId;
+    // Real data-driven configuration (role, classification, abilities, visuals).
+    Check(CireNPCCombat::ConfigureArchetype(M,FName(Archetype),4,Tier,1,bLaneBoss),FString(TEXT("archetype configured: "))+Archetype);
+    M->SetActorTickEnabled(false);M->GetCharacterMovement()->DisableMovement();M->Damage=0;M->Lane=W.Hero->TeamId;
+    M->Health=FMath::RoundToFloat(M->MaxHealth*HealthFraction);CireRealm::UpdateVisibility(M);
     return M;
 }
 bool Setup(ACireGameMode* Mode,ACireController* PC,ACireHUD* HUD)
@@ -142,24 +148,30 @@ bool Setup(ACireGameMode* Mode,ACireController* PC,ACireHUD* HUD)
     const TCHAR* Names[]={TEXT("Ash Ranger"),TEXT("Veil Scholar"),TEXT("Lancer"),TEXT("Rift Summoner")};
     for(int32 I=0;I<4;++I)
     {
-        auto* A=Mode->GetWorld()->SpawnActor<ACireHero>(P+FVector(120,-260+I*170,0),FRotator::ZeroRotator,Params);
+        auto* A=Mode->GetWorld()->SpawnActor<ACireHero>(P+FVector(I<2?-60.f:-60.f,I<2?-330.f+I*120.f:210.f+(I-2)*120.f,0),FRotator::ZeroRotator,Params);
         if(!A)return false;A->Draft(I+1);A->Offers.Reset();A->TeamId=H->TeamId;A->HeroName=Names[I];A->bBot=false;
         A->bAutoAttack=false;A->SetActorTickEnabled(false);A->GetCharacterMovement()->DisableMovement();A->MaxHealth=900;A->Health=560+I*70;A->Level=11+I%2;
         W.Allies.Add(A);
     }
-    W.Elite=Spawn(Mode,P+FVector(520,-140,0),TEXT("Elite 2 | Blight Caster"),2,2140,3100);
-    W.Boss=Spawn(Mode,P+FVector(900,260,0),TEXT("Siegebreaker | Ironbound Bruiser"),1,18400,24000);
-    W.Bruiser=Spawn(Mode,P+FVector(430,180,0),TEXT("Ironbound Bruiser"),1,610,980);
-    W.Hunter=Spawn(Mode,P+FVector(760,-420,0),TEXT("Barbed Hunter"),3,420,700);
-    if(!W.Elite.IsValid()||!W.Boss.IsValid()||!W.Bruiser.IsValid()||!W.Hunter.IsValid())return false;
-    W.Elite->Tier=2;W.Elite->PackId=3;W.Boss->bBoss=true;W.Bruiser->PackId=3;
+    W.Elite=Spawn(Mode,P+FVector(430,-170,0),TEXT("blight_caster"),2,false,.69f);
+    W.Boss=Spawn(Mode,P+FVector(900,330,0),TEXT("hollow_siegebreaker"),0,true,.77f);
+    W.Bruiser=Spawn(Mode,P+FVector(380,200,0),TEXT("ironbound_bruiser"),0,false,.62f);
+    W.Hunter=Spawn(Mode,P+FVector(640,-430,0),TEXT("barbed_hunter"),0,false,.6f);
+    W.Leader=Spawn(Mode,P+FVector(700,40,0),TEXT("gravemaw_pack_leader"),2,false,.54f);
+    if(!W.Elite.IsValid()||!W.Boss.IsValid()||!W.Bruiser.IsValid()||!W.Hunter.IsValid()||!W.Leader.IsValid())return false;
+    W.Elite->PackId=3;W.Bruiser->PackId=3;W.Leader->PackId=3;
+    Check(W.Leader->GetNPCClassification()==ECireNPCClass::Boss&&W.Elite->GetNPCClassification()==ECireNPCClass::Elite,TEXT("classification read API"));
+    Check(W.Elite->GetNPCRole()==ECireNPCRole::Caster&&W.Hunter->GetNPCRole()==ECireNPCRole::Ranged&&W.Boss->IsLaneBoss(),TEXT("role read API"));
     PC->FocusTarget=W.Boss.Get();H->Target=W.Elite.Get();
     Check(HUD->DebugFontsReady(),TEXT("OFL font faces loaded and runtime fonts built"));
     W.Ready=FPlatformTime::Seconds();return true;
 }
 void SetThreat(ACireMonster* M,ACireHero* Victim,std::initializer_list<TPair<ACireHero*,float>> Rows)
 {
-    M->Threat.Reset();for(const auto& Row:Rows)M->Threat.Add(Row.Key,Row.Value);M->Victim=Victim;M->bEngaged=true;
+    M->Threat.Reset();M->NPCState->ThreatTable.Reset();
+    for(const auto& Row:Rows){M->Threat.Add(Row.Key,Row.Value);FCireThreatEntry E;E.Hero=Row.Key;E.Threat=Row.Value;M->NPCState->ThreatTable.Add(E);}
+    M->NPCState->ThreatTable.Sort([](const FCireThreatEntry& A,const FCireThreatEntry& B){return A.Threat>B.Threat;});
+    M->Victim=Victim;M->bEngaged=true;
 }
 void Configure(int32 Stage)
 {
@@ -173,8 +185,12 @@ void Configure(int32 Stage)
     SetThreat(E,Ranger,{{Tank,880.f},{Ranger,1000.f},{Scholar,420.f}});
     SetThreat(B,Tank,{{Tank,5200.f},{Ranger,3900.f},{Scholar,2100.f},{W.Allies[2].Get(),1500.f}});
     SetThreat(W.Bruiser.Get(),Tank,{{Tank,300.f}});W.Hunter->Victim=Scholar;
-    E->CastingAbility=TEXT("npc_shadow_bolt");E->CastStartedAt=Now-.55f;E->CastEndsAt=Now+.45f+3.f;E->SlowUntil=Now+6;
-    B->CastingAbility=FString();B->CastEndsAt=0;
+    SetThreat(W.Leader.Get(),Tank,{{Tank,2600.f},{W.Allies[2].Get(),1900.f}});
+    E->CastingAbility=TEXT("npc_caster_mend");E->NPCState->CastAbilityId=TEXT("npc_caster_mend");E->NPCState->bCastInterruptible=true;
+    E->CastStartedAt=Now-.55f;E->CastEndsAt=Now+.45f+3.f;E->SlowUntil=Now+6;
+    B->CastingAbility=TEXT("boss_siege_cleave");B->NPCState->CastAbilityId=TEXT("boss_siege_cleave");B->NPCState->bCastInterruptible=false;
+    B->CastStartedAt=Now-.3f;B->CastEndsAt=Now+3.f;
+    W.Leader->NPCState->StatusFlags=CireNPCStatus::Enraged|CireNPCStatus::Rallied;
     switch(Stage)
     {
     case 0: break;
@@ -183,9 +199,10 @@ void Configure(int32 Stage)
     case 3: HUD->UISettings.TooltipMode=0;HUD->DebugTooltip(TEXT("Shield Slam"),TEXT("Bash your target with your shield for heavy damage and generate high threat. Interrupts the target's cast. The tooltip slides aside so it never covers the reticle at the centre of the screen."),FVector2D(560,330));break;
     case 4:
     {
+        const float Base=Now+2.f; // capture time: ages below are as seen in the screenshot
         FCireCombatEvent Ev;Ev.SourceName=TEXT("Iron Warden");Ev.SourceId=TEXT("Warden");Ev.bLocalSource=true;Ev.Location=E->GetActorLocation()+FVector(0,0,115);
         auto Add=[&](const TCHAR* Ability,const TCHAR* Target,float Amount,bool bCrit,float Age,ECireHitOutcome Out=ECireHitOutcome::Hit,FName TargetId=TEXT("Elite"))
-        {Ev.AbilityName=Ability;Ev.TargetName=Target;Ev.TargetId=TargetId;Ev.Amount=Amount;Ev.bCritical=bCrit;Ev.Outcome=Out;Ev.TimeSeconds=Now-Age;Ev.ServerTime=Now-Age;Ev.Sequence=PC->CombatEvents.Num()+1;PC->CombatEvents.Add(Ev);};
+        {Ev.AbilityName=Ability;Ev.TargetName=Target;Ev.TargetId=TargetId;Ev.Amount=Amount;Ev.bCritical=bCrit;Ev.Outcome=Out;Ev.TimeSeconds=Base-Age;Ev.ServerTime=Base-Age;Ev.Sequence=PC->CombatEvents.Num()+1;PC->CombatEvents.Add(Ev);};
         Add(TEXT("Ember Lance"),TEXT("Blight Caster"),412,true,.08f);
         Add(TEXT("Frost Bind"),TEXT("Blight Caster"),168,false,.6f);
         Ev.Location=W.Bruiser->GetActorLocation()+FVector(0,0,115);
@@ -197,11 +214,11 @@ void Configure(int32 Stage)
         break;
     }
     case 5: H->ProfileThreatRole=TEXT("damage");SetThreat(E,H,{{H,1100.f},{Ranger,1000.f}});
-        HUD->DebugAlert(TEXT("AGGRO!"),TEXT("Elite 2 | Blight Caster is attacking you. Stop and let your tank take it back."),FLinearColor(.95f,.20f,.16f,1));break;
+        HUD->DebugAlert(TEXT("AGGRO!"),TEXT("Blight Caster turned on you. Stop and let your tank take it back."),FLinearColor(.95f,.20f,.16f,1));break;
     case 6: H->ProfileThreatRole=TEXT("damage");SetThreat(E,Ranger,{{H,940.f},{Ranger,1000.f}});
-        HUD->DebugAlert(TEXT("THREAT 94%"),TEXT("Ease off Elite 2 | Blight Caster or you will pull it."),FLinearColor(1.f,.55f,.10f,1));break;
+        HUD->DebugAlert(TEXT("THREAT 94%"),TEXT("Ease off Blight Caster or you will pull it from Ash Ranger."),FLinearColor(1.f,.55f,.10f,1));break;
     case 7: SetThreat(E,Scholar,{{H,800.f},{Scholar,1000.f}});
-        HUD->DebugAlert(TEXT("LOST AGGRO"),TEXT("Elite 2 | Blight Caster is attacking Veil Scholar. Taunt it back!"),FLinearColor(1.f,.55f,.10f,1));break;
+        HUD->DebugAlert(TEXT("LOST AGGRO"),TEXT("Blight Caster is attacking Veil Scholar. Taunt it back!"),FLinearColor(1.f,.55f,.10f,1));break;
     case 8: H->Target=nullptr;W.bLevelFired=false;break;
     case 9: HUD->UISettings.bAutoUIScale=false;HUD->UISettings.UIScale=.7f;break;
     case 10: HUD->UISettings.bAutoUIScale=false;HUD->UISettings.UIScale=1.15f;break;
@@ -225,7 +242,9 @@ void Capture(int32 Stage)
         const FCireUIRect Map=HUD->UISettings.GetRect(TEXT("Minimap"),View),Chat=HUD->UISettings.GetRect(TEXT("Chat"),View),Skills=HUD->UISettings.GetRect(TEXT("Skills"),View);
         Check(FMath::IsNearlyEqual(Map.X+Map.W,static_cast<float>(View.X)-20.f,.6f)&&FMath::IsNearlyEqual(Map.W,220.f,.6f),TEXT("minimap stays anchored top-right at its designed size"));
         Check(FMath::IsNearlyEqual(Chat.Y+Chat.H,static_cast<float>(View.Y)-20.f,.6f),TEXT("chat stays anchored bottom-left"));
-        Check(FMath::IsNearlyEqual(Skills.X+Skills.W*.5f,static_cast<float>(View.X)*.5f,1.5f),TEXT("action bar stays centred"));
+        Check(FMath::IsNearlyEqual((Skills.X+Skills.W*.5f)/static_cast<float>(View.X),636.f/1280.f,.003f),TEXT("action bar stays centred"));
+        const FCireUIRect Chat2=HUD->PanelRectForTest(TEXT("Chat")),Meter2=HUD->PanelRectForTest(TEXT("Meter"));
+        Check(Chat2.X+Chat2.W<=Skills.X+.5f&&Meter2.X>=Skills.X+Skills.W-.5f,TEXT("chat and meter give way to the action bar"));
     }
     if(Stage>=1&&Stage<=3)
     {
@@ -268,7 +287,8 @@ bool Tick(ACireGameMode* Mode)
     if(W.Stage!=Stage)Configure(Stage);
     // Keep the caster's cast bar alive and fire the level-up just before its capture.
     const float Now=Mode->GetWorld()->GetTimeSeconds();
-    if(W.Elite->CastEndsAt<Now+.5f){W.Elite->CastStartedAt=Now-.55f;W.Elite->CastEndsAt=Now+.45f;}
+    if(W.Elite->CastEndsAt<Now+.5f){W.Elite->CastStartedAt=Now-.9f;W.Elite->CastEndsAt=Now+1.1f;}
+    if(W.Boss->CastEndsAt<Now+.3f){W.Boss->CastStartedAt=Now-.5f;W.Boss->CastEndsAt=Now+.8f;}
     if(Stage==8&&!W.bLevelFired&&Age>=5+Stage*3-.8){W.Hero->Level=13;W.HUD->DebugLevelUp(W.Hero.Get(),true);W.bLevelFired=true;}
     if(Age>=5+Stage*3&&Stage>W.Captured)Capture(Stage);
     if(Age>=5+StageCount*3)Finish();

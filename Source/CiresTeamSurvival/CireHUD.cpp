@@ -5,6 +5,7 @@
 #include "CireSummon.h"
 #include "CireChampionProfiles.h"
 #include "CireTargeting.h"
+#include "CireNPCState.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
@@ -36,7 +37,11 @@ int32 AggroCount(const UWorld* World,const ACireHero* Hero)
 }
 }
 
-void ACireHUD::BeginPlay() { Super::BeginPlay(); UISettings.Load(); UISettings.bLayoutLocked=true; BuildFonts(); }
+void ACireHUD::BeginPlay()
+{
+    Super::BeginPlay(); UISettings.Load(); UISettings.bLayoutLocked=true; BuildFonts();
+    AggroHandle=UCireNPCState::OnAggroChanged().AddUObject(this,&ACireHUD::OnAggroEvent);
+}
 void ACireHUD::ResetTransform() { Origin=FVector2D::ZeroVector; Stretch=FVector2D(1,1); }
 FCireUIRect ACireHUD::PanelRect(FName Id) const
 {
