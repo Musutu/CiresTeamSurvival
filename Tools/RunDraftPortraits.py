@@ -74,8 +74,18 @@ def main() -> int:
                 errors.append("Bad portrait size " + png.name)
             portraits.append(dict(profile=png.stem, path=str(png), bytes=png.stat().st_size))
     imported = None
+    if directory and (directory / "Exposure.json").is_file() and not errors:
+        # Merge the measured per-champion exposure trims for the live draft preview.
+        target = ROOT / "Content/UI/Draft/Portraits/Exposure.json"
+        merged = json.loads(target.read_text(encoding="utf-8")) if target.is_file() else {}
+        merged.update(json.loads((directory / "Exposure.json").read_text(encoding="utf-8")))
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(dict(sorted(merged.items())), indent=2) + "\n", encoding="utf-8")
     if directory and not errors and not args.skip_import:
         import_log = folder / "import.log"
+        # LFS-lockable assets check out read-only; the editor must be able to replace them.
+        for existing in (ROOT / "Content/UI/Draft/Portraits").glob("*.uasset"):
+            os.chmod(existing, 0o666)
         env = dict(os.environ, CIRE_DRAFT_PORTRAIT_DIR=str(directory))
         icode, ifailure = run([str(args.editor), str(args.project.resolve()), "-run=pythonscript",
                                f"-script={ROOT / 'Tools/ImportDraftPortraits.py'}", "-unattended", "-nosplash", "-nosound",
