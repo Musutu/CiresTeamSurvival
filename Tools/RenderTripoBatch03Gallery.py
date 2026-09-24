@@ -25,9 +25,11 @@ ORIGIN = unreal.Vector(0.0, 0.0, 0.0)
 TOWN = (-6000.0, 0.0)
 # Gameplay height targets (cm) before archetype scale; bosses are authored for their archetype multiplier.
 TARGET_HEIGHT = {"HollowInfantry": 180, "HollowInfantryB": 182, "IronboundBruiser": 185, "HollowShieldbearer": 185,
+                 "IronboundBruiserV2": 185, "HollowShieldbearerV2": 185,
                  "BlightCaster": 178, "BlightCasterB": 185, "BarbedHunter": 178, "BarbedHunterB": 180,
                  "GravemawPackLeader": 190, "HollowSiegebreaker": 200}
-ARCHETYPE_SCALE = {"IronboundBruiser": 1.1, "HollowShieldbearer": 1.12, "GravemawPackLeader": 1.7,
+ARCHETYPE_SCALE = {"IronboundBruiser": 1.1, "HollowShieldbearer": 1.12, "IronboundBruiserV2": 1.1,
+                   "HollowShieldbearerV2": 1.12, "GravemawPackLeader": 1.7,
                    "HollowSiegebreaker": 1.35}
 report = {"directory": str(OUT), "monsters": {}, "statics": {}, "captures": [], "passages": {}, "errors": []}
 spawned = []

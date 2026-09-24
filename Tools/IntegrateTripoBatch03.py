@@ -45,6 +45,8 @@ SKELETAL = {
     "CTS_Monster_HollowInfantryB": ("HollowInfantryB", "bruiser", ["hollow_infantry"]),
     "CTS_Monster_IronboundBruiser": ("IronboundBruiser", "bruiser", ["ironbound_bruiser"]),
     "CTS_Monster_HollowShieldbearer": ("HollowShieldbearer", "tank", ["hollow_shieldbearer"]),
+    "CTS_Monster_HollowShieldbearerV2": ("HollowShieldbearerV2", "tank", ["hollow_shieldbearer"]),
+    "CTS_Monster_IronboundBruiserV2": ("IronboundBruiserV2", "bruiser", ["ironbound_bruiser"]),
     "CTS_Monster_BlightCaster": ("BlightCaster", "caster", ["blight_caster"]),
     "CTS_Monster_BlightCasterB": ("BlightCasterB", "caster", ["blight_caster"]),
     "CTS_Monster_BarbedHunter": ("BarbedHunter", "ranged", ["barbed_hunter"]),

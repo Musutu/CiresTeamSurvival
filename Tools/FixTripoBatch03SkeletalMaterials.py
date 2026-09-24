@@ -15,6 +15,8 @@ for folder in EAL.list_assets("/Game/Tripo/Monsters", recursive=False, include_f
         mi = EAL.load_asset("%s/%s_Mat" % (folder, asset.get_name()))
         if not isinstance(mi, unreal.MaterialInstanceConstant):
             raise RuntimeError("Missing instance for " + asset.get_path_name())
+        if all(m.get_editor_property("material_interface") == mi for m in asset.get_editor_property("materials")):
+            continue  # already correct (committed LFS packages are read-only until checked out)
         new = list(asset.get_editor_property("materials"))
         for slot in new:
             slot.set_editor_property("material_interface", mi)
