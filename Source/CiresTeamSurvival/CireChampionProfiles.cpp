@@ -109,7 +109,9 @@ bool ACireHero::DraftProfile(const FString& Id)
     Progression.Stats={Profile->Strength,Profile->Agility,Profile->Intelligence};
     HeroName=Profile->DisplayName;Skills.Reset();Cooldowns.Reset();Offers.Reset();CurrentOffer={};
     bDrafted=true;Recalculate(true);
-    Notice=TEXT("Champion bound. First skill choice at level 3.");ForceNetUpdate();return true;
+    // One starting skill point: the opening offer (primary-role actives) is ready immediately;
+    // bots pick theirs in BotThink, humans get the opening cards.
+    Notice=TEXT("Champion bound. Choose your opening ability.");RefreshOffer();ForceNetUpdate();return true;
 }
 
 Cires::PrimaryStat ACireHero::PrimaryStat() const
@@ -176,7 +178,7 @@ bool ACireHero::LoadThematicBuild()
     for(const auto& Skill:Profile->Actives)if(!Add(Skill,Cires::SkillKind::Active))return false;
     if(!Add(Profile->Passive,Cires::SkillKind::Passive)||!Add(Profile->Ultimate,Cires::SkillKind::Ultimate))return false;
     if(Progression.Level<24&&!Cires::GainLevels(Progression,24-Progression.Level))return false;
-    Progression.LearnedSkills=MoveTemp(Learned);Progression.NextAugmentLevel=27;
+    Progression.LearnedSkills=MoveTemp(Learned);Progression.NextAugmentLevel=Cires::BreakpointForSkill(Cires::MaxSkills);
     Skills=MoveTemp(NewSkills);Cooldowns.Init(0.f,Skills.Num());Recalculate(false);
     Offers.Reset();CurrentOffer={};GlobalCooldown=0;PendingAttackTarget.Reset();BasicTimer=0;
     Notice=TEXT("Developer thematic build loaded: 6 actives, 1 passive, 1 ultimate.");ForceNetUpdate();return true;
@@ -207,7 +209,16 @@ bool CireChampionProfiles::RunSmoke(ACireGameMode* Mode)
         auto* H=Make();if(!H){Check(false,TEXT("hero fixture spawned"));return false;}
         Check(!H->DraftProfile(TEXT("missing_profile"))&&!H->bDrafted&&H->ChampionProfileId.IsEmpty(),TEXT("unknown draft is transactional"));
         Check(H->DraftProfile(Profile.Id)&&H->ChampionProfileId==Profile.Id&&H->Archetype==Profile.RuntimeArchetype,TEXT("known profile selects fallback body independently"));
-        Check(H->Skills.IsEmpty()&&H->Cooldowns.IsEmpty()&&H->Offers.IsEmpty()&&H->Progression.LearnedSkills.empty(),TEXT("normal draft learns no thematic or planned skills"));
+        Check(H->Skills.IsEmpty()&&H->Cooldowns.IsEmpty()&&H->Progression.LearnedSkills.empty(),TEXT("normal draft learns no thematic or planned skills"));
+        {
+            // One starting skill point: four opening actives from the primary role, no passives.
+            bool bOpening=H->Offers.Num()==4&&H->CurrentOffer.BreakpointLevel==1;
+            for(const FString& Id:H->Offers)bOpening&=!ACireHero::IsPassive(Id)&&!ACireHero::IsUltimate(Id)&&Cires::IsOpeningSkill(TCHAR_TO_UTF8(*Id),PrimaryRole(Profile));
+            Check(bOpening,TEXT("draft grants the role-specific opening offer"));
+            H->bBot=true;H->BotThink(.1f);
+            Check(H->Skills.Num()==1&&H->Offers.IsEmpty()&&Cires::IsOpeningSkill(TCHAR_TO_UTF8(*H->Skills[0]),PrimaryRole(Profile)),TEXT("bots learn their opening skill"));
+            H->bBot=false;H->Skills.Reset();H->Cooldowns.Reset();H->Progression.LearnedSkills.clear();H->Progression.NextAugmentLevel=1;H->Offers.Reset();H->CurrentOffer={};
+        }
         Check(H->Progression.DraftRole==DraftRole(H)&&H->Progression.DraftRole!=Cires::SkillDraftRole::Any,TEXT("draft snapshots an explicit gameplay role bucket"));
         Check(H->Progression.DraftRole==PrimaryRole(Profile)&&Cires::EffectiveRoleMask(H->Progression)==ProfileRoleMask(Profile),TEXT("draft snapshots primary plus hybrid roles"));
         Check(H->Strength==Profile.Strength&&H->Agility==Profile.Agility&&H->Intelligence==Profile.Intelligence&&

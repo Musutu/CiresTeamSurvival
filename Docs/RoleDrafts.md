@@ -1,10 +1,53 @@
 # Role-specific skill choices
 
-Normal champions still begin with no learned skills. Every level-three
-breakpoint presents four unique choices and reserves six active slots, one
-passive, and one ultimate. Before a passive is learned, offers contain one or
+Champions begin with no learned skills but one skill point (the opening offer
+below). Each later three-level breakpoint presents four unique choices and
+reserves six active slots, one passive, and one ultimate. Before a passive is learned, offers contain one or
 two passives; a final passive-only slot presents four passives. Role filtering
 never reduces the number of choices or borrows another role's healing spells.
+
+## Opening skill point (Eric's ruling, September 24)
+
+Every champion starts with **one skill point**. The opening offer appears as
+soon as the champion is locked in (level 1) and contains four **active,
+non-ultimate** skills from the champion's **primary** role only (hybrids open in
+their primary role); it never contains passives or ultimates. The pools
+(`Cires::IsOpeningSkill` / `OpeningSkillPool`):
+
+| Primary role | Opening pool |
+|---|---|
+| Tank | Shield Slam, War Cry, Iron Guard, Cleaving Strike, Runestone Wall |
+| Support | Restoring Light, Sanctuary, Purify, Aegis Dome |
+| DPS | every damage-tagged active that is not universal (11 skills) |
+
+After the opening pick, the normal rules continue unchanged. Breakpoints are now
+levels **1, 3, 6, 9, 12, 15, 18, 21** (`Cires::BreakpointForSkill`), so the
+eighth skill arrives at level 21. The server validates the opening offer as
+strictly as the others: a forged passive, ultimate or out-of-pool active is
+rejected. Bots receive the same offer in `DraftProfile` and learn it on their
+next `BotThink`. The offer cards read "Choose Your Opening Tank / DPS / Support
+Ability" (see the skill-offer section below).
+
+## Class baseline traits
+
+Always-active traits by **main** role (`Cires::Traits` maths in the rules module,
+applied server-side by `CireClassTraits` through the single damage/stat
+pipeline, icons `T_trait_*` in the shared ability icon set):
+
+| Role | Trait | Effect |
+|---|---|---|
+| Support | Mending Strikes | 50% of the damage the Support deals (after all modifiers) heals the living party member with the lowest health percentage, the Support included (ties: lower absolute health, then stable id). Shown as healing named "Mending Strikes" in combat text, meters and threat. Supports also deal **-20%** damage to enemies and attack **+10%** faster. |
+| Tank | Natural Defense | Every incoming damage instance (basic or ability) is reduced by a flat **10, applied last**: after guard, Stone Skin, armor and spell ward. Floor 0 (small hits and DoT ticks can be fully absorbed). |
+| DPS | Keen Edge | **10%** base critical-strike chance (tuning base 5% for other roles); items add on top. |
+
+Hooks (all marked `champion-draft`): `CireCombat::ApplyDamage` (Support
+outgoing multiplier + Mending Strikes), `ACireHero::TakeDamage` (Tank flat
+reduction after `CireItems::ModifyIncomingDamage`), `ACireHero::Recalculate`
+(DPS crit) and the basic-attack timer (Support attack speed). Summons, monsters
+and undrafted heroes have no trait. The draft screen details panel, the champion
+tile tooltips and the action-bar stats row show the trait with its icon and a
+passive-style tooltip. Other agents' fixtures that asserted exact damage on a
+Tank now compute their expectation with `CireClassTraits::ModifyIncomingDamage`.
 
 ## Role tags (Tank / DPS / Support)
 
