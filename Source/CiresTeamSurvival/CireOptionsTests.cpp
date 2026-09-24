@@ -41,7 +41,7 @@ bool CireOptions::RunSettingsSmoke()
     B.MasterVolume=-4;B.SFXVolume=9;B.UIVolume=std::numeric_limits<float>::quiet_NaN();B.TooltipMode=99;B.StatusFilter=-1;
     B.TooltipScale=99;B.TooltipAngleDegrees=999;B.TooltipDistance=-1;Check(B.Save(),TEXT("sanitize save"));
     FCireUISettings C;C.Load(File);
-    Check(C.CameraYawSensitivity==1&&C.CameraPitchSensitivity==3&&C.CameraDistance==300&&C.CameraFOV==105,TEXT("camera finite clamp"));
+    Check(C.CameraYawSensitivity==1&&C.CameraPitchSensitivity==5&&C.CameraDistance==300&&C.CameraFOV==105,TEXT("camera finite clamp"));
     Check(C.MasterVolume==0&&C.SFXVolume==1&&FMath::IsNearlyEqual(C.UIVolume,.7f),TEXT("audio finite clamp"));
     Check(C.TooltipMode==2&&C.StatusFilter==0&&C.TooltipAngleDegrees==360&&C.TooltipDistance==16,TEXT("interface bounded"));
     Check(FMath::IsNearlyEqual(C.TooltipScale,1.4f),TEXT("oversized tooltip scale clamped on save"));

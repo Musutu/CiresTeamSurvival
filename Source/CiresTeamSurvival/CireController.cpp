@@ -16,6 +16,7 @@
 #include "CireMobility.h"
 #include "CireTargeting.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "CireCamera.h"
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireNetClient, Log, All);
@@ -119,15 +120,14 @@ void ACireController::BeginPlay() {
 void ACireController::EndPlay(const EEndPlayReason::Type EndPlayReason) {
     CireTargeting::Cleanup(this);
     CireSelection::Cleanup(this);
+    CireCamera::Cleanup(this);
     Super::EndPlay(EndPlayReason);
 }
 void ACireController::CycleTarget(bool bFriendly) {
     auto* H=Cast<ACireHero>(GetPawn()); if(!H){CireTargeting::Cleanup(this);return;}
-    TArray<AActor*> Candidates;
-    for(TActorIterator<ACireMonster> It(GetWorld());It;++It) if(!bFriendly&&H->IsHostile(*It)&&H->InRange(*It,2500))Candidates.Add(*It);
-    for(TActorIterator<ACireHero> It(GetWorld());It;++It) if(!It->bDead&&*It!=H&&H->InRange(*It,2500)&&((bFriendly&&It->TeamId==H->TeamId)||(!bFriendly&&H->IsHostile(*It))))Candidates.Add(*It);
-    Candidates.Sort([H](const AActor& A,const AActor& B){return FVector::DistSquared(H->GetActorLocation(),A.GetActorLocation())<FVector::DistSquared(H->GetActorLocation(),B.GetActorLocation());});
-    if(Candidates.Num()) {int I=Candidates.IndexOfByKey(H->Target);ServerAction(0,(I+1)%Candidates.Num(),Candidates[(I+1)%Candidates.Num()]);}
+    // WoW tab targeting: camera cone first, nearest outward; Shift reverses through the tab history.
+    const bool bReverse=IsInputKeyDown(EKeys::LeftShift)||IsInputKeyDown(EKeys::RightShift);
+    if(AActor* Next=CireSelection::NextTarget(this,bFriendly,bReverse);Next&&Next!=H->Target)ServerAction(0,0,Next);
 }
 void ACireController::PlayerTick(float Dt) {
     Super::PlayerTick(Dt); if(!IsLocalController())return;
@@ -140,12 +140,9 @@ void ACireController::PlayerTick(float Dt) {
     auto* Interface=Cast<ACireHUD>(GetHUD());
     // Release state even if a menu/chat consumes the rest of this frame.
     if(WasInputKeyJustReleased(EKeys::E))H->StopJumping();
-    if(H->Mobility&&H->Mobility->bStrafing&&!IsInputKeyDown(EKeys::RightMouseButton))
-    {H->Mobility->bStrafing=false;H->Mobility->ServerSetStrafe(false);}
     if(Interface) {
         const auto& Options=Interface->UISettings;
         H->Camera->SetFieldOfView(Options.CameraFOV);
-        H->Arm->TargetArmLength=Options.CameraDistance;
         H->Camera->PostProcessSettings.bOverride_BloomIntensity=true;
         H->Camera->PostProcessSettings.BloomIntensity=Options.bBloom?.65f:0.f;
         H->Camera->PostProcessSettings.bOverride_MotionBlurAmount=true;
@@ -154,6 +151,19 @@ void ACireController::PlayerTick(float Dt) {
     CireSelection::Update(this);
     const bool bAimInputConsumed=CireTargeting::Tick(this);
     if(!IsValid(FocusTarget)||!CireRealm::CanObserve(H,FocusTarget))FocusTarget=nullptr;
+    // WoW camera/steering runs every frame so the boom, zoom and facing stay consistent in menus.
+    const bool bBlockingUI=Interface&&Interface->IsBlockingGameplayInput();
+    const bool bOverUI=Interface&&Interface->IsPointerOverInterface();
+    CireCamera::FFrame CameraFrame;
+    CameraFrame.bMouseAllowed=!bBlockingUI;
+    CameraFrame.bSteeringAllowed=!bChatInput&&!bBlockingUI&&H->bDrafted&&!H->bDead&&!bShop;
+    CameraFrame.bPressEligible=!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive&&!bSummonMoveTargeting&&
+        !IsInputKeyDown(EKeys::LeftShift)&&!IsInputKeyDown(EKeys::RightShift);
+    CameraFrame.bPointerOverInterface=bOverUI;
+    if(!bOverUI&&!bBlockingUI)CameraFrame.WheelSteps=(WasInputKeyJustPressed(EKeys::MouseScrollUp)?1.f:0.f)-(WasInputKeyJustPressed(EKeys::MouseScrollDown)?1.f:0.f);
+    CameraFrame.Options=Interface?&Interface->UISettings:nullptr;
+    const auto Camera=CireCamera::Tick(this,H,Dt,CameraFrame);
+    CireSelection::HandleTargetLoss(this,Interface&&Interface->UISettings.bAutoReacquireTarget);
     if(bChatInput) {
         CireTargeting::Cancel(this);
         if(WasInputKeyJustPressed(EKeys::Escape))CancelChat();
@@ -173,8 +183,9 @@ void ACireController::PlayerTick(float Dt) {
         bShop=false;bHelp=false;
     }
     if(Interface) {
-        if(WasInputKeyJustPressed(EKeys::MouseScrollUp))Interface->HandleMouseWheel(1);
-        if(WasInputKeyJustPressed(EKeys::MouseScrollDown))Interface->HandleMouseWheel(-1);
+        // Wheel over HUD panels scrolls them (chat); over the world it zooms the camera (CireCamera).
+        if(bOverUI&&WasInputKeyJustPressed(EKeys::MouseScrollUp))Interface->HandleMouseWheel(1);
+        if(bOverUI&&WasInputKeyJustPressed(EKeys::MouseScrollDown))Interface->HandleMouseWheel(-1);
         if(Interface->IsBlockingGameplayInput()){CireTargeting::Cancel(this);return;}
     }
     if(WasInputKeyJustPressed(EKeys::H))bHelp=!bHelp;
@@ -198,13 +209,15 @@ void ACireController::PlayerTick(float Dt) {
         else if(H->Offers.IsEmpty()&&!bShop) {const int32 Slot=H->ActiveSkillSlot(I);if(Slot!=INDEX_NONE)RequestCast(Slot);}
     }
     if(H->bDrafted&&!bShop&&H->Offers.IsEmpty()&&WasInputKeyJustPressed(EKeys::LeftMouseButton)
-        &&!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive
-        &&!IsInputKeyDown(EKeys::RightMouseButton)&&(!Interface||!Interface->IsPointerOverInterface())) {
-        if(bSummonMoveTargeting||IsInputKeyDown(EKeys::LeftShift)||IsInputKeyDown(EKeys::RightShift)) {
-            ServerSummonCommand(1,nullptr,CursorAim());bSummonMoveTargeting=false;return;
-        }
+        &&!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive&&(!Interface||!Interface->IsPointerOverInterface())
+        &&(bSummonMoveTargeting||IsInputKeyDown(EKeys::LeftShift)||IsInputKeyDown(EKeys::RightShift))) {
+        ServerSummonCommand(1,nullptr,CursorAim());bSummonMoveTargeting=false;return;
+    }
+    // WoW: a left click (released without dragging the camera) selects; a left drag only orbits.
+    if(Camera.bClick&&H->bDrafted&&!bShop&&H->Offers.IsEmpty()&&!CireTargeting::Snapshot(this).bActive
+        &&!IsInputKeyDown(EKeys::RightMouseButton)) {
         FHitResult CursorHit;
-        if(GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1),false,CursorHit)) {
+        if(GetHitResultAtScreenPosition(Camera.ClickPosition,UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1),false,CursorHit)) {
             AActor* Selected=CursorHit.GetActor();
             if((Cast<ACireHero>(Selected)||Cast<ACireMonster>(Selected)||Cast<ACireConstruct>(Selected))&&CireRealm::CanObserve(H,Selected))ServerAction(0,0,Selected);
             else ServerAction(6,0,nullptr);
@@ -215,8 +228,6 @@ void ACireController::PlayerTick(float Dt) {
     if(H->Mobility)
     {
         if(WasInputKeyJustPressed(EKeys::CapsLock)){H->Mobility->bWalking=!H->Mobility->bWalking;H->Mobility->ServerSetWalk(H->Mobility->bWalking);}
-        const bool Strafe=IsInputKeyDown(EKeys::RightMouseButton);
-        if(H->Mobility->bStrafing!=Strafe){H->Mobility->bStrafing=Strafe;H->Mobility->ServerSetStrafe(Strafe);}
         if(WasInputKeyJustPressed(EKeys::LeftControl)||WasInputKeyJustPressed(EKeys::RightControl))
         {
             const FRotator Facing(0,GetControlRotation().Yaw,0);
@@ -225,16 +236,7 @@ void ACireController::PlayerTick(float Dt) {
             H->Mobility->ServerRoll(Move.IsNearlyZero()?H->GetActorForwardVector():Move.GetSafeNormal());
         }
     }
-    if(IsInputKeyDown(EKeys::RightMouseButton)) {
-        float X,Y; GetInputMouseDelta(X,Y);
-        const float YawSpeed=Interface?Interface->UISettings.CameraYawSensitivity:1.f;
-        const float PitchSpeed=Interface?Interface->UISettings.CameraPitchSensitivity:1.f;
-        const float Invert=Interface&&Interface->UISettings.bInvertMouseY?-1.f:1.f;
-        auto R=GetControlRotation(); R.Yaw+=X*.24f*YawSpeed; R.Pitch=FMath::Clamp(FRotator::NormalizeAxis(R.Pitch)-Y*.2f*PitchSpeed*Invert,-65.f,-5.f);SetControlRotation(R);
-    }
-    const FRotator Yaw(0,GetControlRotation().Yaw,0);
-    H->AddMovementInput(FRotationMatrix(Yaw).GetUnitAxis(EAxis::X),(IsInputKeyDown(EKeys::W)?1.f:0.f)-(IsInputKeyDown(EKeys::S)?1.f:0.f));
-    H->AddMovementInput(FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y),(IsInputKeyDown(EKeys::D)?1.f:0.f)-(IsInputKeyDown(EKeys::A)?1.f:0.f));
+    // Movement input itself is applied by CireCamera::Tick (W/S drive, A/D turn or strafe).
 }
 void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActor* Selected) {
     auto* H=Cast<ACireHero>(GetPawn()); auto* M=GetWorld()->GetAuthGameMode<ACireGameMode>();if(!H||!M)return;

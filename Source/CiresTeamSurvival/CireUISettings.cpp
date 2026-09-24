@@ -94,6 +94,7 @@ void FCireUISettings::Reset()
     UIScale=1.f; bAutoUIScale=true; TooltipOpacity=.94f; TooltipDelay=.12f; bTooltipAvoidCenter=true; bUnitTooltips=true;
     bShowMisses=true; bCritPop=true; bSchoolColors=true; bMergeAoE=true; SCTDirection=0; SCTSpeed=1.f; SCTFadeSeconds=3.2f;
     bShowThreatMeter=true; bThreatWarnings=true; bThreatSound=true; ThreatWarningPercent=90.f; bLevelUpEffect=true; bShowBossFrames=true;
+    bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
 }
 
 int32 FCireUISettings::AnchorFor(float Left, float Top, float Right, float Bottom)
@@ -195,7 +196,7 @@ void FCireUISettings::SanitizePreferences()
     // Chat remains legible even if an externally edited profile contains zero alpha.
     ChatColor.A = SafeFloat(ChatColor.A, 1.f, .35f, 1.f);
     MeterMode = FMath::Clamp(MeterMode, 0, 1);
-    CameraYawSensitivity=SafeFloat(CameraYawSensitivity,1,.1f,3); CameraPitchSensitivity=SafeFloat(CameraPitchSensitivity,1,.1f,3);
+    CameraYawSensitivity=SafeFloat(CameraYawSensitivity,1,.05f,5); CameraPitchSensitivity=SafeFloat(CameraPitchSensitivity,1,.05f,5); // camera-movement: widened
     CameraDistance=SafeFloat(CameraDistance,650,300,1200); CameraFOV=SafeFloat(CameraFOV,80,55,105);
     MasterVolume=SafeFloat(MasterVolume,.85f,0,1); SFXVolume=SafeFloat(SFXVolume,.85f,0,1); UIVolume=SafeFloat(UIVolume,.7f,0,1);
     TooltipMode=FMath::Clamp(TooltipMode,0,2); StatusFilter=FMath::Clamp(StatusFilter,0,2);
@@ -242,6 +243,7 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bAutoUIScale); CIRE_LOAD_BOOL(bTooltipAvoidCenter); CIRE_LOAD_BOOL(bUnitTooltips); CIRE_LOAD_BOOL(bShowMisses);
     CIRE_LOAD_BOOL(bCritPop); CIRE_LOAD_BOOL(bSchoolColors); CIRE_LOAD_BOOL(bMergeAoE); CIRE_LOAD_BOOL(bShowThreatMeter);
     CIRE_LOAD_BOOL(bThreatWarnings); CIRE_LOAD_BOOL(bThreatSound); CIRE_LOAD_BOOL(bLevelUpEffect); CIRE_LOAD_BOOL(bShowBossFrames);
+    CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
 #undef CIRE_LOAD_BOOL
     Config.GetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
     Config.GetFloat(PreferencesSection, TEXT("ChatColorR"), ChatColor.R);
@@ -310,6 +312,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bAutoUIScale); CIRE_SAVE_BOOL(bTooltipAvoidCenter); CIRE_SAVE_BOOL(bUnitTooltips); CIRE_SAVE_BOOL(bShowMisses);
     CIRE_SAVE_BOOL(bCritPop); CIRE_SAVE_BOOL(bSchoolColors); CIRE_SAVE_BOOL(bMergeAoE); CIRE_SAVE_BOOL(bShowThreatMeter);
     CIRE_SAVE_BOOL(bThreatWarnings); CIRE_SAVE_BOOL(bThreatSound); CIRE_SAVE_BOOL(bLevelUpEffect); CIRE_SAVE_BOOL(bShowBossFrames);
+    CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
 #undef CIRE_SAVE_BOOL
     Config.SetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
     Config.SetFloat(PreferencesSection, TEXT("ChatColorR"), ChatColor.R);
