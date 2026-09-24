@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "notes": "Monster archetypes. role: bruiser|tank|caster|ranged. classification: normal|elite|boss (wave units become elite inside challenge packs). Health = wave/challenge base x healthMultiplier (or the CombatTuning factor named by tuningKind; lane bosses also x bossHealthMultiplier). Damage is fixed per archetype (tier/wave scale health only). mesh.path is an optional /Game/ soft path (static or skeletal mesh); empty or missing falls back to the mannequin body tinted with mesh.tint. mesh.material only applies to static bodies. See Docs/NPCs.md.",
+  "legacyKinds": ["hollow_infantry", "ironbound_bruiser", "blight_caster", "barbed_hunter"],
+  "waveComposition": ["hollow_infantry", "ironbound_bruiser", "blight_caster", "barbed_hunter", "hollow_shieldbearer"],
+  "waveBoss": "hollow_siegebreaker",
+  "challengePacks": {
+    "members": ["hollow_shieldbearer", "blight_caster", "barbed_hunter"],
+    "leader": "gravemaw_pack_leader",
+    "leaderFromTier": 1
+  },
+  "threat": {
+    "meleePullRatio": 1.1,
+    "rangedPullRatio": 1.3,
+    "meleeRangeCm": 300,
+    "decayDelaySeconds": 10,
+    "decayPerSecond": 0.05,
+    "publishInterval": 0.25,
+    "tauntMaxSeconds": 10
+  },
+  "archetypes": {
+    "hollow_infantry": {
+      "displayName": "Hollow Infantry",
+      "role": "bruiser",
+      "classification": "normal",
+      "tuningKind": "basic",
+      "moveSpeed": 210,
+      "attackRange": 170,
+      "attackInterval": 1.8,
+      "scale": 1.0,
+      "mesh": { "slot": "npc_infantry", "path": "", "tint": [0.62, 0.56, 0.44] },
+      "props": [ { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_Dagger.SM_Dagger", "bone": "hand_r", "scale": 1.0 } ],
+      "abilities": [
+        { "id": "npc_melee", "name": "Rusted Blade", "description": "A plain weapon swing at its current target.", "type": "melee", "basic": true, "range": 170 },
+        { "id": "npc_infantry_lunge", "name": "Lunge", "description": "Marks a short line toward a distant target, then dashes along it. Step out of the line.", "type": "charge", "cooldown": 12, "castTime": 0.7, "minRange": 280, "range": 650, "length": 700, "width": 140, "damageMultiplier": 1.5, "color": [0.9, 0.45, 0.1, 0.35] }
+      ]
+    },
+    "ironbound_bruiser": {
+      "displayName": "Ironbound Bruiser",
+      "role": "bruiser",
+      "classification": "normal",
+      "tuningKind": "bruiser",
+      "moveSpeed": 185,
+      "attackRange": 170,
+      "attackInterval": 1.8,
+      "scale": 1.1,
+      "mesh": { "slot": "npc_bruiser", "path": "", "tint": [0.62, 0.28, 0.12] },
+      "props": [ { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_WarAxe.SM_WarAxe", "bone": "hand_r", "scale": 1.0 } ],
+      "abilities": [
+        { "id": "npc_melee", "name": "Maul", "description": "A heavy weapon swing at its current target.", "type": "melee", "basic": true, "range": 170 },
+        { "id": "npc_bruiser_charge", "name": "Brutal Charge", "description": "Marks a line toward its target and charges through it, hitting everyone in the line.", "type": "charge", "cooldown": 14, "castTime": 0.9, "minRange": 350, "range": 900, "length": 950, "width": 170, "damageMultiplier": 2.0, "color": [0.9, 0.3, 0.05, 0.35] },
+        { "id": "npc_bruiser_slam", "name": "Crushing Slam", "description": "Winds up a frontal cone slam. Leave the cone before it lands.", "type": "cone", "cooldown": 8, "castTime": 1.1, "range": 360, "radius": 360, "angle": 80, "damageMultiplier": 2.5, "color": [0.8, 0.24, 0.06, 0.35] }
+      ]
+    },
+    "hollow_shieldbearer": {
+      "displayName": "Hollow Shieldbearer",
+      "role": "tank",
+      "classification": "normal",
+      "healthMultiplier": 2.2,
+      "damage": 12,
+      "eliteDamageMultiplier": 0.7,
+      "moveSpeed": 180,
+      "armor": 0.25,
+      "attackRange": 170,
+      "attackInterval": 2.0,
+      "scale": 1.12,
+      "mesh": { "slot": "npc_shieldbearer", "path": "", "tint": [0.32, 0.45, 0.68] },
+      "props": [
+        { "asset": "/Game/Art/Weapons/CombatPrototype01/SM_PrototypeShield.SM_PrototypeShield", "bone": "hand_l", "scale": 1.0 },
+        { "asset": "/Game/Art/Weapons/CombatPrototype01/SM_PrototypeSword.SM_PrototypeSword", "bone": "hand_r", "scale": 1.0 }
+      ],
+      "abilities": [
+        { "id": "npc_melee", "name": "Shield Bash", "description": "A shield strike at its current target.", "type": "melee", "basic": true, "range": 170 },
+        { "id": "npc_tank_provoke", "name": "Challenging Roar", "description": "Taunts nearby champions: for 6s they deal 35% less damage to anything except the Shieldbearer. Kill or ignore it.", "type": "provoke", "cooldown": 16, "castTime": 0.5, "range": 550, "radius": 550, "duration": 6, "magnitude": 0.35, "color": [0.35, 0.55, 1.0, 0.3] },
+        { "id": "npc_tank_guard", "name": "Guardian's Oath", "description": "Guards the most injured nearby ally for 8s, taking 40% of the damage it would receive.", "type": "guard", "cooldown": 14, "castTime": 0.4, "range": 700, "radius": 700, "duration": 8, "magnitude": 0.4 },
+        { "id": "npc_tank_wall", "name": "Shield Wall", "description": "Below 50% health, raises its shield and takes 50% less damage for 6s.", "type": "shieldWall", "cooldown": 30, "castTime": 0.5, "range": 5000, "duration": 6, "magnitude": 0.5, "healthThreshold": 0.5 }
+      ]
+    },
+    "blight_caster": {
+      "displayName": "Blight Caster",
+      "role": "caster",
+      "classification": "normal",
+      "tuningKind": "caster",
+      "moveSpeed": 195,
+      "attackRange": 650,
+      "preferredRange": 560,
+      "kiteRange": 320,
+      "attackInterval": 2.2,
+      "scale": 1.0,
+      "mesh": { "slot": "npc_caster", "path": "", "tint": [0.45, 0.18, 0.62] },
+      "props": [ { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_RiftStaff.SM_RiftStaff", "bone": "hand_r", "scale": 1.0 } ],
+      "abilities": [
+        { "id": "npc_shadow_bolt", "name": "Shadow Bolt", "description": "Interruptible cast. Fires a shadow bolt in a fixed direction when the cast bar completes.", "type": "projectile", "basic": true, "interruptible": true, "skillshot": "npc_shadow_bolt", "castTime": 1.4, "range": 650 },
+        { "id": "npc_caster_mend", "name": "Dark Mending", "description": "Interruptible 2s cast that restores 20% health to the most injured ally below 60%. Interrupt it!", "type": "healAlly", "interruptible": true, "cooldown": 12, "castTime": 2.0, "range": 900, "radius": 900, "magnitude": 0.2, "healthThreshold": 0.6 },
+        { "id": "npc_blight_pool", "name": "Blight Pool", "description": "Marks the ground under its target, then leaves a poison pool for 5s.", "type": "targetCircle", "cooldown": 12, "castTime": 1.2, "range": 650, "radius": 220, "duration": 5, "damagePerSecond": 12, "color": [0.28, 0.52, 0.08, 0.35] }
+      ]
+    },
+    "barbed_hunter": {
+      "displayName": "Barbed Hunter",
+      "role": "ranged",
+      "classification": "normal",
+      "tuningKind": "ranged",
+      "moveSpeed": 205,
+      "attackRange": 650,
+      "preferredRange": 520,
+      "kiteRange": 300,
+      "attackInterval": 2.2,
+      "scale": 1.0,
+      "mesh": { "slot": "npc_hunter", "path": "", "tint": [0.25, 0.45, 0.2] },
+      "props": [ { "asset": "/Game/Art/Weapons/CombatPrototype01/SM_PrototypeBow.SM_PrototypeBow", "bone": "hand_l", "scale": 1.0 } ],
+      "abilities": [
+        { "id": "npc_barbed_shot", "name": "Barbed Shot", "description": "Short aim, then an arrow in a fixed direction. Keeps its distance and backs away from melee.", "type": "projectile", "basic": true, "skillshot": "npc_barbed_shot", "castTime": 0.6, "range": 650 },
+        { "id": "npc_hunter_disengage", "name": "Disengage", "description": "Leaps away when a champion reaches melee range.", "type": "disengage", "cooldown": 10, "castTime": 0, "range": 260, "length": 600 },
+        { "id": "npc_hunter_volley", "name": "Rain of Barbs", "description": "Marks a circle on its target, then a volley lands there.", "type": "targetCircle", "cooldown": 10, "castTime": 1.0, "range": 650, "radius": 200, "damageMultiplier": 1.8, "color": [0.75, 0.4, 0.12, 0.35] }
+      ]
+    },
+    "hollow_siegebreaker": {
+      "displayName": "Hollow Siegebreaker",
+      "role": "tank",
+      "classification": "boss",
+      "tuningKind": "bruiser",
+      "healthMultiplier": 1.5,
+      "damage": 40,
+      "moveSpeed": 150,
+      "armor": 0.2,
+      "attackRange": 190,
+      "attackInterval": 2.2,
+      "scale": 1.35,
+      "leakCost": 10,
+      "mesh": { "slot": "boss_siegebreaker", "path": "", "tint": [0.28, 0.24, 0.22] },
+      "props": [ { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_WarHammer.SM_WarHammer", "bone": "hand_r", "scale": 1.2 } ],
+      "abilities": [
+        { "id": "npc_melee", "name": "Siege Hammer", "description": "A crushing hammer blow at its current target.", "type": "melee", "basic": true, "range": 190 },
+        { "id": "boss_siege_stomp", "name": "Siege Stomp", "description": "Marks a ring around itself, then stomps. Melee must step out.", "type": "selfCircle", "cooldown": 10, "castTime": 1.3, "range": 380, "radius": 380, "damageMultiplier": 1.6, "color": [0.85, 0.5, 0.1, 0.35] },
+        { "id": "boss_siege_cleave", "name": "Sundering Cleave", "description": "Winds up a wide frontal cleave. Only the tank should stand in front.", "type": "cone", "cooldown": 9, "castTime": 1.3, "range": 400, "radius": 420, "angle": 110, "damageMultiplier": 2.2, "color": [0.9, 0.15, 0.05, 0.38] },
+        { "id": "boss_siege_rally", "name": "Rallying Bellow", "description": "Buffs nearby monsters: +25% damage and attack speed for 8s.", "type": "rally", "cooldown": 20, "castTime": 1.2, "initialCooldown": 4, "range": 5000, "radius": 1000, "duration": 8, "magnitude": 0.25, "color": [1.0, 0.75, 0.2, 0.25] },
+        { "id": "boss_siege_fury", "name": "Siege Fury", "description": "At 30% health it enrages: +40% damage and faster attacks until killed.", "type": "enrage", "cooldown": 0, "castTime": 1.0, "range": 5000, "magnitude": 0.4, "healthThreshold": 0.3 }
+      ]
+    },
+    "gravemaw_pack_leader": {
+      "displayName": "Gravemaw, Pack Leader",
+      "role": "bruiser",
+      "classification": "boss",
+      "healthMultiplier": 5.0,
+      "damage": 36,
+      "moveSpeed": 215,
+      "armor": 0.1,
+      "attackRange": 210,
+      "attackInterval": 2.0,
+      "scale": 1.7,
+      "mesh": { "slot": "boss_pack_leader", "path": "", "tint": [0.7, 0.1, 0.06] },
+      "props": [
+        { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_WarAxe.SM_WarAxe", "bone": "hand_r", "scale": 1.25 },
+        { "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_Totem.SM_Totem", "bone": "spine_03", "x": -18, "z": 10, "scale": 0.8 }
+      ],
+      "abilities": [
+        { "id": "npc_melee", "name": "Gravemaw Cleaver", "description": "A savage axe blow at its current target.", "type": "melee", "basic": true, "range": 210 },
+        { "id": "boss_leader_rally", "name": "Rallying Roar", "description": "1.5s roar (gold ring): every pack member within 12m gains +25% damage and attack speed for 10s. Pull the pack apart or burst it after.", "type": "rally", "cooldown": 18, "castTime": 1.5, "initialCooldown": 3, "range": 5000, "radius": 1200, "duration": 10, "magnitude": 0.25, "color": [1.0, 0.75, 0.2, 0.25] },
+        { "id": "boss_leader_cleave", "name": "Sundering Cleave", "description": "Winds up a 120-degree frontal cleave for heavy damage. Only the tank should stand in front.", "type": "cone", "cooldown": 9, "castTime": 1.2, "range": 400, "radius": 440, "angle": 120, "damageMultiplier": 2.6, "color": [0.9, 0.12, 0.05, 0.4] },
+        { "id": "boss_leader_charge", "name": "Brutal Charge", "description": "Marks a line to the farthest champion within 12m and charges through it. Ranged, keep the line clear.", "type": "charge", "targeting": "farthest", "cooldown": 14, "castTime": 1.0, "initialCooldown": 6, "minRange": 300, "range": 1200, "length": 1250, "width": 200, "damageMultiplier": 1.8, "color": [0.95, 0.35, 0.05, 0.38] },
+        { "id": "boss_leader_frenzy", "name": "Blood Frenzy", "description": "At 30% health it enrages: +50% damage, faster attacks and movement until killed.", "type": "enrage", "cooldown": 0, "castTime": 1.0, "range": 5000, "magnitude": 0.5, "healthThreshold": 0.3 }
+      ]
+    }
+  }
+}

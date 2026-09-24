@@ -42,7 +42,8 @@ bool CireThreat::RunSmoke(ACireGameMode* Mode){
     const auto& T=CireSkillTuning::Get();
     Damage(Enemy,Tank,10);Check(Enemy->Victim==Tank&&FMath::IsNearlyEqual(Enemy->Threat.FindRef(Tank),10*T.TankDamageThreatMultiplier),TEXT("tank damage threat multiplier"));
     Damage(Enemy,DPS,40);Check(Enemy->Victim==Tank,TEXT("DPS stays below tank threat"));
-    Damage(Enemy,DPS,11);Check(Enemy->Victim==DPS,TEXT("DPS overtakes tank"));
+    Damage(Enemy,DPS,11);Check(Enemy->Victim==Tank,TEXT("DPS above 100% but under the 110% melee pull threshold keeps the tank"));
+    Damage(Enemy,DPS,5);Check(Enemy->Victim==DPS,TEXT("DPS overtakes tank past 110% in melee"));
     Taunt(Enemy,Tank,3);Damage(Enemy,DPS,100);Check(Enemy->Victim==Tank,TEXT("active taunt forces target"));
     Enemy->ForcedVictimUntil=0;Check(Select(Enemy)==DPS,TEXT("expired taunt returns to highest threat"));
     Engage(Second,Tank);Tank->Health=500;

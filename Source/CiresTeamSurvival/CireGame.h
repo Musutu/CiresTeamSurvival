@@ -10,6 +10,7 @@
 #include "CireCombatEvents.h"
 #include "CireChat.h"
 #include "CireSpellPresentation.h"
+#include "CireNPCArchetypes.h" // npc-boss: role/classification enums for ACireMonster read API
 #include "CireGame.generated.h"
 
 class USpringArmComponent;
@@ -197,6 +198,17 @@ public:
     UPROPERTY(Replicated) float SlowUntil = 0;
     float BaseMoveSpeed = 0;
     bool bEngaged = false;
+    // ---- NPC roles / boss / threat read API (feat/npc-boss; see Docs/NPCs.md) ----
+    // Replicated role, classification, cast, status and threat-table state lives
+    // in NPCState; these accessors are safe on server and clients.
+    UPROPERTY(VisibleAnywhere) TObjectPtr<class UCireNPCState> NPCState;
+    ECireNPCRole GetNPCRole() const;
+    ECireNPCClass GetNPCClassification() const;
+    FString GetNPCDisplayName() const;
+    // True only for lane bosses that cost 10 lives on reaching town (pack leaders are
+    // boss-classified but never leak).
+    bool IsLaneBoss() const { return bBoss; }
+    // ---- end NPC read API ----
 };
 
 UCLASS()
