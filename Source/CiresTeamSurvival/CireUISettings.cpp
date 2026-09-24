@@ -16,7 +16,8 @@ struct FOldDefault { const TCHAR* Id; float X, Y, W, H; };
 const FOldDefault OldDefaults[] = {
     {TEXT("Party"), 20, 166, 250, 248}, {TEXT("Match"), 480, 18, 320, 74}, {TEXT("Target"), 482, 111, 300, 140},
     {TEXT("Focus"), 796, 111, 218, 123}, {TEXT("Boss"), 1040, 242, 220, 150}, {TEXT("Threat"), 1040, 398, 220, 124},
-    {TEXT("Meter"), 956, 526, 304, 174}, {TEXT("Pet"), 20, 426, 250, 90}, {TEXT("CombatLog"), 956, 362, 304, 150}};
+    {TEXT("Meter"), 956, 526, 304, 174}, {TEXT("Pet"), 20, 426, 250, 90}, {TEXT("CombatLog"), 956, 362, 304, 150},
+    {TEXT("Stats"), 282, 166, 176, 238}};
 const TCHAR* PreferencesSection = TEXT("CireUI.Preferences");
 
 float SafeFloat(float Value, float Default, float Minimum, float Maximum)
@@ -73,7 +74,7 @@ void FCireUISettings::Reset()
     // The WoW-style default tooltip grows up/left from this panel's lower-right
     // corner: right of the reticle, above the action bar and meter.
     Add(TEXT("Tooltip"), 690.f, 368.f, 340.f, 150.f);
-    Add(TEXT("Pet"), 20.f, 426.f, 210.f, 90.f);
+    Add(TEXT("Pet"), 290.f, 306.f, 210.f, 90.f); // under the focus frame; the bag bar owns 20,420
     // Right column under the minimap: boss frames, then threat, then the damage meter.
     Add(TEXT("Boss"), 1040.f, 208.f, 220.f, 150.f);
     Add(TEXT("Threat"), 1040.f, 372.f, 220.f, 124.f);
@@ -82,7 +83,7 @@ void FCireUISettings::Reset()
     Add(TEXT("Bar3"), 368.f, 440.f, 536.f, 48.f);
     // progression-shop: bag/belt/teleport bar and the compact stats window (CireShopUI).
     Add(TEXT("Inventory"), 20.f, 420.f, 306.f, 102.f);
-    Add(TEXT("Stats"), 282.f, 166.f, 176.f, 238.f);
+    Add(TEXT("Stats"), 858.f, 208.f, 176.f, 238.f); // wow-ui: beside the right column, clear of focus/party
 
     bLayoutLocked = true;
     bShowChat = true;
@@ -113,7 +114,7 @@ void FCireUISettings::Reset()
     bShowThreatMeter=true; bThreatWarnings=true; bThreatSound=true; ThreatWarningPercent=90.f; bLevelUpEffect=true; bShowBossFrames=true;
     bShowActionBar2=true; bShowActionBar3=false; bLockActionBars=false; bMeterCollapsed=false; bThreatCollapsed=false;
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
-    bShowStats=true; // progression-shop
+    bShowStats=false; // progression-shop; wow-ui: closed by default (C toggles) to keep the screen clean
 }
 
 int32 FCireUISettings::AnchorFor(float Left, float Top, float Right, float Bottom)

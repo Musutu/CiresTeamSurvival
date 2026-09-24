@@ -267,9 +267,14 @@ void CireUIStyle::Header(const FCireUIPainter& P,float X,float Y,float W,const F
 }
 void CireUIStyle::Glow(const FCireUIPainter& P,float X,float Y,float W,float H,FLinearColor Color)
 {
-    // Translucent (not additive): the glow texture's alpha shapes the falloff.
-    if(const FAssets& A=Assets();A.Glow)P.Tex(A.Glow,X-W*.25f,Y-H*.25f,W*1.5f,H*1.5f,Color);
-    else P.Rect(X,Y,W,H,Color*FLinearColor(1,1,1,.25f));
+    // Procedural halo: stacked translucent fills growing outward. No texture blend
+    // mode involved, so it can never render as an opaque square (Color.A = strength).
+    const float Spread=FMath::Clamp(FMath::Min(W,H)*.18f,2.f,10.f);
+    for(int32 Ring=4;Ring>=1;--Ring)
+    {
+        const float O=Ring*Spread*.5f;
+        P.Rect(X-O,Y-O,W+2*O,H+2*O,FLinearColor(Color.R,Color.G,Color.B,Color.A*.14f));
+    }
 }
 void CireUIStyle::Button(const FCireUIPainter& P,float X,float Y,float W,float H,const FString& Label,ECireButtonState State,FLinearColor Accent,float TextSize)
 {
@@ -347,7 +352,7 @@ void CireUIStyle::IconSlot(const FCireUIPainter& P,float X,float Y,float S,const
             float D=FMath::Fmod(T+I*Per/4,Per);FVector2D Pt;
             if(D<S)Pt=FVector2D(X+D,Y);else if(D<2*S)Pt=FVector2D(X+S,Y+D-S);else if(D<3*S)Pt=FVector2D(X+S-(D-2*S),Y+S);else Pt=FVector2D(X,Y+S-(D-3*S));
             P.Disc(Pt.X,Pt.Y+Dy,S*.07f,FLinearColor(1.f,.95f,.7f,.95f),10);
-            if(A.Glow)P.Tex(A.Glow,Pt.X-S*.2f,Pt.Y-S*.2f+Dy,S*.4f,S*.4f,FLinearColor(1.f,.8f,.3f,.9f));
+            P.Disc(Pt.X,Pt.Y+Dy,S*.14f,FLinearColor(1.f,.8f,.3f,.35f),12);
         }
         P.Line(X,Y+Dy,X+S,Y+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);P.Line(X,Y+S+Dy,X+S,Y+S+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);
         P.Line(X,Y+Dy,X,Y+S+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);P.Line(X+S,Y+Dy,X+S,Y+S+Dy,FLinearColor(1.f,.85f,.35f,Pulse),1.5f);
