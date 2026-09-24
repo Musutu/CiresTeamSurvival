@@ -25,7 +25,7 @@ ROUTES = json.loads((DATA / "BattlefieldRoutes.json").read_text())
 ROUTE = [tuple(p) for p in ROUTES["lanes"][0]["points"]]
 HW = ROUTES["bounds"]["halfWidth"]
 MAXX = ROUTES["bounds"]["maxX"]
-ROUTE_MARGIN, BAY_MARGIN, SPAWN_MARGIN = 330, 380, 420
+ROUTE_MARGIN, BAY_MARGIN, SPAWN_MARGIN = 330, 450, 420
 INNER_LIMIT = 2100 - 60  # local |y| that stays clear of the realm divider
 
 G = "/Game/Environment/Town/Meshes/"
@@ -61,6 +61,7 @@ SLOTS = {}
 
 def mesh_slot(sid, mesh, fallback=None, footprint=None, collision=True, clearance="route", light=None, shadow=True, parts=None,
               fit=None, note=None, fallback_parts=None):
+    # "fallback" keeps the legacy/engine mesh as the last resort; overlays add higher-priority candidates.
     s = {"mesh": mesh}
     if parts:
         s["parts"] = parts
@@ -95,9 +96,11 @@ LAMP_LIGHT = {"offset": [70, 0, 262], "color": WARM, "intensity": 5200, "radius"
 
 # Landmarks (fit-to-footprint lets Tripo/Fab replacements of any scale drop in).
 mesh_slot("gatehouse", gen("SM_Town_Gatehouse"), footprint=gen_footprint("SM_Town_Gatehouse"), clearance="none",
-          note="Town gate over the march road. Replacement meshes need an 8 m wide, 5.5 m high passage centred on local Y=0.")
+          note="Town gate over the march road. Overlay meshes are used only with \"passage\": true: an 8 m wide, 5 m high open passage along local X at Y=0.")
 mesh_slot("castle_gate", gen("SM_Castle_Gatehouse"), footprint=gen_footprint("SM_Castle_Gatehouse"), clearance="none",
-          note="Castle gatehouse = defended leak zone entrance. Replacement needs a 9 m wide, 6 m high passage on local Y=0.")
+          note="Castle gatehouse = defended leak zone entrance. Overlay meshes are used only with \"passage\": true: a 9 m wide, 5 m high open passage along local X at Y=0.")
+SLOTS["gatehouse"]["requiresPassage"] = True
+SLOTS["castle_gate"]["requiresPassage"] = True
 mesh_slot("castle_keep", gen("SM_Castle_Keep"), footprint=gen_footprint("SM_Castle_Keep"), clearance="none")
 mesh_slot("castle_wall", gen("SM_Castle_Curtain"), footprint=gen_footprint("SM_Castle_Curtain"), clearance="none")
 mesh_slot("castle_tower", gen("SM_Castle_Tower"), footprint=gen_footprint("SM_Castle_Tower"), clearance="bays")
@@ -174,6 +177,7 @@ for i, sub in enumerate(("b", "c"), 1):
     e = ph_extent("fern_02", f"fern_02_{sub}")
     mesh_slot(f"fern_{i}", ph("fern_02", f"fern_02_{sub}"), fit="footprint", footprint=[e[0] * 2, e[1] * 2, e[2] * 2], collision=False, clearance="bays")
 mesh_slot("tree", ph("island_tree_02", "island_tree_02_1k"), fit="footprint", footprint=[420, 410, 340], collision=False, clearance="bays")
+SLOTS["tree"]["materialOverride"] = "/Game/Environment/Town/Materials/MI_Town_Bark.MI_Town_Bark"  # leafless, bark-textured: a dead town tree
 # Material slots. World-space surfaces (road, plazas, ground) are drawn on scaled engine cubes: replacements
 # must be world-aligned or they will stretch. Mesh-slot materials swap that material slot on every town mesh.
 MAT = "/Game/Environment/Town/Materials/"
@@ -182,6 +186,7 @@ for sid, mi, mesh_slot_name in (
         ("ground_material", "MI_TownW_Ground", None), ("field_material", "MI_TownW_Field", None),
         ("flagstone_material", "MI_TownW_Flagstone", None), ("castle_material", "MI_TownW_CastleW", None),
         ("stone_material", "MI_TownW_StoneW", None),
+        ("cliff_material", "MI_TownW_CliffW", None),
         ("plaster_material", "MI_Town_Plaster", "Plaster"), ("timber_material", "MI_Town_Timber", "Timber"),
         ("planks_material", "MI_Town_Planks", "Planks"), ("roof_slate_material", "MI_Town_RoofSlate", "RoofSlate"),
         ("roof_clay_material", "MI_Town_RoofClay", "RoofClay"), ("thatch_material", "MI_Town_Thatch", "Thatch"),
@@ -422,9 +427,9 @@ for s in (-1, 1):
     put("low_wall", -500, s * 1100, 0)
     put("low_wall", 0, s * 1150, 0)
     put("shrub_1", -200, s * 1250, 30)
-    put("tree", 250, s * 1240, 60 * s, scale=2.4)
+    put("shrub_2", 250, s * 1250, 60 * s, scale=1.4)
 # ---- town square: shrine centrepiece, chapel, well, statue, trees, benches (tables)
-put("shrine", 1650, -350, 0, reserve=True)
+put("shrine", 1650, -280, 0, scale=.85, reserve=True)
 put("chapel", 1700, 1360, 180, reserve=True)
 put("statue", 2250, -650, 150, scale=1.3)
 put("well", 600, -700, 30)
@@ -440,10 +445,10 @@ put("gibbet", 350, -1100, 45)
 put("cart", 3150, -1150, 180)
 put("hay_sacks", 2850, -1150, 30)
 # ---- residential lanes: houses inside the realm form an S-bend; gardens behind
-lane_front = [("house_a", 3900)]
+lane_front = [("house_c", 4050)]
 for sid, x in lane_front:
     w, front, depth = width_of(sid)
-    put(sid, x, -80 + front, -90, reserve=True)
+    put(sid, x, 150 + front, -90, reserve=True)
 put("house_planks", 5150, 1250, -90, reserve=True, check_overlap=True)
 for x in (3150, 3950, 4900):
     put("fence", x, 800, 90)
@@ -464,14 +469,14 @@ for i, x in enumerate(range(5950, 7200, 430)):
     for side in (-1, 1):
         sid = "market_stall_a" if (i + (side > 0)) % 2 else "market_stall_b"
         y = 500 + side * 540
-        if put(sid, x, y, 90 if side < 0 else -90, check_overlap=True):
+        if put(sid, x + (120 if (side < 0 and x < 6000) else 0), y - (60 if side < 0 else 0), 90 if side < 0 else -90, check_overlap=True):
             put(rng.choice(["basket", "basket_lidded", "pot", "crate"]), x + 140, y + side * 60, rng.uniform(0, 360), quiet=True)
             put("barrel", x - 150, y + side * 80, rng.uniform(0, 360), quiet=True)
 put("well", 8350, 750, 15, reserve=True)
 for x, y, yaw in ((8000, 1150, 160), (7550, 1050, 20)):
     put("market_stall_a" if x > 7700 else "market_stall_b", x, y, -90, check_overlap=True)
 put("cart", 8250, 1250, 170)
-put("cart", 6250, -1150, 10)
+put("cart", 6450, 1250, 10)
 put("barrel_stack", 8900, 600, 20, quiet=True)
 for x, y in ((7800, 700), (7700, 1250), (6200, 1250), (6700, 1260)):
     put(rng.choice(["crate", "crate_long", "barrel_wine", "hay_sacks"]), x, y, rng.uniform(0, 360), quiet=True)
@@ -482,7 +487,6 @@ for x in (5750, 8550):
         put("banner", x, 500 + s * 520 if x < 7000 else -550 + s * 520, 90 * -s, quiet=True)
 # ---- gate road: watchtower, guard warehouse, barricades
 put("watchtower", 10450, 1050, -90, reserve=True)
-put("warehouse", 10000, 1500, -90, reserve=True, check_overlap=True)
 put("barricade", 10500, -1150, 90)
 put("barricade", 9300, -1150, 80)
 put("fire_pit", 10850, 1000, 0)
@@ -509,6 +513,17 @@ put("gibbet", 11900, 1150, 200)
 put("cart", 12300, -1150, 150)
 put("fire_pit", 11800, -1100, 0)
 put("fire_pit", 11850, 1000, 0)
+# ---- rocky hills beyond the town walls and behind the castle (backdrop only, outer side)
+hr = random.Random(1234)
+for k in range(34):
+    x = hr.uniform(-6500, 16500)
+    y = hr.uniform(5200, 9000)
+    put(hr.choice(["rock_1", "rock_2", "rock_4", "rock_6", "boulder"]), x, y, hr.uniform(0, 360), hr.uniform(7, 16), mode="outer", quiet=True)
+for k in range(10):
+    put(hr.choice(["rock_1", "rock_4", "boulder"]), hr.uniform(-7500, -5200), hr.uniform(-1800, 1800), hr.uniform(0, 360), hr.uniform(6, 12), quiet=True)
+    put(hr.choice(["rock_2", "rock_6", "boulder"]), hr.uniform(16200, 19000), hr.uniform(-1800, 1800), hr.uniform(0, 360), hr.uniform(6, 12), quiet=True)
+for k in range(14):
+    put("tree", hr.uniform(-2500, 15000), hr.uniform(4400, 5200), hr.uniform(0, 360), hr.uniform(2.0, 3.2), mode="outer", quiet=True)
 # ---- street rows along both realm edges (shallow enough for the divider side)
 SHALLOW = ["house_a", "house_c", "house_planks", "cottage_thatch", "cottage_slate"]
 for side, seed in ((1, 11), (-1, 23)):

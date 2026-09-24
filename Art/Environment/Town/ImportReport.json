@@ -5,10 +5,10 @@
       "/Game/Environment/Town/Textures/brown_mud_leaves_01/T_brown_mud_leaves_01_N.T_brown_mud_leaves_01_N",
       "/Game/Environment/Town/Textures/brown_mud_leaves_01/T_brown_mud_leaves_01_ARM.T_brown_mud_leaves_01_ARM"
     ],
-    "castle_brick_07": [
-      "/Game/Environment/Town/Textures/castle_brick_07/T_castle_brick_07_D.T_castle_brick_07_D",
-      "/Game/Environment/Town/Textures/castle_brick_07/T_castle_brick_07_N.T_castle_brick_07_N",
-      "/Game/Environment/Town/Textures/castle_brick_07/T_castle_brick_07_ARM.T_castle_brick_07_ARM"
+    "castle_wall_slates": [
+      "/Game/Environment/Town/Textures/castle_wall_slates/T_castle_wall_slates_D.T_castle_wall_slates_D",
+      "/Game/Environment/Town/Textures/castle_wall_slates/T_castle_wall_slates_N.T_castle_wall_slates_N",
+      "/Game/Environment/Town/Textures/castle_wall_slates/T_castle_wall_slates_ARM.T_castle_wall_slates_ARM"
     ],
     "clay_roof_tiles_02": [
       "/Game/Environment/Town/Textures/clay_roof_tiles_02/T_clay_roof_tiles_02_D.T_clay_roof_tiles_02_D",
@@ -35,15 +35,15 @@
       "/Game/Environment/Town/Textures/fabric_pattern_07/T_fabric_pattern_07_N.T_fabric_pattern_07_N",
       "/Game/Environment/Town/Textures/fabric_pattern_07/T_fabric_pattern_07_ARM.T_fabric_pattern_07_ARM"
     ],
-    "medieval_blocks_02": [
-      "/Game/Environment/Town/Textures/medieval_blocks_02/T_medieval_blocks_02_D.T_medieval_blocks_02_D",
-      "/Game/Environment/Town/Textures/medieval_blocks_02/T_medieval_blocks_02_N.T_medieval_blocks_02_N",
-      "/Game/Environment/Town/Textures/medieval_blocks_02/T_medieval_blocks_02_ARM.T_medieval_blocks_02_ARM"
-    ],
     "monastery_stone_floor": [
       "/Game/Environment/Town/Textures/monastery_stone_floor/T_monastery_stone_floor_D.T_monastery_stone_floor_D",
       "/Game/Environment/Town/Textures/monastery_stone_floor/T_monastery_stone_floor_N.T_monastery_stone_floor_N",
       "/Game/Environment/Town/Textures/monastery_stone_floor/T_monastery_stone_floor_ARM.T_monastery_stone_floor_ARM"
+    ],
+    "rock_face_03": [
+      "/Game/Environment/Town/Textures/rock_face_03/T_rock_face_03_D.T_rock_face_03_D",
+      "/Game/Environment/Town/Textures/rock_face_03/T_rock_face_03_N.T_rock_face_03_N",
+      "/Game/Environment/Town/Textures/rock_face_03/T_rock_face_03_ARM.T_rock_face_03_ARM"
     ],
     "rocky_trail": [
       "/Game/Environment/Town/Textures/rocky_trail/T_rocky_trail_D.T_rocky_trail_D",
@@ -65,6 +65,11 @@
       "/Game/Environment/Town/Textures/rust_coarse_01/T_rust_coarse_01_N.T_rust_coarse_01_N",
       "/Game/Environment/Town/Textures/rust_coarse_01/T_rust_coarse_01_ARM.T_rust_coarse_01_ARM"
     ],
+    "stone_wall_04": [
+      "/Game/Environment/Town/Textures/stone_wall_04/T_stone_wall_04_D.T_stone_wall_04_D",
+      "/Game/Environment/Town/Textures/stone_wall_04/T_stone_wall_04_N.T_stone_wall_04_N",
+      "/Game/Environment/Town/Textures/stone_wall_04/T_stone_wall_04_ARM.T_stone_wall_04_ARM"
+    ],
     "thatch_roof_angled": [
       "/Game/Environment/Town/Textures/thatch_roof_angled/T_thatch_roof_angled_D.T_thatch_roof_angled_D",
       "/Game/Environment/Town/Textures/thatch_roof_angled/T_thatch_roof_angled_N.T_thatch_roof_angled_N",
@@ -83,10 +88,13 @@
   },
   "materials": {
     "masters": [
-      "(kept)"
+      "/Game/Environment/Town/Materials/M_TownSurface.M_TownSurface",
+      "/Game/Environment/Town/Materials/M_TownWorld.M_TownWorld",
+      "/Game/Environment/Town/Materials/M_TownFlat.M_TownFlat"
     ],
     "instances": [
       "BannerCloth",
+      "Bark",
       "Canvas",
       "CanvasAlt",
       "Castle",
@@ -105,6 +113,7 @@
       "Thatch",
       "Timber",
       "W_CastleW",
+      "W_CliffW",
       "W_Cobble",
       "W_Field",
       "W_Flagstone",

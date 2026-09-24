@@ -18,24 +18,24 @@ DEFINE_LOG_CATEGORY_STATIC(LogCireTown,Log,All);
 namespace
 {
 constexpr float RouteMargin=330.f;   // road half-width (260) + escort capsule clearance
-constexpr float BayMargin=380.f;     // challenge pack arena around each bay centre
+constexpr float BayMargin=450.f;     // challenge pack arena around each bay centre
 constexpr float SpawnMargin=420.f;
 constexpr float DividerMargin=60.f;  // nothing may cross into the gap between the two realms
 constexpr int32 MaxLightsPerTeam=56;
 
 struct FCandidate
 {
-    FString Path,Source;TArray<FString> Parts;int32 Priority=0;
+    FString Path,Source,MaterialOverride;TArray<FString> Parts;int32 Priority=0;
     FVector Scale=FVector::OneVector,Offset=FVector::ZeroVector;FRotator Rotation=FRotator::ZeroRotator;bool bFit=false;
 };
 struct FSlotLight {bool bEnabled=false;FVector Offset=FVector::ZeroVector;FLinearColor Color=FLinearColor(1,.6f,.3f);float Intensity=4000,Radius=800;};
 enum class EClearance:uint8 {Route,Bays,None};
 struct FSlot
 {
-    FName Id;bool bMaterial=false,bCollision=true,bShadow=true;FName MeshSlot;FVector Footprint=FVector::ZeroVector;
+    FName Id;bool bMaterial=false,bCollision=true,bShadow=true,bRequiresPassage=false;FName MeshSlot;FVector Footprint=FVector::ZeroVector;
     EClearance Clearance=EClearance::Route;FSlotLight Light;TArray<FCandidate> Candidates;
     // resolved
-    TWeakObjectPtr<UStaticMesh> Mesh;TArray<TWeakObjectPtr<UStaticMesh>> Parts;TWeakObjectPtr<UMaterialInterface> Material;FTransform Local=FTransform::Identity;
+    TWeakObjectPtr<UStaticMesh> Mesh;TArray<TWeakObjectPtr<UStaticMesh>> Parts;TWeakObjectPtr<UMaterialInterface> Material,MeshMaterial;FTransform Local=FTransform::Identity;
     FBox LocalBox=FBox(ForceInit);FString ResolvedSource;
 };
 struct FPlacement {FName Slot;FVector Location=FVector::ZeroVector;float Yaw=0,Scale=1;uint8 Mode=0;/*0 raw,1 outer,2 inner*/};
@@ -80,8 +80,9 @@ FString ObjectPath(FString Path)
     if(!Path.Contains(TEXT(".")))Path+=TEXT(".")+FPaths::GetBaseFilename(Path);
     return Path;
 }
-bool ReadCandidate(const TSharedPtr<FJsonObject>& O,const TCHAR* PathKey,const TCHAR* Prefix,int32 Priority,const FString& Source,FCandidate& Out)
+bool ReadCandidate(const TSharedPtr<FJsonObject>& O,const TCHAR* PathKey,const TCHAR* Prefix,int32 Priority,const FString& Source,bool bBase,FCandidate& Out)
 {
+    Out=FCandidate();
     FString Path;if(!O->TryGetStringField(PathKey,Path))return false;
     Out.Path=ObjectPath(Path);if(Out.Path.IsEmpty())return false;
     Out.Priority=Priority;Out.Source=Source;
@@ -91,9 +92,13 @@ bool ReadCandidate(const TSharedPtr<FJsonObject>& O,const TCHAR* PathKey,const T
     Out.Rotation=FRotator(Rot.X,Rot.Y,Rot.Z);FString FitMode;
     // Multi-part props (e.g. a crate body, lid and latch) share one pivot and transform.
     const TArray<TSharedPtr<FJsonValue>>* Parts=nullptr;const FString PartsKey=FString(Prefix)+TEXT("parts");
+    FString Override;const FString OverrideKey=FString(Prefix)+TEXT("materialOverride");
+    if(O->TryGetStringField(*OverrideKey,Override))Out.MaterialOverride=ObjectPath(Override);
     if(O->TryGetArrayField(*PartsKey,Parts))for(const auto& V:*Parts)
     {FString Part;if(V->TryGetString(Part)&&!ObjectPath(Part).IsEmpty()&&Out.Parts.Num()<32)Out.Parts.Add(ObjectPath(Part));}
-    Out.bFit=O->TryGetStringField(*Fit,FitMode)&&FitMode==TEXT("footprint");
+    // Overlay art of unknown scale is fitted into the slot footprint unless it opts out with "fit": "none".
+    const bool bHasFit=O->TryGetStringField(*Fit,FitMode);
+    Out.bFit=bHasFit?FitMode==TEXT("footprint"):!bBase;
     return true;
 }
 bool MergeManifest(const FString& File,int32 DefaultPriority,const FString& DefaultSource,bool bBase)
@@ -104,37 +109,57 @@ bool MergeManifest(const FString& File,int32 DefaultPriority,const FString& Defa
     double Priority=DefaultPriority;Root->TryGetNumberField(TEXT("priority"),Priority);
     FString Source=DefaultSource;Root->TryGetStringField(TEXT("source"),Source);
     const int32 P=FMath::Clamp(FMath::RoundToInt(Priority),bBase?0:1,1000);
-    int32 Added=0;
+    int32 Added=0,Skipped=0;
     for(const auto& Pair:(*Slots)->Values)
     {
         const TSharedPtr<FJsonObject> O=Pair.Value->AsObject();const FName Id(*FString(Pair.Key));
         if(!O||Id.IsNone()||FString(Pair.Key).Len()>64)continue;
-        FSlot& Slot=Town.Slots.FindOrAdd(Id);Slot.Id=Id;
-        FString Kind;if(O->TryGetStringField(TEXT("kind"),Kind))Slot.bMaterial=Kind==TEXT("material");
-        FString MeshSlot;if(O->TryGetStringField(TEXT("meshSlot"),MeshSlot))Slot.MeshSlot=FName(*MeshSlot);
-        O->TryGetBoolField(TEXT("collision"),Slot.bCollision);O->TryGetBoolField(TEXT("castShadow"),Slot.bShadow);
-        if(!Vec(O,TEXT("footprint"),Slot.Footprint,0,20000)){UE_LOG(LogCireTown,Warning,TEXT("Slot %s footprint invalid in %s"),*Id.ToString(),*File);continue;}
-        FString Clear;if(O->TryGetStringField(TEXT("clearance"),Clear))Slot.Clearance=Clear==TEXT("none")?EClearance::None:Clear==TEXT("bays")?EClearance::Bays:EClearance::Route;
-        const TSharedPtr<FJsonObject>* Light=nullptr;
-        if(O->TryGetObjectField(TEXT("light"),Light))
-        {
-            FVector Color(1,.6,.3);Slot.Light.bEnabled=true;
-            if(!Vec(*Light,TEXT("offset"),Slot.Light.Offset,-5000,5000)||!Vec(*Light,TEXT("color"),Color,0,20)||
-               !Num(*Light,TEXT("intensity"),Slot.Light.Intensity,0,200000)||!Num(*Light,TEXT("radius"),Slot.Light.Radius,50,5000))Slot.Light.bEnabled=false;
-            Slot.Light.Color=FLinearColor(Color.X,Color.Y,Color.Z);
-        }
-        const TCHAR* Key=Slot.bMaterial?TEXT("material"):TEXT("mesh");
-        FCandidate C;
-        if(ReadCandidate(O,Key,TEXT(""),P,Source,C)){Slot.Candidates.Add(C);++Added;}
-        if(ReadCandidate(O,TEXT("fallback"),TEXT("fallback_"),-1,TEXT("fallback"),C)){Slot.Candidates.Add(C);++Added;}
+        // Overlay manifests may gate entries on an import status (e.g. Fab "pending_download").
+        FString Status;if(!bBase&&O->TryGetStringField(TEXT("status"),Status)&&Status!=TEXT("imported")){++Skipped;continue;}
+        FString Kind;if(!O->TryGetStringField(TEXT("kind"),Kind))O->TryGetStringField(TEXT("type"),Kind);
+        const bool bMaterialEntry=Kind==TEXT("material");
+        FSlot* Existing=Town.Slots.Find(Id);
+        const bool bMaterial=Existing?Existing->bMaterial:bMaterialEntry;
+        const TCHAR* Key=bMaterial?TEXT("material"):TEXT("mesh");
+        TArray<FCandidate> Found;FCandidate C;
+        if(ReadCandidate(O,Key,TEXT(""),P,Source,bBase,C))Found.Add(C);
+        if(ReadCandidate(O,TEXT("fallback"),TEXT("fallback_"),-1,TEXT("fallback"),true,C))Found.Add(C);
         // Array form: "candidates":[{"mesh":...,"priority":..}] for manifests with several quality tiers.
         const TArray<TSharedPtr<FJsonValue>>* List=nullptr;
         if(O->TryGetArrayField(TEXT("candidates"),List))for(const auto& V:*List)
         {
             const auto CO=V->AsObject();double CP=P;if(!CO)continue;CO->TryGetNumberField(TEXT("priority"),CP);
-            if(ReadCandidate(CO,Key,TEXT(""),FMath::Clamp(FMath::RoundToInt(CP),bBase?0:1,1000),Source,C)){Slot.Candidates.Add(C);++Added;}
+            if(ReadCandidate(CO,Key,TEXT(""),FMath::Clamp(FMath::RoundToInt(CP),bBase?0:1,1000),Source,bBase,C))Found.Add(C);
         }
+        if(Existing&&!bBase&&Existing->bRequiresPassage)
+        {
+            // Gates span the march road: a replacement must declare its walkable passage or it could wall off the route.
+            bool bPassage=false;O->TryGetBoolField(TEXT("passage"),bPassage);
+            if(!bPassage&&!Found.IsEmpty()){UE_LOG(LogCireTown,Warning,TEXT("%s: overlay for gate slot %s ignored (set \"passage\": true once the mesh has an open road passage on local Y=0)."),*FPaths::GetCleanFilename(File),*Id.ToString());++Skipped;continue;}
+        }
+        if(!Existing&&Found.IsEmpty())continue; // overlay-only slot with nothing loadable yet
+        FSlot& Slot=Existing?*Existing:Town.Slots.Add(Id);
+        if(!Existing)
+        {
+            // Slot attributes come from the first manifest that defines the slot (normally the base file).
+            Slot.Id=Id;Slot.bMaterial=bMaterial;
+            FString MeshSlot;if(O->TryGetStringField(TEXT("meshSlot"),MeshSlot))Slot.MeshSlot=FName(*MeshSlot);
+            O->TryGetBoolField(TEXT("collision"),Slot.bCollision);O->TryGetBoolField(TEXT("castShadow"),Slot.bShadow);
+            O->TryGetBoolField(TEXT("requiresPassage"),Slot.bRequiresPassage);
+            if(!Vec(O,TEXT("footprint"),Slot.Footprint,0,20000)){UE_LOG(LogCireTown,Warning,TEXT("Slot %s footprint invalid in %s"),*Id.ToString(),*File);Slot.Footprint=FVector::ZeroVector;}
+            FString Clear;if(O->TryGetStringField(TEXT("clearance"),Clear))Slot.Clearance=Clear==TEXT("none")?EClearance::None:Clear==TEXT("bays")?EClearance::Bays:EClearance::Route;
+            const TSharedPtr<FJsonObject>* Light=nullptr;
+            if(O->TryGetObjectField(TEXT("light"),Light))
+            {
+                FVector Color(1,.6,.3);Slot.Light.bEnabled=true;
+                if(!Vec(*Light,TEXT("offset"),Slot.Light.Offset,-5000,5000)||!Vec(*Light,TEXT("color"),Color,0,20)||
+                   !Num(*Light,TEXT("intensity"),Slot.Light.Intensity,0,200000)||!Num(*Light,TEXT("radius"),Slot.Light.Radius,50,5000))Slot.Light.bEnabled=false;
+                Slot.Light.Color=FLinearColor(Color.X,Color.Y,Color.Z);
+            }
+        }
+        Slot.Candidates.Append(Found);Added+=Found.Num();
     }
+    if(Skipped)UE_LOG(LogCireTown,Display,TEXT("%s: %d slot entries not yet usable (pending import or no declared gate passage)."),*FPaths::GetCleanFilename(File),Skipped);
     UE_LOG(LogCireTown,Display,TEXT("CIRE_TOWN_SLOTS_MERGED file=%s source=%s priority=%d candidates=%d"),*FPaths::GetCleanFilename(File),*Source,P,Added);
     return true;
 }
@@ -163,6 +188,7 @@ void Resolve(FSlot& Slot)
             const FVector Centre=Rotated.GetCenter();Local.SetTranslation(FVector(-Centre.X,-Centre.Y,-Rotated.Min.Z)+C.Offset);
         }
         else Local.SetTranslation(C.Offset);
+        Slot.MeshMaterial=C.MaterialOverride.IsEmpty()?nullptr:LoadObject<UMaterialInterface>(nullptr,*C.MaterialOverride,nullptr,LOAD_NoWarn|LOAD_Quiet);
         Slot.Mesh=Mesh;Slot.Parts=MoveTemp(Parts);Slot.Local=Local;Slot.LocalBox=Raw.TransformBy(Local);Slot.ResolvedSource=C.Source;
         if(Slot.Footprint.X>1&&Slot.Footprint.Y>1&&C.bFit)
             Slot.LocalBox=FBox(FVector(-Slot.Footprint.X*.5,-Slot.Footprint.Y*.5,0),FVector(Slot.Footprint.X*.5,Slot.Footprint.Y*.5,FMath::Max(Slot.Footprint.Z,10.)));
@@ -275,6 +301,7 @@ void CireEnvironmentProps::Build(ACireWorld* WorldActor)
         C->SetGenerateOverlapEvents(false);C->SetCanEverAffectNavigation(false);C->SetCastShadow(Slot.bShadow);
         C->ComponentTags.Add(TEXT("CireWorldProp"));C->ComponentTags.Add(TEXT("CireTown"));C->ComponentTags.Add(Slot.Id);
         for(const FSlot* M:MaterialOverrides)C->SetMaterialByName(M->MeshSlot,M->Material.Get());
+        if(Slot.MeshMaterial.IsValid())for(int32 I=0;I<C->GetNumMaterials();++I)C->SetMaterial(I,Slot.MeshMaterial.Get());
         WorldActor->AddInstanceComponent(C);C->RegisterComponent();Data.Components.FindOrAdd(Slot.Id).Add(C);
         }
     }

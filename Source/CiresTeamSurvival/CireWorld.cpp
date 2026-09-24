@@ -26,6 +26,7 @@ const TCHAR* const FieldMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW
 const TCHAR* const FlagstoneMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Flagstone.MI_TownW_Flagstone");
 const TCHAR* const CastleMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_CastleW.MI_TownW_CastleW");
 const TCHAR* const StoneMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_StoneW.MI_TownW_StoneW");
+const TCHAR* const CliffMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_CliffW.MI_TownW_CliffW");
 const TCHAR* const RiftMaterial=TEXT("/Game/Environment/Town/Materials/MI_Town_Ember.MI_Town_Ember");
 const TCHAR* const SkyMaterial=TEXT("/Game/Environment/Town/Sky/M_TownSky.M_TownSky");
 }
@@ -55,6 +56,7 @@ void ACireWorld::BeginPlay() {
     auto Mat=[](const TCHAR* Slot,const TCHAR* Path){return CireEnvironmentProps::SurfaceMaterial(Slot,Path);};
     auto Legacy=[](const TCHAR* Path){return LoadObject<UMaterialInterface>(nullptr,Path);};
     auto* Castle=Make(TEXT("CastleMasonry"),Cube,Mat(TEXT("castle_material"),CastleMaterial),true);
+    auto* Cliff=Make(TEXT("SunderingCliff"),Cube,Mat(TEXT("cliff_material"),CliffMaterial),true);
     auto* Stone=Make(TEXT("Stone"),Cube,Mat(TEXT("stone_material"),StoneMaterial),true);
     auto* Earth=Make(TEXT("CourtyardGround"),Cube,Mat(TEXT("ground_material"),GroundMaterial),true,false);
     auto* Field=Make(TEXT("FieldGround"),Cube,Mat(TEXT("field_material"),FieldMaterial),false,false);
@@ -69,13 +71,20 @@ void ACireWorld::BeginPlay() {
     auto Add=[](UInstancedStaticMeshComponent* C,FVector P,FVector Size,FRotator R=FRotator::ZeroRotator){C->AddInstance(FTransform(R,P,Size/100.f));};
     const auto& Routes=CireLanePath::Get(GetWorld());
     const float HW=Routes.HalfWidth;
-    // The Sundering Wall: an opaque, very tall rampart keeps the two PvE realms visually separate even
-    // from elevated cameras. Town pieces are clipped 60 cm short of it on both sides.
+    // The Sundering Cliff: an opaque, very tall rock face keeps the two PvE realms visually separate even
+    // from elevated cameras. The town is built against it; town pieces stop 60 cm short on both sides.
     const float WallMinX=Routes.MinX-3200,WallMaxX=Routes.MaxX+3000,CentreX=(WallMinX+WallMaxX)*.5f,Length=WallMaxX-WallMinX;
-    Add(Castle,FVector(CentreX,0,1600),FVector(Length,200,3400));
-    Add(Castle,FVector(CentreX,0,3330),FVector(Length,300,60));
+    Add(Cliff,FVector(CentreX,0,1600),FVector(Length,200,3400));
+    // Broken strata so the silhouette above the roofs is not a ruler-straight slab (kept inside +/-100 cm).
+    for(float X=WallMinX+400;X<WallMaxX;X+=1150)
+    {
+        const float H=3300+FMath::Fmod(X*.37f,500.f)+(FMath::Fmod(X,2300.f)<1150?250:-150);
+        Add(Cliff,FVector(X,0,H*.5f),FVector(900+FMath::Fmod(X*.13f,500.f),190,H),FRotator(0,0,0));
+    }
+    // A distant plain under the dusk sky so high cameras never see the edge of the world.
+    Add(Field,FVector(CentreX,0,-3),FVector(Length+60000,60000,2));
     RouteRoad=Make(TEXT("CireRouteRoad"),Cube,Mat(TEXT("cobblestone_material"),RoadMaterial),false,false);
-    RouteEdge=Make(TEXT("CireRouteEdge"),Cube,Mat(TEXT("stone_material"),StoneMaterial),false,false);
+    RouteEdge=Make(TEXT("CireRouteEdge"),Cube,Mat(TEXT("castle_material"),CastleMaterial),false,false);
     RouteArrows=Make(TEXT("CireRouteArrows"),Cube,Mat(TEXT("stone_material"),StoneMaterial),false,false);
     RefreshRouteVisuals();
     auto Text=[&](const FString& Str,FVector P,float Size,FColor Color,FRotator Rotation=FRotator(0,180,0)) {
@@ -110,7 +119,7 @@ void ACireWorld::BeginPlay() {
         // Team identity above the castle gate and the breach rift.
         Text(Team==0?TEXT("EMBER KEEP"):TEXT("DUSK KEEP"),FVector(-150,Y,1260),72,Color,FRotator::ZeroRotator);
         Text(TEXT("HOLD THE CASTLE GATE"),FVector(-150,Y,1185),28,FColor(229,190,123),FRotator::ZeroRotator);
-        Light(FVector(-2000,Y,520),FLinearColor(Color),26000,1500);
+        Light(FVector(-2000,Y,520),FLinearColor(1.f,.6f,.32f),14000,1500);
         for(int32 Tier=1;Tier<=3;++Tier) {
             FVector P=CireLanePath::ChallengePosition(GetWorld(),Team,Tier,0);
             Add(Disc,P+FVector(0,0,1),FVector(470,470,6));
@@ -120,8 +129,9 @@ void ACireWorld::BeginPlay() {
         }
         const FVector Spawn=CireLanePath::SpawnPosition(GetWorld(),Team,0);
         // The breach: a glowing rift in the dead fields beyond the town gate.
-        Add(Rift,Spawn+FVector(420,0,230),FVector(40,700,440),FRotator(0,0,0));
-        Add(Team==0?Teal:Red,Spawn+FVector(440,0,230),FVector(10,760,470));
+        Add(Rift,Spawn+FVector(420,0,260),FVector(30,90,520),FRotator(0,0,0));
+        Add(Rift,Spawn+FVector(425,-70,200),FVector(24,60,300),FRotator(0,0,14));
+        Add(Rift,Spawn+FVector(425,80,300),FVector(24,50,260),FRotator(0,0,-18));
         Light(Spawn+FVector(300,0,220),FLinearColor(1.f,.25f,.08f),16000,1400);
         Text(TEXT("THE BREACH"),Spawn+FVector(380,0,560),60,FColor(228,155,137));
     }
@@ -159,8 +169,10 @@ void ACireWorld::BeginPlay() {
         Dome->bAffectDistanceFieldLighting=false;Dome->SetVisibleInRayTracing(false);Dome->bAffectDynamicIndirectLighting=false;
         Dome->RegisterComponent();AddInstanceComponent(Dome);
     }
-    auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,3000),FRotator(-14,-148,0));
-    Sun->GetLightComponent()->SetIntensity(4.2f); Sun->GetLightComponent()->SetLightColor(FLinearColor(1.f,.62f,.38f));
+    // The sun sets behind the breach (+X), straight down both lanes, so the Sundering Cliff never
+    // shades one team's realm more than the other's and the gate is silhouetted against the dusk.
+    auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,3000),FRotator(-17,180,0));
+    Sun->GetLightComponent()->SetIntensity(4.6f); Sun->GetLightComponent()->SetLightColor(FLinearColor(1.f,.68f,.46f));
     auto* Sky=GetWorld()->SpawnActor<ASkyLight>();
     Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable);
     Sky->GetLightComponent()->bRealTimeCapture=true;
@@ -200,7 +212,6 @@ void ACireWorld::RefreshRouteVisuals() {
             // Low kerb stones (visual only) mark the road edges without tripping units.
             for(int Side:{-1,1})Add(RouteEdge,(A+B)*.5f+N*Side*(RoadWidth*.5f+10)+FVector(0,0,3),FVector(FMath::Max(10.f,L-RoadWidth*.5f),20,6),Rot);
             // Worn setts every few metres hint the marching direction without gamey arrows.
-            for(float T=260;T<L-160;T+=780)Add(RouteArrows,A+D*T+FVector(0,0,3.3f),FVector(70,RoadWidth-80,.6f),Rot);
             Add(RouteRoad,B+FVector(0,0,1.6f),FVector(RoadWidth,RoadWidth,3),Rot);
         }
     }

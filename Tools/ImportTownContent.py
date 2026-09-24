@@ -58,7 +58,7 @@ FLATS = {  # slot -> (base colour, roughness, metallic, emissive colour, emissiv
     "GlassDark": ((0.012, 0.014, 0.018), 0.18, 0.0, (0, 0, 0), 0.0, 0.0),
     "Flame":     ((0.2, 0.08, 0.02), 0.6, 0.0, (1.0, 0.45, 0.12), 26.0, 0.18),
     "Water":     ((0.012, 0.022, 0.025), 0.06, 0.0, (0, 0, 0), 0.0, 0.0),
-    "Ember":     ((0.1, 0.02, 0.0), 0.8, 0.0, (1.0, 0.22, 0.04), 12.0, 0.25),
+    "Ember":     ((0.1, 0.02, 0.0), 0.8, 0.0, (1.0, 0.18, 0.05), 5.0, 0.25),
 }
 NANITE_MIN_TRIS = 1500
 PROPS_NO_COLLISION = {"island_tree_02", "shrub_02", "shrub_04", "fern_02", "food_apple_01", "kite_shield", "wooden_axe",

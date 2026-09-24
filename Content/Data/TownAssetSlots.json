@@ -7,22 +7,24 @@
   "gatehouse": {
    "mesh": "/Game/Environment/Town/Meshes/SM_Town_Gatehouse.SM_Town_Gatehouse",
    "footprint": [
-    1060,
+    1046,
     2003,
     1834
    ],
    "clearance": "none",
-   "note": "Town gate over the march road. Replacement meshes need an 8 m wide, 5.5 m high passage centred on local Y=0."
+   "note": "Town gate over the march road. Overlay meshes are used only with \"passage\": true: an 8 m wide, 5 m high open passage along local X at Y=0.",
+   "requiresPassage": true
   },
   "castle_gate": {
    "mesh": "/Game/Environment/Town/Meshes/SM_Castle_Gatehouse.SM_Castle_Gatehouse",
    "footprint": [
-    1380,
+    1366,
     2132,
     2378
    ],
    "clearance": "none",
-   "note": "Castle gatehouse = defended leak zone entrance. Replacement needs a 9 m wide, 6 m high passage on local Y=0."
+   "note": "Castle gatehouse = defended leak zone entrance. Overlay meshes are used only with \"passage\": true: a 9 m wide, 5 m high open passage along local X at Y=0.",
+   "requiresPassage": true
   },
   "castle_keep": {
    "mesh": "/Game/Environment/Town/Meshes/SM_Castle_Keep.SM_Castle_Keep",
@@ -619,7 +621,8 @@
     340
    ],
    "collision": false,
-   "clearance": "bays"
+   "clearance": "bays",
+   "materialOverride": "/Game/Environment/Town/Materials/MI_Town_Bark.MI_Town_Bark"
   },
   "cobblestone_material": {
    "kind": "material",
@@ -654,6 +657,11 @@
   "stone_material": {
    "kind": "material",
    "material": "/Game/Environment/Town/Materials/MI_TownW_StoneW.MI_TownW_StoneW",
+   "note": "world-aligned surface on scaled cubes"
+  },
+  "cliff_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_TownW_CliffW.MI_TownW_CliffW",
    "note": "world-aligned surface on scaled cubes"
   },
   "plaster_material": {
