@@ -334,7 +334,7 @@ void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
     }
     else
     {
-        const FString Level=U.bHero?FString::FromInt(U.Level):U.Tier>0?FString::Printf(TEXT("T%d"),U.Tier):U.bConstruct?TEXT("-"):TEXT("??");
+        const FString Level=U.bHero?FString::FromInt(U.Level):U.Tier>0?FString::Printf(TEXT("T%d"),U.Tier):FString();
         const float LS=bSmall?8.5f:10.f;
         TextFx(Level,BX-TextWidthFont(Level,LS,ECireFont::Numbers)*.5f,BY-LS*.62f,LS,U.Tier>0?WowGold:Neutral,ECireFont::Numbers,true,false);
     }

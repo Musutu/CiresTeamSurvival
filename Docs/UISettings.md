@@ -21,3 +21,32 @@ The settings file uses Unreal's `FConfigFile` INI serializer independently of th
 ## Verification
 
 The development automation test `Cire.UI.Settings.Persistence` exercises actual file write/reload, global and individual locks, rectangle preservation, color/font/filter preservation, damaged-file clamping, three viewport sizes, and reset behavior. It verifies all four combinations of the independent combat display toggles, distinct font sizes, and migration from either old exclusive mode with the master switch both enabled and disabled. It writes only a uniquely named test profile under `Saved/Automation` and removes that profile afterward. The presence of the test is not a record that it has passed; see the current validation record or build output for execution results.
+
+## Schema 4 (WoW-style interface)
+
+`LayoutVersion` is 4. New keys (all optional; older profiles keep defaults):
+
+| Key | Default | Range / meaning |
+| --- | --- | --- |
+| `bAutoUIScale`, `UIScale` | true, 1.0 | Interface scale multiplier on top of the resolution fit, .64-1.15. Auto: 1.0 up to 1080p, ~0.93 at 1440p, 0.85 at 2160p. |
+| `TooltipMode` | 3 | 0 cursor, 1 fixed (anchor top-left), 2 radial, **3 WoW corner anchor** (grows up/left from the Tooltip panel's lower-right). v1-v3 profiles with mode 0 (the old default) migrate to 3; radial/fixed are kept. |
+| `TooltipOpacity`, `TooltipDelay`, `bTooltipAvoidCenter`, `bUnitTooltips` | .94, .12s, true, true | Background opacity .3-1, hover delay 0-1.5s, keep clear of the reticle and ground aim, hover tooltips on characters. |
+| `bShowMisses`, `bCritPop`, `bSchoolColors`, `bMergeAoE`, `SCTDirection`, `SCTSpeed`, `SCTFadeSeconds` | true, true, true, true, 0, 1, 3.2 | Combat text: misses/dodges, crit enlarge, school colours, AoE merging, 0 up / 1 down / 2 fountain, speed .5-2, display time 1.5-5s. |
+| `bShowThreatMeter`, `bThreatWarnings`, `bThreatSound`, `ThreatWarningPercent` | true, true, true, 90 | Threat meter, aggro alerts, alert sounds, pull-progress warning 60-100%. |
+| `bLevelUpEffect`, `bShowBossFrames` | true, true | Level-up burst/banner, boss & pack-leader frames. |
+| `bShowActionBar2`, `bShowActionBar3`, `bLockActionBars` | true, false, false | Extra action bars and drag lock (Shift-drag while locked). |
+
+Panels gain `Anchor` (0-8: horizontal left/centre/right + 3 x vertical top/centre/bottom). Panel
+sizes are stored in reference units, so they keep their designed size when the interface scale
+changes; positions keep their distance from the anchored edge (left/top offsets, right/bottom
+offsets, or stay centred). Older profiles derive the anchor from the saved rectangle, which
+reproduces their 16:9 layout exactly. New panels: `Threat`, `Boss`, `Bar2`, `Bar3`. At large
+scales the HUD lets chat/meter/combat log narrow beside the action bars, the focus frame
+narrow between target and minimap, and boss frames show fewer rows above the threat meter
+instead of overlapping (`ACireHUD::PanelRect`).
+
+Keybindings and per-champion action-bar placements live in the same file
+(`[CireUI.Keybindings]`, `[CireUI.ActionBars.<profile>]`, see `Docs/Keybindings.md`).
+
+`CireOptions::RunSettingsSmoke` (run by `RunExpansionChecks.py --only native`) covers the
+schema-4 defaults, v3 migration, roundtrip, bounds and right-anchor preservation.
