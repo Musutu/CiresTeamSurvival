@@ -41,12 +41,18 @@ void ACireHUD::DrawTooltip()
     FVector2D Cursor(MX,MY);
     bool bDebug=false;
 #if !UE_BUILD_SHIPPING
-    LastTooltipRect={};LastTooltipBodyLines=0;LastTooltipBodyFontSize=0;
+    LastTooltipRect={};LastTooltipBodyLines=0;LastTooltipBodyFontSize=0;LastTooltipTitle.Reset();
     if(bDebugTooltip){TooltipTitle=DebugTooltipTitle;TooltipBody=DebugTooltipBody;Cursor=DebugTooltipCursor;bDebug=true;}
     if(DebugHoverUnit.IsValid()&&TooltipTitle.IsEmpty()){TooltipUnit=DebugHoverUnit;Cursor=DebugHoverCursor;bDebug=true;}
     if(!DebugAbilityId.IsEmpty()&&TooltipTitle.IsEmpty()){TooltipAbility=DebugAbilityId;Cursor=DebugHoverCursor;bDebug=true;}
 #endif
-    if(!UISettings.bTooltips || bEditLayout) return;
+    if(bEditLayout)
+    {
+        // F10: the only tooltip is the description of the panel under the pointer.
+        if(EditHelpTitle.IsEmpty()||!UISettings.bTooltips)return;
+        TooltipTitle=EditHelpTitle;TooltipBody=EditHelpBody;TooltipUnit.Reset();TooltipAbility.Reset();TooltipRegion={0,0,0,0};
+    }
+    else if(!UISettings.bTooltips) return;
     // Specific hovers (skills, statuses, controls) win over a unit; then world hover.
     AActor* Unit=nullptr;
     const bool bAbility=TooltipTitle.IsEmpty()&&!TooltipAbility.IsEmpty()&&!bBarDragging;
@@ -116,7 +122,7 @@ void ACireHUD::DrawTooltip()
     for(int32 I=0;I<BodyLines.Num();++I){NextFont=ECireFont::Body;Label(BodyLines[I],X+Padding,Y+Padding+TitleHeight+Gap+I*BodyStep,BodyFont,FLinearColor(.86f,.87f,.84f,1));}
     NextFont=ECireFont::Auto;
 #if !UE_BUILD_SHIPPING
-    LastTooltipRect={X,Y,W,H};LastTooltipBodyLines=BodyLines.Num();LastTooltipBodyFontSize=BodyFont;
+    LastTooltipRect={X,Y,W,H};LastTooltipBodyLines=BodyLines.Num();LastTooltipBodyFontSize=BodyFont;LastTooltipTitle=TooltipTitle;
 #endif
 }
 void ACireHUD::RevertVideoPreview()

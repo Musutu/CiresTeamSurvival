@@ -118,7 +118,8 @@ FString FCireKeyChord::ToString() const
 }
 bool FCireKeyChord::Parse(const FString& Text,FCireKeyChord& Out)
 {
-    Out=FCireKeyChord();FString Rest=Text.TrimStartAndEnd();if(Rest.IsEmpty())return true;
+    // "" and "-" are an explicit, intentional "no key" (wow-ui); a missing entry keeps the default.
+    Out=FCireKeyChord();FString Rest=Text.TrimStartAndEnd();if(Rest.IsEmpty()||Rest==TEXT("-"))return true;
     for(;;)
     {
         if(Rest.StartsWith(TEXT("Ctrl+"))){Out.bCtrl=true;Rest.RightChopInline(5);}
@@ -368,7 +369,11 @@ void FCireKeybindings::SaveTo(FConfigFile& Config) const
 {
     Config.SetString(Section,TEXT("KeybindingsVersion"),*FString::FromInt(SchemaVersion));
     for(const auto& I:CireKeybindings::Actions())
-        Config.SetString(Section,*I.Id.ToString(),*(Get(I.Id,0).ToString()+TEXT("|")+Get(I.Id,1).ToString()));
+    {
+        // Unbound sides are written as "-" so an intentional unbind survives save/load.
+        const FCireKeyChord& P=Get(I.Id,0);const FCireKeyChord& Q=Get(I.Id,1);
+        Config.SetString(Section,*I.Id.ToString(),*((P.IsBound()?P.ToString():FString(TEXT("-")))+TEXT("|")+(Q.IsBound()?Q.ToString():FString(TEXT("-")))));
+    }
     for(const auto& P:Placements)for(const auto& Slot:P.Value)
         Config.SetString(Section,*(FString(PlacePrefix)+P.Key+TEXT(".")+Slot.Key.ToString()),*Slot.Value);
 }
@@ -436,6 +441,21 @@ bool CireKeybindings::RunSmoke()
     {
         FCireUISettings S;S.Load(File);Check(S.Keybindings.IsDefault(),TEXT("new profile gets WoW defaults"));
         S.Keybindings=B;Check(S.Save(),TEXT("profile save"));
+        {
+            // wow-ui: an action with no keys at all persists as unbound and reset restores it.
+            FCireUISettings U;U.Keybindings=CireKeybindings::Defaults();U.Load(File);
+            U.Keybindings.Unbind(TEXT("Jump"),0);U.Keybindings.Unbind(TEXT("Jump"),1);U.Keybindings.Unbind(TEXT("ToggleShop"),0);
+            Check(U.Save(),TEXT("unbound profile save"));
+            FCireUISettings V;V.Load(File);
+            Check(!V.Keybindings.Get(TEXT("Jump"),0).IsBound()&&!V.Keybindings.Get(TEXT("Jump"),1).IsBound(),TEXT("fully unbound action survives save/load"));
+            Check(!V.Keybindings.Get(TEXT("ToggleShop"),0).IsBound(),TEXT("unbound primary survives save/load"));
+            Check(V.Keybindings.Get(TEXT("MoveForward"),0)==CireKeybindings::Defaults().Get(TEXT("MoveForward"),0),TEXT("other bindings untouched"));
+            Check(!V.Keybindings.WasPressed(nullptr,TEXT("Jump"))&&V.Keybindings.Label(TEXT("Jump")).IsEmpty(),TEXT("unbound action never fires"));
+            FCireKeybindings W=V.Keybindings;auto R2=W.Bind(TEXT("Jump"),0,FCireKeyChord(EKeys::E),ECireBindPolicy::UnbindOther);
+            Check(!R2.ConflictAction.IsNone()&&!W.Get(R2.ConflictAction,R2.ConflictIndex).IsBound(),TEXT("unbind-other leaves the other action unbound"));
+            V.Keybindings.ResetToDefaults();Check(V.Keybindings.IsDefault(),TEXT("reset restores defaults"));
+            S.Keybindings=B;Check(S.Save(),TEXT("profile save (restore fixture)"));
+        }
         FCireUISettings L;L.Load(File);
         Check(L.Keybindings.Get(TEXT("StrafeLeft"),1)==FCireKeyChord(EKeys::ThumbMouseButton)&&L.Keybindings.Get(SlotAction(2,7),0)==FCireKeyChord(EKeys::Seven,false,false,true),TEXT("bindings roundtrip"));
         bool bExplicit=false;

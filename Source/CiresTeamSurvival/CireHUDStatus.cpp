@@ -66,7 +66,7 @@ void ACireHUD::DrawPet(ACireHero* Hero,ACireController* Controller)
     for(auto* P:Pets){if(P->bCommandable)++Commandable;HP+=P->Health;MaxHP+=P->MaxHealth;}
     Bar(9,27,230,10,MaxHP>0?HP/MaxHP:0,Purple);
     Label(Commandable>0?TEXT("GUARDIAN COMMANDS"):TEXT("AUTONOMOUS ALLIES"),9,42,8,Muted);
-    Tip(TEXT("Summoned units"),TEXT("Temporary allied units can be targeted like other characters. Guardians accept commands; spectral packs choose their own targets. Summons do not count as player lives or team elimination."),0,0,250,42);
+    if(bEditLayout)Tip(TEXT("Summoned units"),TEXT("Temporary allied units can be targeted like other characters. Guardians accept commands; spectral packs choose their own targets. Summons do not count as player lives or team elimination."),0,0,250,42);
     const TCHAR* Names[]={TEXT("FOLLOW"),TEXT("MOVE"),TEXT("ATTACK"),TEXT("HOLD")};
     const TCHAR* Details[]={TEXT("Your commandable guardian returns to follow you."),TEXT("Click this command, then click the ground to move controlled summons. Escape cancels. Shift + left click on ground also issues a move command."),TEXT("Order your guardian to attack your selected hostile target."),TEXT("Hold the guardian at its current position.")};
     for(int32 I=0;I<4;++I)

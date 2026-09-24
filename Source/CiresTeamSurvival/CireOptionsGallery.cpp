@@ -98,7 +98,8 @@ const FStage Stages[]={
     {TEXT("05_sct_schools_crits")},{TEXT("06_aggro_alert_dps")},{TEXT("07_threat_warning_dps")},{TEXT("08_lost_aggro_tank")},
     {TEXT("09_level_up")},{TEXT("10_scale_070")},{TEXT("11_scale_115")},{TEXT("12_options_scale_threat")},
     {TEXT("13_options_combat_text")},{TEXT("14_options_tooltips")},{TEXT("15_layout_editor")},
-    {TEXT("16_action_bars_states")},{TEXT("17_quick_keybind")},{TEXT("18_keybindings_page")},{TEXT("19_banner_wave")},{TEXT("20_ability_tooltip")}};
+    {TEXT("16_action_bars_states")},{TEXT("17_quick_keybind")},{TEXT("18_keybindings_page")},{TEXT("19_banner_wave")},{TEXT("20_ability_tooltip")},
+    {TEXT("21_gameplay_hover_combat_text")},{TEXT("22_gameplay_hover_centre")},{TEXT("23_layout_panel_help")}};
 constexpr int32 StageCount=UE_ARRAY_COUNT(Stages);
 struct FState
 {
@@ -183,6 +184,7 @@ void Configure(int32 Stage)
     const float Now=W.Mode->GetWorld()->GetTimeSeconds();
     HUD->DebugTooltipClear();HUD->DebugUnitTooltip(nullptr,FVector2D::ZeroVector);HUD->DebugAbilityTooltip(FString(),FVector2D::ZeroVector);HUD->DebugOptionsPage(0,0,false);
     if(W.bEditing){HUD->ToggleLayoutEditor();W.bEditing=false;}
+    HUD->DebugSetPointer(FVector2D(-1,-1));
     if(HUD->IsQuickKeybind()){HUD->UISettings.Keybindings.CancelCapture();HUD->ToggleQuickKeybind();}
     W.Hero->Mana=300;W.Hero->Energy=100;W.Hero->Cooldowns.Init(0,W.Hero->Skills.Num());
     HUD->UISettings.bAutoUIScale=true;HUD->UISettings.TooltipMode=3;
@@ -244,6 +246,9 @@ void Configure(int32 Stage)
     }
     case 16: HUD->ToggleQuickKeybind();HUD->UISettings.Keybindings.BeginCapture(CireKeybindings::SlotAction(1,3),0);break;
     case 17: HUD->DebugKeybindCategory(4);HUD->DebugOptionsPage(0,1,true);break;
+    case 20: HUD->DebugSetPointer(FVector2D(640+160,350));break;   // inside the CombatText panel, off the character
+    case 21: HUD->DebugSetPointer(FVector2D(640,300));break;       // screen centre
+    case 22: HUD->ToggleLayoutEditor();W.bEditing=true;HUD->DebugSetPointer(FVector2D(640+160,350));break;
     case 18: CireBanners::Show(ECireBanner::WaveIncoming,TEXT("Wave 5"),TEXT("Incoming in 5 seconds."));break;
     default: break;
     }
@@ -280,6 +285,13 @@ void Capture(int32 Stage)
         const FCireUIRect Chat2=HUD->PanelRectForTest(TEXT("Chat")),Meter2=HUD->PanelRectForTest(TEXT("Meter"));
         Check(Chat2.X+Chat2.W<=Skills.X+.5f&&Meter2.X>=Skills.X+Skills.W-.5f,TEXT("chat and meter give way to the action bar"));
     }
+    if(Stage==20||Stage==21)
+    {
+        // Gameplay: hovering the combat text area or the centre never pops a panel description.
+        const FString T=HUD->DebugLastTooltipTitle();
+        for(const FName Id:HUD->UISettings.GetPanelIds())Check(T!=Id.ToString(),FString::Printf(TEXT("%s: no panel tooltip during play (got '%s')"),Stages[Stage].Name,*T));
+    }
+    if(Stage==22)Check(HUD->DebugLastTooltipTitle()==TEXT("CombatText"),FString(TEXT("layout editing shows the panel description (got '"))+HUD->DebugLastTooltipTitle()+TEXT("')"));
     if(Stage>=1&&Stage<=3)
     {
         const FCireUIRect R=HUD->DebugTooltipRect();

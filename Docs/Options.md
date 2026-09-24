@@ -99,3 +99,17 @@ another slot to swap (saved per champion), drop it on the world to clear the slo
 **Quick Keybind mode** (micro-menu KEYBINDS, or the Keybindings page): the world dims, hover any
 action button (or auto attack) and press a key or chord to bind it; Backspace/Delete unbinds,
 Esc leaves the mode. Swaps are reported on the instruction card.
+
+## Unbinding and gameplay tooltips (playtest fixes)
+
+Any action may have no key. Unbind on the Keybindings page with Backspace/Delete while a cell listens,
+the UNBIND button beside it, or right-click on the cell; in Quick Keybind mode with Backspace/Delete or
+right-click on the hovered button. Unbound keys show as "—" on the page and the action bars. The
+profile writes an unbound side as `-` (an explicit "no key"), so it survives save/load; a missing
+entry still falls back to the WoW default. Binding a key that another action uses takes it from that
+action and leaves it unbound (no key is forced onto it). Reset to defaults restores everything.
+
+Panel descriptions (combat text area, player, meter, threat, pet and other panel help) only appear
+while arranging the interface (F10). During play, only unit, ability, item, buff and control tooltips
+appear; hovering the combat text area, the screen centre or the world never pops a panel tooltip
+(checked by the WoW UI gallery stages 21-23).
