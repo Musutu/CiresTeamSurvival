@@ -129,6 +129,8 @@ UAudioComponent* Spawn(const UObject* Context, FName Id, const FVector* Location
     if(!Audio || !Cue || CireAudio::LocalSettings(World).bMuteAudio || !CooldownReady(Id, *Cue)) return nullptr;
     float Volume = 1.f, Pitch = 1.f;
     USoundBase* Sound = Prepare(*Audio, Id, *Cue, Scale, Volume, Pitch);
+    // Legacy sounds without a sound class (e.g. /Game/Audio/CireCombat) bypass the bus mix; scale them here.
+    if(Sound && !Sound->GetSoundClass()) Volume *= CireAudio::BusGain(CireAudio::LocalSettings(World), ECireAudioBus::SFX);
     if(!Sound || Volume <= 0.f) return nullptr;
     UAudioComponent* Component = nullptr;
     if(Attach) Component = UGameplayStatics::SpawnSoundAttached(Sound, Attach, Socket, FVector::ZeroVector, EAttachLocation::KeepRelativeOffset, true, Volume, Pitch);
@@ -289,6 +291,10 @@ void UCireAudioSubsystem::Initialize(FSubsystemCollectionBase& Collection) { Sup
 
 void UCireAudioSubsystem::Deinitialize()
 {
+    if(bStarted)
+        UE_LOG(LogCireAudio, Display, TEXT("CIRE_AUDIO_STATS frames=%d music=%s footsteps=%d bone=%d phase=%d cadence=%d dropped=%d ambience_oneshots=%d district=%s"),
+            FramesTicked, FCireMusicDirector::Name(Director.State), Footsteps.StepsPlayed, Footsteps.BoneSteps, Footsteps.PhaseSteps,
+            Footsteps.CadenceSteps, Footsteps.StepsDropped, Ambience.OneShotsPlayed, *Ambience.CurrentDistrict().ToString());
     Music.Reset(); Ambience.Reset(); Footsteps.Reset();
     if(TeleportHum) TeleportHum->Stop();
     for(UAudioComponent* C : Owned) if(IsValid(C)) C->Stop();
@@ -405,6 +411,19 @@ void UCireAudioSubsystem::Tick(float DeltaTime)
     Footsteps.Tick(*this, Listener, Hero, Settings.bFootstepCameraShake, Dt);
     DetectEvents(Dt);
     UpdateShake(Dt);
+#if !UE_BUILD_SHIPPING
+    // -CireAudioSoak=<seconds>: play a normal match, log CIRE_AUDIO_STATS and quit (Docs/Audio.md).
+    static float SoakSeconds = -1.f;
+    if(SoakSeconds < 0.f && !FParse::Value(FCommandLine::Get(), TEXT("CireAudioSoak="), SoakSeconds)) SoakSeconds = 0.f;
+    SoakClock += Dt;
+    if(SoakSeconds > 0.f && SoakClock >= SoakSeconds)
+    {
+        SoakSeconds = 0.f;
+        UE_LOG(LogCireAudio, Display, TEXT("CIRE_AUDIO_SOAK_DONE seconds=%.0f tracked=%d music=%s track=%s beds=%d emitters=%d"), SoakClock,
+            Footsteps.TrackedCharacters(), FCireMusicDirector::Name(Director.State), *Music.CurrentTitle(), Ambience.ActiveBeds(), Ambience.ActiveEmitters());
+        FPlatformMisc::RequestExit(false);
+    }
+#endif
 }
 
 void UCireAudioSubsystem::DetectEvents(float Dt)

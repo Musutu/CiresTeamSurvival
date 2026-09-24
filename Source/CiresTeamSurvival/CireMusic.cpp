@@ -53,6 +53,8 @@ const CireMusic::FData& CireMusic::Data(bool bReload)
         if((*Stingers)->TryGetObjectField(TEXT("defeat"), O)) { (*O)->TryGetStringField(TEXT("track"), GMusic.DefeatTrack); if((*O)->TryGetNumberField(TEXT("volume"), N)) GMusic.DefeatVolume = static_cast<float>(N); }
     }
     Root->TryGetStringArrayField(TEXT("credits"), GMusic.Credits);
+    const TSharedPtr<FJsonObject>* Titles = nullptr;
+    if(Root->TryGetObjectField(TEXT("titles"), Titles)) for(const auto& Pair : (*Titles)->Values) GMusic.Titles.Add(FString(*Pair.Key), Pair.Value->AsString());
     GMusic.bValid = GMusic.States.Num() == 4;
     return GMusic;
 }
@@ -98,6 +100,12 @@ bool FCireMusicDirector::Update(const FCireMusicInputs& In, float DeltaSeconds, 
 }
 
 // ---------------------------------------------------------------------------------------------
+FString FCireMusicPlayer::CurrentTitle() const
+{
+    const FString* Title = CireMusic::Data().Titles.Find(Track);
+    return Title ? *Title : Track;
+}
+
 bool FCireMusicPlayer::IsPlaying() const
 {
     for(const auto& Slot : Slots) if(Slot.IsValid() && Slot->IsPlaying()) return true;

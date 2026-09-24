@@ -327,7 +327,7 @@ void ACireHUD::DrawSettings()
         Toggle(TEXT("Play music"),UISettings.bMusicEnabled,R,Top+30,TEXT("Turns the score on or off. It fades out immediately and resumes with the current state (town, combat, Pack Leader, arena)."));
         Toggle(TEXT("Heavy footstep camera shake"),UISettings.bFootstepCameraShake,L,Top+56,TEXT("A slight camera bump on each footfall when you play a heavy body (Bear, Behemoth, Ether Golem). Off by default."));
         if(const UCireAudioSubsystem* Audio=UCireAudioSubsystem::Get(this))
-            Label(FString::Printf(TEXT("Score: %s   %s"),*CireAudio::MusicStateName(this),*Audio->Music.CurrentTrack().Replace(TEXT("MUS_"),TEXT(""))),R,Top+58,10,Muted);
+            Label(FString::Printf(TEXT("Score: %s   %s"),*CireAudio::MusicStateName(this),*Audio->Music.CurrentTitle()),R,Top+58,10,Muted);
         const bool bSound=!UISettings.bMuteAudio;
         Slider(TEXT("Master volume"),UISettings.MasterVolume,0,1,.02f,L,Top+92,TEXT("Overall level; every bus below multiplies it."),bSound);
         Slider(TEXT("Music"),UISettings.MusicVolume,0,1,.02f,R,Top+92,TEXT("Orchestral score. Cross-fades between town, combat, Pack Leader and arena themes."),bSound&&UISettings.bMusicEnabled);

@@ -58,6 +58,7 @@ namespace CireMusic
         FString VictoryTrack, DefeatTrack;
         float VictoryVolume = .75f, DefeatVolume = .75f;
         TArray<FString> Credits;
+        TMap<FString, FString> Titles;
     };
     CIRESTEAMSURVIVAL_API const FData& Data(bool bReload = false);
 }
@@ -71,6 +72,8 @@ public:
     void Reset();
     /** The track currently fading in / playing ("" when silent). */
     const FString& CurrentTrack() const { return Track; }
+    /** Display title of the current track ("Five Armies"), or "" when silent. */
+    FString CurrentTitle() const;
     bool IsPlaying() const;
 private:
     TStrongObjectPtr<UAudioComponent> Slots[2];

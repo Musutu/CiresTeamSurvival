@@ -106,6 +106,7 @@ public:
     /** Last pushed bus gains (Music, SFX, Ambience, UI, Voice). */
     float AppliedGain[5] = {-1, -1, -1, -1, -1};
     int32 FramesTicked = 0;
+    float SoakClock = 0.f;
 
 private:
     UPROPERTY(Transient) TObjectPtr<USoundMix> VolumeMix;

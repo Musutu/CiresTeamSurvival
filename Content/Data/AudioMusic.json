@@ -17,6 +17,11 @@
     "victory": { "track": "MUS_HeroTheme", "volume": 0.75 },
     "defeat":  { "track": "MUS_GretaSting", "volume": 0.75 }
   },
+  "titles": {
+    "MUS_ThePyre": "The Pyre", "MUS_OppressiveGloom": "Oppressive Gloom", "MUS_FiveArmies": "Five Armies",
+    "MUS_Crusade": "Crusade", "MUS_Killers": "Killers", "MUS_BlackVortex": "Black Vortex",
+    "MUS_DeathandAxes": "Death and Axes", "MUS_HeroTheme": "Hero Theme", "MUS_GretaSting": "Greta Sting"
+  },
   "credits": [
     "Music by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0 - http://creativecommons.org/licenses/by/4.0/",
     "\"The Pyre\", \"Oppressive Gloom\", \"Five Armies\", \"Crusade\", \"Killers\", \"Black Vortex\", \"Death and Axes\", \"Hero Theme\", \"Greta Sting\"",

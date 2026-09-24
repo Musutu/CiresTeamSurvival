@@ -40,6 +40,9 @@
     "amb_blacksmith":     { "sounds": ["Ambience/AMB_Blacksmith_01"], "volume": 0.45 },
     "amb_guards":         { "sounds": ["Ambience/AMB_GuardsMarch_01"], "volume": 0.45 },
 
+    "aura_apply":         { "sounds": ["CireCombat/S_Ward"], "volume": 0.4, "pitch": [0.96, 1.04], "cooldown": 0.1 },
+    "aura_heal":          { "sounds": ["CireCombat/S_Heal"], "volume": 0.4, "pitch": [0.96, 1.04], "cooldown": 0.1 },
+
     "emt_fountain":       { "sounds": ["Ambience/EMT_Fountain"], "volume": 0.8, "loop": true },
     "emt_fire":           { "sounds": ["Ambience/EMT_FireCrackle"], "volume": 0.7, "loop": true },
     "emt_hearth":         { "sounds": ["Ambience/EMT_Hearth"], "volume": 0.6, "loop": true },

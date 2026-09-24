@@ -11,7 +11,7 @@ Tools/BuildAudioContent.py rebuild them byte-for-byte from the pinned sources be
 Writes Art/Audio/AudioSources.json, the machine-readable provenance record that
 Art/Audio/PROVENANCE.md summarises.
 
-Usage:  python Tools/FetchAudioSources.py [--force]
+Usage:  python Tools/FetchAudioSources.py [--force] [--provenance]  (--provenance: only regenerate PROVENANCE.md)
 Run with the engine's bundled Python (bare "python" may be a Store alias):
   F:/UE_5.8/Engine/Binaries/ThirdParty/Python3/Win64/python.exe Tools/FetchAudioSources.py
 """
@@ -186,8 +186,59 @@ def music(stem, title, use, force):
     }
 
 
+def write_provenance(records):
+    """Art/Audio/PROVENANCE.md: every source, its licence and which shipped sounds use it."""
+    report_path = ROOT / "Art" / "Audio" / "ProcessReport.json"
+    used = {}
+    if report_path.exists():
+        for out in json.loads(report_path.read_text("utf-8"))["outputs"]:
+            for src in out["sources"]:
+                used.setdefault(src.split(":", 1)[-1] if src.startswith("kenney:") else src, []).append(out["name"])
+    kenney_used = sorted({n for k, v in used.items() if k not in FREESOUND for n in v})
+    lines = [
+        "# Audio provenance",
+        "",
+        "Every sound shipped in `Content/Audio/{Music,Ambience,Footsteps,SFX,UI}` comes from the sources below.",
+        "All are free for commercial use and redistribution: **CC0 1.0** (no attribution required) or **CC BY 4.0**",
+        "(attribution required - given in-game under Options > Audio > Music credits, and here).",
+        "The machine-readable record with download URLs and SHA-256 hashes is `Art/Audio/AudioSources.json`;",
+        "`Art/Audio/ProcessReport.json` lists every processed output, its source keys and measured levels.",
+        "Rebuild: `Tools/FetchAudioSources.py` -> `Tools/DecodeAudioSources.py` -> `Tools/ProcessAudio.py` -> `Tools/BuildAudioContent.py`.",
+        "Freesound files are the site's public HQ previews (Ogg Vorbis) of CC0 uploads; the licence of each upload was",
+        "checked by the fetch script, which refuses anything that is not CC0.",
+        "",
+        "The pre-existing `Content/Audio/CireCombat` and `Content/UI/WowUI/Sounds` sounds are original synthesized work",
+        "from earlier passes and are not covered here.",
+        "",
+        "## Music - Kevin MacLeod (incompetech.com), CC BY 4.0",
+        "",
+        "Required attribution (also shown in game):",
+        "",
+    ]
+    for r in records:
+        if r["provider"] == "incompetech":
+            lines.append("> %s  " % r["attribution"].replace("\n", "  \n> "))
+            lines.append("")
+    lines += ["| Asset | Title | Used for | Download |", "|---|---|---|---|"]
+    lines += ["| `Music/%s` | %s | %s | %s |" % (r["key"], r["title"], r["use"], r["download"]) for r in records if r["provider"] == "incompetech"]
+    lines += ["", "## Sound effects and ambience - Freesound.org, CC0 1.0", "",
+              "| Key | Title | Author | Page | Shipped as |", "|---|---|---|---|---|"]
+    for r in records:
+        if r["provider"] == "Freesound":
+            lines.append("| %s | %s | %s | %s | %s |" % (r["key"], r["title"].replace("|", "/"), r["author"], r["page"], ", ".join(sorted(used.get(r["key"], []))) or "-"))
+    lines += ["", "## Kenney (www.kenney.nl), CC0 1.0", "",
+              "| Pack | Page | Download |", "|---|---|---|"]
+    lines += ["| %s | %s | %s |" % (r["title"], r["page"], r["download"]) for r in records if r["provider"] == "Kenney"]
+    lines += ["", "Shipped sounds built (fully or partly) from Kenney packs: " + ", ".join(kenney_used) + ".", ""]
+    (ROOT / "Art" / "Audio" / "PROVENANCE.md").write_text("\n".join(lines), "utf-8")
+
+
 def main():
     force = "--force" in sys.argv
+    if "--provenance" in sys.argv:
+        write_provenance(json.loads(MANIFEST.read_text("utf-8"))["sources"])
+        print("wrote Art/Audio/PROVENANCE.md")
+        return
     records = []
     for stem, (title, use) in MUSIC_TRACKS.items():
         records.append(music(stem, title, use, force)); print("music", stem)
@@ -197,6 +248,7 @@ def main():
         records.append(freesound(key, sid, user, use, force)); print("freesound", key)
         time.sleep(.4)
     MANIFEST.write_text(json.dumps({"schemaVersion": 1, "sources": records}, indent=2, ensure_ascii=False) + "\n", "utf-8")
+    write_provenance(records)
     print("wrote", MANIFEST, len(records), "sources")
 
 
