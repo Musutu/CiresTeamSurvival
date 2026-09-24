@@ -13,8 +13,6 @@
     "meleePullRatio": 1.1,
     "rangedPullRatio": 1.3,
     "meleeRangeCm": 300,
-    "decayDelaySeconds": 10,
-    "decayPerSecond": 0.05,
     "publishInterval": 0.25,
     "tauntMaxSeconds": 10
   },

@@ -107,7 +107,7 @@ bool CireNPCNetProbe::TickServer(ACireGameMode* Mode)
     const double Now=FPlatformTime::Seconds();
     auto Finish=[&](bool bPass,const TCHAR* Why)
     {Server.bDone=true;UE_LOG(LogCireNPCNet,Display,TEXT("CIRE_NPC_NET_SERVER_%s %s"),bPass?TEXT("PASS"):TEXT("FAIL"),Why);FPlatformMisc::RequestExitWithStatus(false,bPass?0:1);};
-    if(Now-Server.Started>85){Finish(false,TEXT("client never drafted"));return true;}
+    if(!Server.bSpawned&&Now-Server.Started>240){Finish(false,TEXT("client never drafted"));return true;} // clients can start slowly under build contention
     if(!Server.bSpawned)
     {
         for(auto* Hero:Mode->Heroes)

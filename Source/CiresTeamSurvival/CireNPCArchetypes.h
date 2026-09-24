@@ -107,8 +107,6 @@ struct CIRESTEAMSURVIVAL_API FCireNPCThreatRules
     float MeleePullRatio = 1.1f;    // WoW: 110% of the current target's threat inside melee
     float RangedPullRatio = 1.3f;   // WoW: 130% outside melee
     float MeleeRangeCm = 300.f;
-    float DecayDelaySeconds = 10.f; // idle threat starts to decay after this delay
-    float DecayPerSecond = .05f;    // fraction per second; 0 disables decay
     float PublishInterval = .25f;   // replicated threat table refresh
     float TauntMaxSeconds = 10.f;
 };
