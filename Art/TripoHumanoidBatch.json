@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "updatedUtc": "2026-09-24T00:05:11.4203181Z",
+  "operator": "modeled_fx humanoid asset pass",
+  "workflow": "Tripo logged-in Chrome UI only; H3.1 Geometry & Texture; T-Pose enabled; one original body per role; retopology and UE mannequin rig follow inspection",
+  "creditAccounting": "Per-action UI prices recorded; shared account balance changes include other parallel artists and are not attributed to this batch.",
+  "engineImportStatus": "All seven humanoid imports saved. Native animation integration and visual acceptance pending.",
+  "reuse": [
+    "Existing Iron Warden knight",
+    "Existing Ash Ranger",
+    "Existing Veil Scholar",
+    "Root-generated Rift Summoner 39a83098-f50e-4c5f-a955-a5decdd99d4a"
+  ],
+  "assets": [
+    {
+      "role": "Lancer",
+      "id": "2ef5bf56-708e-436b-ac9a-1086e61faa41",
+      "url": "https://studio.tripo3d.ai/workspace/generate/2ef5bf56-708e-436b-ac9a-1086e61faa41",
+      "generationCredits": 55,
+      "status": "imported_saved_animation_integration_pending",
+      "prompt": "Original Cire Lancer, one realistic adult human male javelin skirmisher for Cire's Team Survival. Full body, centered, strict symmetric T-pose, arms horizontal, empty relaxed open hands with five clearly separated fingers; legs and boots separated. Lean athletic believable anatomy and weathered human face, cropped dark hair. Dark fantasy realism with practical layered dark brown leather brigandine, blackened steel shoulder plates and bracers, muted russet linen tabard split above knees, fitted trousers, rugged boots, small belt pouches. Readable asymmetrical shoulder silhouette but balanced body. Fine PBR leather grain, worn metal edges, cloth weave; restrained grounded colors. No bow, lance, sword, shield or held props; weapons will attach separately. No floor, plinth, scenery, wings, particles, glow or extra characters. Production game character suitable for Unreal humanoid rigging, no cartoon, no anime, no exaggerated proportions.",
+      "retopologyCredits": 40,
+      "retopologyTarget": "10000 quads",
+      "measuredFaces": 10206,
+      "measuredVertices": 9626,
+      "rigCredits": 20,
+      "rigPreset": "UE5 Mannequin",
+      "intendedProfiles": [
+        "lancer"
+      ],
+      "visualReview": "Realistic human, leather/black steel brigandine and russet tabard, empty hands and separated boots.",
+      "screenshotReview": true,
+      "remainingQA": "Full hand/back and animation deformation review in Unreal pending; online preview is not production approval.",
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains",
+      "rigUrl": "https://studio.tripo3d.ai/workspace/rigging/original-cire-lancer-one-realistic-adult-human-male-javelin-skirmishe-2ef5bf56-708e-436b-ac9a-1086e61faa41",
+      "rigCompletionEvidence": "Viewed UE5 Mannequin selected, completed Skeleton toggle, Retry 20 and Export controls after job completion. No automatic re-rig requested.",
+      "importedToUnreal": true,
+      "importFolder": "/Game/TripoModels/armored_knight_3d_model",
+      "importedMesh": "/Game/TripoModels/armored_knight_3d_model/armored_knight_3d_model.armored_knight_3d_model",
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "lancer"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/lancer/SK_lancer.SK_lancer",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      }
+    },
+    {
+      "role": "Paladin (Holy / Righteous shared body)",
+      "id": "eed717ba-2996-4179-85a3-2069f87a7ef3",
+      "url": "https://studio.tripo3d.ai/workspace/generate/eed717ba-2996-4179-85a3-2069f87a7ef3",
+      "generationCredits": 55,
+      "status": "imported_saved_animation_integration_pending",
+      "prompt": "Original Cire Paladin, one realistic adult human male sacred defender for Cire's Team Survival. Full body, centered strict T-pose, arms horizontal, empty relaxed open hands with five separated fingers, legs and boots separated for animation rigging. Mature grounded face, close-cropped silver hair, sturdy believable athletic anatomy. Dark fantasy realism, practical weathered charcoal steel plate armor over chainmail, muted antique brass edging, restrained ivory split tabard ending above knees, engraved sun reliquary at chest, sturdy armored boots and gauntlets. Distinct calm noble silhouette, proportionate pauldrons. PBR scratched metal, tarnish, fine chain links and woven cloth. This shared base serves Holy and Righteous Paladin roles. No shield, flail, sword, staff or handheld objects; equipment attaches separately. No halo, magic particles, wings, flowing cape, scenery, pedestal or floor. One watertight riggable human character, no cartoon, no anime, no toy proportions.",
+      "retopologyCredits": 40,
+      "retopologyTarget": "10000 quads",
+      "measuredFaces": 10016,
+      "measuredVertices": 9305,
+      "rigCredits": 20,
+      "rigPreset": "UE5 Mannequin",
+      "intendedProfiles": [
+        "paladin_righteous",
+        "paladin_holy"
+      ],
+      "visualReview": "Silver-haired human, sun chest relic, weathered steel and ivory split cloth; suitable shared body prototype.",
+      "screenshotReview": true,
+      "remainingQA": "Full hand/back and animation deformation review in Unreal pending; online preview is not production approval.",
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains",
+      "rigUrl": "https://studio.tripo3d.ai/workspace/rigging/original-cire-paladin-one-realistic-adult-human-male-sacred-defender-eed717ba-2996-4179-85a3-2069f87a7ef3",
+      "rigCompletionEvidence": "Viewed UE5 Mannequin selected, completed Skeleton toggle, Retry 20 and Export controls after job completion. No automatic re-rig requested.",
+      "importedToUnreal": true,
+      "importFolder": "/Game/TripoModels/medieval_knight_3d_model",
+      "importedMesh": "/Game/TripoModels/medieval_knight_3d_model/medieval_knight_3d_model.medieval_knight_3d_model",
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "paladin_holy",
+          "paladin_righteous"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/paladin_holy/SK_paladin_holy.SK_paladin_holy",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      }
+    },
+    {
+      "role": "Dwarf Miner",
+      "id": "b2e30741-4c21-42e0-b8d5-3306df9b254b",
+      "url": "https://studio.tripo3d.ai/workspace/generate/b2e30741-4c21-42e0-b8d5-3306df9b254b",
+      "generationCredits": 55,
+      "status": "imported_saved_animation_integration_pending",
+      "prompt": "Original Cire Dwarf Miner, one adult male dwarf champion for a realistic dark fantasy survival game. Full body, centered strict T-pose, arms horizontal, empty open hands with five distinct separated fingers, boots apart, unobstructed elbows and knees. Short stocky anatomically believable dwarf, strong torso, broad weathered face, short braided auburn beard resting against chest, brown eyes. Practical soot-stained brown leather mining coat ending above knees, heavy charcoal chainmail vest, iron forearm guards, reinforced trousers and stout leather work boots. Restrained copper buckles, small belt tool pouches, a simple iron miner helmet without light or plume. High quality PBR metal scratches, dirt, leather pores and cloth weave, gritty grounded proportions. No pickaxe, hammer, lantern, weapons or held props. No floor, pedestal, background objects, glow or particles. Single riggable humanoid, cinematic realism, no cartoon, no anime, no toy style.",
+      "retopologyCredits": 40,
+      "retopologyTarget": "10000 quads",
+      "measuredFaces": 10312,
+      "measuredVertices": 9673,
+      "rigCredits": 20,
+      "rigPreset": "UE5 Mannequin",
+      "intendedProfiles": [
+        "dwarf_miner"
+      ],
+      "visualReview": "Stocky red-bearded dwarf with helmet, chain/leather and clear boots; arms slightly lowered from strict T-pose.",
+      "screenshotReview": true,
+      "remainingQA": "Full hand/back and animation deformation review in Unreal pending; online preview is not production approval.",
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains",
+      "rigUrl": "https://studio.tripo3d.ai/workspace/rigging/original-cire-dwarf-miner-one-adult-male-dwarf-champion-for-a-realist-b2e30741-4c21-42e0-b8d5-3306df9b254b",
+      "rigCompletionEvidence": "Viewed UE5 Mannequin selected, completed Skeleton toggle, Retry 20 and Export controls after job completion. No automatic re-rig requested.",
+      "importedToUnreal": true,
+      "importFolder": "/Game/TripoModels/dwarf_miner_3d_model",
+      "importedMesh": "/Game/TripoModels/dwarf_miner_3d_model/dwarf_miner_3d_model.dwarf_miner_3d_model",
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "dwarf_miner"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/dwarf_miner/SK_dwarf_miner.SK_dwarf_miner",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      }
+    },
+    {
+      "role": "Orc Chieftain",
+      "id": "9bc8d454-0030-48af-80ae-e334cc1facb1",
+      "url": "https://studio.tripo3d.ai/workspace/generate/9bc8d454-0030-48af-80ae-e334cc1facb1",
+      "generationCredits": 55,
+      "status": "imported_saved_animation_integration_pending",
+      "prompt": "Original Cire Orc Chieftain, one realistic adult male orc champion, full body centered strict T-pose with horizontal arms, empty open hands and five separated fingers, feet apart. Dark fantasy humanoid with believable muscular anatomy, olive-gray leathery skin, broad heavy brow, small lower tusks, stern weathered face, cropped black hair, no giant jaw. Heavy battle-worn black iron cuirass, practical layered leather and chainmail, restrained dark red split war cloth ending above knees, iron bracers and boots. Broad but proportionate shoulder silhouette, small carved bone talisman on chest. Detailed PBR scarred skin, pitted iron, leather grain and woven cloth. Grounded serious cinematic realism, clean rigging-friendly arm and leg separation. No axe, hammer, shield, staff or held objects; weapons attach separately. No oversized spikes, wings, cape, particles, glow, base, floor or scenery. No cartoon, no anime, no toy proportions.",
+      "retopologyCredits": 40,
+      "retopologyTarget": "10000 quads",
+      "measuredFaces": 10524,
+      "measuredVertices": 9639,
+      "rigCredits": 20,
+      "rigPreset": "UE5 Mannequin",
+      "intendedProfiles": [
+        "orc_chieftain"
+      ],
+      "visualReview": "Needs appearance correction: generated face/skin reads too human, with absent or weak tusks and tan instead of olive-gray skin. Preserve as body prototype, not approved final Orc.",
+      "screenshotReview": true,
+      "remainingQA": "Full hand/back and animation deformation review in Unreal pending; online preview is not production approval.",
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains",
+      "rigUrl": "https://studio.tripo3d.ai/workspace/rigging/original-cire-orc-chieftain-one-realistic-adult-male-orc-champion-fu-9bc8d454-0030-48af-80ae-e334cc1facb1",
+      "rigCompletionEvidence": "Viewed UE5 Mannequin selected, completed Skeleton toggle, Retry 20 and Export controls after job completion. No automatic re-rig requested.",
+      "importedToUnreal": true,
+      "importFolder": "/Game/TripoModels/orc_warrior_3d_model",
+      "importedMesh": "/Game/TripoModels/orc_warrior_3d_model/orc_warrior_3d_model.orc_warrior_3d_model",
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "orc_chieftain"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/orc_chieftain/SK_orc_chieftain.SK_orc_chieftain",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      }
+    },
+    {
+      "role": "Wizard DPS",
+      "id": "01507c2b-fd74-4947-8ddf-8883c676beee",
+      "url": "https://studio.tripo3d.ai/workspace/generate/01507c2b-fd74-4947-8ddf-8883c676beee",
+      "generationCredits": 55,
+      "status": "imported_saved_animation_integration_pending",
+      "prompt": "Original Cire Wizard, one realistic adult human male elemental battle mage for a dark fantasy survival game. Full body, centered strict T-pose, arms horizontal, empty open hands with five separate fingers, boots apart. Slender athletic human proportions, thoughtful weathered face, short dark hair and trimmed beard. Practical layered midnight-blue wool battle coat split into separate front and back panels above knees, fitted dark trousers, sturdy boots, aged silver buckles, leather bracers and narrow shoulder guards. Subtle embroidered arcane geometry and small dull red and blue gemstones at belt, no emitted magic. Detailed PBR cloth weave, worn leather, tarnished metal and realistic skin. Distinct from a healer or summoner, restrained scholarly military silhouette. No staff, wand, book, weapon or held props; staff attaches separately. No hood obscuring face, cape, floor, plinth, scenery, particles, floating shapes, glow or wings. One riggable game humanoid, no cartoon, no anime.",
+      "retopologyCredits": 40,
+      "retopologyTarget": "10000 quads",
+      "measuredFaces": 10305,
+      "measuredVertices": 9556,
+      "rigCredits": 20,
+      "rigPreset": "UE5 Mannequin",
+      "intendedProfiles": [
+        "wizard"
+      ],
+      "visualReview": "Midnight-blue battle coat and trimmed beard, empty hands. Coat extends below knees; cloth and leg deformation need review.",
+      "screenshotReview": true,
+      "remainingQA": "Full hand/back and animation deformation review in Unreal pending; online preview is not production approval.",
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains",
+      "rigUrl": "https://studio.tripo3d.ai/workspace/rigging/original-cire-wizard-one-realistic-adult-human-male-elemental-battle-01507c2b-fd74-4947-8ddf-8883c676beee",
+      "rigCompletionEvidence": "Viewed UE5 Mannequin selected, completed Skeleton toggle, Retry 20 and Export controls after job completion. No automatic re-rig requested.",
+      "importedToUnreal": true,
+      "importFolder": "/Game/TripoModels/fantasy_battle_mage_3d_model",
+      "importedMesh": "/Game/TripoModels/fantasy_battle_mage_3d_model/fantasy_battle_mage_3d_model.fantasy_battle_mage_3d_model",
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "wizard"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/wizard/SK_wizard.SK_wizard",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      }
+    },
+    {
+      "role": "Keeper of the Light",
+      "id": "c0df1036-af63-4e54-a7dd-7aed817aa7fb",
+      "url": "https://studio.tripo3d.ai/workspace/generate/c0df1036-af63-4e54-a7dd-7aed817aa7fb",
+      "generationCredits": 55,
+      "status": "imported_saved_animation_integration_pending",
+      "prompt": "Original Cire Keeper of the Light, one realistic elderly human male support champion. Full body centered strict T-pose, arms horizontal, empty open hands with five separated fingers, feet apart. Dignified weathered human face, silver eyebrows and close beard, short silver hair, natural slender anatomy. Dark fantasy realism with an ivory and ash-gray traveling vestment: fitted long-sleeved coat with split panels above knees, dark fitted trousers and practical boots, small antique gold clasps and a sun-shaped chest relic, modest engraved bronze shoulder guards. Subtle cloth embroidery and tarnished metal, PBR fabric weave, worn leather and age-lined skin. Grounded guardian priest silhouette, distinct from an armored paladin. No staff, tome, weapon or held object; props attach separately. No halo, floating light, glow, magic particles, cape, wings, floor, pedestal or scenery. One complete riggable humanoid with clear limb separation, no cartoon, no anime.",
+      "retopologyCredits": 40,
+      "retopologyTarget": "10000 quads",
+      "measuredFaces": 10253,
+      "measuredVertices": 9610,
+      "rigCredits": 20,
+      "rigPreset": "UE5 Mannequin",
+      "intendedProfiles": [
+        "keeper_of_light"
+      ],
+      "visualReview": "Elder silver-bearded human, ivory vestment and sun relic, clear boots and empty hands.",
+      "screenshotReview": true,
+      "remainingQA": "Full hand/back and animation deformation review in Unreal pending; online preview is not production approval.",
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains",
+      "rigUrl": "https://studio.tripo3d.ai/workspace/rigging/original-cire-keeper-of-the-light-one-realistic-elderly-human-male-su-c0df1036-af63-4e54-a7dd-7aed817aa7fb",
+      "rigCompletionEvidence": "Viewed UE5 Mannequin selected, completed Skeleton toggle, Retry 20 and Export controls after job completion. No automatic re-rig requested.",
+      "importedToUnreal": true,
+      "importFolder": "/Game/TripoModels/elderly_fantasy_character_3d_model",
+      "importedMesh": "/Game/TripoModels/elderly_fantasy_character_3d_model/elderly_fantasy_character_3d_model.elderly_fantasy_character_3d_model",
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "keeper_of_light"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/keeper_of_light/SK_keeper_of_light.SK_keeper_of_light",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      }
+    },
+    {
+      "role": "Drakish Footman human form",
+      "id": "1b19e4e3-1095-4397-afa8-3b732dc4ef88",
+      "url": "https://studio.tripo3d.ai/workspace/generate/1b19e4e3-1095-4397-afa8-3b732dc4ef88",
+      "generationCredits": 55,
+      "status": "imported_saved_animation_integration_pending",
+      "prompt": "Original Cire Drakish Footman in human form, one realistic adult human male dragon-blood infantry champion. Full body centered strict T-pose, arms horizontal, empty open hands with five separated fingers, boots apart. Believable powerful human anatomy, stern weathered face, amber eyes, short black hair; fully human limbs and face, no tail, horns or wings. Dark fantasy realism with practical blackened steel lamellar armor, subtle overlapping dragon-scale engraving, restrained oxidized copper edging and dull crimson cloth. Fitted trousers, articulated knee plates, rugged armored boots and separated gauntlet fingers. Short split tabard above knees, no long cape. Detailed PBR pitted steel, tarnished copper, rough leather and natural skin pores. Disciplined dragoon silhouette. No sword, shield, spear or held props; equipment attaches separately. No glow, particles, fire, floor, scenery or pedestal. One clean riggable humanoid game character, no cartoon, no anime.",
+      "retopologyCredits": 40,
+      "retopologyTarget": "10000 quads",
+      "measuredFaces": 9900,
+      "measuredVertices": 9181,
+      "rigCredits": 20,
+      "rigPreset": "UE5 Mannequin",
+      "intendedProfiles": [
+        "drakish_footman"
+      ],
+      "visualReview": "Human blackened scale armor, copper trim and crimson cloth; grounded infantry silhouette.",
+      "screenshotReview": true,
+      "remainingQA": "Full hand/back and animation deformation review in Unreal pending; online preview is not production approval.",
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains",
+      "rigUrl": "https://studio.tripo3d.ai/workspace/rigging/original-cire-drakish-footman-in-human-form-one-realistic-adult-human-1b19e4e3-1095-4397-afa8-3b732dc4ef88",
+      "rigCompletionEvidence": "Viewed UE5 Mannequin selected, completed Skeleton toggle, Retry 20 and Export controls after job completion. No automatic re-rig requested.",
+      "importedToUnreal": true,
+      "importFolder": "/Game/TripoModels/dragon-armored_knight_3d_model",
+      "importedMesh": "/Game/TripoModels/dragon-armored_knight_3d_model/dragon-armored_knight_3d_model.dragon-armored_knight_3d_model",
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "drakish_footman"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/drakish_footman/SK_drakish_footman.SK_drakish_footman",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      }
+    }
+  ],
+  "totalSubmittedCredits": 805,
+  "lastIntegrationUpdateUtc": "2026-09-24T01:00:09.900933+00:00",
+  "status": "all_seven_integrated_verified_prototypes"
+}

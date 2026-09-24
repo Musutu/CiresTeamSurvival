@@ -1,0 +1,503 @@
+#include "CireBalanceLab.h"
+#include "CireLanePath.h"
+#include "CireEnvironmentGallery.h"
+#include "CireBatchArtGallery.h"
+#include "CireTooltipGallery.h"
+#include "CireDeveloperTools.h"
+#include "CireReplay.h"
+#include "CireReplaySpectator.h"
+#include "CireGame.h"
+#include "Engine/World.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
+#include "CireCombatEvents.h"
+#include "CireInterfaceProbe.h"
+#include "CireExpansionNetProbe.h"
+#include "CireTownGoal.h"
+#include "CireFeedbackPreview.h"
+#include "CireArtPreview.h"
+#include "CireCombatArtPreview.h"
+#include "CireAreaEffects.h"
+#include "CireCombatFeaturesProbe.h"
+#include "CireNPCCombat.h"
+#include "CireThreat.h"
+#include "CireSkillshot.h"
+#include "CireConstruct.h"
+#include "CireSummon.h"
+#include "CireSpellGallery.h"
+#include "CireOptionsGallery.h"
+#include "CireCombatExpansionProbe.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogCire, Log, All);
+
+#if !UE_BUILD_SHIPPING
+namespace {
+struct FCireServerProbe {
+    bool Enabled=false;
+    bool ActionsVerified=false;
+    bool Done=false;
+    double Started=0;
+    FVector MovementOrigin=FVector::ZeroVector;
+    TWeakObjectPtr<ACireHero> PlayerPawn;
+    TWeakObjectPtr<ACireMonster> Target;
+};
+FCireServerProbe ServerProbe;
+int32 SmokePhaseMask = 0;
+int32 SmokeClearedWaves = 0;
+float SmokeWaveAge = 0.f;
+int32 SmokeBossLeaks = 0;
+bool SmokeCycleClearValid = false;
+
+void TickServerProbe(ACireGameMode* Mode) {
+    auto& Probe=ServerProbe;
+    if(!Probe.Enabled||Probe.Done)return;
+    const auto Fail=[&](const TCHAR* Reason) {
+        UE_LOG(LogCire,Error,TEXT("CIRE_NET_SERVER_FAIL reason=%s"),Reason);
+        Probe.Done=true;FPlatformMisc::RequestExitWithStatus(false,1);
+    };
+    if(FPlatformTime::Seconds()-Probe.Started>40) {Fail(TEXT("client actions or disconnect timed out"));return;}
+    if(!Probe.PlayerPawn.IsValid()) {
+        for(auto* Hero:Mode->Heroes) {
+            if(!IsValid(Hero)||Hero->bBot||!Hero->IsPlayerControlled())continue;
+            Probe.PlayerPawn=Hero;
+            Probe.MovementOrigin=Hero->GetActorLocation();
+            Mode->SpawnBots();
+            for(auto* Bot:Mode->Heroes) if(IsValid(Bot)&&Bot->bBot) {
+                Bot->GetCharacterMovement()->DisableMovement();
+                Bot->bAutoAttack=false;
+            }
+            FActorSpawnParameters Params;
+            Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+            auto* Target=Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),Hero->GetActorLocation()+FVector(450,0,0),FRotator::ZeroRotator,Params);
+            if(!Target) {Fail(TEXT("probe fixture spawn failed"));return;}
+            Target->Lane=Hero->TeamId;
+            Target->Health=Target->MaxHealth=1000000;
+            Target->Damage=0;
+            Target->MonsterName=TEXT("CIRE_NETWORK_PROBE_TARGET");
+            Target->GetCharacterMovement()->DisableMovement();
+            Mode->Monsters.Add(Target);
+            Probe.Target=Target;
+            UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_JOIN pawn=%s team=%d heroes=%d"),*Hero->GetName(),Hero->TeamId,Mode->Heroes.Num());
+            break;
+        }
+        return;
+    }
+    auto* Hero=Probe.PlayerPawn.Get();
+    if(!Probe.ActionsVerified&&Hero->bDrafted&&Hero->Target==Probe.Target.Get()&&Hero->Notice.Contains(TEXT("intermission"))) {
+        const bool Valid=Hero->Archetype==2&&Hero->Gold==120&&Hero->Skills.Num()==0&&Hero->Cooldowns.Num()==0&&
+            Hero->GearRank==0&&FMath::IsNearlyZero(Hero->CDR)&&Hero->Level==1&&
+            FVector::Dist2D(Probe.MovementOrigin,Hero->GetActorLocation())>=100;
+        if(!Valid) {Fail(TEXT("server validation state mismatch"));return;}
+        Probe.ActionsVerified=true;
+        UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_ACTIONS_PASS draft=2 gold=120 skills=0 illegal_shop_rejected=1 movement_cm=%.1f"),FVector::Dist2D(Probe.MovementOrigin,Hero->GetActorLocation()));
+    }
+    if(Probe.ActionsVerified&&Hero->bBot&&!Hero->IsPlayerControlled()) {
+        int32 Counts[2]={0,0};
+        for(auto* Member:Mode->Heroes) if(IsValid(Member)&&Member->TeamId>=0&&Member->TeamId<2)++Counts[Member->TeamId];
+        const bool Valid=Mode->Heroes.Contains(Hero)&&Mode->Heroes.Num()==10&&Counts[0]==5&&Counts[1]==5&&
+            Hero->bDrafted&&Hero->Archetype==2&&Hero->Level==1&&Hero->Gold==120;
+        if(!Valid) {Fail(TEXT("disconnect did not preserve champion/team membership"));return;}
+        UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_PASS heroes=%d teams=%d/%d preserved_pawn=%s level=%d bot=1"),Mode->Heroes.Num(),Counts[0],Counts[1],*Hero->GetName(),Hero->Level);
+        Probe.Done=true;FPlatformMisc::RequestExitWithStatus(false,0);
+    }
+}
+} // namespace
+#endif
+
+ACireGameState::ACireGameState() { SetNetUpdateFrequency(5); }
+void ACireGameState::OnRepLaneRoutes() { CireLanePath::ReceiveState(this); }
+void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ACireGameState,Phase); DOREPLIFETIME(ACireGameState,SecondsLeft);
+    DOREPLIFETIME(ACireGameState,Round); DOREPLIFETIME(ACireGameState,Wave);
+    DOREPLIFETIME(ACireGameState,CycleWavesDone); DOREPLIFETIME(ACireGameState,WavesPerCycle);
+    DOREPLIFETIME(ACireGameState,NextWaveSeconds);
+    DOREPLIFETIME(ACireGameState,EmberLives); DOREPLIFETIME(ACireGameState,DuskLives);
+    DOREPLIFETIME(ACireGameState,EmberWins); DOREPLIFETIME(ACireGameState,DuskWins);
+    DOREPLIFETIME(ACireGameState,ArenaIndex); DOREPLIFETIME(ACireGameState,Announcement);
+    DOREPLIFETIME(ACireGameState,LaneBounds); DOREPLIFETIME(ACireGameState,LanePoints0);
+    DOREPLIFETIME(ACireGameState,LanePoints1); DOREPLIFETIME(ACireGameState,LaneRouteVersion);
+}
+ACireGameMode::ACireGameMode() {
+    PrimaryActorTick.bCanEverTick=true;
+    GameStateClass=ACireGameState::StaticClass();
+    PlayerControllerClass=ACireController::StaticClass();
+    DefaultPawnClass=ACireHero::StaticClass();
+    HUDClass=ACireHUD::StaticClass();
+    ReplaySpectatorPlayerControllerClass=ACireReplaySpectator::StaticClass();
+}
+FVector ACireGameMode::BasePosition(int32 Team) const { return FVector(-1700,Team==0?-2100:2100,110); }
+FVector ACireGameMode::ArenaPosition(int32 Team,int32 Slot) const {
+    return FVector(Team==0?-700:700,10000+ArenaIndex*6000+(Slot-2)*200,110);
+}
+float ACireGameMode::Power(int32 Team) const { return Team>=0&&Team<2?static_cast<float>(Rewards[Team].PowerMultiplier):1.f; }
+float ACireGameMode::Loot(int32 Team) const { return Team>=0&&Team<2?static_cast<float>(Rewards[Team].LootMultiplier):1.f; }
+bool ACireGameMode::IsCombatPhase() const { return Clock.Phase()==Cires::MatchPhase::Survival||Clock.Phase()==Cires::MatchPhase::Arena; }
+bool ACireGameMode::CanFight(const ACireHero* A,const ACireHero* B) const {
+    return A&&B&&A->bDrafted&&B->bDrafted&&!A->bDead&&!B->bDead&&A->TeamId!=B->TeamId&&Clock.Phase()==Cires::MatchPhase::Arena;
+}
+void ACireGameMode::BeginPlay() {
+    Super::BeginPlay();
+#if !UE_BUILD_SHIPPING
+    ServerProbe={};
+    ServerProbe.Enabled=GetNetMode()==NM_DedicatedServer&&FParse::Param(FCommandLine::Get(),TEXT("CireNetServerProbe"));
+    if(ServerProbe.Enabled) {
+        ServerProbe.Started=FPlatformTime::Seconds();
+        BotFillTimer=60;WaveTimer=60; // leave a fresh champion for the remote draft test
+    }
+#endif
+    bSmoke=FParse::Param(FCommandLine::Get(),TEXT("CireSmoke"));
+    Clock=Cires::MatchClock({60,90,RecoverySeconds});
+#if !UE_BUILD_SHIPPING
+    SmokePhaseMask = 1; SmokeClearedWaves = 0; SmokeWaveAge = 0.f;
+    SmokeBossLeaks = 0; SmokeCycleClearValid = false;
+    if(bSmoke) {Clock=Cires::MatchClock({2,2,1}); WaveBreatherSeconds=.3f; WaveTimer=.3f; BotFillTimer=0;}
+#endif
+    CireDeveloperTools::Initialize(this);
+    CireLanePath::PublishState(GetGameState<ACireGameState>());
+    GetWorld()->SpawnActor<ACireWorld>();
+    for(int32 Team=0;Team<2;++Team) {
+        auto* Goal=GetWorld()->SpawnActor<ACireTownGoal>(ACireTownGoal::StaticClass(),
+            FVector(-1850,Team==0?-2100:2100,150),FRotator::ZeroRotator);
+        if(Goal)Goal->TeamId=Team;
+        else UE_LOG(LogCire,Error,TEXT("Town goal spawn failed for team %d"),Team);
+    }
+    auto* S=GetGameState<ACireGameState>();
+    S->SecondsLeft=-1; S->CycleWavesDone=0; S->WavesPerCycle=FMath::Clamp(S->WavesPerCycle,1,10);
+    S->NextWaveSeconds=WaveTimer;
+    S->Announcement=TEXT("Hold the gates. Challenge the outposts. Survive together.");
+    bool bFeedbackPreview = false;
+#if !UE_BUILD_SHIPPING
+    bFeedbackPreview = CireTooltipGallery::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireBatchArtGallery::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireEnvironmentGallery::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireOptionsGallery::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireSpellGallery::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireCombatArtPreview::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireArtPreview::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireFeedbackPreview::Initialize(this);
+#endif
+    if(!bFeedbackPreview)SpawnPacks();
+    if(!bFeedbackPreview)CireBalanceLab::Initialize(this);
+    UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / 60s prep / 90s arena / %.0fs recovery | server authority"),S->WavesPerCycle,RecoverySeconds);
+#if !UE_BUILD_SHIPPING
+    if(ServerProbe.Enabled)UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_READY dedicated=1 timeout=40"));
+    if(FParse::Param(FCommandLine::Get(),TEXT("CireCombatFeaturesProbe")))
+        FPlatformMisc::RequestExitWithStatus(false,CireCombatFeatures::Run(this)?0:1);
+    if(FParse::Param(FCommandLine::Get(),TEXT("CireCombatExpansionProbe")))
+        FPlatformMisc::RequestExitWithStatus(false,CireCombatExpansion::Run(this)?0:1);
+    if(FParse::Param(FCommandLine::Get(),TEXT("CireTelemetryProbe")))
+        FPlatformMisc::RequestExitWithStatus(false,CireCombat::RunTelemetrySmoke(this)?0:1);
+#endif
+}
+void ACireGameMode::HandleStartingNewPlayer_Implementation(APlayerController* P) {
+    if(!P||P->GetPawn()) return;
+    int Counts[2]={0,0};
+    for(auto* H:Heroes) if(IsValid(H)&&!H->bBot) ++Counts[FMath::Clamp(H->TeamId,0,1)];
+    int Team=Counts[0]<=Counts[1]?0:1;
+    if(Counts[Team]>=5) { P->StartSpectatingOnly(); return; }
+    ACireHero* Replaced=nullptr;
+    for(auto* H:Heroes) if(IsValid(H)&&H->bBot&&H->TeamId==Team) {Replaced=H;break;}
+    if(Replaced) {
+        Replaced->bBot=false; P->Possess(Replaced);
+        Replaced->Notice=TEXT("Joined an existing champion; level and arena state preserved.");
+        return;
+    }
+    FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    auto* H=GetWorld()->SpawnActor<ACireHero>(ACireHero::StaticClass(),BasePosition(Team)+FVector(0,Counts[Team]*140,0),FRotator::ZeroRotator,Params);
+    H->TeamId=Team; H->HomePosition=BasePosition(Team); Heroes.Add(H); P->Possess(H);
+    if(Clock.Phase()==Cires::MatchPhase::Arena) H->ReviveAt(ArenaPosition(Team,Counts[Team]));
+}
+void ACireGameMode::PostLogin(APlayerController* P) { Super::PostLogin(P); }
+void ACireGameMode::Logout(AController* P) {
+    if(auto* H=Cast<ACireHero>(P?P->GetPawn():nullptr)) { H->bBot=true; H->bAutoAttack=true; H->Draft(H->Archetype); }
+    Super::Logout(P);
+    bBotsFilled=false; BotFillTimer=2;
+}
+void ACireGameMode::SpawnBots() {
+    Heroes.RemoveAll([](auto* H){return !IsValid(H);});
+    for(int Team=0;Team<2;++Team) {
+        int Count=0; for(auto* H:Heroes) if(H->TeamId==Team)++Count;
+        for(int I=Count;I<5;++I) {
+            FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+            auto* H=GetWorld()->SpawnActor<ACireHero>(ACireHero::StaticClass(),BasePosition(Team)+FVector(250,I*150-300,0),FRotator::ZeroRotator,Params);
+            H->TeamId=Team; H->bBot=true; H->HomePosition=BasePosition(Team); H->Draft(I%3);
+            H->HomePosition=BasePosition(Team)+FVector(250,I*180-360,0);
+            H->HeroName=FString::Printf(TEXT("%s %d"),Team==0?TEXT("Ember"):TEXT("Dusk"),I+1);
+            H->bAutoAttack=true; Heroes.Add(H);
+            if(Clock.Phase()==Cires::MatchPhase::Arena)H->ReviveAt(ArenaPosition(Team,I));
+        }
+    }
+    bBotsFilled=true;
+}
+void ACireGameMode::SpawnWave() {
+    auto* S=GetGameState<ACireGameState>();
+    if(!S||Clock.Phase()!=Cires::MatchPhase::Survival||CycleWavesSpawned>=S->WavesPerCycle) return;
+    ++S->Wave;
+    ++CycleWavesSpawned;
+    S->NextWaveSeconds=0;
+    S->Announcement=FString::Printf(TEXT("DEFEND THE GATES | Wave %d of %d this cycle"),CycleWavesSpawned,S->WavesPerCycle);
+    Monsters.RemoveAll([](auto* M){return !IsValid(M);});
+    const auto& Dev=CireDeveloperTools::Get(GetWorld());
+    const bool bEscortWave=CireLanePath::ShouldSpawnEscort(GetWorld(),S->Wave);
+    const auto& Routes=CireLanePath::Get(GetWorld());
+    const int32 UnitCount=Dev.bEnabled&&Dev.WaveUnitsOverride>0?Dev.WaveUnitsOverride:
+        bEscortWave?Routes.EscortCount:4+FMath::Min(S->Round,8);
+    const bool bFinalWave=!bEscortWave&&CycleWavesSpawned==S->WavesPerCycle;
+    if(bEscortWave)S->Announcement=TEXT("ARMORED ESCORT | They ignore combat. Break their armor before they reach town!");
+    for(int Team=0;Team<2;++Team) for(int I=0;I<UnitCount+(bFinalWave?1:0);++I) {
+        int ActiveInLane=0;
+        for(auto* Existing:Monsters) if(IsValid(Existing)&&Existing->Lane==Team&&Existing->PackId<0)++ActiveInLane;
+        if(ActiveInLane>=80) {
+            int32& Lives=Team==0?S->EmberLives:S->DuskLives;
+            Lives=FMath::Max(0,Lives-(bEscortWave?Routes.EscortLeakCost:bFinalWave&&I==UnitCount?10:1));
+            if(Lives==0) {EndSurvival(1-Team);return;}
+            continue;
+        }
+        FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        const FVector Start=CireLanePath::SpawnPosition(GetWorld(),Team);
+        const FVector DefaultSpawn=CireLanePath::ClampToLane(GetWorld(),Team,Start+FVector((I/2)*100,(I%2==0?-180:180),0),80);
+        const FVector Position=CireDeveloperTools::SpawnPosition(GetWorld(),Team,I,DefaultSpawn);
+        auto* M=GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),Position,FRotator(0,180,0),Params);
+        if(!M) {UE_LOG(LogCire,Error,TEXT("Wave monster spawn failed"));continue;}
+        M->Lane=Team;
+        CireNPCCombat::Configure(M,bEscortWave?1:I%4,S->Wave,bFinalWave&&I==UnitCount);
+        M->GetCharacterMovement()->MaxWalkSpeed=145+FMath::Min(S->Wave*2,85);
+        M->SpawnPosition=Position;
+        if(bFinalWave&&I==UnitCount) {
+            M->bBoss=true; M->MonsterName=TEXT("Hollow Siegebreaker");
+            M->GetCharacterMovement()->MaxWalkSpeed*=.8f;
+            M->SetActorScale3D(FVector(1.35f));
+        }
+        if(bEscortWave)CireLanePath::ConfigureEscort(M);
+        CireLanePath::InitializeProgress(M);
+        Monsters.Add(M);
+    }
+    UE_LOG(LogCire,Display,TEXT("CIRE WAVE SPAWN round=%d wave=%d cycle=%d/%d"),S->Round,S->Wave,CycleWavesSpawned,S->WavesPerCycle);
+}
+void ACireGameMode::SpawnPacks() {
+    const int R=Clock.Round();
+    for(int Team=0;Team<2;++Team) for(int Tier=1;Tier<=3;++Tier) for(int I=0;I<3;++I) {
+        FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        FVector P=CireLanePath::ChallengePosition(GetWorld(),Team,Tier)+FVector((I-1)*110,0,0);
+        auto* M=GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),P,FRotator::ZeroRotator,Params);
+        M->Lane=Team; M->Tier=Tier; M->PackId=R*100+Team*10+Tier; M->SpawnPosition=P;
+        CireNPCCombat::Configure(M,1+I%3,GetGameState<ACireGameState>()->Wave,false,Tier,R);
+        M->MonsterName=FString::Printf(TEXT("Challenge %d | %s"),Tier,*M->MonsterName);
+        M->GetCharacterMovement()->MaxWalkSpeed=230;
+        M->SetActorScale3D(FVector(1.08f+Tier*.09f)); Monsters.Add(M);
+    }
+}
+void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
+    for(auto* H:Heroes) if(IsValid(H)&&H->TeamId==Team) { H->GrantExperience(XP); H->Gold+=GoldAmount; }
+}
+void ACireGameMode::MonsterKilled(ACireMonster* M,ACireHero* Killer) {
+    if(!IsValid(M)||!IsValid(Killer)||Killer->TeamId!=M->Lane) return;
+    AwardTeam(M->Lane,45+GetGameState<ACireGameState>()->Round*4,FMath::RoundToInt(12*Loot(M->Lane)));
+    if(M->PackId>=0&&!RewardedPacks.Contains(M->PackId)) {
+        bool Remaining=false;
+        for(auto* Other:Monsters) if(IsValid(Other)&&Other!=M&&Other->PackId==M->PackId&&Other->Health>0) {Remaining=true;break;}
+        if(!Remaining) {
+            RewardedPacks.Add(M->PackId);
+            const auto Reward=Cires::RollChallengeReward(M->Tier,Loot(M->Lane),static_cast<uint64>(M->PackId*7919));
+            AwardTeam(M->Lane,Reward.Experience,Reward.Gold);
+            for(auto* H:Heroes) if(IsValid(H)&&H->TeamId==M->Lane) {
+                H->Progression.Stats.Strength+=Reward.StatTomePoints;
+                H->Progression.Stats.Agility+=Reward.StatTomePoints;
+                H->Progression.Stats.Intelligence+=Reward.StatTomePoints;
+                if(Reward.RareDrop) {++H->GearRank; H->CDR=FMath::Min(.6f,H->CDR+.02f);}
+                H->Recalculate(false);
+                H->Notice=FString::Printf(TEXT("Challenge cleared: %d gold, %d XP%s%s"),Reward.Gold,Reward.Experience,Reward.GreaterStatTome?TEXT(" | GREATER TOME"):TEXT(""),Reward.RareDrop?TEXT(" | RARE RELIC"):TEXT(""));
+            }
+        }
+    }
+    Monsters.Remove(M);
+}
+void ACireGameMode::Leak(ACireMonster* M) {
+    if(!IsValid(M)||M->IsActorBeingDestroyed()||!Monsters.Contains(M)||M->PackId>=0
+        ||M->Lane<0||M->Lane>1||Clock.Phase()!=Cires::MatchPhase::Survival) return;
+    auto* S=GetGameState<ACireGameState>();
+    if(!S) return;
+    // Remove first: overlapping collision components must not debit the same creep twice.
+    Monsters.Remove(M);
+    int32& Lives=M->Lane==0?S->EmberLives:S->DuskLives;
+    Lives=FMath::Max(0,Lives-(M->LeakCostOverride>0?M->LeakCostOverride:M->bBoss?10:1));
+    if(M->bArmoredEscort)S->Announcement=FString::Printf(TEXT("%s GATE BREACHED | Armored escort cost %d lives"),M->Lane==0?TEXT("EMBER"):TEXT("DUSK"),FMath::Max(1,M->LeakCostOverride));
+    if(M->bBoss) S->Announcement=FString::Printf(TEXT("%s GATE BREACHED | Siegebreaker cost 10 lives"),M->Lane==0?TEXT("EMBER"):TEXT("DUSK"));
+    const int LosingTeam=M->Lane;
+    M->Destroy();
+    if(Lives==0) EndSurvival(LosingTeam==0?1:0);
+}
+void ACireGameMode::HeroKilled(ACireHero* H) {
+    if(Clock.Phase()==Cires::MatchPhase::Survival) H->RespawnTimer=10;
+    else H->RespawnTimer=0;
+}
+void ACireGameMode::EndSurvival(int32 Winner) {
+    ReplayStopAt=GetWorld()->GetTimeSeconds()+1.f;
+    Clock.Finish(); auto* S=GetGameState<ACireGameState>(); S->Phase=3;
+    S->SecondsLeft=0; S->NextWaveSeconds=0;
+    S->Announcement=Winner==0?TEXT("EMBER VICTORIOUS - Dusk's gate has fallen"):TEXT("DUSK VICTORIOUS - Ember's gate has fallen");
+    UE_LOG(LogCire,Display,TEXT("CIRE MATCH COMPLETE winner=%d"),Winner);
+}
+void ACireGameMode::ChangePhase(int32 NewPhase) {
+    ACireAreaEffect::ClearAll(GetWorld());
+    ACireSkillshot::ClearAll(GetWorld());ACireConstruct::ClearAll(GetWorld());ACireSummon::ClearAll(GetWorld());
+    for(auto* M:Monsters)if(IsValid(M)){CireThreat::Clear(M);CireNPCCombat::Interrupt(M);}
+    for(auto* H:Heroes)if(IsValid(H))H->PendingAttackTarget.Reset();
+    auto* S=GetGameState<ACireGameState>(); S->Phase=NewPhase;
+    S->SecondsLeft=static_cast<float>(Clock.RemainingSeconds()); S->Round=Clock.Round();
+    S->NextWaveSeconds=0;
+#if !UE_BUILD_SHIPPING
+    if(bSmoke) SmokePhaseMask|=1<<NewPhase;
+#endif
+    if(NewPhase==1) {
+#if !UE_BUILD_SHIPPING
+        if(bSmoke) {
+            int32 WaveAlive=0, PacksAlive=0;
+            for(auto* M:Monsters) if(IsValid(M)&&M->Health>0) {if(M->PackId<0)++WaveAlive;else++PacksAlive;}
+            SmokeCycleClearValid=WaveAlive==0&&PacksAlive>0&&S->CycleWavesDone==S->WavesPerCycle;
+            UE_LOG(LogCire,Display,TEXT("CIRE_SMOKE_CLEAR wave_alive=%d optional_alive=%d cleared=%d"),WaveAlive,PacksAlive,S->CycleWavesDone);
+        }
+#endif
+        S->Announcement=TEXT("THE QUIET MINUTE | Return to town. Buy gear and tomes.");
+        int32 TownSlot[2]={0,0};
+        for(auto* H:Heroes) if(IsValid(H)) {
+            H->Target=nullptr;
+            if(H->bDead||H->bBot) {
+                H->HomePosition=BasePosition(H->TeamId)+FVector(250,TownSlot[H->TeamId]++*180-360,0);
+                H->ReviveAt(H->HomePosition);
+            }
+        }
+    } else if(NewPhase==2) {
+        ArenaIndex=FMath::RandRange(0,2); S->ArenaIndex=ArenaIndex;
+        S->Announcement=TEXT("PORTAL CLASH | Defeat the opposing team for power and loot.");
+        int Slot[2]={0,0};
+        for(auto* H:Heroes) if(IsValid(H)) {
+            if(!H->bDrafted)H->Draft(H->Archetype);
+            H->ReviveAt(ArenaPosition(H->TeamId,Slot[H->TeamId]++));
+        }
+    } else if(NewPhase==4) {
+        for(auto* H:Heroes) if(IsValid(H)) {
+            H->ReviveAt(BasePosition(H->TeamId)+FVector(300,Heroes.IndexOfByKey(H)%5*110-220,0));
+            H->Target=nullptr;
+        }
+        S->Announcement+=TEXT(" | Recovery: regroup at your gate.");
+    } else if(NewPhase==0) {
+        CycleWavesSpawned=0; S->CycleWavesDone=0;
+        S->Announcement=TEXT("DEFEND THE GATES | A new wave cycle begins.");
+        // Completed wave creeps are gone; optional challenge packs refresh each cycle.
+        for(int I=Monsters.Num()-1;I>=0;--I) if(IsValid(Monsters[I])&&Monsters[I]->PackId>=0) {Monsters[I]->Destroy();Monsters.RemoveAt(I);}
+        RewardedPacks.Reset();
+        SpawnPacks(); WaveTimer=0;
+    }
+    UE_LOG(LogCire,Display,TEXT("CIRE PHASE %d ROUND %d HEROES %d"),NewPhase,Clock.Round(),Heroes.Num());
+}
+void ACireGameMode::ResolveArena() {
+    if(GetGameState<ACireGameState>()->Phase!=2) return;
+    int Alive[2]={0,0}; float Fraction[2]={0,0};
+    for(auto* H:Heroes) if(IsValid(H)&&H->bDrafted&&!H->bDead) {++Alive[H->TeamId]; Fraction[H->TeamId]+=H->Health/FMath::Max(1.f,H->MaxHealth);}
+    int Winner=-1;
+    if(Alive[0]!=Alive[1]) Winner=Alive[0]>Alive[1]?0:1;
+    else if(!FMath::IsNearlyEqual(Fraction[0],Fraction[1],.01f)) Winner=Fraction[0]>Fraction[1]?0:1;
+    auto* S=GetGameState<ACireGameState>();
+    if(Winner>=0) {
+        Cires::AwardArenaWin(Rewards[Winner]); AwardTeam(Winner,100,80);
+        S->Announcement=FString::Printf(TEXT("%s won the arena | team power %.0f%% | loot %.0f%%"),Winner==0?TEXT("EMBER"):TEXT("DUSK"),(Power(Winner)-1)*100,(Loot(Winner)-1)*100);
+    } else S->Announcement=TEXT("Arena drawn | Both teams return without a victory buff.");
+    S->EmberWins=Rewards[0].ArenaWins; S->DuskWins=Rewards[1].ArenaWins;
+    Clock.ResolveArena(); ChangePhase(4);
+}
+void ACireGameMode::Tick(float Dt) {
+    Super::Tick(Dt);
+#if !UE_BUILD_SHIPPING
+    if(CireTooltipGallery::Tick(this)) return;
+    if(CireBatchArtGallery::Tick(this)) return;
+    if(CireEnvironmentGallery::Tick(this)) return;
+    if(CireBalanceLab::Tick(this,Dt)) return;
+    if(CireOptionsGallery::Tick(this)) return;
+    if(CireSpellGallery::Tick(this)) return;
+    if(CireCombatArtPreview::Tick(this)) return;
+    if(CireArtPreview::Tick(this)) return;
+    if(CireFeedbackPreview::Tick(this)) return;
+    if(CireExpansionNetProbe::TickServer(this)) return;
+    if(CireInterfaceProbe::TickServer(this)) return;
+    TickServerProbe(this);
+#endif
+    auto* S=GetGameState<ACireGameState>(); if(!S) return;
+    if(!bSmoke&&GetNetMode()==NM_Standalone) {
+        for(auto* H:Heroes) if(IsValid(H)&&!H->bBot&&!H->bDrafted)return;
+    }
+    if(!bBotsFilled) {BotFillTimer-=Dt;if(BotFillTimer<=0)SpawnBots();}
+    if(Clock.Phase()==Cires::MatchPhase::Finished) {
+        if(GetWorld()->GetTimeSeconds()>=ReplayStopAt)if(auto* Replay=CireReplay::Get(GetWorld()))Replay->StopRecording();
+        return;
+    }
+    if(!bAutomaticReplayAttempted){
+        bAutomaticReplayAttempted=true;
+        const FString Args=FCommandLine::Get();
+        const bool Test=Args.Contains(TEXT("Probe"))||Args.Contains(TEXT("Gallery"))||Args.Contains(TEXT("Preview"))||
+            Args.Contains(TEXT("CireSmoke"))||Args.Contains(TEXT("CireExpansionNet"))||Args.Contains(TEXT("CireNoReplay"));
+        if(!Test)if(auto* Replay=CireReplay::Get(GetWorld()))Replay->StartRecording();
+    }
+    const auto& Dev=CireDeveloperTools::Get(GetWorld());
+    for(const auto& Event:Clock.Advance(Dev.bEnabled&&Dev.bFreezePhaseClock?0.f:Dt)) {
+        if(Event.ArenaTimedOut) ResolveArena();
+        else ChangePhase(static_cast<int32>(Event.To));
+    }
+    S->Phase=static_cast<int32>(Clock.Phase()); S->SecondsLeft=static_cast<float>(Clock.RemainingSeconds()); S->Round=Clock.Round();
+    if(S->Phase==0) {
+        Monsters.RemoveAll([](auto* M){return !IsValid(M);});
+        bool bWaveAlive=false;
+        for(auto* M:Monsters) if(M->PackId<0&&M->Health>0) {bWaveAlive=true;break;}
+#if !UE_BUILD_SHIPPING
+        // Exercise actual town-zone entry and despawn while optional packs stay alive.
+        if(bSmoke&&bWaveAlive) {
+            SmokeWaveAge+=Dt;
+            if(SmokeWaveAge>=.5f) {
+                const auto WaveMonsters=Monsters;
+                for(auto* M:WaveMonsters) if(IsValid(M)&&M->PackId<0) {
+                    if(M->bBoss)++SmokeBossLeaks;
+                    M->SetActorLocation(FVector(-1850,M->Lane==0?-2100:2100,110),false,nullptr,ETeleportType::TeleportPhysics);
+                }
+                SmokeWaveAge=0;
+            }
+        }
+#endif
+        if(!bWaveAlive) {
+            if(CycleWavesSpawned>S->CycleWavesDone) {
+                S->CycleWavesDone=CycleWavesSpawned;
+                WaveTimer=WaveBreatherSeconds;
+#if !UE_BUILD_SHIPPING
+                if(bSmoke)++SmokeClearedWaves;
+#endif
+                UE_LOG(LogCire,Display,TEXT("CIRE WAVE CLEAR round=%d cleared=%d/%d"),S->Round,S->CycleWavesDone,S->WavesPerCycle);
+            }
+            if(S->CycleWavesDone>=S->WavesPerCycle) {
+                if(Clock.BeginIntermission()) ChangePhase(1);
+            } else {
+                WaveTimer=FMath::Max(0.f,WaveTimer-Dt);
+                S->NextWaveSeconds=WaveTimer;
+                if(WaveTimer<=0&&!(Dev.bEnabled&&Dev.bPauseWaveSpawns))SpawnWave();
+            }
+        } else S->NextWaveSeconds=0;
+    }
+    if(S->Phase==2&&Heroes.Num()>=2) {
+        int Alive[2]={0,0}; for(auto* H:Heroes) if(IsValid(H)&&H->bDrafted&&!H->bDead)++Alive[H->TeamId];
+        if(Alive[0]==0||Alive[1]==0)ResolveArena();
+    }
+#if !UE_BUILD_SHIPPING
+    if(bSmoke) {
+        SmokeElapsed+=Dt;
+        if(S->Round>=2||SmokeElapsed>20) {
+            const bool Pass=Heroes.Num()==10&&S->Round>=2&&SmokeClearedWaves>=S->WavesPerCycle&&(SmokePhaseMask&23)==23
+                &&SmokeCycleClearValid&&SmokeBossLeaks==2&&S->EmberLives==75&&S->DuskLives==75;
+            UE_LOG(LogCire,Display,TEXT("CIRE_SMOKE_%s heroes=%d round=%d phase=%d cleared=%d phase_mask=%d boss_leaks=%d lives=%d/%d"),Pass?TEXT("PASS"):TEXT("FAIL"),Heroes.Num(),S->Round,S->Phase,SmokeClearedWaves,SmokePhaseMask,SmokeBossLeaks,S->EmberLives,S->DuskLives);
+            FPlatformMisc::RequestExitWithStatus(false,Pass?0:1);
+        }
+    }
+#endif
+}

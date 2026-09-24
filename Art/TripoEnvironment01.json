@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "provider": "Tripo Studio logged-in browser",
+  "model": "H3.1 HD text to model",
+  "creditsPerAsset": 55,
+  "creditsSpent": 165,
+  "observedBalanceBefore": 9015,
+  "observedBalanceAfter": 8850,
+  "assets": [
+    {
+      "id": "ashen_gatehouse",
+      "taskId": "bb02c6b4-1aed-43a4-a2aa-9e6231037797",
+      "url": "https://studio.tripo3d.ai/workspace/generate/bb02c6b4-1aed-43a4-a2aa-9e6231037797",
+      "status": "generated_export_pending",
+      "faces": 858339,
+      "vertices": 468500,
+      "prompt": "Original Cire Ashen Citadel gatehouse environment asset, realistic dark fantasy medieval architecture, a complete freestanding monumental stone arch gate with two squat buttressed towers flanking one very wide completely open passage, no gate blocking the passage. Weathered dark basalt masonry, carved solemn heraldic reliefs, bronze trim, iron brackets, warm amber lanterns, layered stone cornices and crenellated battlements. Broad stable foundation, complete clean rear side, grounded proportional architecture, finely sculpted realistic PBR stone and metal, no characters, no text, no surrounding terrain, no background. Game ready landmark for a defensible town entrance."
+    },
+    {
+      "id": "ashen_watchtower",
+      "taskId": "4dfd4b23-2cd5-4948-906d-20be6c096692",
+      "url": "https://studio.tripo3d.ai/workspace/generate/4dfd4b23-2cd5-4948-906d-20be6c096692",
+      "status": "generated_export_pending",
+      "faces": 882219,
+      "vertices": 470613,
+      "prompt": "Original Cire Ashen Watchtower, one freestanding realistic medieval dark fantasy fortified watchtower environment asset. Tall octagonal weathered dark basalt stone tower, layered buttresses, a small bronze-trimmed arched doorway at ground level, slit windows, timber watch platform at the top and a steep dark slate roof with iron ridge ornament. Warm amber lantern fixed above the doorway, chiseled stone blocks, rusted iron rivets, moss confined to the stone foundation, complete modeled rear, sturdy believable architecture and fine PBR textures. A single reusable landmark building, no people, no surrounding scenery, no text, no background."
+    },
+    {
+      "id": "dawnwell_shrine",
+      "taskId": "433e1784-da6d-4150-b45e-8536f78d422e",
+      "url": "https://studio.tripo3d.ai/workspace/generate/433e1784-da6d-4150-b45e-8536f78d422e",
+      "status": "generated_export_pending",
+      "prompt": "Original Cire Dawnwell sanctuary shrine environment asset, realistic dark fantasy medieval architecture. Freestanding circular carved basalt stone dais with three shallow concentric steps, a low octagonal bronze basin holding a glowing pale blue magical crystal, four elegant buttresses and tall stone spires surrounding it with open access between them. Fine chiseled rune ornament without readable text, weathered stone and aged bronze metal, warm gold edging, cool luminous crystal, sculpted PBR detail. Complete modeled back, balanced monumental silhouette, suitable for a healing town landmark. No people, no surrounding scenery, no background.",
+      "faces": 864908,
+      "vertices": 457104
+    }
+  ]
+}

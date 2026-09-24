@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "assets": [
+    {"role": "town_gate", "uuid": "bb02c6b4-1aed-43a4-a2aa-9e6231037797", "status": "generated_import_pending"},
+    {"role": "watchtower", "uuid": "4dfd4b23-2cd5-4948-906d-20be6c096692", "status": "generated_import_pending"},
+    {"role": "challenge_shrine", "uuid": "433e1784-da6d-4150-b45e-8536f78d422e", "status": "generated_import_pending"}
+  ],
+  "notes": "Root supplied all three generated UUIDs; prompt and credit provenance is in Art/TripoEnvironment01.json. No import folders guessed."
+}

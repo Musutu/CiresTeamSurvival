@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "RunSpeed": 520,
+  "WalkSpeed": 240,
+  "JumpVelocity": 470,
+  "RollSpeed": 820,
+  "RollDuration": 0.55,
+  "RollCooldown": 3.5,
+  "RollEnergy": 25,
+  "InvulnerableStart": 0.08,
+  "InvulnerableEnd": 0.32
+}

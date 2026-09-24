@@ -1,0 +1,370 @@
+{
+  "globals": {
+    "defaults": {
+      "critChance": 0.05,
+      "critMultiplier": 1.5,
+      "tankDamageThreatMultiplier": 5,
+      "dpsDamageThreatMultiplier": 1,
+      "healingThreatMultiplier": 0.4,
+      "normalMonsterDamage": 18,
+      "bruiserMonsterDamage": 24,
+      "casterMonsterDamage": 14,
+      "rangedMonsterDamage": 16,
+      "bossMonsterDamage": 40,
+      "challengeMonsterDamage": 24,
+      "waveHealthBase": 800,
+      "waveHealthPerWave": 80,
+      "bossHealthMultiplier": 6,
+      "challengeHealthBase": 1200,
+      "basicHealthMultiplier": 1,
+      "bruiserHealthMultiplier": 1.5,
+      "casterHealthMultiplier": 0.8,
+      "rangedHealthMultiplier": 0.9
+    },
+    "bounds": {
+      "critChance": [
+        0,
+        1
+      ],
+      "critMultiplier": [
+        1,
+        5
+      ],
+      "tankDamageThreatMultiplier": [
+        0,
+        100
+      ],
+      "dpsDamageThreatMultiplier": [
+        0,
+        100
+      ],
+      "healingThreatMultiplier": [
+        0,
+        100
+      ],
+      "normalMonsterDamage": [
+        0,
+        10000
+      ],
+      "bruiserMonsterDamage": [
+        0,
+        10000
+      ],
+      "casterMonsterDamage": [
+        0,
+        10000
+      ],
+      "rangedMonsterDamage": [
+        0,
+        10000
+      ],
+      "bossMonsterDamage": [
+        0,
+        10000
+      ],
+      "challengeMonsterDamage": [
+        0,
+        10000
+      ],
+      "waveHealthBase": [
+        1,
+        100000
+      ],
+      "waveHealthPerWave": [
+        0,
+        10000
+      ],
+      "bossHealthMultiplier": [
+        1,
+        100
+      ],
+      "challengeHealthBase": [
+        1,
+        100000
+      ],
+      "basicHealthMultiplier": [
+        0.1,
+        20
+      ],
+      "bruiserHealthMultiplier": [
+        0.1,
+        20
+      ],
+      "casterHealthMultiplier": [
+        0.1,
+        20
+      ],
+      "rangedHealthMultiplier": [
+        0.1,
+        20
+      ]
+    }
+  },
+  "skillshot": {
+    "defaults": {
+      "speed": 1600,
+      "radius": 24,
+      "maxRange": 1200,
+      "lifetimeSeconds": 3,
+      "damage": 70,
+      "warningSeconds": 0.35,
+      "manaCost": 0,
+      "energyCost": 0,
+      "cooldownSeconds": 0,
+      "castRange": 1200,
+      "canCrit": true,
+      "hitLimit": 1,
+      "reflectionLimit": 2,
+      "hitSameTargetAgain": false,
+      "abilityName": "",
+      "worldCollision": "stop",
+      "playerCollision": "stop",
+      "monsterCollision": "stop",
+      "protectionCollision": "stop",
+      "wallCollision": "stop",
+      "visualStyle": "arcane",
+      "color": [
+        0.3,
+        0.7,
+        0.85,
+        0.85
+      ]
+    },
+    "bounds": {
+      "speed": [
+        50,
+        10000
+      ],
+      "radius": [
+        1,
+        200
+      ],
+      "maxRange": [
+        50,
+        5000
+      ],
+      "lifetimeSeconds": [
+        0.05,
+        30
+      ],
+      "damage": [
+        0,
+        10000
+      ],
+      "warningSeconds": [
+        0,
+        10
+      ],
+      "manaCost": [
+        0,
+        10000
+      ],
+      "energyCost": [
+        0,
+        100
+      ],
+      "cooldownSeconds": [
+        0,
+        300
+      ],
+      "castRange": [
+        0,
+        5000
+      ],
+      "hitLimit": [
+        1,
+        32
+      ],
+      "reflectionLimit": [
+        0,
+        8
+      ]
+    }
+  },
+  "construct": {
+    "defaults": {
+      "kind": "wall",
+      "maxHealth": 250,
+      "lifetimeSeconds": 8,
+      "width": 400,
+      "depth": 60,
+      "height": 240,
+      "manaCost": 60,
+      "energyCost": 0,
+      "cooldownSeconds": 22,
+      "castRange": 750,
+      "blockMovement": true,
+      "blockProjectiles": true,
+      "destructible": true,
+      "blockFriendly": true,
+      "protectionResponse": "stop",
+      "color": [
+        0.28,
+        0.42,
+        0.38,
+        0.85
+      ]
+    },
+    "bounds": {
+      "maxHealth": [
+        1,
+        100000
+      ],
+      "lifetimeSeconds": [
+        0.1,
+        120
+      ],
+      "width": [
+        20,
+        2000
+      ],
+      "depth": [
+        10,
+        1000
+      ],
+      "height": [
+        20,
+        2000
+      ],
+      "manaCost": [
+        0,
+        10000
+      ],
+      "energyCost": [
+        0,
+        100
+      ],
+      "cooldownSeconds": [
+        0,
+        300
+      ],
+      "castRange": [
+        0,
+        5000
+      ]
+    }
+  },
+  "summon": {
+    "defaults": {
+      "count": 1,
+      "health": 400,
+      "damage": 22,
+      "durationSeconds": 30,
+      "manaCost": 45,
+      "energyCost": 0,
+      "cooldownSeconds": 20,
+      "castRange": 600,
+      "commandable": true,
+      "leashRange": 1600,
+      "moveSpeed": 430,
+      "attackRange": 180,
+      "archetypeVisual": 0
+    },
+    "bounds": {
+      "count": [
+        1,
+        3
+      ],
+      "health": [
+        1,
+        100000
+      ],
+      "damage": [
+        0,
+        10000
+      ],
+      "durationSeconds": [
+        0.1,
+        300
+      ],
+      "manaCost": [
+        0,
+        10000
+      ],
+      "energyCost": [
+        0,
+        100
+      ],
+      "cooldownSeconds": [
+        0,
+        300
+      ],
+      "castRange": [
+        0,
+        3000
+      ],
+      "leashRange": [
+        100,
+        5000
+      ],
+      "moveSpeed": [
+        50,
+        1500
+      ],
+      "attackRange": [
+        50,
+        2000
+      ],
+      "archetypeVisual": [
+        0,
+        3
+      ]
+    }
+  },
+  "roleSkill": {
+    "defaults": {
+      "manaCost": 0,
+      "energyCost": 30,
+      "cooldownSeconds": 20,
+      "castRange": 0,
+      "radius": 0,
+      "durationSeconds": 0,
+      "warningSeconds": 0,
+      "flatPower": 0,
+      "primaryScaling": 0,
+      "maxHealthFraction": 0.18
+    },
+    "bounds": {
+      "manaCost": [
+        0,
+        10000
+      ],
+      "energyCost": [
+        0,
+        100
+      ],
+      "cooldownSeconds": [
+        1,
+        300
+      ],
+      "castRange": [
+        0,
+        3000
+      ],
+      "radius": [
+        0,
+        1200
+      ],
+      "durationSeconds": [
+        0,
+        30
+      ],
+      "warningSeconds": [
+        0,
+        5
+      ],
+      "flatPower": [
+        0,
+        10000
+      ],
+      "primaryScaling": [
+        0,
+        20
+      ],
+      "maxHealthFraction": [
+        0,
+        1
+      ]
+    }
+  }
+}

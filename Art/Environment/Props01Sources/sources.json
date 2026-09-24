@@ -1,0 +1,130 @@
+[
+  {
+    "name": "SM_CooperedBarrel",
+    "source": "C:\\Users\\Eric\\.codex\\.chatgpt-projects\\g-p-6a5429b0ab4c81918c1025efbf9d6953\\CiresTeamSurvival\\Art\\Environment\\Props01Sources\\SM_CooperedBarrel.obj",
+    "vertices": 1080,
+    "triangles": 1892,
+    "boundsMin": [
+      -41.996683856560274,
+      -41.996683856560274,
+      0
+    ],
+    "boundsMax": [
+      41.996683856560274,
+      41.996683856560274,
+      95.0
+    ]
+  },
+  {
+    "name": "SM_BracedSupplyCrate",
+    "source": "C:\\Users\\Eric\\.codex\\.chatgpt-projects\\g-p-6a5429b0ab4c81918c1025efbf9d6953\\CiresTeamSurvival\\Art\\Environment\\Props01Sources\\SM_BracedSupplyCrate.obj",
+    "vertices": 1488,
+    "triangles": 2768,
+    "boundsMin": [
+      -59.5,
+      -65.0,
+      1.5
+    ],
+    "boundsMax": [
+      59.5,
+      65.0,
+      103.5
+    ]
+  },
+  {
+    "name": "SM_ForgedBrazier",
+    "source": "C:\\Users\\Eric\\.codex\\.chatgpt-projects\\g-p-6a5429b0ab4c81918c1025efbf9d6953\\CiresTeamSurvival\\Art\\Environment\\Props01Sources\\SM_ForgedBrazier.obj",
+    "vertices": 650,
+    "triangles": 1196,
+    "boundsMin": [
+      -64.0,
+      -64.0,
+      -1.0585293868505303
+    ],
+    "boundsMax": [
+      64.0,
+      64.0,
+      159
+    ]
+  },
+  {
+    "name": "SM_VoussoirArch",
+    "source": "C:\\Users\\Eric\\.codex\\.chatgpt-projects\\g-p-6a5429b0ab4c81918c1025efbf9d6953\\CiresTeamSurvival\\Art\\Environment\\Props01Sources\\SM_VoussoirArch.obj",
+    "vertices": 648,
+    "triangles": 1176,
+    "boundsMin": [
+      -314.0,
+      -90.0,
+      0.0
+    ],
+    "boundsMax": [
+      314.0,
+      86.0,
+      639.0
+    ]
+  },
+  {
+    "name": "SM_CourtyardStair",
+    "source": "C:\\Users\\Eric\\.codex\\.chatgpt-projects\\g-p-6a5429b0ab4c81918c1025efbf9d6953\\CiresTeamSurvival\\Art\\Environment\\Props01Sources\\SM_CourtyardStair.obj",
+    "vertices": 544,
+    "triangles": 1016,
+    "boundsMin": [
+      -29.0,
+      -217.0,
+      0.0
+    ],
+    "boundsMax": [
+      336.0,
+      217.0,
+      274.46611854025497
+    ]
+  },
+  {
+    "name": "SM_GravewoodOak",
+    "source": "C:\\Users\\Eric\\.codex\\.chatgpt-projects\\g-p-6a5429b0ab4c81918c1025efbf9d6953\\CiresTeamSurvival\\Art\\Environment\\Props01Sources\\SM_GravewoodOak.obj",
+    "vertices": 648,
+    "triangles": 1140,
+    "boundsMin": [
+      -180.8466982179714,
+      -206.62189842106656,
+      -3.1697915802050827
+    ],
+    "boundsMax": [
+      222.44269185455744,
+      129.85160081298042,
+      553.5169625183528
+    ]
+  },
+  {
+    "name": "SM_OathObelisk",
+    "source": "C:\\Users\\Eric\\.codex\\.chatgpt-projects\\g-p-6a5429b0ab4c81918c1025efbf9d6953\\CiresTeamSurvival\\Art\\Environment\\Props01Sources\\SM_OathObelisk.obj",
+    "vertices": 233,
+    "triangles": 438,
+    "boundsMin": [
+      -87.5,
+      -87.5,
+      0.0
+    ],
+    "boundsMax": [
+      87.5,
+      87.5,
+      409
+    ]
+  },
+  {
+    "name": "SM_WatchLantern",
+    "source": "C:\\Users\\Eric\\.codex\\.chatgpt-projects\\g-p-6a5429b0ab4c81918c1025efbf9d6953\\CiresTeamSurvival\\Art\\Environment\\Props01Sources\\SM_WatchLantern.obj",
+    "vertices": 189,
+    "triangles": 342,
+    "boundsMin": [
+      -39.0,
+      -39.0,
+      0.0
+    ],
+    "boundsMax": [
+      39.0,
+      39.0,
+      345
+    ]
+  }
+]

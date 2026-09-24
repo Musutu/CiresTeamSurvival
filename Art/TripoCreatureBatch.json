@@ -1,0 +1,426 @@
+{
+  "schemaVersion": 1,
+  "project": "Cire Team Survival",
+  "provider": "Tripo Studio visible UI",
+  "targetEngine": "Unreal 5.8.3",
+  "status": "six_humanoid_creatures_integrated_four_custom_forms_saved_motion_pending",
+  "browserTabId": "1596624453",
+  "qualityTarget": "Realistic grounded dark fantasy PBR; approximately 10000 quads / 20000 triangles after retopology",
+  "notes": "All ten cloud models are saved in Unreal. Six humanoid bodies have verified prototype motion; four custom forms require their own motion pipeline. No additional Tripo generation during integration.",
+  "assets": [
+    {
+      "id": "bear",
+      "uuid": "e668b51d-4d41-41d4-bed8-58d06768e10c",
+      "url": "https://studio.tripo3d.ai/workspace/generate/e668b51d-4d41-41d4-bed8-58d06768e10c",
+      "prompt": "Original Gravewood Bear tank for Cire Team Survival, one massive realistic adult brown bear, grounded dark fantasy game character. Full body, anatomically convincing quadruped, broad muscular shoulders, thick coarse dark umber fur with grey scars, restrained moss and a few worn leather bands, small amber eyes, formidable heavy paws and natural claws. Neutral rig-friendly standing pose with four legs slightly spread and clearly separated, head facing forward, mouth closed. No rider, no weapons, no antlers, no giant armor spikes, no cartoon proportions. Realistic PBR fur and leather material detail, clean continuous anatomy suitable for deformation, distinct silhouette from isometric distance. Isolated subject, no ground, no pedestal, no environment, no text, no particles or floating effects. Unreal Engine game-ready creature direction, realistic cinematic dark-fantasy quality.",
+      "generation": {
+        "status": "completed",
+        "costCredits": 55,
+        "tPose": false,
+        "freeRetriesUsed": 1,
+        "freeRetryCredits": 0
+      },
+      "retopology": {
+        "status": "completed",
+        "costCredits": 40,
+        "topology": "quad",
+        "targetPolygons": 10000,
+        "actualFaces": 10010,
+        "actualVertices": 9232
+      },
+      "rigging": {
+        "status": "completed",
+        "requirement": "quadruped only if supported",
+        "preset": "Other (quadruped-compatible)",
+        "costCredits": 20,
+        "verification": "Other radio selected before request. Completed UI exposes animation link and skeleton. Front and side skeleton view shows spine and four leg chains; deformation animation not yet validated.",
+        "postRigFaces": 10007
+      },
+      "importedToUnreal": false,
+      "visualReview": "Free retry1 corrected stance. Front and rotated side verified four separate bear legs, natural heavy bear body, fur, claws and sparse leather bands. No rider or held prop.",
+      "bridgeImport": {
+        "status": "queued_for_root_editor",
+        "requestedByRoot": true
+      },
+      "runtimeIntegration": {
+        "status": "saved_import_custom_motion_pending",
+        "productionAccepted": false
+      }
+    },
+    {
+      "id": "ether_golem_tank",
+      "uuid": "f83854ff-3a85-459c-be5c-060c0c46d940",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f83854ff-3a85-459c-be5c-060c0c46d940",
+      "prompt": "Original Ether Golem GRANITE TANK for Cire Team Survival. One towering bipedal humanoid constructed from heavy weathered granite boulders, broad shoulders, thick limbs, two articulated hands with five simple fingers, two sturdy feet, small ancient stone face. Grounded realistic dark fantasy, dark grey rock with restrained cool ether light only in deep joints, no giant crystals. Full body front view in clean symmetrical T-pose, straight arms horizontal, separated fingers, legs slightly spread, empty hands. Clear shoulder elbow wrist hip knee ankle articulation for humanoid rigging. PBR stone surface with believable erosion and mineral seams, strong readable silhouette, continuous deformation-friendly body. No weapon, no shield, no base, no ground, no environment, no floating stones, no text, no particles. Isolated character with realistic game asset detail, designed for Unreal Engine. Thick torso protective tank silhouette.",
+      "generation": {
+        "status": "completed",
+        "costCredits": 55,
+        "tPose": true
+      },
+      "retopology": {
+        "status": "completed",
+        "costCredits": 40,
+        "topology": "quad",
+        "targetPolygons": 10000,
+        "actualFaces": 10633,
+        "actualVertices": 9593
+      },
+      "rigging": {
+        "status": "completed",
+        "requirement": "humanoid if supported",
+        "preset": "UE5 Mannequin",
+        "costCredits": 20,
+        "verification": "Selected UE5 Mannequin before submission; afterward UI exposes Rigged models can be used for animation and Retry20."
+      },
+      "importedToUnreal": false,
+      "visualReview": "Viewed full frontal textured model: articulated rock biped in T-pose, empty hands, strong granite silhouette; suitable draft for retopology and rig test.",
+      "bridgeImport": {
+        "status": "queued_for_root_editor",
+        "requestedByRoot": true
+      },
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "ether_golem_tank"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/ether_golem_tank/SK_ether_golem_tank.SK_ether_golem_tank",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      },
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains"
+    },
+    {
+      "id": "ether_golem_support",
+      "uuid": "d99eb76d-3b1d-4c48-a7ba-21944f2e0e53",
+      "url": "https://studio.tripo3d.ai/workspace/generate/d99eb76d-3b1d-4c48-a7ba-21944f2e0e53",
+      "prompt": "Original Ether Golem VERDANT HEALER for Cire Team Survival. One tall bipedal humanoid made of weathered grey rock clothed naturally in rich green moss, restrained small ferns and living roots. Graceful supportive silhouette, broad stable feet, articulated arms and five simple stone fingers. Small calm ancient stone face with subtle green ether eyes. Realistic grounded dark fantasy PBR stone, moss and bark, not cartoon. Full body clean symmetrical T-pose, arms straight horizontal, hands empty, fingers and legs separated. Clear joints for humanoid rigging, continuous body, no detached floating stones. Green moss remains close to body without dense foliage hiding joints. No weapons, no base, no floor, no environment, no text, no halo, no particles. Unreal Engine game character quality, readable natural healing identity with tiny emerald light in cracks.",
+      "generation": {
+        "status": "completed",
+        "costCredits": 55,
+        "tPose": true
+      },
+      "retopology": {
+        "status": "completed",
+        "costCredits": 40,
+        "topology": "quad",
+        "targetPolygons": 10000,
+        "actualFaces": 10822,
+        "actualVertices": 9959
+      },
+      "rigging": {
+        "status": "completed",
+        "requirement": "humanoid if supported",
+        "preset": "UE5 Mannequin",
+        "costCredits": 20,
+        "verification": "Selected UE5 Mannequin before submission; afterward UI exposes Rigged models can be used for animation and Retry20."
+      },
+      "importedToUnreal": false,
+      "visualReview": "Viewed textured front: slender articulated stone healer with moss and restrained foliage, empty hands and separated limbs.",
+      "bridgeImport": {
+        "status": "queued_for_root_editor",
+        "requestedByRoot": true
+      },
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "ether_golem_support"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/ether_golem_support/SK_ether_golem_support.SK_ether_golem_support",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      },
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains"
+    },
+    {
+      "id": "ether_golem_bruiser",
+      "uuid": "310d8260-a3ef-4430-a884-01520ca0be96",
+      "url": "https://studio.tripo3d.ai/workspace/generate/310d8260-a3ef-4430-a884-01520ca0be96",
+      "prompt": "Original Ether Golem FELFIRE BRUISER for Cire Team Survival. One powerful bipedal humanoid built of cracked dark volcanic rock, athletic broad shoulders, heavy fists, articulated five-finger stone hands and sturdy feet. Grounded realistic dark fantasy. Green fel energy shows as modest emissive veins inside deep cracks and short solid flame-shaped mineral ridges on upper back only; actual moving fire effects will be added in Unreal, no floating flames or smoke. Full body symmetrical T-pose, arms horizontal, empty hands, separated fingers and legs, clean continuous rig-friendly anatomy with clear joints. Realistic PBR basalt roughness, charred stone and subtle green glow, menacing readable face. No weapon, no base, no ground, no environment, no text, no cartoon proportions, no disconnected pieces. Cohesive game-ready creature design with stronger bruiser silhouette than healer golem.",
+      "generation": {
+        "status": "completed",
+        "costCredits": 55,
+        "tPose": true
+      },
+      "retopology": {
+        "status": "completed",
+        "costCredits": 40,
+        "topology": "quad",
+        "targetPolygons": 10000,
+        "actualFaces": 10752,
+        "actualVertices": 9659
+      },
+      "rigging": {
+        "status": "completed",
+        "requirement": "humanoid if supported",
+        "preset": "UE5 Mannequin",
+        "costCredits": 20,
+        "verification": "Selected UE5 Mannequin before submission; afterward UI exposes Rigged models can be used for animation and Retry20."
+      },
+      "importedToUnreal": false,
+      "visualReview": "Viewed textured front: broad volcanic-rock bruiser with green energy seams; clear limbs and empty hands; moving flames remain a UE effect task.",
+      "bridgeImport": {
+        "status": "queued_for_root_editor",
+        "requestedByRoot": true
+      },
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "ether_golem_bruiser"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/ether_golem_bruiser/SK_ether_golem_bruiser.SK_ether_golem_bruiser",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      },
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains"
+    },
+    {
+      "id": "totemic_behemoth",
+      "uuid": "9faeed7c-5fbd-4212-9484-1c0a549ae887",
+      "url": "https://studio.tripo3d.ai/workspace/generate/9faeed7c-5fbd-4212-9484-1c0a549ae887",
+      "prompt": "Original Totemic Behemoth for Cire Team Survival. One massive BIPEDAL humanoid elephant-rhinoceros hybrid tank, realistic dark fantasy anatomy: elephant head with short hanging trunk and modest tusks, a single blunt rhinoceros nasal horn, thick grey wrinkled hide, broad muscular humanoid torso, two arms with articulated five-finger gripping hands and two sturdy legs. Worn leather and carved stone ritual armor kept close to body. Full body symmetrical T-pose, horizontal arms, empty hands, separated fingers and feet. Designed to hold a massive totem supplied later as a SEPARATE prop; generate NO totem or weapon. Clear humanoid shoulder elbow hip knee joints for rigging. Grounded PBR hide and stone, imposing but anatomically coherent, not cartoon. No pedestal, no ground, no environment, no floating effects, no text. Unreal game asset, clean silhouette and connected geometry.",
+      "generation": {
+        "status": "completed",
+        "costCredits": 55,
+        "tPose": true
+      },
+      "retopology": {
+        "status": "completed",
+        "costCredits": 40,
+        "topology": "quad",
+        "targetPolygons": 10000,
+        "actualFaces": 11046,
+        "actualVertices": 10235
+      },
+      "rigging": {
+        "status": "completed",
+        "requirement": "humanoid if supported",
+        "preset": "UE5 Mannequin",
+        "costCredits": 20,
+        "verification": "Selected UE5 Mannequin before submission; afterward UI exposes Rigged models can be used for animation and Retry20."
+      },
+      "importedToUnreal": false,
+      "visualReview": "Viewed textured front: coherent elephant/rhino humanoid with two legs, two empty gripping hands, trunk/tusks/horn and grounded ritual armor. Totem remains a separate prop.",
+      "bridgeImport": {
+        "status": "queued_for_root_editor",
+        "requestedByRoot": true
+      },
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "totemic_behemoth"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/totemic_behemoth/SK_totemic_behemoth.SK_totemic_behemoth",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      },
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains"
+    },
+    {
+      "id": "troll_berserker",
+      "uuid": "9f419dd0-b9e0-414f-bafe-c4411db191b3",
+      "url": "https://studio.tripo3d.ai/workspace/generate/9f419dd0-b9e0-414f-bafe-c4411db191b3",
+      "prompt": "Original Red-Moon Troll Berserker for Cire Team Survival, one realistic adult male humanoid troll shared between melee and throwing-axe variants. Tall lean athletic build, long but believable muscular arms, slate blue-grey leathery skin, restrained lower tusks, strong brow, pointed ears, short dark braided hair. Grounded dark fantasy worn leather harness, red ritual cloth and practical bracers; opaque clothing fully covers pelvis and torso. Full body front symmetrical T-pose, arms horizontal, five fingers clearly separated, legs apart, EMPTY HANDS. Dual axes will be separate props later. Clean humanoid joints for Unreal rigging, realistic PBR skin pores, leather and cloth, no exaggerated cartoon hands or head. No weapons, no base, no ground, no environment, no text, no particles, no disconnected ornaments. Readable menacing but anatomically coherent game character.",
+      "generation": {
+        "status": "completed",
+        "costCredits": 55,
+        "tPose": true
+      },
+      "retopology": {
+        "status": "completed",
+        "costCredits": 40,
+        "topology": "quad",
+        "targetPolygons": 10000,
+        "actualFaces": 10092,
+        "actualVertices": 9419
+      },
+      "rigging": {
+        "status": "completed",
+        "requirement": "humanoid if supported",
+        "preset": "UE5 Mannequin",
+        "costCredits": 20,
+        "verification": "Selected UE5 Mannequin before submission; afterward UI exposes Rigged models can be used for animation and Retry20."
+      },
+      "importedToUnreal": false,
+      "visualReview": "Viewed textured front: blue-grey athletic humanoid in T-pose, hands empty, distinct torso/limbs and practical red/leather equipment; shared melee/ranged body draft.",
+      "bridgeImport": {
+        "status": "queued_for_root_editor",
+        "requestedByRoot": true
+      },
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "troll_berserker_melee",
+          "troll_berserker_ranged"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/troll_berserker_melee/SK_troll_berserker_melee.SK_troll_berserker_melee",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      },
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains"
+    },
+    {
+      "id": "dryad",
+      "uuid": "8b756218-9847-4b2f-a36e-936c2dd9fcdc",
+      "url": "https://studio.tripo3d.ai/workspace/generate/8b756218-9847-4b2f-a36e-936c2dd9fcdc",
+      "prompt": "Original Thornweave Dryad for Cire Team Survival. One adult feminine humanoid woodland spirit with realistic anatomy, slender athletic build, bark-textured skin, calm expressive wooden face, a small thorn crown and restrained moss-green leaves. Modest fitted opaque bark armor covers chest, abdomen, hips and upper thighs, natural carved wood bracers and greaves. Grounded dark fantasy realism, no cartoon proportions. Full body front symmetrical T-pose, horizontal arms, EMPTY HANDS, five separated fingers and separated legs, clear shoulder elbow hip knee joints suitable for humanoid rigging. Realistic PBR bark grain, weathered wood and subtle leaf veins. No staff or weapon, no giant branches obscuring limbs, no base, no environment, no ground, no text, no floating leaves or particles. Continuous connected anatomy and a readable elegant healing character silhouette.",
+      "generation": {
+        "status": "completed",
+        "costCredits": 55,
+        "tPose": true
+      },
+      "retopology": {
+        "status": "completed",
+        "costCredits": 40,
+        "topology": "quad",
+        "targetPolygons": 10000,
+        "actualFaces": 10429,
+        "actualVertices": 9564
+      },
+      "rigging": {
+        "status": "completed",
+        "requirement": "humanoid if supported",
+        "preset": "UE5 Mannequin",
+        "costCredits": 20,
+        "verification": "Selected UE5 Mannequin before submission; afterward UI exposes Rigged models can be used for animation and Retry20."
+      },
+      "importedToUnreal": false,
+      "visualReview": "Viewed textured front: coherent bark humanoid in T-pose, modest opaque wood coverage, restrained leaves and clear articulated limbs.",
+      "bridgeImport": {
+        "status": "queued_for_root_editor",
+        "requestedByRoot": true
+      },
+      "runtimeIntegration": {
+        "batch": "Batch01",
+        "status": "verified_prototype",
+        "profileIds": [
+          "dryad"
+        ],
+        "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/dryad/SK_dryad.SK_dryad",
+        "report": "Saved/TripoBatchIntegration/Batch01.json",
+        "visualReview": "Docs/Batch01-VisualReview.md",
+        "productionAccepted": false
+      },
+      "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains"
+    },
+    {
+      "id": "whisp",
+      "uuid": "e77dcbb2-7c7d-4f24-bf48-84b470a19814",
+      "url": "https://studio.tripo3d.ai/workspace/generate/e77dcbb2-7c7d-4f24-bf48-84b470a19814",
+      "prompt": "Original Lantern Whisp support spirit for Cire Team Survival. A single small floating woodland spirit as a solid game mesh: smooth irregular pale jade core encircled by three attached flowing ribbon-like tendrils, a subtle calm mask-like suggestion of a face carved into the core, no human body, no arms or legs. Grounded dark fantasy material design: weathered translucent-looking stone represented with opaque PBR jade, ivory bone accents, restrained pale-green emissive cracks only. Clean connected continuous geometry, tendrils separated and not self-intersecting, neutral balanced pose suitable for later custom skeletal deformation or procedural motion in Unreal. No humanoid T-pose. No disconnected particles, no actual transparent fog, no pedestal, no ground, no scene, no text, no cartoon eyes. Readable graceful lantern-spirit silhouette with modest glow; runtime aura will be added separately.",
+      "generation": {
+        "status": "completed",
+        "costCredits": 55,
+        "tPose": false
+      },
+      "retopology": {
+        "status": "completed",
+        "costCredits": 40,
+        "topology": "quad",
+        "targetPolygons": 10000,
+        "actualFaces": 10334,
+        "actualVertices": 9559
+      },
+      "rigging": {
+        "status": "custom_rig_required_not_submitted",
+        "requirement": "custom Unreal motion; do not force humanoid rig"
+      },
+      "importedToUnreal": false,
+      "visualReview": "Viewed textured front: solid pale jade/ivory spirit-mask core with attached flowing tendrils; no humanoid limbs. Custom procedural motion or custom skeleton required.",
+      "bridgeImport": {
+        "status": "queued_for_root_editor",
+        "requestedByRoot": true
+      },
+      "runtimeIntegration": {
+        "status": "saved_import_custom_motion_pending",
+        "productionAccepted": false
+      }
+    },
+    {
+      "id": "evergrove_centaur",
+      "uuid": "41427c68-a558-4b7a-95a7-10c7b677118d",
+      "url": "https://studio.tripo3d.ai/workspace/generate/41427c68-a558-4b7a-95a7-10c7b677118d",
+      "prompt": "Original Evergrove Centaur healer for Cire Team Survival. One realistic adult centaur, humanoid upper torso joined naturally to a strong deer-brown horse body with EXACTLY FOUR horse legs and two human arms. Calm mature face, small restrained antler crown, long dark hair tied back. Modest fitted opaque woodland leather armor covers chest and waist, practical horse barding kept light and close to body. Grounded realistic dark fantasy PBR leather, fur and weathered wood. Neutral rig-friendly standing pose: four horse legs slightly spread and clearly separated, human arms extended horizontally, empty hands with separated fingers, tail straight behind, no self-intersections. Anatomically coherent centaur proportions, readable full-body silhouette. No javelin or staff, no rider, no extra limbs, no pedestal, no ground, no environment, no text, no particles. Custom centaur skeleton will be authored in Unreal; do not turn into a two-legged humanoid.",
+      "generation": {
+        "status": "completed",
+        "costCredits": 55,
+        "tPose": false
+      },
+      "retopology": {
+        "status": "completed",
+        "costCredits": 40,
+        "topology": "quad",
+        "targetPolygons": 10000,
+        "actualFaces": 10389,
+        "actualVertices": 9624
+      },
+      "rigging": {
+        "status": "custom_rig_required_not_submitted",
+        "requirement": "custom centaur unless explicitly supported"
+      },
+      "importedToUnreal": false,
+      "visualReview": "Viewed front and rotated side: four distinct horse legs plus two humanoid arms, horse-body depth and tail verified. Antlered equine face. Custom centaur skeleton required; standard biped rig inappropriate.",
+      "bridgeImport": {
+        "status": "queued_for_root_editor",
+        "requestedByRoot": true
+      },
+      "runtimeIntegration": {
+        "status": "saved_import_custom_motion_pending",
+        "productionAccepted": false
+      }
+    },
+    {
+      "id": "drakish_dragon",
+      "uuid": "21876ecd-abc5-4f33-81fa-4fe12351163a",
+      "url": "https://studio.tripo3d.ai/workspace/generate/21876ecd-abc5-4f33-81fa-4fe12351163a",
+      "prompt": "Original Drakish Dragon transformation for Cire Team Survival. One realistic mature western dragon, full body, four powerful reptilian legs and two separate leathery wings, long neck, heavy tail, restrained backward horns. Grounded dark fantasy anatomy, charcoal bronze scales with subtle ember seams, weathered wing membranes, formidable but natural proportions. Neutral rig-friendly standing pose: four legs separated, wings extended sideways with clear space from body and legs, tail straight behind, head forward, mouth closed. Coherent shoulder and wing-root anatomy, connected continuous mesh, clear deformation joints. Realistic PBR scales and leather, no armor or rider. Intended short tank transformation with two claw cleaves and weak ranged fireball; NO baked fire breath. No pedestal, no floor, no environment, no text, no particles, no huge crystal spikes, no cartoon. Custom dragon skeleton if standard rigging does not support this six-limb anatomy.",
+      "generation": {
+        "status": "completed",
+        "costCredits": 55,
+        "tPose": false
+      },
+      "retopology": {
+        "status": "completed",
+        "costCredits": 40,
+        "topology": "quad",
+        "targetPolygons": 10000,
+        "actualFaces": 10334,
+        "actualVertices": 9227
+      },
+      "rigging": {
+        "status": "custom_rig_required_not_submitted",
+        "requirement": "custom six-limb dragon unless explicitly supported"
+      },
+      "importedToUnreal": false,
+      "visualReview": "Viewed textured front: dark bronze/charcoal dragon with separate leathery wings, two forelimbs and two hindlimbs. Generated stance is upright rather than requested four-foot stance; retained as a reviewed transformation draft with this limitation, not an approved production animal rig.",
+      "bridgeImport": {
+        "status": "queued_for_root_editor",
+        "requestedByRoot": true
+      },
+      "runtimeIntegration": {
+        "status": "saved_import_custom_motion_pending",
+        "productionAccepted": false
+      }
+    }
+  ],
+  "remaining": [],
+  "processingTabId": "1596624454",
+  "submittedCredits": 1090,
+  "riggedBodies": 7,
+  "customRigBodies": [
+    "whisp",
+    "evergrove_centaur",
+    "drakish_dragon"
+  ],
+  "exportStatus": "No FBX downloads requested; root will use DCC Bridge after editor rebuild/tests.",
+  "lastIntegrationUpdateUtc": "2026-09-24T01:00:09.906933+00:00"
+}

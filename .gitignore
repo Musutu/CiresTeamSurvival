@@ -1,0 +1,27 @@
+# Unreal build output and caches (any depth: game, plugins, builder projects)
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+.vs/
+.vscode/
+*.sln
+*.pdb
+*.ilk
+*.exp
+__pycache__/
+*.pyc
+
+# Native rules test build output
+Tests/build/
+
+# Compiler objects in source trees (art .obj meshes under Art/ are kept)
+Source/**/*.obj
+Source/**/*.lib
+
+# Browser download scratch
+Art/Downloads/
+
+# Local-only
+*.log
+.env

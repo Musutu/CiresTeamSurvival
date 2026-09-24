@@ -1,0 +1,44 @@
+newmtl M_ArmoryWood
+Kd 0.15000 0.05200 0.01900
+Pr 0.7800
+Pm 0.0000
+
+newmtl M_ArmoryLeather
+Kd 0.03800 0.02400 0.02100
+Pr 0.8600
+Pm 0.0000
+
+newmtl M_ArmorySteel
+Kd 0.32000 0.39000 0.43000
+Pr 0.3000
+Pm 0.8500
+
+newmtl M_ArmoryBrass
+Kd 0.43000 0.26000 0.06700
+Pr 0.3600
+Pm 0.7200
+
+newmtl M_ArmoryStone
+Kd 0.14000 0.18000 0.16000
+Pr 0.9000
+Pm 0.0000
+
+newmtl M_ArmoryViolet
+Kd 0.23000 0.06500 0.48000
+Pr 0.2800
+Pm 0.1500
+
+newmtl M_ArmoryEmber
+Kd 0.70000 0.23000 0.04500
+Pr 0.3100
+Pm 0.1000
+
+newmtl M_ArmoryGrove
+Kd 0.08500 0.32000 0.09500
+Pr 0.5000
+Pm 0.0000
+
+newmtl M_ArmoryLight
+Kd 0.68000 0.52000 0.24000
+Pr 0.3500
+Pm 0.1000

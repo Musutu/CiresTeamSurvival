@@ -1,0 +1,36 @@
+{
+  "tool": "Built-in image_gen",
+  "generatedDate": "2026-09-23",
+  "assets": [
+    {
+      "file": "T_BasaltRoad.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless tileable albedo texture for a realistic dark fantasy Unreal Engine game road, square 2048x2048. Orthographic top-down scan of many small worn charcoal basalt cobblestones, uneven rectangular cobbles in roughly staggered rows, muted neutral medium grey and warm grey variations, tight dark mortar joints, traces of dry soil and sparse faded moss in joints. Flat diffuse color only, no directional illumination, no baked cast shadows, no specular highlights, no perspective, no horizon, no vignette, no text, no objects. Edge-to-edge uniform repeatable stone pattern, seamless matching edges. Physically realistic microtexture, readable restrained detail, not cartoonish. Entire image is the road material."
+    },
+    {
+      "file": "T_AshenMasonry.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless tileable albedo texture for realistic dark fantasy fortress masonry in Unreal Engine, square 2048x2048. Orthographic front-facing scan of weathered ash-grey medieval stone blocks of varied lengths in horizontal staggered courses, modest chisel marks, eroded corners, thin recessed muted mortar seams, sparse aged lichen, stone slightly lighter than charcoal. Flat diffuse color only, no directional illumination, no baked cast shadows, no specular highlights, no perspective, no horizon, no vignette, no text or decorative symbols. Seamless matching edges, edge-to-edge physically realistic stone microtexture. Entire image is the masonry material."
+    },
+    {
+      "file": "T_WornEarth.png",
+      "sourceTool": "Built-in image_gen",
+      "sourceGeneratedImage": "C:\\Users\\Eric\\.codex\\generated_images\\01a0ce2b-7f0b-7ad1-8c66-290b23debe12\\exec-4e43748f-761a-4458-9e24-423627c9d666.png",
+      "sha256": "1d83996aa40aac06c7bfbdb7ec74962ea8cd2ba9ce1be20f5d4b805f41ff1fef",
+      "width": 1254,
+      "height": 1254,
+      "promptAvailable": true,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless tileable albedo texture of a worn dark-fantasy courtyard ground for Unreal Engine. Square 2048x2048 orthographic top-down surface scan, neutral dry brown grey compacted soil with fine grit, very sparse small embedded gravel, subtle irregular worn patches and trace faded moss. Restrained natural irregular detail, no patterns or paving, no grass tufts, no large rocks or objects. Flat diffuse color only without directional illumination, baked shadows or highlights. No perspective, horizon, vignette, text or watermarks. Edge-to-edge seamless matching borders. Realistic grounded and muted, not cartoon. Entire image is the material.",
+      "requestedDimensions": [2048, 2048],
+      "observedDescription": "Top-down granular brown-grey worn earth with small pebbles and sparse muted moss. No painted road markings or directional stripe pattern.",
+      "processing": "Copied byte-for-byte from the generated image; no image edits.",
+      "intendedMaterial": "M_WornEarth",
+      "worldRepeatCm": 400,
+      "tint": [
+        0.96,
+        0.96,
+        0.96
+      ],
+      "reviewStatus": "Source visually inspected; Unreal material rebuild and in-engine tiling/lighting review pending."
+    }
+  ],
+  "notes": "Original generated albedo images. Material roughness/detail use Unreal shader nodes; these are prototype surfaces pending tiling and lighting review."
+}

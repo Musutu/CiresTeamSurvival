@@ -1,0 +1,1 @@
+{"FileVersion":3,"EngineAssociation":"5.8","Plugins":[{"Name":"Fab","Enabled":false},{"Name":"PythonScriptPlugin","Enabled":true},{"Name":"EditorScriptingUtilities","Enabled":true},{"Name":"IKRig","Enabled":true},{"Name":"ProceduralMeshComponent","Enabled":true}]}

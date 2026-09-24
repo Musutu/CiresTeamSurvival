@@ -1,0 +1,380 @@
+{
+  "artStatus": "original local prototype",
+  "units": "centimeters",
+  "grip": [
+    0,
+    0,
+    0
+  ],
+  "assets": {
+    "ArcaneStaff": {
+      "vertices": 378,
+      "faces": 244,
+      "triangles": 652,
+      "minimum": [
+        -4.0,
+        -13.36952138346502,
+        -68.0
+      ],
+      "maximum": [
+        4.0,
+        13.36952138346502,
+        105.2750208645242
+      ],
+      "sizeCm": [
+        8.0,
+        26.73904276693004,
+        173.2750208645242
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Light",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "RiftStaff": {
+      "vertices": 390,
+      "faces": 260,
+      "triangles": 668,
+      "minimum": [
+        -4.0,
+        -14.0,
+        -68.0
+      ],
+      "maximum": [
+        4.0,
+        14.0,
+        105.2750208645242
+      ],
+      "sizeCm": [
+        8.0,
+        28.0,
+        173.2750208645242
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Steel",
+        "Violet",
+        "Wood"
+      ]
+    },
+    "EmberStaff": {
+      "vertices": 384,
+      "faces": 252,
+      "triangles": 660,
+      "minimum": [
+        -4.0,
+        -13.36952138346502,
+        -68.0
+      ],
+      "maximum": [
+        4.0,
+        13.36952138346502,
+        117.0
+      ],
+      "sizeCm": [
+        8.0,
+        26.73904276693004,
+        185.0
+      ],
+      "materials": [
+        "Brass",
+        "Ember",
+        "Leather",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "GroveStaff": {
+      "vertices": 238,
+      "faces": 156,
+      "triangles": 420,
+      "minimum": [
+        -3.4875929755249726,
+        -11.5,
+        -68.0
+      ],
+      "maximum": [
+        4.489733016169259,
+        14.5,
+        114.0
+      ],
+      "sizeCm": [
+        7.977325991694231,
+        26.0,
+        182.0
+      ],
+      "materials": [
+        "Brass",
+        "Grove",
+        "Leather",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "LanternStaff": {
+      "vertices": 440,
+      "faces": 288,
+      "triangles": 756,
+      "minimum": [
+        -7.5,
+        -2.66295824562643,
+        -68.0
+      ],
+      "maximum": [
+        7.5,
+        29.5,
+        108.99223492590608
+      ],
+      "sizeCm": [
+        15.0,
+        32.16295824562643,
+        176.99223492590608
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Light",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "Dagger": {
+      "vertices": 104,
+      "faces": 69,
+      "triangles": 180,
+      "minimum": [
+        -6.5,
+        -2.5,
+        -14.0
+      ],
+      "maximum": [
+        6.5,
+        2.5,
+        33
+      ],
+      "sizeCm": [
+        13.0,
+        5.0,
+        47.0
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "WarAxe": {
+      "vertices": 116,
+      "faces": 72,
+      "triangles": 204,
+      "minimum": [
+        -12,
+        -3.0,
+        -14.0
+      ],
+      "maximum": [
+        26,
+        3.0,
+        60
+      ],
+      "sizeCm": [
+        38,
+        6.0,
+        74.0
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "ThrowingAxe": {
+      "vertices": 116,
+      "faces": 72,
+      "triangles": 204,
+      "minimum": [
+        -12,
+        -3.0,
+        -14.0
+      ],
+      "maximum": [
+        19,
+        3.0,
+        43
+      ],
+      "sizeCm": [
+        31,
+        6.0,
+        57.0
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "WarHammer": {
+      "vertices": 112,
+      "faces": 72,
+      "triangles": 192,
+      "minimum": [
+        -14.0,
+        -7.0,
+        -14.0
+      ],
+      "maximum": [
+        12.5,
+        7.0,
+        50.0
+      ],
+      "sizeCm": [
+        26.5,
+        14.0,
+        64.0
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "PickHammer": {
+      "vertices": 114,
+      "faces": 73,
+      "triangles": 196,
+      "minimum": [
+        -36,
+        -7.0,
+        -14.0
+      ],
+      "maximum": [
+        12.5,
+        7.0,
+        50.0
+      ],
+      "sizeCm": [
+        48.5,
+        14.0,
+        64.0
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "Flail": {
+      "vertices": 986,
+      "faces": 680,
+      "triangles": 1640,
+      "minimum": [
+        -3.7244443697168013,
+        -17.0,
+        -12.0
+      ],
+      "maximum": [
+        42.0,
+        17.0,
+        46.7244443697168
+      ],
+      "sizeCm": [
+        45.7244443697168,
+        34.0,
+        58.7244443697168
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "Totem": {
+      "vertices": 146,
+      "faces": 108,
+      "triangles": 240,
+      "minimum": [
+        -14.0,
+        -16.5,
+        -21.0
+      ],
+      "maximum": [
+        16.5,
+        16.5,
+        100.5
+      ],
+      "sizeCm": [
+        30.5,
+        33.0,
+        121.5
+      ],
+      "materials": [
+        "Brass",
+        "Grove",
+        "Leather",
+        "Stone",
+        "Wood"
+      ]
+    },
+    "Crossbow": {
+      "vertices": 460,
+      "faces": 304,
+      "triangles": 772,
+      "minimum": [
+        -35.0,
+        -38.39541825924223,
+        -12.772740661031255
+      ],
+      "maximum": [
+        35.9,
+        38.39541825924223,
+        8.869333243660162
+      ],
+      "sizeCm": [
+        70.9,
+        76.79083651848445,
+        21.642073904691415
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "Bolt": {
+      "vertices": 25,
+      "faces": 19,
+      "triangles": 38,
+      "minimum": [
+        -21.0,
+        -2,
+        -2.5
+      ],
+      "maximum": [
+        31,
+        2,
+        2.5
+      ],
+      "sizeCm": [
+        52.0,
+        4,
+        5.0
+      ],
+      "materials": [
+        "Leather",
+        "Steel",
+        "Wood"
+      ]
+    }
+  }
+}

@@ -1,0 +1,576 @@
+{
+  "schemaVersion": 1,
+  "batch": "Batch01",
+  "updatedUtc": "2026-09-24T00:08:08.602068+00:00",
+  "status": "observed_saved_imports_only_engine_preflight_and_visual_validation_pending",
+  "bindings": [
+    {
+      "uuid": "c0df1036-af63-4e54-a7dd-7aed817aa7fb",
+      "importFolder": "/Game/TripoModels/elderly_fantasy_character_3d_model",
+      "mesh": "/Game/TripoModels/elderly_fantasy_character_3d_model/elderly_fantasy_character_3d_model.elderly_fantasy_character_3d_model",
+      "profileIds": [
+        "keeper_of_light"
+      ],
+      "attackPose": "Scholar",
+      "heightCm": 178,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "1b19e4e3-1095-4397-afa8-3b732dc4ef88",
+      "importFolder": "/Game/TripoModels/dragon-armored_knight_3d_model",
+      "mesh": "/Game/TripoModels/dragon-armored_knight_3d_model/dragon-armored_knight_3d_model.dragon-armored_knight_3d_model",
+      "profileIds": [
+        "drakish_footman"
+      ],
+      "attackPose": "Warden",
+      "heightCm": 185,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "9bc8d454-0030-48af-80ae-e334cc1facb1",
+      "importFolder": "/Game/TripoModels/orc_warrior_3d_model",
+      "mesh": "/Game/TripoModels/orc_warrior_3d_model/orc_warrior_3d_model.orc_warrior_3d_model",
+      "profileIds": [
+        "orc_chieftain"
+      ],
+      "attackPose": "Warden",
+      "heightCm": 195,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "9faeed7c-5fbd-4212-9484-1c0a549ae887",
+      "importFolder": "/Game/TripoModels/elephant_rhinoceros_humanoid_3d_model",
+      "mesh": "/Game/TripoModels/elephant_rhinoceros_humanoid_3d_model/elephant_rhinoceros_humanoid_3d_model.elephant_rhinoceros_humanoid_3d_model",
+      "profileIds": [
+        "totemic_behemoth"
+      ],
+      "attackPose": "Warden",
+      "heightCm": 285,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "f83854ff-3a85-459c-be5c-060c0c46d940",
+      "importFolder": "/Game/TripoModels/granite_golem_3d_model",
+      "mesh": "/Game/TripoModels/granite_golem_3d_model/granite_golem_3d_model.granite_golem_3d_model",
+      "profileIds": [
+        "ether_golem_tank"
+      ],
+      "attackPose": "Warden",
+      "heightCm": 245,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "d99eb76d-3b1d-4c48-a7ba-21944f2e0e53",
+      "importFolder": "/Game/TripoModels/mossy_stone_golem_3d_model",
+      "mesh": "/Game/TripoModels/mossy_stone_golem_3d_model/mossy_stone_golem_3d_model.mossy_stone_golem_3d_model",
+      "profileIds": [
+        "ether_golem_support"
+      ],
+      "attackPose": "Scholar",
+      "heightCm": 235,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "310d8260-a3ef-4430-a884-01520ca0be96",
+      "importFolder": "/Game/TripoModels/stone_golem_3d_model",
+      "mesh": "/Game/TripoModels/stone_golem_3d_model/stone_golem_3d_model.stone_golem_3d_model",
+      "profileIds": [
+        "ether_golem_bruiser"
+      ],
+      "attackPose": "Warden",
+      "heightCm": 240,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "2ef5bf56-708e-436b-ac9a-1086e61faa41",
+      "importFolder": "/Game/TripoModels/armored_knight_3d_model",
+      "mesh": "/Game/TripoModels/armored_knight_3d_model/armored_knight_3d_model.armored_knight_3d_model",
+      "profileIds": [
+        "lancer"
+      ],
+      "attackPose": "Lancer",
+      "heightCm": 182,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "9f419dd0-b9e0-414f-bafe-c4411db191b3",
+      "importFolder": "/Game/TripoModels/troll_3d_model",
+      "mesh": "/Game/TripoModels/troll_3d_model/troll_3d_model.troll_3d_model",
+      "profileIds": [
+        "troll_berserker_melee",
+        "troll_berserker_ranged"
+      ],
+      "attackPose": "Warden",
+      "heightCm": 210,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "8b756218-9847-4b2f-a36e-936c2dd9fcdc",
+      "importFolder": "/Game/TripoModels/thornwood_dryad_3d_model",
+      "mesh": "/Game/TripoModels/thornwood_dryad_3d_model/thornwood_dryad_3d_model.thornwood_dryad_3d_model",
+      "profileIds": [
+        "dryad"
+      ],
+      "attackPose": "Scholar",
+      "heightCm": 180,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "eed717ba-2996-4179-85a3-2069f87a7ef3",
+      "importFolder": "/Game/TripoModels/medieval_knight_3d_model",
+      "mesh": "/Game/TripoModels/medieval_knight_3d_model/medieval_knight_3d_model.medieval_knight_3d_model",
+      "profileIds": [
+        "paladin_holy",
+        "paladin_righteous"
+      ],
+      "attackPose": "Warden",
+      "heightCm": 184,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "b2e30741-4c21-42e0-b8d5-3306df9b254b",
+      "importFolder": "/Game/TripoModels/dwarf_miner_3d_model",
+      "mesh": "/Game/TripoModels/dwarf_miner_3d_model/dwarf_miner_3d_model.dwarf_miner_3d_model",
+      "profileIds": [
+        "dwarf_miner"
+      ],
+      "attackPose": "Warden",
+      "heightCm": 132,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "01507c2b-fd74-4947-8ddf-8883c676beee",
+      "importFolder": "/Game/TripoModels/fantasy_battle_mage_3d_model",
+      "mesh": "/Game/TripoModels/fantasy_battle_mage_3d_model/fantasy_battle_mage_3d_model.fantasy_battle_mage_3d_model",
+      "profileIds": [
+        "wizard"
+      ],
+      "attackPose": "Scholar",
+      "heightCm": 178,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    },
+    {
+      "uuid": "39a83098-f50e-4c5f-a955-a5decdd99d4a",
+      "importFolder": "/Game/TripoModels/Cire_RiftSummoner",
+      "mesh": "/Game/TripoModels/Cire_RiftSummoner/Cire_RiftSummoner.Cire_RiftSummoner",
+      "profileIds": [
+        "summoner"
+      ],
+      "attackPose": "Scholar",
+      "heightCm": 176,
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "visualReviewAccepted": false
+    }
+  ],
+  "receipts": [
+    {
+      "uuid": "c0df1036-af63-4e54-a7dd-7aed817aa7fb",
+      "importFolder": "/Game/TripoModels/elderly_fantasy_character_3d_model",
+      "observedAt": "2026.09.23-23.53.03:808",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "keeper_of_light"
+      ],
+      "mesh": "/Game/TripoModels/elderly_fantasy_character_3d_model/elderly_fantasy_character_3d_model.elderly_fantasy_character_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "1b19e4e3-1095-4397-afa8-3b732dc4ef88",
+      "importFolder": "/Game/TripoModels/dragon-armored_knight_3d_model",
+      "observedAt": "2026.09.23-23.53.57:699",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "drakish_footman"
+      ],
+      "mesh": "/Game/TripoModels/dragon-armored_knight_3d_model/dragon-armored_knight_3d_model.dragon-armored_knight_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "c0df1036-af63-4e54-a7dd-7aed817aa7fb",
+      "importFolder": "/Game/TripoModels/elderly_fantasy_character_3d_model_1",
+      "observedAt": "2026.09.23-23.54.02:942",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "duplicate_saved_import_preserved",
+      "profileIds": [
+        "keeper_of_light"
+      ],
+      "mesh": "/Game/TripoModels/elderly_fantasy_character_3d_model_1/elderly_fantasy_character_3d_model_1.elderly_fantasy_character_3d_model_1",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "9bc8d454-0030-48af-80ae-e334cc1facb1",
+      "importFolder": "/Game/TripoModels/orc_warrior_3d_model",
+      "observedAt": "2026.09.23-23.54.15:017",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "orc_chieftain"
+      ],
+      "mesh": "/Game/TripoModels/orc_warrior_3d_model/orc_warrior_3d_model.orc_warrior_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "41427c68-a558-4b7a-95a7-10c7b677118d",
+      "importFolder": "/Game/TripoModels/centaur_warrior_3d_model",
+      "observedAt": "2026.09.23-23.54.25:791",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_custom_creature_pipeline_pending",
+      "profileIds": [
+        "evergrove_centaur"
+      ],
+      "mesh": "/Game/TripoModels/centaur_warrior_3d_model/centaur_warrior_3d_model.centaur_warrior_3d_model",
+      "meshClass": "StaticMesh",
+      "boneCount": null,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "9faeed7c-5fbd-4212-9484-1c0a549ae887",
+      "importFolder": "/Game/TripoModels/elephant_rhinoceros_humanoid_3d_model",
+      "observedAt": "2026.09.23-23.55.18:078",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "totemic_behemoth"
+      ],
+      "mesh": "/Game/TripoModels/elephant_rhinoceros_humanoid_3d_model/elephant_rhinoceros_humanoid_3d_model.elephant_rhinoceros_humanoid_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "8c3bdd2c-0e47-484f-b5c3-1fa9a75f5023",
+      "importFolder": "/Game/TripoModels/eldritch_monster_3d_model",
+      "observedAt": "2026.09.23-23.59.47:049",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_unmapped_source_uuid",
+      "mesh": "/Game/TripoModels/eldritch_monster_3d_model/eldritch_monster_3d_model.eldritch_monster_3d_model",
+      "meshClass": "StaticMesh",
+      "boneCount": null,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "e668b51d-4d41-41d4-bed8-58d06768e10c",
+      "importFolder": "/Game/TripoModels/armored_bear_3d_model",
+      "observedAt": "2026.09.24-00.00.39:715",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_custom_creature_pipeline_pending",
+      "profileIds": [
+        "bear"
+      ],
+      "mesh": "/Game/TripoModels/armored_bear_3d_model/armored_bear_3d_model.armored_bear_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 45,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "e668b51d-4d41-41d4-bed8-58d06768e10c",
+      "importFolder": "/Game/TripoModels/armored_bear_3d_model_1",
+      "observedAt": "2026.09.24-00.00.42:523",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "import_failed_no_objects_duplicate_source_expired",
+      "profileIds": [
+        "bear"
+      ],
+      "failureEvidence": "Bridge log reports no objects imported; source temp directory was removed by the first simultaneous import. Original saved receipt remains available."
+    },
+    {
+      "uuid": "f83854ff-3a85-459c-be5c-060c0c46d940",
+      "importFolder": "/Game/TripoModels/granite_golem_3d_model",
+      "observedAt": "2026.09.24-00.00.42:830",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "ether_golem_tank"
+      ],
+      "mesh": "/Game/TripoModels/granite_golem_3d_model/granite_golem_3d_model.granite_golem_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "d99eb76d-3b1d-4c48-a7ba-21944f2e0e53",
+      "importFolder": "/Game/TripoModels/mossy_stone_golem_3d_model",
+      "observedAt": "2026.09.24-00.00.49:917",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "ether_golem_support"
+      ],
+      "mesh": "/Game/TripoModels/mossy_stone_golem_3d_model/mossy_stone_golem_3d_model.mossy_stone_golem_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "310d8260-a3ef-4430-a884-01520ca0be96",
+      "importFolder": "/Game/TripoModels/stone_golem_3d_model",
+      "observedAt": "2026.09.24-00.01.00:009",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "ether_golem_bruiser"
+      ],
+      "mesh": "/Game/TripoModels/stone_golem_3d_model/stone_golem_3d_model.stone_golem_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "2ef5bf56-708e-436b-ac9a-1086e61faa41",
+      "importFolder": "/Game/TripoModels/armored_knight_3d_model",
+      "observedAt": "2026.09.24-00.01.12:313",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "lancer"
+      ],
+      "mesh": "/Game/TripoModels/armored_knight_3d_model/armored_knight_3d_model.armored_knight_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "9f419dd0-b9e0-414f-bafe-c4411db191b3",
+      "importFolder": "/Game/TripoModels/troll_3d_model",
+      "observedAt": "2026.09.24-00.01.21:818",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "troll_berserker_melee",
+        "troll_berserker_ranged"
+      ],
+      "mesh": "/Game/TripoModels/troll_3d_model/troll_3d_model.troll_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "8b756218-9847-4b2f-a36e-936c2dd9fcdc",
+      "importFolder": "/Game/TripoModels/thornwood_dryad_3d_model",
+      "observedAt": "2026.09.24-00.01.41:645",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "dryad"
+      ],
+      "mesh": "/Game/TripoModels/thornwood_dryad_3d_model/thornwood_dryad_3d_model.thornwood_dryad_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "eed717ba-2996-4179-85a3-2069f87a7ef3",
+      "importFolder": "/Game/TripoModels/medieval_knight_3d_model",
+      "observedAt": "2026.09.24-00.01.52:948",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "paladin_holy",
+        "paladin_righteous"
+      ],
+      "mesh": "/Game/TripoModels/medieval_knight_3d_model/medieval_knight_3d_model.medieval_knight_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "e77dcbb2-7c7d-4f24-bf48-84b470a19814",
+      "importFolder": "/Game/TripoModels/lantern_spirit_3d_model",
+      "observedAt": "2026.09.24-00.02.00:345",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_custom_creature_pipeline_pending",
+      "profileIds": [
+        "whisp"
+      ],
+      "mesh": "/Game/TripoModels/lantern_spirit_3d_model/lantern_spirit_3d_model.lantern_spirit_3d_model",
+      "meshClass": "StaticMesh",
+      "boneCount": null,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "41427c68-a558-4b7a-95a7-10c7b677118d",
+      "importFolder": "/Game/TripoModels/centaur_warrior_3d_model_1",
+      "observedAt": "2026.09.24-00.02.05:543",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "duplicate_saved_custom_import_preserved",
+      "profileIds": [
+        "evergrove_centaur"
+      ],
+      "mesh": "/Game/TripoModels/centaur_warrior_3d_model_1/centaur_warrior_3d_model_1.centaur_warrior_3d_model_1",
+      "meshClass": "StaticMesh",
+      "boneCount": null,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "21876ecd-abc5-4f33-81fa-4fe12351163a",
+      "importFolder": "/Game/TripoModels/fantasy_dragon_3d_model",
+      "observedAt": "2026.09.24-00.02.17:993",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_custom_creature_pipeline_pending",
+      "profileIds": [
+        "drakish_dragon"
+      ],
+      "mesh": "/Game/TripoModels/fantasy_dragon_3d_model/fantasy_dragon_3d_model.fantasy_dragon_3d_model",
+      "meshClass": "StaticMesh",
+      "boneCount": null,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "b2e30741-4c21-42e0-b8d5-3306df9b254b",
+      "importFolder": "/Game/TripoModels/dwarf_miner_3d_model",
+      "observedAt": "2026.09.24-00.02.38:844",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "dwarf_miner"
+      ],
+      "mesh": "/Game/TripoModels/dwarf_miner_3d_model/dwarf_miner_3d_model.dwarf_miner_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "9bc8d454-0030-48af-80ae-e334cc1facb1",
+      "importFolder": "/Game/TripoModels/orc_warrior_3d_model_1",
+      "observedAt": "2026.09.24-00.02.44:096",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "duplicate_saved_import_preserved",
+      "profileIds": [
+        "orc_chieftain"
+      ],
+      "mesh": "/Game/TripoModels/orc_warrior_3d_model_1/orc_warrior_3d_model_1.orc_warrior_3d_model_1",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "01507c2b-fd74-4947-8ddf-8883c676beee",
+      "importFolder": "/Game/TripoModels/fantasy_battle_mage_3d_model",
+      "observedAt": "2026.09.24-00.02.55:969",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "wizard"
+      ],
+      "mesh": "/Game/TripoModels/fantasy_battle_mage_3d_model/fantasy_battle_mage_3d_model.fantasy_battle_mage_3d_model",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "c0df1036-af63-4e54-a7dd-7aed817aa7fb",
+      "importFolder": "/Game/TripoModels/elderly_fantasy_character_3d_model_2",
+      "observedAt": "2026.09.24-00.02.59:928",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "duplicate_saved_import_preserved",
+      "profileIds": [
+        "keeper_of_light"
+      ],
+      "mesh": "/Game/TripoModels/elderly_fantasy_character_3d_model_2/elderly_fantasy_character_3d_model_2.elderly_fantasy_character_3d_model_2",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "1b19e4e3-1095-4397-afa8-3b732dc4ef88",
+      "importFolder": "/Game/TripoModels/dragon-armored_knight_3d_model_1",
+      "observedAt": "2026.09.24-00.03.04:416",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "duplicate_saved_import_preserved",
+      "profileIds": [
+        "drakish_footman"
+      ],
+      "mesh": "/Game/TripoModels/dragon-armored_knight_3d_model_1/dragon-armored_knight_3d_model_1.dragon-armored_knight_3d_model_1",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    },
+    {
+      "uuid": "39a83098-f50e-4c5f-a955-a5decdd99d4a",
+      "importFolder": "/Game/TripoModels/Cire_RiftSummoner",
+      "observedAt": "2026.09.24-00.07.40:789",
+      "provenance": "Saved/Logs/TripoBatchBridge02.log exact Starting FBX import UUID and folder",
+      "inspectionUtc": "2026-09-24T00:07:54.625877+00:00",
+      "status": "saved_import_verified_animation_pending",
+      "profileIds": [
+        "summoner"
+      ],
+      "mesh": "/Game/TripoModels/Cire_RiftSummoner/Cire_RiftSummoner.Cire_RiftSummoner",
+      "meshClass": "SkeletalMesh",
+      "boneCount": 61,
+      "savedPackagePresent": true,
+      "unsavedPackagesInFolder": false
+    }
+  ],
+  "notes": "First saved import per UUID is canonical; duplicates preserved. Bindings do not publish runtime art. Custom creatures and static meshes are receipts only. No asset paths guessed from display names."
+}

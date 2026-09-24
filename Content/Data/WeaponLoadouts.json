@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "artStatus": "original local prototype props; no gameplay/stat changes",
+  "presets": {
+    "warden": {"motion": "melee", "parts": [
+      {"asset": "legacy/Sword", "bone": "hand_r", "role": "primary"},
+      {"asset": "legacy/Shield", "bone": "hand_l"}]},
+    "ranger": {"motion": "bow", "parts": [
+      {"asset": "legacy/Bow", "bone": "hand_l", "role": "primary"},
+      {"asset": "legacy/Arrow", "bone": "hand_l", "role": "ammunition"},
+      {"asset": "Dagger", "bone": "pelvis", "offsetCm": [0, 20, -5], "rotation": [165, 0, 0], "scale": 0.85}]},
+    "ranger_crossbow": {"motion": "crossbow", "parts": [
+      {"asset": "Crossbow", "bone": "hand_l", "role": "primary"},
+      {"asset": "Bolt", "bone": "hand_l", "role": "ammunition"}]},
+    "scholar": {"motion": "cast", "parts": [
+      {"asset": "ArcaneStaff", "bone": "hand_l", "role": "primary"}]},
+    "summoner": {"motion": "cast", "parts": [
+      {"asset": "RiftStaff", "bone": "hand_l", "role": "primary"},
+      {"asset": "Dagger", "bone": "hand_r", "scale": 0.85}]},
+    "lancer": {"motion": "throw", "parts": [
+      {"asset": "legacy/Lance", "bone": "hand_r", "role": "primary", "hideOnRelease": true}]},
+    "paladin": {"motion": "melee", "parts": [
+      {"asset": "Flail", "bone": "hand_r", "role": "primary"},
+      {"asset": "legacy/Shield", "bone": "hand_l"}]},
+    "miner": {"motion": "melee", "parts": [
+      {"asset": "PickHammer", "bone": "hand_r", "role": "primary", "scale": 0.85}]},
+    "chieftain": {"motion": "melee", "parts": [
+      {"asset": "WarAxe", "bone": "hand_r", "role": "primary", "scale": 1.1}]},
+    "behemoth": {"motion": "melee", "parts": [
+      {"asset": "Totem", "bone": "hand_r", "role": "primary", "scale": 1.25}]},
+    "footman": {"motion": "melee", "parts": [
+      {"asset": "legacy/Sword", "bone": "hand_r", "role": "primary"},
+      {"asset": "legacy/Shield", "bone": "hand_l"}]},
+    "wizard": {"motion": "cast", "parts": [
+      {"asset": "EmberStaff", "bone": "hand_l", "role": "primary"}]},
+    "troll_melee": {"motion": "melee", "parts": [
+      {"asset": "ThrowingAxe", "bone": "hand_r", "role": "primary"},
+      {"asset": "ThrowingAxe", "bone": "hand_l"}]},
+    "troll_ranged": {"motion": "throw", "parts": [
+      {"asset": "ThrowingAxe", "bone": "hand_r", "role": "primary", "hideOnRelease": true},
+      {"asset": "ThrowingAxe", "bone": "hand_l", "hideOnRelease": true}]},
+    "dryad": {"motion": "cast", "parts": [
+      {"asset": "GroveStaff", "bone": "hand_l", "role": "primary"}]},
+    "keeper": {"motion": "cast", "parts": [
+      {"asset": "LanternStaff", "bone": "hand_l", "role": "primary"}]},
+    "centaur": {"motion": "throw", "parts": [
+      {"asset": "legacy/Lance", "bone": "hand_r", "role": "primary", "hideOnRelease": true}]},
+    "hammer_shield": {"motion": "melee", "parts": [
+      {"asset": "WarHammer", "bone": "hand_r", "role": "primary"},
+      {"asset": "legacy/Shield", "bone": "hand_l"}]},
+    "dual_daggers": {"motion": "melee", "parts": [
+      {"asset": "Dagger", "bone": "hand_r", "role": "primary"},
+      {"asset": "Dagger", "bone": "hand_l"}]},
+    "unarmed": {"motion": "none", "parts": []}
+  },
+  "previewOptions": {
+    "knight": ["warden", "hammer_shield"], "ranger": ["ranger", "ranger_crossbow"],
+    "scholar": ["scholar", "wizard"], "summoner": ["summoner", "scholar"],
+    "paladin_righteous": ["paladin", "hammer_shield"], "paladin_holy": ["paladin", "hammer_shield"],
+    "dwarf_miner": ["miner", "hammer_shield"], "orc_chieftain": ["chieftain", "hammer_shield"],
+    "drakish_footman": ["footman", "hammer_shield"], "troll_berserker_melee": ["troll_melee", "dual_daggers"],
+    "wizard": ["wizard", "scholar"]
+  },
+  "profiles": {
+    "knight": "warden", "ranger": "ranger", "scholar": "scholar", "lancer": "lancer", "summoner": "summoner",
+    "bear": "unarmed", "paladin_righteous": "paladin", "paladin_holy": "paladin", "dwarf_miner": "miner",
+    "ether_golem_tank": "unarmed", "ether_golem_support": "unarmed", "ether_golem_bruiser": "unarmed",
+    "orc_chieftain": "chieftain", "totemic_behemoth": "behemoth", "drakish_footman": "footman", "wizard": "wizard",
+    "troll_berserker_melee": "troll_melee", "troll_berserker_ranged": "troll_ranged", "dryad": "dryad",
+    "whisp": "unarmed", "evergrove_centaur": "centaur", "keeper_of_light": "keeper"
+  }
+}

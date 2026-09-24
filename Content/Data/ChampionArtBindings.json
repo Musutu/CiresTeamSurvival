@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "bindings": [
+    {
+      "profileId": "lancer",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/lancer/SK_lancer.SK_lancer",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/lancer/Animations/BS_Idle_Walk_Run_lancer.BS_Idle_Walk_Run_lancer",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/lancer/A_lancer_Attack.A_lancer_Attack",
+      "heightCm": 182.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "summoner",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/summoner/SK_summoner.SK_summoner",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/summoner/Animations/BS_Idle_Walk_Run_summoner.BS_Idle_Walk_Run_summoner",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/summoner/A_summoner_Attack.A_summoner_Attack",
+      "heightCm": 176.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "drakish_footman",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/drakish_footman/SK_drakish_footman.SK_drakish_footman",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/drakish_footman/Animations/BS_Idle_Walk_Run_drakish_footman.BS_Idle_Walk_Run_drakish_footman",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/drakish_footman/A_drakish_footman_Attack.A_drakish_footman_Attack",
+      "heightCm": 185.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "dryad",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/dryad/SK_dryad.SK_dryad",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/dryad/Animations/BS_Idle_Walk_Run_dryad.BS_Idle_Walk_Run_dryad",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/dryad/A_dryad_Attack.A_dryad_Attack",
+      "heightCm": 180.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "dwarf_miner",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/dwarf_miner/SK_dwarf_miner.SK_dwarf_miner",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/dwarf_miner/Animations/BS_Idle_Walk_Run_dwarf_miner.BS_Idle_Walk_Run_dwarf_miner",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/dwarf_miner/A_dwarf_miner_Attack.A_dwarf_miner_Attack",
+      "heightCm": 132.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "ether_golem_bruiser",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/ether_golem_bruiser/SK_ether_golem_bruiser.SK_ether_golem_bruiser",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/ether_golem_bruiser/Animations/BS_Idle_Walk_Run_ether_golem_bruiser.BS_Idle_Walk_Run_ether_golem_bruiser",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/ether_golem_bruiser/A_ether_golem_bruiser_Attack.A_ether_golem_bruiser_Attack",
+      "heightCm": 240.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "ether_golem_support",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/ether_golem_support/SK_ether_golem_support.SK_ether_golem_support",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/ether_golem_support/Animations/BS_Idle_Walk_Run_ether_golem_support.BS_Idle_Walk_Run_ether_golem_support",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/ether_golem_support/A_ether_golem_support_Attack.A_ether_golem_support_Attack",
+      "heightCm": 235.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "ether_golem_tank",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/ether_golem_tank/SK_ether_golem_tank.SK_ether_golem_tank",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/ether_golem_tank/Animations/BS_Idle_Walk_Run_ether_golem_tank.BS_Idle_Walk_Run_ether_golem_tank",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/ether_golem_tank/A_ether_golem_tank_Attack.A_ether_golem_tank_Attack",
+      "heightCm": 245.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "keeper_of_light",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/keeper_of_light/SK_keeper_of_light.SK_keeper_of_light",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/keeper_of_light/Animations/BS_Idle_Walk_Run_keeper_of_light.BS_Idle_Walk_Run_keeper_of_light",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/keeper_of_light/A_keeper_of_light_Attack.A_keeper_of_light_Attack",
+      "heightCm": 178.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "orc_chieftain",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/orc_chieftain/SK_orc_chieftain.SK_orc_chieftain",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/orc_chieftain/Animations/BS_Idle_Walk_Run_orc_chieftain.BS_Idle_Walk_Run_orc_chieftain",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/orc_chieftain/A_orc_chieftain_Attack.A_orc_chieftain_Attack",
+      "heightCm": 195.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "paladin_holy",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/paladin_holy/SK_paladin_holy.SK_paladin_holy",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/paladin_holy/Animations/BS_Idle_Walk_Run_paladin_holy.BS_Idle_Walk_Run_paladin_holy",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/paladin_holy/A_paladin_holy_Attack.A_paladin_holy_Attack",
+      "heightCm": 184.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "paladin_righteous",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/paladin_holy/SK_paladin_holy.SK_paladin_holy",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/paladin_holy/Animations/BS_Idle_Walk_Run_paladin_holy.BS_Idle_Walk_Run_paladin_holy",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/paladin_holy/A_paladin_holy_Attack.A_paladin_holy_Attack",
+      "heightCm": 184.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "totemic_behemoth",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/totemic_behemoth/SK_totemic_behemoth.SK_totemic_behemoth",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/totemic_behemoth/Animations/BS_Idle_Walk_Run_totemic_behemoth.BS_Idle_Walk_Run_totemic_behemoth",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/totemic_behemoth/A_totemic_behemoth_Attack.A_totemic_behemoth_Attack",
+      "heightCm": 285.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "troll_berserker_melee",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/troll_berserker_melee/SK_troll_berserker_melee.SK_troll_berserker_melee",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/troll_berserker_melee/Animations/BS_Idle_Walk_Run_troll_berserker_melee.BS_Idle_Walk_Run_troll_berserker_melee",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/troll_berserker_melee/A_troll_berserker_melee_Attack.A_troll_berserker_melee_Attack",
+      "heightCm": 210.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "troll_berserker_ranged",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/troll_berserker_melee/SK_troll_berserker_melee.SK_troll_berserker_melee",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/troll_berserker_melee/Animations/BS_Idle_Walk_Run_troll_berserker_melee.BS_Idle_Walk_Run_troll_berserker_melee",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/troll_berserker_melee/A_troll_berserker_melee_Attack.A_troll_berserker_melee_Attack",
+      "heightCm": 210.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "wizard",
+      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/wizard/SK_wizard.SK_wizard",
+      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/wizard/Animations/BS_Idle_Walk_Run_wizard.BS_Idle_Walk_Run_wizard",
+      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/wizard/A_wizard_Attack.A_wizard_Attack",
+      "heightCm": 178.0,
+      "status": "ready"
+    },
+    {
+      "profileId": "bear",
+      "mesh": "/Game/Art/Characters/CreatureSurfaces02/SK_Bear.SK_Bear",
+      "heightCm": 148,
+      "motion": "quadruped_procedural",
+      "status": "custom_ready"
+    },
+    {
+      "profileId": "whisp",
+      "mesh": "/Game/Art/Characters/CreatureSurfaces02/SM_Whisp.SM_Whisp",
+      "heightCm": 85,
+      "motion": "hover_procedural",
+      "status": "custom_ready"
+    },
+    {
+      "profileId": "evergrove_centaur",
+      "mesh": "/Game/Art/Characters/CreatureSurfaces02/SM_Centaur.SM_Centaur",
+      "heightCm": 236,
+      "motion": "spatial_skin_prototype",
+      "status": "custom_ready"
+    }
+  ]
+}

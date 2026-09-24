@@ -1,0 +1,83 @@
+[
+  {
+    "name": "Swing",
+    "frames": 14400,
+    "sampleRate": 48000,
+    "duration": 0.3,
+    "rms": 0.14645563934149708,
+    "peak": 0.7799920651875363,
+    "originalSynthesis": true
+  },
+  {
+    "name": "Bow",
+    "frames": 19200,
+    "sampleRate": 48000,
+    "duration": 0.4,
+    "rms": 0.09958416099384174,
+    "peak": 0.7799920651875363,
+    "originalSynthesis": true
+  },
+  {
+    "name": "Lance",
+    "frames": 16800,
+    "sampleRate": 48000,
+    "duration": 0.35,
+    "rms": 0.1589041336298912,
+    "peak": 0.7799920651875363,
+    "originalSynthesis": true
+  },
+  {
+    "name": "Impact",
+    "frames": 13920,
+    "sampleRate": 48000,
+    "duration": 0.29,
+    "rms": 0.08102818210524403,
+    "peak": 0.7799920651875363,
+    "originalSynthesis": true
+  },
+  {
+    "name": "MagicCast",
+    "frames": 26880,
+    "sampleRate": 48000,
+    "duration": 0.56,
+    "rms": 0.15207440864511362,
+    "peak": 0.7799920651875363,
+    "originalSynthesis": true
+  },
+  {
+    "name": "MagicImpact",
+    "frames": 20160,
+    "sampleRate": 48000,
+    "duration": 0.42,
+    "rms": 0.09261995392686295,
+    "peak": 0.7799920651875363,
+    "originalSynthesis": true
+  },
+  {
+    "name": "Heal",
+    "frames": 38400,
+    "sampleRate": 48000,
+    "duration": 0.8,
+    "rms": 0.1262817086071389,
+    "peak": 0.7799920651875363,
+    "originalSynthesis": true
+  },
+  {
+    "name": "Ward",
+    "frames": 33600,
+    "sampleRate": 48000,
+    "duration": 0.7,
+    "rms": 0.11916164972507154,
+    "peak": 0.7799920651875363,
+    "originalSynthesis": true
+  },
+  {
+    "name": "Critical",
+    "frames": 16800,
+    "sampleRate": 48000,
+    "duration": 0.35,
+    "rms": 0.1621655982287718,
+    "peak": 0.7799920651875363,
+    "originalSynthesis": true
+  }
+]

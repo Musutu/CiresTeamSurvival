@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.16)
+project(CiresRulesTests LANGUAGES CXX)
+enable_testing()
+add_executable(CiresRulesTests
+    RulesTests.cpp
+    ../Source/CiresTeamSurvival/Rules/CiresRules.cpp)
+target_include_directories(CiresRulesTests PRIVATE ../Source/CiresTeamSurvival/Rules)
+target_compile_features(CiresRulesTests PRIVATE cxx_std_17)
+set_target_properties(CiresRulesTests PROPERTIES CXX_EXTENSIONS OFF)
+if(MSVC)
+    target_compile_options(CiresRulesTests PRIVATE /W4 /WX /permissive-)
+else()
+    target_compile_options(CiresRulesTests PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_test(NAME gameplay_rules COMMAND CiresRulesTests)

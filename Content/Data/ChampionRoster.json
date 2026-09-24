@@ -1,0 +1,1979 @@
+{
+  "schemaVersion": 1,
+  "profile": "CireChampionRoster",
+  "engine": "Unreal",
+  "engineVersion": "5.8.3",
+  "statPolicy": "existing_stat_per_point",
+  "source": {
+    "path": "C:/Users/Eric/Desktop/Unit Type.txt",
+    "encoding": "windows-1252",
+    "sha256": "b5b3cb8c1c4ad0602b43313ee011e99e4a080355d8a6c2308b3c01ebae46abbd"
+  },
+  "champions": [
+    {
+      "id": "knight",
+      "displayName": "Iron Warden",
+      "familyId": "knight",
+      "variant": "Crusader",
+      "description": "God-backed crusader; the existing Warden identity becomes the Knight profile.",
+      "runtimeArchetype": 0,
+      "primaryStat": "strength",
+      "strength": 20,
+      "agility": 10,
+      "intelligence": 10,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "sword",
+      "threatRole": "tank",
+      "roles": [
+        "tank"
+      ],
+      "artFamily": "blackened crusader plate, shield, muted gold relics",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "shield_slam",
+          "displayName": "Shield Slam",
+          "status": "implemented",
+          "mechanic": "Melee strength strike, two-second slow and monster threat.",
+          "vfxFamily": "holy",
+          "delivery": "targeted"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "war_cry",
+          "displayName": "War Cry",
+          "status": "implemented",
+          "mechanic": "Taunt nearby monsters/bots for six seconds and briefly guard.",
+          "vfxFamily": "war",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "cleaving_strike",
+          "displayName": "Cleaving Strike",
+          "status": "implemented",
+          "mechanic": "Primary-stat melee strike hits nearby enemies.",
+          "vfxFamily": "steel",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "second_wind",
+          "displayName": "Second Wind",
+          "status": "implemented",
+          "mechanic": "Heal only yourself for eighteen percent maximum health; selected allies never receive the heal.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "protection_dome",
+          "displayName": "Aegis Dome",
+          "status": "implemented",
+          "mechanic": "Temporary protection construct with authored projectile response.",
+          "vfxFamily": "holy",
+          "delivery": "construct"
+        }
+      ],
+      "passive": {
+        "id": "stone_skin",
+        "displayName": "Stone Skin",
+        "status": "implemented",
+        "mechanic": "Learned passive reduces incoming damage by ten percent.",
+        "vfxFamily": "stone",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "bastion_of_dawn",
+        "displayName": "Bastion of Dawn",
+        "status": "implemented",
+        "mechanic": "Ultimate heals self for thirty percent max health and guards nearby allies for eight seconds.",
+        "vfxFamily": "holy",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "ranger",
+      "displayName": "Ash Ranger",
+      "familyId": "ranger",
+      "variant": "Waystalker",
+      "description": "A patient hunter combining arrows, frost and poisoned ground.",
+      "runtimeArchetype": 1,
+      "primaryStat": "agility",
+      "strength": 10,
+      "agility": 20,
+      "intelligence": 10,
+      "basicAttackRange": 1500,
+      "attackSeconds": 1.5,
+      "attackStyle": "bow",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "ash-grey leather, hood, weathered bow",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "piercing_shot",
+          "displayName": "Piercing Shot",
+          "status": "implemented",
+          "mechanic": "Authored physical skillshot with per-target hit limits.",
+          "vfxFamily": "steel",
+          "delivery": "projectile"
+        },
+        {
+          "id": "frost_bind",
+          "displayName": "Frost Bind",
+          "status": "implemented",
+          "mechanic": "Authored moving frost skillshot with slow on impact.",
+          "vfxFamily": "frost",
+          "delivery": "projectile"
+        },
+        {
+          "id": "shadow_step",
+          "displayName": "Shadow Step",
+          "status": "implemented",
+          "mechanic": "Dash toward an enemy and strike using agility.",
+          "vfxFamily": "shadow",
+          "delivery": "targeted"
+        },
+        {
+          "id": "venom_ground",
+          "displayName": "Venom Ground",
+          "status": "implemented",
+          "mechanic": "Delayed poison circle; entering applies poison and leaving removes this area contribution.",
+          "vfxFamily": "venom",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "grave_line",
+          "displayName": "Grave Line",
+          "status": "implemented",
+          "mechanic": "Authored warning line followed by spectral-area damage.",
+          "vfxFamily": "shadow",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "spectral_pack",
+          "displayName": "Spectral Pack",
+          "status": "implemented",
+          "mechanic": "Three temporary AI companions attack the selected hostile target.",
+          "vfxFamily": "spectral",
+          "delivery": "summon"
+        }
+      ],
+      "passive": {
+        "id": "battle_rhythm",
+        "displayName": "Battle Rhythm",
+        "status": "implemented",
+        "mechanic": "Learned passive makes basic attacks twenty percent faster.",
+        "vfxFamily": "war",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "executioners_verdict",
+        "displayName": "Executioner's Verdict",
+        "status": "implemented",
+        "mechanic": "Ultimate primary-stat strike with capped missing-health bonus.",
+        "vfxFamily": "steel",
+        "delivery": "targeted"
+      }
+    },
+    {
+      "id": "scholar",
+      "displayName": "Veil Scholar",
+      "familyId": "wizard",
+      "variant": "Healer",
+      "description": "The existing Scholar becomes the healing Wizard variant.",
+      "runtimeArchetype": 2,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 1200,
+      "attackSeconds": 1.5,
+      "attackStyle": "arcane",
+      "threatRole": "healer",
+      "roles": [
+        "healer",
+        "support"
+      ],
+      "artFamily": "veiled scholar robes, pale runes, floating focus",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "restoring_light",
+          "displayName": "Restoring Light",
+          "status": "implemented",
+          "mechanic": "Heal an ally or self using intelligence.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "sanctuary",
+          "displayName": "Sanctuary",
+          "status": "implemented",
+          "mechanic": "Heal nearby allies and briefly guard them.",
+          "vfxFamily": "holy",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "purify",
+          "displayName": "Purify",
+          "status": "implemented",
+          "mechanic": "Remove an ally or self slow and restore health.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "chain_spark",
+          "displayName": "Chain Spark",
+          "status": "implemented",
+          "mechanic": "Intelligence lightning chains to up to four nearby enemies.",
+          "vfxFamily": "arcane",
+          "delivery": "chain"
+        },
+        {
+          "id": "ember_lance",
+          "displayName": "Ember Lance",
+          "status": "implemented",
+          "mechanic": "Authored moving fire skillshot with validated collision policies.",
+          "vfxFamily": "fire",
+          "delivery": "projectile"
+        },
+        {
+          "id": "protection_dome",
+          "displayName": "Aegis Dome",
+          "status": "implemented",
+          "mechanic": "Temporary protection construct with authored projectile response.",
+          "vfxFamily": "holy",
+          "delivery": "construct"
+        }
+      ],
+      "passive": {
+        "id": "soul_conduit",
+        "displayName": "Soul Conduit",
+        "status": "implemented",
+        "mechanic": "Learned passive increases healing by twenty-five percent.",
+        "vfxFamily": "holy",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "renewal",
+        "displayName": "Renewal",
+        "status": "implemented",
+        "mechanic": "Ultimate heals nearby living allies and clears their slows; no revival.",
+        "vfxFamily": "holy",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "lancer",
+      "displayName": "Dusk Lancer",
+      "familyId": "lancer",
+      "variant": "Skirmisher",
+      "description": "A mobile lance wielder with precise thrusts and sweeping melee control.",
+      "runtimeArchetype": 3,
+      "primaryStat": "agility",
+      "strength": 10,
+      "agility": 20,
+      "intelligence": 10,
+      "basicAttackRange": 1300,
+      "attackSeconds": 1.5,
+      "attackStyle": "lance",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "dark segmented armor, long runed lance",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "cleaving_strike",
+          "displayName": "Cleaving Strike",
+          "status": "implemented",
+          "mechanic": "Primary-stat melee strike hits nearby enemies.",
+          "vfxFamily": "steel",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "piercing_shot",
+          "displayName": "Piercing Shot",
+          "status": "implemented",
+          "mechanic": "Authored physical skillshot with per-target hit limits.",
+          "vfxFamily": "steel",
+          "delivery": "projectile"
+        },
+        {
+          "id": "shadow_step",
+          "displayName": "Shadow Step",
+          "status": "implemented",
+          "mechanic": "Dash toward an enemy and strike using agility.",
+          "vfxFamily": "shadow",
+          "delivery": "targeted"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "second_wind",
+          "displayName": "Second Wind",
+          "status": "implemented",
+          "mechanic": "Heal only yourself for eighteen percent maximum health; selected allies never receive the heal.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "ashen_square",
+          "displayName": "Ashen Ward",
+          "status": "implemented",
+          "mechanic": "Authored square ground-area warning and effect.",
+          "vfxFamily": "ash",
+          "delivery": "ground_square"
+        }
+      ],
+      "passive": {
+        "id": "battle_rhythm",
+        "displayName": "Battle Rhythm",
+        "status": "implemented",
+        "mechanic": "Learned passive makes basic attacks twenty percent faster.",
+        "vfxFamily": "war",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "executioners_verdict",
+        "displayName": "Executioner's Verdict",
+        "status": "implemented",
+        "mechanic": "Ultimate primary-stat strike with capped missing-health bonus.",
+        "vfxFamily": "steel",
+        "delivery": "targeted"
+      }
+    },
+    {
+      "id": "summoner",
+      "displayName": "Rift Summoner",
+      "familyId": "summoner",
+      "variant": "Binder",
+      "description": "Retained requested class: one commandable guardian and a three-unit AI spectral pack.",
+      "runtimeArchetype": 4,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 1200,
+      "attackSeconds": 1.5,
+      "attackStyle": "arcane",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "rift-marked robes, spirit chains, summoning focus",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "oathbound_guardian",
+          "displayName": "Oathbound Guardian",
+          "status": "implemented",
+          "mechanic": "One player-commandable allied unit with health, lifespan and attack stats.",
+          "vfxFamily": "spectral",
+          "delivery": "summon"
+        },
+        {
+          "id": "spectral_pack",
+          "displayName": "Spectral Pack",
+          "status": "implemented",
+          "mechanic": "Three temporary AI companions attack the selected hostile target.",
+          "vfxFamily": "spectral",
+          "delivery": "summon"
+        },
+        {
+          "id": "summoned_wall",
+          "displayName": "Runestone Wall",
+          "status": "implemented",
+          "mechanic": "Temporary destructible world wall with authored dimensions and collision.",
+          "vfxFamily": "stone",
+          "delivery": "construct"
+        },
+        {
+          "id": "protection_dome",
+          "displayName": "Aegis Dome",
+          "status": "implemented",
+          "mechanic": "Temporary protection construct with authored projectile response.",
+          "vfxFamily": "holy",
+          "delivery": "construct"
+        },
+        {
+          "id": "chain_spark",
+          "displayName": "Chain Spark",
+          "status": "implemented",
+          "mechanic": "Intelligence lightning chains to up to four nearby enemies.",
+          "vfxFamily": "arcane",
+          "delivery": "chain"
+        },
+        {
+          "id": "venom_ground",
+          "displayName": "Venom Ground",
+          "status": "implemented",
+          "mechanic": "Delayed poison circle; entering applies poison and leaving removes this area contribution.",
+          "vfxFamily": "venom",
+          "delivery": "ground_circle"
+        }
+      ],
+      "passive": {
+        "id": "deep_reserves",
+        "displayName": "Deep Reserves",
+        "status": "implemented",
+        "mechanic": "Learned passive increases mana and energy regeneration by fifty percent.",
+        "vfxFamily": "arcane",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "cataclysm",
+        "displayName": "Cataclysm",
+        "status": "implemented",
+        "mechanic": "Ultimate intelligence blast strikes up to twelve enemies near the selected target.",
+        "vfxFamily": "fire",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "bear",
+      "displayName": "Gravewood Bear",
+      "familyId": "bear",
+      "variant": "Elderhide",
+      "description": "An ancient bear holds enemies with claws, roars and resilient hide.",
+      "runtimeArchetype": 0,
+      "primaryStat": "strength",
+      "strength": 20,
+      "agility": 10,
+      "intelligence": 10,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "claws",
+      "threatRole": "tank",
+      "roles": [
+        "tank"
+      ],
+      "artFamily": "large scarred bear, root growth, restrained amber eyes",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "bear_maul",
+          "displayName": "Gravewood Maul",
+          "status": "planned",
+          "mechanic": "Heavy claw strike generates extra threat against its target.",
+          "vfxFamily": "primal",
+          "delivery": "targeted"
+        },
+        {
+          "id": "bear_roar",
+          "displayName": "Deepwood Roar",
+          "status": "planned",
+          "mechanic": "A visible cone roar taunts enemies and weakens their next attack.",
+          "vfxFamily": "primal",
+          "delivery": "ground_cone"
+        },
+        {
+          "id": "bear_charge",
+          "displayName": "Rootbreaker Charge",
+          "status": "planned",
+          "mechanic": "Telegraphed short rush stops at a blocking wall and stuns the first enemy.",
+          "vfxFamily": "primal",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "bear_hibernate",
+          "displayName": "Ironroot Slumber",
+          "status": "planned",
+          "mechanic": "Channel self-healing while stationary; taking damage can interrupt it.",
+          "vfxFamily": "nature",
+          "delivery": "self"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "war_cry",
+          "displayName": "War Cry",
+          "status": "implemented",
+          "mechanic": "Taunt nearby monsters/bots for six seconds and briefly guard.",
+          "vfxFamily": "war",
+          "delivery": "ground_circle"
+        }
+      ],
+      "passive": {
+        "id": "bear_ancient_hide",
+        "displayName": "Ancient Hide",
+        "status": "planned",
+        "mechanic": "After sustained incoming attacks gain a short defensive hide buff.",
+        "vfxFamily": "primal",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "bear_colossus",
+        "displayName": "Elder of the Deepwood",
+        "status": "planned",
+        "mechanic": "Temporary larger bear form increases threat and defensive reach.",
+        "vfxFamily": "primal",
+        "delivery": "transformation"
+      }
+    },
+    {
+      "id": "paladin_righteous",
+      "displayName": "Relic Paladin",
+      "familyId": "paladin",
+      "variant": "Righteous",
+      "description": "Class-selection Righteous path uses a shield relic and flail for tanking.",
+      "runtimeArchetype": 0,
+      "primaryStat": "strength",
+      "strength": 20,
+      "agility": 10,
+      "intelligence": 10,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "flail",
+      "threatRole": "tank",
+      "roles": [
+        "tank"
+      ],
+      "artFamily": "shield relic, spiked flail, dark plate, restrained gold",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "paladin_righteous_flail",
+          "displayName": "Righteous Flail",
+          "status": "planned",
+          "mechanic": "Shield relic anchors a short flail cleave that marks threatened enemies.",
+          "vfxFamily": "holy",
+          "delivery": "ground_cone"
+        },
+        {
+          "id": "paladin_relic_vow",
+          "displayName": "Relic Vow",
+          "status": "planned",
+          "mechanic": "Bind a consenting ally to the relic for temporary shared protection.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "shield_slam",
+          "displayName": "Shield Slam",
+          "status": "implemented",
+          "mechanic": "Melee strength strike, two-second slow and monster threat.",
+          "vfxFamily": "holy",
+          "delivery": "targeted"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "war_cry",
+          "displayName": "War Cry",
+          "status": "implemented",
+          "mechanic": "Taunt nearby monsters/bots for six seconds and briefly guard.",
+          "vfxFamily": "war",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "second_wind",
+          "displayName": "Second Wind",
+          "status": "implemented",
+          "mechanic": "Heal only yourself for eighteen percent maximum health; selected allies never receive the heal.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        }
+      ],
+      "passive": {
+        "id": "stone_skin",
+        "displayName": "Stone Skin",
+        "status": "implemented",
+        "mechanic": "Learned passive reduces incoming damage by ten percent.",
+        "vfxFamily": "stone",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "bastion_of_dawn",
+        "displayName": "Bastion of Dawn",
+        "status": "implemented",
+        "mechanic": "Ultimate heals self for thirty percent max health and guards nearby allies for eight seconds.",
+        "vfxFamily": "holy",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "paladin_holy",
+      "displayName": "Relic Paladin",
+      "familyId": "paladin",
+      "variant": "Holy",
+      "description": "Class-selection Holy path keeps shield relic and flail while supporting allies.",
+      "runtimeArchetype": 2,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "flail",
+      "threatRole": "healer",
+      "roles": [
+        "healer",
+        "support"
+      ],
+      "artFamily": "same shield relic and flail, ivory cloth, soft holy censer light",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "paladin_holy_flail",
+          "displayName": "Merciful Censer",
+          "status": "planned",
+          "mechanic": "Flail impact releases a healing pulse around the struck hostile target.",
+          "vfxFamily": "holy",
+          "delivery": "targeted"
+        },
+        {
+          "id": "paladin_pilgrim_light",
+          "displayName": "Pilgrim Light",
+          "status": "planned",
+          "mechanic": "A slow visible orb heals the first allied unit it reaches.",
+          "vfxFamily": "holy",
+          "delivery": "projectile"
+        },
+        {
+          "id": "paladin_relic_vow",
+          "displayName": "Relic Vow",
+          "status": "planned",
+          "mechanic": "Bind a consenting ally to the relic for temporary shared protection.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "restoring_light",
+          "displayName": "Restoring Light",
+          "status": "implemented",
+          "mechanic": "Heal an ally or self using intelligence.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "sanctuary",
+          "displayName": "Sanctuary",
+          "status": "implemented",
+          "mechanic": "Heal nearby allies and briefly guard them.",
+          "vfxFamily": "holy",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "purify",
+          "displayName": "Purify",
+          "status": "implemented",
+          "mechanic": "Remove an ally or self slow and restore health.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        }
+      ],
+      "passive": {
+        "id": "soul_conduit",
+        "displayName": "Soul Conduit",
+        "status": "implemented",
+        "mechanic": "Learned passive increases healing by twenty-five percent.",
+        "vfxFamily": "holy",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "renewal",
+        "displayName": "Renewal",
+        "status": "implemented",
+        "mechanic": "Ultimate heals nearby living allies and clears their slows; no revival.",
+        "vfxFamily": "holy",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "dwarf_miner",
+      "displayName": "Deepdelve Miner",
+      "familyId": "dwarf_miner",
+      "variant": "Oath of Stone",
+      "description": "A dwarf miner uses pick, lantern and faultlines to protect the party.",
+      "runtimeArchetype": 0,
+      "primaryStat": "strength",
+      "strength": 20,
+      "agility": 10,
+      "intelligence": 10,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "axes",
+      "threatRole": "tank",
+      "roles": [
+        "tank"
+      ],
+      "artFamily": "stout armored dwarf, mining pick, warm lantern, ore plates",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "miner_pickfall",
+          "displayName": "Pickfall",
+          "status": "planned",
+          "mechanic": "Armor-chipping pick strike leaves a short vulnerability debuff.",
+          "vfxFamily": "stone",
+          "delivery": "targeted"
+        },
+        {
+          "id": "miner_faultline",
+          "displayName": "Faultline",
+          "status": "planned",
+          "mechanic": "Warning line erupts in stone after a delay and briefly slows enemies.",
+          "vfxFamily": "stone",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "miner_lantern",
+          "displayName": "Deep Lantern",
+          "status": "planned",
+          "mechanic": "Place a lantern that reveals the local ground and grants allies resistance.",
+          "vfxFamily": "ember",
+          "delivery": "construct"
+        },
+        {
+          "id": "summoned_wall",
+          "displayName": "Runestone Wall",
+          "status": "implemented",
+          "mechanic": "Temporary destructible world wall with authored dimensions and collision.",
+          "vfxFamily": "stone",
+          "delivery": "construct"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "war_cry",
+          "displayName": "War Cry",
+          "status": "implemented",
+          "mechanic": "Taunt nearby monsters/bots for six seconds and briefly guard.",
+          "vfxFamily": "war",
+          "delivery": "ground_circle"
+        }
+      ],
+      "passive": {
+        "id": "miner_orehide",
+        "displayName": "Orehide",
+        "status": "planned",
+        "mechanic": "Blocking damage builds a small temporary mineral shield.",
+        "vfxFamily": "stone",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "miner_mountain",
+        "displayName": "Heart of the Mountain",
+        "status": "planned",
+        "mechanic": "A warned stone ring rises to protect allies and constrain enemy movement.",
+        "vfxFamily": "stone",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "ether_golem_tank",
+      "displayName": "Ether Golem",
+      "familyId": "ether_golem",
+      "variant": "Granite Tank",
+      "description": "Ether constructs a large rocky tank golem at class selection.",
+      "runtimeArchetype": 0,
+      "primaryStat": "strength",
+      "strength": 20,
+      "agility": 10,
+      "intelligence": 10,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "claws",
+      "threatRole": "tank",
+      "roles": [
+        "tank"
+      ],
+      "artFamily": "large granite boulders, ether-lit joints, broad silhouette",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "golem_granite_fist",
+          "displayName": "Granite Fist",
+          "status": "planned",
+          "mechanic": "Large rocky golem slams a warned cone and generates tank threat.",
+          "vfxFamily": "stone",
+          "delivery": "ground_cone"
+        },
+        {
+          "id": "golem_ether_anchor",
+          "displayName": "Ether Anchor",
+          "status": "planned",
+          "mechanic": "Anchor an enemy briefly within a visible stone circle.",
+          "vfxFamily": "ether",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "war_cry",
+          "displayName": "War Cry",
+          "status": "implemented",
+          "mechanic": "Taunt nearby monsters/bots for six seconds and briefly guard.",
+          "vfxFamily": "war",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "summoned_wall",
+          "displayName": "Runestone Wall",
+          "status": "implemented",
+          "mechanic": "Temporary destructible world wall with authored dimensions and collision.",
+          "vfxFamily": "stone",
+          "delivery": "construct"
+        },
+        {
+          "id": "shield_slam",
+          "displayName": "Shield Slam",
+          "status": "implemented",
+          "mechanic": "Melee strength strike, two-second slow and monster threat.",
+          "vfxFamily": "holy",
+          "delivery": "targeted"
+        }
+      ],
+      "passive": {
+        "id": "golem_construct_core",
+        "displayName": "Construct Core",
+        "status": "planned",
+        "mechanic": "Incoming damage slowly charges the selected golem role resource.",
+        "vfxFamily": "ether",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "golem_worldstone",
+        "displayName": "Worldstone Awakened",
+        "status": "planned",
+        "mechanic": "Temporary ether overgrowth amplifies the selected tank, support or bruiser function.",
+        "vfxFamily": "ether",
+        "delivery": "transformation"
+      }
+    },
+    {
+      "id": "ether_golem_support",
+      "displayName": "Ether Golem",
+      "familyId": "ether_golem",
+      "variant": "Verdant Support",
+      "description": "Ether constructs a verdant, green-mossed rock golem for healing and support.",
+      "runtimeArchetype": 2,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 1200,
+      "attackSeconds": 1.5,
+      "attackStyle": "arcane",
+      "threatRole": "healer",
+      "roles": [
+        "healer",
+        "support"
+      ],
+      "artFamily": "mossy green stone, living vines, subtle emerald ether",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "golem_moss_bloom",
+          "displayName": "Verdant Bloom",
+          "status": "planned",
+          "mechanic": "Mossy rock opens a warned healing garden for allies.",
+          "vfxFamily": "nature",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "golem_living_granite",
+          "displayName": "Living Granite",
+          "status": "planned",
+          "mechanic": "Apply a moss-covered shield to an ally; effective healing restores a portion.",
+          "vfxFamily": "nature",
+          "delivery": "ally"
+        },
+        {
+          "id": "restoring_light",
+          "displayName": "Restoring Light",
+          "status": "implemented",
+          "mechanic": "Heal an ally or self using intelligence.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "sanctuary",
+          "displayName": "Sanctuary",
+          "status": "implemented",
+          "mechanic": "Heal nearby allies and briefly guard them.",
+          "vfxFamily": "holy",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "purify",
+          "displayName": "Purify",
+          "status": "implemented",
+          "mechanic": "Remove an ally or self slow and restore health.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "protection_dome",
+          "displayName": "Aegis Dome",
+          "status": "implemented",
+          "mechanic": "Temporary protection construct with authored projectile response.",
+          "vfxFamily": "holy",
+          "delivery": "construct"
+        }
+      ],
+      "passive": {
+        "id": "soul_conduit",
+        "displayName": "Soul Conduit",
+        "status": "implemented",
+        "mechanic": "Learned passive increases healing by twenty-five percent.",
+        "vfxFamily": "holy",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "golem_worldstone",
+        "displayName": "Worldstone Awakened",
+        "status": "planned",
+        "mechanic": "Temporary ether overgrowth amplifies the selected tank, support or bruiser function.",
+        "vfxFamily": "ether",
+        "delivery": "transformation"
+      }
+    },
+    {
+      "id": "ether_golem_bruiser",
+      "displayName": "Ether Golem",
+      "familyId": "ether_golem",
+      "variant": "Felfire Bruiser",
+      "description": "Ether constructs a green fel-flamed bruiser golem for melee damage.",
+      "runtimeArchetype": 0,
+      "primaryStat": "strength",
+      "strength": 20,
+      "agility": 10,
+      "intelligence": 10,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "claws",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "cracked dark rock, green fel flames, heavy striking arms",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "golem_fel_fist",
+          "displayName": "Felfire Fist",
+          "status": "planned",
+          "mechanic": "Fel-flamed golem punches through a short cone of enemies.",
+          "vfxFamily": "fel",
+          "delivery": "ground_cone"
+        },
+        {
+          "id": "golem_ether_furnace",
+          "displayName": "Ether Furnace",
+          "status": "planned",
+          "mechanic": "Consume stored ether to empower a short sequence of basic attacks.",
+          "vfxFamily": "fel",
+          "delivery": "self"
+        },
+        {
+          "id": "cleaving_strike",
+          "displayName": "Cleaving Strike",
+          "status": "implemented",
+          "mechanic": "Primary-stat melee strike hits nearby enemies.",
+          "vfxFamily": "steel",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "cinder_cone",
+          "displayName": "Cinder Cone",
+          "status": "implemented",
+          "mechanic": "Authored warning cone followed by fire-area damage.",
+          "vfxFamily": "fire",
+          "delivery": "ground_cone"
+        },
+        {
+          "id": "shadow_step",
+          "displayName": "Shadow Step",
+          "status": "implemented",
+          "mechanic": "Dash toward an enemy and strike using agility.",
+          "vfxFamily": "shadow",
+          "delivery": "targeted"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        }
+      ],
+      "passive": {
+        "id": "golem_construct_core",
+        "displayName": "Construct Core",
+        "status": "planned",
+        "mechanic": "Incoming damage slowly charges the selected golem role resource.",
+        "vfxFamily": "ether",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "golem_worldstone",
+        "displayName": "Worldstone Awakened",
+        "status": "planned",
+        "mechanic": "Temporary ether overgrowth amplifies the selected tank, support or bruiser function.",
+        "vfxFamily": "ether",
+        "delivery": "transformation"
+      }
+    },
+    {
+      "id": "orc_chieftain",
+      "displayName": "Blood-Oath Chieftain",
+      "familyId": "orc_chieftain",
+      "variant": "Clan Bulwark",
+      "description": "An orc chieftain anchors the frontline with clan banners and brutal axe control.",
+      "runtimeArchetype": 0,
+      "primaryStat": "strength",
+      "strength": 20,
+      "agility": 10,
+      "intelligence": 10,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "axes",
+      "threatRole": "tank",
+      "roles": [
+        "tank"
+      ],
+      "artFamily": "broad orc, black iron, clan banner, heavy axe",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "chieftain_axe_hook",
+          "displayName": "Chieftain Hook",
+          "status": "planned",
+          "mechanic": "An axe hook pulls the first unprotected target a short distance.",
+          "vfxFamily": "war",
+          "delivery": "projectile"
+        },
+        {
+          "id": "chieftain_banner",
+          "displayName": "Blood-Oath Banner",
+          "status": "planned",
+          "mechanic": "Plant a destructible banner that bolsters nearby allies.",
+          "vfxFamily": "war",
+          "delivery": "construct"
+        },
+        {
+          "id": "war_cry",
+          "displayName": "War Cry",
+          "status": "implemented",
+          "mechanic": "Taunt nearby monsters/bots for six seconds and briefly guard.",
+          "vfxFamily": "war",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "cleaving_strike",
+          "displayName": "Cleaving Strike",
+          "status": "implemented",
+          "mechanic": "Primary-stat melee strike hits nearby enemies.",
+          "vfxFamily": "steel",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "shield_slam",
+          "displayName": "Shield Slam",
+          "status": "implemented",
+          "mechanic": "Melee strength strike, two-second slow and monster threat.",
+          "vfxFamily": "holy",
+          "delivery": "targeted"
+        }
+      ],
+      "passive": {
+        "id": "chieftain_courage",
+        "displayName": "Unbroken Clan",
+        "status": "planned",
+        "mechanic": "Nearby allies grant the chieftain a capped resilience bonus.",
+        "vfxFamily": "war",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "chieftain_earthshout",
+        "displayName": "Earthshout",
+        "status": "planned",
+        "mechanic": "Large delayed shout taunts enemies and shields allies in a visible circle.",
+        "vfxFamily": "war",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "totemic_behemoth",
+      "displayName": "Totemic Behemoth",
+      "familyId": "totemic_behemoth",
+      "variant": "Ancestral Bulwark",
+      "description": "Large elephant/rhino hybrid carries a massive totem for smashing and defense.",
+      "runtimeArchetype": 0,
+      "primaryStat": "strength",
+      "strength": 20,
+      "agility": 10,
+      "intelligence": 10,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "totem",
+      "threatRole": "tank",
+      "roles": [
+        "tank"
+      ],
+      "artFamily": "elephant-rhino hybrid, massive carved totem, ritual stone armor",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "behemoth_totem_sweep",
+          "displayName": "Totem Sweep",
+          "status": "planned",
+          "mechanic": "Elephant-rhino hybrid swings its massive totem through a warned cone.",
+          "vfxFamily": "earth",
+          "delivery": "ground_cone"
+        },
+        {
+          "id": "behemoth_tusk_line",
+          "displayName": "Tuskbreaker",
+          "status": "planned",
+          "mechanic": "A heavy line charge stops at solid collision.",
+          "vfxFamily": "earth",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "behemoth_totem_bulwark",
+          "displayName": "Totem Bulwark",
+          "status": "planned",
+          "mechanic": "Brace the massive totem as a temporary destructible barricade.",
+          "vfxFamily": "earth",
+          "delivery": "construct"
+        },
+        {
+          "id": "war_cry",
+          "displayName": "War Cry",
+          "status": "implemented",
+          "mechanic": "Taunt nearby monsters/bots for six seconds and briefly guard.",
+          "vfxFamily": "war",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "cleaving_strike",
+          "displayName": "Cleaving Strike",
+          "status": "implemented",
+          "mechanic": "Primary-stat melee strike hits nearby enemies.",
+          "vfxFamily": "steel",
+          "delivery": "ground_circle"
+        }
+      ],
+      "passive": {
+        "id": "behemoth_ancestral_weight",
+        "displayName": "Ancestral Weight",
+        "status": "planned",
+        "mechanic": "Standing still briefly increases resistance and threat retention.",
+        "vfxFamily": "earth",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "behemoth_stampede",
+        "displayName": "Ancestral Stampede",
+        "status": "planned",
+        "mechanic": "Warned spectral stampede crosses a broad ground lane.",
+        "vfxFamily": "earth",
+        "delivery": "ground_line"
+      }
+    },
+    {
+      "id": "drakish_footman",
+      "displayName": "Drakish Footman",
+      "familyId": "drakish_footman",
+      "variant": "Dragon Pact",
+      "description": "Human sword-and-shield tank; timed dragon form supplies two cleaves then a weak furthest-target fireball for threat.",
+      "runtimeArchetype": 0,
+      "primaryStat": "strength",
+      "strength": 20,
+      "agility": 10,
+      "intelligence": 10,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "sword",
+      "threatRole": "tank",
+      "roles": [
+        "tank"
+      ],
+      "artFamily": "human scale-mail footman plus separate dragon form, ember-edged scales",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "drakish_dragon_oath",
+          "displayName": "Dragon Oath",
+          "status": "planned",
+          "mechanic": "Timed dragon form grants exactly two cleaving slash attacks, then breathes a weak fireball toward the furthest valid enemy to gain ranged threat; returning to human sword/shield form ends the sequence.",
+          "vfxFamily": "dragon",
+          "delivery": "transformation"
+        },
+        {
+          "id": "drakish_scale_guard",
+          "displayName": "Scale Guard",
+          "status": "planned",
+          "mechanic": "Brief dragon-scale defense protects the sword-and-shield footman.",
+          "vfxFamily": "dragon",
+          "delivery": "self"
+        },
+        {
+          "id": "drakish_wing_rebuke",
+          "displayName": "Wing Rebuke",
+          "status": "planned",
+          "mechanic": "Warned wing sweep knocks nearby enemies away from allies.",
+          "vfxFamily": "dragon",
+          "delivery": "ground_cone"
+        },
+        {
+          "id": "shield_slam",
+          "displayName": "Shield Slam",
+          "status": "implemented",
+          "mechanic": "Melee strength strike, two-second slow and monster threat.",
+          "vfxFamily": "holy",
+          "delivery": "targeted"
+        },
+        {
+          "id": "war_cry",
+          "displayName": "War Cry",
+          "status": "implemented",
+          "mechanic": "Taunt nearby monsters/bots for six seconds and briefly guard.",
+          "vfxFamily": "war",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        }
+      ],
+      "passive": {
+        "id": "drakish_ember_memory",
+        "displayName": "Ember Memory",
+        "status": "planned",
+        "mechanic": "The weak threat fireball applies a short, minor burn; no full damage-spell scaling.",
+        "vfxFamily": "dragon",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "drakish_ancient_pact",
+        "displayName": "Ancient Pact",
+        "status": "planned",
+        "mechanic": "Extend one dragon transformation with a visible landing circle and group guard.",
+        "vfxFamily": "dragon",
+        "delivery": "transformation"
+      }
+    },
+    {
+      "id": "wizard",
+      "displayName": "Cinder Arcanist",
+      "familyId": "wizard",
+      "variant": "Damage",
+      "description": "The damage Wizard commands fire, frost, lightning and warned ground geometry.",
+      "runtimeArchetype": 2,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 1200,
+      "attackSeconds": 1.5,
+      "attackStyle": "arcane",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "charred robes, runic staff, restrained ember and violet glow",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "ember_lance",
+          "displayName": "Ember Lance",
+          "status": "implemented",
+          "mechanic": "Authored moving fire skillshot with validated collision policies.",
+          "vfxFamily": "fire",
+          "delivery": "projectile"
+        },
+        {
+          "id": "frost_bind",
+          "displayName": "Frost Bind",
+          "status": "implemented",
+          "mechanic": "Authored moving frost skillshot with slow on impact.",
+          "vfxFamily": "frost",
+          "delivery": "projectile"
+        },
+        {
+          "id": "chain_spark",
+          "displayName": "Chain Spark",
+          "status": "implemented",
+          "mechanic": "Intelligence lightning chains to up to four nearby enemies.",
+          "vfxFamily": "arcane",
+          "delivery": "chain"
+        },
+        {
+          "id": "cinder_cone",
+          "displayName": "Cinder Cone",
+          "status": "implemented",
+          "mechanic": "Authored warning cone followed by fire-area damage.",
+          "vfxFamily": "fire",
+          "delivery": "ground_cone"
+        },
+        {
+          "id": "grave_line",
+          "displayName": "Grave Line",
+          "status": "implemented",
+          "mechanic": "Authored warning line followed by spectral-area damage.",
+          "vfxFamily": "shadow",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "ashen_square",
+          "displayName": "Ashen Ward",
+          "status": "implemented",
+          "mechanic": "Authored square ground-area warning and effect.",
+          "vfxFamily": "ash",
+          "delivery": "ground_square"
+        }
+      ],
+      "passive": {
+        "id": "deep_reserves",
+        "displayName": "Deep Reserves",
+        "status": "implemented",
+        "mechanic": "Learned passive increases mana and energy regeneration by fifty percent.",
+        "vfxFamily": "arcane",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "cataclysm",
+        "displayName": "Cataclysm",
+        "status": "implemented",
+        "mechanic": "Ultimate intelligence blast strikes up to twelve enemies near the selected target.",
+        "vfxFamily": "fire",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "troll_berserker_melee",
+      "displayName": "Red-Moon Berserker",
+      "familyId": "troll_berserker",
+      "variant": "Melee Dual Axes",
+      "description": "Agile troll rapidly attacks in melee with dual axes.",
+      "runtimeArchetype": 1,
+      "primaryStat": "agility",
+      "strength": 10,
+      "agility": 20,
+      "intelligence": 10,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "axes",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "lean muscular troll, tusks, ritual wraps, paired axes",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "troll_axe_frenzy",
+          "displayName": "Axe Frenzy",
+          "status": "planned",
+          "mechanic": "Rapid dual-axe melee sequence with a visible commitment window.",
+          "vfxFamily": "blood",
+          "delivery": "targeted"
+        },
+        {
+          "id": "troll_blood_leap",
+          "displayName": "Bloodbound Leap",
+          "status": "planned",
+          "mechanic": "Leap to a warned location and cleave on landing.",
+          "vfxFamily": "blood",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "cleaving_strike",
+          "displayName": "Cleaving Strike",
+          "status": "implemented",
+          "mechanic": "Primary-stat melee strike hits nearby enemies.",
+          "vfxFamily": "steel",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "shadow_step",
+          "displayName": "Shadow Step",
+          "status": "implemented",
+          "mechanic": "Dash toward an enemy and strike using agility.",
+          "vfxFamily": "shadow",
+          "delivery": "targeted"
+        },
+        {
+          "id": "iron_guard",
+          "displayName": "Iron Guard",
+          "status": "implemented",
+          "mechanic": "Take 40% less damage for eight seconds.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        },
+        {
+          "id": "second_wind",
+          "displayName": "Second Wind",
+          "status": "implemented",
+          "mechanic": "Heal only yourself for eighteen percent maximum health; selected allies never receive the heal.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        }
+      ],
+      "passive": {
+        "id": "troll_hunger",
+        "displayName": "Berserker Hunger",
+        "status": "planned",
+        "mechanic": "Missing health grants a capped attack-speed bonus.",
+        "vfxFamily": "blood",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "troll_red_moon",
+        "displayName": "Red Moon Frenzy",
+        "status": "planned",
+        "mechanic": "Brief ultimate empowers the selected melee or thrown dual-axe form.",
+        "vfxFamily": "blood",
+        "delivery": "self"
+      }
+    },
+    {
+      "id": "troll_berserker_ranged",
+      "displayName": "Red-Moon Berserker",
+      "familyId": "troll_berserker",
+      "variant": "Thrown Dual Axes",
+      "description": "Agile troll throws dual axes with visible travel and bounded return hits.",
+      "runtimeArchetype": 1,
+      "primaryStat": "agility",
+      "strength": 10,
+      "agility": 20,
+      "intelligence": 10,
+      "basicAttackRange": 1500,
+      "attackSeconds": 1.5,
+      "attackStyle": "axes",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "same troll family, paired throwing axes, dark red ritual wraps",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "troll_twin_throw",
+          "displayName": "Twin Throw",
+          "status": "planned",
+          "mechanic": "Launch two visible axes with independent collision and hit limits.",
+          "vfxFamily": "blood",
+          "delivery": "projectile"
+        },
+        {
+          "id": "troll_returning_axes",
+          "displayName": "Returning Axes",
+          "status": "planned",
+          "mechanic": "Recall thrown axes along warned return lanes; each target has a bounded hit count.",
+          "vfxFamily": "blood",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "piercing_shot",
+          "displayName": "Piercing Shot",
+          "status": "implemented",
+          "mechanic": "Authored physical skillshot with per-target hit limits.",
+          "vfxFamily": "steel",
+          "delivery": "projectile"
+        },
+        {
+          "id": "frost_bind",
+          "displayName": "Frost Bind",
+          "status": "implemented",
+          "mechanic": "Authored moving frost skillshot with slow on impact.",
+          "vfxFamily": "frost",
+          "delivery": "projectile"
+        },
+        {
+          "id": "shadow_step",
+          "displayName": "Shadow Step",
+          "status": "implemented",
+          "mechanic": "Dash toward an enemy and strike using agility.",
+          "vfxFamily": "shadow",
+          "delivery": "targeted"
+        },
+        {
+          "id": "venom_ground",
+          "displayName": "Venom Ground",
+          "status": "implemented",
+          "mechanic": "Delayed poison circle; entering applies poison and leaving removes this area contribution.",
+          "vfxFamily": "venom",
+          "delivery": "ground_circle"
+        }
+      ],
+      "passive": {
+        "id": "troll_hunger",
+        "displayName": "Berserker Hunger",
+        "status": "planned",
+        "mechanic": "Missing health grants a capped attack-speed bonus.",
+        "vfxFamily": "blood",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "troll_red_moon",
+        "displayName": "Red Moon Frenzy",
+        "status": "planned",
+        "mechanic": "Brief ultimate empowers the selected melee or thrown dual-axe form.",
+        "vfxFamily": "blood",
+        "delivery": "self"
+      }
+    },
+    {
+      "id": "dryad",
+      "displayName": "Thornweave Dryad",
+      "familyId": "dryad",
+      "variant": "Grove Tender",
+      "description": "A woodland spirit controls roots while tending injured allies.",
+      "runtimeArchetype": 2,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 1200,
+      "attackSeconds": 1.5,
+      "attackStyle": "staff",
+      "threatRole": "healer",
+      "roles": [
+        "healer",
+        "support"
+      ],
+      "artFamily": "bark skin, thorn crown, sparse verdant leaves, wooden staff",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "dryad_root_snare",
+          "displayName": "Root Snare",
+          "status": "planned",
+          "mechanic": "Warned roots hold enemies inside a small ground circle.",
+          "vfxFamily": "nature",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "dryad_seed_mend",
+          "displayName": "Seed Mend",
+          "status": "planned",
+          "mechanic": "Plant a healing seed on an ally that blooms after a short delay.",
+          "vfxFamily": "nature",
+          "delivery": "ally"
+        },
+        {
+          "id": "dryad_thorn_line",
+          "displayName": "Thornweave",
+          "status": "planned",
+          "mechanic": "A visible thorn line slows enemies crossing it.",
+          "vfxFamily": "nature",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "restoring_light",
+          "displayName": "Restoring Light",
+          "status": "implemented",
+          "mechanic": "Heal an ally or self using intelligence.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "sanctuary",
+          "displayName": "Sanctuary",
+          "status": "implemented",
+          "mechanic": "Heal nearby allies and briefly guard them.",
+          "vfxFamily": "holy",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "purify",
+          "displayName": "Purify",
+          "status": "implemented",
+          "mechanic": "Remove an ally or self slow and restore health.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        }
+      ],
+      "passive": {
+        "id": "dryad_green_covenant",
+        "displayName": "Green Covenant",
+        "status": "planned",
+        "mechanic": "Effective healing builds a small, capped regeneration reserve.",
+        "vfxFamily": "nature",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "dryad_grove_renewal",
+        "displayName": "Grove Renewal",
+        "status": "planned",
+        "mechanic": "Grow a visible sanctuary of healing trees for living allies.",
+        "vfxFamily": "nature",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "whisp",
+      "displayName": "Lantern Whisp",
+      "familyId": "whisp",
+      "variant": "Kindred Guide",
+      "description": "A small luminous spirit guides and sustains the party through a dark world.",
+      "runtimeArchetype": 2,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 1200,
+      "attackSeconds": 1.5,
+      "attackStyle": "arcane",
+      "threatRole": "healer",
+      "roles": [
+        "healer",
+        "support"
+      ],
+      "artFamily": "floating spirit core, wispy pale-green ribbons, restrained halo",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "whisp_guiding_mote",
+          "displayName": "Guiding Mote",
+          "status": "planned",
+          "mechanic": "Send a visible healing mote to the first allied unit in its path.",
+          "vfxFamily": "spirit",
+          "delivery": "projectile"
+        },
+        {
+          "id": "whisp_spirit_tether",
+          "displayName": "Spirit Tether",
+          "status": "planned",
+          "mechanic": "Short-range healing tether breaks immediately outside its range.",
+          "vfxFamily": "spirit",
+          "delivery": "ally"
+        },
+        {
+          "id": "whisp_fey_trail",
+          "displayName": "Fey Trail",
+          "status": "planned",
+          "mechanic": "Leave temporary luminous ground motes that restore allies on contact.",
+          "vfxFamily": "spirit",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "restoring_light",
+          "displayName": "Restoring Light",
+          "status": "implemented",
+          "mechanic": "Heal an ally or self using intelligence.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "purify",
+          "displayName": "Purify",
+          "status": "implemented",
+          "mechanic": "Remove an ally or self slow and restore health.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "protection_dome",
+          "displayName": "Aegis Dome",
+          "status": "implemented",
+          "mechanic": "Temporary protection construct with authored projectile response.",
+          "vfxFamily": "holy",
+          "delivery": "construct"
+        }
+      ],
+      "passive": {
+        "id": "whisp_lantern_soul",
+        "displayName": "Lantern Soul",
+        "status": "planned",
+        "mechanic": "Remaining near an injured ally improves resource regeneration.",
+        "vfxFamily": "spirit",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "whisp_constellation",
+        "displayName": "Kindred Constellation",
+        "status": "planned",
+        "mechanic": "Visible links pulse healing to nearby living allies; no revival.",
+        "vfxFamily": "spirit",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "evergrove_centaur",
+      "displayName": "Evergrove Centaur",
+      "familyId": "evergrove_centaur",
+      "variant": "Spring Warden",
+      "description": "A mobile centaur carries grove javelins and leads allies along healing trails.",
+      "runtimeArchetype": 2,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 1300,
+      "attackSeconds": 1.5,
+      "attackStyle": "lance",
+      "threatRole": "healer",
+      "roles": [
+        "healer",
+        "support"
+      ],
+      "artFamily": "antlered woodland centaur, weathered barding, grove javelin",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "centaur_grove_javelin",
+          "displayName": "Grove Javelin",
+          "status": "planned",
+          "mechanic": "A root-tipped javelin harms enemies and leaves a small healing bloom.",
+          "vfxFamily": "nature",
+          "delivery": "projectile"
+        },
+        {
+          "id": "centaur_trailblaze",
+          "displayName": "Evergrove Trail",
+          "status": "planned",
+          "mechanic": "A warned forward path grants allied movement speed.",
+          "vfxFamily": "nature",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "centaur_herd_call",
+          "displayName": "Herd Call",
+          "status": "planned",
+          "mechanic": "Call a temporary spectral grove companion with a bounded lifetime.",
+          "vfxFamily": "nature",
+          "delivery": "summon"
+        },
+        {
+          "id": "restoring_light",
+          "displayName": "Restoring Light",
+          "status": "implemented",
+          "mechanic": "Heal an ally or self using intelligence.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "sanctuary",
+          "displayName": "Sanctuary",
+          "status": "implemented",
+          "mechanic": "Heal nearby allies and briefly guard them.",
+          "vfxFamily": "holy",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "purify",
+          "displayName": "Purify",
+          "status": "implemented",
+          "mechanic": "Remove an ally or self slow and restore health.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        }
+      ],
+      "passive": {
+        "id": "centaur_steady_gait",
+        "displayName": "Steady Gait",
+        "status": "planned",
+        "mechanic": "Briefly moving without damage strengthens the next effective heal.",
+        "vfxFamily": "nature",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "centaur_spring_march",
+        "displayName": "Spring March",
+        "status": "planned",
+        "mechanic": "A moving grove aura sustains allies during a short formation advance.",
+        "vfxFamily": "nature",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "keeper_of_light",
+      "displayName": "Keeper of the Light",
+      "familyId": "keeper_of_light",
+      "variant": "Last Lantern",
+      "description": "A solemn lantern keeper protects living allies with beams, wards and rallying light.",
+      "runtimeArchetype": 2,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 1200,
+      "attackSeconds": 1.5,
+      "attackStyle": "staff",
+      "threatRole": "healer",
+      "roles": [
+        "healer",
+        "support"
+      ],
+      "artFamily": "aged robed guardian, tall lantern staff, muted gold-white light",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "User Unit Type.txt direction and authored dark-fantasy concept; no approved production model is bound by this roster.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "keeper_dawn_beam",
+          "displayName": "Dawn Beam",
+          "status": "planned",
+          "mechanic": "A warned light line heals allies and lightly damages enemies.",
+          "vfxFamily": "light",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "keeper_lantern_ward",
+          "displayName": "Lantern Ward",
+          "status": "planned",
+          "mechanic": "Place a destructible ward that grants a small allied shield pulse.",
+          "vfxFamily": "light",
+          "delivery": "construct"
+        },
+        {
+          "id": "keeper_beacon",
+          "displayName": "Beacon of Return",
+          "status": "planned",
+          "mechanic": "Mark an allied rally point with a visible ground beacon and short haste buff.",
+          "vfxFamily": "light",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "restoring_light",
+          "displayName": "Restoring Light",
+          "status": "implemented",
+          "mechanic": "Heal an ally or self using intelligence.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        },
+        {
+          "id": "sanctuary",
+          "displayName": "Sanctuary",
+          "status": "implemented",
+          "mechanic": "Heal nearby allies and briefly guard them.",
+          "vfxFamily": "holy",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "purify",
+          "displayName": "Purify",
+          "status": "implemented",
+          "mechanic": "Remove an ally or self slow and restore health.",
+          "vfxFamily": "holy",
+          "delivery": "ally"
+        }
+      ],
+      "passive": {
+        "id": "keeper_last_light",
+        "displayName": "Last Light",
+        "status": "planned",
+        "mechanic": "A low-health ally can receive one small emergency shield per cooldown.",
+        "vfxFamily": "light",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "keeper_sunrise",
+        "displayName": "Sunrise Vigil",
+        "status": "planned",
+        "mechanic": "A broad, clearly warned radiance restores living allies over time.",
+        "vfxFamily": "light",
+        "delivery": "ground_circle"
+      }
+    }
+  ]
+}
