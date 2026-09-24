@@ -1,0 +1,767 @@
+{
+  "generator": "Tools/BuildTownMeshes.py",
+  "units": "cm",
+  "up": "Z",
+  "front": "+X",
+  "meshes": [
+    {
+      "name": "SM_Town_HouseTimberA",
+      "triangles": 2150,
+      "materials": [
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "Plaster",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -361.2,
+        -449.0,
+        -10.0
+      ],
+      "boundsMax": [
+        396.2,
+        449.0,
+        1083.1
+      ]
+    },
+    {
+      "name": "SM_Town_HouseTimberB",
+      "triangles": 3674,
+      "materials": [
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "Plaster",
+        "RoofClay",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -430.0,
+        -340.2,
+        -10.0
+      ],
+      "boundsMax": [
+        465.0,
+        340.2,
+        1285.4
+      ]
+    },
+    {
+      "name": "SM_Town_HouseTimberC",
+      "triangles": 2848,
+      "materials": [
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "Plaster",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -371.2,
+        -509.0,
+        -10.0
+      ],
+      "boundsMax": [
+        406.2,
+        509.0,
+        1115.5
+      ]
+    },
+    {
+      "name": "SM_Town_HouseShop",
+      "triangles": 2606,
+      "materials": [
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "Plaster",
+        "RoofClay",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -381.2,
+        -469.0,
+        -10.0
+      ],
+      "boundsMax": [
+        490.0,
+        469.0,
+        1137.9
+      ]
+    },
+    {
+      "name": "SM_Town_Tavern",
+      "triangles": 5704,
+      "materials": [
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "Plaster",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -431.2,
+        -634.0,
+        -10.0
+      ],
+      "boundsMax": [
+        540.0,
+        634.0,
+        1469.9
+      ]
+    },
+    {
+      "name": "SM_Town_HousePlanks",
+      "triangles": 1550,
+      "materials": [
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "Stone",
+        "Thatch",
+        "Timber"
+      ],
+      "boundsMin": [
+        -331.4,
+        -379.0,
+        -10.0
+      ],
+      "boundsMax": [
+        331.4,
+        379.0,
+        1007.0
+      ]
+    },
+    {
+      "name": "SM_Town_CottageStone",
+      "triangles": 926,
+      "materials": [
+        "Castle",
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "Stone",
+        "Thatch",
+        "Timber"
+      ],
+      "boundsMin": [
+        -326.4,
+        -450.0,
+        -10.0
+      ],
+      "boundsMax": [
+        326.4,
+        450.0,
+        819.0
+      ]
+    },
+    {
+      "name": "SM_Town_CottageStoneSlate",
+      "triangles": 926,
+      "materials": [
+        "Castle",
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -346.4,
+        -390.0,
+        -10.0
+      ],
+      "boundsMax": [
+        346.4,
+        390.0,
+        897.0
+      ]
+    },
+    {
+      "name": "SM_Town_TownhouseRow",
+      "triangles": 2454,
+      "materials": [
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "Plaster",
+        "RoofClay",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -372.0,
+        -769.0,
+        -10.0
+      ],
+      "boundsMax": [
+        465.0,
+        769.0,
+        1331.8
+      ]
+    },
+    {
+      "name": "SM_Town_TownhouseRowB",
+      "triangles": 2430,
+      "materials": [
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "Plaster",
+        "RoofClay",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -372.0,
+        -699.0,
+        -10.0
+      ],
+      "boundsMax": [
+        465.0,
+        699.0,
+        1389.0
+      ]
+    },
+    {
+      "name": "SM_Town_Warehouse",
+      "triangles": 522,
+      "materials": [
+        "Planks",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -400.5,
+        -500.0,
+        -10.0
+      ],
+      "boundsMax": [
+        512.0,
+        500.0,
+        873.8
+      ]
+    },
+    {
+      "name": "SM_Town_Chapel",
+      "triangles": 984,
+      "materials": [
+        "Castle",
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -695.0,
+        -470.0,
+        -10.0
+      ],
+      "boundsMax": [
+        1050.0,
+        470.0,
+        2895.0
+      ]
+    },
+    {
+      "name": "SM_Town_MarketHall",
+      "triangles": 566,
+      "materials": [
+        "Planks",
+        "RoofClay",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -695.0,
+        -446.3,
+        0.0
+      ],
+      "boundsMax": [
+        695.0,
+        446.3,
+        853.4
+      ]
+    },
+    {
+      "name": "SM_Town_Watchtower",
+      "triangles": 302,
+      "materials": [
+        "GlassDark",
+        "Iron",
+        "Planks",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -305.0,
+        -304.9,
+        -10.0
+      ],
+      "boundsMax": [
+        305.0,
+        304.9,
+        1469.7
+      ]
+    },
+    {
+      "name": "SM_Town_Gatehouse",
+      "triangles": 2190,
+      "materials": [
+        "BannerCloth",
+        "Castle",
+        "GlassDark",
+        "Iron",
+        "Planks",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -396.0,
+        -1001.3,
+        0.0
+      ],
+      "boundsMax": [
+        650.0,
+        1001.3,
+        1834.0
+      ]
+    },
+    {
+      "name": "SM_Town_WallSegment",
+      "triangles": 264,
+      "materials": [
+        "Castle",
+        "GlassDark",
+        "Stone"
+      ],
+      "boundsMin": [
+        -150.0,
+        -500.0,
+        0.0
+      ],
+      "boundsMax": [
+        210.0,
+        500.0,
+        855.0
+      ]
+    },
+    {
+      "name": "SM_Town_WallTower",
+      "triangles": 660,
+      "materials": [
+        "Castle",
+        "GlassDark",
+        "Iron",
+        "RoofSlate",
+        "Stone"
+      ],
+      "boundsMin": [
+        -361.1,
+        -375.4,
+        0.0
+      ],
+      "boundsMax": [
+        361.1,
+        375.4,
+        1930.0
+      ]
+    },
+    {
+      "name": "SM_Castle_Gatehouse",
+      "triangles": 2212,
+      "materials": [
+        "BannerCloth",
+        "Castle",
+        "GlassDark",
+        "Iron",
+        "RoofSlate",
+        "Stone"
+      ],
+      "boundsMin": [
+        -516.0,
+        -1066.1,
+        0.0
+      ],
+      "boundsMax": [
+        850.0,
+        1066.1,
+        2378.0
+      ]
+    },
+    {
+      "name": "SM_Castle_Curtain",
+      "triangles": 264,
+      "materials": [
+        "Castle",
+        "GlassDark"
+      ],
+      "boundsMin": [
+        -180.0,
+        -500.0,
+        0.0
+      ],
+      "boundsMax": [
+        246.0,
+        500.0,
+        1175.0
+      ]
+    },
+    {
+      "name": "SM_Castle_Tower",
+      "triangles": 660,
+      "materials": [
+        "Castle",
+        "GlassDark",
+        "Iron",
+        "RoofSlate"
+      ],
+      "boundsMin": [
+        -437.0,
+        -455.4,
+        0.0
+      ],
+      "boundsMax": [
+        437.0,
+        455.4,
+        2698.0
+      ]
+    },
+    {
+      "name": "SM_Castle_Keep",
+      "triangles": 3018,
+      "materials": [
+        "BannerCloth",
+        "Castle",
+        "GlassDark",
+        "GlassLit",
+        "Iron",
+        "Planks",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -1060.0,
+        -1055.3,
+        -10.0
+      ],
+      "boundsMax": [
+        1060.0,
+        1055.3,
+        4070.0
+      ]
+    },
+    {
+      "name": "SM_Town_MarketStallRed",
+      "triangles": 332,
+      "materials": [
+        "Canvas",
+        "Planks",
+        "Sack",
+        "Timber"
+      ],
+      "boundsMin": [
+        -145.4,
+        -210.0,
+        0.0
+      ],
+      "boundsMax": [
+        166.5,
+        210.0,
+        300.5
+      ]
+    },
+    {
+      "name": "SM_Town_MarketStallBlue",
+      "triangles": 308,
+      "materials": [
+        "CanvasAlt",
+        "Planks",
+        "Sack",
+        "Timber"
+      ],
+      "boundsMin": [
+        -155.4,
+        -180.0,
+        0.0
+      ],
+      "boundsMax": [
+        176.5,
+        180.0,
+        300.0
+      ]
+    },
+    {
+      "name": "SM_Town_Cart",
+      "triangles": 836,
+      "materials": [
+        "Iron",
+        "Planks",
+        "Sack",
+        "Timber"
+      ],
+      "boundsMin": [
+        -150.0,
+        -96.0,
+        0.0
+      ],
+      "boundsMax": [
+        360.8,
+        93.0,
+        170.0
+      ]
+    },
+    {
+      "name": "SM_Town_Well",
+      "triangles": 322,
+      "materials": [
+        "GlassDark",
+        "Iron",
+        "Planks",
+        "RoofSlate",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -143.2,
+        -165.0,
+        0.0
+      ],
+      "boundsMax": [
+        143.2,
+        165.0,
+        439.0
+      ]
+    },
+    {
+      "name": "SM_Town_Fence",
+      "triangles": 84,
+      "materials": [
+        "Planks",
+        "Timber"
+      ],
+      "boundsMin": [
+        -6.7,
+        -206.7,
+        0.0
+      ],
+      "boundsMax": [
+        6.7,
+        206.0,
+        110.0
+      ]
+    },
+    {
+      "name": "SM_Town_LowWall",
+      "triangles": 24,
+      "materials": [
+        "Stone"
+      ],
+      "boundsMin": [
+        -35.0,
+        -255.0,
+        0.0
+      ],
+      "boundsMax": [
+        35.0,
+        255.0,
+        101.0
+      ]
+    },
+    {
+      "name": "SM_Town_LampPost",
+      "triangles": 160,
+      "materials": [
+        "Flame",
+        "Iron",
+        "Stone"
+      ],
+      "boundsMin": [
+        -25.0,
+        -25.0,
+        0.0
+      ],
+      "boundsMax": [
+        90.0,
+        25.0,
+        360.0
+      ]
+    },
+    {
+      "name": "SM_Town_WallLantern",
+      "triangles": 96,
+      "materials": [
+        "Flame",
+        "Iron"
+      ],
+      "boundsMin": [
+        -4.0,
+        -13.0,
+        -47.0
+      ],
+      "boundsMax": [
+        53.0,
+        13.0,
+        15.0
+      ]
+    },
+    {
+      "name": "SM_Town_BannerPole",
+      "triangles": 104,
+      "materials": [
+        "BannerCloth",
+        "Iron",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -30.0,
+        -30.0,
+        0.0
+      ],
+      "boundsMax": [
+        30.0,
+        150.0,
+        682
+      ]
+    },
+    {
+      "name": "SM_Town_Fountain",
+      "triangles": 530,
+      "materials": [
+        "Castle",
+        "Stone",
+        "Water"
+      ],
+      "boundsMin": [
+        -420.0,
+        -420.0,
+        0.0
+      ],
+      "boundsMax": [
+        420.0,
+        420.0,
+        458
+      ]
+    },
+    {
+      "name": "SM_Town_Woodpile",
+      "triangles": 530,
+      "materials": [
+        "LogEnd",
+        "Planks",
+        "Timber"
+      ],
+      "boundsMin": [
+        -126.2,
+        -185.0,
+        0.0
+      ],
+      "boundsMax": [
+        126.2,
+        185.0,
+        285.8
+      ]
+    },
+    {
+      "name": "SM_Town_HaySacks",
+      "triangles": 124,
+      "materials": [
+        "Sack",
+        "Thatch"
+      ],
+      "boundsMin": [
+        -150.0,
+        -100.8,
+        0.0
+      ],
+      "boundsMax": [
+        78.0,
+        80.7,
+        100.0
+      ]
+    },
+    {
+      "name": "SM_Town_Gibbet",
+      "triangles": 200,
+      "materials": [
+        "Iron",
+        "Stone",
+        "Timber"
+      ],
+      "boundsMin": [
+        -40.0,
+        -40.0,
+        0.0
+      ],
+      "boundsMax": [
+        182.0,
+        40.0,
+        570.0
+      ]
+    },
+    {
+      "name": "SM_Town_Barricade",
+      "triangles": 180,
+      "materials": [
+        "Timber"
+      ],
+      "boundsMin": [
+        -77.0,
+        -300.0,
+        -2.4
+      ],
+      "boundsMax": [
+        75.6,
+        300.0,
+        192.1
+      ]
+    },
+    {
+      "name": "SM_Castle_Stairs",
+      "triangles": 72,
+      "materials": [
+        "Stone"
+      ],
+      "boundsMin": [
+        -230.0,
+        -450.0,
+        0.0
+      ],
+      "boundsMax": [
+        30.0,
+        450.0,
+        120.0
+      ]
+    }
+  ]
+}

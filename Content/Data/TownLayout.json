@@ -1,0 +1,1971 @@
+{
+ "schemaVersion": 1,
+ "units": "centimeters",
+ "description": "Medieval town placements in realm-local coordinates (Y relative to the team realm centre), applied to both private PvE realms. mode 'outer'/'inner' mirrors a row (authored on +Y) onto each team's outer/divider side. Placements that touch the live route, challenge bays, breach spawn or the realm divider are omitted at runtime. Written by Tools/AuthorTownLayout.py.",
+ "districts": [
+  {
+   "id": "breach",
+   "name": "The Breach Fields",
+   "minX": 11550,
+   "maxX": 30000
+  },
+  {
+   "id": "gate",
+   "name": "Gate Road",
+   "minX": 8900,
+   "maxX": 11550
+  },
+  {
+   "id": "market",
+   "name": "Market District",
+   "minX": 5600,
+   "maxX": 8900
+  },
+  {
+   "id": "residential",
+   "name": "Cooper's Lanes",
+   "minX": 3000,
+   "maxX": 5600
+  },
+  {
+   "id": "square",
+   "name": "Town Square",
+   "minX": 300,
+   "maxX": 3000
+  },
+  {
+   "id": "approach",
+   "name": "Castle Approach",
+   "minX": -1450,
+   "maxX": 300
+  },
+  {
+   "id": "castle",
+   "name": "Castle Bailey",
+   "minX": -30000,
+   "maxX": -1450
+  }
+ ],
+ "placements": [
+  {
+   "slot": "rock_4",
+   "x": -7494.4,
+   "y": -71.3,
+   "yaw": 107.4,
+   "scale": 11.051
+  },
+  {
+   "slot": "boulder",
+   "x": -6994.9,
+   "y": 15.8,
+   "yaw": -124.9,
+   "scale": 10.866
+  },
+  {
+   "slot": "rock_4",
+   "x": -6869.3,
+   "y": -729.2,
+   "yaw": -58.6,
+   "scale": 8.39
+  },
+  {
+   "slot": "boulder",
+   "x": -6858.2,
+   "y": 122.5,
+   "yaw": -143.2,
+   "scale": 8.038
+  },
+  {
+   "slot": "boulder",
+   "x": -6239.0,
+   "y": 1166.9,
+   "yaw": 92.6,
+   "scale": 6.822
+  },
+  {
+   "slot": "rock_1",
+   "x": -6099.2,
+   "y": 8949.4,
+   "yaw": 124.6,
+   "scale": 12.61,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_4",
+   "x": -5575.3,
+   "y": 6232.4,
+   "yaw": -16.3,
+   "scale": 8.391,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_2",
+   "x": -5394.3,
+   "y": 5827.3,
+   "yaw": -56.8,
+   "scale": 7.628,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_1",
+   "x": -5221.5,
+   "y": 56.3,
+   "yaw": 156.4,
+   "scale": 9.092
+  },
+  {
+   "slot": "castle_keep",
+   "x": -4050,
+   "y": 0
+  },
+  {
+   "slot": "rock_1",
+   "x": -3251.8,
+   "y": 6360.5,
+   "yaw": 149.9,
+   "scale": 12.961,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_6",
+   "x": -3089.7,
+   "y": 6024.7,
+   "yaw": 140.9,
+   "scale": 9.92,
+   "mode": "outer"
+  },
+  {
+   "slot": "castle_wall",
+   "x": -3000,
+   "y": -1000
+  },
+  {
+   "slot": "castle_wall",
+   "x": -3000,
+   "y": 0
+  },
+  {
+   "slot": "castle_wall",
+   "x": -3000,
+   "y": 1000
+  },
+  {
+   "slot": "castle_wall",
+   "x": -2920,
+   "y": -1580,
+   "yaw": 90
+  },
+  {
+   "slot": "castle_wall",
+   "x": -2920,
+   "y": 1580,
+   "yaw": 90
+  },
+  {
+   "slot": "rock_4",
+   "x": -2885.1,
+   "y": 8650.4,
+   "yaw": -10.1,
+   "scale": 14.631,
+   "mode": "outer"
+  },
+  {
+   "slot": "castle_door",
+   "x": -2830,
+   "y": 0,
+   "yaw": 90,
+   "scale": 1.6
+  },
+  {
+   "slot": "castle_stairs",
+   "x": -2800,
+   "y": 0
+  },
+  {
+   "slot": "castle_tower",
+   "x": -2600,
+   "y": -1560
+  },
+  {
+   "slot": "castle_tower",
+   "x": -2600,
+   "y": 1560
+  },
+  {
+   "slot": "statue",
+   "x": -2450,
+   "y": -700,
+   "yaw": 60,
+   "scale": 1.2
+  },
+  {
+   "slot": "statue",
+   "x": -2450,
+   "y": 700,
+   "yaw": -60,
+   "scale": 1.2
+  },
+  {
+   "slot": "barrel_stack",
+   "x": -2250,
+   "y": -1150,
+   "yaw": -90
+  },
+  {
+   "slot": "barrel_stack",
+   "x": -2250,
+   "y": 1150,
+   "yaw": 90
+  },
+  {
+   "slot": "rock_6",
+   "x": -2024.2,
+   "y": 8568.5,
+   "yaw": -179.8,
+   "scale": 14.367,
+   "mode": "outer"
+  },
+  {
+   "slot": "wall_section",
+   "x": -2000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "castle_wall",
+   "x": -1980,
+   "y": -1580,
+   "yaw": 90
+  },
+  {
+   "slot": "castle_wall",
+   "x": -1980,
+   "y": 1580,
+   "yaw": 90
+  },
+  {
+   "slot": "fire_pit",
+   "x": -1950,
+   "y": -900
+  },
+  {
+   "slot": "fire_pit",
+   "x": -1950,
+   "y": 900
+  },
+  {
+   "slot": "crate",
+   "x": -1750,
+   "y": -1250,
+   "yaw": 10
+  },
+  {
+   "slot": "crate",
+   "x": -1750,
+   "y": 1250,
+   "yaw": 10
+  },
+  {
+   "slot": "crate_long",
+   "x": -1640,
+   "y": -1260,
+   "yaw": 90
+  },
+  {
+   "slot": "crate_long",
+   "x": -1640,
+   "y": 1260,
+   "yaw": 90
+  },
+  {
+   "slot": "rock_1",
+   "x": -1574.6,
+   "y": 8599.2,
+   "yaw": 79.0,
+   "scale": 14.467,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_4",
+   "x": -1552.8,
+   "y": 5303.1,
+   "yaw": -82.4,
+   "scale": 15.612,
+   "mode": "outer"
+  },
+  {
+   "slot": "banner",
+   "x": -1500,
+   "y": -1150,
+   "yaw": 90
+  },
+  {
+   "slot": "banner",
+   "x": -1500,
+   "y": 1150,
+   "yaw": -90
+  },
+  {
+   "slot": "shield",
+   "x": -1460,
+   "y": -1300,
+   "yaw": 90,
+   "z": 240
+  },
+  {
+   "slot": "shield",
+   "x": -1460,
+   "y": 1300,
+   "yaw": -90,
+   "z": 240
+  },
+  {
+   "slot": "townhouse_row",
+   "x": -1231.0,
+   "y": 3615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "castle_gate",
+   "x": -1050,
+   "y": 0
+  },
+  {
+   "slot": "castle_wall",
+   "x": -1040,
+   "y": -1540
+  },
+  {
+   "slot": "castle_wall",
+   "x": -1040,
+   "y": 1540
+  },
+  {
+   "slot": "wall_section",
+   "x": -1000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_6",
+   "x": -769.5,
+   "y": 8747.4,
+   "yaw": -44.4,
+   "scale": 12.989,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_1",
+   "x": -624.1,
+   "y": 5927.4,
+   "yaw": -107.0,
+   "scale": 14.289,
+   "mode": "outer"
+  },
+  {
+   "slot": "boulder",
+   "x": -512.7,
+   "y": 6759.0,
+   "yaw": 99.6,
+   "scale": 8.024,
+   "mode": "outer"
+  },
+  {
+   "slot": "low_wall",
+   "x": -500,
+   "y": -1100
+  },
+  {
+   "slot": "low_wall",
+   "x": -500,
+   "y": 1100
+  },
+  {
+   "slot": "fire_pit",
+   "x": -350,
+   "y": -900
+  },
+  {
+   "slot": "fire_pit",
+   "x": -350,
+   "y": 900
+  },
+  {
+   "slot": "shrub_1",
+   "x": -200,
+   "y": -1250,
+   "yaw": 30
+  },
+  {
+   "slot": "shrub_1",
+   "x": -200,
+   "y": 1250,
+   "yaw": 30
+  },
+  {
+   "slot": "banner",
+   "x": -100,
+   "y": -760,
+   "yaw": 90
+  },
+  {
+   "slot": "banner",
+   "x": -100,
+   "y": 760,
+   "yaw": -90
+  },
+  {
+   "slot": "house_b",
+   "x": -92.7,
+   "y": 3615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "tree",
+   "x": -24.5,
+   "y": 5176.3,
+   "yaw": -117.3,
+   "scale": 2.306,
+   "mode": "outer"
+  },
+  {
+   "slot": "low_wall",
+   "x": 0,
+   "y": -1150
+  },
+  {
+   "slot": "low_wall",
+   "x": 0,
+   "y": 1150
+  },
+  {
+   "slot": "wall_section",
+   "x": 0,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "barricade",
+   "x": 150,
+   "y": -1050,
+   "yaw": 75
+  },
+  {
+   "slot": "barricade",
+   "x": 150,
+   "y": 1050,
+   "yaw": 105
+  },
+  {
+   "slot": "shrub_2",
+   "x": 250,
+   "y": -1250,
+   "yaw": -60,
+   "scale": 1.4
+  },
+  {
+   "slot": "banner",
+   "x": 250,
+   "y": -760,
+   "yaw": 90
+  },
+  {
+   "slot": "banner",
+   "x": 250,
+   "y": 760,
+   "yaw": -90
+  },
+  {
+   "slot": "shrub_2",
+   "x": 250,
+   "y": 1250,
+   "yaw": 60,
+   "scale": 1.4
+  },
+  {
+   "slot": "gibbet",
+   "x": 350,
+   "y": -1100,
+   "yaw": 45
+  },
+  {
+   "slot": "tree",
+   "x": 400,
+   "y": -900,
+   "yaw": 40,
+   "scale": 2.6
+  },
+  {
+   "slot": "lamp",
+   "x": 449.9,
+   "y": 705.7,
+   "yaw": -63.4
+  },
+  {
+   "slot": "banner",
+   "x": 450,
+   "y": 1000,
+   "yaw": -180
+  },
+  {
+   "slot": "well",
+   "x": 600,
+   "y": -700,
+   "yaw": 30
+  },
+  {
+   "slot": "table",
+   "x": 800,
+   "y": -300,
+   "yaw": -10
+  },
+  {
+   "slot": "jug",
+   "x": 800,
+   "y": -300,
+   "z": 55
+  },
+  {
+   "slot": "stool",
+   "x": 860,
+   "y": -240
+  },
+  {
+   "slot": "townhouse_row_b",
+   "x": 948.7,
+   "y": 3615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_1",
+   "x": 981.6,
+   "y": 5206.5,
+   "yaw": -130.2,
+   "scale": 13.821,
+   "mode": "outer"
+  },
+  {
+   "slot": "townhouse_row_b",
+   "x": 999.0,
+   "y": 2615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "wall_section",
+   "x": 1000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "shrine",
+   "x": 1650,
+   "y": -280,
+   "scale": 0.85
+  },
+  {
+   "slot": "chapel",
+   "x": 1700,
+   "y": 1360,
+   "yaw": -180
+  },
+  {
+   "slot": "tree",
+   "x": 1735.5,
+   "y": 5187.4,
+   "yaw": 10.7,
+   "scale": 2.885,
+   "mode": "outer"
+  },
+  {
+   "slot": "boulder",
+   "x": 1808.9,
+   "y": 8463.0,
+   "yaw": -39.7,
+   "scale": 10.791,
+   "mode": "outer"
+  },
+  {
+   "slot": "lamp",
+   "x": 2000.0,
+   "y": 930.0,
+   "yaw": -90.0
+  },
+  {
+   "slot": "wall_section",
+   "x": 2000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "boulder",
+   "x": 2179.0,
+   "y": 5405.9,
+   "yaw": 178.8,
+   "scale": 7.678,
+   "mode": "outer"
+  },
+  {
+   "slot": "house_shop",
+   "x": 2204.9,
+   "y": 2640.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "statue",
+   "x": 2250,
+   "y": -650,
+   "yaw": 150,
+   "scale": 1.3
+  },
+  {
+   "slot": "tavern",
+   "x": 2321.5,
+   "y": 3690.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "table",
+   "x": 2600,
+   "y": -850,
+   "yaw": 20
+  },
+  {
+   "slot": "jug",
+   "x": 2600,
+   "y": -850,
+   "z": 55
+  },
+  {
+   "slot": "stool",
+   "x": 2660,
+   "y": -790
+  },
+  {
+   "slot": "hay_sacks",
+   "x": 2850,
+   "y": -1150,
+   "yaw": 30
+  },
+  {
+   "slot": "tree",
+   "x": 2900,
+   "y": -1100,
+   "yaw": 40,
+   "scale": 2.6
+  },
+  {
+   "slot": "banner",
+   "x": 2900,
+   "y": 1000,
+   "yaw": -180
+  },
+  {
+   "slot": "wall_section",
+   "x": 3000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "cart",
+   "x": 3150,
+   "y": -1150,
+   "yaw": -180
+  },
+  {
+   "slot": "table",
+   "x": 3150,
+   "y": 450,
+   "yaw": 70
+  },
+  {
+   "slot": "jug",
+   "x": 3150,
+   "y": 450,
+   "z": 55
+  },
+  {
+   "slot": "fence",
+   "x": 3150,
+   "y": 800,
+   "yaw": 90
+  },
+  {
+   "slot": "shrub_3",
+   "x": 3200,
+   "y": 950
+  },
+  {
+   "slot": "rock_2",
+   "x": 3206.8,
+   "y": 7804.0,
+   "yaw": -58.0,
+   "scale": 7.836,
+   "mode": "outer"
+  },
+  {
+   "slot": "stool",
+   "x": 3210,
+   "y": 510
+  },
+  {
+   "slot": "warehouse",
+   "x": 3249.5,
+   "y": 2662.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "woodpile",
+   "x": 3285.7,
+   "y": 1102,
+   "yaw": -90.0,
+   "scale": 0.8
+  },
+  {
+   "slot": "house_b",
+   "x": 3353.6,
+   "y": 3615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "lamp",
+   "x": 3366.2,
+   "y": 33.5,
+   "yaw": -139.4
+  },
+  {
+   "slot": "cottage_slate",
+   "x": 3390.0,
+   "y": -1596.4,
+   "yaw": 90.0
+  },
+  {
+   "slot": "lamp",
+   "x": 3400.0,
+   "y": -980.0,
+   "yaw": 90.0
+  },
+  {
+   "slot": "ladder",
+   "x": 3400,
+   "y": 550,
+   "yaw": 90
+  },
+  {
+   "slot": "house_c",
+   "x": 3509.0,
+   "y": 1656.2,
+   "yaw": -90.0
+  },
+  {
+   "slot": "rock_2",
+   "x": 3571.1,
+   "y": 6245.2,
+   "yaw": 149.9,
+   "scale": 13.922,
+   "mode": "outer"
+  },
+  {
+   "slot": "stump",
+   "x": 3700,
+   "y": -1150
+  },
+  {
+   "slot": "axe",
+   "x": 3720,
+   "y": -1150,
+   "z": 55
+  },
+  {
+   "slot": "woodpile",
+   "x": 3900,
+   "y": 350
+  },
+  {
+   "slot": "tree",
+   "x": 3900,
+   "y": 950,
+   "yaw": 10,
+   "scale": 2.2
+  },
+  {
+   "slot": "fence",
+   "x": 3950,
+   "y": 800,
+   "yaw": 90
+  },
+  {
+   "slot": "tree",
+   "x": 3959.3,
+   "y": 5072.4,
+   "yaw": 147.0,
+   "scale": 2.054,
+   "mode": "outer"
+  },
+  {
+   "slot": "fern_1",
+   "x": 4000,
+   "y": 650
+  },
+  {
+   "slot": "wall_section",
+   "x": 4000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "house_c",
+   "x": 4050,
+   "y": 556.2,
+   "yaw": -90
+  },
+  {
+   "slot": "wall_lantern",
+   "x": 4162.6,
+   "y": -1254,
+   "yaw": -90,
+   "z": 250
+  },
+  {
+   "slot": "shrub_2",
+   "x": 4200,
+   "y": 900
+  },
+  {
+   "slot": "rock_1",
+   "x": 4215.7,
+   "y": 7485.6,
+   "yaw": -174.6,
+   "scale": 7.414,
+   "mode": "outer"
+  },
+  {
+   "slot": "lamp",
+   "x": 4300.0,
+   "y": -120.0,
+   "yaw": -90.0
+  },
+  {
+   "slot": "house_c",
+   "x": 4333.5,
+   "y": -1656.2,
+   "yaw": 90.0
+  },
+  {
+   "slot": "hay_sacks",
+   "x": 4400,
+   "y": -1100
+  },
+  {
+   "slot": "townhouse_row",
+   "x": 4482.0,
+   "y": 3615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "townhouse_row_b",
+   "x": 4514.2,
+   "y": 2615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "crate",
+   "x": 4574.0,
+   "y": -1202,
+   "yaw": 84.1
+  },
+  {
+   "slot": "crate",
+   "x": 4579.0,
+   "y": -1202,
+   "yaw": 104.6,
+   "scale": 0.9,
+   "z": 35
+  },
+  {
+   "slot": "fence",
+   "x": 4700,
+   "y": -1150
+  },
+  {
+   "slot": "fence",
+   "x": 4900,
+   "y": 800,
+   "yaw": 90
+  },
+  {
+   "slot": "tree",
+   "x": 4961.9,
+   "y": 4672.2,
+   "yaw": 175.0,
+   "scale": 2.906,
+   "mode": "outer"
+  },
+  {
+   "slot": "boulder",
+   "x": 4990.5,
+   "y": 8138.6,
+   "yaw": 170.1,
+   "scale": 8.249,
+   "mode": "outer"
+  },
+  {
+   "slot": "wall_section",
+   "x": 5000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_2",
+   "x": 5070.9,
+   "y": 8545.8,
+   "yaw": 23.2,
+   "scale": 11.87,
+   "mode": "outer"
+  },
+  {
+   "slot": "house_planks",
+   "x": 5150,
+   "y": 1250,
+   "yaw": -90
+  },
+  {
+   "slot": "lamp",
+   "x": 5156.5,
+   "y": -708.7,
+   "yaw": 133.7
+  },
+  {
+   "slot": "lamp",
+   "x": 5213.8,
+   "y": 534.9,
+   "yaw": -46.3
+  },
+  {
+   "slot": "banner",
+   "x": 5750,
+   "y": 1020,
+   "yaw": -90
+  },
+  {
+   "slot": "barrel",
+   "x": 5800,
+   "y": 1120,
+   "yaw": 142.1
+  },
+  {
+   "slot": "market_stall_a",
+   "x": 5950,
+   "y": 1040,
+   "yaw": -90
+  },
+  {
+   "slot": "townhouse_row_b",
+   "x": 5966.3,
+   "y": 3615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "house_planks",
+   "x": 5979.0,
+   "y": 1581.4,
+   "yaw": -90.0
+  },
+  {
+   "slot": "barrel_wine",
+   "x": 5990.1,
+   "y": 1187,
+   "yaw": -116.4
+  },
+  {
+   "slot": "wall_section",
+   "x": 6000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "townhouse_row",
+   "x": 6004.2,
+   "y": 2615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "pot",
+   "x": 6090,
+   "y": 1100,
+   "yaw": -18.8
+  },
+  {
+   "slot": "apple",
+   "x": 6100,
+   "y": 1000,
+   "z": 108
+  },
+  {
+   "slot": "apple",
+   "x": 6123,
+   "y": 1009,
+   "z": 108
+  },
+  {
+   "slot": "wall_lantern",
+   "x": 6141.1,
+   "y": 1254,
+   "yaw": 90,
+   "z": 250
+  },
+  {
+   "slot": "apple",
+   "x": 6146,
+   "y": 1018,
+   "z": 108
+  },
+  {
+   "slot": "apple",
+   "x": 6169,
+   "y": 1000,
+   "z": 108
+  },
+  {
+   "slot": "apple",
+   "x": 6192,
+   "y": 1009,
+   "z": 108
+  },
+  {
+   "slot": "crate",
+   "x": 6200,
+   "y": 1250,
+   "yaw": -152.2
+  },
+  {
+   "slot": "apple",
+   "x": 6215,
+   "y": 1018,
+   "z": 108
+  },
+  {
+   "slot": "barrel",
+   "x": 6230,
+   "y": -120,
+   "yaw": -167.1
+  },
+  {
+   "slot": "barrel",
+   "x": 6230,
+   "y": 1120,
+   "yaw": -32.5
+  },
+  {
+   "slot": "apple",
+   "x": 6238,
+   "y": 1000,
+   "z": 108
+  },
+  {
+   "slot": "apple",
+   "x": 6261,
+   "y": 1009,
+   "z": 108
+  },
+  {
+   "slot": "apple",
+   "x": 6284,
+   "y": 1018,
+   "z": 108
+  },
+  {
+   "slot": "apple",
+   "x": 6307,
+   "y": 1000,
+   "z": 108
+  },
+  {
+   "slot": "market_stall_a",
+   "x": 6380,
+   "y": -100,
+   "yaw": 90
+  },
+  {
+   "slot": "market_stall_b",
+   "x": 6380,
+   "y": 1040,
+   "yaw": -90
+  },
+  {
+   "slot": "cart",
+   "x": 6450,
+   "y": 1250,
+   "yaw": 10
+  },
+  {
+   "slot": "basket",
+   "x": 6520,
+   "y": -100,
+   "yaw": 26.1
+  },
+  {
+   "slot": "pot",
+   "x": 6520,
+   "y": 1100,
+   "yaw": -150.2
+  },
+  {
+   "slot": "barrel",
+   "x": 6660,
+   "y": -120,
+   "yaw": 156.1
+  },
+  {
+   "slot": "barrel",
+   "x": 6660,
+   "y": 1120,
+   "yaw": -161.6
+  },
+  {
+   "slot": "hay_sacks",
+   "x": 6700,
+   "y": 1260,
+   "yaw": 17.9
+  },
+  {
+   "slot": "market_stall_b",
+   "x": 6810,
+   "y": -100,
+   "yaw": 90
+  },
+  {
+   "slot": "market_stall_a",
+   "x": 6810,
+   "y": 1040,
+   "yaw": -90
+  },
+  {
+   "slot": "house_planks",
+   "x": 6876.2,
+   "y": 1581.4,
+   "yaw": -90.0
+  },
+  {
+   "slot": "market_hall",
+   "x": 6900,
+   "y": -820
+  },
+  {
+   "slot": "rock_1",
+   "x": 6905.8,
+   "y": 6978.9,
+   "yaw": -78.2,
+   "scale": 11.238,
+   "mode": "outer"
+  },
+  {
+   "slot": "basket_lidded",
+   "x": 6950,
+   "y": -100,
+   "yaw": 13.5
+  },
+  {
+   "slot": "basket",
+   "x": 6950,
+   "y": 1100,
+   "yaw": 86.6
+  },
+  {
+   "slot": "rock_6",
+   "x": 6954.5,
+   "y": 8454.7,
+   "yaw": -18.2,
+   "scale": 7.912,
+   "mode": "outer"
+  },
+  {
+   "slot": "lamp",
+   "x": 7000.0,
+   "y": 930.0,
+   "yaw": -90.0
+  },
+  {
+   "slot": "wall_section",
+   "x": 7000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "house_b",
+   "x": 7187.7,
+   "y": 2615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "tavern",
+   "x": 7343.1,
+   "y": 3690.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "lamp",
+   "x": 7418.5,
+   "y": -67.7,
+   "yaw": 51.1
+  },
+  {
+   "slot": "wall_lantern",
+   "x": 7549.2,
+   "y": 1254,
+   "yaw": 90,
+   "z": 250
+  },
+  {
+   "slot": "market_stall_b",
+   "x": 7550,
+   "y": 1050,
+   "yaw": -90
+  },
+  {
+   "slot": "rock_2",
+   "x": 7663.8,
+   "y": 5764.5,
+   "yaw": -103.2,
+   "scale": 14.608,
+   "mode": "outer"
+  },
+  {
+   "slot": "house_planks",
+   "x": 7679.8,
+   "y": 1581.4,
+   "yaw": -90.0
+  },
+  {
+   "slot": "crate",
+   "x": 7700,
+   "y": 1250,
+   "yaw": -18.9
+  },
+  {
+   "slot": "barrel",
+   "x": 7836.8,
+   "y": 1197,
+   "yaw": -148.9
+  },
+  {
+   "slot": "tree",
+   "x": 7850.1,
+   "y": 4732.0,
+   "yaw": 26.9,
+   "scale": 2.021,
+   "mode": "outer"
+  },
+  {
+   "slot": "barrel",
+   "x": 7906.8,
+   "y": 1202,
+   "yaw": 81.4
+  },
+  {
+   "slot": "house_b",
+   "x": 7933.6,
+   "y": 2615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "market_stall_a",
+   "x": 8000,
+   "y": 1150,
+   "yaw": -90
+  },
+  {
+   "slot": "wall_section",
+   "x": 8000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "wall_lantern",
+   "x": 8097.1,
+   "y": -1254,
+   "yaw": -90,
+   "z": 250
+  },
+  {
+   "slot": "cottage_thatch",
+   "x": 8130.0,
+   "y": -1576.4,
+   "yaw": 90.0
+  },
+  {
+   "slot": "tree",
+   "x": 8178.0,
+   "y": 5075.4,
+   "yaw": 14.7,
+   "scale": 2.082,
+   "mode": "outer"
+  },
+  {
+   "slot": "tree",
+   "x": 8209.2,
+   "y": 4651.3,
+   "yaw": -135.6,
+   "scale": 2.238,
+   "mode": "outer"
+  },
+  {
+   "slot": "cart",
+   "x": 8250,
+   "y": 1250,
+   "yaw": 170
+  },
+  {
+   "slot": "well",
+   "x": 8350,
+   "y": 750,
+   "yaw": 15
+  },
+  {
+   "slot": "crate",
+   "x": 8389.1,
+   "y": -1202,
+   "yaw": 90.7
+  },
+  {
+   "slot": "crate",
+   "x": 8394.1,
+   "y": -1202,
+   "yaw": 78.6,
+   "scale": 0.9,
+   "z": 35
+  },
+  {
+   "slot": "banner",
+   "x": 8550,
+   "y": -1070,
+   "yaw": 90
+  },
+  {
+   "slot": "lamp",
+   "x": 8659.0,
+   "y": 35.8,
+   "yaw": -128.9
+  },
+  {
+   "slot": "lamp",
+   "x": 8800.0,
+   "y": -980.0,
+   "yaw": 90.0
+  },
+  {
+   "slot": "townhouse_row",
+   "x": 8800.8,
+   "y": 3615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "wall_section",
+   "x": 9000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "townhouse_row",
+   "x": 9070.7,
+   "y": 2615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "crate",
+   "x": 9081.8,
+   "y": -1202,
+   "yaw": 87.2
+  },
+  {
+   "slot": "crate",
+   "x": 9086.8,
+   "y": -1202,
+   "yaw": 95.7,
+   "scale": 0.9,
+   "z": 35
+  },
+  {
+   "slot": "house_planks",
+   "x": 9279.0,
+   "y": -1581.4,
+   "yaw": 90.0
+  },
+  {
+   "slot": "barricade",
+   "x": 9300,
+   "y": -1150,
+   "yaw": 80
+  },
+  {
+   "slot": "wall_lantern",
+   "x": 9345.6,
+   "y": -1254,
+   "yaw": -90,
+   "z": 250
+  },
+  {
+   "slot": "lamp",
+   "x": 9700.0,
+   "y": -120.0,
+   "yaw": -90.0
+  },
+  {
+   "slot": "house_b",
+   "x": 9921.5,
+   "y": 3615.0,
+   "yaw": -90.0,
+   "mode": "outer"
+  },
+  {
+   "slot": "crate",
+   "x": 10000,
+   "y": -1100
+  },
+  {
+   "slot": "wall_section",
+   "x": 10000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "crate_long",
+   "x": 10100,
+   "y": -1150,
+   "yaw": 90
+  },
+  {
+   "slot": "house_a",
+   "x": 10238.7,
+   "y": -1646.2,
+   "yaw": 90.0
+  },
+  {
+   "slot": "tree",
+   "x": 10258.0,
+   "y": 4630.7,
+   "yaw": 147.0,
+   "scale": 2.441,
+   "mode": "outer"
+  },
+  {
+   "slot": "watchtower",
+   "x": 10450,
+   "y": 1050,
+   "yaw": -90
+  },
+  {
+   "slot": "barrel",
+   "x": 10486.2,
+   "y": -1197,
+   "yaw": 36.8
+  },
+  {
+   "slot": "barricade",
+   "x": 10500,
+   "y": -1150,
+   "yaw": 90
+  },
+  {
+   "slot": "tree",
+   "x": 10506.4,
+   "y": 5150.8,
+   "yaw": -144.0,
+   "scale": 2.434,
+   "mode": "outer"
+  },
+  {
+   "slot": "barrel",
+   "x": 10556.2,
+   "y": -1202,
+   "yaw": -158.1
+  },
+  {
+   "slot": "lamp",
+   "x": 10751.1,
+   "y": -585.2,
+   "yaw": 128.2
+  },
+  {
+   "slot": "fire_pit",
+   "x": 10850,
+   "y": 1000
+  },
+  {
+   "slot": "wall_section",
+   "x": 11000,
+   "y": 4150,
+   "yaw": 90,
+   "mode": "outer"
+  },
+  {
+   "slot": "tree",
+   "x": 11068.3,
+   "y": 5067.9,
+   "yaw": -142.1,
+   "scale": 2.657,
+   "mode": "outer"
+  },
+  {
+   "slot": "wall_section",
+   "x": 11400,
+   "y": -1500
+  },
+  {
+   "slot": "gatehouse",
+   "x": 11400,
+   "y": 0
+  },
+  {
+   "slot": "wall_section",
+   "x": 11400,
+   "y": 1500
+  },
+  {
+   "slot": "wall_section",
+   "x": 11400,
+   "y": 2500,
+   "mode": "outer"
+  },
+  {
+   "slot": "wall_tower",
+   "x": 11400,
+   "y": 3000,
+   "mode": "outer"
+  },
+  {
+   "slot": "wall_section",
+   "x": 11400,
+   "y": 3500,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_4",
+   "x": 11734.3,
+   "y": 8768.1,
+   "yaw": 110.0,
+   "scale": 11.148,
+   "mode": "outer"
+  },
+  {
+   "slot": "fire_pit",
+   "x": 11800,
+   "y": -1100
+  },
+  {
+   "slot": "fire_pit",
+   "x": 11850,
+   "y": 1000
+  },
+  {
+   "slot": "gibbet",
+   "x": 11900,
+   "y": 1150,
+   "yaw": -160
+  },
+  {
+   "slot": "barricade",
+   "x": 12000,
+   "y": -900,
+   "yaw": 30
+  },
+  {
+   "slot": "rock_1",
+   "x": 12061.1,
+   "y": 5332.7,
+   "yaw": 35.4,
+   "scale": 10.192,
+   "mode": "outer"
+  },
+  {
+   "slot": "stump",
+   "x": 12129.0,
+   "y": 595.5,
+   "yaw": -166.1,
+   "scale": 1.821
+  },
+  {
+   "slot": "tree",
+   "x": 12179.4,
+   "y": 4503.1,
+   "yaw": -0.1,
+   "scale": 2.679,
+   "mode": "outer"
+  },
+  {
+   "slot": "boulder",
+   "x": 12180.4,
+   "y": 945.6,
+   "yaw": 62.0,
+   "scale": 1.478
+  },
+  {
+   "slot": "barricade",
+   "x": 12200,
+   "y": 1050,
+   "yaw": -20
+  },
+  {
+   "slot": "boulder",
+   "x": 12290.7,
+   "y": 1176.3,
+   "yaw": -74.9,
+   "scale": 1.193
+  },
+  {
+   "slot": "rock_6",
+   "x": 12298.9,
+   "y": 8550.0,
+   "yaw": -95.9,
+   "scale": 11.673,
+   "mode": "outer"
+  },
+  {
+   "slot": "cart",
+   "x": 12300,
+   "y": -1150,
+   "yaw": 150
+  },
+  {
+   "slot": "rock_4",
+   "x": 12460.8,
+   "y": 5439.7,
+   "yaw": 173.2,
+   "scale": 10.197,
+   "mode": "outer"
+  },
+  {
+   "slot": "fallen_log",
+   "x": 12497.9,
+   "y": 1073.0,
+   "yaw": -134.7,
+   "scale": 1.687
+  },
+  {
+   "slot": "rock_5",
+   "x": 12506.6,
+   "y": -1111.8,
+   "yaw": -60.3,
+   "scale": 1.013
+  },
+  {
+   "slot": "rock_6",
+   "x": 12679.5,
+   "y": 5356.0,
+   "yaw": -84.9,
+   "scale": 11.463,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_1",
+   "x": 13080.0,
+   "y": -1148.9,
+   "yaw": -110.0,
+   "scale": 3.734
+  },
+  {
+   "slot": "fallen_log",
+   "x": 13217.4,
+   "y": 1357.1,
+   "yaw": -52.7,
+   "scale": 2.729
+  },
+  {
+   "slot": "rock_3",
+   "x": 13335.1,
+   "y": -1139.7,
+   "yaw": 48.0,
+   "scale": 2.73
+  },
+  {
+   "slot": "tree",
+   "x": 13495.5,
+   "y": 5003.6,
+   "yaw": -111.1,
+   "scale": 2.472,
+   "mode": "outer"
+  },
+  {
+   "slot": "shrub_4",
+   "x": 13553.6,
+   "y": -1219.8,
+   "yaw": -19.1,
+   "scale": 2.979
+  },
+  {
+   "slot": "shrub_4",
+   "x": 13555.9,
+   "y": 1520.9,
+   "yaw": 18.5,
+   "scale": 3.264
+  },
+  {
+   "slot": "shrub_4",
+   "x": 13578.5,
+   "y": 117.9,
+   "yaw": -61.0,
+   "scale": 3.966
+  },
+  {
+   "slot": "rock_5",
+   "x": 13696.7,
+   "y": -1011.2,
+   "yaw": -64.0,
+   "scale": 2.47
+  },
+  {
+   "slot": "fallen_log",
+   "x": 13788.1,
+   "y": -1463.5,
+   "yaw": -124.1,
+   "scale": 2.366
+  },
+  {
+   "slot": "fallen_log",
+   "x": 13809.1,
+   "y": 1043.0,
+   "yaw": 15.4,
+   "scale": 2.928
+  },
+  {
+   "slot": "rock_5",
+   "x": 13826.3,
+   "y": 1633.4,
+   "yaw": 104.7,
+   "scale": 3.191
+  },
+  {
+   "slot": "rock_3",
+   "x": 13872.8,
+   "y": 1235.5,
+   "yaw": -109.8,
+   "scale": 3.014
+  },
+  {
+   "slot": "shrub_4",
+   "x": 13917.5,
+   "y": 1703.6,
+   "yaw": 69.8,
+   "scale": 3.522
+  },
+  {
+   "slot": "rock_6",
+   "x": 13920.2,
+   "y": -284.2,
+   "yaw": -167.6,
+   "scale": 4.476
+  },
+  {
+   "slot": "tree",
+   "x": 13946.1,
+   "y": 4817.0,
+   "yaw": -83.1,
+   "scale": 2.708,
+   "mode": "outer"
+  },
+  {
+   "slot": "boulder",
+   "x": 14102.6,
+   "y": -807.5,
+   "yaw": 37.9,
+   "scale": 2.247
+  },
+  {
+   "slot": "rock_2",
+   "x": 14110.5,
+   "y": -348.5,
+   "yaw": 106.6,
+   "scale": 2.473
+  },
+  {
+   "slot": "stump",
+   "x": 14439.6,
+   "y": -421.7,
+   "yaw": 64.4,
+   "scale": 4.395
+  },
+  {
+   "slot": "tree",
+   "x": 14601.2,
+   "y": 4423.9,
+   "yaw": -69.8,
+   "scale": 2.994,
+   "mode": "outer"
+  },
+  {
+   "slot": "boulder",
+   "x": 14811.9,
+   "y": 1095.6,
+   "yaw": 76.5,
+   "scale": 4.181
+  },
+  {
+   "slot": "rock_6",
+   "x": 15099.2,
+   "y": 5591.8,
+   "yaw": 135.7,
+   "scale": 14.351,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_4",
+   "x": 15153.9,
+   "y": 5468.2,
+   "yaw": 51.8,
+   "scale": 11.255,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_2",
+   "x": 15280.8,
+   "y": 627.0,
+   "yaw": -1.0,
+   "scale": 3.423
+  },
+  {
+   "slot": "boulder",
+   "x": 15304.4,
+   "y": -1402.5,
+   "yaw": -91.0,
+   "scale": 3.579
+  },
+  {
+   "slot": "boulder",
+   "x": 15365.8,
+   "y": -40.8,
+   "yaw": -148.2,
+   "scale": 3.861
+  },
+  {
+   "slot": "rock_1",
+   "x": 15408.5,
+   "y": 5972.4,
+   "yaw": -67.4,
+   "scale": 11.809,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_2",
+   "x": 15465.7,
+   "y": -1165.5,
+   "yaw": -75.8,
+   "scale": 3.736
+  },
+  {
+   "slot": "rock_3",
+   "x": 15478.8,
+   "y": 1240.0,
+   "yaw": -115.8,
+   "scale": 2.849
+  },
+  {
+   "slot": "rock_4",
+   "x": 15566.3,
+   "y": -342.5,
+   "yaw": 114.9,
+   "scale": 4.225
+  },
+  {
+   "slot": "rock_1",
+   "x": 15728.4,
+   "y": 6874.8,
+   "yaw": 32.6,
+   "scale": 15.483,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_4",
+   "x": 15849.3,
+   "y": 7763.9,
+   "yaw": -166.5,
+   "scale": 15.29,
+   "mode": "outer"
+  },
+  {
+   "slot": "rock_6",
+   "x": 16126.1,
+   "y": 6429.3,
+   "yaw": -100.6,
+   "scale": 7.706,
+   "mode": "outer"
+  },
+  {
+   "slot": "boulder",
+   "x": 16391.1,
+   "y": 113.0,
+   "yaw": -57.8,
+   "scale": 10.132
+  },
+  {
+   "slot": "rock_6",
+   "x": 16719.6,
+   "y": 462.3,
+   "yaw": 56.6,
+   "scale": 9.549
+  },
+  {
+   "slot": "rock_2",
+   "x": 17304.7,
+   "y": 592.7,
+   "yaw": 15.9,
+   "scale": 7.252
+  },
+  {
+   "slot": "boulder",
+   "x": 17838.1,
+   "y": 1305.2,
+   "yaw": 82.7,
+   "scale": 8.868
+  },
+  {
+   "slot": "rock_6",
+   "x": 18450.6,
+   "y": -92.1,
+   "yaw": 10.2,
+   "scale": 10.774
+  },
+  {
+   "slot": "rock_6",
+   "x": 18656.8,
+   "y": -214.0,
+   "yaw": -80.3,
+   "scale": 6.992
+  },
+  {
+   "slot": "rock_6",
+   "x": 18759.1,
+   "y": -151.1,
+   "yaw": 30.6,
+   "scale": 9.164
+  }
+ ]
+}

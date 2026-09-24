@@ -1,0 +1,1890 @@
+{
+  "source": "Poly Haven public API (api.polyhaven.com)",
+  "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+  "fetched": "2026-09-24T08:51:56Z",
+  "assets": [
+    {
+      "kind": "model",
+      "id": "Barrel_01",
+      "name": "Barrel_01",
+      "authors": "Jorge Camacho",
+      "resolution": "1k",
+      "purpose": "market / street barrels",
+      "page": "https://polyhaven.com/a/Barrel_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/Barrel_01/Barrel_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/Barrel_01/Barrel_01_1k.gltf",
+          "file": "Saved/TownSources/Models/Barrel_01/Barrel_01_1k.gltf",
+          "bytes": 2711,
+          "md5": "45c109401126ea3e5df2fe2c6b6f6d39"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/Barrel_01/Barrel_01.bin",
+          "file": "Saved/TownSources/Models/Barrel_01/Barrel_01.bin",
+          "bytes": 81756,
+          "md5": "e9f1036a183a1747aea6d40c556d7410"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Barrel_01/Barrel_01_explosive_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/Barrel_01/textures/Barrel_01_explosive_diff_1k.jpg",
+          "bytes": 179308,
+          "md5": "a36cd738a17cab52dc4c264a03b2848b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Barrel_01/Barrel_01_explosive_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/Barrel_01/textures/Barrel_01_explosive_nor_gl_1k.jpg",
+          "bytes": 185578,
+          "md5": "f49be8d1ab465c944380b9d565c6ab47"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Barrel_01/Barrel_01_explosive_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/Barrel_01/textures/Barrel_01_explosive_arm_1k.jpg",
+          "bytes": 243594,
+          "md5": "ccfe5da162b909fe98f4780e41cc1233"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wine_barrel_01",
+      "name": "Wine Barrel 01",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "tavern and cellar barrels",
+      "page": "https://polyhaven.com/a/wine_barrel_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wine_barrel_01/wine_barrel_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wine_barrel_01/wine_barrel_01_1k.gltf",
+          "file": "Saved/TownSources/Models/wine_barrel_01/wine_barrel_01_1k.gltf",
+          "bytes": 6673,
+          "md5": "5397e6d959dd3ef20d1fc14436d0eb70"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wine_barrel_01/wine_barrel_01.bin",
+          "file": "Saved/TownSources/Models/wine_barrel_01/wine_barrel_01.bin",
+          "bytes": 385912,
+          "md5": "84f578460020912056a1e3fbe3ec1b97"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_barrel_01/wine_barrel_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wine_barrel_01/textures/wine_barrel_01_diff_1k.jpg",
+          "bytes": 195980,
+          "md5": "fdea9538acf01a04a61626919a84b3fb"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_barrel_01/wine_barrel_01_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wine_barrel_01/textures/wine_barrel_01_arm_1k.jpg",
+          "bytes": 172531,
+          "md5": "2f0cc81ac07fdbe8c22927feac722927"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_barrel_01/wine_barrel_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wine_barrel_01/textures/wine_barrel_01_nor_gl_1k.jpg",
+          "bytes": 163587,
+          "md5": "6b3ce558fa74d3760fa0192dfc4564a3"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wooden_barrels_01",
+      "name": "Wooden Barrels 01",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "stacked barrel cluster",
+      "page": "https://polyhaven.com/a/wooden_barrels_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wooden_barrels_01/wooden_barrels_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_barrels_01/wooden_barrels_01_1k.gltf",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/wooden_barrels_01_1k.gltf",
+          "bytes": 31017,
+          "md5": "1228b95423a5430d74d238284fad724e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_barrels_01/wooden_barrels_01_barrel02_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/textures/wooden_barrels_01_barrel02_nor_gl_1k.jpg",
+          "bytes": 555954,
+          "md5": "21e88f8d945b0a3b6861debe9db58a9f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_barrels_01/wooden_barrels_01_barrel02_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/textures/wooden_barrels_01_barrel02_arm_1k.jpg",
+          "bytes": 848051,
+          "md5": "20a7bccad7bf899a8a4b18c73cd74dc9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_barrels_01/wooden_barrels_01_barrel01_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/textures/wooden_barrels_01_barrel01_arm_1k.jpg",
+          "bytes": 852652,
+          "md5": "19e643936381b9ff0b5d3a17f41f590f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_barrels_01/wooden_barrels_01_pieces_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/textures/wooden_barrels_01_pieces_nor_gl_1k.jpg",
+          "bytes": 620276,
+          "md5": "1f580f7f8ce6fa21694c6048bad318c4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_barrels_01/wooden_barrels_01.bin",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/wooden_barrels_01.bin",
+          "bytes": 1243556,
+          "md5": "6c1dbd45bc5f0b1e726a7343fae0fbdb"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_barrels_01/wooden_barrels_01_barrel01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/textures/wooden_barrels_01_barrel01_nor_gl_1k.jpg",
+          "bytes": 538634,
+          "md5": "21c030448f574a298f22a7edd2b5e176"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_barrels_01/wooden_barrels_01_pieces_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/textures/wooden_barrels_01_pieces_diff_1k.jpg",
+          "bytes": 672604,
+          "md5": "9469a5822acae4616d98ca5fc2af97d2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_barrels_01/wooden_barrels_01_barrel01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/textures/wooden_barrels_01_barrel01_diff_1k.jpg",
+          "bytes": 605063,
+          "md5": "8387b4843c9331f8dd7935a5034d3d38"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_barrels_01/wooden_barrels_01_barrel02_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/textures/wooden_barrels_01_barrel02_diff_1k.jpg",
+          "bytes": 618495,
+          "md5": "5b3f9026ba99f55e3f9397e2e8818945"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_barrels_01/wooden_barrels_01_pieces_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_barrels_01/textures/wooden_barrels_01_pieces_arm_1k.jpg",
+          "bytes": 904545,
+          "md5": "4dc69d91b60da91029acf8e0706e4b33"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wooden_crate_01",
+      "name": "Wooden Crate 01",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "market crates",
+      "page": "https://polyhaven.com/a/wooden_crate_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wooden_crate_01/wooden_crate_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_crate_01/wooden_crate_01_1k.gltf",
+          "file": "Saved/TownSources/Models/wooden_crate_01/wooden_crate_01_1k.gltf",
+          "bytes": 5612,
+          "md5": "33df4d2ae00186d4b64e878466c9e22e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_crate_01/wooden_crate_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_crate_01/textures/wooden_crate_01_diff_1k.jpg",
+          "bytes": 711292,
+          "md5": "266e0462d06e77c5745f66e89820544f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_crate_01/wooden_crate_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_crate_01/textures/wooden_crate_01_nor_gl_1k.jpg",
+          "bytes": 594076,
+          "md5": "e31626a1fcf6f7062c2ffd9fc982b942"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_crate_01/wooden_crate_01.bin",
+          "file": "Saved/TownSources/Models/wooden_crate_01/wooden_crate_01.bin",
+          "bytes": 189408,
+          "md5": "8318f76b0c24b5538ce23051dbcb79a0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_crate_01/wooden_crate_01_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_crate_01/textures/wooden_crate_01_arm_1k.jpg",
+          "bytes": 776699,
+          "md5": "67c4aeb1154af98f95516b21ef62291c"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wooden_crate_02",
+      "name": "Wooden Crate 02",
+      "authors": "James Ray Cock, Jurita Burger",
+      "resolution": "1k",
+      "purpose": "market crates, variant",
+      "page": "https://polyhaven.com/a/wooden_crate_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wooden_crate_02/wooden_crate_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_crate_02/wooden_crate_02_1k.gltf",
+          "file": "Saved/TownSources/Models/wooden_crate_02/wooden_crate_02_1k.gltf",
+          "bytes": 4150,
+          "md5": "a69eb62fd20e6badb6bb56f052930e06"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_crate_02/wooden_crate_02_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_crate_02/textures/wooden_crate_02_diff_1k.jpg",
+          "bytes": 716110,
+          "md5": "45bca8f49da9d541e06bc926ab001c81"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_crate_02/wooden_crate_02_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_crate_02/textures/wooden_crate_02_arm_1k.jpg",
+          "bytes": 819577,
+          "md5": "a7537612dbfb7fd25e756074eec5624e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_crate_02/wooden_crate_02.bin",
+          "file": "Saved/TownSources/Models/wooden_crate_02/wooden_crate_02.bin",
+          "bytes": 150064,
+          "md5": "08d98507231cdeda1070d1a2d0646254"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_crate_02/wooden_crate_02_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_crate_02/textures/wooden_crate_02_nor_gl_1k.jpg",
+          "bytes": 546319,
+          "md5": "314226b31765168cd8070898f8a7e18e"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wooden_bucket_01",
+      "name": "Wooden Bucket 01",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "well and yard bucket",
+      "page": "https://polyhaven.com/a/wooden_bucket_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wooden_bucket_01/wooden_bucket_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_bucket_01/wooden_bucket_01_1k.gltf",
+          "file": "Saved/TownSources/Models/wooden_bucket_01/wooden_bucket_01_1k.gltf",
+          "bytes": 4248,
+          "md5": "d3a6ff00895b69406b203dc417113d9a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_bucket_01/wooden_bucket_01_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_bucket_01/textures/wooden_bucket_01_arm_1k.jpg",
+          "bytes": 777463,
+          "md5": "9f42842024b3117b557348ec265cfeee"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_bucket_01/wooden_bucket_01.bin",
+          "file": "Saved/TownSources/Models/wooden_bucket_01/wooden_bucket_01.bin",
+          "bytes": 158408,
+          "md5": "a93114e5fadd149de908464de7b42550"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_bucket_01/wooden_bucket_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_bucket_01/textures/wooden_bucket_01_diff_1k.jpg",
+          "bytes": 698083,
+          "md5": "d6296adf55e03bb1acc5de3e5fc8b10f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_bucket_01/wooden_bucket_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_bucket_01/textures/wooden_bucket_01_nor_gl_1k.jpg",
+          "bytes": 693440,
+          "md5": "68ad3de3f685798a8d46c070da840e5a"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wicker_basket_01",
+      "name": "Wicker Basket 01",
+      "authors": "Kuutti Siitonen",
+      "resolution": "1k",
+      "purpose": "market produce basket",
+      "page": "https://polyhaven.com/a/wicker_basket_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wicker_basket_01/wicker_basket_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wicker_basket_01/wicker_basket_01_1k.gltf",
+          "file": "Saved/TownSources/Models/wicker_basket_01/wicker_basket_01_1k.gltf",
+          "bytes": 2792,
+          "md5": "6910bb33f9b29c30e41c06342cba4f9b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wicker_basket_01/wicker_basket_01_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wicker_basket_01/textures/wicker_basket_01_arm_1k.jpg",
+          "bytes": 874111,
+          "md5": "e456e1e051da9b8433162de9cb96cb61"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wicker_basket_01/wicker_basket_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wicker_basket_01/textures/wicker_basket_01_nor_gl_1k.jpg",
+          "bytes": 549218,
+          "md5": "4cca87156e77045fd29562b09609b41d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wicker_basket_01/wicker_basket_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wicker_basket_01/textures/wicker_basket_01_diff_1k.jpg",
+          "bytes": 679110,
+          "md5": "54c05d9c5e4f92930cbbf67e4770fc61"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wicker_basket_01/wicker_basket_01.bin",
+          "file": "Saved/TownSources/Models/wicker_basket_01/wicker_basket_01.bin",
+          "bytes": 624920,
+          "md5": "154e2cd9157175591e3585e706925fa9"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wicker_basket_02",
+      "name": "Wicker Basket 02",
+      "authors": "Kuutti Siitonen",
+      "resolution": "1k",
+      "purpose": "market produce basket, variant",
+      "page": "https://polyhaven.com/a/wicker_basket_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wicker_basket_02/wicker_basket_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wicker_basket_02/wicker_basket_02_1k.gltf",
+          "file": "Saved/TownSources/Models/wicker_basket_02/wicker_basket_02_1k.gltf",
+          "bytes": 4497,
+          "md5": "aed62a99730dec42ef32e51c36187f37"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wicker_basket_02/wicker_basket_02_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wicker_basket_02/textures/wicker_basket_02_nor_gl_1k.jpg",
+          "bytes": 1041220,
+          "md5": "502447f7dc5687b386f8c417c31feb07"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wicker_basket_02/wicker_basket_02.bin",
+          "file": "Saved/TownSources/Models/wicker_basket_02/wicker_basket_02.bin",
+          "bytes": 432572,
+          "md5": "32a855c75791b16826530611f9199e82"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wicker_basket_02/wicker_basket_02_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wicker_basket_02/textures/wicker_basket_02_arm_1k.jpg",
+          "bytes": 718943,
+          "md5": "2967de2f99b85ee52d6bab63978c003a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wicker_basket_02/wicker_basket_02_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wicker_basket_02/textures/wicker_basket_02_diff_1k.jpg",
+          "bytes": 867277,
+          "md5": "61471823114f02ca04197e7e2af13e8f"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wooden_lantern_01",
+      "name": "Wooden Lantern 01",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "stall and doorway lantern",
+      "page": "https://polyhaven.com/a/wooden_lantern_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wooden_lantern_01/wooden_lantern_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_lantern_01/wooden_lantern_01_1k.gltf",
+          "file": "Saved/TownSources/Models/wooden_lantern_01/wooden_lantern_01_1k.gltf",
+          "bytes": 9540,
+          "md5": "e31edca6461023e076183cb74721b0b9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_lantern_01/textures/wooden_lantern_01_nor_gl_1k.jpg",
+          "bytes": 747945,
+          "md5": "9db1fa975880b3cf6da5e6c30853e0cf"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_lantern_01/textures/wooden_lantern_01_diff_1k.jpg",
+          "bytes": 712250,
+          "md5": "8f9f537ab312b1ec85acb1f5aaf7ad17"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_glass_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_lantern_01/textures/wooden_lantern_01_glass_nor_gl_1k.jpg",
+          "bytes": 216436,
+          "md5": "38549e36957f90dc61587010c3a8ff3a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_glass_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_lantern_01/textures/wooden_lantern_01_glass_arm_1k.jpg",
+          "bytes": 561615,
+          "md5": "890c1dd6ad9c37521f9f0a0d9d08fba2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_lantern_01/textures/wooden_lantern_01_arm_1k.jpg",
+          "bytes": 842111,
+          "md5": "87b5bdc9f3d5853caef38a00589541ae"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_lantern_01/wooden_lantern_01_glass_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_lantern_01/textures/wooden_lantern_01_glass_diff_1k.jpg",
+          "bytes": 410747,
+          "md5": "c1e45d48f344f86726d02c81679af6a4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_lantern_01/wooden_lantern_01.bin",
+          "file": "Saved/TownSources/Models/wooden_lantern_01/wooden_lantern_01.bin",
+          "bytes": 268136,
+          "md5": "3784667126369ce5c21db3c7436409cb"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "large_castle_door",
+      "name": "Large Castle Door",
+      "authors": "Tina",
+      "resolution": "2k",
+      "purpose": "castle gate and house doors",
+      "page": "https://polyhaven.com/a/large_castle_door",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/large_castle_door/large_castle_door_2k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/large_castle_door/large_castle_door_2k.gltf",
+          "file": "Saved/TownSources/Models/large_castle_door/large_castle_door_2k.gltf",
+          "bytes": 6111,
+          "md5": "301320484d7cceb4176297d3f510e929"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/large_castle_door/large_castle_door_diff_2k.jpg",
+          "file": "Saved/TownSources/Models/large_castle_door/textures/large_castle_door_diff_2k.jpg",
+          "bytes": 3105682,
+          "md5": "030d6cb9b510fc5686a67c670650f06c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/large_castle_door/large_castle_door.bin",
+          "file": "Saved/TownSources/Models/large_castle_door/large_castle_door.bin",
+          "bytes": 422436,
+          "md5": "ed0cee2626677b1a520de7bd868d09cc"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/large_castle_door/large_castle_door_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Models/large_castle_door/textures/large_castle_door_nor_gl_2k.jpg",
+          "bytes": 4281351,
+          "md5": "915c45399d96e5c8617eb78685fb02a1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/large_castle_door/large_castle_door_arm_2k.jpg",
+          "file": "Saved/TownSources/Models/large_castle_door/textures/large_castle_door_arm_2k.jpg",
+          "bytes": 3723833,
+          "md5": "5b31d5e2057371f82158bd56dbe19588"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "gothic_statue",
+      "name": "Gothic Statue",
+      "authors": "Benny Weimer",
+      "resolution": "1k",
+      "purpose": "castle / square statuary",
+      "page": "https://polyhaven.com/a/gothic_statue",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/gothic_statue/gothic_statue_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/gothic_statue/gothic_statue_1k.gltf",
+          "file": "Saved/TownSources/Models/gothic_statue/gothic_statue_1k.gltf",
+          "bytes": 2900,
+          "md5": "4fb49ae8f4278a0f5f1c7ca89a416f69"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gothic_statue/gothic_statue_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/gothic_statue/textures/gothic_statue_nor_gl_1k.jpg",
+          "bytes": 1064867,
+          "md5": "ecba6e86dc6dd8195710765f4889c895"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gothic_statue/gothic_statue_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/gothic_statue/textures/gothic_statue_diff_1k.jpg",
+          "bytes": 1037433,
+          "md5": "a8110eba7602d4d3ff00b05abf25397e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gothic_statue/gothic_statue_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/gothic_statue/textures/gothic_statue_arm_1k.jpg",
+          "bytes": 960949,
+          "md5": "0403abefbd62dfc03eb6b237d6d82119"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/gothic_statue/gothic_statue.bin",
+          "file": "Saved/TownSources/Models/gothic_statue/gothic_statue.bin",
+          "bytes": 912484,
+          "md5": "64ff6a07591c56042e01c780dce7685b"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "stone_fire_pit",
+      "name": "Stone Fire Pit",
+      "authors": "Sebastian Platen",
+      "resolution": "1k",
+      "purpose": "watch fires and braziers",
+      "page": "https://polyhaven.com/a/stone_fire_pit",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/stone_fire_pit/stone_fire_pit_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/stone_fire_pit/stone_fire_pit_1k.gltf",
+          "file": "Saved/TownSources/Models/stone_fire_pit/stone_fire_pit_1k.gltf",
+          "bytes": 2792,
+          "md5": "f3a23e45ee66802ccc7a5462a9371ae3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/stone_fire_pit/stone_fire_pit.bin",
+          "file": "Saved/TownSources/Models/stone_fire_pit/stone_fire_pit.bin",
+          "bytes": 96220,
+          "md5": "1652ba5fb374b6c15cddb64445a0bb5b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/stone_fire_pit/stone_fire_pit_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/stone_fire_pit/textures/stone_fire_pit_diff_1k.jpg",
+          "bytes": 785670,
+          "md5": "a7ec1828062280c20e265d2c99497d1d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/stone_fire_pit/stone_fire_pit_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/stone_fire_pit/textures/stone_fire_pit_nor_gl_1k.jpg",
+          "bytes": 969822,
+          "md5": "75923471613207e5c9f309a1df752753"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/stone_fire_pit/stone_fire_pit_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/stone_fire_pit/textures/stone_fire_pit_arm_1k.jpg",
+          "bytes": 681441,
+          "md5": "506392ebeef9bb696f907a972fc185c6"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "WoodenTable_01",
+      "name": "Wooden Table 01",
+      "authors": "Ethan Place",
+      "resolution": "1k",
+      "purpose": "market stall counters",
+      "page": "https://polyhaven.com/a/WoodenTable_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/WoodenTable_01/WoodenTable_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/WoodenTable_01/WoodenTable_01_1k.gltf",
+          "file": "Saved/TownSources/Models/WoodenTable_01/WoodenTable_01_1k.gltf",
+          "bytes": 2688,
+          "md5": "585f78ec50d4b57dc239f9a9a2259fea"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/WoodenTable_01/WoodenTable_01.bin",
+          "file": "Saved/TownSources/Models/WoodenTable_01/WoodenTable_01.bin",
+          "bytes": 42064,
+          "md5": "b764ee635684db5cc2c06288d51a3c14"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WoodenTable_01/WoodenTable_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/WoodenTable_01/textures/WoodenTable_01_nor_gl_1k.jpg",
+          "bytes": 151350,
+          "md5": "ac08715658eaf47e6df70a6026231fd2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WoodenTable_01/WoodenTable_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/WoodenTable_01/textures/WoodenTable_01_diff_1k.jpg",
+          "bytes": 160147,
+          "md5": "be2bf3134566e1280412d191bd6657f8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WoodenTable_01/WoodenTable_01_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/WoodenTable_01/textures/WoodenTable_01_arm_1k.jpg",
+          "bytes": 198099,
+          "md5": "266842045283ef1ea475386172e8aa2f"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wooden_stool_02",
+      "name": "Wooden Stool 02",
+      "authors": "Kuutti Siitonen",
+      "resolution": "1k",
+      "purpose": "stall and tavern seating",
+      "page": "https://polyhaven.com/a/wooden_stool_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wooden_stool_02/wooden_stool_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_stool_02/wooden_stool_02_1k.gltf",
+          "file": "Saved/TownSources/Models/wooden_stool_02/wooden_stool_02_1k.gltf",
+          "bytes": 4077,
+          "md5": "44db244a27f82a7a8536c689e2995e79"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_stool_02/wooden_stool_02_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_stool_02/textures/wooden_stool_02_diff_1k.jpg",
+          "bytes": 829284,
+          "md5": "5a4c15920d70db2a54f98160bf65b32b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_stool_02/wooden_stool_02_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_stool_02/textures/wooden_stool_02_nor_gl_1k.jpg",
+          "bytes": 854910,
+          "md5": "0ca081d4d50b73f0e4e02b8586c7638d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_stool_02/wooden_stool_02_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_stool_02/textures/wooden_stool_02_arm_1k.jpg",
+          "bytes": 699298,
+          "md5": "09abba658e10d55597bde0b7a1cd6912"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_stool_02/wooden_stool_02.bin",
+          "file": "Saved/TownSources/Models/wooden_stool_02/wooden_stool_02.bin",
+          "bytes": 268448,
+          "md5": "ea27eb52e71c40319d9ca108843b19a0"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "dead_tree_trunk_02",
+      "name": "Dead Tree Trunk 02",
+      "authors": "Jenelle van Heerden, Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "dead trees outside the walls",
+      "page": "https://polyhaven.com/a/dead_tree_trunk_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/dead_tree_trunk_02/dead_tree_trunk_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/dead_tree_trunk_02/dead_tree_trunk_02_1k.gltf",
+          "file": "Saved/TownSources/Models/dead_tree_trunk_02/dead_tree_trunk_02_1k.gltf",
+          "bytes": 2849,
+          "md5": "c16595a5951634914898e1eb6bb0ed3d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dead_tree_trunk_02/dead_tree_trunk_02_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/dead_tree_trunk_02/textures/dead_tree_trunk_02_diff_1k.jpg",
+          "bytes": 932059,
+          "md5": "c1d318584b077b9350477f8873821b45"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dead_tree_trunk_02/dead_tree_trunk_02_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/dead_tree_trunk_02/textures/dead_tree_trunk_02_arm_1k.jpg",
+          "bytes": 805609,
+          "md5": "ce5e467040435895862245a39e295504"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dead_tree_trunk_02/dead_tree_trunk_02_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/dead_tree_trunk_02/textures/dead_tree_trunk_02_nor_gl_1k.jpg",
+          "bytes": 1192056,
+          "md5": "941c7d88f2eaffd771807b3bc7f4a01f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/dead_tree_trunk_02/dead_tree_trunk_02.bin",
+          "file": "Saved/TownSources/Models/dead_tree_trunk_02/dead_tree_trunk_02.bin",
+          "bytes": 1974352,
+          "md5": "7848170c88b67d9e1d5e7d111db7b7ff"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "tree_stump_01",
+      "name": "Tree Stump 01",
+      "authors": "Rob Tuytel",
+      "resolution": "1k",
+      "purpose": "stumps, field clutter",
+      "page": "https://polyhaven.com/a/tree_stump_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/tree_stump_01/tree_stump_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/tree_stump_01/tree_stump_01_1k.gltf",
+          "file": "Saved/TownSources/Models/tree_stump_01/tree_stump_01_1k.gltf",
+          "bytes": 2793,
+          "md5": "fedfc620634a8dbaf6345413b13abe1a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/tree_stump_01/tree_stump_01.bin",
+          "file": "Saved/TownSources/Models/tree_stump_01/tree_stump_01.bin",
+          "bytes": 965380,
+          "md5": "acb292727949126b92e58217fd50fca9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_stump_01/tree_stump_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/tree_stump_01/textures/tree_stump_01_diff_1k.jpg",
+          "bytes": 907451,
+          "md5": "c71fe60400276a37b8847048cbec3720"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_stump_01/tree_stump_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/tree_stump_01/textures/tree_stump_01_nor_gl_1k.jpg",
+          "bytes": 1238404,
+          "md5": "cc2a3c6e4682a521b15cccc61a416bbf"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_stump_01/tree_stump_01_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/tree_stump_01/textures/tree_stump_01_arm_1k.jpg",
+          "bytes": 825646,
+          "md5": "09b7aa228dccb93f5cf4188ba5530578"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "rock_moss_set_01",
+      "name": "Rock Moss Set 01",
+      "authors": "Kless Gyzen",
+      "resolution": "1k",
+      "purpose": "rocks outside the walls",
+      "page": "https://polyhaven.com/a/rock_moss_set_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/rock_moss_set_01/rock_moss_set_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/rock_moss_set_01/rock_moss_set_01_1k.gltf",
+          "file": "Saved/TownSources/Models/rock_moss_set_01/rock_moss_set_01_1k.gltf",
+          "bytes": 9987,
+          "md5": "75113cc1c21806cca5d8badad4737af7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_01/rock_moss_set_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/rock_moss_set_01/textures/rock_moss_set_01_nor_gl_1k.jpg",
+          "bytes": 209975,
+          "md5": "eb7ebd31ad08e78d0497900652ff1568"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/rock_moss_set_01/rock_moss_set_01.bin",
+          "file": "Saved/TownSources/Models/rock_moss_set_01/rock_moss_set_01.bin",
+          "bytes": 1466380,
+          "md5": "207a51c9f56d34732e9814bbf9cc07b1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_01/rock_moss_set_01_rough_1k.jpg",
+          "file": "Saved/TownSources/Models/rock_moss_set_01/textures/rock_moss_set_01_rough_1k.jpg",
+          "bytes": 82624,
+          "md5": "ed9d8a2c863262f76f881346e8047c6a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_01/rock_moss_set_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/rock_moss_set_01/textures/rock_moss_set_01_diff_1k.jpg",
+          "bytes": 168099,
+          "md5": "b8742301e6b4bc5683d2de712e83f772"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "rock_moss_set_02",
+      "name": "Rock Moss Set 02",
+      "authors": "Kless Gyzen",
+      "resolution": "1k",
+      "purpose": "rocks outside the walls, variant",
+      "page": "https://polyhaven.com/a/rock_moss_set_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/rock_moss_set_02/rock_moss_set_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/rock_moss_set_02/rock_moss_set_02_1k.gltf",
+          "file": "Saved/TownSources/Models/rock_moss_set_02/rock_moss_set_02_1k.gltf",
+          "bytes": 11608,
+          "md5": "257569e8c064d0cf198ff866446a5f96"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_02/rock_moss_set_02_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/rock_moss_set_02/textures/rock_moss_set_02_nor_gl_1k.jpg",
+          "bytes": 273527,
+          "md5": "936601de53528f15a12d16a7e187a4f1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_02/rock_moss_set_02_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/rock_moss_set_02/textures/rock_moss_set_02_diff_1k.jpg",
+          "bytes": 194307,
+          "md5": "50a31622ba7d6f3b8157035ce375de4d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_02/rock_moss_set_02_rough_1k.jpg",
+          "file": "Saved/TownSources/Models/rock_moss_set_02/textures/rock_moss_set_02_rough_1k.jpg",
+          "bytes": 146226,
+          "md5": "5de4c0669f19304230fa550a8f3ac0f4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/rock_moss_set_02/rock_moss_set_02.bin",
+          "file": "Saved/TownSources/Models/rock_moss_set_02/rock_moss_set_02.bin",
+          "bytes": 1316572,
+          "md5": "a63878339f14feceab7347cc28110eaa"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "boulder_01",
+      "name": "Boulder 01",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "large boulder",
+      "page": "https://polyhaven.com/a/boulder_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/boulder_01/boulder_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/boulder_01/boulder_01_1k.gltf",
+          "file": "Saved/TownSources/Models/boulder_01/boulder_01_1k.gltf",
+          "bytes": 2773,
+          "md5": "26e2eef4a1f68c9557c65cd375b21d6c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/boulder_01/boulder_01_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/boulder_01/textures/boulder_01_arm_1k.jpg",
+          "bytes": 659386,
+          "md5": "d632159982cc3121ed3d69b89a122146"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/boulder_01/boulder_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/boulder_01/textures/boulder_01_diff_1k.jpg",
+          "bytes": 987467,
+          "md5": "25f8a843f13369d56d37f49db05ea8c3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/boulder_01/boulder_01.bin",
+          "file": "Saved/TownSources/Models/boulder_01/boulder_01.bin",
+          "bytes": 2938808,
+          "md5": "27a19fa031d8b4c3a09261f19c444dc5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/boulder_01/boulder_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/boulder_01/textures/boulder_01_nor_gl_1k.jpg",
+          "bytes": 1183552,
+          "md5": "0c4da644d901144b53e4fe2446f3c389"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "shrub_02",
+      "name": "Shrub 02",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "garden shrubs",
+      "page": "https://polyhaven.com/a/shrub_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/shrub_02/shrub_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/shrub_02/shrub_02_1k.gltf",
+          "file": "Saved/TownSources/Models/shrub_02/shrub_02_1k.gltf",
+          "bytes": 8083,
+          "md5": "8f7254d279c0c49c0b3edfe260aa5c86"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_02/shrub_02_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/shrub_02/textures/shrub_02_arm_1k.jpg",
+          "bytes": 313715,
+          "md5": "28c218aeb7cab930d99ee16578984241"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_02/shrub_02_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/shrub_02/textures/shrub_02_nor_gl_1k.jpg",
+          "bytes": 490815,
+          "md5": "51a7f2db7e06a207171fd725585241d5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_02/shrub_02.bin",
+          "file": "Saved/TownSources/Models/shrub_02/shrub_02.bin",
+          "bytes": 758692,
+          "md5": "683b5475238310899eac1458520903e6"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_02/shrub_02_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/shrub_02/textures/shrub_02_diff_1k.jpg",
+          "bytes": 395120,
+          "md5": "3f4ae281928de030c7d4e41ad5b88a8b"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "shrub_04",
+      "name": "Shrub 04",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "garden shrubs, variant",
+      "page": "https://polyhaven.com/a/shrub_04",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/shrub_04/shrub_04_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/shrub_04/shrub_04_1k.gltf",
+          "file": "Saved/TownSources/Models/shrub_04/shrub_04_1k.gltf",
+          "bytes": 2882,
+          "md5": "eba22f7e018dd3d9ed951150c2092f17"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_04/shrub_04_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/shrub_04/textures/shrub_04_nor_gl_1k.jpg",
+          "bytes": 449241,
+          "md5": "b08f500d19ee9b29d7da06fc0e874bb2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_04/shrub_04_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/shrub_04/textures/shrub_04_diff_1k.jpg",
+          "bytes": 373350,
+          "md5": "b2b4682a82f44be10b8d4b4d481a4fe8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_04/shrub_04_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/shrub_04/textures/shrub_04_arm_1k.jpg",
+          "bytes": 332957,
+          "md5": "65e414abd3533b7157f05aed63f5f329"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_04/shrub_04.bin",
+          "file": "Saved/TownSources/Models/shrub_04/shrub_04.bin",
+          "bytes": 749084,
+          "md5": "987a672e598f9dc04b6d23cb8f36d697"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "fern_02",
+      "name": "Fern 02",
+      "authors": "Rob Tuytel, Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "alley greenery",
+      "page": "https://polyhaven.com/a/fern_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/fern_02/fern_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/fern_02/fern_02_1k.gltf",
+          "file": "Saved/TownSources/Models/fern_02/fern_02_1k.gltf",
+          "bytes": 6899,
+          "md5": "cf276874d37bfb73c299504a6b355b77"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/fern_02/fern_02_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/fern_02/textures/fern_02_arm_1k.jpg",
+          "bytes": 280359,
+          "md5": "1bbb2b22951f450720d28e17d93a2987"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/fern_02/fern_02_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/fern_02/textures/fern_02_diff_1k.jpg",
+          "bytes": 315705,
+          "md5": "82c18a6cfd5ae91c37c0e078f591181c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/fern_02/fern_02_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/fern_02/textures/fern_02_nor_gl_1k.jpg",
+          "bytes": 367222,
+          "md5": "43aed63dff79554f6064627515afd9d7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/fern_02/fern_02.bin",
+          "file": "Saved/TownSources/Models/fern_02/fern_02.bin",
+          "bytes": 176176,
+          "md5": "c061e9255f7d36ae9ce0e92ef3e100b2"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "kite_shield",
+      "name": "Kite Shield",
+      "authors": "Ulan Cabanilla",
+      "resolution": "1k",
+      "purpose": "wall heraldry",
+      "page": "https://polyhaven.com/a/kite_shield",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/kite_shield/kite_shield_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/kite_shield/kite_shield_1k.gltf",
+          "file": "Saved/TownSources/Models/kite_shield/kite_shield_1k.gltf",
+          "bytes": 6826,
+          "md5": "bba20187ab75fefa531830097ba8e014"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/kite_shield/kite_shield_body_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/kite_shield/textures/kite_shield_body_diff_1k.jpg",
+          "bytes": 761392,
+          "md5": "61c83755bd51734169d4bfbd2ea745d5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/kite_shield/kite_shield_body_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/kite_shield/textures/kite_shield_body_nor_gl_1k.jpg",
+          "bytes": 843237,
+          "md5": "9e13405518029733eb35bbc23a054333"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/kite_shield/kite_shield_clamps_trim_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/kite_shield/textures/kite_shield_clamps_trim_diff_1k.jpg",
+          "bytes": 417567,
+          "md5": "966bd203b385be489a336a2a2637be57"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/kite_shield/kite_shield_clamps_trim_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/kite_shield/textures/kite_shield_clamps_trim_arm_1k.jpg",
+          "bytes": 521972,
+          "md5": "21fc1dcea3229435059feaa3738adc87"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/kite_shield/kite_shield.bin",
+          "file": "Saved/TownSources/Models/kite_shield/kite_shield.bin",
+          "bytes": 289804,
+          "md5": "98ad5003efb79db22fa25035fb216565"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/kite_shield/kite_shield_clamps_trim_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/kite_shield/textures/kite_shield_clamps_trim_nor_gl_1k.jpg",
+          "bytes": 413510,
+          "md5": "5f061062760d9fb381c34ab98e2e86e5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/kite_shield/kite_shield_body_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/kite_shield/textures/kite_shield_body_arm_1k.jpg",
+          "bytes": 563372,
+          "md5": "1263267f8c82e09fb08a4800fed8d097"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wooden_axe",
+      "name": "Wooden Axe",
+      "authors": "Ulan Cabanilla",
+      "resolution": "1k",
+      "purpose": "woodpile clutter",
+      "page": "https://polyhaven.com/a/wooden_axe",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wooden_axe/wooden_axe_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_axe/wooden_axe_1k.gltf",
+          "file": "Saved/TownSources/Models/wooden_axe/wooden_axe_1k.gltf",
+          "bytes": 2744,
+          "md5": "93102030283b7a4a2be2913eff8c33e0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_axe/wooden_axe_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_axe/textures/wooden_axe_arm_1k.jpg",
+          "bytes": 698691,
+          "md5": "010c40b8352719162b6698450a0424ce"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/wooden_axe/wooden_axe.bin",
+          "file": "Saved/TownSources/Models/wooden_axe/wooden_axe.bin",
+          "bytes": 91288,
+          "md5": "f494613f678048988f376a7bf62b8dc4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_axe/wooden_axe_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_axe/textures/wooden_axe_diff_1k.jpg",
+          "bytes": 694821,
+          "md5": "6982d117169f6fc77aec67fb01325b97"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_axe/wooden_axe_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_axe/textures/wooden_axe_nor_gl_1k.jpg",
+          "bytes": 542696,
+          "md5": "e7cef558dd4c905f4ce6e487ad551f6a"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "jug_01",
+      "name": "Jug 01",
+      "authors": "Kuutti Siitonen",
+      "resolution": "1k",
+      "purpose": "stall wares",
+      "page": "https://polyhaven.com/a/jug_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/jug_01/jug_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/jug_01/jug_01_1k.gltf",
+          "file": "Saved/TownSources/Models/jug_01/jug_01_1k.gltf",
+          "bytes": 2612,
+          "md5": "b8b3c0c9faf48e2370485a04288da9c4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/jug_01/jug_01.bin",
+          "file": "Saved/TownSources/Models/jug_01/jug_01.bin",
+          "bytes": 137084,
+          "md5": "f4818dd15e25681e1fcf718c9c488998"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/jug_01/jug_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/jug_01/textures/jug_01_diff_1k.jpg",
+          "bytes": 423757,
+          "md5": "ffe6e4999d473e6969c1432fa1ea5e21"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/jug_01/jug_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/jug_01/textures/jug_01_nor_gl_1k.jpg",
+          "bytes": 86094,
+          "md5": "51321fce3679b61a41c9267f18d5ef12"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/jug_01/jug_01_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/jug_01/textures/jug_01_arm_1k.jpg",
+          "bytes": 578188,
+          "md5": "ca8d04eb674fb6c77582383cde180319"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "ceramic_pot",
+      "name": "Ceramic Pot",
+      "authors": "Aron \u0141yczek",
+      "resolution": "1k",
+      "purpose": "stall wares",
+      "page": "https://polyhaven.com/a/ceramic_pot",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/ceramic_pot/ceramic_pot_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/ceramic_pot/ceramic_pot_1k.gltf",
+          "file": "Saved/TownSources/Models/ceramic_pot/ceramic_pot_1k.gltf",
+          "bytes": 2990,
+          "md5": "8777fd3f023e6f83371786b195ac665b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_pot/ceramic_pot_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/ceramic_pot/textures/ceramic_pot_nor_gl_1k.jpg",
+          "bytes": 252874,
+          "md5": "a40c80e5e4f9fa107d2c2dc8983d2867"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_pot/ceramic_pot_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/ceramic_pot/textures/ceramic_pot_diff_1k.jpg",
+          "bytes": 664480,
+          "md5": "85746a999ed333628143b3ad2c0b7f42"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_pot/ceramic_pot_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/ceramic_pot/textures/ceramic_pot_arm_1k.jpg",
+          "bytes": 633246,
+          "md5": "e45cd9ad939172ae7b94fd455bc44c08"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/ceramic_pot/ceramic_pot.bin",
+          "file": "Saved/TownSources/Models/ceramic_pot/ceramic_pot.bin",
+          "bytes": 87952,
+          "md5": "dab3afea04454ad1fbb1108afe764489"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "food_apple_01",
+      "name": "Food Apple 01",
+      "authors": "Oliver Harries",
+      "resolution": "1k",
+      "purpose": "produce",
+      "page": "https://polyhaven.com/a/food_apple_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/food_apple_01/food_apple_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/food_apple_01/food_apple_01_1k.gltf",
+          "file": "Saved/TownSources/Models/food_apple_01/food_apple_01_1k.gltf",
+          "bytes": 2705,
+          "md5": "222a8e136b40f36c1acb87a6036c1106"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/food_apple_01/food_apple_01_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/food_apple_01/textures/food_apple_01_diff_1k.jpg",
+          "bytes": 183791,
+          "md5": "3ddf2b8313f20c95f3e04fb057b32d7b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/food_apple_01/food_apple_01.bin",
+          "file": "Saved/TownSources/Models/food_apple_01/food_apple_01.bin",
+          "bytes": 170680,
+          "md5": "26b23e40de43097b0185a0d93cd72d3b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/food_apple_01/food_apple_01_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/food_apple_01/textures/food_apple_01_nor_gl_1k.jpg",
+          "bytes": 63513,
+          "md5": "e456cb63d6a4c298c826b63be0adfaf7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/food_apple_01/food_apple_01_rough_1k.jpg",
+          "file": "Saved/TownSources/Models/food_apple_01/textures/food_apple_01_rough_1k.jpg",
+          "bytes": 53123,
+          "md5": "e46e242f52a3c2138a1e8c6ce0d82438"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wooden_ladder",
+      "name": "Wooden Ladder",
+      "authors": "Miroslav Turura",
+      "resolution": "1k",
+      "purpose": "yard clutter",
+      "page": "https://polyhaven.com/a/wooden_ladder",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/wooden_ladder/wooden_ladder_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_ladder/wooden_ladder_1k.gltf",
+          "file": "Saved/TownSources/Models/wooden_ladder/wooden_ladder_1k.gltf",
+          "bytes": 4390,
+          "md5": "d50e132958f033f0600b286aafb72a8e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_ladder/wooden_ladder_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_ladder/textures/wooden_ladder_nor_gl_1k.jpg",
+          "bytes": 750034,
+          "md5": "42c32b4f30e33c4c1e815cbb50bfc5d1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_ladder/wooden_ladder_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_ladder/textures/wooden_ladder_diff_1k.jpg",
+          "bytes": 758088,
+          "md5": "b028aa74e7fe0880625a57bf05f9d604"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_ladder/wooden_ladder_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/wooden_ladder/textures/wooden_ladder_arm_1k.jpg",
+          "bytes": 798553,
+          "md5": "dd4edfea207edfc0c46bad8951171468"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/wooden_ladder/wooden_ladder.bin",
+          "file": "Saved/TownSources/Models/wooden_ladder/wooden_ladder.bin",
+          "bytes": 282184,
+          "md5": "058aa183bf6ea324a181d003dabe84c9"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "island_tree_02",
+      "name": "Island Tree 02",
+      "authors": "Rob Tuytel, Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "gnarled courtyard tree (Nanite)",
+      "page": "https://polyhaven.com/a/island_tree_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/TownSources/Models/island_tree_02/island_tree_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/island_tree_02/island_tree_02_1k.gltf",
+          "file": "Saved/TownSources/Models/island_tree_02/island_tree_02_1k.gltf",
+          "bytes": 8545,
+          "md5": "825057164e987894cbfc6c462977fa71"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_02/island_tree_02_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/island_tree_02/textures/island_tree_02_nor_gl_1k.jpg",
+          "bytes": 1157226,
+          "md5": "d8b8bc86de9934a743fc9b0a5470e695"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_02/island_tree_02_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/island_tree_02/textures/island_tree_02_diff_1k.jpg",
+          "bytes": 738738,
+          "md5": "b7435527d9628527ce47d89fc1468e9a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_02/island_tree_02_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/island_tree_02/textures/island_tree_02_arm_1k.jpg",
+          "bytes": 688305,
+          "md5": "e487f91bcb37a2a1109ef6234f1db27e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_02/island_tree_02_leaves_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/island_tree_02/textures/island_tree_02_leaves_nor_gl_1k.jpg",
+          "bytes": 379443,
+          "md5": "a08ffb98b5ffb7dfa682e05a1639c642"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_02/island_tree_02_leaves_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/island_tree_02/textures/island_tree_02_leaves_diff_1k.jpg",
+          "bytes": 191886,
+          "md5": "1356cbb5a5dd1318f9f2a01eddbf03e1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_02/island_tree_02_leaves_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/island_tree_02/textures/island_tree_02_leaves_arm_1k.jpg",
+          "bytes": 489476,
+          "md5": "27b06c4a53ff115ed7d51ee94e417257"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_02/island_tree_02_branches_nor_gl_1k.jpg",
+          "file": "Saved/TownSources/Models/island_tree_02/textures/island_tree_02_branches_nor_gl_1k.jpg",
+          "bytes": 819101,
+          "md5": "789084affb01f4a22290a848558f5e12"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_02/island_tree_02_branches_diff_1k.jpg",
+          "file": "Saved/TownSources/Models/island_tree_02/textures/island_tree_02_branches_diff_1k.jpg",
+          "bytes": 528304,
+          "md5": "7792907fe2b2b748c129a2384192a579"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_02/island_tree_02_branches_arm_1k.jpg",
+          "file": "Saved/TownSources/Models/island_tree_02/textures/island_tree_02_branches_arm_1k.jpg",
+          "bytes": 484806,
+          "md5": "5b6f5b3838f4a8f60fea14fa3a3fef9f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/island_tree_02/island_tree_02.bin",
+          "file": "Saved/TownSources/Models/island_tree_02/island_tree_02.bin",
+          "bytes": 40686576,
+          "md5": "7fa9d6ee752b670cabb65053a5c6395b"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "cobblestone_floor_08",
+      "name": "Cobblestone Floor 08",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "purpose": "march road cobbles",
+      "page": "https://polyhaven.com/a/cobblestone_floor_08",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_floor_08/cobblestone_floor_08_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/cobblestone_floor_08/cobblestone_floor_08_diff_2k.jpg",
+          "bytes": 2289909,
+          "md5": "56404e8a3cdf04c8697dbbc7f9ddd65c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_floor_08/cobblestone_floor_08_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/cobblestone_floor_08/cobblestone_floor_08_nor_gl_2k.jpg",
+          "bytes": 3948187,
+          "md5": "3d1c34ed083de54949e8375d69033b0b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_floor_08/cobblestone_floor_08_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/cobblestone_floor_08/cobblestone_floor_08_arm_2k.jpg",
+          "bytes": 805558,
+          "md5": "6cbb7aa63416eb4ef1620477ac7b605b"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "cobblestone_large_01",
+      "name": "Cobblestone Large 01",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "purpose": "market and square paving",
+      "page": "https://polyhaven.com/a/cobblestone_large_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_large_01/cobblestone_large_01_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/cobblestone_large_01/cobblestone_large_01_diff_2k.jpg",
+          "bytes": 2583728,
+          "md5": "6087957ae5e3eac9fc7e4070edfd8a60"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_large_01/cobblestone_large_01_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/cobblestone_large_01/cobblestone_large_01_nor_gl_2k.jpg",
+          "bytes": 4129342,
+          "md5": "8c9f9c7f788e0a482aa0cde9072cf6ff"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_large_01/cobblestone_large_01_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/cobblestone_large_01/cobblestone_large_01_arm_2k.jpg",
+          "bytes": 1053756,
+          "md5": "4c40f9e7fb3f89100375316d1fcd8648"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "monastery_stone_floor",
+      "name": "Monastery Stone Floor",
+      "authors": "Amal Kumar",
+      "resolution": "2k",
+      "purpose": "castle bailey flagstones",
+      "page": "https://polyhaven.com/a/monastery_stone_floor",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/monastery_stone_floor/monastery_stone_floor_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/monastery_stone_floor/monastery_stone_floor_diff_2k.jpg",
+          "bytes": 3021140,
+          "md5": "35420aa52b8257920b1d7566fb80ab4d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/monastery_stone_floor/monastery_stone_floor_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/monastery_stone_floor/monastery_stone_floor_nor_gl_2k.jpg",
+          "bytes": 4248820,
+          "md5": "68fe9fe33ed384c0a0f45b57f642e0a9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/monastery_stone_floor/monastery_stone_floor_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/monastery_stone_floor/monastery_stone_floor_arm_2k.jpg",
+          "bytes": 2331525,
+          "md5": "43ddeddf503356eb6ddcabd73cb3c35d"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "brown_mud_leaves_01",
+      "name": "Brown Mud Leaves 01",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "purpose": "town ground between streets",
+      "page": "https://polyhaven.com/a/brown_mud_leaves_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+          "bytes": 4539452,
+          "md5": "e8b45aee8e00a253eb3a2b08cea89776"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_mud_leaves_01/brown_mud_leaves_01_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/brown_mud_leaves_01/brown_mud_leaves_01_nor_gl_2k.jpg",
+          "bytes": 5688696,
+          "md5": "eb2c704d2889e1e5a53148dc6a2ebdf4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.jpg",
+          "bytes": 3697743,
+          "md5": "62ef9ac8da61a02f78e05d35ad05438d"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "rocky_trail",
+      "name": "Rocky Trail",
+      "authors": "Amal Kumar",
+      "resolution": "2k",
+      "purpose": "fields outside the walls",
+      "page": "https://polyhaven.com/a/rocky_trail",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rocky_trail/rocky_trail_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/rocky_trail/rocky_trail_diff_2k.jpg",
+          "bytes": 4208713,
+          "md5": "7327bf7d48d33688fb12465222ee3f22"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rocky_trail/rocky_trail_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/rocky_trail/rocky_trail_nor_gl_2k.jpg",
+          "bytes": 5525906,
+          "md5": "4642b3c833d526b23c96baa84f5bf429"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rocky_trail/rocky_trail_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/rocky_trail/rocky_trail_arm_2k.jpg",
+          "bytes": 3986946,
+          "md5": "97daa9ca7cc355d7fe3389a1b555a407"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "white_rough_plaster",
+      "name": "White Rough Plaster",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "purpose": "house plaster infill",
+      "page": "https://polyhaven.com/a/white_rough_plaster",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_rough_plaster/white_rough_plaster_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/white_rough_plaster/white_rough_plaster_diff_2k.jpg",
+          "bytes": 2828405,
+          "md5": "e58c989d3b5452588a31b1d249d4e7e9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_rough_plaster/white_rough_plaster_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/white_rough_plaster/white_rough_plaster_nor_gl_2k.jpg",
+          "bytes": 2551147,
+          "md5": "06e3caf5a222e7d0fa88917fe34a0575"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_rough_plaster/white_rough_plaster_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/white_rough_plaster/white_rough_plaster_arm_2k.jpg",
+          "bytes": 630658,
+          "md5": "f180614f7e23365e1ccceac2845cd085"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "rough_wood",
+      "name": "Rough Wood",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "purpose": "timber framing / beams",
+      "page": "https://polyhaven.com/a/rough_wood",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rough_wood/rough_wood_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/rough_wood/rough_wood_diff_2k.jpg",
+          "bytes": 2223327,
+          "md5": "f5f9c55696f047ceaa49dc97c5aa5526"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rough_wood/rough_wood_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/rough_wood/rough_wood_nor_gl_2k.jpg",
+          "bytes": 2520021,
+          "md5": "62594f2d00eb246581b9d4fde30209f1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rough_wood/rough_wood_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/rough_wood/rough_wood_arm_2k.jpg",
+          "bytes": 575486,
+          "md5": "2f6ee37ee8810aeeb72a14a7d345ba9f"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "weathered_planks",
+      "name": "Weathered Planks",
+      "authors": "Dario Barresi, Dimitrios Savva",
+      "resolution": "2k",
+      "purpose": "planks, shutters, stalls",
+      "page": "https://polyhaven.com/a/weathered_planks",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/weathered_planks/weathered_planks_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/weathered_planks/weathered_planks_diff_2k.jpg",
+          "bytes": 2385451,
+          "md5": "dd5f91445812117d216ed962c2607b7d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/weathered_planks/weathered_planks_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/weathered_planks/weathered_planks_nor_gl_2k.jpg",
+          "bytes": 3184832,
+          "md5": "db8ad9ad21c8de018e009f9c27c2a63d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/weathered_planks/weathered_planks_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/weathered_planks/weathered_planks_arm_2k.jpg",
+          "bytes": 2296561,
+          "md5": "dfe9c9bbefd9146d62852966f95ef096"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "roof_slates_02",
+      "name": "Roof Slates 02",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "purpose": "slate roofs",
+      "page": "https://polyhaven.com/a/roof_slates_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_slates_02/roof_slates_02_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/roof_slates_02/roof_slates_02_diff_2k.jpg",
+          "bytes": 1838933,
+          "md5": "2bd2c8593d8cbaea04878203be4bc7ad"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_slates_02/roof_slates_02_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/roof_slates_02/roof_slates_02_nor_gl_2k.jpg",
+          "bytes": 2919261,
+          "md5": "1256041f95f300753b867934324c7b91"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_slates_02/roof_slates_02_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/roof_slates_02/roof_slates_02_arm_2k.jpg",
+          "bytes": 788012,
+          "md5": "956eb0bc1bea3356195f298b8458ef4c"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "clay_roof_tiles_02",
+      "name": "Clay Roof Tiles 02",
+      "authors": "Amal Kumar",
+      "resolution": "2k",
+      "purpose": "clay tile roofs",
+      "page": "https://polyhaven.com/a/clay_roof_tiles_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_roof_tiles_02/clay_roof_tiles_02_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/clay_roof_tiles_02/clay_roof_tiles_02_diff_2k.jpg",
+          "bytes": 3459427,
+          "md5": "0a1350644116c58a19908b22f569bf8e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_roof_tiles_02/clay_roof_tiles_02_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/clay_roof_tiles_02/clay_roof_tiles_02_nor_gl_2k.jpg",
+          "bytes": 3526539,
+          "md5": "1ccc234195df3d48107490a7f7f03e59"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_roof_tiles_02/clay_roof_tiles_02_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/clay_roof_tiles_02/clay_roof_tiles_02_arm_2k.jpg",
+          "bytes": 2014906,
+          "md5": "0b690f55feebb1a697fc0fbe5a73a36b"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "thatch_roof_angled",
+      "name": "Thatch Roof Angled",
+      "authors": "Rob Tuytel, Dimitrios Savva",
+      "resolution": "2k",
+      "purpose": "thatched roofs",
+      "page": "https://polyhaven.com/a/thatch_roof_angled",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/thatch_roof_angled/thatch_roof_angled_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/thatch_roof_angled/thatch_roof_angled_diff_2k.jpg",
+          "bytes": 3225496,
+          "md5": "d043c7e632bb9560138ccb13a036a02f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/thatch_roof_angled/thatch_roof_angled_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/thatch_roof_angled/thatch_roof_angled_nor_gl_2k.jpg",
+          "bytes": 5097746,
+          "md5": "cda9c9e08f034d725194a7bf49f791be"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/thatch_roof_angled/thatch_roof_angled_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/thatch_roof_angled/thatch_roof_angled_arm_2k.jpg",
+          "bytes": 3201145,
+          "md5": "99e517dffeefee419b19aeeea09deb8e"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "stone_wall_04",
+      "name": "Stone Wall 04",
+      "authors": "Amal Kumar",
+      "resolution": "2k",
+      "purpose": "castle masonry (dressed grey blocks)",
+      "page": "https://polyhaven.com/a/stone_wall_04",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stone_wall_04/stone_wall_04_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/stone_wall_04/stone_wall_04_diff_2k.jpg",
+          "bytes": 3957414,
+          "md5": "d51ffc29d4779a0b17560312431fda0c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stone_wall_04/stone_wall_04_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/stone_wall_04/stone_wall_04_nor_gl_2k.jpg",
+          "bytes": 4900694,
+          "md5": "1b97e2e76f49bb8e6e1a9e4f394faa14"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stone_wall_04/stone_wall_04_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/stone_wall_04/stone_wall_04_arm_2k.jpg",
+          "bytes": 2812773,
+          "md5": "420fd2251c3e816d8cc00d69d2dc99e8"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "castle_wall_slates",
+      "name": "Castle Wall Slates",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "purpose": "town wall, plinth and trim rubble stone",
+      "page": "https://polyhaven.com/a/castle_wall_slates",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/castle_wall_slates/castle_wall_slates_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/castle_wall_slates/castle_wall_slates_diff_2k.jpg",
+          "bytes": 2381426,
+          "md5": "abec73c50e2f2052d9c92f7ac10b8dbd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/castle_wall_slates/castle_wall_slates_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/castle_wall_slates/castle_wall_slates_nor_gl_2k.jpg",
+          "bytes": 4054865,
+          "md5": "2d0f79ec91411413d25b03cd81db8e6a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/castle_wall_slates/castle_wall_slates_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/castle_wall_slates/castle_wall_slates_arm_2k.jpg",
+          "bytes": 1149678,
+          "md5": "0109e42dafa4e1675ac13e87e86e0466"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "rock_face_03",
+      "name": "Rock Face 03",
+      "authors": "Dario Barresi, Rico Cilliers",
+      "resolution": "2k",
+      "purpose": "cliff face of the Sundering Wall between the realms",
+      "page": "https://polyhaven.com/a/rock_face_03",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_face_03/rock_face_03_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/rock_face_03/rock_face_03_diff_2k.jpg",
+          "bytes": 3814362,
+          "md5": "657add9e8a8dffaeed19bdfc58078b59"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_face_03/rock_face_03_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/rock_face_03/rock_face_03_nor_gl_2k.jpg",
+          "bytes": 4473242,
+          "md5": "279b33e71ae6275cafa24e6597024c98"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_face_03/rock_face_03_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/rock_face_03/rock_face_03_arm_2k.jpg",
+          "bytes": 3215097,
+          "md5": "f7999b2d14ebbea91e1a5adfb7beabc3"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "rust_coarse_01",
+      "name": "Rust Coarse 01",
+      "authors": "Dimitrios Savva, Rico Cilliers",
+      "resolution": "2k",
+      "purpose": "wrought iron",
+      "page": "https://polyhaven.com/a/rust_coarse_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rust_coarse_01/rust_coarse_01_diff_2k.jpg",
+          "file": "Saved/TownSources/Textures/rust_coarse_01/rust_coarse_01_diff_2k.jpg",
+          "bytes": 3519719,
+          "md5": "c1f3d0f3e8ea08bfed17bd27a5bb4a45"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rust_coarse_01/rust_coarse_01_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/rust_coarse_01/rust_coarse_01_nor_gl_2k.jpg",
+          "bytes": 3685688,
+          "md5": "70e8ba5a8244cffb052b9ba194610867"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rust_coarse_01/rust_coarse_01_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/rust_coarse_01/rust_coarse_01_arm_2k.jpg",
+          "bytes": 3527204,
+          "md5": "85be306b28a377c9a60217d107c3dcdf"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "fabric_pattern_07",
+      "name": "Fabric Pattern 07",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "purpose": "market awning canvas (red check)",
+      "page": "https://polyhaven.com/a/fabric_pattern_07",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/fabric_pattern_07/fabric_pattern_07_col_1_2k.jpg",
+          "file": "Saved/TownSources/Textures/fabric_pattern_07/fabric_pattern_07_diff_2k.jpg",
+          "bytes": 2650991,
+          "md5": "ad5b3f69e889a6890d6413ea1568ff25"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/fabric_pattern_07/fabric_pattern_07_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/fabric_pattern_07/fabric_pattern_07_nor_gl_2k.jpg",
+          "bytes": 2572375,
+          "md5": "bf1eb2488da43265bd49e42778b6ae51"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/fabric_pattern_07/fabric_pattern_07_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/fabric_pattern_07/fabric_pattern_07_arm_2k.jpg",
+          "bytes": 822275,
+          "md5": "61384156e3e50ee66815a885c9d40c81"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "fabric_pattern_05",
+      "name": "Fabric Pattern 05",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "purpose": "market awning canvas (alt)",
+      "page": "https://polyhaven.com/a/fabric_pattern_05",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/fabric_pattern_05/fabric_pattern_05_col_01_2k.jpg",
+          "file": "Saved/TownSources/Textures/fabric_pattern_05/fabric_pattern_05_diff_2k.jpg",
+          "bytes": 3000828,
+          "md5": "5b1497806235db931b92b2149920dc7a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/fabric_pattern_05/fabric_pattern_05_nor_gl_2k.jpg",
+          "file": "Saved/TownSources/Textures/fabric_pattern_05/fabric_pattern_05_nor_gl_2k.jpg",
+          "bytes": 2908819,
+          "md5": "62061c14f64e7ab30c450228bf3dbe4c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/fabric_pattern_05/fabric_pattern_05_arm_2k.jpg",
+          "file": "Saved/TownSources/Textures/fabric_pattern_05/fabric_pattern_05_arm_2k.jpg",
+          "bytes": 770887,
+          "md5": "928d69e3bb52dc8f199cb015488f71ad"
+        }
+      ]
+    },
+    {
+      "kind": "hdri",
+      "id": "belfast_sunset_puresky",
+      "name": "Belfast Sunset (Pure Sky)",
+      "authors": "Greg Zaal, Dimitrios Savva, Jarod Guest",
+      "resolution": "4k",
+      "purpose": "dusk sky dome and sky light",
+      "page": "https://polyhaven.com/a/belfast_sunset_puresky",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/belfast_sunset_puresky_4k.hdr",
+          "file": "Saved/TownSources/HDRI/belfast_sunset_puresky_4k.hdr",
+          "bytes": 17420114,
+          "md5": "52d2339c16069a2aaa7fd37a320d8495"
+        }
+      ]
+    }
+  ]
+}

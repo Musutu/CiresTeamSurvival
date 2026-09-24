@@ -78,3 +78,12 @@ Sources: [Microsoft command-line installation](https://learn.microsoft.com/en-us
 The full installed Unreal template `Templates/TemplateResources/High/Characters/Content` was copied to `Content/Characters`, preserving all **128 files** and their references. It includes `/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple` and `/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed`.
 
 Verification records: `Tools/ContentBuilder/Saved/ContentBuild.json`, `ContentCopied.json`, and `Logs/ContentBuild-commandlet.log`. The commandlet exited **0** and logged `Python script executed successfully`. This validates asset generation, not a rendered scene or game-module launch.
+
+## Medieval town content (September 24)
+
+Third-party environment content now comes only from Poly Haven (CC0 1.0), downloaded with plain HTTPS
+requests by `Tools/FetchTownAssets.py`; nothing downloaded is executed and Fab remains unused (its plugin is
+still blocked by Windows Application Control). Imports run through an unattended UnrealEditor-Cmd Python
+commandlet (`Tools/ImportTownContent.py`) against this project and write only `/Game/Environment/Town`.
+Provenance: `Art/Environment/Town/PROVENANCE.md`. Layout, slots and runtime: `Docs/EnvironmentProps.md`.
+Route and leak-zone details: `Docs/BattlefieldRoutes.md`.
