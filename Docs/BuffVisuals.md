@@ -169,14 +169,44 @@ would sit in the camera's sightline); its body/ground layers always render.
 * Strikes are local actors that die on any phase change.
 * Dedicated servers create no renderer, subsystem work or strike actors.
 
-## Sound hooks
+## Sound
 
-Each row's `sound` block carries cue ids for the audio pass: `start`, `loop`,
-`end`, `hit` (for example `stance.blood_frenzy.start`, `buff.blood_rage.hit`).
-`CireAuraVisuals::PlaySoundCue` is called on start, end and confirmed empowered
-hits. Until `CireAudio::PlayCue/PlayAttached` lands it only logs (Verbose,
-`LogCireAura`). Loop cues are declared but not yet started; wire them when the
-audio API exposes attached looping sounds.
+Each row's `sound` block names cue ids (`start`, `loop`, `end`, `hit`) that are
+entries in `Content/Data/AudioCues.json` and play through `CireAudio`:
+
+* **start / end**: positional one-shots at the unit when the effect begins or
+  fades (end is skipped on death).
+* **loop**: attached loops (`CireAudio::PlayAttached`) that fade out when the
+  effect fades, the unit dies or leaves observation, the phase changes, or the
+  renderer unregisters. At most 4 loops play world-wide, full-detail units only,
+  your own unit and target first.
+* **hit**: played at the confirmed impact of an empowered attack; `aura_swing`
+  plays when an empowered swipe starts.
+* Sounds use the SFX bus (Options SFX/Master volume, mute), the shared event
+  concurrency (8, stop oldest), `ATT_Prop` attenuation, realm privacy (hidden or
+  unobservable units are silent), and other units play at
+  `0.4 + 0.6 x OtherEffectsIntensity`. An id with no cue entry: `.start` falls back
+  to `aura_apply` / `aura_heal`, anything else stays silent.
+
+| Signature | Start | Loop | Hit |
+|---|---|---|---|
+| Blood Frenzy / Blood Rage / Enraged | snarl (pitch varies) | heavy heartbeat (Rage faster) | blood splash (3 variants) |
+| Siege Fury | flame burst | fire crackle | small flame burst |
+| Frost Bind / Frost Weapon | ice crack | - | ice shatter (3 variants) |
+| Sanctuary / Blessing / Bastion of Dawn | chime / chime / short choir | - | sparkle |
+| Shield Wall / Iron Guard / Challenge of Iron / Provoked | shield clang (pitch by weight) | - | clang (War Cry, Rallied, Challenge, Battle Rhythm) |
+| Mass Aegis / Guarded / Guardian's Oath / Oathshield | force field (end: lower force field) | - | - |
+| War Cry / Rallied / Taunting / Challenging Roar | battle cry (pitch by source) | - | - |
+| Poisoned / Aether Phial / Wellspring | bubble | bubbling (poison, mana) | - |
+| Borrowed Time / Toll of the Grave / Scatter / Stun & daze | hourglass sand / deep gong / whoosh / sparkle | - | - |
+
+Sources are CC0 Freesound uploads fetched and licence-checked by
+`Tools/FetchAudioSources.py` (keys `aura_*`, plus the existing `fire_loop`),
+processed by `Tools/ProcessAudio.py auras`, and imported to
+`Content/Audio/Auras` by `CIRE_AUDIO_FOLDERS=Auras Tools/BuildAudioContent.py`
+(the folder subset leaves every other shipped audio asset untouched; decode with
+`CIRE_AUDIO_ONLY=<keys> Tools/DecodeAudioSources.py`). Everything is listed in
+`Art/Audio/PROVENANCE.md` and `Art/Audio/AudioSources.json`.
 
 ## Adding an effect (items, new skills)
 
@@ -219,4 +249,4 @@ clear records on clients, and that arena records reach both teams.
 * `-CireNoAuras` on the command line disables the renderer (performance A/B).
 * Summons do not receive records yet (they inherit the component but no skill
   writes to them).
-* Loop sound cues are data only until the audio API is available.
+* Aura sounds were levelled by measurement (offline render), not by ear; the Battle Cry source is a crowd recording cut to 1.7 s and may want replacing after a listening pass.

@@ -41,7 +41,7 @@
       ],
       "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.35 },
       "attack": { "swipe": "gold", "onHit": "sparks", "primary": [1.0, 0.5, 0.15], "core": [1.0, 0.92, 0.55] },
-      "sound": { "start": "buff.war_cry.start", "end": "buff.war_cry.end", "hit": "buff.war_cry.hit" }
+      "sound": { "start": "buff.war_cry.start", "hit": "buff.war_cry.hit" }
     },
     "challenge_of_iron": {
       "name": "Challenge of Iron", "kind": "stance", "school": "steel", "source": "champion ultimate: taunt and 12s guard",
@@ -54,7 +54,7 @@
       ],
       "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.45 },
       "attack": { "swipe": "steel", "onHit": "sparks", "primary": [0.75, 0.8, 0.9], "core": [1.0, 1.0, 0.95] },
-      "sound": { "start": "buff.challenge_of_iron.start", "end": "buff.challenge_of_iron.end", "hit": "buff.challenge_of_iron.hit" }
+      "sound": { "start": "buff.challenge_of_iron.start", "hit": "buff.challenge_of_iron.hit" }
     },
     "sanctuary": {
       "name": "Sanctuary", "kind": "buff", "school": "holy", "source": "support active: group heal and 3s guard",
@@ -65,7 +65,7 @@
         { "shape": "motes", "attach": "body", "style": "glint", "count": 10, "speed": 0.8 }
       ],
       "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.35 },
-      "sound": { "start": "buff.sanctuary.start", "end": "buff.sanctuary.end" }
+      "sound": { "start": "buff.sanctuary.start" }
     },
     "bastion_of_dawn": {
       "name": "Bastion of Dawn", "kind": "aura", "school": "holy", "source": "tank/support ultimate: self heal, allies guarded 8s",
@@ -79,7 +79,7 @@
       "lifecycle": { "burstSeconds": 0.6, "fadeSeconds": 0.5 },
       "intensity": { "expiringSeconds": 2.0 },
       "attack": { "swipe": "holy", "onHit": "glint" },
-      "sound": { "start": "buff.bastion_of_dawn.start", "loop": "buff.bastion_of_dawn.loop", "end": "buff.bastion_of_dawn.end", "hit": "buff.bastion_of_dawn.hit" }
+      "sound": { "start": "buff.bastion_of_dawn.start", "hit": "buff.bastion_of_dawn.hit" }
     },
     "mass_aegis": {
       "name": "Mass Aegis", "kind": "buff", "school": "arcane ward", "source": "support ultimate: cleanse slows, 12s guard",
@@ -103,7 +103,7 @@
         { "shape": "motes", "attach": "body", "style": "bubble", "count": 8, "speed": 0.9 }
       ],
       "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
-      "sound": { "start": "buff.wellspring.start", "end": "buff.wellspring.end" }
+      "sound": { "start": "buff.wellspring.start" }
     },
     "frost_bind": {
       "name": "Frost Bind", "kind": "debuff", "school": "frost", "source": "skillshot: 35% slow for 4s",
@@ -145,7 +145,7 @@
         { "shape": "tether", "attach": "link", "style": "chain", "alpha": 0.5 }
       ],
       "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.3 },
-      "sound": { "start": "debuff.provoked.start", "end": "debuff.provoked.end" }
+      "sound": { "start": "debuff.provoked.start" }
     },
     "guarded": {
       "name": "Guarded", "kind": "buff", "school": "ward", "source": "any other 40% guard (developer tools, summons, legacy paths)",
@@ -153,7 +153,7 @@
       "priority": 40,
       "layers": [ { "shape": "shell", "attach": "body", "style": "dome", "alpha": 0.8, "speed": 0.5 } ],
       "lifecycle": { "burstSeconds": 0.35, "fadeSeconds": 0.35 },
-      "sound": { "start": "buff.guarded.start", "end": "buff.guarded.end" }
+      "sound": { "start": "buff.guarded.start" }
     },
     "taunting": {
       "name": "Commanding presence", "kind": "stance", "school": "war", "source": "any other champion taunt state",
@@ -189,7 +189,7 @@
       ],
       "intensity": { "base": 0.8, "perStack": 0.35, "maxStacks": 4, "expiringSeconds": 0 },
       "lifecycle": { "burstSeconds": 0.3, "fadeSeconds": 0.5 },
-      "sound": { "start": "debuff.poisoned.start", "loop": "debuff.poisoned.loop", "end": "debuff.poisoned.end" }
+      "sound": { "start": "debuff.poisoned.start", "loop": "debuff.poisoned.loop" }
     },
     "boss_leader_frenzy": {
       "name": "Blood Frenzy", "kind": "stance", "school": "blood", "source": "Gravemaw, Pack Leader below 30% health: +50% damage, faster attacks and movement",
@@ -203,7 +203,7 @@
       ],
       "lifecycle": { "burstSeconds": 0.8, "fadeSeconds": 0.6 },
       "attack": { "swipe": "blood", "onHit": "splash" },
-      "sound": { "start": "stance.blood_frenzy.start", "loop": "stance.blood_frenzy.loop", "end": "stance.blood_frenzy.end", "hit": "stance.blood_frenzy.hit" }
+      "sound": { "start": "stance.blood_frenzy.start", "loop": "stance.blood_frenzy.loop", "hit": "stance.blood_frenzy.hit" }
     },
     "boss_siege_fury": {
       "name": "Siege Fury", "kind": "stance", "school": "fire", "source": "Hollow Siegebreaker below 30% health: +40% damage, faster attacks",
@@ -217,7 +217,7 @@
       ],
       "lifecycle": { "burstSeconds": 0.8, "fadeSeconds": 0.6 },
       "attack": { "swipe": "ember", "onHit": "sparks" },
-      "sound": { "start": "stance.siege_fury.start", "loop": "stance.siege_fury.loop", "end": "stance.siege_fury.end", "hit": "stance.siege_fury.hit" }
+      "sound": { "start": "stance.siege_fury.start", "loop": "stance.siege_fury.loop", "hit": "stance.siege_fury.hit" }
     },
     "enraged": {
       "name": "Enraged", "kind": "stance", "school": "rage", "source": "any other monster enrage ability",
@@ -230,7 +230,7 @@
       ],
       "lifecycle": { "burstSeconds": 0.7, "fadeSeconds": 0.5 },
       "attack": { "swipe": "ember", "onHit": "sparks", "primary": [0.95, 0.25, 0.1] },
-      "sound": { "start": "stance.enraged.start", "end": "stance.enraged.end", "hit": "stance.enraged.hit" }
+      "sound": { "start": "stance.enraged.start", "hit": "stance.enraged.hit" }
     },
     "rallied": {
       "name": "Rallied", "kind": "buff", "school": "war", "source": "Rallying Roar / Rallying Bellow: +25% damage and attack speed",
@@ -243,7 +243,7 @@
       ],
       "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
       "attack": { "swipe": "gold", "onHit": "sparks" },
-      "sound": { "start": "buff.rallied.start", "end": "buff.rallied.end", "hit": "buff.rallied.hit" }
+      "sound": { "start": "buff.rallied.start", "hit": "buff.rallied.hit" }
     },
     "npc_tank_wall": {
       "name": "Shield Wall", "kind": "stance", "school": "steel", "source": "Hollow Shieldbearer below 50% health: 50% less damage for 6s",
@@ -265,7 +265,7 @@
         { "shape": "ring", "attach": "ground", "style": "runes", "count": 6, "speed": 0.6 }
       ],
       "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.35 },
-      "sound": { "start": "buff.guardians_oath.start", "end": "buff.guardians_oath.end" }
+      "sound": { "start": "buff.guardians_oath.start" }
     },
     "npc_tank_provoke": {
       "name": "Challenging Roar", "kind": "aura", "school": "steel", "source": "Hollow Shieldbearer while its provoke is active",
@@ -276,7 +276,7 @@
         { "shape": "ripple", "attach": "ground", "style": "shock", "speed": 0.9 }
       ],
       "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.35 },
-      "sound": { "start": "aura.challenging_roar.start", "end": "aura.challenging_roar.end" }
+      "sound": { "start": "aura.challenging_roar.start" }
     },
     "battle_rhythm": {
       "name": "Battle Rhythm", "kind": "passive", "school": "war", "source": "passive: 20% faster basic attacks",
@@ -329,7 +329,7 @@
         { "shape": "ring", "attach": "ground", "count": 0, "speed": 0.4, "alpha": 0.7 }
       ],
       "lifecycle": { "burstSeconds": 0.35, "fadeSeconds": 0.4 },
-      "sound": { "start": "item.mana_restore.start", "loop": "item.mana_restore.loop", "end": "item.mana_restore.end" }
+      "sound": { "start": "item.mana_restore.start", "loop": "item.mana_restore.loop" }
     },
     "oathshield": {
       "name": "Oathshield", "kind": "buff", "school": "steel", "source": "Aegis of the Last Oath active: you and allies within 7m take 40% less damage for 3s",
@@ -365,7 +365,7 @@
       ],
       "lifecycle": { "burstSeconds": 0.7, "fadeSeconds": 0.5 },
       "attack": { "swipe": "blood", "onHit": "splash" },
-      "sound": { "start": "buff.blood_rage.start", "loop": "buff.blood_rage.loop", "end": "buff.blood_rage.end", "hit": "buff.blood_rage.hit" }
+      "sound": { "start": "buff.blood_rage.start", "loop": "buff.blood_rage.loop", "hit": "buff.blood_rage.hit" }
     },
     "frost_weapon": {
       "name": "Frost Weapon", "kind": "buff", "school": "frost", "source": "data-ready for item actives and future skills",
@@ -377,7 +377,7 @@
       ],
       "lifecycle": { "burstSeconds": 0.45, "fadeSeconds": 0.45 },
       "attack": { "swipe": "frost", "onHit": "shatter" },
-      "sound": { "start": "buff.frost_weapon.start", "end": "buff.frost_weapon.end", "hit": "buff.frost_weapon.hit" }
+      "sound": { "start": "buff.frost_weapon.start", "hit": "buff.frost_weapon.hit" }
     },
     "blessing": {
       "name": "Blessing", "kind": "buff", "school": "holy", "source": "data-ready for item actives and future skills",
@@ -390,7 +390,7 @@
       ],
       "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
       "attack": { "swipe": "holy", "onHit": "glint" },
-      "sound": { "start": "buff.blessing.start", "end": "buff.blessing.end", "hit": "buff.blessing.hit" }
+      "sound": { "start": "buff.blessing.start", "hit": "buff.blessing.hit" }
     },
     "regeneration": {
       "name": "Regeneration", "kind": "buff", "school": "nature", "source": "heal-over-time; data-ready for item actives and future skills",
@@ -403,7 +403,7 @@
       ],
       "intensity": { "perStack": 0.25, "maxStacks": 3 },
       "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.4 },
-      "sound": { "start": "buff.regeneration.start", "loop": "buff.regeneration.loop", "end": "buff.regeneration.end" }
+      "sound": { "start": "buff.regeneration.start" }
     },
     "stunned": {
       "name": "Stunned", "kind": "debuff", "school": "control", "source": "data-ready; no current ability stuns",
@@ -414,7 +414,7 @@
         { "shape": "ring", "attach": "ground", "style": "dashed", "count": 5, "speed": 1.5, "size": 0.8 }
       ],
       "lifecycle": { "burstSeconds": 0.3, "fadeSeconds": 0.25 },
-      "sound": { "start": "debuff.stunned.start", "end": "debuff.stunned.end" }
+      "sound": { "start": "debuff.stunned.start" }
     }
   }
 }

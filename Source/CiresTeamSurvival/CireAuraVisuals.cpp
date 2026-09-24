@@ -8,6 +8,8 @@
 #include "CireSkillRuntime.h"
 #include "CireAttackSystem.h"
 #include "CireItems.h"
+#include "CireAudio.h"
+#include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -273,6 +275,7 @@ void UCireAuraComponent::OnRegister()
 }
 void UCireAuraComponent::OnUnregister()
 {
+    StopLoops();
     if(auto* Subsystem=CireAuraVisuals::Get(GetWorld()))Subsystem->Unregister(this);
     ReleaseMeshes();
     Super::OnUnregister();
@@ -301,6 +304,30 @@ bool UCireAuraComponent::IsLightOn() const{return Light&&Light->IsVisible()&&Lig
 bool UCireAuraComponent::AreMeshesCollisionFree() const
 {
     return (!Core||Core->GetCollisionEnabled()==ECollisionEnabled::NoCollision)&&(!Soft||Soft->GetCollisionEnabled()==ECollisionEnabled::NoCollision);
+}
+void UCireAuraComponent::StopLoops()
+{
+    for(auto& Pair:LoopAudio)if(UAudioComponent* Audio=Pair.Value.Get())Audio->FadeOut(.35f,0.f);
+    LoopAudio.Reset();LoopIds.Reset();
+}
+void UCireAuraComponent::UpdateLoops(bool bAllowed,int32& Budget,float Volume)
+{
+    TSet<FName> Wanted;
+    if(bAllowed)for(const auto& I:Instances)
+    {
+        if(I.FadeLocal>=0)continue;const auto* Def=CireAuraData::Find(I.Id);
+        if(!Def||Def->SoundLoop.IsEmpty()||Budget<=0)continue;
+        Wanted.Add(I.Id);--Budget;
+    }
+    for(auto It=LoopAudio.CreateIterator();It;++It)
+        if(!Wanted.Contains(It.Key())||!It.Value().IsValid()){if(UAudioComponent* Audio=It.Value().Get())Audio->FadeOut(.35f,0.f);It.RemoveCurrent();}
+    for(const FName Id:Wanted)
+    {
+        if(LoopIds.Contains(Id)&&(LoopAudio.Contains(Id)||!GetWorld()->GetAudioDeviceRaw()))continue;
+        const auto* Def=CireAuraData::Find(Id);AActor* Unit=GetOwner();
+        if(UAudioComponent* Audio=CireAudio::PlayAttached(FName(*Def->SoundLoop),Unit->GetRootComponent(),NAME_None,Volume))LoopAudio.Add(Id,Audio);
+    }
+    LoopIds=Wanted;
 }
 bool UCireAuraComponent::HasVisibleWork() const{return !Instances.IsEmpty();}
 void UCireAuraComponent::AgeForPreview(float Seconds){for(auto& I:Instances){I.BornLocal-=Seconds;}}
@@ -375,7 +402,7 @@ void UCireAuraComponent::Synchronize(float ServerNow,float LocalNow)
         if(!bWanted&&Inst.FadeLocal<0)
         {
             Inst.FadeLocal=LocalNow;
-            if(const auto* Def=CireAuraData::Find(Inst.Id))CireAuraVisuals::PlaySoundCue(Def->SoundEnd,Unit);
+            if(const auto* Def=CireAuraData::Find(Inst.Id);Def&&UnitAlive(Unit))CireAuraVisuals::PlaySoundCue(Def->SoundEnd,Unit);
         }
         const auto* Def=CireAuraData::Find(Inst.Id);const float Fade=Def?Def->Fade:.3f;
         if(Inst.FadeLocal>=0&&LocalNow-Inst.FadeLocal>=Fade)Instances.RemoveAt(I);
@@ -608,7 +635,7 @@ bool UCireAuraSubsystem::MatchHit(const FString& SourceName,const FVector& Locat
         if(P.SourceName!=SourceName||LocalNow>P.Until||FVector::DistSquared2D(P.Near,Location)>FMath::Square(450.f))continue;
         const float Drop=FMath::Clamp(P.Scale*45.f,30.f,110.f);
         SpawnStrike(ACireAuraStrike::EMode::Hit,P.Attack,Location,Location-FVector(0,0,Drop),P.Scale);
-        CireAuraVisuals::PlaySoundCue(P.SoundHit,P.Unit.Get());
+        CireAuraVisuals::PlaySoundCue(P.SoundHit,P.Unit.Get(),&Location);
         PendingHits.RemoveAt(I);return true;
     }
     return false;
@@ -623,7 +650,7 @@ void UCireAuraSubsystem::QueueHit(FPendingHit&& Pending,float LocalNow)
         {
             const float Drop=FMath::Clamp(Pending.Scale*45.f,30.f,110.f);
             SpawnStrike(ACireAuraStrike::EMode::Hit,Pending.Attack,R.Location,R.Location-FVector(0,0,Drop),Pending.Scale);
-            CireAuraVisuals::PlaySoundCue(Pending.SoundHit,Pending.Unit.Get());
+            CireAuraVisuals::PlaySoundCue(Pending.SoundHit,Pending.Unit.Get(),&R.Location);
             RecentHits.RemoveAt(I);return;
         }
     }
@@ -670,7 +697,7 @@ void UCireAuraSubsystem::HandleAttacks(UCireAuraComponent* Aura,float ServerNow,
         if(auto* Body=Hero->GetMesh();Body&&Body->GetBoneIndex(TEXT("hand_r"))!=INDEX_NONE&&Body->IsVisible())Hand=Body->GetSocketLocation(TEXT("hand_r"));
         SpawnStrike(ACireAuraStrike::EMode::Muzzle,Mod->Attack,Hand,Aura->PendingAim,Scale*.8f);
     }
-    else SpawnStrike(ACireAuraStrike::EMode::Swipe,Mod->Attack,Chest,Aura->PendingAim,Scale,(Hero->AttackSerial&1)?1.f:-1.f);
+    else if(SpawnStrike(ACireAuraStrike::EMode::Swipe,Mod->Attack,Chest,Aura->PendingAim,Scale,(Hero->AttackSerial&1)?1.f:-1.f))CireAuraVisuals::PlaySoundCue(TEXT("aura_swing"),Hero);
     Aura->LastStrikeLocal=LocalNow;
     FPendingHit Pending;Pending.SourceName=Hero->HeroName;Pending.Near=Aura->PendingAim;Pending.Until=LocalNow+(bRanged?2.5f:1.f);
     Pending.Attack=Mod->Attack;Pending.Scale=Scale;Pending.SoundHit=Mod->SoundHit;Pending.Unit=Hero;
@@ -686,7 +713,7 @@ void UCireAuraSubsystem::NotifyAttackCue(FName SkillId,FVector From,FVector To)
         if(!Monster||FVector::DistSquared2D(Monster->GetActorLocation(),From)>FMath::Square(60.f)||Monster->IsHidden())continue;
         const FCireAuraDef* Mod=Aura->AttackModifier(ServerNow);if(!Mod)return;
         const float Scale=UnitScale(Monster);
-        SpawnStrike(ACireAuraStrike::EMode::Swipe,Mod->Attack,Monster->GetActorLocation()+FVector(0,0,15*Scale),To,Scale,FMath::RandBool()?1.f:-1.f);
+        if(SpawnStrike(ACireAuraStrike::EMode::Swipe,Mod->Attack,Monster->GetActorLocation()+FVector(0,0,15*Scale),To,Scale,FMath::RandBool()?1.f:-1.f))CireAuraVisuals::PlaySoundCue(TEXT("aura_swing"),Monster);
         FPendingHit Pending;Pending.SourceName=Monster->MonsterName;Pending.Near=To;Pending.Until=LocalNow+1.f;Pending.Attack=Mod->Attack;Pending.Scale=Scale*.9f;
         Pending.SoundHit=Mod->SoundHit;Pending.Unit=Monster;QueueHit(MoveTemp(Pending),LocalNow);
         return;
@@ -730,14 +757,14 @@ void UCireAuraSubsystem::UpdateNow(float LocalOverride)
         Aura->Synchronize(ServerNow,LocalNow);
         // Realm privacy: the same rule as replication and body visibility.
         const bool bObservable=Unit&&!Unit->IsHidden()&&Observer&&CireRealm::CanObserve(Observer,Unit);
-        if(!bObservable||Aura->Instances.IsEmpty()){Aura->HideAll();Aura->bStrikePending=false;continue;}
+        if(!bObservable||Aura->Instances.IsEmpty()){Aura->HideAll();Aura->bStrikePending=false;Aura->StopLoops();continue;}
         const float Distance=static_cast<float>(FVector::Dist(CamLoc,Unit->GetActorLocation()));
         int32 Priority=0;for(const auto& I:Aura->Instances)if(const auto* Def=CireAuraData::Find(I.Id))Priority=FMath::Max(Priority,Def->Priority);
         const bool bLocal=Unit==LocalPawn;
         Visible.Add({Aura,Distance,Distance-(bLocal?1e6f:0.f)-(Unit==Focus?5e5f:0.f)-Priority*12.f,bLocal});
     }
     Visible.Sort([](const FCandidate& A,const FCandidate& B){return A.Score<B.Score;});
-    RenderedUnits=RenderedLayers=LitUnits=CulledUnits=0;
+    RenderedUnits=RenderedLayers=LitUnits=CulledUnits=0;int32 LoopBudget=CireAuraVisuals::MaxLoops;
     for(const FCandidate& Entry:Visible)
     {
         UCireAuraComponent* Aura=Entry.Aura;
@@ -745,7 +772,9 @@ void UCireAuraSubsystem::UpdateNow(float LocalOverride)
         const float Intensity=Entry.bLocal?1.f:Others;
         if(!Entry.bLocal&&Intensity<.35f)Detail=FMath::Min(Detail,0);
         if(Entry.bLocal)Detail=FMath::Max(Detail,1);
-        if(Detail<0||RenderedUnits>=Limits.MaxUnits){Aura->HideAll();++CulledUnits;continue;}
+        if(Detail<0||RenderedUnits>=Limits.MaxUnits){Aura->HideAll();Aura->StopLoops();++CulledUnits;continue;}
+        // Loops only for full-detail units, nearest/most important first (the sort order).
+        Aura->UpdateLoops(Detail==2,LoopBudget,Entry.bLocal?1.f:.4f+.6f*Intensity);
         if(LocalOverride<0&&Detail>=1)HandleAttacks(Aura,ServerNow,LocalNow);
         // Reduced-detail units refresh every other frame; their meshes stay attached meanwhile.
         if(Detail<2&&Aura->CountVertices()>0&&(++Aura->FrameSkip&1)&&LocalOverride<0){++RenderedUnits;RenderedLayers+=Aura->CountLayers();LitUnits+=Aura->IsLightOn();continue;}
@@ -771,11 +800,24 @@ UCireAuraComponent* CireAuraVisuals::Attach(AActor* Unit)
     auto* Component=NewObject<UCireAuraComponent>(Unit,TEXT("CireAuraVisual"));Unit->AddInstanceComponent(Component);Component->RegisterComponent();
     return Component;
 }
-void CireAuraVisuals::PlaySoundCue(const FString& CueId,AActor* Unit)
+void CireAuraVisuals::PlaySoundCue(const FString& CueId,AActor* Unit,const FVector* Location)
 {
-    // Data hook for the audio pass: ids come from BuffVisuals.json "sound".
-    if(CueId.IsEmpty()||!IsValid(Unit))return;
-    UE_LOG(LogCireAura,Verbose,TEXT("CIRE_AURA_SOUND %s %s"),*CueId,*Unit->GetName());
+    // Ids come from BuffVisuals.json "sound". A cue registered in AudioCues.json plays as is;
+    // otherwise start cues fall back to the shared aura_apply / aura_heal cues and the rest stay silent.
+    if(CueId.IsEmpty()||!IsValid(Unit)||Unit->IsHidden()||Unit->GetNetMode()==NM_DedicatedServer)return;
+    const APlayerController* PC=Unit->GetWorld()->GetFirstPlayerController();
+    if(!PC||!CireRealm::CanObserve(PC,Unit))return; // realm privacy: never hear an unobservable unit
+    FName Cue(*CueId);
+    if(!CireAudio::HasCue(Cue))
+    {
+        if(!CueId.EndsWith(TEXT(".start")))return;
+        static const TCHAR* Healing[]={TEXT("regeneration"),TEXT("wellspring"),TEXT("mana_restore"),TEXT("sanctuary")};
+        bool bHeal=false;for(const TCHAR* Word:Healing)bHeal|=CueId.Contains(Word);
+        Cue=bHeal?FName(TEXT("aura_heal")):FName(TEXT("aura_apply"));
+    }
+    const float Volume=Unit==PC->GetPawn()?1.f:.4f+.6f*OtherIntensity(Unit->GetWorld());
+    CireAudio::PlayCue(Unit,Cue,Location?*Location:Unit->GetActorLocation(),Volume);
+    UE_LOG(LogCireAura,Verbose,TEXT("CIRE_AURA_SOUND %s -> %s %s"),*CueId,*Cue.ToString(),*Unit->GetName());
 }
 
 #if !UE_BUILD_SHIPPING

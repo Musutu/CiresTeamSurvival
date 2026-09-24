@@ -27,7 +27,10 @@ STAGING = ROOT / "Tools" / "ContentBuilder"
 PROCESSED = ROOT / "Art" / "Downloads" / "Audio" / "processed"
 MUSIC = ROOT / "Art" / "Downloads" / "Audio" / "music"
 REPORT = ROOT / "Art" / "Audio" / "ProcessReport.json"
-FOLDERS = ("Mix", "Music", "Ambience", "Footsteps", "SFX", "UI")
+FOLDERS = ("Mix", "Music", "Ambience", "Footsteps", "SFX", "UI", "Auras")
+# aura-vfx: CIRE_AUDIO_FOLDERS=Auras rebuilds and copies only those folders (the mix is rebuilt in
+# staging for references but not copied, so shipped assets outside the subset are never touched).
+SUBSET = tuple(f for f in os.environ.get("CIRE_AUDIO_FOLDERS", "").split(",") if f)
 MIX = "/Game/Audio/Mix"
 
 LOOPING_MUSIC = {"MUS_ThePyre", "MUS_OppressiveGloom", "MUS_FiveArmies", "MUS_Crusade", "MUS_Killers",
@@ -154,6 +157,8 @@ def run_inside_unreal():
     report = json.loads(REPORT.read_text("utf-8"))
     imports = [(PROCESSED / o["category"] / (o["name"] + ".wav"), o["category"], o["name"], o) for o in report["outputs"]]
     imports += [(p, "Music", p.stem, {"loop": p.stem in LOOPING_MUSIC}) for p in sorted(MUSIC.glob("MUS_*.mp3"))]
+    if SUBSET:
+        imports = [i for i in imports if i[1] in SUBSET]
     count = 0
     for path, category, name, meta in imports:
         if not path.exists():
@@ -191,6 +196,10 @@ def run_inside_unreal():
             elif name.startswith("AMB_") and not looping:
                 setp(wave, "attenuation_settings", att["Ambient"])
                 setp(wave, "concurrency_set", [conc["AmbienceOneShot"]])
+        elif category == "Auras":  # aura-vfx: buff sounds, positional at the unit, event concurrency
+            setp(wave, "sound_class_object", classes["SFX"])
+            setp(wave, "concurrency_set", [conc["Events"]])
+            setp(wave, "attenuation_settings", att["Prop"])
         else:  # SFX events: 2D unless the runtime passes a location (then ATT_Large applies)
             setp(wave, "sound_class_object", classes["SFX"])
             setp(wave, "concurrency_set", [conc["Events"]])
@@ -232,12 +241,14 @@ def launch():
     for line in text.splitlines():
         if "CIRE_AUDIO_PROPERTY" in line or "CIRE_AUDIO_CONTENT_PASS" in line:
             print(line.split("LogPython: ")[-1])
-    for folder in FOLDERS:
+    for folder in (SUBSET or FOLDERS):
         source, destination = STAGING / "Content" / "Audio" / folder, ROOT / "Content" / "Audio" / folder
         remove_tree(destination)
         shutil.copytree(source, destination)
         remove_tree(source)  # the staging copy is not versioned; Content/Audio is the source of truth
-    print("copied", ", ".join(FOLDERS), "into Content/Audio")
+    for folder in FOLDERS:
+        remove_tree(STAGING / "Content" / "Audio" / folder)
+    print("copied", ", ".join(SUBSET or FOLDERS), "into Content/Audio")
 
 
 if __name__ == "__main__":

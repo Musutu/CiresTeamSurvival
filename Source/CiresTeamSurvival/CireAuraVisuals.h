@@ -108,6 +108,11 @@ public:
     bool bRenderedThisFrame=false;
     /** The local player's own unit: overhead marks are skipped (the HUD buff bar covers them and they would sit in the camera's sightline). */
     bool bLocalView=false;
+    /** Attached loop cues (heartbeat, fire, bubbles) per effect id; stopped on fade, hide, cull and unregister. */
+    void UpdateLoops(bool bAllowed,int32& Budget,float Volume);
+    void StopLoops();
+    TSet<FName> LoopIds; // effects whose loop is active (kept even without an audio device, for tests)
+    TMap<FName,TWeakObjectPtr<class UAudioComponent>> LoopAudio;
     // Attack bookkeeping (subsystem).
     uint32 LastAttackSerial=0;
     bool bAttackPrimed=false;
@@ -208,7 +213,9 @@ namespace CireAuraVisuals
     CIRESTEAMSURVIVAL_API UCireAuraComponent* Attach(AActor* Unit);
     CIRESTEAMSURVIVAL_API UCireAuraSubsystem* Get(const UWorld* World);
     /** Sound cue ids are data hooks for the audio pass; see Docs/BuffVisuals.md. */
-    CIRESTEAMSURVIVAL_API void PlaySoundCue(const FString& CueId,AActor* Unit);
+    CIRESTEAMSURVIVAL_API void PlaySoundCue(const FString& CueId,AActor* Unit,const FVector* Location=nullptr);
+    /** Attached loops playing (or wanted, when no audio device exists) across all units; capped by MaxLoops. */
+    constexpr int32 MaxLoops=4;
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSmoke(ACireGameMode* Mode);
 #endif
