@@ -194,6 +194,7 @@ void UCireWeaponPresentation::Clear()
 {
     for(UStaticMeshComponent* Part:Parts)if(Part)Part->DestroyComponent();
     Parts.Reset();BowStrings.Reset();Primary=nullptr;Arrow=nullptr;EquippedMesh=nullptr;
+    GripHands=CireGrip::FHands();DrawPose=CireGrip::FHandPose(); // creature-anim
     EquippedProfile.Reset();EquippedLoadout.Reset();Motion.Reset();AppliedRevision=INDEX_NONE;PrimarySize=1;
 }
 UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FString& AssetPath,FName BoneName,
@@ -238,6 +239,18 @@ UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FStr
     if(BodyScale.GetAbsMin()>SMALL_NUMBER)
         GripOffset+=BoneReference.InverseTransformVector(Upright.RotateVector(OffsetCm)/BodyScale);
     Part->SetRelativeLocation(GripOffset);Part->SetWorldScale3D(FVector(Size));
+    // creature-anim: with grip data the handle sits inside the curled fist (CireGrip); shields strap onto the forearm.
+    if(const auto* Grip=CireGrip::FindWeapon(Asset))
+    {
+        const CireGrip::FPlacement Placement=CireGrip::Place(Mesh,BoneName,*Grip,Size,static_cast<float>(Body->GetRelativeScale3D().X));
+        if(Placement.bValid)
+        {
+            Part->SetAbsolute(false,false,false);
+            Part->AttachToComponent(Body,FAttachmentTransformRules::KeepRelativeTransform,Placement.Bone);
+            Part->SetRelativeTransform(Placement.Relative);
+            CireGrip::AddToHands(Mesh,Placement,GripHands);
+        }
+    }
     Part->SetVisibility(Body->IsVisible());Parts.Add(Part);return Part;
 }
 void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
@@ -251,7 +264,10 @@ void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
     const FLoadout* Loadout=Database.Presets.Find(EquippedLoadout);if(!Loadout)return;Motion=Loadout->Motion;
     for(const auto& Spec:Loadout->Parts)
     {
-        auto* Part=Attach(Hero,Spec.Asset,Spec.Bone,Spec.Offset,Spec.Rotation,Spec.Size);if(!Part)continue;
+        // creature-anim: presets whose Tripo clips hold the weapon in the other hand swap their hand props.
+        FName Bone=Spec.Bone;
+        if(CireGrip::SwapsHands(EquippedLoadout))Bone=Bone==TEXT("hand_l")?FName(TEXT("hand_r")):Bone==TEXT("hand_r")?FName(TEXT("hand_l")):Bone;
+        auto* Part=Attach(Hero,Spec.Asset,Bone,Spec.Offset,Spec.Rotation,Spec.Size);if(!Part)continue;
         if(Spec.bHideOnRelease)Part->ComponentTags.Add(ReleaseTag);
         if(Spec.Role==TEXT("primary")){Primary=Part;PrimarySize=Spec.Size;}
         else if(Spec.Role==TEXT("ammunition"))Arrow=Part;
@@ -261,6 +277,9 @@ void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
         Arrow->AttachToComponent(Primary,FAttachmentTransformRules::KeepWorldTransform);
         Arrow->SetRelativeLocation(FVector(0,0,Motion==TEXT("crossbow")?9:2));Arrow->SetRelativeRotation(FRotator::ZeroRotator);
     }
+    // creature-anim: the string hand pinches the nock while drawing.
+    if(Motion==TEXT("bow")&&Primary&&Hero.GetMesh()->GetSkeletalMeshAsset())
+        DrawPose=CireGrip::BuildHandPose(*Hero.GetMesh()->GetSkeletalMeshAsset(),true,CireGrip::EHand::Pinch,1.f);
     if(Motion==TEXT("bow")&&Primary)for(int32 I=0;I<2;++I)
     {
         auto* String=NewObject<UStaticMeshComponent>(&Hero);Hero.AddInstanceComponent(String);String->SetupAttachment(Hero.GetMesh());
@@ -282,7 +301,13 @@ void UCireWeaponPresentation::Update(ACireHero& Hero,float AttackElapsed)
     if(Arrow)Arrow->SetHiddenInGame(bHidden||AttackElapsed>=ReleaseAt);
     if(Motion!=TEXT("bow")||!Primary)return;
     const bool bDrawing=AttackElapsed>=0&&AttackElapsed<ReleaseAt;const FTransform Bow=Primary->GetComponentTransform();
-    const FVector Nock=bDrawing?Hero.GetMesh()->GetSocketLocation(TEXT("hand_r")):Bow.TransformPosition(FVector(-9,0,0));
+    FVector Nock=bDrawing?Hero.GetMesh()->GetSocketLocation(TEXT("hand_r")):Bow.TransformPosition(FVector(-9,0,0));
+    // creature-anim: the string rides the pinch between thumb and index while drawing.
+    if(DrawPose.bValid&&(!GripHands.Pose[1].bValid||GripHands.Pose[1].Type==CireGrip::EHand::Pinch))
+    {
+        GripHands.Pose[1]=DrawPose;GripHands.Weight[1]=bDrawing?1.f:0.f;
+        if(bDrawing)Nock=Hero.GetMesh()->GetSocketTransform(TEXT("hand_r"),RTS_World).TransformPosition(DrawPose.PinchInHand);
+    }
     for(int32 I=0;I<BowStrings.Num();++I)
     {
         const FVector Tip=Bow.TransformPosition(FVector(-9,0,I==0?52.f:-52.f));const FVector Segment=Nock-Tip;

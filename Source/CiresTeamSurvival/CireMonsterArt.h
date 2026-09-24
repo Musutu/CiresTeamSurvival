@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
+#include "CireGrip.h"
 #include "CireMonsterArt.generated.h"
 
 class ACireGameMode;
@@ -116,6 +117,8 @@ public:
     bool PlayAction(const FString& Role, float WindupSeconds);
     /** Holds the whole presentation (galleries freeze a mid-swing frame). */
     bool bFrozen = false;
+    /** Hand poses / two-hand setup of the props this body holds (CireGrip). */
+    CireGrip::FHands GripHands;
     UFUNCTION() void OnRep_BodySeed();
 
 private:
@@ -180,7 +183,7 @@ public:
     virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void Tick(float DeltaSeconds) override;
-    bool Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props);
+    bool Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props, const CireGrip::FHands* Hands = nullptr);
     UPROPERTY(VisibleAnywhere) TObjectPtr<USkeletalMeshComponent> Body;
     float Age = 0.f;
     float FallSeconds = 3.f;

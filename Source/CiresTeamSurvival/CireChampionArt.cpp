@@ -29,6 +29,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireChampionArt, Log, All);
+bool GCireForceTripoChampionArt = false; // creature-anim
 
 namespace
 {
@@ -84,6 +85,8 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
     float AttackTime = 0.f;
     float AttackWeight = 0.f;
     float AttackLowerBody = 1.f; // creature-anim
+    CireGrip::FHands Hands; // creature-anim
+    float SpineTwist = 0.f; // creature-anim
     float AirWeight = 0.f, RollProgress = -1.f;
     FVector MotionPitchAxis=FVector(1,0,0);
     virtual void PreUpdate(UAnimInstance* Instance, float DeltaSeconds) override
@@ -94,6 +97,8 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
         AttackTime = Combat->AttackTime;
         AttackWeight = Combat->AttackWeight;
         AttackLowerBody = FMath::Clamp(Combat->AttackLowerBody, 0.f, 1.f); // creature-anim
+        Hands = Combat->Hands; // creature-anim
+        SpineTwist = Combat->SpineTwist; // creature-anim
         AirWeight=Combat->AirWeight;RollProgress=Combat->RollProgress;MotionPitchAxis=Combat->MotionPitchAxis;
     }
     virtual bool Evaluate(FPoseContext& Output) override
@@ -115,6 +120,8 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
             Output.Curve.CopyFrom(Blended.Curve);
         }
         if(bEvaluated)ApplyMobilityPose(Output.Pose,AirWeight,RollProgress,MotionPitchAxis);
+        if(bEvaluated)CireGrip::TwistSpine(Output.Pose,SpineTwist); // creature-anim: sweeping swings
+        if(bEvaluated&&Hands.Any())CireGrip::Apply(Output.Pose,Hands); // creature-anim: grips
         return bEvaluated;
     }
 };
@@ -159,7 +166,7 @@ const FChampionArtDefinition Definitions[] = {
 bool ReviewEnabled()
 {
     static const bool bEnabled = FParse::Param(FCommandLine::Get(), TEXT("CireTripoChampions"));
-    return bEnabled;
+    return bEnabled || GCireForceTripoChampionArt; // creature-anim: native grip tests
 }
 
 const FChampionArtDefinition* ProfileArt(const FString& Id)
@@ -409,6 +416,7 @@ void UCireChampionArt::UpdateVisuals(ACireHero& Hero, float DeltaSeconds)
         const float OutWeight = FMath::Clamp((.65f - AuthoredElapsed) / .16f, 0.f, 1.f);
         Combat->AttackWeight = bAttacking ? FMath::SmoothStep(0.f, 1.f, FMath::Min(InWeight, OutWeight)) : 0.f;
         Combat->AttackLowerBody = 1.f;
+        Combat->SpineTwist = 0.f;
         // creature-anim: Tripo action clips (ChampionAttacks02) replace the prototype attack when the body has them.
         CireChampionActions::Apply(Hero, *Combat, DeltaSeconds, SmoothedSpeed);
         if (Hero.AttackSerial != LastAttackSerial)
@@ -417,5 +425,11 @@ void UCireChampionArt::UpdateVisuals(ACireHero& Hero, float DeltaSeconds)
             UE_LOG(LogCireChampionArt, Verbose, TEXT("Prototype attack %u archetype %d age %.3f"), LastAttackSerial, Hero.Archetype, Elapsed);
         }
         if (Weapons) Weapons->Update(Hero, bAttacking ? AuthoredElapsed : -1.f);
+        // creature-anim: hands close around the props; the off hand lets go of a two-hander during actions.
+        if (Weapons)
+        {
+            Combat->Hands = Weapons->GripHands;
+            Combat->Hands.TwoHandWeight = Weapons->GripHands.bTwoHand || Weapons->GripHands.bCarry ? 1.f - Combat->AttackWeight : 0.f;
+        }
     }
 }

@@ -26,7 +26,6 @@
   "bodies": {
     "BlightCaster":       { "dropPropBones": ["hand_r"], "note": "bone staff is part of the mesh" },
     "BlightCasterB":      { "dropPropBones": ["hand_r"], "note": "iron sceptre is part of the mesh" },
-    "BarbedHunter":       { "props": { "hand_l": { "rotation": [0, 90, 0] } }, "note": "bow prop: limbs across the fist, belly along the arm" },
     "BarbedHunterB":      { "dropPropBones": ["hand_l", "hand_r"], "note": "crossbow is part of the mesh" },
     "GravemawPackLeader": { "dropPropBones": ["hand_r"], "mesh": "/Game/Art/Characters/MonsterAnim/Bodies/SK_GravemawPackLeader.SK_GravemawPackLeader",
                             "props": { "spine_03": { "scale": 0.55, "offsetCm": [-26, 0, -22] } },

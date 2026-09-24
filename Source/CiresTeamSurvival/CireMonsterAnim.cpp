@@ -149,6 +149,7 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
     explicit FCireMonsterAnimProxy(UAnimInstance* Instance) : FAnimInstanceProxy(Instance) {}
     FLayerCopy Idle, Walk, Run, Action, Death;
     float MoveAlpha = 0.f, RunAlpha = 0.f;
+    CireGrip::FHands Hands;
     UCireMonsterAnimInstance* Owner = nullptr;
 
     virtual void PreUpdate(UAnimInstance* Instance, float DeltaSeconds) override
@@ -160,6 +161,7 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
         Action.Copy(Monster->Action); Death.Copy(Monster->Death);
         MoveAlpha = FMath::Clamp(Monster->MoveAlpha, 0.f, 1.f);
         RunAlpha = FMath::Clamp(Monster->RunAlpha, 0.f, 1.f);
+        Hands = Monster->Hands;
     }
 
     static bool Sample(const FLayerCopy& Layer, FPoseContext& Into)
@@ -211,6 +213,7 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
         }
         Overlay(Output, Action);
         Overlay(Output, Death);
+        if (Hands.Any()) CireGrip::Apply(Output.Pose, Hands);
         const bool bSane = PoseIsSane(Output.Pose);
         if (!bSane) Output.ResetToRefPose();
         if (Owner) Owner->bLastPoseRejected = !bSane;

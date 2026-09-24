@@ -1,6 +1,7 @@
 #include "CireChampionActions.h"
 
 #include "CireChampionArt.h"
+#include "CireWeaponPresentation.h"
 #include "CireGame.h"
 #include "Animation/AnimSequence.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -27,6 +28,8 @@ struct FData
     TMap<FString, FString> ProfileMotion;                // profile id -> motion (WeaponLoadouts.json)
     TSet<FString> Shouts, Spells;
     float MaxWindupRate = 2.4f;
+    struct FStyle { FString Clip; float Twist = 0.f; };
+    TMap<FString, FStyle> Styles;                         // weapon preset -> basic attack clip + torso twist
 };
 FData GData;
 
@@ -71,6 +74,15 @@ const FData& Data()
         if (Root->TryGetArrayField(TEXT("spellSkills"), List)) for (const auto& V : *List) GData.Spells.Add(V->AsString());
         double Rate = 0;
         if (Root->TryGetNumberField(TEXT("maxWindupRate"), Rate)) GData.MaxWindupRate = FMath::Clamp(Rate, 1., 6.);
+        if (Root->TryGetObjectField(TEXT("styles"), Object))
+            for (const auto& Pair : (*Object)->Values)
+            {
+                const TSharedPtr<FJsonObject>* Row = nullptr; FData::FStyle Style; double Twist = 0;
+                if (!Pair.Value->TryGetObject(Row)) continue;
+                (*Row)->TryGetStringField(TEXT("clip"), Style.Clip);
+                if ((*Row)->TryGetNumberField(TEXT("twist"), Twist)) Style.Twist = FMath::Clamp(Twist, -80., 80.);
+                GData.Styles.Add(FString(Pair.Key.ToView()), Style);
+            }
     }
     if (ReadJson(TEXT("WeaponLoadouts.json"), Loadouts))
     {
@@ -141,10 +153,28 @@ FString CireChampionActions::SkillKind(const FString& SkillId)
     return TEXT("ability");
 }
 
+namespace
+{
+const FData::FStyle* StyleFor(const ACireHero& Hero)
+{
+    const auto* Weapons = Hero.FindComponentByClass<UCireWeaponPresentation>();
+    return Weapons ? Data().Styles.Find(Weapons->GetEquippedLoadout()) : nullptr;
+}
+}
+
+FString CireChampionActions::StyleName(const ACireHero& Hero)
+{
+    const auto* Weapons = Hero.FindComponentByClass<UCireWeaponPresentation>();
+    return Weapons ? Weapons->GetEquippedLoadout() : FString();
+}
+
 FString CireChampionActions::ClipName(const ACireHero& Hero, const FString& Kind)
 {
     if (Kind == TEXT("shout")) return TEXT("war_cry");
     const FData& D = Data();
+    // Weapon classes read differently: thrusts for daggers/lances, sweeps for axes, overheads for hammers.
+    if (Kind == TEXT("attack") || Kind == TEXT("ability"))
+        if (const FData::FStyle* Style = StyleFor(Hero); Style && !Style->Clip.IsEmpty()) return Style->Clip;
     const TMap<FString, FString>* Motion = D.Motions.Find(MotionFor(Hero));
     if (!Motion) Motion = D.Motions.Find(TEXT("melee"));
     const FString* Clip = Motion ? Motion->Find(Kind) : nullptr;
@@ -212,6 +242,19 @@ bool CireChampionActions::Apply(ACireHero& Hero, UCireCombatAnimInstance& Anim, 
     Anim.AttackSequence = State->Sequence;
     Anim.AttackTime = FMath::Clamp(Time, 0.f, State->Sequence->GetPlayLength());
     Anim.AttackWeight = Weight;
+    // Sweeping styles turn the torso away during the raise and through the target after contact.
+    if (const FData::FStyle* Style = StyleFor(Hero); Style && Style->Twist != 0.f && State->Clip == Style->Clip)
+    {
+        const float T = Style->Twist;
+        float Twist;
+        if (Time <= W.Contact) Twist = -T * Smooth01((Time - From) / FMath::Max(.05f, W.Contact - From));
+        else
+        {
+            const float Q = (Time - W.Contact) / FMath::Max(.05f, W.End - W.Contact);
+            Twist = Q < .35f ? FMath::Lerp(-T, T, Smooth01(Q / .35f)) : T * (1.f - Smooth01((Q - .35f) / .65f));
+        }
+        Anim.SpineTwist = Twist * Weight;
+    }
     // Upper body swings/casts; the legs keep the locomotion cycle while the champion moves.
     Anim.AttackLowerBody = 1.f - FMath::Clamp((Speed - 20.f) / 130.f, 0.f, 1.f);
     return true;
@@ -225,7 +268,7 @@ bool CireChampionActions::Hold(ACireHero& Hero, const FString& Clip, float Phase
     if (!Sequence) return false;
     UCireChampionAction* State = StateFor(Hero);
     State->CachedBody = Body; State->SeenAttackSerial = Hero.AttackSerial; State->LastCooldowns = Hero.Cooldowns;
-    State->Sequence = Sequence; State->Clip = Clip; State->Window = Window(Clip); State->bHold = true; State->bBasic = false;
+    State->Sequence = Sequence; State->Clip = Clip; State->Window = Window(Clip); State->bHold = true; State->bBasic = false; State->Windup = .3f;
     const FWindow& W = State->Window;
     State->HoldTime = Phase <= 1.f ? FMath::Lerp(W.Start, W.Contact, FMath::Max(0.f, Phase)) : FMath::Lerp(W.Contact, W.End, FMath::Min(1.f, Phase - 1.f));
     return true;

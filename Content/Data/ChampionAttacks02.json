@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Champion action clips transferred from the Tripo motion library by Tools/RetargetChampionAttacks.py into /Game/Art/Characters/ChampionAttacks02/<folder>/A_<folder>_<clip>. CireChampionActions picks the clip by weapon motion (WeaponLoadouts.json) and skill, and times it to the server's attack release. Presentation only.",
+  "description": "styles: per weapon preset basic-attack clip and torso twist (degrees; sweeping axes turn the most, hammers chop straight overhead, daggers/lances/throws thrust with the cast push). Champion action clips transferred from the Tripo motion library by Tools/RetargetChampionAttacks.py into /Game/Art/Characters/ChampionAttacks02/<folder>/A_<folder>_<clip>. CireChampionActions picks the clip by weapon motion (WeaponLoadouts.json) and skill, and times it to the server's attack release. Presentation only.",
   "bodies": {
     "/Game/TripoModels/medieval_knight_armor_3d_model/medieval_knight_armor_3d_model.medieval_knight_armor_3d_model": "Warden",
     "/Game/TripoModels/armored_archer_3d_model/armored_archer_3d_model.armored_archer_3d_model": "Ranger",
@@ -35,6 +35,20 @@
     "bow":      { "attack": "attack_bow",      "ability": "attack_bow",      "spell": "cast_a_spell" },
     "crossbow": { "attack": "attack_crossbow", "ability": "attack_crossbow", "spell": "cast_a_spell" },
     "cast":     { "attack": "cast_a_spell",    "ability": "cast_a_spell",    "spell": "cast_a_spell" }
+  },
+  "styles": {
+    "warden":        { "clip": "slash", "twist": 22 },
+    "footman":       { "clip": "slash", "twist": 22 },
+    "chieftain":     { "clip": "slash", "twist": 42 },
+    "troll_melee":   { "clip": "slash", "twist": 38 },
+    "hammer_shield": { "clip": "slash", "twist": 0 },
+    "miner":         { "clip": "slash", "twist": 0 },
+    "paladin":       { "clip": "slash", "twist": 12 },
+    "behemoth":      { "clip": "slash", "twist": 0 },
+    "dual_daggers":  { "clip": "cast_a_spell", "twist": -18 },
+    "lancer":        { "clip": "cast_a_spell", "twist": -14 },
+    "troll_ranged":  { "clip": "cast_a_spell", "twist": -20 },
+    "centaur":       { "clip": "cast_a_spell", "twist": -14 }
   },
   "shoutSkills": ["war_cry", "iron_guard", "second_wind", "bastion_of_dawn", "bear_roar", "paladin_relic_vow", "chieftain_courage",
                   "chieftain_earthshout", "chieftain_banner", "drakish_dragon_oath", "drakish_ancient_pact", "troll_hunger", "troll_red_moon",
