@@ -25,6 +25,8 @@ public:
     UPROPERTY(Transient) TObjectPtr<UAnimSequence> AttackSequence;
     float AttackTime = 0.f;
     float AttackWeight = 0.f;
+    // creature-anim: 0 = the action layer drives only spine and above (legs keep walking), 1 = full body.
+    float AttackLowerBody = 1.f;
     float AirWeight = 0.f;
     float RollProgress = -1.f;
     FVector MotionPitchAxis = FVector(1,0,0);

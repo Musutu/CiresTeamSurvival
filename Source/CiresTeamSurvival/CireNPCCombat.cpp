@@ -19,6 +19,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CireBuffs.h" // aura-vfx
+#include "CireMonsterArt.h" // creature-anim
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireNPCCombat,Log,All);
 
@@ -94,6 +95,7 @@ bool HandleWall(ACireMonster* M,FVector Destination)
         if(M->AttackTimer<=0&&Wall->CanBeDamagedBy(M))
         {
             M->AttackTimer=1.8f;CireCombat::ApplyDamage(M,Wall,M->Damage,TEXT("Breach wall"));
+            if(M->MonsterArt)M->MonsterArt->PresentInstantStrike(); // creature-anim: show the blow
             CireCombat::PlayCue(M,Wall,TEXT("npc_wall_strike"),M->GetActorLocation(),Near,ECireSpellCue::Impact,.8f,true);
         }
     }
@@ -391,6 +393,7 @@ void CireNPCCombat::Interrupt(ACireMonster* M)
 {
     if(!IsValid(M)||!M->HasAuthority())return;
     ClearCast(M);M->AbilityTimer=FMath::Max(M->AbilityTimer,3.f);M->AttackTimer=FMath::Max(M->AttackTimer,1.f);
+    if(M->MonsterArt)M->MonsterArt->CancelSwing(); // creature-anim: an interrupted swing never lands
     if(auto* S=St(M)){S->DashUntil=0;S->KiteUntil=0;}
     // Interrupt owns only this caster's spells. Clearing every membership here
     // would also forgive accumulated poison from hostile player-owned areas.
@@ -451,6 +454,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     if(Mode->Clock.Phase()!=Cires::MatchPhase::Survival||M->Damage<=0)
     {
         CireProgression::PauseNPC(M,M->GetWorld()->GetTimeSeconds());
+        if(M->MonsterArt)M->MonsterArt->CancelSwing(); // creature-anim
         Movement->StopMovementImmediately();return;
     }
     CireProgression::ResumeNPC(M,M->GetWorld()->GetTimeSeconds());
@@ -459,6 +463,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     if(M->BaseMoveSpeed<=0)M->BaseMoveSpeed=Movement->MaxWalkSpeed;
     Movement->MaxWalkSpeed=M->BaseMoveSpeed*(M->SlowUntil>Now?.65f:1.f)*(S&&S->RallyUntil>Now?1.1f:1.f);
     M->AttackTimer=FMath::Max(0.f,M->AttackTimer-Delta);M->AbilityTimer=FMath::Max(0.f,M->AbilityTimer-Delta);
+    if(M->MonsterArt)M->MonsterArt->ReleaseSwing(Now); // creature-anim: a committed swing lands on its contact frame
     if(S)S->RefreshStatusFlags(Now);
     if(M->bArmoredEscort)
     {
@@ -522,6 +527,8 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         const float Distance=static_cast<float>(FVector::Dist2D(M->GetActorLocation(),Victim->GetActorLocation()));
         const FVector Direction=(Victim->GetActorLocation()-M->GetActorLocation()).GetSafeNormal2D();
         const bool bSight=ClearSight(M,Victim);
+        // creature-anim: finish the committed swing before choosing the next action.
+        if(M->MonsterArt&&M->MonsterArt->HasPendingSwing()){Movement->StopMovementImmediately();M->SetActorRotation(Direction.Rotation());return;}
         if(TryAbilities(M,Mode,Victim,Distance,bSight))return;
         const bool bRanged=A?UsesProjectiles(A):M->CombatArchetype>=2;
         const float Reach=A?A->AttackRange:bRanged?650.f:170.f;
@@ -546,6 +553,8 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
             {
                 M->AttackTimer=AttackPeriod(M,A);
                 const float Amount=EffectiveDamage(M)*(Basic?Basic->DamageMultiplier:1.f);
+                // creature-anim: the blow lands on the swing's contact frame (UCireMonsterArt::ReleaseSwing).
+                if(M->MonsterArt&&M->MonsterArt->StartSwing(Victim,Amount,Basic?Basic->Name:TEXT("Monster attack"),Reach,M->AttackTimer))return;
                 CireAttacks::Resolve(M,Victim,Amount,CireAttacks::Roll(M,Victim,false),Basic?Basic->Name:TEXT("Monster attack"));
                 CireCombat::PlayCue(M,Victim,TEXT("npc_melee"),M->GetActorLocation(),Victim->GetActorLocation(),ECireSpellCue::Impact,.8f,true);
             }
@@ -636,6 +645,7 @@ bool CireNPCCombat::RunSmoke(ACireGameMode* Mode)
     bPassed=CireNPCArchetypes::RunValidationSmoke()&&bPassed;
     bPassed=CireThreat::RunRulesSmoke(Mode)&&bPassed;
     bPassed=RunRolesSmoke(Mode)&&bPassed;
+    bPassed=CireMonsterArt::RunSmoke(Mode)&&bPassed; // creature-anim
     return bPassed;
 }
 #endif

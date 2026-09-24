@@ -1,0 +1,1224 @@
+{
+  "schemaVersion": 1,
+  "batch": "03",
+  "createdUtc": "2026-09-24",
+  "operator": "Claude (feat/tripo-assets worktree)",
+  "provider": "Tripo Studio (logged-in browser), DCC Bridge 'Unreal' v1.0.4 -> project plugin Tripo3DUEBridge",
+  "observedBalanceBefore": 8850,
+  "observedBalanceAfter": 6990,
+  "creditsSpent": 1860,
+  "creditsSumOfAssets": 1860,
+  "creditSummary": {
+    "generations": 28,
+    "generationCredits": 1540,
+    "rigs": 12,
+    "rigCredits": 240,
+    "textToMotionClips": 4,
+    "textToMotionCredits": 80,
+    "presetAnimations": "free"
+  },
+  "pipelineNotes": [
+    "Bridge imports land in /Game/TripoModels/<ExportName>; Tools/RunTripoBatch03Integration.py moves them to /Game/Tripo/{Monsters,Town,Landmarks}, rebuilds PBR instances (Bridge omits BaseColor), sets Nanite and collision, and core-redirects the Bridge's transient animation skeleton (tripo_convert_<id>_Skeleton) that it renames without leaving a redirector.",
+    "Tools/OpenTripoBridge.py stops saving after one hour; material instances imported after that were lost and rebuilt. Use Tools/OpenTripoBridgeBatch03.py (no time limit, stop file) for future transfers.",
+    "Raw Tripo meshes are normalised to ~98 cm on the longest axis with the pivot at the bottom centre; BuildScale3D is left at 1 because UE 5.8 kept the unscaled bounds for Nanite meshes built with a scale.",
+    "Committed .uasset files are LFS 'lockable' and therefore read-only in the working copy; re-running integration on them needs a checkout/lock first."
+  ],
+  "assets": [
+    {
+      "id": "BlightCaster",
+      "kind": "skeletal_monster",
+      "role": "caster",
+      "archetypes": [
+        "blight_caster"
+      ],
+      "taskId": "47bf8d55-2c3b-4367-a62c-b58e62aad9cf",
+      "url": "https://studio.tripo3d.ai/workspace/generate/47bf8d55-2c3b-4367-a62c-b58e62aad9cf",
+      "prompt": "Full body game character, realistic dark fantasy undead plague cultist bone shaman, gaunt emaciated human corpse with grey-green rotting skin, tattered hooded black and bone-white ragged robes, necklace of small skulls and fingerbones, rusted iron censer chains on belt, holding a gnarled bone staff topped with a cracked horned skull. Menacing hunched silhouette, highly detailed realistic PBR cloth, bone and leather textures, symmetrical T-pose, arms outstretched, feet planted, single character, no base, no background, no particles, no glow effects.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "walk"
+        ],
+        "textToMotion": null
+      },
+      "credits": 75,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 0,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/BlightCaster/CTS_Monster_BlightCaster.CTS_Monster_BlightCaster",
+        "skeleton": "/Game/Tripo/Monsters/BlightCaster/CTS_Monster_BlightCaster_Skeleton.CTS_Monster_BlightCaster_Skeleton",
+        "material": "/Game/Tripo/Monsters/BlightCaster/CTS_Monster_BlightCaster_Mat.CTS_Monster_BlightCaster_Mat",
+        "animations": {
+          "cast_a_spell": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_cast_a_spell.CTS_Monster_BlightCaster_cast_a_spell",
+          "fall": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_fall.CTS_Monster_BlightCaster_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_hit_to_body_01.CTS_Monster_BlightCaster_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_idle.CTS_Monster_BlightCaster_idle",
+          "run": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_run.CTS_Monster_BlightCaster_run",
+          "walk": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_walk.CTS_Monster_BlightCaster_walk"
+        },
+        "rawHeightCm": 97.78
+      },
+      "status": "imported"
+    },
+    {
+      "id": "BarbedHunter",
+      "kind": "skeletal_monster",
+      "role": "ranged",
+      "archetypes": [
+        "barbed_hunter"
+      ],
+      "taskId": "77ed3a64-cb73-4868-9d35-2025207d7b34",
+      "url": "https://studio.tripo3d.ai/workspace/generate/77ed3a64-cb73-4868-9d35-2025207d7b34",
+      "prompt": "Full body game character, realistic dark fantasy undead skeletal ghoul archer, lean withered corpse with exposed ribs and taut leathery grey skin, torn dark hooded cloak, rusted chainmail scraps and cracked leather bracers, quiver of black-fletched arrows on the back, holding a long weathered recurve bow wrapped in rotting cloth in the left hand. Hollow glowing-less eye sockets, feral lean silhouette, highly detailed realistic PBR bone, leather and metal textures, symmetrical T-pose, arms outstretched, feet planted, single character, no base, no background, no particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "walk"
+        ],
+        "textToMotion": {
+          "name": "attack_bow",
+          "prompt": "Standing archer raises a longbow with the left hand, draws the arrow back to the cheek with the right hand, aims forward, releases the arrow, then lowers the bow back to a ready stance",
+          "seconds": 3,
+          "credits": 20
+        }
+      },
+      "credits": 95,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 20,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/BarbedHunter/CTS_Monster_BarbedHunter.CTS_Monster_BarbedHunter",
+        "skeleton": "/Game/Tripo/Monsters/BarbedHunter/CTS_Monster_BarbedHunter_Skeleton.CTS_Monster_BarbedHunter_Skeleton",
+        "material": "/Game/Tripo/Monsters/BarbedHunter/CTS_Monster_BarbedHunter_Mat.CTS_Monster_BarbedHunter_Mat",
+        "animations": {
+          "attack_bow": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_attack_bow.CTS_Monster_BarbedHunter_attack_bow",
+          "fall": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_fall.CTS_Monster_BarbedHunter_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_hit_to_body_01.CTS_Monster_BarbedHunter_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_idle.CTS_Monster_BarbedHunter_idle",
+          "run": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_run.CTS_Monster_BarbedHunter_run",
+          "walk": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_walk.CTS_Monster_BarbedHunter_walk"
+        },
+        "rawHeightCm": 97.81
+      },
+      "status": "imported"
+    },
+    {
+      "id": "HollowShieldbearer",
+      "kind": "skeletal_monster",
+      "role": "tank",
+      "archetypes": [
+        "hollow_shieldbearer"
+      ],
+      "taskId": "09825062-c201-47b1-a79a-28c5f987bb20",
+      "url": "https://studio.tripo3d.ai/workspace/generate/09825062-c201-47b1-a79a-28c5f987bb20",
+      "prompt": "Full body game character, realistic dark fantasy undead grave brute tank, huge hulking broad-shouldered corpse warrior with pale bloated scarred skin, heavy battered rusted iron plate armor riveted over chainmail, cracked great helm with narrow visor, massive tower shield of iron-banded dark oak strapped to the left forearm, short heavy flanged mace in the right hand, tattered grave shroud tabard. Imposing wide silhouette, highly detailed realistic PBR metal, wood and skin textures, symmetrical T-pose, arms outstretched, feet planted, single character, no base, no background, no particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ],
+        "textToMotion": null
+      },
+      "credits": 75,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 0,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/HollowShieldbearer/CTS_Monster_HollowShieldbearer.CTS_Monster_HollowShieldbearer",
+        "skeleton": "/Game/Tripo/Monsters/HollowShieldbearer/CTS_Monster_HollowShieldbearer_Skeleton.CTS_Monster_HollowShieldbearer_Skeleton",
+        "material": "/Game/Tripo/Monsters/HollowShieldbearer/CTS_Monster_HollowShieldbearer_Mat.CTS_Monster_HollowShieldbearer_Mat",
+        "animations": {
+          "fall": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_fall.CTS_Monster_HollowShieldbearer_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_hit_to_body_01.CTS_Monster_HollowShieldbearer_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_idle.CTS_Monster_HollowShieldbearer_idle",
+          "run": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_run.CTS_Monster_HollowShieldbearer_run",
+          "slash": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_slash.CTS_Monster_HollowShieldbearer_slash",
+          "walk": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_walk.CTS_Monster_HollowShieldbearer_walk"
+        },
+        "rawHeightCm": 97.97
+      },
+      "status": "imported_superseded (fused shield/cape webs when animated; use the V2 body)"
+    },
+    {
+      "id": "HollowInfantry",
+      "kind": "skeletal_monster",
+      "role": "bruiser",
+      "archetypes": [
+        "hollow_infantry"
+      ],
+      "taskId": "855f9850-ca57-48b9-8eff-12d94c229475",
+      "url": "https://studio.tripo3d.ai/workspace/generate/855f9850-ca57-48b9-8eff-12d94c229475",
+      "prompt": "Full body game character, realistic dark fantasy feral ghoul marauder, muscular sinewy undead berserker with mottled grey-blue rotting skin, elongated clawed hands, jagged teeth in a snarling lipless mouth, wild matted black hair, crude spiked leather harness, bone trophies and torn loincloth, a notched rusty cleaver gripped in the right hand. Aggressive athletic silhouette, highly detailed realistic PBR skin, leather and iron textures, symmetrical T-pose, arms outstretched, feet planted, single character, no base, no background, no particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ],
+        "textToMotion": null
+      },
+      "credits": 75,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 0,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/HollowInfantry/CTS_Monster_HollowInfantry.CTS_Monster_HollowInfantry",
+        "skeleton": "/Game/Tripo/Monsters/HollowInfantry/CTS_Monster_HollowInfantry_Skeleton.CTS_Monster_HollowInfantry_Skeleton",
+        "material": "/Game/Tripo/Monsters/HollowInfantry/CTS_Monster_HollowInfantry_Mat.CTS_Monster_HollowInfantry_Mat",
+        "animations": {
+          "fall": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_fall.CTS_Monster_HollowInfantry_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_hit_to_body_01.CTS_Monster_HollowInfantry_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_idle.CTS_Monster_HollowInfantry_idle",
+          "run": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_run.CTS_Monster_HollowInfantry_run",
+          "slash": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_slash.CTS_Monster_HollowInfantry_slash",
+          "walk": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_walk.CTS_Monster_HollowInfantry_walk"
+        },
+        "rawHeightCm": 87.59
+      },
+      "status": "imported"
+    },
+    {
+      "id": "GravemawPackLeader",
+      "kind": "skeletal_monster",
+      "role": "pack_leader",
+      "archetypes": [
+        "gravemaw_pack_leader"
+      ],
+      "taskId": "56e7f9f8-d4be-4233-8b1a-71c5ec2f7b9b",
+      "url": "https://studio.tripo3d.ai/workspace/generate/56e7f9f8-d4be-4233-8b1a-71c5ec2f7b9b",
+      "prompt": "Full body game character, realistic dark fantasy boss, towering wolf-headed abomination warlord, a massive humanoid with the snarling head of a grey dire wolf, thick fur mane, blackened spiked iron plate pauldrons and breastplate etched with crude runes, chainmail skirt, heavy fur cloak, clawed gauntlets, a huge two-handed jagged greataxe held in the right hand. Imposing elite silhouette, highly detailed realistic PBR fur, iron and leather textures, symmetrical T-pose, arms outstretched, feet planted, single character, no base, no background, no particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "chop",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ],
+        "textToMotion": {
+          "name": "war_cry",
+          "prompt": "Huge warlord plants his feet, throws his arms wide and roars a war cry to rally his pack, chest pushed forward, then returns to a menacing ready stance",
+          "seconds": 3,
+          "credits": 20
+        }
+      },
+      "credits": 95,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 20,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/GravemawPackLeader/CTS_Boss_GravemawPackLeader.CTS_Boss_GravemawPackLeader",
+        "skeleton": "/Game/Tripo/Monsters/GravemawPackLeader/CTS_Boss_GravemawPackLeader_Skeleton.CTS_Boss_GravemawPackLeader_Skeleton",
+        "material": "/Game/Tripo/Monsters/GravemawPackLeader/CTS_Boss_GravemawPackLeader_Mat.CTS_Boss_GravemawPackLeader_Mat",
+        "animations": {
+          "chop": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_chop.CTS_Boss_GravemawPackLeader_chop",
+          "fall": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_fall.CTS_Boss_GravemawPackLeader_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_hit_to_body_01.CTS_Boss_GravemawPackLeader_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_idle.CTS_Boss_GravemawPackLeader_idle",
+          "run": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_run.CTS_Boss_GravemawPackLeader_run",
+          "slash": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_slash.CTS_Boss_GravemawPackLeader_slash",
+          "walk": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_walk.CTS_Boss_GravemawPackLeader_walk",
+          "war_cry": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_war_cry.CTS_Boss_GravemawPackLeader_war_cry"
+        },
+        "rawHeightCm": 98.18
+      },
+      "status": "imported"
+    },
+    {
+      "id": "BlightCasterB",
+      "kind": "skeletal_monster",
+      "role": "caster",
+      "archetypes": [
+        "blight_caster"
+      ],
+      "taskId": "fa50b73b-160d-46a9-ba04-828ef79bb950",
+      "url": "https://studio.tripo3d.ai/workspace/generate/fa50b73b-160d-46a9-ba04-828ef79bb950",
+      "prompt": "Full body game character, realistic dark fantasy necromancer crone, tall gaunt undead witch priestess with ashen cracked skin and long lank white hair, tall antlered bone crown, layered tattered crimson and black ceremonial robes embroidered with faded sigils, ribcage corset of real bones, hanging ritual talismans, holding an ornate twisted black iron sceptre with a small caged skull. Eerie elegant silhouette, highly detailed realistic PBR cloth, bone and metal textures, symmetrical T-pose, arms outstretched, feet planted, single character, no base, no background, no particles, no glow.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "walk"
+        ],
+        "textToMotion": null
+      },
+      "credits": 75,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 0,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/BlightCasterB/CTS_Monster_BlightCasterB.CTS_Monster_BlightCasterB",
+        "skeleton": "/Game/Tripo/Monsters/BlightCasterB/CTS_Monster_BlightCasterB_Skeleton.CTS_Monster_BlightCasterB_Skeleton",
+        "material": "/Game/Tripo/Monsters/BlightCasterB/CTS_Monster_BlightCasterB_Mat.CTS_Monster_BlightCasterB_Mat",
+        "animations": {
+          "cast_a_spell": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_cast_a_spell.CTS_Monster_BlightCasterB_cast_a_spell",
+          "fall": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_fall.CTS_Monster_BlightCasterB_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_hit_to_body_01.CTS_Monster_BlightCasterB_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_idle.CTS_Monster_BlightCasterB_idle",
+          "run": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_run.CTS_Monster_BlightCasterB_run",
+          "walk": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_walk.CTS_Monster_BlightCasterB_walk"
+        },
+        "rawHeightCm": 83.26
+      },
+      "status": "imported"
+    },
+    {
+      "id": "BarbedHunterB",
+      "kind": "skeletal_monster",
+      "role": "ranged",
+      "archetypes": [
+        "barbed_hunter"
+      ],
+      "taskId": "e33c63c7-fbb7-4cd2-a3db-cefab88414dc",
+      "url": "https://studio.tripo3d.ai/workspace/generate/e33c63c7-fbb7-4cd2-a3db-cefab88414dc",
+      "prompt": "Full body game character, realistic dark fantasy ghoul crossbowman, hunched undead sharpshooter with sunken grey face and stitched jaw, wide-brimmed rotting leather hat, long tattered dark oilskin coat, bandoliers of iron bolts, rusted chainmail collar, heavy rusted iron crossbow held in the right hand. Sinister lean silhouette, highly detailed realistic PBR leather, cloth, iron and skin textures, symmetrical T-pose, arms outstretched, feet planted, single character, no base, no background, no particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "walk"
+        ],
+        "textToMotion": {
+          "name": "attack_crossbow",
+          "prompt": "Standing marksman raises a heavy crossbow to the shoulder with both hands, aims forward, pulls the trigger with a recoil jolt, then lowers the crossbow to a ready stance",
+          "seconds": 3,
+          "credits": 20
+        }
+      },
+      "credits": 95,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 20,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/BarbedHunterB/CTS_Monster_BarbedHunterB.CTS_Monster_BarbedHunterB",
+        "skeleton": "/Game/Tripo/Monsters/BarbedHunterB/CTS_Monster_BarbedHunterB_Skeleton.CTS_Monster_BarbedHunterB_Skeleton",
+        "material": "/Game/Tripo/Monsters/BarbedHunterB/CTS_Monster_BarbedHunterB_Mat.CTS_Monster_BarbedHunterB_Mat",
+        "animations": {
+          "attack_crossbow": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_attack_crossbow.CTS_Monster_BarbedHunterB_attack_crossbow",
+          "fall": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_fall.CTS_Monster_BarbedHunterB_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_hit_to_body_01.CTS_Monster_BarbedHunterB_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_idle.CTS_Monster_BarbedHunterB_idle",
+          "run": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_run.CTS_Monster_BarbedHunterB_run",
+          "walk": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_walk.CTS_Monster_BarbedHunterB_walk"
+        },
+        "rawHeightCm": 97.07
+      },
+      "status": "imported"
+    },
+    {
+      "id": "IronboundBruiser",
+      "kind": "skeletal_monster",
+      "role": "bruiser",
+      "archetypes": [
+        "ironbound_bruiser"
+      ],
+      "taskId": "b8831dbd-d5e6-489a-a208-d532638dbd75",
+      "url": "https://studio.tripo3d.ai/workspace/generate/b8831dbd-d5e6-489a-a208-d532638dbd75",
+      "prompt": "Full body game character, realistic dark fantasy plague knight tank, heavily armored undead knight in corroded blackened full plate armor with verdigris stains, tall barbute helm with a torn black hood, rotting chainmail and a stained tattered surcoat, large battered kite shield with a faded skull emblem on the left arm, heavy rusted longsword in the right hand. Broad sturdy silhouette, highly detailed realistic PBR metal, cloth and leather textures, symmetrical T-pose, arms outstretched, feet planted, single character, no base, no background, no particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "chop",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ],
+        "textToMotion": null
+      },
+      "credits": 75,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 0,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/IronboundBruiser/CTS_Monster_IronboundBruiser.CTS_Monster_IronboundBruiser",
+        "skeleton": "/Game/Tripo/Monsters/IronboundBruiser/CTS_Monster_IronboundBruiser_Skeleton.CTS_Monster_IronboundBruiser_Skeleton",
+        "material": "/Game/Tripo/Monsters/IronboundBruiser/CTS_Monster_IronboundBruiser_Mat.CTS_Monster_IronboundBruiser_Mat",
+        "animations": {
+          "chop": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_chop.CTS_Monster_IronboundBruiser_chop",
+          "fall": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_fall.CTS_Monster_IronboundBruiser_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_hit_to_body_01.CTS_Monster_IronboundBruiser_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_idle.CTS_Monster_IronboundBruiser_idle",
+          "run": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_run.CTS_Monster_IronboundBruiser_run",
+          "slash": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_slash.CTS_Monster_IronboundBruiser_slash",
+          "walk": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_walk.CTS_Monster_IronboundBruiser_walk"
+        },
+        "rawHeightCm": 97.86
+      },
+      "status": "imported_superseded (fused shield/cape webs when animated; use the V2 body)"
+    },
+    {
+      "id": "HollowInfantryB",
+      "kind": "skeletal_monster",
+      "role": "bruiser",
+      "archetypes": [
+        "hollow_infantry"
+      ],
+      "taskId": "5eca8a13-c6a5-4d02-895f-7f84d6e8d3aa",
+      "url": "https://studio.tripo3d.ai/workspace/generate/5eca8a13-c6a5-4d02-895f-7f84d6e8d3aa",
+      "prompt": "Full body game character, realistic dark fantasy savage marauder raider, brutish scarred human barbarian corrupted by plague, pale veined skin, shaved head with iron-studded leather skullcap and crude bone face mask, heavy fur and hide shoulder mantle, spiked leather bracers, chain belt with trophies, leather kilt, rusted bearded hand axe in the right hand. Powerful muscular silhouette, highly detailed realistic PBR skin, fur, leather and iron textures, symmetrical T-pose, arms outstretched, feet planted, single character, no base, no background, no particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "chop",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ],
+        "textToMotion": null
+      },
+      "credits": 75,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 0,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/HollowInfantryB/CTS_Monster_HollowInfantryB.CTS_Monster_HollowInfantryB",
+        "skeleton": "/Game/Tripo/Monsters/HollowInfantryB/CTS_Monster_HollowInfantryB_Skeleton.CTS_Monster_HollowInfantryB_Skeleton",
+        "material": "/Game/Tripo/Monsters/HollowInfantryB/CTS_Monster_HollowInfantryB_Mat.CTS_Monster_HollowInfantryB_Mat",
+        "animations": {
+          "chop": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_chop.CTS_Monster_HollowInfantryB_chop",
+          "fall": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_fall.CTS_Monster_HollowInfantryB_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_hit_to_body_01.CTS_Monster_HollowInfantryB_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_idle.CTS_Monster_HollowInfantryB_idle",
+          "run": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_run.CTS_Monster_HollowInfantryB_run",
+          "slash": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_slash.CTS_Monster_HollowInfantryB_slash",
+          "walk": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_walk.CTS_Monster_HollowInfantryB_walk"
+        },
+        "rawHeightCm": 93.99
+      },
+      "status": "imported"
+    },
+    {
+      "id": "HollowSiegebreaker",
+      "kind": "skeletal_monster",
+      "role": "tank",
+      "archetypes": [
+        "hollow_siegebreaker"
+      ],
+      "taskId": "74cb1e1b-865f-453e-8299-59dca87c6dee",
+      "url": "https://studio.tripo3d.ai/workspace/generate/74cb1e1b-865f-453e-8299-59dca87c6dee",
+      "prompt": "Full body game character, realistic dark fantasy final boss, the Hollow Siegebreaker, a colossal hulking undead juggernaut giant, grey dead flesh stitched with iron staples, enormous crude armor of riveted siege iron plates, chains and a battering-ram shaped iron pauldron, a cage-like iron helm hiding the face, massive two-handed iron siege maul with a spiked head held in the right hand. Extremely broad heavy silhouette, highly detailed realistic PBR iron, flesh, chain and leather textures, symmetrical T-pose, arms outstretched, feet planted, single character, no base, no background, no particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "chop",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ],
+        "textToMotion": {
+          "name": "ground_slam",
+          "prompt": "Massive brute raises a huge two-handed maul high overhead with both hands, then slams it straight down into the ground in front of him with a heavy full-body stomp, then heaves it back up to a ready stance",
+          "seconds": 3,
+          "credits": 20
+        }
+      },
+      "credits": 95,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 20,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/HollowSiegebreaker/CTS_Boss_HollowSiegebreaker.CTS_Boss_HollowSiegebreaker",
+        "skeleton": "/Game/Tripo/Monsters/HollowSiegebreaker/CTS_Boss_HollowSiegebreaker_Skeleton.CTS_Boss_HollowSiegebreaker_Skeleton",
+        "material": "/Game/Tripo/Monsters/HollowSiegebreaker/CTS_Boss_HollowSiegebreaker_Mat.CTS_Boss_HollowSiegebreaker_Mat",
+        "animations": {
+          "chop": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_chop.CTS_Boss_HollowSiegebreaker_chop",
+          "fall": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_fall.CTS_Boss_HollowSiegebreaker_fall",
+          "ground_slam": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_ground_slam.CTS_Boss_HollowSiegebreaker_ground_slam",
+          "hit_to_body_01": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_hit_to_body_01.CTS_Boss_HollowSiegebreaker_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_idle.CTS_Boss_HollowSiegebreaker_idle",
+          "run": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_run.CTS_Boss_HollowSiegebreaker_run",
+          "slash": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_slash.CTS_Boss_HollowSiegebreaker_slash",
+          "walk": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_walk.CTS_Boss_HollowSiegebreaker_walk"
+        },
+        "rawHeightCm": 98.2
+      },
+      "status": "imported"
+    },
+    {
+      "id": "HollowShieldbearerV2",
+      "kind": "skeletal_monster",
+      "role": "tank",
+      "archetypes": [
+        "hollow_shieldbearer"
+      ],
+      "taskId": "735f1908-ecde-41e9-8b24-93621321d8da",
+      "url": "https://studio.tripo3d.ai/workspace/generate/735f1908-ecde-41e9-8b24-93621321d8da",
+      "prompt": "Full body game character, realistic dark fantasy undead grave brute shieldbearer, huge hulking broad-shouldered corpse warrior with pale bloated scarred skin, heavy battered rusted iron plate armor riveted over chainmail, cracked great helm with narrow visor, tattered grave shroud tabard ending above the knees, empty open hands, no shield, no weapon, no cape. Arms, torso and legs clearly separated, imposing wide silhouette, highly detailed realistic PBR metal, cloth and skin textures, symmetrical T-pose, arms outstretched horizontally, feet planted, single character, no base, no background, no particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ],
+        "textToMotion": null
+      },
+      "credits": 75,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 0,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/HollowShieldbearerV2/CTS_Monster_HollowShieldbearerV2.CTS_Monster_HollowShieldbearerV2",
+        "skeleton": "/Game/Tripo/Monsters/HollowShieldbearerV2/CTS_Monster_HollowShieldbearerV2_Skeleton.CTS_Monster_HollowShieldbearerV2_Skeleton",
+        "material": "/Game/Tripo/Monsters/HollowShieldbearerV2/CTS_Monster_HollowShieldbearerV2_Mat.CTS_Monster_HollowShieldbearerV2_Mat",
+        "animations": {
+          "fall": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_fall.CTS_Monster_HollowShieldbearerV2_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_hit_to_body_01.CTS_Monster_HollowShieldbearerV2_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_idle.CTS_Monster_HollowShieldbearerV2_idle",
+          "run": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_run.CTS_Monster_HollowShieldbearerV2_run",
+          "slash": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_slash.CTS_Monster_HollowShieldbearerV2_slash",
+          "walk": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_walk.CTS_Monster_HollowShieldbearerV2_walk"
+        },
+        "rawHeightCm": 92.2
+      },
+      "status": "imported"
+    },
+    {
+      "id": "IronboundBruiserV2",
+      "kind": "skeletal_monster",
+      "role": "bruiser",
+      "archetypes": [
+        "ironbound_bruiser"
+      ],
+      "taskId": "62d98426-6d25-4ddd-a56b-3a8fb37683f2",
+      "url": "https://studio.tripo3d.ai/workspace/generate/62d98426-6d25-4ddd-a56b-3a8fb37683f2",
+      "prompt": "Full body game character, realistic dark fantasy ironbound bruiser, a massive undead brute whose rotting grey body is bound together with thick riveted iron bands, iron collar and chains, spiked iron knuckle bracers, heavy iron-plated boots, scraps of burlap loincloth and a riveted iron belly plate, bald scarred head with an iron jaw brace, empty clenched fists, no shield, no weapon, no cape. Arms, torso and legs clearly separated, brutal muscular silhouette, highly detailed realistic PBR iron, flesh, chain and leather textures, symmetrical T-pose, arms outstretched horizontally, feet planted, single character, no base, no background, no particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "rig": "Humanoid, UE5 Mannequin preset (61-bone UE4-style)"
+      },
+      "animations": {
+        "presets": [
+          "chop",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ],
+        "textToMotion": null
+      },
+      "credits": 75,
+      "creditBreakdown": {
+        "generate": 55,
+        "rig": 20,
+        "textToMotion": 0,
+        "presetAnimations": 0
+      },
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations)",
+      "unreal": {
+        "mesh": "/Game/Tripo/Monsters/IronboundBruiserV2/CTS_Monster_IronboundBruiserV2.CTS_Monster_IronboundBruiserV2",
+        "skeleton": "/Game/Tripo/Monsters/IronboundBruiserV2/CTS_Monster_IronboundBruiserV2_Skeleton.CTS_Monster_IronboundBruiserV2_Skeleton",
+        "material": "/Game/Tripo/Monsters/IronboundBruiserV2/CTS_Monster_IronboundBruiserV2_Mat.CTS_Monster_IronboundBruiserV2_Mat",
+        "animations": {
+          "chop": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_chop.CTS_Monster_IronboundBruiserV2_chop",
+          "fall": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_fall.CTS_Monster_IronboundBruiserV2_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_hit_to_body_01.CTS_Monster_IronboundBruiserV2_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_idle.CTS_Monster_IronboundBruiserV2_idle",
+          "run": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_run.CTS_Monster_IronboundBruiserV2_run",
+          "slash": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_slash.CTS_Monster_IronboundBruiserV2_slash",
+          "walk": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_walk.CTS_Monster_IronboundBruiserV2_walk"
+        },
+        "rawHeightCm": 87.46
+      },
+      "status": "imported"
+    },
+    {
+      "id": "CastleKeep",
+      "kind": "static_town",
+      "taskId": "99f9a129-c23a-451a-9893-e293e1b6b766",
+      "url": "https://studio.tripo3d.ai/workspace/generate/99f9a129-c23a-451a-9893-e293e1b6b766",
+      "prompt": "Game environment asset, realistic dark fantasy medieval castle keep, one freestanding massive rectangular stone keep with four corner towers and conical dark slate roofs, crenellated battlements, tall arched main doorway with heavy iron-bound oak double doors at ground level, narrow arrow slit and gothic windows, weathered grey granite blocks with dark mortar, iron torch brackets, hanging faded crimson banners. Complete modeled back and sides, flat stable ground footprint, grounded believable architecture, highly detailed realistic PBR stone, slate, wood and iron textures, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 150000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/CastleKeep/CTS_Town_CastleKeep.CTS_Town_CastleKeep",
+        "material": "/Game/Tripo/Town/CastleKeep/CTS_Town_CastleKeep_Mat.CTS_Town_CastleKeep_Mat",
+        "suggestedScale": 24.0,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          88.5,
+          87.7,
+          98.0
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "CastleGate",
+      "kind": "static_town",
+      "taskId": "8aefecff-c894-4651-a9e9-3b8ed270846e",
+      "url": "https://studio.tripo3d.ai/workspace/generate/8aefecff-c894-4651-a9e9-3b8ed270846e",
+      "prompt": "Game environment asset, realistic dark fantasy medieval castle main gate, one freestanding fortified gate building with a tall pointed stone archway, a raised heavy iron portcullis visible at the top of the arch, open passage, two thick round flanking towers with crenellations and small conical slate roofs, machicolations above the arch, weathered grey granite masonry, iron-bound oak gate doors swung fully open against the inner walls, iron lantern brackets. Complete modeled rear side, flat ground footprint, believable architecture, highly detailed realistic PBR stone, iron and wood textures, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 150000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/CastleGate/CTS_Town_CastleGate.CTS_Town_CastleGate",
+        "material": "/Game/Tripo/Town/CastleGate/CTS_Town_CastleGate_Mat.CTS_Town_CastleGate_Mat",
+        "suggestedScale": 22.0,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          98.2,
+          65.0,
+          96.2
+        ]
+      },
+      "status": "imported (road passage 3.3-4.3 m after castle_gate slot fit; slot needs 9 m)"
+    },
+    {
+      "id": "WallSection",
+      "kind": "static_town",
+      "taskId": "29b89848-5141-4a9e-8a25-9eedd8a6a090",
+      "url": "https://studio.tripo3d.ai/workspace/generate/29b89848-5141-4a9e-8a25-9eedd8a6a090",
+      "prompt": "Game environment asset, modular straight medieval town wall section, realistic dark fantasy, one long straight thick defensive curtain wall segment of weathered grey granite blocks with crenellated battlements and a walkway on top, sloped stone buttresses at the base, flat vertical cut ends on the left and right so segments tile seamlessly, a few iron torch brackets, subtle moss only at the foot. Straight rectangular footprint, both faces fully modeled, highly detailed realistic PBR stone textures, no towers, no gate, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 150000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/WallSection/CTS_Town_WallSection.CTS_Town_WallSection",
+        "material": "/Game/Tripo/Town/WallSection/CTS_Town_WallSection_Mat.CTS_Town_WallSection_Mat",
+        "suggestedScale": 10.5,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          20.6,
+          98.0,
+          28.1
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "HouseA",
+      "kind": "static_town",
+      "taskId": "f7d55acf-f6b8-4d40-9e37-b53b3389ce92",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f7d55acf-f6b8-4d40-9e37-b53b3389ce92",
+      "prompt": "Game environment asset, realistic dark fantasy medieval timber-framed town house, two storeys, ground floor of rough grey fieldstone, upper floor jettied out with dark oak half-timbering and pale weathered plaster infill, steep dark slate roof with a stone chimney, small leaded glass windows with wooden shutters, heavy plank front door with iron hinges, a hanging iron lantern. Complete modeled back and sides, flat rectangular ground footprint, believable proportions, highly detailed realistic PBR wood, plaster, stone and slate textures, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 150000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/HouseA/CTS_Town_HouseA.CTS_Town_HouseA",
+        "material": "/Game/Tripo/Town/HouseA/CTS_Town_HouseA_Mat.CTS_Town_HouseA_Mat",
+        "suggestedScale": 11.0,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          97.2,
+          86.0,
+          89.5
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "HouseB",
+      "kind": "static_town",
+      "taskId": "5e54974a-329e-413b-851a-1c038b94de81",
+      "url": "https://studio.tripo3d.ai/workspace/generate/5e54974a-329e-413b-851a-1c038b94de81",
+      "prompt": "Game environment asset, realistic dark fantasy medieval tavern inn building, large three storey timber-framed house on a heavy stone ground floor, dark weathered oak beams with cross bracing and smoke-stained plaster, overhanging upper storeys, steep irregular wooden shingle roof with two dormer windows and a tall brick chimney, wide arched oak entrance door, a carved wooden hanging sign bracket without text, small warm-lit leaded windows. Complete modeled back and sides, flat rectangular ground footprint, highly detailed realistic PBR wood, plaster, stone and shingle textures, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 150000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/HouseB/CTS_Town_HouseB.CTS_Town_HouseB",
+        "material": "/Game/Tripo/Town/HouseB/CTS_Town_HouseB_Mat.CTS_Town_HouseB_Mat",
+        "suggestedScale": 13.0,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          98.2,
+          62.8,
+          92.4
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "HouseC",
+      "kind": "static_town",
+      "taskId": "77aa5b5a-c444-41cb-96a2-6903290ef9ac",
+      "url": "https://studio.tripo3d.ai/workspace/generate/77aa5b5a-c444-41cb-96a2-6903290ef9ac",
+      "prompt": "Game environment asset, realistic dark fantasy medieval blacksmith workshop cottage, small single storey rough stone house with a dark thatched straw roof and a large stone forge chimney, an open-fronted timber lean-to porch on one side sheltering an anvil, quench barrel and hanging iron tools, heavy wooden door, small shuttered windows, weathered oak posts. Complete modeled back and sides, flat rectangular ground footprint, highly detailed realistic PBR stone, thatch, wood and iron textures, no people, no fire, no smoke, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 150000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/HouseC/CTS_Town_HouseC.CTS_Town_HouseC",
+        "material": "/Game/Tripo/Town/HouseC/CTS_Town_HouseC_Mat.CTS_Town_HouseC_Mat",
+        "suggestedScale": 9.5,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          97.9,
+          82.2,
+          72.4
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "MarketStallA",
+      "kind": "static_town",
+      "taskId": "617d1100-a6ce-4481-abac-95e55be24031",
+      "url": "https://studio.tripo3d.ai/workspace/generate/617d1100-a6ce-4481-abac-95e55be24031",
+      "prompt": "Game environment prop, realistic dark fantasy medieval market stall, a sturdy wooden merchant stall with a thick plank counter, four weathered oak posts and a sloped striped canvas awning in faded crimson and cream, wicker baskets of apples and bread loaves, clay jugs, sacks of grain underneath, hanging dried herbs. Complete modeled back, flat ground footprint, highly detailed realistic PBR wood, cloth and produce textures, no people, no text, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 40000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/MarketStallA/CTS_Town_MarketStallA.CTS_Town_MarketStallA",
+        "material": "/Game/Tripo/Town/MarketStallA/CTS_Town_MarketStallA_Mat.CTS_Town_MarketStallA_Mat",
+        "suggestedScale": 3.4,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          96.7,
+          64.7,
+          95.7
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "MarketStallB",
+      "kind": "static_town",
+      "taskId": "c62cc912-cea8-445d-ad0a-65f0b1ca740b",
+      "url": "https://studio.tripo3d.ai/workspace/generate/c62cc912-cea8-445d-ad0a-65f0b1ca740b",
+      "prompt": "Game environment prop, realistic dark fantasy medieval market stall, a weathered wooden blacksmith and armorer merchant stall with a heavy timber frame and a patched dark brown leather and canvas roof, display rack of swords, axes and round shields, a small anvil, crates and a barrel of spears beside the counter. Complete modeled back, flat ground footprint, highly detailed realistic PBR wood, leather, cloth and iron textures, no people, no text, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 40000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/MarketStallB/CTS_Town_MarketStallB.CTS_Town_MarketStallB",
+        "material": "/Game/Tripo/Town/MarketStallB/CTS_Town_MarketStallB_Mat.CTS_Town_MarketStallB_Mat",
+        "suggestedScale": 3.6,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          98.0,
+          73.6,
+          83.4
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "Fountain",
+      "kind": "static_town",
+      "taskId": "49273b33-2e2c-4112-b881-d18307b00bae",
+      "url": "https://studio.tripo3d.ai/workspace/generate/49273b33-2e2c-4112-b881-d18307b00bae",
+      "prompt": "Game environment prop, realistic dark fantasy medieval town square fountain, a wide circular carved grey stone basin with a low octagonal rim, central pedestal column with a weathered stone statue of an armored knight holding a sword point-down, small lion-head water spouts around the column, lichen and age staining, no water surface. Complete 360 degree model, flat round ground footprint, highly detailed realistic PBR stone and bronze textures, no people, no text, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 40000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/Fountain/CTS_Town_Fountain.CTS_Town_Fountain",
+        "material": "/Game/Tripo/Town/Fountain/CTS_Town_Fountain_Mat.CTS_Town_Fountain_Mat",
+        "suggestedScale": 7.0,
+        "nanite": true,
+        "collision": "box",
+        "rawSizeCm": [
+          97.9,
+          94.6,
+          85.9
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "Well",
+      "kind": "static_town",
+      "taskId": "4192b7c8-d88f-4946-a8e4-146edce285c0",
+      "url": "https://studio.tripo3d.ai/workspace/generate/4192b7c8-d88f-4946-a8e4-146edce285c0",
+      "prompt": "Game environment prop, realistic dark fantasy medieval village stone well, round rough fieldstone well wall about waist high, two thick weathered oak posts supporting a small pitched wooden shingle roof, wooden crank winch with coiled hemp rope and an iron-banded wooden bucket hanging above the opening, mossy base stones. Complete 360 degree model, flat round ground footprint, highly detailed realistic PBR stone, wood, rope and iron textures, no people, no water, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 40000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/Well/CTS_Town_Well.CTS_Town_Well",
+        "material": "/Game/Tripo/Town/Well/CTS_Town_Well_Mat.CTS_Town_Well_Mat",
+        "suggestedScale": 3.6,
+        "nanite": true,
+        "collision": "box",
+        "rawSizeCm": [
+          92.2,
+          93.4,
+          98.5
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "Cart",
+      "kind": "static_town",
+      "taskId": "ede7f282-a8ae-45b3-9d0c-5d0425455b65",
+      "url": "https://studio.tripo3d.ai/workspace/generate/ede7f282-a8ae-45b3-9d0c-5d0425455b65",
+      "prompt": "Game environment prop, realistic dark fantasy medieval wooden hand cart, a two-wheeled farmer's cart with large iron-rimmed spoked wooden wheels, weathered plank bed with low slatted sides, two long pulling shafts resting on the ground at the front, loaded with burlap sacks, a small barrel and a coil of rope. Complete 360 degree model, grounded on its wheels and shafts, highly detailed realistic PBR wood, iron and burlap textures, no horse, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 40000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/Cart/CTS_Town_Cart.CTS_Town_Cart",
+        "material": "/Game/Tripo/Town/Cart/CTS_Town_Cart_Mat.CTS_Town_Cart_Mat",
+        "suggestedScale": 4.2,
+        "nanite": true,
+        "collision": "box",
+        "rawSizeCm": [
+          97.9,
+          64.6,
+          58.5
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "Lamp",
+      "kind": "static_town",
+      "taskId": "58f5bf13-e081-4ceb-91fe-5a0be9bee160",
+      "url": "https://studio.tripo3d.ai/workspace/generate/58f5bf13-e081-4ceb-91fe-5a0be9bee160",
+      "prompt": "Game environment prop, realistic dark fantasy medieval street lamp post, a tall slender wrought iron lamp post with a square stone plinth base, twisted iron shaft and a curled scroll bracket arm holding a hanging four-sided iron lantern with glass panes and a candle inside, aged black iron with subtle rust. Complete 360 degree model, upright, flat ground footprint, highly detailed realistic PBR iron, glass and stone textures, no light rays, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 40000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/Lamp/street_lamp_3d_model.street_lamp_3d_model",
+        "material": "/Game/Tripo/Town/Lamp/street_lamp_3d_model_Mat.street_lamp_3d_model_Mat",
+        "suggestedScale": 3.8,
+        "nanite": true,
+        "collision": "box",
+        "rawSizeCm": [
+          40.6,
+          24.6,
+          97.8
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "Banner",
+      "kind": "static_town",
+      "taskId": "6cbbbf05-e6ba-42dd-a540-8615b4994e67",
+      "url": "https://studio.tripo3d.ai/workspace/generate/6cbbbf05-e6ba-42dd-a540-8615b4994e67",
+      "prompt": "Game environment prop, realistic dark fantasy medieval heraldic banner stand, a tall freestanding dark oak pole with a crossbar at the top and an iron spear-point finial, a long hanging vertical cloth banner in deep crimson with a gold embroidered stylized tower emblem and a frayed swallowtail bottom edge, heavy cross-shaped wooden foot base weighted with stones. Complete 360 degree model, upright, flat ground footprint, highly detailed realistic PBR cloth, wood and iron textures, no text, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 40000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/Banner/CTS_Town_Banner.CTS_Town_Banner",
+        "material": "/Game/Tripo/Town/Banner/CTS_Town_Banner_Mat.CTS_Town_Banner_Mat",
+        "suggestedScale": 6.0,
+        "nanite": true,
+        "collision": "box",
+        "rawSizeCm": [
+          33.2,
+          31.6,
+          97.9
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "Barricade",
+      "kind": "static_town",
+      "taskId": "61e5d6ce-7de3-4946-bc3f-147526d40dd5",
+      "url": "https://studio.tripo3d.ai/workspace/generate/61e5d6ce-7de3-4946-bc3f-147526d40dd5",
+      "prompt": "Game environment prop, realistic dark fantasy medieval defensive barricade, a long low wall of sharpened wooden stakes and rough split logs lashed with rope into a slanted cheval-de-frise frame, reinforced with a few iron-banded crates and sandbags at the base, battle-scarred weathered timber. Complete 360 degree model, wide straight footprint, grounded, highly detailed realistic PBR wood, rope, iron and burlap textures, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 40000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/Barricade/CTS_Town_Barricade.CTS_Town_Barricade",
+        "material": "/Game/Tripo/Town/Barricade/CTS_Town_Barricade_Mat.CTS_Town_Barricade_Mat",
+        "suggestedScale": 6.0,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          98.0,
+          29.9,
+          39.4
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "CastleGateV2",
+      "kind": "static_town",
+      "taskId": "75d79bce-fbf5-4cf3-980f-09eda3d4b730",
+      "url": "https://studio.tripo3d.ai/workspace/generate/75d79bce-fbf5-4cf3-980f-09eda3d4b730",
+      "prompt": "Game environment asset, realistic dark fantasy medieval castle gatehouse, front view: a massive weathered grey granite gate building pierced by ONE enormous open archway tunnel straight through it, the arch opening is very wide, wider than it is tall and spanning about half of the total building width, with a flat stone-paved road floor running through the tunnel, no doors, no gate leaves, raised portcullis teeth visible only at the very top of the arch. Two squat round flanking towers with crenellations and small conical dark slate roofs, machicolations above the arch, iron lanterns. Complete modeled rear side identical to the front, flat ground footprint, highly detailed realistic PBR stone, iron and slate textures, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 150000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/CastleGateV2/CTS_Town_CastleGateV2.CTS_Town_CastleGateV2",
+        "material": "/Game/Tripo/Town/CastleGateV2/CTS_Town_CastleGateV2_Mat.CTS_Town_CastleGateV2_Mat",
+        "suggestedScale": 22.0,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          97.9,
+          63.3,
+          75.9
+        ]
+      },
+      "status": "imported (road passage 3.8-5 m after slot fit; below the 8-9 m gate requirement)"
+    },
+    {
+      "id": "GatehouseV2",
+      "kind": "static_town",
+      "taskId": "aaf3e6d5-0015-435a-a08d-d1cd90b925b8",
+      "url": "https://studio.tripo3d.ai/workspace/generate/aaf3e6d5-0015-435a-a08d-d1cd90b925b8",
+      "prompt": "Game environment asset, realistic dark fantasy medieval town gate, front view: a broad fortified stone and timber gatehouse spanning a road, with ONE very wide open archway passage through its middle, the opening is wider than it is tall and takes up more than half of the total width, flat cobbled road floor running straight through, no doors, no gate leaves, no portcullis. A covered timber wall-walk with a dark shingle roof over the arch, two sturdy square stone side towers with arrow slits, iron lanterns and a faded crimson banner. Complete modeled rear side identical to the front, flat ground footprint, highly detailed realistic PBR stone, timber and iron textures, no people, no terrain, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "tPose": false,
+        "polycount": 150000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting"
+      },
+      "credits": 55,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Town/GatehouseV2/CTS_Town_GatehouseV2.CTS_Town_GatehouseV2",
+        "material": "/Game/Tripo/Town/GatehouseV2/CTS_Town_GatehouseV2_Mat.CTS_Town_GatehouseV2_Mat",
+        "suggestedScale": 20.0,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          98.1,
+          54.1,
+          61.9
+        ]
+      },
+      "status": "imported (road passage 3.8-5 m after slot fit; below the 8-9 m gate requirement)"
+    },
+    {
+      "id": "Gatehouse",
+      "kind": "static_landmark",
+      "taskId": "bb02c6b4-1aed-43a4-a2aa-9e6231037797",
+      "url": "https://studio.tripo3d.ai/workspace/generate/bb02c6b4-1aed-43a4-a2aa-9e6231037797",
+      "prompt": "See Art/TripoEnvironment01.json (generated in an earlier pass; reused, not regenerated).",
+      "credits": 0,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Landmarks/Gatehouse/CTS_Landmark_Gatehouse.CTS_Landmark_Gatehouse",
+        "material": "/Game/Tripo/Landmarks/Gatehouse/CTS_Landmark_Gatehouse_Mat.CTS_Landmark_Gatehouse_Mat",
+        "suggestedScale": 20.5,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          97.8,
+          58.8,
+          79.4
+        ]
+      },
+      "status": "imported (road passage 4.75 m after gatehouse slot fit; slot needs 8 m)"
+    },
+    {
+      "id": "Watchtower",
+      "kind": "static_landmark",
+      "taskId": "4dfd4b23-2cd5-4948-906d-20be6c096692",
+      "url": "https://studio.tripo3d.ai/workspace/generate/4dfd4b23-2cd5-4948-906d-20be6c096692",
+      "prompt": "See Art/TripoEnvironment01.json (generated in an earlier pass; reused, not regenerated).",
+      "credits": 0,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Landmarks/Watchtower/CTS_Landmark_Watchtower.CTS_Landmark_Watchtower",
+        "material": "/Game/Tripo/Landmarks/Watchtower/CTS_Landmark_Watchtower_Mat.CTS_Landmark_Watchtower_Mat",
+        "suggestedScale": 15.0,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          54.2,
+          54.3,
+          98.2
+        ]
+      },
+      "status": "imported"
+    },
+    {
+      "id": "DawnwellShrine",
+      "kind": "static_landmark",
+      "taskId": "433e1784-da6d-4150-b45e-8536f78d422e",
+      "url": "https://studio.tripo3d.ai/workspace/generate/433e1784-da6d-4150-b45e-8536f78d422e",
+      "prompt": "See Art/TripoEnvironment01.json (generated in an earlier pass; reused, not regenerated).",
+      "credits": 0,
+      "transfer": "DCC Bridge Send To Unreal",
+      "unreal": {
+        "mesh": "/Game/Tripo/Landmarks/DawnwellShrine/CTS_Landmark_DawnwellShrine.CTS_Landmark_DawnwellShrine",
+        "material": "/Game/Tripo/Landmarks/DawnwellShrine/CTS_Landmark_DawnwellShrine_Mat.CTS_Landmark_DawnwellShrine_Mat",
+        "suggestedScale": 8.6,
+        "nanite": true,
+        "collision": "complex",
+        "rawSizeCm": [
+          97.8,
+          97.8,
+          53.8
+        ]
+      },
+      "status": "imported"
+    }
+  ]
+}

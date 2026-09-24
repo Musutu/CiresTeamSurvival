@@ -36,6 +36,7 @@
 #include "CireCombatExpansionProbe.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCPackPreview.h"
+#include "CireMonsterGallery.h" // creature-anim
 #include "CireNPCNetProbe.h"
 #include "CireArenas.h" // arenas
 #include "CireArenaGallery.h" // arenas
@@ -191,6 +192,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireFeedbackPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireNPCPackPreview::Initialize(this);
+    if(!bFeedbackPreview)bFeedbackPreview = CireMonsterGallery::Initialize(this); // creature-anim
     if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
     CireNPCNetProbe::InitializeServer(this);
 #endif
@@ -427,6 +429,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireArtPreview::Tick(this)) return;
     if(CireFeedbackPreview::Tick(this)) return;
     if(CireNPCPackPreview::Tick(this)) return;
+    if(CireMonsterGallery::Tick(this)) return; // creature-anim
     if(CireShopFixtures::Tick(this)) return; // progression-shop
     if(CireNPCNetProbe::TickServer(this)) return;
     if(CireExpansionNetProbe::TickServer(this)) return;

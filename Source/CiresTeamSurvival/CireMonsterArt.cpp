@@ -1,0 +1,841 @@
+#include "CireMonsterArt.h"
+
+#include "CireMonsterAnim.h"
+#include "CireGame.h"
+#include "CireNPCArchetypes.h"
+#include "CireNPCState.h"
+#include "CireAttackSystem.h"
+#include "CireCombatEvents.h"
+
+#include "Animation/AnimSequence.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Dom/JsonObject.h"
+#include "Engine/SkeletalMesh.h"
+#include "Engine/StaticMesh.h"
+#include "Engine/World.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/GameStateBase.h"
+#include "HAL/IConsoleManager.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/FileHelper.h"
+#include "Misc/PackageName.h"
+#include "Misc/Paths.h"
+#include "Net/UnrealNetwork.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogCireMonsterArt, Log, All);
+
+namespace
+{
+TAutoConsoleVariable<int32> CVarSwingWindup(TEXT("cire.Monsters.SwingWindup"), 1,
+    TEXT("1: monster melee blows land on the swing's contact frame (default). 0: legacy instant hits."));
+TAutoConsoleVariable<int32> CVarTripoBodies(TEXT("cire.Monsters.TripoBodies"), 1,
+    TEXT("1: draw monsters with the animated Tripo bodies. 0: mannequin fallback (applies to newly configured monsters)."));
+
+CireMonsterArt::FData GData;
+bool GLoaded = false;
+int32 GCorpses = 0;
+const TCHAR* const Roles[] = {TEXT("idle"), TEXT("walk"), TEXT("run"), TEXT("attack"), TEXT("attackAlt"), TEXT("hit"), TEXT("death")};
+
+template<class T> T* LoadIfPresent(const FString& Path)
+{
+    if (Path.IsEmpty() || !Path.StartsWith(TEXT("/Game/"))) return nullptr;
+    const FString Package = FPackageName::ObjectPathToPackageName(Path);
+    if (!FPackageName::DoesPackageExist(Package)) return nullptr;
+    return LoadObject<T>(nullptr, *Path);
+}
+
+bool ReadFile(const TCHAR* Name, TSharedPtr<FJsonObject>& Out)
+{
+    FString Text;
+    const FString File = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data"), Name);
+    return FFileHelper::LoadFileToString(Text, *File) && Text.Len() < 400000 &&
+        FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Out) && Out.IsValid();
+}
+
+bool ParseBody(const TSharedPtr<FJsonObject>& O, CireMonsterArt::FBody& Body)
+{
+    double Scale = 1, Yaw = -90, Height = 180;
+    if (!O->TryGetStringField(TEXT("variant"), Body.Variant) || !O->TryGetStringField(TEXT("mesh"), Body.MeshPath) ||
+        !O->TryGetNumberField(TEXT("meshScale"), Scale) || !FMath::IsFinite(Scale) || Scale < .05 || Scale > 50) return false;
+    O->TryGetNumberField(TEXT("yaw"), Yaw); O->TryGetNumberField(TEXT("heightCm"), Height);
+    O->TryGetStringField(TEXT("bakedWeapon"), Body.BakedWeapon);
+    Body.MeshScale = static_cast<float>(Scale); Body.Yaw = static_cast<float>(FMath::Clamp(Yaw, -360., 360.));
+    Body.HeightCm = static_cast<float>(FMath::Clamp(Height, 40., 600.));
+    const TSharedPtr<FJsonObject>* Animations = nullptr;
+    if (!O->TryGetObjectField(TEXT("animations"), Animations)) return false;
+    for (const TCHAR* Role : Roles)
+    {
+        FString Path;
+        if ((*Animations)->TryGetStringField(Role, Path) && Path.StartsWith(TEXT("/Game/"))) Body.Roles.Add(Role, Path);
+    }
+    const TSharedPtr<FJsonObject>* All = nullptr;
+    if ((*Animations)->TryGetObjectField(TEXT("all"), All))
+        for (const auto& Pair : (*All)->Values)
+        {
+            FString Path;
+            if (Pair.Value->TryGetString(Path) && Path.StartsWith(TEXT("/Game/"))) Body.Clips.Add(FString(Pair.Key.ToView()), Path);
+        }
+    return Body.MeshPath.StartsWith(TEXT("/Game/")) && Body.Roles.Contains(TEXT("idle"));
+}
+
+void Load()
+{
+    CireMonsterArt::FData Candidate;
+    TSharedPtr<FJsonObject> Meshes, Art;
+    if (!ReadFile(TEXT("NPCMeshes.tripo.json"), Meshes))
+    {
+        UE_LOG(LogCireMonsterArt, Warning, TEXT("CIRE_MONSTER_ART_DATA missing NPCMeshes.tripo.json; mannequin fallback bodies stay active."));
+        GData = MoveTemp(Candidate); return;
+    }
+    ReadFile(TEXT("MonsterArt.json"), Art);
+    TMap<FName, TMap<FString, CireMonsterArt::FBody>> ByArchetype;
+    TMap<FName, FString> Recommended;
+    const TSharedPtr<FJsonObject>* Archetypes = nullptr;
+    if (Meshes->TryGetObjectField(TEXT("archetypes"), Archetypes))
+        for (const auto& Pair : (*Archetypes)->Values)
+        {
+            const TSharedPtr<FJsonObject>* Entry = nullptr;
+            if (!Pair.Value->TryGetObject(Entry)) continue;
+            const FName Id(FString(Pair.Key.ToView()));
+            CireMonsterArt::FBody Body;
+            if (ParseBody(*Entry, Body)) { Recommended.Add(Id, Body.Variant); ByArchetype.FindOrAdd(Id).Add(Body.Variant, Body); }
+            const TArray<TSharedPtr<FJsonValue>>* Alternates = nullptr;
+            if ((*Entry)->TryGetArrayField(TEXT("alternates"), Alternates))
+                for (const auto& Value : *Alternates)
+                {
+                    const TSharedPtr<FJsonObject>* Alt = nullptr; CireMonsterArt::FBody AltBody;
+                    if (Value->TryGetObject(Alt) && ParseBody(*Alt, AltBody)) ByArchetype.FindOrAdd(Id).Add(AltBody.Variant, AltBody);
+                }
+        }
+    const TSharedPtr<FJsonObject>* ArtArchetypes = nullptr;
+    const TSharedPtr<FJsonObject>* ArtBodies = nullptr;
+    if (Art)
+    {
+        Art->TryGetObjectField(TEXT("archetypes"), ArtArchetypes);
+        Art->TryGetObjectField(TEXT("bodies"), ArtBodies);
+        const TSharedPtr<FJsonObject>* Clips = nullptr;
+        if (Art->TryGetObjectField(TEXT("clips"), Clips))
+            for (const auto& Pair : (*Clips)->Values)
+            {
+                const TSharedPtr<FJsonObject>* W = nullptr; CireMonsterArt::FClipWindow Window; double V = 0;
+                if (!Pair.Value->TryGetObject(W)) continue;
+                if ((*W)->TryGetNumberField(TEXT("start"), V)) Window.Start = V;
+                if ((*W)->TryGetNumberField(TEXT("contact"), V)) Window.Contact = V;
+                if ((*W)->TryGetNumberField(TEXT("end"), V)) Window.End = V;
+                if ((*W)->TryGetNumberField(TEXT("recoverRate"), V)) Window.RecoverRate = FMath::Clamp(V, .2, 5.);
+                if (Window.Start >= 0 && Window.Contact >= Window.Start && Window.End >= Window.Contact)
+                    Candidate.Windows.Add(FString(Pair.Key.ToView()), Window);
+            }
+        const auto Color = [&](const TSharedPtr<FJsonObject>& Object, const TCHAR* Key, FLinearColor& Out)
+        {
+            const TArray<TSharedPtr<FJsonValue>>* Values = nullptr;
+            if (Object->TryGetArrayField(Key, Values) && Values->Num() >= 3)
+                Out = FLinearColor((*Values)[0]->AsNumber(), (*Values)[1]->AsNumber(), (*Values)[2]->AsNumber(), 1.f);
+        };
+        const TSharedPtr<FJsonObject>* Rims = nullptr;
+        if (Art->TryGetObjectField(TEXT("rims"), Rims))
+        {
+            Color(*Rims, TEXT("elite"), Candidate.EliteRim); Color(*Rims, TEXT("boss"), Candidate.BossRim); Color(*Rims, TEXT("enraged"), Candidate.EnragedRim);
+        }
+        const TSharedPtr<FJsonObject>* Death = nullptr; double V = 0;
+        if (Art->TryGetObjectField(TEXT("death"), Death))
+        {
+            if ((*Death)->TryGetNumberField(TEXT("holdSeconds"), V)) Candidate.DeathHoldSeconds = FMath::Clamp(V, 0., 30.);
+            if ((*Death)->TryGetNumberField(TEXT("sinkSeconds"), V)) Candidate.DeathSinkSeconds = FMath::Clamp(V, .1, 10.);
+            if ((*Death)->TryGetNumberField(TEXT("sinkCm"), V)) Candidate.DeathSinkCm = FMath::Clamp(V, 0., 300.);
+        }
+    }
+    for (auto& Pair : ByArchetype)
+    {
+        CireMonsterArt::FArchetypeArt Entry;
+        TArray<FString> Variants;
+        const TSharedPtr<FJsonObject>* Rule = nullptr;
+        if (ArtArchetypes && (*ArtArchetypes)->TryGetObjectField(Pair.Key.ToString(), Rule))
+        {
+            const TArray<TSharedPtr<FJsonValue>>* List = nullptr;
+            if ((*Rule)->TryGetArrayField(TEXT("variants"), List))
+                for (const auto& Value : *List) { FString Name; if (Value->TryGetString(Name) && Pair.Value.Contains(Name)) Variants.AddUnique(Name); }
+            const TSharedPtr<FJsonObject>* Clips = nullptr;
+            if ((*Rule)->TryGetObjectField(TEXT("abilityClips"), Clips))
+                for (const auto& Clip : (*Clips)->Values)
+                {
+                    FString Name; if (Clip.Value->TryGetString(Name)) Entry.AbilityClips.Add(FName(FString(Clip.Key.ToView())), Name);
+                }
+        }
+        if (Variants.IsEmpty() && Recommended.Contains(Pair.Key)) Variants.Add(Recommended[Pair.Key]);
+        for (const FString& Name : Variants)
+        {
+            CireMonsterArt::FBody Body = Pair.Value[Name];
+            const TSharedPtr<FJsonObject>* BodyRule = nullptr;
+            const TArray<TSharedPtr<FJsonValue>>* Drops = nullptr;
+            if (ArtBodies && (*ArtBodies)->TryGetObjectField(Name, BodyRule))
+            {
+                if ((*BodyRule)->TryGetArrayField(TEXT("dropPropBones"), Drops))
+                    for (const auto& Value : *Drops) { FString Bone; if (Value->TryGetString(Bone)) Body.DropPropBones.Add(FName(*Bone)); }
+                FString Override;
+                if ((*BodyRule)->TryGetStringField(TEXT("mesh"), Override) && Override.StartsWith(TEXT("/Game/"))) Body.MeshOverride = Override;
+                const TSharedPtr<FJsonObject>* Adjust = nullptr;
+                if ((*BodyRule)->TryGetObjectField(TEXT("props"), Adjust))
+                    for (const auto& Prop : (*Adjust)->Values)
+                    {
+                        const TSharedPtr<FJsonObject>* Row = nullptr; double Scale = 1;
+                        if (!Prop.Value->TryGetObject(Row)) continue;
+                        const FName Bone(FString(Prop.Key.ToView()));
+                        if ((*Row)->TryGetNumberField(TEXT("scale"), Scale) && Scale > .05 && Scale < 10) Body.PropScale.Add(Bone, Scale);
+                        const TArray<TSharedPtr<FJsonValue>>* Offset = nullptr;
+                        if ((*Row)->TryGetArrayField(TEXT("offsetCm"), Offset) && Offset->Num() == 3)
+                            Body.PropOffset.Add(Bone, FVector((*Offset)[0]->AsNumber(), (*Offset)[1]->AsNumber(), (*Offset)[2]->AsNumber()));
+                        const TArray<TSharedPtr<FJsonValue>>* Rotation = nullptr;
+                        if ((*Row)->TryGetArrayField(TEXT("rotation"), Rotation) && Rotation->Num() == 3)
+                            Body.PropRotation.Add(Bone, FRotator((*Rotation)[0]->AsNumber(), (*Rotation)[1]->AsNumber(), (*Rotation)[2]->AsNumber()));
+                    }
+            }
+            Entry.Bodies.Add(MoveTemp(Body));
+        }
+        if (!Entry.Bodies.IsEmpty()) Candidate.Archetypes.Add(Pair.Key, MoveTemp(Entry));
+    }
+    Candidate.bValid = !Candidate.Archetypes.IsEmpty();
+    UE_LOG(LogCireMonsterArt, Log, TEXT("CIRE_MONSTER_ART_DATA archetypes=%d windows=%d"), Candidate.Archetypes.Num(), Candidate.Windows.Num());
+    GData = MoveTemp(Candidate);
+}
+
+FTransform ReferenceBone(const FReferenceSkeleton& Skeleton, FName Bone)
+{
+    int32 Index = Skeleton.FindBoneIndex(Bone);
+    if (Index == INDEX_NONE) return FTransform::Identity;
+    FTransform Result = Skeleton.GetRefBonePose()[Index];
+    while ((Index = Skeleton.GetParentIndex(Index)) != INDEX_NONE) Result = Result * Skeleton.GetRefBonePose()[Index];
+    return Result;
+}
+
+float Smooth01(float X) { X = FMath::Clamp(X, 0.f, 1.f); return X * X * (3.f - 2.f * X); }
+}
+
+const CireMonsterArt::FData& CireMonsterArt::Data(bool bReload)
+{
+    if (!GLoaded || bReload) { GLoaded = true; Load(); }
+    return GData;
+}
+
+const CireMonsterArt::FArchetypeArt* CireMonsterArt::Find(FName ArchetypeId)
+{
+    return Data().Archetypes.Find(ArchetypeId);
+}
+
+CireMonsterArt::FClipWindow CireMonsterArt::Window(const UAnimSequence* Sequence)
+{
+    FClipWindow Result;
+    if (!Sequence) return Result;
+    const float Length = Sequence->GetPlayLength();
+    Result.Contact = Length * .5f; Result.End = Length;
+    const FString Name = Sequence->GetName();
+    int32 Best = 0;
+    for (const auto& Pair : Data().Windows)
+        if (Pair.Key.Len() > Best && Name.EndsWith(TEXT("_") + Pair.Key)) { Best = Pair.Key.Len(); Result = Pair.Value; }
+    Result.End = FMath::Min(Result.End, Length); Result.Contact = FMath::Min(Result.Contact, Result.End);
+    Result.Start = FMath::Min(Result.Start, Result.Contact);
+    return Result;
+}
+
+// ---------------------------------------------------------------------------------------------
+UCireMonsterArt::UCireMonsterArt()
+{
+    PrimaryComponentTick.bCanEverTick = true;
+    PrimaryComponentTick.bStartWithTickEnabled = false;
+    PrimaryComponentTick.TickGroup = TG_PrePhysics;
+    SetIsReplicatedByDefault(true);
+}
+
+void UCireMonsterArt::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(UCireMonsterArt, BodySeed);
+    DOREPLIFETIME(UCireMonsterArt, SwingSerial);
+    DOREPLIFETIME(UCireMonsterArt, SwingStartedAt);
+    DOREPLIFETIME(UCireMonsterArt, SwingWindup);
+}
+
+void UCireMonsterArt::BeginPlay()
+{
+    Super::BeginPlay();
+    if (GetOwner() && GetOwner()->HasAuthority() && BodySeed == 0) BodySeed = static_cast<uint16>(FMath::RandRange(1, 65535));
+}
+
+double UCireMonsterArt::ServerNow() const
+{
+    const UWorld* World = GetWorld();
+    if (!World) return 0.0;
+    const AGameStateBase* State = World->GetGameState();
+    return State ? State->GetServerWorldTimeSeconds() : World->GetTimeSeconds();
+}
+
+UCireMonsterAnimInstance* UCireMonsterArt::GetMonsterAnim() const
+{
+    const auto* Monster = Cast<ACireMonster>(GetOwner());
+    return Monster && Monster->GetMesh() ? Cast<UCireMonsterAnimInstance>(Monster->GetMesh()->GetAnimInstance()) : nullptr;
+}
+
+// ---- server swing ---------------------------------------------------------------------------
+bool UCireMonsterArt::StartSwing(ACireHero* Victim, float Amount, const FString& AttackName, float Reach, float Period)
+{
+    if (!GetOwner() || !GetOwner()->HasAuthority() || !Victim || CVarSwingWindup.GetValueOnGameThread() == 0) return false;
+    const float Now = GetWorld()->GetTimeSeconds();
+    // A quarter-to-a-third of the attack period, capped so fast (rallied/enraged) swings stay snappy.
+    SwingWindup = FMath::Clamp(Period * .3f, .22f, .5f);
+    SwingStartedAt = Now; ++SwingSerial;
+    PendingVictim = Victim; PendingAmount = Amount; PendingReach = Reach; PendingName = AttackName;
+    PendingReleaseAt = Now + SwingWindup; bSwingPending = true;
+    GetOwner()->ForceNetUpdate();
+    return true;
+}
+
+void UCireMonsterArt::PresentInstantStrike()
+{
+    if (!GetOwner() || !GetOwner()->HasAuthority()) return;
+    SwingWindup = 0.f; SwingStartedAt = GetWorld()->GetTimeSeconds(); ++SwingSerial;
+    GetOwner()->ForceNetUpdate();
+}
+
+void UCireMonsterArt::CancelSwing()
+{
+    PendingVictim.Reset(); PendingReleaseAt = 0.f; PendingAmount = 0.f; bSwingPending = false;
+}
+
+bool UCireMonsterArt::ReleaseSwing(float Now)
+{
+    if (!HasPendingSwing() || Now < PendingReleaseAt) return false;
+    auto* Monster = Cast<ACireMonster>(GetOwner());
+    ACireHero* Victim = PendingVictim.Get();
+    const float Amount = PendingAmount, Reach = PendingReach; const FString Name = PendingName;
+    CancelSwing();
+    if (!Monster || Monster->Health <= 0 || !IsValid(Victim) || Victim->bDead || Victim->Health <= 0 || Victim->TeamId != Monster->Lane) return false;
+    // The blow was committed: a victim who stepped just outside the reach during the windup is still hit.
+    const float Slack = 120.f + Monster->GetCapsuleComponent()->GetScaledCapsuleRadius();
+    if (FVector::Dist2D(Monster->GetActorLocation(), Victim->GetActorLocation()) > Reach + Slack) return false;
+    CireAttacks::Resolve(Monster, Victim, Amount, CireAttacks::Roll(Monster, Victim, false), Name);
+    CireCombat::PlayCue(Monster, Victim, TEXT("npc_melee"), Monster->GetActorLocation(), Victim->GetActorLocation(), ECireSpellCue::Impact, .8f, true);
+    return true;
+}
+
+// ---- body -----------------------------------------------------------------------------------
+void UCireMonsterArt::CaptureFallback()
+{
+    if (bFallbackCaptured) return;
+    auto* Monster = Cast<ACireMonster>(GetOwner());
+    if (!Monster) return;
+    FallbackMesh = Monster->GetMesh()->GetSkeletalMeshAsset();
+    FallbackAnimClass = Monster->GetMesh()->GetAnimClass();
+    FallbackTransform = Monster->GetMesh()->GetRelativeTransform();
+    bFallbackCaptured = true;
+}
+
+void UCireMonsterArt::RestoreFallback()
+{
+    auto* Monster = Cast<ACireMonster>(GetOwner());
+    if (!Monster || !bTripoApplied) { bTripoApplied = false; return; }
+    auto* Mesh = Monster->GetMesh();
+    if (Rim && Mesh->GetOverlayMaterial() == Rim) Mesh->SetOverlayMaterial(nullptr);
+    Rim = nullptr; AppliedRimColor = FLinearColor::Transparent;
+    Mesh->SetAnimInstanceClass(nullptr);
+    if (bFallbackCaptured && FallbackMesh)
+    {
+        Mesh->SetSkeletalMesh(FallbackMesh);
+        Mesh->EmptyOverrideMaterials();
+        Mesh->SetRelativeTransform(FallbackTransform);
+        Monster->CacheInitialMeshOffset(Mesh->GetRelativeLocation(), Mesh->GetRelativeRotation());
+        if (FallbackAnimClass) Mesh->SetAnimInstanceClass(FallbackAnimClass);
+    }
+    RoleClips.Reset(); NamedClips.Reset(); Current = FAction();
+    bTripoApplied = false; AppliedVariant.Reset(); AppliedArchetype = NAME_None;
+    SetComponentTickEnabled(false);
+}
+
+UAnimSequence* UCireMonsterArt::RoleClip(const FString& Role) const
+{
+    const TObjectPtr<UAnimSequence>* Found = RoleClips.Find(Role);
+    return Found ? Found->Get() : nullptr;
+}
+
+UAnimSequence* UCireMonsterArt::NamedClip(const FString& Name) const
+{
+    const TObjectPtr<UAnimSequence>* Found = NamedClips.Find(Name);
+    return Found ? Found->Get() : nullptr;
+}
+
+bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObjectPtr<UStaticMeshComponent>>& OutParts)
+{
+    auto* Monster = Cast<ACireMonster>(GetOwner());
+    if (!Monster || Monster->GetNetMode() == NM_DedicatedServer) return false;
+    const auto* Art = CVarTripoBodies.GetValueOnGameThread() ? CireMonsterArt::Find(Archetype.Id) : nullptr;
+    if (!Art || Art->Bodies.IsEmpty()) { RestoreFallback(); return false; }
+    const int32 Index = (ForcedVariant >= 0 ? ForcedVariant : static_cast<int32>(BodySeed)) % Art->Bodies.Num();
+    const CireMonsterArt::FBody& Body = Art->Bodies[Index];
+    USkeletalMesh* Original = LoadIfPresent<USkeletalMesh>(Body.MeshPath);
+    USkeletalMesh* Asset = LoadIfPresent<USkeletalMesh>(Body.MeshOverride);
+    // The override must share the original skeleton, or the original clips would not play on it.
+    if (!Asset || !Original || Asset->GetSkeleton() != Original->GetSkeleton()) Asset = Original;
+    TMap<FString, TObjectPtr<UAnimSequence>> Loaded, Named;
+    if (Asset)
+    {
+        for (const auto& Pair : Body.Roles)
+            if (auto* Clip = LoadIfPresent<UAnimSequence>(Pair.Value); Clip && Clip->GetSkeleton() == Asset->GetSkeleton() && Clip->GetPlayLength() > 0.f)
+                Loaded.Add(Pair.Key, Clip);
+        for (const auto& Pair : Body.Clips)
+            if (auto* Clip = LoadIfPresent<UAnimSequence>(Pair.Value); Clip && Clip->GetSkeleton() == Asset->GetSkeleton() && Clip->GetPlayLength() > 0.f)
+                Named.Add(Pair.Key, Clip);
+    }
+    if (!Asset || !Loaded.Contains(TEXT("idle")))
+    {
+        UE_LOG(LogCireMonsterArt, Warning, TEXT("CIRE_MONSTER_ART_FALLBACK archetype=%s variant=%s (missing mesh or idle clip)"), *Archetype.Id.ToString(), *Body.Variant);
+        RestoreFallback();
+        return false;
+    }
+    CaptureFallback();
+    auto* Mesh = Monster->GetMesh();
+    UMaterialInterface* Overlay = Mesh->GetOverlayMaterial();
+    if (Rim && Overlay == Rim) Overlay = nullptr;
+    // Clear the mannequin AnimBP before assigning an incompatible skeleton (it would collapse the body).
+    Mesh->SetAnimInstanceClass(nullptr);
+    Mesh->SetSkeletalMesh(Asset);
+    Mesh->EmptyOverrideMaterials();
+    Mesh->SetRelativeScale3D(FVector(Body.MeshScale));
+    Mesh->SetRelativeRotation(FRotator(0, Body.Yaw, 0));
+    // Tripo pivots sit at the soles: the pivot goes on the capsule bottom. The actor scale (archetype
+    // scale, elite tier, enrage) scales capsule and body together, so feet stay grounded at every size.
+    // Some idle clips press the toes below the pivot: lift so the toe joints sit ~1.8% of the body above the floor.
+    float Lift = 0.f;
+    if (UAnimSequence* Stance = Loaded.FindRef(TEXT("idle")))
+    {
+        const float RawHeight = Body.HeightCm / FMath::Max(.01f, Body.MeshScale);
+        Lift = FMath::Clamp(.018f * RawHeight - CireAnimClips::Analyze(Stance).StanceBallZ, -.02f * RawHeight, .05f * RawHeight);
+    }
+    Mesh->SetRelativeLocation(FVector(0, 0, -Monster->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() + Lift * Body.MeshScale));
+    Monster->CacheInitialMeshOffset(Mesh->GetRelativeLocation(), Mesh->GetRelativeRotation());
+    Mesh->SetAnimInstanceClass(UCireMonsterAnimInstance::StaticClass());
+    Mesh->SetOverlayMaterial(Overlay);
+    Mesh->SetVisibility(true, false);
+    RoleClips = MoveTemp(Loaded); NamedClips = MoveTemp(Named);
+    if (auto* Anim = GetMonsterAnim())
+    {
+        Anim->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
+        Anim->Idle.Sequence = RoleClip(TEXT("idle")); Anim->Idle.Weight = 1.f;
+        Anim->Walk.Sequence = RoleClip(TEXT("walk")); Anim->Walk.bRemoveDrift = true;
+        Anim->Run.Sequence = RoleClip(TEXT("run")); Anim->Run.bRemoveDrift = true;
+        // Walk/run carry the body forward on the pelvis; cycle it in place over the idle stance instead.
+        const CireAnimClips::FClipInfo& Stance = CireAnimClips::Analyze(Anim->Idle.Sequence);
+        Anim->Walk.PelvisTarget = Anim->Run.PelvisTarget = Stance.bValid ? Stance.DriftOffset : Stance.ReferencePelvis;
+        Anim->Action = FCireAnimLayer(); Anim->Death = FCireAnimLayer();
+        Anim->MoveAlpha = Anim->RunAlpha = 0.f;
+    }
+    else { RestoreFallback(); return false; }
+    // Props: drop what the body already carries in its mesh, keep the rest on the right bones.
+    const USkeletalMesh& Skeletal = *Asset;
+    const FReferenceSkeleton& Reference = Skeletal.GetRefSkeleton();
+    FVector Forward = ((ReferenceBone(Reference, TEXT("ball_l")).GetLocation() - ReferenceBone(Reference, TEXT("foot_l")).GetLocation()) +
+        (ReferenceBone(Reference, TEXT("ball_r")).GetLocation() - ReferenceBone(Reference, TEXT("foot_r")).GetLocation())).GetSafeNormal2D();
+    if (Forward.IsNearlyZero()) Forward = FVector(0, 1, 0);
+    const FQuat Upright = FRotationMatrix::MakeFromXZ(Forward, FVector::UpVector).ToQuat();
+    for (const FCireNPCProp& Prop : Archetype.Props)
+    {
+        if (Body.DropPropBones.Contains(Prop.Bone) || Reference.FindBoneIndex(Prop.Bone) == INDEX_NONE) continue;
+        auto* PropMesh = LoadIfPresent<UStaticMesh>(Prop.Asset);
+        if (!PropMesh) continue;
+        auto* Part = NewObject<UStaticMeshComponent>(Monster);
+        Monster->AddInstanceComponent(Part);
+        Part->SetupAttachment(Mesh, Prop.Bone);
+        Part->SetStaticMesh(PropMesh);
+        Part->SetCollisionEnabled(ECollisionEnabled::NoCollision); Part->SetGenerateOverlapEvents(false);
+        Part->SetCanEverAffectNavigation(false); Part->SetCastShadow(true);
+        const bool bHand = Prop.Bone == TEXT("hand_r") || Prop.Bone == TEXT("hand_l");
+        if (bHand) Part->ComponentTags.AddUnique(TEXT("CireWeaponProp"));
+        const FTransform Bone = ReferenceBone(Reference, Prop.Bone);
+        FQuat Frame = Upright;
+        if (bHand)
+        {
+            // Grip frame from the bind-pose hand: the handle runs across the palm (pinky -> index), so the
+            // blade / bow limb / shield top leaves on the thumb side (+Z) and the prop's face (+X) is the back
+            // of the hand. Held that way, a sword points ahead of a lowered arm instead of out to the side.
+            const TCHAR* Side = Prop.Bone == TEXT("hand_l") ? TEXT("_l") : TEXT("_r");
+            const FVector Hand = Bone.GetLocation();
+            const FVector Middle = ReferenceBone(Reference, FName(FString(TEXT("middle_01")) + Side)).GetLocation();
+            const FVector IndexFinger = ReferenceBone(Reference, FName(FString(TEXT("index_01")) + Side)).GetLocation();
+            const FVector Pinky = ReferenceBone(Reference, FName(FString(TEXT("pinky_01")) + Side)).GetLocation();
+            const FVector Arm = (Middle - Hand).GetSafeNormal();
+            FVector Across = IndexFinger - Pinky; Across = (Across - Arm * FVector::DotProduct(Across, Arm)).GetSafeNormal();
+            FVector Back = FVector::UpVector - Arm * FVector::DotProduct(FVector::UpVector, Arm) - Across * FVector::DotProduct(FVector::UpVector, Across);
+            Back = Back.GetSafeNormal();
+            if (!Arm.IsNearlyZero() && !Across.IsNearlyZero() && !Back.IsNearlyZero()) Frame = FRotationMatrix::MakeFromXZ(Back, Across).ToQuat();
+        }
+        const FRotator* Turn = Body.PropRotation.Find(Prop.Bone);
+        Part->SetRelativeRotation(Bone.GetRotation().Inverse() * Frame * (Turn ? *Turn : Prop.Rotation).Quaternion());
+        FVector Grip = FVector::ZeroVector;
+        if (bHand)
+        {
+            const FName Knuckle(Prop.Bone == TEXT("hand_l") ? TEXT("middle_01_l") : TEXT("middle_01_r"));
+            if (Reference.FindBoneIndex(Knuckle) != INDEX_NONE)
+                Grip = Bone.InverseTransformPosition((Bone.GetLocation() + ReferenceBone(Reference, Knuckle).GetLocation()) * .5);
+        }
+        const FVector* Offset = Body.PropOffset.Find(Prop.Bone);
+        Grip += Bone.InverseTransformVector(Upright.RotateVector(Offset ? *Offset : Prop.Offset) / Body.MeshScale);
+        Part->SetRelativeLocation(Grip);
+        // Bone transforms inherit the imported root scale (100): props are authored in real centimetres.
+        const float BoneScale = static_cast<float>(Bone.GetScale3D().GetAbsMax()) * Body.MeshScale;
+        const float PropScale = Prop.Scale * (Body.PropScale.Contains(Prop.Bone) ? Body.PropScale[Prop.Bone] : 1.f);
+        Part->SetRelativeScale3D(FVector(BoneScale > UE_SMALL_NUMBER ? PropScale / BoneScale : PropScale));
+        Part->RegisterComponent();
+        OutParts.Add(Part);
+    }
+    bTripoApplied = true; AppliedArchetype = Archetype.Id; AppliedVariant = Body.Variant; AppliedMeshScale = Body.MeshScale;
+    Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = -1.f; // a cast already under way is picked up mid-bar
+    LastHealth = Monster->Health; Phase = FMath::FRand(); IdleTime = FMath::FRand() * 5.f;
+    UpdateRim();
+    SetComponentTickEnabled(true);
+    UE_LOG(LogCireMonsterArt, Verbose, TEXT("CIRE_MONSTER_ART_APPLIED archetype=%s variant=%s scale=%.3f"), *Archetype.Id.ToString(), *Body.Variant, Body.MeshScale);
+    return true;
+}
+
+void UCireMonsterArt::ForceVariant(int32 Index)
+{
+    ForcedVariant = Index;
+    if (auto* Monster = Cast<ACireMonster>(GetOwner()); Monster && Monster->NPCState)
+    {
+        Monster->NPCState->AppliedVisualArchetype = NAME_None;
+        Monster->NPCState->ApplyVisuals();
+    }
+}
+
+void UCireMonsterArt::OnRep_BodySeed()
+{
+    auto* Monster = Cast<ACireMonster>(GetOwner());
+    if (!Monster || !Monster->NPCState || Monster->NPCState->ArchetypeId.IsNone() || ForcedVariant >= 0) return;
+    const auto* Art = CireMonsterArt::Find(Monster->NPCState->ArchetypeId);
+    if (!bTripoApplied || !Art || Art->Bodies.Num() < 2 || Art->Bodies[BodySeed % Art->Bodies.Num()].Variant == AppliedVariant) return;
+    Monster->NPCState->AppliedVisualArchetype = NAME_None;
+    Monster->NPCState->ApplyVisuals();
+}
+
+FVector2D UCireMonsterArt::GroundSpeeds() const
+{
+    const auto* Monster = Cast<ACireMonster>(GetOwner());
+    const float Scale = Monster ? static_cast<float>(Monster->GetMesh()->GetComponentScale().X) : 1.f;
+    const auto Speed = [&](const TCHAR* Role) { const UAnimSequence* Clip = RoleClip(Role); return Clip ? CireAnimClips::Analyze(Clip).GroundSpeed() * Scale : 0.f; };
+    return FVector2D(Speed(TEXT("walk")), Speed(TEXT("run")));
+}
+
+void UCireMonsterArt::UpdateRim()
+{
+    auto* Monster = Cast<ACireMonster>(GetOwner());
+    if (!Monster || !bTripoApplied) return;
+    const auto& D = CireMonsterArt::Data();
+    const ECireNPCClass Class = Monster->GetNPCClassification();
+    const bool bEnraged = Monster->NPCState && Monster->NPCState->HasStatus(CireNPCStatus::Enraged);
+    const FLinearColor Want = bEnraged ? D.EnragedRim : Class == ECireNPCClass::Boss ? D.BossRim : Class == ECireNPCClass::Elite ? D.EliteRim : FLinearColor::Transparent;
+    if (Want == AppliedRimColor) return;
+    AppliedRimColor = Want;
+    auto* Mesh = Monster->GetMesh();
+    if (Want.A <= 0.f)
+    {
+        if (Rim && Mesh->GetOverlayMaterial() == Rim) Mesh->SetOverlayMaterial(nullptr);
+        return;
+    }
+    if (!Rim)
+        if (auto* Edge = LoadIfPresent<UMaterialInterface>(TEXT("/Game/Art/Materials/M_SelectionEdge.M_SelectionEdge")))
+            Rim = UMaterialInstanceDynamic::Create(Edge, this);
+    if (!Rim) return;
+    // A dim fresnel rim: readable at gameplay distance without competing with the selection edge.
+    Rim->SetVectorParameterValue(TEXT("SelectionTint"), Want * .55f);
+    // Never replace another overlay (the selection highlight stores and restores ours).
+    if (!Mesh->GetOverlayMaterial()) Mesh->SetOverlayMaterial(Rim);
+}
+
+UAnimSequence* UCireMonsterArt::ClipForAbility(FName AbilityId) const
+{
+    const auto* Monster = Cast<ACireMonster>(GetOwner());
+    const FCireNPCArchetype* Archetype = Monster && Monster->NPCState ? Monster->NPCState->Archetype() : nullptr;
+    if (const auto* Art = CireMonsterArt::Find(AppliedArchetype))
+        if (const FString* Name = Art->AbilityClips.Find(AbilityId))
+            if (UAnimSequence* Clip = NamedClip(*Name)) return Clip;
+    const FCireNPCAbility* Ability = Archetype ? Archetype->FindAbility(AbilityId) : nullptr;
+    UAnimSequence* Attack = RoleClip(TEXT("attack"));
+    UAnimSequence* Cast = NamedClip(TEXT("cast_a_spell"));
+    UAnimSequence* Shout = NamedClip(TEXT("war_cry"));
+    if (!Ability) return Cast ? Cast : Attack;
+    switch (Ability->Kind)
+    {
+    case ECireNPCAbilityKind::Projectile: return Attack;
+    case ECireNPCAbilityKind::Cone: case ECireNPCAbilityKind::Charge: case ECireNPCAbilityKind::Melee: return Attack;
+    case ECireNPCAbilityKind::SelfCircle: if (auto* Slam = NamedClip(TEXT("ground_slam"))) return Slam; return Attack;
+    case ECireNPCAbilityKind::Rally: case ECireNPCAbilityKind::Enrage: case ECireNPCAbilityKind::Provoke:
+        return Shout ? Shout : Cast ? Cast : Attack;
+    default: return Cast ? Cast : Shout ? Shout : Attack;
+    }
+}
+
+void UCireMonsterArt::StartAction(UAnimSequence* Sequence, double StartedAt, float Windup, float Weight, float LowerBody, bool bCast)
+{
+    if (!Sequence) return;
+    Current = FAction();
+    Current.Sequence = Sequence; Current.Window = CireMonsterArt::Window(Sequence);
+    Current.StartedAt = StartedAt; Current.Windup = Windup; Current.Weight = Weight; Current.LowerBody = LowerBody; Current.bCast = bCast;
+}
+
+bool UCireMonsterArt::PlayAction(const FString& Role, float WindupSeconds)
+{
+    UAnimSequence* Clip = RoleClip(Role);
+    if (!Clip) Clip = NamedClip(Role);
+    if (!Clip || !bTripoApplied) return false;
+    StartAction(Clip, ServerNow(), WindupSeconds, 1.f, 1.f, false);
+    return true;
+}
+
+void UCireMonsterArt::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    if (bTripoApplied && !bFrozen) UpdatePresentation(DeltaTime);
+}
+
+void UCireMonsterArt::UpdatePresentation(float DeltaTime)
+{
+    auto* Monster = Cast<ACireMonster>(GetOwner());
+    UCireMonsterAnimInstance* Anim = GetMonsterAnim();
+    if (!Monster || !Anim || !FMath::IsFinite(DeltaTime)) return;
+    DeltaTime = FMath::Clamp(DeltaTime, 0.f, .25f);
+    const double Now = ServerNow();
+    const float Scale = static_cast<float>(Monster->GetMesh()->GetComponentScale().X);
+
+    // ---- locomotion: idle/walk/run by speed, phase-locked, rate matched to ground speed ----
+    const float Speed = Monster->Health > 0 ? static_cast<float>(Monster->GetVelocity().Size2D()) : 0.f;
+    SmoothedSpeed = FMath::FInterpTo(SmoothedSpeed, Speed, DeltaTime, 10.f);
+    UAnimSequence* WalkClip = Anim->Walk.Sequence;
+    UAnimSequence* RunClip = Anim->Run.Sequence;
+    const CireAnimClips::FClipInfo& WalkInfo = CireAnimClips::Analyze(WalkClip);
+    const CireAnimClips::FClipInfo& RunInfo = CireAnimClips::Analyze(RunClip);
+    const float WalkSpeed = FMath::Max(20.f, WalkInfo.GroundSpeed() * Scale);
+    const float RunSpeed = FMath::Max(WalkSpeed + 50.f, RunInfo.GroundSpeed() * Scale);
+    const float RunAlpha = RunClip ? FMath::Clamp((SmoothedSpeed - WalkSpeed) / (RunSpeed - WalkSpeed), 0.f, 1.f) : 0.f;
+    const float MoveTarget = FMath::Clamp(SmoothedSpeed / (WalkSpeed * .35f), 0.f, 1.f);
+    Anim->MoveAlpha = FMath::FInterpTo(Anim->MoveAlpha, MoveTarget, DeltaTime, 8.f);
+    Anim->RunAlpha = RunAlpha;
+    const float WalkLength = WalkClip ? WalkClip->GetPlayLength() : 1.f, RunLength = RunClip ? RunClip->GetPlayLength() : WalkLength;
+    const float Cycle = FMath::Lerp(WalkLength, RunLength, RunAlpha);
+    const float NaturalSpeed = FMath::Lerp(WalkSpeed, RunSpeed, RunAlpha);
+    // One cycle per the clip's own stride: planted feet move with the ground, not across it.
+    const float Rate = FMath::Clamp(SmoothedSpeed / NaturalSpeed, .35f, 2.2f);
+    if (Anim->MoveAlpha > .01f) Phase = FMath::Frac(Phase + DeltaTime * Rate / FMath::Max(.1f, Cycle));
+    if (WalkClip) Anim->Walk.Time = FMath::Frac(Phase + WalkInfo.LeftFootApexPhase) * WalkLength;
+    if (RunClip) Anim->Run.Time = FMath::Frac(Phase + RunInfo.LeftFootApexPhase) * RunLength;
+    if (UAnimSequence* Idle = Anim->Idle.Sequence) { IdleTime = FMath::Fmod(IdleTime + DeltaTime, Idle->GetPlayLength()); Anim->Idle.Time = IdleTime; }
+
+    // ---- triggers: melee swing, cast bar, hit reaction ----
+    if (SwingSerial != SeenSwingSerial)
+    {
+        SeenSwingSerial = SwingSerial;
+        if (UAnimSequence* Attack = RoleClip(TEXT("attack")))
+        {
+            const bool bRanged = Monster->GetNPCRole() == ECireNPCRole::Caster || Monster->GetNPCRole() == ECireNPCRole::Ranged;
+            if (!bRanged) StartAction(Attack, SwingStartedAt, SwingWindup, 1.f, 1.f, false);
+        }
+    }
+    if (!Monster->CastingAbility.IsEmpty() && Monster->CastStartedAt != SeenCastStartedAt)
+    {
+        SeenCastStartedAt = Monster->CastStartedAt;
+        const FName Ability = Monster->NPCState && !Monster->NPCState->CastAbilityId.IsNone() ? Monster->NPCState->CastAbilityId : FName(*Monster->CastingAbility);
+        StartAction(ClipForAbility(Ability), Monster->CastStartedAt, FMath::Max(.05f, Monster->CastEndsAt - Monster->CastStartedAt), 1.f, 1.f, true);
+    }
+    if (Current.bCast && !Current.bInterrupted && Monster->CastingAbility.IsEmpty() && Now < Current.StartedAt + Current.Windup - .1)
+    {
+        Current.bInterrupted = true; Current.InterruptedAt = Now; // kicked or stunned: let go of the pose
+    }
+    if (LastHealth >= 0.f && Monster->Health < LastHealth - .5f && Monster->Health > 0.f && !Current.Sequence && Now - LastHitAt > 1.1)
+    {
+        LastHitAt = Now;
+        if (UAnimSequence* Hit = RoleClip(TEXT("hit")))
+        {
+            const CireMonsterArt::FClipWindow W = CireMonsterArt::Window(Hit);
+            StartAction(Hit, Now, FMath::Max(.05f, (W.Contact - W.Start) / 1.4f), .75f, 0.f, false);
+        }
+    }
+    LastHealth = Monster->Health;
+
+    // ---- action layer ----
+    Anim->Action.Weight = 0.f;
+    if (Current.Sequence)
+    {
+        const CireMonsterArt::FClipWindow& W = Current.Window;
+        const double Elapsed = Now - Current.StartedAt;
+        float Time;
+        if (Current.Windup <= KINDA_SMALL_NUMBER)
+            Time = W.Contact - .12f * W.RecoverRate + static_cast<float>(Elapsed) * W.RecoverRate;
+        else if (Elapsed < Current.Windup)
+        {
+            // Short windups skip the slow start of the raise rather than racing through it (at most 2.6x).
+            const float From = FMath::Max(W.Start, W.Contact - Current.Windup * 2.6f);
+            Time = From + (W.Contact - From) * static_cast<float>(FMath::Max(0.0, Elapsed) / Current.Windup);
+        }
+        else
+            Time = W.Contact + static_cast<float>(Elapsed - Current.Windup) * W.RecoverRate;
+        const float FadeIn = Smooth01(static_cast<float>(Elapsed) / .12f);
+        const float FadeOut = Smooth01((W.End - Time) / FMath::Max(.05f, .3f * W.RecoverRate));
+        float Weight = Current.Weight * FMath::Min(FadeIn, FadeOut);
+        if (Current.bInterrupted) Weight *= Smooth01(1.f - static_cast<float>(Now - Current.InterruptedAt) / .2f);
+        if (Time >= W.End || Weight <= 0.f && Elapsed > .2) Current = FAction();
+        else
+        {
+            Anim->Action.Sequence = Current.Sequence;
+            Anim->Action.Time = FMath::Clamp(Time, 0.f, Current.Sequence->GetPlayLength());
+            Anim->Action.Weight = Weight;
+            // Legs keep the locomotion cycle whenever the body is travelling.
+            Anim->Action.LowerBody = Current.LowerBody * (1.f - Anim->MoveAlpha);
+        }
+    }
+    if (Anim->Action.Weight <= 0.f) Anim->Action.Sequence = nullptr;
+    UpdateRim();
+}
+
+CireMonsterArt::FClipWindow UCireMonsterArt::WindowOf(const FString& RoleOrName) const
+{
+    const UAnimSequence* Clip = RoleClip(RoleOrName);
+    if (!Clip) Clip = NamedClip(RoleOrName);
+    return Clip ? CireMonsterArt::Window(Clip) : CireMonsterArt::FClipWindow();
+}
+
+bool UCireMonsterArt::PoseClip(const FString& RoleOrName, float ClipSeconds)
+{
+    UAnimSequence* Clip = RoleClip(RoleOrName);
+    if (!Clip) Clip = NamedClip(RoleOrName);
+    if (!Clip || RoleOrName == TEXT("idle") || RoleOrName == TEXT("walk") || RoleOrName == TEXT("run"))
+        return PoseForTest(RoleOrName, Clip ? ClipSeconds / FMath::Max(.01f, Clip->GetPlayLength()) : 0.f);
+    const CireMonsterArt::FClipWindow W = CireMonsterArt::Window(Clip);
+    const bool bDeath = RoleOrName == TEXT("death");
+    return PoseForTest(RoleOrName, bDeath ? ClipSeconds / FMath::Max(.01f, Clip->GetPlayLength()) : (ClipSeconds - W.Start) / FMath::Max(.01f, W.End - W.Start));
+}
+
+bool UCireMonsterArt::PoseForTest(const FString& Role, float Normalized, float MoveSpeed)
+{
+    auto* Monster = Cast<ACireMonster>(GetOwner());
+    UCireMonsterAnimInstance* Anim = GetMonsterAnim();
+    if (!Monster || !Anim || !bTripoApplied) return false;
+    bFrozen = true;
+    Normalized = FMath::Clamp(Normalized, 0.f, 1.f);
+    Anim->MoveAlpha = 0.f; Anim->RunAlpha = 0.f;
+    Anim->Action = FCireAnimLayer(); Anim->Death = FCireAnimLayer();
+    if (Role == TEXT("idle")) Anim->Idle.Time = Normalized * Anim->Idle.Sequence->GetPlayLength();
+    else if (Role == TEXT("walk") || Role == TEXT("run"))
+    {
+        FCireAnimLayer& Layer = Role == TEXT("walk") ? Anim->Walk : Anim->Run;
+        if (!Layer.Sequence) return false;
+        Anim->MoveAlpha = 1.f; Anim->RunAlpha = Role == TEXT("run") ? 1.f : 0.f;
+        Layer.Time = Normalized * Layer.Sequence->GetPlayLength();
+    }
+    else
+    {
+        UAnimSequence* Clip = RoleClip(Role);
+        if (!Clip) Clip = NamedClip(Role);
+        if (!Clip) return false;
+        const CireMonsterArt::FClipWindow W = CireMonsterArt::Window(Clip);
+        FCireAnimLayer& Layer = Role == TEXT("death") ? Anim->Death : Anim->Action;
+        Layer.Sequence = Clip; Layer.Weight = 1.f; Layer.LowerBody = 1.f;
+        Layer.Time = Role == TEXT("death") ? Normalized * Clip->GetPlayLength() : FMath::Lerp(W.Start, W.End, Normalized);
+    }
+    (void)MoveSpeed;
+    USkeletalMeshComponent* Mesh = Monster->GetMesh();
+    Mesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+    Mesh->TickAnimation(0.f, false);
+    Mesh->RefreshBoneTransforms();
+    return !Anim->bLastPoseRejected;
+}
+
+// ---- death ------------------------------------------------------------------------------------
+void UCireMonsterArt::MulticastDeath_Implementation()
+{
+    if (GetNetMode() == NM_DedicatedServer || bDeathPresented) return;
+    bDeathPresented = true;
+    SpawnCorpse();
+}
+
+void UCireMonsterArt::SpawnCorpse()
+{
+    auto* Monster = Cast<ACireMonster>(GetOwner());
+    if (!Monster || !bTripoApplied || !Monster->GetWorld()) return;
+    USkeletalMeshComponent* Mesh = Monster->GetMesh();
+    UAnimSequence* Fall = RoleClip(TEXT("death"));
+    if (!Mesh || !Fall || !Mesh->IsVisible()) return;
+    FActorSpawnParameters Params;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    Params.ObjectFlags |= RF_Transient;
+    auto* Corpse = Monster->GetWorld()->SpawnActor<ACireMonsterCorpse>(Mesh->GetComponentLocation(), Mesh->GetComponentRotation(), Params);
+    if (!Corpse) return;
+    TArray<TObjectPtr<UStaticMeshComponent>> Props;
+    if (Monster->NPCState) Props = Monster->NPCState->VisualParts;
+    if (!Corpse->Initialize(*Mesh, Fall, RoleClip(TEXT("idle")), Props)) { Corpse->Destroy(); return; }
+    // The live actor is destroyed this frame; hide it now so the body is never drawn twice.
+    Mesh->SetVisibility(false, true);
+}
+
+ACireMonsterCorpse::ACireMonsterCorpse()
+{
+    PrimaryActorTick.bCanEverTick = true;
+    bReplicates = false;
+    SetCanBeDamaged(false);
+    Body = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Body"));
+    Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Body->SetGenerateOverlapEvents(false);
+    Body->SetCanEverAffectNavigation(false);
+    RootComponent = Body;
+}
+
+void ACireMonsterCorpse::BeginPlay() { Super::BeginPlay(); ++GCorpses; }
+void ACireMonsterCorpse::EndPlay(const EEndPlayReason::Type Reason) { --GCorpses; Super::EndPlay(Reason); }
+
+int32 ACireMonsterCorpse::LiveCount() { return GCorpses; }
+
+bool ACireMonsterCorpse::Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props)
+{
+    if (!Source.GetSkeletalMeshAsset() || !Fall) return false;
+    SetActorTransform(Source.GetComponentTransform());
+    Body->SetSkeletalMesh(Source.GetSkeletalMeshAsset());
+    for (int32 Slot = 0; Slot < Source.GetNumMaterials(); ++Slot) Body->SetMaterial(Slot, Source.GetMaterial(Slot));
+    Body->SetAnimInstanceClass(UCireMonsterAnimInstance::StaticClass());
+    auto* Anim = Cast<UCireMonsterAnimInstance>(Body->GetAnimInstance());
+    if (!Anim) return false;
+    Anim->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
+    Anim->Idle.Sequence = Idle; Anim->Idle.Weight = 1.f;
+    Anim->Death.Sequence = Fall; Anim->Death.Weight = 0.f; Anim->Death.LowerBody = 1.f;
+    const CireMonsterArt::FClipWindow Window = CireMonsterArt::Window(Fall);
+    FallSeconds = FMath::Max(.2f, Window.End - Window.Start);
+    const auto& D = CireMonsterArt::Data();
+    HoldSeconds = D.DeathHoldSeconds; SinkSeconds = D.DeathSinkSeconds; SinkCm = D.DeathSinkCm;
+    for (const UStaticMeshComponent* Prop : Props)
+    {
+        if (!Prop || !Prop->GetStaticMesh()) continue;
+        auto* Copy = NewObject<UStaticMeshComponent>(this);
+        AddInstanceComponent(Copy);
+        Copy->SetupAttachment(Body, Prop->GetAttachSocketName());
+        Copy->SetStaticMesh(Prop->GetStaticMesh());
+        Copy->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        Copy->SetRelativeTransform(Prop->GetRelativeTransform());
+        Copy->RegisterComponent();
+    }
+    StartLocation = GetActorLocation();
+    return true;
+}
+
+void ACireMonsterCorpse::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+    Age += FMath::Clamp(DeltaSeconds, 0.f, .5f);
+    if (auto* Anim = Cast<UCireMonsterAnimInstance>(Body->GetAnimInstance()))
+    {
+        const CireMonsterArt::FClipWindow Window = CireMonsterArt::Window(Anim->Death.Sequence);
+        Anim->Death.Time = FMath::Min(Window.Start + Age * Window.RecoverRate, Window.End);
+        Anim->Death.Weight = Smooth01(Age / .15f);
+    }
+    const float SinkStart = FallSeconds + HoldSeconds;
+    if (Age > SinkStart) SetActorLocation(StartLocation - FVector(0, 0, SinkCm * Smooth01((Age - SinkStart) / SinkSeconds)));
+    if (Age > SinkStart + SinkSeconds) Destroy();
+}
+

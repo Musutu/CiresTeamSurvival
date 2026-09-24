@@ -1,6 +1,7 @@
 #include "CireBatchArtGallery.h"
 #if !UE_BUILD_SHIPPING
 #include "CireGame.h"
+#include "CireChampionActions.h" // creature-anim
 #include "CireChampionArt.h"
 #include "CireCreatureArt.h"
 #include "CireMobility.h"
@@ -47,7 +48,8 @@ namespace
 constexpr int32 PageSize=2;
 int32 StateCount=5;
 const TCHAR* StateNames[]={TEXT("idle_front"),TEXT("walk_angled"),TEXT("attack_windup"),TEXT("attack_release"),TEXT("recovered_idle"),TEXT("walking_slow"),TEXT("airborne"),TEXT("roll_mid")};
-const float AttackPhases[]={-1,-1,.15f,.25f,.70f,-1,-1,-1};
+// creature-anim: Tripo action clips settle by 1.5x the attack duration (0.975 s at base speed).
+const float AttackPhases[]={-1,-1,.15f,.25f,1.05f,-1,-1,-1};
 const FVector StageCenter(0,-2100,5000);
 struct FBinding {FString Id,Mesh,Locomotion,Attack,Motion;float Height=0;bool bCustom=false;};
 struct FModel
@@ -163,7 +165,9 @@ bool MatchingAssets(FModel& M)
     bool bGood=H && H->ChampionProfileId==B.Id && H->ChampionArt && H->ChampionArt->IsApplied() && Mesh &&
         M.ExpectedMesh.IsValid() && M.ExpectedBlend.IsValid() && M.ExpectedAttack.IsValid() &&
         Mesh->GetSkeletalMeshAsset()==M.ExpectedMesh.Get() && Combat && Combat->GetAnimationAsset()==M.ExpectedBlend.Get() &&
-        Combat->AttackSequence==M.ExpectedAttack.Get() && M.ExpectedMesh->GetSkeleton() &&
+        (Combat->AttackSequence==M.ExpectedAttack.Get() || // creature-anim: or the body's ChampionAttacks02 clip
+         (Combat->AttackSequence && Combat->AttackSequence==CireChampionActions::ClipFor(Mesh->GetSkeletalMeshAsset(),CireChampionActions::ClipName(*H,TEXT("attack"))))) &&
+        M.ExpectedMesh->GetSkeleton() &&
         M.ExpectedBlend->GetSkeleton()==M.ExpectedMesh->GetSkeleton() && M.ExpectedAttack->GetSkeleton()==M.ExpectedMesh->GetSkeleton();
     if(!bGood)return Check(false,TEXT("exact runtime body/locomotion/attack/skeleton binding: ")+B.Id);
     TSet<UAnimSequence*> Unique;

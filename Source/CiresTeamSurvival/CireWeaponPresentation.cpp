@@ -213,7 +213,20 @@ UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FStr
     if(Forward.IsNearlyZero())Forward=FVector::ForwardVector;
     const FQuat Upright=FRotationMatrix::MakeFromXZ(Forward,FVector::UpVector).ToQuat();
     const FTransform BoneReference=ReferenceBone(Mesh,BoneName);
-    Part->SetRelativeRotation(BoneReference.GetRotation().Inverse()*Upright*Rotation.Quaternion());
+    FQuat Frame=Upright;
+    // creature-anim: melee weapons and shields use the bind-pose hand grip (handle across the palm, blade on the
+    // thumb side, face on the back of the hand) so the Tripo slash clips swing the blade instead of its flat side.
+    if(Motion==TEXT("melee")&&(BoneName==TEXT("hand_l")||BoneName==TEXT("hand_r")))
+    {
+        const TCHAR* Side=BoneName==TEXT("hand_l")?TEXT("_l"):TEXT("_r");
+        const FVector Arm=(ReferenceBone(Mesh,FName(FString(TEXT("middle_01"))+Side)).GetLocation()-BoneReference.GetLocation()).GetSafeNormal();
+        FVector Across=ReferenceBone(Mesh,FName(FString(TEXT("index_01"))+Side)).GetLocation()-ReferenceBone(Mesh,FName(FString(TEXT("pinky_01"))+Side)).GetLocation();
+        Across=(Across-Arm*FVector::DotProduct(Across,Arm)).GetSafeNormal();
+        FVector Back=FVector::UpVector-Arm*FVector::DotProduct(FVector::UpVector,Arm)-Across*FVector::DotProduct(FVector::UpVector,Across);
+        Back=Back.GetSafeNormal();
+        if(!Arm.IsNearlyZero()&&!Across.IsNearlyZero()&&!Back.IsNearlyZero())Frame=FRotationMatrix::MakeFromXZ(Back,Across).ToQuat();
+    }
+    Part->SetRelativeRotation(BoneReference.GetRotation().Inverse()*Frame*Rotation.Quaternion());
     FVector GripOffset=FVector::ZeroVector;
     if(BoneName==TEXT("hand_l")||BoneName==TEXT("hand_r"))
     {
