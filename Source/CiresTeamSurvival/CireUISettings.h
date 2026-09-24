@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CireKeybindings.h" // feat/camera-movement: action -> key map stored in this profile
 
 /** A rectangle in the HUD's logical coordinate system, before its DPI scale. */
 struct FCireUIRect
@@ -87,6 +88,8 @@ public:
     /** After the hostile target dies, Tab-select the nearest hostile in front of the camera. */
     bool bAutoReacquireTarget = false;
     // --- end WoW camera / targeting preferences ---
+    /** feat/camera-movement: keybindings + action-bar placements, section [CireUI.Keybindings]. */
+    FCireKeybindings Keybindings;
 
 private:
     struct FPanelLayout

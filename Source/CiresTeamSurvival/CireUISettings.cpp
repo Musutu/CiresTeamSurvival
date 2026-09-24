@@ -161,6 +161,7 @@ void FCireUISettings::Load(const FString& Filename)
     // An independent config file avoids stale global-cache values during profile reloads.
     FConfigFile Config;
     Config.Read(ConfigFilename);
+    Keybindings.LoadFrom(Config); // feat/camera-movement: own section + version; old profiles get WoW defaults
     int32 Version = LayoutVersion;
     Config.GetInt(PreferencesSection, TEXT("Version"), Version);
     if (Version < 1 || Version > LayoutVersion) return;
@@ -223,6 +224,7 @@ bool FCireUISettings::Save()
     SanitizePreferences();
     FConfigFile Config;
     Config.SetString(PreferencesSection, TEXT("Version"), *FString::FromInt(LayoutVersion));
+    Keybindings.SaveTo(Config); // feat/camera-movement
 #define CIRE_SAVE_BOOL(Field) Config.SetBool(PreferencesSection, TEXT(#Field), Field)
     CIRE_SAVE_BOOL(bLayoutLocked);
     CIRE_SAVE_BOOL(bShowChat);

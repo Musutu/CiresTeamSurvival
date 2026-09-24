@@ -8,22 +8,28 @@ Open `PlayTripoPreview.cmd`. Select a champion from the roster. For a quick full
 
 ## Controls
 
+These are the WoW-style defaults. Every key except Escape, the mouse buttons and the wheel can be rebound (see `Keybindings.md`); on-screen key hints follow your bindings.
+
 | Action | Control |
 |---|---|
 | Move forward / backpedal | W / S |
 | Turn character (strafe while right mouse held) | A / D |
+| Strafe left / right (no turning) | Q / E |
+| Autorun | Num Lock |
 | Orbit camera without turning | Hold left mouse and drag |
 | Steer: camera and character turn together | Hold right mouse and drag |
 | Run forward | Hold both mouse buttons |
 | Zoom camera | Mouse wheel (over the world) |
-| Jump | E |
+| Jump | Space |
 | Dodge roll | Ctrl |
 | Walk/run | Caps Lock |
 | Select unit | Left click (without dragging) its body or unit frame |
 | Select yourself | F1 |
 | Cycle enemies (in front of camera, nearest first) / reverse / allies | Tab / Shift+Tab / F |
-| Toggle auto attack | Space |
-| Learned abilities / ultimate | 1–6 / Q |
+| Toggle auto attack | T |
+| Action bar 1: abilities / ultimate | 1–6 / R (bar 2: Shift+1–6, bar 3: Alt+1–6) |
+| Recall to town (prep/recovery) | G |
+| Shop / help / chat | B / H / Enter |
 | Confirm aimed ground skill | Left click valid ground |
 | Cancel aimed skill | Escape or right mouse |
 | Developer quick start | F8, or the button beneath the minimap |

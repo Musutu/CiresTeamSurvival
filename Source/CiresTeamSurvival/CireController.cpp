@@ -17,6 +17,7 @@
 #include "CireTargeting.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "CireCamera.h"
+#include "CireKeybindings.h"
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireNetClient, Log, All);
@@ -28,6 +29,8 @@ struct FCireClientProbe {
     int32 Gold = 0;
     bool Done = false;
     FVector MovementOrigin=FVector::ZeroVector;
+    bool bStrafeStarted=false;
+    float StrafeYaw=0;
     TWeakObjectPtr<ACireMonster> Selected;
 };
 FCireClientProbe ClientProbe;
@@ -65,11 +68,25 @@ bool TickClientProbe(ACireController* Controller) {
         Probe.Step=5;Probe.StepStarted=Now;
         UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_DRAFT_PASS archetype=%d hp=%.0f mana=%.0f"),Hero->Archetype,Hero->MaxHealth,Hero->MaxMana);
     } else if(Probe.Step==5) {
-        if(Now-Probe.StepStarted<0.75) Hero->AddMovementInput(FVector(0,1,0));
+        // WoW strafe (StrafeRight): face-control keeps the heading while input goes along the right vector.
+        const FRotator Heading(0,Probe.StrafeYaw,0);
+        if(!Probe.bStrafeStarted) {
+            Probe.bStrafeStarted=true;Probe.StrafeYaw=static_cast<float>(Hero->GetActorRotation().Yaw);
+            Controller->SetControlRotation(FRotator(-20,Probe.StrafeYaw,0));
+            if(Hero->Mobility){Hero->Mobility->bFaceControl=true;Hero->Mobility->ServerSetFaceControl(true);}
+            Probe.MovementOrigin=Hero->GetActorLocation();
+        }
+        if(Now-Probe.StepStarted<0.75) Hero->AddMovementInput(FRotationMatrix(FRotator(0,Probe.StrafeYaw,0)).GetUnitAxis(EAxis::Y));
         else {
-            const double Displacement=FVector::Dist2D(Probe.MovementOrigin,Hero->GetActorLocation());
-            if(Displacement<100) {Fail(TEXT("remote character movement did not advance"));return true;}
-            UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_MOVEMENT_PASS distance_cm=%.1f"),Displacement);
+            const FVector Delta=Hero->GetActorLocation()-Probe.MovementOrigin;
+            const double Lateral=FVector::DotProduct(Delta,FRotationMatrix(Heading).GetUnitAxis(EAxis::Y));
+            const double Forward=FVector::DotProduct(Delta,FRotationMatrix(Heading).GetUnitAxis(EAxis::X));
+            const float Turned=FMath::Abs(FRotator::NormalizeAxis(static_cast<float>(Hero->GetActorRotation().Yaw)-Probe.StrafeYaw));
+            if(Lateral<100||FMath::Abs(Forward)>Lateral*.2||Turned>3.f) {
+                UE_LOG(LogCireNetClient,Error,TEXT("CIRE_NET_CLIENT_STRAFE lateral=%.1f forward=%.1f turned=%.1f"),Lateral,Forward,Turned);
+                Fail(TEXT("remote strafe did not move sideways without rotating"));return true;}
+            if(Hero->Mobility){Hero->Mobility->bFaceControl=false;Hero->Mobility->ServerSetFaceControl(false);}
+            UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_MOVEMENT_PASS distance_cm=%.1f strafe_lateral_cm=%.1f forward_cm=%.1f yaw_change=%.2f"),Delta.Size2D(),Lateral,Forward,Turned);
             Probe.Step=6;Probe.StepStarted=Now;
         }
     } else if(Probe.Step==6) {
@@ -123,12 +140,14 @@ void ACireController::EndPlay(const EEndPlayReason::Type EndPlayReason) {
     CireCamera::Cleanup(this);
     Super::EndPlay(EndPlayReason);
 }
-void ACireController::CycleTarget(bool bFriendly) {
-    auto* H=Cast<ACireHero>(GetPawn()); if(!H){CireTargeting::Cleanup(this);return;}
-    // WoW tab targeting: camera cone first, nearest outward; Shift reverses through the tab history.
-    const bool bReverse=IsInputKeyDown(EKeys::LeftShift)||IsInputKeyDown(EKeys::RightShift);
-    if(AActor* Next=CireSelection::NextTarget(this,bFriendly,bReverse);Next&&Next!=H->Target)ServerAction(0,0,Next);
+namespace {
+void CycleTargetDirected(ACireController* C,bool bFriendly,bool bReverse) {
+    auto* H=Cast<ACireHero>(C->GetPawn()); if(!H){CireTargeting::Cleanup(C);return;}
+    // WoW tab targeting: camera cone first, nearest outward; TargetPreviousEnemy walks the tab history back.
+    if(AActor* Next=CireSelection::NextTarget(C,bFriendly,bReverse);Next&&Next!=H->Target)C->ServerAction(0,0,Next);
 }
+}
+void ACireController::CycleTarget(bool bFriendly) {CycleTargetDirected(this,bFriendly,false);}
 void ACireController::PlayerTick(float Dt) {
     Super::PlayerTick(Dt); if(!IsLocalController())return;
 #if !UE_BUILD_SHIPPING
@@ -138,8 +157,11 @@ void ACireController::PlayerTick(float Dt) {
 #endif
     auto* H=Cast<ACireHero>(GetPawn()); if(!H){CireTargeting::Cleanup(this);return;}
     auto* Interface=Cast<ACireHUD>(GetHUD());
+    // Every gameplay key comes from the rebindable action map (CireKeybindings.h).
+    FCireKeybindings* MutableKeys=Interface?&Interface->UISettings.Keybindings:nullptr;
+    const FCireKeybindings& Keys=MutableKeys?*MutableKeys:CireKeybindings::Defaults();
     // Release state even if a menu/chat consumes the rest of this frame.
-    if(WasInputKeyJustReleased(EKeys::E))H->StopJumping();
+    if(Keys.WasReleased(this,TEXT("Jump")))H->StopJumping();
     if(Interface) {
         const auto& Options=Interface->UISettings;
         H->Camera->SetFieldOfView(Options.CameraFOV);
@@ -162,7 +184,15 @@ void ACireController::PlayerTick(float Dt) {
     CameraFrame.bPointerOverInterface=bOverUI;
     if(!bOverUI&&!bBlockingUI)CameraFrame.WheelSteps=(WasInputKeyJustPressed(EKeys::MouseScrollUp)?1.f:0.f)-(WasInputKeyJustPressed(EKeys::MouseScrollDown)?1.f:0.f);
     CameraFrame.Options=Interface?&Interface->UISettings:nullptr;
+    CameraFrame.Bindings=&Keys;
+    // Rebinding capture (keybinding screen) owns the keyboard until it binds, unbinds or cancels.
+    if(MutableKeys&&MutableKeys->IsCapturing())CameraFrame.bSteeringAllowed=false;
     const auto Camera=CireCamera::Tick(this,H,Dt,CameraFrame);
+    if(MutableKeys&&MutableKeys->IsCapturing()) {
+        FCireCaptureResult Captured;
+        if(MutableKeys->TickCapture(this,Captured)&&(Captured.Kind==FCireCaptureResult::Bound||Captured.Kind==FCireCaptureResult::Unbound))Interface->UISettings.Save();
+        return;
+    }
     CireSelection::HandleTargetLoss(this,Interface&&Interface->UISettings.bAutoReacquireTarget);
     if(bChatInput) {
         CireTargeting::Cancel(this);
@@ -172,10 +202,10 @@ void ACireController::PlayerTick(float Dt) {
         else if(WasInputKeyJustPressed(EKeys::BackSpace)&&!ChatDraft.IsEmpty())ChatDraft.LeftChopInline(1);
         return;
     }
-    if(WasInputKeyJustPressed(EKeys::Enter)) {CireTargeting::Cancel(this);BeginChat();return;}
-    if(WasInputKeyJustPressed(EKeys::F10)&&Interface)Interface->ToggleLayoutEditor();
-    if(WasInputKeyJustPressed(EKeys::F9)&&Interface)Interface->ToggleSettings();
-    if(WasInputKeyJustPressed(EKeys::F8)&&Interface)Interface->ToggleDeveloperTools();
+    if(Keys.WasPressed(this,TEXT("OpenChat"))) {CireTargeting::Cancel(this);BeginChat();return;}
+    if(Keys.WasPressed(this,TEXT("ToggleLayoutEditor"))&&Interface)Interface->ToggleLayoutEditor();
+    if(Keys.WasPressed(this,TEXT("ToggleOptions"))&&Interface)Interface->ToggleSettings();
+    if(Keys.WasPressed(this,TEXT("ToggleDeveloperTools"))&&Interface)Interface->ToggleDeveloperTools();
     if(WasInputKeyJustPressed(EKeys::Escape)) {
         if(bAimInputConsumed)return;
         if(bSummonMoveTargeting){bSummonMoveTargeting=false;H->Notice=TEXT("Summon order cancelled.");return;}
@@ -188,25 +218,26 @@ void ACireController::PlayerTick(float Dt) {
         if(bOverUI&&WasInputKeyJustPressed(EKeys::MouseScrollDown))Interface->HandleMouseWheel(-1);
         if(Interface->IsBlockingGameplayInput()){CireTargeting::Cancel(this);return;}
     }
-    if(WasInputKeyJustPressed(EKeys::H))bHelp=!bHelp;
-    if(WasInputKeyJustPressed(EKeys::B))bShop=!bShop;
-    if(WasInputKeyJustPressed(EKeys::Tab))CycleTarget(false);
-    if(WasInputKeyJustPressed(EKeys::F))CycleTarget(true);
-    if(WasInputKeyJustPressed(EKeys::F1))ServerAction(0,0,H);
-    if(WasInputKeyJustPressed(EKeys::SpaceBar))ServerAction(1,0,nullptr);
-    if(WasInputKeyJustPressed(EKeys::R))ServerAction(8,0,nullptr);
-    if(WasInputKeyJustPressed(EKeys::Q)&&H->bDrafted&&H->Offers.IsEmpty()&&!bShop) {
-        const int32 Slot=H->UltimateSkillSlot();if(Slot!=INDEX_NONE)RequestCast(Slot);
-    }
-    const FKey Keys[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six};
+    if(Keys.WasPressed(this,TEXT("ToggleHelp")))bHelp=!bHelp;
+    if(Keys.WasPressed(this,TEXT("ToggleShop")))bShop=!bShop;
+    if(Keys.WasPressed(this,TEXT("TargetNextEnemy")))CycleTargetDirected(this,false,false);
+    if(Keys.WasPressed(this,TEXT("TargetPreviousEnemy")))CycleTargetDirected(this,false,true);
+    if(Keys.WasPressed(this,TEXT("TargetNextAlly")))CycleTarget(true);
+    if(Keys.WasPressed(this,TEXT("TargetSelf")))ServerAction(0,0,H);
+    if(Keys.WasPressed(this,TEXT("ToggleAutoAttack")))ServerAction(1,0,nullptr);
+    if(Keys.WasPressed(this,TEXT("RecallToTown")))ServerAction(8,0,nullptr);
     if(!H->bDrafted&&Interface) {
-        if(WasInputKeyJustPressed(EKeys::Left)||WasInputKeyJustPressed(EKeys::PageUp))Interface->ChangeDraftRosterPage(-1);
-        if(WasInputKeyJustPressed(EKeys::Right)||WasInputKeyJustPressed(EKeys::PageDown))Interface->ChangeDraftRosterPage(1);
+        if(Keys.WasPressed(this,TEXT("RosterPreviousPage")))Interface->ChangeDraftRosterPage(-1);
+        if(Keys.WasPressed(this,TEXT("RosterNextPage")))Interface->ChangeDraftRosterPage(1);
     }
-    for(int I=0;I<6;++I)if(WasInputKeyJustPressed(Keys[I])) {
-        if(!H->bDrafted) {if(Interface)Interface->DraftRosterSlot(I);else if(I<5)ServerAction(5,I,nullptr);}
-        else if(H->Offers.Num()>0&&I<4)ServerAction(3,I,nullptr);
-        else if(H->Offers.IsEmpty()&&!bShop) {const int32 Slot=H->ActiveSkillSlot(I);if(Slot!=INDEX_NONE)RequestCast(Slot);}
+    // Action bars: bar 1 slots 1..6 also pick draft roster entries and augment offers.
+    for(int32 Bar=1;Bar<=FCireKeybindings::NumBars;++Bar)for(int32 Index=1;Index<=FCireKeybindings::SlotsPerBar;++Index) {
+        const FName Slot=CireKeybindings::SlotAction(Bar,Index);
+        if(!Keys.WasPressed(this,Slot))continue;
+        const int32 I=Index-1;
+        if(!H->bDrafted) {if(Bar==1&&I<6){if(Interface)Interface->DraftRosterSlot(I);else if(I<5)ServerAction(5,I,nullptr);}}
+        else if(H->Offers.Num()>0) {if(Bar==1&&I<4)ServerAction(3,I,nullptr);}
+        else if(!bShop) {const int32 Skill=CireKeybindings::ResolveSlot(Keys,*H,Slot);if(Skill!=INDEX_NONE)RequestCast(Skill);}
     }
     if(H->bDrafted&&!bShop&&H->Offers.IsEmpty()&&WasInputKeyJustPressed(EKeys::LeftMouseButton)
         &&!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive&&(!Interface||!Interface->IsPointerOverInterface())
@@ -224,15 +255,17 @@ void ACireController::PlayerTick(float Dt) {
         }
     }
     if(H->bDead||!H->bDrafted||bShop)return;
-    if(WasInputKeyJustPressed(EKeys::E))H->Jump();
+    if(Keys.WasPressed(this,TEXT("Jump")))H->Jump();
     if(H->Mobility)
     {
-        if(WasInputKeyJustPressed(EKeys::CapsLock)){H->Mobility->bWalking=!H->Mobility->bWalking;H->Mobility->ServerSetWalk(H->Mobility->bWalking);}
-        if(WasInputKeyJustPressed(EKeys::LeftControl)||WasInputKeyJustPressed(EKeys::RightControl))
+        if(Keys.WasPressed(this,TEXT("ToggleWalk"))){H->Mobility->bWalking=!H->Mobility->bWalking;H->Mobility->ServerSetWalk(H->Mobility->bWalking);}
+        if(Keys.WasPressed(this,TEXT("DodgeRoll")))
         {
             const FRotator Facing(0,GetControlRotation().Yaw,0);
-            const FVector Move=FRotationMatrix(Facing).GetUnitAxis(EAxis::X)*((IsInputKeyDown(EKeys::W)?1.f:0.f)-(IsInputKeyDown(EKeys::S)?1.f:0.f))+
-                FRotationMatrix(Facing).GetUnitAxis(EAxis::Y)*((IsInputKeyDown(EKeys::D)?1.f:0.f)-(IsInputKeyDown(EKeys::A)?1.f:0.f));
+            const auto Held=[&](const TCHAR* A){return Keys.IsDown(this,A)?1.f:0.f;};
+            const float Side=FMath::Clamp(Held(TEXT("StrafeRight"))+Held(TEXT("TurnRight"))-Held(TEXT("StrafeLeft"))-Held(TEXT("TurnLeft")),-1.f,1.f);
+            const FVector Move=FRotationMatrix(Facing).GetUnitAxis(EAxis::X)*(Held(TEXT("MoveForward"))-Held(TEXT("MoveBackward")))+
+                FRotationMatrix(Facing).GetUnitAxis(EAxis::Y)*Side;
             H->Mobility->ServerRoll(Move.IsNearlyZero()?H->GetActorForwardVector():Move.GetSafeNormal());
         }
     }
