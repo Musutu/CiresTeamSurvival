@@ -92,7 +92,7 @@ bool CireOptions::RunSettingsSmoke()
     FCireUISettings G;G.Load(File);
     Check(FMath::IsNearlyEqual(G.UIScale,1.15f)&&FMath::IsNearlyEqual(G.TooltipOpacity,.3f)&&G.SCTDirection==2&&G.ThreatWarningPercent==60,TEXT("v4 bounds"));
     Check(IFileManager::Get().Delete(*File),TEXT("isolated fixture cleanup"));
-    UE_LOG(LogTemp,Display,TEXT("CIRE_OPTIONS_SETTINGS_%s checks=%d schema=4"),Pass?TEXT("PASS"):TEXT("FAIL"),Count);
+    UE_LOG(LogTemp,Display,TEXT("CIRE_OPTIONS_SETTINGS_%s checks=%d schema=5"),Pass?TEXT("PASS"):TEXT("FAIL"),Count);
     return Pass;
 }
 #endif

@@ -98,7 +98,8 @@ bool ACireHUD::DrawActionButton(ACireHero* Hero, ACireController* Controller, in
         }
         FCireUIPainter P = Painter();
         if (bBarDragging && DragSlot == Action) P.Alpha *= .35f;
-        CireShopUI::DrawItemIcon(P, ItemId, X, Y, S, bOverItem, Fraction, Remaining, Charges, UISettings.Keybindings.Label(Action), Cell == INDEX_NONE);
+        const FString ItemKey = UISettings.Keybindings.Label(Action);
+        CireShopUI::DrawItemIcon(P, ItemId, X, Y, S, bOverItem, Fraction, Remaining, Charges, ItemKey.IsEmpty() ? FString(TEXT("\u2014")) : ItemKey, Cell == INDEX_NONE);
         if (bOverItem)
         {
             HoverSlot = Action;
@@ -118,6 +119,7 @@ bool ACireHUD::DrawActionButton(ACireHero* Hero, ACireController* Controller, in
     const double Now = GetWorld()->GetRealTimeSeconds();
     FCireIconSlot Slot;
     Slot.KeyLabel = UISettings.Keybindings.Label(Action);
+    if (Slot.KeyLabel.IsEmpty() && !Id.IsEmpty()) Slot.KeyLabel = TEXT("\u2014"); // unbound
     Slot.bHover = bOver;
     Slot.bEmpty = Id.IsEmpty();
     if (!Slot.bEmpty)
@@ -407,6 +409,14 @@ void ACireHUD::UpdateQuickKeybind()
         QuickHold = HoverSlot; // don't rebind the same button until the pointer leaves it
     }
     if (HoverSlot != QuickHold) QuickHold = NAME_None;
+    // Right-click on a hovered button unbinds it (Backspace/Delete do the same through capture).
+    if (!HoverSlot.IsNone() && PlayerOwner->WasInputKeyJustPressed(EKeys::RightMouseButton))
+    {
+        Keys.CancelCapture(); bQuickCapturing = false;
+        Keys.Unbind(HoverSlot, 0); Keys.Unbind(HoverSlot, 1); UISettings.Save(); PlayUIFeedback();
+        QuickMessage = QuickActionName(HoverSlot) + TEXT(" unbound"); QuickMessageAt = GetWorld()->GetRealTimeSeconds(); QuickHold = HoverSlot;
+        return;
+    }
     if (!HoverSlot.IsNone() && HoverSlot != QuickHold && (!Keys.IsCapturing() || Keys.CaptureAction() != HoverSlot))
     {
         Keys.BeginCapture(HoverSlot, 0); bQuickCapturing = true;
@@ -430,7 +440,7 @@ void ACireHUD::DrawQuickKeybind()
     CireUIStyle::Frame(P, X, Y, W, 96, FLinearColor(.4f, .8f, 1.f, 1));
     CireUIStyle::Header(P, X + 12, Y + 10, W - 24, TEXT("QUICK KEYBIND MODE"), FLinearColor(.55f, .88f, 1.f, 1), 12);
     P.Text(TEXT("Hover an action button and press a key or chord (Shift/Ctrl/Alt + key) to bind it."), X + 20, Y + 38, 11, Parchment, ECireFont::Body);
-    P.Text(TEXT("Backspace or Delete unbinds.   Esc or the KEYBINDS button exits."), X + 20, Y + 56, 11, Muted, ECireFont::Body);
+    P.Text(TEXT("Backspace, Delete or right-click unbinds.   Esc or the KEYBINDS button exits."), X + 20, Y + 56, 11, Muted, ECireFont::Body);
     const double Age = GetWorld()->GetRealTimeSeconds() - QuickMessageAt;
     if (!QuickMessage.IsEmpty() && Age < 4.0)
         P.Text(QuickMessage, X + 20, Y + 74, 11, FLinearColor(1.f, .85f, .35f, FMath::Clamp(static_cast<float>(4.0 - Age), 0.f, 1.f)), ECireFont::Bold);
@@ -487,12 +497,20 @@ void ACireHUD::DrawKeybindingsPage(float L, float Top)
             const bool bOver = Hit(CX, Y + 2, CellW, RowH - 4);
             int32 ConflictIndex = INDEX_NONE;
             const FName Conflict = Chord.IsBound() ? Keys.FindConflict(Chord, A.Id, Index, &ConflictIndex) : NAME_None;
-            const FString Text = bCapturing ? FString(TEXT("Press a key...")) : Chord.IsBound() ? Chord.LongLabel() : FString(TEXT("-"));
+            const FString Text = bCapturing ? FString(TEXT("Press a key...")) : Chord.IsBound() ? Chord.LongLabel() : FString(TEXT("\u2014"));
             CireUIStyle::Button(P, CX, Y + 2, CellW, RowH - 4, Text, bCapturing ? ECireButtonState::Selected : bOver ? ECireButtonState::Hover : ECireButtonState::Normal,
                 !Conflict.IsNone() ? FLinearColor(1.f, .35f, .3f, 1) : Chord.IsBound() ? Gold : Muted, 9.5f);
             if (!Conflict.IsNone()) Tip(TEXT("Key conflict"), Chord.LongLabel() + TEXT(" is also bound to ") + QuickActionName(Conflict) + TEXT("."), CX, Y + 2, CellW, RowH - 4);
-            else Tip(A.DisplayName.ToString(), TEXT("Click, then press a key or chord. Esc cancels, Backspace/Delete clears. A key already in use is swapped onto the other action."), CX, Y + 2, CellW, RowH - 4);
+            else Tip(A.DisplayName.ToString(), TEXT("Click, then press a key or chord. Esc cancels; Backspace, Delete or right-click clears it (an action may have no key). A key already used elsewhere is taken from that action, leaving it unbound."), CX, Y + 2, CellW, RowH - 4);
             if (bOver && Clicked) { Keys.BeginCapture(A.Id, Index); Clicked = false; PlayUIFeedback(); }
+            if (bOver && PlayerOwner->WasInputKeyJustPressed(EKeys::RightMouseButton)) { Keys.CancelCapture(); Keys.Unbind(A.Id, Index); UISettings.Save(); PlayUIFeedback(); }
+            // While listening, a small UNBIND button beside the cell clears it.
+            if (bCapturing)
+            {
+                const float UX = CX + CellW - 46, UY = Y + 4; const bool bOverU = Hit(UX, UY, 42, RowH - 8);
+                CireUIStyle::Button(P, UX, UY, 42, RowH - 8, TEXT("UNBIND"), bOverU ? ECireButtonState::Hover : ECireButtonState::Normal, FLinearColor(1.f, .45f, .4f, 1), 7.f);
+                if (bOverU && Clicked) { Clicked = false; Keys.CancelCapture(); Keys.Unbind(A.Id, Index); UISettings.Save(); PlayUIFeedback(); }
+            }
         }
     }
     if (Rows.Num() > Visible)
@@ -504,7 +522,7 @@ void ACireHUD::DrawKeybindingsPage(float L, float Top)
     const FCireCaptureResult& Last = Keys.LastCapture();
     float BY = ListY + 30 + Visible * RowH;
     if (Last.Kind == FCireCaptureResult::Bound && !Last.Bind.ConflictAction.IsNone())
-        P.Text(FString::Printf(TEXT("%s was used by %s  -  swapped (%s now: %s)"), *Last.Chord.LongLabel(), *QuickActionName(Last.Bind.ConflictAction),
+        P.Text(FString::Printf(TEXT("%s was used by %s  -  taken (%s now: %s)"), *Last.Chord.LongLabel(), *QuickActionName(Last.Bind.ConflictAction),
             *QuickActionName(Last.Bind.ConflictAction), Last.Bind.ConflictNowBound.IsBound() ? *Last.Bind.ConflictNowBound.LongLabel() : TEXT("unbound")), L, BY, 10, Orange, ECireFont::Bold);
     BY += 18;
     const bool bOverReset = Hit(L, BY, 200, 28), bOverQuick = Hit(L + 214, BY, 220, 28), bOverBars = Hit(L + 448, BY, 184, 28);

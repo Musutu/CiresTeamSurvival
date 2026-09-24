@@ -81,6 +81,10 @@ public:
     void DebugLevelUp(ACireHero* Hero,bool bLocal);
     void DebugAlert(const FString& Title,const FString& Subtitle,FLinearColor Color) { ShowAlert(Title,Subtitle,Color,false); }
     float DebugScale() const { return Scale; }
+    void DebugSetPointer(FVector2D Logical) { DebugPointer=Logical; }
+    const FString& DebugLastTooltipTitle() const { return LastTooltipTitle; }
+    FVector2D DebugPointer = FVector2D(-1,-1);
+    FString LastTooltipTitle;
     FCireUIRect PanelRectForTest(FName Id) const { return PanelRect(Id); }
     bool DebugFontsReady() const { return CireUIStyle::Assets().bFonts; }
 #endif
@@ -191,6 +195,7 @@ private:
     FString DeveloperMessage;
     FString TooltipTitle,TooltipBody;
     FString TooltipAbility;
+    FString EditHelpTitle, EditHelpBody; // panel descriptions, shown only in F10 layout editing
     FCireUIRect TooltipRegion; // logical rect of the element whose Tip() won this frame
     FName TooltipAbilitySlot, HoverSlot, DragSlot, QuickHold;
     FString DragAbility, QuickMessage;

@@ -13,7 +13,7 @@ import struct
 import subprocess
 import time
 
-STAGES = 20
+STAGES = 23
 
 
 def main():

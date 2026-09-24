@@ -101,18 +101,19 @@ void ACireHUD::UsePanel(FName Id,float W,float H)
     Origin=FVector2D(R.X,R.Y); Stretch=FVector2D(R.W/W,R.H/H);
     VisiblePanels.AddUnique(Id);
     static const TMap<FName,FString> Help={
-        {TEXT("Player"),TEXT("Your character resources and attributes. Left click to target yourself. STR grants 25 health, INT grants 30 mana, AGI grants 1% attack speed per point. Your primary attribute also adds basic attack damage.")},
+        {TEXT("Player"),TEXT("Your character: green health, blue mana (INT grants 30 each), gold energy for physical abilities. Left click to target yourself. STR grants 25 health, AGI 1% attack speed per point; your primary attribute adds basic attack damage.")},
         {TEXT("Party"),TEXT("Your four teammates. Left click a frame to target for healing or support. The + button sets a focus target. Hover status icons for duration and removal rules.")},
         {TEXT("Match"),TEXT("Three cleared PvE waves lead to town preparation, arena PvP, then recovery. Each team begins with 100 lives. Normal leaks cost one life; bosses cost ten.")},
         {TEXT("Minimap"),TEXT("Your team's separate PvE lane and town entrance. The enemy realm stays obscured during PvE. Teams can fight only after teleporting to a shared arena.")},
         {TEXT("Skills"),TEXT("Basic attack, six learned active abilities, one passive and one ultimate. Empty slots do nothing. Hover a skill for its effect and cost.")},
         {TEXT("Chat"),TEXT("Player messages only. Party reaches teammates; Everyone reaches both teams. Enter opens chat. Hover this panel and scroll to read earlier messages.")},
-        {TEXT("Meter"),TEXT("Effective team damage or healing. Overkill and excess healing do not increase these totals. Click Damage or Healing to change the ranking.")},
+        {TEXT("Meter"),TEXT("Effective team damage or healing. Overkill and excess healing do not count. Click the title to collapse or expand; DMG / HEAL switches the ranking.")},
         {TEXT("CombatLog"),TEXT("Chronological confirmed combat events. Damage, healing and avoided attacks are separate from player chat.")},
         {TEXT("Threat"),TEXT("Threat meter: who your target (or the enemy attacking you) wants to hit. The aggro holder is on top at 100%; others show their share of that. Reaching 100% pulls the enemy.")},
         {TEXT("Boss"),TEXT("Boss and pack-leader frames: health, casts and your threat for the biggest enemies in your lane. Click a frame to target it.")},
         {TEXT("CombatText"),TEXT("Your incoming and outgoing combat feedback. F10 moves this panel. Outgoing damage is coloured by school (gold physical, orange fire, blue frost, green poison, purple shadow), incoming damage red, healing green, misses grey. Critical hits pop larger.")}};
-    if(const FString* Description=Help.Find(Id))Tip(Id.ToString(),*Description,0,0,W,H);
+    // Panel descriptions only while arranging the interface (F10); never during gameplay.
+    if(bEditLayout)if(const FString* Description=Help.Find(Id))if(Hit(0,0,W,H)){EditHelpTitle=Id.ToString();EditHelpBody=*Description;}
 }
 void ACireHUD::Panel(float X,float Y,float W,float H,FLinearColor Color)
 {
@@ -250,9 +251,7 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
     Bar(66,72,182,5,Hero->Energy/100.f,Gold);
     Label(FString::Printf(TEXT("STR %d  AGI %d  INT %d"),Hero->Strength,Hero->Agility,Hero->Intelligence),10,116,10,Muted);
     if(Aggro==0)Label(FString::Printf(TEXT("EN %.0f"),Hero->Energy),210,116,10,Gold);
-    Tip(TEXT("Health"),TEXT("Your remaining life. At zero you fall. Guard effects and tank threat management reduce pressure on the team."),66,31,182,20);
-    Tip(TEXT("Mana"),TEXT("Resource for spells. Each INT grants 30 maximum mana."),66,55,182,13);
-    Tip(TEXT("Energy"),TEXT("Regenerating resource used by physical abilities. It is separate from mana."),66,70,182,9);
+    // (Health/mana/energy help text now lives in the F10 panel description; no gameplay popups.)
     DrawStatuses(Hero,66,83,24,5);
     if(Clicked&&Hit(0,0,260,132)&&!bModal&&!bSettings&&!bEditLayout){if(auto* C=Cast<ACireController>(PlayerOwner))C->ServerAction(0,0,Hero);Clicked=false;}
 }
@@ -514,7 +513,6 @@ void ACireHUD::DrawMeters(ACireHero* Hero,ACireController* Controller)
         P.Text(Heal?TEXT("HEALING"):TEXT("DAMAGE"),19,4,9.5f,Parchment,ECireFont::Heading);
         CireUIStyle::Button(P,118,2,48,16,TEXT("DMG"),!Heal?ECireButtonState::Selected:Hit(118,2,48,16)?ECireButtonState::Hover:ECireButtonState::Normal,Gold,7.5f);
         CireUIStyle::Button(P,168,2,48,16,TEXT("HEAL"),Heal?ECireButtonState::Selected:Hit(168,2,48,16)?ECireButtonState::Hover:ECireButtonState::Normal,Teal,7.5f);
-        Tip(TEXT("Damage / healing meter"),TEXT("Effective team damage or healing this match. Click the title to collapse or expand; DMG / HEAL switches the ranking."),0,0,116,20);
         if(Clicked&&Interactive&&Hit(118,2,98,16)){UISettings.MeterMode=Hit(118,2,48,16)?0:1;UISettings.Save();Clicked=false;}
         else if(Clicked&&Interactive&&Hit(0,0,116,20)){UISettings.bMeterCollapsed=!UISettings.bMeterCollapsed;UISettings.Save();Clicked=false;}
         if(!Collapsed)
@@ -558,10 +556,13 @@ void ACireHUD::DrawHUD()
     Scale=FMath::Max(.25f,FMath::Min(Canvas->ClipX/1280.f,Canvas->ClipY/720.f)*UISettings.ResolveUIScale(Canvas->ClipY));ViewW=Canvas->ClipX/Scale;ViewH=Canvas->ClipY/Scale;
     CireUIStyle::Assets();
     MX=MY=-100;float MouseX=0,MouseY=0;if(PlayerOwner->GetMousePosition(MouseX,MouseY)){MX=MouseX/Scale;MY=MouseY/Scale;}
+#if !UE_BUILD_SHIPPING
+    if(DebugPointer.X>=0){MX=DebugPointer.X;MY=DebugPointer.Y;} // gallery: virtual mouse (logical units)
+#endif
     Clicked=PlayerOwner->WasInputKeyJustPressed(EKeys::LeftMouseButton)&&!PlayerOwner->IsInputKeyDown(EKeys::RightMouseButton);
     auto* Controller=Cast<ACireController>(PlayerOwner);auto* Hero=Cast<ACireHero>(PlayerOwner->GetPawn());auto* State=GetWorld()->GetGameState<ACireGameState>();
     bModal=Hero&&((!Hero->bDrafted||(Hero->Offers.Num()>0&&IsSkillOfferOpen())||(Controller&&Controller->bShop))||(State&&State->Phase==3));
-    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();TooltipAbility.Reset();TooltipRegion={0,0,0,0};
+    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();TooltipAbility.Reset();TooltipRegion={0,0,0,0};EditHelpTitle.Reset();EditHelpBody.Reset();
     LastPanelBoxes.Reset();
     for(FName Id:VisiblePanels)if(Id!=TEXT("CombatText")&&Id!=TEXT("Tooltip")){const FCireUIRect R=PanelRect(Id);LastPanelBoxes.Emplace(FVector2D(R.X,R.Y),FVector2D(R.X+R.W,R.Y+R.H));}
     LayoutInteraction();VisiblePanels.Reset();ResetTransform();
