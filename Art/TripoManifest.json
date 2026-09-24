@@ -313,8 +313,8 @@
       "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains"
     }
   ],
-  "last_observed_account_balance": 11025,
-  "total_recorded_credit_usage": 460,
+  "last_observed_account_balance": 6990,
+  "total_recorded_credit_usage": 2320,
   "last_local_pipeline_update_utc": "2026-09-23T16:19:54.235013-04:00",
   "retarget_summary": {
     "output_root": "/Game/Art/Characters/TripoRetarget/Preview01",
@@ -336,6 +336,18 @@
       "Combat animation coverage"
     ]
   },
-  "last_observed_credit_balance": 10970,
-  "lastIntegrationUpdateUtc": "2026-09-24T01:00:09.893916+00:00"
+  "last_observed_credit_balance": 6990,
+  "lastIntegrationUpdateUtc": "2026-09-24T01:00:09.893916+00:00",
+  "batch03": {
+    "manifest": "Art/TripoBatch03.json",
+    "date": "2026-09-24",
+    "creditsSpent": 1860,
+    "balanceBefore": 8850,
+    "balanceAfter": 6990,
+    "contents": "12 rigged+animated monster/boss bodies (/Game/Tripo/Monsters), 16 town kit statics (/Game/Tripo/Town), 3 reused landmarks imported (/Game/Tripo/Landmarks)",
+    "dataFiles": [
+      "Content/Data/NPCMeshes.tripo.json",
+      "Content/Data/TownAssetSlots.tripo.json"
+    ]
+  }
 }

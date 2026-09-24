@@ -1,0 +1,505 @@
+{
+  "schemaVersion": 1,
+  "source": "tripo",
+  "description": "Tripo batch 03 monster bodies for Content/Data/NPCArchetypes.json. archetypes.<id>.mesh -> mesh.path, meshScale -> mesh.scale, yaw -> mesh.yaw (all Tripo bodies face +Y, so -90 turns them to actor +X). meshScale brings the ~98 cm raw Tripo body to heightCm BEFORE the archetype's own scale (e.g. pack leader 1.7x, siegebreaker 1.35x). Rig: Tripo 'UE5 Mannequin' preset = 61-bone UE4-style skeleton (root, pelvis, spine_01-03, neck_01, head, clavicle/upperarm/lowerarm/hand_l|r with fingers, thigh/calf/foot/ball_l|r) - hand_l, hand_r, spine_03, head and foot sockets exist for props, auras and footsteps. It is NOT the Manny skeleton: the mannequin AnimBP will not drive these meshes; play the listed AnimSequences (single-node / montage) or add a per-skeleton AnimBP. Every clip is in place (no root translation); slash/chop are 6.6 s multi-swing clips (play a section or at 2-3x rate); fall is a 3 s collapse suitable for death. Pivot at the feet. Raw data: Saved/TripoBatch03Integration.json; renders: Saved/TripoBatch03Gallery/.",
+  "archetypes": {
+    "hollow_infantry": {
+      "mesh": "/Game/Tripo/Monsters/HollowInfantry/CTS_Monster_HollowInfantry.CTS_Monster_HollowInfantry",
+      "skeleton": "/Game/Tripo/Monsters/HollowInfantry/CTS_Monster_HollowInfantry_Skeleton.CTS_Monster_HollowInfantry_Skeleton",
+      "material": "/Game/Tripo/Monsters/HollowInfantry/CTS_Monster_HollowInfantry_Mat.CTS_Monster_HollowInfantry_Mat",
+      "tripoTaskId": "855f9850-ca57-48b9-8eff-12d94c229475",
+      "rawHeightCm": 87.59,
+      "heightCm": 180,
+      "meshScale": 2.055,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "note": "",
+      "animations": {
+        "idle": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_idle.CTS_Monster_HollowInfantry_idle",
+        "walk": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_walk.CTS_Monster_HollowInfantry_walk",
+        "run": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_run.CTS_Monster_HollowInfantry_run",
+        "attack": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_slash.CTS_Monster_HollowInfantry_slash",
+        "attackAlt": null,
+        "hit": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_hit_to_body_01.CTS_Monster_HollowInfantry_hit_to_body_01",
+        "death": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_fall.CTS_Monster_HollowInfantry_fall",
+        "all": {
+          "fall": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_fall.CTS_Monster_HollowInfantry_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_hit_to_body_01.CTS_Monster_HollowInfantry_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_idle.CTS_Monster_HollowInfantry_idle",
+          "run": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_run.CTS_Monster_HollowInfantry_run",
+          "slash": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_slash.CTS_Monster_HollowInfantry_slash",
+          "walk": "/Game/Tripo/Monsters/HollowInfantry/Animations/CTS_Monster_HollowInfantry_walk.CTS_Monster_HollowInfantry_walk"
+        }
+      },
+      "slot": "npc_infantry",
+      "role": "bruiser",
+      "variant": "HollowInfantry",
+      "alternates": [
+        {
+          "variant": "HollowInfantryB",
+          "mesh": "/Game/Tripo/Monsters/HollowInfantryB/CTS_Monster_HollowInfantryB.CTS_Monster_HollowInfantryB",
+          "skeleton": "/Game/Tripo/Monsters/HollowInfantryB/CTS_Monster_HollowInfantryB_Skeleton.CTS_Monster_HollowInfantryB_Skeleton",
+          "material": "/Game/Tripo/Monsters/HollowInfantryB/CTS_Monster_HollowInfantryB_Mat.CTS_Monster_HollowInfantryB_Mat",
+          "tripoTaskId": "5eca8a13-c6a5-4d02-895f-7f84d6e8d3aa",
+          "rawHeightCm": 93.99,
+          "heightCm": 182,
+          "meshScale": 1.9364,
+          "yaw": -90,
+          "bakedWeapon": null,
+          "note": "",
+          "animations": {
+            "idle": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_idle.CTS_Monster_HollowInfantryB_idle",
+            "walk": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_walk.CTS_Monster_HollowInfantryB_walk",
+            "run": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_run.CTS_Monster_HollowInfantryB_run",
+            "attack": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_slash.CTS_Monster_HollowInfantryB_slash",
+            "attackAlt": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_chop.CTS_Monster_HollowInfantryB_chop",
+            "hit": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_hit_to_body_01.CTS_Monster_HollowInfantryB_hit_to_body_01",
+            "death": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_fall.CTS_Monster_HollowInfantryB_fall",
+            "all": {
+              "chop": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_chop.CTS_Monster_HollowInfantryB_chop",
+              "fall": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_fall.CTS_Monster_HollowInfantryB_fall",
+              "hit_to_body_01": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_hit_to_body_01.CTS_Monster_HollowInfantryB_hit_to_body_01",
+              "idle": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_idle.CTS_Monster_HollowInfantryB_idle",
+              "run": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_run.CTS_Monster_HollowInfantryB_run",
+              "slash": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_slash.CTS_Monster_HollowInfantryB_slash",
+              "walk": "/Game/Tripo/Monsters/HollowInfantryB/Animations/CTS_Monster_HollowInfantryB_walk.CTS_Monster_HollowInfantryB_walk"
+            }
+          }
+        }
+      ]
+    },
+    "ironbound_bruiser": {
+      "mesh": "/Game/Tripo/Monsters/IronboundBruiserV2/CTS_Monster_IronboundBruiserV2.CTS_Monster_IronboundBruiserV2",
+      "skeleton": "/Game/Tripo/Monsters/IronboundBruiserV2/CTS_Monster_IronboundBruiserV2_Skeleton.CTS_Monster_IronboundBruiserV2_Skeleton",
+      "material": "/Game/Tripo/Monsters/IronboundBruiserV2/CTS_Monster_IronboundBruiserV2_Mat.CTS_Monster_IronboundBruiserV2_Mat",
+      "tripoTaskId": "62d98426-6d25-4ddd-a56b-3a8fb37683f2",
+      "rawHeightCm": 87.46,
+      "heightCm": 185,
+      "meshScale": 2.1153,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "note": "",
+      "animations": {
+        "idle": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_idle.CTS_Monster_IronboundBruiserV2_idle",
+        "walk": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_walk.CTS_Monster_IronboundBruiserV2_walk",
+        "run": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_run.CTS_Monster_IronboundBruiserV2_run",
+        "attack": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_slash.CTS_Monster_IronboundBruiserV2_slash",
+        "attackAlt": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_chop.CTS_Monster_IronboundBruiserV2_chop",
+        "hit": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_hit_to_body_01.CTS_Monster_IronboundBruiserV2_hit_to_body_01",
+        "death": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_fall.CTS_Monster_IronboundBruiserV2_fall",
+        "all": {
+          "chop": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_chop.CTS_Monster_IronboundBruiserV2_chop",
+          "fall": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_fall.CTS_Monster_IronboundBruiserV2_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_hit_to_body_01.CTS_Monster_IronboundBruiserV2_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_idle.CTS_Monster_IronboundBruiserV2_idle",
+          "run": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_run.CTS_Monster_IronboundBruiserV2_run",
+          "slash": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_slash.CTS_Monster_IronboundBruiserV2_slash",
+          "walk": "/Game/Tripo/Monsters/IronboundBruiserV2/Animations/CTS_Monster_IronboundBruiserV2_walk.CTS_Monster_IronboundBruiserV2_walk"
+        }
+      },
+      "slot": "npc_bruiser",
+      "role": "bruiser",
+      "variant": "IronboundBruiserV2",
+      "alternates": [
+        {
+          "variant": "IronboundBruiser",
+          "mesh": "/Game/Tripo/Monsters/IronboundBruiser/CTS_Monster_IronboundBruiser.CTS_Monster_IronboundBruiser",
+          "skeleton": "/Game/Tripo/Monsters/IronboundBruiser/CTS_Monster_IronboundBruiser_Skeleton.CTS_Monster_IronboundBruiser_Skeleton",
+          "material": "/Game/Tripo/Monsters/IronboundBruiser/CTS_Monster_IronboundBruiser_Mat.CTS_Monster_IronboundBruiser_Mat",
+          "tripoTaskId": "b8831dbd-d5e6-489a-a208-d532638dbd75",
+          "rawHeightCm": 97.86,
+          "heightCm": 185,
+          "meshScale": 1.8905,
+          "yaw": -90,
+          "bakedWeapon": "kite shield + longsword fused to arms",
+          "note": "Superseded by IronboundBruiserV2: the fused shield/cape stretches (webbing) once the rig leaves the T-pose.",
+          "animations": {
+            "idle": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_idle.CTS_Monster_IronboundBruiser_idle",
+            "walk": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_walk.CTS_Monster_IronboundBruiser_walk",
+            "run": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_run.CTS_Monster_IronboundBruiser_run",
+            "attack": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_slash.CTS_Monster_IronboundBruiser_slash",
+            "attackAlt": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_chop.CTS_Monster_IronboundBruiser_chop",
+            "hit": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_hit_to_body_01.CTS_Monster_IronboundBruiser_hit_to_body_01",
+            "death": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_fall.CTS_Monster_IronboundBruiser_fall",
+            "all": {
+              "chop": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_chop.CTS_Monster_IronboundBruiser_chop",
+              "fall": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_fall.CTS_Monster_IronboundBruiser_fall",
+              "hit_to_body_01": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_hit_to_body_01.CTS_Monster_IronboundBruiser_hit_to_body_01",
+              "idle": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_idle.CTS_Monster_IronboundBruiser_idle",
+              "run": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_run.CTS_Monster_IronboundBruiser_run",
+              "slash": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_slash.CTS_Monster_IronboundBruiser_slash",
+              "walk": "/Game/Tripo/Monsters/IronboundBruiser/Animations/CTS_Monster_IronboundBruiser_walk.CTS_Monster_IronboundBruiser_walk"
+            }
+          }
+        }
+      ]
+    },
+    "hollow_shieldbearer": {
+      "mesh": "/Game/Tripo/Monsters/HollowShieldbearerV2/CTS_Monster_HollowShieldbearerV2.CTS_Monster_HollowShieldbearerV2",
+      "skeleton": "/Game/Tripo/Monsters/HollowShieldbearerV2/CTS_Monster_HollowShieldbearerV2_Skeleton.CTS_Monster_HollowShieldbearerV2_Skeleton",
+      "material": "/Game/Tripo/Monsters/HollowShieldbearerV2/CTS_Monster_HollowShieldbearerV2_Mat.CTS_Monster_HollowShieldbearerV2_Mat",
+      "tripoTaskId": "735f1908-ecde-41e9-8b24-93621321d8da",
+      "rawHeightCm": 92.2,
+      "heightCm": 185,
+      "meshScale": 2.0065,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "note": "",
+      "animations": {
+        "idle": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_idle.CTS_Monster_HollowShieldbearerV2_idle",
+        "walk": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_walk.CTS_Monster_HollowShieldbearerV2_walk",
+        "run": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_run.CTS_Monster_HollowShieldbearerV2_run",
+        "attack": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_slash.CTS_Monster_HollowShieldbearerV2_slash",
+        "attackAlt": null,
+        "hit": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_hit_to_body_01.CTS_Monster_HollowShieldbearerV2_hit_to_body_01",
+        "death": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_fall.CTS_Monster_HollowShieldbearerV2_fall",
+        "all": {
+          "fall": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_fall.CTS_Monster_HollowShieldbearerV2_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_hit_to_body_01.CTS_Monster_HollowShieldbearerV2_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_idle.CTS_Monster_HollowShieldbearerV2_idle",
+          "run": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_run.CTS_Monster_HollowShieldbearerV2_run",
+          "slash": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_slash.CTS_Monster_HollowShieldbearerV2_slash",
+          "walk": "/Game/Tripo/Monsters/HollowShieldbearerV2/Animations/CTS_Monster_HollowShieldbearerV2_walk.CTS_Monster_HollowShieldbearerV2_walk"
+        }
+      },
+      "slot": "npc_shieldbearer",
+      "role": "tank",
+      "variant": "HollowShieldbearerV2",
+      "alternates": [
+        {
+          "variant": "HollowShieldbearer",
+          "mesh": "/Game/Tripo/Monsters/HollowShieldbearer/CTS_Monster_HollowShieldbearer.CTS_Monster_HollowShieldbearer",
+          "skeleton": "/Game/Tripo/Monsters/HollowShieldbearer/CTS_Monster_HollowShieldbearer_Skeleton.CTS_Monster_HollowShieldbearer_Skeleton",
+          "material": "/Game/Tripo/Monsters/HollowShieldbearer/CTS_Monster_HollowShieldbearer_Mat.CTS_Monster_HollowShieldbearer_Mat",
+          "tripoTaskId": "09825062-c201-47b1-a79a-28c5f987bb20",
+          "rawHeightCm": 97.97,
+          "heightCm": 185,
+          "meshScale": 1.8883,
+          "yaw": -90,
+          "bakedWeapon": "tower shield fused to torso/arm",
+          "note": "Superseded by HollowShieldbearerV2: the fused tower shield webs to the torso in every clip.",
+          "animations": {
+            "idle": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_idle.CTS_Monster_HollowShieldbearer_idle",
+            "walk": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_walk.CTS_Monster_HollowShieldbearer_walk",
+            "run": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_run.CTS_Monster_HollowShieldbearer_run",
+            "attack": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_slash.CTS_Monster_HollowShieldbearer_slash",
+            "attackAlt": null,
+            "hit": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_hit_to_body_01.CTS_Monster_HollowShieldbearer_hit_to_body_01",
+            "death": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_fall.CTS_Monster_HollowShieldbearer_fall",
+            "all": {
+              "fall": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_fall.CTS_Monster_HollowShieldbearer_fall",
+              "hit_to_body_01": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_hit_to_body_01.CTS_Monster_HollowShieldbearer_hit_to_body_01",
+              "idle": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_idle.CTS_Monster_HollowShieldbearer_idle",
+              "run": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_run.CTS_Monster_HollowShieldbearer_run",
+              "slash": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_slash.CTS_Monster_HollowShieldbearer_slash",
+              "walk": "/Game/Tripo/Monsters/HollowShieldbearer/Animations/CTS_Monster_HollowShieldbearer_walk.CTS_Monster_HollowShieldbearer_walk"
+            }
+          }
+        }
+      ]
+    },
+    "blight_caster": {
+      "mesh": "/Game/Tripo/Monsters/BlightCaster/CTS_Monster_BlightCaster.CTS_Monster_BlightCaster",
+      "skeleton": "/Game/Tripo/Monsters/BlightCaster/CTS_Monster_BlightCaster_Skeleton.CTS_Monster_BlightCaster_Skeleton",
+      "material": "/Game/Tripo/Monsters/BlightCaster/CTS_Monster_BlightCaster_Mat.CTS_Monster_BlightCaster_Mat",
+      "tripoTaskId": "47bf8d55-2c3b-4367-a62c-b58e62aad9cf",
+      "rawHeightCm": 97.78,
+      "heightCm": 178,
+      "meshScale": 1.8204,
+      "yaw": -90,
+      "bakedWeapon": "bone staff (right hand)",
+      "note": "Staff is part of the mesh; drop the SM_RiftStaff prop.",
+      "animations": {
+        "idle": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_idle.CTS_Monster_BlightCaster_idle",
+        "walk": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_walk.CTS_Monster_BlightCaster_walk",
+        "run": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_run.CTS_Monster_BlightCaster_run",
+        "attack": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_cast_a_spell.CTS_Monster_BlightCaster_cast_a_spell",
+        "attackAlt": null,
+        "hit": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_hit_to_body_01.CTS_Monster_BlightCaster_hit_to_body_01",
+        "death": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_fall.CTS_Monster_BlightCaster_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_cast_a_spell.CTS_Monster_BlightCaster_cast_a_spell",
+          "fall": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_fall.CTS_Monster_BlightCaster_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_hit_to_body_01.CTS_Monster_BlightCaster_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_idle.CTS_Monster_BlightCaster_idle",
+          "run": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_run.CTS_Monster_BlightCaster_run",
+          "walk": "/Game/Tripo/Monsters/BlightCaster/Animations/CTS_Monster_BlightCaster_walk.CTS_Monster_BlightCaster_walk"
+        }
+      },
+      "slot": "npc_caster",
+      "role": "caster",
+      "variant": "BlightCaster",
+      "alternates": [
+        {
+          "variant": "BlightCasterB",
+          "mesh": "/Game/Tripo/Monsters/BlightCasterB/CTS_Monster_BlightCasterB.CTS_Monster_BlightCasterB",
+          "skeleton": "/Game/Tripo/Monsters/BlightCasterB/CTS_Monster_BlightCasterB_Skeleton.CTS_Monster_BlightCasterB_Skeleton",
+          "material": "/Game/Tripo/Monsters/BlightCasterB/CTS_Monster_BlightCasterB_Mat.CTS_Monster_BlightCasterB_Mat",
+          "tripoTaskId": "fa50b73b-160d-46a9-ba04-828ef79bb950",
+          "rawHeightCm": 83.26,
+          "heightCm": 185,
+          "meshScale": 2.222,
+          "yaw": -90,
+          "bakedWeapon": "iron sceptre (right hand)",
+          "note": "",
+          "animations": {
+            "idle": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_idle.CTS_Monster_BlightCasterB_idle",
+            "walk": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_walk.CTS_Monster_BlightCasterB_walk",
+            "run": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_run.CTS_Monster_BlightCasterB_run",
+            "attack": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_cast_a_spell.CTS_Monster_BlightCasterB_cast_a_spell",
+            "attackAlt": null,
+            "hit": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_hit_to_body_01.CTS_Monster_BlightCasterB_hit_to_body_01",
+            "death": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_fall.CTS_Monster_BlightCasterB_fall",
+            "all": {
+              "cast_a_spell": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_cast_a_spell.CTS_Monster_BlightCasterB_cast_a_spell",
+              "fall": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_fall.CTS_Monster_BlightCasterB_fall",
+              "hit_to_body_01": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_hit_to_body_01.CTS_Monster_BlightCasterB_hit_to_body_01",
+              "idle": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_idle.CTS_Monster_BlightCasterB_idle",
+              "run": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_run.CTS_Monster_BlightCasterB_run",
+              "walk": "/Game/Tripo/Monsters/BlightCasterB/Animations/CTS_Monster_BlightCasterB_walk.CTS_Monster_BlightCasterB_walk"
+            }
+          }
+        }
+      ]
+    },
+    "barbed_hunter": {
+      "mesh": "/Game/Tripo/Monsters/BarbedHunter/CTS_Monster_BarbedHunter.CTS_Monster_BarbedHunter",
+      "skeleton": "/Game/Tripo/Monsters/BarbedHunter/CTS_Monster_BarbedHunter_Skeleton.CTS_Monster_BarbedHunter_Skeleton",
+      "material": "/Game/Tripo/Monsters/BarbedHunter/CTS_Monster_BarbedHunter_Mat.CTS_Monster_BarbedHunter_Mat",
+      "tripoTaskId": "77ed3a64-cb73-4868-9d35-2025207d7b34",
+      "rawHeightCm": 97.81,
+      "heightCm": 178,
+      "meshScale": 1.8199,
+      "yaw": -90,
+      "bakedWeapon": "quiver on back (no bow in hand)",
+      "note": "Attach SM_PrototypeBow to hand_l (archetype prop) - the model holds no bow.",
+      "animations": {
+        "idle": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_idle.CTS_Monster_BarbedHunter_idle",
+        "walk": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_walk.CTS_Monster_BarbedHunter_walk",
+        "run": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_run.CTS_Monster_BarbedHunter_run",
+        "attack": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_attack_bow.CTS_Monster_BarbedHunter_attack_bow",
+        "attackAlt": null,
+        "hit": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_hit_to_body_01.CTS_Monster_BarbedHunter_hit_to_body_01",
+        "death": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_fall.CTS_Monster_BarbedHunter_fall",
+        "all": {
+          "attack_bow": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_attack_bow.CTS_Monster_BarbedHunter_attack_bow",
+          "fall": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_fall.CTS_Monster_BarbedHunter_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_hit_to_body_01.CTS_Monster_BarbedHunter_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_idle.CTS_Monster_BarbedHunter_idle",
+          "run": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_run.CTS_Monster_BarbedHunter_run",
+          "walk": "/Game/Tripo/Monsters/BarbedHunter/Animations/CTS_Monster_BarbedHunter_walk.CTS_Monster_BarbedHunter_walk"
+        }
+      },
+      "slot": "npc_hunter",
+      "role": "ranged",
+      "variant": "BarbedHunter",
+      "alternates": [
+        {
+          "variant": "BarbedHunterB",
+          "mesh": "/Game/Tripo/Monsters/BarbedHunterB/CTS_Monster_BarbedHunterB.CTS_Monster_BarbedHunterB",
+          "skeleton": "/Game/Tripo/Monsters/BarbedHunterB/CTS_Monster_BarbedHunterB_Skeleton.CTS_Monster_BarbedHunterB_Skeleton",
+          "material": "/Game/Tripo/Monsters/BarbedHunterB/CTS_Monster_BarbedHunterB_Mat.CTS_Monster_BarbedHunterB_Mat",
+          "tripoTaskId": "e33c63c7-fbb7-4cd2-a3db-cefab88414dc",
+          "rawHeightCm": 97.07,
+          "heightCm": 180,
+          "meshScale": 1.8543,
+          "yaw": -90,
+          "bakedWeapon": "crossbow (right hand)",
+          "note": "Crossbow is part of the mesh; drop the bow prop if you use this variant.",
+          "animations": {
+            "idle": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_idle.CTS_Monster_BarbedHunterB_idle",
+            "walk": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_walk.CTS_Monster_BarbedHunterB_walk",
+            "run": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_run.CTS_Monster_BarbedHunterB_run",
+            "attack": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_attack_crossbow.CTS_Monster_BarbedHunterB_attack_crossbow",
+            "attackAlt": null,
+            "hit": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_hit_to_body_01.CTS_Monster_BarbedHunterB_hit_to_body_01",
+            "death": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_fall.CTS_Monster_BarbedHunterB_fall",
+            "all": {
+              "attack_crossbow": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_attack_crossbow.CTS_Monster_BarbedHunterB_attack_crossbow",
+              "fall": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_fall.CTS_Monster_BarbedHunterB_fall",
+              "hit_to_body_01": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_hit_to_body_01.CTS_Monster_BarbedHunterB_hit_to_body_01",
+              "idle": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_idle.CTS_Monster_BarbedHunterB_idle",
+              "run": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_run.CTS_Monster_BarbedHunterB_run",
+              "walk": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_walk.CTS_Monster_BarbedHunterB_walk"
+            }
+          }
+        }
+      ]
+    },
+    "hollow_siegebreaker": {
+      "mesh": "/Game/Tripo/Monsters/HollowSiegebreaker/CTS_Boss_HollowSiegebreaker.CTS_Boss_HollowSiegebreaker",
+      "skeleton": "/Game/Tripo/Monsters/HollowSiegebreaker/CTS_Boss_HollowSiegebreaker_Skeleton.CTS_Boss_HollowSiegebreaker_Skeleton",
+      "material": "/Game/Tripo/Monsters/HollowSiegebreaker/CTS_Boss_HollowSiegebreaker_Mat.CTS_Boss_HollowSiegebreaker_Mat",
+      "tripoTaskId": "74cb1e1b-865f-453e-8299-59dca87c6dee",
+      "rawHeightCm": 98.2,
+      "heightCm": 200,
+      "meshScale": 2.0367,
+      "yaw": -90,
+      "bakedWeapon": "spiked siege maul (right hand)",
+      "note": "Maul is part of the mesh; drop the SM_WarHammer prop.",
+      "animations": {
+        "idle": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_idle.CTS_Boss_HollowSiegebreaker_idle",
+        "walk": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_walk.CTS_Boss_HollowSiegebreaker_walk",
+        "run": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_run.CTS_Boss_HollowSiegebreaker_run",
+        "attack": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_slash.CTS_Boss_HollowSiegebreaker_slash",
+        "attackAlt": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_ground_slam.CTS_Boss_HollowSiegebreaker_ground_slam",
+        "hit": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_hit_to_body_01.CTS_Boss_HollowSiegebreaker_hit_to_body_01",
+        "death": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_fall.CTS_Boss_HollowSiegebreaker_fall",
+        "all": {
+          "chop": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_chop.CTS_Boss_HollowSiegebreaker_chop",
+          "fall": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_fall.CTS_Boss_HollowSiegebreaker_fall",
+          "ground_slam": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_ground_slam.CTS_Boss_HollowSiegebreaker_ground_slam",
+          "hit_to_body_01": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_hit_to_body_01.CTS_Boss_HollowSiegebreaker_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_idle.CTS_Boss_HollowSiegebreaker_idle",
+          "run": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_run.CTS_Boss_HollowSiegebreaker_run",
+          "slash": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_slash.CTS_Boss_HollowSiegebreaker_slash",
+          "walk": "/Game/Tripo/Monsters/HollowSiegebreaker/Animations/CTS_Boss_HollowSiegebreaker_walk.CTS_Boss_HollowSiegebreaker_walk"
+        }
+      },
+      "slot": "boss_siegebreaker",
+      "role": "tank",
+      "variant": "HollowSiegebreaker",
+      "alternates": []
+    },
+    "gravemaw_pack_leader": {
+      "mesh": "/Game/Tripo/Monsters/GravemawPackLeader/CTS_Boss_GravemawPackLeader.CTS_Boss_GravemawPackLeader",
+      "skeleton": "/Game/Tripo/Monsters/GravemawPackLeader/CTS_Boss_GravemawPackLeader_Skeleton.CTS_Boss_GravemawPackLeader_Skeleton",
+      "material": "/Game/Tripo/Monsters/GravemawPackLeader/CTS_Boss_GravemawPackLeader_Mat.CTS_Boss_GravemawPackLeader_Mat",
+      "tripoTaskId": "56e7f9f8-d4be-4233-8b1a-71c5ec2f7b9b",
+      "rawHeightCm": 98.18,
+      "heightCm": 190,
+      "meshScale": 1.9352,
+      "yaw": -90,
+      "bakedWeapon": "two-handed greataxe (right hand)",
+      "note": "Greataxe is part of the mesh; drop the SM_WarAxe prop to avoid a double weapon (keep the totem on spine_03).",
+      "animations": {
+        "idle": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_idle.CTS_Boss_GravemawPackLeader_idle",
+        "walk": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_walk.CTS_Boss_GravemawPackLeader_walk",
+        "run": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_run.CTS_Boss_GravemawPackLeader_run",
+        "attack": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_slash.CTS_Boss_GravemawPackLeader_slash",
+        "attackAlt": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_war_cry.CTS_Boss_GravemawPackLeader_war_cry",
+        "hit": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_hit_to_body_01.CTS_Boss_GravemawPackLeader_hit_to_body_01",
+        "death": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_fall.CTS_Boss_GravemawPackLeader_fall",
+        "all": {
+          "chop": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_chop.CTS_Boss_GravemawPackLeader_chop",
+          "fall": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_fall.CTS_Boss_GravemawPackLeader_fall",
+          "hit_to_body_01": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_hit_to_body_01.CTS_Boss_GravemawPackLeader_hit_to_body_01",
+          "idle": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_idle.CTS_Boss_GravemawPackLeader_idle",
+          "run": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_run.CTS_Boss_GravemawPackLeader_run",
+          "slash": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_slash.CTS_Boss_GravemawPackLeader_slash",
+          "walk": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_walk.CTS_Boss_GravemawPackLeader_walk",
+          "war_cry": "/Game/Tripo/Monsters/GravemawPackLeader/Animations/CTS_Boss_GravemawPackLeader_war_cry.CTS_Boss_GravemawPackLeader_war_cry"
+        }
+      },
+      "slot": "boss_pack_leader",
+      "role": "pack_leader",
+      "variant": "GravemawPackLeader",
+      "alternates": []
+    }
+  },
+  "roles": {
+    "bruiser": [
+      "hollow_infantry",
+      "ironbound_bruiser"
+    ],
+    "tank": [
+      "hollow_shieldbearer",
+      "hollow_siegebreaker"
+    ],
+    "caster": [
+      "blight_caster"
+    ],
+    "ranged": [
+      "barbed_hunter"
+    ],
+    "pack_leader": [
+      "gravemaw_pack_leader"
+    ]
+  },
+  "bodies": {
+    "HollowInfantry": {
+      "mesh": "/Game/Tripo/Monsters/HollowInfantry/CTS_Monster_HollowInfantry.CTS_Monster_HollowInfantry",
+      "archetypes": [
+        "hollow_infantry"
+      ],
+      "role": "bruiser"
+    },
+    "HollowInfantryB": {
+      "mesh": "/Game/Tripo/Monsters/HollowInfantryB/CTS_Monster_HollowInfantryB.CTS_Monster_HollowInfantryB",
+      "archetypes": [
+        "hollow_infantry"
+      ],
+      "role": "bruiser"
+    },
+    "IronboundBruiser": {
+      "mesh": "/Game/Tripo/Monsters/IronboundBruiser/CTS_Monster_IronboundBruiser.CTS_Monster_IronboundBruiser",
+      "archetypes": [
+        "ironbound_bruiser"
+      ],
+      "role": "bruiser"
+    },
+    "HollowShieldbearer": {
+      "mesh": "/Game/Tripo/Monsters/HollowShieldbearer/CTS_Monster_HollowShieldbearer.CTS_Monster_HollowShieldbearer",
+      "archetypes": [
+        "hollow_shieldbearer"
+      ],
+      "role": "tank"
+    },
+    "HollowShieldbearerV2": {
+      "mesh": "/Game/Tripo/Monsters/HollowShieldbearerV2/CTS_Monster_HollowShieldbearerV2.CTS_Monster_HollowShieldbearerV2",
+      "archetypes": [
+        "hollow_shieldbearer"
+      ],
+      "role": "tank"
+    },
+    "IronboundBruiserV2": {
+      "mesh": "/Game/Tripo/Monsters/IronboundBruiserV2/CTS_Monster_IronboundBruiserV2.CTS_Monster_IronboundBruiserV2",
+      "archetypes": [
+        "ironbound_bruiser"
+      ],
+      "role": "bruiser"
+    },
+    "BlightCaster": {
+      "mesh": "/Game/Tripo/Monsters/BlightCaster/CTS_Monster_BlightCaster.CTS_Monster_BlightCaster",
+      "archetypes": [
+        "blight_caster"
+      ],
+      "role": "caster"
+    },
+    "BlightCasterB": {
+      "mesh": "/Game/Tripo/Monsters/BlightCasterB/CTS_Monster_BlightCasterB.CTS_Monster_BlightCasterB",
+      "archetypes": [
+        "blight_caster"
+      ],
+      "role": "caster"
+    },
+    "BarbedHunter": {
+      "mesh": "/Game/Tripo/Monsters/BarbedHunter/CTS_Monster_BarbedHunter.CTS_Monster_BarbedHunter",
+      "archetypes": [
+        "barbed_hunter"
+      ],
+      "role": "ranged"
+    },
+    "BarbedHunterB": {
+      "mesh": "/Game/Tripo/Monsters/BarbedHunterB/CTS_Monster_BarbedHunterB.CTS_Monster_BarbedHunterB",
+      "archetypes": [
+        "barbed_hunter"
+      ],
+      "role": "ranged"
+    },
+    "GravemawPackLeader": {
+      "mesh": "/Game/Tripo/Monsters/GravemawPackLeader/CTS_Boss_GravemawPackLeader.CTS_Boss_GravemawPackLeader",
+      "archetypes": [
+        "gravemaw_pack_leader"
+      ],
+      "role": "pack_leader"
+    },
+    "HollowSiegebreaker": {
+      "mesh": "/Game/Tripo/Monsters/HollowSiegebreaker/CTS_Boss_HollowSiegebreaker.CTS_Boss_HollowSiegebreaker",
+      "archetypes": [
+        "hollow_siegebreaker"
+      ],
+      "role": "tank"
+    }
+  }
+}

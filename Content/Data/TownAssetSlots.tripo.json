@@ -1,0 +1,451 @@
+{
+  "schemaVersion": 1,
+  "priority": 10,
+  "source": "tripo",
+  "description": "Tripo batch 03 overlay for Content/Data/TownAssetSlots.json (same schema; merged by CireEnvironmentProps at priority 10). Meshes are raw Tripo scale (~98 cm longest axis, pivot at bottom centre) with Nanite and collision ('complex' = complex-as-simple for walkable buildings, 'box' = simple box); 'fit':'footprint' scales them into each slot, 'rotation' is [pitch,yaw,roll] and puts the street facade on +X. suggestedScale is the metre-correct uniform scale if you place them without fitting. Gate slots only accept an overlay with a verified open passage: both Tripo gate candidates measure 3.5-5 m of clear road width after fitting (the slots require 8-9 m), so they are marked status 'passage_too_narrow' with the measurements (Saved/TripoGatePassages.json, Tools/MeasureTripoGatePassages.py). Generated/imported by Tools/IntegrateTripoBatch03.py; provenance in Art/TripoBatch03.json.",
+  "requiredSlots": [
+    "gatehouse",
+    "watchtower",
+    "shrine",
+    "castle_keep",
+    "castle_gate",
+    "wall_section",
+    "house_a",
+    "house_b",
+    "house_c",
+    "market_stall_a",
+    "market_stall_b",
+    "fountain",
+    "well",
+    "cart",
+    "lamp",
+    "banner",
+    "barricade"
+  ],
+  "slots": {
+    "castle_gate": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/CastleGateV2/CTS_Town_CastleGateV2.CTS_Town_CastleGateV2",
+      "status": "passage_too_narrow",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "suggestedScale": 22.0,
+      "rawSizeCm": [
+        97.9,
+        63.3,
+        75.9
+      ],
+      "tripoTaskId": "75d79bce-fbf5-4cf3-980f-09eda3d4b730",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Road passage runs along local X after the 90 degree yaw. Measured with complex-collision traces after the loader's footprint fit: clear width 450 cm (heights 60/250/470 cm: {'60': 450.0, '250': 500.0, '470': 500.0}) vs the slot's required 900 cm x 500 cm, so 'passage' stays false and the entry is gated off until the slot footprint/requirement changes.",
+      "passage": false,
+      "measuredPassageWidthCm": 450.0,
+      "alternates": [
+        {
+          "mesh": "/Game/Tripo/Town/CastleGate/CTS_Town_CastleGate.CTS_Town_CastleGate",
+          "measuredPassageWidthCm": 325.0,
+          "rotation": [
+            0,
+            90,
+            0
+          ],
+          "tripoTaskId": "8aefecff-c894-4651-a9e9-3b8ed270846e"
+        },
+        {
+          "mesh": "/Game/Tripo/Town/GatehouseV2/CTS_Town_GatehouseV2.CTS_Town_GatehouseV2",
+          "measuredPassageWidthCm": 475.0,
+          "rotation": [
+            0,
+            90,
+            0
+          ],
+          "tripoTaskId": "aaf3e6d5-0015-435a-a08d-d1cd90b925b8"
+        }
+      ]
+    },
+    "gatehouse": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Landmarks/Gatehouse/CTS_Landmark_Gatehouse.CTS_Landmark_Gatehouse",
+      "status": "passage_too_narrow",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "suggestedScale": 20.5,
+      "rawSizeCm": [
+        97.8,
+        58.8,
+        79.4
+      ],
+      "tripoTaskId": "bb02c6b4-1aed-43a4-a2aa-9e6231037797",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Road passage runs along local X after the 90 degree yaw. Measured with complex-collision traces after the loader's footprint fit: clear width 475 cm (heights 60/250/470 cm: {'60': 475.0, '250': 475.0, '470': 475.0}) vs the slot's required 800 cm x 500 cm, so 'passage' stays false and the entry is gated off until the slot footprint/requirement changes.",
+      "passage": false,
+      "measuredPassageWidthCm": 475.0,
+      "alternates": [
+        {
+          "mesh": "/Game/Tripo/Town/GatehouseV2/CTS_Town_GatehouseV2.CTS_Town_GatehouseV2",
+          "measuredPassageWidthCm": 375.0,
+          "rotation": [
+            0,
+            90,
+            0
+          ],
+          "tripoTaskId": "aaf3e6d5-0015-435a-a08d-d1cd90b925b8"
+        },
+        {
+          "mesh": "/Game/Tripo/Town/CastleGateV2/CTS_Town_CastleGateV2.CTS_Town_CastleGateV2",
+          "measuredPassageWidthCm": 350.0,
+          "rotation": [
+            0,
+            90,
+            0
+          ],
+          "tripoTaskId": "75d79bce-fbf5-4cf3-980f-09eda3d4b730"
+        }
+      ]
+    },
+    "castle_keep": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/CastleKeep/CTS_Town_CastleKeep.CTS_Town_CastleKeep",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 24.0,
+      "rawSizeCm": [
+        88.5,
+        87.7,
+        98.0
+      ],
+      "tripoTaskId": "99f9a129-c23a-451a-9893-e293e1b6b766",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Front door and banner face +X."
+    },
+    "wall_section": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/WallSection/CTS_Town_WallSection.CTS_Town_WallSection",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 10.5,
+      "rawSizeCm": [
+        20.6,
+        98.0,
+        28.1
+      ],
+      "tripoTaskId": "29b89848-5141-4a9e-8a25-9eedd8a6a090",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Runs along local Y; about 3 m tall once fitted (lower than the base curtain), battlements on top."
+    },
+    "watchtower": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Landmarks/Watchtower/CTS_Landmark_Watchtower.CTS_Landmark_Watchtower",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 15.0,
+      "rawSizeCm": [
+        54.2,
+        54.3,
+        98.2
+      ],
+      "tripoTaskId": "4dfd4b23-2cd5-4948-906d-20be6c096692",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Astra's Ashen Watchtower landmark (Tripo 4dfd4b23)."
+    },
+    "shrine": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Landmarks/DawnwellShrine/CTS_Landmark_DawnwellShrine.CTS_Landmark_DawnwellShrine",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 8.6,
+      "rawSizeCm": [
+        97.8,
+        97.8,
+        53.8
+      ],
+      "tripoTaskId": "433e1784-da6d-4150-b45e-8536f78d422e",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Astra's Dawnwell shrine landmark (Tripo 433e1784); radial."
+    },
+    "house_a": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/HouseA/CTS_Town_HouseA.CTS_Town_HouseA",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 11.0,
+      "rawSizeCm": [
+        97.2,
+        86.0,
+        89.5
+      ],
+      "tripoTaskId": "f7d55acf-f6b8-4d40-9e37-b53b3389ce92",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Two-storey timber-framed townhouse; door/facade on +X."
+    },
+    "house_b": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/HouseB/CTS_Town_HouseB.CTS_Town_HouseB",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 13.0,
+      "rawSizeCm": [
+        98.2,
+        62.8,
+        92.4
+      ],
+      "tripoTaskId": "5e54974a-329e-413b-851a-1c038b94de81",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Three-storey tavern with hanging sign bracket; facade on +X. Also suits the 'tavern' slot."
+    },
+    "tavern": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/HouseB/CTS_Town_HouseB.CTS_Town_HouseB",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 13.0,
+      "rawSizeCm": [
+        98.2,
+        62.8,
+        92.4
+      ],
+      "tripoTaskId": "5e54974a-329e-413b-851a-1c038b94de81",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Same mesh as house_b."
+    },
+    "house_c": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/HouseC/CTS_Town_HouseC.CTS_Town_HouseC",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 9.5,
+      "rawSizeCm": [
+        97.9,
+        82.2,
+        72.4
+      ],
+      "tripoTaskId": "77aa5b5a-c444-41cb-96a2-6903290ef9ac",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Blacksmith cottage with forge chimney and open lean-to; porch faces +X. Also suits 'cottage_thatch'."
+    },
+    "market_stall_a": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/MarketStallA/CTS_Town_MarketStallA.CTS_Town_MarketStallA",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 3.4,
+      "rawSizeCm": [
+        96.7,
+        64.7,
+        95.7
+      ],
+      "tripoTaskId": "617d1100-a6ce-4481-abac-95e55be24031",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Produce stall (striped awning); counter faces +X."
+    },
+    "market_stall_b": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/MarketStallB/CTS_Town_MarketStallB.CTS_Town_MarketStallB",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 3.6,
+      "rawSizeCm": [
+        98.0,
+        73.6,
+        83.4
+      ],
+      "tripoTaskId": "c62cc912-cea8-445d-ad0a-65f0b1ca740b",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Armorer stall (weapon rack); counter faces +X."
+    },
+    "fountain": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/Fountain/CTS_Town_Fountain.CTS_Town_Fountain",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 7.0,
+      "rawSizeCm": [
+        97.9,
+        94.6,
+        85.9
+      ],
+      "tripoTaskId": "49273b33-2e2c-4112-b881-d18307b00bae",
+      "nanite": true,
+      "collision": "box",
+      "note": "Octagonal basin with knight statue; no water surface."
+    },
+    "well": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/Well/CTS_Town_Well.CTS_Town_Well",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 3.6,
+      "rawSizeCm": [
+        92.2,
+        93.4,
+        98.5
+      ],
+      "tripoTaskId": "4192b7c8-d88f-4946-a8e4-146edce285c0",
+      "nanite": true,
+      "collision": "box"
+    },
+    "cart": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/Cart/CTS_Town_Cart.CTS_Town_Cart",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 4.2,
+      "rawSizeCm": [
+        97.9,
+        64.6,
+        58.5
+      ],
+      "tripoTaskId": "ede7f282-a8ae-45b3-9d0c-5d0425455b65",
+      "nanite": true,
+      "collision": "box",
+      "note": "Long axis on local X (shafts toward -X/+X)."
+    },
+    "lamp": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/Lamp/street_lamp_3d_model.street_lamp_3d_model",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 3.8,
+      "rawSizeCm": [
+        40.6,
+        24.6,
+        97.8
+      ],
+      "tripoTaskId": "58f5bf13-e081-4ceb-91fe-5a0be9bee160",
+      "nanite": true,
+      "collision": "box",
+      "note": "Double iron street lamp on a stone plinth; add a point light in the slot if you want it lit."
+    },
+    "banner": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/Banner/CTS_Town_Banner.CTS_Town_Banner",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "suggestedScale": 6.0,
+      "rawSizeCm": [
+        33.2,
+        31.6,
+        97.9
+      ],
+      "tripoTaskId": "6cbbbf05-e6ba-42dd-a540-8615b4994e67",
+      "nanite": true,
+      "collision": "box"
+    },
+    "barricade": {
+      "type": "mesh",
+      "mesh": "/Game/Tripo/Town/Barricade/CTS_Town_Barricade.CTS_Town_Barricade",
+      "status": "imported",
+      "fit": "footprint",
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "suggestedScale": 6.0,
+      "rawSizeCm": [
+        98.0,
+        29.9,
+        39.4
+      ],
+      "tripoTaskId": "61e5d6ce-7de3-4946-bc3f-147526d40dd5",
+      "nanite": true,
+      "collision": "complex",
+      "note": "Rotated 90 degrees so the stake wall spans local Y."
+    }
+  }
+}
