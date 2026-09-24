@@ -416,6 +416,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireInterfaceProbe::TickServer(this)) return;
     TickServerProbe(this);
     CireWaveDirector::TickSoak(this,Dt); // wave-director: headless soak bookkeeping
+    CireWaveDirector::TickGallery(this); // wave-director: -CireWaveGallery captures
 #endif
     auto* S=GetGameState<ACireGameState>(); if(!S) return;
     if(!bSmoke&&GetNetMode()==NM_Standalone) {

@@ -15,6 +15,9 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "CireHUD.h"
+#include "CireCombatEvents.h"
+#include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireWaveSoak, Log, All);
 
@@ -188,7 +191,101 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
     }
     return false;
 }
+
+// wave-director: -CireWaveGallery renders the F8 Waves editor and a neutral (yellow) challenge
+// pack, then the same pack provoked, to Saved/WaveGallery/<stamp>/ (run -RenderOffscreen).
+namespace
+{
+struct FGallery
+{
+    bool bEnabled = false, bDone = false;
+    int32 Stage = 0;
+    double Started = 0, StageAt = 0;
+    FString Directory;
+    TArray<FString> Files;
+};
+FGallery Gallery;
+void Shot(const FString& Name)
+{
+    const FString File = FPaths::Combine(Gallery.Directory, Name);
+    FScreenshotRequest::RequestScreenshot(File, false, false, false, FIntRect(), true);
+    Gallery.Files.Add(File);
+    UE_LOG(LogCireWaveSoak, Display, TEXT("CIRE_WAVE_GALLERY_CAPTURE file=%s"), *File);
+}
+}
+bool CireWaveDirector::TickGallery(ACireGameMode* Mode)
+{
+    if (!Gallery.bEnabled && !Gallery.bDone && Gallery.Started == 0)
+    {
+        Gallery.Started = FPlatformTime::Seconds();
+        Gallery.bEnabled = Mode && FParse::Param(FCommandLine::Get(), TEXT("CireWaveGallery"));
+        if (!Gallery.bEnabled) { Gallery.bDone = true; return false; }
+        Gallery.Directory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("WaveGallery"), FDateTime::Now().ToString(TEXT("%Y%m%d-%H%M%S"))));
+        IFileManager::Get().MakeDirectory(*Gallery.Directory, true);
+        Mode->WaveTimer = 1.e6f; Mode->bBotsFilled = true; Mode->BotFillTimer = 1.e6f;
+    }
+    if (!Gallery.bEnabled || Gallery.bDone) return false;
+    auto* Controller = Mode->GetWorld()->GetFirstPlayerController();
+    auto* Hero = Controller ? Cast<ACireHero>(Controller->GetPawn()) : nullptr;
+    auto* HUD = Controller ? Cast<ACireHUD>(Controller->GetHUD()) : nullptr;
+    if (!Hero || !HUD) return false;
+    if (!Hero->bDrafted) { Hero->Draft(0); Hero->HeroName = TEXT("Eric"); }
+    const double Now = FPlatformTime::Seconds();
+    ACireMonster* Leader = nullptr; TArray<ACireMonster*> Pack;
+    for (auto* M : Mode->Monsters) if (IsValid(M) && M->PackId >= 0 && M->Lane == Hero->TeamId) { Pack.Add(M); if (M->GetNPCClassification() == ECireNPCClass::Boss) Leader = M; }
+    auto Frame = [&]()
+    {
+        if (Pack.IsEmpty()) return;
+        FVector Center = FVector::ZeroVector; for (auto* M : Pack) Center += M->GetActorLocation(); Center /= Pack.Num();
+        const FVector Stand = Center + FVector(-650, -180, 0);
+        Hero->SetActorLocation(FVector(Stand.X, Stand.Y, Center.Z + 10), false, nullptr, ETeleportType::TeleportPhysics);
+        const FRotator Face = (Center - Stand).GetSafeNormal2D().Rotation();
+        Hero->SetActorRotation(Face); Controller->SetControlRotation(FRotator(-18, Face.Yaw, 0));
+    };
+    switch (Gallery.Stage)
+    {
+    case 0:
+        if (Now - Gallery.Started < 6) return false;
+        HUD->SetSkillOfferOpen(false); HUD->DebugOptionsPage(5, 7, true); Gallery.StageAt = Now; ++Gallery.Stage; return false;
+    case 1:
+        if (Now - Gallery.StageAt < 2.5) return false;
+        Shot(TEXT("01_wave_editor.png")); Gallery.StageAt = Now; ++Gallery.Stage; return false;
+    case 2:
+        if (Now - Gallery.StageAt < 1) return false;
+        HUD->DebugOptionsPage(0, 0, false); HUD->SetSkillOfferOpen(false); Frame(); Hero->Target = Leader; Gallery.StageAt = Now; ++Gallery.Stage; return false;
+    case 3:
+        Frame(); HUD->SetSkillOfferOpen(false);
+        if (Now - Gallery.StageAt < 7) return false; // let the district banner fade
+        {
+            int32 Neutral = 0; for (auto* M : Pack) Neutral += M->bNeutral ? 1 : 0;
+            UE_LOG(LogCireWaveSoak, Display, TEXT("CIRE_WAVE_GALLERY_PACK neutral=%d/%d"), Neutral, Pack.Num());
+        }
+        Shot(TEXT("02_neutral_pack.png")); Gallery.StageAt = Now; ++Gallery.Stage; return false;
+    case 4:
+        if (Now - Gallery.StageAt < 1) return false;
+        if (Leader) CireCombat::ApplyDamage(Hero, Leader, 1, TEXT("Gallery provoke"));
+        Hero->Health = Hero->MaxHealth = 100000; Gallery.StageAt = Now; ++Gallery.Stage; return false;
+    case 5:
+        if (Now - Gallery.StageAt < 1.2) return false;
+        {
+            int32 Neutral = 0; for (auto* M : Pack) Neutral += M->bNeutral ? 1 : 0;
+            UE_LOG(LogCireWaveSoak, Display, TEXT("CIRE_WAVE_GALLERY_PROVOKED neutral=%d/%d"), Neutral, Pack.Num());
+        }
+        Shot(TEXT("03_provoked_pack.png")); Gallery.StageAt = Now; ++Gallery.Stage; return false;
+    default:
+        if (Now - Gallery.StageAt < 2) return false;
+        {
+            bool bOK = Gallery.Files.Num() == 3;
+            for (const FString& F : Gallery.Files) bOK &= IFileManager::Get().FileSize(*F) > 1024;
+            UE_LOG(LogCireWaveSoak, Display, TEXT("CIRE_WAVE_GALLERY_%s dir=%s"), bOK ? TEXT("DONE") : TEXT("INCOMPLETE"), *Gallery.Directory);
+            Gallery.bDone = true;
+            FPlatformMisc::RequestExitWithStatus(false, bOK ? 0 : 1);
+        }
+        return false;
+    }
+}
 #else
+bool CireWaveDirector::TickGallery(ACireGameMode*) { return false; }
 bool CireWaveDirector::IsSoak() { return false; }
 void CireWaveDirector::InitializeSoak(ACireGameMode*) {}
 bool CireWaveDirector::TickSoak(ACireGameMode*, float) { return false; }

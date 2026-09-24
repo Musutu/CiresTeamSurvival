@@ -520,7 +520,7 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
         }
         else
         {
-            const FString V=IsValid(M->Victim)?(M->Victim==Hero?TEXT("Attacking YOU"):TEXT("Attacking ")+Short(M->Victim->HeroName,18)):TEXT("Advancing");
+            const FString V=IsValid(M->Victim)?(M->Victim==Hero?TEXT("Attacking YOU"):TEXT("Attacking ")+Short(M->Victim->HeroName,18)):M->bNeutral?TEXT("Neutral"):TEXT("Advancing"); // wave-director: neutral packs
             TextFx(V,31,Y+34,8,M->Victim==Hero?Hostile:Muted,ECireFont::Body,false);
         }
         UnitTip(M,0,Y,220,46);

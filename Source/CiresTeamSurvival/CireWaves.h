@@ -166,6 +166,7 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API bool IsSoak();
     CIRESTEAMSURVIVAL_API void InitializeSoak(ACireGameMode* Mode);
     CIRESTEAMSURVIVAL_API bool TickSoak(ACireGameMode* Mode, float Delta);
+    CIRESTEAMSURVIVAL_API bool TickGallery(ACireGameMode* Mode);
     CIRESTEAMSURVIVAL_API void NoteFailsafe(const FString& What);
     CIRESTEAMSURVIVAL_API void DumpWave(ACireGameMode* Mode, const TCHAR* Reason);
 #if !UE_BUILD_SHIPPING

@@ -79,7 +79,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
 
     // ---- wave list (left) ---------------------------------------------------------
     const float ListX = L, ListY = T + 18, ListW = 170, RowH = 27;
-    const int32 Visible = 8;
+    const int32 Visible = 6;
     WaveListScroll = FMath::Clamp(WaveListScroll, 0, FMath::Max(0, WaveDraft.Waves.Num() - Visible));
     Painter().Rect(ListX, ListY, ListW, Visible * RowH + 4, FLinearColor(0, 0, 0, .35f));
     for (int32 I = WaveListScroll; I < FMath::Min(WaveDraft.Waves.Num(), WaveListScroll + Visible); ++I)
