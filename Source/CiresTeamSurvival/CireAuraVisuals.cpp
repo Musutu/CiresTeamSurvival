@@ -514,6 +514,11 @@ void ACireAuraStrike::FollowProjectile(AActor* Projectile,const FCireAuraAttack&
     Configure(EMode::Trail,Attack,Projectile->GetActorLocation(),Projectile->GetActorLocation(),InScale);
 }
 void ACireAuraStrike::SetPreviewAge(float Seconds){bPreview=true;Age=FMath::Max(0.f,Seconds);Rebuild();}
+void ACireAuraStrike::SetPreviewTrail(const TArray<FVector>& WorldPoints)
+{
+    bPreview=true;Age=0;Trail=WorldPoints;if(Trail.Num()>10)Trail.RemoveAt(0,Trail.Num()-10);
+    if(!Trail.IsEmpty())SetActorLocation(Trail.Last());Rebuild();
+}
 void ACireAuraStrike::Tick(float Delta)
 {
     Super::Tick(Delta);

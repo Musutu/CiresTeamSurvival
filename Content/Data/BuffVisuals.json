@@ -201,7 +201,7 @@
     },
     "boss_siege_fury": {
       "name": "Siege Fury", "kind": "stance", "school": "fire", "source": "Hollow Siegebreaker below 30% health: +40% damage, faster attacks",
-      "palette": { "primary": [1.0, 0.42, 0.06], "secondary": [0.62, 0.1, 0.02], "core": [1.0, 0.86, 0.42] },
+      "palette": { "primary": [0.95, 0.27, 0.03], "secondary": [0.62, 0.07, 0.02], "core": [1.0, 0.72, 0.3] },
       "priority": 92, "light": 0.9,
       "layers": [
         { "shape": "flames", "attach": "body", "count": 9, "speed": 1.0 },

@@ -170,6 +170,16 @@ bool CireAuraVisuals::RunSmoke(ACireGameMode* Mode)
         for(auto* H:Crowd){H->Destroy();}
         Clock+=.1f;Auras->UpdateNow(Clock);
     }
+    {
+        // Ranged empowered attacks draw a trail along the projectile path and a muzzle burst.
+        const FCireAuraAttack Attack=CireAuraData::Find(TEXT("frost_weapon"))->Attack;
+        ACireAuraStrike* Trail=Auras->SpawnStrike(ACireAuraStrike::EMode::Trail,Attack,Origin,Origin+FVector(300,0,0),1);
+        ACireAuraStrike* Muzzle=Auras->SpawnStrike(ACireAuraStrike::EMode::Muzzle,Attack,Origin,Origin+FVector(300,0,0),1);
+        if(Trail)Trail->SetPreviewTrail({Origin,Origin+FVector(100,0,20),Origin+FVector(200,0,25),Origin+FVector(300,0,10)});
+        if(Muzzle)Muzzle->SetPreviewAge(.05f);
+        Check(Trail&&Muzzle&&Trail->VertexCount()>0&&Muzzle->VertexCount()>0&&Trail->IsCollisionFree(),TEXT("ranged trail and muzzle burst render collision-free"));
+        if(Trail)Trail->Destroy();if(Muzzle)Muzzle->Destroy();
+    }
     // ---- Attack modifier selection -----------------------------------------
     CireBuffs::Apply(Hero,TEXT("battle_rhythm"),30,Hero);CireBuffs::Apply(Hero,TEXT("blood_rage"),30,Hero);Clock+=.1f;Auras->UpdateNow(Clock);
     const FCireAuraDef* Mod=Aura->AttackModifier(CireBuffs::ServerNow(World));

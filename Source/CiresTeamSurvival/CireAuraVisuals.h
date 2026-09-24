@@ -137,6 +137,8 @@ public:
     void Configure(EMode InMode,const FCireAuraAttack& Attack,FVector From,FVector To,float InScale,float Mirror=1.f);
     void FollowProjectile(AActor* Projectile,const FCireAuraAttack& Attack,float InScale);
     void SetPreviewAge(float Seconds);
+    /** Gallery/tests: freeze a trail along these world points (oldest first). */
+    void SetPreviewTrail(const TArray<FVector>& WorldPoints);
     int32 VertexCount() const { return LastVertices; }
     bool IsCollisionFree() const;
     EMode Mode=EMode::Swipe;

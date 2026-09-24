@@ -108,10 +108,11 @@ void BuildPages()
     {
         TArray<FUnit> U={Hero(TEXT("troll_berserker_melee"),{TEXT("blood_rage")},TEXT("BLOOD RAGE: BLOODY SWIPE + SPLASH")),Monster(TEXT("hollow_infantry"),0,TEXT("")),
             Hero(TEXT("knight"),{TEXT("frost_weapon")},TEXT("FROST WEAPON: FROST TRAIL + SHATTER")),Monster(TEXT("hollow_infantry"),0,TEXT("")),
-            Hero(TEXT("paladin_holy"),{TEXT("bastion_of_dawn")},TEXT("BASTION: HOLY GLINTS")),Monster(TEXT("hollow_infantry"),0,TEXT(""))};
-        for(int32 I=0;I<6;I+=2){U[I].AttackTarget=I+1;U[I].Yaw=90;U[I+1].Yaw=-90;}
+            Hero(TEXT("paladin_holy"),{TEXT("bastion_of_dawn")},TEXT("BASTION: HOLY GLINTS")),Monster(TEXT("hollow_infantry"),0,TEXT("")),
+            Hero(TEXT("ranger"),{TEXT("blessing")},TEXT("BLESSING: RANGED GLINT TRAIL")),Monster(TEXT("hollow_infantry"),0,TEXT(""))};
+        for(int32 I=0;I<8;I+=2){U[I].AttackTarget=I+1;U[I].Yaw=90;U[I+1].Yaw=-90;}
         U[4].Poison=-1;
-        const int32 Index=Add(TEXT("EMPOWERED ATTACKS: CHAMPIONS"),TEXT("attacks_champions"),U);G.Pages[Index].Spacing=250;G.Pages[Index].Distance=1650;
+        const int32 Index=Add(TEXT("EMPOWERED ATTACKS: CHAMPIONS"),TEXT("attacks_champions"),U);G.Pages[Index].Spacing=235;G.Pages[Index].Distance=1850;
     }
     {
         TArray<FUnit> U={Monster(TEXT("gravemaw_pack_leader"),Enraged,TEXT("BLOOD FRENZY CLEAVER")),Hero(TEXT("knight"),{},TEXT("")),
@@ -278,7 +279,17 @@ void SpawnStrikes()
         const auto* Attacker=Cast<ACharacter>(Units[I]);const auto* Victim=Cast<ACharacter>(Units[U.AttackTarget]);
         const float Scale=FMath::Clamp(Attacker->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()/92.f,.6f,2.6f);
         const FVector From=Attacker->GetActorLocation()+FVector(0,0,15*Scale),To=Victim->GetActorLocation();
-        if(auto* Swipe=Auras->SpawnStrike(ACireAuraStrike::EMode::Swipe,Mod->Attack,From,To,Scale,1)){Swipe->SetPreviewAge(.16f);}else G.bChecks=false;
+        const auto* Shooter=Cast<ACireHero>(Attacker);
+        if(Shooter&&Shooter->IsRangedBasicAttack())
+        {
+            // Ranged: muzzle burst at the hand and a frozen trail along the projectile path.
+            FVector Hand=From+(To-From).GetSafeNormal2D()*35;
+            if(Shooter->GetMesh()->GetBoneIndex(TEXT("hand_r"))!=INDEX_NONE)Hand=Shooter->GetMesh()->GetSocketLocation(TEXT("hand_r"));
+            if(auto* Muzzle=Auras->SpawnStrike(ACireAuraStrike::EMode::Muzzle,Mod->Attack,Hand,To,Scale*.8f)){Muzzle->SetPreviewAge(.07f);}else G.bChecks=false;
+            TArray<FVector> Path;for(int32 K=0;K<10;++K){const float T=.15f+.6f*K/9.f;Path.Add(FMath::Lerp(Hand,To+FVector(0,0,20),T)+FVector(0,0,FMath::Sin(T*PI)*18));}
+            if(auto* Trail=Auras->SpawnStrike(ACireAuraStrike::EMode::Trail,Mod->Attack,Path[0],Path.Last(),Scale*.8f)){Trail->SetPreviewTrail(Path);}else G.bChecks=false;
+        }
+        else if(auto* Swipe=Auras->SpawnStrike(ACireAuraStrike::EMode::Swipe,Mod->Attack,From,To,Scale,1)){Swipe->SetPreviewAge(.16f);}else G.bChecks=false;
         const FVector Impact=To+FVector(0,0,Victim->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()*.35f);
         if(auto* Hit=Auras->SpawnStrike(ACireAuraStrike::EMode::Hit,Mod->Attack,Impact,Impact,Scale*.9f)){Hit->SetPreviewAge(.12f);}else G.bChecks=false;
     }
