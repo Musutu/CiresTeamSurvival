@@ -1,4 +1,5 @@
 #include "CireKeybindings.h"
+#include "CireItems.h" // progression-shop: item slots on action bars
 #include "CireGame.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/ConfigCacheIni.h"
@@ -62,6 +63,15 @@ TArray<FCireActionInfo> BuildActions()
     Add(TEXT("ToggleDeveloperTools"),LOCTEXT("ToggleDeveloperTools","Developer tools"),C::Interface,EKeys::F8);
     Add(TEXT("RosterPreviousPage"),LOCTEXT("RosterPreviousPage","Champion roster: previous page"),C::Interface,EKeys::PageUp,EKeys::Left);
     Add(TEXT("RosterNextPage"),LOCTEXT("RosterNextPage","Champion roster: next page"),C::Interface,EKeys::PageDown,EKeys::Right);
+    // progression-shop: stats window, consumable belt and bag-slot item use (CireItems / CireShopUI).
+    // Active items also land automatically on action bar 1 slots 9..12 (keys 7, 8, 9, 0).
+    Add(TEXT("ToggleStats"),LOCTEXT("ToggleStats","Character stats window"),C::Interface,EKeys::C);
+    Add(TEXT("UseBelt1"),LOCTEXT("UseBelt1","Use consumable belt slot 1"),C::Combat,EKeys::Z);
+    Add(TEXT("UseBelt2"),LOCTEXT("UseBelt2","Use consumable belt slot 2"),C::Combat,EKeys::X);
+    Add(TEXT("UseBelt3"),LOCTEXT("UseBelt3","Use consumable belt slot 3"),C::Combat,EKeys::V);
+    for(int32 Item=1;Item<=6;++Item)
+        Add(*FString::Printf(TEXT("UseItem%d"),Item),FText::Format(LOCTEXT("UseItem","Use item in bag slot {0}"),Item),C::Combat,FCireKeyChord());
+    // progression-shop: end
     const FKey Digits[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight,EKeys::Nine,EKeys::Zero};
     for(int32 Bar=1;Bar<=FCireKeybindings::NumBars;++Bar)for(int32 Slot=1;Slot<=FCireKeybindings::SlotsPerBar;++Slot)
     {
@@ -170,6 +180,7 @@ FString CireKeybindings::SlotAbilityId(const FCireKeybindings& B,const ACireHero
     if(Index<=6)Skill=Hero.ActiveSkillSlot(Index-1);
     else if(Index==7){for(int32 I=0;I<Hero.Skills.Num();++I)if(ACireHero::IsPassive(Hero.Skills[I])){Skill=I;break;}}
     else if(Index==8)Skill=Hero.UltimateSkillSlot();
+    else if(Index>=9)return CireItems::AutoActionBarItem(Hero,Index-9); // progression-shop: active items on 7,8,9,0
     return Hero.Skills.IsValidIndex(Skill)?Hero.Skills[Skill]:FString();
 }
 int32 CireKeybindings::ResolveSlot(const FCireKeybindings& B,const ACireHero& Hero,FName Slot)
@@ -381,7 +392,7 @@ bool CireKeybindings::RunSmoke()
     Check(B.Get(TEXT("TurnLeft"),0)==FCireKeyChord(EKeys::A)&&B.Get(TEXT("TargetPreviousEnemy"),0)==FCireKeyChord(EKeys::Tab,true),TEXT("A turn, Shift+Tab previous enemy"));
     Check(B.Get(SlotAction(1,1),0)==FCireKeyChord(EKeys::One)&&B.Get(SlotAction(2,3),0)==FCireKeyChord(EKeys::Three,true)&&
         B.Get(SlotAction(3,6),0)==FCireKeyChord(EKeys::Six,false,false,true)&&!B.Get(SlotAction(1,7),0).IsBound()&&!B.Get(SlotAction(3,12),0).IsBound(),TEXT("action bar defaults"));
-    Check(Actions().Num()==24+FCireKeybindings::NumBars*FCireKeybindings::SlotsPerBar,TEXT("action list size"));
+    Check(Actions().Num()==24+10/*progression-shop: stats, 3 belt, 6 item*/+FCireKeybindings::NumBars*FCireKeybindings::SlotsPerBar,TEXT("action list size"));
     {
         TSet<FString> Seen;bool Unique=true;
         for(const auto& I:Actions())for(int32 K=0;K<2;++K)if(I.Default[K].IsBound()){const FString Id=I.Default[K].ToString();Unique&=!Seen.Contains(Id);Seen.Add(Id);}

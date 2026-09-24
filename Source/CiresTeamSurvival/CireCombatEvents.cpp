@@ -1,4 +1,5 @@
 #include "CireCombatEvents.h"
+#include "CireItems.h" // progression-shop
 #include "CireGame.h"
 #include "CireThreat.h"
 #include "CireConstruct.h"
@@ -154,8 +155,12 @@ float CireCombat::ApplyDamage(AActor* Source, AActor* Target, float Amount, cons
 {
     if (!IsValid(Source) || !Source->HasAuthority() || !IsValid(Target) ||
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
+    // progression-shop: spell power, execute, every-Nth-hit and lantern marks scale outgoing damage.
+    Amount = CireItems::ModifyOutgoingDamage(Source, Target, Amount, AbilityName);
     const FCireDamageEvent Event(AbilityName,bCritical);
-    return Target->TakeDamage(Amount, Event, Source->GetInstigatorController(), Source);
+    const float Applied = Target->TakeDamage(Amount, Event, Source->GetInstigatorController(), Source);
+    CireItems::OnDamageDealt(Source, Target, Applied, AbilityName); // progression-shop: lifesteal
+    return Applied;
 }
 
 float CireCombat::ApplyHealing(ACireHero* Source, ACireHero* Target, float Amount, const FString& AbilityName)
@@ -165,7 +170,7 @@ float CireCombat::ApplyHealing(ACireHero* Source, ACireHero* Target, float Amoun
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
     auto* Mode = Source->GetWorld()->GetAuthGameMode<ACireGameMode>();
     if (!Mode || !Mode->IsCombatPhase()) return 0;
-    const float Multiplier = Source->HasSkill(TEXT("soul_conduit")) ? 1.25f : 1.f;
+    const float Multiplier = (Source->HasSkill(TEXT("soul_conduit")) ? 1.25f : 1.f) * CireItems::HealingMultiplier(Source); // progression-shop
     const float Before = Target->Health;
     Target->Health = FMath::Min(Target->MaxHealth, Before + Amount * Multiplier);
     const float Applied = FMath::Max(0.f, Target->Health - Before);

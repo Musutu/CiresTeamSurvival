@@ -1,0 +1,593 @@
+#include "CireItemRules.h"
+
+#include <algorithm>
+#include <cmath>
+
+// progression-shop: see CireItemRules.h and Docs/Items.md.
+namespace Cires
+{
+namespace Items
+{
+namespace
+{
+struct StatInfo { const char* Key; const char* Label; bool Percent; };
+constexpr StatInfo StatTable[StatCount] = {
+    {"strength", "Strength", false},
+    {"agility", "Agility", false},
+    {"intelligence", "Intelligence", false},
+    {"health", "Health", false},
+    {"mana", "Mana", false},
+    {"attackDamage", "Attack Damage", false},
+    {"spellPower", "Spell Power", true},
+    {"armor", "Armor", false},
+    {"ward", "Spell Ward", false},
+    {"attackSpeed", "Attack Speed", true},
+    {"critChance", "Critical Chance", true},
+    {"lifesteal", "Lifesteal", true},
+    {"cooldownReduction", "Cooldown Reduction", true},
+    {"moveSpeed", "Move Speed", true},
+    {"healthRegen", "Health Regen /s", false},
+    {"manaRegen", "Mana Regen /s", false},
+    {"energyRegen", "Energy Regen /s", false},
+};
+
+struct KeyedEffect { const char* Key; EffectKind Kind; };
+constexpr KeyedEffect EffectTable[] = {
+    {"none", EffectKind::None}, {"healOverTime", EffectKind::HealOverTime},
+    {"manaOverTime", EffectKind::ManaOverTime}, {"elixir", EffectKind::Elixir},
+    {"ward", EffectKind::Ward}, {"experience", EffectKind::Experience},
+    {"primaryStat", EffectKind::PrimaryStat}, {"damageArea", EffectKind::DamageArea},
+    {"selfBarrier", EffectKind::SelfBarrier}, {"shieldAllies", EffectKind::ShieldAllies},
+    {"tauntArea", EffectKind::TauntArea}, {"healAllies", EffectKind::HealAllies},
+    {"haste", EffectKind::Haste},
+};
+
+struct KeyedPassive { const char* Key; PassiveKind Kind; };
+constexpr KeyedPassive PassiveTable[] = {
+    {"critMultiplier", PassiveKind::CritMultiplier}, {"abilityLifesteal", PassiveKind::AbilityLifesteal},
+    {"executeBonus", PassiveKind::ExecuteBonus}, {"everyNthHit", PassiveKind::EveryNthHit},
+    {"spellPowerAmp", PassiveKind::SpellPowerAmp}, {"thorns", PassiveKind::Thorns},
+    {"lowHealthShield", PassiveKind::LowHealthShield}, {"healAmp", PassiveKind::HealAmp},
+    {"auraRegen", PassiveKind::AuraRegen},
+};
+
+// SplitMix64: portable, identical across standard libraries and the Unreal build.
+class Random
+{
+public:
+    explicit Random(std::uint64_t seed) : State(seed ^ 0x9E3779B97F4A7C15ull) {}
+    std::uint64_t Next()
+    {
+        std::uint64_t z = (State += 0x9E3779B97F4A7C15ull);
+        z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ull;
+        z = (z ^ (z >> 27)) * 0x94D049BB133111EBull;
+        return z ^ (z >> 31);
+    }
+    double Unit() { return static_cast<double>(Next() >> 11) * (1.0 / 9007199254740992.0); }
+    int Bounded(int count) { return count <= 1 ? 0 : static_cast<int>(Next() % static_cast<std::uint64_t>(count)); }
+private:
+    std::uint64_t State;
+};
+
+bool Finite(double value) { return std::isfinite(value); }
+} // namespace
+
+const char* StatKey(ItemStat stat) { return StatTable[static_cast<int>(stat)].Key; }
+const char* StatLabel(ItemStat stat) { return StatTable[static_cast<int>(stat)].Label; }
+bool StatIsPercent(ItemStat stat) { return StatTable[static_cast<int>(stat)].Percent; }
+bool ParseStatKey(const std::string& key, ItemStat& out)
+{
+    for (int index = 0; index < StatCount; ++index)
+        if (key == StatTable[index].Key) { out = static_cast<ItemStat>(index); return true; }
+    return false;
+}
+
+StatBlock& StatBlock::operator+=(const StatBlock& other)
+{
+    for (int index = 0; index < StatCount; ++index) Values[index] += other.Values[index];
+    return *this;
+}
+bool StatBlock::IsZero() const
+{
+    return std::all_of(Values.begin(), Values.end(), [](double value) { return value == 0.0; });
+}
+
+const char* TierName(ItemTier tier)
+{
+    switch (tier)
+    {
+    case ItemTier::Consumable: return "Consumable";
+    case ItemTier::Basic: return "Basic";
+    case ItemTier::Epic: return "Epic";
+    default: return "Legendary";
+    }
+}
+
+bool ParseEffectKind(const std::string& key, EffectKind& out)
+{
+    for (const auto& entry : EffectTable) if (key == entry.Key) { out = entry.Kind; return true; }
+    return false;
+}
+const char* EffectKey(EffectKind kind)
+{
+    for (const auto& entry : EffectTable) if (entry.Kind == kind) return entry.Key;
+    return "none";
+}
+bool ParsePassiveKind(const std::string& key, PassiveKind& out)
+{
+    for (const auto& entry : PassiveTable) if (key == entry.Key) { out = entry.Kind; return true; }
+    return false;
+}
+
+bool ItemDef::HasTag(const std::string& tag) const
+{
+    return std::find(Tags.begin(), Tags.end(), tag) != Tags.end();
+}
+
+int Inventory::CountOf(const std::string& id) const
+{
+    int count = 0;
+    for (const auto& slot : Equipment) if (slot.Id == id) ++count;
+    for (const auto& slot : Belt) if (slot.Id == id) ++count;
+    return count;
+}
+int Inventory::FreeEquipment() const
+{
+    return static_cast<int>(std::count_if(Equipment.begin(), Equipment.end(), [](const Slot& slot) { return slot.Empty(); }));
+}
+
+// ------------------------------------------------------------------ catalog
+const ItemDef* Catalog::Find(const std::string& id) const
+{
+    for (const auto& item : Items) if (item.Id == id) return &item;
+    return nullptr;
+}
+
+std::vector<std::string> Catalog::BuildsInto(const std::string& id) const
+{
+    std::vector<std::string> result;
+    for (const auto& item : Items)
+        if (std::find(item.Components.begin(), item.Components.end(), id) != item.Components.end() &&
+            std::find(result.begin(), result.end(), item.Id) == result.end())
+            result.push_back(item.Id);
+    return result;
+}
+
+int Catalog::ComputeTotal(std::size_t index, std::vector<int>& state, std::string& error)
+{
+    // state: 0 = unvisited, 1 = visiting (cycle guard), 2 = done
+    if (state[index] == 2) return Items[index].TotalCost;
+    if (state[index] == 1) { error = "Recipe cycle through " + Items[index].Id; return 0; }
+    state[index] = 1;
+    long long total = Items[index].RecipeCost;
+    for (const auto& component : Items[index].Components)
+    {
+        std::size_t found = Items.size();
+        for (std::size_t other = 0; other < Items.size(); ++other) if (Items[other].Id == component) { found = other; break; }
+        if (found == Items.size()) { error = Items[index].Id + " uses unknown component " + component; return 0; }
+        if (Items[found].Belt || Items[found].Instant) { error = Items[index].Id + " cannot use consumable component " + component; return 0; }
+        total += ComputeTotal(found, state, error);
+        if (!error.empty()) return 0;
+    }
+    if (total < 0 || total > 100000) { error = Items[index].Id + " has an invalid total cost"; return 0; }
+    Items[index].TotalCost = static_cast<int>(total);
+    state[index] = 2;
+    return Items[index].TotalCost;
+}
+
+std::string Catalog::Finalize()
+{
+    Finalized = false;
+    if (Items.empty()) return "Item catalog is empty";
+    for (std::size_t index = 0; index < Items.size(); ++index)
+    {
+        const auto& item = Items[index];
+        if (item.Id.empty() || item.Id.size() > 48) return "Item id is empty or too long";
+        for (std::size_t other = index + 1; other < Items.size(); ++other)
+            if (Items[other].Id == item.Id) return "Duplicate item id " + item.Id;
+        if (item.Name.empty()) return item.Id + " has no name";
+        if (item.RecipeCost < 0) return item.Id + " has a negative cost";
+        if (item.MaxStack < 1 || item.MaxStack > 20) return item.Id + " has an invalid stack size";
+        if (item.Belt && item.Instant) return item.Id + " cannot be both belt and instant";
+        if ((item.Belt || item.Instant) && !item.Use.IsSet()) return item.Id + " consumable has no effect";
+        if ((item.Belt || item.Instant) && !item.Components.empty()) return item.Id + " consumables cannot have recipes";
+        if (!item.Belt && item.MaxStack != 1) return item.Id + " only belt items can stack";
+        for (const double value : item.Stats.Values) if (!Finite(value) || std::abs(value) > 5000) return item.Id + " has an invalid stat";
+        const Effect& use = item.Use;
+        if (!Finite(use.Amount) || !Finite(use.Scaling) || !Finite(use.Radius) || !Finite(use.Duration) || !Finite(use.Cooldown) ||
+            use.Amount < 0 || use.Radius < 0 || use.Duration < 0 || use.Cooldown < 0 || use.Duration > 900 || use.Cooldown > 900 || use.Radius > 5000)
+            return item.Id + " has invalid effect numbers";
+        for (const auto& passive : item.Passives)
+            if (passive.Kind == PassiveKind::None || passive.Name.empty() || !Finite(passive.Amount) || passive.Amount < 0 || passive.Amount > 500)
+                return item.Id + " has an invalid passive";
+    }
+    std::vector<int> state(Items.size(), 0);
+    std::string error;
+    for (std::size_t index = 0; index < Items.size(); ++index)
+    {
+        ComputeTotal(index, state, error);
+        if (!error.empty()) return error;
+    }
+    for (const auto& item : Items)
+        if (item.Purchasable && item.TotalCost <= 0) return item.Id + " is purchasable for free";
+    Finalized = true;
+    return {};
+}
+
+// ------------------------------------------------------------------ shop
+ShopAccess CheckShopAccess(const ShopRules& rules, int matchPhase, double distanceToTown, bool dead)
+{
+    if (dead) return ShopAccess::Dead;
+    const bool inTown = Finite(distanceToTown) && distanceToTown <= rules.TownRadius;
+    switch (matchPhase)
+    {
+    case 1: // intermission / prep
+        return rules.BuyAnywhereInPrep || inTown ? ShopAccess::Allowed : ShopAccess::NotInTown;
+    case 4: // recovery
+        if (!rules.TownShoppingDuringRecovery) return ShopAccess::WrongPhase;
+        return inTown ? ShopAccess::Allowed : ShopAccess::NotInTown;
+    case 0: // survival waves
+        if (!rules.TownShoppingDuringWaves) return ShopAccess::WrongPhase;
+        return inTown ? ShopAccess::Allowed : ShopAccess::NotInTown;
+    default:
+        return ShopAccess::WrongPhase;
+    }
+}
+
+std::string ShopAccessMessage(ShopAccess access)
+{
+    switch (access)
+    {
+    case ShopAccess::Allowed: return {};
+    case ShopAccess::Dead: return "The fallen cannot trade.";
+    case ShopAccess::NotInTown: return "Return to town to trade (prep intermission allows buying anywhere).";
+    default: return "The market is shut: buy anywhere during the prep intermission, or in town during recovery.";
+    }
+}
+
+namespace
+{
+// Recursively marks owned parts of a recipe as consumed, LoL style: an owned
+// component is used whole; a missing one is replaced by its own owned parts.
+void ConsumeOwned(const Catalog& catalog, const Inventory& inventory, const ItemDef& item,
+                  std::vector<int>& consumed, int& discount)
+{
+    for (const auto& componentId : item.Components)
+    {
+        int owned = -1;
+        for (int index = 0; index < EquipmentSlots; ++index)
+            if (inventory.Equipment[index].Id == componentId &&
+                std::find(consumed.begin(), consumed.end(), index) == consumed.end()) { owned = index; break; }
+        const ItemDef* component = catalog.Find(componentId);
+        if (!component) continue;
+        if (owned >= 0) { consumed.push_back(owned); discount += component->TotalCost; }
+        else ConsumeOwned(catalog, inventory, *component, consumed, discount);
+    }
+}
+} // namespace
+
+PurchasePlan PlanPurchase(const Catalog& catalog, const Inventory& inventory, const std::string& id, int gold)
+{
+    PurchasePlan plan;
+    const ItemDef* item = catalog.Find(id);
+    if (!item) { plan.Error = "Unknown item."; return plan; }
+    if (!item->Purchasable) { plan.Error = item->Name + " is only found in challenge loot."; return plan; }
+    if (item->Instant)
+    {
+        plan.Instant = true;
+        plan.Cost = item->TotalCost;
+    }
+    else if (item->Belt)
+    {
+        plan.ToBelt = true;
+        plan.Cost = item->TotalCost;
+        for (int index = 0; index < BeltSlots; ++index)
+            if (inventory.Belt[index].Id == id && inventory.Belt[index].Charges < item->MaxStack)
+            { plan.TargetSlot = index; plan.Stacks = true; break; }
+        if (plan.TargetSlot < 0)
+        {
+            for (int index = 0; index < BeltSlots; ++index) if (inventory.Belt[index].Empty()) { plan.TargetSlot = index; break; }
+        }
+        if (plan.TargetSlot < 0)
+        {
+            plan.Error = inventory.CountOf(id) > 0 ? item->Name + " stack is full (" + std::to_string(item->MaxStack) + ")."
+                                                    : "Consumable belt is full (3 slots).";
+            return plan;
+        }
+    }
+    else
+    {
+        int discount = 0;
+        ConsumeOwned(catalog, inventory, *item, plan.ConsumedEquipment, discount);
+        plan.Cost = std::max(0, item->TotalCost - discount);
+        const auto consumed = [&](int index) { return std::find(plan.ConsumedEquipment.begin(), plan.ConsumedEquipment.end(), index) != plan.ConsumedEquipment.end(); };
+        for (int index = 0; index < EquipmentSlots; ++index)
+        {
+            const Slot& slot = inventory.Equipment[index];
+            if (slot.Empty() || consumed(index)) continue;
+            if (item->Unique && slot.Id == id) { plan.Error = item->Name + " is unique: you already own one."; return plan; }
+            const ItemDef* owned = catalog.Find(slot.Id);
+            if (owned && !item->UniqueGroup.empty() && owned->UniqueGroup == item->UniqueGroup)
+            { plan.Error = "Only one " + item->UniqueGroup + " item may be carried (" + owned->Name + ")."; return plan; }
+        }
+        if (!plan.ConsumedEquipment.empty())
+            plan.TargetSlot = *std::min_element(plan.ConsumedEquipment.begin(), plan.ConsumedEquipment.end());
+        else
+            for (int index = 0; index < EquipmentSlots; ++index) if (inventory.Equipment[index].Empty()) { plan.TargetSlot = index; break; }
+        if (plan.TargetSlot < 0) { plan.Error = "Inventory full: sell an item first (6 slots)."; return plan; }
+    }
+    if (gold < plan.Cost)
+    {
+        plan.Error = "Not enough gold: " + std::to_string(plan.Cost - gold) + " more needed.";
+        return plan;
+    }
+    plan.Ok = true;
+    return plan;
+}
+
+bool ApplyPurchase(const Catalog& catalog, Inventory& inventory, int& gold, const std::string& id, const PurchasePlan& plan)
+{
+    const PurchasePlan fresh = PlanPurchase(catalog, inventory, id, gold);
+    if (!plan.Ok || !fresh.Ok || fresh.Cost != plan.Cost || fresh.TargetSlot != plan.TargetSlot ||
+        fresh.ConsumedEquipment != plan.ConsumedEquipment) return false;
+    const ItemDef* item = catalog.Find(id);
+    gold -= plan.Cost;
+    if (plan.Instant) return true;
+    if (plan.ToBelt)
+    {
+        Slot& slot = inventory.Belt[plan.TargetSlot];
+        if (plan.Stacks) ++slot.Charges;
+        else { slot = Slot{}; slot.Id = id; slot.Charges = 1; }
+        return true;
+    }
+    for (const int index : plan.ConsumedEquipment) inventory.Equipment[index] = Slot{};
+    Slot& slot = inventory.Equipment[plan.TargetSlot];
+    slot = Slot{};
+    slot.Id = id;
+    slot.Charges = item && item->HasActive() ? 1 : 0;
+    return true;
+}
+
+int SellValue(const Catalog& catalog, const Slot& slot, const ShopRules& rules)
+{
+    const ItemDef* item = catalog.Find(slot.Id);
+    if (!item) return 0;
+    const double ratio = std::clamp(Finite(rules.SellRatio) ? rules.SellRatio : 0.6, 0.0, 1.0);
+    const int each = static_cast<int>(std::floor(item->TotalCost * ratio));
+    return item->Belt ? each * std::max(1, slot.Charges) : each;
+}
+
+int Sell(const Catalog& catalog, Inventory& inventory, int& gold, int index, bool belt, const ShopRules& rules)
+{
+    if (index < 0 || index >= (belt ? BeltSlots : EquipmentSlots)) return -1;
+    Slot& slot = belt ? inventory.Belt[index] : inventory.Equipment[index];
+    if (slot.Empty() || !catalog.Find(slot.Id)) return -1;
+    const int value = SellValue(catalog, slot, rules);
+    gold += value;
+    slot = Slot{};
+    return value;
+}
+
+void ShopSession::Record(const Inventory& inventory, int gold, const std::string& label)
+{
+    History.push_back({inventory, gold, label});
+    if (History.size() > 32) History.erase(History.begin());
+}
+
+bool ShopSession::Undo(Inventory& inventory, int& gold, std::string& label)
+{
+    if (History.empty()) return false;
+    const ShopSnapshot snapshot = History.back();
+    History.pop_back();
+    // Keep cooldowns that moved on during the visit; restore contents and gold exactly.
+    inventory = snapshot.Before;
+    gold = snapshot.GoldBefore;
+    label = snapshot.Label;
+    return true;
+}
+
+// ------------------------------------------------------------------ totals
+Totals ComputeTotals(const Catalog& catalog, const Inventory& inventory, const std::vector<StatBlock>& activeBuffs)
+{
+    Totals totals;
+    std::vector<std::string> seenPassives;
+    double spellAmp = 0;
+    for (const auto& slot : inventory.Equipment)
+    {
+        const ItemDef* item = catalog.Find(slot.Id);
+        if (!item) continue;
+        totals.Stats += item->Stats;
+        for (const auto& passive : item->Passives)
+        {
+            if (std::find(seenPassives.begin(), seenPassives.end(), passive.Name) != seenPassives.end()) continue;
+            seenPassives.push_back(passive.Name);
+            switch (passive.Kind)
+            {
+            case PassiveKind::CritMultiplier: totals.CritMultiplierBonus += passive.Amount; break;
+            case PassiveKind::AbilityLifesteal: totals.AbilityLifesteal += passive.Amount; break;
+            case PassiveKind::ExecuteBonus:
+                totals.ExecuteBonus += passive.Amount;
+                totals.ExecuteThreshold = std::max(totals.ExecuteThreshold, passive.Threshold);
+                break;
+            case PassiveKind::EveryNthHit:
+                totals.EveryNthDamage += passive.Amount;
+                totals.EveryNthCount = totals.EveryNthCount > 0 ? std::min(totals.EveryNthCount, std::max(1, passive.Count)) : std::max(1, passive.Count);
+                break;
+            case PassiveKind::SpellPowerAmp: spellAmp += passive.Amount; break;
+            case PassiveKind::Thorns: totals.Thorns += passive.Amount; break;
+            case PassiveKind::LowHealthShield:
+                totals.LowHealthThreshold = std::max(totals.LowHealthThreshold, passive.Threshold);
+                totals.LowHealthDuration = std::max(totals.LowHealthDuration, passive.Duration);
+                totals.LowHealthCooldown = totals.LowHealthCooldown > 0 ? std::min(totals.LowHealthCooldown, passive.Cooldown) : passive.Cooldown;
+                break;
+            case PassiveKind::HealAmp: totals.HealAmp += passive.Amount; break;
+            case PassiveKind::AuraRegen:
+                totals.AuraRegen += passive.Amount;
+                totals.AuraRadius = std::max(totals.AuraRadius, passive.Radius);
+                break;
+            default: break;
+            }
+        }
+    }
+    for (const auto& buff : activeBuffs) totals.Stats += buff;
+    totals.Stats[ItemStat::SpellPower] *= 1.0 + spellAmp / 100.0;
+    return totals;
+}
+
+UseResult UseSlot(const Catalog& catalog, Inventory& inventory, int index, bool belt, double now, Effect& effect)
+{
+    if (index < 0 || index >= (belt ? BeltSlots : EquipmentSlots)) return UseResult::Empty;
+    Slot& slot = belt ? inventory.Belt[index] : inventory.Equipment[index];
+    if (slot.Empty()) return UseResult::Empty;
+    const ItemDef* item = catalog.Find(slot.Id);
+    if (!item || !item->Use.IsSet() || item->Instant || (!belt && item->Belt)) return UseResult::NoEffect;
+    if (Finite(now) && slot.ReadyAt > now) return UseResult::OnCooldown;
+    effect = item->Use;
+    if (belt)
+    {
+        if (--slot.Charges <= 0) slot = Slot{};
+        else slot.ReadyAt = now + item->Use.Cooldown;
+    }
+    else slot.ReadyAt = now + item->Use.Cooldown;
+    return UseResult::Used;
+}
+
+double Mitigation(double value)
+{
+    if (!Finite(value) || value <= 0) return 0;
+    return std::min(0.75, value / (value + 100.0));
+}
+
+// ------------------------------------------------------------------ loot
+bool ParseLootKind(const std::string& key, LootKind& out)
+{
+    if (key == "gold") out = LootKind::Gold;
+    else if (key == "experience") out = LootKind::Experience;
+    else if (key == "primaryTome") out = LootKind::PrimaryTome;
+    else if (key == "item") out = LootKind::Item;
+    else return false;
+    return true;
+}
+
+LootBundle RollLoot(const LootTable& table, int tier, double lootMultiplier, std::uint64_t seed, const LootScaling& scaling)
+{
+    tier = std::clamp(tier, 1, 10);
+    lootMultiplier = std::clamp(Finite(lootMultiplier) ? lootMultiplier : 1.0, 1.0, 1.4);
+    Random random(seed ^ (static_cast<std::uint64_t>(tier) << 48));
+    LootBundle bundle;
+    const double amountScale = 1.0 + std::max(0.0, scaling.GoldPerTier) * (tier - 1);
+    const double chanceScale = (1.0 + std::max(0.0, scaling.ChancePerTier) * (tier - 1)) * lootMultiplier;
+    for (const auto& entry : table.Entries)
+    {
+        const bool guaranteed = entry.Chance >= 1.0;
+        const double chance = guaranteed ? 1.0 : std::min(scaling.MaxChance, std::max(0.0, entry.Chance) * chanceScale);
+        const double roll = random.Unit();
+        if (!guaranteed && roll >= chance) continue;
+        const int low = std::min(entry.Min, entry.Max), high = std::max(entry.Min, entry.Max);
+        const int amount = low + random.Bounded(high - low + 1);
+        switch (entry.Kind)
+        {
+        case LootKind::Gold: bundle.Gold += static_cast<int>(std::lround(amount * amountScale * lootMultiplier)); break;
+        case LootKind::Experience: bundle.Experience += static_cast<int>(std::lround(amount * amountScale)); break;
+        case LootKind::PrimaryTome: if (amount > 0) bundle.PrimaryTomes.push_back(amount); break;
+        case LootKind::Item:
+            if (!entry.Pool.empty()) bundle.Items.push_back(entry.Pool[random.Bounded(static_cast<int>(entry.Pool.size()))]);
+            break;
+        }
+    }
+    return bundle;
+}
+
+int PickFairRecipient(const std::vector<Recipient>& members, bool needsRoom, std::uint64_t seed)
+{
+    int best = -1;
+    std::vector<int> tied;
+    for (int index = 0; index < static_cast<int>(members.size()); ++index)
+    {
+        const auto& member = members[index];
+        if (!member.Eligible || (needsRoom && !member.HasRoom)) continue;
+        if (best < 0 || member.LootScore < members[best].LootScore) { best = index; tied.assign(1, index); }
+        else if (member.LootScore == members[best].LootScore) tied.push_back(index);
+    }
+    if (tied.empty()) return -1;
+    Random random(seed);
+    return tied[random.Bounded(static_cast<int>(tied.size()))];
+}
+
+// ------------------------------------------------------------------ packs
+int BayTier(const PackSchedule& schedule, int bay, int round, int waveInCycle)
+{
+    for (const auto& entry : schedule.Bays)
+    {
+        if (entry.Bay != bay) continue;
+        if (round < entry.UnlockRound || (round == entry.UnlockRound && waveInCycle < entry.UnlockWave)) return 0;
+        int tier = std::max(1, bay);
+        if (schedule.PromotionEveryRounds > 0 && round >= schedule.PromotionStartRound)
+            tier += 1 + (round - schedule.PromotionStartRound) / schedule.PromotionEveryRounds;
+        return std::clamp(tier, 1, std::clamp(schedule.MaxTier, 1, 10));
+    }
+    return 0;
+}
+
+bool BayUnlocksAt(const PackSchedule& schedule, int bay, int round, int waveInCycle)
+{
+    for (const auto& entry : schedule.Bays)
+        if (entry.Bay == bay) return entry.UnlockRound == round && entry.UnlockWave == waveInCycle;
+    return false;
+}
+
+std::string ValidateSchedule(const PackSchedule& schedule)
+{
+    if (schedule.Bays.empty() || schedule.Bays.size() > 3) return "packSchedule needs 1-3 bays";
+    for (std::size_t index = 0; index < schedule.Bays.size(); ++index)
+    {
+        const auto& bay = schedule.Bays[index];
+        if (bay.Bay < 1 || bay.Bay > 3) return "pack bay must be 1-3";
+        if (bay.UnlockRound < 1 || bay.UnlockRound > 100 || bay.UnlockWave < 1 || bay.UnlockWave > 10) return "pack bay unlock out of range";
+        for (std::size_t other = index + 1; other < schedule.Bays.size(); ++other)
+            if (schedule.Bays[other].Bay == bay.Bay) return "duplicate pack bay";
+    }
+    if (schedule.MaxTier < 1 || schedule.MaxTier > 10 || schedule.PromotionEveryRounds < 0 || schedule.PromotionStartRound < 1)
+        return "pack promotion settings out of range";
+    return {};
+}
+
+// ------------------------------------------------------------------ teleport
+TeleportStart BeginTeleport(TeleportState& state, const TeleportRules& rules, double now, bool allowed, bool instant)
+{
+    if (!allowed || !Finite(now)) return TeleportStart::NotAllowed;
+    if (state.Channeling()) return TeleportStart::AlreadyChanneling;
+    if (instant) return TeleportStart::Instant;
+    if (now < state.ReadyAt) return TeleportStart::OnCooldown;
+    state.ChannelStart = now;
+    state.ChannelEnd = now + std::max(0.0, rules.ChannelSeconds);
+    return TeleportStart::Channeling;
+}
+
+bool InterruptTeleport(TeleportState& state)
+{
+    if (!state.Channeling()) return false;
+    state.ChannelStart = state.ChannelEnd = -1;
+    return true;
+}
+
+bool CompleteTeleport(TeleportState& state, const TeleportRules& rules, double now)
+{
+    if (!state.Channeling() || !Finite(now) || now < state.ChannelEnd) return false;
+    state.ChannelStart = state.ChannelEnd = -1;
+    state.ReadyAt = now + std::max(0.0, rules.CooldownSeconds);
+    return true;
+}
+
+double TeleportCooldownRemaining(const TeleportState& state, double now)
+{
+    return Finite(now) ? std::max(0.0, state.ReadyAt - now) : 0.0;
+}
+
+double ShiftForPause(double timestamp, double pausedAt, double pauseSeconds)
+{
+    if (!Finite(timestamp) || !Finite(pausedAt) || !Finite(pauseSeconds) || pauseSeconds <= 0) return timestamp;
+    return timestamp > pausedAt ? timestamp + pauseSeconds : timestamp;
+}
+} // namespace Items
+} // namespace Cires
