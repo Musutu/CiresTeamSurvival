@@ -24,6 +24,8 @@ struct CIRESTEAMSURVIVAL_API FCireRouteSegmentCheck
     /** Town pieces the route-clearance rule would remove for this segment at the draft lane width. */
     int32 PropConflicts = 0;
     TArray<FName> Slots;
+    /** The navmesh path a Hero-sized unit takes along this segment (editor overlay). */
+    TArray<FVector> Path;
 };
 
 struct CIRESTEAMSURVIVAL_API FCireRouteValidation
@@ -44,7 +46,7 @@ struct CIRESTEAMSURVIVAL_API FCireRouteValidation
 namespace CireRouteEditor
 {
     CIRESTEAMSURVIVAL_API FCireRouteValidation Validate(const UWorld* World, const FCireBattlefieldRoutes& Draft);
-    CIRESTEAMSURVIVAL_API ECireRouteReach Reach(const UWorld* World, const FVector& From, const FVector& To, float& OutLength);
+    CIRESTEAMSURVIVAL_API ECireRouteReach Reach(const UWorld* World, const FVector& From, const FVector& To, float& OutLength, TArray<FVector>* OutPath = nullptr);
     CIRESTEAMSURVIVAL_API FLinearColor ReachColor(ECireRouteReach Reach);
     CIRESTEAMSURVIVAL_API const TCHAR* ReachLabel(ECireRouteReach Reach);
     /** Insert a waypoint after Index at the middle of that segment (both realms when bLinked). Returns the new index or INDEX_NONE. */

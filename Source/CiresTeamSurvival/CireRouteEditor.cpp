@@ -10,9 +10,10 @@ FVector WorldOf(int32 Team, const FVector2D& Local, float Z = 60.f) { return FVe
 ECireRouteReach Worst(ECireRouteReach A, ECireRouteReach B) { return static_cast<uint8>(A) >= static_cast<uint8>(B) ? A : B; }
 }
 
-ECireRouteReach CireRouteEditor::Reach(const UWorld* World, const FVector& From, const FVector& To, float& OutLength)
+ECireRouteReach CireRouteEditor::Reach(const UWorld* World, const FVector& From, const FVector& To, float& OutLength, TArray<FVector>* OutPath)
 {
     OutLength = 0.f;
+    if (OutPath) OutPath->Reset();
     if (!CireNav::HasNavigation(World)) return ECireRouteReach::Unknown;
     ECireRouteReach Result = ECireRouteReach::Direct;
     // Both agent sizes: ordinary units and heroes (Hero mesh) and the Pack Leader / oversized rows (Large mesh).
@@ -26,7 +27,7 @@ ECireRouteReach CireRouteEditor::Reach(const UWorld* World, const FVector& From,
         if (!Path.bValid) Here = ECireRouteReach::None;
         else if (Path.bPartial || FVector::Dist2D(Path.Points.Last(), B) > 120.) Here = ECireRouteReach::Partial;
         else if (Path.Length > FMath::Max(1.f, Path.Direct) * 1.2f + 60.f) Here = ECireRouteReach::Detour;
-        if (Radius < 50.f) OutLength = Path.Length;
+        if (Radius < 50.f) { OutLength = Path.Length; if (OutPath) *OutPath = Path.Points; }
         Result = Worst(Result, Here);
     }
     return Result;
@@ -46,7 +47,7 @@ FCireRouteValidation CireRouteEditor::Validate(const UWorld* World, const FCireB
         {
             FCireRouteSegmentCheck S;
             S.Direct = static_cast<float>(FVector2D::Distance(Points[I], Points[I + 1]));
-            S.Reach = Reach(World, WorldOf(Team, Points[I]), WorldOf(Team, Points[I + 1]), S.PathLength);
+            S.Reach = Reach(World, WorldOf(Team, Points[I]), WorldOf(Team, Points[I + 1]), S.PathLength, &S.Path);
             S.PropConflicts = CireEnvironmentProps::RouteConflicts(World, Team, Points[I], Points[I + 1], Draft.LaneWidth, &S.Slots);
             V.Unreachable += S.Reach == ECireRouteReach::None || S.Reach == ECireRouteReach::Partial ? 1 : 0;
             V.Detours += S.Reach == ECireRouteReach::Detour ? 1 : 0;

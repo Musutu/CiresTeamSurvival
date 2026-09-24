@@ -275,7 +275,7 @@ bool CireNav::RunTests(ACireGameMode* Mode)
 // =============================================================== -CireNavProbe: march + performance
 namespace
 {
-struct FProbeUnit { TWeakObjectPtr<ACireMonster> M; int32 Team = 0; FName Archetype; float SpawnedAt = 0, LeakedAt = -1, Still = 0, MaxStill = 0; bool bLeaked = false; };
+struct FProbeUnit { TWeakObjectPtr<ACireMonster> M; int32 Team = 0; FName Archetype; float SpawnedAt = 0, LeakedAt = -1, Still = 0, MaxStill = 0, Radius = 0; bool bLeaked = false; };
 struct FProbe
 {
     bool bEnabled = false, bDone = false, bPass = true;
@@ -354,7 +354,7 @@ bool CireNav::TickProbe(ACireGameMode* Mode, float Delta)
             TEXT("hollow_infantry"), TEXT("hollow_siegebreaker"), TEXT("gravemaw_pack_leader"), TEXT("barbed_hunter"), TEXT("ironbound_bruiser")};
         for (int32 Team = 0; Team < 2; ++Team)
             for (int32 I = 0; I < 10; ++I)
-                if (auto* M = SpawnMarcher(Mode, Team, Mix[I], I)) { FProbeUnit U; U.M = M; U.Team = Team; U.Archetype = Mix[I]; U.SpawnedAt = Probe.Clock; Probe.Units.Add(U); }
+                if (auto* M = SpawnMarcher(Mode, Team, Mix[I], I)) { FProbeUnit U; U.M = M; U.Team = Team; U.Archetype = Mix[I]; U.SpawnedAt = Probe.Clock; U.Radius = AgentRadius(M); Probe.Units.Add(U); }
         Note(FString::Printf(TEXT("CIRE_NAV_PROBE_MARCH_START units=%d route=%.0f/%.0f build_ms=%.1f tiles=%d/%d"), Probe.Units.Num(),
             CireLanePath::RouteLength(World, 0), CireLanePath::RouteLength(World, 1), Stats(World).InitialBuildMs, Stats(World).Tiles[0], Stats(World).Tiles[1]));
         ResetQueryStats(World);
@@ -372,7 +372,7 @@ bool CireNav::TickProbe(ACireGameMode* Mode, float Delta)
             {
                 U.bLeaked = true; U.LeakedAt = Probe.Clock;
                 Note(FString::Printf(TEXT("CIRE_NAV_PROBE_LEAK team=%d unit=%s radius=%.0f took=%.1f max_still=%.1f"), U.Team, *U.Archetype.ToString(),
-                    IsValid(M) ? AgentRadius(M) : 0.f, U.LeakedAt - U.SpawnedAt, U.MaxStill));
+                    U.Radius, U.LeakedAt - U.SpawnedAt, U.MaxStill));
                 continue;
             }
             ++Alive;
@@ -438,6 +438,133 @@ bool CireNav::TickProbe(ACireGameMode* Mode, float Delta)
 }
 #endif
 
+
+// =============================================================== -CireNavGallery: rendered evidence
 #if !UE_BUILD_SHIPPING
-bool CireNav::TickGallery(ACireGameMode*) { return false; } // replaced by the capture gallery below once the editor exists
+#include "CireHUD.h"
+#include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
+#include "Engine/GameViewportClient.h"
+#include "ShaderCompiler.h"
+#include "UnrealClient.h"
+namespace
+{
+struct FNavGallery
+{
+    bool bChecked = false, bEnabled = false, bDone = false;
+    int32 Stage = 0;
+    double Started = 0, StageAt = 0;
+    FString Directory;
+    TArray<FString> Files;
+    TWeakObjectPtr<ACameraActor> Camera;
+    int32 ArenaIndex = 0;
+};
+FNavGallery NavGallery;
+void NavShot(const FString& Name)
+{
+    const FString File = FPaths::Combine(NavGallery.Directory, Name);
+    FScreenshotRequest::RequestScreenshot(File, false, false, false, FIntRect(), true);
+    NavGallery.Files.Add(File);
+    UE_LOG(LogCireNavTests, Display, TEXT("CIRE_NAV_GALLERY_CAPTURE file=%s"), *File);
+}
+void ShowNav(UWorld* World, bool bShow) { if (UGameViewportClient* V = World->GetGameViewport()) V->EngineShowFlags.SetNavigation(bShow); }
+void Aim(ACameraActor* Camera, const FVector& From, const FVector& To) { Camera->SetActorLocation(From); Camera->SetActorRotation((To - From).Rotation()); }
+}
+bool CireNav::TickGallery(ACireGameMode* Mode)
+{
+    if (!NavGallery.bChecked)
+    {
+        NavGallery.bChecked = true;
+        NavGallery.bEnabled = Mode && FParse::Param(FCommandLine::Get(), TEXT("CireNavGallery"));
+        if (!NavGallery.bEnabled) return false;
+        NavGallery.Started = FPlatformTime::Seconds();
+        NavGallery.Directory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("NavGallery"), FDateTime::Now().ToString(TEXT("%Y%m%d-%H%M%S"))));
+        IFileManager::Get().MakeDirectory(*NavGallery.Directory, true);
+        Mode->WaveTimer = 1.e6f; Mode->bBotsFilled = true; Mode->BotFillTimer = 1.e6f;
+    }
+    if (!NavGallery.bEnabled || NavGallery.bDone) return false;
+    UWorld* World = Mode->GetWorld();
+    Mode->WaveTimer = 1.e6f;
+    auto* Controller = World->GetFirstPlayerController();
+    auto* Hero = Controller ? Cast<ACireHero>(Controller->GetPawn()) : nullptr;
+    auto* HUD = Controller ? Cast<ACireHUD>(Controller->GetHUD()) : nullptr;
+    if (!Hero || !HUD) return true;
+    if (!Hero->bDrafted) { Hero->Draft(0); Hero->HeroName = TEXT("Eric"); }
+    HUD->SetSkillOfferOpen(false);
+    const double Now = FPlatformTime::Seconds();
+    auto Next = [&]() { NavGallery.StageAt = Now; ++NavGallery.Stage; };
+    auto Fail = [&](const TCHAR* Why) { UE_LOG(LogCireNavTests, Error, TEXT("CIRE_NAV_GALLERY_FAIL %s"), Why); NavGallery.bDone = true; FPlatformMisc::RequestExitWithStatus(false, 1); return true; };
+    switch (NavGallery.Stage)
+    {
+    case 0: // shaders and the navmesh first
+        if (Now - NavGallery.Started < 6 || (GShaderCompilingManager && GShaderCompilingManager->GetNumRemainingJobs() > 0 && Now - NavGallery.Started < 240) || !IsReady(World)) return true;
+        if (ACameraActor* Camera = World->SpawnActor<ACameraActor>())
+        {
+            Camera->GetCameraComponent()->SetFieldOfView(62.f); Camera->GetCameraComponent()->SetAspectRatio(16.f / 9.f);
+            NavGallery.Camera = Camera;
+        }
+        if (!NavGallery.Camera.IsValid()) return Fail(TEXT("camera"));
+        // 1: the Hero navmesh over the market, Cooper's Lanes and the town square (Ember realm).
+        Aim(NavGallery.Camera.Get(), FVector(1600, -4300, 3900), FVector(5200, -2100, 0));
+        Controller->SetViewTarget(NavGallery.Camera.Get()); HUD->bShowHUD = false; ShowNav(World, true);
+        Next(); return true;
+    case 1:
+        if (Now - NavGallery.StageAt < 4) return true;
+        NavShot(TEXT("01_navmesh_town.png")); Next(); return true;
+    case 2: // 2: the path editor with waypoint 5 being dragged across the market
+    {
+        if (Now - NavGallery.StageAt < 1.5) return true;
+        HUD->bShowHUD = true; ShowNav(World, false);
+        HUD->OpenRouteEditor(true);
+        HUD->DebugRouteView(FVector(6600, -2100, 0), 5600.f, -60.f, 180.f);
+        Next(); return true;
+    }
+    case 3:
+    {
+        if (Now - NavGallery.StageAt < 1.0) return true;
+        const FVector Drag(5800 + 350, -2100 + 900, 0); // waypoint 5 (5800, 500) pulled toward the north stalls
+        HUD->DebugRouteDrag(0, 5, Drag, false);
+        FVector2D Screen;
+        if (Controller->ProjectWorldLocationToScreen(Drag, Screen)) HUD->DebugSetPointer(Screen / FMath::Max(.01f, HUD->DebugScale()));
+        if (Now - NavGallery.StageAt < 4.0) return true;
+        NavShot(TEXT("02_path_editor_drag.png")); Next(); return true;
+    }
+    case 4: // zoomed-out editor: whole route with reachability colours and the minimap overlay
+        if (Now - NavGallery.StageAt < 1.0) return true;
+        HUD->DebugRouteDrag(0, 5, FVector(5800, -2100 + 500, 0), true);
+        HUD->DebugSetPointer(FVector2D(-1, -1));
+        HUD->DebugRouteView(FVector(5200, -2100, 0), 15000.f, -80.f, 180.f);
+        if (Now - NavGallery.StageAt < 4.0) return true;
+        NavShot(TEXT("03_path_editor_overview.png")); Next(); return true;
+    case 5: // 3: an arena navmesh (dynamic generation after the arena is built)
+    {
+        if (Now - NavGallery.StageAt < 1.0) return true;
+        HUD->OpenRouteEditor(false);
+        const TArray<int32> Rotation = CireArenas::Rotation();
+        NavGallery.ArenaIndex = Rotation.Num() > 5 ? Rotation[5] : Rotation.Num() ? Rotation[0] : 0; // Star Station Hangar: hard-edged blockers read best
+        CireArenas::Force(World, NavGallery.ArenaIndex, true);
+        Controller->SetViewTarget(NavGallery.Camera.Get()); HUD->bShowHUD = false; ShowNav(World, true);
+        const FVector O = CireArenas::Origin();
+        Aim(NavGallery.Camera.Get(), O + FVector(0, -3900, 4200), O + FVector(0, -200, 0));
+        Next(); return true;
+    }
+    case 6:
+    {
+        const bool bReady = IsReady(World) && OnNav(World, CireArenas::SpawnLocation(NavGallery.ArenaIndex, 0, 0, 60), 46.f, FVector(80, 80, 300));
+        if ((!bReady && Now - NavGallery.StageAt < 20) || Now - NavGallery.StageAt < 5) return true;
+        NavShot(TEXT("04_arena_navmesh.png")); Next(); return true;
+    }
+    default:
+    {
+        if (Now - NavGallery.StageAt < 2) return true;
+        bool bOk = NavGallery.Files.Num() == 4;
+        for (const FString& F : NavGallery.Files) bOk &= IFileManager::Get().FileSize(*F) > 10000;
+        UE_LOG(LogCireNavTests, Display, TEXT("CIRE_NAV_GALLERY_%s captures=%d dir=%s"), bOk ? TEXT("DONE") : TEXT("INCOMPLETE"), NavGallery.Files.Num(), *NavGallery.Directory);
+        NavGallery.bDone = true;
+        CireArenas::ReleaseForce(World);
+        FPlatformMisc::RequestExitWithStatus(false, bOk ? 0 : 1);
+        return true;
+    }
+    }
+}
 #endif
