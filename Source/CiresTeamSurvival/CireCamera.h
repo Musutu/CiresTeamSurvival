@@ -5,6 +5,7 @@ class ACireController;
 class ACireHero;
 class ACireGameMode;
 class FCireUISettings;
+class FCireKeybindings;
 
 /**
  * World of Warcraft style third-person camera and steering for the local player.
@@ -13,6 +14,8 @@ class FCireUISettings;
  *  - Right drag steers: the camera turns and the character faces the camera yaw (mouselook).
  *  - Both buttons run forward. W/S move forward/backpedal along the character facing.
  *  - A/D turn the character when no mouse button is held and strafe while the right button is held.
+ *  - Q/E (StrafeLeft/StrafeRight) always strafe without rotating; NumLock toggles autorun.
+ *  All keys come from FCireKeybindings (see CireKeybindings.h).
  *  - Wheel zoom is smoothed; camera collision pulls in instantly and eases back out.
  *
  * Presentation is local; the character facing uses the replicated control rotation, so the
@@ -33,6 +36,8 @@ namespace CireCamera
         /** Wheel steps this frame (+ zooms in) that were not consumed by the HUD. */
         float WheelSteps = 0.f;
         FCireUISettings* Options = nullptr; // wheel zoom writes CameraDistance
+        /** Movement keys (MoveForward/Backward, TurnLeft/Right, StrafeLeft/Right, ToggleAutoRun). Null = defaults. */
+        const FCireKeybindings* Bindings = nullptr;
     };
     struct FResult
     {

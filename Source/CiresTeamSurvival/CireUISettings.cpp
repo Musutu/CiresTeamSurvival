@@ -7,7 +7,8 @@ namespace
 {
 constexpr float ReferenceWidth = 1280.f;
 constexpr float ReferenceHeight = 720.f;
-constexpr int32 LayoutVersion = 3;
+// 4: interface scale, per-panel anchors, WoW tooltip/SCT/threat/level-up preferences.
+constexpr int32 LayoutVersion = 4;
 const TCHAR* PreferencesSection = TEXT("CireUI.Preferences");
 
 float SafeFloat(float Value, float Default, float Minimum, float Maximum)
@@ -44,6 +45,7 @@ void FCireUISettings::Reset()
         Layout.Normalized = {X / ReferenceWidth, Y / ReferenceHeight,
             W / ReferenceWidth, H / ReferenceHeight};
         Layout.MinimumSize = FVector2D(FMath::Max(60.f, W * .65f), FMath::Max(36.f, H * .65f));
+        Layout.Anchor = AnchorFor(X / ReferenceWidth, Y / ReferenceHeight, (X + W) / ReferenceWidth, (Y + H) / ReferenceHeight);
         Panels.Add(FName(Id), Layout);
         PanelIds.Add(FName(Id));
     };
@@ -58,8 +60,12 @@ void FCireUISettings::Reset()
     Add(TEXT("Meter"), 956.f, 526.f, 304.f, 174.f);
     Add(TEXT("CombatLog"), 956.f, 362.f, 304.f, 150.f);
     Add(TEXT("CombatText"), 425.f, 240.f, 430.f, 220.f);
-    Add(TEXT("Tooltip"), 792.f, 262.f, 340.f, 150.f);
+    // The WoW-style default tooltip grows up/left from this panel's lower-right
+    // corner: right of the reticle, above the action bar and meter.
+    Add(TEXT("Tooltip"), 690.f, 368.f, 340.f, 150.f);
     Add(TEXT("Pet"), 20.f, 426.f, 250.f, 90.f);
+    Add(TEXT("Threat"), 1040.f, 398.f, 220.f, 124.f);
+    Add(TEXT("Boss"), 1040.f, 242.f, 220.f, 150.f);
 
     bLayoutLocked = true;
     bShowChat = true;
@@ -82,10 +88,34 @@ void FCireUISettings::Reset()
     CameraDistance=650.f; CameraFOV=80.f;
     MasterVolume=.85f; SFXVolume=.85f; UIVolume=.7f; bMuteAudio=false;
     bShowFPS=false; bShowNetwork=true; bTooltips=true; bQuickGroundCast=false;
-    TooltipScale=.8f; TooltipMode=0; TooltipAngleDegrees=45.f; TooltipDistance=40.f; bTooltipOffsetLocked=true;
+    TooltipScale=.8f; TooltipMode=3; TooltipAngleDegrees=45.f; TooltipDistance=40.f; bTooltipOffsetLocked=true;
     StatusFilter=0; bDispellableOnly=false; bShowStatusDurations=true; bShowCriticalSymbol=true;
     bBloom=true; bMotionBlur=false;
+    UIScale=1.f; bAutoUIScale=true; TooltipOpacity=.94f; TooltipDelay=.12f; bTooltipAvoidCenter=true; bUnitTooltips=true;
+    bShowMisses=true; bCritPop=true; bSchoolColors=true; bMergeAoE=true; SCTDirection=0; SCTSpeed=1.f; SCTFadeSeconds=3.2f;
+    bShowThreatMeter=true; bThreatWarnings=true; bThreatSound=true; ThreatWarningPercent=90.f; bLevelUpEffect=true; bShowBossFrames=true;
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
+}
+
+int32 FCireUISettings::AnchorFor(float Left, float Top, float Right, float Bottom)
+{
+    const auto Safe = [](float V) { return FMath::IsFinite(V) ? V : .5f; };
+    // Horizontal: nearest third of the panel centre. Vertical: panels starting in
+    // the top third hang from the top, panels ending in the bottom third sit on the
+    // bottom, others stay centred; stacked columns then keep their order at any scale.
+    const float CenterX = (Safe(Left) + Safe(Right)) * .5f;
+    const int32 AX = CenterX < 1.f / 3.f ? 0 : CenterX > 2.f / 3.f ? 2 : 1;
+    const int32 AY = Safe(Top) <= .34f ? 0 : Safe(Bottom) >= 2.f / 3.f ? 2 : 1;
+    return AX + 3 * AY;
+}
+
+float FCireUISettings::ResolveUIScale(float ViewportHeightPixels) const
+{
+    if (!bAutoUIScale) return SafeFloat(UIScale, 1.f, .64f, 1.15f);
+    // Auto: full size at 1080p and below, gently smaller on tall high-DPI displays
+    // (1440p ~0.93, 2160p 0.85), like WoW's resolution-derived default.
+    const float Height = SafeFloat(ViewportHeightPixels, 1080.f, 1.f, 65536.f);
+    return FMath::GetMappedRangeValueClamped(FVector2f(1080.f, 2160.f), FVector2f(1.f, .85f), Height);
 }
 
 FCireUIRect FCireUISettings::ClampRect(const FCireUIRect& Rect, const FVector2D& Viewport,
@@ -107,10 +137,20 @@ FCireUIRect FCireUISettings::GetRect(FName PanelId, const FVector2D& LogicalView
     const FVector2D Viewport = SafeViewport(LogicalViewport);
     const FPanelLayout* Layout = Panels.Find(PanelId);
     if (!Layout) return ClampRect(FCireUIRect(), Viewport, FVector2D(60.f, 36.f));
+    // Sizes are stored in reference units (fractions of 1280x720), so a panel keeps
+    // its designed size when the interface scale enlarges the logical viewport. The
+    // position stays relative to the panel's anchor edge (WoW-style anchoring):
+    // left/top keep their reference offset, right/bottom keep their offset from the
+    // far edge and centred panels stay centred. At exactly 1280x720 all anchors agree.
     const FCireUIRect& R = Layout->Normalized;
-    return ClampRect({R.X * static_cast<float>(Viewport.X), R.Y * static_cast<float>(Viewport.Y),
-        R.W * static_cast<float>(Viewport.X), R.H * static_cast<float>(Viewport.Y)},
-        Viewport, Layout->MinimumSize);
+    const float VW = static_cast<float>(Viewport.X), VH = static_cast<float>(Viewport.Y);
+    const float W = R.W * ReferenceWidth, H = R.H * ReferenceHeight;
+    const int32 AX = Layout->Anchor % 3, AY = Layout->Anchor / 3;
+    const float X = AX == 0 ? R.X * ReferenceWidth : AX == 2 ? VW - (1.f - R.X - R.W) * ReferenceWidth - W
+        : (R.X + R.W * .5f) * VW - W * .5f;
+    const float Y = AY == 0 ? R.Y * ReferenceHeight : AY == 2 ? VH - (1.f - R.Y - R.H) * ReferenceHeight - H
+        : (R.Y + R.H * .5f) * VH - H * .5f;
+    return ClampRect({X, Y, W, H}, Viewport, Layout->MinimumSize);
 }
 
 bool FCireUISettings::SetRect(FName PanelId, const FCireUIRect& Rect, const FVector2D& LogicalViewport)
@@ -119,8 +159,18 @@ bool FCireUISettings::SetRect(FName PanelId, const FCireUIRect& Rect, const FVec
     if (bLayoutLocked || !Layout || Layout->bLocked) return false;
     const FVector2D Viewport = SafeViewport(LogicalViewport);
     const FCireUIRect R = ClampRect(Rect, Viewport, Layout->MinimumSize);
-    Layout->Normalized = {R.X / static_cast<float>(Viewport.X), R.Y / static_cast<float>(Viewport.Y),
-        R.W / static_cast<float>(Viewport.X), R.H / static_cast<float>(Viewport.Y)};
+    const float VW = static_cast<float>(Viewport.X), VH = static_cast<float>(Viewport.Y);
+    // Re-anchor to the nearest screen third, then invert GetRect for that anchor.
+    Layout->Anchor = AnchorFor(R.X / VW, R.Y / VH, (R.X + R.W) / VW, (R.Y + R.H) / VH);
+    const int32 AX = Layout->Anchor % 3, AY = Layout->Anchor / 3;
+    FCireUIRect N;
+    N.W = R.W / ReferenceWidth;
+    N.H = R.H / ReferenceHeight;
+    N.X = AX == 0 ? R.X / ReferenceWidth : AX == 2 ? 1.f - N.W - (VW - R.X - R.W) / ReferenceWidth
+        : (R.X + R.W * .5f) / VW - N.W * .5f;
+    N.Y = AY == 0 ? R.Y / ReferenceHeight : AY == 2 ? 1.f - N.H - (VH - R.Y - R.H) / ReferenceHeight
+        : (R.Y + R.H * .5f) / VH - N.H * .5f;
+    Layout->Normalized = N;
     return true;
 }
 
@@ -152,6 +202,11 @@ void FCireUISettings::SanitizePreferences()
     TooltipMode=FMath::Clamp(TooltipMode,0,2); StatusFilter=FMath::Clamp(StatusFilter,0,2);
     TooltipScale=SafeFloat(TooltipScale,.8f,.6f,1.4f);
     TooltipAngleDegrees=SafeFloat(TooltipAngleDegrees,45,0,360); TooltipDistance=SafeFloat(TooltipDistance,40,16,240);
+    TooltipMode=FMath::Clamp(TooltipMode,0,3);
+    UIScale=SafeFloat(UIScale,1.f,.64f,1.15f); TooltipOpacity=SafeFloat(TooltipOpacity,.94f,.3f,1.f);
+    TooltipDelay=SafeFloat(TooltipDelay,.12f,0.f,1.5f); SCTDirection=FMath::Clamp(SCTDirection,0,2);
+    SCTSpeed=SafeFloat(SCTSpeed,1.f,.5f,2.f); SCTFadeSeconds=SafeFloat(SCTFadeSeconds,3.2f,1.5f,5.f);
+    ThreatWarningPercent=SafeFloat(ThreatWarningPercent,90.f,60.f,100.f);
 }
 
 void FCireUISettings::Load(const FString& Filename)
@@ -161,6 +216,7 @@ void FCireUISettings::Load(const FString& Filename)
     // An independent config file avoids stale global-cache values during profile reloads.
     FConfigFile Config;
     Config.Read(ConfigFilename);
+    Keybindings.LoadFrom(Config); // feat/camera-movement: own section + version; old profiles get WoW defaults
     int32 Version = LayoutVersion;
     Config.GetInt(PreferencesSection, TEXT("Version"), Version);
     if (Version < 1 || Version > LayoutVersion) return;
@@ -184,6 +240,10 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bInvertMouseY); CIRE_LOAD_BOOL(bMuteAudio); CIRE_LOAD_BOOL(bShowFPS); CIRE_LOAD_BOOL(bShowNetwork);
     CIRE_LOAD_BOOL(bTooltips); CIRE_LOAD_BOOL(bQuickGroundCast); CIRE_LOAD_BOOL(bTooltipOffsetLocked); CIRE_LOAD_BOOL(bDispellableOnly);
     CIRE_LOAD_BOOL(bShowStatusDurations); CIRE_LOAD_BOOL(bShowCriticalSymbol); CIRE_LOAD_BOOL(bBloom); CIRE_LOAD_BOOL(bMotionBlur);
+    // Schema 4 keys; absent in older profiles, which keep the defaults.
+    CIRE_LOAD_BOOL(bAutoUIScale); CIRE_LOAD_BOOL(bTooltipAvoidCenter); CIRE_LOAD_BOOL(bUnitTooltips); CIRE_LOAD_BOOL(bShowMisses);
+    CIRE_LOAD_BOOL(bCritPop); CIRE_LOAD_BOOL(bSchoolColors); CIRE_LOAD_BOOL(bMergeAoE); CIRE_LOAD_BOOL(bShowThreatMeter);
+    CIRE_LOAD_BOOL(bThreatWarnings); CIRE_LOAD_BOOL(bThreatSound); CIRE_LOAD_BOOL(bLevelUpEffect); CIRE_LOAD_BOOL(bShowBossFrames);
     CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
 #undef CIRE_LOAD_BOOL
     Config.GetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
@@ -198,8 +258,15 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_FLOAT(CameraYawSensitivity); CIRE_LOAD_FLOAT(CameraPitchSensitivity); CIRE_LOAD_FLOAT(CameraDistance); CIRE_LOAD_FLOAT(CameraFOV);
     CIRE_LOAD_FLOAT(MasterVolume); CIRE_LOAD_FLOAT(SFXVolume); CIRE_LOAD_FLOAT(UIVolume);
     CIRE_LOAD_FLOAT(TooltipScale); CIRE_LOAD_FLOAT(TooltipAngleDegrees); CIRE_LOAD_FLOAT(TooltipDistance);
+    CIRE_LOAD_FLOAT(UIScale); CIRE_LOAD_FLOAT(TooltipOpacity); CIRE_LOAD_FLOAT(TooltipDelay); CIRE_LOAD_FLOAT(SCTSpeed);
+    CIRE_LOAD_FLOAT(SCTFadeSeconds); CIRE_LOAD_FLOAT(ThreatWarningPercent);
 #undef CIRE_LOAD_FLOAT
     Config.GetInt(PreferencesSection,TEXT("TooltipMode"),TooltipMode); Config.GetInt(PreferencesSection,TEXT("StatusFilter"),StatusFilter);
+    Config.GetInt(PreferencesSection,TEXT("SCTDirection"),SCTDirection);
+    // Before schema 4 the cursor-following tooltip (mode 0) was the default and
+    // covered what the player was doing; upgrade it to the WoW corner anchor. Radial
+    // and fixed choices were deliberate and are preserved.
+    if (Version < 4 && TooltipMode == 0) TooltipMode = 3;
     SanitizePreferences();
     for (TPair<FName, FPanelLayout>& Entry : Panels)
     {
@@ -215,6 +282,11 @@ void FCireUISettings::Load(const FString& Filename)
         R.X = SafeFloat(R.X, Default.X, 0.f, 1.f - R.W);
         R.Y = SafeFloat(R.Y, Default.Y, 0.f, 1.f - R.H);
         Config.GetBool(*Section, TEXT("Locked"), Entry.Value.bLocked);
+        // Older profiles have no anchor: derive it from the saved centre, which
+        // reproduces their 16:9 position exactly.
+        int32 Anchor = AnchorFor(R.X, R.Y, R.X + R.W, R.Y + R.H);
+        if (Version >= 4) Config.GetInt(*Section, TEXT("Anchor"), Anchor);
+        Entry.Value.Anchor = FMath::Clamp(Anchor, 0, 8);
     }
 }
 
@@ -223,6 +295,7 @@ bool FCireUISettings::Save()
     SanitizePreferences();
     FConfigFile Config;
     Config.SetString(PreferencesSection, TEXT("Version"), *FString::FromInt(LayoutVersion));
+    Keybindings.SaveTo(Config); // feat/camera-movement
 #define CIRE_SAVE_BOOL(Field) Config.SetBool(PreferencesSection, TEXT(#Field), Field)
     CIRE_SAVE_BOOL(bLayoutLocked);
     CIRE_SAVE_BOOL(bShowChat);
@@ -238,6 +311,9 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bInvertMouseY); CIRE_SAVE_BOOL(bMuteAudio); CIRE_SAVE_BOOL(bShowFPS); CIRE_SAVE_BOOL(bShowNetwork);
     CIRE_SAVE_BOOL(bTooltips); CIRE_SAVE_BOOL(bQuickGroundCast); CIRE_SAVE_BOOL(bTooltipOffsetLocked); CIRE_SAVE_BOOL(bDispellableOnly);
     CIRE_SAVE_BOOL(bShowStatusDurations); CIRE_SAVE_BOOL(bShowCriticalSymbol); CIRE_SAVE_BOOL(bBloom); CIRE_SAVE_BOOL(bMotionBlur);
+    CIRE_SAVE_BOOL(bAutoUIScale); CIRE_SAVE_BOOL(bTooltipAvoidCenter); CIRE_SAVE_BOOL(bUnitTooltips); CIRE_SAVE_BOOL(bShowMisses);
+    CIRE_SAVE_BOOL(bCritPop); CIRE_SAVE_BOOL(bSchoolColors); CIRE_SAVE_BOOL(bMergeAoE); CIRE_SAVE_BOOL(bShowThreatMeter);
+    CIRE_SAVE_BOOL(bThreatWarnings); CIRE_SAVE_BOOL(bThreatSound); CIRE_SAVE_BOOL(bLevelUpEffect); CIRE_SAVE_BOOL(bShowBossFrames);
     CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
 #undef CIRE_SAVE_BOOL
     Config.SetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
@@ -252,7 +328,10 @@ bool FCireUISettings::Save()
     CIRE_SAVE_FLOAT(CameraYawSensitivity); CIRE_SAVE_FLOAT(CameraPitchSensitivity); CIRE_SAVE_FLOAT(CameraDistance); CIRE_SAVE_FLOAT(CameraFOV);
     CIRE_SAVE_FLOAT(MasterVolume); CIRE_SAVE_FLOAT(SFXVolume); CIRE_SAVE_FLOAT(UIVolume);
     CIRE_SAVE_FLOAT(TooltipScale); CIRE_SAVE_FLOAT(TooltipAngleDegrees); CIRE_SAVE_FLOAT(TooltipDistance);
+    CIRE_SAVE_FLOAT(UIScale); CIRE_SAVE_FLOAT(TooltipOpacity); CIRE_SAVE_FLOAT(TooltipDelay); CIRE_SAVE_FLOAT(SCTSpeed);
+    CIRE_SAVE_FLOAT(SCTFadeSeconds); CIRE_SAVE_FLOAT(ThreatWarningPercent);
 #undef CIRE_SAVE_FLOAT
+    Config.SetString(PreferencesSection,TEXT("SCTDirection"),*FString::FromInt(SCTDirection));
     Config.SetString(PreferencesSection,TEXT("TooltipMode"),*FString::FromInt(TooltipMode));
     Config.SetString(PreferencesSection,TEXT("StatusFilter"),*FString::FromInt(StatusFilter));
     for (const TPair<FName, FPanelLayout>& Entry : Panels)
@@ -264,6 +343,7 @@ bool FCireUISettings::Save()
         Config.SetFloat(*Section, TEXT("Width"), R.W);
         Config.SetFloat(*Section, TEXT("Height"), R.H);
         Config.SetBool(*Section, TEXT("Locked"), Entry.Value.bLocked);
+        Config.SetString(*Section, TEXT("Anchor"), *FString::FromInt(Entry.Value.Anchor));
     }
     if (!IFileManager::Get().MakeDirectory(*FPaths::GetPath(ConfigFilename), true)) return false;
     // Replace only after the complete new profile has been successfully written.
