@@ -17,6 +17,7 @@
 #include "CireSummon.h"
 #include "CireThreat.h"
 #include "CireNPCCombat.h"
+#include "CireNPCState.h"
 #include "CireStatusVisual.h"
 #include "EngineUtils.h"
 
@@ -421,7 +422,7 @@ void ACireHero::Cast(int32 Slot)
     else if (Id == TEXT("shield_slam"))
     {
         Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),2.f));
-        if (auto* Monster = ::Cast<ACireMonster>(Target)) { CireThreat::Taunt(Monster,this,3);CireNPCCombat::Interrupt(Monster); }
+        if (auto* Monster = ::Cast<ACireMonster>(Target)) { CireThreat::Taunt(Monster,this,3);CireNPCCombat::InterruptCast(Monster,this); }
         Hit(Target, 35 + (12 + Strength) * 1.25f, FLinearColor(0.4f, 0.7f, 1.f));
     }
     else if (Id == TEXT("war_cry"))
@@ -860,6 +861,7 @@ ACireMonster::ACireMonster()
         TEXT("/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed"));
     if (Animation.Succeeded()) GetMesh()->SetAnimInstanceClass(Animation.Class);
     GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    NPCState = CreateDefaultSubobject<UCireNPCState>(TEXT("NPCState")); // npc-boss: role/boss/threat state
 }
 
 void ACireMonster::BeginPlay()
@@ -890,6 +892,8 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
     auto* Attacker = ::Cast<ACireHero>(Causer);
     if (!HasAuthority() || !Mode || !Attacker || !Attacker->IsHostile(this) || Health <= 0 ||
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
+    Amount = CireNPCCombat::ModifyIncomingDamage(this, Attacker, Amount); // npc-boss: armor/guard/shield wall/provoke
+    if (Amount <= 0 || Health <= 0) return 0;
     const float Taken = FMath::Min(Health, Amount);
     Health -= Taken;
     CireCombat::BroadcastDamage(Causer, this, Taken, Event);

@@ -1,0 +1,701 @@
+{
+  "schemaVersion": 1,
+  "checked": "2026-09-24",
+  "note": "Every license tier verified at price 0 from fab.com listing data on the checked date. delivery=download: Fab website download (FBX/glTF/texture ZIP) into Art/Downloads/Fab/<category>/<folder>/, then Tools/ImportFabAssets.py. delivery=launcher: UE-format pack; Epic Games Launcher Add to Project. delivery=launcher-project: complete sample project; Launcher Create Project, then Migrate. See Docs/FAB-ADD-TO-PROJECT.md.",
+  "items": [
+    {
+      "id": "castle_wall_a",
+      "title": "Castle Wall",
+      "url": "https://www.fab.com/listings/cf0a6982-f96f-4aef-97e6-7dc24b3a639c",
+      "uid": "cf0a6982-f96f-4aef-97e6-7dc24b3a639c",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Architecture",
+      "folder": "CastleWallA",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "wall_section",
+        "castle_keep"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 400
+    },
+    {
+      "id": "castle_wall_b",
+      "title": "Castle Wall (variant)",
+      "url": "https://www.fab.com/listings/b8cfda6a-6514-4242-820d-fdeced558ce3",
+      "uid": "b8cfda6a-6514-4242-820d-fdeced558ce3",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Architecture",
+      "folder": "CastleWallB",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "castle_gate",
+        "gatehouse"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 400
+    },
+    {
+      "id": "castle_stairs",
+      "title": "Castle Stairs",
+      "url": "https://www.fab.com/listings/bb6f516f-48b5-4343-8884-1c300330ff95",
+      "uid": "bb6f516f-48b5-4343-8884-1c300330ff95",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Architecture",
+      "folder": "CastleStairs",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "castle_stairs",
+        "watchtower"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 300
+    },
+    {
+      "id": "ancient_temple_stones",
+      "title": "Ancient Temple Stones",
+      "url": "https://www.fab.com/listings/1a117f26-677e-4ad9-ab4b-f2177b6cda9c",
+      "uid": "1a117f26-677e-4ad9-ab4b-f2177b6cda9c",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Architecture",
+      "folder": "AncientTempleStones",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "shrine"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 300
+    },
+    {
+      "id": "roman_stone_floor",
+      "title": "Roman Stone Floor",
+      "url": "https://www.fab.com/listings/e195504c-3230-4505-ba2a-71d89d33c085",
+      "uid": "e195504c-3230-4505-ba2a-71d89d33c085",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Architecture",
+      "folder": "RomanStoneFloor",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "town_square_floor"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 300
+    },
+    {
+      "id": "old_stone_well",
+      "title": "Old Stone Well",
+      "url": "https://www.fab.com/listings/41c8f2a3-71c0-4a42-922c-db4ec1c429a1",
+      "uid": "41c8f2a3-71c0-4a42-922c-db4ec1c429a1",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Props",
+      "folder": "OldStoneWell",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "well",
+        "fountain"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 250
+    },
+    {
+      "id": "wooden_barrel",
+      "title": "Wooden Barrel",
+      "url": "https://www.fab.com/listings/a9d0d237-ef5b-47f3-b153-f6b4ab9733f1",
+      "uid": "a9d0d237-ef5b-47f3-b153-f6b4ab9733f1",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Props",
+      "folder": "WoodenBarrel",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "barrel"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 120
+    },
+    {
+      "id": "barrel_on_stand",
+      "title": "Barrel On Stand",
+      "url": "https://www.fab.com/listings/3655c9b4-706d-4189-a821-b35ee3a6c632",
+      "uid": "3655c9b4-706d-4189-a821-b35ee3a6c632",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Props",
+      "folder": "BarrelOnStand",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "barrel_stand"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 150
+    },
+    {
+      "id": "wooden_crate",
+      "title": "Wooden Crate",
+      "url": "https://www.fab.com/listings/ae4d047d-f585-413c-9440-69e1af3935a5",
+      "uid": "ae4d047d-f585-413c-9440-69e1af3935a5",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Props",
+      "folder": "WoodenCrate",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "crate"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 120
+    },
+    {
+      "id": "tarped_crate",
+      "title": "Tarped Crate",
+      "url": "https://www.fab.com/listings/8aa1f000-e6b2-48dc-b33d-e233fdf59956",
+      "uid": "8aa1f000-e6b2-48dc-b33d-e233fdf59956",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Props",
+      "folder": "TarpedCrate",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "crate_tarped",
+        "market_goods"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 150
+    },
+    {
+      "id": "wooden_wheelbarrow",
+      "title": "Wooden Wheelbarrow",
+      "url": "https://www.fab.com/listings/8f945fbe-00e4-4fc3-b363-81cdc4ad1653",
+      "uid": "8f945fbe-00e4-4fc3-b363-81cdc4ad1653",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Props",
+      "folder": "WoodenWheelbarrow",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "cart"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 200
+    },
+    {
+      "id": "wooden_wheel",
+      "title": "Wooden Wheel",
+      "url": "https://www.fab.com/listings/9ce45851-50b2-49a0-8cf8-d527e41aa2b4",
+      "uid": "9ce45851-50b2-49a0-8cf8-d527e41aa2b4",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Props",
+      "folder": "WoodenWheel",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "cart_wheel"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 150
+    },
+    {
+      "id": "trench_wall_wood_low",
+      "title": "Military Trenches Wall Wood Low 04",
+      "url": "https://www.fab.com/listings/3bd57e7e-feab-46b3-a67f-18287199159c",
+      "uid": "3bd57e7e-feab-46b3-a67f-18287199159c",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Props",
+      "folder": "WoodBarricadeLow",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "barricade"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 400
+    },
+    {
+      "id": "wooden_beam",
+      "title": "Wooden Beam",
+      "url": "https://www.fab.com/listings/6b7559aa-79c4-4e8d-931a-6be7ab22c1a9",
+      "uid": "6b7559aa-79c4-4e8d-931a-6be7ab22c1a9",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Props",
+      "folder": "WoodenBeam",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "beam"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 400
+    },
+    {
+      "id": "decorative_statuettes",
+      "title": "Decorative Statuettes Pack",
+      "url": "https://www.fab.com/listings/e581059c-6146-4d34-83b2-e963d41dc6f0",
+      "uid": "e581059c-6146-4d34-83b2-e963d41dc6f0",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Props",
+      "folder": "DecorativeStatuettes",
+      "kind": "mesh",
+      "formats": "FBX / glTF (Megascans 3D)",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "shrine_statue"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 100
+    },
+    {
+      "id": "mossy_cobblestone_path",
+      "title": "Mossy Cobblestone Path",
+      "url": "https://www.fab.com/listings/cae0b8c6-aead-486f-9da2-896dd8eb8fd5",
+      "uid": "cae0b8c6-aead-486f-9da2-896dd8eb8fd5",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Surfaces",
+      "folder": "MossyCobblestonePath",
+      "kind": "material",
+      "formats": "Texture set / glTF (Megascans surface)",
+      "unrealVersions": "n/a (textures)",
+      "slots": [
+        "cobblestone_material"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "tiling": 1.0,
+      "collision": false
+    },
+    {
+      "id": "damaged_wall_plaster",
+      "title": "Damaged Wall Plaster",
+      "url": "https://www.fab.com/listings/c16498bb-264a-4376-8b39-401a3a7b4bd1",
+      "uid": "c16498bb-264a-4376-8b39-401a3a7b4bd1",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Surfaces",
+      "folder": "DamagedWallPlaster",
+      "kind": "material",
+      "formats": "Texture set / glTF (Megascans surface)",
+      "unrealVersions": "n/a (textures)",
+      "slots": [
+        "plaster_material"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "tiling": 1.0,
+      "collision": false
+    },
+    {
+      "id": "fresh_wall_plaster",
+      "title": "Fresh Wall Plaster",
+      "url": "https://www.fab.com/listings/b427a11b-5d79-41bc-af42-3cd3aadae25c",
+      "uid": "b427a11b-5d79-41bc-af42-3cd3aadae25c",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Surfaces",
+      "folder": "FreshWallPlaster",
+      "kind": "material",
+      "formats": "Texture set / glTF (Megascans surface)",
+      "unrealVersions": "n/a (textures)",
+      "slots": [
+        "plaster_clean_material"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "tiling": 1.0,
+      "collision": false
+    },
+    {
+      "id": "castle_wall_surface",
+      "title": "Castle Wall (surface)",
+      "url": "https://www.fab.com/listings/c7bacf7e-8073-4f4f-aaf9-ef9fa357c11c",
+      "uid": "c7bacf7e-8073-4f4f-aaf9-ef9fa357c11c",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "download",
+      "category": "Surfaces",
+      "folder": "CastleWallSurface",
+      "kind": "material",
+      "formats": "Texture set / glTF (Megascans surface)",
+      "unrealVersions": "n/a (textures)",
+      "slots": [
+        "castle_stone_material"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "tiling": 1.0,
+      "collision": false
+    },
+    {
+      "id": "barbarian_banners",
+      "title": "Barbarian Banners",
+      "url": "https://www.fab.com/listings/75f4d553-a080-41c7-a57b-98e31c6209be",
+      "uid": "75f4d553-a080-41c7-a57b-98e31c6209be",
+      "author": "Snit",
+      "license": "CC-BY 4.0 (credit: Snit)",
+      "delivery": "download",
+      "category": "Decor",
+      "folder": "BarbarianBanners",
+      "kind": "mesh",
+      "formats": "FBX",
+      "unrealVersions": "n/a (FBX)",
+      "slots": [
+        "banner"
+      ],
+      "libraryStatus": "not_added_signin_blocked",
+      "expectedMaxCm": 400,
+      "collision": false
+    },
+    {
+      "id": "medieval_village_sample",
+      "title": "Medieval Village Megascans Sample",
+      "url": "https://www.fab.com/listings/2e11a225-a6ea-4781-a3e1-fe975b461894",
+      "uid": "2e11a225-a6ea-4781-a3e1-fe975b461894",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher-project",
+      "category": "Architecture",
+      "folder": "MedievalVillageSample",
+      "kind": "project",
+      "formats": "Unreal Engine (complete project)",
+      "unrealVersions": "UE 4.26-4.27, 5.3",
+      "slots": [
+        "house_a",
+        "house_b",
+        "house_c",
+        "market_stall_a",
+        "market_stall_b",
+        "lamp"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "dark_ruins_sample",
+      "title": "Dark Ruins Megascans Sample",
+      "url": "https://www.fab.com/listings/836ed2f8-e2d6-49be-98d3-59d104bd351e",
+      "uid": "836ed2f8-e2d6-49be-98d3-59d104bd351e",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher-project",
+      "category": "Architecture",
+      "folder": "DarkRuinsSample",
+      "kind": "project",
+      "formats": "Unreal Engine (complete project)",
+      "unrealVersions": "UE 5.5, 5.6",
+      "slots": [
+        "castle_keep",
+        "gatehouse",
+        "watchtower"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "medieval_banquet",
+      "title": "Medieval Banquet",
+      "url": "https://www.fab.com/listings/d422ac6c-ce50-4273-8d4a-2ac594a3a2b2",
+      "uid": "d422ac6c-ce50-4273-8d4a-2ac594a3a2b2",
+      "author": "Quixel Megascans",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "Props",
+      "folder": "MedievalBanquet",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack (+ FBX)",
+      "unrealVersions": "UE 5.4-5.6",
+      "slots": [
+        "market_goods",
+        "table"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "modular_wall_f01",
+      "title": "Medieval Modular Wall F01 - Plaster & Wood | Nanite Ready",
+      "url": "https://www.fab.com/listings/bb63d427-0098-4bbb-a262-41d628b5c6a5",
+      "uid": "bb63d427-0098-4bbb-a262-41d628b5c6a5",
+      "author": "Massive Realities",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "Architecture",
+      "folder": "ModularWallF01",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack",
+      "unrealVersions": "UE 5.7",
+      "slots": [
+        "house_a",
+        "house_b"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "modular_wall_f02",
+      "title": "Medieval Modular Wall F02 - Plaster & Wood | Nanite Ready",
+      "url": "https://www.fab.com/listings/92e9b5fe-7893-44da-aec3-5e96c688f0b7",
+      "uid": "92e9b5fe-7893-44da-aec3-5e96c688f0b7",
+      "author": "Massive Realities",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "Architecture",
+      "folder": "ModularWallF02",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack",
+      "unrealVersions": "UE 5.7",
+      "slots": [
+        "house_c"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "modular_roof_front_01",
+      "title": "Medieval Modular Roof Front 01 - Plaster & Wood | Nanite Ready",
+      "url": "https://www.fab.com/listings/1c718658-3c00-4dc5-809a-5da60b7313cf",
+      "uid": "1c718658-3c00-4dc5-809a-5da60b7313cf",
+      "author": "Massive Realities",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "Architecture",
+      "folder": "ModularRoofFront01",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack",
+      "unrealVersions": "UE 5.7",
+      "slots": [
+        "house_roof"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "advanced_village_pack",
+      "title": "Advanced Village Pack",
+      "url": "https://www.fab.com/listings/250a5622-d5fd-49fc-b1c4-0550a444e117",
+      "uid": "250a5622-d5fd-49fc-b1c4-0550a444e117",
+      "author": "Advanced Asset Packs",
+      "license": "UE-Only Content license (Free)",
+      "delivery": "launcher",
+      "category": "Architecture",
+      "folder": "AdvancedVillagePack",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack",
+      "unrealVersions": "UE 4.8-5.4",
+      "slots": [
+        "house_a",
+        "house_b",
+        "house_c",
+        "market_stall_a"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "medieval_dungeon",
+      "title": "Medieval Dungeon",
+      "url": "https://www.fab.com/listings/c13bd0dc-ac4d-4595-b284-f81386b2e6ef",
+      "uid": "c13bd0dc-ac4d-4595-b284-f81386b2e6ef",
+      "author": "Infuse Studio",
+      "license": "UE-Only Content license (Free)",
+      "delivery": "launcher",
+      "category": "Props",
+      "folder": "MedievalDungeon",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack",
+      "unrealVersions": "UE 4.21-5.4",
+      "slots": [
+        "lamp",
+        "castle_gate",
+        "torch"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "dead_pine",
+      "title": "Megaplants: Dead Pine",
+      "url": "https://www.fab.com/listings/bc9e4e89-fcf4-4be6-b0f0-8b37395a72de",
+      "uid": "bc9e4e89-fcf4-4be6-b0f0-8b37395a72de",
+      "author": "Quixel Megaplants",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "Foliage",
+      "folder": "MegaplantsDeadPine",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack",
+      "unrealVersions": "UE 5.8",
+      "slots": [
+        "tree_dead"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "m5_fire_flames",
+      "title": "M5 VFX Vol2. Fire and Flames(Niagara)",
+      "url": "https://www.fab.com/listings/c5b0270a-a295-4644-a4be-42cb1e56a197",
+      "uid": "c5b0270a-a295-4644-a4be-42cb1e56a197",
+      "author": "M5VFX",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "VFX",
+      "folder": "M5FireAndFlames",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack (Niagara)",
+      "unrealVersions": "UE 4.15-5.7",
+      "slots": [
+        "vfx_fire",
+        "vfx_torch_flame"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "fx_variety_pack",
+      "title": "FX Variety Pack",
+      "url": "https://www.fab.com/listings/53531e17-369f-4bba-b493-8588f0dec07b",
+      "uid": "53531e17-369f-4bba-b493-8588f0dec07b",
+      "author": "Kakky",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "VFX",
+      "folder": "FXVarietyPack",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack (Niagara)",
+      "unrealVersions": "UE 4.20-5.8",
+      "slots": [
+        "vfx_spell_cast",
+        "vfx_spell_impact"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "monster_survival_pbr",
+      "title": "Monster for Survival Game PBR Polyart",
+      "url": "https://www.fab.com/listings/9fdd1645-600d-460f-be4b-0b6421b7cf38",
+      "uid": "9fdd1645-600d-460f-be4b-0b6421b7cf38",
+      "author": "Dungeon Mason",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "Creatures",
+      "folder": "MonsterSurvivalPBR",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack",
+      "unrealVersions": "UE 4.19-5.8",
+      "slots": [
+        "creature_ghoul"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "dragon_boss_pbr",
+      "title": "Dragon for Boss Monster : PBR",
+      "url": "https://www.fab.com/listings/6c4bd321-0263-44fe-a3d9-82599eeee12c",
+      "uid": "6c4bd321-0263-44fe-a3d9-82599eeee12c",
+      "author": "Dungeon Mason",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "Creatures",
+      "folder": "DragonBossPBR",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack",
+      "unrealVersions": "UE 4.17-5.8",
+      "slots": [
+        "creature_boss_dragon"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "skeleton_necromancer",
+      "title": "Skeleton Necromancer",
+      "url": "https://www.fab.com/listings/8e5c5f8f-993a-4c76-b53c-b48bac9766ee",
+      "uid": "8e5c5f8f-993a-4c76-b53c-b48bac9766ee",
+      "author": "Feyloom",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "Creatures",
+      "folder": "SkeletonNecromancer",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack (+ FBX)",
+      "unrealVersions": "UE 5.5-5.6",
+      "slots": [
+        "creature_necromancer"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "khornes_monster",
+      "title": "Monster",
+      "url": "https://www.fab.com/listings/6fc1668f-c5d9-4146-8da1-ee3d7f958026",
+      "uid": "6fc1668f-c5d9-4146-8da1-ee3d7f958026",
+      "author": "Khornes",
+      "license": "CC-BY 4.0 (credit: Khornes)",
+      "delivery": "launcher",
+      "category": "Creatures",
+      "folder": "KhornesMonster",
+      "kind": "pack",
+      "formats": "Unreal Engine / FBX / Unity / Maya",
+      "unrealVersions": "UE 4.26-5.8",
+      "slots": [
+        "creature_brute"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    },
+    {
+      "id": "quadruped_fantasy_creatures",
+      "title": "Quadruped Fantasy Creatures",
+      "url": "https://www.fab.com/listings/52d686b6-1180-4f26-901f-ce3c69a14767",
+      "uid": "52d686b6-1180-4f26-901f-ce3c69a14767",
+      "author": "PROTOFACTOR INC",
+      "license": "Fab Standard License (Personal: Free, Professional: Free)",
+      "delivery": "launcher",
+      "category": "Creatures",
+      "folder": "QuadrupedFantasyCreatures",
+      "kind": "pack",
+      "formats": "Unreal Engine asset pack",
+      "unrealVersions": "UE 4.15-5.5",
+      "slots": [
+        "creature_beast"
+      ],
+      "libraryStatus": "not_added_signin_blocked"
+    }
+  ]
+}
