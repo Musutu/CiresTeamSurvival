@@ -35,6 +35,8 @@ FCireRaceDatabase GRaces;
 TMap<TWeakObjectPtr<UWorld>, int32> GSeeds;
 // Summoner -> its live summons (cap per caster).
 TMap<TWeakObjectPtr<ACireMonster>, TArray<TWeakObjectPtr<ACireMonster>>> GSummons;
+FCireRaceStats GStats;
+TArray<FName> GSeenRaces;
 const TCHAR* const RankIds[] = {TEXT("normal"), TEXT("veteran"), TEXT("elite"), TEXT("champion"), TEXT("warlord"), TEXT("mythic")};
 static_assert(UE_ARRAY_COUNT(RankIds) == static_cast<int32>(ECireNPCRank::Count), "rank ids");
 const TCHAR* const SkinPath = TEXT("/Game/Art/Materials/M_CireMonsterSkin.M_CireMonsterSkin");
@@ -393,6 +395,7 @@ void CireRaces::ApplyLoadout(ACireMonster* M, const FCireSkillProgression& R, in
     int32 Tier = TierOverride > 0 ? TierOverride : P.Tier;
     if (Count > 0 && Tier <= 0) Tier = 1;
     S->Loadout = Loadout(MatchSeed(M->GetWorld()), *A, RankValue, Count);
+    if (!A->RaceId.IsNone()) GSeenRaces.AddUnique(A->RaceId);
     S->bLoadoutSet = true;
     S->SkillTier = static_cast<uint8>(S->Loadout.IsEmpty() ? 0 : FMath::Clamp(Tier, 1, 5));
     M->ForceNetUpdate();
@@ -454,15 +457,24 @@ int32 CireRaces::SpawnSummons(ACireMonster* M, const FCireNPCAbility& A)
         Mode->Monsters.Add(S);
         CireWaveDirector::AdoptSummon(Mode, S, M);
         if (IsValid(M->Victim)) { CireThreat::Engage(S, M->Victim); CireThreat::Select(S); }
-        List.Add(S); ++Spawned;
+        List.Add(S); ++Spawned; ++GStats.Summoned;
     }
     UE_LOG(LogCireRaces, Display, TEXT("CIRE_RACE_SUMMON %s summoned %d x %s"), *M->GetNPCDisplayName(), Spawned, *A.SummonId.ToString());
     return Spawned;
 }
 
+FCireRaceStats CireRaces::Stats()
+{
+    FCireRaceStats S = GStats;
+    TArray<FString> Names; for (FName N : GSeenRaces) Names.Add(N.ToString());
+    S.Races = FString::Join(Names, TEXT(","));
+    return S;
+}
+
 int32 CireRaces::OnAbilityReleased(ACireMonster* M, const FCireNPCAbility& A, FVector Aim)
 {
     if (!IsValid(M) || !M->HasAuthority()) return 0;
+    if (!A.bBasic) { ++GStats.Casts; if (GStats.EarliestCastWave == 0) GStats.EarliestCastWave = FMath::Max(1, CurrentWave(M)); }
     if (A.Kind == ECireNPCAbilityKind::Summon) { SpawnSummons(M, A); if (!A.Buff.IsNone()) CireBuffs::Apply(M, A.Buff, 3.f, M); return 0; }
     // Buff-style skills show their themed visual on the caster.
     switch (A.Kind)
@@ -508,7 +520,7 @@ int32 CireRaces::OnAbilityReleased(ACireMonster* M, const FCireNPCAbility& A, FV
         }
         }
         if (!bInside) continue;
-        ++Affected;
+        ++Affected; ++GStats.RiderHits;
         const float Now = M->GetWorld()->GetTimeSeconds();
         float Mark = 1.5f;
         if (A.Root > 0) { CireBuffs::Apply(H, RootedId, A.Root * Scale, M); Mark = FMath::Max(Mark, A.Root * Scale); H->GetCharacterMovement()->StopMovementImmediately(); }
@@ -554,7 +566,7 @@ bool CireRaces::ApplySkin(ACireMonster* M)
     const FCireRacePalette Palette = Race ? Race->Palette(S->PaletteIndex) : FCireRacePalette();
     // A unit drawn on its own art keeps its authored colours on its base palette; borrowed bodies and reskin sets recolour.
     const bool bOwnBody = A->FallbackBody.IsNone() || A->FallbackBody == A->Id || CireMonsterArt::HasOwnBody(A->Id);
-    const float RaceStrength = !Race ? 0.f : (bOwnBody && S->PaletteIndex == 0) ? 0.f : .78f;
+    const float RaceStrength = !Race ? 0.f : (bOwnBody && S->PaletteIndex == 0) ? 0.f : .88f;
     USkeletalMeshComponent* Mesh = M->GetMesh();
     if (M->MonsterArt && M->MonsterArt->IsTripoApplied())
     {

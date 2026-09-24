@@ -83,6 +83,14 @@ struct CIRESTEAMSURVIVAL_API FCireCampaign
     bool operator==(const FCireCampaign& O) const;
 };
 
+/** Soak/diagnostic counters since process start (server). */
+struct CIRESTEAMSURVIVAL_API FCireRaceStats
+{
+    int32 Casts = 0, RiderHits = 0, Summoned = 0;
+    int32 EarliestCastWave = 0; // global wave of the first non-basic monster skill (0 = none yet)
+    FString Races;              // races whose units were configured, in order of appearance
+};
+
 struct CIRESTEAMSURVIVAL_API FCireSkillPlan
 {
     int32 Count = 0; // skills allowed (before the pool cap)
@@ -146,6 +154,7 @@ namespace CireRaces
     CIRESTEAMSURVIVAL_API int32 SpawnSummons(ACireMonster* Monster, const FCireNPCAbility& Ability);
     /** Champions currently rooted / silenced by monster skills (buff records; valid on clients). */
     CIRESTEAMSURVIVAL_API bool IsRooted(const ACireHero* Hero);
+    CIRESTEAMSURVIVAL_API FCireRaceStats Stats();
     CIRESTEAMSURVIVAL_API bool IsSilenced(const ACireHero* Hero);
 
     // ---- presentation (clients / listen server) ----

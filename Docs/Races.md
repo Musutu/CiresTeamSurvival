@@ -42,8 +42,8 @@ name by rank and the target frame uses the rank colour for its border and header
 | Veteran | #1eff19 `[0.12, 1.0, 0.1]` | x1.3 | x1.1 | x1.05 | +0 | normal | WoW uncommon green: armour trim and a green rim. |
 | Elite | #0c72ff `[0.05, 0.45, 1.0]` | x1.6 | x1.25 | x1.1 | +1 | elite | WoW rare blue: blue armour, a blue glowing rim, one extra skill. |
 | Champion | #b238ff `[0.7, 0.22, 1.0]` | x2.2 | x1.4 | x1.18 | +1 | elite | WoW epic purple: purple armour and trim glow, larger, one extra skill. |
-| Warlord | #ff7f05 `[1.0, 0.5, 0.02]` | x1 | x1 | x1 | +2 | boss | WoW legendary orange: every boss. Stats come from the boss archetype; two extra skills. |
-| Mythic | #ff1e14 + trim #ffc63f `[1.0, 0.12, 0.08]` | x1.5 | x1.3 | x1.12 | +3 | boss | Red body glow with gold trim: late-cycle bosses and hand-placed terrors; three extra skills. |
+| Warlord | #ff3d00 `[1.0, 0.24, 0.0]` | x1 | x1 | x1 | +2 | boss | WoW legendary orange: every boss. Stats come from the boss archetype; two extra skills. |
+| Mythic | #f20c07 + trim #ff1e0f `[0.95, 0.05, 0.03]` | x1.5 | x1.3 | x1.12 | +3 | boss | Blood-red body with an ember trim: late-cycle bosses and hand-placed terrors; three extra skills. |
 
 Classification mapping: the old `Normal / Elite / Boss` classification maps onto ranks (Normal -> normal, Elite -> elite,
 Boss -> warlord), so every existing caller keeps working. Wave rows choose a rank (`"rank": "champion"`); the legacy
