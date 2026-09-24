@@ -161,14 +161,17 @@ void ACireHUD::DrawSettings()
     Line(X+168,Y+77,X+168,Y+531,Gold*.35f);
     if(OptionsTab==0)
     {
-        Label(TEXT("CAMERA / HOLD RIGHT MOUSE TO LOOK"),L,Top,12,Gold);
-        Slider(TEXT("Horizontal sensitivity"),UISettings.CameraYawSensitivity,.1f,3,.05f,L,Top+34,TEXT("Multiplies horizontal mouse camera rotation while holding the right mouse button. Movement input is unaffected."));
-        Slider(TEXT("Vertical sensitivity"),UISettings.CameraPitchSensitivity,.1f,3,.05f,R,Top+34,TEXT("Multiplies vertical mouse camera rotation independently from horizontal sensitivity."));
-        Toggle(TEXT("Invert vertical camera"),UISettings.bInvertMouseY,L,Top+88,TEXT("Reverse pitch direction while holding the right mouse button."));
-        Slider(TEXT("Camera distance (cm)"),UISettings.CameraDistance,300,1200,25,L,Top+134,TEXT("Preferred third-person camera boom length. World collision can pull the camera closer near walls."));
+        Label(TEXT("CAMERA / LEFT DRAG ORBIT, RIGHT DRAG STEER"),L,Top,12,Gold);
+        Slider(TEXT("Horizontal sensitivity"),UISettings.CameraYawSensitivity,.05f,5,.05f,L,Top+34,TEXT("Multiplies horizontal mouse camera rotation while dragging with either mouse button. Movement input is unaffected."));
+        Slider(TEXT("Vertical sensitivity"),UISettings.CameraPitchSensitivity,.05f,5,.05f,R,Top+34,TEXT("Multiplies vertical mouse camera rotation independently from horizontal sensitivity."));
+        Toggle(TEXT("Invert vertical camera"),UISettings.bInvertMouseY,L,Top+88,TEXT("Reverse pitch direction while dragging the camera. Off: moving the mouse up looks up."));
+        // feat/camera-movement: WoW camera follow and target reacquire preferences.
+        Toggle(TEXT("Camera follows movement"),UISettings.bCameraAutoFollow,R,Top+88,TEXT("While moving with no mouse button held, the camera swings back behind your character."));
+        Toggle(TEXT("Auto-target next enemy"),UISettings.bAutoReacquireTarget,R,Top+111,TEXT("When your hostile target dies, select the nearest hostile in front of the camera."));
+        Slider(TEXT("Camera distance (cm)"),UISettings.CameraDistance,300,1200,25,L,Top+134,TEXT("Preferred third-person camera boom length. World collision can pull the camera closer near walls. The mouse wheel zooms within this range."));
         Slider(TEXT("Field of view"),UISettings.CameraFOV,55,105,1,R,Top+134,TEXT("Horizontal camera field of view in degrees. A wider view shows more surroundings."));
         Label(TEXT("BATTLEFIELD KEYS"),L,Top+203,12,Gold);
-        const TCHAR* Keys[]={TEXT("W A S D   Move / strafe       RMB   Camera / face direction"),TEXT("E   Jump       Ctrl   Dodge roll       Caps Lock   Walk / run"),TEXT("Left click   Select       F1   Self       F   Ally       Tab   Enemy"),TEXT("Space   Auto attack       1-6   Skills       Q   Ultimate"),TEXT("B   Shop       R   Recall       Enter   Chat       H   Help"),TEXT("F8   Developer tools       F9   Options       F10   Edit layout"),TEXT("Ground skills: press key, aim, click to cast; RMB / Esc cancels")};
+        const TCHAR* Keys[]={TEXT("W S   Move    A D   Turn (strafe with RMB)    LMB drag   Orbit    RMB drag   Steer"),TEXT("E   Jump       Ctrl   Dodge roll       Caps Lock   Walk / run"),TEXT("Left click   Select       F1   Self       F   Ally       Tab / Shift+Tab   Enemy"),TEXT("Space   Auto attack       1-6   Skills       Q   Ultimate"),TEXT("B   Shop       R   Recall       Enter   Chat       H   Help"),TEXT("F8   Developer tools       F9   Options       F10   Edit layout"),TEXT("Ground skills: press key, aim, click to cast; RMB / Esc cancels")};
         for(int32 I=0;I<7;++I)Label(Keys[I],L,Top+232+I*23,11,I%2?Muted:Parchment);
         Toggle(TEXT("Quick cast ground skills at cursor"),UISettings.bQuickGroundCast,L,Top+408,TEXT("Off: preview the real footprint, then left click to confirm. On: cast immediately at the cursor. Server range, line-of-sight and resource checks always apply."));
     }

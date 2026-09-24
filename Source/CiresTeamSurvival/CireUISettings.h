@@ -81,6 +81,12 @@ public:
     bool bShowCriticalSymbol = true;
     bool bBloom = true;
     bool bMotionBlur = false;
+    // --- WoW camera / targeting preferences (feat/camera-movement) ---
+    /** Swing the camera back behind the character while it moves and no mouse button is held. */
+    bool bCameraAutoFollow = true;
+    /** After the hostile target dies, Tab-select the nearest hostile in front of the camera. */
+    bool bAutoReacquireTarget = false;
+    // --- end WoW camera / targeting preferences ---
 
 private:
     struct FPanelLayout
