@@ -72,7 +72,7 @@ public:
     bool bTooltips = true;
     bool bQuickGroundCast = false;
     float TooltipScale = .8f;
-    int32 TooltipMode = 0; // cursor, fixed panel, radial cursor offset
+    int32 TooltipMode = 3; // 0 cursor, 1 fixed panel (top-left), 2 radial cursor offset, 3 WoW anchor (grows from the panel's lower-right)
     float TooltipAngleDegrees = 45.f;
     float TooltipDistance = 40.f;
     bool bTooltipOffsetLocked = true;
@@ -91,18 +91,53 @@ public:
     /** feat/camera-movement: keybindings + action-bar placements, section [CireUI.Keybindings]. */
     FCireKeybindings Keybindings;
 
+    // ---- Schema 4: WoW-style interface (scale, tooltips, SCT, threat, level-up) ----
+    /** Global interface scale multiplier on top of the resolution fit (WoW range .64-1.15). */
+    float UIScale = 1.f;
+    /** Pick the multiplier from the resolution instead of UIScale. */
+    bool bAutoUIScale = true;
+    /** Tooltip background opacity (.3-1) and hover delay in seconds (0-1.5). */
+    float TooltipOpacity = .94f;
+    float TooltipDelay = .12f;
+    /** Keep tooltips away from the screen centre (reticle) and the ground-aim area. */
+    bool bTooltipAvoidCenter = true;
+    /** WoW unit tooltips when hovering characters in the world. */
+    bool bUnitTooltips = true;
+    /** Scrolling combat text extras. Direction: 0 up, 1 down, 2 fountain (arc). */
+    bool bShowMisses = true;
+    bool bCritPop = true;
+    bool bSchoolColors = true;
+    bool bMergeAoE = true;
+    int32 SCTDirection = 0;
+    float SCTSpeed = 1.f;
+    float SCTFadeSeconds = 3.2f;
+    /** Threat meter, nameplate aggro colouring and aggro alerts. */
+    bool bShowThreatMeter = true;
+    bool bThreatWarnings = true;
+    bool bThreatSound = true;
+    float ThreatWarningPercent = 90.f;
+    /** Golden level-up burst, banner and chime; WoW-style boss frames. */
+    bool bLevelUpEffect = true;
+    bool bShowBossFrames = true;
+
+    /** The resolved interface multiplier for a viewport height in pixels. */
+    float ResolveUIScale(float ViewportHeightPixels) const;
+
 private:
     struct FPanelLayout
     {
         FCireUIRect Normalized;
         FVector2D MinimumSize = FVector2D(60.f, 36.f);
         bool bLocked = false;
+        /** Horizontal (0 left, 1 centre, 2 right) + 3 * vertical (0 top, 1 centre, 2 bottom). */
+        int32 Anchor = 0;
     };
     FString ConfigFilename;
     TMap<FName, FPanelLayout> Panels;
     TArray<FName> PanelIds;
 
     void SanitizePreferences();
+    static int32 AnchorFor(float Left, float Top, float Right, float Bottom);
     static FCireUIRect ClampRect(const FCireUIRect& Rect, const FVector2D& Viewport,
         const FVector2D& MinimumSize);
 };
