@@ -119,6 +119,8 @@ public:
     /** Golden level-up burst, banner and chime; WoW-style boss frames. */
     bool bLevelUpEffect = true;
     bool bShowBossFrames = true;
+    /** aura-vfx: buff/aura/attack-modifier visuals on other units (0 = minimal marks, 1 = full). Your own are always full. */
+    float OtherEffectsIntensity = 1.f;
 
     /** The resolved interface multiplier for a viewport height in pixels. */
     float ResolveUIScale(float ViewportHeightPixels) const;

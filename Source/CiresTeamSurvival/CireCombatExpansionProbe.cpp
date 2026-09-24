@@ -21,6 +21,7 @@
 #include "CireTargeting.h"
 #include "Engine/World.h"
 #include "Misc/ScopeExit.h"
+#include "CireAuraVisuals.h" // aura-vfx
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireExpansion,Log,All);
@@ -81,6 +82,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireDeveloperTools::RunValidationSmoke()&&Good;
     Good=CireReplay::RunReplaySmoke(Mode->GetWorld())&&Good;
     Good=CireSpellPresentation::RunSmoke(Mode->GetWorld())&&Good;
+    Good=CireAuraVisuals::RunSmoke(Mode)&&Good; // aura-vfx
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }
 #endif
