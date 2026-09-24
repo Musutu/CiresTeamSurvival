@@ -19,6 +19,9 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
+#include "ShaderCompiler.h"
+#include "ContentStreaming.h"
+#include "CireTownGoal.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireEnvironmentGallery,Log,All);
 namespace
@@ -81,10 +84,29 @@ void CheckEnvironment(UWorld* World)
     if(Battlefield)
     {
         auto* Road=Battlefield->RouteRoad.Get();auto* Material=Road?Road->GetMaterial(0):nullptr;
-        Check(Road && Road->GetStaticMesh() && Road->GetInstanceCount()>0 && Material && Material->GetPathName()==TEXT("/Game/Art/Environment/Materials/M_BasaltRoad.M_BasaltRoad"),TEXT("route paving has geometry and the authored basalt road material"));
+        const auto* Cobble=CireEnvironmentProps::SurfaceMaterial(TEXT("cobblestone_material"),TEXT("/Game/Environment/Town/Materials/MI_TownW_Cobble.MI_TownW_Cobble"));
+        Check(Road && Road->GetStaticMesh() && Road->GetInstanceCount()>0 && Material && Material==Cobble,TEXT("route paving has geometry and the town cobblestone material slot"));
         Check(Battlefield->RenderedRouteRevision==CireLanePath::Revision(World),TEXT("rendered road uses current world route revision"));
-        Check(CireEnvironmentProps::InstanceCount(Battlefield)>40,TEXT("original modeled environment props are present"));
-        Check(CireEnvironmentProps::HasSafeClearance(Battlefield),TEXT("authored prop footprints preserve route, challenge and town entrance clearance"));
+        Check(CireEnvironmentProps::InstanceCount(Battlefield)>200,TEXT("medieval town layout placed in both realms"));
+        Check(CireEnvironmentProps::LightCount(Battlefield)>=20,TEXT("street lamps and braziers light the town"));
+        Check(CireEnvironmentProps::HasSafeClearance(Battlefield),TEXT("town footprints preserve route, challenge bay, breach spawn and realm divider clearance"));
+        int32 Landmarks=0;
+        for(const auto* C:Battlefield->GetComponents())if(const auto* H=Cast<UInstancedStaticMeshComponent>(C))
+            for(const TCHAR* Slot:{TEXT("castle_gate"),TEXT("castle_keep"),TEXT("gatehouse"),TEXT("shrine"),TEXT("market_hall")})
+                if(H->ComponentHasTag(FName(Slot))&&H->GetInstanceCount()==2)++Landmarks;
+        Check(Landmarks>=5,TEXT("castle gate, keep, town gatehouse, square shrine and market hall exist once per realm"));
+        for(const TCHAR* Slot:{TEXT("castle_gate"),TEXT("gatehouse"),TEXT("castle_keep"),TEXT("shrine"),TEXT("house_a"),TEXT("market_stall_a"),TEXT("cobblestone_material"),TEXT("plaster_material")})
+            UE_LOG(LogCireEnvironmentGallery,Display,TEXT("CIRE_TOWN_SLOT slot=%s source=%s"),Slot,*CireEnvironmentProps::SlotSource(FName(Slot)));
+        for(int32 Team=0;Team<2;++Team)
+        {
+            Check(CireEnvironmentProps::DistrictAt(World,Team,CireLanePath::GoalPosition(World,Team))==FName(TEXT("castle")),TEXT("defended leak zone lies in the castle district"));
+            Check(CireEnvironmentProps::DistrictAt(World,Team,CireLanePath::SpawnPosition(World,Team))==FName(TEXT("breach")),TEXT("monsters spawn in the breach fields outside the town gate"));
+            Check(FMath::IsNearlyEqual(CireLanePath::RouteProgress(World,Team,CireLanePath::PointAlongRoute(World,Team,.5f)),.5f,.01f),TEXT("route progress API round-trips"));
+        }
+        int32 Goals=0;
+        for(TActorIterator<ACireTownGoal> It(World);It;++It)
+            if(It->ContainsLocation(CireLanePath::GoalPosition(World,It->TeamId,150))&&!It->ContainsLocation(CireLanePath::PointAlongRoute(World,It->TeamId,.97f,150)))++Goals;
+        Check(Goals==2,TEXT("each castle-gate leak zone contains its route end but not the approach"));
     }
     const auto& Routes=CireLanePath::Get(World);
     FCollisionObjectQueryParams Objects;Objects.AddObjectTypesToQuery(ECC_WorldStatic);
@@ -139,7 +161,7 @@ bool Build(ACireGameMode* Mode,ACireController* Controller)
     Check(Escort->bArmoredEscort && FMath::IsNearlyEqual(Escort->Health,BaseHealth*CireLanePath::Get(World).EscortHealthMultiplier),TEXT("gallery escort uses actual authored escort health"));
     Gallery.Controller=Controller;Controller->SetViewTarget(Gallery.Camera.Get());Gallery.Ready=FPlatformTime::Seconds();
     CheckEnvironment(World);
-    UE_LOG(LogCireEnvironmentGallery,Display,TEXT("CIRE_ENVIRONMENT_GALLERY_READY views=4 route_clearance=45x90 original_environment=1"));return true;
+    UE_LOG(LogCireEnvironmentGallery,Display,TEXT("CIRE_ENVIRONMENT_GALLERY_READY views=%d route_clearance=45x90 medieval_town=1"),7);return true;
 }
 }
 bool CireEnvironmentGallery::Initialize(ACireGameMode* Mode)
@@ -154,7 +176,7 @@ bool CireEnvironmentGallery::Initialize(ACireGameMode* Mode)
 bool CireEnvironmentGallery::Tick(ACireGameMode* Mode)
 {
     if(Gallery.Mode.Get()!=Mode)return false;if(Gallery.bDone)return true;
-    if(FPlatformTime::Seconds()-Gallery.Started>90){Fail(TEXT("gallery exceeded 90 seconds waiting for setup or captures"));Finish(false);return true;}
+    if(FPlatformTime::Seconds()-Gallery.Started>330){Fail(TEXT("gallery exceeded 330 seconds waiting for setup, shaders or captures"));Finish(false);return true;}
     if(Gallery.Ready<0)
     {
         auto* Controller=Cast<ACireController>(Mode->GetWorld()->GetFirstPlayerController());
@@ -163,36 +185,44 @@ bool CireEnvironmentGallery::Tick(ACireGameMode* Mode)
     }
     if(!Gallery.Camera.IsValid() || !Gallery.Controller.IsValid() || !Gallery.Escort.IsValid() || !Gallery.Label.IsValid())
     {Fail(TEXT("a required gallery actor/component disappeared"));Finish(false);return true;}
-    const double Age=FPlatformTime::Seconds()-Gallery.Ready;const int32 Stage=FMath::Clamp(FMath::FloorToInt((Age-8)/5),0,3);
-    const auto& Routes=CireLanePath::Get(Mode->GetWorld());FVector Target,View;
-    const TCHAR* Titles[]={TEXT("01  TOWN DEFENSE / ORIGINAL ENVIRONMENT"),TEXT("02  WINDING STREET / EDITABLE ROUTE"),TEXT("03  PRIVATE LANE / FULL OVERVIEW"),TEXT("04  ARMORED ESCORT / PROTOTYPE BODY")};
-    // Wider approach view includes the keep name, both entry pillars and the
-    // entire defended line with margin instead of cropping the landmark top.
-    if(Stage==0){Target=FVector(-1900,-2100,440);View=FVector(650,-3100,1180);}
-    else if(Stage==1){Target=FVector(5900,-2100,190);View=FVector(2900,-2800,1000);}
-    else if(Stage==2){Target=FVector((Routes.MinX+Routes.MaxX)*.5,-2100,0);View=Target+FVector(700,-9500,12500);}
-    else
+    // Hold the clock while shaders compile so captures never show placeholder materials.
+    if(GShaderCompilingManager&&GShaderCompilingManager->GetNumRemainingJobs()>0&&FPlatformTime::Seconds()-Gallery.Started<240)
+    {Gallery.Ready=FPlatformTime::Seconds();return true;}
+    constexpr int32 Views=7;
+    const double Age=FPlatformTime::Seconds()-Gallery.Ready;const int32 Stage=FMath::Clamp(FMath::FloorToInt((Age-8)/5),0,Views-1);
+    const auto& Routes=CireLanePath::Get(Mode->GetWorld());FVector Target,View;const float Y=CireLanePath::CenterY(0);
+    const TCHAR* Titles[]={TEXT("01  TOWN GATE / BREACH FIELDS"),TEXT("02  MARKET DISTRICT"),TEXT("03  COOPER'S LANES / RESIDENTIAL"),
+        TEXT("04  TOWN SQUARE"),TEXT("05  CASTLE GATE / DEFENDED LEAK ZONE"),TEXT("06  PRIVATE REALM / FULL TOWN OVERVIEW"),TEXT("07  ARMORED ESCORT ON THE MARCH ROAD")};
+    switch(Stage)
     {
+    case 0: Target=FVector(11200,Y,560);View=FVector(14700,Y+1350,980);break;
+    case 1: Target=FVector(6900,Y+150,120);View=FVector(8900,Y-950,820);break;
+    case 2: Target=FVector(3900,Y-350,260);View=FVector(5750,Y+500,720);break;
+    case 3: Target=FVector(1650,Y-150,230);View=FVector(3500,Y+1000,900);break;
+    case 4: Target=FVector(-1150,Y,820);View=FVector(1650,Y+750,760);break;
+    case 5: Target=FVector(6200,Y,0);View=FVector(-5200,Y-3400,6200);break;
+    default:
         if(!Gallery.bEscortMoving){Gallery.Escort->SetActorTickEnabled(true);Gallery.bEscortMoving=true;}
         Target=Gallery.Escort->GetActorLocation()+FVector(0,0,30);View=Target+FVector(-530,-550,240);
     }
     Gallery.Camera->SetActorLocation(View);Gallery.Camera->SetActorRotation((Target-View).Rotation());
     Gallery.Label->SetText(FText::FromString(Titles[Stage]));
+    if(Age>=7+Stage*5&&Age<7.3+Stage*5)IStreamingManager::Get().StreamAllResources(1.f);
     if(Age>=10+Stage*5 && Stage>Gallery.CapturedStage)
     {
-        const TCHAR* Names[]={TEXT("01_town.png"),TEXT("02_street.png"),TEXT("03_lane_overview.png"),TEXT("04_armored_escort.png")};
+        const TCHAR* Names[]={TEXT("01_gate.png"),TEXT("02_market.png"),TEXT("03_residential.png"),TEXT("04_square.png"),TEXT("05_castle.png"),TEXT("06_overview.png"),TEXT("07_armored_escort.png")};
         const FString File=FPaths::Combine(Gallery.Directory,Names[Stage]);FScreenshotRequest::RequestScreenshot(File,false,false,false,FIntRect(),true);
         Gallery.Captures.Add(File);Gallery.CapturedStage=Stage;
-        if(Stage==3)
+        if(Stage==Views-1)
         {
             FVector2D Pixel;int32 Width=0,Height=0;Gallery.Controller->GetViewportSize(Width,Height);
             Check(!Gallery.Escort->IsHidden() && Gallery.Controller->ProjectWorldLocationToScreen(Gallery.Escort->GetActorLocation(),Pixel) && Pixel.X>0 && Pixel.X<Width && Pixel.Y>0 && Pixel.Y<Height,TEXT("escort is visible and framed in the final capture"));
         }
         UE_LOG(LogCireEnvironmentGallery,Display,TEXT("CIRE_ENVIRONMENT_GALLERY_CAPTURE stage=%d file=%s"),Stage,*File);
     }
-    if(Age>=29)
+    if(Age>=14+Views*5)
     {
-        Check(Gallery.Captures.Num()==4,TEXT("all four environment views captured"));
+        Check(Gallery.Captures.Num()==Views,TEXT("all environment views captured"));
         for(const FString& File:Gallery.Captures)Check(IFileManager::Get().FileSize(*File)>1024,TEXT("environment PNG saved with rendered content"));
         Finish(Gallery.bPass);
     }

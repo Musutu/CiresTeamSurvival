@@ -235,6 +235,48 @@ FVector CireLanePath::ChallengePosition(const UWorld* World,int32 Team,int32 Tie
     }
     return WorldPoint(Team,Best,FMath::IsFinite(Z)?Z:110.f);
 }
+TArray<FVector> CireLanePath::RoutePoints(const UWorld* World,int32 Team,float Z)
+{
+    TArray<FVector> Out;Team=FMath::Clamp(Team,0,1);
+    for(const FVector2D& P:Get(World).LocalPoints[Team])Out.Add(WorldPoint(Team,P,FMath::IsFinite(Z)?Z:0.f));
+    return Out;
+}
+float CireLanePath::RouteLength(const UWorld* World,int32 Team)
+{
+    const auto& Points=Get(World).LocalPoints[FMath::Clamp(Team,0,1)];double Length=0;
+    for(int32 I=0;I+1<Points.Num();++I)Length+=FVector2D::Distance(Points[I],Points[I+1]);
+    return static_cast<float>(Length);
+}
+FVector CireLanePath::PointAlongRoute(const UWorld* World,int32 Team,float Fraction,float Z)
+{
+    Team=FMath::Clamp(Team,0,1);const auto& Points=Get(World).LocalPoints[Team];
+    double Remaining=RouteLength(World,Team)*FMath::Clamp(FMath::IsFinite(Fraction)?Fraction:0.f,0.f,1.f);
+    for(int32 I=0;I+1<Points.Num();++I)
+    {
+        const double Segment=FVector2D::Distance(Points[I],Points[I+1]);
+        if(Remaining<=Segment)return WorldPoint(Team,FMath::Lerp(Points[I],Points[I+1],Segment>0?Remaining/Segment:0.),Z);
+        Remaining-=Segment;
+    }
+    return WorldPoint(Team,Points.Last(),Z);
+}
+float CireLanePath::RouteProgress(const UWorld* World,int32 Team,const FVector& Location)
+{
+    Team=FMath::Clamp(Team,0,1);const auto& Points=Get(World).LocalPoints[Team];
+    const FVector2D P(Location.X,Location.Y-CenterY(Team));double Best=TNumericLimits<double>::Max(),BestAlong=0,Walked=0;
+    for(int32 I=0;I+1<Points.Num();++I)
+    {
+        const FVector2D Segment=Points[I+1]-Points[I];const double Length=Segment.Size();
+        const double Alpha=FMath::Clamp(FVector2D::DotProduct(P-Points[I],Segment)/FMath::Max(1.,Segment.SizeSquared()),0.,1.);
+        const double D=FVector2D::DistSquared(P,Points[I]+Segment*Alpha);
+        if(D<Best){Best=D;BestAlong=Walked+Length*Alpha;}
+        Walked+=Length;
+    }
+    return Walked>0?static_cast<float>(BestAlong/Walked):0.f;
+}
+FVector CireLanePath::GoalPosition(const UWorld* World,int32 Team,float Z)
+{
+    Team=FMath::Clamp(Team,0,1);return WorldPoint(Team,Get(World).LocalPoints[Team].Last(),Z);
+}
 void CireLanePath::InitializeProgress(ACireMonster* M)
 {
     if (!IsValid(M) || !M->HasAuthority() || M->Lane < 0 || M->Lane > 1) return;
