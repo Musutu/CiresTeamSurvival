@@ -1,4 +1,5 @@
 #include "CireMusic.h"
+#include "CireArenas.h" // arenas
 #include "CireAudio.h"
 #include "CireUISettings.h"
 #include "Components/AudioComponent.h"
@@ -133,7 +134,13 @@ void FCireMusicPlayer::Start(UCireAudioSubsystem& Audio, ECireMusicState State, 
     if(Slots[Active].IsValid() && Slots[Active]->IsPlaying()) Slots[Active]->FadeOut(Fade, 0.f);
     if(!Def || Def->Tracks.IsEmpty()) { Track.Reset(); return; }
     int32& Next = Rotation.FindOrAdd(State);
-    const FString Name = Def->Tracks[Next++ % Def->Tracks.Num()];
+    FString Name = Def->Tracks[Next++ % Def->Tracks.Num()];
+    // arenas: a themed arena may override the arena score (Arenas.json "music").
+    if(State == ECireMusicState::Arena)
+    {
+        const FString Override = CireArenas::ActiveMusic(Audio.GetWorld());
+        if(!Override.IsEmpty() && Audio.ResolveSound(TEXT("Music/") + Override)) Name = Override;
+    }
     USoundBase* Sound = Audio.ResolveSound(TEXT("Music/") + Name);
     if(!Sound) { Track.Reset(); return; }
     Active = 1 - Active;

@@ -3,6 +3,7 @@
 // Everything here is local presentation; it reads replicated/authoritative state and
 // never changes combat rules.
 #include "CireHUD.h"
+#include "CireArenas.h" // arenas
 #include "CireGame.h"
 #include "CireConstruct.h"
 #include "CireSummon.h"
@@ -1213,8 +1214,13 @@ void ACireHUD::UpdateBanners(ACireHero* Hero,ACireGameState* State)
         switch(State->Phase)
         {
         case 0:CireBanners::Show(ECireBanner::WaveIncoming,TEXT("Survival"),TEXT("Hold your lane. Three cleared waves lead back to town."),TEXT("THE GATES OPEN"));break;
-        case 1:CireBanners::Show(ECireBanner::PrepPhase,TEXT("Prep Phase"),FString::Printf(TEXT("%d seconds to buy gear and tomes before the portal opens."),Seconds));break;
-        case 2:CireBanners::Show(ECireBanner::Arena,TEXT("Arena"),TEXT("Both companies meet in the portal battlefield."));break;
+        case 1:CireBanners::Show(ECireBanner::PrepPhase,TEXT("Prep Phase"),FString::Printf(TEXT("%d seconds to buy gear and tomes. The portal opens onto %s."),Seconds,*CireArenas::DisplayName(State->ArenaIndex)));break; // arenas
+        case 2: // arenas: announce the randomly picked arena by name
+        {
+            const CireArenas::FArena* ArenaDef=CireArenas::Get(State->ArenaIndex);
+            CireBanners::Show(ECireBanner::Arena,CireArenas::DisplayName(State->ArenaIndex),ArenaDef&&!ArenaDef->Subtitle.IsEmpty()?ArenaDef->Subtitle:FString(TEXT("Both companies meet in the portal battlefield.")),TEXT("ARENA"));
+            break;
+        }
         case 4:CireBanners::Show(ECireBanner::Recovery,TEXT("Recovery"),FString::Printf(TEXT("%d seconds to regroup and resupply."),Seconds));break;
         case 3:
         {

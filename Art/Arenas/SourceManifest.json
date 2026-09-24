@@ -1,0 +1,2920 @@
+{
+  "source": "Poly Haven public API (api.polyhaven.com)",
+  "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+  "fetched": "2026-09-24T14:56:38Z",
+  "assets": [
+    {
+      "kind": "model",
+      "id": "rusted_spade_01",
+      "name": "Rusted Spade 01",
+      "authors": "Blemonade",
+      "resolution": "1k",
+      "arena": "fields",
+      "purpose": "farm tool leaning on a bale",
+      "page": "https://polyhaven.com/a/rusted_spade_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/rusted_spade_01/rusted_spade_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/rusted_spade_01/rusted_spade_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/rusted_spade_01/rusted_spade_01_1k.gltf",
+          "bytes": 2799,
+          "md5": "491c4e090b3e836c79a3c954ba3ee213"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rusted_spade_01/rusted_spade_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/rusted_spade_01/textures/rusted_spade_01_nor_gl_1k.jpg",
+          "bytes": 737050,
+          "md5": "e74e88df7540d62a922a682c69cc7065"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/rusted_spade_01/rusted_spade_01.bin",
+          "file": "Saved/ArenaSources/Models/rusted_spade_01/rusted_spade_01.bin",
+          "bytes": 281064,
+          "md5": "711dd23b96e5083ab06623eb7660dacd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rusted_spade_01/rusted_spade_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/rusted_spade_01/textures/rusted_spade_01_arm_1k.jpg",
+          "bytes": 776600,
+          "md5": "7f044d6fe73243259de3d3e2a9f32f26"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rusted_spade_01/rusted_spade_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/rusted_spade_01/textures/rusted_spade_01_diff_1k.jpg",
+          "bytes": 625643,
+          "md5": "f45b63ecdafaf0b2a9ba11af71d499d4"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "hatchet",
+      "name": "Hatchet",
+      "authors": "James Ray Cock, Ulan Cabanilla",
+      "resolution": "1k",
+      "arena": "fields",
+      "purpose": "farm clutter",
+      "page": "https://polyhaven.com/a/hatchet",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/hatchet/hatchet_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/hatchet/hatchet_1k.gltf",
+          "file": "Saved/ArenaSources/Models/hatchet/hatchet_1k.gltf",
+          "bytes": 2718,
+          "md5": "df2b0ec1772498e34029564dd4a69629"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/hatchet/hatchet.bin",
+          "file": "Saved/ArenaSources/Models/hatchet/hatchet.bin",
+          "bytes": 164524,
+          "md5": "8bd5390cfa607c765015987b4ca08560"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/hatchet/hatchet_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/hatchet/textures/hatchet_arm_1k.jpg",
+          "bytes": 690773,
+          "md5": "f32397f946c5afd043c273291e5f74ec"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/hatchet/hatchet_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/hatchet/textures/hatchet_nor_gl_1k.jpg",
+          "bytes": 592465,
+          "md5": "aca9618cbd4bb3b16a7f06696e72d6cc"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/hatchet/hatchet_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/hatchet/textures/hatchet_diff_1k.jpg",
+          "bytes": 517540,
+          "md5": "348d694ebb19250cbfb2645d0eeaa27c"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "coast_rocks_01",
+      "name": "Coast Rocks 01",
+      "authors": "Rob Tuytel, Rico Cilliers",
+      "resolution": "1k",
+      "arena": "iceland",
+      "purpose": "black shoreline rocks",
+      "page": "https://polyhaven.com/a/coast_rocks_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/coast_rocks_01/coast_rocks_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/coast_rocks_01/coast_rocks_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/coast_rocks_01/coast_rocks_01_1k.gltf",
+          "bytes": 2810,
+          "md5": "91f13d2ab5e6e56180649b22712632f5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/coast_rocks_01/coast_rocks_01.bin",
+          "file": "Saved/ArenaSources/Models/coast_rocks_01/coast_rocks_01.bin",
+          "bytes": 19320352,
+          "md5": "4cf9d5009388434a0520e1643127a725"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coast_rocks_01/coast_rocks_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coast_rocks_01/textures/coast_rocks_01_nor_gl_1k.jpg",
+          "bytes": 918464,
+          "md5": "00fc7775241e25e089624d3c6a15c39b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coast_rocks_01/coast_rocks_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coast_rocks_01/textures/coast_rocks_01_arm_1k.jpg",
+          "bytes": 602817,
+          "md5": "60792c07b60d046459f11ca3baf50f1d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coast_rocks_01/coast_rocks_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coast_rocks_01/textures/coast_rocks_01_diff_1k.jpg",
+          "bytes": 839761,
+          "md5": "4d6b6e50668887922d08b8c0f789c350"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "coast_rocks_05",
+      "name": "Coast Rocks 05",
+      "authors": "Rob Tuytel",
+      "resolution": "1k",
+      "arena": "iceland",
+      "purpose": "shoreline rock cluster",
+      "page": "https://polyhaven.com/a/coast_rocks_05",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/coast_rocks_05/coast_rocks_05_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/coast_rocks_05/coast_rocks_05_1k.gltf",
+          "file": "Saved/ArenaSources/Models/coast_rocks_05/coast_rocks_05_1k.gltf",
+          "bytes": 2821,
+          "md5": "4d4e9186fe053d2385913fd2bf7eddd9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coast_rocks_05/coast_rocks_05_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coast_rocks_05/textures/coast_rocks_05_arm_1k.jpg",
+          "bytes": 893696,
+          "md5": "e1254e9d26745f5d06e7a266a1231360"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/coast_rocks_05/coast_rocks_05.bin",
+          "file": "Saved/ArenaSources/Models/coast_rocks_05/coast_rocks_05.bin",
+          "bytes": 22102224,
+          "md5": "9d4e639dd13128e96335a5d9828b3f47"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coast_rocks_05/coast_rocks_05_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coast_rocks_05/textures/coast_rocks_05_nor_gl_1k.jpg",
+          "bytes": 1327762,
+          "md5": "e5f4c65b6fafd54885044cb25a783265"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coast_rocks_05/coast_rocks_05_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coast_rocks_05/textures/coast_rocks_05_diff_1k.jpg",
+          "bytes": 954605,
+          "md5": "f2b66bad46855efa031e21aa392f4349"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "coastal_cliff_02",
+      "name": "Coastal Cliff 02",
+      "authors": "Rob Tuytel",
+      "resolution": "1k",
+      "arena": "iceland",
+      "purpose": "sea-cliff backdrop",
+      "page": "https://polyhaven.com/a/coastal_cliff_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/coastal_cliff_02/coastal_cliff_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/coastal_cliff_02/coastal_cliff_02_1k.gltf",
+          "file": "Saved/ArenaSources/Models/coastal_cliff_02/coastal_cliff_02_1k.gltf",
+          "bytes": 3220,
+          "md5": "adb7787407c87cd1bd74c8e005577a7d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/coastal_cliff_02/coastal_cliff_02.bin",
+          "file": "Saved/ArenaSources/Models/coastal_cliff_02/coastal_cliff_02.bin",
+          "bytes": 26773008,
+          "md5": "e6324e54479fd0f9aefe707dfa9e728b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coastal_cliff_02/coastal_cliff_02_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coastal_cliff_02/textures/coastal_cliff_02_arm_1k.jpg",
+          "bytes": 697369,
+          "md5": "f6fc408070af611ce36d8624952e4ccb"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coastal_cliff_02/coastal_cliff_02_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coastal_cliff_02/textures/coastal_cliff_02_nor_gl_1k.jpg",
+          "bytes": 924518,
+          "md5": "bcb1e2089066001eceb38079f33f3a12"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coastal_cliff_02/coastal_cliff_02_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coastal_cliff_02/textures/coastal_cliff_02_diff_1k.jpg",
+          "bytes": 759723,
+          "md5": "e4d66e6aab22152dcbdd101d23d19e61"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "coast_land_rocks_02",
+      "name": "Coast Land Rocks 02",
+      "authors": "Rob Tuytel, Rico Cilliers",
+      "resolution": "1k",
+      "arena": "iceland",
+      "purpose": "low lava outcrops",
+      "page": "https://polyhaven.com/a/coast_land_rocks_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/coast_land_rocks_02/coast_land_rocks_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/coast_land_rocks_02/coast_land_rocks_02_1k.gltf",
+          "file": "Saved/ArenaSources/Models/coast_land_rocks_02/coast_land_rocks_02_1k.gltf",
+          "bytes": 2851,
+          "md5": "cda0e026c8592f800b48298358f9abc7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coast_land_rocks_02/coast_land_rocks_02_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coast_land_rocks_02/textures/coast_land_rocks_02_arm_1k.jpg",
+          "bytes": 859245,
+          "md5": "2cc438f5e56fa261d0f94b40ae16ba54"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coast_land_rocks_02/coast_land_rocks_02_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coast_land_rocks_02/textures/coast_land_rocks_02_diff_1k.jpg",
+          "bytes": 886282,
+          "md5": "0f42f618eea9819828675e7b7cde1940"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/coast_land_rocks_02/coast_land_rocks_02.bin",
+          "file": "Saved/ArenaSources/Models/coast_land_rocks_02/coast_land_rocks_02.bin",
+          "bytes": 36700376,
+          "md5": "bdb0028f3b0d57deadab130fc34135a3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/coast_land_rocks_02/coast_land_rocks_02_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/coast_land_rocks_02/textures/coast_land_rocks_02_nor_gl_1k.jpg",
+          "bytes": 1163272,
+          "md5": "a27e1226c5887b1b788a82dc3f3905cd"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "moss_01",
+      "name": "Moss 01",
+      "authors": "Rob Tuytel",
+      "resolution": "1k",
+      "arena": "iceland, hornbeam",
+      "purpose": "moss cushions on lava and logs",
+      "page": "https://polyhaven.com/a/moss_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/moss_01/moss_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/moss_01/moss_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/moss_01/moss_01_1k.gltf",
+          "bytes": 18481,
+          "md5": "1baba498fd3936673609dda5ecfe960a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/moss_01/moss_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/moss_01/textures/moss_01_nor_gl_1k.jpg",
+          "bytes": 388925,
+          "md5": "faf161f708abe274db1b8087800fa08b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/moss_01/moss_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/moss_01/textures/moss_01_diff_1k.jpg",
+          "bytes": 170297,
+          "md5": "5768f973a7d6d2846a2e76a6b0669a83"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/moss_01/moss_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/moss_01/textures/moss_01_arm_1k.jpg",
+          "bytes": 336140,
+          "md5": "e3b6adf32db7076885afe0e179cc1850"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/moss_01/moss_01.bin",
+          "file": "Saved/ArenaSources/Models/moss_01/moss_01.bin",
+          "bytes": 7260,
+          "md5": "cdb092878a81b3208a162d79546892fe"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "sand_rocks_small_01",
+      "name": "Sand Rocks Small 01",
+      "authors": "Rob Tuytel, Rico Cilliers",
+      "resolution": "1k",
+      "arena": "iceland, underwater",
+      "purpose": "pebble scatter",
+      "page": "https://polyhaven.com/a/sand_rocks_small_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/sand_rocks_small_01/sand_rocks_small_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/sand_rocks_small_01/sand_rocks_small_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/sand_rocks_small_01/sand_rocks_small_01_1k.gltf",
+          "bytes": 2887,
+          "md5": "b6c774681b156d8e969c81e263f6c7ff"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/sand_rocks_small_01/sand_rocks_small_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/sand_rocks_small_01/textures/sand_rocks_small_01_nor_gl_1k.jpg",
+          "bytes": 1008354,
+          "md5": "c1d26206377745357b0e03d71c7c9412"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/sand_rocks_small_01/sand_rocks_small_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/sand_rocks_small_01/textures/sand_rocks_small_01_diff_1k.jpg",
+          "bytes": 788042,
+          "md5": "d819c51a8f18f0a496b0fcf8d672824a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/sand_rocks_small_01/sand_rocks_small_01.bin",
+          "file": "Saved/ArenaSources/Models/sand_rocks_small_01/sand_rocks_small_01.bin",
+          "bytes": 21253052,
+          "md5": "327c5e2efdde87ecf9d89bbe90ed923e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/sand_rocks_small_01/sand_rocks_small_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/sand_rocks_small_01/textures/sand_rocks_small_01_arm_1k.jpg",
+          "bytes": 758948,
+          "md5": "7c8f7fb524059726d323f60df943807c"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "namaqualand_cliff_01",
+      "name": "Namaqualand Cliff 01",
+      "authors": "Jenelle van Heerden, Rico Cilliers",
+      "resolution": "1k",
+      "arena": "moab",
+      "purpose": "sandstone ledges (red-tinted)",
+      "page": "https://polyhaven.com/a/namaqualand_cliff_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/namaqualand_cliff_01/namaqualand_cliff_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/namaqualand_cliff_01/namaqualand_cliff_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/namaqualand_cliff_01/namaqualand_cliff_01_1k.gltf",
+          "bytes": 2848,
+          "md5": "2b1155ba7a88786d8cfd4e40265a8d3c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_cliff_01/namaqualand_cliff_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_cliff_01/textures/namaqualand_cliff_01_nor_gl_1k.jpg",
+          "bytes": 975864,
+          "md5": "de4012456ca542c47076b8f0d1e69c65"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/namaqualand_cliff_01/namaqualand_cliff_01.bin",
+          "file": "Saved/ArenaSources/Models/namaqualand_cliff_01/namaqualand_cliff_01.bin",
+          "bytes": 2179752,
+          "md5": "2aa51d08780691ff8e748b308d575964"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_cliff_01/namaqualand_cliff_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_cliff_01/textures/namaqualand_cliff_01_diff_1k.jpg",
+          "bytes": 702723,
+          "md5": "2538ea6744e5469bd63f6f3b88bd0f3a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_cliff_01/namaqualand_cliff_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_cliff_01/textures/namaqualand_cliff_01_arm_1k.jpg",
+          "bytes": 683173,
+          "md5": "c85aea4f386a974efe744bf7dd109bc0"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "namaqualand_cliff_02",
+      "name": "Namaqualand Cliff 02",
+      "authors": "Dario Barresi, Rico Cilliers",
+      "resolution": "1k",
+      "arena": "moab",
+      "purpose": "canyon wall faces (red-tinted)",
+      "page": "https://polyhaven.com/a/namaqualand_cliff_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/namaqualand_cliff_02/namaqualand_cliff_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/namaqualand_cliff_02/namaqualand_cliff_02_1k.gltf",
+          "file": "Saved/ArenaSources/Models/namaqualand_cliff_02/namaqualand_cliff_02_1k.gltf",
+          "bytes": 2857,
+          "md5": "3a4f323a98171ce6670f906db122c538"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_cliff_02/namaqualand_cliff_02_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_cliff_02/textures/namaqualand_cliff_02_diff_1k.jpg",
+          "bytes": 793208,
+          "md5": "1bdbd81c80c6693ea589a3005164fd2b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_cliff_02/namaqualand_cliff_02_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_cliff_02/textures/namaqualand_cliff_02_nor_gl_1k.jpg",
+          "bytes": 1071907,
+          "md5": "db4096e8ccf0ace17c228de9f5e69180"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/namaqualand_cliff_02/namaqualand_cliff_02.bin",
+          "file": "Saved/ArenaSources/Models/namaqualand_cliff_02/namaqualand_cliff_02.bin",
+          "bytes": 5697152,
+          "md5": "2920477744cce1a827a61c0d36a1061a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_cliff_02/namaqualand_cliff_02_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_cliff_02/textures/namaqualand_cliff_02_arm_1k.jpg",
+          "bytes": 813799,
+          "md5": "67a9604a9d78af65ce82316d19275f0e"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "namaqualand_boulder_03",
+      "name": "Namaqualand Boulder 03",
+      "authors": "Jenelle van Heerden, Dario Barresi",
+      "resolution": "1k",
+      "arena": "moab",
+      "purpose": "fallen sandstone blocks",
+      "page": "https://polyhaven.com/a/namaqualand_boulder_03",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/namaqualand_boulder_03/namaqualand_boulder_03_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/namaqualand_boulder_03/namaqualand_boulder_03_1k.gltf",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulder_03/namaqualand_boulder_03_1k.gltf",
+          "bytes": 2823,
+          "md5": "419d98b4512f1bc06245555c84f6effc"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_boulder_03/namaqualand_boulder_03_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulder_03/textures/namaqualand_boulder_03_diff_1k.jpg",
+          "bytes": 867015,
+          "md5": "d025cdf2d90fe94cbc2ae5a9784e7a03"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_boulder_03/namaqualand_boulder_03_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulder_03/textures/namaqualand_boulder_03_nor_gl_1k.jpg",
+          "bytes": 851531,
+          "md5": "d2d2c1459c74ae308eb895178e4757ed"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/namaqualand_boulder_03/namaqualand_boulder_03.bin",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulder_03/namaqualand_boulder_03.bin",
+          "bytes": 1450268,
+          "md5": "ded61ea310a66144546eac2a891b6dba"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_boulder_03/namaqualand_boulder_03_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulder_03/textures/namaqualand_boulder_03_arm_1k.jpg",
+          "bytes": 607318,
+          "md5": "d474b780658e7038da53b4328725b4f1"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "namaqualand_boulder_05",
+      "name": "Namaqualand Boulder 05",
+      "authors": "Jenelle van Heerden, Dario Barresi",
+      "resolution": "1k",
+      "arena": "moab",
+      "purpose": "sandstone boulder",
+      "page": "https://polyhaven.com/a/namaqualand_boulder_05",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/namaqualand_boulder_05/namaqualand_boulder_05_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/namaqualand_boulder_05/namaqualand_boulder_05_1k.gltf",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulder_05/namaqualand_boulder_05_1k.gltf",
+          "bytes": 2872,
+          "md5": "93b2f39714f9b4d19197335eb22d9283"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_boulder_05/namaqualand_boulder_05_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulder_05/textures/namaqualand_boulder_05_arm_1k.jpg",
+          "bytes": 713844,
+          "md5": "aa40bbddb8be6e13b0e6cba68c99b3e0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_boulder_05/namaqualand_boulder_05_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulder_05/textures/namaqualand_boulder_05_nor_gl_1k.jpg",
+          "bytes": 1099873,
+          "md5": "0337869f7d21c538f307792a927c8db2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/namaqualand_boulder_05/namaqualand_boulder_05.bin",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulder_05/namaqualand_boulder_05.bin",
+          "bytes": 2015628,
+          "md5": "64bca194605dee7e361d43beabb3d4b7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_boulder_05/namaqualand_boulder_05_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulder_05/textures/namaqualand_boulder_05_diff_1k.jpg",
+          "bytes": 867775,
+          "md5": "de60e1accb73ea17db74fc2fedda85b5"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "namaqualand_boulders_01",
+      "name": "Namaqualand Boulders 01",
+      "authors": "Greg Zaal, Jenelle van Heerden",
+      "resolution": "1k",
+      "arena": "moab",
+      "purpose": "boulder pair",
+      "page": "https://polyhaven.com/a/namaqualand_boulders_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/namaqualand_boulders_01/namaqualand_boulders_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/namaqualand_boulders_01/namaqualand_boulders_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulders_01/namaqualand_boulders_01_1k.gltf",
+          "bytes": 4427,
+          "md5": "904c7349856f65f757b7f6fd36f57641"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_boulders_01/namaqualand_boulders_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulders_01/textures/namaqualand_boulders_01_diff_1k.jpg",
+          "bytes": 830079,
+          "md5": "1ed791727bbb6f26f77246e5de17d901"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_boulders_01/namaqualand_boulders_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulders_01/textures/namaqualand_boulders_01_nor_gl_1k.jpg",
+          "bytes": 1159170,
+          "md5": "0f3ad6c29c72b9fe28fc91dc3cf15c00"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/namaqualand_boulders_01/namaqualand_boulders_01.bin",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulders_01/namaqualand_boulders_01.bin",
+          "bytes": 927724,
+          "md5": "58ed8a29120ad0807320ce49a9d14c2a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_boulders_01/namaqualand_boulders_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_boulders_01/textures/namaqualand_boulders_01_arm_1k.jpg",
+          "bytes": 719208,
+          "md5": "9827ad42f724de4fc327b063878939d6"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "namaqualand_rocks_01",
+      "name": "Namaqualand Rocks 01",
+      "authors": "Greg Zaal, Jenelle van Heerden",
+      "resolution": "1k",
+      "arena": "moab",
+      "purpose": "rock scatter",
+      "page": "https://polyhaven.com/a/namaqualand_rocks_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/namaqualand_rocks_01/namaqualand_rocks_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/namaqualand_rocks_01/namaqualand_rocks_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/namaqualand_rocks_01/namaqualand_rocks_01_1k.gltf",
+          "bytes": 7463,
+          "md5": "0426d6445f947a872f67dffba7ab5dbd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_rocks_01/namaqualand_rocks_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_rocks_01/textures/namaqualand_rocks_01_diff_1k.jpg",
+          "bytes": 868888,
+          "md5": "3b0bb3ffafa585b8e85565f2debb2dd1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_rocks_01/namaqualand_rocks_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_rocks_01/textures/namaqualand_rocks_01_arm_1k.jpg",
+          "bytes": 802099,
+          "md5": "ffeb3aba0ebf19f325fc4ec4cc9ae5c2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/namaqualand_rocks_01/namaqualand_rocks_01.bin",
+          "file": "Saved/ArenaSources/Models/namaqualand_rocks_01/namaqualand_rocks_01.bin",
+          "bytes": 1952600,
+          "md5": "26f7ff48dc3d03e0c3f98b0a3d2c1b72"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/namaqualand_rocks_01/namaqualand_rocks_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/namaqualand_rocks_01/textures/namaqualand_rocks_01_nor_gl_1k.jpg",
+          "bytes": 1171905,
+          "md5": "46c9238b7d2cbcbc7bbf417a7ffd6e56"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "wild_rooibos_bush",
+      "name": "Wild Rooibos Bush",
+      "authors": "James Ray Cock, Jenelle van Heerden",
+      "resolution": "1k",
+      "arena": "moab",
+      "purpose": "desert scrub",
+      "page": "https://polyhaven.com/a/wild_rooibos_bush",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/wild_rooibos_bush/wild_rooibos_bush_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wild_rooibos_bush/wild_rooibos_bush_1k.gltf",
+          "file": "Saved/ArenaSources/Models/wild_rooibos_bush/wild_rooibos_bush_1k.gltf",
+          "bytes": 23122,
+          "md5": "589911681acc2ebac68ff12ded20460d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wild_rooibos_bush/wild_rooibos_bush_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/wild_rooibos_bush/textures/wild_rooibos_bush_nor_gl_1k.jpg",
+          "bytes": 463170,
+          "md5": "78a6bd59ce4a2e21fb01cadf382a1338"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wild_rooibos_bush/wild_rooibos_bush_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/wild_rooibos_bush/textures/wild_rooibos_bush_diff_1k.jpg",
+          "bytes": 374003,
+          "md5": "47ee13b7a87d2aff07c0ec708a33f6ab"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wild_rooibos_bush/wild_rooibos_bush_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/wild_rooibos_bush/textures/wild_rooibos_bush_arm_1k.jpg",
+          "bytes": 367273,
+          "md5": "bd65f1b013b7df7d75ef87d9a66b669c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wild_rooibos_bush/wild_rooibos_bush.bin",
+          "file": "Saved/ArenaSources/Models/wild_rooibos_bush/wild_rooibos_bush.bin",
+          "bytes": 1236928,
+          "md5": "0d6c39ac444bac0381ecdff32a191a9c"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "dead_quiver_branch_01",
+      "name": "Dead Quiver Branch 01",
+      "authors": "Greg Zaal, Jenelle van Heerden",
+      "resolution": "1k",
+      "arena": "moab",
+      "purpose": "dead juniper branches",
+      "page": "https://polyhaven.com/a/dead_quiver_branch_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/dead_quiver_branch_01/dead_quiver_branch_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/dead_quiver_branch_01/dead_quiver_branch_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/dead_quiver_branch_01/dead_quiver_branch_01_1k.gltf",
+          "bytes": 2866,
+          "md5": "e8cf949bee8b828856a71d6486546504"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dead_quiver_branch_01/dead_quiver_branch_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/dead_quiver_branch_01/textures/dead_quiver_branch_01_nor_gl_1k.jpg",
+          "bytes": 1023490,
+          "md5": "32e39448a04678618c9de25fb39bc9ea"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dead_quiver_branch_01/dead_quiver_branch_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/dead_quiver_branch_01/textures/dead_quiver_branch_01_diff_1k.jpg",
+          "bytes": 720703,
+          "md5": "c99cf6384238acd5655095dd9743a3aa"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/dead_quiver_branch_01/dead_quiver_branch_01.bin",
+          "file": "Saved/ArenaSources/Models/dead_quiver_branch_01/dead_quiver_branch_01.bin",
+          "bytes": 363116,
+          "md5": "a09e761f87363e1a453a1231d42e0cb1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dead_quiver_branch_01/dead_quiver_branch_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/dead_quiver_branch_01/textures/dead_quiver_branch_01_arm_1k.jpg",
+          "bytes": 595028,
+          "md5": "54febac298d6fa8789ae6132bd969377"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "dead_tree_trunk",
+      "name": "Dead Tree Trunk",
+      "authors": "Rob Tuytel",
+      "resolution": "1k",
+      "arena": "moab, hornbeam",
+      "purpose": "fallen trunks",
+      "page": "https://polyhaven.com/a/dead_tree_trunk",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/dead_tree_trunk/dead_tree_trunk_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/dead_tree_trunk/dead_tree_trunk_1k.gltf",
+          "file": "Saved/ArenaSources/Models/dead_tree_trunk/dead_tree_trunk_1k.gltf",
+          "bytes": 2812,
+          "md5": "7bbf9fc9fdf61b50ed0495a29c03ecab"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dead_tree_trunk/dead_tree_trunk_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/dead_tree_trunk/textures/dead_tree_trunk_arm_1k.jpg",
+          "bytes": 724384,
+          "md5": "548a72849ce709a9f38fa06776732a07"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dead_tree_trunk/dead_tree_trunk_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/dead_tree_trunk/textures/dead_tree_trunk_nor_gl_1k.jpg",
+          "bytes": 1053075,
+          "md5": "28992c1123371ae1899e49360953c846"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dead_tree_trunk/dead_tree_trunk_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/dead_tree_trunk/textures/dead_tree_trunk_diff_1k.jpg",
+          "bytes": 713480,
+          "md5": "fe92c64532d4684d3239f6edc7733192"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/dead_tree_trunk/dead_tree_trunk.bin",
+          "file": "Saved/ArenaSources/Models/dead_tree_trunk/dead_tree_trunk.bin",
+          "bytes": 2293788,
+          "md5": "2a2b05e67a5c51fba5fc7591a7857957"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "root_cluster_01",
+      "name": "Root Cluster 01",
+      "authors": "Jenelle van Heerden, Rico Cilliers",
+      "resolution": "1k",
+      "arena": "hornbeam",
+      "purpose": "root bank at the glade edge",
+      "page": "https://polyhaven.com/a/root_cluster_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/root_cluster_01/root_cluster_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/root_cluster_01/root_cluster_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/root_cluster_01/root_cluster_01_1k.gltf",
+          "bytes": 2827,
+          "md5": "a19d94111afa0b2dd7a480ac928f4adc"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/root_cluster_01/root_cluster_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/root_cluster_01/textures/root_cluster_01_arm_1k.jpg",
+          "bytes": 875276,
+          "md5": "23df6aea4553abed0760b74195feaf22"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/root_cluster_01/root_cluster_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/root_cluster_01/textures/root_cluster_01_nor_gl_1k.jpg",
+          "bytes": 1340361,
+          "md5": "8d0c2f342d5112959bb6cb8d4561be2b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/root_cluster_01/root_cluster_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/root_cluster_01/textures/root_cluster_01_diff_1k.jpg",
+          "bytes": 769880,
+          "md5": "e16fcba268d6ab34622fb476c9f3f560"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/root_cluster_01/root_cluster_01.bin",
+          "file": "Saved/ArenaSources/Models/root_cluster_01/root_cluster_01.bin",
+          "bytes": 6464764,
+          "md5": "0e64cb42ea471829b95151e08888d8e1"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "tree_stump_02",
+      "name": "Tree Stump 02",
+      "authors": "Rob Tuytel",
+      "resolution": "1k",
+      "arena": "hornbeam",
+      "purpose": "cut stumps",
+      "page": "https://polyhaven.com/a/tree_stump_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/tree_stump_02/tree_stump_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/tree_stump_02/tree_stump_02_1k.gltf",
+          "file": "Saved/ArenaSources/Models/tree_stump_02/tree_stump_02_1k.gltf",
+          "bytes": 2802,
+          "md5": "b2344d2dfc9f0a00d82cdea8aee84c7a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_stump_02/tree_stump_02_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_stump_02/textures/tree_stump_02_nor_gl_1k.jpg",
+          "bytes": 1334839,
+          "md5": "c9cd86ad90819ca7a60a6ef9c77424e4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/tree_stump_02/tree_stump_02.bin",
+          "file": "Saved/ArenaSources/Models/tree_stump_02/tree_stump_02.bin",
+          "bytes": 1433880,
+          "md5": "87f18fe07707d421da70fa2f69b12366"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_stump_02/tree_stump_02_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_stump_02/textures/tree_stump_02_diff_1k.jpg",
+          "bytes": 901605,
+          "md5": "e791fc07d2f7a0c2c44a3fcc42b1313d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_stump_02/tree_stump_02_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_stump_02/textures/tree_stump_02_arm_1k.jpg",
+          "bytes": 796214,
+          "md5": "0e3147e1cc44d37126fa2fb46ba425b1"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "shrub_01",
+      "name": "Shrub 01",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "arena": "hornbeam",
+      "purpose": "flowering undergrowth",
+      "page": "https://polyhaven.com/a/shrub_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/shrub_01/shrub_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/shrub_01/shrub_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/shrub_01/shrub_01_1k.gltf",
+          "bytes": 2895,
+          "md5": "4ac1312e5ea687b321b78382f5f209c8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_01/shrub_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/shrub_01/textures/shrub_01_nor_gl_1k.jpg",
+          "bytes": 746497,
+          "md5": "985fa065ed411dc49e07d564330555ac"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_01/shrub_01.bin",
+          "file": "Saved/ArenaSources/Models/shrub_01/shrub_01.bin",
+          "bytes": 5239664,
+          "md5": "baf77d162f397f43fa4737b545d73e1a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_01/shrub_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/shrub_01/textures/shrub_01_arm_1k.jpg",
+          "bytes": 386309,
+          "md5": "1682705926a9fc60ab34d079564f1a9e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_01/shrub_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/shrub_01/textures/shrub_01_diff_1k.jpg",
+          "bytes": 502162,
+          "md5": "c5ac2665a0e2b4f11fd20b3296d62fe2"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "shrub_03",
+      "name": "Shrub 03",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "arena": "hornbeam",
+      "purpose": "saplings",
+      "page": "https://polyhaven.com/a/shrub_03",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/shrub_03/shrub_03_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/shrub_03/shrub_03_1k.gltf",
+          "file": "Saved/ArenaSources/Models/shrub_03/shrub_03_1k.gltf",
+          "bytes": 7296,
+          "md5": "2c1ef10ff17e23f81d29c851d1409c9a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_03/shrub_03.bin",
+          "file": "Saved/ArenaSources/Models/shrub_03/shrub_03.bin",
+          "bytes": 238684,
+          "md5": "c26c6ed23b0034664eab5a0e3ee00f6a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_03/shrub_03_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/shrub_03/textures/shrub_03_arm_1k.jpg",
+          "bytes": 396238,
+          "md5": "67faf4c5c213589b41a3bd18d378fa7d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_03/shrub_03_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/shrub_03/textures/shrub_03_diff_1k.jpg",
+          "bytes": 481841,
+          "md5": "5da9190b7c2837a9e209a3fe774dba3c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_03/shrub_03_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/shrub_03/textures/shrub_03_nor_gl_1k.jpg",
+          "bytes": 504734,
+          "md5": "38956b2171644cfefda2ef542e055100"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "grass_medium_02",
+      "name": "Grass Medium 02",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "arena": "hornbeam, fields",
+      "purpose": "grass tufts",
+      "page": "https://polyhaven.com/a/grass_medium_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/grass_medium_02/grass_medium_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/grass_medium_02/grass_medium_02_1k.gltf",
+          "file": "Saved/ArenaSources/Models/grass_medium_02/grass_medium_02_1k.gltf",
+          "bytes": 8864,
+          "md5": "dd8f166a6399238553bc3b2931677b68"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/grass_medium_02/grass_medium_02_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/grass_medium_02/textures/grass_medium_02_nor_gl_1k.jpg",
+          "bytes": 118146,
+          "md5": "90b4c27b0c0ff058bd37b88bb70784c1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/grass_medium_02/grass_medium_02_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/grass_medium_02/textures/grass_medium_02_diff_1k.jpg",
+          "bytes": 161235,
+          "md5": "4bb5230e09358d60dd767331685b2d36"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/grass_medium_02/grass_medium_02_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/grass_medium_02/textures/grass_medium_02_arm_1k.jpg",
+          "bytes": 241181,
+          "md5": "2b7a7e6f8b71fd2da62cf172d4784bbb"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/grass_medium_02/grass_medium_02.bin",
+          "file": "Saved/ArenaSources/Models/grass_medium_02/grass_medium_02.bin",
+          "bytes": 272048,
+          "md5": "145041ae03fe02783a0adbd1cdcb4988"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "treasure_chest",
+      "name": "Treasure Chest",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "arena": "underwater",
+      "purpose": "sunken chest",
+      "page": "https://polyhaven.com/a/treasure_chest",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/treasure_chest/treasure_chest_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/treasure_chest/treasure_chest_1k.gltf",
+          "file": "Saved/ArenaSources/Models/treasure_chest/treasure_chest_1k.gltf",
+          "bytes": 8584,
+          "md5": "7bfc4b335cff3e2641c8b9e55dbee0a2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/treasure_chest/treasure_chest_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/treasure_chest/textures/treasure_chest_arm_1k.jpg",
+          "bytes": 958484,
+          "md5": "ffb1a453af7e91fb63c1ec51da29832a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/treasure_chest/treasure_chest_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/treasure_chest/textures/treasure_chest_diff_1k.jpg",
+          "bytes": 812089,
+          "md5": "59a684377b91eed5cb0cf44fad6b1089"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/treasure_chest/treasure_chest_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/treasure_chest/textures/treasure_chest_nor_gl_1k.jpg",
+          "bytes": 893221,
+          "md5": "5ce2977f7417f17575b92873a56a3c4f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/treasure_chest/treasure_chest.bin",
+          "file": "Saved/ArenaSources/Models/treasure_chest/treasure_chest.bin",
+          "bytes": 2811372,
+          "md5": "c955b1084bb3f7c8cea414bdf1a89845"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "cannon_01",
+      "name": "Cannon 01",
+      "authors": "Yann Kervran, James Ray Cock",
+      "resolution": "1k",
+      "arena": "underwater",
+      "purpose": "sunken cannon",
+      "page": "https://polyhaven.com/a/cannon_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/cannon_01/cannon_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/cannon_01/cannon_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/cannon_01/cannon_01_1k.gltf",
+          "bytes": 17734,
+          "md5": "d3bcf94fab5dceb2154281349fe53db1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/cannon_01/cannon_01.bin",
+          "file": "Saved/ArenaSources/Models/cannon_01/cannon_01.bin",
+          "bytes": 1198792,
+          "md5": "5c16dc75d966b2b44cb22a76e15f09d7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/cannon_01/cannon_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/cannon_01/textures/cannon_01_diff_1k.jpg",
+          "bytes": 734461,
+          "md5": "2845d37ac880ccecd5ee30c002f19892"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/cannon_01/cannon_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/cannon_01/textures/cannon_01_nor_gl_1k.jpg",
+          "bytes": 766757,
+          "md5": "ae9e065ce9a6c0bce628e8db822952d5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/cannon_01/cannon_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/cannon_01/textures/cannon_01_arm_1k.jpg",
+          "bytes": 842022,
+          "md5": "90d1561dc9722f21cf1fc09ac57f4692"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "marble_bust_01",
+      "name": "Marble Bust 01",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "arena": "underwater",
+      "purpose": "drowned statuary",
+      "page": "https://polyhaven.com/a/marble_bust_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/marble_bust_01/marble_bust_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/marble_bust_01/marble_bust_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/marble_bust_01/marble_bust_01_1k.gltf",
+          "bytes": 2793,
+          "md5": "599d6dd71c2dcdffa064b1c1d85882f4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/marble_bust_01/marble_bust_01.bin",
+          "file": "Saved/ArenaSources/Models/marble_bust_01/marble_bust_01.bin",
+          "bytes": 416608,
+          "md5": "1c62c1189a0e8985618c1662e1bd25a3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/marble_bust_01/marble_bust_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/marble_bust_01/textures/marble_bust_01_nor_gl_1k.jpg",
+          "bytes": 124627,
+          "md5": "134149a7e8f142fcb605f0bde52b3ff6"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/marble_bust_01/marble_bust_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/marble_bust_01/textures/marble_bust_01_diff_1k.jpg",
+          "bytes": 160337,
+          "md5": "aede40cc2b092d91a5f72598c911da4f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/marble_bust_01/marble_bust_01_rough_1k.jpg",
+          "file": "Saved/ArenaSources/Models/marble_bust_01/textures/marble_bust_01_rough_1k.jpg",
+          "bytes": 193918,
+          "md5": "9fdff7b2b17d12fcc478de3021f561dd"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "lion_head",
+      "name": "Lion Head",
+      "authors": "Tina",
+      "resolution": "1k",
+      "arena": "underwater",
+      "purpose": "fountain lion head",
+      "page": "https://polyhaven.com/a/lion_head",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/lion_head/lion_head_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/lion_head/lion_head_1k.gltf",
+          "file": "Saved/ArenaSources/Models/lion_head/lion_head_1k.gltf",
+          "bytes": 2746,
+          "md5": "28b0ea6cfa4e154b4559ce2eb01acff7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lion_head/lion_head_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/lion_head/textures/lion_head_nor_gl_1k.jpg",
+          "bytes": 807928,
+          "md5": "6eb95ab97478e3a2e255fe467776467c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lion_head/lion_head_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/lion_head/textures/lion_head_diff_1k.jpg",
+          "bytes": 619974,
+          "md5": "0bda22feecb680bfbd20c5beae60cba1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lion_head/lion_head_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/lion_head/textures/lion_head_arm_1k.jpg",
+          "bytes": 674331,
+          "md5": "6da26ff6ba20dac9abccf4f56701f48d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/lion_head/lion_head.bin",
+          "file": "Saved/ArenaSources/Models/lion_head/lion_head.bin",
+          "bytes": 1095444,
+          "md5": "b6e09d69c51220b0b0305ac5f29ca030"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "bronze_whale_statue",
+      "name": "Bronze Whale Statue",
+      "authors": "Tina",
+      "resolution": "1k",
+      "arena": "underwater",
+      "purpose": "bronze whale on a plinth",
+      "page": "https://polyhaven.com/a/bronze_whale_statue",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/bronze_whale_statue/bronze_whale_statue_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/bronze_whale_statue/bronze_whale_statue_1k.gltf",
+          "file": "Saved/ArenaSources/Models/bronze_whale_statue/bronze_whale_statue_1k.gltf",
+          "bytes": 3108,
+          "md5": "4a994af2d8f3323c23a25077c28b5c53"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/bronze_whale_statue/bronze_whale_statue_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/bronze_whale_statue/textures/bronze_whale_statue_nor_gl_1k.jpg",
+          "bytes": 736986,
+          "md5": "e950963915a736ee0ecf8bd76b29d9b0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/bronze_whale_statue/bronze_whale_statue_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/bronze_whale_statue/textures/bronze_whale_statue_diff_1k.jpg",
+          "bytes": 493169,
+          "md5": "ef35aceb26f077240f71cb4b96b7c746"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/bronze_whale_statue/bronze_whale_statue_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/bronze_whale_statue/textures/bronze_whale_statue_arm_1k.jpg",
+          "bytes": 854626,
+          "md5": "386a7521c889b8a7403646c5d4fb2481"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/bronze_whale_statue/bronze_whale_statue.bin",
+          "file": "Saved/ArenaSources/Models/bronze_whale_statue/bronze_whale_statue.bin",
+          "bytes": 102352,
+          "md5": "4e6f9f30384039bb60dc244b5eeeb9d6"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "lambis_shell",
+      "name": "Lambis Shell",
+      "authors": "Kuutti Siitonen",
+      "resolution": "1k",
+      "arena": "underwater",
+      "purpose": "conch shells on the seabed",
+      "page": "https://polyhaven.com/a/lambis_shell",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/lambis_shell/lambis_shell_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/lambis_shell/lambis_shell_1k.gltf",
+          "file": "Saved/ArenaSources/Models/lambis_shell/lambis_shell_1k.gltf",
+          "bytes": 2772,
+          "md5": "ba61498d80a33845f25f1a16604e1f65"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/lambis_shell/lambis_shell.bin",
+          "file": "Saved/ArenaSources/Models/lambis_shell/lambis_shell.bin",
+          "bytes": 310540,
+          "md5": "b895fc766f2ef8adfeaa356833ec90c1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lambis_shell/lambis_shell_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/lambis_shell/textures/lambis_shell_diff_1k.jpg",
+          "bytes": 785669,
+          "md5": "9d73630d4436fc8afd1d314e1555a88f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lambis_shell/lambis_shell_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/lambis_shell/textures/lambis_shell_arm_1k.jpg",
+          "bytes": 567463,
+          "md5": "8b8ba38ce52a5eefcfa6c313d5ffdf54"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lambis_shell/lambis_shell_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/lambis_shell/textures/lambis_shell_nor_gl_1k.jpg",
+          "bytes": 582208,
+          "md5": "2499c0c824ecb4b58349ff88ec2a64c1"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "ship_pinnace",
+      "name": "Ship Pinnace",
+      "authors": "James Ray Cock, Rico Cilliers, Nicol\u00f2 Zubbini, Yann Kervran",
+      "resolution": "1k",
+      "arena": "underwater",
+      "purpose": "the wreck beyond the ruins",
+      "page": "https://polyhaven.com/a/ship_pinnace",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/ship_pinnace/ship_pinnace_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/ship_pinnace/ship_pinnace_1k.gltf",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/ship_pinnace_1k.gltf",
+          "bytes": 17175,
+          "md5": "dca97c677eadc565d7efa4e4c29863ef"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_rigging_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_rigging_diff_1k.jpg",
+          "bytes": 669629,
+          "md5": "0797c0f985407feb2038f57ad876c333"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_sails_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_sails_diff_1k.jpg",
+          "bytes": 593277,
+          "md5": "5cc1a091d4296bb93990f9856f7492c0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_deck_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_deck_diff_1k.jpg",
+          "bytes": 739906,
+          "md5": "5b64def85f9d91987ba566844cb938c0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_aft_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_aft_arm_1k.jpg",
+          "bytes": 553685,
+          "md5": "f479e1318044e212e235d5b2625ddb7d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_rigging_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_rigging_arm_1k.jpg",
+          "bytes": 700773,
+          "md5": "f6451ed77f4be15c6e179ea61245bb80"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_details_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_details_nor_gl_1k.jpg",
+          "bytes": 712283,
+          "md5": "18801519aeb1aa41cfe36210598bfba0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_deck_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_deck_nor_gl_1k.jpg",
+          "bytes": 530854,
+          "md5": "ce3817091f2d897004dcca0f8bda0aa0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_rigging_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_rigging_nor_gl_1k.jpg",
+          "bytes": 713868,
+          "md5": "e904eee86b8ecd0c8d4839e526184de6"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_interior_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_interior_nor_gl_1k.jpg",
+          "bytes": 365806,
+          "md5": "dfc90577fbd4a4d547eaa03482c30721"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/ship_pinnace/ship_pinnace.bin",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/ship_pinnace.bin",
+          "bytes": 7127428,
+          "md5": "154e557f7ecc84a31a213bf176581801"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_hull_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_hull_diff_1k.jpg",
+          "bytes": 602406,
+          "md5": "b4ace551dddf3c75e06477100cba81b9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_hull_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_hull_nor_gl_1k.jpg",
+          "bytes": 642694,
+          "md5": "f60d615eabb763ee530df82699e84c52"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_sails_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_sails_arm_1k.jpg",
+          "bytes": 531487,
+          "md5": "2d95993394aae8895084fbaab158fbec"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_hull_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_hull_arm_1k.jpg",
+          "bytes": 686048,
+          "md5": "e66f12a1d8700b97e971ac41710a3a20"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_interior_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_interior_diff_1k.jpg",
+          "bytes": 720138,
+          "md5": "6ff83361fc0837e45bb38e9bc9bfac9d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_interior_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_interior_arm_1k.jpg",
+          "bytes": 720399,
+          "md5": "b01d9f8cd8a1cd5ad23b4c65219cb700"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_aft_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_aft_diff_1k.jpg",
+          "bytes": 659920,
+          "md5": "841f0a07cb7fea4fb727f6a3452f8f0d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_deck_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_deck_arm_1k.jpg",
+          "bytes": 778067,
+          "md5": "6d78da350d090ae4a62319c487f04bf8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_sails_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_sails_nor_gl_1k.jpg",
+          "bytes": 767155,
+          "md5": "0475784a0c33f5a8d1855b5e0fbaf972"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_details_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_details_arm_1k.jpg",
+          "bytes": 884789,
+          "md5": "3e6f0571f7d895b1038c471e201dbd10"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_aft_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_aft_nor_gl_1k.jpg",
+          "bytes": 728770,
+          "md5": "ee37386069785283142a080d9ecf477e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ship_pinnace/ship_pinnace_details_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/ship_pinnace/textures/ship_pinnace_details_diff_1k.jpg",
+          "bytes": 628000,
+          "md5": "a25e4b635ae110293e93e479517dfea2"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "portable_generator",
+      "name": "Portable Generator",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "arena": "station",
+      "purpose": "deck generator",
+      "page": "https://polyhaven.com/a/portable_generator",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/portable_generator/portable_generator_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/portable_generator/portable_generator_1k.gltf",
+          "file": "Saved/ArenaSources/Models/portable_generator/portable_generator_1k.gltf",
+          "bytes": 10130,
+          "md5": "13c2380487daae6726443b9f38dd7e53"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/portable_generator/portable_generator_spec_1k.jpg",
+          "file": "Saved/ArenaSources/Models/portable_generator/textures/portable_generator_spec_1k.jpg",
+          "bytes": 23119,
+          "md5": "b3044dbc984897ed902bd47a450f742f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/portable_generator/portable_generator_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/portable_generator/textures/portable_generator_nor_gl_1k.jpg",
+          "bytes": 818829,
+          "md5": "89a51a982488c21eddec2c6e02249591"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/portable_generator/portable_generator_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/portable_generator/textures/portable_generator_diff_1k.jpg",
+          "bytes": 755079,
+          "md5": "3d572e1716148ca5d641d8a199fe9192"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/portable_generator/portable_generator_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/portable_generator/textures/portable_generator_arm_1k.jpg",
+          "bytes": 887711,
+          "md5": "7dbb8b9f0aa4e9d3ce6ad37e0326299f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/portable_generator/portable_generator.bin",
+          "file": "Saved/ArenaSources/Models/portable_generator/portable_generator.bin",
+          "bytes": 939572,
+          "md5": "81b2f4c4c6d0b0d7388ae9aa1123563a"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "metal_tool_chest",
+      "name": "Metal Tool Chest",
+      "authors": "Yann Kervran, John Hutcheson",
+      "resolution": "1k",
+      "arena": "station",
+      "purpose": "tool chests",
+      "page": "https://polyhaven.com/a/metal_tool_chest",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/metal_tool_chest/metal_tool_chest_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/metal_tool_chest/metal_tool_chest_1k.gltf",
+          "file": "Saved/ArenaSources/Models/metal_tool_chest/metal_tool_chest_1k.gltf",
+          "bytes": 12256,
+          "md5": "21cb18a2e84ed49f23a98578c543e5ad"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/metal_tool_chest/metal_tool_chest.bin",
+          "file": "Saved/ArenaSources/Models/metal_tool_chest/metal_tool_chest.bin",
+          "bytes": 434496,
+          "md5": "b62c394a4f6764df8993a8965564b390"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_tool_chest/metal_tool_chest_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/metal_tool_chest/textures/metal_tool_chest_nor_gl_1k.jpg",
+          "bytes": 604781,
+          "md5": "1d53f8a77b5789f6b4e5d72a004bb5bd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_tool_chest/metal_tool_chest_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/metal_tool_chest/textures/metal_tool_chest_arm_1k.jpg",
+          "bytes": 755794,
+          "md5": "981d128104104cdb6ab86c648e1d7f46"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_tool_chest/metal_tool_chest_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/metal_tool_chest/textures/metal_tool_chest_diff_1k.jpg",
+          "bytes": 552016,
+          "md5": "4deaf0af07e8cadbfbd4975b49f597df"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "propane_tank",
+      "name": "Propane Tank",
+      "authors": "Slinc",
+      "resolution": "1k",
+      "arena": "station",
+      "purpose": "gas bottles",
+      "page": "https://polyhaven.com/a/propane_tank",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/propane_tank/propane_tank_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/propane_tank/propane_tank_1k.gltf",
+          "file": "Saved/ArenaSources/Models/propane_tank/propane_tank_1k.gltf",
+          "bytes": 2733,
+          "md5": "4579fb704d4d97e1aca048c126f6d921"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/propane_tank/propane_tank_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/propane_tank/textures/propane_tank_nor_gl_1k.jpg",
+          "bytes": 659305,
+          "md5": "d6f11926f096f3373f091bb35f83ddd3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/propane_tank/propane_tank_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/propane_tank/textures/propane_tank_diff_1k.jpg",
+          "bytes": 702492,
+          "md5": "935d42c466adae18710e1f0fc79b306b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/propane_tank/propane_tank_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/propane_tank/textures/propane_tank_arm_1k.jpg",
+          "bytes": 675391,
+          "md5": "23773169952447a34c90944eb17563a0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/propane_tank/propane_tank.bin",
+          "file": "Saved/ArenaSources/Models/propane_tank/propane_tank.bin",
+          "bytes": 174180,
+          "md5": "bb8e4a72c3f655bfa3dec7456a343451"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "old_military_crate",
+      "name": "Old Military Crate",
+      "authors": "Jack Mava",
+      "resolution": "1k",
+      "arena": "station",
+      "purpose": "cargo crates",
+      "page": "https://polyhaven.com/a/old_military_crate",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/old_military_crate/old_military_crate_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/old_military_crate/old_military_crate_1k.gltf",
+          "file": "Saved/ArenaSources/Models/old_military_crate/old_military_crate_1k.gltf",
+          "bytes": 10126,
+          "md5": "4c83b9887a0db6ecd5af18293012c3f0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/old_military_crate/old_military_crate_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/old_military_crate/textures/old_military_crate_nor_gl_1k.jpg",
+          "bytes": 742682,
+          "md5": "4403c6773bcc7c0182fac32e750c7231"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/old_military_crate/old_military_crate_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/old_military_crate/textures/old_military_crate_diff_1k.jpg",
+          "bytes": 709506,
+          "md5": "a679925cb14dbb3ffc39a5d152d23114"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/old_military_crate/old_military_crate_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/old_military_crate/textures/old_military_crate_arm_1k.jpg",
+          "bytes": 704105,
+          "md5": "5e877bd1644fe490e9450794aadc3dd7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/old_military_crate/old_military_crate.bin",
+          "file": "Saved/ArenaSources/Models/old_military_crate/old_military_crate.bin",
+          "bytes": 329004,
+          "md5": "4aa204ebcc401c38206677a808aebea6"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "industrial_storage_cart",
+      "name": "Industrial Storage Cart",
+      "authors": "Jule Bielitz",
+      "resolution": "1k",
+      "arena": "station",
+      "purpose": "cargo cart",
+      "page": "https://polyhaven.com/a/industrial_storage_cart",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/industrial_storage_cart/industrial_storage_cart_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/industrial_storage_cart/industrial_storage_cart_1k.gltf",
+          "file": "Saved/ArenaSources/Models/industrial_storage_cart/industrial_storage_cart_1k.gltf",
+          "bytes": 2878,
+          "md5": "00a94d9dff97c2c18c7c37764f812d6c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/industrial_storage_cart/industrial_storage_cart_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/industrial_storage_cart/textures/industrial_storage_cart_nor_gl_1k.jpg",
+          "bytes": 567119,
+          "md5": "818d963a7e4ca6a0d7b0309f80ffa745"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/industrial_storage_cart/industrial_storage_cart_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/industrial_storage_cart/textures/industrial_storage_cart_diff_1k.jpg",
+          "bytes": 553691,
+          "md5": "ed9ac3076458572e50418a76b8742e9f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/industrial_storage_cart/industrial_storage_cart_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/industrial_storage_cart/textures/industrial_storage_cart_arm_1k.jpg",
+          "bytes": 849352,
+          "md5": "89546cd4242734559608d0ce8584bd46"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/industrial_storage_cart/industrial_storage_cart.bin",
+          "file": "Saved/ArenaSources/Models/industrial_storage_cart/industrial_storage_cart.bin",
+          "bytes": 664580,
+          "md5": "22c80526ee820188a193b4ea0b91fc2f"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "portable_searchlight",
+      "name": "Portable Searchlight",
+      "authors": "Elijah Cragg",
+      "resolution": "1k",
+      "arena": "station",
+      "purpose": "deck floodlights",
+      "page": "https://polyhaven.com/a/portable_searchlight",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/portable_searchlight/portable_searchlight_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/portable_searchlight/portable_searchlight_1k.gltf",
+          "file": "Saved/ArenaSources/Models/portable_searchlight/portable_searchlight_1k.gltf",
+          "bytes": 4786,
+          "md5": "1eab1d5d50f19a129d2ee583eb0a7627"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/portable_searchlight/portable_searchlight_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/portable_searchlight/textures/portable_searchlight_nor_gl_1k.jpg",
+          "bytes": 494444,
+          "md5": "f04afb624632fbed1fb06ba343ec104b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/portable_searchlight/portable_searchlight_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/portable_searchlight/textures/portable_searchlight_diff_1k.jpg",
+          "bytes": 309176,
+          "md5": "486f2aecf402d5e97723260560962450"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/portable_searchlight/portable_searchlight_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/portable_searchlight/textures/portable_searchlight_arm_1k.jpg",
+          "bytes": 638155,
+          "md5": "2a6b4186d425bcd9ce42af3c1052265c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/portable_searchlight/portable_searchlight.bin",
+          "file": "Saved/ArenaSources/Models/portable_searchlight/portable_searchlight.bin",
+          "bytes": 478572,
+          "md5": "331bcc872a04890550fcb70b01bcf8cc"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "overhead_crane",
+      "name": "Overhead Crane",
+      "authors": "Timothy3D",
+      "resolution": "1k",
+      "arena": "station",
+      "purpose": "gantry crane",
+      "page": "https://polyhaven.com/a/overhead_crane",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/overhead_crane/overhead_crane_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/overhead_crane/overhead_crane_1k.gltf",
+          "file": "Saved/ArenaSources/Models/overhead_crane/overhead_crane_1k.gltf",
+          "bytes": 9310,
+          "md5": "b68b869d62ca8797d7060ed2b7b76ac1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/overhead_crane/overhead_crane_trim_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/overhead_crane/textures/overhead_crane_trim_nor_gl_1k.jpg",
+          "bytes": 799724,
+          "md5": "44c84be777832be29d195c07f6cc34a8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/overhead_crane/overhead_crane_trim_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/overhead_crane/textures/overhead_crane_trim_diff_1k.jpg",
+          "bytes": 519408,
+          "md5": "05ffa3a2eca7ad918aaa8b18037897cd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/overhead_crane/overhead_crane_trim_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/overhead_crane/textures/overhead_crane_trim_arm_1k.jpg",
+          "bytes": 759873,
+          "md5": "97c9cf3925801459bc72d6f55791cdb0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/overhead_crane/overhead_crane_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/overhead_crane/textures/overhead_crane_nor_gl_1k.jpg",
+          "bytes": 819830,
+          "md5": "445bcbbf9b4a6a2478a02616017858fd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/overhead_crane/overhead_crane_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/overhead_crane/textures/overhead_crane_diff_1k.jpg",
+          "bytes": 630084,
+          "md5": "a065da8866bb9624921e3dc0aa3fae93"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/overhead_crane/overhead_crane_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/overhead_crane/textures/overhead_crane_arm_1k.jpg",
+          "bytes": 771365,
+          "md5": "de0505cdd2cb157b639738dbecc0e63a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/overhead_crane/overhead_crane.bin",
+          "file": "Saved/ArenaSources/Models/overhead_crane/overhead_crane.bin",
+          "bytes": 3022220,
+          "md5": "5bb23b84cbd931824b458c87f587400b"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "concrete_road_barrier",
+      "name": "Concrete Road Barrier",
+      "authors": "Amal Kumar",
+      "resolution": "1k",
+      "arena": "station",
+      "purpose": "deck barriers",
+      "page": "https://polyhaven.com/a/concrete_road_barrier",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/concrete_road_barrier/concrete_road_barrier_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/concrete_road_barrier/concrete_road_barrier_1k.gltf",
+          "file": "Saved/ArenaSources/Models/concrete_road_barrier/concrete_road_barrier_1k.gltf",
+          "bytes": 2868,
+          "md5": "6d6feaf068f434e8dc163a1a9d983f4a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/concrete_road_barrier/concrete_road_barrier_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/concrete_road_barrier/textures/concrete_road_barrier_nor_gl_1k.jpg",
+          "bytes": 961760,
+          "md5": "5cc77a0a52de7f3e6c7405b5bfedfc6f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/concrete_road_barrier/concrete_road_barrier_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/concrete_road_barrier/textures/concrete_road_barrier_arm_1k.jpg",
+          "bytes": 619502,
+          "md5": "a289412cc7fe2c265f0975b31d8edda1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/concrete_road_barrier/concrete_road_barrier_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/concrete_road_barrier/textures/concrete_road_barrier_diff_1k.jpg",
+          "bytes": 792641,
+          "md5": "0fc11541996e1ddbdb1875dff35bc1c9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/concrete_road_barrier/concrete_road_barrier.bin",
+          "file": "Saved/ArenaSources/Models/concrete_road_barrier/concrete_road_barrier.bin",
+          "bytes": 1374016,
+          "md5": "f256cb4d2bd9e5623b062502605dfcf2"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "metal_jerrycan",
+      "name": "Metal Jerrycan",
+      "authors": "Sean Buckley",
+      "resolution": "1k",
+      "arena": "station",
+      "purpose": "fuel cans",
+      "page": "https://polyhaven.com/a/metal_jerrycan",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/metal_jerrycan/metal_jerrycan_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/metal_jerrycan/metal_jerrycan_1k.gltf",
+          "file": "Saved/ArenaSources/Models/metal_jerrycan/metal_jerrycan_1k.gltf",
+          "bytes": 2793,
+          "md5": "bd328cec77ebf1c6889abba620abc4b6"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_jerrycan/metal_jerrycan_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/metal_jerrycan/textures/metal_jerrycan_nor_gl_1k.jpg",
+          "bytes": 885424,
+          "md5": "659b660e67aafc748364fa9d8a23059e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_jerrycan/metal_jerrycan_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/metal_jerrycan/textures/metal_jerrycan_diff_1k.jpg",
+          "bytes": 673499,
+          "md5": "d265ad6d7ae3583dbd1212743092ecc7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_jerrycan/metal_jerrycan_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/metal_jerrycan/textures/metal_jerrycan_arm_1k.jpg",
+          "bytes": 988166,
+          "md5": "b1aa1ec8f9944e784b64ef64e3b0f7f1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/metal_jerrycan/metal_jerrycan.bin",
+          "file": "Saved/ArenaSources/Models/metal_jerrycan/metal_jerrycan.bin",
+          "bytes": 484676,
+          "md5": "10b2255555debf5e8e0effb5735b2a39"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "withered_grass",
+      "name": "Withered Grass",
+      "authors": "Charlotte Baglioni",
+      "resolution": "2k",
+      "arena": "fields",
+      "purpose": "harvested stubble ground",
+      "page": "https://polyhaven.com/a/withered_grass",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/withered_grass/withered_grass_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/withered_grass/withered_grass_diff_2k.jpg",
+          "bytes": 4632786,
+          "md5": "503d5c7262c46351e5b0acdcc90dd30b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/withered_grass/withered_grass_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/withered_grass/withered_grass_nor_gl_2k.jpg",
+          "bytes": 6194953,
+          "md5": "dd239e55b44c9b9bb0e9f1e145bf3a22"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/withered_grass/withered_grass_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/withered_grass/withered_grass_arm_2k.jpg",
+          "bytes": 4802892,
+          "md5": "8d649cc74868ffaf11b34970ee2ff058"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "farm_soil",
+      "name": "Farm Soil",
+      "authors": "Amal Kumar",
+      "resolution": "2k",
+      "arena": "fields",
+      "purpose": "cart tracks and tilled strips",
+      "page": "https://polyhaven.com/a/farm_soil",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/farm_soil/farm_soil_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/farm_soil/farm_soil_diff_2k.jpg",
+          "bytes": 2841569,
+          "md5": "e3e04001c421396999827980615096b0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/farm_soil/farm_soil_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/farm_soil/farm_soil_nor_gl_2k.jpg",
+          "bytes": 5895886,
+          "md5": "8401c6563fdfc601c118aecda0db0239"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/farm_soil/farm_soil_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/farm_soil/farm_soil_arm_2k.jpg",
+          "bytes": 3820624,
+          "md5": "d8324692c76df1a7246359842ebfc8c5"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "sparse_grass",
+      "name": "Sparse Grass",
+      "authors": "Amal Kumar",
+      "resolution": "2k",
+      "arena": "fields",
+      "purpose": "field margins",
+      "page": "https://polyhaven.com/a/sparse_grass",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sparse_grass/sparse_grass_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/sparse_grass/sparse_grass_diff_2k.jpg",
+          "bytes": 3733797,
+          "md5": "b181e9c61bae87c1bb9b14eecd767d65"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sparse_grass/sparse_grass_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/sparse_grass/sparse_grass_nor_gl_2k.jpg",
+          "bytes": 5892473,
+          "md5": "8ec54ff3b639e6e044ea83792d7c49b0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sparse_grass/sparse_grass_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/sparse_grass/sparse_grass_arm_2k.jpg",
+          "bytes": 3835537,
+          "md5": "d30e667f7d576bc19fface66e98f7ce2"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "stacked_stone_wall",
+      "name": "Stacked Stone Wall",
+      "authors": "Dimitrios Savva",
+      "resolution": "2k",
+      "arena": "fields",
+      "purpose": "dry-stone walls and the well",
+      "page": "https://polyhaven.com/a/stacked_stone_wall",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stacked_stone_wall/stacked_stone_wall_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/stacked_stone_wall/stacked_stone_wall_diff_2k.jpg",
+          "bytes": 2812965,
+          "md5": "f20377a6d0a90386d46a82dfc0e5fc97"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stacked_stone_wall/stacked_stone_wall_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/stacked_stone_wall/stacked_stone_wall_nor_gl_2k.jpg",
+          "bytes": 4072631,
+          "md5": "d37be81d921fe39c6708c07baea8187c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stacked_stone_wall/stacked_stone_wall_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/stacked_stone_wall/stacked_stone_wall_arm_2k.jpg",
+          "bytes": 2983412,
+          "md5": "86275a6fbe004446b19fffe2233a25a6"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "rock_ground",
+      "name": "Rock Ground",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "arena": "iceland",
+      "purpose": "black lava gravel",
+      "page": "https://polyhaven.com/a/rock_ground",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground/rock_ground_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/rock_ground/rock_ground_diff_2k.jpg",
+          "bytes": 3133031,
+          "md5": "755dba4b148e8a9ceb6a0abd50d3f0e3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground/rock_ground_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/rock_ground/rock_ground_nor_gl_2k.jpg",
+          "bytes": 5493497,
+          "md5": "585ebc43db21b612c342e1b26d289be3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground/rock_ground_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/rock_ground/rock_ground_arm_2k.jpg",
+          "bytes": 1344719,
+          "md5": "686b106443acea9d307a366946c33c16"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "dark_rock_02",
+      "name": "Dark Rock 02",
+      "authors": "Amal Kumar",
+      "resolution": "2k",
+      "arena": "iceland",
+      "purpose": "basalt columns and lava rock",
+      "page": "https://polyhaven.com/a/dark_rock_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dark_rock_02/dark_rock_02_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/dark_rock_02/dark_rock_02_diff_2k.jpg",
+          "bytes": 2441558,
+          "md5": "492ae574844fa49cba63aee89ef226d1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dark_rock_02/dark_rock_02_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/dark_rock_02/dark_rock_02_nor_gl_2k.jpg",
+          "bytes": 3870014,
+          "md5": "bfde991c327e33704686fb7ede0561a7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dark_rock_02/dark_rock_02_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/dark_rock_02/dark_rock_02_arm_2k.jpg",
+          "bytes": 2575178,
+          "md5": "97fb8a2c3fcef2e1679c709c386311ca"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "mossy_rock",
+      "name": "Mossy Rock",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "arena": "iceland",
+      "purpose": "moss-covered lava",
+      "page": "https://polyhaven.com/a/mossy_rock",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/mossy_rock/mossy_rock_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/mossy_rock/mossy_rock_diff_2k.jpg",
+          "bytes": 4535360,
+          "md5": "8e55bbeeef1db0d2d0cae85515812c46"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/mossy_rock/mossy_rock_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/mossy_rock/mossy_rock_nor_gl_2k.jpg",
+          "bytes": 4033031,
+          "md5": "e6b611c8a6f8e3276e7f5491c8e66a0f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/mossy_rock/mossy_rock_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/mossy_rock/mossy_rock_arm_2k.jpg",
+          "bytes": 3799947,
+          "md5": "7aa8634ba2202439a413113c9e617b83"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "coast_sand_01",
+      "name": "Coast Sand 01",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "arena": "iceland",
+      "purpose": "black-sand beach (tinted)",
+      "page": "https://polyhaven.com/a/coast_sand_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coast_sand_01/coast_sand_01_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coast_sand_01/coast_sand_01_diff_2k.jpg",
+          "bytes": 3552676,
+          "md5": "bde59bb3bcdd8d4e9d6fcadc19f038fa"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coast_sand_01/coast_sand_01_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coast_sand_01/coast_sand_01_nor_gl_2k.jpg",
+          "bytes": 4630126,
+          "md5": "2a9d793676562b38b5760b9147aa40ea"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coast_sand_01/coast_sand_01_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coast_sand_01/coast_sand_01_arm_2k.jpg",
+          "bytes": 2698547,
+          "md5": "06c766f0d541dacd85bb9c31a31b39e1"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "red_laterite_soil_stones",
+      "name": "Red Laterite Soil Stones",
+      "authors": "Amal Kumar",
+      "resolution": "2k",
+      "arena": "moab",
+      "purpose": "canyon floor",
+      "page": "https://polyhaven.com/a/red_laterite_soil_stones",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_laterite_soil_stones/red_laterite_soil_stones_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/red_laterite_soil_stones/red_laterite_soil_stones_diff_2k.jpg",
+          "bytes": 3593564,
+          "md5": "4ad08edd225b77462fca6f4329e96cb1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_laterite_soil_stones/red_laterite_soil_stones_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/red_laterite_soil_stones/red_laterite_soil_stones_nor_gl_2k.jpg",
+          "bytes": 5924499,
+          "md5": "b034f4899e0d606e23f9cad992df00ea"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_laterite_soil_stones/red_laterite_soil_stones_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/red_laterite_soil_stones/red_laterite_soil_stones_arm_2k.jpg",
+          "bytes": 4050156,
+          "md5": "7816376370def0b720fa6272b50d85a1"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "sandstone_cracks",
+      "name": "Sandstone Cracks",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "arena": "moab",
+      "purpose": "sandstone arches, hoodoos and walls (tinted)",
+      "page": "https://polyhaven.com/a/sandstone_cracks",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sandstone_cracks/sandstone_cracks_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/sandstone_cracks/sandstone_cracks_diff_2k.jpg",
+          "bytes": 2870078,
+          "md5": "bc08fe111536bf9b12fa89b43ae90561"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sandstone_cracks/sandstone_cracks_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/sandstone_cracks/sandstone_cracks_nor_gl_2k.jpg",
+          "bytes": 4545235,
+          "md5": "f2139f27ed981b9b6788f5065ea97fee"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sandstone_cracks/sandstone_cracks_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/sandstone_cracks/sandstone_cracks_arm_2k.jpg",
+          "bytes": 926548,
+          "md5": "fd36297a4933e1aa72dd5af1ce68df90"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "red_sand",
+      "name": "Red Sand",
+      "authors": "Rohit Seervi",
+      "resolution": "2k",
+      "arena": "moab",
+      "purpose": "drift sand",
+      "page": "https://polyhaven.com/a/red_sand",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_sand/red_sand_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/red_sand/red_sand_diff_2k.jpg",
+          "bytes": 2284307,
+          "md5": "2b3c5fd8aaa0b1cc354ece7f7068cd72"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_sand/red_sand_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/red_sand/red_sand_nor_gl_2k.jpg",
+          "bytes": 4550804,
+          "md5": "9cfede9a012e8530c0034ba0d16543d1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_sand/red_sand_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/red_sand/red_sand_arm_2k.jpg",
+          "bytes": 2864047,
+          "md5": "de82c36a45b06292ec645e1dd1d993ad"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "forest_leaves_02",
+      "name": "Forest Leaves 02",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "arena": "hornbeam",
+      "purpose": "mossy glade floor",
+      "page": "https://polyhaven.com/a/forest_leaves_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_diffuse_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/forest_leaves_02/forest_leaves_02_diff_2k.jpg",
+          "bytes": 1668009,
+          "md5": "b7837ba1c51fb0e11af36d6b4e225c20"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/forest_leaves_02/forest_leaves_02_nor_gl_2k.jpg",
+          "bytes": 2323898,
+          "md5": "f974000a2ddc7dcd22bc84c37aa5d7ce"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/forest_leaves_02/forest_leaves_02_arm_2k.jpg",
+          "bytes": 1066850,
+          "md5": "4b476f0e4b633b2aef621afda5209baf"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "forest_floor",
+      "name": "Forest Floor",
+      "authors": "eye-candy.xyz",
+      "resolution": "2k",
+      "arena": "hornbeam",
+      "purpose": "leaf-litter paths",
+      "page": "https://polyhaven.com/a/forest_floor",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_floor/forest_floor_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/forest_floor/forest_floor_diff_2k.jpg",
+          "bytes": 5452936,
+          "md5": "a93f845fca105e6cabc82853161ff7b6"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_floor/forest_floor_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/forest_floor/forest_floor_nor_gl_2k.jpg",
+          "bytes": 5367757,
+          "md5": "41e49ec58f74a749e325f59290266e9d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_floor/forest_floor_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/forest_floor/forest_floor_arm_2k.jpg",
+          "bytes": 3926636,
+          "md5": "00a1d0081bfa9a574d5973106c94c01e"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "bark_willow",
+      "name": "Bark Willow",
+      "authors": "Dario Barresi, Dimitrios Savva",
+      "resolution": "2k",
+      "arena": "hornbeam",
+      "purpose": "hornbeam trunks (tinted grey)",
+      "page": "https://polyhaven.com/a/bark_willow",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/bark_willow/bark_willow_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/bark_willow/bark_willow_diff_2k.jpg",
+          "bytes": 3154082,
+          "md5": "83d9b8f937142151313dc21270ff15f9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/bark_willow/bark_willow_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/bark_willow/bark_willow_nor_gl_2k.jpg",
+          "bytes": 5586193,
+          "md5": "5ec97758109361e8630e90ae00f414d2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/bark_willow/bark_willow_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/bark_willow/bark_willow_arm_2k.jpg",
+          "bytes": 3684160,
+          "md5": "6bb0f9c138e0a59f940e791208b5aec5"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "damp_sand",
+      "name": "Damp Sand",
+      "authors": "eye-candy.xyz",
+      "resolution": "2k",
+      "arena": "underwater",
+      "purpose": "seabed sand",
+      "page": "https://polyhaven.com/a/damp_sand",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/damp_sand/damp_sand_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/damp_sand/damp_sand_diff_2k.jpg",
+          "bytes": 3944799,
+          "md5": "26f2e5edf4411da9f8c25baff39ad05d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/damp_sand/damp_sand_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/damp_sand/damp_sand_nor_gl_2k.jpg",
+          "bytes": 5318803,
+          "md5": "c81e38bd76624498f7f9f7758923090b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/damp_sand/damp_sand_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/damp_sand/damp_sand_arm_2k.jpg",
+          "bytes": 2986338,
+          "md5": "e2a0d0bf6154bcb43c162f9a4340631a"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "coral_stone_wall",
+      "name": "Coral Stone Wall",
+      "authors": "Dimitrios Savva",
+      "resolution": "2k",
+      "arena": "underwater",
+      "purpose": "ruin masonry",
+      "page": "https://polyhaven.com/a/coral_stone_wall",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coral_stone_wall/coral_stone_wall_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coral_stone_wall/coral_stone_wall_diff_2k.jpg",
+          "bytes": 3071134,
+          "md5": "1b1e0317c279f70e65725ca0b8331d55"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coral_stone_wall/coral_stone_wall_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coral_stone_wall/coral_stone_wall_nor_gl_2k.jpg",
+          "bytes": 4857045,
+          "md5": "fac25a057bd23d32ead2297d58d886c0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coral_stone_wall/coral_stone_wall_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coral_stone_wall/coral_stone_wall_arm_2k.jpg",
+          "bytes": 2803022,
+          "md5": "2c894ef15ced1578a12e510bf62f0a45"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "coral_fort_wall_01",
+      "name": "Coral Fort Wall 01",
+      "authors": "Dimitrios Savva, Rico Cilliers",
+      "resolution": "2k",
+      "arena": "underwater",
+      "purpose": "encrusted columns",
+      "page": "https://polyhaven.com/a/coral_fort_wall_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coral_fort_wall_01/coral_fort_wall_01_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coral_fort_wall_01/coral_fort_wall_01_diff_2k.jpg",
+          "bytes": 3840085,
+          "md5": "f42085829a318fc7f8b0a3a0a9a99dc5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coral_fort_wall_01/coral_fort_wall_01_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coral_fort_wall_01/coral_fort_wall_01_nor_gl_2k.jpg",
+          "bytes": 5204171,
+          "md5": "1308ecce5f79e8b757facd0cdebdc179"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coral_fort_wall_01/coral_fort_wall_01_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coral_fort_wall_01/coral_fort_wall_01_arm_2k.jpg",
+          "bytes": 3466513,
+          "md5": "5fc5ea1c6664fb836c98210ad39c4c64"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "coral_gravel",
+      "name": "Coral Gravel",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "arena": "underwater",
+      "purpose": "rubble",
+      "page": "https://polyhaven.com/a/coral_gravel",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coral_gravel/coral_gravel_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coral_gravel/coral_gravel_diff_2k.jpg",
+          "bytes": 3228843,
+          "md5": "57885d198069446e870c6939d215407b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coral_gravel/coral_gravel_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coral_gravel/coral_gravel_nor_gl_2k.jpg",
+          "bytes": 5157744,
+          "md5": "538ae041c1631d5355d4bc3bb6a8c84b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/coral_gravel/coral_gravel_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/coral_gravel/coral_gravel_arm_2k.jpg",
+          "bytes": 1268291,
+          "md5": "becb09e28541b6eb8680b07a8fc612b8"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "metal_plate",
+      "name": "Metal Plate",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "arena": "station",
+      "purpose": "tread-plate deck",
+      "page": "https://polyhaven.com/a/metal_plate",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/metal_plate/metal_plate_diff_2k.jpg",
+          "bytes": 2670774,
+          "md5": "91b841e7e619e55588f0183a703fb644"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/metal_plate/metal_plate_nor_gl_2k.jpg",
+          "bytes": 2516654,
+          "md5": "797c3f3de91da0c03f44f493576e158e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/metal_plate/metal_plate_arm_2k.jpg",
+          "bytes": 3926194,
+          "md5": "4f7da15e97f3e8306743dff5084c8a46"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "metal_plate_02",
+      "name": "Metal Plate 02",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "arena": "station",
+      "purpose": "bulkhead panels",
+      "page": "https://polyhaven.com/a/metal_plate_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/metal_plate_02/metal_plate_02_diff_2k.jpg",
+          "bytes": 2604239,
+          "md5": "519b43cf88b4b6ea74bd259e976f2170"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/metal_plate_02/metal_plate_02_nor_gl_2k.jpg",
+          "bytes": 565185,
+          "md5": "59a2c571e7dd601276f0efbd9c75bb3a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/metal_plate_02/metal_plate_02_arm_2k.jpg",
+          "bytes": 4445975,
+          "md5": "4034385b453f33877eb7619bb834a8ea"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "blue_metal_plate",
+      "name": "Blue Metal Plate",
+      "authors": "Rob Tuytel",
+      "resolution": "2k",
+      "arena": "station",
+      "purpose": "container panels",
+      "page": "https://polyhaven.com/a/blue_metal_plate",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/blue_metal_plate/blue_metal_plate_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/blue_metal_plate/blue_metal_plate_diff_2k.jpg",
+          "bytes": 1518621,
+          "md5": "6189f7c443f0b7767d3e046f021b5495"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/blue_metal_plate/blue_metal_plate_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/blue_metal_plate/blue_metal_plate_nor_gl_2k.jpg",
+          "bytes": 948237,
+          "md5": "c460b1b25b5d418218982d8b100822b8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/blue_metal_plate/blue_metal_plate_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/blue_metal_plate/blue_metal_plate_arm_2k.jpg",
+          "bytes": 1640935,
+          "md5": "d0f422ae772522cc3978f2bf2bbb5902"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "hangar_concrete_floor",
+      "name": "Hangar Concrete Floor",
+      "authors": "Dimitrios Savva",
+      "resolution": "2k",
+      "arena": "station",
+      "purpose": "hangar floor",
+      "page": "https://polyhaven.com/a/hangar_concrete_floor",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/hangar_concrete_floor/hangar_concrete_floor_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/hangar_concrete_floor/hangar_concrete_floor_diff_2k.jpg",
+          "bytes": 2559056,
+          "md5": "35e620ca791e0105e680ef775ecf719d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/hangar_concrete_floor/hangar_concrete_floor_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/hangar_concrete_floor/hangar_concrete_floor_nor_gl_2k.jpg",
+          "bytes": 3100672,
+          "md5": "c255711a514478d91cd6e0424def0471"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/hangar_concrete_floor/hangar_concrete_floor_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/hangar_concrete_floor/hangar_concrete_floor_arm_2k.jpg",
+          "bytes": 2994585,
+          "md5": "d99c4dc230d549d6cb6cd8927920f95c"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "id": "painted_metal_shutter",
+      "name": "Painted Metal Shutter",
+      "authors": "Dario Barresi, Rico Cilliers, Charlotte Baglioni",
+      "resolution": "2k",
+      "arena": "station",
+      "purpose": "shutters and cladding",
+      "page": "https://polyhaven.com/a/painted_metal_shutter",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/painted_metal_shutter/painted_metal_shutter_diff_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/painted_metal_shutter/painted_metal_shutter_diff_2k.jpg",
+          "bytes": 2474114,
+          "md5": "71f3093741ac82b1e4ab10fd25bc367d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/painted_metal_shutter/painted_metal_shutter_nor_gl_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/painted_metal_shutter/painted_metal_shutter_nor_gl_2k.jpg",
+          "bytes": 3097249,
+          "md5": "702bd74c66505f8beb45a9a1171cade6"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/painted_metal_shutter/painted_metal_shutter_arm_2k.jpg",
+          "file": "Saved/ArenaSources/Textures/painted_metal_shutter/painted_metal_shutter_arm_2k.jpg",
+          "bytes": 2565660,
+          "md5": "3cf687653a871b93b7cb2502ce1bf047"
+        }
+      ]
+    },
+    {
+      "kind": "hdri",
+      "id": "plains_sunset",
+      "name": "Plains Sunset",
+      "authors": "Dimitrios Savva, Jarod Guest",
+      "resolution": "4k",
+      "arena": "fields",
+      "purpose": "golden-hour sky over dry plains",
+      "page": "https://polyhaven.com/a/plains_sunset",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/plains_sunset_4k.hdr",
+          "file": "Saved/ArenaSources/HDRI/plains_sunset_4k.hdr",
+          "bytes": 26801322,
+          "md5": "84aff9dd96885e427721dab5fb36a3e8"
+        }
+      ]
+    },
+    {
+      "kind": "hdri",
+      "id": "kloofendal_overcast_puresky",
+      "name": "Kloofendal Overcast (Pure Sky)",
+      "authors": "Greg Zaal",
+      "resolution": "4k",
+      "arena": "iceland",
+      "purpose": "overcast North Atlantic sky",
+      "page": "https://polyhaven.com/a/kloofendal_overcast_puresky",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/kloofendal_overcast_puresky_4k.hdr",
+          "file": "Saved/ArenaSources/HDRI/kloofendal_overcast_puresky_4k.hdr",
+          "bytes": 16953534,
+          "md5": "6678d8e9a87f9b8cdfc4fc4038591d59"
+        }
+      ]
+    },
+    {
+      "kind": "hdri",
+      "id": "kloofendal_43d_clear_puresky",
+      "name": "Kloofendal 43d Clear (Pure Sky)",
+      "authors": "Greg Zaal",
+      "resolution": "4k",
+      "arena": "moab",
+      "purpose": "harsh clear desert sky",
+      "page": "https://polyhaven.com/a/kloofendal_43d_clear_puresky",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/kloofendal_43d_clear_puresky_4k.hdr",
+          "file": "Saved/ArenaSources/HDRI/kloofendal_43d_clear_puresky_4k.hdr",
+          "bytes": 18429221,
+          "md5": "4e0af6bcab0e373639f3b48b6677a2c1"
+        }
+      ]
+    },
+    {
+      "kind": "hdri",
+      "id": "epping_forest_01",
+      "name": "Epping Forest 01",
+      "authors": "Andreas Mischok",
+      "resolution": "4k",
+      "arena": "hornbeam",
+      "purpose": "broadleaf woodland surround",
+      "page": "https://polyhaven.com/a/epping_forest_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/epping_forest_01_4k.hdr",
+          "file": "Saved/ArenaSources/HDRI/epping_forest_01_4k.hdr",
+          "bytes": 29781396,
+          "md5": "d8ca91a166d81c1ec5c628a50b760ad4"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "island_tree_01",
+      "name": "Island Tree 01",
+      "authors": "Rob Tuytel, Rico Cilliers",
+      "resolution": "1k",
+      "arena": "fields, hornbeam",
+      "purpose": "broadleaf trees along the field edge and around the glade",
+      "page": "https://polyhaven.com/a/island_tree_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/island_tree_01/island_tree_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/island_tree_01/island_tree_01_1k.gltf",
+          "file": "Saved/ArenaSources/Models/island_tree_01/island_tree_01_1k.gltf",
+          "bytes": 8576,
+          "md5": "fbc0c570ebd71ea88cedc1f9d5edb835"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_01/island_tree_01_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/island_tree_01/textures/island_tree_01_nor_gl_1k.jpg",
+          "bytes": 1207134,
+          "md5": "3871f67863453a16b866950202fa2b7f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_01/island_tree_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/island_tree_01/textures/island_tree_01_diff_1k.jpg",
+          "bytes": 791327,
+          "md5": "8a67489846657df6b859d97e0b80fcf4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_01/island_tree_01_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/island_tree_01/textures/island_tree_01_arm_1k.jpg",
+          "bytes": 727403,
+          "md5": "8077da7d1a001867c0da0cde6bc807f2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_01/island_tree_01_leaves_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/island_tree_01/textures/island_tree_01_leaves_nor_gl_1k.jpg",
+          "bytes": 379443,
+          "md5": "a08ffb98b5ffb7dfa682e05a1639c642"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_01/island_tree_01_leaves_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/island_tree_01/textures/island_tree_01_leaves_diff_1k.jpg",
+          "bytes": 191886,
+          "md5": "1356cbb5a5dd1318f9f2a01eddbf03e1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_01/island_tree_01_leaves_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/island_tree_01/textures/island_tree_01_leaves_arm_1k.jpg",
+          "bytes": 489476,
+          "md5": "27b06c4a53ff115ed7d51ee94e417257"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_01/island_tree_01_branches_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/island_tree_01/textures/island_tree_01_branches_nor_gl_1k.jpg",
+          "bytes": 819101,
+          "md5": "789084affb01f4a22290a848558f5e12"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_01/island_tree_01_branches_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/island_tree_01/textures/island_tree_01_branches_diff_1k.jpg",
+          "bytes": 528304,
+          "md5": "7792907fe2b2b748c129a2384192a579"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_01/island_tree_01_branches_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/island_tree_01/textures/island_tree_01_branches_arm_1k.jpg",
+          "bytes": 484806,
+          "md5": "5b6f5b3838f4a8f60fea14fa3a3fef9f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/island_tree_01/island_tree_01.bin",
+          "file": "Saved/ArenaSources/Models/island_tree_01/island_tree_01.bin",
+          "bytes": 60709812,
+          "md5": "8271f2d12c2727bd647ce0c242acdcec"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "id": "tree_small_02",
+      "name": "Tree Small 02",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "arena": "fields, hornbeam",
+      "purpose": "young trees, glade understorey",
+      "page": "https://polyhaven.com/a/tree_small_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/Models/tree_small_02/tree_small_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/tree_small_02/tree_small_02_1k.gltf",
+          "file": "Saved/ArenaSources/Models/tree_small_02/tree_small_02_1k.gltf",
+          "bytes": 9075,
+          "md5": "63f42b19687332f7b3a5c8b531734d8e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_branch_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_small_02/textures/tree_small_02_branch_nor_gl_1k.jpg",
+          "bytes": 581596,
+          "md5": "00a3eed0d4d28e7e890d9ec6ac0619af"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_branch_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_small_02/textures/tree_small_02_branch_diff_1k.jpg",
+          "bytes": 449977,
+          "md5": "88b531469f5dba2fc44ca85df3776e7c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_branch_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_small_02/textures/tree_small_02_branch_arm_1k.jpg",
+          "bytes": 375732,
+          "md5": "9ec3d8428295d87ae363bf0d1e0a8288"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_leaves_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_small_02/textures/tree_small_02_leaves_nor_gl_1k.jpg",
+          "bytes": 681604,
+          "md5": "b06c87e73f54d9654f66d67e9de7aa85"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_leaves_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_small_02/textures/tree_small_02_leaves_diff_1k.jpg",
+          "bytes": 340003,
+          "md5": "315cbc2cebfb399e649ccd39112c109a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_leaves_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_small_02/textures/tree_small_02_leaves_arm_1k.jpg",
+          "bytes": 633698,
+          "md5": "3dad5bafc732f7692db32a262530bbab"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_nor_gl_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_small_02/textures/tree_small_02_nor_gl_1k.jpg",
+          "bytes": 1228646,
+          "md5": "115a20da8621cd3e034e9b1bbe574746"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_diff_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_small_02/textures/tree_small_02_diff_1k.jpg",
+          "bytes": 863246,
+          "md5": "a7287a3f4e7f0d4577cb949b245f5b14"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_arm_1k.jpg",
+          "file": "Saved/ArenaSources/Models/tree_small_02/textures/tree_small_02_arm_1k.jpg",
+          "bytes": 708242,
+          "md5": "44b6ed4bf32d7cd67cb3e9d5faeacc38"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/tree_small_02/tree_small_02.bin",
+          "file": "Saved/ArenaSources/Models/tree_small_02/tree_small_02.bin",
+          "bytes": 95102324,
+          "md5": "7a7019a87e6fe0d7475c0fa2e08d8962"
+        }
+      ]
+    },
+    {
+      "kind": "model-fbx",
+      "id": "island_tree_01",
+      "name": "Island Tree 01",
+      "authors": "Rob Tuytel, Rico Cilliers",
+      "resolution": "1k",
+      "arena": "fields, hornbeam",
+      "purpose": "broadleaf trees (FBX with leaf cards and alpha)",
+      "page": "https://polyhaven.com/a/island_tree_01",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/TreesFBX/island_tree_01/island_tree_01_1k.fbx",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/island_tree_01/island_tree_01_1k.fbx",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/island_tree_01_1k.fbx",
+          "bytes": 48055820,
+          "md5": "29529d696d22fc1672961ecf42a501b4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/island_tree_01/island_tree_01_branches_diff_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/textures/island_tree_01_branches_diff_1k.png",
+          "bytes": 5300342,
+          "md5": "06881375b8ce350a45746e30b68a5d4c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/island_tree_01/island_tree_01_branches_nor_gl_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/textures/island_tree_01_branches_nor_gl_1k.png",
+          "bytes": 5400459,
+          "md5": "df3d91a9c29266f44b0b17da135a2899"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/island_tree_01/island_tree_01_branches_rough_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/textures/island_tree_01_branches_rough_1k.png",
+          "bytes": 1625206,
+          "md5": "8bd9e066f93c242ef468c7c6ea6dc382"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/island_tree_01/island_tree_01_diff_1k.jpg",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/textures/island_tree_01_diff_1k.jpg",
+          "bytes": 791327,
+          "md5": "8a67489846657df6b859d97e0b80fcf4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/island_tree_01/island_tree_01_leaves_alpha_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/textures/island_tree_01_leaves_alpha_1k.png",
+          "bytes": 57438,
+          "md5": "5ad9fb9a06e70c069bd3d3ba23577375"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/island_tree_01/island_tree_01_leaves_diff_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/textures/island_tree_01_leaves_diff_1k.png",
+          "bytes": 1638916,
+          "md5": "f5dcd85f170c154cba9cb8367af5dbdd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/island_tree_01/island_tree_01_leaves_nor_gl_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/textures/island_tree_01_leaves_nor_gl_1k.png",
+          "bytes": 2886859,
+          "md5": "13a7610b0459f3175ca049b70eadbfea"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/island_tree_01/island_tree_01_leaves_rough_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/textures/island_tree_01_leaves_rough_1k.png",
+          "bytes": 879599,
+          "md5": "6195150c02ed2522f8ab60c2ec02f1b9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/island_tree_01/island_tree_01_nor_gl_1k.exr",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/textures/island_tree_01_nor_gl_1k.exr",
+          "bytes": 2415664,
+          "md5": "2967bc2e9d8b2256165537c395181aa7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/island_tree_01/island_tree_01_rough_1k.exr",
+          "file": "Saved/ArenaSources/TreesFBX/island_tree_01/textures/island_tree_01_rough_1k.exr",
+          "bytes": 875265,
+          "md5": "58ebd5b8589f82ee2bc0d23b5332c02d"
+        }
+      ]
+    },
+    {
+      "kind": "model-fbx",
+      "id": "tree_small_02",
+      "name": "Tree Small 02",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "arena": "fields, hornbeam",
+      "purpose": "young trees (FBX with leaf cards and alpha)",
+      "page": "https://polyhaven.com/a/tree_small_02",
+      "license": "CC0 1.0 Universal (Poly Haven asset license: https://polyhaven.com/license)",
+      "entry": "Saved/ArenaSources/TreesFBX/tree_small_02/tree_small_02_1k.fbx",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/tree_small_02/tree_small_02_1k.fbx",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/tree_small_02_1k.fbx",
+          "bytes": 75487180,
+          "md5": "f2ead67dd5ca2d4a6a1524a5a546fb7a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/tree_small_02/tree_small_02_branch_diff_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/textures/tree_small_02_branch_diff_1k.png",
+          "bytes": 1277270,
+          "md5": "2da9ea379228636c4fda2fde9a11d760"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/tree_small_02/tree_small_02_branch_nor_gl_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/textures/tree_small_02_branch_nor_gl_1k.png",
+          "bytes": 5754879,
+          "md5": "4b6ae81428061986d42f205d03ec1989"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/tree_small_02/tree_small_02_branch_rough_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/textures/tree_small_02_branch_rough_1k.png",
+          "bytes": 421614,
+          "md5": "6189ac57979c248f9eb362ca04c5619e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_diff_1k.jpg",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/textures/tree_small_02_diff_1k.jpg",
+          "bytes": 863246,
+          "md5": "a7287a3f4e7f0d4577cb949b245f5b14"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/tree_small_02/tree_small_02_leaves_alpha_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/textures/tree_small_02_leaves_alpha_1k.png",
+          "bytes": 264711,
+          "md5": "63199ba87a9e8928424bd8c3b8017bd0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/tree_small_02/tree_small_02_leaves_diff_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/textures/tree_small_02_leaves_diff_1k.png",
+          "bytes": 2338424,
+          "md5": "2c667193084725e8553062ddbdc73c7d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/tree_small_02/tree_small_02_leaves_nor_gl_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/textures/tree_small_02_leaves_nor_gl_1k.png",
+          "bytes": 4903387,
+          "md5": "e81c5d7e7fc09af321e8c5ac5b4948f2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/tree_small_02/tree_small_02_leaves_rough_1k.png",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/textures/tree_small_02_leaves_rough_1k.png",
+          "bytes": 1043665,
+          "md5": "49c08fb74ed781e9632b543b8e19c8cb"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/tree_small_02/tree_small_02_nor_gl_1k.exr",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/textures/tree_small_02_nor_gl_1k.exr",
+          "bytes": 2462999,
+          "md5": "eccf7df1617a8d6d841dff98bf58dc3a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/tree_small_02/tree_small_02_rough_1k.exr",
+          "file": "Saved/ArenaSources/TreesFBX/tree_small_02/textures/tree_small_02_rough_1k.exr",
+          "bytes": 978557,
+          "md5": "af3b33e4b262b8ac40a94ee5d93ce13e"
+        }
+      ]
+    }
+  ]
+}

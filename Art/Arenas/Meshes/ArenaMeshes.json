@@ -1,0 +1,1059 @@
+{
+  "generator": "Tools/BuildArenaMeshes.py",
+  "units": "cm, Z up, base at 0, faces +X",
+  "meshes": [
+    {
+      "name": "SM_Arena_Barn",
+      "triangles": 290,
+      "materials": [
+        "DarkWood",
+        "FieldStone",
+        "Planks",
+        "Thatch",
+        "Timber"
+      ],
+      "boundsMin": [
+        -750.0,
+        -520.0,
+        0.0
+      ],
+      "boundsMax": [
+        750.0,
+        520.0,
+        998.0
+      ],
+      "size": [
+        1500.0,
+        1040.0,
+        998.0
+      ]
+    },
+    {
+      "name": "SM_Arena_Barrier",
+      "triangles": 32,
+      "materials": [
+        "Hazard",
+        "SteelDark"
+      ],
+      "boundsMin": [
+        -35.0,
+        -150,
+        0.0
+      ],
+      "boundsMax": [
+        35.0,
+        150,
+        122.0
+      ],
+      "size": [
+        70.0,
+        300,
+        122.0
+      ]
+    },
+    {
+      "name": "SM_Arena_BasaltCliff",
+      "triangles": 6844,
+      "materials": [
+        "Basalt"
+      ],
+      "boundsMin": [
+        -449.3,
+        -1037.1,
+        -13.4
+      ],
+      "boundsMax": [
+        161.5,
+        1000.3,
+        1213.4
+      ],
+      "size": [
+        610.8,
+        2037.4,
+        1226.7
+      ]
+    },
+    {
+      "name": "SM_Arena_BasaltStack",
+      "triangles": 4792,
+      "materials": [
+        "Basalt"
+      ],
+      "boundsMin": [
+        -528.1,
+        -433.8,
+        -8.2
+      ],
+      "boundsMax": [
+        560.4,
+        385.2,
+        2440.0
+      ],
+      "size": [
+        1088.5,
+        819.0,
+        2448.3
+      ]
+    },
+    {
+      "name": "SM_Arena_BasaltSteps",
+      "triangles": 840,
+      "materials": [
+        "Basalt"
+      ],
+      "boundsMin": [
+        -160.6,
+        -162.9,
+        0
+      ],
+      "boundsMax": [
+        162.2,
+        163.8,
+        157.2
+      ],
+      "size": [
+        322.8,
+        326.7,
+        157.2
+      ]
+    },
+    {
+      "name": "SM_Arena_BasaltTall",
+      "triangles": 532,
+      "materials": [
+        "Basalt"
+      ],
+      "boundsMin": [
+        -144.3,
+        -126.0,
+        0
+      ],
+      "boundsMax": [
+        143.7,
+        125.2,
+        355.8
+      ],
+      "size": [
+        288.0,
+        251.2,
+        355.8
+      ]
+    },
+    {
+      "name": "SM_Arena_BasaltWall",
+      "triangles": 980,
+      "materials": [
+        "Basalt"
+      ],
+      "boundsMin": [
+        -68.2,
+        -290.6,
+        0
+      ],
+      "boundsMax": [
+        68.2,
+        285.9,
+        298.2
+      ],
+      "size": [
+        136.4,
+        576.5,
+        298.2
+      ]
+    },
+    {
+      "name": "SM_Arena_Bulkhead",
+      "triangles": 120,
+      "materials": [
+        "Emissive",
+        "Hull",
+        "SteelDark"
+      ],
+      "boundsMin": [
+        -30.0,
+        -520.0,
+        0.0
+      ],
+      "boundsMax": [
+        55.0,
+        520.0,
+        1200.0
+      ],
+      "size": [
+        85.0,
+        1040.0,
+        1200.0
+      ]
+    },
+    {
+      "name": "SM_Arena_CanyonWall",
+      "triangles": 5122,
+      "materials": [
+        "Sandstone"
+      ],
+      "boundsMin": [
+        -449.9,
+        -1500.0,
+        -7.3
+      ],
+      "boundsMax": [
+        350,
+        1500.0,
+        2007.5
+      ],
+      "size": [
+        799.9,
+        3000.0,
+        2014.8
+      ]
+    },
+    {
+      "name": "SM_Arena_CargoCrate",
+      "triangles": 204,
+      "materials": [
+        "CratePanel",
+        "Emissive",
+        "SteelDark"
+      ],
+      "boundsMin": [
+        -77.0,
+        -77.0,
+        0.0
+      ],
+      "boundsMax": [
+        77.0,
+        77.0,
+        150.0
+      ],
+      "size": [
+        154.0,
+        154.0,
+        150.0
+      ]
+    },
+    {
+      "name": "SM_Arena_Column",
+      "triangles": 700,
+      "materials": [
+        "Ruin"
+      ],
+      "boundsMin": [
+        -74.4,
+        -74.4,
+        0.0
+      ],
+      "boundsMax": [
+        74.4,
+        74.4,
+        620.0
+      ],
+      "size": [
+        148.8,
+        148.8,
+        620.0
+      ]
+    },
+    {
+      "name": "SM_Arena_ColumnBroken",
+      "triangles": 612,
+      "materials": [
+        "Ruin"
+      ],
+      "boundsMin": [
+        -69.6,
+        -69.6,
+        0.0
+      ],
+      "boundsMax": [
+        69.6,
+        69.6,
+        350.3
+      ],
+      "size": [
+        139.2,
+        139.2,
+        350.3
+      ]
+    },
+    {
+      "name": "SM_Arena_ColumnFallen",
+      "triangles": 372,
+      "materials": [
+        "Ruin"
+      ],
+      "boundsMin": [
+        -55.5,
+        -217.0,
+        0.9
+      ],
+      "boundsMax": [
+        55.5,
+        220.9,
+        91.1
+      ],
+      "size": [
+        111.1,
+        437.9,
+        90.2
+      ]
+    },
+    {
+      "name": "SM_Arena_Container",
+      "triangles": 492,
+      "materials": [
+        "ContainerPaint",
+        "Emissive",
+        "SteelDark"
+      ],
+      "boundsMin": [
+        -129.5,
+        -305.5,
+        0.0
+      ],
+      "boundsMax": [
+        129.5,
+        306.0,
+        260.0
+      ],
+      "size": [
+        259.0,
+        611.5,
+        260.0
+      ]
+    },
+    {
+      "name": "SM_Arena_CoralBranch",
+      "triangles": 2660,
+      "materials": [
+        "Coral"
+      ],
+      "boundsMin": [
+        -59.0,
+        -66.3,
+        -3.1
+      ],
+      "boundsMax": [
+        73.1,
+        74.5,
+        116.1
+      ],
+      "size": [
+        132.1,
+        140.7,
+        119.3
+      ]
+    },
+    {
+      "name": "SM_Arena_Dropship",
+      "triangles": 764,
+      "materials": [
+        "Emissive",
+        "EngineGlow",
+        "Glass",
+        "Hull",
+        "SteelDark"
+      ],
+      "boundsMin": [
+        -660,
+        -470,
+        -2.1
+      ],
+      "boundsMax": [
+        650.0,
+        470,
+        520
+      ],
+      "size": [
+        1310.0,
+        940,
+        522.1
+      ]
+    },
+    {
+      "name": "SM_Arena_FallenLog",
+      "triangles": 400,
+      "materials": [
+        "Bark",
+        "LogEnd"
+      ],
+      "boundsMin": [
+        -76.9,
+        -362.0,
+        -0.8
+      ],
+      "boundsMax": [
+        130.3,
+        361.1,
+        125.9
+      ],
+      "size": [
+        207.2,
+        723.1,
+        126.7
+      ]
+    },
+    {
+      "name": "SM_Arena_HayBaleRound",
+      "triangles": 896,
+      "materials": [
+        "Hay",
+        "HayEnd"
+      ],
+      "boundsMin": [
+        -80.2,
+        -78.2,
+        -0.0
+      ],
+      "boundsMax": [
+        80.7,
+        78.2,
+        160.8
+      ],
+      "size": [
+        160.9,
+        156.4,
+        160.9
+      ]
+    },
+    {
+      "name": "SM_Arena_HayBaleSquare",
+      "triangles": 1472,
+      "materials": [
+        "Hay",
+        "Twine"
+      ],
+      "boundsMin": [
+        -55.7,
+        -28.9,
+        -1.2
+      ],
+      "boundsMax": [
+        55.5,
+        28.9,
+        46.2
+      ],
+      "size": [
+        111.2,
+        57.7,
+        47.5
+      ]
+    },
+    {
+      "name": "SM_Arena_HayPyramid",
+      "triangles": 2688,
+      "materials": [
+        "Hay",
+        "HayEnd"
+      ],
+      "boundsMin": [
+        -162.5,
+        -81.2,
+        -1.0
+      ],
+      "boundsMax": [
+        162.8,
+        82.2,
+        300.5
+      ],
+      "size": [
+        325.3,
+        163.4,
+        301.5
+      ]
+    },
+    {
+      "name": "SM_Arena_HayStack",
+      "triangles": 36800,
+      "materials": [
+        "Hay",
+        "Twine"
+      ],
+      "boundsMin": [
+        -61.0,
+        -170.3,
+        -1.2
+      ],
+      "boundsMax": [
+        61.1,
+        169.6,
+        226.2
+      ],
+      "size": [
+        122.2,
+        339.9,
+        227.5
+      ]
+    },
+    {
+      "name": "SM_Arena_HayWagon",
+      "triangles": 7076,
+      "materials": [
+        "Hay",
+        "Iron",
+        "Planks",
+        "Timber"
+      ],
+      "boundsMin": [
+        -225.4,
+        -120.3,
+        -2.5
+      ],
+      "boundsMax": [
+        331.4,
+        120.0,
+        273.1
+      ],
+      "size": [
+        556.7,
+        240.4,
+        275.6
+      ]
+    },
+    {
+      "name": "SM_Arena_Hoodoo",
+      "triangles": 6400,
+      "materials": [
+        "Sandstone",
+        "SandstoneCap"
+      ],
+      "boundsMin": [
+        -137.5,
+        -144.0,
+        -5.7
+      ],
+      "boundsMax": [
+        154.1,
+        124.9,
+        665.4
+      ],
+      "size": [
+        291.5,
+        268.9,
+        671.1
+      ]
+    },
+    {
+      "name": "SM_Arena_Kelp",
+      "triangles": 1176,
+      "materials": [
+        "Kelp"
+      ],
+      "boundsMin": [
+        -42.0,
+        -38.6,
+        -0.1
+      ],
+      "boundsMax": [
+        59.5,
+        31.0,
+        916.0
+      ],
+      "size": [
+        101.5,
+        69.6,
+        916.1
+      ]
+    },
+    {
+      "name": "SM_Arena_LavaOutcrop",
+      "triangles": 5120,
+      "materials": [
+        "Lava"
+      ],
+      "boundsMin": [
+        -308.4,
+        -227.8,
+        -16.9
+      ],
+      "boundsMax": [
+        343.9,
+        243.4,
+        89.5
+      ],
+      "size": [
+        652.3,
+        471.3,
+        106.4
+      ]
+    },
+    {
+      "name": "SM_Arena_LavaRockLarge",
+      "triangles": 5120,
+      "materials": [
+        "Lava"
+      ],
+      "boundsMin": [
+        -239.1,
+        -194.5,
+        -1.1
+      ],
+      "boundsMax": [
+        233.4,
+        158.0,
+        250.3
+      ],
+      "size": [
+        472.5,
+        352.5,
+        251.3
+      ]
+    },
+    {
+      "name": "SM_Arena_LavaRockMedium",
+      "triangles": 5120,
+      "materials": [
+        "Lava"
+      ],
+      "boundsMin": [
+        -129.1,
+        -86.5,
+        0.9
+      ],
+      "boundsMax": [
+        121.5,
+        94.9,
+        149.2
+      ],
+      "size": [
+        250.6,
+        181.5,
+        148.4
+      ]
+    },
+    {
+      "name": "SM_Arena_LightShaft",
+      "triangles": 80,
+      "materials": [
+        "Shaft"
+      ],
+      "boundsMin": [
+        -260.0,
+        -260.0,
+        0.0
+      ],
+      "boundsMax": [
+        260.0,
+        260.0,
+        3200.0
+      ],
+      "size": [
+        520.0,
+        520.0,
+        3200.0
+      ]
+    },
+    {
+      "name": "SM_Arena_MossBoulder",
+      "triangles": 5120,
+      "materials": [
+        "ForestRock"
+      ],
+      "boundsMin": [
+        -205.8,
+        -151.9,
+        0.4
+      ],
+      "boundsMax": [
+        207.1,
+        155.6,
+        277.5
+      ],
+      "size": [
+        412.9,
+        307.5,
+        277.1
+      ]
+    },
+    {
+      "name": "SM_Arena_Mote",
+      "triangles": 8,
+      "materials": [
+        "Mote"
+      ],
+      "boundsMin": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "boundsMax": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "size": [
+        2.0,
+        2.0,
+        2.0
+      ]
+    },
+    {
+      "name": "SM_Arena_Pillar",
+      "triangles": 132,
+      "materials": [
+        "Emissive",
+        "Hull",
+        "SteelDark"
+      ],
+      "boundsMin": [
+        -85.0,
+        -85.0,
+        0.0
+      ],
+      "boundsMax": [
+        85.0,
+        85.0,
+        1400.0
+      ],
+      "size": [
+        170.0,
+        170.0,
+        1400.0
+      ]
+    },
+    {
+      "name": "SM_Arena_Plinth",
+      "triangles": 36,
+      "materials": [
+        "Ruin"
+      ],
+      "boundsMin": [
+        -85.0,
+        -85.0,
+        0.0
+      ],
+      "boundsMax": [
+        85.0,
+        85.0,
+        180.0
+      ],
+      "size": [
+        170.0,
+        170.0,
+        180.0
+      ]
+    },
+    {
+      "name": "SM_Arena_RootPlate",
+      "triangles": 5532,
+      "materials": [
+        "Bark",
+        "RootEarth"
+      ],
+      "boundsMin": [
+        -86.7,
+        -230.5,
+        -39.3
+      ],
+      "boundsMax": [
+        48.4,
+        226.5,
+        390.2
+      ],
+      "size": [
+        135.1,
+        457.0,
+        429.5
+      ]
+    },
+    {
+      "name": "SM_Arena_RuinArch",
+      "triangles": 204,
+      "materials": [
+        "RuinBlock"
+      ],
+      "boundsMin": [
+        -387.5,
+        -80.0,
+        0.0
+      ],
+      "boundsMax": [
+        387.5,
+        80.0,
+        682.3
+      ],
+      "size": [
+        775.0,
+        160.0,
+        682.3
+      ]
+    },
+    {
+      "name": "SM_Arena_RuinWall",
+      "triangles": 1480,
+      "materials": [
+        "FieldStone",
+        "RuinStone"
+      ],
+      "boundsMin": [
+        -91.9,
+        -250.0,
+        0.0
+      ],
+      "boundsMax": [
+        80.1,
+        250.0,
+        251.9
+      ],
+      "size": [
+        172.1,
+        500.0,
+        251.9
+      ]
+    },
+    {
+      "name": "SM_Arena_SandstoneArch",
+      "triangles": 11968,
+      "materials": [
+        "Sandstone"
+      ],
+      "boundsMin": [
+        -627.1,
+        -201.9,
+        -3.4
+      ],
+      "boundsMax": [
+        646.4,
+        196.3,
+        824.5
+      ],
+      "size": [
+        1273.5,
+        398.2,
+        827.9
+      ]
+    },
+    {
+      "name": "SM_Arena_SandstoneBlock",
+      "triangles": 5120,
+      "materials": [
+        "Sandstone"
+      ],
+      "boundsMin": [
+        -166.5,
+        -141.2,
+        -18.7
+      ],
+      "boundsMax": [
+        171.7,
+        142.8,
+        218.0
+      ],
+      "size": [
+        338.3,
+        283.9,
+        236.7
+      ]
+    },
+    {
+      "name": "SM_Arena_Scarecrow",
+      "triangles": 818,
+      "materials": [
+        "CoatCloth",
+        "Hay",
+        "Sack",
+        "Thatch",
+        "Timber",
+        "Twine"
+      ],
+      "boundsMin": [
+        -34.0,
+        -95.1,
+        0.0
+      ],
+      "boundsMax": [
+        34.0,
+        95.1,
+        236.0
+      ],
+      "size": [
+        68.0,
+        190.2,
+        236.0
+      ]
+    },
+    {
+      "name": "SM_Arena_SeaRock",
+      "triangles": 5120,
+      "materials": [
+        "SeaRock"
+      ],
+      "boundsMin": [
+        -182.5,
+        -153.1,
+        -4.2
+      ],
+      "boundsMax": [
+        191.7,
+        169.1,
+        222.9
+      ],
+      "size": [
+        374.2,
+        322.2,
+        227.0
+      ]
+    },
+    {
+      "name": "SM_Arena_StationTower",
+      "triangles": 2280,
+      "materials": [
+        "Emissive",
+        "Hull",
+        "SteelDark"
+      ],
+      "boundsMin": [
+        -801.0,
+        -801.0,
+        0.0
+      ],
+      "boundsMax": [
+        801.0,
+        801.0,
+        7000.0
+      ],
+      "size": [
+        1602.0,
+        1602.0,
+        7000.0
+      ]
+    },
+    {
+      "name": "SM_Arena_StoneWall",
+      "triangles": 15200,
+      "materials": [
+        "FieldStone"
+      ],
+      "boundsMin": [
+        -38.3,
+        -200.8,
+        0.2
+      ],
+      "boundsMax": [
+        37.8,
+        199.9,
+        148.0
+      ],
+      "size": [
+        76.2,
+        400.7,
+        147.8
+      ]
+    },
+    {
+      "name": "SM_Arena_Stook",
+      "triangles": 1440,
+      "materials": [
+        "Ears",
+        "Straw",
+        "Twine"
+      ],
+      "boundsMin": [
+        -40.2,
+        -64.8,
+        -3.7
+      ],
+      "boundsMax": [
+        40.6,
+        56.0,
+        149.5
+      ],
+      "size": [
+        80.8,
+        120.8,
+        153.2
+      ]
+    },
+    {
+      "name": "SM_Arena_StubbleTuft",
+      "triangles": 156,
+      "materials": [
+        "Wheat"
+      ],
+      "boundsMin": [
+        -22.3,
+        -20.5,
+        -0.2
+      ],
+      "boundsMax": [
+        19.9,
+        18.7,
+        20.6
+      ],
+      "size": [
+        42.2,
+        39.2,
+        20.8
+      ]
+    },
+    {
+      "name": "SM_Arena_WheatClump",
+      "triangles": 3332,
+      "materials": [
+        "Wheat"
+      ],
+      "boundsMin": [
+        -47.9,
+        -58.1,
+        -0.1
+      ],
+      "boundsMax": [
+        56.5,
+        52.4,
+        139.1
+      ],
+      "size": [
+        104.4,
+        110.5,
+        139.3
+      ]
+    },
+    {
+      "name": "SM_Arena_Windmill",
+      "triangles": 630,
+      "materials": [
+        "DarkWood",
+        "MillStone",
+        "Thatch",
+        "Timber"
+      ],
+      "boundsMin": [
+        -430.0,
+        -430.0,
+        0.0
+      ],
+      "boundsMax": [
+        440.0,
+        430.0,
+        1700.0
+      ],
+      "size": [
+        870.0,
+        860.0,
+        1700.0
+      ]
+    },
+    {
+      "name": "SM_Arena_WindmillSails",
+      "triangles": 812,
+      "materials": [
+        "SailCloth",
+        "Timber"
+      ],
+      "boundsMin": [
+        -30.0,
+        -1113.1,
+        -1113.1
+      ],
+      "boundsMax": [
+        30.0,
+        1113.1,
+        1113.1
+      ],
+      "size": [
+        60.0,
+        2226.3,
+        2226.3
+      ]
+    }
+  ]
+}
