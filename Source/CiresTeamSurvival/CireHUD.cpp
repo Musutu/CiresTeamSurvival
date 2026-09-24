@@ -67,7 +67,13 @@ FCireUIRect ACireHUD::PanelRect(FName Id) const
         if(UISettings.bShowActionBar2)GiveWay(TEXT("Bar2"));
         if(UISettings.bShowActionBar3)GiveWay(TEXT("Bar3"));
     }
-    if(Id==TEXT("Focus")){GiveWay(TEXT("Target"));GiveWay(TEXT("Minimap"));}
+    if(Id==TEXT("Focus"))
+    {
+        GiveWay(TEXT("Target"));GiveWay(TEXT("Minimap"));
+        // No room beside the target frame: tuck the focus frame under it instead.
+        const FCireUIRect T=UISettings.GetRect(TEXT("Target"),View);
+        if(Overlap(R,T)){R.X=FMath::Clamp(T.X+T.W-R.W,0.f,ViewW-R.W);R.Y=FMath::Min(T.Y+T.H+6,ViewH-R.H);}
+    }
     if(Id==TEXT("Boss"))
     {
         const FCireUIRect T=UISettings.GetRect(TEXT("Threat"),View);
@@ -77,7 +83,14 @@ FCireUIRect ACireHUD::PanelRect(FName Id) const
 }
 void ACireHUD::UsePanel(FName Id,float W,float H)
 {
+    PanelAlpha=1.f;
     FCireUIRect R=PanelRect(Id);
+    // New target: the frame fades and slides in (WoW-like), 0.18s.
+    if(Id==TEXT("Target")&&!bEditLayout)
+    {
+        const float T=FMath::Clamp(static_cast<float>(GetWorld()->GetRealTimeSeconds()-TargetChangedAt)/.18f,0.f,1.f);
+        const float Ease=1.f-FMath::Square(1.f-T);R.Y-=(1.f-Ease)*12.f;PanelAlpha=.25f+.75f*Ease;
+    }
     // Height-trimmed panels (boss frames) keep their scale and simply show fewer rows.
     if(Id==TEXT("Boss"))R.H=UISettings.GetRect(Id,FVector2D(ViewW,ViewH)).H;
     Origin=FVector2D(R.X,R.Y); Stretch=FVector2D(R.W/W,R.H/H);
@@ -508,7 +521,7 @@ void ACireHUD::DrawHUD()
     if(DrawReplayScreen()){DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();return;}
     if(!Hero){Label(TEXT("Joining the battlefield..."),ViewW*.5f-130,ViewH*.5f,20,Parchment);return;}
     UpdateLevelUps(Hero);UpdateThreatAlerts(Hero);UpdateBanners(Hero,State);
-    if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;}
+    if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;TargetChangedAt=GetWorld()->GetRealTimeSeconds();}
     if(!bModal)DrawNameplates(Hero);
     if(!bModal)DrawLevelUps(Hero);
     DrawPlayer(Hero);DrawParty(Hero,Controller);DrawMatch(State);DrawMinimap(Hero,State);

@@ -438,7 +438,8 @@ void CireUIStyle::Banner(const FCireUIPainter& P,float ViewW,float Y,const FCire
     const float TW=Q.TextWidth(Spec.Title,TS,ECireFont::Heading);
     const float BandW=FMath::Max(TW+220.f,440.f)*(.6f+.4f*Ease),BandX=(ViewW-BandW)*.5f,BandH=TS+(Spec.Subtitle.IsEmpty()?34.f:54.f);
     // Dark band that fades at both ends, gold rules above and below.
-    for(int32 I=0;I<8;++I){const float Inset=I*BandW*.06f;Q.Rect(BandX+Inset,Y-16,BandW-2*Inset,BandH,FLinearColor(0,0,0,.09f));}
+    for(int32 I=0;I<8;++I){const float Inset=I*BandW*.06f;Q.Rect(BandX+Inset,Y-16,BandW-2*Inset,BandH,FLinearColor(0,0,0,.13f));}
+    if(const FAssets& A=Assets();A.Gloss)Q.Tex(A.Gloss,BandX+BandW*.2f,Y-16,BandW*.6f,BandH*.5f,Spec.Color*FLinearColor(1,1,1,.06f));
     const FLinearColor Rule=Spec.Color*FLinearColor(1,1,1,.85f);
     Q.Line(BandX+BandW*.12f,Y-16,BandX+BandW*.88f,Y-16,Rule,1.5f);Q.Line(BandX+BandW*.12f,Y-16+BandH,BandX+BandW*.88f,Y-16+BandH,Rule,1.5f);
     // Wings: tapered blades pointing outward from the title.

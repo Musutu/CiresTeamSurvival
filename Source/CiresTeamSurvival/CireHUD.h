@@ -177,6 +177,8 @@ private:
     float PanelAlpha = 1.f;
     int32 BannerSeenPhase = -1, BannerSeenWave = 0, BannerSeenCleared = 0, BannerCountdownWave = 0, BannerSeenChallengeTier = 0;
     TSet<TWeakObjectPtr<ACireMonster>> BannerSeenBosses;
+    FName BannerPendingDistrict, BannerShownDistrict;
+    double BannerDistrictSince = 0.0, TargetChangedAt = -100.0;
     UPROPERTY() TArray<TObjectPtr<USoundBase>> WowSounds;
     ECireFont NextFont = ECireFont::Auto;
     TWeakObjectPtr<AActor> HoverUnit, TooltipUnit, LastTargetSeen;
