@@ -620,6 +620,334 @@
    "positional": true
   },
   {
+   "name": "AUR_BloodSplat_01",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_BloodSplat_01.wav",
+   "seconds": 0.9,
+   "channels": 1,
+   "rmsDb": -21.7,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_blood_splat"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_BloodSplat_02",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_BloodSplat_02.wav",
+   "seconds": 1.0,
+   "channels": 1,
+   "rmsDb": -20.7,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_blood_splat"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_BloodSplat_03",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_BloodSplat_03.wav",
+   "seconds": 0.804,
+   "channels": 1,
+   "rmsDb": -20.5,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_blood_splat"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Bubble",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Bubble.wav",
+   "seconds": 1.0,
+   "channels": 1,
+   "rmsDb": -27.4,
+   "peakDb": -5.0,
+   "sources": [
+    "aura_bubbles"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_BubblesLoop",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_BubblesLoop.wav",
+   "seconds": 6.0,
+   "channels": 1,
+   "rmsDb": -29.6,
+   "peakDb": -1.0,
+   "sources": [
+    "aura_bubbles"
+   ],
+   "loop": true,
+   "positional": true
+  },
+  {
+   "name": "AUR_Chime",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Chime.wav",
+   "seconds": 2.0,
+   "channels": 1,
+   "rmsDb": -28.6,
+   "peakDb": -4.0,
+   "sources": [
+    "aura_chime"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Choir",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Choir.wav",
+   "seconds": 2.2,
+   "channels": 1,
+   "rmsDb": -16.2,
+   "peakDb": -3.0,
+   "sources": [
+    "aura_choir"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Clang_01",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Clang_01.wav",
+   "seconds": 1.3,
+   "channels": 1,
+   "rmsDb": -28.0,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_clang"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Clang_02",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Clang_02.wav",
+   "seconds": 1.3,
+   "channels": 1,
+   "rmsDb": -25.0,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_clang"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Clang_03",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Clang_03.wav",
+   "seconds": 1.3,
+   "channels": 1,
+   "rmsDb": -23.5,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_clang"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_FireLoop",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_FireLoop.wav",
+   "seconds": 8.0,
+   "channels": 1,
+   "rmsDb": -27.7,
+   "peakDb": -1.0,
+   "sources": [
+    "fire_loop"
+   ],
+   "loop": true,
+   "positional": true
+  },
+  {
+   "name": "AUR_FlameBurst",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_FlameBurst.wav",
+   "seconds": 1.6,
+   "channels": 1,
+   "rmsDb": -15.4,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_flame"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_ForceField",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_ForceField.wav",
+   "seconds": 2.4,
+   "channels": 1,
+   "rmsDb": -19.0,
+   "peakDb": -4.0,
+   "sources": [
+    "aura_forcefield"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Gong",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Gong.wav",
+   "seconds": 1.9,
+   "channels": 1,
+   "rmsDb": -21.7,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_gong"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Heartbeat",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Heartbeat.wav",
+   "seconds": 3.68,
+   "channels": 1,
+   "rmsDb": -16.0,
+   "peakDb": -5.4,
+   "sources": [
+    "aura_heartbeat"
+   ],
+   "loop": true,
+   "positional": true
+  },
+  {
+   "name": "AUR_Hourglass",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Hourglass.wav",
+   "seconds": 2.7,
+   "channels": 1,
+   "rmsDb": -19.7,
+   "peakDb": -5.0,
+   "sources": [
+    "aura_hourglass"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_IceCrack",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_IceCrack.wav",
+   "seconds": 1.0,
+   "channels": 1,
+   "rmsDb": -31.4,
+   "peakDb": -3.0,
+   "sources": [
+    "aura_ice_crack"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_IceShatter_01",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_IceShatter_01.wav",
+   "seconds": 0.7,
+   "channels": 1,
+   "rmsDb": -34.1,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_ice_break"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_IceShatter_02",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_IceShatter_02.wav",
+   "seconds": 0.7,
+   "channels": 1,
+   "rmsDb": -30.5,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_ice_break"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_IceShatter_03",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_IceShatter_03.wav",
+   "seconds": 0.68,
+   "channels": 1,
+   "rmsDb": -33.0,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_ice_break"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Snarl",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Snarl.wav",
+   "seconds": 1.35,
+   "channels": 1,
+   "rmsDb": -19.1,
+   "peakDb": -2.0,
+   "sources": [
+    "aura_snarl"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Sparkle",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Sparkle.wav",
+   "seconds": 1.6,
+   "channels": 1,
+   "rmsDb": -19.2,
+   "peakDb": -4.0,
+   "sources": [
+    "aura_sparkle"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Swing",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Swing.wav",
+   "seconds": 0.55,
+   "channels": 1,
+   "rmsDb": -21.2,
+   "peakDb": -3.0,
+   "sources": [
+    "aura_swing"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_WarCry",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_WarCry.wav",
+   "seconds": 1.7,
+   "channels": 1,
+   "rmsDb": -15.9,
+   "peakDb": -3.0,
+   "sources": [
+    "aura_warcry"
+   ],
+   "positional": true
+  },
+  {
+   "name": "AUR_Whoosh",
+   "category": "Auras",
+   "file": "Art/Downloads/Audio/processed/Auras/AUR_Whoosh.wav",
+   "seconds": 0.426,
+   "channels": 1,
+   "rmsDb": -19.0,
+   "peakDb": -3.0,
+   "sources": [
+    "aura_whoosh"
+   ],
+   "positional": true
+  },
+  {
    "name": "FS_ArmorRattle_01",
    "category": "Footsteps",
    "file": "Art/Downloads/Audio/processed/Footsteps/FS_ArmorRattle_01.wav",

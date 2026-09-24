@@ -343,10 +343,43 @@ def build_ui():
     save("UI_Confirm", normalize(mono(kenney("confirmation_002")), peak_db=-6), cat)
 
 
+# aura-vfx: buff / aura / empowered-attack sounds -> Content/Audio/Auras (mono, positional).
+def build_auras():
+    cat = "Auras"
+    one = dict(positional=True)
+    beat = fade(cut(mono(load("aura_heartbeat")), 0, .92), .003, .08)
+    save("AUR_Heartbeat", normalize(concat(beat, beat, beat, beat), rms_db=-16), cat, loop=True, **one)
+    save("AUR_Snarl", normalize(fade(cut(mono(load("aura_snarl")), .2, 1.55), .01, .35), peak_db=-2), cat, **one)
+    splat = mono(load("aura_blood_splat"))
+    for i, f in enumerate((1.0, .9, 1.12), 1):
+        save("AUR_BloodSplat_%02d" % i, normalize(fade(pitch(cut(splat, 0, .9), f), .002, .15), peak_db=-2), cat, **one)
+    save("AUR_Swing", normalize(fade(cut(mono(load("aura_swing")), 1.65, 2.2), .003, .12), peak_db=-3), cat, **one)
+    ice = mono(load("aura_ice_break"))
+    for i, (a, b) in enumerate(((4.95, 5.65), (6.45, 7.15), (5.62, 6.3)), 1):
+        save("AUR_IceShatter_%02d" % i, normalize(fade(cut(ice, a, b), .003, .2), peak_db=-2), cat, **one)
+    save("AUR_IceCrack", normalize(fade(cut(mono(load("aura_ice_crack")), .05, 1.05), .003, .25), peak_db=-3), cat, **one)
+    save("AUR_Chime", normalize(fade(cut(mono(load("aura_chime")), 8.6, 10.6), .02, .8), peak_db=-4), cat, **one)
+    save("AUR_Choir", normalize(fade(cut(mono(load("aura_choir")), .1, 2.3), .03, .7), peak_db=-3), cat, **one)
+    save("AUR_Sparkle", normalize(fade(cut(mono(load("aura_sparkle")), 0, 1.6), .003, .6), peak_db=-4), cat, **one)
+    clang = mono(load("aura_clang"))
+    for i, a in enumerate((.55, 3.35, 6.38), 1):
+        save("AUR_Clang_%02d" % i, normalize(fade(cut(clang, a, a + 1.3), .002, .5), peak_db=-2), cat, **one)
+    bubbles = mono(load("aura_bubbles"))
+    save("AUR_Bubble", normalize(fade(cut(bubbles, 10.9, 11.9), .01, .3), peak_db=-5), cat, **one)
+    save("AUR_BubblesLoop", normalize(loop(bubbles, 6, 1.2, start=9.4), rms_db=-24), cat, loop=True, **one)
+    save("AUR_FlameBurst", normalize(fade(cut(mono(load("aura_flame")), 0, 1.6), .003, .6), peak_db=-2), cat, **one)
+    save("AUR_FireLoop", normalize(loop(mono(load("fire_loop")), 8, 1.5, start=5), rms_db=-22), cat, loop=True, **one)
+    save("AUR_ForceField", normalize(fade(cut(mono(load("aura_forcefield")), 0, 2.4), .05, .9), peak_db=-4), cat, **one)
+    save("AUR_Hourglass", normalize(fade(cut(mono(load("aura_hourglass")), .9, 3.6), .15, .9), peak_db=-5), cat, **one)
+    save("AUR_Gong", normalize(fade(cut(mono(load("aura_gong")), .45, 2.35), .003, 1.0), peak_db=-2), cat, **one)
+    save("AUR_WarCry", normalize(fade(cut(mono(load("aura_warcry")), 0, 1.7), .05, .6), peak_db=-3), cat, **one)
+    save("AUR_Whoosh", normalize(fade(mono(load("aura_whoosh")), .003, .15), peak_db=-3), cat, **one)
+
+
 def main():
     random.seed(7)
     only = set(sys.argv[1:])
-    for name, fn in (("ambience", build_ambience), ("footsteps", build_footsteps), ("events", build_events), ("ui", build_ui)):
+    for name, fn in (("ambience", build_ambience), ("footsteps", build_footsteps), ("events", build_events), ("ui", build_ui), ("auras", build_auras)):
         if not only or name in only:
             fn()
             print("built", name)

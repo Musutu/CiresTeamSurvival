@@ -105,7 +105,7 @@ Required attribution (also shown in game):
 | monster_stomp | Big Monster Stomp | Yoyamen1212 | https://freesound.org/people/Yoyamen1212/sounds/812538/ | FS_Beast_Stone_01, FS_Beast_Stone_02, FS_Beast_Stone_03 |
 | bass_stomp | Stomping Ground Super Bassy | oscaraudiogeek | https://freesound.org/people/oscaraudiogeek/sounds/334228/ | FS_Beast_Stone_04, FS_Beast_Stone_05, FS_Beast_Stone_06 |
 | monster_gravel | Monster footsteps on gravel | AudioPapkin | https://freesound.org/people/AudioPapkin/sounds/712066/ | FS_Beast_Dirt_01, FS_Beast_Dirt_02, FS_Beast_Dirt_03, FS_Beast_Dirt_04, FS_Beast_Dirt_05, FS_Beast_Dirt_06 |
-| fire_loop | Crackling Flames (loop) | NickTayloe | https://freesound.org/people/NickTayloe/sounds/813328/ | EMT_FireCrackle |
+| fire_loop | Crackling Flames (loop) | NickTayloe | https://freesound.org/people/NickTayloe/sounds/813328/ | AUR_FireLoop, EMT_FireCrackle |
 | well | water well with knob and rope.wav | Fedor_Ogon | https://freesound.org/people/Fedor_Ogon/sounds/649240/ | EMT_Well |
 | war_horn | war horn.wav | adharca | https://freesound.org/people/adharca/sounds/539956/ | SFX_WarHorn |
 | war_horn_distant | Distant War Horn.wav | DeVern | https://freesound.org/people/DeVern/sounds/512490/ | SFX_WarHornDistant |
@@ -117,6 +117,23 @@ Required attribution (also shown in game):
 | sword_draw | Sword draw unsheathe | SamsterBirdies | https://freesound.org/people/SamsterBirdies/sounds/581594/ | SFX_AggroWarning |
 | fanfare | Trumpet Fanfare | bevibeldesign | https://freesound.org/people/bevibeldesign/sounds/350428/ | SFX_LevelUp |
 | coins | 1_Coins.ogg | jalastram | https://freesound.org/people/jalastram/sounds/223343/ | SFX_CoinsBuy, SFX_LootPickup |
+| aura_heartbeat | Heavy Heartbeat | MickBoere | https://freesound.org/people/MickBoere/sounds/276578/ | AUR_Heartbeat |
+| aura_snarl | Monster Snarl 4 | pikachu09 | https://freesound.org/people/pikachu09/sounds/204611/ | AUR_Snarl |
+| aura_blood_splat | Blood Spatter_Squelch_Near_Mono | _stubb | https://freesound.org/people/_stubb/sounds/406582/ | AUR_BloodSplat_01, AUR_BloodSplat_02, AUR_BloodSplat_03 |
+| aura_swing | Knife/sword swing | spycrah | https://freesound.org/people/spycrah/sounds/471097/ | AUR_Swing |
+| aura_ice_break | Ice break | humanoide9000 | https://freesound.org/people/humanoide9000/sounds/329744/ | AUR_IceShatter_01, AUR_IceShatter_02, AUR_IceShatter_03 |
+| aura_ice_crack | Ice Crack 1 | j_p_higgins | https://freesound.org/people/j_p_higgins/sounds/262635/ | AUR_IceCrack |
+| aura_chime | Chimes Sparkle | lukabea | https://freesound.org/people/lukabea/sounds/660493/ | AUR_Chime |
+| aura_choir | Short Choir | Breviceps | https://freesound.org/people/Breviceps/sounds/444491/ | AUR_Choir |
+| aura_sparkle | Sparkling Star 01.wav | LilMati | https://freesound.org/people/LilMati/sounds/462095/ | AUR_Sparkle |
+| aura_clang | heavy sword against sword or shield | marchelonia | https://freesound.org/people/marchelonia/sounds/588278/ | AUR_Clang_01, AUR_Clang_02, AUR_Clang_03 |
+| aura_bubbles | bubbles_stereo_02_long.wav | monosfera | https://freesound.org/people/monosfera/sounds/645909/ | AUR_Bubble, AUR_BubblesLoop |
+| aura_flame | Flame Burst | magnuswaker | https://freesound.org/people/magnuswaker/sounds/592572/ | AUR_FlameBurst |
+| aura_forcefield | Force Field 02.wav | LilMati | https://freesound.org/people/LilMati/sounds/702772/ | AUR_ForceField |
+| aura_hourglass | Hourglass - Sand flow light | Vrymaa | https://freesound.org/people/Vrymaa/sounds/825859/ | AUR_Hourglass |
+| aura_gong | Deep Gong Tolling.mp3 | Yin_Yang_Jake007 | https://freesound.org/people/Yin_Yang_Jake007/sounds/415200/ | AUR_Gong |
+| aura_warcry | Battle Cry | mellotrix9898 | https://freesound.org/people/mellotrix9898/sounds/771323/ | AUR_WarCry |
+| aura_whoosh | Whoosh | qubodup | https://freesound.org/people/qubodup/sounds/60013/ | AUR_Whoosh |
 
 ## Kenney (www.kenney.nl), CC0 1.0
 

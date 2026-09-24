@@ -354,7 +354,11 @@ void UCireAudioSubsystem::TickProbe(float DeltaTime)
         Footsteps.PlayClass(*this, Steps.Classes[Classes[ClassIndex]], CireFootsteps::FBinding{Classes[ClassIndex]}, Foot, 320.f, false, nullptr);
         ++P.StepIndex;
     }
-    static const TCHAR* EventCues[] = {TEXT("level_up"), TEXT("aggro_taken"), TEXT("banner_wave"), TEXT("banner_prep"), TEXT("banner_arena"), TEXT("coins_buy"), TEXT("loot_pickup"), TEXT("teleport_arrive"), TEXT("pack_leader_roar")};
+    static const TCHAR* EventCues[] = {TEXT("level_up"), TEXT("aggro_taken"), TEXT("banner_wave"), TEXT("banner_prep"), TEXT("banner_arena"), TEXT("coins_buy"), TEXT("loot_pickup"), TEXT("teleport_arrive"), TEXT("pack_leader_roar"),
+        // aura-vfx: signature buff sounds (Docs/BuffVisuals.md)
+        TEXT("stance.blood_frenzy.start"), TEXT("stance.blood_frenzy.hit"), TEXT("buff.blood_rage.start"), TEXT("buff.frost_weapon.hit"), TEXT("buff.blessing.hit"),
+        TEXT("buff.bastion_of_dawn.start"), TEXT("stance.shield_wall.start"), TEXT("debuff.poisoned.start"), TEXT("stance.siege_fury.start"),
+        TEXT("debuff.frost_bind.start"), TEXT("item.toll_of_the_grave.start"), TEXT("item.borrowed_time.start"), TEXT("buff.war_cry.start"), TEXT("aura_swing")};
     const float EventStart = .5f + Classes.Num() * 2.6f + .5f;
     if(ClassIndex >= Classes.Num() && P.CueIndex < UE_ARRAY_COUNT(EventCues) && R >= EventStart + P.CueIndex * 1.6f)
     {

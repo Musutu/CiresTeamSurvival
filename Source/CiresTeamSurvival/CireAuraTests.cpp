@@ -54,7 +54,14 @@ bool CireAuraVisuals::RunSmoke(ACireGameMode* Mode)
         Check(!CireAuraData::Parse(TEXT("{\"schemaVersion\":1,\"buffs\":{\"x\":{\"name\":\"X\",\"kind\":\"buff\",\"palette\":{\"primary\":[3,0,0],\"secondary\":[1,0,0],\"core\":[1,1,1]},\"layers\":[{\"shape\":\"ring\",\"attach\":\"ground\"}]}}}"),Scratch,Limits,Why),TEXT("rejects out-of-range colour"));
         Check(!CireAuraData::Parse(TEXT("{\"schemaVersion\":1,\"buffs\":{\"x\":{\"name\":\"X\",\"kind\":\"buff\",\"palette\":{\"primary\":[1,0,0],\"secondary\":[1,0,0],\"core\":[1,1,1]},\"layers\":[{\"shape\":\"ring\",\"attach\":\"ground\"}],\"sound\":{\"start\":\"Bad Cue!\"}}}}"),Scratch,Limits,Why),TEXT("rejects unsafe sound cue id"));
         Check(CireAuraData::Find(TEXT("blood_rage"))!=nullptr,TEXT("rejected parses keep the loaded data"));
-        Check(CireAudio::HasCue(TEXT("aura_apply"))&&CireAudio::HasCue(TEXT("aura_heal")),TEXT("aura sound fallbacks exist in AudioCues.json"));
+        Check(CireAudio::HasCue(TEXT("aura_apply"))&&CireAudio::HasCue(TEXT("aura_heal"))&&CireAudio::HasCue(TEXT("aura_swing")),TEXT("aura fallback and swing cues exist in AudioCues.json"));
+        int32 Cues=0;
+        for(const auto& Pair:CireAuraData::All())
+            for(const FString* Cue:{&Pair.Value.SoundStart,&Pair.Value.SoundLoop,&Pair.Value.SoundEnd,&Pair.Value.SoundHit})
+                if(!Cue->IsEmpty()){++Cues;Check(CireAudio::HasCue(FName(**Cue)),TEXT("buff cue id resolves to an AudioCues.json entry: ")+*Cue);}
+        Check(Cues>=50,FString::Printf(TEXT("per-buff cues declared (%d)"),Cues));
+        for(const TCHAR* Id:{TEXT("boss_leader_frenzy"),TEXT("blood_rage"),TEXT("frost_weapon"),TEXT("blessing"),TEXT("npc_tank_wall"),TEXT("poisoned")})
+        {const auto* Def=CireAuraData::Find(Id);Check(Def&&!Def->SoundStart.IsEmpty()&&Def->SoundStart!=TEXT("aura_apply"),FString(TEXT("signature buff has its own start sound: "))+Id);}
     }
     // ---- World fixtures -----------------------------------------------------
     auto* Auras=CireAuraVisuals::Get(World);Check(Auras!=nullptr,TEXT("aura subsystem exists in game worlds"));
@@ -138,9 +145,11 @@ bool CireAuraVisuals::RunSmoke(ACireGameMode* Mode)
     else Check(false,TEXT("hero has an inventory"));
     // ---- Death cleanup -----------------------------------------------------
     CireBuffs::Apply(Hero,TEXT("blood_rage"),30,Hero);Clock+=.1f;Auras->UpdateNow(Clock);Check(Has(TEXT("blood_rage")),TEXT("blood rage visible while alive"));
+    Check(Aura->LoopIds.Contains(TEXT("blood_rage")),TEXT("blood rage heartbeat loop runs while the buff is active"));
     Hero->bDead=true;Clock+=.1f;Auras->UpdateNow(Clock);
     Check(!Aura->Instances.ContainsByPredicate([](const FCireAuraInstance& I){return I.FadeLocal<0;}),TEXT("death fades every effect"));
     Clock+=3;Auras->UpdateNow(Clock);Check(Aura->Instances.IsEmpty()&&Aura->CountVertices()==0&&!Aura->IsLightOn(),TEXT("no geometry or light leaks after death"));
+    Check(Aura->LoopIds.IsEmpty()&&Aura->LoopAudio.IsEmpty(),TEXT("death stops attached loop sounds"));
     Check(CireBuffs::Get(Hero)->Prune(World->GetTimeSeconds(),CireSkillRuntime::Phase(World),false)>0&&CireBuffs::Get(Hero)->Buffs.IsEmpty(),TEXT("server drops records of a dead unit"));
     Hero->bDead=false;Hero->PoisonAreaCount=0;Hero->SlowUntil=0;
     // ---- Phase change ------------------------------------------------------
@@ -169,13 +178,15 @@ bool CireAuraVisuals::RunSmoke(ACireGameMode* Mode)
     // ---- Concurrency caps --------------------------------------------------
     {
         const FCireAuraLimits& Limits=CireAuraData::Limits();TArray<ACireHero*> Crowd;
-        for(int32 I=0;I<Limits.MaxUnits+12;++I)if(auto* H=Make(Origin+FVector(200+(I%8)*120,-500+(I/8)*140,0),0)){CireBuffs::Apply(H,TEXT("bastion_of_dawn"),30,H);H->ShieldUntil=Now+30;Crowd.Add(H);}
+        for(int32 I=0;I<Limits.MaxUnits+12;++I)if(auto* H=Make(Origin+FVector(200+(I%8)*120,-500+(I/8)*140,0),0)){CireBuffs::Apply(H,TEXT("bastion_of_dawn"),30,H);CireBuffs::Apply(H,TEXT("blood_rage"),30,H);H->ShieldUntil=Now+30;Crowd.Add(H);}
         Clock+=.1f;Auras->UpdateNow(Clock);
         Check(Auras->RenderedUnits<=Limits.MaxUnits&&Auras->CulledUnits>0,FString::Printf(TEXT("unit cap holds (%d rendered, %d culled)"),Auras->RenderedUnits,Auras->CulledUnits));
         Check(Auras->LitUnits<=Limits.MaxLights,FString::Printf(TEXT("light cap holds (%d)"),Auras->LitUnits));
         bool bLayers=true;int32 Lights=0;
         for(const auto& Weak:Auras->Components)if(auto* C=Weak.Get()){bLayers&=C->CountLayers()<=Limits.MaxLayersPerUnit;Lights+=C->IsLightOn();}
         Check(bLayers&&Lights<=Limits.MaxLights,TEXT("per-unit layer cap and world light count hold"));
+        int32 Loops=0;for(const auto& Weak:Auras->Components)if(auto* C=Weak.Get())Loops+=C->LoopIds.Num();
+        Check(Loops>0&&Loops<=CireAuraVisuals::MaxLoops,FString::Printf(TEXT("attached loop sound cap holds (%d)"),Loops));
         FCireAuraAttack Attack=CireAuraData::Find(TEXT("blood_rage"))->Attack;int32 Spawned=0;
         for(int32 I=0;I<Limits.MaxStrikes+10;++I)Spawned+=Auras->SpawnStrike(ACireAuraStrike::EMode::Swipe,Attack,Origin,Origin+FVector(100,0,0),1)!=nullptr;
         Check(Spawned==Limits.MaxStrikes,FString::Printf(TEXT("strike cap holds (%d)"),Spawned));

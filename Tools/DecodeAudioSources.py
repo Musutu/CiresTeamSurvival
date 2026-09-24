@@ -35,8 +35,13 @@ KENNEY_FILES = {
 
 
 def sources():
+    # aura-vfx: CIRE_AUDIO_ONLY=key1,key2 decodes just those Freesound sources (no Kenney packs needed).
+    only = {k for k in os.environ.get("CIRE_AUDIO_ONLY", "").split(",") if k}
     for ogg in sorted((DOWNLOADS / "freesound").glob("*.ogg")):
-        yield "freesound", ogg
+        if not only or ogg.stem in only:
+            yield "freesound", ogg
+    if only:
+        return
     for pack, names in KENNEY_FILES.items():
         folder = DOWNLOADS / "kenney" / pack
         for name in names:

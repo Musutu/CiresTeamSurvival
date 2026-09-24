@@ -87,6 +87,24 @@ FREESOUND = {
     "sword_draw": (581594, "SamsterBirdies", "aggro-taken warning"),
     "fanfare": (350428, "bevibeldesign", "level-up fanfare"),
     "coins": (223343, "jalastram", "buy / sell coins"),
+    # aura-vfx: buff / aura / empowered-attack sounds (Content/Audio/Auras, see Docs/BuffVisuals.md)
+    "aura_heartbeat": (276578, "MickBoere", "Blood Rage / Blood Frenzy heartbeat loop"),
+    "aura_snarl": (204611, "pikachu09", "rage and frenzy snarl"),
+    "aura_blood_splat": (406582, "_stubb", "empowered blood splash on hit"),
+    "aura_swing": (471097, "spycrah", "empowered swipe whoosh"),
+    "aura_ice_break": (329744, "humanoide9000", "frost shatter on hit"),
+    "aura_ice_crack": (262635, "j_p_higgins", "Frost Bind / Frost Weapon crackle"),
+    "aura_chime": (660493, "lukabea", "holy chime (Sanctuary, Blessing)"),
+    "aura_choir": (444491, "Breviceps", "Bastion of Dawn choir swell"),
+    "aura_sparkle": (462095, "LilMati", "holy glint on hit, stars"),
+    "aura_clang": (588278, "marchelonia", "Shield Wall / Iron Guard clang"),
+    "aura_bubbles": (645909, "monosfera", "poison / mana bubbles"),
+    "aura_flame": (592572, "magnuswaker", "Siege Fury flame burst, ember hit"),
+    "aura_forcefield": (702772, "LilMati", "guards and aegis shields"),
+    "aura_hourglass": (825859, "Vrymaa", "Borrowed Time sand"),
+    "aura_gong": (415200, "Yin_Yang_Jake007", "Toll of the Grave"),
+    "aura_warcry": (771323, "mellotrix9898", "War Cry / Rallied shout"),
+    "aura_whoosh": (60013, "qubodup", "Scatter wind rush"),
 }
 
 KENNEY = {
