@@ -95,7 +95,7 @@ CireCamera::FResult CireCamera::Tick(ACireController* C, ACireHero* H, float Dt,
     // Hide and lock the cursor while a world drag is held (engine restores it on release).
     // Drags that start on HUD panels keep the normal cursor so sliders/layout editing work.
     if (auto* LP = C->GetLocalPlayer(); LP && LP->ViewportClient && !C->IsInputKeyDown(EKeys::LeftMouseButton) && !C->IsInputKeyDown(EKeys::RightMouseButton))
-        LP->ViewportClient->SetHideCursorDuringCapture(Frame.bMouseAllowed && !Frame.bPointerOverInterface && Frame.bPressEligible);
+        LP->ViewportClient->SetHideCursorDuringCapture(Frame.bMouseAllowed && !Frame.bPointerOverInterface && Frame.bPressEligible && H->bDrafted);
 
     // ---- mouse gestures -------------------------------------------------------------
     const bool bWorldPress = Frame.bMouseAllowed && !Frame.bPointerOverInterface;

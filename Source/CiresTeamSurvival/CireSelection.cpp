@@ -243,9 +243,12 @@ void CireSelection::HandleTargetLoss(ACireController* Controller,bool bAutoReacq
     const bool bDeadTarget=IsValid(Target)&&!IsLivingUnit(Target);
     // A hostile target died (still replicated as dead) or was destroyed since last frame.
     const bool bLost=bDeadTarget||(!IsValid(Target)&&State.LastHostile.IsStale(true));
-    if(!bLost){if(!IsValid(Target))State.LastHostile.Reset();return;}
-    const bool bWasHostile=bDeadTarget?(Cast<ACireMonster>(Target)||(Cast<ACireHero>(Target)&&Cast<ACireHero>(Target)->TeamId!=Self->TeamId)):true;
+    // Living non-hostile selections (allies, self) and manual clears end the hostile watch.
+    if(!bLost){State.LastHostile.Reset();return;}
+    // Dead allies (and yourself) stay selected; only hostile losses clear or reacquire.
+    const bool bWasHostile=bDeadTarget?(Cast<ACireMonster>(Target)||Cast<ACireConstruct>(Target)||(Cast<ACireHero>(Target)&&Cast<ACireHero>(Target)->TeamId!=Self->TeamId)):true;
     State.LastHostile.Reset();
+    if(!bWasHostile)return;
     if(bAutoReacquire&&bWasHostile&&Self->bDrafted&&!Self->bDead)
     {
         State.History.Reset();State.LastTab=-100;
