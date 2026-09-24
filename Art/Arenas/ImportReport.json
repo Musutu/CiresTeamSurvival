@@ -123,16 +123,7 @@
     "Moab": "/Game/Arenas/Sky/T_Sky_Moab",
     "Hornbeam": "/Game/Arenas/Sky/T_Sky_Hornbeam"
   },
-  "meshes": {
-    "SM_Arena_CanyonWall": {
-      "triangles": 2363,
-      "extent": [
-        400,
-        1500,
-        1007
-      ]
-    }
-  },
+  "meshes": {},
   "props": {
     "rusted_spade_01": [
       {
@@ -1190,6 +1181,7 @@
     "MillStone",
     "Mote",
     "Planks",
+    "Pollen",
     "PortalRing",
     "RedSand",
     "RedSoil",
@@ -1214,7 +1206,8 @@
     "Track",
     "Twine",
     "Water",
-    "Wheat"
+    "Wheat",
+    "Windrow"
   ],
   "treeMeshes": {
     "island_tree_01": {

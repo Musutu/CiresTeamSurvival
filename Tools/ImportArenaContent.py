@@ -26,10 +26,10 @@ REPORT = ROOT / "Art/Arenas/ImportReport.json"
 
 # ---- surface instances on UV-mapped meshes (metre UVs): slot -> (texture, metres/repeat, tint, rough mul, normal, macro, saturation)
 SURFACES = {
-    "Hay": ("thatch_roof_angled", 1.1, (1.05, 0.86, 0.50), 1.0, 1.2, 0.35, 1.05),
-    "HayEnd": ("thatch_roof_angled", 0.7, (0.98, 0.78, 0.44), 1.0, 1.3, 0.2, 1.0),
-    "Straw": ("thatch_roof_angled", 0.8, (1.08, 0.90, 0.55), 1.0, 1.1, 0.3, 1.0),
-    "Ears": ("thatch_roof_angled", 0.5, (1.10, 0.80, 0.40), 1.0, 1.2, 0.2, 1.1),
+    "Hay": ("thatch_roof_angled", 1.1, (1.45, 1.16, 0.64), 1.0, 1.2, 0.25, 1.1),
+    "HayEnd": ("thatch_roof_angled", 0.7, (1.30, 1.02, 0.55), 1.0, 1.3, 0.15, 1.05),
+    "Straw": ("thatch_roof_angled", 0.8, (1.45, 1.18, 0.68), 1.0, 1.1, 0.2, 1.05),
+    "Ears": ("thatch_roof_angled", 0.5, (1.50, 1.08, 0.52), 1.0, 1.2, 0.15, 1.15),
     "Twine": ("fabric_pattern_05", 0.4, (0.40, 0.30, 0.20), 1.0, 0.6, 0.0, 0.4),
     "Timber": ("rough_wood", 1.2, (0.52, 0.42, 0.33), 1.0, 1.0, 0.2, 0.7),
     "Planks": ("weathered_planks", 1.8, (0.70, 0.60, 0.50), 1.0, 1.0, 0.3, 0.6),
@@ -53,27 +53,22 @@ SURFACES = {
 # ---- world-aligned triplanar instances (ground planes and scaled shapes): slot -> (texture, metres, tint, rough, normal, macro, sat)
 WORLD = {
     "Stubble": ("withered_grass", 2.6, (1.12, 0.88, 0.55), 1.0, 1.1, 0.55, 1.1),
-    "FarmSoil": ("farm_soil", 2.4, (0.80, 0.66, 0.52), 1.0, 1.0, 0.45, 0.8),
     "Track": ("withered_grass", 2.0, (0.82, 0.66, 0.46), 1.0, 1.2, 0.5, 0.8),
-    "FieldGrass": ("sparse_grass", 3.0, (0.95, 0.85, 0.52), 1.0, 1.0, 0.5, 0.9),
     "FieldStone": ("rock_face_03", 1.2, (0.78, 0.72, 0.64), 1.0, 1.2, 0.3, 0.5),
     "BlackGravel": ("rock_ground", 2.4, (0.40, 0.40, 0.42), 1.0, 1.2, 0.5, 0.4),
     "BlackSand": ("coast_sand_01", 3.5, (0.20, 0.20, 0.21), 0.85, 1.3, 0.6, 0.25),
     "RedSoil": ("red_laterite_soil_stones", 3.0, (1.08, 0.78, 0.60), 1.0, 1.0, 0.5, 1.0),
-    "RedSand": ("red_sand", 3.5, (1.15, 0.72, 0.48), 1.0, 0.9, 0.45, 1.0),
     "SandstoneCap": ("sandstone_cracks", 2.5, (0.62, 0.38, 0.26), 1.0, 1.2, 0.35, 1.0),
     "ForestFloor": ("forest_floor", 3.2, (0.78, 0.74, 0.64), 1.0, 1.0, 0.55, 0.95),
-    "LeafPath": ("forest_leaves_02", 2.2, (0.70, 0.74, 0.58), 1.0, 1.0, 0.45, 0.85),
     "RootEarth": ("farm_soil", 1.6, (0.62, 0.50, 0.40), 1.0, 1.2, 0.35, 0.8),
     "Seabed": ("damp_sand", 3.0, (0.72, 0.80, 0.82), 0.9, 1.0, 0.5, 0.55),
-    "Rubble": ("coral_gravel", 2.0, (0.80, 0.82, 0.80), 1.0, 1.0, 0.4, 0.6),
     "Deck": ("metal_plate", 1.6, (0.55, 0.58, 0.62), 0.9, 1.0, 0.25, 0.4),
     "HangarFloor": ("hangar_concrete_floor", 4.0, (0.55, 0.57, 0.60), 1.0, 1.0, 0.4, 0.4),
 }
 # ---- two-layer blend (triplanar base + top layer on up-facing surfaces, optional strata bands)
 # slot -> (base tex, base m, base tint, top tex, top m, top tint, top amount, sharpness, strata strength, strata cm, strata colour)
 BLEND = {
-    "Lava": ("dark_rock_02", 2.2, (0.28, 0.29, 0.31), "mossy_rock", 1.4, (0.30, 0.38, 0.21), 0.15, 7.0, 0.0, 100.0, (1, 1, 1)),
+    "Lava": ("dark_rock_02", 2.2, (0.28, 0.29, 0.31), "mossy_rock", 1.4, (0.24, 0.30, 0.17), 0.12, 7.0, 0.0, 100.0, (1, 1, 1)),
     "Sandstone": ("sandstone_cracks", 2.4, (0.90, 0.48, 0.31), "red_sand", 3.0, (1.1, 0.72, 0.5), 0.18, 7.0, 0.55, 140.0, (0.62, 0.34, 0.24)),
     "ForestRock": ("rock_face_03", 2.4, (0.55, 0.56, 0.52), "mossy_rock", 1.4, (0.62, 0.80, 0.45), 0.32, 5.0, 0.0, 100.0, (1, 1, 1)),
     "Ruin": ("coral_fort_wall_01", 2.0, (0.78, 0.82, 0.80), "coral_gravel", 1.6, (0.55, 0.75, 0.55), 0.32, 5.0, 0.0, 100.0, (1, 1, 1)),
@@ -618,6 +613,8 @@ return normalize(float3(-g.x,-g.y,1));""", [("P", pos), ("T", t)])
     lib.save_loaded_asset(instances["Kelp"], only_if_is_dirty=False)
     instances["Mote"] = instance("MI_Arena_Motes", masters["M_ArenaMotes"])
     setp(instances["Mote"], {"Intensity": 2.5, "RiseSpeed": 10.0, "WrapHeight": 900.0}, {"MoteColor": (0.55, 0.85, 0.9)})
+    instances["Pollen"] = instance("MI_Arena_Pollen", masters["M_ArenaMotes"])
+    setp(instances["Pollen"], {"Intensity": 1.1, "RiseSpeed": 3.0, "WrapHeight": 650.0}, {"MoteColor": (1.0, 0.78, 0.42)})
     instances["Shaft"] = instance("MI_Arena_Shaft", masters["M_ArenaShaft"])
     setp(instances["Shaft"], {"Intensity": 0.09}, {"ShaftColor": (0.45, 0.85, 0.9)})
     instances["Hazard"] = instance("MI_Arena_Hazard", masters["M_ArenaHazard"])
@@ -627,7 +624,7 @@ return normalize(float3(-g.x,-g.y,1));""", [("P", pos), ("T", t)])
     instances["Dapple"] = instance("MI_Arena_Dapple", masters["M_ArenaCaustics"])
     setp(instances["Dapple"], {"CausticScale": 0.0011, "CausticSpeed": 0.05, "CausticStrength": 0.55})
     instances["SeaWater"] = instance("MI_Arena_Water", masters["M_ArenaWater"])
-    setp(instances["SeaWater"], {"Roughness": 0.14, "Specular": 0.6}, {"Deep": (0.006, 0.018, 0.022)})
+    setp(instances["SeaWater"], {"Roughness": 0.42, "Specular": 0.3}, {"Deep": (0.008, 0.014, 0.017)})
     report["instances"] = sorted(instances)
 
     # ------------------------------------------------------------ skies
@@ -789,31 +786,6 @@ return normalize(float3(-g.x,-g.y,1));""", [("P", pos), ("T", t)])
             b = mesh.get_bounds()
             report.setdefault("treeMeshes", {})[aid] = {"asset": mesh.get_path_name(), "triangles": mesh.get_num_triangles(0),
                                                        "size": [round(b.box_extent.x * 2), round(b.box_extent.y * 2), round(b.box_extent.z * 2)]}
-
-    # Leaves: the glTF leaf materials are translucent (BLEND), which Nanite skips, so swap in masked foliage instances.
-    for tree, folder, tint in (("island_tree_01", "island_tree_01_1k", (0.95, 1.0, 0.85)), ("tree_small_02", "tree_small_02_1k", (0.9, 1.0, 0.85))):
-        base = f"{PKG}/Props/{tree}/{folder}"
-        diff = next((p for p in lib.list_assets(f"{base}/Textures") if "leaves_diff" in p), None)
-        nrm = next((p for p in lib.list_assets(f"{base}/Textures") if "leaves_nor" in p), None)
-        mesh = next((lib.load_asset(p) for p in lib.list_assets(f"{base}/StaticMeshes")), None)
-        if not diff or not mesh:
-            u.log_warning(f"CIRE_ARENA_LEAVES_SKIPPED {tree}")
-            continue
-        mi = instance(f"MI_Arena_Leaves_{tree}", masters["M_ArenaFoliage"])
-        texs = {"LeafMap": lib.load_asset(diff)}
-        if nrm:
-            texs["LeafNormal"] = lib.load_asset(nrm)
-        setp(mi, {"WindAmplitude": 2.5, "UseAlpha": 0.0}, {"LeafTint": tint}, texs)  # Poly Haven leaves are real geometry; the JPG has no alpha
-        for i, slot in enumerate(mesh.get_editor_property("static_materials")):
-            current = slot.get_editor_property("material_interface")
-            names = str(slot.get_editor_property("material_slot_name")).lower() + " " + (current.get_name().lower() if current else "")
-            if "leaves" in names or "leaf" in names:
-                mesh.set_material(i, mi)
-                report.setdefault("leaves", {})[tree] = i
-        ns = mesh.get_editor_property("nanite_settings")  # keep leaf cards from simplifying away at distance
-        ns.set_editor_property("shape_preservation", u.NaniteShapePreservation.VOXELIZE)
-        mesh.set_editor_property("nanite_settings", ns)
-        lib.save_loaded_asset(mesh, only_if_is_dirty=False)
 
     REPORT.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     u.log(f"CIRE_ARENA_IMPORT_PASS textures={len(report['textures'])} materials={len(report['materials'])} meshes={len(report['meshes'])} props={len(report['props'])}")

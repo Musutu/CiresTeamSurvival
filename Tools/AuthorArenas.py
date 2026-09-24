@@ -30,6 +30,26 @@ M = lambda n: f"/Game/Arenas/Materials/{n}.{n}"
 SKY = lambda n: f"/Game/Arenas/Sky/{n}.{n}"
 SLOTS: dict = {}
 
+# Fab packs from Eric's library that are Unreal-format only (Docs/FAB-ADD-TO-PROJECT.md, "Arenas"). After "Add to
+# Project", put the real object paths of the meshes you want here and rerun this script: they are tried before the
+# CC0/original art, per slot, and the arena switches over automatically. Empty lists keep the current art.
+FAB_OVERRIDES = {
+    "well": [],              # e.g. Fab "Old Stone Well" (website download, fab-assets pipeline)
+    "basalt_tall": [],       # Iceland Collections: basalt column assemblies
+    "lava_large": [],        # Iceland Collections: mossy lava boulders
+    "arch": [],              # Moab Desert Collections: arch / hoodoo assemblies
+    "hoodoo": [],
+    "canyon_wall": [],       # Moab Desert Collections: cliff assemblies
+    "glade_tree": [],        # European Hornbeam: mature trees
+    "glade_tree_young": [],
+    "column": [],            # Underwater World: ruin columns
+    "ruin_arch": [],
+    "kelp": [],
+    "container": [],         # Big Star Station: crates, containers, hangar walls
+    "cargo_crate": [],
+    "bulkhead": [],
+}
+
 
 def kit(name):
     return f"/Game/Arenas/Meshes/{name}.{name}"
@@ -64,6 +84,7 @@ def slot(sid, candidates=(), footprint=None, fallback="cube", fallback_material=
     for k, v in kw.items():
         s[{"materials": "materials", "shadow": "shadow", "essential": "essential", "cull": "cull", "spin": "spin", "wpo": "wpo",
            "hidden": "hidden", "offset": "offset", "yaw": "yaw", "wpo_distance": "wpoDistance"}[k]] = v
+    s["candidates"] = list(FAB_OVERRIDES.get(sid, [])) + s["candidates"]
     SLOTS[sid] = s
     return sid
 
@@ -77,20 +98,16 @@ def mat_all(path, n=1):
 slot("proxy_box", [], footprint=(100, 100, 100), hidden=True)
 slot("proxy_round", [], footprint=(100, 100, 100), shape="round", hidden=True)
 # flat ground patches (tracks, beaches): engine cube with a world-aligned material
-for name, mi in (("patch_soil", "MI_ArenaW_FarmSoil"), ("patch_track", "MI_ArenaW_Track"), ("patch_grass", "MI_ArenaW_FieldGrass"), ("patch_blacksand", "MI_ArenaW_BlackSand"),
-                 ("patch_redsand", "MI_ArenaW_RedSand"), ("patch_leafpath", "MI_ArenaW_LeafPath"), ("patch_rubble", "MI_ArenaW_Rubble"),
-                 ("patch_hangar", "MI_ArenaW_HangarFloor"), ("patch_moss", "MI_ArenaB_Lava")):
+for name, mi in (("patch_track", "MI_ArenaW_Track"), ("patch_hangar", "MI_ArenaW_HangarFloor")):
     slot(name, [], footprint=(100, 100, 2), fallback_material=M(mi), shadow=False)
-for name, mi in (("ground_stubble", "MI_ArenaW_Stubble"), ("ground_blacksand", "MI_ArenaW_BlackSand"), ("ground_blackgravel", "MI_ArenaW_BlackGravel"), ("ground_redsoil", "MI_ArenaW_RedSoil"),
-                 ("ground_forest", "MI_ArenaW_ForestFloor"), ("ground_seabed", "MI_ArenaW_Seabed"), ("ground_deck", "MI_ArenaW_Deck"),
-                 ("ground_fieldgrass", "MI_ArenaW_FieldGrass"), ("ground_redsand", "MI_ArenaW_RedSand")):
+for name, mi in (("ground_stubble", "MI_ArenaW_Stubble"), ("ground_blacksand", "MI_ArenaW_BlackSand"), ("ground_redsoil", "MI_ArenaW_RedSoil"),
+                 ("ground_forest", "MI_ArenaW_ForestFloor"), ("ground_seabed", "MI_ArenaW_Seabed"), ("ground_deck", "MI_ArenaW_Deck")):
     slot(name, [], footprint=(100, 100, 2), fallback_material=M(mi), shadow=False)
 slot("sea", [], footprint=(100, 100, 2), fallback_material=M("MI_Arena_Water"), shadow=False)
 slot("glow_strip", [], footprint=(100, 100, 2), fallback_material=M("MI_ArenaF_Emissive"), shadow=False)
 slot("glow_amber", [], footprint=(100, 100, 2), fallback_material=M("MI_ArenaF_EmissiveAmber"), shadow=False)
 
 # ---- The Sunlit Fields
-FAB = "/Game/Fab/Arenas"
 slot("hay_round", [kit("SM_Arena_HayBaleRound")], essential=True)
 slot("hay_square", [kit("SM_Arena_HayBaleSquare")])
 slot("hay_stack", [kit("SM_Arena_HayStack")], essential=True)
@@ -100,7 +117,7 @@ slot("scarecrow", [kit("SM_Arena_Scarecrow")])
 slot("stone_wall", [kit("SM_Arena_StoneWall")])
 slot("ruin_wall", [kit("SM_Arena_RuinWall")])
 slot("hay_wagon", [kit("SM_Arena_HayWagon")], essential=True)
-slot("well", [f"{FAB}/Fields/OldStoneWell/SM_OldStoneWell.SM_OldStoneWell", town("SM_Town_Well")], footprint=(286, 330, 439), shape="round")
+slot("well", [town("SM_Town_Well")], footprint=(286, 330, 439), shape="round")
 slot("fence", [town("SM_Town_Fence")], footprint=(13, 413, 110))
 slot("cart", [town("SM_Town_Cart")], footprint=(511, 189, 170))
 slot("hay_sacks", [town("SM_Town_HaySacks")], footprint=(228, 182, 100))
@@ -111,8 +128,8 @@ slot("barn", [kit("SM_Arena_Barn")])
 slot("wheat", [kit("SM_Arena_WheatClump")], footprint=(100, 100, 128), fit="uniform", wpo=True, wpo_distance=4500, essential=True)
 slot("stubble", [kit("SM_Arena_StubbleTuft")], footprint=(40, 40, 20), fit="uniform", shadow=False, cull=9000)
 TREE = lambda n: f"/Game/Arenas/Trees/{n}/SM_{n}.SM_{n}"
-slot("oak", [TREE("island_tree_01"), prop("island_tree_01_1k")], footprint=(476, 482, 503), fit="uniform")
-slot("young_tree", [TREE("tree_small_02"), prop("tree_small_02_1k")], footprint=(292, 429, 456), fit="uniform")
+slot("oak", [TREE("island_tree_01")], footprint=(476, 482, 503), fit="uniform")
+slot("young_tree", [TREE("tree_small_02")], footprint=(292, 429, 456), fit="uniform")
 slot("bucket", [town_prop("wooden_bucket_01", "wooden_bucket_01") + "|" + town_prop("wooden_bucket_01", "wooden_bucket_01_handle")], footprint=(34, 34, 36), fit="uniform", shadow=True)
 slot("barrels", [town_prop("wooden_barrels_01", "wooden_barrels_01_barrel01")], footprint=(74, 74, 92), fit="uniform")
 slot("spade", [prop("rusted_spade_01_1k")], footprint=(17, 5, 110), fit="uniform")
@@ -120,7 +137,7 @@ slot("tree_stump", [town_prop("tree_stump_01", "tree_stump_01_1k")], footprint=(
 slot("field_rock", [town_prop("rock_moss_set_01", "rock_moss_set_01_rock02")], footprint=(266, 326, 126), fit="uniform")
 
 # ---- The Black Shore (Iceland)
-slot("basalt_tall", [f"{FAB}/Iceland/SM_BasaltColumns_Tall.SM_BasaltColumns_Tall", kit("SM_Arena_BasaltTall")], essential=True, fit="footprint")
+slot("basalt_tall", [kit("SM_Arena_BasaltTall")], essential=True, fit="footprint")
 slot("basalt_steps", [kit("SM_Arena_BasaltSteps")])
 slot("basalt_wall", [kit("SM_Arena_BasaltWall")], essential=True)
 slot("basalt_stack", [kit("SM_Arena_BasaltStack")], shadow=True)
@@ -128,8 +145,6 @@ slot("basalt_cliff", [kit("SM_Arena_BasaltCliff")], shadow=True)
 slot("lava_large", [kit("SM_Arena_LavaRockLarge")], essential=True)
 slot("lava_medium", [kit("SM_Arena_LavaRockMedium")])
 slot("lava_outcrop", [kit("SM_Arena_LavaOutcrop")])
-slot("shore_shelf", [prop("coast_rocks_01_1k")], footprint=(5951, 4252, 329), materials=mat_all(M("MI_ArenaB_Lava")))
-slot("sea_cliff", [prop("coastal_cliff_02_1k")], footprint=(4093, 865, 1005), materials=mat_all(M("MI_ArenaB_Lava")))
 slot("lava_cluster", [prop("coast_rocks_05_1k")], footprint=(404, 375, 133), materials=mat_all(M("MI_ArenaB_Lava")))
 slot("lava_ridge", [prop("coast_land_rocks_02_1k")], footprint=(489, 1045, 140), materials=mat_all(M("MI_ArenaB_Lava")))
 slot("beach_pebbles", [prop("sand_rocks_small_01_1k")], footprint=(463, 388, 53), materials=mat_all(M("MI_ArenaW_BlackGravel")), shadow=False)
@@ -137,30 +152,26 @@ slot("lyme_grass", [prop("grass_medium_02_e")], footprint=(72, 86, 80), fit="uni
 slot("driftwood", [prop("dead_tree_trunk_1k")], footprint=(610, 56, 58), fit="uniform", materials={"0": M("MI_Arena_Bark")})
 
 # ---- Redrock Canyon (Moab)
-slot("arch", [f"{FAB}/Moab/SM_Arch_Delicate.SM_Arch_Delicate", kit("SM_Arena_SandstoneArch")], essential=True)
+slot("arch", [kit("SM_Arena_SandstoneArch")], essential=True)
 slot("arch_leg", [], footprint=(330, 330, 540), shape="round", hidden=True)
 slot("hoodoo", [kit("SM_Arena_Hoodoo")], essential=True)
 slot("sandstone_block", [kit("SM_Arena_SandstoneBlock")], essential=True)
 slot("canyon_wall", [kit("SM_Arena_CanyonWall")], shadow=True)
-slot("mesa_cliff", [prop("namaqualand_cliff_02_1k")], footprint=(2023, 659, 718), materials=mat_all(M("MI_ArenaB_Sandstone")))
-slot("ledge_cliff", [prop("namaqualand_cliff_01_1k")], footprint=(828, 439, 496), materials=mat_all(M("MI_ArenaB_Sandstone")))
 slot("red_boulder", [prop("namaqualand_boulder_03_1k")], footprint=(241, 307, 147), materials=mat_all(M("MI_ArenaB_Sandstone")))
 slot("red_boulder_small", [prop("namaqualand_boulder_05_1k")], footprint=(136, 75, 54), materials=mat_all(M("MI_ArenaB_Sandstone")))
 for k, name in enumerate(("wild_rooibos_bush_a", "wild_rooibos_bush_b", "wild_rooibos_bush_c")):
     slot(f"scrub_{k}", [prop(name)], footprint=PROPS[name]["size"], fit="uniform", shadow=True)
-slot("dead_juniper", [prop("dead_quiver_branch_01_1k")], footprint=(25, 23, 44), fit="uniform")
 slot("dead_log", [prop("dead_tree_trunk_1k")], footprint=(305, 28, 29), fit="uniform")
 
 # ---- Hornbeam Glade
-slot("glade_tree", [f"{FAB}/Hornbeam/SM_EuropeanHornbeam_01.SM_EuropeanHornbeam_01", TREE("island_tree_01")], footprint=(476, 482, 503), fit="uniform", essential=True)
-slot("glade_tree_young", [f"{FAB}/Hornbeam/SM_EuropeanHornbeam_02.SM_EuropeanHornbeam_02", TREE("tree_small_02")], footprint=(292, 429, 456), fit="uniform")
+slot("glade_tree", [TREE("island_tree_01")], footprint=(476, 482, 503), fit="uniform", essential=True)
+slot("glade_tree_young", [TREE("tree_small_02")], footprint=(292, 429, 456), fit="uniform")
 slot("trunk_proxy", [], footprint=(130, 130, 900), shape="round", hidden=True)
 slot("fallen_log", [kit("SM_Arena_FallenLog")], essential=True)
 slot("root_plate", [kit("SM_Arena_RootPlate")], essential=True)
 slot("moss_boulder", [kit("SM_Arena_MossBoulder")], essential=True)
 slot("stump", [prop("tree_stump_02_1k")], footprint=(152, 139, 52))
 slot("root_bank", [prop("root_cluster_01_1k")], footprint=(412, 268, 151))
-slot("fern", [town_prop("fern_02", "fern_02_b")], footprint=(98, 90, 42), fit="uniform", shadow=False)
 slot("forest_shrub", [town_prop("shrub_02", "shrub_02_c")], footprint=(176, 228, 132), fit="uniform")
 slot("sapling", [prop("shrub_03_a")], footprint=(20, 15, 40), fit="uniform", shadow=False)
 slot("grass_tuft", [prop("grass_medium_02_c")], footprint=(26, 25, 23), fit="uniform", shadow=False, cull=7000)
@@ -185,6 +196,8 @@ slot("coral", [kit("SM_Arena_CoralBranch")], fit="uniform")
 slot("coral_violet", [kit("SM_Arena_CoralBranch")], fit="uniform", materials={"0": M("MI_ArenaF_CoralViolet")})
 slot("coral_gold", [kit("SM_Arena_CoralBranch")], fit="uniform", materials={"0": M("MI_ArenaF_CoralGold")})
 slot("motes", [kit("SM_Arena_Mote")], footprint=(2, 2, 2), fit="uniform", shadow=False, wpo=True, wpo_distance=8000, cull=6000)
+slot("pollen", [kit("SM_Arena_Mote")], footprint=(2, 2, 2), fit="uniform", shadow=False, wpo=True, wpo_distance=6000, cull=5000,
+     materials={"0": M("MI_Arena_Pollen")})
 slot("light_shaft", [kit("SM_Arena_LightShaft")], shadow=False)
 slot("chest", [prop("treasure_chest_bottom") + "|" + prop("treasure_chest_lid")], footprint=(96, 52, 60), fit="uniform", shadow=True)
 slot("cannon", [prop("cannon_01_frame")], footprint=(94, 138, 59), fit="uniform")
@@ -193,8 +206,7 @@ slot("wreck", ["|".join(prop(n) for n in ("ship_pinnace_hull", "ship_pinnace_dec
 slot("shell", [prop("lambis_shell_1k")], footprint=(28, 14, 10), fit="uniform", shadow=False)
 
 # ---- Star Station Hangar
-SS = "/Game/Fab/Arenas/StarStation"
-slot("container", [f"{SS}/SM_Container_A.SM_Container_A", kit("SM_Arena_Container")], essential=True)
+slot("container", [kit("SM_Arena_Container")], essential=True)
 slot("container_rust", [kit("SM_Arena_Container")], materials={"0": M("MI_Arena_ContainerRust")})
 slot("cargo_crate", [kit("SM_Arena_CargoCrate")], essential=True)
 slot("pylon", [kit("SM_Arena_Pillar")], essential=True)
@@ -206,7 +218,6 @@ slot("generator", [prop("portable_generator")], footprint=(164, 112, 116), fit="
 slot("tool_chest", [prop("metal_tool_chest_chest") + "|" + prop("metal_tool_chest_lid")], footprint=(69, 32, 70), fit="uniform")
 slot("gas_bottle", [prop("propane_tank_1k")], footprint=(34, 34, 55), fit="uniform")
 slot("cargo_cart", [prop("industrial_storage_cart_1k")], footprint=(160, 110, 138), fit="uniform")
-slot("floodlight", [prop("portable_searchlight_1k")], footprint=(34, 50, 38), fit="uniform")
 slot("gantry", [prop("overhead_crane") + "|" + prop("overhead_crane_winch")], footprint=(1222, 400, 454), fit="uniform")
 slot("jerrycan", [prop("metal_jerrycan_1k")], footprint=(35, 17, 46), fit="uniform")
 
@@ -275,26 +286,24 @@ a.add("bucket", 150, -1180, yaw=10)
 a.add("hay_sacks", 190, 1620, yaw=90)
 a.add("hay_square", -1330, 1060, yaw=15)
 a.add("hay_square", 1360, -1040, yaw=-20)
-# Cart ruts along the centre lane and a crossing track
-for k, x in enumerate(range(-2500, 2501, 500)):
-    for side, y in enumerate((-100, 100)):
-        jitter = ((k * 37 + side * 11) % 7 - 3) * 6
-        a.add("patch_track", x + jitter, y + jitter * 0.5, z=-1.5 - 0.01 * k, yaw=((k + side) % 3 - 1) * 1.5, scale=(3.8 + (k % 3) * 0.3, 0.42, 1))
+# Pollen and chaff drifting in the low sun
+a.scatter("pollen", (-4200, -3600, 4200, 3600), 3200, 15, scale=(1.5, 3.0), z=330, z_jitter=320)
 # Field boundary: split-rail fences behind the spawns, a low stone wall on the field side
 for y in range(-1850, 1851, 412):
     a.add("fence", -H[0] - 120, y)
     a.add("fence", H[0] + 120, y, yaw=180)
 # Farmstead and landmarks outside the fight
-a.add("windmill", -2400, 7200, yaw=-60)
-hub = (-2400 + math.cos(math.radians(-60)) * 440, 7200 + math.sin(math.radians(-60)) * 440)
-a.add("windmill_sails", hub[0], hub[1], z=1460, yaw=-60)
-a.add("barn", 4200, -6800, yaw=160)
-a.add("hay_pyramid", 2600, -5200, yaw=20)
-a.add("hay_round", 3300, -5100, yaw=70)
-a.add("hay_wagon", 5600, -5600, yaw=-30)
-a.add("cart", -5200, -3600, yaw=35)
-a.add("woodpile", 3500, -7800, yaw=70)
-a.add("barrels", 3600, -6000, yaw=0)
+MILL = (7800, 3600, 200.0)  # seen from the Ember side over the wheat; the barn is seen from the Dusk side
+a.add("windmill", MILL[0], MILL[1], yaw=MILL[2])
+hub = (MILL[0] + math.cos(math.radians(MILL[2])) * 440, MILL[1] + math.sin(math.radians(MILL[2])) * 440)
+a.add("windmill_sails", hub[0], hub[1], z=1460, yaw=MILL[2])
+a.add("barn", -7400, -3800, yaw=20)
+a.add("hay_pyramid", -5600, -2900, yaw=20)
+a.add("hay_round", -5000, -3300, yaw=70)
+a.add("hay_wagon", -6200, -1500, yaw=-30)
+a.add("cart", 5200, -3600, yaw=35)
+a.add("woodpile", -8600, -2600, yaw=70)
+a.add("barrels", -6400, -3000, yaw=0)
 for k, (x, y, s) in enumerate(((-8800, 3500, 3.4), (-9400, 1200, 3.0), (-9000, -2600, 3.6), (-9600, -5200, 2.8), (9000, 4200, 3.2),
                                (9600, 1500, 2.9), (9300, -1900, 3.5), (8800, -4500, 3.0), (-3600, 11200, 3.6), (1800, 11800, 3.3),
                                (6200, 10600, 3.8), (-7600, 9200, 3.0), (2500, -12000, 3.5), (-3800, -11200, 3.2), (7800, -10200, 3.6))):
@@ -304,15 +313,16 @@ a.add("field_rock", 3600, 2500, yaw=-20, scale=0.8)
 a.add("tree_stump", -3900, -2300, yaw=10)
 # Standing wheat all around the harvested arena, dense close in, thinner toward the horizon
 a.scatter("wheat", (-7000, -6500, 7000, 6500), 21000, 11, scale=(0.85, 1.25), outside=True, margin=90, tilt=True,
-          exclude=[(-3100, -2250, 3100, 2250)])
+          exclude=[(-3100, -2250, 3100, 2250), (-9200, -5400, -4600, -800), (7000, 2800, 8700, 4400)])
 a.scatter("wheat", (-14000, -14000, 14000, 14000), 21000, 12, scale=(0.9, 1.3), outside=True, margin=90, tilt=True,
-          exclude=[(-7000, -6500, 7000, 6500), (3000, -8300, 5600, -5200), (-3200, 6300, -1500, 8100)])
+          exclude=[(-7000, -6500, 7000, 6500), (-9200, -5400, -4600, -800), (7000, 2800, 8700, 4400)])
+a.add("patch_track", -6900, -3100, z=-1.3, yaw=20, scale=(42, 34, 1))  # the barnyard
 # Stubble inside the harvested fight area and around the fences
 a.scatter("stubble", (-H[0], -H[1], H[0], H[1]), 5200, 13, scale=(0.8, 1.4), clearance=40)
 a.scatter("stubble", (-3100, -2250, 3100, 2250), 1800, 14, scale=(0.8, 1.4), outside=True)
 a.set(ground="ground_stubble", groundSize=56000, ambience="arena_fields", music="MUS_Crusade",
       minimap={"ground": [0.30, 0.22, 0.09], "blocker": [0.86, 0.66, 0.30], "accent": [1.0, 0.82, 0.42]},
-      lighting={"sunPitch": -14.0, "sunYaw": 90.0, "sunIntensity": 6.0, "sunColor": [1.0, 0.74, 0.46], "sunSourceAngle": 1.0,
+      lighting={"sunPitch": -10.0, "sunYaw": 90.0, "sunIntensity": 7.5, "sunColor": [1.0, 0.70, 0.42], "sunSourceAngle": 1.2,
                 "lightShafts": True, "shaftBloomScale": 0.3, "shaftThreshold": 3.0, "volumetricScattering": 1.6,
                 "skyMaterial": SKY("MI_Sky_Fields"), "skyYaw": 0.0, "skyBrightness": 0.5, "skyTint": [1.05, 0.95, 0.85],
                 "skyHaze": [0.78, 0.56, 0.34], "skyHazeStrength": 0.8,
@@ -342,8 +352,6 @@ a.pair("basalt_steps", -300, 1650, yaw=-25, scale=0.7, blocker=True)
 # moss patches and gravel inside (flat)
 # The shore: black-sand beach, then the sea to the north; lava fields and sea cliffs to the south
 a.add("sea", 0, 24400, z=4, scale=(700, 400, 1))
-a.add("shore_shelf", -6500, 5400, z=-20, yaw=8, scale=0.6)
-a.add("shore_shelf", 7000, 5800, z=-20, yaw=-12, scale=0.55)
 for k, (x, y, s, r) in enumerate(((-4200, 13000, 1.4, 20), (1500, 17000, 1.9, -35), (7800, 12500, 1.2, 70), (-10500, 16000, 1.6, 5), (12500, 20000, 2.2, 40))):
     a.add("basalt_stack", x, y, z=-60, yaw=r, scale=s)
 for k, x in enumerate(range(-15000, 15001, 1950)):  # a black basalt column cliff behind the lava field to the south
@@ -360,6 +368,7 @@ a.add("driftwood", 1800, 3200, yaw=20)
 a.add("driftwood", -2600, 3500, yaw=-60, scale=0.8)
 a.scatter("lava_medium", (-9000, -8000, 9000, 2400), 180, 21, scale=(0.35, 1.2), outside=True, margin=300)
 a.scatter("lava_outcrop", (-10000, -9000, 10000, 1800), 60, 22, scale=(0.5, 1.4), outside=True, margin=500)
+a.scatter("lava_ridge", (-11000, -5800, 11000, -2600), 26, 27, scale=(0.8, 1.6), outside=True, margin=400)
 a.scatter("beach_pebbles", (-8000, 2100, 8000, 4200), 70, 23, scale=(0.6, 1.2), outside=True, margin=60)
 a.scatter("lyme_grass", (-9000, 2150, 9000, 3000), 900, 24, scale=(0.8, 1.6), outside=True, margin=80)
 a.scatter("lyme_grass", (-9000, -6000, 9000, -2150), 500, 25, scale=(0.7, 1.3), outside=True, margin=80)

@@ -16,17 +16,17 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "Art/Arenas/PROVENANCE.md"
 
 FAB_PACKS = [
-    # (name, author, listing, license, target arena, slot candidates waiting for it)
+    # (name, author, listing, license, target arena, slots in AuthorArenas.FAB_OVERRIDES)
     ("Moab Desert Collections", "Quixel Megascans", "https://www.fab.com/library/assets/2c0a2fe4-1ab9-4c49-8055-9aa053c46457",
-     "Fab Standard License (UE-only Megascans collection, in Eric's library)", "Redrock Canyon", "/Game/Fab/Arenas/Moab/..."),
+     "UE Marketplace terms: UE-only content, licensed for use only with Unreal Engine products (in Eric's library)", "Redrock Canyon", "arch, hoodoo, canyon_wall"),
     ("Iceland Collections", "Quixel Megascans", "https://www.fab.com/library/assets/765f63b0-1994-493e-af8d-33ad1c2dc10c",
-     "Fab Standard License (UE-only Megascans collection, in Eric's library)", "The Black Shore", "/Game/Fab/Arenas/Iceland/..."),
+     "UE Marketplace terms: UE-only content, licensed for use only with Unreal Engine products (in Eric's library)", "The Black Shore", "basalt_tall, lava_large"),
     ("European Hornbeam", "Quixel Megascans", "https://www.fab.com/listings/c6f917b6-ffcb-4b86-9d9f-5274ba7f6a8e",
-     "Fab Standard License (free, UE format only, in Eric's library)", "Hornbeam Glade", "/Game/Fab/Arenas/Hornbeam/..."),
+     "Fab Standard License (free, UE format only, in Eric's library)", "Hornbeam Glade", "glade_tree, glade_tree_young"),
     ("Underwater World / 70 Assets", "PackDev", "https://www.fab.com/listings/e2cdf1ba-c517-4b8e-b5ce-0828bbc44eab",
-     "Fab Standard License (owned by Eric, UE format)", "The Drowned Sanctum", "/Game/Fab/Arenas/Underwater/..."),
+     "Fab Standard License (owned by Eric, UE format)", "The Drowned Sanctum", "column, ruin_arch, kelp"),
     ("Big Star Station", "Akairo", "https://www.fab.com/listings/9cff72cf-bd72-4f4b-bab0-ec556a25e37d",
-     "Fab Standard License (owned by Eric, UE format)", "Star Station Hangar", "/Game/Fab/Arenas/StarStation/..."),
+     "Fab Standard License (owned by Eric, UE format)", "Star Station Hangar", "container, cargo_crate, bulkhead"),
 ]
 
 
@@ -74,11 +74,11 @@ def main() -> int:
               "Options > Audio and `Art/Audio/PROVENANCE.md`.", "",
               "## Fab packs from Eric's library (not yet in the project)", "",
               "These are Unreal-format only, so they cannot be website-downloaded; they need **Add to Project** in the Epic",
-              "Games Launcher (see `Docs/FAB-ADD-TO-PROJECT.md`, section Arenas). The arena slots already list their expected",
-              "paths first, so the arenas switch to them automatically once added; until then the CC0/original fallbacks above are used.", "",
-              "| Pack | Author | Licence | Arena | Listing |", "| --- | --- | --- | --- | --- |"]
-    for name, author, url, lic, arena, _ in FAB_PACKS:
-        lines.append(f"| {name} | {author} | {lic} | {arena} | {url} |")
+              "Games Launcher (see `Docs/FAB-ADD-TO-PROJECT.md`, section Arenas). Once added, their mesh paths go into",
+              "`FAB_OVERRIDES` in `Tools/AuthorArenas.py`; until then the CC0/original art above is used.", "",
+              "| Pack | Author | Licence | Arena | Slots | Listing |", "| --- | --- | --- | --- | --- | --- |"]
+    for name, author, url, lic, arena, slots in FAB_PACKS:
+        lines.append(f"| {name} | {author} | {lic} | {arena} | {slots} | {url} |")
     lines.append("")
     OUT.write_text("\n".join(lines), encoding="utf-8")
     print(f"wrote {OUT}")

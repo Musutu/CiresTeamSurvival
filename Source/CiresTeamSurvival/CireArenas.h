@@ -217,5 +217,6 @@ private:
     TWeakObjectPtr<ACireArenaStage> Stage;
     bool bTownHidden = false;
     TArray<TWeakObjectPtr<class USceneComponent>> HiddenTown;
+    TArray<TWeakObjectPtr<AActor>> HiddenTownActors; // the town world is hidden too: the IsSky dome cannot occlude it
     void HideTown(bool bHide);
 };

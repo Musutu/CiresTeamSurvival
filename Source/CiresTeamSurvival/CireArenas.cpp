@@ -920,7 +920,8 @@ void UCireArenaSubsystem::HideTown(bool bHide)
     if (!bHide)
     {
         for (auto& C : HiddenTown) if (C.IsValid()) C->SetVisibility(true);
-        HiddenTown.Reset(); return;
+        for (auto& A : HiddenTownActors) if (A.IsValid()) A->SetActorHiddenInGame(false);
+        HiddenTown.Reset(); HiddenTownActors.Reset(); return;
     }
     UWorld* World = GetWorld(); if (!World) return;
     auto Hide = [&](USceneComponent* C) { if (C && C->IsVisible() && !Cast<ACireArenaStage>(C->GetOwner())) { C->SetVisibility(false); HiddenTown.Add(C); } };
@@ -928,5 +929,9 @@ void UCireArenaSubsystem::HideTown(bool bHide)
     for (TActorIterator<ASkyLight> It(World); It; ++It) Hide(It->GetLightComponent());
     for (TActorIterator<AExponentialHeightFog> It(World); It; ++It) Hide(It->GetComponent());
     for (TActorIterator<ACireWorld> It(World); It; ++It)
+    {
         for (UActorComponent* C : It->GetComponents()) if (C && C->GetFName() == TEXT("SkyDome")) Hide(Cast<USceneComponent>(C));
+        // Everyone is in the arena: stop drawing the town (550 m away) that would show through the sky dome.
+        if (!It->IsHidden()) { It->SetActorHiddenInGame(true); HiddenTownActors.Add(*It); }
+    }
 }
