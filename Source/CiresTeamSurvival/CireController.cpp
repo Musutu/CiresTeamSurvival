@@ -15,6 +15,7 @@
 #include "CireCombatEvents.h"
 #include "CireMobility.h"
 #include "CireTargeting.h"
+#include "CireChampionProfiles.h"
 #include "GameFramework/SpringArmComponent.h"
 
 #if !UE_BUILD_SHIPPING
@@ -262,6 +263,8 @@ void ACireController::ServerDraftProfile_Implementation(const FString& ProfileId
     auto* M=GetWorld()->GetAuthGameMode<ACireGameMode>();
     if(!H||!M||H->bDrafted||H->bDead||ProfileId.IsEmpty()||ProfileId.Len()>64||
         M->Clock.Phase()==Cires::MatchPhase::Finished)return;
+    // champion-draft: a champion locked by a human teammate cannot be locked again (bots never block).
+    if(const ACireHero* Taken=CireChampionProfiles::PickedByTeammate(H,ProfileId,true)){H->Notice=Taken->HeroName+TEXT(" already locked that champion.");return;}
     H->DraftProfile(ProfileId);
 }
 

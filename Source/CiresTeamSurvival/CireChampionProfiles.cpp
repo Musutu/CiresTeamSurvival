@@ -7,6 +7,7 @@
 #include "CireAbilityLibrary.h"
 #include "CireRoleSkills.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireChampionProfiles,Log,All);
 
@@ -16,16 +17,58 @@ const TCHAR* CireChampionProfiles::LegacyProfileId(int32 Choice)
     return Choice>=0&&Choice<UE_ARRAY_COUNT(Ids)?Ids[Choice]:nullptr;
 }
 
+Cires::RoleMask CireChampionProfiles::RoleMaskFromNames(const TArray<FString>& Roles)
+{
+    Cires::RoleMask Mask=Cires::RoleNone;
+    for(const FString& Role:Roles)
+        Mask|=Role==TEXT("tank")?Cires::RoleTank:Role==TEXT("damage")?Cires::RoleDamage:
+            (Role==TEXT("healer")||Role==TEXT("support"))?Cires::RoleSupport:Cires::RoleNone;
+    return Mask;
+}
+
+static Cires::SkillDraftRole RoleFromThreat(const FString& ThreatRole,const TArray<FString>& Roles)
+{
+    // The threat role is the champion's primary gameplay bucket; extra roles are hybrids.
+    if(ThreatRole==TEXT("tank"))return Cires::SkillDraftRole::Tank;
+    if(ThreatRole==TEXT("healer"))return Cires::SkillDraftRole::Support;
+    if(ThreatRole==TEXT("damage"))return Cires::SkillDraftRole::Damage;
+    return Roles.Contains(TEXT("support"))||Roles.Contains(TEXT("healer"))?Cires::SkillDraftRole::Support:Cires::SkillDraftRole::Damage;
+}
+
+Cires::SkillDraftRole CireChampionProfiles::PrimaryRole(const FCireChampionProfile& Profile)
+{
+    return RoleFromThreat(Profile.ThreatRole,Profile.Roles);
+}
+
+Cires::RoleMask CireChampionProfiles::ProfileRoleMask(const FCireChampionProfile& Profile)
+{
+    return static_cast<Cires::RoleMask>(Cires::RoleBit(PrimaryRole(Profile))|RoleMaskFromNames(Profile.Roles));
+}
+
 Cires::SkillDraftRole CireChampionProfiles::DraftRole(const ACireHero* Hero)
 {
     if(!Hero)return Cires::SkillDraftRole::Any;
-    if(!Hero->ChampionProfileId.IsEmpty())
-    {
-        if(Hero->ProfileThreatRole==TEXT("tank"))return Cires::SkillDraftRole::Tank;
-        if(Hero->ProfileThreatRole==TEXT("healer")||Hero->ProfileRoles.Contains(TEXT("support")))return Cires::SkillDraftRole::Support;
-        return Cires::SkillDraftRole::Damage;
-    }
+    if(!Hero->ChampionProfileId.IsEmpty())return RoleFromThreat(Hero->ProfileThreatRole,Hero->ProfileRoles);
     return Hero->Archetype==0?Cires::SkillDraftRole::Tank:Hero->Archetype==2?Cires::SkillDraftRole::Support:Cires::SkillDraftRole::Damage;
+}
+
+Cires::RoleMask CireChampionProfiles::SecondaryRoles(const ACireHero* Hero)
+{
+    if(!Hero||Hero->ChampionProfileId.IsEmpty())return Cires::RoleNone;
+    return static_cast<Cires::RoleMask>(RoleMaskFromNames(Hero->ProfileRoles)&~Cires::RoleBit(DraftRole(Hero))&Cires::RoleAll);
+}
+
+const ACireHero* CireChampionProfiles::PickedByTeammate(const ACireHero* Hero,const FString& ProfileId,bool bHumansOnly)
+{
+    if(!Hero||!Hero->GetWorld()||ProfileId.IsEmpty()||Hero->TeamId<0)return nullptr;
+    for(TActorIterator<ACireHero> It(Hero->GetWorld());It;++It)
+    {
+        const ACireHero* Other=*It;
+        if(Other==Hero||Other->IsA<ACireSummon>()||Other->TeamId!=Hero->TeamId||!Other->bDrafted||Other->ChampionProfileId!=ProfileId)continue;
+        if(bHumansOnly&&Other->bBot)continue;
+        return Other;
+    }
+    return nullptr;
 }
 
 FString CireChampionProfiles::SkillTargeting(const FString& Id)
@@ -62,6 +105,7 @@ bool ACireHero::DraftProfile(const FString& Id)
     Progression=Cires::Progression{};
     Progression.Primary=PrimaryStat();
     Progression.DraftRole=CireChampionProfiles::DraftRole(this);
+    Progression.SecondaryRoles=CireChampionProfiles::SecondaryRoles(this);
     Progression.Stats={Profile->Strength,Profile->Agility,Profile->Intelligence};
     HeroName=Profile->DisplayName;Skills.Reset();Cooldowns.Reset();Offers.Reset();CurrentOffer={};
     bDrafted=true;Recalculate(true);
@@ -165,6 +209,7 @@ bool CireChampionProfiles::RunSmoke(ACireGameMode* Mode)
         Check(H->DraftProfile(Profile.Id)&&H->ChampionProfileId==Profile.Id&&H->Archetype==Profile.RuntimeArchetype,TEXT("known profile selects fallback body independently"));
         Check(H->Skills.IsEmpty()&&H->Cooldowns.IsEmpty()&&H->Offers.IsEmpty()&&H->Progression.LearnedSkills.empty(),TEXT("normal draft learns no thematic or planned skills"));
         Check(H->Progression.DraftRole==DraftRole(H)&&H->Progression.DraftRole!=Cires::SkillDraftRole::Any,TEXT("draft snapshots an explicit gameplay role bucket"));
+        Check(H->Progression.DraftRole==PrimaryRole(Profile)&&Cires::EffectiveRoleMask(H->Progression)==ProfileRoleMask(Profile),TEXT("draft snapshots primary plus hybrid roles"));
         Check(H->Strength==Profile.Strength&&H->Agility==Profile.Agility&&H->Intelligence==Profile.Intelligence&&
             H->MaxHealth==Profile.Strength*25.f&&H->MaxMana==Profile.Intelligence*30.f,TEXT("authored base stats preserve native per-point formula"));
         Check(H->BasicAttackRange()==Profile.BasicAttackRange&&H->BaseAttackSeconds()==Profile.AttackSeconds&&

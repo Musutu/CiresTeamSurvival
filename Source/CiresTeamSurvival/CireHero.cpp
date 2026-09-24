@@ -252,7 +252,9 @@ void ACireHero::RefreshOffer()
         (static_cast<std::uint64_t>(GetUniqueID()) << 32) ^
         static_cast<std::uint64_t>(Progression.NextAugmentLevel);
     Progression.DraftRole = CireChampionProfiles::DraftRole(this);
-    CurrentOffer = Cires::GenerateAugmentOffer(Progression, Cires::StarterSkillPool(Progression.DraftRole), Seed);
+    // champion-draft: hybrids draw from primary + secondary role tags; the rules filter the full catalog.
+    Progression.SecondaryRoles = CireChampionProfiles::SecondaryRoles(this);
+    CurrentOffer = Cires::GenerateAugmentOffer(Progression, Cires::StarterSkillPool(), Seed);
     if (!CurrentOffer.IsValid())
     {
         Notice = UTF8_TO_TCHAR(CurrentOffer.Error.c_str());

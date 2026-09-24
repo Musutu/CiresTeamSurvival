@@ -77,7 +77,7 @@ bool CireChampionRoster::ParseJson(const FString& Json,TArray<FCireChampionProfi
     {
         const TSharedPtr<FJsonObject>* P=nullptr;if(!V->TryGetObject(P)||!P||!P->IsValid())return Fail(TEXT("Champion must be an object"));
         auto J=*P;FCireChampionProfile C;
-        if(!Keys(J,{TEXT("id"),TEXT("displayName"),TEXT("familyId"),TEXT("variant"),TEXT("description"),TEXT("runtimeArchetype"),TEXT("primaryStat"),TEXT("strength"),TEXT("agility"),TEXT("intelligence"),TEXT("basicAttackRange"),TEXT("attackSeconds"),TEXT("attackStyle"),TEXT("threatRole"),TEXT("roles"),TEXT("artFamily"),TEXT("artStatus"),TEXT("artProvenance"),TEXT("startsWithSkills"),TEXT("actives"),TEXT("passive"),TEXT("ultimate")})||
+        if(!Keys(J,{TEXT("id"),TEXT("displayName"),TEXT("familyId"),TEXT("variant"),TEXT("classType"),TEXT("difficulty"),TEXT("lore"),TEXT("description"),TEXT("runtimeArchetype"),TEXT("primaryStat"),TEXT("strength"),TEXT("agility"),TEXT("intelligence"),TEXT("basicAttackRange"),TEXT("attackSeconds"),TEXT("attackStyle"),TEXT("threatRole"),TEXT("roles"),TEXT("artFamily"),TEXT("artStatus"),TEXT("artProvenance"),TEXT("startsWithSkills"),TEXT("actives"),TEXT("passive"),TEXT("ultimate")})||
             !Id(J,TEXT("id"),C.Id)||Seen.Contains(C.Id)||!Id(J,TEXT("familyId"),C.FamilyId)||
             !Text(J,TEXT("displayName"),C.DisplayName,80)||!Text(J,TEXT("variant"),C.Variant,64)||!Text(J,TEXT("description"),C.Description,800)||
             !Integer(J,TEXT("runtimeArchetype"),C.RuntimeArchetype,0,4)||!Text(J,TEXT("primaryStat"),C.PrimaryStat,16)||
@@ -89,6 +89,11 @@ bool CireChampionRoster::ParseJson(const FString& Json,TArray<FCireChampionProfi
             !Text(J,TEXT("artFamily"),C.ArtFamily,160)||!Text(J,TEXT("artStatus"),C.ArtStatus,32)||
             !(C.ArtStatus==TEXT("prototype_fallback")||C.ArtStatus==TEXT("generated_draft")||C.ArtStatus==TEXT("approved_asset"))||
             !Text(J,TEXT("artProvenance"),C.ArtProvenance,800))return Fail(TEXT("Invalid champion identity, stats or appearance: ")+C.Id);
+        // Optional presentation fields: absent keeps safe defaults, present must be valid.
+        if((J->HasField(TEXT("classType"))&&!Text(J,TEXT("classType"),C.ClassType,48))||
+            (J->HasField(TEXT("lore"))&&!Text(J,TEXT("lore"),C.Lore,200))||
+            (J->HasField(TEXT("difficulty"))&&!Integer(J,TEXT("difficulty"),C.Difficulty,1,3)))return Fail(TEXT("Invalid class type, lore or difficulty: ")+C.Id);
+        if(C.ClassType.IsEmpty())C.ClassType=C.Variant;
         const TArray<TSharedPtr<FJsonValue>>* RoleValues=nullptr;const TArray<TSharedPtr<FJsonValue>>* StartSkills=nullptr;const TArray<TSharedPtr<FJsonValue>>* Actives=nullptr;
         if(!J->TryGetArrayField(TEXT("roles"),RoleValues)||RoleValues->Num()<1||RoleValues->Num()>4||
             !J->TryGetArrayField(TEXT("startsWithSkills"),StartSkills)||StartSkills->Num()!=0||
