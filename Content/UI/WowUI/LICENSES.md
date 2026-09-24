@@ -20,9 +20,15 @@ not be sold by themselves, and the Reserved Font Names must not be used for modi
 The `.uasset` font faces embed the unmodified TTF data. Marcellus is used as an OFL stand-in for
 the "Friz Quadrata" look of WoW headings; Alegreya Sans is the body/number face.
 
+## Textures (original, procedural)
+
+`Textures/T_Panel, T_Border, T_Button, T_ButtonUlt, T_ButtonPassive, T_Glow, T_Gloss, T_IconBg,
+T_Gem, T_Header` are generated from value noise and geometry by `Tools/BuildWowUITextures.py`
+(sources in `Textures/src/*.png`). Original to this project; no third-party license.
+
 ## Sounds (original)
 
-`Sounds/S_LevelUp`, `S_AggroGained`, `S_AggroLost`, `S_ThreatWarning`, `S_TargetSelect` are
+`Sounds/S_LevelUp`, `S_AggroGained`, `S_AggroLost`, `S_ThreatWarning`, `S_TargetSelect`, `S_BannerHorn`, `S_BannerChime` are
 synthesized from sine partials by `Tools/BuildWowUIContent.py` (sources in `Sounds/src/*.wav`).
 They are original to this project and carry no third-party license.
 

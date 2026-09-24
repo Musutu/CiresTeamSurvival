@@ -8,6 +8,8 @@
 #include "CireSummon.h"
 #include "CireTargeting.h"
 #include "CireNPCState.h"
+#include "CireUIStyle.h"
+#include "CireBanners.h"
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -258,114 +260,28 @@ FLinearColor ThreatColor(float Percent)
 // ---------------------------------------------------------------------------
 ACireHUD::ACireHUD()
 {
-    // Hard references cook the OFL font faces and generated UI sounds with the HUD.
-    const TCHAR* Faces[]={TEXT("/Game/UI/WowUI/Fonts/UIBody.UIBody"),TEXT("/Game/UI/WowUI/Fonts/UIHeading.UIHeading"),
-        TEXT("/Game/UI/WowUI/Fonts/UIBold.UIBold"),TEXT("/Game/UI/WowUI/Fonts/UINumbers.UINumbers")};
-    for(const TCHAR* Path:Faces){ConstructorHelpers::FObjectFinderOptional<UFontFace> Finder(Path);WowFontFaces.Add(Finder.Get());}
+    // Hard references cook the style kit's OFL font faces / textures and the UI sounds.
+    for(const FString& Path:CireUIStyle::AssetPaths()){ConstructorHelpers::FObjectFinderOptional<UObject> Finder(*Path);if(Finder.Get())WowAssetRefs.Add(Finder.Get());}
     const TCHAR* Sounds[]={TEXT("/Game/UI/WowUI/Sounds/S_LevelUp.S_LevelUp"),TEXT("/Game/UI/WowUI/Sounds/S_AggroGained.S_AggroGained"),
         TEXT("/Game/UI/WowUI/Sounds/S_ThreatWarning.S_ThreatWarning"),TEXT("/Game/UI/WowUI/Sounds/S_AggroLost.S_AggroLost"),
-        TEXT("/Game/UI/WowUI/Sounds/S_TargetSelect.S_TargetSelect")};
+        TEXT("/Game/UI/WowUI/Sounds/S_TargetSelect.S_TargetSelect"),TEXT("/Game/UI/WowUI/Sounds/S_BannerHorn.S_BannerHorn"),
+        TEXT("/Game/UI/WowUI/Sounds/S_BannerChime.S_BannerChime")};
     for(const TCHAR* Path:Sounds){ConstructorHelpers::FObjectFinderOptional<USoundBase> Finder(Path);WowSounds.Add(Finder.Get());}
 }
-void ACireHUD::BuildFonts()
+FCireUIPainter ACireHUD::Painter() const
 {
-    WowFonts.Reset();FontCalibration.Reset();
-    for(UFontFace* Face:WowFontFaces)if(!Face)return; // any missing face: keep the engine font everywhere
-    auto Measure=FEngineFontServices::IsInitialized()?FEngineFontServices::Get().GetFontMeasure():nullptr;
-    if(!Measure.IsValid()||!GEngine||!GEngine->GetMediumFont())return;
-    // Calibrate each face so a given logical Size keeps the line height the layout
-    // was designed around (engine Roboto at Size/16 of its legacy size). Alegreya's
-    // small x-height gets a modest boost so body text is not smaller than before.
-    const float Reference=Measure->GetMaxCharacterHeight(GEngine->GetMediumFont()->GetLegacySlateFontInfo(),1.f)/16.f;
-    const float Boost[]={1.14f,1.0f,1.12f,1.12f};
-    for(int32 I=0;I<WowFontFaces.Num();++I)
-    {
-        UFont* Font=NewObject<UFont>(this,NAME_None,RF_Transient);
-        Font->FontCacheType=EFontCacheType::Runtime;
-        FTypefaceEntry Entry(TEXT("Regular"));Entry.Font=FFontData(WowFontFaces[I]);
-        Font->CompositeFont.DefaultTypeface.Fonts.Add(Entry);
-        Font->LegacyFontSize=16;
-        WowFonts.Add(Font);
-        const float Height=Measure->GetMaxCharacterHeight(FSlateFontInfo(Font,100.f),1.f)/100.f;
-        FontCalibration.Add(Height>0?Reference/Height*Boost[I]:1.f);
-    }
+    FCireUIPainter P;P.Canvas=Canvas;P.Scale=Scale;P.Origin=Origin;P.Stretch=Stretch;P.Alpha=PanelAlpha;return P;
 }
-UFont* ACireHUD::ResolveFont(ECireFont Font,const FString& Text,float Size) const
-{
-    if(WowFonts.Num()!=4)return GEngine?GEngine->GetMediumFont():nullptr;
-    if(Font==ECireFont::Auto)
-    {
-        bool bLower=false,bLetter=false;
-        for(const TCHAR C:Text){bLower|=FChar::IsLower(C)!=0;bLetter|=FChar::IsAlpha(C)!=0;}
-        Font=!bLetter?ECireFont::Numbers:!bLower?ECireFont::Heading:Size>=14.f?ECireFont::Bold:ECireFont::Body;
-    }
-    return WowFonts[FMath::Clamp(static_cast<int32>(Font)-1,0,3)];
-}
-float ACireHUD::FontPoints(ECireFont Font,float Size) const
-{
-    const int32 Index=FMath::Clamp(static_cast<int32>(Font)-1,0,3);
-    return Size*(FontCalibration.IsValidIndex(Index)?FontCalibration[Index]:1.f);
-}
+void ACireHUD::BuildFonts() { CireUIStyle::Assets(); }
+UFont* ACireHUD::ResolveFont(ECireFont Font,const FString& Text,float Size) const { return CireUIStyle::ResolveFont(Font,Text,Size); }
 void ACireHUD::TextFx(const FString& Text,float X,float Y,float Size,FLinearColor Color,ECireFont Font,bool bOutline,bool bShadow)
 {
-    if(Text.IsEmpty()||!Canvas||Color.A<=.004f)return;
-    const float K=Scale*FMath::Min(Stretch.X,Stretch.Y);
-    const FVector2D At(FMath::RoundToFloat((Origin.X+X*Stretch.X)*Scale),FMath::RoundToFloat((Origin.Y+Y*Stretch.Y)*Scale));
-    UFont* Resolved=ResolveFont(Font,Text,Size);
-    if(!Resolved)return;
-    if(WowFonts.Num()!=4)
-    {
-        // Engine-font fallback (font assets missing): the original scaled path.
-        FCanvasTextItem Item(At,FText::FromString(Text),Resolved,Color);Item.Scale=FVector2D(Size/16.f*K);
-        if(bShadow)Item.EnableShadow(FLinearColor(0,0,0,1));
-        if(bOutline){Item.bOutlined=true;Item.OutlineColor=FLinearColor(0,0,0,Color.A);}
-        Canvas->DrawItem(Item);return;
-    }
-    const int32 Index=WowFonts.IndexOfByKey(Resolved);
-    // Rasterize at the final pixel size (no bitmap stretching). Whole-point sizes keep
-    // the glyph cache small and hinting stable.
-    const float Points=FMath::Max(4.f,FMath::RoundToFloat(Size*(FontCalibration.IsValidIndex(Index)?FontCalibration[Index]:1.f)*K));
-    FCanvasTextItem Item(At,FText::FromString(Text),FSlateFontInfo(Resolved,Points),Color);
-    if(bShadow)Item.EnableShadow(FLinearColor(0,0,0,1),FVector2D(Points>=20?2.f:1.f,Points>=20?2.f:1.f));
-    if(bOutline){Item.bOutlined=true;Item.OutlineColor=FLinearColor(0,0,0,Color.A*.92f);}
-    Canvas->DrawItem(Item);
+    Painter().Text(Text,X,Y,Size,Color,Font,bOutline,bShadow);
 }
-float ACireHUD::TextWidthFont(const FString& Text,float Size,ECireFont Font) const
-{
-    UFont* Resolved=ResolveFont(Font,Text,Size);
-    if(!Resolved||Text.IsEmpty())return 0.f;
-    if(WowFonts.Num()!=4)
-    {
-        float W=0,H=0;const_cast<ACireHUD*>(this)->GetTextSize(Text,W,H,Resolved,Size/16.f);return W;
-    }
-    auto Measure=FEngineFontServices::Get().GetFontMeasure();
-    if(!Measure.IsValid())return Text.Len()*Size*.5f;
-    const int32 Index=WowFonts.IndexOfByKey(Resolved);
-    const float K=FMath::Max(.05f,Scale);
-    const float Points=FMath::Max(4.f,FMath::RoundToFloat(Size*(FontCalibration.IsValidIndex(Index)?FontCalibration[Index]:1.f)*K));
-    return static_cast<float>(Measure->Measure(Text,FSlateFontInfo(Resolved,Points),1.f).X)/K;
-}
-void ACireHUD::Disc(float X,float Y,float R,FLinearColor Color,int32 Sides)
-{
-    if(!Canvas||R<=0)return;
-    const float K=Scale*FMath::Min(Stretch.X,Stretch.Y);
-    FCanvasNGonItem Item(FVector2D((Origin.X+X*Stretch.X)*Scale,(Origin.Y+Y*Stretch.Y)*Scale),FVector2D(R*K,R*K),FMath::Max(3,Sides),GWhiteTexture,Color);
-    Item.BlendMode=SE_BLEND_Translucent;Canvas->DrawItem(Item);
-}
-void ACireHUD::Circle(float X,float Y,float R,FLinearColor Color,float Width,int32 Sides)
-{
-    for(int32 I=0;I<Sides;++I)
-    {
-        const float A=I*2*PI/Sides,B=(I+1)*2*PI/Sides;
-        Line(X+FMath::Cos(A)*R,Y+FMath::Sin(A)*R,X+FMath::Cos(B)*R,Y+FMath::Sin(B)*R,Color,Width);
-    }
-}
-void ACireHUD::Tri(FVector2D A,FVector2D B,FVector2D C,FLinearColor Color)
-{
-    if(!Canvas)return;
-    auto P=[&](FVector2D V){return FVector2D((Origin.X+V.X*Stretch.X)*Scale,(Origin.Y+V.Y*Stretch.Y)*Scale);};
-    FCanvasTriangleItem Item(P(A),P(B),P(C),GWhiteTexture);Item.SetColor(Color);Item.BlendMode=SE_BLEND_Translucent;Canvas->DrawItem(Item);
-}
+float ACireHUD::TextWidthFont(const FString& Text,float Size,ECireFont Font) const { return Painter().TextWidth(Text,Size,Font); }
+void ACireHUD::Disc(float X,float Y,float R,FLinearColor Color,int32 Sides) { Painter().Disc(X,Y,R,Color,Sides); }
+void ACireHUD::Circle(float X,float Y,float R,FLinearColor Color,float Width,int32 Sides) { Painter().Circle(X,Y,R,Color,Width,Sides); }
+void ACireHUD::Tri(FVector2D A,FVector2D B,FVector2D C,FLinearColor Color) { Painter().Tri(A,B,C,Color); }
 void ACireHUD::PlayWowSound(int32 Index,float Volume)
 {
     if(UISettings.bMuteAudio||!WowSounds.IsValidIndex(Index)||!WowSounds[Index])return;
@@ -742,7 +658,7 @@ void ACireHUD::UpdateLevelUps(ACireHero* Hero)
         if(H->Level>*Seen&&H->bDrafted&&UISettings.bLevelUpEffect)
         {
             LevelBursts.Add({H,H->Level,Now,H==Hero});
-            if(H==Hero)PlayWowSound(0,1.f);
+            if(H==Hero){PlayWowSound(0,1.f);CireBanners::Show(ECireBanner::LevelUp,FString::Printf(TEXT("Level %d"),H->Level),TEXT("+2 primary attribute  /  +1 to the others"));}
         }
         *Seen=H->Level;
     }
@@ -753,6 +669,7 @@ void ACireHUD::DebugLevelUp(ACireHero* Hero,bool bLocal)
 {
     if(!Hero)return;
     LevelBursts.Add({Hero,Hero->Level,GetWorld()->GetRealTimeSeconds(),bLocal});SeenLevels.Add(Hero,Hero->Level);
+    if(bLocal)CireBanners::Show(ECireBanner::LevelUp,FString::Printf(TEXT("Level %d"),Hero->Level),TEXT("+2 primary attribute  /  +1 to the others"));
 }
 #endif
 void ACireHUD::DrawLevelUps(ACireHero* Hero)
@@ -832,24 +749,6 @@ void ACireHUD::DrawLevelUps(ACireHero* Hero)
                 const float A=I*PI/8+.2f;const float R0=10.f+K*50.f,R1=R0+20.f+(I%2)*26.f*(1.f-K);
                 Line(Chest.X+FMath::Cos(A)*R0,Chest.Y+FMath::Sin(A)*R0,Chest.X+FMath::Cos(A)*R1,Chest.Y+FMath::Sin(A)*R1,FLinearColor(1.f,.9f,.5f,1.f-K),2.2f);
             }
-        }
-        // Banner for your own level-up.
-        if(B.bLocal)
-        {
-            const float BA=FMath::Clamp(T/.25f,0.f,1.f)*FMath::Clamp((4.f-T)/.8f,0.f,1.f);if(BA<=0)continue;
-            const float Y=ViewH*.16f,Pop=1.f+.18f*FMath::Clamp(1.f-T/.3f,0.f,1.f);
-            const FString Caption=TEXT("YOU HAVE REACHED"),Level=FString::Printf(TEXT("LEVEL %d"),B.Level),Detail=TEXT("+2 primary attribute  /  +1 to the others");
-            const float LS=38.f*Pop,LW=TextWidthFont(Level,LS,ECireFont::Heading);
-            Panel(ViewW*.5f-230,Y-8,460,LS+50,FLinearColor(0,0,0,.35f*BA));
-            for(int32 S=0;S<2;++S)
-            {
-                const float Dir=S?1.f:-1.f;const float X0=ViewW*.5f+Dir*(LW*.5f+14.f),X1=X0+Dir*120.f;
-                Line(X0,Y+LS*.62f+10,X1,Y+LS*.62f+10,FLinearColor(1.f,.8f,.3f,.8f*BA),1.5f);
-                Tri(FVector2D(X0,Y+LS*.62f+4),FVector2D(X0+Dir*7,Y+LS*.62f+10),FVector2D(X0,Y+LS*.62f+16),FLinearColor(1.f,.85f,.35f,BA));
-            }
-            TextFx(Caption,(ViewW-TextWidthFont(Caption,11,ECireFont::Heading))*.5f,Y-4,11,FLinearColor(1.f,.92f,.7f,BA),ECireFont::Heading,true,true);
-            TextFx(Level,(ViewW-LW)*.5f,Y+10,LS,FLinearColor(1.f,.8f,.2f,BA),ECireFont::Heading,true,true);
-            TextFx(Detail,(ViewW-TextWidthFont(Detail,12,ECireFont::Body))*.5f,Y+LS+16,12,FLinearColor(.95f,.93f,.85f,BA),ECireFont::Body,true,true);
         }
     }
 }
@@ -1274,4 +1173,79 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         Plate(*It,It->GetNPCDisplayName(),It->Health,It->MaxHealth,It->bArmoredEscort?Silver*.8f:Hostile*.9f,100,*It);
     for(TActorIterator<ACireConstruct> It(GetWorld());It;++It)if(It->CanObserve(PlayerOwner))
         Plate(*It,It->GetDisplayName(),It->Health,It->MaxHealth,It->OriginTeam==Hero->TeamId?Friendly*.85f:Hostile,It->ConstructSpec.Height*.5f+25,nullptr);
+}
+
+// ---------------------------------------------------------------------------
+// Transition banners: detected client-side from replicated state (works on LAN
+// clients too), queued through CireBanners so they never overlap.
+// ---------------------------------------------------------------------------
+void ACireHUD::UpdateBanners(ACireHero* Hero,ACireGameState* State)
+{
+    if(!Hero||!State)return;
+    const bool bFirst=BannerSeenPhase<0;
+    if(!bFirst&&State->Phase!=BannerSeenPhase)
+    {
+        const int32 Seconds=FMath::Max(0,FMath::RoundToInt(State->SecondsLeft));
+        switch(State->Phase)
+        {
+        case 0:CireBanners::Show(ECireBanner::WaveIncoming,TEXT("Survival"),TEXT("Hold your lane. Three cleared waves lead back to town."),TEXT("THE GATES OPEN"));break;
+        case 1:CireBanners::Show(ECireBanner::PrepPhase,TEXT("Prep Phase"),FString::Printf(TEXT("%d seconds to buy gear and tomes before the portal opens."),Seconds));break;
+        case 2:CireBanners::Show(ECireBanner::Arena,TEXT("Arena"),TEXT("Both companies meet in the portal battlefield."));break;
+        case 4:CireBanners::Show(ECireBanner::Recovery,TEXT("Recovery"),FString::Printf(TEXT("%d seconds to regroup and resupply."),Seconds));break;
+        case 3:
+        {
+            const int32 Mine=Hero->TeamId==0?State->EmberLives:State->DuskLives,Theirs=Hero->TeamId==0?State->DuskLives:State->EmberLives;
+            const int32 MyWins=Hero->TeamId==0?State->EmberWins:State->DuskWins,TheirWins=Hero->TeamId==0?State->DuskWins:State->EmberWins;
+            const bool bWon=Mine!=Theirs?Mine>Theirs:MyWins>=TheirWins;
+            CireBanners::Show(bWon?ECireBanner::Victory:ECireBanner::Defeat,bWon?TEXT("Victory"):TEXT("Defeat"),State->Announcement);
+            break;
+        }
+        default:break;
+        }
+    }
+    if(State->Phase==0&&!bFirst)
+    {
+        // Telegraph the next wave five seconds ahead; otherwise announce it as it spawns.
+        const int32 Next=State->Wave+1;
+        if(State->NextWaveSeconds>.05f&&State->NextWaveSeconds<=5.f&&BannerCountdownWave!=Next)
+        {
+            BannerCountdownWave=Next;
+            CireBanners::Show(ECireBanner::WaveIncoming,FString::Printf(TEXT("Wave %d"),Next),TEXT("Incoming in 5 seconds."));
+        }
+        if(State->Wave>BannerSeenWave&&BannerCountdownWave!=State->Wave)
+            CireBanners::Show(ECireBanner::WaveIncoming,FString::Printf(TEXT("Wave %d"),State->Wave),TEXT("The horde is at the breach."));
+        if(State->CycleWavesDone>BannerSeenCleared&&State->CycleWavesDone>0)
+            CireBanners::Show(ECireBanner::WaveCleared,TEXT("Wave Cleared"),FString::Printf(TEXT("%d of %d waves this cycle."),State->CycleWavesDone,State->WavesPerCycle));
+    }
+    BannerSeenPhase=State->Phase;BannerSeenWave=State->Wave;BannerSeenCleared=State->CycleWavesDone;
+    // Bosses and challenge tiers appearing in your lane.
+    for(auto It=BannerSeenBosses.CreateIterator();It;++It)if(!It->IsValid())It.RemoveCurrent();
+    for(TActorIterator<ACireMonster> It(GetWorld());It;++It)
+    {
+        ACireMonster* M=*It;
+        if(M->Health<=0||M->Lane!=Hero->TeamId||M->GetNPCClassification()!=ECireNPCClass::Boss||BannerSeenBosses.Contains(M))continue;
+        BannerSeenBosses.Add(M);
+        if(bFirst)continue;
+        if(M->IsLaneBoss())CireBanners::Show(ECireBanner::BossSpawned,M->GetNPCDisplayName(),TEXT("A boss marches on your keep. If it leaks, you lose 10 lives."));
+        else if(M->Tier>BannerSeenChallengeTier)
+            CireBanners::Show(ECireBanner::ChallengeUnlocked,FString::Printf(TEXT("Challenge Tier %d"),M->Tier),M->GetNPCDisplayName()+TEXT(" guards the outpost. Clear the pack for rare rewards."));
+        else CireBanners::Show(ECireBanner::BossSpawned,M->GetNPCDisplayName(),TEXT("A pack leader has appeared."),TEXT("PACK LEADER"));
+        BannerSeenChallengeTier=FMath::Max(BannerSeenChallengeTier,M->Tier);
+    }
+}
+void ACireHUD::DrawBanners()
+{
+    ResetTransform();
+    ECireBanner Started=ECireBanner::Custom;
+    if(CireBanners::Draw(Painter(),ViewW,ViewH,Started))
+    {
+        switch(Started)
+        {
+        case ECireBanner::LevelUp:break; // the level-up burst plays its own chime
+        case ECireBanner::Victory:PlayWowSound(0,1.f);break;
+        case ECireBanner::Defeat:PlayWowSound(3,1.f);break;
+        case ECireBanner::WaveCleared:case ECireBanner::PrepPhase:case ECireBanner::Recovery:PlayWowSound(6,.9f);break;
+        default:PlayWowSound(5,.9f);break;
+        }
+    }
 }

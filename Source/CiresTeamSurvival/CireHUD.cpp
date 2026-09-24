@@ -42,7 +42,7 @@ void ACireHUD::BeginPlay()
     Super::BeginPlay(); UISettings.Load(); UISettings.bLayoutLocked=true; BuildFonts();
     AggroHandle=UCireNPCState::OnAggroChanged().AddUObject(this,&ACireHUD::OnAggroEvent);
 }
-void ACireHUD::ResetTransform() { Origin=FVector2D::ZeroVector; Stretch=FVector2D(1,1); }
+void ACireHUD::ResetTransform() { Origin=FVector2D::ZeroVector; Stretch=FVector2D(1,1); PanelAlpha=1.f; }
 FCireUIRect ACireHUD::PanelRect(FName Id) const
 {
     // The saved, anchored rectangle, then a small responsive pass: at large
@@ -92,7 +92,7 @@ void ACireHUD::UsePanel(FName Id,float W,float H)
 }
 void ACireHUD::Panel(float X,float Y,float W,float H,FLinearColor Color)
 {
-    DrawRect(Color,(Origin.X+X*Stretch.X)*Scale,(Origin.Y+Y*Stretch.Y)*Scale,W*Stretch.X*Scale,H*Stretch.Y*Scale);
+    Painter().Rect(X,Y,W,H,Color);
 }
 void ACireHUD::Wrapped(const FString& Text,float X,float Y,float Width,float Size,FLinearColor Color,int32 MaxLines)
 {
@@ -107,25 +107,19 @@ void ACireHUD::Wrapped(const FString& Text,float X,float Y,float Width,float Siz
 }
 void ACireHUD::Line(float X1,float Y1,float X2,float Y2,FLinearColor Color,float Width)
 {
-    DrawLine((Origin.X+X1*Stretch.X)*Scale,(Origin.Y+Y1*Stretch.Y)*Scale,
-        (Origin.X+X2*Stretch.X)*Scale,(Origin.Y+Y2*Stretch.Y)*Scale,Color,Width*Scale*FMath::Min(Stretch.X,Stretch.Y));
+    Painter().Line(X1,Y1,X2,Y2,Color,Width);
 }
 void ACireHUD::Bar(float X,float Y,float W,float H,float Value,FLinearColor Color)
 {
-    Panel(X,Y,W,H,FLinearColor(.004f,.008f,.012f,.96f));
-    Value=FMath::IsFinite(Value)?FMath::Clamp(Value,0.f,1.f):0.f;
-    const float BW=FMath::Max(0.f,W-2)*Value;
-    Panel(X+1,Y+1,BW,FMath::Max(0.f,H-2),Color);
-    Panel(X+1,Y+1,BW,FMath::Max(1.f,H*.22f),FLinearColor(1,1,1,.11f));
+    // Every bar animates (smooth fill + trailing damage chunk). Its identity is its
+    // on-screen slot, which is stable while the panel is not being moved.
+    const FVector2D At=Painter().ToScreen(X,Y);
+    const uint64 Key=(static_cast<uint64>(FMath::RoundToInt(At.X))<<32)^static_cast<uint64>(FMath::RoundToInt(At.Y)*131+FMath::RoundToInt(W));
+    CireUIStyle::Bar(Painter(),X,Y,W,H,Value,Color,&BarTrails.FindOrAdd(Key),GetWorld()->GetRealTimeSeconds());
 }
 void ACireHUD::Frame(float X,float Y,float W,float H,FLinearColor Accent)
 {
-    Panel(X+3,Y+4,W,H,FLinearColor(0,0,0,.30f)); Panel(X,Y,W,H,Ink);
-    const FLinearColor Edge(.22f,.25f,.25f,.9f);
-    Line(X,Y,X+W,Y,Accent,.85f); Line(X,Y+H,X+W,Y+H,Edge);
-    Line(X,Y,X,Y+H,Edge); Line(X+W,Y,X+W,Y+H,Edge);
-    Line(X+3,Y+3,X+14,Y+3,Accent); Line(X+3,Y+3,X+3,Y+12,Accent);
-    Line(X+W-3,Y+3,X+W-14,Y+3,Accent); Line(X+W-3,Y+3,X+W-3,Y+12,Accent);
+    CireUIStyle::Frame(Painter(),X,Y,W,H,Accent);
 }
 bool ACireHUD::Hit(float X,float Y,float W,float H) const
 {
@@ -134,56 +128,7 @@ bool ACireHUD::Hit(float X,float Y,float W,float H) const
 }
 void ACireHUD::Icon(const FString& Id,float X,float Y,float S,FLinearColor Color)
 {
-    // Original geometric sigils: each silhouette remains distinct without licensed artwork.
-    auto L=[&](float A,float B,float C,float D,float Weight=1.8f){Line(X+A*S,Y+B*S,X+C*S,Y+D*S,Color,Weight);};
-    auto Ring=[&](float Radius){for(int32 I=0;I<24;++I){float A=I*PI/12,B=(I+1)*PI/12; L(.5f+FMath::Cos(A)*Radius,.5f+FMath::Sin(A)*Radius,.5f+FMath::Cos(B)*Radius,.5f+FMath::Sin(B)*Radius,.75f);}};
-    if(Id.IsEmpty()) { L(.43f,.5f,.57f,.5f,.6f); L(.5f,.43f,.5f,.57f,.6f); return; }
-    if(Id==TEXT("role_caster")) {
-        // Caster: a staff crowned by a four-pointed star.
-        L(.3f,.9f,.62f,.38f,2.4f);for(int32 I=0;I<12;++I){const float A=I*PI/6,B=(I+1)*PI/6;L(.72f+FMath::Cos(A)*.1f,.25f+FMath::Sin(A)*.1f,.72f+FMath::Cos(B)*.1f,.25f+FMath::Sin(B)*.1f,1.f);}L(.72f,.06f,.72f,.44f,1.4f);L(.53f,.25f,.91f,.25f,1.4f);L(.6f,.13f,.84f,.37f,.8f);L(.84f,.13f,.6f,.37f,.8f);
-        return;
-    }
-    if(Id==TEXT("role4")||Id==TEXT("oathbound_guardian")||Id==TEXT("spectral_pack")) {
-        Ring(.36f);Ring(.22f);L(.5f,.14f,.5f,.86f);L(.18f,.7f,.82f,.7f);L(.18f,.7f,.5f,.18f);L(.5f,.18f,.82f,.7f);
-    } else if(Id==TEXT("venom_ground")||Id==TEXT("blight_sigil")||Id==TEXT("npc_blight_pool")) {
-        Ring(.34f);for(int32 I=0;I<3;++I){const float A=I*2*PI/3;L(.5f,.5f,.5f+FMath::Cos(A)*.28f,.5f+FMath::Sin(A)*.28f,3);}Ring(.10f);
-    } else if(Id==TEXT("runic_wall")) {
-        L(.17f,.78f,.83f,.78f);L(.17f,.78f,.17f,.25f);L(.83f,.78f,.83f,.25f);L(.17f,.25f,.83f,.25f);L(.17f,.51f,.83f,.51f);L(.5f,.25f,.5f,.51f);L(.33f,.51f,.33f,.78f);L(.67f,.51f,.67f,.78f);
-    } else if(Id==TEXT("bastion_of_dawn")) {
-        Ring(.39f);L(.25f,.75f,.25f,.32f);L(.25f,.32f,.38f,.32f);L(.38f,.32f,.38f,.21f);L(.38f,.21f,.61f,.21f);L(.61f,.21f,.61f,.32f);L(.61f,.32f,.75f,.32f);L(.75f,.32f,.75f,.75f);L(.25f,.75f,.75f,.75f);L(.43f,.75f,.43f,.53f);L(.43f,.53f,.57f,.53f);L(.57f,.53f,.57f,.75f);
-    } else if(Id==TEXT("cataclysm")) {
-        L(.21f,.79f,.57f,.43f,3);L(.57f,.43f,.8f,.19f,3);L(.38f,.44f,.66f,.13f);L(.63f,.65f,.90f,.35f);L(.19f,.61f,.19f,.8f);L(.19f,.8f,.4f,.8f);L(.13f,.88f,.5f,.88f);L(.45f,.71f,.58f,.77f);L(.45f,.71f,.40f,.61f);
-    } else if(Id==TEXT("executioners_verdict")) {
-        L(.2f,.82f,.74f,.26f,3);L(.8f,.82f,.26f,.26f,3);L(.64f,.15f,.83f,.14f,3);L(.83f,.14f,.87f,.33f,3);L(.87f,.33f,.64f,.39f,3);L(.36f,.15f,.17f,.14f,3);L(.17f,.14f,.13f,.33f,3);L(.13f,.33f,.36f,.39f,3);
-    } else if(Id==TEXT("renewal")) {
-        Ring(.16f);for(int32 I=0;I<8;++I){float A=I*PI/4,B=A+PI/8;L(.5f+FMath::Cos(A)*.17f,.5f+FMath::Sin(A)*.17f,.5f+FMath::Cos(B)*.4f,.5f+FMath::Sin(B)*.4f);L(.5f+FMath::Cos(B)*.4f,.5f+FMath::Sin(B)*.4f,.5f+FMath::Cos(A+PI/4)*.17f,.5f+FMath::Sin(A+PI/4)*.17f);}
-    } else if(Id==TEXT("iron_guard")||Id==TEXT("shield_slam")||Id==TEXT("stone_skin")||Id==TEXT("role0")) {
-        L(.24f,.24f,.5f,.15f);L(.5f,.15f,.76f,.24f);L(.76f,.24f,.71f,.61f);L(.71f,.61f,.5f,.84f);L(.5f,.84f,.29f,.61f);L(.29f,.61f,.24f,.24f);
-        L(.5f,.27f,.5f,.66f);L(.36f,.43f,.64f,.43f);
-        if(Id==TEXT("shield_slam")){L(.77f,.12f,.91f,.08f);L(.82f,.31f,.96f,.33f);}
-    } else if(Id==TEXT("restoring_light")||Id==TEXT("purify")||Id==TEXT("soul_conduit")||Id==TEXT("role2")) {
-        Ring(.33f); L(.5f,.22f,.5f,.78f,3);L(.22f,.5f,.78f,.5f,3);L(.32f,.32f,.68f,.68f,.7f);L(.68f,.32f,.32f,.68f,.7f);
-    } else if(Id==TEXT("frost_bind")) {
-        for(int32 I=0;I<6;++I){float A=I*PI/3;float DX=FMath::Cos(A),DY=FMath::Sin(A);L(.5f,.5f,.5f+DX*.37f,.5f+DY*.37f);L(.5f+DX*.24f,.5f+DY*.24f,.5f+DX*.22f-DY*.12f,.5f+DY*.22f+DX*.12f);}
-    } else if(Id==TEXT("chain_spark")||Id==TEXT("deep_reserves")) {
-        L(.62f,.12f,.29f,.52f,3);L(.29f,.52f,.61f,.46f,3);L(.61f,.46f,.39f,.87f,3);
-        if(Id==TEXT("chain_spark")){L(.77f,.32f,.88f,.41f);L(.2f,.65f,.1f,.77f);}
-    } else if(Id==TEXT("ember_lance")) {
-        L(.48f,.12f,.28f,.43f,2);L(.28f,.43f,.22f,.67f,2);L(.22f,.67f,.47f,.87f,2);L(.47f,.87f,.77f,.63f,2);L(.77f,.63f,.69f,.30f,2);L(.69f,.30f,.56f,.52f,2);L(.56f,.52f,.48f,.12f,2);L(.47f,.57f,.43f,.78f,2);
-    } else if(Id==TEXT("sanctuary")) {
-        Ring(.34f);Ring(.23f);L(.19f,.77f,.81f,.77f);L(.5f,.15f,.5f,.64f);L(.28f,.39f,.72f,.39f);
-    } else if(Id==TEXT("war_cry")) {
-        L(.24f,.34f,.7f,.16f);L(.7f,.16f,.7f,.69f);L(.7f,.69f,.24f,.55f);L(.24f,.55f,.24f,.34f);L(.35f,.59f,.43f,.84f);L(.78f,.2f,.9f,.1f);L(.8f,.44f,.94f,.44f);L(.78f,.67f,.89f,.77f);
-    } else if(Id==TEXT("piercing_shot")||Id==TEXT("role1")) {
-        L(.23f,.77f,.78f,.22f,2.5f);L(.55f,.2f,.8f,.2f);L(.8f,.2f,.8f,.46f);L(.24f,.60f,.24f,.77f);L(.24f,.77f,.41f,.77f);L(.34f,.69f,.34f,.51f);
-    } else if(Id==TEXT("shadow_step")) {
-        L(.60f,.13f,.32f,.31f);L(.32f,.31f,.25f,.62f);L(.25f,.62f,.47f,.84f);L(.47f,.84f,.68f,.7f);L(.68f,.7f,.46f,.65f);L(.46f,.65f,.46f,.4f);L(.46f,.4f,.6f,.13f);L(.7f,.4f,.88f,.4f);L(.73f,.52f,.91f,.52f);
-    } else if(Id==TEXT("battle_rhythm")) {
-        Ring(.33f);L(.24f,.50f,.38f,.50f);L(.38f,.5f,.45f,.3f);L(.45f,.3f,.56f,.72f);L(.56f,.72f,.63f,.5f);L(.63f,.5f,.79f,.5f);
-    } else {
-        L(.23f,.8f,.7f,.26f,3);L(.7f,.26f,.85f,.15f,3);L(.85f,.15f,.77f,.38f,2);L(.77f,.38f,.3f,.84f,2);L(.22f,.6f,.46f,.84f,3);L(.18f,.85f,.26f,.93f,3);
-        if(Id==TEXT("cleaving_strike")){L(.15f,.43f,.28f,.24f);L(.28f,.24f,.53f,.13f);}
-    }
+    CireUIStyle::Sigil(Painter(),Id,X,Y,S,Color);
 }
 
 bool ACireHUD::IsPointerOverInterface() const
@@ -546,7 +491,7 @@ void ACireHUD::DrawHUD()
     // slider drag is applied on release so the Options window does not move under it.
     if(PendingUIScale>0&&!PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton)){UISettings.UIScale=PendingUIScale;UISettings.bAutoUIScale=false;PendingUIScale=-1;UISettings.Save();}
     Scale=FMath::Max(.25f,FMath::Min(Canvas->ClipX/1280.f,Canvas->ClipY/720.f)*UISettings.ResolveUIScale(Canvas->ClipY));ViewW=Canvas->ClipX/Scale;ViewH=Canvas->ClipY/Scale;
-    if(WowFonts.Num()!=4&&WowFontFaces.Num()==4)BuildFonts();
+    CireUIStyle::Assets();
     MX=MY=-100;float MouseX=0,MouseY=0;if(PlayerOwner->GetMousePosition(MouseX,MouseY)){MX=MouseX/Scale;MY=MouseY/Scale;}
     Clicked=PlayerOwner->WasInputKeyJustPressed(EKeys::LeftMouseButton)&&!PlayerOwner->IsInputKeyDown(EKeys::RightMouseButton);
     auto* Controller=Cast<ACireController>(PlayerOwner);auto* Hero=Cast<ACireHero>(PlayerOwner->GetPawn());auto* State=GetWorld()->GetGameState<ACireGameState>();
@@ -555,7 +500,7 @@ void ACireHUD::DrawHUD()
     LayoutInteraction();VisiblePanels.Reset();ResetTransform();
     if(DrawReplayScreen()){DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();return;}
     if(!Hero){Label(TEXT("Joining the battlefield..."),ViewW*.5f-130,ViewH*.5f,20,Parchment);return;}
-    UpdateLevelUps(Hero);UpdateThreatAlerts(Hero);
+    UpdateLevelUps(Hero);UpdateThreatAlerts(Hero);UpdateBanners(Hero,State);
     if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;}
     if(!bModal)DrawNameplates(Hero);
     if(!bModal)DrawLevelUps(Hero);
@@ -567,6 +512,7 @@ void ACireHUD::DrawHUD()
     if(!bModal&&!bSettings)DrawCombatText(Hero,Controller);
     ResetTransform();
     if(!bModal&&!bSettings)DrawAlert();
+    if(!bSettings)DrawBanners();
     ResetTransform();
     if(!bModal&&!bSettings&&Controller)
     {

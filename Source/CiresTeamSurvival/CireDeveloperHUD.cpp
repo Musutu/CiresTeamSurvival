@@ -18,7 +18,7 @@ FCireUIRect ACireHUD::DeveloperLauncherRect()const
 }
 void ACireHUD::DrawDeveloperLauncher()
 {
-    if(!CireDeveloperTools::CanEdit(GetWorld())||bEditLayout||bSettings)return;
+    if(!CireDeveloperTools::CanEdit(GetWorld())||bEditLayout||bSettings||bModal)return; // hidden over the draft screen, shop and offers
     ResetTransform();const auto R=DeveloperLauncherRect();const bool Over=Hit(R.X,R.Y,R.W,R.H);
     Frame(R.X,R.Y,R.W,R.H,Over?Teal:Gold);Label(TEXT("DEVELOPER TOOLS  [F8]"),R.X+14,R.Y+8,12,Over?Parchment:Gold);
     Tip(TEXT("Developer tools / F8"),TEXT("Quick test kit, weapons, movement, wave controls, effect tuning, match simulations and replays. Opening this panel does not change match settings."),R.X,R.Y,R.W,R.H);

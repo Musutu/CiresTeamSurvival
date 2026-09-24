@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 STAGING = ROOT / "Tools/ContentBuilder"
 FONT_SRC = ROOT / "Content/UI/WowUI/Fonts/src"
 SOUND_SRC = ROOT / "Content/UI/WowUI/Sounds/src"
+TEXTURE_SRC = ROOT / "Content/UI/WowUI/Textures/src"
 FONTS = {
     "UIHeading": "marcellus_Marcellus-Regular.ttf",
     "UIBody": "alegreyasans_AlegreyaSans-Medium.ttf",
@@ -74,6 +75,15 @@ def synthesize():
     _write(SOUND_SRC / "S_AggroLost.wav", _mix(
         _tone([(392.0, 1), (784.0, .3)], 0, .3, total, decay=10),
         _tone([(294.0, 1), (588.0, .3)], .14, .45, total, decay=8)))
+    # Banner horn (wave/boss/arena): a low brass swell with a fifth above.
+    total = int(1.8 * RATE)
+    _write(SOUND_SRC / "S_BannerHorn.wav", _mix(
+        _tone([(110.0, 1), (220.0, .7), (330.0, .45), (440.0, .2)], 0, 1.7, total, decay=1.4, attack=.18),
+        _tone([(165.0, .6), (330.0, .35), (495.0, .2)], .12, 1.6, total, decay=1.6, attack=.22)))
+    # Banner chime (cleared/prep/recovery): a bright descending-then-rising triad.
+    total = int(1.4 * RATE)
+    _write(SOUND_SRC / "S_BannerChime.wav", _mix(*[
+        _tone([(f, 1), (f * 2.0, .3), (f * 3.0, .12)], .0 + i * .09, 1.2, total, decay=3.2) for i, f in enumerate((783.99, 659.25, 987.77))]))
     # Target acquired: a short soft click.
     total = int(.12 * RATE)
     _write(SOUND_SRC / "S_TargetSelect.wav", _tone([(1760.0, .6), (2640.0, .3)], 0, .12, total, decay=40, attack=.002))
@@ -101,7 +111,24 @@ def build(unreal):
         task.replace_existing = True
         task.save = True
         tasks.append(task)
+    for png in sorted(TEXTURE_SRC.glob("*.png")):
+        task = unreal.AssetImportTask()
+        task.filename = str(png)
+        task.destination_path = "/Game/UI/WowUI/Textures"
+        task.destination_name = png.stem
+        task.automated = True
+        task.replace_existing = True
+        task.save = True
+        tasks.append(task)
     tools.import_asset_tasks(tasks)
+    for png in TEXTURE_SRC.glob("*.png"):
+        texture = library.load_asset("/Game/UI/WowUI/Textures/" + png.stem)
+        if not texture:
+            raise RuntimeError("Texture import failed: " + png.stem)
+        texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_EDITOR_ICON)
+        texture.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+        texture.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_UI)
+        library.save_loaded_asset(texture, only_if_is_dirty=False)
     for name in FONTS:
         path = "/Game/UI/WowUI/Fonts/" + name
         asset = library.load_asset(path)
@@ -129,6 +156,7 @@ if __name__ == "__main__":
         import unreal
     except ImportError:
         synthesize()
+        subprocess.run(["F:/UE_5.8/Engine/Binaries/ThirdParty/Python3/Win64/python.exe", str(ROOT / "Tools/BuildWowUITextures.py")], check=True)
         logs = STAGING / "Saved/Logs"
         logs.mkdir(parents=True, exist_ok=True)
         log = logs / "WowUIContent.log"
@@ -142,7 +170,7 @@ if __name__ == "__main__":
                                     creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
         if "CIRE_WOWUI_CONTENT_PASS" not in log.read_text(encoding="utf-8", errors="replace"):
             raise RuntimeError(f"WoW UI content generation failed: {log}")
-        for sub in ("Fonts", "Sounds"):
+        for sub in ("Fonts", "Sounds", "Textures"):
             source = STAGING / "Content/UI/WowUI" / sub
             destination = ROOT / "Content/UI/WowUI" / sub
             destination.mkdir(parents=True, exist_ok=True)

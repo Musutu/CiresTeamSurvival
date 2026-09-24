@@ -5,6 +5,7 @@
 #include "Scalability.h"
 #include "CireDeveloperTools.h"
 #include "CireMobility.h"
+#include "CireUIStyle.h"
 #include "CireHUD.generated.h"
 
 class ACireHero;
@@ -15,8 +16,6 @@ class UFont;
 class UFontFace;
 class USoundBase;
 
-/** Font hierarchy of the WoW-style interface. Auto picks by text content and size. */
-enum class ECireFont : uint8 { Auto, Body, Heading, Bold, Numbers };
 
 /** A transient WoW-style centre-screen alert (aggro, threat, level). */
 struct FCireHUDAlert
@@ -74,7 +73,7 @@ public:
     void DebugAlert(const FString& Title,const FString& Subtitle,FLinearColor Color) { ShowAlert(Title,Subtitle,Color,false); }
     float DebugScale() const { return Scale; }
     FCireUIRect PanelRectForTest(FName Id) const { return PanelRect(Id); }
-    bool DebugFontsReady() const { return WowFonts.Num()==4; }
+    bool DebugFontsReady() const { return CireUIStyle::Assets().bFonts; }
 #endif
 private:
     void Panel(float X, float Y, float W, float H, FLinearColor Color);
@@ -83,13 +82,13 @@ private:
     void TextFx(const FString& Text, float X, float Y, float Size, FLinearColor Color, ECireFont Font, bool bOutline, bool bShadow=true);
     float TextWidthFont(const FString& Text, float Size, ECireFont Font) const;
     UFont* ResolveFont(ECireFont Font, const FString& Text, float Size) const;
-    float FontPoints(ECireFont Font, float Size) const;
     void BuildFonts();
     /** Filled circle / ring / triangle in panel space. */
     void Disc(float X, float Y, float R, FLinearColor Color, int32 Sides=28);
     void Circle(float X, float Y, float R, FLinearColor Color, float Width=1.f, int32 Sides=36);
     void Tri(FVector2D A, FVector2D B, FVector2D C, FLinearColor Color);
     void PlayWowSound(int32 Index, float Volume=1.f);
+    FCireUIPainter Painter() const;
     void Bar(float X, float Y, float W, float H, float Fraction, FLinearColor Color);
     void Line(float X1, float Y1, float X2, float Y2, FLinearColor Color, float Width=1.f);
     void Frame(float X, float Y, float W, float H, FLinearColor Accent);
@@ -114,6 +113,8 @@ private:
     void UpdateThreatAlerts(ACireHero* Hero);
     void OnAggroEvent(const struct FCireAggroEvent& Event);
     void DrawAlert();
+    void UpdateBanners(ACireHero* Hero, ACireGameState* State);
+    void DrawBanners();
     void ShowAlert(const FString& Title, const FString& Subtitle, FLinearColor Color, bool bSound, int32 SoundIndex=1);
     void UpdateLevelUps(ACireHero* Hero);
     void DrawLevelUps(ACireHero* Hero);
@@ -149,11 +150,13 @@ private:
     FString DeveloperMessage;
     FString TooltipTitle,TooltipBody;
     // WoW interface state.
-    UPROPERTY(Transient) TArray<TObjectPtr<UFont>> WowFonts;
-    UPROPERTY() TArray<TObjectPtr<UFontFace>> WowFontFaces;
+    UPROPERTY() TArray<TObjectPtr<UObject>> WowAssetRefs;
+    TMap<uint64, FCireBarTrail> BarTrails;
+    float PanelAlpha = 1.f;
+    int32 BannerSeenPhase = -1, BannerSeenWave = 0, BannerSeenCleared = 0, BannerCountdownWave = 0, BannerSeenChallengeTier = 0;
+    TSet<TWeakObjectPtr<ACireMonster>> BannerSeenBosses;
     UPROPERTY() TArray<TObjectPtr<USoundBase>> WowSounds;
     ECireFont NextFont = ECireFont::Auto;
-    TArray<float> FontCalibration;
     TWeakObjectPtr<AActor> HoverUnit, TooltipUnit, LastTargetSeen;
     FDelegateHandle AggroHandle;
     TMap<TWeakObjectPtr<ACireHero>, int32> SeenLevels;
