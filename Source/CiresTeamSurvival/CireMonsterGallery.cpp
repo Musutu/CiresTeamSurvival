@@ -3,6 +3,8 @@
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireMonsterArt.h"
+#include "CireChampionActions.h"
+#include "CireChampionArt.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
@@ -23,6 +25,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HAL/FileManager.h"
 #include "Materials/MaterialInterface.h"
+#include "Misc/App.h"
 #include "Misc/CommandLine.h"
 #include "Misc/DateTime.h"
 #include "Misc/Parse.h"
@@ -43,6 +46,8 @@ struct FGallery
     TArray<TWeakObjectPtr<AActor>> Scene;
     TArray<TWeakObjectPtr<ACireMonster>> Wave;
     TWeakObjectPtr<ACireHero> Hero;
+    struct FChampion { TWeakObjectPtr<ACireHero> Hero; FString Clip; float Phase = 1.f; };
+    TArray<FChampion> Champions;
     TArray<FStage> Stages;
     TArray<FString> Captures, Only;
     FString Directory;
@@ -69,7 +74,7 @@ UWorld* World() { return G.Mode.IsValid() ? G.Mode->GetWorld() : nullptr; }
 void ClearScene()
 {
     for (auto& Actor : G.Scene) if (Actor.IsValid()) Actor->Destroy();
-    G.Scene.Reset(); G.Wave.Reset();
+    G.Scene.Reset(); G.Wave.Reset(); G.Champions.Reset();
     for (TActorIterator<ACireMonsterCorpse> It(World()); It; ++It) It->Destroy();
     if (G.Mode.IsValid()) G.Mode->Monsters.RemoveAll([](ACireMonster* M) { return !IsValid(M) || M->IsActorBeingDestroyed(); });
 }
@@ -261,6 +266,36 @@ void Deaths()
     Look(C + FVector(1500, -500, 900), C + FVector(-250, 0, 40), 55);
 }
 
+void Champions()
+{
+    const FVector C = G.Studio;
+    struct FEntry { const TCHAR* Profile; const TCHAR* Clip; float Phase; const TCHAR* Title; };
+    const FEntry List[] = {
+        {TEXT("knight"), TEXT("slash"), 1.f, TEXT("Warden: slash @ release")},
+        {TEXT("ranger"), TEXT("attack_bow"), 1.f, TEXT("Ranger: bow @ release")},
+        {TEXT("scholar"), TEXT("cast_a_spell"), 1.f, TEXT("Scholar: cast @ release")},
+        {TEXT("orc_chieftain"), TEXT("slash"), .7f, TEXT("Orc Chieftain: slash windup")},
+        {TEXT("drakish_footman"), TEXT("war_cry"), 1.f, TEXT("Drakish Footman: war cry")},
+        {TEXT("wizard"), TEXT("cast_a_spell"), 1.f, TEXT("Wizard: cast @ release")}};
+    FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    for (int32 I = 0; I < UE_ARRAY_COUNT(List); ++I)
+    {
+        const FVector At = C + FVector(0, (I - 2.5f) * 300.f, 0);
+        auto* H = World()->SpawnActor<ACireHero>(At + FVector(0, 0, 200), FRotator::ZeroRotator, Params);
+        if (!H) { Fail(TEXT("spawn champion")); continue; }
+        G.Scene.Add(H);
+        H->TeamId = 0;
+        if (!H->DraftProfile(List[I].Profile)) Fail(FString(TEXT("draft ")) + List[I].Profile);
+        H->SetActorTickEnabled(false); H->GetCharacterMovement()->DisableMovement();
+        H->SetActorLocation(FVector(At.X, At.Y, FloorZ(At) + H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 1));
+        H->SetActorRotation(FRotator(0, 0, 0));
+        H->GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+        G.Champions.Add({H, List[I].Clip, List[I].Phase});
+        Label(At + FVector(0, 0, 250), List[I].Title, FColor(246, 219, 155), 14, 0);
+    }
+    Look(C + FVector(1900, -700, 380), C + FVector(0, 0, 110), 50);
+}
+
 void TownWave()
 {
     UWorld* W = World();
@@ -317,6 +352,7 @@ void EnterStage(const FStage& S)
     else if (N == TEXT("variants")) Variants();
     else if (N == TEXT("locomotion")) Locomotion();
     else if (N == TEXT("deaths")) Deaths();
+    else if (N == TEXT("champions")) Champions();
     else if (N == TEXT("town_march")) { TownWave(); GameplayCamera(900, -24); }
     else if (N == TEXT("town_fight")) GameplayCamera(1100, -30);
     else if (N == TEXT("town_kill"))
@@ -371,7 +407,7 @@ bool Build(ACireGameMode& Mode, ACireController& Controller)
     const TCHAR* Names[] = {TEXT("lineup_melee"), TEXT("lineup_ranged"), TEXT("pack"),
         TEXT("attack_hollow_infantry"), TEXT("attack_ironbound_bruiser"), TEXT("attack_hollow_shieldbearer"), TEXT("attack_blight_caster"),
         TEXT("attack_barbed_hunter"), TEXT("attack_hollow_siegebreaker"), TEXT("attack_gravemaw_pack_leader"),
-        TEXT("variants"), TEXT("locomotion"), TEXT("deaths")};
+        TEXT("variants"), TEXT("locomotion"), TEXT("deaths"), TEXT("champions")};
     for (const TCHAR* Name : Names)
         if (G.Only.IsEmpty() || G.Only.Contains(Name)) G.Stages.Add({Name, 2.5f, false});
     if (G.Only.IsEmpty() || G.Only.Contains(TEXT("town")))
@@ -419,6 +455,14 @@ bool CireMonsterGallery::Tick(ACireGameMode* Mode)
         EnterStage(G.Stages[G.Stage]);
         return true;
     }
+    // Champions pose through the real ChampionArt path (-CireTripoChampions) with their action clip held.
+    for (auto& Champion : G.Champions)
+        if (ACireHero* H = Champion.Hero.Get(); H && H->ChampionArt)
+        {
+            H->ChampionArt->UpdateVisuals(*H, FApp::GetDeltaTime());
+            if (H->ChampionArt->IsApplied() && !CireChampionActions::Hold(*H, Champion.Clip, Champion.Phase) && G.bCaptured == false && Now - G.StageStarted > G.Stages[G.Stage].Settle - .1)
+                Fail(TEXT("champion clip missing: ") + H->ChampionProfileId + TEXT(" ") + Champion.Clip);
+        }
     // Hold captures while shaders compile so no placeholder materials are recorded.
     if (GShaderCompilingManager && GShaderCompilingManager->GetNumRemainingJobs() > 0 && Now - G.Started < 300) { G.StageStarted = Now; return true; }
     if (!G.bCaptured && Now - G.StageStarted >= G.Stages[G.Stage].Settle)

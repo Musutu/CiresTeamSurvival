@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "description": "Presentation rules for the Tripo batch-03 monster bodies (UCireMonsterArt, Docs/MonsterArt.md). Bodies, scales and clip paths come from NPCMeshes.tripo.json; this file only adds which bodies each archetype draws from, clip timing windows (seconds on the source clip), prop de-duplication and readability rims. Presentation only: no gameplay rule reads it.",
   "clips": {
-    "slash":           { "start": 0.80, "contact": 2.03, "end": 3.30, "recoverRate": 1.6 },
-    "chop":            { "start": 0.80, "contact": 2.03, "end": 3.30, "recoverRate": 1.6 },
+    "slash":           { "start": 0.80, "contact": 2.10, "end": 3.30, "recoverRate": 1.6 },
+    "chop":            { "start": 0.80, "contact": 2.10, "end": 3.30, "recoverRate": 1.6 },
     "ground_slam":     { "start": 0.05, "contact": 1.12, "end": 2.20, "recoverRate": 1.4 },
     "war_cry":         { "start": 0.10, "contact": 1.60, "end": 2.90, "recoverRate": 1.2 },
     "cast_a_spell":    { "start": 0.30, "contact": 2.40, "end": 3.40, "recoverRate": 1.5 },

@@ -1,6 +1,8 @@
 #include "CireNPCNetProbe.h"
 #if !UE_BUILD_SHIPPING
 #include "CireGame.h"
+#include "CireMonsterArt.h" // creature-anim
+#include "CireMonsterAnim.h" // creature-anim
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
 #include "CireNPCArchetypes.h"
@@ -51,6 +53,10 @@ bool ClientTick(float)
         const bool bReady=M->GetNPCRole()==ECireNPCRole::Bruiser&&M->GetNPCClassification()==ECireNPCClass::Boss&&Abilities.Num()>=4&&
             Cast.bCasting&&!Cast.bInterruptible&&Cast.Name==TEXT("Sundering Cleave")&&bThreat&&S->Aggro.Target==Hero&&M->Victim==Hero&&
             FMath::IsNearlyEqual(S->ThreatPercent(Hero),100.f)&&(S->StatusFlags&CireNPCStatus::Rallied)!=0;
+        // creature-anim: the client draws the animated Tripo body (replicated variant seed) and plays the cleave windup.
+        const auto* Art=M->MonsterArt.Get();const auto* Anim=Art?Art->GetMonsterAnim():nullptr;
+        const bool bArt=Art&&Art->IsTripoApplied()&&Art->BodySeed!=0&&Anim&&Anim->Action.Sequence&&Anim->Action.Weight>0.f;
+        if(bReady&&!bArt){static double LastArt=0;if(Now-LastArt>2){LastArt=Now;UE_LOG(LogCireNPCNet,Display,TEXT("CIRE_NPC_NET_CLIENT_WAIT_ART tripo=%d seed=%d action=%d"),Art&&Art->IsTripoApplied(),Art?Art->BodySeed:0,Anim&&Anim->Action.Sequence);}return true;}
         if(!bReady)
         {
             static double LastDiag=0;
@@ -66,7 +72,7 @@ bool ClientTick(float)
         UE_LOG(LogCireNPCNet,Display,TEXT("CIRE_NPC_NET_CLIENT_STATE name=%s role=%s class=%s abilities=%d cast=%s progress=%.2f threat_rows=%d aggro_event=%d text=\"%s\""),
             *M->GetNPCDisplayName(),*CireNPCArchetypes::RoleLabel(M->GetNPCRole()),*CireNPCArchetypes::ClassLabel(M->GetNPCClassification()),
             Abilities.Num(),*Cast.Name,Cast.Progress,S->ThreatTable.Num(),Client.bAggroEvent?1:0,*UCireNPCState::DescribeFocus(M));
-        Finish(Client.bAggroEvent,Client.bAggroEvent?TEXT("role/boss/cast/threat/aggro replicated"):TEXT("aggro delegate did not fire on the client"));
+        Finish(Client.bAggroEvent,Client.bAggroEvent?TEXT("role/boss/cast/threat/aggro replicated; Tripo body animates the cast"):TEXT("aggro delegate did not fire on the client"));
         return false;
     }
     return true;

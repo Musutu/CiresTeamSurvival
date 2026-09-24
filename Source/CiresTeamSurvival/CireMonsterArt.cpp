@@ -490,7 +490,7 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
         OutParts.Add(Part);
     }
     bTripoApplied = true; AppliedArchetype = Archetype.Id; AppliedVariant = Body.Variant; AppliedMeshScale = Body.MeshScale;
-    Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = Monster->CastStartedAt;
+    Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = -1.f; // a cast already under way is picked up mid-bar
     LastHealth = Monster->Health; Phase = FMath::FRand(); IdleTime = FMath::FRand() * 5.f;
     UpdateRim();
     SetComponentTickEnabled(true);

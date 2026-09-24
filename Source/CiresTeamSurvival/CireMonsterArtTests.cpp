@@ -4,6 +4,7 @@
 
 #if !UE_BUILD_SHIPPING
 #include "CireMonsterAnim.h"
+#include "CireChampionActions.h"
 #include "CireGame.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
@@ -253,6 +254,7 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
         Check(M && M->MonsterArt && M->MonsterArt->IsTripoApplied(), TEXT("Tripo body re-applies over the fallback"));
     }
     UE_LOG(LogCireMonsterArtTests, Display, TEXT("CIRE_MONSTER_ART_%s checks=%d bodies=%d poses=%d"), bPass ? TEXT("PASS") : TEXT("FAIL"), Checks, Bodies, Poses);
+    bPass = CireChampionActions::RunSmoke(Mode) && bPass;
     return bPass;
 }
 #endif
