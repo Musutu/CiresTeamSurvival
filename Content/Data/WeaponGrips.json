@@ -1,0 +1,417 @@
+{
+  "schemaVersion": 1,
+  "description": "Handle data for held props (CireGrip, Docs/MonsterArt.md 'Grips'). Keys are static mesh names. All vectors are in the mesh's own centimetre space: handle = centre of the grip, axis = handle direction running out of the fist on the thumb side, edge = direction that faces the knuckles (blade edge, axe/hammer head, bow back, crossbow muzzle), radiusCm = handle radius incl. wrapping, tilt = degrees the tip leans toward the knuckles, offHand/offAxis = second hand grip for two-handed weapons, carry = held upright in front while idle/moving, carryAt = [forward, inward, drop] of that grip as fractions of arm length. grip: power (default), shield (strapped on the forearm), ammo (rides on another prop). swapHandPresets: WeaponLoadouts presets whose props swap hands because the Tripo cast/crossbow clips hold the weapon in the right hand and gesture with the left.",
+  "weapons": {
+    "SM_PrototypeSword": {
+      "handle": [
+        0,
+        0,
+        -3.5
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 1.65,
+      "tilt": 30
+    },
+    "SM_PrototypeShield": {
+      "grip": "shield",
+      "handle": [
+        0,
+        0,
+        -4
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 1.3
+    },
+    "SM_PrototypeBow": {
+      "handle": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.5
+    },
+    "SM_PrototypeArrow": {
+      "grip": "ammo"
+    },
+    "SM_PrototypeLance": {
+      "handle": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "edge": [
+        0,
+        0,
+        1
+      ],
+      "radiusCm": 2.2,
+      "carry": true
+    },
+    "SM_Dagger": {
+      "handle": [
+        0,
+        0,
+        -3.5
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 1.55,
+      "tilt": 20
+    },
+    "SM_WarAxe": {
+      "handle": [
+        0,
+        0,
+        -3
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.15,
+      "tilt": 28
+    },
+    "SM_ThrowingAxe": {
+      "handle": [
+        0,
+        0,
+        -3
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 1.75,
+      "tilt": 25
+    },
+    "SM_WarHammer": {
+      "handle": [
+        0,
+        0,
+        -3
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.15,
+      "tilt": 28
+    },
+    "SM_PickHammer": {
+      "handle": [
+        0,
+        0,
+        -3
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.15,
+      "tilt": 28
+    },
+    "SM_Flail": {
+      "handle": [
+        0,
+        0,
+        -2
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.05,
+      "tilt": 22
+    },
+    "SM_Totem": {
+      "handle": [
+        0,
+        0,
+        -2
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 3.85,
+      "offHand": [
+        0,
+        0,
+        17
+      ],
+      "offAxis": [
+        0,
+        0,
+        1
+      ],
+      "carry": true
+    },
+    "SM_ArcaneStaff": {
+      "handle": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.25,
+      "offHand": [
+        0,
+        0,
+        22
+      ],
+      "offAxis": [
+        0,
+        0,
+        1
+      ],
+      "carry": true
+    },
+    "SM_RiftStaff": {
+      "handle": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.25,
+      "offHand": [
+        0,
+        0,
+        22
+      ],
+      "offAxis": [
+        0,
+        0,
+        1
+      ],
+      "carry": true
+    },
+    "SM_EmberStaff": {
+      "handle": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.25,
+      "offHand": [
+        0,
+        0,
+        22
+      ],
+      "offAxis": [
+        0,
+        0,
+        1
+      ],
+      "carry": true
+    },
+    "SM_GroveStaff": {
+      "handle": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.25,
+      "offHand": [
+        0,
+        0,
+        22
+      ],
+      "offAxis": [
+        0,
+        0,
+        1
+      ],
+      "carry": true
+    },
+    "SM_LanternStaff": {
+      "handle": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.25,
+      "offHand": [
+        0,
+        0,
+        22
+      ],
+      "offAxis": [
+        0,
+        0,
+        1
+      ],
+      "carry": true
+    },
+    "SM_Crossbow": {
+      "handle": [
+        0,
+        0,
+        -1.5
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.0,
+      "offHand": [
+        11,
+        0,
+        -1
+      ],
+      "offAxis": [
+        1,
+        0,
+        0
+      ],
+      "carry": true,
+      "carryAt": [
+        0.45,
+        0.34,
+        0.42
+      ]
+    },
+    "SM_Bolt": {
+      "grip": "ammo"
+    }
+  },
+  "swapHandPresets": [
+    "scholar",
+    "summoner",
+    "wizard",
+    "dryad",
+    "keeper",
+    "ranger_crossbow"
+  ]
+}

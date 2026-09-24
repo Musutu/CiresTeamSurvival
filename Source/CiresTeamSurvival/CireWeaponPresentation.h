@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "CireGrip.h" // creature-anim
 #include "CireWeaponPresentation.generated.h"
 
 class ACireHero;
@@ -30,6 +31,10 @@ public:
     void Clear();
     const FString& GetEquippedLoadout() const { return EquippedLoadout; }
     int32 GetPartCount() const { return Parts.Num(); }
+    // creature-anim: closed hands around the held props and the two-hand setup (CireGrip), read by CireChampionArt.
+    CireGrip::FHands GripHands;
+    CireGrip::FHandPose DrawPose;          // bow string hand (pinch) while drawing
+    const TArray<TObjectPtr<UStaticMeshComponent>>& GetParts() const { return Parts; }
 #if !UE_BUILD_SHIPPING
     bool CyclePreview(ACireHero& Hero,FString& Message);
     void ResetPreview(ACireHero& Hero);

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "CireGrip.h"
 #include "CireMonsterAnim.generated.h"
 
 class UAnimSequence;
@@ -72,6 +73,8 @@ public:
     /** 0..1 blend from idle to moving, and inside moving from walk to run. */
     float MoveAlpha = 0.f;
     float RunAlpha = 0.f;
+    /** Closed hands around held props and the off-hand IK of two-handed weapons. */
+    CireGrip::FHands Hands;
     /** Set when the last evaluation produced a non-finite pose (reference pose was used). */
     bool bLastPoseRejected = false;
 protected:

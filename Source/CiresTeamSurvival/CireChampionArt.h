@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Animation/AnimSingleNodeInstance.h"
+#include "CireGrip.h" // creature-anim
 #include "CireChampionArt.generated.h"
 
 class ACireHero;
@@ -15,6 +16,8 @@ class UAnimSequence;
 class UCireWeaponPresentation;
 class UCireCreatureArt;
 class UMeshComponent;
+/** creature-anim: native tests force the Tripo champion bodies without -CireTripoChampions. */
+extern CIRESTEAMSURVIVAL_API bool GCireForceTripoChampionArt;
 
 /** Prototype combat layer. Locomotion keeps advancing while the attack fades in/out. */
 UCLASS(Transient)
@@ -27,6 +30,9 @@ public:
     float AttackWeight = 0.f;
     // creature-anim: 0 = the action layer drives only spine and above (legs keep walking), 1 = full body.
     float AttackLowerBody = 1.f;
+    // creature-anim: closed hands around held props and the off-hand IK of two-handed weapons.
+    CireGrip::FHands Hands;
+    float SpineTwist = 0.f;
     float AirWeight = 0.f;
     float RollProgress = -1.f;
     FVector MotionPitchAxis = FVector(1,0,0);

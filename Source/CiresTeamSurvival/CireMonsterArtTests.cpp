@@ -140,7 +140,7 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
             for (const FCireNPCProp& Prop : Archetype->Props)
             {
                 const UStaticMeshComponent* Found = nullptr;
-                for (const auto& Part : M->NPCState->VisualParts) if (Part && Part->GetAttachSocketName() == Prop.Bone) Found = Part;
+                for (const auto& Part : M->NPCState->VisualParts) if (Part && (Part->GetAttachSocketName() == Prop.Bone || Part->ComponentHasTag(FName(*(TEXT("CireGripHand_") + Prop.Bone.ToString()))))) Found = Part;
                 if (Body.DropPropBones.Contains(Prop.Bone)) Check(Found == nullptr, Tag + TEXT(" drops duplicate prop on ") + Prop.Bone.ToString());
                 else
                 {
@@ -270,6 +270,7 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
     }
     UE_LOG(LogCireMonsterArtTests, Display, TEXT("CIRE_MONSTER_ART_%s checks=%d bodies=%d poses=%d"), bPass ? TEXT("PASS") : TEXT("FAIL"), Checks, Bodies, Poses);
     bPass = CireChampionActions::RunSmoke(Mode) && bPass;
+    bPass = CireGrip::RunSmoke(Mode) && bPass;
     return bPass;
 }
 #endif

@@ -96,6 +96,53 @@ the weapon strike. The layer blends per bone, so the legs keep walking during sw
 weapons and shields use the same bind-pose grip frame as the monsters. Bodies without ChampionAttacks02 clips keep
 the CombatPrototype01 clip.
 
+## Grips (`CireGrip`, `Content/Data/WeaponGrips.json`)
+
+Held props used to be parented to the hand bone with a computed offset and the fingers stayed in the bind
+pose, so weapons pierced open hands. Now every held prop (champions and the monster props that stay) is
+gripped:
+
+* **Hand poses.** Built natively from each body's bind pose: palm frame (knuckle direction, pinky->index
+  direction, palm normal), a handle axis across the fingers leaning toward the wrist on the pinky side, tangent
+  to the finger roots at the wrapped radius (handle radius + finger thickness) and lifted off any cupped knuckle.
+  Proximal and distal finger curls are fitted so every finger joint and tip sits on that cylinder; the thumb is
+  searched to close over the fingers. Types: power grip (swords, axes, hammers, flail, pick, daggers, staffs,
+  lance, totem, bow, crossbow), pinch (bow string hand while drawing). The finger rotations override the
+  animation on the finger bones in idle, locomotion and attacks (monster and champion anim instances).
+* **Attachment.** `WeaponGrips.json` gives each weapon mesh a handle point, handle axis, edge direction (what
+  faces the knuckles: blade edge, axe/hammer head, bow back, crossbow muzzle), handle radius and a tilt toward the
+  knuckles. `CireGrip::Place` puts the handle through the fitted palm centre along the fitted axis, so the handle
+  sits inside the closed fist and the blade leaves on the thumb side along the swing. Props keep real centimetres
+  on every body (root scale 100 compensated).
+* **Shields** strap onto the outside of the forearm (lowerarm bone), face out, centred between elbow and wrist.
+* **Two-handed** staffs, totem and crossbow place the second hand on an off-hand grip point with a two-bone IK;
+  the support hand's knuckles continue its arm so the wrist stays reachable. The second hand lets go while an
+  action clip drives the arms.
+* **Carry.** Staffs, totem, lance and crossbow are carried upright in front while idle or moving (main arm IK to a
+  chest-relative grip, `carryAt` = forward/inward/drop fractions of arm length; the crossbow is held higher and
+  nearer the midline, stock forward).
+* **Bow draw.** The string hand closes to a pinch during the draw and the bow string runs to the pinch point.
+* Presets whose Tripo cast/crossbow clips hold the weapon in the right hand (scholar, summoner, wizard, dryad,
+  keeper, ranger_crossbow) swap their hand props. The summoner's dagger releases the staff's second grip.
+
+## Swing styles
+
+`ChampionAttacks02.json` `styles` picks the basic attack by weapon preset: swords a diagonal slash (torso twist
+22 deg), axes a sweep (38-42 deg twist: turned away during the raise, through the target after contact), hammers,
+pick, flail and totem a straight overhead (slash, no twist), daggers, lance and thrown weapons a thrust (the
+forward push of cast_a_spell). The twist is applied natively to spine_01..03 in the champion anim instance.
+
+## Grip tests
+
+`CireGrip::RunSmoke` (in the NPC/expansion native suites): 14 champion weapon cases (sword+shield,
+hammer+shield, bow, crossbow, staff, staff+dagger, lantern staff, axe, throwing axes, daggers, flail+shield,
+pick, totem, lance) and the kept monster props (dagger, axe, sword+shield, bow), each in idle and mid-attack:
+handle axis through the palm centre (<= 0.35 r + 1.2 cm), handle point in the fist (<= 2.5 cm along), handle
+orientation equal to the authored tilt (+-6 deg), every finger's middle joint outside the handle (>= 0.6 r) yet
+wrapping it (<= r + 5.5 cm), knuckles and wrist clear of the handle (>= 0.8 r), second hand on its grip line and
+carried weapons upright in idle, shields on the forearm, finite poses. `CIRE_GRIP_PASS checks=674 grips=50`.
+Close-ups: `Tools/RunMonsterGallery.py --only hand_,grips_,styles_`.
+
 ## Tests and evidence
 
 * Native (`CireMonsterArt::RunSmoke` and `CireChampionActions::RunSmoke`, run by `RunNPCChecks --only native` and
@@ -121,6 +168,8 @@ the CombatPrototype01 clip.
   are identical), there is no second melee variation, and the bow clip holds the bow canted.
 * No foot IK: feet are grounded by pivot and toe lift, not planted per step; slopes and stairs will float or sink
   the soles by a few centimetres. Strafing plays the forward cycle.
-* Prop grips are computed, not authored: weapons sit in the fist but fingers do not wrap them.
+* Grips are computed, not authored per body: the Behemoth's 10 cm totem pole is thicker than a fist can close
+  around and is held loosely; fingers do not collide with each other; the thrust style reuses the cast push, so a
+  thrown lance is raised vertically at release rather than pointed.
 * Champion casts are recognised from cooldowns, so a cast whose cooldown is refunded or zero plays nothing.
 * The corpse is local presentation: it ignores realm changes after death and does not ragdoll.

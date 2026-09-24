@@ -5,6 +5,8 @@
 #include "CireMonsterArt.h"
 #include "CireChampionActions.h"
 #include "CireChampionArt.h"
+#include "CireWeaponPresentation.h"
+#include "GameFramework/GameStateBase.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
@@ -46,7 +48,9 @@ struct FGallery
     TArray<TWeakObjectPtr<AActor>> Scene;
     TArray<TWeakObjectPtr<ACireMonster>> Wave;
     TWeakObjectPtr<ACireHero> Hero;
-    struct FChampion { TWeakObjectPtr<ACireHero> Hero; FString Clip; float Phase = 1.f; };
+    struct FChampion { TWeakObjectPtr<ACireHero> Hero; FString Clip; float Phase = 1.f; float Draw = -1.f; };
+    // Hand detail stages: the camera tracks one bone of one character.
+    TWeakObjectPtr<ACharacter> Focus; FName FocusBone; FVector FocusOffset = FVector::ZeroVector;
     TArray<FChampion> Champions;
     TArray<FStage> Stages;
     TArray<FString> Captures, Only;
@@ -74,7 +78,7 @@ UWorld* World() { return G.Mode.IsValid() ? G.Mode->GetWorld() : nullptr; }
 void ClearScene()
 {
     for (auto& Actor : G.Scene) if (Actor.IsValid()) Actor->Destroy();
-    G.Scene.Reset(); G.Wave.Reset(); G.Champions.Reset();
+    G.Scene.Reset(); G.Wave.Reset(); G.Champions.Reset(); G.Focus.Reset();
     for (TActorIterator<ACireMonsterCorpse> It(World()); It; ++It) It->Destroy();
     if (G.Mode.IsValid()) G.Mode->Monsters.RemoveAll([](ACireMonster* M) { return !IsValid(M) || M->IsActorBeingDestroyed(); });
 }
@@ -296,6 +300,58 @@ void Champions()
     Look(C + FVector(1900, -700, 380), C + FVector(0, 0, 110), 50);
 }
 
+struct FClose { const TCHAR* Who; const TCHAR* Preset; const TCHAR* Clip; float Phase; const TCHAR* Title; };
+void Closeups(const TArray<FClose>& List);
+
+/** One character, camera on a hand: View 0 from the side/front, 1 from above/behind. */
+void HandDetail(const FClose& Entry, FName Bone, const FVector& Offset)
+{
+    Closeups({Entry});
+    for (auto& Actor : G.Scene) if (auto* C = Cast<ACharacter>(Actor.Get())) { G.Focus = C; break; }
+    G.FocusBone = Bone; G.FocusOffset = Offset;
+}
+
+/** Close-up pairs: each subject idle and mid-attack, framed on the hands. Who = champion profile or monster archetype. */
+void Closeups(const TArray<FClose>& List)
+{
+    const FVector C = G.Studio;
+    FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    for (int32 I = 0; I < List.Num(); ++I)
+    {
+        const FClose& E = List[I];
+        const FVector At = C + FVector(0, (I - (List.Num() - 1) * .5f) * 95.f, 0);
+        if (CireNPCArchetypes::Find(FName(E.Who)))
+        {
+            ACireMonster* M = Spawn(FName(E.Who), 0, At, 0);
+            if (M && FCString::Strlen(E.Clip) > 0)
+            {
+                const CireMonsterArt::FClipWindow W = M->MonsterArt->WindowOf(E.Clip);
+                Pose(M, E.Clip, E.Phase <= 1.f ? FMath::Lerp(W.Start, W.Contact, E.Phase) : FMath::Lerp(W.Contact, W.End, E.Phase - 1.f));
+            }
+            else if (M) M->MonsterArt->PoseForTest(TEXT("idle"), .3f);
+        }
+        else
+        {
+            auto* H = World()->SpawnActor<ACireHero>(At + FVector(0, 0, 200), FRotator::ZeroRotator, Params);
+            if (!H) { Fail(TEXT("spawn champion")); continue; }
+            G.Scene.Add(H); H->TeamId = 0;
+            if (!H->DraftProfile(E.Who)) Fail(FString(TEXT("draft ")) + E.Who);
+            H->SetActorTickEnabled(false); H->GetCharacterMovement()->DisableMovement();
+            H->SetActorLocation(FVector(At.X, At.Y, FloorZ(At) + H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 1));
+            H->SetActorRotation(FRotator(0, 0, 0));
+            H->GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+            if (H->ChampionArt) H->ChampionArt->UpdateVisuals(*H, 0.f);
+            if (FCString::Strlen(E.Preset) > 0)
+                if (auto* Weapons = H->FindComponentByClass<UCireWeaponPresentation>())
+                    for (int32 Try = 0; Try < 4 && Weapons->GetEquippedLoadout() != E.Preset; ++Try) { FString Message; Weapons->CyclePreview(*H, Message); }
+            const bool bBowDraw = FCString::Strcmp(E.Clip, TEXT("attack_bow")) == 0;
+            G.Champions.Add({H, E.Clip, E.Phase, bBowDraw ? .15f : -1.f});
+        }
+        Label(At + FVector(0, 0, 212), E.Title, FColor(246, 219, 155), 7, 0);
+    }
+    Look(C + FVector(215, -55, 150), C + FVector(0, 0, 118), 50);
+}
+
 void TownWave()
 {
     UWorld* W = World();
@@ -353,6 +409,38 @@ void EnterStage(const FStage& S)
     else if (N == TEXT("locomotion")) Locomotion();
     else if (N == TEXT("deaths")) Deaths();
     else if (N == TEXT("champions")) Champions();
+    else if (N == TEXT("hand_sword_front")) HandDetail({TEXT("knight"), TEXT(""), TEXT(""), 0, TEXT("")}, TEXT("hand_r"), FVector(120, 90, 15));
+    else if (N == TEXT("hand_sword_side")) HandDetail({TEXT("knight"), TEXT(""), TEXT(""), 0, TEXT("")}, TEXT("hand_r"), FVector(10, 140, 25));
+    else if (N == TEXT("hand_sword_attack")) HandDetail({TEXT("knight"), TEXT(""), TEXT("slash"), 1.f, TEXT("")}, TEXT("hand_r"), FVector(110, 110, 30));
+    else if (N == TEXT("hand_shield")) HandDetail({TEXT("knight"), TEXT(""), TEXT(""), 0, TEXT("")}, TEXT("lowerarm_l"), FVector(110, -130, 30));
+    else if (N == TEXT("hand_bow")) HandDetail({TEXT("ranger"), TEXT(""), TEXT(""), 0, TEXT("")}, TEXT("hand_l"), FVector(110, -110, 20));
+    else if (N == TEXT("hand_bow_draw")) HandDetail({TEXT("ranger"), TEXT(""), TEXT("attack_bow"), .85f, TEXT("")}, TEXT("hand_r"), FVector(60, 130, 40));
+    else if (N == TEXT("hand_staff")) HandDetail({TEXT("scholar"), TEXT(""), TEXT(""), 0, TEXT("")}, TEXT("hand_r"), FVector(130, 90, 20));
+    else if (N == TEXT("hand_axe")) HandDetail({TEXT("orc_chieftain"), TEXT(""), TEXT(""), 0, TEXT("")}, TEXT("hand_r"), FVector(260, 200, 40));
+    else if (N == TEXT("styles_windup") || N == TEXT("styles_contact"))
+    {
+        const float Phase = N == TEXT("styles_windup") ? .75f : 1.15f;
+        Closeups({{TEXT("knight"), TEXT(""), TEXT("slash"), Phase, TEXT("Sword: diagonal slash")}, {TEXT("orc_chieftain"), TEXT(""), TEXT("slash"), Phase, TEXT("Axe: sweep")},
+            {TEXT("knight"), TEXT("hammer_shield"), TEXT("slash"), Phase, TEXT("Hammer: overhead")}, {TEXT("troll_berserker_melee"), TEXT("dual_daggers"), TEXT("cast_a_spell"), Phase, TEXT("Daggers: thrust")},
+            {TEXT("lancer"), TEXT(""), TEXT("cast_a_spell"), Phase, TEXT("Lance: thrust")}});
+        for (auto& Actor : G.Scene) if (auto* Text = Cast<ATextRenderActor>(Actor.Get())) Text->GetTextRender()->SetWorldSize(9.f);
+        Look(G.Studio + FVector(620, -360, 240), G.Studio + FVector(0, 0, 120), 50);
+    }
+    else if (N == TEXT("hand_totem")) HandDetail({TEXT("totemic_behemoth"), TEXT(""), TEXT(""), 0, TEXT("")}, TEXT("hand_r"), FVector(190, 150, 20));
+    else if (N == TEXT("hand_crossbow")) HandDetail({TEXT("ranger"), TEXT("ranger_crossbow"), TEXT(""), 0, TEXT("")}, TEXT("hand_r"), FVector(120, 20, 25));
+    else if (N == TEXT("hand_monster")) HandDetail({TEXT("hollow_infantry"), TEXT(""), TEXT(""), 0, TEXT("")}, TEXT("hand_r"), FVector(110, 90, 15));
+    else if (N == TEXT("grips_melee_a")) Closeups({{TEXT("knight"), TEXT(""), TEXT(""), 0, TEXT("Warden sword+shield idle")}, {TEXT("knight"), TEXT(""), TEXT("slash"), .8f, TEXT("Warden windup")}});
+    else if (N == TEXT("grips_melee_b")) Closeups({{TEXT("orc_chieftain"), TEXT(""), TEXT(""), 0, TEXT("Chieftain axe idle")}, {TEXT("orc_chieftain"), TEXT(""), TEXT("slash"), 1.f, TEXT("Chieftain axe contact")}});
+    else if (N == TEXT("grips_heavy_a")) Closeups({{TEXT("dwarf_miner"), TEXT(""), TEXT(""), 0, TEXT("Miner pick idle")}, {TEXT("paladin_holy"), TEXT(""), TEXT(""), 0, TEXT("Paladin flail+shield idle")}});
+    else if (N == TEXT("grips_heavy_b")) Closeups({{TEXT("knight"), TEXT("hammer_shield"), TEXT("slash"), 1.f, TEXT("Hammer contact")}, {TEXT("totemic_behemoth"), TEXT(""), TEXT(""), 0, TEXT("Behemoth totem two-hand")}});
+    else if (N == TEXT("grips_ranged_a")) Closeups({{TEXT("ranger"), TEXT(""), TEXT(""), 0, TEXT("Ranger bow idle")}, {TEXT("ranger"), TEXT(""), TEXT("attack_bow"), .85f, TEXT("Ranger bow draw")}});
+    else if (N == TEXT("grips_ranged_b")) Closeups({{TEXT("ranger"), TEXT("ranger_crossbow"), TEXT(""), 0, TEXT("Crossbow idle")}, {TEXT("ranger"), TEXT("ranger_crossbow"), TEXT("attack_crossbow"), 1.f, TEXT("Crossbow shot")}});
+    else if (N == TEXT("grips_casters_a")) Closeups({{TEXT("scholar"), TEXT(""), TEXT(""), 0, TEXT("Scholar staff two-hand")}, {TEXT("wizard"), TEXT(""), TEXT("cast_a_spell"), 1.f, TEXT("Wizard cast")}});
+    else if (N == TEXT("grips_casters_b")) Closeups({{TEXT("summoner"), TEXT(""), TEXT(""), 0, TEXT("Summoner staff+dagger")}, {TEXT("keeper_of_light"), TEXT(""), TEXT(""), 0, TEXT("Keeper lantern staff")}});
+    else if (N == TEXT("grips_light_a")) Closeups({{TEXT("lancer"), TEXT(""), TEXT(""), 0, TEXT("Lancer lance idle")}, {TEXT("lancer"), TEXT(""), TEXT("slash"), .8f, TEXT("Lancer windup")}});
+    else if (N == TEXT("grips_light_b")) Closeups({{TEXT("troll_berserker_melee"), TEXT(""), TEXT(""), 0, TEXT("Troll throwing axes")}, {TEXT("troll_berserker_melee"), TEXT("dual_daggers"), TEXT("slash"), 1.f, TEXT("Daggers contact")}});
+    else if (N == TEXT("grips_monsters_a")) Closeups({{TEXT("hollow_infantry"), TEXT(""), TEXT(""), 0, TEXT("Infantry dagger idle")}, {TEXT("ironbound_bruiser"), TEXT(""), TEXT("attack"), .8f, TEXT("Bruiser axe windup")}});
+    else if (N == TEXT("grips_monsters_b")) Closeups({{TEXT("hollow_shieldbearer"), TEXT(""), TEXT(""), 0, TEXT("Shieldbearer idle")}, {TEXT("barbed_hunter"), TEXT(""), TEXT("attack"), .9f, TEXT("Hunter bow draw")}});
     else if (N == TEXT("town_march")) { TownWave(); GameplayCamera(900, -24); }
     else if (N == TEXT("town_fight")) GameplayCamera(1100, -30);
     else if (N == TEXT("town_kill"))
@@ -407,9 +495,13 @@ bool Build(ACireGameMode& Mode, ACireController& Controller)
     const TCHAR* Names[] = {TEXT("lineup_melee"), TEXT("lineup_ranged"), TEXT("pack"),
         TEXT("attack_hollow_infantry"), TEXT("attack_ironbound_bruiser"), TEXT("attack_hollow_shieldbearer"), TEXT("attack_blight_caster"),
         TEXT("attack_barbed_hunter"), TEXT("attack_hollow_siegebreaker"), TEXT("attack_gravemaw_pack_leader"),
-        TEXT("variants"), TEXT("locomotion"), TEXT("deaths"), TEXT("champions")};
+        TEXT("variants"), TEXT("locomotion"), TEXT("deaths"), TEXT("champions"),
+        TEXT("hand_sword_front"), TEXT("hand_sword_side"), TEXT("hand_sword_attack"), TEXT("hand_shield"), TEXT("hand_bow"), TEXT("hand_bow_draw"),
+        TEXT("styles_windup"), TEXT("styles_contact"),
+        TEXT("hand_staff"), TEXT("hand_axe"), TEXT("hand_totem"), TEXT("hand_crossbow"), TEXT("hand_monster"),
+        TEXT("grips_melee_a"), TEXT("grips_melee_b"), TEXT("grips_heavy_a"), TEXT("grips_heavy_b"), TEXT("grips_ranged_a"), TEXT("grips_ranged_b"), TEXT("grips_casters_a"), TEXT("grips_casters_b"), TEXT("grips_light_a"), TEXT("grips_light_b"), TEXT("grips_monsters_a"), TEXT("grips_monsters_b")};
     for (const TCHAR* Name : Names)
-        if (G.Only.IsEmpty() || G.Only.Contains(Name)) G.Stages.Add({Name, 2.5f, false});
+        if (G.Only.IsEmpty() || G.Only.ContainsByPredicate([Name](const FString& Prefix) { return FString(Name).StartsWith(Prefix); })) G.Stages.Add({Name, 2.5f, false});
     if (G.Only.IsEmpty() || G.Only.Contains(TEXT("town")))
     {
         G.Stages.Add({TEXT("town_march"), 4.f, false});
@@ -455,12 +547,40 @@ bool CireMonsterGallery::Tick(ACireGameMode* Mode)
         EnterStage(G.Stages[G.Stage]);
         return true;
     }
+    if (ACharacter* F = G.Focus.Get())
+    {
+        const FVector Hand = F->GetMesh()->GetSocketLocation(G.FocusBone);
+        Look(Hand + F->GetActorRotation().RotateVector(G.FocusOffset), Hand, 38.f);
+        static double LastLog = 0;
+        if (FPlatformTime::Seconds() - LastLog > 1.0)
+        {
+            LastLog = FPlatformTime::Seconds();
+            const auto* Mesh = F->GetMesh();
+            const TCHAR* Side = G.FocusBone == TEXT("hand_l") ? TEXT("_l") : TEXT("_r");
+            FString Line = FString::Printf(TEXT("CIRE_GRIP_DEBUG stage=%s hand=%s"), *G.Stages[G.Stage].Name, *Mesh->GetSocketLocation(FName(FString(TEXT("hand")) + Side)).ToString());
+            for (const TCHAR* B : {TEXT("index_01"), TEXT("pinky_01"), TEXT("middle_01"), TEXT("middle_03"), TEXT("thumb_03"), TEXT("lowerarm")})
+                Line += FString::Printf(TEXT(" %s=%s"), B, *Mesh->GetSocketLocation(FName(FString(B) + Side)).ToString());
+            TArray<USceneComponent*> Children; Mesh->GetChildrenComponents(false, Children);
+            for (USceneComponent* Child : Children)
+                if (auto* Part = Cast<UStaticMeshComponent>(Child); Part && Part->GetStaticMesh())
+                    Line += FString::Printf(TEXT(" | %s@%s origin=%s up=%s fwd=%s"), *Part->GetStaticMesh()->GetName(), *Part->GetAttachSocketName().ToString(),
+                        *Part->GetComponentLocation().ToString(), *Part->GetUpVector().ToString(), *Part->GetForwardVector().ToString());
+            UE_LOG(LogCireMonsterGallery, Display, TEXT("%s"), *Line);
+        }
+    }
     // Champions pose through the real ChampionArt path (-CireTripoChampions) with their action clip held.
     for (auto& Champion : G.Champions)
         if (ACireHero* H = Champion.Hero.Get(); H && H->ChampionArt)
         {
+            if (Champion.Draw >= 0.f)
+            {
+                // Bow draw: the replicated attack is mid-draw so the string hand pinches the nock.
+                const AGameStateBase* State = H->GetWorld()->GetGameState();
+                const float ServerNow = State ? State->GetServerWorldTimeSeconds() : H->GetWorld()->GetTimeSeconds();
+                H->AttackSerial = 7; H->AttackDuration = .65f; H->AttackStartedServerTime = ServerNow - Champion.Draw;
+            }
             H->ChampionArt->UpdateVisuals(*H, FApp::GetDeltaTime());
-            if (H->ChampionArt->IsApplied() && !CireChampionActions::Hold(*H, Champion.Clip, Champion.Phase) && G.bCaptured == false && Now - G.StageStarted > G.Stages[G.Stage].Settle - .1)
+            if (!Champion.Clip.IsEmpty() && H->ChampionArt->IsApplied() && !CireChampionActions::Hold(*H, Champion.Clip, Champion.Phase) && G.bCaptured == false && Now - G.StageStarted > G.Stages[G.Stage].Settle - .1)
                 Fail(TEXT("champion clip missing: ") + H->ChampionProfileId + TEXT(" ") + Champion.Clip);
         }
     // Hold captures while shaders compile so no placeholder materials are recorded.

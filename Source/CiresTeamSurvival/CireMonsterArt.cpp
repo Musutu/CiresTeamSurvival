@@ -432,6 +432,7 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
         Anim->MoveAlpha = Anim->RunAlpha = 0.f;
     }
     else { RestoreFallback(); return false; }
+    GripHands = CireGrip::FHands();
     // Props: drop what the body already carries in its mesh, keep the rest on the right bones.
     const USkeletalMesh& Skeletal = *Asset;
     const FReferenceSkeleton& Reference = Skeletal.GetRefSkeleton();
@@ -452,6 +453,23 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
         Part->SetCanEverAffectNavigation(false); Part->SetCastShadow(true);
         const bool bHand = Prop.Bone == TEXT("hand_r") || Prop.Bone == TEXT("hand_l");
         if (bHand) Part->ComponentTags.AddUnique(TEXT("CireWeaponProp"));
+        if (bHand)
+            if (const CireGrip::FWeapon* Grip = CireGrip::FindWeapon(PropMesh))
+            {
+                // Handle inside the curled fist (CireGrip); shields strap onto the forearm.
+                const float Size = Prop.Scale * (Body.PropScale.Contains(Prop.Bone) ? Body.PropScale[Prop.Bone] : 1.f);
+                const CireGrip::FPlacement Placement = CireGrip::Place(Skeletal, Prop.Bone, *Grip, Size, Body.MeshScale);
+                if (Placement.bValid)
+                {
+                    Part->SetupAttachment(Mesh, Placement.Bone);
+                    Part->SetRelativeTransform(Placement.Relative);
+                    Part->ComponentTags.AddUnique(FName(*(TEXT("CireGripHand_") + Prop.Bone.ToString())));
+                    Part->RegisterComponent();
+                    OutParts.Add(Part);
+                    CireGrip::AddToHands(Skeletal, Placement, GripHands);
+                    continue;
+                }
+            }
         const FTransform Bone = ReferenceBone(Reference, Prop.Bone);
         FQuat Frame = Upright;
         if (bHand)
@@ -693,6 +711,9 @@ void UCireMonsterArt::UpdatePresentation(float DeltaTime)
         }
     }
     if (Anim->Action.Weight <= 0.f) Anim->Action.Sequence = nullptr;
+    Anim->Hands = GripHands;
+    // The off hand lets go of a two-handed weapon while an action clip drives the arms.
+    Anim->Hands.TwoHandWeight = GripHands.bTwoHand || GripHands.bCarry ? 1.f - Anim->Action.Weight : 0.f;
     UpdateRim();
 }
 
@@ -742,6 +763,8 @@ bool UCireMonsterArt::PoseForTest(const FString& Role, float Normalized, float M
         Layer.Time = Role == TEXT("death") ? Normalized * Clip->GetPlayLength() : FMath::Lerp(W.Start, W.End, Normalized);
     }
     (void)MoveSpeed;
+    Anim->Hands = GripHands;
+    Anim->Hands.TwoHandWeight = (GripHands.bTwoHand || GripHands.bCarry) && Role != TEXT("death") && Anim->Action.Weight <= 0.f ? 1.f : 0.f;
     USkeletalMeshComponent* Mesh = Monster->GetMesh();
     Mesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
     Mesh->TickAnimation(0.f, false);
@@ -771,7 +794,7 @@ void UCireMonsterArt::SpawnCorpse()
     if (!Corpse) return;
     TArray<TObjectPtr<UStaticMeshComponent>> Props;
     if (Monster->NPCState) Props = Monster->NPCState->VisualParts;
-    if (!Corpse->Initialize(*Mesh, Fall, RoleClip(TEXT("idle")), Props)) { Corpse->Destroy(); return; }
+    if (!Corpse->Initialize(*Mesh, Fall, RoleClip(TEXT("idle")), Props, &GripHands)) { Corpse->Destroy(); return; }
     // The live actor is destroyed this frame; hide it now so the body is never drawn twice.
     Mesh->SetVisibility(false, true);
 }
@@ -793,7 +816,7 @@ void ACireMonsterCorpse::EndPlay(const EEndPlayReason::Type Reason) { --GCorpses
 
 int32 ACireMonsterCorpse::LiveCount() { return GCorpses; }
 
-bool ACireMonsterCorpse::Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props)
+bool ACireMonsterCorpse::Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props, const CireGrip::FHands* Hands)
 {
     if (!Source.GetSkeletalMeshAsset() || !Fall) return false;
     SetActorTransform(Source.GetComponentTransform());
@@ -805,6 +828,7 @@ bool ACireMonsterCorpse::Initialize(const USkeletalMeshComponent& Source, UAnimS
     Anim->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
     Anim->Idle.Sequence = Idle; Anim->Idle.Weight = 1.f;
     Anim->Death.Sequence = Fall; Anim->Death.Weight = 0.f; Anim->Death.LowerBody = 1.f;
+    if (Hands) { Anim->Hands = *Hands; Anim->Hands.TwoHandWeight = 0.f; }
     const CireMonsterArt::FClipWindow Window = CireMonsterArt::Window(Fall);
     FallSeconds = FMath::Max(.2f, Window.End - Window.Start);
     const auto& D = CireMonsterArt::Data();
