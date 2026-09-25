@@ -213,6 +213,13 @@ void ACireHUD::DrawSettings()
             Slider(TEXT("Camera distance (cm)"),UISettings.CameraDistance,300,1200,25,L,Top+134,TEXT("Preferred third-person camera boom length. World collision can pull the camera closer near walls. The mouse wheel zooms within this range."));
             Slider(TEXT("Field of view"),UISettings.CameraFOV,55,105,1,R,Top+134,TEXT("Horizontal camera field of view in degrees. A wider view shows more surroundings."));
             Toggle(TEXT("Quick cast ground skills at cursor"),UISettings.bQuickGroundCast,L,Top+210,TEXT("Off: preview the real footprint, then left click to confirm. On: cast immediately at the cursor. Server range, line-of-sight and resource checks always apply."));
+            // feat/camera-movement: casting while moving / smart targeting preferences.
+            Label(TEXT("CASTING"),L,Top+248,12,Gold);
+            Toggle(TEXT("Smart cast (auto-target enemy)"),UISettings.bSmartCast,L,Top+278,TEXT("An enemy spell with no valid target selects the enemy under the cursor, else the nearest enemy in front of the camera. Summons that need an enemy do the same."));
+            Toggle(TEXT("Mouseover casting"),UISettings.bMouseoverCast,R,Top+278,TEXT("Spells go to the valid unit under the cursor without changing your target (enemy spells on enemies, ally spells on allies)."));
+            Toggle(TEXT("Right click cancels ground aim"),UISettings.bRightClickCancelsAim,L,Top+310,TEXT("Only a clean right click (no camera drag) cancels an armed reticle. Right-drag steering and movement never cancel. Escape always cancels."));
+            Toggle(TEXT("Press ability again to cast at reticle"),UISettings.bPressAgainToCast,R,Top+310,TEXT("While a ground ability is armed, pressing its key again casts it at the reticle."));
+            Toggle(TEXT("Stop moving to cast"),UISettings.bAutoStopToCast,L,Top+342,TEXT("Cast-time spells need you to stand still (WoW). On: pressing one while moving stops your movement keys and casts; press a movement key again to move (cancels the cast). Off: shows Can't cast while moving."));
         }
         else DrawKeybindingsPage(L,Top-40);
     }
@@ -328,7 +335,8 @@ void ACireHUD::DrawSettings()
         Toggle(TEXT("Spell / scene bloom"),UISettings.bBloom,R,Top+143,TEXT("Controls the local camera bloom intensity. It does not remove enemy telegraphs."));
         Toggle(TEXT("Impact camera shake"),UISettings.bImpactCameraShake,L,Top+190,TEXT("A small camera kick when a heavy spell or critical hit lands on or next to your champion. Never moves the camera for distant fights.")); // ability-vfx
         Toggle(TEXT("Motion blur"),UISettings.bMotionBlur,R,Top+184,TEXT("Controls local camera motion blur. Off preserves clarity during fast turns."));
-        Slider(TEXT("Other units' aura effects"),UISettings.OtherEffectsIntensity,0,1,.05f,R,Top+222,TEXT("Strength of buff auras, rage swirls and empowered-attack trails on units other than you. 0 keeps only overhead marks. Your own effects stay full.")); // aura-vfx
+        Slider(TEXT("Ground telegraph intensity"),UISettings.GroundTelegraphIntensity,.3f,1,.05f,R,Top+268,TEXT("Brightness of ground telegraphs, aim previews and lingering zones (fill, rim and runes). Enemy warnings stay readable at the lowest setting.")); // ability-vfx
+        Slider(TEXT("Ally / other units' effects"),UISettings.OtherEffectsIntensity,0,1,.05f,R,Top+222,TEXT("Strength of buff auras, rage swirls and empowered-attack trails on units other than you. 0 keeps only overhead marks. Your own effects stay full.")); // aura-vfx
         if(Settings && !bVideoPending && Button(TEXT("APPLY VIDEO PREVIEW"),L,Top+239,286))
         {
             PreviousResolution=Settings->GetScreenResolution();PreviousMode=Settings->GetFullscreenMode();PreviousQuality=Settings->ScalabilityQuality;
@@ -343,7 +351,7 @@ void ACireHUD::DrawSettings()
             if(Button(TEXT("KEEP CHANGES"),L,Top+337,286)){Settings->ConfirmVideoMode();Settings->SaveSettings();bVideoPending=false;}
             if(Button(TEXT("REVERT NOW"),R,Top+337,286))RevertVideoPreview();
         }
-        else Wrapped(TEXT("Display changes are saved only after confirmation. Closing Options or waiting 15 seconds restores the prior resolution, window mode, quality, VSync and frame cap."),L,Top+296,593,12,Muted,4);
+        else Wrapped(TEXT("Display changes are saved only after confirmation. Closing Options or waiting 15 seconds restores the prior resolution, window mode, quality, VSync and frame cap."),L,Top+318,593,12,Muted,4);
     }
     else if(OptionsTab==3)
     {

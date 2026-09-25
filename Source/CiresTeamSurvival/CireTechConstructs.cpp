@@ -1,5 +1,6 @@
 // new-champions: Aetheri Constructs (see CireTechConstructs.h, Docs/NewChampions.md).
 #include "CireTechConstructs.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireConstruct.h"
 #include "CireGame.h"
 #include "CireAbilityDB.h"
@@ -326,6 +327,7 @@ int32 CireTechConstructs::Detonate(ACireConstruct* C)
     {
         if (U == C || !IsEnemy(C, U) || !Near(C, U, FMath::Max(S.EffectRadius, S.TriggerRadius))) continue;
         const float Applied = S.AttackDamage > 0 ? CireCombat::ApplyDamage(Owner, U, S.AttackDamage, C->AbilityName) : 0.f;
+        if (auto* M = Cast<ACireMonster>(U)) CireKits::AddConstructThreat(M, C, FMath::Max(Applied, 1.f)); // scaling-kits: monsters hunt the construct
         ++Hit;
         const float Seconds = S.EffectMagnitude;
         const bool bBoss = [&] { const auto* M = Cast<ACireMonster>(U); return M && M->IsLaneBoss(); }();
@@ -363,14 +365,15 @@ bool CireTechConstructs::TickConstruct(ACireConstruct* C, float Dt)
         if (C->TechTimer > 0) return true;
         AActor* Target = NearestEnemy(C, S.AttackRange, true, true);
         if (!Target) { C->TechTimer = .2f; return true; }
-        C->TechTimer = S.AttackInterval;
+        C->TechTimer = CireKits::InheritedInterval(C, S.AttackInterval); // scaling-kits: the owner's attack speed
         const FVector Dir = (Target->GetActorLocation() - C->GetActorLocation()).GetSafeNormal2D();
         if (!Dir.IsNearlyZero()) C->SetActorRotation(Dir.Rotation());
         const FVector Head = C->GetActorLocation() + FVector(0, 0, S.Height * .4f);
         Cue(C, Target, Head, Target->GetActorLocation(), ECireSpellCue::Launch, S.SplashRadius > 0 ? 1.4f : .8f);
         if (S.AttackDamage > 0)
         {
-            CireCombat::ApplyStrike(Owner, Target, S.AttackDamage, C->AbilityName);
+            const float Dealt = CireCombat::ApplyStrike(Owner, Target, S.AttackDamage, C->AbilityName);
+            if (auto* M = Cast<ACireMonster>(Target)) CireKits::AddConstructThreat(M, C, FMath::Max(Dealt, 1.f) * 2.f); // scaling-kits: turret threat
             if (S.SplashRadius > 0)
             {
                 TArray<AActor*> List; Units(World, List, true);

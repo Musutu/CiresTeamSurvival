@@ -33,6 +33,7 @@
 #include "CireSkillshot.h"
 #include "CireConstruct.h"
 #include "CireSummon.h"
+#include "CireKitsGallery.h" // scaling-kits
 #include "CireSpellGallery.h"
 #include "CireAuraGallery.h" // aura-vfx
 #include "CireAbilityVFXGallery.h" // ability-vfx
@@ -136,7 +137,7 @@ void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireGameState,EmberLives); DOREPLIFETIME(ACireGameState,DuskLives);
     DOREPLIFETIME(ACireGameState,EmberWins); DOREPLIFETIME(ACireGameState,DuskWins);
     DOREPLIFETIME(ACireGameState,ArenaIndex); DOREPLIFETIME(ACireGameState,Announcement);
-    DOREPLIFETIME(ACireGameState,ProgressionMode); // progression-shop
+    DOREPLIFETIME(ACireGameState,ProgressionMode); DOREPLIFETIME(ACireGameState,bReadyGateHold); DOREPLIFETIME(ACireGameState,ReadyGateLeft); // progression-shop
     DOREPLIFETIME(ACireGameState,WaveLabel); DOREPLIFETIME(ACireGameState,NextWaveLabel); // wave-director
     DOREPLIFETIME(ACireGameState,BreatherReady); DOREPLIFETIME(ACireGameState,BreatherPlayers); // wave-director
     DOREPLIFETIME(ACireGameState,LaneBounds); DOREPLIFETIME(ACireGameState,LanePoints0);
@@ -224,6 +225,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireNPCPackPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireMonsterGallery::Initialize(this); // creature-anim
     if(!bFeedbackPreview)bFeedbackPreview = CireNewChampionsGallery::Initialize(this); // new-champions
+    if(!bFeedbackPreview)bFeedbackPreview = CireKitsGallery::Initialize(this); // scaling-kits
     if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
     CireNPCNetProbe::InitializeServer(this);
 #endif
@@ -474,6 +476,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireNPCPackPreview::Tick(this)) return;
     if(CireMonsterGallery::Tick(this)) return; // creature-anim
     if(CireNewChampionsGallery::Tick(this)) return; // new-champions
+    if(CireKitsGallery::Tick(this)) return; // scaling-kits
     if(CireShopFixtures::Tick(this)) return; // progression-shop
     if(CireNPCNetProbe::TickServer(this)) return;
     if(CireExpansionNetProbe::TickServer(this)) return;
@@ -546,7 +549,9 @@ void ACireGameMode::Tick(float Dt) {
             } else {
                 // wave-director: every human pressed Ready in the Skill Shop window -> start in 1 s.
                 if(CireWaveDirector::UpdateBreatherReady(this))WaveTimer=FMath::Min(WaveTimer,1.f);
-                WaveTimer=FMath::Max(0.f,WaveTimer-Dt);
+                // progression-shop: in Skill Shop mode the breather is a hard gate: the countdown waits for
+                // every human's READY TO CONTINUE (bots auto-ready) or the SkillShop.json safety cap.
+                if(!CireSkillShop::HoldBreather(this,Dt,WaveTimer))WaveTimer=FMath::Max(0.f,WaveTimer-Dt);
                 S->NextWaveSeconds=WaveTimer;
                 if(WaveTimer<=0&&!(Dev.bEnabled&&Dev.bPauseWaveSpawns))SpawnWave();
             }

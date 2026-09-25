@@ -82,11 +82,17 @@ private:
     TArray<FVector2D> SoftUVs;
     void Rebuild();
     void StartSound();
+    bool bEventAudio = false, bLoopFading = false, bEventArmed = false; // audio-overhaul: sound-event table owns this visual's audio
     // ability-vfx: new presentation modes (CireSpellVisualModes.cpp).
     EMode Mode = EMode::Legacy;
     FCireHitShape Shape;
     float StartDelay = 0, LaneLength = 0, LaneWidth = 0, GroundZ = -88.f, AreaActiveAge = -1, FadeOutAt = -1, ReleasedAge = -1;
     bool bChainHop = false, bHarmlessArea = false, bShapeResolved = false;
+    int32 OverlapCount = 0; float OverlapCheckedAt = -1.f;
+public:
+    int32 GetOverlapCount() const { return OverlapCount; }
+    const TArray<FLinearColor>& GetGroundColors() const { return GroundColors; }
+private:
     FVector2D LastVoidRadii = FVector2D::ZeroVector; int32 LastVoidIcons = 0; FVector HopFrom = FVector::ZeroVector;
     bool bHostile = false, bSoundPending = false, bGroundProbed = false, bAreaPersistent = true, bShakeDone = false;
     TWeakObjectPtr<AActor> CastSource;

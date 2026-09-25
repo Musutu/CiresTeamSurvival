@@ -75,7 +75,7 @@ void FCireUISettings::Reset()
     // The WoW-style default tooltip grows up/left from this panel's lower-right
     // corner: right of the reticle, above the action bar and meter.
     Add(TEXT("Tooltip"), 690.f, 368.f, 340.f, 150.f);
-    Add(TEXT("Pet"), 290.f, 306.f, 210.f, 90.f); // under the focus frame; the bag bar owns 20,420
+    Add(TEXT("Pet"), 290.f, 306.f, 250.f, 112.f); // under the focus frame; the bag bar owns 20,420. pets: companion frame
     // Right column under the minimap: boss frames, then threat, then the damage meter.
     Add(TEXT("Boss"), 1040.f, 208.f, 220.f, 150.f);
     Add(TEXT("Threat"), 1040.f, 372.f, 220.f, 124.f);
@@ -119,7 +119,9 @@ void FCireUISettings::Reset()
     bShowActionBar2=true; bShowActionBar3=false; bLockActionBars=false; bMeterCollapsed=false; bThreatCollapsed=false;
     bEffectCallouts=true; bControlAlerts=true; bPlayerCastBar=true; OverheadStatusMode=0;
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
+    bSmartCast=true; bMouseoverCast=false; bRightClickCancelsAim=true; bPressAgainToCast=true; bAutoStopToCast=true; // feat/camera-movement
     OtherEffectsIntensity=1.f; // aura-vfx
+    GroundTelegraphIntensity=.6f; // ability-vfx
     UITheme=CireUITheme::DefaultId().IsNone()?FString(TEXT("GildedCitadel")):CireUITheme::DefaultId().ToString(); // ui-themes
     bShowStats=false; bShowLootLog=false; // progression-shop; wow-ui: closed by default (C toggles) to keep the screen clean
 }
@@ -239,6 +241,7 @@ void FCireUISettings::SanitizePreferences()
     ThreatWarningPercent=SafeFloat(ThreatWarningPercent,90.f,60.f,100.f);
     OverheadStatusMode=FMath::Clamp(OverheadStatusMode,0,2);
     OtherEffectsIntensity=SafeFloat(OtherEffectsIntensity,1.f,0.f,1.f); // aura-vfx
+    GroundTelegraphIntensity=SafeFloat(GroundTelegraphIntensity,.6f,.3f,1.f); // ability-vfx
 }
 
 void FCireUISettings::Load(const FString& Filename)
@@ -280,6 +283,7 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bMeterCollapsed); CIRE_LOAD_BOOL(bThreatCollapsed);
     CIRE_LOAD_BOOL(bEffectCallouts); CIRE_LOAD_BOOL(bControlAlerts); CIRE_LOAD_BOOL(bPlayerCastBar);
     CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
+    CIRE_LOAD_BOOL(bSmartCast); CIRE_LOAD_BOOL(bMouseoverCast); CIRE_LOAD_BOOL(bRightClickCancelsAim); CIRE_LOAD_BOOL(bPressAgainToCast); CIRE_LOAD_BOOL(bAutoStopToCast); // feat/camera-movement
     CIRE_LOAD_BOOL(bMusicEnabled); CIRE_LOAD_BOOL(bFootstepCameraShake); // audio: absent keys keep the defaults
     CIRE_LOAD_BOOL(bImpactCameraShake); // ability-vfx
     CIRE_LOAD_BOOL(bShowStats); CIRE_LOAD_BOOL(bShowLootLog); // progression-shop
@@ -300,6 +304,7 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_FLOAT(UIScale); CIRE_LOAD_FLOAT(TooltipOpacity); CIRE_LOAD_FLOAT(TooltipDelay); CIRE_LOAD_FLOAT(SCTSpeed);
     CIRE_LOAD_FLOAT(SCTFadeSeconds); CIRE_LOAD_FLOAT(ThreatWarningPercent);
     CIRE_LOAD_FLOAT(OtherEffectsIntensity); // aura-vfx: absent in older profiles, keeps the default
+    CIRE_LOAD_FLOAT(GroundTelegraphIntensity); // ability-vfx
 #undef CIRE_LOAD_FLOAT
     Config.GetInt(PreferencesSection,TEXT("TooltipMode"),TooltipMode); Config.GetInt(PreferencesSection,TEXT("StatusFilter"),StatusFilter);
     Config.GetInt(PreferencesSection,TEXT("SCTDirection"),SCTDirection);
@@ -372,6 +377,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bMeterCollapsed); CIRE_SAVE_BOOL(bThreatCollapsed);
     CIRE_SAVE_BOOL(bEffectCallouts); CIRE_SAVE_BOOL(bControlAlerts); CIRE_SAVE_BOOL(bPlayerCastBar);
     CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
+    CIRE_SAVE_BOOL(bSmartCast); CIRE_SAVE_BOOL(bMouseoverCast); CIRE_SAVE_BOOL(bRightClickCancelsAim); CIRE_SAVE_BOOL(bPressAgainToCast); CIRE_SAVE_BOOL(bAutoStopToCast); // feat/camera-movement
     CIRE_SAVE_BOOL(bMusicEnabled); CIRE_SAVE_BOOL(bFootstepCameraShake); // audio:
     CIRE_SAVE_BOOL(bImpactCameraShake); // ability-vfx
     CIRE_SAVE_BOOL(bShowStats); CIRE_SAVE_BOOL(bShowLootLog); // progression-shop
@@ -392,6 +398,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_FLOAT(UIScale); CIRE_SAVE_FLOAT(TooltipOpacity); CIRE_SAVE_FLOAT(TooltipDelay); CIRE_SAVE_FLOAT(SCTSpeed);
     CIRE_SAVE_FLOAT(SCTFadeSeconds); CIRE_SAVE_FLOAT(ThreatWarningPercent);
     CIRE_SAVE_FLOAT(OtherEffectsIntensity); // aura-vfx
+    CIRE_SAVE_FLOAT(GroundTelegraphIntensity); // ability-vfx
 #undef CIRE_SAVE_FLOAT
     Config.SetString(PreferencesSection,TEXT("SCTDirection"),*FString::FromInt(SCTDirection));
     Config.SetString(PreferencesSection,TEXT("OverheadStatusMode"),*FString::FromInt(OverheadStatusMode));

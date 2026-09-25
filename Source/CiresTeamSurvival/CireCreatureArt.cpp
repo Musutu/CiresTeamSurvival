@@ -109,13 +109,14 @@ void Prepare(UMeshComponent& Mesh)
 
 FAnimInstanceProxy* UCireBearAnimInstance::CreateAnimInstanceProxy(){return new FBearProxy(this);}
 bool UCireCreatureArt::Handles(const FString& Profile){return Profile==TEXT("bear")||Profile==TEXT("whisp")||Profile==TEXT("evergrove_centaur");}
-bool UCireCreatureArt::HandlesMotion(const FString& Motion){return Motion==TEXT("monster_native")||Motion==TEXT("mounted");} // new-champions
-UMeshComponent* UCireCreatureArt::VisualMesh() const{if(Native)return Native;return Bear?static_cast<UMeshComponent*>(Bear.Get()):Centaur?static_cast<UMeshComponent*>(Centaur.Get()):StaticBody.Get();}
+bool UCireCreatureArt::HandlesMotion(const FString& Motion){return Motion==TEXT("monster_native")||Motion==TEXT("mounted")||Motion==TEXT("quadruped_procedural");} // new-champions; pets: procedural quadruped
+UMeshComponent* UCireCreatureArt::VisualMesh() const{if(Quad)return Quad;if(Native)return Native;return Bear?static_cast<UMeshComponent*>(Bear.Get()):Centaur?static_cast<UMeshComponent*>(Centaur.Get()):StaticBody.Get();}
 void UCireCreatureArt::Clear()
 {
     if(StaticBody)StaticBody->DestroyComponent();if(Centaur)Centaur->DestroyComponent();StaticBody=nullptr;Centaur=nullptr;Bear=nullptr;
     // new-champions: the rider and props are ours; the native body is the hero's own mesh (restored by the champion art).
     if(Rider)Rider->DestroyComponent();Rider=nullptr;for(auto& Part:Props)if(Part)Part->DestroyComponent();Props.Reset();Native=nullptr;
+    Quad=nullptr;DeathClip=nullptr;DeadAge=DeadWeight=0; // pets
     AttackClip=nullptr;RiderAttack=nullptr;RiderLocomotion=nullptr;SeatBone=NAME_None;NativeWalkRaw=NativeRunRaw=NativePhase=NativeIdleTime=0;SeenAttackSerial=0;AttackSeenAt=-100;
     Sections.Reset();SourceAsset=nullptr;Kind.Reset();Phase=0;SmoothedSpeed=0;AnimationTime=0;UpdateBudget=0;bHasLastYaw=false;
 }
@@ -223,6 +224,7 @@ void UCireCreatureArt::DeformCentaur(float Stride,float Attack,float Air,float R
 void UCireCreatureArt::Update(ACireHero& Hero,float Delta)
 {
     if(Kind.IsEmpty())return;const float Dt=FMath::Clamp(Delta,0.f,.1f);
+    if(Quad){UpdateQuad(Hero,Dt);return;} // pets
     if(Native){UpdateNative(Hero,Dt);return;} // new-champions
     const float Speed=Hero.bDead?0.f:static_cast<float>(Hero.GetVelocity().Size2D());
     SmoothedSpeed=FMath::FInterpTo(SmoothedSpeed,Speed,Dt,10.f);AnimationTime+=Dt;
@@ -378,6 +380,7 @@ bool FacingYaw(const USkeletalMesh& Mesh,float& Out)
 bool UCireCreatureArt::ApplyBinding(ACireHero& Hero,const FString& Profile,const FString& Motion,const FString& MeshPath,float HeightCm,const TSharedPtr<FJsonObject>& Binding)
 {
     Clear();if(!HandlesMotion(Motion)||!Binding.IsValid()||Hero.GetNetMode()==NM_DedicatedServer)return false;
+    if(Motion==TEXT("quadruped_procedural"))return ApplyQuad(Hero,MeshPath,HeightCm,Binding); // pets: clip-less quadruped
     auto* Mesh=LoadObject<USkeletalMesh>(nullptr,*MeshPath);if(!Mesh)return false;
     const TSharedPtr<FJsonObject>* Animations=nullptr;if(!Binding->TryGetObjectField(TEXT("animations"),Animations))return false;
     UAnimSequence* Idle=Clip(*Animations,TEXT("idle"));UAnimSequence* Walk=Clip(*Animations,TEXT("walk"));UAnimSequence* Run=Clip(*Animations,TEXT("run"));
@@ -404,6 +407,7 @@ bool UCireCreatureArt::ApplyBinding(ACireHero& Hero,const FString& Profile,const
     Anim->Walk.PelvisTarget=Anim->Run.PelvisTarget=Stance.bValid?Stance.DriftOffset:Stance.ReferencePelvis;
     Anim->Action=FCireAnimLayer();Anim->Death=FCireAnimLayer();Anim->MoveAlpha=Anim->RunAlpha=0.f;
     AttackClip=Clip(*Animations,TEXT("attack"));if(AttackClip&&AttackClip->GetSkeleton()!=Mesh->GetSkeleton())AttackClip=nullptr;
+    DeathClip=Clip(*Animations,TEXT("death"));if(DeathClip&&DeathClip->GetSkeleton()!=Mesh->GetSkeleton())DeathClip=nullptr; // pets: the corpse stays down
     double Raw=0;if(Binding->TryGetNumberField(TEXT("walkSpeedRaw"),Raw))NativeWalkRaw=static_cast<float>(Raw);
     if(Binding->TryGetNumberField(TEXT("runSpeedRaw"),Raw))NativeRunRaw=static_cast<float>(Raw);
     Native=Parent;
@@ -519,6 +523,9 @@ void UCireCreatureArt::UpdateNative(ACireHero& Hero,float Dt)
         Anim->Action.Weight=FMath::SmoothStep(0.f,1.f,FMath::Min(Age/.08f,(Window-Age)/.2f));Anim->Action.LowerBody=Kind==TEXT("mounted")?0.f:(1.f-Anim->MoveAlpha);
     }
     else{Anim->Action.Weight=0.f;Anim->Action.Sequence=nullptr;}
+    // pets: a fallen companion plays its death clip and stays down until revived.
+    if(Hero.bDead&&DeathClip&&Hero.ChampionProfileId.StartsWith(TEXT("pet:"))){DeadAge+=Dt;Anim->Death.Sequence=DeathClip;Anim->Death.Time=FMath::Min(DeadAge,DeathClip->GetPlayLength()-.01f);Anim->Death.Weight=1.f;}
+    else{DeadAge=0;Anim->Death.Weight=0.f;Anim->Death.Sequence=nullptr;}
     Native->SetOverlayMaterial(Native->GetOverlayMaterial());
     if(Rider)
     {
@@ -536,4 +543,280 @@ void UCireCreatureArt::UpdateNative(ACireHero& Hero,float Dt)
         }
         Rider->SetOverlayMaterial(Native->GetOverlayMaterial());
     }
+}
+
+// ========================================================================================== pets
+namespace
+{
+struct FQuadProxy : FAnimInstanceProxy
+{
+    explicit FQuadProxy(UAnimInstance* In) : FAnimInstanceProxy(In) {}
+    FCireQuadRig Rig;
+    float Phase = 0, Stride = 0, Amplitude = 0, Attack = -1, Time = 0, Air = 0, Dead = 0;
+    virtual void PreUpdate(UAnimInstance* Instance, float Delta) override
+    {
+        FAnimInstanceProxy::PreUpdate(Instance, Delta);
+        const auto* A = CastChecked<UCireQuadrupedAnimInstance>(Instance);
+        Rig = A->Rig; Phase = A->Phase; Stride = A->Stride; Amplitude = A->Amplitude; Attack = A->Attack; Time = A->Time; Air = A->Air; Dead = A->Dead;
+    }
+    void Turn(FCompactPose& Pose, const FName& Bone, const FVector& Axis, float Degrees)
+    {
+        if (!Bone.IsNone() && FMath::Abs(Degrees) > .01f && FMath::IsFinite(Degrees)) RotateBone(Pose, *Bone.ToString(), Axis, Degrees);
+    }
+    virtual bool Evaluate(FPoseContext& Output) override
+    {
+        Output.ResetToRefPose();
+        if (!Rig.bValid) return true;
+        auto& Pose = Output.Pose;
+        const FVector L = Rig.Lateral, Up(0, 0, 1), F = Rig.Forward;
+        const float S = Rig.SwingSign;
+        const float Ground = 1.f - Air, Alive = 1.f - Dead;
+        const float Cycle = Phase / (2 * PI);
+        const float Pulse = AttackPulse(Attack) * Alive;
+        // Diagonal trot: front-left with rear-right. Stance legs sweep back linearly (planted paws).
+        const float Offsets[4] = {0.f, .5f, .5f, 0.f};
+        float LowestCos = 1.f;
+        for (int32 Leg = 0; Leg < 4; ++Leg)
+        {
+            const bool bFront = Leg < 2;
+            float Angle, Lift;
+            GaitSample(Cycle + Offsets[Leg], Amplitude * Ground * Alive, Angle, Lift);
+            Lift *= Stride * Ground * Alive;
+            LowestCos = FMath::Min(LowestCos, FMath::Cos(FMath::DegreesToRadians(Angle)));
+            // Leap: front legs reach forward, rear legs trail. Lunge: front legs rise, body coils.
+            const float Reach = Air * (bFront ? 28.f : -24.f) + (bFront ? -Pulse * 32.f : Pulse * 10.f);
+            // Corpse: legs go slack.
+            Turn(Pose, Rig.Legs[Leg][0], L, S * (Angle + Reach + Dead * (bFront ? 18.f : -12.f)));
+            Turn(Pose, Rig.Legs[Leg][1], L, S * (bFront ? -1.f : 1.f) * (Lift * 32.f + Air * 18.f + Pulse * (bFront ? 26.f : 0.f)));
+            Turn(Pose, Rig.Legs[Leg][2], L, S * (bFront ? 1.f : -1.f) * (Lift * 22.f + Air * 10.f));
+        }
+        // Spine: stride flex, breathing at rest, coil on the lunge.
+        for (int32 I = 0; I < Rig.Spine.Num(); ++I)
+            Turn(Pose, Rig.Spine[I], L, S * (FMath::Sin(Phase * 2.f) * Stride * 1.5f + FMath::Sin(Time * 1.7f) * .7f * (1 - Stride) - Pulse * 4.f) * Alive);
+        // Neck and head: nod with the gait, look around at rest, strike on the lunge.
+        for (int32 I = 0; I < Rig.Neck.Num(); ++I)
+        {
+            const float W = (I + 1.f) / FMath::Max(1, Rig.Neck.Num());
+            Turn(Pose, Rig.Neck[I], L, S * W * (FMath::Sin(Phase * 2.f + .6f) * Stride * 3.f + FMath::Sin(Time * 1.3f) * 1.5f * (1 - Stride) + Pulse * 14.f + Dead * 20.f));
+            Turn(Pose, Rig.Neck[I], Up, W * FMath::Sin(Time * .45f) * 9.f * (1 - Stride) * Alive);
+        }
+        // Tail: a lazy sway that stiffens at a run.
+        for (int32 I = 0; I < Rig.Tail.Num(); ++I)
+        {
+            const float W = (I + 1.f) / FMath::Max(1, Rig.Tail.Num());
+            Turn(Pose, Rig.Tail[I], Up, W * FMath::Sin(Time * 2.1f - I * .7f) * (10.f - 5.f * Stride) * Alive);
+            Turn(Pose, Rig.Tail[I], L, S * W * (-6.f * Stride + Air * 10.f - Dead * 12.f));
+        }
+        const auto Root = BoneIndex(Pose, *Rig.Root.ToString());
+        if (Root.IsValid())
+        {
+            // Planted paws: lower the body by the vertical shortening of a swung leg; a corpse rolls onto its side.
+            Pose[Root].AddToTranslation(FVector(0, 0, -Rig.LegUnits * (1 - LowestCos) * Ground * Alive - Rig.LegUnits * .45f * Dead));
+            if (Dead > 0) Pose[Root].SetRotation((FQuat(F.GetSafeNormal(), FMath::DegreesToRadians(84.f * Dead)) * Pose[Root].GetRotation()).GetNormalized());
+        }
+        return true;
+    }
+};
+FTransform RefGlobal(const FReferenceSkeleton& Ref, int32 I)
+{
+    FTransform T = FTransform::Identity;
+    while (I != INDEX_NONE) { T = T * Ref.GetRefBonePose()[I]; I = Ref.GetParentIndex(I); }
+    return T;
+}
+}
+
+FAnimInstanceProxy* UCireQuadrupedAnimInstance::CreateAnimInstanceProxy() { return new FQuadProxy(this); }
+
+bool FCireQuadRig::Analyze(const USkeletalMesh& Mesh, float MeshYaw, FCireQuadRig& Out, FString* Why)
+{
+    Out = FCireQuadRig();
+    auto Fail = [&](const FString& Reason) { if (Why) *Why = Reason; return false; };
+    const FReferenceSkeleton& Ref = Mesh.GetRefSkeleton();
+    const int32 N = Ref.GetNum();
+    if (N < 8) return Fail(TEXT("too few bones for a quadruped"));
+    TArray<FVector> Pos; Pos.SetNum(N);
+    TArray<TArray<int32>> Children; Children.SetNum(N);
+    float MinZ = TNumericLimits<float>::Max(), MaxZ = -TNumericLimits<float>::Max();
+    for (int32 I = 0; I < N; ++I)
+    {
+        Pos[I] = RefGlobal(Ref, I).GetLocation();
+        MinZ = FMath::Min(MinZ, static_cast<float>(Pos[I].Z)); MaxZ = FMath::Max(MaxZ, static_cast<float>(Pos[I].Z));
+        if (Ref.GetParentIndex(I) != INDEX_NONE) Children[Ref.GetParentIndex(I)].Add(I);
+    }
+    const float Height = MaxZ - MinZ;
+    if (Height <= KINDA_SMALL_NUMBER) return Fail(TEXT("flat skeleton"));
+    // The mesh is yawed by MeshYaw on the pawn so that its forward becomes actor +X.
+    Out.Forward = FRotator(0, -MeshYaw, 0).RotateVector(FVector::ForwardVector);
+    Out.Lateral = FVector::CrossProduct(FVector::UpVector, Out.Forward).GetSafeNormal();
+    auto IsAncestor = [&](int32 A, int32 B) { for (int32 I = B; I != INDEX_NONE; I = Ref.GetParentIndex(I)) if (I == A) return true; return false; };
+    // Ground leaves (paws / toe tips).
+    TArray<int32> Feet;
+    for (int32 I = 0; I < N; ++I) if (Children[I].IsEmpty() && Pos[I].Z < MinZ + .22f * Height) Feet.Add(I);
+    if (Feet.Num() < 2) return Fail(FString::Printf(TEXT("%d ground chains (need at least 2)"), Feet.Num()));
+    // A significant child carries more than a single helper leaf (Tripo rigs add twin leaves at hips and shoulders).
+    TArray<int32> Size; Size.Init(1, N);
+    for (int32 I = N - 1; I >= 0; --I) if (Ref.GetParentIndex(I) != INDEX_NONE) Size[Ref.GetParentIndex(I)] += Size[I];
+    auto Significant = [&](int32 Parent) { int32 Count = 0; for (int32 C : Children[Parent]) if (Size[C] >= 2 || Feet.Contains(C)) ++Count; return Count; };
+    // Leg top: walk up from the paw while the parent has a single significant child (the hip / shoulder is the branch).
+    TArray<int32> LegTops;
+    for (int32 Foot : Feet)
+    {
+        int32 Top = Foot;
+        while (Ref.GetParentIndex(Top) != INDEX_NONE && Significant(Ref.GetParentIndex(Top)) == 1) Top = Ref.GetParentIndex(Top);
+        if (Ref.GetParentIndex(Top) != INDEX_NONE) LegTops.AddUnique(Top);
+    }
+    // Front / rear by the tops' positions along the facing; left / right by the lateral axis.
+    float MinF = TNumericLimits<float>::Max(), MaxF = -TNumericLimits<float>::Max();
+    for (int32 I = 0; I < N; ++I) { const float F = FVector::DotProduct(Pos[I], Out.Forward); MinF = FMath::Min(MinF, F); MaxF = FMath::Max(MaxF, F); }
+    const float MidF = (MinF + MaxF) * .5f;
+    // The head is the forward-most high leaf; its chain is never a leg.
+    int32 HeadLeaf = INDEX_NONE; float Front = -TNumericLimits<float>::Max();
+    for (int32 I = 0; I < N; ++I)
+        if (Children[I].IsEmpty() && Pos[I].Z > MinZ + .4f * Height && FVector::DotProduct(Pos[I], Out.Forward) > Front) { Front = FVector::DotProduct(Pos[I], Out.Forward); HeadLeaf = I; }
+    TArray<int32> Side[2]; // 0 front, 1 rear
+    for (int32 Top : LegTops) Side[FVector::DotProduct(Pos[Top], Out.Forward) > MidF ? 0 : 1].Add(Top);
+    // A rig can miss a leg's lower bones (the Tripo sabercat's front right leg stops at the shoulder):
+    // take the found leg's mirror sibling under the same branch as the short leg.
+    for (int32 S = 0; S < 2; ++S)
+    {
+        if (Side[S].Num() != 1) continue;
+        const int32 Found = Side[S][0], Parent = Ref.GetParentIndex(Found);
+        const float FoundSide = FVector::DotProduct(Pos[Found] - Pos[Parent], Out.Lateral);
+        int32 Mirror = INDEX_NONE; float Best = TNumericLimits<float>::Max();
+        for (int32 C : Children[Parent])
+        {
+            if (C == Found || Size[C] < 2 || (HeadLeaf != INDEX_NONE && IsAncestor(C, HeadLeaf))) continue;
+            const float Lat = FVector::DotProduct(Pos[C] - Pos[Parent], Out.Lateral);
+            const float Dz = FMath::Abs(static_cast<float>(Pos[C].Z - Pos[Found].Z));
+            if (Lat * FoundSide >= 0 || Dz > .25f * Height) continue;
+            const float Score = Dz + FMath::Abs(FMath::Abs(Lat) - FMath::Abs(FoundSide));
+            if (Score < Best) { Best = Score; Mirror = C; }
+        }
+        if (Mirror != INDEX_NONE) Side[S].Add(Mirror);
+    }
+    if (Side[0].Num() != 2 || Side[1].Num() != 2) return Fail(FString::Printf(TEXT("legs front=%d rear=%d (need 2 + 2)"), Side[0].Num(), Side[1].Num()));
+    int32 Tops4[4];
+    for (int32 S = 0; S < 2; ++S)
+    {
+        const bool bFirstLeft = FVector::DotProduct(Pos[Side[S][0]], Out.Lateral) < FVector::DotProduct(Pos[Side[S][1]], Out.Lateral);
+        Tops4[S * 2] = bFirstLeft ? Side[S][0] : Side[S][1];
+        Tops4[S * 2 + 1] = bFirstLeft ? Side[S][1] : Side[S][0];
+    }
+    TSet<int32> LegBones;
+    int32 GroundLegs = 0; Out.LegUnits = 0;
+    for (int32 G = 0; G < 4; ++G)
+    {
+        // Down the leg: always the lowest significant child.
+        TArray<int32> Path; int32 Bone = Tops4[G];
+        while (Bone != INDEX_NONE && Path.Num() < 6)
+        {
+            Path.Add(Bone); int32 Next = INDEX_NONE;
+            for (int32 C : Children[Bone]) if ((Size[C] >= 2 || Feet.Contains(C) || Children[Bone].Num() == 1) && (Next == INDEX_NONE || Pos[C].Z < Pos[Next].Z)) Next = C;
+            Bone = Next;
+        }
+        Out.Legs[G][0] = Ref.GetBoneName(Path[0]);
+        if (Path.Num() >= 3) { Out.Legs[G][1] = Ref.GetBoneName(Path[1]); Out.Legs[G][2] = Ref.GetBoneName(Path[2]); }
+        else if (Path.Num() == 2) Out.Legs[G][1] = Ref.GetBoneName(Path[1]);
+        for (int32 I = 0; I < N; ++I) if (IsAncestor(Tops4[G], I)) LegBones.Add(I);
+        if (Feet.Contains(Path.Last())) { Out.LegUnits += static_cast<float>(Pos[Tops4[G]].Z - MinZ); ++GroundLegs; }
+    }
+    Out.LegUnits = GroundLegs ? Out.LegUnits / GroundLegs : 0.f;
+    const int32 Tops[4] = {Tops4[0], Tops4[1], Tops4[2], Tops4[3]};
+    auto Lca = [&](const TArray<int32>& Set)
+    {
+        int32 A = Set[0];
+        for (int32 K = 1; K < Set.Num(); ++K) while (A != INDEX_NONE && !IsAncestor(A, Set[K])) A = Ref.GetParentIndex(A);
+        return A;
+    };
+    FVector Centre = FVector::ZeroVector; for (int32 G = 0; G < 4; ++G) Centre += Pos[Tops[G]]; Centre /= 4.f;
+    // Spine: hip branch (common parent of the rear legs) to shoulder branch (common parent of the front legs).
+    const int32 Hips = Lca({Tops[2], Tops[3]}), Chest = Lca({Tops[0], Tops[1]});
+    if (Hips == INDEX_NONE || Chest == INDEX_NONE) return Fail(TEXT("no hip or shoulder branch"));
+    TArray<int32> SpinePath;
+    if (IsAncestor(Hips, Chest)) for (int32 I = Chest; I != INDEX_NONE && I != Hips; I = Ref.GetParentIndex(I)) SpinePath.Insert(I, 0);
+    else if (IsAncestor(Chest, Hips)) for (int32 I = Hips; I != INDEX_NONE && I != Chest; I = Ref.GetParentIndex(I)) SpinePath.Insert(I, 0);
+    for (int32 I : SpinePath) if (Out.Spine.Num() < 4) Out.Spine.Add(Ref.GetBoneName(I));
+    // Head: the forward-most free leaf; tail: the rear-most free leaf (each walked back to the body).
+    int32 Head = INDEX_NONE, Tail = INDEX_NONE; float HeadF = -TNumericLimits<float>::Max(), Back = TNumericLimits<float>::Max();
+    for (int32 I = 0; I < N; ++I)
+    {
+        if (!Children[I].IsEmpty() || LegBones.Contains(I)) continue;
+        const float D = FVector::DotProduct(Pos[I] - Centre, Out.Forward);
+        if (D > HeadF && Pos[I].Z > MinZ + .4f * Height) { HeadF = D; Head = I; }
+        if (D < Back) { Back = D; Tail = I; }
+    }
+    auto Walk = [&](int32 Leaf, int32 Body, TArray<FName>& Into, int32 Max)
+    {
+        TArray<int32> Path;
+        for (int32 I = Leaf; I != INDEX_NONE && I != Body && !SpinePath.Contains(I) && I != Hips && I != Chest; I = Ref.GetParentIndex(I)) Path.Insert(I, 0);
+        for (int32 I : Path) if (Into.Num() < Max && !LegBones.Contains(I)) Into.Add(Ref.GetBoneName(I));
+    };
+    if (Head != INDEX_NONE && FVector::DotProduct(Pos[Head] - Pos[Chest], Out.Forward) > 0) Walk(Head, Chest, Out.Neck, 4);
+    if (Tail != INDEX_NONE && FVector::DotProduct(Pos[Tail] - Pos[Hips], Out.Forward) < 0) Walk(Tail, Hips, Out.Tail, 4);
+    Out.Root = Ref.GetBoneName(0);
+    // A hanging leg (pointing down) must swing toward Forward for a positive angle.
+    Out.SwingSign = FVector::DotProduct(FQuat(Out.Lateral, FMath::DegreesToRadians(10.f)).RotateVector(FVector(0, 0, -1)), Out.Forward) > 0 ? 1.f : -1.f;
+    Out.bValid = Out.LegUnits > 1.f;
+    if (!Out.bValid) return Fail(TEXT("legs too short"));
+    if (Why) *Why = FString::Printf(TEXT("legs FL=%s FR=%s RL=%s RR=%s spine=%d neck=%d tail=%d leg=%.1f"), *Out.Legs[0][0].ToString(), *Out.Legs[1][0].ToString(),
+        *Out.Legs[2][0].ToString(), *Out.Legs[3][0].ToString(), Out.Spine.Num(), Out.Neck.Num(), Out.Tail.Num(), Out.LegUnits);
+    return true;
+}
+
+const FCireQuadRig* UCireCreatureArt::GetQuadRig() const
+{
+    const auto* Anim = Quad ? Cast<UCireQuadrupedAnimInstance>(Quad->GetAnimInstance()) : nullptr;
+    return Anim ? &Anim->Rig : nullptr;
+}
+
+bool UCireCreatureArt::ApplyQuad(ACireHero& Hero, const FString& MeshPath, float HeightCm, const TSharedPtr<FJsonObject>& Binding)
+{
+    auto* Mesh = LoadObject<USkeletalMesh>(nullptr, *MeshPath);
+    if (!Mesh) return false;
+    double Yaw = -90; Binding->TryGetNumberField(TEXT("yaw"), Yaw);
+    FCireQuadRig Rig; FString Why;
+    if (!FCireQuadRig::Analyze(*Mesh, static_cast<float>(Yaw), Rig, &Why))
+    { UE_LOG(LogTemp, Warning, TEXT("CIRE_PET_RIG_REJECTED %s: %s"), *MeshPath, *Why); return false; }
+    UE_LOG(LogTemp, Log, TEXT("CIRE_PET_RIG %s: %s"), *MeshPath, *Why);
+    auto* Parent = Hero.GetMesh(); Parent->SetAnimInstanceClass(nullptr); Parent->EmptyOverrideMaterials();
+    const float Capsule = Hero.GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+    const auto Bounds = Mesh->GetImportedBounds(); const float Height = static_cast<float>(Bounds.BoxExtent.Z * 2);
+    if (Height < 1 || Height > 100000) return false;
+    const float Scale = HeightCm / Height; MeshScale = Scale; LegUnits = Rig.LegUnits;
+    Parent->SetSkeletalMesh(Mesh); Parent->SetRelativeScale3D(FVector(Scale));
+    BasePosition = FVector(0, 0, -Capsule - (Bounds.Origin.Z - Bounds.BoxExtent.Z) * Scale);
+    Parent->SetRelativeLocation(BasePosition); Parent->SetRelativeRotation(FRotator(0, static_cast<float>(Yaw), 0));
+    Parent->SetAnimInstanceClass(UCireQuadrupedAnimInstance::StaticClass());
+    auto* Anim = Cast<UCireQuadrupedAnimInstance>(Parent->GetAnimInstance());
+    if (!Anim) { Parent->SetSkeletalMesh(nullptr); return false; }
+    Anim->Rig = Rig;
+    Kind = TEXT("quadruped_procedural"); SourceAsset = Mesh; Quad = Parent;
+    Hero.CacheInitialMeshOffset(Parent->GetRelativeLocation(), Parent->GetRelativeRotation());
+    return true;
+}
+
+void UCireCreatureArt::UpdateQuad(ACireHero& Hero, float Dt)
+{
+    auto* Anim = Quad ? Cast<UCireQuadrupedAnimInstance>(Quad->GetAnimInstance()) : nullptr;
+    if (!Anim) return;
+    const float Speed = Hero.bDead ? 0.f : static_cast<float>(Hero.GetVelocity().Size2D());
+    SmoothedSpeed = FMath::FInterpTo(SmoothedSpeed, Speed, Dt, 10.f); AnimationTime += Dt;
+    const float Yaw = static_cast<float>(Hero.GetActorRotation().Yaw);
+    const float YawRate = bHasLastYaw && Dt > 0 ? FMath::Abs(FRotator::NormalizeAxis(Yaw - LastYaw)) / Dt : 0.f; LastYaw = Yaw; bHasLastYaw = true;
+    const float LegCm = FMath::Max(10.f, LegUnits * MeshScale * static_cast<float>(Hero.GetActorScale3D().Z));
+    const float Travel = Hero.bDead ? 0.f : FMath::Max(SmoothedSpeed, FMath::DegreesToRadians(FMath::Min(YawRate, 360.f)) * LegCm * .4f);
+    const float Stride = FMath::Clamp(Travel / 140.f, 0.f, 1.f);
+    // Walk ~16 degrees of hip swing, full gallop ~34.
+    const float Amplitude = FMath::Lerp(16.f, 34.f, FMath::Clamp((Travel - 160.f) / 420.f, 0.f, 1.f)) * Stride;
+    const float CycleCm = FMath::Max(20.f, 4.f * LegCm * FMath::Sin(FMath::DegreesToRadians(FMath::Max(Amplitude, 4.f))));
+    Phase = FMath::Fmod(Phase + Dt * Travel / CycleCm * 2 * PI, 2 * PI);
+    const auto* State = Hero.GetWorld()->GetGameState();
+    const double Now = State ? State->GetServerWorldTimeSeconds() : Hero.GetWorld()->GetTimeSeconds();
+    const float Elapsed = static_cast<float>(Now - Hero.AttackStartedServerTime);
+    const float Window = FMath::Max(.35f, Hero.AttackDuration);
+    DeadWeight = FMath::FInterpTo(DeadWeight, Hero.bDead ? 1.f : 0.f, Dt, Hero.bDead ? 5.f : 8.f);
+    Anim->Phase = Phase; Anim->Stride = Stride; Anim->Amplitude = Amplitude; Anim->Time = AnimationTime;
+    Anim->Attack = !Hero.bDead && Hero.AttackSerial > 0 && Elapsed >= 0 && Elapsed < Window ? Elapsed / Window : -1.f;
+    Anim->Air = Hero.GetCharacterMovement()->IsFalling() ? 1.f : 0.f;
+    Anim->Dead = DeadWeight;
 }

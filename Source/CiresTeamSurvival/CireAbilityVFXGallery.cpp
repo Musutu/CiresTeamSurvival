@@ -51,6 +51,7 @@ struct FState
     TWeakObjectPtr<ACireController> PC;
     TWeakObjectPtr<ACameraActor> Camera;
     TWeakObjectPtr<AStaticMeshActor> Floor;
+    TWeakObjectPtr<AActor> StageLight;
     TWeakObjectPtr<ACireHero> Hero;
     TArray<TWeakObjectPtr<AActor>> Actors;
     TArray<FEntry> Entries;
@@ -101,6 +102,7 @@ void BuildEntries(const FString& Set,const TArray<FString>& Only)
     for(const TCHAR* Id:{TEXT("blight_sigil"),TEXT("second_wind"),TEXT("last_stand"),TEXT("challenge_of_iron"),TEXT("seismic_reprisal"),TEXT("starfall"),
         TEXT("spectral_hunt"),TEXT("mass_aegis"),TEXT("wellspring")})Champion.AddUnique(Id);
     for(const TCHAR* Id:{TEXT("basic_sword"),TEXT("basic_bow"),TEXT("basic_lance"),TEXT("basic_arcane")})Champion.AddUnique(Id);
+    Champion.Add(TEXT("overlap_town")); // playtest 3: 4 pylon fields + AoEs + an enemy warning overlapping, in the dusk town
     auto Wanted=[&](const FString& Id){return Only.IsEmpty()||Only.Contains(Id);};
     if(Set!=TEXT("monster"))
         for(const FString& Id:Champion)if(Wanted(Id))
@@ -255,11 +257,54 @@ void CastMonster(const FEntry& E)
     G.bCastRefused=!M||!CireNPCCombat::DebugStartAbility(M,FName(*E.Id),G.Hero.Get());
     if(G.bCastRefused)UE_LOG(LogTemp,Warning,TEXT("CIRE_ABILITY_VFX_REFUSED %s (monster %s)"),*E.Id,*E.Archetype.ToString());
 }
+// Overlap stress case on the real town ground under the map's dusk lighting, from the gameplay camera.
+FVector TownGround(FVector2D XY)
+{
+    FHitResult Hit;const FVector From(XY.X,XY.Y,3000);
+    return G.Mode->GetWorld()->LineTraceSingleByObjectType(Hit,From,From-FVector(0,0,6000),FCollisionObjectQueryParams(ECC_WorldStatic))?Hit.ImpactPoint:FVector(XY.X,XY.Y,0);
+}
+void BeginOverlap()
+{
+    const FVector Origin=TownGround(FVector2D(700,-2100)); // lane road just outside the town gate
+    auto* H=SpawnHero(TEXT("wizard"),Origin+FVector(0,0,95),FRotator::ZeroRotator);if(!H){G.bChecks=false;return;}
+    G.Hero=H;G.PC->Possess(H);G.PC->SetViewTarget(G.Camera.Get());H->Skills.Reset();H->Cooldowns.Reset();
+    const bool bSaved=G.bGameplayCamera;const float SavedPitch=G.Pitch;G.bGameplayCamera=true;G.Pitch=FMath::Min(G.Pitch,-40.f);
+    PlaceCamera(FVector::ZeroVector,FVector::ZeroVector);G.bGameplayCamera=bSaved;G.Pitch=SavedPitch;
+    G.bAimArmed=false;
+    Schedule({{TEXT("1_aim"),-.05f},{TEXT("2_cast"),.15f},{TEXT("3_travel"),.5f},{TEXT("4_impact"),1.0f},{TEXT("5_linger"),1.6f},{TEXT("6_end"),2.4f}});
+}
+void CastOverlap()
+{
+    auto* H=G.Hero.Get();if(!H)return;
+    const FVector O=TownGround(FVector2D(H->GetActorLocation().X,H->GetActorLocation().Y));
+    struct FField{FVector2D At;float R;FLinearColor C;const TCHAR* Name;};
+    // Aetheri-style pylon fields (friendly buff zones) overlapping each other and the caster.
+    const FField Fields[]={{{450,-120},220,FLinearColor(.25f,.9f,1.f,.18f),TEXT("Aegis Pylon")},{{560,140},200,FLinearColor(1.f,.8f,.25f,.18f),TEXT("Haste Pylon")},
+        {{380,200},200,FLinearColor(.45f,.75f,1.f,.18f),TEXT("Gravity Pylon")},{{640,-40},200,FLinearColor(1.f,.35f,.5f,.18f),TEXT("Disruption Pylon")}};
+    for(const FField& F:Fields)
+    {
+        FCireAreaSpec S;S.Shape=ECireAreaShape::Circle;S.Radius=F.R;S.WarningSeconds=0;S.DurationSeconds=8;S.DamagePerSecond=0;S.BurstDamage=0;
+        S.bPersistent=true;S.bPoison=false;S.Color=F.C;S.AbilityName=F.Name;S.VerticalTolerance=120;
+        ACireAreaEffect::Spawn(H,S,TownGround(FVector2D(O.X+F.At.X,O.Y+F.At.Y)),FRotator::ZeroRotator);
+    }
+    // Two of your AoEs on top (poison pool + fire cone) and an enemy warning crossing them.
+    if(const auto* Venom=CireAbilityLibrary::Find(TEXT("venom_ground"))){auto S=Venom->Area;S.WarningSeconds=.2f;S.DamagePerSecond=0;ACireAreaEffect::Spawn(H,S,TownGround(FVector2D(O.X+520,O.Y+40)),FRotator::ZeroRotator);}
+    if(const auto* Cone=CireAbilityLibrary::Find(TEXT("cinder_cone"))){auto S=Cone->Area;S.WarningSeconds=6;S.BurstDamage=0;ACireAreaEffect::Spawn(H,S,O,FRotator::ZeroRotator);}
+    if(auto* M=SpawnMonster(TEXT("hollow_infantry"),TownGround(FVector2D(O.X+900,O.Y+260))+FVector(0,0,95),FRotator(0,200,0),true))
+    {
+        FCireAreaSpec S;S.Shape=ECireAreaShape::Cone;S.Radius=440;S.ConeAngleDegrees=110;S.WarningSeconds=6;S.DurationSeconds=.3f;S.bPersistent=false;S.bPoison=false;
+        S.BurstDamage=0;S.DamagePerSecond=0;S.Color=FLinearColor(.8f,.24f,.06f,.35f);S.AbilityName=TEXT("Rusted Cleave");
+        ACireAreaEffect::Spawn(M,S,TownGround(FVector2D(M->GetActorLocation().X,M->GetActorLocation().Y)),FRotator(0,200,0));
+    }
+    for(TActorIterator<ACireAreaEffect> It(G.Mode->GetWorld());It;++It)CireSpellPresentation::FollowArea(*It);
+}
 void BeginEntry(int32 Index)
 {
     Clear();G.Index=Index;G.EntryAt=Now();G.CastAt=-1;G.bCastRefused=false;G.Frames.Reset();
     const FEntry& E=G.Entries[Index];
-    if(E.bMonster)BeginMonster(E);else BeginChampion(E);
+    if(G.StageLight.IsValid())G.StageLight->SetActorHiddenInGame(E.Id==TEXT("overlap_town"));
+    if(E.Id==TEXT("overlap_town"))BeginOverlap();
+    else if(E.bMonster)BeginMonster(E);else BeginChampion(E);
     UE_LOG(LogTemp,Display,TEXT("CIRE_ABILITY_VFX_ENTRY %d/%d %s"),Index+1,G.Entries.Num(),*E.Id);
 }
 FString Escape(const FString& S){return S.Replace(TEXT("\\"),TEXT("\\\\")).Replace(TEXT("\""),TEXT("\\\""));}
@@ -292,7 +337,7 @@ bool Setup(ACireGameMode* Mode,ACireController* PC)
     Floor->GetStaticMeshComponent()->SetMaterial(0,Ground);
     G.Floor=Floor;
     if(auto* Light=World->SpawnActor<ADirectionalLight>(Stage+FVector(400,0,2000),FRotator(-50,-130,0)))
-    {Light->GetLightComponent()->SetIntensity(3.2f);Light->GetLightComponent()->SetLightColor(FLinearColor(.82f,.86f,1.f));}
+    {G.StageLight=Light;Light->GetLightComponent()->SetIntensity(3.2f);Light->GetLightComponent()->SetLightColor(FLinearColor(.82f,.86f,1.f));}
     G.Camera=World->SpawnActor<ACameraActor>(Stage+FVector(-700,0,600),FRotator::ZeroRotator);if(!G.Camera.IsValid())return false;
     auto* Camera=G.Camera->GetCameraComponent();Camera->SetFieldOfView(80);Camera->SetAspectRatio(16.f/9.f);Camera->bConstrainAspectRatio=true;
     auto& Post=Camera->PostProcessSettings;
@@ -379,7 +424,8 @@ bool CireAbilityVFXGallery::Tick(ACireGameMode* Mode)
         if(Local>=Settle)
         {
             G.CastAt=Now();
-            if(E.bMonster)CastMonster(E);else CastChampion(E);
+            if(E.Id==TEXT("overlap_town"))CastOverlap();
+            else if(E.bMonster)CastMonster(E);else CastChampion(E);
         }
         return true;
     }

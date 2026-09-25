@@ -30,8 +30,8 @@ These are the WoW-style defaults. Every key except Escape, the mouse buttons and
 | Action bar 1: abilities / ultimate | 1–6 / R (bar 2: Shift+1–6, bar 3: Alt+1–6) |
 | Recall to town (prep/recovery) | G |
 | Shop / help / chat | B / H / Enter |
-| Confirm aimed ground skill | Left click valid ground |
-| Cancel aimed skill | Escape or right mouse |
+| Confirm aimed ground skill | Clean left click (a left drag only turns the camera); pressing the key again also casts |
+| Cancel aimed skill | Escape, or a clean right click (right-drag steering and movement keep the reticle) |
 | Developer quick start | F8, or the button beneath the minimap |
 | Options / layout editor | F9 / F10 |
 

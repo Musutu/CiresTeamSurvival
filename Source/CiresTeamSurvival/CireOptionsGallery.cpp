@@ -334,6 +334,13 @@ void Capture(int32 Stage)
         FName Shown;Check(HUD->DebugCalloutActive(Shown)&&Shown==(Stage==23?FName(TEXT("blood_rage")):FName(TEXT("stunned"))),FString(Stages[Stage].Name)+TEXT(": callout on screen for the gained effect"));
     }
     if(Stage==25)Check(HUD->DebugLastTooltipTitle()==TEXT("Sundered")||HUD->DebugLastTooltipTitle()==TEXT("Blessing")||HUD->DebugLastTooltipTitle()==TEXT("Scatter"),FString(TEXT("buff icon tooltip (got '"))+HUD->DebugLastTooltipTitle()+TEXT("')"));
+    if(Stage==0||Stage==26||Stage==27)
+    {
+        // ui-themes: nameplates never overlap after stacking.
+        const TArray<FBox2D>& B=HUD->LastPlateBoxes;int32 Overlaps=0;
+        for(int32 A=0;A<B.Num();++A)for(int32 C=A+1;C<B.Num();++C)if(B[A].Intersect(B[C])&&FMath::Min(B[A].Max.Y,B[C].Max.Y)-FMath::Max(B[A].Min.Y,B[C].Min.Y)>.5f&&FMath::Min(B[A].Max.X,B[C].Max.X)-FMath::Max(B[A].Min.X,B[C].Min.X)>.5f)++Overlaps;
+        Check(Overlaps==0,FString::Printf(TEXT("%s: %d overlapping nameplates (of %d)"),Stages[Stage].Name,Overlaps,B.Num()));
+    }
     if(Stage==28)
     {
         // ui-themes: three themes parsed with all art resolved, and the active one is known.

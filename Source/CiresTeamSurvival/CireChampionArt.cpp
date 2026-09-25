@@ -1,6 +1,7 @@
 #include "CireChampionArt.h"
 #include "CireFabAnimation.h" // fab-integration
 #include "CireGame.h"
+#include "CirePets.h" // pets
 #include "CireWeaponPresentation.h"
 #include "CireCreatureArt.h"
 #include "CireChampionActions.h" // creature-anim
@@ -236,9 +237,21 @@ bool ReviewEnabled()
     static const bool bEnabled = FParse::Param(FCommandLine::Get(), TEXT("CireTripoChampions"));
     return bEnabled || GCireForceTripoChampionArt; // creature-anim: native grip tests
 }
-
 const FChampionArtDefinition* ProfileArt(const FString& Id)
 {
+    // pets: companion bodies come from Pets.json (key "pet:<id>"), never from the champion bindings.
+    if(Id.StartsWith(TEXT("pet:")))
+    {
+        static TMap<FString,FChampionArtDefinition> PetBindings;
+        if(const auto* Found=PetBindings.Find(Id))return Found;
+        const FCirePetDef* Pet=CirePets::Find(FName(*Id.RightChop(4)));
+        FChampionArtDefinition D;double Height=0;
+        if(!Pet||!Pet->Art.IsValid()||!Pet->Art->TryGetStringField(TEXT("motion"),D.Motion)||!Pet->Art->TryGetStringField(TEXT("mesh"),D.MeshPath)||
+           !Pet->Art->TryGetNumberField(TEXT("heightCm"),Height)||Height<20||Height>400)return nullptr;
+        D.HeightCm=static_cast<float>(Height);D.Raw=Pet->Art;
+        return &PetBindings.Add(Id,MoveTemp(D));
+    }
+
     static bool bLoaded=false;
     static TMap<FString,FChampionArtDefinition> Bindings;
     if(!bLoaded) {
@@ -368,6 +381,12 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
         if(Profile && (bBinding?Creature->ApplyBinding(Hero,Hero.ChampionProfileId,Profile->Motion,Profile->MeshPath,Profile->HeightCm,Profile->Raw):
             Creature->Apply(Hero,Hero.ChampionProfileId,Profile->MeshPath,Profile->HeightCm)))
         {AppliedArchetype=Archetype;return true;}
+        // pets: a binding may carry a "fallback" body (the procedural sabercat falls back to the animated wolf).
+        const TSharedPtr<FJsonObject>* Fallback=nullptr;FString FallbackMotion,FallbackMeshPath;double FallbackHeight=0;
+        if(Profile&&Profile->Raw.IsValid()&&Profile->Raw->TryGetObjectField(TEXT("fallback"),Fallback)&&(*Fallback)->TryGetStringField(TEXT("motion"),FallbackMotion)&&
+           (*Fallback)->TryGetStringField(TEXT("mesh"),FallbackMeshPath)&&(*Fallback)->TryGetNumberField(TEXT("heightCm"),FallbackHeight)&&UCireCreatureArt::HandlesMotion(FallbackMotion)&&
+           Creature->ApplyBinding(Hero,Hero.ChampionProfileId,FallbackMotion,FallbackMeshPath,static_cast<float>(FallbackHeight),*Fallback))
+        {UE_LOG(LogCireChampionArt,Warning,TEXT("%s: primary creature body failed; using its fallback (%s)."),*Hero.ChampionProfileId,*FallbackMeshPath);AppliedArchetype=Archetype;return true;}
         // Never silently substitute a humanoid for a creature whose body failed to load.
         Hero.GetMesh()->SetAnimInstanceClass(nullptr);Hero.GetMesh()->SetSkeletalMesh(nullptr);
         UE_LOG(LogCireChampionArt,Error,TEXT("Creature art unavailable for %s; humanoid fallback suppressed."),*Hero.ChampionProfileId);return false;
@@ -448,7 +467,8 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
 
 void UCireChampionArt::UpdateVisuals(ACireHero& Hero, float DeltaSeconds)
 {
-    if (!ReviewEnabled() || Hero.GetNetMode() == NM_DedicatedServer) return;
+    // pets: companions always wear their creature body (it is not an opt-in champion review asset).
+    if ((!ReviewEnabled() && !Hero.ChampionProfileId.StartsWith(TEXT("pet:"))) || Hero.GetNetMode() == NM_DedicatedServer) return;
     if (!Hero.bDrafted || Hero.Archetype < 0 || Hero.Archetype >= UE_ARRAY_COUNT(Definitions))
     {
         RestoreFallback(Hero);

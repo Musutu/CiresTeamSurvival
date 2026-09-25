@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "CireBuffs.h" // aura-vfx
+#include "CirePets.h" // pets: owner threat share
 
 namespace {
 const FCireNPCThreatRules& Rules(){return CireNPCArchetypes::Get().Threat;}
@@ -29,7 +30,9 @@ void CireThreat::Engage(ACireMonster* M,ACireHero* H){Add(M,H,1.f);}
 void CireThreat::AddRaw(ACireMonster* M,ACireHero* H,float Amount){Add(M,H,Amount);Select(M);}
 void CireThreat::Damage(ACireMonster* M,ACireHero* H,float Amount){
     if(!H)return;
-    Add(M,H,Amount*H->DamageThreatMultiplier());
+    float Threat=Amount*H->DamageThreatMultiplier();
+    Threat-=CirePets::ShareOwnerThreat(M,H,Threat); // pets: part of the owner's threat lands on its engaged companion
+    Add(M,H,Threat);
     Select(M);
 }
 void CireThreat::Healing(ACireHero* Source,ACireHero* Target,float Amount){

@@ -63,6 +63,8 @@ public:
     // new-champions: tech construct presentation (energy core, crystal, ring); hidden for walls.
     UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> CoreMesh;
     UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> CrownMesh;
+    // items-v2: absorb shield from the owner's Artificer's Heartforge (server only).
+    float ItemShield = 0.f;
     // Server-only tech state (CireTechConstructs::TickConstruct).
     float TechTimer = 0.f;
     bool bTriggered = false;

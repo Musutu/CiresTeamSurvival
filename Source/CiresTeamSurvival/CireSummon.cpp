@@ -1,4 +1,5 @@
 #include "CireSummon.h"
+#include "CireItems.h" // items-v2
 #include "CireDeveloperTools.h"
 #include "CireAreaEffects.h"
 #include "CireConstruct.h"
@@ -6,6 +7,7 @@
 #include "CireSkillRuntime.h"
 #include "CireCombatEvents.h"
 #include "CireThreat.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "Components/CapsuleComponent.h"
 #include "Engine/OverlapResult.h"
 #include "EngineUtils.h"
@@ -71,7 +73,7 @@ TArray<ACireSummon*> ACireSummon::SpawnGroup(ACireHero* Source, const FCireSummo
         Unit->OriginPhase = CireSkillRuntime::Phase(World); Unit->ExpiresServerTime = World->GetTimeSeconds() + Spec.DurationSeconds;
         Unit->Draft(Spec.ArchetypeVisual);
         Unit->HeroName = Spec.bCommandable ? TEXT("Oathbound Guardian") : TEXT("Spectral Companion");
-        Unit->MaxHealth = Unit->Health = Spec.Health;
+        Unit->MaxHealth = Unit->Health = Spec.Health * CireItems::SummonMultiplier(Source); // items-v2: Soulbinder's Crook
         Unit->Gold = 0; Unit->Skills.Reset(); Unit->Offers.Reset(); Unit->Cooldowns.Reset();
         Unit->Target = CireCombat::AreHostile(Source, TargetActor) ? TargetActor : nullptr;
         Unit->CurrentCommand = Unit->Target ? ECireSummonCommand::Attack : ECireSummonCommand::Follow;
@@ -136,7 +138,11 @@ void ACireSummon::Tick(float Delta)
             SetActorRotation(Direction.Rotation());
             const uint32 PreviousSerial = AttackSerial;
             BasicAttack();
-            if (AttackSerial != PreviousSerial) PendingAttackDamage = SummonSpec.Damage;
+            if (AttackSerial != PreviousSerial)
+            {
+                PendingAttackDamage = SummonSpec.Damage;
+                BasicTimer = CireKits::InheritedInterval(this, BaseAttackSeconds()); // scaling-kits: the owner's attack speed drives the summon
+            }
         }
     }
 }

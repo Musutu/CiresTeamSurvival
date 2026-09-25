@@ -15,6 +15,16 @@
   "arcane",
   "storm"
  ],
+ "sections": [
+  "spell",
+  "attack",
+  "defensive",
+  "control",
+  "summon",
+  "construct",
+  "passive",
+  "ultimate"
+ ],
  "types": [
   "TANK",
   "DPS",
@@ -109,6 +119,21 @@
     "totemic_behemoth",
     "drakish_footman",
     "troll_berserker_melee"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Guard"
    ]
   },
   "shield_slam": {
@@ -144,7 +169,7 @@
     "minCooldownSeconds": 1.0
    },
    "status": "implemented",
-   "description": "Melee STR strike for {effect} damage: interrupts the target's cast (2s school lockout), slows for 2s and draws monster attention.",
+   "description": "Melee strike for {effect} damage: interrupts the target's cast (2s school lockout), slows for 2s and draws monster attention.",
    "effects": [
     {
      "type": "interrupt",
@@ -189,6 +214,24 @@
     "ether_golem_tank",
     "orc_chieftain",
     "drakish_footman"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 45,
+    "primary": 1.05
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Interrupt",
+    "Taunt",
+    "Damage"
    ]
   },
   "war_cry": {
@@ -263,6 +306,22 @@
     "orc_chieftain",
     "totemic_behemoth",
     "drakish_footman"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Taunt",
+    "Guard"
    ]
   },
   "chain_spark": {
@@ -299,7 +358,7 @@
     "minCooldownSeconds": 1.0
    },
    "status": "implemented",
-   "description": "Lightning hits up to 4 nearby enemies for {effect} + INT damage.",
+   "description": "Lightning hits up to 4 nearby enemies for {effect} damage.",
    "effects": [],
    "champions": [
     "ranger",
@@ -327,6 +386,21 @@
     "scholar",
     "summoner",
     "wizard"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 60,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "frost_bind": {
@@ -408,6 +482,22 @@
     "ranger",
     "wizard",
     "troll_berserker_ranged"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 65,
+    "primary": 2.2
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Damage"
    ]
   },
   "cleaving_strike": {
@@ -444,7 +534,7 @@
     "minCooldownSeconds": 1.0
    },
    "status": "implemented",
-   "description": "Primary-stat strike hits every enemy around you for {effect} damage.",
+   "description": "Strike hits every enemy around you for {effect} damage.",
    "effects": [],
    "champions": [
     "knight",
@@ -476,6 +566,21 @@
     "orc_chieftain",
     "totemic_behemoth",
     "troll_berserker_melee"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.12
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "shadow_step": {
@@ -512,7 +617,7 @@
     "minCooldownSeconds": 1.0
    },
    "status": "implemented",
-   "description": "Void-blink to an enemy and strike for {effect} AGI damage. The void rift stuns enemies in the inner circle (1s) and slows those in the outer ring (40%, 2.5s); you mend 5% max health.",
+   "description": "Void-blink to an enemy and strike for {effect} damage. The void rift stuns enemies in the inner circle (1s) and slows those in the outer ring (40%, 2.5s); you mend 5% max health.",
    "effects": [],
    "champions": [
     "knight",
@@ -554,7 +659,24 @@
     "outerMagnitude": 0.4,
     "damage": 30,
     "selfHealMaxHealthFraction": 0.05
-   }
+   },
+   "scaling": {
+    "component": "damage",
+    "base": 50,
+    "primary": 2.2
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "restoring_light": {
    "id": "restoring_light",
@@ -589,7 +711,7 @@
     "minCooldownSeconds": 1.0
    },
    "status": "implemented",
-   "description": "Cast 1.5s: heal an ally (or yourself) for {effect} + 3x INT.",
+   "description": "Cast 1.5s: heal an ally (or yourself) for {effect}.",
    "effects": [],
    "champions": [
     "scholar",
@@ -611,6 +733,21 @@
     "whisp",
     "evergrove_centaur",
     "keeper_of_light"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 90,
+    "primary": 1.8
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "sanctuary": {
@@ -646,7 +783,7 @@
     "minCooldownSeconds": 1.0
    },
    "status": "implemented",
-   "description": "Cast 2s: heal nearby allies for {effect} + INT and guard them for 3s.",
+   "description": "Cast 2s: heal nearby allies for {effect} and guard them for 3s.",
    "effects": [
     {
      "type": "guard",
@@ -676,6 +813,22 @@
     "dryad",
     "evergrove_centaur",
     "keeper_of_light"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 60,
+    "primary": 1.8
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal",
+    "Guard"
    ]
   },
   "purify": {
@@ -711,7 +864,7 @@
     "minCooldownSeconds": 1.0
    },
    "status": "implemented",
-   "description": "Cast 1s: remove an ally's slow and restore {effect} + INT health.",
+   "description": "Cast 1s: remove an ally's slow and restore {effect} health.",
    "effects": [
     {
      "type": "cleanse",
@@ -741,6 +894,22 @@
     "whisp",
     "evergrove_centaur",
     "keeper_of_light"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 40,
+    "primary": 1.2
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal",
+    "Cleanse"
    ]
   },
   "summoned_wall": {
@@ -813,6 +982,21 @@
     "summoner",
     "dwarf_miner",
     "ether_golem_tank"
+   ],
+   "scaling": {
+    "component": "shield",
+    "base": 450,
+    "primary": 6.0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct"
    ]
   },
   "protection_dome": {
@@ -887,6 +1071,21 @@
     "summoner",
     "ether_golem_support",
     "whisp"
+   ],
+   "scaling": {
+    "component": "shield",
+    "base": 300,
+    "primary": 6.0
+   },
+   "level15": {
+    "bonus": "healCut",
+    "label": "Lv 15: +healing on the target -40% for 4s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct"
    ]
   },
   "oathbound_guardian": {
@@ -957,6 +1156,22 @@
    ],
    "signatureOf": [
     "summoner"
+   ],
+   "scaling": {
+    "component": "summon",
+    "base": 22,
+    "primary": 0.5
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Damage"
    ]
   },
   "spectral_pack": {
@@ -1011,6 +1226,106 @@
    "signatureOf": [
     "ranger",
     "summoner"
+   ],
+   "scaling": {
+    "component": "summon",
+    "base": 14,
+    "primary": 0.4
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Damage"
+   ]
+  },
+  "polymorph": {
+   "id": "polymorph",
+   "name": "Polymorph",
+   "icon": "/Game/UI/Abilities/T_polymorph",
+   "types": [
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "enemy",
+   "castTime": 1.5,
+   "base": {
+    "effect": 8,
+    "manaCost": 50,
+    "energyCost": 0,
+    "cooldown": 20,
+    "castTime": 1.5,
+    "range": 1100,
+    "radius": 0,
+    "duration": 8
+   },
+   "effectLabel": "seconds",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 12,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Cast 1.5s: turn an enemy into a harmless critter for {effect}s (half on elites, 3s on champions; bosses and Pack Leaders are immune). Any damage breaks it.",
+   "effects": [
+    {
+     "type": "polymorph",
+     "zone": "target",
+     "duration": 8,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Polymorphed"
+    }
+   ],
+   "champions": [
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "paladin_holy",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "control",
+   "effectTags": [
+    "Polymorph"
    ]
   },
   "second_wind": {
@@ -1084,6 +1399,22 @@
     "lancer",
     "paladin_righteous",
     "troll_berserker_melee"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 0,
+    "primary": 1.0,
+    "note": "plus the % max health"
+   },
+   "level15": {
+    "bonus": "healCut",
+    "label": "Lv 15: +healing on the target -40% for 4s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "decimating_strike": {
@@ -1166,6 +1497,23 @@
     "orc_chieftain",
     "drakish_footman",
     "troll_berserker_melee"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 150,
+    "primary": 2.2
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Execute",
+    "Armor Break",
+    "Damage"
    ]
   },
   "stone_skin": {
@@ -1237,7 +1585,19 @@
    "signatureOf": [
     "knight",
     "paladin_righteous"
-   ]
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "battle_rhythm": {
    "id": "battle_rhythm",
@@ -1308,7 +1668,19 @@
    "signatureOf": [
     "ranger",
     "lancer"
-   ]
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "attackSpeed",
+    "label": "Lv 15 aura: party +30% attack speed"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "deep_reserves": {
    "id": "deep_reserves",
@@ -1379,7 +1751,19 @@
    "signatureOf": [
     "summoner",
     "wizard"
-   ]
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "soul_conduit": {
    "id": "soul_conduit",
@@ -1451,6 +1835,20 @@
     "scholar",
     "paladin_holy",
     "ether_golem_support"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "magicLifesteal",
+    "label": "Lv 15 aura: party 5% magic lifesteal"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "executioner": {
@@ -1515,6 +1913,21 @@
     "lancer",
     "troll_berserker_melee",
     "troll_berserker_ranged"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Execute",
+    "Damage"
    ]
   },
   "bastion_of_dawn": {
@@ -1585,6 +1998,38 @@
    "signatureOf": [
     "knight",
     "paladin_righteous"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 0,
+    "primary": 2.0,
+    "note": "plus the % max health"
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Dawnward",
+    "text": "Allies within 7 m also gain a shield absorbing 150 + 10% of your max health for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "barrier",
+      "radius": 700,
+      "duration": 8,
+      "amount": 150,
+      "healthScaling": 0.1
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Guard"
    ]
   },
   "cataclysm": {
@@ -1620,7 +2065,7 @@
     "minCooldownSeconds": 10.0
    },
    "status": "implemented",
-   "description": "Blast up to 12 enemies near your target for {effect} + 3.5x INT damage.",
+   "description": "Blast up to 12 enemies near your target for {effect} damage.",
    "effects": [],
    "champions": [
     "ranger",
@@ -1639,6 +2084,39 @@
    "signatureOf": [
     "summoner",
     "wizard"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 160,
+    "primary": 2.8
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Scorched Earth",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "executioners_verdict": {
@@ -1674,7 +2152,7 @@
     "minCooldownSeconds": 10.0
    },
    "status": "implemented",
-   "description": "Deal {effect} + 3x primary, plus 25% of the target's missing health (bonus capped at 300).",
+   "description": "Deal {effect}, plus 25% of the target's missing health (bonus capped at 300).",
    "effects": [],
    "champions": [
     "ranger",
@@ -1693,6 +2171,41 @@
    "signatureOf": [
     "ranger",
     "lancer"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 100,
+    "primary": 3.5
+   },
+   "level15": {
+    "bonus": "healCut",
+    "label": "Lv 15: +healing on the target -40% for 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Verdict Rendered",
+    "text": "Your other cooldowns shrink by 50% and you gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "cooldownRefund",
+      "magnitude": 0.5
+     },
+     {
+      "type": "partyBuff",
+      "radius": 0,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "renewal": {
@@ -1728,7 +2241,7 @@
     "minCooldownSeconds": 10.0
    },
    "status": "implemented",
-   "description": "Cast 2.5s: cleanse nearby allies' slows and heal each for {effect} + 4x INT.",
+   "description": "Cast 2.5s: cleanse nearby allies' slows and heal each for {effect}.",
    "effects": [
     {
      "type": "cleanse",
@@ -1753,6 +2266,39 @@
    "signatureOf": [
     "scholar",
     "paladin_holy"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 200,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "Second Dawn",
+    "text": "Allies within 9 m also gain +30 armor and +30 ward for 8 s (a party aura).",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "armor": 30,
+       "ward": 30
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Cleanse"
    ]
   },
   "last_stand": {
@@ -1810,7 +2356,37 @@
     "drakish_footman",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "scaling": {
+    "component": "heal",
+    "base": 0,
+    "primary": 2.0,
+    "note": "plus the % max health"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Rallying Stand",
+    "text": "Allies within 8 m are also healed for 12% of your max health.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "heal",
+      "radius": 800,
+      "healthScaling": 0.12
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Cleanse"
+   ]
   },
   "challenge_of_iron": {
    "id": "challenge_of_iron",
@@ -1875,7 +2451,36 @@
     "drakish_footman",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Iron Echo",
+    "text": "Enemies within 8.5 m are also stunned for 1.5 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "stun",
+      "radius": 850,
+      "duration": 1.5
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Taunt",
+    "Guard"
+   ]
   },
   "seismic_reprisal": {
    "id": "seismic_reprisal",
@@ -1910,7 +2515,7 @@
     "minCooldownSeconds": 10.0
    },
    "status": "implemented",
-   "description": "After 0.8s the ground around you bursts for {effect} + 3x primary damage and stuns for 1s.",
+   "description": "After 0.8s the ground around you bursts for {effect} damage and stuns for 1s.",
    "effects": [
     {
      "type": "stun",
@@ -1933,7 +2538,44 @@
     "drakish_footman",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 160,
+    "primary": 2.8
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Aftershock",
+    "text": "The burst also breaks enemy armor for 6 s, and allies within 6 m gain +40 armor for 8 s.",
+    "center": "self",
+    "delay": 0.8,
+    "effects": [
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 6
+     },
+     {
+      "type": "partyBuff",
+      "radius": 600,
+      "duration": 8,
+      "stats": {
+       "armor": 40
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Stun",
+    "Damage"
+   ]
   },
   "starfall": {
    "id": "starfall",
@@ -1968,7 +2610,7 @@
     "minCooldownSeconds": 10.0
    },
    "status": "implemented",
-   "description": "Aim a 5m circle; after 1.25s deal {effect} + 3.5x primary damage.",
+   "description": "Aim a 5m circle; after 1.25s deal {effect} damage.",
    "effects": [],
    "champions": [
     "ranger",
@@ -1984,7 +2626,40 @@
     "huntress",
     "aetheri_artificer"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 180,
+    "primary": 2.8
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Falling Sky",
+    "text": "The impact also silences enemies for 2 s, and you restore 20% of your max mana.",
+    "center": "target",
+    "delay": 1.25,
+    "effects": [
+     {
+      "type": "silence",
+      "radius": 500,
+      "duration": 2
+     },
+     {
+      "type": "restore",
+      "radius": 0,
+      "magnitude": 0.2
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "spectral_hunt": {
    "id": "spectral_hunt",
@@ -2019,7 +2694,7 @@
     "minCooldownSeconds": 10.0
    },
    "status": "implemented",
-   "description": "Three hunters attack your target for 18s, {effect} + 0.4x primary per hit.",
+   "description": "Three hunters attack your target for 18s, {effect} per hit.",
    "effects": [],
    "champions": [
     "ranger",
@@ -2035,7 +2710,39 @@
     "huntress",
     "aetheri_artificer"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "scaling": {
+    "component": "summon",
+    "base": 58,
+    "primary": 0.6
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Pack Leader",
+    "text": "You and allies within 9 m gain +20% attack speed and +10% move speed for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "attackSpeed": 20,
+       "moveSpeed": 10
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "mass_aegis": {
    "id": "mass_aegis",
@@ -2100,7 +2807,38 @@
     "keeper_of_light",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Aegis Bloom",
+    "text": "Allies within 9 m also gain a shield absorbing 200 + 2x primary stat for 12 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "barrier",
+      "radius": 900,
+      "duration": 12,
+      "amount": 200,
+      "scaling": 2
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Cleanse",
+    "Guard"
+   ]
   },
   "wellspring": {
    "id": "wellspring",
@@ -2135,7 +2873,7 @@
     "minCooldownSeconds": 10.0
    },
    "status": "implemented",
-   "description": "Cast 2s: heal an ally (or yourself) for {effect} + 4x INT and guard for 5s.",
+   "description": "Cast 2s: heal an ally (or yourself) for {effect} and guard for 5s.",
    "effects": [
     {
      "type": "guard",
@@ -2158,7 +2896,41 @@
     "keeper_of_light",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "scaling": {
+    "component": "heal",
+    "base": 220,
+    "primary": 4.0
+   },
+   "level15": {
+    "bonus": "healCut",
+    "label": "Lv 15: +healing on the target -40% for 4s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "Overflow",
+    "text": "Allies within 6 m of you also heal 150 and restore 15% of their max mana.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "heal",
+      "radius": 600,
+      "amount": 150
+     },
+     {
+      "type": "restore",
+      "radius": 600,
+      "magnitude": 0.15
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Guard"
+   ]
   },
   "venom_ground": {
    "id": "venom_ground",
@@ -2213,6 +2985,22 @@
     "ranger",
     "summoner",
     "troll_berserker_ranged"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 60,
+    "primary": 1.12,
+    "dotPerSecond": 0.28
+   },
+   "level15": {
+    "bonus": "healCut",
+    "label": "Lv 15: +healing on the target -40% for 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "cinder_cone": {
@@ -2267,6 +3055,22 @@
    "signatureOf": [
     "ether_golem_bruiser",
     "wizard"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 95,
+    "primary": 1.12,
+    "dotPerSecond": 0.28
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "grave_line": {
@@ -2330,6 +3134,23 @@
    "signatureOf": [
     "ranger",
     "wizard"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 85,
+    "primary": 1.12,
+    "dotPerSecond": 0.28
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Silence",
+    "Damage"
    ]
   },
   "ashen_square": {
@@ -2384,6 +3205,22 @@
    "signatureOf": [
     "lancer",
     "wizard"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 60,
+    "primary": 1.12,
+    "dotPerSecond": 0.28
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "blight_sigil": {
@@ -2444,7 +3281,24 @@
     "huntress",
     "aetheri_artificer"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 60,
+    "primary": 1.12,
+    "dotPerSecond": 0.28
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Heal Cut",
+    "Damage"
+   ]
   },
   "piercing_shot": {
    "id": "piercing_shot",
@@ -2499,6 +3353,21 @@
     "ranger",
     "lancer",
     "troll_berserker_ranged"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 90,
+    "primary": 1.8
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "ember_lance": {
@@ -2535,7 +3404,7 @@
     "minCooldownSeconds": 1.0
    },
    "status": "implemented",
-   "description": "Fire skillshot for {effect} + 2x INT damage.",
+   "description": "Fire skillshot for {effect} damage.",
    "effects": [],
    "champions": [
     "ranger",
@@ -2562,7 +3431,686 @@
    "signatureOf": [
     "scholar",
     "wizard"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 95,
+    "primary": 1.2
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
+  },
+  "shield_bash": {
+   "id": "shield_bash",
+   "name": "Shield Bash",
+   "icon": "/Game/UI/Abilities/T_shield_bash",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 40,
+    "manaCost": 0,
+    "energyCost": 20,
+    "cooldown": 9,
+    "castTime": 0,
+    "range": 260,
+    "radius": 0,
+    "duration": 1.0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "requires": "shield",
+   "description": "Bash with your shield for {effect} damage: interrupts the target's cast (2s school lockout) and stuns it for 1s.",
+   "effects": [
+    {
+     "type": "interrupt",
+     "zone": "target",
+     "duration": 0,
+     "magnitude": 0,
+     "radius": 0.0,
+     "lockoutSeconds": 2.0,
+     "label": "Interrupted"
+    },
+    {
+     "type": "stun",
+     "zone": "target",
+     "duration": 1.0,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "knight",
+    "paladin_righteous",
+    "drakish_footman"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 40,
+    "primary": 1.35
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Shield",
+    "Stun",
+    "Interrupt",
+    "Damage"
+   ]
+  },
+  "shield_toss": {
+   "id": "shield_toss",
+   "name": "Shield Toss",
+   "icon": "/Game/UI/Abilities/T_shield_toss",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 50,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 500,
+    "duration": 0
+   },
+   "effectLabel": "damage per bounce",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "requires": "shield",
+   "description": "Hurl your shield at an enemy for {effect} damage; it ricochets to 2 more enemies within 5m (-20% per bounce) and draws their attention.",
+   "effects": [
+    {
+     "type": "taunt",
+     "zone": "target",
+     "duration": 2,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "knight",
+    "paladin_righteous",
+    "drakish_footman"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 50,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Shield",
+    "Taunt",
+    "Damage"
+   ]
+  },
+  "shield_wall": {
+   "id": "shield_wall",
+   "name": "Shield Wall",
+   "icon": "/Game/UI/Abilities/T_shield_wall",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 60,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 20,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 6
+   },
+   "effectLabel": "% frontal damage reduction",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 80,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "requires": "shield",
+   "description": "Raise your shield for 6s: damage from the front is reduced by {effect}% and physical hits from the front are always blocked.",
+   "effects": [
+    {
+     "type": "guard",
+     "zone": "self",
+     "duration": 6,
+     "magnitude": 0.6,
+     "radius": 0.0,
+     "label": "Frontal DEF +60%"
+    }
+   ],
+   "champions": [
+    "knight",
+    "paladin_righteous",
+    "drakish_footman"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Shield",
+    "Guard",
+    "Damage"
+   ]
+  },
+  "pavise": {
+   "id": "pavise",
+   "name": "Construct: Pavise",
+   "icon": "/Game/UI/Abilities/T_pavise",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 500,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 18,
+    "castTime": 0,
+    "range": 600,
+    "radius": 160,
+    "duration": 12
+   },
+   "effectLabel": "barrier health",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "requires": "shield",
+   "description": "Plant a tall pavise shield for 12s ({effect} health): it blocks enemy projectiles and allies behind it take 25% less damage (cover).",
+   "effects": [],
+   "champions": [
+    "knight",
+    "paladin_righteous",
+    "drakish_footman"
+   ],
+   "signatureOf": [],
+   "category": "construct",
+   "scaling": {
+    "component": "shield",
+    "base": 500,
+    "primary": 5.0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Shield",
+    "Construct"
+   ]
+  },
+  "mechanical_tank": {
+   "id": "mechanical_tank",
+   "name": "Construct: Mechanical Tank",
+   "icon": "/Game/UI/Abilities/T_mechanical_tank",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 800,
+    "manaCost": 0,
+    "energyCost": 40,
+    "cooldown": 40,
+    "castTime": 0,
+    "range": 600,
+    "radius": 250,
+    "duration": 25
+   },
+   "effectLabel": "mech health",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "requires": "shield",
+   "description": "Summon a mechanical tank for 25s ({effect} health). It guards your allies: it attacks enemies that are hitting allies other than you, Taunts enemies that are not attacking you, and ground-slams nearby enemies (small AoE, generates threat).",
+   "effects": [
+    {
+     "type": "taunt",
+     "zone": "target",
+     "duration": 3,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "knight",
+    "paladin_righteous",
+    "drakish_footman"
+   ],
+   "signatureOf": [],
+   "category": "construct",
+   "scaling": {
+    "component": "summon",
+    "base": 30,
+    "primary": 0.6
+   },
+   "level15": {
+    "bonus": "slow",
+    "special": "mechSlam",
+    "label": "Lv 15: +the mech's slam also cuts enemy attack speed by 10% for 4s"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Shield",
+    "Construct",
+    "Summon",
+    "Taunt"
+   ]
+  },
+  "artillery": {
+   "id": "artillery",
+   "name": "Artillery",
+   "icon": "/Game/UI/Abilities/T_artillery",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 100,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 45,
+    "castTime": 0,
+    "range": 0,
+    "radius": 700,
+    "duration": 8
+   },
+   "effectLabel": "% attack speed",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 100,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "requires": "ranged",
+   "description": "For 8s you only basic-attack, with unlimited range and {effect}% more attack speed.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "wizard",
+    "troll_berserker_ranged",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "dot",
+    "special": "artilleryBomb",
+    "label": "Lv 15: +when Artillery ends, a bomb hits a 7m radius for all the damage Artillery dealt"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": []
+  },
+  "eagle_eye": {
+   "id": "eagle_eye",
+   "name": "Eagle Eye",
+   "icon": "/Game/UI/Abilities/T_eagle_eye",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 400,
+    "manaCost": 0,
+    "energyCost": 20,
+    "cooldown": 16,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 8
+   },
+   "effectLabel": "range",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 800,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "requires": "ranged",
+   "description": "Your basic attacks and aimed skills reach {effect}cm further for 8s.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "wizard",
+    "troll_berserker_ranged",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": []
+  },
+  "longshot": {
+   "id": "longshot",
+   "name": "Longshot Stance",
+   "icon": "/Game/UI/Abilities/T_longshot",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 25,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 20,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 10
+   },
+   "effectLabel": "% damage beyond 8m",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 50,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "requires": "ranged",
+   "description": "Plant your feet for 10s: +250cm range and your basic attacks deal {effect}% more damage to targets beyond 8m, but you move 30% slower.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "wizard",
+    "troll_berserker_ranged",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
+  },
+  "headshot": {
+   "id": "headshot",
+   "name": "Headshot",
+   "icon": "/Game/UI/Abilities/T_headshot",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% proc chance",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 10,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "requires": "ranged",
+   "description": "Each hit has a {effect}% chance to strike again for 2x the original hit's damage, on top of the normal hit.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "wizard",
+    "troll_berserker_ranged",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "none",
+    "special": "headshotTriple",
+    "label": "Lv 15: +Headshot's extra hit deals 3x instead of 2x"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Damage"
+   ]
+  },
+  "artillery_training": {
+   "id": "artillery_training",
+   "name": "Artillery Training",
+   "icon": "/Game/UI/Abilities/T_artillery_training",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 150,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "range",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 400,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "requires": "ranged",
+   "description": "Your basic attacks reach {effect}cm further.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "wizard",
+    "troll_berserker_ranged",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "rangedDamage",
+    "label": "Lv 15 aura: party +10% ranged damage"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "silver_shot": {
    "id": "silver_shot",
@@ -2598,13 +4146,28 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Aimed silver round: {effect} + 1.6x AGI damage; +60% against undead and void monsters.",
+   "description": "Aimed silver round: {effect} damage; +60% against undead and void monsters.",
    "effects": [],
    "champions": [
     "gunblade"
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 95,
+    "primary": 1.6
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "hex_mark": {
@@ -2657,6 +4220,22 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "healCut",
+    "label": "Lv 15: +healing on the target -40% for 4s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Mark",
+    "Damage"
    ]
   },
   "powder_flask": {
@@ -2693,7 +4272,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Hurl a powder flask: after a short fuse it bursts for {effect} + 1x AGI fire damage in 2.6m and slows by 35% for 2.5s.",
+   "description": "Hurl a powder flask: after a short fuse it bursts for {effect} fire damage in 2.6m and slows by 35% for 2.5s.",
    "effects": [
     {
      "type": "slow",
@@ -2709,6 +4288,23 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 70,
+    "primary": 1.54,
+    "dotPerSecond": 0.39
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Damage"
    ]
   },
   "blade_flurry": {
@@ -2745,13 +4341,28 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Three quick falchion slashes around you, each {effect} + 0.8x AGI damage.",
+   "description": "Three quick falchion slashes around you, each {effect} damage.",
    "effects": [],
    "champions": [
     "gunblade"
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 40,
+    "primary": 1.26
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "hunters_stride": {
@@ -2795,6 +4406,21 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "warding_talisman": {
@@ -2854,6 +4480,22 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Cleanse",
+    "Guard"
    ]
   },
   "price_on_every_soul": {
@@ -2897,7 +4539,19 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "physicalLifesteal",
+    "label": "Lv 15 aura: party 5% physical lifesteal"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "collect_the_bounty": {
    "id": "collect_the_bounty",
@@ -2933,7 +4587,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Execution shot: {effect} + 3x AGI plus 40% of missing health (bonus capped at 400). Non-boss monsters under 20% health die; a kill refunds half the cooldown and pays a marked bounty twice.",
+   "description": "Execution shot: {effect} plus 40% of missing health (bonus capped at 400). Non-boss monsters under 20% health die; a kill refunds half the cooldown and pays a marked bounty twice.",
    "effects": [
     {
      "type": "lethal",
@@ -2948,6 +4602,43 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 180,
+    "primary": 3.5
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Bounty Hunter",
+    "text": "You gain +30% move speed and +12 primary stat for 6 s; other cooldowns shrink by 30%.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 0,
+      "duration": 6,
+      "stats": {
+       "moveSpeed": 30,
+       "primaryStat": 12
+      }
+     },
+     {
+      "type": "cooldownRefund",
+      "magnitude": 0.3
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Execute",
+    "Damage"
    ]
   },
   "arcane_blunderbuss": {
@@ -2984,7 +4675,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "A 60-degree cone of arcane shot (5.5m): {effect} + 1.8x INT damage; +40% against casting enemies and interrupts their cast.",
+   "description": "A 60-degree cone of arcane shot (5.5m): {effect} damage; +40% against casting enemies and interrupts their cast.",
    "effects": [
     {
      "type": "interrupt",
@@ -3001,6 +4692,22 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 110,
+    "primary": 0.84
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Interrupt",
+    "Damage"
    ]
   },
   "spirit_lantern": {
@@ -3037,7 +4744,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Set a spirit-lantern trap (20s, up to 2). The first enemy to come within 1.5m sets it off: {effect} + 1x INT damage and a 2s silence within 2.6m.",
+   "description": "Set a spirit-lantern trap (20s, up to 2). The first enemy to come within 1.5m sets it off: {effect} damage and a 2s silence within 2.6m.",
    "effects": [
     {
      "type": "silence",
@@ -3054,7 +4761,24 @@
    "signatureOf": [
     "witch_slayer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "construct",
+    "base": 60,
+    "primary": 1.0
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Silence",
+    "Damage"
+   ]
   },
   "purge": {
    "id": "purge",
@@ -3090,7 +4814,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Strip every buff from an enemy and silence it for 2.5s; deals {effect} + 1x INT damage.",
+   "description": "Strip every buff from an enemy and silence it for 2.5s; deals {effect} damage.",
    "effects": [
     {
      "type": "purge",
@@ -3113,6 +4837,23 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 60,
+    "primary": 2.2
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Silence",
+    "Purge",
+    "Damage"
    ]
   },
   "banishment": {
@@ -3149,7 +4890,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Exile an enemy for 2s: it cannot act, move or be harmed, then returns for {effect} + 1.5x INT void damage. Bosses resist: silenced and slowed instead.",
+   "description": "Exile an enemy for 2s: it cannot act, move or be harmed, then returns for {effect} void damage. Bosses resist: silenced and slowed instead.",
    "effects": [
     {
      "type": "banish",
@@ -3165,6 +4906,22 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 80,
+    "primary": 2.2
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Banish",
+    "Damage"
    ]
   },
   "witchfinders_mark": {
@@ -3217,6 +4974,22 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Mark",
+    "Damage"
    ]
   },
   "spectral_blade": {
@@ -3253,13 +5026,28 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Lunge up to 6m with the spectral blade: {effect} + 1.4x INT damage.",
+   "description": "Lunge up to 6m with the spectral blade: {effect} damage.",
    "effects": [],
    "champions": [
     "witch_slayer"
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 90,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "healCut",
+    "label": "Lv 15: +healing on the target -40% for 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "witchbane": {
@@ -3303,6 +5091,20 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "stunIgnore",
+    "label": "Lv 15 aura: party 5% chance to ignore stuns"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Damage"
    ]
   },
   "hexbane_judgment": {
@@ -3339,7 +5141,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Aim a 4.5m circle; after 1s it bursts for {effect} + 3x INT damage, strips every buff and silences for 3s.",
+   "description": "Aim a 4.5m circle; after 1s it bursts for {effect} damage, strips every buff and silences for 3s.",
    "effects": [
     {
      "type": "silence",
@@ -3362,6 +5164,46 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 200,
+    "primary": 2.8
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Witchlight",
+    "text": "Enemies in the circle are also armor-broken for 6 s; allies within 9 m of you gain +25 ward for 8 s.",
+    "center": "target",
+    "delay": 1.0,
+    "effects": [
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 6,
+      "atTarget": true
+     },
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "ward": 25
+      },
+      "atSelf": true
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Silence",
+    "Purge",
+    "Damage"
    ]
   },
   "bouncing_glaive": {
@@ -3398,25 +5240,40 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Hurl a glaive that strikes the target and bounces to 4 more enemies within 5m, losing 20% per bounce: {effect} + 1.5x AGI.",
+   "description": "Hurl a glaive that strikes the target and bounces to 4 more enemies within 5m, losing 20% per bounce: {effect}.",
    "effects": [],
    "champions": [
     "huntress"
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 80,
+    "primary": 1.12
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "sabercat_pounce": {
    "id": "sabercat_pounce",
-   "name": "Sabercat Pounce",
+   "name": "Ashfang: Pounce",
    "icon": "/Game/UI/Abilities/T_sabercat_pounce",
    "types": [
     "DPS"
    ],
    "kind": "active",
    "school": "physical",
-   "targeting": "aim",
+   "targeting": "enemy",
    "castTime": 0,
    "base": {
     "effect": 75,
@@ -3441,7 +5298,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "The sabercat leaps up to 7m and mauls everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s.",
+   "description": "Command Ashfang to leap up to 7m onto your target and maul everything within 2.6m on landing: {effect} and a 40% slow for 2s. Needs your companion.",
    "effects": [
     {
      "type": "slow",
@@ -3457,6 +5314,24 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "category": "pet",
+   "scaling": {
+    "component": "damage",
+    "base": 75,
+    "primary": 1.54
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Slow",
+    "Damage"
    ]
   },
   "owl_scout": {
@@ -3509,6 +5384,22 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Mark",
+    "Damage"
    ]
   },
   "moonlit_sprint": {
@@ -3568,6 +5459,22 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Cleanse",
+    "Haste"
    ]
   },
   "crescent_volley": {
@@ -3604,25 +5511,40 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Loose a crescent glaive that flies 14m in a line and cuts through up to five enemies: {effect} + 1.4x AGI.",
+   "description": "Loose a crescent glaive that flies 14m in a line and cuts through up to five enemies: {effect}.",
    "effects": [],
    "champions": [
     "huntress"
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 90,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
-  "sabercat_rake": {
-   "id": "sabercat_rake",
-   "name": "Sabercat Rake",
-   "icon": "/Game/UI/Abilities/T_sabercat_rake",
+  "sabercat_maul": {
+   "id": "sabercat_maul",
+   "name": "Ashfang: Maul",
+   "icon": "/Game/UI/Abilities/T_sabercat_maul",
    "types": [
     "DPS"
    ],
    "kind": "active",
-   "school": "nature",
-   "targeting": "aim",
+   "school": "physical",
+   "targeting": "enemy",
    "castTime": 0,
    "base": {
     "effect": 70,
@@ -3630,8 +5552,8 @@
     "energyCost": 25,
     "cooldown": 7,
     "castTime": 0,
-    "range": 320,
-    "radius": 320,
+    "range": 1600,
+    "radius": 0,
     "duration": 0
    },
    "effectLabel": "damage",
@@ -3647,13 +5569,109 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "The sabercat rakes a 70-degree arc in front of you (3.2m): {effect} + 1.2x AGI.",
+   "description": "Command Ashfang to maul your target: {effect}, with 50% bonus threat so the cat holds it off you. Needs your companion.",
    "effects": [],
    "champions": [
     "huntress"
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "category": "pet",
+   "scaling": {
+    "component": "damage",
+    "base": 70,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Damage"
+   ]
+  },
+  "sabercat_roar": {
+   "id": "sabercat_roar",
+   "name": "Ashfang: Dread Roar",
+   "icon": "/Game/UI/Abilities/T_sabercat_roar",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 30,
+    "manaCost": 0,
+    "energyCost": 20,
+    "cooldown": 16,
+    "castTime": 0,
+    "range": 0,
+    "radius": 450,
+    "duration": 3
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Ashfang roars: enemies within 4.5m of the cat take {effect}, are slowed 35% for 3s and turn on Ashfang for 2s. Also the pet's special command. Needs your companion.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "area",
+     "duration": 3,
+     "magnitude": 0.35,
+     "radius": 450,
+     "label": "Move -35%"
+    },
+    {
+     "type": "taunt",
+     "zone": "area",
+     "duration": 2,
+     "magnitude": 0.0,
+     "radius": 450,
+     "label": "Taunted by Ashfang"
+    }
+   ],
+   "champions": [
+    "huntress"
+   ],
+   "signatureOf": [
+    "huntress"
+   ],
+   "category": "pet",
+   "scaling": {
+    "component": "damage",
+    "base": 30,
+    "primary": 1.54
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Slow",
+    "Taunt",
+    "Damage"
    ]
   },
   "moon_glaive": {
@@ -3697,6 +5715,20 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "doubleAttack",
+    "label": "Lv 15 aura: party 10% chance to attack twice"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Damage"
    ]
   },
   "glaive_storm": {
@@ -3733,13 +5765,51 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "A whirling storm of glaives surrounds you for 6s, striking enemies within 4.8m for {effect} + 0.5x AGI every 0.5s.",
+   "description": "A whirling storm of glaives surrounds you for 6s, striking enemies within 4.8m for {effect} every 0.5s.",
    "effects": [],
    "champions": [
     "huntress"
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 45,
+    "primary": 2.8
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Eye of the Storm",
+    "text": "You gain a shield absorbing 200 + 2x primary stat and +20% move speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "barrier",
+      "radius": 0,
+      "duration": 6,
+      "amount": 200,
+      "scaling": 2
+     },
+     {
+      "type": "partyBuff",
+      "radius": 0,
+      "duration": 6,
+      "stats": {
+       "moveSpeed": 20
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "photon_turret": {
@@ -3776,7 +5846,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Warp in a turret for 25s ({effect} health, up to 2) that fires energy bolts at enemies within 9.5m: 18 + 0.35x INT every 0.8s.",
+   "description": "Warp in a turret for 25s ({effect} health, up to 2) that fires energy bolts at enemies within 9.5m: 18 every 0.8s.",
    "effects": [],
    "champions": [
     "aetheri_artificer"
@@ -3784,7 +5854,22 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "construct",
+    "base": 18,
+    "primary": 0.35
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "skitter_swarm": {
    "id": "skitter_swarm",
@@ -3820,7 +5905,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Deploy three skitter bombs (up to 6) that race at the nearest enemies and explode for {effect} + 0.8x INT in 2m.",
+   "description": "Deploy three skitter bombs (up to 6) that race at the nearest enemies and explode for {effect} in 2m.",
    "effects": [],
    "champions": [
     "aetheri_artificer"
@@ -3828,7 +5913,23 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "construct",
+    "base": 70,
+    "primary": 0.8
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Damage"
+   ]
   },
   "arc_mine": {
    "id": "arc_mine",
@@ -3864,7 +5965,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Plant a mine (30s, up to 3): the first enemy within 1.5m detonates it for {effect} + 1.2x INT in 2.4m.",
+   "description": "Plant a mine (30s, up to 3): the first enemy within 1.5m detonates it for {effect} in 2.4m.",
    "effects": [],
    "champions": [
     "aetheri_artificer"
@@ -3872,7 +5973,23 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "construct",
+    "base": 110,
+    "primary": 1.2
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Damage"
+   ]
   },
   "disruption_pylon": {
    "id": "disruption_pylon",
@@ -3925,7 +6042,24 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Weaken",
+    "Damage"
+   ]
   },
   "phase_lance": {
    "id": "phase_lance",
@@ -3961,13 +6095,28 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Fire an energy lance skillshot: {effect} + 1.8x INT damage.",
+   "description": "Fire an energy lance skillshot: {effect} damage.",
    "effects": [],
    "champions": [
     "aetheri_artificer"
    ],
    "signatureOf": [
     "aetheri_artificer"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 100,
+    "primary": 1.2
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "overcharge": {
@@ -4012,7 +6161,22 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "aether_engineering": {
    "id": "aether_engineering",
@@ -4056,7 +6220,21 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "stunOnHit",
+    "label": "Lv 15 aura: party 0.5% chance to stun on basic attacks"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "warp_obelisk": {
    "id": "warp_obelisk",
@@ -4092,7 +6270,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Warp in a siege obelisk for 15s ({effect} health): heavy beams at enemies within 13m for 60 + 1x INT, splashing 2m.",
+   "description": "Warp in a siege obelisk for 15s ({effect} health): heavy beams at enemies within 13m for 60, splashing 2m.",
    "effects": [],
    "champions": [
     "aetheri_artificer"
@@ -4100,7 +6278,45 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "construct",
+    "base": 60,
+    "primary": 1.0
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Siege Protocol",
+    "text": "Enemies within 6 m of the obelisk are stunned for 1 s; you gain +12 primary stat for 15 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "stun",
+      "radius": 600,
+      "duration": 1,
+      "atTarget": true
+     },
+     {
+      "type": "partyBuff",
+      "radius": 0,
+      "duration": 15,
+      "stats": {
+       "primaryStat": 12
+      },
+      "atSelf": true
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "aegis_pylon": {
    "id": "aegis_pylon",
@@ -4154,7 +6370,24 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "heal",
+    "base": 0,
+    "primary": 1.0,
+    "note": "plus the % max health"
+   },
+   "level15": {
+    "bonus": "healCut",
+    "label": "Lv 15: +healing on the target -40% for 4s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Shield"
+   ]
   },
   "haste_pylon": {
    "id": "haste_pylon",
@@ -4208,7 +6441,23 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Haste"
+   ]
   },
   "gravity_pylon": {
    "id": "gravity_pylon",
@@ -4262,7 +6511,23 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Slow"
+   ]
   },
   "stasis_snare": {
    "id": "stasis_snare",
@@ -4299,7 +6564,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Plant a snare (30s, up to 3): the first enemy within 1.5m is locked in stasis for 1.5s and takes {effect} + 0.3x INT damage. Bosses are slowed instead.",
+   "description": "Plant a snare (30s, up to 3): the first enemy within 1.5m is locked in stasis for 1.5s and takes {effect} damage. Bosses are slowed instead.",
    "effects": [
     {
      "type": "stun",
@@ -4316,7 +6581,24 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "construct",
+    "base": 20,
+    "primary": 0.3
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Stun",
+    "Damage"
+   ]
   },
   "aether_mend": {
    "id": "aether_mend",
@@ -4352,13 +6634,28 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Cast 1s: mend an ally (or yourself) for {effect} + 2.5x INT.",
+   "description": "Cast 1s: mend an ally (or yourself) for {effect}.",
    "effects": [],
    "champions": [
     "aetheri_warden"
    ],
    "signatureOf": [
     "aetheri_warden"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 85,
+    "primary": 1.8
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "repulsor_pulse": {
@@ -4396,7 +6693,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Release a pulse around you: {effect} + 1x INT damage and a 30% slow for 2s to enemies within 3.5m; monsters turn on you briefly.",
+   "description": "Release a pulse around you: {effect} damage and a 30% slow for 2s to enemies within 3.5m; monsters turn on you briefly.",
    "effects": [
     {
      "type": "slow",
@@ -4419,6 +6716,23 @@
    ],
    "signatureOf": [
     "aetheri_warden"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 60,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Taunt",
+    "Damage"
    ]
   },
   "resonant_lattice": {
@@ -4464,7 +6778,21 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "aoeResist",
+    "label": "Lv 15 aura: party 15% chance to resist area damage"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "aether_nexus": {
    "id": "aether_nexus",
@@ -4518,7 +6846,43 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "scaling": {
+    "component": "heal",
+    "base": 0,
+    "primary": 2.0,
+    "note": "plus the % max health"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Resonant Field",
+    "text": "Allies within 9 m of you restore 20% of their max mana and gain a shield absorbing 150 for 10 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "restore",
+      "radius": 900,
+      "magnitude": 0.2
+     },
+     {
+      "type": "barrier",
+      "radius": 900,
+      "duration": 10,
+      "amount": 150
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Construct",
+    "Guard"
+   ]
   },
   "riposte_roll": {
    "id": "riposte_roll",
@@ -4566,7 +6930,7 @@
     "I-Frame",
     "Damage"
    ],
-   "description": "A hit you dodge during the roll's i-frames triggers a counter strike on the attacker for {effect} + 1x primary stat damage (once per roll).",
+   "description": "A hit you dodge during the roll's i-frames triggers a counter strike on the attacker for {effect} stat damage (once per roll).",
    "effects": [],
    "champions": [
     "knight",
@@ -4597,10 +6961,18 @@
     "huntress"
    ],
    "scaling": {
+    "component": "damage",
+    "base": 60,
+    "primary": 1.0,
     "stat": "primary",
     "ratio": 1.0
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
+   },
+   "castWhileMoving": true
   },
   "tumblers_edge": {
    "id": "tumblers_edge",
@@ -4667,10 +7039,16 @@
     "huntress"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "aoeResist",
+    "label": "Lv 15 aura: party 15% chance to resist area damage"
+   },
+   "castWhileMoving": true
   },
   "killer_instinct": {
    "id": "killer_instinct",
@@ -4737,10 +7115,16 @@
     "huntress"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
+   },
+   "castWhileMoving": true
   },
   "fleet_recovery": {
    "id": "fleet_recovery",
@@ -4787,7 +7171,7 @@
     "Roll",
     "Heal"
    ],
-   "description": "Every dodge roll restores {effect}% of your maximum health + 0.5x primary stat.",
+   "description": "Every dodge roll restores {effect}% of your maximum health stat.",
    "effects": [],
    "champions": [
     "knight",
@@ -4828,10 +7212,18 @@
     "aetheri_warden"
    ],
    "scaling": {
+    "component": "heal",
+    "base": 0,
+    "primary": 0.5,
     "stat": "primary",
     "ratio": 0.5
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
+   },
+   "castWhileMoving": true
   },
   "windrunner": {
    "id": "windrunner",
@@ -4909,10 +7301,16 @@
     "aetheri_warden"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
+   },
+   "castWhileMoving": true
   },
   "quickened_mind": {
    "id": "quickened_mind",
@@ -4981,10 +7379,16 @@
     "aetheri_warden"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
+   },
+   "castWhileMoving": true
   },
   "hasted_tumble": {
    "id": "hasted_tumble",
@@ -5066,10 +7470,16 @@
     "aetheri_warden"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "doubleAttack",
+    "label": "Lv 15 aura: party 10% chance to attack twice"
+   },
+   "castWhileMoving": true
   },
   "ember_wake": {
    "id": "ember_wake",
@@ -5115,7 +7525,7 @@
     "Trail",
     "Damage"
    ],
-   "description": "Your roll leaves a line of embers: enemies within 1.8m of the path take {effect} + 0.6x primary stat fire damage.",
+   "description": "Your roll leaves a line of embers: enemies within 1.8m of the path take {effect} stat fire damage.",
    "effects": [],
    "champions": [
     "lancer",
@@ -5132,10 +7542,18 @@
     "gunblade"
    ],
    "scaling": {
+    "component": "damage",
+    "base": 40,
+    "primary": 0.6,
     "stat": "primary",
     "ratio": 0.6
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
+   },
+   "castWhileMoving": true
   },
   "frost_wake": {
    "id": "frost_wake",
@@ -5183,7 +7601,7 @@
     "Trail",
     "Damage"
    ],
-   "description": "Your roll leaves a frost trail: enemies within 1.8m of the path take {effect} + 0.4x primary stat damage and are slowed 40% for 3s.",
+   "description": "Your roll leaves a frost trail: enemies within 1.8m of the path take {effect} stat damage and are slowed 40% for 3s.",
    "effects": [
     {
      "type": "slow",
@@ -5213,10 +7631,18 @@
     "huntress"
    ],
    "scaling": {
+    "component": "damage",
+    "base": 25,
+    "primary": 0.4,
     "stat": "primary",
     "ratio": 0.4
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "doubleAttack",
+    "label": "Lv 15 aura: party 10% chance to attack twice"
+   },
+   "castWhileMoving": true
   },
   "momentum": {
    "id": "momentum",
@@ -5294,10 +7720,16 @@
     "huntress"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
+   },
+   "castWhileMoving": true
   },
   "blur_step": {
    "id": "blur_step",
@@ -5363,10 +7795,16 @@
     "huntress"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "stunIgnore",
+    "label": "Lv 15 aura: party 5% chance to ignore stuns"
+   },
+   "castWhileMoving": true
   },
   "slippery_roll": {
    "id": "slippery_roll",
@@ -5462,10 +7900,16 @@
     "aetheri_warden"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
+   },
+   "castWhileMoving": true
   },
   "bloodrush": {
    "id": "bloodrush",
@@ -5542,10 +7986,16 @@
     "huntress"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {},
+   "aura15": {
+    "aura": "aoeResist",
+    "label": "Lv 15 aura: party 15% chance to resist area damage"
+   },
+   "castWhileMoving": true
   },
   "tumble_strike": {
    "id": "tumble_strike",
@@ -5591,7 +8041,7 @@
     "Gap Closer",
     "Damage"
    ],
-   "description": "Roll toward your target (ignores the dodge cooldown and triggers your roll skills), then strike for {effect} + 1.5x primary stat damage.",
+   "description": "Roll toward your target (ignores the dodge cooldown and triggers your roll skills), then strike for {effect} stat damage.",
    "effects": [],
    "champions": [
     "knight",
@@ -5622,10 +8072,18 @@
     "huntress"
    ],
    "scaling": {
+    "component": "damage",
+    "base": 70,
+    "primary": 2.0,
     "stat": "primary",
     "ratio": 1.5
    },
-   "level15": {}
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true
   },
   "mine_layer": {
    "id": "mine_layer",
@@ -5673,7 +8131,7 @@
     "Slow",
     "Damage"
    ],
-   "description": "For 8s your next roll drops a caltrop mine (20s, up to 2): the first enemy within 1.5m sets it off for {effect} + 1x primary stat damage and a 50% slow for 2s in 2.5m.",
+   "description": "For 8s your next roll drops a caltrop mine (20s, up to 2): the first enemy within 1.5m sets it off for {effect} stat damage and a 50% slow for 2s in 2.5m.",
    "effects": [
     {
      "type": "slow",
@@ -5699,11 +8157,19 @@
     "aetheri_artificer"
    ],
    "scaling": {
+    "component": "damage",
+    "base": 80,
+    "primary": 1.54,
     "stat": "primary",
     "ratio": 1.0
    },
-   "level15": {},
-   "category": "construct"
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "category": "construct",
+   "castWhileMoving": true
   },
   "taunting_tumble": {
    "id": "taunting_tumble",
@@ -5790,10 +8256,16 @@
     "drakish_footman"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true
   },
   "shield_tumble": {
    "id": "shield_tumble",
@@ -5872,10 +8344,18 @@
     "aetheri_warden"
    ],
    "scaling": {
+    "component": "heal",
+    "base": 5,
+    "primary": 3.0,
     "stat": "primary",
     "ratio": 1.0
    },
-   "level15": {}
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true
   },
   "venom_tumble": {
    "id": "venom_tumble",
@@ -5922,7 +8402,7 @@
     "Heal Cut",
     "Damage"
    ],
-   "description": "For 8s your rolls leave venom: enemies within 1.8m of the path take {effect} + 0.5x primary stat damage and receive 30% less healing for 5s.",
+   "description": "For 8s your rolls leave venom: enemies within 1.8m of the path take {effect} stat damage and receive 30% less healing for 5s.",
    "effects": [
     {
      "type": "healCut",
@@ -5948,10 +8428,18 @@
     "huntress"
    ],
    "scaling": {
+    "component": "damage",
+    "base": 30,
+    "primary": 1.54,
     "stat": "primary",
     "ratio": 0.5
    },
-   "level15": {}
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true
   },
   "shadow_dance": {
    "id": "shadow_dance",
@@ -6017,10 +8505,16 @@
     "huntress"
    ],
    "scaling": {
-    "stat": "primary",
-    "ratio": 0
+    "component": "none",
+    "base": 0,
+    "primary": 0
    },
-   "level15": {}
+   "level15": {
+    "bonus": "healCut",
+    "label": "Lv 15: +healing on the target -40% for 4s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true
   },
   "evasive_stance": {
    "id": "evasive_stance",
@@ -6066,7 +8560,7 @@
     "I-Frame",
     "Heal"
    ],
-   "description": "For 6s rolls refund their energy and every hit you dodge during i-frames restores {effect}% max health + 0.4x primary stat.",
+   "description": "For 6s rolls refund their energy and every hit you dodge during i-frames restores {effect}% max health stat.",
    "effects": [],
    "champions": [
     "knight",
@@ -6097,10 +8591,18 @@
     "huntress"
    ],
    "scaling": {
+    "component": "heal",
+    "base": 3,
+    "primary": 3.0,
     "stat": "primary",
     "ratio": 0.4
    },
-   "level15": {}
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true
   },
   "bear_maul": {
    "id": "bear_maul",
@@ -6142,6 +8644,21 @@
    ],
    "signatureOf": [
     "bear"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "bear_roar": {
@@ -6194,6 +8711,22 @@
    ],
    "signatureOf": [
     "bear"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.05
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Interrupt",
+    "Damage"
    ]
   },
   "bear_charge": {
@@ -6247,7 +8780,24 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "bear_hibernate": {
    "id": "bear_hibernate",
@@ -6289,6 +8839,21 @@
    ],
    "signatureOf": [
     "bear"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "bear_ancient_hide": {
@@ -6331,6 +8896,20 @@
    ],
    "signatureOf": [
     "bear"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "aoeResist",
+    "label": "Lv 15 aura: party 15% chance to resist area damage"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "bear_colossus": {
@@ -6373,6 +8952,37 @@
    ],
    "signatureOf": [
     "bear"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 140,
+    "primary": 3.5
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Den Mother",
+    "text": "Allies within 8 m gain +40 armor for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 800,
+      "duration": 8,
+      "stats": {
+       "armor": 40
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "paladin_righteous_flail": {
@@ -6415,6 +9025,21 @@
    ],
    "signatureOf": [
     "paladin_righteous"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "paladin_relic_vow": {
@@ -6459,6 +9084,21 @@
    "signatureOf": [
     "paladin_righteous",
     "paladin_holy"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "paladin_holy_flail": {
@@ -6501,6 +9141,21 @@
    ],
    "signatureOf": [
     "paladin_holy"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "paladin_pilgrim_light": {
@@ -6543,6 +9198,21 @@
    ],
    "signatureOf": [
     "paladin_holy"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "miner_pickfall": {
@@ -6585,6 +9255,21 @@
    ],
    "signatureOf": [
     "dwarf_miner"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "miner_faultline": {
@@ -6636,6 +9321,22 @@
    ],
    "signatureOf": [
     "dwarf_miner"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.05
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Damage"
    ]
   },
   "miner_lantern": {
@@ -6678,6 +9379,21 @@
    ],
    "signatureOf": [
     "dwarf_miner"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "miner_orehide": {
@@ -6720,6 +9436,20 @@
    ],
    "signatureOf": [
     "dwarf_miner"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "miner_mountain": {
@@ -6762,6 +9492,34 @@
    ],
    "signatureOf": [
     "dwarf_miner"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 140,
+    "primary": 2.8
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Rockfall",
+    "text": "Enemies within 4 m of the ring are stunned for 1 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "stun",
+      "radius": 400,
+      "duration": 1
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "golem_granite_fist": {
@@ -6804,6 +9562,21 @@
    ],
    "signatureOf": [
     "ether_golem_tank"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "golem_ether_anchor": {
@@ -6846,6 +9619,21 @@
    ],
    "signatureOf": [
     "ether_golem_tank"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "golem_construct_core": {
@@ -6890,7 +9678,19 @@
    "signatureOf": [
     "ether_golem_tank",
     "ether_golem_bruiser"
-   ]
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "golem_worldstone": {
    "id": "golem_worldstone",
@@ -6936,6 +9736,36 @@
     "ether_golem_tank",
     "ether_golem_support",
     "ether_golem_bruiser"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 140,
+    "primary": 3.5
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Worldstone Ward",
+    "text": "Allies within 7 m gain a shield absorbing 200 + 8% of your max health for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "barrier",
+      "radius": 700,
+      "duration": 8,
+      "amount": 200,
+      "healthScaling": 0.08
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "golem_moss_bloom": {
@@ -6978,6 +9808,21 @@
    ],
    "signatureOf": [
     "ether_golem_support"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "golem_living_granite": {
@@ -7020,6 +9865,21 @@
    ],
    "signatureOf": [
     "ether_golem_support"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "golem_fel_fist": {
@@ -7062,6 +9922,21 @@
    ],
    "signatureOf": [
     "ether_golem_bruiser"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "golem_ether_furnace": {
@@ -7104,6 +9979,21 @@
    ],
    "signatureOf": [
     "ether_golem_bruiser"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "chieftain_axe_hook": {
@@ -7146,6 +10036,21 @@
    ],
    "signatureOf": [
     "orc_chieftain"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "chieftain_banner": {
@@ -7188,6 +10093,21 @@
    ],
    "signatureOf": [
     "orc_chieftain"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "chieftain_courage": {
@@ -7230,7 +10150,19 @@
    ],
    "signatureOf": [
     "orc_chieftain"
-   ]
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "stunIgnore",
+    "label": "Lv 15 aura: party 5% chance to ignore stuns"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "chieftain_earthshout": {
    "id": "chieftain_earthshout",
@@ -7281,6 +10213,39 @@
    ],
    "signatureOf": [
     "orc_chieftain"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 140,
+    "primary": 4.0
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Warband",
+    "text": "Allies within 9 m gain +8 primary stat and +15% attack speed for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "primaryStat": 8,
+       "attackSpeed": 15
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Silence"
    ]
   },
   "behemoth_totem_sweep": {
@@ -7323,6 +10288,21 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "behemoth_tusk_line": {
@@ -7365,6 +10345,21 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "behemoth_totem_bulwark": {
@@ -7407,6 +10402,21 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "behemoth_ancestral_weight": {
@@ -7449,7 +10459,19 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "stunOnHit",
+    "label": "Lv 15 aura: party 0.5% chance to stun on basic attacks"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "behemoth_stampede": {
    "id": "behemoth_stampede",
@@ -7500,6 +10522,40 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 140,
+    "primary": 2.8
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Trampled",
+    "text": "Enemies within 6 m are slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 600,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 600,
+      "duration": 5
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Stun",
+    "Damage"
    ]
   },
   "drakish_dragon_oath": {
@@ -7542,6 +10598,21 @@
    ],
    "signatureOf": [
     "drakish_footman"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "drakish_scale_guard": {
@@ -7584,6 +10655,21 @@
    ],
    "signatureOf": [
     "drakish_footman"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "drakish_wing_rebuke": {
@@ -7626,6 +10712,21 @@
    ],
    "signatureOf": [
     "drakish_footman"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "drakish_ember_memory": {
@@ -7668,7 +10769,19 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "drakish_ancient_pact": {
    "id": "drakish_ancient_pact",
@@ -7710,6 +10823,38 @@
    ],
    "signatureOf": [
     "drakish_footman"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 140,
+    "primary": 3.5
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Scaled Oath",
+    "text": "Allies within 8 m gain +40 ward and +20 armor for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 800,
+      "duration": 8,
+      "stats": {
+       "ward": 40,
+       "armor": 20
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "troll_axe_frenzy": {
@@ -7752,6 +10897,21 @@
    ],
    "signatureOf": [
     "troll_berserker_melee"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "troll_blood_leap": {
@@ -7805,7 +10965,24 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "troll_hunger": {
    "id": "troll_hunger",
@@ -7849,6 +11026,20 @@
    "signatureOf": [
     "troll_berserker_melee",
     "troll_berserker_ranged"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "attackSpeed",
+    "label": "Lv 15 aura: party +30% attack speed"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "troll_red_moon": {
@@ -7893,6 +11084,38 @@
    "signatureOf": [
     "troll_berserker_melee",
     "troll_berserker_ranged"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 140,
+    "primary": 3.5
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Blood Moon",
+    "text": "You gain +20% lifesteal and +20% attack speed for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 0,
+      "duration": 8,
+      "stats": {
+       "lifesteal": 20,
+       "attackSpeed": 20
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "troll_twin_throw": {
@@ -7935,6 +11158,21 @@
    ],
    "signatureOf": [
     "troll_berserker_ranged"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "troll_returning_axes": {
@@ -7977,6 +11215,21 @@
    ],
    "signatureOf": [
     "troll_berserker_ranged"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "dryad_root_snare": {
@@ -8028,6 +11281,22 @@
    ],
    "signatureOf": [
     "dryad"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Damage"
    ]
   },
   "dryad_seed_mend": {
@@ -8070,6 +11339,21 @@
    ],
    "signatureOf": [
     "dryad"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "dryad_thorn_line": {
@@ -8112,6 +11396,21 @@
    ],
    "signatureOf": [
     "dryad"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "dryad_green_covenant": {
@@ -8154,6 +11453,20 @@
    ],
    "signatureOf": [
     "dryad"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "magicLifesteal",
+    "label": "Lv 15 aura: party 5% magic lifesteal"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "dryad_grove_renewal": {
@@ -8196,6 +11509,40 @@
    ],
    "signatureOf": [
     "dryad"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 140,
+    "primary": 4.0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "Heartwood",
+    "text": "Allies within 8 m lose their slows and gain a shield absorbing 150 + 2x primary stat for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "cleanse",
+      "radius": 800
+     },
+     {
+      "type": "barrier",
+      "radius": 800,
+      "duration": 8,
+      "amount": 150,
+      "scaling": 2
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
    ]
   },
   "whisp_guiding_mote": {
@@ -8238,6 +11585,21 @@
    ],
    "signatureOf": [
     "whisp"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "whisp_spirit_tether": {
@@ -8280,6 +11642,21 @@
    ],
    "signatureOf": [
     "whisp"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "whisp_fey_trail": {
@@ -8333,7 +11710,24 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "control",
+   "effectTags": [
+    "Heal",
+    "Stun",
+    "Slow"
+   ]
   },
   "whisp_lantern_soul": {
    "id": "whisp_lantern_soul",
@@ -8375,7 +11769,19 @@
    ],
    "signatureOf": [
     "whisp"
-   ]
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "whisp_constellation": {
    "id": "whisp_constellation",
@@ -8417,6 +11823,39 @@
    ],
    "signatureOf": [
     "whisp"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 140,
+    "primary": 4.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "Starlit Well",
+    "text": "Allies within 9 m heal 150 and restore 15% of their max mana.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "heal",
+      "radius": 900,
+      "amount": 150
+     },
+     {
+      "type": "restore",
+      "radius": 900,
+      "magnitude": 0.15
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
    ]
   },
   "centaur_grove_javelin": {
@@ -8459,6 +11898,21 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "centaur_trailblaze": {
@@ -8512,7 +11966,24 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "centaur_herd_call": {
    "id": "centaur_herd_call",
@@ -8554,6 +12025,21 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 2.0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "centaur_steady_gait": {
@@ -8596,6 +12082,20 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "physicalLifesteal",
+    "label": "Lv 15 aura: party 5% physical lifesteal"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "centaur_spring_march": {
@@ -8638,6 +12138,41 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 140,
+    "primary": 4.0
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "Spring Stride",
+    "text": "Allies within 9 m lose their slows and gain +20% move speed for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "cleanse",
+      "radius": 900
+     },
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "moveSpeed": 20
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
    ]
   },
   "keeper_dawn_beam": {
@@ -8689,6 +12224,22 @@
    ],
    "signatureOf": [
     "keeper_of_light"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal",
+    "Heal Cut"
    ]
   },
   "keeper_lantern_ward": {
@@ -8731,6 +12282,21 @@
    ],
    "signatureOf": [
     "keeper_of_light"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 55,
+    "primary": 3.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "keeper_beacon": {
@@ -8773,6 +12339,21 @@
    ],
    "signatureOf": [
     "keeper_of_light"
+   ],
+   "scaling": {
+    "component": "damage",
+    "base": 55,
+    "primary": 1.4
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "hit"
+   },
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "keeper_last_light": {
@@ -8815,6 +12396,20 @@
    ],
    "signatureOf": [
     "keeper_of_light"
+   ],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "aura15": {
+    "aura": "aoeResist",
+    "label": "Lv 15 aura: party 15% chance to resist area damage"
+   },
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "keeper_sunrise": {
@@ -8857,6 +12452,38 @@
    ],
    "signatureOf": [
     "keeper_of_light"
+   ],
+   "scaling": {
+    "component": "heal",
+    "base": 140,
+    "primary": 4.0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "High Noon",
+    "text": "Allies within 9 m gain +8 primary stat and +20 ward for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "primaryStat": 8,
+       "ward": 20
+      }
+     }
+    ]
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
    ]
   }
  },
@@ -8916,7 +12543,12 @@
     "soul_conduit",
     "last_stand",
     "challenge_of_iron",
-    "seismic_reprisal"
+    "seismic_reprisal",
+    "shield_bash",
+    "shield_toss",
+    "shield_wall",
+    "pavise",
+    "mechanical_tank"
    ],
    "purchasableImplemented": [
     "shield_slam",
@@ -8947,7 +12579,12 @@
     "soul_conduit",
     "last_stand",
     "challenge_of_iron",
-    "seismic_reprisal"
+    "seismic_reprisal",
+    "shield_bash",
+    "shield_toss",
+    "shield_wall",
+    "pavise",
+    "mechanical_tank"
    ]
   },
   "ranger": {
@@ -9015,6 +12652,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9026,7 +12664,12 @@
     "cinder_cone",
     "ashen_square",
     "blight_sigil",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ],
    "purchasableImplemented": [
     "piercing_shot",
@@ -9060,6 +12703,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9071,7 +12715,12 @@
     "cinder_cone",
     "ashen_square",
     "blight_sigil",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ]
   },
   "scholar": {
@@ -9115,6 +12764,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -9142,6 +12792,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -9214,6 +12865,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "decimating_strike",
     "stone_skin",
     "deep_reserves",
@@ -9225,7 +12877,12 @@
     "cinder_cone",
     "grave_line",
     "blight_sigil",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ],
    "purchasableImplemented": [
     "cleaving_strike",
@@ -9258,6 +12915,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "decimating_strike",
     "stone_skin",
     "deep_reserves",
@@ -9269,7 +12927,12 @@
     "cinder_cone",
     "grave_line",
     "blight_sigil",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ]
   },
   "summoner": {
@@ -9301,6 +12964,7 @@
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9315,7 +12979,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ],
    "purchasableImplemented": [
     "oathbound_guardian",
@@ -9330,6 +12999,7 @@
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9344,7 +13014,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ]
   },
   "bear": {
@@ -9472,7 +13147,12 @@
     "soul_conduit",
     "last_stand",
     "challenge_of_iron",
-    "seismic_reprisal"
+    "seismic_reprisal",
+    "shield_bash",
+    "shield_toss",
+    "shield_wall",
+    "pavise",
+    "mechanical_tank"
    ],
    "purchasableImplemented": [
     "shield_slam",
@@ -9503,7 +13183,12 @@
     "soul_conduit",
     "last_stand",
     "challenge_of_iron",
-    "seismic_reprisal"
+    "seismic_reprisal",
+    "shield_bash",
+    "shield_toss",
+    "shield_wall",
+    "pavise",
+    "mechanical_tank"
    ]
   },
   "paladin_holy": {
@@ -9539,6 +13224,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -9561,6 +13247,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -9737,6 +13424,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -9758,6 +13446,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -9821,6 +13510,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -9864,6 +13554,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -9941,6 +13632,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -9979,6 +13671,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -10120,7 +13813,12 @@
     "bastion_of_dawn",
     "last_stand",
     "challenge_of_iron",
-    "seismic_reprisal"
+    "seismic_reprisal",
+    "shield_bash",
+    "shield_toss",
+    "shield_wall",
+    "pavise",
+    "mechanical_tank"
    ],
    "purchasableImplemented": [
     "shield_slam",
@@ -10150,7 +13848,12 @@
     "bastion_of_dawn",
     "last_stand",
     "challenge_of_iron",
-    "seismic_reprisal"
+    "seismic_reprisal",
+    "shield_bash",
+    "shield_toss",
+    "shield_wall",
+    "pavise",
+    "mechanical_tank"
    ]
   },
   "wizard": {
@@ -10197,6 +13900,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -10212,7 +13916,12 @@
     "wellspring",
     "venom_ground",
     "blight_sigil",
-    "piercing_shot"
+    "piercing_shot",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ],
    "purchasableImplemented": [
     "ember_lance",
@@ -10237,6 +13946,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -10252,7 +13962,12 @@
     "wellspring",
     "venom_ground",
     "blight_sigil",
-    "piercing_shot"
+    "piercing_shot",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ]
   },
   "troll_berserker_melee": {
@@ -10318,6 +14033,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "stone_skin",
     "battle_rhythm",
     "deep_reserves",
@@ -10361,6 +14077,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "stone_skin",
     "battle_rhythm",
     "deep_reserves",
@@ -10440,6 +14157,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -10454,7 +14172,12 @@
     "grave_line",
     "ashen_square",
     "blight_sigil",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ],
    "purchasableImplemented": [
     "piercing_shot",
@@ -10483,6 +14206,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -10497,7 +14221,12 @@
     "grave_line",
     "ashen_square",
     "blight_sigil",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ]
   },
   "dryad": {
@@ -10545,6 +14274,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -10573,6 +14303,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -10628,6 +14359,7 @@
     "sanctuary",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -10655,6 +14387,7 @@
     "sanctuary",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -10714,6 +14447,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -10735,7 +14469,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ],
    "purchasableImplemented": [
     "restoring_light",
@@ -10756,6 +14495,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -10777,7 +14517,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ]
   },
   "keeper_of_light": {
@@ -10811,6 +14556,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -10832,6 +14578,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -10908,6 +14655,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -10925,7 +14673,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ],
    "purchasableImplemented": [
     "silver_shot",
@@ -10960,6 +14713,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -10977,7 +14731,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ]
   },
   "witch_slayer": {
@@ -11044,6 +14803,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -11061,7 +14821,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ],
    "purchasableImplemented": [
     "arcane_blunderbuss",
@@ -11096,6 +14861,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -11113,7 +14879,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ]
   },
   "huntress": {
@@ -11128,9 +14899,10 @@
     "owl_scout",
     "moonlit_sprint",
     "crescent_volley",
-    "sabercat_rake",
+    "sabercat_maul",
     "moon_glaive",
     "glaive_storm",
+    "sabercat_roar",
     "riposte_roll",
     "tumblers_edge",
     "killer_instinct",
@@ -11154,9 +14926,10 @@
     "owl_scout",
     "moonlit_sprint",
     "crescent_volley",
-    "sabercat_rake",
+    "sabercat_maul",
     "moon_glaive",
     "glaive_storm",
+    "sabercat_roar",
     "riposte_roll",
     "tumblers_edge",
     "killer_instinct",
@@ -11182,6 +14955,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -11199,7 +14973,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ],
    "purchasableImplemented": [
     "bouncing_glaive",
@@ -11207,9 +14986,10 @@
     "owl_scout",
     "moonlit_sprint",
     "crescent_volley",
-    "sabercat_rake",
+    "sabercat_maul",
     "moon_glaive",
     "glaive_storm",
+    "sabercat_roar",
     "riposte_roll",
     "tumblers_edge",
     "killer_instinct",
@@ -11235,6 +15015,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -11252,7 +15033,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ]
   },
   "aetheri_artificer": {
@@ -11295,6 +15081,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -11312,7 +15099,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ],
    "purchasableImplemented": [
     "photon_turret",
@@ -11335,6 +15127,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -11352,7 +15145,12 @@
     "ashen_square",
     "blight_sigil",
     "piercing_shot",
-    "ember_lance"
+    "ember_lance",
+    "artillery",
+    "eagle_eye",
+    "longshot",
+    "headshot",
+    "artillery_training"
    ]
   },
   "aetheri_warden": {
@@ -11406,6 +15204,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -11449,6 +15248,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -11467,6 +15267,19 @@
   }
  },
  "buffModifiers": {
+  "polymorphed": {
+   "type": "arcane",
+   "control": "incapacitate",
+   "mods": [
+    {
+     "stat": "Actions",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Turned into a harmless critter: cannot attack or cast. Damage breaks it.",
+   "name": "Polymorphed"
+  },
   "heal_cut_done": {
    "type": "curse",
    "control": "none",
@@ -11680,5 +15493,50 @@
    "line": "Rolls refund energy; dodged hits restore health.",
    "name": "Evasive Stance"
   }
+ },
+ "shieldChampions": [
+  "drakish_footman",
+  "knight",
+  "paladin_holy",
+  "paladin_righteous"
+ ],
+ "rangedChampions": [
+  "aetheri_artificer",
+  "dryad",
+  "ether_golem_support",
+  "evergrove_centaur",
+  "gunblade",
+  "huntress",
+  "keeper_of_light",
+  "lancer",
+  "ranger",
+  "scholar",
+  "summoner",
+  "troll_berserker_ranged",
+  "whisp",
+  "witch_slayer",
+  "wizard"
+ ],
+ "level15Labels": {
+  "dot": "burn for 40% of the hit over 4s",
+  "healCut": "healing on the target -40% for 4s",
+  "stun": "0.75s stun",
+  "slow": "35% slow for 2.5s",
+  "damageAmp": "target takes 12% more damage for 5s",
+  "vulnerability": "Vulnerability: ignore 20% of the target's defences for 5s",
+  "purge": "purge the target's buffs"
+ },
+ "auraLabels": {
+  "attackSpeed": "party +30% attack speed",
+  "doubleAttack": "party 10% chance to attack twice",
+  "crit": "party +5% critical chance",
+  "magicLifesteal": "party 5% magic lifesteal",
+  "physicalLifesteal": "party 5% physical lifesteal",
+  "armor": "party +15 armour",
+  "magicResist": "party +15 magic resist",
+  "stunIgnore": "party 5% chance to ignore stuns",
+  "aoeResist": "party 15% chance to resist area damage",
+  "stunOnHit": "party 0.5% chance to stun on basic attacks",
+  "rangedDamage": "party +10% ranged damage"
  }
 }

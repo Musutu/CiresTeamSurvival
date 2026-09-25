@@ -1,4 +1,5 @@
 #include "CireRoleSkills.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireGame.h"
 #include "CireSkillTuning.h"
@@ -88,9 +89,9 @@ bool CireRoleSkills::Cast(ACireHero* Hero,int32 Slot,const FString& Id)
     if(!Mode||!Mode->IsCombatPhase()||!Recipe)return false;
     const auto S=*Recipe;
     auto Fail=[&](const TCHAR* Why){Hero->Notice=Why;return false;};
-    if(!CireSkillShop::CanPayCast(Hero,Id,S.ManaCost,S.EnergyCost))return Fail(TEXT("Not enough mana or energy.")); // progression-shop: Skill Shop level (Ability DB curve)
+    if(!CireSkillShop::CanPayCast(Hero,Id,S.ManaCost,S.EnergyCost))return Fail(*CireSkillShop::CostFailText()); // progression-shop: Skill Shop level (Ability DB curve)
     const float Now=Hero->GetWorld()->GetTimeSeconds(),Duration=CireDeveloperTools::EffectSeconds(Hero->GetWorld(),S.DurationSeconds);
-    const float Power=Mode->Power(Hero->TeamId),Amount=FMath::Min(10000.f,(S.FlatPower+S.PrimaryScaling*Hero->PrimaryAttribute())*Power);
+    const float Power=Mode->Power(Hero->TeamId),Amount=FMath::Min(10000.f,CireKits::Amount(Hero,Id,S.FlatPower,S.PrimaryScaling)*Power); // scaling-kits: DB base + coef x PRIMARY
     FVector Aim=Hero->GetActorLocation();ACireHero* Ally=Hero;
     if(Id==TEXT("wellspring"))
     {
@@ -130,7 +131,7 @@ bool CireRoleSkills::Cast(ACireHero* Hero,int32 Slot,const FString& Id)
     else if(Id==TEXT("second_wind")||Id==TEXT("last_stand"))
     {
         if(Id==TEXT("last_stand"))Hero->SlowUntil=0;
-        CireCombat::ApplyHealing(Hero,Hero,Hero->MaxHealth*S.MaxHealthFraction*Power,Name(Id));
+        CireCombat::ApplyHealing(Hero,Hero,(Hero->MaxHealth*S.MaxHealthFraction+CireKits::Amount(Hero,Id))*Power,Name(Id)); // scaling-kits: + primary
     }
     else if(Id==TEXT("challenge_of_iron"))
     {

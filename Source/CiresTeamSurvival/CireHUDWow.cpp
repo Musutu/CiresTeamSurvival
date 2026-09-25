@@ -525,7 +525,7 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
         if(CireUIStyle::HasThemeArt())
         {
             // ui-themes: each boss row is a kit unit frame; selection glows in the theme accent.
-            CireUIStyle::Frame(Painter(),0,Y,220,46,bSelected?CireUIColors::ThemeAccent*1.3f:Gold,ECireFrame::Unit);
+            CireUIStyle::Frame(Painter(),0,Y,220,46,bSelected?CireUIColors::ThemeAccent*1.3f:Gold,ECireFrame::Card); // card art stays inside the row: stacked rows never overlap
             if(bSelected)CireUIStyle::Glow(Painter(),0,Y,220,46,CireUIColors::ThemeGlow*FLinearColor(1,1,1,.18f));
         }
         else{Panel(2,Y+3,220,46,FLinearColor(0,0,0,.3f));Panel(0,Y,220,46,FLinearColor(.012f,.014f,.02f,.86f));
@@ -1022,11 +1022,12 @@ void ACireHUD::DrawCombatText(ACireHero* Hero,ACireController* Controller)
     {
         if(!E.bLocalTarget&&!E.bLocalSource)return false;
         if(!(E.bLocalTarget&&UISettings.bShowIncoming)&&!(E.bLocalSource&&UISettings.bShowOutgoing))return false;
-        if(E.Outcome!=ECireHitOutcome::Hit&&!UISettings.bShowMisses)return false;
+        if(E.Outcome!=ECireHitOutcome::Hit&&E.Outcome!=ECireHitOutcome::Block&&!UISettings.bShowMisses)return false; // scaling-kits: BLOCK always shows
         return E.bHealing?UISettings.bShowHealing:UISettings.bShowDamage;
     };
     auto ColorFor=[&](const FCireCombatEvent& E,bool bIncomingLane)
     {
+        if(E.Outcome==ECireHitOutcome::Block)return FLinearColor(.55f,.8f,1.f,1); // scaling-kits: shield block
         if(E.Outcome!=ECireHitOutcome::Hit)return FLinearColor(.78f,.83f,.9f,1);
         if(E.bHealing)return FLinearColor(.35f,1.f,.55f,1);
         if(bIncomingLane)return FLinearColor(1.f,.28f,.24f,1);
@@ -1035,7 +1036,7 @@ void ACireHUD::DrawCombatText(ACireHero* Hero,ACireController* Controller)
     };
     auto NumberFor=[](const FCireCombatEvent& E,float Amount,bool bIncoming)
     {
-        if(E.Outcome!=ECireHitOutcome::Hit)return FString(E.Outcome==ECireHitOutcome::Miss?TEXT("Miss"):TEXT("Dodge"));
+        if(E.Outcome!=ECireHitOutcome::Hit)return E.Outcome==ECireHitOutcome::Block?FString(TEXT("BLOCK")):CireCombat::OutcomeText(E.Outcome); // scaling-kits: shield block
         return FString::Printf(TEXT("%s%.0f"),E.bHealing?TEXT("+"):bIncoming?TEXT("-"):TEXT(""),Amount);
     };
     // Crit "pop": starts large and settles, WoW style.
@@ -1166,16 +1167,27 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
     const auto* Controller=Cast<ACireController>(PlayerOwner);
     const bool bTank=IsTank(Hero);const float Now=ServerNow(GetWorld());
     const float Pulse=.5f+.5f*FMath::Sin(GetWorld()->GetRealTimeSeconds()*5.f);
+    // ui-themes: plates are collected first, de-overlapped (WoW-style stacking: a plate that would
+    // cover a nearer one is pushed up), then drawn far-to-near so the nearest stays on top.
+    struct FPlate { AActor* Actor; FString Name; float HP, MaxHP; FLinearColor Color; const ACireMonster* Mob; float X, Y, Dist; bool bSelected; };
+    TArray<FPlate> Plates;
     auto Plate=[&](AActor* Actor,const FString& Name,float HP,float MaxHP,FLinearColor Color,float Lift,const ACireMonster* Mob)
     {
         if(!IsValid(Actor)||Actor==Hero||HP<=0||MaxHP<=0)return;
-        const bool Selected=Hero->Target==Actor,Focused=Controller&&Controller->FocusTarget==Actor;
+        const bool Selected=Hero->Target==Actor;
         const float Dist=FVector::Dist(Hero->GetActorLocation(),Actor->GetActorLocation());
-        if(!Selected&&(Count>=32||Dist>2400.f))return;
+        if(!Selected&&Dist>2400.f)return;
         FVector2D Screen;if(!PlayerOwner->ProjectWorldLocationToScreen(Actor->GetActorLocation()+FVector(0,0,Lift),Screen,false))return;
         const float X=Screen.X/Scale,Y=Screen.Y/Scale;if(X<35||X>ViewW-35||Y<105||Y>ViewH-185)return;
+        Plates.Add({Actor,Name,HP,MaxHP,Color,Mob,X,Y,Dist,Selected});
+    };
+    auto DrawPlate=[&](const FPlate& Pl)
+    {
+        AActor* Actor=Pl.Actor;const FString& Name=Pl.Name;const float HP=Pl.HP,MaxHP=Pl.MaxHP;const FLinearColor Color=Pl.Color;const ACireMonster* Mob=Pl.Mob;
+        const bool Selected=Pl.bSelected,Focused=Controller&&Controller->FocusTarget==Actor;
+        const float Dist=Pl.Dist,X=Pl.X,Y=Pl.Y;
         // A plate that would sit under a HUD frame is hidden rather than drawn through it.
-        {const FBox2D Plate(FVector2D(X-80,Y-26),FVector2D(X+80,Y+16));for(const FBox2D& Box:LastPanelBoxes)if(Plate.Intersect(Box))return;}
+        {const FBox2D PlateBox(FVector2D(X-80,Y-26),FVector2D(X+80,Y+16));for(const FBox2D& Box:LastPanelBoxes)if(PlateBox.Intersect(Box))return;}
         ++Count;
         // Aggro state: DPS/healers are warned when an enemy is on them or about to be;
         // tanks are warned when an engaged enemy is NOT on them.
@@ -1201,17 +1213,12 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
             const FLinearColor NameColor=Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob)*.8f+FLinearColor(.2f,.2f,.2f,.2f):Color;
             TextFx(Label,X-TextWidthFont(Label,NS,ECireFont::Bold)*.5f,Y-NS-5.f,NS,(Selected?FLinearColor::White:NameColor)*FLinearColor(1,1,1,Fade),ECireFont::Bold,true,false);
         }
-        if(Glow.A>0){const float G=Selected?3.f:2.f;Panel(PX-G,Y-G,PW+2*G,PH+2*G,Glow*FLinearColor(1,1,1,.55f+.35f*Pulse));}
-        // monster-races: a rank-coloured frame around the plate of veteran and higher monsters (neutral packs stay yellow).
-        if(Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal){const FLinearColor RC=CireRaces::RankColor(Mob);Panel(PX-2.5f,Y-2.5f,PW+5,PH+5,RC*FLinearColor(1,1,1,Fade));}
-        Panel(PX-1,Y-1,PW+2,PH+2,FLinearColor(0,0,0,.9f*Fade));
         const float HF=Frac(HP,MaxHP);
-        {
-            // ui-themes: themed gloss fill and a hairline trim in the theme colour (plates stay compact).
-            FCireUIPainter NP=Painter();NP.Alpha=Fade;
-            if(!CireUITheme::DrawBarFill(NP,PX,Y,PW*HF,PH,Color*1.2f)){Panel(PX,Y,PW*HF,PH,Color*FLinearColor(1,1,1,Fade));Panel(PX,Y,PW*HF,PH*.4f,FLinearColor(1,1,1,.14f*Fade));}
-            else{const FLinearColor T=CireUIColors::Gold*FLinearColor(1,1,1,.55f*Fade);Line(PX-1,Y-1,PX+PW+1,Y-1,T,1.f);Line(PX-1,Y+PH+1,PX+PW+1,Y+PH+1,T,1.f);}
-        }
+        FCireUIPainter NP=Painter();NP.Alpha=Fade;
+        // ui-themes: WoW-style rounded plate. Aggro glow and rank colour become the capsule's rim.
+        const FLinearColor Rim=Glow.A>0?Glow*FLinearColor(1,1,1,.55f+.35f*Pulse):Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob):FLinearColor(0,0,0,0);
+        if(Rim.A>0){const float G=Selected?2.5f:2.f;CireUIStyle::Capsule(NP,PX-G,Y-G,PW+2*G,PH+2*G,1.f,Rim);}
+        CireUIStyle::RoundBar(NP,PX,Y,PW,PH,HF,Color);
         if(Selected)
         {
             const FString Pct=FString::Printf(TEXT("%.0f%%"),HF*100);
@@ -1222,7 +1229,6 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
             Tri(FVector2D(PX+PW+Off+7,Y+PH*.5f),FVector2D(PX+PW+Off,Y-2),FVector2D(PX+PW+Off,Y+PH+2),Ch);
             const float AY=Y-NS-14.f-3.f*Pulse;
             Tri(FVector2D(X-7,AY-8),FVector2D(X+7,AY-8),FVector2D(X,AY),Ch);
-            Line(PX,Y-1,PX+PW,Y-1,FLinearColor(1,1,1,.9f),1.f);Line(PX,Y+PH+1,PX+PW,Y+PH+1,FLinearColor(1,1,1,.9f),1.f);
         }
         if(Focused&&!Selected)Tri(FVector2D(PX-9,Y+PH*.5f),FVector2D(PX-3,Y-2),FVector2D(PX-3,Y+PH+2),FLinearColor(.4f,.8f,1.f,.9f));
         if(Mob)
@@ -1240,10 +1246,36 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
                 Tri(FVector2D(DX,DY-6),FVector2D(DX+5,DY),FVector2D(DX-5,DY),Hostile);Tri(FVector2D(DX,DY+6),FVector2D(DX+5,DY),FVector2D(DX-5,DY),Hostile);
             }
             // Enemy cast bar under the plate (name inside when targeted); interrupt/silence flash.
-            DrawCastBar(Mob,PX,Y+PH+3.f,PW,Selected?11.f:7.f,Selected?7.5f:5.5f,Selected);
+            DrawCastBar(Mob,PX+(Selected?0.f:6.f),Y+PH+4.f,PW-(Selected?0.f:12.f),Selected?11.f:6.f,Selected?7.5f:5.5f,Selected); // ui-themes: thinner, inset and clear of the health bar
         }
         const int32 Poisoned=Mob?Mob->PoisonAreaCount:0;
         if(Poisoned>0&&Selected){const FString P=FString::Printf(TEXT("POISON x%d"),Poisoned);TextFx(P,X-TextWidthFont(P,8,ECireFont::Heading)*.5f,Y+PH+10,8,FLinearColor(.61f,.83f,.27f,1),ECireFont::Heading,true,false);}
+    };
+    auto LayoutAndDraw=[&]()
+    {
+        // Selected first, then nearest: those keep their spot; later plates are pushed upward
+        // until their box (status chips, name, bar, cast bar) clears every placed plate.
+        Plates.Sort([](const FPlate& A,const FPlate& B){return A.bSelected!=B.bSelected?A.bSelected:A.Dist<B.Dist;});
+        if(Plates.Num()>32)Plates.SetNum(32);
+        TArray<FBox2D> Placed;
+        for(FPlate& P:Plates)
+        {
+            const float HalfW=(P.bSelected?150.f:70.f)*.5f+6.f,NS=P.bSelected?12.f:8.5f;
+            const float Top=NS+(P.bSelected?30.f:16.f),Bottom=(P.bSelected?11.f:6.f)+(P.Mob?(P.bSelected?15.f:11.f):2.f);
+            float Shift=0;
+            for(int32 Pass=0;Pass<12;++Pass)
+            {
+                const FBox2D Box(FVector2D(P.X-HalfW,P.Y-Shift-Top),FVector2D(P.X+HalfW,P.Y-Shift+Bottom));
+                float Need=0;
+                for(const FBox2D& O:Placed)if(Box.Intersect(O))Need=FMath::Max(Need,Box.Max.Y-O.Min.Y+1.f);
+                if(Need<=0)break;
+                Shift+=Need;
+            }
+            Shift=FMath::Min(Shift,160.f);P.Y-=Shift;
+            Placed.Add(FBox2D(FVector2D(P.X-HalfW,P.Y-Top),FVector2D(P.X+HalfW,P.Y+Bottom)));
+        }
+        LastPlateBoxes=Placed;
+        for(int32 I=Plates.Num()-1;I>=0;--I)DrawPlate(Plates[I]);
     };
     // Your own champion: overhead chips above your head (no nameplate).
     if(UISettings.OverheadStatusMode==0&&!Hero->bDead)
@@ -1258,6 +1290,7 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         Plate(*It,It->GetNPCDisplayName(),It->Health,It->MaxHealth,It->bNeutral?Neutral*.95f:It->bArmoredEscort?Silver*.8f:Hostile*.9f,100,*It); // wave-director: neutral = yellow
     for(TActorIterator<ACireConstruct> It(GetWorld());It;++It)if(It->CanObserve(PlayerOwner))
         Plate(*It,It->GetDisplayName(),It->Health,It->MaxHealth,It->OriginTeam==Hero->TeamId?Friendly*.85f:Hostile,It->ConstructSpec.Height*.5f+25,nullptr);
+    LayoutAndDraw();
 }
 
 // ---------------------------------------------------------------------------

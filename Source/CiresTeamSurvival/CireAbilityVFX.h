@@ -89,6 +89,14 @@ namespace CireAbilityVFX
     // cire.AbilityVFX 0 (or -CireLegacyVFX) restores the previous presentation for A/B comparison.
     CIRESTEAMSURVIVAL_API bool Enabled();
 
+    // Brightness control (playtest 3): the player's "Ground telegraph intensity" (Options, 0.3..1, default 0.6).
+    CIRESTEAMSURVIVAL_API float GroundIntensity(const UWorld* World);
+    // Tempers painted ground vertices: translucent fills scale with Intensity x Overlap (overlapping zones share the
+    // budget, 1/sqrt(count)); crisp rims and runes keep more alpha; every colour is hue-preserving capped below the
+    // bloom threshold so stacked or bright zones never white out.
+    CIRESTEAMSURVIVAL_API void Temper(TArray<FLinearColor>& Colors, int32 From, float Intensity, float Overlap);
+    constexpr float FillEmissiveCap = .9f, RimEmissiveCap = 1.2f;
+
     // Local impact camera kick (UISettings.bImpactCameraShake); only near the local champion.
     CIRESTEAMSURVIVAL_API void ImpactShake(UWorld* World, FVector At, float Strength);
 

@@ -62,3 +62,12 @@ Content/UndeadPack
 # World-partition external actors/objects of pack demo maps (e.g. the audio packs): local only, never tracked.
 Content/__ExternalActors__
 Content/__ExternalObjects__
+# audio packs (feat/audio-overhaul, Docs/Audio.md "Fab audio packs"; mapped by Tools/MapFabAudio.py)
+Content/ShieldBlocksDeflects
+Content/Professional_Gunshots
+Content/Magic_Spell_SFX_Pack_Vol1
+Content/Combat_Sounds_-_Lite
+Content/Fantasy_UI_SFX_Pack
+# the gunshot pack's demo map writes One File Per Actor data here
+Content/__ExternalActors__/Professional_Gunshots
+Content/__ExternalObjects__/Professional_Gunshots

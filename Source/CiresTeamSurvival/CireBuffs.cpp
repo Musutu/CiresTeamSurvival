@@ -1,4 +1,5 @@
 #include "CireBuffs.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireGame.h"
 #include "CireSkillRuntime.h"
 #include "Engine/World.h"
@@ -103,7 +104,7 @@ bool CireBuffs::IsActive(const AActor* Unit,FName Id)
 }
 const TArray<FName>& CireBuffs::KnownIds()
 {
-    static const TArray<FName> Ids={
+    static const TArray<FName> BaseIds={
         // Champion skills recorded with Apply.
         TEXT("iron_guard"),TEXT("war_cry"),TEXT("challenge_of_iron"),TEXT("sanctuary"),TEXT("bastion_of_dawn"),
         TEXT("mass_aegis"),TEXT("wellspring"),TEXT("frost_bind"),TEXT("shield_slam"),
@@ -117,6 +118,7 @@ const TArray<FName>& CireBuffs::KnownIds()
         TEXT("battle_rhythm"),TEXT("soul_conduit"),
         // Data-ready ids for item actives and future skills.
         TEXT("blood_rage"),TEXT("frost_weapon"),TEXT("blessing"),TEXT("regeneration"),TEXT("stunned"),
+        TEXT("polymorphed"), // progression-shop: Polymorph (critter body; Stacks = critter)
         // Item actives and consumables (progression-shop): records and inventory timed buffs.
         TEXT("oathshield"),TEXT("toll_of_the_grave"),TEXT("borrowed_time"),TEXT("scatter"),TEXT("mana_restore"),
         // monster-races: race-skill riders and themed marks (CireRaces::OnAbilityReleased).
@@ -128,8 +130,11 @@ const TArray<FName>& CireBuffs::KnownIds()
         // new-champions: bounty/witch marks, tracking, banishment, self buffs and Aetheri construct fields.
         TEXT("bounty_mark"),TEXT("witch_mark"),TEXT("tracked"),TEXT("banished"),TEXT("hunters_stride"),TEXT("warding_talisman"),TEXT("moonlit_sprint"),TEXT("overcharge"),
         TEXT("aether_aegis"),TEXT("aether_haste"),TEXT("aether_weakened"),TEXT("aether_nexus"),TEXT("npc_aether_empowered"),
+        // items-v2: party shield, armor banner, ultimate-upgrade aura.
+        TEXT("party_barrier"),TEXT("vigil_banner"),TEXT("apotheosis"),
         // champion-draft: dodge-roll skill states (CireRollSkills::BuffIds).
         TEXT("tumblers_edge"),TEXT("killer_instinct"),TEXT("windrunner"),TEXT("quickened_mind"),TEXT("momentum"),TEXT("blur_step"),
         TEXT("mine_layer"),TEXT("taunting_tumble"),TEXT("shield_tumble"),TEXT("venom_tumble"),TEXT("shadow_dance"),TEXT("evasive_stance")};
+    static const TArray<FName> Ids=[]{TArray<FName> Out=BaseIds;for(const FName Id:CireKits::BuffIds())Out.AddUnique(Id);return Out;}(); // scaling-kits
     return Ids;
 }

@@ -18,6 +18,25 @@ passives, ultimates and Construct skills) and the redrawn `sanctuary` (healing s
 `Art/Icons/ChatGPT/abilities_{gunblade,witch_slayer,huntress,aetheri_artificer,aetheri_warden}.png`
 (the Aetheri sheets' 9th tile is an unused emblem).
 
+## Dodge-roll skills and Ashfang companion (art-2d)
+
+The 20 dodge-roll skill icons (`riposte_roll` ... `evasive_stance`; one family: a hooded figure mid-roll inside a
+school-coloured tumbling arc) and the Huntress companion icons `sabercat_maul` (Ashfang: Maul) and `sabercat_roar`
+(Ashfang: Dread Roar) are painted icons **generated for Eric via ChatGPT (OpenAI), 2026-09-25**, from
+`Art/Icons/ChatGPT/abilities_roll1.png`, `abilities_roll2.png` and `abilities_roll3_pet.png` (2x2).
+
+## Scaling-kits skills (art-2d)
+
+`shield_bash`, `shield_toss`, `shield_wall`, `pavise`, `mechanical_tank`, `artillery`, `artillery_training`,
+`eagle_eye`, `longshot` and `headshot` are painted icons **generated for Eric via ChatGPT (OpenAI), 2026-09-25**,
+from `Art/Icons/ChatGPT/abilities_scaling_kits.png` (3x3) and `abilities_scaling_kits2.png` (2x2; only the
+first tile is used).
+
+## Polymorph (art-2d)
+
+`polymorph` (an arcane vortex with a startled chicken at its centre) is a painted icon **generated for Eric via
+ChatGPT (OpenAI), 2026-09-25**; source `Art/Icons/ChatGPT/abilities_polymorph.png` (single icon, resized to 256).
+
 ## Procedural icons
 
 Any future `T_<id>` without a painted PNG falls back to original procedural art from `Tools/BuildAbilityIcons.py`

@@ -1,4 +1,5 @@
 #include "CireSkillCasting.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireSignatureSkills.h" // new-champions
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
@@ -108,7 +109,7 @@ bool CireSkillCasting::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     if (!CostFor(Id, Cost)) return Fail(TEXT("This combat recipe is unavailable."));
     if (!FMath::IsFinite(Cost.Mana) || Cost.Mana < 0 || !FMath::IsFinite(Cost.Energy) || Cost.Energy < 0 ||
         !FMath::IsFinite(Cost.Cooldown) || Cost.Cooldown < 0 || !FMath::IsFinite(Cost.Range) || Cost.Range < 0) return Fail(TEXT("Combat recipe has invalid costs or range."));
-    if (!CireSkillShop::CanPayCast(Hero, Id, Cost.Mana, Cost.Energy)) return Fail(TEXT("Not enough mana or energy.")); // progression-shop: Skill Shop level (Ability DB curve)
+    if (!CireSkillShop::CanPayCast(Hero, Id, Cost.Mana, Cost.Energy)) return Fail(*CireSkillShop::CostFailText()); // progression-shop: Skill Shop level (Ability DB curve)
     const bool bTargetHostile = CireCombat::AreHostile(Hero, Hero->Target);
     FVector Aim = Hero->bHasCastAim ? Hero->CastAimPoint : bTargetHostile ? Hero->Target->GetActorLocation() :
         Hero->GetActorLocation() + Hero->GetActorForwardVector().GetSafeNormal2D() * FMath::Min(500.f, Cost.Range);
@@ -125,13 +126,14 @@ bool CireSkillCasting::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     if (PlayerShot(Id))
     {
         auto Spec = *CireSkillTuning::FindSkillshot(Id);
-        Spec.Damage = FMath::Min(10000.f, Spec.Damage * Power);
+        Spec.Damage = FMath::Min(10000.f, CireKits::Amount(Hero, Id, Spec.Damage) * Power); // scaling-kits: base + coef x PRIMARY
         Spec.AbilityName = AbilityName;
         bSpawned = ACireSkillshot::Spawn(Hero, Spec, Aim, AbilityName) != nullptr;
     }
     else if (PlayerConstruct(Id))
     {
-        const auto Spec = *CireSkillTuning::FindConstruct(Id);
+        auto Spec = *CireSkillTuning::FindConstruct(Id);
+        Spec.MaxHealth = FMath::Min(20000.f, CireKits::Amount(Hero, Id, Spec.MaxHealth)); // scaling-kits: barrier health + coef x PRIMARY
         const FVector Direction = (Aim - Hero->GetActorLocation()).GetSafeNormal2D();
         bSpawned = ACireConstruct::Spawn(Hero, Spec, Aim, Direction.IsNearlyZero() ? Hero->GetActorRotation() : Direction.Rotation(), AbilityName) != nullptr;
     }
@@ -139,7 +141,7 @@ bool CireSkillCasting::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     {
         auto Spec = *CireSkillTuning::FindSummon(Id);
         if (!Spec.bCommandable && !bTargetHostile) return Fail(TEXT("Select a hostile target for your companions."));
-        Spec.Damage = FMath::Min(10000.f, Spec.Damage * Power);
+        Spec.Damage = FMath::Min(10000.f, CireKits::Amount(Hero, Id, Spec.Damage) * Power); // scaling-kits: summons hit off the owner's PRIMARY
         const auto Units = ACireSummon::SpawnGroup(Hero, Spec, bTargetHostile ? Hero->Target : nullptr, Aim);
         bSpawned = Units.Num() == Spec.Count;
         if (!bSpawned) for (auto* Unit : Units) if (IsValid(Unit)) Unit->Destroy();

@@ -19,6 +19,7 @@
 #include "NiagaraSystem.h"
 #include "Sound/SoundWave.h"
 #include "Sound/SoundConcurrency.h"
+#include "CireSoundEvents.h" // audio-overhaul
 #include <limits>
 
 namespace
@@ -153,6 +154,13 @@ void ACireSpellVisual::Configure(FName Id,FVector From,FVector To,ECireSpellCue 
 
 void ACireSpellVisual::StartSound()
 {
+    // audio-overhaul: data-driven sound events (AudioEvents.json); the legacy S_* picks below are the fallback.
+    // The first call (from Configure) defers to the first tick, so a release-frame delay set right after still applies.
+    if(CireSoundEvents::Data().bValid&&!bPreview)
+    {
+        if(!bEventArmed){bEventArmed=true;bSoundPending=true;return;}
+        if(CireSoundEvents::PlaySpellCue(GetWorld(),Skill,Cue,Start,End,Size)){bEventAudio=true;return;}
+    }
     const FString S=Normalize(Skill);
     FString Name;
     if(Cue==ECireSpellCue::Critical) Name=TEXT("Critical");
@@ -177,6 +185,7 @@ void ACireSpellVisual::Follow(ACireAreaEffect* Area)
     bFollowArea=true; FollowedArea=Area; Duration=65;
     if(Area) Configure(FName(*Area->AreaSpec.AbilityName),Area->GetActorLocation(),Area->GetActorLocation(),ECireSpellCue::Cast,1,false);
     Duration=65;
+    if(Area&&CireSoundEvents::StartLoop(Audio,Skill,TEXT("area")))bEventAudio=true; // audio-overhaul: persistent area bed
 }
 void ACireSpellVisual::FollowActor(AActor* Actor,FName Id,ECireSpellCue InCue,FVector Bounds)
 {
@@ -185,6 +194,7 @@ void ACireSpellVisual::FollowActor(AActor* Actor,FName Id,ECireSpellCue InCue,FV
     TrailPoints.Reset();TrailPoints.Add(Actor->GetActorLocation());
     Configure(Id,Actor->GetActorLocation(),Actor->GetActorLocation(),InCue,1,false);
     Duration=65; SetActorTransform(Actor->GetActorTransform());
+    if(InCue==ECireSpellCue::Projectile&&CireSoundEvents::StartLoop(Audio,Id,TEXT("projectile")))bEventAudio=true; // audio-overhaul: flight loop
 }
 void ACireSpellVisual::SetPreviewAge(float Seconds) { bPreview=true; Age=FMath::Max(0.f,Seconds); Rebuild(); }
 void ACireSpellVisual::SetTint(FLinearColor Color)
@@ -196,7 +206,8 @@ void ACireSpellVisual::SetTint(FLinearColor Color)
 void ACireSpellVisual::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-    if(Audio->IsPlaying())Audio->SetVolumeMultiplier((Cue==ECireSpellCue::Impact?.6f:.45f)*CombatVolume(GetWorld()));
+    if(Audio->IsPlaying()&&!bEventAudio)Audio->SetVolumeMultiplier((Cue==ECireSpellCue::Impact?.6f:.45f)*CombatVolume(GetWorld()));
+    if(bEventAudio&&FadeOutAt>=0&&!bLoopFading&&Audio->IsPlaying()){bLoopFading=true;Audio->FadeOut(.3f,0.f);} // audio-overhaul: loops end with the visual
     if(!bPreview && !bFollowArea && OriginPhase!=CurrentPhase(GetWorld())) { Destroy(); return; }
     if(!bPreview) Age+=FMath::Clamp(DeltaSeconds,0.f,.25f);
     if(TickModes(DeltaSeconds)) return; // ability-vfx: release delay, fade-out after the source ends, cancelled telegraphs

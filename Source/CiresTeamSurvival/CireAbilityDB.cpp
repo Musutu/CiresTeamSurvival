@@ -49,8 +49,10 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
         const TSharedPtr<FJsonObject>& J=*O;FCireAbilityDef D;
         D.Id=Str(J,TEXT("id"));D.Name=Str(J,TEXT("name"));D.Icon=Str(J,TEXT("icon"));D.Kind=Str(J,TEXT("kind"));D.School=Str(J,TEXT("school"));
         D.Targeting=Str(J,TEXT("targeting"));D.Status=Str(J,TEXT("status"));D.Description=Str(J,TEXT("description"));D.EffectLabel=Str(J,TEXT("effectLabel"));D.Category=Str(J,TEXT("category"));
-        D.Types=Strings(J,TEXT("types"));D.EffectTags=Strings(J,TEXT("effectTags"));D.Categories=Strings(J,TEXT("categories"));D.Champions=Strings(J,TEXT("champions"));D.SignatureOf=Strings(J,TEXT("signatureOf"));
+        D.Types=Strings(J,TEXT("types"));D.Section=Str(J,TEXT("section"));D.EffectTags=Strings(J,TEXT("effectTags"));D.Categories=Strings(J,TEXT("categories"));D.Champions=Strings(J,TEXT("champions"));D.SignatureOf=Strings(J,TEXT("signatureOf"));
         D.CastTime=Num(J,TEXT("castTime"));
+        // feat/camera-movement: optional; missing means WoW behaviour (instants move, cast-time spells stand still).
+        if(!J->TryGetBoolField(TEXT("castWhileMoving"),D.bCastWhileMoving))D.bCastWhileMoving=D.CastTime<=0;
         if(D.Id!=FString(Pair.Key)||D.Id.IsEmpty()||Seen.Contains(D.Id)||D.Name.IsEmpty()||!Kinds.Contains(D.Kind)||!Schools.Contains(D.School)||
             !Targets.Contains(D.Targeting)||D.Types.IsEmpty()||D.CastTime<0||D.CastTime>10)return Fail(TEXT("Invalid ability identity: ")+D.Id);
         for(const FString& T:D.Types)if(!Types.Contains(T))return Fail(TEXT("Invalid type: ")+D.Id);
@@ -81,6 +83,44 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
             Z.SelfHealMaxHealthFraction=Num(*Void,TEXT("selfHealMaxHealthFraction"));
             Z.bValid=Z.InnerRadius>0&&Z.OuterRadius>Z.InnerRadius&&Z.OuterRadius<=3000&&Z.InnerDuration>=0&&Z.OuterMagnitude>=0&&Z.OuterMagnitude<=1;
             if(!Z.bValid)return Fail(TEXT("Invalid void zone: ")+D.Id);
+        }
+        // scaling-kits: primary-stat scaling, shield/ranged gating, level-15 bonus / aura.
+        D.Requires=Str(J,TEXT("requires"));
+        const TSharedPtr<FJsonObject>* Scaling=nullptr;
+        if(J->TryGetObjectField(TEXT("scaling"),Scaling))
+        {
+            D.ScaleComponent=Str(*Scaling,TEXT("component"));D.ScaleBase=Num(*Scaling,TEXT("base"));D.ScalePrimary=Num(*Scaling,TEXT("primary"));
+            D.DotPerSecondPrimary=Num(*Scaling,TEXT("dotPerSecond"));
+            if(D.ScaleBase<0||D.ScalePrimary<0||D.ScalePrimary>10||D.DotPerSecondPrimary<0)return Fail(TEXT("Invalid scaling: ")+D.Id);
+        }
+        const TSharedPtr<FJsonObject>* L15=nullptr;
+        if(J->TryGetObjectField(TEXT("level15"),L15))
+        {
+            const FString Bonus=Str(*L15,TEXT("bonus"));D.Level15Bonus=Bonus.IsEmpty()||Bonus==TEXT("none")?NAME_None:FName(*Bonus);
+            D.Level15Special=Str(*L15,TEXT("special"));D.Level15Label=Str(*L15,TEXT("label"));D.Level15Trigger=Str(*L15,TEXT("trigger"));
+        }
+        const TSharedPtr<FJsonObject>* Aura=nullptr;
+        if(J->TryGetObjectField(TEXT("aura15"),Aura)){D.Aura15=FName(*Str(*Aura,TEXT("aura")));D.Aura15Label=Str(*Aura,TEXT("label"));}
+        const TSharedPtr<FJsonObject>* Up=nullptr; // items-v2: ultimate upgrade
+        if(J->TryGetObjectField(TEXT("ultimateUpgrade"),Up))
+        {
+            auto& U=D.Upgrade;U.Name=Str(*Up,TEXT("name"));U.Text=Str(*Up,TEXT("text"));U.bAtTarget=Str(*Up,TEXT("center"))==TEXT("target");
+            U.Delay=FMath::Clamp(Num(*Up,TEXT("delay")),0.f,5.f);
+            const TArray<TSharedPtr<FJsonValue>>* List=nullptr;
+            if((*Up)->TryGetArrayField(TEXT("effects"),List))for(const auto& V:*List)
+            {
+                const TSharedPtr<FJsonObject>* E=nullptr;if(!V->TryGetObject(E)||!E)return Fail(TEXT("ultimateUpgrade effect must be an object: ")+D.Id);
+                FCireUpgradeEffect X;X.Type=FName(*Str(*E,TEXT("type")));X.Radius=Num(*E,TEXT("radius"));X.Duration=Num(*E,TEXT("duration"));
+                X.Amount=Num(*E,TEXT("amount"));X.Scaling=Num(*E,TEXT("scaling"));X.HealthScaling=Num(*E,TEXT("healthScaling"));
+                X.PrimaryScaling=Num(*E,TEXT("primaryScaling"));X.Magnitude=Num(*E,TEXT("magnitude"));
+                bool bFlag=false;if((*E)->TryGetBoolField(TEXT("atSelf"),bFlag)&&bFlag)X.CenterOverride=1;if((*E)->TryGetBoolField(TEXT("atTarget"),bFlag)&&bFlag)X.CenterOverride=2;
+                const TSharedPtr<FJsonObject>* Stats=nullptr;
+                if((*E)->TryGetObjectField(TEXT("stats"),Stats))for(const auto& StatPair:(*Stats)->Values)X.Stats.Add(FString(StatPair.Key),static_cast<float>(StatPair.Value->AsNumber()));
+                if(X.Type.IsNone()||X.Radius<0||X.Radius>3000||X.Duration<0||X.Duration>60||X.Magnitude<0||X.Magnitude>1)return Fail(TEXT("Invalid ultimateUpgrade effect: ")+D.Id);
+                U.Effects.Add(MoveTemp(X));
+            }
+            U.bValid=D.IsUltimate()&&U.Effects.Num()>0;
+            if(!U.bValid)return Fail(TEXT("ultimateUpgrade needs an ultimate with effects: ")+D.Id);
         }
         Seen.Add(D.Id);Parsed.Add(MoveTemp(D));
     }
@@ -150,7 +190,16 @@ FString CireAbilityDB::Describe(const FString& Id,int32 Level)
     if(Now.EnergyCost>0)Parts.Add(FString::Printf(TEXT("%s energy (+%s)"),*Trim(Now.EnergyCost),*Trim(Next.EnergyCost-Now.EnergyCost)));
     if(Now.Cooldown>0)Parts.Add(FString::Printf(TEXT("%.1fs cooldown (-%.1fs)"),Now.Cooldown,Now.Cooldown-Next.Cooldown));
     if(Now.CastTime>0)Parts.Add(FString::Printf(TEXT("%.1fs cast"),Now.CastTime));
-    return Text+TEXT("\n")+FString::Join(Parts,TEXT("  |  "));
+    FString Extra; // scaling-kits: universal primary scaling + level-15 line
+    if(D->ScalePrimary>0)Extra+=FString::Printf(TEXT("\n%s + %sx Primary %s"),*Trim(D->ScaleBase),*FString::SanitizeFloat(D->ScalePrimary,0),*ScalingWord(*D));
+    const FString L15=!D->Aura15Label.IsEmpty()?D->Aura15Label:D->Level15Label;
+    if(!L15.IsEmpty())Extra+=TEXT("\n")+L15;
+    return Text+TEXT("\n")+FString::Join(Parts,TEXT("  |  "))+Extra;
+}
+FString CireAbilityDB::ScalingWord(const FCireAbilityDef& D)
+{
+    return D.ScaleComponent==TEXT("heal")?TEXT("healing"):D.ScaleComponent==TEXT("shield")?TEXT("barrier health"):
+        (D.ScaleComponent==TEXT("summon")||D.ScaleComponent==TEXT("construct"))?TEXT("damage per hit"):TEXT("damage");
 }
 
 TArray<FString> CireAbilityDB::PurchasableSkills(const FString& ProfileId,bool bImplementedOnly)

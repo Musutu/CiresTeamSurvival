@@ -189,6 +189,33 @@ locked scrolls are dimmed with a red ribbon (NEED 9g, SLOT AT WAVE 10, SLOTS FUL
 The item shop (**Armory**) uses the same framing: recommended build per role first (starter -> core ->
 situational), all items under ALL ITEMS as tier-coloured cards, larger text, same buy/sell feedback.
 
+### Playtest 3 update: readability, Ready to Continue, sections, Polymorph
+
+* **Readability:** scroll cards are 150x198 (never shrunk), icons 60 px in the crest ring, 11 pt names,
+  high-contrast ink on a cream wash. A card shows only name, level, up to two affinity tags, one key-number
+  line and the price; the full level -> next numbers are in the hover tooltip (`CireAbilityDB::Describe`).
+  With many skills, rows scroll (mouse wheel or the arrows); verified at 1920x1080, 1600x900 and 1280x720.
+* **Sections ("periodic table"):** labelled, coloured, bordered blocks: Offensive: Spell Damage, Offensive:
+  Attack Damage, Defensive, Crowd Control (stuns, silences, slows, roots, polymorph), Summons, Constructs,
+  Passives, Ultimates. Filter chips show or hide groups (the first click isolates one). Each ability has one
+  primary `section` and up to four `effectTags` ("Stun", "Slow", "Heal", "Summon"...), derived by
+  `Tools/BuildAbilityDB.py` `classify()` from its CC effects, damage/heal wording, summon and construct data.
+  Rows that preset `section` / `categories` / `effectTags` (for example the dodge-roll skills) keep them.
+* **Ready to Continue (Skill Shop mode only):** after a cleared wave the next wave **waits until every
+  human presses READY TO CONTINUE** (bots auto-ready). The Skill Shop shows each teammate's portrait with a
+  check mark and "WAITING FOR 2 PLAYERS · 3 / 5 READY" ("WAITING FOR 1 PLAYER" when one is left); the match plate says the same. The AFK safety cap is
+  `SkillShop.json -> readyGate.maxSeconds` (180 s, also in F8 > Economy; 0 = none); its countdown appears
+  in the last 30 s. The gate is `CireSkillShop::HoldBreather`, called from the survival tick (`CireMatch.cpp`)
+  on top of the wave director's breather/ready-up; Classic Draft keeps the timed breather with early ready-up.
+* **Polymorph** (`polymorph`, Crowd Control active, arcane, caster DPS and supports, 1.5 s cast, 50 mana,
+  20 s cooldown): turns the target into a Chicken, a Piglet or a Frog (random per cast) for 8 s (+ per level,
+  capped at 12 s). The critter cannot attack or cast, loses its threat table and wanders slowly; any damage
+  breaks it. Lane bosses and Pack Leaders are immune, elites get half, champions (PvP) at most 3 s with the
+  crowd-control diminishing returns. It shows a poof cue and the `polymorphed` buff row ("Polymorphed").
+  Code: `CirePolymorph.*`. Critters are CC0 Quaternius models (Art/Creatures/Free/PROVENANCE_Critters.md,
+  `Tools/ImportPolymorphCritters.py`); the Piglet reuses the imported Pig. Icon id for the 2D art agent:
+  `polymorph` (`/Game/UI/Abilities/T_polymorph`); a procedural placeholder is drawn until it exists.
+
 ## Decisions for Eric to review
 
 1. Unlock pacing (bay 2 in cycle 2, bay 3 mid-cycle 3, promotions every 2 rounds from round 4, cap 8).
