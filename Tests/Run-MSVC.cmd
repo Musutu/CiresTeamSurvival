@@ -28,5 +28,13 @@ if errorlevel 1 (
 )
 build\CireItemRulesTests.exe
 if errorlevel 1 set "CIRES_RESULT=1"
+rem scaling-kits: primary-stat scaling, inheritance, shield block, level-15, Headshot, Artillery, Mech Tank.
+cl /nologo /std:c++17 /EHsc /W4 /WX /permissive- /O2 /I"..\Source\CiresTeamSurvival\Rules" KitRulesTests.cpp ..\Source\CiresTeamSurvival\Rules\CireKitRules.cpp /Fo"build\\" /Fe"build\CireKitRulesTests.exe"
+if errorlevel 1 (
+    popd
+    exit /b 1
+)
+build\CireKitRulesTests.exe
+if errorlevel 1 set "CIRES_RESULT=1"
 popd
 exit /b %CIRES_RESULT%
