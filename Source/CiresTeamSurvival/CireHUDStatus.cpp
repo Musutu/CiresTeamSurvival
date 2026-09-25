@@ -72,6 +72,8 @@ FString ACireHUD::StatusIconId(const FCireEffectInfo& I)
     default:break;
     }
     if(I.Mods.Num()&&I.Mods[0].Value<0&&(I.Mods[0].Stat==TEXT("DEF")||I.Mods[0].Stat==TEXT("Armor")))return TEXT("status_armor_break");
+    if(I.IsHarmful()&&I.Dispel==ECireDispel::Poison)return TEXT("status_poison");
+    if(I.IsHarmful()&&I.Dispel==ECireDispel::Curse)return TEXT("status_curse");
     return FString();
 }
 FString ACireHUD::EffectSigil(FName Id,const FCireEffectInfo& I)

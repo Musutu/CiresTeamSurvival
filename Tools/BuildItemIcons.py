@@ -472,6 +472,13 @@ def main():
         glow_scale = {"legendary": 1.0, "epic": .8, "basic": .55, "consumable": .6}[tier]
         render(item_id, theme, tuple(c * glow_scale for c in glow), layers, seed=index + 7, sparkle=sparkle, rays=rays)
         print("icon", item_id, flush=True)
+    if not procedural and not only:
+        # Painted-only UI icons with no catalog entry (toast icons: gold, teleport, challenge).
+        for extra in sorted(PAINTED.glob("T_Item_*.png")):
+            if extra.stem[len("T_Item_"):] not in ids:
+                (OUT / extra.name).write_bytes(extra.read_bytes())
+                painted += 1
+                print("icon", extra.stem, "(painted, UI)", flush=True)
     print(f"CIRE_ITEM_ICONS_PASS count={len(ids)} painted={painted} out={OUT}")
 
 
