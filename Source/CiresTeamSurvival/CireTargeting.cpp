@@ -9,6 +9,8 @@
 #include "CireSkillRuntime.h"
 #include "CireConstruct.h"
 #include "CireLanePath.h"
+#include "CireAbilityVFX.h" // ability-vfx
+#include "CireSpellMesh.h" // ability-vfx
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/PrimitiveComponent.h"
@@ -28,6 +30,7 @@ struct FTargetState
     uint64 ArmedFrame=0;
     TArray<FVector2D> CachedBoundary;
     bool bMeshBuilt=false,bLastValid=false;
+    TArray<FVector> DecorV;TArray<int32> DecorI;TArray<FLinearColor> DecorC; // ability-vfx: animated arrow/chevrons/spot marker
 };
 TMap<TWeakObjectPtr<ACireController>,FTargetState> States;
 FCireTargetDescriptor RuntimeDescriptor(UWorld* World,const FString& Id)
@@ -110,11 +113,25 @@ void Render(ACireController* C,FTargetState& S,const FCireTargetDescriptor& D,FV
         Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);Mesh->SetGenerateOverlapEvents(false);Mesh->SetCanEverAffectNavigation(false);Mesh->SetCastShadow(false);Mesh->RegisterComponent();
         auto* Material=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_GroundArea.M_GroundArea"));
         if(!Material)Material=LoadObject<UMaterialInterface>(nullptr,TEXT("/Engine/EngineDebugMaterials/VertexColorMaterial.VertexColorMaterial"));
-        Mesh->SetMaterial(0,Material);Mesh->SetMaterial(1,Material);
+        Mesh->SetMaterial(0,Material);Mesh->SetMaterial(1,Material);Mesh->SetMaterial(2,Material); // ability-vfx: section 2 = animated decorations
         S.Preview=A;S.Mesh=Mesh;
     }
     if(!S.Mesh.IsValid())return;S.Preview->SetActorHiddenInGame(false);S.Preview->SetActorLocationAndRotation(Center,Heading);
     const auto Points=ACireAreaEffect::BoundaryPoints(D.Footprint);
+    if(CireAbilityVFX::Enabled())
+    {
+        // ability-vfx: lines get an arrowhead + travelling chevrons, cones chevrons, circles the designated-spot
+        // marker, all inside the true boundary; rebuilt every frame so they animate.
+        FCireGroundMesh G(S.DecorV,S.DecorI,S.DecorC);G.Z=7.5f;
+        const auto Style=CireAbilityVFX::StyleFor(S.View.bValid?CireAbilityVFX::ETone::AimValid:CireAbilityVFX::ETone::AimInvalid,FLinearColor::White);
+        CireAbilityVFX::PaintTelegraph(G,D.Footprint,Style,-1.f,C->GetWorld()->GetTimeSeconds(),1.f,
+            CireAbilityVFX::PaintNoFill|CireAbilityVFX::PaintArrow|CireAbilityVFX::PaintCenter|CireAbilityVFX::PaintPulse);
+        const auto* Section=S.Mesh->GetProcMeshSection(2);
+        if(G.V.IsEmpty())S.Mesh->ClearMeshSection(2);
+        else if(Section&&Section->ProcVertexBuffer.Num()==G.V.Num()&&Section->ProcIndexBuffer.Num()==G.I.Num())
+            S.Mesh->UpdateMeshSection_LinearColor(2,G.V,TArray<FVector>(),TArray<FVector2D>(),G.C,TArray<FProcMeshTangent>(),false);
+        else S.Mesh->CreateMeshSection_LinearColor(2,G.V,G.I,TArray<FVector>(),TArray<FVector2D>(),G.C,TArray<FProcMeshTangent>(),false);
+    }
     if(S.bMeshBuilt&&S.bLastValid==S.View.bValid&&S.CachedBoundary==Points)return;
     S.bMeshBuilt=true;S.bLastValid=S.View.bValid;S.CachedBoundary=Points;
     const auto Fill=Triangulate(Points);

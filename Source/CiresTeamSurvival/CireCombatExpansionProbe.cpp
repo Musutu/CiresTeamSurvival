@@ -28,6 +28,7 @@
 #include "Misc/ScopeExit.h"
 #include "CireAuraVisuals.h" // aura-vfx
 #include "CireNav.h" // nav-paths
+#include "CireAbilityVFX.h" // ability-vfx
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireExpansion,Log,All);
@@ -95,6 +96,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireArenas::RunSmoke(Mode)&&Good; // arenas: data, symmetry, paths, random no-repeat pick, build and cleanup
     Good=CireWaveDirector::RunTests(Mode)&&Good; // wave-director: data, templates, live edits, escort, stuck/failsafe, neutral packs, bots
     Good=CireNav::RunTests(Mode)&&Good; // nav-paths: navmesh coverage, paths, prop carving, arenas, path editor
+    Good=CireAbilityVFX::RunTests(Mode)&&Good; // ability-vfx: shape-true telegraphs, line indicators, lifecycles, release sync
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }
 #endif

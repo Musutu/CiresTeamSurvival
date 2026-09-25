@@ -73,6 +73,7 @@ public:
     bool bMusicEnabled = true;
     bool bFootstepCameraShake = false;
     // audio: end
+    bool bImpactCameraShake = true; // ability-vfx: small camera kick when a heavy hit lands on/near your champion
     bool bShowFPS = false;
     bool bShowNetwork = true;
     bool bTooltips = true;

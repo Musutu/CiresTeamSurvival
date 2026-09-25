@@ -140,6 +140,7 @@ def main() -> int:
     parser.add_argument("--timeout", type=int, default=2700)
     parser.add_argument("--compose", type=Path, help="only (re)build sheets for an existing capture directory")
     parser.add_argument("--compare", nargs=2, type=Path, metavar=("BEFORE", "AFTER"))
+    parser.add_argument("--legacy", action="store_true", help="capture the previous presentation (-CireLegacyVFX) for before/after")
     parser.add_argument("--in-pillow", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.compare or args.compose:
@@ -160,6 +161,8 @@ def main() -> int:
                f"-CireVFXSet={args.set}", f"-CireVFXTag={args.tag}", "-CireTripoChampions", "-RenderOffscreen", "-ForceRes",
                f"-ResX={width}", f"-ResY={height}", "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding",
                "-ExecCmds=t.MaxFPS 30,r.AntiAliasingMethod 1", f"-abslog={log}"]
+    if args.legacy:
+        command.append("-CireLegacyVFX")
     if args.only:
         command.append(f"-CireVFXOnly={args.only}")
     started = time.monotonic()

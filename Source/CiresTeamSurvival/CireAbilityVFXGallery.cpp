@@ -55,6 +55,7 @@ struct FState
     TArray<FEntry> Entries;
     TArray<FFrame> Frames;
     TArray<FString> Files,ManifestLines;
+    TMap<TWeakObjectPtr<ACireMonster>,float> HeldDamage; // monsters stay paused (Damage 0) until their scripted cast
     FString Directory,Tag;
     int32 Index=-1,FrameIndex=0,Refused=0;
     double Start=0,FinishAt=-1;float EntryAt=0,CastAt=-1;
@@ -137,7 +138,7 @@ void Clear()
         if(auto* M=Cast<ACireMonster>(A.Get()))G.Mode->Monsters.Remove(M);
         A->Destroy();
     }
-    G.Actors.Reset();
+    G.Actors.Reset();G.HeldDamage.Reset();
     for(TActorIterator<ACireSpellVisual> It(World);It;++It)It->Destroy();
 }
 ACireMonster* SpawnMonster(FName Arch,FVector At,FRotator Facing,bool bFrozen)
@@ -147,7 +148,8 @@ ACireMonster* SpawnMonster(FName Arch,FVector At,FRotator Facing,bool bFrozen)
     if(!M)return nullptr;
     M->Lane=0;CireNPCCombat::ConfigureArchetype(M,Arch,5,0,1);M->SpawnPosition=At;
     M->MaxHealth=M->Health=100000;
-    if(bFrozen){M->Damage=0;} // paused NPC: never moves, attacks or casts
+    if(!bFrozen)G.HeldDamage.Add(M,M->Damage);
+    M->Damage=0; // paused NPC: never moves, attacks or casts before its scripted ability
     G.Mode->Monsters.Add(M);G.Actors.Add(M);
     return M;
 }
@@ -181,6 +183,7 @@ void BeginChampion(const FEntry& E)
         SpawnMonster(TEXT("hollow_infantry"),Stage+(bNear?FVector(120,210,95):FVector(1000,170,95)),FRotator(0,180,0),true);
         SpawnMonster(TEXT("hollow_infantry"),Stage+(bNear?FVector(60,-240,95):FVector(900,-260,95)),FRotator(0,180,0),true);
     }
+    if(Dummy&&(E.Id==TEXT("shield_slam")||E.Id==TEXT("basic_sword")||E.Id==TEXT("stone_skin")))Dummy->SetActorLocation(Stage+FVector(200,0,95));
     H->Skills.Reset();H->Cooldowns.Reset();
     if(!E.Id.StartsWith(TEXT("basic_"))){H->Skills={E.Id};H->Cooldowns={0};}
     H->Target=Dummy;H->GlobalCooldown=0;
@@ -198,7 +201,7 @@ void CastChampion(const FEntry& E)
     auto* H=G.Hero.Get();if(!H)return;
     const FVector Target=H->Target?H->Target->GetActorLocation():H->GetActorLocation()+FVector(600,0,0);
     FVector Aim=FVector(Target.X,Target.Y,Stage.Z);
-    if(E.Id==TEXT("summoned_wall")||E.Id==TEXT("protection_dome")||E.Id==TEXT("oathbound_guardian"))Aim=Stage+FVector(380,0,0);
+    if(E.Id==TEXT("summoned_wall")||E.Id==TEXT("protection_dome")||E.Id==TEXT("oathbound_guardian")||E.Id==TEXT("spectral_pack"))Aim=Stage+FVector(380,0,0);
     CireTargeting::DebugSetAimOverride({});CireTargeting::Cancel(G.PC.Get());
     if(E.Id.StartsWith(TEXT("basic_"))){H->BasicTimer=0;H->BasicAttack();G.bCastRefused=H->AttackSerial==0;return;}
     const float Before=H->Cooldowns.IsValidIndex(0)?H->Cooldowns[0]:0;
@@ -232,7 +235,8 @@ void BeginMonster(const FEntry& E)
 }
 void CastMonster(const FEntry& E)
 {
-    ACireMonster* M=nullptr;for(auto& A:G.Actors)if(auto* Mon=Cast<ACireMonster>(A.Get());Mon&&Mon->Damage>0){M=Mon;break;}
+    ACireMonster* M=nullptr;
+    for(auto& Pair:G.HeldDamage)if(Pair.Key.IsValid()){M=Pair.Key.Get();M->Damage=Pair.Value;M->AttackTimer=5.f;break;}
     G.bCastRefused=!M||!CireNPCCombat::DebugStartAbility(M,FName(*E.Id),G.Hero.Get());
     if(G.bCastRefused)UE_LOG(LogTemp,Warning,TEXT("CIRE_ABILITY_VFX_REFUSED %s (monster %s)"),*E.Id,*E.Archetype.ToString());
 }
@@ -344,7 +348,7 @@ bool CireAbilityVFXGallery::Tick(ACireGameMode* Mode)
             // Aim preview exactly as the player sees it: armed slot, cursor on the aim point.
             auto* H=G.Hero.Get();const FVector T=H&&H->Target?H->Target->GetActorLocation():Stage+FVector(700,0,0);
             FVector Aim(T.X,T.Y,Stage.Z);
-            if(E.Id==TEXT("summoned_wall")||E.Id==TEXT("protection_dome")||E.Id==TEXT("oathbound_guardian"))Aim=Stage+FVector(380,0,0);
+            if(E.Id==TEXT("summoned_wall")||E.Id==TEXT("protection_dome")||E.Id==TEXT("oathbound_guardian")||E.Id==TEXT("spectral_pack"))Aim=Stage+FVector(380,0,0);
             CireTargeting::DebugSetAimOverride(Aim);CireTargeting::Request(G.PC.Get(),0);
         }
         if(G.FrameIndex==0&&G.Frames.Num()&&G.Frames[0].At<0&&Local>=Settle-.06f){Capture(G.Frames[0].Name);G.FrameIndex=1;}

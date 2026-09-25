@@ -128,6 +128,11 @@ ECireSchool CireAbilityShapes::SchoolFor(FName Id,const FCireNPCArchetype* Caste
     }
     if(Ab)return MonsterSchool(S,Caster,Ab);
     if(S.StartsWith(TEXT("npc_"))||S.StartsWith(TEXT("boss_")))return MonsterSchool(S,nullptr,nullptr);
+    // Skillshot visual styles (CombatTuning "visualStyle") name their school directly.
+    static const TMap<FString,ECireSchool> Styles={{TEXT("fire"),ECireSchool::Fire},{TEXT("frost"),ECireSchool::Frost},{TEXT("arrow"),ECireSchool::Steel},
+        {TEXT("lance"),ECireSchool::Steel},{TEXT("arcane"),ECireSchool::Arcane},{TEXT("shadow"),ECireSchool::Shadow},{TEXT("poison"),ECireSchool::Poison},
+        {TEXT("holy"),ECireSchool::Holy},{TEXT("storm"),ECireSchool::Storm},{TEXT("nature"),ECireSchool::Nature},{TEXT("tide"),ECireSchool::Tide},{TEXT("void"),ECireSchool::Void}};
+    if(const ECireSchool* Style=Styles.Find(S))return *Style;
     if(S==TEXT("bow")||S==TEXT("basic_bow")||S==TEXT("sword")||S==TEXT("basic_sword")||S==TEXT("lance")||S==TEXT("basic_lance"))return ECireSchool::Steel;
     if(S==TEXT("arcane")||S==TEXT("basic_arcane"))return ECireSchool::Arcane;
     return ChampionSchool(S);

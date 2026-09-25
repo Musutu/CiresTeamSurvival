@@ -2,6 +2,7 @@
 
 #include "CireChampionArt.h"
 #include "CireWeaponPresentation.h"
+#include "CireAbilityVFX.h" // ability-vfx: release timing shared with the spell cues
 #include "CireGame.h"
 #include "Animation/AnimSequence.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -145,6 +146,8 @@ CireChampionActions::FWindow CireChampionActions::Window(const FString& Clip)
     return Found ? *Found : FWindow{0.f, .4f, 1.f, 1.f};
 }
 
+float CireChampionActions::SkillWindup(const UWorld* World, const FString& SkillId) { return FMath::Max(.05f, CireAbilityVFX::ReleaseLead(World, SkillId)); } // ability-vfx
+
 FString CireChampionActions::SkillKind(const FString& SkillId)
 {
     const FData& D = Data();
@@ -220,7 +223,9 @@ bool CireChampionActions::Apply(ACireHero& Hero, UCireCombatAnimInstance& Anim, 
         if (Hero.Cooldowns[Slot] > Previous + .5f && Hero.Skills.IsValidIndex(Slot))
         {
             const FString Clip = ClipName(Hero, SkillKind(Hero.Skills[Slot]));
-            Start(*State, ClipFor(Body, Clip), Clip, Now, .28f);
+            // ability-vfx: the contact frame lands on the effect release (skillshot warning end, or the
+            // short snap-in the spell cue waits for), instead of a fixed 0.28 s after the cast.
+            Start(*State, ClipFor(Body, Clip), Clip, Now, SkillWindup(Hero.GetWorld(), Hero.Skills[Slot]));
         }
     }
     State->LastCooldowns = Hero.Cooldowns;

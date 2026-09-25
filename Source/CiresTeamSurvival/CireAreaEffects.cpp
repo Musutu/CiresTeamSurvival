@@ -306,7 +306,7 @@ void ACireAreaEffect::Tick(float DeltaSeconds)
     if (GetNetMode() != NM_DedicatedServer)
     {
         const auto* Local = GetWorld()->GetFirstPlayerController();
-        GroundMesh->SetVisibility(Local && Local->IsLocalController() && CanObserve(Local));
+        GroundMesh->SetVisibility(Local && Local->IsLocalController() && CanObserve(Local) && !bPresentationOwnsGround); // ability-vfx
     }
 }
 
