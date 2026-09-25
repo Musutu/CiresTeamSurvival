@@ -381,3 +381,25 @@ relevancy/opening, bots auto-loot, auto-collect summary, exact tome stat, team d
 probe: the remote client never receives the teammate's chest, cannot open it by standing on it, and
 receives its own loot report (`CIRE_SHOP_NET_CLIENT_PASS personal_report_lines=2`). Captures:
 `Saved/ShopGallery/20260925-023312/11-13`.
+
+### Evidence: items v2 (25 September 2026, after merging main with the dodge-roll skills)
+
+- Native rules: `Tests/Run-MSVC.cmd` 2,064,683 + 146,196 item assertions, 0 failures (new: path/boots
+  unique groups, new passives in totals, `ValidateBuild`, stat policy, mitigation specials, mana
+  economy, dodge charges).
+- In-engine `RunProgressionChecks --only native`: `CIRE_ITEMS_PASS checks=47`, **`CIRE_ITEMS_V2_PASS
+  checks=247`** (catalog shape and one-line effects, stat policy, every recommended core carryable,
+  adaptive primary stat on STR and INT champions, mitigation specials, path/boots/active uniques incl.
+  loot, party shield/armor banner/1,000 heal/200 area heal on allies in range only, double dash and
+  Tailwind, all 27 ultimate upgrades apply their added effect plus the real Bastion of Dawn cast path,
+  mana regen formula, level-scaled costs, spam runs dry, regen items extend it, "Not enough mana (x / y)"
+  + HUD flash, Moonwell refund), `CIRE_SKILLSHOP_PASS checks=48`, `CIRE_PROGRESSION_PASS checks=39`.
+- `RunExpansionChecks --only native`: `CIRE_COMBAT_EXPANSION_PASS` (aura smoke 596 checks with the three
+  new buff visuals, tech constructs, new champions, crowd control, arenas, waves, navigation, VFX).
+- `RunProgressionChecks --only network`: shop network probe PASS.
+- Captures (reviewed): Armory `Saved/ShopGallery/20260925-141458/11_shop_path_uniques.png` (path filter,
+  PATH ribbons, "+10 Primary Stat (STR for you)", tooltip) and `12_shop_path_unique_refused.png`
+  (second path unique refused, BUY UNAVAILABLE, toast); combat `Saved/AuraGallery/20260925-141556/
+  13_items_v2_apotheosis_combat.png` (Dawnward shields on allies, apotheosis halo, stunned monsters)
+  and `12_items_v2_actives.png`. The aura gallery stages the buff visuals; the gameplay effects are
+  proven by the in-engine suite above.
