@@ -7,7 +7,9 @@
 #include "CireAreaEffects.h"
 #include "CireSummon.h"
 #include "CireMobility.h"
+#include "CireLanePath.h"
 #include "EngineUtils.h"
+#include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerInput.h"
@@ -25,6 +27,7 @@ struct FSession
     TWeakObjectPtr<ACireMonster> A,B;
     FVector Pos0=FVector::ZeroVector,LastAim=FVector::ZeroVector;float Yaw0=0,CamYaw0=0,MinSpeed=1e9f,SpeedAtCast=-1;
     int32 Areas0=0,Summons0=0;double Started=0;
+    FVector Spot=FVector::ZeroVector;float SpotYaw=0;bool bHasSpot=false;
 };
 FSession G;
 
@@ -72,6 +75,15 @@ void CirePlaySession::Tick(ACireController* C,float Dt)
     if(!H||!HUD||!Mode)return;
     const FCireKeybindings& K=HUD->UISettings.Keybindings;
     const auto Speed=[&]{return static_cast<float>(H->GetVelocity().Size2D());};
+    // Every stage starts from the same open lane spot, facing down the lane, standing still.
+    const auto ResetSpot=[&]()
+    {
+        if(!G.bHasSpot)return;
+        H->GetCharacterMovement()->StopMovementImmediately();
+        H->SetActorLocation(G.Spot,false,nullptr,ETeleportType::TeleportPhysics);H->SetActorRotation(FRotator(0,G.SpotYaw,0));
+        C->SetControlRotation(FRotator(-20,G.SpotYaw,0));
+    };
+    if(G.Stage>=2&&G.Stage<=8&&G.F==0)ResetSpot();
     const auto Aim=[&](float Ahead)
     {
         const FVector Fwd=FRotator(0,C->GetControlRotation().Yaw,0).Vector();
@@ -81,6 +93,10 @@ void CirePlaySession::Tick(ACireController* C,float Dt)
         CireTargeting::DebugSetAimOverride(G.LastAim);
     };
     const int32 F=G.F++;
+    {   // Diagnostics: every selection change with its stage/frame.
+        static TWeakObjectPtr<AActor> LastTarget;
+        if(LastTarget.Get()!=H->Target){UE_LOG(LogCirePlaySession,Display,TEXT("CIRE_PLAY_TARGET stage=%d frame=%d %s -> %s"),G.Stage,F,*GetNameSafe(LastTarget.Get()),*GetNameSafe(H->Target));LastTarget=H->Target;}
+    }
     switch(G.Stage)
     {
     case 0: // draft a champion and build an isolated fixture
@@ -92,6 +108,21 @@ void CirePlaySession::Tick(ACireController* C,float Dt)
             H->Cooldowns={0,0,0,0};H->MaxMana=H->Mana=5000;H->MaxHealth=H->Health=5000;Ready(H);
             auto& O=HUD->UISettings;O.bSmartCast=true;O.bMouseoverCast=false;O.bRightClickCancelsAim=true;O.bPressAgainToCast=true;
             O.bAutoStopToCast=true;O.bCameraAutoFollow=true;O.bQuickGroundCast=false;
+            // Stand on a long straight lane segment facing along it (town spawn faces walls).
+            {
+                const TArray<FVector> Route=CireLanePath::RoutePoints(W,H->TeamId,0);
+                for(int32 I=Route.Num()/3;I+1<Route.Num();++I)if(FVector::Dist2D(Route[I],Route[I+1])>=1800)
+                {
+                    const FVector Dir=(Route[I+1]-Route[I]).GetSafeNormal2D();FVector Spot=Route[I]+Dir*200;
+                    FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(CirePlaySpot),false,H);
+                    if(W->LineTraceSingleByObjectType(Hit,Spot+FVector(0,0,2000),Spot-FVector(0,0,4000),FCollisionObjectQueryParams(ECC_WorldStatic),Q))Spot=Hit.ImpactPoint;
+                    G.Spot=Spot+FVector(0,0,H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+5);G.SpotYaw=Dir.Rotation().Yaw;G.bHasSpot=true;
+                    H->SetActorLocation(G.Spot,false,nullptr,ETeleportType::TeleportPhysics);
+                    H->SetActorRotation(Dir.Rotation());C->SetControlRotation(FRotator(-20,Dir.Rotation().Yaw,0));
+                    H->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+                    break;
+                }
+            }
             FActorSpawnParameters P;P.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
             const FVector Fwd=H->GetActorForwardVector(),Right=H->GetActorRightVector();
             auto Spawn=[&](FVector At){auto* M=W->SpawnActor<ACireMonster>(At,FRotator::ZeroRotator,P);
@@ -148,7 +179,8 @@ void CirePlaySession::Tick(ACireController* C,float Dt)
         if(F==6){Check(CireTargeting::Snapshot(C).bActive,TEXT("ability key arms the ground reticle"));Key(C,K.Get(TEXT("MoveForward"),0).Key,true);}
         if(F==12)G.CamYaw0=CireCamera::ViewRotation(C).Yaw;
         if(F==30)Check(FMath::Abs(FRotator::NormalizeAxis(CireCamera::ViewRotation(C).Yaw-G.CamYaw0))<.1f&&Speed()>200,
-            TEXT("no camera drift/snap while the reticle is armed and the hero runs (auto-follow paused)"));
+            FString::Printf(TEXT("no camera drift/snap while the reticle is armed and the hero runs (auto-follow paused; yaw change %.2f, speed %.0f)"),
+            FRotator::NormalizeAxis(CireCamera::ViewRotation(C).Yaw-G.CamYaw0),Speed()));
         if(F==32)Key(C,EKeys::RightMouseButton,true);
         if(F>32&&F<=52)Mouse(C,10,-2);
         if(F==53)Key(C,EKeys::RightMouseButton,false);
@@ -165,14 +197,15 @@ void CirePlaySession::Tick(ACireController* C,float Dt)
         }
         return;
     case 4: // LMB drag does not confirm; clean RMB click cancels; pressing the key again casts at the reticle
-        if(F==0){Ready(H);G.Areas0=Areas(W);}
+        if(F==0){Ready(H);CireTargeting::Cancel(C);G.Areas0=Areas(W);}
+        if(F==1)G.Areas0=Areas(W);
         Aim(380.f);
         if(F==2)Key(C,SlotKey(K,2),true);
         if(F==3)Key(C,SlotKey(K,2),false);
         if(F==6)Key(C,EKeys::LeftMouseButton,true);
         if(F>6&&F<=20)Mouse(C,8,0);
         if(F==21)Key(C,EKeys::LeftMouseButton,false);
-        if(F==25)Check(CireTargeting::Snapshot(C).bActive&&Areas(W)==G.Areas0,TEXT("LMB camera drag does not confirm the reticle"));
+        if(F==25)Check(CireTargeting::Snapshot(C).bActive&&Areas(W)==G.Areas0,FString::Printf(TEXT("LMB camera drag does not confirm the reticle (armed %d, areas %d->%d, notice %s)"),CireTargeting::Snapshot(C).bActive,G.Areas0,Areas(W),*H->Notice));
         if(F==27)Key(C,EKeys::RightMouseButton,true);
         if(F==28)Key(C,EKeys::RightMouseButton,false);
         if(F==32)Check(!CireTargeting::Snapshot(C).bActive&&Areas(W)==G.Areas0,TEXT("a clean RMB click cancels the reticle"));

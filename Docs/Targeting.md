@@ -100,3 +100,12 @@ start moving or right-click and the AoE circle is gone".
   strafing cancels a cast; and a summon with no target.
 - Native: movement suite (cast rule, gate, cancel), targeting runtime (smart-cast selection,
   front-point fallback).
+- Pet/summon **Attack** with no hostile selected commands the nearest visible hostile within tab
+  range (server side), else "No enemy nearby to attack.". Move/Follow/Hold are unchanged.
+
+Latest evidence (September 25):
+- Play session: 24/24 checks passed, three runs in a row (`Saved/PlaySession/20260925T140715437054Z`).
+- Native expansion: passed (`Saved/ExpansionChecks/20260925T140422427104Z`); movement 54 checks,
+  targeting runtime 32.
+- Two-client network: passed (`20260925T140528244702Z`).
+- Interface smoke: passed.

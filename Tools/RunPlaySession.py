@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -33,15 +34,16 @@ def main() -> int:
            "-NoLiveCoding", "-ExecCmds=t.MaxFPS 60", f"-abslog={log}"]
     started = time.monotonic()
     with (folder / "console.log").open("wb") as out:
-        child = subprocess.Popen(cmd, stdout=out, stderr=subprocess.STDOUT)
+        # UE_SKIP_UBT_SDK_SETUP avoids the editor's ValidatePlatforms Build.bat, which blocks on the
+        # machine-wide Build.bat lock while other worktrees compile.
+        child = subprocess.Popen(cmd, stdout=out, stderr=subprocess.STDOUT, env={**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"})
         try:
             code = child.wait(timeout=a.timeout)
         except subprocess.TimeoutExpired:
-            child.terminate()
-            try:
-                code = child.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                child.kill(); code = child.wait(timeout=10)
+            if os.name == "nt":  # kill the whole tree we started
+                subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+            child.kill()
+            child.wait(timeout=10)
             code = -1
     text = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
     checks = [{"pass": m.group(1) == "PASS", "name": m.group(2).strip()} for m in re.finditer(r"CIRE_PLAY_CHECK_(PASS|FAIL) (.*)", text)]

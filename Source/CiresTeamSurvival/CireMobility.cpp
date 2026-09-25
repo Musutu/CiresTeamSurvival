@@ -83,7 +83,8 @@ void UCireMobility::ServerSetFaceControl_Implementation(bool Face){bFaceControl=
 bool CireMovement::IsMovingForCast(const ACireHero& Hero)
 {
     const auto* Move=Hero.GetCharacterMovement();if(!Move)return false;
-    if(Move->IsFalling())return true;
+    // Jumping/falling counts (WoW), but a parked actor in the falling state with no velocity does not.
+    if(Move->IsFalling())return Hero.GetVelocity().SizeSquared()>100.f;
     return Move->GetCurrentAcceleration().SizeSquared2D()>1.f&&Hero.GetVelocity().Size2D()>10.f;
 }
 bool CireMovement::BlocksCast(const ACireHero& Hero,const FString& AbilityId)

@@ -429,7 +429,8 @@ bool CireTargeting::Tick(ACireController* C)
         if(!H||H->bDead||!H->Skills.IsValidIndex(Q->Slot))Deferred.Remove(TWeakObjectPtr<ACireController>(C));
         else if(!Q->bSent)
         {
-            if(!CireMovement::IsMovingForCast(*H)||Now-Q->Since>.6)
+            // Send once the input stopped and the slide has settled (the server re-checks).
+            if((!CireMovement::IsMovingForCast(*H)&&H->GetVelocity().Size2D()<30.f)||Now-Q->Since>.6)
             {Q->bSent=true;Q->SentAt=Now;SendNow(C,Q->Slot,Q->Explicit.Get(),Q->bAt,Q->Point);}
         }
         else
