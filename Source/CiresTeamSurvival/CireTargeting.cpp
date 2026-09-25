@@ -188,7 +188,7 @@ FCireTargetDescriptor CireTargeting::Describe(const FString& Id)
     bool Known=false;for(const auto& Skill:Cires::StarterSkillPool())Known|=Id==UTF8_TO_TCHAR(Skill.Id.c_str());
     if(!Known)return D;
     D.Kind=ECireTargetKind::Hostile;D.Label=TEXT("Enemy");D.Range=1200;
-    if(Id==TEXT("shield_slam"))D.Range=240;else if(Id==TEXT("cleaving_strike"))D.Range=300;else if(Id==TEXT("shadow_step"))D.Range=850;
+    if(Id==TEXT("shield_slam"))D.Range=240;else if(Id==TEXT("cleaving_strike"))D.Range=300;else if(Id==TEXT("shadow_step"))D.Range=850;else if(Id==TEXT("decimating_strike"))D.Range=300; // champion-draft
     else if(Id==TEXT("cataclysm")||Id==TEXT("executioners_verdict"))D.Range=1500;
     if(const auto* S=CireSkillTuning::FindRoleSkill(Id))D.Range=S->CastRange;
     return D;

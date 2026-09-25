@@ -12,6 +12,8 @@
 #include "CireRaces.h" // monster-races: rank colours, race names
 #include "CireUIStyle.h"
 #include "CireBanners.h"
+#include "CireEffects.h"
+#include "CireBuffs.h"
 #include "CireEnvironmentProps.h"
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
@@ -452,24 +454,20 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
             Tip(U.Abilities[I].Name,U.Abilities[I].Text,AX,RowY,S,S);
         }
     }
-    // Cast bar, WoW gold, with remaining time.
+    // Cast bar (CireCasts): gold interruptible, grey + shield uninterruptible, green heals,
+    // INTERRUPTED / SILENCED flash when a cast is stopped.
     const float CY=H-(bFocus?17.f:21.f),CH=bFocus?13.f:15.f;
-    if(!U.Casting.IsEmpty())
+    if(DrawCastBar(Actor,10,CY,W-20,CH,bFocus?8.5f:9.5f))
     {
-        // WoW convention: gold bar = interruptible, grey bar with a shield = cannot be interrupted.
-        const FLinearColor Bar=U.bInterruptible?CastGold:FLinearColor(.40f,.42f,.48f,1);
-        Panel(10,CY,W-20,CH,FLinearColor(0,0,0,.85f));Panel(11,CY+1,(W-22)*U.CastProgress,CH-2,Bar);Panel(11,CY+1,(W-22)*U.CastProgress,(CH-2)*.4f,FLinearColor(1,1,1,.25f));
-        if(!U.bInterruptible){Panel(4,CY+1,5,CH-2,FLinearColor(.75f,.77f,.82f,1));}
-        const FString Rem=FString::Printf(TEXT("%.1f"),U.CastRemaining);
-        const float RemW=TextWidthFont(Rem,9,ECireFont::Numbers);
-        TextFx(Painter().Fit(U.Casting,bFocus?8.5f:9.5f,W-34-RemW,ECireFont::Bold),15,CY+.5f,bFocus?8.5f:9.5f,FLinearColor::White,ECireFont::Bold,true,false);
-        TextFx(Rem,W-14-RemW,CY+.5f,9,FLinearColor::White,ECireFont::Numbers,true,false);
-        Tip(TEXT("Enemy cast: ")+U.Casting,U.bInterruptible?TEXT("Gold bar: this cast can be interrupted (Shield Slam). Otherwise leave its ground warning or projectile path."):
-            TEXT("Grey bar: this cast cannot be interrupted. Leave its ground warning or projectile path before the bar completes."),10,CY,W-20,CH);
+        const FCireCastView CastView=CireCasts::Get(Actor,CireBuffs::ServerNow(GetWorld()));
+        if(CastView.bCasting)Tip(TEXT("Cast: ")+CastView.Name,CastView.bHeal?TEXT("Green bar: a heal is being cast."):CastView.bInterruptible?TEXT("Gold bar: this cast can be interrupted (Shield Slam). Otherwise leave its ground warning or projectile path."):
+            TEXT("Grey bar with a shield: this cast cannot be interrupted. Leave its ground warning or projectile path before the bar completes."),10,CY,W-20,CH);
     }
     else if(!U.Status.IsEmpty())TextFx(Short(U.Status,bFocus?30:44),10,CY+1,8.5f,U.bDead?Hostile:Neutral*.9f,ECireFont::Body,false);
     else if(Mob&&Mob->IsLaneBoss())TextFx(TEXT("A leak costs 10 lives"),10,CY+1,8.5f,Hostile*.9f,ECireFont::Body,false);
     DrawPortrait(Actor,PCX,PCY,PR,bFocus);
+    // Crowd-control badge (STUN / SILENCE / ROOT / HEAL-CUT) across the portrait.
+    DrawControlBadge(Actor,PCX-PR*.62f,PCY+PR*.12f,bFocus?7.5f:8.5f);
     if(bFocus&&Clicked&&Hit(0,0,W,H)&&!bEditLayout&&!bModal&&!bSettings)
     {
         if(auto* C=Cast<ACireController>(PlayerOwner))C->ServerAction(0,0,Actor);Clicked=false;
@@ -531,21 +529,14 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
         const FString HP=FString::Printf(TEXT("%.0f / %.0f"),M->Health,M->MaxHealth),Pct=FString::Printf(TEXT("%.0f%%"),HF*100);
         TextFx(HP,35,Y+19,9.5f,FLinearColor::White,ECireFont::Numbers,true,false);
         TextFx(Pct,210-TextWidthFont(Pct,9.5f,ECireFont::Numbers),Y+19,9.5f,FLinearColor::White,ECireFont::Numbers,true,false);
-        const FCireNPCCastInfo Cast=M->NPCState?M->NPCState->CastInfo():FCireNPCCastInfo();
-        if(Cast.bCasting&&Cast.Remaining>0)
+        if(!DrawCastBar(M,30,Y+34,184,12,7.5f))
         {
-            // Cast bar tall enough to hold its label inside; remaining time on the right.
-            Panel(30,Y+34,184,12,FLinearColor(0,0,0,.85f));Panel(31,Y+35,182*Cast.Progress,10,Cast.bInterruptible?CastGold:FLinearColor(.40f,.42f,.48f,1));
-            const FString Rem=FString::Printf(TEXT("%.1f"),Cast.Remaining);const float RemW=TextWidthFont(Rem,7.5f,ECireFont::Numbers);
-            TextFx(Painter().Fit(Cast.Name,7.5f,176-RemW-8,ECireFont::Bold),34,Y+34.2f,7.5f,FLinearColor::White,ECireFont::Bold,true,false);
-            TextFx(Rem,210-RemW,Y+34.2f,7.5f,FLinearColor::White,ECireFont::Numbers,true,false);
-        }
-        else
-        {
+            DrawStatuses(M,152,Y+34.5f,10,4);
             const FString V=IsValid(M->Victim)?(M->Victim==Hero?TEXT("Attacking YOU"):TEXT("Attacking ")+Short(M->Victim->HeroName,18)):M->bNeutral?TEXT("Neutral"):TEXT("Advancing"); // wave-director: neutral packs
             TextFx(V,31,Y+34,8,M->Victim==Hero?Hostile:Muted,ECireFont::Body,false);
         }
         UnitTip(M,0,Y,220,46);
+        DrawControlBadge(M,4,Y+30,6.5f); // CC badge on the boss badge
         if(Clicked&&Hit(0,Y,220,46)&&!bModal&&!bSettings&&!bEditLayout&&Controller){Controller->ServerAction(0,0,M);Clicked=false;}
     }
 }
@@ -1166,6 +1157,9 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         const float PW=Selected?150.f:70.f,PH=Selected?11.f:6.f,PX=X-PW*.5f;
         // Name above the bar (reaction coloured; white when selected).
         const float NS=Selected?12.f:8.5f;
+        // Overhead status chips (CC, ATK/DEF/SPD arrows, marks) above the name; LOD by distance.
+        if(UISettings.OverheadStatusMode==0||(UISettings.OverheadStatusMode==1&&(Mob||(Cast<ACireHero>(Actor)&&Cast<ACireHero>(Actor)->TeamId!=Hero->TeamId))))
+            DrawOverheadStatus(Actor,X,Y-NS-(Selected?26.f:9.f),Fade,Selected||Dist<1700.f);
         if(Selected||Dist<1700.f||Glow.A>0)
         {
             const FString Label=Short(Name,Selected?26:20);
@@ -1206,17 +1200,19 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
                 const float DX=PX-(Selected?24.f:8.f),DY=Y+PH*.5f;
                 Tri(FVector2D(DX,DY-6),FVector2D(DX+5,DY),FVector2D(DX-5,DY),Hostile);Tri(FVector2D(DX,DY+6),FVector2D(DX+5,DY),FVector2D(DX-5,DY),Hostile);
             }
-            const FCireNPCCastInfo Cast=Mob->NPCState?Mob->NPCState->CastInfo():FCireNPCCastInfo();
-            if(Cast.bCasting&&Cast.Remaining>0)
-            {
-                const float CY=Y+PH+3.f,CH=Selected?7.f:4.f;
-                Panel(PX-1,CY-1,PW+2,CH+2,FLinearColor(0,0,0,.9f));Panel(PX,CY,PW*Cast.Progress,CH,Cast.bInterruptible?CastGold:FLinearColor(.40f,.42f,.48f,1));
-                if(Selected)TextFx(Painter().Fit(Cast.Name,8,PW-4,ECireFont::Bold),PX+2,CY+CH+1,8,FLinearColor::White,ECireFont::Bold,true,false);
-            }
+            // Enemy cast bar under the plate (name inside when targeted); interrupt/silence flash.
+            DrawCastBar(Mob,PX,Y+PH+3.f,PW,Selected?11.f:7.f,Selected?7.5f:5.5f,Selected);
         }
         const int32 Poisoned=Mob?Mob->PoisonAreaCount:0;
         if(Poisoned>0&&Selected){const FString P=FString::Printf(TEXT("POISON x%d"),Poisoned);TextFx(P,X-TextWidthFont(P,8,ECireFont::Heading)*.5f,Y+PH+10,8,FLinearColor(.61f,.83f,.27f,1),ECireFont::Heading,true,false);}
     };
+    // Your own champion: overhead chips above your head (no nameplate).
+    if(UISettings.OverheadStatusMode==0&&!Hero->bDead)
+    {
+        FVector2D Screen;
+        if(PlayerOwner->ProjectWorldLocationToScreen(Hero->GetActorLocation()+FVector(0,0,125),Screen,false))
+            DrawOverheadStatus(Hero,Screen.X/Scale,Screen.Y/Scale,1.f,true);
+    }
     for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(bArena||It->TeamId==Hero->TeamId)
         Plate(*It,It->HeroName,It->Health,It->MaxHealth,It->TeamId==Hero->TeamId?Friendly*.85f:Hostile,120,nullptr);
     for(TActorIterator<ACireMonster> It(GetWorld());It;++It)if(!bArena&&It->Lane==Hero->TeamId)

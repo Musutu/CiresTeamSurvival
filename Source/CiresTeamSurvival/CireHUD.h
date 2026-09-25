@@ -6,6 +6,7 @@
 #include "CireDeveloperTools.h"
 #include "CireMobility.h"
 #include "CireUIStyle.h"
+#include "CireEffects.h"
 #include "CireWaves.h" // wave-director
 #include "CireHUD.generated.h"
 
@@ -91,6 +92,7 @@ public:
     void DebugAlert(const FString& Title,const FString& Subtitle,FLinearColor Color) { ShowAlert(Title,Subtitle,Color,false); }
     float DebugScale() const { return Scale; }
     void DebugSetPointer(FVector2D Logical) { DebugPointer=Logical; }
+    bool DebugCalloutActive(FName& OutId) const { if(!EffectCallouts.Active.IsSet())return false; OutId=EffectCallouts.Active->Id; return true; }
     const FString& DebugLastTooltipTitle() const { return LastTooltipTitle; }
     FVector2D DebugPointer = FVector2D(-1,-1);
     FString LastTooltipTitle;
@@ -178,6 +180,21 @@ private:
     void DrawCombatText(ACireHero* Hero, ACireController* Controller);
     void DrawNameplates(ACireHero* Hero);
     void DrawStatuses(AActor* Actor,float X,float Y,float Size,int32 MaxIcons=4);
+    FString EffectSigil(FName Id,const struct FCireEffectInfo& I);
+    void DrawEffectIcon(const struct FCireActiveEffect& E,const struct FCireEffectInfo& I,float X,float Y,float Size,float Remaining,float Total);
+    // ---- buff/debuff callouts, CC and cast bars (CireHUDEffects.cpp) ----
+    void UpdateEffectCallouts(ACireHero* Hero);
+    void DrawEffectCallouts(ACireHero* Hero);
+    void DrawControlEdge(ACireHero* Hero);
+    void DrawPlayerCastBar(ACireHero* Hero);
+    /** Cast bar with interrupt/silence flash; returns true when something was drawn. */
+    bool DrawCastBar(const AActor* Unit,float X,float Y,float W,float H,float TextSize,bool bShowTime=true);
+    void DrawControlBadge(const AActor* Unit,float X,float Y,float Size);
+    void DrawOverheadStatus(const AActor* Unit,float CX,float BottomY,float Fade,bool bNear);
+    FCireCalloutQueue EffectCallouts;
+    TSet<FName> SeenEffectIds;
+    bool bEffectsSeeded = false;
+    TMap<FString, FVector2D> OverheadSeen;
     void DrawPet(ACireHero* Hero,ACireController* Controller);
     void Tip(const FString& Title,const FString& Body,float X,float Y,float W,float H);
     void DrawTooltip();
@@ -195,6 +212,7 @@ private:
     FCireWaveConfig WaveDraft;
     bool bWaveDraftLoaded=false;
     int32 WaveSelected=0,WaveListScroll=0;
+    bool bBreatherReadyLocal=false; int32 BreatherReadyWave=-1; // wave-director: breather Ready button
     void DrawDeveloperLauncher();
     FCireUIRect DeveloperLauncherRect() const;
     FCireUIRect PanelRect(FName Id) const;

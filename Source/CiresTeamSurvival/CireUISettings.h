@@ -139,6 +139,12 @@ public:
     /** Compact right-column panels can fold down to their header (click the header). */
     bool bMeterCollapsed = false;
     bool bThreatCollapsed = false;
+    /** Buff/debuff gain callouts, hard-CC centre callout + screen edge, player cast bar. */
+    bool bEffectCallouts = true;
+    bool bControlAlerts = true;
+    bool bPlayerCastBar = true;
+    /** Overhead status chips above units: 0 all units, 1 enemies only, 2 off. */
+    int32 OverheadStatusMode = 0;
 
     /** The resolved interface multiplier for a viewport height in pixels. */
     float ResolveUIScale(float ViewportHeightPixels) const;

@@ -216,4 +216,49 @@ namespace Traits
     int SelectMendingTarget(const std::vector<PartyMember>& party);
 }
 std::vector<SkillDefinition> StarterSkillPoolForRoles(RoleMask roles);
+
+// Per-level ability scaling with no level cap (Content/Data/Abilities.json "curve").
+// Effect grows logarithmically (diminishing, unbounded unless EffectCap > 0), costs
+// rise toward a capped multiplier, cooldowns decay toward a floor fraction and an
+// absolute minimum. Level 1 always equals the base values.
+namespace Abilities
+{
+    struct Curve
+    {
+        double EffectGrowth = 0.35;         // effect x (1 + g ln(1 + (L-1)/h))
+        double EffectHalfLevels = 4.0;      // h
+        double EffectCap = 0.0;             // absolute effect cap (0 = none), e.g. 30 for a 30% reduction
+        double CostCapMultiplier = 1.5;     // cost -> base x cap as L -> infinity
+        double CostRampLevels = 10.0;       // cost x (1 + (cap-1)(L-1)/(L-1+ramp))
+        double CooldownFloorFraction = 0.6; // cooldown -> base x floor as L -> infinity
+        double CooldownDecayLevels = 15.0;  // cooldown x (floor + (1-floor) e^-((L-1)/decay))
+        double MinCooldownSeconds = 1.0;    // absolute cooldown floor (skills with a base cooldown)
+    };
+    struct Base { double Effect = 0, ManaCost = 0, EnergyCost = 0, Cooldown = 0, CastTime = 0; };
+    struct LevelStats { int Level = 1; double Effect = 0, ManaCost = 0, EnergyCost = 0, Cooldown = 0, CastTime = 0; };
+    bool ValidCurve(const Curve& curve);
+    bool ValidBase(const Base& base);
+    // level < 1 is treated as 1; invalid inputs return the base unchanged.
+    LevelStats Scale(const Base& base, const Curve& curve, int level);
+}
+
+// Crowd control, heal cuts and executes (server authority; engine: CireCrowdControl).
+namespace CC
+{
+    constexpr double DiminishingWindowSeconds = 18.0;
+    // PvP chain-CC: 1st full, 2nd half, 3rd quarter, then immune until the window lapses.
+    double DiminishedDuration(double baseSeconds, int priorApplicationsInWindow);
+    enum class VoidZone { None, Inner, Outer };
+    // Inner circle (distance <= inner) stuns; the ring (inner < distance <= outer) slows.
+    VoidZone ClassifyVoidZone(double distance, double innerRadius, double outerRadius);
+    // Cuts are fractions 0..1 (0.5 = -50%); received and done cuts multiply.
+    double ApplyHealingCut(double amount, double receivedCut, double doneCut);
+    double ArmorAfterBreak(double armor, double breakFraction);
+    enum class ExecuteTarget { Monster, Boss, Hero };
+    constexpr double ExecutionerIntervalSeconds = 300.0;
+    constexpr double ExecuteHeroMaxHealthFraction = 0.30;
+    // Executioner / Decimating Strike damage: lethal to ordinary monsters, a normal hit
+    // on bosses, and max(normal, 30% of max health) against champions (PvP).
+    double ExecuteDamage(ExecuteTarget target, double targetHealth, double targetMaxHealth, double normalDamage);
+}
 } // namespace Cires
