@@ -3,11 +3,53 @@
   "generator": "Tools/BuildAbilityIcons.py",
   "texturePath": "/Game/UI/Abilities/T_<id>",
   "icons": {
+    "aegis_pylon": {
+      "school": "frost",
+      "glyph": "pylon",
+      "accent": "#78c8ff",
+      "pool": false
+    },
+    "aether_engineering": {
+      "school": "light",
+      "glyph": "gear",
+      "accent": "#ffe28c",
+      "pool": false
+    },
+    "aether_mend": {
+      "school": "ether",
+      "glyph": "heart",
+      "accent": "#5abeff",
+      "pool": false
+    },
+    "aether_nexus": {
+      "school": "ether",
+      "glyph": "sun",
+      "accent": "#5abeff",
+      "pool": false
+    },
+    "arc_mine": {
+      "school": "arcane",
+      "glyph": "bolt",
+      "accent": "#6eaaff",
+      "pool": false
+    },
+    "arcane_blunderbuss": {
+      "school": "arcane",
+      "glyph": "ground_cone",
+      "accent": "#6eaaff",
+      "pool": false
+    },
     "ashen_square": {
       "school": "ash",
       "glyph": "square_ward",
       "accent": "#e6783c",
       "pool": true
+    },
+    "banishment": {
+      "school": "shadow",
+      "glyph": "spiral",
+      "accent": "#a05aff",
+      "pool": false
     },
     "bastion_of_dawn": {
       "school": "holy",
@@ -87,11 +129,23 @@
       "accent": "#dca050",
       "pool": false
     },
+    "blade_flurry": {
+      "school": "ash",
+      "glyph": "challenge",
+      "accent": "#e6783c",
+      "pool": false
+    },
     "blight_sigil": {
       "school": "venom",
       "glyph": "sigil",
       "accent": "#96f03c",
       "pool": true
+    },
+    "bouncing_glaive": {
+      "school": "steel",
+      "glyph": "glaive",
+      "accent": "#aac8e6",
+      "pool": false
     },
     "cataclysm": {
       "school": "fire",
@@ -177,6 +231,18 @@
       "accent": "#aac8e6",
       "pool": true
     },
+    "collect_the_bounty": {
+      "school": "blood",
+      "glyph": "skull",
+      "accent": "#e62832",
+      "pool": false
+    },
+    "crescent_volley": {
+      "school": "spirit",
+      "glyph": "arrow",
+      "accent": "#a0ffd2",
+      "pool": false
+    },
     "decimating_strike": {
       "school": "blood",
       "glyph": "cleave",
@@ -188,6 +254,12 @@
       "glyph": "reserves",
       "accent": "#6eaaff",
       "pool": true
+    },
+    "disruption_pylon": {
+      "school": "shadow",
+      "glyph": "pylon",
+      "accent": "#a05aff",
+      "pool": false
     },
     "drakish_ancient_pact": {
       "school": "dragon",
@@ -273,6 +345,12 @@
       "accent": "#78c8ff",
       "pool": true
     },
+    "glaive_storm": {
+      "school": "war",
+      "glyph": "glaive",
+      "accent": "#f0503c",
+      "pool": false
+    },
     "golem_construct_core": {
       "school": "ether",
       "glyph": "gear",
@@ -326,6 +404,36 @@
       "glyph": "grave_line",
       "accent": "#a05aff",
       "pool": true
+    },
+    "gravity_pylon": {
+      "school": "arcane",
+      "glyph": "pylon",
+      "accent": "#6eaaff",
+      "pool": false
+    },
+    "haste_pylon": {
+      "school": "light",
+      "glyph": "pylon",
+      "accent": "#ffe28c",
+      "pool": false
+    },
+    "hex_mark": {
+      "school": "blood",
+      "glyph": "eye",
+      "accent": "#e62832",
+      "pool": false
+    },
+    "hexbane_judgment": {
+      "school": "spirit",
+      "glyph": "sigil",
+      "accent": "#a0ffd2",
+      "pool": false
+    },
+    "hunters_stride": {
+      "school": "steel",
+      "glyph": "dash",
+      "accent": "#aac8e6",
+      "pool": false
     },
     "iron_guard": {
       "school": "steel",
@@ -405,11 +513,35 @@
       "accent": "#c8b48c",
       "pool": false
     },
+    "moon_glaive": {
+      "school": "frost",
+      "glyph": "glaive",
+      "accent": "#78c8ff",
+      "pool": false
+    },
+    "moonlit_sprint": {
+      "school": "frost",
+      "glyph": "moon",
+      "accent": "#78c8ff",
+      "pool": false
+    },
     "oathbound_guardian": {
       "school": "spectral",
       "glyph": "guardian",
       "accent": "#5ae6d2",
       "pool": true
+    },
+    "overcharge": {
+      "school": "ether",
+      "glyph": "gear",
+      "accent": "#5abeff",
+      "pool": false
+    },
+    "owl_scout": {
+      "school": "nature",
+      "glyph": "feather",
+      "accent": "#82e664",
+      "pool": false
     },
     "paladin_holy_flail": {
       "school": "holy",
@@ -435,17 +567,47 @@
       "accent": "#ffc45a",
       "pool": false
     },
+    "phase_lance": {
+      "school": "arcane",
+      "glyph": "beam",
+      "accent": "#6eaaff",
+      "pool": false
+    },
+    "photon_turret": {
+      "school": "ether",
+      "glyph": "turret",
+      "accent": "#5abeff",
+      "pool": false
+    },
     "piercing_shot": {
       "school": "steel",
       "glyph": "piercing",
       "accent": "#aac8e6",
       "pool": true
     },
+    "powder_flask": {
+      "school": "ember",
+      "glyph": "flask",
+      "accent": "#ff8c32",
+      "pool": false
+    },
+    "price_on_every_soul": {
+      "school": "dragon",
+      "glyph": "coins",
+      "accent": "#ff9628",
+      "pool": false
+    },
     "protection_dome": {
       "school": "ether",
       "glyph": "dome",
       "accent": "#5abeff",
       "pool": true
+    },
+    "purge": {
+      "school": "arcane",
+      "glyph": "purify",
+      "accent": "#6eaaff",
+      "pool": false
     },
     "purify": {
       "school": "spirit",
@@ -459,11 +621,35 @@
       "accent": "#82e664",
       "pool": true
     },
+    "repulsor_pulse": {
+      "school": "ether",
+      "glyph": "rune_circle",
+      "accent": "#5abeff",
+      "pool": false
+    },
+    "resonant_lattice": {
+      "school": "ether",
+      "glyph": "constellation",
+      "accent": "#5abeff",
+      "pool": false
+    },
     "restoring_light": {
       "school": "holy",
       "glyph": "restoring",
       "accent": "#ffc45a",
       "pool": true
+    },
+    "sabercat_pounce": {
+      "school": "primal",
+      "glyph": "claw",
+      "accent": "#e69646",
+      "pool": false
+    },
+    "sabercat_rake": {
+      "school": "blood",
+      "glyph": "claw",
+      "accent": "#e62832",
+      "pool": false
     },
     "sanctuary": {
       "school": "light",
@@ -495,11 +681,29 @@
       "accent": "#ffc45a",
       "pool": true
     },
+    "silver_shot": {
+      "school": "light",
+      "glyph": "pistol",
+      "accent": "#ffe28c",
+      "pool": false
+    },
+    "skitter_swarm": {
+      "school": "ether",
+      "glyph": "skitter",
+      "accent": "#5abeff",
+      "pool": false
+    },
     "soul_conduit": {
       "school": "holy",
       "glyph": "conduit",
       "accent": "#ffc45a",
       "pool": true
+    },
+    "spectral_blade": {
+      "school": "spectral",
+      "glyph": "sword",
+      "accent": "#5ae6d2",
+      "pool": false
     },
     "spectral_hunt": {
       "school": "spectral",
@@ -513,11 +717,23 @@
       "accent": "#5ae6d2",
       "pool": true
     },
+    "spirit_lantern": {
+      "school": "spectral",
+      "glyph": "lantern",
+      "accent": "#5ae6d2",
+      "pool": false
+    },
     "starfall": {
       "school": "arcane",
       "glyph": "starfall",
       "accent": "#6eaaff",
       "pool": true
+    },
+    "stasis_snare": {
+      "school": "ether",
+      "glyph": "hourglass",
+      "accent": "#5abeff",
+      "pool": false
     },
     "stone_skin": {
       "school": "stone",
@@ -597,6 +813,18 @@
       "accent": "#f0503c",
       "pool": true
     },
+    "warding_talisman": {
+      "school": "holy",
+      "glyph": "sun",
+      "accent": "#ffc45a",
+      "pool": false
+    },
+    "warp_obelisk": {
+      "school": "ether",
+      "glyph": "tower",
+      "accent": "#5abeff",
+      "pool": false
+    },
     "wellspring": {
       "school": "frost",
       "glyph": "wellspring",
@@ -631,6 +859,18 @@
       "school": "spirit",
       "glyph": "chains",
       "accent": "#a0ffd2",
+      "pool": false
+    },
+    "witchbane": {
+      "school": "shadow",
+      "glyph": "witch_hat",
+      "accent": "#a05aff",
+      "pool": false
+    },
+    "witchfinders_mark": {
+      "school": "arcane",
+      "glyph": "eye",
+      "accent": "#6eaaff",
       "pool": false
     }
   }

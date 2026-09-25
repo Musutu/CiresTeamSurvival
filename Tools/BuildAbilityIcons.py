@@ -746,7 +746,73 @@ def shield_slam(g, cx=.5, cy=.5, s=1.0):
         g.line([(cx + .24 * s + math.cos(a) * .06 * s, cy - .10 * s + math.sin(a) * .1 * s), (cx + .24 * s + math.cos(a) * .20 * s, cy - .10 * s + math.sin(a) * .26 * s)], .03 * s)
 
 
-GLYPHS = {k: v for k, v in globals().items() if callable(v) and v.__module__ == __name__ and k not in ('P', 'rot', 'main', 'paint', 'planned_glyph')}
+# ---- new-champions glyphs (Gunblade, Witch Slayer, Huntress, Aetheri) ----
+def pistol(g, cx=.5, cy=.5, s=1.0):
+    g.poly(rot([(cx - .38 * s, cy - .08 * s), (cx + .34 * s, cy - .08 * s), (cx + .34 * s, cy + .02 * s), (cx - .10 * s, cy + .02 * s),
+                (cx - .18 * s, cy + .34 * s), (cx - .34 * s, cy + .30 * s), (cx - .24 * s, cy + .02 * s), (cx - .38 * s, cy + .02 * s)], cx, cy, -12))
+    g.ring(cx - .12 * s, cy + .10 * s, .07 * s, .025 * s)
+    g.circle(cx + .40 * s, cy - .12 * s, .05 * s)
+
+
+def flask(g, cx=.5, cy=.5, s=1.0):
+    g.circle(cx, cy + .12 * s, .26 * s)
+    g.rect(cx - .07 * s, cy - .32 * s, cx + .07 * s, cy - .08 * s)
+    g.rect(cx - .10 * s, cy - .38 * s, cx + .10 * s, cy - .31 * s)
+    g.line([(cx + .06 * s, cy - .36 * s), (cx + .20 * s, cy - .44 * s), (cx + .28 * s, cy - .38 * s)], .02 * s)
+    g.star(cx + .30 * s, cy - .40 * s, .02 * s, .07 * s, 6)
+
+
+def coins(g, cx=.5, cy=.5, s=1.0):
+    for dx, dy, r in ((-.16, .14, .17), (.14, .10, .17), (0, -.12, .19)):
+        g.circle(cx + dx * s, cy + dy * s, r * s)
+        g.ring(cx + dx * s, cy + dy * s, r * .68 * s, .02 * s, 0)
+
+
+def witch_hat(g, cx=.5, cy=.5, s=1.0):
+    g.poly([(cx - .40 * s, cy + .22 * s), (cx + .40 * s, cy + .22 * s), (cx + .30 * s, cy + .30 * s), (cx - .30 * s, cy + .30 * s)])
+    g.poly([(cx - .20 * s, cy + .22 * s), (cx + .20 * s, cy + .22 * s), (cx + .02 * s, cy - .40 * s), (cx - .10 * s, cy - .30 * s)])
+    g.rect(cx - .19 * s, cy + .10 * s, cx + .19 * s, cy + .16 * s, 0)
+
+
+def glaive(g, cx=.5, cy=.5, s=1.0):
+    g.circle(cx, cy, .09 * s)
+    for k in range(3):
+        a0 = k * 120
+        pts = []
+        for i in range(10):
+            a = math.radians(a0 + i * 9)
+            pts.append((cx + math.cos(a) * .40 * s, cy + math.sin(a) * .40 * s))
+        for i in range(10):
+            a = math.radians(a0 + 81 - i * 9)
+            r = .14 + .10 * math.sin(math.pi * i / 9)
+            pts.append((cx + math.cos(a) * r * s, cy + math.sin(a) * r * s))
+        g.poly(pts)
+
+
+def turret(g, cx=.5, cy=.5, s=1.0):
+    g.poly([(cx - .30 * s, cy + .40 * s), (cx + .30 * s, cy + .40 * s), (cx + .18 * s, cy + .12 * s), (cx - .18 * s, cy + .12 * s)])
+    g.circle(cx, cy - .02 * s, .19 * s)
+    g.rect(cx + .10 * s, cy - .07 * s, cx + .42 * s, cy + .03 * s)
+    g.circle(cx, cy - .02 * s, .08 * s, 0)
+
+
+def skitter(g, cx=.5, cy=.5, s=1.0):
+    g.circle(cx, cy, .20 * s)
+    g.circle(cx + .08 * s, cy - .06 * s, .06 * s, 0)
+    for side in (-1, 1):
+        for k in range(3):
+            y = cy - .10 * s + k * .12 * s
+            g.line([(cx + side * .16 * s, y), (cx + side * .30 * s, y - .08 * s), (cx + side * .40 * s, y + .06 * s)], .03 * s)
+
+
+def pylon(g, cx=.5, cy=.5, s=1.0):
+    g.poly([(cx, cy - .40 * s), (cx + .14 * s, cy - .04 * s), (cx, cy + .16 * s), (cx - .14 * s, cy - .04 * s)])
+    g.poly([(cx - .22 * s, cy + .40 * s), (cx + .22 * s, cy + .40 * s), (cx + .12 * s, cy + .24 * s), (cx - .12 * s, cy + .24 * s)])
+    g.arc(cx, cy - .06 * s, .30 * s, 200, 340, .03 * s)
+    g.arc(cx, cy - .06 * s, .30 * s, 20, 160, .03 * s)
+
+
+GLYPHS = {k: v for k, v in globals().items() if callable(v) and v.__module__ == __name__ and k not in ('P', 'rot', 'main', 'paint', 'planned_glyph', 'data_rows')}
 
 # Pool skills: (glyph, palette). Each pair is unique so every offered skill reads distinctly.
 POOL = {
@@ -764,6 +830,19 @@ POOL = {
     'starfall': ('starfall', 'arcane'), 'spectral_hunt': ('hunt', 'spectral'), 'mass_aegis': ('aegis', 'light'),
     'wellspring': ('wellspring', 'frost'),
     'executioner': ('skull', 'steel'), 'decimating_strike': ('cleave', 'blood'),
+}
+# new-champions: signature kits (procedural placeholders until painted icons land in Art/Icons/ChatGPT/Abilities).
+NEW_CHAMPIONS = {
+    'silver_shot': ('pistol', 'light'), 'hex_mark': ('eye', 'blood'), 'powder_flask': ('flask', 'ember'), 'blade_flurry': ('challenge', 'ash'),
+    'hunters_stride': ('dash', 'steel'), 'warding_talisman': ('sun', 'holy'), 'price_on_every_soul': ('coins', 'dragon'), 'collect_the_bounty': ('skull', 'blood'),
+    'arcane_blunderbuss': ('ground_cone', 'arcane'), 'spirit_lantern': ('lantern', 'spectral'), 'purge': ('purify', 'arcane'), 'banishment': ('spiral', 'shadow'),
+    'witchfinders_mark': ('eye', 'arcane'), 'spectral_blade': ('sword', 'spectral'), 'witchbane': ('witch_hat', 'shadow'), 'hexbane_judgment': ('sigil', 'spirit'),
+    'bouncing_glaive': ('glaive', 'steel'), 'sabercat_pounce': ('claw', 'primal'), 'owl_scout': ('feather', 'nature'), 'moonlit_sprint': ('moon', 'frost'),
+    'crescent_volley': ('arrow', 'spirit'), 'sabercat_rake': ('claw', 'blood'), 'moon_glaive': ('glaive', 'frost'), 'glaive_storm': ('glaive', 'war'),
+    'photon_turret': ('turret', 'ether'), 'skitter_swarm': ('skitter', 'ether'), 'arc_mine': ('bolt', 'arcane'), 'disruption_pylon': ('pylon', 'shadow'),
+    'phase_lance': ('beam', 'arcane'), 'overcharge': ('gear', 'ether'), 'aether_engineering': ('gear', 'light'), 'warp_obelisk': ('tower', 'ether'),
+    'aegis_pylon': ('pylon', 'frost'), 'haste_pylon': ('pylon', 'light'), 'gravity_pylon': ('pylon', 'arcane'), 'stasis_snare': ('hourglass', 'ether'),
+    'aether_mend': ('heart', 'ether'), 'repulsor_pulse': ('rune_circle', 'ether'), 'resonant_lattice': ('constellation', 'ether'), 'aether_nexus': ('sun', 'ether'),
 }
 # Class baseline traits (CireClassTraits): Support / Tank / DPS.
 TRAITS = {'trait_mending_strikes': ('heart', 'spirit'), 'trait_natural_defense': ('shield', 'earth'), 'trait_keen_edge': ('sword', 'blood')}
@@ -851,6 +930,10 @@ def paint(glyph_name, palette_name, seed, kwargs=None):
     return bg
 
 
+def data_rows(jobs):
+    return {sid: dict(school=p, glyph=g, accent='#%02x%02x%02x' % PALETTES[p][3], pool=sid in POOL) for sid, (g, p, _) in sorted(jobs.items())}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=Path)
@@ -873,6 +956,8 @@ def main() -> int:
         jobs[sid] = (glyph, pal, None)
     for sid, (glyph, pal) in TRAITS.items():
         jobs[sid] = (glyph, pal, None)
+    for sid, (glyph, pal) in NEW_CHAMPIONS.items():
+        jobs[sid] = (glyph, pal, None)
     for c in roster['champions']:
         for s in c['actives'] + [c['passive'], c['ultimate']]:
             if s['id'] not in jobs:
@@ -893,6 +978,13 @@ def main() -> int:
         paint(glyph, pal, hash(sid) & 0xffff if False else sum(map(ord, sid)), kw).save(out / f'{sid}.png')
     manifest = {sid: dict(glyph=g, palette=p, pool=sid in POOL) for sid, (g, p, _) in jobs.items()}
     (out / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+    if args.data and args.ids:
+        # new-champions: a subset refresh still records its rows (merged into the existing table).
+        existing = json.loads(args.data.read_text(encoding='utf-8')) if args.data.is_file() else dict(schemaVersion=1, generator='Tools/BuildAbilityIcons.py',
+                                                                                                 texturePath='/Game/UI/Abilities/T_<id>', icons={})
+        existing['icons'].update(data_rows(jobs))
+        existing['icons'] = dict(sorted(existing['icons'].items()))
+        args.data.write_text(json.dumps(existing, indent=2) + chr(10), encoding='utf-8')
     if args.data and not args.ids:
         rows = {sid: dict(school=p, glyph=g, accent='#%02x%02x%02x' % PALETTES[p][3], pool=sid in POOL)
                 for sid, (g, p, _) in sorted(jobs.items())}
