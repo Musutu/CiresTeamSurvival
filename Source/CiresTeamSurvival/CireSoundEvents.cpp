@@ -687,6 +687,19 @@ bool CireSoundEvents::RunSmoke(UWorld* World, int32& OutChecks)
         const FVector At = CireAudio::ListenerTransform(World).GetLocation() + FVector(200, 0, 0);
         Check(PlaySpellCue(World, TEXT("sword"), ECireSpellCue::Launch, At, At + FVector(100, 0, 0), 1.f), TEXT("resolver handles a basic sword swing"));
         Check(PlaySpellCue(World, TEXT("fireball"), ECireSpellCue::Impact, At, At, 1.f) || !FindAbility(TEXT("fireball")), TEXT("resolver handles a fire impact"));
+        // A shield block reaching the local client always produces the clang (and ranged blocks the deflect).
+        if(ACireController* PC = Cast<ACireController>(World->GetFirstPlayerController()))
+        {
+            UCireAudioSubsystem* Audio = UCireAudioSubsystem::Get(World);
+            Audio->Events.Tick(*Audio, 0.f); // prime: history is never replayed
+            const int32 Blocks0 = Audio->Events.Blocks, Deflects0 = Audio->Events.Deflects;
+            FCireCombatEvent E; E.Outcome = ECireHitOutcome::Block; E.bLocalTarget = true; E.AbilityName = TEXT("sword strike"); E.Location = At;
+            CireCombat::AppendReceivedEvent(PC->CombatEvents, PC->CombatEventSequence, E, World->GetTimeSeconds());
+            E.AbilityName = TEXT("Bow shot");
+            CireCombat::AppendReceivedEvent(PC->CombatEvents, PC->CombatEventSequence, E, World->GetTimeSeconds());
+            Audio->Events.Tick(*Audio, 0.f);
+            Check(Audio->Events.Blocks == Blocks0 + 1 && Audio->Events.Deflects == Deflects0 + 1, TEXT("block event -> clang, ranged block -> deflect"));
+        }
     }
     return Pass;
 }
