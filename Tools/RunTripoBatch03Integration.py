@@ -6,6 +6,7 @@ This wrapper scans each pending /Game/TripoModels/CTS_* import, adds [CoreRedire
 transient skeleton to the saved <Export>_Skeleton, runs the editor integration, then restores DefaultEngine.ini.
 Usage: python Tools/RunTripoBatch03Integration.py
 """
+import os
 from pathlib import Path
 import re
 import shutil
@@ -14,6 +15,27 @@ import subprocess
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = "F:/UE_5.8/Engine/Binaries/Win64/"
 INI = ROOT / "Config" / "DefaultEngine.ini"
+
+
+def run_editor(command, timeout, env=None, **kwargs) -> subprocess.CompletedProcess:
+    """subprocess.run() for an editor that skips UBT SDK setup and kills the whole process tree on timeout."""
+    # AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+    # and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Editors here target Win64.
+    child = subprocess.Popen(command, env={**(env or os.environ), "UE_SKIP_UBT_SDK_SETUP": "1"}, **kwargs)
+    try:
+        return subprocess.CompletedProcess(command, child.wait(timeout=timeout))
+    except subprocess.TimeoutExpired:
+        kill_tree(child)
+        child.kill()
+        child.wait()
+        raise
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
 
 
 def redirects():
@@ -37,16 +59,16 @@ def main():
         if extra:
             with INI.open("a", encoding="utf-8", newline="\r\n") as stream:
                 stream.write("\n[CoreRedirects]\n" + "\n".join(extra) + "\n")
-        subprocess.run([ENGINE + "UnrealEditor.exe", str(ROOT / "CiresTeamSurvival.uproject"), "-unattended", "-nosplash",
-                        "-NoLiveCoding", "-RenderOffscreen", "-nosound",
-                        "-ExecCmds=py " + (ROOT / "Tools" / "IntegrateTripoBatch03.py").as_posix(),
-                        "-abslog=" + str(ROOT / "Saved" / "Logs" / "TripoBatch03-Integrate.log")], check=True, timeout=1800)
+        run_editor([ENGINE + "UnrealEditor.exe", str(ROOT / "CiresTeamSurvival.uproject"), "-unattended", "-nosplash",
+                    "-NoLiveCoding", "-RenderOffscreen", "-nosound",
+                    "-ExecCmds=py " + (ROOT / "Tools" / "IntegrateTripoBatch03.py").as_posix(),
+                    "-abslog=" + str(ROOT / "Saved" / "Logs" / "TripoBatch03-Integrate.log")], 1800).check_returncode()
     finally:
         shutil.copy2(backup, INI)
         backup.unlink()
-    subprocess.run([ENGINE + "UnrealEditor-Cmd.exe", str(ROOT / "CiresTeamSurvival.uproject"), "-run=pythonscript",
-                    "-script=" + (ROOT / "Tools" / "FixTripoBatch03SkeletalMaterials.py").as_posix(), "-unattended",
-                    "-nullrhi", "-nosplash", "-nop4"], check=True, timeout=1800)
+    run_editor([ENGINE + "UnrealEditor-Cmd.exe", str(ROOT / "CiresTeamSurvival.uproject"), "-run=pythonscript",
+                "-script=" + (ROOT / "Tools" / "FixTripoBatch03SkeletalMaterials.py").as_posix(), "-unattended",
+                "-nullrhi", "-nosplash", "-nop4"], 1800).check_returncode()
     # The rename leaves the original (now superseded) Bridge packages behind when core redirects are active.
     for folder in (ROOT / "Content" / "TripoModels").glob("CTS_*"):
         shutil.rmtree(folder)
