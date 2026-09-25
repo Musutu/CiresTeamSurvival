@@ -166,7 +166,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         StepI(FString(), U.Count, 1, 20, EX + 146, RY, 52, TEXT("Units of this row per lane (1-20)."));
         StepF(FString(), U.HealthScale, .05f, .1f, 20, EX + 200, RY, 58, 2, TEXT(""), TEXT("Health multiplier on top of wave/round scaling."));
         StepF(FString(), U.DamageScale, .05f, .05f, 10, EX + 260, RY, 58, 2, TEXT(""), TEXT("Damage multiplier."));
-        StepF(FString(), U.SizeScale, .05f, .5f, 3, EX + 320, RY, 46, 2, TEXT(""), TEXT("Body size multiplier."));
+        StepF(FString(), U.SizeScale, .1f, .5f, 3, EX + 320, RY, 46, 1, TEXT(""), TEXT("Body size multiplier."));
         {
             // Skill tier override: A = the wave schedule, 1..3 = force tier I..III, 0 skills with "-".
             const FString Tier = U.SkillCount == 0 ? FString(TEXT("-")) : U.SkillTier > 0 ? FString::FromInt(U.SkillTier) : FString(TEXT("A"));

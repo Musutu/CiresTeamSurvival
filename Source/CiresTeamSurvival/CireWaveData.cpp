@@ -134,7 +134,7 @@ FCireWaveConfig CireWaveDirector::Defaults()
     FCireWaveConfig C;
     FCireWaveDef One = Template(ECireWaveType::Normal);
     FCireWaveDef Two = Template(ECireWaveType::Normal);
-    Two.Label = TEXT("Hollow Column");
+    Two.Label = TEXT("Breach Column"); // monster-races: race-neutral (the race is appended at runtime)
     Two.Units = {Unit(TEXT("hollow_infantry"), 3, 1.15f, 1.3f), Unit(TEXT("ironbound_bruiser"), 2, 1.15f, 1.3f),
                  Unit(TEXT("barbed_hunter"), 2, 1.15f, 1.3f), Unit(TEXT("blight_caster"), 1, 1.15f, 1.3f)};
     // monster-races: wave 2 brings the race's special unit (hollow: grave hounds).
