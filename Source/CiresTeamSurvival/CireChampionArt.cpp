@@ -1,4 +1,5 @@
 #include "CireChampionArt.h"
+#include "CireFabAnimation.h" // fab-integration
 #include "CireGame.h"
 #include "CireWeaponPresentation.h"
 #include "CireCreatureArt.h"
@@ -374,6 +375,8 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
     const auto& Definition = Profile?*Profile:Definitions[Archetype];
     auto* Body = LoadObject<USkeletalMesh>(nullptr, *Definition.MeshPath);
     auto* Blend = LoadObject<UBlendSpace>(nullptr, *Definition.LocomotionPath);
+    // fab-integration: locomotion retargeted from the Fab packs (true strafe/backpedal) when installed for this body.
+    if (UBlendSpace* FabBlend = CireFabAnimation::Locomotion(Body, CireFabAnimation::FolderFor(Body)); FabBlend && HasMatchingLocomotion(Body, FabBlend)) Blend = FabBlend;
     if (!HasMatchingLocomotion(Body, Blend))
     {
         UE_LOG(LogCireChampionArt, Warning, TEXT("Keeping original hero art: missing or mismatched locomotion for archetype %d (%s)."), Archetype, *Definition.LocomotionPath);

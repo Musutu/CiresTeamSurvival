@@ -1,6 +1,7 @@
 // ability-vfx: shape-true presentation modes for ACireSpellVisual (telegraph lanes, area warnings with
 // progress, detonations, projectile heads/trails, school impacts, caster flares, self shockwaves).
 // Local-only cosmetics: nothing here decides a hit, moves a unit or replicates.
+#include "NiagaraComponent.h" // fab-integration
 #include "CireSpellPresentation.h"
 #include "CireSpellMesh.h"
 #include "CireAbilityVFX.h"
@@ -796,6 +797,8 @@ void ACireSpellVisual::EndPlay(const EEndPlayReason::Type Reason)
 {
     // Hand the ground back to the area if this presentation goes away first (capacity, cleanup).
     if(auto* Area=FollowedArea.Get())Area->bPresentationOwnsGround=false;
+    // fab-integration: let a looping Fab overlay (projectile trail, zone) finish its particles instead of popping.
+    if(UNiagaraComponent* FX=FabFX.Get()){FX->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);FX->SetAutoDestroy(true);FX->Deactivate();}
     Super::EndPlay(Reason);
 }
 

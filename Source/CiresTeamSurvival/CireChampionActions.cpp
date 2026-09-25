@@ -4,6 +4,7 @@
 #include "CireChampionArt.h"
 #include "CireWeaponPresentation.h"
 #include "CireAbilityVFX.h" // ability-vfx: release timing shared with the spell cues
+#include "CireFabAnimation.h" // fab-integration
 #include "CireGame.h"
 #include "Animation/AnimSequence.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -118,10 +119,12 @@ UCireChampionAction* StateFor(ACireHero& Hero)
     return Created;
 }
 
-void Start(UCireChampionAction& State, UAnimSequence* Clip, const FString& Name, double StartedAt, float Windup, float Settled = 0.f)
+void Start(UCireChampionAction& State, UAnimSequence* Clip, const FString& Name, double StartedAt, float Windup, float Settled = 0.f, bool bFab = false)
 {
     if (!Clip) return;
     State.Sequence = Clip; State.Clip = Name; State.Window = CireChampionActions::Window(Name);
+    // fab-integration: Fab clips carry their own timing (FabAnimations.json).
+    State.bFab = bFab && CireFabAnimation::Window(Name, State.Window); State.bReaction = false; State.bDeath = false;
     State.StartedAt = StartedAt; State.Windup = FMath::Max(.05f, Windup); State.bBasic = Settled > 0.f;
     // A basic attack must be back at rest by Settled seconds so the next swing starts from locomotion.
     const float Follow = State.Window.End - State.Window.Contact;
@@ -203,12 +206,66 @@ UAnimSequence* CireChampionActions::ClipFor(const USkeletalMesh* Body, const FSt
     return Sequence && Sequence->GetSkeleton() == Body->GetSkeleton() ? Sequence : nullptr;
 }
 
+namespace
+{
+// fab-integration: full-body death (held on its last frame), a short upper-body flinch when health drops,
+// the dodge roll and the airborne pose. Each only when this body has the Fab clip; true = the layer is set.
+bool ApplyFabReactions(ACireHero& Hero, UCireCombatAnimInstance& Anim, UCireChampionAction& State, const USkeletalMesh* Body, const FString& Folder, double Now)
+{
+    if (Folder.IsEmpty() || !CireFabAnimation::Enabled()) return false;
+    const FString Style = CireChampionActions::StyleName(Hero), Motion = CireChampionActions::MotionFor(Hero);
+    UAnimSequence* Clip = nullptr; FString Name; CireChampionActions::FWindow W;
+    if (Hero.bDead)
+    {
+        if (!State.bDeath)
+        {
+            if (!CireFabAnimation::Pick(Body, Folder, Style, Motion, TEXT("death"), Hero.GetUniqueID(), Clip, Name) || !CireFabAnimation::Window(Name, W)) return false;
+            State.Sequence = Clip; State.Clip = Name; State.Window = W; State.StartedAt = Now; State.bDeath = true; State.bFab = true; State.bReaction = false;
+        }
+        if (!State.Sequence) return false;
+        const float T = FMath::Min(State.Window.Start + static_cast<float>(Now - State.StartedAt), State.Window.End);
+        Anim.AttackSequence = State.Sequence; Anim.AttackTime = FMath::Clamp(T, 0.f, State.Sequence->GetPlayLength());
+        Anim.AttackWeight = Smooth01(static_cast<float>(Now - State.StartedAt) / .12f); Anim.AttackLowerBody = 1.f; Anim.SpineTwist = 0.f;
+        Anim.RollProgress = -1.f; Anim.AirWeight = 0.f;
+        return true;
+    }
+    if (State.bDeath) { State.bDeath = false; State.Sequence = nullptr; } // respawned
+    // Flinch: health dropped by at least 1.5% while no action plays, at most once per 0.9 s.
+    const float Health = Hero.Health;
+    if (State.LastHealth >= 0.f && Health < State.LastHealth - .015f * FMath::Max(1.f, Hero.MaxHealth) && !State.Sequence && Now - State.LastHitAt > .9)
+        if (CireFabAnimation::Pick(Body, Folder, Style, Motion, TEXT("hit"), static_cast<uint32>(Now * 7.0), Clip, Name) && CireFabAnimation::Window(Name, W))
+        {
+            State.Sequence = Clip; State.Clip = Name; State.Window = W; State.StartedAt = Now; State.Windup = FMath::Max(.05f, W.Contact - W.Start);
+            State.RecoverRate = W.RecoverRate; State.bBasic = false; State.bFab = true; State.bReaction = true; State.LastHitAt = Now;
+        }
+    State.LastHealth = Health;
+    // Dodge roll: the clip follows the mobility roll's progress and replaces the procedural tumble.
+    if (Anim.RollProgress >= 0.f && CireFabAnimation::Pick(Body, Folder, Style, Motion, TEXT("roll"), 0, Clip, Name) && CireFabAnimation::Window(Name, W))
+    {
+        Anim.AttackSequence = Clip; Anim.AttackTime = FMath::Clamp(FMath::Lerp(W.Start, W.End, Anim.RollProgress), 0.f, Clip->GetPlayLength());
+        Anim.AttackWeight = 1.f; Anim.AttackLowerBody = 1.f; Anim.SpineTwist = 0.f; Anim.RollProgress = -1.f;
+        return true;
+    }
+    // Airborne: rising maps to the take-off half of the jump clip, falling to the landing half.
+    if (Anim.AirWeight > .05f && !State.Sequence && CireFabAnimation::Pick(Body, Folder, Style, Motion, TEXT("jump"), 0, Clip, Name) && CireFabAnimation::Window(Name, W))
+    {
+        const float Vz = static_cast<float>(Hero.GetVelocity().Z);
+        const float U = FMath::Clamp(.5f - Vz / 1400.f, 0.f, 1.f);
+        Anim.AttackSequence = Clip; Anim.AttackTime = FMath::Clamp(FMath::Lerp(W.Start, W.End, U), 0.f, Clip->GetPlayLength());
+        Anim.AttackWeight = Anim.AirWeight; Anim.AttackLowerBody = 1.f; Anim.SpineTwist = 0.f; Anim.AirWeight = 0.f;
+        return true;
+    }
+    return false;
+}
+}
+
 bool CireChampionActions::Apply(ACireHero& Hero, UCireCombatAnimInstance& Anim, float DeltaSeconds, float Speed)
 {
     USkeletalMesh* Body = Hero.GetMesh() ? Hero.GetMesh()->GetSkeletalMeshAsset() : nullptr;
     if (!Body || !Data().Bodies.Contains(Body->GetPathName()) || !ClipFor(Body, ClipName(Hero, TEXT("attack")))) return false;
     UCireChampionAction* State = StateFor(Hero);
     const double Now = ServerNow(Hero.GetWorld());
+    const FString Folder = CireFabAnimation::FolderFor(Body); // fab-integration
     if (State->CachedBody != Body)
     {
         // New body: forget old clips and do not replay attacks/casts that happened before it appeared.
@@ -221,7 +278,12 @@ bool CireChampionActions::Apply(ACireHero& Hero, UCireCombatAnimInstance& Anim, 
         // Server releases the blow at 0.25 of the 0.65 s authored attack, scaled by attack speed.
         const FString Clip = ClipName(Hero, TEXT("attack"));
         const float Duration = FMath::Max(.05f, Hero.AttackDuration);
-        Start(*State, ClipFor(Body, Clip), Clip, Hero.AttackStartedServerTime, Duration * (.25f / .65f), Duration * 1.5f);
+        UAnimSequence* FabClip = nullptr; FString FabName;
+        // fab-integration: the weapon style's Fab strike (alternating through its combo) when installed.
+        if (Clip != TEXT("attack_crossbow") && CireFabAnimation::Pick(Body, Folder, StyleName(Hero), MotionFor(Hero), TEXT("attack"), Hero.AttackSerial, FabClip, FabName))
+            Start(*State, FabClip, FabName, Hero.AttackStartedServerTime, Duration * (.25f / .65f), Duration * 1.5f, true);
+        else
+            Start(*State, ClipFor(Body, Clip), Clip, Hero.AttackStartedServerTime, Duration * (.25f / .65f), Duration * 1.5f);
     }
     for (int32 Slot = 0; Slot < Hero.Cooldowns.Num(); ++Slot)
     {
@@ -229,15 +291,22 @@ bool CireChampionActions::Apply(ACireHero& Hero, UCireCombatAnimInstance& Anim, 
         // A cooldown starting means the server accepted a cast of that slot.
         if (Hero.Cooldowns[Slot] > Previous + .5f && Hero.Skills.IsValidIndex(Slot))
         {
-            const FString Clip = ClipName(Hero, SkillKind(Hero.Skills[Slot]));
+            const FString Kind = SkillKind(Hero.Skills[Slot]);
+            const FString Clip = ClipName(Hero, Kind);
             // ability-vfx: the contact frame lands on the effect release (skillshot warning end, or the
             // short snap-in the spell cue waits for), instead of a fixed 0.28 s after the cast.
-            Start(*State, ClipFor(Body, Clip), Clip, Now, SkillWindup(Hero.GetWorld(), Hero.Skills[Slot]));
+            UAnimSequence* FabClip = nullptr; FString FabName;
+            if (CireFabAnimation::Pick(Body, Folder, StyleName(Hero), MotionFor(Hero), Kind, Slot + Hero.AttackSerial, FabClip, FabName))
+                Start(*State, FabClip, FabName, Now, SkillWindup(Hero.GetWorld(), Hero.Skills[Slot]), 0.f, true);
+            else
+                Start(*State, ClipFor(Body, Clip), Clip, Now, SkillWindup(Hero.GetWorld(), Hero.Skills[Slot]));
         }
     }
     State->LastCooldowns = Hero.Cooldowns;
     if (State->bBasic && State->Sequence && Hero.AttackSerial == State->SeenAttackSerial) State->StartedAt = Hero.AttackStartedServerTime;
     Anim.AttackWeight = 0.f;
+    // fab-integration: death, hit, dodge-roll and airborne clips from the Fab packs (procedural poses otherwise).
+    if (!State->bHold && ApplyFabReactions(Hero, Anim, *State, Body, Folder, Now)) return true;
     if (Hero.bDead) State->Sequence = nullptr;
     // At rest the layer keeps the weapon class's attack clip at zero weight (same contract as the prototype).
     if (!State->Sequence) { Anim.AttackSequence = ClipFor(Body, ClipName(Hero, TEXT("attack"))); return true; }
@@ -250,7 +319,8 @@ bool CireChampionActions::Apply(ACireHero& Hero, UCireCombatAnimInstance& Anim, 
                                          : W.Contact + (Elapsed - State->Windup) * State->RecoverRate;
     if (State->bHold) Time = State->HoldTime;
     if (!State->bHold && Time >= W.End) { State->Sequence = nullptr; Anim.AttackSequence = ClipFor(Body, ClipName(Hero, TEXT("attack"))); return true; }
-    const float Weight = State->bHold ? 1.f : FMath::Min(Smooth01(Elapsed / .09f), Smooth01((W.End - Time) / FMath::Max(.05f, .3f * State->RecoverRate)));
+    float Weight = State->bHold ? 1.f : FMath::Min(Smooth01(Elapsed / .09f), Smooth01((W.End - Time) / FMath::Max(.05f, .3f * State->RecoverRate)));
+    if (State->bReaction) Weight *= .7f; // a flinch reads on the torso without cancelling the stance
     Anim.AttackSequence = State->Sequence;
     Anim.AttackTime = FMath::Clamp(Time, 0.f, State->Sequence->GetPlayLength());
     Anim.AttackWeight = Weight;
@@ -268,7 +338,7 @@ bool CireChampionActions::Apply(ACireHero& Hero, UCireCombatAnimInstance& Anim, 
         Anim.SpineTwist = Twist * Weight;
     }
     // Upper body swings/casts; the legs keep the locomotion cycle while the champion moves.
-    Anim.AttackLowerBody = 1.f - FMath::Clamp((Speed - 20.f) / 130.f, 0.f, 1.f);
+    Anim.AttackLowerBody = State->bReaction ? 0.f : 1.f - FMath::Clamp((Speed - 20.f) / 130.f, 0.f, 1.f);
     return true;
 }
 

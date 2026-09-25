@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "priority": "highest",
+  "description": "Purchased Fab creature bodies (ROG Creatures Pack, Quadruped Fantasy Creatures, Undead Pack; Docs/FAB-PURCHASED.md). Read by CireMonsterArt before RaceMeshes.free.json and over NPCMeshes/RaceMeshes.tripo.json, but a body is used only when its mesh and idle clip exist locally (packs are licensed, never committed). Same shape as RaceMeshes.free.json.",
+  "units": {}
+}

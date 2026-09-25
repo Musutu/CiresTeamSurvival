@@ -9,6 +9,7 @@ class UProceduralMeshComponent;
 class UAudioComponent;
 class ACireAreaEffect;
 class UPointLightComponent;
+class UNiagaraComponent; // fab-integration
 struct FCireSpellMesh; // ability-vfx
 struct FCireSoftMesh;  // ability-vfx
 
@@ -99,6 +100,13 @@ private:
     TArray<FLinearColor> GroundColors;
     void ClassifyCue();
     void ProbeGround();
+    // fab-integration: optional Niagara overlay from the Fab VFX packs (CireFabVFX); procedural art always stays.
+    TWeakObjectPtr<UNiagaraComponent> FabFX;
+    bool bFabTried = false;
+    void UpdateFabVFX();
+public:
+    bool HasFabVFX() const;
+private:
     bool RebuildModes(FCireSpellMesh& M, FCireSoftMesh& Soft, float T, float Fade, float Expand);
     void RebuildGround(float T, float Fade);
     void DrawImpact(FCireSpellMesh& M, FCireSoftMesh& Soft, float T, float Fade);

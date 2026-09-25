@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "notes": "Optional champion clips retargeted from the purchased Fab animation packs by Tools/RetargetFabAnimations.py into /Game/FabDerived/Anim/<BodyFolder>/A_<BodyFolder>_<clip> (gitignored; derived from licensed content). clips: timing per clip name (seconds: start, contact = hit/release frame, end, recoverRate). replace: 'style:<WeaponLoadouts preset>' / 'motion:<melee|cast|bow|crossbow|throw|none>' / 'default' -> kind (attack|ability|spell|shout|hit|death|roll|jump) -> clip names (alternatives rotate as a combo). locomotion: use BS_Fab_Locomotion_<BodyFolder> when present. Everything missing falls back to ChampionAttacks02 and the procedural poses.",
+  "root": "/Game/FabDerived/Anim",
+  "locomotion": true,
+  "clips": {},
+  "replace": {}
+}

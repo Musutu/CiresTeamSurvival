@@ -159,6 +159,37 @@ void Load()
                 if (!Recommended.Contains(Id) || !Bodies.Contains(Recommended[Id])) { TArray<FString> Keys; Bodies.GetKeys(Keys); Recommended.Add(Id, Keys[0]); }
             }
     }
+    // fab-integration: RaceMeshes.fab.json (purchased Fab creature packs: ROG Creatures, Quadruped Fantasy Creatures,
+    // Undead Pack; Docs/FAB-PURCHASED.md) is the HIGHEST-priority overlay, but only for bodies whose mesh and idle clip
+    // exist locally: the packs are licensed and never committed, so a clean clone keeps the Tripo/free art.
+    {
+        TSharedPtr<FJsonObject> FabMeshes;
+        const TSharedPtr<FJsonObject>* FabUnits = nullptr;
+        auto Present = [](const FString& Path) { const FString Package = FPackageName::ObjectPathToPackageName(Path);
+            return FPackageName::IsValidLongPackageName(Package) && FPackageName::DoesPackageExist(Package); };
+        if (ReadFile(TEXT("RaceMeshes.fab.json"), FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
+            for (const auto& Pair : (*FabUnits)->Values)
+            {
+                const FName Id(FString(Pair.Key.ToView()));
+                const TSharedPtr<FJsonObject>* Entry = nullptr;
+                if (!Pair.Value->TryGetObject(Entry)) continue;
+                TMap<FString, CireMonsterArt::FBody> Bodies;
+                auto Add = [&](const TSharedPtr<FJsonObject>& O)
+                {
+                    CireMonsterArt::FBody Body;
+                    if (!ParseBody(O, Body) || !Present(Body.MeshPath) || !Present(Body.Roles.FindRef(TEXT("idle")))) return;
+                    Bodies.Add(Body.Variant, Body);
+                };
+                if ((*Entry)->HasField(TEXT("mesh"))) Add(*Entry);
+                const TArray<TSharedPtr<FJsonValue>>* Alternates = nullptr;
+                if ((*Entry)->TryGetArrayField(TEXT("alternates"), Alternates))
+                    for (const auto& Value : *Alternates) { const TSharedPtr<FJsonObject>* Alt = nullptr; if (Value->TryGetObject(Alt)) Add(*Alt); }
+                if (Bodies.IsEmpty()) continue;
+                ByArchetype.Add(Id, Bodies); RaceArt.Add(Id);
+                TArray<FString> Keys; Bodies.GetKeys(Keys); Recommended.Add(Id, Keys[0]);
+                UE_LOG(LogCireMonsterArt, Log, TEXT("CIRE_MONSTER_ART_FAB unit=%s bodies=%d"), *Id.ToString(), Bodies.Num());
+            }
+    }
     // world-dressing: RaceMeshes.free.json (CC0 animated creatures, /Game/Free/Creatures) is the lowest-priority
     // overlay: a unit takes a free body only when neither NPCMeshes nor RaceMeshes.tripo.json gave it one, and only
     // if the mesh package is present (so a missing or local-only pack silently falls back).

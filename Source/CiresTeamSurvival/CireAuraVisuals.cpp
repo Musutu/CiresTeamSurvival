@@ -1,4 +1,6 @@
 #include "CireAuraVisuals.h"
+#include "CireFabVFX.h" // fab-integration
+#include "NiagaraComponent.h"
 #include "CireAuraShapes.h"
 #include "CireBuffs.h"
 #include "CireGame.h"
@@ -309,6 +311,38 @@ void UCireAuraComponent::StopLoops()
 {
     for(auto& Pair:LoopAudio)if(UAudioComponent* Audio=Pair.Value.Get())Audio->FadeOut(.35f,0.f);
     LoopAudio.Reset();LoopIds.Reset();
+    for(auto& Pair:FabAuras)if(UNiagaraComponent* FX=Pair.Value.Get()){FX->SetAutoDestroy(true);FX->Deactivate();} // fab-integration
+    FabAuras.Reset();
+}
+// fab-integration: exact effect id first, then "<kind>.<school>" (e.g. "buff.holy"), then "<kind>".
+static const CireFabVFX::FEntry* FabAuraEntry(const FCireAuraDef& Def)
+{
+    if(const auto* E=CireFabVFX::FindBuff(Def.Id.ToString()))return E;
+    if(const auto* E=CireFabVFX::FindBuff(Def.Kind+TEXT(".")+Def.School))return E;
+    return CireFabVFX::FindBuff(Def.Kind);
+}
+void UCireAuraComponent::UpdateFabAuras(bool bAllowed,int32& Budget,float Intensity)
+{
+    TMap<FName,UNiagaraSystem*> Wanted;
+    // Other units' auras follow the "Other units' aura effects" slider: faint below .35, full at 1.
+    if(bAllowed&&CireFabVFX::Enabled()&&Intensity>=.35f)for(const auto& I:Instances)
+    {
+        if(I.FadeLocal>=0||Budget<=0)continue;
+        const auto* Def=CireAuraData::Find(I.Id);const auto* Entry=Def?FabAuraEntry(*Def):nullptr;
+        if(UNiagaraSystem* System=CireFabVFX::Resolve(Entry)){Wanted.Add(I.Id,System);--Budget;}
+    }
+    for(auto It=FabAuras.CreateIterator();It;++It)
+        if(!Wanted.Contains(It.Key())||!It.Value().IsValid()){if(UNiagaraComponent* FX=It.Value().Get()){FX->SetAutoDestroy(true);FX->Deactivate();}It.RemoveCurrent();}
+    AActor* Unit=GetOwner();
+    for(const auto& Pair:Wanted)
+    {
+        if(FabAuras.Contains(Pair.Key)||!Unit||!Unit->GetRootComponent())continue;
+        const auto* Def=CireAuraData::Find(Pair.Key);const auto* Entry=FabAuraEntry(*Def);
+        const float Scale=Entry->Scale*FMath::Lerp(.75f,1.f,FMath::Clamp(Intensity,0.f,1.f));
+        UNiagaraComponent* FX=CireFabVFX::SpawnAttached(Pair.Value,Unit->GetRootComponent(),FVector(0,0,-88.f),Scale,false);
+        CireFabVFX::ApplyTint(FX,Entry->Tint);
+        if(FX)FabAuras.Add(Pair.Key,FX);
+    }
 }
 void UCireAuraComponent::UpdateLoops(bool bAllowed,int32& Budget,float Volume)
 {
@@ -764,7 +798,7 @@ void UCireAuraSubsystem::UpdateNow(float LocalOverride)
         Visible.Add({Aura,Distance,Distance-(bLocal?1e6f:0.f)-(Unit==Focus?5e5f:0.f)-Priority*12.f,bLocal});
     }
     Visible.Sort([](const FCandidate& A,const FCandidate& B){return A.Score<B.Score;});
-    RenderedUnits=RenderedLayers=LitUnits=CulledUnits=0;int32 LoopBudget=CireAuraVisuals::MaxLoops;
+    RenderedUnits=RenderedLayers=LitUnits=CulledUnits=0;int32 LoopBudget=CireAuraVisuals::MaxLoops;int32 FabBudget=CireAuraVisuals::MaxFabAuras;
     for(const FCandidate& Entry:Visible)
     {
         UCireAuraComponent* Aura=Entry.Aura;
@@ -775,6 +809,7 @@ void UCireAuraSubsystem::UpdateNow(float LocalOverride)
         if(Detail<0||RenderedUnits>=Limits.MaxUnits){Aura->HideAll();Aura->StopLoops();++CulledUnits;continue;}
         // Loops only for full-detail units, nearest/most important first (the sort order).
         Aura->UpdateLoops(Detail==2,LoopBudget,Entry.bLocal?1.f:.4f+.6f*Intensity);
+        Aura->UpdateFabAuras(Detail>=1,FabBudget,Intensity); // fab-integration
         if(LocalOverride<0&&Detail>=1)HandleAttacks(Aura,ServerNow,LocalNow);
         // Reduced-detail units refresh every other frame; their meshes stay attached meanwhile.
         if(Detail<2&&Aura->CountVertices()>0&&(++Aura->FrameSkip&1)&&LocalOverride<0){++RenderedUnits;RenderedLayers+=Aura->CountLayers();LitUnits+=Aura->IsLightOn();continue;}

@@ -38,3 +38,7 @@ Content/Fab/
 # and also lists them in .git/info/exclude. NEVER commit these (public repo).
 # No trailing slash: in a worktree the folder is a junction, not a directory.
 # (pack folders are appended below as each pack lands)
+# Derived from licensed Fab packs (retargeted clips, IK rigs): same rule, never commit.
+Content/FabDerived
+Content/Big_Pack_Magic_VFX
+Content/Shadow_Magic

@@ -1,0 +1,6 @@
+{
+  "_comment": "Source clips in the local Fab animation packs for Tools/RetargetFabAnimations.py. clips.<name>: path + timing in seconds (start, contact = hit/release frame, end, recoverRate). locomotion: idle, walk_f/_b/_l/_r/_fl/_fr/_bl/_br, run_* (any subset, *_f required). replace: copied to Content/Data/FabAnimations.json. Filled once the packs are installed (they are not yet on 2026-09-25 morning).",
+  "clips": {},
+  "locomotion": {},
+  "replace": {}
+}
