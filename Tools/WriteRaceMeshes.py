@@ -111,6 +111,15 @@ SPEC = {
     "voidborn_devourer": (245, "slash", "claws", ["hand_r"],
                           {"void_titan_slam": "ground_slam", "void_singularity": "ground_slam", "void_devourer_hunger": "war_cry",
                            "void_breath": "fire_breath", "void_devour": "slash"}),
+    # The Aetheri Remnant (art-collector-3d, Art/TripoArt3D.json)
+    "aetheri_phaseblade": (185, "slash", "energy blades on both wrist gauntlets", ["hand_r"], {}),
+    "aetheri_warframe": (225, "slash", "oversized gauntlet fists", ["hand_r"], {}),
+    "aetheri_bulwark": (210, "slash", "hard-light tower shield (left arm)", ["hand_l"], {}),
+    "aetheri_engineer": (185, "cast_a_spell", None, ["hand_r"], {}),
+    "aetheri_lancer": (190, "cast_a_spell", "photon lance-rifle (right hand)", ["hand_r"], {}),
+    "skitter_drone": (110, "slash", "claw arms", ["hand_r"], {}),
+    "aetheri_hierarch": (235, "cast_a_spell", "warp staff (right hand)", ["hand_r"], {}),
+    "aetheri_colossus": (260, "slash", "clawed war-engine hands", ["hand_r"], {}),
 }
 EXTRA_WINDOWS = {"tentacle_sweep": {"start": 0.3, "contact": 1.7, "end": 3.4, "recoverRate": 1.4},
                  "axe_throw": {"start": 0.2, "contact": 1.2, "end": 2.6, "recoverRate": 1.4},
@@ -127,6 +136,8 @@ def main():
                            "named). Written by Tools/WriteRaceMeshes.py from Saved/TripoRacesIntegration.json; prompts, "
                            "task ids and credits in Art/TripoRaces.json."),
            "archetypes": {}}
+    if OUT.exists():  # keep bodies integrated by earlier batches (their Saved report may live in another worktree)
+        out["archetypes"].update(json.loads(OUT.read_text(encoding="utf-8")).get("archetypes", {}))
     art_text = ART.read_text(encoding="utf-8")
     art = json.loads(art_text)
     for unit, (height, attack, baked, drops, ability_clips) in SPEC.items():

@@ -1889,6 +1889,257 @@
           "war_cry": "/Game/Tripo/Races/voidborn/VoidbornDevourer/Animations/CTS_Race_VoidbornDevourer_war_cry.CTS_Race_VoidbornDevourer_war_cry"
         }
       }
+    },
+    "aetheri_phaseblade": {
+      "variant": "AetheriPhaseblade",
+      "mesh": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/CTS_Race_AetheriPhaseblade.CTS_Race_AetheriPhaseblade",
+      "skeleton": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/CTS_Race_AetheriPhaseblade_Skeleton.CTS_Race_AetheriPhaseblade_Skeleton",
+      "material": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/CTS_Race_AetheriPhaseblade_Mat.CTS_Race_AetheriPhaseblade_Mat",
+      "race": "aetheri",
+      "rawHeightCm": 97.76,
+      "heightCm": 185,
+      "meshScale": 1.8924,
+      "yaw": -90,
+      "bakedWeapon": "energy blades on both wrist gauntlets",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_idle.CTS_Race_AetheriPhaseblade_idle",
+        "walk": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_walk.CTS_Race_AetheriPhaseblade_walk",
+        "run": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_run.CTS_Race_AetheriPhaseblade_run",
+        "attack": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_slash.CTS_Race_AetheriPhaseblade_slash",
+        "hit": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_hit_to_body_01.CTS_Race_AetheriPhaseblade_hit_to_body_01",
+        "death": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_fall.CTS_Race_AetheriPhaseblade_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_fall.CTS_Race_AetheriPhaseblade_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_hit_to_body_01.CTS_Race_AetheriPhaseblade_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_idle.CTS_Race_AetheriPhaseblade_idle",
+          "run": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_run.CTS_Race_AetheriPhaseblade_run",
+          "slash": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_slash.CTS_Race_AetheriPhaseblade_slash",
+          "walk": "/Game/Tripo/Races/aetheri/AetheriPhaseblade/Animations/CTS_Race_AetheriPhaseblade_walk.CTS_Race_AetheriPhaseblade_walk"
+        }
+      }
+    },
+    "aetheri_warframe": {
+      "variant": "AetheriWarframe",
+      "mesh": "/Game/Tripo/Races/aetheri/AetheriWarframe/CTS_Race_AetheriWarframe.CTS_Race_AetheriWarframe",
+      "skeleton": "/Game/Tripo/Races/aetheri/AetheriWarframe/CTS_Race_AetheriWarframe_Skeleton.CTS_Race_AetheriWarframe_Skeleton",
+      "material": "/Game/Tripo/Races/aetheri/AetheriWarframe/CTS_Race_AetheriWarframe_Mat.CTS_Race_AetheriWarframe_Mat",
+      "race": "aetheri",
+      "rawHeightCm": 93.51,
+      "heightCm": 225,
+      "meshScale": 2.4062,
+      "yaw": -90,
+      "bakedWeapon": "oversized gauntlet fists",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_idle.CTS_Race_AetheriWarframe_idle",
+        "walk": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_walk.CTS_Race_AetheriWarframe_walk",
+        "run": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_run.CTS_Race_AetheriWarframe_run",
+        "attack": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_slash.CTS_Race_AetheriWarframe_slash",
+        "hit": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_hit_to_body_01.CTS_Race_AetheriWarframe_hit_to_body_01",
+        "death": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_fall.CTS_Race_AetheriWarframe_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_fall.CTS_Race_AetheriWarframe_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_hit_to_body_01.CTS_Race_AetheriWarframe_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_idle.CTS_Race_AetheriWarframe_idle",
+          "run": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_run.CTS_Race_AetheriWarframe_run",
+          "slash": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_slash.CTS_Race_AetheriWarframe_slash",
+          "walk": "/Game/Tripo/Races/aetheri/AetheriWarframe/Animations/CTS_Race_AetheriWarframe_walk.CTS_Race_AetheriWarframe_walk"
+        }
+      }
+    },
+    "aetheri_bulwark": {
+      "variant": "AetheriBulwark",
+      "mesh": "/Game/Tripo/Races/aetheri/AetheriBulwark/CTS_Race_AetheriBulwark.CTS_Race_AetheriBulwark",
+      "skeleton": "/Game/Tripo/Races/aetheri/AetheriBulwark/CTS_Race_AetheriBulwark_Skeleton.CTS_Race_AetheriBulwark_Skeleton",
+      "material": "/Game/Tripo/Races/aetheri/AetheriBulwark/CTS_Race_AetheriBulwark_Mat.CTS_Race_AetheriBulwark_Mat",
+      "race": "aetheri",
+      "rawHeightCm": 94.05,
+      "heightCm": 210,
+      "meshScale": 2.2329,
+      "yaw": -90,
+      "bakedWeapon": "hard-light tower shield (left arm)",
+      "dropPropBones": [
+        "hand_l"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_idle.CTS_Race_AetheriBulwark_idle",
+        "walk": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_walk.CTS_Race_AetheriBulwark_walk",
+        "run": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_run.CTS_Race_AetheriBulwark_run",
+        "attack": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_slash.CTS_Race_AetheriBulwark_slash",
+        "hit": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_hit_to_body_01.CTS_Race_AetheriBulwark_hit_to_body_01",
+        "death": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_fall.CTS_Race_AetheriBulwark_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_fall.CTS_Race_AetheriBulwark_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_hit_to_body_01.CTS_Race_AetheriBulwark_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_idle.CTS_Race_AetheriBulwark_idle",
+          "run": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_run.CTS_Race_AetheriBulwark_run",
+          "slash": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_slash.CTS_Race_AetheriBulwark_slash",
+          "walk": "/Game/Tripo/Races/aetheri/AetheriBulwark/Animations/CTS_Race_AetheriBulwark_walk.CTS_Race_AetheriBulwark_walk"
+        }
+      }
+    },
+    "aetheri_engineer": {
+      "variant": "AetheriEngineer",
+      "mesh": "/Game/Tripo/Races/aetheri/AetheriEngineer/CTS_Race_AetheriEngineer.CTS_Race_AetheriEngineer",
+      "skeleton": "/Game/Tripo/Races/aetheri/AetheriEngineer/CTS_Race_AetheriEngineer_Skeleton.CTS_Race_AetheriEngineer_Skeleton",
+      "material": "/Game/Tripo/Races/aetheri/AetheriEngineer/CTS_Race_AetheriEngineer_Mat.CTS_Race_AetheriEngineer_Mat",
+      "race": "aetheri",
+      "rawHeightCm": 91.27,
+      "heightCm": 185,
+      "meshScale": 2.027,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_idle.CTS_Race_AetheriEngineer_idle",
+        "walk": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_walk.CTS_Race_AetheriEngineer_walk",
+        "run": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_run.CTS_Race_AetheriEngineer_run",
+        "attack": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_cast_a_spell.CTS_Race_AetheriEngineer_cast_a_spell",
+        "hit": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_hit_to_body_01.CTS_Race_AetheriEngineer_hit_to_body_01",
+        "death": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_fall.CTS_Race_AetheriEngineer_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_cast_a_spell.CTS_Race_AetheriEngineer_cast_a_spell",
+          "fall": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_fall.CTS_Race_AetheriEngineer_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_hit_to_body_01.CTS_Race_AetheriEngineer_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_idle.CTS_Race_AetheriEngineer_idle",
+          "run": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_run.CTS_Race_AetheriEngineer_run",
+          "slash": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_slash.CTS_Race_AetheriEngineer_slash",
+          "walk": "/Game/Tripo/Races/aetheri/AetheriEngineer/Animations/CTS_Race_AetheriEngineer_walk.CTS_Race_AetheriEngineer_walk"
+        }
+      }
+    },
+    "aetheri_lancer": {
+      "variant": "AetheriLancer",
+      "mesh": "/Game/Tripo/Races/aetheri/AetheriLancer/CTS_Race_AetheriLancer.CTS_Race_AetheriLancer",
+      "skeleton": "/Game/Tripo/Races/aetheri/AetheriLancer/CTS_Race_AetheriLancer_Skeleton.CTS_Race_AetheriLancer_Skeleton",
+      "material": "/Game/Tripo/Races/aetheri/AetheriLancer/CTS_Race_AetheriLancer_Mat.CTS_Race_AetheriLancer_Mat",
+      "race": "aetheri",
+      "rawHeightCm": 97.91,
+      "heightCm": 190,
+      "meshScale": 1.9406,
+      "yaw": -90,
+      "bakedWeapon": "photon lance-rifle (right hand)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_idle.CTS_Race_AetheriLancer_idle",
+        "walk": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_walk.CTS_Race_AetheriLancer_walk",
+        "run": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_run.CTS_Race_AetheriLancer_run",
+        "attack": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_cast_a_spell.CTS_Race_AetheriLancer_cast_a_spell",
+        "hit": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_hit_to_body_01.CTS_Race_AetheriLancer_hit_to_body_01",
+        "death": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_fall.CTS_Race_AetheriLancer_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_cast_a_spell.CTS_Race_AetheriLancer_cast_a_spell",
+          "fall": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_fall.CTS_Race_AetheriLancer_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_hit_to_body_01.CTS_Race_AetheriLancer_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_idle.CTS_Race_AetheriLancer_idle",
+          "run": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_run.CTS_Race_AetheriLancer_run",
+          "slash": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_slash.CTS_Race_AetheriLancer_slash",
+          "walk": "/Game/Tripo/Races/aetheri/AetheriLancer/Animations/CTS_Race_AetheriLancer_walk.CTS_Race_AetheriLancer_walk"
+        }
+      }
+    },
+    "skitter_drone": {
+      "variant": "SkitterDrone",
+      "mesh": "/Game/Tripo/Races/aetheri/SkitterDrone/CTS_Race_SkitterDrone.CTS_Race_SkitterDrone",
+      "skeleton": "/Game/Tripo/Races/aetheri/SkitterDrone/CTS_Race_SkitterDrone_Skeleton.CTS_Race_SkitterDrone_Skeleton",
+      "material": "/Game/Tripo/Races/aetheri/SkitterDrone/CTS_Race_SkitterDrone_Mat.CTS_Race_SkitterDrone_Mat",
+      "race": "aetheri",
+      "rawHeightCm": 94.08,
+      "heightCm": 110,
+      "meshScale": 1.1692,
+      "yaw": -90,
+      "bakedWeapon": "claw arms",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_idle.CTS_Race_SkitterDrone_idle",
+        "walk": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_walk.CTS_Race_SkitterDrone_walk",
+        "run": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_run.CTS_Race_SkitterDrone_run",
+        "attack": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_slash.CTS_Race_SkitterDrone_slash",
+        "hit": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_hit_to_body_01.CTS_Race_SkitterDrone_hit_to_body_01",
+        "death": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_fall.CTS_Race_SkitterDrone_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_fall.CTS_Race_SkitterDrone_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_hit_to_body_01.CTS_Race_SkitterDrone_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_idle.CTS_Race_SkitterDrone_idle",
+          "run": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_run.CTS_Race_SkitterDrone_run",
+          "slash": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_slash.CTS_Race_SkitterDrone_slash",
+          "walk": "/Game/Tripo/Races/aetheri/SkitterDrone/Animations/CTS_Race_SkitterDrone_walk.CTS_Race_SkitterDrone_walk"
+        }
+      }
+    },
+    "aetheri_hierarch": {
+      "variant": "AetheriHierarch",
+      "mesh": "/Game/Tripo/Races/aetheri/AetheriHierarch/CTS_Race_AetheriHierarch.CTS_Race_AetheriHierarch",
+      "skeleton": "/Game/Tripo/Races/aetheri/AetheriHierarch/CTS_Race_AetheriHierarch_Skeleton.CTS_Race_AetheriHierarch_Skeleton",
+      "material": "/Game/Tripo/Races/aetheri/AetheriHierarch/CTS_Race_AetheriHierarch_Mat.CTS_Race_AetheriHierarch_Mat",
+      "race": "aetheri",
+      "rawHeightCm": 91.42,
+      "heightCm": 235,
+      "meshScale": 2.5706,
+      "yaw": -90,
+      "bakedWeapon": "warp staff (right hand)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_idle.CTS_Race_AetheriHierarch_idle",
+        "walk": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_walk.CTS_Race_AetheriHierarch_walk",
+        "run": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_run.CTS_Race_AetheriHierarch_run",
+        "attack": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_cast_a_spell.CTS_Race_AetheriHierarch_cast_a_spell",
+        "hit": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_hit_to_body_01.CTS_Race_AetheriHierarch_hit_to_body_01",
+        "death": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_fall.CTS_Race_AetheriHierarch_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_cast_a_spell.CTS_Race_AetheriHierarch_cast_a_spell",
+          "fall": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_fall.CTS_Race_AetheriHierarch_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_hit_to_body_01.CTS_Race_AetheriHierarch_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_idle.CTS_Race_AetheriHierarch_idle",
+          "run": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_run.CTS_Race_AetheriHierarch_run",
+          "slash": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_slash.CTS_Race_AetheriHierarch_slash",
+          "walk": "/Game/Tripo/Races/aetheri/AetheriHierarch/Animations/CTS_Race_AetheriHierarch_walk.CTS_Race_AetheriHierarch_walk"
+        }
+      }
+    },
+    "aetheri_colossus": {
+      "variant": "AetheriColossusB",
+      "mesh": "/Game/Tripo/Races/aetheri/AetheriColossus/CTS_Race_AetheriColossusB.CTS_Race_AetheriColossusB",
+      "skeleton": "/Game/Tripo/Races/aetheri/AetheriColossus/CTS_Race_AetheriColossusB_Skeleton.CTS_Race_AetheriColossusB_Skeleton",
+      "material": "/Game/Tripo/Races/aetheri/AetheriColossus/CTS_Race_AetheriColossusB_Mat.CTS_Race_AetheriColossusB_Mat",
+      "race": "aetheri",
+      "rawHeightCm": 98.04,
+      "heightCm": 260,
+      "meshScale": 2.652,
+      "yaw": -90,
+      "bakedWeapon": "clawed war-engine hands",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_idle.CTS_Race_AetheriColossusB_idle",
+        "walk": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_walk.CTS_Race_AetheriColossusB_walk",
+        "run": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_run.CTS_Race_AetheriColossusB_run",
+        "attack": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_slash.CTS_Race_AetheriColossusB_slash",
+        "hit": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_hit_to_body_01.CTS_Race_AetheriColossusB_hit_to_body_01",
+        "death": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_fall.CTS_Race_AetheriColossusB_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_fall.CTS_Race_AetheriColossusB_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_hit_to_body_01.CTS_Race_AetheriColossusB_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_idle.CTS_Race_AetheriColossusB_idle",
+          "run": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_run.CTS_Race_AetheriColossusB_run",
+          "slash": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_slash.CTS_Race_AetheriColossusB_slash",
+          "walk": "/Game/Tripo/Races/aetheri/AetheriColossus/Animations/CTS_Race_AetheriColossusB_walk.CTS_Race_AetheriColossusB_walk"
+        }
+      }
     }
   }
 }
