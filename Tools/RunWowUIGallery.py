@@ -13,7 +13,7 @@ import struct
 import subprocess
 import time
 
-STAGES = 23
+STAGES = 28
 
 
 def main():
@@ -30,7 +30,7 @@ def main():
         child = subprocess.Popen(command, cwd=root, stdout=output, stderr=subprocess.STDOUT,
                                  creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         try:
-            code = child.wait(timeout=180)
+            code = child.wait(timeout=240)
         except subprocess.TimeoutExpired:
             child.terminate()
             try:
@@ -38,7 +38,7 @@ def main():
             except subprocess.TimeoutExpired:
                 child.kill()
                 code = child.wait(timeout=5)
-            failures.append("WoW UI gallery exceeded its 180-second process bound")
+            failures.append("WoW UI gallery exceeded its 240-second process bound")
     contents = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""
     match = re.search(r"CIRE_WOWUI_GALLERY_PASS captures=(\d+) checks=(\d+) directory=(.+)", contents)
     failures += [line for line in contents.splitlines()

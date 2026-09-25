@@ -276,7 +276,13 @@ void ACireHUD::DrawSettings()
             Toggle(TEXT("Status remaining time"),UISettings.bShowStatusDurations,L,B+240,TEXT("Durations use seconds below one minute and minutes above it. Ground effects show their remaining area lifetime."));
             if(Button(TEXT("EDIT / LOCK INTERFACE  [F10]"),R,B,286,TEXT("Drag a panel, resize its lower-right corner, or use U/L to lock just that panel. F10/Escape saves and locks the interface.")))ToggleLayoutEditor();
             Wrapped(TEXT("Player, party, target, focus, boss frames, threat meter, minimap, skills, chat, meters, combat text, tooltip anchor and pet commands are individually movable and lockable. Panels keep their size and stay anchored to the nearest screen edge."),R,B+45,286,12,Muted,7);
-            Wrapped(TEXT("Buffs use gold/blue edges; debuffs use red/purple edges. Hover an icon for its effect, remaining time and removal rule."),R,B+200,286,12,Muted,5);
+            Wrapped(TEXT("Buffs have gold edges; debuffs are coloured by type: blue magic, green poison, purple curse, red physical. Hover for DEF +40% style summaries."),R,B+180,286,11,Muted,4);
+            Toggle(TEXT("Buff / debuff callouts"),UISettings.bEffectCallouts,R,B+238,TEXT("A short banner with the icon and effect when you gain a notable buff or debuff (throttled so combat is not spammy)."));
+            Toggle(TEXT("Crowd-control alerts"),UISettings.bControlAlerts,R,B+268,TEXT("STUNNED / SILENCED / HEALING CUT in the centre and a coloured screen edge while you are controlled."));
+            Toggle(TEXT("Player cast bar"),UISettings.bPlayerCastBar,R,B+298,TEXT("Your cast bar above the action bars (gold interruptible, grey uninterruptible, green heals)."));
+            const TCHAR* Overhead[]={TEXT("All units"),TEXT("Enemies only"),TEXT("Off")};
+            if(Button(FString(TEXT("Overhead status: "))+Overhead[FMath::Clamp(UISettings.OverheadStatusMode,0,2)],L,B+285,286,TEXT("Status chips above heads: STUN / SILENCE / ROOT with a duration ring, ATK / DEF / SPD arrows for stat changes. Far units show crowd control only.")))
+            {UISettings.OverheadStatusMode=(UISettings.OverheadStatusMode+1)%3;UISettings.Save();}
         }
         else
         {
