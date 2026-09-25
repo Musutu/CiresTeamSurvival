@@ -72,8 +72,13 @@ Fetched: 2026-09-25T02:26:37Z
 
 * `Art/Environment/Dressing/Meshes/*.obj` -> `/Game/Free/Dressing/Meshes`: hanging shop signs, wall banners, laundry
   lines, ivy cards, puddles, grime cards, leaf litter cards, chimney smoke plumes, perched and circling crows, wall
-  torches, a weapon rack, hay piles and a market produce crate. Authored procedurally by `Tools/BuildDressingMeshes.py`
+  torches, a weapon rack and hay piles. Authored procedurally by `Tools/BuildDressingMeshes.py`
   for this project (no third-party geometry).
 * `/Game/Free/Dressing/Materials`: masters `M_DressCard` (masked two-sided cards: ivy, leaves, grime),
   `M_DressPuddle`, `M_DressSmoke` (translucent rising smoke), `M_DressCrow` (wing flap and flock orbit in the
   vertex shader) and their instances, written by `Tools/ImportWorldDressing.py`.
+* `/Game/Free/Materials/M_FreePBR`, `M_FreePBRMasked`, `M_FreePBRTranslucent`, `T_FreeLinearWhite`: original
+  glTF-compatible PBR masters with instanced/Nanite usage, written by `Tools/FixGltfMaterials.py`. Every Poly Haven
+  material instance in `/Game/Free`, `/Game/Environment/Town/Props` and `/Game/Arenas/Props` is parented to them
+  (the engine glTF masters lack those usage flags, so uncooked -game runs drew them as the default grey material).
+  Their CC0 textures and credits are unchanged.

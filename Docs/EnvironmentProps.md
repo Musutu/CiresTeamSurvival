@@ -116,3 +116,59 @@ street lamps, braziers, wall lanterns and lit windows. The legacy `EnvironmentPl
   colliding town pieces carve; the route-clearance margin follows the editable `laneWidth`.)
 - Performance was not profiled against a budget: several hundred instances per realm, Nanite on
   buildings, up to 56 unshadowed lights per realm, volumetric fog and Lumen. Profile before shipping.
+
+## World dressing (world-dressing, September 25)
+
+The town and two arenas were dressed with life: goods on market tables, pottery on display shelves, benches and
+round tables in the square, spinning wheels, ladders, tools and woodpiles in the lanes, flower boxes, weeds and
+nettles at wall feet, rats, shop signs and wall banners, laundry lines, ivy, grime streaks and leaf litter on walls
+and ground, puddles, chimney smoke, flickering wall torches at both gates and the castle, a weapon rack armoury and
+chests in the bailey, crows perched on statues, walls and the gibbet, and crow flocks wheeling over the breach, the
+lanes, the market and the keep.
+
+* **Sources.** CC0 only: Poly Haven models (market goods, furniture, tools, planters, weeds, a rat) and ambientCG
+  texture sets (ivy atlas, wall streaks, leaf litter) via `Tools/FetchWorldDressing.py`; an original kit (signs,
+  banners, laundry, ivy/grime/litter cards, puddles, smoke plumes, crows, torches, weapon rack, hay piles) from
+  `Tools/BuildDressingMeshes.py`; imported to `/Game/Free/Dressing` by `Tools/ImportWorldDressing.py`. Provenance:
+  `Art/Environment/Dressing/PROVENANCE.md`.
+* **Data.** `Content/Data/TownAssetSlots.dressing.json` (priority 5, new `dress_*` slots) and
+  `Content/Data/TownLayout.dressing.json` (placements), both written by `Tools/AuthorWorldDressing.py`, which applies
+  the runtime rules to every row and prints what it dropped. The base `TownAssetSlots.json`/`TownLayout.json` are not
+  touched. One base slot is overridden: `barrel` resolved to Poly Haven *Barrel_01*, a red hazard-stencilled oil drum;
+  the overlay swaps in the upright wooden wine barrel (same placements).
+* **Runtime additions** (`// world-dressing:` blocks in `CireEnvironmentProps.cpp`, new `CireWorldDressing.h/.cpp`):
+  `TownLayout.<source>.json` overlays append placements (same schema, same clearance checks); a slot's
+  `cullDistance` (`end` or `[start, end]` cm) sets HISM cull distances; `light.flicker` (0..1) registers the slot's
+  point lights with `UCireLightFlicker` (30 Hz, client-only, never replicated).
+* **Navigation rules.** Colliding dressing (benches, tables, display shelves, weapon racks, hay piles, chests, barrels,
+  crates, woodpiles) keeps the full route clearance, the bays and the spawn, and carves the navmesh like every
+  colliding town piece. Small clutter never collides and keeps route clearance too (nothing stands on the march road),
+  except flat ground cards (puddles, litter), smoke and crows (`clearance: none`) and wall-hung pieces above head
+  height (`bays`).
+* **Wall pieces** are hung only on base-kit buildings: facades are measured from the OBJ sources (face-based ray tests,
+  so gate torches land on the tower surfaces beside the passages). Slots an overlay replaces (the Tripo houses, fitted
+  into a footprint) get only ground-level doorstep life in front of their footprint.
+* **Materials.** `M_DressCard` (masked two-sided cards; screen-dithered opacity for grime; radial fade for litter),
+  `M_DressPuddle`, `M_DressSmoke` (translucent unlit, rising value noise), `M_DressCrow` (vertex-shader wing flap and a
+  flock orbit around the instance pivot: no CPU cost).
+* **Fixed along the way (visible everywhere).** Every glTF-imported Poly Haven prop (town, arenas, dressing) was drawn as
+  the default grey material in uncooked `-game` runs: the Interchange glTF masters in `/InterchangeAssets` lack the
+  InstancedStaticMeshes/Nanite usage flags. `Tools/FixGltfMaterials.py` re-parents those instances onto project masters
+  (`/Game/Free/Materials/M_FreePBR*`) with the same parameter names. The Tripo town/landmark art (stalls, shrine,
+  houses, well, cart, lamps) had the same problem through `M_Tripo_PBR_Master`; its usage flags were set
+  (`--usage-masters`, flags only).
+* **Arenas.** `Tools/AuthorArenas.py` has a `world-dressing` block: crow flocks and perched crows plus loose straw in
+  the Sunlit Fields, leaf litter, dry branches and crows in Hornbeam Glade. Decoration only (no blockers): symmetry,
+  collision proxies and sight lines are unchanged.
+* **Performance.** All dressing is hierarchical instanced; small clutter culls at 25-42 m, mid props at 45-75 m, large
+  ones at 90-160 m; plants and flat cards cast no shadows; glass props stay off Nanite (Nanite cannot draw translucent
+  sections); Poly Haven meshes of 1,500+ triangles are Nanite. About 400 dressing rows per realm layout, 16 extra
+  flickering lights per realm (the 56-light cap per realm still applies).
+
+Reproduce: `FetchWorldDressing.py` -> `BuildDressingMeshes.py` -> `ImportWorldDressing.py` (chains
+`FixGltfMaterials.py --folders /Game/Free`) -> `AuthorWorldDressing.py`; `AuthorArenas.py` for the arenas.
+
+Limits: the kit is procedural (signs carry iron silhouettes, not painted boards); ivy and grime are cards, not decals;
+smoke is crossed cards (reads well from the gameplay camera, less so from street level); puddles are dark glossy
+patches, not true water; animals in town are static (rats) or shader-animated (crows), there are no skeletal ambient
+animals; wall dressing skips the Tripo houses. Free animated monster bodies are in `Docs/FreeCreatureSources.md`.
