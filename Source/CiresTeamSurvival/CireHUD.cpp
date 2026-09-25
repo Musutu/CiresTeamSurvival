@@ -251,14 +251,15 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
     {
         // ui-themes: round portrait in the theme's ring with a level medallion (the concept layout).
         CireUIStyle::Frame(Painter(),0,0,260,132,Aggro>0?FLinearColor(1.f,.25f,.2f,1):Gold,ECireFrame::Unit);
-        Disc(40,44,32,FLinearColor(0,0,0,.9f));Disc(40,44,30,FLinearColor(.035f,.04f,.06f,1));Disc(40,37,21,Accent*FLinearColor(1,1,1,.14f));
-        Icon(FString::Printf(TEXT("role%d"),Hero->Archetype),18,22,44,Accent);
-        CireUIStyle::PortraitRing(Painter(),40,44,30);
+        // Larger ring (concept); the painted role emblem is inscribed in the circle so no square corners show.
+        Disc(41,45,34,FLinearColor(0,0,0,.9f));Disc(41,45,32,FLinearColor(.035f,.04f,.06f,1));
+        Icon(FString::Printf(TEXT("role%d"),Hero->Archetype),41-22.f,45-22.f,44,Accent);
+        CireUIStyle::PortraitRing(Painter(),41,45,32);
     }
     else{Frame(0,0,260,132,Aggro>0?FLinearColor(1.f,.25f,.2f,1):Accent);Frame(8,9,49,59,Accent);Icon(FString::Printf(TEXT("role%d"),Hero->Archetype),10,13,44,Accent);}
     if(Aggro>0){Panel(186,116,66,14,FLinearColor(.35f,.03f,.02f,.9f));Label(FString::Printf(TEXT("AGGRO x%d"),Aggro),191,116,9,FLinearColor(1.f,.55f,.5f,1));
         Tip(TEXT("Enemies on you"),FString::Printf(TEXT("%d enemies are attacking you. Tanks want this; damage dealers and healers should move to their tank."),Aggro),186,116,66,14);}
-    if(bThemed)CireUIStyle::Medallion(Painter(),16,72,11.5f,FString::FromInt(Hero->Level),CireUIColors::BrightGold);
+    if(bThemed)CireUIStyle::Medallion(Painter(),17,77,12.f,FString::FromInt(Hero->Level),CireUIColors::BrightGold);
     else{Panel(19,63,28,18,Card);Label(FString::FromInt(Hero->Level),26,64,13,Gold);}
     const int32 Poisoned=PoisonCount(Hero);
     // ui-themes: the themed layout gives the larger portrait ring room (bars start further right).
@@ -296,12 +297,18 @@ void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
         if(bThemedParty)
         {
             CireUIStyle::Frame(Painter(),2,Y,206,50,Selected?CireUIColors::ThemeAccent*1.3f:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):Gold,ECireFrame::Card);
-            Disc(18.5f,Y+24.5f,15,FLinearColor(0,0,0,.85f));
+            Disc(19.f,Y+25.f,16,FLinearColor(0,0,0,.9f));Disc(19.f,Y+22.f,11,RoleColor(Ally->Archetype)*FLinearColor(1,1,1,.14f));
         }
         else Frame(0,Y,210,50,Selected?Parchment:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):RoleColor(Ally->Archetype)*.65f);
         if(Over)Panel(1,Y+1,208,48,FLinearColor(.3f,.45f,.48f,.12f));
-        Icon(FString::Printf(TEXT("role%d"),Ally->Archetype),4,Y+10,29,Ally->bDead?Muted:RoleColor(Ally->Archetype));
-        if(bThemedParty)CireUIStyle::PortraitRing(Painter(),18.5f,Y+24.5f,14.5f); // ui-themes: ring over the emblem
+        // ui-themes: inside the round ring the class sigil reads cleanly (the square painted role emblem
+        // was cropped by the ring into a red "slash" glyph); the ring sits on top.
+        if(bThemedParty)
+        {
+            CireUIStyle::Sigil(Painter(),FString::Printf(TEXT("role%d"),Ally->Archetype),7.f,Y+13.f,24.f,Ally->bDead?Muted:RoleColor(Ally->Archetype)*1.1f+FLinearColor(.08f,.08f,.08f,0));
+            CireUIStyle::PortraitRing(Painter(),19.f,Y+25.f,15.5f);
+        }
+        else Icon(FString::Printf(TEXT("role%d"),Ally->Archetype),4,Y+10,29,Ally->bDead?Muted:RoleColor(Ally->Archetype));
         Label(ShortName(Ally->HeroName,18),39,Y+4,11,Ally->bDead?Muted:Parchment);
         Label(FString::FromInt(Ally->Level),158,Y+4,10,Gold);
         Bar(39,Y+21,130,13,Fraction(Ally->Health,Ally->MaxHealth),Ally->bDead?Muted:LifeGreen);
