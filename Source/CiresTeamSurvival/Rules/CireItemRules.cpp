@@ -611,6 +611,84 @@ double TeleportCooldownRemaining(const TeleportState& state, double now)
     return Finite(now) ? std::max(0.0, state.ReadyAt - now) : 0.0;
 }
 
+int MobValue(const Economy& economy, int wave)
+{
+    wave = std::max(1, wave);
+    const int every = std::max(1, economy.StepEveryWaves);
+    return std::max(0, economy.MobBase + economy.MobStep * (wave / every));
+}
+
+int KillGold(const Economy& economy, BountyKind kind, int wave, double rewardMultiplier)
+{
+    double multiplier = 1;
+    switch (kind)
+    {
+    case BountyKind::Armored: multiplier = economy.ArmoredMultiplier; break;
+    case BountyKind::Boss: multiplier = economy.BossMultiplier; break;
+    case BountyKind::PackUnit: multiplier = economy.PackUnitMultiplier; break;
+    case BountyKind::PackLeader: multiplier = economy.PackLeaderMultiplier; break;
+    default: break;
+    }
+    const double reward = Finite(rewardMultiplier) ? std::clamp(rewardMultiplier, 0.0, 100.0) : 1.0;
+    return static_cast<int>(std::lround(MobValue(economy, wave) * std::max(0.0, multiplier) * reward));
+}
+
+int SkillBuyPrice(const SkillShopRules& rules, const Economy& economy, ShopSkillKind kind, int ownedActives, int wave)
+{
+    const double value = MobValue(economy, wave);
+    double units = kind == ShopSkillKind::Ultimate ? rules.UltimatePrice : kind == ShopSkillKind::Passive ? rules.PassivePrice
+        : rules.ActivePrice * (1.0 + std::max(0.0, rules.ActiveOwnedGrowth) * std::max(0, ownedActives));
+    return std::max(1, static_cast<int>(std::lround(units * value)));
+}
+
+int SkillLevelPrice(const SkillShopRules& rules, const Economy& economy, int currentLevel, int wave)
+{
+    const double growth = std::pow(std::max(1.0, rules.LevelUpGrowth), std::max(0, currentLevel - 1));
+    return std::max(1, static_cast<int>(std::lround(rules.LevelUpBase * growth * MobValue(economy, wave))));
+}
+
+int SlotsAvailable(const SkillShopRules& rules, ShopSkillKind kind, int wave)
+{
+    wave = std::max(0, wave);
+    switch (kind)
+    {
+    case ShopSkillKind::Passive: return wave >= rules.PassiveFromWave ? rules.MaxPassive : 0;
+    case ShopSkillKind::Ultimate: return wave >= rules.UltimateFromWave ? rules.MaxUltimate : 0;
+    default:
+    {
+        const int every = std::max(1, rules.ActiveSlotEveryWaves);
+        return std::clamp(rules.ActiveSlotsStart + wave / every, 0, rules.MaxActive);
+    }
+    }
+}
+
+int NextSlotWave(const SkillShopRules& rules, ShopSkillKind kind, int wave)
+{
+    const int now = SlotsAvailable(rules, kind, wave);
+    for (int later = std::max(0, wave) + 1; later <= wave + 200; ++later)
+        if (SlotsAvailable(rules, kind, later) > now) return later;
+    return 0;
+}
+
+SkillShopResult CheckSkillBuy(const SkillShopRules& rules, const Economy& economy, ShopSkillKind kind, int ownedOfKind,
+                              int ownedActives, bool alreadyOwned, bool allowedForChampion, int wave, int gold, int& price)
+{
+    price = SkillBuyPrice(rules, economy, kind, ownedActives, wave);
+    if (!allowedForChampion) return SkillShopResult::NotAllowed;
+    if (alreadyOwned) return SkillShopResult::AlreadyOwned;
+    if (ownedOfKind >= SlotsAvailable(rules, kind, wave)) return SkillShopResult::SlotLocked;
+    if (gold < price) return SkillShopResult::NotEnoughGold;
+    return SkillShopResult::Ok;
+}
+
+double SkillEffectScale(const SkillShopRules& rules, int level) { return 1.0 + std::max(0.0, rules.EffectPerLevel) * std::max(0, level - 1); }
+double SkillCostScale(const SkillShopRules& rules, int level) { return 1.0 + std::max(0.0, rules.CostPerLevel) * std::max(0, level - 1); }
+double SkillCooldownScale(const SkillShopRules& rules, int level)
+{
+    const double trim = std::clamp(rules.CooldownPerLevel, 0.0, 0.5);
+    return std::max(std::clamp(rules.MinCooldownFactor, 0.05, 1.0), std::pow(1.0 - trim, std::max(0, level - 1)));
+}
+
 double ShiftForPause(double timestamp, double pausedAt, double pauseSeconds)
 {
     if (!Finite(timestamp) || !Finite(pausedAt) || !Finite(pauseSeconds) || pauseSeconds <= 0) return timestamp;

@@ -531,8 +531,57 @@ void PauseRules()
 }
 } // namespace
 
+void EconomyAndSkillShopRules()
+{
+    Economy economy;
+    // Eric's ruling: 1 gold at the start, +1 every 3 waves (wave 6 = 3), armored x2, boss x10, pack unit x10, leader x100.
+    CHECK(MobValue(economy, 1) == 1 && MobValue(economy, 2) == 1 && MobValue(economy, 3) == 2 && MobValue(economy, 6) == 3 && MobValue(economy, 9) == 4);
+    CHECK(MobValue(economy, 0) == 1 && MobValue(economy, -5) == 1);
+    CHECK(KillGold(economy, BountyKind::Mob, 6) == 3 && KillGold(economy, BountyKind::Armored, 6) == 6);
+    CHECK(KillGold(economy, BountyKind::Boss, 6) == 30 && KillGold(economy, BountyKind::PackUnit, 6) == 30 && KillGold(economy, BountyKind::PackLeader, 6) == 300);
+    CHECK(KillGold(economy, BountyKind::Mob, 1) == 1 && KillGold(economy, BountyKind::Boss, 1) == 10 && KillGold(economy, BountyKind::PackLeader, 2) == 100);
+    CHECK(KillGold(economy, BountyKind::Mob, 6, 2.0) == 6 && KillGold(economy, BountyKind::Mob, 6, std::nan("")) == 3);
+    for (int wave = 1; wave <= 60; ++wave)
+    {
+        CHECK(MobValue(economy, wave) == 1 + wave / 3);
+        CHECK(KillGold(economy, BountyKind::PackLeader, wave) == 10 * KillGold(economy, BountyKind::PackUnit, wave));
+        CHECK(KillGold(economy, BountyKind::Boss, wave) == 10 * KillGold(economy, BountyKind::Mob, wave));
+    }
+    Economy tuned; tuned.MobBase = 2; tuned.MobStep = 3; tuned.StepEveryWaves = 5; tuned.ArmoredMultiplier = 3;
+    CHECK(MobValue(tuned, 10) == 8 && KillGold(tuned, BountyKind::Armored, 10) == 24);
+
+    SkillShopRules rules;
+    // Prices follow the gold available: in mob values.
+    CHECK(SkillBuyPrice(rules, economy, ShopSkillKind::Active, 0, 1) == 15);
+    CHECK(SkillBuyPrice(rules, economy, ShopSkillKind::Active, 2, 1) == 23);           // 15 x 1.5
+    CHECK(SkillBuyPrice(rules, economy, ShopSkillKind::Active, 0, 6) == 45);           // mob value 3
+    CHECK(SkillBuyPrice(rules, economy, ShopSkillKind::Passive, 5, 6) == 90 && SkillBuyPrice(rules, economy, ShopSkillKind::Ultimate, 5, 12) == 300);
+    CHECK(SkillLevelPrice(rules, economy, 1, 1) == 8 && SkillLevelPrice(rules, economy, 2, 1) == 11 && SkillLevelPrice(rules, economy, 3, 6) == 44);
+    int last = 0;
+    for (int level = 1; level <= 40; ++level) { const int p = SkillLevelPrice(rules, economy, level, 3); CHECK(p >= last); last = p; }
+    // Slot gate: 2 actives at the start, +1 every 3 waves up to 6; passive from wave 5, ultimate from wave 10.
+    CHECK(SlotsAvailable(rules, ShopSkillKind::Active, 0) == 2 && SlotsAvailable(rules, ShopSkillKind::Active, 3) == 3 && SlotsAvailable(rules, ShopSkillKind::Active, 12) == 6 && SlotsAvailable(rules, ShopSkillKind::Active, 99) == 6);
+    CHECK(SlotsAvailable(rules, ShopSkillKind::Passive, 4) == 0 && SlotsAvailable(rules, ShopSkillKind::Passive, 5) == 1);
+    CHECK(SlotsAvailable(rules, ShopSkillKind::Ultimate, 9) == 0 && SlotsAvailable(rules, ShopSkillKind::Ultimate, 10) == 1);
+    CHECK(NextSlotWave(rules, ShopSkillKind::Active, 1) == 3 && NextSlotWave(rules, ShopSkillKind::Active, 12) == 0 && NextSlotWave(rules, ShopSkillKind::Passive, 1) == 5);
+    int price = 0;
+    CHECK(CheckSkillBuy(rules, economy, ShopSkillKind::Active, 1, 1, false, true, 1, 100, price) == SkillShopResult::Ok && price == 19);
+    CHECK(CheckSkillBuy(rules, economy, ShopSkillKind::Active, 2, 2, false, true, 1, 100, price) == SkillShopResult::SlotLocked);
+    CHECK(CheckSkillBuy(rules, economy, ShopSkillKind::Active, 2, 2, false, true, 3, 100, price) == SkillShopResult::Ok);
+    CHECK(CheckSkillBuy(rules, economy, ShopSkillKind::Active, 0, 0, false, true, 1, 10, price) == SkillShopResult::NotEnoughGold);
+    CHECK(CheckSkillBuy(rules, economy, ShopSkillKind::Active, 0, 0, true, true, 1, 100, price) == SkillShopResult::AlreadyOwned);
+    CHECK(CheckSkillBuy(rules, economy, ShopSkillKind::Active, 0, 0, false, false, 1, 100, price) == SkillShopResult::NotAllowed);
+    CHECK(CheckSkillBuy(rules, economy, ShopSkillKind::Ultimate, 0, 3, false, true, 9, 9999, price) == SkillShopResult::SlotLocked);
+    // No level cap: effect and cost grow, cooldown shrinks toward its floor.
+    CHECK(Near(SkillEffectScale(rules, 1), 1) && Near(SkillEffectScale(rules, 6), 1.4) && Near(SkillCostScale(rules, 3), 1.1));
+    CHECK(Near(SkillCooldownScale(rules, 1), 1) && Near(SkillCooldownScale(rules, 2), .96) && Near(SkillCooldownScale(rules, 500), .4));
+    for (int level = 2; level <= 100; ++level)
+        CHECK(SkillEffectScale(rules, level) > SkillEffectScale(rules, level - 1) && SkillCooldownScale(rules, level) <= SkillCooldownScale(rules, level - 1));
+}
+
 int main()
 {
+    EconomyAndSkillShopRules();
     CatalogRules();
     RecipeRules();
     UniqueAndSlotRules();

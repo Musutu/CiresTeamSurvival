@@ -4,6 +4,7 @@
 // Tools/RunProgressionChecks.py. Pure rules are covered natively by Tests/ItemRulesTests.cpp.
 #include "CireItems.h"
 #include "CireLoot.h"
+#include "CireSkillShop.h"
 #include "CireGame.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
@@ -133,8 +134,11 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     Check(!Inv->Buy(N(TEXT("bloodstone_shard")), Message) && Hero->Gold == 5000, TEXT("recovery shopping away from town rejected"));
     F.Prep();
     const float BaseHealth = Hero->MaxHealth;
+    // Prices come from Items.json (rescaled with the economy), so checks read them from the catalog.
+    auto Recipe = [&](const char* Id) { const auto* Def = D.Catalog.Find(Id); return Def ? Def->RecipeCost : -1; };
+    auto Total = [&](const char* Id) { const auto* Def = D.Catalog.Find(Id); return Def ? Def->TotalCost : -1; };
     Message.Reset();
-    Check(Inv->Buy(N(TEXT("bloodstone_shard")), Message) && Hero->Gold == 4880 && Inv->Equipment[0].Id == N(TEXT("bloodstone_shard")), TEXT("prep: buy anywhere on the map"));
+    Check(Inv->Buy(N(TEXT("bloodstone_shard")), Message) && Hero->Gold == 5000 - Recipe("bloodstone_shard") && Inv->Equipment[0].Id == N(TEXT("bloodstone_shard")), TEXT("prep: buy anywhere on the map"));
     Check(FMath::IsNearlyEqual(Hero->MaxHealth, BaseHealth + 160.f), TEXT("item health applied to max health"));
     // ---- stats application
     const int32 BaseStrength = Hero->Strength;
@@ -149,18 +153,18 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     Check(Inv->ToRules().FreeEquipment() == 0 && !Inv->Buy(N(TEXT("hexweave_cloak")), Message) && Message.Contains(TEXT("full")), TEXT("six-slot limit"));
     // ---- recipe consumes owned components and charges only the recipe
     int32 Gold = Hero->Gold;
-    Check(Inv->Buy(N(TEXT("serrated_cleaver")), Message) && Hero->Gold == Gold - 120 && Inv->ToRules().CountOf("rusted_longsword") == 0 && Inv->ToRules().CountOf("bone_dagger") == 0, TEXT("recipe consumes components, charges recipe cost"));
+    Check(Inv->Buy(N(TEXT("serrated_cleaver")), Message) && Hero->Gold == Gold - Recipe("serrated_cleaver") && Inv->ToRules().CountOf("rusted_longsword") == 0 && Inv->ToRules().CountOf("bone_dagger") == 0, TEXT("recipe consumes components, charges recipe cost"));
     Gold = Hero->Gold;
-    Check(Inv->Buy(N(TEXT("nightfall_reaver")), Message) && Hero->Gold == Gold - 300 && Hero->GearRank == 1, TEXT("legendary built from owned epic + component"));
+    Check(Inv->Buy(N(TEXT("nightfall_reaver")), Message) && Hero->Gold == Gold - Recipe("nightfall_reaver") && Hero->GearRank == 1, TEXT("legendary built from owned epic + component"));
     Check(FMath::IsNearlyEqual(Hero->CriticalMultiplier, CireSkillTuning::Get().CritMultiplier + .25f, .001f), TEXT("unique passive raises crit multiplier"));
     Check(!Inv->Buy(N(TEXT("nightfall_reaver")), Message) && Message.Contains(TEXT("unique")), TEXT("unique item cannot be bought twice"));
     // ---- sell + undo
     Gold = Hero->Gold;
     const int32 Slot = Inv->Equipment.IndexOfByPredicate([](const FCireItemSlot& S) { return S.Id == FName(TEXT("bloodstone_shard")); });
-    Check(Slot != INDEX_NONE && Inv->SellSlot(Slot, false, Message) && Hero->Gold == Gold + 72, TEXT("sell returns 60% of total cost"));
+    Check(Slot != INDEX_NONE && Inv->SellSlot(Slot, false, Message) && Hero->Gold == Gold + FMath::RoundToInt(Total("bloodstone_shard") * .6f), TEXT("sell returns 60% of total cost"));
     Check(Inv->UndoLast(Message) && Hero->Gold == Gold && Inv->Equipment[Slot].Id == N(TEXT("bloodstone_shard")), TEXT("undo restores the sold item and gold"));
     Gold = Hero->Gold;
-    Check(Inv->UndoLast(Message) && Hero->Gold == Gold + 300 && Inv->ToRules().CountOf("nightfall_reaver") == 0 && Inv->ToRules().CountOf("serrated_cleaver") == 1, TEXT("undo reverts a recipe to its parts"));
+    Check(Inv->UndoLast(Message) && Hero->Gold == Gold + Recipe("nightfall_reaver") && Inv->ToRules().CountOf("nightfall_reaver") == 0 && Inv->ToRules().CountOf("serrated_cleaver") == 1, TEXT("undo reverts a recipe to its parts"));
     Inv->EndShopVisit();
     Check(!Inv->UndoLast(Message) && Inv->UndoDepth == 0, TEXT("closing the shop ends the undo history"));
     // ---- instant tomes and belt consumables
@@ -214,7 +218,7 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     Inv->Invalidate();
     int32 Converted = 0;
     Gold = Hero->Gold;
-    Check(!Inv->GrantItem(N(TEXT("ravens_eye")), Converted) && Converted == 160 && Hero->Gold == Gold + 160, TEXT("loot into a full bag converts to gold"));
+    Check(!Inv->GrantItem(N(TEXT("ravens_eye")), Converted) && Converted == Total("ravens_eye") && Hero->Gold == Gold + Total("ravens_eye"), TEXT("loot into a full bag converts to gold"));
     Check(Inv->HasRoomFor(N(TEXT("watchers_lantern"))) && Inv->GrantItem(N(TEXT("watchers_lantern")), Converted), TEXT("loot consumable goes to the belt"));
     UE_LOG(LogCireProgressionTests, Display, TEXT("CIRE_ITEMS_%s checks=%d"), Check.bPass ? TEXT("PASS") : TEXT("FAIL"), Check.Count);
     return Check.bPass;
@@ -224,6 +228,7 @@ bool CireProgression::RunSmoke(ACireGameMode* Mode)
 {
     if (!Mode || !Mode->HasAuthority()) return false;
     bool bGood = CireItems::RunSmoke(Mode);
+    bGood = CireSkillShop::RunSmoke(Mode) && bGood; // progression-shop: economy, mode, Skill Shop, bots, builds
     FChecker Check{TEXT("PROGRESSION")};
     FFixture F(Mode);
     const auto& Loot = CireLoot::Get();
