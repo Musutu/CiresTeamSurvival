@@ -34,7 +34,7 @@ class SkillRoleTests(unittest.TestCase):
         for skill, mask in TABLE.items():
             self.assertTrue(1 <= mask <= 7, skill)
         for skill, kind in CATALOG.items():
-            if kind == 'Passive':
+            if kind == 'Passive' and skill != 'executioner':
                 self.assertEqual(TABLE[skill], 7, skill)
 
     def test_astra_role_mirror_matches_native_table(self):

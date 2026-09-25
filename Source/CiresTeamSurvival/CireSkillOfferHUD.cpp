@@ -8,6 +8,10 @@
 #include "CireAbilityIcons.h"
 #include "CireChampionProfiles.h"
 #include "CireClassTraits.h"
+#include "CireCrowdControl.h"
+#include "CireAbilityDB.h"
+#include "CireBuffs.h"
+#include "EngineUtils.h"
 #include "CireGame.h"
 #include "CireKeybindings.h"
 #include "CireRoleSkills.h"
@@ -542,6 +546,7 @@ void ACireHUD::DrawSkillOfferExtras(ACireHero* Hero,ACireController* Controller)
         T.Text(Name,(ViewW-T.TextWidth(Name,20,ECireFont::Heading))*.5f,From.Y-150,20,Accent*1.2f,ECireFont::Heading,true,true);
     }
 
+    CireCrowdControl::RegisterCastProvider(); // champion-draft: hero cast bars are drawn by the shared CireCasts bars
     // Deferred reminder: pulsing, above the action bar; click or key to open.
     if(Hero->Offers.Num()>0&&!S.bOpen&&!bSettings)
     {

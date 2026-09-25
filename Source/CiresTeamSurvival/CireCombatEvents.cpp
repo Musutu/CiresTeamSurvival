@@ -1,4 +1,5 @@
 #include "CireCombatEvents.h"
+#include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireClassTraits.h"
 #include "CireItems.h" // progression-shop
 #include "CireGame.h"
@@ -159,10 +160,12 @@ float CireCombat::ApplyDamage(AActor* Source, AActor* Target, float Amount, cons
     // progression-shop: spell power, execute, every-Nth-hit and lantern marks scale outgoing damage.
     Amount = CireItems::ModifyOutgoingDamage(Source, Target, Amount, AbilityName);
     Amount = CireClassTraits::ModifyOutgoingDamage(Source, Amount); // champion-draft: Support -20% damage
+    Amount = CireCrowdControl::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // champion-draft: Executioner
     const FCireDamageEvent Event(AbilityName,bCritical);
     const float Applied = Target->TakeDamage(Amount, Event, Source->GetInstigatorController(), Source);
     CireItems::OnDamageDealt(Source, Target, Applied, AbilityName); // progression-shop: lifesteal
     CireClassTraits::OnDamageDealt(Source, Target, Applied); // champion-draft: Support Mending Strikes
+    if (Applied > 0) CireCrowdControl::OnAbilityHit(Source, Target, AbilityName); // champion-draft: ability CC from Abilities.json
     return Applied;
 }
 
@@ -173,7 +176,8 @@ float CireCombat::ApplyHealing(ACireHero* Source, ACireHero* Target, float Amoun
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
     auto* Mode = Source->GetWorld()->GetAuthGameMode<ACireGameMode>();
     if (!Mode || !Mode->IsCombatPhase()) return 0;
-    const float Multiplier = (Source->HasSkill(TEXT("soul_conduit")) ? 1.25f : 1.f) * CireItems::HealingMultiplier(Source); // progression-shop
+    const float Multiplier = (Source->HasSkill(TEXT("soul_conduit")) ? 1.25f : 1.f) * CireItems::HealingMultiplier(Source) // progression-shop
+        * CireCrowdControl::HealingMultiplier(Source, Target); // champion-draft: healing cuts
     const float Before = Target->Health;
     Target->Health = FMath::Min(Target->MaxHealth, Before + Amount * Multiplier);
     const float Applied = FMath::Max(0.f, Target->Health - Before);
@@ -406,7 +410,7 @@ bool CireCombat::RunTelemetrySmoke(ACireGameMode* Mode)
     Ally->Health = Ally->MaxHealth - 80;
     Source->SlowUntil = Ally->SlowUntil = Enemy->SlowUntil = Now + 20;
     PreviousHealing = Source->HealingDone;
-    Source->Cast(0);
+    Source->Cast(0); CireCrowdControl::CompleteCastNow(Source); // champion-draft: Renewal has a 2.5s cast
     Check(Near(Source->Health, Source->MaxHealth) && Near(Ally->Health, Ally->MaxHealth) && Near(Enemy->Health, 3000 - VerdictHit) &&
         Source->SlowUntil == 0 && Ally->SlowUntil == 0 && Enemy->SlowUntil > Now, TEXT("renewal heals and cleanses allies only"));
     Check(Near(Source->HealingDone - PreviousHealing, 140), TEXT("renewal overhealing excluded from meter"));
