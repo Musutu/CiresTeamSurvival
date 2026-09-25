@@ -26,6 +26,7 @@ Older profiles without the keys keep the defaults. No schema bump was needed.
 | `CireMusic.h/.cpp` | `FCireMusicDirector` (pure state machine) + `FCireMusicPlayer` (two crossfading slots + stinger slot) |
 | `CireAmbience.h/.cpp` | district beds, random one-shots, nearest prop emitters, combat ducking |
 | `CireFootsteps.h/.cpp` | armour classes, contact detection, surface trace, step budget |
+| `CireSoundEvents.h/.cpp` | sound-event table: spell/attack resolution, loops, polled combat/death/UI events |
 | `CireAudioTests.cpp` | native smoke (`CireAudio::RunAudioSmoke`) and the offline render probe |
 
 Shared-file hooks are small and marked `// audio:`: `CireUISettings` (fields), `CireOptions.cpp` (click cue, hover
@@ -142,6 +143,81 @@ All calls are safe on a server (no-op), when muted, or with an unknown id (retur
 add a cue to `AudioCues.json` that points at an existing `Folder/Name` under `/Game/Audio`. For new source audio, add it to
 `Tools/FetchAudioSources.py` (CC0/CC-BY only) and a line in `Tools/ProcessAudio.py`, then rebuild (below) so it gets the
 right class, submix, attenuation and concurrency.
+
+## Sound events (combat, spells, UI) - `AudioEvents.json`
+
+Every presentation cue the server sends (`CireCombat::PlayCue` -> `ACireSpellVisual`) is resolved by
+`CireSoundEvents` from data, never from code:
+
+```
+ability id / attack style -> { element, kind, weapon }          (AudioEvents.json "abilities" / "extraIds" / "weaponAliases")
+kind x slot               -> cue template                       ("spell.{element}.impact", "weapon:swing", ...)
++ layers                  -> critical ring (combat.crit); physical hits add the target's body layer
+                             (impact.armor / flesh / stone / wood from its footstep armour class)
+```
+
+* **Elements**: physical, fire, frost, nature, shadow, arcane, holy, earth, water, lightning. Each has
+  `spell.<element>.cast / .channel (loop) / .projectile (loop) / .impact / .heal`. Game schools map onto them
+  (cold -> frost, storm -> lightning, tide -> water, void/blood -> shadow, poison/life -> nature, spirit -> arcane).
+* **Kinds**: spell, heal, buff, guard, shout, melee, shot, summon, passive. Melee/shot use the weapon's slots.
+  Shot abilities fire on cast; a timed cast plays the draw/cock at its start.
+* **Weapons**: sword, axe (+ thrown beyond 4.2 m), mace, dagger, glaive, spear (+ thrown), claws, staff, bow and
+  crossbow (draw / release / arrow flight / impact), pistol, gunblade (falchion up close, pistol beyond 3.2 m),
+  blunderbuss, shield. Guns are only reachable from the gun champions' styles and abilities.
+* **Unknown ids** (monster abilities, item procs) fall back to their school, so nothing is silent.
+* **Coverage**: `Docs/AudioCoverage.md` (162/162 Ability DB entries) and `CIRE_AUDIO_COVERAGE` in the native smoke.
+
+Polled events (`FCireSoundEventTracker`, client only):
+
+| Event | Cue |
+|---|---|
+| Shield block (the 30% / 50% physical block, `ECireHitOutcome::Block`) | `combat.block` (+ armour rattle); ranged hits `combat.deflect`. Always +25 priority |
+| Your dodge / miss / resist | `combat.dodge`, `combat.miss`, `combat.resist` (other units' misses are skipped) |
+| You take damage | `hit.player`; >= 12% of max health `hit.player_heavy` (ducks the score) |
+| A hero dies / you die | `death.hero`; `death.player` (+ `sting.death`, deep duck) |
+| A monster dies | `death.humanoid / creature / golem / ethereal` by armour class; bosses `death.boss` (duck) |
+| Timed casts (heroes and monsters) | the element's channel loop for the cast's duration |
+| READY / READY TO CONTINUE | `ui_ready` (+ bell), un-ready `ui_unready` |
+| Failed action notice | `ui_error_mana`, `ui_error_gold`, `ui_error` |
+
+UI: every `CireUIStyle::Button` hover ticks `ui_hover` once per element; clicks `ui_click`; shop tabs `ui_tab`;
+Skill Shop buy `ui_skill_buy`; item buy/sell `coins_buy`/`coins_sell` + confirm layer; loot window by rarity
+`loot_common/magic/rare/epic`; not-enough-gold `ui_error_gold`; target change `ui_target`; the skill-offer screen
+routes through `uiLegacy`. Banners keep their horn/bell/drums and add `sting.<phase>` layers from the UI pack.
+Buffs and crowd control come from `BuffVisuals.json` "sound" (every row now has an expire cue: `cc.stun.end`,
+`cc.silence.end`, `cc.root.end`, `cc.slow.end`, `buff.expire`, `debuff.expire`). Polymorph uses
+`cc.polymorph.start` (critter pop): point the progression-shop `polymorphed` row at it when that branch merges.
+
+### Mix rules
+
+* `AudioCues.json` cue fields: `bus` (class override: sfx / ui / voice / music / ambience), `attenuation`
+  (`close`, `combat`, `loop`, `large` presets), `maxVoices` (per cue), `combat` + `priority` (shared budget of
+  `maxCombatVoices` = 28: a new sound only plays if it outranks the lowest live one), `duck` / `duckSeconds`
+  (music), `with` (layers), `cooldown`, `pitch`, `volumeJitter`.
+* The local player's own actions (+30 priority) and incoming hits (+20) win the budget and keep their own
+  cooldown key, so wave chaos never starves them; other units play at 0.8.
+* Voice bus (`SCL_Voice`): hit reactions, deaths, shouts. It follows the Combat effects slider.
+* Music ducks through the same sound-mix override as the Music slider (heavy hits, player death, bosses, epic loot).
+
+## Fab audio packs (licensed, never committed)
+
+| Pack (Fab) | Content folder | Used for |
+|---|---|---|
+| Shield Blocks and Deflects Sound Effects | `ShieldBlocksDeflects` | block (A-H), deflect (I-Q), shield bash impact (guard breaks) |
+| Professional Gunshots, 105 AAA weapon SFX | `Professional_Gunshots` | gun champions only: pistol (Pistol A/B), blunderbuss (Shotgun A/D), Collect the Bounty (heavy/sniper) |
+| Magic Spell Sound Effects Pack Vol 1 | `Magic_Spell_SFX_Pack_Vol1` | spells per element (cast = variant 1, impact = variants 2+), element loops, heals (positive), CC (negative) |
+| Combat Sounds Pack - Lite Edition | `Combat_Sounds_-_Lite` | weapon swings/impacts, bow/crossbow, armour/flesh layers, crits, body falls, explosions |
+| Complete Fantasy UI Sound Effects Pack | `Fantasy_UI_SFX_Pack` | every menu (Dark Fantasy set), loot, errors, ready, banner stings; polymorph pop (Cute set) |
+
+* `Tools/MapFabAudio.py` writes `Art/Audio/FabAudioMap.json` (object paths only) from the installed folders, or
+  from the launcher's vault manifests while a download is still running. `Tools/BuildAudioEvents.py` copies the
+  paths into each cue's `pack` list (and `packVolume` / `packPitch` trims from the map's `tuning`).
+* At runtime a cue plays its `pack` members when they exist, otherwise its shipped `sounds`. `CireAudio::SetPacksEnabled(false)`
+  forces the fallback; the native smoke checks both paths, so a clean clone passes with no Fab content.
+* Storage follows `Docs/FAB-PURCHASED.md`: the folders live only in the main checkout, are listed in the
+  purchased-packs `.gitignore` block and `.git/info/exclude`, and `Tools/LinkFabContent.py` junctions them into worktrees.
+* Regenerate after changing rules or data: `python Tools/MapFabAudio.py && python Tools/BuildAudioEvents.py`
+  (`--check` fails on stale files or an ability without a sound set).
 
 ## Asset pipeline
 

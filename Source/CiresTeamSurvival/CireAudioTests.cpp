@@ -51,9 +51,8 @@ TArray<FString> JsonKeys(const TCHAR* File, const TCHAR* Field, bool bArrayOfObj
 
 bool SoundExists(const FString& Short)
 {
-    FString Folder, Name;
-    if(!Short.Split(TEXT("/"), &Folder, &Name, ESearchCase::IgnoreCase, ESearchDir::FromEnd)) return false;
-    return LoadObject<USoundBase>(nullptr, *FString::Printf(TEXT("/Game/Audio/%s/%s.%s"), *Folder, *Name, *Name), nullptr, LOAD_NoWarn | LOAD_Quiet) != nullptr;
+    const FString Path = CireAudio::SoundObjectPath(Short);
+    return !Path.IsEmpty() && LoadObject<USoundBase>(nullptr, *Path, nullptr, LOAD_NoWarn | LOAD_Quiet) != nullptr;
 }
 }
 
@@ -113,8 +112,8 @@ bool CireAudio::RunAudioSmoke(UWorld* World)
             }
         else Check(false, TEXT("AudioCues.json parses"));
     }
-    Check(PlayShopSound(World, TEXT("S_ShopBuy"), 0.f) && PlayShopSound(World, TEXT("S_TeleportChannel"), 0.f) && !PlayShopSound(World, TEXT("S_ShopError"), 0.f),
-        TEXT("shop sounds: buy mapped, channel covered by the loop, error keeps the shop tone"));
+    Check(PlayShopSound(World, TEXT("S_ShopBuy"), 0.f) && PlayShopSound(World, TEXT("S_TeleportChannel"), 0.f) && PlayShopSound(World, TEXT("S_ShopError"), 0.f)
+        && !PlayShopSound(World, TEXT("S_NoSuchShopSound"), 0.f), TEXT("shop sounds: buy/error mapped, channel covered by the loop, unknown names keep the shop tone"));
     const CireMusic::FData& Music = CireMusic::Data(true);
     Check(Music.bValid && Music.Credits.Num() > 0, TEXT("music data: four states + CC-BY credits"));
     for(const auto& Pair : Music.States) for(const FString& Track : Pair.Value.Tracks) Check(SoundExists(TEXT("Music/") + Track), TEXT("music track ") + Track);
@@ -224,6 +223,18 @@ bool CireAudio::RunAudioSmoke(UWorld* World)
             Check(Audio->ResolveSound(TEXT("Footsteps/FS_Plate_Stone_01")) != nullptr && Audio->ResolveSound(TEXT("Music/MUS_ThePyre")) != nullptr, TEXT("runtime sound resolution"));
         }
     }
+    // ---- 8. sound events (AudioEvents.json): elements, weapons, outcomes, deaths, UI, ability coverage, pack fallback ----
+    {
+        int32 EventChecks = 0;
+        const bool bEvents = CireSoundEvents::RunSmoke(World, EventChecks);
+        Count += EventChecks; Pass &= bEvents;
+        Check(bEvents, FString::Printf(TEXT("sound-event table (%d checks)"), EventChecks));
+        FCireUISettings Mix; Mix.MasterVolume = 1.f; Mix.UIVolume = .5f; Mix.SFXVolume = .25f;
+        Check(FMath::IsNearlyEqual(BusGain(Mix, ECireAudioBus::Voice), .25f), TEXT("voice bus follows the combat effects slider"));
+        Check(PlayShopSound(World, TEXT("S_ShopErrorGold"), 0.f) && PlayShopSound(World, TEXT("S_SkillLearn"), 0.f) && PlayShopSound(World, TEXT("S_LootEpic"), 0.f),
+            TEXT("shop: not-enough-gold, skill buy and loot rarity cues mapped"));
+        Check(PlayLegacyPath(World, TEXT("/Game/UI/Draft/Sounds/S_SkillOffer.S_SkillOffer"), 0.f), TEXT("skill offer UI routes through the shared kit"));
+    }
     UE_LOG(LogCireAudioTest, Display, TEXT("CIRE_AUDIO_SMOKE_%s checks=%d"), Pass ? TEXT("PASS") : TEXT("FAIL"), Count);
     return Pass;
 }
@@ -291,7 +302,7 @@ void UCireAudioSubsystem::TickProbe(float DeltaTime)
             {
                 S->SetSubmixOutputVolume(World, 0.f); // silent speakers; the recording taps pre-output
                 P.Muted.Emplace(S);
-                if(FString(Name) != TEXT("SMX_UI") && FString(Name) != TEXT("SMX_Voice")) { S->StartRecordingOutput(World, 60.f); P.Record.Emplace(S); }
+                if(FString(Name) != TEXT("SMX_UI") && FString(Name) != TEXT("SMX_Voice")) { S->StartRecordingOutput(World, 150.f); P.Record.Emplace(S); }
             }
         // The engine's main submix too, so gameplay sounds outside the Cire buses stay silent as well.
         if(USoundSubmix* Main = Cast<USoundSubmix>(GetDefault<UAudioSettings>()->MasterSubmix.TryLoad()))
@@ -358,14 +369,23 @@ void UCireAudioSubsystem::TickProbe(float DeltaTime)
         // aura-vfx: signature buff sounds (Docs/BuffVisuals.md)
         TEXT("stance.blood_frenzy.start"), TEXT("stance.blood_frenzy.hit"), TEXT("buff.blood_rage.start"), TEXT("buff.frost_weapon.hit"), TEXT("buff.blessing.hit"),
         TEXT("buff.bastion_of_dawn.start"), TEXT("stance.shield_wall.start"), TEXT("debuff.poisoned.start"), TEXT("stance.siege_fury.start"),
-        TEXT("debuff.frost_bind.start"), TEXT("item.toll_of_the_grave.start"), TEXT("item.borrowed_time.start"), TEXT("buff.war_cry.start"), TEXT("aura_swing")};
+        TEXT("debuff.frost_bind.start"), TEXT("item.toll_of_the_grave.start"), TEXT("item.borrowed_time.start"), TEXT("buff.war_cry.start"), TEXT("aura_swing"),
+        // audio-overhaul: sound events (weapons, block, spells by element, reactions, deaths, UI)
+        TEXT("weapon.sword.swing"), TEXT("weapon.sword.impact"), TEXT("weapon.axe.impact"), TEXT("weapon.mace.impact"), TEXT("weapon.bow.release"),
+        TEXT("weapon.pistol.shot"), TEXT("weapon.blunderbuss.shot"), TEXT("combat.block"), TEXT("combat.deflect"), TEXT("combat.crit"),
+        TEXT("spell.fire.cast"), TEXT("spell.fire.impact"), TEXT("spell.frost.impact"), TEXT("spell.nature.impact"), TEXT("spell.shadow.impact"),
+        TEXT("spell.arcane.impact"), TEXT("spell.holy.heal"), TEXT("spell.earth.impact"), TEXT("spell.water.impact"), TEXT("spell.lightning.impact"),
+        TEXT("death.golem"), TEXT("spell.explosion"), TEXT("cc.polymorph.start")}; // (UI and Voice buses are not recorded by the probe)
     const float EventStart = .5f + Classes.Num() * 2.6f + .5f;
     if(ClassIndex >= Classes.Num() && P.CueIndex < UE_ARRAY_COUNT(EventCues) && R >= EventStart + P.CueIndex * 1.6f)
     {
         const FString Cue = EventCues[P.CueIndex];
         Segment(TEXT("SFX"), TEXT("cue_") + Cue, EventStart + P.CueIndex * 1.6f, EventStart + P.CueIndex * 1.6f + 1.4f);
-        if(Cue == TEXT("pack_leader_roar")) CireAudio::PlayCue(World, *Cue, Listener + Forward * 400.f);
-        else CireAudio::PlayCue2D(World, *Cue);
+        const FVector At = Listener + Forward * 400.f;
+        FCirePlayParams Params; Params.bLocal = true;
+        if(Cue == TEXT("pack_leader_roar") || Cue.StartsWith(TEXT("weapon.")) || Cue.StartsWith(TEXT("spell.")) || Cue.StartsWith(TEXT("combat.")) || Cue.StartsWith(TEXT("death.")) || Cue.StartsWith(TEXT("cc.")))
+            Params.Location = &At;
+        CireAudio::PlayCueEx(World, *Cue, Params);
         ++P.CueIndex;
     }
 

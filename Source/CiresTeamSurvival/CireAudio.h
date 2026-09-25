@@ -4,6 +4,7 @@
 #include "CireMusic.h"
 #include "CireAmbience.h"
 #include "CireFootsteps.h"
+#include "CireSoundEvents.h"
 #include "CireAudio.generated.h"
 
 class FCireUISettings;
@@ -30,6 +31,22 @@ enum class ECireAudioBus : uint8 { Music, SFX, Ambience, UI, Voice };
  * Bus volumes (master x bus, mute, music on/off) come from the local player's Options profile and are
  * applied through a sound-mix class override, so cue volumes never need to multiply them again.
  */
+/** Options for CireAudio::PlayCueEx (the sound-event path used by combat, spells, deaths and UI). */
+struct FCirePlayParams
+{
+    /** World position (nullptr and no Attach = 2D). */
+    const FVector* Location = nullptr;
+    /** Follow this component instead of a fixed location (loops keep playing until the caller stops them). */
+    USceneComponent* Attach = nullptr;
+    FName Socket = NAME_None;
+    float Volume = 1.f;
+    float Pitch = 1.f;
+    /** Added to the cue priority for the combat voice budget (the local player's own actions and incoming hits). */
+    float PriorityBoost = 0.f;
+    /** The local player caused or receives it: its own cooldown key, never starved by other units' spam. */
+    bool bLocal = false;
+};
+
 namespace CireAudio
 {
     /** Effective linear gain for a bus from local preferences: master x bus; 0 when muted (and for Music when music is off). */
@@ -62,6 +79,34 @@ namespace CireAudio
     CIRESTEAMSURVIVAL_API bool PlayShopSound(const UObject* WorldContext, const TCHAR* LegacyName, float Volume);
     /** A hovered interactive element (one call per frame while hovered); plays ui_hover on entry. */
     CIRESTEAMSURVIVAL_API void NoteHover(const UObject* WorldContext, float X, float Y);
+
+    // ---- sound events (Docs/Audio.md "Sound events") ----
+    /** Full-control play: bus/attenuation/voice limits/priority come from the cue; returns the component (nullptr when dropped). */
+    CIRESTEAMSURVIVAL_API UAudioComponent* PlayCueEx(const UObject* WorldContext, FName CueId, const FCirePlayParams& Params);
+    /** A hard-coded UI sound path (e.g. /Game/UI/Draft/Sounds/S_SkillOffer...) -> cue (AudioCues.json uiLegacy); false keeps the caller's sound. */
+    CIRESTEAMSURVIVAL_API bool PlayLegacyPath(const UObject* WorldContext, const TCHAR* Path, float Volume);
+    /** Music ducking for big moments: Depth 0..1 of the music bus for Seconds (the deepest active request wins). */
+    CIRESTEAMSURVIVAL_API void Duck(const UObject* WorldContext, float Depth, float Seconds);
+    /** Current music duck gain (1 = none). */
+    CIRESTEAMSURVIVAL_API float DuckGain(const UObject* WorldContext);
+    /** Hover tick for a hovered button with no world context at hand (CireUIStyle::Button); uses the local game world. */
+    CIRESTEAMSURVIVAL_API void NoteUIHover(float X, float Y);
+    /** Fab pack members (cue "pack") are preferred when installed; false forces the shipped fallback (tests, A/B). */
+    CIRESTEAMSURVIVAL_API void SetPacksEnabled(bool bEnabled);
+    CIRESTEAMSURVIVAL_API bool PacksEnabled();
+    /** True when the cue currently resolves to installed Fab pack members. */
+    CIRESTEAMSURVIVAL_API bool CueUsesPack(FName CueId);
+    /** The members the cue plays right now (pack or fallback), as asset paths. */
+    CIRESTEAMSURVIVAL_API TArray<FString> CueMembers(FName CueId);
+    CIRESTEAMSURVIVAL_API bool CueIsLoop(FName CueId);
+    CIRESTEAMSURVIVAL_API TArray<FName> CueIds();
+    /** Picks the next member of a cue and applies bus, attenuation and priority to an existing component (looping spell/area audio). */
+    CIRESTEAMSURVIVAL_API bool ConfigureComponent(UAudioComponent* Component, FName CueId, float VolumeScale = 1.f);
+    /** Short "Folder/Name" (under /Game/Audio) or a full /Game/... path -> object path; empty when it does not exist. */
+    CIRESTEAMSURVIVAL_API FString SoundObjectPath(const FString& Name, bool bCheckExists = true);
+    /** Play/drop counters for the soak and the probe. */
+    struct FStats { int32 Played = 0, PackPlays = 0, FallbackPlays = 0, DroppedCooldown = 0, DroppedVoices = 0, DroppedBudget = 0, Stolen = 0; };
+    CIRESTEAMSURVIVAL_API FStats& Stats();
 
     /** Name of the current music state ("town", "combat", ...) for HUD/diagnostics. */
     CIRESTEAMSURVIVAL_API FString MusicStateName(const UObject* WorldContext);
@@ -97,6 +142,10 @@ public:
 
     /** Resolves "Folder/Name" to /Game/Audio/Folder/Name and caches the loaded sound. */
     USoundBase* ResolveSound(const FString& ShortPath);
+    /** The Options bus class (SCL_<Bus>), used as the class override for pack sounds. */
+    USoundClass* BusClass(ECireAudioBus Bus) const;
+    /** /Game/Audio/Mix/SC_<Name>, cached. */
+    class USoundConcurrency* Concurrency(FName Name);
     /** Keeps a runtime component alive for the lifetime of this world. */
     void Keep(UAudioComponent* Component);
 
@@ -104,6 +153,12 @@ public:
     FCireMusicPlayer Music;
     FCireAmbiencePlayer Ambience;
     FCireFootstepPlayer Footsteps;
+    /** Combat/spell/UI sound events: outcomes, hit reactions, deaths, casts, UI state (CireSoundEvents.h). */
+    FCireSoundEventTracker Events;
+
+    /** Music duck (CireAudio::Duck): the deepest active request and how long it holds. */
+    float DuckDepth = 0.f, DuckHold = 0.f, DuckGainNow = 1.f;
+    void RequestDuck(float Depth, float Seconds);
 
     /** Last pushed bus gains (Music, SFX, Ambience, UI, Voice). */
     float AppliedGain[5] = {-1, -1, -1, -1, -1};
@@ -114,6 +169,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<USoundMix> VolumeMix;
     UPROPERTY(Transient) TArray<TObjectPtr<USoundClass>> BusClasses;
     UPROPERTY(Transient) TMap<FString, TObjectPtr<USoundBase>> SoundCache;
+    UPROPERTY(Transient) TMap<FName, TObjectPtr<class USoundConcurrency>> ConcurrencyCache;
     UPROPERTY(Transient) TArray<TObjectPtr<UAudioComponent>> Owned;
     UPROPERTY(Transient) TObjectPtr<UAudioComponent> TeleportHum;
     bool bStarted = false;
