@@ -456,6 +456,12 @@ float CireItems::ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FSt
     // items-v2: completed-item mitigation specials (percent, then flat block per hit).
     Amount = static_cast<float>(ApplyItemMitigation(Amount, T.Stats.Get(ItemStat::DamageReduction), T.Stats.Get(ItemStat::DamageBlock)));
     const double Now = Inventory->Now();
+    // rules-conformance: HitGuard ("reduce instances of incoming damage"): each hit spends a guard charge.
+    if (T.HitGuardCharges > 0 && Amount > 0 && SpendCharge(Inventory->HitGuardState, T.HitGuardCharges, FMath::Max(.5, T.HitGuardRecharge), Now))
+    {
+        Amount = static_cast<float>(ApplyHitGuard(Amount, T.HitGuardPercent, T.HitGuardFlat));
+        ++Inventory->HitGuardSpent;
+    }
     for (const auto& Buff : Inventory->Buffs)
         if (Buff.EndsAt > Now)
             if (const ItemDef* Item = Find(Buff.Id); Item && Item->Use.Kind == EffectKind::SelfBarrier)

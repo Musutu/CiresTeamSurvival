@@ -91,11 +91,12 @@ bool bSuppressFlash = false;
 double Now() { return State.DebugNow >= 0 ? State.DebugNow : FPlatformTime::Seconds(); }
 FVector2D VirtualPointer(-1, -1);
 
-// items-v2: items grant the primary stat and flat stats; path-defining uniques get their own filter.
-const TCHAR* FilterTags[] = {TEXT("path"), TEXT("primary"), TEXT("attack"), TEXT("crit"), TEXT("mana"), TEXT("health"), TEXT("armor"),
-    TEXT("ward"), TEXT("defense"), TEXT("cooldown"), TEXT("boots"), TEXT("support"), TEXT("active"), TEXT("consumable")};
-const TCHAR* FilterNames[] = {TEXT("Path Uniques"), TEXT("Primary Stat"), TEXT("Attack & Speed"), TEXT("Crit & Lifesteal"), TEXT("Mana & Regen"),
-    TEXT("Health"), TEXT("Armor"), TEXT("Spell Ward"), TEXT("Mitigation"), TEXT("Cooldowns"), TEXT("Boots"), TEXT("Support"), TEXT("Active Use"), TEXT("Consumables")};
+// items-v2 / rules-conformance: items grant the primary stat and flat stats (completed items add damage
+// reduction); path-defining uniques get their own filter.
+const TCHAR* FilterTags[] = {TEXT("path"), TEXT("primary"), TEXT("attack"), TEXT("block"), TEXT("mana"), TEXT("health"), TEXT("armor"),
+    TEXT("ward"), TEXT("defense"), TEXT("heal"), TEXT("boots"), TEXT("support"), TEXT("active"), TEXT("consumable")};
+const TCHAR* FilterNames[] = {TEXT("Path Uniques"), TEXT("Primary Stat"), TEXT("Attack"), TEXT("Damage Reduction"), TEXT("Mana"),
+    TEXT("Health"), TEXT("Armor"), TEXT("Spell Ward"), TEXT("Mitigation"), TEXT("Healing"), TEXT("Boots"), TEXT("Support"), TEXT("Active Use"), TEXT("Consumables")};
 TWeakObjectPtr<const ACireHero> GShopViewer; // items-v2: whose primary stat "+X Primary Stat" names
 bool IsPathUnique(const CI::ItemDef& Item) { return Item.UniqueGroup == "path"; }
 constexpr int32 FilterCount = UE_ARRAY_COUNT(FilterTags);
