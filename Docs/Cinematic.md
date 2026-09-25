@@ -120,3 +120,24 @@ These limits reflect each tool's publicly documented behaviour. Check the curren
 | # | Date | Tool | Part / segment | Settings | Result / what differed | Change made |
 |---|---|---|---|---|---|---|
 | 0 | 2026-09-25 | Sora 2 | — | — | Not run: Sora has been shut down (`sora.chatgpt.com/sunset`), and ChatGPT Pro has no video tool | Rewrote the prompts to work with any tool; waiting for Eric to pick one |
+| 1 | 2026-09-25 | Seedance 2.5 (OpenArt Suite) | — | — | Not run: **not enough credits** (balance 20, cheapest clip 300). See §7.1 | Nothing generated; waiting for Eric to add credits or choose a plan |
+
+### 7.1 Seedance 2.5 on OpenArt: what the UI shows (checked 2026-09-25, no generation made)
+
+- **Where:** OpenArt Suite → Tools → Video → *Frame to Video* → Model **Seedance 2.5** (`https://openart.ai/suite/animate-video/byte-plus-seedance-2-5`). The older `openart.ai/video` page only lists Seedance 1.0 / 1.5 Pro.
+- **Account:** Eric Vautherot's workspace, **Free** plan, **20 credits**. On the Free plan, creations are **kept for only 7 days**, so download any results within a week.
+- **Capabilities (model list badges):** Reference images, Start/End frame, **native Audio** (toggle, default On), 480p / 720p / 1080p, duration **4–30 s** on a slider.
+- **Aspect ratio:** not shown on the Frame to Video panel; it probably follows the start-frame image. Use a 16:9 start frame.
+- **Credit cost (Generate button):**
+
+  | Output | Credits |
+  |---|---|
+  | 480p, 5 s | 300 |
+  | 1080p, 18 s | 5,775 |
+  | 1080p, 21 s | 6,735 (≈ 320 credits per second at 1080p) |
+
+- **Budget for this job:** at 1080p, a 20 s Part 1 plus a 20 s Part 2 costs about **12,800 credits** for one attempt each. With the planned retries (up to ~4 per part), budget **25,000–50,000 credits**. At 720p or 480p it's cheaper; 480p is about 60 credits per second, so about 2,400 for both parts at one attempt each.
+- **Adaptation plan once credits are available** (no split needed, since 30 s covers a 20 s part):
+  1. Part 1: text only (or the champion-select image as a Reference), 1080p, 20 s, Audio **On**, prompt = §2 block + §3. Seedance generates audio, so keep the "NO dialogue / wordless choir only" lines.
+  2. Save Part 1's final frame and use it as Part 2's **start frame**. Add `champion-select-target.png` as a Reference, 1080p, 20 s, Audio On, prompt = §2 block + §4.
+  3. Check the frames against §5.3 and regenerate on mismatch, within the credit budget.
