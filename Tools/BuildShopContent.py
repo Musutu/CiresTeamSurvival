@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 STAGING = ROOT / "Saved/ItemContentBuilder"
 ICON_SRC = ROOT / "Content/UI/Items/src"
 SOUND_SRC = ROOT / "Content/UI/Shop/src"
+SCROLL_SRC = ROOT / "Content/UI/Shop/Scrolls/src"   # cut by Tools/CutSkillScrolls.py
 EDITOR = "F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor.exe"
 PYTHON = "F:/UE_5.8/Engine/Binaries/ThirdParty/Python3/Win64/python.exe"
 RATE = 44100
@@ -102,6 +103,15 @@ def import_in_editor(unreal):
         task.replace_existing = True
         task.save = True
         tasks.append(task)
+    for png in sorted(SCROLL_SRC.glob("*.png")):
+        task = unreal.AssetImportTask()
+        task.filename = str(png)
+        task.destination_path = "/Game/UI/Shop/Scrolls"
+        task.destination_name = png.stem
+        task.automated = True
+        task.replace_existing = True
+        task.save = True
+        tasks.append(task)
     for wav in sorted(SOUND_SRC.glob("*.wav")):
         task = unreal.AssetImportTask()
         task.filename = str(wav)
@@ -112,8 +122,9 @@ def import_in_editor(unreal):
         task.save = True
         tasks.append(task)
     tools.import_asset_tasks(tasks)
-    for png in ICON_SRC.glob("*.png"):
-        texture = library.load_asset("/Game/UI/Items/" + png.stem)
+    for png in list(ICON_SRC.glob("*.png")) + list(SCROLL_SRC.glob("*.png")):
+        folder = "/Game/UI/Shop/Scrolls/" if png.parent == SCROLL_SRC else "/Game/UI/Items/"
+        texture = library.load_asset(folder + png.stem)
         if not texture:
             raise RuntimeError("Icon import failed: " + png.stem)
         texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_EDITOR_ICON)
@@ -143,7 +154,7 @@ def main():
     shutil.copy2(ROOT / "Tools/ContentBuilder/ContentBuilder.uproject", STAGING / "ItemContentBuilder.uproject")
     shutil.copy2(ROOT / "Tools/ContentBuilder/Config/DefaultEngine.ini", STAGING / "Config/DefaultEngine.ini")
     for sub in ("Content/UI/Items", "Content/UI/Shop"):
-        shutil.rmtree(STAGING / sub, ignore_errors=True)
+        shutil.rmtree(STAGING / sub, ignore_errors=True)  # includes Shop/Scrolls
     logs = STAGING / "Saved/Logs"
     logs.mkdir(parents=True, exist_ok=True)
     log = logs / "ShopContent.log"
@@ -155,7 +166,7 @@ def main():
     if "CIRE_SHOP_CONTENT_PASS" not in log.read_text(encoding="utf-8", errors="replace"):
         raise SystemExit(f"Shop content import failed: {log}")
     copied = 0
-    for sub in ("Items", "Shop"):
+    for sub in ("Items", "Shop", "Shop/Scrolls"):
         source = STAGING / "Content/UI" / sub
         destination = ROOT / "Content/UI" / sub
         destination.mkdir(parents=True, exist_ok=True)

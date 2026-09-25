@@ -109,6 +109,8 @@ public:
     FCireUIRect LayoutRect(FName Id) const { return PanelRect(Id); }
     void SetTooltip(const FString& Title,const FString& Body) { TooltipTitle=Title; TooltipBody=Body; }
     void PlayInterfaceSound(int32 Index,float Volume=1.f) { PlayWowSound(Index,Volume); }
+    // F8 > Economy page (CireEconomyPage.cpp).
+    void DrawEconomyPage(float X,float Y);
     // progression-shop: end
 private:
     void Panel(float X, float Y, float W, float H, FLinearColor Color);

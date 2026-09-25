@@ -1,4 +1,5 @@
 #include "CireDeveloperTools.h"
+#include "CireSkillShop.h" // progression-shop: game mode
 #include "CireRaces.h" // monster-races
 #include "CireGame.h"
 #include "CireCombatEvents.h"
@@ -256,7 +257,7 @@ void ACireHero::GrantExperience(int32 Amount)
     if (bLeveled)
     {
         Recalculate(false);
-        Notice = FString::Printf(TEXT("Level %d: +2 primary, +1 other stats."), Level);
+        Notice = FString::Printf(TEXT("Level %d: +2 primary, +1 other stats. New skills: Skill Shop between waves."), Level);
         RefreshOffer();
     }
 }
@@ -264,6 +265,9 @@ void ACireHero::GrantExperience(int32 Amount)
 void ACireHero::RefreshOffer()
 {
     if (!HasAuthority() || !bDrafted || !Offers.IsEmpty() || !Cires::HasPendingAugment(Progression)) return;
+    // progression-shop: after the free opening role pick, skills come from the Skill Shop
+    // (Eric's playtest-2 ruling); level-ups only raise stats.
+    if (!Skills.IsEmpty() && CireSkillShop::IsSkillShopMode(GetWorld())) return;
     const std::uint64_t Seed = static_cast<std::uint64_t>(FMath::Rand()) ^
         (static_cast<std::uint64_t>(GetUniqueID()) << 32) ^
         static_cast<std::uint64_t>(Progression.NextAugmentLevel);

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "_comment": "Wave composer data (Docs/Waves.md). Edited live with F8 > Waves; counts are per lane.",
-  "breatherSeconds": 8,
+  "breatherSeconds": 20,
   "wavesPerCycle": 5,
   "cycles": 0,
   "cycleScaling": {

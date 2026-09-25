@@ -173,7 +173,7 @@ float CireCombat::ApplyHealing(ACireHero* Source, ACireHero* Target, float Amoun
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
     auto* Mode = Source->GetWorld()->GetAuthGameMode<ACireGameMode>();
     if (!Mode || !Mode->IsCombatPhase()) return 0;
-    const float Multiplier = (Source->HasSkill(TEXT("soul_conduit")) ? 1.25f : 1.f) * CireItems::HealingMultiplier(Source); // progression-shop
+    const float Multiplier = (Source->HasSkill(TEXT("soul_conduit")) ? 1.25f : 1.f) * CireItems::HealingMultiplier(Source, AbilityName); // progression-shop
     const float Before = Target->Health;
     Target->Health = FMath::Min(Target->MaxHealth, Before + Amount * Multiplier);
     const float Applied = FMath::Max(0.f, Target->Health - Before);

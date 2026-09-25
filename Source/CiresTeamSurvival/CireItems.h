@@ -60,7 +60,7 @@ namespace CireItems
     CIRESTEAMSURVIVAL_API void OnDamageDealt(AActor* Source, AActor* Target, float Applied, const FString& AbilityName);
     CIRESTEAMSURVIVAL_API float ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FString& AbilityName, float Amount);
     CIRESTEAMSURVIVAL_API void OnHeroDamaged(ACireHero* Hero, AActor* Causer, const FString& AbilityName, float Taken);
-    CIRESTEAMSURVIVAL_API float HealingMultiplier(const ACireHero* Source);
+    CIRESTEAMSURVIVAL_API float HealingMultiplier(const ACireHero* Source, const FString& AbilityName = FString());
 
     // ---- shop access / teleport (ServerAction 4 and 8) ----
     CIRESTEAMSURVIVAL_API Cires::Items::ShopAccess ShopAccessFor(const ACireHero* Hero);
@@ -92,6 +92,15 @@ struct CIRESTEAMSURVIVAL_API FCireItemSlot
     UPROPERTY() float Cooldown = 0;    // full duration of the last cooldown (UI sweep)
 };
 
+// progression-shop: a skill's Skill Shop level (1 = learned; no cap).
+USTRUCT()
+struct CIRESTEAMSURVIVAL_API FCireSkillRank
+{
+    GENERATED_BODY()
+    UPROPERTY() FString Id;
+    UPROPERTY() int32 Level = 1;
+};
+
 USTRUCT()
 struct CIRESTEAMSURVIVAL_API FCireTimedBuff
 {
@@ -102,7 +111,7 @@ struct CIRESTEAMSURVIVAL_API FCireTimedBuff
 };
 
 UENUM()
-enum class ECireShopAction : uint8 { Buy, Sell, Undo, Use, Loot, Teleport, Swap, Announce };
+enum class ECireShopAction : uint8 { Buy, Sell, Undo, Use, Loot, Teleport, Swap, Announce, SkillBuy, SkillLevel };
 
 USTRUCT()
 struct CIRESTEAMSURVIVAL_API FCireShopFeedback
@@ -146,6 +155,7 @@ public:
     UPROPERTY(Replicated) int32 LootScore = 0;
     UPROPERTY(Replicated) int32 UndoDepth = 0;
     UPROPERTY(Replicated) bool bShopVisit = false;
+    UPROPERTY(Replicated) TArray<FCireSkillRank> SkillRanks;   // Skill Shop levels
 
     // ---- client requests (owning client only) ----
     UFUNCTION(Server, Reliable) void ServerBuy(FName ItemId);
@@ -156,6 +166,12 @@ public:
     UFUNCTION(Server, Reliable) void ServerShopOpen(bool bOpen);
     UFUNCTION(Client, Reliable) void ClientFeedback(const FCireShopFeedback& Feedback);
     UFUNCTION(Client, Reliable) void ClientLootReport(const FCireLootReport& Report);
+    UFUNCTION(Server, Reliable) void ServerBuySkill(const FString& SkillId);
+    UFUNCTION(Server, Reliable) void ServerLevelSkill(const FString& SkillId);
+    // Host/standalone only, before the first wave: 0 Classic Draft, 1 Skill Shop.
+    UFUNCTION(Server, Reliable) void ServerSetProgressionMode(uint8 NewMode);
+    // Kill bounty feedback ("+3g" over the kill; Kind = Cires::Items::BountyKind).
+    UFUNCTION(Client, Unreliable) void ClientGoldGain(int32 Amount, FVector_NetQuantize Where, uint8 Kind);
 
     // ---- authoritative operations (also used by bots, loot and tests) ----
     bool Buy(FName ItemId, FString& Message);
@@ -185,6 +201,12 @@ public:
     // Local (client) feedback queue consumed by the shop UI.
     TArray<FCireShopFeedback> PendingFeedback;
     TArray<FCireLootReport> PendingLoot;
+    struct FGoldGain { int32 Amount = 0; FVector Where = FVector::ZeroVector; uint8 Kind = 0; };
+    TArray<FGoldGain> PendingGold;
+    // Skill Shop cast scaling bookkeeping (server).
+    TArray<float> LastCooldowns;
+    float LastMana = -1.f, LastEnergy = -1.f;
+    float BotSkillTimer = 0.f;
     // Server-only runtime
     float ItemCDRApplied = 0;
     int32 BasicHitCounter = 0;

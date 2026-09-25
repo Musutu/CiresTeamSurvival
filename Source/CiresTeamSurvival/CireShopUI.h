@@ -21,6 +21,8 @@ namespace CireShopUI
     CIRESTEAMSURVIVAL_API void DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller);
     // Compact movable stats window (CireStatsPanel.cpp).
     CIRESTEAMSURVIVAL_API void DrawStatsWindow(ACireHUD& HUD, ACireHero* Hero);
+    // Skill Shop tab (K): opens the shop on the skill tab, or closes it.
+    CIRESTEAMSURVIVAL_API void ToggleSkillShop(ACireController* Controller);
     // Personal loot history (toggle: L), newest first.
     CIRESTEAMSURVIVAL_API void DrawLootLog(ACireHUD& HUD, ACireHero* Hero);
 
@@ -44,6 +46,9 @@ namespace CireShopUI
     CIRESTEAMSURVIVAL_API void DebugReset();
     // Virtual pointer for offscreen captures (logical units); (-1,-1) clears.
     CIRESTEAMSURVIVAL_API void DebugMouse(FVector2D Logical);
+    CIRESTEAMSURVIVAL_API void DebugSkillTab(const FString& SkillId);
+    CIRESTEAMSURVIVAL_API void DebugItemTab();
+    CIRESTEAMSURVIVAL_API FVector2D DebugSkillGridPos(const FString& SkillId);
     // Freezes UI animation time at (latest feedback event + Age); Age < 0 unfreezes.
     CIRESTEAMSURVIVAL_API void DebugFreezeAfterLastEvent(float Age);
     CIRESTEAMSURVIVAL_API FVector2D DebugGridPos(FName ItemId);
