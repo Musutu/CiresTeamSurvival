@@ -27,6 +27,15 @@ share a scene (ether_golem, paladin, troll_berserker). Source PNGs (1672x941):
 | whisp | lantern-lit twilight woodland path |
 | evergrove_centaur | spring meadow grove with a stone circle |
 | keeper_of_light | drowned city with a great lighthouse lantern |
+| gunblade | gallows crossroads outside a burned village at dusk (new champions, art-2d) |
+| witch_slayer | witch's clearing with a broken blue-fire ritual circle (new champions, art-2d) |
+| huntress | moonlit forest ridge with sabercat tracks in the frost (new champions, art-2d) |
+| aetheri | Aetheri workshop plaza of crystal spires and warp rings (Aetheri Artificer) |
+| aetheri_warden | Aetheri sanctuary terrace with warding pylons and aurora |
+
+The five new-champion scenes (gunblade, witch_slayer, huntress, aetheri, aetheri_warden) were
+**generated for Eric via ChatGPT (OpenAI), 2026-09-25**, using the ranger scene above as the style
+reference, 1672x941 like the rest. Which profile shows which scene is in `Content/Data/DraftBackgrounds.json`.
 
 ## M_DraftCutout.uasset
 
