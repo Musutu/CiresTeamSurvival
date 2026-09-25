@@ -17,8 +17,8 @@
     "stuckSeconds": 5
   },
   "pacing": {
-    "_comment": "breatherSeconds is the Skill Shop window after each cleared wave; earlyContinue ends it once every human is Ready. Waves appear spawnAlongRoute of the way down the road and walk marchSpeed x faster while not fighting (Docs/Waves.md).",
-    "spawnAlongRoute": 0.3,
+    "_comment": "breatherSeconds is the Skill Shop window after each cleared wave; earlyContinue ends it once every human is Ready. Waves appear spawnAlongRoute of the way down the road (0 = at the rift, per Eric) and walk marchSpeed x faster while not fighting (Docs/Waves.md).",
+    "spawnAlongRoute": 0.0,
     "marchSpeed": 1.25,
     "firstWaveDelay": 8,
     "earlyContinue": true,
