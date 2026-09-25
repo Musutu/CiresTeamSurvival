@@ -38,6 +38,8 @@ public:
     FVector MotionPitchAxis = FVector(1,0,0);
     // new-champions: 1 = seated rider (thighs forward, knees bent), used by mounted champions.
     float SeatWeight = 0.f;
+    // new-champions: 1 = lower arms that the body's idle keeps near T-pose (some Tripo retargets); scaled by (1 - attack weight).
+    float RelaxArms = 0.f;
 protected:
     virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;
 };

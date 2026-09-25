@@ -100,6 +100,38 @@ static void ApplySeatPose(FCompactPose& Pose,float Weight,FVector PitchAxis)
     Rotate(TEXT("spine_01"),PitchAxis,6);
 }
 
+// new-champions: swing each upper arm from where the pose holds it toward "down at the side, slightly out and
+// forward". Works in component space from the bone positions, so it needs no knowledge of the rig's axes.
+static void ApplyRelaxedArms(FCompactPose& Pose,float Weight)
+{
+    if(Weight<=.001f)return;
+    const auto& Bones=Pose.GetBoneContainer();
+    const auto Index=[&](const TCHAR* Name){const int32 I=Bones.GetReferenceSkeleton().FindBoneIndex(Name);return I==INDEX_NONE?FCompactPoseBoneIndex(INDEX_NONE):Bones.MakeCompactPoseIndex(FMeshPoseBoneIndex(I));};
+    const auto World=[&](FCompactPoseBoneIndex Bone){FTransform T=Pose[Bone];for(Bone=Bones.GetParentBoneIndex(Bone);Bone.IsValid();Bone=Bones.GetParentBoneIndex(Bone))T*=Pose[Bone];return T;};
+    const auto Pelvis=Index(TEXT("pelvis")),Head=Index(TEXT("head"));
+    if(!Pelvis.IsValid()||!Head.IsValid())return;
+    const FVector Up=(World(Head).GetLocation()-World(Pelvis).GetLocation()).GetSafeNormal();
+    if(Up.IsNearlyZero())return;
+    for(const TCHAR* Side:{TEXT("_l"),TEXT("_r")})
+    {
+        const auto Upper=Index(*(FString(TEXT("upperarm"))+Side)),Lower=Index(*(FString(TEXT("lowerarm"))+Side));
+        if(!Upper.IsValid()||!Lower.IsValid())continue;
+        const FTransform UpperWorld=World(Upper);
+        const FVector Dir=(World(Lower).GetLocation()-UpperWorld.GetLocation()).GetSafeNormal();
+        if(Dir.IsNearlyZero())continue;
+        // Only arms raised well above hanging are relaxed; a pose that already hangs is left alone.
+        const float Hang=static_cast<float>(FVector::DotProduct(Dir,-Up));
+        if(Hang>.6f)continue;
+        const FVector Out=(Dir-Up*FVector::DotProduct(Dir,Up)).GetSafeNormal();
+        const FVector Target=(-Up*.94f+Out*.32f).GetSafeNormal();
+        const FQuat Swing=FQuat::Slerp(FQuat::Identity,FQuat::FindBetweenNormals(Dir,Target),FMath::Clamp(Weight,0.f,1.f));
+        const auto Parent=Bones.GetParentBoneIndex(Upper);
+        const FQuat ParentRot=Parent.IsValid()?World(Parent).GetRotation():FQuat::Identity;
+        const FQuat NewWorld=Swing*UpperWorld.GetRotation();
+        Pose[Upper].SetRotation((ParentRot.Inverse()*NewWorld).GetNormalized());
+    }
+}
+
 // Game-thread values are copied during PreUpdate, then evaluated on the animation worker.
 struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
 {
@@ -113,6 +145,7 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
     float AirWeight = 0.f, RollProgress = -1.f;
     FVector MotionPitchAxis=FVector(1,0,0);
     float SeatWeight = 0.f; // new-champions
+    float RelaxArms = 0.f; // new-champions
     virtual void PreUpdate(UAnimInstance* Instance, float DeltaSeconds) override
     {
         FAnimSingleNodeInstanceProxy::PreUpdate(Instance, DeltaSeconds);
@@ -124,7 +157,7 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
         Hands = Combat->Hands; // creature-anim
         SpineTwist = Combat->SpineTwist; // creature-anim
         AirWeight=Combat->AirWeight;RollProgress=Combat->RollProgress;MotionPitchAxis=Combat->MotionPitchAxis;
-        SeatWeight=Combat->SeatWeight; // new-champions
+        SeatWeight=Combat->SeatWeight; RelaxArms=Combat->RelaxArms; // new-champions
     }
     virtual bool Evaluate(FPoseContext& Output) override
     {
@@ -146,6 +179,7 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
         }
         if(bEvaluated)ApplyMobilityPose(Output.Pose,AirWeight,RollProgress,MotionPitchAxis);
         if(bEvaluated&&SeatWeight>0)ApplySeatPose(Output.Pose,SeatWeight,MotionPitchAxis); // new-champions: mounted rider
+        if(bEvaluated&&RelaxArms>0)ApplyRelaxedArms(Output.Pose,RelaxArms*(1.f-FMath::Clamp(AttackWeight,0.f,1.f))); // new-champions: T-pose idles
         if(bEvaluated)CireGrip::TwistSpine(Output.Pose,SpineTwist); // creature-anim: sweeping swings
         if(bEvaluated&&Hands.Any())CireGrip::Apply(Output.Pose,Hands); // creature-anim: grips
         return bEvaluated;
@@ -371,6 +405,11 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
     Hero.CacheInitialMeshOffset(Mesh->GetRelativeLocation(), Mesh->GetRelativeRotation());
     Mesh->SetAnimInstanceClass(UCireCombatAnimInstance::StaticClass());
     if (auto* Animation = Mesh->GetSingleNodeInstance()) Animation->SetAnimationAsset(Blend, true);
+    if (auto* Combat = Cast<UCireCombatAnimInstance>(Mesh->GetSingleNodeInstance()))
+    {   // new-champions: bodies whose idle keeps the arms up (ChampionArtBindings "relaxArms").
+        bool bRelax = false; if (Profile && Profile->Raw.IsValid()) Profile->Raw->TryGetBoolField(TEXT("relaxArms"), bRelax);
+        Combat->RelaxArms = bRelax ? 1.f : 0.f;
+    }
     Mesh->SetOverlayMaterial(Overlay);
     Locomotion = Blend;
     AttackAnimation = LoadObject<UAnimSequence>(nullptr, *Definition.AttackPath);

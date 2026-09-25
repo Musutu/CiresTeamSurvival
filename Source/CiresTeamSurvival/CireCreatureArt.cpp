@@ -449,6 +449,7 @@ bool UCireCreatureArt::ApplyBinding(ACireHero& Hero,const FString& Profile,const
             Rider->AttachToComponent(Parent,FAttachmentTransformRules::KeepWorldTransform,SeatBone);
             if(auto* Blend=LoadObject<UBlendSpace>(nullptr,*LocoPath);Blend&&Blend->GetSkeleton()==RiderMesh->GetSkeleton())
             {RiderLocomotion=Blend;if(auto* Single=Rider->GetSingleNodeInstance()){Single->SetAnimationAsset(Blend,true);Single->SetBlendSpacePosition(FVector::ZeroVector);Single->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);}}
+            bool bRelax=false;(*R)->TryGetBoolField(TEXT("relaxArms"),bRelax);bRiderRelax=bRelax;
             RiderAttack=LoadObject<UAnimSequence>(nullptr,*AttackPath);if(RiderAttack&&RiderAttack->GetSkeleton()!=RiderMesh->GetSkeleton())RiderAttack=nullptr;
             const TArray<TSharedPtr<FJsonValue>>* RiderProps=nullptr;
             if((*R)->TryGetArrayField(TEXT("props"),RiderProps))AttachProps(Hero,Rider,RiderProps,RScale);
@@ -523,7 +524,7 @@ void UCireCreatureArt::UpdateNative(ACireHero& Hero,float Dt)
     {
         if(auto* Combat=Cast<UCireCombatAnimInstance>(Rider->GetSingleNodeInstance()))
         {
-            Combat->SeatWeight=1.f;
+            Combat->SeatWeight=1.f;Combat->RelaxArms=bRiderRelax?1.f:0.f;
             const FVector Lateral=FVector::CrossProduct(FVector::UpVector,Hero.GetActorForwardVector()).GetSafeNormal();
             Combat->MotionPitchAxis=Rider->GetComponentQuat().UnrotateVector(Lateral);
             Combat->SetPlaying(!Hero.bDead);

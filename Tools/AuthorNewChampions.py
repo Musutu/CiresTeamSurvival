@@ -136,7 +136,7 @@ BINDINGS = [
                     "walk": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Walk.WolfAnimalArmature_Walk",
                     "run": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Gallop.WolfAnimalArmature_Gallop",
                     "attack": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Attack.WolfAnimalArmature_Attack"},
-     "tint": {"base": [0.3, 0.24, 0.18], "accent": [0.55, 0.12, 0.08], "strength": 0.8},
+     "tint": {"base": [0.78, 0.62, 0.46], "accent": [0.55, 0.12, 0.08], "strength": 0.8},
      "rider": {"mesh": "/Game/TripoModels/armored_archer_3d_model/armored_archer_3d_model.armored_archer_3d_model",
                "locomotion": "/Game/Art/Characters/TripoRetarget/Preview02/Ranger/Animations/BS_Idle_Walk_Run_Ranger.BS_Idle_Walk_Run_Ranger",
                "attack": "/Game/Art/Characters/CombatPrototype01/Ranger/A_Ranger_Attack.A_Ranger_Attack", "heightCm": 172,
@@ -314,6 +314,8 @@ def upsert_roster(text: str) -> str:
 
 
 TRIPO = DATA / "ChampionArt.tripo.json"
+# The Tripo idle of these bodies keeps the arms near T-pose (the carry grips of the others hide it): the runtime lowers them.
+RELAX_ARMS = {"gunblade", "huntress"}
 BINDING_KEYS = ("profileId", "status", "mesh", "locomotion", "attack", "heightCm")
 
 
@@ -336,6 +338,8 @@ def final_bindings() -> list:
             continue
         if row.get("motion") == "mounted":
             rider = copy.deepcopy(t.get("riderBinding") or {})
+            if rider and row["profileId"] in RELAX_ARMS:
+                rider["relaxArms"] = True
             if rider:
                 row["rider"] = rider
             row["tripoSlot"]["delivered"] = "rider: " + t["mesh"] + "; mount (no clips yet): " + t.get("mount", {}).get("mesh", "")
@@ -344,6 +348,8 @@ def final_bindings() -> list:
             out.append(row)
             continue
         bound = {k: t[k] for k in BINDING_KEYS}
+        if row["profileId"] in RELAX_ARMS:
+            bound["relaxArms"] = True
         bound["note"] = "Tripo model (tripo-races). Temporary body before it: " + row.get("note", "")
         bound["tripoSlot"] = dict(row["tripoSlot"], delivered=t["mesh"])
         out.append(bound)

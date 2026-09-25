@@ -27,6 +27,10 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "ShaderCompiler.h"
+#include "Animation/AnimSingleNodeInstance.h"
+#include "Animation/AnimSequence.h"
+#include "Animation/BlendSpace.h"
+#include "Engine/SkeletalMesh.h"
 #include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireNewChampionsGallery, Log, All);
@@ -298,8 +302,29 @@ void EnterStage(const FStage& S)
     }
 }
 
+void Diagnose()
+{
+    for (const auto& Pair : G.Heroes)
+    {
+        ACireHero* H = Pair.Value.Get(); if (!H) continue;
+        USkeletalMeshComponent* Mesh = H->GetMesh();
+        FString Line = FString::Printf(TEXT("CIRE_NEW_CHAMPIONS_GALLERY_POSE %s mesh=%s anim=%s"), *Pair.Key,
+            Mesh->GetSkeletalMeshAsset() ? *Mesh->GetSkeletalMeshAsset()->GetName() : TEXT("none"), Mesh->GetAnimInstance() ? *Mesh->GetAnimInstance()->GetClass()->GetName() : TEXT("none"));
+        const float Feet = static_cast<float>(H->GetActorLocation().Z - H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+        if (Mesh->GetBoneIndex(TEXT("hand_r")) != INDEX_NONE) Line += FString::Printf(TEXT(" hand_r_above_feet=%.0f hand_l_above_feet=%.0f"), Mesh->GetBoneLocation(TEXT("hand_r")).Z - Feet, Mesh->GetBoneLocation(TEXT("hand_l")).Z - Feet);
+        if (auto* C = Cast<UCireCombatAnimInstance>(Mesh->GetAnimInstance()))
+            Line += FString::Printf(TEXT(" attackW=%.2f seq=%s handsW=%.2f/%.2f two=%d carry=%d twoW=%.2f air=%.2f roll=%.2f seat=%.2f twist=%.1f"), C->AttackWeight, C->AttackSequence ? *C->AttackSequence->GetName() : TEXT("none"),
+                C->Hands.Weight[0], C->Hands.Weight[1], C->Hands.bTwoHand ? 1 : 0, C->Hands.bCarry ? 1 : 0, C->Hands.TwoHandWeight, C->AirWeight, C->RollProgress, C->SeatWeight, C->SpineTwist);
+        if (auto* Single = Mesh->GetSingleNodeInstance())
+            if (auto* Blend = Cast<UBlendSpace>(Single->GetAnimationAsset()))
+                for (const FBlendSample& Sample : Blend->GetBlendSamples())
+                    if (auto* Seq = Cast<UAnimSequence>(Sample.Animation.Get())) Line += FString::Printf(TEXT(" %s:%d"), *Seq->GetName().Right(12), Seq->IsCompressedDataValid() ? 1 : 0);
+        UE_LOG(LogCireNewChampionsGallery, Display, TEXT("%s"), *Line);
+    }
+}
 void Capture(const FStage& S)
 {
+    Diagnose();
     const FString File = FPaths::Combine(G.Directory, FString::Printf(TEXT("%02d_%s.png"), G.Stage + 1, *S.Name));
     FScreenshotRequest::RequestScreenshot(File, false, false, false, FIntRect(), true);
     G.Captures.Add(File);
@@ -336,6 +361,12 @@ bool Build(ACireGameMode& Mode, ACireController& Controller)
     for (const FStage& S : All)
         if (G.Only.IsEmpty() || G.Only.ContainsByPredicate([&S](const FString& Prefix) { return S.Name.StartsWith(Prefix); })) G.Stages.Add(S);
     G.bBuilt = true;
+    if (auto* Cat = LoadObject<USkeletalMesh>(nullptr, TEXT("/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat"), nullptr, LOAD_Quiet | LOAD_NoWarn))
+    {
+        FString Bones; const auto& Ref = Cat->GetRefSkeleton();
+        for (int32 I = 0; I < Ref.GetNum(); ++I) Bones += Ref.GetBoneName(I).ToString() + TEXT("<") + (Ref.GetParentIndex(I) >= 0 ? Ref.GetBoneName(Ref.GetParentIndex(I)).ToString() : FString(TEXT("-"))) + TEXT(" ");
+        UE_LOG(LogCireNewChampionsGallery, Display, TEXT("CIRE_NEW_CHAMPIONS_GALLERY_SABERCAT bones=%d %s"), Ref.GetNum(), *Bones);
+    }
     UE_LOG(LogCireNewChampionsGallery, Display, TEXT("CIRE_NEW_CHAMPIONS_GALLERY_READY stages=%d hold=%s"), G.Stages.Num(), *G.Hold.ToString());
     return G.Stages.Num() > 0;
 }

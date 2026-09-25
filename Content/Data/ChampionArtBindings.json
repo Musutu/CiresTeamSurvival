@@ -157,6 +157,7 @@
       "locomotion": "/Game/Tripo/Champions/Gunblade/Animations/BS_Idle_Walk_Run_Gunblade.BS_Idle_Walk_Run_Gunblade",
       "attack": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_slash.CTS_Champ_Gunblade_slash",
       "heightCm": 182,
+      "relaxArms": true,
       "note": "Tripo model (tripo-races). Temporary body before it: Temporary body: the scarecrow-hatted BarbedHunterB monster (its crossbow is fused into the right hand and reads as the gun); falchion on the off hand.",
       "tripoSlot": {
         "unit": "gunblade",
@@ -209,9 +210,9 @@
       },
       "tint": {
         "base": [
-          0.3,
-          0.24,
-          0.18
+          0.78,
+          0.62,
+          0.46
         ],
         "accent": [
           0.55,
@@ -232,7 +233,8 @@
             "asset": "/Game/Tripo/Props/HuntressGlaiveLauncher/CTS_Prop_HuntressGlaiveLauncher.CTS_Prop_HuntressGlaiveLauncher",
             "bone": "hand_l"
           }
-        ]
+        ],
+        "relaxArms": true
       },
       "tripoSlot": {
         "unit": "huntress (rider) + huntress_sabercat (mount)",

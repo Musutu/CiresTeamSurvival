@@ -82,6 +82,7 @@ private:
     FName SeatBone;
     float NativeWalkRaw=0,NativeRunRaw=0,NativePhase=0,NativeIdleTime=0;
     uint32 SeenAttackSerial=0;
+    bool bRiderRelax=false;
     double AttackSeenAt=-100;
     void UpdateNative(ACireHero& Hero,float Delta);
     void AttachProps(ACireHero& Hero,USkeletalMeshComponent* Body,const TArray<TSharedPtr<FJsonValue>>* List,float MeshScale);
