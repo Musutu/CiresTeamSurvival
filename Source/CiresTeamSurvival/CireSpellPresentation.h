@@ -82,6 +82,7 @@ private:
     EMode Mode = EMode::Legacy;
     FCireHitShape Shape;
     float StartDelay = 0, LaneLength = 0, LaneWidth = 0, GroundZ = -88.f, AreaActiveAge = -1, FadeOutAt = -1, ReleasedAge = -1;
+    bool bChainHop = false, bHarmlessArea = false; FVector HopFrom = FVector::ZeroVector;
     bool bHostile = false, bSoundPending = false, bGroundProbed = false, bAreaPersistent = true, bShakeDone = false;
     TWeakObjectPtr<AActor> CastSource;
     FVector LaneOrigin = FVector::ZeroVector, LaneDirection = FVector::ForwardVector;

@@ -322,6 +322,56 @@ bool CireProgression::RunSmoke(ACireGameMode* Mode)
     for (uint64 Seed = 1; Seed <= 400; ++Seed) { MinorGold += CI::RollLoot(*Minor, 1, 1, Seed, Loot.Scaling).Gold; EliteGold += CI::RollLoot(*Elite, 6, 1, Seed, Loot.Scaling).Gold; }
     Check(EliteGold > MinorGold * 4, TEXT("higher tiers pay much more"));
 
+    // ---- personal loot: independent rolls, owner-only chests, eligibility, bots auto-loot, auto-collect summary
+    for (TActorIterator<ACireLootDrop> It(Mode->GetWorld()); It; ++It) It->Destroy();
+    for (ACireHero* H : Team) Mode->Heroes.Remove(H); // earlier fixture party must not count as nearby teammates
+    Check(Loot.bPersonal && Loot.bBotsAutoLoot, TEXT("personal loot is the default distribution"));
+    TArray<ACireHero*> Party;
+    for (int32 Index = 0; Index < 5; ++Index) Party.Add(F.Hero(1, Index % 3, FVector(120, Index * 130 - 260, 0)));
+    for (ACireHero* H : Party) { H->Gold = 0; H->Inventory->LootScore = 0; }
+    Party[3]->bBot = true;                                                        // bot: auto-loots, no chest
+    Party[4]->SetActorLocation(Mode->BasePosition(1) + FVector(9000, 0, 0));     // far away and never helped: ineligible
+    Party[2]->SetActorLocation(Mode->BasePosition(1) + FVector(8000, 400, 0));   // far away but helped: eligible
+    ACireMonster* Boss = F.Monster(1, Mode->BasePosition(1) + FVector(900, 0, 0));
+    CireNPCCombat::ConfigureArchetype(Boss, CireNPCArchetypes::Get().PackLeader, 1, 4, 1);
+    Boss->PackId = 4321;
+    CireLoot::NoteContribution(Party[2], Boss);
+    const TArray<ACireHero*> Eligible = CireLoot::EligibleFor(Mode, Boss, Boss->GetActorLocation());
+    Check(Eligible.Num() == 4 && Eligible.Contains(Party[2]) && !Eligible.Contains(Party[4]), TEXT("eligible = contributed or alive within 40 m"));
+    CireLoot::OnMonsterKilled(Mode, Boss, Party[0], true);
+    TMap<ACireHero*, ACireLootDrop*> Chests;
+    int32 ChestCount = 0;
+    for (TActorIterator<ACireLootDrop> It(Mode->GetWorld()); It; ++It) { ++ChestCount; Chests.Add(It->OwnerHero, *It); }
+    Check(ChestCount == 3 && Chests.Contains(Party[0]) && Chests.Contains(Party[1]) && Chests.Contains(Party[2]), TEXT("each eligible player gets their own chest"));
+    Check(!Chests.Contains(Party[3]) && Party[3]->Gold > 0, TEXT("bots auto-loot their personal roll"));
+    Check(!Chests.Contains(Party[4]) && Party[4]->Gold == 0, TEXT("ineligible players get nothing"));
+    ACireLootDrop* Mine = Chests.FindRef(Party[0]);
+    ACireLootDrop* Theirs = Chests.FindRef(Party[1]);
+    if (!Mine || !Theirs) { Check(false, TEXT("personal chests")); return false; }
+    Check(Mine->bOnlyRelevantToOwner && Mine->GetOwner() == Party[0] && Mine->IsNetRelevantFor(nullptr, Party[0], FVector::ZeroVector) &&
+        !Mine->IsNetRelevantFor(nullptr, Party[1], FVector::ZeroVector), TEXT("a personal chest replicates only to its owner"));
+    Check(!Mine->CanBeOpenedBy(Party[1]) && !Mine->Open(Party[1]) && !Mine->bOpened, TEXT("a teammate cannot open your chest"));
+    bool bAllSame = true;
+    for (const auto& Pair : Chests)
+        bAllSame &= Pair.Value->Bundle.Gold == Mine->Bundle.Gold && Pair.Value->Bundle.Experience == Mine->Bundle.Experience && Pair.Value->Bundle.Items == Mine->Bundle.Items;
+    Check(!bAllSame, TEXT("rolls are independent per player"));
+    const int32 OwnGold = Party[0]->Gold;
+    Check(Mine->Open(Party[0]) && Mine->bOpened && Party[0]->Gold > OwnGold && Mine->Manifest.Num() > 0, TEXT("the owner opens their chest"));
+    TMap<TWeakObjectPtr<ACireHero>, FCireLootReport> Summaries;
+    Check(CireLoot::CollectAll(Mode, &Summaries) == 2 && Summaries.Num() == 2, TEXT("prep auto-collects the two unopened chests"));
+    const FCireLootReport* Summary = Summaries.Find(Party[1]);
+    Check(Summary && Summary->bAutoCollected && Summary->Chests == 1 && Summary->Lines.Num() > 0 && Summary->Source.Contains(TEXT("Auto-collected")), TEXT("auto-collect sends a per-owner summary"));
+    Cires::Items::LootBundle Tomes; Tomes.PrimaryTomes = {2};
+    const int32 Strength = Party[0]->Strength;
+    const FCireLootReport TomeReport = CireLoot::GrantPersonal(Party[0], Tomes, TEXT("Probe"), TEXT("why"), false);
+    Check(TomeReport.Lines.Num() == 1 && TomeReport.Lines[0].Text.Contains(TEXT("+2 Strength")) && Party[0]->Strength == Strength + 2, TEXT("stat tomes state the exact stat gained"));
+    const CI::LootTable* Major = Loot.Tables.Find(TEXT("pack_major"));
+    const double SharedDrops = Major ? CI::ExpectedPersonalDrops(*Major, 3, 1, Loot.Scaling, 1) : 0;
+    bool bSameTotals = Major != nullptr;
+    for (int32 Players = 1; Players <= 5; ++Players)
+        bSameTotals &= FMath::IsNearlyEqual(CI::ExpectedPersonalDrops(*Major, 3, 1, Loot.Scaling, CI::PersonalItemShare(Players, Loot.PersonalFactor)) * Players, SharedDrops, 1e-6);
+    Check(bSameTotals, TEXT("team-wide expected tomes/items match one shared roll for 1-5 players"));
+
     // ---- teleport to base: channel, damage interrupt, completion cooldown, instant prep recall
     F.Survival();
     ACireHero* Traveler = F.Hero(0, 1, FVector(4000, 0, 0));

@@ -30,6 +30,11 @@ struct CIRESTEAMSURVIVAL_API FCireLootData
     TArray<FCireLootSource> PackCompletion, PackLeader, LaneBoss;
     float PickupRadius = 320.f;
     bool bAutoCollectOnPrep = true;
+    // Personal loot (default): every eligible player gets an independent roll and a chest only they see.
+    bool bPersonal = true;
+    float EligibleRadius = 4000.f;   // alive teammates this close to the kill are eligible even without damage
+    double PersonalFactor = 1.0;     // team-wide tome/item multiplier (1 = same team total as one shared roll)
+    bool bBotsAutoLoot = true;
     FString Error;
     bool bValid = false;
 };
@@ -39,9 +44,29 @@ USTRUCT()
 struct CIRESTEAMSURVIVAL_API FCireLootLine
 {
     GENERATED_BODY()
-    UPROPERTY() FName ItemId;       // None for gold/xp/tome lines
-    UPROPERTY() FString Text;
+    UPROPERTY() FName ItemId;       // None for gold/xp lines; tome lines carry the tome item id
+    UPROPERTY() FString Text;       // "+3 Strength (primary attribute)", "Bone Dagger"
     UPROPERTY() uint8 Kind = 0;     // Cires::Items::LootKind
+    UPROPERTY() int32 Amount = 0;   // gold, XP or tome points
+    UPROPERTY() int32 Rarity = 0;   // 0 common .. 3 legendary
+    UPROPERTY() int32 Slot = -1;    // bag/belt slot the item landed in (-1: converted or none)
+    UPROPERTY() bool bBelt = false;
+    UPROPERTY() int32 ConvertedGold = 0;
+};
+
+// What one player received from one (or several auto-collected) personal chests.
+USTRUCT()
+struct CIRESTEAMSURVIVAL_API FCireLootReport
+{
+    GENERATED_BODY()
+    UPROPERTY() FString Source;     // "Gravemaw, Pack Leader"
+    UPROPERTY() FString Why;        // "Personal loot: you helped clear the Tier 3 pack"
+    UPROPERTY() TArray<FCireLootLine> Lines;
+    UPROPERTY() int32 Gold = 0;
+    UPROPERTY() int32 Experience = 0;
+    UPROPERTY() int32 Chests = 1;
+    UPROPERTY() int32 Rarity = 0;
+    UPROPERTY() bool bAutoCollected = false;
 };
 
 namespace CireLoot
@@ -59,8 +84,19 @@ namespace CireLoot
     // Gold/XP to every team member; tomes and items rotate to the lowest loot score.
     CIRESTEAMSURVIVAL_API TArray<FCireLootLine> Distribute(ACireGameMode* Mode, int32 Team,
         const Cires::Items::LootBundle& Bundle, const FString& Source, uint64 Seed);
-    // Opens every unopened chest (e.g. when prep begins, so no loot is lost to phase changes).
-    CIRESTEAMSURVIVAL_API int32 CollectAll(ACireGameMode* Mode);
+    // Opens every unopened chest (e.g. when prep begins, so no loot is lost to phase changes);
+    // each owner gets one merged "auto-collected" report.
+    CIRESTEAMSURVIVAL_API int32 CollectAll(ACireGameMode* Mode, TMap<TWeakObjectPtr<ACireHero>, FCireLootReport>* OutReports = nullptr);
+    // Personal loot: records who damaged a loot source (a pack or a boss) for eligibility.
+    CIRESTEAMSURVIVAL_API void NoteContribution(AActor* Source, AActor* Target);
+    // Eligible teammates: contributed to the source, or alive within EligibleRadius of the kill.
+    CIRESTEAMSURVIVAL_API TArray<ACireHero*> EligibleFor(ACireGameMode* Mode, ACireMonster* Monster, FVector Location);
+    // Grants one player's bundle (gold, XP, tomes, items) and returns what they received.
+    CIRESTEAMSURVIVAL_API FCireLootReport GrantPersonal(ACireHero* Hero, const Cires::Items::LootBundle& Bundle,
+        const FString& Source, const FString& Why, bool bSendReport);
+    CIRESTEAMSURVIVAL_API class ACireLootDrop* SpawnPersonalDrop(ACireGameMode* Mode, ACireHero* Owner, FVector Location,
+        const Cires::Items::LootBundle& Bundle, int32 Tier, const FString& Label, const FString& Why, uint64 Seed);
+    CIRESTEAMSURVIVAL_API void ForgetContributions(ACireGameMode* Mode);
 }
 
 namespace CireProgression
@@ -91,12 +127,16 @@ public:
     virtual void Tick(float DeltaSeconds) override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
     virtual bool IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const override;
-    bool Open(ACireHero* Opener);
+    // Only the owner (or the server's auto-collect, Opener == nullptr) can open a personal chest.
+    bool Open(ACireHero* Opener, FCireLootReport* OutReport = nullptr);
+    bool CanBeOpenedBy(const ACireHero* Opener) const;
 
     UPROPERTY(Replicated) int32 TeamId = -1;
     UPROPERTY(Replicated) int32 Rarity = 0;
     UPROPERTY(Replicated) int32 Tier = 1;
     UPROPERTY(Replicated) FString Label;
+    UPROPERTY(Replicated) FString Why;
+    UPROPERTY(Replicated) TObjectPtr<ACireHero> OwnerHero; // personal chest owner (null = legacy team chest)
     UPROPERTY(ReplicatedUsing=OnRep_Opened) bool bOpened = false;
     UPROPERTY(Replicated) TArray<FCireLootLine> Manifest; // filled on open for the pickup banner
     Cires::Items::LootBundle Bundle;                       // server only

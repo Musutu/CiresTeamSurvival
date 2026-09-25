@@ -218,10 +218,10 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintActive(FCireGroundMesh& G,cons
     if(bConvex)
     {
         const auto Inner=Offset(Boundary,-Feather);
-        FillLoop(G,Inner,true,Pivot,A(.10f*Breathe+.45f*Flash,1+Flash),A(.2f*Breathe+.4f*Flash,1+Flash));
-        G.Band(Inner,Boundary,A(.2f*Breathe+.4f*Flash,1+Flash),A(.36f+.3f*Flash,1.2f+Flash),true);
+        FillLoop(G,Inner,true,Pivot,A(.10f*Breathe+.22f*Flash,1+.4f*Flash),A(.2f*Breathe+.22f*Flash,1+.4f*Flash));
+        G.Band(Inner,Boundary,A(.2f*Breathe+.22f*Flash,1+.4f*Flash),A(.36f+.2f*Flash,1.2f+.4f*Flash),true);
     }
-    else FillLoop(G,Boundary,false,Pivot,A(.2f+.4f*Flash),A(.26f+.4f*Flash));
+    else FillLoop(G,Boundary,false,Pivot,A(.2f+.25f*Flash),A(.26f+.25f*Flash));
     Outline(G,Boundary,FMath::Clamp(Size*.01f,2.f,4.f),FMath::Clamp(Size*.06f,8.f,26.f),A((.7f+.3f*Breathe)*(bPersistent?1.f:.9f),1.5f),1.2f);
     if(bPersistent)
     {

@@ -14,6 +14,13 @@
     "maxTier": 8
   },
   "pickup": { "radius": 320, "autoCollectOnPrep": true },
+  "distribution": {
+    "_comment": "personal (default): every eligible teammate rolls every table independently and gets a chest only they can see/open. Eligible = damaged the pack/boss, or alive within eligibleRadius cm of the kill. Gold/XP entries keep their full chance per player; tome/item chances are multiplied by personalItemFactor / eligiblePlayers so the team's expected tomes+items equal the old single shared roll. Bots auto-loot. teamRotation = the previous shared chest with lowest-loot-score rotation.",
+    "mode": "personal",
+    "eligibleRadius": 4000,
+    "personalItemFactor": 1.0,
+    "botsAutoLoot": true
+  },
   "sources": {
     "packCompletion": [ { "minTier": 1, "table": "pack_minor" }, { "minTier": 3, "table": "pack_major" }, { "minTier": 5, "table": "pack_elite" } ],
     "packLeader": [ { "minTier": 1, "table": "leader_minor" }, { "minTier": 4, "table": "leader_major" } ],

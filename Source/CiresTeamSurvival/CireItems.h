@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Rules/CiresRules.h"
 #include "Rules/CireItemRules.h"
+#include "CireLoot.h"
 #include "CireItems.generated.h"
 
 class ACireHero;
@@ -154,6 +155,7 @@ public:
     UFUNCTION(Server, Reliable) void ServerSwap(int32 From, int32 To);
     UFUNCTION(Server, Reliable) void ServerShopOpen(bool bOpen);
     UFUNCTION(Client, Reliable) void ClientFeedback(const FCireShopFeedback& Feedback);
+    UFUNCTION(Client, Reliable) void ClientLootReport(const FCireLootReport& Report);
 
     // ---- authoritative operations (also used by bots, loot and tests) ----
     bool Buy(FName ItemId, FString& Message);
@@ -162,7 +164,7 @@ public:
     bool UseSlot(int32 Index, bool bBeltSlot, FString& Message);
     bool SwapSlots(int32 From, int32 To);
     // Loot: places an item (or converts it to gold if there is no room). Returns false when converted.
-    bool GrantItem(FName ItemId, int32& ConvertedGold);
+    bool GrantItem(FName ItemId, int32& ConvertedGold, int32* OutSlot = nullptr, bool* OutBelt = nullptr);
     bool HasRoomFor(FName ItemId) const;
     void BeginShopVisit(bool bOpen);
     void EndShopVisit();
@@ -182,6 +184,7 @@ public:
 
     // Local (client) feedback queue consumed by the shop UI.
     TArray<FCireShopFeedback> PendingFeedback;
+    TArray<FCireLootReport> PendingLoot;
     // Server-only runtime
     float ItemCDRApplied = 0;
     int32 BasicHitCounter = 0;
