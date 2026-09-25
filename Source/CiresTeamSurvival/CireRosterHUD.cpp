@@ -321,6 +321,24 @@ TArray<FString> HowItPlays(const FCireChampionProfile& P)
     return Out;
 }
 FString Capitalized(FString S){if(!S.IsEmpty())S[0]=FChar::ToUpper(S[0]);return S;}
+// Stage light colours per painted scene so the champion reads as standing in it.
+struct FSceneMood{FLinearColor Key,Rim,Fill;};
+FSceneMood MoodFor(const FString& Bg)
+{
+    const FLinearColor Candle(1.f,.78f,.52f),Fire(1.f,.55f,.25f),Moon(.55f,.70f,1.f),Ether(.45f,1.f,.85f),Blood(1.f,.35f,.30f),Dawn(1.f,.88f,.70f),Violet(.70f,.55f,1.f);
+    if(Bg==TEXT("wizard")||Bg==TEXT("drakish_footman")||Bg==TEXT("dwarf_miner")||Bg==TEXT("orc_chieftain"))return {Candle,Fire,FLinearColor(.60f,.45f,.40f)};
+    if(Bg==TEXT("dryad")||Bg==TEXT("whisp")||Bg==TEXT("bear")||Bg==TEXT("ranger"))return {FLinearColor(.95f,.92f,.85f),Moon,FLinearColor(.45f,.55f,.60f)};
+    if(Bg==TEXT("ether_golem"))return {FLinearColor(.90f,.95f,.95f),Ether,FLinearColor(.40f,.60f,.60f)};
+    if(Bg==TEXT("troll_berserker"))return {Candle,Blood,FLinearColor(.55f,.35f,.35f)};
+    if(Bg==TEXT("summoner")||Bg==TEXT("lancer"))return {FLinearColor(.95f,.88f,.85f),Violet,FLinearColor(.50f,.45f,.65f)};
+    if(Bg==TEXT("evergrove_centaur")||Bg==TEXT("totemic_behemoth"))return {Dawn,FLinearColor(1.f,.80f,.55f),FLinearColor(.60f,.58f,.50f)};
+    if(Bg==TEXT("keeper_of_light"))return {Candle,Moon,FLinearColor(.45f,.52f,.65f)};
+    return {Candle,FLinearColor(1.f,.70f,.40f),FLinearColor(.55f,.60f,.72f)}; // knight, paladin, scholar: warm candle rim
+}
+// First word of the variant ("Granite", "Thrown", "Holy") tells look-alike champions apart.
+FString VariantWord(const FCireChampionProfile& P){FString W=P.Variant;int32 Space;if(W.FindChar(TEXT(' '),Space))W.LeftInline(Space);return W;}
+bool HasTwin(const FCireChampionProfile& P){int32 N=0;for(const auto& Q:CireChampionRoster::All())N+=Q.DisplayName==P.DisplayName;return N>1;}
+FString FullName(const FCireChampionProfile& P){return HasTwin(P)?P.DisplayName+TEXT(" · ")+VariantWord(P):P.DisplayName;}
 // UI material that composites the stage's alpha render (inverse opacity) over the backdrop.
 UMaterialInstanceDynamic* CutoutMaterial()
 {
@@ -624,7 +642,14 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     const bool bIdle=!Shown;
     if(!Shown&&S.Tiles.IsValidIndex(S.Cursor))Shown=S.Tiles[S.Cursor].Profile;
     if(!Shown)Shown=&CireChampionRoster::All()[0];
-    if(Stage&&!S.Portraits.bActive)Stage->ShowProfile(Shown->Id);
+    if(Stage&&!S.Portraits.bActive)
+    {
+        Stage->ShowProfile(Shown->Id);
+        // Face the camera in a 3/4 front pose with a slow idle sway, lit to match the scene.
+        Stage->SetTurntable(false,-18.f+6.f*FMath::Sin(static_cast<float>(Now)*.45f));
+        const FSceneMood Mood=MoodFor(BackgroundId(Shown->Id));
+        Stage->SetMood(Mood.Key,Mood.Rim,Mood.Fill);
+    }
     if(Shown->Id!=S.SplashId){S.SplashId=Shown->Id;S.SplashSince=Now;}
     const auto ShownPrimary=CireChampionProfiles::PrimaryRole(*Shown);
     const FLinearColor ShownColor=RoleColor(ShownPrimary);
@@ -708,19 +733,19 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         const bool bLive=Stage&&!S.Portraits.bActive&&Stage->GetProfileId()==Shown->Id&&Stage->IsPreviewReady();
         // Ground shadow and a role-coloured halo behind the figure.
         CireUIStyle::Glow(Pen(),Box.X+Box.W*.2f,Box.Y+Box.H*.15f,Box.W*.6f,Box.H*.7f,WithAlpha(ShownColor,.10f*Ease));
-        Ellipse(Box.X+Box.W*.5f,Box.Y+Box.H*.95f,Box.W*.28f,Box.H*.03f,FLinearColor(0,0,0,.5f*Ease));
+        Ellipse(Box.X+Box.W*.5f,Box.Y+Box.H*.975f,Box.W*.28f,Box.H*.03f,FLinearColor(0,0,0,.5f*Ease));
         if(bLive)
         {
-            float VHt=.90f;float UW=(BW/BH)*VHt/.75f;if(UW>1.f){VHt/=UW;UW=1.f;}
+            float VHt=.86f;float UW=(BW/BH)*VHt/.75f;if(UW>1.f){VHt/=UW;UW=1.f;}
             const float Zoom=1.f+.05f*(1.f-Ease);UW/=Zoom;VHt/=Zoom;
             UMaterialInstanceDynamic* Cutout=CutoutMaterial();
             if(Cutout&&Stage->IsCutout())
             {
                 Cutout->SetTextureParameterValue(TEXT("Figure"),Stage->GetRenderTarget());Cutout->SetScalarParameterValue(TEXT("Fade"),Ease*Fade);
                 if(Stage->GetDepthTarget()){Cutout->SetTextureParameterValue(TEXT("Depth"),Stage->GetDepthTarget());Cutout->SetScalarParameterValue(TEXT("MaxDepth"),Stage->GetCutoutMaxDepth());}
-                DrawMaterial(Cutout,PX(Box.X),PX(Box.Y),PX(Box.W),PX(Box.H),(1-UW)*.5f,.05f+(.9f-VHt)*.5f,UW,VHt);
+                DrawMaterial(Cutout,PX(Box.X),PX(Box.Y),PX(Box.W),PX(Box.H),(1-UW)*.5f,.06f+(.86f-VHt)*.5f,UW,VHt);
             }
-            else Tex(Stage->GetRenderTarget(),Box,(1-UW)*.5f,.05f+(.9f-VHt)*.5f,UW,VHt,FLinearColor(1,1,1,Ease));
+            else Tex(Stage->GetRenderTarget(),Box,(1-UW)*.5f,.06f+(.86f-VHt)*.5f,UW,VHt,FLinearColor(1,1,1,Ease));
         }
         else if(UTexture2D* Face=Portrait(Shown->Id))Tex(Face,FRect{Box.X+Box.W*.2f,Box.Y+Box.H*.2f,Box.W*.6f,Box.W*.6f},0,0,1,1,FLinearColor(1,1,1,.35f));
         if(T<1.f&&bLive){const float SX=Box.X+Box.W*(-.2f+1.4f*Ease);CireUIStyle::Glow(Pen(),SX-20,Box.Y,40,Box.H,FLinearColor(1.f,.92f,.75f,.20f*(1.f-T)));}
@@ -882,21 +907,38 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         const float BW=bSel?3.f:bOver||bKey?2.f:1.f;
         Outline(C,BW,bSel?BrightGold:bOver?WithAlpha(Gold,.9f):bKey?GoldDim:bHumanTaken?Faint:SRGB(58,72,96));
         Panel(C.X,C.Y,PW,PW,SRGB(14,20,30));
-        const FLinearColor FaceTint=bHumanTaken?SRGB(70,70,70):T.bSecondary?SRGB(205,205,205):FLinearColor::White;
+        // Portrait graded toward the target's painted look: warm key, role-tinted base, dark vignette.
+        const FLinearColor FaceTint=bHumanTaken?SRGB(70,70,70):T.bSecondary?FLinearColor(.80f,.74f,.64f):FLinearColor(1.f,.90f,.76f);
         if(UTexture2D* Face=Portrait(P.Id))Tex(Face,FRect{C.X,C.Y,PW,PW},.15f,.08f,.70f,.70f,FaceTint);
         else
         {
             for(int32 B=0;B<6;++B)Panel(C.X,C.Y+B*PW/6,PW,PW/6,Tint(Col,.20f*(6-B)/6.f+.05f));
             Icon(RoleSigil(Primary),C.X+PW*.25f,C.Y+PW*.2f,PW*.5f,WithAlpha(Col,.55f));
         }
-        if(bOver&&!bSel)Panel(C.X,C.Y,PW,PW,FLinearColor(1.f,.9f,.7f,.07f));
-        for(int32 B=0;B<6;++B)Panel(C.X,C.Y+PW-PW*.30f+B*PW*.05f,PW,PW*.05f,FLinearColor(0,0,0,.08f+.10f*B));
-        const float PipW=FMath::Clamp(PW*.09f,6.f,14.f),PipH=FMath::Clamp(PW*.035f,3.f,5.f);
-        for(int32 D=0;D<3;++D)Panel(C.X+5+D*(PipW+3),C.Y+PW-5-PipH,PipW,PipH,D<P.Difficulty?Gold:WithAlpha(Faint,.9f));
-        if(NameUses.FindRef(P.DisplayName)>1&&!bHumanTaken)
         {
-            const float VS=FMath::Clamp(PW*.1f,9.5f,11.f);const FRect VR{C.X,C.Y+PW-9-PipH-LH(VS,ECireFont::Body),PW,LH(VS,ECireFont::Body)};
-            Line(P.Variant,VR.X+4,VR.Y,VR.W-8,VS,SRGB(236,222,190),FRect{C.X,C.Y,PW,PW},ECireFont::Body,0,true);
+            const int32 VS=8;const float E=PW*.18f/VS;
+            for(int32 V=0;V<VS;++V)
+            {
+                const float A=.42f*(1.f-(V+.5f)/VS);
+                Panel(C.X+V*E,C.Y,E,PW,FLinearColor(0,0,0,A));Panel(C.R()-(V+1)*E,C.Y,E,PW,FLinearColor(0,0,0,A));
+                Panel(C.X,C.Y+V*E,PW,E,FLinearColor(0,0,0,A*.8f));
+                Panel(C.X,C.Y+PW-(V+1)*E*1.6f,PW,E*1.6f,WithAlpha(Tint(Col,.30f),A*.9f));
+            }
+        }
+        if(bOver&&!bSel)Panel(C.X,C.Y,PW,PW,FLinearColor(1.f,.9f,.7f,.07f));
+        if(bHumanTaken)Panel(C.X,C.Y,PW,PW,FLinearColor(0,0,0,.35f));
+        // Status band along the portrait's bottom edge (never across the face): difficulty pips,
+        // plus BOT PICK / LOCKED BY.
+        const float BandS=9.5f,BandH=LH(BandS,ECireFont::Heading)+4;
+        const FRect Band{C.X,C.Y+PW-BandH,PW,BandH};
+        Panel(Band.X,Band.Y,Band.W,Band.H,bHumanTaken?WithAlpha(LockRed,.92f):FLinearColor(0,0,0,.62f));
+        const float PipW=FMath::Clamp(PW*.08f,6.f,12.f),PipH=4.f;
+        float PipEnd=Band.X+4;
+        if(!bHumanTaken)for(int32 D=0;D<3;++D){Panel(Band.X+5+D*(PipW+3),Band.Y+(BandH-PipH)*.5f,PipW,PipH,D<P.Difficulty?Gold:WithAlpha(Faint,.9f));PipEnd=Band.X+5+(D+1)*(PipW+3);}
+        if(Taker)
+        {
+            const FString What=bHumanTaken?FString(TEXT("LOCKED BY "))+MateName(*Taker).ToUpper():FString(TEXT("BOT PICK"));
+            Line(What,PipEnd+2,Band.Y+2,Band.R()-PipEnd-6,BandS,bHumanTaken?Text:SRGB(190,194,198),Band,ECireFont::Heading,bHumanTaken?1:2);
         }
         const float BadgeR=FMath::Clamp(PW*.11f,8.f,15.f);
         Disc(C.X+4+BadgeR,C.Y+4+BadgeR,BadgeR+1.5f,WithAlpha(Col,.95f));Disc(C.X+4+BadgeR,C.Y+4+BadgeR,BadgeR,WithAlpha(Backdrop,.92f));
@@ -916,24 +958,6 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 }
             }
         }
-        if(Taker)
-        {
-            const FString Who=MateName(*Taker);
-            if(bHumanTaken)
-            {
-                const float RS=FMath::Clamp(PW*.1f,9.5f,12.f),RH=LH(RS,ECireFont::Heading)*2+6;
-                const FRect Rib{C.X,C.Y+PW*.5f-RH*.5f,PW,RH};
-                Panel(Rib.X,Rib.Y,Rib.W,Rib.H,WithAlpha(LockRed,.92f));
-                Line(TEXT("LOCKED BY"),Rib.X+3,Rib.Y+3,Rib.W-6,RS,Text,Rib,ECireFont::Heading,1);
-                Line(Who,Rib.X+3,Rib.Y+3+LH(RS,ECireFont::Heading),Rib.W-6,RS,BrightGold,Rib,ECireFont::Bold,1);
-            }
-            else
-            {
-                const float RS=9.5f,RH=LH(RS,ECireFont::Heading)+4;const FRect Rib{C.X,C.Y+4+2*BadgeR+4,PW,RH};
-                Panel(Rib.X,Rib.Y,Rib.W,Rib.H,SRGB(28,30,34,215));
-                Line(TEXT("BOT PICK"),Rib.X+3,Rib.Y+2,Rib.W-6,RS,Muted,Rib,ECireFont::Heading,1);
-            }
-        }
         if(bSel)
         {
             const float CR=FMath::Clamp(PW*.12f,9.f,16.f),CXc=C.R()-5-CR,CYc=C.Y+5+CR;
@@ -943,9 +967,19 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         Panel(Plate.X,Plate.Y,Plate.W,Plate.H,bSel?SRGB(58,46,22,250):bOver?SRGB(30,38,54,250):SRGB(10,15,24,245));
         {
             const float NS=NameSizeFor(T.W),NL=LH(NS,ECireFont::Bold);
-            const TArray<FString> Lines=NameLines(Pen(),P.DisplayName,NS,Plate.W-6,ECireFont::Bold);
-            float Y=Plate.Y+(Plate.H-Lines.Num()*NL)*.5f;
-            for(const FString& L:Lines){Txt(L,Plate.X+(Plate.W-TW(L,NS,ECireFont::Bold))*.5f,Y,NS,bSel?BrightGold:bHumanTaken?Muted:Text,Plate,ECireFont::Bold,false,1);Y+=NL;}
+            const bool bTwin=NameUses.FindRef(P.DisplayName)>1;
+            TArray<FString> Lines;float Size=NS;
+            if(bTwin)
+            {
+                // Look-alikes: the name on one line (shrunk to fit, never below 10), the variant under it.
+                while(Size>10.f&&TW(P.DisplayName,Size,ECireFont::Bold)>Plate.W-6)Size=FMath::Max(10.f,Size-.5f);
+                Lines.Add(Pen().Fit(P.DisplayName,Size,Plate.W-6,ECireFont::Bold));
+            }
+            else Lines=NameLines(Pen(),P.DisplayName,NS,Plate.W-6,ECireFont::Bold);
+            const float VS=FMath::Max(10.f,NS*.85f),VL=LH(VS,ECireFont::Body);
+            float Y=Plate.Y+(Plate.H-Lines.Num()*NL-(bTwin?VL:0.f))*.5f;
+            for(const FString& L:Lines){Txt(L,Plate.X+(Plate.W-TW(L,Size,ECireFont::Bold))*.5f,Y,Size,bSel?BrightGold:bHumanTaken?Muted:Text,Plate,ECireFont::Bold,false,1);Y+=NL;}
+            if(bTwin)Line(FString(TEXT("· "))+VariantWord(P)+TEXT(" ·"),Plate.X+3,Y,Plate.W-6,VS,bSel?Text:Gold,Plate,ECireFont::Body,1);
         }
         if(Interactive&&bOver&&Clicked&&S.ForcedHover.IsEmpty()&&!bOverDropdown)
         {
@@ -998,7 +1032,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             Y+=Para(TEXT("\"")+Shown->Lore+TEXT("\""),R.X,Y,R.W,QS,SRGB(226,190,120),QL,R,ECireFont::Body)+12;
         }
         const float NS=FMath::Clamp(R.W*.12f,22.f,34.f);
-        Y+=Para(Shown->DisplayName,R.X,Y,R.W,NS,Text,2,R,ECireFont::Bold)+2;
+        Y+=Para(FullName(*Shown),R.X,Y,R.W,NS,Text,2,R,ECireFont::Bold)+2;
         FString Caption=Shown->ClassType.ToUpper();if(!Shown->Race.IsEmpty())Caption+=TEXT("  |  ")+Shown->Race.ToUpper();
         Y+=Para(Caption,R.X,Y,R.W,12.f*RK,Gold,2,R,ECireFont::Heading)+8;
         // Role chips + difficulty.
@@ -1174,7 +1208,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         }
         CireUIStyle::Button(Pen(),BtnR.X,BtnR.Y,BtnR.W,BtnR.H,FString(),bLockedView?ECireButtonState::Selected:bCanLock?(bOver?ECireButtonState::Hover:ECireButtonState::Normal):ECireButtonState::Disabled,Gold,16.f);
         Outline(BtnR.Inset(3),1,WithAlpha(CapC,.6f));
-        const FString Main=bLockedView?FString(TEXT("LOCKED IN")):bPending?FString(TEXT("LOCKING IN...")):bSelectedBlocked?FString(TEXT("TAKEN BY "))+MateName(*SelectedTaker).ToUpper():Selected?FString(TEXT("LOCK IN  "))+Selected->DisplayName.ToUpper():FString(TEXT("SELECT A CHAMPION"));
+        const FString Main=bLockedView?FString(TEXT("LOCKED IN")):bPending?FString(TEXT("LOCKING IN...")):bSelectedBlocked?FString(TEXT("TAKEN BY "))+MateName(*SelectedTaker).ToUpper():Selected?FString(TEXT("LOCK IN  "))+FullName(*Selected).ToUpper():FString(TEXT("SELECT A CHAMPION"));
         const FString Sub=bLockedView?FString(TEXT("Next: choose your opening ability")):!Selected?FString(TEXT("Click a portrait to select it")):bSelectedBlocked?FString(TEXT("Pick another champion")):bPending?FString(TEXT("Waiting for the server")):FString(TEXT("Space or double-click also locks in"));
         const float MS=17.f,SubS=10.5f,ML=LH(MS,ECireFont::Heading),SubL=LH(SubS,ECireFont::Body),BY=BtnR.Y+(BtnR.H-ML-SubL)*.5f;
         Line(Main,BtnR.X+14,BY,BtnR.W-28,MS,bCanLock||bLockedView?(bOver?FLinearColor(1.f,.93f,.72f,1):BrightGold):Muted,BtnR,ECireFont::Heading,1,true);
@@ -1325,7 +1359,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             Json+=TEXT("  ],\n  \"issues\": [\n");
             for(int32 I=0;I<Issues.Num();++I)Json+=FString::Printf(TEXT("    \"%s\"%s\n"),*Issues[I].Replace(TEXT("\""),TEXT("'")),I+1<Issues.Num()?TEXT(","):TEXT(""));
             Json+=TEXT("  ]\n}\n");
-            FFileHelper::SaveStringToFile(Json,*FPaths::Combine(G.Directory,ShotName+TEXT(".layout.json")));
+            FFileHelper::SaveStringToFile(Json,*FPaths::Combine(G.Directory,ShotName+TEXT(".layout.json")),FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
             if(!Issues.IsEmpty())++G.LayoutFailures;
             UE_LOG(LogCireDraft,Display,TEXT("CIRE_DRAFT_LAYOUT_%s shot=%s items=%d cards=%d min_text=%.1f min_name=%.1f issues=%d%s%s"),Issues.IsEmpty()?TEXT("PASS"):TEXT("FAIL"),*ShotName,
                 S.Audit.Num(),Names,MinText==MAX_flt?0.f:MinText,MinName==MAX_flt?0.f:MinName,Issues.Num(),Issues.IsEmpty()?TEXT(""):TEXT(" first="),Issues.IsEmpty()?TEXT(""):*Issues[0]);

@@ -368,6 +368,12 @@ void ACireDraftStage::RefreshCutoutParts()
         if(bBody&&(Part->IsA<USkeletalMeshComponent>()||Part->IsA<UStaticMeshComponent>())){Capture->ShowOnlyComponents.Add(Part);if(DepthCapture)DepthCapture->ShowOnlyComponents.Add(Part);}
     }
 }
+void ACireDraftStage::SetMood(const FLinearColor& Key,const FLinearColor& Rim,const FLinearColor& Fill)
+{
+    if(KeyLight)KeyLight->SetLightColor(Key);
+    if(RimLight)RimLight->SetLightColor(Rim);
+    if(FillLight)FillLight->SetLightColor(Fill);
+}
 void ACireDraftStage::SetCutout(bool bEnable)
 {
     if(bCutout==bEnable)return;

@@ -46,6 +46,8 @@ public:
     // cutout stage exists).
     void SetCutout(bool bEnable);
     bool IsCutout() const { return bCutout; }
+    // Light the champion to sit in a painted scene: key (front), rim (back edge), fill (ambient).
+    void SetMood(const FLinearColor& Key,const FLinearColor& Rim,const FLinearColor& Fill);
     // Scene depth of the cutout view (R, world units): masks out anything far behind the champion.
     UTextureRenderTarget2D* GetDepthTarget() const { return DepthTarget; }
     float GetCutoutMaxDepth() const { return CameraDistance+650.f*StageScale; }

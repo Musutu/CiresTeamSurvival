@@ -81,7 +81,9 @@ def run_one(args, width: int, height: int, folder: Path) -> dict:
             report = directory / (name + ".layout.json")
             issues = []
             if report.is_file():
-                issues = json.loads(report.read_text(encoding="utf-8")).get("issues", [])
+                raw = report.read_bytes()
+                text = raw.decode("utf-16") if raw[:2] in (bytes([0xFF, 0xFE]), bytes([0xFE, 0xFF])) else raw.decode("utf-8-sig")
+                issues = json.loads(text).get("issues", [])
             else:
                 errors.append("Missing layout report " + report.name)
             captures.append(dict(path=str(path), width=size[0], height=size[1], layoutIssues=issues))
