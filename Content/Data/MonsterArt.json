@@ -5,6 +5,7 @@
     "slash":           { "start": 0.80, "contact": 2.10, "end": 3.30, "recoverRate": 1.6 },
     "chop":            { "start": 0.80, "contact": 2.10, "end": 3.30, "recoverRate": 1.6 },
     "ground_slam":     { "start": 0.05, "contact": 1.12, "end": 2.20, "recoverRate": 1.4 },
+    "fire_breath": {"start": 0.3, "contact": 1.5, "end": 3.5, "recoverRate": 1.3},
     "axe_throw": {"start": 0.2, "contact": 1.2, "end": 2.6, "recoverRate": 1.4},
     "tentacle_sweep": {"start": 0.3, "contact": 1.7, "end": 3.4, "recoverRate": 1.4},
     "war_cry":         { "start": 0.10, "contact": 1.60, "end": 2.90, "recoverRate": 1.2 },
@@ -30,7 +31,11 @@
     "redmoon_axethrower": { "abilityClips": {"ironhide_axe_barrage": "axe_throw", "ironhide_hamstring_axe": "axe_throw", "ironhide_spinning_axe": "axe_throw"} },
     "ironhide_drummer": { "abilityClips": {"ironhide_war_drums": "war_cry", "ironhide_battle_hymn": "war_cry", "ironhide_deafening_boom": "war_cry"} },
     "ironhide_warchief": { "abilityClips": {"ironhide_warchief_roar": "war_cry", "ironhide_call_the_clans": "war_cry", "ironhide_blood_fury": "war_cry", "ironhide_skull_cleave": "slash"} },
-    "ironhide_juggernaut": { "abilityClips": {"ironhide_earthsplitter": "ground_slam", "ironhide_trunk_sweep": "slash", "ironhide_juggernaut_rage": "war_cry"} }
+    "ironhide_juggernaut": { "abilityClips": {"ironhide_earthsplitter": "ground_slam", "ironhide_trunk_sweep": "slash", "ironhide_juggernaut_rage": "war_cry"} },
+    "drakkari_broodmother": { "abilityClips": {"drakkari_broodmother_wrath": "war_cry", "drakkari_hatch_the_brood": "war_cry"} },
+    "drakkari_ashwing": { "abilityClips": {"drakkari_inferno_breath": "fire_breath", "drakkari_ash_fall": "fire_breath", "drakkari_ashwing_stomp": "ground_slam", "drakkari_ashwing_fury": "war_cry", "drakkari_ashwing_tail": "slash"} },
+    "stoneborn_forgelord": { "abilityClips": {"stoneborn_forge_fury": "war_cry", "stoneborn_forge_sentinels": "war_cry", "stoneborn_slag_eruption": "ground_slam", "stoneborn_anvil_cleave": "slash", "stoneborn_runic_shockwave": "ground_slam"} },
+    "stoneborn_colossus": { "abilityClips": {"stoneborn_quake": "ground_slam", "stoneborn_crush": "ground_slam", "stoneborn_colossus_rage": "war_cry", "stoneborn_boulder_toss": "slash"} }
   },
   "bodies": {
     "BlightCaster":       { "dropPropBones": ["hand_r"], "note": "bone staff is part of the mesh" },

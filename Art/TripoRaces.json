@@ -26,6 +26,14 @@
     {
       "when": "ironhide boundary (ledger)",
       "balance": 5095
+    },
+    {
+      "when": "drakkari boundary (ledger)",
+      "balance": 4420
+    },
+    {
+      "when": "stoneborn 6 bipeds (ledger; crystal_ballista and ether_mote not generated yet)",
+      "balance": 3970
     }
   ],
   "pipelineNotes": [
@@ -89,7 +97,17 @@
           "walk"
         ]
       },
-      "status": "integrated"
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      }
     },
     {
       "race": "drowned_deep",
@@ -143,7 +161,17 @@
           "walk"
         ]
       },
-      "status": "integrated"
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      }
     },
     {
       "race": "drowned_deep",
@@ -197,7 +225,17 @@
           "walk"
         ]
       },
-      "status": "integrated"
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      }
     },
     {
       "race": "drowned_deep",
@@ -253,7 +291,17 @@
           "walk"
         ]
       },
-      "status": "integrated"
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      }
     },
     {
       "race": "drowned_deep",
@@ -309,7 +357,17 @@
           "walk"
         ]
       },
-      "status": "integrated"
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      }
     },
     {
       "race": "drowned_deep",
@@ -365,7 +423,17 @@
           "walk"
         ]
       },
-      "status": "integrated"
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      }
     },
     {
       "race": "drowned_deep",
@@ -421,7 +489,17 @@
           "walk"
         ]
       },
-      "status": "integrated"
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      }
     },
     {
       "race": "drowned_deep",
@@ -447,8 +525,14 @@
       "export": "CTS_Race_MawOfTheDeep",
       "folder": "MawOfTheDeep",
       "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
         "Huge_crab_monster": "tentacle_sweep",
-        "Huge_warlord": "war_cry"
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "textToMotion": [
         {
@@ -523,7 +607,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -583,7 +671,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -643,7 +735,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -703,7 +799,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -765,7 +865,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -827,7 +931,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -904,7 +1012,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -974,7 +1086,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -1048,7 +1164,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -1108,7 +1228,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -1168,7 +1292,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -1228,7 +1356,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -1290,7 +1422,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -1360,7 +1496,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -1430,7 +1570,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -1498,7 +1642,11 @@
         "Huge_warlord": "war_cry",
         "Massive_brute": "ground_slam",
         "Lean_warrior": "axe_throw",
-        "Huge_crab_monster": "tentacle_sweep"
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
       },
       "rig": {
         "type": "Humanoid",
@@ -1563,9 +1711,59 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariWhelpguard",
+      "folder": "DrakkariWhelpguard",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "fire_breath",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariWhelpguard",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariWhelpguard/CTS_Race_DrakkariWhelpguard.CTS_Race_DrakkariWhelpguard",
+        "rawHeightCm": 98.02,
+        "animations": [
+          "fall",
+          "fire_breath",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "drakkari",
@@ -1585,9 +1783,51 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariScalebreaker",
+      "folder": "DrakkariScalebreaker",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariScalebreaker",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariScalebreaker/CTS_Race_DrakkariScalebreaker.CTS_Race_DrakkariScalebreaker",
+        "rawHeightCm": 85.3,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "drakkari",
@@ -1607,9 +1847,51 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariScaleguard",
+      "folder": "DrakkariScaleguard",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariScaleguard",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariScaleguard/CTS_Race_DrakkariScaleguard.CTS_Race_DrakkariScaleguard",
+        "rawHeightCm": 98.08,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "drakkari",
@@ -1629,9 +1911,53 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariFlamecaller",
+      "folder": "DrakkariFlamecaller",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariFlamecaller",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariFlamecaller/CTS_Race_DrakkariFlamecaller.CTS_Race_DrakkariFlamecaller",
+        "rawHeightCm": 97.91,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "drakkari",
@@ -1651,7 +1977,8 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "rejected",
+          "note": "crossbow floated in front of the body, not in the hands; re-prompted with empty hands (game bow prop + library bow clip)"
         },
         {
           "taskId": "d0f05ed7-d125-4107-8141-51df020f87bc",
@@ -1667,9 +1994,59 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariWingshot",
+      "folder": "DrakkariWingshot",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "attack_bow",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 130,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariWingshot",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariWingshot/CTS_Race_DrakkariWingshot.CTS_Race_DrakkariWingshot",
+        "rawHeightCm": 93.77,
+        "animations": [
+          "attack_bow",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "drakkari",
@@ -1689,9 +2066,51 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_EmberWhelp",
+      "folder": "EmberWhelp",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/EmberWhelp",
+        "mesh": "/Game/Tripo/Races/drakkari/EmberWhelp/CTS_Race_EmberWhelp.CTS_Race_EmberWhelp",
+        "rawHeightCm": 98.06,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "drakkari",
@@ -1711,9 +2130,62 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted",
+          "note": "Free Retry used once (first result had wings spread and a twisted pose)"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariBroodmother",
+      "folder": "DrakkariBroodmother",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariBroodmother",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariBroodmother/CTS_Race_DrakkariBroodmother.CTS_Race_DrakkariBroodmother",
+        "rawHeightCm": 85.02,
+        "animations": [
+          "Huge_w_rlord_plants_his_feet__throws_his_arms_wide_and_roars_a_",
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "drakkari",
@@ -1733,9 +2205,75 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariAshwing",
+      "folder": "DrakkariAshwing",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "textToMotion": [
+        {
+          "name": "fire_breath",
+          "prompt": "Huge dragon warrior rears its head back, then thrusts its open jaws forward breathing a long cone of fire, sweeping its head slowly from left to right with the chest pushed forward, then recovers to a menacing stance",
+          "seconds": 4,
+          "credits": 20,
+          "note": "the Studio attached the finished clip to the Whelpguard page that was open; the Ashwing picked it up from the AI library ('Custom Motion') for free"
+        }
+      ],
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 95,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariAshwing",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariAshwing/CTS_Race_DrakkariAshwing.CTS_Race_DrakkariAshwing",
+        "rawHeightCm": 98.02,
+        "animations": [
+          "fall",
+          "fire_breath",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "stoneborn",
@@ -1755,9 +2293,51 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_RuneSentinel",
+      "folder": "RuneSentinel",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/RuneSentinel",
+        "mesh": "/Game/Tripo/Races/stoneborn/RuneSentinel/CTS_Race_RuneSentinel.CTS_Race_RuneSentinel",
+        "rawHeightCm": 97.26,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "stoneborn",
@@ -1777,9 +2357,51 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_GraniteCrusher",
+      "folder": "GraniteCrusher",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/GraniteCrusher",
+        "mesh": "/Game/Tripo/Races/stoneborn/GraniteCrusher/CTS_Race_GraniteCrusher.CTS_Race_GraniteCrusher",
+        "rawHeightCm": 95.37,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "stoneborn",
@@ -1799,9 +2421,51 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_BastionGolem",
+      "folder": "BastionGolem",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/BastionGolem",
+        "mesh": "/Game/Tripo/Races/stoneborn/BastionGolem/CTS_Race_BastionGolem.CTS_Race_BastionGolem",
+        "rawHeightCm": 97.63,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "stoneborn",
@@ -1821,9 +2485,53 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_DeepforgeRunesmith",
+      "folder": "DeepforgeRunesmith",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/DeepforgeRunesmith",
+        "mesh": "/Game/Tripo/Races/stoneborn/DeepforgeRunesmith/CTS_Race_DeepforgeRunesmith.CTS_Race_DeepforgeRunesmith",
+        "rawHeightCm": 100.0,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "stoneborn",
@@ -1843,9 +2551,65 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
-          "status": "generated"
+          "status": "accepted"
         }
-      ]
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_StonebornForgelord",
+      "folder": "StonebornForgelord",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/StonebornForgelord",
+        "mesh": "/Game/Tripo/Races/stoneborn/StonebornForgelord/CTS_Race_StonebornForgelord.CTS_Race_StonebornForgelord",
+        "rawHeightCm": 97.88,
+        "animations": [
+          "fall",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
     },
     {
       "race": "stoneborn",
@@ -1865,9 +2629,318 @@
             "privacy": "Sharing Only"
           },
           "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry"
+      },
+      "export": "CTS_Race_StonebornColossus",
+      "folder": "StonebornColossus",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/StonebornColossus",
+        "mesh": "/Game/Tripo/Races/stoneborn/StonebornColossus/CTS_Race_StonebornColossus.CTS_Race_StonebornColossus",
+        "rawHeightCm": 97.95,
+        "animations": [
+          "fall",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "feral_kin",
+      "unit": "werebear_mauler",
+      "attempts": [
+        {
+          "taskId": "297696ac-6f14-4083-9f2f-344f63bef951",
+          "url": "https://studio.tripo3d.ai/workspace/generate/297696ac-6f14-4083-9f2f-344f63bef951",
+          "prompt": "Full body game character, realistic dark fantasy towering upright werebear, thick dark brown fur, massive clawed paws, roaring open jaws with fangs, amber eyes, torn remains of leather armour straps and a broken iron shackle on one wrist, root growth and green moss across its shoulders, tarnished iron studs on the leather. Highly detailed realistic PBR fur, leather and iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
           "status": "generated"
         }
-      ]
+      ],
+      "aiClips": {}
+    },
+    {
+      "race": "feral_kin",
+      "unit": "wild_outrider",
+      "attempts": [
+        {
+          "taskId": "5bbbd247-960e-479c-ae12-117c518dd675",
+          "url": "https://studio.tripo3d.ai/workspace/generate/5bbbd247-960e-479c-ae12-117c518dd675",
+          "prompt": "Full body game character, realistic dark fantasy wild beastman archer standing on two digitigrade legs with hooves, shaggy chestnut fur on the legs, bare painted human-like torso with tribal markings, antler headdress, braided mane with beads, leather quiver of feathered arrows on the back, bronze arm rings, empty open hands holding nothing. Highly detailed realistic PBR fur, skin, leather and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ],
+      "aiClips": {}
+    },
+    {
+      "race": "feral_kin",
+      "unit": "feral_ursoth",
+      "attempts": [
+        {
+          "taskId": "09223256-5ffb-44d4-b0fb-1f8f3e947610",
+          "url": "https://studio.tripo3d.ai/workspace/generate/09223256-5ffb-44d4-b0fb-1f8f3e947610",
+          "prompt": "Full body game character, realistic dark fantasy gigantic ancient werebear chieftain standing upright, grizzled silver-streaked fur, a mantle of antlers and bones on its shoulders, a small gnarled tree growing from its hunched back, huge scarred claws, one blind white eye and one glowing amber eye, tarnished bronze torc and arm rings. Highly detailed realistic PBR fur, bone, bark and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ],
+      "aiClips": {}
+    },
+    {
+      "race": "feral_kin",
+      "unit": "feral_mammoth",
+      "attempts": [
+        {
+          "taskId": "7867aaca-13e7-42fa-a1e9-0588570298a3",
+          "url": "https://studio.tripo3d.ai/workspace/generate/7867aaca-13e7-42fa-a1e9-0588570298a3",
+          "prompt": "Full body game character, realistic dark fantasy colossal upright mammoth-behemoth warrior standing on two thick legs, shaggy brown wool, huge curling tusks capped in carved stone, trunk hanging to the chest, a tall ritual totem pole strapped across its back, carved stone plates tied to its shoulders, yellow war paint, bronze bands on the tusks and arms. Highly detailed realistic PBR wool, ivory, stone and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ],
+      "aiClips": {}
+    },
+    {
+      "race": "feral_kin",
+      "unit": "tusked_behemoth",
+      "attempts": [
+        {
+          "taskId": "8bfdb2db-7601-4f9c-8c9f-d5170da450c6",
+          "url": "https://studio.tripo3d.ai/workspace/generate/8bfdb2db-7601-4f9c-8c9f-d5170da450c6",
+          "prompt": "Full body game character, realistic dark fantasy massive upright elephant-rhino hybrid warrior, grey leathery hide, curved ivory tusks and a nose horn, carved stone plates tied on with rope as armour, painted tribal markings, pillar-thick legs, bronze rings on the tusks, empty open hands holding nothing. Highly detailed realistic PBR hide, ivory, stone and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ],
+      "aiClips": {}
+    },
+    {
+      "race": "feral_kin",
+      "unit": "feral_shaman",
+      "attempts": [
+        {
+          "taskId": "123a0cac-7c8c-4ffe-a9d8-8b42fc8557c6",
+          "url": "https://studio.tripo3d.ai/workspace/generate/123a0cac-7c8c-4ffe-a9d8-8b42fc8557c6",
+          "prompt": "Full body game character, realistic dark fantasy hunched goat-legged beastman shaman, deer skull mask with large antlers, cloak of feathers and pelts, glowing yellow eyes, digitigrade goat legs with hooves, tarnished bronze charms, right hand gripping a staff of bone and antler hung with bells and charms, left hand open. Highly detailed realistic PBR fur, bone, feather and metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ],
+      "aiClips": {}
+    },
+    {
+      "race": "fallen_order",
+      "unit": "fallen_squire",
+      "attempts": [
+        {
+          "taskId": "c062b414-6aad-4f1d-abe4-4bee78c8dd6d",
+          "url": "https://studio.tripo3d.ai/workspace/generate/c062b414-6aad-4f1d-abe4-4bee78c8dd6d",
+          "prompt": "Full body game character, realistic dark fantasy gaunt pale undead-looking squire, dented tarnished steel mail, torn crimson tabard with a defaced sun emblem, open-faced steel helm, hollow glowing gold eyes, leather belt and boots, empty open hands holding nothing. Highly detailed realistic PBR steel, cloth and leather textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ],
+      "aiClips": {}
+    },
+    {
+      "race": "fallen_order",
+      "unit": "fallen_inquisitor_crossbow",
+      "attempts": [
+        {
+          "taskId": "7e10a43b-43a4-409e-9039-f8c3346bf20a",
+          "url": "https://studio.tripo3d.ai/workspace/generate/7e10a43b-43a4-409e-9039-f8c3346bf20a",
+          "prompt": "Full body game character, realistic dark fantasy lean inquisitor in a wide-brimmed hat and long dark leather coat over a steel breastplate, bandolier of silver bolts, a cracked sun pendant, pale face with glowing gold eyes, right hand gripping a heavy repeating crossbow by its stock, held out to the side, left hand open. Highly detailed realistic PBR leather, steel and silver textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ],
+      "aiClips": {}
+    },
+    {
+      "race": "fallen_order",
+      "unit": "flagellant",
+      "attempts": [
+        {
+          "taskId": "76928c47-fb44-4099-ad1c-bb1f9ef1920d",
+          "url": "https://studio.tripo3d.ai/workspace/generate/76928c47-fb44-4099-ad1c-bb1f9ef1920d",
+          "prompt": "Full body game character, realistic dark fantasy emaciated bare-chested zealot in a hooded sackcloth robe, lash scars on the body, rope belt hung with prayer scrolls, iron chain bracers, a short barbed iron flail gripped in each hand. Highly detailed realistic PBR skin, sackcloth and iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ],
+      "aiClips": {}
+    },
+    {
+      "race": "fallen_order",
+      "unit": "fallen_high_inquisitor",
+      "attempts": [
+        {
+          "taskId": "bdba69fc-fb46-4924-8ab8-6ad2c2c65e2b",
+          "url": "https://studio.tripo3d.ai/workspace/generate/bdba69fc-fb46-4924-8ab8-6ad2c2c65e2b",
+          "prompt": "Full body game character, realistic dark fantasy tall gaunt high inquisitor in layered crimson and black robes with gold filigree, towering mitre, chains wrapped around his arms, a burning book chained at his hip, right hand gripping a tall staff topped with a gold sun relic, left hand open. Highly detailed realistic PBR cloth, gold and iron textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ],
+      "aiClips": {}
+    },
+    {
+      "race": "fallen_order",
+      "unit": "fallen_crusader",
+      "attempts": [
+        {
+          "taskId": "d2fe1dea-842f-4f8f-9cba-151f092a24d6",
+          "url": "https://studio.tripo3d.ai/workspace/generate/d2fe1dea-842f-4f8f-9cba-151f092a24d6",
+          "prompt": "Full body game character, realistic dark fantasy giant armoured crusader, ornate tarnished gold-and-steel plate armour with a crumbling sun relief on the breastplate, empty great helm with gold light inside the visor, torn white banner on its back, right hand gripping a huge greatsword held out to the side. Highly detailed realistic PBR steel, gold and cloth textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ],
+      "aiClips": {}
     }
   ]
 }

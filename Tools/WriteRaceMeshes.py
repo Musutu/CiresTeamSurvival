@@ -53,9 +53,33 @@ SPEC = {
                            "ironhide_skull_cleave": "slash"}),
     "ironhide_juggernaut": (240, "slash", "iron-bound tree-trunk club (right hand)", ["hand_r"],
                             {"ironhide_earthsplitter": "ground_slam", "ironhide_trunk_sweep": "slash", "ironhide_juggernaut_rage": "war_cry"}),
+    # The Drakkari Brood
+    "drakkari_whelpguard": (185, "slash", None, [], {}),
+    "drakkari_scalebreaker": (205, "slash", None, [], {}),
+    "drakkari_scaleguard": (195, "slash", None, [], {}),
+    "drakkari_flamecaller": (190, "cast_a_spell", "caged-coal iron staff (right hand)", ["hand_r"], {}),
+    "drakkari_wingshot": (185, "attack_bow", None, [], {}),
+    "ember_whelp": (90, "slash", "claws", ["hand_r"], {}),
+    "drakkari_broodmother": (205, "cast_a_spell", "dragon-egg staff (right hand)", ["hand_r"],
+                             {"drakkari_broodmother_wrath": "war_cry", "drakkari_hatch_the_brood": "war_cry"}),
+    "drakkari_ashwing": (240, "slash", "claws", ["hand_r"],
+                         {"drakkari_inferno_breath": "fire_breath", "drakkari_ash_fall": "fire_breath", "drakkari_ashwing_stomp": "ground_slam",
+                          "drakkari_ashwing_fury": "war_cry", "drakkari_ashwing_tail": "slash"}),
+    # The Stoneborn
+    "rune_sentinel": (190, "slash", "stone blade forearm (right arm)", ["hand_r"], {}),
+    "granite_crusher": (205, "slash", "granite fists", ["hand_r"], {}),
+    "bastion_golem": (200, "slash", "stone slab shield fused to the left forearm", ["hand_l", "hand_r"], {}),
+    "deepforge_runesmith": (170, "cast_a_spell", "forge-hammer staff (right hand)", ["hand_r"], {}),
+    "stoneborn_forgelord": (200, "slash", "glowing forge hammer (right hand)", ["hand_r", "spine_03"],
+                            {"stoneborn_forge_fury": "war_cry", "stoneborn_forge_sentinels": "war_cry", "stoneborn_slag_eruption": "ground_slam",
+                             "stoneborn_anvil_cleave": "slash", "stoneborn_runic_shockwave": "ground_slam"}),
+    "stoneborn_colossus": (240, "slash", "boulder fists", ["hand_r"],
+                           {"stoneborn_quake": "ground_slam", "stoneborn_crush": "ground_slam", "stoneborn_colossus_rage": "war_cry",
+                            "stoneborn_boulder_toss": "slash"}),
 }
 EXTRA_WINDOWS = {"tentacle_sweep": {"start": 0.3, "contact": 1.7, "end": 3.4, "recoverRate": 1.4},
-                 "axe_throw": {"start": 0.2, "contact": 1.2, "end": 2.6, "recoverRate": 1.4}}
+                 "axe_throw": {"start": 0.2, "contact": 1.2, "end": 2.6, "recoverRate": 1.4},
+                 "fire_breath": {"start": 0.3, "contact": 1.5, "end": 3.5, "recoverRate": 1.3}}
 
 
 def main():
