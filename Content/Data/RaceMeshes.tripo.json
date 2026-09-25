@@ -254,6 +254,509 @@
           "war_cry": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_war_cry.CTS_Race_MawOfTheDeep_war_cry"
         }
       }
+    },
+    "vinelasher": {
+      "variant": "Vinelasher",
+      "mesh": "/Game/Tripo/Races/blightwood/Vinelasher/CTS_Race_Vinelasher.CTS_Race_Vinelasher",
+      "skeleton": "/Game/Tripo/Races/blightwood/Vinelasher/CTS_Race_Vinelasher_Skeleton.CTS_Race_Vinelasher_Skeleton",
+      "material": "/Game/Tripo/Races/blightwood/Vinelasher/CTS_Race_Vinelasher_Mat.CTS_Race_Vinelasher_Mat",
+      "race": "blightwood",
+      "rawHeightCm": 97.84,
+      "heightCm": 185,
+      "meshScale": 1.8908,
+      "yaw": -90,
+      "bakedWeapon": "thorn-vine whip arms",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_idle.CTS_Race_Vinelasher_idle",
+        "walk": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_walk.CTS_Race_Vinelasher_walk",
+        "run": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_run.CTS_Race_Vinelasher_run",
+        "attack": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_slash.CTS_Race_Vinelasher_slash",
+        "hit": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_hit_to_body_01.CTS_Race_Vinelasher_hit_to_body_01",
+        "death": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_fall.CTS_Race_Vinelasher_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_fall.CTS_Race_Vinelasher_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_hit_to_body_01.CTS_Race_Vinelasher_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_idle.CTS_Race_Vinelasher_idle",
+          "run": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_run.CTS_Race_Vinelasher_run",
+          "slash": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_slash.CTS_Race_Vinelasher_slash",
+          "walk": "/Game/Tripo/Races/blightwood/Vinelasher/Animations/CTS_Race_Vinelasher_walk.CTS_Race_Vinelasher_walk"
+        }
+      }
+    },
+    "sapling_brute": {
+      "variant": "SaplingBrute",
+      "mesh": "/Game/Tripo/Races/blightwood/SaplingBrute/CTS_Race_SaplingBrute.CTS_Race_SaplingBrute",
+      "skeleton": "/Game/Tripo/Races/blightwood/SaplingBrute/CTS_Race_SaplingBrute_Skeleton.CTS_Race_SaplingBrute_Skeleton",
+      "material": "/Game/Tripo/Races/blightwood/SaplingBrute/CTS_Race_SaplingBrute_Mat.CTS_Race_SaplingBrute_Mat",
+      "race": "blightwood",
+      "rawHeightCm": 84.63,
+      "heightCm": 200,
+      "meshScale": 2.3632,
+      "yaw": -90,
+      "bakedWeapon": "splintered stump club (right arm)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_idle.CTS_Race_SaplingBrute_idle",
+        "walk": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_walk.CTS_Race_SaplingBrute_walk",
+        "run": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_run.CTS_Race_SaplingBrute_run",
+        "attack": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_slash.CTS_Race_SaplingBrute_slash",
+        "hit": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_hit_to_body_01.CTS_Race_SaplingBrute_hit_to_body_01",
+        "death": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_fall.CTS_Race_SaplingBrute_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_fall.CTS_Race_SaplingBrute_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_hit_to_body_01.CTS_Race_SaplingBrute_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_idle.CTS_Race_SaplingBrute_idle",
+          "run": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_run.CTS_Race_SaplingBrute_run",
+          "slash": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_slash.CTS_Race_SaplingBrute_slash",
+          "walk": "/Game/Tripo/Races/blightwood/SaplingBrute/Animations/CTS_Race_SaplingBrute_walk.CTS_Race_SaplingBrute_walk"
+        }
+      }
+    },
+    "barkhide_warden": {
+      "variant": "BarkhideWarden",
+      "mesh": "/Game/Tripo/Races/blightwood/BarkhideWarden/CTS_Race_BarkhideWarden.CTS_Race_BarkhideWarden",
+      "skeleton": "/Game/Tripo/Races/blightwood/BarkhideWarden/CTS_Race_BarkhideWarden_Skeleton.CTS_Race_BarkhideWarden_Skeleton",
+      "material": "/Game/Tripo/Races/blightwood/BarkhideWarden/CTS_Race_BarkhideWarden_Mat.CTS_Race_BarkhideWarden_Mat",
+      "race": "blightwood",
+      "rawHeightCm": 76.84,
+      "heightCm": 190,
+      "meshScale": 2.4727,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "dropPropBones": [],
+      "animations": {
+        "idle": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_idle.CTS_Race_BarkhideWarden_idle",
+        "walk": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_walk.CTS_Race_BarkhideWarden_walk",
+        "run": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_run.CTS_Race_BarkhideWarden_run",
+        "attack": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_slash.CTS_Race_BarkhideWarden_slash",
+        "hit": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_hit_to_body_01.CTS_Race_BarkhideWarden_hit_to_body_01",
+        "death": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_fall.CTS_Race_BarkhideWarden_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_fall.CTS_Race_BarkhideWarden_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_hit_to_body_01.CTS_Race_BarkhideWarden_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_idle.CTS_Race_BarkhideWarden_idle",
+          "run": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_run.CTS_Race_BarkhideWarden_run",
+          "slash": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_slash.CTS_Race_BarkhideWarden_slash",
+          "walk": "/Game/Tripo/Races/blightwood/BarkhideWarden/Animations/CTS_Race_BarkhideWarden_walk.CTS_Race_BarkhideWarden_walk"
+        }
+      }
+    },
+    "rotbloom_shaman": {
+      "variant": "RotbloomShaman",
+      "mesh": "/Game/Tripo/Races/blightwood/RotbloomShaman/CTS_Race_RotbloomShaman.CTS_Race_RotbloomShaman",
+      "skeleton": "/Game/Tripo/Races/blightwood/RotbloomShaman/CTS_Race_RotbloomShaman_Skeleton.CTS_Race_RotbloomShaman_Skeleton",
+      "material": "/Game/Tripo/Races/blightwood/RotbloomShaman/CTS_Race_RotbloomShaman_Mat.CTS_Race_RotbloomShaman_Mat",
+      "race": "blightwood",
+      "rawHeightCm": 95.99,
+      "heightCm": 185,
+      "meshScale": 1.9273,
+      "yaw": -90,
+      "bakedWeapon": "fungus branch staff (right hand)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_idle.CTS_Race_RotbloomShaman_idle",
+        "walk": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_walk.CTS_Race_RotbloomShaman_walk",
+        "run": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_run.CTS_Race_RotbloomShaman_run",
+        "attack": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_cast_a_spell.CTS_Race_RotbloomShaman_cast_a_spell",
+        "hit": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_hit_to_body_01.CTS_Race_RotbloomShaman_hit_to_body_01",
+        "death": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_fall.CTS_Race_RotbloomShaman_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_cast_a_spell.CTS_Race_RotbloomShaman_cast_a_spell",
+          "fall": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_fall.CTS_Race_RotbloomShaman_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_hit_to_body_01.CTS_Race_RotbloomShaman_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_idle.CTS_Race_RotbloomShaman_idle",
+          "run": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_run.CTS_Race_RotbloomShaman_run",
+          "slash": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_slash.CTS_Race_RotbloomShaman_slash",
+          "walk": "/Game/Tripo/Races/blightwood/RotbloomShaman/Animations/CTS_Race_RotbloomShaman_walk.CTS_Race_RotbloomShaman_walk"
+        }
+      }
+    },
+    "thornspitter": {
+      "variant": "Thornspitter",
+      "mesh": "/Game/Tripo/Races/blightwood/Thornspitter/CTS_Race_Thornspitter.CTS_Race_Thornspitter",
+      "skeleton": "/Game/Tripo/Races/blightwood/Thornspitter/CTS_Race_Thornspitter_Skeleton.CTS_Race_Thornspitter_Skeleton",
+      "material": "/Game/Tripo/Races/blightwood/Thornspitter/CTS_Race_Thornspitter_Mat.CTS_Race_Thornspitter_Mat",
+      "race": "blightwood",
+      "rawHeightCm": 89.01,
+      "heightCm": 180,
+      "meshScale": 2.0222,
+      "yaw": -90,
+      "bakedWeapon": "thorn quivers on the back; spits its thorns",
+      "dropPropBones": [
+        "hand_l"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_idle.CTS_Race_Thornspitter_idle",
+        "walk": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_walk.CTS_Race_Thornspitter_walk",
+        "run": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_run.CTS_Race_Thornspitter_run",
+        "attack": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_cast_a_spell.CTS_Race_Thornspitter_cast_a_spell",
+        "hit": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_hit_to_body_01.CTS_Race_Thornspitter_hit_to_body_01",
+        "death": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_fall.CTS_Race_Thornspitter_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_cast_a_spell.CTS_Race_Thornspitter_cast_a_spell",
+          "fall": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_fall.CTS_Race_Thornspitter_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_hit_to_body_01.CTS_Race_Thornspitter_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_idle.CTS_Race_Thornspitter_idle",
+          "run": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_run.CTS_Race_Thornspitter_run",
+          "slash": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_slash.CTS_Race_Thornspitter_slash",
+          "walk": "/Game/Tripo/Races/blightwood/Thornspitter/Animations/CTS_Race_Thornspitter_walk.CTS_Race_Thornspitter_walk"
+        }
+      }
+    },
+    "sporeling": {
+      "variant": "Sporeling",
+      "mesh": "/Game/Tripo/Races/blightwood/Sporeling/CTS_Race_Sporeling.CTS_Race_Sporeling",
+      "skeleton": "/Game/Tripo/Races/blightwood/Sporeling/CTS_Race_Sporeling_Skeleton.CTS_Race_Sporeling_Skeleton",
+      "material": "/Game/Tripo/Races/blightwood/Sporeling/CTS_Race_Sporeling_Mat.CTS_Race_Sporeling_Mat",
+      "race": "blightwood",
+      "rawHeightCm": 97.83,
+      "heightCm": 95,
+      "meshScale": 0.9711,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_idle.CTS_Race_Sporeling_idle",
+        "walk": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_walk.CTS_Race_Sporeling_walk",
+        "run": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_run.CTS_Race_Sporeling_run",
+        "attack": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_slash.CTS_Race_Sporeling_slash",
+        "hit": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_hit_to_body_01.CTS_Race_Sporeling_hit_to_body_01",
+        "death": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_fall.CTS_Race_Sporeling_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_fall.CTS_Race_Sporeling_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_hit_to_body_01.CTS_Race_Sporeling_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_idle.CTS_Race_Sporeling_idle",
+          "run": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_run.CTS_Race_Sporeling_run",
+          "slash": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_slash.CTS_Race_Sporeling_slash",
+          "walk": "/Game/Tripo/Races/blightwood/Sporeling/Animations/CTS_Race_Sporeling_walk.CTS_Race_Sporeling_walk"
+        }
+      }
+    },
+    "withered_matron": {
+      "variant": "WitheredMatron",
+      "mesh": "/Game/Tripo/Races/blightwood/WitheredMatron/CTS_Race_WitheredMatron.CTS_Race_WitheredMatron",
+      "skeleton": "/Game/Tripo/Races/blightwood/WitheredMatron/CTS_Race_WitheredMatron_Skeleton.CTS_Race_WitheredMatron_Skeleton",
+      "material": "/Game/Tripo/Races/blightwood/WitheredMatron/CTS_Race_WitheredMatron_Mat.CTS_Race_WitheredMatron_Mat",
+      "race": "blightwood",
+      "rawHeightCm": 93.39,
+      "heightCm": 210,
+      "meshScale": 2.2486,
+      "yaw": -90,
+      "bakedWeapon": "clawed branch fingers",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_idle.CTS_Race_WitheredMatron_idle",
+        "walk": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_walk.CTS_Race_WitheredMatron_walk",
+        "run": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_run.CTS_Race_WitheredMatron_run",
+        "attack": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_cast_a_spell.CTS_Race_WitheredMatron_cast_a_spell",
+        "hit": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_hit_to_body_01.CTS_Race_WitheredMatron_hit_to_body_01",
+        "death": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_fall.CTS_Race_WitheredMatron_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_cast_a_spell.CTS_Race_WitheredMatron_cast_a_spell",
+          "fall": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_fall.CTS_Race_WitheredMatron_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_hit_to_body_01.CTS_Race_WitheredMatron_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_idle.CTS_Race_WitheredMatron_idle",
+          "run": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_run.CTS_Race_WitheredMatron_run",
+          "slash": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_slash.CTS_Race_WitheredMatron_slash",
+          "walk": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_walk.CTS_Race_WitheredMatron_walk",
+          "war_cry": "/Game/Tripo/Races/blightwood/WitheredMatron/Animations/CTS_Race_WitheredMatron_war_cry.CTS_Race_WitheredMatron_war_cry"
+        }
+      }
+    },
+    "elder_oakheart": {
+      "variant": "ElderOakheart",
+      "mesh": "/Game/Tripo/Races/blightwood/ElderOakheart/CTS_Race_ElderOakheart.CTS_Race_ElderOakheart",
+      "skeleton": "/Game/Tripo/Races/blightwood/ElderOakheart/CTS_Race_ElderOakheart_Skeleton.CTS_Race_ElderOakheart_Skeleton",
+      "material": "/Game/Tripo/Races/blightwood/ElderOakheart/CTS_Race_ElderOakheart_Mat.CTS_Race_ElderOakheart_Mat",
+      "race": "blightwood",
+      "rawHeightCm": 97.94,
+      "heightCm": 240,
+      "meshScale": 2.4505,
+      "yaw": -90,
+      "bakedWeapon": "root-fist arms",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_idle.CTS_Race_ElderOakheart_idle",
+        "walk": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_walk.CTS_Race_ElderOakheart_walk",
+        "run": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_run.CTS_Race_ElderOakheart_run",
+        "attack": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_slash.CTS_Race_ElderOakheart_slash",
+        "hit": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_hit_to_body_01.CTS_Race_ElderOakheart_hit_to_body_01",
+        "death": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_fall.CTS_Race_ElderOakheart_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_fall.CTS_Race_ElderOakheart_fall",
+          "ground_slam": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_ground_slam.CTS_Race_ElderOakheart_ground_slam",
+          "hit_to_body_01": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_hit_to_body_01.CTS_Race_ElderOakheart_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_idle.CTS_Race_ElderOakheart_idle",
+          "run": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_run.CTS_Race_ElderOakheart_run",
+          "slash": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_slash.CTS_Race_ElderOakheart_slash",
+          "walk": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_walk.CTS_Race_ElderOakheart_walk",
+          "war_cry": "/Game/Tripo/Races/blightwood/ElderOakheart/Animations/CTS_Race_ElderOakheart_war_cry.CTS_Race_ElderOakheart_war_cry"
+        }
+      }
+    },
+    "ironhide_grunt": {
+      "variant": "IronhideGrunt",
+      "mesh": "/Game/Tripo/Races/ironhide/IronhideGrunt/CTS_Race_IronhideGrunt.CTS_Race_IronhideGrunt",
+      "skeleton": "/Game/Tripo/Races/ironhide/IronhideGrunt/CTS_Race_IronhideGrunt_Skeleton.CTS_Race_IronhideGrunt_Skeleton",
+      "material": "/Game/Tripo/Races/ironhide/IronhideGrunt/CTS_Race_IronhideGrunt_Mat.CTS_Race_IronhideGrunt_Mat",
+      "race": "ironhide",
+      "rawHeightCm": 84.83,
+      "heightCm": 190,
+      "meshScale": 2.2398,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "dropPropBones": [],
+      "animations": {
+        "idle": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_idle.CTS_Race_IronhideGrunt_idle",
+        "walk": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_walk.CTS_Race_IronhideGrunt_walk",
+        "run": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_run.CTS_Race_IronhideGrunt_run",
+        "attack": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_slash.CTS_Race_IronhideGrunt_slash",
+        "hit": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_hit_to_body_01.CTS_Race_IronhideGrunt_hit_to_body_01",
+        "death": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_fall.CTS_Race_IronhideGrunt_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_fall.CTS_Race_IronhideGrunt_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_hit_to_body_01.CTS_Race_IronhideGrunt_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_idle.CTS_Race_IronhideGrunt_idle",
+          "run": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_run.CTS_Race_IronhideGrunt_run",
+          "slash": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_slash.CTS_Race_IronhideGrunt_slash",
+          "walk": "/Game/Tripo/Races/ironhide/IronhideGrunt/Animations/CTS_Race_IronhideGrunt_walk.CTS_Race_IronhideGrunt_walk"
+        }
+      }
+    },
+    "redmoon_ravager": {
+      "variant": "RedmoonRavager",
+      "mesh": "/Game/Tripo/Races/ironhide/RedmoonRavager/CTS_Race_RedmoonRavager.CTS_Race_RedmoonRavager",
+      "skeleton": "/Game/Tripo/Races/ironhide/RedmoonRavager/CTS_Race_RedmoonRavager_Skeleton.CTS_Race_RedmoonRavager_Skeleton",
+      "material": "/Game/Tripo/Races/ironhide/RedmoonRavager/CTS_Race_RedmoonRavager_Mat.CTS_Race_RedmoonRavager_Mat",
+      "race": "ironhide",
+      "rawHeightCm": 97.48,
+      "heightCm": 205,
+      "meshScale": 2.103,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "dropPropBones": [],
+      "animations": {
+        "idle": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_idle.CTS_Race_RedmoonRavager_idle",
+        "walk": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_walk.CTS_Race_RedmoonRavager_walk",
+        "run": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_run.CTS_Race_RedmoonRavager_run",
+        "attack": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_slash.CTS_Race_RedmoonRavager_slash",
+        "hit": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_hit_to_body_01.CTS_Race_RedmoonRavager_hit_to_body_01",
+        "death": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_fall.CTS_Race_RedmoonRavager_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_fall.CTS_Race_RedmoonRavager_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_hit_to_body_01.CTS_Race_RedmoonRavager_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_idle.CTS_Race_RedmoonRavager_idle",
+          "run": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_run.CTS_Race_RedmoonRavager_run",
+          "slash": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_slash.CTS_Race_RedmoonRavager_slash",
+          "walk": "/Game/Tripo/Races/ironhide/RedmoonRavager/Animations/CTS_Race_RedmoonRavager_walk.CTS_Race_RedmoonRavager_walk"
+        }
+      }
+    },
+    "ironhide_bulwark": {
+      "variant": "IronhideBulwark",
+      "mesh": "/Game/Tripo/Races/ironhide/IronhideBulwark/CTS_Race_IronhideBulwark.CTS_Race_IronhideBulwark",
+      "skeleton": "/Game/Tripo/Races/ironhide/IronhideBulwark/CTS_Race_IronhideBulwark_Skeleton.CTS_Race_IronhideBulwark_Skeleton",
+      "material": "/Game/Tripo/Races/ironhide/IronhideBulwark/CTS_Race_IronhideBulwark_Mat.CTS_Race_IronhideBulwark_Mat",
+      "race": "ironhide",
+      "rawHeightCm": 97.92,
+      "heightCm": 200,
+      "meshScale": 2.0425,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "dropPropBones": [],
+      "animations": {
+        "idle": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_idle.CTS_Race_IronhideBulwark_idle",
+        "walk": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_walk.CTS_Race_IronhideBulwark_walk",
+        "run": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_run.CTS_Race_IronhideBulwark_run",
+        "attack": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_slash.CTS_Race_IronhideBulwark_slash",
+        "hit": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_hit_to_body_01.CTS_Race_IronhideBulwark_hit_to_body_01",
+        "death": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_fall.CTS_Race_IronhideBulwark_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_fall.CTS_Race_IronhideBulwark_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_hit_to_body_01.CTS_Race_IronhideBulwark_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_idle.CTS_Race_IronhideBulwark_idle",
+          "run": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_run.CTS_Race_IronhideBulwark_run",
+          "slash": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_slash.CTS_Race_IronhideBulwark_slash",
+          "walk": "/Game/Tripo/Races/ironhide/IronhideBulwark/Animations/CTS_Race_IronhideBulwark_walk.CTS_Race_IronhideBulwark_walk"
+        }
+      }
+    },
+    "blood_hexer": {
+      "variant": "BloodHexer",
+      "mesh": "/Game/Tripo/Races/ironhide/BloodHexer/CTS_Race_BloodHexer.CTS_Race_BloodHexer",
+      "skeleton": "/Game/Tripo/Races/ironhide/BloodHexer/CTS_Race_BloodHexer_Skeleton.CTS_Race_BloodHexer_Skeleton",
+      "material": "/Game/Tripo/Races/ironhide/BloodHexer/CTS_Race_BloodHexer_Mat.CTS_Race_BloodHexer_Mat",
+      "race": "ironhide",
+      "rawHeightCm": 97.92,
+      "heightCm": 185,
+      "meshScale": 1.8893,
+      "yaw": -90,
+      "bakedWeapon": "shrunken-head totem staff (right hand)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_idle.CTS_Race_BloodHexer_idle",
+        "walk": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_walk.CTS_Race_BloodHexer_walk",
+        "run": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_run.CTS_Race_BloodHexer_run",
+        "attack": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_cast_a_spell.CTS_Race_BloodHexer_cast_a_spell",
+        "hit": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_hit_to_body_01.CTS_Race_BloodHexer_hit_to_body_01",
+        "death": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_fall.CTS_Race_BloodHexer_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_cast_a_spell.CTS_Race_BloodHexer_cast_a_spell",
+          "fall": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_fall.CTS_Race_BloodHexer_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_hit_to_body_01.CTS_Race_BloodHexer_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_idle.CTS_Race_BloodHexer_idle",
+          "run": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_run.CTS_Race_BloodHexer_run",
+          "slash": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_slash.CTS_Race_BloodHexer_slash",
+          "walk": "/Game/Tripo/Races/ironhide/BloodHexer/Animations/CTS_Race_BloodHexer_walk.CTS_Race_BloodHexer_walk"
+        }
+      }
+    },
+    "redmoon_axethrower": {
+      "variant": "RedmoonAxethrower",
+      "mesh": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/CTS_Race_RedmoonAxethrower.CTS_Race_RedmoonAxethrower",
+      "skeleton": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/CTS_Race_RedmoonAxethrower_Skeleton.CTS_Race_RedmoonAxethrower_Skeleton",
+      "material": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/CTS_Race_RedmoonAxethrower_Mat.CTS_Race_RedmoonAxethrower_Mat",
+      "race": "ironhide",
+      "rawHeightCm": 91.03,
+      "heightCm": 195,
+      "meshScale": 2.1422,
+      "yaw": -90,
+      "bakedWeapon": "throwing axes on a bandolier (thrown axes are projectiles)",
+      "dropPropBones": [
+        "hand_l",
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_idle.CTS_Race_RedmoonAxethrower_idle",
+        "walk": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_walk.CTS_Race_RedmoonAxethrower_walk",
+        "run": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_run.CTS_Race_RedmoonAxethrower_run",
+        "attack": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_axe_throw.CTS_Race_RedmoonAxethrower_axe_throw",
+        "hit": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_hit_to_body_01.CTS_Race_RedmoonAxethrower_hit_to_body_01",
+        "death": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_fall.CTS_Race_RedmoonAxethrower_fall",
+        "all": {
+          "axe_throw": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_axe_throw.CTS_Race_RedmoonAxethrower_axe_throw",
+          "fall": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_fall.CTS_Race_RedmoonAxethrower_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_hit_to_body_01.CTS_Race_RedmoonAxethrower_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_idle.CTS_Race_RedmoonAxethrower_idle",
+          "run": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_run.CTS_Race_RedmoonAxethrower_run",
+          "slash": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_slash.CTS_Race_RedmoonAxethrower_slash",
+          "walk": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/Animations/CTS_Race_RedmoonAxethrower_walk.CTS_Race_RedmoonAxethrower_walk"
+        }
+      }
+    },
+    "ironhide_drummer": {
+      "variant": "IronhideDrummer",
+      "mesh": "/Game/Tripo/Races/ironhide/IronhideDrummer/CTS_Race_IronhideDrummer.CTS_Race_IronhideDrummer",
+      "skeleton": "/Game/Tripo/Races/ironhide/IronhideDrummer/CTS_Race_IronhideDrummer_Skeleton.CTS_Race_IronhideDrummer_Skeleton",
+      "material": "/Game/Tripo/Races/ironhide/IronhideDrummer/CTS_Race_IronhideDrummer_Mat.CTS_Race_IronhideDrummer_Mat",
+      "race": "ironhide",
+      "rawHeightCm": 98.17,
+      "heightCm": 180,
+      "meshScale": 1.8336,
+      "yaw": -90,
+      "bakedWeapon": "war drum on the back and two bone mallets",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_idle.CTS_Race_IronhideDrummer_idle",
+        "walk": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_walk.CTS_Race_IronhideDrummer_walk",
+        "run": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_run.CTS_Race_IronhideDrummer_run",
+        "attack": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_cast_a_spell.CTS_Race_IronhideDrummer_cast_a_spell",
+        "hit": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_hit_to_body_01.CTS_Race_IronhideDrummer_hit_to_body_01",
+        "death": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_fall.CTS_Race_IronhideDrummer_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_cast_a_spell.CTS_Race_IronhideDrummer_cast_a_spell",
+          "fall": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_fall.CTS_Race_IronhideDrummer_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_hit_to_body_01.CTS_Race_IronhideDrummer_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_idle.CTS_Race_IronhideDrummer_idle",
+          "run": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_run.CTS_Race_IronhideDrummer_run",
+          "slash": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_slash.CTS_Race_IronhideDrummer_slash",
+          "walk": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_walk.CTS_Race_IronhideDrummer_walk",
+          "war_cry": "/Game/Tripo/Races/ironhide/IronhideDrummer/Animations/CTS_Race_IronhideDrummer_war_cry.CTS_Race_IronhideDrummer_war_cry"
+        }
+      }
+    },
+    "ironhide_warchief": {
+      "variant": "IronhideWarchief",
+      "mesh": "/Game/Tripo/Races/ironhide/IronhideWarchief/CTS_Race_IronhideWarchief.CTS_Race_IronhideWarchief",
+      "skeleton": "/Game/Tripo/Races/ironhide/IronhideWarchief/CTS_Race_IronhideWarchief_Skeleton.CTS_Race_IronhideWarchief_Skeleton",
+      "material": "/Game/Tripo/Races/ironhide/IronhideWarchief/CTS_Race_IronhideWarchief_Mat.CTS_Race_IronhideWarchief_Mat",
+      "race": "ironhide",
+      "rawHeightCm": 97.4,
+      "heightCm": 200,
+      "meshScale": 2.0534,
+      "yaw": -90,
+      "bakedWeapon": "colossal cleaver (right hand) and skull banner on the back",
+      "dropPropBones": [
+        "hand_r",
+        "spine_03"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_idle.CTS_Race_IronhideWarchief_idle",
+        "walk": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_walk.CTS_Race_IronhideWarchief_walk",
+        "run": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_run.CTS_Race_IronhideWarchief_run",
+        "attack": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_slash.CTS_Race_IronhideWarchief_slash",
+        "hit": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_hit_to_body_01.CTS_Race_IronhideWarchief_hit_to_body_01",
+        "death": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_fall.CTS_Race_IronhideWarchief_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_fall.CTS_Race_IronhideWarchief_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_hit_to_body_01.CTS_Race_IronhideWarchief_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_idle.CTS_Race_IronhideWarchief_idle",
+          "run": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_run.CTS_Race_IronhideWarchief_run",
+          "slash": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_slash.CTS_Race_IronhideWarchief_slash",
+          "walk": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_walk.CTS_Race_IronhideWarchief_walk",
+          "war_cry": "/Game/Tripo/Races/ironhide/IronhideWarchief/Animations/CTS_Race_IronhideWarchief_war_cry.CTS_Race_IronhideWarchief_war_cry"
+        }
+      }
+    },
+    "ironhide_juggernaut": {
+      "variant": "IronhideJuggernaut",
+      "mesh": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/CTS_Race_IronhideJuggernaut.CTS_Race_IronhideJuggernaut",
+      "skeleton": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/CTS_Race_IronhideJuggernaut_Skeleton.CTS_Race_IronhideJuggernaut_Skeleton",
+      "material": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/CTS_Race_IronhideJuggernaut_Mat.CTS_Race_IronhideJuggernaut_Mat",
+      "race": "ironhide",
+      "rawHeightCm": 89.0,
+      "heightCm": 240,
+      "meshScale": 2.6966,
+      "yaw": -90,
+      "bakedWeapon": "iron-bound tree-trunk club (right hand)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_idle.CTS_Race_IronhideJuggernaut_idle",
+        "walk": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_walk.CTS_Race_IronhideJuggernaut_walk",
+        "run": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_run.CTS_Race_IronhideJuggernaut_run",
+        "attack": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_slash.CTS_Race_IronhideJuggernaut_slash",
+        "hit": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_hit_to_body_01.CTS_Race_IronhideJuggernaut_hit_to_body_01",
+        "death": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_fall.CTS_Race_IronhideJuggernaut_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_fall.CTS_Race_IronhideJuggernaut_fall",
+          "ground_slam": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_ground_slam.CTS_Race_IronhideJuggernaut_ground_slam",
+          "hit_to_body_01": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_hit_to_body_01.CTS_Race_IronhideJuggernaut_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_idle.CTS_Race_IronhideJuggernaut_idle",
+          "run": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_run.CTS_Race_IronhideJuggernaut_run",
+          "slash": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_slash.CTS_Race_IronhideJuggernaut_slash",
+          "walk": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_walk.CTS_Race_IronhideJuggernaut_walk",
+          "war_cry": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/Animations/CTS_Race_IronhideJuggernaut_war_cry.CTS_Race_IronhideJuggernaut_war_cry"
+        }
+      }
     }
   }
 }

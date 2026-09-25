@@ -5,6 +5,7 @@
     "slash":           { "start": 0.80, "contact": 2.10, "end": 3.30, "recoverRate": 1.6 },
     "chop":            { "start": 0.80, "contact": 2.10, "end": 3.30, "recoverRate": 1.6 },
     "ground_slam":     { "start": 0.05, "contact": 1.12, "end": 2.20, "recoverRate": 1.4 },
+    "axe_throw": {"start": 0.2, "contact": 1.2, "end": 2.6, "recoverRate": 1.4},
     "tentacle_sweep": {"start": 0.3, "contact": 1.7, "end": 3.4, "recoverRate": 1.4},
     "war_cry":         { "start": 0.10, "contact": 1.60, "end": 2.90, "recoverRate": 1.2 },
     "cast_a_spell":    { "start": 0.30, "contact": 2.40, "end": 3.40, "recoverRate": 1.5 },
@@ -23,7 +24,13 @@
                               "abilityClips": { "boss_siege_stomp": "ground_slam", "boss_siege_cleave": "slash", "boss_siege_rally": "ground_slam", "boss_siege_fury": "ground_slam" } },
     "gravemaw_pack_leader": { "variants": ["GravemawPackLeader"],
                               "abilityClips": { "boss_leader_rally": "war_cry", "boss_leader_frenzy": "war_cry", "boss_leader_cleave": "slash", "boss_leader_charge": "chop" } },
-    "maw_of_the_deep": { "abilityClips": {"drowned_tentacle_sweep": "tentacle_sweep", "drowned_tsunami_slam": "tentacle_sweep", "drowned_leviathan_rage": "war_cry", "drowned_devour": "slash"} }
+    "maw_of_the_deep": { "abilityClips": {"drowned_tentacle_sweep": "tentacle_sweep", "drowned_tsunami_slam": "tentacle_sweep", "drowned_leviathan_rage": "war_cry", "drowned_devour": "slash"} },
+    "withered_matron": { "abilityClips": {"blight_withering_wrath": "war_cry", "blight_matron_call": "war_cry"} },
+    "elder_oakheart": { "abilityClips": {"blight_root_eruption": "ground_slam", "blight_oakheart_stomp": "ground_slam", "blight_crushing_bough": "slash", "blight_heartwood_fury": "war_cry"} },
+    "redmoon_axethrower": { "abilityClips": {"ironhide_axe_barrage": "axe_throw", "ironhide_hamstring_axe": "axe_throw", "ironhide_spinning_axe": "axe_throw"} },
+    "ironhide_drummer": { "abilityClips": {"ironhide_war_drums": "war_cry", "ironhide_battle_hymn": "war_cry", "ironhide_deafening_boom": "war_cry"} },
+    "ironhide_warchief": { "abilityClips": {"ironhide_warchief_roar": "war_cry", "ironhide_call_the_clans": "war_cry", "ironhide_blood_fury": "war_cry", "ironhide_skull_cleave": "slash"} },
+    "ironhide_juggernaut": { "abilityClips": {"ironhide_earthsplitter": "ground_slam", "ironhide_trunk_sweep": "slash", "ironhide_juggernaut_rage": "war_cry"} }
   },
   "bodies": {
     "BlightCaster":       { "dropPropBones": ["hand_r"], "note": "bone staff is part of the mesh" },

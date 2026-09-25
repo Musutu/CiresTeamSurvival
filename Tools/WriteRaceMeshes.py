@@ -28,8 +28,34 @@ SPEC = {
     "maw_of_the_deep": (230, "slash", "crab claws (both arms)", ["hand_r"],
                         {"drowned_tentacle_sweep": "tentacle_sweep", "drowned_tsunami_slam": "tentacle_sweep",
                          "drowned_leviathan_rage": "war_cry", "drowned_devour": "slash"}),
+    # The Blightwood
+    "vinelasher": (185, "slash", "thorn-vine whip arms", ["hand_r"], {}),
+    "sapling_brute": (200, "slash", "splintered stump club (right arm)", ["hand_r"], {}),
+    "barkhide_warden": (190, "slash", None, [], {}),
+    "rotbloom_shaman": (185, "cast_a_spell", "fungus branch staff (right hand)", ["hand_r"], {}),
+    "thornspitter": (180, "cast_a_spell", "thorn quivers on the back; spits its thorns", ["hand_l"], {}),
+    "sporeling": (95, "slash", None, ["hand_r"], {}),
+    "withered_matron": (210, "cast_a_spell", "clawed branch fingers", ["hand_r"], {"blight_withering_wrath": "war_cry", "blight_matron_call": "war_cry"}),
+    "elder_oakheart": (240, "slash", "root-fist arms", ["hand_r"],
+                       {"blight_root_eruption": "ground_slam", "blight_oakheart_stomp": "ground_slam", "blight_crushing_bough": "slash",
+                        "blight_heartwood_fury": "war_cry"}),
+    # The Ironhide Warband
+    "ironhide_grunt": (190, "slash", None, [], {}),
+    "redmoon_ravager": (205, "slash", None, [], {}),
+    "ironhide_bulwark": (200, "slash", None, [], {}),
+    "blood_hexer": (185, "cast_a_spell", "shrunken-head totem staff (right hand)", ["hand_r"], {}),
+    "redmoon_axethrower": (195, "axe_throw", "throwing axes on a bandolier (thrown axes are projectiles)", ["hand_l", "hand_r"],
+                           {"ironhide_axe_barrage": "axe_throw", "ironhide_hamstring_axe": "axe_throw", "ironhide_spinning_axe": "axe_throw"}),
+    "ironhide_drummer": (180, "cast_a_spell", "war drum on the back and two bone mallets", ["hand_r"],
+                         {"ironhide_war_drums": "war_cry", "ironhide_battle_hymn": "war_cry", "ironhide_deafening_boom": "war_cry"}),
+    "ironhide_warchief": (200, "slash", "colossal cleaver (right hand) and skull banner on the back", ["hand_r", "spine_03"],
+                          {"ironhide_warchief_roar": "war_cry", "ironhide_call_the_clans": "war_cry", "ironhide_blood_fury": "war_cry",
+                           "ironhide_skull_cleave": "slash"}),
+    "ironhide_juggernaut": (240, "slash", "iron-bound tree-trunk club (right hand)", ["hand_r"],
+                            {"ironhide_earthsplitter": "ground_slam", "ironhide_trunk_sweep": "slash", "ironhide_juggernaut_rage": "war_cry"}),
 }
-EXTRA_WINDOWS = {"tentacle_sweep": {"start": 0.3, "contact": 1.7, "end": 3.4, "recoverRate": 1.4}}
+EXTRA_WINDOWS = {"tentacle_sweep": {"start": 0.3, "contact": 1.7, "end": 3.4, "recoverRate": 1.4},
+                 "axe_throw": {"start": 0.2, "contact": 1.2, "end": 2.6, "recoverRate": 1.4}}
 
 
 def main():
