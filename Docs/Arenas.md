@@ -147,7 +147,8 @@ Freesound recordings, licence-checked by the fetch script; see `Art/Arenas/PROVE
   distance but have no bespoke sculpting. The Megascans and Fab packs would be a clear upgrade.
 - Blockers use box or cylinder collision proxies. Irregular art (the hoodoos, the root plates) is a little smaller
   or larger than its proxy at the edges.
-- Bots still move in straight lines (no navmesh). In the arenas they can slide along a blocker while chasing.
+- (Superseded by nav-paths, `Docs/Navigation.md`: every arena gets navmesh when it is built; the collision proxies
+  carve it and bots path around blockers and reposition for line of sight.)
 - The HDRI sun positions are only roughly aligned with the directional light (the Fields sky is rotated to match).
 - The build hitch of about 140 ms for the Fields (52k wheat and stubble instances) happens at the start of the prep
   minute, in town. It is not profiled on minimum-spec hardware.

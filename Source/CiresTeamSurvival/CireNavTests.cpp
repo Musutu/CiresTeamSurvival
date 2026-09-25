@@ -157,6 +157,8 @@ bool CireNav::RunTests(ACireGameMode* Mode)
             Forget(M); M->Destroy();
         }
         // On the navmesh: steering toward the far side of the shrine does not aim through it.
+        // The whole native suite runs inside one frame: give this check a fresh per-frame query budget.
+        if (auto* Sub = World->GetSubsystem<UCireNavSubsystem>()) Sub->BudgetUsed = 0;
         auto* N = World->SpawnActor<ACireMonster>(CireLanePath::SpawnPosition(World, 0, 110), FRotator::ZeroRotator, Params);
         if (N)
         {

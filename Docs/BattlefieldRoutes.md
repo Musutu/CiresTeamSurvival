@@ -35,6 +35,8 @@ The leak zone (`ACireTownGoal`, 900 x 1800 cm centred on the route end) is uncha
 - `GoalPosition(World, Team, Z)` - centre of the castle-gate leak zone.
 - `CireEnvironmentProps::DistrictAt(World, Team, Location)` / `Districts()` / `DistrictName(Id)` - which town district (breach, gate, market, residential, square, approach, castle) a location is in, for minimap labels or announcements.
 
+**Path editor and navigation (nav-paths):** routes can now be edited live in F8 > Developer > Paths (drag waypoints, bays and the goal zone on the ground, validated against the navmesh). The document gained three optional keys, `laneWidth`, `goal` and per-lane `bays`; monsters and bots follow navmesh paths between waypoints and the waypoint arrival radius is 150 cm. See `Docs/Navigation.md`.
+
 Edit the JSON and use `cire.Routes reload` in the authoritative development console to apply waypoints and escort tuning. The development settings panel can call `CireLanePath::Reload(World, &Error)` and display its result. Clients cannot reload the server's path. Successful changes publish both routes and the revision through GameState; client world geometry and the minimap use that world's received cache. Each world owns separate runtime route state. Bounds changes require restarting the match because they change permanent world geometry.
 
 Reload is transactional: malformed or out-of-bounds documents retain the active routes. Routes require exactly two unique teams, 3–64 finite points each, at least 50 cm between adjacent points, realm clearance, a distant starting point, and a final point within 100 cm of the actual town center. Unknown keys and oversized documents are rejected. The two private realms cannot overlap.
