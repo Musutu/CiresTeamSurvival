@@ -57,6 +57,27 @@ void ACireHUD::DrawStatuses(AActor* Actor,float X,float Y,float Size,int32 MaxIc
         Tip(TEXT("More effects"),Extra,At,Y,22,Size);
     }
 }
+FString ACireHUD::StatusIconId(const FCireEffectInfo& I)
+{
+    // Painted status icons (/Game/UI/Abilities/T_status_<name>, generated for Eric via ChatGPT) for
+    // effects without their own ability art; empty -> the procedural sigil below.
+    switch(I.Control)
+    {
+    case ECireControl::Stun:return TEXT("status_stun");
+    case ECireControl::Silence:return TEXT("status_silence");
+    case ECireControl::Root:return TEXT("status_root");
+    case ECireControl::HealCut:return TEXT("status_heal_cut");
+    case ECireControl::Slow:return TEXT("status_slow");
+    case ECireControl::Taunt:return TEXT("status_taunt");
+    case ECireControl::Disarm:return TEXT("status_disarm");
+    case ECireControl::Fear:return TEXT("status_fear");
+    default:break;
+    }
+    if(I.Mods.Num()&&I.Mods[0].Value<0&&(I.Mods[0].Stat==TEXT("DEF")||I.Mods[0].Stat==TEXT("Armor")))return TEXT("status_armor_break");
+    if(I.IsHarmful()&&I.Dispel==ECireDispel::Poison)return TEXT("status_poison");
+    if(I.IsHarmful()&&I.Dispel==ECireDispel::Curse)return TEXT("status_curse");
+    return FString();
+}
 FString ACireHUD::EffectSigil(FName Id,const FCireEffectInfo& I)
 {
     // Distinct symbols for effects without painted art: by control, then the leading stat,
@@ -98,7 +119,10 @@ void ACireHUD::DrawEffectIcon(const FCireActiveEffect& E,const FCireEffectInfo& 
     const FLinearColor Border=CireEffects::BorderColor(I);
     const float Pulse=Remaining>0&&Remaining<3.f?.55f+.45f*FMath::Sin(static_cast<float>(GetWorld()->GetRealTimeSeconds())*9.f):1.f; // expiring blink
     P.Rect(X-1,Y-1,Size+2,Size+2,FLinearColor(0,0,0,.9f));
-    if(UTexture2D* Tex=CireUIStyle::FindAbilityIcon(E.Id.ToString()))P.Tex(Tex,X+1,Y+1,Size-2,Size-2,FLinearColor(1,1,1,Pulse));
+    UTexture2D* Tex=CireUIStyle::FindAbilityIcon(E.Id.ToString());
+    if(!Tex)Tex=CireUIStyle::FindAbilityIcon(StatusIconId(I)); // painted crowd-control / armor-break art
+    if(!Tex)Tex=CireUIStyle::FindAbilityIcon(EffectSigil(E.Id,I)); // painted art of the ability whose symbol it borrows
+    if(Tex)P.Tex(Tex,X+1,Y+1,Size-2,Size-2,FLinearColor(1,1,1,Pulse));
     else
     {
         P.Rect(X+1,Y+1,Size-2,Size-2,Border*FLinearColor(.25f,.25f,.25f,1));

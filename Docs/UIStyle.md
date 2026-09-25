@@ -84,6 +84,20 @@ T_ButtonPassive, T_Glow, T_Gloss, T_IconBg, T_Gem, T_Header` (procedural, genera
 `Tools/BuildWowUIContent.py`. Licenses: `Content/UI/WowUI/LICENSES.md`.
 `CireUIStyle::AssetPaths()` lists them for hard references so they cook.
 
+### Painted icons (ChatGPT art)
+
+Item, ability, status-effect and role icons are painted art generated for Eric via ChatGPT
+(OpenAI). Source sheets live in `Art/Icons/ChatGPT/*.png`; `Tools/SliceIconSheet.py` cuts a 3x3
+sheet into 256px PNGs in `Art/Icons/ChatGPT/Items` (`T_Item_<id>`) and `Art/Icons/ChatGPT/Abilities`
+(`<id>`). `Tools/BuildItemIcons.py` + `Tools/BuildShopContent.py` and `Tools/RunAbilityIcons.py`
+use those PNGs in place of the procedural renders (`--procedural` ignores them), so asset paths stay
+`/Game/UI/Items/T_Item_<id>` and `/Game/UI/Abilities/T_<id>`. Extra painted-only textures:
+`T_status_<stun|silence|root|slow|heal_cut|taunt|disarm|fear|armor_break|poison|curse>` (buff/debuff
+frames, `ACireHUD::StatusIconId`), `T_role_<tank|damage|support|hybrid>` (unit-frame portraits when
+no champion portrait is drawn, >= 24px) and `T_Item_gold|teleport|challenge` (toasts).
+`Tools/IconContactSheet.py DIR OUT.png` renders a 64/40px review sheet. Licences:
+`Content/UI/Items/LICENSES.md`, `Content/UI/Abilities/LICENSES.md`.
+
 ## Verification
 
 `Tools/RunWowUIGallery.py` renders 20 deterministic 1080p captures (`-CireWowUIGallery`, isolated
