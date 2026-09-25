@@ -7,11 +7,24 @@ writes a report. It does not modify a level or player save.
 from datetime import datetime, timezone
 import argparse
 import json
+import os
 from pathlib import Path
 import re
 import struct
 import subprocess
 import time
+
+
+# AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+# and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Probes only target Win64.
+EDITOR_ENV = {**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"}
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
 
 
 def main():
@@ -32,10 +45,11 @@ def main():
     failure = ""
     with console.open("wb") as output:
         child = subprocess.Popen(command, stdout=output, stderr=subprocess.STDOUT,
-                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0), env=EDITOR_ENV)
         try:
             code = child.wait(timeout=85)
         except subprocess.TimeoutExpired:
+            kill_tree(child)
             child.terminate()
             try:
                 code = child.wait(timeout=5)

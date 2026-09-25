@@ -176,7 +176,8 @@ SWAP_HAND = ["witch_slayer", "artificer"]
 
 # Painted champion-select backgrounds (the draft-layout agent paints Art/DraftBackgrounds/<id>.png ->
 # /Game/UI/Draft/Backgrounds/T_DraftBg_<id>). Until a painting exists the draft screen uses the fallback,
-# a role-themed scene of an existing champion. Prompts describe the missing painting.
+# a role-themed scene of an existing champion. Prompts describe the painting ("status": painted once
+# Art/DraftBackgrounds/<background>.png exists and is imported; all five painted by art-2d, 2026-09-25).
 BACKGROUNDS = {
     "gunblade": {"background": "gunblade", "fallback": "ranger", "mood": "candle",
                  "prompt": "Dusk over a gallows crossroads outside a burned village, bounty posters nailed to a leaning post, lantern light, crows, dark fantasy oil painting, no people"},
@@ -185,9 +186,9 @@ BACKGROUNDS = {
     "huntress": {"background": "huntress", "fallback": "dryad", "mood": "moon",
                  "prompt": "Moonlit ancient forest ridge, great cat tracks in silver frost, an owl on a broken branch, cold blue light, dark fantasy oil painting, no people"},
     "aetheri_artificer": {"background": "aetheri", "fallback": "ether_golem", "mood": "ether",
-                          "prompt": "Crystalline gold-and-white alloy spires under a violet sky, floating warp rings and a humming pylon, luminous blue energy, dark fantasy oil painting, no people"},
-    "aetheri_warden": {"background": "aetheri", "fallback": "ether_golem", "mood": "ether",
-                       "prompt": "(shares the Aetheri scene)"},
+                          "prompt": "Aetheri workshop plaza: crystalline gold-and-white alloy spires under a violet sky, floating warp rings and a humming pylon, gears and crystal shards on wet flagstones, luminous blue energy, dark fantasy oil painting, no people"},
+    "aetheri_warden": {"background": "aetheri_warden", "fallback": "ether_golem", "mood": "ether",
+                       "prompt": "A quiet Aetheri sanctuary terrace on a cliff at night, white marble and gold-and-white crystal pylons casting an icy-blue warding field, floating rune rings, teal aurora over snowy peaks, a crystal beacon, dark fantasy oil painting, no people"},
 }
 
 
@@ -413,8 +414,10 @@ def upsert_grips(text: str) -> str:
 def backgrounds() -> str:
     return json.dumps({"schemaVersion": 1, "generator": "Tools/AuthorNewChampions.py",
                        "notes": "Champion-select painted backgrounds for champions without one yet. background = /Game/UI/Draft/Backgrounds/T_DraftBg_<background>; "
-                                "until that texture exists the draft screen shows fallback's painting (a role-themed scene). mood picks the stage lighting.",
-                       "champions": BACKGROUNDS}, indent=2) + "\n"
+                                "until that texture exists the draft screen shows fallback's painting (a role-themed scene). mood picks the stage lighting. "
+                                "status: painted when Art/DraftBackgrounds/<background>.png exists (imported by Tools/BuildDraftSelectContent.py), else fallback.",
+                       "champions": {cid: dict(row, status="painted" if (ROOT / "Art/DraftBackgrounds" / (row["background"] + ".png")).is_file() else "fallback")
+                                     for cid, row in BACKGROUNDS.items()}}, indent=2) + "\n"
 
 
 def main() -> int:

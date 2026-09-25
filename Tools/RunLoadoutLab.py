@@ -7,7 +7,7 @@ import statistics
 import subprocess
 import time
 import uuid
-from RunBalanceLab import ROOT, find_reports, stop_owned
+from RunBalanceLab import EDITOR_ENV, ROOT, find_reports, stop_owned
 
 PRESETS=('thematic','tank_last_stand','tank_challenge','tank_seismic','support_aegis','support_wellspring','dps_starfall','dps_hunt')
 
@@ -51,7 +51,7 @@ def run_case(engine,output,wave,preset,repeat,duration,timeout,enemies=5):
     start=time.monotonic();completed=None;shutdown='natural_exit'
     with stdout.open('wb') as stream:
         child=subprocess.Popen(command,cwd=ROOT,stdout=stream,stderr=subprocess.STDOUT,
-                               creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+                               creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0),env=EDITOR_ENV)
         try:
             while child.poll() is None:
                 now=time.monotonic()

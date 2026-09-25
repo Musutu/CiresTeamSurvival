@@ -177,15 +177,14 @@ Two reviews show the current bindings:
 
 The pre-Tripo temporary bodies are kept in `AuthorNewChampions.BINDINGS`. They are used again if a Tripo row is no longer `ready`.
 
-- **Icons.** There are 40 procedural ability icons (`/Game/UI/Abilities/T_<skill>`).
+- **Icons.** All 40 kit icons (`/Game/UI/Abilities/T_<skill>`) are painted (ChatGPT sheets `Art/Icons/ChatGPT/abilities_<champion>.png`, sliced into `Art/Icons/ChatGPT/Abilities/`).
 - **Buffs and aiming.** Buff registry rows exist for every construct field effect. Every aimed skill has a ground-aim descriptor.
-- **Champion select.** All five champions have portraits (`/Game/UI/Draft/Portraits/T_Portrait_<id>`). Each has a background slot in `DraftBackgrounds.json`. Until a painting exists, it falls back to a role-themed scene: ranger, summoner or dryad, and ether_golem for both Aetheri. The painting prompts are stored in the same file.
+- **Champion select.** All five champions have portraits (`/Game/UI/Draft/Portraits/T_Portrait_<id>`). Each has a painted background (`/Game/UI/Draft/Backgrounds/T_DraftBg_<background>`, `"status": "painted"` in `DraftBackgrounds.json`): gunblade, witch_slayer, huntress, aetheri (Artificer) and aetheri_warden. The role-themed fallback (ranger, summoner, dryad, ether_golem) is only used if a texture goes missing. The painting prompts are stored in the same file.
 
 ## Known limits
 
 - **No mount.** The mount was removed: the Huntress fights on foot, and `final_bindings()` binds every ready Tripo body the same way. Riding units are future work; the `mounted` creature motion is kept in `CireCreatureArt` for them.
 - **Sabercat clips.** The Tripo sabercat (`/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat`) has no clips; as the companion it moves procedurally until `Content/Data/PetArt.tripo.json` provides them (Pets.md).
-- **No painted backgrounds.** None of the five champion-select backgrounds is painted yet; all use the role-themed fallbacks.
 - **Aetheri monster bodies.** The Aetheri monster units use tinted fallback bodies from other races. Races.md holds their Tripo prompts.
 - **Placeholder props.** The props (flintlock, falchion, blunderbuss, glaives, staff, halberd) are original prototype meshes authored in `Tools/BuildNewChampionContent.py`, not final art.
 - **Balance.** Numbers are first-pass design values and have not been through the Balance Lab.

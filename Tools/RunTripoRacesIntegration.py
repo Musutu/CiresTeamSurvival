@@ -7,6 +7,7 @@ saving a redirector, so saved clips point at a package that never existed. This 
 The Bridge watcher editor (Tools/OpenTripoBridgeBatch03.py) must be closed first.
 Usage: python Tools/RunTripoRacesIntegration.py
 """
+import os
 from pathlib import Path
 import json
 import re
@@ -16,6 +17,27 @@ import subprocess
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = "F:/UE_5.8/Engine/Binaries/Win64/"
 INI = ROOT / "Config" / "DefaultEngine.ini"
+
+
+def run_editor(command, timeout, env=None, **kwargs) -> subprocess.CompletedProcess:
+    """subprocess.run() for an editor that skips UBT SDK setup and kills the whole process tree on timeout."""
+    # AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+    # and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Editors here target Win64.
+    child = subprocess.Popen(command, env={**(env or os.environ), "UE_SKIP_UBT_SDK_SETUP": "1"}, **kwargs)
+    try:
+        return subprocess.CompletedProcess(command, child.wait(timeout=timeout))
+    except subprocess.TimeoutExpired:
+        kill_tree(child)
+        child.kill()
+        child.wait()
+        raise
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
 
 
 def redirects():
@@ -39,10 +61,10 @@ def main():
         if extra:
             with INI.open("a", encoding="utf-8", newline="\r\n") as stream:
                 stream.write("\n[CoreRedirects]\n" + "\n".join(extra) + "\n")
-        subprocess.run([ENGINE + "UnrealEditor.exe", str(ROOT / "CiresTeamSurvival.uproject"), "-unattended", "-nosplash",
-                        "-NoLiveCoding", "-RenderOffscreen", "-nosound",
-                        "-ExecCmds=py " + (ROOT / "Tools" / "IntegrateTripoRaces.py").as_posix(),
-                        "-abslog=" + str(ROOT / "Saved" / "Logs" / "TripoRaces-Integrate.log")], check=True, timeout=2400)
+        run_editor([ENGINE + "UnrealEditor.exe", str(ROOT / "CiresTeamSurvival.uproject"), "-unattended", "-nosplash",
+                    "-NoLiveCoding", "-RenderOffscreen", "-nosound",
+                    "-ExecCmds=py " + (ROOT / "Tools" / "IntegrateTripoRaces.py").as_posix(),
+                    "-abslog=" + str(ROOT / "Saved" / "Logs" / "TripoRaces-Integrate.log")], 2400).check_returncode()
     finally:
         shutil.copy2(backup, INI)
         backup.unlink()

@@ -5,10 +5,10 @@ Everything below works in-game today with a stand-in. This list tracks what stil
 ## A. ChatGPT, painted 2D (collector: art-collector-2d)
 | # | Item | Current stand-in | Needed |
 |---|---|---|---|
-| A1 | Champion-select backgrounds: Gunblade, Witch Slayer, Huntress, Aetheri Artificer, Aetheri Warden | Scenes borrowed from similar champions | 5 painted scenes in the same style as the other 18 (prompts in Content/Data/DraftBackgrounds.json) |
-| A2 | Ability icons for the 5 new champions' kits (~40) plus the Construct skills | Procedural placeholder icons | Painted icons matching the 105 existing ones |
-| A3 | Icons that look too alike: Sanctuary, Aegis Dome, Mass Aegis | Three similar golden domes | Three clearly different designs |
-| A4 | Pale champion portraits: Ether Golem variants, Totemic Behemoth, Whisp, Keeper | Washed-out 3D renders | Painted portraits, or re-lit renders |
+| A1 | Champion-select backgrounds: Gunblade, Witch Slayer, Huntress, Aetheri Artificer, Aetheri Warden | **Done 2026-09-25** | 5 painted scenes (Art/DraftBackgrounds; Warden now has its own) |
+| A2 | Ability icons for the 5 new champions' kits (~40) plus the Construct skills | **Done 2026-09-25** | 40 painted icons (Art/Icons/ChatGPT/abilities_<champion>.png) |
+| A3 | Icons that look too alike: Sanctuary, Aegis Dome, Mass Aegis | **Done 2026-09-25** | Healing spring / crystal hex barrier / winged shield ring |
+| A4 | Pale champion portraits: Ether Golem variants, Totemic Behemoth, Whisp, Keeper | **Done 2026-09-25** | Painted over the renders (Art/DraftPortraits/Painted, applied by RunDraftPortraits) |
 | A5 | Aetheri monster race concept sheets (6 units + 2 bosses) | — | Reference sheets for Tripo image-to-3D |
 
 ## B. Tripo 3D (collector: art-collector-3d; balance about 1,575 credits)

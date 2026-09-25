@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -25,6 +26,10 @@ def read_log(path: Path) -> str:
 def stop_child(child: subprocess.Popen[bytes]) -> None:
     if child.poll() is not None:
         return
+    if os.name == "nt":
+        # Kill the whole tree so a Build.bat child spawned by the editor cannot outlive it.
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
     child.terminate()
     try:
         child.wait(timeout=5)
@@ -47,8 +52,8 @@ def main() -> int:
         parser.error("UnrealEditor-Cmd or project does not exist")
     if not 1024 <= args.port <= 65535:
         parser.error("port must be 1024..65535")
-    if not 1 <= args.startup_timeout <= 120 or not 1 <= args.probe_timeout <= 120:
-        parser.error("timeouts must be 1..120 seconds")
+    if not 1 <= args.startup_timeout <= 1800 or not 1 <= args.probe_timeout <= 1800:
+        parser.error("timeouts must be 1..1800 seconds")
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as check:
         try:
             check.bind(("127.0.0.1", args.port))
@@ -68,9 +73,13 @@ def main() -> int:
     failure = ""
     start = time.monotonic()
     flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    # AutoSDK is off on this machine, so every editor boot otherwise runs
+    # "Build.bat -Mode=ValidatePlatforms" and blocks on Build.bat's machine-wide
+    # lock file while any other worktree compiles. The probe only targets Win64.
+    env = {**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"}
     try:
         print(f"Starting interface probe at loopback port {args.port}.", flush=True)
-        children["server"] = subprocess.Popen(commands["server"], cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags)
+        children["server"] = subprocess.Popen(commands["server"], cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags, env=env)
         deadline = time.monotonic() + args.startup_timeout
         while "CIRE_INTERFACE_SERVER_READY" not in read_log(logs["server"]):
             if children["server"].poll() is not None:
@@ -80,7 +89,7 @@ def main() -> int:
             time.sleep(0.25)
         print("Dedicated server ready; starting two remote clients.", flush=True)
         for name in ("client0", "client1"):
-            children[name] = subprocess.Popen(commands[name], cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags)
+            children[name] = subprocess.Popen(commands[name], cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags, env=env)
         deadline = time.monotonic() + args.probe_timeout
         while any(child.poll() is None for child in children.values()):
             for name, path in logs.items():
