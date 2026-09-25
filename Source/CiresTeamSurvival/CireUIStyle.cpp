@@ -371,12 +371,22 @@ void CireUIStyle::Button(const FCireUIPainter& P,float X,float Y,float W,float H
         // Themed: panel fill brightened by state, the card frame, accent glow on hover/selection.
         const FCireUITheme& T=*CireUITheme::Active();
         P.Rect(X+2,Y+3,W,H,FLinearColor(0,0,0,.35f));
+        // hud-art: themes with painted button states draw the state piece (opaque face + frame).
+        const ECireThemePiece BtnPiece=bOff?ECireThemePiece::ButtonDisabled:bPress?ECireThemePiece::ButtonPressed:bHover||bSel?ECireThemePiece::ButtonHover:ECireThemePiece::Button;
+        if(T.Piece(BtnPiece).bValid&&CireUITheme::Draw(P,BtnPiece,X,Y+Dy,W,H,FLinearColor::White,CornerScaleFor(W,H,60.f)))
+        {
+            if(bSel)P.Rect(X+W*.06f,Y+H*.2f+Dy,W*.88f,H*.6f,Accent*FLinearColor(1,1,1,.12f));
+            if(bHover||bSel)Glow(P,X+W*.1f,Y+Dy,W*.8f,H,(bSel?Accent:ThemeGlow)*FLinearColor(1,1,1,(bSel?.22f:.14f)*T.GlowStrength));
+        }
+        else
+        {
         const FLinearColor Base=bOff?FLinearColor(.55f,.55f,.55f,.9f):bSel?FLinearColor(1.45f,1.35f,1.2f,1):bHover?FLinearColor(1.5f,1.5f,1.55f,1):bPress?FLinearColor(.8f,.8f,.85f,1):FLinearColor(1.1f,1.1f,1.15f,1);
         CireUITheme::DrawFill(P,X,Y+Dy,W,H,PanelTint*Base);
         if(A.Gloss)P.Tex(A.Gloss,X+1,Y+1+Dy,W-2,H*.5f,ThemeGlow*FLinearColor(1,1,1,bPress?.02f:.07f));
         if(bSel)P.Rect(X+2,Y+2+Dy,W-4,H-4,Accent*FLinearColor(1,1,1,.14f));
         CireUITheme::Draw(P,ECireThemePiece::Card,X,Y+Dy,W,H,bOff?FLinearColor(.5f,.5f,.5f,.8f):bHover||bSel?FLinearColor(1.25f,1.2f,1.1f,1):FLinearColor::White,CornerScaleFor(W,H,60.f));
         if(bHover||bSel)Glow(P,X+W*.1f,Y+Dy,W*.8f,H,(bSel?Accent:ThemeGlow)*FLinearColor(1,1,1,(bSel?.3f:.22f)*T.GlowStrength));
+        }
     }
     else if(A.bTextures)
     {
@@ -446,7 +456,13 @@ void CireUIStyle::IconSlot(const FCireUIPainter& P,float X,float Y,float S,const
     // Frame.
     UTexture2D* FrameTex=bUlt?A.ButtonUlt:bPassive?A.ButtonPassive:A.Button;
     // ui-themes: themed slot frames; hover brightens, pressed darkens (normal/hover/pressed states).
-    if(bThemed)CireUITheme::Draw(P,FramePiece,X-FramePad,Y-FramePad+Dy,S+2*FramePad,S+2*FramePad,Slot.bPressed?FLinearColor(.78f,.78f,.8f,1):Slot.bHover?FLinearColor(1.3f,1.25f,1.15f,1):FLinearColor::White);
+    if(bThemed)
+    {
+        // hud-art: painted state frames (hover / pressed / cooldown) when the theme has them, else tint.
+        const ECireThemePiece StatePiece=FramePiece!=ECireThemePiece::Slot?FramePiece:Slot.bPressed?ECireThemePiece::SlotPressed:Slot.bHover?ECireThemePiece::SlotHover:Slot.CooldownFraction>0?ECireThemePiece::SlotCooldown:ECireThemePiece::Slot;
+        if(StatePiece==FramePiece||!CireUITheme::Draw(P,StatePiece,X-FramePad,Y-FramePad+Dy,S+2*FramePad,S+2*FramePad,FLinearColor::White))
+            CireUITheme::Draw(P,FramePiece,X-FramePad,Y-FramePad+Dy,S+2*FramePad,S+2*FramePad,Slot.bPressed?FLinearColor(.78f,.78f,.8f,1):Slot.bHover?FLinearColor(1.3f,1.25f,1.15f,1):FLinearColor::White);
+    }
     else if(FrameTex)P.Tex(FrameTex,X-(bUlt?2.f:0.f),Y-(bUlt?2.f:0.f)+Dy,S+(bUlt?4.f:0.f),S+(bUlt?4.f:0.f),FLinearColor::White);
     else{P.Line(X,Y,X+S,Y,Gold);P.Line(X,Y+S,X+S,Y+S,Gold);P.Line(X,Y,X,Y+S,Gold);P.Line(X+S,Y,X+S,Y+S,Gold);}
     const float GlowK=bThemed?CireUITheme::Active()->GlowStrength:1.f;

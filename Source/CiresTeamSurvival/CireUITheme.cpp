@@ -12,7 +12,9 @@ DEFINE_LOG_CATEGORY_STATIC(LogCireUITheme, Log, All);
 namespace
 {
 const TCHAR* GPieceNames[] = {TEXT("Panel"), TEXT("Card"), TEXT("Tooltip"), TEXT("Slot"), TEXT("SlotPassive"), TEXT("SlotUltimate"),
-    TEXT("Ring"), TEXT("BarFrame"), TEXT("CastFrame"), TEXT("Minimap"), TEXT("Banner"), TEXT("Divider"), TEXT("Ornament"), TEXT("BarFill")};
+    TEXT("Ring"), TEXT("BarFrame"), TEXT("CastFrame"), TEXT("Minimap"), TEXT("Banner"), TEXT("Divider"), TEXT("Ornament"), TEXT("BarFill"),
+    TEXT("SlotHover"), TEXT("SlotPressed"), TEXT("SlotCooldown"), TEXT("SlotDisabled"),
+    TEXT("Button"), TEXT("ButtonHover"), TEXT("ButtonPressed"), TEXT("ButtonDisabled"), TEXT("BuffBorder")};
 static_assert(UE_ARRAY_COUNT(GPieceNames) == static_cast<int32>(ECireThemePiece::Count), "piece names");
 
 TArray<FCireUITheme> GThemes;
@@ -154,6 +156,7 @@ bool CireUITheme::ParseJson(const FString& Json, TArray<FCireUITheme>& Out, FNam
             const TSharedPtr<FJsonObject>* PieceObj = nullptr;
             if (!Pieces || !(*Pieces)->TryGetObjectField(GPieceNames[I], PieceObj) || !PieceObj)
             {
+                if (I >= static_cast<int32>(ECireThemePiece::RequiredCount)) continue; // optional piece
                 Errors.Add(FString::Printf(TEXT("%s: missing piece %s"), *Where, GPieceNames[I]));
                 continue;
             }
@@ -305,7 +308,7 @@ bool CireUITheme::Validate(TArray<FString>& Errors, bool bRequireArt)
         for (const FCireUITheme& T : Parsed)
         {
             if (!LoadArt(T)) Errors.Add(FString::Printf(TEXT("theme %s: atlas or fill texture failed to load"), *T.Id.ToString()));
-            for (int32 I = 0; I < static_cast<int32>(ECireThemePiece::Count); ++I)
+            for (int32 I = 0; I < static_cast<int32>(ECireThemePiece::RequiredCount); ++I)
                 if (!T.Pieces[I].bValid) Errors.Add(FString::Printf(TEXT("theme %s: piece %s unresolved"), *T.Id.ToString(), GPieceNames[I]));
         }
     return Errors.IsEmpty();
