@@ -14,7 +14,7 @@ import struct
 import subprocess
 import time
 
-EXPECTED = 12
+EXPECTED = 14  # items-v2: +group actives, +ultimate upgrade in combat
 
 
 def main():

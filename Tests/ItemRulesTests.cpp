@@ -680,6 +680,33 @@ void ItemsV2Rules()
     CHECK(SpendCharge(single, 1, 3.5, 5) && !SpendCharge(single, 1, 3.5, 8) && SpendCharge(single, 1, 3.5, 8.6));
     single.ReadyAt = 0; single.Charges = 0;                     // legacy "ReadyAt = 0" reset still refills
     CHECK(AvailableCharges(single, 1, 3.5, 1) == 1);
+
+    // Stat policy (universal primary scaling): adaptive primary + flat stats; specials on completed items only.
+    ItemStat stat{};
+    CHECK(ParseStatKey("primaryStat", stat) && stat == ItemStat::Primary && std::string(StatLabel(stat)) == "Primary Stat");
+    CHECK(ParseStatKey("damageReduction", stat) && StatIsPercent(stat) && ParseStatKey("damageBlock", stat) && !StatIsPercent(stat));
+    CHECK(StatAllowed(ItemStat::Primary, ItemTier::Basic) && StatAllowed(ItemStat::Health, ItemTier::Basic) && StatAllowed(ItemStat::Armor, ItemTier::Epic));
+    CHECK(!StatAllowed(ItemStat::AttackDamage, ItemTier::Legendary) && !StatAllowed(ItemStat::SpellPower, ItemTier::Basic));
+    CHECK(!StatAllowed(ItemStat::Strength, ItemTier::Basic) && !StatAllowed(ItemStat::Intelligence, ItemTier::Legendary));
+    CHECK(!StatAllowed(ItemStat::DamageReduction, ItemTier::Epic) && StatAllowed(ItemStat::DamageReduction, ItemTier::Legendary));
+    CHECK(!StatAllowed(ItemStat::CritChance, ItemTier::Basic) && StatAllowed(ItemStat::Lifesteal, ItemTier::Legendary));
+    Catalog policy;
+    auto band = Make("band", ItemTier::Basic, 150); band.Stats[ItemStat::Primary] = 5; band.Stats[ItemStat::Health] = 100;
+    auto plate = Make("plate", ItemTier::Legendary, 300, {"band"}); plate.Stats[ItemStat::DamageReduction] = 6; plate.Stats[ItemStat::DamageBlock] = 10;
+    policy.Items = {band, plate};
+    CHECK(policy.Finalize().empty() && ValidateStatPolicy(policy).empty());
+    policy.Items[0].Stats[ItemStat::AttackDamage] = 6;
+    CHECK(ValidateStatPolicy(policy).find("attackDamage") != std::string::npos);
+    policy.Items[0].Stats[ItemStat::AttackDamage] = 0; policy.Items[0].Stats[ItemStat::DamageBlock] = 4;
+    CHECK(!ValidateStatPolicy(policy).empty());
+    policy.Items[0].Stats[ItemStat::DamageBlock] = 0;
+    // Primary items feed totals like any stat.
+    Inventory primaryBag; primaryBag.Equipment[0].Id = "band"; primaryBag.Equipment[1].Id = "plate";
+    const Totals pt = ComputeTotals(policy, primaryBag);
+    CHECK(Near(pt.Stats.Get(ItemStat::Primary), 5) && Near(pt.Stats.Get(ItemStat::DamageReduction), 6) && Near(pt.Stats.Get(ItemStat::DamageBlock), 10));
+    // Mitigation specials: percent then block, block floored at 25% of the hit, reduction capped at 40%.
+    CHECK(Near(ApplyItemMitigation(100, 10, 10), 80) && Near(ApplyItemMitigation(20, 0, 50), 5) && Near(ApplyItemMitigation(100, 90, 0), 60));
+    CHECK(Near(ApplyItemMitigation(-5, 10, 10), 0) && Near(ApplyItemMitigation(100, 0, 0), 100));
 }
 
 int main()

@@ -29,6 +29,9 @@ constexpr StatInfo StatTable[StatCount] = {
     {"healthRegen", "Health Regen /s", false},
     {"manaRegen", "Mana Regen /s", false},
     {"energyRegen", "Energy Regen /s", false},
+    {"primaryStat", "Primary Stat", false},
+    {"damageReduction", "Damage Reduction", true},
+    {"damageBlock", "Damage Block per hit", false},
 };
 
 struct KeyedEffect { const char* Key; EffectKind Kind; };
@@ -833,6 +836,48 @@ double ChargeCooldown(const ChargeState& state, int maxCharges, double rechargeS
     ChargeState copy = state;
     Refill(copy, maxCharges, rechargeSeconds, now);
     return copy.Charges >= std::max(1, maxCharges) ? 0.0 : std::max(0.0, copy.ReadyAt - now);
+}
+} // namespace Items
+} // namespace Cires
+
+namespace Cires
+{
+namespace Items
+{
+bool StatAllowed(ItemStat stat, ItemTier tier)
+{
+    switch (stat)
+    {
+    case ItemStat::Primary: case ItemStat::Health: case ItemStat::Mana: case ItemStat::Armor: case ItemStat::Ward:
+    case ItemStat::AttackSpeed: case ItemStat::CooldownReduction: case ItemStat::MoveSpeed:
+    case ItemStat::HealthRegen: case ItemStat::ManaRegen: case ItemStat::EnergyRegen:
+        return true;
+    case ItemStat::DamageReduction: case ItemStat::DamageBlock: case ItemStat::CritChance: case ItemStat::Lifesteal:
+        return tier == ItemTier::Legendary;
+    default:
+        return false;   // Strength/Agility/Intelligence, Attack Damage, Spell Power
+    }
+}
+
+std::string ValidateStatPolicy(const Catalog& catalog)
+{
+    for (const auto& item : catalog.Items)
+        for (int index = 0; index < StatCount; ++index)
+        {
+            const auto stat = static_cast<ItemStat>(index);
+            if (item.Stats.Get(stat) != 0 && !StatAllowed(stat, item.Tier))
+                return item.Id + " grants " + StatKey(stat) + " (items grant the primary stat and flat stats only)";
+            if (item.Use.Buff.Get(stat) != 0 && !StatAllowed(stat, ItemTier::Legendary))
+                return item.Id + " buff grants " + StatKey(stat);
+        }
+    return {};
+}
+
+double ApplyItemMitigation(double amount, double reductionPercent, double block)
+{
+    if (!(amount > 0)) return 0;
+    const double reduced = amount * (1.0 - std::clamp(reductionPercent, 0.0, MaxItemDamageReduction) / 100.0);
+    return std::max(reduced * MinBlockedFraction, reduced - std::max(0.0, block));
 }
 } // namespace Items
 } // namespace Cires

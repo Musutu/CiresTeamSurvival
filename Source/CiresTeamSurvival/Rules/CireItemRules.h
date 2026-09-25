@@ -20,13 +20,27 @@ enum class ItemStat : std::uint8_t
 {
     Strength, Agility, Intelligence, Health, Mana, AttackDamage, SpellPower, Armor, Ward,
     AttackSpeed, CritChance, Lifesteal, CooldownReduction, MoveSpeed, HealthRegen, ManaRegen,
-    EnergyRegen, Count
+    EnergyRegen,
+    // items-v2 (Eric's universal-scaling ruling): items grant the owner's primary stat, flat pools,
+    // flat armor/ward, and completed-item mitigation.
+    Primary,          // adaptive: added to STR, AGI or INT, whichever is the owner's primary
+    DamageReduction,  // % of every incoming hit (after armor/ward), capped at 40%
+    DamageBlock,      // flat reduction of every incoming hit (after armor/ward), never below 25% of the hit
+    Count
 };
 constexpr int StatCount = static_cast<int>(ItemStat::Count);
 const char* StatKey(ItemStat stat);            // JSON key, e.g. "attackDamage"
 const char* StatLabel(ItemStat stat);          // UI label, e.g. "Attack Damage"
 bool StatIsPercent(ItemStat stat);
 bool ParseStatKey(const std::string& key, ItemStat& out);
+// items-v2 stat policy: every item may grant Primary, flat Health/Mana, flat Armor/Ward, regen,
+// attack speed, cooldown reduction and move speed; only legendary (completed) items may add
+// DamageReduction, DamageBlock, CritChance or Lifesteal; nothing grants STR/AGI/INT directly,
+// Attack Damage or Spell Power. Returns "" when the catalog follows the policy.
+constexpr double MaxItemDamageReduction = 40.0;   // percent
+constexpr double MinBlockedFraction = 0.25;       // a block never removes more than 75% of a hit
+// Incoming hit after the item mitigation specials (percent reduction, then flat block).
+double ApplyItemMitigation(double amount, double reductionPercent, double block);
 
 struct StatBlock
 {
@@ -174,6 +188,9 @@ private:
     bool Finalized = false;
     int ComputeTotal(std::size_t index, std::vector<int>& state, std::string& error);
 };
+
+bool StatAllowed(ItemStat stat, ItemTier tier);          // items-v2 stat policy (see above)
+std::string ValidateStatPolicy(const Catalog& catalog);
 
 // Where an item lands after purchase and which owned parts the recipe consumes.
 struct PurchasePlan

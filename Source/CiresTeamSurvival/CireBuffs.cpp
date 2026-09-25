@@ -127,6 +127,8 @@ const TArray<FName>& CireBuffs::KnownIds()
         TEXT("silenced"),TEXT("interrupted"),TEXT("healing_cut"),TEXT("heal_cut_done"),TEXT("armor_broken"),TEXT("executioner_ready"),
         // new-champions: bounty/witch marks, tracking, banishment, self buffs and Aetheri construct fields.
         TEXT("bounty_mark"),TEXT("witch_mark"),TEXT("tracked"),TEXT("banished"),TEXT("hunters_stride"),TEXT("warding_talisman"),TEXT("moonlit_sprint"),TEXT("overcharge"),
-        TEXT("aether_aegis"),TEXT("aether_haste"),TEXT("aether_weakened"),TEXT("aether_nexus"),TEXT("npc_aether_empowered")};
+        TEXT("aether_aegis"),TEXT("aether_haste"),TEXT("aether_weakened"),TEXT("aether_nexus"),TEXT("npc_aether_empowered"),
+        // items-v2: party shield, armor banner, ultimate-upgrade aura.
+        TEXT("party_barrier"),TEXT("vigil_banner"),TEXT("apotheosis")};
     return Ids;
 }

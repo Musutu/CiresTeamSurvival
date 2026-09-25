@@ -244,7 +244,7 @@ bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     if (!Mode || !Mode->IsCombatPhase()) return false;
     auto Fail = [&](const FString& Message) { Hero->Notice = Message; return false; };
     const float Mana = Def->Base.ManaCost, Energy = Def->Base.EnergyCost;
-    if (!CireSkillShop::CanPayCast(Hero, Id, Mana, Energy)) return Fail(TEXT("Not enough mana or energy."));
+    if (!CireSkillShop::CanPayCast(Hero, Id, Mana, Energy)) return Fail(*CireSkillShop::CostFailText());
     const float Range = Def->Range > 0 ? Def->Range : 900.f;
     const float Power = Mode->Power(Hero->TeamId);
     const float Amount = FMath::Min(10000.f, (Def->Base.Effect + Sig->Scaling * Hero->PrimaryAttribute()) * Power);

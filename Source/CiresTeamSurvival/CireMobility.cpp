@@ -1,4 +1,5 @@
 #include "CireMobility.h"
+#include "CireItems.h" // items-v2: dodge charges, Tailwind
 #include "CireGame.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -66,14 +67,17 @@ void UCireMobility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(UCireMobility,bWalking);DOREPLIFETIME(UCireMobility,bStrafing);DOREPLIFETIME(UCireMobility,bFaceControl);DOREPLIFETIME(UCireMobility,RollStartedAt);
-    DOREPLIFETIME(UCireMobility,RollDuration);DOREPLIFETIME(UCireMobility,ReadyAt);DOREPLIFETIME(UCireMobility,RollDirection);
+    DOREPLIFETIME(UCireMobility,RollDuration);DOREPLIFETIME(UCireMobility,ReadyAt);DOREPLIFETIME(UCireMobility,RollCharges);DOREPLIFETIME(UCireMobility,MaxRollCharges);DOREPLIFETIME(UCireMobility,RollDirection);
     DOREPLIFETIME(UCireMobility,InvulnerableFrom);DOREPLIFETIME(UCireMobility,InvulnerableUntil);
 }
 double UCireMobility::Now()const{const auto* S=GetWorld()?GetWorld()->GetGameState():nullptr;return S?S->GetServerWorldTimeSeconds():GetWorld()?GetWorld()->GetTimeSeconds():0;}
 bool UCireMobility::IsRolling()const{return Now()>=RollStartedAt&&Now()<RollStartedAt+RollDuration;}
 bool UCireMobility::IsInvulnerable()const{return IsRolling()&&Now()>=InvulnerableFrom&&Now()<InvulnerableUntil;}
 float UCireMobility::RollProgress()const{return IsRolling()?FMath::Clamp(static_cast<float>((Now()-RollStartedAt)/FMath::Max(.01f,RollDuration)),0.f,1.f):-1.f;}
-float UCireMobility::CooldownRemaining()const{return FMath::Max(0.f,static_cast<float>(ReadyAt-Now()));}
+// items-v2: charges (Rules/CireItemRules ChargeState). With one charge this is the old single cooldown.
+int32 UCireMobility::AvailableCharges()const{return Cires::Items::AvailableCharges({RollCharges,ReadyAt},MaxRollCharges,CireMovement::Tuning().RollCooldown,Now());}
+float UCireMobility::NextChargeIn()const{return static_cast<float>(Cires::Items::ChargeCooldown({RollCharges,ReadyAt},MaxRollCharges,CireMovement::Tuning().RollCooldown,Now()));}
+float UCireMobility::CooldownRemaining()const{return AvailableCharges()>0?0.f:NextChargeIn();}
 float UCireMobility::MovementSpeed(bool bSlowed)const{return (bWalking?CireMovement::Tuning().WalkSpeed:CireMovement::Tuning().RunSpeed)*(bSlowed?.65f:1.f);}
 void UCireMobility::ServerSetWalk_Implementation(bool Walking){bWalking=Walking;}
 void UCireMobility::ServerSetStrafe_Implementation(bool Strafing){bStrafing=Strafing;}
@@ -114,12 +118,15 @@ bool UCireMobility::StartRoll(FVector Direction)
     if(!H||!H->HasAuthority()||!Mode||H->bDead||!H->bDrafted||Mode->Clock.Phase()==Cires::MatchPhase::Finished||
         Direction.ContainsNaN()||!H->GetCharacterMovement()->IsMovingOnGround())return false;
     const auto V=CireMovement::Tuning();
-    if(IsRolling()||CooldownRemaining()>0){H->Notice=TEXT("Dodge is recovering.");return false;}
+    MaxRollCharges=CireItems::MaxDodgeCharges(H); // items-v2: Galeborn Twinstep
+    if(IsRolling()||AvailableCharges()<=0){H->Notice=TEXT("Dodge is recovering.");return false;}
     if(H->Energy<V.RollEnergy){H->Notice=TEXT("Not enough energy to dodge.");return false;}
     Direction=Direction.GetSafeNormal2D();if(Direction.IsNearlyZero())Direction=H->GetActorForwardVector();
     H->Energy-=V.RollEnergy;RollStartedAt=Now();RollDuration=V.RollDuration;RollDirection=Direction;
-    ReadyAt=RollStartedAt+V.RollCooldown;InvulnerableFrom=RollStartedAt+V.InvulnerableStart;InvulnerableUntil=RollStartedAt+V.InvulnerableEnd;
+    {Cires::Items::ChargeState Charge{RollCharges,ReadyAt};Cires::Items::SpendCharge(Charge,MaxRollCharges,V.RollCooldown,RollStartedAt);RollCharges=Charge.Charges;ReadyAt=static_cast<float>(Charge.ReadyAt);}
+    InvulnerableFrom=RollStartedAt+V.InvulnerableStart;InvulnerableUntil=RollStartedAt+V.InvulnerableEnd;
     H->PendingAttackTarget.Reset();H->GlobalCooldown=FMath::Max(H->GlobalCooldown,V.RollDuration);H->Notice=TEXT("Dodge roll");
+    CireItems::OnDodgeRoll(H); // items-v2: Windrunner Boots (Tailwind)
     MulticastRoll(RollStartedAt,RollDuration,RollDirection,V.RollSpeed);H->ForceNetUpdate();return true;
 }
 void UCireMobility::MulticastRoll_Implementation(float Started,float Duration,FVector_NetQuantizeNormal Direction,float Speed)

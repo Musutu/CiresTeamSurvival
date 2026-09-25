@@ -1,4 +1,5 @@
 #include "CireConstruct.h"
+#include "CireItems.h" // items-v2
 #include "CireDeveloperTools.h"
 #include "CireCombatEvents.h"
 #include "CireSkillRuntime.h"
@@ -169,7 +170,7 @@ ACireConstruct* ACireConstruct::SpawnFor(AActor* Source, const FCireConstructSpe
     {
         // new-champions: at the recipe's limit the oldest one collapses to make room; the owner budget stays bounded.
         SameRecipe.Sort([](const ACireConstruct& A, const ACireConstruct& B) { return A.Age > B.Age; });
-        const int32 Limit = Spec.OwnerLimit > 0 ? Spec.OwnerLimit : 4;
+        const int32 Limit = (Spec.OwnerLimit > 0 ? Spec.OwnerLimit : 4) + CireItems::ConstructLimitBonus(Source); // items-v2: Heartforge
         int32 Removed = 0;
         for (int32 Index = 0; Index + Limit <= SameRecipe.Num(); ++Index) { SameRecipe[Index]->Destroy(); ++Removed; }
         OwnedTech -= Removed; Total -= Removed;
@@ -181,7 +182,8 @@ ACireConstruct* ACireConstruct::SpawnFor(AActor* Source, const FCireConstructSpe
     if (!Result) return nullptr;
     Result->SourceUnit = Source; Result->OriginTeam = CireSkillRuntime::Team(Source); Result->bMonsterOwned = Source->IsA<ACireMonster>();
     Result->OriginPhase = CireSkillRuntime::Phase(Source->GetWorld());
-    Result->ConstructSpec = Spec; Result->Health = Result->MaxHealth = Spec.MaxHealth;
+    Result->ConstructSpec = Spec; Result->Health = Result->MaxHealth = Spec.MaxHealth * CireItems::ConstructHealthMultiplier(Source); // items-v2
+    Result->ItemShield = Result->MaxHealth * CireItems::ConstructShieldFraction(Source);
     Result->AbilityName = Name.IsEmpty() ? (Spec.Kind == ECireConstructKind::Wall ? TEXT("Summoned Wall") : Spec.IsTech() ? Spec.Recipe.ToString() : TEXT("Protection")) : Name;
     if (Spec.Kind == ECireConstructKind::Skitter) Result->SetNetUpdateFrequency(30);
     Result->FinishSpawning(Transform);
@@ -264,6 +266,7 @@ float ACireConstruct::TakeDamage(float Amount, const FDamageEvent& Event, AContr
 {
     if (!HasAuthority() || !FMath::IsFinite(Amount) || Amount <= 0 || !CanBeDamagedBy(Causer)) return 0;
     if (IsTech()) Amount = CireTechConstructs::ModifyIncomingDamage(this, Causer, Amount); // new-champions
+    if (ItemShield > 0) { const float Soak = FMath::Min(ItemShield, Amount); ItemShield -= Soak; Amount -= Soak; if (Amount <= 0) return 0; } // items-v2: Aegis Plating
     const float Applied = FMath::Min(Health, Amount);
     Health -= Applied;
     CireCombat::BroadcastDamage(Causer, this, Applied, Event);
