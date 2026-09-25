@@ -1,0 +1,550 @@
+{
+  "schemaVersion": 1,
+  "createdUtc": "2026-09-25",
+  "operator": "Claude (feat/tripo-races worktree)",
+  "purpose": "New playable champions requested by Eric (coordinator message): Gunblade, Witch Slayer, Huntress + sabercat mount, two Aetheri. Mapping for the game: Content/Data/ChampionArt.tripo.json.",
+  "items": [
+    {
+      "id": "gunblade",
+      "kind": "champion",
+      "taskId": "acfe9b4e-d3bb-4d2a-b184-87b21d3932f7",
+      "url": "https://studio.tripo3d.ai/workspace/generate/acfe9b4e-d3bb-4d2a-b184-87b21d3932f7",
+      "settings": "HD Model, H3.1 Best Quality, image to 3D, 4K PBR, remove lighting, 60k triangles",
+      "generateCredits": 55,
+      "source": "Saved/Reference/gunblade-sheet.png, FRONT view cropped (text and neighbouring views masked)",
+      "export": "CTS_Champ_Gunblade",
+      "dest": "/Game/Tripo/Champions/Gunblade",
+      "folder": "Gunblade",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Champions/Gunblade",
+        "mesh": "/Game/Tripo/Champions/Gunblade/CTS_Champ_Gunblade.CTS_Champ_Gunblade",
+        "skeletal": true,
+        "skeleton": "/Game/Tripo/Champions/Gunblade/CTS_Champ_Gunblade_Skeleton.CTS_Champ_Gunblade_Skeleton",
+        "material": "/Game/Tripo/Champions/Gunblade/CTS_Champ_Gunblade_Mat.CTS_Champ_Gunblade_Mat",
+        "rawHeightCm": 97.98,
+        "boundsExtentCm": [
+          44.8,
+          16.6,
+          49.0
+        ],
+        "animations": {
+          "attack_crossbow": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_attack_crossbow.CTS_Champ_Gunblade_attack_crossbow",
+          "cast_a_spell": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_cast_a_spell.CTS_Champ_Gunblade_cast_a_spell",
+          "fall": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_fall.CTS_Champ_Gunblade_fall",
+          "hit_to_body_01": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_hit_to_body_01.CTS_Champ_Gunblade_hit_to_body_01",
+          "idle": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_idle.CTS_Champ_Gunblade_idle",
+          "run": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_run.CTS_Champ_Gunblade_run",
+          "slash": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_slash.CTS_Champ_Gunblade_slash",
+          "walk": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_walk.CTS_Champ_Gunblade_walk"
+        }
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20
+      },
+      "creditsTotal": 75,
+      "status": "integrated"
+    },
+    {
+      "id": "gunblade_pistol",
+      "kind": "prop",
+      "taskId": "486daac1-1188-4e1a-a0d8-f571954b8d04",
+      "url": "https://studio.tripo3d.ai/workspace/generate/486daac1-1188-4e1a-a0d8-f571954b8d04",
+      "settings": "HD Model, H3.1 Best Quality, image to 3D, 4K PBR, remove lighting, 60k triangles",
+      "generateCredits": 55,
+      "source": "Saved/Reference/gunblade-sheet.png, BLUNDERBUSS render cropped",
+      "export": "CTS_Prop_GunbladePistol",
+      "dest": "/Game/Tripo/Props/GunbladePistol",
+      "folder": "GunbladePistol",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Props/GunbladePistol",
+        "mesh": "/Game/Tripo/Props/GunbladePistol/CTS_Prop_GunbladePistol.CTS_Prop_GunbladePistol",
+        "skeletal": false,
+        "skeleton": null,
+        "material": "/Game/Tripo/Props/GunbladePistol/CTS_Prop_GunbladePistol_Mat.CTS_Prop_GunbladePistol_Mat",
+        "rawHeightCm": 37.33,
+        "boundsExtentCm": [
+          49.0,
+          8.1,
+          18.7
+        ],
+        "animations": {}
+      },
+      "creditsTotal": 55,
+      "status": "integrated"
+    },
+    {
+      "id": "gunblade_sword",
+      "kind": "prop",
+      "taskId": "4018f1ce-7188-41a8-b344-96119fb4862d",
+      "url": "https://studio.tripo3d.ai/workspace/generate/4018f1ce-7188-41a8-b344-96119fb4862d",
+      "settings": "HD Model, H3.1 Best Quality, image to 3D, 4K PBR, remove lighting, 60k triangles",
+      "generateCredits": 55,
+      "source": "Saved/Reference/gunblade-sheet.png, SWORD render cropped",
+      "export": "CTS_Prop_GunbladeSword",
+      "dest": "/Game/Tripo/Props/GunbladeSword",
+      "folder": "GunbladeSword",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Props/GunbladeSword",
+        "mesh": "/Game/Tripo/Props/GunbladeSword/CTS_Prop_GunbladeSword.CTS_Prop_GunbladeSword",
+        "skeletal": false,
+        "skeleton": null,
+        "material": "/Game/Tripo/Props/GunbladeSword/CTS_Prop_GunbladeSword_Mat.CTS_Prop_GunbladeSword_Mat",
+        "rawHeightCm": 53.45,
+        "boundsExtentCm": [
+          49.1,
+          7.0,
+          26.7
+        ],
+        "animations": {}
+      },
+      "creditsTotal": 55,
+      "status": "integrated"
+    },
+    {
+      "id": "huntress",
+      "kind": "champion",
+      "taskId": "62f3bf83-dc70-4073-a044-0b4fa5cb7312",
+      "url": "https://studio.tripo3d.ai/workspace/generate/62f3bf83-dc70-4073-a044-0b4fa5cb7312",
+      "settings": "HD Model, H3.1 Best Quality, image to 3D, 4K PBR, remove lighting, 60k triangles",
+      "generateCredits": 55,
+      "source": "Saved/Reference/huntress-sheet.png, bottom-row FRONT T-pose cropped",
+      "export": "CTS_Champ_Huntress",
+      "dest": "/Game/Tripo/Champions/Huntress",
+      "folder": "Huntress",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Champions/Huntress",
+        "mesh": "/Game/Tripo/Champions/Huntress/CTS_Champ_Huntress.CTS_Champ_Huntress",
+        "skeletal": true,
+        "skeleton": "/Game/Tripo/Champions/Huntress/CTS_Champ_Huntress_Skeleton.CTS_Champ_Huntress_Skeleton",
+        "material": "/Game/Tripo/Champions/Huntress/CTS_Champ_Huntress_Mat.CTS_Champ_Huntress_Mat",
+        "rawHeightCm": 97.93,
+        "boundsExtentCm": [
+          43.8,
+          10.1,
+          49.0
+        ],
+        "animations": {
+          "attack_bow": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_attack_bow.CTS_Champ_Huntress_attack_bow",
+          "attack_crossbow": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_attack_crossbow.CTS_Champ_Huntress_attack_crossbow",
+          "fall": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_fall.CTS_Champ_Huntress_fall",
+          "hit_to_body_01": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_hit_to_body_01.CTS_Champ_Huntress_hit_to_body_01",
+          "idle": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_idle.CTS_Champ_Huntress_idle",
+          "run": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_run.CTS_Champ_Huntress_run",
+          "slash": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_slash.CTS_Champ_Huntress_slash",
+          "walk": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_walk.CTS_Champ_Huntress_walk"
+        }
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20
+      },
+      "creditsTotal": 75,
+      "status": "integrated"
+    },
+    {
+      "id": "huntress_glaive_launcher",
+      "kind": "prop",
+      "taskId": "bdba69a8-63f0-4c4c-b953-8c813c36f3f5",
+      "url": "https://studio.tripo3d.ai/workspace/generate/bdba69a8-63f0-4c4c-b953-8c813c36f3f5",
+      "settings": "HD Model, H3.1 Best Quality, image to 3D, 4K PBR, remove lighting, 60k triangles",
+      "generateCredits": 55,
+      "source": "Saved/Reference/huntress-sheet.png, GLAIVE THROWER (MOUNTED) render cropped",
+      "export": "CTS_Prop_HuntressGlaiveLauncher",
+      "dest": "/Game/Tripo/Props/HuntressGlaiveLauncher",
+      "folder": "HuntressGlaiveLauncher",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Props/HuntressGlaiveLauncher",
+        "mesh": "/Game/Tripo/Props/HuntressGlaiveLauncher/CTS_Prop_HuntressGlaiveLauncher.CTS_Prop_HuntressGlaiveLauncher",
+        "skeletal": false,
+        "skeleton": null,
+        "material": "/Game/Tripo/Props/HuntressGlaiveLauncher/CTS_Prop_HuntressGlaiveLauncher_Mat.CTS_Prop_HuntressGlaiveLauncher_Mat",
+        "rawHeightCm": 33.1,
+        "boundsExtentCm": [
+          49.1,
+          7.1,
+          16.5
+        ],
+        "animations": {}
+      },
+      "creditsTotal": 55,
+      "status": "integrated"
+    },
+    {
+      "id": "huntress_sabercat",
+      "kind": "mount",
+      "taskId": "a27f1777-7570-49e1-8982-48e358154e8f",
+      "url": "https://studio.tripo3d.ai/workspace/generate/a27f1777-7570-49e1-8982-48e358154e8f",
+      "settings": "HD Model, H3.1 Best Quality, text to 3D, 4K PBR, remove lighting, 60k triangles",
+      "generateCredits": 55,
+      "prompt": "Full body game creature, huge armoured sabercat war mount, massive muscular big cat with long sabre fangs and a snarling face, shaggy dark brown and black fur, dark iron and leather barding plates on the head, neck, shoulders and flanks, a leather riding saddle with straps on its back, a torn red cloth banner hanging from the saddle, thick bushy tail, standing on four legs in a neutral pose, no rider. Highly detailed realistic PBR fur, leather and iron textures, single creature, no base, no background, no particles.",
+      "export": "CTS_Mount_HuntressSabercat",
+      "dest": "/Game/Tripo/Champions/HuntressSabercat",
+      "folder": "HuntressSabercat",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Champions/HuntressSabercat",
+        "mesh": "/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat",
+        "skeletal": true,
+        "skeleton": "/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat_Skeleton.CTS_Mount_HuntressSabercat_Skeleton",
+        "material": "/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat_Mat.CTS_Mount_HuntressSabercat_Mat",
+        "rawHeightCm": 61.55,
+        "boundsExtentCm": [
+          22.2,
+          49.2,
+          30.8
+        ],
+        "animations": {}
+      },
+      "rig": {
+        "type": "Other (quadruped)",
+        "credits": 20,
+        "note": "Studio offered only a 'Walk' preset for this rig and it failed to retarget; a text-to-motion idle (20 credits) also failed ('Invalid user input'). Imported rigged with no clips: needs procedural motion (CireCreatureArt precedent) or more clips."
+      },
+      "textToMotion": [
+        {
+          "name": "idle",
+          "prompt": "Big cat stands still on all four legs, breathing slowly, tail swaying, head turning slightly to look around, idle loop",
+          "seconds": 4,
+          "credits": 20,
+          "status": "failed to retarget"
+        }
+      ],
+      "creditsTotal": 95,
+      "status": "integrated"
+    },
+    {
+      "id": "witch_slayer",
+      "kind": "champion",
+      "taskId": "4a74bde1-0297-4115-a196-310295d932a4",
+      "url": "https://studio.tripo3d.ai/workspace/generate/4a74bde1-0297-4115-a196-310295d932a4",
+      "settings": "HD Model, H3.1 Best Quality, text to 3D, 4K PBR, remove lighting, 60k triangles, T-pose",
+      "generateCredits": 55,
+      "source": "original design: concept kept (pointed hat, green coat, arcane blunderbuss, spectral blade), every detail varied; the reference sheet was not uploaded",
+      "prompt": "Full body game character, realistic dark fantasy arcane witch hunter, tall lean figure, wide-brimmed tall pointed hat of dark green leather with a tarnished silver band and a small blue gem, high-collared long coat of deep forest green leather with tarnished silver trim and rune stitching split at the front, dark grey scarf covering the lower face, faint pale blue eyes in the shadow of the brim, leather harness with glass vials and a small iron spirit lantern at the hip, dark trousers and tall buckled boots, fingerless dark gloves, empty open hands holding nothing. Highly detailed realistic PBR leather, cloth and silver textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no base, no background, no particles, no glow effects.",
+      "export": "CTS_Champ_WitchSlayer",
+      "dest": "/Game/Tripo/Champions/WitchSlayer",
+      "folder": "WitchSlayer",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Champions/WitchSlayer",
+        "mesh": "/Game/Tripo/Champions/WitchSlayer/CTS_Champ_WitchSlayer.CTS_Champ_WitchSlayer",
+        "skeletal": true,
+        "skeleton": "/Game/Tripo/Champions/WitchSlayer/CTS_Champ_WitchSlayer_Skeleton.CTS_Champ_WitchSlayer_Skeleton",
+        "material": "/Game/Tripo/Champions/WitchSlayer/CTS_Champ_WitchSlayer_Mat.CTS_Champ_WitchSlayer_Mat",
+        "rawHeightCm": 98.15,
+        "boundsExtentCm": [
+          40.7,
+          10.9,
+          49.1
+        ],
+        "animations": {
+          "attack_crossbow": "/Game/Tripo/Champions/WitchSlayer/Animations/CTS_Champ_WitchSlayer_attack_crossbow.CTS_Champ_WitchSlayer_attack_crossbow",
+          "cast_a_spell": "/Game/Tripo/Champions/WitchSlayer/Animations/CTS_Champ_WitchSlayer_cast_a_spell.CTS_Champ_WitchSlayer_cast_a_spell",
+          "fall": "/Game/Tripo/Champions/WitchSlayer/Animations/CTS_Champ_WitchSlayer_fall.CTS_Champ_WitchSlayer_fall",
+          "hit_to_body_01": "/Game/Tripo/Champions/WitchSlayer/Animations/CTS_Champ_WitchSlayer_hit_to_body_01.CTS_Champ_WitchSlayer_hit_to_body_01",
+          "idle": "/Game/Tripo/Champions/WitchSlayer/Animations/CTS_Champ_WitchSlayer_idle.CTS_Champ_WitchSlayer_idle",
+          "run": "/Game/Tripo/Champions/WitchSlayer/Animations/CTS_Champ_WitchSlayer_run.CTS_Champ_WitchSlayer_run",
+          "slash": "/Game/Tripo/Champions/WitchSlayer/Animations/CTS_Champ_WitchSlayer_slash.CTS_Champ_WitchSlayer_slash",
+          "walk": "/Game/Tripo/Champions/WitchSlayer/Animations/CTS_Champ_WitchSlayer_walk.CTS_Champ_WitchSlayer_walk"
+        }
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20
+      },
+      "creditsTotal": 75,
+      "status": "integrated"
+    },
+    {
+      "id": "witch_slayer_blunderbuss",
+      "kind": "prop",
+      "taskId": "5483d13c-fc7b-4a23-9983-5dd37f6be1b5",
+      "url": "https://studio.tripo3d.ai/workspace/generate/5483d13c-fc7b-4a23-9983-5dd37f6be1b5",
+      "settings": "HD Model, H3.1 Best Quality, text to 3D, 4K PBR, remove lighting, 60k triangles",
+      "generateCredits": 55,
+      "prompt": "Game weapon prop, arcane blunderbuss rifle, dark iron barrel ending in a wide flared bell muzzle, tarnished silver filigree and a blue gem on the lock, dark wooden stock wrapped in leather, a small glass chamber of pale blue essence on top of the barrel, realistic dark fantasy PBR metal and wood, single object lying horizontally, side view, no hands, no base, no background.",
+      "export": "CTS_Prop_WitchSlayerBlunderbuss",
+      "dest": "/Game/Tripo/Props/WitchSlayerBlunderbuss",
+      "folder": "WitchSlayerBlunderbuss",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Props/WitchSlayerBlunderbuss",
+        "mesh": "/Game/Tripo/Props/WitchSlayerBlunderbuss/CTS_Prop_WitchSlayerBlunderbuss.CTS_Prop_WitchSlayerBlunderbuss",
+        "skeletal": false,
+        "skeleton": null,
+        "material": "/Game/Tripo/Props/WitchSlayerBlunderbuss/CTS_Prop_WitchSlayerBlunderbuss_Mat.CTS_Prop_WitchSlayerBlunderbuss_Mat",
+        "rawHeightCm": 34.82,
+        "boundsExtentCm": [
+          49.1,
+          11.4,
+          17.4
+        ],
+        "animations": {}
+      },
+      "creditsTotal": 55,
+      "status": "integrated"
+    },
+    {
+      "id": "witch_slayer_blade",
+      "kind": "prop",
+      "taskId": "bfb19613-49ea-4c3f-b98e-7c7679e894d9",
+      "url": "https://studio.tripo3d.ai/workspace/generate/bfb19613-49ea-4c3f-b98e-7c7679e894d9",
+      "settings": "HD Model, H3.1 Best Quality, text to 3D, 4K PBR, remove lighting, 60k triangles",
+      "generateCredits": 55,
+      "prompt": "Game weapon prop, spectral short sword, translucent pale blue crystal blade with a jagged serrated edge, dark iron crossguard with a diamond blue gem, leather-wrapped grip and a spiked pommel, realistic dark fantasy PBR crystal and metal, single object lying horizontally, side view, no hands, no base, no background.",
+      "export": "CTS_Prop_WitchSlayerBlade",
+      "dest": "/Game/Tripo/Props/WitchSlayerBlade",
+      "folder": "WitchSlayerBlade",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Props/WitchSlayerBlade",
+        "mesh": "/Game/Tripo/Props/WitchSlayerBlade/CTS_Prop_WitchSlayerBlade.CTS_Prop_WitchSlayerBlade",
+        "skeletal": false,
+        "skeleton": null,
+        "material": "/Game/Tripo/Props/WitchSlayerBlade/CTS_Prop_WitchSlayerBlade_Mat.CTS_Prop_WitchSlayerBlade_Mat",
+        "rawHeightCm": 27.78,
+        "boundsExtentCm": [
+          49.1,
+          14.3,
+          13.9
+        ],
+        "animations": {}
+      },
+      "creditsTotal": 55,
+      "status": "integrated"
+    },
+    {
+      "id": "aetheri_artificer",
+      "kind": "champion",
+      "taskId": "f0b467ad-87f4-43a2-a6a9-a40e22f96795",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f0b467ad-87f4-43a2-a6a9-a40e22f96795",
+      "settings": "HD Model, H3.1 Best Quality, text to 3D, 4K PBR, remove lighting, 60k triangles, T-pose",
+      "generateCredits": 55,
+      "source": "original Aetheri energy race (gold-white alloy, blue-violet energy)",
+      "prompt": "Full body game character, sci-fantasy luminous alien artificer of an ancient energy race, tall slender humanoid in sleek gold-white alloy armour with smooth flowing plates, thin blue-violet energy seams glowing between the plates, an elongated crested head with a smooth faceless mask and two narrow violet eye slits, small angular crystal fins on the shoulders, a gold-white gauntlet on the right forearm with a ring-shaped energy emitter, slim armoured legs, empty open hands. Highly detailed realistic PBR polished metal and crystal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no base, no background, no particles.",
+      "export": "CTS_Champ_AetheriArtificer",
+      "dest": "/Game/Tripo/Champions/AetheriArtificer",
+      "folder": "AetheriArtificer",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Champions/AetheriArtificer",
+        "mesh": "/Game/Tripo/Champions/AetheriArtificer/CTS_Champ_AetheriArtificer.CTS_Champ_AetheriArtificer",
+        "skeletal": true,
+        "skeleton": "/Game/Tripo/Champions/AetheriArtificer/CTS_Champ_AetheriArtificer_Skeleton.CTS_Champ_AetheriArtificer_Skeleton",
+        "material": "/Game/Tripo/Champions/AetheriArtificer/CTS_Champ_AetheriArtificer_Mat.CTS_Champ_AetheriArtificer_Mat",
+        "rawHeightCm": 97.94,
+        "boundsExtentCm": [
+          48.9,
+          10.0,
+          49.0
+        ],
+        "animations": {
+          "cast_a_spell": "/Game/Tripo/Champions/AetheriArtificer/Animations/CTS_Champ_AetheriArtificer_cast_a_spell.CTS_Champ_AetheriArtificer_cast_a_spell",
+          "fall": "/Game/Tripo/Champions/AetheriArtificer/Animations/CTS_Champ_AetheriArtificer_fall.CTS_Champ_AetheriArtificer_fall",
+          "hit_to_body_01": "/Game/Tripo/Champions/AetheriArtificer/Animations/CTS_Champ_AetheriArtificer_hit_to_body_01.CTS_Champ_AetheriArtificer_hit_to_body_01",
+          "idle": "/Game/Tripo/Champions/AetheriArtificer/Animations/CTS_Champ_AetheriArtificer_idle.CTS_Champ_AetheriArtificer_idle",
+          "run": "/Game/Tripo/Champions/AetheriArtificer/Animations/CTS_Champ_AetheriArtificer_run.CTS_Champ_AetheriArtificer_run",
+          "slash": "/Game/Tripo/Champions/AetheriArtificer/Animations/CTS_Champ_AetheriArtificer_slash.CTS_Champ_AetheriArtificer_slash",
+          "walk": "/Game/Tripo/Champions/AetheriArtificer/Animations/CTS_Champ_AetheriArtificer_walk.CTS_Champ_AetheriArtificer_walk"
+        }
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20
+      },
+      "creditsTotal": 75,
+      "status": "integrated"
+    },
+    {
+      "id": "aetheri_warden",
+      "kind": "champion",
+      "taskId": "e0b8ba95-e2de-4cee-94e4-2cc8c21770eb",
+      "url": "https://studio.tripo3d.ai/workspace/generate/e0b8ba95-e2de-4cee-94e4-2cc8c21770eb",
+      "settings": "HD Model, H3.1 Best Quality, text to 3D, 4K PBR, remove lighting, 60k triangles, T-pose",
+      "generateCredits": 55,
+      "source": "original Aetheri energy race",
+      "prompt": "Full body game character, sci-fantasy luminous alien warden of an ancient energy race, tall broad guardian in heavy gold-white alloy plate armour, large sweeping shoulder plates, a round blue-violet energy core glowing in the chest, a crested helm with a narrow glowing violet visor, a large curved shield emitter plate mounted on the left forearm, thick armoured legs, empty open gauntleted hands. Highly detailed realistic PBR polished metal and crystal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles.",
+      "export": "CTS_Champ_AetheriWarden",
+      "dest": "/Game/Tripo/Champions/AetheriWarden",
+      "folder": "AetheriWarden",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "race": "champions",
+      "unreal": {
+        "folder": "/Game/Tripo/Champions/AetheriWarden",
+        "mesh": "/Game/Tripo/Champions/AetheriWarden/CTS_Champ_AetheriWarden.CTS_Champ_AetheriWarden",
+        "skeletal": true,
+        "skeleton": "/Game/Tripo/Champions/AetheriWarden/CTS_Champ_AetheriWarden_Skeleton.CTS_Champ_AetheriWarden_Skeleton",
+        "material": "/Game/Tripo/Champions/AetheriWarden/CTS_Champ_AetheriWarden_Mat.CTS_Champ_AetheriWarden_Mat",
+        "rawHeightCm": 98.0,
+        "boundsExtentCm": [
+          48.5,
+          16.8,
+          49.0
+        ],
+        "animations": {
+          "cast_a_spell": "/Game/Tripo/Champions/AetheriWarden/Animations/CTS_Champ_AetheriWarden_cast_a_spell.CTS_Champ_AetheriWarden_cast_a_spell",
+          "fall": "/Game/Tripo/Champions/AetheriWarden/Animations/CTS_Champ_AetheriWarden_fall.CTS_Champ_AetheriWarden_fall",
+          "hit_to_body_01": "/Game/Tripo/Champions/AetheriWarden/Animations/CTS_Champ_AetheriWarden_hit_to_body_01.CTS_Champ_AetheriWarden_hit_to_body_01",
+          "idle": "/Game/Tripo/Champions/AetheriWarden/Animations/CTS_Champ_AetheriWarden_idle.CTS_Champ_AetheriWarden_idle",
+          "run": "/Game/Tripo/Champions/AetheriWarden/Animations/CTS_Champ_AetheriWarden_run.CTS_Champ_AetheriWarden_run",
+          "slash": "/Game/Tripo/Champions/AetheriWarden/Animations/CTS_Champ_AetheriWarden_slash.CTS_Champ_AetheriWarden_slash",
+          "walk": "/Game/Tripo/Champions/AetheriWarden/Animations/CTS_Champ_AetheriWarden_walk.CTS_Champ_AetheriWarden_walk",
+          "war_cry": "/Game/Tripo/Champions/AetheriWarden/Animations/CTS_Champ_AetheriWarden_war_cry.CTS_Champ_AetheriWarden_war_cry"
+        }
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20
+      },
+      "creditsTotal": 75,
+      "status": "integrated"
+    }
+  ],
+  "creditsTotal": 745,
+  "balanceAfter": 1575,
+  "mappingForGame": {
+    "note": "Content/Data/ChampionArt.tripo.json was not written: the tool that writes it was blocked by the session's permission classifier. Paths per profile are in items[].unreal (profiles: gunblade, witch_slayer, huntress, aetheri_artificer, aetheri_warden; props gunblade_pistol/sword, witch_slayer_blunderbuss/blade, huntress_glaive_launcher; mount huntress_sabercat)."
+  }
+}

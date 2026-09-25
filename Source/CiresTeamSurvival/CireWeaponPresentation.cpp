@@ -35,6 +35,13 @@ bool NaturalAttacks(const FString& Id)
 }
 FString AssetPath(const FString& Token)
 {
+    // tripo-races: Tripo champion props (/Game/Tripo/Props/<Name>/CTS_Prop_<Name>, Content/Data/ChampionArt.tripo.json).
+    static const TSet<FString> Tripo={TEXT("GunbladePistol"),TEXT("GunbladeSword"),TEXT("HuntressGlaiveLauncher"),TEXT("WitchSlayerBlade"),TEXT("WitchSlayerBlunderbuss")};
+    if(Token.StartsWith(TEXT("tripo/")))
+    {
+        const FString Kind=Token.Mid(6);if(!Tripo.Contains(Kind))return FString();
+        return FString::Printf(TEXT("/Game/Tripo/Props/%s/CTS_Prop_%s.CTS_Prop_%s"),*Kind,*Kind,*Kind);
+    }
     static const TSet<FString> Legacy={TEXT("Sword"),TEXT("Shield"),TEXT("Bow"),TEXT("Arrow"),TEXT("Lance")};
     static const TSet<FString> Armory={TEXT("ArcaneStaff"),TEXT("RiftStaff"),TEXT("EmberStaff"),TEXT("GroveStaff"),TEXT("LanternStaff"),
         TEXT("Dagger"),TEXT("WarAxe"),TEXT("ThrowingAxe"),TEXT("WarHammer"),TEXT("PickHammer"),TEXT("Flail"),TEXT("Totem"),TEXT("Crossbow"),TEXT("Bolt")};

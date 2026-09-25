@@ -1,0 +1,4347 @@
+{
+  "schemaVersion": 1,
+  "batch": "races",
+  "createdUtc": "2026-09-25",
+  "operator": "Claude (feat/tripo-races worktree)",
+  "provider": "Tripo Studio (logged-in browser), DCC Bridge -> Tripo3DUEBridge",
+  "creditCap": 5500,
+  "observedBalanceBefore": 6990,
+  "balanceLog": [
+    {
+      "when": "start",
+      "balance": 6990
+    },
+    {
+      "when": "drowned_deep 8 generations submitted",
+      "balance": 6550
+    },
+    {
+      "when": "drowned rigs (8x20) + blightwood 8 generations + maw text-to-motion",
+      "balance": 5930
+    },
+    {
+      "when": "blightwood boundary (ledger: 6370 - blightwood credits)",
+      "balance": 5715
+    },
+    {
+      "when": "ironhide boundary (ledger)",
+      "balance": 5095
+    },
+    {
+      "when": "drakkari boundary (ledger)",
+      "balance": 4420
+    },
+    {
+      "when": "stoneborn 6 bipeds (ledger; crystal_ballista and ether_mote not generated yet)",
+      "balance": 3970
+    },
+    {
+      "when": "feral_kin (ledger)",
+      "balance": 3520
+    },
+    {
+      "when": "fallen_order (ledger)",
+      "balance": 2920
+    },
+    {
+      "when": "voidborn (ledger)",
+      "balance": 2320
+    }
+  ],
+  "pipelineNotes": [
+    "Studio: text-to-3D HD Model H3.1 Best Quality (55), Ultra Mesh Quality on, T-Pose on, 60k triangles, 4K PBR, remove lighting; Humanoid auto-rig with the UE5 Mannequin skeleton preset (20); preset animations are free; text-to-motion 20 per clip; clips already in the account's AI Animation library (batch-03 war cry, ground slam, bow, crossbow and every new text-to-motion) retarget onto new rigs for free.",
+    "Free Retry (x3) regenerates a model under the same task id at no cost (used for withered_matron before re-prompting).",
+    "DCC Bridge: open the 'DCC Bridge' popover in the Studio header and switch Unreal on (it must say Connected; the switch resets on every page load). Send To Unreal then streams the FBX in 5 MB chunks to the plugin on 127.0.0.1:60620.",
+    "The streaming page must stay in the foreground until the editor logs 'All N chunks received'. Navigating away, a background tab (Chrome timer throttling) or the Studio switching the page to a newly finished generation kills the transfer.",
+    "Bridge imports land in /Game/TripoModels/CTS_Race_<Unit>; Tools/RunTripoRacesIntegration.py (skeleton core-redirect workaround + Tools/IntegrateTripoRaces.py) moves them to /Game/Tripo/Races/<race>/<Unit>/, rebuilds the PBR instance on M_Tripo_PBR_Master (BaseColor restored), renames text-to-motion clips and writes Saved/TripoRacesIntegration.json; Tools/WriteRaceMeshes.py then writes Content/Data/RaceMeshes.tripo.json.",
+    "Skeletal bodies stay non-Nanite and unscaled (meshScale in data), like batch 03, so M_CireMonsterSkin's rank/race tint (a MID copying the four PBR textures) applies unchanged."
+  ],
+  "units": [
+    {
+      "race": "drowned_deep",
+      "unit": "abyssal_stalker",
+      "attempts": [
+        {
+          "taskId": "91612085-ef2a-4e6a-a7ef-d2bf4b5636e4",
+          "url": "https://studio.tripo3d.ai/workspace/generate/91612085-ef2a-4e6a-a7ef-d2bf4b5636e4",
+          "prompt": "Full body game character, realistic dark fantasy cephalopod humanoid assassin, lean wiry hunched body, squid head with a beard of short tentacles hanging over the chest, huge glossy black eyes, wet translucent blue-grey teal skin with small pale cyan spots, long thin arms ending in hooked bone claws instead of hands, tattered dark kelp sash and loincloth, tarnished dark iron bracers and a rusted iron collar, webbed bare feet. Highly detailed realistic PBR wet skin, kelp and metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_AbyssalStalker",
+      "folder": "AbyssalStalker",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/AbyssalStalker",
+        "mesh": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/CTS_Race_AbyssalStalker.CTS_Race_AbyssalStalker",
+        "rawHeightCm": 97.78,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      }
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "deepspawn_thrall",
+      "attempts": [
+        {
+          "taskId": "7b79e8c5-d87e-47d4-bcb5-029eb9c971df",
+          "url": "https://studio.tripo3d.ai/workspace/generate/7b79e8c5-d87e-47d4-bcb5-029eb9c971df",
+          "prompt": "Full body game character, realistic dark fantasy hulking squid-headed brute, massive muscular body, thick hanging tentacle beard, slick dark teal hide with a pale grey belly, crusted with barnacles on shoulders and back, right forearm grows into a huge club of fused coral and barnacles, left forearm is a massive crab claw, heavy rusted iron anchor chain wrapped around the torso, tarnished iron shoulder plate, stooped powerful stance. Highly detailed realistic PBR wet skin, coral, barnacle and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_DeepspawnThrall",
+      "folder": "DeepspawnThrall",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall",
+        "mesh": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/CTS_Race_DeepspawnThrall.CTS_Race_DeepspawnThrall",
+        "rawHeightCm": 83.86,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      }
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "coralshell_guardian",
+      "attempts": [
+        {
+          "taskId": "938582b8-cb23-4ab5-b28a-5efd41aa0c33",
+          "url": "https://studio.tripo3d.ai/workspace/generate/938582b8-cb23-4ab5-b28a-5efd41aa0c33",
+          "prompt": "Full body game character, realistic dark fantasy squat armoured cephalopod warrior, broad stocky body in a carapace of layered pale pink-white coral plates, spiky mantis-shrimp shell pauldrons, squid face with short tentacles peering from a ridged coral helm, tarnished bronze-green metal rims and rivets on the coral armour, dark teal skin at the joints, empty open hands with webbed fingers, holding nothing, stocky immovable stance. Highly detailed realistic PBR coral, shell and metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_CoralshellGuardian",
+      "folder": "CoralshellGuardian",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian",
+        "mesh": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/CTS_Race_CoralshellGuardian.CTS_Race_CoralshellGuardian",
+        "rawHeightCm": 88.32,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      }
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "tidecaller",
+      "attempts": [
+        {
+          "taskId": "836de0ad-c02c-4a1a-9a2a-c51a4174ee21",
+          "url": "https://studio.tripo3d.ai/workspace/generate/836de0ad-c02c-4a1a-9a2a-c51a4174ee21",
+          "prompt": "Full body game character, realistic dark fantasy tall robed cephalopod priest, squid head with a long drooping tentacle beard, flowing sea-green and dark teal robes crusted with shells and barnacles, pearl necklaces, tarnished silver-bronze chest clasp and bracers, right hand gripping a tall staff of twisted driftwood crowned with a large conch shell and a round water orb, left hand open. Highly detailed realistic PBR cloth, shell and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_Tidecaller",
+      "folder": "Tidecaller",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/Tidecaller",
+        "mesh": "/Game/Tripo/Races/drowned_deep/Tidecaller/CTS_Race_Tidecaller.CTS_Race_Tidecaller",
+        "rawHeightCm": 95.11,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      }
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "barbspitter",
+      "attempts": [
+        {
+          "taskId": "edbccb8a-85dc-4b4d-835a-f4968a93244b",
+          "url": "https://studio.tripo3d.ai/workspace/generate/edbccb8a-85dc-4b4d-835a-f4968a93244b",
+          "prompt": "Full body game character, realistic dark fantasy frog-postured cephalopod creature, squat crouched humanoid body, bulbous head with a tube-like siphon mouth and small tentacles, rows of barbed quills and spines along its back and shoulders, mottled olive and violet wet skin, yellow slit eyes, a whalebone harpoon strapped diagonally across its back, tarnished iron armbands and a rusted iron belt buckle, empty webbed hands. Highly detailed realistic PBR wet skin and bone textures, symmetrical T-pose, arms straight out to the sides, legs bent slightly, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_Barbspitter",
+      "folder": "Barbspitter",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/Barbspitter",
+        "mesh": "/Game/Tripo/Races/drowned_deep/Barbspitter/CTS_Race_Barbspitter.CTS_Race_Barbspitter",
+        "rawHeightCm": 88.19,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      }
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "mind_leech",
+      "attempts": [
+        {
+          "taskId": "f1c39f59-396c-4832-bddd-ed3d28dce72e",
+          "url": "https://studio.tripo3d.ai/workspace/generate/f1c39f59-396c-4832-bddd-ed3d28dce72e",
+          "prompt": "Full body game character, realistic dark fantasy small hunched cephalopod aberration, oversized exposed brain-like mantle for a head with pulsing violet veins, a single cluster of magenta eyes, thin pale humanoid torso and thin arms with long fingers, a long skirt of hanging thin tentacles that reaches the ground and hides its legs, tarnished silver circlet and chest brooch. Highly detailed realistic PBR wet skin textures, symmetrical T-pose, arms straight out to the sides, standing, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_MindLeech",
+      "folder": "MindLeech",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/MindLeech",
+        "mesh": "/Game/Tripo/Races/drowned_deep/MindLeech/CTS_Race_MindLeech.CTS_Race_MindLeech",
+        "rawHeightCm": 92.57,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      }
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "drowned_prophet",
+      "attempts": [
+        {
+          "taskId": "2467de5b-f879-46cc-8628-190276db4b71",
+          "url": "https://studio.tripo3d.ai/workspace/generate/2467de5b-f879-46cc-8628-190276db4b71",
+          "prompt": "Full body game character, realistic dark fantasy towering gaunt cephalopod prophet, squid head with a mass of long tentacles for a beard, crown of black coral and pearls, tattered deep abyssal-blue vestments with a long skirt of dragging tentacles, barnacle-crusted tome chained at the hip, tarnished gold-bronze chains and shoulder ornaments, right hand gripping a tall gnarled staff topped with a large eldritch eye in a coral cage, left hand open with long fingers. Highly detailed realistic PBR cloth, coral and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_DrownedProphet",
+      "folder": "DrownedProphet",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/DrownedProphet",
+        "mesh": "/Game/Tripo/Races/drowned_deep/DrownedProphet/CTS_Race_DrownedProphet.CTS_Race_DrownedProphet",
+        "rawHeightCm": 94.35,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      }
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "maw_of_the_deep",
+      "attempts": [
+        {
+          "taskId": "2253061f-6a6b-432e-baf7-082b69e3dda0",
+          "url": "https://studio.tripo3d.ai/workspace/generate/2253061f-6a6b-432e-baf7-082b69e3dda0",
+          "prompt": "Full body game character, realistic dark fantasy colossal kraken-crab abomination walking upright on two thick barnacled legs, no head: a gaping circular maw of needle teeth ringed by long thick tentacles sits on top of its shoulders, massive armoured shell back overgrown with coral and hung with rusted anchor chains, right arm an enormous crab claw, left arm a thick tentacle-fingered hand, small bioluminescent lures on stalks, tarnished iron shackles. Highly detailed realistic PBR shell, coral, wet skin and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_MawOfTheDeep",
+      "folder": "MawOfTheDeep",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "textToMotion": [
+        {
+          "name": "tentacle_sweep",
+          "prompt": "Huge crab monster plants its feet, swings its long right arm in a wide heavy horizontal sweep from right to left across its front, torso twisting with the sweep, then returns to a menacing ready stance",
+          "seconds": 4,
+          "credits": 20
+        },
+        {
+          "name": "war_cry",
+          "reused": "Warlord War Cry from the Tripo AI animation library (batch 03 Gravemaw clip), retargeted free",
+          "credits": 0
+        }
+      ],
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 95,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep",
+        "mesh": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/CTS_Race_MawOfTheDeep.CTS_Race_MawOfTheDeep",
+        "rawHeightCm": 97.91,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "tentacle_sweep",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "blightwood",
+      "unit": "vinelasher",
+      "attempts": [
+        {
+          "taskId": "9b2353c2-d814-450d-8121-837a8981689c",
+          "url": "https://studio.tripo3d.ai/workspace/generate/9b2353c2-d814-450d-8121-837a8981689c",
+          "prompt": "Full body game character, realistic dark fantasy wiry humanoid woven from braided thorny vines and dry dark-brown bark strips, lithe body, both forearms end in long thorny vine whips that hang down to the knees, a knot of glowing green sap for a face inside a hood of leaves, small red berries and dead leaves sprouting from the shoulders, rusted iron nails and old iron bands bound around the limbs, forward-leaning stance. Highly detailed realistic PBR bark, vine and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_Vinelasher",
+      "folder": "Vinelasher",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/blightwood/Vinelasher",
+        "mesh": "/Game/Tripo/Races/blightwood/Vinelasher/CTS_Race_Vinelasher.CTS_Race_Vinelasher",
+        "rawHeightCm": 97.84,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "blightwood",
+      "unit": "sapling_brute",
+      "attempts": [
+        {
+          "taskId": "3a99f5fc-8a92-4838-8330-faecee71b7ee",
+          "url": "https://studio.tripo3d.ai/workspace/generate/3a99f5fc-8a92-4838-8330-faecee71b7ee",
+          "prompt": "Full body game character, realistic dark fantasy young bulky treant brute of pale ash wood and grey bark, massive broad torso, right forearm ends in a huge splintered tree-stump club, left hand a gnarled wooden fist, mossy shoulders with fresh green shoots, cracked bark chest showing amber heartwood, short thick root legs, rusted iron bands and old iron spikes hammered into the shoulders, aggressive hunched stance. Highly detailed realistic PBR bark, moss and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_SaplingBrute",
+      "folder": "SaplingBrute",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/blightwood/SaplingBrute",
+        "mesh": "/Game/Tripo/Races/blightwood/SaplingBrute/CTS_Race_SaplingBrute.CTS_Race_SaplingBrute",
+        "rawHeightCm": 84.63,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "blightwood",
+      "unit": "barkhide_warden",
+      "attempts": [
+        {
+          "taskId": "79455769-7a12-455a-9988-6fd57b515a8a",
+          "url": "https://studio.tripo3d.ai/workspace/generate/79455769-7a12-455a-9988-6fd57b515a8a",
+          "prompt": "Full body game character, realistic dark fantasy thick squat oak treant guardian, broad stocky body covered in overlapping shield-like dark bark plates, knotted wooden face with deep-set amber eyes, thick green moss mantle over the shoulders, gnarled root feet planted wide, rusted iron rivets and iron bands binding the bark plates like armour, empty open wooden hands holding nothing. Highly detailed realistic PBR bark, moss and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_BarkhideWarden",
+      "folder": "BarkhideWarden",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/blightwood/BarkhideWarden",
+        "mesh": "/Game/Tripo/Races/blightwood/BarkhideWarden/CTS_Race_BarkhideWarden.CTS_Race_BarkhideWarden",
+        "rawHeightCm": 76.84,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "blightwood",
+      "unit": "rotbloom_shaman",
+      "attempts": [
+        {
+          "taskId": "f5203c65-d5e4-4d95-8399-6a57bb4b3efe",
+          "url": "https://studio.tripo3d.ai/workspace/generate/f5203c65-d5e4-4d95-8399-6a57bb4b3efe",
+          "prompt": "Full body game character, realistic dark fantasy hunched fungal treant shaman, head is a huge drooping rotten flower bloom with a sickly green core, dark bark robe hung with mushroom shelves and dead leaves, thin branch arms, right hand gripping a crooked branch staff sprouting pale fungus and dangling seed pods, left hand open, old tarnished bronze amulets and iron rings on the robe. Highly detailed realistic PBR bark, fungus, petal and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_RotbloomShaman",
+      "folder": "RotbloomShaman",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged (Studio pre-check said 'Not Ready for Auto-Rigging'; used Try Rigging Anyway)"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/blightwood/RotbloomShaman",
+        "mesh": "/Game/Tripo/Races/blightwood/RotbloomShaman/CTS_Race_RotbloomShaman.CTS_Race_RotbloomShaman",
+        "rawHeightCm": 95.99,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "blightwood",
+      "unit": "thornspitter",
+      "attempts": [
+        {
+          "taskId": "14009107-2cda-4ee0-86d0-8d337c97df7f",
+          "url": "https://studio.tripo3d.ai/workspace/generate/14009107-2cda-4ee0-86d0-8d337c97df7f",
+          "prompt": "Full body game character, realistic dark fantasy walking carnivorous pitcher-plant creature, tall veined green-and-crimson pitcher body with a lidded mouth full of thorn teeth on top, two leafy vine arms with thorny three-fingered hands, two short thick root legs, bundles of long thorns bristling from its back like quivers, rusted iron bands wrapped around the stem. Highly detailed realistic PBR plant, thorn and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_Thornspitter",
+      "folder": "Thornspitter",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/blightwood/Thornspitter",
+        "mesh": "/Game/Tripo/Races/blightwood/Thornspitter/CTS_Race_Thornspitter.CTS_Race_Thornspitter",
+        "rawHeightCm": 89.01,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "blightwood",
+      "unit": "sporeling",
+      "attempts": [
+        {
+          "taskId": "e2125214-868f-421c-8388-959b55f4da75",
+          "url": "https://studio.tripo3d.ai/workspace/generate/e2125214-868f-421c-8388-959b55f4da75",
+          "prompt": "Full body game character, realistic dark fantasy small waddling mushroom creature, wide spotted red-brown mushroom cap with pale yellow-green gills, stout pale stalk body, stubby root legs with little root toes, thin twig arms with twig fingers, small beady eyes under the cap, a tiny rusted iron ring around its stalk. Highly detailed realistic PBR fungus and bark textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_Sporeling",
+      "folder": "Sporeling",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged (Studio pre-check said 'Not Ready for Auto-Rigging'; used Try Rigging Anyway)"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/blightwood/Sporeling",
+        "mesh": "/Game/Tripo/Races/blightwood/Sporeling/CTS_Race_Sporeling.CTS_Race_Sporeling",
+        "rawHeightCm": 97.83,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "blightwood",
+      "unit": "withered_matron",
+      "attempts": [
+        {
+          "taskId": "87ec3d9a-620b-4230-aee5-2788418aa86d",
+          "url": "https://studio.tripo3d.ai/workspace/generate/87ec3d9a-620b-4230-aee5-2788418aa86d",
+          "prompt": "Full body game character, realistic dark fantasy tall gaunt corrupted dryad queen, grey-violet dead-bark skin, crown of blackened thorns and dead lilies, long flowing gown of dried roots and dark moss that drags behind like a train, hollow eyes, long clawed branch fingers, tarnished bronze filigree bracers and a bronze torc at the neck, empty hands. Highly detailed realistic PBR bark, moss and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "rejected",
+          "note": "asymmetric pose with the legs hidden by a trailing gown (Free Retry gave the same); re-prompted with visible legs"
+        },
+        {
+          "taskId": "cac583ce-2bdb-4758-8482-d910784fbbfe",
+          "url": "https://studio.tripo3d.ai/workspace/generate/cac583ce-2bdb-4758-8482-d910784fbbfe",
+          "prompt": "Full body game character, realistic dark fantasy tall gaunt corrupted dryad queen standing upright, grey-violet dead-bark skin, crown of blackened thorns and dead lilies, knee-length tattered gown of dried roots and dark moss open at the front, thin bark legs and root-like feet clearly visible, hollow eyes, long clawed branch fingers, tarnished bronze filigree bracers and a bronze torc at the neck, empty hands. Highly detailed realistic PBR bark, moss and metal textures, symmetrical T-pose, arms straight out horizontally to the sides, legs straight and apart, feet planted, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_WitheredMatron",
+      "folder": "WitheredMatron",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library (batch-03 clip retargeted)"
+        }
+      ],
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 130,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/blightwood/WitheredMatron",
+        "mesh": "/Game/Tripo/Races/blightwood/WitheredMatron/CTS_Race_WitheredMatron.CTS_Race_WitheredMatron",
+        "rawHeightCm": 93.39,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "blightwood",
+      "unit": "elder_oakheart",
+      "attempts": [
+        {
+          "taskId": "941cbb57-f688-4de3-9442-b20159914751",
+          "url": "https://studio.tripo3d.ai/workspace/generate/941cbb57-f688-4de3-9442-b20159914751",
+          "prompt": "Full body game character, realistic dark fantasy ancient towering oak treant colossus, massive trunk body with deep bark fissures showing amber heartwood, long hanging grey moss beard, antler-like branching crown with a few living leaves, huge thick root-fist arms, stone-embedded root feet, mushrooms and a bird nest in its bark, ancient rusted iron chains and iron bands grown into the trunk. Highly detailed realistic PBR bark, moss, stone and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_ElderOakheart",
+      "folder": "ElderOakheart",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library (batch-03 clip retargeted)"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library (batch-03 clip retargeted)"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/blightwood/ElderOakheart",
+        "mesh": "/Game/Tripo/Races/blightwood/ElderOakheart/CTS_Race_ElderOakheart.CTS_Race_ElderOakheart",
+        "rawHeightCm": 97.94,
+        "animations": [
+          "fall",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "ironhide",
+      "unit": "ironhide_grunt",
+      "attempts": [
+        {
+          "taskId": "0cd92d4e-44a8-428f-8be3-e0319b8f50c9",
+          "url": "https://studio.tripo3d.ai/workspace/generate/0cd92d4e-44a8-428f-8be3-e0319b8f50c9",
+          "prompt": "Full body game character, realistic dark fantasy muscular green-skinned orc grunt, jutting lower tusks, black topknot, crude black-iron shoulder plate on the left shoulder, black-iron bracers, fur loincloth and leather straps, red handprint war paint on chest and face, empty open hands holding nothing. Highly detailed realistic PBR skin, fur, leather and black iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_IronhideGrunt",
+      "folder": "IronhideGrunt",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/ironhide/IronhideGrunt",
+        "mesh": "/Game/Tripo/Races/ironhide/IronhideGrunt/CTS_Race_IronhideGrunt.CTS_Race_IronhideGrunt",
+        "rawHeightCm": 84.83,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "ironhide",
+      "unit": "redmoon_ravager",
+      "attempts": [
+        {
+          "taskId": "94da05ad-f5ed-4b24-8a1f-d3e75dc61f39",
+          "url": "https://studio.tripo3d.ai/workspace/generate/94da05ad-f5ed-4b24-8a1f-d3e75dc61f39",
+          "prompt": "Full body game character, realistic dark fantasy tall lean blue-grey troll berserker, very long arms, huge upward tusks, red mohawk, ritual bone jewellery, red cloth wraps on forearms and waist, scars and tribal tattoos, dark iron arm rings and a dark iron belt, empty open hands holding nothing, hunched loping stance. Highly detailed realistic PBR skin, bone, cloth and iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_RedmoonRavager",
+      "folder": "RedmoonRavager",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/ironhide/RedmoonRavager",
+        "mesh": "/Game/Tripo/Races/ironhide/RedmoonRavager/CTS_Race_RedmoonRavager.CTS_Race_RedmoonRavager",
+        "rawHeightCm": 97.48,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "ironhide",
+      "unit": "ironhide_bulwark",
+      "attempts": [
+        {
+          "taskId": "38708375-913a-43a0-8292-62ae70879a9b",
+          "url": "https://studio.tripo3d.ai/workspace/generate/38708375-913a-43a0-8292-62ae70879a9b",
+          "prompt": "Full body game character, realistic dark fantasy massive orc warrior in layered black-iron plate armour, horned black-iron helm with tusks protruding through the visor, heavy chains and a meat hook at the belt, green skin at the arms, empty open gauntleted hands holding nothing, broad planted stance. Highly detailed realistic PBR black iron, leather and skin textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_IronhideBulwark",
+      "folder": "IronhideBulwark",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/ironhide/IronhideBulwark",
+        "mesh": "/Game/Tripo/Races/ironhide/IronhideBulwark/CTS_Race_IronhideBulwark.CTS_Race_IronhideBulwark",
+        "rawHeightCm": 97.92,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "ironhide",
+      "unit": "blood_hexer",
+      "attempts": [
+        {
+          "taskId": "8211b4df-df6a-43bb-8f65-12cfc1c5f0cb",
+          "url": "https://studio.tripo3d.ai/workspace/generate/8211b4df-df6a-43bb-8f65-12cfc1c5f0cb",
+          "prompt": "Full body game character, realistic dark fantasy wiry troll witch-doctor, blue-grey skin, bone mask over the face, long dreadlocks woven with feathers and small skulls, necklaces of teeth, red and black face paint, loincloth and red cloth wraps, tarnished bronze arm rings, right hand gripping a crooked wooden staff hung with shrunken-head totems, left hand open. Highly detailed realistic PBR skin, bone, feather and metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_BloodHexer",
+      "folder": "BloodHexer",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/ironhide/BloodHexer",
+        "mesh": "/Game/Tripo/Races/ironhide/BloodHexer/CTS_Race_BloodHexer.CTS_Race_BloodHexer",
+        "rawHeightCm": 97.92,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "ironhide",
+      "unit": "redmoon_axethrower",
+      "attempts": [
+        {
+          "taskId": "db001f10-2f33-4c00-b5b8-ef422617c9e8",
+          "url": "https://studio.tripo3d.ai/workspace/generate/db001f10-2f33-4c00-b5b8-ef422617c9e8",
+          "prompt": "Full body game character, realistic dark fantasy lean blue-grey troll warrior, long legs, a leather bandolier of small throwing axes across the chest, red cloth wraps, bone earrings, dark iron bracers, right hand gripping one small throwing axe, left hand open. Highly detailed realistic PBR skin, leather, cloth and iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_RedmoonAxethrower",
+      "folder": "RedmoonAxethrower",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "textToMotion": [
+        {
+          "name": "axe_throw",
+          "prompt": "Lean warrior steps forward and hurls a small axe overhand with the right arm, the throwing arm whipping forward from behind the head, body leaning into the throw, then recovers to a ready stance",
+          "seconds": 3,
+          "credits": 20,
+          "libraryName": "Overhand Axe Throw"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 95,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/ironhide/RedmoonAxethrower",
+        "mesh": "/Game/Tripo/Races/ironhide/RedmoonAxethrower/CTS_Race_RedmoonAxethrower.CTS_Race_RedmoonAxethrower",
+        "rawHeightCm": 91.03,
+        "animations": [
+          "axe_throw",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "ironhide",
+      "unit": "ironhide_drummer",
+      "attempts": [
+        {
+          "taskId": "67a1b966-8c45-4d68-8b50-11ec2b97d351",
+          "url": "https://studio.tripo3d.ai/workspace/generate/67a1b966-8c45-4d68-8b50-11ec2b97d351",
+          "prompt": "Full body game character, realistic dark fantasy stocky green-skinned orc drummer, an enormous hide war drum strapped to its back with trophy skulls on the drum rim, fur cloak, black-iron shoulder guards, open roaring mouth with tusks, a bone mallet gripped in each hand. Highly detailed realistic PBR skin, fur, hide and iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_IronhideDrummer",
+      "folder": "IronhideDrummer",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged (Studio pre-check said 'Not Ready for Auto-Rigging'; used Try Rigging Anyway)"
+      },
+      "libraryClips": [
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library (batch-03 clip retargeted)"
+        }
+      ],
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/ironhide/IronhideDrummer",
+        "mesh": "/Game/Tripo/Races/ironhide/IronhideDrummer/CTS_Race_IronhideDrummer.CTS_Race_IronhideDrummer",
+        "rawHeightCm": 98.17,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "ironhide",
+      "unit": "ironhide_warchief",
+      "attempts": [
+        {
+          "taskId": "b01513bc-dce7-4921-9dc4-a85492c67e8b",
+          "url": "https://studio.tripo3d.ai/workspace/generate/b01513bc-dce7-4921-9dc4-a85492c67e8b",
+          "prompt": "Full body game character, realistic dark fantasy huge scarred orc warchief, green skin, black-iron and bone plate armour, a cloak of wolf pelts, a banner pole of skulls strapped to his back, one tusk capped in gold, red war paint, right hand gripping a colossal two-handed black-iron cleaver held out to the side. Highly detailed realistic PBR skin, fur, bone and iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_IronhideWarchief",
+      "folder": "IronhideWarchief",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library (batch-03 clip retargeted)"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/ironhide/IronhideWarchief",
+        "mesh": "/Game/Tripo/Races/ironhide/IronhideWarchief/CTS_Race_IronhideWarchief.CTS_Race_IronhideWarchief",
+        "rawHeightCm": 97.4,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "ironhide",
+      "unit": "ironhide_juggernaut",
+      "attempts": [
+        {
+          "taskId": "c2b0b6b1-64c2-4531-9de9-4bf303ecce70",
+          "url": "https://studio.tripo3d.ai/workspace/generate/c2b0b6b1-64c2-4531-9de9-4bf303ecce70",
+          "prompt": "Full body game character, realistic dark fantasy colossal hulking mountain troll, stone-grey hide with patches of moss, iron plates riveted into its skin, broken iron chains dangling from its wrists, tiny eyes under a heavy brow, right hand gripping a whole tree trunk bound with iron bands as a club. Highly detailed realistic PBR skin, moss, wood and rusted iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_IronhideJuggernaut",
+      "folder": "IronhideJuggernaut",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library (batch-03 clip retargeted)"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library (batch-03 clip retargeted)"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/ironhide/IronhideJuggernaut",
+        "mesh": "/Game/Tripo/Races/ironhide/IronhideJuggernaut/CTS_Race_IronhideJuggernaut.CTS_Race_IronhideJuggernaut",
+        "rawHeightCm": 89.0,
+        "animations": [
+          "fall",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drakkari",
+      "unit": "drakkari_whelpguard",
+      "attempts": [
+        {
+          "taskId": "916bd3c8-b127-4169-8660-db113514935e",
+          "url": "https://studio.tripo3d.ai/workspace/generate/916bd3c8-b127-4169-8660-db113514935e",
+          "prompt": "Full body game character, realistic dark fantasy young dragonkin footsoldier, lizard-like dragon head with small horns, red-orange scales, a faint ember glow in its throat, scale-mail skirt and bronze-riveted leather harness, bronze bracers, thin tail touching the ground, empty open clawed hands holding nothing, upright soldier stance. Highly detailed realistic PBR scale, leather and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariWhelpguard",
+      "folder": "DrakkariWhelpguard",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "fire_breath",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariWhelpguard",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariWhelpguard/CTS_Race_DrakkariWhelpguard.CTS_Race_DrakkariWhelpguard",
+        "rawHeightCm": 98.02,
+        "animations": [
+          "fall",
+          "fire_breath",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drakkari",
+      "unit": "drakkari_scalebreaker",
+      "attempts": [
+        {
+          "taskId": "a9b6d21a-a492-495d-8a64-4e95353d65ee",
+          "url": "https://studio.tripo3d.ai/workspace/generate/a9b6d21a-a492-495d-8a64-4e95353d65ee",
+          "prompt": "Full body game character, realistic dark fantasy brawny dragonkin bruiser, thick red scales with gold horn tips, small leathery wings folded tight on its back, broad chest with glowing cracks between the scale seams, heavy bone and gold armbands, dark bronze belt plates, thick tail, empty open clawed hands holding nothing. Highly detailed realistic PBR scale, bone and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariScalebreaker",
+      "folder": "DrakkariScalebreaker",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariScalebreaker",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariScalebreaker/CTS_Race_DrakkariScalebreaker.CTS_Race_DrakkariScalebreaker",
+        "rawHeightCm": 85.3,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drakkari",
+      "unit": "drakkari_scaleguard",
+      "attempts": [
+        {
+          "taskId": "25239096-062f-4a23-83c6-f3db6c2a816e",
+          "url": "https://studio.tripo3d.ai/workspace/generate/25239096-062f-4a23-83c6-f3db6c2a816e",
+          "prompt": "Full body game character, realistic dark fantasy heavily armoured dragonkin warrior, overlapping bronze scale-plate armour, horned bronze helm with a crest, red scales at the neck and hands, thick tail, empty open clawed hands holding nothing, sturdy defensive stance. Highly detailed realistic PBR bronze and scale textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariScaleguard",
+      "folder": "DrakkariScaleguard",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariScaleguard",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariScaleguard/CTS_Race_DrakkariScaleguard.CTS_Race_DrakkariScaleguard",
+        "rawHeightCm": 98.08,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drakkari",
+      "unit": "drakkari_flamecaller",
+      "attempts": [
+        {
+          "taskId": "c8ade104-4536-4f6a-ad3d-e1157c9f9b2f",
+          "url": "https://studio.tripo3d.ai/workspace/generate/c8ade104-4536-4f6a-ad3d-e1157c9f9b2f",
+          "prompt": "Full body game character, realistic dark fantasy slender horned dragonkin pyromancer, crimson-scaled head, charred crimson robes with tarnished gold trim, long tail wrapped in cloth, clawed fingers, right hand gripping a tall dark iron staff topped with a caged burning coal, left hand open. Highly detailed realistic PBR cloth, scale and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariFlamecaller",
+      "folder": "DrakkariFlamecaller",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariFlamecaller",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariFlamecaller/CTS_Race_DrakkariFlamecaller.CTS_Race_DrakkariFlamecaller",
+        "rawHeightCm": 97.91,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drakkari",
+      "unit": "drakkari_wingshot",
+      "attempts": [
+        {
+          "taskId": "7470ee75-cb2e-432d-8f39-4e618922e537",
+          "url": "https://studio.tripo3d.ai/workspace/generate/7470ee75-cb2e-432d-8f39-4e618922e537",
+          "prompt": "Full body game character, realistic dark fantasy agile dragonkin archer, bat-like wings folded tight on its back, crest of small horns, light bronze scale vest, quiver of ember-tipped bolts on the hip, red-brown scales, both hands holding a heavy bronze crossbow with a dragon-head prow held horizontally at waist height. Highly detailed realistic PBR scale, leather and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "rejected",
+          "note": "crossbow floated in front of the body, not in the hands; re-prompted with empty hands (game bow prop + library bow clip)"
+        },
+        {
+          "taskId": "d0f05ed7-d125-4107-8141-51df020f87bc",
+          "url": "https://studio.tripo3d.ai/workspace/generate/d0f05ed7-d125-4107-8141-51df020f87bc",
+          "prompt": "Full body game character, realistic dark fantasy agile dragonkin archer, bat-like wings folded tight against its back, crest of small horns, light bronze scale vest and leather bracers, quiver of ember-tipped bolts on the hip, red-brown scales, thin tail, empty open clawed hands holding nothing. Highly detailed realistic PBR scale, leather and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariWingshot",
+      "folder": "DrakkariWingshot",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "attack_bow",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 130,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariWingshot",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariWingshot/CTS_Race_DrakkariWingshot.CTS_Race_DrakkariWingshot",
+        "rawHeightCm": 93.77,
+        "animations": [
+          "attack_bow",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drakkari",
+      "unit": "ember_whelp",
+      "attempts": [
+        {
+          "taskId": "27dfe660-7415-4e04-8c4a-78788390a9de",
+          "url": "https://studio.tripo3d.ai/workspace/generate/27dfe660-7415-4e04-8c4a-78788390a9de",
+          "prompt": "Full body game character, realistic dark fantasy small dragon whelp standing upright on its hind legs like a little biped, oversized head with stubby horns, small wings folded on its back, bright orange scales with a pale glowing belly, short arms with little claws, thick tail, small bronze ring collar. Highly detailed realistic PBR scale textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_EmberWhelp",
+      "folder": "EmberWhelp",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/EmberWhelp",
+        "mesh": "/Game/Tripo/Races/drakkari/EmberWhelp/CTS_Race_EmberWhelp.CTS_Race_EmberWhelp",
+        "rawHeightCm": 98.06,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drakkari",
+      "unit": "drakkari_broodmother",
+      "attempts": [
+        {
+          "taskId": "d11a8bb7-ae8b-4d3c-80ac-b327ae239f42",
+          "url": "https://studio.tripo3d.ai/workspace/generate/d11a8bb7-ae8b-4d3c-80ac-b327ae239f42",
+          "prompt": "Full body game character, realistic dark fantasy tall regal dragonkin matriarch, crown of curling golden horns, wide ragged wings folded close behind her back, flowing robes of scorched crimson silk over bronze scale armour, long tail, right hand gripping a tall golden staff with a glowing dragon egg inside a gold cage, left hand open. Highly detailed realistic PBR silk, scale and gold textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted",
+          "note": "Free Retry used once (first result had wings spread and a twisted pose)"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariBroodmother",
+      "folder": "DrakkariBroodmother",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariBroodmother",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariBroodmother/CTS_Race_DrakkariBroodmother.CTS_Race_DrakkariBroodmother",
+        "rawHeightCm": 85.02,
+        "animations": [
+          "Huge_w_rlord_plants_his_feet__throws_his_arms_wide_and_roars_a_",
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drakkari",
+      "unit": "drakkari_ashwing",
+      "attempts": [
+        {
+          "taskId": "eeb47e82-2a59-437f-8d49-b00825f7efdf",
+          "url": "https://studio.tripo3d.ai/workspace/generate/eeb47e82-2a59-437f-8d49-b00825f7efdf",
+          "prompt": "Full body game character, realistic dark fantasy massive bipedal fire drake standing upright like a giant warrior, huge wings folded down its back like a cloak, thick black-and-crimson scales with molten cracks, long horned dragon head, heavy muscular clawed arms, thick legs, tail dragging behind, dark iron shackles on the wrists. Highly detailed realistic PBR scale and iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_DrakkariAshwing",
+      "folder": "DrakkariAshwing",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "textToMotion": [
+        {
+          "name": "fire_breath",
+          "prompt": "Huge dragon warrior rears its head back, then thrusts its open jaws forward breathing a long cone of fire, sweeping its head slowly from left to right with the chest pushed forward, then recovers to a menacing stance",
+          "seconds": 4,
+          "credits": 20,
+          "note": "the Studio attached the finished clip to the Whelpguard page that was open; the Ashwing picked it up from the AI library ('Custom Motion') for free"
+        }
+      ],
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 95,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drakkari/DrakkariAshwing",
+        "mesh": "/Game/Tripo/Races/drakkari/DrakkariAshwing/CTS_Race_DrakkariAshwing.CTS_Race_DrakkariAshwing",
+        "rawHeightCm": 98.02,
+        "animations": [
+          "fall",
+          "fire_breath",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "stoneborn",
+      "unit": "rune_sentinel",
+      "attempts": [
+        {
+          "taskId": "f1ab23b0-5942-4d90-a7fc-9df4794ff215",
+          "url": "https://studio.tripo3d.ai/workspace/generate/f1ab23b0-5942-4d90-a7fc-9df4794ff215",
+          "prompt": "Full body game character, realistic dark fantasy man-sized stone construct soldier built from carved grey granite blocks, blue rune lines carved along its limbs, right forearm ends in a broad stone blade, left hand a stone fist, faceless helm-shaped stone head with a single rune slit, bronze joint rings at the elbows and knees. Highly detailed realistic PBR granite and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_RuneSentinel",
+      "folder": "RuneSentinel",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/RuneSentinel",
+        "mesh": "/Game/Tripo/Races/stoneborn/RuneSentinel/CTS_Race_RuneSentinel.CTS_Race_RuneSentinel",
+        "rawHeightCm": 97.26,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "stoneborn",
+      "unit": "granite_crusher",
+      "attempts": [
+        {
+          "taskId": "0a9c3d4c-fd09-4783-b4c7-1fce5d8921d4",
+          "url": "https://studio.tripo3d.ai/workspace/generate/0a9c3d4c-fd09-4783-b4c7-1fce5d8921d4",
+          "prompt": "Full body game character, realistic dark fantasy hulking boulder golem, rough granite body, oversized granite fists, a small head sunk between huge rock shoulders, blue glowing cracks across its chest, moss in the crevices, bronze bands around the wrists, heavy knuckle-dragging build. Highly detailed realistic PBR granite, moss and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_GraniteCrusher",
+      "folder": "GraniteCrusher",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/GraniteCrusher",
+        "mesh": "/Game/Tripo/Races/stoneborn/GraniteCrusher/CTS_Race_GraniteCrusher.CTS_Race_GraniteCrusher",
+        "rawHeightCm": 95.37,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "stoneborn",
+      "unit": "bastion_golem",
+      "attempts": [
+        {
+          "taskId": "03e9ce65-f2d1-46b2-9daa-1c6c153f8c8e",
+          "url": "https://studio.tripo3d.ai/workspace/generate/03e9ce65-f2d1-46b2-9daa-1c6c153f8c8e",
+          "prompt": "Full body game character, realistic dark fantasy tall monolithic stone golem shaped like a walking fortress wall, crenellated stone shoulders, a blue ether core visible through a bronze grille in its chest, a thick slab of carved stone fused to its left forearm like a shield with a dwarven rune, right hand a stone fist, thick pillar legs. Highly detailed realistic PBR stone and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_BastionGolem",
+      "folder": "BastionGolem",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/BastionGolem",
+        "mesh": "/Game/Tripo/Races/stoneborn/BastionGolem/CTS_Race_BastionGolem.CTS_Race_BastionGolem",
+        "rawHeightCm": 97.63,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "stoneborn",
+      "unit": "deepforge_runesmith",
+      "attempts": [
+        {
+          "taskId": "cf1f44cc-0d15-408d-8fef-13ca9761eb3c",
+          "url": "https://studio.tripo3d.ai/workspace/generate/cf1f44cc-0d15-408d-8fef-13ca9761eb3c",
+          "prompt": "Full body game character, realistic dark fantasy stout dwarf-shaped construct of bronze and dark iron, a stone beard carved in braids, glowing furnace belly, rune-etched bronze pauldrons, right hand gripping a long forge-hammer staff with a rune-carved iron head, left hand open. Highly detailed realistic PBR bronze, iron and stone textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_DeepforgeRunesmith",
+      "folder": "DeepforgeRunesmith",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/DeepforgeRunesmith",
+        "mesh": "/Game/Tripo/Races/stoneborn/DeepforgeRunesmith/CTS_Race_DeepforgeRunesmith.CTS_Race_DeepforgeRunesmith",
+        "rawHeightCm": 100.0,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "stoneborn",
+      "unit": "stoneborn_forgelord",
+      "attempts": [
+        {
+          "taskId": "8a3b3b1e-8bb2-489f-b09d-b32f34218c56",
+          "url": "https://studio.tripo3d.ai/workspace/generate/8a3b3b1e-8bb2-489f-b09d-b32f34218c56",
+          "prompt": "Full body game character, realistic dark fantasy towering dwarven forge-king construct of blackened iron and bronze, braided beard of chain and stone, crown of anvil horns, furnace chest with a blue fire behind a grille, runic bronze pauldrons, right hand gripping a massive forge hammer with a glowing hot head. Highly detailed realistic PBR iron, bronze and stone textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_StonebornForgelord",
+      "folder": "StonebornForgelord",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/StonebornForgelord",
+        "mesh": "/Game/Tripo/Races/stoneborn/StonebornForgelord/CTS_Race_StonebornForgelord.CTS_Race_StonebornForgelord",
+        "rawHeightCm": 97.88,
+        "animations": [
+          "fall",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "stoneborn",
+      "unit": "stoneborn_colossus",
+      "attempts": [
+        {
+          "taskId": "f5affa0e-9ac8-4052-a7f3-544067b147bf",
+          "url": "https://studio.tripo3d.ai/workspace/generate/f5affa0e-9ac8-4052-a7f3-544067b147bf",
+          "prompt": "Full body game character, realistic dark fantasy colossal ancient stone giant covered in moss and ruined masonry, a broken stone tower fused into its back, huge boulder fists, blue ether seams across its body, a cavernous face with two glowing eyes, bronze bands around the arms, thick pillar legs. Highly detailed realistic PBR stone, moss and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Huge_w_rlord": "war_cry",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_StonebornColossus",
+      "folder": "StonebornColossus",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/stoneborn/StonebornColossus",
+        "mesh": "/Game/Tripo/Races/stoneborn/StonebornColossus/CTS_Race_StonebornColossus.CTS_Race_StonebornColossus",
+        "rawHeightCm": 97.95,
+        "animations": [
+          "fall",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "feral_kin",
+      "unit": "werebear_mauler",
+      "attempts": [
+        {
+          "taskId": "297696ac-6f14-4083-9f2f-344f63bef951",
+          "url": "https://studio.tripo3d.ai/workspace/generate/297696ac-6f14-4083-9f2f-344f63bef951",
+          "prompt": "Full body game character, realistic dark fantasy towering upright werebear, thick dark brown fur, massive clawed paws, roaring open jaws with fangs, amber eyes, torn remains of leather armour straps and a broken iron shackle on one wrist, root growth and green moss across its shoulders, tarnished iron studs on the leather. Highly detailed realistic PBR fur, leather and iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_WerebearMauler",
+      "folder": "WerebearMauler",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/feral_kin/WerebearMauler",
+        "mesh": "/Game/Tripo/Races/feral_kin/WerebearMauler/CTS_Race_WerebearMauler.CTS_Race_WerebearMauler",
+        "rawHeightCm": 91.6,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "feral_kin",
+      "unit": "wild_outrider",
+      "attempts": [
+        {
+          "taskId": "5bbbd247-960e-479c-ae12-117c518dd675",
+          "url": "https://studio.tripo3d.ai/workspace/generate/5bbbd247-960e-479c-ae12-117c518dd675",
+          "prompt": "Full body game character, realistic dark fantasy wild beastman archer standing on two digitigrade legs with hooves, shaggy chestnut fur on the legs, bare painted human-like torso with tribal markings, antler headdress, braided mane with beads, leather quiver of feathered arrows on the back, bronze arm rings, empty open hands holding nothing. Highly detailed realistic PBR fur, skin, leather and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_WildOutrider",
+      "folder": "WildOutrider",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "attack_bow",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/feral_kin/WildOutrider",
+        "mesh": "/Game/Tripo/Races/feral_kin/WildOutrider/CTS_Race_WildOutrider.CTS_Race_WildOutrider",
+        "rawHeightCm": 98.12,
+        "animations": [
+          "attack_bow",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "feral_kin",
+      "unit": "feral_ursoth",
+      "attempts": [
+        {
+          "taskId": "09223256-5ffb-44d4-b0fb-1f8f3e947610",
+          "url": "https://studio.tripo3d.ai/workspace/generate/09223256-5ffb-44d4-b0fb-1f8f3e947610",
+          "prompt": "Full body game character, realistic dark fantasy gigantic ancient werebear chieftain standing upright, grizzled silver-streaked fur, a mantle of antlers and bones on its shoulders, a small gnarled tree growing from its hunched back, huge scarred claws, one blind white eye and one glowing amber eye, tarnished bronze torc and arm rings. Highly detailed realistic PBR fur, bone, bark and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_FeralUrsoth",
+      "folder": "FeralUrsoth",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/feral_kin/FeralUrsoth",
+        "mesh": "/Game/Tripo/Races/feral_kin/FeralUrsoth/CTS_Race_FeralUrsoth.CTS_Race_FeralUrsoth",
+        "rawHeightCm": 97.91,
+        "animations": [
+          "fall",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "feral_kin",
+      "unit": "feral_mammoth",
+      "attempts": [
+        {
+          "taskId": "7867aaca-13e7-42fa-a1e9-0588570298a3",
+          "url": "https://studio.tripo3d.ai/workspace/generate/7867aaca-13e7-42fa-a1e9-0588570298a3",
+          "prompt": "Full body game character, realistic dark fantasy colossal upright mammoth-behemoth warrior standing on two thick legs, shaggy brown wool, huge curling tusks capped in carved stone, trunk hanging to the chest, a tall ritual totem pole strapped across its back, carved stone plates tied to its shoulders, yellow war paint, bronze bands on the tusks and arms. Highly detailed realistic PBR wool, ivory, stone and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_FeralMammoth",
+      "folder": "FeralMammoth",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/feral_kin/FeralMammoth",
+        "mesh": "/Game/Tripo/Races/feral_kin/FeralMammoth/CTS_Race_FeralMammoth.CTS_Race_FeralMammoth",
+        "rawHeightCm": 89.89,
+        "animations": [
+          "fall",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "feral_kin",
+      "unit": "tusked_behemoth",
+      "attempts": [
+        {
+          "taskId": "8bfdb2db-7601-4f9c-8c9f-d5170da450c6",
+          "url": "https://studio.tripo3d.ai/workspace/generate/8bfdb2db-7601-4f9c-8c9f-d5170da450c6",
+          "prompt": "Full body game character, realistic dark fantasy massive upright elephant-rhino hybrid warrior, grey leathery hide, curved ivory tusks and a nose horn, carved stone plates tied on with rope as armour, painted tribal markings, pillar-thick legs, bronze rings on the tusks, empty open hands holding nothing. Highly detailed realistic PBR hide, ivory, stone and bronze textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_TuskedBehemoth",
+      "folder": "TuskedBehemoth",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/feral_kin/TuskedBehemoth",
+        "mesh": "/Game/Tripo/Races/feral_kin/TuskedBehemoth/CTS_Race_TuskedBehemoth.CTS_Race_TuskedBehemoth",
+        "rawHeightCm": 89.35,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "feral_kin",
+      "unit": "feral_shaman",
+      "attempts": [
+        {
+          "taskId": "123a0cac-7c8c-4ffe-a9d8-8b42fc8557c6",
+          "url": "https://studio.tripo3d.ai/workspace/generate/123a0cac-7c8c-4ffe-a9d8-8b42fc8557c6",
+          "prompt": "Full body game character, realistic dark fantasy hunched goat-legged beastman shaman, deer skull mask with large antlers, cloak of feathers and pelts, glowing yellow eyes, digitigrade goat legs with hooves, tarnished bronze charms, right hand gripping a staff of bone and antler hung with bells and charms, left hand open. Highly detailed realistic PBR fur, bone, feather and metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_FeralShaman",
+      "folder": "FeralShaman",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/feral_kin/FeralShaman",
+        "mesh": "/Game/Tripo/Races/feral_kin/FeralShaman/CTS_Race_FeralShaman.CTS_Race_FeralShaman",
+        "rawHeightCm": 98.18,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "fallen_order",
+      "unit": "fallen_squire",
+      "attempts": [
+        {
+          "taskId": "c062b414-6aad-4f1d-abe4-4bee78c8dd6d",
+          "url": "https://studio.tripo3d.ai/workspace/generate/c062b414-6aad-4f1d-abe4-4bee78c8dd6d",
+          "prompt": "Full body game character, realistic dark fantasy gaunt pale undead-looking squire, dented tarnished steel mail, torn crimson tabard with a defaced sun emblem, open-faced steel helm, hollow glowing gold eyes, leather belt and boots, empty open hands holding nothing. Highly detailed realistic PBR steel, cloth and leather textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_FallenSquire",
+      "folder": "FallenSquire",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/fallen_order/FallenSquire",
+        "mesh": "/Game/Tripo/Races/fallen_order/FallenSquire/CTS_Race_FallenSquire.CTS_Race_FallenSquire",
+        "rawHeightCm": 92.12,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "fallen_order",
+      "unit": "fallen_inquisitor_crossbow",
+      "attempts": [
+        {
+          "taskId": "7e10a43b-43a4-409e-9039-f8c3346bf20a",
+          "url": "https://studio.tripo3d.ai/workspace/generate/7e10a43b-43a4-409e-9039-f8c3346bf20a",
+          "prompt": "Full body game character, realistic dark fantasy lean inquisitor in a wide-brimmed hat and long dark leather coat over a steel breastplate, bandolier of silver bolts, a cracked sun pendant, pale face with glowing gold eyes, right hand gripping a heavy repeating crossbow by its stock, held out to the side, left hand open. Highly detailed realistic PBR leather, steel and silver textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_FallenInquisitorCrossbow",
+      "folder": "FallenInquisitorCrossbow",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "attack_crossbow",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/fallen_order/FallenInquisitorCrossbow",
+        "mesh": "/Game/Tripo/Races/fallen_order/FallenInquisitorCrossbow/CTS_Race_FallenInquisitorCrossbow.CTS_Race_FallenInquisitorCrossbow",
+        "rawHeightCm": 97.92,
+        "animations": [
+          "attack_crossbow",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "fallen_order",
+      "unit": "flagellant",
+      "attempts": [
+        {
+          "taskId": "76928c47-fb44-4099-ad1c-bb1f9ef1920d",
+          "url": "https://studio.tripo3d.ai/workspace/generate/76928c47-fb44-4099-ad1c-bb1f9ef1920d",
+          "prompt": "Full body game character, realistic dark fantasy emaciated bare-chested zealot in a hooded sackcloth robe, lash scars on the body, rope belt hung with prayer scrolls, iron chain bracers, a short barbed iron flail gripped in each hand. Highly detailed realistic PBR skin, sackcloth and iron textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_Flagellant",
+      "folder": "Flagellant",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/fallen_order/Flagellant",
+        "mesh": "/Game/Tripo/Races/fallen_order/Flagellant/CTS_Race_Flagellant.CTS_Race_Flagellant",
+        "rawHeightCm": 92.94,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "fallen_order",
+      "unit": "fallen_high_inquisitor",
+      "attempts": [
+        {
+          "taskId": "bdba69fc-fb46-4924-8ab8-6ad2c2c65e2b",
+          "url": "https://studio.tripo3d.ai/workspace/generate/bdba69fc-fb46-4924-8ab8-6ad2c2c65e2b",
+          "prompt": "Full body game character, realistic dark fantasy tall gaunt high inquisitor in layered crimson and black robes with gold filigree, towering mitre, chains wrapped around his arms, a burning book chained at his hip, right hand gripping a tall staff topped with a gold sun relic, left hand open. Highly detailed realistic PBR cloth, gold and iron textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_FallenHighInquisitor",
+      "folder": "FallenHighInquisitor",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/fallen_order/FallenHighInquisitor",
+        "mesh": "/Game/Tripo/Races/fallen_order/FallenHighInquisitor/CTS_Race_FallenHighInquisitor.CTS_Race_FallenHighInquisitor",
+        "rawHeightCm": 97.78,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "fallen_order",
+      "unit": "fallen_crusader",
+      "attempts": [
+        {
+          "taskId": "d2fe1dea-842f-4f8f-9cba-151f092a24d6",
+          "url": "https://studio.tripo3d.ai/workspace/generate/d2fe1dea-842f-4f8f-9cba-151f092a24d6",
+          "prompt": "Full body game character, realistic dark fantasy giant armoured crusader, ornate tarnished gold-and-steel plate armour with a crumbling sun relief on the breastplate, empty great helm with gold light inside the visor, torn white banner on its back, right hand gripping a huge greatsword held out to the side. Highly detailed realistic PBR steel, gold and cloth textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "export": "CTS_Race_FallenCrusader",
+      "folder": "FallenCrusader",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/fallen_order/FallenCrusader",
+        "mesh": "/Game/Tripo/Races/fallen_order/FallenCrusader/CTS_Race_FallenCrusader.CTS_Race_FallenCrusader",
+        "rawHeightCm": 87.75,
+        "animations": [
+          "fall",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "fallen_order",
+      "unit": "dread_knight",
+      "attempts": [
+        {
+          "taskId": "3b769844-205f-46d8-8199-46606e18daf6",
+          "url": "https://studio.tripo3d.ai/workspace/generate/3b769844-205f-46d8-8199-46606e18daf6",
+          "prompt": "Full body game character, realistic dark fantasy tall dread knight in blackened fluted full plate armour, spiked pauldrons, tattered crimson cloak, horned great helm with a gold visor slit, empty open gauntleted hands holding nothing. Highly detailed realistic PBR blackened steel and cloth textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_DreadKnight",
+      "folder": "DreadKnight",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/fallen_order/DreadKnight",
+        "mesh": "/Game/Tripo/Races/fallen_order/DreadKnight/CTS_Race_DreadKnight.CTS_Race_DreadKnight",
+        "rawHeightCm": 92.95,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "fallen_order",
+      "unit": "oathbreaker_templar",
+      "attempts": [
+        {
+          "taskId": "a0f73262-b764-4c9f-a85c-8a0f70ef25a5",
+          "url": "https://studio.tripo3d.ai/workspace/generate/a0f73262-b764-4c9f-a85c-8a0f70ef25a5",
+          "prompt": "Full body game character, realistic dark fantasy massive templar in heavy gothic plate armour gone green with corrosion, tall plumed helm with a skull-like faceplate, a cracked sun relic on the breastplate, tattered white and gold surcoat, empty open gauntleted hands holding nothing, broad planted stance. Highly detailed realistic PBR corroded steel, gold and cloth textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_OathbreakerTemplar",
+      "folder": "OathbreakerTemplar",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/fallen_order/OathbreakerTemplar",
+        "mesh": "/Game/Tripo/Races/fallen_order/OathbreakerTemplar/CTS_Race_OathbreakerTemplar.CTS_Race_OathbreakerTemplar",
+        "rawHeightCm": 97.88,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "fallen_order",
+      "unit": "blighted_chaplain",
+      "attempts": [
+        {
+          "taskId": "0b300a29-7776-4774-8ef8-f6a49056abff",
+          "url": "https://studio.tripo3d.ai/workspace/generate/0b300a29-7776-4774-8ef8-f6a49056abff",
+          "prompt": "Full body game character, realistic dark fantasy hunched robed chaplain in stained ivory and crimson vestments, mitre-like hood hiding a withered face with glowing eyes, prayer beads of teeth, tarnished gold trim, right hand holding a brass censer on a short chain, left hand open. Highly detailed realistic PBR cloth, brass and bone textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_BlightedChaplain",
+      "folder": "BlightedChaplain",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/fallen_order/BlightedChaplain",
+        "mesh": "/Game/Tripo/Races/fallen_order/BlightedChaplain/CTS_Race_BlightedChaplain.CTS_Race_BlightedChaplain",
+        "rawHeightCm": 92.24,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "voidborn",
+      "unit": "rift_stalker",
+      "attempts": [
+        {
+          "taskId": "a4ff9f50-8bee-4244-bf77-eaa941f52505",
+          "url": "https://studio.tripo3d.ai/workspace/generate/a4ff9f50-8bee-4244-bf77-eaa941f52505",
+          "prompt": "Full body game character, realistic dark fantasy lanky shadow humanoid with elongated limbs, dark skin like a starry night sky with violet specks, featureless head split by a vertical glowing magenta slit, long scythe-like blades for fingers, dark metallic plates on the shoulders and shins, crouched predatory build. Highly detailed realistic PBR skin and dark metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_RiftStalker",
+      "folder": "RiftStalker",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/voidborn/RiftStalker",
+        "mesh": "/Game/Tripo/Races/voidborn/RiftStalker/CTS_Race_RiftStalker.CTS_Race_RiftStalker",
+        "rawHeightCm": 97.89,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "voidborn",
+      "unit": "void_ravager",
+      "attempts": [
+        {
+          "taskId": "0d17f649-e785-47d0-affd-37c1e744a627",
+          "url": "https://studio.tripo3d.ai/workspace/generate/0d17f649-e785-47d0-affd-37c1e744a627",
+          "prompt": "Full body game character, realistic dark fantasy hulking void aberration with chitinous black-violet armour plates, two massive arms ending in crushing mandible claws, two small spindly arms folded on its chest, a head that is a gaping ring of teeth around a dark maw, cracks of starlight across its body, heavy digitigrade legs. Highly detailed realistic PBR chitin textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_VoidRavager",
+      "folder": "VoidRavager",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/voidborn/VoidRavager",
+        "mesh": "/Game/Tripo/Races/voidborn/VoidRavager/CTS_Race_VoidRavager.CTS_Race_VoidRavager",
+        "rawHeightCm": 93.55,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "voidborn",
+      "unit": "null_warden",
+      "attempts": [
+        {
+          "taskId": "9eab3aa0-9214-477d-9659-91204878b57f",
+          "url": "https://studio.tripo3d.ai/workspace/generate/9eab3aa0-9214-477d-9659-91204878b57f",
+          "prompt": "Full body game character, realistic dark fantasy tall armoured void aberration, body a hollow shell of polished obsidian plates around a swirling black core, a single huge eye set in its chest, dark steel trim on the plates, empty open clawed hands holding nothing. Highly detailed realistic PBR obsidian and steel textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_NullWarden",
+      "folder": "NullWarden",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/voidborn/NullWarden",
+        "mesh": "/Game/Tripo/Races/voidborn/NullWarden/CTS_Race_NullWarden.CTS_Race_NullWarden",
+        "rawHeightCm": 91.94,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "voidborn",
+      "unit": "rift_weaver",
+      "attempts": [
+        {
+          "taskId": "53bc998e-d0bb-4f76-bbba-fe44cadefc1c",
+          "url": "https://studio.tripo3d.ai/workspace/generate/53bc998e-d0bb-4f76-bbba-fe44cadefc1c",
+          "prompt": "Full body game character, realistic dark fantasy tall robed void sorcerer, no face under its deep hood, only a swirling violet rift, tattered dark violet robes to the ground with silver-grey trim, four extra thin spectral arms folded on its back, glyph-covered tarnished silver bracers, empty long-fingered hands. Highly detailed realistic PBR cloth and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_RiftWeaver",
+      "folder": "RiftWeaver",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/voidborn/RiftWeaver",
+        "mesh": "/Game/Tripo/Races/voidborn/RiftWeaver/CTS_Race_RiftWeaver.CTS_Race_RiftWeaver",
+        "rawHeightCm": 92.87,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "voidborn",
+      "unit": "rift_gazer",
+      "attempts": [
+        {
+          "taskId": "b9df2402-4c9f-44cf-8736-2e122aa3bc17",
+          "url": "https://studio.tripo3d.ai/workspace/generate/b9df2402-4c9f-44cf-8736-2e122aa3bc17",
+          "prompt": "Full body game character, realistic dark fantasy hunched void aberration standing on two spindly digitigrade legs, its whole head a giant single eye with a crown of smaller eyes on writhing stalks, leathery violet body, short tentacles hanging from its torso, thin clawed arms, tarnished silver rings on the stalks. Highly detailed realistic PBR leathery skin textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_RiftGazer",
+      "folder": "RiftGazer",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/voidborn/RiftGazer",
+        "mesh": "/Game/Tripo/Races/voidborn/RiftGazer/CTS_Race_RiftGazer.CTS_Race_RiftGazer",
+        "rawHeightCm": 97.49,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "voidborn",
+      "unit": "voidling",
+      "attempts": [
+        {
+          "taskId": "4c3130b6-5b4e-4d35-abfe-a1c58ef69dcd",
+          "url": "https://studio.tripo3d.ai/workspace/generate/4c3130b6-5b4e-4d35-abfe-a1c58ef69dcd",
+          "prompt": "Full body game character, realistic dark fantasy small hunched void imp standing on two short legs, round body of black chitin with starlight cracks, a wide mouth of needle teeth, two pinprick magenta eyes, thin clawed arms, stubby tail. Highly detailed realistic PBR chitin textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_Voidling",
+      "folder": "Voidling",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/voidborn/Voidling",
+        "mesh": "/Game/Tripo/Races/voidborn/Voidling/CTS_Race_Voidling.CTS_Race_Voidling",
+        "rawHeightCm": 74.26,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "voidborn",
+      "unit": "voidborn_herald",
+      "attempts": [
+        {
+          "taskId": "4b1aa8e5-b10b-4d49-9dca-375247c76df0",
+          "url": "https://studio.tripo3d.ai/workspace/generate/4b1aa8e5-b10b-4d49-9dca-375247c76df0",
+          "prompt": "Full body game character, realistic dark fantasy towering herald of the void, tall robed silhouette in long dark robes with silver-grey filigree, a halo of shattered black glass behind the head, a face that is a swirling spiral galaxy, long trailing sleeves, right hand gripping a tall black staff crowned with a floating crystal shard, left hand open. Highly detailed realistic PBR cloth, glass and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_VoidbornHerald",
+      "folder": "VoidbornHerald",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged (Try Rigging Anyway)"
+      },
+      "libraryClips": [
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/voidborn/VoidbornHerald",
+        "mesh": "/Game/Tripo/Races/voidborn/VoidbornHerald/CTS_Race_VoidbornHerald.CTS_Race_VoidbornHerald",
+        "rawHeightCm": 98.08,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "voidborn",
+      "unit": "voidborn_devourer",
+      "attempts": [
+        {
+          "taskId": "8eeeef19-c10c-4c28-b68b-f7adcfd61586",
+          "url": "https://studio.tripo3d.ai/workspace/generate/8eeeef19-c10c-4c28-b68b-f7adcfd61586",
+          "prompt": "Full body game character, realistic dark fantasy colossal bipedal void leviathan, hunched titan of black chitin with patches of exposed starry void, a head that splits open into four mandibles around a dark maw, long arms ending in huge claws, thick digitigrade legs, a few broken dark metal rings bolted into its shoulders. Highly detailed realistic PBR chitin and metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_VoidbornDevourer",
+      "folder": "VoidbornDevourer",
+      "aiClips": {
+        "Huge_warlord": "war_cry",
+        "Huge_w_rlord": "war_cry",
+        "Massive_brute": "ground_slam",
+        "Lean_warrior": "axe_throw",
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_dragon_warrior": "fire_breath",
+        "Standing_archer": "attack_bow",
+        "Standing_marksman": "attack_crossbow",
+        "Sta_marksman": "attack_crossbow",
+        "Huge__rlord": "war_cry"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "libraryClips": [
+        {
+          "name": "ground_slam",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "war_cry",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        },
+        {
+          "name": "fire_breath",
+          "credits": 0,
+          "source": "Tripo AI animation library, retargeted free"
+        }
+      ],
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/voidborn/VoidbornDevourer",
+        "mesh": "/Game/Tripo/Races/voidborn/VoidbornDevourer/CTS_Race_VoidbornDevourer.CTS_Race_VoidbornDevourer",
+        "rawHeightCm": 92.66,
+        "animations": [
+          "fall",
+          "fire_breath",
+          "ground_slam",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    }
+  ],
+  "notDone": {
+    "grave_hound": "not generated (race cap reached); keeps its fallback body",
+    "dire_wolf": "not generated; keeps the CC0 wolf (RaceMeshes.free.json)",
+    "bristleback": "not generated; keeps the CC0 boar (RaceMeshes.free.json)",
+    "crystal_ballista": "not generated (spider legs, not Humanoid-riggable); keeps the CC0 spider",
+    "ether_mote": "not generated (floating, no legs); keeps its fallback body; needs procedural hover if modelled"
+  },
+  "raceCreditsTotal": 4670
+}

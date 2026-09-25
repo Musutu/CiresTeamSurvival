@@ -94,3 +94,21 @@ The separate verification pass atomically merges validated entries into `Content
 Success markers are `CIRE_TRIPO_BATCH_BUILD_PASS` (assets built, no runtime publication) and `CIRE_TRIPO_BATCH_VERIFY_PASS` (saved validation and publication). `CIRE_TRIPO_BATCH_FAIL` identifies a failed commandlet. The native runtime also validates the skeleton and locomotion relationship and keeps its existing fallback if a binding is unusable.
 
 Run `Tools/TestIntegrateTripoBatch.py` with ordinary Python for offline manifest/no-overwrite/read-only/publication tests. These tests do not establish animation or visual acceptance; those require the coordinated Unreal passes above.
+
+## Tripo champions (tripo-races, 2026-09-25)
+
+`Content/Data/ChampionArt.tripo.json` maps the new-champions profiles (`gunblade`, `witch_slayer`, `huntress`,
+`aetheri_artificer`, `aetheri_warden`) to their Tripo bodies under `/Game/Tripo/Champions/`. Each `champions[]` row is a
+drop-in `ChampionArtBindings.json` row (`status: "ready"`: mesh, `locomotion` BlendSpace, `attack`, `heightCm`) plus
+`yaw`/`animations` for the `monster_native`/`mounted` modes, its ChampionAttacks02 folder and its props.
+
+- Locomotion: `Tools/BuildTripoChampionMotion.py` writes in-place copies of the native walk/run (Tripo bakes travel
+  into the pelvis) and `BS_Idle_Walk_Run_<Name>` with the lancer's Direction x Speed axes, samples at the clips' own
+  scaled ground speed.
+- Actions: `Tools/RetargetChampionAttacks.py -CireChampionAttacksAdd` transfers slash / cast_a_spell / war_cry
+  (+ attack_crossbow for the Witch Slayer, attack_bow for the Huntress) into `ChampionAttacks02/Tripo<Name>/`;
+  the bodies are registered in `ChampionAttacks02.json` `bodies`.
+- Props: WeaponLoadouts tokens `tripo/<Name>` resolve to `/Game/Tripo/Props/<Name>/CTS_Prop_<Name>`; handles live in
+  `WeaponGrips.json` (`CTS_Prop_*`). `loadoutPresets` in the mapping file are ready-made presets.
+- The Huntress's sabercat (`CTS_Mount_HuntressSabercat`) is rigged but has no clips; see the row's `mount.note`.
+- Review render: `Tools/RenderTripoChampionLineup.py` (Saved/TripoChampionLineup/<stamp>/).

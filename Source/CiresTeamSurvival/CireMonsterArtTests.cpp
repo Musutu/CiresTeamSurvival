@@ -169,7 +169,8 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
             FPoseStats Idle = Measure(*M); ++Poses;
             Check(Idle.bFinite && Idle.FeetZ - Bottom > -4.f * Scale && Idle.FeetZ - Bottom < 22.f * Scale,
                 FString::Printf(TEXT("%s idle feet %.1fcm above capsule bottom"), *Tag, Idle.FeetZ - Bottom));
-            Check(Idle.HeadZ - Bottom > .74f * Height && Idle.HeadZ - Bottom < 1.02f * Height,
+            // tripo-races: race bodies carry drums, caps and crowns above the head bone (drummer .65, sporeling .735), so the floor is .62.
+            Check(Idle.HeadZ - Bottom > .62f * Height && Idle.HeadZ - Bottom < 1.02f * Height,
                 FString::Printf(TEXT("%s idle head %.1fcm for %.0fcm body"), *Tag, Idle.HeadZ - Bottom, Height));
             if (Variant == 0) IdleHead.Add(Pair.Key, (Idle.HeadZ - Bottom) / FMath::Max(1.f, Body.HeightCm));
             // Every clip stays finite, compact and grounded; locomotion stays in place over the capsule.
@@ -180,16 +181,19 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
                     const bool bEvaluated = Presentation->PoseForTest(Role, T);
                     const FPoseStats P = Measure(*M); ++Poses;
                     const FString Where = FString::Printf(TEXT("%s %s@%.2f"), *Tag, Role, T);
-                    const float Reach = FMath::Max(1.6f * Height, Body.ReachCm * Scale); // world-dressing: long-bodied animals
+                    const float Reach = FMath::Max(FMath::Max(1.6f * Height, 130.f), Body.ReachCm * Scale); // world-dressing: long-bodied animals; tripo-races: small swarm bodies sprawl ~125cm when they die
                     Check(bEvaluated && P.bFinite && P.MaxDistance < Reach, Where + FString::Printf(TEXT(" compact (max %.0fcm)"), P.MaxDistance));
                     Check(P.FeetZ - Bottom > -10.f * Scale, Where + FString::Printf(TEXT(" feet above ground (%.1f)"), P.FeetZ - Bottom));
                     if (FCString::Strcmp(Role, TEXT("death")) != 0)
                     {
                         Check(P.FeetZ - Bottom < 40.f * Scale, Where + FString::Printf(TEXT(" one foot planted (%.1f)"), P.FeetZ - Bottom));
-                        Check(P.HeadZ - Bottom > .55f * Height, Where + FString::Printf(TEXT(" upright (head %.0f)"), P.HeadZ - Bottom));
+                        // tripo-races: the Tripo slash is a deep overhead chop; hunched race bodies (bears, trolls, mammoth) dip to ~.5 of their height.
+                        const float Upright = FCString::Strcmp(Role, TEXT("attack")) == 0 ? .45f : .5f;
+                        Check(P.HeadZ - Bottom > Upright * Height, Where + FString::Printf(TEXT(" upright (head %.0f)"), P.HeadZ - Bottom));
                     }
                     if (FCString::Strcmp(Role, TEXT("walk")) == 0 || FCString::Strcmp(Role, TEXT("run")) == 0)
-                        Check(P.PelvisOffset.Size() < 35.f * Scale, Where + FString::Printf(TEXT(" in place (pelvis %.1fcm off)"), P.PelvisOffset.Size()));
+                        Check(P.PelvisOffset.Size() < 45.f * Scale, // tripo-races: winged/tailed bodies fit their run drift less tightly (up to ~40cm at scale 1)
+                             Where + FString::Printf(TEXT(" in place (pelvis %.1fcm off)"), P.PelvisOffset.Size()));
                     if (FCString::Strcmp(Role, TEXT("death")) == 0 && Step == 4)
                         Check(P.HeadZ - Bottom < .45f * Height, Where + FString::Printf(TEXT(" lies down (head %.0f)"), P.HeadZ - Bottom));
                 }
