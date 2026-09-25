@@ -35,7 +35,7 @@ share a scene (ether_golem, paladin, troll_berserker). Source PNGs (1672x941):
 
 The five new-champion scenes (gunblade, witch_slayer, huntress, aetheri, aetheri_warden) were
 **generated for Eric via ChatGPT (OpenAI), 2026-09-25**, using the ranger scene above as the style
-reference, 1672x941 like the rest. Which profile shows which scene is in `Content/Data/DraftBackgrounds.json`.
+reference, 1672x941 like the rest (aetheri_warden was darkened with a gamma curve and vignette to sit in the same value range). Which profile shows which scene is in `Content/Data/DraftBackgrounds.json`.
 
 ## M_DraftCutout.uasset
 
