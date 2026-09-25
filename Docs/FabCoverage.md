@@ -39,7 +39,7 @@ Installed pack folders compared with `Art/Fab/PurchasedPacks.json` and `Docs/FAB
 | Medieval_Weapons (+VOL2), CastleTown | yes | weapon props, town | unchanged (not in this audit's scope) |
 | UndeadPack, ROG_Creatures, QuadrapedCreatures | yes | monster / creature champion bodies | existing units filled; unused creatures -> monster-expansion (below) |
 | **Monster** (Khornes, free pass) | `alsoInstalled`, "not used" | - | -> monster-expansion (idle/walk/run/jump only, no attacks) |
-| Polyphoria (Paladin MetaHuman parts) | `alsoInstalled` | - | needs Eric in the editor (MetaHuman assembly); skipped |
+| Polyphoria (Paladin RPG Set) | `alsoInstalled` | champion bodies | **used (paladin-hq)**: its ready combined mesh needs no MetaHuman assembly; Iron Warden and both Relic Paladins wear it (`Docs/FabIntegration.md`) |
 | Magic_Spell_SFX_Pack_Vol1, Combat_Sounds_-_Lite, Fantasy_UI_SFX_Pack, Professional_Gunshots, ShieldBlocksDeflects | `.gitignore` audio block, `Art/Audio/FabAudioMap.json`, `Docs/Audio.md` | audio | see *C. Audio* |
 
 Every pack folder is gitignored and junctioned; nothing licensed is committed. All new references are soft object
@@ -604,7 +604,6 @@ icon, so none is procedural. Still placeholder: **none**.
 | 13 buffs without a Fab overlay (11 level-15 party auras, `battle_rhythm`, `soul_conduit`) | always-on passives: a looping Fab effect on every ally all match would drown the combat read; each keeps its procedural signature | by design |
 | 30 passive abilities without a spell effect | stat passives with no presentation moment; those with a visible state use their buff overlay (Tumbler's Edge, Killer Instinct, Windrunner, Quickened Mind, Momentum, Blur) and wakes / procs have their own (Ember Wake, Frost Wake, Executioner, Headshot, Moon Glaive, Ember Memory) | by design |
 | 49 audio cues on CC0 (vocals, horns / drums, ambience, footsteps) | no fitting sound in any installed pack | listed in *C. Audio* |
-| Paladin MetaHuman parts (Polyphoria) | MetaHuman assembly needs Eric in the editor | Eric |
 | Chain Spark in the ability gallery arcs to units under the raised gallery stage | `chain_spark` gathers victims by 2D distance (`CireHero.cpp`), so the stacked gallery stage finds units below it; not a gameplay issue on a flat arena | noted, not changed |
 
 Deliberately not used after review in the galleries (`Tools/FabAbilityVFXTable.py` docstring): Lord Enot `*_Target`

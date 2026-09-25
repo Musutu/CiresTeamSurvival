@@ -115,6 +115,82 @@
    ],
    "radiusCm": 1.8,
    "tilt": 25
+  },
+  "/Game/Polyphoria/Polyphoria/CharacterParts_HeavyArmour/Meshes/UE5/Weapons/SM_wp_1h_sword_03.SM_wp_1h_sword_03": {
+   "handle": [
+    0,
+    0,
+    -4.9
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "edge": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "radiusCm": 1.96,
+   "tilt": 30
+  },
+  "/Game/FabDerived/Props/Polyphoria/SM_wp_shield_tri_01_a.SM_wp_shield_tri_01_a": {
+   "grip": "shield",
+   "handle": [
+    -2.9,
+    -2.3,
+    0.0
+   ],
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "edge": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "radiusCm": 1.3
+  },
+  "/Game/Medieval_Weapons/Meshes/SM_Mace_3.SM_Mace_3": {
+   "handle": [
+    0,
+    0,
+    13.8
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "edge": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "radiusCm": 1.55,
+   "tilt": 28
+  },
+  "/Game/Medieval_Weapons/Meshes/SM_Mace_1.SM_Mace_1": {
+   "handle": [
+    0,
+    0,
+    11.1
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "edge": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "radiusCm": 1.76,
+   "tilt": 28
   }
  }
 }

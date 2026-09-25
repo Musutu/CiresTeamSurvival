@@ -86,7 +86,10 @@ bool HasTripoChampionArt(const ACireHero* Hero, FString& Reason) {
     const auto* Asset=Mesh->GetSkeletalMeshAsset();
     const auto* SingleNode=Mesh->GetSingleNodeInstance();
     const auto* Blend=SingleNode?Cast<UBlendSpace>(SingleNode->GetAnimationAsset()):nullptr;
-    const FString Expected=FString::Printf(TEXT("/Game/TripoModels/%s/%s.%s"),Names[Hero->Archetype],Names[Hero->Archetype],Names[Hero->Archetype]);
+    FString Expected=FString::Printf(TEXT("/Game/TripoModels/%s/%s.%s"),Names[Hero->Archetype],Names[Hero->Archetype],Names[Hero->Archetype]);
+    // paladin-hq: with the Polyphoria pack installed the profile wears its Fab plate body (ChampionArtBindings.fab.json).
+    FString FabMesh;float FabHeight=0,FabScale=1;const bool bFab=UCireChampionArt::FabHumanoidBody(Hero->ChampionProfileId,FabMesh,FabHeight,FabScale);
+    if(bFab)Expected=FabMesh;
     if(!Asset||Asset->GetPathName()!=Expected||!Blend||!Asset->GetSkeleton()||Blend->GetSkeleton()!=Asset->GetSkeleton())
         return Reject(TEXT("Tripo mesh or locomotion skeleton does not match"));
     if(Blend->GetNumberOfBlendSamples()<3)return Reject(TEXT("locomotion sample set is incomplete"));
@@ -98,8 +101,10 @@ bool HasTripoChampionArt(const ACireHero* Hero, FString& Reason) {
     const double CapsuleFeet=Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     const double Height=2.0*Bounds.BoxExtent.Z*Mesh->GetComponentScale().Z;
     if(Mesh->GetComponentTransform().ContainsNaN()||Feet.ContainsNaN()||!FMath::IsFinite(CapsuleFeet)||
-        !FMath::IsNearlyEqual(Feet.Z,CapsuleFeet,3.0)||!FMath::IsNearlyEqual(Height,static_cast<double>(Heights[Hero->Archetype])*Hero->GetActorScale3D().Z,0.5)) // tank body scale (MovementTuning TankBodyScale) enlarges mesh and capsule together
+        !FMath::IsNearlyEqual(Feet.Z,CapsuleFeet,3.0)||(bFab?!FMath::IsNearlyEqual(Mesh->GetComponentScale().Z,static_cast<double>(FabScale)*Hero->GetActorScale3D().Z,.001):
+        !FMath::IsNearlyEqual(Height,static_cast<double>(Heights[Hero->Archetype])*Hero->GetActorScale3D().Z,0.5))) // tank body scale (MovementTuning TankBodyScale) enlarges mesh and capsule together
         return Reject(TEXT("Tripo feet or height do not align with the unchanged capsule"));
+    if(bFab)return Hero->ChampionArt->GetBodyParts().Num()>0||Reject(TEXT("Fab plate body has no parts")); // its identity materials are data-driven overrides
     if(Mesh->GetNumMaterials()!=Asset->GetMaterials().Num())return Reject(TEXT("Tripo material slots changed"));
     for(int32 Index=0;Index<Asset->GetMaterials().Num();++Index)
         if(!Mesh->GetMaterial(Index)||Mesh->GetMaterial(Index)!=Asset->GetMaterials()[Index].MaterialInterface)

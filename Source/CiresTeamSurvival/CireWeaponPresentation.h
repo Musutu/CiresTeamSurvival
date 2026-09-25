@@ -25,6 +25,9 @@ namespace CireWeaponFab
 {
     /** fab-integration: the Fab weapon mesh replacing an asset token (WeaponLoadouts.fab.json) when installed, else Fallback. */
     CIRESTEAMSURVIVAL_API FString ResolveMesh(const FString& Token, const FString& Fallback, float& InOutSize);
+    /** paladin-hq: a per-profile Fab prop (WeaponLoadouts.fab.json "profiles"."<profile>"."<token>") first, then the
+     *  token override. OutMaterials is the prop's material spec (UCireChampionArt::ApplyMaterialSpec), or null. */
+    CIRESTEAMSURVIVAL_API FString ResolveMesh(const FString& Profile, const FString& Token, const FString& Fallback, float& InOutSize, TSharedPtr<class FJsonObject>& OutMaterials, bool& bOutProfileProp);
 }
 
 UCLASS()
