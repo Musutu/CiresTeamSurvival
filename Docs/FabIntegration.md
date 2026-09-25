@@ -89,6 +89,54 @@ Leader-pose **parts**: the Quadruped Fantasy Centaur is modular (body, armour st
 - **Tests.** The native probe logs `CIRE_FAB_CREATURE_CHAMPIONS_PASS` (Fab body + parts, flinch, strikes, cast, held death, respawn; or, without the packs, the committed body). `Tools/RunBatchArtGallery.py --profiles bear,evergrove_centaur --mobility` renders them; the gallery expects the Fab body whenever the pack is installed.
 - **Known gap.** Neither pack has a dodge-roll or jump clip for these bodies, so the roll and airborne states show the gait / idle pose (no tumble).
 
+### Plate-body champions: Iron Warden and both Relic Paladins (Polyphoria Paladin RPG Set)
+
+The Polyphoria "Paladin RPG Set" (`Content/Polyphoria`) replaces the Tripo bodies of the **Iron Warden** (knight) and both
+**Relic Paladins** (`paladin_righteous`, `paladin_holy`).
+
+- **What the pack is.** MetaHuman Creator wardrobe items plus plain UE5 skeletal meshes on a Manny-compatible
+  skeleton (`SKEL_metahuman_base`, compatible with the pack's `SKEL_Mannequin_UE5`). No MetaHuman Creator assembly is
+  needed: `SK_ma_pala_combine_a` is a ready combined body (chest, cloak, pants, boots, gloves, bracers; 34.8k vertices,
+  4K chest textures, 2K elsewhere). The pack's own head (`SK_ma_meta_body_head_01`, not a MetaHuman face rig) and a
+  great helm (`helm_paladin_a` / `_b`) are leader-posed parts. The helms are closed, so no face is ever on show.
+- **Binding.** `Tools/BuildFabPaladins.py` writes three `motion: "humanoid"` rows into `ChampionArtBindings.fab.json`:
+  leader mesh, the Fab locomotion BlendSpace, `heightCm` (sole to helm top, about 184.5), `meshScale` 1 (the set is
+  authored in real centimetres), `floorZ`, the parts, and a material spec per slot. `UCireChampionArt` takes a row only
+  when the leader, every part and the BlendSpace exist locally, and never with `-CireNoFab` / `-CireNoFabCreatures`. A
+  row that fails to apply falls back to the committed art (Tripo `paladin_holy` body, the Preview02 Warden), so a clean
+  clone is unchanged. Parts are `USkeletalMeshComponent`s with `SetLeaderPoseComponent`, tagged `CireBodyPart`, and they
+  mirror the leader's selection/rim overlay every frame.
+- **Colour identities.** Every piece uses the pack's ID-masked Base Complex master, so identities are data: the neutral
+  vendor instance of each piece plus runtime vector overrides of its ID channels (`R: Primary` plate, `G` trim, `B`
+  leather, `A` cloth, `Y` rivets, `M` tabard, `C` mail; `[r, g, b, blend]`) and per-channel metallic / roughness
+  multipliers (`UCireChampionArt::ApplyMaterialSpec`, shared with the props).
+  - Iron Warden: gunmetal steel plate, dark silver trim, midnight-blue cloak and tabard, flat-topped great helm, and a
+    midnight-blue enamelled heater shield with the set's longsword.
+  - Relic Paladin (Righteous): crimson-lacquered plate, ember-gold filigree, blood-red cloak, winged great helm with a
+    gold cross, a crimson heater shield and a flanged mace.
+  - Relic Paladin (Holy): ivory enamelled plate, bright gold filigree, white cloak, winged helm in ivory and gold, an
+    ivory heater shield and a mace.
+- **Props.** `WeaponLoadouts.fab.json` `"profiles"."<profile>"."<token>"` overrides one champion's prop (mesh, scale,
+  material spec) before the global token overrides; grips come from `Tools/MeasureFabWeapons.py` (which reads the
+  `WEAPONS` table of `BuildFabPaladins.py`). Profile props stay on LOD 0. The pack's heater shield has corrupt reduction
+  LODs (NaN render bounds: it never draws), so `BuildFabPaladins.py` derives a clean single-LOD copy into
+  `/Game/FabDerived/Props/Polyphoria` (gitignored). Its face is convex toward -Y, so its grip `edge` is flipped.
+- **Animation.** The body is `Art/Fab/FabAnimMap.json` `fabBodies` (folder `PolyPaladin`, the sword & shield set).
+  `Tools/RetargetFabAnimations.py -CireFabAnimOnly=PolyPaladin` retargets it like the Tripo bodies: 8-way walk/run,
+  idle, four attacks, three skills, cast, shout, hit, death, roll and jump. A Fab body has no locomotion BlendSpace of
+  its own, so the tool batch-retargets the lancer's BlendSpace onto it as a template first (`_template`). Root-scale
+  validation compares against the body's own reference root scale (1 here, 100 on Tripo bodies).
+  `FabAnimations.json` `"bodies"` maps the leader to its folder for `CireFabAnimation::FolderFor`, and
+  `CireChampionActions::Apply` runs a body that has Fab clips but no ChampionAttacks02 clips.
+- **Scale.** Tanks (Iron Warden, Righteous) get the usual `TankBodyScale` actor scale (1.15), so mesh, capsule, feet
+  and camera pivot scale together. Champion select frames the body on its head bone like any humanoid.
+- **Captures.** `Tools/RunMonsterGallery.py --only pala_` renders the three in the town: `pala_front`, `pala_back`,
+  `pala_idle`, `pala_run`, `pala_attack`, `pala_cast`, `pala_roll`, `pala_death`, `pala_game` (gameplay camera),
+  `pala_detail`. `Tools/RunDraftGallery.py --champions knight,paladin_righteous,paladin_holy` renders champion select.
+  `RunBatchArtGallery.py` skips profiles wearing a Fab plate body (it asserts the committed Tripo assets).
+- **Rebuild order.** `BuildFabAnimMap.py` → `RetargetFabAnimations.py -CireFabAnimOnly=PolyPaladin` →
+  `BuildFabPaladins.py` → `MeasureFabWeapons.py`.
+
 ## Environment and weapons
 
 - **Town.** Medieval Kingdom meshes go into `Content/Data/TownAssetSlots.fab.json` (priority 20, `status: "imported"`), and the arenas use `Tools/AuthorArenas.py` `FAB_OVERRIDES`. Both resolve only when the package exists.
@@ -106,6 +154,7 @@ Leader-pose **parts**: the Quadruped Fantasy Centaur is modular (body, armour st
 | Crossbow Animation Set (`CrossbowPackAnim`) | Ranger `ranger_crossbow` loadout: shots, hit, death, roll (extra set on the Ranger body) | `Tools/BuildFabAnimMap.py` `extraSets`, `Tools/RetargetFabAnimations.py -CireFabAnimOnly=Ranger -CireFabAnimKeep` |
 | GDH All Animation Bundle (`GDHBundle`), Male Locomotion (`MaleLocomotionSet`), Gun & Sword (`Gun_and_Sword`) | 22 champion bodies: attacks (combo rotation), casts, hit, death, dodge roll, airborne, 8-direction walk/run per weapon set | `Tools/BuildFabAnimMap.py`, `Tools/RetargetFabAnimations.py` → `FabAnimations.json`, `/Game/FabDerived` |
 | ROG Creatures, Quadruped Fantasy Creatures, Undead Pack | dire_wolf, bristleback, feral_ursoth, feral_mammoth, grave_hound (Barghest), wild_outrider (Centaur archer with bow, armour and mane parts), hollow_infantry (skeleton + ghoul variants) | `Tools/BuildFabCreatures.py` → `RaceMeshes.fab.json` |
+| Polyphoria Paladin RPG Set (`Polyphoria`) | Iron Warden and both Relic Paladins: plate body + head + helm, per-champion colour identity, the set's sword and heater shield (plus Ultimate Weapons maces), sword & shield Fab animation | `Tools/BuildFabPaladins.py` → `ChampionArtBindings.fab.json`, `WeaponLoadouts.fab.json` `profiles` |
 | ROG Creatures (bear), Quadruped Fantasy Creatures (centaur) | Bear and Evergrove Centaur **champions** (native clips, casts, flinch, death; replace the procedural bodies) | `Tools/BuildFabChampionCreatures.py` → `ChampionArtBindings.fab.json` |
 | Ultimate Weapons (`Medieval_Weapons`, `_VOL2`) | sword, kite shield, spear, war hammer, dagger, axe props | `Tools/MeasureFabWeapons.py` → `WeaponLoadouts.fab.json`, `WeaponGrips.fab.json` |
 | Medieval Kingdom (`CastleTown`) | 16 town prop slots (crates, barrels, keg, lanterns, castle door, cart, fence...) | `Tools/BuildFabTownSlots.py` → `TownAssetSlots.fabkit.json` |

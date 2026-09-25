@@ -16,6 +16,8 @@ class UAnimSequence;
 class UCireWeaponPresentation;
 class UCireCreatureArt;
 class UMeshComponent;
+class FJsonObject;
+struct FCireChampionArtDefinition;
 /** creature-anim: native tests force the Tripo champion bodies without -CireTripoChampions. */
 extern CIRESTEAMSURVIVAL_API bool GCireForceTripoChampionArt;
 
@@ -64,11 +66,22 @@ public:
     static bool TintBody(class USkeletalMeshComponent* Mesh, UObject* Outer, FLinearColor Base, FLinearColor Accent, float Strength, FLinearColor Rim);
     /** new-champions (tests): apply the profile's art now, as the review flag would. */
     bool DebugApply(ACireHero& Hero);
+    /** paladin-hq: the Fab humanoid body in effect for a profile (ChampionArtBindings.fab.json "humanoid" row, pack
+     *  installed, not -CireNoFab); false otherwise. OutScale is the mesh scale at actor scale 1. */
+    static bool FabHumanoidBody(const FString& ProfileId, FString& OutMesh, float& OutHeightCm, float& OutScale);
+    /** paladin-hq: leader-posed armour/head parts of a Fab humanoid body (empty otherwise). */
+    const TArray<TObjectPtr<class USkeletalMeshComponent>>& GetBodyParts() const { return BodyParts; }
+    /** paladin-hq: material overrides from data: {"<slot name|index>": "/Game/..MI" | {"base": path, "vectors":
+     *  {"R: Primary": [r,g,b,a]}, "scalars": {name: v}}}. Returns the number of slots changed. */
+    static int32 ApplyMaterialSpec(class UMeshComponent* Mesh, const TSharedPtr<class FJsonObject>& Spec, UObject* Outer);
 
 private:
     bool Apply(ACireHero& Hero, int32 Archetype);
     void CaptureFallback(ACireHero& Hero);
     void RestoreFallback(ACireHero& Hero);
+    void ClearBodyParts();
+    bool ApplyHumanoid(ACireHero& Hero, int32 Archetype, const FCireChampionArtDefinition& Definition);
+    bool ApplyFabBody(ACireHero& Hero, const TSharedPtr<FJsonObject>& Raw); // paladin-hq
 
     UPROPERTY(Transient) TObjectPtr<USkeletalMesh> FallbackMesh;
     UPROPERTY(Transient) TSubclassOf<UAnimInstance> FallbackAnimClass;
@@ -78,6 +91,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<UAnimSequence> AttackAnimation;
     UPROPERTY(Transient) TObjectPtr<UCireWeaponPresentation> Weapons;
     UPROPERTY(Transient) TObjectPtr<UCireCreatureArt> Creature;
+    UPROPERTY(Transient) TArray<TObjectPtr<class USkeletalMeshComponent>> BodyParts; // paladin-hq
     FTransform FallbackTransform;
     uint8 FallbackAnimationMode = 0;
     bool bFallbackCaptured = false;

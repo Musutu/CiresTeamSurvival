@@ -3,6 +3,7 @@
 #include "Misc/PackageName.h"
 #include "CireGame.h"
 #include "CireChampionRoster.h"
+#include "CireChampionArt.h" // paladin-hq: prop material specs
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -217,23 +218,43 @@ void UCireWeaponPresentation::Clear()
 namespace
 {
 // fab-integration: WeaponLoadouts.fab.json replaces an asset token with a Fab weapon mesh when the pack is installed.
-struct FFabWeapon { FString Mesh; float Scale = 1.f; };
+struct FFabWeapon { FString Mesh; float Scale = 1.f; TSharedPtr<FJsonObject> Materials; };
+TMap<FString,TMap<FString,FFabWeapon>> GFabProfileWeapons; // paladin-hq: profile -> token -> prop
+void ReadFabWeapons(const TSharedPtr<FJsonObject>& Rows,TMap<FString,FFabWeapon>& Map)
+{
+    for(const auto& Pair:Rows->Values)
+    {
+        const TSharedPtr<FJsonObject>* O=nullptr;FFabWeapon W;double Scale=1;const TSharedPtr<FJsonObject>* Materials=nullptr;
+        if(!Pair.Value->TryGetObject(O)||!(*O)->TryGetStringField(TEXT("mesh"),W.Mesh)||!W.Mesh.StartsWith(TEXT("/Game/")))continue;
+        if((*O)->TryGetNumberField(TEXT("scale"),Scale)&&FMath::IsFinite(Scale))W.Scale=FMath::Clamp(static_cast<float>(Scale),.2f,3.f);
+        if((*O)->TryGetObjectField(TEXT("materials"),Materials))W.Materials=*Materials;
+        Map.Add(FString(Pair.Key.ToView()),W);
+    }
+}
 const TMap<FString,FFabWeapon>& FabWeapons()
 {
     static TMap<FString,FFabWeapon> Map; static bool bFabLoaded=false;
     if(bFabLoaded)return Map; bFabLoaded=true;
     FString Text;TSharedPtr<FJsonObject> Root;const TSharedPtr<FJsonObject>* Rows=nullptr;
     if(FFileHelper::LoadFileToString(Text,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/WeaponLoadouts.fab.json")))&&
-       FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Root)&&Root&&Root->TryGetObjectField(TEXT("overrides"),Rows))
-        for(const auto& Pair:(*Rows)->Values)
-        {
-            const TSharedPtr<FJsonObject>* O=nullptr;FFabWeapon W;double Scale=1;
-            if(!Pair.Value->TryGetObject(O)||!(*O)->TryGetStringField(TEXT("mesh"),W.Mesh)||!W.Mesh.StartsWith(TEXT("/Game/")))continue;
-            if((*O)->TryGetNumberField(TEXT("scale"),Scale)&&FMath::IsFinite(Scale))W.Scale=FMath::Clamp(static_cast<float>(Scale),.2f,3.f);
-            Map.Add(FString(Pair.Key.ToView()),W);
-        }
+       FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Root)&&Root)
+    {
+        if(Root->TryGetObjectField(TEXT("overrides"),Rows))ReadFabWeapons(*Rows,Map);
+        if(Root->TryGetObjectField(TEXT("profiles"),Rows))
+            for(const auto& Pair:(*Rows)->Values){const TSharedPtr<FJsonObject>* P=nullptr;if(Pair.Value->TryGetObject(P))ReadFabWeapons(*P,GFabProfileWeapons.Add(FString(Pair.Key.ToView())));}
+    }
     return Map;
 }
+}
+FString CireWeaponFab::ResolveMesh(const FString& Profile,const FString& Token,const FString& Fallback,float& InOutSize,TSharedPtr<FJsonObject>& OutMaterials,bool& bOutProfileProp)
+{
+    OutMaterials.Reset();bOutProfileProp=false;
+    static const bool bOff=FParse::Param(FCommandLine::Get(),TEXT("CireNoFabWeapons"))||FParse::Param(FCommandLine::Get(),TEXT("CireNoFabCreatures"))||FParse::Param(FCommandLine::Get(),TEXT("CireNoFab"));
+    FabWeapons();
+    const auto* Props=bOff?nullptr:GFabProfileWeapons.Find(Profile);
+    if(const FFabWeapon* W=Props?Props->Find(Token):nullptr;W&&FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(W->Mesh)))
+    {InOutSize*=W->Scale;OutMaterials=W->Materials;bOutProfileProp=true;return W->Mesh;}
+    return ResolveMesh(Token,Fallback,InOutSize);
 }
 FString CireWeaponFab::ResolveMesh(const FString& Token,const FString& Fallback,float& InOutSize)
 {
@@ -317,8 +338,11 @@ void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
         // creature-anim: presets whose Tripo clips hold the weapon in the other hand swap their hand props.
         FName Bone=Spec.Bone;
         if(CireGrip::SwapsHands(EquippedLoadout))Bone=Bone==TEXT("hand_l")?FName(TEXT("hand_r")):Bone==TEXT("hand_r")?FName(TEXT("hand_l")):Bone;
-        float FabSize=Spec.Size;const FString Mesh=CireWeaponFab::ResolveMesh(Spec.Token,Spec.Asset,FabSize); // fab-integration
+        float FabSize=Spec.Size;TSharedPtr<FJsonObject> PropMaterials;bool bProfileProp=false;
+        const FString Mesh=CireWeaponFab::ResolveMesh(Profile,Spec.Token,Spec.Asset,FabSize,PropMaterials,bProfileProp); // fab-integration, paladin-hq
         auto* Part=Attach(Hero,Mesh,Bone,Spec.Offset,Spec.Rotation,FabSize);if(!Part)continue;
+        if(PropMaterials.IsValid())UCireChampionArt::ApplyMaterialSpec(Part,PropMaterials,&Hero); // paladin-hq
+        if(bProfileProp)Part->SetForcedLodModel(1); // paladin-hq: hero props stay on LOD 0 (the set's shield has broken reduction LODs)
         if(Spec.bHideOnRelease)Part->ComponentTags.Add(ReleaseTag);
         if(Spec.Role==TEXT("primary")){Primary=Part;PrimarySize=Spec.Size;}
         else if(Spec.Role==TEXT("ammunition"))Arrow=Part;

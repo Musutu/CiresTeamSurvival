@@ -22,5 +22,123 @@
   "WarAxe": {
    "mesh": "/Game/Medieval_Weapons/Meshes/SM_Axe_1.SM_Axe_1"
   }
+ },
+ "profiles": {
+  "knight": {
+   "legacy/Sword": {
+    "mesh": "/Game/Polyphoria/Polyphoria/CharacterParts_HeavyArmour/Meshes/UE5/Weapons/SM_wp_1h_sword_03.SM_wp_1h_sword_03",
+    "materials": {
+     "0": {
+      "base": "/Game/Polyphoria/Polyphoria/CharacterParts_HeavyArmour/Materials/Weapoon/MI_sword_simple.MI_sword_simple"
+     }
+    }
+   },
+   "legacy/Shield": {
+    "mesh": "/Game/FabDerived/Props/Polyphoria/SM_wp_shield_tri_01_a.SM_wp_shield_tri_01_a",
+    "scale": 0.8,
+    "materials": {
+     "0": {
+      "base": "/Game/Polyphoria/Polyphoria/CharacterParts_HeavyArmour/Materials/Weapoon/MI_wp_shield_tri_01_a.MI_wp_shield_tri_01_a",
+      "vectors": {
+       "R: Primary": [
+        0.02,
+        0.05,
+        0.19,
+        1
+       ],
+       "G: Details 1": [
+        0.3,
+        0.31,
+        0.34,
+        1
+       ],
+       "B: Details 2": [
+        0.3,
+        0.31,
+        0.34,
+        1
+       ]
+      },
+      "scalars": {
+       "R: Metallic Multiplier": 1
+      }
+     }
+    }
+   }
+  },
+  "paladin_righteous": {
+   "Flail": {
+    "mesh": "/Game/Medieval_Weapons/Meshes/SM_Mace_3.SM_Mace_3"
+   },
+   "legacy/Shield": {
+    "mesh": "/Game/FabDerived/Props/Polyphoria/SM_wp_shield_tri_01_a.SM_wp_shield_tri_01_a",
+    "scale": 0.8,
+    "materials": {
+     "0": {
+      "base": "/Game/Polyphoria/Polyphoria/CharacterParts_HeavyArmour/Materials/Weapoon/MI_wp_shield_tri_01_b.MI_wp_shield_tri_01_b",
+      "vectors": {
+       "R: Primary": [
+        0.2,
+        0.004,
+        0.004,
+        1
+       ],
+       "G: Details 1": [
+        1.0,
+        0.5,
+        0.12,
+        1
+       ],
+       "B: Details 2": [
+        1.0,
+        0.5,
+        0.12,
+        1
+       ]
+      },
+      "scalars": {
+       "R: Metallic Multiplier": 0.75
+      }
+     }
+    }
+   }
+  },
+  "paladin_holy": {
+   "Flail": {
+    "mesh": "/Game/Medieval_Weapons/Meshes/SM_Mace_1.SM_Mace_1"
+   },
+   "legacy/Shield": {
+    "mesh": "/Game/FabDerived/Props/Polyphoria/SM_wp_shield_tri_01_a.SM_wp_shield_tri_01_a",
+    "scale": 0.8,
+    "materials": {
+     "0": {
+      "base": "/Game/Polyphoria/Polyphoria/CharacterParts_HeavyArmour/Materials/Weapoon/MI_wp_shield_tri_01_b.MI_wp_shield_tri_01_b",
+      "vectors": {
+       "R: Primary": [
+        0.86,
+        0.84,
+        0.78,
+        1
+       ],
+       "G: Details 1": [
+        1.0,
+        0.72,
+        0.28,
+        1
+       ],
+       "B: Details 2": [
+        1.0,
+        0.72,
+        0.28,
+        1
+       ]
+      },
+      "scalars": {
+       "R: Metallic Multiplier": 0.35
+      }
+     }
+    }
+   }
+  }
  }
 }

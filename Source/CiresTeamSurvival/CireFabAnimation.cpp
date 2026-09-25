@@ -50,6 +50,10 @@ const FFabData& Data()
     if (!ReadJson(TEXT("FabAnimations.json"), Root)) return GFab;
     FString R; if (Root->TryGetStringField(TEXT("root"), R) && R.StartsWith(TEXT("/Game/")) && !R.Contains(TEXT(".."))) GFab.Root = R;
     Root->TryGetBoolField(TEXT("locomotion"), GFab.bLocomotion);
+    // paladin-hq: Fab champion bodies outside ChampionAttacks02 (e.g. the Polyphoria plate body): mesh -> folder.
+    const TSharedPtr<FJsonObject>* FabBodies = nullptr;
+    if (Root->TryGetObjectField(TEXT("bodies"), FabBodies))
+        for (const auto& Pair : (*FabBodies)->Values) { FString Folder; if (Pair.Value->TryGetString(Folder) && !Folder.Contains(TEXT("/")) && !Folder.Contains(TEXT(".."))) GFab.Bodies.Add(FString(Pair.Key.ToView()), Folder); }
     const TSharedPtr<FJsonObject>* Clips = nullptr;
     if (Root->TryGetObjectField(TEXT("clips"), Clips))
         for (const auto& Pair : (*Clips)->Values)

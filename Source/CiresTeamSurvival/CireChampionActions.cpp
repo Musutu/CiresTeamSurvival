@@ -262,10 +262,17 @@ bool ApplyFabReactions(ACireHero& Hero, UCireCombatAnimInstance& Anim, UCireCham
 bool CireChampionActions::Apply(ACireHero& Hero, UCireCombatAnimInstance& Anim, float DeltaSeconds, float Speed)
 {
     USkeletalMesh* Body = Hero.GetMesh() ? Hero.GetMesh()->GetSkeletalMeshAsset() : nullptr;
-    if (!Body || !Data().Bodies.Contains(Body->GetPathName()) || !ClipFor(Body, ClipName(Hero, TEXT("attack")))) return false;
+    if (!Body) return false;
+    const FString Folder = CireFabAnimation::FolderFor(Body); // fab-integration
+    // paladin-hq: a Fab-only body (no ChampionAttacks02 clips, e.g. the Polyphoria plate body) runs on its Fab clips.
+    const bool bTripoClips = Data().Bodies.Contains(Body->GetPathName()) && ClipFor(Body, ClipName(Hero, TEXT("attack")));
+    if (!bTripoClips)
+    {
+        UAnimSequence* Probe = nullptr; FString ProbeName;
+        if (Folder.IsEmpty() || !CireFabAnimation::Pick(Body, Folder, StyleName(Hero), MotionFor(Hero), TEXT("attack"), 0, Probe, ProbeName)) return false;
+    }
     UCireChampionAction* State = StateFor(Hero);
     const double Now = ServerNow(Hero.GetWorld());
-    const FString Folder = CireFabAnimation::FolderFor(Body); // fab-integration
     if (State->CachedBody != Body)
     {
         // New body: forget old clips and do not replay attacks/casts that happened before it appeared.

@@ -194,9 +194,7 @@ FAnimInstanceProxy* UCireCombatAnimInstance::CreateAnimInstanceProxy()
     return new FCireCombatAnimProxy(this);
 }
 
-namespace
-{
-struct FChampionArtDefinition
+struct FCireChampionArtDefinition
 {
     FString MeshPath;
     FString LocomotionPath;
@@ -205,6 +203,9 @@ struct FChampionArtDefinition
     FString Motion;
     TSharedPtr<FJsonObject> Raw; // new-champions: the whole binding row (animations, props, rider, tint)
 };
+namespace
+{
+using FChampionArtDefinition = FCireChampionArtDefinition;
 bool ReadColor(const TSharedPtr<FJsonObject>& O,const TCHAR* Key,FLinearColor& Out)
 {
     const TArray<TSharedPtr<FJsonValue>>* A=nullptr;if(!O||!O->TryGetArrayField(Key,A)||A->Num()<3)return false;
@@ -259,6 +260,25 @@ const FChampionArtDefinition* FabProfileArt(const FString& Id)
             for(const auto& Row:*Rows)
             {
                 const TSharedPtr<FJsonObject>* O=nullptr;const TSharedPtr<FJsonObject>* Animations=nullptr;FString Profile,Status,Idle,Walk,Run;FChampionArtDefinition D;double Height=0;
+                // paladin-hq: "humanoid" rows put a purchased humanoid body (leader mesh + leader-posed parts) on the
+                // regular champion path: Fab locomotion BlendSpace, Fab action clips, weapons and grips. Every mesh
+                // must exist locally, otherwise the committed Tripo body stays.
+                if(Row->TryGetObject(O)&&(*O)->TryGetStringField(TEXT("profileId"),Profile)&&(*O)->TryGetStringField(TEXT("status"),Status)&&Status==TEXT("custom_ready")&&
+                   (*O)->TryGetStringField(TEXT("motion"),D.Motion)&&D.Motion==TEXT("humanoid"))
+                {
+                    if(!(*O)->TryGetStringField(TEXT("mesh"),D.MeshPath)||!(*O)->TryGetStringField(TEXT("locomotion"),D.LocomotionPath)||
+                       !(*O)->TryGetNumberField(TEXT("heightCm"),Height)||Height<80||Height>400||!Present(D.MeshPath)||!Present(D.LocomotionPath))continue;
+                    bool bParts=true;const TArray<TSharedPtr<FJsonValue>>* Parts=nullptr;
+                    if((*O)->TryGetArrayField(TEXT("parts"),Parts))for(const auto& Part:*Parts)
+                    {
+                        const TSharedPtr<FJsonObject>* PO=nullptr;FString PartMesh;
+                        bParts&=Part->TryGetObject(PO)&&(*PO)->TryGetStringField(TEXT("mesh"),PartMesh)&&Present(PartMesh);
+                    }
+                    if(!bParts)continue;
+                    (*O)->TryGetStringField(TEXT("attack"),D.AttackPath);
+                    D.HeightCm=static_cast<float>(Height);D.Raw=*O;Bindings.Add(Profile,MoveTemp(D));continue;
+                }
+                O=nullptr;D=FChampionArtDefinition();Height=0;
                 if(!Row->TryGetObject(O)||!(*O)->TryGetStringField(TEXT("profileId"),Profile)||!(*O)->TryGetStringField(TEXT("status"),Status)||Status!=TEXT("custom_ready")||
                    !(*O)->TryGetStringField(TEXT("motion"),D.Motion)||D.Motion!=TEXT("monster_native")||!(*O)->TryGetStringField(TEXT("mesh"),D.MeshPath)||
                    !(*O)->TryGetNumberField(TEXT("heightCm"),Height)||Height<50||Height>400||!(*O)->TryGetObjectField(TEXT("animations"),Animations)||
@@ -390,8 +410,9 @@ void UCireChampionArt::CaptureFallback(ACireHero& Hero)
 void UCireChampionArt::RestoreFallback(ACireHero& Hero)
 {
     if (!bFallbackCaptured || !FallbackMesh) return;
-    if(!IsApplied() && Hero.GetMesh()->GetSkeletalMeshAsset()==FallbackMesh)return;
+    if(!IsApplied() && Hero.GetMesh()->GetSkeletalMeshAsset()==FallbackMesh && BodyParts.IsEmpty())return;
     if(Creature)Creature->Clear();
+    ClearBodyParts(); // paladin-hq
     auto* Mesh = Hero.GetMesh();
     UMaterialInterface* Overlay = Mesh->GetOverlayMaterial();
     Mesh->SetAnimInstanceClass(nullptr);
@@ -443,7 +464,22 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
         Hero.GetMesh()->SetAnimInstanceClass(nullptr);Hero.GetMesh()->SetSkeletalMesh(nullptr);
         UE_LOG(LogCireChampionArt,Error,TEXT("Creature art unavailable for %s; humanoid fallback suppressed."),*Hero.ChampionProfileId);return false;
     }
-    const auto& Definition = Profile?*Profile:Definitions[Archetype];
+    // paladin-hq: a Fab humanoid body that fails to apply falls back to the committed binding (or the archetype art).
+    if (Profile && Profile->Motion == TEXT("humanoid"))
+    {
+        if (ApplyHumanoid(Hero, Archetype, *Profile)) return true;
+        UE_LOG(LogCireChampionArt, Warning, TEXT("%s: Fab humanoid body failed (%s); using the committed art."), *Hero.ChampionProfileId, *Profile->MeshPath);
+        ClearBodyParts();
+        const auto* Base = BaseProfileArt(Hero.ChampionProfileId);
+        return ApplyHumanoid(Hero, Archetype, Base ? *Base : Definitions[Archetype]);
+    }
+    return ApplyHumanoid(Hero, Archetype, Profile ? *Profile : Definitions[Archetype]);
+}
+
+bool UCireChampionArt::ApplyHumanoid(ACireHero& Hero, int32 Archetype, const FChampionArtDefinition& Definition)
+{
+    const FChampionArtDefinition* Profile = Definition.Raw.IsValid() ? &Definition : nullptr;
+    const bool bFabHumanoid = Definition.Motion == TEXT("humanoid");
     auto* Body = LoadObject<USkeletalMesh>(nullptr, *Definition.MeshPath);
     auto* Blend = LoadObject<UBlendSpace>(nullptr, *Definition.LocomotionPath);
     // fab-integration: locomotion retargeted from the Fab packs (true strafe/backpedal) when installed for this body.
@@ -456,8 +492,16 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
     const FBoxSphereBounds Bounds = Body->GetImportedBounds();
     const double Height = Bounds.BoxExtent.Z * 2.0;
     if (!FMath::IsFinite(Height) || Height < 20.0 || Height > 1000.0) return false;
-    const float Scale = Definition.HeightCm / static_cast<float>(Height);
-    const double Bottom = Bounds.Origin.Z - Bounds.BoxExtent.Z;
+    float Scale = Definition.HeightCm / static_cast<float>(Height);
+    double Bottom = Bounds.Origin.Z - Bounds.BoxExtent.Z;
+    // paladin-hq: a modular Fab body is authored in real centimetres: its leader's bounds miss the head and helmet
+    // parts, so the row gives the mesh scale and the sole height explicitly.
+    if (bFabHumanoid)
+    {
+        double RowScale = 1, Floor = Bottom;
+        if (Definition.Raw->TryGetNumberField(TEXT("meshScale"), RowScale) && FMath::IsFinite(RowScale) && RowScale > .2 && RowScale < 5) Scale = static_cast<float>(RowScale);
+        if (Definition.Raw->TryGetNumberField(TEXT("floorZ"), Floor) && FMath::IsFinite(Floor) && FMath::Abs(Floor) < 50) Bottom = Floor;
+    }
     if (!FMath::IsFinite(Bottom)) return false;
     float FacingYaw = 0.f;
     if (!GetFacingYaw(*Body, FacingYaw))
@@ -485,8 +529,15 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
         Combat->RelaxArms = bRelax ? 1.f : 0.f;
     }
     Mesh->SetOverlayMaterial(Overlay);
+    // paladin-hq: leader-posed parts (head, helmet, armour pieces) and the per-champion material identity.
+    if (bFabHumanoid && !ApplyFabBody(Hero, Definition.Raw))
+    {
+        ClearBodyParts();
+        RestoreFallback(Hero);
+        return false;
+    }
     Locomotion = Blend;
-    AttackAnimation = LoadObject<UAnimSequence>(nullptr, *Definition.AttackPath);
+    AttackAnimation = Definition.AttackPath.IsEmpty() ? nullptr : LoadObject<UAnimSequence>(nullptr, *Definition.AttackPath);
     if (AttackAnimation && AttackAnimation->GetSkeleton() != Body->GetSkeleton()) AttackAnimation = nullptr;
     LastAttackSerial = Hero.AttackSerial;
     if (!Weapons)
@@ -538,6 +589,9 @@ void UCireChampionArt::UpdateVisuals(ACireHero& Hero, float DeltaSeconds)
     if(IsApplied() && IsCreatureProfile(Hero.ChampionProfileId))
     {if(Creature)Creature->Update(Hero,DeltaSeconds);return;}
     if (!IsApplied() || !Locomotion) return;
+    // paladin-hq: leader-posed parts share the leader's selection/rim overlay.
+    for (USkeletalMeshComponent* Part : BodyParts)
+        if (Part && Part->GetOverlayMaterial() != Hero.GetMesh()->GetOverlayMaterial()) Part->SetOverlayMaterial(Hero.GetMesh()->GetOverlayMaterial());
     auto* SingleNode = Hero.GetMesh()->GetSingleNodeInstance();
     if (!SingleNode || SingleNode->GetAnimationAsset() != Locomotion)
     {
@@ -639,4 +693,99 @@ bool UCireChampionArt::TintBody(USkeletalMeshComponent* Mesh,UObject* Outer,FLin
         ++Tinted;
     }
     return Tinted>0;
+}
+
+// ------------------------------------------------------------------------------------ paladin-hq
+namespace
+{
+bool ReadColor4(const TSharedPtr<FJsonValue>& V, FLinearColor& Out)
+{
+    const TArray<TSharedPtr<FJsonValue>>* A = nullptr;
+    if (!V.IsValid() || !V->TryGetArray(A) || A->Num() < 3 || A->Num() > 4) return false;
+    double C[4] = {0, 0, 0, 1};
+    for (int32 I = 0; I < A->Num(); ++I) if (!(*A)[I]->TryGetNumber(C[I]) || !FMath::IsFinite(C[I]) || C[I] < -1 || C[I] > 16) return false;
+    Out = FLinearColor(C[0], C[1], C[2], C[3]); return true;
+}
+UMaterialInterface* LoadMaterialQuiet(const FString& Path)
+{
+    const FString Package = FPackageName::ObjectPathToPackageName(Path);
+    if (!Path.StartsWith(TEXT("/Game/")) || !FPackageName::IsValidLongPackageName(Package) || !FPackageName::DoesPackageExist(Package)) return nullptr;
+    return LoadObject<UMaterialInterface>(nullptr, *Path, nullptr, LOAD_Quiet | LOAD_NoWarn);
+}
+}
+
+int32 UCireChampionArt::ApplyMaterialSpec(UMeshComponent* Mesh, const TSharedPtr<FJsonObject>& Spec, UObject* Outer)
+{
+    if (!Mesh || !Spec.IsValid() || !Outer) return 0;
+    int32 Changed = 0;
+    for (const auto& Pair : Spec->Values)
+    {
+        const FString Key(Pair.Key.ToView());
+        int32 Slot = Mesh->GetMaterialIndex(FName(*Key));
+        if (Slot == INDEX_NONE && Key.IsNumeric()) Slot = FCString::Atoi(*Key);
+        if (Slot < 0 || Slot >= Mesh->GetNumMaterials()) { UE_LOG(LogCireChampionArt, Warning, TEXT("Material slot %s not on %s"), *Key, *Mesh->GetName()); continue; }
+        FString BasePath; const TSharedPtr<FJsonObject>* Row = nullptr;
+        if (Pair.Value->TryGetString(BasePath)) { if (UMaterialInterface* M = LoadMaterialQuiet(BasePath)) { Mesh->SetMaterial(Slot, M); ++Changed; } continue; }
+        if (!Pair.Value->TryGetObject(Row)) continue;
+        UMaterialInterface* Base = Mesh->GetMaterial(Slot);
+        if ((*Row)->TryGetStringField(TEXT("base"), BasePath)) if (UMaterialInterface* M = LoadMaterialQuiet(BasePath)) Base = M;
+        if (!Base) continue;
+        const TSharedPtr<FJsonObject>* Vectors = nullptr; const TSharedPtr<FJsonObject>* Scalars = nullptr;
+        const bool bParams = (*Row)->TryGetObjectField(TEXT("vectors"), Vectors) | (*Row)->TryGetObjectField(TEXT("scalars"), Scalars);
+        if (!bParams) { Mesh->SetMaterial(Slot, Base); ++Changed; continue; }
+        UMaterialInstanceDynamic* MID = UMaterialInstanceDynamic::Create(Base, Outer);
+        if (!MID) continue;
+        if (Vectors) for (const auto& V : (*Vectors)->Values) { FLinearColor C; if (ReadColor4(V.Value, C)) MID->SetVectorParameterValue(FName(V.Key.ToView()), C); }
+        if (Scalars) for (const auto& V : (*Scalars)->Values) { double X = 0; if (V.Value->TryGetNumber(X) && FMath::IsFinite(X)) MID->SetScalarParameterValue(FName(V.Key.ToView()), static_cast<float>(X)); }
+        Mesh->SetMaterial(Slot, MID); ++Changed;
+    }
+    return Changed;
+}
+
+void UCireChampionArt::ClearBodyParts()
+{
+    for (USkeletalMeshComponent* Part : BodyParts) if (Part) Part->DestroyComponent();
+    BodyParts.Reset();
+}
+
+bool UCireChampionArt::ApplyFabBody(ACireHero& Hero, const TSharedPtr<FJsonObject>& Raw)
+{
+    ClearBodyParts();
+    USkeletalMeshComponent* Leader = Hero.GetMesh();
+    if (!Leader || !Raw.IsValid()) return false;
+    const TSharedPtr<FJsonObject>* Materials = nullptr;
+    if (Raw->TryGetObjectField(TEXT("materials"), Materials)) ApplyMaterialSpec(Leader, *Materials, &Hero);
+    const TArray<TSharedPtr<FJsonValue>>* Parts = nullptr;
+    if (!Raw->TryGetArrayField(TEXT("parts"), Parts)) return true;
+    for (const auto& Value : *Parts)
+    {
+        const TSharedPtr<FJsonObject>* Row = nullptr; FString Path;
+        if (!Value->TryGetObject(Row) || !(*Row)->TryGetStringField(TEXT("mesh"), Path)) return false;
+        USkeletalMesh* Asset = LoadObject<USkeletalMesh>(nullptr, *Path, nullptr, LOAD_Quiet | LOAD_NoWarn);
+        if (!Asset) { UE_LOG(LogCireChampionArt, Warning, TEXT("Fab body part missing: %s"), *Path); return false; }
+        auto* Part = NewObject<USkeletalMeshComponent>(&Hero, NAME_None, RF_Transient);
+        Hero.AddInstanceComponent(Part);
+        Part->SetupAttachment(Leader);
+        Part->SetSkeletalMesh(Asset);
+        Part->SetCollisionEnabled(ECollisionEnabled::NoCollision); Part->SetGenerateOverlapEvents(false);
+        Part->SetCanEverAffectNavigation(false); Part->SetCastShadow(true);
+        Part->bUseBoundsFromLeaderPoseComponent = true;
+        Part->ComponentTags.AddUnique(TEXT("CireBodyPart"));
+        Part->RegisterComponent();
+        Part->SetLeaderPoseComponent(Leader);
+        if ((*Row)->TryGetObjectField(TEXT("materials"), Materials)) ApplyMaterialSpec(Part, *Materials, &Hero);
+        Part->SetOverlayMaterial(Leader->GetOverlayMaterial());
+        Part->SetVisibility(Leader->IsVisible());
+        BodyParts.Add(Part);
+    }
+    return true;
+}
+
+bool UCireChampionArt::FabHumanoidBody(const FString& ProfileId, FString& OutMesh, float& OutHeightCm, float& OutScale)
+{
+    const auto* Fab = ProfileId.StartsWith(TEXT("pet:")) ? nullptr : FabProfileArt(ProfileId);
+    if (!Fab || Fab->Motion != TEXT("humanoid")) return false;
+    double Scale = 1; Fab->Raw->TryGetNumberField(TEXT("meshScale"), Scale);
+    OutMesh = Fab->MeshPath; OutHeightCm = Fab->HeightCm; OutScale = static_cast<float>(Scale);
+    return true;
 }
