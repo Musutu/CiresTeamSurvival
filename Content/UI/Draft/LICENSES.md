@@ -3,8 +3,9 @@
 ## Backgrounds/T_DraftBg_*.uasset (champion-select scenes)
 
 Generated for Eric via ChatGPT (OpenAI), 2026-09-25, using Eric's own champion-select
-target image as the style reference. One scene per champion family; variants of one body
-share a scene (ether_golem, paladin, troll_berserker). Source PNGs (1672x941):
+target image as the style reference. One scene per champion family; since champ-select-hq every
+variant has its own scene too (ether_golem is the Granite golem's, paladin the Righteous paladin's,
+troll_berserker the melee berserker's). Source PNGs (1672x941):
 `Art/DraftBackgrounds/<id>.png`, imported by `Tools/BuildDraftSelectContent.py`.
 
 | id | scene |
@@ -32,6 +33,13 @@ share a scene (ether_golem, paladin, troll_berserker). Source PNGs (1672x941):
 | huntress | moonlit forest ridge with sabercat tracks in the frost (new champions, art-2d) |
 | aetheri | Aetheri workshop plaza of crystal spires and warp rings (Aetheri Artificer) |
 | aetheri_warden | Aetheri sanctuary terrace with warding pylons and aurora |
+| ether_golem_support | sunken moss-grown golem ruin with glowing oath-runes, waterfall and healing spring (Verdant) |
+| ether_golem_bruiser | breached fortress wall burning with green fel-fire, broken portcullis and siege chains (Felfire) |
+| paladin_holy | dawn-lit healers' sanctuary in a white-stone abbey with censers and a glowing relic (Holy) |
+| troll_berserker_ranged | troll hunting gorge under a blood-red moon: rope bridge, axe-studded totems, throwing targets (Thrown) |
+
+The four variant scenes above were **generated for Eric via ChatGPT (OpenAI), 2026-09-25** (champ-select-hq),
+1672x941, prompted in the same painterly dark-fantasy splash style with an open centre foreground for the champion.
 
 The five new-champion scenes (gunblade, witch_slayer, huntress, aetheri, aetheri_warden) were
 **generated for Eric via ChatGPT (OpenAI), 2026-09-25**, using the ranger scene above as the style

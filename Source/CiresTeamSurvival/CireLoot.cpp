@@ -2,6 +2,7 @@
 #include "CireWaves.h" // wave-director economy hooks (UnitFlags)
 // progression-shop: see CireLoot.h, Docs/Progression.md.
 #include "CireGame.h"
+#include "CireAudio.h" // fab-coverage: chest land / open cues
 #include "CireItems.h"
 #include "CireLanePath.h"
 #include "CireNPCArchetypes.h"
@@ -961,10 +962,13 @@ void ACireLootDrop::Tick(float DeltaSeconds)
             Body->SetRelativeLocation(FVector(0, 0, 23 + Drop)); BandA->SetRelativeLocation(FVector(-24, 0, 28 + Drop));
             BandB->SetRelativeLocation(FVector(24, 0, 28 + Drop)); Lock->SetRelativeLocation(FVector(46, 0, 36 + Drop));
             Hinge->SetRelativeLocation(FVector(-45, 0, 46 + Drop));
+            // fab-coverage: the landing thump, once, only for viewers who can see this chest.
+            if (!bLandSoundPlayed && Age >= .45f) { bLandSoundPlayed = true; if (!IsHidden() && Age < 2.f) CireAudio::PlayCue(this, TEXT("loot_chest_land"), GetActorLocation()); }
         }
         else
         {
             if (OpenedAt < 0) OpenedAt = Now;
+            if (!bOpenSoundPlayed) { bOpenSoundPlayed = true; if (!IsHidden()) CireAudio::PlayCue(this, TEXT("loot_chest_open"), GetActorLocation()); } // fab-coverage
             const float T = FMath::Clamp((Now - OpenedAt) / .45f, 0.f, 1.f);
             Hinge->SetRelativeRotation(FRotator(-72.f * FMath::InterpEaseOut(0.f, 1.f, T, 2.f), 0, 0));
             const float Fade = FMath::Clamp(1.f - (Now - OpenedAt - .4f) / 2.5f, 0.f, 1.f);

@@ -251,6 +251,8 @@ public:
     float ItemCDRApplied = 0;
     int32 BasicHitCounter = 0;
     float LowHealthReadyAt = 0;
+    Cires::Items::ChargeState HitGuardState;   // rules-conformance: HitGuard charges (server)
+    int32 HitGuardSpent = 0;                   // hits reduced by HitGuard (tests / diagnostics)
     float BarrierUntil = 0, BarrierReduction = 0;
     float HasteUntil = 0, HasteAmount = 0;
     TArray<FCireRestore> Restores;

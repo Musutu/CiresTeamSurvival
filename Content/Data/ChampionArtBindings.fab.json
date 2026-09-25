@@ -32,7 +32,8 @@
      "bear_roar": "/Game/ROG_Creatures/Bear/Animations/A_Bear_aggressive_1.A_Bear_aggressive_1",
      "iron_guard": "/Game/ROG_Creatures/Bear/Animations/A_Bear_aggressive_2.A_Bear_aggressive_2",
      "bear_hibernate": "/Game/ROG_Creatures/Bear/Animations/A_Bear_aggressive_2.A_Bear_aggressive_2",
-     "spell": "/Game/ROG_Creatures/Bear/Animations/A_Bear_aggressive_2.A_Bear_aggressive_2"
+     "spell": "/Game/ROG_Creatures/Bear/Animations/A_Bear_aggressive_2.A_Bear_aggressive_2",
+     "bear_colossus": "/Game/ROG_Creatures/Bear/Animations/A_Bear_aggressive_1.A_Bear_aggressive_1"
     },
     "contact": {
      "attack": 0.25,
@@ -45,7 +46,8 @@
      "bear_roar": 0.4,
      "iron_guard": 0.3,
      "bear_hibernate": 0.3,
-     "spell": 0.3
+     "spell": 0.3,
+     "bear_colossus": 0.4
     }
    },
    "parts": [],
@@ -84,7 +86,8 @@
      "sanctuary": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackBow.ANIM_Centaur_LegAttackBow",
      "centaur_trailblaze": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackBow.ANIM_Centaur_LegAttackBow",
      "centaur_herd_call": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackBow.ANIM_Centaur_LegAttackBow",
-     "shout": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackBow.ANIM_Centaur_LegAttackBow"
+     "shout": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackBow.ANIM_Centaur_LegAttackBow",
+     "centaur_spring_march": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackAiming.ANIM_Centaur_LegAttackAiming"
     },
     "contact": {
      "attack": 0.271,
@@ -96,7 +99,8 @@
      "sanctuary": 0.767,
      "centaur_trailblaze": 0.767,
      "centaur_herd_call": 0.767,
-     "shout": 0.767
+     "shout": 0.767,
+     "centaur_spring_march": 0.767
     }
    },
    "parts": [

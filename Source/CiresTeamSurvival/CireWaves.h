@@ -93,6 +93,9 @@ struct CIRESTEAMSURVIVAL_API FCireWaveConfig
     /** Stuck detection: a wave unit that makes no progress for this long is nudged along its route. */
     float StuckSeconds = 5.f;
     TArray<FCireWaveDef> Waves;
+    /** rules-conformance (Waves.json "waveOrder"): "campaign" = Waves[] is played straight through the match (cycle 2
+     *  continues at Waves[WavesPerCycle]) and wraps; "cycle" (default) = every cycle replays Waves[] from the start. */
+    bool bCampaignOrder = false;
     /** monster-races: when monsters get skills, and which race each cycle fields. */
     FCireSkillProgression Skills;
     FCireCampaign Campaign;
@@ -179,9 +182,12 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API void Forget(const ACireMonster* Monster);
     // ---- monster-races ----
     /** Race fielded by a wave row: the wave's own race, else the campaign rotation for the cycle (0-based). */
-    CIRESTEAMSURVIVAL_API FName RaceFor(const FCireWaveConfig& Config, const FCireWaveDef& Wave, int32 Cycle, int32 Row = 0);
+    CIRESTEAMSURVIVAL_API FName RaceFor(const FCireWaveConfig& Config, const FCireWaveDef& Wave, int32 Cycle, int32 Row = 0, int32 WaveInCycle = 0);
+    /** rules-conformance: index into Waves[] (campaign order) and into the race rotation (per wave or per cycle). */
+    CIRESTEAMSURVIVAL_API int32 WaveIndex(const FCireWaveConfig& Config, int32 WaveInCycle, int32 Cycle);
+    CIRESTEAMSURVIVAL_API int32 RotationIndex(const FCireWaveConfig& Config, int32 WaveInCycle, int32 Cycle);
     /** Human label of a wave's race ("The Drowned Deep", or "Hollow + Blightwood"). */
-    CIRESTEAMSURVIVAL_API FString RaceLabel(const FCireWaveConfig& Config, const FCireWaveDef& Wave, int32 Cycle);
+    CIRESTEAMSURVIVAL_API FString RaceLabel(const FCireWaveConfig& Config, const FCireWaveDef& Wave, int32 Cycle, int32 WaveInCycle = 0);
     /** A summoned unit joins its summoner's wave bookkeeping (clear rule, failsafe, size). */
     CIRESTEAMSURVIVAL_API void AdoptSummon(ACireGameMode* Mode, ACireMonster* Summon, ACireMonster* Parent);
     /** F8 editor: next race of a wave (campaign rotation, then every race in Races.json order). */

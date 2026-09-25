@@ -41,10 +41,11 @@ CHAMPIONS = {
         # Gravewood Maul / Rootbreaker Charge: the heavy two-paw strike; roars and guards: the aggressive stand.
         casts=dict(bear_maul="A_Bear_attack_01", bear_charge="A_Bear_attack_02", ability="A_Bear_attack_01",
                    shout="A_Bear_aggressive_1", war_cry="A_Bear_aggressive_1", bear_roar="A_Bear_aggressive_1",
-                   iron_guard="A_Bear_aggressive_2", bear_hibernate="A_Bear_aggressive_2", spell="A_Bear_aggressive_2"),
+                   iron_guard="A_Bear_aggressive_2", bear_hibernate="A_Bear_aggressive_2", spell="A_Bear_aggressive_2",
+                   bear_colossus="A_Bear_aggressive_1"),  # fab-coverage: Elder of the Deepwood roars as it grows
         contact=dict(attack=("paws", "reach"), attackAlt=("paws", "reach"), bear_maul=("paws", "reach"), bear_charge=("paws", "reach"),
                      ability=("paws", "reach"), shout=("head", "speed"), war_cry=("head", "speed"), bear_roar=("head", "speed"),
-                     iron_guard=("head", "speed"), bear_hibernate=("head", "speed"), spell=("head", "speed")),
+                     iron_guard=("head", "speed"), bear_hibernate=("head", "speed"), spell=("head", "speed"), bear_colossus=("head", "speed")),
         parts=[],
         # The brown coat: the feral_ursoth boss (same pack) keeps the mesh's default black one under its race tint.
         swap={R + "/Bear/Materials/MI_Bear_Body_Black_ORM": R + "/Bear/Materials/MI_Bear_Body_Brown_ORM",
@@ -60,11 +61,12 @@ CHAMPIONS = {
         casts=dict(spell="ANIM_Centaur_IdleNormalToIdleAiming", restoring_light="ANIM_Centaur_IdleNormalToIdleAiming",
                    purify="ANIM_Centaur_IdleNormalToIdleAiming", centaur_grove_javelin="ANIM_Centaur_ShootArrowToIdleAiming",
                    ability="ANIM_Centaur_LegAttackBow", sanctuary="ANIM_Centaur_LegAttackBow", centaur_trailblaze="ANIM_Centaur_LegAttackBow",
-                   centaur_herd_call="ANIM_Centaur_LegAttackBow", shout="ANIM_Centaur_LegAttackBow"),
+                   centaur_herd_call="ANIM_Centaur_LegAttackBow", shout="ANIM_Centaur_LegAttackBow",
+                   centaur_spring_march="ANIM_Centaur_LegAttackAiming"),  # fab-coverage: rears with the bow drawn
         contact=dict(attack=("hand_r", "speed"), centaur_grove_javelin=("hand_r", "speed"),
                      spell=("hand_l", "frac:.65"), restoring_light=("hand_l", "frac:.65"), purify=("hand_l", "frac:.65"),
                      ability=("front_hooves", "reach"), sanctuary=("front_hooves", "reach"), centaur_trailblaze=("front_hooves", "reach"),
-                     centaur_herd_call=("front_hooves", "reach"), shout=("front_hooves", "reach")),
+                     centaur_herd_call=("front_hooves", "reach"), shout=("front_hooves", "reach"), centaur_spring_march=("front_hooves", "reach")),
         parts=["SK_Body_Armor", "SK_Shoulder_Pads", "SK_Mane", "SK_Beard", "SK_Bow_Action"],
         # A different coat and hair than the wild_outrider monsters (same pack) so the champion reads apart.
         swap={QC + "/Materials/M_Centaur_Body_1": QC + "/Materials/M_Centaur_Body_3",

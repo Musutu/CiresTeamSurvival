@@ -153,9 +153,14 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     Check(FMath::IsNearlyEqual(Hero->AttackDamage(), BaseAD + OxPrimary), TEXT("primary attribute from items adds attack damage"));
     const float SwordPrimary = StatOf("rusted_longsword", CI::ItemStat::Primary);
     Check(Inv->Buy(N(TEXT("rusted_longsword")), Message) && FMath::IsNearlyEqual(Hero->AttackDamage(), BaseAD + OxPrimary + SwordPrimary), TEXT("adaptive primary stat applied"));
-    Check(Inv->Buy(N(TEXT("sandglass_charm")), Message) && FMath::IsNearlyEqual(Hero->CDR, StatOf("sandglass_charm", CI::ItemStat::CooldownReduction) / 100.f), TEXT("cooldown reduction applied"));
+    // rules-conformance: items grant only the primary stat and flat stats (no CDR, attack speed, crit or lifesteal).
+    const float CDRBefore = Hero->CDR;
+    Check(Inv->Buy(N(TEXT("sandglass_charm")), Message) && FMath::IsNearlyEqual(Hero->CDR, CDRBefore) && StatOf("sandglass_charm", CI::ItemStat::Mana) > 0 &&
+        FMath::IsNearlyEqual(static_cast<float>(Inv->Totals().Stats.Get(CI::ItemStat::Mana)), StatOf("sandglass_charm", CI::ItemStat::Mana)), TEXT("a hybrid component adds flat mana, never cooldown reduction"));
     Check(Inv->Buy(N(TEXT("boiled_jerkin")), Message) && FMath::IsNearlyEqual(static_cast<float>(Inv->Totals().Stats.Get(CI::ItemStat::Armor)), StatOf("boiled_jerkin", CI::ItemStat::Armor)), TEXT("flat armor applied"));
-    Check(FMath::IsNearlyEqual(AttackSpeedBonus(Hero), 0.f) && Inv->Buy(N(TEXT("bone_dagger")), Message) && FMath::IsNearlyEqual(AttackSpeedBonus(Hero), StatOf("bone_dagger", CI::ItemStat::AttackSpeed) / 100.f), TEXT("attack speed bonus applied"));
+    const float BeforeDagger = Hero->AttackDamage();
+    Check(FMath::IsNearlyEqual(AttackSpeedBonus(Hero), 0.f) && Inv->Buy(N(TEXT("bone_dagger")), Message) && FMath::IsNearlyEqual(AttackSpeedBonus(Hero), 0.f) &&
+        FMath::IsNearlyEqual(Hero->AttackDamage(), BeforeDagger + StatOf("bone_dagger", CI::ItemStat::Primary)), TEXT("the dagger adds primary stat, not attack speed"));
     // ---- slot limit: 6/6 full
     Check(Inv->ToRules().FreeEquipment() == 0 && !Inv->Buy(N(TEXT("hexweave_cloak")), Message) && Message.Contains(TEXT("full")), TEXT("six-slot limit"));
     // ---- recipe consumes owned components and charges only the recipe
@@ -165,7 +170,7 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     Gold = Hero->Gold;
     Check(Inv->Buy(N(TEXT("nightfall_reaver")), Message) && Hero->Gold == Gold - Recipe("nightfall_reaver") && Hero->GearRank == 1, TEXT("legendary built from owned epic + component"));
     Check(FMath::IsNearlyEqual(Hero->CriticalMultiplier, CireSkillTuning::Get().CritMultiplier + .25f, .001f), TEXT("unique passive raises crit multiplier"));
-    Check(FMath::IsNearlyEqual(Hero->CriticalChance, StatOf("nightfall_reaver", CI::ItemStat::CritChance) / 100.f + CireSkillTuning::Get().CritChance, .001f), TEXT("completed item adds critical chance"));
+    Check(StatOf("nightfall_reaver", CI::ItemStat::CritChance) == 0 && FMath::IsNearlyEqual(Hero->CriticalChance, CireSkillTuning::Get().CritChance, .001f), TEXT("items add no critical chance"));
     Check(!Inv->Buy(N(TEXT("nightfall_reaver")), Message) && Message.Contains(TEXT("unique")), TEXT("unique item cannot be bought twice"));
     // ---- sell + undo
     Gold = Hero->Gold;
@@ -210,14 +215,26 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     // ---- armor / ward mitigation and lifesteal
     for (auto& Cell : Inv->Equipment) Cell = FCireItemSlot();
     Inv->Equipment[0].Id = N(TEXT("gravewarden_bulwark"));
-    Inv->Equipment[1].Id = N(TEXT("sanguine_sabre"));
     Inv->Invalidate();
     const float BulwarkArmor = StatOf("gravewarden_bulwark", CI::ItemStat::Armor) * CireKits::DefenseMultiplier(Hero), /* scaling-kits: shield tanks -10% */ Block = StatOf("gravewarden_bulwark", CI::ItemStat::DamageBlock);
     Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Monster attack"), 100.f), 100.f * (1.f - BulwarkArmor / (BulwarkArmor + 100.f)) - Block, .01f), TEXT("armor mitigates basic attacks, then the block"));
     Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), 100.f - Block), TEXT("armor does not mitigate spells (the block does)"));
-    Hero->Health = 100;
-    OnDamageDealt(Hero, Target, 100.f, TEXT("sword strike"));
-    Check(FMath::IsNearlyEqual(Hero->Health, 100.f + StatOf("sanguine_sabre", CI::ItemStat::Lifesteal), .01f), TEXT("lifesteal heals from basic attacks"));
+    // rules-conformance: HitGuard ("reduce instances of incoming damage"), Sanguine Sabre's Blood Parry.
+    {
+        Inv->Equipment[0] = FCireItemSlot(); Inv->Equipment[1].Id = N(TEXT("sanguine_sabre")); Inv->Invalidate(); Inv->HitGuardState = CI::ChargeState();
+        const CI::ItemDef* Sabre = D.Catalog.Find("sanguine_sabre");
+        const float Parry = Sabre && !Sabre->Passives.empty() ? static_cast<float>(Sabre->Passives[0].Amount) : 0.f;
+        const int32 Charges = Sabre && !Sabre->Passives.empty() ? Sabre->Passives[0].Count : 0;
+        const int32 Spent = Inv->HitGuardSpent;
+        bool bGuarded = Parry > 0 && Charges == 2;
+        for (int32 Hit = 0; Hit < Charges; ++Hit) bGuarded &= FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), 100.f * (1.f - Parry / 100.f), .01f);
+        Check(bGuarded && Inv->HitGuardSpent == Spent + Charges, TEXT("hit guard reduces the next hits by its percent"));
+        Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), 100.f), TEXT("hit guard runs out of charges"));
+        Hero->Health = 100;
+        OnDamageDealt(Hero, Target, 100.f, TEXT("sword strike"));
+        Check(FMath::IsNearlyEqual(Hero->Health, 100.f), TEXT("items grant no lifesteal"));
+        Inv->Equipment[1] = FCireItemSlot(); Inv->Equipment[0].Id = N(TEXT("gravewarden_bulwark")); Inv->Invalidate();
+    }
     const float MonsterHealth = Target->Health;
     OnHeroDamaged(Hero, Target, TEXT("Monster attack"), 40.f);
     Check(Target->Health < MonsterHealth, TEXT("thorns reflect basic-attack damage"));

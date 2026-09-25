@@ -107,6 +107,114 @@
     "cc.polymorph.start": {
       "packVolume": 1.4
     },
+    "spell.physical.channel": {
+      "packVolume": 0.55,
+      "packPitch": [
+        0.9,
+        1.0
+      ]
+    },
+    "spell.earth.channel": {
+      "packVolume": 0.6,
+      "packPitch": [
+        0.7,
+        0.78
+      ]
+    },
+    "debuff.poisoned.loop": {
+      "packVolume": 0.5
+    },
+    "item.mana_restore.loop": {
+      "packVolume": 0.45,
+      "packPitch": [
+        1.1,
+        1.2
+      ]
+    },
+    "stance.siege_fury.loop": {
+      "packVolume": 0.5
+    },
+    "teleport_channel": {
+      "packVolume": 0.6
+    },
+    "buff.blessing.hit": {
+      "packVolume": 2.2
+    },
+    "buff.bastion_of_dawn.hit": {
+      "packVolume": 1.8
+    },
+    "loot_shine": {
+      "packVolume": 1.2
+    },
+    "buff.sanctuary.start": {
+      "packVolume": 0.8
+    },
+    "item.toll_of_the_grave.start": {
+      "packVolume": 0.8,
+      "packPitch": [
+        0.85,
+        0.92
+      ]
+    },
+    "combat.whiz": {
+      "packVolume": 0.6,
+      "packPitch": [
+        1.2,
+        1.35
+      ]
+    },
+    "aura_swing": {
+      "packVolume": 0.7,
+      "packPitch": [
+        1.05,
+        1.15
+      ]
+    },
+    "death.boss.body": {
+      "packVolume": 0.9,
+      "packPitch": [
+        0.8,
+        0.9
+      ]
+    },
+    "death.creature.body": {
+      "packVolume": 0.8,
+      "packPitch": [
+        0.85,
+        0.95
+      ]
+    },
+    "death.golem": {
+      "packPitch": [
+        0.7,
+        0.8
+      ]
+    },
+    "loot_chest_land": {
+      "packVolume": 0.8,
+      "packPitch": [
+        0.8,
+        0.9
+      ]
+    },
+    "coins_sell": {
+      "packPitch": [
+        0.88,
+        0.94
+      ]
+    },
+    "banner_custom": {
+      "packVolume": 0.8
+    },
+    "buff.blood_rage.hit": {
+      "packVolume": 0.6
+    },
+    "stance.blood_frenzy.hit": {
+      "packVolume": 0.6
+    },
+    "npc.ink.start": {
+      "packVolume": 0.7
+    },
     "weapon.mace.impact": {
       "packVolume": 1.7
     },
@@ -351,7 +459,12 @@
       "/Game/Combat_Sounds_-_Lite/Combat/wav/Generic_Hit_1_3"
     ],
     "weapon.axe.throw": [
-      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Whoosh_Metal_3_1"
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Whoosh_Metal_2_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Whoosh_Metal_2_2",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Whoosh_Metal_2_4",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Whoosh_Metal_3_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Whoosh_4_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Whoosh_4_2"
     ],
     "weapon.mace.swing": [
       "/Game/Combat_Sounds_-_Lite/Combat/wav/Whoosh_4_1",
@@ -453,7 +566,11 @@
     ],
     "weapon.bow.impact": [
       "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Arrow_Hit_1_1",
-      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Arrow_Hit_1_9"
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Arrow_Hit_1_9",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Stab_3_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Stab_3_2",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Stab_3_5",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Stab_3_7"
     ],
     "weapon.crossbow.draw": [
       "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Arrow_Handle_1_1",
@@ -469,7 +586,12 @@
     ],
     "weapon.crossbow.impact": [
       "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Arrow_Hit_1_1",
-      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Arrow_Hit_1_9"
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Arrow_Hit_1_9",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Stab_4_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Stab_4_4",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Generic_Hit_2_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Generic_Hit_2_4",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Generic_Hit_2_5"
     ],
     "impact.armor": [
       "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Armor_Foley_1_2",
@@ -1049,7 +1171,10 @@
       "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_1-2_wav"
     ],
     "debuff.expire": [
-      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_7_wav"
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_7_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_6-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_6-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_6-3_wav"
     ],
     "debuff.stunned.start": [
       "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-1_wav",
@@ -1095,10 +1220,16 @@
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Cute_Fantasy_UI/WAV_Fantasy_UI_Cute_Star_Bounce_02_mono"
     ],
     "cc.stun.end": [
-      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_7_wav"
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Wind/wav/Wind_Magic_Spell_6-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Wind/wav/Wind_Magic_Spell_1-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Wind/wav/Wind_Magic_Spell_1-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Wind/wav/Wind_Magic_Spell_1-3_wav"
     ],
     "cc.silence.end": [
-      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_7_wav"
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_7_wav",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Subtle_Buzz_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Subtle_Buzz_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Subtle_Buzz_03_mono"
     ],
     "ui_click": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Generic_Click_01_mono",
@@ -1199,10 +1330,13 @@
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Reward_Obtained_Small_02_mono"
     ],
     "loot_magic": [
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Item_Obtained_stereo"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Item_Obtained_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Reward_Obtained_01_stereo"
     ],
     "loot_rare": [
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Reward_Obtained_stereo"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Reward_Obtained_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Reward_Obtained_02_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Reward_Obtained_03_stereo"
     ],
     "loot_epic": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_Epic_01_stereo"
@@ -1237,6 +1371,488 @@
     "sting.death": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Stinger_Low_01_stereo",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Stinger_Low_02_stereo"
+    ],
+    "spell.physical.channel": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Wind_Loop_1_wav"
+    ],
+    "spell.earth.channel": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Wind_Loop_1_wav"
+    ],
+    "ability.wall": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Debris_1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Debris_2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Debris_3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Special_Hit_3-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Special_Hit_3-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Special_Hit_3-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Special_Hit_3-4_wav"
+    ],
+    "combat.whiz": [
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Whoosh_1_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Whoosh_1_2",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Whoosh_2_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Whoosh_2_2"
+    ],
+    "death.player": [
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Body_Fall_1_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Body_Fall_1_3"
+    ],
+    "death.golem": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Debris_1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Debris_2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Debris_3_wav",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Body_Fall_2_4",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Body_Fall_2_5"
+    ],
+    "death.ethereal": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Wind/wav/Wind_Magic_Spell_9-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Wind/wav/Wind_Magic_Spell_9-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_9-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_9-2_wav"
+    ],
+    "death.creature.body": [
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Body_Fall_2_4",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Body_Fall_2_5",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Bone_2_7",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Bone_2_9"
+    ],
+    "death.boss.body": [
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Body_Fall_1_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Body_Fall_1_3",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Body_Fall_2_4",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Body_Fall_2_5",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Hit_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Hit_02_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Hit_03_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Hit_04_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Hit_05_stereo"
+    ],
+    "buff.iron_guard.start": [
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_D01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_D02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_D03",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_E01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_E02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_E03",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_F01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_F02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_F03"
+    ],
+    "buff.iron_guard.end": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-5_wav"
+    ],
+    "buff.guarded.start": [
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Metal_2_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Metal_2_2",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Metal_2_3",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Metal_2_4",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Metal_2_5",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_4-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_4-2_wav"
+    ],
+    "buff.guardians_oath.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_5-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_5-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_5-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_5-4_wav"
+    ],
+    "buff.mass_aegis.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_5-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_5-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_5-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_5-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_7-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_7-2_wav"
+    ],
+    "buff.mass_aegis.end": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-5_wav"
+    ],
+    "item.oathshield.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_6-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_6-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_6-3_wav"
+    ],
+    "item.oathshield.end": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_7-1_wav"
+    ],
+    "stance.shield_wall.start": [
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_P01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_P02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_P03",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_Q01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_Q02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_Q03",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Metal_2_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Metal_2_2",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Metal_2_3",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Metal_2_4",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Metal_2_5"
+    ],
+    "stance.shield_wall.end": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_7-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Negative_Magic_Effect_2-5_wav"
+    ],
+    "buff.challenge_of_iron.start": [
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_1_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_1_11",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_1_12",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_1_14",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_1_2",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_1_3"
+    ],
+    "buff.challenge_of_iron.hit": [
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_2_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_2_4",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_2_7",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_2_8"
+    ],
+    "buff.rallied.hit": [
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Draw_Weapon_Metal_2_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Draw_Weapon_Metal_2_3",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Draw_Weapon_Metal_2_6"
+    ],
+    "buff.war_cry.hit": [
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_J01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_J02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_J03",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_K01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_K02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_K03",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_L01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_L02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_L03"
+    ],
+    "debuff.provoked.start": [
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_M01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_M02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_M03",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_N01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_N02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_N03",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_O01",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_O02",
+      "/Game/ShieldBlocksDeflects/wav/SH_Block_Deflect_O03"
+    ],
+    "passive.battle_rhythm.hit": [
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_2_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_2_4",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_2_7",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Metal_Weapon_Clash_2_8"
+    ],
+    "buff.bastion_of_dawn.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_1-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_1-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_1-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_7_wav"
+    ],
+    "buff.bastion_of_dawn.hit": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Hit_Subtle_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Hit_Subtle_02_mono"
+    ],
+    "buff.blessing.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_2-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_2-2_wav"
+    ],
+    "buff.blessing.hit": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Twinkle_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Twinkle_02_mono"
+    ],
+    "buff.sanctuary.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_7_wav",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Notification_Bell_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Notification_Bell_02_mono"
+    ],
+    "buff.regeneration.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_8-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_8-5_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_8-6_wav"
+    ],
+    "buff.wellspring.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_1-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_1-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_1-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_1-5_wav"
+    ],
+    "buff.blood_rage.hit": [
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood___Gore_1_2",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood___Gore_2_4",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood___Gore_2_5",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood_Drop_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood_Drop_3"
+    ],
+    "stance.blood_frenzy.hit": [
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood___Gore_1_2",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood___Gore_2_4",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood___Gore_2_5",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood_Drop_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood_Drop_3"
+    ],
+    "buff.frost_weapon.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Freeze_1-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Freeze_1-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Freeze_1-3_wav"
+    ],
+    "buff.frost_weapon.hit": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_5-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_5-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_5-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_5-5_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_5-6_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_5-7_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_5-8_wav"
+    ],
+    "debuff.frost_bind.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_2-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_2-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_2-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Freeze_1-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Freeze_1-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Freeze_1-3_wav"
+    ],
+    "debuff.frost_bind.end": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_6-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_6-3_wav"
+    ],
+    "cc.slow.end": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_7-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_6-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Frost/wav/Frost_Magic_Spell_6-3_wav"
+    ],
+    "cc.root.end": [
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Wood_1_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Wood_1_2",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Wood_1_3",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_4-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_4-5_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_4-6_wav"
+    ],
+    "debuff.poisoned.loop": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Nature_Loop_2-3_wav"
+    ],
+    "debuff.shield_slam.start": [
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Generic_Hit_3_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Generic_Hit_3_2",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Special_Hit_1-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Special_Hit_1-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Special_Hit_1-3_wav"
+    ],
+    "item.borrowed_time.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_1-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_1-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_1-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_1-4_wav"
+    ],
+    "item.borrowed_time.end": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Subtle_Delay_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Subtle_Delay_02_mono"
+    ],
+    "item.mana_restore.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_2-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_2-2_wav"
+    ],
+    "item.mana_restore.loop": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Water_Loop_1_wav"
+    ],
+    "item.scatter.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Wind/wav/Wind_Magic_Spell_2-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Wind/wav/Wind_Magic_Spell_2-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Wind/wav/Wind_Magic_Spell_2-3_wav"
+    ],
+    "item.toll_of_the_grave.start": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Bell_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Bell_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Bell_03_mono"
+    ],
+    "stance.enraged.hit": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-5_wav"
+    ],
+    "stance.siege_fury.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Fire/wav/Fire_Magic_Spell_7-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Fire/wav/Fire_Magic_Spell_7-2_wav"
+    ],
+    "stance.siege_fury.hit": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-5_wav"
+    ],
+    "stance.siege_fury.loop": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Loop_1_wav"
+    ],
+    "aura_swing": [
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Whoosh_Metal_2_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Whoosh_Metal_2_2",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Whoosh_Metal_2_4"
+    ],
+    "npc.aether.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_5-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_5-2_wav"
+    ],
+    "npc.aether.cast": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_8-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_8-2_wav"
+    ],
+    "npc.cleave.start": [
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Draw_Weapon_Metal_1_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Draw_Weapon_Metal_1_2",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Draw_Weapon_Metal_1_3"
+    ],
+    "npc.fire.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Fire_Burn_1-5_wav"
+    ],
+    "npc.fire.cast": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Fire/wav/Fire_Magic_Spell_8-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Fire/wav/Fire_Magic_Spell_8-2_wav"
+    ],
+    "npc.grove.cast": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_7-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_7-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_7-3_wav"
+    ],
+    "npc.heal.cast": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_8-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_8-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_8-3_wav"
+    ],
+    "npc.ink.start": [
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood_Drop_1",
+      "/Game/Combat_Sounds_-_Lite/Combat/wav/Blood_Drop_3",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_9-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_9-2_wav"
+    ],
+    "npc.mind.cast": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Dark/wav/Dark_Magic_Spell_6-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Dark/wav/Dark_Magic_Spell_6-2_wav"
+    ],
+    "npc.profane.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Dark/wav/Dark_Magic_Spell_8-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Dark/wav/Dark_Magic_Spell_8-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Dark/wav/Dark_Magic_Spell_8-3_wav"
+    ],
+    "npc.rune.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_3-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_3-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_3-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_3-4_wav"
+    ],
+    "npc.spores.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_5-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_5-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_5-3_wav"
+    ],
+    "npc.thorns.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_4-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_4-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Nature/wav/Nature_Magic_Spell_4-3_wav"
+    ],
+    "npc.tide.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_5-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_5-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_5-3_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_5-4_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_5-5_wav"
+    ],
+    "npc.tide.cast": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_7-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Water/wav/Water_Magic_Spell_7-2_wav"
+    ],
+    "npc.void.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Dark/wav/Dark_Magic_Spell_4-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Dark/wav/Dark_Magic_Spell_4-2_wav"
+    ],
+    "npc.void.cast": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Dark/wav/Dark_Magic_Spell_9-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Dark/wav/Dark_Magic_Spell_9-2_wav"
+    ],
+    "npc.ward.start": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_4-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_4-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_4-3_wav"
+    ],
+    "loot_shine": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Twinkle_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Twinkle_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Hit_Subtle_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Star_Hit_Subtle_02_mono"
+    ],
+    "loot_choir": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Success_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Success_02_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Success_03_stereo"
+    ],
+    "loot_chest_land": [
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Wood_2_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Shield_Wood_2_2",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Wood_Weapon_Handle_1_1",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Wood_Weapon_Handle_1_3",
+      "/Game/Combat_Sounds_-_Lite/Weapons_Shield/wav/Wood_Weapon_Handle_1_7"
+    ],
+    "loot_chest_open": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Inventory_Open_Bag_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Inventory_Whoosh_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Inventory_Whoosh_02_stereo"
+    ],
+    "coins_buy": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Purchase_v1_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Purchase_v2_mono"
+    ],
+    "coins_sell": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Purchase_v1_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Purchase_v2_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Swap_High_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Swap_High_02_mono"
+    ],
+    "level_up": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_New_Skill_Unlocked_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Skill_Upgrade_stereo"
+    ],
+    "banner_prep": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Notification_Bell_03_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Notification_Bell_04_mono"
+    ],
+    "banner_cleared": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Impact_Bell_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Impact_Bell_02_mono"
+    ],
+    "banner_recovery": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Notification_Bell_Long_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Notification_Bell_Long_02_mono"
+    ],
+    "banner_custom": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_03_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_04_mono"
+    ],
+    "teleport_channel": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Arcane_Loop_1_wav"
+    ],
+    "teleport_arrive": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_6-1_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_6-2_wav",
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_6-3_wav",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Whoosh_Enter_stereo"
     ]
   }
 }

@@ -603,11 +603,12 @@ void ACireSpellVisual::UpdateFabVFX()
     }
     bFabTried=true;
     const ECireSchool School=Shape.bHeal?ECireSchool::Life:static_cast<ECireSchool>(FMath::Clamp(Family,0,static_cast<int32>(ECireSchool::Count)-1));
-    const CireFabVFX::FEntry* Entry=CireFabVFX::Find(School,FabRole);
-    UNiagaraSystem* System=CireFabVFX::Resolve(Entry);
+    // fab-coverage: the ability's own signature system first, then the school set.
+    const CireFabVFX::FEntry* Entry=CireFabVFX::FindFor(Skill,School,FabRole);
+    UFXSystemAsset* System=CireFabVFX::Resolve(Entry);
     if(!System){UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_NONE skill=%s role=%s"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole));return;} // pack not installed: the procedural presentation carries the cue alone
     const float Scale=Entry->Scale*Extra*(bFollowArea?1.f:Size);
-    UNiagaraComponent* C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)
+    UFXSystemComponent* C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)
         :CireFabVFX::SpawnAt(GetWorld(),System,GetActorLocation(),GetActorRotation(),Scale);
     CireFabVFX::ApplyTint(C,Entry->Tint);
     FabFX=C;

@@ -332,10 +332,11 @@ void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
 }
 void ACireGameMode::MonsterKilled(ACireMonster* M,ACireHero* Killer) {
     if(!IsValid(M)||!IsValid(Killer)||Killer->TeamId!=M->Lane) return;
-    const float Reward=M->PackId<0?CireWaveDirector::RewardMultiplier(M):1.f; // wave-director: per-wave reward multiplier
-    // progression-shop: gold is the playtest-2 kill bounty (CireLoot::AwardKillGold); XP unchanged.
+    const float Reward=M->PackId<0?CireWaveDirector::RewardMultiplier(M):1.f; // wave-director: per-wave reward multiplier (XP only)
     AwardTeam(M->Lane,FMath::RoundToInt((45+GetGameState<ACireGameState>()->Round*4)*Reward),0);
-    CireLoot::AwardKillGold(this,M,Reward);
+    // rules-conformance: gold is exactly Eric's bounty ruling (mob 1 +1 every 3 waves, armored x2, boss x10,
+    // challenge packs x10, leader another x10). The wave rewardMultiplier no longer stacks on gold.
+    CireLoot::AwardKillGold(this,M);
     // progression-shop: pack completion, Pack Leaders and lane bosses roll data-driven loot tables
     // into a glowing auto-pickup chest (CireLoot). The old flat stat/rare reward is replaced.
     bool bPackCompleted=false;
