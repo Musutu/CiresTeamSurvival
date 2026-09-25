@@ -2,6 +2,7 @@
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireNav.h" // nav-paths
+#include "CireWorldDressing.h" // world-dressing
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Dom/JsonObject.h"
@@ -30,7 +31,9 @@ struct FCandidate
     FString Path,Source,MaterialOverride;TArray<FString> Parts;int32 Priority=0;
     FVector Scale=FVector::OneVector,Offset=FVector::ZeroVector;FRotator Rotation=FRotator::ZeroRotator;bool bFit=false;
 };
-struct FSlotLight {bool bEnabled=false;FVector Offset=FVector::ZeroVector;FLinearColor Color=FLinearColor(1,.6f,.3f);float Intensity=4000,Radius=800;};
+struct FSlotLight {bool bEnabled=false;FVector Offset=FVector::ZeroVector;FLinearColor Color=FLinearColor(1,.6f,.3f);float Intensity=4000,Radius=800;
+    float Flicker=0; // world-dressing: 0..1 torch/brazier flicker amount
+};
 enum class EClearance:uint8 {Route,Bays,None};
 struct FSlot
 {
@@ -39,6 +42,7 @@ struct FSlot
     // resolved
     TWeakObjectPtr<UStaticMesh> Mesh;TArray<TWeakObjectPtr<UStaticMesh>> Parts;TWeakObjectPtr<UMaterialInterface> Material,MeshMaterial;FTransform Local=FTransform::Identity;
     FBox LocalBox=FBox(ForceInit);FString ResolvedSource;
+    float CullStart=0,CullEnd=0; // world-dressing: HISM cull distances (cm), 0 = never culled
 };
 struct FPlacement {FName Slot;FVector Location=FVector::ZeroVector;float Yaw=0,Scale=1;uint8 Mode=0;/*0 raw,1 outer,2 inner*/};
 struct FPlaced {int32 Team=0;FName Slot;FTransform Transform;FBox Box;EClearance Clearance=EClearance::Route;};
@@ -157,6 +161,17 @@ bool MergeManifest(const FString& File,int32 DefaultPriority,const FString& Defa
                 if(!Vec(*Light,TEXT("offset"),Slot.Light.Offset,-5000,5000)||!Vec(*Light,TEXT("color"),Color,0,20)||
                    !Num(*Light,TEXT("intensity"),Slot.Light.Intensity,0,200000)||!Num(*Light,TEXT("radius"),Slot.Light.Radius,50,5000))Slot.Light.bEnabled=false;
                 Slot.Light.Color=FLinearColor(Color.X,Color.Y,Color.Z);
+                if(!Num(*Light,TEXT("flicker"),Slot.Light.Flicker,0,1))Slot.Light.Flicker=0; // world-dressing
+            }
+            // world-dressing: "cullDistance": end or [start, end] in cm; small clutter fades out with distance.
+            {
+                const TArray<TSharedPtr<FJsonValue>>* Cull=nullptr;double End=0;
+                if(O->TryGetNumberField(TEXT("cullDistance"),End)&&Finite(End,0,200000)){Slot.CullStart=static_cast<float>(End*.8);Slot.CullEnd=static_cast<float>(End);}
+                else if(O->TryGetArrayField(TEXT("cullDistance"),Cull)&&Cull->Num()==2)
+                {
+                    double A=0,B=0;
+                    if((*Cull)[0]->TryGetNumber(A)&&(*Cull)[1]->TryGetNumber(B)&&Finite(A,0,200000)&&Finite(B,A,200000)){Slot.CullStart=static_cast<float>(A);Slot.CullEnd=static_cast<float>(B);}
+                }
             }
         }
         Slot.Candidates.Append(Found);Added+=Found.Num();
@@ -236,6 +251,31 @@ bool LoadTown()
         P.Location=FVector(X,Y,Z);Town.Placements.Add(P);
     }
     if(Rejected)UE_LOG(LogCireTown,Warning,TEXT("TownLayout.json: %d placement rows rejected (unknown slot or out of range)."),Rejected);
+    // world-dressing: additive layout overlays (TownLayout.<source>.json, e.g. .dressing.json) append placements;
+    // they never remove or move base rows and pass the same clearance checks at runtime.
+    {
+        TArray<FString> LayoutOverlays;IFileManager::Get().FindFiles(LayoutOverlays,*DataPath(TEXT("TownLayout.*.json")),true,false);
+        LayoutOverlays.Sort();
+        for(const FString& Name:LayoutOverlays)
+        {
+            TSharedPtr<FJsonObject> Extra;const TArray<TSharedPtr<FJsonValue>>* Rows=nullptr;double ExtraVersion=0;
+            if(!ReadJson(DataPath(*Name),Extra)||!Extra->TryGetNumberField(TEXT("schemaVersion"),ExtraVersion)||ExtraVersion!=1||
+               !Extra->TryGetArrayField(TEXT("placements"),Rows)||Rows->Num()>8192)
+            {UE_LOG(LogCireTown,Warning,TEXT("%s ignored (unreadable, wrong schema or too many rows)."),*Name);continue;}
+            int32 Added=0,Bad=0;
+            for(const auto& V:*Rows)
+            {
+                const auto O=V->AsObject();FPlacement P;FString Slot,Mode;float X=0,Y=0,Z=0;
+                if(!O||!O->TryGetStringField(TEXT("slot"),Slot)){++Bad;continue;}
+                P.Slot=FName(*Slot);
+                if(!Town.Slots.Contains(P.Slot)||Town.Slots[P.Slot].bMaterial||!Num(O,TEXT("x"),X,-30000,30000)||!Num(O,TEXT("y"),Y,-6000,6000)||
+                   !Num(O,TEXT("z"),Z,-500,5000)||!Num(O,TEXT("yaw"),P.Yaw,-720,720)||!Num(O,TEXT("scale"),P.Scale,.05,20)){++Bad;continue;}
+                if(O->TryGetStringField(TEXT("mode"),Mode))P.Mode=Mode==TEXT("outer")?1:Mode==TEXT("inner")?2:0;
+                P.Location=FVector(X,Y,Z);Town.Placements.Add(P);++Added;
+            }
+            UE_LOG(LogCireTown,Display,TEXT("CIRE_TOWN_LAYOUT_OVERLAY file=%s placements=%d rejected=%d"),*Name,Added,Bad);
+        }
+    }
     Town.bValid=!Town.Placements.IsEmpty();return Town.bValid;
 }
 FTransform WorldTransform(const FPlacement& P,int32 Team)
@@ -304,6 +344,7 @@ void CireEnvironmentProps::Build(ACireWorld* WorldActor)
         // nav-paths: colliding town pieces (houses, walls, the shrine, stalls, crates) carve the navmesh.
         C->SetGenerateOverlapEvents(false);C->SetCanEverAffectNavigation(Slot.bCollision);C->SetCastShadow(Slot.bShadow);
         C->ComponentTags.Add(TEXT("CireWorldProp"));C->ComponentTags.Add(TEXT("CireTown"));C->ComponentTags.Add(Slot.Id);
+        if(Slot.CullEnd>0)C->SetCullDistances(FMath::RoundToInt(Slot.CullStart),FMath::RoundToInt(Slot.CullEnd)); // world-dressing
         for(const FSlot* M:MaterialOverrides)C->SetMaterialByName(M->MeshSlot,M->Material.Get());
         if(Slot.MeshMaterial.IsValid())for(int32 I=0;I<C->GetNumMaterials();++I)C->SetMaterial(I,Slot.MeshMaterial.Get());
         WorldActor->AddInstanceComponent(C);C->RegisterComponent();Data.Components.FindOrAdd(Slot.Id).Add(C);
@@ -317,6 +358,7 @@ void CireEnvironmentProps::Refresh(ACireWorld* WorldActor)
     UWorld* World=WorldActor->GetWorld();
     for(auto& Pair:Data->Components)for(auto& C:Pair.Value)if(C.IsValid())C->ClearInstances();
     for(auto& L:Data->Lights)if(L.IsValid())L->DestroyComponent();
+    CireWorldDressing::ResetFlicker(WorldActor); // world-dressing
     Data->Lights.Reset();Data->Placed.Reset();Data->Visible=Data->Suppressed=0;
     int32 Lights[2]={0,0};
     TMap<FName,TArray<FTransform>> Batches;
@@ -336,6 +378,7 @@ void CireEnvironmentProps::Refresh(ACireWorld* WorldActor)
                 L->SetLightColor(Slot.Light.Color);L->SetAttenuationRadius(Slot.Light.Radius);L->SetCastShadows(false);
                 L->SetSourceRadius(8.f);L->RegisterComponent();WorldActor->AddInstanceComponent(L);
                 Data->Lights.Add(L);++Lights[Team];
+                if(Slot.Light.Flicker>0)CireWorldDressing::AddFlicker(WorldActor,L,Slot.Light.Flicker); // world-dressing
             }
         }
     }
