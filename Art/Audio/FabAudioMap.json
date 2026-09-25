@@ -10,25 +10,25 @@
     "Professional_Gunshots": {
       "name": "Professional Gunshots | 105 AAA Handcrafted Weapon SFX",
       "use": "gun champions only: Gunblade pistol, Witch Slayer blunderbuss, Collect the Bounty",
-      "source": "vault manifest",
-      "assets": 344
+      "source": "installed",
+      "assets": 271
     },
     "Magic_Spell_SFX_Pack_Vol1": {
       "name": "Magic Spell Sound Effects Pack Vol 1 (300 spells)",
       "use": "spells by element: cast / channel loop / projectile loop / impact / heal; buffs, CC",
-      "source": "vault manifest",
+      "source": "installed",
       "assets": 600
     },
     "Combat_Sounds_-_Lite": {
       "name": "Combat Sounds Pack - Lite Edition (150 combat SFX)",
       "use": "weapon swings/impacts by type, bow/crossbow, flesh/armour layers, crits, body falls, explosions",
-      "source": "vault manifest",
+      "source": "installed",
       "assets": 300
     },
     "Fantasy_UI_SFX_Pack": {
       "name": "Complete Fantasy UI Sound Effects Pack",
       "use": "every menu (Dark Fantasy set), shop, Skill Shop, loot, errors, ready, banner stings, polymorph pop (Cute set)",
-      "source": "vault manifest",
+      "source": "installed",
       "assets": 1018
     }
   },
@@ -106,6 +106,36 @@
     },
     "cc.polymorph.start": {
       "packVolume": 1.4
+    },
+    "weapon.mace.impact": {
+      "packVolume": 1.7
+    },
+    "spell.water.impact": {
+      "packVolume": 1.8
+    },
+    "weapon.sword.swing": {
+      "packVolume": 1.3
+    },
+    "spell.arcane.impact": {
+      "packVolume": 1.5
+    },
+    "spell.earth.impact": {
+      "packVolume": 1.4
+    },
+    "spell.fire.cast": {
+      "packVolume": 1.3
+    },
+    "weapon.sword.impact": {
+      "packVolume": 1.3
+    },
+    "weapon.gunblade.impact": {
+      "packVolume": 1.3
+    },
+    "weapon.spear.impact": {
+      "packVolume": 1.3
+    },
+    "weapon.dagger.impact": {
+      "packVolume": 1.3
     }
   },
   "cues": {
