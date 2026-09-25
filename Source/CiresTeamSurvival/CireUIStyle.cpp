@@ -1,5 +1,6 @@
 #include "CireUIStyle.h"
 #include "CireUITheme.h" // ui-themes
+#include "CireAudio.h" // audio: one hover tick for every menu button
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -363,6 +364,7 @@ void CireUIStyle::Button(const FCireUIPainter& P,float X,float Y,float W,float H
 {
     const FAssets& A=Assets();
     const bool bHover=State==ECireButtonState::Hover,bPress=State==ECireButtonState::Pressed,bOff=State==ECireButtonState::Disabled,bSel=State==ECireButtonState::Selected;
+    if(bHover)CireAudio::NoteUIHover(X,Y); // audio: consistent hover tick across menus
     const float Dy=bPress?1.f:0.f;
     if(HasThemeArt())
     {
@@ -387,7 +389,10 @@ void CireUIStyle::Button(const FCireUIPainter& P,float X,float Y,float W,float H
         if(bHover||bSel)Glow(P,X+W*.1f,Y+Dy,W*.8f,H,Accent*FLinearColor(1,1,1,bSel?.35f:.25f));
     }
     else{P.Rect(X,Y,W,H,bHover?Hover:Card);}
-    const FLinearColor TextColor=bOff?Muted*.8f:bHover||bSel?FLinearColor(1.f,.93f,.72f,1):Accent;
+    // ui-themes: themed buttons use bright engraved caps a size larger (concept typography).
+    const bool bThemedBtn=HasThemeArt();
+    if(bThemedBtn)TextSize=FMath::Max(TextSize,FMath::Min(H*.42f,TextSize*1.25f));
+    const FLinearColor TextColor=bOff?Muted*.8f:bHover||bSel?FLinearColor(1.f,.93f,.72f,1):bThemedBtn?Parchment*FLinearColor(.95f,.93f,.88f,1):Accent;
     const float TW=P.TextWidth(Label,TextSize,ECireFont::Heading);
     P.Text(Label,X+FMath::Max(8.f,(W-TW)*.5f),Y+Dy+(H-TextSize)*.5f-2.f,TextSize,TextColor,ECireFont::Heading,false,true);
 }
@@ -411,7 +416,9 @@ void CireUIStyle::IconSlot(const FCireUIPainter& P,float X,float Y,float S,const
     P.Rect(X+2,Y+3,S,S,FLinearColor(0,0,0,.45f));
     const bool bThemed=HasThemeArt();
     const ECireThemePiece FramePiece=bUlt?ECireThemePiece::SlotUltimate:bPassive?ECireThemePiece::SlotPassive:ECireThemePiece::Slot;
-    const float FramePad=bUlt?S*.1f:S*.05f; // themed frames overhang the icon a little
+    // Themed: the bevelled frame sits just inside the slot (a dark gap separates neighbours) and the
+    // icon is inset within it, like the concept's framed buttons; the ultimate's crest overhangs.
+    const float FramePad=bUlt?S*.06f:-S*.03f;
     if(Slot.bEmpty)
     {
         P.Rect(X,Y,S,S,FLinearColor(.02f,.025f,.03f,.9f));
@@ -421,7 +428,8 @@ void CireUIStyle::IconSlot(const FCireUIPainter& P,float X,float Y,float S,const
         return;
     }
     // Icon art: painted texture if available, else a school-tinted backdrop with the sigil.
-    if(Slot.IconTexture)P.Tex(Slot.IconTexture,X+2,Y+2+Dy,S-4,S-4,FLinearColor::White);
+    const float Inset=bThemed&&!bPassive?S*.11f:2.f;
+    if(Slot.IconTexture){if(bThemed)P.Rect(X+Inset-1,Y+Inset-1+Dy,S-2*Inset+2,S-2*Inset+2,FLinearColor(0,0,0,.9f));P.Tex(Slot.IconTexture,X+Inset,Y+Inset+Dy,S-2*Inset,S-2*Inset,FLinearColor::White);}
     else
     {
         const FLinearColor Deep=Slot.Tint*FLinearColor(.28f,.28f,.28f,1.f);
@@ -512,6 +520,17 @@ void CireUIStyle::Bar(const FCireUIPainter& P,float X,float Y,float W,float H,fl
         Shown=Trail->Shown;TrailValue=Trail->Trail;
     }
     const bool bThemed=HasThemeArt();
+    if(bThemed&&Capsule(P,X,Y,0,H,1,FLinearColor::White))
+    {
+        // ui-themes: rounded WoW-style bar.
+        RoundBar(P,X,Y,W,H,Shown,Color,TrailValue>Shown?TrailValue:-1.f);
+        if(!Text.IsEmpty())
+        {
+            const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.72f);
+            P.Text(Text,X+(W-P.TextWidth(Text,TS,ECireFont::Numbers))*.5f,Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Numbers,true,false);
+        }
+        return;
+    }
     P.Rect(X,Y,W,H,bThemed?BarBack:FLinearColor(0,0,0,.85f));
     const float IW=FMath::Max(0.f,W-2),IH=FMath::Max(0.f,H-2);
     P.Rect(X+1,Y+1,IW,IH,Color*FLinearColor(.12f,.12f,.12f,1));
@@ -733,6 +752,16 @@ void CireUIStyle::CastBar(const FCireUIPainter& P,float X,float Y,float W,float 
 {
     Progress=FMath::IsFinite(Progress)?FMath::Clamp(Progress,0.f,1.f):0.f;
     const bool bThemed=HasThemeArt();
+    if(bThemed&&Capsule(P,X,Y,0,H,1,FLinearColor::White))
+    {
+        // ui-themes: rounded cast bar with a small theme crest at each end (outside the bar).
+        RoundBar(P,X,Y,W,H,Progress,Color);
+        if(H>=10.f){Ornament(P,X-1.f,Y+H*.5f,H*1.1f);Ornament(P,X+W+1.f,Y+H*.5f,H*1.1f);}
+        const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.62f);
+        if(!Name.IsEmpty())P.Text(P.Fit(Name,TS,W-(Time.IsEmpty()?16.f:48.f),ECireFont::Bold),X+H*.5f+3,Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Bold,true,false);
+        if(!Time.IsEmpty())P.Text(Time,X+W-H*.5f-3-P.TextWidth(Time,TS,ECireFont::Numbers),Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Numbers,true,false);
+        return;
+    }
     P.Rect(X,Y,W,H,bThemed?BarBack:FLinearColor(0,0,0,.85f));
     if(!(bThemed&&CireUITheme::DrawBarFill(P,X+1,Y+1,(W-2)*Progress,H-2,Color*1.2f)))
     {
@@ -751,4 +780,55 @@ void CireUIStyle::CastBar(const FCireUIPainter& P,float X,float Y,float W,float 
     const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.62f);
     if(!Name.IsEmpty())P.Text(P.Fit(Name,TS,W-(Time.IsEmpty()?12.f:44.f),ECireFont::Bold),X+6,Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Bold,true,false);
     if(!Time.IsEmpty())P.Text(Time,X+W-6-P.TextWidth(Time,TS,ECireFont::Numbers),Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Numbers,true,false);
+}
+
+// ---------------------------------------------------------------------------
+// ui-themes: rounded (capsule) bars
+// ---------------------------------------------------------------------------
+namespace
+{
+UTexture2D* CapsuleTexture()
+{
+    static TWeakObjectPtr<UTexture2D> Cached;static bool bTried=false;
+    if(!bTried){bTried=true;if(UTexture2D* T=LoadObject<UTexture2D>(nullptr,TEXT("/Game/UI/Themes/Common/T_BarCapsule.T_BarCapsule"),nullptr,LOAD_NoWarn|LOAD_Quiet)){T->AddToRoot();Cached=T;}}
+    return Cached.Get();
+}
+}
+bool CireUIStyle::Capsule(const FCireUIPainter& P,float X,float Y,float W,float H,float Fraction,FLinearColor Color,int32 Layer)
+{
+    UTexture2D* T=CapsuleTexture();
+    if(!T)return false;
+    const float F=W*FMath::Clamp(Fraction,0.f,1.f);
+    if(F<=.01f||H<=0)return true;
+    const float C=FMath::Min(H*.5f,W*.5f),CapU=.125f,V0=Layer?.5f:0.f,V1=Layer?1.f:.5f;
+    if(F>=2*C)
+    {
+        P.Tex(T,X,Y,C,H,Color,0,V0,CapU,V1);
+        if(F>2*C)P.Tex(T,X+C,Y,F-2*C,H,Color,CapU,V0,1-CapU,V1);
+        P.Tex(T,X+F-C,Y,C,H,Color,1-CapU,V0,1,V1);
+    }
+    else
+    {
+        // Very low fill: a small pill made of the start of the left cap and the end of the right cap.
+        const float L=FMath::Min(F,C),R=F-L;
+        P.Tex(T,X,Y,L,H,Color,0,V0,CapU*L/C,V1);
+        if(R>0)P.Tex(T,X+L,Y,R,H,Color,1-CapU*R/C,V0,1,V1);
+    }
+    return true;
+}
+void CireUIStyle::RoundBar(const FCireUIPainter& P,float X,float Y,float W,float H,float Fraction,FLinearColor Color,float Trail)
+{
+    Fraction=FMath::IsFinite(Fraction)?FMath::Clamp(Fraction,0.f,1.f):0.f;
+    // Everything stays inside X..X+W / Y..Y+H so stacked bars never overlap: a faint theme rim,
+    // the thin dark border, then the rounded content inset.
+    const bool bRim=H>=8.f;
+    const float Rim=bRim?1.f:0.f,Border=H>=12.f?1.3f:.9f,In=Rim+Border;
+    if(bRim)Capsule(P,X,Y,W,H,1,Gold*FLinearColor(1,1,1,.6f));
+    Capsule(P,X+Rim,Y+Rim,W-2*Rim,H-2*Rim,1,FLinearColor(0,0,0,.94f));
+    const float CX=X+In,CY=Y+In,CW=FMath::Max(0.f,W-2*In),CH=FMath::Max(1.f,H-2*In);
+    Capsule(P,CX,CY,CW,CH,1,FLinearColor(Color.R*.13f+.01f,Color.G*.13f+.01f,Color.B*.13f+.015f,1));
+    if(Trail>Fraction)Capsule(P,CX,CY,CW,CH,Trail,FLinearColor(1.f,.92f,.72f,.85f));
+    Capsule(P,CX,CY,CW,CH,Fraction,Color*1.2f);
+    Capsule(P,CX,CY,CW,CH,Fraction,FLinearColor(1,1,1,.9f),1);
+    Capsule(P,CX,CY,CW,CH,1,FLinearColor(1,1,1,.1f),1); // faint glass over the empty part
 }

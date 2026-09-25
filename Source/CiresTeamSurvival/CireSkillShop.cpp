@@ -419,21 +419,36 @@ float CireSkillShop::EffectScale(const ACireHero* Source, const FString& Ability
     return 1.f;
 }
 
+// items-v2: mana costs also grow with champion level (Items.json manaEconomy); energy stays flat.
+static FString GCostFailText = TEXT("Not enough mana or energy.");
+void CireSkillShop::ScaledCost(const ACireHero* Hero, const FString& Id, float BaseMana, float BaseEnergy, float& OutMana, float& OutEnergy)
+{
+    const float Cost = Hero ? CastScale(Hero, Id).Cost : 1.f;
+    OutMana = BaseMana * Cost * CireItems::ManaCostScale(Hero);
+    OutEnergy = BaseEnergy * Cost;
+}
+FString CireSkillShop::CostFailText() { return GCostFailText; }
 bool CireSkillShop::CanPayCast(const ACireHero* Hero, const FString& Id, float BaseMana, float BaseEnergy)
 {
     if (!Hero) return false;
-    const float Cost = CastScale(Hero, Id).Cost;
-    return Hero->Mana >= BaseMana * Cost && Hero->Energy >= BaseEnergy * Cost;
+    float Mana = 0, Energy = 0;
+    ScaledCost(Hero, Id, BaseMana, BaseEnergy, Mana, Energy);
+    if (Hero->Mana >= Mana && Hero->Energy >= Energy) return true;
+    GCostFailText = CireItems::NoteShortfall(Hero, Mana, Energy);
+    return false;
 }
 
 void CireSkillShop::ApplyCastLevel(ACireHero* Hero, int32 Slot, const FString& Id, float BaseMana, float BaseEnergy)
 {
     if (!Hero || !Hero->HasAuthority()) return;
     const FCireCastScale Scale = CastScale(Hero, Id);
+    // items-v2: the caller already paid the base cost; charge the level-scaled remainder, then refunds/upgrades.
+    float Mana = 0, Energy = 0;
+    ScaledCost(Hero, Id, BaseMana, BaseEnergy, Mana, Energy);
+    Hero->Mana = FMath::Max(0.f, Hero->Mana - FMath::Max(0.f, Mana - BaseMana));
+    Hero->Energy = FMath::Max(0.f, Hero->Energy - FMath::Max(0.f, Energy - BaseEnergy));
+    CireItems::OnAbilityCast(Hero, Id, Mana);
     if (Scale.Level <= 1) return;
-    const float Extra = FMath::Max(0.f, Scale.Cost - 1.f);
-    Hero->Mana = FMath::Max(0.f, Hero->Mana - BaseMana * Extra);
-    Hero->Energy = FMath::Max(0.f, Hero->Energy - BaseEnergy * Extra);
     if (Hero->Cooldowns.IsValidIndex(Slot)) Hero->Cooldowns[Slot] *= Scale.Cooldown;
 }
 

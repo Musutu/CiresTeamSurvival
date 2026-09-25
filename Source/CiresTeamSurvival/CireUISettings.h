@@ -94,6 +94,16 @@ public:
     bool bCameraAutoFollow = true;
     /** After the hostile target dies, Tab-select the nearest hostile in front of the camera. */
     bool bAutoReacquireTarget = false;
+    /** Enemy spell with no valid target: auto-select the enemy under the cursor or the best one in front. */
+    bool bSmartCast = true;
+    /** Spells cast on the unit under the cursor (if valid) without changing your target. */
+    bool bMouseoverCast = false;
+    /** A clean right click (no camera drag) cancels an armed ground-aim reticle. Escape always cancels. */
+    bool bRightClickCancelsAim = true;
+    /** Pressing the armed ground ability's key again casts it at the reticle. */
+    bool bPressAgainToCast = true;
+    /** Pressing a cast-time spell that cannot be cast while moving stops your movement keys and casts. */
+    bool bAutoStopToCast = true;
     /** progression-shop: show the compact character stats window (toggle: C). */
     bool bShowStats = true;
     /** progression-shop: show the personal loot log (toggle: L). */
@@ -134,6 +144,8 @@ public:
     bool bShowBossFrames = true;
     /** aura-vfx: buff/aura/attack-modifier visuals on other units (0 = minimal marks, 1 = full). Your own are always full. */
     float OtherEffectsIntensity = 1.f;
+    /** ability-vfx: ground telegraph / zone brightness (fill, rim and runes), 0.3..1. */
+    float GroundTelegraphIntensity = .6f;
     /** Extra WoW action bars (bar 1 is always shown) and the drag lock (Shift-drag when locked). */
     bool bShowActionBar2 = true;
     bool bShowActionBar3 = false;

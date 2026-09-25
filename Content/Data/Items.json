@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "_comment": "progression-shop: design proposal for review. Stat percentages are percentage points. Docs/Items.md explains every field and number. Prices rescaled x1.2 for the playtest-2 kill-gold economy (Docs/Progression.md, economy curve).",
+  "_comment": "items-v2: items grant the owner's primary stat (\"primaryStat\": STR, AGI or INT, whichever is primary), flat health/mana/armor/ward, regen, attack speed, CDR and move speed; completed items add mitigation specials and the path-defining uniques (uniqueGroup \"path\": one per player). Docs/Items.md explains every field and number.",
   "shopRules": {
     "sellRatio": 0.6,
     "buyAnywhereInPrep": true,
@@ -13,6 +13,13 @@
     "cooldownSeconds": 120,
     "moveTolerance": 40
   },
+  "manaEconomy": {
+    "regenFlat": 2.0,
+    "regenPercent": 0.008,
+    "costPerLevel": 0.05,
+    "maxCostScale": 3.0,
+    "_comment": "items-v2: mana regen = regenFlat + regenPercent x max mana per second (+ items); mana costs x (1 + costPerLevel x (level-1)). Energy unchanged. Docs/Items.md, Tools/ManaEconomySim.py."
+  },
   "recommended": {
     "tank": {
       "starting": [
@@ -22,14 +29,17 @@
       ],
       "core": [
         "greaves_of_the_undying",
+        "shackles_of_the_pale_king",
         "gravewarden_bulwark",
-        "aegis_of_the_last_oath",
-        "stoneheart"
+        "stoneheart",
+        "banner_of_the_vigil",
+        "gravebell"
       ],
       "situational": [
-        "gravebell",
-        "elixir_of_iron",
-        "watchers_lantern"
+        "aegis_of_the_last_oath",
+        "sigil_of_apotheosis",
+        "twinstep_treads",
+        "elixir_of_iron"
       ]
     },
     "physical": {
@@ -40,13 +50,16 @@
       ],
       "core": [
         "stalkers_treads",
+        "stormhowl_ravager",
         "nightfall_reaver",
         "sanguine_sabre",
-        "wraithstring"
+        "wraithstring",
+        "headsmans_greataxe"
       ],
       "situational": [
-        "headsmans_greataxe",
+        "twinstep_treads",
         "ravenfeather_mantle",
+        "sigil_of_apotheosis",
         "elixir_of_wrath"
       ]
     },
@@ -58,14 +71,17 @@
       ],
       "core": [
         "veilwalker_slippers",
-        "crown_of_cinders",
+        "heart_of_cataclysm",
+        "moonwell_codex",
         "voidglass_orb",
-        "hourglass_of_ages"
+        "hourglass_of_ages",
+        "ravenfeather_mantle"
       ],
       "situational": [
-        "ravenfeather_mantle",
-        "elixir_of_black_sorcery",
-        "mantle_of_ash"
+        "shackles_of_the_pale_king",
+        "sigil_of_apotheosis",
+        "windrunner_boots",
+        "elixir_of_black_sorcery"
       ]
     },
     "support": {
@@ -76,14 +92,57 @@
       ],
       "core": [
         "veilwalker_slippers",
+        "sigil_of_apotheosis",
         "censer_of_dawn",
+        "lifebinders_reliquary",
         "chalice_of_mercy",
-        "banner_of_the_vigil"
+        "aegis_of_the_last_oath"
       ],
       "situational": [
-        "aegis_of_the_last_oath",
-        "hourglass_of_ages",
+        "banner_of_the_vigil",
+        "moonwell_codex",
+        "shackles_of_the_pale_king",
         "elixir_of_iron"
+      ]
+    },
+    "summoner": {
+      "starting": [
+        "aether_phial",
+        "ashwood_wand",
+        "bone_dagger"
+      ],
+      "core": [
+        "veilwalker_slippers",
+        "soulbinders_crook",
+        "moonwell_codex",
+        "voidglass_orb",
+        "hourglass_of_ages",
+        "ravenfeather_mantle"
+      ],
+      "situational": [
+        "sigil_of_apotheosis",
+        "windrunner_boots",
+        "elixir_of_black_sorcery"
+      ]
+    },
+    "constructor": {
+      "starting": [
+        "aether_phial",
+        "pilgrims_idol",
+        "ashwood_wand"
+      ],
+      "core": [
+        "veilwalker_slippers",
+        "artificers_heartforge",
+        "moonwell_codex",
+        "hourglass_of_ages",
+        "aegis_of_the_last_oath",
+        "voidglass_orb"
+      ],
+      "situational": [
+        "heart_of_cataclysm",
+        "twinstep_treads",
+        "elixir_of_black_sorcery"
       ]
     }
   },
@@ -106,7 +165,8 @@
         "cooldown": 1,
         "text": "Restore 150 health over 12 seconds."
       },
-      "lore": "Pressed from grave-roses. Bitter, thick, and warm as a wound."
+      "lore": "Pressed from grave-roses. Bitter, thick, and warm as a wound.",
+      "effect": "Drink: 150 health over 12 s."
     },
     {
       "id": "aether_phial",
@@ -121,12 +181,13 @@
       ],
       "use": {
         "kind": "manaOverTime",
-        "amount": 120,
+        "amount": 180,
         "duration": 10,
         "cooldown": 1,
-        "text": "Restore 120 mana and 40 energy over 10 seconds."
+        "text": "Restore 180 mana and 60 energy over 10 seconds."
       },
-      "lore": "Condensed starlight, bottled on the one night a year the veil thins."
+      "lore": "Condensed starlight, bottled on the one night a year the veil thins.",
+      "effect": "Drink: 180 mana and 60 energy over 10 s."
     },
     {
       "id": "elixir_of_iron",
@@ -146,11 +207,12 @@
         "cooldown": 1,
         "buff": {
           "health": 250,
-          "armor": 12
+          "armor": 15
         },
-        "text": "For 3 minutes: +250 health and +12 armor. Persists through death."
+        "text": "For 3 minutes: +250 health and +15 armor. Persists through death."
       },
-      "lore": "Tastes of rust and oath-iron."
+      "lore": "Tastes of rust and oath-iron.",
+      "effect": "3 min: +250 health, +15 armor."
     },
     {
       "id": "elixir_of_wrath",
@@ -169,12 +231,13 @@
         "duration": 180,
         "cooldown": 1,
         "buff": {
-          "attackDamage": 8,
+          "primaryStat": 6,
           "attackSpeed": 12
         },
-        "text": "For 3 minutes: +8 attack damage and +12% attack speed. Persists through death."
+        "text": "For 3 minutes: +6 primary stat and +12% attack speed. Persists through death."
       },
-      "lore": "Distilled from a berserker's last breath."
+      "lore": "Distilled from a berserker's last breath.",
+      "effect": "3 min: +6 primary stat, +12% attack speed."
     },
     {
       "id": "elixir_of_black_sorcery",
@@ -193,12 +256,13 @@
         "duration": 180,
         "cooldown": 1,
         "buff": {
-          "spellPower": 14,
+          "primaryStat": 6,
           "manaRegen": 3
         },
-        "text": "For 3 minutes: +14% spell power and +3 mana per second. Persists through death."
+        "text": "For 3 minutes: +6 primary stat and +3 mana per second. Persists through death."
       },
-      "lore": "Ink of a forbidden grimoire, boiled until it screamed."
+      "lore": "Ink of a forbidden grimoire, boiled until it screamed.",
+      "effect": "3 min: +6 primary stat, +3 mana/s."
     },
     {
       "id": "watchers_lantern",
@@ -221,7 +285,8 @@
         "cooldown": 3,
         "text": "Plant a lantern ward at your feet for 2 minutes. Monsters within 7 m are slowed 20% and Marked: they take 10% more damage from your team."
       },
-      "lore": "The flame burns blue when the hollow draw near."
+      "lore": "The flame burns blue when the hollow draw near.",
+      "effect": "Plant a ward: slows and marks monsters for your team."
     },
     {
       "id": "tome_of_insight",
@@ -238,7 +303,8 @@
         "amount": 300,
         "text": "Read on purchase: gain 300 experience."
       },
-      "lore": "Margins crowded with a dead captain's field notes."
+      "lore": "Margins crowded with a dead captain's field notes.",
+      "effect": "Read: +300 experience."
     },
     {
       "id": "tome_of_ascendance",
@@ -256,7 +322,8 @@
         "amount": 3,
         "text": "Read on purchase: permanently gain +3 to your primary attribute."
       },
-      "lore": "Each page teaches the body something it should not know."
+      "lore": "Each page teaches the body something it should not know.",
+      "effect": "Read: +3 primary attribute."
     },
     {
       "id": "greater_tome_of_ascendance",
@@ -275,7 +342,8 @@
         "amount": 3,
         "text": "Challenge loot only: permanently gain 2-5 primary attribute (by pack tier)."
       },
-      "lore": "Bound in the hide of something that guarded it."
+      "lore": "Bound in the hide of something that guarded it.",
+      "effect": "Loot: +2 to +5 primary attribute."
     },
     {
       "id": "rusted_longsword",
@@ -283,12 +351,48 @@
       "tier": "basic",
       "cost": 170,
       "stats": {
-        "attackDamage": 6
+        "primaryStat": 5
       },
       "tags": [
-        "attack"
+        "primary",
+        "attack",
+        "spell"
       ],
+      "effect": "+5 primary stat.",
       "lore": "Pitted, heavy, and still sharper than it looks."
+    },
+    {
+      "id": "ashwood_wand",
+      "name": "Ashwood Wand",
+      "tier": "basic",
+      "cost": 160,
+      "stats": {
+        "primaryStat": 3,
+        "mana": 150
+      },
+      "tags": [
+        "primary",
+        "mana",
+        "spell"
+      ],
+      "effect": "Primary stat and mana.",
+      "lore": "Cut from a tree that grew in a burned village."
+    },
+    {
+      "id": "gauntlet_of_the_ox",
+      "name": "Gauntlet of the Ox",
+      "tier": "basic",
+      "cost": 160,
+      "stats": {
+        "primaryStat": 3,
+        "health": 150
+      },
+      "tags": [
+        "primary",
+        "health"
+      ],
+      "effect": "Primary stat and health.",
+      "lore": "Riveted iron, heavy enough to be a weapon."
     },
     {
       "id": "bone_dagger",
@@ -296,37 +400,28 @@
       "tier": "basic",
       "cost": 155,
       "stats": {
-        "attackSpeed": 10
+        "attackSpeed": 12
       },
       "tags": [
-        "attackspeed"
+        "speed",
+        "attack"
       ],
+      "effect": "Attack speed (you and your summons).",
       "lore": "Carved from a thighbone. Quick in the hand."
-    },
-    {
-      "id": "ashwood_wand",
-      "name": "Ashwood Wand",
-      "tier": "basic",
-      "cost": 170,
-      "stats": {
-        "spellPower": 10
-      },
-      "tags": [
-        "spell"
-      ],
-      "lore": "Cut from a tree that grew in a burned village."
     },
     {
       "id": "bloodstone_shard",
       "name": "Bloodstone Shard",
       "tier": "basic",
-      "cost": 145,
+      "cost": 140,
       "stats": {
-        "health": 160
+        "health": 180
       },
       "tags": [
-        "health"
+        "health",
+        "defense"
       ],
+      "effect": "Flat health.",
       "lore": "It pulses faintly, out of time with your heart."
     },
     {
@@ -335,11 +430,12 @@
       "tier": "basic",
       "cost": 120,
       "stats": {
-        "mana": 200
+        "mana": 220
       },
       "tags": [
         "mana"
       ],
+      "effect": "Flat mana.",
       "lore": "Black glass that remembers the stars."
     },
     {
@@ -348,12 +444,13 @@
       "tier": "basic",
       "cost": 130,
       "stats": {
-        "armor": 12
+        "armor": 15
       },
       "tags": [
         "armor",
         "defense"
       ],
+      "effect": "Flat armor (vs basic attacks).",
       "lore": "Stiff, scarred and stitched a dozen times."
     },
     {
@@ -362,55 +459,14 @@
       "tier": "basic",
       "cost": 130,
       "stats": {
-        "ward": 12
+        "ward": 15
       },
       "tags": [
         "ward",
         "defense"
       ],
+      "effect": "Flat ward (vs abilities).",
       "lore": "Protective sigils embroidered in grey thread."
-    },
-    {
-      "id": "gauntlet_of_the_ox",
-      "name": "Gauntlet of the Ox",
-      "tier": "basic",
-      "cost": 155,
-      "stats": {
-        "strength": 5
-      },
-      "tags": [
-        "attributes",
-        "health"
-      ],
-      "lore": "Riveted iron, heavy enough to be a weapon."
-    },
-    {
-      "id": "band_of_the_fox",
-      "name": "Band of the Fox",
-      "tier": "basic",
-      "cost": 155,
-      "stats": {
-        "agility": 5
-      },
-      "tags": [
-        "attributes",
-        "attackspeed"
-      ],
-      "lore": "A copper ring worn smooth by nervous fingers."
-    },
-    {
-      "id": "circlet_of_the_owl",
-      "name": "Circlet of the Owl",
-      "tier": "basic",
-      "cost": 155,
-      "stats": {
-        "intelligence": 5
-      },
-      "tags": [
-        "attributes",
-        "mana"
-      ],
-      "lore": "Silver feathers frame an unblinking stone."
     },
     {
       "id": "road_worn_boots",
@@ -422,8 +478,10 @@
         "moveSpeed": 8
       },
       "tags": [
-        "speed"
+        "speed",
+        "boots"
       ],
+      "effect": "Move speed; upgrades into every boots.",
       "lore": "They have walked out of three sieges."
     },
     {
@@ -432,54 +490,13 @@
       "tier": "basic",
       "cost": 190,
       "stats": {
-        "cooldownReduction": 5
+        "cooldownReduction": 6
       },
       "tags": [
         "cooldown"
       ],
+      "effect": "Cooldown reduction (you, your summons and constructs).",
       "lore": "The sand falls upward when no one watches."
-    },
-    {
-      "id": "vampire_fang",
-      "name": "Vampire Fang",
-      "tier": "basic",
-      "cost": 180,
-      "stats": {
-        "lifesteal": 7
-      },
-      "tags": [
-        "lifesteal",
-        "attack"
-      ],
-      "lore": "Still wet. Always wet."
-    },
-    {
-      "id": "ravens_eye",
-      "name": "Raven's Eye",
-      "tier": "basic",
-      "cost": 190,
-      "stats": {
-        "critChance": 10
-      },
-      "tags": [
-        "crit",
-        "attack"
-      ],
-      "lore": "A polished obsidian bead that finds the weak seam."
-    },
-    {
-      "id": "gravemoss_pendant",
-      "name": "Gravemoss Pendant",
-      "tier": "basic",
-      "cost": 120,
-      "stats": {
-        "healthRegen": 2.5
-      },
-      "tags": [
-        "regen",
-        "health"
-      ],
-      "lore": "Moss scraped from a hero's tomb, sealed in a locket."
     },
     {
       "id": "pilgrims_idol",
@@ -487,51 +504,55 @@
       "tier": "basic",
       "cost": 130,
       "stats": {
-        "manaRegen": 4
+        "manaRegen": 3
       },
       "tags": [
-        "regen",
         "mana",
-        "support"
+        "regen"
       ],
+      "effect": "Mana regeneration.",
       "lore": "A small saint, face worn away by prayers."
     },
     {
       "id": "serrated_cleaver",
       "name": "Serrated Cleaver",
       "tier": "epic",
-      "cost": 145,
+      "cost": 140,
       "components": [
         "rusted_longsword",
         "bone_dagger"
       ],
       "stats": {
-        "attackDamage": 9,
-        "attackSpeed": 14
+        "primaryStat": 8,
+        "attackSpeed": 15
       },
       "tags": [
+        "primary",
         "attack",
-        "attackspeed"
+        "speed"
       ],
+      "effect": "Primary stat and attack speed.",
       "lore": "Butcher's work, soldier's grip."
     },
     {
       "id": "grimoire_of_whispers",
       "name": "Grimoire of Whispers",
       "tier": "epic",
-      "cost": 145,
+      "cost": 140,
       "components": [
         "ashwood_wand",
         "nightglass_shard"
       ],
       "stats": {
-        "spellPower": 14,
-        "mana": 250
+        "primaryStat": 7,
+        "mana": 350
       },
       "tags": [
-        "spell",
-        "mana"
+        "primary",
+        "mana",
+        "spell"
       ],
+      "effect": "Primary stat and a deep mana pool.",
       "lore": "Something reads it back to you."
     },
     {
@@ -544,34 +565,16 @@
         "bloodstone_shard"
       ],
       "stats": {
-        "armor": 18,
-        "health": 200
+        "armor": 25,
+        "health": 250
       },
       "tags": [
         "armor",
         "health",
         "defense"
       ],
+      "effect": "Armor and health.",
       "lore": "Taken from the field. Its owner will not miss it."
-    },
-    {
-      "id": "bloodletter",
-      "name": "Bloodletter",
-      "tier": "epic",
-      "cost": 130,
-      "components": [
-        "rusted_longsword",
-        "vampire_fang"
-      ],
-      "stats": {
-        "attackDamage": 9,
-        "lifesteal": 10
-      },
-      "tags": [
-        "attack",
-        "lifesteal"
-      ],
-      "lore": "A narrow blade with a groove for the red."
     },
     {
       "id": "mantle_of_ash",
@@ -583,15 +586,80 @@
         "bloodstone_shard"
       ],
       "stats": {
-        "ward": 18,
-        "health": 200
+        "ward": 25,
+        "health": 250
       },
       "tags": [
         "ward",
         "health",
         "defense"
       ],
+      "effect": "Ward and health.",
       "lore": "Soot-black wool that curses cannot soak through."
+    },
+    {
+      "id": "bloodletter",
+      "name": "Bloodletter",
+      "tier": "epic",
+      "cost": 130,
+      "components": [
+        "rusted_longsword",
+        "gauntlet_of_the_ox"
+      ],
+      "stats": {
+        "primaryStat": 9,
+        "health": 200
+      },
+      "tags": [
+        "primary",
+        "health",
+        "attack"
+      ],
+      "effect": "Primary stat and health (bruisers).",
+      "lore": "A narrow blade with a groove for the red."
+    },
+    {
+      "id": "aether_conduit",
+      "name": "Aether Conduit",
+      "tier": "epic",
+      "cost": 130,
+      "components": [
+        "ashwood_wand",
+        "pilgrims_idol"
+      ],
+      "stats": {
+        "primaryStat": 6,
+        "manaRegen": 4
+      },
+      "tags": [
+        "primary",
+        "mana",
+        "regen",
+        "support"
+      ],
+      "effect": "Primary stat and mana regeneration.",
+      "lore": "A wand bored hollow so the idol's trickle runs straight through it."
+    },
+    {
+      "id": "oathkeeper_charm",
+      "name": "Oathkeeper's Charm",
+      "tier": "epic",
+      "cost": 120,
+      "components": [
+        "sandglass_charm",
+        "bloodstone_shard"
+      ],
+      "stats": {
+        "cooldownReduction": 8,
+        "health": 250
+      },
+      "tags": [
+        "cooldown",
+        "health",
+        "support"
+      ],
+      "effect": "Cooldown reduction and health.",
+      "lore": "Every grain of sand in it is a promise someone kept."
     },
     {
       "id": "greaves_of_the_undying",
@@ -605,13 +673,14 @@
       ],
       "stats": {
         "moveSpeed": 12,
-        "armor": 15
+        "armor": 20
       },
       "tags": [
         "speed",
         "armor",
-        "defense"
+        "boots"
       ],
+      "effect": "Boots: speed and armor.",
       "lore": "Plated to the knee. The dead march in them still."
     },
     {
@@ -626,12 +695,14 @@
       ],
       "stats": {
         "moveSpeed": 12,
-        "attackSpeed": 15
+        "attackSpeed": 18
       },
       "tags": [
         "speed",
-        "attackspeed"
+        "attack",
+        "boots"
       ],
+      "effect": "Boots: speed and attack speed.",
       "lore": "Soft-soled, silent, and quick to the kill."
     },
     {
@@ -646,160 +717,201 @@
       ],
       "stats": {
         "moveSpeed": 12,
-        "cooldownReduction": 8
+        "cooldownReduction": 10
       },
       "tags": [
         "speed",
-        "cooldown"
+        "cooldown",
+        "boots"
       ],
+      "effect": "Boots: speed and cooldown reduction.",
       "lore": "Each step lands a heartbeat before it is taken."
+    },
+    {
+      "id": "windrunner_boots",
+      "name": "Windrunner Boots",
+      "tier": "legendary",
+      "cost": 320,
+      "unique": true,
+      "uniqueGroup": "boots",
+      "components": [
+        "road_worn_boots"
+      ],
+      "stats": {
+        "moveSpeed": 20
+      },
+      "tags": [
+        "speed",
+        "boots",
+        "mobility"
+      ],
+      "passives": [
+        {
+          "kind": "rollHaste",
+          "name": "Tailwind",
+          "text": "Dodge rolling grants +30% move speed for 2 seconds.",
+          "amount": 30,
+          "duration": 2
+        }
+      ],
+      "effect": "Unique boots: +20% move speed; rolls grant a burst of speed.",
+      "lore": "Cut from a sail that never saw a calm day."
+    },
+    {
+      "id": "twinstep_treads",
+      "name": "Galeborn Twinstep",
+      "tier": "legendary",
+      "cost": 380,
+      "unique": true,
+      "uniqueGroup": "boots",
+      "components": [
+        "road_worn_boots"
+      ],
+      "stats": {
+        "moveSpeed": 12,
+        "attackSpeed": 10
+      },
+      "tags": [
+        "speed",
+        "boots",
+        "mobility"
+      ],
+      "passives": [
+        {
+          "kind": "dodgeCharges",
+          "name": "Double Dash",
+          "text": "+1 dodge-roll charge: roll twice back to back; charges refill one at a time.",
+          "count": 1
+        }
+      ],
+      "effect": "Unique boots: +1 dodge-roll charge (double dash).",
+      "lore": "Two steps where the storm expects one."
     },
     {
       "id": "nightfall_reaver",
       "name": "Nightfall Reaver",
       "tier": "legendary",
-      "cost": 360,
+      "cost": 330,
       "unique": true,
       "components": [
         "serrated_cleaver",
-        "ravens_eye"
+        "rusted_longsword"
       ],
       "stats": {
-        "attackDamage": 16,
-        "attackSpeed": 18,
-        "critChance": 18
+        "primaryStat": 16,
+        "attackSpeed": 20,
+        "critChance": 20
       },
       "tags": [
+        "primary",
         "attack",
-        "attackspeed",
         "crit"
       ],
       "passives": [
         {
           "kind": "critMultiplier",
           "name": "Nightfall",
-          "amount": 0.25,
-          "text": "Critical strikes deal 175% damage instead of 150%."
+          "text": "Critical strikes deal 175% damage instead of 150%.",
+          "amount": 0.25
         }
       ],
+      "effect": "+20% crit chance; crits deal 175%.",
       "lore": "Forged at dusk, quenched at midnight, never shown the sun."
     },
     {
       "id": "sanguine_sabre",
       "name": "Sanguine Sabre",
       "tier": "legendary",
-      "cost": 335,
+      "cost": 320,
       "unique": true,
       "components": [
         "bloodletter",
         "rusted_longsword"
       ],
       "stats": {
-        "attackDamage": 18,
-        "lifesteal": 14
+        "primaryStat": 16,
+        "health": 250,
+        "lifesteal": 12
       },
       "tags": [
+        "primary",
         "attack",
-        "lifesteal"
+        "lifesteal",
+        "health"
       ],
       "passives": [
         {
           "kind": "abilityLifesteal",
           "name": "Blood Tithe",
-          "amount": 6,
-          "text": "Your abilities also heal you for 6% of the damage they deal."
+          "text": "Your abilities also heal you for 6% of the damage they deal.",
+          "amount": 6
         }
       ],
+      "effect": "12% attack lifesteal; abilities heal 6% of their damage.",
       "lore": "The duelist who carried it never lost a drop of his own."
     },
     {
       "id": "headsmans_greataxe",
       "name": "Headsman's Greataxe",
       "tier": "legendary",
-      "cost": 360,
+      "cost": 330,
       "unique": true,
       "components": [
-        "serrated_cleaver",
-        "gauntlet_of_the_ox"
+        "bloodletter",
+        "bone_dagger"
       ],
       "stats": {
-        "attackDamage": 15,
-        "strength": 8,
-        "attackSpeed": 10
+        "primaryStat": 18,
+        "attackSpeed": 12,
+        "health": 200
       },
       "tags": [
+        "primary",
         "attack",
-        "attackspeed",
-        "attributes"
+        "execute"
       ],
       "passives": [
         {
           "kind": "executeBonus",
           "name": "Execution",
+          "text": "Deal 20% more damage to targets below 30% health.",
           "amount": 20,
-          "threshold": 30,
-          "text": "Deal 20% more damage to targets below 30% health."
+          "threshold": 30
         }
       ],
+      "effect": "+20% damage to targets under 30% health.",
       "lore": "The block is optional."
     },
     {
       "id": "wraithstring",
       "name": "Wraithstring",
       "tier": "legendary",
-      "cost": 335,
+      "cost": 300,
       "unique": true,
       "components": [
-        "bone_dagger",
-        "band_of_the_fox",
+        "serrated_cleaver",
         "bone_dagger"
       ],
       "stats": {
-        "attackSpeed": 30,
-        "agility": 8
+        "primaryStat": 10,
+        "attackSpeed": 32
       },
       "tags": [
-        "attackspeed",
-        "attributes"
+        "primary",
+        "attack",
+        "speed"
       ],
       "passives": [
         {
           "kind": "everyNthHit",
           "name": "Wraith Echo",
+          "text": "Every third basic attack deals 35 bonus damage.",
           "amount": 35,
-          "count": 3,
-          "text": "Every third basic attack deals 35 bonus damage."
+          "count": 3
         }
       ],
+      "effect": "Every third attack deals 35 bonus damage.",
       "lore": "Strung with the hair of a drowned archer. It sings on the draw."
-    },
-    {
-      "id": "crown_of_cinders",
-      "name": "Crown of Cinders",
-      "tier": "legendary",
-      "cost": 360,
-      "unique": true,
-      "components": [
-        "grimoire_of_whispers",
-        "ashwood_wand"
-      ],
-      "stats": {
-        "spellPower": 28,
-        "mana": 250
-      },
-      "tags": [
-        "spell",
-        "mana"
-      ],
-      "passives": [
-        {
-          "kind": "spellPowerAmp",
-          "name": "Kindled Mind",
-          "amount": 25,
-          "text": "Increases your total spell power by 25%."
-        }
-      ],
-      "lore": "It was a king's crown until the king caught fire."
     },
     {
       "id": "voidglass_orb",
@@ -808,19 +920,17 @@
       "cost": 300,
       "unique": true,
       "components": [
-        "ashwood_wand",
-        "circlet_of_the_owl",
-        "nightglass_shard"
+        "grimoire_of_whispers",
+        "ashwood_wand"
       ],
       "stats": {
-        "spellPower": 16,
-        "intelligence": 8,
-        "mana": 200
+        "primaryStat": 14,
+        "mana": 300
       },
       "tags": [
+        "primary",
         "spell",
         "mana",
-        "attributes",
         "active"
       ],
       "use": {
@@ -830,31 +940,61 @@
         "scaling": 2,
         "radius": 400,
         "cooldown": 45,
-        "text": "Deal 80 + 2x INT spell damage to your target and every enemy within 4 m of it. 45 s cooldown."
+        "text": "Deal 80 + 2x primary stat damage to your target and every enemy within 4 m of it. 45 s cooldown."
       },
+      "effect": "Active: burst your target and everything within 4 m.",
       "lore": "Look into it and it looks back, hungry."
+    },
+    {
+      "id": "moonwell_codex",
+      "name": "Moonwell Codex",
+      "tier": "legendary",
+      "cost": 300,
+      "unique": true,
+      "components": [
+        "grimoire_of_whispers",
+        "pilgrims_idol"
+      ],
+      "stats": {
+        "primaryStat": 10,
+        "mana": 500,
+        "manaRegen": 5
+      },
+      "tags": [
+        "primary",
+        "mana",
+        "regen"
+      ],
+      "passives": [
+        {
+          "kind": "manaRefund",
+          "name": "Moonwell",
+          "text": "Your abilities refund 20% of their mana cost.",
+          "amount": 20
+        }
+      ],
+      "effect": "Abilities refund 20% of their mana cost.",
+      "lore": "Its pages refill overnight, like a well under the moon."
     },
     {
       "id": "hourglass_of_ages",
       "name": "Hourglass of Ages",
       "tier": "legendary",
-      "cost": 310,
+      "cost": 280,
       "unique": true,
       "components": [
-        "sandglass_charm",
-        "circlet_of_the_owl"
+        "oathkeeper_charm",
+        "ashwood_wand"
       ],
       "stats": {
+        "primaryStat": 8,
         "cooldownReduction": 12,
-        "intelligence": 8,
-        "spellPower": 10
+        "health": 200
       },
       "tags": [
+        "primary",
         "cooldown",
-        "spell",
-        "attributes",
-        "active",
-        "defense"
+        "active"
       ],
       "use": {
         "kind": "selfBarrier",
@@ -865,90 +1005,62 @@
         "cooldown": 60,
         "text": "For 4 seconds take 60% less damage, and heal 10% of your maximum health. 60 s cooldown."
       },
+      "effect": "Active: 60% damage reduction and a 10% heal.",
       "lore": "Turn it, and the last four heartbeats never happened."
     },
     {
       "id": "gravewarden_bulwark",
       "name": "Gravewarden Bulwark",
       "tier": "legendary",
-      "cost": 300,
+      "cost": 280,
       "unique": true,
       "components": [
         "chainmail_of_the_fallen",
         "bloodstone_shard"
       ],
       "stats": {
-        "health": 350,
-        "armor": 25
+        "health": 400,
+        "armor": 35,
+        "damageBlock": 12
       },
       "tags": [
         "health",
         "armor",
-        "defense"
+        "defense",
+        "block"
       ],
       "passives": [
         {
           "kind": "thorns",
           "name": "Iron Retribution",
-          "amount": 25,
-          "text": "Attackers take 25% of the basic-attack damage they deal to you."
+          "text": "Attackers take 25% of the basic-attack damage they deal to you.",
+          "amount": 25
         }
       ],
+      "effect": "Blocks 12 damage from every hit; attackers take 25% back.",
       "lore": "Tower-shield of the cemetery watch. Spikes point both ways."
-    },
-    {
-      "id": "aegis_of_the_last_oath",
-      "name": "Aegis of the Last Oath",
-      "tier": "legendary",
-      "cost": 335,
-      "unique": true,
-      "components": [
-        "chainmail_of_the_fallen",
-        "hexweave_cloak"
-      ],
-      "stats": {
-        "armor": 18,
-        "ward": 18,
-        "health": 200
-      },
-      "tags": [
-        "armor",
-        "ward",
-        "health",
-        "defense",
-        "support",
-        "active"
-      ],
-      "use": {
-        "kind": "shieldAllies",
-        "name": "Oathshield",
-        "radius": 700,
-        "duration": 3,
-        "cooldown": 75,
-        "text": "You and allies within 7 m take 40% less damage for 3 seconds. 75 s cooldown."
-      },
-      "lore": "Sworn on it: no one behind me falls."
     },
     {
       "id": "stoneheart",
       "name": "Stoneheart",
       "tier": "legendary",
-      "cost": 335,
+      "cost": 300,
       "unique": true,
       "components": [
         "bloodstone_shard",
-        "gravemoss_pendant",
+        "bloodstone_shard",
         "gauntlet_of_the_ox"
       ],
       "stats": {
-        "health": 450,
-        "strength": 8,
-        "healthRegen": 4
+        "health": 600,
+        "primaryStat": 6,
+        "healthRegen": 4,
+        "damageReduction": 6
       },
       "tags": [
         "health",
+        "primary",
         "regen",
-        "attributes",
         "defense"
       ],
       "passives": [
@@ -962,26 +1074,29 @@
           "text": "Dropping below 30% health grants 40% damage reduction for 4 seconds. 45 s cooldown."
         }
       ],
+      "effect": "6% less damage from everything; a last-stand shield below 30%.",
       "lore": "The mountain's heart does not break. It only cools."
     },
     {
       "id": "gravebell",
       "name": "Gravebell",
       "tier": "legendary",
-      "cost": 275,
+      "cost": 260,
       "unique": true,
       "components": [
         "mantle_of_ash"
       ],
       "stats": {
-        "ward": 20,
-        "health": 250
+        "ward": 30,
+        "health": 350,
+        "damageBlock": 8
       },
       "tags": [
         "ward",
         "health",
         "defense",
-        "active"
+        "active",
+        "block"
       ],
       "use": {
         "kind": "tauntArea",
@@ -991,26 +1106,26 @@
         "cooldown": 30,
         "text": "Every monster within 8 m must attack you for 3 seconds. 30 s cooldown."
       },
+      "effect": "Active: taunt every monster within 8 m.",
       "lore": "Rung for every soldier the gate has swallowed."
     },
     {
       "id": "censer_of_dawn",
       "name": "Censer of Dawn",
       "tier": "legendary",
-      "cost": 300,
+      "cost": 230,
       "unique": true,
       "components": [
-        "pilgrims_idol",
-        "ashwood_wand"
+        "aether_conduit"
       ],
       "stats": {
-        "spellPower": 12,
+        "primaryStat": 10,
         "manaRegen": 5
       },
       "tags": [
-        "spell",
-        "regen",
+        "primary",
         "support",
+        "heal",
         "mana"
       ],
       "passives": [
@@ -1021,93 +1136,27 @@
           "text": "Your healing is 15% stronger."
         }
       ],
+      "effect": "Your healing is 15% stronger.",
       "lore": "Its smoke smells of the morning after a battle."
-    },
-    {
-      "id": "chalice_of_mercy",
-      "name": "Chalice of Mercy",
-      "tier": "legendary",
-      "cost": 275,
-      "unique": true,
-      "components": [
-        "pilgrims_idol",
-        "nightglass_shard",
-        "circlet_of_the_owl"
-      ],
-      "stats": {
-        "intelligence": 8,
-        "mana": 250,
-        "manaRegen": 4
-      },
-      "tags": [
-        "support",
-        "mana",
-        "regen",
-        "attributes",
-        "active"
-      ],
-      "use": {
-        "kind": "healAllies",
-        "name": "Outpouring",
-        "amount": 60,
-        "scaling": 2.5,
-        "radius": 800,
-        "cooldown": 60,
-        "text": "Heal every ally within 8 m for 60 + 2.5x INT. 60 s cooldown."
-      },
-      "lore": "It fills itself. No one asks with what."
-    },
-    {
-      "id": "banner_of_the_vigil",
-      "name": "Banner of the Vigil",
-      "tier": "legendary",
-      "cost": 300,
-      "unique": true,
-      "components": [
-        "sandglass_charm",
-        "bloodstone_shard"
-      ],
-      "stats": {
-        "health": 200,
-        "cooldownReduction": 10
-      },
-      "tags": [
-        "health",
-        "cooldown",
-        "support",
-        "regen"
-      ],
-      "passives": [
-        {
-          "kind": "auraRegen",
-          "name": "Vigil",
-          "amount": 3,
-          "radius": 1000,
-          "text": "Allies within 10 m regenerate 3 health per second."
-        }
-      ],
-      "lore": "Carried at the front so the rear remembers why."
     },
     {
       "id": "ravenfeather_mantle",
       "name": "Ravenfeather Mantle",
       "tier": "legendary",
-      "cost": 265,
+      "cost": 220,
       "unique": true,
       "components": [
         "hexweave_cloak",
-        "band_of_the_fox"
+        "bone_dagger"
       ],
       "stats": {
-        "ward": 15,
-        "agility": 6,
+        "ward": 20,
+        "attackSpeed": 10,
         "moveSpeed": 5
       },
       "tags": [
         "ward",
         "speed",
-        "attributes",
-        "defense",
         "active"
       ],
       "use": {
@@ -1118,7 +1167,357 @@
         "cooldown": 40,
         "text": "Gain 40% move speed for 3 seconds and shake off slows. 40 s cooldown."
       },
+      "effect": "Active: burst of speed that shakes off slows.",
       "lore": "When the flock scatters, look for the one that stayed."
+    },
+    {
+      "id": "aegis_of_the_last_oath",
+      "name": "Aegis of the Last Oath",
+      "tier": "legendary",
+      "cost": 280,
+      "unique": true,
+      "components": [
+        "chainmail_of_the_fallen",
+        "hexweave_cloak"
+      ],
+      "stats": {
+        "armor": 25,
+        "ward": 25,
+        "health": 250
+      },
+      "tags": [
+        "armor",
+        "ward",
+        "health",
+        "defense",
+        "support",
+        "active"
+      ],
+      "use": {
+        "kind": "partyBarrier",
+        "name": "Oathshield",
+        "amount": 180,
+        "scaling": 2,
+        "radius": 800,
+        "duration": 6,
+        "cooldown": 75,
+        "text": "You and allies within 8 m gain a shield absorbing 180 + 2x primary stat damage for 6 seconds. 75 s cooldown."
+      },
+      "effect": "Active: shield the party around you (180 + 2x primary).",
+      "lore": "Sworn on it: no one behind me falls."
+    },
+    {
+      "id": "banner_of_the_vigil",
+      "name": "Banner of the Vigil",
+      "tier": "legendary",
+      "cost": 220,
+      "unique": true,
+      "components": [
+        "oathkeeper_charm",
+        "boiled_jerkin"
+      ],
+      "stats": {
+        "health": 300,
+        "armor": 20,
+        "cooldownReduction": 10
+      },
+      "tags": [
+        "health",
+        "armor",
+        "cooldown",
+        "support",
+        "active",
+        "aura"
+      ],
+      "use": {
+        "kind": "partyBuff",
+        "name": "Raise the Vigil",
+        "radius": 900,
+        "duration": 10,
+        "cooldown": 90,
+        "buff": {
+          "armor": 250
+        },
+        "text": "You and allies within 9 m gain +250 armor for 10 seconds. 90 s cooldown."
+      },
+      "effect": "Active: allies within 9 m gain +250 armor for 10 s.",
+      "lore": "Carried at the front so the rear remembers why."
+    },
+    {
+      "id": "chalice_of_mercy",
+      "name": "Chalice of Mercy",
+      "tier": "legendary",
+      "cost": 230,
+      "unique": true,
+      "components": [
+        "aether_conduit",
+        "nightglass_shard"
+      ],
+      "stats": {
+        "primaryStat": 6,
+        "mana": 300,
+        "manaRegen": 4
+      },
+      "tags": [
+        "primary",
+        "mana",
+        "support",
+        "heal",
+        "active"
+      ],
+      "use": {
+        "kind": "healAllies",
+        "name": "Outpouring",
+        "amount": 200,
+        "scaling": 0,
+        "radius": 450,
+        "cooldown": 30,
+        "text": "Heal yourself and allies within 4.5 m for 200. 30 s cooldown."
+      },
+      "effect": "Active: heal a small area for 200.",
+      "lore": "It fills itself. No one asks with what."
+    },
+    {
+      "id": "lifebinders_reliquary",
+      "name": "Lifebinder's Reliquary",
+      "tier": "legendary",
+      "cost": 260,
+      "unique": true,
+      "components": [
+        "aether_conduit",
+        "bloodstone_shard"
+      ],
+      "stats": {
+        "primaryStat": 8,
+        "health": 300,
+        "manaRegen": 3
+      },
+      "tags": [
+        "primary",
+        "support",
+        "heal",
+        "health",
+        "active"
+      ],
+      "use": {
+        "kind": "healTarget",
+        "name": "Bind the Living",
+        "amount": 1000,
+        "radius": 1200,
+        "cooldown": 90,
+        "text": "Heal your targeted ally (or yourself) within 12 m for 1,000. 90 s cooldown."
+      },
+      "effect": "Active: heal one ally for 1,000.",
+      "lore": "It holds a heartbeat in reserve for whoever needs it most."
+    },
+    {
+      "id": "artificers_heartforge",
+      "name": "Artificer's Heartforge",
+      "tier": "legendary",
+      "cost": 380,
+      "unique": true,
+      "uniqueGroup": "path",
+      "components": [
+        "aether_conduit",
+        "ashwood_wand"
+      ],
+      "stats": {
+        "primaryStat": 16,
+        "cooldownReduction": 10,
+        "mana": 200
+      },
+      "tags": [
+        "path",
+        "construct",
+        "primary",
+        "cooldown"
+      ],
+      "passives": [
+        {
+          "kind": "constructLimit",
+          "name": "Second Forge",
+          "text": "+1 live construct of each recipe (turrets, pylons, traps, skitters).",
+          "count": 1
+        },
+        {
+          "kind": "constructShield",
+          "name": "Aegis Plating",
+          "text": "Your constructs have +20% health and spawn with a shield worth 30% of their maximum health.",
+          "amount": 30,
+          "threshold": 20
+        }
+      ],
+      "effect": "Construct path: +1 construct per recipe; constructs are shielded.",
+      "lore": "It still beats. Whatever it builds inherits the rhythm."
+    },
+    {
+      "id": "soulbinders_crook",
+      "name": "Soulbinder's Crook",
+      "tier": "legendary",
+      "cost": 360,
+      "unique": true,
+      "uniqueGroup": "path",
+      "components": [
+        "grimoire_of_whispers",
+        "bone_dagger"
+      ],
+      "stats": {
+        "primaryStat": 18,
+        "mana": 300,
+        "attackSpeed": 10
+      },
+      "tags": [
+        "path",
+        "summon",
+        "primary",
+        "mana"
+      ],
+      "passives": [
+        {
+          "kind": "summonPower",
+          "name": "Shepherd of Souls",
+          "text": "Your summons and pets have +35% health and deal +35% damage.",
+          "amount": 35
+        }
+      ],
+      "effect": "Summon path: summons and pets +35% health and damage.",
+      "lore": "The flock follows the crook, alive or otherwise."
+    },
+    {
+      "id": "heart_of_cataclysm",
+      "name": "Heart of the Cataclysm",
+      "tier": "legendary",
+      "cost": 400,
+      "unique": true,
+      "uniqueGroup": "path",
+      "components": [
+        "grimoire_of_whispers",
+        "nightglass_shard"
+      ],
+      "stats": {
+        "primaryStat": 18,
+        "mana": 500
+      },
+      "tags": [
+        "path",
+        "aoe",
+        "primary",
+        "mana"
+      ],
+      "passives": [
+        {
+          "kind": "areaAmp",
+          "name": "Widening Ruin",
+          "text": "Area abilities deal +20% damage, and your ground areas are 20% wider.",
+          "amount": 20,
+          "radius": 20
+        }
+      ],
+      "effect": "Area path: area abilities +20% damage and 20% wider.",
+      "lore": "A coal from the first fire, still looking for a world to end."
+    },
+    {
+      "id": "shackles_of_the_pale_king",
+      "name": "Shackles of the Pale King",
+      "tier": "legendary",
+      "cost": 370,
+      "unique": true,
+      "uniqueGroup": "path",
+      "components": [
+        "mantle_of_ash",
+        "sandglass_charm"
+      ],
+      "stats": {
+        "primaryStat": 8,
+        "health": 350,
+        "ward": 25,
+        "cooldownReduction": 10
+      },
+      "tags": [
+        "path",
+        "control",
+        "primary",
+        "health",
+        "ward"
+      ],
+      "passives": [
+        {
+          "kind": "controlAmp",
+          "name": "Pale Dominion",
+          "text": "Your stuns, slows and silences last 30% longer; you deal 12% more damage to enemies under your control.",
+          "amount": 30,
+          "threshold": 12
+        }
+      ],
+      "effect": "Control path: your crowd control lasts 30% longer.",
+      "lore": "He is long dead. The chains never noticed."
+    },
+    {
+      "id": "sigil_of_apotheosis",
+      "name": "Sigil of Apotheosis",
+      "tier": "legendary",
+      "cost": 390,
+      "unique": true,
+      "uniqueGroup": "path",
+      "components": [
+        "oathkeeper_charm",
+        "gauntlet_of_the_ox"
+      ],
+      "stats": {
+        "primaryStat": 10,
+        "health": 350,
+        "cooldownReduction": 15
+      },
+      "tags": [
+        "path",
+        "ultimate",
+        "primary",
+        "cooldown"
+      ],
+      "passives": [
+        {
+          "kind": "ultimateUpgrade",
+          "name": "Apotheosis",
+          "text": "Your ultimate gains an extra effect (its upgrade is listed on the ultimate's tooltip)."
+        }
+      ],
+      "effect": "Ultimate path: your ultimate gains an extra effect.",
+      "lore": "Carve it on the blade, the shield or the heart: it only asks for your finest hour."
+    },
+    {
+      "id": "stormhowl_ravager",
+      "name": "Stormhowl Ravager",
+      "tier": "legendary",
+      "cost": 380,
+      "unique": true,
+      "uniqueGroup": "path",
+      "components": [
+        "serrated_cleaver",
+        "gauntlet_of_the_ox"
+      ],
+      "stats": {
+        "primaryStat": 18,
+        "attackSpeed": 20,
+        "health": 200
+      },
+      "tags": [
+        "path",
+        "attack",
+        "primary",
+        "speed"
+      ],
+      "passives": [
+        {
+          "kind": "attackSplash",
+          "name": "Howling Cleave",
+          "text": "Basic attacks deal +15% damage and cleave 40% of it to enemies within 2.5 m of the target.",
+          "amount": 40,
+          "radius": 250,
+          "threshold": 15
+        }
+      ],
+      "effect": "Attack path: basic attacks hit harder and cleave 40%.",
+      "lore": "It screams on the backswing. The pack answers."
     }
   ]
 }

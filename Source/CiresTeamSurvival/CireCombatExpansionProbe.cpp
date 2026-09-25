@@ -35,6 +35,7 @@
 #include "CireAbilityVFX.h" // ability-vfx
 #include "CireTechConstructs.h" // new-champions
 #include "CireSignatureSkills.h" // new-champions
+#include "CirePets.h" // pets
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireExpansion,Log,All);
@@ -109,6 +110,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireAbilityVFX::RunTests(Mode)&&Good; // ability-vfx: shape-true telegraphs, line indicators, lifecycles, release sync
     Good=CireTechConstructs::RunSmoke(Mode)&&Good; // new-champions: Aetheri Constructs (place, attack/aura, expire, limits, destroy, skitters, monsters, arena)
     Good=CireSignatureSkills::RunSmoke(Mode)&&Good; // new-champions: kits, gunblade basic, glaive bounces, marks, mount, Aetheri race
+    Good=CirePets::RunSmoke(Mode)&&Good; // pets: companions (summon, follow, stances, commands, threat share, death/revive, scaling, on-foot Huntress)
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }
 #endif

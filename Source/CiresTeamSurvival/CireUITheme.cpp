@@ -230,6 +230,7 @@ const TArray<FString>& CireUITheme::AssetPaths()
         for (const FCireUITheme& T : All())
             for (const FString& Path : {T.AtlasPath, T.FillPath})
                 Paths.Add(Path.Contains(TEXT(".")) ? Path : Path + TEXT(".") + FPackageName::GetShortName(Path));
+        Paths.Add(TEXT("/Game/UI/Themes/Common/T_BarCapsule.T_BarCapsule")); // rounded bars
     return Paths;
 }
 

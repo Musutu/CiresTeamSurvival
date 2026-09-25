@@ -20,13 +20,27 @@ enum class ItemStat : std::uint8_t
 {
     Strength, Agility, Intelligence, Health, Mana, AttackDamage, SpellPower, Armor, Ward,
     AttackSpeed, CritChance, Lifesteal, CooldownReduction, MoveSpeed, HealthRegen, ManaRegen,
-    EnergyRegen, Count
+    EnergyRegen,
+    // items-v2 (Eric's universal-scaling ruling): items grant the owner's primary stat, flat pools,
+    // flat armor/ward, and completed-item mitigation.
+    Primary,          // adaptive: added to STR, AGI or INT, whichever is the owner's primary
+    DamageReduction,  // % of every incoming hit (after armor/ward), capped at 40%
+    DamageBlock,      // flat reduction of every incoming hit (after armor/ward), never below 25% of the hit
+    Count
 };
 constexpr int StatCount = static_cast<int>(ItemStat::Count);
 const char* StatKey(ItemStat stat);            // JSON key, e.g. "attackDamage"
 const char* StatLabel(ItemStat stat);          // UI label, e.g. "Attack Damage"
 bool StatIsPercent(ItemStat stat);
 bool ParseStatKey(const std::string& key, ItemStat& out);
+// items-v2 stat policy: every item may grant Primary, flat Health/Mana, flat Armor/Ward, regen,
+// attack speed, cooldown reduction and move speed; only legendary (completed) items may add
+// DamageReduction, DamageBlock, CritChance or Lifesteal; nothing grants STR/AGI/INT directly,
+// Attack Damage or Spell Power. Returns "" when the catalog follows the policy.
+constexpr double MaxItemDamageReduction = 40.0;   // percent
+constexpr double MinBlockedFraction = 0.25;       // a block never removes more than 75% of a hit
+// Incoming hit after the item mitigation specials (percent reduction, then flat block).
+double ApplyItemMitigation(double amount, double reductionPercent, double block);
 
 struct StatBlock
 {
@@ -55,7 +69,11 @@ enum class EffectKind : std::uint8_t
     ShieldAllies,   // allies within Radius gain the 40% guard for Duration seconds
     TauntArea,      // taunt monsters within Radius for Duration seconds
     HealAllies,     // heal allies within Radius for Amount + Scaling * INT
-    Haste           // +Amount % move speed for Duration seconds and cleanse slows
+    Haste,          // +Amount % move speed for Duration seconds and cleanse slows
+    // items-v2: group on-use actives
+    PartyBarrier,   // allies within Radius gain an absorb shield of Amount + Scaling * INT for Duration
+    PartyBuff,      // allies within Radius gain the Buff stats for Duration (e.g. +250 armor)
+    HealTarget      // heal the targeted ally (yourself when none) for Amount + Scaling * INT, Radius = range
 };
 bool ParseEffectKind(const std::string& key, EffectKind& out);
 const char* EffectKey(EffectKind kind);
@@ -81,7 +99,18 @@ enum class PassiveKind : std::uint8_t
     Thorns,           // reflect Amount % of basic-attack damage taken
     LowHealthShield,  // falling below Threshold % health grants the guard for Duration, Cooldown
     HealAmp,          // +Amount % healing done
-    AuraRegen         // allies within Radius regenerate Amount HP per second
+    AuraRegen,        // allies within Radius regenerate Amount HP per second
+    // items-v2: path-defining uniques and unique boots
+    ConstructLimit,   // +Count live constructs of each recipe (turrets, pylons, traps, skitters)
+    ConstructShield,  // constructs spawn with an absorb shield of Amount % of their max health; +Threshold % health
+    SummonPower,      // summons and pets: +Amount % health and damage
+    AreaAmp,          // area abilities: +Amount % damage and +Radius % radius (ground effects)
+    ControlAmp,       // crowd control you apply lasts +Amount % longer; +Threshold % damage to controlled enemies
+    UltimateUpgrade,  // your ultimate also triggers its Ability DB "ultimateUpgrade" effect
+    AttackSplash,     // basic attacks deal +Threshold % damage and splash Amount % to enemies within Radius cm
+    ManaRefund,       // abilities refund Amount % of their mana cost
+    DodgeCharges,     // +Count dodge-roll charges
+    RollHaste         // a dodge roll grants +Amount % move speed for Duration seconds
 };
 bool ParsePassiveKind(const std::string& key, PassiveKind& out);
 
@@ -160,6 +189,9 @@ private:
     int ComputeTotal(std::size_t index, std::vector<int>& state, std::string& error);
 };
 
+bool StatAllowed(ItemStat stat, ItemTier tier);          // items-v2 stat policy (see above)
+std::string ValidateStatPolicy(const Catalog& catalog);
+
 // Where an item lands after purchase and which owned parts the recipe consumes.
 struct PurchasePlan
 {
@@ -212,6 +244,17 @@ struct Totals
     double LowHealthThreshold = 0, LowHealthDuration = 0, LowHealthCooldown = 0;
     double HealAmp = 0;
     double AuraRegen = 0, AuraRadius = 0;
+    // items-v2
+    int ConstructLimitBonus = 0;
+    double ConstructShield = 0, ConstructHealth = 0;
+    double SummonPower = 0;
+    double AreaDamage = 0, AreaRadius = 0;
+    double ControlDuration = 0, ControlDamage = 0;
+    bool UltimateUpgrade = false;
+    double SplashPercent = 0, SplashRadius = 0, BasicDamageBonus = 0;
+    double ManaRefund = 0;
+    int DodgeCharges = 0;
+    double RollHaste = 0, RollHasteDuration = 0;
 };
 Totals ComputeTotals(const Catalog& catalog, const Inventory& inventory,
                      const std::vector<StatBlock>& activeBuffs = {});
@@ -220,6 +263,38 @@ Totals ComputeTotals(const Catalog& catalog, const Inventory& inventory,
 enum class UseResult : std::uint8_t { Used, Empty, NoEffect, OnCooldown };
 UseResult UseSlot(const Catalog& catalog, Inventory& inventory, int index, bool belt,
                   double now, Effect& effect);
+
+// Label for a unique group in messages and the shop ("path" -> "path-defining unique").
+std::string UniqueGroupLabel(const std::string& group);
+// The owned item that blocks buying `id` because of its unique group (nullptr when none).
+const ItemDef* UniqueGroupConflict(const Catalog& catalog, const Inventory& inventory, const std::string& id);
+
+// A recommended build (the items a role ends with): every id exists and is purchasable, at most
+// six bag items, no two items share a unique id or unique group. Returns "" when valid.
+std::string ValidateBuild(const Catalog& catalog, const std::vector<std::string>& ids);
+
+// ---------------------------------------------------------------- mana economy (items-v2)
+// Mana regenerates Flat + Percent x max mana per second (+ item regen), times passives such as
+// Deep Reserves; mana costs grow with champion level so the pool/cost ratio stays tight.
+// Energy is untouched: 100 points, fast regen, flat costs (the snappy resource).
+struct ManaRules
+{
+    double RegenFlat = 2.0;
+    double RegenPercent = 0.008;   // of max mana per second (was 0.015 with flat costs)
+    double CostPerLevel = 0.05;    // mana cost x (1 + CostPerLevel x (level - 1))
+    double MaxCostScale = 3.0;
+};
+double ManaRegenPerSecond(const ManaRules& rules, double maxMana, double itemRegen, double regenMultiplier = 1.0);
+double ManaCostScale(const ManaRules& rules, int heroLevel);
+
+// ---------------------------------------------------------------- dodge-roll charges (items-v2)
+// Charges refill one at a time; ReadyAt is when the next missing charge returns.
+struct ChargeState { int Charges = 1; double ReadyAt = 0; };
+int AvailableCharges(const ChargeState& state, int maxCharges, double rechargeSeconds, double now);
+// Spends one charge (refilling lazily first). Returns false when none is available.
+bool SpendCharge(ChargeState& state, int maxCharges, double rechargeSeconds, double now);
+// Seconds until the next charge returns (0 when full).
+double ChargeCooldown(const ChargeState& state, int maxCharges, double rechargeSeconds, double now);
 
 // Armor/ward mitigation: value / (value + 100), never negative, capped at 75%.
 double Mitigation(double value);

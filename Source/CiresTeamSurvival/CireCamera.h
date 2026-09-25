@@ -33,6 +33,10 @@ namespace CireCamera
         bool bPressEligible = true;
         /** The cursor is over a HUD panel; drags starting there never orbit. */
         bool bPointerOverInterface = false;
+        /** A ground-aim reticle is armed: clean left clicks confirm it; auto-follow pauses (no reticle drift). */
+        bool bAiming = false;
+        /** Stop-to-cast: drive/strafe input is held back (turning still works) until a movement key is pressed again. */
+        bool bHoldMovement = false;
         /** Wheel steps this frame (+ zooms in) that were not consumed by the HUD. */
         float WheelSteps = 0.f;
         FCireUISettings* Options = nullptr; // wheel zoom writes CameraDistance
@@ -44,6 +48,10 @@ namespace CireCamera
         /** Left button released without dragging: select under this screen position. */
         bool bClick = false;
         FVector2D ClickPosition = FVector2D::ZeroVector;
+        /** Right button pressed and released over the world without dragging the camera (quick, < 5 counts). */
+        bool bRightClick = false;
+        /** A movement key was newly pressed this frame (releases a stop-to-cast hold). */
+        bool bMovementPressed = false;
     };
 
     CIRESTEAMSURVIVAL_API FResult Tick(ACireController* Controller, ACireHero* Hero, float DeltaSeconds, const FFrame& Frame);

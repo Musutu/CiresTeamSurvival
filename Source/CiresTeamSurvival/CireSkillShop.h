@@ -96,6 +96,10 @@ namespace CireSkillShop
     CIRESTEAMSURVIVAL_API void ApplyCastLevel(ACireHero* Hero, int32 Slot, const FString& Id, float BaseMana, float BaseEnergy);
     // Resource check with the level's cost (casts refuse when the scaled cost is unaffordable).
     CIRESTEAMSURVIVAL_API bool CanPayCast(const ACireHero* Hero, const FString& Id, float BaseMana, float BaseEnergy);
+    /** items-v2: the mana/energy a cast really costs (Skill Shop level x champion-level mana scaling). */
+    CIRESTEAMSURVIVAL_API void ScaledCost(const ACireHero* Hero, const FString& Id, float BaseMana, float BaseEnergy, float& OutMana, float& OutEnergy);
+    /** items-v2: the message for the last failed CanPayCast ("Not enough mana (32 / 48)."). */
+    CIRESTEAMSURVIVAL_API FString CostFailText();
 #if !UE_BUILD_SHIPPING
     // In-engine checks (CireSkillShopTests.cpp): economy, mode, buy/level, cast scaling, bots, builds.
     CIRESTEAMSURVIVAL_API bool RunSmoke(ACireGameMode* Mode);

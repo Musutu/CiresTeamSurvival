@@ -90,10 +90,13 @@ bool bSuppressFlash = false;
 double Now() { return State.DebugNow >= 0 ? State.DebugNow : FPlatformTime::Seconds(); }
 FVector2D VirtualPointer(-1, -1);
 
-const TCHAR* FilterTags[] = {TEXT("attack"), TEXT("attackspeed"), TEXT("crit"), TEXT("lifesteal"), TEXT("spell"), TEXT("mana"),
-    TEXT("health"), TEXT("armor"), TEXT("ward"), TEXT("cooldown"), TEXT("speed"), TEXT("support"), TEXT("active"), TEXT("consumable")};
-const TCHAR* FilterNames[] = {TEXT("Attack Damage"), TEXT("Attack Speed"), TEXT("Critical Strike"), TEXT("Lifesteal"), TEXT("Spell Power"), TEXT("Mana & Regen"),
-    TEXT("Health"), TEXT("Armor"), TEXT("Spell Ward"), TEXT("Cooldowns"), TEXT("Movement"), TEXT("Support"), TEXT("Active Use"), TEXT("Consumables")};
+// items-v2: items grant the primary stat and flat stats; path-defining uniques get their own filter.
+const TCHAR* FilterTags[] = {TEXT("path"), TEXT("primary"), TEXT("attack"), TEXT("crit"), TEXT("mana"), TEXT("health"), TEXT("armor"),
+    TEXT("ward"), TEXT("defense"), TEXT("cooldown"), TEXT("boots"), TEXT("support"), TEXT("active"), TEXT("consumable")};
+const TCHAR* FilterNames[] = {TEXT("Path Uniques"), TEXT("Primary Stat"), TEXT("Attack & Speed"), TEXT("Crit & Lifesteal"), TEXT("Mana & Regen"),
+    TEXT("Health"), TEXT("Armor"), TEXT("Spell Ward"), TEXT("Mitigation"), TEXT("Cooldowns"), TEXT("Boots"), TEXT("Support"), TEXT("Active Use"), TEXT("Consumables")};
+TWeakObjectPtr<const ACireHero> GShopViewer; // items-v2: whose primary stat "+X Primary Stat" names
+bool IsPathUnique(const CI::ItemDef& Item) { return Item.UniqueGroup == "path"; }
 constexpr int32 FilterCount = UE_ARRAY_COUNT(FilterTags);
 
 std::string Utf8(FName Id) { return std::string(TCHAR_TO_UTF8(*Id.ToString())); }
@@ -149,7 +152,7 @@ void ShowError(ACireHUD& HUD, FName Id, int32 Slot, bool bBelt, const FString& R
     State.Shake.Id = Id; State.Shake.Slot = Slot; State.Shake.bBelt = bBelt; State.Shake.Start = Now(); State.Shake.bError = true;
     State.ShakeReason = Reason;
     AddToast(TEXT("Cannot do that"), Reason, Id, Red, 3.2f);
-    Play(HUD, TEXT("S_ShopError"), .8f);
+    Play(HUD, Reason.Contains(TEXT("gold")) ? TEXT("S_ShopErrorGold") : TEXT("S_ShopError"), .8f); // audio: not-enough-gold has its own cue
 }
 
 float ShakeOffset(FName Id, int32 Slot = -2, bool bBelt = false)
@@ -222,7 +225,7 @@ void ProcessFeedback(ACireHUD& HUD, ACireHero* Hero)
             Fly.ToSkillSlot = FMath::Clamp(F.Slot, 0, 7);
             State.Flies.Add(Fly);
             AddToast(bLevel ? TEXT("Skill levelled up") : TEXT("Skill learned"), F.Message, F.ItemId, bLevel ? Teal : Purple, 3.5f);
-            Play(HUD, TEXT("S_ShopBuy"));
+            Play(HUD, TEXT("S_SkillLearn")); // audio: Skill Shop buy (AudioCues.json shopLegacy -> ui_skill_buy)
             if (bLevel) Play(HUD, TEXT("S_LootPickup"), .5f);
             break;
         }
@@ -382,7 +385,7 @@ void ProcessLoot(ACireHUD& HUD, ACireHero* Hero)
             FFloater Floater; Floater.Text = FString::Printf(TEXT("+%dg"), Report.Gold); Floater.Pos = State.GoldPos; Floater.Start = Now() + .3; Floater.Color = BrightGold;
             State.Floaters.Add(Floater);
         }
-        const TCHAR* Sounds[] = {TEXT("S_LootPickup"), TEXT("S_LootPickup"), TEXT("S_LootPickup"), TEXT("S_TeleportArrive")};
+        const TCHAR* Sounds[] = {TEXT("S_LootCommon"), TEXT("S_LootMagic"), TEXT("S_LootRare"), TEXT("S_LootEpic")}; // audio: loot window by rarity
         Play(HUD, Sounds[FMath::Clamp(Report.Rarity, 0, 3)], .65f + .15f * Report.Rarity);
         if (Report.Rarity >= 2) Play(HUD, TEXT("S_ShopBuy"), .5f);
     }
@@ -864,7 +867,9 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
     const TArray<FCireShopSkill> Catalog = CireSkillShop::CatalogFor(Hero);
     TArray<const FCireShopSkill*> BySection[SectionCount];
     for (const FCireShopSkill& Skill : Catalog) BySection[SectionOf(Skill.Id)].Add(&Skill);
-    if (State.SkillFilter == 1) State.HiddenSections = ~(1u << SectionIndex(TEXT("construct"))); // new-champions: Constructs only
+    // new-champions / pets: the old CONSTRUCTS / COMPANION filter maps onto the section chips.
+    if (State.SkillFilter == 1) State.HiddenSections = ~(1u << SectionIndex(TEXT("construct")));
+    if (State.SkillFilter == 2) State.HiddenSections = ~(1u << SectionIndex(TEXT("summon")));
     State.SkillFilter = 0;
     // Filter chips.
     {
@@ -1211,7 +1216,14 @@ FString CireShopUI::StatLines(FName ItemId)
         if (Value == 0) continue;
         const bool bWhole = FMath::IsNearlyEqual(Value, FMath::RoundToDouble(Value));
         const FString Number = bWhole ? FString::Printf(TEXT("%.0f"), Value) : FString::Printf(TEXT("%.1f"), Value);
-        Lines += FString::Printf(TEXT("+%s%s %s\n"), *Number, CI::StatIsPercent(Stat) ? TEXT("%") : TEXT(""), UTF8_TO_TCHAR(CI::StatLabel(Stat)));
+        FString Label = UTF8_TO_TCHAR(CI::StatLabel(Stat));
+        if (Stat == CI::ItemStat::Primary) // items-v2: adaptive primary stat
+        {
+            const ACireHero* Viewer = GShopViewer.Get();
+            const TCHAR* Mine = !Viewer ? nullptr : Viewer->PrimaryStat() == Cires::PrimaryStat::Strength ? TEXT("STR") : Viewer->PrimaryStat() == Cires::PrimaryStat::Agility ? TEXT("AGI") : TEXT("INT");
+            if (Mine) Label += FString::Printf(TEXT(" (%s for you)"), Mine);
+        }
+        Lines += FString::Printf(TEXT("+%s%s %s\n"), *Number, CI::StatIsPercent(Stat) ? TEXT("%") : TEXT(""), *Label);
     }
     return Lines.TrimEnd();
 }
@@ -1221,7 +1233,8 @@ FString CireShopUI::ItemTooltip(FName ItemId, int32 PriceForYou)
     const CI::ItemDef* Item = CireItems::Find(ItemId);
     if (!Item) return FString();
     const auto& D = CireItems::Get();
-    FString Body = FString::Printf(TEXT("%s item  |  %dg"), UTF8_TO_TCHAR(CI::TierName(Item->Tier)), Item->TotalCost);
+    FString Body = FString::Printf(TEXT("%s%s item  |  %dg"), IsPathUnique(*Item) ? TEXT("Path-defining ") : TEXT(""), UTF8_TO_TCHAR(CI::TierName(Item->Tier)), Item->TotalCost);
+    if (const FString* Effect = D.EffectLine.Find(ItemId)) Body += TEXT("\n") + *Effect; // items-v2: one-line effect
     if (PriceForYou >= 0 && PriceForYou != Item->TotalCost) Body += FString::Printf(TEXT("  (your price %dg)"), PriceForYou);
     if (!Item->Purchasable) Body += TEXT("  |  loot only");
     const FString Stats = StatLines(ItemId);
@@ -1229,8 +1242,8 @@ FString CireShopUI::ItemTooltip(FName ItemId, int32 PriceForYou)
     if (const auto* Passives = D.PassiveText.Find(ItemId)) for (const FString& Line : *Passives) Body += TEXT("\nUNIQUE PASSIVE  ") + Line;
     if (const FString* Use = D.UseText.Find(ItemId); Use && !Use->IsEmpty())
         Body += (Item->Belt || Item->Instant ? TEXT("\nUSE  ") : TEXT("\nACTIVE  ")) + *Use;
-    if (Item->Unique) Body += TEXT("\nUnique: you may carry only one.");
-    if (!Item->UniqueGroup.empty()) Body += FString::Printf(TEXT("\nOnly one %s item may be carried."), UTF8_TO_TCHAR(Item->UniqueGroup.c_str()));
+    if (!Item->UniqueGroup.empty()) Body += FString::Printf(TEXT("\nOnly one %s may be carried."), UTF8_TO_TCHAR(CI::UniqueGroupLabel(Item->UniqueGroup).c_str()));
+    else if (Item->Unique) Body += TEXT("\nUnique: you may carry only one.");
     return Body;
 }
 
@@ -1240,6 +1253,7 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
     // Fly targets: the shop's bag strip while the shop is open, else the HUD bag bar.
     State.bShopDrawn = Controller && Controller->bShop;
     if (!Hero || !Hero->bDrafted || !Hero->Inventory) return;
+    GShopViewer = Hero; // items-v2
     UpdateGold(Hero);
     ProcessFeedback(HUD, Hero);
     ProcessLoot(HUD, Hero);
@@ -1437,7 +1451,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     else if (Access == CI::ShopAccess::Allowed) Status = TEXT("IN TOWN  ·  TRADING OPEN");
     else { Status = Access == CI::ShopAccess::NotInTown ? TEXT("CLOSED  ·  RETURN TO TOWN") : TEXT("CLOSED  ·  OPENS IN PREP"); bOpen = false; }
     const FString RoleKey = CireItems::RoleKey(Hero);
-    const FString RoleCaption = RoleKey == TEXT("tank") ? TEXT("TANK") : RoleKey == TEXT("support") ? TEXT("SUPPORT") : RoleKey == TEXT("caster") ? TEXT("SPELL DAMAGE") : TEXT("PHYSICAL DAMAGE");
+    const FString RoleCaption = RoleKey == TEXT("tank") ? TEXT("TANK") : RoleKey == TEXT("support") ? TEXT("SUPPORT") : RoleKey == TEXT("caster") ? TEXT("CASTER (AREA)") : RoleKey == TEXT("summoner") ? TEXT("SUMMONER") : RoleKey == TEXT("constructor") ? TEXT("CONSTRUCTS") : TEXT("ATTACKER");
     CireShopArt::CompassStar(P, X + 40, Y + 46, 15, Filigree * FLinearColor(1, 1, 1, .8f));
     CireShopArt::Spaced(P, FString::Printf(TEXT("YOUR CHAMPION  ·  %s"), *RoleCaption), X + 66, Y + 28, 7.f, .34f, Filigree * .85f, ECireFont::Display, false, false);
     P.Text(P.Fit(Hero->HeroName, 12, 230, ECireFont::Bold), X + 66, Y + 39, 12, Parchment, ECireFont::Bold);
@@ -1543,6 +1557,13 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
             P.Disc(OX, OY, 6.5f, FLinearColor(.08f, .4f, .15f, 1), 12);
             P.Line(OX - 3, OY, OX, OY + 3, Parchment, 1.5f); P.Line(OX, OY + 3, OX + 4, OY - 4, Parchment, 1.5f);
         }
+        if (IsPathUnique(*Item)) // items-v2: path-defining unique ribbon
+        {
+            const FLinearColor PathGold(1.f, .62f, .22f, 1);
+            P.Rect(CX0 + 2, CY0 + 2, 26, 11, FLinearColor(.25f, .1f, .02f, .92f));
+            P.Text(TEXT("PATH"), CX0 + 4, CY0 + 2, 8.f, PathGold, ECireFont::Bold);
+            Border(P, CX0 + 1, CY0 + 1, CW - 2, CH - 2, PathGold * FLinearColor(1, 1, 1, .55f), 1.2f);
+        }
         if (bNamed) CentredWrap(P, CireItems::DisplayName(Id), CX0 + CW * .5f, CY0 + S + 12, CW - 8, 9.5f, TC * 1.1f, ECireFont::Bold, 2, 0.5f);
         const FString Cost = FString::Printf(TEXT("%dg"), Price);
         const FLinearColor CostColor = bAffordable ? (Price < Item->TotalCost ? FLinearColor(.55f, 1.f, .5f, 1) : BrightGold) : FLinearColor(1.f, .42f, .38f, 1);
@@ -1600,20 +1621,20 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     }
     else
     {
-        TArray<FName> Tiers[4];
+        TArray<FName> Tiers[5];
         for (const FName Id : D.Order)
-            if (const CI::ItemDef* Item = CireItems::Find(Id); Item && Item->Purchasable && Matches(*Item)) Tiers[static_cast<int32>(Item->Tier)].Add(Id);
-        const TCHAR* Names[] = {TEXT("CONSUMABLES & TOMES"), TEXT("BASIC COMPONENTS"), TEXT("EPIC COMPONENTS"), TEXT("LEGENDARY")};
+            if (const CI::ItemDef* Item = CireItems::Find(Id); Item && Item->Purchasable && Matches(*Item)) Tiers[IsPathUnique(*Item) ? 4 : static_cast<int32>(Item->Tier)].Add(Id);
+        const TCHAR* Names[] = {TEXT("CONSUMABLES & TOMES"), TEXT("BASIC COMPONENTS"), TEXT("EPIC COMPONENTS"), TEXT("LEGENDARY"), TEXT("PATH-DEFINING UNIQUES  ·  ONE PER CHAMPION")};
         const float CW = 58, Gap = 5;
         const int32 PerRow = FMath::Max(1, FMath::FloorToInt((GW + Gap) / (CW + Gap)));
         // Card height fits every tier in the column (no scrolling, no pagination).
         int32 Rows = 0, Sections = 0;
-        for (int32 Tier = 0; Tier < 4; ++Tier) if (Tiers[Tier].Num() > 0) { Rows += FMath::DivideAndRoundUp(Tiers[Tier].Num(), PerRow); ++Sections; }
+        for (int32 Tier = 0; Tier < 5; ++Tier) if (Tiers[Tier].Num() > 0) { Rows += FMath::DivideAndRoundUp(Tiers[Tier].Num(), PerRow); ++Sections; }
         const float CH = FMath::Clamp((Bottom - CY - Sections * 19.f) / FMath::Max(1, Rows) - Gap, 54.f, 76.f);
-        for (int32 Tier = 0; Tier < 4; ++Tier)
+        for (int32 Tier : {0, 1, 2, 4, 3})
         {
             if (Tiers[Tier].Num() == 0) continue;
-            const FLinearColor TC = TierColor(Tier);
+            const FLinearColor TC = Tier == 4 ? FLinearColor(1.f, .62f, .22f, 1) : TierColor(Tier);
             const float NW = CireShopArt::SpacedWidth(P, Names[Tier], 8.f, .3f);
             CireShopArt::Spaced(P, Names[Tier], GX + 4, CY, 8.f, .3f, TC, ECireFont::Display, false, false);
             CireShopArt::Rule(P, GX + 14 + NW, GX + GW - 4, CY + 5, TC * FLinearColor(1, 1, 1, .45f));
@@ -1622,7 +1643,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
                 DrawCard(Tiers[Tier][Index], GX + 2 + (Index % PerRow) * (CW + Gap), CY + (Index / PerRow) * (CH + Gap), CW, CH, false);
             CY += FMath::DivideAndRoundUp(Tiers[Tier].Num(), PerRow) * (CH + Gap) + 4;
         }
-        if (Tiers[0].Num() + Tiers[1].Num() + Tiers[2].Num() + Tiers[3].Num() == 0) P.Text(TEXT("No item matches every filter."), GX + 8, CY, 12, Muted);
+        if (Tiers[0].Num() + Tiers[1].Num() + Tiers[2].Num() + Tiers[3].Num() + Tiers[4].Num() == 0) P.Text(TEXT("No item matches every filter."), GX + 8, CY, 12, Muted);
     }
     if (!HoverId.IsNone()) Tip(HUD, CireItems::DisplayName(HoverId), ItemTooltip(HoverId, PriceFor(Hero, HoverId)));
 
@@ -1687,6 +1708,8 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         CireShopArt::Spaced(P, CostLine, DX + 10, TY, 7.5f, .22f, Filigree, ECireFont::Display, false, false);
         TY += 15;
         if (Price != Item->TotalCost && Item->Purchasable) { P.Text(FString::Printf(TEXT("Your price: %dg (owned parts count)"), Price), DX + 10, TY, 11.5f, FLinearColor(.55f, 1.f, .5f, 1), ECireFont::Bold); TY += 17; }
+        if (const FString* Effect = D.EffectLine.Find(Shown)) // items-v2: the one-line effect
+        { TY += P.Wrapped(*Effect, DX + 10, TY, DWd - 20, 11.5f, IsPathUnique(*Item) ? FLinearColor(1.f, .7f, .32f, 1) : Parchment, 2) * 15 + 2; }
         TArray<FString> Lines;
         StatLines(Shown).ParseIntoArrayLines(Lines);
         for (const FString& Line : Lines) { P.Text(Line, DX + 10, TY, 12.5f, FLinearColor(.45f, .95f, .5f, 1), ECireFont::Bold); TY += 16; }
@@ -1702,7 +1725,8 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
             TY += 14 + (P.Wrapped(*Use, DX + 10, TY + 14, DWd - 20, 11, Parchment, 3) * 15);
         }
         if (Item->Unique || !Item->UniqueGroup.empty())
-        { P.Text(Item->Unique ? TEXT("Unique: carry only one.") : TEXT("Only one pair of boots."), DX + 10, TY + 2, 10.5f, Muted * 1.3f, ECireFont::Body); TY += 15; }
+        { P.Text(IsPathUnique(*Item) ? TEXT("Path-defining unique: one per champion.") : !Item->UniqueGroup.empty() ? TEXT("Only one pair of boots.") : TEXT("Unique: carry only one."),
+            DX + 10, TY + 2, 10.5f, IsPathUnique(*Item) ? FLinearColor(1.f, .62f, .22f, 1) : Muted * 1.3f, ECireFont::Body); TY += 15; }
         if (!Item->Lore.empty() && TY < DY + DHt - 116) P.Wrapped(Str(Item->Lore), DX + 10, TY + 4, DWd - 20, 10, Muted * 1.2f, 2);
         const std::vector<std::string> Into = D.Catalog.BuildsInto(Item->Id);
         if (!Into.empty())
@@ -1952,6 +1976,7 @@ void CireShopUI::DrawLootLog(ACireHUD& HUD, ACireHero* Hero)
 }
 
 #if !UE_BUILD_SHIPPING
+void CireShopUI::DebugFilter(uint32 Mask) { State.Filters = Mask; if (Mask) State.Category = 1; }
 void CireShopUI::DebugSelect(FName ItemId, int32 Category) { State.Selected = ItemId; State.SelectedSlot = -1; State.Category = Category; }
 void CireShopUI::DebugHover(FName ItemId) { State.Hovered = ItemId; }
 void CireShopUI::DebugPurchaseMoment(FName ItemId, int32 Slot, int32 GoldBefore, int32 Cost, float Age)

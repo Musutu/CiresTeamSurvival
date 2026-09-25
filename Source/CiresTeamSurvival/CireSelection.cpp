@@ -256,3 +256,34 @@ void CireSelection::HandleTargetLoss(ACireController* Controller,bool bAutoReacq
     }
     if(bDeadTarget&&State.ClearRequested.Get()!=Target){State.ClearRequested=Target;Controller->ServerAction(6,0,nullptr);}
 }
+
+AActor* CireSelection::UnitUnderCursor(ACireController* Controller)
+{
+    auto* Self=Controller?Cast<ACireHero>(Controller->GetPawn()):nullptr;if(!Self)return nullptr;
+    FHitResult Hit;
+    if(!Controller->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1),false,Hit))return nullptr;
+    AActor* A=Hit.GetActor();
+    return (Cast<ACireHero>(A)||Cast<ACireMonster>(A)||Cast<ACireConstruct>(A))&&IsLivingUnit(A)&&CireRealm::CanObserve(Self,A)?A:nullptr;
+}
+AActor* CireSelection::BestHostile(ACireController* Controller,float Range,AActor* UnderCursor,const FTransform* ViewOverride)
+{
+    auto* Self=Controller?Cast<ACireHero>(Controller->GetPawn()):nullptr;if(!Self||!Controller->GetWorld())return nullptr;
+    Range=FMath::Max(Range,150.f);
+    if(IsLivingUnit(UnderCursor)&&Self->IsHostile(UnderCursor)&&Self->InRange(UnderCursor,Range))return UnderCursor;
+    TArray<AActor*> All;
+    const auto Consider=[&](AActor* A){if(IsLivingUnit(A)&&!A->IsHidden()&&Self->IsHostile(A)&&CireRealm::CanObserve(Self,A)&&Self->InRange(A,Range))All.Add(A);};
+    for(TActorIterator<ACireMonster> It(Controller->GetWorld());It;++It)Consider(*It);
+    for(TActorIterator<ACireHero> It(Controller->GetWorld());It;++It)Consider(*It);
+    if(All.IsEmpty())return nullptr;
+    const FVector Origin=Self->GetActorLocation();
+    All.Sort([&Origin](const AActor& A,const AActor& B){return FVector::DistSquared(Origin,A.GetActorLocation())<FVector::DistSquared(Origin,B.GetActorLocation());});
+    const auto* View=Controller->PlayerCameraManager.Get();
+    if(View||ViewOverride)
+    {
+        const FVector Eye=ViewOverride?ViewOverride->GetLocation():View->GetCameraLocation();
+        const FVector Forward=(ViewOverride?ViewOverride->GetRotation().Rotator():View->GetCameraRotation()).Vector().GetSafeNormal2D();
+        const float MinDot=FMath::Cos(FMath::DegreesToRadians(FMath::Min(85.f,(View?View->GetFOVAngle():80.f)*.5f+15.f)));
+        for(AActor* A:All){const FVector To=(A->GetActorLocation()-Eye).GetSafeNormal2D();if(FVector::DotProduct(To,Forward)>=MinDot)return A;}
+    }
+    return All[0];
+}

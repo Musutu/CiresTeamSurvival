@@ -16,6 +16,7 @@
 #include "CireSkillshot.h"
 #include "CireTechConstructs.h"
 #include "CireThreat.h"
+#include "CirePets.h" // pets
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -28,7 +29,7 @@ namespace
 enum class EDelivery : uint8
 {
     Projectile, Pierce, Cone, Circle, SelfBurst, Flurry, Strike, Lunge, Chain, Dash, Pounce, Mark, AreaMark,
-    SelfBuff, AllyHeal, Construct, Banish, Execute, Storm, Overcharge, Passive
+    SelfBuff, AllyHeal, Construct, Banish, Execute, Storm, Overcharge, Pet, Passive
 };
 struct FSig
 {
@@ -60,13 +61,14 @@ const FSig Sigs[] = {
     {TEXT("spectral_blade"), EDelivery::Lunge, 1.4f},
     {TEXT("witchbane"), EDelivery::Passive},
     {TEXT("hexbane_judgment"), EDelivery::Circle, 3.0f, 0, 1.0f},
-    // ---- Huntress (mounted glaive thrower) ----
+    // ---- Huntress (glaive thrower on foot; the sabercat Ashfang is her companion, CirePets) ----
     {TEXT("bouncing_glaive"), EDelivery::Chain, 1.5f, 0, 0, 5},
-    {TEXT("sabercat_pounce"), EDelivery::Pounce, 1.0f},
+    {TEXT("sabercat_pounce"), EDelivery::Pet, 1.0f},   // pets: Ashfang leaps at the target
     {TEXT("owl_scout"), EDelivery::AreaMark, 0, 0, 0, 1, nullptr, TEXT("tracked")},
     {TEXT("moonlit_sprint"), EDelivery::SelfBuff, 0, 0, 0, 1, nullptr, TEXT("moonlit_sprint")},
     {TEXT("crescent_volley"), EDelivery::Pierce, 1.4f, 0, 0, 5, TEXT("arrow")},
-    {TEXT("sabercat_rake"), EDelivery::Cone, 1.2f, 70},
+    {TEXT("sabercat_maul"), EDelivery::Pet, 1.2f},     // pets: Ashfang mauls the target (bonus threat)
+    {TEXT("sabercat_roar"), EDelivery::Pet, .4f},      // pets: Ashfang roars, slowing and taunting nearby enemies
     {TEXT("moon_glaive"), EDelivery::Passive},
     {TEXT("glaive_storm"), EDelivery::Storm, .5f},
     // ---- Aetheri Artificer ----
@@ -244,7 +246,7 @@ bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     if (!Mode || !Mode->IsCombatPhase()) return false;
     auto Fail = [&](const FString& Message) { Hero->Notice = Message; return false; };
     const float Mana = Def->Base.ManaCost, Energy = Def->Base.EnergyCost;
-    if (!CireSkillShop::CanPayCast(Hero, Id, Mana, Energy)) return Fail(TEXT("Not enough mana or energy."));
+    if (!CireSkillShop::CanPayCast(Hero, Id, Mana, Energy)) return Fail(*CireSkillShop::CostFailText());
     const float Range = Def->Range > 0 ? Def->Range : 900.f;
     const float Power = Mode->Power(Hero->TeamId);
     const float Amount = FMath::Min(10000.f, (Def->Base.Effect + Sig->Scaling * Hero->PrimaryAttribute()) * Power);
@@ -439,6 +441,14 @@ bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
         }
         Aim = Target->GetActorLocation(); break;
     }
+    case EDelivery::Pet:
+    {
+        // pets: the companion performs the skill (it closes in first); no companion, no charge.
+        FString Why;
+        if (!CirePets::OwnerCast(Hero, Id, bHostile ? Target : nullptr, Amount, Why)) return Fail(Why);
+        if (const ACirePet* Pet = CirePets::PetOf(Hero)) Aim = Pet->GetActorLocation();
+        bCue = false; break;
+    }
     default: return false;
     }
     Hero->Mana -= Mana; Hero->Energy -= Energy;
@@ -487,6 +497,9 @@ bool CireSignatureSkills::DescribeShape(const FString& Id, FCireHitShape& R)
         R.bHostileOnly = X && X->Kind == ECireConstructKind::Pylon ? (X->Effect == TEXT("weaken") || X->Effect == TEXT("slow")) : true;
         R.LingerSeconds = FMath::Min(2.f, X ? X->Lifetime : 2.f); break;
     }
+    case EDelivery::Pet: // pets: pounce / maul at the target; the roar is centred on the companion
+        if (Id == TEXT("sabercat_roar")) { R.Kind = ECireHitShape::Self; R.bHostileOnly = false; R.LingerSeconds = 1.f; } else R.Kind = ECireHitShape::Unit;
+        break;
     case EDelivery::Passive: R.Kind = ECireHitShape::None; break;
     default: R.Kind = ECireHitShape::Unit; break; // strike, lunge, mark, banish, execute
     }

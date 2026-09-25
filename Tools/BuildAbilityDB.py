@@ -156,6 +156,7 @@ POOL = {
 # kit lists them. Same tuple layout as POOL; extra "category": "construct" marks the Skill Shop's
 # Constructs tab. Construct numbers beyond the headline effect live in CireTechConstructs.cpp.
 CONSTRUCT = {"category": "construct"}
+PET = {"category": "pet"}  # pets: companion commands (Skill Shop "COMPANION" filter)
 NEW_CHAMPION_SKILLS = {
     # ---- Gunblade (Bounty Hunter): AGI, energy ----
     "silver_shot": ("Silver Shot", ["dps"], "active", "holy", "aim", 0, 0, 30, 8, 95, "damage", 1300, 28, 0,
@@ -201,12 +202,12 @@ NEW_CHAMPION_SKILLS = {
     "hexbane_judgment": ("Hexbane Judgment", ["dps"], "ultimate", "arcane", "aim", 0, 130, 0, 80, 200, "damage", 1100, 450, 3,
                          "Aim a 4.5m circle; after 1s it bursts for {effect} + 3x INT damage, strips every buff and silences for 3s.",
                          [fx("silence", "area", 3, radius=450, label="Silenced"), fx("purge", "area", radius=450)], {}),
-    # ---- Huntress (mounted glaive thrower): AGI, energy ----
+    # ---- Huntress (glaive thrower on foot): AGI, energy. The sabercat skills command her companion Ashfang (CirePets, Docs/Pets.md) ----
     "bouncing_glaive": ("Bouncing Glaive", ["dps"], "active", "physical", "enemy", 0, 0, 30, 8, 80, "damage", 1300, 500, 0,
                         "Hurl a glaive that strikes the target and bounces to 4 more enemies within 5m, losing 20% per bounce: {effect} + 1.5x AGI.", [], {}),
-    "sabercat_pounce": ("Sabercat Pounce", ["dps"], "active", "physical", "aim", 0, 0, 35, 12, 75, "damage", 700, 260, 2,
-                        "The sabercat leaps up to 7m and mauls everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s.",
-                        [fx("slow", "area", 2, 0.4, 260, label="Move -40%")], {}),
+    "sabercat_pounce": ("Ashfang: Pounce", ["dps"], "active", "physical", "enemy", 0, 0, 35, 12, 75, "damage", 700, 260, 2,
+                        "Command Ashfang to leap up to 7m onto your target and maul everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s. Needs your companion.",
+                        [fx("slow", "area", 2, 0.4, 260, label="Move -40%")], PET),
     "owl_scout": ("Owl Scout", ["dps"], "active", "nature", "aim", 0, 0, 20, 14, 10, "% damage taken", 1600, 450, 8,
                   "Send the owl to a point: enemies within 4.5m are revealed and tracked for 8s, taking {effect}% more damage from you.",
                   [fx("mark", "area", 8, 0.10, 450, label="Tracked")], {}),
@@ -215,8 +216,11 @@ NEW_CHAMPION_SKILLS = {
                        [fx("haste", "self", 4, 0.4, label="Move +40%"), fx("cleanse", "self")], {"curve": {"effectCap": 70}}),
     "crescent_volley": ("Crescent Volley", ["dps"], "active", "physical", "aim", 0, 0, 30, 10, 90, "damage", 1400, 40, 0,
                         "Loose a crescent glaive that flies 14m in a line and cuts through up to five enemies: {effect} + 1.4x AGI.", [], {}),
-    "sabercat_rake": ("Sabercat Rake", ["dps"], "active", "nature", "aim", 0, 0, 25, 7, 70, "damage", 320, 320, 0,
-                      "The sabercat rakes a 70-degree arc in front of you (3.2m): {effect} + 1.2x AGI.", [], {}),
+    "sabercat_maul": ("Ashfang: Maul", ["dps"], "active", "physical", "enemy", 0, 0, 25, 7, 70, "damage", 1600, 0, 0,
+                      "Command Ashfang to maul your target: {effect} + 1.2x AGI, with 50% bonus threat so the cat holds it off you. Needs your companion.", [], PET),
+    "sabercat_roar": ("Ashfang: Dread Roar", ["dps"], "active", "nature", "self", 0, 0, 20, 16, 30, "damage", 0, 450, 3,
+                      "Ashfang roars: enemies within 4.5m of the cat take {effect} + 0.4x AGI, are slowed 35% for 3s and turn on Ashfang for 2s. Also the pet's special command. Needs your companion.",
+                      [fx("slow", "area", 3, 0.35, 450, label="Move -35%"), fx("taunt", "area", 2, radius=450, label="Taunted by Ashfang")], PET),
     "moon_glaive": ("Moon Glaive", ["dps"], "passive", "physical", "passive", 0, 0, 0, 0, 60, "% bounce damage", 0, 450, 0,
                     "Your glaive throws bounce to 2 more enemies within 4.5m, for {effect}% and then 36% damage.", [], {"curve": {"effectCap": 85}}),
     "glaive_storm": ("Glaive Storm", ["dps"], "ultimate", "physical", "self", 0, 0, 70, 75, 45, "damage per tick", 0, 480, 6,
@@ -275,6 +279,7 @@ DELIVERY_TARGET = {"targeted": "enemy", "ground_cone": "aim", "ground_line": "ai
 ROLE_OF = {"tank": "tank", "damage": "dps", "healer": "heal", "support": "heal"}
 # Extra signature assignments for the new skills (identity kits).
 SIGNATURE_EXTRA = {
+    "sabercat_roar": ["huntress"],  # pets: the companion's third command joins her identity kit
     "decimating_strike": ["drakish_footman", "ether_golem_bruiser", "orc_chieftain", "troll_berserker_melee"],
     "executioner": ["ranger", "lancer", "troll_berserker_melee", "troll_berserker_ranged"],
 }
@@ -353,6 +358,7 @@ def classify(rec, summons, constructs):
     if heal: tags.insert(0, "Heal")
     is_summon = rec["id"] in summons or "summon" in text and rec["kind"] == "active"
     is_construct = rec.get("category") == "construct" or rec["id"] in constructs
+    is_summon = is_summon or rec.get("category") == "pet"  # pets: companion skills sit with the summons
     if is_summon: tags.insert(0, "Summon")
     if is_construct: tags.insert(0, "Construct")
     if deals: tags.append("Damage")
@@ -372,6 +378,9 @@ def classify(rec, summons, constructs):
         rec["section"] = cats[0] if cats else section
     if not rec.get("effectTags"):
         rec["effectTags"] = tags[:4]
+
+# Cast-time abilities that may still be cast (and keep casting) while moving.
+CAST_WHILE_MOVING = set()
 
 
 # Dodge-roll synergy skills (CireRollSkills, Docs/Abilities.md "Dodge-roll skills"). Signature-only: purchasable by the
@@ -437,6 +446,10 @@ ROLL_SKILLS = {
 # and shields of the roll skills = base effect + ratio x primary stat (CireRollSkills uses the same ratios).
 ROLL_PRIMARY = {"riposte_roll": 1.0, "fleet_recovery": 0.5, "ember_wake": 0.6, "frost_wake": 0.4, "tumble_strike": 1.5,
                 "mine_layer": 1.0, "shield_tumble": 1.0, "venom_tumble": 0.5, "evasive_stance": 0.4}
+
+
+from UltimateUpgrades import ULTIMATE_UPGRADES, validate as validate_upgrades  # items-v2
+
 
 def build():
     tuning = json.loads((ROOT / "Content/Data/CombatTuning.json").read_text(encoding="utf-8"))
@@ -542,6 +555,14 @@ def build():
             abilities[sid]["champions"].append(c["id"])
         for sid in signature:
             abilities[sid]["signatureOf"].append(c["id"])
+    # feat/camera-movement: WoW rule - cast-time spells need you to stand still unless listed here.
+    # Instants (castTime 0) always work while moving. See Docs/Targeting.md "Casting while moving".
+    for sid, a in abilities.items():
+        a["castWhileMoving"] = a["castTime"] <= 0 or sid in CAST_WHILE_MOVING
+    # items-v2: every ultimate carries the extra effect the Sigil of Apotheosis unlocks (Tools/UltimateUpgrades.py).
+    for sid, upgrade in ULTIMATE_UPGRADES.items():
+        if sid in abilities:
+            abilities[sid]["ultimateUpgrade"] = upgrade
     summons = {x["id"] for x in tuning["summons"]}
     constructs = {x["id"] for x in tuning["constructs"]}
     for rec in abilities.values():
@@ -570,6 +591,7 @@ def validate(db):
             if cur["effect"] < prev["effect"] - 1e-9 or cur["manaCost"] < prev["manaCost"] - 1e-9 or cur["cooldown"] > prev["cooldown"] + 1e-9:
                 errors.append(f"{sid}: curve not monotone at {level}"); break
             prev = cur
+    errors += validate_upgrades(db["abilities"])  # items-v2
     for cid, c in db["champions"].items():
         if len(c["purchasableImplemented"]) < 8: errors.append(f"{cid}: fewer than 8 implemented purchasable skills")
     return errors
@@ -612,6 +634,14 @@ def docs(db):
         if a["status"] == "planned":
             extra = ", ".join(e.get("label", e["type"]) for e in a["effects"]) + (" void zones" if "void" in a else "")
             lines.append(f"| {a['name']} (`{sid}`) | {', '.join(a['signatureOf'])} | {'/'.join(a['types'])} | {a['kind']} | {a['school']} | {a['targeting']} | {extra} |")
+    lines += ["", "## Ultimate upgrades (Sigil of Apotheosis)", "",
+              "Carrying the path-defining unique **Sigil of Apotheosis** adds one extra effect to your ultimate (numbers unchanged).",
+              "Source: `Tools/UltimateUpgrades.py`; runtime: `CireUltimateUpgrades.cpp`; items: Docs/Items.md.", "",
+              "| Ultimate | Upgrade | Added effect |", "|---|---|---|"]
+    for sid, a in sorted(db["abilities"].items(), key=lambda kv: (kv[1]["status"], kv[0])):
+        if a.get("ultimateUpgrade"):
+            u = a["ultimateUpgrade"]
+            lines.append(f"| {a['name']} (`{sid}`{', planned' if a['status'] == 'planned' else ''}) | {u['name']} | {u['text']} |")
     lines += ["", "## Champion identity kits", "", "| Champion | Roles | Signature | Implemented purchasable |", "|---|---|---|---|"]
     for cid, c in db["champions"].items():
         lines.append(f"| {c['name']} (`{cid}`) | {'/'.join(c['roles'])} | {', '.join(c['signature'])} | {len(c['purchasableImplemented'])} |")

@@ -128,7 +128,8 @@ bool ACireHUD::DrawCastBar(const AActor* Unit, float X, float Y, float W, float 
         // Flash: the bar turns red and reads INTERRUPTED / SILENCED for about a second.
         const float A = FMath::Clamp((1.1f - V.ResultAge) / .4f, 0.f, 1.f);
         const FLinearColor Col = V.Result == ECireCastResult::Silenced ? FLinearColor(.7f, .35f, 1.f, A) : FLinearColor(.95f, .18f, .12f, A);
-        P.Rect(X, Y, W, H, FLinearColor(0, 0, 0, .85f * A)); P.Rect(X + 1, Y + 1, W - 2, H - 2, Col * FLinearColor(.75f, .75f, .75f, 1));
+        if (!(CireUIStyle::HasThemeArt() && CireUIStyle::Capsule(P, X - 1, Y - 1, W + 2, H + 2, 1, FLinearColor(0, 0, 0, .85f * A)) && CireUIStyle::Capsule(P, X, Y, W, H, 1, Col * FLinearColor(.75f, .75f, .75f, 1))))
+        { P.Rect(X, Y, W, H, FLinearColor(0, 0, 0, .85f * A)); P.Rect(X + 1, Y + 1, W - 2, H - 2, Col * FLinearColor(.75f, .75f, .75f, 1)); }
         const FString Word = V.Result == ECireCastResult::Silenced ? TEXT("SILENCED") : TEXT("INTERRUPTED");
         if (H >= 9.f) P.Text(Word, X + (W - P.TextWidth(Word, TS, ECireFont::Heading)) * .5f, Y + (H - TS) * .5f - 1.5f, TS, FLinearColor(1, 1, 1, A), ECireFont::Heading, true, false);
         return true;

@@ -5,6 +5,7 @@
 // fills. The panel animates in, can be deferred (N) to a pulsing reminder so it never
 // blocks combat, auto-waits while you are fighting, and plays a pick animation + chime.
 #include "CireHUD.h"
+#include "CireAudio.h" // audio
 #include "CireAbilityIcons.h"
 #include "CireChampionProfiles.h"
 #include "CireClassTraits.h"
@@ -443,6 +444,7 @@ void ACireHUD::DrawSkillOffer(ACireHero* Hero,ACireController* Controller)
         Tip(Name,TipText,X,Y,CardW,CardH);
         if(bOver&&Clicked&&Controller){Controller->ServerAction(3,I,nullptr);Clicked=false;}
     }
+    if(NewHover!=S.Hovered&&NewHover>=0&&!UISettings.bMuteAudio&&CireAudio::PlayLegacyPath(this,TEXT("/Game/UI/Draft/Sounds/S_SkillHover.S_SkillHover"),.35f)){S.Hovered=NewHover;} // audio: shared UI kit
     if(NewHover!=S.Hovered){if(NewHover>=0)if(auto* Tick=LoadObject<USoundBase>(nullptr,TEXT("/Game/UI/Draft/Sounds/S_SkillHover.S_SkillHover")))
         if(!UISettings.bMuteAudio)UGameplayStatics::PlaySound2D(this,Tick,UISettings.MasterVolume*UISettings.UIVolume*.35f);S.Hovered=NewHover;}
 
@@ -488,6 +490,7 @@ void ACireHUD::DrawSkillOfferExtras(ACireHero* Hero,ACireController* Controller)
     auto Play=[&](const TCHAR* Path,float Volume)
     {
         if(UISettings.bMuteAudio)return;
+        if(CireAudio::PlayLegacyPath(this,Path,Volume))return; // audio: shared UI kit (AudioCues.json uiLegacy)
         if(auto* Sound=LoadObject<USoundBase>(nullptr,Path))UGameplayStatics::PlaySound2D(this,Sound,UISettings.MasterVolume*UISettings.UIVolume*Volume);
     };
     if(S.bPlayOpenSound){S.bPlayOpenSound=false;Play(TEXT("/Game/UI/Draft/Sounds/S_SkillOffer.S_SkillOffer"),.6f);}

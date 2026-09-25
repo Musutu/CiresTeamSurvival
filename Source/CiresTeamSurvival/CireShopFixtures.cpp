@@ -106,7 +106,7 @@ bool SetupGallery(ACireGameMode* Mode, ACireController* PC, ACireHUD* HUD)
     H->Cooldowns.Init(0, H->Skills.Num());
     SetPhase(Mode, 1);
     // A believable mid-game bag: parts of a Nightfall Reaver, boots, potions and lanterns.
-    Give(TEXT("serrated_cleaver"), 0); Give(TEXT("bloodstone_shard"), 1); Give(TEXT("road_worn_boots"), 2); Give(TEXT("vampire_fang"), 3);
+    Give(TEXT("serrated_cleaver"), 0); Give(TEXT("bloodstone_shard"), 1); Give(TEXT("road_worn_boots"), 2); Give(TEXT("rusted_longsword"), 3);
     Give(TEXT("vial_of_crimson"), 0, true, 3); Give(TEXT("watchers_lantern"), 1, true, 2);
     Inv()->Buffs.Reset();
     Inv()->BeginShopVisit(true);
@@ -137,7 +137,10 @@ const FStage Stages[] = {
     // progression-shop: the Skill Shop (Eric's target image) and its purchase moments.
     {TEXT("skill_shop_hover"), 2.4f}, {TEXT("skill_shop_seal_stamp"), .9f}, {TEXT("skill_shop_scroll_flight"), .9f},
     {TEXT("skill_shop_unaffordable_error"), .8f}, {TEXT("skill_shop_auto_open_after_wave"), 1.8f},
-    {TEXT("skill_polymorph_critters"), 4.2f}};
+    {TEXT("skill_polymorph_critters"), 4.2f},
+
+    // items-v2: the path-defining uniques (filtered grid + tooltip) and the one-per-champion rule.
+    {TEXT("shop_path_uniques"), 2.2f}, {TEXT("shop_path_unique_refused"), .8f}};
 bool InSubset(int32 Stage) { return !G.bShopOnly || FString(Stages[Stage].Name).StartsWith(TEXT("shop_")) || FString(Stages[Stage].Name).StartsWith(TEXT("skill_")); }
 constexpr int32 StageCount = UE_ARRAY_COUNT(Stages);
 
@@ -150,7 +153,7 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
     FString Message;
     HUD->DebugTooltipClear();
     CireShopUI::DebugFreezeAfterLastEvent(-1);
-    HUD->UISettings.bTooltips = Stage == 0 || Stage == 5; // only the hover shots show a tooltip
+    HUD->UISettings.bTooltips = Stage == 0 || Stage == 5 || Stage == 18; // only the hover shots show a tooltip
     CireShopUI::DebugMouse(FVector2D(-1, -1));
     CireShopUI::DebugHoverStat(-1);
     switch (Stage)
@@ -159,13 +162,13 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
     case 1: CireShopUI::DebugSelect(TEXT("greaves_of_the_undying"), 0); break;
     case 2: // real purchase through the server path: recipe consumes the cleaver
         CireShopUI::DebugSelect(TEXT("nightfall_reaver"), 1);
-        I->Buy(TEXT("ravens_eye"), Message);
+        I->Buy(TEXT("rusted_longsword"), Message);
         I->Buy(TEXT("nightfall_reaver"), Message);
         break;
     case 3: // unaffordable legendary -> server rejects with the reason, icon shakes
         H->Gold = 90;
-        CireShopUI::DebugSelect(TEXT("crown_of_cinders"), 1);
-        I->Buy(TEXT("crown_of_cinders"), Message);
+        CireShopUI::DebugSelect(TEXT("heart_of_cataclysm"), 1);
+        I->Buy(TEXT("heart_of_cataclysm"), Message);
         break;
     case 4:
         CireShopUI::DebugSelect(TEXT("nightfall_reaver"), 1);
@@ -212,7 +215,7 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
         G.Mate = Mode->GetWorld()->SpawnActor<ACireHero>(Ahead - Side * 3.f, FRotator::ZeroRotator, Params);
         if (G.Mate.IsValid()) { G.Mate->TeamId = H->TeamId; G.Mate->Draft(2); G.Mate->HeroName = TEXT("Veil Scholar"); G.Mate->SetActorTickEnabled(false); }
         Cires::Items::LootBundle Mine;
-        Mine.Gold = 88; Mine.Experience = 200; Mine.PrimaryTomes = {3}; Mine.Items = {"crown_of_cinders", "vial_of_crimson"};
+        Mine.Gold = 88; Mine.Experience = 200; Mine.PrimaryTomes = {3}; Mine.Items = {"heart_of_cataclysm", "vial_of_crimson"};
         Cires::Items::LootBundle Theirs; Theirs.Gold = 74; Theirs.Items = {"censer_of_dawn"};
         const FString Why = TEXT("Personal loot from Gravemaw, Pack Leader (Tier 4)");
         G.Chest = CireLoot::SpawnPersonalDrop(Mode, H, Ahead - Side, Mine, 4, TEXT("Gravemaw, Pack Leader"), Why, 11);
@@ -262,6 +265,20 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
         break;
     case 16: // the ultimate slot opens at wave 10: rejected with the reason, the scroll shakes
         I->ServerBuySkill(TEXT("last_stand"));
+        break;
+    case 19: // items-v2: ALL ITEMS filtered to the path-defining uniques, a card hovered
+        PC->bShop = true; CireShopUI::DebugItemTab(); SetPhase(Mode, 1);
+        H->Gold = 1400;
+        CireShopUI::DebugFilter(1u);
+        CireShopUI::DebugSelect(TEXT("sigil_of_apotheosis"), 1);
+        break;
+    case 20: // owning one path unique, buying a second is refused (server reason, shake)
+        PC->bShop = true; CireShopUI::DebugItemTab(); SetPhase(Mode, 1);
+        H->Gold = 5000;
+        I->Buy(TEXT("heart_of_cataclysm"), Message);
+        CireShopUI::DebugFilter(1u);
+        CireShopUI::DebugSelect(TEXT("stormhowl_ravager"), 1);
+        I->Buy(TEXT("stormhowl_ravager"), Message);
         break;
     case 17:
     {
@@ -336,6 +353,13 @@ bool TickGallery(ACireGameMode* Mode)
         const FVector2D Pos = CireShopUI::DebugGridPos(TEXT("sanguine_sabre"));
         if (Pos.X >= 0) CireShopUI::DebugMouse(Pos);
     }
+    if (G.Stage == 19 || G.Stage == 20) CireShopUI::DebugItemTab(); // items-v2: prep's Skill Shop auto-open must not steal the Armory shots
+    if (G.Stage == 19)
+    {
+        const FVector2D Pos = CireShopUI::DebugGridPos(TEXT("artificers_heartforge"));
+        if (Pos.X >= 0) CireShopUI::DebugMouse(Pos);
+    }
+    if (G.Stage == 20 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f) CireShopUI::DebugFreezeAfterLastEvent(.1f);
     // Skill Shop hover: the pointer rests on a scroll so it lifts and shows its tooltip.
     if (G.Stage == 13)
     {

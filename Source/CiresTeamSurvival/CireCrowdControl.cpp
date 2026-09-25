@@ -1,5 +1,6 @@
 #include "CireCrowdControl.h"
 #include "CirePolymorph.h" // progression-shop
+#include "CireMobility.h" // feat/camera-movement
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireAbilityDB.h"
@@ -96,6 +97,7 @@ float CireCrowdControl::CastProgress(const ACireHero* H)
 float CireCrowdControl::Stun(AActor* Target,float Seconds,AActor* Source)
 {
     if(!IsValid(Target)||!Target->HasAuthority()||IsBossUnit(Target)||Seconds<=0)return 0.f;
+    Seconds*=CireItems::ControlDurationMultiplier(Source); // items-v2: Shackles of the Pale King
     const float Applied=Diminish(Target,Source,StunnedId,Seconds);if(Applied<=0)return 0.f;
     CireBuffs::Apply(Target,StunnedId,Applied,Source);
     if(auto* H=Cast<ACireHero>(Target))
@@ -109,6 +111,7 @@ float CireCrowdControl::Stun(AActor* Target,float Seconds,AActor* Source)
 float CireCrowdControl::Silence(AActor* Target,float Seconds,AActor* Source)
 {
     if(!IsValid(Target)||!Target->HasAuthority()||IsBossUnit(Target)||Seconds<=0)return 0.f;
+    Seconds*=CireItems::ControlDurationMultiplier(Source); // items-v2
     const float Applied=Diminish(Target,Source,SilencedId,Seconds);if(Applied<=0)return 0.f;
     CireBuffs::Apply(Target,SilencedId,Applied,Source);
     if(auto* H=Cast<ACireHero>(Target)){CancelCast(H,TEXT("Silenced"));H->Notice=TEXT("Silenced: you cannot cast right now.");}
@@ -118,6 +121,7 @@ float CireCrowdControl::Silence(AActor* Target,float Seconds,AActor* Source)
 float CireCrowdControl::Slow(AActor* Target,float Seconds,AActor* Source)
 {
     if(!IsValid(Target)||!Target->HasAuthority()||Seconds<=0)return 0.f;
+    Seconds*=CireItems::ControlDurationMultiplier(Source); // items-v2
     const float Until=Now(Target->GetWorld())+Seconds;
     if(auto* H=Cast<ACireHero>(Target))H->SlowUntil=FMath::Max(H->SlowUntil,Until);
     else if(auto* M=Cast<ACireMonster>(Target))M->SlowUntil=FMath::Max(M->SlowUntil,Until);
@@ -163,7 +167,9 @@ bool CireCrowdControl::GateCast(ACireHero* H,int32 Slot,const FString& Id)
     {H->Notice=FString::Printf(TEXT("%s spells are locked out."),*D->School);return true;}
     if(IsCasting(H)){H->Notice=TEXT("Already casting.");return true;}
     if(!D||D->CastTime<=0)return false;
-    if(H->Mana<D->Base.ManaCost||H->Energy<D->Base.EnergyCost){H->Notice=TEXT("Not enough mana or energy.");return true;}
+    // feat/camera-movement: WoW rule, data-driven per ability (Abilities.json castWhileMoving).
+    if(CireMovement::BlocksCast(*H,Id)){H->Notice=TEXT("Can't cast while moving.");H->ForceNetUpdate();return true;}
+    if(!CireSkillShop::CanPayCast(H,Id,D->Base.ManaCost,D->Base.EnergyCost)){H->Notice=CireSkillShop::CostFailText();return true;} // items-v2: scaled cost
     if(CireRollSkills::ConsumeInstantCast(H))return false; // champion-draft: Quickened Mind (instant after a roll)
     FPendingCast P;P.Slot=Slot;P.Id=Id;P.Target=H->Target;P.bAim=H->bHasCastAim;P.Aim=H->CastAimPoint;
     State().Casts.Add(H,P);
@@ -191,6 +197,7 @@ void CireCrowdControl::TickHero(ACireHero* H,float Delta)
     {
         auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();
         if(H->bDead||!Mode||!Mode->IsCombatPhase()){CancelCast(H,H->bDead?TEXT(""):TEXT("Phase changed"));}
+        else if(CireMovement::BlocksCast(*H,H->CastSkill.ToString())){CancelCast(H,TEXT("Moved"));} // feat/camera-movement: moving cancels (WoW)
         else if(T>=H->CastEndTime)
         {
             const FPendingCast P=State().Casts.FindRef(H);State().Casts.Remove(H);
@@ -293,7 +300,7 @@ bool CireCrowdControl::CastSkill(ACireHero* H,int32 Slot,const FString& Id)
     auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();if(!Mode)return false;
     AActor* Target=H->Target;
     if(!H->IsHostile(Target)||!H->InRange(Target,D->Range)){H->Notice=TEXT("Select a hostile target in melee range.");return false;}
-    if(!CireSkillShop::CanPayCast(H,Id,D->Base.ManaCost,D->Base.EnergyCost)){H->Notice=TEXT("Not enough mana or energy.");return false;} // progression-shop: Skill Shop level (Ability DB curve)
+    if(!CireSkillShop::CanPayCast(H,Id,D->Base.ManaCost,D->Base.EnergyCost)){H->Notice=CireSkillShop::CostFailText();return false;} // progression-shop: Skill Shop level (Ability DB curve)
     H->Energy-=D->Base.EnergyCost;H->Mana-=D->Base.ManaCost;
     H->Cooldowns[Slot]=static_cast<float>(Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(H->GetWorld(),D->Base.Cooldown),H->CDR));
     CireSkillShop::ApplyCastLevel(H,Slot,Id,D->Base.ManaCost,D->Base.EnergyCost); // progression-shop: Skill Shop level (Ability DB curve)

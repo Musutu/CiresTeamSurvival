@@ -90,8 +90,9 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 | Crescent Volley (`crescent_volley`) | huntress | DPS | active | physical | aim | 30 EN | 10s | 90 / 127 / 171 damage |  |
 | Moonlit Sprint (`moonlit_sprint`) | huntress | DPS | active | arcane | self | 20 EN | 16s | 40 / 57 / 70 % move speed | Move +40%, cleanse |
 | Owl Scout (`owl_scout`) | huntress | DPS | active | nature | aim | 20 EN | 14s | 10 / 14 / 19 % damage taken | Tracked |
-| Sabercat Pounce (`sabercat_pounce`) | huntress | DPS | active | physical | aim | 35 EN | 12s | 75 / 106 / 143 damage | Move -40% |
-| Sabercat Rake (`sabercat_rake`) | huntress | DPS | active | nature | aim | 25 EN | 7s | 70 / 99 / 133 damage |  |
+| Ashfang: Maul (`sabercat_maul`) | huntress | DPS | active | physical | enemy | 25 EN | 7s | 70 / 99 / 133 damage |  |
+| Ashfang: Pounce (`sabercat_pounce`) | huntress | DPS | active | physical | enemy | 35 EN | 12s | 75 / 106 / 143 damage | Move -40% |
+| Ashfang: Dread Roar (`sabercat_roar`) | huntress | DPS | active | nature | self | 20 EN | 16s | 30 / 42 / 57 damage | Move -35%, Taunted by Ashfang |
 | Moon Glaive (`moon_glaive`) | huntress | DPS | passive | physical | passive | - | 0s | 60 / 75 / 85 % bounce damage |  |
 | Glaive Storm (`glaive_storm`) | huntress | DPS | ultimate | physical | self | 70 EN | 75s | 45 / 59 / 77 damage per tick |  |
 | Taunting Tumble (`taunting_tumble`) | knight, bear, paladin_righteous, dwarf_miner, ether_golem_tank, ether_golem_bruiser, orc_chieftain, totemic_behemoth, drakish_footman | TANK | active | physical | self | 25 EN | 18s | 3 / 4 / 6 s taunt | taunt, DEF +20% |
@@ -191,6 +192,41 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 | Lantern Soul (`whisp_lantern_soul`) | whisp | HEAL | passive | arcane | passive |  |
 | Spirit Tether (`whisp_spirit_tether`) | whisp | HEAL | active | arcane | ally |  |
 
+## Ultimate upgrades (Sigil of Apotheosis)
+
+Carrying the path-defining unique **Sigil of Apotheosis** adds one extra effect to your ultimate (numbers unchanged).
+Source: `Tools/UltimateUpgrades.py`; runtime: `CireUltimateUpgrades.cpp`; items: Docs/Items.md.
+
+| Ultimate | Upgrade | Added effect |
+|---|---|---|
+| Aether Nexus (`aether_nexus`) | Resonant Field | Allies within 9 m of you restore 20% of their max mana and gain a shield absorbing 150 for 10 s. |
+| Bastion of Dawn (`bastion_of_dawn`) | Dawnward | Allies within 7 m also gain a shield absorbing 150 + 10% of your max health for 8 s. |
+| Cataclysm (`cataclysm`) | Scorched Earth | Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s. |
+| Challenge of Iron (`challenge_of_iron`) | Iron Echo | Enemies within 8.5 m are also stunned for 1.5 s. |
+| Collect the Bounty (`collect_the_bounty`) | Bounty Hunter | You gain +30% move speed and +12 primary stat for 6 s; other cooldowns shrink by 30%. |
+| Executioner's Verdict (`executioners_verdict`) | Verdict Rendered | Your other cooldowns shrink by 50% and you gain +25% attack speed for 6 s. |
+| Glaive Storm (`glaive_storm`) | Eye of the Storm | You gain a shield absorbing 200 + 2x primary stat and +20% move speed for 6 s. |
+| Hexbane Judgment (`hexbane_judgment`) | Witchlight | Enemies in the circle are also armor-broken for 6 s; allies within 9 m of you gain +25 ward for 8 s. |
+| Last Stand (`last_stand`) | Rallying Stand | Allies within 8 m are also healed for 12% of your max health. |
+| Mass Aegis (`mass_aegis`) | Aegis Bloom | Allies within 9 m also gain a shield absorbing 200 + 2x primary stat for 12 s. |
+| Renewal (`renewal`) | Second Dawn | Allies within 9 m also gain +30 armor and +30 ward for 8 s (a party aura). |
+| Seismic Reprisal (`seismic_reprisal`) | Aftershock | The burst also breaks enemy armor for 6 s, and allies within 6 m gain +40 armor for 8 s. |
+| Spectral Hunt (`spectral_hunt`) | Pack Leader | You and allies within 9 m gain +20% attack speed and +10% move speed for 8 s. |
+| Starfall (`starfall`) | Falling Sky | The impact also silences enemies for 2 s, and you restore 20% of your max mana. |
+| Warp Obelisk (`warp_obelisk`) | Siege Protocol | Enemies within 6 m of the obelisk are stunned for 1 s; you gain +12 primary stat for 15 s. |
+| Wellspring (`wellspring`) | Overflow | Allies within 6 m of you also heal 150 and restore 15% of their max mana. |
+| Elder of the Deepwood (`bear_colossus`, planned) | Den Mother | Allies within 8 m gain +40 armor for 8 s. |
+| Ancestral Stampede (`behemoth_stampede`, planned) | Trampled | Enemies within 6 m are slowed for 3 s and armor-broken for 5 s. |
+| Spring March (`centaur_spring_march`, planned) | Spring Stride | Allies within 9 m lose their slows and gain +20% move speed for 8 s. |
+| Earthshout (`chieftain_earthshout`, planned) | Warband | Allies within 9 m gain +8 primary stat and +15% attack speed for 8 s. |
+| Ancient Pact (`drakish_ancient_pact`, planned) | Scaled Oath | Allies within 8 m gain +40 ward and +20 armor for 8 s. |
+| Grove Renewal (`dryad_grove_renewal`, planned) | Heartwood | Allies within 8 m lose their slows and gain a shield absorbing 150 + 2x primary stat for 8 s. |
+| Worldstone Awakened (`golem_worldstone`, planned) | Worldstone Ward | Allies within 7 m gain a shield absorbing 200 + 8% of your max health for 8 s. |
+| Sunrise Vigil (`keeper_sunrise`, planned) | High Noon | Allies within 9 m gain +8 primary stat and +20 ward for 8 s. |
+| Heart of the Mountain (`miner_mountain`, planned) | Rockfall | Enemies within 4 m of the ring are stunned for 1 s. |
+| Red Moon Frenzy (`troll_red_moon`, planned) | Blood Moon | You gain +20% lifesteal and +20% attack speed for 8 s. |
+| Kindred Constellation (`whisp_constellation`, planned) | Starlit Well | Allies within 9 m heal 150 and restore 15% of their max mana. |
+
 ## Champion identity kits
 
 | Champion | Roles | Signature | Implemented purchasable |
@@ -219,7 +255,7 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 | Keeper of the Light (`keeper_of_light`) | HEAL | keeper_dawn_beam, keeper_lantern_ward, keeper_beacon, restoring_light, sanctuary, purify, keeper_last_light, keeper_sunrise | 20 |
 | Gunblade (`gunblade`) | DPS | silver_shot, hex_mark, powder_flask, blade_flurry, hunters_stride, warding_talisman, price_on_every_soul, collect_the_bounty, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, ember_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, shadow_dance, evasive_stance | 51 |
 | Witch Slayer (`witch_slayer`) | DPS | arcane_blunderbuss, spirit_lantern, purge, banishment, witchfinders_mark, spectral_blade, witchbane, hexbane_judgment, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, quickened_mind, hasted_tumble, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, venom_tumble, shadow_dance, evasive_stance | 51 |
-| Huntress (`huntress`) | DPS | bouncing_glaive, sabercat_pounce, owl_scout, moonlit_sprint, crescent_volley, sabercat_rake, moon_glaive, glaive_storm, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, venom_tumble, shadow_dance, evasive_stance | 52 |
+| Huntress (`huntress`) | DPS | bouncing_glaive, sabercat_pounce, owl_scout, moonlit_sprint, crescent_volley, sabercat_maul, moon_glaive, glaive_storm, sabercat_roar, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, venom_tumble, shadow_dance, evasive_stance | 53 |
 | Aetheri Artificer (`aetheri_artificer`) | DPS | photon_turret, skitter_swarm, arc_mine, disruption_pylon, phase_lance, overcharge, aether_engineering, warp_obelisk, quickened_mind, hasted_tumble, mine_layer | 39 |
 | Aetheri Warden (`aetheri_warden`) | TANK/HEAL | aegis_pylon, haste_pylon, gravity_pylon, stasis_snare, aether_mend, repulsor_pulse, resonant_lattice, aether_nexus, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 42 |
 
