@@ -4,7 +4,7 @@
     "ShieldBlocksDeflects": {
       "name": "Shield Blocks and Deflects Sound Effects",
       "use": "shield block (30% physical block on shield tanks), deflect, guard break",
-      "source": "vault manifest",
+      "source": "installed",
       "assets": 146
     },
     "Professional_Gunshots": {

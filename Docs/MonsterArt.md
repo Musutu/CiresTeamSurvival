@@ -194,6 +194,18 @@ Close-ups: `Tools/RunMonsterGallery.py --only hand_,grips_,styles_`.
   each race's 6 units + 2 bosses, one body in all six ranks (close and at gameplay distance), one body under six race
   palettes, and the Blightwood / Drowned reskin sets.
 
+### HQ regenerations (art-3d, upgraded Tripo plan)
+
+After the plan upgrade the weakest race bodies were regenerated at H3.1 Best Quality, 120k faces, 8K PBR, then
+retopologised to 80k triangles (the auto-rig refuses 120k) and rigged with the UE5 Mannequin preset. They integrate
+exactly like the first batch (`CIRE_TRIPO_PENDING_ONLY=1 python Tools/RunTripoRacesIntegration.py`, then
+`Tools/WriteRaceMeshes.py`) into `/Game/Tripo/Races/<race>/<Unit>HQ/`; the replaced first-batch folders are deleted.
+Records (task ids, prompts, credits, binding status) are the `"hq": true` rows of `Art/TripoArt3D.json`.
+`WriteRaceMeshes.HOLD_HQ` keeps an older body bound when an HQ body regressed (the crossbow inquisitor lost its crossbow; the HQ voidling fails the stride/upright checks).
+`crystal_ballista` and `ether_mote` now have Tripo bodies (a bipedal siege walker and a small legged ether
+construct, so both take the Humanoid rig) instead of the CC0 spider / fallback. Close-up review:
+`python Tools/RunMonsterGallery.py --only close_<unit>+<unit>+...` (front row idle, back row at attack contact).
+
 ## Free CC0 creature bodies (world-dressing)
 
 `Content/Data/RaceMeshes.free.json` is read after `NPCMeshes.tripo.json` and `RaceMeshes.tripo.json`: a race unit with

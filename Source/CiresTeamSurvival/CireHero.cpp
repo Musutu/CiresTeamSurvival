@@ -2,6 +2,7 @@
 #include "CireSkillShop.h" // progression-shop: game mode
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireRaces.h" // monster-races
+#include "CireBotPets.h"
 #include "CireGame.h"
 #include "CirePolymorph.h" // progression-shop: Polymorph
 #include "CireCombatEvents.h"
@@ -736,6 +737,7 @@ void ACireHero::BotThink(float DeltaSeconds)
 {
     auto* Mode = ModeFor(this);
     if (!Mode || bDead || !bDrafted) return;
+    CireBotPets::Think(this, DeltaSeconds); // balance: bots order their companion (attack their target, roar to peel)
     if (!Offers.IsEmpty())
     {
         int32 Pick = 0;

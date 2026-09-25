@@ -1,30 +1,30 @@
 {
   "schemaVersion": 1,
   "_comment": "Wave composer data (Docs/Waves.md). Edited live with F8 > Waves; counts are per lane.",
-  "breatherSeconds": 15,
+  "breatherSeconds": 12,
   "wavesPerCycle": 5,
-  "cycles": 0,
+  "cycles": 3,
   "cycleScaling": {
-    "healthGrowth": 0.1,
+    "healthGrowth": 0.08,
     "damageGrowth": 0.1,
     "extraUnits": 0
   },
   "failsafe": {
     "enabled": true,
-    "maxWaveSeconds": 120,
+    "maxWaveSeconds": 100,
     "action": "march",
-    "graceSeconds": 30,
+    "graceSeconds": 20,
     "stuckSeconds": 5
   },
   "pacing": {
     "_comment": "breatherSeconds is the Skill Shop window after each cleared wave; earlyContinue ends it once every human is Ready. Waves appear spawnAlongRoute of the way down the road (0 = at the rift, per Eric) and walk marchSpeed x faster while not fighting (Docs/Waves.md).",
     "spawnAlongRoute": 0.0,
-    "marchSpeed": 1.25,
+    "marchSpeed": 1.4,
     "firstWaveDelay": 8,
     "earlyContinue": true,
-    "prepSeconds": 30,
+    "prepSeconds": 25,
     "arenaSeconds": 60,
-    "recoverySeconds": 10
+    "recoverySeconds": 8
   },
   "skillProgression": {
     "_comment": "Monster skills: none before firstSkillWave (global wave number); then 1 skill, +1 every unlockEveryWaves up to maxSkills (+ rank bonus); tier II/III every tierEveryWaves (Docs/Races.md).",
@@ -73,7 +73,7 @@
           "archetype": "hollow_infantry",
           "count": 3,
           "health": 0.9,
-          "damage": 1.25,
+          "damage": 1.4,
           "size": 1,
           "slot": "line"
         },
@@ -81,7 +81,7 @@
           "archetype": "ironbound_bruiser",
           "count": 2,
           "health": 0.9,
-          "damage": 1.25,
+          "damage": 1.4,
           "size": 1,
           "slot": "bruiser"
         },
@@ -89,7 +89,7 @@
           "archetype": "barbed_hunter",
           "count": 1,
           "health": 0.9,
-          "damage": 1.25,
+          "damage": 1.4,
           "size": 1,
           "slot": "ranged"
         },
@@ -97,7 +97,7 @@
           "archetype": "blight_caster",
           "count": 1,
           "health": 0.9,
-          "damage": 1.25,
+          "damage": 1.4,
           "size": 1,
           "slot": "caster"
         }
@@ -114,40 +114,40 @@
         {
           "archetype": "hollow_infantry",
           "count": 3,
-          "health": 0.95,
-          "damage": 1.3,
+          "health": 0.85,
+          "damage": 1.45,
           "size": 1,
           "slot": "line"
         },
         {
           "archetype": "ironbound_bruiser",
           "count": 2,
-          "health": 0.95,
-          "damage": 1.3,
+          "health": 0.85,
+          "damage": 1.45,
           "size": 1,
           "slot": "bruiser"
         },
         {
           "archetype": "barbed_hunter",
           "count": 1,
-          "health": 0.95,
-          "damage": 1.3,
+          "health": 0.85,
+          "damage": 1.45,
           "size": 1,
           "slot": "ranged"
         },
         {
           "archetype": "blight_caster",
           "count": 1,
-          "health": 0.95,
-          "damage": 1.3,
+          "health": 0.85,
+          "damage": 1.45,
           "size": 1,
           "slot": "caster"
         },
         {
           "archetype": "grave_hound",
           "count": 2,
-          "health": 0.95,
-          "damage": 1.3,
+          "health": 0.85,
+          "damage": 1.45,
           "size": 1,
           "slot": "special"
         }
@@ -253,7 +253,7 @@
         {
           "archetype": "hollow_siegebreaker",
           "count": 1,
-          "health": 0.4,
+          "health": 0.3,
           "damage": 1,
           "size": 1,
           "boss": true,

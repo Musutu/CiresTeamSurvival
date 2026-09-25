@@ -66,3 +66,26 @@ replicated expiry. The rebuild passed, and native role checks passed 28/28 in
 also passed 17/17 and 18/18. The measured cases above used neutral overrides
 and an unobstructed platform. These corrections do not change
 authored damage, healing, stat growth, or default durations.
+
+# Champion lab, round 1 — 25 September 2026 (feat/balance)
+
+`python Tools/RunChampionLab.py --waves 3,10,20 --repeats 3 --parallel 3`: each champion takes one
+fixture slot beside the knight/scholar/ranger/lancer/summoner team against 8 mixed NPCs. Ratios are
+personal DPS (or HPS) against the role median; the review band is 0.8-1.25×.
+
+| Champion | Before w3 / w10 / w20 | After w3 / w10 / w20 | Change |
+| --- | --- | --- | --- |
+| Aetheri Artificer (DPS) | 1.31 / 1.36 / 1.24 | 1.10 / 1.23 / 1.08 | Turret 18 → 12 base; Skitter 70+0.8× → 45+0.6× INT, 3 live; Arc Mine 110+1.2× → 70+0.9× INT, 2 live; Obelisk 60+1× → 45+0.8× INT |
+| Gunblade (DPS) | 0.79 / 0.91 / 0.98 | 0.54 / 0.94 / 0.92 | Silver Shot 95 → 150, Powder Flask 70 → 110, Blade Flurry 40 → 60 (4.2 m), energy 30/30/35 → 20/20/25, Hex Mark 15 → 20%, execute 20 → 15% |
+| Witch Slayer (DPS) | 1.01 / 0.77 / 0.82 | 0.97 / 0.90 / 1.16 | Blunderbuss 110 → 135, Spectral Blade 90 → 115 |
+| Aetheri Warden (HPS) | 1.38 / 1.29 / 1.00 | 1.04 / 1.10 / 1.06 | Aegis DR 15 → 10%, Nexus DR 40 → 25% (Ability DB data) |
+
+Evidence: before `Saved/BalanceLab/champions-round1-20260925-120237-45ea52/`, after
+`Saved/BalanceLab/champions-round1-after-20260925-141648-b18f8e/` (99 cases, 0 failures). The after
+run's fights are shorter (10-20 s against 23-39 s), so compare ratios, not absolute DPS.
+
+Still outside the band, not tuned in this pass:
+
+- **Summoner** 1.58 / 1.53 / 1.23: summons front-load damage in short fights.
+- **Lancer** 0.66 / 0.75 / 0.75 (six runs each, every wave).
+- **Gunblade at wave 3** 0.54 (0.79 before): not yet explained, possibly its cooldowns in a 12 s fight; in band at 10 and 20.
