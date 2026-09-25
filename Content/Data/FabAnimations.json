@@ -46,6 +46,48 @@
       "end": 1.267,
       "recoverRate": 1.0
     },
+    "crossbow_attack1": {
+      "start": 0.0,
+      "contact": 0.067,
+      "end": 0.333,
+      "recoverRate": 1.2
+    },
+    "crossbow_attack2": {
+      "start": 0.0,
+      "contact": 0.204,
+      "end": 0.598,
+      "recoverRate": 1.2
+    },
+    "crossbow_attack3": {
+      "start": 0.0,
+      "contact": 0.647,
+      "end": 0.767,
+      "recoverRate": 1.2
+    },
+    "crossbow_death": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 1.167,
+      "recoverRate": 1.0
+    },
+    "crossbow_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.583,
+      "recoverRate": 1.0
+    },
+    "crossbow_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    },
+    "crossbow_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.9,
+      "recoverRate": 1.0
+    },
     "dual_attack1": {
       "start": 0.0,
       "contact": 0.733,
@@ -1132,6 +1174,30 @@
       ],
       "jump": [
         "unarmed_jump"
+      ]
+    },
+    "style:ranger_crossbow": {
+      "attack": [
+        "crossbow_attack1",
+        "crossbow_attack2",
+        "crossbow_attack3"
+      ],
+      "ability": [
+        "crossbow_attack1",
+        "crossbow_attack2",
+        "crossbow_attack3"
+      ],
+      "hit": [
+        "crossbow_hit"
+      ],
+      "death": [
+        "crossbow_death"
+      ],
+      "roll": [
+        "crossbow_roll"
+      ],
+      "jump": [
+        "crossbow_jump"
       ]
     }
   }

@@ -345,6 +345,41 @@
    "path": "/Game/MaleLocomotionSet/Animations/Mannequin/InPlace/Jump/A_INP_JumpIdle_inAir.A_INP_JumpIdle_inAir",
    "set": "unarmed",
    "kind": "jump"
+  },
+  "crossbow_attack1": {
+   "path": "/Game/CrossbowPackAnim/Animation/UE5/Attack/Crossbow_Attack_01.Crossbow_Attack_01",
+   "set": "crossbow",
+   "kind": "attack"
+  },
+  "crossbow_attack2": {
+   "path": "/Game/CrossbowPackAnim/Animation/UE5/Attack/Crossbow_Attack_03.Crossbow_Attack_03",
+   "set": "crossbow",
+   "kind": "attack"
+  },
+  "crossbow_attack3": {
+   "path": "/Game/CrossbowPackAnim/Animation/UE5/Attack/Crossbow_Attack_02.Crossbow_Attack_02",
+   "set": "crossbow",
+   "kind": "attack"
+  },
+  "crossbow_hit": {
+   "path": "/Game/CrossbowPackAnim/Animation/UE5/Hit/Crossbow_HitF.Crossbow_HitF",
+   "set": "crossbow",
+   "kind": "hit"
+  },
+  "crossbow_death": {
+   "path": "/Game/CrossbowPackAnim/Animation/UE5/Death/Crossbow_Death.Crossbow_Death",
+   "set": "crossbow",
+   "kind": "death"
+  },
+  "crossbow_roll": {
+   "path": "/Game/CrossbowPackAnim/Animation/UE5/Roll/Crossbow_RollF.Crossbow_RollF",
+   "set": "crossbow",
+   "kind": "roll"
+  },
+  "crossbow_jump": {
+   "path": "/Game/MaleLocomotionSet/Animations/Mannequin/InPlace/Jump/A_INP_JumpIdle_inAir.A_INP_JumpIdle_inAir",
+   "set": "crossbow",
+   "kind": "jump"
   }
  },
  "locomotion": {
@@ -543,6 +578,11 @@
   "ether_golem_bruiser": "unarmed",
   "ether_golem_support": "unarmed",
   "ether_golem_tank": "unarmed"
+ },
+ "extraSets": {
+  "Ranger": [
+   "crossbow"
+  ]
  },
  "replace": {
   "style:warden": {
@@ -1249,6 +1289,30 @@
    ],
    "jump": [
     "unarmed_jump"
+   ]
+  },
+  "style:ranger_crossbow": {
+   "attack": [
+    "crossbow_attack1",
+    "crossbow_attack2",
+    "crossbow_attack3"
+   ],
+   "ability": [
+    "crossbow_attack1",
+    "crossbow_attack2",
+    "crossbow_attack3"
+   ],
+   "hit": [
+    "crossbow_hit"
+   ],
+   "death": [
+    "crossbow_death"
+   ],
+   "roll": [
+    "crossbow_roll"
+   ],
+   "jump": [
+    "crossbow_jump"
    ]
   }
  }

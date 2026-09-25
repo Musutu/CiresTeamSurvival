@@ -377,13 +377,17 @@ def main():
             mesh = unreal.load_asset(mesh_path.split(".")[0])
             if not isinstance(mesh, unreal.SkeletalMesh):
                 report["bodies"][folder] = {"error": "body missing"}; continue
-            sources = {c: src(r["path"]) for c, r in cfg["clips"].items() if r.get("set") == set_name and src(r["path"])}
+            # The body's weapon set plus any extra sets (alternate loadouts, e.g. the Ranger's crossbow): clips only.
+            sets = {set_name, *cfg.get("extraSets", {}).get(folder, [])}
+            sources = {c: src(r["path"]) for c, r in cfg["clips"].items() if r.get("set") in sets and src(r["path"])}
             loco = {k: src(p) for k, p in cfg["locomotion"].get(set_name, {}).items() if src(p)}
             try:
                 done = retarget_body(folder, mesh, sources, loco, report["bodies"], keep)
                 ok_clips.update(c for c in done if not c.startswith("loco_"))
                 report["bodies"][folder]["set"] = set_name
-                build_locomotion(folder, mesh, done, loco, speeds_by_set.get(set_name, {}), lancer, report["bodies"])
+                # -CireFabAnimKeep adds clips (e.g. an extra set) without rebuilding a locomotion BlendSpace that exists.
+                if not (keep and lib.does_asset_exist("%s/%s/BS_Fab_Locomotion_%s" % (OUT, folder, folder))):
+                    build_locomotion(folder, mesh, done, loco, speeds_by_set.get(set_name, {}), lancer, report["bodies"])
             except Exception:
                 report["bodies"].setdefault(folder, {})["error"] = traceback.format_exc()
         data_path = ROOT / "Content/Data/FabAnimations.json"

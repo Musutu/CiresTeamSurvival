@@ -280,7 +280,9 @@ bool CireChampionActions::Apply(ACireHero& Hero, UCireCombatAnimInstance& Anim, 
         const float Duration = FMath::Max(.05f, Hero.AttackDuration);
         UAnimSequence* FabClip = nullptr; FString FabName;
         // fab-integration: the weapon style's Fab strike (alternating through its combo) when installed.
-        if (Clip != TEXT("attack_crossbow") && CireFabAnimation::Pick(Body, Folder, StyleName(Hero), MotionFor(Hero), TEXT("attack"), Hero.AttackSerial, FabClip, FabName))
+        // Aimed Tripo shots (gunblade pistol, witch slayer) keep their clip unless the style has a real Fab crossbow set.
+        if (CireFabAnimation::Pick(Body, Folder, StyleName(Hero), MotionFor(Hero), TEXT("attack"), Hero.AttackSerial, FabClip, FabName) &&
+            (Clip != TEXT("attack_crossbow") || FabName.StartsWith(TEXT("crossbow_"))))
             Start(*State, FabClip, FabName, Hero.AttackStartedServerTime, Duration * (.25f / .65f), Duration * 1.5f, true);
         else
             Start(*State, ClipFor(Body, Clip), Clip, Hero.AttackStartedServerTime, Duration * (.25f / .65f), Duration * 1.5f);

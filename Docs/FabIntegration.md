@@ -87,6 +87,7 @@ Leader-pose **parts**: the Quadruped Fantasy Centaur is modular (body, armour st
 | State VFX (`State_VFX`) | 22 status effects (stun, root, slow, freeze, poison, burn, silence, curse, charm, blind, heal-over-time, mana, shock, bleed) | `FabVFX.json` `buffs` |
 | Earth Spells (`Earth_Spells`), Nature VFX (`Forest_VFX`) | earth and nature schools; nature area heal | `FabVFX.json` |
 | Realistic Blood (`RealisticBlood`) | restrained physical (steel) impacts: low-intensity slash/burst | `FabVFX.json` |
+| Crossbow Animation Set (`CrossbowPackAnim`) | Ranger `ranger_crossbow` loadout: shots, hit, death, roll (extra set on the Ranger body) | `Tools/BuildFabAnimMap.py` `extraSets`, `Tools/RetargetFabAnimations.py -CireFabAnimOnly=Ranger -CireFabAnimKeep` |
 | GDH All Animation Bundle (`GDHBundle`), Male Locomotion (`MaleLocomotionSet`), Gun & Sword (`Gun_and_Sword`) | 22 champion bodies: attacks (combo rotation), casts, hit, death, dodge roll, airborne, 8-direction walk/run per weapon set | `Tools/BuildFabAnimMap.py`, `Tools/RetargetFabAnimations.py` → `FabAnimations.json`, `/Game/FabDerived` |
 | ROG Creatures, Quadruped Fantasy Creatures, Undead Pack | dire_wolf, bristleback, feral_ursoth, feral_mammoth, grave_hound (Barghest), wild_outrider (Centaur archer with bow, armour and mane parts), hollow_infantry (skeleton + ghoul variants) | `Tools/BuildFabCreatures.py` → `RaceMeshes.fab.json` |
 | ROG Creatures (bear), Quadruped Fantasy Creatures (centaur) | Bear and Evergrove Centaur **champions** (native clips, casts, flinch, death; replace the procedural bodies) | `Tools/BuildFabChampionCreatures.py` → `ChampionArtBindings.fab.json` |
@@ -95,8 +96,14 @@ Leader-pose **parts**: the Quadruped Fantasy Centaur is modular (body, armour st
 
 Deliberately not used (reviewed in galleries): the Undead Pack zombie (cartoon-styled, kept the Tripo siegebreaker), the Mountain
 Dragon (idle head near the ground on a 9 m winged mesh), the Undead skeleton archer (bow attack lives on the bow's skeleton), the
-Medieval Kingdom market stand (bare frame) and table (hides the goods). Crossbow Animation Set is installed but not mapped yet (the
-crossbow champion keeps its Tripo clip). The VOL2 bow/arrow/throwing axe have no CPU-readable vertices, so they keep their props.
+Medieval Kingdom market stand (bare frame) and table (hides the goods). The VOL2 bow/arrow/throwing axe have no CPU-readable
+vertices, so they keep their props. The Witch Slayer's blunderbuss and the Gunblade's pistol keep their aimed Tripo shot.
+
+Crossbow Animation Set (`CrossbowPackAnim`): the `crossbow` set (three shouldered shots, hit, death, roll) is an **extra set** on the
+Ranger body (`extraSets` in `Art/Fab/FabAnimMap.json`; `RetargetFabAnimations.py` retargets clips only, the body keeps its bow
+locomotion) and replaces the Tripo `attack_crossbow` for the `ranger_crossbow` loadout. `-CireAltLoadout=ranger` (dev builds) starts
+the Ranger on it; `Tools/RunAbilityVFXGallery.py --only basic_bow --alt-loadout ranger` captures it. `-CireFabAnimKeep` reruns add
+clips without rebuilding an existing locomotion BlendSpace.
 
 Switches: `-CireNoFab` hides every overlay (VFX, animation, creatures, weapons, town) for before/after captures; the galleries
 take `--no-fab` (ability VFX, monster, new champions, environment).

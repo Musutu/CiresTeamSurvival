@@ -157,6 +157,7 @@ def main() -> int:
     parser.add_argument("--db", type=Path, help="Ability Database JSON override (e.g. void zones on a ground skill)")
     parser.add_argument("--legacy", action="store_true", help="capture the previous presentation (-CireLegacyVFX) for before/after")
     parser.add_argument("--no-fab", action="store_true", help="fab-integration: hide the Fab Niagara/animation overlays (-CireNoFabVFX -CireNoFabAnim) for before/after")
+    parser.add_argument("--alt-loadout", default="", help="fab-integration: profiles cast with their second weapon loadout (e.g. ranger = crossbow)")
     parser.add_argument("--in-pillow", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.compare or args.compose:
@@ -187,6 +188,8 @@ def main() -> int:
         command += ["-CireNoFabVFX", "-CireNoFabAnim"]
     if args.only:
         command.append(f"-CireVFXOnly={args.only}")
+    if args.alt_loadout:
+        command.append(f"-CireAltLoadout={args.alt_loadout}")
     started = time.monotonic()
     failure = ""
     with console.open("wb") as output:

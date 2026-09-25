@@ -306,6 +306,11 @@ void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
     if(PreviewProfile!=Profile||!Options||!Options->Contains(PreviewLoadout))PreviewLoadout.Reset();
     const FString* Default=Database.Profiles.Find(Profile);if(!Default||NaturalAttacks(Profile))return;
     EquippedLoadout=PreviewLoadout.IsEmpty()?*Default:PreviewLoadout;
+#if !UE_BUILD_SHIPPING
+    // fab-integration (review captures): -CireAltLoadout=ranger,... starts those profiles on their second loadout option.
+    if(FString Alt;PreviewLoadout.IsEmpty()&&Options&&Options->Num()>1&&FParse::Value(FCommandLine::Get(),TEXT("CireAltLoadout="),Alt,false))
+    {TArray<FString> Ids;Alt.ParseIntoArray(Ids,TEXT(","),true);if(Ids.Contains(Profile))EquippedLoadout=(*Options)[1];}
+#endif
     const FLoadout* Loadout=Database.Presets.Find(EquippedLoadout);if(!Loadout)return;Motion=Loadout->Motion;
     for(const auto& Spec:Loadout->Parts)
     {
