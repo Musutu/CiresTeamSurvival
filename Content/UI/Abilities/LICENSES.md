@@ -32,6 +32,11 @@ school-coloured tumbling arc) and the Huntress companion icons `sabercat_maul` (
 from `Art/Icons/ChatGPT/abilities_scaling_kits.png` (3x3) and `abilities_scaling_kits2.png` (2x2; only the
 first tile is used).
 
+## Polymorph (art-2d)
+
+`polymorph` (an arcane vortex with a startled chicken at its centre) is a painted icon **generated for Eric via
+ChatGPT (OpenAI), 2026-09-25**; source `Art/Icons/ChatGPT/abilities_polymorph.png` (single icon, resized to 256).
+
 ## Procedural icons
 
 Any future `T_<id>` without a painted PNG falls back to original procedural art from `Tools/BuildAbilityIcons.py`
