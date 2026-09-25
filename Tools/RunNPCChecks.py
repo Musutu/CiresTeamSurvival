@@ -24,6 +24,18 @@ ROOT = Path(__file__).resolve().parent.parent
 FAILURE = re.compile(r"CIRE_\S*(?:FAIL|ERROR)|Fatal error:|Assertion failed:|Ensure condition failed:")
 
 
+# AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+# and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Probes only target Win64.
+EDITOR_ENV = {**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"}
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+
+
 def read(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
 
@@ -31,6 +43,7 @@ def read(path: Path) -> str:
 def stop(child: subprocess.Popen | None) -> None:
     if child is None or child.poll() is not None:
         return
+    kill_tree(child)
     child.terminate()
     try:
         child.wait(timeout=5)
@@ -55,7 +68,7 @@ def main() -> int:
 
     def launch(address: str, switches: list[str], log: Path) -> subprocess.Popen:
         command = [str(args.editor), str(project), address, *switches, f"-abslog={log}", *common]
-        return subprocess.Popen(command, cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation)
+        return subprocess.Popen(command, cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation, env=EDITOR_ENV)
 
     def save(name: str, logs: list[Path], codes: list, markers: list[str], failure: str = "", extra: dict | None = None) -> None:
         texts = [read(log) for log in logs]

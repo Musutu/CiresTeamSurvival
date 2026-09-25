@@ -12,6 +12,18 @@ from SimulateBalance import simulate
 
 ROOT=Path(__file__).resolve().parents[1]
 
+# AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+# and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Probes only target Win64.
+EDITOR_ENV = {**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"}
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+
+
 def find_reports(reports, before, wave):
     matches=[]
     for file in reports.glob('runtime-*.json'):
@@ -23,6 +35,7 @@ def find_reports(reports, before, wave):
     return matches
 
 def stop_owned(child):
+    kill_tree(child)
     child.terminate()
     try: child.wait(timeout=10)
     except subprocess.TimeoutExpired: child.kill();child.wait(timeout=10)
@@ -38,7 +51,7 @@ def run(engine, waves, duration, timeout):
         print(f'MEASURED_START wave={wave} log={log}',flush=True)
         start=time.monotonic()
         with stdout.open('wb') as stream:
-            child=subprocess.Popen(command,cwd=ROOT,stdout=stream,stderr=subprocess.STDOUT,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+            child=subprocess.Popen(command,cwd=ROOT,stdout=stream,stderr=subprocess.STDOUT,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0),env=EDITOR_ENV)
             completed_at=None;shutdown='natural_exit'
             try:
                 while child.poll() is None:
