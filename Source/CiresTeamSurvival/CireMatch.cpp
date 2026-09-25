@@ -1,4 +1,6 @@
 #include "CireBalanceLab.h"
+#include "CireChampionProfiles.h"
+#include "CireChampionRoster.h"
 #include "CireShopFixtures.h" // progression-shop
 #include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
@@ -165,6 +167,16 @@ void ACireGameMode::BeginPlay() {
     }
 #endif
     bSmoke=FParse::Param(FCommandLine::Get(),TEXT("CireSmoke"));
+    // champion-select: pick timer length (Game.ini, then -CireDraftSeconds=N; 0 = untimed).
+    GConfig->GetFloat(TEXT("/Script/CiresTeamSurvival.CireGameMode"),TEXT("DraftPickSeconds"),DraftPickSeconds,GGameIni);
+    FParse::Value(FCommandLine::Get(),TEXT("CireDraftSeconds="),DraftPickSeconds);
+    {
+        // Developer probes, galleries, previews and smokes draft on their own schedule.
+        const FString Args=FCommandLine::Get();
+        if(Args.Contains(TEXT("Probe"))||Args.Contains(TEXT("Gallery"))||Args.Contains(TEXT("Preview"))||Args.Contains(TEXT("Smoke"))||Args.Contains(TEXT("BalanceLab"))||Args.Contains(TEXT("Soak")))
+            if(!FParse::Param(FCommandLine::Get(),TEXT("CireDraftTimerInTests")))DraftPickSeconds=0;
+    }
+    DraftPickSeconds=FMath::Clamp(DraftPickSeconds,0.f,3600.f);
     Clock=Cires::MatchClock({60,90,RecoverySeconds});
 #if !UE_BUILD_SHIPPING
     SmokePhaseMask = 1; SmokeClearedWaves = 0; SmokeWaveAge = 0.f;
@@ -241,6 +253,33 @@ void ACireGameMode::HandleStartingNewPlayer_Implementation(APlayerController* P)
     if(Clock.Phase()==Cires::MatchPhase::Arena) H->ReviveAt(ArenaPosition(Team,Counts[Team]));
 }
 void ACireGameMode::PostLogin(APlayerController* P) { Super::PostLogin(P); }
+void ACireGameMode::TickDraftTimer() {
+    // champion-select: every human champion gets DraftPickSeconds to lock in. At zero the
+    // selected champion is locked if still free, otherwise a random champion no human took.
+    if(DraftPickSeconds<=0||Clock.Phase()==Cires::MatchPhase::Finished) return;
+    const float Now=GetWorld()->GetTimeSeconds();
+    for(auto* H:Heroes) {
+        if(!IsValid(H)||H->bBot||H->bDrafted||H->bDead) continue;
+        if(!Cast<APlayerController>(H->GetController())) continue;
+        if(H->DraftDeadline<=0) {H->DraftDeadline=Now+DraftPickSeconds;H->DraftTimerTotal=DraftPickSeconds;continue;}
+        if(Now<H->DraftDeadline) continue;
+        FString Pick=H->DraftHoverId;
+        if(Pick.IsEmpty()||!CireChampionRoster::Find(Pick)||CireChampionProfiles::PickedByTeammate(H,Pick,true)) {
+            TArray<FString> Free,Untouched;
+            for(const auto& P:CireChampionRoster::All()) {
+                if(CireChampionProfiles::PickedByTeammate(H,P.Id,true)) continue;
+                Free.Add(P.Id);
+                if(!CireChampionProfiles::PickedByTeammate(H,P.Id,false)) Untouched.Add(P.Id);
+            }
+            const TArray<FString>& From=Untouched.Num()>0?Untouched:Free;
+            Pick=From.Num()>0?From[FMath::RandRange(0,From.Num()-1)]:FString();
+        }
+        const bool bLocked=!Pick.IsEmpty()&&H->DraftProfile(Pick);
+        if(!bLocked) H->Draft(H->Archetype);
+        H->Notice=TEXT("Time ran out: your champion was locked in. Choose your opening ability.");
+        UE_LOG(LogCire,Display,TEXT("CIRE_DRAFT_TIMER_AUTOLOCK hero=%s profile=%s"),*H->HeroName,*H->ChampionProfileId);
+    }
+}
 void ACireGameMode::Logout(AController* P) {
     if(auto* H=Cast<ACireHero>(P?P->GetPawn():nullptr)) { H->bBot=true; H->bAutoAttack=true; H->Draft(H->Archetype); }
     Super::Logout(P);
@@ -431,6 +470,7 @@ void ACireGameMode::Tick(float Dt) {
     CireNav::TickProbe(this,Dt); // nav-paths: -CireNavProbe
 #endif
     auto* S=GetGameState<ACireGameState>(); if(!S) return;
+    TickDraftTimer(); // champion-select
     if(!bSmoke&&GetNetMode()==NM_Standalone) {
         for(auto* H:Heroes) if(IsValid(H)&&!H->bBot&&!H->bDrafted)return;
     }

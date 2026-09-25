@@ -653,6 +653,7 @@ void ACireHUD::DrawModal(ACireHero* Hero,ACireController* Controller,ACireGameSt
         else if (OfferOpen)
         {
             DrawSkillOffer(Hero,Controller); // champion-draft: CireSkillOfferHUD.cpp
+            DrawDraftRoster(Hero,Controller); // champion-select: the LOCKED IN outro fades over the opening offer
         }
         else if (ShopOpen)
         {

@@ -1,4 +1,5 @@
 #include "CireDraftStage.h"
+#include "HAL/IConsoleManager.h"
 #include "CireGame.h"
 #include "CireChampionArt.h"
 #include "CireChampionRoster.h"
@@ -118,6 +119,17 @@ void ACireDraftStage::BuildStage()
     PP.bOverride_ColorSaturation=true;PP.ColorSaturation=FVector4(.92f,.92f,.92f,1.f);
     Capture->RegisterComponent();AddInstanceComponent(Capture);
     Capture->ShowOnlyActors.Add(this);
+    // Cutout depth: same camera, scene depth only (see SetCutout / GetDepthTarget).
+    DepthTarget=NewObject<UTextureRenderTarget2D>(this,TEXT("DraftDepthTarget"));
+    DepthTarget->RenderTargetFormat=ETextureRenderTargetFormat::RTF_R32f;DepthTarget->ClearColor=FLinearColor(1e6f,0,0,0);
+    DepthTarget->InitAutoFormat(PreviewWidth,PreviewHeight);DepthTarget->UpdateResourceImmediate(true);
+    DepthCapture=NewObject<USceneCaptureComponent2D>(this,TEXT("DraftDepthCapture"));
+    DepthCapture->SetupAttachment(Capture);
+    DepthCapture->TextureTarget=DepthTarget;DepthCapture->CaptureSource=ESceneCaptureSource::SCS_SceneDepth;
+    DepthCapture->PrimitiveRenderMode=ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
+    DepthCapture->bCaptureEveryFrame=false;DepthCapture->bCaptureOnMovement=false;DepthCapture->FOVAngle=CaptureFov;
+    DepthCapture->ShowFlags=Capture->ShowFlags;
+    DepthCapture->RegisterComponent();AddInstanceComponent(DepthCapture);
 
     UStaticMesh* Cylinder=Mesh(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
     UStaticMesh* Cube=Mesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
@@ -209,6 +221,7 @@ void ACireDraftStage::ShowProfile(const FString& Id)
     Hero->GetMesh()->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
     Hero->ChampionArt->UpdateVisuals(*Hero,.016f);
     Preview=Hero;Capture->ShowOnlyActors.AddUnique(Hero);
+    RefreshCutoutParts();
     SetExposureOffset(StoredExposure(Id));
     // Ask the streamer for full-resolution body/weapon textures immediately (the preview is a close-up).
     Hero->PrestreamTextures(20.f,true);
@@ -316,10 +329,52 @@ void ACireDraftStage::SetPortraitTarget(UTextureRenderTarget2D* Into)
     PortraitTarget=Into;
     if(Capture)Capture->TextureTarget=Into?Into:Target.Get();
     // Busts read best as clean silhouettes: hide the architecture, keep the warm fire rim.
-    for(UStaticMeshComponent* Part:{Wall.Get(),Arch.Get(),Floor.Get(),Dais.Get()})if(Part)Part->SetVisibility(Into==nullptr);
-    for(auto& Part:Braziers)if(Part)Part->SetVisibility(Into==nullptr);
-    for(auto& Part:Embers)if(Part)Part->SetVisibility(Into==nullptr);
+    const bool bProps=Into==nullptr&&!bCutout;
+    for(UStaticMeshComponent* Part:{Wall.Get(),Arch.Get(),Floor.Get(),Dais.Get()})if(Part){Part->SetVisibility(bProps);Part->SetHiddenInGame(!bProps);}
+    for(auto& Part:Braziers)if(Part){Part->SetVisibility(bProps);Part->SetHiddenInGame(!bProps);}
+    for(auto& Part:Embers)if(Part){Part->SetVisibility(bProps);Part->SetHiddenInGame(!bProps);}
+    RefreshCutoutParts();
     bFramed=false;
+}
+
+namespace
+{
+// Post-process alpha is a renderer-wide switch: on while any cutout stage lives, then restored.
+int32 GCutoutStages=0;bool GPropagateAlphaBefore=false;
+void RetainPropagateAlpha(bool bRetain)
+{
+    IConsoleVariable* CVar=IConsoleManager::Get().FindConsoleVariable(TEXT("r.PostProcessing.PropagateAlpha"));
+    if(!CVar)return;
+    if(bRetain){if(GCutoutStages++==0){GPropagateAlphaBefore=CVar->GetBool();CVar->Set(true,ECVF_SetByCode);}}
+    else if(GCutoutStages>0&&--GCutoutStages==0)CVar->Set(GPropagateAlphaBefore,ECVF_SetByCode);
+}
+}
+void ACireDraftStage::RefreshCutoutParts()
+{
+    // Cutout: only the champion's meshes (body, weapons, gear) reach the capture, never
+    // helper geometry such as ground auras or rings the hero may carry.
+    if(!Capture)return;
+    Capture->ShowOnlyComponents.Reset();
+    if(DepthCapture){DepthCapture->ShowOnlyComponents.Reset();DepthCapture->bCaptureEveryFrame=bCutout&&!PortraitTarget&&IsValid(Preview);}
+    if(!IsValid(Preview)){Capture->ShowOnlyActors.AddUnique(this);return;}
+    if(!bCutout||PortraitTarget){Capture->ShowOnlyActors.AddUnique(this);Capture->ShowOnlyActors.AddUnique(Preview);return;}
+    // Lights are not filtered by the show-only list; the stage's own meshes are left out entirely.
+    Capture->ShowOnlyActors.Remove(Preview);Capture->ShowOnlyActors.Remove(this);
+    TArray<UPrimitiveComponent*> Parts;Preview->GetComponents(Parts);
+    for(UPrimitiveComponent* Part:Parts)
+    {
+        bool bBody=Part->IsA<USkeletalMeshComponent>();
+        for(const USceneComponent* Up=Part->GetAttachParent();Up&&!bBody;Up=Up->GetAttachParent())bBody=Up->IsA<USkeletalMeshComponent>();
+        if(bBody&&(Part->IsA<USkeletalMeshComponent>()||Part->IsA<UStaticMeshComponent>())){Capture->ShowOnlyComponents.Add(Part);if(DepthCapture)DepthCapture->ShowOnlyComponents.Add(Part);}
+    }
+}
+void ACireDraftStage::SetCutout(bool bEnable)
+{
+    if(bCutout==bEnable)return;
+    bCutout=bEnable;RetainPropagateAlpha(bEnable);
+    if(Target){Target->ClearColor=bEnable?FLinearColor(0,0,0,0):FLinearColor(.006f,.007f,.009f,1);Target->UpdateResourceImmediate(true);}
+    if(Capture){Capture->PostProcessSettings.bOverride_VignetteIntensity=true;Capture->PostProcessSettings.VignetteIntensity=bEnable?0.f:.55f;}
+    SetPortraitTarget(PortraitTarget);
 }
 
 void ACireDraftStage::Tick(float DeltaSeconds)
@@ -327,7 +382,7 @@ void ACireDraftStage::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
     // Frame-based so a long asset-load hitch never tears down a live draft screen.
     if(LastTouchedFrame>0&&GFrameCounter>LastTouchedFrame+4){Destroy();return;}
-    if(!IsValid(Preview)){if(Capture)Capture->bCaptureEveryFrame=false;return;}
+    if(!IsValid(Preview)){if(Capture)Capture->bCaptureEveryFrame=false;if(DepthCapture)DepthCapture->bCaptureEveryFrame=false;return;}
     Capture->bCaptureEveryFrame=true;
     if(bSpin)Yaw=FMath::Fmod(Yaw+DeltaSeconds*11.f+360.f,360.f);
     Preview->SetActorRotation(FRotator(0,Yaw,0));
@@ -340,11 +395,13 @@ void ACireDraftStage::Tick(float DeltaSeconds)
         Preview->AttackAimLocation=Preview->GetActorLocation()+Preview->GetActorForwardVector()*600.f;
     }
     Preview->ChampionArt->UpdateVisuals(*Preview,DeltaSeconds);
+    if(bCutout&&!PortraitTarget)RefreshCutoutParts(); // weapons and gear attach after the body loads
     FrameCamera(DeltaSeconds,false);
 }
 
 void ACireDraftStage::EndPlay(const EEndPlayReason::Type Reason)
 {
+    if(bCutout){bCutout=false;RetainPropagateAlpha(false);}
     DestroyPreview();
     Super::EndPlay(Reason);
 }

@@ -158,6 +158,9 @@ void ACireHero::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
     DOREPLIFETIME(ACireHero, ProfileRoles);
     DOREPLIFETIME(ACireHero, bBot);
     DOREPLIFETIME(ACireHero, bDrafted);
+    DOREPLIFETIME(ACireHero, DraftDeadline);
+    DOREPLIFETIME(ACireHero, DraftTimerTotal);
+    DOREPLIFETIME(ACireHero, DraftHoverId);
     DOREPLIFETIME(ACireHero, bDead);
     DOREPLIFETIME(ACireHero, bAutoAttack);
     DOREPLIFETIME(ACireHero, HeroName);

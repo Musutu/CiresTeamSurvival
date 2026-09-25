@@ -9,10 +9,18 @@ bool UCireViewportClient::InputChar(FViewport* InViewport, int32 ControllerId, T
         Controller->AppendChatCharacter(InputCharacter);
         return true;
     }
+    if (Controller && Controller->bDraftSearch) { // champion-select search box
+        Controller->AppendDraftSearchCharacter(InputCharacter);
+        return true;
+    }
     return Super::InputChar(InViewport, ControllerId, InputCharacter);
 }
 
 void ACireController::BeginChat() { bChatInput = true; }
+void ACireController::AppendDraftSearchCharacter(TCHAR InputCharacter) {
+    if (!bDraftSearch || InputCharacter < 32 || InputCharacter == 127 || DraftSearch.Len() >= 24) return;
+    DraftSearch.AppendChar(InputCharacter);
+}
 void ACireController::CancelChat() { bChatInput = false; ChatDraft.Empty(); }
 void ACireController::AppendChatCharacter(TCHAR InputCharacter) {
     if (!bChatInput || InputCharacter < 32 || InputCharacter == 127 || ChatDraft.Len() >= 180) return;
