@@ -90,9 +90,9 @@ feedback; the server still validates everything. Sounds are original synthesized
 
 ## Catalog (48 entries: 9 consumables/tomes, 16 basic, 5 epic, 18 legendary)
 
-Costs are totals (recipe gold in brackets). Economy reference: a team earns roughly 300-500 gold per
-cycle from kills plus chests and arena wins, so a first legendary lands around cycle 3-4 and a full
-build late in the match. Recommended builds per role (tank, physical, caster, support) are in
+Costs are totals (recipe gold in brackets), rescaled x1.2 for the kill-gold economy (Docs/Progression.md,
+"Gold economy" and `Tools/EconomyCurve.py`): a team clearing challenge packs affords a core legendary in
+round 2 and a full build around round 4. Recommended builds per role (tank, physical, caster, support) are in
 `Items.json -> recommended` and shown on the shop's RECOMMENDED tab.
 
 ### Consumables and tomes

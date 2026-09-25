@@ -52,6 +52,14 @@ Sizes are logical: 8-9 captions, 10-11 body, 12-15 names/titles, 24+ numbers, 36
 | `Toast(P, X, Y, W, IconId, Title, Body, Age, Life, Accent)` | Slide-in toast card (loot, purchases, pickups). |
 | `Banner(P, ViewW, Y, FCireBannerSpec, Age)` | Big animated banner (use the queue below instead of calling directly). |
 
+## Ornate shop framing (`CireShopArt`)
+
+The Skill Shop and the Armory share the framing of Eric's target image: `Panel` (near-black, double
+thin gold border, corner ornaments, a raised title plate), `Title` / `Spaced` (letter-spaced
+`ECireFont::Display` = Cinzel caps), `Rule` / `Divider` (diamond-studded), `CompassStar`, `CrestRing` /
+`Crest`, `Scroll` (3-sliced scroll card with tier glow, golden sparks, prismatic sheen and wisps), and
+`WaxSeal` (purchase stamp). Ink colours for parchment are linear values (`CireShopArt::Ink`).
+
 ## Transition banners (`CireBanners`)
 
 ```cpp
