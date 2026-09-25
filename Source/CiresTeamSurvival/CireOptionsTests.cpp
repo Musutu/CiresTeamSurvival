@@ -92,6 +92,16 @@ bool CireOptions::RunSettingsSmoke()
     F.UIScale=9;F.TooltipOpacity=-2;F.SCTDirection=7;F.ThreatWarningPercent=5;Check(F.Save(),TEXT("v4 sanitize save"));
     FCireUISettings G;G.Load(File);
     Check(FMath::IsNearlyEqual(G.UIScale,1.15f)&&FMath::IsNearlyEqual(G.TooltipOpacity,.3f)&&G.SCTDirection==2&&G.ThreatWarningPercent==60,TEXT("v4 bounds"));
+    // Pet frame: an unmoved pets-merge default (over the screen centre) adopts the new default; a moved one is kept.
+    const FString OldPet=TEXT("[CireUI.Preferences]\nVersion=6\n[CireUI.Panel.Pet]\nX=0.2265625\nY=0.425\nWidth=0.1953125\nHeight=0.1555556\nAnchor=3\n");
+    Check(FFileHelper::SaveStringToFile(OldPet,*File),TEXT("old pet default fixture write"));
+    FCireUISettings H;H.Load(File);
+    const auto PetR=H.GetRect(TEXT("Pet"),FVector2D(1280,720)),PetTall=H.GetRect(TEXT("Pet"),FVector2D(1280,960));
+    Check(FMath::IsNearlyEqual(PetR.X,258.f,.6f)&&FMath::IsNearlyEqual(PetR.Y,304.f,.6f)&&FMath::IsNearlyEqual(PetTall.Y,304.f,.6f),TEXT("unmoved pet frame adopts the unit-frame default"));
+    const FString MovedPet=TEXT("[CireUI.Preferences]\nVersion=6\n[CireUI.Panel.Pet]\nX=0.5\nY=0.1\nWidth=0.1953125\nHeight=0.1555556\nAnchor=1\n");
+    Check(FFileHelper::SaveStringToFile(MovedPet,*File),TEXT("moved pet fixture write"));
+    H.Load(File);
+    Check(FMath::IsNearlyEqual(H.GetRect(TEXT("Pet"),FVector2D(1280,720)).Y,72.f,.6f),TEXT("moved pet frame keeps its saved position"));
     Check(IFileManager::Get().Delete(*File),TEXT("isolated fixture cleanup"));
     UE_LOG(LogTemp,Display,TEXT("CIRE_OPTIONS_SETTINGS_%s checks=%d schema=5"),Pass?TEXT("PASS"):TEXT("FAIL"),Count);
     // wow-ui: buff/debuff registry coverage, symbol formatting, callout throttling, cast states.
