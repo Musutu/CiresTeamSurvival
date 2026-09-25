@@ -36,3 +36,10 @@ the camera, so a left drag can orbit the camera without dropping the target.
 The runtime smoke adds 9 checks: cone preference over a closer hostile behind the camera, outward
 cycling, wrap-around, Shift+Tab history, other-realm exclusion, all-around fallback, clear on death and
 auto-reacquire. Latest run: 27/27 runtime checks passed (`Saved/ExpansionChecks/20260924T084431773010Z`).
+
+## Aim indicator decorations (ability-vfx)
+
+The armed preview keeps its exact boundary sections (fill + rim) and adds an animated section 2:
+lines and skillshots get an arrowhead at the far end and chevrons travelling from the caster, cones
+get outward chevrons, circles/squares/custom shapes get the designated-spot marker. All decorations
+stay inside the true footprint. Server validation is unchanged. See [AbilityVFXAudit.md](AbilityVFXAudit.md).

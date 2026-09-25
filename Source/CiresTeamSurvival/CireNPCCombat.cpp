@@ -1,4 +1,5 @@
 #include "CireNPCCombat.h"
+#include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireLoot.h" // progression-shop: NPC pause
 #include "CireGame.h"
 #include "CireThreat.h"
@@ -62,6 +63,7 @@ void ClearCast(ACireMonster* M)
 }
 void BeginCast(ACireMonster* M,const FCireNPCAbility& A,FVector Aim,bool bProjectile)
 {
+    if(CireCrowdControl::IsSilenced(M)||CireCrowdControl::IsStunned(M))return; // champion-draft: silenced/stunned monsters cannot cast
     const float Now=NowOf(M);
     M->CastingAbility=A.Id.ToString();M->CastStartedAt=Now;M->CastEndsAt=Now+FMath::Max(A.CastTime,.05f);
     M->PendingAim=Aim;M->bPendingSkillshot=bProjectile;
@@ -462,7 +464,7 @@ float CireNPCCombat::ModifyIncomingDamage(ACireMonster* M,ACireHero* Attacker,fl
     static int32 Depth=0;
     if(!IsValid(M)||!M->HasAuthority()||!FMath::IsFinite(Amount)||Amount<=0)return Amount;
     auto* S=St(M);const auto* A=Arch(M);const float Now=NowOf(M);
-    if(A)Amount*=1.f-A->Armor;
+    if(A)Amount*=1.f-A->Armor*CireCrowdControl::ArmorMultiplier(M); // champion-draft: armor break
     if(S&&S->ShieldWallUntil>Now)Amount*=1.f-S->ShieldWallReduction;
     if(Attacker)if(auto* Mode=M->GetWorld()->GetAuthGameMode<ACireGameMode>())
         for(auto* Other:Mode->Monsters)
@@ -504,7 +506,8 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     if(!FMath::IsFinite(Delta)||Delta<0)return;
     const float Now=M->GetWorld()->GetTimeSeconds();
     if(M->BaseMoveSpeed<=0)M->BaseMoveSpeed=Movement->MaxWalkSpeed;
-    Movement->MaxWalkSpeed=M->BaseMoveSpeed*(M->SlowUntil>Now?.65f:1.f)*(S&&S->RallyUntil>Now?1.1f:1.f);
+    Movement->MaxWalkSpeed=M->BaseMoveSpeed*(M->SlowUntil>Now?.65f:1.f)*(S&&S->RallyUntil>Now?1.1f:1.f)
+        *CireWaveDirector::MarchSpeed(M); // wave-director: pacing, faster while a wave unit walks the road
     M->AttackTimer=FMath::Max(0.f,M->AttackTimer-Delta);M->AbilityTimer=FMath::Max(0.f,M->AbilityTimer-Delta);
     if(M->MonsterArt)M->MonsterArt->ReleaseSwing(Now); // creature-anim: a committed swing lands on its contact frame
     if(S)S->RefreshStatusFlags(Now);
@@ -646,6 +649,28 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
 #if !UE_BUILD_SHIPPING
 #include "Components/BoxComponent.h"
 #include "Misc/ScopeExit.h"
+
+// ability-vfx: start one authored ability through the real StartAbility rules (galleries/tests).
+bool CireNPCCombat::DebugStartAbility(ACireMonster* M,FName AbilityId,ACireHero* Victim)
+{
+    auto* Mode=IsValid(M)?M->GetWorld()->GetAuthGameMode<ACireGameMode>():nullptr;
+    const auto* A=Arch(M);const FCireNPCAbility* Ability=A?A->FindAbility(AbilityId):nullptr;
+    if(!Mode||!Ability||!M->HasAuthority()||!M->CastingAbility.IsEmpty())return false;
+    if(IsValid(Victim)){CireThreat::Engage(M,Victim);M->Victim=Victim;}
+    const float Distance=Victim?static_cast<float>(FVector::Dist2D(M->GetActorLocation(),Victim->GetActorLocation())):0.f;
+    const bool bSight=Victim&&ClearSight(M,Victim);
+    if(Ability->Kind==ECireNPCAbilityKind::Projectile&&Ability->bBasic)
+    {
+        if(!Victim||!CireSkillTuning::FindSkillshot(Ability->Skillshot))return false;
+        BeginCast(M,*Ability,Victim->GetActorLocation(),true);return true;
+    }
+    if(Ability->Kind==ECireNPCAbilityKind::Melee)
+    {
+        if(!Victim)return false;
+        M->AttackTimer=0;M->AbilityTimer=5.f;return true; // the next Tick swings through the normal basic path
+    }
+    return StartAbility(M,Mode,*Ability,Victim,Distance,bSight);
+}
 
 bool CireNPCCombat::RunSmoke(ACireGameMode* Mode)
 {

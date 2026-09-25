@@ -1,4 +1,6 @@
 #include "CireItems.h"
+#include "CireSkillShop.h" // progression-shop: Skill Shop
+#include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireBuffs.h" // aura-vfx
 // progression-shop: see CireItems.h, Docs/Items.md.
 #include "CireGame.h"
@@ -376,7 +378,7 @@ float CireItems::ModifyOutgoingDamage(AActor* Source, AActor* Target, float Amou
         {
             if (T.EveryNthCount > 0 && ++Inventory->BasicHitCounter % T.EveryNthCount == 0) Amount += static_cast<float>(T.EveryNthDamage);
         }
-        else Amount *= 1.f + static_cast<float>(T.Stats.Get(ItemStat::SpellPower) / 100.);
+        else Amount *= (1.f + static_cast<float>(T.Stats.Get(ItemStat::SpellPower) / 100.)) * CireSkillShop::EffectScale(Hero, AbilityName);
         if (T.ExecuteBonus > 0)
         {
             float Health = 0, MaxHealth = 0;
@@ -407,7 +409,7 @@ float CireItems::ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FSt
     if (!Inventory || !FMath::IsFinite(Amount) || Amount <= 0) return Amount;
     const Totals& T = Inventory->Totals();
     const bool bPhysical = IsBasicAttack(Causer, AbilityName);
-    Amount *= 1.f - static_cast<float>(Mitigation(T.Stats.Get(bPhysical ? ItemStat::Armor : ItemStat::Ward)));
+    Amount *= 1.f - static_cast<float>(Mitigation(T.Stats.Get(bPhysical ? ItemStat::Armor : ItemStat::Ward) * (bPhysical ? CireCrowdControl::ArmorMultiplier(Hero) : 1.f))); // champion-draft: armor break
     const double Now = Inventory->Now();
     for (const auto& Buff : Inventory->Buffs)
         if (Buff.EndsAt > Now)
@@ -438,12 +440,13 @@ void CireItems::OnHeroDamaged(ACireHero* Hero, AActor* Causer, const FString& Ab
     }
 }
 
-float CireItems::HealingMultiplier(const ACireHero* Source)
+float CireItems::HealingMultiplier(const ACireHero* Source, const FString& AbilityName)
 {
     const UCireInventory* Inventory = InventoryOf(Source);
     if (!Inventory) return 1.f;
     const Totals& T = Inventory->Totals();
-    return (1.f + static_cast<float>(T.Stats.Get(ItemStat::SpellPower) / 100.)) * (1.f + static_cast<float>(T.HealAmp / 100.));
+    const float SkillLevel = AbilityName.IsEmpty() ? 1.f : CireSkillShop::EffectScale(Source, AbilityName); // Skill Shop level
+    return SkillLevel * (1.f + static_cast<float>(T.Stats.Get(ItemStat::SpellPower) / 100.)) * (1.f + static_cast<float>(T.HealAmp / 100.));
 }
 
 // ------------------------------------------------------------------ shop access / teleport / bots
@@ -563,6 +566,7 @@ void UCireInventory::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(UCireInventory, LootScore);
     DOREPLIFETIME_CONDITION(UCireInventory, UndoDepth, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(UCireInventory, bShopVisit, COND_OwnerOnly);
+    DOREPLIFETIME(UCireInventory, SkillRanks);
 }
 
 ACireHero* UCireInventory::Hero() const { return Cast<ACireHero>(GetOwner()); }
@@ -631,6 +635,25 @@ void UCireInventory::SendFeedback(ECireShopAction Action, bool bOk, FName ItemId
     UE_LOG(LogCireItems, Verbose, TEXT("CIRE_SHOP %s %s ok=%d slot=%d gold=%d %s"), ActionVerb(Action), *ItemId.ToString(), bOk ? 1 : 0, Slot, GoldDelta, *Message);
     ACireHero* Owner = Hero();
     if (Owner && !Owner->bBot && Owner->IsPlayerControlled()) ClientFeedback(Feedback);
+}
+
+void UCireInventory::ServerBuySkill_Implementation(const FString& SkillId) { FString Message; CireSkillShop::Buy(Hero(), SkillId, Message); }
+void UCireInventory::ServerLevelSkill_Implementation(const FString& SkillId) { FString Message; CireSkillShop::LevelUp(Hero(), SkillId, Message); }
+void UCireInventory::ServerSetProgressionMode_Implementation(uint8 NewMode)
+{
+    ACireHero* Owner = Hero();
+    auto* Mode = ModeOf(Owner);
+    // Only the host (listen server's local player, or standalone) may pick the match mode.
+    const APlayerController* PC = Owner ? Cast<APlayerController>(Owner->GetController()) : nullptr;
+    if (!Mode || !PC || !PC->IsLocalController()) return;
+    FString Why;
+    if (!CireSkillShop::SetMode(Mode, NewMode != 0, &Why) && Owner) Owner->Notice = Why;
+}
+void UCireInventory::ClientGoldGain_Implementation(int32 Amount, FVector_NetQuantize Where, uint8 Kind)
+{
+    FGoldGain Gain; Gain.Amount = Amount; Gain.Where = Where; Gain.Kind = Kind;
+    PendingGold.Add(Gain);
+    if (PendingGold.Num() > 24) PendingGold.RemoveAt(0);
 }
 
 void UCireInventory::ClientLootReport_Implementation(const FCireLootReport& Report)
@@ -1137,6 +1160,9 @@ void UCireInventory::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
     }
     // A shop visit ends when trading is no longer allowed (left town, phase change, death).
     if (bShopVisit && CireItems::ShopAccessFor(Owner) != ShopAccess::Allowed) EndShopVisit();
+    // Skill Shop: bots shop between waves (per-level cast scaling runs in the cast path).
+    BotSkillTimer -= DeltaTime;
+    if (Owner->bBot && BotSkillTimer <= 0) { BotSkillTimer = 2.f; CireSkillShop::BotShop(Owner); }
 }
 
 void UCireInventory::ServerBuy_Implementation(FName ItemId) { FString Message; Buy(ItemId, Message); }

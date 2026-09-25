@@ -1,6 +1,8 @@
 #include "CireCombatExpansionProbe.h"
 #include "CireWaves.h" // wave-director
 #include "CireClassTraits.h"
+#include "CireAbilityDB.h"
+#include "CireCrowdControl.h"
 #include "CireArenas.h" // arenas
 #include "CireAudio.h" // audio:
 #include "CireLoot.h" // progression-shop
@@ -28,6 +30,7 @@
 #include "Misc/ScopeExit.h"
 #include "CireAuraVisuals.h" // aura-vfx
 #include "CireNav.h" // nav-paths
+#include "CireAbilityVFX.h" // ability-vfx
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireExpansion,Log,All);
@@ -72,6 +75,8 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireChampionRoster::RunValidationSmoke()&&Good;
     Good=CireChampionProfiles::RunSmoke(Mode)&&Good;
     Good=CireClassTraits::RunSmoke(Mode)&&Good; // champion-draft: class traits
+    Good=CireAbilityDB::RunSmoke()&&Good; // champion-draft: ability database
+    Good=CireCrowdControl::RunSmoke(Mode)&&Good; // champion-draft: crowd control, casts, execute skills
     Good=CireWeapons::RunValidationSmoke()&&Good;
     Good=CireMovement::RunSmoke(Mode)&&Good;
     Good=CireRoleSkills::RunSmoke(Mode)&&Good;
@@ -95,6 +100,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireArenas::RunSmoke(Mode)&&Good; // arenas: data, symmetry, paths, random no-repeat pick, build and cleanup
     Good=CireWaveDirector::RunTests(Mode)&&Good; // wave-director: data, templates, live edits, escort, stuck/failsafe, neutral packs, bots
     Good=CireNav::RunTests(Mode)&&Good; // nav-paths: navmesh coverage, paths, prop carving, arenas, path editor
+    Good=CireAbilityVFX::RunTests(Mode)&&Good; // ability-vfx: shape-true telegraphs, line indicators, lifecycles, release sync
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }
 #endif

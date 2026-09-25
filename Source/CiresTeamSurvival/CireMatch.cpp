@@ -1,4 +1,7 @@
 #include "CireBalanceLab.h"
+#include "CireChampionProfiles.h"
+#include "CireChampionRoster.h"
+#include "CireSkillShop.h" // progression-shop
 #include "CireShopFixtures.h" // progression-shop
 #include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
@@ -32,6 +35,7 @@
 #include "CireSummon.h"
 #include "CireSpellGallery.h"
 #include "CireAuraGallery.h" // aura-vfx
+#include "CireAbilityVFXGallery.h" // ability-vfx
 #include "CireOptionsGallery.h"
 #include "CireCombatExpansionProbe.h"
 #include "CireNPCArchetypes.h"
@@ -131,7 +135,9 @@ void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireGameState,EmberLives); DOREPLIFETIME(ACireGameState,DuskLives);
     DOREPLIFETIME(ACireGameState,EmberWins); DOREPLIFETIME(ACireGameState,DuskWins);
     DOREPLIFETIME(ACireGameState,ArenaIndex); DOREPLIFETIME(ACireGameState,Announcement);
+    DOREPLIFETIME(ACireGameState,ProgressionMode); // progression-shop
     DOREPLIFETIME(ACireGameState,WaveLabel); DOREPLIFETIME(ACireGameState,NextWaveLabel); // wave-director
+    DOREPLIFETIME(ACireGameState,BreatherReady); DOREPLIFETIME(ACireGameState,BreatherPlayers); // wave-director
     DOREPLIFETIME(ACireGameState,LaneBounds); DOREPLIFETIME(ACireGameState,LanePoints0);
     DOREPLIFETIME(ACireGameState,LanePoints1); DOREPLIFETIME(ACireGameState,LaneRouteVersion);
 }
@@ -164,6 +170,16 @@ void ACireGameMode::BeginPlay() {
     }
 #endif
     bSmoke=FParse::Param(FCommandLine::Get(),TEXT("CireSmoke"));
+    // champion-select: pick timer length (Game.ini, then -CireDraftSeconds=N; 0 = untimed).
+    GConfig->GetFloat(TEXT("/Script/CiresTeamSurvival.CireGameMode"),TEXT("DraftPickSeconds"),DraftPickSeconds,GGameIni);
+    FParse::Value(FCommandLine::Get(),TEXT("CireDraftSeconds="),DraftPickSeconds);
+    {
+        // Developer probes, galleries, previews and smokes draft on their own schedule.
+        const FString Args=FCommandLine::Get();
+        if(Args.Contains(TEXT("Probe"))||Args.Contains(TEXT("Gallery"))||Args.Contains(TEXT("Preview"))||Args.Contains(TEXT("Smoke"))||Args.Contains(TEXT("BalanceLab"))||Args.Contains(TEXT("Soak")))
+            if(!FParse::Param(FCommandLine::Get(),TEXT("CireDraftTimerInTests")))DraftPickSeconds=0;
+    }
+    DraftPickSeconds=FMath::Clamp(DraftPickSeconds,0.f,3600.f);
     Clock=Cires::MatchClock({60,90,RecoverySeconds});
 #if !UE_BUILD_SHIPPING
     SmokePhaseMask = 1; SmokeClearedWaves = 0; SmokeWaveAge = 0.f;
@@ -171,6 +187,7 @@ void ACireGameMode::BeginPlay() {
     if(bSmoke) {Clock=Cires::MatchClock({2,2,1}); WaveBreatherSeconds=.3f; WaveTimer=.3f; BotFillTimer=0;}
 #endif
     CireDeveloperTools::Initialize(this);
+    CireSkillShop::InitializeMode(this); // progression-shop: -CireMode=SkillShop|Classic
     CireLanePath::PublishState(GetGameState<ACireGameState>());
     GetWorld()->SpawnActor<ACireWorld>();
     for(int32 Team=0;Team<2;++Team) {
@@ -181,7 +198,13 @@ void ACireGameMode::BeginPlay() {
     }
     auto* S=GetGameState<ACireGameState>();
     S->SecondsLeft=-1; S->CycleWavesDone=0; S->WavesPerCycle=FMath::Clamp(S->WavesPerCycle,1,10);
-    CireWaveDirector::Initialize(this); // wave-director: Waves.json drives composition, waves per cycle and breather
+    CireWaveDirector::Initialize(this); // wave-director: Waves.json drives composition, waves per cycle, breather and phase pacing
+#if !UE_BUILD_SHIPPING
+    const bool bProbeTimer=ServerProbe.Enabled;
+#else
+    const bool bProbeTimer=false;
+#endif
+    if(!bSmoke&&!bProbeTimer)WaveTimer=CireWaveDirector::Config(GetWorld()).FirstWaveDelay;
     S->NextWaveSeconds=WaveTimer;
     S->Announcement=TEXT("Hold the gates. Challenge the outposts. Survive together.");
     bool bFeedbackPreview = false;
@@ -193,6 +216,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireOptionsGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireSpellGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireAuraGallery::Initialize(this); // aura-vfx
+    if(!bFeedbackPreview)bFeedbackPreview = CireAbilityVFXGallery::Initialize(this); // ability-vfx
     if(!bFeedbackPreview)bFeedbackPreview = CireCombatArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireFeedbackPreview::Initialize(this);
@@ -207,7 +231,7 @@ void ACireGameMode::BeginPlay() {
 #if !UE_BUILD_SHIPPING
     if(!bFeedbackPreview)CireNav::InitializeProbe(this); // nav-paths: -CireNavProbe march + performance probe
 #endif
-    UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / 60s prep / 90s arena / %.0fs recovery | server authority"),S->WavesPerCycle,RecoverySeconds);
+    UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / %.0fs prep / %.0fs arena / %.0fs recovery | server authority"),S->WavesPerCycle,Clock.GetDurations().Intermission,Clock.GetDurations().Arena,RecoverySeconds);
 #if !UE_BUILD_SHIPPING
     if(ServerProbe.Enabled)UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_READY dedicated=1 timeout=40"));
     if(FParse::Param(FCommandLine::Get(),TEXT("CireCombatFeaturesProbe")))
@@ -239,6 +263,33 @@ void ACireGameMode::HandleStartingNewPlayer_Implementation(APlayerController* P)
     if(Clock.Phase()==Cires::MatchPhase::Arena) H->ReviveAt(ArenaPosition(Team,Counts[Team]));
 }
 void ACireGameMode::PostLogin(APlayerController* P) { Super::PostLogin(P); }
+void ACireGameMode::TickDraftTimer() {
+    // champion-select: every human champion gets DraftPickSeconds to lock in. At zero the
+    // selected champion is locked if still free, otherwise a random champion no human took.
+    if(DraftPickSeconds<=0||Clock.Phase()==Cires::MatchPhase::Finished) return;
+    const float Now=GetWorld()->GetTimeSeconds();
+    for(auto* H:Heroes) {
+        if(!IsValid(H)||H->bBot||H->bDrafted||H->bDead) continue;
+        if(!Cast<APlayerController>(H->GetController())) continue;
+        if(H->DraftDeadline<=0) {H->DraftDeadline=Now+DraftPickSeconds;H->DraftTimerTotal=DraftPickSeconds;continue;}
+        if(Now<H->DraftDeadline) continue;
+        FString Pick=H->DraftHoverId;
+        if(Pick.IsEmpty()||!CireChampionRoster::Find(Pick)||CireChampionProfiles::PickedByTeammate(H,Pick,true)) {
+            TArray<FString> Free,Untouched;
+            for(const auto& P:CireChampionRoster::All()) {
+                if(CireChampionProfiles::PickedByTeammate(H,P.Id,true)) continue;
+                Free.Add(P.Id);
+                if(!CireChampionProfiles::PickedByTeammate(H,P.Id,false)) Untouched.Add(P.Id);
+            }
+            const TArray<FString>& From=Untouched.Num()>0?Untouched:Free;
+            Pick=From.Num()>0?From[FMath::RandRange(0,From.Num()-1)]:FString();
+        }
+        const bool bLocked=!Pick.IsEmpty()&&H->DraftProfile(Pick);
+        if(!bLocked) H->Draft(H->Archetype);
+        H->Notice=TEXT("Time ran out: your champion was locked in. Choose your opening ability.");
+        UE_LOG(LogCire,Display,TEXT("CIRE_DRAFT_TIMER_AUTOLOCK hero=%s profile=%s"),*H->HeroName,*H->ChampionProfileId);
+    }
+}
 void ACireGameMode::Logout(AController* P) {
     if(auto* H=Cast<ACireHero>(P?P->GetPawn():nullptr)) { H->bBot=true; H->bAutoAttack=true; H->Draft(H->Archetype); }
     Super::Logout(P);
@@ -278,7 +329,9 @@ void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
 void ACireGameMode::MonsterKilled(ACireMonster* M,ACireHero* Killer) {
     if(!IsValid(M)||!IsValid(Killer)||Killer->TeamId!=M->Lane) return;
     const float Reward=M->PackId<0?CireWaveDirector::RewardMultiplier(M):1.f; // wave-director: per-wave reward multiplier
-    AwardTeam(M->Lane,FMath::RoundToInt((45+GetGameState<ACireGameState>()->Round*4)*Reward),FMath::RoundToInt(12*Loot(M->Lane)*Reward));
+    // progression-shop: gold is the playtest-2 kill bounty (CireLoot::AwardKillGold); XP unchanged.
+    AwardTeam(M->Lane,FMath::RoundToInt((45+GetGameState<ACireGameState>()->Round*4)*Reward),0);
+    CireLoot::AwardKillGold(this,M,Reward);
     // progression-shop: pack completion, Pack Leaders and lane bosses roll data-driven loot tables
     // into a glowing auto-pickup chest (CireLoot). The old flat stat/rare reward is replaced.
     bool bPackCompleted=false;
@@ -412,6 +465,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireOptionsGallery::Tick(this)) return;
     if(CireSpellGallery::Tick(this)) return;
     if(CireAuraGallery::Tick(this)) return; // aura-vfx
+    if(CireAbilityVFXGallery::Tick(this)) return; // ability-vfx
     if(CireCombatArtPreview::Tick(this)) return;
     if(CireArtPreview::Tick(this)) return;
     if(CireFeedbackPreview::Tick(this)) return;
@@ -428,6 +482,7 @@ void ACireGameMode::Tick(float Dt) {
     CireNav::TickProbe(this,Dt); // nav-paths: -CireNavProbe
 #endif
     auto* S=GetGameState<ACireGameState>(); if(!S) return;
+    TickDraftTimer(); // champion-select
     if(!bSmoke&&GetNetMode()==NM_Standalone) {
         for(auto* H:Heroes) if(IsValid(H)&&!H->bBot&&!H->bDrafted)return;
     }
@@ -486,6 +541,8 @@ void ACireGameMode::Tick(float Dt) {
                 if(!bWaveAlive&&Clock.BeginIntermission()) ChangePhase(1);
                 else S->NextWaveSeconds=0;
             } else {
+                // wave-director: every human pressed Ready in the Skill Shop window -> start in 1 s.
+                if(CireWaveDirector::UpdateBreatherReady(this))WaveTimer=FMath::Min(WaveTimer,1.f);
                 WaveTimer=FMath::Max(0.f,WaveTimer-Dt);
                 S->NextWaveSeconds=WaveTimer;
                 if(WaveTimer<=0&&!(Dev.bEnabled&&Dev.bPauseWaveSpawns))SpawnWave();

@@ -107,6 +107,7 @@ void FCireUISettings::Reset()
     CameraDistance=650.f; CameraFOV=80.f;
     MasterVolume=.85f; SFXVolume=.85f; UIVolume=.7f; bMuteAudio=false;
     MusicVolume=.6f; AmbienceVolume=.8f; bMusicEnabled=true; bFootstepCameraShake=false; // audio:
+    bImpactCameraShake=true; // ability-vfx
     bShowFPS=false; bShowNetwork=true; bTooltips=true; bQuickGroundCast=false;
     TooltipScale=.8f; TooltipMode=3; TooltipAngleDegrees=45.f; TooltipDistance=40.f; bTooltipOffsetLocked=true;
     StatusFilter=0; bDispellableOnly=false; bShowStatusDurations=true; bShowCriticalSymbol=true;
@@ -115,6 +116,7 @@ void FCireUISettings::Reset()
     bShowMisses=true; bCritPop=true; bSchoolColors=true; bMergeAoE=true; SCTDirection=0; SCTSpeed=1.f; SCTFadeSeconds=3.2f;
     bShowThreatMeter=true; bThreatWarnings=true; bThreatSound=true; ThreatWarningPercent=90.f; bLevelUpEffect=true; bShowBossFrames=true;
     bShowActionBar2=true; bShowActionBar3=false; bLockActionBars=false; bMeterCollapsed=false; bThreatCollapsed=false;
+    bEffectCallouts=true; bControlAlerts=true; bPlayerCastBar=true; OverheadStatusMode=0;
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
     OtherEffectsIntensity=1.f; // aura-vfx
     bShowStats=false; bShowLootLog=false; // progression-shop; wow-ui: closed by default (C toggles) to keep the screen clean
@@ -231,6 +233,7 @@ void FCireUISettings::SanitizePreferences()
     TooltipDelay=SafeFloat(TooltipDelay,.12f,0.f,1.5f); SCTDirection=FMath::Clamp(SCTDirection,0,2);
     SCTSpeed=SafeFloat(SCTSpeed,1.f,.5f,2.f); SCTFadeSeconds=SafeFloat(SCTFadeSeconds,3.2f,1.5f,5.f);
     ThreatWarningPercent=SafeFloat(ThreatWarningPercent,90.f,60.f,100.f);
+    OverheadStatusMode=FMath::Clamp(OverheadStatusMode,0,2);
     OtherEffectsIntensity=SafeFloat(OtherEffectsIntensity,1.f,0.f,1.f); // aura-vfx
 }
 
@@ -271,8 +274,10 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bThreatWarnings); CIRE_LOAD_BOOL(bThreatSound); CIRE_LOAD_BOOL(bLevelUpEffect); CIRE_LOAD_BOOL(bShowBossFrames);
     CIRE_LOAD_BOOL(bShowActionBar2); CIRE_LOAD_BOOL(bShowActionBar3); CIRE_LOAD_BOOL(bLockActionBars);
     CIRE_LOAD_BOOL(bMeterCollapsed); CIRE_LOAD_BOOL(bThreatCollapsed);
+    CIRE_LOAD_BOOL(bEffectCallouts); CIRE_LOAD_BOOL(bControlAlerts); CIRE_LOAD_BOOL(bPlayerCastBar);
     CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
     CIRE_LOAD_BOOL(bMusicEnabled); CIRE_LOAD_BOOL(bFootstepCameraShake); // audio: absent keys keep the defaults
+    CIRE_LOAD_BOOL(bImpactCameraShake); // ability-vfx
     CIRE_LOAD_BOOL(bShowStats); CIRE_LOAD_BOOL(bShowLootLog); // progression-shop
 #undef CIRE_LOAD_BOOL
     Config.GetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
@@ -294,6 +299,7 @@ void FCireUISettings::Load(const FString& Filename)
 #undef CIRE_LOAD_FLOAT
     Config.GetInt(PreferencesSection,TEXT("TooltipMode"),TooltipMode); Config.GetInt(PreferencesSection,TEXT("StatusFilter"),StatusFilter);
     Config.GetInt(PreferencesSection,TEXT("SCTDirection"),SCTDirection);
+    Config.GetInt(PreferencesSection,TEXT("OverheadStatusMode"),OverheadStatusMode);
     // Before schema 4 the cursor-following tooltip (mode 0) was the default and
     // covered what the player was doing; upgrade it to the WoW corner anchor. Radial
     // and fixed choices were deliberate and are preserved.
@@ -357,8 +363,10 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bThreatWarnings); CIRE_SAVE_BOOL(bThreatSound); CIRE_SAVE_BOOL(bLevelUpEffect); CIRE_SAVE_BOOL(bShowBossFrames);
     CIRE_SAVE_BOOL(bShowActionBar2); CIRE_SAVE_BOOL(bShowActionBar3); CIRE_SAVE_BOOL(bLockActionBars);
     CIRE_SAVE_BOOL(bMeterCollapsed); CIRE_SAVE_BOOL(bThreatCollapsed);
+    CIRE_SAVE_BOOL(bEffectCallouts); CIRE_SAVE_BOOL(bControlAlerts); CIRE_SAVE_BOOL(bPlayerCastBar);
     CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
     CIRE_SAVE_BOOL(bMusicEnabled); CIRE_SAVE_BOOL(bFootstepCameraShake); // audio:
+    CIRE_SAVE_BOOL(bImpactCameraShake); // ability-vfx
     CIRE_SAVE_BOOL(bShowStats); CIRE_SAVE_BOOL(bShowLootLog); // progression-shop
 #undef CIRE_SAVE_BOOL
     Config.SetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
@@ -379,6 +387,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_FLOAT(OtherEffectsIntensity); // aura-vfx
 #undef CIRE_SAVE_FLOAT
     Config.SetString(PreferencesSection,TEXT("SCTDirection"),*FString::FromInt(SCTDirection));
+    Config.SetString(PreferencesSection,TEXT("OverheadStatusMode"),*FString::FromInt(OverheadStatusMode));
     Config.SetString(PreferencesSection,TEXT("TooltipMode"),*FString::FromInt(TooltipMode));
     Config.SetString(PreferencesSection,TEXT("StatusFilter"),*FString::FromInt(StatusFilter));
     for (const TPair<FName, FPanelLayout>& Entry : Panels)

@@ -142,6 +142,7 @@ bool ACireHUD::DrawActionButton(ACireHero* Hero, ACireController* Controller, in
             const FFacts F = AbilityFacts(Id);
             Slot.bNoResource = Hero->Mana < F.Mana || Hero->Energy < F.Energy;
             const auto D = CireTargeting::Describe(Id);
+            if (bOver) if (auto* PC = Cast<ACireController>(PlayerOwner)) CireTargeting::HoverPreview(PC, Id); // ability-vfx: void rift preview
             if (D.bNeedsHostile && IsValid(Hero->Target) && D.Range > 0 && Hero->IsHostile(Hero->Target))
                 Slot.bOutOfRange = FVector::Dist2D(Hero->GetActorLocation(), Hero->Target->GetActorLocation()) > D.Range + 40.f;
             // Proc highlights: ultimate ready; an interrupt while the target channels an interruptible cast.

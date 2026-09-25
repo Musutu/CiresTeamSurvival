@@ -10,6 +10,8 @@
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
 #include "Net/UnrealNetwork.h"
+#include "CireSpellPresentation.h" // ability-vfx
+#include "CireAbilityVFX.h" // ability-vfx
 
 namespace CireAttacks {
 float FeetZ(const AActor* Actor) {
@@ -95,6 +97,10 @@ void ACireTargetProjectile::Tick(float Delta){
             if(Style!=1&&Style!=3)Body->SetMaterial(0,LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_Ember.M_Ember")));
             AppliedStyle=Style;
         }
+        // ability-vfx: readable head and wake on basic ranged attacks; hidden exactly when the body is.
+        SetActorHiddenInGame(!Body->IsVisible());
+        if(!VFXWake.IsValid()&&CireAbilityVFX::Enabled())
+            VFXWake=CireSpellPresentation::AttachProjectile(this,Style==1?FName(TEXT("arrow")):Style==3?FName(TEXT("lance")):FName(TEXT("arcane")),Style==1||Style==3?9.f:15.f);
     }
     if(!IsValid(Attacker)||!IsValid(Victim)) {if(HasAuthority()||Age>6)Destroy();return;}
     if(HasAuthority()&&!Attacker->IsHostile(Victim)){Destroy();return;}

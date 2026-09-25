@@ -1,4 +1,5 @@
 #include "CireAbilityLibrary.h"
+#include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireDeveloperTools.h"
 #include "CireGame.h"
 #include "CireAttackSystem.h"
@@ -63,7 +64,7 @@ const FCireAuthoredAbility* CireAbilityLibrary::Find(const FString& Id){Load();r
 int32 CireAbilityLibrary::Count(){Load();return Abilities.Num();}
 bool CireAbilityLibrary::Cast(ACireHero* Hero,int32 Slot,const FCireAuthoredAbility& A){
     if(!IsValid(Hero)||!Hero->HasAuthority()||!Hero->Cooldowns.IsValidIndex(Slot))return false;
-    if(Hero->Mana<A.ManaCost||Hero->Energy<A.EnergyCost){Hero->Notice=TEXT("Not enough mana or energy.");return false;}
+    if(!CireSkillShop::CanPayCast(Hero,A.Id,A.ManaCost,A.EnergyCost)){Hero->Notice=TEXT("Not enough mana or energy.");return false;} // progression-shop: Skill Shop level (Ability DB curve)
     const bool Directional=A.Area.Shape==ECireAreaShape::Cone||A.Area.Shape==ECireAreaShape::Line;
     FVector Aim=Hero->bHasCastAim?Hero->CastAimPoint:(Hero->IsHostile(Hero->Target)?Hero->Target->GetActorLocation():Hero->GetActorLocation()+Hero->GetActorForwardVector()*FMath::Min(500.f,A.CastRange));
     if(!CireSkillRuntime::InRealmBounds(Hero->GetWorld()->GetAuthGameMode<ACireGameMode>(),Hero->TeamId,Aim)){Hero->Notice=TEXT("Choose ground inside your battlefield.");return false;}
@@ -81,6 +82,7 @@ bool CireAbilityLibrary::Cast(ACireHero* Hero,int32 Slot,const FCireAuthoredAbil
     const float Power=Mode?Mode->Power(Hero->TeamId):1.f;Spec.BurstDamage*=Power;Spec.DamagePerSecond*=Power;
     if(!ACireAreaEffect::Spawn(Hero,Spec,Center,Heading)){Hero->Notice=TEXT("Area could not be created.");return false;}
     Hero->Mana-=A.ManaCost;Hero->Energy-=A.EnergyCost;Hero->Cooldowns[Slot]=Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(Hero->GetWorld(),A.CooldownSeconds),Hero->CDR);Hero->GlobalCooldown=.9f;Hero->Notice=A.Name;
+    CireSkillShop::ApplyCastLevel(Hero,Slot,A.Id,A.ManaCost,A.EnergyCost); // progression-shop: Skill Shop level (Ability DB curve)
     CireCombat::PlayCue(Hero,nullptr,FName(*A.Id),Hero->GetActorLocation(),Center,ECireSpellCue::Cast);
     return true;
 }

@@ -1,6 +1,9 @@
 #include "CireHUD.h"
 #include "CireGame.h"
 #include "CireSummon.h"
+#include "CireBuffs.h"
+#include "CireEffects.h"
+#include "CireUIStyle.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 
@@ -15,43 +18,123 @@ FString Duration(float Seconds)
 }
 void ACireHUD::DrawStatuses(AActor* Actor,float X,float Y,float Size,int32 MaxIcons)
 {
-    if(!IsValid(Actor))return;
-    const auto* State=GetWorld()->GetGameState<ACireGameState>();
-    const float Now=State?State->GetServerWorldTimeSeconds():GetWorld()->GetTimeSeconds();
-    struct FStatus{FString Id,Name,Description;float Remaining;bool bDebuff,bDispel;FLinearColor Color;};
-    TArray<FStatus> Effects;
-    const auto* H=Cast<ACireHero>(Actor);const auto* M=Cast<ACireMonster>(Actor);
-    if(H&&!H->bDead)
+    // WoW buff/debuff row from the modifier registry (CireEffects): coloured borders by
+    // type (gold buff, blue magic, green poison, purple curse, red physical), a darkening
+    // duration sweep, stack counts and concise symbol tooltips ("DEF +40%  ·  8s").
+    if(!IsValid(Actor)||MaxIcons<=0)return;
+    const float Now=CireBuffs::ServerNow(GetWorld());
+    const AActor* Local=PlayerOwner?PlayerOwner->GetPawn():nullptr;
+    TArray<FCireActiveEffect> Effects;CireEffects::Gather(Actor,Now,Effects,Local);
+    Effects.RemoveAll([&](const FCireActiveEffect& E){
+        const FCireEffectInfo* I=CireEffects::Find(E.Id);if(!I)return true;
+        const bool bDebuff=I->IsHarmful(),bDispel=I->Dispel==ECireDispel::Magic||I->Dispel==ECireDispel::Poison||I->Dispel==ECireDispel::Curse||I->Dispel==ECireDispel::Disease;
+        return (UISettings.StatusFilter==1&&bDebuff)||(UISettings.StatusFilter==2&&!bDebuff)||(UISettings.bDispellableOnly&&!bDispel);});
+    const int32 Visible=FMath::Min(Effects.Num(),Effects.Num()>MaxIcons?FMath::Max(0,MaxIcons-1):MaxIcons);
+    FCireUIPainter P=Painter();
+    for(int32 Index=0;Index<Visible;++Index)
     {
-        if(H->ShieldUntil>Now)Effects.Add({TEXT("iron_guard"),TEXT("Guarded"),TEXT("Incoming damage is reduced by 40%. This beneficial guard is dispellable."),H->ShieldUntil-Now,false,true,Blue});
-        if(H->TauntUntil>Now)Effects.Add({TEXT("war_cry"),TEXT("Commanding presence"),TEXT("Nearby enemies have been compelled to focus this champion. This taunt effect cannot be dispelled."),H->TauntUntil-Now,false,false,Gold});
-        for(const FString& Id:H->Skills)if(ACireHero::IsPassive(Id))Effects.Add({Id,ACireHero::SkillName(Id),ACireHero::SkillDescription(Id),-1,false,false,Purple});
+        const FCireActiveEffect& E=Effects[Index];const FCireEffectInfo& I=*CireEffects::Find(E.Id);
+        const float At=X+Index*(Size+3);
+        const float Remaining=E.End>Now?E.End-Now:-1.f,Total=E.End>E.Start?E.End-E.Start:0.f;
+        DrawEffectIcon(E,I,At,Y,Size,Remaining,Total);
+        FString Body=CireEffects::Symbols(I,Remaining);
+        if(Remaining>0)Body+=(Body.IsEmpty()?TEXT(""):TEXT("  ·  "))+CireEffects::DurationText(Remaining)+TEXT(" left");
+        else if(I.Kind==ECireEffectKind::Passive)Body+=(Body.IsEmpty()?TEXT(""):TEXT("  ·  "))+FString(TEXT("Passive"));
+        if(E.Stacks>1)Body+=FString::Printf(TEXT("  ·  %d stacks"),E.Stacks);
+        Body+=TEXT("\n")+I.Line;
+        const TCHAR* Types[]={TEXT(""),TEXT("Magic"),TEXT("Poison"),TEXT("Curse"),TEXT("Disease"),TEXT("Physical")};
+        if(I.Dispel!=ECireDispel::None)Body+=FString(TEXT("\n"))+Types[static_cast<int32>(I.Dispel)]+(I.Dispel==ECireDispel::Physical?TEXT(" (cannot be dispelled)"):TEXT(" (dispellable)"));
+        if(E.Id==TEXT("poisoned"))Body+=TEXT("\nLeave the poisoned area to remove it.");
+        if(E.bFromLocalPlayer)Body+=TEXT("\nApplied by you.");
+        Tip(I.Name,Body,At,Y,Size,Size);
     }
-    const float Slow=H?H->SlowUntil:M?M->SlowUntil:0;
-    if(Slow>Now)Effects.Add({TEXT("frost_bind"),TEXT("Slowed"),TEXT("Movement speed is reduced by 35%. This harmful effect can be cleansed."),Slow-Now,true,true,Purple});
-    const int32 Count=H?H->PoisonAreaCount:M?M->PoisonAreaCount:0;
-    if(Count>0)
+    if(Effects.Num()>Visible)
     {
-        const float End=H?H->PoisonEndsAt:M->PoisonEndsAt;
-        Effects.Add({TEXT("venom_ground"),FString::Printf(TEXT("Ground poison x%d"),Count),TEXT("Standing in poisonous ground. Leave the affected area to remove the poison immediately. Each overlapping area acts independently. Ground poison cannot be dispelled."),FMath::Max(0.f,End-Now),true,false,Poison});
+        const float At=X+Visible*(Size+3);P.Text(FString::Printf(TEXT("+%d"),Effects.Num()-Visible),At,Y+Size*.25f,FMath::Max(8.f,Size*.45f),Muted,ECireFont::Numbers,true,false);
+        FString Extra;for(int32 Index=Visible;Index<Effects.Num();++Index)if(const auto* I=CireEffects::Find(Effects[Index].Id))Extra+=I->Name+TEXT(": ")+CireEffects::Symbols(*I)+TEXT("\n");
+        Tip(TEXT("More effects"),Extra,At,Y,22,Size);
     }
-    Effects.RemoveAll([&](const FStatus& E){return (UISettings.StatusFilter==1&&E.bDebuff)||(UISettings.StatusFilter==2&&!E.bDebuff)||(UISettings.bDispellableOnly&&!E.bDispel);});
-    const int32 CountVisible=FMath::Min(Effects.Num(),Effects.Num()>MaxIcons?FMath::Max(0,MaxIcons-1):MaxIcons);
-    for(int32 I=0;I<CountVisible;++I)
+}
+FString ACireHUD::StatusIconId(const FCireEffectInfo& I)
+{
+    // Painted status icons (/Game/UI/Abilities/T_status_<name>, generated for Eric via ChatGPT) for
+    // effects without their own ability art; empty -> the procedural sigil below.
+    switch(I.Control)
     {
-        const auto& E=Effects[I];const float At=X+I*(Size+4);
-        Frame(At,Y,Size,Size,E.bDebuff?Red:E.Color);Icon(E.Id,At+2,Y+2,Size-4,E.Color);
-        if(E.bDispel)Panel(At+Size-4,Y+1,3,3,Gold);
-        const FString Time=E.Remaining<0?TEXT(""):E.Remaining>0?Duration(E.Remaining):TEXT("AREA");
-        if(UISettings.bShowStatusDurations&&!Time.IsEmpty())
-        {Panel(At,Y+Size-7,Size,9,FLinearColor(0,0,0,.8f));Label(Time,At+1,Y+Size-8,8,FLinearColor::White);}
-        Tip(E.Name,E.Description+TEXT(" Remaining: ")+(E.Remaining<0?TEXT("Permanent while learned."):Time+TEXT(".")),At,Y,Size,Size);
+    case ECireControl::Stun:return TEXT("status_stun");
+    case ECireControl::Silence:return TEXT("status_silence");
+    case ECireControl::Root:return TEXT("status_root");
+    case ECireControl::HealCut:return TEXT("status_heal_cut");
+    case ECireControl::Slow:return TEXT("status_slow");
+    case ECireControl::Taunt:return TEXT("status_taunt");
+    case ECireControl::Disarm:return TEXT("status_disarm");
+    case ECireControl::Fear:return TEXT("status_fear");
+    default:break;
     }
-    if(Effects.Num()>CountVisible)
+    if(I.Mods.Num()&&I.Mods[0].Value<0&&(I.Mods[0].Stat==TEXT("DEF")||I.Mods[0].Stat==TEXT("Armor")))return TEXT("status_armor_break");
+    if(I.IsHarmful()&&I.Dispel==ECireDispel::Poison)return TEXT("status_poison");
+    if(I.IsHarmful()&&I.Dispel==ECireDispel::Curse)return TEXT("status_curse");
+    return FString();
+}
+FString ACireHUD::EffectSigil(FName Id,const FCireEffectInfo& I)
+{
+    // Distinct symbols for effects without painted art: by control, then the leading stat,
+    // then the dispel type. Ability ids reuse their own ability sigil.
+    static const TSet<FName> OwnSigil={TEXT("iron_guard"),TEXT("war_cry"),TEXT("sanctuary"),TEXT("bastion_of_dawn"),TEXT("frost_bind"),TEXT("shield_slam"),TEXT("battle_rhythm"),TEXT("soul_conduit")};
+    if(OwnSigil.Contains(Id))return Id.ToString();
+    switch(I.Control)
     {
-        const float At=X+CountVisible*(Size+4);Label(FString::Printf(TEXT("+%d"),Effects.Num()-CountVisible),At,Y+4,9,Muted);
-        FString Extra;for(int32 I=CountVisible;I<Effects.Num();++I)Extra+=Effects[I].Name+TEXT(" ")+Duration(Effects[I].Remaining)+TEXT(". ");
-        Tip(TEXT("Additional statuses"),Extra,At,Y,22,Size);
+    case ECireControl::Stun:return TEXT("chain_spark");
+    case ECireControl::Silence:return TEXT("role_caster");
+    case ECireControl::Root:return TEXT("runic_wall");
+    case ECireControl::HealCut:return TEXT("cataclysm");
+    case ECireControl::Slow:return TEXT("frost_bind");
+    case ECireControl::Taunt:return TEXT("war_cry");
+    default:break;
+    }
+    if(I.Mods.Num())
+    {
+        const FString& S=I.Mods[0].Stat;const bool bUp=I.Mods[0].Value>=0;
+        if(S==TEXT("DEF")||S==TEXT("Armor"))return bUp?TEXT("iron_guard"):TEXT("cleaving_strike");
+        if(S==TEXT("ATK")||S==TEXT("Damage Dealt"))return bUp?TEXT("executioners_verdict"):TEXT("cleaving_strike");
+        if(S==TEXT("Move"))return TEXT("shadow_step");
+        if(S==TEXT("Haste"))return TEXT("battle_rhythm");
+        if(S.Contains(TEXT("Heal"))||S==TEXT("HP Regen"))return TEXT("restoring_light");
+        if(S==TEXT("Mana Regen"))return TEXT("deep_reserves");
+        if(S==TEXT("HP"))return TEXT("venom_ground");
+    }
+    switch(I.Dispel)
+    {
+    case ECireDispel::Poison:return TEXT("venom_ground");
+    case ECireDispel::Curse:return TEXT("cataclysm");
+    case ECireDispel::Magic:return I.IsHarmful()?TEXT("frost_bind"):TEXT("sanctuary");
+    default:return I.IsHarmful()?TEXT("cleaving_strike"):TEXT("renewal");
+    }
+}
+void ACireHUD::DrawEffectIcon(const FCireActiveEffect& E,const FCireEffectInfo& I,float X,float Y,float Size,float Remaining,float Total)
+{
+    FCireUIPainter P=Painter();
+    const FLinearColor Border=CireEffects::BorderColor(I);
+    const float Pulse=Remaining>0&&Remaining<3.f?.55f+.45f*FMath::Sin(static_cast<float>(GetWorld()->GetRealTimeSeconds())*9.f):1.f; // expiring blink
+    P.Rect(X-1,Y-1,Size+2,Size+2,FLinearColor(0,0,0,.9f));
+    UTexture2D* Tex=CireUIStyle::FindAbilityIcon(E.Id.ToString());
+    if(!Tex)Tex=CireUIStyle::FindAbilityIcon(StatusIconId(I)); // painted crowd-control / armor-break art
+    if(!Tex)Tex=CireUIStyle::FindAbilityIcon(EffectSigil(E.Id,I)); // painted art of the ability whose symbol it borrows
+    if(Tex)P.Tex(Tex,X+1,Y+1,Size-2,Size-2,FLinearColor(1,1,1,Pulse));
+    else
+    {
+        P.Rect(X+1,Y+1,Size-2,Size-2,Border*FLinearColor(.25f,.25f,.25f,1));
+        if(const auto& Kit=CireUIStyle::Assets();Kit.IconBg)P.Tex(Kit.IconBg,X+1,Y+1,Size-2,Size-2,Border*FLinearColor(.45f,.45f,.45f,1));
+        CireUIStyle::Sigil(P,EffectSigil(E.Id,I),X+Size*.12f,Y+Size*.12f,Size*.76f,FLinearColor(1,1,1,.95f*Pulse));
+    }
+    if(Total>0&&Remaining>0)CireUIStyle::CooldownSweep(P,X+1,Y+1,Size-2,1.f-Remaining/Total);
+    const float W=E.bFromLocalPlayer?2.f:1.3f;
+    P.Line(X,Y,X+Size,Y,Border,W);P.Line(X,Y+Size,X+Size,Y+Size,Border,W);P.Line(X,Y,X,Y+Size,Border,W);P.Line(X+Size,Y,X+Size,Y+Size,Border,W);
+    if(E.Stacks>1)P.Text(FString::FromInt(E.Stacks),X+Size-P.TextWidth(FString::FromInt(E.Stacks),Size*.42f,ECireFont::Numbers)-1,Y+Size*.5f,Size*.42f,FLinearColor::White,ECireFont::Numbers,true,false);
+    if(UISettings.bShowStatusDurations&&Remaining>0&&Size>=15)
+    {
+        const FString T=CireEffects::DurationText(Remaining);const float TS=FMath::Max(7.f,Size*.36f);
+        P.Text(T,X+(Size-P.TextWidth(T,TS,ECireFont::Numbers))*.5f,Y+Size-TS*.35f,TS,Remaining<3.f?FLinearColor(1.f,.4f,.35f,1):FLinearColor(1.f,.95f,.8f,1),ECireFont::Numbers,true,false);
     }
 }
 void ACireHUD::DrawPet(ACireHero* Hero,ACireController* Controller)

@@ -379,7 +379,7 @@ void RoleTagRules()
         const RoleMask tags=SkillRoleTags(skill.Id);
         CHECK(tags!=RoleNone);
         CHECK((tags&~RoleAll)==0);
-        if(skill.Kind==SkillKind::Passive)CHECK(tags==RoleAll);
+        if(skill.Kind==SkillKind::Passive&&skill.Id!="executioner")CHECK(tags==RoleAll);
         for(int r=0;r<3;++r)CHECK(IsSkillAllowedForRole(skill.Id,roles[r])==((tags&roleBits[r])!=0));
     }
     // Documented exclusive tags (Docs/RoleDrafts.md).
@@ -601,6 +601,64 @@ void OpeningAndTraitRules()
     CHECK(SelectMendingTarget(party)==1);
 }
 
+// Ability database scaling curve and crowd-control / execute maths.
+void AbilityAndControlRules()
+{
+    using namespace Abilities;
+    const Curve standard;
+    CHECK(ValidCurve(standard));
+    Curve bad=standard;bad.CooldownFloorFraction=0;CHECK(!ValidCurve(bad));
+    bad=standard;bad.CostCapMultiplier=.5;CHECK(!ValidCurve(bad));
+    bad=standard;bad.EffectHalfLevels=std::numeric_limits<double>::quiet_NaN();CHECK(!ValidCurve(bad));
+    Base b;b.Effect=100;b.ManaCost=40;b.EnergyCost=10;b.Cooldown=12;b.CastTime=1.5;
+    CHECK(ValidBase(b));
+    Base negative=b;negative.ManaCost=-1;CHECK(!ValidBase(negative));
+    const auto l1=Scale(b,standard,1);
+    CHECK(Near(l1.Effect,100)&&Near(l1.ManaCost,40)&&Near(l1.Cooldown,12)&&Near(l1.CastTime,1.5));
+    CHECK(Scale(b,standard,0).Level==1&&Near(Scale(b,standard,-5).Effect,100));
+    // Monotone, uncapped effect with diminishing gains; cost capped; cooldown floored.
+    LevelStats prev=l1;double prevGain=1e9;
+    for(int level=2;level<=100000;level+=(level<200?1:997))
+    {
+        const auto cur=Scale(b,standard,level);
+        CHECK(cur.Effect>prev.Effect);
+        CHECK(cur.ManaCost>=prev.ManaCost&&cur.ManaCost<=40*standard.CostCapMultiplier+1e-9);
+        CHECK(cur.EnergyCost<=10*standard.CostCapMultiplier+1e-9);
+        CHECK(cur.Cooldown<=prev.Cooldown+1e-12&&cur.Cooldown>=12*standard.CooldownFloorFraction-1e-9&&cur.Cooldown>=standard.MinCooldownSeconds-1e-9);
+        CHECK(Near(cur.CastTime,1.5));
+        if(level<200){const double gain=cur.Effect-prev.Effect;CHECK(gain<=prevGain+1e-9);prevGain=gain;}
+        prev=cur;
+    }
+    CHECK(Scale(b,standard,100000).Effect>300); // no level cap on effect growth
+    Curve capped=standard;capped.EffectCap=25;Base pct;pct.Effect=10;
+    CHECK(Near(Scale(pct,capped,100000).Effect,25)&&Scale(pct,capped,5).Effect<=25);
+    Curve floorTest=standard;floorTest.MinCooldownSeconds=5;Base quick;quick.Cooldown=6;quick.Effect=1;
+    CHECK(Scale(quick,floorTest,100000).Cooldown>=5-1e-9);
+    Base tiny;tiny.Cooldown=.5;tiny.Effect=1;CHECK(Near(Scale(tiny,standard,1000).Cooldown,.5)); // never raised above its base
+    Base none;none.Effect=5;CHECK(Near(Scale(none,standard,50).Cooldown,0));
+
+    using namespace CC;
+    CHECK(Near(DiminishedDuration(2,0),2)&&Near(DiminishedDuration(2,1),1)&&Near(DiminishedDuration(2,2),.5)&&Near(DiminishedDuration(2,3),0)&&Near(DiminishedDuration(2,9),0));
+    CHECK(Near(DiminishedDuration(-1,0),0)&&Near(DiminishedDuration(std::numeric_limits<double>::infinity(),0),0));
+    CHECK(ClassifyVoidZone(0,180,420)==VoidZone::Inner&&ClassifyVoidZone(180,180,420)==VoidZone::Inner);
+    CHECK(ClassifyVoidZone(181,180,420)==VoidZone::Outer&&ClassifyVoidZone(420,180,420)==VoidZone::Outer);
+    CHECK(ClassifyVoidZone(421,180,420)==VoidZone::None&&ClassifyVoidZone(10,300,200)==VoidZone::None&&ClassifyVoidZone(-1,180,420)==VoidZone::None);
+    CHECK(Near(ApplyHealingCut(100,.5,0),50)&&Near(ApplyHealingCut(100,.5,.5),25)&&Near(ApplyHealingCut(100,2,0),0)&&Near(ApplyHealingCut(100,-1,0),100));
+    CHECK(Near(ApplyHealingCut(-10,.5,0),0)&&Near(ApplyHealingCut(100,std::numeric_limits<double>::quiet_NaN(),0),100));
+    CHECK(Near(ArmorAfterBreak(.4,.5),.2)&&Near(ArmorAfterBreak(.4,0),.4)&&Near(ArmorAfterBreak(.4,3),0));
+    CHECK(Near(ExecuteDamage(ExecuteTarget::Monster,900,1000,50),900));   // lethal
+    CHECK(Near(ExecuteDamage(ExecuteTarget::Monster,20,1000,50),50));
+    CHECK(Near(ExecuteDamage(ExecuteTarget::Boss,9000,10000,50),50));    // bosses take a normal hit
+    CHECK(Near(ExecuteDamage(ExecuteTarget::Hero,900,1000,50),300));     // 30% max HP vs champions
+    CHECK(Near(ExecuteDamage(ExecuteTarget::Hero,900,1000,400),400));
+    CHECK(Near(ExecutionerIntervalSeconds,300)&&Near(ExecuteHeroMaxHealthFraction,.3));
+    // New skills are in the pool with their roles and kinds.
+    const auto catalog=StarterSkillPool();
+    const auto kindOf=[&](const char* id){for(const auto& s:catalog)if(s.Id==id)return static_cast<int>(s.Kind);return -1;};
+    CHECK(kindOf("executioner")==static_cast<int>(SkillKind::Passive)&&SkillRoleTags("executioner")==RoleDamage);
+    CHECK(kindOf("decimating_strike")==static_cast<int>(SkillKind::Active)&&SkillRoleTags("decimating_strike")==(RoleTank|RoleDamage));
+}
+
 void ClockRules()
 {
     MatchClock clock;
@@ -765,6 +823,7 @@ int main()
     RoleDraftRules();
     RoleTagRules();
     OpeningAndTraitRules();
+    AbilityAndControlRules();
     ClockRules();
     RewardRules();
     std::cout << Assertions << " assertions; " << Failures << " failures\n";

@@ -13,12 +13,15 @@ are drawn procedurally by the HUD (`CireHUD*.cpp`) and only follow WoW's layout 
 | `Fonts/UIBodyRegular` | `alegreyasans_AlegreyaSans-Regular.ttf` | Alegreya Sans | `Fonts/src/alegreyasans_OFL.txt` |
 | `Fonts/UIBold` | `alegreyasans_AlegreyaSans-Bold.ttf` | Alegreya Sans | `Fonts/src/alegreyasans_OFL.txt` |
 | `Fonts/UINumbers` | `alegreyasans_AlegreyaSans-ExtraBold.ttf` | Alegreya Sans | `Fonts/src/alegreyasans_OFL.txt` |
+| `Fonts/UIDisplay` | `cinzel_Cinzel-wght.ttf` | Cinzel, Copyright 2020 The Cinzel Project Authors (github.com/NDISCOVER/Cinzel) | `Fonts/src/cinzel_OFL.txt` |
 
 Downloaded 2026-09-24 from the Google Fonts repository (`github.com/google/fonts`, `ofl/`).
 The OFL permits bundling and embedding in software, including commercial games; the fonts may
 not be sold by themselves, and the Reserved Font Names must not be used for modified versions.
 The `.uasset` font faces embed the unmodified TTF data. Marcellus is used as an OFL stand-in for
-the "Friz Quadrata" look of WoW headings; Alegreya Sans is the body/number face.
+the "Friz Quadrata" look of WoW headings; Alegreya Sans is the body/number face. Cinzel (downloaded
+2026-09-25, imported by `Tools/BuildSkillShopArt.py`) is the wide-spaced display face of the Skill Shop
+and Armory titles (`ECireFont::Display`).
 
 ## Textures (original, procedural)
 

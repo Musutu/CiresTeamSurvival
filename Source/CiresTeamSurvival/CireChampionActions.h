@@ -29,6 +29,8 @@ namespace CireChampionActions
     CIRESTEAMSURVIVAL_API FWindow Window(const FString& Clip);
     /** "attack" | "ability" | "spell" | "shout": which clip a learned skill plays. */
     CIRESTEAMSURVIVAL_API FString SkillKind(const FString& SkillId);
+    /** ability-vfx: seconds from the accepted cast to the clip's contact frame = the effect release (CireAbilityVFX::ReleaseLead). */
+    CIRESTEAMSURVIVAL_API float SkillWindup(const UWorld* World, const FString& SkillId);
     /** Equipped weapon preset (WeaponLoadouts.json), which selects the swing style. */
     CIRESTEAMSURVIVAL_API FString StyleName(const ACireHero& Hero);
     /** Clip name the champion plays for an action kind ("attack", "ability", "spell", "shout"). */

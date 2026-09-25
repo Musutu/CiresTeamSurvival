@@ -62,6 +62,8 @@ public:
     bool IsActive() const { return bActive; }
     int32 GetOccupantCount() const { return Occupants.Num(); }
     bool HasOccupant(AActor* Actor) const { return Occupants.Contains(Actor); }
+    // ability-vfx: a following ACireSpellVisual paints the animated ground; the flat mesh stays as the fallback.
+    bool bPresentationOwnsGround = false;
 
     UPROPERTY(ReplicatedUsing=OnRep_Appearance) FCireAreaSpec AreaSpec;
     UPROPERTY(ReplicatedUsing=OnRep_Appearance) bool bActive = false;

@@ -1,4 +1,5 @@
 #include "CireLoot.h"
+#include "CireWaves.h" // wave-director economy hooks (UnitFlags)
 // progression-shop: see CireLoot.h, Docs/Progression.md.
 #include "CireGame.h"
 #include "CireItems.h"
@@ -119,6 +120,19 @@ bool CireLoot::ParseJson(const FString& Json, FCireLootData& Out, FString& Error
     {
         Out.PickupRadius = FMath::Clamp(static_cast<float>(Num(*Pickup, TEXT("radius"), 320)), 80.f, 2000.f);
         (*Pickup)->TryGetBoolField(TEXT("autoCollectOnPrep"), Out.bAutoCollectOnPrep);
+    }
+    const TSharedPtr<FJsonObject>* Econ = nullptr;
+    if (Root->TryGetObjectField(TEXT("economy"), Econ))
+    {
+        auto& E = Out.Economy;
+        E.MobBase = FMath::Clamp(static_cast<int>(Num(*Econ, TEXT("mobBase"), 1)), 0, 1000);
+        E.MobStep = FMath::Clamp(static_cast<int>(Num(*Econ, TEXT("mobStep"), 1)), 0, 1000);
+        E.StepEveryWaves = FMath::Clamp(static_cast<int>(Num(*Econ, TEXT("stepEveryWaves"), 3)), 1, 100);
+        E.ArmoredMultiplier = FMath::Clamp(Num(*Econ, TEXT("armoredMultiplier"), 2), 0., 1000.);
+        E.BossMultiplier = FMath::Clamp(Num(*Econ, TEXT("bossMultiplier"), 10), 0., 1000.);
+        E.PackUnitMultiplier = FMath::Clamp(Num(*Econ, TEXT("packUnitMultiplier"), 10), 0., 1000.);
+        E.PackLeaderMultiplier = FMath::Clamp(Num(*Econ, TEXT("packLeaderMultiplier"), 100), 0., 10000.);
+        (*Econ)->TryGetBoolField(TEXT("lootGoldInMobValues"), Out.bLootGoldInMobValues);
     }
     const TSharedPtr<FJsonObject>* Personal = nullptr;
     if (Root->TryGetObjectField(TEXT("distribution"), Personal))
@@ -285,6 +299,7 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
     if (!D.bPersonal)
     {
         // Server option: the old shared team chest with lowest-loot-score rotation.
+        if (D.bLootGoldInMobValues) Bundle.Gold *= MobValueNow(Mode->GetWorld());
         if (!Bundle.Empty()) SpawnDrop(Mode, Monster->Lane, Monster->GetActorLocation(), Bundle, Tier, Label, MakeSeed(Monster->PackId + 7, Round));
         return;
     }
@@ -317,6 +332,7 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
             Personal.PrimaryTomes.insert(Personal.PrimaryTomes.end(), Part.PrimaryTomes.begin(), Part.PrimaryTomes.end());
             Personal.Items.insert(Personal.Items.end(), Part.Items.begin(), Part.Items.end());
         }
+        if (D.bLootGoldInMobValues) Personal.Gold *= MobValueNow(Mode->GetWorld());
         if (Personal.Empty()) continue;
         if (Hero->bBot && D.bBotsAutoLoot) GrantPersonal(Hero, Personal, SourceName, Why + TEXT(" (auto-looted)"), false);
         else SpawnPersonalDrop(Mode, Hero, Where, Personal, Tier, Label.IsEmpty() ? SourceName : Label, Why, Base + Index);
@@ -355,6 +371,87 @@ void CireLoot::NoteContribution(AActor* Source, AActor* Target)
     if (auto* Summon = Cast<ACireSummon>(Source)) Hero = Summon->GetOwnerHero();
     if (!Monster || !Hero || !Monster->HasAuthority() || (Monster->PackId < 0 && !Monster->IsLaneBoss())) return;
     Contributions.FindOrAdd(SourceKey(Monster)).Add(Hero);
+}
+
+int32 CireLoot::MobValueNow(const UWorld* World)
+{
+    const auto* S = World ? World->GetGameState<ACireGameState>() : nullptr;
+    return CI::MobValue(Get().Economy, S ? FMath::Max(1, S->Wave) : 1);
+}
+
+CI::BountyKind CireLoot::BountyKindOf(const ACireMonster* Monster)
+{
+    if (!Monster) return CI::BountyKind::Mob;
+    if (Monster->PackId >= 0) return Monster->GetNPCClassification() == ECireNPCClass::Boss ? CI::BountyKind::PackLeader : CI::BountyKind::PackUnit;
+    // Wave units: the wave director's spawn-time flags (valid inside MonsterKilled).
+    const FCireWaveUnitInfo Info = CireWaveDirector::UnitFlags(Monster);
+    if (Info.bValid) return Info.bBoss ? CI::BountyKind::Boss : Info.bArmored ? CI::BountyKind::Armored : CI::BountyKind::Mob;
+    if (Monster->IsLaneBoss()) return CI::BountyKind::Boss;
+    if (Monster->bArmoredEscort) return CI::BountyKind::Armored;
+    return CI::BountyKind::Mob;
+}
+
+int32 CireLoot::BountyWave(ACireGameMode* Mode, const ACireMonster* Monster)
+{
+    // Wave units pay at the wave they spawned in (a unit can die after the next wave starts);
+    // challenge packs at the current wave.
+    const FCireWaveUnitInfo Info = CireWaveDirector::UnitFlags(Monster);
+    if (Info.bValid && Info.WaveNumber > 0) return Info.WaveNumber;
+    const int32 Current = Mode ? CireWaveDirector::CurrentWaveIndex(Mode) : 0;
+    if (Current > 0) return Current;
+    const auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    return S ? FMath::Max(1, S->Wave) : 1;
+}
+
+int32 CireLoot::KillBounty(ACireGameMode* Mode, const ACireMonster* Monster, float RewardMultiplier)
+{
+    return CI::KillGold(Get().Economy, BountyKindOf(Monster), BountyWave(Mode, Monster), RewardMultiplier);
+}
+
+int32 CireLoot::AwardKillGold(ACireGameMode* Mode, ACireMonster* Monster, float RewardMultiplier)
+{
+    if (!Mode || !Monster) return 0;
+    const int32 Gold = KillBounty(Mode, Monster, RewardMultiplier);
+    if (Gold <= 0) return 0;
+    const CI::BountyKind Kind = BountyKindOf(Monster);
+    const bool bPack = Kind == CI::BountyKind::PackUnit || Kind == CI::BountyKind::PackLeader;
+    // Wave kills: the whole team shares the lane bounty (every teammate gets the full value).
+    // Challenge packs: every eligible teammate (helped, or alive within the eligibility radius).
+    const TArray<ACireHero*> Recipients = bPack ? EligibleFor(Mode, Monster, Monster->GetActorLocation()) : TeamOf(Mode, Monster->Lane);
+    const FVector Where = Monster->GetActorLocation() + FVector(0, 0, 120);
+    for (ACireHero* Hero : Recipients)
+    {
+        Hero->Gold += Gold;
+        if (Hero->Inventory && !Hero->bBot && Hero->IsPlayerControlled()) Hero->Inventory->ClientGoldGain(Gold, Where, static_cast<uint8>(Kind));
+    }
+    return Gold;
+}
+
+CI::Economy& CireLoot::MutableEconomy() { Get(); return LootData.Economy; }
+
+bool CireLoot::SaveEconomy(FString* Error)
+{
+    // Rewrites only the numeric economy fields in LootTables.json (the rest of the file is kept).
+    const FString Path = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/LootTables.json"));
+    FString Json;
+    if (!FFileHelper::LoadFileToString(Json, *Path)) { if (Error) *Error = TEXT("Cannot read LootTables.json"); return false; }
+    const CI::Economy& E = Get().Economy;
+    auto Set = [&Json](const TCHAR* Key, const FString& Value)
+    {
+        const FString Needle = FString::Printf(TEXT("\"%s\": "), Key);
+        const int32 At = Json.Find(Needle);
+        if (At == INDEX_NONE) return;
+        int32 End = At + Needle.Len();
+        while (End < Json.Len() && (FChar::IsDigit(Json[End]) || Json[End] == TEXT('.') || Json[End] == TEXT('-'))) ++End;
+        Json = Json.Left(At + Needle.Len()) + Value + Json.Mid(End);
+    };
+    Set(TEXT("mobBase"), FString::FromInt(E.MobBase)); Set(TEXT("mobStep"), FString::FromInt(E.MobStep));
+    Set(TEXT("stepEveryWaves"), FString::FromInt(E.StepEveryWaves));
+    Set(TEXT("armoredMultiplier"), FString::SanitizeFloat(E.ArmoredMultiplier)); Set(TEXT("bossMultiplier"), FString::SanitizeFloat(E.BossMultiplier));
+    Set(TEXT("packUnitMultiplier"), FString::SanitizeFloat(E.PackUnitMultiplier)); Set(TEXT("packLeaderMultiplier"), FString::SanitizeFloat(E.PackLeaderMultiplier));
+    const bool bOk = FFileHelper::SaveStringToFile(Json, *Path, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+    if (!bOk && Error) *Error = TEXT("Cannot write LootTables.json");
+    return bOk;
 }
 
 void CireLoot::ForgetContributions(ACireGameMode* Mode)

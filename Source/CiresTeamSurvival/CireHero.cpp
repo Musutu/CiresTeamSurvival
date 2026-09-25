@@ -1,4 +1,6 @@
 #include "CireDeveloperTools.h"
+#include "CireSkillShop.h" // progression-shop: game mode
+#include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireRaces.h" // monster-races
 #include "CireGame.h"
 #include "CireCombatEvents.h"
@@ -149,6 +151,7 @@ void ACireHero::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ACireHero, TeamId);
     DOREPLIFETIME(ACireHero, Archetype);
+    DOREPLIFETIME(ACireHero, CastSkill); DOREPLIFETIME(ACireHero, CastStartTime); DOREPLIFETIME(ACireHero, CastEndTime); // champion-draft
     DOREPLIFETIME(ACireHero, ChampionProfileId);
     DOREPLIFETIME(ACireHero, StatPrimaryOverride);
     DOREPLIFETIME(ACireHero, ProfileBasicAttackRange);
@@ -158,6 +161,9 @@ void ACireHero::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
     DOREPLIFETIME(ACireHero, ProfileRoles);
     DOREPLIFETIME(ACireHero, bBot);
     DOREPLIFETIME(ACireHero, bDrafted);
+    DOREPLIFETIME(ACireHero, DraftDeadline);
+    DOREPLIFETIME(ACireHero, DraftTimerTotal);
+    DOREPLIFETIME(ACireHero, DraftHoverId);
     DOREPLIFETIME(ACireHero, bDead);
     DOREPLIFETIME(ACireHero, bAutoAttack);
     DOREPLIFETIME(ACireHero, HeroName);
@@ -256,7 +262,7 @@ void ACireHero::GrantExperience(int32 Amount)
     if (bLeveled)
     {
         Recalculate(false);
-        Notice = FString::Printf(TEXT("Level %d: +2 primary, +1 other stats."), Level);
+        Notice = FString::Printf(TEXT("Level %d: +2 primary, +1 other stats. New skills: Skill Shop between waves."), Level);
         RefreshOffer();
     }
 }
@@ -264,6 +270,9 @@ void ACireHero::GrantExperience(int32 Amount)
 void ACireHero::RefreshOffer()
 {
     if (!HasAuthority() || !bDrafted || !Offers.IsEmpty() || !Cires::HasPendingAugment(Progression)) return;
+    // progression-shop: after the free opening role pick, skills come from the Skill Shop
+    // (Eric's playtest-2 ruling); level-ups only raise stats.
+    if (!Skills.IsEmpty() && CireSkillShop::IsSkillShopMode(GetWorld())) return;
     const std::uint64_t Seed = static_cast<std::uint64_t>(FMath::Rand()) ^
         (static_cast<std::uint64_t>(GetUniqueID()) << 32) ^
         static_cast<std::uint64_t>(Progression.NextAugmentLevel);
@@ -320,7 +329,7 @@ bool ACireHero::IsUltimate(const FString& Id)
 bool ACireHero::IsPassive(const FString& Id)
 {
     return Id == TEXT("stone_skin") || Id == TEXT("battle_rhythm") ||
-        Id == TEXT("deep_reserves") || Id == TEXT("soul_conduit");
+        Id == TEXT("deep_reserves") || Id == TEXT("soul_conduit") || Id == TEXT("executioner"); // champion-draft: Executioner passive
 }
 
 bool ACireHero::IsHostile(AActor* Other) const
@@ -362,6 +371,7 @@ float ACireHero::AttackDamage() const
 void ACireHero::BasicAttack()
 {
     if(Mobility&&Mobility->IsRolling())return;
+    if(CireCrowdControl::IsStunned(this))return; // champion-draft: stunned units cannot attack
     const auto* Mode = ModeFor(this);
     if (!HasAuthority() || !Mode || !Mode->IsCombatPhase() || bDead || !bDrafted || BasicTimer > 0 ||
         !IsHostile(Target) || !InRange(Target, BasicRange(this)) || !ClearSight(this, Target)) return;
@@ -390,6 +400,8 @@ void ACireHero::Cast(int32 Slot)
         (Mobility&&Mobility->IsRolling()) || GlobalCooldown > 0 || !Skills.IsValidIndex(Slot) || !Cooldowns.IsValidIndex(Slot) || Cooldowns[Slot] > 0) return;
     const FString Id = Skills[Slot];
     if (CireRaces::IsSilenced(this) && !IsPassive(Id)) { Notice = TEXT("Silenced: you cannot cast right now."); return; } // monster-races
+    if (CireCrowdControl::GateCast(this, Slot, Id)) return; // champion-draft: stun/silence/lockout gates and timed casts
+    if (CireCrowdControl::HandlesSkill(Id)) { CireCrowdControl::CastSkill(this, Slot, Id); return; } // champion-draft: Decimating Strike
     if(CireSkillCasting::Handles(Id)){CireSkillCasting::Cast(this,Slot,Id);return;}
     if (const auto* Authored = CireAbilityLibrary::Find(Id)) { CireAbilityLibrary::Cast(this, Slot, *Authored); return; }
     if (IsPassive(Id)) { Notice = TEXT("This passive is always active."); return; }
@@ -412,7 +424,7 @@ void ACireHero::Cast(int32 Slot)
     else if (Id == TEXT("executioners_verdict")) { EnergyCost = 60; Cooldown = 60; Range = 1500; bNeedsEnemy = true; }
     else if (Id == TEXT("renewal")) { ManaCost = 140; Cooldown = 90; }
     else return;
-    if (Mana < ManaCost || Energy < EnergyCost) { Notice = TEXT("Not enough mana or energy."); return; }
+    if (!CireSkillShop::CanPayCast(this, Id, ManaCost, EnergyCost)) { Notice = TEXT("Not enough mana or energy."); return; } // progression-shop: Skill Shop level (Ability DB curve)
     if (bNeedsEnemy && (!IsHostile(Target) || !InRange(Target, Range) || !ClearSight(this, Target)))
     { Notice = TEXT("Select a hostile target in range and line of sight."); return; }
     ACireHero* Ally = ::Cast<ACireHero>(Target);
@@ -423,6 +435,7 @@ void ACireHero::Cast(int32 Slot)
     Mana -= ManaCost;
     Energy -= EnergyCost;
     Cooldowns[Slot] = static_cast<float>(Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(GetWorld(),Cooldown), CDR));
+    CireSkillShop::ApplyCastLevel(this, Slot, Id, ManaCost, EnergyCost); // progression-shop: Skill Shop level (Ability DB curve)
     GlobalCooldown = 0.9f;
     const float Now = GetWorld()->GetTimeSeconds();
     const float Power = Mode->Power(TeamId);
@@ -485,6 +498,7 @@ void ACireHero::Cast(int32 Slot)
         if (SetActorLocation(Target->GetActorLocation() + Direction * 170, true))
             ACireAreaEffect::ClearForActor(this);
         if (InRange(Target, 240)) Hit(Target, 30 + Agility * 1.5f, FLinearColor(0.6f, 0.2f, 0.9f));
+        if (IsValid(Target)) CireCrowdControl::VoidBurst(this, Target->GetActorLocation(), Id); // champion-draft: void rift (stun inside, slow the ring, self-mend)
     }
     else if (Id == TEXT("restoring_light")) CireCombat::ApplyHealing(this, Ally, (90 + Intelligence * 3.f) * Power, SkillName(Id));
     else if (Id == TEXT("sanctuary"))
@@ -654,6 +668,7 @@ void ACireHero::Tick(float DeltaSeconds)
         GetCharacterMovement()->MaxWalkSpeed = Mobility?Mobility->MovementSpeed(SlowUntil>ServerTime):(SlowUntil>ServerTime?338.f:520.f);
         GetCharacterMovement()->MaxWalkSpeed *= CireItems::MoveSpeedMultiplier(this); // progression-shop
         if (CireRaces::IsRooted(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // monster-races: rooted by a monster skill
+        if (CireCrowdControl::IsStunned(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // champion-draft: stunned
         return;
     }
     auto* Mode = ModeFor(this);
@@ -691,6 +706,8 @@ void ACireHero::Tick(float DeltaSeconds)
     GetCharacterMovement()->MaxWalkSpeed = Mobility?Mobility->MovementSpeed(SlowUntil>GetWorld()->GetTimeSeconds()):(SlowUntil>GetWorld()->GetTimeSeconds()?338.f:520.f);
     GetCharacterMovement()->MaxWalkSpeed *= CireItems::MoveSpeedMultiplier(this); // progression-shop
     if (CireRaces::IsRooted(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // monster-races: rooted by a monster skill
+    if (CireCrowdControl::IsStunned(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // champion-draft: stunned
+    CireCrowdControl::TickHero(this, DeltaSeconds); // champion-draft: completes timed casts, Executioner charge
     if (bBot) BotThink(DeltaSeconds);
     if (bAutoAttack) BasicAttack();
 }
@@ -834,6 +851,8 @@ FString ACireHero::SkillName(const FString& Id)
 
 FString ACireHero::SkillDescription(const FString& Id)
 {
+    if(CireCrowdControl::HandlesSkill(Id))return CireCrowdControl::Description(Id); // champion-draft
+    if(Id==TEXT("executioner"))return TEXT("PASSIVE: every 5 minutes your next basic attack is lethal. Bosses take a normal hit (the charge is kept); champions take 30% of their max health."); // champion-draft
     if(CireSkillCasting::Handles(Id))return CireSkillCasting::Description(Id);
     if(const auto* A=CireAbilityLibrary::Find(Id))return FString::Printf(TEXT("%.0f mana | %.0fs CD. Ground area: %.0f impact + %.0f damage/sec for %.1fs. Warning %.2fs. Aim at target, or forward when none selected."),A->ManaCost,A->CooldownSeconds,A->Area.BurstDamage,A->Area.bPersistent?A->Area.DamagePerSecond:0,A->Area.DurationSeconds,A->Area.WarningSeconds);
     if (Id == TEXT("iron_guard")) return TEXT("25 energy | 14s CD. Take 40% less damage for 8s.");
@@ -945,6 +964,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
 void ACireMonster::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+    if(CireCrowdControl::TickMonster(this,DeltaSeconds))return; // champion-draft: stunned monsters skip their AI
     CireNPCCombat::Tick(this,DeltaSeconds);
 }
 

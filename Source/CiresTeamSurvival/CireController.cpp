@@ -1,4 +1,8 @@
+#include "CireWaves.h" // wave-director
 #include "CireGame.h"
+#include "CireChampionRoster.h"
+#include "CireShopUI.h" // progression-shop: Skill Shop key
+#include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireShopFixtures.h" // progression-shop
 #include "CireItems.h" // progression-shop
 #include "Engine/World.h"
@@ -198,6 +202,16 @@ void ACireController::PlayerTick(float Dt) {
         return;
     }
     CireSelection::HandleTargetLoss(this,Interface&&Interface->UISettings.bAutoReacquireTarget);
+    // champion-select: while the draft search box is focused it owns the keyboard.
+    if(bDraftSearch) {
+        if(H->bDrafted){bDraftSearch=false;}
+        else {
+            if(WasInputKeyJustPressed(EKeys::Escape)){DraftSearch.Empty();bDraftSearch=false;}
+            else if(WasInputKeyJustPressed(EKeys::Enter))bDraftSearch=false;
+            else if(WasInputKeyJustPressed(EKeys::BackSpace)&&!DraftSearch.IsEmpty())DraftSearch.LeftChopInline(1);
+            return;
+        }
+    }
     if(bChatInput) {
         CireTargeting::Cancel(this);
         if(WasInputKeyJustPressed(EKeys::Escape))CancelChat();
@@ -233,6 +247,7 @@ void ACireController::PlayerTick(float Dt) {
     // progression-shop: stats window, consumable belt and item-use keys (CireItems / CireShopUI).
     if(Keys.WasPressed(this,TEXT("ToggleStats"))&&Interface){Interface->UISettings.bShowStats=!Interface->UISettings.bShowStats;Interface->UISettings.Save();}
     if(Keys.WasPressed(this,TEXT("ToggleLootLog"))&&Interface){Interface->UISettings.bShowLootLog=!Interface->UISettings.bShowLootLog;Interface->UISettings.Save();}
+    if(Keys.WasPressed(this,TEXT("ToggleSkillShop")))CireShopUI::ToggleSkillShop(this);
     if(H->bDrafted&&H->Inventory&&H->Offers.IsEmpty()) {
         for(int32 Index=0;Index<3;++Index)if(Keys.WasPressed(this,CireItems::BeltAction(Index)))H->Inventory->ServerUse(Index,true);
         for(int32 Index=0;Index<6;++Index)if(Keys.WasPressed(this,CireItems::ItemAction(Index)))H->Inventory->ServerUse(Index,false);
@@ -271,7 +286,7 @@ void ACireController::PlayerTick(float Dt) {
             else ServerAction(6,0,nullptr);
         }
     }
-    if(H->bDead||!H->bDrafted||bShop)return;
+    if(H->bDead||!H->bDrafted||bShop||CireCrowdControl::IsStunned(H))return; // champion-draft: stunned: no movement, jump or dodge
     if(Keys.WasPressed(this,TEXT("Jump")))H->Jump();
     if(H->Mobility)
     {
@@ -290,6 +305,7 @@ void ACireController::PlayerTick(float Dt) {
 }
 void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActor* Selected) {
     auto* H=Cast<ACireHero>(GetPawn()); auto* M=GetWorld()->GetAuthGameMode<ACireGameMode>();if(!H||!M)return;
+    if(Action==10) {CireWaveDirector::SetPlayerReady(H,Value!=0);return;} // wave-director: breather Ready (Skill Shop window)
     if(Action==9) {if(M->Clock.Phase()==Cires::MatchPhase::Finished)GetWorld()->ServerTravel(TEXT("/Game/Maps/Citadel"));return;}
     if(Action==5) {if(Value>=0&&Value<5&&!H->bDrafted)H->Draft(Value);return;}
     if(!H->bDrafted)return;
@@ -311,6 +327,12 @@ void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActo
     }
 }
 
+void ACireController::ServerDraftHover_Implementation(const FString& ProfileId) {
+    // champion-select: remember the selected (not yet locked) champion for teammates and the timer.
+    auto* H=Cast<ACireHero>(GetPawn());
+    if(!H||H->bDrafted||ProfileId.Len()>64)return;
+    H->DraftHoverId=ProfileId.IsEmpty()||CireChampionRoster::Find(ProfileId)?ProfileId:FString();
+}
 void ACireController::ServerDraftProfile_Implementation(const FString& ProfileId) {
     auto* H=Cast<ACireHero>(GetPawn());
     auto* M=GetWorld()->GetAuthGameMode<ACireGameMode>();

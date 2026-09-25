@@ -8,6 +8,10 @@
 #include "CireAbilityIcons.h"
 #include "CireChampionProfiles.h"
 #include "CireClassTraits.h"
+#include "CireCrowdControl.h"
+#include "CireAbilityDB.h"
+#include "CireBuffs.h"
+#include "EngineUtils.h"
 #include "CireGame.h"
 #include "CireKeybindings.h"
 #include "CireRoleSkills.h"
@@ -542,11 +546,12 @@ void ACireHUD::DrawSkillOfferExtras(ACireHero* Hero,ACireController* Controller)
         T.Text(Name,(ViewW-T.TextWidth(Name,20,ECireFont::Heading))*.5f,From.Y-150,20,Accent*1.2f,ECireFont::Heading,true,true);
     }
 
+    CireCrowdControl::RegisterCastProvider(); // champion-draft: hero cast bars are drawn by the shared CireCasts bars
     // Deferred reminder: pulsing, above the action bar; click or key to open.
     if(Hero->Offers.Num()>0&&!S.bOpen&&!bSettings)
     {
         const auto Bar=PanelRect(TEXT("Skills"));
-        const float W=330,H=52,X=(ViewW-W)*.5f,Y=FMath::Clamp(FMath::Min(Bar.Y,ActionBarsTop())-H-30,60.f,ViewH-H-10); // wow-ui: above the extra bars and movement hint
+        const float W=330,H=52,X=(ViewW-W)*.5f,Y=FMath::Clamp(FMath::Min(Bar.Y,ActionBarsTop())-H-48,60.f,ViewH-H-10); // wow-ui: above the extra bars and movement hint
         const float Pulse=.5f+.5f*FMath::Sin(static_cast<float>(Now)*4.f);
         CireUIStyle::Glow(P,X-10,Y-10,W+20,H+20,FLinearColor(1.f,.78f,.25f,.25f+.35f*Pulse));
         const bool bOver=!bEditLayout&&Hit(X,Y,W,H);

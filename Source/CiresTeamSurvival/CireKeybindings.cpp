@@ -67,6 +67,7 @@ TArray<FCireActionInfo> BuildActions()
     // Active items also land automatically on action bar 1 slots 9..12 (keys 7, 8, 9, 0).
     Add(TEXT("ToggleStats"),LOCTEXT("ToggleStats","Character stats window"),C::Interface,EKeys::C);
     Add(TEXT("ToggleLootLog"),LOCTEXT("ToggleLootLog","Loot log"),C::Interface,EKeys::L);
+    Add(TEXT("ToggleSkillShop"),LOCTEXT("ToggleSkillShop","Skill Shop (between waves, prep, recovery)"),C::Interface,EKeys::K);
     Add(TEXT("UseBelt1"),LOCTEXT("UseBelt1","Use consumable belt slot 1"),C::Combat,EKeys::Z);
     Add(TEXT("UseBelt2"),LOCTEXT("UseBelt2","Use consumable belt slot 2"),C::Combat,EKeys::X);
     Add(TEXT("UseBelt3"),LOCTEXT("UseBelt3","Use consumable belt slot 3"),C::Combat,EKeys::V);
@@ -399,7 +400,7 @@ bool CireKeybindings::RunSmoke()
     Check(B.Get(TEXT("TurnLeft"),0)==FCireKeyChord(EKeys::A)&&B.Get(TEXT("TargetPreviousEnemy"),0)==FCireKeyChord(EKeys::Tab,true),TEXT("A turn, Shift+Tab previous enemy"));
     Check(B.Get(SlotAction(1,1),0)==FCireKeyChord(EKeys::One)&&B.Get(SlotAction(2,3),0)==FCireKeyChord(EKeys::Three,true)&&
         B.Get(SlotAction(3,6),0)==FCireKeyChord(EKeys::Six,false,false,true)&&!B.Get(SlotAction(1,7),0).IsBound()&&!B.Get(SlotAction(3,12),0).IsBound(),TEXT("action bar defaults"));
-    Check(Actions().Num()==25+11/*progression-shop: stats, loot log, 3 belt, 6 item; champion-draft: +1 skill offer toggle*/+FCireKeybindings::NumBars*FCireKeybindings::SlotsPerBar,TEXT("action list size"));
+    Check(Actions().Num()==25+12/*progression-shop: stats, loot log, skill shop, 3 belt, 6 item; champion-draft: +1 skill offer toggle*/+FCireKeybindings::NumBars*FCireKeybindings::SlotsPerBar,TEXT("action list size"));
     {
         TSet<FString> Seen;bool Unique=true;
         for(const auto& I:Actions())for(int32 K=0;K<2;++K)if(I.Default[K].IsBound()){const FString Id=I.Default[K].ToString();Unique&=!Seen.Contains(Id);Seen.Add(Id);}

@@ -1,4 +1,5 @@
 #include "CireRoleSkills.h"
+#include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireGame.h"
 #include "CireSkillTuning.h"
 #include "CireSkillRuntime.h"
@@ -87,7 +88,7 @@ bool CireRoleSkills::Cast(ACireHero* Hero,int32 Slot,const FString& Id)
     if(!Mode||!Mode->IsCombatPhase()||!Recipe)return false;
     const auto S=*Recipe;
     auto Fail=[&](const TCHAR* Why){Hero->Notice=Why;return false;};
-    if(Hero->Mana<S.ManaCost||Hero->Energy<S.EnergyCost)return Fail(TEXT("Not enough mana or energy."));
+    if(!CireSkillShop::CanPayCast(Hero,Id,S.ManaCost,S.EnergyCost))return Fail(TEXT("Not enough mana or energy.")); // progression-shop: Skill Shop level (Ability DB curve)
     const float Now=Hero->GetWorld()->GetTimeSeconds(),Duration=CireDeveloperTools::EffectSeconds(Hero->GetWorld(),S.DurationSeconds);
     const float Power=Mode->Power(Hero->TeamId),Amount=FMath::Min(10000.f,(S.FlatPower+S.PrimaryScaling*Hero->PrimaryAttribute())*Power);
     FVector Aim=Hero->GetActorLocation();ACireHero* Ally=Hero;
@@ -148,6 +149,7 @@ bool CireRoleSkills::Cast(ACireHero* Hero,int32 Slot,const FString& Id)
     }
     Hero->Mana-=S.ManaCost;Hero->Energy-=S.EnergyCost;
     Hero->Cooldowns[Slot]=static_cast<float>(Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(Hero->GetWorld(),S.CooldownSeconds),Hero->CDR));
+    CireSkillShop::ApplyCastLevel(Hero,Slot,Id,S.ManaCost,S.EnergyCost); // progression-shop: Skill Shop level (Ability DB curve)
     Hero->GlobalCooldown=.9f;Hero->Notice=Name(Id);Hero->ForceNetUpdate();
     CireCombat::PlayCue(Hero,Id==TEXT("wellspring")?Ally:Hero,FName(*Id),Hero->GetActorLocation(),Aim,ECireSpellCue::Cast);
     return true;

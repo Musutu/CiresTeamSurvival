@@ -307,6 +307,9 @@ void ACireAreaEffect::Tick(float DeltaSeconds)
     {
         const auto* Local = GetWorld()->GetFirstPlayerController();
         GroundMesh->SetVisibility(Local && Local->IsLocalController() && CanObserve(Local));
+        // ability-vfx: the following spell visual paints the animated telegraph of this exact boundary;
+        // the flat mesh keeps its observable state but is not drawn underneath it.
+        GroundMesh->SetHiddenInGame(bPresentationOwnsGround);
     }
 }
 

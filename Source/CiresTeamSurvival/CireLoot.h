@@ -35,6 +35,9 @@ struct CIRESTEAMSURVIVAL_API FCireLootData
     float EligibleRadius = 4000.f;   // alive teammates this close to the kill are eligible even without damage
     double PersonalFactor = 1.0;     // team-wide tome/item multiplier (1 = same team total as one shared roll)
     bool bBotsAutoLoot = true;
+    // Gold economy (Eric's playtest-2 ruling; LootTables.json "economy").
+    Cires::Items::Economy Economy;
+    bool bLootGoldInMobValues = true;
     FString Error;
     bool bValid = false;
 };
@@ -97,6 +100,16 @@ namespace CireLoot
     CIRESTEAMSURVIVAL_API class ACireLootDrop* SpawnPersonalDrop(ACireGameMode* Mode, ACireHero* Owner, FVector Location,
         const Cires::Items::LootBundle& Bundle, int32 Tier, const FString& Label, const FString& Why, uint64 Seed);
     CIRESTEAMSURVIVAL_API void ForgetContributions(ACireGameMode* Mode);
+    // Kill bounty: mob value by wave, x2 armored, x10 boss, x10 pack unit, x100 Pack Leader.
+    CIRESTEAMSURVIVAL_API Cires::Items::BountyKind BountyKindOf(const ACireMonster* Monster);
+    CIRESTEAMSURVIVAL_API int32 KillBounty(ACireGameMode* Mode, const ACireMonster* Monster, float RewardMultiplier = 1.f);
+    // Wave the bounty is valued at: the unit's spawn wave (wave director), else the current wave.
+    CIRESTEAMSURVIVAL_API int32 BountyWave(ACireGameMode* Mode, const ACireMonster* Monster);
+    // Pays the bounty: wave kills to every teammate, pack kills to eligible teammates. Returns gold per recipient.
+    CIRESTEAMSURVIVAL_API int32 AwardKillGold(ACireGameMode* Mode, ACireMonster* Monster, float RewardMultiplier = 1.f);
+    CIRESTEAMSURVIVAL_API int32 MobValueNow(const UWorld* World);
+    CIRESTEAMSURVIVAL_API bool SaveEconomy(FString* Error = nullptr);
+    CIRESTEAMSURVIVAL_API Cires::Items::Economy& MutableEconomy();
 }
 
 namespace CireProgression

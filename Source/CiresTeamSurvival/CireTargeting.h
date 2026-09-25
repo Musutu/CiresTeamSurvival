@@ -31,11 +31,18 @@ namespace CireTargeting
     bool Tick(ACireController* Controller);
     void Cancel(ACireController* Controller);
     void Cleanup(ACireController* Controller);
+    // ability-vfx: hovering a learned skill with a void zone (e.g. Shadow Step on a hostile target) previews both
+    // rift zones where it would open. Call every frame while hovered; the preview hides one frame after.
+    void HoverPreview(ACireController* Controller, const FString& SkillId);
     // Shared local/server placement preflight. Server handlers still validate
     // gameplay, slot ownership, costs, cooldown, collision and realm independently.
     bool ValidateGround(ACireHero* Hero,const FString& Id,FVector Point,FVector& Center,FRotator& Heading,FString& Reason);
 #if !UE_BUILD_SHIPPING
     bool RunDescriptorSmoke();
     bool RunRuntimeSmoke(ACireGameMode* Mode);
+    // ability-vfx: galleries/tests aim the armed preview at a world point instead of the cursor (unset clears).
+    void DebugSetAimOverride(TOptional<FVector> Point);
+    // ability-vfx: void zone radii / icons drawn by the armed preview this frame (x outer, y inner, z icons).
+    FVector DebugPreviewVoid(const ACireController* Controller);
 #endif
 }

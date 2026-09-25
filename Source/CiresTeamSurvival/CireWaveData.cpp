@@ -52,6 +52,8 @@ bool FCireWaveConfig::operator==(const FCireWaveConfig& O) const
         Near(CycleHealthGrowth, O.CycleHealthGrowth) && Near(CycleDamageGrowth, O.CycleDamageGrowth) && CycleExtraUnits == O.CycleExtraUnits &&
         bStallFailsafe == O.bStallFailsafe && Near(MaxWaveSeconds, O.MaxWaveSeconds) && FailsafeAction == O.FailsafeAction &&
         Near(FailsafeGraceSeconds, O.FailsafeGraceSeconds) && Near(StuckSeconds, O.StuckSeconds) && Waves == O.Waves &&
+        Near(SpawnAlongRoute, O.SpawnAlongRoute) && Near(MarchSpeedMultiplier, O.MarchSpeedMultiplier) && Near(FirstWaveDelay, O.FirstWaveDelay) && // pacing
+        Near(PrepSeconds, O.PrepSeconds) && Near(ArenaSeconds, O.ArenaSeconds) && Near(RecoverySeconds, O.RecoverySeconds) && bEarlyContinue == O.bEarlyContinue &&
         Skills == O.Skills && Campaign == O.Campaign; // monster-races
 }
 
@@ -79,12 +81,12 @@ FCireWaveDef CireWaveDirector::Template(ECireWaveType Type)
     {
     case ECireWaveType::Normal:
         W.Label = TEXT("Breach Vanguard");
-        W.Units = {Unit(TEXT("hollow_infantry"), 3, 1.1f, 1.25f), Unit(TEXT("ironbound_bruiser"), 2, 1.1f, 1.25f),
-                   Unit(TEXT("barbed_hunter"), 1, 1.1f, 1.25f), Unit(TEXT("blight_caster"), 1, 1.1f, 1.25f)};
+        W.Units = {Unit(TEXT("hollow_infantry"), 3, .9f, 1.25f), Unit(TEXT("ironbound_bruiser"), 2, .9f, 1.25f),
+                   Unit(TEXT("barbed_hunter"), 1, .9f, 1.25f), Unit(TEXT("blight_caster"), 1, .9f, 1.25f)};
         break;
     case ECireWaveType::Armored:
     {
-        W.Label = TEXT("Iron Procession"); W.SpawnInterval = 1.2f;
+        W.Label = TEXT("Iron Procession"); W.SpawnInterval = .8f;
         FCireWaveUnit A = Unit(TEXT("hollow_shieldbearer"), 4, 1.3f, 1.f); A.bNonAttacking = true; A.SizeScale = 1.2f; A.LeakCost = 2;
         W.Units = {A};
         break;
@@ -92,19 +94,20 @@ FCireWaveDef CireWaveDirector::Template(ECireWaveType Type)
     case ECireWaveType::ArmoredEscort:
     {
         W.Label = TEXT("Armored Escort"); W.SpawnInterval = .5f;
-        FCireWaveUnit Tank = Unit(TEXT("hollow_shieldbearer"), 1, 5.f, 1.f);
+        FCireWaveUnit Tank = Unit(TEXT("hollow_shieldbearer"), 1, 4.f, 1.f);
         Tank.bNonAttacking = true; Tank.bEscortee = true; Tank.SizeScale = 1.45f; Tank.LeakCost = 5;
-        W.Units = {Tank, Unit(TEXT("hollow_infantry"), 2, 1.1f, 1.2f), Unit(TEXT("ironbound_bruiser"), 1, 1.1f, 1.2f),
-                   Unit(TEXT("barbed_hunter"), 1, 1.1f, 1.2f)};
+        W.Units = {Tank, Unit(TEXT("hollow_infantry"), 2, .95f, 1.2f), Unit(TEXT("ironbound_bruiser"), 1, .95f, 1.2f),
+                   Unit(TEXT("barbed_hunter"), 1, .95f, 1.2f)};
         W.RewardMultiplier = 1.25f;
         break;
     }
     case ECireWaveType::Boss:
     {
-        W.Label = TEXT("Siege Host"); W.SpawnInterval = .7f;
-        FCireWaveUnit Boss = Unit(TEXT("hollow_siegebreaker"), 1); Boss.bBoss = true;
-        W.Units = {Unit(TEXT("hollow_infantry"), 2, 1.25f, 1.2f), Unit(TEXT("ironbound_bruiser"), 2, 1.25f, 1.2f),
-                   Unit(TEXT("blight_caster"), 1, 1.25f, 1.2f), Boss};
+        W.Label = TEXT("Siege Host"); W.SpawnInterval = .5f;
+        // pacing: the boss is 40% of its archetype health so a defended boss falls in about a minute.
+        FCireWaveUnit Boss = Unit(TEXT("hollow_siegebreaker"), 1, .4f, 1.f); Boss.bBoss = true;
+        W.Units = {Unit(TEXT("hollow_infantry"), 2, .95f, 1.2f), Unit(TEXT("ironbound_bruiser"), 2, .95f, 1.2f),
+                   Unit(TEXT("blight_caster"), 1, .95f, 1.2f), Boss};
         W.RewardMultiplier = 1.5f;
         break;
     }
@@ -135,10 +138,10 @@ FCireWaveConfig CireWaveDirector::Defaults()
     FCireWaveDef One = Template(ECireWaveType::Normal);
     FCireWaveDef Two = Template(ECireWaveType::Normal);
     Two.Label = TEXT("Breach Column"); // monster-races: race-neutral (the race is appended at runtime)
-    Two.Units = {Unit(TEXT("hollow_infantry"), 3, 1.15f, 1.3f), Unit(TEXT("ironbound_bruiser"), 2, 1.15f, 1.3f),
-                 Unit(TEXT("barbed_hunter"), 2, 1.15f, 1.3f), Unit(TEXT("blight_caster"), 1, 1.15f, 1.3f)};
+    Two.Units = {Unit(TEXT("hollow_infantry"), 3, .95f, 1.3f), Unit(TEXT("ironbound_bruiser"), 2, .95f, 1.3f),
+                 Unit(TEXT("barbed_hunter"), 1, .95f, 1.3f), Unit(TEXT("blight_caster"), 1, .95f, 1.3f)};
     // monster-races: wave 2 brings the race's special unit (hollow: grave hounds).
-    Two.Units.Add(Unit(TEXT("grave_hound"), 2, 1.15f, 1.3f));
+    Two.Units.Add(Unit(TEXT("grave_hound"), 2, .95f, 1.3f));
     C.Waves = {One, Two, Template(ECireWaveType::Armored), Template(ECireWaveType::ArmoredEscort), Template(ECireWaveType::Boss)};
     C.WavesPerCycle = C.Waves.Num();
     // Start on the hollow basics, bring in Eric's favourites (Blightwood, then the Drowned Deep), then the other races,
@@ -152,15 +155,22 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
 {
     auto Fail = [&](const FString& Why) { if (Error) *Error = Why; return false; };
     FCireWaveConfig Before = C;
-    C.BreatherSeconds = ClampF(C.BreatherSeconds, 0, 120, 8);
+    C.BreatherSeconds = ClampF(C.BreatherSeconds, 0, 120, 15);
     C.WavesPerCycle = FMath::Clamp(C.WavesPerCycle, 1, 10);
     C.Cycles = FMath::Clamp(C.Cycles, 0, 50);
-    C.CycleHealthGrowth = ClampF(C.CycleHealthGrowth, 0, 2, .15f);
+    C.CycleHealthGrowth = ClampF(C.CycleHealthGrowth, 0, 2, .1f);
     C.CycleDamageGrowth = ClampF(C.CycleDamageGrowth, 0, 2, .1f);
     C.CycleExtraUnits = FMath::Clamp(C.CycleExtraUnits, 0, 5);
-    C.MaxWaveSeconds = ClampF(C.MaxWaveSeconds, 30, 900, 210);
-    C.FailsafeGraceSeconds = ClampF(C.FailsafeGraceSeconds, 5, 300, 45);
+    C.MaxWaveSeconds = ClampF(C.MaxWaveSeconds, 30, 900, 120);
+    C.FailsafeGraceSeconds = ClampF(C.FailsafeGraceSeconds, 5, 300, 30);
     C.StuckSeconds = ClampF(C.StuckSeconds, 1, 30, 5);
+    // pacing
+    C.SpawnAlongRoute = ClampF(C.SpawnAlongRoute, 0, .7f, 0.f); // default: spawn at the rift (Eric)
+    C.MarchSpeedMultiplier = ClampF(C.MarchSpeedMultiplier, .5f, 2, 1.25f);
+    C.FirstWaveDelay = ClampF(C.FirstWaveDelay, 0, 120, 8);
+    C.PrepSeconds = ClampF(C.PrepSeconds, 5, 600, 30);
+    C.ArenaSeconds = ClampF(C.ArenaSeconds, 15, 900, 60);
+    C.RecoverySeconds = ClampF(C.RecoverySeconds, 1, 180, 10);
     if (C.Waves.IsEmpty()) return Fail(TEXT("At least one wave is required."));
     if (C.Waves.Num() > 20) return Fail(TEXT("At most 20 waves are allowed."));
     for (int32 WI = 0; WI < C.Waves.Num(); ++WI)
@@ -253,6 +263,17 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
         C.CycleHealthGrowth = static_cast<float>(Num(*Scaling, TEXT("healthGrowth"), C.CycleHealthGrowth));
         C.CycleDamageGrowth = static_cast<float>(Num(*Scaling, TEXT("damageGrowth"), C.CycleDamageGrowth));
         C.CycleExtraUnits = static_cast<int32>(Num(*Scaling, TEXT("extraUnits"), C.CycleExtraUnits));
+    }
+    const TSharedPtr<FJsonObject>* Pacing = nullptr;
+    if (Root->TryGetObjectField(TEXT("pacing"), Pacing) && Pacing)
+    {
+        C.SpawnAlongRoute = static_cast<float>(Num(*Pacing, TEXT("spawnAlongRoute"), C.SpawnAlongRoute));
+        C.MarchSpeedMultiplier = static_cast<float>(Num(*Pacing, TEXT("marchSpeed"), C.MarchSpeedMultiplier));
+        C.FirstWaveDelay = static_cast<float>(Num(*Pacing, TEXT("firstWaveDelay"), C.FirstWaveDelay));
+        C.PrepSeconds = static_cast<float>(Num(*Pacing, TEXT("prepSeconds"), C.PrepSeconds));
+        C.ArenaSeconds = static_cast<float>(Num(*Pacing, TEXT("arenaSeconds"), C.ArenaSeconds));
+        C.RecoverySeconds = static_cast<float>(Num(*Pacing, TEXT("recoverySeconds"), C.RecoverySeconds));
+        C.bEarlyContinue = Flag(*Pacing, TEXT("earlyContinue"), C.bEarlyContinue);
     }
     const TSharedPtr<FJsonObject>* Failsafe = nullptr;
     if (Root->TryGetObjectField(TEXT("failsafe"), Failsafe) && Failsafe)
@@ -368,6 +389,16 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     Failsafe->SetNumberField(TEXT("graceSeconds"), C.FailsafeGraceSeconds);
     Failsafe->SetNumberField(TEXT("stuckSeconds"), C.StuckSeconds);
     Root->SetObjectField(TEXT("failsafe"), Failsafe);
+    auto Pacing = MakeShared<FJsonObject>();
+    Pacing->SetStringField(TEXT("_comment"), TEXT("breatherSeconds is the Skill Shop window after each cleared wave; earlyContinue ends it once every human is Ready. Waves appear spawnAlongRoute of the way down the road and walk marchSpeed x faster while not fighting (Docs/Waves.md)."));
+    Pacing->SetNumberField(TEXT("spawnAlongRoute"), C.SpawnAlongRoute);
+    Pacing->SetNumberField(TEXT("marchSpeed"), C.MarchSpeedMultiplier);
+    Pacing->SetNumberField(TEXT("firstWaveDelay"), C.FirstWaveDelay);
+    Pacing->SetBoolField(TEXT("earlyContinue"), C.bEarlyContinue);
+    Pacing->SetNumberField(TEXT("prepSeconds"), C.PrepSeconds);
+    Pacing->SetNumberField(TEXT("arenaSeconds"), C.ArenaSeconds);
+    Pacing->SetNumberField(TEXT("recoverySeconds"), C.RecoverySeconds);
+    Root->SetObjectField(TEXT("pacing"), Pacing);
     // monster-races
     auto Skills = MakeShared<FJsonObject>();
     Skills->SetStringField(TEXT("_comment"), TEXT("Monster skills: none before firstSkillWave (global wave number); then 1 skill, +1 every unlockEveryWaves up to maxSkills (+ rank bonus); tier II/III every tierEveryWaves (Docs/Races.md)."));

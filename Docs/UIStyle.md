@@ -52,6 +52,14 @@ Sizes are logical: 8-9 captions, 10-11 body, 12-15 names/titles, 24+ numbers, 36
 | `Toast(P, X, Y, W, IconId, Title, Body, Age, Life, Accent)` | Slide-in toast card (loot, purchases, pickups). |
 | `Banner(P, ViewW, Y, FCireBannerSpec, Age)` | Big animated banner (use the queue below instead of calling directly). |
 
+## Ornate shop framing (`CireShopArt`)
+
+The Skill Shop and the Armory share the framing of Eric's target image: `Panel` (near-black, double
+thin gold border, corner ornaments, a raised title plate), `Title` / `Spaced` (letter-spaced
+`ECireFont::Display` = Cinzel caps), `Rule` / `Divider` (diamond-studded), `CompassStar`, `CrestRing` /
+`Crest`, `Scroll` (3-sliced scroll card with tier glow, golden sparks, prismatic sheen and wisps), and
+`WaxSeal` (purchase stamp). Ink colours for parchment are linear values (`CireShopArt::Ink`).
+
 ## Transition banners (`CireBanners`)
 
 ```cpp
@@ -75,6 +83,20 @@ T_ButtonPassive, T_Glow, T_Gloss, T_IconBg, T_Gem, T_Header` (procedural, genera
 `Tools/BuildWowUITextures.py`), sounds (synthesized). Rebuild everything with
 `Tools/BuildWowUIContent.py`. Licenses: `Content/UI/WowUI/LICENSES.md`.
 `CireUIStyle::AssetPaths()` lists them for hard references so they cook.
+
+### Painted icons (ChatGPT art)
+
+Item, ability, status-effect and role icons are painted art generated for Eric via ChatGPT
+(OpenAI). Source sheets live in `Art/Icons/ChatGPT/*.png`; `Tools/SliceIconSheet.py` cuts a 3x3
+sheet into 256px PNGs in `Art/Icons/ChatGPT/Items` (`T_Item_<id>`) and `Art/Icons/ChatGPT/Abilities`
+(`<id>`). `Tools/BuildItemIcons.py` + `Tools/BuildShopContent.py` and `Tools/RunAbilityIcons.py`
+use those PNGs in place of the procedural renders (`--procedural` ignores them), so asset paths stay
+`/Game/UI/Items/T_Item_<id>` and `/Game/UI/Abilities/T_<id>`. Extra painted-only textures:
+`T_status_<stun|silence|root|slow|heal_cut|taunt|disarm|fear|armor_break|poison|curse>` (buff/debuff
+frames, `ACireHUD::StatusIconId`), `T_role_<tank|damage|support|hybrid>` (unit-frame portraits when
+no champion portrait is drawn, >= 24px) and `T_Item_gold|teleport|challenge` (toasts).
+`Tools/IconContactSheet.py DIR OUT.png` renders a 64/40px review sheet. Licences:
+`Content/UI/Items/LICENSES.md`, `Content/UI/Abilities/LICENSES.md`.
 
 ## Verification
 

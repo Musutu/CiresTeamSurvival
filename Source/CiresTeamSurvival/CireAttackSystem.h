@@ -26,6 +26,7 @@ public:
     ECireHitOutcome Result=ECireHitOutcome::Hit;
     float Age=0;
     int32 AppliedStyle=-1;
+    TWeakObjectPtr<AActor> VFXWake; // ability-vfx: glowing head + wake that follows the real flight
 };
 namespace CireAttacks {
     float FeetZ(const AActor* Actor);
