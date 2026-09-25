@@ -33,13 +33,13 @@ UNITS = {
                      foot_l="b_L_back_leg_5", foot_r="b_R_back_leg_5", ball_l="b_L_front_leg_6", ball_r="b_R_front_leg_6"),
         roles=dict(idle="A_Boar_idle_combat", walk="A_Boar_walk", run="A_Boar_run", attack="A_Boar_Attack", attackAlt="A_Boar_Attack_2",
                    hit="A_Boar_Hit_Body_left", death="A_Boar_Death"), named=dict(war_cry="A_Boar_aggressive"), folder=R + "/Boar/Animations"),
-    "feral_ursoth": dict(variant="FabRogBear", mesh=R + "/Bear/Meshes/SK_Bear_Fur_Full", head=205, rig="quadruped",
+    "feral_ursoth": dict(variant="FabRogBear", mesh=R + "/Bear/Meshes/SK_Bear_Fur_Full", head=150, rig="quadruped",
         sockets=dict(head="b_head", pelvis="b_spine_02", spine_03="b_spine_03", hand_l="b_L_F_toes", hand_r="b_R_F_toes",
                      foot_l="b_L_B_toes", foot_r="b_R_B_toes", ball_l="b_L_F_toes", ball_r="b_R_F_toes"),
         roles=dict(idle="A_Bear_idle", walk="A_Bear_walk", run="A_Bear_run", attack="A_Bear_attack_01", attackAlt="A_Bear_attack_03",
                    hit="A_Bear_Hit_Body_Front", death="A_Bear_death"), named=dict(war_cry="A_Bear_aggressive_1", ground_slam="A_Bear_attack_04"),
         folder=R + "/Bear/Animations"),
-    "feral_mammoth": dict(variant="FabRogMammoth", mesh=R + "/Mammoth/Meshes/SK_Mammoth_Fur_full", head=330, rig="quadruped",
+    "feral_mammoth": dict(variant="FabRogMammoth", mesh=R + "/Mammoth/Meshes/SK_Mammoth_Fur_full", head=240, rig="quadruped",
         sockets=dict(head="b_head", pelvis="b_spine_2", spine_03="b_spine_3", hand_l="b_L_F_toe", hand_r="b_R_F_toe",
                      foot_l="b_L_B_toe", foot_r="b_R_B_toe", ball_l="b_L_F_toe", ball_r="b_R_F_toe"),
         roles=dict(idle="A_Mammoth_Idle", walk="A_Mammoth_Walk", run="A_Mammoth_Run", attack="A_Mammoth_attack_1", attackAlt="A_Mammoth_attack_2",
@@ -50,7 +50,7 @@ UNITS = {
                      foot_l="BARGHEST_-L-Toe0", foot_r="BARGHEST_-R-Toe0", ball_l="BARGHEST_-L-Finger0", ball_r="BARGHEST_-R-Finger0"),
         roles=dict(idle="BARGHEST_idleAggressive", walk="BARGHEST_walk", run="BARGHEST_run", attack="BARGHEST_biteAggressive", attackAlt="BARGHEST_biteNormal",
                    hit="BARGHEST_getHitAggressive", death="BARGHEST_deathAggressive"), named=dict(), folder=Q + "/Barghest/Animations"),
-    "wild_outrider": dict(variant="FabCentaur", mesh=Q + "/Centaur/Meshes/SK_Centaur", head=235, rig="quadruped",
+    "wild_outrider": dict(variant="FabCentaur", mesh=Q + "/Centaur/Meshes/SK_Centaur", head=215, rig="quadruped",
         sockets=dict(head="CENTAUR_-Head", pelvis="CENTAUR_-Spine", spine_03="CENTAUR_-Spine2", hand_l="CENTAUR_HAND_L", hand_r="CENTAUR_HAND_R",
                      foot_l="CENTAUR_-L-Foot", foot_r="CENTAUR_-R-Foot", ball_l="CENTAUR_-L-Foot", ball_r="CENTAUR_-R-Foot"),
         roles=dict(idle="ANIM_Centaur_IdleNormal", walk="ANIM_Centaur_WalkNormal", run="ANIM_Centaur_GallopNormal", attack="ANIM_Centaur_LegAttackNormal",
@@ -63,9 +63,7 @@ UNITS = {
     "hollow_infantry_ghoul": dict(variant="FabGhoul", mesh=UD + "/Ghoul/Mesh/SK_Ghoul_Full", head=168, humanoid=True, alternate=True,
         roles=dict(idle="Anim_Idle", walk="Anim_Walk", run="Anim_Run", attack="Anim_Attack_Right", attackAlt="Anim_Attack_Left",
                    hit="Anim_Hit", death="Anim_Death"), named=dict(), folder=UD + "/Ghoul/Animations"),
-    "hollow_siegebreaker": dict(variant="FabZombieColossus", mesh=UD + "/Zombie/Mesh/SK_Zombie", head=190, humanoid=True,
-        roles=dict(idle="Anim_Idle", walk="Anim_Walk", run="Anim_Walk", attack="Anim_Attack1", attackAlt="Anim_Attack2",
-                   hit="Anim_Hit", death="Anim_Death"), named=dict(ground_slam="Anim_Attack2"), folder=UD + "/Zombie/Animations"),
+    # hollow_siegebreaker: the Undead Pack zombie reads as a cartoon ghoul (off-tone); the Tripo siegebreaker stays.
 }
 
 

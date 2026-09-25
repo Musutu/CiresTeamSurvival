@@ -126,6 +126,27 @@ CURATED = {
                "cast": ["Air_Magic_Muzzle1"], "area": ["Air_Magic_AOE"], "aura": ["Air_Magic_Aura"]},
     "spirit": {"projectile": ["Air_Magic_Air_Ball"], "impact": ["Air_Magic_Hit2"], "cast": ["Air_Magic_Muzzle2"], "aura": ["Air_Magic_Buff"]},
 }
+# Dedicated packs lead their school (tried first, Lord Enot stays as the fallback candidate).
+DEDICATED = {
+    "earth": {"projectile": ["Earth_Spells_Projectile1"], "impact": ["Earth_Spells_Hit1"], "cast": ["Earth_Spells_Attack_Up"],
+              "area": ["Earth_Spells_Circle"], "aura": ["Earth_Spells_Aura"]},
+    "nature": {"projectile": ["Ribbon_Nature"], "impact": ["Explosion_Small_Nature"], "cast": ["Explosion_Cast_Nature"],
+               "area": ["AreaBuff"], "aura": ["Aura_Nature"]},
+    "life": {"area": ["AreaBuff"]},
+    # Physical hits: restrained realistic blood (low intensity) - dark-fantasy, not splatter.
+    "steel": {"impact": ["Slash_Low", "BloodBurst_Low"]},
+    "blood": {"impact": ["BloodBurst_Med"]},
+}
+# Exact status effects (BuffVisuals ids) -> State VFX Niagara loops.
+CURATED_STATES = {
+    "npc_rooted": "State_VFX_Root1", "stunned": "Stun1", "interrupted": "Stun1", "silenced": "State_VFX_Silence1",
+    "npc_silenced": "State_VFX_Silence1", "slowed": "State_VFX_Slow1", "frost_bind": "State_VFX_Freeze1",
+    "poisoned": "State_VFX_Poison1", "npc_spores": "State_VFX_Poison1", "npc_dragonfire": "State_VFX_Burn1",
+    "healing_cut": "State_VFX_Cursed1", "heal_cut_done": "State_VFX_Cursed1", "bounty_mark": "State_VFX_Cursed1",
+    "witch_mark": "State_VFX_Cursed1", "npc_profane": "State_VFX_Cursed1", "npc_mind": "State_VFX_Charm1",
+    "npc_ink": "State_VFX_Blind1", "regeneration": "State_VFX_Heal1", "mana_restore": "State_VFX_Mana1",
+    "npc_aether": "State_VFX_Shock1", "overcharge": "State_VFX_Shock1", "npc_feral": "State_VFX_Bleed1",
+}
 # Per-effect-kind state overlays (BuffVisuals kind.school): buffs use <Element>_Buff, debuffs <Element>_Debuff.
 CURATED_BUFFS = {
     "buff.fire": ["Fire_Magic_Buff"], "buff.frost": ["Ice_Magic_Buff"], "buff.storm": ["Lightning_Magic_Buff1"],
@@ -142,11 +163,16 @@ def build(found, existing):
     for f in found:
         by_stem.setdefault(f["path"].rsplit(".", 1)[1].replace("NS_", "", 1), f["path"])
     curated = {}
-    for school, roles in CURATED.items():
+    for school, roles in DEDICATED.items():
         for role, stems in roles.items():
-            paths = [by_stem[s] for s in stems if s in by_stem]
+            paths = [by_stem[x] for x in stems if x in by_stem]
             if paths:
                 curated[(school, role)] = paths
+    for school, roles in CURATED.items():
+        for role, stems in roles.items():
+            paths = [by_stem[x] for x in stems if x in by_stem]
+            if paths:
+                curated[(school, role)] = curated.get((school, role), []) + [p for p in paths if p not in curated.get((school, role), [])]
     slots = defaultdict(list)
     for f in found:
         if f["school"] and f["role"]:
@@ -159,15 +185,13 @@ def build(found, existing):
     for (school, role), paths in curated.items():
         schools.setdefault(school, {})[role] = {"paths": paths, "scale": role_scale.get(role, 1.0)}
     # Physical hits: blood on flesh reads best in the dark-fantasy tone.
-    # Only realistic blood (not the glowing blood-magic set) may stand in for steel.
-    gore = [f["path"] for f in found if f["school"] == "blood" and f["role"] == "impact" and "magic" not in f["path"].lower()]
-    if gore:
-        schools.setdefault("steel", {})["impact"] = {"paths": sorted(gore, key=len)[:3], "scale": 1.0}
-    else:
-        schools.pop("steel", None)
+    if "steel" in schools and "impact" in schools["steel"]:
+        schools["steel"]["impact"]["scale"] = 0.9  # restrained: a weapon hit, not a gore spray
+    if ("steel", "impact") not in curated:
+        schools.pop("steel", None)  # never glowing blood-magic on plain weapon hits
     # Heuristic slots for schools the curated table covers are dropped: curated picks are reviewed.
     for school in list(schools):
-        if school in CURATED:
+        if school in CURATED or school in DEDICATED:
             schools[school] = {r: e for r, e in schools[school].items() if (school, r) in curated}
     # Heals borrow holy/nature art when there is no dedicated life set.
     for role in ("cast", "impact", "aura", "area"):
@@ -180,6 +204,9 @@ def build(found, existing):
         if "aura" in roles:
             buffs["buff." + school] = dict(roles["aura"])
             buffs["debuff." + school] = dict(roles["aura"])
+    for key, stem in CURATED_STATES.items():
+        if stem in by_stem:
+            buffs[key] = {"paths": [by_stem[stem]], "scale": 1.0}
     for key, stems in CURATED_BUFFS.items():
         paths = [by_stem[s] for s in stems if s in by_stem]
         if paths:

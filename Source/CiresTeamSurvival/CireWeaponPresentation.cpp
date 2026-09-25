@@ -1,4 +1,6 @@
 #include "CireWeaponPresentation.h"
+#include "Misc/CommandLine.h"
+#include "Misc/PackageName.h"
 #include "CireGame.h"
 #include "CireChampionRoster.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -17,7 +19,7 @@ namespace
 {
 struct FPart
 {
-    FString Asset,Role;FName Bone;FVector Offset=FVector::ZeroVector;FRotator Rotation=FRotator::ZeroRotator;
+    FString Asset,Role,Token;FName Bone;FVector Offset=FVector::ZeroVector;FRotator Rotation=FRotator::ZeroRotator;
     float Size=1;bool bHideOnRelease=false;
 };
 struct FLoadout {FString Motion;TArray<FPart> Parts;};
@@ -95,7 +97,7 @@ bool Parse(const FString& Text,FDatabase& Out,FString& Error)
             const TSharedPtr<FJsonObject>* PartRow=nullptr;FPart Part;FString Token,Bone;
             if(!Value->TryGetObject(PartRow)||!(*PartRow)->TryGetStringField(TEXT("asset"),Token)||!(*PartRow)->TryGetStringField(TEXT("bone"),Bone))
                 return Bad(TEXT("Weapon part requires asset and bone"));
-            Part.Asset=AssetPath(Token);Part.Bone=FName(*Bone);
+            Part.Asset=AssetPath(Token);Part.Bone=FName(*Bone);Part.Token=Token;
             if(Part.Asset.IsEmpty()||(Bone!=TEXT("hand_l")&&Bone!=TEXT("hand_r")&&Bone!=TEXT("pelvis")&&Bone!=TEXT("spine_03")))
                 return Bad(TEXT("Unsupported asset or attachment bone: ")+Token+TEXT(" / ")+Bone);
             FVector Rotation=FVector::ZeroVector;
@@ -212,6 +214,34 @@ void UCireWeaponPresentation::Clear()
     GripHands=CireGrip::FHands();DrawPose=CireGrip::FHandPose(); // creature-anim
     EquippedProfile.Reset();EquippedLoadout.Reset();Motion.Reset();AppliedRevision=INDEX_NONE;PrimarySize=1;
 }
+namespace
+{
+// fab-integration: WeaponLoadouts.fab.json replaces an asset token with a Fab weapon mesh when the pack is installed.
+struct FFabWeapon { FString Mesh; float Scale = 1.f; };
+const TMap<FString,FFabWeapon>& FabWeapons()
+{
+    static TMap<FString,FFabWeapon> Map; static bool bFabLoaded=false;
+    if(bFabLoaded)return Map; bFabLoaded=true;
+    FString Text;TSharedPtr<FJsonObject> Root;const TSharedPtr<FJsonObject>* Rows=nullptr;
+    if(FFileHelper::LoadFileToString(Text,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/WeaponLoadouts.fab.json")))&&
+       FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Root)&&Root&&Root->TryGetObjectField(TEXT("overrides"),Rows))
+        for(const auto& Pair:(*Rows)->Values)
+        {
+            const TSharedPtr<FJsonObject>* O=nullptr;FFabWeapon W;double Scale=1;
+            if(!Pair.Value->TryGetObject(O)||!(*O)->TryGetStringField(TEXT("mesh"),W.Mesh)||!W.Mesh.StartsWith(TEXT("/Game/")))continue;
+            if((*O)->TryGetNumberField(TEXT("scale"),Scale)&&FMath::IsFinite(Scale))W.Scale=FMath::Clamp(static_cast<float>(Scale),.2f,3.f);
+            Map.Add(FString(Pair.Key.ToView()),W);
+        }
+    return Map;
+}
+}
+FString CireWeaponFab::ResolveMesh(const FString& Token,const FString& Fallback,float& InOutSize)
+{
+    static const bool bOff=FParse::Param(FCommandLine::Get(),TEXT("CireNoFabWeapons"))||FParse::Param(FCommandLine::Get(),TEXT("CireNoFabCreatures"));
+    const FFabWeapon* W=bOff?nullptr:FabWeapons().Find(Token);
+    if(!W||!FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(W->Mesh)))return Fallback;
+    InOutSize*=W->Scale;return W->Mesh;
+}
 UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FString& AssetPath,FName BoneName,
     const FVector& OffsetCm,const FRotator& Rotation,float Size)
 {
@@ -282,7 +312,8 @@ void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
         // creature-anim: presets whose Tripo clips hold the weapon in the other hand swap their hand props.
         FName Bone=Spec.Bone;
         if(CireGrip::SwapsHands(EquippedLoadout))Bone=Bone==TEXT("hand_l")?FName(TEXT("hand_r")):Bone==TEXT("hand_r")?FName(TEXT("hand_l")):Bone;
-        auto* Part=Attach(Hero,Spec.Asset,Bone,Spec.Offset,Spec.Rotation,Spec.Size);if(!Part)continue;
+        float FabSize=Spec.Size;const FString Mesh=CireWeaponFab::ResolveMesh(Spec.Token,Spec.Asset,FabSize); // fab-integration
+        auto* Part=Attach(Hero,Mesh,Bone,Spec.Offset,Spec.Rotation,FabSize);if(!Part)continue;
         if(Spec.bHideOnRelease)Part->ComponentTags.Add(ReleaseTag);
         if(Spec.Role==TEXT("primary")){Primary=Part;PrimarySize=Spec.Size;}
         else if(Spec.Role==TEXT("ammunition"))Arrow=Part;

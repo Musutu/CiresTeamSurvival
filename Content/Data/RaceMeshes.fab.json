@@ -98,13 +98,13 @@
   "feral_ursoth": {
    "variant": "FabRogBear",
    "mesh": "/Game/ROG_Creatures/Bear/Meshes/SK_Bear_Fur_Full.SK_Bear_Fur_Full",
-   "meshScale": 1.5637,
+   "meshScale": 1.1442,
    "yaw": -90.0,
-   "heightCm": 215.8,
+   "heightCm": 157.9,
    "lockRoot": true,
-   "walkSpeedCm": 124.7,
-   "runSpeedCm": 509.8,
-   "reachCm": 615.0,
+   "walkSpeedCm": 91.2,
+   "runSpeedCm": 373.0,
+   "reachCm": 450.0,
    "animations": {
     "idle": "/Game/ROG_Creatures/Bear/Animations/A_Bear_idle.A_Bear_idle",
     "walk": "/Game/ROG_Creatures/Bear/Animations/A_Bear_walk.A_Bear_walk",
@@ -119,7 +119,7 @@
     }
    },
    "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
-   "soleCm": 7.0,
+   "soleCm": 5.1,
    "rig": "quadruped",
    "sockets": {
     "head": "b_head",
@@ -145,13 +145,13 @@
   "feral_mammoth": {
    "variant": "FabRogMammoth",
    "mesh": "/Game/ROG_Creatures/Mammoth/Meshes/SK_Mammoth_Fur_full.SK_Mammoth_Fur_full",
-   "meshScale": 0.7754,
+   "meshScale": 0.5639,
    "yaw": -90.0,
-   "heightCm": 347.4,
+   "heightCm": 252.6,
    "lockRoot": true,
    "walkSpeedCm": 60.0,
-   "runSpeedCm": 131.3,
-   "reachCm": 990.0,
+   "runSpeedCm": 95.5,
+   "reachCm": 720.0,
    "animations": {
     "idle": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_Idle.A_Mammoth_Idle",
     "walk": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_Walk.A_Mammoth_Walk",
@@ -166,7 +166,6 @@
     }
    },
    "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
-   "soleCm": 5.7,
    "rig": "quadruped",
    "sockets": {
     "head": "b_head",
@@ -235,13 +234,13 @@
   "wild_outrider": {
    "variant": "FabCentaur",
    "mesh": "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Centaur.SK_Centaur",
-   "meshScale": 0.9109,
+   "meshScale": 0.8333,
    "yaw": -90.0,
-   "heightCm": 247.4,
+   "heightCm": 226.3,
    "lockRoot": true,
-   "walkSpeedCm": 65.1,
-   "runSpeedCm": 230.1,
-   "reachCm": 705.0,
+   "walkSpeedCm": 60.0,
+   "runSpeedCm": 210.5,
+   "reachCm": 645.0,
    "animations": {
     "idle": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_IdleNormal.ANIM_Centaur_IdleNormal",
     "walk": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_WalkNormal.ANIM_Centaur_WalkNormal",
@@ -252,8 +251,8 @@
     "death": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_DeathNormal.ANIM_Centaur_DeathNormal"
    },
    "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
-   "soleCm": 20.7,
-   "airborneCm": 27.6,
+   "soleCm": 18.9,
+   "airborneCm": 23.2,
    "rig": "quadruped",
    "sockets": {
     "head": "CENTAUR_-Head",
@@ -319,30 +318,6 @@
      "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md"
     }
    ]
-  },
-  "hollow_siegebreaker": {
-   "variant": "FabZombieColossus",
-   "mesh": "/Game/UndeadPack/Zombie/Mesh/SK_Zombie.SK_Zombie",
-   "meshScale": 0.7448,
-   "yaw": -90.0,
-   "heightCm": 204.3,
-   "lockRoot": true,
-   "walkSpeedCm": 60.0,
-   "runSpeedCm": 90.0,
-   "reachCm": 570.0,
-   "animations": {
-    "idle": "/Game/UndeadPack/Zombie/Animations/Anim_Idle.Anim_Idle",
-    "walk": "/Game/UndeadPack/Zombie/Animations/Anim_Walk.Anim_Walk",
-    "run": "/Game/UndeadPack/Zombie/Animations/Anim_Walk.Anim_Walk",
-    "attack": "/Game/UndeadPack/Zombie/Animations/Anim_Attack1.Anim_Attack1",
-    "attackAlt": "/Game/UndeadPack/Zombie/Animations/Anim_Attack2.Anim_Attack2",
-    "hit": "/Game/UndeadPack/Zombie/Animations/Anim_Hit.Anim_Hit",
-    "death": "/Game/UndeadPack/Zombie/Animations/Anim_Death.Anim_Death",
-    "all": {
-     "ground_slam": "/Game/UndeadPack/Zombie/Animations/Anim_Attack2.Anim_Attack2"
-    }
-   },
-   "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md"
   }
  }
 }

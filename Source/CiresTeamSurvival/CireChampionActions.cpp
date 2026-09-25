@@ -347,10 +347,18 @@ bool CireChampionActions::Hold(ACireHero& Hero, const FString& Clip, float Phase
 {
     USkeletalMesh* Body = Hero.GetMesh() ? Hero.GetMesh()->GetSkeletalMeshAsset() : nullptr;
     UAnimSequence* Sequence = ClipFor(Body, Clip);
+    // fab-integration: galleries show what the game plays: the weapon style's Fab strike / cast when installed.
+    FString Name = Clip; FWindow HoldWindow = Window(Clip);
+    {
+        const FString Kind = Clip == ClipName(Hero, TEXT("attack")) ? FString(TEXT("attack")) : Clip == TEXT("cast_a_spell") ? FString(TEXT("spell")) : FString();
+        UAnimSequence* FabClip = nullptr; FString FabName; FWindow FabWindow;
+        if (!Kind.IsEmpty() && CireFabAnimation::Pick(Body, CireFabAnimation::FolderFor(Body), StyleName(Hero), MotionFor(Hero), Kind, 0, FabClip, FabName) &&
+            CireFabAnimation::Window(FabName, FabWindow)) { Sequence = FabClip; Name = FabName; HoldWindow = FabWindow; }
+    }
     if (!Sequence) return false;
     UCireChampionAction* State = StateFor(Hero);
     State->CachedBody = Body; State->SeenAttackSerial = Hero.AttackSerial; State->LastCooldowns = Hero.Cooldowns;
-    State->Sequence = Sequence; State->Clip = Clip; State->Window = Window(Clip); State->bHold = true; State->bBasic = false; State->Windup = .3f;
+    State->Sequence = Sequence; State->Clip = Name; State->Window = HoldWindow; State->bHold = true; State->bBasic = false; State->Windup = .3f;
     const FWindow& W = State->Window;
     State->HoldTime = Phase <= 1.f ? FMath::Lerp(W.Start, W.Contact, FMath::Max(0.f, Phase)) : FMath::Lerp(W.Contact, W.End, FMath::Min(1.f, Phase - 1.f));
     return true;

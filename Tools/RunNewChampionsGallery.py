@@ -32,6 +32,7 @@ def kill_tree(child) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--only", default="")
+    parser.add_argument("--no-fab", action="store_true", help="fab-integration: hide the local Fab packs (before/after captures)")
     parser.add_argument("--editor", type=Path, default=Path("F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"))
     args = parser.parse_args()
     log = ROOT / "Saved/Logs/NewChampionsGallery.log"
@@ -39,6 +40,8 @@ def main() -> int:
     command = [str(args.editor), str(ROOT / "CiresTeamSurvival.uproject"), "/Game/Maps/Citadel", "-game", "-CireNewChampionsGallery",
                "-CireTripoChampions", "-RenderOffscreen", "-ForceRes", "-windowed", "-ResX=1920", "-ResY=1080",
                "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-nosplash", f"-abslog={log}"]
+    if args.no_fab:
+        command += ["-CireNoFabVFX", "-CireNoFabAnim", "-CireNoFabCreatures"]
     if args.only:
         command.append(f"-CireNewChampionsGalleryOnly={args.only}")
     creation = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0

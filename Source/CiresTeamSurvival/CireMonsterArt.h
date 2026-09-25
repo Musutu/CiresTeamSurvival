@@ -50,6 +50,8 @@ namespace CireMonsterArt
         /** fab-integration: world cm (at mesh scale) from the lowest foot joint to the sole (hooves end below the joint),
          *  and the extra foot clearance a galloping run's airborne phase reaches. Both only relax the grounding checks. */
         float SoleCm = 0.f, AirborneCm = 0.f;
+        /** fab-integration: body from a purchased Fab pack (authored materials: no race reskin). */
+        bool bFab = false;
         /** Socket name -> bone, added to the mesh in memory when the body is applied (head, pelvis, hand_r...). */
         TMap<FName, FName> Sockets;
     };
@@ -114,6 +116,8 @@ public:
     /** Applies the Tripo body for this archetype. False keeps (restores) the mannequin fallback. */
     bool ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObjectPtr<UStaticMeshComponent>>& OutParts);
     bool IsTripoApplied() const { return bTripoApplied; }
+    /** fab-integration: the applied body is a Fab pack body (keeps its authored materials; rank shows as the rim overlay). */
+    bool IsFabApplied() const { return bTripoApplied && bFabApplied; }
     bool HasRoleClip(const FString& Role) const { return RoleClip(Role) != nullptr; }
     const FString& GetAppliedVariant() const { return AppliedVariant; }
     UCireMonsterAnimInstance* GetMonsterAnim() const;
@@ -167,6 +171,7 @@ private:
     FTransform FallbackTransform;
     bool bFallbackCaptured = false;
     bool bTripoApplied = false;
+    bool bFabApplied = false;
     bool bDeathPresented = false;
     int32 ForcedVariant = INDEX_NONE;
     FName AppliedArchetype;

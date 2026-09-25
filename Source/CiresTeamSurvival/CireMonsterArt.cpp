@@ -23,6 +23,7 @@
 #include "CireRaces.h" // monster-races
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
+#include "Misc/CommandLine.h"
 #include "Misc/Paths.h"
 #include "Net/UnrealNetwork.h"
 #include "Serialization/JsonReader.h"
@@ -169,7 +170,7 @@ void Load()
         const TSharedPtr<FJsonObject>* FabUnits = nullptr;
         auto Present = [](const FString& Path) { const FString Package = FPackageName::ObjectPathToPackageName(Path);
             return FPackageName::IsValidLongPackageName(Package) && FPackageName::DoesPackageExist(Package); };
-        if (ReadFile(TEXT("RaceMeshes.fab.json"), FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
+        if (!FParse::Param(FCommandLine::Get(), TEXT("CireNoFabCreatures")) && ReadFile(TEXT("RaceMeshes.fab.json"), FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
             for (const auto& Pair : (*FabUnits)->Values)
             {
                 const FName Id(FString(Pair.Key.ToView()));
@@ -180,6 +181,7 @@ void Load()
                 {
                     CireMonsterArt::FBody Body;
                     if (!ParseBody(O, Body) || !Present(Body.MeshPath) || !Present(Body.Roles.FindRef(TEXT("idle")))) return;
+                    Body.bFab = true;
                     Bodies.Add(Body.Variant, Body);
                 };
                 if ((*Entry)->HasField(TEXT("mesh"))) Add(*Entry);
@@ -636,6 +638,7 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
         Part->RegisterComponent();
         OutParts.Add(Part);
     }
+    bFabApplied = Body.bFab; // fab-integration
     bTripoApplied = true; AppliedArchetype = Archetype.Id; AppliedVariant = Body.Variant; AppliedMeshScale = Body.MeshScale;
     AppliedWalkRaw = Body.WalkSpeedCm / FMath::Max(.01f, Body.MeshScale); AppliedRunRaw = Body.RunSpeedCm / FMath::Max(.01f, Body.MeshScale); // world-dressing
     Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = -1.f; // a cast already under way is picked up mid-bar

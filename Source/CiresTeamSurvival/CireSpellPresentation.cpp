@@ -600,7 +600,7 @@ void ACireSpellVisual::UpdateFabVFX()
         :CireFabVFX::SpawnAt(GetWorld(),System,GetActorLocation(),GetActorRotation(),Scale);
     CireFabVFX::ApplyTint(C,Entry->Tint);
     FabFX=C;
-    UE_LOG(LogTemp,Log,TEXT("CIRE_FAB_VFX_SPAWN skill=%s role=%s school=%s system=%s ok=%d"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole),
+    UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_SPAWN skill=%s role=%s school=%s system=%s ok=%d"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole),
         *CireAbilityShapes::SchoolName(School),*System->GetName(),C!=nullptr);
 }
 
