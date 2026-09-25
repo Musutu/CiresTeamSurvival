@@ -5,6 +5,7 @@
     "slash":           { "start": 0.80, "contact": 2.10, "end": 3.30, "recoverRate": 1.6 },
     "chop":            { "start": 0.80, "contact": 2.10, "end": 3.30, "recoverRate": 1.6 },
     "ground_slam":     { "start": 0.05, "contact": 1.12, "end": 2.20, "recoverRate": 1.4 },
+    "tentacle_sweep": {"start": 0.3, "contact": 1.7, "end": 3.4, "recoverRate": 1.4},
     "war_cry":         { "start": 0.10, "contact": 1.60, "end": 2.90, "recoverRate": 1.2 },
     "cast_a_spell":    { "start": 0.30, "contact": 2.40, "end": 3.40, "recoverRate": 1.5 },
     "attack_bow":      { "start": 0.00, "contact": 0.92, "end": 1.80, "recoverRate": 1.4 },
@@ -21,7 +22,8 @@
     "hollow_siegebreaker":  { "variants": ["HollowSiegebreaker"],
                               "abilityClips": { "boss_siege_stomp": "ground_slam", "boss_siege_cleave": "slash", "boss_siege_rally": "ground_slam", "boss_siege_fury": "ground_slam" } },
     "gravemaw_pack_leader": { "variants": ["GravemawPackLeader"],
-                              "abilityClips": { "boss_leader_rally": "war_cry", "boss_leader_frenzy": "war_cry", "boss_leader_cleave": "slash", "boss_leader_charge": "chop" } }
+                              "abilityClips": { "boss_leader_rally": "war_cry", "boss_leader_frenzy": "war_cry", "boss_leader_cleave": "slash", "boss_leader_charge": "chop" } },
+    "maw_of_the_deep": { "abilityClips": {"drowned_tentacle_sweep": "tentacle_sweep", "drowned_tsunami_slam": "tentacle_sweep", "drowned_leviathan_rage": "war_cry", "drowned_devour": "slash"} }
   },
   "bodies": {
     "BlightCaster":       { "dropPropBones": ["hand_r"], "note": "bone staff is part of the mesh" },

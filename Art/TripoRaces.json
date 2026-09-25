@@ -1,0 +1,668 @@
+{
+  "schemaVersion": 1,
+  "batch": "races",
+  "createdUtc": "2026-09-25",
+  "operator": "Claude (feat/tripo-races worktree)",
+  "provider": "Tripo Studio (logged-in browser), DCC Bridge -> Tripo3DUEBridge",
+  "creditCap": 5500,
+  "observedBalanceBefore": 6990,
+  "balanceLog": [
+    {
+      "when": "start",
+      "balance": 6990
+    },
+    {
+      "when": "drowned_deep 8 generations submitted",
+      "balance": 6550
+    },
+    {
+      "when": "drowned rigs (8x20) + blightwood 8 generations + maw text-to-motion",
+      "balance": 5930
+    }
+  ],
+  "pipelineNotes": [
+    "Studio: text-to-3D HD Model H3.1 Best Quality (55), Ultra Mesh Quality on, T-Pose on, 60k triangles, 4K PBR, remove lighting; Humanoid auto-rig with the UE5 Mannequin skeleton preset (20); preset animations are free; text-to-motion 20 per clip; clips already in the account's AI Animation library (batch-03 war cry, ground slam, bow, crossbow and every new text-to-motion) retarget onto new rigs for free.",
+    "Free Retry (x3) regenerates a model under the same task id at no cost (used for withered_matron before re-prompting).",
+    "DCC Bridge: open the 'DCC Bridge' popover in the Studio header and switch Unreal on (it must say Connected; the switch resets on every page load). Send To Unreal then streams the FBX in 5 MB chunks to the plugin on 127.0.0.1:60620.",
+    "The streaming page must stay in the foreground until the editor logs 'All N chunks received'. Navigating away, a background tab (Chrome timer throttling) or the Studio switching the page to a newly finished generation kills the transfer.",
+    "Bridge imports land in /Game/TripoModels/CTS_Race_<Unit>; Tools/RunTripoRacesIntegration.py (skeleton core-redirect workaround + Tools/IntegrateTripoRaces.py) moves them to /Game/Tripo/Races/<race>/<Unit>/, rebuilds the PBR instance on M_Tripo_PBR_Master (BaseColor restored), renames text-to-motion clips and writes Saved/TripoRacesIntegration.json; Tools/WriteRaceMeshes.py then writes Content/Data/RaceMeshes.tripo.json.",
+    "Skeletal bodies stay non-Nanite and unscaled (meshScale in data), like batch 03, so M_CireMonsterSkin's rank/race tint (a MID copying the four PBR textures) applies unchanged."
+  ],
+  "units": [
+    {
+      "race": "drowned_deep",
+      "unit": "abyssal_stalker",
+      "attempts": [
+        {
+          "taskId": "91612085-ef2a-4e6a-a7ef-d2bf4b5636e4",
+          "url": "https://studio.tripo3d.ai/workspace/generate/91612085-ef2a-4e6a-a7ef-d2bf4b5636e4",
+          "prompt": "Full body game character, realistic dark fantasy cephalopod humanoid assassin, lean wiry hunched body, squid head with a beard of short tentacles hanging over the chest, huge glossy black eyes, wet translucent blue-grey teal skin with small pale cyan spots, long thin arms ending in hooked bone claws instead of hands, tattered dark kelp sash and loincloth, tarnished dark iron bracers and a rusted iron collar, webbed bare feet. Highly detailed realistic PBR wet skin, kelp and metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_AbyssalStalker",
+      "folder": "AbyssalStalker",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/AbyssalStalker",
+        "mesh": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/CTS_Race_AbyssalStalker.CTS_Race_AbyssalStalker",
+        "rawHeightCm": 97.78,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "deepspawn_thrall",
+      "attempts": [
+        {
+          "taskId": "7b79e8c5-d87e-47d4-bcb5-029eb9c971df",
+          "url": "https://studio.tripo3d.ai/workspace/generate/7b79e8c5-d87e-47d4-bcb5-029eb9c971df",
+          "prompt": "Full body game character, realistic dark fantasy hulking squid-headed brute, massive muscular body, thick hanging tentacle beard, slick dark teal hide with a pale grey belly, crusted with barnacles on shoulders and back, right forearm grows into a huge club of fused coral and barnacles, left forearm is a massive crab claw, heavy rusted iron anchor chain wrapped around the torso, tarnished iron shoulder plate, stooped powerful stance. Highly detailed realistic PBR wet skin, coral, barnacle and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_DeepspawnThrall",
+      "folder": "DeepspawnThrall",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall",
+        "mesh": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/CTS_Race_DeepspawnThrall.CTS_Race_DeepspawnThrall",
+        "rawHeightCm": 83.86,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "coralshell_guardian",
+      "attempts": [
+        {
+          "taskId": "938582b8-cb23-4ab5-b28a-5efd41aa0c33",
+          "url": "https://studio.tripo3d.ai/workspace/generate/938582b8-cb23-4ab5-b28a-5efd41aa0c33",
+          "prompt": "Full body game character, realistic dark fantasy squat armoured cephalopod warrior, broad stocky body in a carapace of layered pale pink-white coral plates, spiky mantis-shrimp shell pauldrons, squid face with short tentacles peering from a ridged coral helm, tarnished bronze-green metal rims and rivets on the coral armour, dark teal skin at the joints, empty open hands with webbed fingers, holding nothing, stocky immovable stance. Highly detailed realistic PBR coral, shell and metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_CoralshellGuardian",
+      "folder": "CoralshellGuardian",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian",
+        "mesh": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/CTS_Race_CoralshellGuardian.CTS_Race_CoralshellGuardian",
+        "rawHeightCm": 88.32,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "tidecaller",
+      "attempts": [
+        {
+          "taskId": "836de0ad-c02c-4a1a-9a2a-c51a4174ee21",
+          "url": "https://studio.tripo3d.ai/workspace/generate/836de0ad-c02c-4a1a-9a2a-c51a4174ee21",
+          "prompt": "Full body game character, realistic dark fantasy tall robed cephalopod priest, squid head with a long drooping tentacle beard, flowing sea-green and dark teal robes crusted with shells and barnacles, pearl necklaces, tarnished silver-bronze chest clasp and bracers, right hand gripping a tall staff of twisted driftwood crowned with a large conch shell and a round water orb, left hand open. Highly detailed realistic PBR cloth, shell and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_Tidecaller",
+      "folder": "Tidecaller",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/Tidecaller",
+        "mesh": "/Game/Tripo/Races/drowned_deep/Tidecaller/CTS_Race_Tidecaller.CTS_Race_Tidecaller",
+        "rawHeightCm": 95.11,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "barbspitter",
+      "attempts": [
+        {
+          "taskId": "edbccb8a-85dc-4b4d-835a-f4968a93244b",
+          "url": "https://studio.tripo3d.ai/workspace/generate/edbccb8a-85dc-4b4d-835a-f4968a93244b",
+          "prompt": "Full body game character, realistic dark fantasy frog-postured cephalopod creature, squat crouched humanoid body, bulbous head with a tube-like siphon mouth and small tentacles, rows of barbed quills and spines along its back and shoulders, mottled olive and violet wet skin, yellow slit eyes, a whalebone harpoon strapped diagonally across its back, tarnished iron armbands and a rusted iron belt buckle, empty webbed hands. Highly detailed realistic PBR wet skin and bone textures, symmetrical T-pose, arms straight out to the sides, legs bent slightly, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_Barbspitter",
+      "folder": "Barbspitter",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/Barbspitter",
+        "mesh": "/Game/Tripo/Races/drowned_deep/Barbspitter/CTS_Race_Barbspitter.CTS_Race_Barbspitter",
+        "rawHeightCm": 88.19,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "mind_leech",
+      "attempts": [
+        {
+          "taskId": "f1c39f59-396c-4832-bddd-ed3d28dce72e",
+          "url": "https://studio.tripo3d.ai/workspace/generate/f1c39f59-396c-4832-bddd-ed3d28dce72e",
+          "prompt": "Full body game character, realistic dark fantasy small hunched cephalopod aberration, oversized exposed brain-like mantle for a head with pulsing violet veins, a single cluster of magenta eyes, thin pale humanoid torso and thin arms with long fingers, a long skirt of hanging thin tentacles that reaches the ground and hides its legs, tarnished silver circlet and chest brooch. Highly detailed realistic PBR wet skin textures, symmetrical T-pose, arms straight out to the sides, standing, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_MindLeech",
+      "folder": "MindLeech",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/MindLeech",
+        "mesh": "/Game/Tripo/Races/drowned_deep/MindLeech/CTS_Race_MindLeech.CTS_Race_MindLeech",
+        "rawHeightCm": 92.57,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "drowned_prophet",
+      "attempts": [
+        {
+          "taskId": "2467de5b-f879-46cc-8628-190276db4b71",
+          "url": "https://studio.tripo3d.ai/workspace/generate/2467de5b-f879-46cc-8628-190276db4b71",
+          "prompt": "Full body game character, realistic dark fantasy towering gaunt cephalopod prophet, squid head with a mass of long tentacles for a beard, crown of black coral and pearls, tattered deep abyssal-blue vestments with a long skirt of dragging tentacles, barnacle-crusted tome chained at the hip, tarnished gold-bronze chains and shoulder ornaments, right hand gripping a tall gnarled staff topped with a large eldritch eye in a coral cage, left hand open with long fingers. Highly detailed realistic PBR cloth, coral and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_DrownedProphet",
+      "folder": "DrownedProphet",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/DrownedProphet",
+        "mesh": "/Game/Tripo/Races/drowned_deep/DrownedProphet/CTS_Race_DrownedProphet.CTS_Race_DrownedProphet",
+        "rawHeightCm": 94.35,
+        "animations": [
+          "cast_a_spell",
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "walk"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "maw_of_the_deep",
+      "attempts": [
+        {
+          "taskId": "2253061f-6a6b-432e-baf7-082b69e3dda0",
+          "url": "https://studio.tripo3d.ai/workspace/generate/2253061f-6a6b-432e-baf7-082b69e3dda0",
+          "prompt": "Full body game character, realistic dark fantasy colossal kraken-crab abomination walking upright on two thick barnacled legs, no head: a gaping circular maw of needle teeth ringed by long thick tentacles sits on top of its shoulders, massive armoured shell back overgrown with coral and hung with rusted anchor chains, right arm an enormous crab claw, left arm a thick tentacle-fingered hand, small bioluminescent lures on stalks, tarnished iron shackles. Highly detailed realistic PBR shell, coral, wet skin and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "accepted"
+        }
+      ],
+      "export": "CTS_Race_MawOfTheDeep",
+      "folder": "MawOfTheDeep",
+      "aiClips": {
+        "Huge_crab_monster": "tentacle_sweep",
+        "Huge_warlord": "war_cry"
+      },
+      "textToMotion": [
+        {
+          "name": "tentacle_sweep",
+          "prompt": "Huge crab monster plants its feet, swings its long right arm in a wide heavy horizontal sweep from right to left across its front, torso twisting with the sweep, then returns to a menacing ready stance",
+          "seconds": 4,
+          "credits": 20
+        },
+        {
+          "name": "war_cry",
+          "reused": "Warlord War Cry from the Tripo AI animation library (batch 03 Gravemaw clip), retargeted free",
+          "credits": 0
+        }
+      ],
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "creditsTotal": 95,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "unreal": {
+        "folder": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep",
+        "mesh": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/CTS_Race_MawOfTheDeep.CTS_Race_MawOfTheDeep",
+        "rawHeightCm": 97.91,
+        "animations": [
+          "fall",
+          "hit_to_body_01",
+          "idle",
+          "run",
+          "slash",
+          "tentacle_sweep",
+          "walk",
+          "war_cry"
+        ]
+      },
+      "status": "integrated"
+    },
+    {
+      "race": "blightwood",
+      "unit": "vinelasher",
+      "attempts": [
+        {
+          "taskId": "9b2353c2-d814-450d-8121-837a8981689c",
+          "url": "https://studio.tripo3d.ai/workspace/generate/9b2353c2-d814-450d-8121-837a8981689c",
+          "prompt": "Full body game character, realistic dark fantasy wiry humanoid woven from braided thorny vines and dry dark-brown bark strips, lithe body, both forearms end in long thorny vine whips that hang down to the knees, a knot of glowing green sap for a face inside a hood of leaves, small red berries and dead leaves sprouting from the shoulders, rusted iron nails and old iron bands bound around the limbs, forward-leaning stance. Highly detailed realistic PBR bark, vine and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ]
+    },
+    {
+      "race": "blightwood",
+      "unit": "sapling_brute",
+      "attempts": [
+        {
+          "taskId": "3a99f5fc-8a92-4838-8330-faecee71b7ee",
+          "url": "https://studio.tripo3d.ai/workspace/generate/3a99f5fc-8a92-4838-8330-faecee71b7ee",
+          "prompt": "Full body game character, realistic dark fantasy young bulky treant brute of pale ash wood and grey bark, massive broad torso, right forearm ends in a huge splintered tree-stump club, left hand a gnarled wooden fist, mossy shoulders with fresh green shoots, cracked bark chest showing amber heartwood, short thick root legs, rusted iron bands and old iron spikes hammered into the shoulders, aggressive hunched stance. Highly detailed realistic PBR bark, moss and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ]
+    },
+    {
+      "race": "blightwood",
+      "unit": "barkhide_warden",
+      "attempts": [
+        {
+          "taskId": "79455769-7a12-455a-9988-6fd57b515a8a",
+          "url": "https://studio.tripo3d.ai/workspace/generate/79455769-7a12-455a-9988-6fd57b515a8a",
+          "prompt": "Full body game character, realistic dark fantasy thick squat oak treant guardian, broad stocky body covered in overlapping shield-like dark bark plates, knotted wooden face with deep-set amber eyes, thick green moss mantle over the shoulders, gnarled root feet planted wide, rusted iron rivets and iron bands binding the bark plates like armour, empty open wooden hands holding nothing. Highly detailed realistic PBR bark, moss and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no weapons, no shield, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ]
+    },
+    {
+      "race": "blightwood",
+      "unit": "rotbloom_shaman",
+      "attempts": [
+        {
+          "taskId": "f5203c65-d5e4-4d95-8399-6a57bb4b3efe",
+          "url": "https://studio.tripo3d.ai/workspace/generate/f5203c65-d5e4-4d95-8399-6a57bb4b3efe",
+          "prompt": "Full body game character, realistic dark fantasy hunched fungal treant shaman, head is a huge drooping rotten flower bloom with a sickly green core, dark bark robe hung with mushroom shelves and dead leaves, thin branch arms, right hand gripping a crooked branch staff sprouting pale fungus and dangling seed pods, left hand open, old tarnished bronze amulets and iron rings on the robe. Highly detailed realistic PBR bark, fungus, petal and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ]
+    },
+    {
+      "race": "blightwood",
+      "unit": "thornspitter",
+      "attempts": [
+        {
+          "taskId": "14009107-2cda-4ee0-86d0-8d337c97df7f",
+          "url": "https://studio.tripo3d.ai/workspace/generate/14009107-2cda-4ee0-86d0-8d337c97df7f",
+          "prompt": "Full body game character, realistic dark fantasy walking carnivorous pitcher-plant creature, tall veined green-and-crimson pitcher body with a lidded mouth full of thorn teeth on top, two leafy vine arms with thorny three-fingered hands, two short thick root legs, bundles of long thorns bristling from its back like quivers, rusted iron bands wrapped around the stem. Highly detailed realistic PBR plant, thorn and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ]
+    },
+    {
+      "race": "blightwood",
+      "unit": "sporeling",
+      "attempts": [
+        {
+          "taskId": "e2125214-868f-421c-8388-959b55f4da75",
+          "url": "https://studio.tripo3d.ai/workspace/generate/e2125214-868f-421c-8388-959b55f4da75",
+          "prompt": "Full body game character, realistic dark fantasy small waddling mushroom creature, wide spotted red-brown mushroom cap with pale yellow-green gills, stout pale stalk body, stubby root legs with little root toes, thin twig arms with twig fingers, small beady eyes under the cap, a tiny rusted iron ring around its stalk. Highly detailed realistic PBR fungus and bark textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ]
+    },
+    {
+      "race": "blightwood",
+      "unit": "withered_matron",
+      "attempts": [
+        {
+          "taskId": "87ec3d9a-620b-4230-aee5-2788418aa86d",
+          "url": "https://studio.tripo3d.ai/workspace/generate/87ec3d9a-620b-4230-aee5-2788418aa86d",
+          "prompt": "Full body game character, realistic dark fantasy tall gaunt corrupted dryad queen, grey-violet dead-bark skin, crown of blackened thorns and dead lilies, long flowing gown of dried roots and dark moss that drags behind like a train, hollow eyes, long clawed branch fingers, tarnished bronze filigree bracers and a bronze torc at the neck, empty hands. Highly detailed realistic PBR bark, moss and metal textures, symmetrical T-pose, arms straight out to the sides, feet planted apart, single character, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ]
+    },
+    {
+      "race": "blightwood",
+      "unit": "elder_oakheart",
+      "attempts": [
+        {
+          "taskId": "941cbb57-f688-4de3-9442-b20159914751",
+          "url": "https://studio.tripo3d.ai/workspace/generate/941cbb57-f688-4de3-9442-b20159914751",
+          "prompt": "Full body game character, realistic dark fantasy ancient towering oak treant colossus, massive trunk body with deep bark fissures showing amber heartwood, long hanging grey moss beard, antler-like branching crown with a few living leaves, huge thick root-fist arms, stone-embedded root feet, mushrooms and a bird nest in its bark, ancient rusted iron chains and iron bands grown into the trunk. Highly detailed realistic PBR bark, moss, stone and rusted metal textures, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single creature, no base, no background, no particles, no glow effects.",
+          "settings": {
+            "model": "HD Model, H3.1 Best Quality, text to 3D",
+            "ultraMeshQuality": true,
+            "tPose": true,
+            "polycount": 60000,
+            "topology": "triangle",
+            "texture": "4K PBR, remove lighting",
+            "privacy": "Sharing Only"
+          },
+          "credits": 55,
+          "status": "generated"
+        }
+      ]
+    }
+  ]
+}

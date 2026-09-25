@@ -1,0 +1,259 @@
+{
+  "schemaVersion": 1,
+  "source": "tripo",
+  "description": "Tripo race-unit bodies (tripo-races agent) overlaying Content/Data/Races.json units by priority (RaceMeshes.tripo.json > NPCMeshes.tripo.json > RaceMeshes.free.json > fallback archetype). meshScale brings the raw ~98 cm Tripo body to heightCm BEFORE the archetype's scale; yaw -90; Tripo 'UE5 Mannequin' 61-bone rig; clips are the Tripo preset library (+ text-to-motion where named). Written by Tools/WriteRaceMeshes.py from Saved/TripoRacesIntegration.json; prompts, task ids and credits in Art/TripoRaces.json.",
+  "archetypes": {
+    "abyssal_stalker": {
+      "variant": "AbyssalStalker",
+      "mesh": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/CTS_Race_AbyssalStalker.CTS_Race_AbyssalStalker",
+      "skeleton": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/CTS_Race_AbyssalStalker_Skeleton.CTS_Race_AbyssalStalker_Skeleton",
+      "material": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/CTS_Race_AbyssalStalker_Mat.CTS_Race_AbyssalStalker_Mat",
+      "race": "drowned_deep",
+      "rawHeightCm": 97.78,
+      "heightCm": 185,
+      "meshScale": 1.892,
+      "yaw": -90,
+      "bakedWeapon": "hooked bone claws (both hands)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_idle.CTS_Race_AbyssalStalker_idle",
+        "walk": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_walk.CTS_Race_AbyssalStalker_walk",
+        "run": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_run.CTS_Race_AbyssalStalker_run",
+        "attack": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_slash.CTS_Race_AbyssalStalker_slash",
+        "hit": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_hit_to_body_01.CTS_Race_AbyssalStalker_hit_to_body_01",
+        "death": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_fall.CTS_Race_AbyssalStalker_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_fall.CTS_Race_AbyssalStalker_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_hit_to_body_01.CTS_Race_AbyssalStalker_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_idle.CTS_Race_AbyssalStalker_idle",
+          "run": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_run.CTS_Race_AbyssalStalker_run",
+          "slash": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_slash.CTS_Race_AbyssalStalker_slash",
+          "walk": "/Game/Tripo/Races/drowned_deep/AbyssalStalker/Animations/CTS_Race_AbyssalStalker_walk.CTS_Race_AbyssalStalker_walk"
+        }
+      }
+    },
+    "deepspawn_thrall": {
+      "variant": "DeepspawnThrall",
+      "mesh": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/CTS_Race_DeepspawnThrall.CTS_Race_DeepspawnThrall",
+      "skeleton": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/CTS_Race_DeepspawnThrall_Skeleton.CTS_Race_DeepspawnThrall_Skeleton",
+      "material": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/CTS_Race_DeepspawnThrall_Mat.CTS_Race_DeepspawnThrall_Mat",
+      "race": "drowned_deep",
+      "rawHeightCm": 83.86,
+      "heightCm": 200,
+      "meshScale": 2.3849,
+      "yaw": -90,
+      "bakedWeapon": "coral club (right arm) and crab claw (left arm)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_idle.CTS_Race_DeepspawnThrall_idle",
+        "walk": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_walk.CTS_Race_DeepspawnThrall_walk",
+        "run": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_run.CTS_Race_DeepspawnThrall_run",
+        "attack": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_slash.CTS_Race_DeepspawnThrall_slash",
+        "hit": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_hit_to_body_01.CTS_Race_DeepspawnThrall_hit_to_body_01",
+        "death": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_fall.CTS_Race_DeepspawnThrall_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_fall.CTS_Race_DeepspawnThrall_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_hit_to_body_01.CTS_Race_DeepspawnThrall_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_idle.CTS_Race_DeepspawnThrall_idle",
+          "run": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_run.CTS_Race_DeepspawnThrall_run",
+          "slash": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_slash.CTS_Race_DeepspawnThrall_slash",
+          "walk": "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/Animations/CTS_Race_DeepspawnThrall_walk.CTS_Race_DeepspawnThrall_walk"
+        }
+      }
+    },
+    "coralshell_guardian": {
+      "variant": "CoralshellGuardian",
+      "mesh": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/CTS_Race_CoralshellGuardian.CTS_Race_CoralshellGuardian",
+      "skeleton": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/CTS_Race_CoralshellGuardian_Skeleton.CTS_Race_CoralshellGuardian_Skeleton",
+      "material": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/CTS_Race_CoralshellGuardian_Mat.CTS_Race_CoralshellGuardian_Mat",
+      "race": "drowned_deep",
+      "rawHeightCm": 88.32,
+      "heightCm": 185,
+      "meshScale": 2.0947,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "dropPropBones": [],
+      "animations": {
+        "idle": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_idle.CTS_Race_CoralshellGuardian_idle",
+        "walk": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_walk.CTS_Race_CoralshellGuardian_walk",
+        "run": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_run.CTS_Race_CoralshellGuardian_run",
+        "attack": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_slash.CTS_Race_CoralshellGuardian_slash",
+        "hit": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_hit_to_body_01.CTS_Race_CoralshellGuardian_hit_to_body_01",
+        "death": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_fall.CTS_Race_CoralshellGuardian_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_fall.CTS_Race_CoralshellGuardian_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_hit_to_body_01.CTS_Race_CoralshellGuardian_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_idle.CTS_Race_CoralshellGuardian_idle",
+          "run": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_run.CTS_Race_CoralshellGuardian_run",
+          "slash": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_slash.CTS_Race_CoralshellGuardian_slash",
+          "walk": "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/Animations/CTS_Race_CoralshellGuardian_walk.CTS_Race_CoralshellGuardian_walk"
+        }
+      }
+    },
+    "tidecaller": {
+      "variant": "Tidecaller",
+      "mesh": "/Game/Tripo/Races/drowned_deep/Tidecaller/CTS_Race_Tidecaller.CTS_Race_Tidecaller",
+      "skeleton": "/Game/Tripo/Races/drowned_deep/Tidecaller/CTS_Race_Tidecaller_Skeleton.CTS_Race_Tidecaller_Skeleton",
+      "material": "/Game/Tripo/Races/drowned_deep/Tidecaller/CTS_Race_Tidecaller_Mat.CTS_Race_Tidecaller_Mat",
+      "race": "drowned_deep",
+      "rawHeightCm": 95.11,
+      "heightCm": 190,
+      "meshScale": 1.9977,
+      "yaw": -90,
+      "bakedWeapon": "conch-and-driftwood staff (right hand)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_idle.CTS_Race_Tidecaller_idle",
+        "walk": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_walk.CTS_Race_Tidecaller_walk",
+        "run": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_run.CTS_Race_Tidecaller_run",
+        "attack": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_cast_a_spell.CTS_Race_Tidecaller_cast_a_spell",
+        "hit": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_hit_to_body_01.CTS_Race_Tidecaller_hit_to_body_01",
+        "death": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_fall.CTS_Race_Tidecaller_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_cast_a_spell.CTS_Race_Tidecaller_cast_a_spell",
+          "fall": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_fall.CTS_Race_Tidecaller_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_hit_to_body_01.CTS_Race_Tidecaller_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_idle.CTS_Race_Tidecaller_idle",
+          "run": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_run.CTS_Race_Tidecaller_run",
+          "slash": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_slash.CTS_Race_Tidecaller_slash",
+          "walk": "/Game/Tripo/Races/drowned_deep/Tidecaller/Animations/CTS_Race_Tidecaller_walk.CTS_Race_Tidecaller_walk"
+        }
+      }
+    },
+    "barbspitter": {
+      "variant": "Barbspitter",
+      "mesh": "/Game/Tripo/Races/drowned_deep/Barbspitter/CTS_Race_Barbspitter.CTS_Race_Barbspitter",
+      "skeleton": "/Game/Tripo/Races/drowned_deep/Barbspitter/CTS_Race_Barbspitter_Skeleton.CTS_Race_Barbspitter_Skeleton",
+      "material": "/Game/Tripo/Races/drowned_deep/Barbspitter/CTS_Race_Barbspitter_Mat.CTS_Race_Barbspitter_Mat",
+      "race": "drowned_deep",
+      "rawHeightCm": 88.19,
+      "heightCm": 178,
+      "meshScale": 2.0184,
+      "yaw": -90,
+      "bakedWeapon": "whalebone harpoon slung on the back; spits its spines",
+      "dropPropBones": [
+        "hand_l"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_idle.CTS_Race_Barbspitter_idle",
+        "walk": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_walk.CTS_Race_Barbspitter_walk",
+        "run": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_run.CTS_Race_Barbspitter_run",
+        "attack": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_cast_a_spell.CTS_Race_Barbspitter_cast_a_spell",
+        "hit": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_hit_to_body_01.CTS_Race_Barbspitter_hit_to_body_01",
+        "death": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_fall.CTS_Race_Barbspitter_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_cast_a_spell.CTS_Race_Barbspitter_cast_a_spell",
+          "fall": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_fall.CTS_Race_Barbspitter_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_hit_to_body_01.CTS_Race_Barbspitter_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_idle.CTS_Race_Barbspitter_idle",
+          "run": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_run.CTS_Race_Barbspitter_run",
+          "slash": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_slash.CTS_Race_Barbspitter_slash",
+          "walk": "/Game/Tripo/Races/drowned_deep/Barbspitter/Animations/CTS_Race_Barbspitter_walk.CTS_Race_Barbspitter_walk"
+        }
+      }
+    },
+    "mind_leech": {
+      "variant": "MindLeech",
+      "mesh": "/Game/Tripo/Races/drowned_deep/MindLeech/CTS_Race_MindLeech.CTS_Race_MindLeech",
+      "skeleton": "/Game/Tripo/Races/drowned_deep/MindLeech/CTS_Race_MindLeech_Skeleton.CTS_Race_MindLeech_Skeleton",
+      "material": "/Game/Tripo/Races/drowned_deep/MindLeech/CTS_Race_MindLeech_Mat.CTS_Race_MindLeech_Mat",
+      "race": "drowned_deep",
+      "rawHeightCm": 92.57,
+      "heightCm": 165,
+      "meshScale": 1.7824,
+      "yaw": -90,
+      "bakedWeapon": null,
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_idle.CTS_Race_MindLeech_idle",
+        "walk": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_walk.CTS_Race_MindLeech_walk",
+        "run": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_run.CTS_Race_MindLeech_run",
+        "attack": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_cast_a_spell.CTS_Race_MindLeech_cast_a_spell",
+        "hit": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_hit_to_body_01.CTS_Race_MindLeech_hit_to_body_01",
+        "death": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_fall.CTS_Race_MindLeech_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_cast_a_spell.CTS_Race_MindLeech_cast_a_spell",
+          "fall": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_fall.CTS_Race_MindLeech_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_hit_to_body_01.CTS_Race_MindLeech_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_idle.CTS_Race_MindLeech_idle",
+          "run": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_run.CTS_Race_MindLeech_run",
+          "slash": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_slash.CTS_Race_MindLeech_slash",
+          "walk": "/Game/Tripo/Races/drowned_deep/MindLeech/Animations/CTS_Race_MindLeech_walk.CTS_Race_MindLeech_walk"
+        }
+      }
+    },
+    "drowned_prophet": {
+      "variant": "DrownedProphet",
+      "mesh": "/Game/Tripo/Races/drowned_deep/DrownedProphet/CTS_Race_DrownedProphet.CTS_Race_DrownedProphet",
+      "skeleton": "/Game/Tripo/Races/drowned_deep/DrownedProphet/CTS_Race_DrownedProphet_Skeleton.CTS_Race_DrownedProphet_Skeleton",
+      "material": "/Game/Tripo/Races/drowned_deep/DrownedProphet/CTS_Race_DrownedProphet_Mat.CTS_Race_DrownedProphet_Mat",
+      "race": "drowned_deep",
+      "rawHeightCm": 94.35,
+      "heightCm": 200,
+      "meshScale": 2.1198,
+      "yaw": -90,
+      "bakedWeapon": "eldritch-eye staff (right hand)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_idle.CTS_Race_DrownedProphet_idle",
+        "walk": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_walk.CTS_Race_DrownedProphet_walk",
+        "run": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_run.CTS_Race_DrownedProphet_run",
+        "attack": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_cast_a_spell.CTS_Race_DrownedProphet_cast_a_spell",
+        "hit": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_hit_to_body_01.CTS_Race_DrownedProphet_hit_to_body_01",
+        "death": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_fall.CTS_Race_DrownedProphet_fall",
+        "all": {
+          "cast_a_spell": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_cast_a_spell.CTS_Race_DrownedProphet_cast_a_spell",
+          "fall": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_fall.CTS_Race_DrownedProphet_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_hit_to_body_01.CTS_Race_DrownedProphet_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_idle.CTS_Race_DrownedProphet_idle",
+          "run": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_run.CTS_Race_DrownedProphet_run",
+          "slash": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_slash.CTS_Race_DrownedProphet_slash",
+          "walk": "/Game/Tripo/Races/drowned_deep/DrownedProphet/Animations/CTS_Race_DrownedProphet_walk.CTS_Race_DrownedProphet_walk"
+        }
+      }
+    },
+    "maw_of_the_deep": {
+      "variant": "MawOfTheDeep",
+      "mesh": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/CTS_Race_MawOfTheDeep.CTS_Race_MawOfTheDeep",
+      "skeleton": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/CTS_Race_MawOfTheDeep_Skeleton.CTS_Race_MawOfTheDeep_Skeleton",
+      "material": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/CTS_Race_MawOfTheDeep_Mat.CTS_Race_MawOfTheDeep_Mat",
+      "race": "drowned_deep",
+      "rawHeightCm": 97.91,
+      "heightCm": 230,
+      "meshScale": 2.3491,
+      "yaw": -90,
+      "bakedWeapon": "crab claws (both arms)",
+      "dropPropBones": [
+        "hand_r"
+      ],
+      "animations": {
+        "idle": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_idle.CTS_Race_MawOfTheDeep_idle",
+        "walk": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_walk.CTS_Race_MawOfTheDeep_walk",
+        "run": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_run.CTS_Race_MawOfTheDeep_run",
+        "attack": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_slash.CTS_Race_MawOfTheDeep_slash",
+        "hit": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_hit_to_body_01.CTS_Race_MawOfTheDeep_hit_to_body_01",
+        "death": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_fall.CTS_Race_MawOfTheDeep_fall",
+        "all": {
+          "fall": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_fall.CTS_Race_MawOfTheDeep_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_hit_to_body_01.CTS_Race_MawOfTheDeep_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_idle.CTS_Race_MawOfTheDeep_idle",
+          "run": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_run.CTS_Race_MawOfTheDeep_run",
+          "slash": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_slash.CTS_Race_MawOfTheDeep_slash",
+          "tentacle_sweep": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_tentacle_sweep.CTS_Race_MawOfTheDeep_tentacle_sweep",
+          "walk": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_walk.CTS_Race_MawOfTheDeep_walk",
+          "war_cry": "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/Animations/CTS_Race_MawOfTheDeep_war_cry.CTS_Race_MawOfTheDeep_war_cry"
+        }
+      }
+    }
+  }
+}

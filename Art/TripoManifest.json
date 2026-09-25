@@ -313,7 +313,7 @@
       "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains"
     }
   ],
-  "last_observed_account_balance": 6990,
+  "last_observed_account_balance": 5445,
   "total_recorded_credit_usage": 2320,
   "last_local_pipeline_update_utc": "2026-09-23T16:19:54.235013-04:00",
   "retarget_summary": {
@@ -336,7 +336,7 @@
       "Combat animation coverage"
     ]
   },
-  "last_observed_credit_balance": 6990,
+  "last_observed_credit_balance": 5445,
   "lastIntegrationUpdateUtc": "2026-09-24T01:00:09.893916+00:00",
   "batch03": {
     "manifest": "Art/TripoBatch03.json",
@@ -348,6 +348,23 @@
     "dataFiles": [
       "Content/Data/NPCMeshes.tripo.json",
       "Content/Data/TownAssetSlots.tripo.json"
+    ]
+  },
+  "races": {
+    "manifest": "Art/TripoRaces.json",
+    "date": "2026-09-25",
+    "creditCap": 5500,
+    "balanceBefore": 6990,
+    "balanceAtRaceBoundary": {
+      "drowned_deep": 6370
+    },
+    "dataFiles": [
+      "Content/Data/RaceMeshes.tripo.json",
+      "Content/Data/MonsterArt.json"
+    ],
+    "contents": "Race-unit bodies from Docs/Races.md in /Game/Tripo/Races/<race>/<Unit>/ (rigged UE5-mannequin skeleton, preset clips + text-to-motion)",
+    "racesDone": [
+      "drowned_deep"
     ]
   }
 }
