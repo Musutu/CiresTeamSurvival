@@ -506,7 +506,8 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     if(!FMath::IsFinite(Delta)||Delta<0)return;
     const float Now=M->GetWorld()->GetTimeSeconds();
     if(M->BaseMoveSpeed<=0)M->BaseMoveSpeed=Movement->MaxWalkSpeed;
-    Movement->MaxWalkSpeed=M->BaseMoveSpeed*(M->SlowUntil>Now?.65f:1.f)*(S&&S->RallyUntil>Now?1.1f:1.f);
+    Movement->MaxWalkSpeed=M->BaseMoveSpeed*(M->SlowUntil>Now?.65f:1.f)*(S&&S->RallyUntil>Now?1.1f:1.f)
+        *CireWaveDirector::MarchSpeed(M); // wave-director: pacing, faster while a wave unit walks the road
     M->AttackTimer=FMath::Max(0.f,M->AttackTimer-Delta);M->AbilityTimer=FMath::Max(0.f,M->AbilityTimer-Delta);
     if(M->MonsterArt)M->MonsterArt->ReleaseSwing(Now); // creature-anim: a committed swing lands on its contact frame
     if(S)S->RefreshStatusFlags(Now);

@@ -318,6 +318,16 @@ void ACireHUD::DrawMatch(ACireGameState* State)
     if(State->Phase==0&&FMath::IsFinite(State->NextWaveSeconds)&&State->NextWaveSeconds>.05f&&State->NextWaveSeconds<3600.f) {
         const FString Next=FString::Printf(TEXT("NEXT WAVE IN %ds"),FMath::CeilToInt(State->NextWaveSeconds));
         Label(Next,(250-TextWidth(Next,9))/2,76,9,Gold);
+        // wave-director: breather Ready (the Skill Shop window ends early once every player is ready).
+        if(BreatherReadyWave!=State->Wave){BreatherReadyWave=State->Wave;bBreatherReadyLocal=false;}
+        auto* Controller=Cast<ACireController>(PlayerOwner);
+        if(State->BreatherPlayers>0&&State->NextWaveSeconds>1.2f&&Controller) {
+            const FString Caption=FString::Printf(TEXT("%s  %d/%d"),bBreatherReadyLocal?TEXT("READY"):TEXT("READY UP"),State->BreatherReady,State->BreatherPlayers);
+            const bool Over=Hit(75,104,100,22);
+            CireUIStyle::Button(Painter(),75,104,100,22,Caption,bBreatherReadyLocal?ECireButtonState::Selected:Over?ECireButtonState::Hover:ECireButtonState::Normal,bBreatherReadyLocal?Teal:Gold,8.5f);
+            Tip(TEXT("Ready"),TEXT("Start the next wave early. It begins 1 second after every player is ready; otherwise the full breather runs."),75,104,100,22);
+            if(Over&&Clicked){Clicked=false;PlayUIFeedback();bBreatherReadyLocal=!bBreatherReadyLocal;Controller->ServerAction(10,bBreatherReadyLocal?1:0,nullptr);}
+        }
     }
 }
 void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
