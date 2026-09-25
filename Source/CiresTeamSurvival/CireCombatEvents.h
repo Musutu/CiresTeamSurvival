@@ -64,7 +64,9 @@ namespace CireCombat
     CIRESTEAMSURVIVAL_API float ApplyHealing(ACireHero* Source, ACireHero* Target, float Amount, const FString& AbilityName);
     CIRESTEAMSURVIVAL_API void BroadcastDamage(AActor* Source, AActor* Target, float AppliedAmount, const FDamageEvent& DamageEvent);
     CIRESTEAMSURVIVAL_API void BroadcastHealing(ACireHero* Source, ACireHero* Target, float AppliedAmount, const FString& AbilityName);
-    CIRESTEAMSURVIVAL_API void BroadcastAvoidance(AActor* Source, AActor* Target, ECireHitOutcome Outcome, const FString& AbilityName);
+    CIRESTEAMSURVIVAL_API void BroadcastAvoidance(AActor* Source, AActor* Target, ECireHitOutcome Outcome, const FString& AbilityName, float PreventedAmount = 0.f);
+    /** Floating text / log word for an outcome ("Miss", "Dodge", "Block", "Resist"). */
+    CIRESTEAMSURVIVAL_API FString OutcomeText(ECireHitOutcome Outcome);
     CIRESTEAMSURVIVAL_API void AppendReceivedEvent(TArray<FCireCombatEvent>& Buffer, uint32& Sequence, const FCireCombatEvent& Event, float Now);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunTelemetrySmoke(ACireGameMode* Mode);

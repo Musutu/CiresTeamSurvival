@@ -101,7 +101,7 @@ bool CireCombatFeatures::Run(ACireGameMode* Mode) {
         for(TActorIterator<ACireAreaEffect> It(W);It;++It)if(!It->IsActorBeingDestroyed()&&It->AreaSpec.AbilityName==TEXT("Venom Ground")){CastArea=*It;break;}
         Check(CastArea&&Target->Health==HealthBefore&&Target->PoisonAreaCount==0,TEXT("authored cast creates harmless warning before activation"));
         if(CastArea){Fixtures.Add(CastArea);CastArea->Tick(.65f);CastArea->Tick(.5f);
-            Check(Target->PoisonAreaCount==1&&FMath::IsNearlyEqual(Target->Health,HealthBefore-12.f),TEXT("authored poison produces configured DPS after warning"));
+            Check(Target->PoisonAreaCount==1&&FMath::IsNearlyEqual(Target->Health,HealthBefore-12.f*CastArea->AreaSpec.DamagePerSecond/FMath::Max(1.f,CireAbilityLibrary::Find(TEXT("venom_ground"))->Area.DamagePerSecond),.05f),TEXT("authored poison produces configured DPS after warning")); // scaling-kits: DPS includes the primary term
             Target->AddActorWorldOffset(FVector(500,0,0));CastArea->Tick(.01f);
             Check(Target->PoisonAreaCount==0,TEXT("authored poison stops on exit"));}
         const float PaidMana=Ranger->Mana;Ranger->GlobalCooldown=0;Ranger->Cast(0);

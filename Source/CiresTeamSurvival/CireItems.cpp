@@ -1,4 +1,5 @@
 #include "CireItems.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireSkillShop.h" // progression-shop: Skill Shop
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireBuffs.h" // aura-vfx
@@ -450,7 +451,8 @@ float CireItems::ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FSt
     if (!Inventory || !FMath::IsFinite(Amount) || Amount <= 0) return Amount;
     const Totals& T = Inventory->Totals();
     const bool bPhysical = IsBasicAttack(Causer, AbilityName);
-    Amount *= 1.f - static_cast<float>(Mitigation(T.Stats.Get(bPhysical ? ItemStat::Armor : ItemStat::Ward) * (bPhysical ? CireCrowdControl::ArmorMultiplier(Hero) : 1.f))); // champion-draft: armor break
+    // champion-draft: armor break; scaling-kits: party armour / MR aura, shield-tank -10% and Vulnerability.
+    Amount *= 1.f - static_cast<float>(Mitigation((T.Stats.Get(bPhysical ? ItemStat::Armor : ItemStat::Ward) + CireKits::FlatDefense(Hero, bPhysical)) * (bPhysical ? CireCrowdControl::ArmorMultiplier(Hero) : 1.f) * CireKits::DefenseMultiplier(Hero)));
     // items-v2: completed-item mitigation specials (percent, then flat block per hit).
     Amount = static_cast<float>(ApplyItemMitigation(Amount, T.Stats.Get(ItemStat::DamageReduction), T.Stats.Get(ItemStat::DamageBlock)));
     const double Now = Inventory->Now();

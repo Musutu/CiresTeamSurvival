@@ -6,30 +6,30 @@ Every Ability DB entry maps to an element and a kind; the kind picks the cue for
 a critical adds `combat.crit`, and a melee/shot hit of another element adds that element's impact.
 `pack` = the cue has installed Fab pack members listed in `Art/Audio/FabAudioMap.json`; otherwise the shipped fallback plays.
 
-**163 / 163 abilities have a sound set** (cast and hit resolve to cues whose fallback sounds exist). 163 use at least one Fab pack cue.
+**173 / 173 abilities have a sound set** (cast and hit resolve to cues whose fallback sounds exist). 173 use at least one Fab pack cue.
 
 Gaps: none.
 
 | Kind | Abilities |
 |---|---|
-| passive | 31 |
-| summon | 27 |
-| melee | 24 |
+| passive | 33 |
+| summon | 28 |
+| melee | 25 |
 | spell | 23 |
 | heal | 22 |
-| buff | 11 |
-| shot | 10 |
+| buff | 14 |
+| shot | 11 |
+| guard | 9 |
 | shout | 8 |
-| guard | 7 |
 
 | Element | Abilities |
 |---|---|
-| physical | 45 |
+| physical | 53 |
 | arcane | 35 |
+| nature | 22 |
 | holy | 21 |
-| nature | 21 |
+| earth | 14 |
 | fire | 14 |
-| earth | 13 |
 | shadow | 9 |
 | lightning | 2 |
 | frost | 2 |
@@ -114,6 +114,16 @@ Gaps: none.
 | `blight_sigil` | poison | nature | spell | - | `spell.nature.cast` | `spell.nature.impact` | yes |
 | `piercing_shot` | physical | physical | shot | bow | `weapon.bow.release` | `weapon.bow.impact` | yes |
 | `ember_lance` | fire | fire | spell | - | `spell.fire.cast` | `spell.fire.impact` | yes |
+| `shield_bash` | physical | physical | melee | caster | `weapon.sword.swing` | `weapon.sword.impact` | yes |
+| `shield_toss` | physical | physical | shot | glaive | `weapon.glaive.throw` | `weapon.glaive.impact` | yes |
+| `shield_wall` | physical | physical | guard | - | `ability.guard` | `ability.guard` | yes |
+| `pavise` | earth | earth | guard | - | `ability.guard` | `ability.guard` | yes |
+| `mechanical_tank` | physical | physical | summon | - | `ability.summon` | `spell.physical.impact` | yes |
+| `artillery` | physical | physical | buff | - | `spell.physical.cast` | `spell.physical.heal` | yes |
+| `eagle_eye` | nature | nature | buff | - | `spell.nature.cast` | `spell.nature.heal` | yes |
+| `longshot` | physical | physical | buff | - | `spell.physical.cast` | `spell.physical.heal` | yes |
+| `headshot` | physical | physical | passive | - | `spell.physical.cast` | `spell.physical.impact` | yes |
+| `artillery_training` | physical | physical | passive | - | `spell.physical.cast` | `spell.physical.impact` | yes |
 | `silver_shot` | holy | holy | shot | pistol | `weapon.pistol.shot` | `weapon.bullet.impact` | yes |
 | `hex_mark` | shadow | shadow | spell | - | `spell.shadow.cast` | `spell.shadow.impact` | yes |
 | `powder_flask` | fire | fire | spell | - | `spell.fire.cast` | `spell.explosion` | yes |

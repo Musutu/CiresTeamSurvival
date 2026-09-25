@@ -1,4 +1,5 @@
 #include "CireBuffs.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireGame.h"
 #include "CireSkillRuntime.h"
 #include "Engine/World.h"
@@ -103,7 +104,7 @@ bool CireBuffs::IsActive(const AActor* Unit,FName Id)
 }
 const TArray<FName>& CireBuffs::KnownIds()
 {
-    static const TArray<FName> Ids={
+    static const TArray<FName> BaseIds={
         // Champion skills recorded with Apply.
         TEXT("iron_guard"),TEXT("war_cry"),TEXT("challenge_of_iron"),TEXT("sanctuary"),TEXT("bastion_of_dawn"),
         TEXT("mass_aegis"),TEXT("wellspring"),TEXT("frost_bind"),TEXT("shield_slam"),
@@ -133,5 +134,6 @@ const TArray<FName>& CireBuffs::KnownIds()
         // champion-draft: dodge-roll skill states (CireRollSkills::BuffIds).
         TEXT("tumblers_edge"),TEXT("killer_instinct"),TEXT("windrunner"),TEXT("quickened_mind"),TEXT("momentum"),TEXT("blur_step"),
         TEXT("mine_layer"),TEXT("taunting_tumble"),TEXT("shield_tumble"),TEXT("venom_tumble"),TEXT("shadow_dance"),TEXT("evasive_stance")};
+    static const TArray<FName> Ids=[]{TArray<FName> Out=BaseIds;for(const FName Id:CireKits::BuffIds())Out.AddUnique(Id);return Out;}(); // scaling-kits
     return Ids;
 }

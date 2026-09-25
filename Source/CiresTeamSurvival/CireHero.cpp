@@ -29,6 +29,8 @@
 #include "CireStatusVisual.h"
 #include "CireBuffs.h" // aura-vfx
 #include "CireItems.h" // progression-shop
+#include "CireScalingKits.h" // scaling-kits
+#include "CireAbilityDB.h" // scaling-kits
 #include "CireMonsterArt.h" // creature-anim
 #include "EngineUtils.h"
 
@@ -379,8 +381,9 @@ void ACireHero::BasicAttack()
     const auto* Mode = ModeFor(this);
     if (!HasAuthority() || !Mode || !Mode->IsCombatPhase() || bDead || !bDrafted || BasicTimer > 0 ||
         !IsHostile(Target) || !InRange(Target, BasicRange(this)) || !ClearSight(this, Target)) return;
-    const float PassiveSpeed = HasSkill(TEXT("battle_rhythm")) ? 1.20f : 1.f;
-    BasicTimer = BaseAttackSeconds() / ((1.f + Agility * 0.01f + CireItems::AttackSpeedBonus(this) + CireClassTraits::AttackSpeedBonus(this) + CireSignatureSkills::AttackSpeedBonus(this)) * PassiveSpeed); // new-champions: haste pylons // progression-shop: item attack speed; champion-draft: Support +10%
+    // scaling-kits: one attack-speed formula (agility, items, class, haste pylons, auras, Artillery, Battle Rhythm)
+    // shared with summons and constructs, which inherit it.
+    BasicTimer = BaseAttackSeconds() / CireKits::AttackSpeedMultiplier(this); // new-champions: haste pylons // progression-shop: item attack speed; champion-draft: Support +10%
     AttackDuration = FMath::Min(.65f, BasicTimer);
     AttackReleaseTimer = AttackDuration * (.25f / .65f);
     PendingAttackTarget = Target;
@@ -405,6 +408,8 @@ void ACireHero::Cast(int32 Slot)
     const FString Id = Skills[Slot];
     if (CireRaces::IsSilenced(this) && !IsPassive(Id)) { Notice = TEXT("Silenced: you cannot cast right now."); return; } // monster-races
     if (CireCrowdControl::GateCast(this, Slot, Id)) return; // champion-draft: stun/silence/lockout gates and timed casts
+    if (CireKits::BlocksCasting(this, Id)) return; // scaling-kits: Artillery is basic attacks only
+    if (CireKits::Handles(Id)) { CireKits::Cast(this, Slot, Id); return; } // scaling-kits: shield / range skills
     if (CireCrowdControl::HandlesSkill(Id)) { CireCrowdControl::CastSkill(this, Slot, Id); return; } // champion-draft: Decimating Strike
     if(CireSkillCasting::Handles(Id)){CireSkillCasting::Cast(this,Slot,Id);return;}
     if (const auto* Authored = CireAbilityLibrary::Find(Id)) { CireAbilityLibrary::Cast(this, Slot, *Authored); return; }
@@ -458,7 +463,7 @@ void ACireHero::Cast(int32 Slot)
     {
         Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),2.f)); CireBuffs::Apply(Target,TEXT("shield_slam"),CireDeveloperTools::EffectSeconds(GetWorld(),2.f),this); // aura-vfx
         if (auto* Monster = ::Cast<ACireMonster>(Target)) { CireThreat::Taunt(Monster,this,3);CireNPCCombat::InterruptCast(Monster,this); }
-        Hit(Target, 35 + (12 + Strength) * 1.25f, FLinearColor(0.4f, 0.7f, 1.f));
+        Hit(Target, CireKits::Amount(this, Id, 35, 1.25f), FLinearColor(0.4f, 0.7f, 1.f)); // scaling-kits: base + coef x PRIMARY
     }
     else if (Id == TEXT("war_cry"))
     {
@@ -480,48 +485,48 @@ void ACireHero::Cast(int32 Slot)
         for (auto* Enemy : Mode->Heroes)
             if (IsHostile(Enemy) && Enemy != Target && FVector::DistSquared2D(Center, Enemy->GetActorLocation()) < 250000 && Chain.Num() < 4)
                 Chain.Add(Enemy);
-        for (auto* Victim : Chain) if (ClearSight(this, Victim)) Hit(Victim, 40 + Intelligence * 1.5f, FLinearColor(0.45f, 0.6f, 1.f));
+        for (auto* Victim : Chain) if (ClearSight(this, Victim)) Hit(Victim, CireKits::Amount(this, Id, 40, 1.5f), FLinearColor(0.45f, 0.6f, 1.f));
     }
-    else if (Id == TEXT("ember_lance")) Hit(Target, 65 + Intelligence * 2.f, FLinearColor(1.f, 0.25f, 0.05f));
+    else if (Id == TEXT("ember_lance")) Hit(Target, CireKits::Amount(this, Id, 65, 2.f), FLinearColor(1.f, 0.25f, 0.05f));
     else if (Id == TEXT("frost_bind"))
     {
         Slow(Target, Now + CireDeveloperTools::EffectSeconds(GetWorld(),4.f)); CireBuffs::Apply(Target,TEXT("frost_bind"),CireDeveloperTools::EffectSeconds(GetWorld(),4.f),this); // aura-vfx
-        Hit(Target, 30 + Intelligence, FLinearColor(0.2f, 0.85f, 1.f));
+        Hit(Target, CireKits::Amount(this, Id, 30, 1.f), FLinearColor(0.2f, 0.85f, 1.f));
     }
     else if (Id == TEXT("cleaving_strike"))
     {
         TArray<AActor*> Victims;
         for (auto* Monster : Mode->Monsters) if (IsHostile(Monster) && InRange(Monster, 320)) Victims.Add(Monster);
         for (auto* Enemy : Mode->Heroes) if (IsHostile(Enemy) && InRange(Enemy, 320)) Victims.Add(Enemy);
-        for (auto* Victim : Victims) if (ClearSight(this, Victim)) Hit(Victim, 35 + (12 + PrimaryAttribute()) * 1.5f, FLinearColor(1.f, 0.7f, 0.3f));
+        for (auto* Victim : Victims) if (ClearSight(this, Victim)) Hit(Victim, CireKits::Amount(this, Id, 35, 1.5f), FLinearColor(1.f, 0.7f, 0.3f));
     }
-    else if (Id == TEXT("piercing_shot")) Hit(Target, 40 + (12 + Agility) * 1.75f, FLinearColor(1.f, 0.9f, 0.35f));
+    else if (Id == TEXT("piercing_shot")) Hit(Target, CireKits::Amount(this, Id, 40, 1.75f), FLinearColor(1.f, 0.9f, 0.35f));
     else if (Id == TEXT("shadow_step"))
     {
         const FVector Direction = (GetActorLocation() - Target->GetActorLocation()).GetSafeNormal2D();
         if (SetActorLocation(Target->GetActorLocation() + Direction * 170, true))
             ACireAreaEffect::ClearForActor(this);
-        if (InRange(Target, 240)) Hit(Target, 30 + Agility * 1.5f, FLinearColor(0.6f, 0.2f, 0.9f));
+        if (InRange(Target, 240)) Hit(Target, CireKits::Amount(this, Id, 30, 1.5f), FLinearColor(0.6f, 0.2f, 0.9f));
         if (IsValid(Target)) CireCrowdControl::VoidBurst(this, Target->GetActorLocation(), Id); // champion-draft: void rift (stun inside, slow the ring, self-mend)
     }
-    else if (Id == TEXT("restoring_light")) CireCombat::ApplyHealing(this, Ally, (90 + Intelligence * 3.f) * Power, SkillName(Id));
+    else if (Id == TEXT("restoring_light")) CireCombat::ApplyHealing(this, Ally, CireKits::Amount(this, Id, 90, 3.f) * Power, SkillName(Id));
     else if (Id == TEXT("sanctuary"))
     {
         for (auto* Friend : Mode->Heroes)
             if (IsValid(Friend) && !Friend->bDead && Friend->TeamId == TeamId && InRange(Friend, 600) && ClearSight(this, Friend))
             {
-                CireCombat::ApplyHealing(this, Friend, (45 + Intelligence * 1.5f) * Power, SkillName(Id));
+                CireCombat::ApplyHealing(this, Friend, CireKits::Amount(this, Id, 45, 1.5f) * Power, SkillName(Id));
                 Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),3.f)); CireBuffs::Apply(Friend,TEXT("sanctuary"),CireDeveloperTools::EffectSeconds(GetWorld(),3.f),this); // aura-vfx
             }
     }
     else if (Id == TEXT("purify"))
     {
         Ally->SlowUntil = 0;
-        CireCombat::ApplyHealing(this, Ally, (35 + Intelligence * 1.4f) * Power, SkillName(Id));
+        CireCombat::ApplyHealing(this, Ally, CireKits::Amount(this, Id, 35, 1.4f) * Power, SkillName(Id));
     }
     else if (Id == TEXT("bastion_of_dawn"))
     {
-        CireCombat::ApplyHealing(this, this, MaxHealth * 0.30f * Power, SkillName(Id));
+        CireCombat::ApplyHealing(this, this, (MaxHealth * 0.30f + CireKits::Amount(this, Id)) * Power, SkillName(Id));
         for (auto* Friend : Mode->Heroes)
             if (IsValid(Friend) && Friend->bDrafted && !Friend->bDead && Friend->TeamId == TeamId &&
                 InRange(Friend, 650) && ClearSight(this, Friend))
@@ -545,7 +550,7 @@ void ACireHero::Cast(int32 Slot)
         for (auto* Monster : Mode->Monsters) Collect(Monster);
         for (auto* Enemy : Mode->Heroes) Collect(Enemy);
         for (auto* Victim : Victims)
-            if (ClearSight(this, Victim)) Hit(Victim, 160 + Intelligence * 3.5f, FLinearColor(1.f, 0.18f, 0.04f));
+            if (ClearSight(this, Victim)) Hit(Victim, CireKits::Amount(this, Id, 160, 3.5f), FLinearColor(1.f, 0.18f, 0.04f));
     }
     else if (Id == TEXT("executioners_verdict"))
     {
@@ -553,7 +558,7 @@ void ACireHero::Cast(int32 Slot)
         if (const auto* Enemy = ::Cast<ACireHero>(Target)) MissingHealth = Enemy->MaxHealth - Enemy->Health;
         else if (const auto* Monster = ::Cast<ACireMonster>(Target)) MissingHealth = Monster->MaxHealth - Monster->Health;
         const int32 Primary = PrimaryAttribute();
-        Hit(Target, 100 + Primary * 3.f + FMath::Clamp(MissingHealth * 0.25f, 0.f, 300.f), FLinearColor(1.f, 0.12f, 0.5f));
+        Hit(Target, CireKits::Amount(this, Id, 100, 3.f) + FMath::Clamp(MissingHealth * 0.25f, 0.f, 300.f), FLinearColor(1.f, 0.12f, 0.5f)); (void)Primary;
     }
     else if (Id == TEXT("renewal"))
     {
@@ -562,7 +567,7 @@ void ACireHero::Cast(int32 Slot)
                 InRange(Friend, 1000) && ClearSight(this, Friend))
             {
                 Friend->SlowUntil = 0;
-                CireCombat::ApplyHealing(this, Friend, (200 + Intelligence * 4.f) * Power, SkillName(Id));
+                CireCombat::ApplyHealing(this, Friend, CireKits::Amount(this, Id, 200, 4.f) * Power, SkillName(Id));
             }
     }
     Notice = SkillName(Id);
@@ -594,6 +599,7 @@ float ACireHero::TakeDamage(float Amount, FDamageEvent const& Event, AController
     // progression-shop: armor (basic attacks) / spell ward (abilities) and item barriers.
     const FString IncomingName = Event.IsOfType(FCireDamageEvent::CireClassID) ? static_cast<const FCireDamageEvent&>(Event).AbilityName : TEXT("Basic attack");
     Amount = CireItems::ModifyIncomingDamage(this, Causer, IncomingName, Amount);
+    Amount = CireKits::ModifyIncomingDamage(this, Causer, IncomingName, Amount); // scaling-kits: shield block, Shield Wall, Pavise cover, AoE-resist aura
     Amount = CireClassTraits::ModifyIncomingDamage(this, Amount); // champion-draft: Tank Natural Defense, flat 10 after armor, floor 0
     const float Taken = FMath::Min(Health, Amount);
     Health -= Taken;
@@ -780,6 +786,11 @@ void ACireHero::BotThink(float DeltaSeconds)
         {
             for (auto* Enemy : Mode->Heroes)
                 if (IsValid(Enemy)) Consider(Enemy, Enemy->TauntUntil > GetWorld()->GetTimeSeconds() ? -100000000.0 : 0.0);
+            // scaling-kits: enemy summons (a taunting Mechanical Tank first) and constructs are valid targets.
+            for (TActorIterator<ACireSummon> It(GetWorld()); It; ++It)
+                Consider(*It, It->TauntUntil > GetWorld()->GetTimeSeconds() ? -100000000.0 : 250000.0);
+            for (TActorIterator<ACireConstruct> It(GetWorld()); It; ++It)
+                if (It->IsTech() || It->IsWall()) Consider(*It, 400000.0);
         }
         else Best = CireWaveDirector::ChooseBotTarget(this); // wave-director: lane-defence priorities
         Target = Best;
@@ -854,6 +865,7 @@ FString ACireHero::SkillName(const FString& Id)
 {
     if(CireSignatureSkills::Knows(Id))return CireSignatureSkills::Name(Id); // new-champions
     if(CireRollSkills::Knows(Id))return CireRollSkills::Name(Id); // champion-draft: roll skills
+    if(CireKits::Handles(Id)||Id==TEXT("headshot")||Id==TEXT("artillery_training"))if(const auto* D=CireAbilityDB::Find(Id))return D->Name; // scaling-kits
     if(CireSkillCasting::Handles(Id))return CireSkillCasting::Name(Id);
     if(Id==TEXT("npc_shadow_bolt"))return TEXT("Shadow Bolt");
     if(Id==TEXT("npc_barbed_shot"))return TEXT("Barbed Shot");
@@ -864,6 +876,7 @@ FString ACireHero::SkillName(const FString& Id)
 
 FString ACireHero::SkillDescription(const FString& Id)
 {
+    if(CireKits::Handles(Id)||Id==TEXT("headshot")||Id==TEXT("artillery_training"))return CireKits::Description(Id); // scaling-kits
     if(CireSignatureSkills::Knows(Id))return CireSignatureSkills::Description(Id); // new-champions
     if(CireRollSkills::Knows(Id))return CireRollSkills::Description(Id); // champion-draft: roll skills
     if(CireCrowdControl::HandlesSkill(Id))return CireCrowdControl::Description(Id); // champion-draft
