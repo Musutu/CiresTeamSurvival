@@ -171,4 +171,5 @@ private:
     UFUNCTION() void OnRep_Opened();
     void BuildGlow();
     int32 BuiltRarity = -1;
+    bool bLandSoundPlayed = false, bOpenSoundPlayed = false; // fab-coverage: client-side one-shots
 };

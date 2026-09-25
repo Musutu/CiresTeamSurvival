@@ -39,14 +39,14 @@ Gaps: none.
 
 | Element | cast | channel | projectile | impact | heal |
 |---|---|---|---|---|---|
-| physical | pack | fallback | pack | pack | pack |
+| physical | pack | pack | pack | pack | pack |
 | fire | pack | pack | pack | pack | pack |
 | frost | pack | pack | pack | pack | pack |
 | nature | pack | pack | pack | pack | pack |
 | shadow | pack | pack | pack | pack | pack |
 | arcane | pack | pack | pack | pack | pack |
 | holy | pack | pack | pack | pack | pack |
-| earth | pack | fallback | pack | pack | pack |
+| earth | pack | pack | pack | pack | pack |
 | water | pack | pack | pack | pack | pack |
 | lightning | pack | pack | pack | pack | pack |
 
