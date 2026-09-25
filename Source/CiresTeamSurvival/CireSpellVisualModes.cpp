@@ -106,7 +106,11 @@ void ACireSpellVisual::ClassifyCue()
             if(D.Void.bValid&&FMath::Abs(D.Void.OuterRadius-Outer)<Best)
             {Best=FMath::Abs(D.Void.OuterRadius-Outer);Shape.VoidInner=D.Void.InnerRadius*Outer/FMath::Max(1.f,D.Void.OuterRadius);
              Shape.VoidSeconds=FMath::Max(D.Void.InnerDuration,D.Void.OuterDuration);Shape.bVoidHeal=D.Void.SelfHealMaxHealthFraction>0;}
-        Duration=FMath::Clamp(Shape.VoidSeconds,.8f,3.f)+.3f;Size=1.f;bHostile=HostileToLocal(GetWorld(),SourceAt(GetWorld(),Start));
+        Duration=FMath::Clamp(Shape.VoidSeconds,.8f,3.f)+.3f;Size=1.f;
+        // The rift's caster is the champion that just landed here (its victims stand close by too).
+        ACireHero* Caster=nullptr;double Best2=FMath::Square(320.0);
+        for(TActorIterator<ACireHero> It(GetWorld());It;++It){const double D=FVector::DistSquared2D(It->GetActorLocation(),Start);if(D<Best2&&!It->bDead){Best2=D;Caster=*It;}}
+        bHostile=Caster?HostileToLocal(GetWorld(),Caster):false;
         SetActorRotation(FRotator::ZeroRotator);return;
     }
     if(Cue==ECireSpellCue::Impact||Cue==ECireSpellCue::Critical)
