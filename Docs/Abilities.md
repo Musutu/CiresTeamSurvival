@@ -298,3 +298,54 @@ curve is monotone with floors/caps for 200 levels before writing).
 - Maths: `Cires::CC` (DiminishedDuration, ClassifyVoidZone, ApplyHealingCut, ArmorAfterBreak,
   ExecuteDamage) in the rules module, covered by the native rules tests; runtime smoke
   `CIRE_CC_PASS` in the in-engine checks.
+
+## Dodge-roll skills (`CireRollSkills.h`)
+
+Twenty skills built around the dodge roll (`UCireMobility::StartRoll`). Data rows are generated from
+`ROLL_SKILLS` in `Tools/BuildAbilityDB.py` (signature-only: buyable by the champions listed in each row's
+`champions`). Each row carries `section` (Skill Shop periodic-table section), `categories` (player-facing
+groups, primary first: Offensive, Defensive, Crowd Control, Constructs, Passives), `effectTags` (card tags,
+`Roll` first), `scaling` (`{"stat": "primary", "ratio": r}`) and an empty `level15` object reserved for
+the level-15 bonus / team-aura pass. Icons: `/Game/UI/Abilities/T_<id>` (procedural placeholders from
+`Tools/BuildAbilityIcons.py` `ROLL_SKILLS`: a tumbling arc around a glyph; to be painted by the 2D art pass).
+
+**Primary-stat rule.** Every damage, heal and shield amount is `base effect + ratio x primary stat`
+(STR, AGI or INT, whichever is the owner's primary); damage is also multiplied by the team power scalar.
+
+**Hooks.** Every trigger runs on the server from `StartRoll` after it succeeds, so it fires once per roll
+and again for every extra roll charge (items-v2 double-dodge boots). Other hooks: an i-frame dodge in
+`ACireHero::TakeDamage` (`OnDodgedHit`), Blur (`TryBlur`, before armor), outgoing damage
+(`ModifyOutgoingDamage` in `CireCombat::ApplyDamage`; Killer Instinct flags the hit critical),
+`MoveSpeedMultiplier` (client and server walk speed), `ConsumeInstantCast` in `CireCrowdControl::GateCast`,
+`OnKill` (hero and monster deaths), and `Tick` from `CireCrowdControl::TickHero` (mines, bots). Timed
+states are `CireBuffs` records (replicated) with BuffVisuals and modifier-registry rows.
+
+| Skill | Type | Effect | Primary ratio |
+| --- | --- | --- | --- |
+| Riposte (`riposte_roll`) | passive | a hit dodged in the i-frames counter-strikes the attacker (once per roll) | 1.0 |
+| Tumbler's Edge (`tumblers_edge`) | passive | next basic attack within 4s: +50% damage | - |
+| Killer Instinct (`killer_instinct`) | passive | next basic attack within 4s is a guaranteed crit | - |
+| Fleet Recovery (`fleet_recovery`) | passive | every roll heals 5% max health + 0.5x primary | 0.5 |
+| Windrunner (`windrunner`) | passive | every roll: +10% move speed for 5s | - |
+| Quickened Mind (`quickened_mind`) | passive | next spell with a cast time (within 6s) is instant; consumed on use | - |
+| Hasted Tumble (`hasted_tumble`) | passive | every roll cuts remaining active cooldowns by 15% (compounds per charge) | - |
+| Ember Wake (`ember_wake`) | passive | fire trail: enemies within 1.8m of the roll path take damage | 0.6 |
+| Frost Wake (`frost_wake`) | passive | frost trail: damage and a 40% slow for 3s | 0.4 |
+| Momentum (`momentum`) | passive | each roll adds a stack for 8s (max 5): +4% damage per stack | - |
+| Blur (`blur_step`) | passive | 3s after a roll: 25% chance to dodge attacks | - |
+| Slippery (`slippery_roll`) | passive | every roll cleanses one debuff (slow, heal cut, silence, armor break, root) | - |
+| Bloodrush (`bloodrush`) | passive | a kill resets the roll cooldown and refunds its energy | - |
+| Tumble Strike (`tumble_strike`) | active, 30 EN, 10s | free roll to the target (triggers roll skills), then a strike | 1.5 |
+| Caltrop Mine (`mine_layer`) | active, 25 EN, 16s | next roll within 8s drops a mine (20s, max 2): damage + 50% slow in 2.5m | 1.0 |
+| Taunting Tumble (`taunting_tumble`) | active, 25 EN, 18s | 8s: each roll taunts monsters in 5m for 3s and guards you | - |
+| Shield Tumble (`shield_tumble`) | active, 40 mana, 20s | 10s: each roll guards the nearest ally (40%, 3s) and heals them | 1.0 |
+| Venom Tumble (`venom_tumble`) | active, 25 EN, 16s | 8s: rolls leave venom, damage + 30% healing cut for 5s | 0.5 |
+| Shadow Dance (`shadow_dance`) | active, 20 EN, 30s | 10s: the roll recovers 70% faster and refunds its energy | - |
+| Evasive Stance (`evasive_stance`) | active, 20 EN, 24s | 6s: rolls refund energy; each i-frame dodge heals 3% max health | 0.4 |
+
+**Bots** with a roll skill open their roll stance/active and dodge sideways in combat every 5-8s
+(`CireRollSkills::Tick`). **Tests:** rules `RollRules` (cooldown cut, compounding per charge, trail
+distance, Momentum cap, Shadow Dance recovery, Blur odds); native `CIRE_ROLL_SKILLS_PASS` in the expansion
+checks (heal per roll and per charge, cooldown %, instant cast consumed once, next-attack empower and crit,
+Momentum cap, cleanse order, Shadow Dance, Bloodrush, Riposte once per roll, Evasive Stance, Frost Wake,
+mines, bots roll, 20 DB rows); `CireMobilityTests` drives the real `StartRoll` twice and a real i-frame hit.

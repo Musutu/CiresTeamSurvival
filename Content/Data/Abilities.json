@@ -4555,13 +4555,18 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "offensive",
-   "effectTags": [
-    "roll",
-    "iframe",
-    "counter"
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
    ],
-   "description": "A hit you dodge during the roll's i-frames triggers a counter strike on the attacker for {effect} + 1x primary damage (once per roll).",
+   "effectTags": [
+    "Roll",
+    "Counter",
+    "I-Frame",
+    "Damage"
+   ],
+   "description": "A hit you dodge during the roll's i-frames triggers a counter strike on the attacker for {effect} + 1x primary stat damage (once per roll).",
    "effects": [],
    "champions": [
     "knight",
@@ -4590,7 +4595,12 @@
     "gunblade",
     "witch_slayer",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 1.0
+   },
+   "level15": {}
   },
   "tumblers_edge": {
    "id": "tumblers_edge",
@@ -4626,11 +4636,15 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "offensive",
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
    "effectTags": [
-    "roll",
-    "nextAttack",
-    "empower"
+    "Roll",
+    "Empower",
+    "Next Attack"
    ],
    "description": "After a roll, your next basic attack within 4s deals {effect}% more damage.",
    "effects": [],
@@ -4651,7 +4665,12 @@
     "gunblade",
     "witch_slayer",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "killer_instinct": {
    "id": "killer_instinct",
@@ -4687,11 +4706,15 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "offensive",
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
    "effectTags": [
-    "roll",
-    "nextAttack",
-    "crit"
+    "Roll",
+    "Crit",
+    "Next Attack"
    ],
    "description": "After a roll, your next basic attack within 4s is a guaranteed critical strike.",
    "effects": [],
@@ -4712,7 +4735,12 @@
     "gunblade",
     "witch_slayer",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "fleet_recovery": {
    "id": "fleet_recovery",
@@ -4750,13 +4778,16 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "defensive",
-   "effectTags": [
-    "roll",
-    "heal",
-    "sustain"
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Defensive"
    ],
-   "description": "Every dodge roll restores {effect}% of your maximum health.",
+   "effectTags": [
+    "Roll",
+    "Heal"
+   ],
+   "description": "Every dodge roll restores {effect}% of your maximum health + 0.5x primary stat.",
    "effects": [],
    "champions": [
     "knight",
@@ -4795,7 +4826,12 @@
     "witch_slayer",
     "huntress",
     "aetheri_warden"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0.5
+   },
+   "level15": {}
   },
   "windrunner": {
    "id": "windrunner",
@@ -4832,11 +4868,15 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "mobility",
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Defensive"
+   ],
    "effectTags": [
-    "roll",
-    "haste",
-    "moveSpeed"
+    "Roll",
+    "Haste",
+    "Move Speed"
    ],
    "description": "Every dodge roll grants {effect}% movement speed for 5s.",
    "effects": [],
@@ -4867,7 +4907,12 @@
     "witch_slayer",
     "huntress",
     "aetheri_warden"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "quickened_mind": {
    "id": "quickened_mind",
@@ -4904,11 +4949,14 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "utility",
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
    "effectTags": [
-    "roll",
-    "instantCast",
-    "caster"
+    "Roll",
+    "Instant Cast"
    ],
    "description": "After a roll, your next spell with a cast time (within {effect}s) is cast instantly.",
    "effects": [],
@@ -4931,7 +4979,12 @@
     "witch_slayer",
     "aetheri_artificer",
     "aetheri_warden"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "hasted_tumble": {
    "id": "hasted_tumble",
@@ -4969,10 +5022,14 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "utility",
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
    "effectTags": [
-    "roll",
-    "cooldown"
+    "Roll",
+    "Cooldown"
    ],
    "description": "Every dodge roll shortens the remaining cooldowns of your active skills by {effect}%.",
    "effects": [],
@@ -5007,7 +5064,12 @@
     "huntress",
     "aetheri_artificer",
     "aetheri_warden"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "ember_wake": {
    "id": "ember_wake",
@@ -5043,13 +5105,17 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "offensive",
-   "effectTags": [
-    "roll",
-    "trail",
-    "fire"
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
    ],
-   "description": "Your roll leaves a line of embers: enemies within 1.8m of the path take {effect} + 0.6x primary fire damage.",
+   "effectTags": [
+    "Roll",
+    "Trail",
+    "Damage"
+   ],
+   "description": "Your roll leaves a line of embers: enemies within 1.8m of the path take {effect} + 0.6x primary stat fire damage.",
    "effects": [],
    "champions": [
     "lancer",
@@ -5064,7 +5130,12 @@
     "wizard",
     "troll_berserker_melee",
     "gunblade"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0.6
+   },
+   "level15": {}
   },
   "frost_wake": {
    "id": "frost_wake",
@@ -5101,14 +5172,18 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "crowdControl",
-   "effectTags": [
-    "roll",
-    "trail",
-    "slow",
-    "cold"
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Crowd Control"
    ],
-   "description": "Your roll leaves a frost trail: enemies within 1.8m of the path take {effect} damage and are slowed 40% for 3s.",
+   "effectTags": [
+    "Roll",
+    "Slow",
+    "Trail",
+    "Damage"
+   ],
+   "description": "Your roll leaves a frost trail: enemies within 1.8m of the path take {effect} + 0.4x primary stat damage and are slowed 40% for 3s.",
    "effects": [
     {
      "type": "slow",
@@ -5136,7 +5211,12 @@
     "orc_chieftain",
     "wizard",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0.4
+   },
+   "level15": {}
   },
   "momentum": {
    "id": "momentum",
@@ -5173,11 +5253,15 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "offensive",
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
    "effectTags": [
-    "roll",
-    "stacking",
-    "empower"
+    "Roll",
+    "Stacking",
+    "Empower"
    ],
    "description": "Each roll grants a Momentum stack for 8s (max 5): +{effect}% damage per stack.",
    "effects": [],
@@ -5208,7 +5292,12 @@
     "gunblade",
     "witch_slayer",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "blur_step": {
    "id": "blur_step",
@@ -5244,11 +5333,14 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "defensive",
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Defensive"
+   ],
    "effectTags": [
-    "roll",
-    "dodge",
-    "stealth"
+    "Roll",
+    "Dodge"
    ],
    "description": "After a roll you blur for 3s: {effect}% chance to dodge incoming attacks.",
    "effects": [],
@@ -5269,7 +5361,12 @@
     "gunblade",
     "witch_slayer",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "slippery_roll": {
    "id": "slippery_roll",
@@ -5307,10 +5404,14 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "defensive",
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Defensive"
+   ],
    "effectTags": [
-    "roll",
-    "cleanse"
+    "Roll",
+    "Cleanse"
    ],
    "description": "Every dodge roll cleanses one debuff: slows first, then healing cuts, silences and armor breaks.",
    "effects": [
@@ -5359,7 +5460,12 @@
     "witch_slayer",
     "huntress",
     "aetheri_warden"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "bloodrush": {
    "id": "bloodrush",
@@ -5396,11 +5502,14 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "mobility",
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
    "effectTags": [
-    "roll",
-    "reset",
-    "onKill"
+    "Roll",
+    "Reset"
    ],
    "description": "Killing an enemy resets your dodge roll cooldown and refunds its energy.",
    "effects": [],
@@ -5431,7 +5540,12 @@
     "gunblade",
     "witch_slayer",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "tumble_strike": {
    "id": "tumble_strike",
@@ -5468,13 +5582,16 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "offensive",
-   "effectTags": [
-    "roll",
-    "gapCloser",
-    "strike"
+   "section": "attack",
+   "categories": [
+    "Offensive"
    ],
-   "description": "Roll toward your target (ignores the dodge cooldown and triggers your roll skills), then strike for {effect} + 1.5x primary damage.",
+   "effectTags": [
+    "Roll",
+    "Gap Closer",
+    "Damage"
+   ],
+   "description": "Roll toward your target (ignores the dodge cooldown and triggers your roll skills), then strike for {effect} + 1.5x primary stat damage.",
    "effects": [],
    "champions": [
     "knight",
@@ -5503,7 +5620,12 @@
     "gunblade",
     "witch_slayer",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 1.5
+   },
+   "level15": {}
   },
   "mine_layer": {
    "id": "mine_layer",
@@ -5540,14 +5662,18 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "construct",
-   "effectTags": [
-    "roll",
-    "trap",
-    "construct",
-    "slow"
+   "section": "construct",
+   "categories": [
+    "Constructs",
+    "Crowd Control"
    ],
-   "description": "For 8s your next roll drops a caltrop mine (20s, up to 2): the first enemy within 1.5m sets it off for {effect} + 1x primary damage and a 50% slow for 2s in 2.5m.",
+   "effectTags": [
+    "Roll",
+    "Trap",
+    "Slow",
+    "Damage"
+   ],
+   "description": "For 8s your next roll drops a caltrop mine (20s, up to 2): the first enemy within 1.5m sets it off for {effect} + 1x primary stat damage and a 50% slow for 2s in 2.5m.",
    "effects": [
     {
      "type": "slow",
@@ -5571,7 +5697,13 @@
     "gunblade",
     "huntress",
     "aetheri_artificer"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 1.0
+   },
+   "level15": {},
+   "category": "construct"
   },
   "taunting_tumble": {
    "id": "taunting_tumble",
@@ -5607,11 +5739,15 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "crowdControl",
+   "section": "control",
+   "categories": [
+    "Crowd Control",
+    "Defensive"
+   ],
    "effectTags": [
-    "roll",
-    "taunt",
-    "guard"
+    "Roll",
+    "Taunt",
+    "Guard"
    ],
    "description": "For 8s each roll taunts monsters within 5m for {effect}s and guards you (20% damage reduction) briefly.",
    "effects": [
@@ -5652,7 +5788,12 @@
     "orc_chieftain",
     "totemic_behemoth",
     "drakish_footman"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "shield_tumble": {
    "id": "shield_tumble",
@@ -5689,13 +5830,17 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "support",
-   "effectTags": [
-    "roll",
-    "shield",
-    "ally"
+   "section": "defensive",
+   "categories": [
+    "Defensive"
    ],
-   "description": "For 10s each roll grants the nearest ally within 8m a 40% guard for 3s and heals them for {effect}% of their max health.",
+   "effectTags": [
+    "Roll",
+    "Shield",
+    "Heal",
+    "Guard"
+   ],
+   "description": "For 10s each roll grants the nearest ally within 8m a 40% guard for 3s and heals them for {effect}% of their max health + 1x your primary stat.",
    "effects": [
     {
      "type": "guard",
@@ -5725,7 +5870,12 @@
     "whisp",
     "evergrove_centaur",
     "aetheri_warden"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 1.0
+   },
+   "level15": {}
   },
   "venom_tumble": {
    "id": "venom_tumble",
@@ -5761,14 +5911,18 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "crowdControl",
-   "effectTags": [
-    "roll",
-    "trail",
-    "poison",
-    "healCut"
+   "section": "control",
+   "categories": [
+    "Crowd Control",
+    "Offensive"
    ],
-   "description": "For 8s your rolls leave venom: enemies within 1.8m of the path take {effect} damage and receive 30% less healing for 5s.",
+   "effectTags": [
+    "Roll",
+    "Trail",
+    "Heal Cut",
+    "Damage"
+   ],
+   "description": "For 8s your rolls leave venom: enemies within 1.8m of the path take {effect} + 0.5x primary stat damage and receive 30% less healing for 5s.",
    "effects": [
     {
      "type": "healCut",
@@ -5792,7 +5946,12 @@
     "dryad",
     "witch_slayer",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0.5
+   },
+   "level15": {}
   },
   "shadow_dance": {
    "id": "shadow_dance",
@@ -5828,11 +5987,14 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "mobility",
+   "section": "defensive",
+   "categories": [
+    "Defensive"
+   ],
    "effectTags": [
-    "roll",
-    "cooldown",
-    "stance"
+    "Roll",
+    "Cooldown",
+    "Haste"
    ],
    "description": "For 10s your dodge roll recovers {effect}% faster and refunds its energy.",
    "effects": [],
@@ -5853,7 +6015,12 @@
     "gunblade",
     "witch_slayer",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
   },
   "evasive_stance": {
    "id": "evasive_stance",
@@ -5890,14 +6057,16 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "category": "defensive",
-   "effectTags": [
-    "roll",
-    "iframe",
-    "heal",
-    "stance"
+   "section": "defensive",
+   "categories": [
+    "Defensive"
    ],
-   "description": "For 6s rolls refund their energy and every hit you dodge during i-frames restores {effect}% max health.",
+   "effectTags": [
+    "Roll",
+    "I-Frame",
+    "Heal"
+   ],
+   "description": "For 6s rolls refund their energy and every hit you dodge during i-frames restores {effect}% max health + 0.4x primary stat.",
    "effects": [],
    "champions": [
     "knight",
@@ -5926,7 +6095,12 @@
     "gunblade",
     "witch_slayer",
     "huntress"
-   ]
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0.4
+   },
+   "level15": {}
   },
   "bear_maul": {
    "id": "bear_maul",
@@ -11333,6 +11507,178 @@
    ],
    "line": "Your next basic attack is lethal (bosses excepted; champions lose 30% max health).",
    "name": "Executioner Ready"
+  },
+  "tumblers_edge": {
+   "type": "none",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "ATK",
+     "value": 50,
+     "unit": "%"
+    }
+   ],
+   "line": "Your next basic attack deals more damage.",
+   "name": "Tumbler's Edge"
+  },
+  "killer_instinct": {
+   "type": "none",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "ATK",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Your next basic attack is a guaranteed critical strike.",
+   "name": "Killer Instinct"
+  },
+  "windrunner": {
+   "type": "magic",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "Move",
+     "value": 10,
+     "unit": "%"
+    }
+   ],
+   "line": "Moves faster after a roll.",
+   "name": "Windrunner"
+  },
+  "quickened_mind": {
+   "type": "magic",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "Haste",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Your next spell with a cast time is instant.",
+   "name": "Quickened Mind"
+  },
+  "momentum": {
+   "type": "none",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "Damage Dealt",
+     "value": 4,
+     "unit": "%"
+    }
+   ],
+   "line": "More damage per stack; each roll adds a stack (max 5).",
+   "name": "Momentum"
+  },
+  "blur_step": {
+   "type": "magic",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "DEF",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Blurred: a chance to dodge incoming attacks.",
+   "name": "Blur"
+  },
+  "mine_layer": {
+   "type": "none",
+   "control": "none",
+   "kind": "stance",
+   "callout": false,
+   "mods": [
+    {
+     "stat": "ATK",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Your next roll drops a caltrop mine.",
+   "name": "Caltrop Mine"
+  },
+  "taunting_tumble": {
+   "type": "none",
+   "control": "none",
+   "kind": "stance",
+   "mods": [
+    {
+     "stat": "DEF",
+     "value": 20,
+     "unit": "%",
+     "duration": 1.5
+    }
+   ],
+   "line": "Each roll taunts nearby monsters and guards you briefly.",
+   "name": "Taunting Tumble"
+  },
+  "shield_tumble": {
+   "type": "magic",
+   "control": "none",
+   "kind": "stance",
+   "mods": [
+    {
+     "stat": "DEF",
+     "value": 40,
+     "unit": "%",
+     "duration": 3
+    }
+   ],
+   "line": "Each roll shields and heals the nearest ally.",
+   "name": "Shield Tumble"
+  },
+  "venom_tumble": {
+   "type": "poison",
+   "control": "none",
+   "kind": "stance",
+   "mods": [
+    {
+     "stat": "Healing",
+     "value": -30,
+     "unit": "%",
+     "duration": 5
+    }
+   ],
+   "line": "Your rolls leave venom that cuts enemy healing.",
+   "name": "Venom Tumble"
+  },
+  "shadow_dance": {
+   "type": "magic",
+   "control": "none",
+   "kind": "stance",
+   "mods": [
+    {
+     "stat": "Haste",
+     "value": 70,
+     "unit": "%"
+    }
+   ],
+   "line": "Your dodge roll recovers faster and refunds its energy.",
+   "name": "Shadow Dance"
+  },
+  "evasive_stance": {
+   "type": "none",
+   "control": "none",
+   "kind": "stance",
+   "mods": [
+    {
+     "stat": "DEF",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Rolls refund energy; dodged hits restore health.",
+   "name": "Evasive Stance"
   }
  }
 }

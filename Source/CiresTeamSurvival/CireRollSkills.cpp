@@ -5,6 +5,7 @@
 #include "CireCrowdControl.h"
 #include "CireDeveloperTools.h"
 #include "CireGame.h"
+#include "CireItems.h"
 #include "CireMobility.h"
 #include "CireSkillShop.h"
 #include "CireSummon.h"
@@ -41,6 +42,14 @@ float Effect(const ACireHero* H,const FString& Id)
     return CireAbilityDB::EffectiveStats(Id,FMath::Max(1,CireSkillShop::Level(H,Id))).Effect;
 }
 FCireAbilityStats Stats(const ACireHero* H,const FString& Id){return CireAbilityDB::EffectiveStats(Id,FMath::Max(1,CireSkillShop::Level(H,Id)));}
+// Every ability scales off the owner's primary stat (STR/AGI/INT): base effect + ratio x primary.
+// Ratios mirror ROLL_PRIMARY in Tools/BuildAbilityDB.py (the "scaling" field of each DB row).
+float Primary(const ACireHero* H,const TCHAR* Id)
+{
+    static const TMap<FString,float> Ratios={{TEXT("riposte_roll"),1.f},{TEXT("fleet_recovery"),.5f},{TEXT("ember_wake"),.6f},{TEXT("frost_wake"),.4f},
+        {TEXT("tumble_strike"),1.5f},{TEXT("mine_layer"),1.f},{TEXT("shield_tumble"),1.f},{TEXT("venom_tumble"),.5f},{TEXT("evasive_stance"),.4f}};
+    const float* R=Ratios.Find(Id);return R&&H?*R*H->PrimaryAttribute():0.f;
+}
 template<typename Fn> void ForEachHostile(ACireHero* H,Fn&& Visit)
 {
     auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();if(!Mode)return;
@@ -85,10 +94,10 @@ FString CireRollSkills::Description(const FString& Id)
 
 bool CireRollSkills::Cast(ACireHero* H,int32 Slot,const FString& Id)
 {
-    if(!H||!H->HasAuthority()||!IsActive(Id)||!H->Cooldowns.IsValidIndex(Slot))return false;
+    if(!H||!H->HasAuthority()||!IsActive(Id)||H->bDead||!H->Skills.IsValidIndex(Slot)||H->Skills[Slot]!=Id||!H->Cooldowns.IsValidIndex(Slot)||H->Cooldowns[Slot]>0)return false;
     const FCireAbilityStats S=Stats(H,Id);const FCireAbilityDef* D=CireAbilityDB::Find(Id);if(!D)return false;
     if(H->Mana<S.ManaCost||H->Energy<S.EnergyCost){H->Notice=TEXT("Not enough mana or energy.");return false;}
-    auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();if(!Mode)return false;
+    auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();if(!Mode||!Mode->IsCombatPhase())return false;
     if(Id==TEXT("tumble_strike"))
     {
         AActor* Target=H->Target;
@@ -98,7 +107,7 @@ bool CireRollSkills::Cast(ACireHero* H,int32 Slot,const FString& Id)
         const float Ready=H->Mobility->ReadyAt;H->Mobility->ReadyAt=0;const float Energy=H->Energy;H->Energy=100.f;
         const bool bRolled=H->Mobility->StartRoll((Target->GetActorLocation()-H->GetActorLocation()).GetSafeNormal2D());
         H->Energy=Energy;if(!bRolled)H->Mobility->ReadyAt=Ready;
-        CireCombat::ApplyStrike(H,Target,(S.Effect+1.5f*H->PrimaryAttribute())*Mode->Power(H->TeamId),D->Name);
+        CireCombat::ApplyStrike(H,Target,(S.Effect+Primary(H,TEXT("tumble_strike")))*Mode->Power(H->TeamId),D->Name);
     }
     else
     {
@@ -121,7 +130,7 @@ void CireRollSkills::OnRoll(ACireHero* H,FVector Direction)
     const float T=Now(W);const auto V=CireMovement::Tuning();
     const FVector Start=H->GetActorLocation(),End=Start+Direction.GetSafeNormal2D()*V.RollSpeed*V.RollDuration;
     const float Power=Mode->Power(H->TeamId);
-    if(Has(H,TEXT("fleet_recovery")))CireCombat::ApplyHealing(H,H,H->MaxHealth*Effect(H,TEXT("fleet_recovery"))/100.f,TEXT("Fleet Recovery"));
+    if(Has(H,TEXT("fleet_recovery")))CireCombat::ApplyHealing(H,H,H->MaxHealth*Effect(H,TEXT("fleet_recovery"))/100.f+Primary(H,TEXT("fleet_recovery")),TEXT("Fleet Recovery"));
     if(Has(H,TEXT("windrunner")))CireBuffs::Apply(H,WindId,5.f,H);
     if(Has(H,TEXT("quickened_mind")))CireBuffs::Apply(H,QuickId,Effect(H,TEXT("quickened_mind")),H);
     if(Has(H,TEXT("tumblers_edge")))CireBuffs::Apply(H,EdgeId,4.f,H);
@@ -147,17 +156,17 @@ void CireRollSkills::OnRoll(ACireHero* H,FVector Direction)
     }
     if(Has(H,TEXT("ember_wake")))
     {
-        const float Dmg=(Effect(H,TEXT("ember_wake"))+.6f*H->PrimaryAttribute())*Power;
+        const float Dmg=(Effect(H,TEXT("ember_wake"))+Primary(H,TEXT("ember_wake")))*Power;
         ForEachOnPath(H,Start,End,180.f,[&](AActor* U){CireCombat::ApplyDamage(H,U,Dmg,TEXT("Ember Wake"));});
     }
     if(Has(H,TEXT("frost_wake")))
     {
-        const float Dmg=Effect(H,TEXT("frost_wake"))*Power;
-        ForEachOnPath(H,Start,End,180.f,[&](AActor* U){CireCombat::ApplyDamage(H,U,Dmg,TEXT("Frost Wake"));CireCrowdControl::Slow(U,3.f,H);CireBuffs::Apply(U,TEXT("slowed"),3.f,H);});
+        const float Dmg=(Effect(H,TEXT("frost_wake"))+Primary(H,TEXT("frost_wake")))*Power;
+        ForEachOnPath(H,Start,End,180.f,[&](AActor* U){CireCombat::ApplyDamage(H,U,Dmg,TEXT("Frost Wake"));CireCrowdControl::Slow(U,3.f,H);});
     }
     if(CireBuffs::IsActive(H,VenomId))
     {
-        const float Dmg=Effect(H,TEXT("venom_tumble"))*Power;
+        const float Dmg=(Effect(H,TEXT("venom_tumble"))+Primary(H,TEXT("venom_tumble")))*Power;
         ForEachOnPath(H,Start,End,180.f,[&](AActor* U){CireCombat::ApplyDamage(H,U,Dmg,TEXT("Venom Tumble"));CireCrowdControl::HealCut(U,.3f,5.f,H);});
     }
     if(CireBuffs::IsActive(H,TauntId))
@@ -172,7 +181,7 @@ void CireRollSkills::OnRoll(ACireHero* H,FVector Direction)
         ACireHero* Best=nullptr;float BestDist=800.f*800.f;
         for(auto* A:Mode->Heroes)if(IsValid(A)&&A!=H&&!A->bDead&&A->TeamId==H->TeamId&&!A->IsA<ACireSummon>())
         {const float D=FVector::DistSquared(A->GetActorLocation(),H->GetActorLocation());if(D<BestDist){BestDist=D;Best=A;}}
-        if(Best){Guard(Best,3.f);CireBuffs::Apply(Best,TEXT("iron_guard"),3.f,H);CireCombat::ApplyHealing(H,Best,Best->MaxHealth*Effect(H,TEXT("shield_tumble"))/100.f,TEXT("Shield Tumble"));}
+        if(Best){Guard(Best,3.f);CireBuffs::Apply(Best,TEXT("iron_guard"),3.f,H);CireCombat::ApplyHealing(H,Best,Best->MaxHealth*Effect(H,TEXT("shield_tumble"))/100.f+Primary(H,TEXT("shield_tumble")),TEXT("Shield Tumble"));}
     }
     if(CireBuffs::IsActive(H,MineId))
     {
@@ -200,10 +209,10 @@ void CireRollSkills::OnDodgedHit(ACireHero* H,AActor* Attacker)
         {
             Last=H->Mobility->RollStartedAt;
             auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();
-            CireCombat::ApplyStrike(H,Attacker,(Effect(H,TEXT("riposte_roll"))+H->PrimaryAttribute())*(Mode?Mode->Power(H->TeamId):1.f),TEXT("Riposte"));
+            CireCombat::ApplyStrike(H,Attacker,(Effect(H,TEXT("riposte_roll"))+Primary(H,TEXT("riposte_roll")))*(Mode?Mode->Power(H->TeamId):1.f),TEXT("Riposte"));
         }
     }
-    if(CireBuffs::IsActive(H,EvasiveId))CireCombat::ApplyHealing(H,H,H->MaxHealth*Effect(H,TEXT("evasive_stance"))/100.f,TEXT("Evasive Stance"));
+    if(CireBuffs::IsActive(H,EvasiveId))CireCombat::ApplyHealing(H,H,H->MaxHealth*Effect(H,TEXT("evasive_stance"))/100.f+Primary(H,TEXT("evasive_stance")),TEXT("Evasive Stance"));
 }
 
 bool CireRollSkills::TryBlur(ACireHero* H,AActor* Attacker,const FString& AbilityName)
@@ -214,13 +223,18 @@ bool CireRollSkills::TryBlur(ACireHero* H,AActor* Attacker,const FString& Abilit
     return true;
 }
 
-float CireRollSkills::ModifyOutgoingDamage(AActor* Source,AActor* Target,float Amount,const FString& AbilityName)
+float CireRollSkills::ModifyOutgoingDamage(AActor* Source,AActor* Target,float Amount,const FString& AbilityName,bool* InOutCritical)
 {
     auto* H=Cast<ACireHero>(Source);if(!H||!H->HasAuthority()||Amount<=0)return Amount;
-    const bool bBasic=AbilityName==TEXT("Basic attack")||AbilityName.EndsWith(TEXT(" strike"))||AbilityName==TEXT("Bow shot")||
-        AbilityName==TEXT("Thrown lance")||AbilityName==TEXT("Thrown axe")||AbilityName==TEXT("Arcane bolt");
+    const bool bBasic=CireItems::IsBasicAttack(H,AbilityName);
     if(bBasic&&CireBuffs::IsActive(H,EdgeId)&&Has(H,TEXT("tumblers_edge"))){Amount*=1.f+Effect(H,TEXT("tumblers_edge"))/100.f;CireBuffs::Remove(H,EdgeId);}
-    if(bBasic&&CireBuffs::IsActive(H,InstinctId)&&Has(H,TEXT("killer_instinct"))){Amount*=FMath::Clamp(H->CriticalMultiplier,1.f,5.f);CireBuffs::Remove(H,InstinctId);}
+    if(bBasic&&CireBuffs::IsActive(H,InstinctId)&&Has(H,TEXT("killer_instinct")))
+    {
+        // Guaranteed critical: an attack that already crit keeps its single multiplier.
+        if(!(InOutCritical&&*InOutCritical))Amount*=FMath::Clamp(H->CriticalMultiplier,1.f,5.f);
+        if(InOutCritical)*InOutCritical=true;
+        CireBuffs::Remove(H,InstinctId);
+    }
     if(Has(H,TEXT("momentum"))&&CireBuffs::IsActive(H,MomentumId))
     {
         const auto* Buffs=CireBuffs::Get(H);const auto* E=Buffs?Buffs->Find(MomentumId):nullptr;
@@ -258,7 +272,8 @@ void CireRollSkills::Tick(ACireHero* H,float)
         bool bTriggered=false;
         ForEachHostile(H,[&](AActor* U){if(!bTriggered&&FVector::Dist2D(U->GetActorLocation(),M.At)<=150.f)bTriggered=true;});
         if(!bTriggered)continue;
-        const float Dmg=Effect(H,TEXT("mine_layer"))+H->PrimaryAttribute();const FVector At=M.At;Mines.RemoveAt(I);
+        auto* Mode=W->GetAuthGameMode<ACireGameMode>();
+        const float Dmg=(Effect(H,TEXT("mine_layer"))+Primary(H,TEXT("mine_layer")))*(Mode?Mode->Power(H->TeamId):1.f);const FVector At=M.At;Mines.RemoveAt(I);
         CireCombat::PlayCue(H,nullptr,TEXT("mine_layer"),At,At,ECireSpellCue::Impact,1.f,true);
         ForEachHostile(H,[&](AActor* U){if(FVector::Dist2D(U->GetActorLocation(),At)<=250.f){CireCombat::ApplyDamage(H,U,Dmg,TEXT("Caltrop Mine"));CireCrowdControl::Slow(U,2.f,H);}});
     }
@@ -292,8 +307,9 @@ bool CireRollSkills::RunSmoke(ACireGameMode* Mode)
     const auto Learn=[&](std::initializer_list<const TCHAR*> Ids){H->Skills.Reset();H->Cooldowns.Reset();for(const TCHAR* Id:Ids){H->Skills.Add(Id);H->Cooldowns.Add(0);}CireBuffs::ClearAll(H);};
     // Heal on roll, fires per roll (charges roll again).
     Learn({TEXT("fleet_recovery")});H->Health=500;
-    if(bSurvival){OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Health,550.f,1.f),TEXT("fleet recovery heals 5% per roll"));
-        OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Health,600.f,1.f),TEXT("second roll (charge) heals again"));}
+    if(bSurvival){const float Heal=50.f+.5f*H->PrimaryAttribute();
+        OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Health,500.f+Heal,1.f),TEXT("fleet recovery heals 5% + 0.5x primary per roll"));
+        OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Health,FMath::Min(1000.f,500.f+2*Heal),1.f),TEXT("second roll (charge) heals again"));}
     // Cooldown % cut per roll.
     Learn({TEXT("hasted_tumble"),TEXT("tumble_strike"),TEXT("stone_skin")});H->Cooldowns={10.f,20.f,0.f};
     OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Cooldowns[1],17.f,.01f),TEXT("hasted tumble cuts active cooldowns by 15%"));
@@ -350,7 +366,7 @@ bool CireRollSkills::RunSmoke(ACireGameMode* Mode)
         H->bBot=false;
     }
     // Data: 20 skills, all in the DB with the roll tag and an icon id.
-    int32 InDb=0;for(const FString& Id:AllIds()){const auto* D=CireAbilityDB::Find(Id);InDb+=D&&D->EffectTags.Contains(TEXT("roll"))&&!D->Champions.IsEmpty();}
+    int32 InDb=0;for(const FString& Id:AllIds()){const auto* D=CireAbilityDB::Find(Id);InDb+=D&&D->EffectTags.Contains(TEXT("Roll"))&&!D->Categories.IsEmpty()&&!D->Champions.IsEmpty();}
     Check(AllIds().Num()==20&&InDb==20,TEXT("20 roll skills in the database, each buyable by someone"));
     UE_LOG(LogCireRoll,Display,TEXT("CIRE_ROLL_SKILLS_%s checks=%d"),bPass?TEXT("PASS"):TEXT("FAIL"),Checks);
     return bPass;
