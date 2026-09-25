@@ -27,6 +27,15 @@ share a scene (ether_golem, paladin, troll_berserker). Source PNGs (1672x941):
 | whisp | lantern-lit twilight woodland path |
 | evergrove_centaur | spring meadow grove with a stone circle |
 | keeper_of_light | drowned city with a great lighthouse lantern |
+| gunblade | gallows crossroads outside a burned village at dusk (new champions, art-2d) |
+| witch_slayer | witch's clearing with a broken blue-fire ritual circle (new champions, art-2d) |
+| huntress | moonlit forest ridge with sabercat tracks in the frost (new champions, art-2d) |
+| aetheri | Aetheri workshop plaza of crystal spires and warp rings (Aetheri Artificer) |
+| aetheri_warden | Aetheri sanctuary terrace with warding pylons and aurora |
+
+The five new-champion scenes (gunblade, witch_slayer, huntress, aetheri, aetheri_warden) were
+**generated for Eric via ChatGPT (OpenAI), 2026-09-25**, using the ranger scene above as the style
+reference, 1672x941 like the rest (aetheri_warden was darkened with a gamma curve and vignette to sit in the same value range). Which profile shows which scene is in `Content/Data/DraftBackgrounds.json`.
 
 ## M_DraftCutout.uasset
 
@@ -36,3 +45,10 @@ composites the live 3D champion over the scene).
 ## Portraits/, Sounds/
 
 See the tools that generate them (`Tools/RunDraftPortraits.py`, `Tools/BuildDraftSounds.py`).
+
+Six portraits whose mesh renders read pale and washed-out (`ether_golem_bruiser`, `ether_golem_support`,
+`ether_golem_tank`, `totemic_behemoth`, `whisp`, `keeper_of_light`) are repainted from those renders (same
+design, pose and bust framing, darker key/rim lighting, dark vignette): **generated for Eric via ChatGPT
+(OpenAI), 2026-09-25**. Sheet: `Art/DraftPortraits/portraits_pale_sheet.png` (3x2, 512 px tiles); tiles:
+`Art/DraftPortraits/Painted/<id>.png`, which `Tools/RunDraftPortraits.py` applies over fresh renders
+(`--rendered` keeps the raw renders).

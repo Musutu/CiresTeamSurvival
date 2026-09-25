@@ -1,5 +1,6 @@
 #include "CireMobility.h"
 #include "CireGame.h"
+#include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "CireAbilityDB.h"
@@ -135,6 +136,7 @@ bool UCireMobility::StartRoll(FVector Direction)
     H->Energy-=V.RollEnergy;RollStartedAt=Now();RollDuration=V.RollDuration;RollDirection=Direction;
     ReadyAt=RollStartedAt+V.RollCooldown;InvulnerableFrom=RollStartedAt+V.InvulnerableStart;InvulnerableUntil=RollStartedAt+V.InvulnerableEnd;
     H->PendingAttackTarget.Reset();H->GlobalCooldown=FMath::Max(H->GlobalCooldown,V.RollDuration);H->Notice=TEXT("Dodge roll");
+    CireRollSkills::OnRoll(H,Direction); // champion-draft: roll skills fire per roll (and per roll charge)
     MulticastRoll(RollStartedAt,RollDuration,RollDirection,V.RollSpeed);H->ForceNetUpdate();return true;
 }
 void UCireMobility::MulticastRoll_Implementation(float Started,float Duration,FVector_NetQuantizeNormal Direction,float Speed)

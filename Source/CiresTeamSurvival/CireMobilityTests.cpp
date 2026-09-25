@@ -121,6 +121,18 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
     Check(!Mobility->StartRoll(FVector::ForwardVector),TEXT("airborne roll rejected"));
     Move->SetMovementMode(MOVE_Walking);Hero->bDead=true;
     Check(!Mobility->StartRoll(FVector::ForwardVector),TEXT("dead hero cannot roll"));Hero->bDead=false;
+    {
+        // champion-draft: roll skills fire through the real StartRoll, once per roll (a second roll charge from
+        // items-v2 boots is just another StartRoll), and an i-frame dodge in the real damage pipeline counters.
+        Hero->Skills={TEXT("fleet_recovery"),TEXT("riposte_roll")};Hero->Cooldowns={0.f,0.f};Hero->Health=500;Hero->Energy=100;Mobility->ReadyAt=0;
+        Check(Mobility->StartRoll(FVector::ForwardVector)&&Hero->Health>500,TEXT("roll skill (Fleet Recovery) fires on a real roll"));
+        const float AfterFirst=Hero->Health;Mobility->CancelRoll();Mobility->ReadyAt=0;Hero->Energy=100;
+        Check(Mobility->StartRoll(FVector::ForwardVector)&&Hero->Health>AfterFirst,TEXT("roll skill fires again on the next roll charge"));
+        SetAge((V.InvulnerableStart+V.InvulnerableEnd)*.5f);Enemy->Health=1000;const float HeroBefore=Hero->Health;
+        Check(CireCombat::ApplyDamage(Enemy,Hero,50,TEXT("Countered hit"))==0&&Hero->Health==HeroBefore&&Enemy->Health<1000,
+            TEXT("Riposte counters a hit dodged by the i-frames"));
+        Mobility->CancelRoll();Mobility->ReadyAt=0;Hero->Skills.Reset();Hero->Cooldowns.Reset();Hero->Health=1000;Enemy->Health=1000;Hero->Energy=100;
+    }
 
     // Let CharacterMovement discard the cancelled source before looking up its replacement.
     Move->TickComponent(.001f,LEVELTICK_All,nullptr);Move->StopMovementImmediately();
