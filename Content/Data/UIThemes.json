@@ -49,17 +49,17 @@
           "corner": 24.3
         },
         "Card": {
-          "rect": [1608, 6, 222, 222],
-          "slice": 0.4324,
-          "corner": 6.0
+          "rect": [474, 314, 199, 199],
+          "slice": 0.4824,
+          "corner": 23.9
         },
         "Slot": {
-          "rect": [912, 314, 192, 192],
+          "rect": [889, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotPassive": {
-          "rect": [708, 314, 192, 192],
+          "rect": [685, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
@@ -104,22 +104,22 @@
           "corner": 0
         },
         "SlotHover": {
-          "rect": [1116, 314, 192, 192],
+          "rect": [1093, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotPressed": {
-          "rect": [1320, 314, 192, 192],
+          "rect": [1297, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotCooldown": {
-          "rect": [1524, 314, 192, 192],
+          "rect": [1501, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotDisabled": {
-          "rect": [1728, 314, 192, 192],
+          "rect": [1705, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
@@ -131,22 +131,22 @@
         "ButtonPressed": {
           "rect": [1373, 6, 223, 223],
           "slice": 0.4305,
-          "corner": 5.8
+          "corner": 22.0
         },
         "Button": {
-          "rect": [6, 314, 222, 222],
+          "rect": [1608, 6, 222, 222],
           "slice": 0.4324,
-          "corner": 6.0
+          "corner": 22.0
         },
         "ButtonHover": {
-          "rect": [240, 314, 222, 222],
+          "rect": [6, 314, 222, 222],
           "slice": 0.4324,
-          "corner": 6.0
+          "corner": 22.0
         },
         "ButtonDisabled": {
-          "rect": [474, 314, 222, 222],
+          "rect": [240, 314, 222, 222],
           "slice": 0.4324,
-          "corner": 6.0
+          "corner": 22.0
         }
       }
     },
@@ -183,12 +183,12 @@
         "Panel": {
           "rect": [6, 6, 296, 296],
           "slice": 0.4865,
-          "corner": 32.5
+          "corner": 30.0
         },
         "Tooltip": {
           "rect": [582, 6, 235, 235],
           "slice": 0.4766,
-          "corner": 20.5
+          "corner": 20.0
         },
         "Minimap": {
           "rect": [1284, 6, 196, 196],
@@ -201,12 +201,12 @@
           "corner": 14
         },
         "Slot": {
-          "rect": [1492, 6, 192, 192],
+          "rect": [1696, 6, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotPassive": {
-          "rect": [618, 314, 192, 192],
+          "rect": [1492, 6, 192, 192],
           "slice": 0,
           "corner": 0
         },
@@ -251,22 +251,22 @@
           "corner": 0
         },
         "SlotHover": {
-          "rect": [1696, 6, 192, 192],
-          "slice": 0,
-          "corner": 0
-        },
-        "SlotPressed": {
           "rect": [6, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
-        "SlotCooldown": {
+        "SlotPressed": {
           "rect": [210, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
-        "SlotDisabled": {
+        "SlotCooldown": {
           "rect": [414, 314, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotDisabled": {
+          "rect": [618, 314, 192, 192],
           "slice": 0,
           "corner": 0
         }

@@ -96,3 +96,34 @@ crest, bar fill, fill swatch), transparent PNGs. Pieces are found as alpha compo
   during an active wave, and saves `Saved/UIWaveCapture/<utc>/wave_fight_NN.png`.
 * **Concept pass.** Themed action slots show the bevelled frame just inside the slot with the icon
   inset (a dark gap separates neighbours); themed buttons use brighter, larger engraved caps.
+
+## Per-piece frame art (hud-art)
+
+The frames were rebuilt from **individually generated pieces** (ChatGPT image generation for Eric, one
+image per piece, front-on on a flat key colour: magenta for Gilded Citadel / Ironbound, green planned
+for Arcane Veil, blue for Verdant Bloom). Raw captures: `Art/UI/Themes/ChatGPT/Pieces/<key>/<Piece>.png`.
+
+```
+python Tools/BuildHUDArt.py --pylib <dir with Pillow+numpy> [--theme GildedCitadel] [--no-import | --import-only]
+```
+
+`BuildHUDArt.py` keys the background to alpha (colour unmixing, no fringe), rebuilds nine-slice frames
+from four corners plus straight edge strips whose cross-section is the mean of the whole straight run
+(tileable, corners feathered into the profile), 3-slices the strips (cast frame, bar frame, title plate,
+divider), squares the slots/rings (the portrait ring's hole is placed at 72% of the piece), splits the
+state sheets (`SlotStates` → `Slot, SlotHover, SlotPressed, SlotCooldown, SlotDisabled`; `ButtonStates`
+→ `Button, ButtonHover, ButtonPressed, ButtonDisabled`; `Card` stays the slimmer card frame because party rows and list rows draw it behind text), grades
+every piece of a theme to one metal colour, deepens recesses and adds an S-curve so bevels read at
+15-20 px, adds a faint theme-coloured halo, packs the atlas with the shared packer of
+`BuildUIThemes.py` and writes rects/slices into `UIThemes.json`. The drawn corner size is solved from
+the measured band thickness so every frame's band has a set logical width (`NINE[...]["band"]`),
+capped by `CORNER_MAX` so corner ornaments never cover the panels' corner labels. Pieces without a new
+file keep their previous slice. Extra atlas pieces (`SlotHover`, `SlotPressed`, `SlotCooldown`,
+`SlotDisabled`, `Button*`, `BuffBorder`) are packed and listed in the JSON (the parser ignores keys it
+does not know); the painters still show states by tinting until they look these up.
+
+| Theme | New pieces |
+| --- | --- |
+| Gilded Citadel | Panel, Tooltip, Card (+ Button states), Minimap, Slot states, SlotPassive, SlotUltimate, Ring, BarFrame (rounded capsule), CastFrame, Banner (title plate), Divider, BuffBorder |
+| Ironbound | Panel, Tooltip, Slot states, SlotPassive (the rest keep the sheet slices) |
+| Arcane Veil, Verdant Bloom | not yet regenerated (sheet slices) |

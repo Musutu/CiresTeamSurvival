@@ -55,6 +55,8 @@ NINE = {
     "Minimap": {"corner": .25, "band": 14.0, "px": 144},
 }
 BUTTON_CORNER = 22.0
+# Largest drawn corner (logical units): bigger ornaments start covering the panels' corner labels.
+CORNER_MAX = {"Panel": 30.0, "Tooltip": 20.0, "Minimap": 30.0, "Card": 24.0}
 # Per-theme multiplier on the drawn band thickness (dark iron needs more width to read).
 THEME_BAND = {"Ironbound": 1.2}
 # Horizontal strips: rebuilt height (px) and cap width as a fraction of the cropped width.
@@ -415,7 +417,7 @@ def build_theme(theme):
             thick, _ = band_thickness(a)
             thick = max(thick, 1)
             # Drawn corner (logical) so the band is spec["band"] units thick: band/c of the corner cell.
-            corner = round(spec["band"] * THEME_BAND.get(theme, 1.0) * c / thick, 1)
+            corner = round(min(spec["band"] * THEME_BAND.get(theme, 1.0) * c / thick, CORNER_MAX.get(name, 128.0)), 1)
             pieces[name] = out
             meta[name] = {"slice": round(frac, 4), "corner": min(corner, 128)}
             print(f"  {name}: crop {a.shape[1]}x{a.shape[0]} corner {c}px band {thick}px -> corner {corner} units")
@@ -440,9 +442,6 @@ def build_theme(theme):
                     # Buttons have an opaque face, so the rim cannot be measured from alpha: the corner cell
                     # (gem cap + rim) is drawn at a fixed size (halved by CireUIStyle on short buttons).
                     meta[pn] = {"slice": round(frac, 4), "corner": BUTTON_CORNER}
-                    if pn == "Button":
-                        # The normal button is also the theme's Card (buttons, rows, cards).
-                        pieces["Card"], meta["Card"] = out, dict(meta[pn])
         elif name == "Ornament":
             h, w = a.shape[:2]
             pieces[name] = BT.resize(a, w * 128 / h, 128)
