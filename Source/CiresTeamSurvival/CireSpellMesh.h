@@ -6,7 +6,7 @@
 
 namespace CireSpellMesh
 {
-    constexpr int32 MaxCoreVertices = 6144, MaxSoftVertices = 2048, MaxGroundVertices = 3072;
+    constexpr int32 MaxCoreVertices = 6144, MaxSoftVertices = 2048, MaxGroundVertices = 6144; // ability-vfx: themed rune telegraphs
     inline float Fract(float N) { return N - FMath::FloorToFloat(N); }
     inline FVector Polar(float R, float A, float Z = 0) { return FVector(FMath::Cos(A) * R, FMath::Sin(A) * R, Z); }
     inline FVector2D Polar2(float R, float A) { return FVector2D(FMath::Cos(A) * R, FMath::Sin(A) * R); }

@@ -39,7 +39,7 @@ public:
     UPROPERTY(VisibleAnywhere) TObjectPtr<UAudioComponent> Audio;
     // ability-vfx: flat ground layer (telegraphs, shock rings, splash/scorch) in actor-local space.
     UPROPERTY(VisibleAnywhere) TObjectPtr<UProceduralMeshComponent> GroundMesh;
-    enum class EMode : uint8 { Legacy, AreaFollow, Projectile, Lane, CasterFlare, SelfShock, TargetMark, Chain, Gather, Impact };
+    enum class EMode : uint8 { Legacy, AreaFollow, Projectile, Lane, CasterFlare, SelfShock, TargetMark, Chain, Gather, Impact, VoidZone };
     EMode GetMode() const { return Mode; }
     // Hidden (no geometry, light or sound) until the caster's clip reaches its release frame.
     void SetStartDelay(float Seconds);
@@ -54,6 +54,9 @@ public:
     float TelegraphLength() const { return LaneLength; }
     float TelegraphWidth() const { return LaneWidth; }
     bool IsFadingOut() const { return FadeOutAt>=0; }
+    const FCireHitShape& GetShape() const { return Shape; }
+    FVector2D VoidRadiiDrawn() const { return LastVoidRadii; }
+    int32 VoidIconsDrawn() const { return LastVoidIcons; }
 private:
     FName Skill;
     FVector Start, End;
@@ -82,7 +85,8 @@ private:
     EMode Mode = EMode::Legacy;
     FCireHitShape Shape;
     float StartDelay = 0, LaneLength = 0, LaneWidth = 0, GroundZ = -88.f, AreaActiveAge = -1, FadeOutAt = -1, ReleasedAge = -1;
-    bool bChainHop = false, bHarmlessArea = false; FVector HopFrom = FVector::ZeroVector;
+    bool bChainHop = false, bHarmlessArea = false, bShapeResolved = false;
+    FVector2D LastVoidRadii = FVector2D::ZeroVector; int32 LastVoidIcons = 0; FVector HopFrom = FVector::ZeroVector;
     bool bHostile = false, bSoundPending = false, bGroundProbed = false, bAreaPersistent = true, bShakeDone = false;
     TWeakObjectPtr<AActor> CastSource;
     FVector LaneOrigin = FVector::ZeroVector, LaneDirection = FVector::ForwardVector;

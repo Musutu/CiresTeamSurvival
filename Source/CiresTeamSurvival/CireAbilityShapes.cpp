@@ -6,9 +6,41 @@
 #include "CireNPCArchetypes.h"
 #include "CireRaces.h"
 #include "CireSkillTuning.h"
+#include "Dom/JsonObject.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 
 namespace
 {
+// Ability Database entries: school override and the void zone of teleport/portal skills.
+struct FDbEntry { bool bSchool=false; ECireSchool School=ECireSchool::Steel; FCireHitShape Void; };
+TMap<FName,FDbEntry> GDatabase;bool bDatabaseLoaded=false;
+const FDbEntry* DbFind(FName Id)
+{
+    if(!bDatabaseLoaded)CireAbilityShapes::ReloadDatabase();
+    return GDatabase.Find(Id);
+}
+// Stub void zones until the Ability Database lands (champion-draft adds the gameplay): teleport /
+// portal skills leave an outer slowing ring and an inner stunning circle at their destination.
+void StubVoid(FName Id,FCireHitShape& S)
+{
+    struct FStub{const TCHAR* Id;float Outer,Inner,Seconds;bool bHeal,bOrigin;};
+    static const FStub Stubs[]={{TEXT("shadow_step"),260.f,110.f,2.f,false,false},{TEXT("void_blink"),240.f,100.f,2.f,false,true},
+        {TEXT("void_warp"),240.f,100.f,2.f,false,true}};
+    for(const FStub& X:Stubs)if(Id==FName(X.Id)){S.VoidOuter=X.Outer;S.VoidInner=X.Inner;S.VoidSeconds=X.Seconds;S.bVoidHeal=X.bHeal;S.bVoidAtOrigin=X.bOrigin;return;}
+}
+void ApplyDatabase(FName Id,FCireHitShape& S)
+{
+    if(const FDbEntry* E=DbFind(Id))
+    {
+        if(E->bSchool)S.School=E->School;
+        if(E->Void.HasVoidZone()){S.VoidOuter=E->Void.VoidOuter;S.VoidInner=E->Void.VoidInner;S.VoidSeconds=E->Void.VoidSeconds;
+            S.bVoidHeal=E->Void.bVoidHeal;S.bVoidAtOrigin=E->Void.bVoidAtOrigin;S.bVoidFromDatabase=true;return;}
+    }
+    StubVoid(Id,S);
+}
 FString Norm(FName Id)
 {
     FString S=Id.ToString().ToLower();S.ReplaceInline(TEXT(" "),TEXT("_"));S.ReplaceInline(TEXT("'"),TEXT(""));
@@ -119,6 +151,7 @@ const FCireNPCArchetype* CireAbilityShapes::FindOwner(FName AbilityId,const FCir
 ECireSchool CireAbilityShapes::SchoolFor(FName Id,const FCireNPCArchetype* Caster)
 {
     const FString S=Norm(Id);
+    if(const FDbEntry* E=DbFind(FName(*S));E&&E->bSchool)return E->School; // Ability Database wins
     const FCireNPCAbility* Ab=Caster?Caster->FindAbility(Id):nullptr;
     if(!Ab&&!Caster&&!S.IsEmpty())
     {
@@ -155,6 +188,70 @@ FString CireAbilityShapes::ShapeName(ECireHitShape Kind)
     static const TCHAR* Names[]={TEXT("none"),TEXT("self"),TEXT("unit"),TEXT("circle"),TEXT("cone"),TEXT("line"),TEXT("square"),TEXT("custom"),TEXT("chain")};
     const int32 I=static_cast<int32>(Kind);return I>=0&&I<UE_ARRAY_COUNT(Names)?Names[I]:TEXT("none");
 }
+bool CireAbilityShapes::ParseSchool(const FString& In,ECireSchool& Out)
+{
+    const FString T=In.ToLower().TrimStartAndEnd();
+    static const TMap<FString,ECireSchool> Map={{TEXT("physical"),ECireSchool::Steel},{TEXT("steel"),ECireSchool::Steel},{TEXT("fire"),ECireSchool::Fire},
+        {TEXT("cold"),ECireSchool::Frost},{TEXT("frost"),ECireSchool::Frost},{TEXT("ice"),ECireSchool::Frost},{TEXT("storm"),ECireSchool::Storm},
+        {TEXT("lightning"),ECireSchool::Storm},{TEXT("shadow"),ECireSchool::Shadow},{TEXT("life"),ECireSchool::Life},{TEXT("heal"),ECireSchool::Life},
+        {TEXT("healing"),ECireSchool::Life},{TEXT("holy"),ECireSchool::Holy},{TEXT("light"),ECireSchool::Holy},{TEXT("poison"),ECireSchool::Poison},
+        {TEXT("arcane"),ECireSchool::Arcane},{TEXT("earth"),ECireSchool::Earth},{TEXT("stone"),ECireSchool::Earth},{TEXT("nature"),ECireSchool::Nature},
+        {TEXT("spirit"),ECireSchool::Spirit},{TEXT("blood"),ECireSchool::Blood},{TEXT("water"),ECireSchool::Tide},{TEXT("tide"),ECireSchool::Tide},
+        {TEXT("void"),ECireSchool::Void}};
+    if(const ECireSchool* F=Map.Find(T)){Out=*F;return true;}
+    return false;
+}
+
+bool CireAbilityShapes::ParseDatabase(const FString& Json,TMap<FName,TPair<ECireSchool,FCireHitShape>>& Out,FString* Error)
+{
+    Out.Reset();TSharedPtr<FJsonObject> Root;
+    if(Json.Len()>8*1024*1024||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),Root)||!Root.IsValid()){if(Error)*Error=TEXT("not a JSON object");return false;}
+    TArray<TPair<FString,TSharedPtr<FJsonObject>>> Rows;
+    const TArray<TSharedPtr<FJsonValue>>* List=nullptr;const TSharedPtr<FJsonObject>* Map=nullptr;
+    if(Root->TryGetArrayField(TEXT("abilities"),List)){for(const auto& V:*List){const TSharedPtr<FJsonObject>* O=nullptr;FString Id;if(V->TryGetObject(O)&&(*O)->TryGetStringField(TEXT("id"),Id))Rows.Add({Id,*O});}}
+    else if(Root->TryGetObjectField(TEXT("abilities"),Map)){for(const auto& Pair:(*Map)->Values){const TSharedPtr<FJsonObject>* O=nullptr;if(Pair.Value->TryGetObject(O))Rows.Add({FString(Pair.Key),*O});}}
+    else{if(Error)*Error=TEXT("needs an abilities array or object");return false;}
+    auto Num=[](const TSharedPtr<FJsonObject>& O,std::initializer_list<const TCHAR*> Keys,float Default){double V=0;for(const TCHAR* K:Keys)if(O->TryGetNumberField(K,V)&&FMath::IsFinite(V))return static_cast<float>(V);return Default;};
+    for(const auto& Row:Rows)
+    {
+        FCireHitShape Shape;ECireSchool School=ECireSchool::Count;FString Text;
+        if(Row.Value->TryGetStringField(TEXT("school"),Text))ParseSchool(Text,School);
+        const TSharedPtr<FJsonObject>* V=nullptr;
+        if(Row.Value->TryGetObjectField(TEXT("voidZone"),V)||Row.Value->TryGetObjectField(TEXT("void"),V))
+        {
+            Shape.VoidOuter=FMath::Clamp(Num(*V,{TEXT("outerRadius"),TEXT("slowRadius"),TEXT("outer")},0.f),0.f,2000.f);
+            Shape.VoidInner=FMath::Clamp(Num(*V,{TEXT("innerRadius"),TEXT("stunRadius"),TEXT("inner")},0.f),0.f,2000.f);
+            Shape.VoidSeconds=FMath::Clamp(Num(*V,{TEXT("duration"),TEXT("durationSeconds"),TEXT("seconds")},2.f),.2f,30.f);
+            bool B=false;if((*V)->TryGetBoolField(TEXT("selfHeal"),B)||(*V)->TryGetBoolField(TEXT("heal"),B))Shape.bVoidHeal=B;
+            if(Num(*V,{TEXT("selfHeal"),TEXT("heal")},0.f)>0)Shape.bVoidHeal=true;
+            FString At;if((*V)->TryGetStringField(TEXT("at"),At))Shape.bVoidAtOrigin=At.Equals(TEXT("origin"),ESearchCase::IgnoreCase);
+        }
+        Out.Add(FName(*Row.Key.ToLower()),TPair<ECireSchool,FCireHitShape>(School,Shape));
+    }
+    return true;
+}
+
+bool CireAbilityShapes::ReloadDatabase(FString* Error)
+{
+    bDatabaseLoaded=true;GDatabase.Reset();
+    FString Json;const FString Path=FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/Abilities.json"));
+    if(!FFileHelper::LoadFileToString(Json,*Path)){if(Error)*Error=TEXT("Content/Data/Abilities.json not present (built-in schools)");return false;}
+    TMap<FName,TPair<ECireSchool,FCireHitShape>> Rows;
+    if(!ParseDatabase(Json,Rows,Error))return false;
+    for(const auto& Pair:Rows){FDbEntry E;E.bSchool=Pair.Value.Key!=ECireSchool::Count;E.School=E.bSchool?Pair.Value.Key:ECireSchool::Steel;E.Void=Pair.Value.Value;GDatabase.Add(Pair.Key,E);}
+    return true;
+}
+#if !UE_BUILD_SHIPPING
+bool CireAbilityShapes::DebugUseDatabase(const FString& Json)
+{
+    TMap<FName,TPair<ECireSchool,FCireHitShape>> Rows;if(!ParseDatabase(Json,Rows))return false;
+    bDatabaseLoaded=true;GDatabase.Reset();
+    for(const auto& Pair:Rows){FDbEntry E;E.bSchool=Pair.Value.Key!=ECireSchool::Count;E.School=E.bSchool?Pair.Value.Key:ECireSchool::Steel;E.Void=Pair.Value.Value;GDatabase.Add(Pair.Key,E);}
+    return true;
+}
+#endif
+int32 CireAbilityShapes::DatabaseCount(){if(!bDatabaseLoaded)ReloadDatabase();return GDatabase.Num();}
+
 FString CireAbilityShapes::SchoolName(ECireSchool School)
 {
     static const TCHAR* Names[]={TEXT("steel"),TEXT("fire"),TEXT("frost"),TEXT("storm"),TEXT("shadow"),TEXT("life"),TEXT("holy"),TEXT("poison"),
@@ -177,7 +274,36 @@ TArray<FName> CireAbilityShapes::ChampionAbilityIds()
     return Cached;
 }
 
+namespace { FCireHitShape DescribeMonsterRaw(const FCireNPCAbility& A,const FCireNPCArchetype* Caster); FCireHitShape DescribeRaw(FName Id,const FCireNPCArchetype* Caster); }
+namespace
+{
+void Finish(FCireHitShape& S)
+{
+    static const TSet<FName> Heals={TEXT("restoring_light"),TEXT("purify"),TEXT("renewal"),TEXT("sanctuary"),TEXT("wellspring"),
+        TEXT("second_wind"),TEXT("last_stand"),TEXT("bastion_of_dawn")};
+    if(Heals.Contains(S.Id))S.bHeal=true;
+    S.bBuff=!S.bHeal&&!S.bHostileOnly&&S.Kind!=ECireHitShape::None;
+    ApplyDatabase(S.Id,S);
+}
+}
 FCireHitShape CireAbilityShapes::DescribeMonster(const FCireNPCAbility& A,const FCireNPCArchetype* Caster)
+{
+    FCireHitShape S=DescribeMonsterRaw(A,Caster);
+    if(A.Kind==ECireNPCAbilityKind::HealAlly)S.bHeal=true;
+    Finish(S);return S;
+}
+FCireHitShape CireAbilityShapes::Describe(FName Id,const FCireNPCArchetype* Caster)
+{
+    const FString Low=Norm(Id);
+    if(Caster)if(const auto* Ab=Caster->FindAbility(Id))return DescribeMonster(*Ab,Caster);
+    FCireHitShape S=DescribeRaw(FName(*Low),Caster);
+    if(S.Kind==ECireHitShape::None&&!ACireHero::IsPassive(Low)){const FCireNPCAbility* Ab=nullptr;if(const auto* Owner=FindOwner(Id,&Ab);Owner&&Ab)return DescribeMonster(*Ab,Owner);}
+    // Monster ids resolved through DescribeRaw's fallback already went through DescribeMonster.
+    Finish(S);
+    return S;
+}
+namespace {
+FCireHitShape DescribeMonsterRaw(const FCireNPCAbility& A,const FCireNPCArchetype* Caster)
 {
     FCireHitShape S;S.Id=A.Id;S.School=MonsterSchool(Norm(A.Id),Caster,&A);S.WarningSeconds=A.CastTime;S.LingerSeconds=.35f;
     switch(A.Kind)
@@ -202,10 +328,10 @@ FCireHitShape CireAbilityShapes::DescribeMonster(const FCireNPCAbility& A,const 
     return S;
 }
 
-FCireHitShape CireAbilityShapes::Describe(FName Id,const FCireNPCArchetype* Caster)
+FCireHitShape DescribeRaw(FName Id,const FCireNPCArchetype* Caster)
 {
+    using namespace CireAbilityShapes;
     const FString S=Norm(Id);
-    if(Caster)if(const auto* Ab=Caster->FindAbility(Id))return DescribeMonster(*Ab,Caster);
     FCireHitShape R;R.Id=Id;R.School=SchoolFor(Id);
     auto Circle=[&](float Radius,bool bSelf){R.Kind=ECireHitShape::Circle;R.Radius=Radius;R.bFromCaster=bSelf;R.bAtTarget=!bSelf;};
     if(ACireHero::IsPassive(S)){R.Kind=ECireHitShape::None;return R;}
@@ -257,3 +383,4 @@ FCireHitShape CireAbilityShapes::Describe(FName Id,const FCireNPCArchetype* Cast
     if(const auto* Owner=FindOwner(Id,&Ab);Owner&&Ab)return DescribeMonster(*Ab,Owner);
     return R;
 }
+} // namespace

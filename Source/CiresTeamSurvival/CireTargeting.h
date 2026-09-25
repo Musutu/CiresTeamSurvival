@@ -39,5 +39,7 @@ namespace CireTargeting
     bool RunRuntimeSmoke(ACireGameMode* Mode);
     // ability-vfx: galleries/tests aim the armed preview at a world point instead of the cursor (unset clears).
     void DebugSetAimOverride(TOptional<FVector> Point);
+    // ability-vfx: void zone radii / icons drawn by the armed preview this frame (x outer, y inner, z icons).
+    FVector DebugPreviewVoid(const ACireController* Controller);
 #endif
 }

@@ -31,6 +31,7 @@ struct FTargetState
     TArray<FVector2D> CachedBoundary;
     bool bMeshBuilt=false,bLastValid=false;
     TArray<FVector> DecorV;TArray<int32> DecorI;TArray<FLinearColor> DecorC; // ability-vfx: animated arrow/chevrons/spot marker
+    CireAbilityVFX::FVoidResult LastVoid; // ability-vfx: void zone drawn in the preview (tests)
 };
 TMap<TWeakObjectPtr<ACireController>,FTargetState> States;
 FCireTargetDescriptor RuntimeDescriptor(UWorld* World,const FString& Id)
@@ -123,9 +124,18 @@ void Render(ACireController* C,FTargetState& S,const FCireTargetDescriptor& D,FV
         // ability-vfx: lines get an arrowhead + travelling chevrons, cones chevrons, circles the designated-spot
         // marker, all inside the true boundary; rebuilt every frame so they animate.
         FCireGroundMesh G(S.DecorV,S.DecorI,S.DecorC);G.Z=7.5f;
-        const auto Style=CireAbilityVFX::StyleFor(S.View.bValid?CireAbilityVFX::ETone::AimValid:CireAbilityVFX::ETone::AimInvalid,FLinearColor::White);
+        // Themed: school runes of the ability (heal crosses for heals), red-dimmed when the aim is invalid.
+        const auto Shape=CireAbilityShapes::Describe(FName(*S.View.SkillId));
+        const auto Style=CireAbilityVFX::ThemedStyle(S.View.bValid?CireAbilityVFX::ETone::AimValid:CireAbilityVFX::ETone::AimInvalid,Shape);
         CireAbilityVFX::PaintTelegraph(G,D.Footprint,Style,-1.f,C->GetWorld()->GetTimeSeconds(),1.f,
             CireAbilityVFX::PaintNoFill|CireAbilityVFX::PaintArrow|CireAbilityVFX::PaintCenter|CireAbilityVFX::PaintPulse);
+        // Teleport/portal skills: both void zones (outer slow ring, inner stun circle) at the aimed spot.
+        if(Shape.HasVoidZone())
+        {
+            const FVector Local=S.Preview->GetActorTransform().InverseTransformPosition(S.View.Point);
+            S.LastVoid=CireAbilityVFX::PaintVoidZone(G,FVector2D(Local.X,Local.Y),Shape.VoidOuter,Shape.VoidInner,
+                S.View.bValid?CireAbilityVFX::ETone::AimValid:CireAbilityVFX::ETone::AimInvalid,C->GetWorld()->GetTimeSeconds(),1.f,Shape.bVoidHeal);
+        }
         const auto* Section=S.Mesh->GetProcMeshSection(2);
         if(G.V.IsEmpty())S.Mesh->ClearMeshSection(2);
         else if(Section&&Section->ProcVertexBuffer.Num()==G.V.Num()&&Section->ProcIndexBuffer.Num()==G.I.Num())
@@ -135,7 +145,9 @@ void Render(ACireController* C,FTargetState& S,const FCireTargetDescriptor& D,FV
     if(S.bMeshBuilt&&S.bLastValid==S.View.bValid&&S.CachedBoundary==Points)return;
     S.bMeshBuilt=true;S.bLastValid=S.View.bValid;S.CachedBoundary=Points;
     const auto Fill=Triangulate(Points);
-    const FLinearColor Tint=S.View.bValid?FLinearColor(.1f,1.1f,.65f,.18f):FLinearColor(1.3f,.12f,.07f,.18f);
+    // ability-vfx: valid aim is tinted with the ability's rune colour (school / heal) instead of generic green.
+    FLinearColor Tint=S.View.bValid?FLinearColor(.1f,1.1f,.65f,.18f):FLinearColor(1.3f,.12f,.07f,.18f);
+    if(S.View.bValid&&CireAbilityVFX::Enabled()){Tint=CireAbilityVFX::ThemeFor(CireAbilityShapes::Describe(FName(*S.View.SkillId))).Glyph*.6f;Tint.A=.15f;}
     TArray<FVector> V,N;TArray<FVector2D> UV;TArray<FLinearColor> Colors;TArray<int32> Indices;
     for(FVector2D P:Points){V.Add(FVector(P.X,P.Y,6));N.Add(FVector::UpVector);UV.Add(P/2000);Colors.Add(Tint);}
     S.Mesh->CreateMeshSection_LinearColor(0,V,Fill,N,UV,Colors,TArray<FProcMeshTangent>(),false);
@@ -297,6 +309,11 @@ bool CireTargeting::Tick(ACireController* C)
 #include "Misc/ScopeExit.h"
 
 void CireTargeting::DebugSetAimOverride(TOptional<FVector> Point){GAimOverride=Point;} // ability-vfx
+FVector CireTargeting::DebugPreviewVoid(const ACireController* C) // ability-vfx
+{
+    const auto* S=States.Find(TWeakObjectPtr<ACireController>(const_cast<ACireController*>(C)));
+    return S?FVector(S->LastVoid.Outer,S->LastVoid.Inner,S->LastVoid.SlowIcons+S->LastVoid.StunIcons):FVector::ZeroVector;
+}
 
 bool CireTargeting::RunDescriptorSmoke()
 {
