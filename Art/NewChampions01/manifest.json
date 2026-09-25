@@ -1,0 +1,218 @@
+{
+  "artStatus": "original local prototype",
+  "units": "centimeters",
+  "grip": [
+    0,
+    0,
+    0
+  ],
+  "assets": {
+    "Flintlock": {
+      "vertices": 244,
+      "faces": 160,
+      "triangles": 412,
+      "minimum": [
+        -4.0,
+        -1.9,
+        -11.5
+      ],
+      "maximum": [
+        31.0,
+        1.9,
+        11.25
+      ],
+      "sizeCm": [
+        35.0,
+        3.8,
+        22.75
+      ],
+      "materials": [
+        "Brass",
+        "DarkSteel",
+        "Wood"
+      ]
+    },
+    "Falchion": {
+      "vertices": 110,
+      "faces": 72,
+      "triangles": 192,
+      "minimum": [
+        -7.5,
+        -2.0,
+        -14.5
+      ],
+      "maximum": [
+        7.5,
+        2.0,
+        66
+      ],
+      "sizeCm": [
+        15.0,
+        4.0,
+        80.5
+      ],
+      "materials": [
+        "Brass",
+        "Leather",
+        "Silver",
+        "Wood"
+      ]
+    },
+    "ArcaneBlunderbuss": {
+      "vertices": 390,
+      "faces": 270,
+      "triangles": 660,
+      "minimum": [
+        -18.0,
+        -6.30658740328479,
+        -8.312358075880178
+      ],
+      "maximum": [
+        34.6,
+        6.30658740328479,
+        16.25
+      ],
+      "sizeCm": [
+        52.6,
+        12.61317480656958,
+        24.562358075880177
+      ],
+      "materials": [
+        "Aether",
+        "DarkSteel",
+        "Steel"
+      ]
+    },
+    "SpectralBlade": {
+      "vertices": 108,
+      "faces": 71,
+      "triangles": 188,
+      "minimum": [
+        -7,
+        -1.6167960777017611,
+        -10.0
+      ],
+      "maximum": [
+        7,
+        1.6167960777017611,
+        60
+      ],
+      "sizeCm": [
+        14,
+        3.2335921554035223,
+        70.0
+      ],
+      "materials": [
+        "Brass",
+        "DarkSteel",
+        "Leather",
+        "Spirit",
+        "Wood"
+      ]
+    },
+    "Glaive": {
+      "vertices": 330,
+      "faces": 210,
+      "triangles": 576,
+      "minimum": [
+        -21.952896311249276,
+        -1.5,
+        -19.938771314806303
+      ],
+      "maximum": [
+        21.952896311249276,
+        1.5,
+        22.0
+      ],
+      "sizeCm": [
+        43.90579262249855,
+        3.0,
+        41.9387713148063
+      ],
+      "materials": [
+        "Leather",
+        "Moon",
+        "Silver",
+        "Steel"
+      ]
+    },
+    "GlaiveLauncher": {
+      "vertices": 376,
+      "faces": 236,
+      "triangles": 656,
+      "minimum": [
+        -26.0,
+        -22.878704280245188,
+        -8.295918177149643
+      ],
+      "maximum": [
+        40.97644815562464,
+        22.878704280245188,
+        23.0
+      ],
+      "sizeCm": [
+        66.97644815562464,
+        45.757408560490376,
+        31.295918177149645
+      ],
+      "materials": [
+        "Brass",
+        "DarkSteel",
+        "Leather",
+        "Silver",
+        "Steel",
+        "Wood"
+      ]
+    },
+    "AetherStaff": {
+      "vertices": 582,
+      "faces": 388,
+      "triangles": 976,
+      "minimum": [
+        -7.675449871046387,
+        -10.509630981092226,
+        -60.0
+      ],
+      "maximum": [
+        7.6754498710463865,
+        10.509630981092226,
+        107.0
+      ],
+      "sizeCm": [
+        15.350899742092775,
+        21.01926196218445,
+        167.0
+      ],
+      "materials": [
+        "Aether",
+        "Alloy",
+        "DarkSteel"
+      ]
+    },
+    "AetherHalberd": {
+      "vertices": 78,
+      "faces": 54,
+      "triangles": 132,
+      "minimum": [
+        -2.5,
+        -2.5,
+        -70.0
+      ],
+      "maximum": [
+        24,
+        2.5,
+        112
+      ],
+      "sizeCm": [
+        26.5,
+        5.0,
+        182.0
+      ],
+      "materials": [
+        "Aether",
+        "Alloy",
+        "DarkSteel"
+      ]
+    }
+  }
+}

@@ -1,4 +1,5 @@
 #include "CireChampionActions.h"
+#include "CireSignatureSkills.h" // new-champions
 
 #include "CireChampionArt.h"
 #include "CireWeaponPresentation.h"
@@ -176,6 +177,12 @@ FString CireChampionActions::ClipName(const ACireHero& Hero, const FString& Kind
     if (Kind == TEXT("shout")) return TEXT("war_cry");
     const FData& D = Data();
     // Weapon classes read differently: thrusts for daggers/lances, sweeps for axes, overheads for hammers.
+    // new-champions: the Gunblade's basic attack is a falchion slash up close and an aimed pistol shot at range.
+    if (Kind == TEXT("attack") && Hero.BasicAttackStyle() == TEXT("gunblade"))
+    {
+        const AActor* Foe = Hero.PendingAttackTarget.IsValid() ? Hero.PendingAttackTarget.Get() : Hero.Target;
+        return CireSignatureSkills::IsCloseQuarters(&Hero, Foe) ? FString(TEXT("slash")) : FString(TEXT("attack_crossbow"));
+    }
     if (Kind == TEXT("attack") || Kind == TEXT("ability"))
         if (const FData::FStyle* Style = StyleFor(Hero); Style && !Style->Clip.IsEmpty()) return Style->Clip;
     const TMap<FString, FString>* Motion = D.Motions.Find(MotionFor(Hero));

@@ -32,7 +32,7 @@ const TMap<FName, TArray<FString>>& ThemePrefixes()
         {TEXT("drowned_deep"), {TEXT("drowned_")}}, {TEXT("blightwood"), {TEXT("blight_")}},
         {TEXT("hollow"), {TEXT("hollow_"), TEXT("npc_"), TEXT("boss_")}}, {TEXT("ironhide"), {TEXT("ironhide_")}},
         {TEXT("drakkari"), {TEXT("drakkari_")}}, {TEXT("stoneborn"), {TEXT("stoneborn_")}}, {TEXT("feral_kin"), {TEXT("feral_")}},
-        {TEXT("fallen_order"), {TEXT("fallen_")}}, {TEXT("voidborn"), {TEXT("void_")}}};
+        {TEXT("fallen_order"), {TEXT("fallen_")}}, {TEXT("voidborn"), {TEXT("void_")}}, {TEXT("aetheri"), {TEXT("aether_")}}}; // new-champions: Aetheri
     return P;
 }
 }
@@ -45,7 +45,7 @@ bool CireRaces::RunSmoke(ACireGameMode* Mode)
     const FCireRaceDatabase& D = Get();
 
     // ------------------------------------------------------------ data: 9 races x (6 units + 2 bosses), fallbacks, pools
-    Check(D.bValid && D.Races.Num() == 9, FString::Printf(TEXT("nine races load (%d)"), D.Races.Num()));
+    Check(D.bValid && D.Races.Num() == 10, FString::Printf(TEXT("ten races load (%d)"), D.Races.Num())); // new-champions: + the Aetheri Remnant
     int32 Units = 0, Skills = 0;
     for (const FName RaceId : D.Order)
     {
@@ -86,7 +86,7 @@ bool CireRaces::RunSmoke(ACireGameMode* Mode)
             }
         }
     }
-    Check(Units == 72, FString::Printf(TEXT("72 race units (%d)"), Units));
+    Check(Units == 80, FString::Printf(TEXT("80 race units (%d)"), Units)); // new-champions: + 8 Aetheri
     Check(CireRaces::UnitFor(TEXT("hollow"), TEXT("boss"), 0) == TEXT("hollow_siegebreaker") && CireRaces::UnitFor(TEXT("hollow"), TEXT("boss"), 1) == TEXT("gravemaw_pack_leader"),
         TEXT("boss slot alternates colossus / warlord by cycle"));
 

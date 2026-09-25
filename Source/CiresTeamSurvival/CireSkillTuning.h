@@ -8,8 +8,9 @@
 UENUM()
 enum class ECireProjectileCollision : uint8 { Ignore, Stop, Pierce, Reflect };
 
+// new-champions: Turret/Trap/Pylon/Skitter are the Aetheri "Constructs" (CireTechConstructs.h).
 UENUM()
-enum class ECireConstructKind : uint8 { Wall, Protection };
+enum class ECireConstructKind : uint8 { Wall, Protection, Turret, Trap, Pylon, Skitter };
 
 USTRUCT()
 struct CIRESTEAMSURVIVAL_API FCireSkillshotSpec
@@ -59,6 +60,19 @@ struct CIRESTEAMSURVIVAL_API FCireConstructSpec
     UPROPERTY() bool bBlockFriendly = true;
     UPROPERTY() ECireProjectileCollision ProtectionResponse = ECireProjectileCollision::Stop;
     UPROPERTY() FLinearColor Color = FLinearColor(.28f, .42f, .38f, .85f);
+    // new-champions: tech constructs (turret/trap/pylon/skitter). Ignored by walls and protection.
+    UPROPERTY() FName Recipe;                 // CireTechConstructs recipe id (per-owner limits, visuals)
+    UPROPERTY() FName Effect;                 // trap: stasis|mine|silence; pylon: shield|haste|weaken|slow|nexus|empower
+    UPROPERTY() float AttackRange = 0.f;      // turret reach / skitter seek radius (cm)
+    UPROPERTY() float AttackInterval = 1.f;   // turret seconds between bolts
+    UPROPERTY() float AttackDamage = 0.f;     // turret bolt / trap / skitter blast damage
+    UPROPERTY() float TriggerRadius = 0.f;    // trap / skitter trigger distance (cm)
+    UPROPERTY() float EffectRadius = 0.f;     // blast radius, pylon field radius (cm)
+    UPROPERTY() float EffectMagnitude = 0.f;  // pylon fraction (slow .35, haste .25...), trap control seconds
+    UPROPERTY() float MoveSpeed = 0.f;        // skitter run speed (cm/s)
+    UPROPERTY() int32 OwnerLimit = 0;         // live constructs of this recipe per owner; the oldest is replaced
+    UPROPERTY() float SplashRadius = 0.f;     // turret bolt splash (cm), 0 = single target
+    bool IsTech() const { return Kind == ECireConstructKind::Turret || Kind == ECireConstructKind::Trap || Kind == ECireConstructKind::Pylon || Kind == ECireConstructKind::Skitter; }
 };
 
 struct CIRESTEAMSURVIVAL_API FCireGlobalCombatTuning

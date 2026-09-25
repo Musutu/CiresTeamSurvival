@@ -11,6 +11,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "KismetProceduralMeshLibrary.h"
+#include "CireChampionArt.h" // new-champions: rider combat layer
+#include "CireGrip.h" // new-champions: prop grips
+#include "CireMonsterAnim.h" // new-champions: native monster / mount clips
+#include "Animation/AnimSequence.h"
+#include "Animation/BlendSpace.h"
 #if WITH_EDITOR
 #include "SkinnedAssetCompiler.h"
 #endif
@@ -104,10 +109,14 @@ void Prepare(UMeshComponent& Mesh)
 
 FAnimInstanceProxy* UCireBearAnimInstance::CreateAnimInstanceProxy(){return new FBearProxy(this);}
 bool UCireCreatureArt::Handles(const FString& Profile){return Profile==TEXT("bear")||Profile==TEXT("whisp")||Profile==TEXT("evergrove_centaur");}
-UMeshComponent* UCireCreatureArt::VisualMesh() const{return Bear?static_cast<UMeshComponent*>(Bear.Get()):Centaur?static_cast<UMeshComponent*>(Centaur.Get()):StaticBody.Get();}
+bool UCireCreatureArt::HandlesMotion(const FString& Motion){return Motion==TEXT("monster_native")||Motion==TEXT("mounted");} // new-champions
+UMeshComponent* UCireCreatureArt::VisualMesh() const{if(Native)return Native;return Bear?static_cast<UMeshComponent*>(Bear.Get()):Centaur?static_cast<UMeshComponent*>(Centaur.Get()):StaticBody.Get();}
 void UCireCreatureArt::Clear()
 {
     if(StaticBody)StaticBody->DestroyComponent();if(Centaur)Centaur->DestroyComponent();StaticBody=nullptr;Centaur=nullptr;Bear=nullptr;
+    // new-champions: the rider and props are ours; the native body is the hero's own mesh (restored by the champion art).
+    if(Rider)Rider->DestroyComponent();Rider=nullptr;for(auto& Part:Props)if(Part)Part->DestroyComponent();Props.Reset();Native=nullptr;
+    AttackClip=nullptr;RiderAttack=nullptr;RiderLocomotion=nullptr;SeatBone=NAME_None;NativeWalkRaw=NativeRunRaw=NativePhase=NativeIdleTime=0;SeenAttackSerial=0;AttackSeenAt=-100;
     Sections.Reset();SourceAsset=nullptr;Kind.Reset();Phase=0;SmoothedSpeed=0;AnimationTime=0;UpdateBudget=0;bHasLastYaw=false;
 }
 bool UCireCreatureArt::Apply(ACireHero& Hero,const FString& Profile,const FString& MeshPath,float HeightCm)
@@ -214,6 +223,7 @@ void UCireCreatureArt::DeformCentaur(float Stride,float Attack,float Air,float R
 void UCireCreatureArt::Update(ACireHero& Hero,float Delta)
 {
     if(Kind.IsEmpty())return;const float Dt=FMath::Clamp(Delta,0.f,.1f);
+    if(Native){UpdateNative(Hero,Dt);return;} // new-champions
     const float Speed=Hero.bDead?0.f:static_cast<float>(Hero.GetVelocity().Size2D());
     SmoothedSpeed=FMath::FInterpTo(SmoothedSpeed,Speed,Dt,10.f);AnimationTime+=Dt;
     float Stride=FMath::Clamp(SmoothedSpeed/280.f,0.f,1.f);
@@ -332,3 +342,198 @@ bool UCireCreatureArt::RunGaitSmoke(UWorld* World)
     return Pass;
 }
 #endif
+
+// ================================================================================== new-champions
+namespace
+{
+UAnimSequence* Clip(const TSharedPtr<FJsonObject>& Object,const TCHAR* Role)
+{
+    FString Path;
+    if(!Object||!Object->TryGetStringField(Role,Path)||!Path.StartsWith(TEXT("/Game/")))return nullptr;
+    return LoadObject<UAnimSequence>(nullptr,*Path);
+}
+FTransform RefComponent(const USkeletalMesh& Mesh,FName Bone)
+{
+    const auto& Ref=Mesh.GetRefSkeleton();int32 I=Ref.FindBoneIndex(Bone);FTransform T=FTransform::Identity;
+    while(I!=INDEX_NONE){T=T*Ref.GetRefBonePose()[I];I=Ref.GetParentIndex(I);}return T;
+}
+FName FindSeat(const USkeletalMesh& Mesh)
+{
+    // Quadruped rigs name the back differently: prefer a mid-torso bone, then the body/spine root.
+    const auto& Ref=Mesh.GetRefSkeleton();
+    for(const TCHAR* Name:{TEXT("Torso2"),TEXT("Torso1"),TEXT("Torso"),TEXT("Body"),TEXT("Spine_1"),TEXT("spine_02"),TEXT("Spine_0"),TEXT("spine_01"),TEXT("pelvis")})
+        if(Ref.FindBoneIndex(Name)!=INDEX_NONE)return FName(Name);
+    return NAME_None;
+}
+bool FacingYaw(const USkeletalMesh& Mesh,float& Out)
+{
+    const FVector LF=RefComponent(Mesh,TEXT("foot_l")).GetLocation(),LT=RefComponent(Mesh,TEXT("ball_l")).GetLocation();
+    const FVector RF=RefComponent(Mesh,TEXT("foot_r")).GetLocation(),RT=RefComponent(Mesh,TEXT("ball_r")).GetLocation();
+    const FVector Forward=((LT-LF)+(RT-RF)).GetSafeNormal2D();
+    if(Forward.IsNearlyZero())return false;
+    Out=-Forward.Rotation().Yaw;return FMath::IsFinite(Out);
+}
+}
+
+bool UCireCreatureArt::ApplyBinding(ACireHero& Hero,const FString& Profile,const FString& Motion,const FString& MeshPath,float HeightCm,const TSharedPtr<FJsonObject>& Binding)
+{
+    Clear();if(!HandlesMotion(Motion)||!Binding.IsValid()||Hero.GetNetMode()==NM_DedicatedServer)return false;
+    auto* Mesh=LoadObject<USkeletalMesh>(nullptr,*MeshPath);if(!Mesh)return false;
+    const TSharedPtr<FJsonObject>* Animations=nullptr;if(!Binding->TryGetObjectField(TEXT("animations"),Animations))return false;
+    UAnimSequence* Idle=Clip(*Animations,TEXT("idle"));UAnimSequence* Walk=Clip(*Animations,TEXT("walk"));UAnimSequence* Run=Clip(*Animations,TEXT("run"));
+    if(!Idle||Idle->GetSkeleton()!=Mesh->GetSkeleton())return false;
+    Kind=Motion;SourceAsset=Mesh;
+    auto* Parent=Hero.GetMesh();Parent->SetAnimInstanceClass(nullptr);Parent->EmptyOverrideMaterials();
+    const float Capsule=Hero.GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+    const auto Bounds=Mesh->GetImportedBounds();const float Height=static_cast<float>(Bounds.BoxExtent.Z*2);
+    if(Height<1||Height>100000)return false;
+    const float Scale=HeightCm/Height;MeshScale=Scale;
+    double Yaw=-90;Binding->TryGetNumberField(TEXT("yaw"),Yaw);
+    Parent->SetSkeletalMesh(Mesh);Parent->SetRelativeScale3D(FVector(Scale));
+    BasePosition=FVector(0,0,-Capsule-(Bounds.Origin.Z-Bounds.BoxExtent.Z)*Scale);
+    Parent->SetRelativeLocation(BasePosition);Parent->SetRelativeRotation(FRotator(0,static_cast<float>(Yaw),0));
+    Parent->SetAnimInstanceClass(UCireMonsterAnimInstance::StaticClass());
+    auto* Anim=Cast<UCireMonsterAnimInstance>(Parent->GetAnimInstance());
+    if(!Anim){Parent->SetSkeletalMesh(nullptr);Kind.Reset();return false;}
+    bool bLockRoot=false;Binding->TryGetBoolField(TEXT("lockRoot"),bLockRoot);
+    Anim->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);Anim->bLockRootToReference=bLockRoot||Motion==TEXT("mounted");
+    Anim->Idle.Sequence=Idle;Anim->Idle.Weight=1.f;
+    Anim->Walk.Sequence=Walk&&Walk->GetSkeleton()==Mesh->GetSkeleton()?Walk:nullptr;Anim->Walk.bRemoveDrift=Motion==TEXT("monster_native");
+    Anim->Run.Sequence=Run&&Run->GetSkeleton()==Mesh->GetSkeleton()?Run:nullptr;Anim->Run.bRemoveDrift=Motion==TEXT("monster_native");
+    const CireAnimClips::FClipInfo& Stance=CireAnimClips::Analyze(Idle);
+    Anim->Walk.PelvisTarget=Anim->Run.PelvisTarget=Stance.bValid?Stance.DriftOffset:Stance.ReferencePelvis;
+    Anim->Action=FCireAnimLayer();Anim->Death=FCireAnimLayer();Anim->MoveAlpha=Anim->RunAlpha=0.f;
+    AttackClip=Clip(*Animations,TEXT("attack"));if(AttackClip&&AttackClip->GetSkeleton()!=Mesh->GetSkeleton())AttackClip=nullptr;
+    double Raw=0;if(Binding->TryGetNumberField(TEXT("walkSpeedRaw"),Raw))NativeWalkRaw=static_cast<float>(Raw);
+    if(Binding->TryGetNumberField(TEXT("runSpeedRaw"),Raw))NativeRunRaw=static_cast<float>(Raw);
+    Native=Parent;
+    // Mount tint (the wolf reads as a dark sabercat).
+    {
+        const TSharedPtr<FJsonObject>* Tint=nullptr;const TArray<TSharedPtr<FJsonValue>>* B=nullptr;const TArray<TSharedPtr<FJsonValue>>* A=nullptr;
+        if(Binding->TryGetObjectField(TEXT("tint"),Tint)&&(*Tint)->TryGetArrayField(TEXT("base"),B)&&(*Tint)->TryGetArrayField(TEXT("accent"),A)&&B->Num()>=3&&A->Num()>=3)
+        {
+            const FLinearColor Base((*B)[0]->AsNumber(),(*B)[1]->AsNumber(),(*B)[2]->AsNumber()),Accent((*A)[0]->AsNumber(),(*A)[1]->AsNumber(),(*A)[2]->AsNumber());
+            double Strength=.6;(*Tint)->TryGetNumberField(TEXT("strength"),Strength);
+            if(!UCireChampionArt::TintBody(Parent,&Hero,Base,Accent,static_cast<float>(Strength),FLinearColor::Black))
+                for(int32 I=0;I<Parent->GetNumMaterials();++I)if(auto* MID=Parent->CreateDynamicMaterialInstance(I))
+                { MID->SetVectorParameterValue(TEXT("Tint"),Base);MID->SetVectorParameterValue(TEXT("BaseColor"),Base);MID->SetVectorParameterValue(TEXT("Color"),Base); }
+        }
+    }
+    const TArray<TSharedPtr<FJsonValue>>* PropList=nullptr;
+    if(Binding->TryGetArrayField(TEXT("props"),PropList))AttachProps(Hero,Parent,PropList,Scale);
+    if(Motion==TEXT("mounted"))
+    {
+        const TSharedPtr<FJsonObject>* R=nullptr;FString RiderPath,LocoPath,AttackPath;double RiderHeight=170,SeatHeight=.62,SeatForward=0;
+        if(!Binding->TryGetObjectField(TEXT("rider"),R)||!(*R)->TryGetStringField(TEXT("mesh"),RiderPath))return VisualMesh()!=nullptr;
+        (*R)->TryGetStringField(TEXT("locomotion"),LocoPath);(*R)->TryGetStringField(TEXT("attack"),AttackPath);
+        (*R)->TryGetNumberField(TEXT("heightCm"),RiderHeight);(*R)->TryGetNumberField(TEXT("seatHeight"),SeatHeight);(*R)->TryGetNumberField(TEXT("seatForward"),SeatForward);
+        auto* RiderMesh=LoadObject<USkeletalMesh>(nullptr,*RiderPath);SeatBone=FindSeat(*Mesh);
+        if(RiderMesh&&!SeatBone.IsNone())
+        {
+            Rider=NewObject<USkeletalMeshComponent>(&Hero,TEXT("MountedRider"));Hero.AddInstanceComponent(Rider);
+            Rider->SetSkeletalMesh(RiderMesh);Prepare(*Rider);
+            const auto RB=RiderMesh->GetImportedBounds();const float RScale=static_cast<float>(RiderHeight)/FMath::Max(1.f,static_cast<float>(RB.BoxExtent.Z*2));
+            float RiderYaw=0;FacingYaw(*RiderMesh,RiderYaw);
+            Rider->SetAnimInstanceClass(UCireCombatAnimInstance::StaticClass());
+            Rider->RegisterComponent();
+            // Seat: the rider's pelvis sits SeatHeight x mount height above the ground, over the seat bone (component space).
+            const FTransform SeatRef=RefComponent(*Mesh,SeatBone);
+            const FVector PelvisRef=RefComponent(*RiderMesh,TEXT("pelvis")).GetLocation()*RScale;
+            const FVector SeatWorld=Parent->GetComponentTransform().TransformPosition(SeatRef.GetLocation());
+            const FVector Ground=Hero.GetActorLocation()-FVector(0,0,Capsule);
+            const FVector Forward=Hero.GetActorForwardVector();
+            FVector Target=FVector(SeatWorld.X,SeatWorld.Y,Ground.Z+HeightCm*static_cast<float>(SeatHeight))+Forward*HeightCm*static_cast<float>(SeatForward);
+            const FRotator RiderRotation(0,Hero.GetActorRotation().Yaw+RiderYaw,0);
+            Rider->SetWorldScale3D(FVector(RScale));Rider->SetWorldRotation(RiderRotation);
+            Rider->SetWorldLocation(Target-RiderRotation.RotateVector(PelvisRef));
+            Rider->AttachToComponent(Parent,FAttachmentTransformRules::KeepWorldTransform,SeatBone);
+            if(auto* Blend=LoadObject<UBlendSpace>(nullptr,*LocoPath);Blend&&Blend->GetSkeleton()==RiderMesh->GetSkeleton())
+            {RiderLocomotion=Blend;if(auto* Single=Rider->GetSingleNodeInstance()){Single->SetAnimationAsset(Blend,true);Single->SetBlendSpacePosition(FVector::ZeroVector);Single->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);}}
+            bool bRelax=false;(*R)->TryGetBoolField(TEXT("relaxArms"),bRelax);bRiderRelax=bRelax;
+            RiderAttack=LoadObject<UAnimSequence>(nullptr,*AttackPath);if(RiderAttack&&RiderAttack->GetSkeleton()!=RiderMesh->GetSkeleton())RiderAttack=nullptr;
+            const TArray<TSharedPtr<FJsonValue>>* RiderProps=nullptr;
+            if((*R)->TryGetArrayField(TEXT("props"),RiderProps))AttachProps(Hero,Rider,RiderProps,RScale);
+        }
+    }
+    Hero.CacheInitialMeshOffset(Parent->GetRelativeLocation(),Parent->GetRelativeRotation());
+    return VisualMesh()!=nullptr;
+}
+
+void UCireCreatureArt::AttachProps(ACireHero& Hero,USkeletalMeshComponent* Body,const TArray<TSharedPtr<FJsonValue>>* List,float BodyScale)
+{
+    if(!Body||!List||!Body->GetSkeletalMeshAsset())return;
+    const USkeletalMesh& Skeletal=*Body->GetSkeletalMeshAsset();
+    for(const auto& Value:*List)
+    {
+        const TSharedPtr<FJsonObject>* O=nullptr;FString Asset,BoneName;
+        if(!Value->TryGetObject(O)||!(*O)->TryGetStringField(TEXT("asset"),Asset)||!(*O)->TryGetStringField(TEXT("bone"),BoneName))continue;
+        const FName Bone(*BoneName);if(Skeletal.GetRefSkeleton().FindBoneIndex(Bone)==INDEX_NONE)continue;
+        auto* PropMesh=LoadObject<UStaticMesh>(nullptr,*Asset,nullptr,LOAD_Quiet|LOAD_NoWarn);if(!PropMesh)continue;
+        auto* Part=NewObject<UStaticMeshComponent>(&Hero);Hero.AddInstanceComponent(Part);
+        Part->SetStaticMesh(PropMesh);Prepare(*Part);Part->SetCastShadow(true);Part->ComponentTags.AddUnique(TEXT("CireWeaponProp"));
+        const CireGrip::FWeapon* Grip=(Bone==TEXT("hand_l")||Bone==TEXT("hand_r"))?CireGrip::FindWeapon(PropMesh):nullptr;
+        const CireGrip::FPlacement Placement=Grip?CireGrip::Place(Skeletal,Bone,*Grip,1.f,BodyScale):CireGrip::FPlacement();
+        if(Placement.bValid){Part->SetupAttachment(Body,Placement.Bone);Part->SetRelativeTransform(Placement.Relative);}
+        else
+        {
+            // Holstered / belt props: an offset in real centimetres on the bone, props at world scale 1.
+            FVector Offset=FVector::ZeroVector;FRotator Rotation=FRotator::ZeroRotator;
+            const TArray<TSharedPtr<FJsonValue>>* V=nullptr;
+            if((*O)->TryGetArrayField(TEXT("offsetCm"),V)&&V->Num()==3)Offset=FVector((*V)[0]->AsNumber(),(*V)[1]->AsNumber(),(*V)[2]->AsNumber());
+            if((*O)->TryGetArrayField(TEXT("rotation"),V)&&V->Num()==3)Rotation=FRotator((*V)[0]->AsNumber(),(*V)[1]->AsNumber(),(*V)[2]->AsNumber());
+            Part->SetupAttachment(Body,Bone);
+            const FTransform BoneRef=RefComponent(Skeletal,Bone);
+            const float BoneScale=FMath::Max(.0001f,static_cast<float>(BoneRef.GetScale3D().GetAbsMax())*BodyScale);
+            Part->SetRelativeLocation(Offset/BoneScale);Part->SetRelativeRotation(Rotation);
+        }
+        Part->SetAbsolute(false,false,true);Part->SetWorldScale3D(FVector::OneVector);
+        Part->RegisterComponent();Props.Add(Part);
+    }
+}
+
+void UCireCreatureArt::UpdateNative(ACireHero& Hero,float Dt)
+{
+    auto* Anim=Native?Cast<UCireMonsterAnimInstance>(Native->GetAnimInstance()):nullptr;if(!Anim)return;
+    const float Scale=static_cast<float>(Native->GetComponentScale().X);
+    const float Speed=Hero.bDead?0.f:static_cast<float>(Hero.GetVelocity().Size2D());
+    SmoothedSpeed=FMath::FInterpTo(SmoothedSpeed,Speed,Dt,10.f);AnimationTime+=Dt;
+    UAnimSequence* WalkClip=Anim->Walk.Sequence;UAnimSequence* RunClip=Anim->Run.Sequence;
+    const auto& WalkInfo=CireAnimClips::Analyze(WalkClip);const auto& RunInfo=CireAnimClips::Analyze(RunClip);
+    float WalkSpeed=FMath::Max(20.f,WalkInfo.GroundSpeed()*Scale),RunSpeed=FMath::Max(WalkSpeed+50.f,RunInfo.GroundSpeed()*Scale);
+    if(NativeWalkRaw>0){WalkSpeed=NativeWalkRaw*Scale;RunSpeed=FMath::Max(WalkSpeed+50.f,NativeRunRaw*Scale);}
+    const float RunAlpha=RunClip?FMath::Clamp((SmoothedSpeed-WalkSpeed)/(RunSpeed-WalkSpeed),0.f,1.f):0.f;
+    Anim->MoveAlpha=FMath::FInterpTo(Anim->MoveAlpha,FMath::Clamp(SmoothedSpeed/(WalkSpeed*.35f),0.f,1.f),Dt,8.f);Anim->RunAlpha=RunAlpha;
+    const float WalkLength=WalkClip?WalkClip->GetPlayLength():1.f,RunLength=RunClip?RunClip->GetPlayLength():WalkLength;
+    const float Cycle=FMath::Lerp(WalkLength,RunLength,RunAlpha),Natural=FMath::Lerp(WalkSpeed,RunSpeed,RunAlpha);
+    if(Anim->MoveAlpha>.01f)NativePhase=FMath::Frac(NativePhase+Dt*FMath::Clamp(SmoothedSpeed/FMath::Max(1.f,Natural),.35f,2.2f)/FMath::Max(.1f,Cycle));
+    if(WalkClip)Anim->Walk.Time=FMath::Frac(NativePhase+WalkInfo.LeftFootApexPhase)*WalkLength;
+    if(RunClip)Anim->Run.Time=FMath::Frac(NativePhase+RunInfo.LeftFootApexPhase)*RunLength;
+    if(UAnimSequence* Idle=Anim->Idle.Sequence){NativeIdleTime=FMath::Fmod(NativeIdleTime+Dt,FMath::Max(.01f,Idle->GetPlayLength()));Anim->Idle.Time=NativeIdleTime;}
+    // Attack: every basic attack serial plays the body's attack clip (mount: the sabercat's swipe; gunblade: the aimed shot).
+    const double Now=Hero.GetWorld()->GetTimeSeconds();
+    if(Hero.AttackSerial!=SeenAttackSerial){SeenAttackSerial=Hero.AttackSerial;AttackSeenAt=Now;}
+    const float Age=static_cast<float>(Now-AttackSeenAt),Window=.85f;
+    if(AttackClip&&Age>=0&&Age<Window&&!Hero.bDead)
+    {
+        Anim->Action.Sequence=AttackClip;Anim->Action.Time=FMath::Clamp(Age/Window,0.f,1.f)*AttackClip->GetPlayLength();
+        Anim->Action.Weight=FMath::SmoothStep(0.f,1.f,FMath::Min(Age/.08f,(Window-Age)/.2f));Anim->Action.LowerBody=Kind==TEXT("mounted")?0.f:(1.f-Anim->MoveAlpha);
+    }
+    else{Anim->Action.Weight=0.f;Anim->Action.Sequence=nullptr;}
+    Native->SetOverlayMaterial(Native->GetOverlayMaterial());
+    if(Rider)
+    {
+        if(auto* Combat=Cast<UCireCombatAnimInstance>(Rider->GetSingleNodeInstance()))
+        {
+            Combat->SeatWeight=1.f;Combat->RelaxArms=bRiderRelax?1.f:0.f;
+            const FVector Lateral=FVector::CrossProduct(FVector::UpVector,Hero.GetActorForwardVector()).GetSafeNormal();
+            Combat->MotionPitchAxis=Rider->GetComponentQuat().UnrotateVector(Lateral);
+            Combat->SetPlaying(!Hero.bDead);
+            Combat->AttackSequence=RiderAttack;
+            const bool bAttacking=RiderAttack&&Age>=0&&Age<Window&&!Hero.bDead;
+            Combat->AttackTime=RiderAttack?FMath::Clamp(Age/Window,0.f,1.f)*RiderAttack->GetPlayLength():0.f;
+            Combat->AttackWeight=bAttacking?FMath::SmoothStep(0.f,1.f,FMath::Min(Age/.07f,(Window-Age)/.16f)):0.f;
+            Combat->AttackLowerBody=0.f;
+        }
+        Rider->SetOverlayMaterial(Native->GetOverlayMaterial());
+    }
+}

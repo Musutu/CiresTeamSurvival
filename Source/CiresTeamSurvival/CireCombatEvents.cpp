@@ -1,4 +1,5 @@
 #include "CireCombatEvents.h"
+#include "CireSignatureSkills.h" // new-champions
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireClassTraits.h"
 #include "CireItems.h" // progression-shop
@@ -161,11 +162,14 @@ float CireCombat::ApplyDamage(AActor* Source, AActor* Target, float Amount, cons
     Amount = CireItems::ModifyOutgoingDamage(Source, Target, Amount, AbilityName);
     Amount = CireClassTraits::ModifyOutgoingDamage(Source, Amount); // champion-draft: Support -20% damage
     Amount = CireCrowdControl::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // champion-draft: Executioner
+    Amount = CireSignatureSkills::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // new-champions: marks, fields, silver, banishment
+    if (Amount <= 0) return 0;
     const FCireDamageEvent Event(AbilityName,bCritical);
     const float Applied = Target->TakeDamage(Amount, Event, Source->GetInstigatorController(), Source);
     CireItems::OnDamageDealt(Source, Target, Applied, AbilityName); // progression-shop: lifesteal
     CireClassTraits::OnDamageDealt(Source, Target, Applied); // champion-draft: Support Mending Strikes
     if (Applied > 0) CireCrowdControl::OnAbilityHit(Source, Target, AbilityName); // champion-draft: ability CC from Abilities.json
+    if (Applied > 0) CireSignatureSkills::OnAbilityHit(Source, Target, AbilityName, Applied); // new-champions: slows, purges
     return Applied;
 }
 

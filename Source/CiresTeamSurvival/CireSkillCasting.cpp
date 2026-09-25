@@ -1,4 +1,5 @@
 #include "CireSkillCasting.h"
+#include "CireSignatureSkills.h" // new-champions
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireRoleSkills.h"
 #include "CireDeveloperTools.h"
@@ -48,9 +49,10 @@ bool PlacementSight(ACireHero* Hero, FVector Ground)
 }
 }
 
-bool CireSkillCasting::Handles(const FString& Id) { return CireRoleSkills::Handles(Id)||PlayerShot(Id) || PlayerConstruct(Id) || PlayerSummon(Id); }
+bool CireSkillCasting::Handles(const FString& Id) { return CireSignatureSkills::Handles(Id)||CireRoleSkills::Handles(Id)||PlayerShot(Id) || PlayerConstruct(Id) || PlayerSummon(Id); }
 FString CireSkillCasting::Name(const FString& Id)
 {
+    if(CireSignatureSkills::Knows(Id))return CireSignatureSkills::Name(Id); // new-champions
     if(CireRoleSkills::Handles(Id))return CireRoleSkills::Name(Id);
     if (Id == TEXT("ember_lance")) return TEXT("Ember Lance");
     if (Id == TEXT("frost_bind")) return TEXT("Frost Bind");
@@ -63,6 +65,7 @@ FString CireSkillCasting::Name(const FString& Id)
 }
 FString CireSkillCasting::Description(const FString& Id)
 {
+    if(CireSignatureSkills::Knows(Id))return CireSignatureSkills::Description(Id); // new-champions
     if(CireRoleSkills::Handles(Id))return CireRoleSkills::Description(Id);
     FCost Cost;
     if (!CostFor(Id, Cost)) return TEXT("Combat recipe unavailable.");
@@ -89,6 +92,7 @@ FString CireSkillCasting::Description(const FString& Id)
 }
 bool CireSkillCasting::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
 {
+    if(CireSignatureSkills::Handles(Id))return CireSignatureSkills::Cast(Hero,Slot,Id); // new-champions
     if(CireRoleSkills::Handles(Id))return CireRoleSkills::Cast(Hero,Slot,Id);
     if (!IsValid(Hero) || !Hero->HasAuthority() || !CireSkillRuntime::Alive(Hero) || !Handles(Id) ||
         !Hero->Skills.IsValidIndex(Slot) || Hero->Skills[Slot] != Id || !Hero->Cooldowns.IsValidIndex(Slot) ||

@@ -53,14 +53,22 @@
     "dual_daggers":  { "clip": "cast_a_spell", "twist": -18 },
     "lancer":        { "clip": "cast_a_spell", "twist": -14 },
     "troll_ranged":  { "clip": "cast_a_spell", "twist": -20 },
-    "centaur":       { "clip": "cast_a_spell", "twist": -14 }
+    "centaur":       { "clip": "cast_a_spell", "twist": -14 },
+    "tripo_gunblade":     { "clip": "attack_crossbow", "twist": 0 },
+    "tripo_witch_slayer": { "clip": "attack_crossbow", "twist": 0 },
+    "tripo_huntress":     { "clip": "attack_bow", "twist": 0 },
+    "aetheri_warden":     { "clip": "slash", "twist": 18 }
   },
   "shoutSkills": ["war_cry", "iron_guard", "second_wind", "bastion_of_dawn", "bear_roar", "paladin_relic_vow", "chieftain_courage",
                   "chieftain_earthshout", "chieftain_banner", "drakish_dragon_oath", "drakish_ancient_pact", "troll_hunger", "troll_red_moon",
-                  "behemoth_totem_bulwark", "miner_mountain", "golem_living_granite", "centaur_herd_call"],
+                  "behemoth_totem_bulwark", "miner_mountain", "golem_living_granite", "centaur_herd_call",
+                  "warding_talisman", "moonlit_sprint", "overcharge", "repulsor_pulse", "hex_mark"],
   "spellSkills": ["restoring_light", "sanctuary", "purify", "renewal", "protection_dome", "chain_spark", "ember_lance", "cataclysm",
                   "frost_bind", "venom_ground", "spectral_pack", "grave_line", "summoned_wall", "oathbound_guardian", "ashen_square",
                   "cinder_cone", "paladin_pilgrim_light", "keeper_beacon", "keeper_dawn_beam", "keeper_lantern_ward", "keeper_last_light",
                   "keeper_sunrise", "dryad_green_covenant", "dryad_grove_renewal", "dryad_root_snare", "dryad_seed_mend", "dryad_thorn_line",
-                  "golem_moss_bloom", "golem_ether_anchor", "drakish_ember_memory"]
+                  "golem_moss_bloom", "golem_ether_anchor", "drakish_ember_memory",
+                  "purge", "banishment", "witchfinders_mark", "spirit_lantern", "hexbane_judgment", "owl_scout", "phase_lance",
+                  "photon_turret", "skitter_swarm", "arc_mine", "disruption_pylon", "warp_obelisk", "aegis_pylon", "haste_pylon",
+                  "gravity_pylon", "stasis_snare", "aether_mend", "aether_nexus"]
 }

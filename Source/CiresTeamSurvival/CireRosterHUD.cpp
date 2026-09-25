@@ -36,6 +36,9 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "UObject/StrongObjectPtr.h"
+#include "Dom/JsonObject.h" // new-champions: DraftBackgrounds.json
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "UnrealClient.h"
 #include "ContentStreaming.h"
 #include "UObject/Package.h"
@@ -271,9 +274,34 @@ TArray<FString> NameLines(const FCireUIPainter& P,const FString& Name,float Size
     return Lines;
 }
 // Per-champion painted backdrop (Content/UI/Draft/Backgrounds); variants of one body share it.
+// new-champions: Content/Data/DraftBackgrounds.json names a painting per champion that has none yet, and the
+// role-themed painting of an existing champion to show until it is painted (Tools/AuthorNewChampions.py).
+struct FDraftBackgroundRow{FString Background,Fallback,Mood;};
+const TMap<FString,FDraftBackgroundRow>& DraftBackgroundRows()
+{
+    static TMap<FString,FDraftBackgroundRow> Rows;static bool bLoaded=false;
+    if(bLoaded)return Rows;bLoaded=true;
+    FString Json;TSharedPtr<FJsonObject> Root;const TSharedPtr<FJsonObject>* Champions=nullptr;
+    if(!FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/DraftBackgrounds.json")))||Json.Len()>65536||
+       !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),Root)||!Root||!Root->TryGetObjectField(TEXT("champions"),Champions))return Rows;
+    for(const auto& Pair:(*Champions)->Values)
+    {
+        const TSharedPtr<FJsonObject>* O=nullptr;FDraftBackgroundRow Row;
+        if(!Pair.Value->TryGetObject(O)||!(*O)->TryGetStringField(TEXT("background"),Row.Background)||!(*O)->TryGetStringField(TEXT("fallback"),Row.Fallback))continue;
+        (*O)->TryGetStringField(TEXT("mood"),Row.Mood);Rows.Add(FString(Pair.Key),Row);
+    }
+    return Rows;
+}
+bool HasBackgroundTexture(const FString& Id)
+{
+    const FString Path=FString::Printf(TEXT("/Game/UI/Draft/Backgrounds/T_DraftBg_%s.T_DraftBg_%s"),*Id,*Id);
+    return FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path));
+}
 FString BackgroundId(const FString& ProfileId)
 {
     for(const TCHAR* Family:{TEXT("ether_golem"),TEXT("paladin"),TEXT("troll_berserker")})if(ProfileId.StartsWith(Family))return Family;
+    if(const FDraftBackgroundRow* Row=DraftBackgroundRows().Find(ProfileId))
+        return HasBackgroundTexture(Row->Background)?Row->Background:Row->Fallback; // new-champions: painted slot, or the role-themed stand-in
     return ProfileId;
 }
 UTexture2D* Background(const FString& Id)
@@ -325,6 +353,15 @@ FString Capitalized(FString S){if(!S.IsEmpty())S[0]=FChar::ToUpper(S[0]);return 
 struct FSceneMood{FLinearColor Key,Rim,Fill;};
 FSceneMood MoodFor(const FString& Bg)
 {
+    // new-champions: freshly painted scenes pick their stage lighting by name (DraftBackgrounds.json "mood").
+    for(const auto& Pair:DraftBackgroundRows())if(Pair.Value.Background==Bg&&HasBackgroundTexture(Bg))
+    {
+        const FString& Mood=Pair.Value.Mood;
+        if(Mood==TEXT("violet"))return MoodFor(TEXT("summoner"));
+        if(Mood==TEXT("moon"))return MoodFor(TEXT("dryad"));
+        if(Mood==TEXT("ether"))return MoodFor(TEXT("ether_golem"));
+        return MoodFor(TEXT("wizard"));
+    }
     const FLinearColor Candle(1.f,.78f,.52f),Fire(1.f,.55f,.25f),Moon(.55f,.70f,1.f),Ether(.45f,1.f,.85f),Blood(1.f,.35f,.30f),Dawn(1.f,.88f,.70f),Violet(.70f,.55f,1.f);
     if(Bg==TEXT("wizard")||Bg==TEXT("drakish_footman")||Bg==TEXT("dwarf_miner")||Bg==TEXT("orc_chieftain"))return {Candle,Fire,FLinearColor(.60f,.45f,.40f)};
     if(Bg==TEXT("dryad")||Bg==TEXT("whisp")||Bg==TEXT("bear")||Bg==TEXT("ranger"))return {FLinearColor(.95f,.92f,.85f),Moon,FLinearColor(.45f,.55f,.60f)};
@@ -1332,6 +1369,27 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             {TEXT("07_search_golem"),-1,TEXT("ether_golem_support"),TEXT(""),0,false,33.f,TEXT("golem")},
             {TEXT("08_timer_low_behemoth"),-1,TEXT(""),TEXT("totemic_behemoth"),0,false,6.f,TEXT("")},
             {TEXT("09_locked_in_knight"),-1,TEXT(""),TEXT("knight"),0,true,0.f,TEXT("")}};
+        // new-champions: -CireDraftGalleryChampions=a,b,... replaces the fixed states with each champion
+        // selected (overview) and on its abilities tab, so new rosters can be reviewed in champion select.
+        static TArray<FShot> ShotList;static TArray<FString> ShotStrings;
+        if(ShotList.IsEmpty())
+        {
+            FString Ids;
+            if(FParse::Value(FCommandLine::Get(),TEXT("CireDraftGalleryChampions="),Ids,false))
+            {
+                TArray<FString> List;Ids.ParseIntoArray(List,TEXT(","),true);
+                ShotStrings.Reserve(List.Num()*4);
+                for(const FString& Id:List)
+                {
+                    const FString& Stored=ShotStrings.Add_GetRef(Id);
+                    const FString& Overview=ShotStrings.Add_GetRef(FString::Printf(TEXT("%02d_selected_%s"),ShotList.Num()+1,*Id));
+                    ShotList.Add({*Overview,-1,TEXT(""),*Stored,0,false,60.f,TEXT("")});
+                    const FString& Kit=ShotStrings.Add_GetRef(FString::Printf(TEXT("%02d_abilities_%s"),ShotList.Num()+1,*Id));
+                    ShotList.Add({*Kit,-1,TEXT(""),*Stored,1,false,50.f,TEXT("")});
+                }
+            }
+            if(ShotList.IsEmpty())for(const FShot& Shot:Shots)ShotList.Add(Shot);
+        }
         // Audit the frame in which the previous shot was requested (the frame is complete now).
         const auto RunAudit=[&](const FString& ShotName)
         {
@@ -1393,11 +1451,11 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             }
         }
         if(G.bShotThisFrame){G.bShotThisFrame=false;RunAudit(G.PendingShot);}
-        int32 ShotCount=static_cast<int32>(UE_ARRAY_COUNT(Shots));
-        FParse::Value(FCommandLine::Get(),TEXT("CireDraftGalleryShots="),ShotCount);ShotCount=FMath::Clamp(ShotCount,1,static_cast<int32>(UE_ARRAY_COUNT(Shots)));
+        int32 ShotCount=ShotList.Num();
+        FParse::Value(FCommandLine::Get(),TEXT("CireDraftGalleryShots="),ShotCount);ShotCount=FMath::Clamp(ShotCount,1,ShotList.Num());
         if(G.Stage<ShotCount)
         {
-            const FShot& Shot=Shots[G.Stage];
+            const FShot& Shot=ShotList[G.Stage];
             DebugSetPointer(FVector2D(VW-1.f,VH-1.f)); // keep the real cursor from raising tooltips
             S.Filter=Shot.Filter;S.InfoTab=Shot.Tab;S.ForcedHover=Shot.Hover;S.bForceOutro=Shot.bOutro;S.ForcedTimer=Shot.Timer;
             S.bChosen=*Shot.Select!=0;S.SelectedId=Shot.Select;if(S.bChosen)S.CursorId=Shot.Select;

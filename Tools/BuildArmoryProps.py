@@ -195,6 +195,8 @@ def validate_loadouts(models):
     ids={r["id"] for r in roster["champions"]}
     require(set(data["profiles"])==ids,"Loadout/profile coverage mismatch")
     known=set(models)|{"legacy/"+n for n in ("Sword","Shield","Bow","Arrow","Lance")}
+    # new-champions: props authored by Tools/BuildNewChampionContent.py.
+    known|={"hunter/"+n for n in ("Flintlock","Falchion","ArcaneBlunderbuss","SpectralBlade","Glaive","GlaiveLauncher","AetherStaff","AetherHalberd")}
     for name,row in data["presets"].items():
         require(row["motion"] in ("none","melee","cast","bow","crossbow","throw") and len(row["parts"])<=6,"Invalid preset "+name)
         roles=[p.get("role","") for p in row["parts"]]

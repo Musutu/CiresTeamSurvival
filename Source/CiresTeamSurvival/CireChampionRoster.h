@@ -14,6 +14,7 @@ struct FCireChampionProfile
     FString Description,ArtFamily,ArtStatus,ArtProvenance;
     // Draft-screen presentation (optional in JSON): class caption, 1..3 difficulty, one-line lore.
     FString ClassType,Lore;
+    FString Quote; // new-champions: optional one-line battle quote (<= 120 chars)
     // monster-races: player race (human, dwarf, orc, troll, drakkari, ether-construct, beast, sylvan, spirit...);
     // Docs/Races.md links each player race to its monster counterpart.
     FString Race;

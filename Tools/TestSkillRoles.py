@@ -17,6 +17,10 @@ BITS = {'RoleTank': 1, 'RoleDamage': 2, 'RoleSupport': 4, 'RoleAll': 7}
 NAMES = {'tank': 1, 'damage': 2, 'healer': 4, 'support': 4}
 TABLE = {i: sum(BITS[b.strip()] for b in expr.split('|'))
          for i, expr in re.findall(r'\{"([a-z_]+)",\s*(Role[A-Za-z]+(?:\s*\|\s*Role[A-Za-z]+)*)\}', RULES)}
+import sys
+sys.path.insert(0, str(ROOT / 'Tools'))
+import BuildAbilityDB  # noqa: E402
+SIGNATURE = set(BuildAbilityDB.NEW_CHAMPION_SKILLS)
 CATALOG = {i: k for i, k in re.findall(r'\{"([a-z_]+)",\s*"[^"]+",\s*SkillKind::(Active|Passive|Ultimate)\}', RULES)}
 PRIMARY = {'tank': 1, 'damage': 2, 'healer': 4}
 
@@ -55,7 +59,7 @@ class SkillRoleTests(unittest.TestCase):
         for c in ROSTER['champions']:
             mask = profile_mask(c)
             for s in c['actives'] + [c['passive'], c['ultimate']]:
-                if s['status'] == 'implemented':
+                if s['status'] == 'implemented' and s['id'] not in SIGNATURE:  # new-champions: signature-only kits never enter role offers
                     self.assertTrue(TABLE[s['id']] & mask, f"{c['id']} example {s['id']} outside its roles")
 
     def test_every_profile_has_explicit_role_and_presentation(self):

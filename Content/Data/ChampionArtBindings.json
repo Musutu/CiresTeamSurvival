@@ -149,6 +149,141 @@
       "heightCm": 236,
       "motion": "spatial_skin_prototype",
       "status": "custom_ready"
+    },
+    {
+      "profileId": "gunblade",
+      "status": "ready",
+      "mesh": "/Game/Tripo/Champions/Gunblade/CTS_Champ_Gunblade.CTS_Champ_Gunblade",
+      "locomotion": "/Game/Tripo/Champions/Gunblade/Animations/BS_Idle_Walk_Run_Gunblade.BS_Idle_Walk_Run_Gunblade",
+      "attack": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_slash.CTS_Champ_Gunblade_slash",
+      "heightCm": 182,
+      "relaxArms": true,
+      "note": "Tripo model (tripo-races). Temporary body before it: Temporary body: the scarecrow-hatted BarbedHunterB monster (its crossbow is fused into the right hand and reads as the gun); falchion on the off hand.",
+      "tripoSlot": {
+        "unit": "gunblade",
+        "skeleton": "Tripo humanoid biped (61-bone champion batch rig: pelvis, spine_01..03, thigh/calf/foot, hand_l/hand_r)",
+        "sheet": "Saved/Reference/gunblade-sheet.png",
+        "props": [
+          "flintlock pistol (hand_r)",
+          "falchion (hand_l)",
+          "powder flask, bounty ledger (belt)"
+        ],
+        "bindAs": "status ready: mesh + BS_Idle_Walk_Run + A_*_Attack (see the lancer row)",
+        "delivered": "/Game/Tripo/Champions/Gunblade/CTS_Champ_Gunblade.CTS_Champ_Gunblade"
+      }
+    },
+    {
+      "profileId": "witch_slayer",
+      "status": "ready",
+      "mesh": "/Game/Tripo/Champions/WitchSlayer/CTS_Champ_WitchSlayer.CTS_Champ_WitchSlayer",
+      "locomotion": "/Game/Tripo/Champions/WitchSlayer/Animations/BS_Idle_Walk_Run_WitchSlayer.BS_Idle_Walk_Run_WitchSlayer",
+      "attack": "/Game/Tripo/Champions/WitchSlayer/Animations/CTS_Champ_WitchSlayer_attack_crossbow.CTS_Champ_WitchSlayer_attack_crossbow",
+      "heightCm": 180,
+      "note": "Tripo model (tripo-races). Temporary body before it: Temporary body: the Rift Summoner rig re-tinted dark green with blue arcane accents.",
+      "tripoSlot": {
+        "unit": "witch_slayer",
+        "skeleton": "Tripo humanoid biped (champion batch rig)",
+        "sheet": "Saved/Reference/witchslayer-sheet.png",
+        "props": [
+          "arcane blunderbuss with blue orb drum (hand_l)",
+          "spectral arcane blade (hand_r / back)",
+          "spirit lantern (belt)"
+        ],
+        "delivered": "/Game/Tripo/Champions/WitchSlayer/CTS_Champ_WitchSlayer.CTS_Champ_WitchSlayer"
+      }
+    },
+    {
+      "profileId": "huntress",
+      "status": "custom_ready",
+      "motion": "mounted",
+      "mesh": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/Wolf.Wolf",
+      "heightCm": 175,
+      "yaw": -90,
+      "lockRoot": true,
+      "walkSpeedRaw": 180.4,
+      "runSpeedRaw": 759.1,
+      "animations": {
+        "idle": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle.WolfAnimalArmature_Idle",
+        "walk": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Walk.WolfAnimalArmature_Walk",
+        "run": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Gallop.WolfAnimalArmature_Gallop",
+        "attack": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Attack.WolfAnimalArmature_Attack"
+      },
+      "tint": {
+        "base": [
+          0.52,
+          0.4,
+          0.28
+        ],
+        "accent": [
+          0.55,
+          0.12,
+          0.08
+        ],
+        "strength": 0.8
+      },
+      "rider": {
+        "mesh": "/Game/Tripo/Champions/Huntress/CTS_Champ_Huntress.CTS_Champ_Huntress",
+        "locomotion": "/Game/Tripo/Champions/Huntress/Animations/BS_Idle_Walk_Run_Huntress.BS_Idle_Walk_Run_Huntress",
+        "attack": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_attack_bow.CTS_Champ_Huntress_attack_bow",
+        "heightCm": 172,
+        "seatHeight": 0.62,
+        "seatForward": -0.08,
+        "props": [
+          {
+            "asset": "/Game/Tripo/Props/HuntressGlaiveLauncher/CTS_Prop_HuntressGlaiveLauncher.CTS_Prop_HuntressGlaiveLauncher",
+            "bone": "hand_l"
+          }
+        ],
+        "relaxArms": true
+      },
+      "tripoSlot": {
+        "unit": "huntress (rider) + huntress_sabercat (mount)",
+        "skeleton": "rider: Tripo humanoid biped seated; mount: quadruped (sabercat) rig",
+        "sheet": "Saved/Reference/huntress-sheet.png",
+        "props": [
+          "mounted glaive launcher (rider hand_r)",
+          "glaive ammo (back)",
+          "mount barding"
+        ],
+        "delivered": "rider: /Game/Tripo/Champions/Huntress/CTS_Champ_Huntress.CTS_Champ_Huntress; mount (no clips yet): /Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat"
+      },
+      "note": "Tripo Huntress seated on the Quaternius wolf (tinted as a sabercat) until the Tripo sabercat mount (/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat) has animation clips."
+    },
+    {
+      "profileId": "aetheri_artificer",
+      "status": "ready",
+      "mesh": "/Game/Tripo/Champions/AetheriArtificer/CTS_Champ_AetheriArtificer.CTS_Champ_AetheriArtificer",
+      "locomotion": "/Game/Tripo/Champions/AetheriArtificer/Animations/BS_Idle_Walk_Run_AetheriArtificer.BS_Idle_Walk_Run_AetheriArtificer",
+      "attack": "/Game/Tripo/Champions/AetheriArtificer/Animations/CTS_Champ_AetheriArtificer_cast_a_spell.CTS_Champ_AetheriArtificer_cast_a_spell",
+      "heightCm": 184,
+      "note": "Tripo model (tripo-races). Temporary body before it: Temporary body: the Cinder Arcanist rig re-tinted Aetheri gold-white with violet energy.",
+      "tripoSlot": {
+        "unit": "aetheri_artificer",
+        "skeleton": "Tripo humanoid biped (champion batch rig)",
+        "sheet": "(none yet: gold/white alloy, blue-violet energy)",
+        "props": [
+          "floating focus crystal / energy staff (hand_l)"
+        ],
+        "delivered": "/Game/Tripo/Champions/AetheriArtificer/CTS_Champ_AetheriArtificer.CTS_Champ_AetheriArtificer"
+      }
+    },
+    {
+      "profileId": "aetheri_warden",
+      "status": "ready",
+      "mesh": "/Game/Tripo/Champions/AetheriWarden/CTS_Champ_AetheriWarden.CTS_Champ_AetheriWarden",
+      "locomotion": "/Game/Tripo/Champions/AetheriWarden/Animations/BS_Idle_Walk_Run_AetheriWarden.BS_Idle_Walk_Run_AetheriWarden",
+      "attack": "/Game/Tripo/Champions/AetheriWarden/Animations/CTS_Champ_AetheriWarden_slash.CTS_Champ_AetheriWarden_slash",
+      "heightCm": 192,
+      "note": "Tripo model (tripo-races). Temporary body before it: Temporary body: the Keeper of the Light rig re-tinted white-gold with blue-violet psionic accents.",
+      "tripoSlot": {
+        "unit": "aetheri_warden",
+        "skeleton": "Tripo humanoid biped (champion batch rig)",
+        "sheet": "(none yet: white-gold alloy warden, psionic glow)",
+        "props": [
+          "energy halberd (hand_r)"
+        ],
+        "delivered": "/Game/Tripo/Champions/AetheriWarden/CTS_Champ_AetheriWarden.CTS_Champ_AetheriWarden"
+      }
     }
   ]
 }

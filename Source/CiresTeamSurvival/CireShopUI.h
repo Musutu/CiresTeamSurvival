@@ -47,6 +47,7 @@ namespace CireShopUI
     // Virtual pointer for offscreen captures (logical units); (-1,-1) clears.
     CIRESTEAMSURVIVAL_API void DebugMouse(FVector2D Logical);
     CIRESTEAMSURVIVAL_API void DebugSkillTab(const FString& SkillId);
+    CIRESTEAMSURVIVAL_API void DebugSkillFilter(int32 Filter); // new-champions: 0 all, 1 Constructs
     CIRESTEAMSURVIVAL_API void DebugItemTab();
     CIRESTEAMSURVIVAL_API FVector2D DebugSkillGridPos(const FString& SkillId);
     // Freezes UI time at (last wax-seal stamp + Age); the current shop tab (0 items, 1 skills).

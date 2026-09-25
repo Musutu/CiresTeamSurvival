@@ -48,7 +48,7 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
         const TSharedPtr<FJsonObject>* O=nullptr;if(!Pair.Value->TryGetObject(O)||!O)return Fail(TEXT("ability must be an object"));
         const TSharedPtr<FJsonObject>& J=*O;FCireAbilityDef D;
         D.Id=Str(J,TEXT("id"));D.Name=Str(J,TEXT("name"));D.Icon=Str(J,TEXT("icon"));D.Kind=Str(J,TEXT("kind"));D.School=Str(J,TEXT("school"));
-        D.Targeting=Str(J,TEXT("targeting"));D.Status=Str(J,TEXT("status"));D.Description=Str(J,TEXT("description"));D.EffectLabel=Str(J,TEXT("effectLabel"));
+        D.Targeting=Str(J,TEXT("targeting"));D.Status=Str(J,TEXT("status"));D.Description=Str(J,TEXT("description"));D.EffectLabel=Str(J,TEXT("effectLabel"));D.Category=Str(J,TEXT("category"));
         D.Types=Strings(J,TEXT("types"));D.Champions=Strings(J,TEXT("champions"));D.SignatureOf=Strings(J,TEXT("signatureOf"));
         D.CastTime=Num(J,TEXT("castTime"));
         if(D.Id!=FString(Pair.Key)||D.Id.IsEmpty()||Seen.Contains(D.Id)||D.Name.IsEmpty()||!Kinds.Contains(D.Kind)||!Schools.Contains(D.School)||

@@ -409,6 +409,206 @@
     },
     "SM_Bolt": {
       "grip": "ammo"
+    },
+    "SM_Falchion": {
+      "handle": [
+        0,
+        0,
+        -3
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 1.6,
+      "tilt": 25
+    },
+    "SM_Flintlock": {
+      "handle": [
+        0,
+        0,
+        -2
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 1.9
+    },
+    "SM_ArcaneBlunderbuss": {
+      "handle": [
+        0,
+        0,
+        -2
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.1,
+      "offHand": [
+        16,
+        0,
+        1
+      ],
+      "offAxis": [
+        1,
+        0,
+        0
+      ],
+      "carry": true,
+      "carryAt": [
+        0.45,
+        0.34,
+        0.42
+      ]
+    },
+    "SM_SpectralBlade": {
+      "handle": [
+        0,
+        0,
+        -3
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 1.5,
+      "tilt": 20
+    },
+    "SM_Glaive": {
+      "handle": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 1.8
+    },
+    "SM_GlaiveLauncher": {
+      "handle": [
+        0,
+        0,
+        -2
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.2,
+      "offHand": [
+        18,
+        0,
+        1
+      ],
+      "offAxis": [
+        1,
+        0,
+        0
+      ],
+      "carry": true,
+      "carryAt": [
+        0.45,
+        0.34,
+        0.42
+      ]
+    },
+    "SM_AetherStaff": {
+      "handle": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.2,
+      "offHand": [
+        0,
+        0,
+        22
+      ],
+      "offAxis": [
+        0,
+        0,
+        1
+      ],
+      "carry": true
+    },
+    "SM_AetherHalberd": {
+      "handle": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "edge": [
+        1,
+        0,
+        0
+      ],
+      "radiusCm": 2.2,
+      "offHand": [
+        0,
+        0,
+        28
+      ],
+      "offAxis": [
+        0,
+        0,
+        1
+      ],
+      "carry": true
     }
   },
   "swapHandPresets": [
@@ -417,6 +617,8 @@
     "wizard",
     "dryad",
     "keeper",
-    "ranger_crossbow"
+    "ranger_crossbow",
+    "witch_slayer",
+    "artificer"
   ]
 }

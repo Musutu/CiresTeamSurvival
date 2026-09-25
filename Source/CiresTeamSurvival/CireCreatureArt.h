@@ -3,12 +3,16 @@
 #include "Animation/AnimInstance.h"
 #include "Components/ActorComponent.h"
 #include "ProceduralMeshComponent.h"
+#include "Dom/JsonObject.h"
 #include "CireCreatureArt.generated.h"
 
 class ACireHero;
 class UStaticMeshComponent;
 class USkeletalMeshComponent;
 class UMeshComponent;
+class UStaticMeshComponent;
+class UAnimSequence;
+class UBlendSpace;
 
 /** Imported custom quadruped rig, evaluated in local space without root motion. */
 UCLASS(Transient)
@@ -38,7 +42,19 @@ class CIRESTEAMSURVIVAL_API UCireCreatureArt : public UActorComponent
     GENERATED_BODY()
 public:
     static bool Handles(const FString& Profile);
+    /** new-champions: binding motions drawn by this adapter ("monster_native", "mounted"). */
+    static bool HandlesMotion(const FString& Motion);
     bool Apply(ACireHero& Hero,const FString& Profile,const FString& MeshPath,float HeightCm);
+    /**
+     * new-champions: data-driven bodies from ChampionArtBindings.json.
+     *  monster_native  a Tripo monster body driven natively (idle/walk/run/attack clips) with props on its bones (Gunblade)
+     *  mounted         a quadruped mount (idle/walk/run/attack) with a humanoid rider seated on its back (Huntress)
+     */
+    bool ApplyBinding(ACireHero& Hero,const FString& Profile,const FString& Motion,const FString& MeshPath,float HeightCm,const TSharedPtr<FJsonObject>& Binding);
+    USkeletalMeshComponent* GetRider() const { return Rider; }
+    USkeletalMeshComponent* GetNativeBody() const { return Native; }
+    FName GetSeatBone() const { return SeatBone; }
+    int32 GetPropCount() const { return Props.Num(); }
     void Update(ACireHero& Hero,float Delta);
     void Clear();
     UMeshComponent* VisualMesh() const;
@@ -56,6 +72,20 @@ private:
     UPROPERTY(Transient) TObjectPtr<UStaticMeshComponent> StaticBody;
     UPROPERTY(Transient) TObjectPtr<UProceduralMeshComponent> Centaur;
     UPROPERTY(Transient) TObjectPtr<USkeletalMeshComponent> Bear;
+    // new-champions: native monster body / mount, rider and props.
+    UPROPERTY(Transient) TObjectPtr<USkeletalMeshComponent> Native;
+    UPROPERTY(Transient) TObjectPtr<USkeletalMeshComponent> Rider;
+    UPROPERTY(Transient) TArray<TObjectPtr<UStaticMeshComponent>> Props;
+    UPROPERTY(Transient) TObjectPtr<UAnimSequence> AttackClip;
+    UPROPERTY(Transient) TObjectPtr<UAnimSequence> RiderAttack;
+    UPROPERTY(Transient) TObjectPtr<UBlendSpace> RiderLocomotion;
+    FName SeatBone;
+    float NativeWalkRaw=0,NativeRunRaw=0,NativePhase=0,NativeIdleTime=0;
+    uint32 SeenAttackSerial=0;
+    bool bRiderRelax=false;
+    double AttackSeenAt=-100;
+    void UpdateNative(ACireHero& Hero,float Delta);
+    void AttachProps(ACireHero& Hero,USkeletalMeshComponent* Body,const TArray<TSharedPtr<FJsonValue>>* List,float MeshScale);
     TArray<FCireCreatureSection> Sections;
     FString Kind;
     FVector BasePosition=FVector::ZeroVector;

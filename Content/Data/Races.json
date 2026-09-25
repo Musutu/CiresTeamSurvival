@@ -125,7 +125,8 @@
     "stoneborn",
     "feral_kin",
     "fallen_order",
-    "voidborn"
+    "voidborn",
+    "aetheri"
   ],
   "races": {
     "drowned_deep": {
@@ -9269,6 +9270,995 @@
                 "healthThreshold": 0.3,
                 "buff": "npc_void",
                 "cue": "npc.void.cast",
+                "core": true
+              }
+            ]
+          }
+        }
+      }
+    },
+    "aetheri": {
+      "name": "The Aetheri Remnant",
+      "short": "Aetheri",
+      "lore": "A splinter host of the Aetheri, crystal-and-light beings who worship their own machines. They warp through the Breach to claim its energy, and they build before they bleed.",
+      "origin": {
+        "playerRaces": [
+          "aetheri"
+        ],
+        "profiles": [
+          "aetheri_artificer",
+          "aetheri_warden"
+        ],
+        "note": "The same luminous race as the Aetheri Artificer and Warden: the Remnant are the zealots who stayed with the machine-cult."
+      },
+      "palette": {
+        "base": [
+          0.82,
+          0.74,
+          0.52
+        ],
+        "accent": [
+          0.42,
+          0.36,
+          1.0
+        ],
+        "secondary": [
+          0.12,
+          0.1,
+          0.18
+        ],
+        "glow": [
+          0.5,
+          0.42,
+          1.0
+        ],
+        "variants": [
+          {
+            "name": "Radiant Gold",
+            "base": [
+              0.82,
+              0.74,
+              0.52
+            ],
+            "accent": [
+              0.42,
+              0.36,
+              1.0
+            ]
+          },
+          {
+            "name": "Void Alloy",
+            "base": [
+              0.16,
+              0.14,
+              0.22
+            ],
+            "accent": [
+              0.3,
+              0.75,
+              1.0
+            ]
+          },
+          {
+            "name": "Pale Crystal",
+            "base": [
+              0.86,
+              0.88,
+              0.92
+            ],
+            "accent": [
+              0.62,
+              0.3,
+              0.95
+            ]
+          }
+        ]
+      },
+      "footsteps": "golem",
+      "ambienceCue": "amb.race.aether",
+      "voiceCue": "voice.race.growl",
+      "slots": {
+        "line": "aetheri_phaseblade",
+        "bruiser": "aetheri_warframe",
+        "tank": "aetheri_bulwark",
+        "caster": "aetheri_engineer",
+        "ranged": "aetheri_lancer",
+        "special": "skitter_drone"
+      },
+      "bosses": {
+        "warlord": "aetheri_hierarch",
+        "colossus": "aetheri_colossus"
+      },
+      "units": {
+        "aetheri_phaseblade": {
+          "slot": "line",
+          "look": "Slender luminous warrior in gold-white alloy armour with blue-violet energy seams, a smooth crested helm with a glowing visor slit, twin psionic blades of light projecting from its wrist gauntlets, a flowing sash of energy.",
+          "poolDraw": 2,
+          "fallback": "hollow_infantry",
+          "archetype": {
+            "displayName": "Aetheri Phaseblade",
+            "role": "bruiser",
+            "classification": "normal",
+            "tuningKind": "basic",
+            "moveSpeed": 250,
+            "attackRange": 160,
+            "attackInterval": 1.5,
+            "scale": 0.95,
+            "healthScale": 0.85,
+            "mesh": {
+              "slot": "race_aetheri_line",
+              "path": "",
+              "tint": [
+                0.82,
+                0.74,
+                0.52
+              ]
+            },
+            "props": [
+              {
+                "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_Dagger.SM_Dagger",
+                "bone": "hand_r",
+                "scale": 1.0
+              }
+            ],
+            "abilities": [
+              {
+                "id": "npc_melee",
+                "name": "Psi Blades",
+                "description": "Twin light-blades at its current target.",
+                "type": "melee",
+                "basic": true,
+                "range": 165
+              },
+              {
+                "id": "aether_phase_strike",
+                "name": "Phase Strike",
+                "description": "Marks a line and blinks through it, slashing everyone in the path.",
+                "type": "charge",
+                "cooldown": 11,
+                "castTime": 0.7,
+                "minRange": 320,
+                "range": 900,
+                "length": 750,
+                "width": 170,
+                "damageMultiplier": 1.6,
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "buff": "npc_aether",
+                "cue": "npc.aether.start"
+              },
+              {
+                "id": "aether_psi_sweep",
+                "name": "Psi Sweep",
+                "description": "A wide sweep of light-blades that slows everyone hit for 2s.",
+                "type": "cone",
+                "cooldown": 9,
+                "castTime": 0.8,
+                "range": 300,
+                "radius": 300,
+                "angle": 110,
+                "damageMultiplier": 1.6,
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "buff": "npc_aether",
+                "cue": "npc.aether.start",
+                "slow": 2
+              },
+              {
+                "id": "aether_warp_step",
+                "name": "Warp Step",
+                "description": "Warps away when a champion reaches melee range.",
+                "type": "disengage",
+                "cooldown": 10,
+                "castTime": 0,
+                "range": 260,
+                "length": 600,
+                "buff": "npc_aether",
+                "cue": "npc.aether.start"
+              }
+            ]
+          }
+        },
+        "aetheri_warframe": {
+          "slot": "bruiser",
+          "look": "Hulking walking war-suit of gold and white alloy plates with a glowing violet reactor core in the chest, oversized gauntlet fists crackling with energy, a small crystalline pilot visible behind a curved light canopy.",
+          "poolDraw": 2,
+          "fallback": "ironbound_bruiser",
+          "archetype": {
+            "displayName": "Aetheri Warframe",
+            "role": "bruiser",
+            "classification": "normal",
+            "tuningKind": "bruiser",
+            "moveSpeed": 185,
+            "attackRange": 170,
+            "attackInterval": 1.8,
+            "scale": 1.1,
+            "mesh": {
+              "slot": "race_aetheri_bruiser",
+              "path": "",
+              "tint": [
+                0.82,
+                0.74,
+                0.52
+              ]
+            },
+            "props": [
+              {
+                "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_WarAxe.SM_WarAxe",
+                "bone": "hand_r",
+                "scale": 1.0
+              }
+            ],
+            "abilities": [
+              {
+                "id": "npc_melee",
+                "name": "Alloy Fists",
+                "description": "A crushing gauntlet blow at its current target.",
+                "type": "melee",
+                "basic": true,
+                "range": 170
+              },
+              {
+                "id": "aether_warp_slam",
+                "name": "Warp Slam",
+                "description": "Marks a ring and slams the ground, knocking everyone inside away.",
+                "type": "selfCircle",
+                "cooldown": 11,
+                "castTime": 1.2,
+                "range": 360,
+                "radius": 360,
+                "damageMultiplier": 1.7,
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast",
+                "knockback": 420
+              },
+              {
+                "id": "aether_warframe_charge",
+                "name": "Reactor Charge",
+                "description": "Marks a line and thunders through it on reactor thrust.",
+                "type": "charge",
+                "cooldown": 14,
+                "castTime": 0.9,
+                "minRange": 320,
+                "range": 900,
+                "length": 900,
+                "width": 170,
+                "damageMultiplier": 2.0,
+                "color": [
+                  0.95,
+                  0.85,
+                  0.45,
+                  0.35
+                ],
+                "buff": "npc_sundered",
+                "cue": "npc.cleave.start"
+              },
+              {
+                "id": "aether_overdrive",
+                "name": "Overdrive",
+                "description": "At 35% health its reactor overloads: +35% damage and faster attacks.",
+                "type": "enrage",
+                "cooldown": 0,
+                "castTime": 1.0,
+                "range": 5000,
+                "magnitude": 0.35,
+                "healthThreshold": 0.35,
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              }
+            ]
+          }
+        },
+        "aetheri_bulwark": {
+          "slot": "tank",
+          "look": "Tall armoured Aetheri guardian carrying a tower shield made of hard light framed in gold, a faceted prism crystal floating above its shoulders, pale white-gold plating with violet glow lines.",
+          "poolDraw": 3,
+          "fallback": "hollow_shieldbearer",
+          "archetype": {
+            "displayName": "Prism Bulwark",
+            "role": "tank",
+            "classification": "normal",
+            "healthMultiplier": 2.2,
+            "damage": 12,
+            "eliteDamageMultiplier": 0.7,
+            "moveSpeed": 180,
+            "armor": 0.25,
+            "attackRange": 170,
+            "attackInterval": 2.0,
+            "scale": 1.12,
+            "mesh": {
+              "slot": "race_aetheri_tank",
+              "path": "",
+              "tint": [
+                0.82,
+                0.74,
+                0.52
+              ]
+            },
+            "props": [
+              {
+                "asset": "/Game/Art/Weapons/CombatPrototype01/SM_PrototypeShield.SM_PrototypeShield",
+                "bone": "hand_l",
+                "scale": 1.0
+              },
+              {
+                "asset": "/Game/Art/Weapons/CombatPrototype01/SM_PrototypeSword.SM_PrototypeSword",
+                "bone": "hand_r",
+                "scale": 1.0
+              }
+            ],
+            "abilities": [
+              {
+                "id": "npc_melee",
+                "name": "Prism Bash",
+                "description": "A hard-light shield bash at its current target.",
+                "type": "melee",
+                "basic": true,
+                "range": 170
+              },
+              {
+                "id": "aether_prism_glare",
+                "name": "Prism Glare",
+                "description": "Its prism flares: for 6s nearby champions deal 35% less damage to anything but the Bulwark.",
+                "type": "provoke",
+                "cooldown": 16,
+                "castTime": 0.5,
+                "range": 550,
+                "radius": 550,
+                "duration": 6,
+                "magnitude": 0.35,
+                "color": [
+                  0.35,
+                  0.55,
+                  1.0,
+                  0.3
+                ],
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              },
+              {
+                "id": "aether_hardlight_shell",
+                "name": "Hardlight Shell",
+                "description": "Below 50% health it closes a shell of hard light: 50% less damage for 6s.",
+                "type": "shieldWall",
+                "cooldown": 30,
+                "castTime": 0.5,
+                "range": 5000,
+                "duration": 6,
+                "magnitude": 0.5,
+                "healthThreshold": 0.5,
+                "buff": "npc_scaleward",
+                "cue": "npc.ward.start"
+              },
+              {
+                "id": "aether_link_shield",
+                "name": "Link Shield",
+                "description": "Links a shield to the most injured ally, taking 40% of its damage for 8s.",
+                "type": "guard",
+                "cooldown": 14,
+                "castTime": 0.4,
+                "range": 700,
+                "radius": 700,
+                "duration": 8,
+                "magnitude": 0.4,
+                "buff": "npc_aether",
+                "cue": "npc.aether.start"
+              },
+              {
+                "id": "aether_bulwark_pylon",
+                "name": "Empowering Pylon",
+                "description": "Interruptible cast: warps in a pylon whose field makes Aetheri stronger (+25% damage, less damage taken).",
+                "type": "deploy",
+                "cooldown": 22,
+                "castTime": 1.3,
+                "range": 900,
+                "radius": 300,
+                "deploy": "npc_empower_pylon",
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "interruptible": true,
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              }
+            ]
+          }
+        },
+        "aetheri_engineer": {
+          "slot": "caster",
+          "look": "Robed Aetheri engineer in layered white cloth over gold alloy, a halo of floating tools and crystal shards, glowing blue-violet hands shaping light, a backpack frame holding folded turret parts.",
+          "poolDraw": 3,
+          "fallback": "blight_caster",
+          "archetype": {
+            "displayName": "Aetheri Engineer",
+            "role": "caster",
+            "classification": "normal",
+            "tuningKind": "caster",
+            "moveSpeed": 195,
+            "attackRange": 650,
+            "attackInterval": 2.2,
+            "preferredRange": 560,
+            "kiteRange": 320,
+            "scale": 1.0,
+            "mesh": {
+              "slot": "race_aetheri_caster",
+              "path": "",
+              "tint": [
+                0.82,
+                0.74,
+                0.52
+              ]
+            },
+            "props": [
+              {
+                "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_RiftStaff.SM_RiftStaff",
+                "bone": "hand_r",
+                "scale": 1.0
+              }
+            ],
+            "abilities": [
+              {
+                "id": "npc_bolt",
+                "name": "Photon Bolt",
+                "description": "Interruptible cast. A bolt of photon energy.",
+                "type": "projectile",
+                "basic": true,
+                "interruptible": true,
+                "skillshot": "npc_shadow_bolt",
+                "castTime": 1.4,
+                "range": 650
+              },
+              {
+                "id": "aether_deploy_turret",
+                "name": "Deploy Turret",
+                "description": "Interruptible cast: warps in a photon turret beside itself that fires at champions (up to 2).",
+                "type": "deploy",
+                "cooldown": 16,
+                "castTime": 1.2,
+                "range": 900,
+                "radius": 300,
+                "deploy": "npc_photon_turret",
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "interruptible": true,
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              },
+              {
+                "id": "aether_deploy_skitters",
+                "name": "Skitter Swarm",
+                "description": "Interruptible cast: three skitter bombs scuttle at the nearest champions and explode.",
+                "type": "deploy",
+                "cooldown": 14,
+                "castTime": 1.0,
+                "range": 900,
+                "radius": 300,
+                "deploy": "npc_skitter",
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "interruptible": true,
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              },
+              {
+                "id": "aether_stasis_mine",
+                "name": "Stasis Mine",
+                "description": "Interruptible cast: plants a mine under its target that roots the first champion to step on it.",
+                "type": "deploy",
+                "cooldown": 15,
+                "castTime": 1.0,
+                "range": 900,
+                "radius": 300,
+                "deploy": "npc_stasis_mine",
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "interruptible": true,
+                "buff": "npc_aether",
+                "cue": "npc.aether.start"
+              },
+              {
+                "id": "aether_field_repair",
+                "name": "Field Repair",
+                "description": "Interruptible 2s cast that restores 20% health to the most injured ally below 60%.",
+                "type": "healAlly",
+                "interruptible": true,
+                "cooldown": 12,
+                "castTime": 2.0,
+                "range": 900,
+                "radius": 900,
+                "magnitude": 0.2,
+                "healthThreshold": 0.6,
+                "buff": "npc_aether",
+                "cue": "npc.heal.cast"
+              }
+            ]
+          }
+        },
+        "aetheri_lancer": {
+          "slot": "ranged",
+          "look": "Lean Aetheri marksman in gold-trimmed white alloy, a long photon lance-rifle with a crystal focusing lens, a visor of blue light, energy cables running along the arms.",
+          "poolDraw": 2,
+          "fallback": "barbed_hunter",
+          "archetype": {
+            "displayName": "Photon Lancer",
+            "role": "ranged",
+            "classification": "normal",
+            "tuningKind": "ranged",
+            "moveSpeed": 205,
+            "attackRange": 650,
+            "attackInterval": 2.2,
+            "preferredRange": 520,
+            "kiteRange": 300,
+            "scale": 1.0,
+            "mesh": {
+              "slot": "race_aetheri_ranged",
+              "path": "",
+              "tint": [
+                0.82,
+                0.74,
+                0.52
+              ]
+            },
+            "props": [
+              {
+                "asset": "/Game/Art/Weapons/CombatPrototype01/SM_PrototypeBow.SM_PrototypeBow",
+                "bone": "hand_l",
+                "scale": 1.0
+              }
+            ],
+            "abilities": [
+              {
+                "id": "npc_shot",
+                "name": "Photon Round",
+                "description": "Short aim, then fires a photon round in a fixed direction.",
+                "type": "projectile",
+                "basic": true,
+                "skillshot": "npc_barbed_shot",
+                "castTime": 0.6,
+                "range": 650
+              },
+              {
+                "id": "aether_photon_beam",
+                "name": "Photon Beam",
+                "description": "Charges the lance, then fires a long narrow beam.",
+                "type": "cone",
+                "cooldown": 12,
+                "castTime": 1.3,
+                "range": 760,
+                "radius": 760,
+                "angle": 12,
+                "damageMultiplier": 2.1,
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              },
+              {
+                "id": "aether_orbital_strike",
+                "name": "Orbital Strike",
+                "description": "Marks a circle on its target; a column of light strikes it.",
+                "type": "targetCircle",
+                "cooldown": 11,
+                "castTime": 1.1,
+                "range": 650,
+                "radius": 220,
+                "damageMultiplier": 1.8,
+                "color": [
+                  0.95,
+                  0.85,
+                  0.45,
+                  0.35
+                ],
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              },
+              {
+                "id": "aether_recall",
+                "name": "Recall",
+                "description": "Recalls a short way back when a champion reaches melee range.",
+                "type": "disengage",
+                "cooldown": 10,
+                "castTime": 0,
+                "range": 260,
+                "length": 600,
+                "buff": "npc_aether",
+                "cue": "npc.aether.start"
+              }
+            ]
+          }
+        },
+        "skitter_drone": {
+          "slot": "special",
+          "look": "Dog-sized mechanical skitter: a rounded gold alloy carapace, six thin spider legs, a single blue-violet eye lens and a pulsing unstable energy core on its back (fallback: small hunched two-legged construct).",
+          "poolDraw": 2,
+          "fallback": "hollow_infantry",
+          "archetype": {
+            "displayName": "Skitter Drone",
+            "role": "swarm",
+            "classification": "normal",
+            "tuningKind": "basic",
+            "moveSpeed": 250,
+            "attackRange": 150,
+            "attackInterval": 1.4,
+            "scale": 0.8,
+            "healthScale": 0.55,
+            "damageScale": 0.65,
+            "mesh": {
+              "slot": "race_aetheri_special",
+              "path": "",
+              "tint": [
+                0.82,
+                0.74,
+                0.52
+              ]
+            },
+            "props": [
+              {
+                "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_Dagger.SM_Dagger",
+                "bone": "hand_r",
+                "scale": 1.0
+              }
+            ],
+            "abilities": [
+              {
+                "id": "npc_melee",
+                "name": "Spark Bite",
+                "description": "A crackling bite at its current target.",
+                "type": "melee",
+                "basic": true,
+                "range": 150
+              },
+              {
+                "id": "aether_core_burst",
+                "name": "Core Burst",
+                "description": "Marks a ring and vents its core, burning everyone around it.",
+                "type": "selfCircle",
+                "cooldown": 12,
+                "castTime": 1.0,
+                "range": 260,
+                "radius": 260,
+                "damageMultiplier": 1.5,
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "buff": "npc_aether",
+                "cue": "npc.aether.start"
+              },
+              {
+                "id": "aether_unstable_core",
+                "name": "Unstable Core",
+                "description": "At 50% health its core destabilises: +30% damage and faster attacks.",
+                "type": "enrage",
+                "cooldown": 0,
+                "castTime": 1.0,
+                "range": 5000,
+                "magnitude": 0.3,
+                "healthThreshold": 0.5,
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              }
+            ]
+          }
+        },
+        "aetheri_hierarch": {
+          "slot": "warlord",
+          "look": "Towering floating Aetheri hierarch in ceremonial white-gold alloy robes, a crown of orbiting crystal shards, four slender arms of light holding a warp-staff crowned with a spinning ring, a face that is a smooth mask of light.",
+          "poolDraw": 99,
+          "fallback": "blight_caster",
+          "archetype": {
+            "displayName": "The Warp Hierarch",
+            "role": "caster",
+            "classification": "boss",
+            "tuningKind": "caster",
+            "damage": 34,
+            "moveSpeed": 170,
+            "armor": 0.1,
+            "attackRange": 700,
+            "attackInterval": 2.2,
+            "preferredRange": 600,
+            "kiteRange": 300,
+            "scale": 1.45,
+            "leakCost": 10,
+            "healthScale": 1.85,
+            "mesh": {
+              "slot": "race_aetheri_warlord",
+              "path": "",
+              "tint": [
+                0.82,
+                0.74,
+                0.52
+              ]
+            },
+            "props": [
+              {
+                "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_RiftStaff.SM_RiftStaff",
+                "bone": "hand_r",
+                "scale": 1.0
+              }
+            ],
+            "abilities": [
+              {
+                "id": "npc_bolt",
+                "name": "Warp Lance",
+                "description": "Interruptible cast. A lance of warp energy in a fixed direction.",
+                "type": "projectile",
+                "basic": true,
+                "interruptible": true,
+                "skillshot": "npc_shadow_bolt",
+                "castTime": 1.2,
+                "range": 700
+              },
+              {
+                "id": "aether_warp_pylons",
+                "name": "Warp Pylons",
+                "description": "Interruptible cast: warps in an Empowering Pylon beside itself (+25% damage for Aetheri inside).",
+                "type": "deploy",
+                "cooldown": 20,
+                "castTime": 1.4,
+                "range": 900,
+                "radius": 300,
+                "deploy": "npc_empower_pylon",
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "interruptible": true,
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              },
+              {
+                "id": "aether_gravity_field",
+                "name": "Gravity Field",
+                "description": "Interruptible cast: warps a gravity pylon onto its target; champions inside are slowed.",
+                "type": "deploy",
+                "cooldown": 18,
+                "castTime": 1.2,
+                "range": 900,
+                "radius": 300,
+                "deploy": "npc_gravity_pylon",
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "interruptible": true,
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              },
+              {
+                "id": "aether_warp_in",
+                "name": "Warp In",
+                "description": "Interruptible cast: three Skitter Drones warp in beside it.",
+                "type": "summon",
+                "cooldown": 24,
+                "castTime": 1.6,
+                "range": 5000,
+                "radius": 450,
+                "summon": "skitter_drone",
+                "count": 3,
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "interruptible": true,
+                "buff": "npc_aether",
+                "cue": "npc.summon.cast"
+              },
+              {
+                "id": "aether_psionic_storm",
+                "name": "Psionic Storm",
+                "description": "Marks a large ring; everyone inside is silenced for 3s.",
+                "type": "selfCircle",
+                "cooldown": 18,
+                "castTime": 1.6,
+                "range": 520,
+                "radius": 520,
+                "damageMultiplier": 1.3,
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "buff": "npc_silenced",
+                "cue": "npc.aether.cast",
+                "silence": 3.0
+              },
+              {
+                "id": "aether_hierarch_ascension",
+                "name": "Final Protocol",
+                "description": "At 30% health: +40% damage and faster casting until destroyed.",
+                "type": "enrage",
+                "cooldown": 0,
+                "castTime": 1.0,
+                "range": 5000,
+                "magnitude": 0.4,
+                "healthThreshold": 0.3,
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast",
+                "core": true
+              }
+            ]
+          }
+        },
+        "aetheri_colossus": {
+          "slot": "colossus",
+          "look": "Colossal three-legged Aetheri war engine of gold and white alloy, a crystal reactor dome for a head with a sweeping violet beam emitter, turret pods on its shoulders, energy cables and glowing seams across its hull.",
+          "poolDraw": 99,
+          "fallback": "hollow_siegebreaker",
+          "archetype": {
+            "displayName": "Aetheric Colossus",
+            "role": "tank",
+            "classification": "boss",
+            "tuningKind": "bruiser",
+            "damage": 40,
+            "moveSpeed": 150,
+            "armor": 0.2,
+            "attackRange": 200,
+            "attackInterval": 2.2,
+            "scale": 1.5,
+            "leakCost": 10,
+            "healthScale": 1.05,
+            "mesh": {
+              "slot": "race_aetheri_colossus",
+              "path": "",
+              "tint": [
+                0.82,
+                0.74,
+                0.52
+              ]
+            },
+            "props": [
+              {
+                "asset": "/Game/Art/Weapons/ArmoryPrototype01/SM_WarHammer.SM_WarHammer",
+                "bone": "hand_r",
+                "scale": 1.2
+              }
+            ],
+            "abilities": [
+              {
+                "id": "npc_melee",
+                "name": "Hull Crush",
+                "description": "A crushing leg stomp at its current target.",
+                "type": "melee",
+                "basic": true,
+                "range": 210
+              },
+              {
+                "id": "aether_colossus_beam",
+                "name": "Thermal Lance",
+                "description": "Winds up a long cone of searing light. Get out of the cone.",
+                "type": "cone",
+                "cooldown": 10,
+                "castTime": 1.4,
+                "range": 580,
+                "radius": 580,
+                "angle": 50,
+                "damageMultiplier": 2.4,
+                "color": [
+                  0.95,
+                  0.85,
+                  0.45,
+                  0.35
+                ],
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              },
+              {
+                "id": "aether_colossus_turrets",
+                "name": "Shoulder Turrets",
+                "description": "Interruptible cast: drops a photon turret beside itself (up to 2).",
+                "type": "deploy",
+                "cooldown": 18,
+                "castTime": 1.2,
+                "range": 900,
+                "radius": 300,
+                "deploy": "npc_photon_turret",
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "interruptible": true,
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast"
+              },
+              {
+                "id": "aether_colossus_stomp",
+                "name": "Seismic Stomp",
+                "description": "Marks a ring and stomps, knocking everyone inside back.",
+                "type": "selfCircle",
+                "cooldown": 11,
+                "castTime": 1.3,
+                "range": 420,
+                "radius": 420,
+                "damageMultiplier": 1.7,
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "buff": "npc_sundered",
+                "cue": "npc.cleave.start",
+                "knockback": 500
+              },
+              {
+                "id": "aether_tractor_beam",
+                "name": "Tractor Beam",
+                "description": "A beam marks a line to the farthest champion and drags them in.",
+                "type": "pull",
+                "cooldown": 16,
+                "castTime": 1.2,
+                "minRange": 300,
+                "range": 1200,
+                "length": 1200,
+                "width": 160,
+                "damageMultiplier": 1.2,
+                "color": [
+                  0.45,
+                  0.4,
+                  1.0,
+                  0.4
+                ],
+                "buff": "npc_aether",
+                "cue": "npc.aether.start",
+                "targeting": "farthest"
+              },
+              {
+                "id": "aether_colossus_meltdown",
+                "name": "Meltdown",
+                "description": "At 30% health: +40% damage and faster attacks until destroyed.",
+                "type": "enrage",
+                "cooldown": 0,
+                "castTime": 1.0,
+                "range": 5000,
+                "magnitude": 0.4,
+                "healthThreshold": 0.3,
+                "buff": "npc_aether",
+                "cue": "npc.aether.cast",
                 "core": true
               }
             ]

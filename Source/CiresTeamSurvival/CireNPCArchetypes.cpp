@@ -38,7 +38,8 @@ bool ParseEnum(const FString& Text,ECireNPCAbilityKind& Out)
         {TEXT("rally"),ECireNPCAbilityKind::Rally},{TEXT("enrage"),ECireNPCAbilityKind::Enrage},
         {TEXT("healAlly"),ECireNPCAbilityKind::HealAlly},{TEXT("shieldWall"),ECireNPCAbilityKind::ShieldWall},
         {TEXT("disengage"),ECireNPCAbilityKind::Disengage},
-        {TEXT("pull"),ECireNPCAbilityKind::Pull},{TEXT("summon"),ECireNPCAbilityKind::Summon}}; // monster-races
+        {TEXT("pull"),ECireNPCAbilityKind::Pull},{TEXT("summon"),ECireNPCAbilityKind::Summon},
+        {TEXT("deploy"),ECireNPCAbilityKind::Deploy}}; // monster-races; new-champions: deploy
     if(const auto* Found=Kinds.Find(Text)){Out=*Found;return true;}
     return false;
 }
@@ -104,10 +105,12 @@ bool ParseAbility(const TSharedPtr<FJsonObject>& O,FCireNPCAbility& A,FString& E
             Number(O,TEXT("count"),Count,1,6,Error,Where)))return false;
         A.Count=FMath::RoundToInt(Count);
         if(O->TryGetStringField(TEXT("summon"),Text)&&!Text.IsEmpty())A.SummonId=FName(*Text);
+        if(O->TryGetStringField(TEXT("deploy"),Text)&&!Text.IsEmpty())A.DeployRecipe=FName(*Text); // new-champions
         if(O->TryGetStringField(TEXT("buff"),Text)&&!Text.IsEmpty())A.Buff=FName(*Text);
         if(O->TryGetStringField(TEXT("cue"),Text)&&!Text.IsEmpty())A.Cue=FName(*Text);
         O->TryGetBoolField(TEXT("core"),A.bCore);
         if(A.Kind==ECireNPCAbilityKind::Summon&&(A.SummonId.IsNone()||A.CastTime<.2f)){Error=Where+TEXT(" summon needs a summon archetype id and castTime >= 0.2s");return false;}
+        if(A.Kind==ECireNPCAbilityKind::Deploy&&(A.DeployRecipe.IsNone()||A.CastTime<.2f)){Error=Where+TEXT(" deploy needs a construct recipe and castTime >= 0.2s");return false;} // new-champions
         if(A.bBasic&&(A.HasRiders()||A.bCore)){Error=Where+TEXT(" basic attacks cannot carry riders or be core");return false;}
     }
     if(A.MinRange>A.Range){Error=Where+TEXT(".minRange exceeds range");return false;}
@@ -320,6 +323,7 @@ FString CireNPCArchetypes::KindLabel(const FCireNPCAbility& A)
     case ECireNPCAbilityKind::Cone:case ECireNPCAbilityKind::TargetCircle:case ECireNPCAbilityKind::SelfCircle:case ECireNPCAbilityKind::Charge:
     case ECireNPCAbilityKind::Pull:return TEXT("Telegraph"); // monster-races
     case ECireNPCAbilityKind::Summon:return TEXT("Summon (interruptible)");
+    case ECireNPCAbilityKind::Deploy:return TEXT("Deploy construct (interruptible)"); // new-champions
     case ECireNPCAbilityKind::Guard:case ECireNPCAbilityKind::Rally:case ECireNPCAbilityKind::ShieldWall:return TEXT("Buff");
     case ECireNPCAbilityKind::Provoke:return TEXT("Taunt");
     case ECireNPCAbilityKind::Enrage:return TEXT("Enrage");

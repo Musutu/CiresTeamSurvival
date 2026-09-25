@@ -39,6 +39,13 @@ def png_size(path: Path) -> tuple[int, int]:
     return struct.unpack(">II", header[16:24])
 
 
+def expected_shots(args) -> list[str]:
+    if args.champions:
+        ids = [i for i in args.champions.split(",") if i]
+        return [f"{2 * n + 1:02d}_selected_{i}" for n, i in enumerate(ids)] + [f"{2 * n + 2:02d}_abilities_{i}" for n, i in enumerate(ids)]
+    return EXPECTED[:max(1, min(args.shots, len(EXPECTED)))]
+
+
 def run_one(args, width: int, height: int, folder: Path) -> dict:
     tag = f"{width}x{height}"
     log = folder / f"gallery_{tag}.log"
@@ -46,7 +53,10 @@ def run_one(args, width: int, height: int, folder: Path) -> dict:
                "-RenderOffscreen", "-ForceRes", f"-ResX={width}", f"-ResY={height}", "-windowed", "-unattended",
                "-nosplash", "-nosound", "-nop4", "-NoLiveCoding", "-ExecCmds=t.MaxFPS 60",
                f"-CireDraftGalleryTag={tag}", f"-abslog={log}"]
-    if args.shots < len(EXPECTED):
+    if args.champions:
+        # new-champions: each listed champion selected (overview) and on its abilities tab instead of the fixed states.
+        command.append(f"-CireDraftGalleryChampions={args.champions}")
+    elif args.shots < len(EXPECTED):
         command.append(f"-CireDraftGalleryShots={args.shots}")
     if not args.mannequin:
         command.insert(5, "-CireTripoChampions")
@@ -71,7 +81,7 @@ def run_one(args, width: int, height: int, folder: Path) -> dict:
     captures = []
     if match:
         directory = Path(match.group(3).strip())
-        for name in EXPECTED[:max(1, min(args.shots, len(EXPECTED)))]:
+        for name in expected_shots(args):
             path = directory / (name + ".png")
             if not path.is_file():
                 errors.append("Missing capture " + path.name); continue
@@ -99,6 +109,7 @@ def main() -> int:
     parser.add_argument("--mannequin", action="store_true", help="Omit -CireTripoChampions (fallback bodies)")
     parser.add_argument("--timeout", type=int, default=300, help="Seconds per resolution")
     parser.add_argument("--shots", type=int, default=len(EXPECTED), help="Capture only the first N states (iteration)")
+    parser.add_argument("--champions", default="", help="Comma-separated profile ids: review these champions instead of the fixed states")
     parser.add_argument("--res", action="append", default=[], help="WIDTHxHEIGHT; repeat to pick resolutions (default: all six)")
     args = parser.parse_args()
     resolutions = [tuple(int(v) for v in r.lower().split("x")) for r in args.res] or RESOLUTIONS

@@ -33,6 +33,7 @@ struct CIRESTEAMSURVIVAL_API FCireVoidZone
 struct CIRESTEAMSURVIVAL_API FCireAbilityDef
 {
     FString Id, Name, Icon, Kind, School, Targeting, Status, Description, EffectLabel;
+    FString Category;                    // new-champions: "construct" for Aetheri Constructs (Skill Shop tab); empty otherwise
     TArray<FString> Types;               // "DPS", "TANK", "HEAL"
     float CastTime = 0, Range = 0, Radius = 0, Duration = 0;
     Cires::Abilities::Base Base;
@@ -44,6 +45,7 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     bool IsImplemented() const { return Status == TEXT("implemented"); }
     bool IsPassive() const { return Kind == TEXT("passive"); }
     bool IsUltimate() const { return Kind == TEXT("ultimate"); }
+    bool IsConstruct() const { return Category == TEXT("construct"); }
 };
 
 /** Scaled numbers at a level (level >= 1, no cap). */

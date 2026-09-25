@@ -4,6 +4,7 @@
 #include "CireCombatEvents.h"
 #include "CireSkillshot.h"
 #include "CireConstruct.h"
+#include "CireTechConstructs.h" // new-champions: replicated Aetheri constructs
 #include "CireSummon.h"
 #include "CireLanePath.h"
 #include "CireMobility.h"
@@ -80,6 +81,8 @@ bool SpawnObjects(ACireHero* Hero, FVector Ground, bool bArena)
     FCireSummonSpec Summon; Summon.Health = 100; Summon.Damage = 0; Summon.DurationSeconds = 120; Summon.CastRange = 1600;
     auto Group = ACireSummon::SpawnGroup(Hero, Summon, nullptr, Ground + (bArena ? FVector(Team == 0 ? -350 : 350, Team == 0 ? -550 : 550, 0) : FVector(200, 300, 0)));
     if (Group.Num() != 1 || !Server.Walls[Team].IsValid()) return false;
+    // new-champions: an Aetheri turret per team in the survival stage (out of reach of the stage-2 targets).
+    if (!bArena && CireTechConstructs::Deploy(Hero, TEXT("photon_turret"), Ground + FVector(-450, 320, 0)).Num() != 1) return false;
     Server.Summons[Team] = Group[0]; Group[0]->HeroName = FString::Printf(TEXT("CIRE_EXP_NET_SUMMON_%d"), Team);
     Group[0]->Command(ECireSummonCommand::Hold, Group[0]->GetActorLocation()); Group[0]->ForceNetUpdate();
     FCireSkillshotSpec Shot; Shot.Speed = 100; Shot.Radius = 12; Shot.MaxRange = 5000; Shot.LifetimeSeconds = 30;
@@ -87,12 +90,16 @@ bool SpawnObjects(ACireHero* Hero, FVector Ground, bool bArena)
     auto* Projectile = ACireSkillshot::Spawn(Hero, Shot, Hero->GetActorLocation() + (bArena ? FVector(0, 900, 0) : FVector(1000, 0, 0)), FString::Printf(TEXT("CIRE_EXP_NET_SHOT_%d"), Team));
     return Projectile != nullptr;
 }
-struct FCounts { int32 Wall[2] = {0, 0}, Shot[2] = {0, 0}, Summon[2] = {0, 0}; ACireSkillshot* OwnShot = nullptr; ACireSummon* FirstSummon = nullptr; };
+struct FCounts { int32 Wall[2] = {0, 0}, Shot[2] = {0, 0}, Summon[2] = {0, 0}, Turret[2] = {0, 0}; ACireSkillshot* OwnShot = nullptr; ACireSummon* FirstSummon = nullptr; ACireConstruct* OwnTurret = nullptr; };
 FCounts Count(UWorld* World, int32 Self)
 {
     FCounts R;
     for (TActorIterator<ACireConstruct> It(World); It; ++It)
+    {
         if (!It->IsActorBeingDestroyed() && It->AbilityName.StartsWith(TEXT("CIRE_EXP_NET_WALL_")) && It->OriginTeam >= 0 && It->OriginTeam < 2) ++R.Wall[It->OriginTeam];
+        if (!It->IsActorBeingDestroyed() && It->ConstructSpec.Recipe == TEXT("photon_turret") && It->OriginTeam >= 0 && It->OriginTeam < 2)
+        { ++R.Turret[It->OriginTeam]; if (It->OriginTeam == Self) R.OwnTurret = *It; }
+    }
     for (TActorIterator<ACireSkillshot> It(World); It; ++It)
         if (!It->IsActorBeingDestroyed() && It->AbilityName.StartsWith(TEXT("CIRE_EXP_NET_SHOT_")) && It->OriginTeam >= 0 && It->OriginTeam < 2)
         { ++R.Shot[It->OriginTeam]; if (It->OriginTeam == Self) R.OwnShot = *It; }
@@ -265,7 +272,7 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
         UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_EXPANSION_NET_CLIENT_STAGE_PASS team=%d stage=%d"), Team, Client.Stage);
     };
     if (Now - Client.ChangedAt < .3 && Client.Stage != 9) return true;
-    if (Client.Stage <= 2 && State->Phase == 0 && (Counts.Wall[Enemy] || Counts.Shot[Enemy] || Counts.Summon[Enemy] || Event(FString::Printf(TEXT("CIRE_EXP_PVE_CRIT_%d"), Enemy))))
+    if (Client.Stage <= 2 && State->Phase == 0 && (Counts.Wall[Enemy] || Counts.Shot[Enemy] || Counts.Summon[Enemy] || Counts.Turret[Enemy] || Event(FString::Printf(TEXT("CIRE_EXP_PVE_CRIT_%d"), Enemy))))
     { Abort(TEXT("opposing survival actors or critical event leaked")); return true; }
     if (Client.Stage == 1)
     {
@@ -284,6 +291,9 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
             if (It->OriginTeam == Team && It->AbilityName.StartsWith(TEXT("CIRE_EXP_NET_WALL_")) && It->Health == 200 && It->MaxHealth == 200 &&
                 It->ConstructSpec.Width == 220 && It->CollisionBox->GetCollisionResponseToChannel(ECC_Pawn) == ECR_Block && !It->HasAuthority()) bWallReady = true;
         if (!bWallReady) return true;
+        // new-champions: the Aetheri turret replicated with its kind, recipe, health and range, owned by this realm.
+        if (!Counts.OwnTurret || Counts.OwnTurret->HasAuthority() || Counts.OwnTurret->ConstructSpec.Kind != ECireConstructKind::Turret ||
+            Counts.OwnTurret->ConstructSpec.AttackRange < 900 || Counts.OwnTurret->Health <= 0 || Counts.OwnTurret->Health != Counts.OwnTurret->MaxHealth || Counts.OwnTurret->bMonsterOwned) return true;
         if (!Client.FirstShotAt) { Client.FirstShotAt = Now; Client.FirstShotPosition = Counts.OwnShot->GetActorLocation(); }
         if (Now - Client.FirstShotAt < .6) return true;
         // aura-vfx: the survival buff record replicates to its own client and drives the local aura; opponents never render one.
@@ -305,8 +315,8 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
     }
     else if (Client.Stage == 3)
     {
-        if ((Team == 0 && Hero->bDead && CireBuffs::Get(Hero) && CireBuffs::Get(Hero)->Buffs.IsEmpty() /* aura-vfx */ && Counts.Wall[0] == 0 && Counts.Shot[0] == 0 && Counts.Summon[0] == 0) ||
-            (Team == 1 && Counts.Wall[1] == 1 && Counts.Shot[1] == 1 && Counts.Summon[1] == 1)) Ack();
+        if ((Team == 0 && Hero->bDead && CireBuffs::Get(Hero) && CireBuffs::Get(Hero)->Buffs.IsEmpty() /* aura-vfx */ && Counts.Wall[0] == 0 && Counts.Shot[0] == 0 && Counts.Summon[0] == 0 && Counts.Turret[0] == 0 /* new-champions */) ||
+            (Team == 1 && Counts.Wall[1] == 1 && Counts.Shot[1] == 1 && Counts.Summon[1] == 1 && Counts.Turret[1] == 1)) Ack();
     }
     else if (Client.Stage == 4 && State->Phase == 2)
     { if (Counts.Wall[0] == 1 && Counts.Wall[1] == 1 && Counts.Shot[0] == 1 && Counts.Shot[1] == 1 && Counts.Summon[0] == 1 && Counts.Summon[1] == 1 && CireBuffs::Get(Hero) && CireBuffs::Get(Hero)->Buffs.IsEmpty() /* aura-vfx: phase change drops records */) Ack(); }
@@ -363,7 +373,7 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
     { if (Counts.Wall[0] + Counts.Wall[1] + Counts.Shot[0] + Counts.Shot[1] + Counts.Summon[0] + Counts.Summon[1] == 0) Ack(); }
     else if (Client.Stage == 7)
     {
-        UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_EXPANSION_NET_CLIENT_PASS team=%d remote_authority=0 stages=8 pve_privacy=1 critical_events=1 pvp_damage=50 cleanup=1 route_replication=1 movement_replication=1"), Team);
+        UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_EXPANSION_NET_CLIENT_PASS team=%d remote_authority=0 stages=8 pve_privacy=1 critical_events=1 pvp_damage=50 cleanup=1 route_replication=1 movement_replication=1 construct_replication=1"), Team);
         Client.bDone = true; FPlatformMisc::RequestExitWithStatus(false, 0);
     }
     return true;

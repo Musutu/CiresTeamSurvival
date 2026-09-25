@@ -273,7 +273,12 @@ void ACireDraftStage::FrameCamera(float DeltaSeconds,bool bSnap)
     const float FloorZ=StageOrigin.Z+14.f*StageScale;
     // Humanoid rigs: the head bone gives a much tighter top than padded skeletal bounds.
     FVector Head=FVector::ZeroVector;bool bHead=false;
-    if(USkeletalMeshComponent* Body=Preview->GetMesh();Body&&Body->GetSkeletalMeshAsset())
+    USkeletalMeshComponent* HeadBody=Preview->GetMesh();
+    {   // new-champions: a mounted champion (Huntress) is framed on its rider, not on the mount's head.
+        TArray<USkeletalMeshComponent*> Parts;Preview->GetComponents(Parts);
+        for(USkeletalMeshComponent* Part:Parts)if(Part&&Part->GetFName()==TEXT("MountedRider")&&Part->GetSkeletalMeshAsset())HeadBody=Part;
+    }
+    if(USkeletalMeshComponent* Body=HeadBody;Body&&Body->GetSkeletalMeshAsset())
         for(const TCHAR* Bone:{TEXT("head"),TEXT("Head"),TEXT("neck_01")})
             if(Body->GetBoneIndex(Bone)!=INDEX_NONE){Head=Body->GetBoneLocation(Bone);bHead=Head.Z>FloorZ+30.f;break;}
     float Top=FMath::Max(Box.Max.Z,FloorZ+40.f);

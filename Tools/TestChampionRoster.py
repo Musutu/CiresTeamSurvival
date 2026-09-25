@@ -10,10 +10,15 @@ DATA=json.loads((ROOT/'Content/Data/ChampionRoster.json').read_text(encoding='ut
 PROFILES={c['id']:c for c in DATA['champions']}
 RULES=(ROOT/'Source/CiresTeamSurvival/Rules/CiresRules.cpp').read_text(encoding='utf-8')
 KNOWN={id:kind.lower() for id,kind in re.findall(r'\{"([a-z_]+)",\s*"[^"]+",\s*SkillKind::(Active|Passive|Ultimate)\}',RULES)}
+# new-champions: signature-only kits implemented natively (CireSignatureSkills), declared in the Ability DB generator.
+import sys;sys.path.insert(0,str(ROOT/'Tools'))
+import BuildAbilityDB
+SIGNATURE={id:row[2] for id,row in BuildAbilityDB.NEW_CHAMPION_SKILLS.items()}
+NEW_CHAMPIONS=('gunblade','witch_slayer','huntress','aetheri_artificer','aetheri_warden')
 
 class RosterTests(unittest.TestCase):
     def test_unique_twenty_two_profiles_and_empty_start(self):
-        self.assertEqual(len(PROFILES),22)
+        self.assertEqual(len(PROFILES),27)
         self.assertEqual(len(PROFILES),len(DATA['champions']))
         for c in PROFILES.values():
             self.assertEqual(c['startsWithSkills'],[])
@@ -25,7 +30,7 @@ class RosterTests(unittest.TestCase):
             for kind,skills in [('active',c['actives']),('passive',[c['passive']]),('ultimate',[c['ultimate']])]:
                 for s in skills:
                     self.assertIn(s['status'],('implemented','planned'))
-                    if s['status']=='implemented':self.assertEqual(KNOWN.get(s['id']),kind,s['id'])
+                    if s['status']=='implemented':self.assertEqual(KNOWN.get(s['id'],SIGNATURE.get(s['id'])),kind,s['id'])
                     else:self.assertNotIn(s['id'],KNOWN,s['id'])
     def test_current_five_full_sets_are_implemented(self):
         for id in ('knight','ranger','scholar','lancer','summoner'):
@@ -36,7 +41,7 @@ class RosterTests(unittest.TestCase):
             if c['threatRole']=='tank':
                 self.assertFalse({'restoring_light','purify','sanctuary','renewal','wellspring'}&{s['id'] for s in c['actives']+[c['ultimate']]})
             if c['basicAttackRange']>300:
-                self.assertEqual(c['basicAttackRange'],1500 if c['attackStyle'] in ('bow','axes') else 1300 if c['attackStyle']=='lance' else 1200)
+                self.assertEqual(c['basicAttackRange'],1500 if c['attackStyle'] in ('bow','axes') else 1300 if c['attackStyle'] in ('lance','glaive') else 950 if c['attackStyle']=='gunblade' else 900 if c['attackStyle']=='blunderbuss' else 1200)
             else:self.assertEqual(c['basicAttackRange'],220)
         self.assertIn('second_wind',[s['id'] for s in PROFILES['knight']['actives']])
     def test_primary_and_role_are_independent_of_prototype(self):
@@ -62,5 +67,16 @@ class RosterTests(unittest.TestCase):
         if source.exists():self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(),DATA['source']['sha256'])
         self.assertEqual(DATA['source']['encoding'],'windows-1252')
         for c in PROFILES.values():self.assertEqual(c['artStatus'],'prototype_fallback')
+
+    def test_new_champions_are_complete_and_original(self):
+        for id in NEW_CHAMPIONS:
+            c=PROFILES[id]
+            self.assertTrue(all(s['status']=='implemented' for s in c['actives']+[c['passive'],c['ultimate']]),id)
+            self.assertTrue(c.get('quote') and c.get('lore'),id)
+            for word in ('Newerth','Warcraft','StarCraft','Protoss','Night Elf'):
+                self.assertNotIn(word.lower(),json.dumps(c).lower(),id)
+        self.assertEqual(PROFILES['witch_slayer']['displayName'],'Witch Slayer')
+        self.assertEqual({PROFILES[i]['race'] for i in ('aetheri_artificer','aetheri_warden')},{'aetheri'})
+        self.assertEqual(PROFILES['aetheri_warden']['threatRole'],'healer')
 
 if __name__=='__main__':unittest.main()

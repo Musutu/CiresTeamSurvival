@@ -65,6 +65,7 @@ struct FShopState
     // Skill Shop
     int32 Tab = 0;              // 0 items, 1 skills
     int32 PendingTab = -1;      // tab to show when the shop next opens
+    int32 SkillFilter = 0;      // new-champions: 0 all skills, 1 Constructs only (Aetheri champions)
     FString SelectedSkill;
     TMap<FString, FVector2D> SkillGridPos;
     FVector2D SkillSlotPos[8];
@@ -731,7 +732,25 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
     }
 
     // Columns: Active (golden) | Passive (plain) | Ultimate (prismatic).
-    const TArray<FCireShopSkill> Catalog = CireSkillShop::CatalogFor(Hero);
+    TArray<FCireShopSkill> Catalog = CireSkillShop::CatalogFor(Hero);
+    // new-champions: champions with Constructs get an ALL / CONSTRUCTS filter under the title.
+    {
+        const bool bHasConstructs = Catalog.ContainsByPredicate([](const FCireShopSkill& S) { const auto* D = CireAbilityDB::Find(S.Id); return D && D->IsConstruct(); });
+        if (!bHasConstructs) State.SkillFilter = 0;
+        else
+        {
+            const TCHAR* Labels[] = {TEXT("ALL SKILLS"), TEXT("CONSTRUCTS")};
+            const float FW = 118, FH = 22, FX = X + W * .5f - FW - 4, FY = Y + 54;
+            for (int32 Index = 0; Index < 2; ++Index)
+            {
+                const float BX = FX + Index * (FW + 8);
+                ShopButton(P, BX, FY, FW, FH, Labels[Index], In(M, BX, FY, FW, FH), State.SkillFilter == Index, false, Index == 1 ? FLinearColor(.45f, .6f, 1.f, 1) : Gold, 8.5f);
+                if (Click(BX, FY, FW, FH)) { State.SkillFilter = Index; Play(HUD, TEXT("S_ShopTab"), .4f); }
+            }
+            if (State.SkillFilter == 1)
+                Catalog.RemoveAll([](const FCireShopSkill& S) { const auto* D = CireAbilityDB::Find(S.Id); return !D || !D->IsConstruct(); });
+        }
+    }
     const CI::ShopSkillKind Kinds[] = {CI::ShopSkillKind::Active, CI::ShopSkillKind::Passive, CI::ShopSkillKind::Ultimate};
     const TCHAR* Names[] = {TEXT("ACTIVE SKILLS"), TEXT("PASSIVE SKILLS"), TEXT("ULTIMATE SKILLS")};
     const TCHAR* Keywords[] = {TEXT("STRIKE  ·  CAST  ·  UNLEASH"), TEXT("ENDURE  ·  ADAPT  ·  PERSEVERE"), TEXT("TRANSCEND  ·  DOMINATE  ·  ASCEND")};
@@ -1826,6 +1845,7 @@ void CireShopUI::DebugFreezeAfterLastEvent(float Age)
     if (Latest > 0) State.DebugNow = Latest + Age;
 }
 void CireShopUI::DebugSkillTab(const FString& SkillId) { State.Tab = 1; State.PendingTab = 1; State.SelectedSkill = SkillId; }
+void CireShopUI::DebugSkillFilter(int32 Filter) { State.SkillFilter = FMath::Clamp(Filter, 0, 1); } // new-champions
 FVector2D CireShopUI::DebugSkillGridPos(const FString& SkillId) { const FVector2D* P = State.SkillGridPos.Find(SkillId); return P ? *P + FVector2D(23, 23) : FVector2D(-1, -1); }
 void CireShopUI::DebugItemTab() { State.Tab = 0; State.PendingTab = 0; }
 void CireShopUI::DebugFreezeAfterStamp(float Age) { if (State.StampStart > 0) State.DebugNow = State.StampStart + Age; }
