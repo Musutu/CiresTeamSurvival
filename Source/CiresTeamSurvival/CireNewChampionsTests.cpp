@@ -277,7 +277,7 @@ bool CireSignatureSkills::RunSmoke(ACireGameMode* Mode)
         T.Check(Profile && Kit && !Profile->Quote.IsEmpty() && !Profile->Lore.IsEmpty(), FString(P) + TEXT(": roster profile with lore and quote"));
         if (!Profile || !Kit) continue;
         TArray<FString> Signature; for (const auto& A : Profile->Actives) Signature.Add(A.Id); Signature.Add(Profile->Passive.Id); Signature.Add(Profile->Ultimate.Id);
-        for (const FString& S : Kit->Signature) Signature.AddUnique(S); // identity-kit extras (pets: the Huntress's Dread Roar)
+        for (const FString& S : Kit->Signature) if (Knows(S)) Signature.AddUnique(S); // identity-kit extras of this module (pets: the Huntress's Dread Roar)
         for (const FString& S : Signature) T.Check(Kit->PurchasableImplemented.Contains(S) && Knows(S), FString(P) + TEXT(" can buy ") + S);
         for (const FString& S : AllIds()) if (!Signature.Contains(S)) T.Check(!Kit->Purchasable.Contains(S), FString(P) + TEXT(" cannot buy another champion's ") + S);
     }
