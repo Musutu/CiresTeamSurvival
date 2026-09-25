@@ -95,6 +95,13 @@ use those PNGs in place of the procedural renders (`--procedural` ignores them),
 `T_status_<stun|silence|root|slow|heal_cut|taunt|disarm|fear|armor_break|poison|curse>` (buff/debuff
 frames, `ACireHUD::StatusIconId`), `T_role_<tank|damage|support|hybrid>` (unit-frame portraits when
 no champion portrait is drawn, >= 24px) and `T_Item_gold|teleport|challenge` (toasts).
+Every buff / debuff / stance / aura id in `BuffModifiers.json` / `BuffVisuals.json` also has its own painted
+`T_<effect id>` (sheets `Art/Icons/ChatGPT/buffs_*.png`; lower-case file names, the lookup is case-insensitive), so
+`ACireHUD::DrawEffectIcon` no longer borrows another ability's art; `T_role_caster`, `T_role1`, `T_role0`, `T_role2`
+and `T_basic` cover the NPC tooltip role and melee-attack icons. To add more: slice a sheet into
+`Art/Icons/ChatGPT/Abilities`, copy just the new PNGs to a folder and run `Tools/ImportDraftPortraits.py` with
+`CIRE_DRAFT_PORTRAIT_DIR=<folder> CIRE_UI_TEXTURE_DEST=/Game/UI/Abilities CIRE_UI_TEXTURE_PREFIX=T_` (a full
+`RunAbilityIcons.py` also works but reimports every texture).
 `Tools/IconContactSheet.py DIR OUT.png` renders a 64/40px review sheet. Licences:
 `Content/UI/Items/LICENSES.md`, `Content/UI/Abilities/LICENSES.md`.
 
