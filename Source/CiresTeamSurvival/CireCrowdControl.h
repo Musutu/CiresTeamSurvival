@@ -46,6 +46,8 @@ namespace CireCrowdControl
     CIRESTEAMSURVIVAL_API void TickHero(ACireHero* Hero, float DeltaSeconds);
     /** Fixtures: finish the current timed cast immediately (no-op when not casting). */
     CIRESTEAMSURVIVAL_API bool CompleteCastNow(ACireHero* Hero);
+    /** Registers the hero reader for the shared cast bars (CireCasts, wow-ui). Idempotent. */
+    CIRESTEAMSURVIVAL_API void RegisterCastProvider();
     /** True while the monster is stunned (its AI tick is skipped). */
     CIRESTEAMSURVIVAL_API bool TickMonster(ACireMonster* Monster, float DeltaSeconds);
 

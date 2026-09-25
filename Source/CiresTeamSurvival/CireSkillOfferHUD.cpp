@@ -546,34 +546,7 @@ void ACireHUD::DrawSkillOfferExtras(ACireHero* Hero,ACireController* Controller)
         T.Text(Name,(ViewW-T.TextWidth(Name,20,ECireFont::Heading))*.5f,From.Y-150,20,Accent*1.2f,ECireFont::Heading,true,true);
     }
 
-    // Cast bars (timed heals etc.): the local player's above the action bar, and a small
-    // bar over every other visible casting champion so interrupts can be timed.
-    if(!bSettings)
-    {
-        const auto Bar=PanelRect(TEXT("Skills"));
-        const auto DrawBar=[&](const ACireHero* H,float CX,float Y,float W,float Hgt,bool bOwn)
-        {
-            const float Progress=CireCrowdControl::CastProgress(H);if(Progress<0)return;
-            const FCireAbilityDef* D=CireAbilityDB::Find(H->CastSkill.ToString());
-            const FLinearColor Fill=D&&D->School==TEXT("holy")?FLinearColor(1.f,.82f,.35f,1):FLinearColor(.45f,.7f,1.f,1);
-            const float X=CX-W*.5f;
-            P.Rect(X-2,Y-2,W+4,Hgt+4,FLinearColor(0,0,0,.75f));P.Rect(X,Y,W,Hgt,FLinearColor(.06f,.07f,.09f,.95f));
-            P.Rect(X,Y,W*Progress,Hgt,Fill);P.Rect(X,Y,W*Progress,Hgt*.35f,FLinearColor(1,1,1,.18f));
-            P.Line(X+W*Progress,Y-2,X+W*Progress,Y+Hgt+2,FLinearColor(1,1,.9f,.9f),1.5f);
-            const FString Name=D?D->Name:H->CastSkill.ToString();
-            const float Left=FMath::Max(0.f,H->CastEndTime-CireBuffs::ServerNow(GetWorld()));
-            const float TS=bOwn?10.f:7.5f;
-            P.Text(Name,X+6,Y+(Hgt-TS)*.5f-1,TS,Parchment,ECireFont::Bold,true,false);
-            if(bOwn){const FString Time=FString::Printf(TEXT("%.1fs"),Left);P.Text(Time,X+W-6-P.TextWidth(Time,TS,ECireFont::Numbers),Y+(Hgt-TS)*.5f-1,TS,Parchment,ECireFont::Numbers,true,false);}
-        };
-        DrawBar(Hero,ViewW*.5f,FMath::Clamp(Bar.Y-26.f,40.f,ViewH-40.f),260,18,true);
-        if(PlayerOwner)for(TActorIterator<ACireHero> It(GetWorld());It;++It)
-        {
-            const ACireHero* Other=*It;if(Other==Hero||!CireCrowdControl::IsCasting(Other)||Other->IsHidden())continue;
-            FVector2D Screen;if(!PlayerOwner->ProjectWorldLocationToScreen(Other->GetActorLocation()+FVector(0,0,150),Screen,false))continue;
-            DrawBar(Other,Screen.X/Scale,Screen.Y/Scale-26,110,11,false);
-        }
-    }
+    CireCrowdControl::RegisterCastProvider(); // champion-draft: hero cast bars are drawn by the shared CireCasts bars
     // Deferred reminder: pulsing, above the action bar; click or key to open.
     if(Hero->Offers.Num()>0&&!S.bOpen&&!bSettings)
     {

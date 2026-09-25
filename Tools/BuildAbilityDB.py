@@ -165,18 +165,15 @@ PLANNED_CC = {
     "chieftain_earthshout": [fx("silence", "area", 1.5, label="Silenced")],
     "behemoth_stampede": [fx("stun", "area", 1.0, label="Stunned")],
 }
+# Modifier registry rows (Docs/BuffModifiers.md format) for the effect ids this DB adds.
+# stunned / silenced / healing_cut / interrupted rows live in BuffModifiers.json (wow-ui).
 BUFF_MODIFIERS = {
-    "stunned": [dict(stat="actions", value=-1.0, label="Stunned")],
-    "silenced": [dict(stat="casting", value=-1.0, label="Silenced")],
-    "npc_silenced": [dict(stat="casting", value=-1.0, label="Silenced")],
-    "school_locked": [dict(stat="casting_school", value=-1.0, label="School locked")],
-    "heal_cut": [dict(stat="healing_received", value=-0.5, label="Healing -50%")],
-    "heal_cut_done": [dict(stat="healing_done", value=-0.5, label="Healing done -50%")],
-    "armor_broken": [dict(stat="armor", value=-0.5, label="Armor -50%")],
-    "slowed": [dict(stat="move_speed", value=-0.35, label="Move -35%")],
-    "iron_guard": [dict(stat="damage_taken", value=-0.4, label="DEF +40%")],
-    "guarded": [dict(stat="damage_taken", value=-0.4, label="DEF +40%")],
-    "executioner_ready": [dict(stat="next_attack", value=1.0, label="Next attack lethal")],
+    "heal_cut_done": {"type": "curse", "control": "none", "mods": [{"stat": "Healing", "value": -50, "unit": "%"}],
+                      "line": "Healing you deal is reduced.", "name": "Enfeebled"},
+    "armor_broken": {"type": "physical", "control": "none", "mods": [{"stat": "Armor", "value": -50, "unit": "%", "duration": 10}],
+                     "line": "Armor shattered by a Decimating Strike.", "name": "Armor Broken"},
+    "executioner_ready": {"type": "none", "control": "none", "kind": "buff", "mods": [{"stat": "ATK", "value": 0, "unit": ""}],
+                          "line": "Your next basic attack is lethal (bosses excepted; champions lose 30% max health).", "name": "Executioner Ready"},
 }
 
 

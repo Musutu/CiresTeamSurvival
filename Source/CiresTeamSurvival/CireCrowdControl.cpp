@@ -8,6 +8,7 @@
 #include "CireRaces.h"
 #include "CireSummon.h"
 #include "CireDeveloperTools.h"
+#include "CireEffects.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -18,8 +19,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogCireCC,Log,All);
 
 namespace
 {
-const FName StunnedId(TEXT("stunned")),SilencedId(TEXT("silenced")),NpcSilencedId(TEXT("npc_silenced")),LockedId(TEXT("school_locked")),
-    HealCutId(TEXT("heal_cut")),HealCutDoneId(TEXT("heal_cut_done")),ArmorId(TEXT("armor_broken")),ExecId(TEXT("executioner_ready"));
+const FName StunnedId(TEXT("stunned")),SilencedId(TEXT("silenced")),NpcSilencedId(TEXT("npc_silenced")),LockedId(TEXT("interrupted")),
+    HealCutId(TEXT("healing_cut")),HealCutDoneId(TEXT("heal_cut_done")),ArmorId(TEXT("armor_broken")),ExecId(TEXT("executioner_ready"));
 
 struct FPendingCast { int32 Slot=INDEX_NONE; FString Id; TWeakObjectPtr<AActor> Target; FVector Aim=FVector::ZeroVector; bool bAim=false; };
 struct FServerState
@@ -176,6 +177,7 @@ void CireCrowdControl::CancelCast(ACireHero* H,const FString& Reason)
 }
 void CireCrowdControl::TickHero(ACireHero* H,float Delta)
 {
+    RegisterCastProvider();
     if(!H||!H->HasAuthority())return;
     const float T=Now(H->GetWorld());
     if(IsCasting(H))
@@ -211,6 +213,20 @@ bool CireCrowdControl::CompleteCastNow(ACireHero* H)
     if(!IsCasting(H))return false;
     H->CastEndTime=H->CastStartTime=Now(H->GetWorld())-.01f;H->CastStartTime-=.01f;
     TickHero(H,0.f);return true;
+}
+void CireCrowdControl::RegisterCastProvider()
+{
+    static bool bRegistered=false;if(bRegistered)return;bRegistered=true;
+    CireCasts::RegisterHeroProvider([](const ACireHero& H,float ServerNow,FCireCastView& Out)
+    {
+        if(H.CastSkill.IsNone()||H.CastEndTime<=H.CastStartTime||H.CastEndTime<=ServerNow)return false;
+        const FCireAbilityDef* D=CireAbilityDB::Find(H.CastSkill.ToString());
+        Out.bCasting=true;Out.AbilityId=H.CastSkill;Out.Name=D?D->Name:ACireHero::SkillName(H.CastSkill.ToString());
+        Out.Duration=H.CastEndTime-H.CastStartTime;Out.Remaining=H.CastEndTime-ServerNow;
+        Out.Progress=FMath::Clamp(1.f-Out.Remaining/FMath::Max(.01f,Out.Duration),0.f,1.f);
+        Out.bInterruptible=true;Out.bHeal=D&&D->Types.Contains(TEXT("HEAL"));
+        return true;
+    });
 }
 bool CireCrowdControl::TickMonster(ACireMonster* M,float)
 {

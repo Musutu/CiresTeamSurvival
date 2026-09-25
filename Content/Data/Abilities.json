@@ -6753,82 +6753,46 @@
   }
  },
  "buffModifiers": {
-  "stunned": [
-   {
-    "stat": "actions",
-    "value": -1.0,
-    "label": "Stunned"
-   }
-  ],
-  "silenced": [
-   {
-    "stat": "casting",
-    "value": -1.0,
-    "label": "Silenced"
-   }
-  ],
-  "npc_silenced": [
-   {
-    "stat": "casting",
-    "value": -1.0,
-    "label": "Silenced"
-   }
-  ],
-  "school_locked": [
-   {
-    "stat": "casting_school",
-    "value": -1.0,
-    "label": "School locked"
-   }
-  ],
-  "heal_cut": [
-   {
-    "stat": "healing_received",
-    "value": -0.5,
-    "label": "Healing -50%"
-   }
-  ],
-  "heal_cut_done": [
-   {
-    "stat": "healing_done",
-    "value": -0.5,
-    "label": "Healing done -50%"
-   }
-  ],
-  "armor_broken": [
-   {
-    "stat": "armor",
-    "value": -0.5,
-    "label": "Armor -50%"
-   }
-  ],
-  "slowed": [
-   {
-    "stat": "move_speed",
-    "value": -0.35,
-    "label": "Move -35%"
-   }
-  ],
-  "iron_guard": [
-   {
-    "stat": "damage_taken",
-    "value": -0.4,
-    "label": "DEF +40%"
-   }
-  ],
-  "guarded": [
-   {
-    "stat": "damage_taken",
-    "value": -0.4,
-    "label": "DEF +40%"
-   }
-  ],
-  "executioner_ready": [
-   {
-    "stat": "next_attack",
-    "value": 1.0,
-    "label": "Next attack lethal"
-   }
-  ]
+  "heal_cut_done": {
+   "type": "curse",
+   "control": "none",
+   "mods": [
+    {
+     "stat": "Healing",
+     "value": -50,
+     "unit": "%"
+    }
+   ],
+   "line": "Healing you deal is reduced.",
+   "name": "Enfeebled"
+  },
+  "armor_broken": {
+   "type": "physical",
+   "control": "none",
+   "mods": [
+    {
+     "stat": "Armor",
+     "value": -50,
+     "unit": "%",
+     "duration": 10
+    }
+   ],
+   "line": "Armor shattered by a Decimating Strike.",
+   "name": "Armor Broken"
+  },
+  "executioner_ready": {
+   "type": "none",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "ATK",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Your next basic attack is lethal (bosses excepted; champions lose 30% max health).",
+   "name": "Executioner Ready"
+  }
  }
 }

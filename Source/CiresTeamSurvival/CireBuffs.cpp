@@ -124,6 +124,6 @@ const TArray<FName>& CireBuffs::KnownIds()
         TEXT("npc_bloodlust"),TEXT("npc_sundered"),TEXT("npc_dragonfire"),TEXT("npc_scaleward"),TEXT("npc_runic"),TEXT("npc_feral"),
         TEXT("npc_profane"),TEXT("npc_void"),
         // champion-draft: crowd control, heal cuts, armor break and Executioner (CireCrowdControl).
-        TEXT("silenced"),TEXT("school_locked"),TEXT("heal_cut"),TEXT("heal_cut_done"),TEXT("armor_broken"),TEXT("executioner_ready")};
+        TEXT("silenced"),TEXT("interrupted"),TEXT("healing_cut"),TEXT("heal_cut_done"),TEXT("armor_broken"),TEXT("executioner_ready")};
     return Ids;
 }

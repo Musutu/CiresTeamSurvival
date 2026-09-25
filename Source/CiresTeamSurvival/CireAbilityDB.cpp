@@ -97,9 +97,17 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
     const TSharedPtr<FJsonObject>* Mods=nullptr;
     if(Root->TryGetObjectField(TEXT("buffModifiers"),Mods))for(const auto& Pair:(*Mods)->Values)
     {
-        const TArray<TSharedPtr<FJsonValue>>* A=nullptr;if(!Pair.Value->TryGetArray(A))continue;
+        // Same row format as Content/Data/BuffModifiers.json (Docs/BuffModifiers.md).
+        const TSharedPtr<FJsonObject>* Row=nullptr;if(!Pair.Value->TryGetObject(Row)||!Row)return Fail(TEXT("buffModifiers rows must be objects"));
         auto& List=Modifiers.Add(FName(*FString(Pair.Key)));
-        for(const auto& V:*A){const TSharedPtr<FJsonObject>* M=nullptr;if(V->TryGetObject(M)&&M)List.Add({Str(*M,TEXT("stat")),Num(*M,TEXT("value")),Str(*M,TEXT("label"))});}
+        const TArray<TSharedPtr<FJsonValue>>* A=nullptr;
+        if((*Row)->TryGetArrayField(TEXT("mods"),A))for(const auto& V:*A)
+        {
+            const TSharedPtr<FJsonObject>* M=nullptr;if(!V->TryGetObject(M)||!M)continue;
+            FCireModifier X;X.Stat=Str(*M,TEXT("stat"));X.Value=Num(*M,TEXT("value"));const FString Unit=Str(*M,TEXT("unit"));
+            X.Label=X.Value==0?Str(*Row,TEXT("name")):FString::Printf(TEXT("%s %s%s%s"),*X.Stat,X.Value>0?TEXT("+"):TEXT("-"),*Trim(FMath::Abs(X.Value)),*Unit);
+            List.Add(X);
+        }
     }
     OutAbilities=MoveTemp(Parsed);OutKits=MoveTemp(Kits);OutModifiers=MoveTemp(Modifiers);Error.Reset();return true;
 }
@@ -183,7 +191,7 @@ bool CireAbilityDB::RunSmoke()
     Check(L10.Effect>L1.Effect&&L200.Effect>L10.Effect&&L10.ManaCost>=L1.ManaCost&&L10.Cooldown<L1.Cooldown&&L200.Cooldown>=L1.Cooldown*.6f-1e-3f,TEXT("scaling monotone with floor"));
     Check(Find(TEXT("shadow_step"))&&Find(TEXT("shadow_step"))->Void.bValid,TEXT("shadow step carries void zones"));
     Check(Describe(TEXT("restoring_light"),3).Contains(TEXT("next")),TEXT("describe shows next level"));
-    Check(ModifierSummary(TEXT("heal_cut"))==TEXT("Healing -50%"),TEXT("modifier summaries"));
+    Check(ModifierSummary(TEXT("armor_broken"))==TEXT("Armor -50%"),TEXT("modifier summaries"));
     Check(FindByName(TEXT("Blight Sigil"))==Find(TEXT("blight_sigil")),TEXT("lookup by display name"));
     UE_LOG(LogCireAbilityDB,Display,TEXT("CIRE_ABILITY_DB_%s checks=%d abilities=%d"),bPass?TEXT("PASS"):TEXT("FAIL"),Checks,All().Num());
     return bPass;
