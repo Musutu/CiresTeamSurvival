@@ -2066,6 +2066,478 @@
         "vfxFamily": "light",
         "delivery": "ground_circle"
       }
+    },
+    {
+      "id": "gunblade",
+      "displayName": "Gunblade",
+      "familyId": "gunblade",
+      "race": "human",
+      "variant": "Bounty Hunter",
+      "classType": "Bounty Hunter",
+      "difficulty": 2,
+      "lore": "He hunts the wicked for coin and keeps a ledger of every soul he has priced.",
+      "quote": "Some pray. I collect.",
+      "description": "A hybrid gunner: a flintlock at mid range, a falchion up close, silver for the dead and a price on every head.",
+      "runtimeArchetype": 1,
+      "primaryStat": "agility",
+      "strength": 10,
+      "agility": 20,
+      "intelligence": 10,
+      "basicAttackRange": 950,
+      "attackSeconds": 1.5,
+      "attackStyle": "gunblade",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "wide-brim hat, weathered long coat and cape, flintlock pistol, falchion",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "Original design for Cire's Team Survival from Eric's reference sheets (inspiration only, no third-party names, text or likeness); temporary body until the Tripo agent delivers the bound model.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "silver_shot",
+          "displayName": "Silver Shot",
+          "status": "implemented",
+          "mechanic": "Aimed silver round: 95 + 1.6x AGI damage; +60% against undead and void monsters.",
+          "vfxFamily": "holy",
+          "delivery": "projectile"
+        },
+        {
+          "id": "hex_mark",
+          "displayName": "Hex Mark",
+          "status": "implemented",
+          "mechanic": "Put a bounty on an enemy for 12s: it takes 15% more damage from every source, and killing it pays bounty gold (25, elites 60, bosses 150).",
+          "vfxFamily": "shadow",
+          "delivery": "targeted"
+        },
+        {
+          "id": "powder_flask",
+          "displayName": "Powder Flask",
+          "status": "implemented",
+          "mechanic": "Hurl a powder flask: after a short fuse it bursts for 70 + 1x AGI fire damage in 2.6m and slows by 35% for 2.5s.",
+          "vfxFamily": "fire",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "blade_flurry",
+          "displayName": "Blade Flurry",
+          "status": "implemented",
+          "mechanic": "Three quick falchion slashes around you, each 40 + 0.8x AGI damage.",
+          "vfxFamily": "steel",
+          "delivery": "self"
+        },
+        {
+          "id": "hunters_stride",
+          "displayName": "Hunter's Stride",
+          "status": "implemented",
+          "mechanic": "Dash up to 5.5m; your next basic attack within 4s deals 50% more damage.",
+          "vfxFamily": "steel",
+          "delivery": "ground_line"
+        },
+        {
+          "id": "warding_talisman",
+          "displayName": "Warding Talisman",
+          "status": "implemented",
+          "mechanic": "Raise the talisman: take 30% less damage for 4s and shake off slows.",
+          "vfxFamily": "holy",
+          "delivery": "self"
+        }
+      ],
+      "passive": {
+        "id": "price_on_every_soul",
+        "displayName": "Price on Every Soul",
+        "status": "implemented",
+        "mechanic": "Your killing blows pay 5 bonus gold (x3 elites, x8 bosses) and restore 15 energy.",
+        "vfxFamily": "steel",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "collect_the_bounty",
+        "displayName": "Collect the Bounty",
+        "status": "implemented",
+        "mechanic": "Execution shot: 180 + 3x AGI plus 40% of missing health (bonus capped at 400). Non-boss monsters under 20% health die; a kill refunds half the cooldown and pays a marked bounty twice.",
+        "vfxFamily": "steel",
+        "delivery": "targeted"
+      }
+    },
+    {
+      "id": "witch_slayer",
+      "displayName": "Witch Slayer",
+      "familyId": "witch_slayer",
+      "race": "human",
+      "variant": "Hexbane",
+      "classType": "Witch Hunter",
+      "difficulty": 3,
+      "lore": "Covens whisper of a lantern no hex can put out, and of the hunter who carries it.",
+      "quote": "Every ward has a seam.",
+      "description": "An anti-caster hunter with an arcane blunderbuss and a spectral blade: purge, silence and banish whatever works magic.",
+      "runtimeArchetype": 2,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 900,
+      "attackSeconds": 1.5,
+      "attackStyle": "blunderbuss",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "pointed hat, green-and-dark long coat, arcane blunderbuss with glowing blue orbs, spectral arcane blade",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "Original design for Cire's Team Survival from Eric's reference sheets (inspiration only, no third-party names, text or likeness); temporary body until the Tripo agent delivers the bound model.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "arcane_blunderbuss",
+          "displayName": "Arcane Blunderbuss",
+          "status": "implemented",
+          "mechanic": "A 60-degree cone of arcane shot (5.5m): 110 + 1.8x INT damage; +40% against casting enemies and interrupts their cast.",
+          "vfxFamily": "arcane",
+          "delivery": "ground_cone"
+        },
+        {
+          "id": "spirit_lantern",
+          "displayName": "Spirit Lantern",
+          "status": "implemented",
+          "mechanic": "Set a spirit-lantern trap (20s, up to 2). The first enemy to come within 1.5m sets it off: 60 + 1x INT damage and a 2s silence within 2.6m.",
+          "vfxFamily": "arcane",
+          "delivery": "construct"
+        },
+        {
+          "id": "purge",
+          "displayName": "Purge",
+          "status": "implemented",
+          "mechanic": "Strip every buff from an enemy and silence it for 2.5s; deals 60 + 1x INT damage.",
+          "vfxFamily": "holy",
+          "delivery": "targeted"
+        },
+        {
+          "id": "banishment",
+          "displayName": "Banishment",
+          "status": "implemented",
+          "mechanic": "Exile an enemy for 2s: it cannot act, move or be harmed, then returns for 80 + 1.5x INT void damage. Bosses resist: silenced and slowed instead.",
+          "vfxFamily": "spectral",
+          "delivery": "targeted"
+        },
+        {
+          "id": "witchfinders_mark",
+          "displayName": "Witchfinder's Mark",
+          "status": "implemented",
+          "mechanic": "Mark an enemy for 10s: it is revealed and takes 12% more damage, tripled while it casts.",
+          "vfxFamily": "arcane",
+          "delivery": "targeted"
+        },
+        {
+          "id": "spectral_blade",
+          "displayName": "Spectral Blade",
+          "status": "implemented",
+          "mechanic": "Lunge up to 6m with the spectral blade: 90 + 1.4x INT damage.",
+          "vfxFamily": "arcane",
+          "delivery": "targeted"
+        }
+      ],
+      "passive": {
+        "id": "witchbane",
+        "displayName": "Witchbane",
+        "status": "implemented",
+        "mechanic": "You deal 20% more damage to enemies that are casting, silenced or marked.",
+        "vfxFamily": "arcane",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "hexbane_judgment",
+        "displayName": "Hexbane Judgment",
+        "status": "implemented",
+        "mechanic": "Aim a 4.5m circle; after 1s it bursts for 200 + 3x INT damage, strips every buff and silences for 3s.",
+        "vfxFamily": "arcane",
+        "delivery": "ground_circle"
+      }
+    },
+    {
+      "id": "huntress",
+      "displayName": "Huntress",
+      "familyId": "huntress",
+      "race": "sylvan",
+      "variant": "Glaive Thrower",
+      "classType": "Mounted Glaive Thrower",
+      "difficulty": 2,
+      "lore": "Masked and hooded, she rides the great sabercat Ashfang, and her glaives come back for more.",
+      "quote": "Track. Strike. Survive.",
+      "description": "A mounted ranged hunter: a glaive launcher whose glaives bounce between foes, a sabercat that pounces, and an owl that finds prey.",
+      "runtimeArchetype": 1,
+      "primaryStat": "agility",
+      "strength": 10,
+      "agility": 20,
+      "intelligence": 10,
+      "basicAttackRange": 1300,
+      "attackSeconds": 1.5,
+      "attackStyle": "glaive",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "masked hooded huntress in leather and red cloth riding a great sabercat, mounted glaive launcher, bouncing glaives",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "Original design for Cire's Team Survival from Eric's reference sheets (inspiration only, no third-party names, text or likeness); temporary body until the Tripo agent delivers the bound model.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "bouncing_glaive",
+          "displayName": "Bouncing Glaive",
+          "status": "implemented",
+          "mechanic": "Hurl a glaive that strikes the target and bounces to 4 more enemies within 5m, losing 20% per bounce: 80 + 1.5x AGI.",
+          "vfxFamily": "steel",
+          "delivery": "chain"
+        },
+        {
+          "id": "sabercat_pounce",
+          "displayName": "Sabercat Pounce",
+          "status": "implemented",
+          "mechanic": "The sabercat leaps up to 7m and mauls everything within 2.6m on landing: 75 + 1x AGI and a 40% slow for 2s.",
+          "vfxFamily": "steel",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "owl_scout",
+          "displayName": "Owl Scout",
+          "status": "implemented",
+          "mechanic": "Send the owl to a point: enemies within 4.5m are revealed and tracked for 8s, taking 10% more damage from you.",
+          "vfxFamily": "nature",
+          "delivery": "ground_circle"
+        },
+        {
+          "id": "moonlit_sprint",
+          "displayName": "Moonlit Sprint",
+          "status": "implemented",
+          "mechanic": "Sprint under the moon: +40% movement speed for 4s and shake off slows.",
+          "vfxFamily": "arcane",
+          "delivery": "self"
+        },
+        {
+          "id": "crescent_volley",
+          "displayName": "Crescent Volley",
+          "status": "implemented",
+          "mechanic": "Loose a crescent glaive that flies 14m in a line and cuts through up to five enemies: 90 + 1.4x AGI.",
+          "vfxFamily": "steel",
+          "delivery": "projectile"
+        },
+        {
+          "id": "sabercat_rake",
+          "displayName": "Sabercat Rake",
+          "status": "implemented",
+          "mechanic": "The sabercat rakes a 70-degree arc in front of you (3.2m): 70 + 1.2x AGI.",
+          "vfxFamily": "nature",
+          "delivery": "ground_cone"
+        }
+      ],
+      "passive": {
+        "id": "moon_glaive",
+        "displayName": "Moon Glaive",
+        "status": "implemented",
+        "mechanic": "Your glaive throws bounce to 2 more enemies within 4.5m, for 60% and then 36% damage.",
+        "vfxFamily": "steel",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "glaive_storm",
+        "displayName": "Glaive Storm",
+        "status": "implemented",
+        "mechanic": "A whirling storm of glaives surrounds you for 6s, striking enemies within 4.8m for 45 + 0.5x AGI every 0.5s.",
+        "vfxFamily": "steel",
+        "delivery": "self"
+      }
+    },
+    {
+      "id": "aetheri_artificer",
+      "displayName": "Aetheri Artificer",
+      "familyId": "aetheri",
+      "race": "aetheri",
+      "variant": "Forge-Caller",
+      "classType": "Construct Artificer",
+      "difficulty": 3,
+      "lore": "Aetheri artificers speak to machines in light; turrets rise where they point.",
+      "quote": "Build. Deploy. Endure.",
+      "description": "An Aetheri engineer who fights through Constructs: photon turrets, skitter bombs, arc mines and a disruption pylon.",
+      "runtimeArchetype": 4,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 1200,
+      "attackSeconds": 1.5,
+      "attackStyle": "arcane",
+      "threatRole": "damage",
+      "roles": [
+        "damage"
+      ],
+      "artFamily": "luminous crystalline being in gold and white alloy plate with blue-violet energy seams, floating focus crystal",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "Original design for Cire's Team Survival from Eric's reference sheets (inspiration only, no third-party names, text or likeness); temporary body until the Tripo agent delivers the bound model.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "photon_turret",
+          "displayName": "Photon Turret",
+          "status": "implemented",
+          "mechanic": "Warp in a turret for 25s (240 health, up to 2) that fires energy bolts at enemies within 9.5m: 18 + 0.35x INT every 0.8s.",
+          "vfxFamily": "arcane",
+          "delivery": "construct"
+        },
+        {
+          "id": "skitter_swarm",
+          "displayName": "Skitter Swarm",
+          "status": "implemented",
+          "mechanic": "Deploy three skitter bombs (up to 6) that race at the nearest enemies and explode for 70 + 0.8x INT in 2m.",
+          "vfxFamily": "arcane",
+          "delivery": "construct"
+        },
+        {
+          "id": "arc_mine",
+          "displayName": "Arc Mine",
+          "status": "implemented",
+          "mechanic": "Plant a mine (30s, up to 3): the first enemy within 1.5m detonates it for 110 + 1.2x INT in 2.4m.",
+          "vfxFamily": "arcane",
+          "delivery": "construct"
+        },
+        {
+          "id": "disruption_pylon",
+          "displayName": "Disruption Pylon",
+          "status": "implemented",
+          "mechanic": "Warp in a pylon (15s): enemies inside its 4.5m field deal 25% less damage.",
+          "vfxFamily": "arcane",
+          "delivery": "construct"
+        },
+        {
+          "id": "phase_lance",
+          "displayName": "Phase Lance",
+          "status": "implemented",
+          "mechanic": "Fire an energy lance skillshot: 100 + 1.8x INT damage.",
+          "vfxFamily": "arcane",
+          "delivery": "projectile"
+        },
+        {
+          "id": "overcharge",
+          "displayName": "Overcharge",
+          "status": "implemented",
+          "mechanic": "Overcharge your constructs within 12m for 6s: turrets fire 100% faster and every construct regains 25% health.",
+          "vfxFamily": "arcane",
+          "delivery": "self"
+        }
+      ],
+      "passive": {
+        "id": "aether_engineering",
+        "displayName": "Aether Engineering",
+        "status": "implemented",
+        "mechanic": "Your constructs have 25% more health and last 20% longer.",
+        "vfxFamily": "arcane",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "warp_obelisk",
+        "displayName": "Warp Obelisk",
+        "status": "implemented",
+        "mechanic": "Warp in a siege obelisk for 15s (600 health): heavy beams at enemies within 13m for 60 + 1x INT, splashing 2m.",
+        "vfxFamily": "arcane",
+        "delivery": "construct"
+      }
+    },
+    {
+      "id": "aetheri_warden",
+      "displayName": "Aetheri Warden",
+      "familyId": "aetheri",
+      "race": "aetheri",
+      "variant": "Pylon Warden",
+      "classType": "Pylon Warden",
+      "difficulty": 2,
+      "lore": "Where a Warden stands, pylons hum and the line does not break.",
+      "quote": "The lattice holds.",
+      "description": "An Aetheri guardian who shapes the battlefield with pylons: shield-regen, haste and gravity fields, stasis snares and a Nexus.",
+      "runtimeArchetype": 0,
+      "primaryStat": "intelligence",
+      "strength": 10,
+      "agility": 10,
+      "intelligence": 20,
+      "basicAttackRange": 220,
+      "attackSeconds": 1.5,
+      "attackStyle": "staff",
+      "threatRole": "healer",
+      "roles": [
+        "healer",
+        "support",
+        "tank"
+      ],
+      "artFamily": "tall armoured Aetheri warden in white-gold alloy, blue-violet psionic glow, energy halberd",
+      "artStatus": "prototype_fallback",
+      "artProvenance": "Original design for Cire's Team Survival from Eric's reference sheets (inspiration only, no third-party names, text or likeness); temporary body until the Tripo agent delivers the bound model.",
+      "startsWithSkills": [],
+      "actives": [
+        {
+          "id": "aegis_pylon",
+          "displayName": "Aegis Pylon",
+          "status": "implemented",
+          "mechanic": "Warp in a pylon (15s): allies inside its 4.5m field regenerate 2% max health per second and take 15% less damage.",
+          "vfxFamily": "arcane",
+          "delivery": "construct"
+        },
+        {
+          "id": "haste_pylon",
+          "displayName": "Haste Pylon",
+          "status": "implemented",
+          "mechanic": "Warp in a pylon (12s): allies inside its 4.5m field move and attack 25% faster.",
+          "vfxFamily": "arcane",
+          "delivery": "construct"
+        },
+        {
+          "id": "gravity_pylon",
+          "displayName": "Gravity Pylon",
+          "status": "implemented",
+          "mechanic": "Warp in a pylon (12s): enemies inside its 4.5m field are slowed by 35%.",
+          "vfxFamily": "arcane",
+          "delivery": "construct"
+        },
+        {
+          "id": "stasis_snare",
+          "displayName": "Stasis Snare",
+          "status": "implemented",
+          "mechanic": "Plant a snare (30s, up to 3): the first enemy within 1.5m is locked in stasis for 1.5s and takes 20 + 0.3x INT damage. Bosses are slowed instead.",
+          "vfxFamily": "arcane",
+          "delivery": "construct"
+        },
+        {
+          "id": "aether_mend",
+          "displayName": "Aether Mend",
+          "status": "implemented",
+          "mechanic": "Cast 1s: mend an ally (or yourself) for 85 + 2.5x INT.",
+          "vfxFamily": "arcane",
+          "delivery": "ally"
+        },
+        {
+          "id": "repulsor_pulse",
+          "displayName": "Repulsor Pulse",
+          "status": "implemented",
+          "mechanic": "Release a pulse around you: 60 + 1x INT damage and a 30% slow for 2s to enemies within 3.5m; monsters turn on you briefly.",
+          "vfxFamily": "arcane",
+          "delivery": "self"
+        }
+      ],
+      "passive": {
+        "id": "resonant_lattice",
+        "displayName": "Resonant Lattice",
+        "status": "implemented",
+        "mechanic": "Allies inside your Aegis Pylon or Nexus take a further 10% less damage, and your pylons last 20% longer.",
+        "vfxFamily": "arcane",
+        "delivery": "passive"
+      },
+      "ultimate": {
+        "id": "aether_nexus",
+        "displayName": "Aether Nexus",
+        "status": "implemented",
+        "mechanic": "Warp in a Nexus for 10s: allies inside its 6.5m field take 40% less damage and regenerate 5% max health per second; enemies inside are slowed.",
+        "vfxFamily": "arcane",
+        "delivery": "construct"
+      }
     }
   ]
 }

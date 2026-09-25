@@ -43,6 +43,14 @@ FString AssetPath(const FString& Token)
         const FString Kind=Token.Mid(7);if(!Legacy.Contains(Kind))return FString();
         return FString::Printf(TEXT("/Game/Art/Weapons/CombatPrototype01/SM_Prototype%s.SM_Prototype%s"),*Kind,*Kind);
     }
+    // new-champions: hunter/* props (Tools/BuildNewChampionContent.py -> /Game/Art/NewChampions01/Props).
+    static const TSet<FString> Hunter={TEXT("Flintlock"),TEXT("Falchion"),TEXT("ArcaneBlunderbuss"),TEXT("SpectralBlade"),TEXT("Glaive"),
+        TEXT("GlaiveLauncher"),TEXT("AetherStaff"),TEXT("AetherHalberd")};
+    if(Token.StartsWith(TEXT("hunter/")))
+    {
+        const FString Kind=Token.Mid(7);if(!Hunter.Contains(Kind))return FString();
+        return FString::Printf(TEXT("/Game/Art/NewChampions01/Props/SM_%s.SM_%s"),*Kind,*Kind);
+    }
     if(!Armory.Contains(Token))return FString();
     return FString::Printf(TEXT("/Game/Art/Weapons/ArmoryPrototype01/SM_%s.SM_%s"),*Token,*Token);
 }

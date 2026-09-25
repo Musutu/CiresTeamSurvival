@@ -2,6 +2,7 @@
 #include "CireGame.h"
 #include "CireRealm.h"
 #include "CireSummon.h"
+#include "CireSignatureSkills.h" // new-champions
 #include "Engine/World.h"
 #include "Rules/CireAttackRules.h"
 #include "Components/CapsuleComponent.h"
@@ -34,9 +35,11 @@ void Resolve(AActor* Source,AActor* Target,float Damage,ECireHitOutcome Result,c
 }
 void Release(ACireHero* Source,AActor* Target,float Damage) {
     if(!IsValid(Source)||!Source->HasAuthority()||!Source->IsHostile(Target))return;
-    const bool bRanged=Source->IsRangedBasicAttack();
+    bool bRanged=Source->IsRangedBasicAttack();
     const bool bSummon=Source->IsA<ACireSummon>();
     const float ReleaseRange=Source->BasicAttackRange()*(bRanged||bSummon?1.2f:240.f/220.f);
+    FString StrikeName=Source->BasicAttackStyle()+TEXT(" strike");
+    Damage=CireSignatureSkills::ModifyBasicAttack(Source,Target,Damage,bRanged,StrikeName); // new-champions: gunblade falchion/pistol switch, Hunter's Stride
     if(!Source->InRange(Target,ReleaseRange))return;
     FHitResult Hit;
     FCollisionQueryParams Query(SCENE_QUERY_STAT(CireAttackRelease),false,Source);
@@ -46,7 +49,7 @@ void Release(ACireHero* Source,AActor* Target,float Damage) {
     const FString Style=Source->BasicAttackStyle();
     CireCombat::PlayCue(Source,Target,FName(*Style),Source->GetActorLocation(),Target->GetActorLocation(),ECireSpellCue::Launch);
     if(bRanged)ACireTargetProjectile::Launch(Source,Target,Damage,Result);
-    else Resolve(Source,Target,Damage,Result,Style+TEXT(" strike"));
+    else Resolve(Source,Target,Damage,Result,StrikeName);
 }
 }
 
@@ -112,7 +115,9 @@ void ACireTargetProjectile::Tick(float Delta){
         if(HasAuthority()){
             const FString AttackStyle=Attacker->BasicAttackStyle();
             CireAttacks::Resolve(Attacker,Victim,Amount,Result,AttackStyle==TEXT("lance")?TEXT("Thrown lance"):
-                AttackStyle==TEXT("bow")?TEXT("Bow shot"):AttackStyle==TEXT("axes")?TEXT("Thrown axe"):TEXT("Arcane bolt"));
+                AttackStyle==TEXT("bow")?TEXT("Bow shot"):AttackStyle==TEXT("axes")?TEXT("Thrown axe"):
+                AttackStyle==TEXT("gunblade")?TEXT("Pistol shot"):AttackStyle==TEXT("glaive")?TEXT("Glaive"):AttackStyle==TEXT("blunderbuss")?TEXT("Arcane shot"):TEXT("Arcane bolt")); // new-champions: styles
+            CireSignatureSkills::OnBasicProjectileHit(Attacker,Victim,Amount,Result==ECireHitOutcome::Hit); // new-champions: Moon Glaive bounces
             Destroy();
         }
     }else SetActorLocation(GetActorLocation()+Offset.GetSafeNormal()*Step);

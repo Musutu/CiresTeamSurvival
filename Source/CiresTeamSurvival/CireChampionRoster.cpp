@@ -71,13 +71,14 @@ bool CireChampionRoster::ParseJson(const FString& Json,TArray<FCireChampionProfi
     const TArray<TSharedPtr<FJsonValue>>* Values=nullptr;
     if(!Root->TryGetArrayField(TEXT("champions"),Values)||Values->Num()<1||Values->Num()>64)return Fail(TEXT("Roster requires 1..64 champions"));
     TArray<FCireChampionProfile> Candidate;TSet<FString> Seen;
-    const TSet<FString> Styles={TEXT("sword"),TEXT("bow"),TEXT("arcane"),TEXT("lance"),TEXT("claws"),TEXT("axes"),TEXT("flail"),TEXT("staff"),TEXT("totem")};
+    const TSet<FString> Styles={TEXT("sword"),TEXT("bow"),TEXT("arcane"),TEXT("lance"),TEXT("claws"),TEXT("axes"),TEXT("flail"),TEXT("staff"),TEXT("totem"),
+        TEXT("gunblade"),TEXT("blunderbuss"),TEXT("glaive")}; // new-champions
     const TSet<FString> Roles={TEXT("tank"),TEXT("damage"),TEXT("healer"),TEXT("support")};
     for(const auto& V:*Values)
     {
         const TSharedPtr<FJsonObject>* P=nullptr;if(!V->TryGetObject(P)||!P||!P->IsValid())return Fail(TEXT("Champion must be an object"));
         auto J=*P;FCireChampionProfile C;
-        if(!Keys(J,{TEXT("id"),TEXT("displayName"),TEXT("familyId"),TEXT("race"),TEXT("variant"),TEXT("classType"),TEXT("difficulty"),TEXT("lore"),TEXT("description"),TEXT("runtimeArchetype"),TEXT("primaryStat"),TEXT("strength"),TEXT("agility"),TEXT("intelligence"),TEXT("basicAttackRange"),TEXT("attackSeconds"),TEXT("attackStyle"),TEXT("threatRole"),TEXT("roles"),TEXT("artFamily"),TEXT("artStatus"),TEXT("artProvenance"),TEXT("startsWithSkills"),TEXT("actives"),TEXT("passive"),TEXT("ultimate")})||
+        if(!Keys(J,{TEXT("id"),TEXT("displayName"),TEXT("familyId"),TEXT("race"),TEXT("variant"),TEXT("classType"),TEXT("difficulty"),TEXT("lore"),TEXT("description"),TEXT("runtimeArchetype"),TEXT("primaryStat"),TEXT("strength"),TEXT("agility"),TEXT("intelligence"),TEXT("basicAttackRange"),TEXT("attackSeconds"),TEXT("attackStyle"),TEXT("threatRole"),TEXT("roles"),TEXT("artFamily"),TEXT("artStatus"),TEXT("artProvenance"),TEXT("startsWithSkills"),TEXT("actives"),TEXT("passive"),TEXT("ultimate"),TEXT("quote")})||
             !Id(J,TEXT("id"),C.Id)||Seen.Contains(C.Id)||!Id(J,TEXT("familyId"),C.FamilyId)||
             !Text(J,TEXT("displayName"),C.DisplayName,80)||!Text(J,TEXT("variant"),C.Variant,64)||!Text(J,TEXT("description"),C.Description,800)||
             !Integer(J,TEXT("runtimeArchetype"),C.RuntimeArchetype,0,4)||!Text(J,TEXT("primaryStat"),C.PrimaryStat,16)||
@@ -93,6 +94,7 @@ bool CireChampionRoster::ParseJson(const FString& Json,TArray<FCireChampionProfi
         if((J->HasField(TEXT("classType"))&&!Text(J,TEXT("classType"),C.ClassType,48))||
             (J->HasField(TEXT("lore"))&&!Text(J,TEXT("lore"),C.Lore,200))||
             (J->HasField(TEXT("difficulty"))&&!Integer(J,TEXT("difficulty"),C.Difficulty,1,3))||
+            (J->HasField(TEXT("quote"))&&!Text(J,TEXT("quote"),C.Quote,120))|| // new-champions
             (J->HasField(TEXT("race"))&&!Text(J,TEXT("race"),C.Race,32)))return Fail(TEXT("Invalid class type, lore, difficulty or race: ")+C.Id); // monster-races: race
         if(C.ClassType.IsEmpty())C.ClassType=C.Variant;
         const TArray<TSharedPtr<FJsonValue>>* RoleValues=nullptr;const TArray<TSharedPtr<FJsonValue>>* StartSkills=nullptr;const TArray<TSharedPtr<FJsonValue>>* Actives=nullptr;

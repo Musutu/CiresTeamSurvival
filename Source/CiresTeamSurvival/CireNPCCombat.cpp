@@ -1,4 +1,5 @@
 #include "CireNPCCombat.h"
+#include "CireTechConstructs.h" // new-champions
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireLoot.h" // progression-shop: NPC pause
 #include "CireGame.h"
@@ -267,6 +268,14 @@ bool StartAbility(ACireMonster* M,ACireGameMode* Mode,const FCireNPCAbility& A,A
     case ECireNPCAbilityKind::Summon:
         if(!Victim||!CireRaces::CanSummon(M,A))return false;
         BeginCast(M,A,M->GetActorLocation()+M->GetActorForwardVector()*100,false);break;
+    case ECireNPCAbilityKind::Deploy: // new-champions: turrets/empower fields beside the caster, the rest on the victim
+    {
+        const auto* Recipe=CireTechConstructs::FindRecipe(A.DeployRecipe);
+        if(!Victim||!Recipe||Distance>FMath::Max(A.Range,900.f))return false;
+        const bool bSelf=Recipe->Kind==ECireConstructKind::Turret||Recipe->Effect==TEXT("empower");
+        const FVector Toward=(Victim->GetActorLocation()-M->GetActorLocation()).GetSafeNormal2D();
+        BeginCast(M,A,bSelf?M->GetActorLocation()+Toward*220.f:Victim->GetActorLocation(),false);break;
+    }
     default:return false;
     }
     Committed(M,A);return true;
@@ -580,6 +589,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         if(Now>=M->CastEndsAt)ReleaseCast(M,Mode);
         return;
     }
+    if(!M->Victim&&CireTechConstructs::MonsterHandleConstructs(M,false))return; // new-champions: smash a champion's turret/pylon close by
     if(auto* Victim=M->Victim)
     {
         M->bEngaged=true;

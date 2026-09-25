@@ -1,6 +1,7 @@
 // monster-races: race data, ranks, per-match skill draws, wave-gated unlocks, race-skill riders and the
 // race/rank skin. See CireRaces.h and Docs/Races.md.
 #include "CireRaces.h"
+#include "CireTechConstructs.h" // new-champions
 #include "CireGame.h"
 #include "CireNPCState.h"
 #include "CireNPCCombat.h"
@@ -253,7 +254,10 @@ bool CireRaces::MergeInto(FCireNPCDatabase& Database, FString& Error)
         const FCireNPCArchetype& A = Pair.Value;
         if (!A.FallbackBody.IsNone() && !Work.Archetypes.Contains(A.FallbackBody)) { Error = A.Id.ToString() + TEXT(" falls back to unknown body ") + A.FallbackBody.ToString(); GRaces = D; return false; }
         for (const FCireNPCAbility& Ab : A.Abilities)
+        {
+            if (Ab.Kind == ECireNPCAbilityKind::Deploy && !CireTechConstructs::FindRecipe(Ab.DeployRecipe)) { Error = A.Id.ToString() + TEXT(" deploys unknown construct ") + Ab.DeployRecipe.ToString(); GRaces = D; return false; } // new-champions
             if (Ab.Kind == ECireNPCAbilityKind::Summon && !Work.Archetypes.Contains(Ab.SummonId)) { Error = A.Id.ToString() + TEXT(" summons unknown ") + Ab.SummonId.ToString(); GRaces = D; return false; }
+        }
     }
     D.bValid = true;
     Database = MoveTemp(Work);
@@ -476,6 +480,15 @@ int32 CireRaces::OnAbilityReleased(ACireMonster* M, const FCireNPCAbility& A, FV
     if (!IsValid(M) || !M->HasAuthority()) return 0;
     if (!A.bBasic) { ++GStats.Casts; if (GStats.EarliestCastWave == 0) GStats.EarliestCastWave = FMath::Max(1, CurrentWave(M)); }
     if (A.Kind == ECireNPCAbilityKind::Summon) { SpawnSummons(M, A); if (!A.Buff.IsNone()) CireBuffs::Apply(M, A.Buff, 3.f, M); return 0; }
+    if (A.Kind == ECireNPCAbilityKind::Deploy) // new-champions: Aetheri engineers and the Hierarch place constructs
+    {
+        FVector Ground = Aim; FHitResult Floor; FCollisionQueryParams Q(SCENE_QUERY_STAT(CireDeployFloor), false, M);
+        if (M->GetWorld()->LineTraceSingleByObjectType(Floor, Aim + FVector(0, 0, 300), Aim - FVector(0, 0, 600), FCollisionObjectQueryParams(ECC_WorldStatic), Q)) Ground = Floor.ImpactPoint;
+        const int32 Placed = CireTechConstructs::Deploy(M, A.DeployRecipe, Ground, nullptr, FMath::Max(.1f, A.DamageMultiplier) * TierDamage(M)).Num();
+        if (!A.Buff.IsNone()) CireBuffs::Apply(M, A.Buff, 3.f, M);
+        UE_LOG(LogCireRaces, Display, TEXT("CIRE_RACE_DEPLOY %s placed %d x %s"), *M->GetNPCDisplayName(), Placed, *A.DeployRecipe.ToString());
+        return Placed;
+    }
     // Buff-style skills show their themed visual on the caster.
     switch (A.Kind)
     {

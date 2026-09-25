@@ -33,7 +33,8 @@ enum class ECireNPCAbilityKind : uint8
     Disengage,    // leap away from a victim in melee range
     // monster-races: generic race-skill behaviours (riders root/silence/slow/knockback work on every telegraph)
     Pull,         // telegraphed line to the victim (or farthest champion); champions in it are dragged to the caster
-    Summon        // interruptible cast; spawns Count units of SummonId beside the caster (joins its wave)
+    Summon,       // interruptible cast; spawns Count units of SummonId beside the caster (joins its wave)
+    Deploy        // new-champions: interruptible cast; places Aetheri constructs (CireTechConstructs recipe Deploy)
 };
 
 struct CIRESTEAMSURVIVAL_API FCireNPCAbility
@@ -67,6 +68,7 @@ struct CIRESTEAMSURVIVAL_API FCireNPCAbility
     float Slow = 0.f;              // seconds slowed (existing slow)
     float Knockback = 0.f;         // cm pushed away from the caster / circle centre
     FName SummonId;                // Summon: archetype id
+    FName DeployRecipe;            // new-champions: Deploy: CireTechConstructs recipe id (npc_photon_turret, npc_skitter...)
     int32 Count = 1;               // Summon: units per cast
     FName Buff;                    // BuffVisuals.json id shown on champions hit (or allies buffed)
     FName Cue;                     // AudioCues.json id played when the cast starts

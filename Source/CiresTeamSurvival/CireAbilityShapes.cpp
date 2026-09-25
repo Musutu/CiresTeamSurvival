@@ -6,6 +6,7 @@
 #include "CireNPCArchetypes.h"
 #include "CireRaces.h"
 #include "CireSkillTuning.h"
+#include "CireSignatureSkills.h" // new-champions
 #include "CireAbilityDB.h" // champion-draft Ability Database: school, void zones, heal type
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
@@ -348,6 +349,7 @@ FCireHitShape DescribeRaw(FName Id,const FCireNPCArchetype* Caster)
     FCireHitShape R;R.Id=Id;R.School=SchoolFor(Id);
     auto Circle=[&](float Radius,bool bSelf){R.Kind=ECireHitShape::Circle;R.Radius=Radius;R.bFromCaster=bSelf;R.bAtTarget=!bSelf;};
     if(ACireHero::IsPassive(S)){R.Kind=ECireHitShape::None;return R;}
+    if(CireSignatureSkills::DescribeShape(S,R))return R; // new-champions: kits and Aetheri constructs
     if(const auto* A=CireAbilityLibrary::Find(S)){FromArea(R,A->Area);R.bGroundAim=true;return R;}
     if(const auto* P=CireSkillTuning::FindSkillshot(S);P&&(S==TEXT("ember_lance")||S==TEXT("frost_bind")||S==TEXT("piercing_shot")))
     {FromSkillshot(R,*P,P->WarningSeconds);R.bGroundAim=true;return R;}

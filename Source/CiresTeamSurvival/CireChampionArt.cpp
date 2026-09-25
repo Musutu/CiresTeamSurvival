@@ -23,6 +23,7 @@
 #include "Engine/SkeletalMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstanceDynamic.h" // new-champions: body tint
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "GameFramework/GameStateBase.h"
@@ -77,6 +78,28 @@ void ApplyMobilityPose(FCompactPose& Pose,float Air,float Roll,FVector PitchAxis
 }
 }
 
+// new-champions: seated rider. Thighs swing forward and apart, knees bend down around the mount's back.
+static void ApplySeatPose(FCompactPose& Pose,float Weight,FVector PitchAxis)
+{
+    const auto& Bones=Pose.GetBoneContainer();
+    const auto World=[&](FCompactPoseBoneIndex Bone)
+    {
+        FTransform T=Pose[Bone];for(Bone=Bones.GetParentBoneIndex(Bone);Bone.IsValid();Bone=Bones.GetParentBoneIndex(Bone))T*=Pose[Bone];return T;
+    };
+    const auto Rotate=[&](const TCHAR* Name,FVector Axis,float Degrees)
+    {
+        const int32 I=Bones.GetReferenceSkeleton().FindBoneIndex(Name);if(I==INDEX_NONE)return;
+        const auto Bone=Bones.MakeCompactPoseIndex(FMeshPoseBoneIndex(I));if(!Bone.IsValid())return;
+        const auto Parent=Bones.GetParentBoneIndex(Bone);if(Parent.IsValid())Axis=World(Parent).GetRotation().UnrotateVector(Axis);
+        auto& T=Pose[Bone];T.SetRotation((FQuat(Axis.GetSafeNormal(),FMath::DegreesToRadians(Degrees*Weight))*T.GetRotation()).GetNormalized());
+    };
+    const FVector Up(0,0,1);
+    Rotate(TEXT("thigh_l"),PitchAxis,-78);Rotate(TEXT("thigh_r"),PitchAxis,-78);
+    Rotate(TEXT("thigh_l"),Up,-14);Rotate(TEXT("thigh_r"),Up,14);
+    Rotate(TEXT("calf_l"),PitchAxis,84);Rotate(TEXT("calf_r"),PitchAxis,84);
+    Rotate(TEXT("spine_01"),PitchAxis,6);
+}
+
 // Game-thread values are copied during PreUpdate, then evaluated on the animation worker.
 struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
 {
@@ -89,6 +112,7 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
     float SpineTwist = 0.f; // creature-anim
     float AirWeight = 0.f, RollProgress = -1.f;
     FVector MotionPitchAxis=FVector(1,0,0);
+    float SeatWeight = 0.f; // new-champions
     virtual void PreUpdate(UAnimInstance* Instance, float DeltaSeconds) override
     {
         FAnimSingleNodeInstanceProxy::PreUpdate(Instance, DeltaSeconds);
@@ -100,6 +124,7 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
         Hands = Combat->Hands; // creature-anim
         SpineTwist = Combat->SpineTwist; // creature-anim
         AirWeight=Combat->AirWeight;RollProgress=Combat->RollProgress;MotionPitchAxis=Combat->MotionPitchAxis;
+        SeatWeight=Combat->SeatWeight; // new-champions
     }
     virtual bool Evaluate(FPoseContext& Output) override
     {
@@ -120,6 +145,7 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
             Output.Curve.CopyFrom(Blended.Curve);
         }
         if(bEvaluated)ApplyMobilityPose(Output.Pose,AirWeight,RollProgress,MotionPitchAxis);
+        if(bEvaluated&&SeatWeight>0)ApplySeatPose(Output.Pose,SeatWeight,MotionPitchAxis); // new-champions: mounted rider
         if(bEvaluated)CireGrip::TwistSpine(Output.Pose,SpineTwist); // creature-anim: sweeping swings
         if(bEvaluated&&Hands.Any())CireGrip::Apply(Output.Pose,Hands); // creature-anim: grips
         return bEvaluated;
@@ -140,7 +166,14 @@ struct FChampionArtDefinition
     FString AttackPath;
     float HeightCm = 0;
     FString Motion;
+    TSharedPtr<FJsonObject> Raw; // new-champions: the whole binding row (animations, props, rider, tint)
 };
+bool ReadColor(const TSharedPtr<FJsonObject>& O,const TCHAR* Key,FLinearColor& Out)
+{
+    const TArray<TSharedPtr<FJsonValue>>* A=nullptr;if(!O||!O->TryGetArrayField(Key,A)||A->Num()<3)return false;
+    double C[3]={};for(int32 I=0;I<3;++I)if(!(*A)[I]->TryGetNumber(C[I])||!FMath::IsFinite(C[I])||C[I]<0||C[I]>8)return false;
+    Out=FLinearColor(C[0],C[1],C[2],1);return true;
+}
 
 // Opt-in review assets: no live champion mapping changes without the launch flag.
 const FChampionArtDefinition Definitions[] = {
@@ -183,15 +216,15 @@ const FChampionArtDefinition* ProfileArt(const FString& Id)
                 if(!Row->TryGetObject(O)||!O||!O->IsValid())continue;
                 FString Profile,Status;FChampionArtDefinition D;double Height=0;
                 if((*O)->TryGetStringField(TEXT("profileId"),Profile)&&(*O)->TryGetStringField(TEXT("status"),Status)&&Status==TEXT("custom_ready")&&
-                   UCireCreatureArt::Handles(Profile)&&(*O)->TryGetStringField(TEXT("motion"),D.Motion)&&
+                   (*O)->TryGetStringField(TEXT("motion"),D.Motion)&&(UCireCreatureArt::Handles(Profile)||UCireCreatureArt::HandlesMotion(D.Motion))&&
                    (*O)->TryGetStringField(TEXT("mesh"),D.MeshPath)&&(*O)->TryGetNumberField(TEXT("heightCm"),Height)&&
                    Height>=50&&Height<=400&&D.MeshPath.StartsWith(TEXT("/Game/")))
-                {D.HeightCm=static_cast<float>(Height);Bindings.Add(Profile,MoveTemp(D));continue;}
+                {D.HeightCm=static_cast<float>(Height);D.Raw=*O;Bindings.Add(Profile,MoveTemp(D));continue;}
                 if((*O)->TryGetStringField(TEXT("profileId"),Profile)&&(*O)->TryGetStringField(TEXT("status"),Status)&&Status==TEXT("ready")&&
                    (*O)->TryGetStringField(TEXT("mesh"),D.MeshPath)&&(*O)->TryGetStringField(TEXT("locomotion"),D.LocomotionPath)&&
                    (*O)->TryGetStringField(TEXT("attack"),D.AttackPath)&&(*O)->TryGetNumberField(TEXT("heightCm"),Height)&&
                    Height>=80&&Height<=400&&D.MeshPath.StartsWith(TEXT("/Game/"))&&D.LocomotionPath.StartsWith(TEXT("/Game/"))&&D.AttackPath.StartsWith(TEXT("/Game/"))) {
-                    D.HeightCm=static_cast<float>(Height);Bindings.Add(Profile,MoveTemp(D));
+                    D.HeightCm=static_cast<float>(Height);D.Raw=*O;Bindings.Add(Profile,MoveTemp(D));
                 }
             }
         }
@@ -291,12 +324,14 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
 {
     if (Archetype < 0 || Archetype >= UE_ARRAY_COUNT(Definitions)) return false;
     const auto* Profile=ProfileArt(Hero.ChampionProfileId);
-    if(UCireCreatureArt::Handles(Hero.ChampionProfileId))
+    if(IsCreatureProfile(Hero.ChampionProfileId))
     {
         CaptureFallback(Hero);
         if(!Creature){Creature=NewObject<UCireCreatureArt>(&Hero,TEXT("CreaturePresentation"));Creature->RegisterComponent();}
         if(Weapons)Weapons->Clear();
-        if(Profile && Creature->Apply(Hero,Hero.ChampionProfileId,Profile->MeshPath,Profile->HeightCm))
+        const bool bBinding=Profile&&UCireCreatureArt::HandlesMotion(Profile->Motion); // new-champions: monster_native / mounted
+        if(Profile && (bBinding?Creature->ApplyBinding(Hero,Hero.ChampionProfileId,Profile->Motion,Profile->MeshPath,Profile->HeightCm,Profile->Raw):
+            Creature->Apply(Hero,Hero.ChampionProfileId,Profile->MeshPath,Profile->HeightCm)))
         {AppliedArchetype=Archetype;return true;}
         // Never silently substitute a humanoid for a creature whose body failed to load.
         Hero.GetMesh()->SetAnimInstanceClass(nullptr);Hero.GetMesh()->SetSkeletalMesh(nullptr);
@@ -357,6 +392,13 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
     // The movement component remains authoritative; animation never drives the capsule.
     SingleNode->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
     SingleNode->SetBlendSpacePosition(FVector::ZeroVector);
+    // new-champions: temporary bodies re-tinted toward the champion's palette (ChampionArtBindings "tint").
+    if(Profile && Profile->Raw.IsValid())
+    {
+        const TSharedPtr<FJsonObject>* Tint=nullptr;FLinearColor Base,Accent,Rim=FLinearColor::Black;double Strength=.6;
+        if(Profile->Raw->TryGetObjectField(TEXT("tint"),Tint)&&ReadColor(*Tint,TEXT("base"),Base)&&ReadColor(*Tint,TEXT("accent"),Accent))
+        {(*Tint)->TryGetNumberField(TEXT("strength"),Strength);ReadColor(*Tint,TEXT("rim"),Rim);TintBody(Mesh,&Hero,Base,Accent,FMath::Clamp(static_cast<float>(Strength),0.f,1.f),Rim);}
+    }
     UE_LOG(LogCireChampionArt, Log, TEXT("Applied archetype %d: %s, height %.1fcm, scale %.4f, facing_yaw %.2f, matching locomotion %s"),
         Archetype, *Body->GetName(), Definition.HeightCm, Scale, FacingYaw, *Blend->GetName());
     return true;
@@ -379,7 +421,7 @@ void UCireChampionArt::UpdateVisuals(ACireHero& Hero, float DeltaSeconds)
         AttemptedProfile = Hero.ChampionProfileId;
         Apply(Hero, Hero.Archetype);
     }
-    if(IsApplied() && UCireCreatureArt::Handles(Hero.ChampionProfileId))
+    if(IsApplied() && IsCreatureProfile(Hero.ChampionProfileId))
     {if(Creature)Creature->Update(Hero,DeltaSeconds);return;}
     if (!IsApplied() || !Locomotion) return;
     auto* SingleNode = Hero.GetMesh()->GetSingleNodeInstance();
@@ -432,4 +474,47 @@ void UCireChampionArt::UpdateVisuals(ACireHero& Hero, float DeltaSeconds)
             Combat->Hands.TwoHandWeight = Weapons->GripHands.bTwoHand || Weapons->GripHands.bCarry ? 1.f - Combat->AttackWeight : 0.f;
         }
     }
+}
+
+// ------------------------------------------------------------------------------------ new-champions
+bool UCireChampionArt::IsCreatureProfile(const FString& ProfileId)
+{
+    if(UCireCreatureArt::Handles(ProfileId))return true;
+    const auto* Profile=ProfileArt(ProfileId);
+    return Profile&&UCireCreatureArt::HandlesMotion(Profile->Motion);
+}
+bool UCireChampionArt::DebugApply(ACireHero& Hero)
+{
+    RestoreFallback(Hero);AttemptedArchetype=Hero.Archetype;AttemptedProfile=Hero.ChampionProfileId;
+    return Apply(Hero,Hero.Archetype);
+}
+bool UCireChampionArt::TintBody(USkeletalMeshComponent* Mesh,UObject* Outer,FLinearColor Base,FLinearColor Accent,float Strength,FLinearColor Rim)
+{
+    if(!Mesh||!Outer)return false;
+    UMaterialInterface* Skin=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_CireMonsterSkin.M_CireMonsterSkin"),nullptr,LOAD_Quiet|LOAD_NoWarn);
+    if(!Skin)return false;
+    static const FName Textures[]={TEXT("BaseColorTex"),TEXT("NormalTex"),TEXT("MetallicTex"),TEXT("RoughnessTex")};
+    int32 Tinted=0;
+    for(int32 I=0;I<Mesh->GetNumMaterials();++I)
+    {
+        UMaterialInterface* Current=Mesh->GetMaterial(I);
+        auto* MID=Cast<UMaterialInstanceDynamic>(Current);
+        if(!MID||MID->Parent!=Skin)
+        {
+            UTexture* Probe=nullptr;
+            // Only bodies that carry the Tripo PBR set can be reskinned; others keep their authored look.
+            if(!Current||!Current->GetTextureParameterValue(FHashedMaterialParameterInfo(Textures[0]),Probe)||!Probe)continue;
+            MID=UMaterialInstanceDynamic::Create(Skin,Outer);if(!MID)continue;
+            for(const FName& Name:Textures){UTexture* Texture=nullptr;if(Current->GetTextureParameterValue(FHashedMaterialParameterInfo(Name),Texture)&&Texture)MID->SetTextureParameterValue(Name,Texture);}
+            Mesh->SetMaterial(I,MID);
+        }
+        MID->SetVectorParameterValue(TEXT("RaceTint"),Base);MID->SetScalarParameterValue(TEXT("RaceTintStrength"),Strength);
+        MID->SetVectorParameterValue(TEXT("RaceAccent"),Accent);MID->SetScalarParameterValue(TEXT("RaceAccentStrength"),Strength*.8f);
+        MID->SetVectorParameterValue(TEXT("RankColor"),Accent);MID->SetVectorParameterValue(TEXT("TrimColor"),Rim);
+        MID->SetScalarParameterValue(TEXT("RankArmor"),0.f);MID->SetScalarParameterValue(TEXT("RankBody"),0.f);
+        MID->SetScalarParameterValue(TEXT("RankGlow"),Rim.GetMax()>0?.6f:0.f);
+        MID->SetVectorParameterValue(TEXT("RimColor"),Rim);MID->SetScalarParameterValue(TEXT("RimStrength"),Rim.GetMax()>0?.45f:0.f);
+        ++Tinted;
+    }
+    return Tinted>0;
 }

@@ -36,6 +36,8 @@ public:
     float AirWeight = 0.f;
     float RollProgress = -1.f;
     FVector MotionPitchAxis = FVector(1,0,0);
+    // new-champions: 1 = seated rider (thighs forward, knees bent), used by mounted champions.
+    float SeatWeight = 0.f;
 protected:
     virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;
 };
@@ -51,6 +53,13 @@ public:
     bool IsApplied() const { return AppliedArchetype != INDEX_NONE; }
     int32 GetAppliedArchetype() const { return AppliedArchetype; }
     UMeshComponent* GetVisualMesh() const;
+    UCireCreatureArt* GetCreature() const { return Creature; }
+    /** new-champions: the profile is drawn by UCireCreatureArt (bear/whisp/centaur, or a monster_native/mounted binding). */
+    static bool IsCreatureProfile(const FString& ProfileId);
+    /** new-champions: re-tints a Tripo body with the race skin material (base/accent/rim), e.g. temporary champion bodies. */
+    static bool TintBody(class USkeletalMeshComponent* Mesh, UObject* Outer, FLinearColor Base, FLinearColor Accent, float Strength, FLinearColor Rim);
+    /** new-champions (tests): apply the profile's art now, as the review flag would. */
+    bool DebugApply(ACireHero& Hero);
 
 private:
     bool Apply(ACireHero& Hero, int32 Archetype);

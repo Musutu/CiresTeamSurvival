@@ -91,6 +91,11 @@ def summon(id, name, desc, unit, count, color, cd=24, cast=1.6, buff="", cue="",
     return _ab(id, name, desc, "summon", cooldown=cd, castTime=cast, range=5000, radius=450, summon=unit, count=count,
                color=color, interruptible=True, buff=buff, cue=cue, **kw)
 
+def deploy(id, name, desc, recipe, color, cd=18, cast=1.2, rng=900, buff="", cue="", **kw):
+    """new-champions: interruptible cast that places Aetheri constructs (CireTechConstructs recipe id)."""
+    return _ab(id, name, desc, "deploy", cooldown=cd, castTime=cast, range=rng, radius=300, deploy=recipe, color=color,
+               interruptible=True, buff=buff, cue=cue, **kw)
+
 def heal(id, name, desc, frac=0.2, cd=12, cast=2.0, threshold=0.6, buff="", cue="", **kw):
     return _ab(id, name, desc, "healAlly", interruptible=True, cooldown=cd, castTime=cast, range=900, radius=900,
                magnitude=frac, healthThreshold=threshold, buff=buff, cue=cue, **kw)
@@ -205,6 +210,9 @@ VISUALS = {
     "npc_profane": vis("Profaned", "debuff", "holy", [0.9, 0.82, 0.3], [0.45, 0.35, 0.05], [1.0, 1.0, 0.7],
                        [{"shape": "halo", "attach": "overhead", "count": 12, "speed": 0.8}, {"shape": "chains", "attach": "body", "count": 10, "speed": 0.5}],
                        "npc.profane.start", "Fallen Order corrupted light and chains"),
+    "npc_aether": vis("Aether-Seared", "debuff", "arcane", [0.5, 0.45, 1.0], [0.12, 0.1, 0.4], [0.95, 0.92, 1.0],
+                      [{"shape": "crystals", "attach": "body", "count": 6, "speed": 0.9}, {"shape": "ring", "attach": "ground", "style": "runes", "count": 8, "speed": 0.7}],
+                      "npc.aether.start", "Aetheri energy weapons, beams and warp fields"),
     "npc_void": vis("Void-Touched", "debuff", "void", [0.65, 0.25, 1.0], [0.15, 0.05, 0.3], [0.95, 0.8, 1.0],
                     [{"shape": "swirl", "attach": "body", "speed": 1.4}, {"shape": "tether", "attach": "link", "style": "beam", "burstOnly": True}],
                     "npc.void.start", "Voidborn rifts and gravity"),
@@ -230,6 +238,9 @@ CUES = {
     "npc.roar.cast":     {"sounds": ["SFX/SFX_PackLeaderRoar"], "volume": 0.8, "pitch": [0.9, 1.1], "cooldown": 1.0},
     "npc.profane.start": {"sounds": ["Auras/AUR_Choir"], "volume": 0.5, "pitch": [0.7, 0.78], "cooldown": 0.3},
     "npc.void.start":    {"sounds": ["Auras/AUR_Hourglass"], "volume": 0.5, "pitch": [0.6, 0.7], "cooldown": 0.2},
+    "npc.aether.start":  {"sounds": ["Auras/AUR_ForceField"], "volume": 0.5, "pitch": [1.1, 1.25], "cooldown": 0.2},
+    "npc.aether.cast":   {"sounds": ["Auras/AUR_Chime"], "volume": 0.5, "pitch": [0.9, 1.0], "cooldown": 0.4},
+    "amb.race.aether":   {"sounds": ["Auras/AUR_ForceField"], "volume": 0.25, "pitch": [0.55, 0.6], "loop": True},
     "npc.void.cast":     {"sounds": ["Auras/AUR_ForceField"], "volume": 0.5, "pitch": [0.5, 0.58], "cooldown": 0.5},
     "npc.summon.cast":   {"sounds": ["SFX/SFX_WarHornDistant"], "volume": 0.6, "pitch": [0.7, 0.8], "cooldown": 1.0},
     "npc.heal.cast":     {"sounds": ["CireCombat/S_Heal"], "volume": 0.45, "pitch": [0.7, 0.8], "cooldown": 0.3},
@@ -248,6 +259,7 @@ TEAL, VIOLET, INK, CORAL = C(0.15, 0.75, 0.8), C(0.6, 0.25, 0.9), C(0.2, 0.08, 0
 MOSS, THORN, SPORE, ROT = C(0.35, 0.65, 0.15), C(0.5, 0.55, 0.12), C(0.8, 0.85, 0.25), C(0.35, 0.45, 0.08)
 BLOOD, IRON, EMBER, GOLD = C(0.85, 0.12, 0.05, 0.4), C(0.55, 0.5, 0.45), C(1.0, 0.45, 0.08, 0.4), C(1.0, 0.75, 0.2, 0.3)
 RUNE, STONE, FERAL, PROFANE, VOID = C(0.3, 0.55, 1.0), C(0.55, 0.5, 0.42), C(0.8, 0.4, 0.15), C(0.9, 0.8, 0.3), C(0.55, 0.2, 0.95, 0.4)
+AETHER, PHOTON = C(0.45, 0.4, 1.0, 0.4), C(0.95, 0.85, 0.45, 0.35)  # new-champions: Aetheri energy / photon gold
 
 # ============================================================================================== RACES
 RACES: list[dict] = []
@@ -987,6 +999,95 @@ RACES.append({
     ],
 })
 
+
+# ------------------------------------------------------------------------------------------- AETHERI
+# new-champions: the monster counterpart of the playable Aetheri (Aetheri Artificer, Aetheri Warden). Energy beings of
+# gold-white alloy and blue-violet light who fight with technology: engineers warp in turrets and skitter bombs, the
+# Hierarch plants pylons. Their constructs are the same server-authoritative ACireConstruct kinds the champions build
+# (CireTechConstructs recipes npc_*); "deploy" abilities place them.
+RACES.append({
+    "id": "aetheri", "name": "The Aetheri Remnant", "short": "Aetheri",
+    "lore": "A splinter host of the Aetheri, crystal-and-light beings who worship their own machines. They warp through the Breach to claim its energy, and they build before they bleed.",
+    "origin": {"playerRaces": ["aetheri"], "profiles": ["aetheri_artificer", "aetheri_warden"],
+               "note": "The same luminous race as the Aetheri Artificer and Warden: the Remnant are the zealots who stayed with the machine-cult."},
+    "palette": {"base": [0.82, 0.74, 0.52], "accent": [0.42, 0.36, 1.00], "secondary": [0.12, 0.10, 0.18], "glow": [0.50, 0.42, 1.00],
+                "variants": [{"name": "Radiant Gold", "base": [0.82, 0.74, 0.52], "accent": [0.42, 0.36, 1.00]},
+                             {"name": "Void Alloy", "base": [0.16, 0.14, 0.22], "accent": [0.30, 0.75, 1.00]},
+                             {"name": "Pale Crystal", "base": [0.86, 0.88, 0.92], "accent": [0.62, 0.30, 0.95]}]},
+    "footsteps": "golem", "footstepPitch": 1.08, "ambienceCue": "amb.race.aether", "voiceCue": "voice.race.growl",
+    "units": [
+        {"id": "aetheri_phaseblade", "slot": "line", "tmpl": "skirmisher", "name": "Aetheri Phaseblade", "fallback": "hollow_infantry",
+         "footsteps": "mail",
+         "look": "Slender luminous warrior in gold-white alloy armour with blue-violet energy seams, a smooth crested helm with a glowing visor slit, twin psionic blades of light projecting from its wrist gauntlets, a flowing sash of energy.",
+         "basic": melee("Psi Blades", "Twin light-blades at its current target.", 165),
+         "pool": [charge("aether_phase_strike", "Phase Strike", "Marks a line and blinks through it, slashing everyone in the path.", 1.6, AETHER, cd=11, cast=0.7, length=750, buff="npc_aether", cue="npc.aether.start"),
+                  cone("aether_psi_sweep", "Psi Sweep", "A wide sweep of light-blades that slows everyone hit for 2s.", 1.6, AETHER, cd=9, cast=0.8, radius=300, angle=110, slow=2, buff="npc_aether", cue="npc.aether.start"),
+                  disengage("aether_warp_step", "Warp Step", "Warps away when a champion reaches melee range.", cd=10, buff="npc_aether", cue="npc.aether.start")],
+         "poolDraw": 2},
+        {"id": "aetheri_warframe", "slot": "bruiser", "tmpl": "bruiser", "name": "Aetheri Warframe", "fallback": "ironbound_bruiser",
+         "footsteps": "golem",
+         "look": "Hulking walking war-suit of gold and white alloy plates with a glowing violet reactor core in the chest, oversized gauntlet fists crackling with energy, a small crystalline pilot visible behind a curved light canopy.",
+         "basic": melee("Alloy Fists", "A crushing gauntlet blow at its current target."),
+         "pool": [ring("aether_warp_slam", "Warp Slam", "Marks a ring and slams the ground, knocking everyone inside away.", 1.7, AETHER, cd=11, radius=360, knockback=420, buff="npc_aether", cue="npc.aether.cast"),
+                  charge("aether_warframe_charge", "Reactor Charge", "Marks a line and thunders through it on reactor thrust.", 2.0, PHOTON, cd=14, buff="npc_sundered", cue="npc.cleave.start"),
+                  enrage("aether_overdrive", "Overdrive", "At 35% health its reactor overloads: +35% damage and faster attacks.", mag=0.35, threshold=0.35, buff="npc_aether", cue="npc.aether.cast")],
+         "poolDraw": 2},
+        {"id": "aetheri_bulwark", "slot": "tank", "tmpl": "tank", "name": "Prism Bulwark", "fallback": "hollow_shieldbearer",
+         "footsteps": "golem",
+         "look": "Tall armoured Aetheri guardian carrying a tower shield made of hard light framed in gold, a faceted prism crystal floating above its shoulders, pale white-gold plating with violet glow lines.",
+         "basic": melee("Prism Bash", "A hard-light shield bash at its current target."),
+         "pool": [provoke("aether_prism_glare", "Prism Glare", "Its prism flares: for 6s nearby champions deal 35% less damage to anything but the Bulwark.", buff="npc_aether", cue="npc.aether.cast"),
+                  wall("aether_hardlight_shell", "Hardlight Shell", "Below 50% health it closes a shell of hard light: 50% less damage for 6s.", buff="npc_scaleward", cue="npc.ward.start"),
+                  guard("aether_link_shield", "Link Shield", "Links a shield to the most injured ally, taking 40% of its damage for 8s.", buff="npc_aether", cue="npc.aether.start"),
+                  deploy("aether_bulwark_pylon", "Empowering Pylon", "Interruptible cast: warps in a pylon whose field makes Aetheri stronger (+25% damage, less damage taken).", "npc_empower_pylon", AETHER, cd=22, cast=1.3, buff="npc_aether", cue="npc.aether.cast")],
+         "poolDraw": 3},
+        {"id": "aetheri_engineer", "slot": "caster", "tmpl": "caster", "name": "Aetheri Engineer", "fallback": "blight_caster",
+         "footsteps": "cloth",
+         "look": "Robed Aetheri engineer in layered white cloth over gold alloy, a halo of floating tools and crystal shards, glowing blue-violet hands shaping light, a backpack frame holding folded turret parts.",
+         "basic": bolt("Photon Bolt", "Interruptible cast. A bolt of photon energy."),
+         "pool": [deploy("aether_deploy_turret", "Deploy Turret", "Interruptible cast: warps in a photon turret beside itself that fires at champions (up to 2).", "npc_photon_turret", AETHER, cd=16, cast=1.2, buff="npc_aether", cue="npc.aether.cast"),
+                  deploy("aether_deploy_skitters", "Skitter Swarm", "Interruptible cast: three skitter bombs scuttle at the nearest champions and explode.", "npc_skitter", AETHER, cd=14, cast=1.0, buff="npc_aether", cue="npc.aether.cast"),
+                  deploy("aether_stasis_mine", "Stasis Mine", "Interruptible cast: plants a mine under its target that roots the first champion to step on it.", "npc_stasis_mine", AETHER, cd=15, cast=1.0, buff="npc_aether", cue="npc.aether.start"),
+                  heal("aether_field_repair", "Field Repair", "Interruptible 2s cast that restores 20% health to the most injured ally below 60%.", buff="npc_aether", cue="npc.heal.cast")],
+         "poolDraw": 3},
+        {"id": "aetheri_lancer", "slot": "ranged", "tmpl": "ranged", "name": "Photon Lancer", "fallback": "barbed_hunter",
+         "footsteps": "mail",
+         "look": "Lean Aetheri marksman in gold-trimmed white alloy, a long photon lance-rifle with a crystal focusing lens, a visor of blue light, energy cables running along the arms.",
+         "basic": shot("Photon Round", "Short aim, then fires a photon round in a fixed direction."),
+         "pool": [cone("aether_photon_beam", "Photon Beam", "Charges the lance, then fires a long narrow beam.", 2.1, AETHER, cd=12, cast=1.3, radius=760, angle=12, buff="npc_aether", cue="npc.aether.cast"),
+                  circle("aether_orbital_strike", "Orbital Strike", "Marks a circle on its target; a column of light strikes it.", 1.8, PHOTON, cd=11, cast=1.1, radius=220, buff="npc_aether", cue="npc.aether.cast"),
+                  disengage("aether_recall", "Recall", "Recalls a short way back when a champion reaches melee range.", buff="npc_aether", cue="npc.aether.start")],
+         "poolDraw": 2},
+        {"id": "skitter_drone", "slot": "special", "tmpl": "swarm", "name": "Skitter Drone", "fallback": "hollow_infantry",
+         "footsteps": "whisp",
+         "look": "Dog-sized mechanical skitter: a rounded gold alloy carapace, six thin spider legs, a single blue-violet eye lens and a pulsing unstable energy core on its back (fallback: small hunched two-legged construct).",
+         "basic": melee("Spark Bite", "A crackling bite at its current target.", 150),
+         "pool": [ring("aether_core_burst", "Core Burst", "Marks a ring and vents its core, burning everyone around it.", 1.5, AETHER, cd=12, cast=1.0, radius=260, buff="npc_aether", cue="npc.aether.start"),
+                  enrage("aether_unstable_core", "Unstable Core", "At 50% health its core destabilises: +30% damage and faster attacks.", mag=0.3, threshold=0.5, buff="npc_aether", cue="npc.aether.cast")],
+         "poolDraw": 2},
+    ],
+    "bosses": [
+        {"id": "aetheri_hierarch", "slot": "warlord", "tmpl": "warlord_caster", "name": "The Warp Hierarch", "fallback": "blight_caster",
+         "footsteps": "whisp",
+         "look": "Towering floating Aetheri hierarch in ceremonial white-gold alloy robes, a crown of orbiting crystal shards, four slender arms of light holding a warp-staff crowned with a spinning ring, a face that is a smooth mask of light.",
+         "basic": bolt("Warp Lance", "Interruptible cast. A lance of warp energy in a fixed direction.", cast=1.2, rng=700),
+         "pool": [deploy("aether_warp_pylons", "Warp Pylons", "Interruptible cast: warps in an Empowering Pylon beside itself (+25% damage for Aetheri inside).", "npc_empower_pylon", AETHER, cd=20, cast=1.4, buff="npc_aether", cue="npc.aether.cast"),
+                  deploy("aether_gravity_field", "Gravity Field", "Interruptible cast: warps a gravity pylon onto its target; champions inside are slowed.", "npc_gravity_pylon", AETHER, cd=18, cast=1.2, buff="npc_aether", cue="npc.aether.cast"),
+                  summon("aether_warp_in", "Warp In", "Interruptible cast: three Skitter Drones warp in beside it.", "skitter_drone", 3, AETHER, cd=24, buff="npc_aether", cue="npc.summon.cast"),
+                  ring("aether_psionic_storm", "Psionic Storm", "Marks a large ring; everyone inside is silenced for 3s.", 1.3, AETHER, cd=18, cast=1.6, radius=520, silence=3.0, buff="npc_silenced", cue="npc.aether.cast"),
+                  enrage("aether_hierarch_ascension", "Final Protocol", "At 30% health: +40% damage and faster casting until destroyed.", buff="npc_aether", cue="npc.aether.cast", core=True)]},
+        {"id": "aetheri_colossus", "slot": "colossus", "tmpl": "colossus", "name": "Aetheric Colossus", "fallback": "hollow_siegebreaker",
+         "footsteps": "behemoth",
+         "look": "Colossal three-legged Aetheri war engine of gold and white alloy, a crystal reactor dome for a head with a sweeping violet beam emitter, turret pods on its shoulders, energy cables and glowing seams across its hull.",
+         "basic": melee("Hull Crush", "A crushing leg stomp at its current target.", 210),
+         "pool": [cone("aether_colossus_beam", "Thermal Lance", "Winds up a long cone of searing light. Get out of the cone.", 2.4, PHOTON, cd=10, cast=1.4, radius=580, angle=50, buff="npc_aether", cue="npc.aether.cast"),
+                  deploy("aether_colossus_turrets", "Shoulder Turrets", "Interruptible cast: drops a photon turret beside itself (up to 2).", "npc_photon_turret", AETHER, cd=18, cast=1.2, buff="npc_aether", cue="npc.aether.cast"),
+                  ring("aether_colossus_stomp", "Seismic Stomp", "Marks a ring and stomps, knocking everyone inside back.", 1.7, AETHER, cd=11, cast=1.3, radius=420, knockback=500, buff="npc_sundered", cue="npc.cleave.start"),
+                  pull("aether_tractor_beam", "Tractor Beam", "A beam marks a line to the farthest champion and drags them in.", 1.2, AETHER, cd=16, cast=1.2, length=1200, rng=1200, targeting="farthest", buff="npc_aether", cue="npc.aether.start"),
+                  enrage("aether_colossus_meltdown", "Meltdown", "At 30% health: +40% damage and faster attacks until destroyed.", buff="npc_aether", cue="npc.aether.cast", core=True)]},
+    ],
+})
+
 # ================================================================================================ build
 SLOTS = ["line", "bruiser", "tank", "caster", "ranged", "special"]
 BOSS_SLOTS = ["warlord", "colossus"]
@@ -1194,6 +1295,9 @@ PLAYER_RACE = {
     "totemic_behemoth": ("beast", "feral_kin"), "drakish_footman": ("drakkari", "drakkari"), "wizard": ("human", "voidborn"),
     "troll_berserker_melee": ("troll", "ironhide"), "troll_berserker_ranged": ("troll", "ironhide"), "dryad": ("sylvan", "blightwood"),
     "whisp": ("spirit", "voidborn"), "evergrove_centaur": ("centaur", "blightwood, feral_kin"), "keeper_of_light": ("human", "voidborn, fallen_order"),
+    # new-champions
+    "gunblade": ("human", "hollow, voidborn"), "witch_slayer": ("human", "voidborn, drowned_deep"), "huntress": ("sylvan", "feral_kin, blightwood"),
+    "aetheri_artificer": ("aetheri", "aetheri"), "aetheri_warden": ("aetheri", "aetheri"),
 }
 
 
@@ -1212,7 +1316,7 @@ def build_doc(races_json: dict) -> str:
         out.append(f"| `{pid}` | {prace} | {counterpart} |")
     out.append("")
     # Eric's favourites first: the art agent generates these before the others.
-    order = ["drowned_deep", "blightwood", "hollow", "ironhide", "drakkari", "stoneborn", "feral_kin", "fallen_order", "voidborn"]
+    order = ["drowned_deep", "blightwood", "hollow", "ironhide", "drakkari", "stoneborn", "feral_kin", "fallen_order", "voidborn", "aetheri"]
     by_id = {r["id"]: r for r in RACES}
     for rid in order:
         out.append(race_section(by_id[rid]))

@@ -90,7 +90,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "knight",
@@ -175,7 +180,8 @@
     "ether_golem_bruiser",
     "orc_chieftain",
     "totemic_behemoth",
-    "drakish_footman"
+    "drakish_footman",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "knight",
@@ -245,7 +251,8 @@
     "ether_golem_bruiser",
     "orc_chieftain",
     "totemic_behemoth",
-    "drakish_footman"
+    "drakish_footman",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "knight",
@@ -309,7 +316,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "scholar",
@@ -385,7 +397,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "ranger",
@@ -445,7 +462,12 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "knight",
@@ -508,7 +530,12 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "ranger",
@@ -573,7 +600,8 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "scholar",
@@ -638,7 +666,8 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "scholar",
@@ -701,7 +730,8 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "scholar",
@@ -772,7 +802,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "summoner",
@@ -839,7 +874,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "knight",
@@ -908,7 +948,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "summoner"
@@ -957,7 +1002,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": [
     "ranger",
@@ -1023,7 +1072,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "knight",
@@ -1100,7 +1154,12 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "ether_golem_bruiser",
@@ -1168,7 +1227,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "knight",
@@ -1234,7 +1298,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "ranger",
@@ -1300,7 +1369,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "summoner",
@@ -1366,7 +1440,12 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "scholar",
@@ -1425,7 +1504,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": [
     "ranger",
@@ -1496,7 +1579,8 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "knight",
@@ -1546,7 +1630,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": [
     "summoner",
@@ -1596,7 +1684,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": [
     "ranger",
@@ -1655,7 +1747,8 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "scholar",
@@ -1714,7 +1807,8 @@
     "ether_golem_bruiser",
     "orc_chieftain",
     "totemic_behemoth",
-    "drakish_footman"
+    "drakish_footman",
+    "aetheri_warden"
    ],
    "signatureOf": []
   },
@@ -1778,7 +1872,8 @@
     "ether_golem_bruiser",
     "orc_chieftain",
     "totemic_behemoth",
-    "drakish_footman"
+    "drakish_footman",
+    "aetheri_warden"
    ],
    "signatureOf": []
   },
@@ -1835,7 +1930,8 @@
     "ether_golem_bruiser",
     "orc_chieftain",
     "totemic_behemoth",
-    "drakish_footman"
+    "drakish_footman",
+    "aetheri_warden"
    ],
    "signatureOf": []
   },
@@ -1882,7 +1978,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": []
   },
@@ -1929,7 +2029,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": []
   },
@@ -1993,7 +2097,8 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "aetheri_warden"
    ],
    "signatureOf": []
   },
@@ -2050,7 +2155,8 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "aetheri_warden"
    ],
    "signatureOf": []
   },
@@ -2097,7 +2203,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": [
     "ranger",
@@ -2148,7 +2258,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": [
     "ether_golem_bruiser",
@@ -2207,7 +2321,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": [
     "ranger",
@@ -2257,7 +2375,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": [
     "lancer",
@@ -2316,7 +2438,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": []
   },
@@ -2363,7 +2489,11 @@
     "wizard",
     "troll_berserker_melee",
     "troll_berserker_ranged",
-    "evergrove_centaur"
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer"
    ],
    "signatureOf": [
     "ranger",
@@ -2422,12 +2552,1973 @@
     "dryad",
     "whisp",
     "evergrove_centaur",
-    "keeper_of_light"
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
    ],
    "signatureOf": [
     "scholar",
     "wizard"
    ]
+  },
+  "silver_shot": {
+   "id": "silver_shot",
+   "name": "Silver Shot",
+   "icon": "/Game/UI/Abilities/T_silver_shot",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 95,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 8,
+    "castTime": 0,
+    "range": 1300,
+    "radius": 28,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Aimed silver round: {effect} + 1.6x AGI damage; +60% against undead and void monsters.",
+   "effects": [],
+   "champions": [
+    "gunblade"
+   ],
+   "signatureOf": [
+    "gunblade"
+   ]
+  },
+  "hex_mark": {
+   "id": "hex_mark",
+   "name": "Hex Mark",
+   "icon": "/Game/UI/Abilities/T_hex_mark",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "shadow",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 15,
+    "manaCost": 0,
+    "energyCost": 20,
+    "cooldown": 12,
+    "castTime": 0,
+    "range": 1100,
+    "radius": 0,
+    "duration": 12
+   },
+   "effectLabel": "% damage taken",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Put a bounty on an enemy for 12s: it takes {effect}% more damage from every source, and killing it pays bounty gold (25, elites 60, bosses 150).",
+   "effects": [
+    {
+     "type": "mark",
+     "zone": "target",
+     "duration": 12,
+     "magnitude": 0.15,
+     "radius": 0.0,
+     "label": "Damage taken +15%"
+    }
+   ],
+   "champions": [
+    "gunblade"
+   ],
+   "signatureOf": [
+    "gunblade"
+   ]
+  },
+  "powder_flask": {
+   "id": "powder_flask",
+   "name": "Powder Flask",
+   "icon": "/Game/UI/Abilities/T_powder_flask",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "fire",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 70,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 12,
+    "castTime": 0,
+    "range": 900,
+    "radius": 260,
+    "duration": 2.5
+   },
+   "effectLabel": "impact damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Hurl a powder flask: after a short fuse it bursts for {effect} + 1x AGI fire damage in 2.6m and slows by 35% for 2.5s.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "area",
+     "duration": 2.5,
+     "magnitude": 0.35,
+     "radius": 260,
+     "label": "Move -35%"
+    }
+   ],
+   "champions": [
+    "gunblade"
+   ],
+   "signatureOf": [
+    "gunblade"
+   ]
+  },
+  "blade_flurry": {
+   "id": "blade_flurry",
+   "name": "Blade Flurry",
+   "icon": "/Game/UI/Abilities/T_blade_flurry",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 40,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 9,
+    "castTime": 0,
+    "range": 0,
+    "radius": 320,
+    "duration": 0
+   },
+   "effectLabel": "damage per slash",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Three quick falchion slashes around you, each {effect} + 0.8x AGI damage.",
+   "effects": [],
+   "champions": [
+    "gunblade"
+   ],
+   "signatureOf": [
+    "gunblade"
+   ]
+  },
+  "hunters_stride": {
+   "id": "hunters_stride",
+   "name": "Hunter's Stride",
+   "icon": "/Game/UI/Abilities/T_hunters_stride",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 50,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 11,
+    "castTime": 0,
+    "range": 550,
+    "radius": 0,
+    "duration": 4
+   },
+   "effectLabel": "% next shot damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Dash up to 5.5m; your next basic attack within 4s deals {effect}% more damage.",
+   "effects": [],
+   "champions": [
+    "gunblade"
+   ],
+   "signatureOf": [
+    "gunblade"
+   ]
+  },
+  "warding_talisman": {
+   "id": "warding_talisman",
+   "name": "Warding Talisman",
+   "icon": "/Game/UI/Abilities/T_warding_talisman",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 30,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 18,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 4
+   },
+   "effectLabel": "% damage reduction",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 45,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Raise the talisman: take {effect}% less damage for 4s and shake off slows.",
+   "effects": [
+    {
+     "type": "guard",
+     "zone": "self",
+     "duration": 4,
+     "magnitude": 0.3,
+     "radius": 0.0,
+     "label": "DEF +30%"
+    },
+    {
+     "type": "cleanse",
+     "zone": "self",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "gunblade"
+   ],
+   "signatureOf": [
+    "gunblade"
+   ]
+  },
+  "price_on_every_soul": {
+   "id": "price_on_every_soul",
+   "name": "Price on Every Soul",
+   "icon": "/Game/UI/Abilities/T_price_on_every_soul",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 5,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "bonus gold per kill",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Your killing blows pay {effect} bonus gold (x3 elites, x8 bosses) and restore 15 energy.",
+   "effects": [],
+   "champions": [
+    "gunblade"
+   ],
+   "signatureOf": [
+    "gunblade"
+   ]
+  },
+  "collect_the_bounty": {
+   "id": "collect_the_bounty",
+   "name": "Collect the Bounty",
+   "icon": "/Game/UI/Abilities/T_collect_the_bounty",
+   "types": [
+    "DPS"
+   ],
+   "kind": "ultimate",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 180,
+    "manaCost": 0,
+    "energyCost": 60,
+    "cooldown": 70,
+    "castTime": 0,
+    "range": 950,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Execution shot: {effect} + 3x AGI plus 40% of missing health (bonus capped at 400). Non-boss monsters under 20% health die; a kill refunds half the cooldown and pays a marked bounty twice.",
+   "effects": [
+    {
+     "type": "lethal",
+     "zone": "target",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "gunblade"
+   ],
+   "signatureOf": [
+    "gunblade"
+   ]
+  },
+  "arcane_blunderbuss": {
+   "id": "arcane_blunderbuss",
+   "name": "Arcane Blunderbuss",
+   "icon": "/Game/UI/Abilities/T_arcane_blunderbuss",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 110,
+    "manaCost": 40,
+    "energyCost": 0,
+    "cooldown": 8,
+    "castTime": 0,
+    "range": 550,
+    "radius": 550,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "A 60-degree cone of arcane shot (5.5m): {effect} + 1.8x INT damage; +40% against casting enemies and interrupts their cast.",
+   "effects": [
+    {
+     "type": "interrupt",
+     "zone": "area",
+     "duration": 0,
+     "magnitude": 0,
+     "radius": 550,
+     "lockoutSeconds": 1.5,
+     "label": "Interrupted"
+    }
+   ],
+   "champions": [
+    "witch_slayer"
+   ],
+   "signatureOf": [
+    "witch_slayer"
+   ]
+  },
+  "spirit_lantern": {
+   "id": "spirit_lantern",
+   "name": "Spirit Lantern",
+   "icon": "/Game/UI/Abilities/T_spirit_lantern",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 60,
+    "manaCost": 45,
+    "energyCost": 0,
+    "cooldown": 14,
+    "castTime": 0,
+    "range": 800,
+    "radius": 260,
+    "duration": 20
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Set a spirit-lantern trap (20s, up to 2). The first enemy to come within 1.5m sets it off: {effect} + 1x INT damage and a 2s silence within 2.6m.",
+   "effects": [
+    {
+     "type": "silence",
+     "zone": "area",
+     "duration": 2,
+     "magnitude": 0.0,
+     "radius": 260,
+     "label": "Silenced"
+    }
+   ],
+   "champions": [
+    "witch_slayer"
+   ],
+   "signatureOf": [
+    "witch_slayer"
+   ],
+   "category": "construct"
+  },
+  "purge": {
+   "id": "purge",
+   "name": "Purge",
+   "icon": "/Game/UI/Abilities/T_purge",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 60,
+    "manaCost": 40,
+    "energyCost": 0,
+    "cooldown": 14,
+    "castTime": 0,
+    "range": 1000,
+    "radius": 0,
+    "duration": 2.5
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Strip every buff from an enemy and silence it for 2.5s; deals {effect} + 1x INT damage.",
+   "effects": [
+    {
+     "type": "purge",
+     "zone": "target",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 0.0
+    },
+    {
+     "type": "silence",
+     "zone": "target",
+     "duration": 2.5,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Silenced"
+    }
+   ],
+   "champions": [
+    "witch_slayer"
+   ],
+   "signatureOf": [
+    "witch_slayer"
+   ]
+  },
+  "banishment": {
+   "id": "banishment",
+   "name": "Banishment",
+   "icon": "/Game/UI/Abilities/T_banishment",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "void",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 80,
+    "manaCost": 55,
+    "energyCost": 0,
+    "cooldown": 22,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 2
+   },
+   "effectLabel": "damage on return",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Exile an enemy for 2s: it cannot act, move or be harmed, then returns for {effect} + 1.5x INT void damage. Bosses resist: silenced and slowed instead.",
+   "effects": [
+    {
+     "type": "banish",
+     "zone": "target",
+     "duration": 2,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Banished"
+    }
+   ],
+   "champions": [
+    "witch_slayer"
+   ],
+   "signatureOf": [
+    "witch_slayer"
+   ]
+  },
+  "witchfinders_mark": {
+   "id": "witchfinders_mark",
+   "name": "Witchfinder's Mark",
+   "icon": "/Game/UI/Abilities/T_witchfinders_mark",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 12,
+    "manaCost": 25,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 1200,
+    "radius": 0,
+    "duration": 10
+   },
+   "effectLabel": "% damage taken",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Mark an enemy for 10s: it is revealed and takes {effect}% more damage, tripled while it casts.",
+   "effects": [
+    {
+     "type": "mark",
+     "zone": "target",
+     "duration": 10,
+     "magnitude": 0.12,
+     "radius": 0.0,
+     "label": "Exposed"
+    }
+   ],
+   "champions": [
+    "witch_slayer"
+   ],
+   "signatureOf": [
+    "witch_slayer"
+   ]
+  },
+  "spectral_blade": {
+   "id": "spectral_blade",
+   "name": "Spectral Blade",
+   "icon": "/Game/UI/Abilities/T_spectral_blade",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 90,
+    "manaCost": 30,
+    "energyCost": 0,
+    "cooldown": 7,
+    "castTime": 0,
+    "range": 600,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Lunge up to 6m with the spectral blade: {effect} + 1.4x INT damage.",
+   "effects": [],
+   "champions": [
+    "witch_slayer"
+   ],
+   "signatureOf": [
+    "witch_slayer"
+   ]
+  },
+  "witchbane": {
+   "id": "witchbane",
+   "name": "Witchbane",
+   "icon": "/Game/UI/Abilities/T_witchbane",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "arcane",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 20,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% bonus damage",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 40,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "You deal {effect}% more damage to enemies that are casting, silenced or marked.",
+   "effects": [],
+   "champions": [
+    "witch_slayer"
+   ],
+   "signatureOf": [
+    "witch_slayer"
+   ]
+  },
+  "hexbane_judgment": {
+   "id": "hexbane_judgment",
+   "name": "Hexbane Judgment",
+   "icon": "/Game/UI/Abilities/T_hexbane_judgment",
+   "types": [
+    "DPS"
+   ],
+   "kind": "ultimate",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 200,
+    "manaCost": 130,
+    "energyCost": 0,
+    "cooldown": 80,
+    "castTime": 0,
+    "range": 1100,
+    "radius": 450,
+    "duration": 3
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Aim a 4.5m circle; after 1s it bursts for {effect} + 3x INT damage, strips every buff and silences for 3s.",
+   "effects": [
+    {
+     "type": "silence",
+     "zone": "area",
+     "duration": 3,
+     "magnitude": 0.0,
+     "radius": 450,
+     "label": "Silenced"
+    },
+    {
+     "type": "purge",
+     "zone": "area",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 450
+    }
+   ],
+   "champions": [
+    "witch_slayer"
+   ],
+   "signatureOf": [
+    "witch_slayer"
+   ]
+  },
+  "bouncing_glaive": {
+   "id": "bouncing_glaive",
+   "name": "Bouncing Glaive",
+   "icon": "/Game/UI/Abilities/T_bouncing_glaive",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 80,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 8,
+    "castTime": 0,
+    "range": 1300,
+    "radius": 500,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Hurl a glaive that strikes the target and bounces to 4 more enemies within 5m, losing 20% per bounce: {effect} + 1.5x AGI.",
+   "effects": [],
+   "champions": [
+    "huntress"
+   ],
+   "signatureOf": [
+    "huntress"
+   ]
+  },
+  "sabercat_pounce": {
+   "id": "sabercat_pounce",
+   "name": "Sabercat Pounce",
+   "icon": "/Game/UI/Abilities/T_sabercat_pounce",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 75,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 12,
+    "castTime": 0,
+    "range": 700,
+    "radius": 260,
+    "duration": 2
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "The sabercat leaps up to 7m and mauls everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "area",
+     "duration": 2,
+     "magnitude": 0.4,
+     "radius": 260,
+     "label": "Move -40%"
+    }
+   ],
+   "champions": [
+    "huntress"
+   ],
+   "signatureOf": [
+    "huntress"
+   ]
+  },
+  "owl_scout": {
+   "id": "owl_scout",
+   "name": "Owl Scout",
+   "icon": "/Game/UI/Abilities/T_owl_scout",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 20,
+    "cooldown": 14,
+    "castTime": 0,
+    "range": 1600,
+    "radius": 450,
+    "duration": 8
+   },
+   "effectLabel": "% damage taken",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Send the owl to a point: enemies within 4.5m are revealed and tracked for 8s, taking {effect}% more damage from you.",
+   "effects": [
+    {
+     "type": "mark",
+     "zone": "area",
+     "duration": 8,
+     "magnitude": 0.1,
+     "radius": 450,
+     "label": "Tracked"
+    }
+   ],
+   "champions": [
+    "huntress"
+   ],
+   "signatureOf": [
+    "huntress"
+   ]
+  },
+  "moonlit_sprint": {
+   "id": "moonlit_sprint",
+   "name": "Moonlit Sprint",
+   "icon": "/Game/UI/Abilities/T_moonlit_sprint",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 40,
+    "manaCost": 0,
+    "energyCost": 20,
+    "cooldown": 16,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 4
+   },
+   "effectLabel": "% move speed",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 70,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Sprint under the moon: +{effect}% movement speed for 4s and shake off slows.",
+   "effects": [
+    {
+     "type": "haste",
+     "zone": "self",
+     "duration": 4,
+     "magnitude": 0.4,
+     "radius": 0.0,
+     "label": "Move +40%"
+    },
+    {
+     "type": "cleanse",
+     "zone": "self",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "huntress"
+   ],
+   "signatureOf": [
+    "huntress"
+   ]
+  },
+  "crescent_volley": {
+   "id": "crescent_volley",
+   "name": "Crescent Volley",
+   "icon": "/Game/UI/Abilities/T_crescent_volley",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 90,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 1400,
+    "radius": 40,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Loose a crescent glaive that flies 14m in a line and cuts through up to five enemies: {effect} + 1.4x AGI.",
+   "effects": [],
+   "champions": [
+    "huntress"
+   ],
+   "signatureOf": [
+    "huntress"
+   ]
+  },
+  "sabercat_rake": {
+   "id": "sabercat_rake",
+   "name": "Sabercat Rake",
+   "icon": "/Game/UI/Abilities/T_sabercat_rake",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 70,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 7,
+    "castTime": 0,
+    "range": 320,
+    "radius": 320,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "The sabercat rakes a 70-degree arc in front of you (3.2m): {effect} + 1.2x AGI.",
+   "effects": [],
+   "champions": [
+    "huntress"
+   ],
+   "signatureOf": [
+    "huntress"
+   ]
+  },
+  "moon_glaive": {
+   "id": "moon_glaive",
+   "name": "Moon Glaive",
+   "icon": "/Game/UI/Abilities/T_moon_glaive",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 60,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 450,
+    "duration": 0
+   },
+   "effectLabel": "% bounce damage",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 85,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Your glaive throws bounce to 2 more enemies within 4.5m, for {effect}% and then 36% damage.",
+   "effects": [],
+   "champions": [
+    "huntress"
+   ],
+   "signatureOf": [
+    "huntress"
+   ]
+  },
+  "glaive_storm": {
+   "id": "glaive_storm",
+   "name": "Glaive Storm",
+   "icon": "/Game/UI/Abilities/T_glaive_storm",
+   "types": [
+    "DPS"
+   ],
+   "kind": "ultimate",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 45,
+    "manaCost": 0,
+    "energyCost": 70,
+    "cooldown": 75,
+    "castTime": 0,
+    "range": 0,
+    "radius": 480,
+    "duration": 6
+   },
+   "effectLabel": "damage per tick",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "A whirling storm of glaives surrounds you for 6s, striking enemies within 4.8m for {effect} + 0.5x AGI every 0.5s.",
+   "effects": [],
+   "champions": [
+    "huntress"
+   ],
+   "signatureOf": [
+    "huntress"
+   ]
+  },
+  "photon_turret": {
+   "id": "photon_turret",
+   "name": "Photon Turret",
+   "icon": "/Game/UI/Abilities/T_photon_turret",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 240,
+    "manaCost": 55,
+    "energyCost": 0,
+    "cooldown": 14,
+    "castTime": 0,
+    "range": 800,
+    "radius": 950,
+    "duration": 25
+   },
+   "effectLabel": "turret health",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Warp in a turret for 25s ({effect} health, up to 2) that fires energy bolts at enemies within 9.5m: 18 + 0.35x INT every 0.8s.",
+   "effects": [],
+   "champions": [
+    "aetheri_artificer"
+   ],
+   "signatureOf": [
+    "aetheri_artificer"
+   ],
+   "category": "construct"
+  },
+  "skitter_swarm": {
+   "id": "skitter_swarm",
+   "name": "Skitter Swarm",
+   "icon": "/Game/UI/Abilities/T_skitter_swarm",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 70,
+    "manaCost": 45,
+    "energyCost": 0,
+    "cooldown": 15,
+    "castTime": 0,
+    "range": 700,
+    "radius": 200,
+    "duration": 12
+   },
+   "effectLabel": "blast damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Deploy three skitter bombs (up to 6) that race at the nearest enemies and explode for {effect} + 0.8x INT in 2m.",
+   "effects": [],
+   "champions": [
+    "aetheri_artificer"
+   ],
+   "signatureOf": [
+    "aetheri_artificer"
+   ],
+   "category": "construct"
+  },
+  "arc_mine": {
+   "id": "arc_mine",
+   "name": "Arc Mine",
+   "icon": "/Game/UI/Abilities/T_arc_mine",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 110,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 9,
+    "castTime": 0,
+    "range": 800,
+    "radius": 240,
+    "duration": 30
+   },
+   "effectLabel": "blast damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Plant a mine (30s, up to 3): the first enemy within 1.5m detonates it for {effect} + 1.2x INT in 2.4m.",
+   "effects": [],
+   "champions": [
+    "aetheri_artificer"
+   ],
+   "signatureOf": [
+    "aetheri_artificer"
+   ],
+   "category": "construct"
+  },
+  "disruption_pylon": {
+   "id": "disruption_pylon",
+   "name": "Disruption Pylon",
+   "icon": "/Game/UI/Abilities/T_disruption_pylon",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 25,
+    "manaCost": 50,
+    "energyCost": 0,
+    "cooldown": 20,
+    "castTime": 0,
+    "range": 800,
+    "radius": 450,
+    "duration": 15
+   },
+   "effectLabel": "% damage dealt",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 40,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Warp in a pylon (15s): enemies inside its 4.5m field deal {effect}% less damage.",
+   "effects": [
+    {
+     "type": "weaken",
+     "zone": "area",
+     "duration": 0,
+     "magnitude": 0.25,
+     "radius": 450,
+     "label": "Damage -25%"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer"
+   ],
+   "signatureOf": [
+    "aetheri_artificer"
+   ],
+   "category": "construct"
+  },
+  "phase_lance": {
+   "id": "phase_lance",
+   "name": "Phase Lance",
+   "icon": "/Game/UI/Abilities/T_phase_lance",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 100,
+    "manaCost": 40,
+    "energyCost": 0,
+    "cooldown": 6,
+    "castTime": 0,
+    "range": 1300,
+    "radius": 30,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Fire an energy lance skillshot: {effect} + 1.8x INT damage.",
+   "effects": [],
+   "champions": [
+    "aetheri_artificer"
+   ],
+   "signatureOf": [
+    "aetheri_artificer"
+   ]
+  },
+  "overcharge": {
+   "id": "overcharge",
+   "name": "Overcharge",
+   "icon": "/Game/UI/Abilities/T_overcharge",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 100,
+    "manaCost": 40,
+    "energyCost": 0,
+    "cooldown": 20,
+    "castTime": 0,
+    "range": 0,
+    "radius": 1200,
+    "duration": 6
+   },
+   "effectLabel": "% turret fire rate",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Overcharge your constructs within 12m for 6s: turrets fire {effect}% faster and every construct regains 25% health.",
+   "effects": [],
+   "champions": [
+    "aetheri_artificer"
+   ],
+   "signatureOf": [
+    "aetheri_artificer"
+   ],
+   "category": "construct"
+  },
+  "aether_engineering": {
+   "id": "aether_engineering",
+   "name": "Aether Engineering",
+   "icon": "/Game/UI/Abilities/T_aether_engineering",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "arcane",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 25,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% construct health",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Your constructs have {effect}% more health and last 20% longer.",
+   "effects": [],
+   "champions": [
+    "aetheri_artificer"
+   ],
+   "signatureOf": [
+    "aetheri_artificer"
+   ],
+   "category": "construct"
+  },
+  "warp_obelisk": {
+   "id": "warp_obelisk",
+   "name": "Warp Obelisk",
+   "icon": "/Game/UI/Abilities/T_warp_obelisk",
+   "types": [
+    "DPS"
+   ],
+   "kind": "ultimate",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 600,
+    "manaCost": 130,
+    "energyCost": 0,
+    "cooldown": 80,
+    "castTime": 0,
+    "range": 800,
+    "radius": 1300,
+    "duration": 15
+   },
+   "effectLabel": "obelisk health",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Warp in a siege obelisk for 15s ({effect} health): heavy beams at enemies within 13m for 60 + 1x INT, splashing 2m.",
+   "effects": [],
+   "champions": [
+    "aetheri_artificer"
+   ],
+   "signatureOf": [
+    "aetheri_artificer"
+   ],
+   "category": "construct"
+  },
+  "aegis_pylon": {
+   "id": "aegis_pylon",
+   "name": "Aegis Pylon",
+   "icon": "/Game/UI/Abilities/T_aegis_pylon",
+   "types": [
+    "HEAL",
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 2,
+    "manaCost": 55,
+    "energyCost": 0,
+    "cooldown": 18,
+    "castTime": 0,
+    "range": 800,
+    "radius": 450,
+    "duration": 15
+   },
+   "effectLabel": "% max health per second",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 4,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Warp in a pylon (15s): allies inside its 4.5m field regenerate {effect}% max health per second and take 15% less damage.",
+   "effects": [
+    {
+     "type": "shield",
+     "zone": "area",
+     "duration": 0,
+     "magnitude": 0.15,
+     "radius": 450,
+     "label": "DEF +15%"
+    }
+   ],
+   "champions": [
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "aetheri_warden"
+   ],
+   "category": "construct"
+  },
+  "haste_pylon": {
+   "id": "haste_pylon",
+   "name": "Haste Pylon",
+   "icon": "/Game/UI/Abilities/T_haste_pylon",
+   "types": [
+    "HEAL",
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 25,
+    "manaCost": 45,
+    "energyCost": 0,
+    "cooldown": 20,
+    "castTime": 0,
+    "range": 800,
+    "radius": 450,
+    "duration": 12
+   },
+   "effectLabel": "% move and attack speed",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 40,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Warp in a pylon (12s): allies inside its 4.5m field move and attack {effect}% faster.",
+   "effects": [
+    {
+     "type": "haste",
+     "zone": "area",
+     "duration": 0,
+     "magnitude": 0.25,
+     "radius": 450,
+     "label": "Haste +25%"
+    }
+   ],
+   "champions": [
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "aetheri_warden"
+   ],
+   "category": "construct"
+  },
+  "gravity_pylon": {
+   "id": "gravity_pylon",
+   "name": "Gravity Pylon",
+   "icon": "/Game/UI/Abilities/T_gravity_pylon",
+   "types": [
+    "HEAL",
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 35,
+    "manaCost": 45,
+    "energyCost": 0,
+    "cooldown": 18,
+    "castTime": 0,
+    "range": 800,
+    "radius": 450,
+    "duration": 12
+   },
+   "effectLabel": "% slow",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 50,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Warp in a pylon (12s): enemies inside its 4.5m field are slowed by {effect}%.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "area",
+     "duration": 0,
+     "magnitude": 0.35,
+     "radius": 450,
+     "label": "Move -35%"
+    }
+   ],
+   "champions": [
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "aetheri_warden"
+   ],
+   "category": "construct"
+  },
+  "stasis_snare": {
+   "id": "stasis_snare",
+   "name": "Stasis Snare",
+   "icon": "/Game/UI/Abilities/T_stasis_snare",
+   "types": [
+    "HEAL",
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 20,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 14,
+    "castTime": 0,
+    "range": 800,
+    "radius": 150,
+    "duration": 30
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Plant a snare (30s, up to 3): the first enemy within 1.5m is locked in stasis for 1.5s and takes {effect} + 0.3x INT damage. Bosses are slowed instead.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "area",
+     "duration": 1.5,
+     "magnitude": 0.0,
+     "radius": 150,
+     "label": "Stasis"
+    }
+   ],
+   "champions": [
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "aetheri_warden"
+   ],
+   "category": "construct"
+  },
+  "aether_mend": {
+   "id": "aether_mend",
+   "name": "Aether Mend",
+   "icon": "/Game/UI/Abilities/T_aether_mend",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "ally",
+   "castTime": 1.0,
+   "base": {
+    "effect": 85,
+    "manaCost": 40,
+    "energyCost": 0,
+    "cooldown": 6,
+    "castTime": 1.0,
+    "range": 1200,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Cast 1s: mend an ally (or yourself) for {effect} + 2.5x INT.",
+   "effects": [],
+   "champions": [
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "aetheri_warden"
+   ]
+  },
+  "repulsor_pulse": {
+   "id": "repulsor_pulse",
+   "name": "Repulsor Pulse",
+   "icon": "/Game/UI/Abilities/T_repulsor_pulse",
+   "types": [
+    "TANK",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 60,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 0,
+    "radius": 350,
+    "duration": 2
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Release a pulse around you: {effect} + 1x INT damage and a 30% slow for 2s to enemies within 3.5m; monsters turn on you briefly.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "area",
+     "duration": 2,
+     "magnitude": 0.3,
+     "radius": 350,
+     "label": "Move -30%"
+    },
+    {
+     "type": "taunt",
+     "zone": "area",
+     "duration": 2,
+     "magnitude": 0.0,
+     "radius": 350
+    }
+   ],
+   "champions": [
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "aetheri_warden"
+   ]
+  },
+  "resonant_lattice": {
+   "id": "resonant_lattice",
+   "name": "Resonant Lattice",
+   "icon": "/Game/UI/Abilities/T_resonant_lattice",
+   "types": [
+    "HEAL",
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "arcane",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% damage reduction in fields",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 20,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Allies inside your Aegis Pylon or Nexus take a further {effect}% less damage, and your pylons last 20% longer.",
+   "effects": [],
+   "champions": [
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "aetheri_warden"
+   ],
+   "category": "construct"
+  },
+  "aether_nexus": {
+   "id": "aether_nexus",
+   "name": "Aether Nexus",
+   "icon": "/Game/UI/Abilities/T_aether_nexus",
+   "types": [
+    "HEAL",
+    "TANK"
+   ],
+   "kind": "ultimate",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 5,
+    "manaCost": 120,
+    "energyCost": 0,
+    "cooldown": 85,
+    "castTime": 0,
+    "range": 800,
+    "radius": 650,
+    "duration": 10
+   },
+   "effectLabel": "% max health per second",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 8,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Warp in a Nexus for 10s: allies inside its 6.5m field take 40% less damage and regenerate {effect}% max health per second; enemies inside are slowed.",
+   "effects": [
+    {
+     "type": "guard",
+     "zone": "area",
+     "duration": 0,
+     "magnitude": 0.4,
+     "radius": 650,
+     "label": "DEF +40%"
+    }
+   ],
+   "champions": [
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "aetheri_warden"
+   ],
+   "category": "construct"
   },
   "bear_maul": {
    "id": "bear_maul",
@@ -6746,6 +8837,462 @@
     "soul_conduit",
     "bastion_of_dawn",
     "renewal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ]
+  },
+  "gunblade": {
+   "name": "Gunblade",
+   "primaryRole": "DPS",
+   "roles": [
+    "DPS"
+   ],
+   "signature": [
+    "silver_shot",
+    "hex_mark",
+    "powder_flask",
+    "blade_flurry",
+    "hunters_stride",
+    "warding_talisman",
+    "price_on_every_soul",
+    "collect_the_bounty"
+   ],
+   "purchasable": [
+    "silver_shot",
+    "hex_mark",
+    "powder_flask",
+    "blade_flurry",
+    "hunters_stride",
+    "warding_talisman",
+    "price_on_every_soul",
+    "collect_the_bounty",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "silver_shot",
+    "hex_mark",
+    "powder_flask",
+    "blade_flurry",
+    "hunters_stride",
+    "warding_talisman",
+    "price_on_every_soul",
+    "collect_the_bounty",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ]
+  },
+  "witch_slayer": {
+   "name": "Witch Slayer",
+   "primaryRole": "DPS",
+   "roles": [
+    "DPS"
+   ],
+   "signature": [
+    "arcane_blunderbuss",
+    "spirit_lantern",
+    "purge",
+    "banishment",
+    "witchfinders_mark",
+    "spectral_blade",
+    "witchbane",
+    "hexbane_judgment"
+   ],
+   "purchasable": [
+    "arcane_blunderbuss",
+    "spirit_lantern",
+    "purge",
+    "banishment",
+    "witchfinders_mark",
+    "spectral_blade",
+    "witchbane",
+    "hexbane_judgment",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "arcane_blunderbuss",
+    "spirit_lantern",
+    "purge",
+    "banishment",
+    "witchfinders_mark",
+    "spectral_blade",
+    "witchbane",
+    "hexbane_judgment",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ]
+  },
+  "huntress": {
+   "name": "Huntress",
+   "primaryRole": "DPS",
+   "roles": [
+    "DPS"
+   ],
+   "signature": [
+    "bouncing_glaive",
+    "sabercat_pounce",
+    "owl_scout",
+    "moonlit_sprint",
+    "crescent_volley",
+    "sabercat_rake",
+    "moon_glaive",
+    "glaive_storm"
+   ],
+   "purchasable": [
+    "bouncing_glaive",
+    "sabercat_pounce",
+    "owl_scout",
+    "moonlit_sprint",
+    "crescent_volley",
+    "sabercat_rake",
+    "moon_glaive",
+    "glaive_storm",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "bouncing_glaive",
+    "sabercat_pounce",
+    "owl_scout",
+    "moonlit_sprint",
+    "crescent_volley",
+    "sabercat_rake",
+    "moon_glaive",
+    "glaive_storm",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ]
+  },
+  "aetheri_artificer": {
+   "name": "Aetheri Artificer",
+   "primaryRole": "DPS",
+   "roles": [
+    "DPS"
+   ],
+   "signature": [
+    "photon_turret",
+    "skitter_swarm",
+    "arc_mine",
+    "disruption_pylon",
+    "phase_lance",
+    "overcharge",
+    "aether_engineering",
+    "warp_obelisk"
+   ],
+   "purchasable": [
+    "photon_turret",
+    "skitter_swarm",
+    "arc_mine",
+    "disruption_pylon",
+    "phase_lance",
+    "overcharge",
+    "aether_engineering",
+    "warp_obelisk",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "photon_turret",
+    "skitter_swarm",
+    "arc_mine",
+    "disruption_pylon",
+    "phase_lance",
+    "overcharge",
+    "aether_engineering",
+    "warp_obelisk",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ]
+  },
+  "aetheri_warden": {
+   "name": "Aetheri Warden",
+   "primaryRole": "HEAL",
+   "roles": [
+    "TANK",
+    "HEAL"
+   ],
+   "signature": [
+    "aegis_pylon",
+    "haste_pylon",
+    "gravity_pylon",
+    "stasis_snare",
+    "aether_mend",
+    "repulsor_pulse",
+    "resonant_lattice",
+    "aether_nexus"
+   ],
+   "purchasable": [
+    "aegis_pylon",
+    "haste_pylon",
+    "gravity_pylon",
+    "stasis_snare",
+    "aether_mend",
+    "repulsor_pulse",
+    "resonant_lattice",
+    "aether_nexus",
+    "iron_guard",
+    "shield_slam",
+    "war_cry",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "renewal",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "aegis_pylon",
+    "haste_pylon",
+    "gravity_pylon",
+    "stasis_snare",
+    "aether_mend",
+    "repulsor_pulse",
+    "resonant_lattice",
+    "aether_nexus",
+    "iron_guard",
+    "shield_slam",
+    "war_cry",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "renewal",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal",
     "mass_aegis",
     "wellspring",
     "ember_lance"

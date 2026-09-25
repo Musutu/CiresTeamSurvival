@@ -22,7 +22,8 @@ ROOT = Path(__file__).resolve().parent.parent
 SCHOOLS = ["physical", "fire", "cold", "earth", "tide", "holy", "shadow", "void", "poison", "nature", "arcane", "storm"]
 TYPES = {"tank": "TANK", "dps": "DPS", "heal": "HEAL"}
 TARGETING = ["self", "ally", "enemy", "aim", "passive"]
-EFFECT_TYPES = ["stun", "slow", "silence", "interrupt", "healCut", "healCutDone", "armorBreak", "taunt", "guard", "lethal", "cleanse"]
+EFFECT_TYPES = ["stun", "slow", "silence", "interrupt", "healCut", "healCutDone", "armorBreak", "taunt", "guard", "lethal", "cleanse",
+                "mark", "purge", "banish", "haste", "weaken", "shield"]  # new-champions: marks, purges, banishment, construct fields
 
 # Default curves by kind. Scale() in CiresRules.cpp is the authority; the docs table mirrors it.
 CURVES = {
@@ -142,6 +143,122 @@ POOL = {
     "ember_lance": ("Ember Lance", ["dps", "heal"], "active", "fire", "aim", 0, 40, 0, 6, 95, "damage", 1200, 30, 0,
                     "Fire skillshot for {effect} + 2x INT damage.", [], {}),
 }
+
+# new-champions: signature kits of the Gunblade, Witch Slayer, Huntress and the two Aetheri champions.
+# Implemented natively by CireSignatureSkills / CireTechConstructs (Docs/NewChampions.md). They are
+# signature-only: never added to the generic role pools, purchasable only by the champions whose roster
+# kit lists them. Same tuple layout as POOL; extra "category": "construct" marks the Skill Shop's
+# Constructs tab. Construct numbers beyond the headline effect live in CireTechConstructs.cpp.
+CONSTRUCT = {"category": "construct"}
+NEW_CHAMPION_SKILLS = {
+    # ---- Gunblade (Bounty Hunter): AGI, energy ----
+    "silver_shot": ("Silver Shot", ["dps"], "active", "holy", "aim", 0, 0, 30, 8, 95, "damage", 1300, 28, 0,
+                    "Aimed silver round: {effect} + 1.6x AGI damage; +60% against undead and void monsters.", [], {}),
+    "hex_mark": ("Hex Mark", ["dps"], "active", "shadow", "enemy", 0, 0, 20, 12, 15, "% damage taken", 1100, 0, 12,
+                 "Put a bounty on an enemy for 12s: it takes {effect}% more damage from every source, and killing it pays bounty gold (25, elites 60, bosses 150).",
+                 [fx("mark", "target", 12, 0.15, label="Damage taken +15%")], {}),
+    "powder_flask": ("Powder Flask", ["dps"], "active", "fire", "aim", 0, 0, 30, 12, 70, "impact damage", 900, 260, 2.5,
+                     "Hurl a powder flask: after a short fuse it bursts for {effect} + 1x AGI fire damage in 2.6m and slows by 35% for 2.5s.",
+                     [fx("slow", "area", 2.5, 0.35, 260, label="Move -35%")], {}),
+    "blade_flurry": ("Blade Flurry", ["dps"], "active", "physical", "self", 0, 0, 35, 9, 40, "damage per slash", 0, 320, 0,
+                     "Three quick falchion slashes around you, each {effect} + 0.8x AGI damage.", [], {}),
+    "hunters_stride": ("Hunter's Stride", ["dps"], "active", "physical", "aim", 0, 0, 25, 11, 50, "% next shot damage", 550, 0, 4,
+                       "Dash up to 5.5m; your next basic attack within 4s deals {effect}% more damage.", [], {}),
+    "warding_talisman": ("Warding Talisman", ["dps"], "active", "holy", "self", 0, 0, 25, 18, 30, "% damage reduction", 0, 0, 4,
+                         "Raise the talisman: take {effect}% less damage for 4s and shake off slows.",
+                         [fx("guard", "self", 4, 0.3, label="DEF +30%"), fx("cleanse", "self")], {"curve": {"effectCap": 45}}),
+    "price_on_every_soul": ("Price on Every Soul", ["dps"], "passive", "physical", "passive", 0, 0, 0, 0, 5, "bonus gold per kill", 0, 0, 0,
+                            "Your killing blows pay {effect} bonus gold (x3 elites, x8 bosses) and restore 15 energy.", [], {}),
+    "collect_the_bounty": ("Collect the Bounty", ["dps"], "ultimate", "physical", "enemy", 0, 0, 60, 70, 180, "damage", 950, 0, 0,
+                           "Execution shot: {effect} + 3x AGI plus 40% of missing health (bonus capped at 400). Non-boss monsters under 20% health die; a kill refunds half the cooldown and pays a marked bounty twice.",
+                           [fx("lethal", "target")], {}),
+    # ---- Witch Slayer: INT, mana ----
+    "arcane_blunderbuss": ("Arcane Blunderbuss", ["dps"], "active", "arcane", "aim", 0, 40, 0, 8, 110, "damage", 550, 550, 0,
+                           "A 60-degree cone of arcane shot (5.5m): {effect} + 1.8x INT damage; +40% against casting enemies and interrupts their cast.",
+                           [fx("interrupt", "area", 0, 0, 550, lockout=1.5, label="Interrupted")], {}),
+    "spirit_lantern": ("Spirit Lantern", ["dps"], "active", "arcane", "aim", 0, 45, 0, 14, 60, "damage", 800, 260, 20,
+                       "Set a spirit-lantern trap (20s, up to 2). The first enemy to come within 1.5m sets it off: {effect} + 1x INT damage and a 2s silence within 2.6m.",
+                       [fx("silence", "area", 2, radius=260, label="Silenced")], CONSTRUCT),
+    "purge": ("Purge", ["dps"], "active", "holy", "enemy", 0, 40, 0, 14, 60, "damage", 1000, 0, 2.5,
+              "Strip every buff from an enemy and silence it for 2.5s; deals {effect} + 1x INT damage.",
+              [fx("purge", "target"), fx("silence", "target", 2.5, label="Silenced")], {}),
+    "banishment": ("Banishment", ["dps"], "active", "void", "enemy", 0, 55, 0, 22, 80, "damage on return", 900, 0, 2,
+                   "Exile an enemy for 2s: it cannot act, move or be harmed, then returns for {effect} + 1.5x INT void damage. Bosses resist: silenced and slowed instead.",
+                   [fx("banish", "target", 2, label="Banished")], {}),
+    "witchfinders_mark": ("Witchfinder's Mark", ["dps"], "active", "arcane", "enemy", 0, 25, 0, 10, 12, "% damage taken", 1200, 0, 10,
+                          "Mark an enemy for 10s: it is revealed and takes {effect}% more damage, tripled while it casts.",
+                          [fx("mark", "target", 10, 0.12, label="Exposed")], {}),
+    "spectral_blade": ("Spectral Blade", ["dps"], "active", "arcane", "enemy", 0, 30, 0, 7, 90, "damage", 600, 0, 0,
+                       "Lunge up to 6m with the spectral blade: {effect} + 1.4x INT damage.", [], {}),
+    "witchbane": ("Witchbane", ["dps"], "passive", "arcane", "passive", 0, 0, 0, 0, 20, "% bonus damage", 0, 0, 0,
+                  "You deal {effect}% more damage to enemies that are casting, silenced or marked.", [], {"curve": {"effectCap": 40}}),
+    "hexbane_judgment": ("Hexbane Judgment", ["dps"], "ultimate", "arcane", "aim", 0, 130, 0, 80, 200, "damage", 1100, 450, 3,
+                         "Aim a 4.5m circle; after 1s it bursts for {effect} + 3x INT damage, strips every buff and silences for 3s.",
+                         [fx("silence", "area", 3, radius=450, label="Silenced"), fx("purge", "area", radius=450)], {}),
+    # ---- Huntress (mounted glaive thrower): AGI, energy ----
+    "bouncing_glaive": ("Bouncing Glaive", ["dps"], "active", "physical", "enemy", 0, 0, 30, 8, 80, "damage", 1300, 500, 0,
+                        "Hurl a glaive that strikes the target and bounces to 4 more enemies within 5m, losing 20% per bounce: {effect} + 1.5x AGI.", [], {}),
+    "sabercat_pounce": ("Sabercat Pounce", ["dps"], "active", "physical", "aim", 0, 0, 35, 12, 75, "damage", 700, 260, 2,
+                        "The sabercat leaps up to 7m and mauls everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s.",
+                        [fx("slow", "area", 2, 0.4, 260, label="Move -40%")], {}),
+    "owl_scout": ("Owl Scout", ["dps"], "active", "nature", "aim", 0, 0, 20, 14, 10, "% damage taken", 1600, 450, 8,
+                  "Send the owl to a point: enemies within 4.5m are revealed and tracked for 8s, taking {effect}% more damage from you.",
+                  [fx("mark", "area", 8, 0.10, 450, label="Tracked")], {}),
+    "moonlit_sprint": ("Moonlit Sprint", ["dps"], "active", "arcane", "self", 0, 0, 20, 16, 40, "% move speed", 0, 0, 4,
+                       "Sprint under the moon: +{effect}% movement speed for 4s and shake off slows.",
+                       [fx("haste", "self", 4, 0.4, label="Move +40%"), fx("cleanse", "self")], {"curve": {"effectCap": 70}}),
+    "crescent_volley": ("Crescent Volley", ["dps"], "active", "physical", "aim", 0, 0, 30, 10, 90, "damage", 1400, 40, 0,
+                        "Loose a crescent glaive that flies 14m in a line and cuts through up to five enemies: {effect} + 1.4x AGI.", [], {}),
+    "sabercat_rake": ("Sabercat Rake", ["dps"], "active", "nature", "aim", 0, 0, 25, 7, 70, "damage", 320, 320, 0,
+                      "The sabercat rakes a 70-degree arc in front of you (3.2m): {effect} + 1.2x AGI.", [], {}),
+    "moon_glaive": ("Moon Glaive", ["dps"], "passive", "physical", "passive", 0, 0, 0, 0, 60, "% bounce damage", 0, 450, 0,
+                    "Your glaive throws bounce to 2 more enemies within 4.5m, for {effect}% and then 36% damage.", [], {"curve": {"effectCap": 85}}),
+    "glaive_storm": ("Glaive Storm", ["dps"], "ultimate", "physical", "self", 0, 0, 70, 75, 45, "damage per tick", 0, 480, 6,
+                     "A whirling storm of glaives surrounds you for 6s, striking enemies within 4.8m for {effect} + 0.5x AGI every 0.5s.", [], {}),
+    # ---- Aetheri Artificer: INT, mana; Constructs ----
+    "photon_turret": ("Photon Turret", ["dps"], "active", "arcane", "aim", 0, 55, 0, 14, 240, "turret health", 800, 950, 25,
+                      "Warp in a turret for 25s ({effect} health, up to 2) that fires energy bolts at enemies within 9.5m: 18 + 0.35x INT every 0.8s.", [], CONSTRUCT),
+    "skitter_swarm": ("Skitter Swarm", ["dps"], "active", "arcane", "aim", 0, 45, 0, 15, 70, "blast damage", 700, 200, 12,
+                      "Deploy three skitter bombs (up to 6) that race at the nearest enemies and explode for {effect} + 0.8x INT in 2m.", [], CONSTRUCT),
+    "arc_mine": ("Arc Mine", ["dps"], "active", "arcane", "aim", 0, 35, 0, 9, 110, "blast damage", 800, 240, 30,
+                 "Plant a mine (30s, up to 3): the first enemy within 1.5m detonates it for {effect} + 1.2x INT in 2.4m.", [], CONSTRUCT),
+    "disruption_pylon": ("Disruption Pylon", ["dps"], "active", "arcane", "aim", 0, 50, 0, 20, 25, "% damage dealt", 800, 450, 15,
+                         "Warp in a pylon (15s): enemies inside its 4.5m field deal {effect}% less damage.",
+                         [fx("weaken", "area", 0, 0.25, 450, label="Damage -25%")], dict(CONSTRUCT, curve={"effectCap": 40})),
+    "phase_lance": ("Phase Lance", ["dps"], "active", "arcane", "aim", 0, 40, 0, 6, 100, "damage", 1300, 30, 0,
+                    "Fire an energy lance skillshot: {effect} + 1.8x INT damage.", [], {}),
+    "overcharge": ("Overcharge", ["dps"], "active", "arcane", "self", 0, 40, 0, 20, 100, "% turret fire rate", 0, 1200, 6,
+                   "Overcharge your constructs within 12m for 6s: turrets fire {effect}% faster and every construct regains 25% health.", [], CONSTRUCT),
+    "aether_engineering": ("Aether Engineering", ["dps"], "passive", "arcane", "passive", 0, 0, 0, 0, 25, "% construct health", 0, 0, 0,
+                           "Your constructs have {effect}% more health and last 20% longer.", [], CONSTRUCT),
+    "warp_obelisk": ("Warp Obelisk", ["dps"], "ultimate", "arcane", "aim", 0, 130, 0, 80, 600, "obelisk health", 800, 1300, 15,
+                     "Warp in a siege obelisk for 15s ({effect} health): heavy beams at enemies within 13m for 60 + 1x INT, splashing 2m.", [], CONSTRUCT),
+    # ---- Aetheri Warden: INT, mana; Constructs; Support with Tank hybrid ----
+    "aegis_pylon": ("Aegis Pylon", ["heal", "tank"], "active", "arcane", "aim", 0, 55, 0, 18, 2, "% max health per second", 800, 450, 15,
+                    "Warp in a pylon (15s): allies inside its 4.5m field regenerate {effect}% max health per second and take 15% less damage.",
+                    [fx("shield", "area", 0, 0.15, 450, label="DEF +15%")], dict(CONSTRUCT, curve={"effectCap": 4})),
+    "haste_pylon": ("Haste Pylon", ["heal", "tank"], "active", "arcane", "aim", 0, 45, 0, 20, 25, "% move and attack speed", 800, 450, 12,
+                    "Warp in a pylon (12s): allies inside its 4.5m field move and attack {effect}% faster.",
+                    [fx("haste", "area", 0, 0.25, 450, label="Haste +25%")], dict(CONSTRUCT, curve={"effectCap": 40})),
+    "gravity_pylon": ("Gravity Pylon", ["heal", "tank"], "active", "arcane", "aim", 0, 45, 0, 18, 35, "% slow", 800, 450, 12,
+                      "Warp in a pylon (12s): enemies inside its 4.5m field are slowed by {effect}%.",
+                      [fx("slow", "area", 0, 0.35, 450, label="Move -35%")], dict(CONSTRUCT, curve={"effectCap": 50})),
+    "stasis_snare": ("Stasis Snare", ["heal", "tank"], "active", "arcane", "aim", 0, 35, 0, 14, 20, "damage", 800, 150, 30,
+                     "Plant a snare (30s, up to 3): the first enemy within 1.5m is locked in stasis for 1.5s and takes {effect} + 0.3x INT damage. Bosses are slowed instead.",
+                     [fx("stun", "area", 1.5, radius=150, label="Stasis")], CONSTRUCT),
+    "aether_mend": ("Aether Mend", ["heal"], "active", "arcane", "ally", 1.0, 40, 0, 6, 85, "healing", 1200, 0, 0,
+                    "Cast 1s: mend an ally (or yourself) for {effect} + 2.5x INT.", [], {}),
+    "repulsor_pulse": ("Repulsor Pulse", ["tank", "heal"], "active", "arcane", "self", 0, 35, 0, 10, 60, "damage", 0, 350, 2,
+                       "Release a pulse around you: {effect} + 1x INT damage and a 30% slow for 2s to enemies within 3.5m; monsters turn on you briefly.",
+                       [fx("slow", "area", 2, 0.3, 350, label="Move -30%"), fx("taunt", "area", 2, radius=350)], {}),
+    "resonant_lattice": ("Resonant Lattice", ["heal", "tank"], "passive", "arcane", "passive", 0, 0, 0, 0, 10, "% damage reduction in fields", 0, 0, 0,
+                         "Allies inside your Aegis Pylon or Nexus take a further {effect}% less damage, and your pylons last 20% longer.",
+                         [], dict(CONSTRUCT, curve={"effectCap": 20})),
+    "aether_nexus": ("Aether Nexus", ["heal", "tank"], "ultimate", "arcane", "aim", 0, 120, 0, 85, 5, "% max health per second", 800, 650, 10,
+                     "Warp in a Nexus for 10s: allies inside its 6.5m field take 40% less damage and regenerate {effect}% max health per second; enemies inside are slowed.",
+                     [fx("guard", "area", 0, 0.4, 650, label="DEF +40%")], dict(CONSTRUCT, curve={"effectCap": 8})),
+}
+
 VFX_SCHOOL = {"holy": "holy", "light": "holy", "frost": "cold", "fire": "fire", "ember": "fire", "ash": "fire", "venom": "poison",
               "shadow": "shadow", "steel": "physical", "war": "physical", "blood": "physical", "arcane": "arcane", "spectral": "void",
               "spirit": "arcane", "stone": "earth", "earth": "earth", "primal": "physical", "nature": "nature", "ether": "arcane",
@@ -215,6 +332,18 @@ def build():
         if "void" in extra:
             rec["void"] = extra["void"]
         abilities[sid] = rec
+    # new-champions: implemented signature-only kits.
+    for sid, row in NEW_CHAMPION_SKILLS.items():
+        name, roles, kind, school, targeting, cast, mana, energy, cd, effect, label, rng, radius, dur, desc, effects, extra = row
+        curve = dict(CURVES[kind])
+        curve.update(extra.get("curve", {}))
+        rec = dict(id=sid, name=name, icon=f"/Game/UI/Abilities/T_{sid}", types=[TYPES[r] for r in roles], kind=kind, school=school,
+                   targeting=targeting, castTime=cast, base=dict(effect=effect, manaCost=mana, energyCost=energy, cooldown=cd, castTime=cast,
+                   range=rng, radius=radius, duration=dur), effectLabel=label, curve=curve, status="implemented", signatureOnly=True,
+                   description=desc, effects=effects, champions=[], signatureOf=[])
+        if extra.get("category"):
+            rec["category"] = extra["category"]
+        abilities[sid] = rec
     # Planned signature skills from the roster.
     for c in roster["champions"]:
         prim = ROLE_OF[c["threatRole"]]
@@ -249,7 +378,7 @@ def build():
         signature = [s["id"] for s in c["actives"] + [c["passive"], c["ultimate"]]]
         signature += [sid for sid, owners in SIGNATURE_EXTRA.items() if c["id"] in owners]
         mask = sum(role_bits[r] for r in roles)
-        pool = [sid for sid, a in abilities.items() if a["status"] == "implemented" and sum(role_bits[t.lower()] for t in a["types"]) & mask]
+        pool = [sid for sid, a in abilities.items() if a["status"] == "implemented" and not a.get("signatureOnly") and sum(role_bits[t.lower()] for t in a["types"]) & mask]
         purchasable = list(dict.fromkeys(signature + pool))
         champions[c["id"]] = dict(name=c["displayName"], primaryRole=TYPES[prim], roles=[TYPES[r] for r in roles], signature=signature,
                                   purchasable=purchasable, purchasableImplemented=[s for s in purchasable if abilities[s]["status"] == "implemented"])
@@ -294,7 +423,7 @@ def docs(db):
              "## Pool skills", "", "| Skill | Type | Kind | School | Target | Cast | Cost | CD | Effect L1 / L10 / L50 | CC / notes |",
              "|---|---|---|---|---|---|---|---|---|---|"]
     for sid, a in sorted(db["abilities"].items(), key=lambda kv: (kv[1]["status"], kv[1]["kind"], kv[0])):
-        if a["status"] != "implemented":
+        if a["status"] != "implemented" or a.get("signatureOnly"):
             continue
         b = a["base"]
         l10, l50 = scale(b, a["curve"], 10), scale(b, a["curve"], 50)
@@ -303,6 +432,19 @@ def docs(db):
         if "void" in a:
             v = a["void"]; cc += (", " if cc else "") + f"void: stun <= {v['innerRadius']}cm, slow <= {v['outerRadius']}cm"
         lines.append(f"| {a['name']} (`{sid}`) | {'/'.join(a['types'])} | {a['kind']} | {a['school']} | {a['targeting']} | {a['castTime']:g}s | {cost} | {b['cooldown']:g}s | "
+                     f"{b['effect']:g} / {l10['effect']:.0f} / {l50['effect']:.0f} {a['effectLabel']} | {cc} |")
+    lines += ["", "## Champion signature skills (implemented, signature-only)", "",
+              "Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampions.md). Only the champions listed can buy them;",
+              "`construct` rows appear under the Skill Shop's CONSTRUCTS filter.", "",
+              "| Skill | Champion | Type | Kind | School | Target | Cost | CD | Effect L1 / L10 / L50 | CC / notes |", "|---|---|---|---|---|---|---|---|---|---|"]
+    for sid, a in sorted(db["abilities"].items(), key=lambda kv: (",".join(kv[1]["signatureOf"]), kv[1]["kind"], kv[0])):
+        if not a.get("signatureOnly"):
+            continue
+        b = a["base"]
+        l10, l50 = scale(b, a["curve"], 10), scale(b, a["curve"], 50)
+        cost = (f"{b['manaCost']:.0f} MP" if b["manaCost"] else "") + (f"{b['energyCost']:.0f} EN" if b["energyCost"] else "") or "-"
+        cc = ", ".join(e.get("label", e["type"]) for e in a["effects"]) + (" construct" if a.get("category") == "construct" else "")
+        lines.append(f"| {a['name']} (`{sid}`) | {', '.join(a['signatureOf'])} | {'/'.join(a['types'])} | {a['kind']} | {a['school']} | {a['targeting']} | {cost} | {b['cooldown']:g}s | "
                      f"{b['effect']:g} / {l10['effect']:.0f} / {l50['effect']:.0f} {a['effectLabel']} | {cc} |")
     lines += ["", "## Planned signature skills", "", "| Skill | Champion | Type | Kind | School | Target | Notes |", "|---|---|---|---|---|---|---|"]
     for sid, a in sorted(db["abilities"].items()):

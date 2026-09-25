@@ -89,6 +89,7 @@ Every race skill names a themed visual (`buff`, BuffVisuals.json) shown on champ
 | The Feral Kin | bear, totemic_behemoth, evergrove_centaur | `dire_wolf` | `werebear_mauler` | `tusked_behemoth` | `feral_shaman` | `wild_outrider` | `bristleback` | `feral_ursoth` | `feral_mammoth` |
 | The Fallen Order | knight, paladin_righteous, paladin_holy, keeper_of_light | `fallen_squire` | `dread_knight` | `oathbreaker_templar` | `blighted_chaplain` | `fallen_inquisitor_crossbow` | `flagellant` | `fallen_high_inquisitor` | `fallen_crusader` |
 | The Voidborn | whisp, keeper_of_light, summoner, wizard | `rift_stalker` | `void_ravager` | `null_warden` | `rift_weaver` | `rift_gazer` | `voidling` | `voidborn_herald` | `voidborn_devourer` |
+| The Aetheri Remnant | aetheri_artificer, aetheri_warden | `aetheri_phaseblade` | `aetheri_warframe` | `aetheri_bulwark` | `aetheri_engineer` | `aetheri_lancer` | `skitter_drone` | `aetheri_hierarch` | `aetheri_colossus` |
 
 ## Player races (ChampionRoster.json `race`)
 
@@ -116,6 +117,11 @@ Every race skill names a themed visual (`buff`, BuffVisuals.json) shown on champ
 | `whisp` | spirit | voidborn |
 | `evergrove_centaur` | centaur | blightwood, feral_kin |
 | `keeper_of_light` | human | voidborn, fallen_order |
+| `gunblade` | human | hollow, voidborn |
+| `witch_slayer` | human | voidborn, drowned_deep |
+| `huntress` | sylvan | feral_kin, blightwood |
+| `aetheri_artificer` | aetheri | aetheri |
+| `aetheri_warden` | aetheri | aetheri |
 
 ## The Drowned Deep (`drowned_deep`)
 
@@ -1072,3 +1078,108 @@ Every race skill names a themed visual (`buff`, BuffVisuals.json) shown on champ
   - `void_breath` **Void Breath** (cone, 1.4s cast, 10s cd): Winds up a long cone of void breath. Get out of the cone.
   - `void_titan_slam` **Titan Slam** (selfCircle, 1.3s cast, 11s cd, knockback 520cm): Marks a ring and slams, knocking everyone inside back.
   - `void_devourer_hunger` **Endless Hunger** (enrage, 1.0s cast, always in the kit): At 30% health: +40% damage and faster attacks until killed.
+
+## The Aetheri Remnant (`aetheri`)
+
+*A splinter host of the Aetheri, crystal-and-light beings who worship their own machines. They warp through the Breach to claim its energy, and they build before they bleed.*
+
+- **Origin (player counterpart):** The same luminous race as the Aetheri Artificer and Warden: the Remnant are the zealots who stayed with the machine-cult. Player races: aetheri; profiles: `aetheri_artificer`, `aetheri_warden`.
+- **Palette:** base #d1bc84 `[0.82, 0.74, 0.52]`, accent #6b5bff `[0.42, 0.36, 1.0]`, secondary #1e192d, glow #7f6bff.
+- **Reskin sets (palette variants):** Radiant Gold (base #d1bc84, accent #6b5bff); Void Alloy (base #282338, accent #4cbfff); Pale Crystal (base #dbe0ea, accent #9e4cf2).
+- **Footsteps:** `golem` (per-unit overrides below). **Ambience cue:** `amb.race.aether`. **Voice cue:** `voice.race.growl`.
+
+| Slot | Unit id | Name | Role | Fallback body | Draw per match |
+|---|---|---|---|---|---|
+| line | `aetheri_phaseblade` | Aetheri Phaseblade | bruiser | `hollow_infantry` | 2 |
+| bruiser | `aetheri_warframe` | Aetheri Warframe | bruiser | `ironbound_bruiser` | 2 |
+| tank | `aetheri_bulwark` | Prism Bulwark | tank | `hollow_shieldbearer` | 3 |
+| caster | `aetheri_engineer` | Aetheri Engineer | caster | `blight_caster` | 3 |
+| ranged | `aetheri_lancer` | Photon Lancer | ranged | `barbed_hunter` | 2 |
+| special | `skitter_drone` | Skitter Drone | swarm | `hollow_infantry` | 2 |
+| warlord | `aetheri_hierarch` | The Warp Hierarch | caster boss | `blight_caster` | all |
+| colossus | `aetheri_colossus` | Aetheric Colossus | tank boss | `hollow_siegebreaker` | all |
+
+### Aetheri Phaseblade (`aetheri_phaseblade`, line)
+
+**Tripo art prompt:** Slender luminous warrior in gold-white alloy armour with blue-violet energy seams, a smooth crested helm with a glowing visor slit, twin psionic blades of light projecting from its wrist gauntlets, a flowing sash of energy. Dark-fantasy, stylised PBR, readable silhouette, T-pose, no base.
+
+- Basic: **Psi Blades** (melee): Twin light-blades at its current target.
+- Skill pool:
+  - `aether_phase_strike` **Phase Strike** (charge, 0.7s cast, 11s cd): Marks a line and blinks through it, slashing everyone in the path.
+  - `aether_psi_sweep` **Psi Sweep** (cone, 0.8s cast, 9s cd, slows 2s): A wide sweep of light-blades that slows everyone hit for 2s.
+  - `aether_warp_step` **Warp Step** (disengage, 10s cd): Warps away when a champion reaches melee range.
+
+### Aetheri Warframe (`aetheri_warframe`, bruiser)
+
+**Tripo art prompt:** Hulking walking war-suit of gold and white alloy plates with a glowing violet reactor core in the chest, oversized gauntlet fists crackling with energy, a small crystalline pilot visible behind a curved light canopy. Dark-fantasy, stylised PBR, readable silhouette, T-pose, no base.
+
+- Basic: **Alloy Fists** (melee): A crushing gauntlet blow at its current target.
+- Skill pool:
+  - `aether_warp_slam` **Warp Slam** (selfCircle, 1.2s cast, 11s cd, knockback 420cm): Marks a ring and slams the ground, knocking everyone inside away.
+  - `aether_warframe_charge` **Reactor Charge** (charge, 0.9s cast, 14s cd): Marks a line and thunders through it on reactor thrust.
+  - `aether_overdrive` **Overdrive** (enrage, 1.0s cast): At 35% health its reactor overloads: +35% damage and faster attacks.
+
+### Prism Bulwark (`aetheri_bulwark`, tank)
+
+**Tripo art prompt:** Tall armoured Aetheri guardian carrying a tower shield made of hard light framed in gold, a faceted prism crystal floating above its shoulders, pale white-gold plating with violet glow lines. Dark-fantasy, stylised PBR, readable silhouette, T-pose, no base.
+
+- Basic: **Prism Bash** (melee): A hard-light shield bash at its current target.
+- Skill pool:
+  - `aether_prism_glare` **Prism Glare** (provoke, 0.5s cast, 16s cd): Its prism flares: for 6s nearby champions deal 35% less damage to anything but the Bulwark.
+  - `aether_hardlight_shell` **Hardlight Shell** (shieldWall, 0.5s cast, 30s cd): Below 50% health it closes a shell of hard light: 50% less damage for 6s.
+  - `aether_link_shield` **Link Shield** (guard, 0.4s cast, 14s cd): Links a shield to the most injured ally, taking 40% of its damage for 8s.
+  - `aether_bulwark_pylon` **Empowering Pylon** (deploy, 1.3s cast, 22s cd): Interruptible cast: warps in a pylon whose field makes Aetheri stronger (+25% damage, less damage taken).
+
+### Aetheri Engineer (`aetheri_engineer`, caster)
+
+**Tripo art prompt:** Robed Aetheri engineer in layered white cloth over gold alloy, a halo of floating tools and crystal shards, glowing blue-violet hands shaping light, a backpack frame holding folded turret parts. Dark-fantasy, stylised PBR, readable silhouette, T-pose, no base.
+
+- Basic: **Photon Bolt** (projectile): Interruptible cast. A bolt of photon energy.
+- Skill pool:
+  - `aether_deploy_turret` **Deploy Turret** (deploy, 1.2s cast, 16s cd): Interruptible cast: warps in a photon turret beside itself that fires at champions (up to 2).
+  - `aether_deploy_skitters` **Skitter Swarm** (deploy, 1.0s cast, 14s cd): Interruptible cast: three skitter bombs scuttle at the nearest champions and explode.
+  - `aether_stasis_mine` **Stasis Mine** (deploy, 1.0s cast, 15s cd): Interruptible cast: plants a mine under its target that roots the first champion to step on it.
+  - `aether_field_repair` **Field Repair** (healAlly, 2.0s cast, 12s cd): Interruptible 2s cast that restores 20% health to the most injured ally below 60%.
+
+### Photon Lancer (`aetheri_lancer`, ranged)
+
+**Tripo art prompt:** Lean Aetheri marksman in gold-trimmed white alloy, a long photon lance-rifle with a crystal focusing lens, a visor of blue light, energy cables running along the arms. Dark-fantasy, stylised PBR, readable silhouette, T-pose, no base.
+
+- Basic: **Photon Round** (projectile): Short aim, then fires a photon round in a fixed direction.
+- Skill pool:
+  - `aether_photon_beam` **Photon Beam** (cone, 1.3s cast, 12s cd): Charges the lance, then fires a long narrow beam.
+  - `aether_orbital_strike` **Orbital Strike** (targetCircle, 1.1s cast, 11s cd): Marks a circle on its target; a column of light strikes it.
+  - `aether_recall` **Recall** (disengage, 10s cd): Recalls a short way back when a champion reaches melee range.
+
+### Skitter Drone (`skitter_drone`, special)
+
+**Tripo art prompt:** Dog-sized mechanical skitter: a rounded gold alloy carapace, six thin spider legs, a single blue-violet eye lens and a pulsing unstable energy core on its back (fallback: small hunched two-legged construct). Dark-fantasy, stylised PBR, readable silhouette, T-pose, no base.
+
+- Basic: **Spark Bite** (melee): A crackling bite at its current target.
+- Skill pool:
+  - `aether_core_burst` **Core Burst** (selfCircle, 1.0s cast, 12s cd): Marks a ring and vents its core, burning everyone around it.
+  - `aether_unstable_core` **Unstable Core** (enrage, 1.0s cast): At 50% health its core destabilises: +30% damage and faster attacks.
+
+### The Warp Hierarch (`aetheri_hierarch`, warlord)
+
+**Tripo art prompt:** Towering floating Aetheri hierarch in ceremonial white-gold alloy robes, a crown of orbiting crystal shards, four slender arms of light holding a warp-staff crowned with a spinning ring, a face that is a smooth mask of light. Dark-fantasy, stylised PBR, readable silhouette, T-pose, no base.
+
+- Basic: **Warp Lance** (projectile): Interruptible cast. A lance of warp energy in a fixed direction.
+- Skill pool:
+  - `aether_warp_pylons` **Warp Pylons** (deploy, 1.4s cast, 20s cd): Interruptible cast: warps in an Empowering Pylon beside itself (+25% damage for Aetheri inside).
+  - `aether_gravity_field` **Gravity Field** (deploy, 1.2s cast, 18s cd): Interruptible cast: warps a gravity pylon onto its target; champions inside are slowed.
+  - `aether_warp_in` **Warp In** (summon, 1.6s cast, 24s cd, summons 3x skitter_drone): Interruptible cast: three Skitter Drones warp in beside it.
+  - `aether_psionic_storm` **Psionic Storm** (selfCircle, 1.6s cast, 18s cd, silences 3.0s): Marks a large ring; everyone inside is silenced for 3s.
+  - `aether_hierarch_ascension` **Final Protocol** (enrage, 1.0s cast, always in the kit): At 30% health: +40% damage and faster casting until destroyed.
+
+### Aetheric Colossus (`aetheri_colossus`, colossus)
+
+**Tripo art prompt:** Colossal three-legged Aetheri war engine of gold and white alloy, a crystal reactor dome for a head with a sweeping violet beam emitter, turret pods on its shoulders, energy cables and glowing seams across its hull. Dark-fantasy, stylised PBR, readable silhouette, T-pose, no base.
+
+- Basic: **Hull Crush** (melee): A crushing leg stomp at its current target.
+- Skill pool:
+  - `aether_colossus_beam` **Thermal Lance** (cone, 1.4s cast, 10s cd): Winds up a long cone of searing light. Get out of the cone.
+  - `aether_colossus_turrets` **Shoulder Turrets** (deploy, 1.2s cast, 18s cd): Interruptible cast: drops a photon turret beside itself (up to 2).
+  - `aether_colossus_stomp` **Seismic Stomp** (selfCircle, 1.3s cast, 11s cd, knockback 500cm): Marks a ring and stomps, knocking everyone inside back.
+  - `aether_tractor_beam` **Tractor Beam** (pull, 1.2s cast, 16s cd): A beam marks a line to the farthest champion and drags them in.
+  - `aether_colossus_meltdown` **Meltdown** (enrage, 1.0s cast, always in the kit): At 30% health: +40% damage and faster attacks until destroyed.
