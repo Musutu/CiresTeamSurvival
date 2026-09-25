@@ -154,6 +154,11 @@ bool ACireHUD::Hit(float X,float Y,float W,float H) const
 }
 void ACireHUD::Icon(const FString& Id,float X,float Y,float S,FLinearColor Color)
 {
+    // icon-art: role portraits (unit frames) use the painted role emblems when drawn large enough.
+    static const TMap<FString,FString> PaintedRoles={{TEXT("role0"),TEXT("role_tank")},{TEXT("role1"),TEXT("role_damage")},
+        {TEXT("role2"),TEXT("role_support")},{TEXT("role3"),TEXT("role_damage")},{TEXT("role4"),TEXT("role_damage")}};
+    if(const FString* RoleIcon=S>=24?PaintedRoles.Find(Id):nullptr)
+        if(UTexture2D* Tex=CireUIStyle::FindAbilityIcon(*RoleIcon)){Painter().Tex(Tex,X,Y,S,S,FLinearColor(1,1,1,Color.A));return;}
     CireUIStyle::Sigil(Painter(),Id,X,Y,S,Color);
 }
 
@@ -665,6 +670,7 @@ void ACireHUD::DrawModal(ACireHero* Hero,ACireController* Controller,ACireGameSt
         else if (OfferOpen)
         {
             DrawSkillOffer(Hero,Controller); // champion-draft: CireSkillOfferHUD.cpp
+            DrawDraftRoster(Hero,Controller); // champion-select: the LOCKED IN outro fades over the opening offer
         }
         else if (ShopOpen)
         {
