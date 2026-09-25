@@ -2,7 +2,7 @@
 #include "CirePylonField.h"
 #include "CireAreaEffects.h"
 #include "CireConstruct.h"
-#include "CireHUD.h"
+#include "CireAbilityVFX.h"
 #include "CireSpellMesh.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -41,11 +41,8 @@ int32 CirePylonField::CountOverlaps(const ACireAreaEffect* Area)
 
 float CirePylonField::Intensity(const UWorld* World)
 {
-    // The effects intensity slider (Options). Pylon fields belong to whoever placed them, so they follow the same
-    // player-set strength as other units' effects.
-    const auto* PC = World ? World->GetFirstPlayerController() : nullptr;
-    const auto* HUD = PC ? Cast<ACireHUD>(PC->GetHUD()) : nullptr;
-    return HUD ? FMath::Clamp(HUD->UISettings.OtherEffectsIntensity, 0.f, 1.f) : 1.f;
+    // The ground-telegraph intensity slider (Options, 0.3..1, default 0.6), normalised to 0..1.
+    return FMath::Clamp((CireAbilityVFX::GroundIntensity(World) - .3f) / .7f, 0.f, 1.f);
 }
 
 float CirePylonField::TargetFill(float InIntensity) { return FMath::Lerp(MinFill, MaxFill, FMath::Clamp(InIntensity, 0.f, 1.f)); }

@@ -798,6 +798,8 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
                 if(FVector::Dist2D(It->GetActorLocation(),GetActorLocation())<(Mine+Other)*.7f)++OverlapCount;
             }
     }
+    // balance: pylon fields already paint their final, overlap-shared alpha from the same slider (CirePylonField).
+    if(!(Mode==EMode::AreaFollow&&bPylonField))
     CireAbilityVFX::Temper(G.C,0,CireAbilityVFX::GroundIntensity(GetWorld()),Mode==EMode::AreaFollow?1.f/FMath::Sqrt(static_cast<float>(FMath::Max(1,OverlapCount))):1.f);
     if(G.V.IsEmpty()){GroundMesh->ClearMeshSection(0);return;}
     const auto* Section=GroundMesh->GetProcMeshSection(0);

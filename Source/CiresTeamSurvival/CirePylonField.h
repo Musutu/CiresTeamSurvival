@@ -1,7 +1,7 @@
 // balance: calm ground presentation for construct pylon fields (Aegis, Haste, Gravity, Disruption, Aether Nexus and the
 // Aetheri monster pylons). A pylon field is a harmless persistent zone that often overlaps others; drawn with the generic
 // active-zone painter, 3-4 stacked pylons turned the ground near-opaque. Rules (ground-telegraph rules):
-//   - fill 15-25% opacity, set by the intensity slider (0 -> 15%, 1 -> 25%);
+//   - fill 15-25% opacity, set by the ground-telegraph intensity slider (0.3 -> 15%, 1 -> 25%, default 0.6 -> 19%);
 //   - overlap cap: N overlapping fields share that budget, so the stacked fill never exceeds the single-field fill;
 //   - a readable rim (never below 40% alpha) and no runes, ripples or detonation on the fill;
 //   - rising particles are budgeted per overlap group.
@@ -24,7 +24,7 @@ namespace CirePylonField
     CIRESTEAMSURVIVAL_API bool IsPylonField(const ACireAreaEffect* Area);
     /** This field plus every other visible pylon field whose circle intersects it (1..MaxCountedOverlaps). */
     CIRESTEAMSURVIVAL_API int32 CountOverlaps(const ACireAreaEffect* Area);
-    /** The local player's effects intensity slider, 0..1 (1 without a HUD). */
+    /** The ground-telegraph intensity slider (CireAbilityVFX::GroundIntensity) normalised to 0..1. */
     CIRESTEAMSURVIVAL_API float Intensity(const UWorld* World);
 
     /** Target opacity of the field fill (and the cap for any number of overlapping fields). */
