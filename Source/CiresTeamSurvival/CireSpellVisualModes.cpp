@@ -617,8 +617,8 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
         if(bPylonField)
         {
             // balance: construct pylon field: flat 15-25% fill shared across overlaps, readable rim (CirePylonField).
-            FLinearColor C=Spec.Color*1.7f;
-            if(Shape.School!=ECireSchool::Steel)C=FMath::Lerp(C,CireAbilityShapes::SchoolColor(Shape.School)*.9f,.35f);
+            // The pylon's own tint (gold haste, ice gravity, cyan aegis, rose disruption) so stacked fields stay distinguishable.
+            FLinearColor C=Spec.Color*1.25f;
             const float Rise=AreaActiveAge<0?1.f:FMath::Clamp((Age-AreaActiveAge)/.35f,0.f,1.f);
             CirePylonField::Paint(G,Spec.Radius,C,Age,Alpha*FMath::Max(.2f,Rise),CirePylonField::Intensity(GetWorld()),PylonOverlaps);
             LastFill=FBox2D(FVector2D(-Spec.Radius,-Spec.Radius),FVector2D(Spec.Radius,Spec.Radius));

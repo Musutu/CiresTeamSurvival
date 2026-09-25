@@ -345,7 +345,7 @@ void EnterStage(const FStage& S)
                 CastAt(W, TEXT("aegis_pylon"), Ground(-420, 0));
                 CastAt(W, TEXT("haste_pylon"), Ground(-620, 260));
                 CastAt(W, TEXT("gravity_pylon"), Ground(-680, -240));
-                CastAt(A, TEXT("disruption_pylon"), Ground(-880, 60));
+                CastAt(A, TEXT("disruption_pylon"), Ground(-740, 40));
                 CastAt(W, TEXT("aether_nexus"), Ground(-600, 20));
             }
         }

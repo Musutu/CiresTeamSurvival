@@ -84,9 +84,9 @@ int32 CirePylonField::Paint(FCireGroundMesh& G, float Radius, FLinearColor Color
     G.Disc(FVector2D::ZeroVector, Radius - 3.f, FillColor, FillColor, Steps);
     // Crisp rim on the true boundary, feathered inward only.
     G.Ring(FVector2D::ZeroVector, Radius - 2.f, 2.f, 6.f, EdgeColor, Steps);
-    // One slow breathing ring (not a ripple train): shows the field is alive without adding fill.
+    // One slow breathing ring on a lone field (not a ripple train, and none where fields overlap): shows the field is alive without adding fill.
     const float U = .5f + .5f * FMath::Sin(Time * 1.2f);
-    G.Ring(FVector2D::ZeroVector, Radius * (.55f + .3f * U), 1.2f, 4.f, WithAlpha(EdgeColor, EdgeColor.A * .35f), Steps);
+    if (Overlaps <= 1) G.Ring(FVector2D::ZeroVector, Radius * (.55f + .3f * U), 1.2f, 4.f, WithAlpha(EdgeColor, EdgeColor.A * .35f), Steps);
     return G.V.Num() - Start;
 }
 
