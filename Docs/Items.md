@@ -200,3 +200,13 @@ core build one component at a time and keep a health potion.
 - In-engine: `CIRE_ITEMS_PASS checks=45`, `CIRE_PROGRESSION_PASS checks=26`; `RunExpansionChecks --only native` and `--only network` PASS; `RunNetworkSmoke.py` PASS; `RunNPCChecks.py` PASS; `-CireSmoke` full cycle PASS (cycle 2 unlocks the tier-2 bay).
 - Shop network probe (dedicated server + client): prep purchase 30 m from town, recipe, sell, undo, invalid item, potion, survival rejection, teleport channel and cooldown all replicated: `Saved/ProgressionChecks/20260924T105835834752Z/report.json`.
 - Captures (1920x1080, reviewed): `Saved/ShopGallery/20260924-110101/` (shop browsing + hover, recommended, buy flight, error shake, sell, stats hover, loot chest drop/opened, teleport channel/cooldown).
+
+### Personal loot update (25 September 2026)
+
+Loot is now personal (see Progression.md): per-player rolls, owner-only chests, loot window, toasts,
+bag flights, loot log (L), minimap chest markers, auto-collect summary at prep. Evidence: item rules
+145,787 assertions; `CIRE_PROGRESSION_PASS checks=39` (independent rolls, eligibility, owner-only
+relevancy/opening, bots auto-loot, auto-collect summary, exact tome stat, team drop totals); network
+probe: the remote client never receives the teammate's chest, cannot open it by standing on it, and
+receives its own loot report (`CIRE_SHOP_NET_CLIENT_PASS personal_report_lines=2`). Captures:
+`Saved/ShopGallery/20260925-023312/11-13`.

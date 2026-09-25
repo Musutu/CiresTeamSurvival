@@ -58,18 +58,41 @@ Scaling (`scaling`): gold and XP +25% per tier above 1; chances +8% (relative) p
 the arena-winner loot bonus (`Loot(team)`, 1.0-1.4). Pack leader and completion roll into **one chest**
 when the leader is the last kill.
 
-## Team-fair distribution
+## Personal loot (default since Eric's playtest, 25 September)
 
-- **Gold and experience** go to **every** team member (like the existing kill share).
-- **Tomes and items are personal** and rotate: each goes to the teammate with the **lowest loot score**
-  (value received so far this match: item cost, 60 per tome point); ties break randomly. Items skip
-  players whose bag has no room; if nobody has room, the chosen player receives the item's full value
-  in gold ("bags full").
-- Every teammate gets a toast per line ("Outpost strongbox: Grimoire of Whispers -> you" /
-  "-> Dusk 3"), and a coin/chime plays.
+Every loot source (whole pack, Pack Leader, lane boss) rolls **separately for each eligible player on the
+lane's team**. Each player gets **their own chest**, which:
 
-This replaces the previous whole-pack reward (flat gold/XP to all plus +1-5 to **all three** stats for
-**every** player and a hidden rare-relic CDR bump); the per-kill team share is unchanged.
+- replicates **only to its owner** (owner-only relevancy: other clients never receive the actor) and is
+  hidden locally for anyone else; only the owner can open it by walking within 3.2 m;
+- keeps the rarity-coloured light pillar, halo and world label ("YOUR personal loot | walk over to open");
+- shows on the owner's minimap as a small rarity-coloured chest until opened.
+
+**Eligibility (fair rule):** a teammate is eligible if they **damaged any unit of that pack / the boss**
+(pets count for their owner), **or** were **alive within 40 m** of the kill (covers healers and tanks
+who did not land the damage). Players who helped and then died stay eligible. Everyone else gets nothing
+from that source. (`distribution.eligibleRadius`).
+
+**Rates (keeps team totals the same):** gold and XP entries keep their full chance **per player**, since
+everyone already received them under the old shared rule. Tome and item chances are multiplied by
+`personalItemFactor / eligiblePlayers` (1/5 with a full team), so the **team's expected tomes and items
+equal the old single shared roll** (verified natively for 1 to 5 players). Example, Tier 3 pack
+(`pack_major`, tier 3): previously one shared roll gave the team about 0.60 tomes + 0.55 items per
+clear; now each of five players rolls 0.12 tomes + 0.11 items, the same team total. Each player's gold
+(70-100 x1.5 at tier 3) and XP (200 x1.5, 70%) are their own roll.
+
+**Bots** roll their own personal loot and **auto-loot it instantly** (no chest).
+
+**Presentation:** opening a chest opens a WoW-style **Personal Loot window** (source, "why you got this",
+every line with icon, rarity-coloured name, stats and destination: "-> bag 3", "Bags full / unique owned:
++160 gold", "+3 Strength (your primary attribute)"). Items **fly from the window into the bag slot**, gold
+floats up and ticks, a rarity sound plays, and each item/tome gets an icon toast. The **Loot log** (key
+**L**) lists everything received with time and source. Unopened chests are **auto-collected when prep
+begins**, with one merged summary window per player ("Auto-collected at prep: 2 unopened personal
+chests").
+
+**Server option:** `distribution.mode: "teamRotation"` restores the previous shared chest where tomes and
+items rotate to the teammate with the lowest loot score (off by default).
 
 ## Prep phase: NPCs pause
 
@@ -90,7 +113,7 @@ shop visits (undo history) and cancel teleport channels; lantern wards are remov
 ## Decisions for Eric to review
 
 1. Unlock pacing (bay 2 in cycle 2, bay 3 mid-cycle 3, promotions every 2 rounds from round 4, cap 8).
-2. Personal-rotation loot versus per-player rolls or need/greed.
+2. Personal loot eligibility (damage or within 40 m) and the 1/eligible item share; need/greed is not implemented.
 3. Chest pickup radius 3.2 m and auto-collect at prep.
 4. Drop rates: especially legendary chances (8% elite packs, 12% late bosses).
 5. Removing the old +stats-for-everyone pack reward (it was very strong).

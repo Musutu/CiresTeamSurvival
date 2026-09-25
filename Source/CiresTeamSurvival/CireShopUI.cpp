@@ -21,10 +21,12 @@ using namespace CireUIColors;
 namespace
 {
 // ------------------------------------------------------------------ local UI state
-struct FFly { FName Id; FVector2D From, To; double Start = 0; float Size = 40; bool bSell = false; };
+struct FFly { FName Id; FVector2D From, To; double Start = 0; float Size = 40; bool bSell = false; int32 bLootRow = -1; int32 ToSlot = -1; };
 struct FToast { FString Title, Body; FName Icon; double Start = 0; float Life = 4.f; FLinearColor Accent = Gold; };
 struct FFloater { FString Text; FVector2D Pos; double Start = 0; FLinearColor Color = Gold; };
 struct FFlash { FName Id; int32 Slot = -1; bool bBelt = false; double Start = -10; bool bError = false; };
+struct FLootWindow { FCireLootReport Report; double Start = 0; bool bClosed = false; };
+struct FLootLogEntry { FString When, Text, Why; FName Icon; FLinearColor Color = Parchment; };
 
 struct FShopState
 {
@@ -52,6 +54,10 @@ struct FShopState
     double GoldChangeAt = -10;
     float GoldFrom = 0;
     bool bWasShopOpen = false;
+    // Personal loot presentation
+    TArray<FLootWindow> LootWindows;
+    TArray<FLootLogEntry> LootLog;
+    FVector2D LootRowPos[12];
     double LastClickTime = 0; FName LastClickId;
     // Stats window drag
     bool bDragging = false; FVector2D DragOffset = FVector2D::ZeroVector;
@@ -249,6 +255,70 @@ void ProcessFeedback(ACireHUD& HUD, ACireHero* Hero)
     }
 }
 
+FLinearColor RarityColor(int32 Rarity)
+{
+    switch (Rarity)
+    {
+    case 3: return Orange;
+    case 2: return FLinearColor(.72f, .45f, 1.f, 1);
+    case 1: return FLinearColor(.35f, .65f, 1.f, 1);
+    default: return Parchment;
+    }
+}
+
+FString WorldClock(const ACireHUD& HUD)
+{
+    const float T = HUD.GetWorld() ? HUD.GetWorld()->GetTimeSeconds() : 0.f;
+    return FString::Printf(TEXT("%02d:%02d"), FMath::FloorToInt(T / 60.f), FMath::FloorToInt(T) % 60);
+}
+
+// Turns server loot reports into the loot window, toasts, bag flights, log lines and a rarity sound.
+void ProcessLoot(ACireHUD& HUD, ACireHero* Hero)
+{
+    if (!Hero || !Hero->Inventory || Hero->Inventory->PendingLoot.Num() == 0) return;
+    TArray<FCireLootReport> Reports = MoveTemp(Hero->Inventory->PendingLoot);
+    Hero->Inventory->PendingLoot.Reset();
+    for (const FCireLootReport& Report : Reports)
+    {
+        FLootWindow Window; Window.Report = Report; Window.Start = Now();
+        State.LootWindows.Add(Window);
+        if (State.LootWindows.Num() > 4) State.LootWindows.RemoveAt(0);
+        for (int32 Index = 0; Index < Report.Lines.Num(); ++Index)
+        {
+            const FCireLootLine& Line = Report.Lines[Index];
+            const bool bThing = Line.Kind == static_cast<uint8>(CI::LootKind::Item) || Line.Kind == static_cast<uint8>(CI::LootKind::PrimaryTome);
+            FLootLogEntry Entry;
+            Entry.When = WorldClock(HUD);
+            Entry.Icon = Line.ItemId.IsNone() ? FName(TEXT("gold")) : Line.ItemId;
+            Entry.Color = RarityColor(Line.Rarity);
+            Entry.Text = Line.Kind == static_cast<uint8>(CI::LootKind::PrimaryTome) ? CireItems::DisplayName(Line.ItemId) + TEXT(": ") + Line.Text
+                : Line.ConvertedGold > 0 ? FString::Printf(TEXT("%s (no room: +%d gold)"), *Line.Text, Line.ConvertedGold) : Line.Text;
+            Entry.Why = Report.Source;
+            State.LootLog.Insert(Entry, 0);
+            if (bThing)
+                AddToast(Line.Kind == static_cast<uint8>(CI::LootKind::PrimaryTome) ? CireItems::DisplayName(Line.ItemId) : Line.Text,
+                    Line.Kind == static_cast<uint8>(CI::LootKind::PrimaryTome) ? Line.Text + TEXT("  |  ") + Report.Source : Report.Why,
+                    Line.ItemId, RarityColor(FMath::Max(1, Line.Rarity)), 5.f);
+            if (Line.Kind == static_cast<uint8>(CI::LootKind::Item) && Line.Slot >= 0)
+            {
+                FFly Fly; Fly.Id = Line.ItemId; Fly.Start = Now() + .25 + Index * .08; Fly.From = FVector2D(-1, -1); Fly.Size = 34;
+                Fly.ToSlot = FMath::Clamp(Line.Slot, 0, Line.bBelt ? 2 : 5) + (Line.bBelt ? 6 : 0); // resolved at draw time
+                Fly.bLootRow = Index;
+                State.Flies.Add(Fly);
+            }
+        }
+        if (State.LootLog.Num() > 40) State.LootLog.SetNum(40);
+        if (Report.Gold > 0)
+        {
+            FFloater Floater; Floater.Text = FString::Printf(TEXT("+%dg"), Report.Gold); Floater.Pos = State.GoldPos; Floater.Start = Now() + .3; Floater.Color = BrightGold;
+            State.Floaters.Add(Floater);
+        }
+        const TCHAR* Sounds[] = {TEXT("S_LootPickup"), TEXT("S_LootPickup"), TEXT("S_LootPickup"), TEXT("S_TeleportArrive")};
+        Play(HUD, Sounds[FMath::Clamp(Report.Rarity, 0, 3)], .65f + .15f * Report.Rarity);
+        if (Report.Rarity >= 2) Play(HUD, TEXT("S_ShopBuy"), .5f);
+    }
+}
+
 void DrawGoldCounter(const FCireUIPainter& P, ACireHero* Hero, float X, float Y, float Size, bool bRightAlign)
 {
     const float Amount = State.ShownGold < 0 ? static_cast<float>(Hero->Gold) : State.ShownGold;
@@ -323,6 +393,64 @@ void ShopButton(const FCireUIPainter& P, float X, float Y, float W, float H, con
     if (bSelected) { P.Rect(X + 6, Y + H - 4, W - 12, 2, BrightGold); P.Line(X + 6, Y + 3, X + W - 6, Y + 3, Gold * FLinearColor(1, 1, 1, .6f), 1.f); }
     else if (bHover) P.Rect(X + 10, Y + H - 4, W - 20, 1.5f, Accent);
 }
+// WoW-style personal loot window: what you got, why, and where it went.
+void DrawLootWindow(ACireHUD& HUD, const FCireUIPainter& Base, FVector2D View, double T)
+{
+    State.LootWindows.RemoveAll([&](const FLootWindow& W) { return W.bClosed || T - W.Start > 10.0; });
+    if (State.LootWindows.Num() == 0) return;
+    const FLootWindow& Window = State.LootWindows.Last();
+    const FCireLootReport& R = Window.Report;
+    const float Age = static_cast<float>(T - Window.Start);
+    FCireUIPainter P = Base;
+    P.Alpha = FMath::Min(FMath::Clamp(Age / .2f, 0.f, 1.f), FMath::Clamp((10.f - Age) / .8f, 0.f, 1.f));
+    const float W = 330, RowH = 40, X = FMath::Max(300.f, View.X * .5f - W - 30), Y = View.Y * .24f;
+    const int32 Rows = FMath::Min(R.Lines.Num(), 12);
+    const float H = 70 + Rows * RowH + 34;
+    const FLinearColor Accent = RarityColor(FMath::Max(1, R.Rarity));
+    CireUIStyle::Frame(P, X, Y, W, H, Accent, ECireFrame::Panel);
+    P.Text(R.bAutoCollected ? TEXT("PERSONAL LOOT  |  AUTO-COLLECTED") : TEXT("PERSONAL LOOT"), X + 14, Y + 9, 9, Gold, ECireFont::Heading);
+    const FVector2D M = CireShopUI::Pointer(HUD);
+    const bool bOverClose = M.X >= X + W - 26 && M.X <= X + W - 6 && M.Y >= Y + 6 && M.Y <= Y + 24;
+    P.Text(TEXT("x"), X + W - 20, Y + 6, 12, bOverClose ? Parchment : Muted, ECireFont::Bold);
+    if (bOverClose && HUD.HasClick()) { HUD.TakeClick(); State.LootWindows.Last().bClosed = true; }
+    P.Text(R.Source, X + 14, Y + 23, 14, Accent, ECireFont::Bold);
+    P.Wrapped(R.Why, X + 14, Y + 42, W - 28, 9, Muted, 2, ECireFont::Body, 2.f);
+    for (int32 Index = 0; Index < Rows; ++Index)
+    {
+        const FCireLootLine& Line = R.Lines[Index];
+        const float RY = Y + 66 + Index * RowH;
+        const float Slide = FMath::Clamp((Age - .05f * Index) / .25f, 0.f, 1.f);
+        FCireUIPainter Q = P; Q.Alpha *= Slide;
+        const float RX = X + 10 + (1.f - Slide) * 20.f;
+        Q.Rect(RX, RY, W - 20, RowH - 4, FLinearColor(0, 0, 0, .28f));
+        const bool bGold = Line.Kind == static_cast<uint8>(CI::LootKind::Gold) || Line.Kind == static_cast<uint8>(CI::LootKind::Experience);
+        if (bGold)
+        {
+            const bool bXP = Line.Kind == static_cast<uint8>(CI::LootKind::Experience);
+            Q.Disc(RX + 18, RY + 18, 12, bXP ? FLinearColor(.2f, .45f, .8f, 1) : FLinearColor(.62f, .43f, .1f, 1), 20);
+            Q.Disc(RX + 18, RY + 17, 9.5f, bXP ? FLinearColor(.45f, .75f, 1.f, 1) : FLinearColor(1.f, .8f, .28f, 1), 20);
+            Q.Text(Line.Text, RX + 40, RY + 4, 12, bXP ? FLinearColor(.6f, .82f, 1.f, 1) : BrightGold, ECireFont::Bold);
+            Q.Text(bXP ? TEXT("Experience: your own roll") : TEXT("Gold: your own roll (every eligible player gets one)"), RX + 40, RY + 20, 8, Muted, ECireFont::Body);
+        }
+        else
+        {
+            bSuppressFlash = true; CireShopUI::DrawItemIcon(Q, Line.ItemId, RX + 2, RY + 1, 34, false); bSuppressFlash = false;
+            const bool bTome = Line.Kind == static_cast<uint8>(CI::LootKind::PrimaryTome);
+            const FString Name = bTome ? CireItems::DisplayName(Line.ItemId) : Line.Text;
+            Q.Text(Name, RX + 42, RY + 3, 12, RarityColor(FMath::Max(1, Line.Rarity)), ECireFont::Bold);
+            FString Detail = bTome ? Line.Text : CireShopUI::StatLines(Line.ItemId).Replace(TEXT("\n"), TEXT("  "));
+            if (!bTome && Detail.IsEmpty()) if (const FString* Use = CireItems::Get().UseText.Find(Line.ItemId)) Detail = *Use;
+            if (Line.ConvertedGold > 0) Detail = FString::Printf(TEXT("No room (bags full or unique owned): +%d gold instead"), Line.ConvertedGold);
+            else if (!bTome && Line.Slot >= 0) Detail += FString::Printf(TEXT("   -> %s %d"), Line.bBelt ? TEXT("belt") : TEXT("bag"), Line.Slot + 1);
+            Q.Text(Detail.Left(60), RX + 42, RY + 20, 8, bTome ? FLinearColor(.55f, 1.f, .5f, 1) : Parchment, ECireFont::Body);
+            State.LootRowPos[Index] = FVector2D(RX + 2, RY + 1);
+        }
+    }
+    const FString Foot = FString::Printf(TEXT("Only you can see and open your chest.  Loot log: %s"), *KeyLabel(HUD, TEXT("ToggleLootLog")));
+    P.Text(Foot, X + 14, Y + H - 22, 8, Muted, ECireFont::Body);
+    if (State.LootWindows.Num() > 1) P.Text(FString::Printf(TEXT("+%d more"), State.LootWindows.Num() - 1), X + W - 60, Y + H - 22, 8, Gold, ECireFont::Heading);
+}
+
 // Hand-drawn glyph for the teleport button: a hearth-portal arch with a rising spark.
 void DrawTeleportGlyph(const FCireUIPainter& P, float X, float Y, float S, FLinearColor Color)
 {
@@ -445,6 +573,7 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
     if (!Hero || !Hero->bDrafted || !Hero->Inventory) return;
     UpdateGold(Hero);
     ProcessFeedback(HUD, Hero);
+    ProcessLoot(HUD, Hero);
     // Tell the server when the shop window opens/closes: a visit bounds the undo history.
     const bool bShopOpen = Controller && Controller->bShop;
     if (bShopOpen != State.bWasShopOpen) { Hero->Inventory->ServerShopOpen(bShopOpen); State.bWasShopOpen = bShopOpen; if (bShopOpen) Play(HUD, TEXT("S_ShopOpen"), .6f); }
@@ -558,7 +687,7 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
         const float Scale = FMath::Max(.01f, W.Scale);
         for (TActorIterator<ACireLootDrop> It(HUD.GetWorld()); It; ++It)
         {
-            if (It->bOpened || It->TeamId != Hero->TeamId) continue;
+            if (It->bOpened || (It->OwnerHero ? It->OwnerHero != Hero : It->TeamId != Hero->TeamId)) continue;
             FVector2D Screen;
             if (!PC->ProjectWorldLocationToScreen(It->GetActorLocation() + FVector(0, 0, 140), Screen)) continue;
             const float Distance = FVector::Dist(Hero->GetActorLocation(), It->GetActorLocation());
@@ -569,11 +698,13 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
             const float TW = W.TextWidth(Title, 11, ECireFont::Bold);
             W.Rect(L.X - TW * .5f - 8, L.Y - 3, TW + 16, 30, FLinearColor(0, 0, 0, .55f));
             W.Text(Title, L.X - TW * .5f, L.Y, 11, C, ECireFont::Bold, true);
-            const FString Hint = FString::Printf(TEXT("Tier %d  |  walk over to loot  %.0fm"), It->Tier, Distance / 100.f);
+            const FString Hint = It->OwnerHero ? FString::Printf(TEXT("YOUR personal loot  |  walk over to open  %.0fm"), Distance / 100.f)
+                : FString::Printf(TEXT("Tier %d  |  walk over to loot  %.0fm"), It->Tier, Distance / 100.f);
             W.Text(Hint, L.X - W.TextWidth(Hint, 8, ECireFont::Body) * .5f, L.Y + 15, 8, Parchment, ECireFont::Body, true);
         }
     }
     if (HUD.UISettings.bShowStats) DrawStatsWindow(HUD, Hero);
+    if (HUD.UISettings.bShowLootLog) DrawLootLog(HUD, Hero);
 }
 
 // ------------------------------------------------------------------ the shop window
@@ -905,8 +1036,11 @@ void CireShopUI::DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Co
     // Flying icons (buy: grid -> bag slot, sell: slot -> gold counter).
     for (int32 Index = State.Flies.Num() - 1; Index >= 0; --Index)
     {
-        const FFly& Fly = State.Flies[Index];
+        FFly& Fly = State.Flies[Index];
+        if (Fly.bLootRow >= 0 && Fly.From.X < 0) Fly.From = State.LootRowPos[FMath::Clamp(Fly.bLootRow, 0, 11)];
+        if (Fly.ToSlot >= 0) Fly.To = State.HudSlotPos[Fly.ToSlot];
         const float Age = static_cast<float>(T - Fly.Start), Life = .5f;
+        if (Age < 0) continue;
         if (Age > Life + .25f) { State.Flies.RemoveAt(Index); continue; }
         const float K = FMath::Clamp(Age / Life, 0.f, 1.f);
         const float E = 1.f - FMath::Pow(1.f - K, 3.f);
@@ -946,6 +1080,7 @@ void CireShopUI::DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Co
         FCireUIPainter Q = P; Q.Alpha = FMath::Clamp(1.4f - Age, 0.f, 1.f);
         Q.Text(F.Text, F.Pos.X + 12, F.Pos.Y - 12 - Age * 36, 16, F.Color, ECireFont::Numbers, true);
     }
+    DrawLootWindow(HUD, P, View, T);
     // Toasts (right edge).
     const bool bShopTop = Controller && Controller->bShop;
     float TY = bShopTop ? 4.f : View.Y * .28f;
@@ -988,6 +1123,32 @@ void CireShopUI::DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Co
         CireUIStyle::Bar(P, X, Y, W, 20, Frac, FLinearColor(.3f, .8f, 1.f, 1), nullptr, T,
             FString::Printf(TEXT("Teleporting to base   %.1f"), FMath::Max(0.f, Hero->Inventory->TeleportChannelEnd - STime)), 10);
         P.Text(TEXT("Moving or taking damage cancels"), X + (W - P.TextWidth(TEXT("Moving or taking damage cancels"), 8)) * .5f, Y + 26, 8, Muted);
+    }
+}
+
+void CireShopUI::DrawLootLog(ACireHUD& HUD, ACireHero* Hero)
+{
+    if (!Hero) return;
+    constexpr float DW = 270, DH = 164;
+    const FName Id(TEXT("LootLog"));
+    HUD.RegisterPanel(Id);
+    const FCireUIRect R = HUD.LayoutRect(Id);
+    FCireUIPainter P = HUD.ScreenPainter();
+    P.Origin = FVector2D(R.X, R.Y); P.Stretch = FVector2D(R.W / DW, R.H / DH);
+    CireUIStyle::Frame(P, 0, 0, DW, DH, Gold, ECireFrame::Panel);
+    P.Text(TEXT("LOOT LOG"), 10, 6, 10, Gold, ECireFont::Heading);
+    P.Text(FString::Printf(TEXT("%s  hide"), *KeyLabel(HUD, TEXT("ToggleLootLog"))), DW - 58, 7, 8, Muted, ECireFont::Heading);
+    if (State.LootLog.Num() == 0) { P.Wrapped(TEXT("Personal loot you receive is listed here: what it was, when, and where it came from."), 10, 28, DW - 20, 9, Muted, 3); return; }
+    const FVector2D M = (CireShopUI::Pointer(HUD) - P.Origin) / P.Stretch;
+    for (int32 Index = 0; Index < FMath::Min(State.LootLog.Num(), 8); ++Index)
+    {
+        const FLootLogEntry& E = State.LootLog[Index];
+        const float Y = 24 + Index * 18;
+        P.Text(E.When, 8, Y + 2, 8, Muted, ECireFont::Numbers);
+        if (E.Icon == FName(TEXT("gold"))) P.Disc(44, Y + 7, 5, FLinearColor(1.f, .8f, .28f, 1), 12);
+        else { bSuppressFlash = true; DrawItemIcon(P, E.Icon, 37, Y, 15, false); bSuppressFlash = false; }
+        P.Text(E.Text.Left(34), 56, Y + 1, 9, E.Color, ECireFont::Body);
+        if (HUD.IsInteractive() && M.X >= 0 && M.X <= DW && M.Y >= Y && M.Y < Y + 18) CireShopUI::Tip(HUD, E.Text, TEXT("From: ") + E.Why + TEXT("\nPersonal loot: your own roll, visible only to you."));
     }
 }
 

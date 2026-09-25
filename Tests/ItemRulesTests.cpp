@@ -388,6 +388,34 @@ void LootRules()
     CHECK(clamped.Gold == capped.Gold && clamped.Items == capped.Items);
     LootTable empty;
     CHECK(RollLoot(empty, 1, 1, 1).Empty());
+    // Personal loot: each player rolls independently; tomes/items scale by 1/eligible so the
+    // team's expected drops match one shared roll, while every player keeps full gold/XP.
+    CHECK(Near(PersonalItemShare(5), .2) && Near(PersonalItemShare(1), 1) && Near(PersonalItemShare(0), 1) && Near(PersonalItemShare(4, 2), .5) && Near(PersonalItemShare(1, 3), 1));
+    const double shared = ExpectedPersonalDrops(table, 3, 1.0, LootScaling{}, 1.0);
+    for (int players = 1; players <= 5; ++players)
+        CHECK(Near(ExpectedPersonalDrops(table, 3, 1.0, LootScaling{}, PersonalItemShare(players)) * players, shared, 1e-9));
+    long long teamItems = 0, teamGold = 0, sharedItems = 0, sharedGold = 0;
+    int differing = 0;
+    for (std::uint64_t source = 1; source <= 20000; ++source)
+    {
+        const auto one = RollLoot(table, 1, 1.0, source * 977);
+        sharedItems += one.Items.size() + one.PrimaryTomes.size();
+        sharedGold += one.Gold;
+        std::vector<LootBundle> players;
+        for (int player = 0; player < 5; ++player)
+        {
+            players.push_back(RollLoot(table, 1, 1.0, source * 977 + 0x9E37ull * (player + 1), LootScaling{}, PersonalItemShare(5)));
+            teamItems += players.back().Items.size() + players.back().PrimaryTomes.size();
+            teamGold += players.back().Gold;
+            CHECK(players.back().Gold >= 40 && players.back().Gold <= 60);
+        }
+        differing += players[0].Gold != players[1].Gold || players[0].Items != players[1].Items;
+    }
+    CHECK(differing > 14000);                                              // rolls are independent per player
+    const double expectedTeam = ExpectedPersonalDrops(table, 1, 1.0, LootScaling{}, 1.0) * 20000;
+    CHECK(std::abs(teamItems / expectedTeam - 1.0) < .04);   // five personal rolls ~= one shared roll
+    CHECK(std::abs(sharedItems / expectedTeam - 1.0) < .04);
+    CHECK(std::abs(static_cast<double>(teamGold) / (sharedGold * 5.0) - 1.0) < .02); // everyone keeps their gold
     LootKind kind = LootKind::Gold;
     CHECK(ParseLootKind("primaryTome", kind) && kind == LootKind::PrimaryTome && !ParseLootKind("x", kind));
 

@@ -84,6 +84,7 @@ void FCireUISettings::Reset()
     // progression-shop: bag/belt/teleport bar and the compact stats window (CireShopUI).
     Add(TEXT("Inventory"), 20.f, 420.f, 306.f, 102.f);
     Add(TEXT("Stats"), 858.f, 208.f, 176.f, 238.f); // wow-ui: beside the right column, clear of focus/party
+    Add(TEXT("LootLog"), 20.f, 250.f, 270.f, 164.f); // progression-shop: personal loot history (L)
 
     bLayoutLocked = true;
     bShowChat = true;
@@ -116,7 +117,7 @@ void FCireUISettings::Reset()
     bShowActionBar2=true; bShowActionBar3=false; bLockActionBars=false; bMeterCollapsed=false; bThreatCollapsed=false;
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
     OtherEffectsIntensity=1.f; // aura-vfx
-    bShowStats=false; // progression-shop; wow-ui: closed by default (C toggles) to keep the screen clean
+    bShowStats=false; bShowLootLog=false; // progression-shop; wow-ui: closed by default (C toggles) to keep the screen clean
 }
 
 int32 FCireUISettings::AnchorFor(float Left, float Top, float Right, float Bottom)
@@ -272,7 +273,7 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bMeterCollapsed); CIRE_LOAD_BOOL(bThreatCollapsed);
     CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
     CIRE_LOAD_BOOL(bMusicEnabled); CIRE_LOAD_BOOL(bFootstepCameraShake); // audio: absent keys keep the defaults
-    CIRE_LOAD_BOOL(bShowStats); // progression-shop
+    CIRE_LOAD_BOOL(bShowStats); CIRE_LOAD_BOOL(bShowLootLog); // progression-shop
 #undef CIRE_LOAD_BOOL
     Config.GetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
     Config.GetFloat(PreferencesSection, TEXT("ChatColorR"), ChatColor.R);
@@ -358,7 +359,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bMeterCollapsed); CIRE_SAVE_BOOL(bThreatCollapsed);
     CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
     CIRE_SAVE_BOOL(bMusicEnabled); CIRE_SAVE_BOOL(bFootstepCameraShake); // audio:
-    CIRE_SAVE_BOOL(bShowStats); // progression-shop
+    CIRE_SAVE_BOOL(bShowStats); CIRE_SAVE_BOOL(bShowLootLog); // progression-shop
 #undef CIRE_SAVE_BOOL
     Config.SetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
     Config.SetFloat(PreferencesSection, TEXT("ChatColorR"), ChatColor.R);
