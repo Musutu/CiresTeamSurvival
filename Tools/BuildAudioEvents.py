@@ -184,6 +184,7 @@ OVERRIDES = {
     "bear_roar": {"kind": "shout"}, "chieftain_earthshout": {"kind": "shout"}, "repulsor_pulse": {"kind": "spell"},
     "iron_guard": {"kind": "guard"}, "warding_talisman": {"kind": "guard"}, "drakish_scale_guard": {"kind": "guard"},
     "shield_tumble": {"kind": "guard"}, "stone_skin": {"kind": "guard"}, "evasive_stance": {"kind": "buff"},
+    "shield_wall": {"kind": "guard"}, "longshot": {"kind": "buff"}, "eagle_eye": {"kind": "buff"}, "artillery": {"kind": "buff"}, "pavise": {"kind": "guard"}, "mechanical_tank": {"kind": "summon"}, "shield_toss": {"kind": "shot", "weapon": "glaive"},  # scaling-kits
     "cleaving_strike": {"kind": "melee"}, "decimating_strike": {"kind": "melee"}, "executioners_verdict": {"kind": "melee"},
     "blade_flurry": {"kind": "melee", "weapon": "gunblade"}, "tumble_strike": {"kind": "melee"},
     "shadow_step": {"kind": "melee", "weapon": "dagger"}, "spectral_blade": {"kind": "melee", "weapon": "sword"},

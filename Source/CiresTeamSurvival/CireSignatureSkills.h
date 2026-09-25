@@ -42,6 +42,8 @@ namespace CireSignatureSkills
     CIRESTEAMSURVIVAL_API float MoveSpeedMultiplier(const ACireHero* Hero);
     /** Haste fields (added to the attack-speed sum). */
     CIRESTEAMSURVIVAL_API float AttackSpeedBonus(const ACireHero* Hero);
+    /** scaling-kits: strips a unit's positive buffs (level-15 purge). Returns records removed. */
+    CIRESTEAMSURVIVAL_API int32 PurgeBuffs(AActor* Target);
     /** Gunblade: true when the basic attack is a falchion slash (target within close range). */
     CIRESTEAMSURVIVAL_API bool IsCloseQuarters(const ACireHero* Hero, const AActor* Target);
     /** Basic attack release: the style's damage (falchion, Hunter's Stride) and its combat name. */

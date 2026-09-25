@@ -1,5 +1,6 @@
 // pets: persistent companions (Docs/Pets.md).
 #include "CirePets.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireAbilityDB.h"
 #include "CireAreaEffects.h"
 #include "CireCombatEvents.h"
@@ -768,15 +769,7 @@ float CirePets::ShareOwnerThreat(ACireMonster* M, ACireHero* Owner, float Threat
 
 #undef LOCTEXT_NAMESPACE
 
-float CirePets::OwnerPrimaryScale(const ACireHero* Owner) { return IsValid(Owner) ? static_cast<float>(FMath::Max(0, Owner->PrimaryAttribute())) : 0.f; }
-float CirePets::OwnerAttackSpeed(const ACireHero* Owner)
-{
-    if (!IsValid(Owner)) return 1.f;
-    const float Rhythm = Owner->HasSkill(TEXT("battle_rhythm")) ? 1.2f : 1.f;
-    const float Speed = (1.f + Owner->Agility * .01f + CireItems::AttackSpeedBonus(Owner) + CireClassTraits::AttackSpeedBonus(Owner) + CireSignatureSkills::AttackSpeedBonus(Owner)) * Rhythm;
-    return FMath::Clamp(FMath::IsFinite(Speed) ? Speed : 1.f, .25f, 5.f);
-}
-float CirePets::OwnerCooldown(const ACireHero* Owner, float BaseSeconds)
-{
-    return static_cast<float>(Cires::CooldownSeconds(BaseSeconds, IsValid(Owner) ? Owner->CDR : 0.f));
-}
+// scaling-kits: one shared owner-inheritance implementation for pets, summons and constructs (CireScalingKits).
+float CirePets::OwnerPrimaryScale(const ACireHero* Owner) { return IsValid(Owner) ? static_cast<float>(FMath::Max(0, CireKits::PrimaryOf(Owner))) : 0.f; }
+float CirePets::OwnerAttackSpeed(const ACireHero* Owner) { return IsValid(Owner) ? CireKits::AttackSpeedMultiplier(Owner) : 1.f; }
+float CirePets::OwnerCooldown(const ACireHero* Owner, float BaseSeconds) { return CireKits::OwnerCooldown(Owner, BaseSeconds); }
