@@ -298,3 +298,16 @@ A talent or skill would work like this:
 - **Uncapped pet stats.** Pet stats are not capped by `CombatTuning`, and the numbers have not been through the Balance Lab.
 - **Bots.** Bot Huntresses get their pet, keep it in the default Defensive stance, and never use its commands.
 - **Minimap.** Pets have no minimap marker.
+- **Borrowed icons.** The Maul and Dread Roar icons reuse painted art: Sabercat Rake's claws and the planned Bear Roar. Fresh paintings would replace `Art/Icons/ChatGPT/Abilities/sabercat_maul.png` and `sabercat_roar.png`.
+- **Short front leg.** The Tripo sabercat rig lacks lower bones on one front leg, so the procedural rig swings that leg from the shoulder as one piece.
+
+## Verification (2026-09-25)
+
+| Check | Result |
+|---|---|
+| `RunExpansionChecks --only native` | `CIRE_PETS_PASS checks=86`, `CIRE_COMBAT_EXPANSION_PASS` |
+| `RunExpansionChecks --only network` | PASS with `pets=1`; `CIRE_PET_NET_CLIENT_PASS` on both clients |
+| `RunInterfaceSmoke` | PASS |
+| Gallery | `RunNewChampionsGallery --only huntress_close,combat_huntress,pet_roar,hud_pet`: 8 captures |
+
+The analyzed rig is logged as `CIRE_PET_RIG ... legs FL=bone_4 FR=bone_8 RL=bone_19 RR=bone_24 spine=3 neck=3 tail=4`.
