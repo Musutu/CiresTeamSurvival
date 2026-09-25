@@ -952,6 +952,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
     if (!HasAuthority() || !Mode || !Attacker || !Attacker->IsHostile(this) || Health <= 0 ||
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
     if (!CireWaveDirector::AllowDamage(this, Attacker)) return 0; // wave-director: neutral packs ignore bots; a player's hit aggroes the pack
+    if (CirePolymorph::IsPolymorphed(this)) { UE_LOG(LogTemp, Display, TEXT("CIRE_POLYMORPH_DAMAGED by %s amount=%.1f"), *GetNameSafe(Causer), Amount); }
     CirePolymorph::Break(this); // progression-shop: any damage breaks Polymorph
     Amount = CireNPCCombat::ModifyIncomingDamage(this, Attacker, Amount); // npc-boss: armor/guard/shield wall/provoke
     if (Amount <= 0 || Health <= 0) return 0;

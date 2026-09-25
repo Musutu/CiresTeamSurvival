@@ -16,6 +16,7 @@
 #include "CireShopUI.h"
 #include "CireSkillShop.h"
 #include "CirePolymorph.h"
+#include "Camera/PlayerCameraManager.h"
 #include "CireCrowdControl.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -136,7 +137,7 @@ const FStage Stages[] = {
     // progression-shop: the Skill Shop (Eric's target image) and its purchase moments.
     {TEXT("skill_shop_hover"), 2.4f}, {TEXT("skill_shop_seal_stamp"), .9f}, {TEXT("skill_shop_scroll_flight"), .9f},
     {TEXT("skill_shop_unaffordable_error"), .8f}, {TEXT("skill_shop_auto_open_after_wave"), 1.8f},
-    {TEXT("skill_polymorph_critters"), 2.2f}};
+    {TEXT("skill_polymorph_critters"), 4.2f}};
 bool InSubset(int32 Stage) { return !G.bShopOnly || FString(Stages[Stage].Name).StartsWith(TEXT("shop_")) || FString(Stages[Stage].Name).StartsWith(TEXT("skill_")); }
 constexpr int32 StageCount = UE_ARRAY_COUNT(Stages);
 
@@ -280,14 +281,18 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
         PC->bShop = false;
         HUD->UISettings.bTooltips = false;
         SetPhase(Mode, 0);
-        const FVector Forward = H->GetActorForwardVector(), Right = H->GetActorRightVector();
+        // Along the camera's view, out on the lit road beyond the town gate.
+        FVector Forward = H->GetActorForwardVector();
+        if (PC->PlayerCameraManager) Forward = PC->PlayerCameraManager->GetCameraRotation().Vector().GetSafeNormal2D();
+        const FVector Right = FVector::CrossProduct(FVector::UpVector, Forward);
         for (int32 Critter = 0; Critter < 3; ++Critter)
         {
             FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-            const FVector At = H->GetActorLocation() + Forward * 520.f + Right * ((Critter - 1) * 170.f);
+            const FVector At = H->GetActorLocation() + Forward * 720.f + Right * ((Critter - 1) * 120.f);
             ACireMonster* M = Mode->GetWorld()->SpawnActor<ACireMonster>(At, (-Forward).Rotation(), Params);
             if (!M) continue;
-            M->Lane = H->TeamId; M->Health = M->MaxHealth = 5000; Mode->Monsters.Add(M);
+            // The other lane: the hero stands in town, where its own lane's units would leak at the goal.
+            M->Lane = 1 - H->TeamId; M->Health = M->MaxHealth = 5000; Mode->Monsters.Add(M);
             CirePolymorph::Apply(M, 30.f, H, Critter);
             G.Critters.Add(M);
         }
@@ -341,6 +346,8 @@ bool TickGallery(ACireGameMode* Mode)
     if ((G.Stage == 14 || G.Stage == 15) && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f)
         CireShopUI::DebugFreezeAfterStamp(G.Stage == 14 ? .2f : .62f);
     if (G.Stage == 16 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f) CireShopUI::DebugFreezeAfterLastEvent(.1f);
+    // Breather with the Ready to Continue gate: the fixture drives the gate like the match tick does.
+    if (G.Stage == 17) { float Timer = 8.f; CireSkillShop::HoldBreather(Mode, .016f, Timer); }
     // Auto-open: the second cleared wave arrives a moment later (the HUD has seen the first).
     if (G.Stage == 17 && G.bAutoOpenArmed && Now - G.StageStart >= .4f)
     {

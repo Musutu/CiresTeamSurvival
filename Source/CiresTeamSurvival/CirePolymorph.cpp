@@ -31,15 +31,15 @@ const FCritterDef Critters[] = {
     {TEXT("Chicken"), TEXT("/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/Chicken.Chicken"),
         TEXT("/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_Idle.ChickenCharacterArmature_Idle"),
         TEXT("/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_Walk.ChickenCharacterArmature_Walk"),
-        48.f, -90.f, FLinearColor::White},
+        70.f, -90.f, FLinearColor::White},
     {TEXT("Piglet"), TEXT("/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/Pig.Pig"),
         TEXT("/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Idle.PigAnimalArmature_AnimalArmature_AnimalArmature_Idle"),
         TEXT("/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Walk.PigAnimalArmature_AnimalArmature_AnimalArmature_Walk"),
-        45.f, -90.f, FLinearColor(1.f, .52f, .58f, 1)},
+        62.f, -90.f, FLinearColor(1.f, .52f, .58f, 1)},
     {TEXT("Frog"), TEXT("/Game/Free/Critters/Frog/Frog/SkeletalMeshes/Frog.Frog"),
         TEXT("/Game/Free/Critters/Frog/Frog/SkeletalMeshes/FrogFrogArmature_Frog_Idle.FrogFrogArmature_Frog_Idle"),
         TEXT("/Game/Free/Critters/Frog/Frog/SkeletalMeshes/FrogFrogArmature_Frog_Jump.FrogFrogArmature_Frog_Jump"),
-        34.f, -90.f, FLinearColor::White},
+        50.f, -90.f, FLinearColor::White},
 };
 
 template <typename T> T* LoadSoft(const TCHAR* Path)
@@ -131,6 +131,7 @@ bool CirePolymorph::Break(AActor* Unit)
     if (!IsValid(Unit) || !Unit->HasAuthority() || !IsPolymorphed(Unit)) return false;
     CireBuffs::Remove(Unit, PolymorphedId);
     Wanders().Remove(Unit);
+    UE_LOG(LogCirePolymorph, Display, TEXT("CIRE_POLYMORPH_BREAK %s"), *Unit->GetName());
     if (auto* M = Cast<ACireMonster>(Unit)) M->GetCharacterMovement()->MaxWalkSpeed = M->BaseMoveSpeed;
     Poof(Unit);
     return true;
@@ -199,7 +200,7 @@ void CirePolymorph::TickVisual(AActor* Unit)
         if (Def.Tint != FLinearColor::White)
             for (int32 Slot = 0; Slot < Component->GetNumMaterials(); ++Slot)
                 if (UMaterialInstanceDynamic* MID = Component->CreateDynamicMaterialInstance(Slot))
-                { MID->SetVectorParameterValue(TEXT("RaceTint"), Def.Tint); MID->SetVectorParameterValue(TEXT("Paint Tint"), Def.Tint); }
+                { MID->SetVectorParameterValue(TEXT("RaceTint"), Def.Tint); MID->SetScalarParameterValue(TEXT("RaceTintStrength"), 1.f); MID->SetVectorParameterValue(TEXT("Paint Tint"), Def.Tint); }
         if (UAnimSequence* Idle = LoadSoft<UAnimSequence>(Def.Idle)) Component->PlayAnimation(Idle, true);
         // Hide the monster's own body, weapons and props while it is a critter.
         TArray<USceneComponent*> Children;
@@ -208,6 +209,9 @@ void CirePolymorph::TickVisual(AActor* Unit)
             if (Child && Child != Component && Child->IsA<UPrimitiveComponent>() && !Child->bHiddenInGame && Child->IsVisible())
             { Child->SetHiddenInGame(true, false); V->Hidden.Add(Child); }
         V->Critter = Component; V->Kind = Kind; V->bWalking = false;
+        Component->UpdateBounds();
+        UE_LOG(LogCirePolymorph, Display, TEXT("CIRE_POLYMORPH_VISUAL %s critter=%s scale=%.3f world_bounds=%s actor=%s"), *Unit->GetName(), Def.Name, Scale,
+            *Component->Bounds.GetBox().ToString(), *Unit->GetActorLocation().ToString());
     }
     // Walk while moving, idle otherwise.
     const bool bWalking = Unit->GetVelocity().Size2D() > 20.f;

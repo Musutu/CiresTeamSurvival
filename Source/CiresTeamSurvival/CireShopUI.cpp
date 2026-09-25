@@ -787,7 +787,7 @@ void DrawReadyPanel(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller,
     }
     const int32 Humans = GameState->BreatherPlayers, ReadyCount = GameState->BreatherReady;
     const bool bMeReady = Hero->Inventory && Hero->Inventory->bReadyToContinue;
-    FString Banner = GameState->bReadyGateHold ? FString::Printf(TEXT("WAITING FOR %d / %d PLAYERS"), FMath::Max(0, Humans - ReadyCount), Humans)
+    FString Banner = Humans <= 0 ? FString::Printf(TEXT("BREATHER  ·  NEXT WAVE IN %.0fs"), FMath::Max(0.f, GameState->NextWaveSeconds)) : GameState->bReadyGateHold ? FString::Printf(TEXT("WAITING FOR %d / %d PLAYERS"), FMath::Max(0, Humans - ReadyCount), Humans)
                                                : FString::Printf(TEXT("ALL READY  ·  NEXT WAVE IN %.0fs"), FMath::Max(0.f, GameState->NextWaveSeconds));
     Spaced(P, Banner, BX, Y + 4, 9.f, .2f, GameState->bReadyGateHold ? BrightGold : FLinearColor(.4f, 1.f, .5f, 1), ECireFont::Display, false, false);
     if (GameState->bReadyGateHold && GameState->ReadyGateLeft >= 0 && GameState->ReadyGateLeft <= 30.f)
