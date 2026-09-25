@@ -136,7 +136,7 @@ BINDINGS = [
                     "walk": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Walk.WolfAnimalArmature_Walk",
                     "run": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Gallop.WolfAnimalArmature_Gallop",
                     "attack": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Attack.WolfAnimalArmature_Attack"},
-     "tint": {"base": [0.78, 0.62, 0.46], "accent": [0.55, 0.12, 0.08], "strength": 0.8},
+     "tint": {"base": [0.52, 0.4, 0.28], "accent": [0.55, 0.12, 0.08], "strength": 0.8},
      "rider": {"mesh": "/Game/TripoModels/armored_archer_3d_model/armored_archer_3d_model.armored_archer_3d_model",
                "locomotion": "/Game/Art/Characters/TripoRetarget/Preview02/Ranger/Animations/BS_Idle_Walk_Run_Ranger.BS_Idle_Walk_Run_Ranger",
                "attack": "/Game/Art/Characters/CombatPrototype01/Ranger/A_Ranger_Attack.A_Ranger_Attack", "heightCm": 172,
