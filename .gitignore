@@ -31,3 +31,10 @@ Tools/ContentBuilder/Content/Fab/
 
 # Fab / Epic-licensed content: licensed for use, not redistribution. Kept local only (repo is public).
 Content/Fab/
+
+# ---- Purchased Fab packs (Docs/FAB-PURCHASED.md) ----------------------------
+# Paid, licensed Unreal packs. "Add to Project" puts each one at Content/<PackFolder>
+# in the MAIN checkout; Tools/LinkFabContent.py junctions them into every worktree
+# and also lists them in .git/info/exclude. NEVER commit these (public repo).
+# No trailing slash: in a worktree the folder is a junction, not a directory.
+# (pack folders are appended below as each pack lands)
