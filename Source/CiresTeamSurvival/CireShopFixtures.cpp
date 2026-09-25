@@ -324,6 +324,7 @@ bool TickGallery(ACireGameMode* Mode)
         const FVector2D Pos = CireShopUI::DebugGridPos(TEXT("sanguine_sabre"));
         if (Pos.X >= 0) CireShopUI::DebugMouse(Pos);
     }
+    if (G.Stage == 18 || G.Stage == 19) CireShopUI::DebugItemTab(); // items-v2: prep's Skill Shop auto-open must not steal the Armory shots
     if (G.Stage == 18)
     {
         const FVector2D Pos = CireShopUI::DebugGridPos(TEXT("artificers_heartforge"));
