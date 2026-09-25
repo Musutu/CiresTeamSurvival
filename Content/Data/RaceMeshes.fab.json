@@ -68,7 +68,8 @@
     "hit": "/Game/ROG_Creatures/Boar/Animations/A_Boar_Hit_Body_left.A_Boar_Hit_Body_left",
     "death": "/Game/ROG_Creatures/Boar/Animations/A_Boar_Death.A_Boar_Death",
     "all": {
-     "war_cry": "/Game/ROG_Creatures/Boar/Animations/A_Boar_aggressive.A_Boar_Aggressive"
+     "war_cry": "/Game/ROG_Creatures/Boar/Animations/A_Boar_aggressive.A_Boar_Aggressive",
+     "ground_slam": "/Game/ROG_Creatures/Boar/Animations/A_Boar_Agressive_2.A_Boar_Agressive_2"
     }
    },
    "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
@@ -205,7 +206,10 @@
     "attack": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_biteAggressive.BARGHEST_biteAggressive",
     "attackAlt": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_biteNormal.BARGHEST_biteNormal",
     "hit": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_getHitAggressive.BARGHEST_getHitAggressive",
-    "death": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_deathAggressive.BARGHEST_deathAggressive"
+    "death": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_deathAggressive.BARGHEST_deathAggressive",
+    "all": {
+     "war_cry": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_idleAggressive.BARGHEST_idleAggressive"
+    }
    },
    "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
    "airborneCm": 60.0,

@@ -32,7 +32,7 @@ UNITS = {
         sockets=dict(head="b_head", pelvis="b_spine_2", spine_03="b_spine_3", hand_l="b_L_front_leg_6", hand_r="b_R_front_leg_6",
                      foot_l="b_L_back_leg_5", foot_r="b_R_back_leg_5", ball_l="b_L_front_leg_6", ball_r="b_R_front_leg_6"),
         roles=dict(idle="A_Boar_idle_combat", walk="A_Boar_walk", run="A_Boar_run", attack="A_Boar_Attack", attackAlt="A_Boar_Attack_2",
-                   hit="A_Boar_Hit_Body_left", death="A_Boar_Death"), named=dict(war_cry="A_Boar_aggressive"), folder=R + "/Boar/Animations"),
+                   hit="A_Boar_Hit_Body_left", death="A_Boar_Death"), named=dict(war_cry="A_Boar_aggressive", ground_slam="A_Boar_Agressive_2"), folder=R + "/Boar/Animations"),  # fab-coverage: Bristle Burst slam
     "feral_ursoth": dict(variant="FabRogBear", mesh=R + "/Bear/Meshes/SK_Bear_Fur_Full", head=150, rig="quadruped",
         sockets=dict(head="b_head", pelvis="b_spine_02", spine_03="b_spine_03", hand_l="b_L_F_toes", hand_r="b_R_F_toes",
                      foot_l="b_L_B_toes", foot_r="b_R_B_toes", ball_l="b_L_F_toes", ball_r="b_R_F_toes"),
@@ -49,7 +49,7 @@ UNITS = {
         sockets=dict(head="BARGHEST_-Head", pelvis="BARGHEST_-Spine1", spine_03="BARGHEST_-Spine2", hand_l="BARGHEST_-L-Finger0", hand_r="BARGHEST_-R-Finger0",
                      foot_l="BARGHEST_-L-Toe0", foot_r="BARGHEST_-R-Toe0", ball_l="BARGHEST_-L-Finger0", ball_r="BARGHEST_-R-Finger0"),
         roles=dict(idle="BARGHEST_idleAggressive", walk="BARGHEST_walk", run="BARGHEST_run", attack="BARGHEST_biteAggressive", attackAlt="BARGHEST_biteNormal",
-                   hit="BARGHEST_getHitAggressive", death="BARGHEST_deathAggressive"), named=dict(), folder=Q + "/Barghest/Animations"),
+                   hit="BARGHEST_getHitAggressive", death="BARGHEST_deathAggressive"), named=dict(war_cry="BARGHEST_idleAggressive"), folder=Q + "/Barghest/Animations"),  # fab-coverage: Pack Howl snarl
     "wild_outrider": dict(variant="FabCentaur", mesh=Q + "/Centaur/Meshes/SK_Centaur", head=215, rig="quadruped",
         sockets=dict(head="CENTAUR_-Head", pelvis="CENTAUR_-Spine", spine_03="CENTAUR_-Spine2", hand_l="CENTAUR_HAND_L", hand_r="CENTAUR_HAND_R",
                      foot_l="CENTAUR_-L-Foot", foot_r="CENTAUR_-R-Foot", ball_l="CENTAUR_-L-Foot", ball_r="CENTAUR_-R-Foot"),

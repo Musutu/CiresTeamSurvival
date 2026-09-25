@@ -1,4 +1,5 @@
 #include "CireMonsterArt.h"
+#include "CireFabAnimation.h" // fab-coverage
 
 #include "CireMonsterAnim.h"
 #include "CireGame.h"
@@ -225,6 +226,47 @@ void Load()
                 ByArchetype.Add(Id, Bodies); RaceArt.Add(Id);
                 TArray<FString> Keys; Bodies.GetKeys(Keys); Recommended.Add(Id, Keys[0]);
             }
+    }
+    // fab-coverage: MonsterFabClips.json (Tools/RetargetFabAnimations.py -CireFabAnimMonsters) adds a Fab shout
+    // (Gun & Sword "Buff") and ground slam retargeted onto Tripo monster bodies that have no clip of that name, so
+    // rallies, enrages, guards and self circles stop reusing the attack swing. Derived from licensed packs: local only;
+    // a missing package or another skeleton is skipped when the clips load, and -CireNoFab / cire.FabAnim 0 turn it off.
+    if (CireFabAnimation::Enabled())
+    {
+        TSharedPtr<FJsonObject> FabClips;
+        const TSharedPtr<FJsonObject>* Variants = nullptr;
+        if (ReadFile(TEXT("MonsterFabClips.json"), FabClips) && FabClips->TryGetObjectField(TEXT("variants"), Variants))
+        {
+            int32 Added = 0;
+            for (auto& Pair : ByArchetype)
+                for (auto& BodyPair : Pair.Value)
+                {
+                    CireMonsterArt::FBody& Body = BodyPair.Value;
+                    const TSharedPtr<FJsonObject>* Clips = nullptr;
+                    if (Body.bFab || !(*Variants)->TryGetObjectField(Body.Variant, Clips)) continue;
+                    for (const auto& Clip : (*Clips)->Values)
+                    {
+                        FString Path; const FString Name(Clip.Key.ToView());
+                        if (Body.Clips.Contains(Name) || !Clip.Value->TryGetString(Path) || !Path.StartsWith(TEXT("/Game/"))) continue;
+                        if (!FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))) continue;
+                        Body.Clips.Add(Name, Path); ++Added;
+                    }
+                }
+            const TSharedPtr<FJsonObject>* Windows = nullptr;
+            if (FabClips->TryGetObjectField(TEXT("windows"), Windows))
+                for (const auto& Pair : (*Windows)->Values)
+                {
+                    const TSharedPtr<FJsonObject>* W = nullptr; CireMonsterArt::FClipWindow Window; double V = 0;
+                    if (!Pair.Value->TryGetObject(W)) continue;
+                    if ((*W)->TryGetNumberField(TEXT("start"), V)) Window.Start = V;
+                    if ((*W)->TryGetNumberField(TEXT("contact"), V)) Window.Contact = V;
+                    if ((*W)->TryGetNumberField(TEXT("end"), V)) Window.End = V;
+                    if ((*W)->TryGetNumberField(TEXT("recoverRate"), V)) Window.RecoverRate = FMath::Clamp(V, .2, 5.);
+                    if (Window.Start >= 0 && Window.Contact >= Window.Start && Window.End >= Window.Contact)
+                        Candidate.Windows.Add(FString(Pair.Key.ToView()), Window);
+                }
+            UE_LOG(LogCireMonsterArt, Log, TEXT("CIRE_MONSTER_ART_FAB_CLIPS added=%d"), Added);
+        }
     }
     const TSharedPtr<FJsonObject>* ArtArchetypes = nullptr;
     const TSharedPtr<FJsonObject>* ArtBodies = nullptr;
