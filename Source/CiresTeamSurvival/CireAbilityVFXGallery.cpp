@@ -139,6 +139,11 @@ void Clear()
         A->Destroy();
     }
     G.Actors.Reset();G.HeldDamage.Reset();
+    // Summons, spawned adds and anything else that reached the raised stage: the next ability starts clean.
+    for(TActorIterator<ACireMonster> It(World);It;++It)
+        if(It->GetActorLocation().Z>Stage.Z-600.f){G.Mode->Monsters.Remove(*It);It->Destroy();}
+    for(TActorIterator<ACireHero> It(World);It;++It)
+        if(It->GetActorLocation().Z>Stage.Z-600.f&&*It!=G.PC->GetPawn()&&!It->IsPlayerControlled()){G.Mode->Heroes.Remove(*It);It->Destroy();}
     for(TActorIterator<ACireSpellVisual> It(World);It;++It)It->Destroy();
 }
 ACireMonster* SpawnMonster(FName Arch,FVector At,FRotator Facing,bool bFrozen)

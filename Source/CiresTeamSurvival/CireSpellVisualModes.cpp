@@ -212,7 +212,6 @@ bool ACireSpellVisual::RebuildModes(FCireSpellMesh& M,FCireSoftMesh& Soft,float 
     {
     case EMode::AreaFollow:
     {
-        const FCireAreaSpec& Spec=FollowedArea.IsValid()?FollowedArea->AreaSpec:CachedArea;
         if(bHarmlessArea)return true; // harmless buff radius: ground ring only
         const float Burst=AreaActiveAge>=0&&!bAreaPersistent?FMath::Clamp(1-(Age-AreaActiveAge)/.4f,0.f,1.f):0.f;
         DrawAreaParticles(M,Soft,Burst);return true;
