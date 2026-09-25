@@ -19,8 +19,8 @@ the abilities come from data.
 Rules shared by all roles:
 
 - Telegraphed abilities (`cone`, `targetCircle`, `selfCircle`, `charge`) spawn an `ACireAreaEffect` warning whose
-  warning time equals the cast time; damage lands when the warning completes. Hard cancels (phase change, leash,
-  death, escort conversion) destroy the warning.
+  warning time equals the cast time; damage lands when the warning completes. Hard cancels (phase change, a pack
+  walking home after its threat holders died, death, escort conversion) destroy the warning.
 - `interruptible` casts can be kicked by champions (`shield_slam` now calls `CireNPCCombat::InterruptCast`).
   Non-interruptible casts (all boss abilities, hunter aim) ignore kicks. Monsters without archetype data keep
   the old always-interruptible behaviour.
@@ -51,7 +51,7 @@ Leader**: 1.7x scale, blood-red body, boss classification (UI boss frame), 5x ch
 
 Rewards are unchanged: the existing whole-pack rule (`ACireGameMode::MonsterKilled` / `Cires::RollChallengeReward`)
 pays once the last pack unit dies, so the leader must die too. Each kill also pays the normal per-kill team share.
-Pack leaders never leak (packs leash). The lane boss (**Hollow Siegebreaker**, final wave of each cycle) is also
+Pack leaders never leak (packs stay off the lane and walk home once every threat holder is dead). The lane boss (**Hollow Siegebreaker**, final wave of each cycle) is also
 data-driven: tank role, boss classification, Siege Stomp / Sundering Cleave / Rallying Bellow / Siege Fury, and
 it still costs **10 lives** on reaching town (`leakCost`).
 
@@ -71,7 +71,15 @@ it still costs **10 lives** on reaching town (`leakCost`).
   `CireThreat::Scale(M, Hero, x)` (fade / "drop 50% threat"). The loader rejects the old `decayPerSecond` /
   `decayDelaySeconds` keys.
 - Range (22 m) only gates **gaining** threat (damage, healing, proximity pull). A held target keeps aggro at any
-  distance and monsters chase it; there is no distance leash any more.
+  distance and monsters chase it; there is no distance leash (wave units lost the old 18 m lane leash too).
+- **Unreachable targets are kept** (rules-conformance): a victim the navmesh cannot reach is not dropped. The
+  monster follows the partial navmesh path and holds at the nearest reachable point until the victim is back in
+  reach (`CireNav::Steer`). A stuck wave unit that holds threat repaths instead of being nudged down the road, and
+  the stall failsafe only marches or despawns wave units that hold **no** threat (Docs/Waves.md).
+- **Abilities that drop or reduce threat** use `CireThreat::ScaleAll(Hero, x)` (0 = drop, 0.5 = -50% on every
+  monster) through the Ability DB field `threatScale` (0..1), applied on cast in `CireSkillShop::ApplyCastLevel`.
+  As of this change no ability's text says it drops or reduces threat, so no ability carries `threatScale` yet.
+  Polymorph freezes the monster but keeps its threat table (it resumes on the same target when it breaks).
 - **When every threat holder is dead** a challenge-pack unit walks back to its spawn (8s leash state, cannot acquire
   new targets on the way), then heals to full and resets its buffs/cooldowns. Wave units resume marching on the route.
   A living hero within 7 m (line of sight) can still pull a monster with an empty table (proximity aggro).
