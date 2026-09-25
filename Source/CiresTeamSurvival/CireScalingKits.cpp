@@ -55,9 +55,9 @@ const TSet<FString>& ShieldProfiles()
         const TSharedPtr<FJsonObject>* O=nullptr;const TArray<TSharedPtr<FJsonValue>>* Parts=nullptr;
         if(!P.Value->TryGetObject(O)||!(*O)->TryGetArrayField(TEXT("parts"),Parts))continue;
         for(const auto& V:*Parts){const TSharedPtr<FJsonObject>* Part=nullptr;FString Asset;
-            if(V->TryGetObject(Part)&&(*Part)->TryGetStringField(TEXT("asset"),Asset)&&Asset.Contains(TEXT("shield"),ESearchCase::IgnoreCase))Shielded.Add(P.Key);}
+            if(V->TryGetObject(Part)&&(*Part)->TryGetStringField(TEXT("asset"),Asset)&&Asset.Contains(TEXT("shield"),ESearchCase::IgnoreCase))Shielded.Add(FString(P.Key));}
     }
-    for(const auto& P:(*Profiles)->Values){FString Preset;if(P.Value->TryGetString(Preset)&&Shielded.Contains(Preset))Out.Add(P.Key);}
+    for(const auto& P:(*Profiles)->Values){FString Preset;if(P.Value->TryGetString(Preset)&&Shielded.Contains(Preset))Out.Add(FString(P.Key));}
     return Out;
 }
 

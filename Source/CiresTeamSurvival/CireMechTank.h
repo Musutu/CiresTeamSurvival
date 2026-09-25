@@ -24,7 +24,7 @@ public:
     int32 Slam();
     AActor* ChooseAttackTarget() const;
     float TauntCooldown = 0.f, SlamCooldown = 0.f;
-    static constexpr float TauntBaseCooldown = 8.f, SlamBaseCooldown = 6.f, TauntRange = 900.f, SlamRadius = 320.f, TauntSeconds = 3.f;
+    float TauntBaseCooldown = 8.f, SlamBaseCooldown = 6.f, TauntRange = 900.f, SlamRadius = 320.f, TauntSeconds = 3.f;
     UPROPERTY() TObjectPtr<AActor> LastTaunted;
     int32 SlamCount = 0;
 };
