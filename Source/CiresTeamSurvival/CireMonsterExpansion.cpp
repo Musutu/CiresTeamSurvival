@@ -260,8 +260,8 @@ void UCireExpansionPresenter::Tick(float DeltaTime)
                 CireRaces::ApplySkin(M); // the rare / bonus colour on reskinned and Tripo bodies (the rim follows RankColor)
                 const FLinearColor Color = CireMonsterExpansion::SpecialColor(S.Special);
                 float Scale = 1.f;
-                if (UNiagaraSystem* System = CireFabVFX::ResolveSchool(S.Special == 2 ? ECireSchool::Holy : ECireSchool::Arcane, CireFabVFX::ERole::Aura, &Scale))
-                    if (UNiagaraComponent* Aura = CireFabVFX::SpawnAttached(System, M->GetMesh(), FVector::ZeroVector, Scale * .8f, false))
+                if (UFXSystemAsset* System = CireFabVFX::ResolveSchool(S.Special == 2 ? ECireSchool::Holy : ECireSchool::Arcane, CireFabVFX::ERole::Aura, &Scale))
+                    if (UFXSystemComponent* Aura = CireFabVFX::SpawnAttached(System, M->GetMesh(), FVector::ZeroVector, Scale * .8f, false))
                     { CireFabVFX::ApplyTint(Aura, Color); S.Aura = Aura; }
                 const bool bMine = !Me || M->Lane == Me->TeamId;
                 if (bMine && S.Special == 1)
@@ -288,8 +288,8 @@ void UCireExpansionPresenter::Tick(float DeltaTime)
                 {
                     CireAudio::PlayCue(World, TEXT("bonus.caught"), S.Location);
                     float Scale = 1.f;
-                    if (UNiagaraSystem* Burst = CireFabVFX::ResolveSchool(ECireSchool::Holy, CireFabVFX::ERole::Impact, &Scale))
-                        if (UNiagaraComponent* Fx = CireFabVFX::SpawnAt(World, Burst, S.Location, FRotator::ZeroRotator, Scale)) CireFabVFX::ApplyTint(Fx, CireMonsterExpansion::SpecialColor(2));
+                    if (UFXSystemAsset* Burst = CireFabVFX::ResolveSchool(ECireSchool::Holy, CireFabVFX::ERole::Impact, &Scale))
+                        if (UFXSystemComponent* Fx = CireFabVFX::SpawnAt(World, Burst, S.Location, FRotator::ZeroRotator, Scale)) CireFabVFX::ApplyTint(Fx, CireMonsterExpansion::SpecialColor(2));
                 }
                 if (S.Aura.IsValid()) S.Aura->Deactivate();
             }
@@ -316,8 +316,8 @@ void UCireExpansionPresenter::Tick(float DeltaTime)
             ++Escapes;
             CireAudio::PlayCue(World, TEXT("bonus.escape"), S.Location);
             float Scale = 1.f;
-            if (UNiagaraSystem* Puff = CireFabVFX::ResolveSchool(ECireSchool::Arcane, CireFabVFX::ERole::Impact, &Scale))
-                if (UNiagaraComponent* Fx = CireFabVFX::SpawnAt(World, Puff, S.Location, FRotator::ZeroRotator, Scale)) CireFabVFX::ApplyTint(Fx, CireMonsterExpansion::SpecialColor(2));
+            if (UFXSystemAsset* Puff = CireFabVFX::ResolveSchool(ECireSchool::Arcane, CireFabVFX::ERole::Impact, &Scale))
+                if (UFXSystemComponent* Fx = CireFabVFX::SpawnAt(World, Puff, S.Location, FRotator::ZeroRotator, Scale)) CireFabVFX::ApplyTint(Fx, CireMonsterExpansion::SpecialColor(2));
         }
         It.RemoveCurrent();
     }
