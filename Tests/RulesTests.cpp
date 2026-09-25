@@ -532,7 +532,8 @@ void OpeningAndTraitRules()
     }
     // Role-defining opening pools.
     for(const auto* id:{"shield_slam","war_cry","iron_guard"})CHECK(IsOpeningSkill(id,SkillDraftRole::Tank));
-    for(const auto* id:{"restoring_light","sanctuary","purify"})CHECK(IsOpeningSkill(id,SkillDraftRole::Support));
+    for(const auto* id:{"restoring_light","sanctuary","purify","second_wind"})CHECK(IsOpeningSkill(id,SkillDraftRole::Support));
+    for(const auto* id:{"protection_dome","summoned_wall","frost_bind"})CHECK(!IsOpeningSkill(id,SkillDraftRole::Support)); // kits-complete: heals only
     for(const auto* id:{"restoring_light","sanctuary","purify","chain_spark","frost_bind"})CHECK(!IsOpeningSkill(id,SkillDraftRole::Tank));
     for(const auto* id:{"chain_spark","ember_lance","piercing_shot","war_cry"})CHECK(!IsOpeningSkill(id,SkillDraftRole::Support));
     for(const auto* id:{"restoring_light","sanctuary","purify","war_cry","iron_guard","second_wind"})CHECK(!IsOpeningSkill(id,SkillDraftRole::Damage));

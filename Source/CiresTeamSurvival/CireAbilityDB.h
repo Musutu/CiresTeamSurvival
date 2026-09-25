@@ -72,6 +72,8 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     // scaling-kits (Docs/Abilities.md): damage/heal/shield/DoT = ScaleBase + ScalePrimary x caster PRIMARY stat.
     FString ScaleComponent;              // damage, heal, shield, summon, construct, none
     float ScaleBase = 0, ScalePrimary = 0, DotPerSecondPrimary = 0;
+    // kits-complete: utility skills and passives ("potency"): headline effect +PotencyPerPoint % per PRIMARY point, max +PotencyCap %.
+    float PotencyPerPoint = 0, PotencyCap = 0;
     FString Requires;                    // "shield" (shield users only), "ranged" (ranged basic attack), empty
     FName Level15Bonus;                  // dot, healCut, stun, slow, damageAmp, vulnerability, purge (actives/ultimates)
     FString Level15Special, Level15Label, Level15Trigger; // special: mechSlam, artilleryBomb, headshotTriple; trigger: hit|pulse

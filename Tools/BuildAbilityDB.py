@@ -63,7 +63,8 @@ POOL = {
                    "Take {effect}% less damage for 8s.", [fx("guard", "self", 8, 0.4, label="DEF +40%")], {"curve": {"effectCap": 60}}),
     "shield_slam": ("Shield Slam", ["tank"], "active", "physical", "enemy", 0, 0, 25, 7, 45, "damage", 240, 0, 2,
                     "Melee STR strike for {effect} damage: interrupts the target's cast (2s school lockout), slows for 2s and draws monster attention.",
-                    [fx("interrupt", "target", 0, 0, lockout=2.0, label="Interrupted"), fx("slow", "target", 2, 0.35, label="Move -35%"), fx("taunt", "target", 2)], {}),
+                    [fx("interrupt", "target", 0, 0, lockout=2.0, label="Interrupted"), fx("slow", "target", 2, 0.35, label="Move -35%"), fx("taunt", "target", 2)],
+                    {"requires": "shield"}),  # kits-complete: a shield skill (Eric's shield list); never sold to shieldless tanks
     "war_cry": ("War Cry", ["tank"], "active", "physical", "self", 0, 0, 30, 18, 6, "s taunt", 0, 600, 6,
                 "Taunt nearby monsters/bots for {effect}s; guard yourself for 3s.", [fx("taunt", "area", 6, radius=600), fx("guard", "self", 3, 0.4, label="DEF +40%")], {}),
     "chain_spark": ("Chain Spark", ["dps", "heal"], "active", "storm", "enemy", 0, 45, 0, 10, 60, "damage per target", 1200, 0, 0,
@@ -95,8 +96,8 @@ POOL = {
                   "Cast 1.5s: turn an enemy into a harmless critter for {effect}s (half on elites, 3s on champions; bosses and "
                   "Pack Leaders are immune). Any damage breaks it.", [fx("polymorph", "target", 8, label="Polymorphed")],
                   {"curve": {"effectCap": 12}}),
-    "second_wind": ("Second Wind", ["tank", "dps", "heal"], "active", "nature", "self", 0, 0, 30, 20, 18, "% max health", 0, 0, 0,
-                    "Heal only yourself for {effect}% of your maximum health.", [], {"curve": {"effectCap": 35}}),
+    "second_wind": ("Second Wind", ["tank", "dps", "heal"], "active", "nature", "self", 1.0, 0, 30, 20, 18, "% max health", 0, 0, 0,
+                    "Cast 1s: heal only yourself for {effect}% of your maximum health.", [], {"curve": {"effectCap": 35}}),
     "decimating_strike": ("Decimating Strike", ["tank", "dps"], "active", "physical", "enemy", 0, 0, 40, 300, 150, "damage (non-lethal targets)", 300, 500, 10,
                           "Kill the target outright (bosses take {effect} damage; champions take 30% of max health). Enemies within 5m have their armor reduced by 50% for 10s.",
                           [fx("lethal", "target"), fx("armorBreak", "area", 10, 0.5, 500, label="Armor -50%")], {"curve": {"minCooldownSeconds": 180}}),
@@ -111,16 +112,16 @@ POOL = {
     "executioner": ("Executioner", ["dps"], "passive", "physical", "passive", 0, 0, 0, 300, 100, "damage vs bosses", 0, 0, 0,
                     "Every 5 minutes your next basic attack is lethal. Bosses take a normal hit (the charge is kept); champions take 30% of their maximum health.",
                     [fx("lethal", "target")], {"curve": {"cooldownFloorFraction": 0.8, "minCooldownSeconds": 180}}),
-    "bastion_of_dawn": ("Bastion of Dawn", ["tank", "heal"], "ultimate", "holy", "self", 0, 0, 45, 75, 30, "% max health healed", 0, 700, 8,
-                        "Heal yourself for {effect}% max health; nearby allies take 40% less damage for 8s.", [fx("guard", "area", 8, 0.4, 700, label="DEF +40%")], {"curve": {"effectCap": 50}}),
+    "bastion_of_dawn": ("Bastion of Dawn", ["tank", "heal"], "ultimate", "holy", "self", 1.0, 0, 45, 75, 30, "% max health healed", 0, 700, 8,
+                        "Cast 1s: heal yourself for {effect}% max health; nearby allies take 40% less damage for 8s.", [fx("guard", "area", 8, 0.4, 700, label="DEF +40%")], {"curve": {"effectCap": 50}}),
     "cataclysm": ("Cataclysm", ["dps"], "ultimate", "fire", "enemy", 0, 150, 0, 80, 160, "damage", 1500, 450, 0,
                   "Blast up to 12 enemies near your target for {effect} + 3.5x INT damage.", [], {}),
     "executioners_verdict": ("Executioner's Verdict", ["dps"], "ultimate", "physical", "enemy", 0, 0, 60, 60, 100, "damage", 1500, 0, 0,
                              "Deal {effect} + 3x primary, plus 25% of the target's missing health (bonus capped at 300).", [], {}),
     "renewal": ("Renewal", ["heal"], "ultimate", "holy", "self", 2.5, 140, 0, 90, 200, "healing per ally", 0, 900, 0,
                 "Cast 2.5s: cleanse nearby allies' slows and heal each for {effect} + 4x INT.", [fx("cleanse", "area", radius=900)], {}),
-    "last_stand": ("Last Stand", ["tank"], "ultimate", "physical", "self", 0, 0, 50, 85, 40, "% max health healed", 0, 0, 0,
-                   "Clear your slow and heal yourself for {effect}% maximum health.", [fx("cleanse", "self")], {"curve": {"effectCap": 60}}),
+    "last_stand": ("Last Stand", ["tank"], "ultimate", "physical", "self", 1.0, 0, 50, 85, 40, "% max health healed", 0, 0, 0,
+                   "Cast 1s: clear your slow and heal yourself for {effect}% maximum health.", [fx("cleanse", "self")], {"curve": {"effectCap": 60}}),
     "challenge_of_iron": ("Challenge of Iron", ["tank"], "ultimate", "physical", "self", 0, 0, 65, 90, 12, "s guard", 0, 850, 12,
                           "Taunt monsters within 8.5m (10s cap) and take 40% less damage for {effect}s.", [fx("taunt", "area", 10, radius=850), fx("guard", "self", 12, 0.4, label="DEF +40%")], {}),
     "seismic_reprisal": ("Seismic Reprisal", ["tank"], "ultimate", "earth", "self", 0, 0, 60, 65, 160, "damage", 0, 450, 0,
@@ -431,12 +432,16 @@ def apply_kits(abilities):
     """Adds scaling / level15 / aura15 to every ability (called by build())."""
     for sid, a in abilities.items():
         prev = a.get("scaling") or {}
-        a["scaling"] = scaling_for(sid, a)
+        a["scaling"] = dict(a.pop("scalingFixed")) if a.get("scalingFixed") else scaling_for(sid, a)
         if prev.get("ratio"):  # roll skills (champion-draft) declare their own primary ratio
             a["scaling"].update(stat="primary", ratio=prev["ratio"])
             if not a["scaling"]["primary"]:
                 a["scaling"].update(component="heal" if "heal" in a["effectLabel"] else "damage", base=a["base"]["effect"] if "%" not in a["effectLabel"] else 0,
                                     primary=prev["ratio"])
+        # kits-complete: Eric's universal rule. Utility skills and passives without a damage / heal / shield
+        # component scale their headline magnitude (DR %, buff %, range, taunt / guard seconds...) with PRIMARY.
+        if a["status"] == "implemented" and not a["scaling"].get("primary") and not a["scaling"].get("ratio"):
+            a["scaling"].update(component="potency", base=0, primary=0, potency=POTENCY_PER_POINT, potencyCap=POTENCY_CAP)
         if a["kind"] == "passive":
             if sid in PASSIVE_SPECIAL:
                 special, label = PASSIVE_SPECIAL[sid]
@@ -457,6 +462,8 @@ def apply_kits(abilities):
 
 def scaling_text(a):
     s = a.get("scaling", {})
+    if s.get("component") == "potency":
+        return f"+{s['potency']:g}% effect per Primary (max +{s['potencyCap']:g}%)"
     if not s or s.get("component") == "none" or not s.get("primary"):
         return ""
     word = {"damage": "damage", "heal": "healing", "shield": "barrier health", "summon": "damage per hit", "construct": "damage per hit"}[s["component"]]
@@ -632,7 +639,7 @@ ROLL_SKILLS = {
                         "For 8s each roll taunts monsters within 5m for {effect}s and guards you (20% damage reduction) briefly.",
                         [fx("taunt", "area", 3, radius=500), fx("guard", "self", 1.5, 0.2, label="DEF +20%")], {}, BRUISER + ["bear", "ether_golem_tank", "totemic_behemoth", "dwarf_miner"]),
     "shield_tumble": ("Shield Tumble", ["heal", "tank"], "active", "holy", "self", 40, 0, 20, 5, "% max health heal", 0, 800, 10, "defensive", ["Defensive"], ["Roll", "Shield", "Heal", "Guard"],
-                      "For 10s each roll grants the nearest ally within 8m a 40% guard for 3s and heals them for {effect}% of their max health + 1x your primary stat.",
+                      "For 10s each roll grants the nearest ally within 8m a 40% guard for 3s and a Tumbling Mend: {effect}% of their max health + 1x your primary stat healed over 3s.",
                       [fx("guard", "target", 3, 0.4, label="DEF +40%")], {"effectCap": 10}, MOBILE_SUPPORT + ["paladin_righteous", "paladin_holy", "knight"]),
     "venom_tumble": ("Venom Tumble", ["dps"], "active", "poison", "self", 0, 25, 16, 30, "poison damage", 0, 180, 8, "control", ["Crowd Control", "Offensive"], ["Roll", "Trail", "Heal Cut", "Damage"],
                      "For 8s your rolls leave venom: enemies within 1.8m of the path take {effect} + 0.5x primary stat damage and receive 30% less healing for 5s.",
@@ -640,7 +647,7 @@ ROLL_SKILLS = {
     "shadow_dance": ("Shadow Dance", ["dps"], "active", "shadow", "self", 0, 20, 30, 70, "% roll cooldown cut", 0, 0, 10, "defensive", ["Defensive"], ["Roll", "Cooldown", "Haste"],
                      "For 10s your dodge roll recovers {effect}% faster and refunds its energy.", [], {"effectCap": 85}, AGILE),
     "evasive_stance": ("Evasive Stance", ["dps", "tank"], "active", "physical", "self", 0, 20, 24, 3, "% max health per dodge", 0, 0, 6, "defensive", ["Defensive"], ["Roll", "I-Frame", "Heal"],
-                       "For 6s rolls refund their energy and every hit you dodge during i-frames restores {effect}% max health + 0.4x primary stat.", [], {"effectCap": 8}, AGILE + BRUISER),
+                       "For 6s rolls refund their energy and every hit you dodge during i-frames starts an Evasive Mend: {effect}% max health + 0.4x primary stat healed over 3s.", [], {"effectCap": 8}, AGILE + BRUISER),
 }
 
 
@@ -651,6 +658,17 @@ ROLL_PRIMARY = {"riposte_roll": 1.0, "fleet_recovery": 0.5, "ember_wake": 0.6, "
 
 
 from UltimateUpgrades import ULTIMATE_UPGRADES, validate as validate_upgrades  # items-v2
+from ChampionKits import KIT_SIGNATURES  # kits-complete
+from ChampionKitBuffs import BUFF_MODIFIER_ROWS  # kits-complete
+
+# kits-complete: potency (Eric's universal primary rule for utility skills). The headline magnitude of every
+# ability without a damage / heal / shield component grows +POTENCY_PER_POINT % per point of the caster's
+# PRIMARY stat, capped at +POTENCY_CAP %. Crowd-control durations from any ability grow +CONTROL_PER_POINT %
+# per point, capped at +CONTROL_CAP % (CireKits::Potency / CireKits::ControlScale mirror these).
+POTENCY_PER_POINT, POTENCY_CAP = 0.4, 40
+CONTROL_PER_POINT, CONTROL_CAP = 0.25, 25
+# Roll-triggered reactions heal over time (a visible HoT) instead of carrying a cast time.
+INSTANT_HEAL_OK = {"shield_tumble", "evasive_stance", "fleet_recovery"}
 
 
 def build():
@@ -690,6 +708,8 @@ def build():
                    description=desc, effects=effects, champions=[], signatureOf=[])
         if "void" in extra:
             rec["void"] = extra["void"]
+        if extra.get("requires"):
+            rec["requires"] = extra["requires"]
         abilities[sid] = rec
     # scaling-kits: shield / range skills and Headshot (gated by "requires").
     for sid, row in KIT_SKILLS.items():
@@ -714,6 +734,21 @@ def build():
                    description=desc, effects=effects, champions=[], signatureOf=[])
         if extra.get("category"):
             rec["category"] = extra["category"]
+        abilities[sid] = rec
+    # kits-complete: the 63 signature skills of the thirteen roster champions (Tools/ChampionKits.py, CireKitSkills).
+    for sid, row in KIT_SIGNATURES.items():
+        name, roles, kind, school, targeting, cast, mana, energy, cd, effect, label, rng, radius, dur, desc, effects, extra = row
+        curve = dict(CURVES[kind])
+        curve.update(extra.get("curve", {}))
+        rec = dict(id=sid, name=name, icon=f"/Game/UI/Abilities/T_{sid}", types=[TYPES[r] for r in roles], kind=kind, school=school,
+                   targeting=targeting, castTime=cast, base=dict(effect=effect, manaCost=mana, energyCost=energy, cooldown=cd, castTime=cast,
+                   range=rng, radius=radius, duration=dur), effectLabel=label, curve=curve, status="implemented", signatureOnly=True,
+                   description=desc, effects=effects, champions=[], signatureOf=[])
+        for key in ("category", "section", "void", "requires"):
+            if extra.get(key):
+                rec[key] = extra[key]
+        if extra.get("scaling"):
+            rec["scalingFixed"] = dict(extra["scaling"])
         abilities[sid] = rec
     # Dodge-roll synergy skills.
     for sid, row in ROLL_SKILLS.items():
@@ -789,7 +824,7 @@ def build():
         classify(rec, summons, constructs)
     return dict(schemaVersion=1, generator="Tools/BuildAbilityDB.py", schools=SCHOOLS, sections=SECTIONS, types=list(TYPES.values()),
                 scalingFormula="effect*(1+g*ln(1+(L-1)/h)) capped at effectCap; cost*(1+(cap-1)(L-1)/(L-1+ramp)); cooldown*(floor+(1-floor)e^-((L-1)/decay)), min minCooldownSeconds",
-                abilities=abilities, champions=champions, buffModifiers=BUFF_MODIFIERS, shieldChampions=sorted(shields), rangedChampions=sorted(ranged),
+                abilities=abilities, champions=champions, buffModifiers={**BUFF_MODIFIERS, **BUFF_MODIFIER_ROWS}, shieldChampions=sorted(shields), rangedChampions=sorted(ranged),
                 level15Labels=L15_LABEL, auraLabels=AURA_LABEL)
 
 
@@ -818,9 +853,16 @@ def validate(db):
             if "aura15" in a and a["aura15"]["aura"] not in AURA_LABEL: errors.append(f"{sid}: aura {a['aura15']['aura']}")
         elif a.get("level15", {}).get("bonus") not in L15_LABEL: errors.append(f"{sid}: no level-15 bonus")
         s = a.get("scaling")
-        if not s or s["component"] not in ("none", "damage", "heal", "shield", "summon", "construct") or s["primary"] < 0 or s["primary"] > 6:
+        if not s or s["component"] not in ("none", "damage", "heal", "shield", "summon", "construct", "potency") or s["primary"] < 0 or s["primary"] > 6:
             errors.append(f"{sid}: scaling")
-        if s and s["component"] == "damage" and a["kind"] == "active" and not 0.7 <= s["primary"] <= 2.2: errors.append(f"{sid}: damage coefficient out of band")
+        per_tick = any(w in a["effectLabel"] for w in ("per hit", "per second", "per axe", "per pass"))
+        if s and s["component"] == "damage" and a["kind"] == "active" and not per_tick and not 0.7 <= s["primary"] <= 2.2:
+            errors.append(f"{sid}: damage coefficient out of band")
+        if a["status"] == "implemented" and not (s.get("primary") or s.get("ratio") or s.get("potency")):
+            errors.append(f"{sid}: no primary-stat scaling (Eric's universal rule)")
+        if a["status"] == "implemented" and a["kind"] != "passive" and s.get("component") == "heal" and a["castTime"] <= 0 \
+                and not any(w in a["effectLabel"] for w in ("per second", "per mote", "per pulse")) and sid not in INSTANT_HEAL_OK:
+            errors.append(f"{sid}: heal without a cast time")
     errors += validate_upgrades(db["abilities"])  # items-v2
     for cid, c in db["champions"].items():
         if len(c["purchasableImplemented"]) < 8: errors.append(f"{cid}: fewer than 8 implemented purchasable skills")

@@ -537,11 +537,13 @@ bool IsOpeningOffer(const Progression& progression)
 
 bool IsOpeningSkill(const std::string& id, SkillDraftRole primary)
 {
-    // Role-defining actives. Tanks: threat, guard, cleave, wall. Supports: heals,
-    // cleanse and the protective dome. DPS: every damage-tagged active that is not
-    // universal. Legacy "Any" progressions may open with any non-ultimate active.
+    // Role-defining actives. Tanks: threat, guard, cleave, wall (Shield Slam only for shield
+    // bearers: the champion layer filters shield skills out of a shieldless tank's pool).
+    // Supports: heals only (Eric, playtest 1: the first offer is role-specific actives;
+    // kits-complete: a support's first pick is always a heal). DPS: every damage-tagged active
+    // that is not universal. Legacy "Any" progressions may open with any non-ultimate active.
     static const std::set<std::string> tank = {"shield_slam", "war_cry", "iron_guard", "cleaving_strike", "summoned_wall"};
-    static const std::set<std::string> support = {"restoring_light", "sanctuary", "purify", "protection_dome"};
+    static const std::set<std::string> support = {"restoring_light", "sanctuary", "purify", "second_wind"};
     if (primary == SkillDraftRole::Any) return !id.empty();
     const RoleMask tags = SkillRoleTags(id);
     if (tags == RoleNone) return false;

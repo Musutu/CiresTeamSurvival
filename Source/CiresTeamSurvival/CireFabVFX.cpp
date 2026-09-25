@@ -11,6 +11,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "Engine/World.h"
+#include "CireAbilityDB.h" // kits-complete: display-name lookups
 
 namespace
 {
@@ -22,6 +23,7 @@ struct FTable
     bool bLoaded = false;
     TMap<FString, CireFabVFX::FEntry> Schools; // "<school>.<role>"
     TMap<FString, CireFabVFX::FEntry> Buffs;
+    TMap<FString, CireFabVFX::FEntry> Abilities; // kits-complete: "<ability id>.<role>"
     TMap<FString, TWeakObjectPtr<UNiagaraSystem>> Resolved;
     TSet<FString> Unresolvable;
 };
@@ -61,6 +63,15 @@ void Load()
                     CireFabVFX::FEntry E=ParseEntry(R.Value);
                     if(E.Candidates.Num())T.Schools.Add(FString(S.Key.ToView()).ToLower()+TEXT(".")+FString(R.Key.ToView()).ToLower(),MoveTemp(E));
                 }
+    const TSharedPtr<FJsonObject>* Abilities=nullptr; // kits-complete
+    if(Root->TryGetObjectField(TEXT("abilities"),Abilities))
+        for(const auto& A:(*Abilities)->Values)
+            if(const TSharedPtr<FJsonObject> Roles=A.Value->AsObject())
+                for(const auto& R:Roles->Values)
+                {
+                    CireFabVFX::FEntry E=ParseEntry(R.Value);
+                    if(E.Candidates.Num())T.Abilities.Add(FString(A.Key.ToView()).ToLower()+TEXT(".")+FString(R.Key.ToView()).ToLower(),MoveTemp(E));
+                }
     const TSharedPtr<FJsonObject>* Buffs=nullptr;
     if(Root->TryGetObjectField(TEXT("buffs"),Buffs))
         for(const auto& B:(*Buffs)->Values)
@@ -98,6 +109,16 @@ const CireFabVFX::FEntry* CireFabVFX::Find(ECireSchool School, ERole Role)
     if(const FEntry* E=T.Schools.Find(CireAbilityShapes::SchoolName(School)+TEXT(".")+RoleName(Role)))return E;
     // A school without its own art borrows the generic "default" set for that role.
     return T.Schools.Find(FString(TEXT("default."))+RoleName(Role));
+}
+
+const CireFabVFX::FEntry* CireFabVFX::FindAbility(FName Skill, ERole Role)
+{
+    FTable& T=Loaded();
+    if(T.Abilities.IsEmpty()||Skill.IsNone())return nullptr;
+    if(const FEntry* E=T.Abilities.Find(Skill.ToString().ToLower()+TEXT(".")+RoleName(Role)))return E;
+    // Combat events carry display names ("Gravewood Maul"); map them to the ability id.
+    if(const FCireAbilityDef* D=CireAbilityDB::FindByName(Skill.ToString()))return T.Abilities.Find(D->Id.ToLower()+TEXT(".")+RoleName(Role));
+    return nullptr;
 }
 
 const CireFabVFX::FEntry* CireFabVFX::FindBuff(const FString& Key)

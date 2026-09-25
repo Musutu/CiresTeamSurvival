@@ -260,12 +260,13 @@ void CireCrowdControl::OnAbilityHit(AActor* Source,AActor* Target,const FString&
     for(const FCireAbilityEffect& E:D->Effects)
     {
         if(E.Zone==TEXT("self"))continue;
-        if(E.Type==Stun)CireCrowdControl::Stun(Target,E.Duration,Source);
-        else if(E.Type==Silence)CireCrowdControl::Silence(Target,E.Duration,Source);
+        const float Seconds=E.Duration*CireKits::ControlScale(Source); // kits-complete: +0.25% per PRIMARY point, max +25%
+        if(E.Type==Stun)CireCrowdControl::Stun(Target,Seconds,Source);
+        else if(E.Type==Silence)CireCrowdControl::Silence(Target,Seconds,Source);
         else if(E.Type==Interrupt)CireCrowdControl::Interrupt(Target,Source,E.LockoutSeconds);
-        else if(E.Type==HealCutT)HealCut(Target,E.Magnitude,E.Duration,Source,false);
-        else if(E.Type==HealCutDoneT)HealCut(Target,E.Magnitude,E.Duration,Source,true);
-        else if(E.Type==ArmorT)ArmorBreak(Target,E.Duration,Source);
+        else if(E.Type==HealCutT)HealCut(Target,E.Magnitude,Seconds,Source,false);
+        else if(E.Type==HealCutDoneT)HealCut(Target,E.Magnitude,Seconds,Source,true);
+        else if(E.Type==ArmorT)ArmorBreak(Target,Seconds,Source);
     }
 }
 
@@ -282,7 +283,7 @@ float CireCrowdControl::ModifyOutgoingDamage(AActor* Source,AActor* Target,float
     const float Health=M?M->Health:Victim?Victim->Health:0.f,MaxHealth=M?M->MaxHealth:Victim?Victim->MaxHealth:0.f;
     float Result=static_cast<float>(Cires::CC::ExecuteDamage(Kind,Health,MaxHealth,Amount));
     if(M)Result=FMath::Max(Result,Health*20.f+1.f); // lethal through any mitigation
-    State().ExecutionerReadyAt.Add(H,Now(H->GetWorld())+CireDeveloperTools::CooldownSeconds(H->GetWorld(),static_cast<float>(Cires::CC::ExecutionerIntervalSeconds)));
+    State().ExecutionerReadyAt.Add(H,Now(H->GetWorld())+CireDeveloperTools::CooldownSeconds(H->GetWorld(),static_cast<float>(Cires::CC::ExecutionerIntervalSeconds))/CireKits::Potency(H,TEXT("executioner"))); // kits-complete: potency shortens the recharge
     CireBuffs::Remove(H,ExecId);H->Notice=TEXT("Executioner!");
     CireCombat::PlayCue(H,Target,TEXT("executioner"),H->GetActorLocation(),Target->GetActorLocation(),ECireSpellCue::Impact,1.3f,true);
     return Result;

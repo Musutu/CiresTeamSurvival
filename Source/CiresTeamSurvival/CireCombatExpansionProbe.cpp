@@ -1,4 +1,5 @@
 #include "CireCombatExpansionProbe.h"
+#include "CireKitSkills.h" // kits-complete
 #include "CireScalingKits.h" // scaling-kits
 #include "CireWaves.h" // wave-director
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
@@ -118,6 +119,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireTechConstructs::RunSmoke(Mode)&&Good; // new-champions: Aetheri Constructs (place, attack/aura, expire, limits, destroy, skitters, monsters, arena)
     Good=CireSignatureSkills::RunSmoke(Mode)&&Good; // new-champions: kits, gunblade basic, glaive bounces, marks, mount, Aetheri race
     Good=CireKits::RunSmoke(Mode)&&Good; // scaling-kits: primary scaling, inheritance, construct threat, shield block, Mech Tank, level 15, Headshot, Artillery
+    Good=CireKitSkills::RunSmoke(Mode)&&Good; // kits-complete: the 63 roster signature skills, potency, heal casts, shield gating, big Bear
     Good=CirePets::RunSmoke(Mode)&&Good; // pets: companions (summon, follow, stances, commands, threat share, death/revive, scaling, on-foot Huntress)
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }

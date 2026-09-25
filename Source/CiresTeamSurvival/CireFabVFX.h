@@ -34,6 +34,8 @@ namespace CireFabVFX
     // The configured entry for a school/role, or nullptr when the data has none.
     CIRESTEAMSURVIVAL_API const FEntry* Find(ECireSchool School, ERole Role);
     CIRESTEAMSURVIVAL_API const FEntry* FindBuff(const FString& Key);
+    // kits-complete: a skill's own overlay ("abilities.<id>.<role>"); Skill may be the ability id or its display name.
+    CIRESTEAMSURVIVAL_API const FEntry* FindAbility(FName Skill, ERole Role);
     // First candidate whose package exists and loads as a Niagara system; cached. Never logs for missing packs.
     CIRESTEAMSURVIVAL_API UNiagaraSystem* Resolve(const FEntry* Entry);
     CIRESTEAMSURVIVAL_API UNiagaraSystem* ResolveSchool(ECireSchool School, ERole Role, float* OutScale = nullptr);

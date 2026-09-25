@@ -795,6 +795,1179 @@
         "/Game/State_VFX/VFX_Niagara/NS_State_VFX_Bleed1.NS_State_VFX_Bleed1"
       ],
       "scale": 1.0
+    },
+    "bear_hibernate": {
+      "paths": [
+        "/Game/Forest_VFX/Niagara/Aura/NS_Aura_Nature.NS_Aura_Nature"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "ancient_hide": {
+      "paths": [
+        "/Game/Forest_VFX/Niagara/VineBarrior/NS_Wood_Hide_Forest.NS_Wood_Hide_Forest"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "bear_colossus": {
+      "paths": [
+        "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Aura.NS_Earth_Spells_Aura"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "bear_cowed": {
+      "paths": [
+        "/Game/State_VFX/VFX_Niagara/NS_State_VFX_Charm1.NS_State_VFX_Charm1"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "relic_mark": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Target.NS_Light_Magic_Target"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "relic_vow": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Shield.NS_Light_Magic_Shield"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "mountain_heart": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Shield.NS_Earth_Magic_Shield"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "construct_core": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Aura.NS_Air_Magic_Aura"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "worldstone_tank": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Aura.NS_Earth_Magic_Aura"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "worldstone_bruiser": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Buff.NS_Fire_Magic_Buff"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "living_granite": {
+      "paths": [
+        "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Shield.NS_Earth_Spells_Shield"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "ether_furnace": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Aura.NS_Fire_Magic_Aura"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "blood_oath_banner": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Buff.NS_Blood_Magic_Buff"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "deep_lantern": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Sheild.NS_Fire_Magic_Sheild"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "ancestral_weight": {
+      "paths": [
+        "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Buff.NS_Earth_Spells_Buff"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "dragon_form": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Wall.NS_Fire_Magic_Wall"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "scale_guard": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Target.NS_Fire_Magic_Target"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "ancient_pact": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Dark_Magic/VFX_Niagara/NS_Dark_Flame_Burst.NS_Dark_Flame_Burst"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "red_moon": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Tornado.NS_Blood_Magic_Tornado"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "seed_mend": {
+      "paths": [
+        "/Game/Forest_VFX/Niagara/VineBarrior/NS_RoundedVine_Forest.NS_RoundedVine_Forest"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "grove_renewal": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Buff.NS_Posion_Magic_Buff"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "spirit_tether": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_Aura.NS_Water_Magic_Aura"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "kindred_link": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Lightning_Magic/VFX_Niagara/NS_Lightning_Magic_Buff1.NS_Lightning_Magic_Buff1"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "evergrove_trail": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Lightning_Magic/VFX_Niagara/NS_Lightning_Magic_Buff2.NS_Lightning_Magic_Buff2"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "steady_gait": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Buff.NS_Air_Magic_Buff"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "spring_march": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Aura.NS_Posion_Magic_Aura"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "beacon_of_return": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Buff.NS_Light_Magic_Buff"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "sunrise_vigil": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Heal.NS_Light_Magic_Heal"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "kit_burning": {
+      "paths": [
+        "/Game/State_VFX/VFX_Niagara/NS_State_VFX_Burn1.NS_State_VFX_Burn1"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "axe_frenzy": {
+      "paths": [
+        "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Aura.NS_Blood_Magic_Aura"
+      ],
+      "scale": 1.0,
+      "locked": true
+    },
+    "tumbling_mend": {
+      "paths": [
+        "/Game/State_VFX/VFX_Niagara/NS_State_VFX_Heal1.NS_State_VFX_Heal1"
+      ],
+      "scale": 1.0,
+      "locked": true
+    }
+  },
+  "abilities": {
+    "bear_maul": {
+      "impact": {
+        "paths": [
+          "/Game/RealisticBlood/Slash/Niagara/NS_Slash_Med.NS_Slash_Med"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Slash1.NS_Earth_Magic_Slash1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "bear_roar": {
+      "area": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Cone.NS_Earth_Spells_Cone"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Muzzle3.NS_Air_Magic_Muzzle3"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Hit3.NS_Air_Magic_Hit3"
+        ],
+        "scale": 1.0
+      }
+    },
+    "bear_charge": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Dash.NS_Earth_Magic_Dash"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Hit2.NS_Earth_Spells_Hit2"
+        ],
+        "scale": 1.0
+      }
+    },
+    "bear_hibernate": {
+      "cast": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/Aura/NS_Aura_Nature.NS_Aura_Nature"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/State_VFX/VFX_Niagara/NS_State_VFX_Heal1.NS_State_VFX_Heal1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "bear_ancient_hide": {
+      "impact": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/VineBarrior/NS_Wood_Hide_Forest.NS_Wood_Hide_Forest"
+        ],
+        "scale": 1.0
+      }
+    },
+    "bear_colossus": {
+      "cast": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Attack_Up2.NS_Earth_Spells_Attack_Up2"
+        ],
+        "scale": 1.0
+      },
+      "area": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Shockwave.NS_Earth_Spells_Shockwave"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Hit3.NS_Earth_Spells_Hit3"
+        ],
+        "scale": 1.0
+      }
+    },
+    "paladin_righteous_flail": {
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Sword_Area.NS_Light_Magic_Sword_Area"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Hit2.NS_Light_Magic_Hit2"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Slash1.NS_Light_Magic_Slash1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "paladin_relic_vow": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Top.NS_Light_Magic_Top"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Shield_Splash.NS_Light_Magic_Shield_Splash"
+        ],
+        "scale": 1.0
+      }
+    },
+    "paladin_holy_flail": {
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Explosion1.NS_Light_Magic_Explosion1"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Slash2.NS_Light_Magic_Slash2"
+        ],
+        "scale": 1.0
+      }
+    },
+    "paladin_pilgrim_light": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Orb2.NS_Light_Magic_Orb2"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Heal_Hit.NS_Light_Magic_Heal_Hit"
+        ],
+        "scale": 1.0
+      }
+    },
+    "miner_pickfall": {
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Hit.NS_Earth_Magic_Hit"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Slash2.NS_Earth_Magic_Slash2"
+        ],
+        "scale": 1.0
+      }
+    },
+    "miner_faultline": {
+      "area": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/V1_1/NS_Earth_Spells_Spike_Line2.NS_Earth_Spells_Spike_Line2"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Splash.NS_Earth_Magic_Splash"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Muzzle.NS_Earth_Magic_Muzzle"
+        ],
+        "scale": 1.0
+      }
+    },
+    "miner_lantern": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Orb.NS_Fire_Magic_Orb"
+        ],
+        "scale": 1.0
+      },
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Circle.NS_Fire_Magic_Circle"
+        ],
+        "scale": 1.0
+      }
+    },
+    "miner_orehide": {
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Shield.NS_Earth_Magic_Shield"
+        ],
+        "scale": 1.0
+      }
+    },
+    "miner_mountain": {
+      "area": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Arena.NS_Earth_Spells_Arena"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Explosion.NS_Earth_Spells_Explosion"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Stone1.NS_Earth_Magic_Stone1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "golem_granite_fist": {
+      "area": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/V1_1/NS_Earth_Spells_Cone2.NS_Earth_Spells_Cone2"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Hit1.NS_Earth_Spells_Hit1"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Attack1.NS_Earth_Spells_Attack1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "golem_ether_anchor": {
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Dark_Magic/VFX_Niagara/NS_Dark_Magic_Circle.NS_Dark_Magic_Circle"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Dark_Magic/VFX_Niagara/NS_Dark_Magic_Hit.NS_Dark_Magic_Hit"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Dark_Magic/VFX_Niagara/NS_Dark_Magic_Top.NS_Dark_Magic_Top"
+        ],
+        "scale": 1.0
+      }
+    },
+    "golem_construct_core": {
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Target.NS_Air_Magic_Target"
+        ],
+        "scale": 1.0
+      }
+    },
+    "golem_worldstone": {
+      "cast": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Attack_Up.NS_Earth_Spells_Attack_Up"
+        ],
+        "scale": 1.0
+      },
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Shockwave.NS_Earth_Magic_Shockwave"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Stone2.NS_Earth_Magic_Stone2"
+        ],
+        "scale": 1.0
+      }
+    },
+    "golem_moss_bloom": {
+      "area": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/AreaBuff/NS_AreaBuff.NS_AreaBuff"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/Projectile/NS_Explosion_Cast_Nature.NS_Explosion_Cast_Nature"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/AreaBuff/NS_AreaBuff_Applied.NS_AreaBuff_Applied"
+        ],
+        "scale": 1.0
+      }
+    },
+    "golem_living_granite": {
+      "cast": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/VineAttack/NS_Vine_Barrior.NS_Vine_Barrior"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Shield_Splash.NS_Earth_Spells_Shield_Splash"
+        ],
+        "scale": 1.0
+      }
+    },
+    "golem_fel_fist": {
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_FrontSplash.NS_Fire_Magic_FrontSplash"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Hit.NS_Fire_Magic_Hit"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Muzzle.NS_Fire_Magic_Muzzle"
+        ],
+        "scale": 1.0
+      }
+    },
+    "golem_ether_furnace": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Flame2.NS_Fire_Magic_Flame2"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Splash.NS_Fire_Magic_Splash"
+        ],
+        "scale": 1.0
+      }
+    },
+    "chieftain_axe_hook": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Slash3.NS_Air_Magic_Slash3"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Hit.NS_Blood_Magic_Hit"
+        ],
+        "scale": 1.0
+      }
+    },
+    "chieftain_banner": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Marker.NS_Blood_Magic_Marker"
+        ],
+        "scale": 1.0
+      },
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Area3.NS_Blood_Magic_Area3"
+        ],
+        "scale": 1.0
+      }
+    },
+    "chieftain_courage": {
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Shield_Splash.NS_Blood_Magic_Shield_Splash"
+        ],
+        "scale": 1.0
+      }
+    },
+    "chieftain_earthshout": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Area2.NS_Blood_Magic_Area2"
+        ],
+        "scale": 1.0
+      },
+      "area": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Circle.NS_Earth_Spells_Circle"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Explo2.NS_Blood_Magic_Explo2"
+        ],
+        "scale": 1.0
+      }
+    },
+    "behemoth_totem_sweep": {
+      "area": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/V1_1/NS_Earth_Spells_Cone3.NS_Earth_Spells_Cone3"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Slash3.NS_Earth_Spells_Slash3"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Slash.NS_Earth_Spells_Slash"
+        ],
+        "scale": 1.0
+      }
+    },
+    "behemoth_tusk_line": {
+      "cast": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/V1_1/NS_Earth_Spells_Area_Spike_Line1.NS_Earth_Spells_Area_Spike_Line1"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Spike1.NS_Earth_Spells_Spike1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "behemoth_totem_bulwark": {
+      "cast": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Wall2.NS_Earth_Spells_Wall2"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Earth_Wall1.NS_Earth_Magic_Earth_Wall1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "behemoth_ancestral_weight": {
+      "impact": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Orb.NS_Earth_Spells_Orb"
+        ],
+        "scale": 1.0
+      }
+    },
+    "behemoth_stampede": {
+      "area": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Meteorites_Line.NS_Earth_Spells_Meteorites_Line"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Spike3.NS_Earth_Spells_Spike3"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Flow.NS_Earth_Magic_Flow"
+        ],
+        "scale": 1.0
+      }
+    },
+    "drakish_dragon_oath": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Flame1.NS_Fire_Magic_Flame1"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Slash1.NS_Fire_Magic_Slash1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "drakish_scale_guard": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Flame3.NS_Fire_Magic_Flame3"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Spike1.NS_Fire_Magic_Spike1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "drakish_wing_rebuke": {
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Shockwave.NS_Fire_Magic_Shockwave"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Slash2.NS_Fire_Magic_Slash2"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Dash2.NS_Fire_Magic_Dash2"
+        ],
+        "scale": 1.0
+      }
+    },
+    "drakish_ember_memory": {
+      "impact": {
+        "paths": [
+          "/Game/State_VFX/VFX_Niagara/NS_State_VFX_Burn1.NS_State_VFX_Burn1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "drakish_ancient_pact": {
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Arena.NS_Fire_Magic_Arena"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Spike2.NS_Fire_Magic_Spike2"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_SpearSplash.NS_Fire_Magic_SpearSplash"
+        ],
+        "scale": 1.0
+      }
+    },
+    "troll_axe_frenzy": {
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Slash1.NS_Blood_Magic_Slash1"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Slash2.NS_Blood_Magic_Slash2"
+        ],
+        "scale": 1.0
+      }
+    },
+    "troll_blood_leap": {
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Area1.NS_Blood_Magic_Area1"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Dash.NS_Blood_Magic_Dash"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Explo.NS_Blood_Magic_Explo"
+        ],
+        "scale": 1.0
+      }
+    },
+    "troll_hunger": {
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Debuff.NS_Blood_Magic_Debuff"
+        ],
+        "scale": 1.0
+      }
+    },
+    "troll_red_moon": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Spike1.NS_Blood_Magic_Spike1"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Spike2.NS_Blood_Magic_Spike2"
+        ],
+        "scale": 1.0
+      }
+    },
+    "troll_twin_throw": {
+      "projectile": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Wind_Blade.NS_Air_Magic_Wind_Blade"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Crystal1.NS_Blood_Magic_Crystal1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "troll_returning_axes": {
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Blades.NS_Air_Magic_Blades"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Crystal2.NS_Blood_Magic_Crystal2"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Arrow1.NS_Air_Magic_Arrow1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "dryad_root_snare": {
+      "area": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/VineAttack/NS_Vine_attack1.NS_Vine_attack1"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/State_VFX/VFX_Niagara/NS_State_VFX_Root1.NS_State_VFX_Root1"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/Projectile/NS_Explosion_Small_Nature.NS_Explosion_Small_Nature"
+        ],
+        "scale": 1.0
+      }
+    },
+    "dryad_seed_mend": {
+      "cast": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/Projectile/NS_Projectile_Grenade_Nature.NS_Projectile_Grenade_Nature"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/Projectile/NS_Explosion_Nature.NS_Explosion_Nature"
+        ],
+        "scale": 1.0
+      }
+    },
+    "dryad_thorn_line": {
+      "area": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/VineAttack/NS_Vine_attack2.NS_Vine_attack2"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_SpikeHit.NS_Posion_Magic_SpikeHit"
+        ],
+        "scale": 1.0
+      }
+    },
+    "dryad_green_covenant": {
+      "impact": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/Projectile/NS_Ribbon_Nature.NS_Ribbon_Nature"
+        ],
+        "scale": 1.0
+      }
+    },
+    "dryad_grove_renewal": {
+      "area": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/RuneParticle/NS_TextureParticle_Forest.NS_TextureParticle_Forest"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/Aura/NS_Wing_Nature.NS_Wing_Nature"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/Projectile/NS_Explosion_Grenade_Nature.NS_Explosion_Grenade_Nature"
+        ],
+        "scale": 1.0
+      }
+    },
+    "whisp_guiding_mote": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Orb.NS_Air_Magic_Orb"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_Splash1.NS_Water_Magic_Splash1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "whisp_spirit_tether": {
+      "cast": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/HealBeam/NS_HealBeam.NS_HealBeam"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_Hit.NS_Water_Magic_Hit"
+        ],
+        "scale": 1.0
+      }
+    },
+    "whisp_fey_trail": {
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_Waterflow1.NS_Water_Magic_Waterflow1"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_Splash2.NS_Water_Magic_Splash2"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_Muzzle.NS_Water_Magic_Muzzle"
+        ],
+        "scale": 1.0
+      }
+    },
+    "whisp_lantern_soul": {
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_TargetBubble.NS_Water_Magic_TargetBubble"
+        ],
+        "scale": 1.0
+      }
+    },
+    "whisp_constellation": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Lightning_Magic/VFX_Niagara/NS_Lightning_Magic_Aura1.NS_Lightning_Magic_Aura1"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_Splash3.NS_Water_Magic_Splash3"
+        ],
+        "scale": 1.0
+      }
+    },
+    "centaur_grove_javelin": {
+      "projectile": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Projectile2.NS_Posion_Magic_Projectile2"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Hit.NS_Posion_Magic_Hit"
+        ],
+        "scale": 1.0
+      },
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Area1.NS_Posion_Magic_Area1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "centaur_trailblaze": {
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Airflow.NS_Air_Magic_Airflow"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Dash.NS_Air_Magic_Dash"
+        ],
+        "scale": 1.0
+      }
+    },
+    "centaur_herd_call": {
+      "cast": {
+        "paths": [
+          "/Game/Forest_VFX/Niagara/Projectile/NS_Projectile_Grenade_Big_Nature.NS_Projectile_Grenade_Big_Nature"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Explosion1.NS_Posion_Magic_Explosion1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "centaur_steady_gait": {
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Tornado1.NS_Air_Magic_Tornado1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "centaur_spring_march": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_AreaWave.NS_Posion_Magic_AreaWave"
+        ],
+        "scale": 1.0
+      },
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Area2.NS_Posion_Magic_Area2"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Explosion2.NS_Posion_Magic_Explosion2"
+        ],
+        "scale": 1.0
+      }
+    },
+    "keeper_dawn_beam": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Beam.NS_Light_Magic_Beam"
+        ],
+        "scale": 1.0
+      },
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Area_Beam.NS_Light_Magic_Area_Beam"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Hit3.NS_Light_Magic_Hit3"
+        ],
+        "scale": 1.0
+      }
+    },
+    "keeper_lantern_ward": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Circle.NS_Light_Magic_Circle"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Hit1.NS_Light_Magic_Hit1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "keeper_beacon": {
+      "area": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_AOE1.NS_Light_Magic_AOE1"
+        ],
+        "scale": 1.0
+      },
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Top_Area.NS_Light_Magic_Top_Area"
+        ],
+        "scale": 1.0
+      }
+    },
+    "keeper_last_light": {
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Blink1.NS_Light_Magic_Blink1"
+        ],
+        "scale": 1.0
+      }
+    },
+    "keeper_sunrise": {
+      "cast": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Aura.NS_Light_Magic_Aura"
+        ],
+        "scale": 1.0
+      },
+      "impact": {
+        "paths": [
+          "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Blink2.NS_Light_Magic_Blink2"
+        ],
+        "scale": 1.0
+      }
     }
   }
 }

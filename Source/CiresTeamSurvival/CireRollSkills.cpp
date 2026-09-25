@@ -1,4 +1,6 @@
 #include "CireRollSkills.h"
+#include "CireKitSkills.h" // kits-complete
+#include "CireScalingKits.h"
 #include "CireAbilityDB.h"
 #include "CireBuffs.h"
 #include "CireCombatEvents.h"
@@ -40,7 +42,7 @@ float Now(const UWorld* W){return W?W->GetTimeSeconds():0.f;}
 bool Has(const ACireHero* H,const FString& Id){return H&&H->HasSkill(Id);}
 float Effect(const ACireHero* H,const FString& Id)
 {
-    return CireAbilityDB::EffectiveStats(Id,FMath::Max(1,CireSkillShop::Level(H,Id))).Effect;
+    return CireKits::ScaledEffect(H,Id,0.f); // kits-complete: level x potency (1 for the primary-ratio skills)
 }
 FCireAbilityStats Stats(const ACireHero* H,const FString& Id){return CireAbilityDB::EffectiveStats(Id,FMath::Max(1,CireSkillShop::Level(H,Id)));}
 // Every ability scales off the owner's primary stat (STR/AGI/INT): base effect + ratio x primary.
@@ -182,7 +184,8 @@ void CireRollSkills::OnRoll(ACireHero* H,FVector Direction)
         ACireHero* Best=nullptr;float BestDist=800.f*800.f;
         for(auto* A:Mode->Heroes)if(IsValid(A)&&A!=H&&!A->bDead&&A->TeamId==H->TeamId&&!A->IsA<ACireSummon>())
         {const float D=FVector::DistSquared(A->GetActorLocation(),H->GetActorLocation());if(D<BestDist){BestDist=D;Best=A;}}
-        if(Best){Guard(Best,3.f);CireBuffs::Apply(Best,TEXT("iron_guard"),3.f,H);CireCombat::ApplyHealing(H,Best,Best->MaxHealth*Effect(H,TEXT("shield_tumble"))/100.f+Primary(H,TEXT("shield_tumble")),TEXT("Shield Tumble"));}
+        // kits-complete: a roll reaction heals over 3s (visible Tumbling Mend) instead of carrying a cast time.
+        if(Best){Guard(Best,3.f);CireBuffs::Apply(Best,TEXT("iron_guard"),3.f,H);CireKitSkills::StartHealOverTime(H,Best,Best->MaxHealth*Effect(H,TEXT("shield_tumble"))/100.f+Primary(H,TEXT("shield_tumble")),3.f,TEXT("Shield Tumble"));}
     }
     if(CireBuffs::IsActive(H,MineId))
     {
@@ -213,7 +216,7 @@ void CireRollSkills::OnDodgedHit(ACireHero* H,AActor* Attacker)
             CireCombat::ApplyStrike(H,Attacker,(Effect(H,TEXT("riposte_roll"))+Primary(H,TEXT("riposte_roll")))*(Mode?Mode->Power(H->TeamId):1.f),TEXT("Riposte"));
         }
     }
-    if(CireBuffs::IsActive(H,EvasiveId))CireCombat::ApplyHealing(H,H,H->MaxHealth*Effect(H,TEXT("evasive_stance"))/100.f+Primary(H,TEXT("evasive_stance")),TEXT("Evasive Stance"));
+    if(CireBuffs::IsActive(H,EvasiveId))CireKitSkills::StartHealOverTime(H,H,H->MaxHealth*Effect(H,TEXT("evasive_stance"))/100.f+Primary(H,TEXT("evasive_stance")),3.f,TEXT("Evasive Stance")); // kits-complete: visible HoT
 }
 
 bool CireRollSkills::TryBlur(ACireHero* H,AActor* Attacker,const FString& AbilityName)
@@ -313,10 +316,12 @@ bool CireRollSkills::RunSmoke(ACireGameMode* Mode)
         OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Health,FMath::Min(1000.f,500.f+2*Heal),1.f),TEXT("second roll (charge) heals again"));}
     // Cooldown % cut per roll.
     Learn({TEXT("hasted_tumble"),TEXT("tumble_strike"),TEXT("stone_skin")});H->Cooldowns={10.f,20.f,0.f};
-    OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Cooldowns[1],17.f,.01f),TEXT("hasted tumble cuts active cooldowns by 15%"));
-    OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Cooldowns[1],14.45f,.01f),TEXT("cut applies per roll"));
+    // kits-complete: roll effects carry potency (x1 + 0.4% per PRIMARY point), so expectations follow it.
+    const float Cut=1.f-.15f*CireKits::Potency(H,TEXT("hasted_tumble"));
+    OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Cooldowns[1],20.f*Cut,.01f),TEXT("hasted tumble cuts active cooldowns by 15% x potency"));
+    OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Cooldowns[1],20.f*Cut*Cut,.01f),TEXT("cut applies per roll"));
     // Windrunner and move speed.
-    Learn({TEXT("windrunner")});OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(MoveSpeedMultiplier(H),1.1f,.001f),TEXT("windrunner +10% move speed"));
+    Learn({TEXT("windrunner")});OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(MoveSpeedMultiplier(H),1.f+.1f*CireKits::Potency(H,TEXT("windrunner")),.001f),TEXT("windrunner +10% move speed x potency"));
     // Quickened Mind: next timed cast is instant, consumed once.
     Learn({TEXT("quickened_mind"),TEXT("restoring_light")});H->Target=H;OnRoll(H,FVector::ForwardVector);
     Check(CireBuffs::IsActive(H,QuickId),TEXT("quickened mind arms after a roll"));
@@ -325,12 +330,12 @@ bool CireRollSkills::RunSmoke(ACireGameMode* Mode)
     CireCrowdControl::CancelCast(H,TEXT(""));
     // Next-attack empowerment and guaranteed crit.
     Learn({TEXT("tumblers_edge")});OnRoll(H,FVector::ForwardVector);
-    Check(FMath::IsNearlyEqual(ModifyOutgoingDamage(H,Ally,100,TEXT("Bow shot")),150.f,.1f)&&FMath::IsNearlyEqual(ModifyOutgoingDamage(H,Ally,100,TEXT("Bow shot")),100.f,.1f),TEXT("tumbler's edge empowers one attack"));
+    Check(FMath::IsNearlyEqual(ModifyOutgoingDamage(H,Ally,100,TEXT("Bow shot")),100.f+50.f*CireKits::Potency(H,TEXT("tumblers_edge")),.1f)&&FMath::IsNearlyEqual(ModifyOutgoingDamage(H,Ally,100,TEXT("Bow shot")),100.f,.1f),TEXT("tumbler's edge empowers one attack"));
     Learn({TEXT("killer_instinct")});OnRoll(H,FVector::ForwardVector);
     Check(FMath::IsNearlyEqual(ModifyOutgoingDamage(H,Ally,100,TEXT("Ember Lance")),100.f,.1f)&&FMath::IsNearlyEqual(ModifyOutgoingDamage(H,Ally,100,TEXT("Bow shot")),200.f,.1f),TEXT("killer instinct crits the next basic attack only"));
     // Momentum stacks per roll.
     Learn({TEXT("momentum")});for(int32 I=0;I<7;++I)OnRoll(H,FVector::ForwardVector);
-    Check(FMath::IsNearlyEqual(ModifyOutgoingDamage(H,Ally,100,TEXT("Ember Lance")),120.f,.1f),TEXT("momentum caps at 5 stacks (+20%)"));
+    Check(FMath::IsNearlyEqual(ModifyOutgoingDamage(H,Ally,100,TEXT("Ember Lance")),100.f+20.f*CireKits::Potency(H,TEXT("momentum")),.1f),TEXT("momentum caps at 5 stacks (+20% x potency)"));
     // Slippery cleanse.
     Learn({TEXT("slippery_roll")});H->SlowUntil=Now(H->GetWorld())+10;CireBuffs::Apply(H,TEXT("healing_cut"),10,Ally,50);
     OnRoll(H,FVector::ForwardVector);Check(H->SlowUntil==0&&CireBuffs::IsActive(H,TEXT("healing_cut")),TEXT("first roll cleanses the slow"));
@@ -339,7 +344,7 @@ bool CireRollSkills::RunSmoke(ACireGameMode* Mode)
     Learn({TEXT("shadow_dance"),TEXT("bloodrush")});H->Energy=100;
     Check(Cast(H,0,TEXT("shadow_dance"))&&CireBuffs::IsActive(H,DanceId)&&H->Cooldowns[0]>0,TEXT("shadow dance opens its window and costs"));
     H->Mobility->RollStartedAt=Now(H->GetWorld());H->Mobility->ReadyAt=H->Mobility->RollStartedAt+3.5f;H->Energy=50;
-    OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Mobility->ReadyAt-H->Mobility->RollStartedAt,1.05f,.01f)&&H->Energy>=75,TEXT("shadow dance: 70% faster recovery and refund"));
+    OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Mobility->ReadyAt-H->Mobility->RollStartedAt,3.5f*(1.f-FMath::Min(1.f,.7f*CireKits::Potency(H,TEXT("shadow_dance")))),.01f)&&H->Energy>=75,TEXT("shadow dance: 70% x potency faster recovery and refund"));
     OnKill(H);Check(H->Mobility->ReadyAt==0,TEXT("bloodrush resets the roll on kill"));
     // Riposte counter on an i-frame dodge, once per roll; Evasive Stance heals on dodge.
     auto* Enemy=Mode->GetWorld()->SpawnActor<ACireMonster>(Origin+FVector(200,0,0),FRotator::ZeroRotator,P);

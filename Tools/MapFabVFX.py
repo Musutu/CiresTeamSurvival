@@ -245,6 +245,8 @@ def main() -> int:
         "schools": schools,
         "buffs": buffs,
     }
+    if existing.get("abilities"):  # kits-complete: per-ability overlays (Tools/MapKitVFX.py) are hand-authored; keep them
+        data["abilities"] = existing["abilities"]
     OUT.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     print("wrote " + str(OUT))
     return 0

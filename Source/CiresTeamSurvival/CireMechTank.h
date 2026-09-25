@@ -23,6 +23,8 @@ public:
     /** Slams now (ignores the cooldown). Returns units hit. */
     int32 Slam();
     AActor* ChooseAttackTarget() const;
+    /** kits-complete: DPS / Support champions are protected before other allies. */
+    static bool IsProtectedRole(const ACireHero* Ally);
     float TauntCooldown = 0.f, SlamCooldown = 0.f;
     float TauntBaseCooldown = 8.f, SlamBaseCooldown = 6.f, TauntRange = 900.f, SlamRadius = 320.f, TauntSeconds = 3.f;
     UPROPERTY() TObjectPtr<AActor> LastTaunted;

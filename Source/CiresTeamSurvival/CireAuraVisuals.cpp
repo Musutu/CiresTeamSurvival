@@ -77,7 +77,7 @@ bool CireAuraData::Parse(const FString& Text,TMap<FName,FCireAuraDef>& Out,FCire
     if(!FJsonSerializer::Deserialize(Reader,Root)||!Root)return Bad(TEXT("Invalid BuffVisuals JSON"));
     double Version=0;const TSharedPtr<FJsonObject>* Buffs=nullptr;
     if(!Root->TryGetNumberField(TEXT("schemaVersion"),Version)||Version!=1||!Root->TryGetObjectField(TEXT("buffs"),Buffs)||
-        (*Buffs)->Values.IsEmpty()||(*Buffs)->Values.Num()>128)return Bad(TEXT("Expected schemaVersion 1 and 1..128 buffs"));
+        (*Buffs)->Values.IsEmpty()||(*Buffs)->Values.Num()>256)return Bad(TEXT("Expected schemaVersion 1 and 1..256 buffs")); // kits-complete: 128 -> 256 (roster kit buffs)
     FCireAuraLimits Limits;
     const TSharedPtr<FJsonObject>* LimitRow=nullptr;
     if(Root->TryGetObjectField(TEXT("limits"),LimitRow))

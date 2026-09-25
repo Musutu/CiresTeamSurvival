@@ -603,8 +603,12 @@ void ACireSpellVisual::UpdateFabVFX()
     }
     bFabTried=true;
     const ECireSchool School=Shape.bHeal?ECireSchool::Life:static_cast<ECireSchool>(FMath::Clamp(Family,0,static_cast<int32>(ECireSchool::Count)-1));
-    const CireFabVFX::FEntry* Entry=CireFabVFX::Find(School,FabRole);
+    // kits-complete: the skill's own overlay first (area visuals follow their zone's ability), then the school table.
+    FName AbilityKey=Skill;
+    if(Mode==EMode::AreaFollow)if(const ACireAreaEffect* Area=FollowedArea.Get())AbilityKey=FName(*Area->AreaSpec.AbilityName);
+    const CireFabVFX::FEntry* Entry=CireFabVFX::FindAbility(AbilityKey,FabRole);
     UNiagaraSystem* System=CireFabVFX::Resolve(Entry);
+    if(!System){Entry=CireFabVFX::Find(School,FabRole);System=CireFabVFX::Resolve(Entry);}
     if(!System){UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_NONE skill=%s role=%s"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole));return;} // pack not installed: the procedural presentation carries the cue alone
     const float Scale=Entry->Scale*Extra*(bFollowArea?1.f:Size);
     UNiagaraComponent* C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)

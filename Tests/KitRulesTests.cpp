@@ -129,6 +129,12 @@ void MechTank()
     c[2].Alive = false;
     CHECK(SelectMechTauntTarget(c, 900) == -1);      // only the summoner's attacker left: no taunt
     CHECK(SelectMechTauntTarget({{9, 1000, true, false, true, false}}, 900) == -1); // out of range
+    // kits-complete: an enemy on a DPS / Support ally outranks a nearer one on another tank.
+    {
+        std::vector<MechCandidate> p = {{1, 100, true, false, true, false, false}, {2, 400, true, false, true, false, true}, {3, 50, true, false, false, false, false}};
+        CHECK(SelectMechTauntTarget(p, 900) == 1);
+        CHECK(SelectMechAttackTarget(p, 900) == 1);
+    }
 }
 }
 

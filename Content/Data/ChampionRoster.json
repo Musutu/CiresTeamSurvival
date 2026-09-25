@@ -506,7 +506,7 @@
         {
           "id": "bear_maul",
           "displayName": "Gravewood Maul",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Heavy claw strike generates extra threat against its target.",
           "vfxFamily": "primal",
           "delivery": "targeted"
@@ -514,7 +514,7 @@
         {
           "id": "bear_roar",
           "displayName": "Deepwood Roar",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "A visible cone roar taunts enemies and weakens their next attack.",
           "vfxFamily": "primal",
           "delivery": "ground_cone"
@@ -522,7 +522,7 @@
         {
           "id": "bear_charge",
           "displayName": "Rootbreaker Charge",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Telegraphed short rush stops at a blocking wall and stuns the first enemy.",
           "vfxFamily": "primal",
           "delivery": "ground_line"
@@ -530,7 +530,7 @@
         {
           "id": "bear_hibernate",
           "displayName": "Ironroot Slumber",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Channel self-healing while stationary; taking damage can interrupt it.",
           "vfxFamily": "nature",
           "delivery": "self"
@@ -555,7 +555,7 @@
       "passive": {
         "id": "bear_ancient_hide",
         "displayName": "Ancient Hide",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "After sustained incoming attacks gain a short defensive hide buff.",
         "vfxFamily": "primal",
         "delivery": "passive"
@@ -563,7 +563,7 @@
       "ultimate": {
         "id": "bear_colossus",
         "displayName": "Elder of the Deepwood",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Temporary larger bear form increases threat and defensive reach.",
         "vfxFamily": "primal",
         "delivery": "transformation"
@@ -599,7 +599,7 @@
         {
           "id": "paladin_righteous_flail",
           "displayName": "Righteous Flail",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Shield relic anchors a short flail cleave that marks threatened enemies.",
           "vfxFamily": "holy",
           "delivery": "ground_cone"
@@ -607,7 +607,7 @@
         {
           "id": "paladin_relic_vow",
           "displayName": "Relic Vow",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Bind a consenting ally to the relic for temporary shared protection.",
           "vfxFamily": "holy",
           "delivery": "ally"
@@ -693,7 +693,7 @@
         {
           "id": "paladin_holy_flail",
           "displayName": "Merciful Censer",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Flail impact releases a healing pulse around the struck hostile target.",
           "vfxFamily": "holy",
           "delivery": "targeted"
@@ -701,7 +701,7 @@
         {
           "id": "paladin_pilgrim_light",
           "displayName": "Pilgrim Light",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "A slow visible orb heals the first allied unit it reaches.",
           "vfxFamily": "holy",
           "delivery": "projectile"
@@ -709,7 +709,7 @@
         {
           "id": "paladin_relic_vow",
           "displayName": "Relic Vow",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Bind a consenting ally to the relic for temporary shared protection.",
           "vfxFamily": "holy",
           "delivery": "ally"
@@ -786,7 +786,7 @@
         {
           "id": "miner_pickfall",
           "displayName": "Pickfall",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Armor-chipping pick strike leaves a short vulnerability debuff.",
           "vfxFamily": "stone",
           "delivery": "targeted"
@@ -794,7 +794,7 @@
         {
           "id": "miner_faultline",
           "displayName": "Faultline",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Warning line erupts in stone after a delay and briefly slows enemies.",
           "vfxFamily": "stone",
           "delivery": "ground_line"
@@ -802,7 +802,7 @@
         {
           "id": "miner_lantern",
           "displayName": "Deep Lantern",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Place a lantern that reveals the local ground and grants allies resistance.",
           "vfxFamily": "ember",
           "delivery": "construct"
@@ -835,7 +835,7 @@
       "passive": {
         "id": "miner_orehide",
         "displayName": "Orehide",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Blocking damage builds a small temporary mineral shield.",
         "vfxFamily": "stone",
         "delivery": "passive"
@@ -843,7 +843,7 @@
       "ultimate": {
         "id": "miner_mountain",
         "displayName": "Heart of the Mountain",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "A warned stone ring rises to protect allies and constrain enemy movement.",
         "vfxFamily": "stone",
         "delivery": "ground_circle"
@@ -879,7 +879,7 @@
         {
           "id": "golem_granite_fist",
           "displayName": "Granite Fist",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Large rocky golem slams a warned cone and generates tank threat.",
           "vfxFamily": "stone",
           "delivery": "ground_cone"
@@ -887,7 +887,7 @@
         {
           "id": "golem_ether_anchor",
           "displayName": "Ether Anchor",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Anchor an enemy briefly within a visible stone circle.",
           "vfxFamily": "ether",
           "delivery": "ground_circle"
@@ -928,7 +928,7 @@
       "passive": {
         "id": "golem_construct_core",
         "displayName": "Construct Core",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Incoming damage slowly charges the selected golem role resource.",
         "vfxFamily": "ether",
         "delivery": "passive"
@@ -936,7 +936,7 @@
       "ultimate": {
         "id": "golem_worldstone",
         "displayName": "Worldstone Awakened",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Temporary ether overgrowth amplifies the selected tank, support or bruiser function.",
         "vfxFamily": "ether",
         "delivery": "transformation"
@@ -973,7 +973,7 @@
         {
           "id": "golem_moss_bloom",
           "displayName": "Verdant Bloom",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Mossy rock opens a warned healing garden for allies.",
           "vfxFamily": "nature",
           "delivery": "ground_circle"
@@ -981,7 +981,7 @@
         {
           "id": "golem_living_granite",
           "displayName": "Living Granite",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Apply a moss-covered shield to an ally; effective healing restores a portion.",
           "vfxFamily": "nature",
           "delivery": "ally"
@@ -1030,7 +1030,7 @@
       "ultimate": {
         "id": "golem_worldstone",
         "displayName": "Worldstone Awakened",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Temporary ether overgrowth amplifies the selected tank, support or bruiser function.",
         "vfxFamily": "ether",
         "delivery": "transformation"
@@ -1067,7 +1067,7 @@
         {
           "id": "golem_fel_fist",
           "displayName": "Felfire Fist",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Fel-flamed golem punches through a short cone of enemies.",
           "vfxFamily": "fel",
           "delivery": "ground_cone"
@@ -1075,7 +1075,7 @@
         {
           "id": "golem_ether_furnace",
           "displayName": "Ether Furnace",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Consume stored ether to empower a short sequence of basic attacks.",
           "vfxFamily": "fel",
           "delivery": "self"
@@ -1116,7 +1116,7 @@
       "passive": {
         "id": "golem_construct_core",
         "displayName": "Construct Core",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Incoming damage slowly charges the selected golem role resource.",
         "vfxFamily": "ether",
         "delivery": "passive"
@@ -1124,7 +1124,7 @@
       "ultimate": {
         "id": "golem_worldstone",
         "displayName": "Worldstone Awakened",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Temporary ether overgrowth amplifies the selected tank, support or bruiser function.",
         "vfxFamily": "ether",
         "delivery": "transformation"
@@ -1161,7 +1161,7 @@
         {
           "id": "chieftain_axe_hook",
           "displayName": "Chieftain Hook",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "An axe hook pulls the first unprotected target a short distance.",
           "vfxFamily": "war",
           "delivery": "projectile"
@@ -1169,7 +1169,7 @@
         {
           "id": "chieftain_banner",
           "displayName": "Blood-Oath Banner",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Plant a destructible banner that bolsters nearby allies.",
           "vfxFamily": "war",
           "delivery": "construct"
@@ -1210,7 +1210,7 @@
       "passive": {
         "id": "chieftain_courage",
         "displayName": "Unbroken Clan",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Nearby allies grant the chieftain a capped resilience bonus.",
         "vfxFamily": "war",
         "delivery": "passive"
@@ -1218,7 +1218,7 @@
       "ultimate": {
         "id": "chieftain_earthshout",
         "displayName": "Earthshout",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Large delayed shout taunts enemies and shields allies in a visible circle.",
         "vfxFamily": "war",
         "delivery": "ground_circle"
@@ -1254,7 +1254,7 @@
         {
           "id": "behemoth_totem_sweep",
           "displayName": "Totem Sweep",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Elephant-rhino hybrid swings its massive totem through a warned cone.",
           "vfxFamily": "earth",
           "delivery": "ground_cone"
@@ -1262,7 +1262,7 @@
         {
           "id": "behemoth_tusk_line",
           "displayName": "Tuskbreaker",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "A heavy line charge stops at solid collision.",
           "vfxFamily": "earth",
           "delivery": "ground_line"
@@ -1270,7 +1270,7 @@
         {
           "id": "behemoth_totem_bulwark",
           "displayName": "Totem Bulwark",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Brace the massive totem as a temporary destructible barricade.",
           "vfxFamily": "earth",
           "delivery": "construct"
@@ -1303,7 +1303,7 @@
       "passive": {
         "id": "behemoth_ancestral_weight",
         "displayName": "Ancestral Weight",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Standing still briefly increases resistance and threat retention.",
         "vfxFamily": "earth",
         "delivery": "passive"
@@ -1311,7 +1311,7 @@
       "ultimate": {
         "id": "behemoth_stampede",
         "displayName": "Ancestral Stampede",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Warned spectral stampede crosses a broad ground lane.",
         "vfxFamily": "earth",
         "delivery": "ground_line"
@@ -1347,7 +1347,7 @@
         {
           "id": "drakish_dragon_oath",
           "displayName": "Dragon Oath",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Timed dragon form grants exactly two cleaving slash attacks, then breathes a weak fireball toward the furthest valid enemy to gain ranged threat; returning to human sword/shield form ends the sequence.",
           "vfxFamily": "dragon",
           "delivery": "transformation"
@@ -1355,7 +1355,7 @@
         {
           "id": "drakish_scale_guard",
           "displayName": "Scale Guard",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Brief dragon-scale defense protects the sword-and-shield footman.",
           "vfxFamily": "dragon",
           "delivery": "self"
@@ -1363,7 +1363,7 @@
         {
           "id": "drakish_wing_rebuke",
           "displayName": "Wing Rebuke",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Warned wing sweep knocks nearby enemies away from allies.",
           "vfxFamily": "dragon",
           "delivery": "ground_cone"
@@ -1396,7 +1396,7 @@
       "passive": {
         "id": "drakish_ember_memory",
         "displayName": "Ember Memory",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "The weak threat fireball applies a short, minor burn; no full damage-spell scaling.",
         "vfxFamily": "dragon",
         "delivery": "passive"
@@ -1404,7 +1404,7 @@
       "ultimate": {
         "id": "drakish_ancient_pact",
         "displayName": "Ancient Pact",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Extend one dragon transformation with a visible landing circle and group guard.",
         "vfxFamily": "dragon",
         "delivery": "transformation"
@@ -1534,7 +1534,7 @@
         {
           "id": "troll_axe_frenzy",
           "displayName": "Axe Frenzy",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Rapid dual-axe melee sequence with a visible commitment window.",
           "vfxFamily": "blood",
           "delivery": "targeted"
@@ -1542,7 +1542,7 @@
         {
           "id": "troll_blood_leap",
           "displayName": "Bloodbound Leap",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Leap to a warned location and cleave on landing.",
           "vfxFamily": "blood",
           "delivery": "ground_circle"
@@ -1583,7 +1583,7 @@
       "passive": {
         "id": "troll_hunger",
         "displayName": "Berserker Hunger",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Missing health grants a capped attack-speed bonus.",
         "vfxFamily": "blood",
         "delivery": "passive"
@@ -1591,7 +1591,7 @@
       "ultimate": {
         "id": "troll_red_moon",
         "displayName": "Red Moon Frenzy",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Brief ultimate empowers the selected melee or thrown dual-axe form.",
         "vfxFamily": "blood",
         "delivery": "self"
@@ -1627,7 +1627,7 @@
         {
           "id": "troll_twin_throw",
           "displayName": "Twin Throw",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Launch two visible axes with independent collision and hit limits.",
           "vfxFamily": "blood",
           "delivery": "projectile"
@@ -1635,7 +1635,7 @@
         {
           "id": "troll_returning_axes",
           "displayName": "Returning Axes",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Recall thrown axes along warned return lanes; each target has a bounded hit count.",
           "vfxFamily": "blood",
           "delivery": "ground_line"
@@ -1676,7 +1676,7 @@
       "passive": {
         "id": "troll_hunger",
         "displayName": "Berserker Hunger",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Missing health grants a capped attack-speed bonus.",
         "vfxFamily": "blood",
         "delivery": "passive"
@@ -1684,7 +1684,7 @@
       "ultimate": {
         "id": "troll_red_moon",
         "displayName": "Red Moon Frenzy",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Brief ultimate empowers the selected melee or thrown dual-axe form.",
         "vfxFamily": "blood",
         "delivery": "self"
@@ -1721,7 +1721,7 @@
         {
           "id": "dryad_root_snare",
           "displayName": "Root Snare",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Warned roots hold enemies inside a small ground circle.",
           "vfxFamily": "nature",
           "delivery": "ground_circle"
@@ -1729,7 +1729,7 @@
         {
           "id": "dryad_seed_mend",
           "displayName": "Seed Mend",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Plant a healing seed on an ally that blooms after a short delay.",
           "vfxFamily": "nature",
           "delivery": "ally"
@@ -1737,7 +1737,7 @@
         {
           "id": "dryad_thorn_line",
           "displayName": "Thornweave",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "A visible thorn line slows enemies crossing it.",
           "vfxFamily": "nature",
           "delivery": "ground_line"
@@ -1770,7 +1770,7 @@
       "passive": {
         "id": "dryad_green_covenant",
         "displayName": "Green Covenant",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Effective healing builds a small, capped regeneration reserve.",
         "vfxFamily": "nature",
         "delivery": "passive"
@@ -1778,7 +1778,7 @@
       "ultimate": {
         "id": "dryad_grove_renewal",
         "displayName": "Grove Renewal",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Grow a visible sanctuary of healing trees for living allies.",
         "vfxFamily": "nature",
         "delivery": "ground_circle"
@@ -1815,7 +1815,7 @@
         {
           "id": "whisp_guiding_mote",
           "displayName": "Guiding Mote",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Send a visible healing mote to the first allied unit in its path.",
           "vfxFamily": "spirit",
           "delivery": "projectile"
@@ -1823,7 +1823,7 @@
         {
           "id": "whisp_spirit_tether",
           "displayName": "Spirit Tether",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Short-range healing tether breaks immediately outside its range.",
           "vfxFamily": "spirit",
           "delivery": "ally"
@@ -1831,7 +1831,7 @@
         {
           "id": "whisp_fey_trail",
           "displayName": "Fey Trail",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Leave temporary luminous ground motes that restore allies on contact.",
           "vfxFamily": "spirit",
           "delivery": "ground_line"
@@ -1864,7 +1864,7 @@
       "passive": {
         "id": "whisp_lantern_soul",
         "displayName": "Lantern Soul",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Remaining near an injured ally improves resource regeneration.",
         "vfxFamily": "spirit",
         "delivery": "passive"
@@ -1872,7 +1872,7 @@
       "ultimate": {
         "id": "whisp_constellation",
         "displayName": "Kindred Constellation",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Visible links pulse healing to nearby living allies; no revival.",
         "vfxFamily": "spirit",
         "delivery": "ground_circle"
@@ -1910,7 +1910,7 @@
         {
           "id": "centaur_grove_javelin",
           "displayName": "Grove Javelin",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "A root-tipped javelin harms enemies and leaves a small healing bloom.",
           "vfxFamily": "nature",
           "delivery": "projectile"
@@ -1918,7 +1918,7 @@
         {
           "id": "centaur_trailblaze",
           "displayName": "Evergrove Trail",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "A warned forward path grants allied movement speed.",
           "vfxFamily": "nature",
           "delivery": "ground_line"
@@ -1926,7 +1926,7 @@
         {
           "id": "centaur_herd_call",
           "displayName": "Herd Call",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Call a temporary spectral grove companion with a bounded lifetime.",
           "vfxFamily": "nature",
           "delivery": "summon"
@@ -1959,7 +1959,7 @@
       "passive": {
         "id": "centaur_steady_gait",
         "displayName": "Steady Gait",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "Briefly moving without damage strengthens the next effective heal.",
         "vfxFamily": "nature",
         "delivery": "passive"
@@ -1967,7 +1967,7 @@
       "ultimate": {
         "id": "centaur_spring_march",
         "displayName": "Spring March",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "A moving grove aura sustains allies during a short formation advance.",
         "vfxFamily": "nature",
         "delivery": "ground_circle"
@@ -2004,7 +2004,7 @@
         {
           "id": "keeper_dawn_beam",
           "displayName": "Dawn Beam",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "A warned light line heals allies and lightly damages enemies.",
           "vfxFamily": "light",
           "delivery": "ground_line"
@@ -2012,7 +2012,7 @@
         {
           "id": "keeper_lantern_ward",
           "displayName": "Lantern Ward",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Place a destructible ward that grants a small allied shield pulse.",
           "vfxFamily": "light",
           "delivery": "construct"
@@ -2020,7 +2020,7 @@
         {
           "id": "keeper_beacon",
           "displayName": "Beacon of Return",
-          "status": "planned",
+          "status": "implemented",
           "mechanic": "Mark an allied rally point with a visible ground beacon and short haste buff.",
           "vfxFamily": "light",
           "delivery": "ground_circle"
@@ -2053,7 +2053,7 @@
       "passive": {
         "id": "keeper_last_light",
         "displayName": "Last Light",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "A low-health ally can receive one small emergency shield per cooldown.",
         "vfxFamily": "light",
         "delivery": "passive"
@@ -2061,7 +2061,7 @@
       "ultimate": {
         "id": "keeper_sunrise",
         "displayName": "Sunrise Vigil",
-        "status": "planned",
+        "status": "implemented",
         "mechanic": "A broad, clearly warned radiance restores living allies over time.",
         "vfxFamily": "light",
         "delivery": "ground_circle"

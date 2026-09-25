@@ -16,6 +16,8 @@ struct FCireMovementTuning
     float KeyboardTurnRate=180,BackpedalScale=.65f;
     // Whole-body scale for champions whose role is Tank (mesh, capsule, ring and camera follow).
     float TankBodyScale=1.15f;
+    // kits-complete: the Gravewood Bear reads clearly bigger than any human champion (replaces the tank scale).
+    float BearBodyScale=1.45f;
 };
 namespace CireMovement
 {

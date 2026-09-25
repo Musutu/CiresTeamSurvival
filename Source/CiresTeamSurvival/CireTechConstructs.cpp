@@ -1,5 +1,6 @@
 // new-champions: Aetheri Constructs (see CireTechConstructs.h, Docs/NewChampions.md).
 #include "CireTechConstructs.h"
+#include "CireKitSkills.h" // kits-complete
 #include "CireScalingKits.h" // scaling-kits
 #include "CireConstruct.h"
 #include "CireGame.h"
@@ -62,6 +63,13 @@ TArray<FCireTechRecipe> BuildRecipes()
       X.Damage = 20; X.Scaling = .3f; X.Trigger = 150; X.Radius = 150; X.Magnitude = 1.5f; X.Limit = 3; Out.Add(X); }
     { auto X = R(TEXT("aether_nexus"), TEXT("Aether Nexus"), K::Pylon, TEXT("nexus"), 500, 10, 90, 280, White);
       X.Interval = .5f; X.Radius = 650; X.Magnitude = .05f; X.Limit = 1; Out.Add(X); }
+    // ---- kits-complete: roster champion constructs (fields handled by CireKitSkills::PylonPulse) ----
+    { auto X = R(TEXT("miner_lantern"), TEXT("Deep Lantern"), K::Pylon, TEXT("resist"), 220, 15, 50, 170, Gold);
+      X.Interval = .5f; X.Radius = 450; X.Magnitude = .20f; X.Limit = 1; Out.Add(X); }
+    { auto X = R(TEXT("chieftain_banner"), TEXT("Blood-Oath Banner"), K::Pylon, TEXT("rally"), 260, 15, 50, 260, Crimson);
+      X.Interval = .5f; X.Radius = 500; X.Magnitude = .15f; X.Limit = 1; Out.Add(X); }
+    { auto X = R(TEXT("keeper_lantern_ward"), TEXT("Lantern Ward"), K::Pylon, TEXT("barrier"), 200, 12, 50, 190, White);
+      X.Interval = 3.f; X.Radius = 450; X.Magnitude = .40f; X.Limit = 1; Out.Add(X); }
     // ---- Aetheri monster race (damage = unit damage x the ability's damageMultiplier) ----
     { auto X = R(TEXT("npc_photon_turret"), TEXT("Warp Turret"), K::Turret, nullptr, 180, 20, 70, 150, Crimson);
       X.Range = 900; X.Interval = 1.2f; X.Damage = 1; X.Limit = 2; X.bMonster = true; Out.Add(X); }
@@ -216,10 +224,10 @@ bool CireTechConstructs::BuildSpec(AActor* Owner, FName RecipeId, FCireConstruct
         const auto* Def = CireAbilityDB::Find(X->Id.ToString());
         S.CastRange = Def && Def->Range > 0 ? Def->Range + 60.f : 900.f;
         S.AttackDamage = FMath::Min(10000.f, (X->Damage + X->Scaling * H->PrimaryAttribute()) * Power);
-        S.MaxHealth *= LevelScale(H, X->Id) * (H->HasSkill(TEXT("aether_engineering")) ? 1.25f : 1.f);
+        S.MaxHealth *= LevelScale(H, X->Id) * (H->HasSkill(TEXT("aether_engineering")) ? 1.f + CireKits::ScaledEffect(H, TEXT("aether_engineering"), 25.f) / 100.f : 1.f); // kits-complete: potency
         if (H->HasSkill(TEXT("aether_engineering"))) S.LifetimeSeconds *= 1.2f;
         if (X->Kind == K::Pylon && H->HasSkill(TEXT("resonant_lattice"))) S.LifetimeSeconds *= 1.2f;
-        if (X->Kind == K::Pylon) S.EffectMagnitude *= FMath::Min(1.6f, LevelScale(H, X->Id));
+        if (X->Kind == K::Pylon) S.EffectMagnitude *= FMath::Min(1.6f, LevelScale(H, X->Id)) * CireKits::Potency(H, X->Id.ToString()); // kits-complete: potency
     }
     else if (const auto* M = Cast<ACireMonster>(Owner))
     {
@@ -448,6 +456,7 @@ bool CireTechConstructs::TickConstruct(ACireConstruct* C, float Dt)
             else if (S.Effect == TEXT("weaken") && bEnemy) CireBuffs::Apply(U, WeakenedId, Hold, Owner, Stacks);
             else if (S.Effect == TEXT("slow") && bEnemy) CireCrowdControl::Slow(U, Hold, Owner);
             else if (S.Effect == TEXT("empower") && bAlly) CireBuffs::Apply(U, EmpoweredId, Hold, Owner, Stacks);
+            else CireKitSkills::PylonPulse(C, U, bAlly, bEnemy, Hold); // kits-complete: rally banner, lantern resist, ward barrier
         }
         return true;
     }

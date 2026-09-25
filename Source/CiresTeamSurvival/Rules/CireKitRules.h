@@ -104,13 +104,14 @@ namespace Kits
         double Distance = 0;
         bool Alive = true;
         bool AttackingSummoner = false;  // its current victim is the summoner
-        bool AttackingAlly = false;      // its current victim is another allied unit (DPS / support)
+        bool AttackingAlly = false;      // its current victim is another allied unit
         bool AlreadyTaunted = false;
+        bool AttackingPriority = false;  // kits-complete: that ally is a DPS or Support champion (protected first)
     };
-    // Taunt: an enemy that is NOT attacking the summoner, preferring those attacking another ally,
-    // then the nearest; already-taunted enemies last. -1 when nobody qualifies (within range).
+    // Taunt: an enemy that is NOT attacking the summoner, preferring those attacking a DPS / Support ally,
+    // then any other ally, then the nearest; already-taunted enemies last. -1 when nobody qualifies (within range).
     int SelectMechTauntTarget(const std::vector<MechCandidate>& candidates, double range);
-    // Attack: the nearest enemy attacking an ally other than the summoner; falls back to the nearest enemy.
+    // Attack: the nearest enemy attacking a DPS / Support ally, then any ally other than the summoner; falls back to the nearest enemy.
     int SelectMechAttackTarget(const std::vector<MechCandidate>& candidates, double range);
     constexpr double MechSlowAttackSpeed = 0.10;  // level-15 slam: -10% enemy attack speed
 }

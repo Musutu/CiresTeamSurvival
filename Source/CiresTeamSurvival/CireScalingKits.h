@@ -39,6 +39,13 @@ namespace CireKits
     CIRESTEAMSURVIVAL_API FString PrimaryName(const ACireHero* Hero);                 // "STR" / "AGI" / "INT"
     /** base + coefficient x PRIMARY from the Ability DB (FallbackBase / FallbackCoef when the row has no scaling). */
     CIRESTEAMSURVIVAL_API float Amount(const ACireHero* Hero, const FString& Id, float FallbackBase = 0.f, float FallbackCoef = 0.f);
+    /** kits-complete: potency multiplier of a utility skill / passive (1 + potency% x PRIMARY, capped); 1 for skills
+     *  whose damage / heal / shield already scales with PRIMARY. */
+    CIRESTEAMSURVIVAL_API float Potency(const ACireHero* Hero, const FString& Id);
+    /** kits-complete: the skill's headline effect at the hero's skill level, times its potency. */
+    CIRESTEAMSURVIVAL_API float ScaledEffect(const ACireHero* Hero, const FString& Id, float Fallback);
+    /** kits-complete: crowd-control duration multiplier from the source champion's PRIMARY (+0.25% per point, max +25%). */
+    CIRESTEAMSURVIVAL_API float ControlScale(const AActor* Source);
     /** Extra DoT per second from primary for ground areas (dotPerSecond x PRIMARY). */
     CIRESTEAMSURVIVAL_API float DotPerSecondBonus(const ACireHero* Hero, const FString& Id);
     /** "Deals 40 + 1.2x Primary (STR 30) damage" (empty when the ability has no scaled component). */
