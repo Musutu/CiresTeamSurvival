@@ -2,7 +2,9 @@
 //  -CireShopGallery          offscreen 1920x1080 captures of the shop, buy/sell/error feedback,
 //                            stats window, loot chest and Teleport to Base (Tools/RunProgressionChecks.py --only gallery)
 //  -CireShopNetServer/Client dedicated server + remote client: server-enforced shop, replicated
-//                            inventory/gold/feedback, undo, consumables and teleport (--only network)
+//                            inventory/gold/feedback, undo, consumables and teleport, then the Skill
+//                            Shop: buy + level-up through the Server RPCs, rejections, and a remote
+//                            client that cannot change the host's progression mode (--only network)
 //  -CireProgressionProbe     runs only the progression smoke suites and exits (--only native)
 //  -CireShopGalleryShopOnly  with -CireShopGallery: only the shop screens (Skill Shop + Armory), for a second resolution
 #include "CireShopFixtures.h"
@@ -363,7 +365,7 @@ bool TickNetServer(ACireGameMode* Mode)
     if (G.bDone) return true;
     const double Now = FPlatformTime::Seconds();
     auto Fail = [&](const TCHAR* Reason) { UE_LOG(LogCireShopFixtures, Error, TEXT("CIRE_SHOP_NET_SERVER_FAIL step=%d %s"), G.NetStep, Reason); Finish(false, TEXT("CIRE_SHOP_NET_SERVER")); };
-    if (Now - G.Start > 110) { Fail(TEXT("timed out")); return true; }
+    if (Now - G.Start > 170) { Fail(TEXT("timed out")); return true; }
     if (!NetHero.IsValid())
     {
         for (ACireHero* Hero : Mode->Heroes) if (IsValid(Hero) && Hero->IsPlayerControlled() && Hero->bDrafted) NetHero = Hero;
@@ -391,7 +393,7 @@ bool TickNetServer(ACireGameMode* Mode)
     }
     else if (G.NetStep == 2 && I->TeleportReadyAt > I->Now() + 60 && FVector::Dist2D(Hero->GetActorLocation(), Mode->BasePosition(Hero->TeamId)) < 600)
     {
-        if (Hero->Gold != 2000 - 490) { Fail(TEXT("survival purchase was not rejected")); return true; }
+        if (Hero->Gold != AfterVials()) { Fail(TEXT("survival purchase was not rejected")); return true; }
         UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_TELEPORT_PASS teleport_cooldown=%.0f"), I->TeleportCooldownRemaining());
         // Personal loot: a chest for the remote player and one for a bot teammate, side by side.
         FActorSpawnParameters Params;
@@ -425,11 +427,26 @@ bool TickNetServer(ACireGameMode* Mode)
     {
         const bool bMateClosed = NetMateChest.IsValid() && !NetMateChest->bOpened;
         if (!bMateClosed || I->ToRules().CountOf("bone_dagger") != 1) { Fail(TEXT("personal chest contents or teammate chest state")); return true; }
-        G.NetStep = 6;
-        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_PASS personal_chest_opened=1 teammate_chest_closed=1"));
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_LOOT_PASS personal_chest_opened=1 teammate_chest_closed=1"));
+        // Skill Shop: prep of wave 7 with 500 gold; the client buys and levels a skill.
+        SetPhase(Mode, 1);
+        if (auto* S = Mode->GetGameState<ACireGameState>()) { S->Wave = 7; S->ProgressionMode = 1; }
+        Hero->Gold = 500;
+        I->SkillRanks.Reset();
+        G.NetStep = 6; G.NetStepAt = Now;
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_SKILLSHOP_PREP wave=7 gold=500"));
+    }
+    else if (G.NetStep == 6 && I->SkillRanks.ContainsByPredicate([](const FCireSkillRank& R) { return R.Level == 2; }))
+    {
+        const auto* S = Mode->GetGameState<ACireGameState>();
+        const FCireSkillRank* Rank = I->SkillRanks.FindByPredicate([](const FCireSkillRank& R) { return R.Level == 2; });
+        const int32 Spent = CireSkillShop::BuyPrice(Hero, Rank->Id) > 0 ? 500 - Hero->Gold : -1;
+        if (!S || S->ProgressionMode != 1 || !Hero->Skills.Contains(Rank->Id) || Spent <= 0) { Fail(TEXT("server Skill Shop state")); return true; }
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_PASS skill=%s level=2 spent=%d mode=SkillShop (client could not change it)"), *Rank->Id, Spent);
+        G.NetStep = 7;
     }
     else if (G.NetStep == 5 && Now - G.NetStepAt > 8.0) { Fail(TEXT("owner could not open their chest")); return true; }
-    else if (G.NetStep == 6 && Mode->GetNumPlayers() == 0) Finish(true, TEXT("CIRE_SHOP_NET_SERVER"));
+    else if (G.NetStep == 7 && Mode->GetNumPlayers() == 0) Finish(true, TEXT("CIRE_SHOP_NET_SERVER"));
     return true;
 }
 } // namespace
@@ -488,6 +505,8 @@ struct FNetClient
     double Start = 0, StepAt = 0;
     bool bDone = false;
     TArray<FCireShopFeedback> Seen;
+    FString SkillId;
+    int32 SkillPrice = 0, LevelPrice = 0;
 };
 FNetClient C;
 }
@@ -503,7 +522,7 @@ bool CireShopFixtures::TickClient(ACireController* Controller)
         UE_LOG(LogCireShopFixtures, Error, TEXT("CIRE_SHOP_NET_CLIENT_FAIL step=%d %s"), C.Step, Reason);
         C.bDone = true; FPlatformMisc::RequestExitWithStatus(false, 1);
     };
-    if (Now - C.Start > 100) { Fail(TEXT("timed out")); return true; }
+    if (Now - C.Start > 160) { Fail(TEXT("timed out")); return true; }
     auto* Hero = Cast<ACireHero>(Controller->GetPawn());
     auto* State = Controller->GetWorld()->GetGameState<ACireGameState>();
     if (!Hero || !State) return true;
@@ -609,11 +628,45 @@ bool CireShopFixtures::TickClient(ACireController* Controller)
         const FCireLootReport& Report = I->PendingLoot.Last();
         const bool bDagger = Report.Lines.ContainsByPredicate([](const FCireLootLine& L) { return L.ItemId == FName(TEXT("bone_dagger")) && L.Slot >= 0; });
         if (!bDagger || Report.Gold != 50 || Report.Why.IsEmpty()) { Fail(TEXT("loot report contents")); return true; }
-        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_PASS personal_report_lines=%d gold=%d teammate_chest_never_replicated=1"), Report.Lines.Num(), Report.Gold);
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_LOOT_PASS personal_report_lines=%d gold=%d teammate_chest_never_replicated=1"), Report.Lines.Num(), Report.Gold);
+        Next();
+        break;
+    }
+    case 14:
+    {
+        // Skill Shop through the Server RPCs: the host put us in the prep of wave 7 with 500 gold.
+        if (!(State->Phase == 1 && State->Wave == 7 && Hero->Gold == 500 && State->ProgressionMode == 1)) return true;
+        const TArray<FCireShopSkill> Catalog = CireSkillShop::CatalogFor(Hero);
+        const FCireShopSkill* Pick = Catalog.FindByPredicate([&](const FCireShopSkill& K) { return K.Kind == Cires::Items::ShopSkillKind::Active && CireSkillShop::BuyBlocker(Hero, K.Id).IsEmpty(); });
+        FString Outside;
+        for (const auto& Skill : Cires::StarterSkillPool())
+        {
+            const FString Id = UTF8_TO_TCHAR(Skill.Id.c_str());
+            if (!Catalog.ContainsByPredicate([&](const FCireShopSkill& K) { return K.Id == Id; })) { Outside = Id; break; }
+        }
+        if (!Pick || Outside.IsEmpty()) { Fail(TEXT("no buyable skill in the replicated catalog")); return true; }
+        C.SkillId = Pick->Id; C.SkillPrice = CireSkillShop::BuyPrice(Hero, Pick->Id);
+        I->ServerSetProgressionMode(0); // a remote client is not the host: ignored
+        I->ServerBuySkill(Outside);     // not in this champion's list: rejected
+        I->ServerBuySkill(C.SkillId);
+        Next();
+        break;
+    }
+    case 15:
+        if (!(Hero->Skills.Contains(C.SkillId) && Hero->Gold == 500 - C.SkillPrice && CireSkillShop::Level(Hero, C.SkillId) == 1 &&
+            Saw(ECireShopAction::SkillBuy, true) && Saw(ECireShopAction::SkillBuy, false, TEXT("Not in your")))) return true;
+        if (State->ProgressionMode != 1) { Fail(TEXT("a remote client changed the progression mode")); return true; }
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_SKILL_BUY_PASS skill=%s price=%d gold=%d"), *C.SkillId, C.SkillPrice, Hero->Gold);
+        C.LevelPrice = CireSkillShop::LevelPrice(Hero, C.SkillId);
+        I->ServerLevelSkill(C.SkillId);
+        Next();
+        break;
+    case 16:
+        if (!(CireSkillShop::Level(Hero, C.SkillId) == 2 && Hero->Gold == 500 - C.SkillPrice - C.LevelPrice && Saw(ECireShopAction::SkillLevel, true))) return true;
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_PASS skill=%s level=2 gold=%d replicated_ranks=1 mode_unchanged=1"), *C.SkillId, Hero->Gold);
         C.bDone = true;
         FPlatformMisc::RequestExitWithStatus(false, 0);
         break;
-    }
     default: break;
     }
     if (Now - C.StepAt > 20) Fail(TEXT("step timed out"));
