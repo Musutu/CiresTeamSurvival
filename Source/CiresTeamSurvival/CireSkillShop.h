@@ -3,8 +3,9 @@
 // breather), during prep and recovery, a champion buys new skills from its class list or levels
 // owned ones (no cap). Replaces level-up skill offers; the free opening role pick stays.
 // Data: Content/Data/SkillShop.json (+ LootTables.json economy). Rules: Rules/CireItemRules.*.
-// The skill list comes from a thin adapter over the current role-tagged skill pool; swap
-// CatalogFor/Scaling to CireAbilityDB when the champion-draft Ability Database lands.
+// The skill list and per-level numbers come from the Ability Database (CireAbilityDB:
+// PurchasableSkills per champion profile, EffectiveStats per level); heroes without a profile
+// fall back to the role-tagged skill pool. Levels live on UCireInventory::SkillRanks (replicated).
 #include "CoreMinimal.h"
 #include "Rules/CiresRules.h"
 #include "Rules/CireItemRules.h"
@@ -19,6 +20,15 @@ struct CIRESTEAMSURVIVAL_API FCireShopSkill
     FString Name;
     Cires::Items::ShopSkillKind Kind = Cires::Items::ShopSkillKind::Active;
     Cires::RoleMask Roles = Cires::RoleNone;
+    FString Types;    // "DPS / TANK" (Ability DB types)
+    FString School;   // "Fire", "Holy"... (Ability DB)
+};
+
+// A cast's multipliers at the caster's Skill Shop level (1 at level 1).
+struct CIRESTEAMSURVIVAL_API FCireCastScale
+{
+    int32 Level = 1;
+    float Effect = 1.f, Cost = 1.f, Cooldown = 1.f;
 };
 
 struct CIRESTEAMSURVIVAL_API FCireSkillShopData
@@ -39,10 +49,11 @@ namespace CireSkillShop
     CIRESTEAMSURVIVAL_API bool ParseJson(const FString& Json, FCireSkillShopData& Out, FString& Error);
     CIRESTEAMSURVIVAL_API FString ToJson(const FCireSkillShopData& Data);
 
-    // ---- Ability DB adapter ----
+    // ---- Ability DB ----
     CIRESTEAMSURVIVAL_API TArray<FCireShopSkill> CatalogFor(const ACireHero* Hero);
     CIRESTEAMSURVIVAL_API Cires::Items::ShopSkillKind KindOf(const FString& Id);
     CIRESTEAMSURVIVAL_API FString RoleTags(const FString& Id);  // "TANK / DPS"
+    CIRESTEAMSURVIVAL_API FString SchoolOf(const FString& Id);
 
     // ---- game mode (replicated on ACireGameState::ProgressionMode) ----
     // "Skill Shop" (default): skills are bought/levelled in the shop after every cleared wave and
@@ -69,8 +80,17 @@ namespace CireSkillShop
     CIRESTEAMSURVIVAL_API bool LevelUp(ACireHero* Hero, const FString& Id, FString& Message);
     CIRESTEAMSURVIVAL_API void BotShop(ACireHero* Hero);
 
-    // ---- per-level scaling hooks ----
+    // ---- per-level scaling (CireAbilityDB::EffectiveStats(Id, Level) relative to level 1) ----
+    CIRESTEAMSURVIVAL_API FCireCastScale CastScale(const ACireHero* Hero, const FString& Id);
+    // Damage/healing multiplier for an ability by display name (combat events carry names).
     CIRESTEAMSURVIVAL_API float EffectScale(const ACireHero* Source, const FString& AbilityName);
-    // Server: after a cast starts a cooldown, trims it and charges the extra resource cost.
-    CIRESTEAMSURVIVAL_API void TickCastScaling(ACireHero* Hero);
+    // Cast path hook, called right after a cast paid its level-1 cost and started its cooldown:
+    // charges the level's extra mana/energy and scales the cooldown. No-op at level 1.
+    CIRESTEAMSURVIVAL_API void ApplyCastLevel(ACireHero* Hero, int32 Slot, const FString& Id, float BaseMana, float BaseEnergy);
+    // Resource check with the level's cost (casts refuse when the scaled cost is unaffordable).
+    CIRESTEAMSURVIVAL_API bool CanPayCast(const ACireHero* Hero, const FString& Id, float BaseMana, float BaseEnergy);
+#if !UE_BUILD_SHIPPING
+    // In-engine checks (CireSkillShopTests.cpp): economy, mode, buy/level, cast scaling, bots, builds.
+    CIRESTEAMSURVIVAL_API bool RunSmoke(ACireGameMode* Mode);
+#endif
 }

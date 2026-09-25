@@ -1160,8 +1160,7 @@ void UCireInventory::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
     }
     // A shop visit ends when trading is no longer allowed (left town, phase change, death).
     if (bShopVisit && CireItems::ShopAccessFor(Owner) != ShopAccess::Allowed) EndShopVisit();
-    // Skill Shop: per-level cooldown/cost scaling of casts, and bots shopping between waves.
-    CireSkillShop::TickCastScaling(Owner);
+    // Skill Shop: bots shop between waves (per-level cast scaling runs in the cast path).
     BotSkillTimer -= DeltaTime;
     if (Owner->bBot && BotSkillTimer <= 0) { BotSkillTimer = 2.f; CireSkillShop::BotShop(Owner); }
 }

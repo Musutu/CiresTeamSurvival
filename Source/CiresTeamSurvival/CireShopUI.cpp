@@ -790,6 +790,18 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
         TY += Ring * 2 + 4;
         const FLinearColor InkC = CireShopArt::Ink;
         TY += CentredWrap(P, ACireHero::SkillName(Id), Mid, TY, Pr.W + 6, 8.5f * K, InkC, ECireFont::Bold, 2, 0.f) * (8.5f * K + .5f) + 1;
+        // School and types from the Ability Database ("FIRE  ·  DPS / HEAL").
+        {
+            const FString School = CireSkillShop::SchoolOf(Id).ToUpper(), Types = CireSkillShop::RoleTags(Id);
+            const FString Tags = School.IsEmpty() ? Types : Types.IsEmpty() ? School : School + TEXT("  ·  ") + Types;
+            if (!Tags.IsEmpty())
+            {
+                const float TS = 6.f * K;
+                const FString Fit = P.Fit(Tags, TS, Pr.W + 8, ECireFont::Heading);
+                P.Text(Fit, Mid - P.TextWidth(Fit, TS, ECireFont::Heading) * .5f, TY, TS, InkSoft, ECireFont::Heading, false, false);
+                TY += TS + 2.5f;
+            }
+        }
         const FString LevelLine = bOwned ? FString::Printf(TEXT("LV %d » %d"), Level, Level + 1) : TEXT("NEW  ·  LV 1");
         P.Text(LevelLine, Mid - P.TextWidth(LevelLine, 7.f * K, ECireFont::Heading) * .5f, TY, 7.f * K, InkRed, ECireFont::Heading, false, false);
         TY += 7.f * K + 3;
@@ -873,6 +885,17 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
     }
     const FString Keys[] = {TEXT("CLICK A SCROLL  ·  LEARN OR LEVEL UP"), TEXT("HOVER  ·  FULL DETAILS"), FString::Printf(TEXT("%s  ·  CLOSE"), *KeyLabel(HUD, TEXT("ToggleSkillShop")))};
     for (int32 Index = 0; Index < 3; ++Index) Spaced(P, Keys[Index], X + 26, BandY + 12 + Index * 12, 6.5f, .3f, Muted * 1.2f, ECireFont::Display, false, false);
+    // READY: the breather's ready-up (wave director), same state as the match plate's button.
+    if (GameState && Controller && CireSkillShop::IsBreather(HUD.GetWorld()) && GameState->BreatherPlayers > 0)
+    {
+        const bool bReady = HUD.IsBreatherReadyLocal(GameState->Wave);
+        const float RX = X + W - 26 - 2 * 104 - 132, RY = BandY + 14;
+        const bool bOver = In(M, RX, RY, 124, 24);
+        ShopButton(P, RX, RY, 124, 24, FString::Printf(TEXT("%s  %d/%d"), bReady ? TEXT("READY") : TEXT("READY UP"), GameState->BreatherReady, GameState->BreatherPlayers),
+            bOver, bReady, false, Teal, 9);
+        if (bOver) CireShopUI::Tip(HUD, TEXT("Ready up"), TEXT("When every player is ready, the next wave starts in 1 second."));
+        if (Click(RX, RY, 124, 24)) { HUD.SetBreatherReadyLocal(GameState->Wave, !bReady); Controller->ServerAction(10, bReady ? 0 : 1, nullptr); Play(HUD, TEXT("S_ShopTab"), .4f); }
+    }
     const TCHAR* Tabs[] = {TEXT("ITEMS"), TEXT("SKILLS")};
     const FName TabKeys[] = {TEXT("ToggleShop"), TEXT("ToggleSkillShop")};
     for (int32 Index = 0; Index < 2; ++Index)

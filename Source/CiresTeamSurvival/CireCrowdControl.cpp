@@ -1,4 +1,5 @@
 #include "CireCrowdControl.h"
+#include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireAbilityDB.h"
 #include "CireBuffs.h"
 #include "CireCombatEvents.h"
@@ -285,9 +286,10 @@ bool CireCrowdControl::CastSkill(ACireHero* H,int32 Slot,const FString& Id)
     auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();if(!Mode)return false;
     AActor* Target=H->Target;
     if(!H->IsHostile(Target)||!H->InRange(Target,D->Range)){H->Notice=TEXT("Select a hostile target in melee range.");return false;}
-    if(H->Energy<D->Base.EnergyCost||H->Mana<D->Base.ManaCost){H->Notice=TEXT("Not enough mana or energy.");return false;}
+    if(!CireSkillShop::CanPayCast(H,Id,D->Base.ManaCost,D->Base.EnergyCost)){H->Notice=TEXT("Not enough mana or energy.");return false;} // progression-shop: Skill Shop level (Ability DB curve)
     H->Energy-=D->Base.EnergyCost;H->Mana-=D->Base.ManaCost;
     H->Cooldowns[Slot]=static_cast<float>(Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(H->GetWorld(),D->Base.Cooldown),H->CDR));
+    CireSkillShop::ApplyCastLevel(H,Slot,Id,D->Base.ManaCost,D->Base.EnergyCost); // progression-shop: Skill Shop level (Ability DB curve)
     H->GlobalCooldown=.9f;
     const auto* M=Cast<ACireMonster>(Target);const auto* Victim=Cast<ACireHero>(Target);
     const float Normal=(D->Base.Effect+2.f*H->PrimaryAttribute())*Mode->Power(H->TeamId);

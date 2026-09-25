@@ -103,6 +103,8 @@ namespace CireLoot
     // Kill bounty: mob value by wave, x2 armored, x10 boss, x10 pack unit, x100 Pack Leader.
     CIRESTEAMSURVIVAL_API Cires::Items::BountyKind BountyKindOf(const ACireMonster* Monster);
     CIRESTEAMSURVIVAL_API int32 KillBounty(ACireGameMode* Mode, const ACireMonster* Monster, float RewardMultiplier = 1.f);
+    // Wave the bounty is valued at: the unit's spawn wave (wave director), else the current wave.
+    CIRESTEAMSURVIVAL_API int32 BountyWave(ACireGameMode* Mode, const ACireMonster* Monster);
     // Pays the bounty: wave kills to every teammate, pack kills to eligible teammates. Returns gold per recipient.
     CIRESTEAMSURVIVAL_API int32 AwardKillGold(ACireGameMode* Mode, ACireMonster* Monster, float RewardMultiplier = 1.f);
     CIRESTEAMSURVIVAL_API int32 MobValueNow(const UWorld* World);

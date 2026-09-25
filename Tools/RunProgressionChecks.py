@@ -196,9 +196,7 @@ def main() -> int:
             if match:
                 for path in sorted(Path(match.group(2).strip()).glob("*.png")):
                     header = path.read_bytes()[:24]
-                    size = struct.unpack(">II", header[16:24]) if header[:8] == b"PNG
-
-" else (0, 0)
+                    size = struct.unpack(">II", header[16:24]) if header[:8] == bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]) else (0, 0)
                     captures.append({"path": str(path), "width": size[0], "height": size[1], "bytes": path.stat().st_size})
                     record["passed"] = record["passed"] and size == (width, height)
             record["captures"] = captures

@@ -6,6 +6,7 @@
 #include "CireItems.h"
 #include "CireLoot.h"
 #include "CireChampionProfiles.h"
+#include "CireAbilityDB.h"
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "Misc/FileHelper.h"
@@ -147,14 +148,17 @@ bool CireSkillShop::Save(FString* Error)
     return bOk;
 }
 
-// ------------------------------------------------------------------ adapter
+// ------------------------------------------------------------------ Ability DB
 CI::ShopSkillKind CireSkillShop::KindOf(const FString& Id)
 {
+    if (const FCireAbilityDef* Def = CireAbilityDB::Find(Id))
+        return Def->IsUltimate() ? CI::ShopSkillKind::Ultimate : Def->IsPassive() ? CI::ShopSkillKind::Passive : CI::ShopSkillKind::Active;
     return ACireHero::IsUltimate(Id) ? CI::ShopSkillKind::Ultimate : ACireHero::IsPassive(Id) ? CI::ShopSkillKind::Passive : CI::ShopSkillKind::Active;
 }
 
 FString CireSkillShop::RoleTags(const FString& Id)
 {
+    if (const FCireAbilityDef* Def = CireAbilityDB::Find(Id); Def && Def->Types.Num() > 0) return FString::Join(Def->Types, TEXT(" / "));
     const Cires::RoleMask Tags = Cires::SkillRoleTags(Utf8(Id));
     TArray<FString> Parts;
     if (Tags & Cires::RoleTank) Parts.Add(TEXT("TANK"));
@@ -163,26 +167,35 @@ FString CireSkillShop::RoleTags(const FString& Id)
     return FString::Join(Parts, TEXT(" / "));
 }
 
+FString CireSkillShop::SchoolOf(const FString& Id)
+{
+    const FCireAbilityDef* Def = CireAbilityDB::Find(Id);
+    return Def ? Def->School : FString();
+}
+
 TArray<FCireShopSkill> CireSkillShop::CatalogFor(const ACireHero* Hero)
 {
+    TArray<FString> Ids;
+    // The champion's purchasable list from the Ability Database (implemented skills only).
+    if (Hero && !Hero->ChampionProfileId.IsEmpty() && CireAbilityDB::Kit(Hero->ChampionProfileId))
+        Ids = CireAbilityDB::PurchasableSkills(Hero->ChampionProfileId, true);
+    // No profile (legacy archetype heroes, fixtures): the role-tagged skill pool.
+    if (Ids.IsEmpty())
+        for (const auto& Skill : Cires::StarterSkillPoolForRoles(HeroRoles(Hero))) Ids.Add(UTF8_TO_TCHAR(Skill.Id.c_str()));
+    // Owned skills (e.g. an opening pick from another list) are always listed so they can level.
+    if (Hero) for (const FString& Id : Hero->Skills) Ids.AddUnique(Id);
     TArray<FCireShopSkill> Out;
-    for (const auto& Skill : Cires::StarterSkillPoolForRoles(HeroRoles(Hero)))
+    for (const FString& Id : Ids)
     {
         FCireShopSkill Entry;
-        Entry.Id = UTF8_TO_TCHAR(Skill.Id.c_str());
-        Entry.Name = ACireHero::SkillName(Entry.Id);
-        Entry.Kind = KindOf(Entry.Id);
-        Entry.Roles = Cires::SkillRoleTags(Skill.Id);
+        Entry.Id = Id;
+        Entry.Name = ACireHero::SkillName(Id);
+        Entry.Kind = KindOf(Id);
+        Entry.Roles = Cires::SkillRoleTags(Utf8(Id));
+        Entry.Types = RoleTags(Id);
+        Entry.School = SchoolOf(Id);
         Out.Add(Entry);
     }
-    // Owned skills (e.g. an opening pick from another list) are always listed so they can level.
-    if (Hero)
-        for (const FString& Id : Hero->Skills)
-            if (!Out.ContainsByPredicate([&](const FCireShopSkill& S) { return S.Id == Id; }))
-            {
-                FCireShopSkill Entry; Entry.Id = Id; Entry.Name = ACireHero::SkillName(Id); Entry.Kind = KindOf(Id); Entry.Roles = Cires::SkillRoleTags(Utf8(Id));
-                Out.Add(Entry);
-            }
     Out.StableSort([](const FCireShopSkill& A, const FCireShopSkill& B) { return A.Kind != B.Kind ? A.Kind < B.Kind : A.Name < B.Name; });
     return Out;
 }
@@ -344,15 +357,21 @@ void CireSkillShop::BotShop(ACireHero* Hero)
     FString Message;
     // 1) Fill an open slot with a skill that matches the bot's primary role (cheapest first).
     const Cires::RoleMask Primary = Cires::RoleBit(CireChampionProfiles::DraftRole(Hero));
-    const FCireShopSkill* Best = nullptr;
+    // Ultimates first when their slot opens, then primary-role actives, then passives; the
+    // share of gold a bot may spend on skills keeps a reserve for items.
+    FString BestId;
     int32 BestScore = MAX_int32;
-    for (const FCireShopSkill& Skill : CatalogFor(Hero))
+    const TArray<FCireShopSkill> Catalog = CatalogFor(Hero);
+    for (const FCireShopSkill& Skill : Catalog)
     {
         if (!BuyBlocker(Hero, Skill.Id).IsEmpty()) continue;
-        const int32 Score = BuyPrice(Hero, Skill.Id) + ((Skill.Roles & Primary) ? 0 : 10000) + static_cast<int32>(GetTypeHash(Skill.Id) % 7);
-        if (Score < BestScore) { BestScore = Score; Best = &Skill; }
+        const int32 Price = BuyPrice(Hero, Skill.Id);
+        if (Price > FMath::Max(1, FMath::FloorToInt(Hero->Gold * FMath::Max(.34f, Get().BotSkillShare)))) continue;
+        const int32 KindRank = Skill.Kind == CI::ShopSkillKind::Ultimate ? 0 : Skill.Kind == CI::ShopSkillKind::Active ? 1 : 2;
+        const int32 Score = KindRank * 100000 + ((Skill.Roles & Primary) ? 0 : 10000) + Price + static_cast<int32>(GetTypeHash(Skill.Id) % 7);
+        if (Score < BestScore) { BestScore = Score; BestId = Skill.Id; }
     }
-    if (Best && Buy(Hero, Best->Id, Message)) return;
+    if (!BestId.IsEmpty() && Buy(Hero, BestId, Message)) return;
     // 2) Otherwise level the lowest-ranked skill while keeping a reserve for items.
     FString Lowest;
     int32 LowestLevel = MAX_int32;
@@ -362,37 +381,50 @@ void CireSkillShop::BotShop(ACireHero* Hero)
 }
 
 // ------------------------------------------------------------------ scaling
+FCireCastScale CireSkillShop::CastScale(const ACireHero* Hero, const FString& Id)
+{
+    FCireCastScale Scale;
+    Scale.Level = FMath::Max(1, Level(Hero, Id));
+    if (Scale.Level <= 1) return Scale;
+    const auto& R = Get().Rules;
+    // Fallback: the SkillShop.json per-level rules (abilities the database does not know).
+    Scale.Effect = static_cast<float>(CI::SkillEffectScale(R, Scale.Level));
+    Scale.Cost = static_cast<float>(CI::SkillCostScale(R, Scale.Level));
+    Scale.Cooldown = static_cast<float>(CI::SkillCooldownScale(R, Scale.Level));
+    if (CireAbilityDB::Find(Id))
+    {
+        const FCireAbilityStats One = CireAbilityDB::EffectiveStats(Id, 1), Now = CireAbilityDB::EffectiveStats(Id, Scale.Level);
+        if (One.Effect > 0) Scale.Effect = Now.Effect / One.Effect;
+        const float BaseCost = One.ManaCost + One.EnergyCost;
+        if (BaseCost > 0) Scale.Cost = (Now.ManaCost + Now.EnergyCost) / BaseCost;
+        if (One.Cooldown > 0) Scale.Cooldown = Now.Cooldown / One.Cooldown;
+    }
+    return Scale;
+}
+
 float CireSkillShop::EffectScale(const ACireHero* Source, const FString& AbilityName)
 {
-    if (!Source || !Source->Inventory || Source->Inventory->SkillRanks.Num() == 0) return 1.f;
+    if (!Source || !Source->Inventory || Source->Inventory->SkillRanks.Num() == 0 || AbilityName.IsEmpty()) return 1.f;
     for (const FCireSkillRank& Rank : Source->Inventory->SkillRanks)
         if (Rank.Level > 1 && Source->Skills.Contains(Rank.Id) && ACireHero::SkillName(Rank.Id) == AbilityName)
-            return static_cast<float>(CI::SkillEffectScale(Get().Rules, Rank.Level));
+            return CastScale(Source, Rank.Id).Effect;
     return 1.f;
 }
 
-void CireSkillShop::TickCastScaling(ACireHero* Hero)
+bool CireSkillShop::CanPayCast(const ACireHero* Hero, const FString& Id, float BaseMana, float BaseEnergy)
 {
-    if (!Hero || !Hero->HasAuthority() || !Hero->Inventory) return;
-    UCireInventory* Inv = Hero->Inventory;
-    Inv->LastCooldowns.SetNum(Hero->Cooldowns.Num());
-    for (int32 Slot = 0; Slot < Hero->Cooldowns.Num(); ++Slot)
-    {
-        const float Now = Hero->Cooldowns[Slot];
-        if (Now > Inv->LastCooldowns[Slot] + .05f && Hero->Skills.IsValidIndex(Slot))
-        {
-            // A cast just started this cooldown: apply the skill level's cooldown trim and extra cost.
-            const int32 L = Level(Hero, Hero->Skills[Slot]);
-            if (L > 1)
-            {
-                Hero->Cooldowns[Slot] = Now * static_cast<float>(CI::SkillCooldownScale(Get().Rules, L));
-                const float Extra = static_cast<float>(CI::SkillCostScale(Get().Rules, L) - 1.0);
-                if (Inv->LastMana >= 0 && Inv->LastMana > Hero->Mana) Hero->Mana = FMath::Max(0.f, Hero->Mana - (Inv->LastMana - Hero->Mana) * Extra);
-                if (Inv->LastEnergy >= 0 && Inv->LastEnergy > Hero->Energy) Hero->Energy = FMath::Max(0.f, Hero->Energy - (Inv->LastEnergy - Hero->Energy) * Extra);
-            }
-        }
-        Inv->LastCooldowns[Slot] = Hero->Cooldowns[Slot];
-    }
-    Inv->LastMana = Hero->Mana;
-    Inv->LastEnergy = Hero->Energy;
+    if (!Hero) return false;
+    const float Cost = CastScale(Hero, Id).Cost;
+    return Hero->Mana >= BaseMana * Cost && Hero->Energy >= BaseEnergy * Cost;
+}
+
+void CireSkillShop::ApplyCastLevel(ACireHero* Hero, int32 Slot, const FString& Id, float BaseMana, float BaseEnergy)
+{
+    if (!Hero || !Hero->HasAuthority()) return;
+    const FCireCastScale Scale = CastScale(Hero, Id);
+    if (Scale.Level <= 1) return;
+    const float Extra = FMath::Max(0.f, Scale.Cost - 1.f);
+    Hero->Mana = FMath::Max(0.f, Hero->Mana - BaseMana * Extra);
+    Hero->Energy = FMath::Max(0.f, Hero->Energy - BaseEnergy * Extra);
+    if (Hero->Cooldowns.IsValidIndex(Slot)) Hero->Cooldowns[Slot] *= Scale.Cooldown;
 }

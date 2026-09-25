@@ -203,10 +203,7 @@ public:
     TArray<FCireLootReport> PendingLoot;
     struct FGoldGain { int32 Amount = 0; FVector Where = FVector::ZeroVector; uint8 Kind = 0; };
     TArray<FGoldGain> PendingGold;
-    // Skill Shop cast scaling bookkeeping (server).
-    TArray<float> LastCooldowns;
-    float LastMana = -1.f, LastEnergy = -1.f;
-    float BotSkillTimer = 0.f;
+    float BotSkillTimer = 0.f;   // Skill Shop: bots shop between waves (server)
     // Server-only runtime
     float ItemCDRApplied = 0;
     int32 BasicHitCounter = 0;

@@ -113,6 +113,9 @@ public:
     void PlayInterfaceSound(int32 Index,float Volume=1.f) { PlayWowSound(Index,Volume); }
     // F8 > Economy page (CireEconomyPage.cpp).
     void DrawEconomyPage(float X,float Y);
+    // Skill Shop READY button shares the match plate's breather Ready state (wave-director).
+    bool IsBreatherReadyLocal(int32 Wave) const { return BreatherReadyWave==Wave&&bBreatherReadyLocal; }
+    void SetBreatherReadyLocal(int32 Wave,bool bReady) { BreatherReadyWave=Wave; bBreatherReadyLocal=bReady; }
     // progression-shop: end
 private:
     void Panel(float X, float Y, float W, float H, FLinearColor Color);

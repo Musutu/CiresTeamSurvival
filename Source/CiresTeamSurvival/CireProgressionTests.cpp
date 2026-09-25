@@ -4,6 +4,7 @@
 // Tools/RunProgressionChecks.py. Pure rules are covered natively by Tests/ItemRulesTests.cpp.
 #include "CireItems.h"
 #include "CireLoot.h"
+#include "CireSkillShop.h"
 #include "CireGame.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
@@ -227,6 +228,7 @@ bool CireProgression::RunSmoke(ACireGameMode* Mode)
 {
     if (!Mode || !Mode->HasAuthority()) return false;
     bool bGood = CireItems::RunSmoke(Mode);
+    bGood = CireSkillShop::RunSmoke(Mode) && bGood; // progression-shop: economy, mode, Skill Shop, bots, builds
     FChecker Check{TEXT("PROGRESSION")};
     FFixture F(Mode);
     const auto& Loot = CireLoot::Get();

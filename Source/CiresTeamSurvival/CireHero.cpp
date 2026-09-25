@@ -421,7 +421,7 @@ void ACireHero::Cast(int32 Slot)
     else if (Id == TEXT("executioners_verdict")) { EnergyCost = 60; Cooldown = 60; Range = 1500; bNeedsEnemy = true; }
     else if (Id == TEXT("renewal")) { ManaCost = 140; Cooldown = 90; }
     else return;
-    if (Mana < ManaCost || Energy < EnergyCost) { Notice = TEXT("Not enough mana or energy."); return; }
+    if (!CireSkillShop::CanPayCast(this, Id, ManaCost, EnergyCost)) { Notice = TEXT("Not enough mana or energy."); return; } // progression-shop: Skill Shop level (Ability DB curve)
     if (bNeedsEnemy && (!IsHostile(Target) || !InRange(Target, Range) || !ClearSight(this, Target)))
     { Notice = TEXT("Select a hostile target in range and line of sight."); return; }
     ACireHero* Ally = ::Cast<ACireHero>(Target);
@@ -432,6 +432,7 @@ void ACireHero::Cast(int32 Slot)
     Mana -= ManaCost;
     Energy -= EnergyCost;
     Cooldowns[Slot] = static_cast<float>(Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(GetWorld(),Cooldown), CDR));
+    CireSkillShop::ApplyCastLevel(this, Slot, Id, ManaCost, EnergyCost); // progression-shop: Skill Shop level (Ability DB curve)
     GlobalCooldown = 0.9f;
     const float Now = GetWorld()->GetTimeSeconds();
     const float Power = Mode->Power(TeamId);

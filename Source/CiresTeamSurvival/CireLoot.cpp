@@ -1,4 +1,5 @@
 #include "CireLoot.h"
+#include "CireWaves.h" // wave-director economy hooks (UnitFlags)
 // progression-shop: see CireLoot.h, Docs/Progression.md.
 #include "CireGame.h"
 #include "CireItems.h"
@@ -382,15 +383,29 @@ CI::BountyKind CireLoot::BountyKindOf(const ACireMonster* Monster)
 {
     if (!Monster) return CI::BountyKind::Mob;
     if (Monster->PackId >= 0) return Monster->GetNPCClassification() == ECireNPCClass::Boss ? CI::BountyKind::PackLeader : CI::BountyKind::PackUnit;
+    // Wave units: the wave director's spawn-time flags (valid inside MonsterKilled).
+    const FCireWaveUnitInfo Info = CireWaveDirector::UnitFlags(Monster);
+    if (Info.bValid) return Info.bBoss ? CI::BountyKind::Boss : Info.bArmored ? CI::BountyKind::Armored : CI::BountyKind::Mob;
     if (Monster->IsLaneBoss()) return CI::BountyKind::Boss;
     if (Monster->bArmoredEscort) return CI::BountyKind::Armored;
     return CI::BountyKind::Mob;
 }
 
+int32 CireLoot::BountyWave(ACireGameMode* Mode, const ACireMonster* Monster)
+{
+    // Wave units pay at the wave they spawned in (a unit can die after the next wave starts);
+    // challenge packs at the current wave.
+    const FCireWaveUnitInfo Info = CireWaveDirector::UnitFlags(Monster);
+    if (Info.bValid && Info.WaveNumber > 0) return Info.WaveNumber;
+    const int32 Current = Mode ? CireWaveDirector::CurrentWaveIndex(Mode) : 0;
+    if (Current > 0) return Current;
+    const auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    return S ? FMath::Max(1, S->Wave) : 1;
+}
+
 int32 CireLoot::KillBounty(ACireGameMode* Mode, const ACireMonster* Monster, float RewardMultiplier)
 {
-    const auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
-    return CI::KillGold(Get().Economy, BountyKindOf(Monster), S ? FMath::Max(1, S->Wave) : 1, RewardMultiplier);
+    return CI::KillGold(Get().Economy, BountyKindOf(Monster), BountyWave(Mode, Monster), RewardMultiplier);
 }
 
 int32 CireLoot::AwardKillGold(ACireGameMode* Mode, ACireMonster* Monster, float RewardMultiplier)
