@@ -15,7 +15,7 @@
 
 class ACireGameMode;
 class ACireMonster;
-class UNiagaraComponent;
+class UFXSystemComponent;
 struct FCireNPCDatabase;
 struct FCireRareSpawnRules;
 struct FCireBonusWaveRules;
@@ -74,7 +74,7 @@ private:
         uint8 SwingSerial = 0, Special = 0;
         bool bDead = false;
         FVector Location = FVector::ZeroVector;
-        TWeakObjectPtr<UNiagaraComponent> Aura;
+        TWeakObjectPtr<UFXSystemComponent> Aura; // CireFabVFX spawns Niagara or Cascade
         FName Archetype;
     };
     TMap<TWeakObjectPtr<ACireMonster>, FSeen> Seen;
