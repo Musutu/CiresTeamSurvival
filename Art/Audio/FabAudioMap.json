@@ -958,6 +958,18 @@
     "weapon.arrow.flight": [
       "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Wind_Loop_1_wav"
     ],
+    "spell.physical.projectile": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Wind_Loop_1_wav"
+    ],
+    "spell.earth.projectile": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Wind_Loop_1_wav"
+    ],
+    "weapon.glaive.spin": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Wind_Loop_1_wav"
+    ],
+    "weapon.axe.spin": [
+      "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Wind_Loop_1_wav"
+    ],
     "ability.summon": [
       "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/General_Magic_Loop_4_wav",
       "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_5-1_wav",
