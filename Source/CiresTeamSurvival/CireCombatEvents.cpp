@@ -268,6 +268,14 @@ bool CireCombat::RunTelemetrySmoke(ACireGameMode* Mode)
         }
     };
     const auto Near = [](float A, float B) { return FMath::IsNearlyEqual(A, B, 0.01f); };
+    // champion-draft class traits apply to every PvP hit: the fixture heroes are drafted Iron Wardens
+    // (Tank, Natural Defense: flat reduction after other mitigation) and the source's outgoing class
+    // multiplier. Expected values are derived from the same rules, not hard-coded around them.
+    const auto Hit = [&](const ACireHero* Victim, float Raw)
+    {
+        const double Out = Raw * Cires::Traits::OutgoingDamageMultiplier(CireClassTraits::Role(Source));
+        return static_cast<float>(Cires::Traits::ApplyIncomingFlatReduction(Out, CireClassTraits::Role(Victim)));
+    };
     Mode->Clock = Cires::MatchClock({60, 90, 15});
     Check(Near(ApplyDamage(Source, Enemy, 30, TEXT("probe")), 0), TEXT("enemy PvE damage rejected"));
     Check(Near(ApplyDamage(Source, Ally, 30, TEXT("probe")), 0), TEXT("friendly damage rejected"));
@@ -282,13 +290,15 @@ bool CireCombat::RunTelemetrySmoke(ACireGameMode* Mode)
     Check(Near(ApplyDamage(Source, Enemy, 30, TEXT("probe")), 0), TEXT("enemy town damage rejected"));
     Check(Near(ApplyDamage(Source, Monster, 30, TEXT("probe")), 0), TEXT("monster town damage rejected"));
     Mode->Clock.Advance(60);
-    Check(Near(ApplyDamage(Source, Enemy, 50, TEXT("probe strike")), 50), TEXT("arena enemy damage permitted"));
+    const float ArenaHit = Hit(Enemy, 50);
+    Check(ArenaHit > 0 && Near(ApplyDamage(Source, Enemy, 50, TEXT("probe strike")), ArenaHit), TEXT("arena enemy damage permitted"));
     Enemy->Skills.Add(TEXT("stone_skin"));
     Enemy->ShieldUntil = Mode->GetWorld()->GetTimeSeconds() + 10;
-    Check(Near(ApplyDamage(Source, Enemy, 100, TEXT("probe strike")), 54), TEXT("mitigated amount recorded"));
+    const float MitigatedHit = Hit(Enemy, 100 * .90f * .60f); // Stone Skin, then guard, then class trait
+    Check(Near(ApplyDamage(Source, Enemy, 100, TEXT("probe strike")), MitigatedHit), TEXT("mitigated amount recorded"));
     Enemy->Health = 20;
     Check(Near(ApplyDamage(Source, Enemy, 100, TEXT("probe strike")), 20), TEXT("overkill excluded"));
-    Check(Near(Source->DamageDone, 149), TEXT("authoritative cumulative damage"));
+    Check(Near(Source->DamageDone, 25 + ArenaHit + MitigatedHit + 20), TEXT("authoritative cumulative damage"));
     Check(Near(ApplyDamage(Source, Enemy, 100, TEXT("probe strike")), 0), TEXT("dead target damage rejected"));
     Source->Skills.Add(TEXT("soul_conduit"));
     Ally->Health = Ally->MaxHealth - 40;
@@ -362,15 +372,16 @@ bool CireCombat::RunTelemetrySmoke(ACireGameMode* Mode)
     PrepareUltimate(TEXT("cataclysm"));
     Source->CDR = 0.25f;
     float PreviousDamage = Source->DamageDone;
+    const float CataclysmHit = Hit(Enemy, (160 + Source->Intelligence * 3.5f) * Mode->Power(Source->TeamId));
     Source->Cast(0);
-    Check(Near(Enemy->Health, 805) && Near(NearEnemy->Health, 805) && Near(FarEnemy->Health, 1000) && Near(Ally->Health, Ally->MaxHealth),
+    Check(Near(Enemy->Health, 1000 - CataclysmHit) && Near(NearEnemy->Health, 1000 - CataclysmHit) && Near(FarEnemy->Health, 1000) && Near(Ally->Health, Ally->MaxHealth),
         TEXT("cataclysm hits nearby enemies only"));
     Check(Near(Source->Mana, 150) && Near(Source->Cooldowns[0], 60), TEXT("cataclysm mana and pure cooldown reduction"));
-    Check(Near(Source->DamageDone - PreviousDamage, 390), TEXT("cataclysm effective damage attribution"));
+    Check(Near(Source->DamageDone - PreviousDamage, 2 * CataclysmHit), TEXT("cataclysm effective damage attribution"));
     PrepareUltimate(TEXT("cataclysm"));
     Mode->Clock = Cires::MatchClock({60, 90, 15});
     Source->Cast(0);
-    Check(Near(Source->Mana, Source->MaxMana) && Near(Source->Cooldowns[0], 0) && Near(Enemy->Health, 805), TEXT("ultimate cannot attack other team during PvE"));
+    Check(Near(Source->Mana, Source->MaxMana) && Near(Source->Cooldowns[0], 0) && Near(Enemy->Health, 1000 - CataclysmHit), TEXT("ultimate cannot attack other team during PvE"));
     Mode->Clock.BeginIntermission();
     Source->Cast(0);
     Check(Near(Source->Mana, Source->MaxMana) && Near(Source->Cooldowns[0], 0), TEXT("ultimate blocked during preparation"));
@@ -384,8 +395,10 @@ bool CireCombat::RunTelemetrySmoke(ACireGameMode* Mode)
     Enemy->MaxHealth = 5000;
     Enemy->Health = 3000;
     PreviousDamage = Source->DamageDone;
+    // 100 + 3 x primary + missing-health bonus capped at 300 (2000 missing -> 300).
+    const float VerdictHit = Hit(Enemy, (100 + Source->PrimaryAttribute() * 3.f + 300.f) * Mode->Power(Source->TeamId));
     Source->Cast(0);
-    Check(Near(Enemy->Health, 2540) && Near(Source->DamageDone - PreviousDamage, 460), TEXT("executioner missing health bonus capped"));
+    Check(Near(Enemy->Health, 3000 - VerdictHit) && Near(Source->DamageDone - PreviousDamage, VerdictHit), TEXT("executioner missing health bonus capped"));
     Check(Near(Source->Energy, 40) && Near(Source->Cooldowns[0], 60), TEXT("executioner energy and cooldown"));
 
     PrepareUltimate(TEXT("renewal"));
@@ -394,7 +407,7 @@ bool CireCombat::RunTelemetrySmoke(ACireGameMode* Mode)
     Source->SlowUntil = Ally->SlowUntil = Enemy->SlowUntil = Now + 20;
     PreviousHealing = Source->HealingDone;
     Source->Cast(0);
-    Check(Near(Source->Health, Source->MaxHealth) && Near(Ally->Health, Ally->MaxHealth) && Near(Enemy->Health, 2540) &&
+    Check(Near(Source->Health, Source->MaxHealth) && Near(Ally->Health, Ally->MaxHealth) && Near(Enemy->Health, 3000 - VerdictHit) &&
         Source->SlowUntil == 0 && Ally->SlowUntil == 0 && Enemy->SlowUntil > Now, TEXT("renewal heals and cleanses allies only"));
     Check(Near(Source->HealingDone - PreviousHealing, 140), TEXT("renewal overhealing excluded from meter"));
     Check(Near(Source->Mana, 160) && Near(Source->Cooldowns[0], 90), TEXT("renewal mana and cooldown"));
