@@ -27,5 +27,8 @@ bool ReachedGoal(ACireMonster* Monster);
 #if !UE_BUILD_SHIPPING
 bool RunSmoke(ACireGameMode* Mode);
 bool RunRolesSmoke(ACireGameMode* Mode);
+// ability-vfx: galleries/tests start one authored ability through the real StartAbility path
+// (same range, sight, area and cast-bar rules), ignoring cooldown/loadout gating. False if refused.
+bool DebugStartAbility(ACireMonster* Monster,FName AbilityId,ACireHero* Victim);
 #endif
 }

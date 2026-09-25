@@ -1,4 +1,5 @@
 #include "CireCombatArtPreview.h"
+#include "CireSpellPresentation.h" // ability-vfx
 #if !UE_BUILD_SHIPPING
 #include "CireGame.h"
 #include "CireChampionArt.h"
@@ -189,7 +190,8 @@ void CaptureGroundFigures()
     {
         const auto* Area = WeakArea.Get();
         bool bShapeValid = IsValid(Area) && Area->IsActive() && !Area->IsHidden() &&
-            Area->CanObserve(Preview.Controller.Get()) && Area->GroundMesh && Area->GroundMesh->IsVisible() &&
+            Area->CanObserve(Preview.Controller.Get()) && Area->GroundMesh &&
+            (Area->GroundMesh->IsVisible() || CireSpellPresentation::IsAreaPresented(Area)) && // ability-vfx: animated telegraph draws this boundary
             Area->GroundMesh->GetNumSections() >= 2;
         if (Area)
         {

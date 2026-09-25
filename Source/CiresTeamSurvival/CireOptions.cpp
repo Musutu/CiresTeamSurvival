@@ -314,6 +314,7 @@ void ACireHUD::DrawSettings()
         if(Button(FString(TEXT("VSync: "))+(bVideoVSync?TEXT("On"):TEXT("Off")),R,Top+83,286))bVideoVSync=!bVideoVSync;
         Slider(TEXT("Frame rate cap (0 = uncapped)"),VideoFPS,0,240,15,L,Top+136,TEXT("Limits rendered frames per second. VSync may impose a lower display refresh limit."));
         Toggle(TEXT("Spell / scene bloom"),UISettings.bBloom,R,Top+143,TEXT("Controls the local camera bloom intensity. It does not remove enemy telegraphs."));
+        Toggle(TEXT("Impact camera shake"),UISettings.bImpactCameraShake,L,Top+190,TEXT("A small camera kick when a heavy spell or critical hit lands on or next to your champion. Never moves the camera for distant fights.")); // ability-vfx
         Toggle(TEXT("Motion blur"),UISettings.bMotionBlur,R,Top+184,TEXT("Controls local camera motion blur. Off preserves clarity during fast turns."));
         Slider(TEXT("Other units' aura effects"),UISettings.OtherEffectsIntensity,0,1,.05f,R,Top+222,TEXT("Strength of buff auras, rage swirls and empowered-attack trails on units other than you. 0 keeps only overhead marks. Your own effects stay full.")); // aura-vfx
         if(Settings && !bVideoPending && Button(TEXT("APPLY VIDEO PREVIEW"),L,Top+239,286))

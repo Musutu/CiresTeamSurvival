@@ -107,6 +107,7 @@ void FCireUISettings::Reset()
     CameraDistance=650.f; CameraFOV=80.f;
     MasterVolume=.85f; SFXVolume=.85f; UIVolume=.7f; bMuteAudio=false;
     MusicVolume=.6f; AmbienceVolume=.8f; bMusicEnabled=true; bFootstepCameraShake=false; // audio:
+    bImpactCameraShake=true; // ability-vfx
     bShowFPS=false; bShowNetwork=true; bTooltips=true; bQuickGroundCast=false;
     TooltipScale=.8f; TooltipMode=3; TooltipAngleDegrees=45.f; TooltipDistance=40.f; bTooltipOffsetLocked=true;
     StatusFilter=0; bDispellableOnly=false; bShowStatusDurations=true; bShowCriticalSymbol=true;
@@ -273,6 +274,7 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bMeterCollapsed); CIRE_LOAD_BOOL(bThreatCollapsed);
     CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
     CIRE_LOAD_BOOL(bMusicEnabled); CIRE_LOAD_BOOL(bFootstepCameraShake); // audio: absent keys keep the defaults
+    CIRE_LOAD_BOOL(bImpactCameraShake); // ability-vfx
     CIRE_LOAD_BOOL(bShowStats); CIRE_LOAD_BOOL(bShowLootLog); // progression-shop
 #undef CIRE_LOAD_BOOL
     Config.GetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);
@@ -359,6 +361,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bMeterCollapsed); CIRE_SAVE_BOOL(bThreatCollapsed);
     CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
     CIRE_SAVE_BOOL(bMusicEnabled); CIRE_SAVE_BOOL(bFootstepCameraShake); // audio:
+    CIRE_SAVE_BOOL(bImpactCameraShake); // ability-vfx
     CIRE_SAVE_BOOL(bShowStats); CIRE_SAVE_BOOL(bShowLootLog); // progression-shop
 #undef CIRE_SAVE_BOOL
     Config.SetFloat(PreferencesSection, TEXT("ChatFontSize"), ChatFontSize);

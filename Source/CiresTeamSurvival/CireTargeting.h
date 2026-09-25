@@ -37,5 +37,7 @@ namespace CireTargeting
 #if !UE_BUILD_SHIPPING
     bool RunDescriptorSmoke();
     bool RunRuntimeSmoke(ACireGameMode* Mode);
+    // ability-vfx: galleries/tests aim the armed preview at a world point instead of the cursor (unset clears).
+    void DebugSetAimOverride(TOptional<FVector> Point);
 #endif
 }

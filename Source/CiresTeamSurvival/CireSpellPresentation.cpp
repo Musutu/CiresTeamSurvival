@@ -4,6 +4,9 @@
 #include "CireHUD.h"
 #include "CireChampionRoster.h"
 #include "CireAuraVisuals.h" // aura-vfx
+#include "CireSpellMesh.h" // ability-vfx
+#include "CireAbilityShapes.h" // ability-vfx
+#include "CireAbilityVFX.h" // ability-vfx
 #include "Components/AudioComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Engine/World.h"
@@ -31,14 +34,15 @@ float CombatVolume(UWorld* World)
     if(!HUD)return .85f*.85f;
     return HUD->UISettings.bMuteAudio?0.f:HUD->UISettings.MasterVolume*HUD->UISettings.SFXVolume;
 }
-enum EFamily { Steel, Fire, Frost, Storm, Shadow, Life, Holy, Poison, Arcane, Earth, Nature, Spirit, Blood };
+enum EFamily { Steel, Fire, Frost, Storm, Shadow, Life, Holy, Poison, Arcane, Earth, Nature, Spirit, Blood, Tide, Void }; // ability-vfx: Tide/Void monster schools
 FString Normalize(FName Id)
 {
     FString S = Id.ToString().ToLower();
     S.ReplaceInline(TEXT(" "),TEXT("_")); S.ReplaceInline(TEXT("'"),TEXT(""));
     return S;
 }
-int32 FamilyFor(FName Id)
+// Previous id-substring families, kept for cire.AbilityVFX 0 A/B captures.
+int32 LegacyFamilyFor(FName Id)
 {
     const FString S = Normalize(Id);
     if (S.Contains(TEXT("venom")) || S.Contains(TEXT("blight")) || S.Contains(TEXT("poison"))) return Poison;
@@ -55,124 +59,15 @@ int32 FamilyFor(FName Id)
     if (S.Contains(TEXT("arcane")) || S.Contains(TEXT("scholar")) || S.Contains(TEXT("starfall")) || S.Contains(TEXT("rift"))) return Arcane;
     return Steel;
 }
-FLinearColor ColorFor(int32 Family)
-{
-    const FLinearColor Colors[] = {
-        {1.1f,.64f,.24f,1},{2.6f,.32f,.045f,1},{.13f,.88f,1.65f,1},
-        {.45f,.55f,2.6f,1},{.51f,.08f,.92f,1},{.4f,1.35f,.82f,1},
-        {1.85f,1.1f,.27f,1},{.28f,.85f,.085f,1},{.46f,.31f,1.65f,1},
-        {1.15f,.56f,.16f,1},{.16f,1.12f,.45f,1},{.12f,1.2f,1.05f,1},{1.5f,.085f,.12f,1}};
-    return Colors[FMath::Clamp(Family,0,12)];
-}
+// ability-vfx: one school table for champions and monsters (CireAbilityShapes), incl. Tide/Void monster schools.
+int32 FamilyFor(FName Id) { return CireAbilityVFX::Enabled() ? static_cast<int32>(CireAbilityShapes::SchoolFor(Id)) : LegacyFamilyFor(Id); }
+FLinearColor ColorFor(int32 Family) { return CireAbilityShapes::SchoolColor(static_cast<ECireSchool>(FMath::Clamp(Family,0,static_cast<int32>(ECireSchool::Count)-1))); }
 float Fract(float N) { return N-FMath::FloorToFloat(N); }
 FVector Polar(float R, float A, float Z=0) { return FVector(FMath::Cos(A)*R,FMath::Sin(A)*R,Z); }
 
-// Bounded modeled core section with no collision cooking. Vertex alpha separates
-// thin bright cores from dim ribbons; the soft section supplies feathered halos.
-struct FMesh
-{
-    TArray<FVector>& V;
-    TArray<int32>& I;
-    TArray<FLinearColor>& C;
-    FMesh(TArray<FVector>& Vertices,TArray<int32>& Indices,TArray<FLinearColor>& Colors):V(Vertices),I(Indices),C(Colors)
-    { V.Reset();I.Reset();C.Reset();V.Reserve(4096);I.Reserve(6144);C.Reserve(4096); }
-    void Tri(FVector A,FVector B,FVector D,FLinearColor Color)
-    {
-        if (V.Num()+3>MaxCoreVertices) return;
-        const int32 N=V.Num(); V.Append({A,B,D}); C.Append({Color,Color,Color}); I.Append({N,N+1,N+2});
-    }
-    void Quad(FVector A,FVector B,FVector D,FVector E,FLinearColor Color)
-    { Tri(A,B,D,Color); Tri(A,D,E,Color); }
-    void Tube(FVector A,FVector B,float Radius,FLinearColor Color,int32 Sides=5)
-    {
-        FVector Along=(B-A).GetSafeNormal(), U,Vv; Along.FindBestAxisVectors(U,Vv);
-        for(int32 J=0;J<Sides;++J)
-        {
-            const float X=2*PI*J/Sides,Y=2*PI*(J+1)/Sides;
-            const FVector P=(U*FMath::Cos(X)+Vv*FMath::Sin(X))*Radius;
-            const FVector Q=(U*FMath::Cos(Y)+Vv*FMath::Sin(Y))*Radius;
-            Quad(A+P,B+P,B+Q,A+Q,Color);
-        }
-    }
-    void Ring(float R,float W,float Z,FLinearColor Color,float Begin=0,float Span=2*PI,int32 Steps=48)
-    {
-        for(int32 J=0;J<Steps;++J)
-        {
-            const float A=Begin+Span*J/Steps,B=Begin+Span*(J+1)/Steps;
-            const float Edge=FMath::Min(1.f,FMath::Min((J+1)*.25f,(Steps-J)*.25f));
-            FLinearColor T=Color; T.A*=Edge;
-            Quad(Polar(R,A,Z),Polar(R,B,Z),Polar(R-W,B,Z),Polar(R-W,A,Z),T);
-        }
-    }
-    void Shard(FVector P,float R,float H,FLinearColor Color,float Twist=0)
-    {
-        const FVector Top=P+FVector(0,0,H),Bottom=P-FVector(0,0,H*.2f);
-        for(int32 J=0;J<4;++J)
-        {
-            const FVector A=P+Polar(R,Twist+PI*.5f*J),B=P+Polar(R,Twist+PI*.5f*(J+1));
-            FLinearColor Shade=Color; Shade*=J%2?.58f:1.f; Shade.A=Color.A;
-            Tri(A,B,Top,Shade); Tri(B,A,Bottom,Shade);
-        }
-    }
-    void Rune(FVector P,float Scale,float Angle,FLinearColor Color)
-    {
-        const FVector X=Polar(Scale,Angle),Y=Polar(Scale*.55f,Angle+PI*.5f);
-        Tube(P-X,P+X,1.2f,Color,3); Tube(P-X,P+Y,1.2f,Color,3);
-        Tube(P+Y,P+X,1.2f,Color,3); Tube(P-X*.3f-Y,P+X*.3f+Y,1.2f,Color,3);
-    }
-    void Helix(float R,float H,float T,FLinearColor Color,int32 Strands=2)
-    {
-        for(int32 S=0;S<Strands;++S)
-            for(int32 J=0;J<22;++J)
-            {
-                float U=J/22.f,Vv=(J+1)/22.f;
-                const float A=S*2*PI/Strands+U*PI*1.6f+T;
-                const float B=S*2*PI/Strands+Vv*PI*1.6f+T;
-                FLinearColor Fade=Color; Fade.A*=FMath::Sin(U*PI)*.8f;
-                Tube(Polar(R*(1-U*.35f),A,H*U),Polar(R*(1-Vv*.35f),B,H*Vv),1.8f,Fade,4);
-            }
-    }
-    void Star(FVector P,float Radius,FLinearColor Color,float Angle=0)
-    {
-        for(int32 J=0;J<8;++J)
-        {
-            const float A=Angle+J*PI*.25f,B=A+PI*.25f;
-            Tri(P,P+Polar(J%2?Radius*.28f:Radius,A),P+Polar(J%2?Radius:Radius*.28f,B),Color);
-        }
-    }
-    void Sigil(float R,float Z,float Spin,FLinearColor Color)
-    {
-        Ring(R,1.1f,Z,Color,Spin,2*PI,48);Ring(R*.79f,.7f,Z+.3f,Color,-Spin,2*PI,48);
-        for(int32 Mark=0;Mark<8;++Mark)
-        {
-            const float A=Spin+Mark*PI*.25f;
-            Tube(Polar(R*.84f,A-.025f,Z),Polar(R*.96f,A+.025f,Z),.6f,Color,3);
-            if(Mark%2==0)Rune(Polar(R*.63f,A,Z),R*.08f,A,Color);
-        }
-        for(int32 Corner=0;Corner<3;++Corner)Tube(Polar(R*.4f,Spin+Corner*PI*2/3,Z),Polar(R*.4f,Spin+(Corner+1)*PI*2/3,Z),.65f,Color,3);
-    }
-};
-struct FSoftMesh
-{
-    TArray<FVector>& V;TArray<int32>& I;TArray<FLinearColor>& C;TArray<FVector2D>& UV;
-    FVector Right,Up,Look;
-    FSoftMesh(TArray<FVector>& InV,TArray<int32>& InI,TArray<FLinearColor>& InC,TArray<FVector2D>& InUV,FVector R,FVector U)
-        :V(InV),I(InI),C(InC),UV(InUV),Right(R),Up(U),Look(FVector::CrossProduct(R,U))
-    {V.Reset();I.Reset();C.Reset();UV.Reset();V.Reserve(1024);I.Reserve(1024);C.Reserve(1024);UV.Reserve(1024);}
-    void Quad(FVector A,FVector B,FVector D,FVector E,FLinearColor Color)
-    {
-        if(V.Num()+4>MaxSoftVertices)return;const int32 N=V.Num();
-        V.Append({A,B,D,E});C.Append({Color,Color,Color,Color});UV.Append({FVector2D(0,0),FVector2D(1,0),FVector2D(1,1),FVector2D(0,1)});
-        I.Append({N,N+1,N+2,N,N+2,N+3});
-    }
-    void Glow(FVector P,float Radius,FLinearColor Color)
-    {Quad(P-Right*Radius-Up*Radius,P+Right*Radius-Up*Radius,P+Right*Radius+Up*Radius,P-Right*Radius+Up*Radius,Color);}
-    void Ribbon(FVector A,FVector B,float Width,FLinearColor Color)
-    {
-        const FVector Side=FVector::CrossProduct(B-A,Look).GetSafeNormal()*Width;
-        Quad(A-Side,A+Side,B+Side,B-Side,Color);
-    }
-};
+// ability-vfx: modeled core / soft sections now live in CireSpellMesh.h (shared with telegraphs).
+using FMesh=FCireSpellMesh;
+using FSoftMesh=FCireSoftMesh;
 bool Capacity(UWorld* World)
 {
     int32 Count=0;
@@ -192,6 +87,11 @@ ACireSpellVisual::ACireSpellVisual()
     SoftMesh=CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("SoftSpellVeil"));SoftMesh->SetupAttachment(Mesh);
     SoftMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);SoftMesh->SetGenerateOverlapEvents(false);
     SoftMesh->SetCanEverAffectNavigation(false);SoftMesh->SetCastShadow(false);SoftMesh->bUseAsyncCooking=false;
+    // ability-vfx: flat ground layer for telegraphs, shock rings and splashes.
+    GroundMesh=CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("SpellGround"));GroundMesh->SetupAttachment(Mesh);
+    GroundMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);GroundMesh->SetGenerateOverlapEvents(false);
+    GroundMesh->SetCanEverAffectNavigation(false);GroundMesh->SetCastShadow(false);GroundMesh->bUseAsyncCooking=false;
+    GroundMesh->SetUsingAbsoluteScale(true);
     Light=CreateDefaultSubobject<UPointLightComponent>(TEXT("SpellAccentLight"));Light->SetupAttachment(Mesh);
     Light->SetMobility(EComponentMobility::Movable);
     Light->SetIntensityUnits(ELightUnits::Lumens);Light->SetIntensity(0);Light->SetAttenuationRadius(280);
@@ -235,6 +135,8 @@ void ACireSpellVisual::Configure(FName Id,FVector From,FVector To,ECireSpellCue 
     if(!Material) Material=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_GroundArea.M_GroundArea"));
     Mesh->SetMaterial(0,Material);
     SoftMesh->SetMaterial(0,LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Effects/CireSpellPolish01/M_SpellSoft.M_SpellSoft")));
+    GroundMesh->SetMaterial(0,LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_GroundArea.M_GroundArea")));
+    ClassifyCue(); // ability-vfx: shape-true telegraph / flare / shock modes (may re-anchor at the caster)
     bLightGranted=false;Light->SetVisibility(false);
     if(Family!=Steel&&!bFollowArea&&Cue!=ECireSpellCue::Wall&&Cue!=ECireSpellCue::Protection)
     {
@@ -243,7 +145,7 @@ void ACireSpellVisual::Configure(FName Id,FVector From,FVector To,ECireSpellCue 
         bLightGranted=Count<MaxLights;
     }
     Rebuild();
-    if(bSound) StartSound();
+    if(bSound){if(StartDelay>0)bSoundPending=true;else StartSound();} // ability-vfx: delayed cues sound on release
 }
 
 void ACireSpellVisual::StartSound()
@@ -294,6 +196,7 @@ void ACireSpellVisual::Tick(float DeltaSeconds)
     if(Audio->IsPlaying())Audio->SetVolumeMultiplier((Cue==ECireSpellCue::Impact?.6f:.45f)*CombatVolume(GetWorld()));
     if(!bPreview && !bFollowArea && OriginPhase!=CurrentPhase(GetWorld())) { Destroy(); return; }
     if(!bPreview) Age+=FMath::Clamp(DeltaSeconds,0.f,.25f);
+    if(TickModes(DeltaSeconds)) return; // ability-vfx: release delay, fade-out after the source ends, cancelled telegraphs
     if(bFollowArea)
     {
         ACireAreaEffect* Area=FollowedArea.Get();
@@ -340,7 +243,8 @@ void ACireSpellVisual::Rebuild()
     FLinearColor Core=FMath::Lerp(Tint,FLinearColor(2.3f,2.3f,2.1f,1),.4f);Core.A=Fade*.85f;
     const FString Id=Normalize(Skill);
     const float Expand=1-FMath::Square(1-T);
-    if(bFollowArea && FollowedArea.IsValid())
+    if(RebuildModes(M,Soft,T,Fade,Expand)) {} // ability-vfx: telegraphs, projectiles, impacts, flares
+    else if(bFollowArea && FollowedArea.IsValid())
     {
         auto* Area=FollowedArea.Get(); const auto& Spec=Area->AreaSpec;
         const bool Active=Area->IsActive(); const auto Boundary=ACireAreaEffect::BoundaryPoints(Spec);
@@ -641,6 +545,7 @@ void ACireSpellVisual::Rebuild()
     }
     if(!bFollowArea && Size!=1){for(auto& V:M.V)V*=Size;for(auto& V:Soft.V)V*=Size;}
     LastVertexCount=M.V.Num()+Soft.V.Num();
+    RebuildGround(T,Fade); // ability-vfx
     // All indices are sequential triangles. A stable topology can update its
     // existing render buffers rather than recreating a scene proxy every frame.
     const auto* Section=Mesh->GetProcMeshSection(0);
@@ -668,6 +573,7 @@ ACireSpellVisual* CireSpellPresentation::Play(UWorld* World,FName SkillId,FVecto
     FActorSpawnParameters P; P.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     auto* Visual=World->SpawnActor<ACireSpellVisual>(To,FRotator::ZeroRotator,P);
     if(Visual) Visual->Configure(SkillId,From,To,Cue,Scale,bSound);
+    if(Visual) Visual->SetStartDelay(ReleaseDelay(World,SkillId,Cue,From)); // ability-vfx: appear on the clip's release frame
     return Visual;
 }
 ACireSpellVisual* CireSpellPresentation::FollowArea(ACireAreaEffect* Area)
