@@ -203,7 +203,7 @@ situational), all items under ALL ITEMS as tier-coloured cards, larger text, sam
   Rows that preset `section` / `categories` / `effectTags` (for example the dodge-roll skills) keep them.
 * **Ready to Continue (Skill Shop mode only):** after a cleared wave the next wave **waits until every
   human presses READY TO CONTINUE** (bots auto-ready). The Skill Shop shows each teammate's portrait with a
-  check mark and "WAITING FOR 2 / 5 PLAYERS"; the match plate says the same. The AFK safety cap is
+  check mark and "WAITING FOR 2 PLAYERS · 3 / 5 READY" ("WAITING FOR 1 PLAYER" when one is left); the match plate says the same. The AFK safety cap is
   `SkillShop.json -> readyGate.maxSeconds` (180 s, also in F8 > Economy; 0 = none); its countdown appears
   in the last 30 s. The gate is `CireSkillShop::HoldBreather`, called from the survival tick (`CireMatch.cpp`)
   on top of the wave director's breather/ready-up; Classic Draft keeps the timed breather with early ready-up.

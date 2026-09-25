@@ -226,6 +226,15 @@ bool CireSkillShop::IsSkillShopMode(const UWorld* World)
 
 FString CireSkillShop::ModeName(bool bSkillShop) { return bSkillShop ? TEXT("Skill Shop") : TEXT("Classic Draft"); }
 
+FString CireSkillShop::WaitingLabel(int32 Humans, int32 Ready)
+{
+    Humans = FMath::Max(0, Humans); Ready = FMath::Clamp(Ready, 0, Humans);
+    const int32 Waiting = Humans - Ready;
+    FString Label = FString::Printf(TEXT("WAITING FOR %d %s"), Waiting, Waiting == 1 ? TEXT("PLAYER") : TEXT("PLAYERS"));
+    if (Humans > 1) Label += FString::Printf(TEXT("  ·  %d / %d READY"), Ready, Humans);
+    return Label;
+}
+
 void CireSkillShop::InitializeMode(ACireGameMode* Mode)
 {
     auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;

@@ -379,7 +379,7 @@ void ACireHUD::DrawMatch(ACireGameState* State)
     }
     if(State->Phase==0&&FMath::IsFinite(State->NextWaveSeconds)&&State->NextWaveSeconds>.05f&&State->NextWaveSeconds<3600.f) {
         // progression-shop: in Skill Shop mode the wave waits for every human's READY TO CONTINUE.
-        const FString Next=State->bReadyGateHold?FString::Printf(TEXT("WAITING FOR %d/%d PLAYERS"),FMath::Max(0,State->BreatherPlayers-State->BreatherReady),State->BreatherPlayers)
+        const FString Next=State->bReadyGateHold?CireSkillShop::WaitingLabel(State->BreatherPlayers,State->BreatherReady)
             :FString::Printf(TEXT("NEXT WAVE IN %ds"),FMath::CeilToInt(State->NextWaveSeconds));
         Label(Next,(250-TextWidth(Next,9))/2,76,9,Gold);
         // wave-director: breather Ready (the Skill Shop window ends early once every player is ready).

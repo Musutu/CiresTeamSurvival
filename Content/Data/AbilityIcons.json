@@ -387,12 +387,6 @@
       "accent": "#82e664",
       "pool": false
     },
-    "polymorph": {
-      "school": "arcane",
-      "glyph": "polymorph",
-      "accent": "#e07af0",
-      "pool": true
-    },
     "frost_bind": {
       "school": "frost",
       "glyph": "frost_bind",
@@ -691,6 +685,12 @@
       "school": "steel",
       "glyph": "piercing",
       "accent": "#aac8e6",
+      "pool": true
+    },
+    "polymorph": {
+      "school": "arcane",
+      "glyph": "polymorph",
+      "accent": "#e07af0",
       "pool": true
     },
     "powder_flask": {

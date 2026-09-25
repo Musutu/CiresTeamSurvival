@@ -710,6 +710,24 @@ def frost_bind(g, cx=.5, cy=.5, s=1.0):
     g.ring(cx, cy, .40 * s, .03 * s)
 
 
+def polymorph(g, cx=.5, cy=.5, s=1.0):
+    """Polymorph: a piglet's face inside a transmuting swirl, with sparkles."""
+    g.arc(cx, cy, .42 * s, 200, 470, .035 * s)
+    g.arc(cx, cy, .35 * s, 30, 150, .025 * s)
+    hx, hy = cx, cy + .03 * s
+    for side in (-1, 1):  # ears
+        g.poly([(hx + side * .10 * s, hy - .17 * s), (hx + side * .23 * s, hy - .27 * s), (hx + side * .21 * s, hy - .06 * s)])
+    g.circle(hx, hy, .20 * s)
+    for side in (-1, 1):  # eyes
+        g.circle(hx + side * .08 * s, hy - .06 * s, .025 * s, 0)
+    g.d.ellipse([P(hx - .09 * s, hy + .01 * s), P(hx + .09 * s, hy + .12 * s)], fill=0)
+    g.d.ellipse([P(hx - .07 * s, hy + .025 * s), P(hx + .07 * s, hy + .105 * s)], fill=255)
+    for side in (-1, 1):  # nostrils
+        g.circle(hx + side * .03 * s, hy + .065 * s, .016 * s, 0)
+    for x, y, r in ((.30, -.30, .07), (-.33, .26, .05), (.36, .12, .04)):
+        g.star(cx + x * s, cy + y * s, r * .28 * s, r * s, 4)
+
+
 def chain_spark(g, cx=.5, cy=.5, s=1.0):
     bolt(g, cx - .06 * s, cy, s * .8)
     for x, y in ((.28, -.28), (.30, .20), (-.32, .28)):
@@ -831,7 +849,7 @@ GLYPHS = {k: v for k, v in globals().items() if callable(v) and v.__module__ == 
 
 # Pool skills: (glyph, palette). Each pair is unique so every offered skill reads distinctly.
 POOL = {
-    'polymorph': ('spiral', 'arcane'),  # procedural fallback; the imported icon is painted (Art/Icons/ChatGPT/Abilities)
+    'polymorph': ('polymorph', 'arcane'),  # procedural fallback; the imported icon is painted (Art/Icons/ChatGPT/Abilities)
     'iron_guard': ('iron_guard', 'steel'), 'shield_slam': ('shield_slam', 'holy'), 'war_cry': ('war_cry', 'war'),
     'chain_spark': ('chain_spark', 'arcane'), 'ember_lance': ('ember_lance', 'fire'), 'venom_ground': ('venom', 'venom'),
     'cinder_cone': ('cinder_cone', 'fire'), 'grave_line': ('grave_line', 'shadow'), 'ashen_square': ('square_ward', 'ash'),
@@ -908,9 +926,10 @@ def planned_glyph(skill_id, delivery):
     return DELIVERY.get(delivery, 'rune_circle')
 
 
-def paint(glyph_name, palette_name, seed, kwargs=None):
+def paint(glyph_name, palette_name, seed, kwargs=None, glow_override=None):
     from PIL import Image, ImageDraw, ImageFilter, ImageChops
     deep, mid, fg, glow = PALETTES[palette_name]
+    glow = glow_override or glow
     rnd = random.Random(seed)
     # Backdrop: radial light slightly above centre, grain, vignette.
     bg = Image.new('RGB', (SIZE, SIZE))
@@ -960,8 +979,16 @@ def paint(glyph_name, palette_name, seed, kwargs=None):
     return bg
 
 
+# Runtime accents that differ from the school's glow (the painted icon's colour). Also tints the procedural glyph's glow.
+ACCENTS = {'polymorph': (224, 122, 240)}
+
+
+def accent(sid, palette):
+    return '#%02x%02x%02x' % ACCENTS.get(sid, PALETTES[palette][3])
+
+
 def data_rows(jobs):
-    return {sid: dict(school=p, glyph=g, accent='#%02x%02x%02x' % PALETTES[p][3], pool=sid in POOL) for sid, (g, p, _) in sorted(jobs.items())}
+    return {sid: dict(school=p, glyph=g, accent=accent(sid, p), pool=sid in POOL) for sid, (g, p, _) in sorted(jobs.items())}
 
 
 def main() -> int:
@@ -1009,7 +1036,7 @@ def main() -> int:
     out = args.out or ROOT / 'Saved/AbilityIcons' / __import__('datetime').datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
     out.mkdir(parents=True, exist_ok=True)
     for i, (sid, (glyph, pal, kw)) in enumerate(sorted(jobs.items())):
-        paint(glyph, pal, hash(sid) & 0xffff if False else sum(map(ord, sid)), kw).save(out / f'{sid}.png')
+        paint(glyph, pal, hash(sid) & 0xffff if False else sum(map(ord, sid)), kw, ACCENTS.get(sid)).save(out / f'{sid}.png')
     manifest = {sid: dict(glyph=g, palette=p, pool=sid in POOL) for sid, (g, p, _) in jobs.items()}
     (out / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
     if args.data and args.ids:
@@ -1020,8 +1047,7 @@ def main() -> int:
         existing['icons'] = dict(sorted(existing['icons'].items()))
         args.data.write_text(json.dumps(existing, indent=2) + chr(10), encoding='utf-8')
     if args.data and not args.ids:
-        rows = {sid: dict(school=p, glyph=g, accent='#%02x%02x%02x' % PALETTES[p][3], pool=sid in POOL)
-                for sid, (g, p, _) in sorted(jobs.items())}
+        rows = data_rows(jobs)
         args.data.write_text(json.dumps(dict(schemaVersion=1, generator='Tools/BuildAbilityIcons.py',
                                              texturePath='/Game/UI/Abilities/T_<id>', icons=rows), indent=2) + chr(10), encoding='utf-8')
     if args.sheet:

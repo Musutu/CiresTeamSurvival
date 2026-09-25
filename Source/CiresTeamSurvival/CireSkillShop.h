@@ -66,6 +66,8 @@ namespace CireSkillShop
     // Server: switch before the first wave (host / standalone). Returns false when not allowed.
     CIRESTEAMSURVIVAL_API bool SetMode(ACireGameMode* Mode, bool bSkillShop, FString* Why = nullptr);
     CIRESTEAMSURVIVAL_API FString ModeName(bool bSkillShop);
+    // Ready gate banner: "WAITING FOR 1 PLAYER" / "WAITING FOR 2 PLAYERS  ·  3 / 5 READY".
+    CIRESTEAMSURVIVAL_API FString WaitingLabel(int32 Humans, int32 Ready);
 
     // ---- state (server and clients) ----
     CIRESTEAMSURVIVAL_API int32 CurrentWave(const UWorld* World);
