@@ -119,6 +119,7 @@ void ACireHUD::DrawEffectIcon(const FCireActiveEffect& E,const FCireEffectInfo& 
     P.Rect(X-1,Y-1,Size+2,Size+2,FLinearColor(0,0,0,.9f));
     UTexture2D* Tex=CireUIStyle::FindAbilityIcon(E.Id.ToString());
     if(!Tex)Tex=CireUIStyle::FindAbilityIcon(StatusIconId(I)); // painted crowd-control / armor-break art
+    if(!Tex)Tex=CireUIStyle::FindAbilityIcon(EffectSigil(E.Id,I)); // painted art of the ability whose symbol it borrows
     if(Tex)P.Tex(Tex,X+1,Y+1,Size-2,Size-2,FLinearColor(1,1,1,Pulse));
     else
     {
