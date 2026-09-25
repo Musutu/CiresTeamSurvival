@@ -26,7 +26,7 @@ WEAPONS = {
     "legacy/Shield": (V1 + "/SM_Kite_Wood_Shield", "shield", {"scale": .62}),
     "legacy/Bow": (V2 + "/SM_Bow", "bow", {}),
     "legacy/Arrow": (V2 + "/SM_Arrow_Var1", "ammo", {}),
-    "legacy/Lance": (V1 + "/SM_Spear", "pole", {"carry": True}),
+    "legacy/Lance": (V1 + "/SM_Spear", "pole", {"carry": True, "scale": .8}),
     "WarHammer": (V1 + "/SM_WarHammer", "head", {"tilt": 28}),
     "Dagger": (V1 + "/SM_Dagger_1", "guard", {"tilt": 20}),
     "WarAxe": (V1 + "/SM_Axe_1", "head", {"tilt": 25}),

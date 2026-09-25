@@ -170,7 +170,7 @@ void Load()
         const TSharedPtr<FJsonObject>* FabUnits = nullptr;
         auto Present = [](const FString& Path) { const FString Package = FPackageName::ObjectPathToPackageName(Path);
             return FPackageName::IsValidLongPackageName(Package) && FPackageName::DoesPackageExist(Package); };
-        if (!FParse::Param(FCommandLine::Get(), TEXT("CireNoFabCreatures")) && ReadFile(TEXT("RaceMeshes.fab.json"), FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
+        if (!FParse::Param(FCommandLine::Get(), TEXT("CireNoFabCreatures")) && !FParse::Param(FCommandLine::Get(), TEXT("CireNoFab")) && ReadFile(TEXT("RaceMeshes.fab.json"), FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
             for (const auto& Pair : (*FabUnits)->Values)
             {
                 const FName Id(FString(Pair.Key.ToView()));

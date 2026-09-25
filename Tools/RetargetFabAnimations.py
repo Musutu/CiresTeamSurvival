@@ -179,16 +179,20 @@ def retarget_body(folder, mesh, sources, locomotion, report, keep):
         if not todo:
             continue
         tag = "S%d" % index
-        for name in ("IK_Src_" + tag, "IK_" + folder + "_" + tag, "RTG_" + tag):
-            writable_delete("%s/%s" % (rig_dir, name))
-        src_rig = RT.create_asset("IK_Src_" + tag, rig_dir, unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
-        RT.configure_rig(src_rig, src_mesh)
-        dst_rig = RT.create_asset("IK_" + folder + "_" + tag, rig_dir, unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
-        RT.configure_rig(dst_rig, mesh)
-        rtg = RT.create_asset("RTG_" + tag, rig_dir, unreal.IKRetargeter, unreal.IKRetargetFactory())
-        RT.configure_retargeter(rtg, src_rig, dst_rig, src_mesh, mesh)
-        for asset in (src_rig, dst_rig, rtg):
-            lib.save_loaded_asset(asset, False)
+        existing = "%s/RTG_%s" % (rig_dir, tag)
+        if keep and lib.does_asset_exist(existing):
+            rtg = unreal.load_asset(existing)  # keep mode: reuse the rig pair built with the clips
+        else:
+            for name in ("IK_Src_" + tag, "IK_" + folder + "_" + tag, "RTG_" + tag):
+                writable_delete("%s/%s" % (rig_dir, name))
+            src_rig = RT.create_asset("IK_Src_" + tag, rig_dir, unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
+            RT.configure_rig(src_rig, src_mesh)
+            dst_rig = RT.create_asset("IK_" + folder + "_" + tag, rig_dir, unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
+            RT.configure_rig(dst_rig, mesh)
+            rtg = RT.create_asset("RTG_" + tag, rig_dir, unreal.IKRetargeter, unreal.IKRetargetFactory())
+            RT.configure_retargeter(rtg, src_rig, dst_rig, src_mesh, mesh)
+            for asset in (src_rig, dst_rig, rtg):
+                lib.save_loaded_asset(asset, False)
         staging = out_dir + "/_staging"
         if lib.does_directory_exist(staging):
             lib.delete_directory(staging)
@@ -235,48 +239,58 @@ def retarget_body(folder, mesh, sources, locomotion, report, keep):
     return done
 
 
+def body_locomotion(mesh_path):
+    """The body's own, proven locomotion BlendSpace (ChampionArtBindings / ChampionArt.tripo.json / Preview02)."""
+    mesh_path = mesh_path.split(".")[0]
+    for name, rel in (("ChampionArtBindings.json", "bindings"), ("ChampionArt.tripo.json", "champions")):
+        data = json.loads((ROOT / "Content/Data" / name).read_text(encoding="utf-8"))
+        for row in data.get(rel, []):
+            if row.get("mesh", "").split(".")[0] == mesh_path and row.get("locomotion"):
+                return row["locomotion"].split(".")[0]
+    legacy = {"medieval_knight_armor_3d_model": "Warden", "armored_archer_3d_model": "Ranger", "battlefield_healer_3d_model": "Scholar"}
+    for model, label in legacy.items():
+        if model in mesh_path:
+            return "/Game/Art/Characters/TripoRetarget/Preview02/%s/Animations/BS_Idle_Walk_Run_%s" % (label, label)
+    return None
+
+
 def build_locomotion(folder, mesh, done, loco_sources, speeds, lancer, report):
+    """Duplicate the body's working BlendSpace and swap each sample's clip for the Fab one (same grid positions:
+    speed 0 = idle, the middle speed = walk, the top speed = run; direction picks the 8-way clip). Building a
+    BlendSpace from scratch in Python evaluated to the reference pose at runtime, so the proven asset is reused."""
     need = [k for k in ("idle", "walk_f") if "loco_" + k not in done]
     if need:
         report[folder]["errors"]["locomotion"] = "missing " + ",".join(need)
         return None
+    template = body_locomotion(path_of(mesh))
+    if not template or not lib.does_asset_exist(template):
+        report[folder]["errors"]["locomotion"] = "no template BlendSpace for body"
+        return None
     path = "%s/%s/BS_Fab_Locomotion_%s" % (OUT, folder, folder)
     writable_delete(path)
-    factory = unreal.BlendSpaceFactoryNew()
-    factory.set_editor_property("target_skeleton", mesh.get_editor_property("skeleton"))
-    blend = unreal.AssetToolsHelpers.get_asset_tools().create_asset(path.rsplit("/", 1)[1], path.rsplit("/", 1)[0], unreal.BlendSpace, factory)
-    params = lancer.get_editor_property("blend_parameters")
-    blend.set_editor_property("blend_parameters", params)
-    speed_max = float(params[1].get_editor_property("max"))
-    samples, layout = [], set()
-
-    def add(clip_key, direction, speed):
-        key = (round(direction, 1), round(min(speed, speed_max), 1))
-        if key in layout or "loco_" + clip_key not in done:
-            return
-        s = unreal.BlendSample()
-        s.set_editor_property("animation", unreal.load_asset(done["loco_" + clip_key]))
-        s.set_editor_property("sample_value", unreal.Vector(key[0], key[1], 0))
-        s.set_editor_property("rate_scale", 1.0)
-        samples.append(s)
-        layout.add(key)
-    for d in (-180.0, -90.0, 0.0, 90.0, 180.0, -135.0, -45.0, 45.0, 135.0):
-        add("idle", d, 0.0)
-    for gait in ("walk", "run"):
-        fwd = gait + "_f"
-        if "loco_" + fwd not in done:
-            continue
-        for suffix, d in DIRS.items():
-            k = gait + "_" + suffix if "loco_" + gait + "_" + suffix in done else fwd
-            v = speeds.get(gait, 240.0 if gait == "walk" else 520.0) * (speeds.get("back", .65) if suffix.startswith("b") else 1.0)
-            add(k, d, v)
-            if suffix == "b":
-                add(k, -180.0, v)
+    blend = lib.duplicate_asset(template, path)
+    require(isinstance(blend, unreal.BlendSpace), "template duplicate failed")
+    require(blend.get_editor_property("skeleton") == mesh.get_editor_property("skeleton"), "template skeleton differs")
+    samples = list(blend.get_editor_property("sample_data"))
+    speeds_seen = sorted({round(s.get_editor_property("sample_value").y, 1) for s in samples})
+    top = speeds_seen[-1]
+    dirs = {0: "f", 45: "fr", 90: "r", 135: "br", 180: "b", -180: "b", -135: "bl", -90: "l", -45: "fl"}
+    layout = []
+    for s in samples:
+        v = s.get_editor_property("sample_value")
+        d = dirs.get(int(round(v.x)), "f")
+        gait = "idle" if v.y <= 1 else ("run" if v.y >= top - 1 else "walk")
+        key = "idle" if gait == "idle" else "%s_%s" % (gait, d)
+        if "loco_" + key not in done:
+            key = "idle" if gait == "idle" else "%s_f" % gait
+        if "loco_" + key not in done:
+            key = "walk_f"
+        s.set_editor_property("animation", unreal.load_asset(done["loco_" + key]))
+        layout.append([round(v.x, 1), round(v.y, 1), key])
     blend.set_editor_property("sample_data", samples)
     require(lib.save_loaded_asset(blend, False), "blend save failed")
-    report[folder]["locomotion"] = {"blend": path, "samples": sorted(layout), "speeds": speeds}
+    report[folder]["locomotion"] = {"blend": path, "template": template, "samples": layout}
     return path
-
 
 def measure_window(anim, mesh, kind):
     """Timing for a clip without authored notifies: attacks contact at peak wrist speed (12%..85% of the clip)."""

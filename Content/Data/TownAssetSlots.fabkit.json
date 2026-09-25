@@ -1,0 +1,119 @@
+{
+ "schemaVersion": 1,
+ "priority": 25,
+ "source": "fab",
+ "description": "Purchased Medieval Kingdom (Hivemind) props over the town's Tripo/procedural slots (Docs/FabIntegration.md). Local-only pack: a slot resolves only when its package exists; otherwise the lower-priority art stays. Written by Tools/BuildFabTownSlots.py.",
+ "slots": {
+  "crate": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/Crates/SM_Crate_A_01.SM_Crate_A_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "crate_long": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/Crates/SM_CargoCrate_01.SM_CargoCrate_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "barrel": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Barrel_01.SM_Barrel_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "barrel_wine": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Large_Keg.SM_Large_Keg",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "bucket": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Bucket_01.SM_Bucket_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "stool": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/Furniture/SM_Stool.SM_Stool",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "fire_pit": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_FirePit_01.SM_FirePit_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "hanging_lantern": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/Lanterns/SM_Lantern_Hanging.SM_Lantern_Hanging",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "castle_door": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Castle_Kit/Buildings/WindowsandDoors/SM_Castle_Door.SM_Castle_Door",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "shield": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Shield_01.SM_Shield_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "axe": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Axe_01.SM_Axe_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "jug": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Flagon_01.SM_Flagon_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "pot": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Pot.SM_Pot",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "apple": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/Fruit/SM_Apple.SM_Apple",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "cart": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Props/carts/SM_Cart.SM_Cart",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "fence": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Village/Building_Kit/WoodenFences/SM_Fence_01a.SM_Fence_01a",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  }
+ }
+}

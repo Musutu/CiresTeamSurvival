@@ -86,7 +86,7 @@ FString CireFabVFX::RoleName(ERole Role)
 
 bool CireFabVFX::Enabled()
 {
-    static const bool bOffByFlag=FParse::Param(FCommandLine::Get(),TEXT("CireNoFabVFX"));
+    static const bool bOffByFlag=(FParse::Param(FCommandLine::Get(),TEXT("CireNoFabVFX"))||FParse::Param(FCommandLine::Get(),TEXT("CireNoFab")));
     return !bOffByFlag&&CVarFabVFX.GetValueOnGameThread()!=0;
 }
 

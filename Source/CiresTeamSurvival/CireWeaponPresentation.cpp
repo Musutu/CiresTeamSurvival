@@ -237,7 +237,7 @@ const TMap<FString,FFabWeapon>& FabWeapons()
 }
 FString CireWeaponFab::ResolveMesh(const FString& Token,const FString& Fallback,float& InOutSize)
 {
-    static const bool bOff=FParse::Param(FCommandLine::Get(),TEXT("CireNoFabWeapons"))||FParse::Param(FCommandLine::Get(),TEXT("CireNoFabCreatures"));
+    static const bool bOff=FParse::Param(FCommandLine::Get(),TEXT("CireNoFabWeapons"))||FParse::Param(FCommandLine::Get(),TEXT("CireNoFabCreatures"))||FParse::Param(FCommandLine::Get(),TEXT("CireNoFab"));
     const FFabWeapon* W=bOff?nullptr:FabWeapons().Find(Token);
     if(!W||!FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(W->Mesh)))return Fallback;
     InOutSize*=W->Scale;return W->Mesh;

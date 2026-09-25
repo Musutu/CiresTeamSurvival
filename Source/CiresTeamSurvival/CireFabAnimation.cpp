@@ -90,7 +90,7 @@ template<typename T> T* LoadIfPresent(const FString& Path)
 
 bool CireFabAnimation::Enabled()
 {
-    static const bool bOff = FParse::Param(FCommandLine::Get(), TEXT("CireNoFabAnim"));
+    static const bool bOff = (FParse::Param(FCommandLine::Get(), TEXT("CireNoFabAnim")) || FParse::Param(FCommandLine::Get(), TEXT("CireNoFab")));
     return !bOff && CVarFabAnim.GetValueOnAnyThread() != 0;
 }
 

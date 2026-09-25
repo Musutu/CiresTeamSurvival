@@ -12,7 +12,10 @@
    "declares58": true,
    "contents": "~6,872 combat animations (sword, sword & shield, two-hand, dual, dagger, spear, magic, unarmed, defence) on the UE5 Manny skeleton; bundle of GDH packs",
    "use": "champion attacks, casts, hits, deaths, dodges per weapon archetype",
-   "folders": []
+   "folders": [
+    "GDHBundle"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 2,
@@ -24,7 +27,10 @@
    "declares58": true,
    "contents": "strafe and non-strafe male locomotion (idle, walk, jog, run, starts/stops, turns); extra FBX/MotionBuilder files",
    "use": "champion idle / run / strafe / backpedal / jump",
-   "folders": []
+   "folders": [
+    "MaleLocomotionSet"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 3,
@@ -36,7 +42,10 @@
    "declares58": true,
    "contents": "pistol + sword combat set on UE5 Manny (Simple)",
    "use": "pistol / gunblade champions",
-   "folders": []
+   "folders": [
+    "Gun_and_Sword"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 4,
@@ -48,7 +57,10 @@
    "declares58": false,
    "contents": "174 crossbow animations, ALS V4 compatible, native UE5 Manny/Quinn skeleton",
    "use": "crossbow / ranged champions (bow archetype fallback for aim/reload/hit)",
-   "folders": []
+   "folders": [
+    "CrossbowPackAnim"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 5,
@@ -90,7 +102,10 @@
    "declares58": true,
    "contents": "15 looping character state effects (buff/debuff auras, stun, poison, burning, freeze...)",
    "use": "buff/debuff/aura signature visuals",
-   "folders": []
+   "folders": [
+    "State_VFX"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 8,
@@ -102,7 +117,10 @@
    "declares58": true,
    "contents": "49 earth magic effects, size/colour user parameters",
    "use": "earth school",
-   "folders": []
+   "folders": [
+    "Earth_Spells"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 9,
@@ -114,7 +132,10 @@
    "declares58": true,
    "contents": "vine attack/growth/barrier, wood hide, area buff, heal beam, projectile, grenade, explosions, rune particle",
    "use": "nature school, heals, roots",
-   "folders": []
+   "folders": [
+    "Forest_VFX"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 10,
@@ -126,7 +147,10 @@
    "declares58": true,
    "contents": "Niagara blood hits, sprays, splatter decals",
    "use": "physical hit impacts (dark-fantasy tone)",
-   "folders": []
+   "folders": [
+    "RealisticBlood"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 11,
@@ -138,7 +162,11 @@
    "declares58": true,
    "contents": "medieval weapon static meshes (swords, axes, maces, spears, shields, bows, arrows...)",
    "use": "champion weapon props where they beat the Tripo props",
-   "folders": []
+   "folders": [
+    "Medieval_Weapons",
+    "Medieval_Weapons_VOL2"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 12,
@@ -150,7 +178,10 @@
    "declares58": true,
    "contents": "580 meshes, enterable furnished castle + town, 2K/4K textures, demo map",
    "use": "town + arena slots",
-   "folders": []
+   "folders": [
+    "CastleTown"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 13,
@@ -162,7 +193,10 @@
    "declares58": false,
    "contents": "Lich, Ghoul, Skeleton, Zombie, Goblin characters, 4 LODs, 2K/4K",
    "use": "monster races (monster-races agent) - reference only here",
-   "folders": []
+   "folders": [
+    "UndeadPack"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
   },
   {
    "order": 14,
@@ -174,7 +208,30 @@
    "declares58": true,
    "contents": "animated animal/creature pack (wolf, deer, ... with ABP/BS)",
    "use": "creatures / pets (creature agents) - reference only here",
-   "folders": []
+   "folders": [
+    "ROG_Creatures"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 15,
+   "name": "Quadruped Fantasy Creatures",
+   "seller": "PROTOFACTOR INC",
+   "listing": "52d686b6-1180-4f26-901f-ce3c69a14767",
+   "category": "characters",
+   "ue": "4.15-5.5",
+   "declares58": false,
+   "contents": "Centaur (85 anims), Barghest, Mountain Dragon, Griffon",
+   "use": "grave_hound (Barghest), wild_outrider (Centaur)",
+   "folders": [
+    "QuadrapedCreatures"
+   ],
+   "installed": "2026-09-25"
   }
- ]
+ ],
+ "alsoInstalled": {
+  "Monster": "Khornes 'Monster' (free pass): idle/walk/run/jump only, no attack clips - not used",
+  "Polyphoria": "Paladin RPG Set (MetaHuman heavy armour parts) - not a Wood Monster; MetaHuman assembly needs the editor",
+  "FXVarietyPack": "Kakky FX Variety Pack (free pass) - not mapped yet"
+ }
 }

@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import struct
 import subprocess
+import sys
 import time
 
 
@@ -30,6 +31,8 @@ def main() -> int:
                "/Game/Maps/Citadel", "-game", "-CireEnvironmentGallery", "-RenderOffscreen", "-ForceRes",
                "-ResX=1920", "-ResY=1080", "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding",
                "-ExecCmds=t.MaxFPS 60", f"-abslog={log}"]
+    if "--no-fab" in sys.argv:  # fab-integration: before/after captures without the purchased-pack overlays
+        command.append("-CireNoFab")
     started = time.monotonic()
     failure = ""
     with (folder / "console.log").open("wb") as output:

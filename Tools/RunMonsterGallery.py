@@ -41,7 +41,7 @@ def main() -> int:
                "-CireTripoChampions", "-RenderOffscreen", "-ForceRes", "-windowed", "-ResX=1920", "-ResY=1080",
                "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-nosplash", f"-abslog={log}"]
     if args.no_fab:
-        command += ["-CireNoFabVFX", "-CireNoFabAnim", "-CireNoFabCreatures"]
+        command += ["-CireNoFab"]
     if args.only:
         command.append(f"-CireMonsterGalleryOnly={args.only}")
     creation = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0

@@ -10,7 +10,8 @@
    "scale": 0.62
   },
   "legacy/Lance": {
-   "mesh": "/Game/Medieval_Weapons/Meshes/SM_Spear.SM_Spear"
+   "mesh": "/Game/Medieval_Weapons/Meshes/SM_Spear.SM_Spear",
+   "scale": 0.8
   },
   "WarHammer": {
    "mesh": "/Game/Medieval_Weapons/Meshes/SM_WarHammer.SM_WarHammer"

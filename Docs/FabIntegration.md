@@ -64,3 +64,24 @@ Champion creature bodies (the Bear, and the Centaur from Quadruped Fantasy Creat
 
 - **Town.** Medieval Kingdom meshes go into `Content/Data/TownAssetSlots.fab.json` (priority 20, `status: "imported"`), and the arenas use `Tools/AuthorArenas.py` `FAB_OVERRIDES`. Both resolve only when the package exists.
 - **Weapons.** Ultimate Weapons Bundle props replace Tripo props only where they clearly look better. They need `WeaponGrips.json` handle data so the hands close on the grip.
+
+## Status on 2026-09-25 (what landed where)
+
+| Pack (Content folder) | Integrated into | Tool / data |
+|---|---|---|
+| Big Pack Magic Effects (`Big_Pack_Magic_VFX`), Shadow Magic (`Shadow_Magic`) | cast / projectile / impact / area / aura Niagara per school (fire, frost, storm, shadow, void, holy, life, poison, tide, blood, arcane, spirit) | `Tools/MapFabVFX.py` → `FabVFX.json` |
+| State VFX (`State_VFX`) | 22 status effects (stun, root, slow, freeze, poison, burn, silence, curse, charm, blind, heal-over-time, mana, shock, bleed) | `FabVFX.json` `buffs` |
+| Earth Spells (`Earth_Spells`), Nature VFX (`Forest_VFX`) | earth and nature schools; nature area heal | `FabVFX.json` |
+| Realistic Blood (`RealisticBlood`) | restrained physical (steel) impacts: low-intensity slash/burst | `FabVFX.json` |
+| GDH All Animation Bundle (`GDHBundle`), Male Locomotion (`MaleLocomotionSet`), Gun & Sword (`Gun_and_Sword`) | 22 champion bodies: attacks (combo rotation), casts, hit, death, dodge roll, airborne, 8-direction walk/run per weapon set | `Tools/BuildFabAnimMap.py`, `Tools/RetargetFabAnimations.py` → `FabAnimations.json`, `/Game/FabDerived` |
+| ROG Creatures, Quadruped Fantasy Creatures, Undead Pack | dire_wolf, bristleback, feral_ursoth, feral_mammoth, grave_hound (Barghest), wild_outrider (Centaur), hollow_infantry (skeleton + ghoul variants) | `Tools/BuildFabCreatures.py` → `RaceMeshes.fab.json` |
+| Ultimate Weapons (`Medieval_Weapons`, `_VOL2`) | sword, kite shield, spear, war hammer, dagger, axe props | `Tools/MeasureFabWeapons.py` → `WeaponLoadouts.fab.json`, `WeaponGrips.fab.json` |
+| Medieval Kingdom (`CastleTown`) | 16 town prop slots (crates, barrels, keg, lanterns, castle door, cart, fence...) | `Tools/BuildFabTownSlots.py` → `TownAssetSlots.fabkit.json` |
+
+Deliberately not used (reviewed in galleries): the Undead Pack zombie (cartoon-styled, kept the Tripo siegebreaker), the Mountain
+Dragon (idle head near the ground on a 9 m winged mesh), the Undead skeleton archer (bow attack lives on the bow's skeleton), the
+Medieval Kingdom market stand (bare frame) and table (hides the goods). Crossbow Animation Set is installed but not mapped yet (the
+crossbow champion keeps its Tripo clip). The VOL2 bow/arrow/throwing axe have no CPU-readable vertices, so they keep their props.
+
+Switches: `-CireNoFab` hides every overlay (VFX, animation, creatures, weapons, town) for before/after captures; the galleries
+take `--no-fab` (ability VFX, monster, new champions, environment).
