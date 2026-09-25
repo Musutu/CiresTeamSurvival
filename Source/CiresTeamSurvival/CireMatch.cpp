@@ -133,6 +133,7 @@ void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireGameState,EmberWins); DOREPLIFETIME(ACireGameState,DuskWins);
     DOREPLIFETIME(ACireGameState,ArenaIndex); DOREPLIFETIME(ACireGameState,Announcement);
     DOREPLIFETIME(ACireGameState,WaveLabel); DOREPLIFETIME(ACireGameState,NextWaveLabel); // wave-director
+    DOREPLIFETIME(ACireGameState,BreatherReady); DOREPLIFETIME(ACireGameState,BreatherPlayers); // wave-director
     DOREPLIFETIME(ACireGameState,LaneBounds); DOREPLIFETIME(ACireGameState,LanePoints0);
     DOREPLIFETIME(ACireGameState,LanePoints1); DOREPLIFETIME(ACireGameState,LaneRouteVersion);
 }
@@ -182,7 +183,13 @@ void ACireGameMode::BeginPlay() {
     }
     auto* S=GetGameState<ACireGameState>();
     S->SecondsLeft=-1; S->CycleWavesDone=0; S->WavesPerCycle=FMath::Clamp(S->WavesPerCycle,1,10);
-    CireWaveDirector::Initialize(this); // wave-director: Waves.json drives composition, waves per cycle and breather
+    CireWaveDirector::Initialize(this); // wave-director: Waves.json drives composition, waves per cycle, breather and phase pacing
+#if !UE_BUILD_SHIPPING
+    const bool bProbeTimer=ServerProbe.Enabled;
+#else
+    const bool bProbeTimer=false;
+#endif
+    if(!bSmoke&&!bProbeTimer)WaveTimer=CireWaveDirector::Config(GetWorld()).FirstWaveDelay;
     S->NextWaveSeconds=WaveTimer;
     S->Announcement=TEXT("Hold the gates. Challenge the outposts. Survive together.");
     bool bFeedbackPreview = false;
@@ -209,7 +216,7 @@ void ACireGameMode::BeginPlay() {
 #if !UE_BUILD_SHIPPING
     if(!bFeedbackPreview)CireNav::InitializeProbe(this); // nav-paths: -CireNavProbe march + performance probe
 #endif
-    UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / 60s prep / 90s arena / %.0fs recovery | server authority"),S->WavesPerCycle,RecoverySeconds);
+    UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / %.0fs prep / %.0fs arena / %.0fs recovery | server authority"),S->WavesPerCycle,Clock.GetDurations().Intermission,Clock.GetDurations().Arena,RecoverySeconds);
 #if !UE_BUILD_SHIPPING
     if(ServerProbe.Enabled)UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_READY dedicated=1 timeout=40"));
     if(FParse::Param(FCommandLine::Get(),TEXT("CireCombatFeaturesProbe")))
@@ -489,6 +496,8 @@ void ACireGameMode::Tick(float Dt) {
                 if(!bWaveAlive&&Clock.BeginIntermission()) ChangePhase(1);
                 else S->NextWaveSeconds=0;
             } else {
+                // wave-director: every human pressed Ready in the Skill Shop window -> start in 1 s.
+                if(CireWaveDirector::UpdateBreatherReady(this))WaveTimer=FMath::Min(WaveTimer,1.f);
                 WaveTimer=FMath::Max(0.f,WaveTimer-Dt);
                 S->NextWaveSeconds=WaveTimer;
                 if(WaveTimer<=0&&!(Dev.bEnabled&&Dev.bPauseWaveSpawns))SpawnWave();

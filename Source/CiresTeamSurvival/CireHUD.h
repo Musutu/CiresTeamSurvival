@@ -193,6 +193,7 @@ private:
     FCireWaveConfig WaveDraft;
     bool bWaveDraftLoaded=false;
     int32 WaveSelected=0,WaveListScroll=0;
+    bool bBreatherReadyLocal=false; int32 BreatherReadyWave=-1; // wave-director: breather Ready button
     void DrawDeveloperLauncher();
     FCireUIRect DeveloperLauncherRect() const;
     FCireUIRect PanelRect(FName Id) const;

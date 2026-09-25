@@ -215,7 +215,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     // ---- globals ---------------------------------------------------------------------
     const float GY = Y + 318;
     Painter().Rect(L, GY - 18, 600, 1, Gold * FLinearColor(1, 1, 1, .5f));
-    StepF(TEXT("BREATHER"), WaveDraft.BreatherSeconds, 1, 0, 120, L, GY, 92, 0, TEXT("s"), TEXT("Seconds between a cleared wave and the next spawn."));
+    StepF(TEXT("BREATHER"), WaveDraft.BreatherSeconds, 1, 0, 120, L, GY, 92, 0, TEXT("s"), TEXT("Seconds between a cleared wave and the next spawn: the Skill Shop window (15-20 s recommended)."));
     StepI(TEXT("WAVES / CYCLE"), WaveDraft.WavesPerCycle, 1, 10, L + 100, GY, 92, TEXT("Cleared waves before prep, arena and recovery. The list wraps if it is shorter."));
     StepI(TEXT("CYCLES (0 = LOOP)"), WaveDraft.Cycles, 0, 50, L + 200, GY, 92, TEXT("0 loops forever with per-cycle scaling. N ends the match after cycle N (more lives wins)."));
     StepF(TEXT("CYCLE HEALTH +"), WaveDraft.CycleHealthGrowth, .05f, 0, 2, L + 300, GY, 92, 2, TEXT(""), TEXT("Health multiplier added per completed cycle."));
@@ -224,7 +224,17 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         WaveDraft.bStallFailsafe = !WaveDraft.bStallFailsafe;
 
     // ---- actions -----------------------------------------------------------------------
-    const float AY = Y + 350;
+    // ---- pacing (Waves.json "pacing") -----------------------------------------------------
+    const float PY = GY + 34;
+    StepF(TEXT("SPAWN AT ROUTE"), WaveDraft.SpawnAlongRoute, .05f, 0, .7f, L, PY, 80, 2, TEXT(""), TEXT("Where waves appear along the road: 0 = the breach gate, 0.30 = 30% of the way to the castle. Shorter walk, faster waves."));
+    StepF(TEXT("MARCH SPEED x"), WaveDraft.MarchSpeedMultiplier, .05f, .5f, 2, L + 86, PY, 80, 2, TEXT(""), TEXT("Wave units walk this much faster while not fighting (combat speed unchanged; bosses excluded)."));
+    StepF(TEXT("FIRST WAVE"), WaveDraft.FirstWaveDelay, 1, 0, 120, L + 172, PY, 80, 0, TEXT("s"), TEXT("Delay before the first wave of the match."));
+    StepF(TEXT("PREP"), WaveDraft.PrepSeconds, 5, 5, 600, L + 258, PY, 80, 0, TEXT("s"), TEXT("Town preparation after a cycle's last wave."));
+    StepF(TEXT("ARENA"), WaveDraft.ArenaSeconds, 5, 15, 900, L + 344, PY, 80, 0, TEXT("s"), TEXT("Arena time limit (ends early when a team is wiped)."));
+    StepF(TEXT("RECOVERY"), WaveDraft.RecoverySeconds, 1, 1, 180, L + 430, PY, 80, 0, TEXT("s"), TEXT("Regroup time after the arena before the next cycle."));
+    if (Button(WaveDraft.bEarlyContinue ? TEXT("READY-UP ON") : TEXT("READY-UP OFF"), L + 516, PY, 84, 20, TEXT("When on, the breather (Skill Shop window) ends 1 s after every human player presses Ready."), true, WaveDraft.bEarlyContinue, WaveDraft.bEarlyContinue ? Teal : Gold))
+        WaveDraft.bEarlyContinue = !WaveDraft.bEarlyContinue;
+    const float AY = Y + 384;
     const bool bLab = CireBalanceLab::IsActive(Mode);
     if (Button(TEXT("APPLY LIVE"), L, AY, 96, 24, TEXT("Validate and apply on the server. Takes effect from the next wave."), !bLab, false, Teal))
     {
