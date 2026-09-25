@@ -198,7 +198,11 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
     if (bCyclesDone || bFinished || Now >= Soak.LimitSeconds)
     {
         Soak.bDone = true;
-        const bool bPass = bCyclesDone && !bFinished && Soak.WavesCleared >= Soak.TargetCycles * FMath::Max(1, S->WavesPerCycle);
+        // balance: a finite match (Waves.json cycles = N) finishes itself after cycle N; that is a completed soak, not an overrun.
+        const int32 MatchCycles = CireWaveDirector::Config(Mode->GetWorld()).Cycles;
+        const bool bCycleLimitEnd = bFinished && MatchCycles > 0 && S->Round > MatchCycles && S->EmberLives > 0 && S->DuskLives > 0;
+        const bool bPass = bCyclesDone && (!bFinished || bCycleLimitEnd) && Soak.WavesCleared >= Soak.TargetCycles * FMath::Max(1, S->WavesPerCycle);
+        Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_MATCH t=%.1f minutes=%.2f match_cycles=%d cycle_limit_end=%d"), Now, Now / 60.f, MatchCycles, bCycleLimitEnd ? 1 : 0));
         FString Types; for (const auto& Pair : Soak.TypeCounts) Types += FString::Printf(TEXT("%s:%d "), *Pair.Key, Pair.Value);
         { const FCireRaceStats R = CireRaces::Stats(); // monster-races: race skill usage over the soak
           Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_RACES skill_casts=%d rider_hits=%d summoned=%d first_skill_wave=%d earliest_cast_wave=%d races=%s"),

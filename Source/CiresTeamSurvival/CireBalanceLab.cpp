@@ -50,12 +50,15 @@ struct FRun
     float SavedSeconds=0;FString SavedAnnouncement,TuningJson;
     TArray<TSharedPtr<FJsonValue>> Samples,Participants;
     TMap<TWeakObjectPtr<ACireMonster>,TWeakObjectPtr<ACireHero>> LastVictim;
+    // balance: one roster champion replaces a fixture slot; survival is measured as health lost per hero.
+    FString Champion;int32 ChampionSlot=INDEX_NONE;
+    TMap<TWeakObjectPtr<ACireHero>,float> LastHealth,DamageTaken,DiedAt;
 };
 TUniquePtr<FRun> Active;
 FCireBalanceSnapshot Last;
 bool bAutoRequested=false,bAutoStarted=false,bAutoPlayer=false,bAutoArena=false;
 int32 AutoWave=1,AutoKind=-1,AutoSize=5,AutoEnemies=5;float AutoSeconds=60;
-FString AutoLoadout=TEXT("baseline");
+FString AutoLoadout=TEXT("baseline"),AutoChampion;int32 AutoSlot=INDEX_NONE;
 bool ValidLoadout(const FString& Value)
 {
     return Value==TEXT("baseline")||Value==TEXT("thematic")||Value==TEXT("tank_last_stand")||
@@ -80,6 +83,13 @@ void Sample(FRun& R,float Delta)
     {
         if(H->TeamId==0){V.Damage+=H->DamageDone;V.Healing+=H->HealingDone;if(!H->bDead&&H->Health>0)++V.AlliesAlive;}
         else if(R.bArena&&!H->bDead&&H->Health>0){++V.EnemiesAlive;V.EnemyHealthRemaining+=H->Health;}
+        {
+            // Health lost between frames (net of same-frame healing): the survival pressure each hero absorbed.
+            float& Previous=R.LastHealth.FindOrAdd(H,H->Health);
+            if(H->Health<Previous)R.DamageTaken.FindOrAdd(H)+=Previous-H->Health;
+            Previous=H->Health;
+            if((H->bDead||H->Health<=0)&&!R.DiedAt.Contains(H))R.DiedAt.Add(H,R.View.ElapsedSeconds);
+        }
         // The lab measures one encounter, with no resurrection after elimination.
         if(H->bDead)H->RespawnTimer=600;
     }
@@ -112,6 +122,7 @@ void WriteReport(FRun& R)
     auto J=Metrics(R.View);J->SetStringField(TEXT("kind"),TEXT("measured-runtime"));
     J->SetStringField(TEXT("scenario"),R.View.Scenario);J->SetStringField(TEXT("result"),R.View.Result);
     J->SetStringField(TEXT("loadoutPreset"),R.Loadout);
+    J->SetStringField(TEXT("champion"),R.Champion);J->SetNumberField(TEXT("championSlot"),R.ChampionSlot);
     J->SetNumberField(TEXT("schemaVersion"),1);J->SetStringField(TEXT("engineVersion"),TEXT("5.8.3"));
     J->SetNumberField(TEXT("enemyInitialHealth"),R.View.EnemyInitialHealth);J->SetNumberField(TEXT("limitSeconds"),R.View.LimitSeconds);
     J->SetStringField(TEXT("method"),TEXT("Actual authoritative combat actors, role fixtures, world collision, live hit/crit rolls and effective combat meters; not deterministic. Threat sampled each frame. Threat lead ratio is the enemy-seconds weighted mean of tank threat divided by highest non-tank threat (denominator at least 1, ratio at most 10000). Fixed fixture loadouts bypass normal drafting only inside the lab."));
@@ -133,7 +144,13 @@ void WriteReport(FRun& R)
         P->SetStringField(TEXT("draftRole"),UTF8_TO_TCHAR(Cires::DraftRoleName(CireChampionProfiles::DraftRole(H))));
         P->SetNumberField(TEXT("dps"),H->DamageDone/FMath::Max(.001f,R.View.ElapsedSeconds));P->SetNumberField(TEXT("hps"),H->HealingDone/FMath::Max(.001f,R.View.ElapsedSeconds));
         P->SetNumberField(TEXT("teamDamageShare"),H->TeamId==0?H->DamageDone/FMath::Max(1.f,R.View.Damage):0);
-        P->SetNumberField(TEXT("level"),H->Level);P->SetBoolField(TEXT("dead"),H->bDead);End.Add(MakeShared<FJsonValueObject>(P));
+        P->SetNumberField(TEXT("level"),H->Level);P->SetBoolField(TEXT("dead"),H->bDead);
+        P->SetStringField(TEXT("champion"),H->ChampionProfileId);P->SetNumberField(TEXT("maxHealth"),H->MaxHealth);
+        const float Taken=R.DamageTaken.FindRef(H);P->SetNumberField(TEXT("damageTaken"),Taken);
+        P->SetNumberField(TEXT("dtps"),Taken/FMath::Max(.001f,R.View.ElapsedSeconds));
+        P->SetNumberField(TEXT("diedAtSeconds"),R.DiedAt.Contains(H)?R.DiedAt.FindRef(H):-1.f);
+        P->SetBoolField(TEXT("labChampion"),H->TeamId==0&&!R.Champion.IsEmpty()&&H->ChampionProfileId==R.Champion);
+        End.Add(MakeShared<FJsonValueObject>(P));
     }
     J->SetArrayField(TEXT("finalHeroes"),End);
     TArray<TSharedPtr<FJsonValue>> Gates;
@@ -165,14 +182,16 @@ ACireHero* CreateHero(FRun& R,int32 Team,int32 Index,FVector Ground,int32 Level)
     FActorSpawnParameters P;P.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     const FVector Location=Ground+FVector(Team==0?-480:480,(Index-2)*140.f,92);
     auto* H=Mode->GetWorld()->SpawnActor<ACireHero>(Location,FRotator(0,Team?180:0,0),P);if(!H)return nullptr;
-    R.Fixtures.Add(H);R.Heroes.Add(H);Mode->Heroes.Add(H);H->TeamId=Team;H->bBot=true;H->Draft(Role);
+    R.Fixtures.Add(H);R.Heroes.Add(H);Mode->Heroes.Add(H);H->TeamId=Team;H->bBot=true;
+    const bool bChampion=Team==0&&Index==R.ChampionSlot&&!R.Champion.IsEmpty();
+    if(bChampion){if(!H->DraftProfile(R.Champion))return nullptr;}else H->Draft(Role);
     Cires::GainLevels(H->Progression,FMath::Clamp(Level,1,1000)-1);H->Progression.NextAugmentLevel=10001;H->Recalculate(true);
     if(Role==0)H->Skills={TEXT("shield_slam"),TEXT("war_cry"),TEXT("iron_guard")};
     else if(Role==2)H->Skills={TEXT("restoring_light"),TEXT("sanctuary"),TEXT("ember_lance")};
     else if(Role==1)H->Skills={TEXT("piercing_shot"),TEXT("frost_bind")};
     else if(Role==3)H->Skills={TEXT("cleaving_strike"),TEXT("piercing_shot")};
     else H->Skills={TEXT("oathbound_guardian"),TEXT("spectral_pack"),TEXT("ember_lance")};
-    if(R.Loadout!=TEXT("baseline"))
+    if(R.Loadout!=TEXT("baseline")||bChampion)
     {
         const auto* Profile=H->ChampionProfile();if(!Profile)return nullptr;
         H->Skills.Reset();
@@ -195,8 +214,9 @@ ACireHero* CreateHero(FRun& R,int32 Team,int32 Index,FVector Ground,int32 Level)
             if(R.Loadout==TEXT("dps_starfall"))Replacement=TEXT("starfall");
             if(R.Loadout==TEXT("dps_hunt"))Replacement=TEXT("spectral_hunt");
         }
-        if(!Replacement.IsEmpty())H->Skills.Last()=Replacement;
-        for(const auto& Id:H->Skills)if(!Cires::IsSkillAllowedForRole(TCHAR_TO_UTF8(*Id),CireChampionProfiles::DraftRole(H)))return nullptr;
+        if(!Replacement.IsEmpty()&&!bChampion)H->Skills.Last()=Replacement;
+        // Signature kits belong to their champion, not to a generic role pool.
+        if(!bChampion)for(const auto& Id:H->Skills)if(!Cires::IsSkillAllowedForRole(TCHAR_TO_UTF8(*Id),CireChampionProfiles::DraftRole(H)))return nullptr;
     }
     H->Cooldowns.Init(0,H->Skills.Num());H->HeroName=FString::Printf(TEXT("Lab %s %d | %s"),Team?TEXT("Dusk"):TEXT("Ember"),Index+1,*H->HeroName);
     H->HomePosition=Location;H->Gold=0;H->DamageDone=H->HealingDone=0;
@@ -205,11 +225,13 @@ ACireHero* CreateHero(FRun& R,int32 Team,int32 Index,FVector Ground,int32 Level)
     J->SetNumberField(TEXT("basicDamage"),H->AttackDamage());J->SetNumberField(TEXT("agility"),H->Agility);
     J->SetStringField(TEXT("draftRole"),UTF8_TO_TCHAR(Cires::DraftRoleName(CireChampionProfiles::DraftRole(H))));
     J->SetNumberField(TEXT("basicAttackRange"),H->BasicAttackRange());J->SetStringField(TEXT("loadoutPreset"),R.Loadout);
+    J->SetStringField(TEXT("champion"),H->ChampionProfileId);
     J->SetNumberField(TEXT("critChance"),H->CriticalChance);J->SetNumberField(TEXT("critMultiplier"),H->CriticalMultiplier);
     TArray<TSharedPtr<FJsonValue>> Skills;for(const auto& Skill:H->Skills)Skills.Add(MakeShared<FJsonValueString>(Skill));J->SetArrayField(TEXT("skills"),Skills);
     R.Participants.Add(MakeShared<FJsonValueObject>(J));return H;
 }
-bool Begin(ACireGameMode* Mode,int32 Wave,int32 Kind,bool bPlayer,int32 TeamSize,int32 EnemyCount,float Seconds,bool bArena,const FString& Loadout=TEXT("baseline"))
+bool Begin(ACireGameMode* Mode,int32 Wave,int32 Kind,bool bPlayer,int32 TeamSize,int32 EnemyCount,float Seconds,bool bArena,const FString& Loadout=TEXT("baseline"),
+    const FString& Champion=FString(),int32 ChampionSlot=INDEX_NONE)
 {
 #if UE_BUILD_SHIPPING
     return false;
@@ -217,7 +239,15 @@ bool Begin(ACireGameMode* Mode,int32 Wave,int32 Kind,bool bPlayer,int32 TeamSize
     if(!IsValid(Mode)||!Mode->HasAuthority()||!ValidLoadout(Loadout)||!FMath::IsFinite(Seconds)||Seconds<5||Seconds>300||Wave<1||Wave>1000||Kind<-1||Kind>3||TeamSize<1||TeamSize>5||EnemyCount<1||EnemyCount>20)return false;
     if(Active){if(Active->Mode.IsValid())CireBalanceLab::Stop(Active->Mode.Get());else Active.Reset();}
     auto* PC=Mode->GetWorld()->GetFirstPlayerController();if(bPlayer&&(!PC||!PC->GetPawn()))return false;
+    const FCireChampionProfile* LabProfile=Champion.IsEmpty()?nullptr:CireChampionRoster::Find(Champion);
+    if(!Champion.IsEmpty()&&(!LabProfile||bPlayer))return false;
     Active=MakeUnique<FRun>();auto& R=*Active;R.Mode=Mode;R.bArena=bArena;R.bPlayer=bPlayer;R.Loadout=Loadout;
+    if(LabProfile)
+    {
+        // Default slot: the fixture of the champion's threat role (tank 0, healer 1, damage 2 = the ranger).
+        R.Champion=LabProfile->Id;
+        R.ChampionSlot=ChampionSlot>=0&&ChampionSlot<TeamSize?ChampionSlot:LabProfile->ThreatRole==TEXT("tank")?0:LabProfile->ThreatRole==TEXT("healer")?1:FMath::Min(2,TeamSize-1);
+    }
     R.StartWorldTime=Mode->GetWorld()->GetTimeSeconds();
     R.SavedClock=Mode->Clock;R.SavedHeroes=Mode->Heroes;R.SavedMonsters=Mode->Monsters;
     for(int32 T=0;T<2;++T){R.SavedRewards[T]=Mode->Rewards[T];Mode->Rewards[T]=Cires::TeamRewards{};}
@@ -259,7 +289,8 @@ bool Begin(ACireGameMode* Mode,int32 Wave,int32 Kind,bool bPlayer,int32 TeamSize
         PC->SetControlRotation(FRotator(-45,0,0));
     }
     R.View.bActive=true;R.View.LimitSeconds=Seconds;
-    R.View.Scenario=FString::Printf(TEXT("%s %dv%d | wave %d | %s"),bArena?TEXT("arena"):TEXT("wave"),TeamSize,bArena?TeamSize:EnemyCount,Wave,bPlayer?TEXT("player + AI"):TEXT("all AI"));
+    R.View.Scenario=FString::Printf(TEXT("%s %dv%d | wave %d | %s%s"),bArena?TEXT("arena"):TEXT("wave"),TeamSize,bArena?TeamSize:EnemyCount,Wave,bPlayer?TEXT("player + AI"):TEXT("all AI"),
+        R.Champion.IsEmpty()?TEXT(""):*FString::Printf(TEXT(" | champion %s slot %d"),*R.Champion,R.ChampionSlot));
     FFileHelper::LoadFileToString(R.TuningJson,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/CombatTuning.json")));
     Sample(R,0);UE_LOG(LogCireBalanceLab,Display,TEXT("CIRE_BALANCE_LAB_STARTED %s limit=%.0f"),*R.View.Scenario,Seconds);return true;
 #endif
@@ -277,6 +308,8 @@ void CireBalanceLab::Initialize(ACireGameMode* Mode)
     FParse::Value(FCommandLine::Get(),TEXT("CireBalanceBots="),AutoSize);FParse::Value(FCommandLine::Get(),TEXT("CireBalanceEnemies="),AutoEnemies);
     FParse::Value(FCommandLine::Get(),TEXT("CireBalanceSeconds="),AutoSeconds);
     FParse::Value(FCommandLine::Get(),TEXT("CireBalanceLoadout="),AutoLoadout);
+    AutoChampion.Reset();AutoSlot=INDEX_NONE;
+    FParse::Value(FCommandLine::Get(),TEXT("CireBalanceChampion="),AutoChampion);FParse::Value(FCommandLine::Get(),TEXT("CireBalanceSlot="),AutoSlot);
 #endif
 }
 bool CireBalanceLab::Start(ACireGameMode* M,int32 Wave,int32 Kind,bool Player,int32 Size,int32 Enemies,float Seconds){return Begin(M,Wave,Kind,Player,Size,Enemies,Seconds,false);}
@@ -293,7 +326,7 @@ bool CireBalanceLab::Tick(ACireGameMode* Mode,float Delta)
     if(!Mode||!Mode->HasAuthority())return false;
     if(bAutoRequested&&!bAutoStarted&&(!bAutoPlayer||Mode->GetWorld()->GetFirstPlayerController()&&Mode->GetWorld()->GetFirstPlayerController()->GetPawn()))
     {
-        bAutoStarted=true;if(!Begin(Mode,AutoWave,AutoKind,bAutoPlayer,AutoSize,AutoEnemies,AutoSeconds,bAutoArena,AutoLoadout))UE_LOG(LogCireBalanceLab,Warning,TEXT("Balance lab rejected its launch parameters"));
+        bAutoStarted=true;if(!Begin(Mode,AutoWave,AutoKind,bAutoPlayer,AutoSize,AutoEnemies,AutoSeconds,bAutoArena,AutoLoadout,AutoChampion,AutoSlot))UE_LOG(LogCireBalanceLab,Warning,TEXT("Balance lab rejected its launch parameters"));
     }
     if(!IsActive(Mode))return false;
     if(Mode->Clock.Phase()!=(Active->bArena?Cires::MatchPhase::Arena:Cires::MatchPhase::Survival))

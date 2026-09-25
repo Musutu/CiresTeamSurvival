@@ -429,7 +429,15 @@ bool CireTechConstructs::TickConstruct(ACireConstruct* C, float Dt)
                     const float Amount = Max * S.EffectMagnitude * C->TechTimer;
                     if (auto* H = Cast<ACireHero>(U); H && HeroOwner) CireCombat::ApplyHealing(HeroOwner, H, Amount, C->AbilityName);
                     else if (auto* M = Cast<ACireMonster>(U)) { M->Health = FMath::Min(M->MaxHealth, M->Health + Amount); }
-                    CireBuffs::Apply(U, S.Effect == TEXT("nexus") ? NexusId : AegisId, Hold, Owner, S.Effect == TEXT("nexus") ? 40 : 15);
+                    // balance: the damage reduction is Ability DB data (aether_nexus "guard", aegis_pylon "shield" magnitude).
+                    static const auto Reduction = [](const TCHAR* Skill, const TCHAR* Type, float Fallback)
+                    {
+                        if (const FCireAbilityDef* D = CireAbilityDB::Find(Skill)) for (const FCireAbilityEffect& E : D->Effects) if (E.Type == Type && E.Magnitude > 0) return E.Magnitude;
+                        return Fallback;
+                    };
+                    const bool bNexus = S.Effect == TEXT("nexus");
+                    const float Percent = 100.f * (bNexus ? Reduction(TEXT("aether_nexus"), TEXT("guard"), .4f) : Reduction(TEXT("aegis_pylon"), TEXT("shield"), .15f));
+                    CireBuffs::Apply(U, bNexus ? NexusId : AegisId, Hold, Owner, static_cast<uint8>(FMath::Clamp(FMath::RoundToInt(Percent), 1, 80)));
                 }
                 else if (bEnemy && S.Effect == TEXT("nexus")) CireCrowdControl::Slow(U, Hold, Owner);
             }

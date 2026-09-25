@@ -91,6 +91,7 @@ private:
     TWeakObjectPtr<AActor> CastSource;
     FVector LaneOrigin = FVector::ZeroVector, LaneDirection = FVector::ForwardVector;
     FCireAreaSpec CachedArea;
+    bool bPylonField = false; int32 PylonOverlaps = 1; float PylonCheckedAt = -1.f; // balance: calm pylon fields (CirePylonField)
     FBox2D LastFill = FBox2D(ForceInit);
     FVector2D LastArrowTip = FVector2D::ZeroVector;
     int32 LastChevrons = 0;

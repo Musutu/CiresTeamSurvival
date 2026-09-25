@@ -1,6 +1,7 @@
 // new-champions: native checks for the new kits, the Aetheri Constructs, the art bindings and the Aetheri race.
 #include "CireSignatureSkills.h"
 #include "CireTechConstructs.h"
+#include "CirePylonField.h"
 
 #if !UE_BUILD_SHIPPING
 #include "CireAbilityDB.h"
@@ -195,6 +196,14 @@ bool CireTechConstructs::RunSmoke(ACireGameMode* Mode)
         T.Check(Aegis.Num() == 1 && Ally->Health > 1000 && CireBuffs::IsActive(Ally, TEXT("aether_aegis")), TEXT("aegis field regenerates allies"));
         const float Guarded = CireSignatureSkills::ModifyOutgoingDamage(M, Ally, 100.f, TEXT("Test"));
         T.Check(Guarded < 90.f, TEXT("aegis field reduces damage taken"));
+        // balance: pylon fields are recognised and overlapping ones share one fill budget (CirePylonField).
+        TArray<ACireAreaEffect*> Fields;
+        for (TActorIterator<ACireAreaEffect> It(World); It; ++It) if (!It->IsActorBeingDestroyed() && CirePylonField::IsPylonField(*It)) Fields.Add(*It);
+        T.Check(Fields.Num() == 3, FString::Printf(TEXT("three pylon fields recognised (%d)"), Fields.Num()));
+        int32 MaxOverlap = 0; for (auto* Field : Fields) MaxOverlap = FMath::Max(MaxOverlap, CirePylonField::CountOverlaps(Field));
+        T.Check(MaxOverlap >= 2, TEXT("overlapping haste + aegis fields counted together"));
+        TArray<FString> PylonFailures;
+        T.Check(CirePylonField::RunTests(PylonFailures), TEXT("pylon field visual rules: ") + FString::Join(PylonFailures, TEXT("; ")));
     }
     auto Disruption = Deploy(Hero, TEXT("disruption_pylon"), F.At(FVector(420, -120, 0)), &Why);
     if (Disruption.Num()) Disruption[0]->Tick(.1f);

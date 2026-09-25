@@ -430,7 +430,10 @@ bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
         const float Health = HealthOf(Target), Max = MaxHealthOf(Target);
         const bool bMarked = Active(Target, BountyId) != nullptr;
         float Damage = Amount + FMath::Min(400.f, .4f * FMath::Max(0.f, Max - Health));
-        if (!IsBoss(Target) && Cast<ACireMonster>(Target) && Max > 0 && Health / Max < .2f) Damage = FMath::Max(Damage, Health * 20.f + 1.f);
+        // balance: the execute threshold is Ability DB data (collect_the_bounty "lethal" magnitude; 0.2 if absent).
+        float Threshold = .2f;
+        for (const FCireAbilityEffect& E : Def->Effects) if (E.Type == TEXT("lethal") && E.Magnitude > 0) Threshold = FMath::Min(E.Magnitude, .5f);
+        if (!IsBoss(Target) && Cast<ACireMonster>(Target) && Max > 0 && Health / Max < Threshold) Damage = FMath::Max(Damage, Health * 20.f + 1.f);
         CireCombat::ApplyStrike(Hero, Target, Damage, Def->Name);
         if (!CireCombat::IsAlive(Target))
         {
