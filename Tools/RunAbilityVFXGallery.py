@@ -35,6 +35,18 @@ FRAME_TITLES = {"1_aim": "AIM", "1_telegraph": "TELEGRAPH", "2_cast": "CAST", "2
                 "3_travel": "TRAVEL", "3_release": "RELEASE", "4_impact": "IMPACT", "5_linger": "LINGER", "6_end": "END"}
 
 
+# AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+# and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Probes only target Win64.
+EDITOR_ENV = {**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"}
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+
+
 def pillow():
     try:
         import PIL  # noqa: F401
@@ -175,10 +187,11 @@ def main() -> int:
     started = time.monotonic()
     failure = ""
     with console.open("wb") as output:
-        child = subprocess.Popen(command, stdout=output, stderr=subprocess.STDOUT, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        child = subprocess.Popen(command, stdout=output, stderr=subprocess.STDOUT, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0), env=EDITOR_ENV)
         try:
             code = child.wait(timeout=args.timeout)
         except subprocess.TimeoutExpired:
+            kill_tree(child)
             child.terminate()
             try:
                 code = child.wait(timeout=5)

@@ -22,6 +22,27 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def run_editor(command, timeout, env=None, **kwargs) -> subprocess.CompletedProcess:
+    """subprocess.run() for an editor that skips UBT SDK setup and kills the whole process tree on timeout."""
+    # AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+    # and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Editors here target Win64.
+    child = subprocess.Popen(command, env={**(env or os.environ), "UE_SKIP_UBT_SDK_SETUP": "1"}, **kwargs)
+    try:
+        return subprocess.CompletedProcess(command, child.wait(timeout=timeout))
+    except subprocess.TimeoutExpired:
+        kill_tree(child)
+        child.kill()
+        child.wait()
+        raise
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--editor", type=Path, default=Path("F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"))
@@ -51,10 +72,10 @@ def main() -> int:
     for existing in (ROOT / "Content/UI/Abilities").glob("*.uasset"):
         os.chmod(existing, 0o666)  # LFS-lockable assets check out read-only
     env = dict(os.environ, CIRE_DRAFT_PORTRAIT_DIR=str(out), CIRE_UI_TEXTURE_DEST="/Game/UI/Abilities", CIRE_UI_TEXTURE_PREFIX="T_")
-    code = subprocess.run([str(args.editor), str(args.project.resolve()), "-run=pythonscript", f"-script={ROOT / 'Tools/ImportDraftPortraits.py'}",
-                           "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding", "-stdout", f"-abslog={log}"],
-                          cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=900,
-                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).returncode
+    code = run_editor([str(args.editor), str(args.project.resolve()), "-run=pythonscript", f"-script={ROOT / 'Tools/ImportDraftPortraits.py'}",
+                       "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding", "-stdout", f"-abslog={log}"],
+                      900, cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                      creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).returncode
     text = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""
     match = re.search(r"CIRE_DRAFT_PORTRAIT_IMPORT_PASS imported=(\d+)", text)
     expected = len(list(out.glob("*.png")))
