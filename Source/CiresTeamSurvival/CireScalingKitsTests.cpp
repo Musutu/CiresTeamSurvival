@@ -126,8 +126,11 @@ bool CireKits::RunSmoke(ACireGameMode* Mode)
         CireThreat::Clear(M2);
         CireCombat::ApplyDamage(Mech, M2, 50.f, TEXT("Mech Slam"));
         Check(M2->Threat.Contains(Mech) && M2->Victim == Mech, TEXT("a summon's damage makes it the monster's victim"));
-        TArray<ACireConstruct*> Built = CireTechConstructs::Deploy(Wizard, TEXT("photon_turret"), Origin + FVector(700, -300, 0));
+        TArray<ACireConstruct*> Built; FString DeployWhy;
+        for (const FVector Offset : {FVector(700, -300, 0), FVector(-400, -400, 0), FVector(300, 300, 0), FVector(-600, 200, 0), FVector(0, -700, 0)})
+            if (Built.IsEmpty()) Built = CireTechConstructs::Deploy(Wizard, TEXT("photon_turret"), Origin + Offset, &DeployWhy);
         ACireConstruct* Tower = Built.Num() ? Built[0] : nullptr;
+        if (!Tower) UE_LOG(LogCireKitsTests, Error, TEXT("CIRE_KITS_TURRET_DEPLOY %s"), *DeployWhy);
         Check(Tower != nullptr, TEXT("turret deploys"));
         if (Tower)
         {
