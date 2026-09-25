@@ -313,6 +313,13 @@ bool CireAbilityVFXGallery::Initialize(ACireGameMode* Mode)
         G.Tag+TEXT("-")+Set+TEXT("-")+FDateTime::UtcNow().ToString(TEXT("%Y%m%d-%H%M%S"))));
     if(!Mode||Mode->GetNetMode()!=NM_Standalone||!IFileManager::Get().MakeDirectory(*G.Directory,true)){Finish(false);return true;}
     Mode->bBotsFilled=true;Mode->BotFillTimer=MAX_flt;Mode->WaveTimer=MAX_flt;Mode->Clock=Cires::MatchClock();
+    // Optional Ability Database override (e.g. to preview void zones on a ground-aimed skill before the DB lands).
+    FString DbPath;
+    if(FParse::Value(FCommandLine::Get(),TEXT("CireVFXDb="),DbPath))
+    {
+        FString Json;
+        if(FFileHelper::LoadFileToString(Json,*DbPath))CireAbilityShapes::DebugUseDatabase(Json);
+    }
     BuildEntries(Set,OnlyList);
     return true;
 }

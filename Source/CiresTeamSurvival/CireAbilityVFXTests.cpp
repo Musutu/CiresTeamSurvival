@@ -3,6 +3,8 @@
 #include "CireCrowdControl.h" // champion-draft
 #if !UE_BUILD_SHIPPING
 #include "CireAbilityLibrary.h"
+#include "CireAbilityDB.h"
+#include "CireCrowdControl.h"
 #include "CireAbilityShapes.h"
 #include "CireAreaEffects.h"
 #include "CireChampionActions.h"
@@ -369,6 +371,176 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
         Check(VisualsNow()<=64,TEXT("presentation actor cap respected"));
         Pump(nullptr,2.5f);
         Check(VisualsNow()<=Before,FString::Printf(TEXT("all transient cues cleaned up (%d -> %d)"),Before,VisualsNow()));
+    }
+    // ---------------------------------------------------------------- 8. themed rune telegraphs
+    {
+        PurgeNew();
+        TArray<FVector> V;TArray<int32> I;TArray<FLinearColor> C;
+        // Every school has its own glyph geometry (no two sets draw the same strokes).
+        TMap<uint32,ERuneSet> Signatures;
+        for(int32 J=0;J<static_cast<int32>(ERuneSet::Count);++J)
+        {
+            FCireGroundMesh G(V,I,C);PaintGlyph(G,static_cast<ERuneSet>(J),FVector2D::ZeroVector,40.f,0.f,FLinearColor::White,0.f,1);
+            uint32 Hash=GetTypeHash(G.V.Num());for(int32 K=0;K<G.V.Num();K+=7)Hash=HashCombine(Hash,GetTypeHash(FIntPoint(FMath::RoundToInt(G.V[K].X),FMath::RoundToInt(G.V[K].Y))));
+            Check(G.V.Num()>0&&!Signatures.Contains(Hash),RuneSetName(static_cast<ERuneSet>(J))+TEXT(" rune set has its own glyph"));Signatures.Add(Hash,static_cast<ERuneSet>(J));
+        }
+        // Every ability resolves a rune set; heals use the heal set; buffs are calm, damage sharp.
+        int32 Resolved=0,Heals=0;TSet<ERuneSet> Used;
+        auto Resolve=[&](const FCireHitShape& Shape,const FString& Name)
+        {
+            if(Shape.Kind==ECireHitShape::None)return;
+            const auto Theme=ThemeFor(Shape);++Resolved;Used.Add(Theme.Set);
+            Check(Theme.Set!=ERuneSet::Count&&RuneSetName(Theme.Set)!=TEXT("none"),Name+TEXT(" resolves a school rune set"));
+            if(Shape.bHeal)
+            {
+                ++Heals;const FLinearColor G=Theme.Glyph;
+                Check(Theme.Set==ERuneSet::Heal&&!Theme.bSharp&&G.G>G.R&&G.G>G.B,Name+TEXT(" heal telegraph uses the green/gold cross rune style, calm"));
+            }
+            else Check(Theme.Set!=ERuneSet::Heal,Name+TEXT(" non-heal never borrows the heal style"));
+            if(Shape.bBuff)Check(!Theme.bSharp,Name+TEXT(" buff zone is calm"));
+            if(Shape.bHostileOnly&&!Shape.bHeal)Check(Theme.bSharp,Name+TEXT(" damage zone is sharp"));
+        };
+        for(const FName Id:Champions)Resolve(CireAbilityShapes::Describe(Id),Id.ToString());
+        for(const auto& Pair:CireNPCArchetypes::Get().Archetypes)for(const auto& A:Pair.Value.Abilities)Resolve(CireAbilityShapes::DescribeMonster(A,&Pair.Value),A.Id.ToString());
+        Check(Heals>=9&&Resolved>=330&&Used.Num()>=12,FString::Printf(TEXT("rune sets resolved for %d abilities (%d heals, %d distinct sets)"),Resolved,Heals,Used.Num()));
+        for(const TCHAR* Id:{TEXT("restoring_light"),TEXT("sanctuary"),TEXT("renewal"),TEXT("purify"),TEXT("wellspring"),TEXT("second_wind")})
+            Check(CireAbilityShapes::Describe(FName(Id)).bHeal,FString(Id)+TEXT(" is a heal"));
+        Check(RuneSetFor(CireAbilityShapes::Describe(TEXT("ember_lance")))==ERuneSet::Fire&&RuneSetFor(CireAbilityShapes::Describe(TEXT("frost_bind")))==ERuneSet::Frost&&
+            RuneSetFor(CireAbilityShapes::Describe(TEXT("cleaving_strike")))==ERuneSet::Physical&&RuneSetFor(CireAbilityShapes::Describe(TEXT("drowned_rend")))==ERuneSet::Tide&&
+            RuneSetFor(CireAbilityShapes::Describe(TEXT("seismic_reprisal")))==ERuneSet::Earth,TEXT("fire/cold/physical/water/earth abilities get their own rune sets"));
+        // Runes stay inside every true boundary (edge motifs point inward, glyph bands are inset).
+        for(ECireAreaShape Kind:{ECireAreaShape::Circle,ECireAreaShape::Cone,ECireAreaShape::Line,ECireAreaShape::Square})
+            for(int32 J=0;J<static_cast<int32>(ERuneSet::Count);++J)
+            {
+                FCireAreaSpec Spec;Spec.Shape=Kind;Spec.Radius=300;Spec.Width=Kind==ECireAreaShape::Line?160:400;Spec.Length=900;Spec.ConeAngleDegrees=90;
+                FCireGroundMesh G(V,I,C);FRuneTheme T;T.Set=static_cast<ERuneSet>(J);T.Glyph=RuneColor(T.Set);T.Edge=T.Glyph;
+                const auto R=PaintRunes(G,Spec,T,1.3f,1.f,true);
+                int32 Outside=0;
+                for(const FVector& P:G.V)
+                {
+                    // Feathered stroke edges may reach 8 cm past the core line; everything else is inside.
+                    FCireAreaSpec Grown=Spec;Grown.Radius+=8;Grown.Width+=16;Grown.Length+=8;
+                    const FVector2D Q(P.X,P.Y);
+                    const bool bIn=ACireAreaEffect::ContainsPoint(Grown,FVector::ZeroVector,FRotator::ZeroRotator,FVector(Q.X,Q.Y,0))||
+                        (Kind==ECireAreaShape::Line&&Q.X>=-8.f&&Q.X<=Spec.Length+8.f&&FMath::Abs(Q.Y)<=Spec.Width*.5f+8.f)||Q.Size()<30.f;
+                    Outside+=!bIn;
+                }
+                Check(R.Glyphs>0&&R.EdgeMotifs>0&&Outside==0&&G.V.Num()<=CireSpellMesh::MaxGroundVertices,
+                    FString::Printf(TEXT("%s runes stay inside shape %d (%d outside, %d verts)"),*RuneSetName(T.Set),static_cast<int32>(Kind),Outside,G.V.Num()));
+            }
+        // Enemy warnings keep amber urgency with the school runes inside.
+        {
+            const auto Hostile=ThemedStyle(ETone::Hostile,CireAbilityShapes::Describe(TEXT("drakkari_ember_breath")));
+            Check(Hostile.bRunes&&Hostile.Runes.Set==ERuneSet::Fire&&Hostile.Edge.R>Hostile.Edge.B*4.f,TEXT("enemy warning: amber edge, fire runes inside"));
+            const auto Aim=ThemedStyle(ETone::AimValid,CireAbilityShapes::Describe(TEXT("venom_ground")));
+            Check(Aim.bRunes&&Aim.Runes.Set==ERuneSet::Poison,TEXT("aim preview carries the poison rune set"));
+        }
+        // Timed heal casts: the telegraph reads during the whole cast bar and ends with it.
+        {
+            const FCireAbilityDef* Def=CireAbilityDB::Find(TEXT("sanctuary"));
+            Ready(Hero,TEXT("sanctuary"));Hero->Target=nullptr;
+            Hero->Cast(0);
+            ACireSpellVisual* Channel=nullptr;
+            for(TActorIterator<ACireSpellVisual> It(World);It;++It)if(!It->IsActorBeingDestroyed()&&It->GetMode()==ACireSpellVisual::EMode::Channel)Channel=*It;
+            if(Def&&Def->CastTime>0)
+            {
+                // The server cue goes to clients; in the standalone probe play it the same way (from the cast start).
+                if(!Channel&&!Hero->CastSkill.IsNone())Channel=CireSpellPresentation::Play(World,TEXT("sanctuary"),Hero->GetActorLocation(),Hero->GetActorLocation(),ECireSpellCue::Cast,.7f,false);
+                Check(Channel&&Channel->GetMode()==ACireSpellVisual::EMode::Channel&&Channel->GetShape().bHeal,TEXT("heal cast shows a heal telegraph during its cast time"));
+                if(Channel)
+                {
+                    Channel->Tick(.2f);Check(Channel->GroundVertexCount()>0&&Near(Channel->GroundFillBounds().Max.X,Channel->GetShape().Radius,1.f),TEXT("heal cast telegraph covers the true radius"));
+                    CireCrowdControl::CancelCast(Hero,TEXT("test"));Pump(Channel,.6f);
+                    Check(!IsValid(Channel)||Channel->IsActorBeingDestroyed(),TEXT("cancelled heal cast removes its telegraph"));
+                }
+            }
+            PurgeNew();
+        }
+        // Heal cast in the world: the heal visual uses the heal theme.
+        if(auto* Heal=CireSpellPresentation::Play(World,TEXT("sanctuary"),Hero->GetActorLocation(),Hero->GetActorLocation(),ECireSpellCue::Cast,1,false))
+        {
+            Heal->Tick(InstantLead+.3f);
+            Check(Heal->GetShape().bHeal&&ThemeFor(Heal->GetShape()).Set==ERuneSet::Heal&&Heal->GroundVertexCount()>0,TEXT("sanctuary cast paints heal runes"));
+        }
+        PurgeNew();
+    }
+
+    // ---------------------------------------------------------------- 9. void zones (teleport / portal)
+    {
+        // Shadow Step's rift radii come from the Ability Database (inner stun, outer slow).
+        const auto Step=CireAbilityShapes::Describe(TEXT("shadow_step"));const FCireAbilityDef* StepDef=CireAbilityDB::Find(TEXT("shadow_step"));
+        Check(StepDef&&StepDef->Void.bValid&&Step.HasVoidZone()&&Near(Step.VoidOuter,StepDef->Void.OuterRadius)&&Near(Step.VoidInner,StepDef->Void.InnerRadius),
+            FString::Printf(TEXT("shadow step void zone from the Ability Database (%.0f / %.0f)"),Step.VoidOuter,Step.VoidInner));
+        // Every database school maps to a rune set (physical, cold, tide... names included).
+        for(const FCireAbilityDef& D:CireAbilityDB::All()){ECireSchool Sc;Check(D.School.IsEmpty()||CireAbilityShapes::ParseSchool(D.School,Sc),D.Id+TEXT(" database school resolves: ")+D.School);}
+        for(const FCireAbilityDef& D:CireAbilityDB::All())if(D.IsImplemented()&&!D.IsPassive())
+        {
+            ECireSchool Sc;if(!CireAbilityShapes::ParseSchool(D.School,Sc))continue;
+            const auto Shape=CireAbilityShapes::Describe(FName(*D.Id));
+            if(!Shape.bHeal)Check(RuneSetFor(Shape)==RuneSetForSchool(Sc),D.Id+TEXT(" rune set follows the database school"));
+        }
+        TArray<FVector> V;TArray<int32> I;TArray<FLinearColor> C;
+        for(ETone Tone:{ETone::AimValid,ETone::Hostile,ETone::Friendly})
+        {
+            FCireGroundMesh G(V,I,C);const auto R=PaintVoidZone(G,FVector2D::ZeroVector,300.f,120.f,Tone,.7f,1.f,false);
+            float MaxR=0;int32 NearInner=0,NearOuter=0;
+            for(const FVector& P:G.V){const float D=FVector2D(P.X,P.Y).Size();MaxR=FMath::Max(MaxR,D);NearInner+=FMath::Abs(D-120.f)<4.f;NearOuter+=FMath::Abs(D-300.f)<4.f;}
+            Check(Near(R.Outer,300)&&Near(R.Inner,120)&&MaxR<=300.f+10.f&&NearInner>20&&NearOuter>20&&R.SlowIcons>0&&R.StunIcons>0,
+                FString::Printf(TEXT("void zone draws both radii with slow/stun icons (tone %d, max %.0f)"),static_cast<int32>(Tone),MaxR));
+        }
+        // Preview: a ground-aimed teleport armed by the cursor shows both zones at the aimed spot.
+        CireAbilityShapes::DebugUseDatabase(TEXT("{\"abilities\":[{\"id\":\"starfall\",\"school\":\"void\",\"voidZone\":{\"outerRadius\":320,\"innerRadius\":130,\"duration\":2}},{\"id\":\"cleaving_strike\",\"school\":\"fire\"}]}"));
+        Check(CireAbilityShapes::SchoolFor(TEXT("cleaving_strike"))==ECireSchool::Fire&&CireAbilityShapes::Describe(TEXT("starfall")).VoidOuter==320.f,TEXT("Ability Database school and void zone override the built-in mapping"));
+        Ready(Hero,TEXT("starfall"));
+        const FVector Aim=Hero->GetActorLocation()+FVector(500,0,-92);
+        CireTargeting::DebugSetAimOverride(Aim);CireTargeting::Request(PC,0);CireTargeting::Tick(PC);
+        const FVector Preview=CireTargeting::DebugPreviewVoid(PC);
+        Check(Near(Preview.X,320)&&Near(Preview.Y,130)&&Preview.Z>0,FString::Printf(TEXT("aim preview renders both void radii (%.0f / %.0f)"),Preview.X,Preview.Y));
+        CireTargeting::DebugSetAimOverride({});CireTargeting::Cancel(PC);
+        if(auto* Own=CireSpellPresentation::Play(World,TEXT("starfall"),Hero->GetActorLocation(),Aim,ECireSpellCue::Cast,1,false))
+        {
+            for(int32 J=0;J<6;++J)Own->Tick(.1f); // Tick clamps each step to 0.25 s
+            Check(Own->GetMode()==ACireSpellVisual::EMode::VoidZone&&Near(Own->VoidRadiiDrawn().X,320)&&Near(Own->VoidRadiiDrawn().Y,130)&&!Own->IsHostileTelegraph()&&
+                FVector::Dist2D(Own->GetActorLocation(),Aim)<1,TEXT("void zone cast renders both radii at the portal"));
+            Pump(Own,3.f);Check(!IsValid(Own)||Own->IsActorBeingDestroyed(),TEXT("void zone cleans up"));
+        }
+        CireAbilityShapes::ReloadDatabase();
+        // Real rift: the authoritative VoidBurst cue renders both radii exactly at its centre.
+        {
+            const FVector Center=Hero->GetActorLocation()+FVector(300,200,0);
+            auto* Rift=CireSpellPresentation::Play(World,TEXT("void_rift"),Center,Center,ECireSpellCue::Impact,Step.VoidOuter/250.f,false);
+            if(Rift)
+            {
+                for(int32 J=0;J<6;++J)Rift->Tick(.1f);
+                Check(Rift->GetMode()==ACireSpellVisual::EMode::VoidZone&&Near(Rift->VoidRadiiDrawn().X,Step.VoidOuter,2.f)&&Near(Rift->VoidRadiiDrawn().Y,Step.VoidInner,2.f)&&
+                    Rift->VoidIconsDrawn()>0&&FVector::Dist2D(Rift->GetActorLocation(),Center)<1,
+                    FString::Printf(TEXT("void rift cue renders both radii (%.0f / %.0f)"),Rift->VoidRadiiDrawn().X,Rift->VoidRadiiDrawn().Y));
+                Pump(Rift,3.5f);Check(!IsValid(Rift)||Rift->IsActorBeingDestroyed(),TEXT("void rift cleans up"));
+            }
+            else Check(false,TEXT("void rift cue"));
+        }
+        // Hover preview: a targeted void skill shows both rift zones in front of the hostile target.
+        if(auto* Target=MakeMonster(Stage+FVector(600,0,0),TEXT("hollow_infantry")))
+        {
+            Ready(Hero,TEXT("shadow_step"));Hero->Target=Target;
+            CireTargeting::HoverPreview(PC,TEXT("shadow_step"));CireTargeting::Tick(PC);
+            const FVector Hover=CireTargeting::DebugPreviewVoid(PC);
+            Check(Near(Hover.X,Step.VoidOuter)&&Near(Hover.Y,Step.VoidInner)&&Hover.Z>0,FString::Printf(TEXT("hovering Shadow Step previews both rift zones (%.0f / %.0f)"),Hover.X,Hover.Y));
+            Hero->Target=nullptr;Mode->Monsters.Remove(Target);AddedMonsters.Remove(Target);Target->Destroy();
+        }
+        if(auto* M=MakeMonster(Stage+FVector(400,0,0),TEXT("rift_stalker")))
+        {
+            auto* Warn=CireSpellPresentation::Play(World,TEXT("void_blink"),M->GetActorLocation(),M->GetActorLocation()+FVector(600,0,0),ECireSpellCue::Cast,.8f,false);
+            if(Warn)
+            {
+                for(int32 J=0;J<4;++J)Warn->Tick(.1f);const auto Shape=CireAbilityShapes::Describe(TEXT("void_blink"));
+                Check(Warn->GetMode()==ACireSpellVisual::EMode::VoidZone&&Warn->IsHostileTelegraph()&&Near(Warn->VoidRadiiDrawn().X,Shape.VoidOuter)&&Near(Warn->VoidRadiiDrawn().Y,Shape.VoidInner)&&Warn->VoidIconsDrawn()>0,
+                    TEXT("monster void zone shows as an amber warning with both radii"));
+            }
+            else Check(false,TEXT("monster void zone cue"));
+            Mode->Monsters.Remove(M);AddedMonsters.Remove(M);M->Destroy();
+        }
+        PurgeNew();
     }
     UE_LOG(LogCireAbilityVFX,Display,TEXT("CIRE_ABILITY_VFX_TESTS_%s checks=%d failed=%d"),S.Failed==0?TEXT("PASS"):TEXT("FAIL"),S.Checks,S.Failed);
     return S.Failed==0;
