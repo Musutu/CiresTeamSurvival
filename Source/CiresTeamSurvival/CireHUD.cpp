@@ -585,7 +585,7 @@ void ACireHUD::DrawHUD()
     if(!Hero){Label(TEXT("Joining the battlefield..."),ViewW*.5f-130,ViewH*.5f,20,Parchment);return;}
     // nav-paths: the in-world path editor replaces the gameplay HUD (minimap, editor overlay, toolbar, F8).
     if(bRouteEditor){DrawMinimap(Hero,State);ResetTransform();TickRouteEditor();ResetTransform();DrawSettings();DrawTooltip();ResetTransform();return;}
-    UpdateLevelUps(Hero);UpdateThreatAlerts(Hero);UpdateBanners(Hero,State);
+    UpdateLevelUps(Hero);UpdateThreatAlerts(Hero);UpdateBanners(Hero,State);UpdateEffectCallouts(Hero);
     if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;TargetChangedAt=GetWorld()->GetRealTimeSeconds();}
     if(!bModal)DrawNameplates(Hero);
     if(!bModal)DrawLevelUps(Hero);
@@ -596,6 +596,8 @@ void ACireHUD::DrawHUD()
     DrawActionBars(Hero,Controller);DrawChat(Controller);DrawMeters(Hero,Controller);DrawPet(Hero,Controller);
     ResetTransform();CireShopUI::DrawHUDElements(*this,Hero,Controller,State); // progression-shop: bag bar, teleport, stats window
     if(!bModal&&!bSettings)DrawCombatText(Hero,Controller);
+    ResetTransform();
+    if(!bModal&&!bSettings){DrawControlEdge(Hero);DrawPlayerCastBar(Hero);DrawEffectCallouts(Hero);}
     ResetTransform();
     if(!bModal&&!bSettings)DrawAlert();
     if(!bSettings)DrawBanners();
