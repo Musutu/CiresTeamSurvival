@@ -87,7 +87,7 @@ FLinearColor CireAbilityVFX::RuneColor(ERuneSet Set)
     static const FLinearColor Colors[] = {
         // Kept near 1.0-1.5 at the brightest channel: higher emissive values bloom toward white and lose the hue.
         {.95f, .78f, .55f, 1},   // physical: dusty steel / earth tan, close to the ground colour
-        {1.6f, .42f, .05f, 1},   // fire: ember orange
+        {1.3f, .26f, .02f, 1},   // fire: ember orange-red (stays orange after bloom)
         {.5f, .95f, 1.5f, 1},    // frost: pale ice blue
         {1.1f, .55f, .18f, 1},   // earth: ochre stone
         {.06f, .75f, 1.3f, 1},   // tide: sea blue-cyan
@@ -129,7 +129,7 @@ CireAbilityVFX::FStyle CireAbilityVFX::ThemedStyle(ETone Tone, const FCireHitSha
         S = StyleFor(ETone::AimInvalid, Theme.Glyph);
         Theme.Glyph = FMath::Lerp(Theme.Glyph, FLinearColor(1.8f, .25f, .2f, 1), .55f); // can't cast here: runes dim toward red
     }
-    else if (Tone == ETone::AimValid) { S.Edge = WithAlpha(FMath::Lerp(Theme.Edge, FLinearColor(2.2f, 2.2f, 2.2f, 1), .3f), .95f); }
+    else if (Tone == ETone::AimValid) { S.Edge = WithAlpha(FMath::Lerp(Theme.Edge, FLinearColor(2.f, 2.f, 2.f, 1), .1f), .95f); S.Fill = WithAlpha(Theme.Glyph * .55f, .2f); } // rim and fill keep the school hue
     else if (Tone == ETone::Hostile)
     {
         // Amber stays the urgency colour; the school must still read inside it: amber-adjacent schools shift
@@ -146,9 +146,9 @@ CireAbilityVFX::FStyle CireAbilityVFX::ThemedStyle(ETone Tone, const FCireHitSha
 void CireAbilityVFX::PaintGlyph(FCireGroundMesh& G, ERuneSet Set, FVector2D C, float Size, float Angle, FLinearColor Col, float Time, int32 Seed, float Lift, float Underlay)
 {
     const float S = FMath::Max(6.f, Size);
-    const float W = FMath::Clamp(S * .1f, 1.8f, 6.5f), F = W * 1.1f;
+    const float W = FMath::Clamp(S * .095f, 2.2f, 10.f), F = W * .9f; // gameplay-distance legibility: thick strokes
     // Dark underlay: lifts the glyph off bright or busy ground at gameplay distance.
-    if (Underlay > 0) { FLinearColor Dark = Col * .06f; Dark.A = Underlay * Col.A; G.Disc(C, S * 1.2f, Dark, WithAlpha(Dark, Dark.A * .15f), 14, Lift - .2f); }
+    if (Underlay > 0) { FLinearColor Dark = Col * .06f; Dark.A = FMath::Min(.8f, Underlay * 1.3f) * Col.A; G.Disc(C, S * 1.2f, Dark, WithAlpha(Dark, Dark.A * .15f), 14, Lift - .2f); }
     auto P = [&](float X, float Y) { return C + Rot(FVector2D(X, Y) * S, Angle); };
     auto Ln = [&](float X0, float Y0, float X1, float Y1, float Scale = 1.f) { G.Stroke(P(X0, Y0), P(X1, Y1), W * Scale, F * Scale, Col, Lift); };
     auto Arc = [&](float Cx, float Cy, float R, float A0, float A1, int32 Steps, float Scale = 1.f)
@@ -268,7 +268,7 @@ namespace
 void EdgeMotif(FCireGroundMesh& G, ERuneSet Set, const FEdgeSample& E, float Size, float Time, int32 K, FLinearColor Col, bool bSharp)
 {
     const FVector2D P = E.P + E.N * 6.f, T = E.T, N = E.N; // inset so diagonal stroke caps never cross the edge
-    const float W = FMath::Clamp(Size * .05f, 1.2f, 3.5f);
+    const float W = FMath::Clamp(Size * .075f, 2.f, 7.f);
     auto Ln = [&](FVector2D A, FVector2D B, float Scale = 1.f, FLinearColor C = FLinearColor::Transparent)
     { G.Stroke(A, B, W * Scale, W * 1.2f * Scale, C.A > 0 ? C : Col, 1.3f); };
     const float H = Hash(K + 7);
@@ -361,8 +361,8 @@ void EdgeMotif(FCireGroundMesh& G, ERuneSet Set, const FEdgeSample& E, float Siz
 int32 CireAbilityVFX::PaintRuneRing(FCireGroundMesh& G, FVector2D Center, float Radius, const FRuneTheme& Theme, float Time, float Alpha, float GlyphSize)
 {
     if (Radius < 20 || Alpha <= .01f) return 0;
-    const float Size = GlyphSize > 0 ? GlyphSize : FMath::Clamp(Radius * .17f, 14.f, 60.f);
-    const int32 Count = FMath::Clamp(FMath::RoundToInt(Tau * Radius / (Size * 3.1f)), 4, 16);
+    const float Size = GlyphSize > 0 ? GlyphSize : FMath::Clamp(Radius * .22f, 16.f, 110.f);
+    const int32 Count = FMath::Clamp(FMath::RoundToInt(Tau * Radius / (Size * 3.1f)), 4, 10); // fewer, larger glyphs
     const float Spin = Time * (Theme.bSharp ? .18f : .07f);
     FLinearColor Frame = WithAlpha(Theme.Glyph, .45f * Alpha);
     G.Ring(Center, Radius + Size * 1.15f, 1.1f, 3.f, Frame, 64, 0, Tau, 1.2f);
@@ -384,7 +384,7 @@ CireAbilityVFX::FRuneResult CireAbilityVFX::PaintRunes(FCireGroundMesh& G, const
     const float Breath = Theme.bSharp ? .85f + .15f * FMath::Sin(Time * 5.f) : .8f + .2f * FMath::Sin(Time * 1.4f);
     const FLinearColor Glyph = WithAlpha(Theme.Glyph, .92f * Alpha * Breath), Edge = WithAlpha(Theme.Edge, .85f * Alpha);
     // 1. Edge treatment around the true boundary, pointing inward.
-    const float EdgeSize = FMath::Clamp(Dim * .16f, 10.f, 46.f);
+    const float EdgeSize = FMath::Clamp(Dim * .2f, 16.f, 90.f);
     int32 K = 0;
     for (const FEdgeSample& E : SampleEdge(Boundary, EdgeSize * 1.5f, 72))
     {
@@ -401,27 +401,28 @@ CireAbilityVFX::FRuneResult CireAbilityVFX::PaintRunes(FCireGroundMesh& G, const
         EdgeMotif(G, Theme.Set, E, EdgeSize, Time, K++, Edge, Theme.bSharp); ++R.EdgeMotifs;
     }
     // 2. Glyph band framed by thin rune rings, 3. centre sigil.
-    auto Glyphs = [&](FVector2D Pos, float Size, float Angle, int32 Seed) { PaintGlyph(G, Theme.Set, Pos, Size, Angle, Glyph, Time, Seed, 1.5f, Theme.Underlay); ++R.Glyphs; };
+    const float Underlay = Spec.Shape == ECireAreaShape::Line ? 0.f : Theme.Underlay;
+    auto Glyphs = [&](FVector2D Pos, float Size, float Angle, int32 Seed) { PaintGlyph(G, Theme.Set, Pos, Size, Angle, Glyph, Time, Seed, 1.5f, Underlay); ++R.Glyphs; };
     switch (Spec.Shape)
     {
     case ECireAreaShape::Circle:
     {
         // Bold enough to read at gameplay distance: glyphs ~13% of the radius, band at 62%.
-        const float GlyphSize = FMath::Clamp(Spec.Radius * .13f, 16.f, 64.f);
-        const float Band = Spec.Radius * .62f;
+        const float GlyphSize = FMath::Clamp(Spec.Radius * .23f, 20.f, 130.f);
+        const float Band = Spec.Radius * .64f;
         R.Glyphs += PaintRuneRing(G, FVector2D::ZeroVector, Band, Theme, Time, Alpha * Breath, GlyphSize);
         if (bCenterSigil && Spec.Radius > 110.f)
         {
-            Glyphs(FVector2D::ZeroVector, FMath::Clamp(Spec.Radius * .2f, 18.f, 80.f), -Time * (Theme.bSharp ? .25f : .1f), 99);
-            G.Ring(FVector2D::ZeroVector, FMath::Clamp(Spec.Radius * .29f, 26.f, 110.f), 1.2f, 3.f, WithAlpha(Theme.Glyph, .5f * Alpha), 48, 0, Tau, 1.2f);
+            Glyphs(FVector2D::ZeroVector, FMath::Clamp(Spec.Radius * .26f, 22.f, 170.f), -Time * (Theme.bSharp ? .25f : .1f), 99);
+            G.Ring(FVector2D::ZeroVector, FMath::Clamp(Spec.Radius * .36f, 30.f, 230.f), 2.6f, 4.f, WithAlpha(Theme.Glyph, .75f * Alpha), 48, 0, Tau, 1.2f);
         }
         break;
     }
     case ECireAreaShape::Cone:
     {
         const float Half = FMath::DegreesToRadians(Spec.ConeAngleDegrees * .5f), Band = Spec.Radius * .66f;
-        const float Size = FMath::Clamp(Spec.Radius * .12f, 14.f, 56.f);
-        const int32 Count = FMath::Clamp(FMath::RoundToInt(2 * Half * Band / (Size * 3.f)), 2, 10);
+        const float Size = FMath::Clamp(FMath::Min(Spec.Radius * .18f, Band * FMath::Sin(Half) * .75f), 16.f, 110.f);
+        const int32 Count = FMath::Clamp(FMath::RoundToInt(2 * Half * Band / (Size * 2.7f)), 1, 6);
         const float Pad = FMath::Min(Half * .9f, Size * 1.4f / FMath::Max(Band, 1.f));
         G.Ring(FVector2D::ZeroVector, Band + Size * 1.15f, 1.1f, 3.f, WithAlpha(Theme.Glyph, .45f * Alpha), 32, -Half + Pad * .4f, 2 * (Half - Pad * .4f), 1.2f);
         G.Ring(FVector2D::ZeroVector, Band - Size * 1.15f, 1.1f, 3.f, WithAlpha(Theme.Glyph, .45f * Alpha), 32, -Half + Pad * .4f, 2 * (Half - Pad * .4f), 1.2f);
@@ -435,7 +436,7 @@ CireAbilityVFX::FRuneResult CireAbilityVFX::PaintRunes(FCireGroundMesh& G, const
     case ECireAreaShape::Line:
     {
         // Glyphs march along the lane's centre between the caster and the arrowhead, oriented along the lane.
-        const float Size = FMath::Clamp(Spec.Width * .34f, 10.f, 48.f);
+        const float Size = FMath::Clamp(Spec.Width * .42f, 12.f, 90.f); // lanes: glyph nearly as wide as the lane (lane fill is the backing)
         const float Head = FMath::Clamp(Spec.Width * .95f, 36.f, FMath::Max(36.f, Spec.Length * .28f));
         const float From = Size * 1.4f, To = FMath::Max(From, Spec.Length - Head - Size * 1.2f);
         const int32 Count = FMath::Clamp(FMath::RoundToInt((To - From) / (Size * 3.2f)), 1, 14);
@@ -456,7 +457,7 @@ CireAbilityVFX::FRuneResult CireAbilityVFX::PaintRunes(FCireGroundMesh& G, const
     default:
     {
         // Squares and authored polygons: a glyph band along an inset loop, sigil at the centroid.
-        const float Size = FMath::Clamp(Dim * .18f, 14.f, 52.f);
+        const float Size = FMath::Clamp(Dim * .24f, 16.f, 100.f);
         const auto Inset = Offset(Boundary, -Size * 1.9f);
         int32 J = 0;
         for (const FEdgeSample& E : SampleEdge(Inset, Size * 2.8f, 16))
@@ -465,7 +466,7 @@ CireAbilityVFX::FRuneResult CireAbilityVFX::PaintRunes(FCireGroundMesh& G, const
             if (!ACireAreaEffect::ContainsPoint(Spec, FVector::ZeroVector, FRotator::ZeroRotator, FVector(Pos.X, Pos.Y, 0))) continue;
             Glyphs(Pos, Size, FMath::Atan2(E.T.Y, E.T.X), J++);
         }
-        if (bCenterSigil && Dim > 90.f) Glyphs(Centroid(Boundary), FMath::Clamp(Dim * .3f, 16.f, 70.f), -Time * .15f, 99);
+        if (bCenterSigil && Dim > 90.f) Glyphs(Centroid(Boundary), FMath::Clamp(Dim * .38f, 20.f, 150.f), -Time * .15f, 99);
         break;
     }
     }
@@ -498,8 +499,8 @@ CireAbilityVFX::FVoidResult CireAbilityVFX::PaintVoidZone(FCireGroundMesh& G, FV
     // Rune rings: void starfield glyphs in the slow band, rift swirls inside the stun circle.
     FRuneTheme Band; Band.Set = ERuneSet::Void; Band.Glyph = bInvalid ? FLinearColor(1.6f, .4f, .5f, 1) : VoidC; Band.Edge = Band.Glyph; Band.bSharp = true;
     const float BandR = (Outer + Inner) * .5f;
-    const float GlyphSize = FMath::Clamp((Outer - Inner) * .22f, 10.f, 34.f);
-    const int32 Glyphs = FMath::Clamp(FMath::RoundToInt(Tau * BandR / (GlyphSize * 3.4f)), 6, 16);
+    const float GlyphSize = FMath::Clamp((Outer - Inner) * .3f, 14.f, 80.f);
+    const int32 Glyphs = FMath::Clamp(FMath::RoundToInt(Tau * BandR / (GlyphSize * 3.4f)), 6, 12);
     for (int32 K = 0; K < Glyphs; ++K)
     {
         const float A = Time * .12f + K * Tau / Glyphs;
@@ -521,11 +522,11 @@ CireAbilityVFX::FVoidResult CireAbilityVFX::PaintVoidZone(FCireGroundMesh& G, FV
     const int32 Stars = Inner > 70.f ? 4 : 3;
     for (int32 K = 0; K < Stars; ++K)
     {
-        const float A = -Time * .8f + K * Tau / Stars; const FVector2D P = C + Polar2(Inner * .52f, A); const float S = FMath::Clamp(Inner * .22f, 12.f, 32.f);
+        const float A = -Time * .8f + K * Tau / Stars; const FVector2D P = C + Polar2(Inner * .52f, A); const float S = FMath::Clamp(Inner * .3f, 14.f, 60.f);
         for (int32 J = 0; J < 5; ++J)
         {
             const float B = A + J * Tau / 5;
-            G.Stroke(P, P + Polar2(S, B), 2.4f, 3.f, WithAlpha(FLinearColor(1.7f, 1.45f, .2f, 1), Alpha), 2.f);
+            G.Stroke(P, P + Polar2(S, B), FMath::Clamp(S * .1f, 2.4f, 6.f), 3.f, WithAlpha(FLinearColor(1.7f, 1.45f, .2f, 1), Alpha), 2.f);
         }
         ++R.StunIcons;
     }
@@ -536,7 +537,7 @@ CireAbilityVFX::FVoidResult CireAbilityVFX::PaintVoidZone(FCireGroundMesh& G, FV
             const float U0 = J / 8.f, U1 = (J + 1) / 8.f, A0 = K * Tau / 3 + U0 * 2.2f + Time * 1.2f, A1 = K * Tau / 3 + U1 * 2.2f + Time * 1.2f;
             G.Stroke(C + Polar2(Inner * .3f * U0, A0), C + Polar2(Inner * .3f * U1, A1), 1.4f, 2.5f, WithAlpha(InnerEdge, .8f * Alpha), 1.8f);
         }
-    if (bHeal) PaintGlyph(G, ERuneSet::Heal, C, FMath::Clamp(Inner * .18f, 10.f, 30.f), 0, WithAlpha(RuneColor(ERuneSet::Heal), Alpha), Time, 0, 2.2f);
+    if (bHeal) PaintGlyph(G, ERuneSet::Heal, C, FMath::Clamp(Inner * .26f, 14.f, 60.f), 0, WithAlpha(RuneColor(ERuneSet::Heal), Alpha), Time, 0, 2.2f);
     R.Bounds = FBox2D(C - FVector2D(Outer, Outer), C + FVector2D(Outer, Outer));
     return R;
 }

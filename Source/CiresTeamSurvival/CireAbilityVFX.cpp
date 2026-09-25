@@ -197,14 +197,16 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintTelegraph(FCireGroundMesh& G,c
     {
         // Designated-spot marker: ring + crosshair ticks + dot, rotating slowly.
         const FVector2D C=Spec.Shape==ECireAreaShape::Circle?FVector2D::ZeroVector:Centroid(Boundary);
-        const float Mark=FMath::Clamp(Size*.11f,12.f,42.f);
-        G.Ring(C,Mark,1.8f,4.f,A(Style.Accent,.85f),28,0,2*PI,1.8f);
+        // Big enough that the school sigil inside reads from the gameplay camera.
+        const float Mark=Style.bRunes?FMath::Clamp(Size*.3f,22.f,170.f):FMath::Clamp(Size*.11f,12.f,42.f);
+        G.Ring(C,Mark,Style.bRunes?FMath::Clamp(Mark*.03f,1.8f,4.f):1.8f,4.f,A(Style.Accent,.85f),40,0,2*PI,1.8f);
         for(int32 J=0;J<4;++J)
         {
             const float Ang=Time*.6f+J*PI*.5f;
-            G.Stroke(C+Polar2(Mark*1.35f,Ang),C+Polar2(Mark*2.1f,Ang),1.8f,3.f,A(Style.Accent,.75f),1.8f);
+            if(Style.bRunes)G.Stroke(C+Polar2(Mark*1.05f,Ang),C+Polar2(Mark*1.25f,Ang),2.2f,3.f,A(Style.Accent,.75f),1.8f);
+            else G.Stroke(C+Polar2(Mark*1.35f,Ang),C+Polar2(Mark*2.1f,Ang),1.8f,3.f,A(Style.Accent,.75f),1.8f);
         }
-        if(Style.bRunes)PaintGlyph(G,Style.Runes.Set,C,Mark*.72f,-Time*.3f,A(Style.Runes.Glyph,.95f),Time,99,2.f); // school sigil in the spot marker
+        if(Style.bRunes)PaintGlyph(G,Style.Runes.Set,C,Mark*.78f,-Time*.3f,A(Style.Runes.Glyph,1.f),Time,99,2.f,.8f); // school sigil in the spot marker
         else G.Disc(C,FMath::Max(3.f,Mark*.18f),A(Style.Accent,.9f),A(Style.Accent,.5f),12,1.9f);
     }
     R.Vertices=G.V.Num()-Start;return R;
