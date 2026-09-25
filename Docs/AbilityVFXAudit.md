@@ -506,19 +506,27 @@ of the damage type... healing-related things should also be obvious."
 - **Aim preview** is tinted and runed with the ability's school; invalid aim dims the runes toward red.
 - **Void zones** (teleport/portal skills): outer ring = slow (dashed rim, void starfield glyphs, slow double-
   chevrons), inner circle = stun (solid double ring, orbiting stun stars, rift swirl), optional heal "+".
-  Shown in the aim preview, on cast (own team: violet) and as amber monster warnings. Radii and placement come
-  from `Content/Data/Abilities.json` `voidZone` (`outerRadius`, `innerRadius`, `duration`, `selfHeal`,
-  `at: origin|destination`); until the champion-draft Ability Database lands they are stubbed for
-  `shadow_step` (260/110 at the destination) and the voidborn `void_blink`/`void_warp` (240/100 at the origin).
-- **School source**: `Content/Data/Abilities.json` `school` wins when present (physical, fire, cold, earth,
-  water, holy, shadow, void, poison, nature, storm, arcane, blood, spirit, heal); otherwise the built-in
-  `CireAbilityShapes` mapping. The file is optional and reloads via `CireAbilityShapes::ReloadDatabase`.
-- **CC visuals**: stun (existing daze stars), silence now a sealed-mouth glyph (`npc_silenced`), heal-cut a
-  broken green cross (`heal_cut`, data-ready in BuffVisuals.json), interrupt a shatter flash where the cast
-  circle breaks into falling shards (`npc_interrupted` cue), root unchanged.
+  Radii come from the Ability Database (`CireAbilityDB`, `Abilities.json` `void`: Shadow Step 180 cm stun /
+  420 cm slow, the planned portal skills 160/380). Shown **while aiming** (ground-aimed portals in the cursor
+  preview; targeted Shadow Step when its action-bar button is hovered with a hostile target, at its landing
+  spot 170 cm in front of the target), **on cast** (the authoritative `void_rift` cue from
+  `CireCrowdControl::VoidBurst`, exactly at the rift centre, violet for your team) and as **amber monster
+  warnings** (voidborn `void_blink`/`void_warp` keep a stub 240/100 zone until they get DB entries).
+- **School source**: the Ability Database `school` (physical, fire, cold, earth, tide, holy, shadow, void,
+  poison, nature, storm, arcane) and its HEAL type; the built-in `CireAbilityShapes` mapping covers monsters
+  and anything the DB does not list. Database changes: Spectral Hunt is void, Wellspring tide.
+- **Heal cast times**: timed casts (Restoring Light 1.5 s, Sanctuary 2 s, Purify 1 s, Wellspring 2 s,
+  Renewal 2.5 s) show the heal telegraph (true radius for self circles, a heal rune ring on the target
+  otherwise) for the whole cast bar with a progress fill, and drop it on cancel/interrupt.
+- **CC visuals** on the champion-draft buff ids: `stunned` (daze stars, existing), `silenced` / `npc_silenced`
+  sealed-mouth glyph, `healing_cut` / `heal_cut_done` broken green cross over the unit, `interrupted` keeps
+  its school-lock runes plus the shatter flash (`npc_interrupted` cue) where the cast circle breaks, root unchanged.
 - Budgets: 6144 ground vertices per effect (was 3072), same 64-actor / 8-light caps.
-- Tests (in `CireAbilityVFX::RunTests`, 3365 checks): distinct glyph per set, a rune set for every ability,
+- Tests (in `CireAbilityVFX::RunTests`, 3498 checks): distinct glyph per set, a rune set for every ability,
   heal style for every heal, buffs calm / damage sharp, runes inside every boundary, amber + school runes on
-  enemy warnings, Ability Database overrides, void zones draw both radii with icons in the preview (armed
-  cursor), on cast and as a monster warning, and clean up.
+  enemy warnings, every database school resolves and drives the rune set, void zones draw both radii with icons
+  in the armed preview, the Shadow Step hover preview, the void_rift cue and as a monster warning, heal casts
+  show the heal telegraph during the cast and drop it on cancel, and everything cleans up.
+- Evidence: before/after sheets `Saved/AbilityVFX/compare-20260925T064342Z` (32 abilities: previous pass vs runes),
+  captures `Saved/AbilityVFX/runes4-all-20260925-064126`, Shadow Step rift `Saved/AbilityVFX/runes5-champion-20260925-064509`.
 - Gallery: `python Tools/RunAbilityVFXGallery.py --only <ids> --tag runes` (`--db file.json` previews DB overrides).
