@@ -167,33 +167,43 @@ failsafe; early waves hit harder instead of dying faster.
 The longest waves are the wave-2 slot and the boss wave in cycles 2-3, held by one or two stragglers
 until the failsafe marches them; the tighter failsafe turns that dead time into leaked lives.
 
-### World scale (feat/world-scale, September 25): a 3x longer road without 3x longer waves
+### World scale (feat/world-scale, September 25): a 3x longer road, pacing about +12%
 
 The town is three times as long (`Docs/BattlefieldRoutes.md`): the road from the rift to the castle gate is 495 m (was 159 m).
-Spawns stay at the rift (`spawnAlongRoute` 0). Pace comes from three new `pacing` knobs (data, `Waves.json`):
+Spawns stay at the rift (`spawnAlongRoute` 0). Pace comes from four new `pacing` knobs (data, `Waves.json`, defaults in
+`FCireWaveConfig`):
 
 | Knob | Value | Meaning |
 | --- | --- | --- |
-| `rallySpeed` | 2.8 | A marching wave unit with no living defender of its lane within `rallyRadius` moves at 2.8x its base speed (never below `marchSpeed`): columns cross the empty outer districts quickly and slow to the normal march (`marchSpeed` 1.4) as they meet the heroes. Fights happen at the old speeds. |
-| `rallyRadius` | 3000 cm | 30 m: beyond the gameplay camera's view, so the hurry is seen on the minimap, not in melee. |
-| `marcherSpeed` | 3.0 | Non-attacking marchers (armored waves, escortees) never stop to fight, so they always move at 3x base (about hero running speed). Without it they needed 170 s for the road, hit the 100 s failsafe and were despawned instead of leaking: armored waves became harmless and took 122 s each. |
-| `botHoldAt` | 0.5 | Idle bots hold at the middle of the road (the Weavers' Lanes) instead of 0.8 (which is now 100 m in front of the castle). Bots still charge any wave unit in their lane. |
+| `rallySpeed` | 3.0 | A marching wave unit with no living defender of its lane within `rallyRadius` moves at 3x its base speed (never below `marchSpeed`): columns cross the empty outer districts quickly and slow to the normal march (`marchSpeed` 1.4) as they meet the heroes. Fights happen at the old speeds. |
+| `rallyRadius` | 3000 cm | 30 m, about the edge of the gameplay camera's view, so the hurry is mostly seen on the minimap. |
+| `marcherSpeed` | 3.0 | Non-attacking marchers (armored waves, escortees) never stop to fight, so they always move at 3x base (about a running hero; the escortee stays just below hero speed so it can be caught). Escort guards walking beside their escortee keep the same pace, so the escort does not break formation. Without it the marchers needed 170 s for the road, hit the 100 s failsafe and were despawned instead of leaking: armored waves became harmless and took 122 s each. |
+| `botHoldAt` | 0.35 | Idle bots hold 35% of the way from the rift (the Outer Farmsteads) instead of 0.8, which on the long road is 100 m in front of the castle. Bots still charge any wave unit in their lane. |
+
+Two bugs the long road exposed were fixed on the way: every bot's A* search ran out of nodes on 495 m paths, so all ten bots
+walked to the same partial-path end (a pinch point in the market hall) and stood there (`Docs/Navigation.md`); and a unit
+carried forward off its march (escort guards beside their escortee) walked back to its stale waypoint, up to 300 m, until the
+failsafe (`CireLanePath::NextWaypoint` now only ever advances progress to where the unit is).
 
 Soak, bots only, 3 cycles, `python Tools/RunPacingSoak.py --cycles 3` (files `Saved/WaveSoak/pacing-ws-*`):
 
-| Run | Cycle lengths | Mean / longest wave | Lives left (Ember / Dusk) | Match |
-| --- | --- | --- | --- | --- |
-| Before (main 5cc5732, `ws-before-1`) | 8.0, 8.7, 9.8 min | 84 / 123 s | 68 / 68 | **26.5 min** |
-| 3x road, march 1.4 only (`ws-after-1`, bots stuck, see below) | 12.2, 12.0, 12.0 min | 122 / 123 s | 100 / 94 | 36.2 min |
-| + rally 2.8, bot line 0.5, nav search budget (`ws-after-2`) | 9.3, 10.8, 11.5 min | 103 / 123 s | 99 / 100 | 31.6 min |
-| **+ marcher pace 3.0 (`ws-after-3`)** | **9.6, 9.2, 10.0 min** | **93 / 123 s** | **78 / 76** | **28.8 min (+8.7%)** |
+| Run | Match | Mean / longest wave | Lives left (Ember / Dusk) |
+| --- | --- | --- | --- |
+| Before (main 5cc5732, `ws-before-1`; `after-round3` on feat/balance was 26.6) | **26.5 min** | 84 / 123 s | 68 / 68 |
+| 3x road, march 1.4 only (`ws-after-1`, bots stuck) | 36.2 min | 122 / 123 s | 100 / 94 |
+| + rally 2.8, bot line 0.5, nav search budget (`ws-after-2`) | 31.6 min | 103 / 123 s | 99 / 100 |
+| + marcher pace 3.0 (`ws-after-3`, `ws-after-4`) | 28.8, 30.1 min | 93-97 / 123 s | 75-78 / 76-78 |
+| rally 3.0, bot line 0.35, marchers 3.2 (`ws-tune-a`, `-a2`, `ws-final-1`) | 29.3, 29.2, 29.6 min | 94-96 / 123 s | 71-76 / 71-72 |
+| **Final: rally 3.0, bot line 0.35, marchers 3.0, guards keep pace, waypoint fix (`ws-final-4`, `-5`)** | **30.2, 29.6 min (mean 29.9, +12.8%)** | 95-97 / 123 s | 70-75 / 75-78 |
 
-The first run exposed a real bug rather than slow waves: with a 495 m road every bot's A* search ran out of nodes and all ten
-bots walked to the same partial-path end (a pinch point inside the market hall) and stood there; see `Docs/Navigation.md`.
-Armored and escort waves now take 81-102 s (was 57-79 s) and leak 6-8 lives again; normal and boss waves are within noise
-of before. Trade-off, stated plainly: units far from any hero move at up to 2.8x (normal) or 3x (marchers) their base speed,
-about as fast as a running hero; a player who runs out to meet a column sees it slow to the usual march as it comes within
-30 m. If that reads as too hasty, lower `rallySpeed` / `marcherSpeed` in `Waves.json` (the match lengthens accordingly; re-soak).
+Where the extra ~3 minutes go: normal and boss waves are within noise of before (contact still happens quickly); **armored
+and escort waves take 80-100 s instead of 60-80 s** because their non-attacking marchers must physically walk 495 m and are
+kept at or below hero running speed so the heroes can still catch and kill them; and the 2x arenas run about 5-10 s longer
+per fight (~0.4 min per match). Trade-off, stated plainly: the bots-only match is about 12% longer than before, not within
+10%. Closing the rest would need marchers faster than a running hero (`marcherSpeed` 3.5+: escorts that cannot be chased
+down), a shorter failsafe, or fewer/tougher-but-shorter waves; none of those is a march-speed tune without changing how the
+waves feel, so they are left for Eric to decide. Units far from any hero move at up to 3x their base speed; a player who
+runs out to meet a column sees it slow to the usual march as it comes within 30 m.
 
 ### Skill Shop breather and Ready-up
 

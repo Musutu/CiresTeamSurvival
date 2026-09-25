@@ -81,7 +81,7 @@ struct CIRESTEAMSURVIVAL_API FCireWaveConfig
      *  MarcherSpeed: non-attacking marchers (armored waves, escortees) never stop to fight, so they always move at this
      *  multiple (about hero running speed) and still reach the castle inside the stall failsafe on the long road.
      *  BotHoldAt is the route fraction (0 = rift, 1 = castle gate) where idle bots hold their defensive line. */
-    float RallySpeed = 2.8f, RallyRadius = 3000.f, BotHoldAt = .5f, MarcherSpeed = 3.f;
+    float RallySpeed = 3.f, RallyRadius = 3000.f, BotHoldAt = .35f, MarcherSpeed = 3.f;
     float PrepSeconds = 25.f, ArenaSeconds = 60.f, RecoverySeconds = 8.f; // balance (pacing): prep 30 -> 25, recovery 10 -> 8
     /** Breather ends early (1 s) once every human player has pressed Ready; bots are always ready. */
     bool bEarlyContinue = true;

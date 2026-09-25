@@ -835,8 +835,9 @@ float CireWaveDirector::MarchSpeed(const ACireMonster* M)
     const FTrack* T = TrackOf(M);
     if (!T) return 1.f;
     const FCireWaveConfig& C = Config(M->GetWorld());
-    // world-scale: non-attacking marchers never stop to fight: they keep their own (hero-like) pace the whole way.
-    if (M->bArmoredEscort) return FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed);
+    // world-scale: non-attacking marchers never stop to fight: they keep their own (hero-like) pace the whole way, and
+    // escort guards walking beside their escortee keep that pace too, so the escort does not break formation.
+    if (M->bArmoredEscort || (T->bGuard && AliveUnit(T->Charge.Get()))) return FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed);
     // world-scale: hurry across the empty outer districts; march at the normal pace once a defender is near.
     if (C.RallySpeed > C.MarchSpeedMultiplier)
     {

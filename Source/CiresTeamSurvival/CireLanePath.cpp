@@ -478,6 +478,10 @@ FVector CireLanePath::NextWaypoint(ACireMonster* M)
     if (M->LaneRouteRevision != Revision(M->GetWorld()) || M->LaneWaypointIndex < 1 || M->LaneWaypointIndex >= R.LocalPoints[M->Lane].Num()) InitializeProgress(M);
     const auto& Points = R.LocalPoints[M->Lane]; const FVector P = M->GetActorLocation();
     const FVector2D Local(P.X,P.Y-CenterY(M->Lane));
+    // world-scale: a unit carried forward off its march (escort guards walking beside their escortee, a chase) resumes
+    // from where it now is instead of walking back to a stale waypoint; on the 495 m road that walk-back reached the
+    // stall failsafe. Progress still never moves backward.
+    if (M->HasAuthority()) M->LaneWaypointIndex = FMath::Max(M->LaneWaypointIndex, ProjectNext(Points, Local));
     // nav-paths: 150 cm arrival radius (was 100): navmesh-steered units in a crowd rarely stand exactly on the point.
     while (M->LaneWaypointIndex + 1 < Points.Num() && FVector2D::DistSquared(Local,Points[M->LaneWaypointIndex]) <= FMath::Square(150.f)) ++M->LaneWaypointIndex;
     return WorldPoint(M->Lane,Points[M->LaneWaypointIndex],P.Z);

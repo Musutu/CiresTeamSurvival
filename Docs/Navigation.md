@@ -167,3 +167,6 @@ why. Like the rest of F8 it only exists in development standalone sessions.
   gave up and every bot walked to the same partial-path end and waited there.
 * The timed march probe scales its limit with the route: probe marchers walk at their base speed (they are not wave units),
   so the limit is max(240 s, route length / 100 cm/s * 0.8), about 400 s on the new road.
+* `CireLanePath::NextWaypoint` advances a unit's waypoint index to the segment it is actually on (never backward). Escort
+  guards walking beside their escortee, or units chasing forward, used to keep a stale index and walk back to it after the
+  escortee leaked: on the 495 m road that walk-back reached the stall failsafe.
