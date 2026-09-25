@@ -109,6 +109,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--only", choices=("data", "native", "network", "gallery", "all"), default="all")
     parser.add_argument("--port", type=int, default=7791)
+    parser.add_argument("--theme", help="ui-themes: render the gallery with this UI theme id")
     args = parser.parse_args()
     project = ROOT / "CiresTeamSurvival.uproject"
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
@@ -182,6 +183,8 @@ def main() -> int:
             log, child, failure = output / f"{name}.log", None, ""
             try:
                 switches = ["-game", "-CireShopGallery", "-RenderOffscreen", "-ForceRes", f"-ResX={width}", f"-ResY={height}", "-ExecCmds=t.MaxFPS 60"]
+                if args.theme:
+                    switches.append(f"-CireUITheme={args.theme}")
                 if shop_only:
                     switches.insert(2, "-CireShopGalleryShopOnly")
                 child = launch("/Game/Maps/Citadel", switches, log, ["-nosound"])

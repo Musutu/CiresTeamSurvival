@@ -331,7 +331,7 @@
         "barBack": [0.0, 0.006, 0.002, 0.88],
         "title": [1.0, 0.76, 0.62, 1],
         "filigree": [0.8, 0.7, 0.46, 1],
-        "panelTint": [1, 1, 1, 1]
+        "panelTint": [0.5, 0.58, 0.52, 1]
       },
       "glowStrength": 1.1,
       "fillScale": 256,
