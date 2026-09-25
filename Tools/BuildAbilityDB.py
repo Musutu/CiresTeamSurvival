@@ -324,6 +324,10 @@ BUFF_MODIFIERS = {
 }
 
 
+# Cast-time abilities that may still be cast (and keep casting) while moving.
+CAST_WHILE_MOVING = set()
+
+
 # Dodge-roll synergy skills (CireRollSkills, Docs/Abilities.md "Dodge-roll skills"). Signature-only: purchasable by the
 # champions listed in ROLL_AVAILABLE (agile DPS, rogue-likes, Gunblade, Huntress, bruiser tanks,
 # mobile supports). "section" is the Skill Shop periodic-table section (progression-shop SECTIONS),
@@ -496,6 +500,10 @@ def build():
             abilities[sid]["champions"].append(c["id"])
         for sid in signature:
             abilities[sid]["signatureOf"].append(c["id"])
+    # feat/camera-movement: WoW rule - cast-time spells need you to stand still unless listed here.
+    # Instants (castTime 0) always work while moving. See Docs/Targeting.md "Casting while moving".
+    for sid, a in abilities.items():
+        a["castWhileMoving"] = a["castTime"] <= 0 or sid in CAST_WHILE_MOVING
     # items-v2: every ultimate carries the extra effect the Sigil of Apotheosis unlocks (Tools/UltimateUpgrades.py).
     for sid, upgrade in ULTIMATE_UPGRADES.items():
         if sid in abilities:

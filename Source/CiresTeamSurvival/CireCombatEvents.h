@@ -10,7 +10,7 @@ class ACireHero;
 class ACireGameMode;
 
 UENUM()
-enum class ECireHitOutcome : uint8 { Hit, Miss, Dodge };
+enum class ECireHitOutcome : uint8 { Hit, Miss, Dodge, Block, Resist }; // scaling-kits: shield BLOCK, aura RESIST
 
 // Actor references are used only while preparing recipients on the server, then
 // removed from the wire payload. Killing blows never depend on an actor NetGUID.

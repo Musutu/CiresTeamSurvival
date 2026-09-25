@@ -81,6 +81,7 @@ private:
     TArray<FVector2D> SoftUVs;
     void Rebuild();
     void StartSound();
+    bool bEventAudio = false, bLoopFading = false, bEventArmed = false; // audio-overhaul: sound-event table owns this visual's audio
     // ability-vfx: new presentation modes (CireSpellVisualModes.cpp).
     EMode Mode = EMode::Legacy;
     FCireHitShape Shape;

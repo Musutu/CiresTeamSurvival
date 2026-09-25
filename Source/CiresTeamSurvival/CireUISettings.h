@@ -94,6 +94,16 @@ public:
     bool bCameraAutoFollow = true;
     /** After the hostile target dies, Tab-select the nearest hostile in front of the camera. */
     bool bAutoReacquireTarget = false;
+    /** Enemy spell with no valid target: auto-select the enemy under the cursor or the best one in front. */
+    bool bSmartCast = true;
+    /** Spells cast on the unit under the cursor (if valid) without changing your target. */
+    bool bMouseoverCast = false;
+    /** A clean right click (no camera drag) cancels an armed ground-aim reticle. Escape always cancels. */
+    bool bRightClickCancelsAim = true;
+    /** Pressing the armed ground ability's key again casts it at the reticle. */
+    bool bPressAgainToCast = true;
+    /** Pressing a cast-time spell that cannot be cast while moving stops your movement keys and casts. */
+    bool bAutoStopToCast = true;
     /** progression-shop: show the compact character stats window (toggle: C). */
     bool bShowStats = true;
     /** progression-shop: show the personal loot log (toggle: L). */

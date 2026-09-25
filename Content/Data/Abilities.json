@@ -109,7 +109,8 @@
     "totemic_behemoth",
     "drakish_footman",
     "troll_berserker_melee"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "shield_slam": {
    "id": "shield_slam",
@@ -189,7 +190,8 @@
     "ether_golem_tank",
     "orc_chieftain",
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "war_cry": {
    "id": "war_cry",
@@ -263,7 +265,8 @@
     "orc_chieftain",
     "totemic_behemoth",
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "chain_spark": {
    "id": "chain_spark",
@@ -327,7 +330,8 @@
     "scholar",
     "summoner",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "frost_bind": {
    "id": "frost_bind",
@@ -408,7 +412,8 @@
     "ranger",
     "wizard",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "cleaving_strike": {
    "id": "cleaving_strike",
@@ -476,7 +481,8 @@
     "orc_chieftain",
     "totemic_behemoth",
     "troll_berserker_melee"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "shadow_step": {
    "id": "shadow_step",
@@ -554,7 +560,8 @@
     "outerMagnitude": 0.4,
     "damage": 30,
     "selfHealMaxHealthFraction": 0.05
-   }
+   },
+   "castWhileMoving": true
   },
   "restoring_light": {
    "id": "restoring_light",
@@ -611,7 +618,8 @@
     "whisp",
     "evergrove_centaur",
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "sanctuary": {
    "id": "sanctuary",
@@ -676,7 +684,8 @@
     "dryad",
     "evergrove_centaur",
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "purify": {
    "id": "purify",
@@ -741,7 +750,8 @@
     "whisp",
     "evergrove_centaur",
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "summoned_wall": {
    "id": "summoned_wall",
@@ -813,7 +823,8 @@
     "summoner",
     "dwarf_miner",
     "ether_golem_tank"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "protection_dome": {
    "id": "protection_dome",
@@ -887,7 +898,8 @@
     "summoner",
     "ether_golem_support",
     "whisp"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "oathbound_guardian": {
    "id": "oathbound_guardian",
@@ -957,7 +969,8 @@
    ],
    "signatureOf": [
     "summoner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "spectral_pack": {
    "id": "spectral_pack",
@@ -1011,7 +1024,8 @@
    "signatureOf": [
     "ranger",
     "summoner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "second_wind": {
    "id": "second_wind",
@@ -1084,7 +1098,8 @@
     "lancer",
     "paladin_righteous",
     "troll_berserker_melee"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "decimating_strike": {
    "id": "decimating_strike",
@@ -1166,7 +1181,8 @@
     "orc_chieftain",
     "drakish_footman",
     "troll_berserker_melee"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "stone_skin": {
    "id": "stone_skin",
@@ -1237,7 +1253,8 @@
    "signatureOf": [
     "knight",
     "paladin_righteous"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "battle_rhythm": {
    "id": "battle_rhythm",
@@ -1308,7 +1325,8 @@
    "signatureOf": [
     "ranger",
     "lancer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "deep_reserves": {
    "id": "deep_reserves",
@@ -1379,7 +1397,8 @@
    "signatureOf": [
     "summoner",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "soul_conduit": {
    "id": "soul_conduit",
@@ -1451,7 +1470,8 @@
     "scholar",
     "paladin_holy",
     "ether_golem_support"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "executioner": {
    "id": "executioner",
@@ -1515,7 +1535,8 @@
     "lancer",
     "troll_berserker_melee",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bastion_of_dawn": {
    "id": "bastion_of_dawn",
@@ -1586,6 +1607,7 @@
     "knight",
     "paladin_righteous"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Dawnward",
     "text": "Allies within 7 m also gain a shield absorbing 150 + 10% of your max health for 8 s.",
@@ -1655,6 +1677,7 @@
     "summoner",
     "wizard"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Scorched Earth",
     "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
@@ -1727,6 +1750,7 @@
     "ranger",
     "lancer"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Verdict Rendered",
     "text": "Your other cooldowns shrink by 50% and you gain +25% attack speed for 6 s.",
@@ -1807,6 +1831,7 @@
     "scholar",
     "paladin_holy"
    ],
+   "castWhileMoving": false,
    "ultimateUpgrade": {
     "name": "Second Dawn",
     "text": "Allies within 9 m also gain +30 armor and +30 ward for 8 s (a party aura).",
@@ -1881,6 +1906,7 @@
     "aetheri_warden"
    ],
    "signatureOf": [],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Rallying Stand",
     "text": "Allies within 8 m are also healed for 12% of your max health.",
@@ -1959,6 +1985,7 @@
     "aetheri_warden"
    ],
    "signatureOf": [],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Iron Echo",
     "text": "Enemies within 8.5 m are also stunned for 1.5 s.",
@@ -2030,6 +2057,7 @@
     "aetheri_warden"
    ],
    "signatureOf": [],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Aftershock",
     "text": "The burst also breaks enemy armor for 6 s, and allies within 6 m gain +40 armor for 8 s.",
@@ -2102,6 +2130,7 @@
     "aetheri_artificer"
    ],
    "signatureOf": [],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Falling Sky",
     "text": "The impact also silences enemies for 2 s, and you restore 20% of your max mana.",
@@ -2171,6 +2200,7 @@
     "aetheri_artificer"
    ],
    "signatureOf": [],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Pack Leader",
     "text": "You and allies within 9 m gain +20% attack speed and +10% move speed for 8 s.",
@@ -2253,6 +2283,7 @@
     "aetheri_warden"
    ],
    "signatureOf": [],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Aegis Bloom",
     "text": "Allies within 9 m also gain a shield absorbing 200 + 2x primary stat for 12 s.",
@@ -2326,6 +2357,7 @@
     "aetheri_warden"
    ],
    "signatureOf": [],
+   "castWhileMoving": false,
    "ultimateUpgrade": {
     "name": "Overflow",
     "text": "Allies within 6 m of you also heal 150 and restore 15% of their max mana.",
@@ -2398,7 +2430,8 @@
     "ranger",
     "summoner",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "cinder_cone": {
    "id": "cinder_cone",
@@ -2452,7 +2485,8 @@
    "signatureOf": [
     "ether_golem_bruiser",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "grave_line": {
    "id": "grave_line",
@@ -2515,7 +2549,8 @@
    "signatureOf": [
     "ranger",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "ashen_square": {
    "id": "ashen_square",
@@ -2569,7 +2604,8 @@
    "signatureOf": [
     "lancer",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "blight_sigil": {
    "id": "blight_sigil",
@@ -2629,7 +2665,8 @@
     "huntress",
     "aetheri_artificer"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "castWhileMoving": true
   },
   "piercing_shot": {
    "id": "piercing_shot",
@@ -2684,7 +2721,8 @@
     "ranger",
     "lancer",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "ember_lance": {
    "id": "ember_lance",
@@ -2747,7 +2785,8 @@
    "signatureOf": [
     "scholar",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "silver_shot": {
    "id": "silver_shot",
@@ -2790,7 +2829,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "hex_mark": {
    "id": "hex_mark",
@@ -2842,7 +2882,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "powder_flask": {
    "id": "powder_flask",
@@ -2894,7 +2935,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "blade_flurry": {
    "id": "blade_flurry",
@@ -2937,7 +2979,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "hunters_stride": {
    "id": "hunters_stride",
@@ -2980,7 +3023,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "warding_talisman": {
    "id": "warding_talisman",
@@ -3039,7 +3083,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "price_on_every_soul": {
    "id": "price_on_every_soul",
@@ -3082,7 +3127,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "collect_the_bounty": {
    "id": "collect_the_bounty",
@@ -3134,6 +3180,7 @@
    "signatureOf": [
     "gunblade"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Bounty Hunter",
     "text": "You gain +30% move speed and +12 primary stat for 6 s; other cooldowns shrink by 30%.",
@@ -3207,7 +3254,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "spirit_lantern": {
    "id": "spirit_lantern",
@@ -3260,7 +3308,8 @@
    "signatureOf": [
     "witch_slayer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "purge": {
    "id": "purge",
@@ -3319,7 +3368,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "banishment": {
    "id": "banishment",
@@ -3371,7 +3421,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "witchfinders_mark": {
    "id": "witchfinders_mark",
@@ -3423,7 +3474,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "spectral_blade": {
    "id": "spectral_blade",
@@ -3466,7 +3518,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "witchbane": {
    "id": "witchbane",
@@ -3509,7 +3562,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "hexbane_judgment": {
    "id": "hexbane_judgment",
@@ -3569,6 +3623,7 @@
    "signatureOf": [
     "witch_slayer"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Witchlight",
     "text": "Enemies in the circle are also armor-broken for 6 s; allies within 9 m of you gain +25 ward for 8 s.",
@@ -3634,7 +3689,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "sabercat_pounce": {
    "id": "sabercat_pounce",
@@ -3687,7 +3743,8 @@
    "signatureOf": [
     "huntress"
    ],
-   "category": "pet"
+   "category": "pet",
+   "castWhileMoving": true
   },
   "owl_scout": {
    "id": "owl_scout",
@@ -3739,7 +3796,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "moonlit_sprint": {
    "id": "moonlit_sprint",
@@ -3798,7 +3856,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "crescent_volley": {
    "id": "crescent_volley",
@@ -3841,7 +3900,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "sabercat_maul": {
    "id": "sabercat_maul",
@@ -3885,7 +3945,8 @@
    "signatureOf": [
     "huntress"
    ],
-   "category": "pet"
+   "category": "pet",
+   "castWhileMoving": true
   },
   "sabercat_roar": {
    "id": "sabercat_roar",
@@ -3946,7 +4007,8 @@
    "signatureOf": [
     "huntress"
    ],
-   "category": "pet"
+   "category": "pet",
+   "castWhileMoving": true
   },
   "moon_glaive": {
    "id": "moon_glaive",
@@ -3989,7 +4051,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "glaive_storm": {
    "id": "glaive_storm",
@@ -4033,6 +4096,7 @@
    "signatureOf": [
     "huntress"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Eye of the Storm",
     "text": "You gain a shield absorbing 200 + 2x primary stat and +20% move speed for 6 s.",
@@ -4099,7 +4163,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "skitter_swarm": {
    "id": "skitter_swarm",
@@ -4143,7 +4208,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "arc_mine": {
    "id": "arc_mine",
@@ -4187,7 +4253,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "disruption_pylon": {
    "id": "disruption_pylon",
@@ -4240,7 +4307,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "phase_lance": {
    "id": "phase_lance",
@@ -4283,7 +4351,8 @@
    ],
    "signatureOf": [
     "aetheri_artificer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "overcharge": {
    "id": "overcharge",
@@ -4327,7 +4396,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "aether_engineering": {
    "id": "aether_engineering",
@@ -4371,7 +4441,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "warp_obelisk": {
    "id": "warp_obelisk",
@@ -4416,6 +4487,7 @@
     "aetheri_artificer"
    ],
    "category": "construct",
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Siege Protocol",
     "text": "Enemies within 6 m of the obelisk are stunned for 1 s; you gain +12 primary stat for 15 s.",
@@ -4492,7 +4564,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "haste_pylon": {
    "id": "haste_pylon",
@@ -4546,7 +4619,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "gravity_pylon": {
    "id": "gravity_pylon",
@@ -4600,7 +4674,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "stasis_snare": {
    "id": "stasis_snare",
@@ -4654,7 +4729,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "aether_mend": {
    "id": "aether_mend",
@@ -4697,7 +4773,8 @@
    ],
    "signatureOf": [
     "aetheri_warden"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "repulsor_pulse": {
    "id": "repulsor_pulse",
@@ -4757,7 +4834,8 @@
    ],
    "signatureOf": [
     "aetheri_warden"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "resonant_lattice": {
    "id": "resonant_lattice",
@@ -4802,7 +4880,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "aether_nexus": {
    "id": "aether_nexus",
@@ -4857,6 +4936,7 @@
     "aetheri_warden"
    ],
    "category": "construct",
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Resonant Field",
     "text": "Allies within 9 m of you restore 20% of their max mana and gain a shield absorbing 150 for 10 s.",
@@ -4957,7 +5037,8 @@
     "stat": "primary",
     "ratio": 1.0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "tumblers_edge": {
    "id": "tumblers_edge",
@@ -5027,7 +5108,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "killer_instinct": {
    "id": "killer_instinct",
@@ -5097,7 +5179,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "fleet_recovery": {
    "id": "fleet_recovery",
@@ -5188,7 +5271,8 @@
     "stat": "primary",
     "ratio": 0.5
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "windrunner": {
    "id": "windrunner",
@@ -5269,7 +5353,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "quickened_mind": {
    "id": "quickened_mind",
@@ -5341,7 +5426,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "hasted_tumble": {
    "id": "hasted_tumble",
@@ -5426,7 +5512,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "ember_wake": {
    "id": "ember_wake",
@@ -5492,7 +5579,8 @@
     "stat": "primary",
     "ratio": 0.6
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "frost_wake": {
    "id": "frost_wake",
@@ -5573,7 +5661,8 @@
     "stat": "primary",
     "ratio": 0.4
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "momentum": {
    "id": "momentum",
@@ -5654,7 +5743,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "blur_step": {
    "id": "blur_step",
@@ -5723,7 +5813,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "slippery_roll": {
    "id": "slippery_roll",
@@ -5822,7 +5913,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "bloodrush": {
    "id": "bloodrush",
@@ -5902,7 +5994,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "tumble_strike": {
    "id": "tumble_strike",
@@ -5982,7 +6075,8 @@
     "stat": "primary",
     "ratio": 1.5
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "mine_layer": {
    "id": "mine_layer",
@@ -6060,7 +6154,8 @@
     "ratio": 1.0
    },
    "level15": {},
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "taunting_tumble": {
    "id": "taunting_tumble",
@@ -6150,7 +6245,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "shield_tumble": {
    "id": "shield_tumble",
@@ -6232,7 +6328,8 @@
     "stat": "primary",
     "ratio": 1.0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "venom_tumble": {
    "id": "venom_tumble",
@@ -6308,7 +6405,8 @@
     "stat": "primary",
     "ratio": 0.5
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "shadow_dance": {
    "id": "shadow_dance",
@@ -6377,7 +6475,8 @@
     "stat": "primary",
     "ratio": 0
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "evasive_stance": {
    "id": "evasive_stance",
@@ -6457,7 +6556,8 @@
     "stat": "primary",
     "ratio": 0.4
    },
-   "level15": {}
+   "level15": {},
+   "castWhileMoving": true
   },
   "bear_maul": {
    "id": "bear_maul",
@@ -6499,7 +6599,8 @@
    ],
    "signatureOf": [
     "bear"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bear_roar": {
    "id": "bear_roar",
@@ -6551,7 +6652,8 @@
    ],
    "signatureOf": [
     "bear"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bear_charge": {
    "id": "bear_charge",
@@ -6604,7 +6706,8 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "castWhileMoving": true
   },
   "bear_hibernate": {
    "id": "bear_hibernate",
@@ -6646,7 +6749,8 @@
    ],
    "signatureOf": [
     "bear"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bear_ancient_hide": {
    "id": "bear_ancient_hide",
@@ -6688,7 +6792,8 @@
    ],
    "signatureOf": [
     "bear"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bear_colossus": {
    "id": "bear_colossus",
@@ -6731,6 +6836,7 @@
    "signatureOf": [
     "bear"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Den Mother",
     "text": "Allies within 8 m gain +40 armor for 8 s.",
@@ -6788,7 +6894,8 @@
    ],
    "signatureOf": [
     "paladin_righteous"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "paladin_relic_vow": {
    "id": "paladin_relic_vow",
@@ -6832,7 +6939,8 @@
    "signatureOf": [
     "paladin_righteous",
     "paladin_holy"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "paladin_holy_flail": {
    "id": "paladin_holy_flail",
@@ -6874,7 +6982,8 @@
    ],
    "signatureOf": [
     "paladin_holy"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "paladin_pilgrim_light": {
    "id": "paladin_pilgrim_light",
@@ -6916,7 +7025,8 @@
    ],
    "signatureOf": [
     "paladin_holy"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "miner_pickfall": {
    "id": "miner_pickfall",
@@ -6958,7 +7068,8 @@
    ],
    "signatureOf": [
     "dwarf_miner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "miner_faultline": {
    "id": "miner_faultline",
@@ -7009,7 +7120,8 @@
    ],
    "signatureOf": [
     "dwarf_miner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "miner_lantern": {
    "id": "miner_lantern",
@@ -7051,7 +7163,8 @@
    ],
    "signatureOf": [
     "dwarf_miner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "miner_orehide": {
    "id": "miner_orehide",
@@ -7093,7 +7206,8 @@
    ],
    "signatureOf": [
     "dwarf_miner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "miner_mountain": {
    "id": "miner_mountain",
@@ -7136,6 +7250,7 @@
    "signatureOf": [
     "dwarf_miner"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Rockfall",
     "text": "Enemies within 4 m of the ring are stunned for 1 s.",
@@ -7190,7 +7305,8 @@
    ],
    "signatureOf": [
     "ether_golem_tank"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "golem_ether_anchor": {
    "id": "golem_ether_anchor",
@@ -7232,7 +7348,8 @@
    ],
    "signatureOf": [
     "ether_golem_tank"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "golem_construct_core": {
    "id": "golem_construct_core",
@@ -7276,7 +7393,8 @@
    "signatureOf": [
     "ether_golem_tank",
     "ether_golem_bruiser"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "golem_worldstone": {
    "id": "golem_worldstone",
@@ -7323,6 +7441,7 @@
     "ether_golem_support",
     "ether_golem_bruiser"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Worldstone Ward",
     "text": "Allies within 7 m gain a shield absorbing 200 + 8% of your max health for 8 s.",
@@ -7379,7 +7498,8 @@
    ],
    "signatureOf": [
     "ether_golem_support"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "golem_living_granite": {
    "id": "golem_living_granite",
@@ -7421,7 +7541,8 @@
    ],
    "signatureOf": [
     "ether_golem_support"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "golem_fel_fist": {
    "id": "golem_fel_fist",
@@ -7463,7 +7584,8 @@
    ],
    "signatureOf": [
     "ether_golem_bruiser"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "golem_ether_furnace": {
    "id": "golem_ether_furnace",
@@ -7505,7 +7627,8 @@
    ],
    "signatureOf": [
     "ether_golem_bruiser"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "chieftain_axe_hook": {
    "id": "chieftain_axe_hook",
@@ -7547,7 +7670,8 @@
    ],
    "signatureOf": [
     "orc_chieftain"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "chieftain_banner": {
    "id": "chieftain_banner",
@@ -7589,7 +7713,8 @@
    ],
    "signatureOf": [
     "orc_chieftain"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "chieftain_courage": {
    "id": "chieftain_courage",
@@ -7631,7 +7756,8 @@
    ],
    "signatureOf": [
     "orc_chieftain"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "chieftain_earthshout": {
    "id": "chieftain_earthshout",
@@ -7683,6 +7809,7 @@
    "signatureOf": [
     "orc_chieftain"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Warband",
     "text": "Allies within 9 m gain +8 primary stat and +15% attack speed for 8 s.",
@@ -7741,7 +7868,8 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "behemoth_tusk_line": {
    "id": "behemoth_tusk_line",
@@ -7783,7 +7911,8 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "behemoth_totem_bulwark": {
    "id": "behemoth_totem_bulwark",
@@ -7825,7 +7954,8 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "behemoth_ancestral_weight": {
    "id": "behemoth_ancestral_weight",
@@ -7867,7 +7997,8 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "behemoth_stampede": {
    "id": "behemoth_stampede",
@@ -7919,6 +8050,7 @@
    "signatureOf": [
     "totemic_behemoth"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Trampled",
     "text": "Enemies within 6 m are slowed for 3 s and armor-broken for 5 s.",
@@ -7978,7 +8110,8 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "drakish_scale_guard": {
    "id": "drakish_scale_guard",
@@ -8020,7 +8153,8 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "drakish_wing_rebuke": {
    "id": "drakish_wing_rebuke",
@@ -8062,7 +8196,8 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "drakish_ember_memory": {
    "id": "drakish_ember_memory",
@@ -8104,7 +8239,8 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "drakish_ancient_pact": {
    "id": "drakish_ancient_pact",
@@ -8147,6 +8283,7 @@
    "signatureOf": [
     "drakish_footman"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Scaled Oath",
     "text": "Allies within 8 m gain +40 ward and +20 armor for 8 s.",
@@ -8205,7 +8342,8 @@
    ],
    "signatureOf": [
     "troll_berserker_melee"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "troll_blood_leap": {
    "id": "troll_blood_leap",
@@ -8258,7 +8396,8 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "castWhileMoving": true
   },
   "troll_hunger": {
    "id": "troll_hunger",
@@ -8302,7 +8441,8 @@
    "signatureOf": [
     "troll_berserker_melee",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "troll_red_moon": {
    "id": "troll_red_moon",
@@ -8347,6 +8487,7 @@
     "troll_berserker_melee",
     "troll_berserker_ranged"
    ],
+   "castWhileMoving": true,
    "ultimateUpgrade": {
     "name": "Blood Moon",
     "text": "You gain +20% lifesteal and +20% attack speed for 8 s.",
@@ -8405,7 +8546,8 @@
    ],
    "signatureOf": [
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "troll_returning_axes": {
    "id": "troll_returning_axes",
@@ -8447,7 +8589,8 @@
    ],
    "signatureOf": [
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "dryad_root_snare": {
    "id": "dryad_root_snare",
@@ -8498,7 +8641,8 @@
    ],
    "signatureOf": [
     "dryad"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "dryad_seed_mend": {
    "id": "dryad_seed_mend",
@@ -8540,7 +8684,8 @@
    ],
    "signatureOf": [
     "dryad"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "dryad_thorn_line": {
    "id": "dryad_thorn_line",
@@ -8582,7 +8727,8 @@
    ],
    "signatureOf": [
     "dryad"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "dryad_green_covenant": {
    "id": "dryad_green_covenant",
@@ -8624,7 +8770,8 @@
    ],
    "signatureOf": [
     "dryad"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "dryad_grove_renewal": {
    "id": "dryad_grove_renewal",
@@ -8667,6 +8814,7 @@
    "signatureOf": [
     "dryad"
    ],
+   "castWhileMoving": false,
    "ultimateUpgrade": {
     "name": "Heartwood",
     "text": "Allies within 8 m lose their slows and gain a shield absorbing 150 + 2x primary stat for 8 s.",
@@ -8727,7 +8875,8 @@
    ],
    "signatureOf": [
     "whisp"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "whisp_spirit_tether": {
    "id": "whisp_spirit_tether",
@@ -8769,7 +8918,8 @@
    ],
    "signatureOf": [
     "whisp"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "whisp_fey_trail": {
    "id": "whisp_fey_trail",
@@ -8822,7 +8972,8 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "castWhileMoving": false
   },
   "whisp_lantern_soul": {
    "id": "whisp_lantern_soul",
@@ -8864,7 +9015,8 @@
    ],
    "signatureOf": [
     "whisp"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "whisp_constellation": {
    "id": "whisp_constellation",
@@ -8907,6 +9059,7 @@
    "signatureOf": [
     "whisp"
    ],
+   "castWhileMoving": false,
    "ultimateUpgrade": {
     "name": "Starlit Well",
     "text": "Allies within 9 m heal 150 and restore 15% of their max mana.",
@@ -8966,7 +9119,8 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "centaur_trailblaze": {
    "id": "centaur_trailblaze",
@@ -9019,7 +9173,8 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "castWhileMoving": true
   },
   "centaur_herd_call": {
    "id": "centaur_herd_call",
@@ -9061,7 +9216,8 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "centaur_steady_gait": {
    "id": "centaur_steady_gait",
@@ -9103,7 +9259,8 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "centaur_spring_march": {
    "id": "centaur_spring_march",
@@ -9146,6 +9303,7 @@
    "signatureOf": [
     "evergrove_centaur"
    ],
+   "castWhileMoving": false,
    "ultimateUpgrade": {
     "name": "Spring Stride",
     "text": "Allies within 9 m lose their slows and gain +20% move speed for 8 s.",
@@ -9216,7 +9374,8 @@
    ],
    "signatureOf": [
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "keeper_lantern_ward": {
    "id": "keeper_lantern_ward",
@@ -9258,7 +9417,8 @@
    ],
    "signatureOf": [
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "keeper_beacon": {
    "id": "keeper_beacon",
@@ -9300,7 +9460,8 @@
    ],
    "signatureOf": [
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "keeper_last_light": {
    "id": "keeper_last_light",
@@ -9342,7 +9503,8 @@
    ],
    "signatureOf": [
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "keeper_sunrise": {
    "id": "keeper_sunrise",
@@ -9385,6 +9547,7 @@
    "signatureOf": [
     "keeper_of_light"
    ],
+   "castWhileMoving": false,
    "ultimateUpgrade": {
     "name": "High Noon",
     "text": "Allies within 9 m gain +8 primary stat and +20 ward for 8 s.",

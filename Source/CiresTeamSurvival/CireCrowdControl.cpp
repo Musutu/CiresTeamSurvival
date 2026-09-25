@@ -1,4 +1,5 @@
 #include "CireCrowdControl.h"
+#include "CireMobility.h" // feat/camera-movement
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireAbilityDB.h"
@@ -163,6 +164,8 @@ bool CireCrowdControl::GateCast(ACireHero* H,int32 Slot,const FString& Id)
     {H->Notice=FString::Printf(TEXT("%s spells are locked out."),*D->School);return true;}
     if(IsCasting(H)){H->Notice=TEXT("Already casting.");return true;}
     if(!D||D->CastTime<=0)return false;
+    // feat/camera-movement: WoW rule, data-driven per ability (Abilities.json castWhileMoving).
+    if(CireMovement::BlocksCast(*H,Id)){H->Notice=TEXT("Can't cast while moving.");H->ForceNetUpdate();return true;}
     if(!CireSkillShop::CanPayCast(H,Id,D->Base.ManaCost,D->Base.EnergyCost)){H->Notice=CireSkillShop::CostFailText();return true;} // items-v2: scaled cost
     if(CireRollSkills::ConsumeInstantCast(H))return false; // champion-draft: Quickened Mind (instant after a roll)
     FPendingCast P;P.Slot=Slot;P.Id=Id;P.Target=H->Target;P.bAim=H->bHasCastAim;P.Aim=H->CastAimPoint;
@@ -191,6 +194,7 @@ void CireCrowdControl::TickHero(ACireHero* H,float Delta)
     {
         auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();
         if(H->bDead||!Mode||!Mode->IsCombatPhase()){CancelCast(H,H->bDead?TEXT(""):TEXT("Phase changed"));}
+        else if(CireMovement::BlocksCast(*H,H->CastSkill.ToString())){CancelCast(H,TEXT("Moved"));} // feat/camera-movement: moving cancels (WoW)
         else if(T>=H->CastEndTime)
         {
             const FPendingCast P=State().Casts.FindRef(H);State().Casts.Remove(H);

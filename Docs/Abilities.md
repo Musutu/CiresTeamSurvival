@@ -342,8 +342,8 @@ Twenty skills built around the dodge roll (`UCireMobility::StartRoll`). Data row
 `champions`). Each row carries `section` (Skill Shop periodic-table section), `categories` (player-facing
 groups, primary first: Offensive, Defensive, Crowd Control, Constructs, Passives), `effectTags` (card tags,
 `Roll` first), `scaling` (`{"stat": "primary", "ratio": r}`) and an empty `level15` object reserved for
-the level-15 bonus / team-aura pass. Icons: `/Game/UI/Abilities/T_<id>` (painted; the procedural placeholders from
-`Tools/BuildAbilityIcons.py` `ROLL_SKILLS` stay as the fallback; sources `Art/Icons/ChatGPT/abilities_roll*.png`).
+the level-15 bonus / team-aura pass. Icons: `/Game/UI/Abilities/T_<id>` (procedural placeholders from
+`Tools/BuildAbilityIcons.py` `ROLL_SKILLS`: a tumbling arc around a glyph; to be painted by the 2D art pass).
 
 **Primary-stat rule.** Every damage, heal and shield amount is `base effect + ratio x primary stat`
 (STR, AGI or INT, whichever is the owner's primary); damage is also multiplied by the team power scalar.

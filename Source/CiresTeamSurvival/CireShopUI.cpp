@@ -149,7 +149,7 @@ void ShowError(ACireHUD& HUD, FName Id, int32 Slot, bool bBelt, const FString& R
     State.Shake.Id = Id; State.Shake.Slot = Slot; State.Shake.bBelt = bBelt; State.Shake.Start = Now(); State.Shake.bError = true;
     State.ShakeReason = Reason;
     AddToast(TEXT("Cannot do that"), Reason, Id, Red, 3.2f);
-    Play(HUD, TEXT("S_ShopError"), .8f);
+    Play(HUD, Reason.Contains(TEXT("gold")) ? TEXT("S_ShopErrorGold") : TEXT("S_ShopError"), .8f); // audio: not-enough-gold has its own cue
 }
 
 float ShakeOffset(FName Id, int32 Slot = -2, bool bBelt = false)
@@ -222,7 +222,7 @@ void ProcessFeedback(ACireHUD& HUD, ACireHero* Hero)
             Fly.ToSkillSlot = FMath::Clamp(F.Slot, 0, 7);
             State.Flies.Add(Fly);
             AddToast(bLevel ? TEXT("Skill levelled up") : TEXT("Skill learned"), F.Message, F.ItemId, bLevel ? Teal : Purple, 3.5f);
-            Play(HUD, TEXT("S_ShopBuy"));
+            Play(HUD, TEXT("S_SkillLearn")); // audio: Skill Shop buy (AudioCues.json shopLegacy -> ui_skill_buy)
             if (bLevel) Play(HUD, TEXT("S_LootPickup"), .5f);
             break;
         }
@@ -382,7 +382,7 @@ void ProcessLoot(ACireHUD& HUD, ACireHero* Hero)
             FFloater Floater; Floater.Text = FString::Printf(TEXT("+%dg"), Report.Gold); Floater.Pos = State.GoldPos; Floater.Start = Now() + .3; Floater.Color = BrightGold;
             State.Floaters.Add(Floater);
         }
-        const TCHAR* Sounds[] = {TEXT("S_LootPickup"), TEXT("S_LootPickup"), TEXT("S_LootPickup"), TEXT("S_TeleportArrive")};
+        const TCHAR* Sounds[] = {TEXT("S_LootCommon"), TEXT("S_LootMagic"), TEXT("S_LootRare"), TEXT("S_LootEpic")}; // audio: loot window by rarity
         Play(HUD, Sounds[FMath::Clamp(Report.Rarity, 0, 3)], .65f + .15f * Report.Rarity);
         if (Report.Rarity >= 2) Play(HUD, TEXT("S_ShopBuy"), .5f);
     }

@@ -28,6 +28,11 @@ namespace CireMovement
     float BodyScaleFor(const ACireHero& Hero);
     /** Applies acceleration/braking/rotation/scale tuning to a hero. Safe on server and clients. */
     void ApplyToHero(ACireHero& Hero);
+    /** WoW cast rule: the hero is moving under its own input (walk/strafe/backpedal) or airborne.
+     *  Knockbacks and residual braking without input do not count. Bots are never gated. */
+    bool IsMovingForCast(const ACireHero& Hero);
+    /** True when a cast-time ability may not start/continue for this hero right now. */
+    bool BlocksCast(const ACireHero& Hero, const FString& AbilityId);
 }
 UCLASS()
 class CIRESTEAMSURVIVAL_API UCireMobility : public UActorComponent
