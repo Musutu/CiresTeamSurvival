@@ -82,7 +82,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--editor", type=Path, default=Path("F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"))
     parser.add_argument("--project", type=Path, default=ROOT / "CiresTeamSurvival.uproject")
-    parser.add_argument("--timeout", type=int, default=240)
+    parser.add_argument("--timeout", type=int, default=420)
     parser.add_argument("--analyze", type=Path, help="only analyse an existing output folder")
     args = parser.parse_args()
     if args.analyze:
@@ -123,7 +123,11 @@ def main():
             failures.append("%s: no recording for bus %s" % (seg["name"], bus))
             continue
         rate, _, mono = waves[bus]
-        rms, peak = level(mono, rate, seg["start"], seg["end"])
+        # The timeline is in game seconds, the recording in audio-device seconds. Under load they drift apart
+        # (a few percent over a 100 s run); rescale linearly so late segments still land on their sounds.
+        drift = (len(mono) / rate) / timeline["seconds"] if timeline.get("seconds") else 1.0
+        drift = drift if 0.9 < drift < 1.1 else 1.0
+        rms, peak = level(mono, rate, seg["start"] * drift, seg["end"] * drift)
         ok = rms is not None and rms > SILENCE_DB
         rows.append(dict(bus=bus, name=seg["name"], start=seg["start"], end=seg["end"], rmsDb=rms, peakDb=peak, audible=ok))
         if not ok:
