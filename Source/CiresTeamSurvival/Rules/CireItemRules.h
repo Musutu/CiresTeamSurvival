@@ -304,6 +304,51 @@ bool InterruptTeleport(TeleportState& state);
 bool CompleteTeleport(TeleportState& state, const TeleportRules& rules, double now);
 double TeleportCooldownRemaining(const TeleportState& state, double now);
 
+// ---------------------------------------------------------------- gold economy (Eric's ruling)
+// A normal mob is worth Base gold, +Step every StepEveryWaves waves (wave 6 = 3 with 1/1/3).
+// Armored x2, bosses x10, challenge-pack units x10, Pack Leaders x100 (another x10).
+enum class BountyKind : std::uint8_t { Mob, Armored, Boss, PackUnit, PackLeader };
+struct Economy
+{
+    int MobBase = 1;
+    int MobStep = 1;
+    int StepEveryWaves = 3;
+    double ArmoredMultiplier = 2;
+    double BossMultiplier = 10;
+    double PackUnitMultiplier = 10;
+    double PackLeaderMultiplier = 100;
+};
+int MobValue(const Economy& economy, int wave);                       // wave is the global wave number (>= 1)
+int KillGold(const Economy& economy, BountyKind kind, int wave, double rewardMultiplier = 1.0);
+
+// ---------------------------------------------------------------- skill shop
+enum class ShopSkillKind : std::uint8_t { Active, Passive, Ultimate };
+struct SkillShopRules
+{
+    // Prices are in mob values, so they follow the gold players actually have (MobValue(wave)).
+    double ActivePrice = 15, PassivePrice = 30, UltimatePrice = 60;
+    double ActiveOwnedGrowth = 0.25;   // each owned active makes the next one 25% dearer
+    double LevelUpBase = 8, LevelUpGrowth = 1.35;
+    // Per-level effect scaling (no level cap): effect +x, resource cost +y, cooldown x (1-z) per level.
+    double EffectPerLevel = 0.08, CostPerLevel = 0.05, CooldownPerLevel = 0.04, MinCooldownFactor = 0.4;
+    // Slot gate: active slots open over the match, passive/ultimate from a wave.
+    int ActiveSlotsStart = 2, ActiveSlotEveryWaves = 3, MaxActive = 6;
+    int PassiveFromWave = 5, UltimateFromWave = 10;
+    int MaxPassive = 1, MaxUltimate = 1;
+};
+int SkillBuyPrice(const SkillShopRules& rules, const Economy& economy, ShopSkillKind kind, int ownedActives, int wave);
+int SkillLevelPrice(const SkillShopRules& rules, const Economy& economy, int currentLevel, int wave);
+// Slots of each kind available at this wave (the champion's cap still applies).
+int SlotsAvailable(const SkillShopRules& rules, ShopSkillKind kind, int wave);
+// Next wave that opens another slot of this kind (0 = none left).
+int NextSlotWave(const SkillShopRules& rules, ShopSkillKind kind, int wave);
+enum class SkillShopResult : std::uint8_t { Ok, NotOwned, AlreadyOwned, SlotLocked, NotEnoughGold, NotAllowed };
+SkillShopResult CheckSkillBuy(const SkillShopRules& rules, const Economy& economy, ShopSkillKind kind, int ownedOfKind,
+                              int ownedActives, bool alreadyOwned, bool allowedForChampion, int wave, int gold, int& price);
+double SkillEffectScale(const SkillShopRules& rules, int level);    // 1.0 at level 1
+double SkillCostScale(const SkillShopRules& rules, int level);
+double SkillCooldownScale(const SkillShopRules& rules, int level);
+
 // ---------------------------------------------------------------- NPC pause
 // Timestamps that were still in the future when the pause began are pushed back
 // by the pause length, so cooldowns/buffs/casts resume exactly where they froze.

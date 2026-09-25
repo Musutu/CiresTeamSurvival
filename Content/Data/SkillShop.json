@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "_comment": "progression-shop: the Skill Shop (Eric's playtest-2 ruling). Replaces level-up skill offers; the free opening role pick at the start stays. Prices are in mob values (LootTables.json economy), so they follow the gold players have. Edit live in F8 > Economy. See Docs/Progression.md.",
+  "access": {
+    "breather": true,
+    "prep": true,
+    "recovery": true,
+    "autoOpenOnWaveClear": true
+  },
+  "prices": {
+    "active": 15,
+    "passive": 30,
+    "ultimate": 60,
+    "activeOwnedGrowth": 0.25,
+    "levelUpBase": 8,
+    "levelUpGrowth": 1.35
+  },
+  "scaling": {
+    "_comment": "Per skill level (no cap): damage/healing +effectPerLevel, mana/energy cost +costPerLevel, cooldown x (1 - cooldownPerLevel) down to minCooldownFactor.",
+    "effectPerLevel": 0.08,
+    "costPerLevel": 0.05,
+    "cooldownPerLevel": 0.04,
+    "minCooldownFactor": 0.4
+  },
+  "slots": {
+    "_comment": "The 6 active + 1 passive + 1 ultimate structure stays; slots open over the match.",
+    "activeStart": 2,
+    "activeEveryWaves": 3,
+    "maxActive": 6,
+    "passiveFromWave": 5,
+    "ultimateFromWave": 10
+  },
+  "bots": {
+    "_comment": "Bots spend on skills first while a slot is open, then level their lowest-ranked skill, then items.",
+    "skillBudgetShare": 0.6
+  }
+}

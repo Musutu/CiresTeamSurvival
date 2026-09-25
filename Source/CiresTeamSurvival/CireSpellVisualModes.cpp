@@ -10,6 +10,7 @@
 #include "CireNPCArchetypes.h"
 #include "CireNPCState.h"
 #include "CireSkillshot.h"
+#include "CireAbilityDB.h"
 #include "Components/AudioComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Engine/World.h"
@@ -94,6 +95,24 @@ void ACireSpellVisual::ClassifyCue()
     if(Arch||bMonster){Family=static_cast<int32>(Shape.School);}
     const FVector Aim=(End-Start).GetSafeNormal2D();
     auto Anchor=[&]{SetActorLocation(Start);SetActorRotation(Aim.IsNearlyZero()?FRotator::ZeroRotator:Aim.Rotation());};
+    if(Cue==ECireSpellCue::Impact&&NormId(Skill)==TEXT("void_rift"))
+    {
+        // CireCrowdControl::VoidBurst: the rift opens exactly here. The cue carries the outer radius (scale x 250);
+        // the inner radius comes from the ability that owns that outer radius in the Ability Database.
+        Mode=EMode::VoidZone;const float Outer=FMath::Max(60.f,Size*250.f);
+        Shape=FCireHitShape();Shape.Id=Skill;Shape.School=ECireSchool::Void;Shape.VoidOuter=Outer;Shape.VoidInner=Outer*.43f;Shape.VoidSeconds=1.6f;
+        float Best=1e9f;
+        for(const FCireAbilityDef& D:CireAbilityDB::All())
+            if(D.Void.bValid&&FMath::Abs(D.Void.OuterRadius-Outer)<Best)
+            {Best=FMath::Abs(D.Void.OuterRadius-Outer);Shape.VoidInner=D.Void.InnerRadius*Outer/FMath::Max(1.f,D.Void.OuterRadius);
+             Shape.VoidSeconds=FMath::Max(D.Void.InnerDuration,D.Void.OuterDuration);Shape.bVoidHeal=D.Void.SelfHealMaxHealthFraction>0;}
+        Duration=FMath::Clamp(Shape.VoidSeconds,.8f,3.f)+.3f;Size=1.f;
+        // The rift's caster is the champion that just landed here (its victims stand close by too).
+        ACireHero* Caster=nullptr;double Best2=FMath::Square(320.0);
+        for(TActorIterator<ACireHero> It(GetWorld());It;++It){const double D=FVector::DistSquared2D(It->GetActorLocation(),Start);if(D<Best2&&!It->bDead){Best2=D;Caster=*It;}}
+        bHostile=Caster?HostileToLocal(GetWorld(),Caster):false;
+        SetActorRotation(FRotator::ZeroRotator);return;
+    }
     if(Cue==ECireSpellCue::Impact||Cue==ECireSpellCue::Critical)
     {
         Mode=Cue==ECireSpellCue::Impact?EMode::Impact:EMode::Legacy;bChainHop=false;
@@ -110,6 +129,27 @@ void ACireSpellVisual::ClassifyCue()
     }
     if(Cue!=ECireSpellCue::Cast)return;
     const bool bSelfCircle=Shape.Kind==ECireHitShape::Circle&&Shape.bFromCaster;
+    if(const auto* Hero=Cast<ACireHero>(Source);Hero&&!Hero->CastSkill.IsNone()&&NormId(Hero->CastSkill)==NormId(Skill)&&FMath::IsNearlyEqual(Size,.7f,.05f))
+    {
+        // Timed cast start (CireCrowdControl::GateCast): the telegraph reads during the whole cast bar.
+        Mode=EMode::Channel;Duration=FMath::Max(.3f,Hero->CastEndTime-Hero->CastStartTime)+.25f;Size=1.f;Anchor();
+        if(!(Shape.Kind==ECireHitShape::Circle&&Shape.bFromCaster))
+            if(AActor* Target=Hero->Target;IsValid(Target)&&Shape.Kind==ECireHitShape::Unit)
+            {
+                const auto* Ally=Cast<ACireHero>(Target);
+                if(!Shape.bHeal||(Ally&&Ally->TeamId==Hero->TeamId))SetActorLocation(Target->GetActorLocation());
+            }
+        return;
+    }
+    // Void zones on a cast: ground-aimed portals and monster teleports. Targeted champion rifts (Shadow Step)
+    // arrive as the authoritative "void_rift" impact at their true destination instead.
+    if(Shape.HasVoidZone()&&!(Cast<ACireHero>(Source)&&Shape.Kind==ECireHitShape::Unit))
+    {
+        // Teleport / portal: the void zone (outer slow ring, inner stun circle) appears where the portal opens.
+        Mode=EMode::VoidZone;Duration=FMath::Max(Shape.VoidSeconds,.6f)+.3f;
+        SetActorLocation(Shape.bVoidAtOrigin?Start:End);SetActorRotation(FRotator::ZeroRotator);
+        return;
+    }
     if(Shape.bProjectile&&bMonster)
     {
         // Enemy skillshot: amber lane with the projectile's true corridor for the whole cast bar.
@@ -156,9 +196,15 @@ bool ACireSpellVisual::TickModes(float DeltaSeconds)
         if(Area->IsActive()&&AreaActiveAge<0)AreaActiveAge=Age;
         // A monster's zero-damage area is a buff radius (rally), not a threat.
         bHarmlessArea=Cast<ACireMonster>(Area->GetOwner())&&(Area->AreaSpec.bPersistent?Area->AreaSpec.DamagePerSecond<=0:Area->AreaSpec.BurstDamage<=0);
-        if(Shape.School==ECireSchool::Steel&&!Cast<ACireMonster>(Area->GetOwner()))Shape.School=CireAbilityShapes::SchoolFor(FName(*Area->AreaSpec.AbilityName));
-        if(const auto* Arch=ArchetypeOf(Area->GetOwner()))
-            for(const auto& Ab:Arch->Abilities)if(Ab.Name.Left(80)==Area->AreaSpec.AbilityName){Shape.School=CireAbilityShapes::DescribeMonster(Ab,Arch).School;break;}
+        if(!bShapeResolved)
+        {
+            // The area carries its display name; resolve the ability (and its rune theme) once.
+            bShapeResolved=true;bool bFound=false;
+            if(const auto* Arch=ArchetypeOf(Area->GetOwner()))
+                for(const auto& Ab:Arch->Abilities)if(Ab.Name.Left(80)==Area->AreaSpec.AbilityName){Shape=CireAbilityShapes::DescribeMonster(Ab,Arch);bFound=true;break;}
+            if(!bFound)Shape=CireAbilityShapes::Describe(FName(*NormId(FName(*Area->AreaSpec.AbilityName))));
+            if(Shape.Kind==ECireHitShape::None&&Area->AreaSpec.bPoison)Shape.School=ECireSchool::Poison;
+        }
         return false;
     }
     if(Mode==EMode::Projectile)
@@ -181,7 +227,9 @@ bool ACireSpellVisual::TickModes(float DeltaSeconds)
                 LaneLength=FMath::Min(Shot->ShotSpec.MaxRange,Shot->ShotSpec.Speed*Shot->ShotSpec.LifetimeSeconds);LaneWidth=Shot->ShotSpec.Radius*2;
                 LaneOrigin=Actor->GetActorLocation();LaneDirection=Actor->GetActorForwardVector().GetSafeNormal2D();
                 bHostile=Cast<ACireMonster>(Shot->GetOwner())!=nullptr||HostileToLocal(GetWorld(),Shot->GetOwner());
-                Shape.School=CireAbilityShapes::SchoolFor(Skill);
+                // Rune theme from the ability (display name), else the skillshot's visual style.
+                Shape=CireAbilityShapes::Describe(FName(*NormId(FName(*Shot->AbilityName))));
+                if(Shape.Kind==ECireHitShape::None||Shape.School==ECireSchool::Steel)Shape.School=CireAbilityShapes::SchoolFor(Skill);
                 FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(CireLaneGround),false,Actor);Q.AddIgnoredActor(Shot->GetOwner());
                 GroundZ=GetWorld()->LineTraceSingleByObjectType(Hit,LaneOrigin+FVector(0,0,40),LaneOrigin-FVector(0,0,700),FCollisionObjectQueryParams(ECC_WorldStatic),Q)
                     ?static_cast<float>(Hit.ImpactPoint.Z-LaneOrigin.Z):-88.f;
@@ -191,6 +239,13 @@ bool ACireSpellVisual::TickModes(float DeltaSeconds)
             if(Shot->bReleased&&ReleasedAge<0)ReleasedAge=Age;
         }
         else if(ReleasedAge<0)ReleasedAge=Age;
+        return false;
+    }
+    if(Mode==EMode::Channel)
+    {
+        const auto* Hero=Cast<ACireHero>(CastSource.Get());
+        const bool bCasting=Hero&&!Hero->CastSkill.IsNone()&&NormId(Hero->CastSkill)==NormId(Skill);
+        if(!bCasting&&Age>.15f&&FadeOutAt<0){FadeOutAt=Age;Duration=FMath::Min(Duration,Age+.25f);}
         return false;
     }
     if(Mode==EMode::Lane||Mode==EMode::Gather)
@@ -209,8 +264,33 @@ bool ACireSpellVisual::RebuildModes(FCireSpellMesh& M,FCireSoftMesh& Soft,float 
     FLinearColor Main=Tint;Main.A=Fade;
     FLinearColor Glow=Tint*.55f;Glow.A=Fade*.22f;
     FLinearColor Core=FMath::Lerp(Tint,FLinearColor(2.3f,2.3f,2.1f,1),.45f);Core.A=Fade*.9f;
+    if(Shape.bHeal&&(Mode==EMode::SelfShock||Mode==EMode::TargetMark||Mode==EMode::Gather||Mode==EMode::Channel))
+    {
+        // Healing is unmistakable: soft green/gold "+" motes shimmer upward around the healed unit.
+        const FLinearColor Green=CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal),Gold(1.55f,1.15f,.25f,1);
+        for(int32 J=0;J<10;++J)
+        {
+            const float U=Fract(Age*.8f+J*.1f);const float A=J*2.39996f+Age*.6f;
+            const FVector P=Polar(38.f+14.f*FMath::Sin(J*1.7f),A,-70.f+U*150.f);const float S=3.5f+2.f*(1-U);
+            const FLinearColor C=WithAlpha(J%2?Gold:Green,FMath::Sin(U*PI)*.9f*Fade);
+            M.Tube(P-FVector(0,S,0),P+FVector(0,S,0),.9f,C,3);M.Tube(P-FVector(0,0,S),P+FVector(0,0,S),.9f,C,3);
+            if(J%3==0)Soft.Glow(P,9.f,WithAlpha(Green*.6f,.25f*C.A));
+        }
+    }
     switch(Mode)
     {
+    case EMode::VoidZone:
+    {
+        // Void motes drifting up from the stun circle.
+        const FLinearColor V=CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Void);
+        for(int32 J=0;J<12;++J)
+        {
+            const float U=Fract(Age*.5f+J*.083f);const FVector P=Polar(Shape.VoidInner*(.2f+.6f*Fract(J*.37f)),J*2.39996f+Age,GroundZ+8.f+U*90.f);
+            M.Star(P,2.5f+2.f*(1-U),WithAlpha(V,FMath::Sin(U*PI)*.9f*Fade),J);
+        }
+        Soft.Glow(FVector(0,0,GroundZ+30.f),FMath::Min(Shape.VoidInner,140.f),WithAlpha(V*.6f,.22f*Fade));
+        return true;
+    }
     case EMode::AreaFollow:
     {
         if(bHarmlessArea){DrawAreaParticles(M,Soft,0);return true;} // harmless buff radius: ring + border sparks
@@ -431,6 +511,25 @@ void ACireSpellVisual::DrawImpact(FCireSpellMesh& M,FCireSoftMesh& Soft,float T,
     Away=GetActorTransform().InverseTransformVectorNoScale(Away);
     // Flash: white-hot bloom that collapses in the first 0.15 s.
     const float Flash=FMath::Clamp(1-Life/.16f,0.f,1.f);
+    if(NormId(Skill)==TEXT("npc_interrupted"))
+    {
+        // Interrupt: the caster's rune circle shatters. Bright flash, ring shards thrown outward and falling.
+        const FLinearColor Ice(1.6f,1.9f,2.6f,1),White(2.6f,2.6f,2.6f,1);
+        Soft.Glow(FVector(0,0,70),60+90*Flash,WithAlpha(Ice*.8f,(.25f+.6f*Flash)*Fade));
+        if(Flash>0)M.Star(FVector(0,0,70),40*Flash+10,WithAlpha(White,Flash),Life*3);
+        for(int32 I=0;I<12;++I)
+        {
+            const float A=I*PI/6+.13f;const float Tm=FMath::Min(Life,.55f);
+            const FVector V=Polar(260.f+60.f*Fract(I*.37f),A,120.f+80.f*Fract(I*.61f));
+            const FVector P=FVector(0,0,70)+Polar(26,A)+V*Tm+FVector(0,0,.5f*Gravity*Tm*Tm);
+            const FVector Tangent=Polar(1,A+PI*.5f);
+            // Each shard is a piece of the broken cast circle: a short curved plate tumbling.
+            const float Spin=Life*9.f+I;
+            M.Quad(P-Tangent*9.f,P+Tangent*9.f,P+Tangent*7.f+FVector(0,0,4.f*FMath::Sin(Spin)),P-Tangent*7.f+FVector(0,0,4.f*FMath::Cos(Spin)),WithAlpha(I%2?Ice:White,Fade*(1-T*.6f)));
+        }
+        M.Ring(30+60*E,2.5f*(1-T)+.5f,70,WithAlpha(White,Fade*(1-T)),Life,PI*1.4f,24);
+        return;
+    }
     if(bChainHop)
     {
         // Hop arc from the previous chain victim, bright for the first 0.25 s.
@@ -524,7 +623,7 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
             float Progress=0;
             if(auto* Area=FollowedArea.Get())
                 Progress=Spec.WarningSeconds>0?FMath::Clamp(float(ServerNow(GetWorld())-Area->StartServerTime)/Spec.WarningSeconds,0.f,1.f):1.f;
-            const auto Style=CireAbilityVFX::StyleFor(bHostile?CireAbilityVFX::ETone::Hostile:CireAbilityVFX::ETone::Friendly,Spec.Color*1.6f);
+            const auto Style=CireAbilityVFX::ThemedStyle(bHostile?CireAbilityVFX::ETone::Hostile:CireAbilityVFX::ETone::Friendly,Shape);
             R=CireAbilityVFX::PaintTelegraph(G,Spec,Style,Progress,Age,Alpha,CireAbilityVFX::PaintArrow|CireAbilityVFX::PaintCenter|CireAbilityVFX::PaintProgress|CireAbilityVFX::PaintPulse);
         }
         else
@@ -534,7 +633,8 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
             FLinearColor C=Spec.Color*1.7f;
             if(Shape.School!=ECireSchool::Steel)C=FMath::Lerp(C,CireAbilityShapes::SchoolColor(Shape.School)*.9f,.55f);
             C.A=1;
-            R=CireAbilityVFX::PaintActive(G,Spec,C,Age,Alpha*(bAreaPersistent?1.f:FMath::Clamp(1-(Age-AreaActiveAge)/.5f,0.f,1.f)*1.2f),Burst,bAreaPersistent);
+            const auto Theme=CireAbilityVFX::ThemeFor(Shape);
+            R=CireAbilityVFX::PaintActive(G,Spec,C,Age,Alpha*(bAreaPersistent?1.f:FMath::Clamp(1-(Age-AreaActiveAge)/.5f,0.f,1.f)*1.2f),Burst,bAreaPersistent,&Theme);
         }
         LastFill=R.FillBounds;LastArrowTip=R.ArrowTip;LastChevrons=R.Chevrons;
         break;
@@ -544,7 +644,7 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
         FCireAreaSpec Lane;Lane.Shape=ECireAreaShape::Line;Lane.Length=FMath::Max(1.f,LaneLength);Lane.Width=FMath::Max(1.f,LaneWidth);
         const float Warn=FMath::Max(Duration-.18f,.1f);
         const float Alpha=FMath::Clamp(Age/.08f,0.f,1.f)*(Age>Warn?FMath::Clamp(1-(Age-Warn)/.18f,0.f,1.f):1.f);
-        const auto Style=CireAbilityVFX::StyleFor(bHostile?CireAbilityVFX::ETone::Hostile:CireAbilityVFX::ETone::Friendly,Tint);
+        const auto Style=CireAbilityVFX::ThemedStyle(bHostile?CireAbilityVFX::ETone::Hostile:CireAbilityVFX::ETone::Friendly,Shape);
         const auto R=CireAbilityVFX::PaintTelegraph(G,Lane,Style,FMath::Clamp(Age/Warn,0.f,1.f),Age,Alpha,CireAbilityVFX::PaintArrow|CireAbilityVFX::PaintProgress|CireAbilityVFX::PaintPulse);
         LastFill=R.FillBounds;LastArrowTip=R.ArrowTip;LastChevrons=R.Chevrons;
         break;
@@ -557,7 +657,7 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
             if(Alpha>0)
             {
                 FCireAreaSpec Lane;Lane.Shape=ECireAreaShape::Line;Lane.Length=LaneLength;Lane.Width=LaneWidth;
-                const auto Style=CireAbilityVFX::StyleFor(bHostile?CireAbilityVFX::ETone::Hostile:CireAbilityVFX::ETone::Friendly,Tint);
+                const auto Style=CireAbilityVFX::ThemedStyle(bHostile?CireAbilityVFX::ETone::Hostile:CireAbilityVFX::ETone::Friendly,Shape);
                 const auto* Shot=Cast<ACireSkillshot>(FollowedActor.Get());
                 const float WarnSeconds=Shot?FMath::Max(Shot->ShotSpec.WarningSeconds,.05f):.35f;
                 const int32 From=G.V.Num();
@@ -578,10 +678,55 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
         break;
     }
     case EMode::SelfShock:
-        CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,FMath::Max(40.f,Shape.Radius),Tint,FMath::Clamp(Age/.55f,0.f,1.f),Fade);
+    {
+        const auto Theme=CireAbilityVFX::ThemeFor(Shape);
+        CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,FMath::Max(40.f,Shape.Radius),Shape.bHeal?CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal):Tint,
+            FMath::Clamp(Age/(Shape.bHeal||Shape.bBuff?.8f:.55f),0.f,1.f),Fade,&Theme);
         break;
+    }
+    case EMode::Channel:
+    {
+        // Cast-time telegraph: the true area (self circles) or a rune ring on the target, filling until release.
+        const auto* Hero=Cast<ACireHero>(CastSource.Get());
+        float Progress=FMath::Clamp(Age/FMath::Max(Duration-.25f,.1f),0.f,1.f);
+        if(Hero&&Hero->CastEndTime>Hero->CastStartTime)Progress=FMath::Clamp(float((ServerNow(GetWorld())-Hero->CastStartTime)/(Hero->CastEndTime-Hero->CastStartTime)),0.f,1.f);
+        const float Alpha=FMath::Clamp(Age/.1f,0.f,1.f)*(FadeOutAt>=0?FMath::Clamp(1-(Age-FadeOutAt)/.25f,0.f,1.f):1.f);
+        if(Shape.Kind==ECireHitShape::Circle&&Shape.Radius>0)
+        {
+            FCireAreaSpec Spec=Shape.AsArea();
+            const auto Style=CireAbilityVFX::ThemedStyle(bHostile?CireAbilityVFX::ETone::Hostile:CireAbilityVFX::ETone::Friendly,Shape);
+            const auto R=CireAbilityVFX::PaintTelegraph(G,Spec,Style,Progress,Age,Alpha,CireAbilityVFX::PaintProgress|CireAbilityVFX::PaintPulse);
+            LastFill=R.FillBounds;
+        }
+        else
+        {
+            const auto Theme=CireAbilityVFX::ThemeFor(Shape);
+            CireAbilityVFX::PaintRuneRing(G,FVector2D::ZeroVector,90.f,Theme,Age,.9f*Alpha);
+            FLinearColor C=Theme.Glyph;C.A=.5f*Alpha;G.Ring(FVector2D::ZeroVector,40.f+60.f*Progress,2.f,6.f,C,40);
+        }
+        break;
+    }
+    case EMode::VoidZone:
+    {
+        G.Z=GroundZ+4.f;
+        const float Alpha=FMath::Clamp(Age/.12f,0.f,1.f)*FMath::Clamp((Duration-Age)/.3f,0.f,1.f);
+        // The zone opens from the centre over 0.25 s.
+        const float Open=Ease(FMath::Clamp(Age/.25f,0.f,1.f));
+        const auto R=CireAbilityVFX::PaintVoidZone(G,FVector2D::ZeroVector,Shape.VoidOuter*FMath::Max(.3f,Open),Shape.VoidInner*FMath::Max(.3f,Open),
+            bHostile?CireAbilityVFX::ETone::Hostile:CireAbilityVFX::ETone::Friendly,Age,Alpha,Shape.bVoidHeal);
+        LastVoidRadii=FVector2D(R.Outer,R.Inner);LastVoidIcons=R.SlowIcons+R.StunIcons;LastFill=R.Bounds;
+        // Portal streak from the other end of the teleport.
+        const FVector Other=GetActorTransform().InverseTransformPosition(Shape.bVoidAtOrigin?End:Start);
+        FLinearColor C=CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Void);C.A=.6f*Alpha*(1-FMath::Clamp(Age/.6f,0.f,1.f));
+        if(FVector2D(Other.X,Other.Y).Size()>60.f&&C.A>0)G.Stroke(FVector2D(Other.X,Other.Y),FVector2D::ZeroVector,3.f,8.f,C,.5f);
+        break;
+    }
     case EMode::TargetMark:
-        if(Shape.Kind==ECireHitShape::Circle&&Shape.WarningSeconds<=0)CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,FMath::Max(40.f,Shape.Radius),Tint,FMath::Clamp(Age/.6f,0.f,1.f),Fade);
+        if(Shape.Kind==ECireHitShape::Circle&&Shape.WarningSeconds<=0)
+        {
+            const auto Theme=CireAbilityVFX::ThemeFor(Shape);
+            CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,FMath::Max(40.f,Shape.Radius),Tint,FMath::Clamp(Age/.6f,0.f,1.f),Fade,&Theme);
+        }
         else if(Shape.Kind==ECireHitShape::Unit)
         {
             // Unit strike / heal: a streak along the ground from the caster to the unit, then a ring on it.
@@ -589,13 +734,16 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
             const FVector2D From(Local.X,Local.Y);const float U=FMath::Clamp(Age/.25f,0.f,1.f);
             FLinearColor C=Tint;C.A=.75f*Fade*(1-FMath::Clamp((Age-.25f)/.5f,0.f,1.f));
             if(From.Size()>60.f&&C.A>0)G.Stroke(From,FMath::Lerp(From,FVector2D::ZeroVector,Ease(U)),3.5f,9.f,C,.5f);
-            CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,75.f,Tint,FMath::Clamp(Age/.5f,0.f,1.f),Fade);
+            const auto Theme=CireAbilityVFX::ThemeFor(Shape);
+            CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,Shape.bHeal?95.f:75.f,Shape.bHeal?CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal):Tint,
+                FMath::Clamp(Age/(Shape.bHeal?.8f:.5f),0.f,1.f),Fade,&Theme);
         }
         break;
     case EMode::Chain:
     {
         FLinearColor C=Tint;C.A=.5f*Fade;G.Ring(FVector2D::ZeroVector,Shape.Radius>0?Shape.Radius:500.f,1.8f,6.f,C,64);
-        CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,90.f,Tint,FMath::Clamp(Age/.4f,0.f,1.f),Fade);
+        const auto Theme=CireAbilityVFX::ThemeFor(Shape);
+        CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,90.f,Tint,FMath::Clamp(Age/.4f,0.f,1.f),Fade,&Theme);
         break;
     }
     case EMode::CasterFlare:
@@ -606,7 +754,9 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
         const float Charge=FMath::Clamp(Age/FMath::Max(Duration-.12f,.1f),0.f,1.f);
         FLinearColor C=Tint;C.A=(.35f+.4f*Charge)*Fade;
         G.Ring(FVector2D::ZeroVector,70.f-20.f*Charge,2.f,7.f,C,40);
-        for(int32 J=0;J<6;++J){const float A=Age*1.5f+J*PI/3;G.Stroke(Polar2(52,A),Polar2(76,A+.2f),1.6f,3.f,WithAlpha(C,C.A*.8f));}
+        // School rune ring gathering at the caster's feet (heal casts show the green/gold cross runes).
+        const auto Theme=CireAbilityVFX::ThemeFor(Shape);
+        CireAbilityVFX::PaintRuneRing(G,FVector2D::ZeroVector,95.f-25.f*Charge,Theme,Age,(.5f+.4f*Charge)*Fade);
         break;
     }
     case EMode::Impact:

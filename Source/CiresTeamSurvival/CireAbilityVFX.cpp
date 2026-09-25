@@ -129,12 +129,14 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintTelegraph(FCireGroundMesh& G,c
     const float Feather=FMath::Clamp(Size*.2f,10.f,70.f);
     auto A=[&](FLinearColor C,float Scale=1.f){C.A*=Alpha*Scale;return C;};
     // 1. Soft fill: faint interior, denser toward the edge (reads as a disc/lane, not a flat sticker).
+    // With runes the fill steps back so the glyphs carry the colour.
+    const float FillScale=Style.bRunes?.65f:1.f;
     if(Flags&PaintNoFill){}
     else if(bConvex)
     {
         const auto Inner=Offset(Boundary,-Feather);
-        FillLoop(G,Inner,true,Pivot,A(Style.Fill,.55f),A(Style.Fill,.9f));
-        G.Band(Inner,Boundary,A(Style.Fill,.9f),A(Style.Fill,1.9f),true);
+        FillLoop(G,Inner,true,Pivot,A(Style.Fill,.55f*FillScale),A(Style.Fill,.9f*FillScale));
+        G.Band(Inner,Boundary,A(Style.Fill,.9f*FillScale),A(Style.Fill,1.9f),true);
     }
     else FillLoop(G,Boundary,false,Pivot,A(Style.Fill),A(Style.Fill,1.2f));
     // 2. Progress: fills from the caster (lines/cones) or the centre (circles) until release.
@@ -154,8 +156,12 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintTelegraph(FCireGroundMesh& G,c
             else Outline(G,Loop,2.f,6.f,A(Style.Accent,.75f),.8f);
         }
     }
+    // 2b. School runes: glyph band, inward edge motif and (without a spot marker) a centre sigil.
+    if(Style.bRunes)PaintRunes(G,Spec,Style.Runes,Time,Alpha,!(Flags&PaintCenter));
     // 3. Border: crisp line on the true boundary with a soft glow, breathing while armed.
-    const float Pulse=(Flags&PaintPulse)?.72f+.28f*FMath::Sin(Time*2*PI*1.6f):1.f;
+    // Damage telegraphs pulse sharply; heals and buffs breathe slowly.
+    const float Rate=Style.bRunes&&!Style.Runes.bSharp?.55f:1.6f;
+    const float Pulse=(Flags&PaintPulse)?.72f+.28f*FMath::Sin(Time*2*PI*Rate):1.f;
     const float Half=FMath::Clamp(Size*.012f,2.2f,4.5f);
     Outline(G,Boundary,Half,FMath::Clamp(Size*.05f,8.f,22.f),A(Style.Edge,Pulse),1.2f);
     // 4. Shape language.
@@ -169,7 +175,7 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintTelegraph(FCireGroundMesh& G,c
         G.Stroke(FVector2D(Base,HalfHead),FVector2D(Tip,0),2.f,5.f,A(Style.Accent,.95f),1.8f);
         R.ArrowTip=FVector2D(Tip,0);
         // Travel chevrons flowing caster -> tip: the direction of the attack at a glance.
-        const float Run=FMath::Max(1.f,Base-6.f);const int32 Count=FMath::Clamp(FMath::RoundToInt(Run/230.f),1,6);
+        const float Run=FMath::Max(1.f,Base-6.f);const int32 Count=FMath::Clamp(FMath::RoundToInt(Run/(Style.bRunes?460.f:230.f)),1,6);
         const float Phase=Fract(Time*.85f);const float Chevron=FMath::Clamp(W*.42f,16.f,70.f);
         for(int32 J=0;J<Count;++J)
         {
@@ -191,19 +197,22 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintTelegraph(FCireGroundMesh& G,c
     {
         // Designated-spot marker: ring + crosshair ticks + dot, rotating slowly.
         const FVector2D C=Spec.Shape==ECireAreaShape::Circle?FVector2D::ZeroVector:Centroid(Boundary);
-        const float Mark=FMath::Clamp(Size*.11f,12.f,42.f);
-        G.Ring(C,Mark,1.8f,4.f,A(Style.Accent,.85f),28,0,2*PI,1.8f);
+        // Big enough that the school sigil inside reads from the gameplay camera.
+        const float Mark=Style.bRunes?FMath::Clamp(Size*.3f,22.f,170.f):FMath::Clamp(Size*.11f,12.f,42.f);
+        G.Ring(C,Mark,Style.bRunes?FMath::Clamp(Mark*.03f,1.8f,4.f):1.8f,4.f,A(Style.Accent,.85f),40,0,2*PI,1.8f);
         for(int32 J=0;J<4;++J)
         {
             const float Ang=Time*.6f+J*PI*.5f;
-            G.Stroke(C+Polar2(Mark*1.35f,Ang),C+Polar2(Mark*2.1f,Ang),1.8f,3.f,A(Style.Accent,.75f),1.8f);
+            if(Style.bRunes)G.Stroke(C+Polar2(Mark*1.05f,Ang),C+Polar2(Mark*1.25f,Ang),2.2f,3.f,A(Style.Accent,.75f),1.8f);
+            else G.Stroke(C+Polar2(Mark*1.35f,Ang),C+Polar2(Mark*2.1f,Ang),1.8f,3.f,A(Style.Accent,.75f),1.8f);
         }
-        G.Disc(C,FMath::Max(3.f,Mark*.18f),A(Style.Accent,.9f),A(Style.Accent,.5f),12,1.9f);
+        if(Style.bRunes)PaintGlyph(G,Style.Runes.Set,C,Mark*.78f,-Time*.3f,A(Style.Runes.Glyph,1.f),Time,99,2.f,.8f); // school sigil in the spot marker
+        else G.Disc(C,FMath::Max(3.f,Mark*.18f),A(Style.Accent,.9f),A(Style.Accent,.5f),12,1.9f);
     }
     R.Vertices=G.V.Num()-Start;return R;
 }
 
-CireAbilityVFX::FPaintResult CireAbilityVFX::PaintActive(FCireGroundMesh& G,const FCireAreaSpec& Spec,FLinearColor Color,float Time,float Alpha,float Burst,bool bPersistent)
+CireAbilityVFX::FPaintResult CireAbilityVFX::PaintActive(FCireGroundMesh& G,const FCireAreaSpec& Spec,FLinearColor Color,float Time,float Alpha,float Burst,bool bPersistent,const FRuneTheme* Theme)
 {
     FPaintResult R;const int32 Start=G.V.Num();
     const TArray<FVector2D> Boundary=ACireAreaEffect::BoundaryPoints(Spec);
@@ -234,6 +243,8 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintActive(FCireGroundMesh& G,cons
             Outline(G,Loop,1.6f,6.f,A(.34f*FMath::Sin(U*PI),1.3f),.7f);
         }
     }
+    // Lingering zones keep their school runes, dimmer and slowly turning.
+    if(Theme&&bPersistent)PaintRunes(G,Spec,*Theme,Time,Alpha*.7f,true);
     if(Flash>0)
     {
         // Detonation: shock front races from the pivot to the true edge.
@@ -243,7 +254,7 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintActive(FCireGroundMesh& G,cons
     R.Vertices=G.V.Num()-Start;return R;
 }
 
-void CireAbilityVFX::PaintShock(FCireGroundMesh& G,FVector2D Center,float Radius,FLinearColor Color,float U,float Alpha)
+void CireAbilityVFX::PaintShock(FCireGroundMesh& G,FVector2D Center,float Radius,FLinearColor Color,float U,float Alpha,const FRuneTheme* Theme)
 {
     U=FMath::Clamp(U,0.f,1.f);if(Alpha<=.001f||Radius<=1)return;
     const float R=Radius*(.12f+.88f*Ease(U));
@@ -253,6 +264,12 @@ void CireAbilityVFX::PaintShock(FCireGroundMesh& G,FVector2D Center,float Radius
     G.Disc(Center,R,WithAlpha(Soft,Soft.A*.4f),Soft,48,.6f);
     // Final extent marker: the true radius the effect reached, faintly held while the wave travels.
     if(U<.95f){FLinearColor Edge=Color;Edge.A=Alpha*.35f*(1-U);G.Ring(Center,Radius,1.6f,5.f,Edge,64,0,2*PI,1.2f);}
+    // School runes ride the wave front; heals/buffs linger a moment at the final radius.
+    if(Theme&&Radius>=60.f)
+    {
+        const float Hold=Theme->bSharp?0.f:FMath::Clamp((U-.6f)/.4f,0.f,1.f);
+        PaintRuneRing(G,Center,FMath::Max(30.f,R*(Theme->bSharp?.82f:.78f)),*Theme,U*3.f,Alpha*(Theme->bSharp?(1-U*.7f):(.85f-.35f*Hold)));
+    }
 }
 
 float CireAbilityVFX::ReleaseLead(const UWorld* World,const FString& SkillId)

@@ -636,16 +636,20 @@ bool CireSpellPresentation::RunSmoke(UWorld* World)
         auto* V=Play(World,FName(Id),FVector(0,0,100),FVector(200,0,100),ECireSpellCue::Cast,1,false);
         if(!V) { bPass=false; continue; }
         V->SetPreviewAge(.35f);
-        bPass &= IsSupported(FName(Id)) && V->VertexCount()>0 && V->VertexCount()<=MaxVertices &&
+        const bool bOk = IsSupported(FName(Id)) && V->VertexCount()>0 && V->VertexCount()<=MaxVertices &&
             V->Mesh->GetCollisionEnabled()==ECollisionEnabled::NoCollision &&
             V->SoftMesh->GetCollisionEnabled()==ECollisionEnabled::NoCollision && V->HasMaterial()&&V->GeometryValid();
+        if(!bOk)UE_LOG(LogTemp,Error,TEXT("CIRE_SPELL_PRESENTATION_CASE_FAIL %s supported=%d vertices=%d material=%d geometry=%d"),Id,IsSupported(FName(Id)),V->VertexCount(),V->HasMaterial(),V->GeometryValid()); // ability-vfx
+        bPass &= bOk;
         ++Checked; V->Destroy();
     }
     const FVector Invalid(std::numeric_limits<double>::quiet_NaN(),0,0);
     bPass &= Play(World,TEXT("bow"),Invalid,FVector::ZeroVector)==nullptr;
     bPass &= Play(World,TEXT("bow"),FVector::ZeroVector,FVector::ZeroVector,ECireSpellCue::Cast,-1)==nullptr;
-    bPass &= FamilyFor(TEXT("Starfall"))==Arcane&&FamilyFor(TEXT("Seismic Reprisal"))==Earth&&
-        FamilyFor(TEXT("Spectral Hunt"))==Spirit&&FamilyFor(TEXT("Wellspring"))==Nature;
+    // ability-vfx: schools come from the Ability Database (champion-draft) when it lists the ability.
+    bPass &= FamilyFor(TEXT("Starfall"))==Arcane&&FamilyFor(TEXT("Seismic Reprisal"))==Earth;
+    for(const TCHAR* Id:{TEXT("spectral_hunt"),TEXT("wellspring"),TEXT("starfall"),TEXT("seismic_reprisal")})
+        bPass &= FamilyFor(FName(Id))==static_cast<int32>(CireAbilityShapes::SchoolFor(FName(Id)));
     UE_LOG(LogTemp,Display,TEXT("CIRE_SPELL_PRESENTATION_%s families=13 skills=%d bounded_vertices=%d light_budget=%d"),bPass?TEXT("PASS"):TEXT("FAIL"),Checked,MaxVertices,MaxLights);
     return bPass;
 }

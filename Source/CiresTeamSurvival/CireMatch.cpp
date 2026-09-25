@@ -1,4 +1,5 @@
 #include "CireBalanceLab.h"
+#include "CireSkillShop.h" // progression-shop
 #include "CireShopFixtures.h" // progression-shop
 #include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
@@ -132,6 +133,7 @@ void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireGameState,EmberLives); DOREPLIFETIME(ACireGameState,DuskLives);
     DOREPLIFETIME(ACireGameState,EmberWins); DOREPLIFETIME(ACireGameState,DuskWins);
     DOREPLIFETIME(ACireGameState,ArenaIndex); DOREPLIFETIME(ACireGameState,Announcement);
+    DOREPLIFETIME(ACireGameState,ProgressionMode); // progression-shop
     DOREPLIFETIME(ACireGameState,WaveLabel); DOREPLIFETIME(ACireGameState,NextWaveLabel); // wave-director
     DOREPLIFETIME(ACireGameState,BreatherReady); DOREPLIFETIME(ACireGameState,BreatherPlayers); // wave-director
     DOREPLIFETIME(ACireGameState,LaneBounds); DOREPLIFETIME(ACireGameState,LanePoints0);
@@ -173,6 +175,7 @@ void ACireGameMode::BeginPlay() {
     if(bSmoke) {Clock=Cires::MatchClock({2,2,1}); WaveBreatherSeconds=.3f; WaveTimer=.3f; BotFillTimer=0;}
 #endif
     CireDeveloperTools::Initialize(this);
+    CireSkillShop::InitializeMode(this); // progression-shop: -CireMode=SkillShop|Classic
     CireLanePath::PublishState(GetGameState<ACireGameState>());
     GetWorld()->SpawnActor<ACireWorld>();
     for(int32 Team=0;Team<2;++Team) {
@@ -287,7 +290,9 @@ void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
 void ACireGameMode::MonsterKilled(ACireMonster* M,ACireHero* Killer) {
     if(!IsValid(M)||!IsValid(Killer)||Killer->TeamId!=M->Lane) return;
     const float Reward=M->PackId<0?CireWaveDirector::RewardMultiplier(M):1.f; // wave-director: per-wave reward multiplier
-    AwardTeam(M->Lane,FMath::RoundToInt((45+GetGameState<ACireGameState>()->Round*4)*Reward),FMath::RoundToInt(12*Loot(M->Lane)*Reward));
+    // progression-shop: gold is the playtest-2 kill bounty (CireLoot::AwardKillGold); XP unchanged.
+    AwardTeam(M->Lane,FMath::RoundToInt((45+GetGameState<ACireGameState>()->Round*4)*Reward),0);
+    CireLoot::AwardKillGold(this,M,Reward);
     // progression-shop: pack completion, Pack Leaders and lane bosses roll data-driven loot tables
     // into a glowing auto-pickup chest (CireLoot). The old flat stat/rare reward is replaced.
     bool bPackCompleted=false;

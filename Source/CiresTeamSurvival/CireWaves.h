@@ -74,7 +74,7 @@ struct CIRESTEAMSURVIVAL_API FCireWaveConfig
     float BreatherSeconds = 15.f;
     /** Pacing (Waves.json "pacing"): where on the route waves appear (0 = breach gate, 0.7 max), the march-speed
      *  multiplier while a wave unit is not fighting, the first wave's delay and the phase clock after a cycle. */
-    float SpawnAlongRoute = .30f, MarchSpeedMultiplier = 1.25f, FirstWaveDelay = 8.f;
+    float SpawnAlongRoute = 0.f, MarchSpeedMultiplier = 1.25f, FirstWaveDelay = 8.f;
     float PrepSeconds = 30.f, ArenaSeconds = 60.f, RecoverySeconds = 10.f;
     /** Breather ends early (1 s) once every human player has pressed Ready; bots are always ready. */
     bool bEarlyContinue = true;

@@ -112,7 +112,7 @@ globals row). The route shape itself stays in F8 → Paths.
 
 | Knob | Before | Now | Why |
 | --- | --- | --- | --- |
-| `spawnAlongRoute` | 0 (breach gate) | 0.30 | The route is about 155 m, so an unopposed walk took about 75 s before any fight. Waves now appear 30% of the way down the road. That is roughly 108 m of walking, and the challenge bays stay placed along the full route |
+| `spawnAlongRoute` | 0 (breach gate) | 0 (reverted: Eric wants spawns at the rift; tune pace with wave HP/speed instead) — briefly 0.30 | The route is about 155 m, so an unopposed walk took about 75 s before any fight. Waves now appear 30% of the way down the road. That is roughly 108 m of walking, and the challenge bays stay placed along the full route |
 | `marchSpeed` | 1 | 1.25 | Wave units (bosses included) walk 25% faster while they have no victim. Chase and combat speed are unchanged |
 | spawn interval | 0.6 / 1.2 / 0.5 / 0.7 s | 0.4 / 0.8 / 0.5 / 0.5 s | The column arrives together instead of trickling in |
 | `breatherSeconds` | 8 s | **15 s** | The Skill Shop opens after every cleared wave (progression-shop); 15 s is enough to buy, and Ready-up ends it early |

@@ -31,8 +31,13 @@ struct FTargetState
     TArray<FVector2D> CachedBoundary;
     bool bMeshBuilt=false,bLastValid=false;
     TArray<FVector> DecorV;TArray<int32> DecorI;TArray<FLinearColor> DecorC; // ability-vfx: animated arrow/chevrons/spot marker
+    CireAbilityVFX::FVoidResult LastVoid; // ability-vfx: void zone drawn in the preview (tests)
 };
 TMap<TWeakObjectPtr<ACireController>,FTargetState> States;
+// ability-vfx: hover void preview (targeted skills have no aim mode).
+struct FHoverState { TWeakObjectPtr<AActor> Preview; TWeakObjectPtr<UProceduralMeshComponent> Mesh; FString SkillId; uint64 Frame=0; CireAbilityVFX::FVoidResult Last;
+    TArray<FVector> V; TArray<int32> I; TArray<FLinearColor> C; };
+TMap<TWeakObjectPtr<ACireController>,FHoverState> Hovers;
 FCireTargetDescriptor RuntimeDescriptor(UWorld* World,const FString& Id)
 {
     auto D=CireTargeting::Describe(Id);
@@ -123,9 +128,18 @@ void Render(ACireController* C,FTargetState& S,const FCireTargetDescriptor& D,FV
         // ability-vfx: lines get an arrowhead + travelling chevrons, cones chevrons, circles the designated-spot
         // marker, all inside the true boundary; rebuilt every frame so they animate.
         FCireGroundMesh G(S.DecorV,S.DecorI,S.DecorC);G.Z=7.5f;
-        const auto Style=CireAbilityVFX::StyleFor(S.View.bValid?CireAbilityVFX::ETone::AimValid:CireAbilityVFX::ETone::AimInvalid,FLinearColor::White);
+        // Themed: school runes of the ability (heal crosses for heals), red-dimmed when the aim is invalid.
+        const auto Shape=CireAbilityShapes::Describe(FName(*S.View.SkillId));
+        const auto Style=CireAbilityVFX::ThemedStyle(S.View.bValid?CireAbilityVFX::ETone::AimValid:CireAbilityVFX::ETone::AimInvalid,Shape);
         CireAbilityVFX::PaintTelegraph(G,D.Footprint,Style,-1.f,C->GetWorld()->GetTimeSeconds(),1.f,
             CireAbilityVFX::PaintNoFill|CireAbilityVFX::PaintArrow|CireAbilityVFX::PaintCenter|CireAbilityVFX::PaintPulse);
+        // Teleport/portal skills: both void zones (outer slow ring, inner stun circle) at the aimed spot.
+        if(Shape.HasVoidZone())
+        {
+            const FVector Local=S.Preview->GetActorTransform().InverseTransformPosition(S.View.Point);
+            S.LastVoid=CireAbilityVFX::PaintVoidZone(G,FVector2D(Local.X,Local.Y),Shape.VoidOuter,Shape.VoidInner,
+                S.View.bValid?CireAbilityVFX::ETone::AimValid:CireAbilityVFX::ETone::AimInvalid,C->GetWorld()->GetTimeSeconds(),1.f,Shape.bVoidHeal);
+        }
         const auto* Section=S.Mesh->GetProcMeshSection(2);
         if(G.V.IsEmpty())S.Mesh->ClearMeshSection(2);
         else if(Section&&Section->ProcVertexBuffer.Num()==G.V.Num()&&Section->ProcIndexBuffer.Num()==G.I.Num())
@@ -135,7 +149,9 @@ void Render(ACireController* C,FTargetState& S,const FCireTargetDescriptor& D,FV
     if(S.bMeshBuilt&&S.bLastValid==S.View.bValid&&S.CachedBoundary==Points)return;
     S.bMeshBuilt=true;S.bLastValid=S.View.bValid;S.CachedBoundary=Points;
     const auto Fill=Triangulate(Points);
-    const FLinearColor Tint=S.View.bValid?FLinearColor(.1f,1.1f,.65f,.18f):FLinearColor(1.3f,.12f,.07f,.18f);
+    // ability-vfx: valid aim is tinted with the ability's rune colour (school / heal) instead of generic green.
+    FLinearColor Tint=S.View.bValid?FLinearColor(.1f,1.1f,.65f,.18f):FLinearColor(1.3f,.12f,.07f,.18f);
+    if(S.View.bValid&&CireAbilityVFX::Enabled()){Tint=CireAbilityVFX::ThemeFor(CireAbilityShapes::Describe(FName(*S.View.SkillId))).Glyph*.6f;Tint.A=.15f;}
     TArray<FVector> V,N;TArray<FVector2D> UV;TArray<FLinearColor> Colors;TArray<int32> Indices;
     for(FVector2D P:Points){V.Add(FVector(P.X,P.Y,6));N.Add(FVector::UpVector);UV.Add(P/2000);Colors.Add(Tint);}
     S.Mesh->CreateMeshSection_LinearColor(0,V,Fill,N,UV,Colors,TArray<FProcMeshTangent>(),false);
@@ -267,8 +283,46 @@ void CireTargeting::Request(ACireController* C,int32 Slot)
     S.View.bActive=true;S.View.Slot=Slot;S.View.SkillId=Id;S.View.Range=D.Range;S.View.Message=TEXT("Aim at ground, then left click. Esc/right mouse cancels.");
     C->bSummonMoveTargeting=false;
 }
+void CireTargeting::HoverPreview(ACireController* C,const FString& Id)
+{
+    if(!IsValid(C)||!C->IsLocalController()||!CireAbilityVFX::Enabled())return;
+    auto& H=Hovers.FindOrAdd(TWeakObjectPtr<ACireController>(C));H.SkillId=Id;H.Frame=GFrameCounter;
+}
+namespace
+{
+void TickHover(ACireController* C)
+{
+    auto* H=Hovers.Find(TWeakObjectPtr<ACireController>(C));if(!H)return;
+    auto* Hero=Cast<ACireHero>(C->GetPawn());
+    const auto Shape=CireAbilityShapes::Describe(FName(*H->SkillId));
+    const bool bArmed=States.Contains(TWeakObjectPtr<ACireController>(C));
+    AActor* Target=Hero?Hero->Target:nullptr;
+    const bool bShow=GFrameCounter-H->Frame<=1&&!bArmed&&Hero&&Shape.HasVoidZone()&&Hero->IsHostile(Target);
+    if(!bShow){if(H->Preview.IsValid())H->Preview->SetActorHiddenInGame(true);return;}
+    // Shadow Step lands 170 cm in front of its target, on the caster's side (CireHero.cpp).
+    const FVector Toward=(Hero->GetActorLocation()-Target->GetActorLocation()).GetSafeNormal2D();
+    FVector At=Target->GetActorLocation()+Toward*170.f;
+    FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(CireHoverVoid),false,Hero);Q.AddIgnoredActor(Target);
+    if(C->GetWorld()->LineTraceSingleByObjectType(Hit,At+FVector(0,0,150),At-FVector(0,0,600),FCollisionObjectQueryParams(ECC_WorldStatic),Q))At=Hit.ImpactPoint;
+    if(!H->Preview.IsValid())
+    {
+        FActorSpawnParameters P;P.Owner=C;P.ObjectFlags|=RF_Transient;
+        auto* A=C->GetWorld()->SpawnActor<AActor>(AActor::StaticClass(),At,FRotator::ZeroRotator,P);if(!A)return;
+        A->SetReplicates(false);A->SetActorEnableCollision(false);
+        auto* Mesh=NewObject<UProceduralMeshComponent>(A,TEXT("VoidHoverPreview"));A->SetRootComponent(Mesh);A->AddInstanceComponent(Mesh);
+        Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);Mesh->SetCanEverAffectNavigation(false);Mesh->SetCastShadow(false);Mesh->RegisterComponent();
+        Mesh->SetMaterial(0,LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_GroundArea.M_GroundArea")));
+        H->Preview=A;H->Mesh=Mesh;
+    }
+    H->Preview->SetActorHiddenInGame(false);H->Preview->SetActorLocation(At);
+    FCireGroundMesh G(H->V,H->I,H->C);G.Z=6.f;
+    H->Last=CireAbilityVFX::PaintVoidZone(G,FVector2D::ZeroVector,Shape.VoidOuter,Shape.VoidInner,CireAbilityVFX::ETone::AimValid,C->GetWorld()->GetTimeSeconds(),.85f,Shape.bVoidHeal);
+    H->Mesh->CreateMeshSection_LinearColor(0,G.V,G.I,TArray<FVector>(),TArray<FVector2D>(),G.C,TArray<FProcMeshTangent>(),false);
+}
+}
 bool CireTargeting::Tick(ACireController* C)
 {
+    TickHover(C); // ability-vfx
     for(auto It=States.CreateIterator();It;++It)if(!It.Key().IsValid()){if(It.Value().Preview.IsValid())It.Value().Preview->Destroy();It.RemoveCurrent();}
     auto* S=States.Find(TWeakObjectPtr<ACireController>(C));if(!S)return false;
     auto* H=Cast<ACireHero>(C->GetPawn());auto* HUD=Cast<ACireHUD>(C->GetHUD());
@@ -297,6 +351,14 @@ bool CireTargeting::Tick(ACireController* C)
 #include "Misc/ScopeExit.h"
 
 void CireTargeting::DebugSetAimOverride(TOptional<FVector> Point){GAimOverride=Point;} // ability-vfx
+FVector CireTargeting::DebugPreviewVoid(const ACireController* C) // ability-vfx
+{
+    const TWeakObjectPtr<ACireController> Key(const_cast<ACireController*>(C));
+    if(const auto* H=Hovers.Find(Key);H&&H->Preview.IsValid()&&!H->Preview->IsHidden())
+        return FVector(H->Last.Outer,H->Last.Inner,H->Last.SlowIcons+H->Last.StunIcons);
+    const auto* S=States.Find(Key);
+    return S?FVector(S->LastVoid.Outer,S->LastVoid.Inner,S->LastVoid.SlowIcons+S->LastVoid.StunIcons):FVector::ZeroVector;
+}
 
 bool CireTargeting::RunDescriptorSmoke()
 {

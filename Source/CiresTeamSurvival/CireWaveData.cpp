@@ -165,7 +165,7 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
     C.FailsafeGraceSeconds = ClampF(C.FailsafeGraceSeconds, 5, 300, 30);
     C.StuckSeconds = ClampF(C.StuckSeconds, 1, 30, 5);
     // pacing
-    C.SpawnAlongRoute = ClampF(C.SpawnAlongRoute, 0, .7f, .3f);
+    C.SpawnAlongRoute = ClampF(C.SpawnAlongRoute, 0, .7f, 0.f); // default: spawn at the rift (Eric)
     C.MarchSpeedMultiplier = ClampF(C.MarchSpeedMultiplier, .5f, 2, 1.25f);
     C.FirstWaveDelay = ClampF(C.FirstWaveDelay, 0, 120, 8);
     C.PrepSeconds = ClampF(C.PrepSeconds, 5, 600, 30);
