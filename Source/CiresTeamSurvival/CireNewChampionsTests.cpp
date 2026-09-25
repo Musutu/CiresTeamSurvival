@@ -284,7 +284,7 @@ bool CireSignatureSkills::RunSmoke(ACireGameMode* Mode)
         auto* H = F.Hero(0, FVector(-300, 0, 0), P);
         T.Check(H && H->ChampionProfileId == P, FString(P) + TEXT(" drafts"));
         if (!H) continue;
-        T.Check(CireClassTraits::Role(H) == (FString(P) == TEXT("aetheri_warden") ? Cires::SkillDraftRole::Support : Cires::SkillDraftRole::DPS),
+        T.Check(CireClassTraits::Role(H) == (FString(P) == TEXT("aetheri_warden") ? Cires::SkillDraftRole::Support : Cires::SkillDraftRole::Damage),
             FString(P) + TEXT(" class trait role (DPS Keen Edge / Support Mending Strikes)"));
         const auto* Profile = CireChampionRoster::Find(P);
         TArray<FString> Kit; for (const auto& A : Profile->Actives) Kit.Add(A.Id); Kit.Add(Profile->Ultimate.Id);
@@ -414,7 +414,7 @@ bool CireSignatureSkills::RunSmoke(ACireGameMode* Mode)
         {
             const FCireNPCArchetype* A = CireNPCArchetypes::Find(Unit);
             T.Check(A != nullptr, TEXT("Aetheri unit is an NPC archetype: ") + Unit.ToString());
-            if (A) for (const auto& Ab : A->Abilities) if (Ab.Kind == ECireNPCAbilityKind::Deploy) { ++Deploys; T.Check(FindRecipe(Ab.DeployRecipe) != nullptr, Ab.Id.ToString() + TEXT(" deploys a known construct")); }
+            if (A) for (const auto& Ab : A->Abilities) if (Ab.Kind == ECireNPCAbilityKind::Deploy) { ++Deploys; T.Check(CireTechConstructs::FindRecipe(Ab.DeployRecipe) != nullptr, Ab.Id.ToString() + TEXT(" deploys a known construct")); }
         }
         T.Check(Deploys >= 5, TEXT("Aetheri engineers and bosses deploy constructs"));
         auto* Engineer = F.Monster(0, FVector(600, 300, 0));
