@@ -26,6 +26,8 @@ scale 100, pelvis height within 35% of bind at rest, head above feet, finite, co
 
 Run: UnrealEditor-Cmd <project> -run=pythonscript -script=Tools/RetargetChampionAttacks.py -unattended -nullrhi
      (-CireChampionAttacksRebuild deletes and rebuilds only /Game/Art/Characters/ChampionAttacks02)
+     (-CireChampionAttacksAdd is additive: only the Tripo champion bodies in Content/Data/ChampionArt.tripo.json
+      whose <attacksFolder> does not exist yet; the template is the body's own native idle. Existing clips are untouched.)
 Report: Saved/ChampionAttacks02Build.json
 """
 import json
@@ -109,6 +111,20 @@ def targets():
     return out
 
 
+def added_targets():
+    """tripo-races: new Tripo champion bodies (ChampionArt.tripo.json rows carrying attacksFolder)."""
+    root = Path(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_dir()))
+    rows = json.loads((root / "Content/Data/ChampionArt.tripo.json").read_text(encoding="utf-8"))["champions"]
+    out = {}
+    for row in rows:
+        folder = row.get("attacksFolder")
+        if folder and not unreal.EditorAssetLibrary.does_directory_exist("%s/%s" % (OUT, folder)):
+            out[folder] = (row["mesh"].split(".")[0], row["animations"]["idle"].split(".")[0])
+            if row.get("attacksExtra"):
+                EXTRA[folder] = list(row["attacksExtra"])
+    return out
+
+
 def options(mesh, raw=True):
     o = unreal.AnimPoseEvaluationOptions()
     o.set_editor_property("evaluation_type", unreal.AnimDataEvalType.RAW if raw else unreal.AnimDataEvalType.COMPRESSED)
@@ -156,6 +172,12 @@ def transfer(src_anim, src_mesh, target, template, final, window):
     clip = lib.duplicate_asset(template, final)
     require(isinstance(clip, unreal.AnimSequence), "template duplicate failed " + template)
     require(clip.get_editor_property("skeleton") == target.get_editor_property("skeleton"), "template skeleton differs from target")
+    # tripo-races: native Tripo templates run at 24 fps, and the data controller only accepts a multiple or factor of it.
+    t_rate = clip.get_editor_property("data_model_interface").get_frame_rate()
+    t_fps = int(round(float(t_rate.numerator) / float(t_rate.denominator)))
+    if t_fps and out_fps % t_fps and t_fps % out_fps:
+        out_fps = t_fps
+        count = max(1, int(round((end - start) * out_fps)))
     t_ref, t_local = reference(unreal.AnimPoseExtensions.get_anim_pose_at_time(clip, 0, options(target)), t_names)
     k = t_ref["pelvis"][0][2] / max(1e-3, s_ref["pelvis"][0][2])
     keys = {n: ([], [], []) for n in t_names}
@@ -258,13 +280,14 @@ def validate(anim, mesh):
 def main():
     started = time.monotonic()
     rebuild = "-cirechampionattacksrebuild" in unreal.SystemLibrary.get_command_line().lower()
+    additive = "-cirechampionattacksadd" in unreal.SystemLibrary.get_command_line().lower()
     lib = unreal.EditorAssetLibrary
     report = {"output": OUT, "method": "bind-pose-offset FK transfer (the IK retargeter collapsed the pelvis with root scale 100)",
               "targets": {}, "created": [], "original_assets_saved": False}
     saved = Path(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_saved_dir()))
     content = Path(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_content_dir()))
     try:
-        if lib.does_directory_exist(OUT):
+        if lib.does_directory_exist(OUT) and not additive:
             require(rebuild, OUT + " exists; pass -CireChampionAttacksRebuild to replace it")
             for file in (content / "Art/Characters/ChampionAttacks02").rglob("*.uasset"):
                 file.chmod(file.stat().st_mode | stat.S_IWRITE)
@@ -272,7 +295,7 @@ def main():
         sources = {c: (unreal.load_asset(m), unreal.load_asset(a)) for c, (m, a) in CLIPS.items()}
         for c, (m, a) in sources.items():
             require(isinstance(m, unreal.SkeletalMesh) and isinstance(a, unreal.AnimSequence), "missing source " + c)
-        for name, (mesh_path, template) in targets().items():
+        for name, (mesh_path, template) in (added_targets() if additive else targets()).items():
             target = unreal.load_asset(mesh_path)
             entry = {"mesh": mesh_path, "template": template, "clips": {}}
             report["targets"][name] = entry
@@ -301,7 +324,7 @@ def main():
         unreal.log_error("CIRE_CHAMPION_ATTACKS02_FAIL " + str(error))
     finally:
         report["seconds"] = round(time.monotonic() - started, 1)
-        (saved / "ChampionAttacks02Build.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
+        (saved / ("ChampionAttacks02Build%s.json" % ("-Add" if additive else ""))).write_text(json.dumps(report, indent=1), encoding="utf-8")
 
 
 main()
