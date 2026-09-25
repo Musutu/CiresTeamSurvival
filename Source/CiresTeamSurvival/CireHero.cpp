@@ -16,6 +16,7 @@
 #include "CireSkillTuning.h"
 #include "CireSkillCasting.h"
 #include "CireSignatureSkills.h" // new-champions
+#include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireRoleSkills.h"
 #include "CireConstruct.h"
 #include "CireSkillshot.h"
@@ -331,7 +332,7 @@ bool ACireHero::IsUltimate(const FString& Id)
 
 bool ACireHero::IsPassive(const FString& Id)
 {
-    return CireSignatureSkills::IsPassive(Id) || Id == TEXT("stone_skin") || Id == TEXT("battle_rhythm") ||
+    return CireSignatureSkills::IsPassive(Id) || CireRollSkills::IsPassive(Id) || Id == TEXT("stone_skin") || Id == TEXT("battle_rhythm") ||
         Id == TEXT("deep_reserves") || Id == TEXT("soul_conduit") || Id == TEXT("executioner"); // champion-draft: Executioner passive
 }
 
@@ -584,8 +585,10 @@ float ACireHero::TakeDamage(float Amount, FDamageEvent const& Event, AController
     if(Mobility&&Mobility->IsInvulnerable())
     {
         const FString AttackName=Event.IsOfType(FCireDamageEvent::CireClassID)?static_cast<const FCireDamageEvent&>(Event).AbilityName:TEXT("Attack");
-        CireCombat::BroadcastAvoidance(Causer,this,ECireHitOutcome::Dodge,AttackName);return 0;
+        CireCombat::BroadcastAvoidance(Causer,this,ECireHitOutcome::Dodge,AttackName);
+        CireRollSkills::OnDodgedHit(this,Causer);return 0; // champion-draft: Riposte, Evasive Stance
     }
+    if(CireRollSkills::TryBlur(this,Causer,Event.IsOfType(FCireDamageEvent::CireClassID)?static_cast<const FCireDamageEvent&>(Event).AbilityName:TEXT("Attack")))return 0; // champion-draft: Blur
     if (HasSkill(TEXT("stone_skin"))) Amount *= 0.90f;
     if (ShieldUntil > GetWorld()->GetTimeSeconds()) Amount *= 0.60f;
     // progression-shop: armor (basic attacks) / spell ward (abilities) and item barriers.
@@ -610,6 +613,7 @@ float ACireHero::TakeDamage(float Amount, FDamageEvent const& Event, AController
         GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Notice = Mode->Clock.Phase() == Cires::MatchPhase::Arena ? TEXT("Eliminated. Team is still fighting.") : TEXT("Fallen. Reviving at base in 10 seconds.");
         Mode->HeroKilled(this);
+        CireRollSkills::OnKill(::Cast<ACireHero>(Causer)); // champion-draft: Bloodrush
     }
     return Taken;
 }
@@ -671,6 +675,7 @@ void ACireHero::Tick(float DeltaSeconds)
         GetCharacterMovement()->MaxWalkSpeed = Mobility?Mobility->MovementSpeed(SlowUntil>ServerTime):(SlowUntil>ServerTime?338.f:520.f);
         GetCharacterMovement()->MaxWalkSpeed *= CireItems::MoveSpeedMultiplier(this); // progression-shop
     GetCharacterMovement()->MaxWalkSpeed *= CireSignatureSkills::MoveSpeedMultiplier(this); // new-champions: Moonlit Sprint, haste pylons
+    GetCharacterMovement()->MaxWalkSpeed *= CireRollSkills::MoveSpeedMultiplier(this); // champion-draft: Windrunner
         if (CireRaces::IsRooted(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // monster-races: rooted by a monster skill
         if (CireCrowdControl::IsStunned(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // champion-draft: stunned
         return;
@@ -709,6 +714,7 @@ void ACireHero::Tick(float DeltaSeconds)
     }
     GetCharacterMovement()->MaxWalkSpeed = Mobility?Mobility->MovementSpeed(SlowUntil>GetWorld()->GetTimeSeconds()):(SlowUntil>GetWorld()->GetTimeSeconds()?338.f:520.f);
     GetCharacterMovement()->MaxWalkSpeed *= CireItems::MoveSpeedMultiplier(this); // progression-shop
+    GetCharacterMovement()->MaxWalkSpeed *= CireRollSkills::MoveSpeedMultiplier(this); // champion-draft: Windrunner
     if (CireRaces::IsRooted(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // monster-races: rooted by a monster skill
     if (CireCrowdControl::IsStunned(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // champion-draft: stunned
     CireCrowdControl::TickHero(this, DeltaSeconds); // champion-draft: completes timed casts, Executioner charge
@@ -847,6 +853,7 @@ void ACireHero::MulticastCombatFx_Implementation(FVector From, FVector To, FLine
 FString ACireHero::SkillName(const FString& Id)
 {
     if(CireSignatureSkills::Knows(Id))return CireSignatureSkills::Name(Id); // new-champions
+    if(CireRollSkills::Knows(Id))return CireRollSkills::Name(Id); // champion-draft: roll skills
     if(CireSkillCasting::Handles(Id))return CireSkillCasting::Name(Id);
     if(Id==TEXT("npc_shadow_bolt"))return TEXT("Shadow Bolt");
     if(Id==TEXT("npc_barbed_shot"))return TEXT("Barbed Shot");
@@ -858,6 +865,7 @@ FString ACireHero::SkillName(const FString& Id)
 FString ACireHero::SkillDescription(const FString& Id)
 {
     if(CireSignatureSkills::Knows(Id))return CireSignatureSkills::Description(Id); // new-champions
+    if(CireRollSkills::Knows(Id))return CireRollSkills::Description(Id); // champion-draft: roll skills
     if(CireCrowdControl::HandlesSkill(Id))return CireCrowdControl::Description(Id); // champion-draft
     if(Id==TEXT("executioner"))return TEXT("PASSIVE: every 5 minutes your next basic attack is lethal. Bosses take a normal hit (the charge is kept); champions take 30% of their max health."); // champion-draft
     if(CireSkillCasting::Handles(Id))return CireSkillCasting::Description(Id);
@@ -962,6 +970,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
         ACireAreaEffect::ClearForActor(this);
         GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         CireSignatureSkills::OnMonsterKilled(this, Attacker); // new-champions: bounties
+        CireRollSkills::OnKill(Attacker); // champion-draft: Bloodrush
         Mode->MonsterKilled(this, Attacker);
         if (MonsterArt) MonsterArt->MulticastDeath(); // creature-anim: clients keep a falling corpse after the actor goes
         if (!IsActorBeingDestroyed()) Destroy();

@@ -644,6 +644,40 @@ LevelStats Scale(const Base& base, const Curve& curve, int level)
 }
 } // namespace Abilities
 
+namespace Roll
+{
+double ReducedCooldown(double remaining, double percent)
+{
+    if (!std::isfinite(remaining) || remaining <= 0) return 0.0;
+    const double p = std::isfinite(percent) ? std::clamp(percent, 0.0, 100.0) : 0.0;
+    return remaining * (1.0 - p / 100.0);
+}
+double PointSegmentDistance2D(double px, double py, double ax, double ay, double bx, double by)
+{
+    const double dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy;
+    double t = len2 > 0 ? ((px - ax) * dx + (py - ay) * dy) / len2 : 0.0;
+    t = std::clamp(t, 0.0, 1.0);
+    return std::hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+double MomentumMultiplier(int stacks, double perStackPercent)
+{
+    const int s = std::clamp(stacks, 0, MaxMomentumStacks);
+    const double p = std::isfinite(perStackPercent) ? std::max(0.0, perStackPercent) : 0.0;
+    return 1.0 + s * p / 100.0;
+}
+double ShortenedReadyAt(double startedAt, double readyAt, double cutPercent)
+{
+    if (!std::isfinite(startedAt) || !std::isfinite(readyAt) || readyAt <= startedAt) return readyAt;
+    const double c = std::isfinite(cutPercent) ? std::clamp(cutPercent, 0.0, 100.0) : 0.0;
+    return startedAt + (readyAt - startedAt) * (1.0 - c / 100.0);
+}
+bool BlurDodges(double roll01, double chancePercent)
+{
+    if (!std::isfinite(roll01) || !std::isfinite(chancePercent)) return false;
+    return roll01 < std::clamp(chancePercent, 0.0, 100.0) / 100.0;
+}
+} // namespace Roll
+
 namespace CC
 {
 double DiminishedDuration(double baseSeconds, int prior)

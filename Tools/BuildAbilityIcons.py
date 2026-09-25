@@ -812,6 +812,21 @@ def pylon(g, cx=.5, cy=.5, s=1.0):
     g.arc(cx, cy - .06 * s, .30 * s, 20, 160, .03 * s)
 
 
+def caltrop(g, cx=.5, cy=.5, s=1.0):
+    g.star(cx, cy, .07 * s, .34 * s, 4, rot=-45)
+    g.star(cx, cy, .05 * s, .22 * s, 4)
+
+
+def tumble(g, cx=.5, cy=.5, s=1.0, inner='dash'):
+    """champion-draft roll family: a tumbling arc with an arrowhead around a smaller glyph."""
+    g.arc(cx, cy, .40 * s, 150, 390, .05 * s)
+    a = math.radians(390)
+    x, y = cx + math.cos(a) * .40 * s, cy + math.sin(a) * .40 * s
+    t = a + math.pi / 2
+    g.poly([(x + math.cos(t) * .13 * s, y + math.sin(t) * .13 * s), (x + math.cos(a) * .09 * s, y + math.sin(a) * .09 * s), (x - math.cos(a) * .09 * s, y - math.sin(a) * .09 * s)])
+    GLYPHS[inner](g, cx, cy + .02 * s, s * .56)
+
+
 GLYPHS = {k: v for k, v in globals().items() if callable(v) and v.__module__ == __name__ and k not in ('P', 'rot', 'main', 'paint', 'planned_glyph', 'data_rows')}
 
 # Pool skills: (glyph, palette). Each pair is unique so every offered skill reads distinctly.
@@ -843,6 +858,14 @@ NEW_CHAMPIONS = {
     'phase_lance': ('beam', 'arcane'), 'overcharge': ('gear', 'ether'), 'aether_engineering': ('gear', 'light'), 'warp_obelisk': ('tower', 'ether'),
     'aegis_pylon': ('pylon', 'frost'), 'haste_pylon': ('pylon', 'light'), 'gravity_pylon': ('pylon', 'arcane'), 'stasis_snare': ('hourglass', 'ether'),
     'aether_mend': ('heart', 'ether'), 'repulsor_pulse': ('rune_circle', 'ether'), 'resonant_lattice': ('constellation', 'ether'), 'aether_nexus': ('sun', 'ether'),
+}
+# champion-draft: dodge-roll skill family (CireRollSkills). Placeholders until the 2D art pass paints them.
+ROLL_SKILLS = {
+    'riposte_roll': ('sword', 'steel'), 'tumblers_edge': ('dash', 'ember'), 'killer_instinct': ('eye', 'blood'), 'fleet_recovery': ('heart', 'nature'),
+    'windrunner': ('wind', 'spirit'), 'quickened_mind': ('hourglass', 'arcane'), 'hasted_tumble': ('spiral', 'ether'), 'ember_wake': ('trail', 'fire'),
+    'frost_wake': ('snowflake', 'frost'), 'momentum': ('rhythm', 'war'), 'blur_step': ('feather', 'shadow'), 'slippery_roll': ('drop', 'spectral'),
+    'bloodrush': ('skull', 'war'), 'tumble_strike': ('fist', 'steel'), 'mine_layer': ('caltrop', 'ash'), 'taunting_tumble': ('challenge', 'war'),
+    'shield_tumble': ('shield', 'holy'), 'venom_tumble': ('venom', 'venom'), 'shadow_dance': ('moon', 'shadow'), 'evasive_stance': ('dash', 'spirit'),
 }
 # Class baseline traits (CireClassTraits): Support / Tank / DPS.
 TRAITS = {'trait_mending_strikes': ('heart', 'spirit'), 'trait_natural_defense': ('shield', 'earth'), 'trait_keen_edge': ('sword', 'blood')}
@@ -958,6 +981,8 @@ def main() -> int:
         jobs[sid] = (glyph, pal, None)
     for sid, (glyph, pal) in NEW_CHAMPIONS.items():
         jobs[sid] = (glyph, pal, None)
+    for sid, (glyph, pal) in ROLL_SKILLS.items():
+        jobs[sid] = ('tumble', pal, dict(inner=glyph))
     for c in roster['champions']:
         for s in c['actives'] + [c['passive'], c['ultimate']]:
             if s['id'] not in jobs:

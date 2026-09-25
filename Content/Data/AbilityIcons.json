@@ -141,6 +141,18 @@
       "accent": "#96f03c",
       "pool": true
     },
+    "bloodrush": {
+      "school": "war",
+      "glyph": "tumble",
+      "accent": "#f0503c",
+      "pool": false
+    },
+    "blur_step": {
+      "school": "shadow",
+      "glyph": "tumble",
+      "accent": "#a05aff",
+      "pool": false
+    },
     "bouncing_glaive": {
       "school": "steel",
       "glyph": "glaive",
@@ -327,6 +339,18 @@
       "accent": "#ff781e",
       "pool": true
     },
+    "ember_wake": {
+      "school": "fire",
+      "glyph": "tumble",
+      "accent": "#ff781e",
+      "pool": false
+    },
+    "evasive_stance": {
+      "school": "spirit",
+      "glyph": "tumble",
+      "accent": "#a0ffd2",
+      "pool": false
+    },
     "executioner": {
       "school": "steel",
       "glyph": "skull",
@@ -339,11 +363,23 @@
       "accent": "#e62832",
       "pool": true
     },
+    "fleet_recovery": {
+      "school": "nature",
+      "glyph": "tumble",
+      "accent": "#82e664",
+      "pool": false
+    },
     "frost_bind": {
       "school": "frost",
       "glyph": "frost_bind",
       "accent": "#78c8ff",
       "pool": true
+    },
+    "frost_wake": {
+      "school": "frost",
+      "glyph": "tumble",
+      "accent": "#78c8ff",
+      "pool": false
     },
     "glaive_storm": {
       "school": "war",
@@ -417,6 +453,12 @@
       "accent": "#ffe28c",
       "pool": false
     },
+    "hasted_tumble": {
+      "school": "ether",
+      "glyph": "tumble",
+      "accent": "#5abeff",
+      "pool": false
+    },
     "hex_mark": {
       "school": "blood",
       "glyph": "eye",
@@ -471,6 +513,12 @@
       "accent": "#ffe28c",
       "pool": false
     },
+    "killer_instinct": {
+      "school": "blood",
+      "glyph": "tumble",
+      "accent": "#e62832",
+      "pool": false
+    },
     "last_stand": {
       "school": "war",
       "glyph": "last_stand",
@@ -482,6 +530,12 @@
       "glyph": "aegis",
       "accent": "#ffe28c",
       "pool": true
+    },
+    "mine_layer": {
+      "school": "ash",
+      "glyph": "tumble",
+      "accent": "#e6783c",
+      "pool": false
     },
     "miner_faultline": {
       "school": "stone",
@@ -511,6 +565,12 @@
       "school": "stone",
       "glyph": "pick",
       "accent": "#c8b48c",
+      "pool": false
+    },
+    "momentum": {
+      "school": "war",
+      "glyph": "tumble",
+      "accent": "#f0503c",
       "pool": false
     },
     "moon_glaive": {
@@ -615,6 +675,12 @@
       "accent": "#a0ffd2",
       "pool": true
     },
+    "quickened_mind": {
+      "school": "arcane",
+      "glyph": "tumble",
+      "accent": "#6eaaff",
+      "pool": false
+    },
     "renewal": {
       "school": "nature",
       "glyph": "renewal",
@@ -638,6 +704,12 @@
       "glyph": "restoring",
       "accent": "#ffc45a",
       "pool": true
+    },
+    "riposte_roll": {
+      "school": "steel",
+      "glyph": "tumble",
+      "accent": "#aac8e6",
+      "pool": false
     },
     "sabercat_maul": {
       "school": "blood",
@@ -681,6 +753,12 @@
       "accent": "#dca050",
       "pool": true
     },
+    "shadow_dance": {
+      "school": "shadow",
+      "glyph": "tumble",
+      "accent": "#a05aff",
+      "pool": false
+    },
     "shadow_step": {
       "school": "shadow",
       "glyph": "shadow_step",
@@ -693,6 +771,12 @@
       "accent": "#ffc45a",
       "pool": true
     },
+    "shield_tumble": {
+      "school": "holy",
+      "glyph": "tumble",
+      "accent": "#ffc45a",
+      "pool": false
+    },
     "silver_shot": {
       "school": "light",
       "glyph": "pistol",
@@ -703,6 +787,12 @@
       "school": "ether",
       "glyph": "skitter",
       "accent": "#5abeff",
+      "pool": false
+    },
+    "slippery_roll": {
+      "school": "spectral",
+      "glyph": "tumble",
+      "accent": "#5ae6d2",
       "pool": false
     },
     "soul_conduit": {
@@ -759,6 +849,12 @@
       "accent": "#c8b48c",
       "pool": true
     },
+    "taunting_tumble": {
+      "school": "war",
+      "glyph": "tumble",
+      "accent": "#f0503c",
+      "pool": false
+    },
     "trait_keen_edge": {
       "school": "blood",
       "glyph": "sword",
@@ -813,11 +909,29 @@
       "accent": "#e62832",
       "pool": false
     },
+    "tumble_strike": {
+      "school": "steel",
+      "glyph": "tumble",
+      "accent": "#aac8e6",
+      "pool": false
+    },
+    "tumblers_edge": {
+      "school": "ember",
+      "glyph": "tumble",
+      "accent": "#ff8c32",
+      "pool": false
+    },
     "venom_ground": {
       "school": "venom",
       "glyph": "venom",
       "accent": "#96f03c",
       "pool": true
+    },
+    "venom_tumble": {
+      "school": "venom",
+      "glyph": "tumble",
+      "accent": "#96f03c",
+      "pool": false
     },
     "war_cry": {
       "school": "war",
@@ -870,6 +984,12 @@
     "whisp_spirit_tether": {
       "school": "spirit",
       "glyph": "chains",
+      "accent": "#a0ffd2",
+      "pool": false
+    },
+    "windrunner": {
+      "school": "spirit",
+      "glyph": "tumble",
       "accent": "#a0ffd2",
       "pool": false
     },
