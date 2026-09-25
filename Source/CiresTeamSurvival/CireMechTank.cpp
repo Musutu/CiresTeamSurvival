@@ -29,9 +29,8 @@ ACireMechTank* ACireMechTank::SpawnFor(ACireHero* Owner, FVector Point, FString*
     FCollisionQueryParams Params(SCENE_QUERY_STAT(CireMechPlacement), false);
     FVector P = Point;
     FHitResult Floor;
-    if (!World->LineTraceSingleByObjectType(Floor, P + FVector(0, 0, 300), P - FVector(0, 0, 600), FCollisionObjectQueryParams(ECC_WorldStatic), Params))
-        return Fail(TEXT("no ground"));
-    P.Z = Floor.ImpactPoint.Z + 120.f;
+    if (World->LineTraceSingleByObjectType(Floor, P + FVector(0, 0, 300), P - FVector(0, 0, 1200), FCollisionObjectQueryParams(ECC_WorldStatic), Params))
+        P.Z = Floor.ImpactPoint.Z + 120.f;
     const FCireAbilityDef* D = CireAbilityDB::Find(TEXT("mechanical_tank"));
     FCireSummonSpec Spec;
     Spec.Count = 1; Spec.ArchetypeVisual = 0; Spec.bCommandable = false;

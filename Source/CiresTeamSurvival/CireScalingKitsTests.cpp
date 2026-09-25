@@ -98,7 +98,9 @@ bool CireKits::RunSmoke(ACireGameMode* Mode)
     // ---- 2. summons / constructs: owner primary, attack speed, CDR ----
     ACireMechTank* Mech = nullptr;
     {
-        Mech = ACireMechTank::SpawnFor(Tank, Origin + FVector(100, -250, 0));
+        FString Why;
+        Mech = ACireMechTank::SpawnFor(Tank, Origin + FVector(100, -250, 0), &Why);
+        if (!Mech) UE_LOG(LogCireKitsTests, Error, TEXT("CIRE_KITS_MECH_SPAWN %s"), *Why);
         Check(Mech != nullptr, TEXT("Mechanical Tank spawns"));
         if (Mech)
         {

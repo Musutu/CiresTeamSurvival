@@ -3,6 +3,7 @@
 // Run by -CireCombatExpansionProbe (Tools/RunExpansionChecks.py --only native) and by
 // Tools/RunProgressionChecks.py. Pure rules are covered natively by Tests/ItemRulesTests.cpp.
 #include "CireItems.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireLoot.h"
 #include "CireSkillShop.h"
 #include "CireGame.h"
@@ -201,7 +202,8 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     Inv->Equipment[0].Id = N(TEXT("gravewarden_bulwark"));
     Inv->Equipment[1].Id = N(TEXT("bloodletter"));
     Inv->Invalidate();
-    Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Monster attack"), 100.f), 100.f * (1.f - 25.f / 125.f), .01f), TEXT("armor mitigates basic attacks"));
+    const float KitArmor = 25.f * CireKits::DefenseMultiplier(Hero); // scaling-kits: shield tanks carry -10% armour
+    Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Monster attack"), 100.f), 100.f * (1.f - KitArmor / (100.f + KitArmor)), .01f), TEXT("armor mitigates basic attacks"));
     Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), 100.f), TEXT("armor does not mitigate spells"));
     Hero->Health = 100;
     OnDamageDealt(Hero, Target, 100.f, TEXT("sword strike"));
