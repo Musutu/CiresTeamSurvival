@@ -1,4 +1,5 @@
 #include "CireNPCCombat.h"
+#include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireLoot.h" // progression-shop: NPC pause
 #include "CireGame.h"
 #include "CireThreat.h"
@@ -62,6 +63,7 @@ void ClearCast(ACireMonster* M)
 }
 void BeginCast(ACireMonster* M,const FCireNPCAbility& A,FVector Aim,bool bProjectile)
 {
+    if(CireCrowdControl::IsSilenced(M)||CireCrowdControl::IsStunned(M))return; // champion-draft: silenced/stunned monsters cannot cast
     const float Now=NowOf(M);
     M->CastingAbility=A.Id.ToString();M->CastStartedAt=Now;M->CastEndsAt=Now+FMath::Max(A.CastTime,.05f);
     M->PendingAim=Aim;M->bPendingSkillshot=bProjectile;
@@ -462,7 +464,7 @@ float CireNPCCombat::ModifyIncomingDamage(ACireMonster* M,ACireHero* Attacker,fl
     static int32 Depth=0;
     if(!IsValid(M)||!M->HasAuthority()||!FMath::IsFinite(Amount)||Amount<=0)return Amount;
     auto* S=St(M);const auto* A=Arch(M);const float Now=NowOf(M);
-    if(A)Amount*=1.f-A->Armor;
+    if(A)Amount*=1.f-A->Armor*CireCrowdControl::ArmorMultiplier(M); // champion-draft: armor break
     if(S&&S->ShieldWallUntil>Now)Amount*=1.f-S->ShieldWallReduction;
     if(Attacker)if(auto* Mode=M->GetWorld()->GetAuthGameMode<ACireGameMode>())
         for(auto* Other:Mode->Monsters)

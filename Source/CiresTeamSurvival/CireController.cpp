@@ -1,5 +1,6 @@
 #include "CireWaves.h" // wave-director
 #include "CireGame.h"
+#include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireShopFixtures.h" // progression-shop
 #include "CireItems.h" // progression-shop
 #include "Engine/World.h"
@@ -272,7 +273,7 @@ void ACireController::PlayerTick(float Dt) {
             else ServerAction(6,0,nullptr);
         }
     }
-    if(H->bDead||!H->bDrafted||bShop)return;
+    if(H->bDead||!H->bDrafted||bShop||CireCrowdControl::IsStunned(H))return; // champion-draft: stunned: no movement, jump or dodge
     if(Keys.WasPressed(this,TEXT("Jump")))H->Jump();
     if(H->Mobility)
     {

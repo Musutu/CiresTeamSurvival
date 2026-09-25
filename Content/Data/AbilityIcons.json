@@ -177,6 +177,12 @@
       "accent": "#aac8e6",
       "pool": true
     },
+    "decimating_strike": {
+      "school": "blood",
+      "glyph": "cleave",
+      "accent": "#e62832",
+      "pool": true
+    },
     "deep_reserves": {
       "school": "arcane",
       "glyph": "reserves",
@@ -247,6 +253,12 @@
       "school": "fire",
       "glyph": "ember_lance",
       "accent": "#ff781e",
+      "pool": true
+    },
+    "executioner": {
+      "school": "steel",
+      "glyph": "skull",
+      "accent": "#aac8e6",
       "pool": true
     },
     "executioners_verdict": {

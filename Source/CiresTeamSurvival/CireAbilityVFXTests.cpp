@@ -1,5 +1,6 @@
 // ability-vfx: native tests for shape-true telegraphs, line indicators, lifecycles, release sync and budgets.
 #include "CireAbilityVFX.h"
+#include "CireCrowdControl.h" // champion-draft
 #if !UE_BUILD_SHIPPING
 #include "CireAbilityLibrary.h"
 #include "CireAbilityShapes.h"
@@ -214,7 +215,7 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
         {
             auto* In=MakeHero(Stage+FVector(0,Radius-25.f,0),0,TEXT("knight"));auto* Out=MakeHero(Stage+FVector(0,-(Radius+25.f),0),0,TEXT("knight"));
             if(!In||!Out)return;In->Health=Out->Health=100;In->ShieldUntil=Out->ShieldUntil=0;
-            Ready(Hero,Id);Hero->Target=nullptr;Hero->Cast(0);
+            Ready(Hero,Id);Hero->Target=nullptr;Hero->Cast(0);CireCrowdControl::CompleteCastNow(Hero); // champion-draft: resolve timed heals
             const bool bInside=In->Health>100||In->ShieldUntil>0,bOutside=Out->Health>100||Out->ShieldUntil>0;
             Check(bInside&&!bOutside,FString(Id)+FString::Printf(TEXT(" reaches allies inside its drawn %.0f cm radius only"),Radius));
             PurgeNew();In->SetActorLocation(Stage+FVector(-4000,0,92));Out->SetActorLocation(Stage+FVector(-4000,300,92));
