@@ -87,9 +87,9 @@ struct CIRESTEAMSURVIVAL_API FCireWaveConfig
     int32 CycleExtraUnits = 0;
     /** Stall failsafe: a wave older than this (seconds after its last spawn) has its leftovers march, then despawn. */
     bool bStallFailsafe = true;
-    float MaxWaveSeconds = 120.f;
+    float MaxWaveSeconds = 100.f; // balance (pacing): 120 -> 100, stragglers held whole cycles
     ECireWaveFailsafe FailsafeAction = ECireWaveFailsafe::March;
-    float FailsafeGraceSeconds = 30.f;
+    float FailsafeGraceSeconds = 20.f; // balance (pacing): 30 -> 20
     /** Stuck detection: a wave unit that makes no progress for this long is nudged along its route. */
     float StuckSeconds = 5.f;
     TArray<FCireWaveDef> Waves;

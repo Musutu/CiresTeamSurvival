@@ -81,8 +81,9 @@ FCireWaveDef CireWaveDirector::Template(ECireWaveType Type)
     {
     case ECireWaveType::Normal:
         W.Label = TEXT("Breach Vanguard");
-        W.Units = {Unit(TEXT("hollow_infantry"), 3, .9f, 1.25f), Unit(TEXT("ironbound_bruiser"), 2, .9f, 1.25f),
-                   Unit(TEXT("barbed_hunter"), 1, .9f, 1.25f), Unit(TEXT("blight_caster"), 1, .9f, 1.25f)};
+        // balance: early waves hit harder (damage 1.25 -> 1.4; wave 2 1.3 -> 1.45 with health .95 -> .85).
+        W.Units = {Unit(TEXT("hollow_infantry"), 3, .9f, 1.4f), Unit(TEXT("ironbound_bruiser"), 2, .9f, 1.4f),
+                   Unit(TEXT("barbed_hunter"), 1, .9f, 1.4f), Unit(TEXT("blight_caster"), 1, .9f, 1.4f)};
         break;
     case ECireWaveType::Armored:
     {
@@ -104,8 +105,8 @@ FCireWaveDef CireWaveDirector::Template(ECireWaveType Type)
     case ECireWaveType::Boss:
     {
         W.Label = TEXT("Siege Host"); W.SpawnInterval = .5f;
-        // pacing: the boss is 40% of its archetype health so a defended boss falls in about a minute.
-        FCireWaveUnit Boss = Unit(TEXT("hollow_siegebreaker"), 1, .4f, 1.f); Boss.bBoss = true;
+        // pacing: the boss is 30% of its archetype health (balance: 40 -> 30%, the boss wave held every cycle).
+        FCireWaveUnit Boss = Unit(TEXT("hollow_siegebreaker"), 1, .3f, 1.f); Boss.bBoss = true;
         W.Units = {Unit(TEXT("hollow_infantry"), 2, .95f, 1.2f), Unit(TEXT("ironbound_bruiser"), 2, .95f, 1.2f),
                    Unit(TEXT("blight_caster"), 1, .95f, 1.2f), Boss};
         W.RewardMultiplier = 1.5f;
@@ -138,10 +139,10 @@ FCireWaveConfig CireWaveDirector::Defaults()
     FCireWaveDef One = Template(ECireWaveType::Normal);
     FCireWaveDef Two = Template(ECireWaveType::Normal);
     Two.Label = TEXT("Breach Column"); // monster-races: race-neutral (the race is appended at runtime)
-    Two.Units = {Unit(TEXT("hollow_infantry"), 3, .95f, 1.3f), Unit(TEXT("ironbound_bruiser"), 2, .95f, 1.3f),
-                 Unit(TEXT("barbed_hunter"), 1, .95f, 1.3f), Unit(TEXT("blight_caster"), 1, .95f, 1.3f)};
+    Two.Units = {Unit(TEXT("hollow_infantry"), 3, .85f, 1.45f), Unit(TEXT("ironbound_bruiser"), 2, .85f, 1.45f),
+                 Unit(TEXT("barbed_hunter"), 1, .85f, 1.45f), Unit(TEXT("blight_caster"), 1, .85f, 1.45f)};
     // monster-races: wave 2 brings the race's special unit (hollow: grave hounds).
-    Two.Units.Add(Unit(TEXT("grave_hound"), 2, .95f, 1.3f));
+    Two.Units.Add(Unit(TEXT("grave_hound"), 2, .85f, 1.45f));
     C.Waves = {One, Two, Template(ECireWaveType::Armored), Template(ECireWaveType::ArmoredEscort), Template(ECireWaveType::Boss)};
     C.WavesPerCycle = C.Waves.Num();
     // Start on the hollow basics, bring in Eric's favourites (Blightwood, then the Drowned Deep), then the other races,
