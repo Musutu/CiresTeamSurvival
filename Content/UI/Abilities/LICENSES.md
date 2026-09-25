@@ -9,6 +9,15 @@ output; no third-party icon pack, traced game art or licensed asset is used. The
 are in `Art/Icons/ChatGPT/abilities_*.png` and `ui_*.png`, sliced to 256x256 by
 `Tools/SliceIconSheet.py`.
 
+## New-champion kits (art-2d)
+
+The 40 kit icons of Gunblade, Witch Slayer, Huntress, Aetheri Artificer and Aetheri Warden (all actives,
+passives, ultimates and Construct skills) and the redrawn `sanctuary` (healing spring), `protection_dome`
+(Aegis Dome: crystal hex barrier) and `mass_aegis` (winged shield ring) icons are painted icons
+**generated for Eric via ChatGPT (OpenAI), 2026-09-25**, from the sheets
+`Art/Icons/ChatGPT/abilities_{gunblade,witch_slayer,huntress,aetheri_artificer,aetheri_warden}.png`
+(the Aetheri sheets' 9th tile is an unused emblem).
+
 ## Procedural icons
 
 Any future `T_<id>` without a painted PNG falls back to original procedural art from `Tools/BuildAbilityIcons.py`

@@ -7,6 +7,10 @@ writes Saved/DraftPortraits/<stamp>/<profile_id>.png (512x512).
 Step 2 runs Tools/ImportDraftPortraits.py in UnrealEditor-Cmd to import them as
 /Game/UI/Draft/Portraits/T_Portrait_<profile_id>. Only child processes started
 here are ever stopped. --ids limits the run to a comma-separated subset.
+
+Painted overrides: Art/DraftPortraits/Painted/<profile_id>.png (512x512 portraits generated for Eric via
+ChatGPT from the renders, for bodies whose renders read pale; see Content/UI/Draft/LICENSES.md) replace
+the render of that id before import; pass --rendered to keep the raw renders.
 """
 from __future__ import annotations
 
@@ -45,6 +49,7 @@ def main() -> int:
     parser.add_argument("--ids", help="Comma-separated profile ids (default: whole roster)")
     parser.add_argument("--skip-import", action="store_true")
     parser.add_argument("--import-dir", type=Path, help="Skip rendering; import an existing Saved/DraftPortraits/<stamp> folder")
+    parser.add_argument("--rendered", action="store_true", help="Ignore the painted overrides in Art/DraftPortraits/Painted")
     args = parser.parse_args()
     folder = ROOT / "Saved/DraftPortraitChecks" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     folder.mkdir(parents=True)
@@ -65,6 +70,11 @@ def main() -> int:
     errors = [line for line in text.splitlines() if "CIRE_DRAFT_PORTRAIT FAIL" in line or "Fatal error:" in line]
     portraits = []
     directory = Path(match.group(2).strip()) if match else None
+    painted_dir = ROOT / "Art/DraftPortraits/Painted"
+    if directory and not args.rendered and painted_dir.is_dir() and directory.resolve() != painted_dir.resolve():
+        for painted in painted_dir.glob("*.png"):
+            if (directory / painted.name).is_file():
+                (directory / painted.name).write_bytes(painted.read_bytes())
     if directory:
         for png in sorted(directory.glob("*.png")):
             with png.open("rb") as stream:
