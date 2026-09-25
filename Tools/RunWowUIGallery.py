@@ -13,10 +13,14 @@ import struct
 import subprocess
 import time
 
-STAGES = 28
+STAGES = 30
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--theme", help="ui-themes: render with this UI theme id (-CireUITheme=<id>), e.g. Ironbound")
+    args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     directory = root / "Saved/WowUIGalleryChecks" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     directory.mkdir(parents=True)
@@ -24,13 +28,13 @@ def main():
     command = ["F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe", str(root / "CiresTeamSurvival.uproject"),
                "/Game/Maps/Citadel", "-game", "-CireWowUIGallery", "-RenderOffscreen", "-ForceRes",
                "-ResX=1920", "-ResY=1080", "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding",
-               "-ExecCmds=t.MaxFPS 60", f"-abslog={log}"]
+               "-ExecCmds=t.MaxFPS 60", f"-abslog={log}"] + ([f"-CireUITheme={args.theme}"] if args.theme else [])
     failures, started = [], time.monotonic()
     with (directory / "console.log").open("wb") as output:
         child = subprocess.Popen(command, cwd=root, stdout=output, stderr=subprocess.STDOUT,
                                  creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         try:
-            code = child.wait(timeout=240)
+            code = child.wait(timeout=300)
         except subprocess.TimeoutExpired:
             child.terminate()
             try:
@@ -38,7 +42,7 @@ def main():
             except subprocess.TimeoutExpired:
                 child.kill()
                 code = child.wait(timeout=5)
-            failures.append("WoW UI gallery exceeded its 240-second process bound")
+            failures.append("WoW UI gallery exceeded its 300-second process bound")
     contents = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""
     match = re.search(r"CIRE_WOWUI_GALLERY_PASS captures=(\d+) checks=(\d+) directory=(.+)", contents)
     failures += [line for line in contents.splitlines()

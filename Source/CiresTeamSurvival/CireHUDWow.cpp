@@ -3,6 +3,7 @@
 // Everything here is local presentation; it reads replicated/authoritative state and
 // never changes combat rules.
 #include "CireHUD.h"
+#include "CireUITheme.h" // ui-themes
 #include "CireArenas.h" // arenas
 #include "CireGame.h"
 #include "CireConstruct.h"
@@ -34,7 +35,8 @@
 
 namespace
 {
-const FLinearColor Gold(.77f,.61f,.34f,1.f), Parchment(.91f,.90f,.83f,1.f), Muted(.50f,.57f,.59f,1.f);
+// ui-themes: themed colours are references to CireUIColors so they follow the active UI theme.
+const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment, &Muted=CireUIColors::Muted;
 const FLinearColor Teal(.20f,.71f,.59f,1.f), Red(.75f,.20f,.23f,1.f), Purple(.66f,.46f,.83f,1.f);
 // WoW reaction colours: hostile red, neutral yellow, friendly green; unit health is green.
 const FLinearColor Hostile(.95f,.20f,.16f,1.f), Neutral(1.f,.86f,.18f,1.f), Friendly(.16f,.92f,.24f,1.f);
@@ -287,6 +289,7 @@ ACireHUD::ACireHUD()
 {
     // Hard references cook the style kit's OFL font faces / textures and the UI sounds.
     for(const FString& Path:CireUIStyle::AssetPaths()){ConstructorHelpers::FObjectFinderOptional<UObject> Finder(*Path);if(Finder.Get())WowAssetRefs.Add(Finder.Get());}
+    for(const FString& Path:CireUITheme::AssetPaths()){ConstructorHelpers::FObjectFinderOptional<UObject> Finder(*Path);if(Finder.Get())WowAssetRefs.Add(Finder.Get());} // ui-themes: cook every theme
     const TCHAR* Sounds[]={TEXT("/Game/UI/WowUI/Sounds/S_LevelUp.S_LevelUp"),TEXT("/Game/UI/WowUI/Sounds/S_AggroGained.S_AggroGained"),
         TEXT("/Game/UI/WowUI/Sounds/S_ThreatWarning.S_ThreatWarning"),TEXT("/Game/UI/WowUI/Sounds/S_AggroLost.S_AggroLost"),
         TEXT("/Game/UI/WowUI/Sounds/S_TargetSelect.S_TargetSelect"),TEXT("/Game/UI/WowUI/Sounds/S_BannerHorn.S_BannerHorn"),
@@ -350,10 +353,13 @@ void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
     const FString IconId=U.bConstruct?TEXT("runic_wall"):RoleIcon(U.Role);
     Icon(IconId,CX-R*.62f,CY-R*.62f,R*1.24f,U.bDead?Muted:U.bMonster?RoleTint(U.Role):ReactionColor(U)*.9f+FLinearColor(.1f,.1f,.1f,0));
     if(U.bDead){Disc(CX,CY,R,FLinearColor(0,0,0,.55f));}
-    Circle(CX,CY,R,Trim,bSmall?1.6f:2.2f);Circle(CX,CY,R+2.5f,FLinearColor(0,0,0,.9f),1.f);
+    const bool bThemed=CireUIStyle::HasThemeArt();
+    if(bThemed)CireUIStyle::PortraitRing(Painter(),CX,CY,R,U.Class>=1||(U.bMonster&&U.Rank>0)?Trim*1.25f+FLinearColor(.1f,.1f,.1f,0):FLinearColor::White); // ui-themes
+    else{Circle(CX,CY,R,Trim,bSmall?1.6f:2.2f);Circle(CX,CY,R+2.5f,FLinearColor(0,0,0,.9f),1.f);}
     // Level badge (bottom-left): hero level, elite tier, or a skull for bosses.
     const float BR=bSmall?8.f:10.5f,BX=CX-R*.78f,BY=CY+R*.74f;
-    Disc(BX,BY,BR+1.5f,FLinearColor(0,0,0,.9f));Disc(BX,BY,BR,FLinearColor(.07f,.06f,.04f,1));Circle(BX,BY,BR,Trim,1.2f,20);
+    if(bThemed)CireUIStyle::Medallion(Painter(),BX,BY,BR,FString(),FLinearColor::White);
+    else{Disc(BX,BY,BR+1.5f,FLinearColor(0,0,0,.9f));Disc(BX,BY,BR,FLinearColor(.07f,.06f,.04f,1));Circle(BX,BY,BR,Trim,1.2f,20);}
     if(U.Class==3)
     {
         Disc(BX,BY-BR*.12f,BR*.55f,Parchment);Panel(BX-BR*.3f,BY+BR*.25f,BR*.6f,BR*.32f,Parchment);
@@ -382,6 +388,8 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     UsePanel(bFocus?TEXT("Focus"):TEXT("Target"),W,H);
     auto Backdrop=[&](FLinearColor Border)
     {
+        // ui-themes: the kit's unit frame (themed art); the border colour becomes its state accent.
+        if(CireUIStyle::HasThemeArt()){CireUIStyle::Frame(Painter(),0,0,W,H,Border,ECireFrame::Unit);return;}
         Panel(2,3,W,H,FLinearColor(0,0,0,.35f));Panel(0,0,W,H,FLinearColor(.012f,.014f,.02f,.84f));
         Panel(0,0,W,H*.35f,FLinearColor(1,1,1,.025f));
         Line(0,0,W,0,Border,1.2f);Line(0,H,W,H,Border*.6f);Line(0,0,0,H,Border*.6f);Line(W,0,W,H,Border*.6f);
@@ -419,15 +427,16 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     Panel(10,NY,BW,NH,React*FLinearColor(.42f,.42f,.42f,.92f));Panel(10,NY,BW,NH*.45f,FLinearColor(1,1,1,.07f));
     TextFx(Painter().Fit(U.Name,bFocus?11.f:13.f,BW-8,ECireFont::Bold),14,NY+(bFocus?1.f:1.5f),bFocus?11.f:13.f,FLinearColor::White,ECireFont::Bold,true,false);
     const float HY=NY+NH+2,HH=bFocus?13.f:18.f;
-    Panel(10,HY,BW,HH,FLinearColor(0,0,0,.85f));
     const float HF=Frac(U.HP,U.MaxHP);
-    Panel(11,HY+1,(BW-2)*HF,HH-2,U.bDead?Muted*.5f:HealthGreen);Panel(11,HY+1,(BW-2)*HF,(HH-2)*.4f,FLinearColor(1,1,1,.16f));
+    if(CireUIStyle::HasThemeArt())Bar(10,HY,BW,HH,HF,U.bDead?Muted*.5f:HealthGreen); // ui-themes: kit bar (themed frame, trailing chunk)
+    else{Panel(10,HY,BW,HH,FLinearColor(0,0,0,.85f));
+    Panel(11,HY+1,(BW-2)*HF,HH-2,U.bDead?Muted*.5f:HealthGreen);Panel(11,HY+1,(BW-2)*HF,(HH-2)*.4f,FLinearColor(1,1,1,.16f));}
     const float HS=bFocus?9.f:10.5f;
     const FString HPText=U.bDead?TEXT("DEAD"):FString::Printf(TEXT("%.0f / %.0f"),U.HP,U.MaxHP),Pct=FString::Printf(TEXT("%.0f%%"),HF*100);
     TextFx(HPText,10+(BW-TextWidthFont(HPText,HS,ECireFont::Numbers))*.5f,HY+(HH-HS)*.5f-1.5f,HS,FLinearColor::White,ECireFont::Numbers,true,false);
     if(!bFocus&&!U.bDead)TextFx(Pct,10+BW-4-TextWidthFont(Pct,9,ECireFont::Numbers),HY+(HH-9)*.5f-1.5f,9,Parchment,ECireFont::Numbers,true,false);
     float Y=HY+HH+1;
-    if(U.MaxMP>0){Panel(10,Y,BW,bFocus?5.f:7.f,FLinearColor(0,0,0,.85f));Panel(11,Y+1,(BW-2)*Frac(U.MP,U.MaxMP),bFocus?3.f:5.f,ManaBlue);Y+=bFocus?6.f:8.f;}
+    if(U.MaxMP>0){if(CireUIStyle::HasThemeArt())Bar(10,Y+1,BW,bFocus?5.f:7.f,Frac(U.MP,U.MaxMP),ManaBlue);else{Panel(10,Y,BW,bFocus?5.f:7.f,FLinearColor(0,0,0,.85f));Panel(11,Y+1,(BW-2)*Frac(U.MP,U.MaxMP),bFocus?3.f:5.f,ManaBlue);}Y+=bFocus?6.f:8.f;}
     // Target of target.
     Y+=3;
     const bool bOnMe=U.Victim&&U.Victim==Self;
@@ -449,8 +458,14 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
         for(int32 I=0;I<Count;++I)
         {
             const float AX=W-10-(Count-I)*(S+3);
-            Panel(AX,RowY,S,S,FLinearColor(0,0,0,.8f));Icon(U.Abilities[I].Id,AX+1.5f,RowY+1.5f,S-3,U.bMonster?RoleTint(U.Role):Gold);
-            Line(AX,RowY,AX+S,RowY,Gold*.6f);
+            if(CireUIStyle::HasThemeArt())
+            {
+                // ui-themes: kit icon slots for the unit's abilities.
+                FCireIconSlot Slot;Slot.IconId=U.Abilities[I].Id;Slot.IconTexture=CireUIStyle::FindAbilityIcon(Slot.IconId);Slot.Tint=U.bMonster?RoleTint(U.Role):Gold;
+                CireUIStyle::IconSlot(Painter(),AX,RowY,S,Slot,GetWorld()->GetRealTimeSeconds());
+            }
+            else{Panel(AX,RowY,S,S,FLinearColor(0,0,0,.8f));Icon(U.Abilities[I].Id,AX+1.5f,RowY+1.5f,S-3,U.bMonster?RoleTint(U.Role):Gold);
+            Line(AX,RowY,AX+S,RowY,Gold*.6f);}
             Tip(U.Abilities[I].Name,U.Abilities[I].Text,AX,RowY,S,S);
         }
     }
@@ -506,11 +521,18 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
     {
         ACireMonster* M=Units[I];const float Y=I*50.f;
         const bool bSelected=Hero->Target==M;
-        Panel(2,Y+3,220,46,FLinearColor(0,0,0,.3f));Panel(0,Y,220,46,FLinearColor(.012f,.014f,.02f,.86f));
         const bool bSkull=IsBossClass(M);
-        Line(0,Y,220,Y,bSkull?Hostile:WowGold,bSelected?2.f:1.f);if(bSelected){Line(0,Y+46,220,Y+46,Parchment,1.5f);}
+        if(CireUIStyle::HasThemeArt())
+        {
+            // ui-themes: each boss row is a kit unit frame; selection glows in the theme accent.
+            CireUIStyle::Frame(Painter(),0,Y,220,46,bSelected?CireUIColors::ThemeAccent*1.3f:Gold,ECireFrame::Unit);
+            if(bSelected)CireUIStyle::Glow(Painter(),0,Y,220,46,CireUIColors::ThemeGlow*FLinearColor(1,1,1,.18f));
+        }
+        else{Panel(2,Y+3,220,46,FLinearColor(0,0,0,.3f));Panel(0,Y,220,46,FLinearColor(.012f,.014f,.02f,.86f));
+        Line(0,Y,220,Y,bSkull?Hostile:WowGold,bSelected?2.f:1.f);if(bSelected){Line(0,Y+46,220,Y+46,Parchment,1.5f);}}
         // Mini skull / dragon badge.
-        Disc(15,Y+15,9.5f,FLinearColor(.07f,.06f,.04f,1));Circle(15,Y+15,9.5f,bSkull?Hostile:WowGold,1.2f,20);
+        if(CireUIStyle::HasThemeArt())CireUIStyle::Medallion(Painter(),15,Y+15,9.5f,FString(),FLinearColor::White);
+        else{Disc(15,Y+15,9.5f,FLinearColor(.07f,.06f,.04f,1));Circle(15,Y+15,9.5f,bSkull?Hostile:WowGold,1.2f,20);}
         if(bSkull){Disc(15,Y+13.5f,5.2f,Parchment);Panel(12,Y+16.5f,6,3,Parchment);Disc(13,Y+13.5f,1.4f,FLinearColor(0,0,0,1),8);Disc(17,Y+13.5f,1.4f,FLinearColor(0,0,0,1),8);}
         else TextFx(FString::Printf(TEXT("T%d"),M->Tier),9.5f,Y+9.5f,8.5f,WowGold,ECireFont::Numbers,true,false);
         const bool bEnraged=M->NPCState&&M->NPCState->HasStatus(CireNPCStatus::Enraged);
@@ -525,7 +547,8 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
             TextFx(T,214-TextWidthFont(T,9,ECireFont::Numbers),Y+4,9,ThreatColor(Threat),ECireFont::Numbers,true,false);
         }
         const float HF=Frac(M->Health,M->MaxHealth);
-        Panel(30,Y+18,184,15,FLinearColor(0,0,0,.85f));Panel(31,Y+19,182*HF,13,HealthGreen);Panel(31,Y+19,182*HF,5,FLinearColor(1,1,1,.16f));
+        if(CireUIStyle::HasThemeArt())Bar(30,Y+18,184,15,HF,HealthGreen); // ui-themes
+        else{Panel(30,Y+18,184,15,FLinearColor(0,0,0,.85f));Panel(31,Y+19,182*HF,13,HealthGreen);Panel(31,Y+19,182*HF,5,FLinearColor(1,1,1,.16f));}
         const FString HP=FString::Printf(TEXT("%.0f / %.0f"),M->Health,M->MaxHealth),Pct=FString::Printf(TEXT("%.0f%%"),HF*100);
         TextFx(HP,35,Y+19,9.5f,FLinearColor::White,ECireFont::Numbers,true,false);
         TextFx(Pct,210-TextWidthFont(Pct,9.5f,ECireFont::Numbers),Y+19,9.5f,FLinearColor::White,ECireFont::Numbers,true,false);
@@ -558,10 +581,19 @@ void ACireHUD::DrawThreatMeter(ACireHero* Hero,ACireController* Controller)
     }
     if(!Source&&!bEditLayout)return;
     UsePanel(TEXT("Threat"),220,124);
-    if(!(UISettings.bThreatCollapsed&&!bEditLayout)){Panel(2,3,220,124,FLinearColor(0,0,0,.3f));Panel(0,0,220,124,FLinearColor(.012f,.014f,.02f,.8f));}
     const bool bCollapsed=UISettings.bThreatCollapsed&&!bEditLayout;
-    if(bCollapsed){/* header only */}
+    const bool bThemed=CireUIStyle::HasThemeArt();
+    if(bThemed)
+    {
+        // ui-themes: kit frame (collapsed = header card only), a dark red header strip under the art.
+        CireUIStyle::Frame(Painter(),0,0,220,bCollapsed?18.f:124.f,Gold,bCollapsed?ECireFrame::Card:ECireFrame::Unit);
+        Panel(3,3,214,15,FLinearColor(.3f,.05f,.04f,.55f));CireUIStyle::Divider(Painter(),4,19,212,FLinearColor(1,1,1,.8f));
+    }
+    else
+    {
+    if(!bCollapsed){Panel(2,3,220,124,FLinearColor(0,0,0,.3f));Panel(0,0,220,124,FLinearColor(.012f,.014f,.02f,.8f));}
     Panel(0,0,220,18,FLinearColor(.3f,.05f,.04f,.85f));Line(0,0,220,0,Hostile*.8f,1.2f);
+    }
     CireUIStyle::Chevron(Painter(),4,4,10,bCollapsed,Parchment);
     TextFx(TEXT("THREAT"),17,2,9.5f,Parchment,ECireFont::Heading,true,false);
     if(Clicked&&Hit(0,0,220,18)&&!bModal&&!bSettings&&!bEditLayout){UISettings.bThreatCollapsed=!UISettings.bThreatCollapsed;UISettings.Save();Clicked=false;}
@@ -581,8 +613,9 @@ void ACireHUD::DrawThreatMeter(ACireHero* Hero,ACireController* Controller)
         const float Pull=PullPercent(Source,H);
         const bool bMe=H==Hero,bAggro=H==Source->Victim;
         const ERole R=HeroRole(H);
-        Panel(4,Y,212,18,FLinearColor(0,0,0,.6f));
-        Panel(5,Y+1,210*FMath::Clamp(Pct/100.f,0.f,1.f),16,RoleTint(R)*FLinearColor(.55f,.55f,.55f,bMe?.95f:.75f));
+        if(bThemed)CireUIStyle::Bar(Painter(),6,Y+1,208,16,FMath::Clamp(Pct/100.f,0.f,1.f),RoleTint(R)*FLinearColor(.55f,.55f,.55f,bMe?.95f:.75f),nullptr,0); // ui-themes
+        else{Panel(4,Y,212,18,FLinearColor(0,0,0,.6f));
+        Panel(5,Y+1,210*FMath::Clamp(Pct/100.f,0.f,1.f),16,RoleTint(R)*FLinearColor(.55f,.55f,.55f,bMe?.95f:.75f));}
         if(bMe)Line(4,Y,216,Y,Parchment,1.2f);
         Icon(RoleIcon(R),7,Y+2,14,RoleTint(R)*1.2f);
         TextFx(FString::Printf(TEXT("%d. %s"),I+1,*Short(bMe?TEXT("You"):H->HeroName,15)),25,Y+1.5f,9.5f,bMe?FLinearColor::White:Parchment,ECireFont::Bold,true,false);
@@ -823,6 +856,7 @@ void ACireHUD::UpdateHoverUnit(ACireHero* Hero)
 void ACireHUD::TooltipBox(float X,float Y,float W,float H,FLinearColor Border)
 {
     const float O=UISettings.TooltipOpacity;
+    if(CireUIStyle::HasThemeArt()){CireUIStyle::TooltipFrame(Painter(),X,Y,W,H,Border,O);return;} // ui-themes
     Panel(X+2,Y+3,W,H,FLinearColor(0,0,0,.35f*O));
     Panel(X,Y,W,H,FLinearColor(.02f,.025f,.06f,O));
     Panel(X+1,Y+1,W-2,FMath::Min(22.f,H*.3f),FLinearColor(1,1,1,.035f*O));
@@ -1172,7 +1206,12 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         if(Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal){const FLinearColor RC=CireRaces::RankColor(Mob);Panel(PX-2.5f,Y-2.5f,PW+5,PH+5,RC*FLinearColor(1,1,1,Fade));}
         Panel(PX-1,Y-1,PW+2,PH+2,FLinearColor(0,0,0,.9f*Fade));
         const float HF=Frac(HP,MaxHP);
-        Panel(PX,Y,PW*HF,PH,Color*FLinearColor(1,1,1,Fade));Panel(PX,Y,PW*HF,PH*.4f,FLinearColor(1,1,1,.14f*Fade));
+        {
+            // ui-themes: themed gloss fill and a hairline trim in the theme colour (plates stay compact).
+            FCireUIPainter NP=Painter();NP.Alpha=Fade;
+            if(!CireUITheme::DrawBarFill(NP,PX,Y,PW*HF,PH,Color*1.2f)){Panel(PX,Y,PW*HF,PH,Color*FLinearColor(1,1,1,Fade));Panel(PX,Y,PW*HF,PH*.4f,FLinearColor(1,1,1,.14f*Fade));}
+            else{const FLinearColor T=CireUIColors::Gold*FLinearColor(1,1,1,.55f*Fade);Line(PX-1,Y-1,PX+PW+1,Y-1,T,1.f);Line(PX-1,Y+PH+1,PX+PW+1,Y+PH+1,T,1.f);}
+        }
         if(Selected)
         {
             const FString Pct=FString::Printf(TEXT("%.0f%%"),HF*100);

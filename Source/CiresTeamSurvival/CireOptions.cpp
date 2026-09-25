@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireUITheme.h" // ui-themes
 #include "CireGame.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -14,8 +15,11 @@
 
 namespace
 {
-const FLinearColor Ink(.014f,.020f,.026f,.98f),Card(.034f,.046f,.055f,.98f),Hover(.075f,.106f,.116f,1);
-const FLinearColor Gold(.77f,.61f,.34f,1),Parchment(.91f,.9f,.83f,1),Muted(.50f,.57f,.59f,1),Teal(.20f,.71f,.59f,1),Red(.75f,.20f,.23f,1);
+// ui-themes: themed colours are references to CireUIColors so they follow the active UI theme.
+const FLinearColor &Ink=CireUIColors::Ink, &Card=CireUIColors::Card, &Hover=CireUIColors::Hover;
+// ui-themes: themed colours are references to CireUIColors so they follow the active UI theme.
+const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment, &Muted=CireUIColors::Muted;
+const FLinearColor Teal(.20f,.71f,.59f,1), Red(.75f,.20f,.23f,1);
 }
 void ACireHUD::PlayUIFeedback()
 {
@@ -214,8 +218,9 @@ void ACireHUD::DrawSettings()
     }
     else if(OptionsTab==1)
     {
-        const TCHAR* Pages[]={TEXT("Combat text"),TEXT("Tooltips"),TEXT("Status / chat"),TEXT("Scale / threat")};
-        for(int32 I=0;I<4;++I){if(InterfacePage==I)Panel(L+I*155,Top,146,27,Hover);if(Button(Pages[I],L+I*155,Top,146))InterfacePage=I;}
+        // ui-themes: a fifth page for the UI theme (5 page buttons now share the row).
+        const TCHAR* Pages[]={TEXT("Combat text"),TEXT("Tooltips"),TEXT("Status / chat"),TEXT("Scale / threat"),TEXT("UI theme")};
+        for(int32 I=0;I<5;++I){if(InterfacePage==I)Panel(L+I*126,Top,120,27,Hover);if(Button(Pages[I],L+I*126,Top,120))InterfacePage=I;}
         const float B=Top+48;
         if(InterfacePage==0)
         {
@@ -284,6 +289,7 @@ void ACireHUD::DrawSettings()
             if(Button(FString(TEXT("Overhead status: "))+Overhead[FMath::Clamp(UISettings.OverheadStatusMode,0,2)],L,B+285,286,TEXT("Status chips above heads: STUN / SILENCE / ROOT with a duration ring, ATK / DEF / SPD arrows for stat changes. Far units show crowd control only.")))
             {UISettings.OverheadStatusMode=(UISettings.OverheadStatusMode+1)%3;UISettings.Save();}
         }
+        else if(InterfacePage==4)DrawThemePicker(L,B);
         else
         {
             Toggle(TEXT("Automatic interface scale"),UISettings.bAutoUIScale,L,B,TEXT("Chooses the scale from your resolution: 100% up to 1080p, slightly smaller on 1440p/4K displays."));
@@ -374,4 +380,63 @@ void ACireHUD::DrawSettings()
     Line(X+20,Y+535,X+820,Y+535,Gold*.3f);
     Label(TEXT("F9 / Escape closes Options"),X+23,Y+553,11,Muted);
     if(Button(TEXT("SAVE & CLOSE"),X+628,Y+547,189)){RevertVideoPreview();UISettings.Save();bSettings=false;}
+}
+
+// ---------------------------------------------------------------------------
+// ui-themes: Options > Interface > UI theme. Three cards, each a live miniature of the HUD drawn
+// with that theme (the theme is activated just for its card, then the profile's theme returns).
+// ---------------------------------------------------------------------------
+void ACireHUD::DrawThemePicker(float L,float B)
+{
+    const TArray<FCireUITheme>& Themes=CireUITheme::All();
+    const FName Current=CireUITheme::Active()?CireUITheme::Active()->Id:NAME_None;
+    const double Now=GetWorld()?GetWorld()->GetRealTimeSeconds():0.0;
+    Label(TEXT("UI THEME / THE WHOLE INTERFACE SWITCHES TOGETHER"),L,B-4,11,Gold);
+    const int32 N=FMath::Clamp(Themes.Num(),1,4);
+    const float Gap=10,CW=(628-Gap*(N-1))/N,CH=336,CY=B+18;
+    FName Picked=NAME_None;
+    for(int32 I=0;I<N;++I)
+    {
+        const FCireUITheme& T=Themes[I];
+        const float CX=L+I*(CW+Gap);
+        const bool bSelected=FName(*UISettings.UITheme)==T.Id,bOver=Hit(CX,CY,CW,CH);
+        CireUITheme::SetActive(T.Id); // this card draws in its own theme
+        FCireUIPainter P=Painter();
+        if(bSelected||bOver)CireUIStyle::Glow(P,CX-2,CY-2,CW+4,CH+4,CireUIColors::ThemeGlow*FLinearColor(1,1,1,bSelected?.45f:.22f));
+        CireUIStyle::Frame(P,CX,CY,CW,CH,bSelected?CireUIColors::ThemeAccent*1.3f:CireUIColors::Gold,ECireFrame::Panel);
+        P.Text(T.Name.ToUpper(),CX+(CW-P.TextWidth(T.Name.ToUpper(),12,ECireFont::Display))*.5f,CY+12,12,CireUIColors::TitleText,ECireFont::Display,false,true);
+        CireUIStyle::Divider(P,CX+14,CY+34,CW-28);
+        P.Wrapped(T.Tagline,CX+12,CY+42,CW-24,9,CireUIColors::Muted,4,ECireFont::Body,2.f);
+        // Miniature unit frame: portrait ring, name, health and mana bars.
+        const float UY=CY+94;
+        CireUIStyle::Frame(P,CX+10,UY,CW-20,64,CireUIColors::Gold,ECireFrame::Unit);
+        P.Disc(CX+36,UY+32,17,FLinearColor(.035f,.04f,.06f,1));CireUIStyle::Sigil(P,TEXT("role0"),CX+24,UY+20,24,CireUIColors::Gold);
+        CireUIStyle::PortraitRing(P,CX+36,UY+32,17);
+        P.Text(TEXT("Iron Warden"),CX+62,UY+8,10,CireUIColors::Parchment,ECireFont::Bold,false,true);
+        CireUIStyle::Bar(P,CX+62,UY+24,CW-86,12,.78f,CireUIColors::Health,nullptr,Now,TEXT("1320 / 1650"),8);
+        CireUIStyle::Bar(P,CX+62,UY+41,CW-86,8,.62f,CireUIColors::Mana,nullptr,Now);
+        // Action slots: normal, hover, passive, ultimate (ready glow).
+        const float SY=UY+78,S=FMath::Min(34.f,(CW-28-3*8)/4);
+        const TCHAR* Ids[]={TEXT("shield_slam"),TEXT("iron_guard"),TEXT("stone_skin"),TEXT("bastion_of_dawn")};
+        for(int32 K=0;K<4;++K)
+        {
+            FCireIconSlot Slot;Slot.IconId=Ids[K];Slot.IconTexture=CireUIStyle::FindAbilityIcon(Slot.IconId);Slot.Tint=CireUIColors::Gold;
+            Slot.KeyLabel=K<2?FString::FromInt(K+1):FString();Slot.Kind=K==2?ECireSlotKind::Passive:K==3?ECireSlotKind::Ultimate:ECireSlotKind::Normal;
+            Slot.bHover=K==1;Slot.bGlow=K==3;Slot.CooldownFraction=K==0?.4f:0.f;Slot.CooldownRemaining=K==0?3.f:0.f;
+            CireUIStyle::IconSlot(P,CX+14+K*(S+8),SY,S,Slot,Now);
+        }
+        // Cast bar and a tooltip sample.
+        CireUIStyle::CastBar(P,CX+20,SY+S+14,CW-40,12,.6f,CireUIColors::Cast,TEXT("Restoring Light"),TEXT("0.7"),8.f);
+        CireUIStyle::Tooltip(P,CX+14,SY+S+38,CW-28,TEXT("Shield Slam"),TEXT("Melee strike that slows and draws attention."),.78f,.94f);
+        const FString State=bSelected?TEXT("ACTIVE"):TEXT("SELECT");
+        CireUIStyle::Button(P,CX+24,CY+CH-34,CW-48,24,State,bSelected?ECireButtonState::Selected:bOver?ECireButtonState::Hover:ECireButtonState::Normal,CireUIColors::ThemeAccent,10.f);
+        if(bOver&&Clicked){Clicked=false;Picked=T.Id;}
+        Tip(T.Name,T.Tagline+TEXT(" Click to use this theme; it is saved in your profile."),CX,CY,CW,CH);
+    }
+    CireUITheme::SetActive(Current); // restore the live theme for the rest of the frame
+    if(!Picked.IsNone()&&Picked.ToString()!=UISettings.UITheme)
+    {
+        UISettings.UITheme=Picked.ToString();UISettings.Save();PlayUIFeedback();
+        CireUITheme::SetActive(Picked);
+    }
 }

@@ -39,8 +39,9 @@ struct FCireRouteEditorState
 
 namespace
 {
-const FLinearColor Gold(.77f, .61f, .34f, 1), Parchment(.91f, .9f, .83f, 1), Muted(.5f, .57f, .59f, 1), Teal(.2f, .71f, .59f, 1),
-    Red(.75f, .2f, .23f, 1), Purple(.66f, .46f, .83f, 1), Orange(1.f, .55f, .1f, 1);
+// ui-themes: themed colours are references to CireUIColors so they follow the active UI theme.
+const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment, &Muted=CireUIColors::Muted;
+const FLinearColor Teal(.2f, .71f, .59f, 1), Red(.75f, .2f, .23f, 1), Purple(.66f, .46f, .83f, 1), Orange(1.f, .55f, .1f, 1);
 constexpr float ToolbarW = 344.f, ToolbarH = 336.f;
 FVector2D LocalOf(int32 Team, const FVector& World) { return FVector2D(World.X, World.Y - CireLanePath::CenterY(Team)); }
 FVector WorldOf(int32 Team, const FVector2D& Local, float Z = 5.f) { return FVector(Local.X, Local.Y + CireLanePath::CenterY(Team), Z); }

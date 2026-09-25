@@ -1,4 +1,5 @@
 #include "CireOptionsGallery.h"
+#include "CireUITheme.h" // ui-themes
 #if !UE_BUILD_SHIPPING
 #include "CireGame.h"
 #include "CireHUD.h"
@@ -102,7 +103,8 @@ const FStage Stages[]={
     {TEXT("13_options_combat_text")},{TEXT("14_options_tooltips")},{TEXT("15_layout_editor")},
     {TEXT("16_action_bars_states")},{TEXT("17_quick_keybind")},{TEXT("18_keybindings_page")},{TEXT("19_banner_wave")},{TEXT("20_ability_tooltip")},
     {TEXT("21_gameplay_hover_combat_text")},{TEXT("22_gameplay_hover_centre")},{TEXT("23_layout_panel_help")},
-    {TEXT("24_callout_buff")},{TEXT("25_callout_stunned")},{TEXT("26_buff_rows_tooltip")},{TEXT("27_cast_bars")},{TEXT("28_overhead_status")}};
+    {TEXT("24_callout_buff")},{TEXT("25_callout_stunned")},{TEXT("26_buff_rows_tooltip")},{TEXT("27_cast_bars")},{TEXT("28_overhead_status")},
+    {TEXT("29_options_ui_theme")},{TEXT("30_scale_080")}}; // ui-themes: theme picker, legibility at 0.8
 constexpr int32 StageCount=UE_ARRAY_COUNT(Stages);
 struct FState
 {
@@ -236,6 +238,8 @@ void Configure(int32 Stage)
     case 9: HUD->UISettings.bAutoUIScale=false;HUD->UISettings.UIScale=.7f;break;
     case 10: HUD->UISettings.bAutoUIScale=false;HUD->UISettings.UIScale=1.15f;break;
     case 11: HUD->DebugOptionsPage(1,3,true);break;
+    case 28: HUD->DebugOptionsPage(1,4,true);break; // ui-themes: Options > Interface > UI theme
+    case 29: HUD->UISettings.bAutoUIScale=false;HUD->UISettings.UIScale=.8f;HUD->DebugUnitTooltip(E,FVector2D(900,430));break;
     case 12: HUD->DebugOptionsPage(1,0,true);break;
     case 13: HUD->DebugOptionsPage(1,1,true);break;
     case 14: HUD->ToggleLayoutEditor();W.bEditing=true;break;
@@ -261,7 +265,7 @@ void Configure(int32 Stage)
         CireBuffs::Apply(H,TEXT("blessing"),30,H);CireBuffs::Apply(H,TEXT("scatter"),6,H);CireBuffs::Apply(H,TEXT("npc_sundered"),9,E);
         CireBuffs::Apply(E,TEXT("frost_bind"),5,H);E->SlowUntil=Now+5;CireBuffs::Apply(E,TEXT("npc_runic"),12,E);CireBuffs::Apply(E,TEXT("healing_cut"),8,H);
         CireBuffs::Apply(W.Allies[0].Get(),TEXT("regeneration"),10,W.Allies[1].Get());W.Allies[0]->PoisonAreaCount=1;W.Allies[0]->PoisonEndsAt=Now+6;
-        HUD->DebugSetPointer(FVector2D(20+66+12,20+83+10)); // first icon of the player's buff row
+        HUD->DebugSetPointer(FVector2D(20+(CireUIStyle::HasThemeArt()?88:66)+12,20+83+10)); // ui-themes: themed player frame moves the row right // first icon of the player's buff row
         break;
     }
     case 26:
@@ -293,7 +297,7 @@ void Capture(int32 Stage)
     auto* HUD=W.HUD.Get();
     int32 VW=0,VH=0;W.PC->GetViewportSize(VW,VH);Check(VW==1920&&VH==1080,TEXT("1080p viewport"));
     const FVector2D View=HUD->DebugTooltipViewport();
-    const float Expected=Stage==9?1.5f*.7f:Stage==10?1.5f*1.15f:1.5f;
+    const float Expected=Stage==9?1.5f*.7f:Stage==10?1.5f*1.15f:Stage==29?1.5f*.8f:1.5f;
     Check(FMath::IsNearlyEqual(HUD->DebugScale(),Expected,.01f),FString::Printf(TEXT("%s: interface scale %.3f (expected %.3f)"),Stages[Stage].Name,HUD->DebugScale(),Expected));
     if(Stage==0)
     {
@@ -330,6 +334,12 @@ void Capture(int32 Stage)
         FName Shown;Check(HUD->DebugCalloutActive(Shown)&&Shown==(Stage==23?FName(TEXT("blood_rage")):FName(TEXT("stunned"))),FString(Stages[Stage].Name)+TEXT(": callout on screen for the gained effect"));
     }
     if(Stage==25)Check(HUD->DebugLastTooltipTitle()==TEXT("Sundered")||HUD->DebugLastTooltipTitle()==TEXT("Blessing")||HUD->DebugLastTooltipTitle()==TEXT("Scatter"),FString(TEXT("buff icon tooltip (got '"))+HUD->DebugLastTooltipTitle()+TEXT("')"));
+    if(Stage==28)
+    {
+        // ui-themes: three themes parsed with all art resolved, and the active one is known.
+        TArray<FString> Errors;Check(CireUITheme::Validate(Errors,true),TEXT("UI themes valid: ")+FString::Join(Errors,TEXT("; ")));
+        Check(CireUITheme::Active()!=nullptr,TEXT("an active UI theme"));
+    }
     if(Stage==22)Check(HUD->DebugLastTooltipTitle()==TEXT("CombatText"),FString(TEXT("layout editing shows the panel description (got '"))+HUD->DebugLastTooltipTitle()+TEXT("')"));
     if(Stage>=1&&Stage<=3)
     {
@@ -359,7 +369,7 @@ bool Initialize(ACireGameMode* Mode)
 bool Tick(ACireGameMode* Mode)
 {
     if(W.Mode.Get()!=Mode)return false;if(W.bDone)return true;
-    if(FPlatformTime::Seconds()-W.Start>120){W.Failures.Add(TEXT("timeout"));Finish();return true;}
+    if(FPlatformTime::Seconds()-W.Start>150){W.Failures.Add(TEXT("timeout"));Finish();return true;}
     if(W.Ready<0)
     {
         auto* PC=Cast<ACireController>(Mode->GetWorld()->GetFirstPlayerController());auto* HUD=PC?Cast<ACireHUD>(PC->GetHUD()):nullptr;

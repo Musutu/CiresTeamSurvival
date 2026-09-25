@@ -22,6 +22,7 @@
 #include "CireSpellPresentation.h"
 #include "CireCombatEvents.h"
 #include "CireUISettings.h"
+#include "CireUITheme.h" // ui-themes
 #include "CireMobility.h"
 #include "CireRoleSkills.h"
 #include "CireWeaponPresentation.h"
@@ -91,6 +92,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireSkillCasting::RunCastSmoke(Mode)&&Good;
     Good=CireNPCCombat::RunSmoke(Mode)&&Good;
     Good=CireOptions::RunSettingsSmoke()&&Good;
+    Good=CireUITheme::RunSmoke()&&Good; // ui-themes
     Good=CireDeveloperTools::RunValidationSmoke()&&Good;
     Good=CireReplay::RunReplaySmoke(Mode->GetWorld())&&Good;
     Good=CireSpellPresentation::RunSmoke(Mode->GetWorld())&&Good;

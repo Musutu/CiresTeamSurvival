@@ -106,3 +106,10 @@ avoidance, SCT, aggro/threat/lost-aggro alerts, level-up, 0.7 and 1.15 interface
 layout editor, action-bar states, Quick Keybind mode, Keybindings page, a wave banner and an ability
 tooltip. Native checks cover fonts loading, the interface scale, anchoring, tooltip placement and the
 NPC read API; the images still need a human look.
+
+## Themes
+
+The kit is skinnable: `Docs/UIThemes.md`. The palette's themed block (`Gold`, `Parchment`, `Muted`,
+`Ink`, `Card`, `Hover`, ...) is written by `CireUITheme::SetActive`; the painters draw the active
+theme's atlas pieces (nine-slice frames, slots, rings, bars, banners). New themed calls: `CastBar`,
+`PortraitRing`, `Medallion`, `MinimapFrame`, `Divider`, `Ornament`, `BarFrame`, `HasThemeArt`.

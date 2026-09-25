@@ -17,16 +17,29 @@ class UWorld;
 // Display: Cinzel wide serif caps for ornate titles (Skill Shop / Armory); falls back to Heading.
 enum class ECireFont : uint8 { Auto, Body, Heading, Bold, Numbers, Display };
 
-/** Palette. */
+/**
+ * Palette. The first block is themed: CireUITheme::SetActive writes the active theme's
+ * colours here (Content/Data/UIThemes.json), so every screen using these names follows the
+ * selected UI theme. The values below are the pre-theme defaults. The second block is
+ * semantic (reaction, resource, school colours) and never changes with the theme.
+ */
 namespace CireUIColors
 {
-    inline const FLinearColor Ink(.014f,.020f,.026f,.95f);
-    inline const FLinearColor Card(.034f,.046f,.055f,.98f);
-    inline const FLinearColor Hover(.075f,.106f,.116f,1.f);
-    inline const FLinearColor Gold(.77f,.61f,.34f,1.f);       // UI trim, captions
-    inline const FLinearColor BrightGold(1.f,.82f,.0f,1.f);   // elite, WoW quest gold
-    inline const FLinearColor Parchment(.91f,.90f,.83f,1.f);  // body text
-    inline const FLinearColor Muted(.50f,.57f,.59f,1.f);      // secondary text
+    inline FLinearColor Ink(.014f,.020f,.026f,.95f);
+    inline FLinearColor Card(.034f,.046f,.055f,.98f);
+    inline FLinearColor Hover(.075f,.106f,.116f,1.f);
+    inline FLinearColor Gold(.77f,.61f,.34f,1.f);       // UI trim, captions (theme trim)
+    inline FLinearColor BrightGold(1.f,.82f,.0f,1.f);   // elite, WoW quest gold (theme bright trim)
+    inline FLinearColor Parchment(.91f,.90f,.83f,1.f);  // body text
+    inline FLinearColor Muted(.50f,.57f,.59f,1.f);      // secondary text
+    inline FLinearColor ThemeAccent(.77f,.61f,.34f,1.f); // selection / highlight accent
+    inline FLinearColor ThemeGlow(1.f,.85f,.5f,1.f);     // hover, proc and selection glow
+    inline FLinearColor TooltipBg(.02f,.025f,.06f,1.f);
+    inline FLinearColor TooltipBorder(.55f,.58f,.64f,1.f);
+    inline FLinearColor BarBack(0.f,0.f,0.f,.85f);       // empty part of bars
+    inline FLinearColor TitleText(1.f,.86f,.3f,1.f);     // tooltip / window titles
+    inline FLinearColor ThemeFiligree(.83f,.66f,.36f,1.f); // ornate shop framing (CireShopArt::Filigree)
+    inline FLinearColor PanelTint(1.f,1.f,1.f,1.f);      // multiplies the panel fill
     inline const FLinearColor Teal(.20f,.71f,.59f,1.f);
     inline const FLinearColor Red(.75f,.20f,.23f,1.f);
     inline const FLinearColor Blue(.23f,.46f,.80f,1.f);
@@ -169,4 +182,23 @@ namespace CireUIStyle
         const FString& Body, float Age, float Life, FLinearColor Accent = CireUIColors::Gold);
     /** Big animated transition banner centred horizontally at Y. */
     CIRESTEAMSURVIVAL_API void Banner(const FCireUIPainter& P, float ViewW, float Y, const FCireBannerSpec& Spec, float Age);
+
+    // ui-themes: themed pieces (CireUITheme). Each falls back to procedural drawing without theme art.
+    /** Ornate portrait ring around a circle of radius R (drawn over the portrait). */
+    CIRESTEAMSURVIVAL_API void PortraitRing(const FCireUIPainter& P, float CX, float CY, float R, FLinearColor Tint = FLinearColor::White);
+    /** Small round medallion (level / tier badge) with centred text. */
+    CIRESTEAMSURVIVAL_API void Medallion(const FCireUIPainter& P, float CX, float CY, float R, const FString& Text, FLinearColor TextColor);
+    /** Minimap border (drawn over the map area). */
+    CIRESTEAMSURVIVAL_API void MinimapFrame(const FCireUIPainter& P, float X, float Y, float W, float H);
+    /** Ornamental horizontal divider. */
+    CIRESTEAMSURVIVAL_API void Divider(const FCireUIPainter& P, float X, float Y, float W, FLinearColor Tint = FLinearColor::White);
+    /** Top-centre crest ornament centred at CX, Y (a panel's top edge). */
+    CIRESTEAMSURVIVAL_API void Ornament(const FCireUIPainter& P, float CX, float Y, float Height, FLinearColor Tint = FLinearColor::White);
+    /** Cast bar: themed frame, fill, spell name (left) and time (right). */
+    CIRESTEAMSURVIVAL_API void CastBar(const FCireUIPainter& P, float X, float Y, float W, float H, float Progress, FLinearColor Color,
+        const FString& Name, const FString& Time, float TextSize = 0.f);
+    /** Frame around an existing bar (bars drawn with Bar() get it automatically when tall enough). */
+    CIRESTEAMSURVIVAL_API void BarFrame(const FCireUIPainter& P, float X, float Y, float W, float H);
+    /** True when the active theme has art loaded (painters use it). */
+    CIRESTEAMSURVIVAL_API bool HasThemeArt();
 }

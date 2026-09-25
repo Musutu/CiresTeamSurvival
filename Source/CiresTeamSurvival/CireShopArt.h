@@ -23,7 +23,7 @@ namespace CireShopArt
     inline const FLinearColor Ink(.022f, .011f, .004f, 1.f);
     inline const FLinearColor InkSoft(.055f, .03f, .011f, 1.f);
     inline const FLinearColor InkRed(.22f, .018f, .01f, 1.f);
-    inline const FLinearColor Filigree(.83f, .66f, .36f, 1.f);
+    inline FLinearColor& Filigree = CireUIColors::ThemeFiligree; // ui-themes: follows the active theme
 
     // Near-black panel, double thin gold border, corner ornaments; the top edge rises into a
     // plate behind the title (TitleWidth 0 = flat top).

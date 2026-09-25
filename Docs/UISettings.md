@@ -66,3 +66,9 @@ the header to fold these panels). The Developer Tools [F8] button is hidden in n
 pressed (or the game runs with `-dev`). A focus target that already has a boss frame is shown there
 (tagged FOCUS) instead of a second frame. Transition banners and aggro alerts centre in the free gap
 between the left frames and the right column.
+
+## Schema 6 (UI themes)
+
+`LayoutVersion` is 6. New key `UITheme` (default `GildedCitadel`; see `Docs/UIThemes.md`). Profiles
+older than 6 keep every preference and get the default theme; an unknown id is sanitised to the default.
+`CireUITheme::RunSmoke` covers the default, round trip, sanitising and the schema-5 migration.

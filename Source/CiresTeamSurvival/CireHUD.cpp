@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireUITheme.h" // ui-themes
 #include "CireArenas.h" // arenas
 #include "CireShopUI.h" // progression-shop
 #include "CireLoot.h" // progression-shop: minimap chest markers
@@ -18,8 +19,10 @@
 
 namespace
 {
-const FLinearColor Ink(.014f,.020f,.026f,.95f), Card(.034f,.046f,.055f,.98f), Hover(.075f,.106f,.116f,1.f);
-const FLinearColor Gold(.77f,.61f,.34f,1.f), Parchment(.91f,.90f,.83f,1.f), Muted(.50f,.57f,.59f,1.f);
+// ui-themes: themed colours are references to CireUIColors so they follow the active UI theme.
+const FLinearColor &Ink=CireUIColors::Ink, &Card=CireUIColors::Card, &Hover=CireUIColors::Hover;
+// ui-themes: themed colours are references to CireUIColors so they follow the active UI theme.
+const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment, &Muted=CireUIColors::Muted;
 const FLinearColor Teal(.20f,.71f,.59f,1.f), Red(.75f,.20f,.23f,1.f), Blue(.23f,.46f,.80f,1.f), Purple(.66f,.46f,.83f,1.f);
 const FLinearColor Poison(.61f,.83f,.27f,1.f);
 FString ShortName(const FString& Name,int32 Max=22) { return Name.Len()>Max ? Name.Left(Max-2)+TEXT("..") : Name; }
@@ -243,28 +246,43 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
     UsePanel(TEXT("Player"),260,132); const FLinearColor Accent=RoleColor(Hero->Archetype);
     const int32 Aggro=AggroCount(GetWorld(),Hero);
     if(Aggro>0){const float P=.55f+.3f*FMath::Sin(GetWorld()->GetRealTimeSeconds()*6.f);Panel(-3,-3,266,138,FLinearColor(.9f,.08f,.05f,.35f*P));}
-    Frame(0,0,260,132,Aggro>0?FLinearColor(1.f,.25f,.2f,1):Accent);Frame(8,9,49,59,Accent);Icon(FString::Printf(TEXT("role%d"),Hero->Archetype),10,13,44,Accent);
+    const bool bThemed=CireUIStyle::HasThemeArt();
+    if(bThemed)
+    {
+        // ui-themes: round portrait in the theme's ring with a level medallion (the concept layout).
+        CireUIStyle::Frame(Painter(),0,0,260,132,Aggro>0?FLinearColor(1.f,.25f,.2f,1):Gold,ECireFrame::Unit);
+        // Larger ring (concept); the painted role emblem is inscribed in the circle so no square corners show.
+        Disc(41,45,34,FLinearColor(0,0,0,.9f));Disc(41,45,32,FLinearColor(.035f,.04f,.06f,1));
+        Icon(FString::Printf(TEXT("role%d"),Hero->Archetype),41-22.f,45-22.f,44,Accent);
+        CireUIStyle::PortraitRing(Painter(),41,45,32);
+    }
+    else{Frame(0,0,260,132,Aggro>0?FLinearColor(1.f,.25f,.2f,1):Accent);Frame(8,9,49,59,Accent);Icon(FString::Printf(TEXT("role%d"),Hero->Archetype),10,13,44,Accent);}
     if(Aggro>0){Panel(186,116,66,14,FLinearColor(.35f,.03f,.02f,.9f));Label(FString::Printf(TEXT("AGGRO x%d"),Aggro),191,116,9,FLinearColor(1.f,.55f,.5f,1));
         Tip(TEXT("Enemies on you"),FString::Printf(TEXT("%d enemies are attacking you. Tanks want this; damage dealers and healers should move to their tank."),Aggro),186,116,66,14);}
-    Panel(19,63,28,18,Card);Label(FString::FromInt(Hero->Level),26,64,13,Gold);
+    if(bThemed)CireUIStyle::Medallion(Painter(),17,77,12.f,FString::FromInt(Hero->Level),CireUIColors::BrightGold);
+    else{Panel(19,63,28,18,Card);Label(FString::FromInt(Hero->Level),26,64,13,Gold);}
     const int32 Poisoned=PoisonCount(Hero);
-    Label(ShortName(Hero->HeroName,Poisoned>0?12:23),66,8,14,Parchment);
+    // ui-themes: the themed layout gives the larger portrait ring room (bars start further right).
+    const float BX=bThemed?88.f:66.f,BW=bThemed?160.f:182.f;
+    Label(ShortName(Hero->HeroName,Poisoned>0?12:23),BX,8,14,Parchment);
     if(Poisoned>0){Panel(165,8,84,17,Card);Label(PoisonLabel(Poisoned),170,10,9,Poison);}
-    Bar(66,31,182,20,Fraction(Hero->Health,Hero->MaxHealth),LifeGreen);
-    Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Health,Hero->MaxHealth),73,33,12,Parchment);
-    Bar(66,55,182,13,Fraction(Hero->Mana,Hero->MaxMana),Blue);
-    Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Mana,Hero->MaxMana),73,55,10,Parchment);
-    Bar(66,72,182,5,Hero->Energy/100.f,Gold);
+    Bar(BX,31,BW,20,Fraction(Hero->Health,Hero->MaxHealth),LifeGreen);
+    Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Health,Hero->MaxHealth),BX+7,33,12,Parchment);
+    Bar(BX,55,BW,13,Fraction(Hero->Mana,Hero->MaxMana),Blue);
+    Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Mana,Hero->MaxMana),BX+7,55,10,Parchment);
+    Bar(BX,72,BW,5,Hero->Energy/100.f,CireUIColors::Energy); // energy stays yellow in every theme
     Label(FString::Printf(TEXT("STR %d  AGI %d  INT %d"),Hero->Strength,Hero->Agility,Hero->Intelligence),10,116,10,Muted);
     if(Aggro==0)Label(FString::Printf(TEXT("EN %.0f"),Hero->Energy),210,116,10,Gold);
     // (Health/mana/energy help text now lives in the F10 panel description; no gameplay popups.)
-    DrawStatuses(Hero,66,83,24,5);
+    DrawStatuses(Hero,BX,83,24,bThemed?4:5);
     if(Clicked&&Hit(0,0,260,132)&&!bModal&&!bSettings&&!bEditLayout){if(auto* C=Cast<ACireController>(PlayerOwner))C->ServerAction(0,0,Hero);Clicked=false;}
 }
 void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
 {
     UsePanel(TEXT("Party"),210,248);
-    Label(Hero->TeamId==0?TEXT("EMBER COMPANY"):TEXT("DUSK COMPANY"),1,0,10,Gold);
+    const bool bThemedParty=CireUIStyle::HasThemeArt();
+    if(bThemedParty)CireUIStyle::Frame(Painter(),-4,-6,218,256,Gold,ECireFrame::Unit); // ui-themes: the company panel around the rows
+    Label(Hero->TeamId==0?TEXT("EMBER COMPANY"):TEXT("DUSK COMPANY"),bThemedParty?6:1,0,10,bThemedParty?Parchment:Gold);
     Label(TEXT("PARTY / 5"),152,0,9,Muted);
     TArray<ACireHero*> Allies;
     for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(*It!=Hero&&It->TeamId==Hero->TeamId&&!Cast<ACireSummon>(*It))Allies.Add(*It);
@@ -275,9 +293,22 @@ void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
         const bool Over=Hit(0,Y,210,50)&&!bModal&&!bEditLayout&&!bSettings;
         const int32 AllyAggro=Ally->bDead?0:AggroCount(GetWorld(),Ally);
         if(AllyAggro>0)Panel(-2,Y-2,214,54,FLinearColor(.9f,.08f,.05f,.4f));
-        Frame(0,Y,210,50,Selected?Parchment:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):RoleColor(Ally->Archetype)*.65f);
+        // ui-themes: party rows are unit frames (no crest); selection / aggro colour the accent line.
+        if(bThemedParty)
+        {
+            CireUIStyle::Frame(Painter(),2,Y,206,50,Selected?CireUIColors::ThemeAccent*1.3f:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):Gold,ECireFrame::Card);
+            Disc(19.f,Y+25.f,16,FLinearColor(0,0,0,.9f));Disc(19.f,Y+22.f,11,RoleColor(Ally->Archetype)*FLinearColor(1,1,1,.14f));
+        }
+        else Frame(0,Y,210,50,Selected?Parchment:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):RoleColor(Ally->Archetype)*.65f);
         if(Over)Panel(1,Y+1,208,48,FLinearColor(.3f,.45f,.48f,.12f));
-        Icon(FString::Printf(TEXT("role%d"),Ally->Archetype),4,Y+10,29,Ally->bDead?Muted:RoleColor(Ally->Archetype));
+        // ui-themes: inside the round ring the class sigil reads cleanly (the square painted role emblem
+        // was cropped by the ring into a red "slash" glyph); the ring sits on top.
+        if(bThemedParty)
+        {
+            CireUIStyle::Sigil(Painter(),FString::Printf(TEXT("role%d"),Ally->Archetype),7.f,Y+13.f,24.f,Ally->bDead?Muted:RoleColor(Ally->Archetype)*1.1f+FLinearColor(.08f,.08f,.08f,0));
+            CireUIStyle::PortraitRing(Painter(),19.f,Y+25.f,15.5f);
+        }
+        else Icon(FString::Printf(TEXT("role%d"),Ally->Archetype),4,Y+10,29,Ally->bDead?Muted:RoleColor(Ally->Archetype));
         Label(ShortName(Ally->HeroName,18),39,Y+4,11,Ally->bDead?Muted:Parchment);
         Label(FString::FromInt(Ally->Level),158,Y+4,10,Gold);
         Bar(39,Y+21,130,13,Fraction(Ally->Health,Ally->MaxHealth),Ally->bDead?Muted:LifeGreen);
@@ -422,6 +453,7 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
         Panel(P.X-2,P.Y-2,Self?5:4,Self?5:4,C);
         if(Self){Line(P.X,P.Y-6,P.X-4,P.Y+2,Gold,1.5f);Line(P.X,P.Y-6,P.X+4,P.Y+2,Gold,1.5f);}
     }
+    CireUIStyle::MinimapFrame(Painter(),9,28,202,125); // ui-themes: ornate border over the map
     Label(Arena?TEXT("ALLIES   /   ENEMIES"):TEXT("ALLIES   /   WAVES   /   CHALLENGES"),12,160,8,Muted);
 }
 
@@ -522,7 +554,8 @@ void ACireHUD::DrawChat(ACireController* Controller)
         for(int32 I=Start;I<End;++I)Label(Display[I].Key,12,30+(I-Start)*LineH,Font,Display[I].Value);
         if(Display.Num()==0){Label(TEXT("Your party's conversation appears here."),12,36,10,Muted);Label(TEXT("Enter to chat. Tab changes the channel."),12,54,10,Muted);}
         if(ChatScroll>0)Label(TEXT("SCROLLED / WHEEL TO LATEST"),80,124,8,Gold);
-        Panel(8,141,290,24,Controller->bChatInput?Hover:Card);
+        if(CireUIStyle::HasThemeArt())CireUIStyle::Frame(Painter(),8,141,290,24,Controller->bChatInput?CireUIColors::ThemeAccent:Gold,ECireFrame::Inset); // ui-themes
+        else Panel(8,141,290,24,Controller->bChatInput?Hover:Card);
         const FString Draft=Controller->bChatInput?Controller->ChatDraft.Right(38)+TEXT("|"):TEXT("Press Enter to chat...");
         Label(Controller->bChatTeamOnly?TEXT("P"):TEXT("ALL"),13,147,9,Team?Teal:Gold);
         Label(Draft,40,146,10,Controller->bChatInput?Parchment:Muted);
@@ -585,6 +618,12 @@ void ACireHUD::DrawHUD()
     if(PendingUIScale>0&&!PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton)){UISettings.UIScale=PendingUIScale;UISettings.bAutoUIScale=false;PendingUIScale=-1;UISettings.Save();}
     Scale=FMath::Max(.25f,FMath::Min(Canvas->ClipX/1280.f,Canvas->ClipY/720.f)*UISettings.ResolveUIScale(Canvas->ClipY));ViewW=Canvas->ClipX/Scale;ViewH=Canvas->ClipY/Scale;
     CireUIStyle::Assets();
+    // ui-themes: the profile's theme (a -CireUITheme=<Id> command line overrides it for galleries,
+    // without saving). SetActive only reapplies the palette when the theme actually changes.
+    {
+        static const FString Override=[]{FString Id;FParse::Value(FCommandLine::Get(),TEXT("CireUITheme="),Id);return Id;}();
+        CireUITheme::SetActive(FName(Override.IsEmpty()?*UISettings.UITheme:*Override));
+    }
     MX=MY=-100;float MouseX=0,MouseY=0;if(PlayerOwner->GetMousePosition(MouseX,MouseY)){MX=MouseX/Scale;MY=MouseY/Scale;}
 #if !UE_BUILD_SHIPPING
     if(DebugPointer.X>=0){MX=DebugPointer.X;MY=DebugPointer.Y;} // gallery: virtual mouse (logical units)

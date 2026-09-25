@@ -177,6 +177,8 @@ private:
     void UpdateQuickKeybind();
     void DrawQuickKeybind();
     void DrawKeybindingsPage(float L, float Top);
+    /** ui-themes: Options > Interface > UI theme (three live preview cards). */
+    void DrawThemePicker(float L, float B);
     FString QuickActionName(FName Action) const;
     void DrawChat(ACireController* Controller);
     void DrawMeters(ACireHero* Hero, ACireController* Controller);
