@@ -532,11 +532,12 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         else Movement->StopMovementImmediately();
         return;
     }
-    // wave-director: the stall failsafe's forced march behaves like an armored marcher.
-    if(M->bArmoredEscort||CireWaveDirector::IsForcedMarch(M))
+    // wave-director: the stall failsafe's forced march behaves like an armored marcher. rules-conformance: only a
+    // unit with NO threat marches; one that is attacked keeps its threat and fights (the director ends the march).
+    if(M->bArmoredEscort||(CireWaveDirector::IsForcedMarch(M)&&M->Threat.IsEmpty()&&!M->Victim))
     {
         if(!M->CastingAbility.IsEmpty())Interrupt(M);
-        if(!M->Threat.IsEmpty()||M->Victim)CireThreat::Clear(M);
+        if(M->bArmoredEscort&&(!M->Threat.IsEmpty()||M->Victim))CireThreat::Clear(M); // escortees never fight (no threat table)
         M->bEngaged=false;
         CireLanePath::RefreshEscortCollision(M);MarchLane(M,Mode);return;
     }
@@ -613,14 +614,10 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         }
         if(Distance>Reach||!bSight)
         {
-            // nav-paths: path to the victim (around houses, into line of sight). A victim the navmesh cannot
-            // reach is dropped by wave units (they return to the lane) and makes a pack reset home.
+            // nav-paths: path to the victim (around houses, into line of sight). rules-conformance: a victim the
+            // navmesh cannot reach is KEPT (threat is lost only on death or an explicit ability): Steer follows the
+            // partial path and holds at the nearest reachable point until the victim comes back into reach.
             M->AddMovementInput(CireNav::Steer(M,Victim->GetActorLocation()));
-            if(CireNav::GoalUnreachable(M,2.5f))
-            {
-                if(M->PackId>=0)StartLeash(M);
-                else{CireThreat::Clear(M);CireWaveDirector::SuppressAggro(M,6.f);}
-            }
             return;
         }
         Movement->StopMovementImmediately();M->SetActorRotation(Direction.Rotation());

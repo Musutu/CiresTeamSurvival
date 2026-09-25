@@ -1,4 +1,5 @@
 #include "CireSkillShop.h"
+#include "CireThreat.h" // rules-conformance: threatScale hook
 #include "CireScalingKits.h" // scaling-kits
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
@@ -462,6 +463,8 @@ void CireSkillShop::ApplyCastLevel(ACireHero* Hero, int32 Slot, const FString& I
     Hero->Mana = FMath::Max(0.f, Hero->Mana - FMath::Max(0.f, Mana - BaseMana));
     Hero->Energy = FMath::Max(0.f, Hero->Energy - FMath::Max(0.f, Energy - BaseEnergy));
     CireItems::OnAbilityCast(Hero, Id, Mana);
+    // rules-conformance: the only ways to lose threat are death and an ability that explicitly says so.
+    if (const FCireAbilityDef* Def = CireAbilityDB::Find(Id); Def && Def->ThreatScale < 1.f) CireThreat::ScaleAll(Hero, Def->ThreatScale);
     if (Scale.Level <= 1) return;
     if (Hero->Cooldowns.IsValidIndex(Slot)) Hero->Cooldowns[Slot] *= Scale.Cooldown;
 }
