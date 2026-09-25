@@ -41,6 +41,16 @@ public:
     // Non-null: frame a head-and-shoulders bust into this square target every frame
     // (portrait generation). Null returns to the full-body draft preview.
     void SetPortraitTarget(UTextureRenderTarget2D* Into);
+    // Cutout: hide the stage architecture and render the champion alone with alpha, so the
+    // draft screen can stand it on a painted background (enables post-process alpha while any
+    // cutout stage exists).
+    void SetCutout(bool bEnable);
+    bool IsCutout() const { return bCutout; }
+    // Light the champion to sit in a painted scene: key (front), rim (back edge), fill (ambient).
+    void SetMood(const FLinearColor& Key,const FLinearColor& Rim,const FLinearColor& Fill);
+    // Scene depth of the cutout view (R, world units): masks out anything far behind the champion.
+    UTextureRenderTarget2D* GetDepthTarget() const { return DepthTarget; }
+    float GetCutoutMaxDepth() const { return CameraDistance+650.f*StageScale; }
     // The owner calls this every frame it shows the stage; an untouched stage
     // (draft screen closed, HUD gone) destroys itself and its preview hero.
     void Touch() { LastTouchedFrame = GFrameCounter; }
@@ -54,10 +64,14 @@ private:
     void FitStage(float BodyHeight);
     void FrameCamera(float DeltaSeconds, bool bSnap);
     void DestroyPreview();
+    void RefreshCutoutParts();
     UPROPERTY(Transient) TObjectPtr<USceneCaptureComponent2D> Capture;
     UPROPERTY(Transient) TObjectPtr<UTextureRenderTarget2D> Target;
     UPROPERTY(Transient) TObjectPtr<ACireHero> Preview;
     UPROPERTY(Transient) TObjectPtr<UTextureRenderTarget2D> PortraitTarget;
+    bool bCutout = false;
+    UPROPERTY(Transient) TObjectPtr<USceneCaptureComponent2D> DepthCapture;
+    UPROPERTY(Transient) TObjectPtr<UTextureRenderTarget2D> DepthTarget;
     UPROPERTY(Transient) TObjectPtr<UStaticMeshComponent> Floor;
     UPROPERTY(Transient) TObjectPtr<UStaticMeshComponent> Dais;
     UPROPERTY(Transient) TObjectPtr<UStaticMeshComponent> Wall;

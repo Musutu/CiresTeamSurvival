@@ -1,5 +1,6 @@
 #include "CireWaves.h" // wave-director
 #include "CireGame.h"
+#include "CireChampionRoster.h"
 #include "CireShopUI.h" // progression-shop: Skill Shop key
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireShopFixtures.h" // progression-shop
@@ -201,6 +202,16 @@ void ACireController::PlayerTick(float Dt) {
         return;
     }
     CireSelection::HandleTargetLoss(this,Interface&&Interface->UISettings.bAutoReacquireTarget);
+    // champion-select: while the draft search box is focused it owns the keyboard.
+    if(bDraftSearch) {
+        if(H->bDrafted){bDraftSearch=false;}
+        else {
+            if(WasInputKeyJustPressed(EKeys::Escape)){DraftSearch.Empty();bDraftSearch=false;}
+            else if(WasInputKeyJustPressed(EKeys::Enter))bDraftSearch=false;
+            else if(WasInputKeyJustPressed(EKeys::BackSpace)&&!DraftSearch.IsEmpty())DraftSearch.LeftChopInline(1);
+            return;
+        }
+    }
     if(bChatInput) {
         CireTargeting::Cancel(this);
         if(WasInputKeyJustPressed(EKeys::Escape))CancelChat();
@@ -316,6 +327,12 @@ void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActo
     }
 }
 
+void ACireController::ServerDraftHover_Implementation(const FString& ProfileId) {
+    // champion-select: remember the selected (not yet locked) champion for teammates and the timer.
+    auto* H=Cast<ACireHero>(GetPawn());
+    if(!H||H->bDrafted||ProfileId.Len()>64)return;
+    H->DraftHoverId=ProfileId.IsEmpty()||CireChampionRoster::Find(ProfileId)?ProfileId:FString();
+}
 void ACireController::ServerDraftProfile_Implementation(const FString& ProfileId) {
     auto* H=Cast<ACireHero>(GetPawn());
     auto* M=GetWorld()->GetAuthGameMode<ACireGameMode>();
