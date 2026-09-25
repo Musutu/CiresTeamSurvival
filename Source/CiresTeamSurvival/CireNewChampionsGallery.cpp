@@ -12,6 +12,9 @@
 #include "CireRaces.h"
 #include "CireSignatureSkills.h"
 #include "CireTechConstructs.h"
+#include "CirePets.h" // pets
+#include "CireCreatureArt.h"
+#include "GameFramework/HUD.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -140,6 +143,18 @@ bool CastAt(ACireHero* H, const TCHAR* Id, const FVector& Aim, AActor* Target = 
     if (!bCast) Fail(FString::Printf(TEXT("%s could not cast %s: %s"), *H->ChampionProfileId, Id, *H->Notice));
     return bCast;
 }
+// pets: the owner's companion, placed for the shot (its own AI takes over after).
+ACirePet* Companion(ACireHero* H, float Along, float Side)
+{
+    ACirePet* Pet = H ? CirePets::Summon(H) : nullptr;
+    if (!Pet) { Fail(TEXT("companion did not spawn")); return nullptr; }
+    const FVector At = Ground(Along, Side);
+    Pet->SetActorLocation(FVector(At.X, At.Y, At.Z + Pet->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2));
+    Pet->SetActorRotation((-G.Forward).Rotation());
+    Pet->GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+    G.Scene.Add(Pet);
+    return Pet;
+}
 void Fight(ACireHero* H, AActor* Target) { if (H && Target) { H->Target = Target; H->bAutoAttack = true; } }
 void GameplayCamera(ACireHero* H, float Boom = 950.f, float Pitch = -30.f, float YawOffset = 0.f)
 {
@@ -168,10 +183,11 @@ void EnterStage(const FStage& S)
         // Labels face the camera.
         for (auto& A : G.Scene) if (auto* T = Cast<ATextRenderActor>(A.Get())) T->SetActorRotation((G.Camera->GetActorLocation() - T->GetActorLocation()).GetSafeNormal2D().Rotation());
     }
-    else if (N == TEXT("huntress_mount"))
+    else if (N == TEXT("huntress_close"))
     {
+        // pets: the Huntress on foot with her sabercat companion Ashfang beside her.
         auto* H = Hero(TEXT("huntress"), 0, 0, Face);
-        if (H) { const FVector C = H->GetActorLocation(); Look(C + G.Right * 520 + G.Forward * -160 + FVector(0, 0, 90), C + FVector(0, 0, 20), 50); }
+        if (H) { Companion(H, -40, 190); const FVector C = H->GetActorLocation() + G.Right * 90; Look(C + G.Right * 360 + G.Forward * -520 + FVector(0, 0, 110), C + FVector(0, 0, 5), 50); }
     }
     else if (N == TEXT("gunblade_close"))
     {
@@ -233,8 +249,62 @@ void EnterStage(const FStage& S)
         ACireMonster* A = Monster(TEXT("hollow_infantry"), -700, -200, false);
         ACireMonster* B = Monster(TEXT("hollow_infantry"), -850, 60, false);
         Monster(TEXT("hollow_infantry"), -760, 280, false); Monster(TEXT("ironbound_bruiser"), -950, -60, false);
-        if (H && A && B) { CastAt(H, TEXT("owl_scout"), Ground(-800, 0)); CastAt(H, TEXT("bouncing_glaive"), A->GetActorLocation(), A); Fight(H, B); }
+        if (H && A && B)
+        {
+            Companion(H, -120, 160);
+            CastAt(H, TEXT("owl_scout"), Ground(-800, 0)); CastAt(H, TEXT("bouncing_glaive"), A->GetActorLocation(), A);
+            CastAt(H, TEXT("sabercat_pounce"), A->GetActorLocation(), A); Fight(H, B);
+        }
         G.Focus = H; GameplayCamera(H);
+    }
+    else if (N == TEXT("combat_huntress_pet"))
+    {
+        // pets: Ashfang mauls while the Huntress throws glaives (the maul is her command).
+        auto* H = Hero(TEXT("huntress"), 0, 0, Face);
+        ACireMonster* A = Monster(TEXT("hollow_infantry"), -520, 60, false);
+        Monster(TEXT("hollow_infantry"), -640, -150, false); Monster(TEXT("ironbound_bruiser"), -720, 200, false);
+        if (H && A) { if (ACirePet* Pet = Companion(H, -380, 60)) CirePets::Command(H, ECirePetCommand::Attack, A); CastAt(H, TEXT("sabercat_maul"), A->GetActorLocation(), A); Fight(H, A); }
+        G.Focus = H; if (H) { const FVector C = Ground(-330, 40); Look(C + G.Right * 620 + G.Forward * 260 + FVector(0, 0, 260), C + FVector(0, 0, 30), 55); }
+    }
+    else if (N == TEXT("pet_roar"))
+    {
+        // pets: the special command, Dread Roar, slows and taunts the pack onto the cat.
+        auto* H = Hero(TEXT("huntress"), 0, 0, Face);
+        for (int32 I = 0; I < 3; ++I) Monster(TEXT("hollow_infantry"), -420 - I * 40.f, (I - 1) * 170.f, false);
+        if (H) { if (Companion(H, -300, 0)) { CirePets::Command(H, ECirePetCommand::Special, nullptr); UE_LOG(LogCireNewChampionsGallery, Display, TEXT("CIRE_NEW_CHAMPIONS_GALLERY_CAST pet special %s"), *H->Notice); } }
+        G.Focus = H; if (H) { const FVector C = Ground(-330, 0); Look(C + G.Right * 560 + G.Forward * 420 + FVector(0, 0, 300), C + FVector(0, 0, 30), 60); }
+    }
+    else if (N.StartsWith(TEXT("hud_pet")))
+    {
+        // pets: the companion frame in the real HUD while the player's Huntress fights (possessed so the HUD draws her).
+        ACireHero* H = G.Heroes.FindRef(TEXT("huntress")).Get();
+        if (!H || N == TEXT("hud_pet_frame"))
+        {
+            ClearScene();
+            H = Hero(TEXT("huntress"), 0, 0, Face);
+            ACireMonster* A = Monster(TEXT("hollow_infantry"), -520, 40, false);
+            Monster(TEXT("hollow_infantry"), -600, -160, false);
+            if (H && A && G.Controller.IsValid())
+            {
+                if (APawn* Old = G.Controller->GetPawn(); Old && Old != H) G.Controller->UnPossess();
+                G.Controller->Possess(H); G.Controller->SetViewTarget(G.Camera.Get());
+                if (G.Controller->GetHUD()) G.Controller->GetHUD()->bShowHUD = true;
+                H->Health = H->MaxHealth = 2400; H->Level = 8; H->Agility = 44;
+                if (Companion(H, -380, 40)) { CirePets::Command(H, ECirePetCommand::StanceAggressive, nullptr); CirePets::Command(H, ECirePetCommand::Attack, A); }
+                Fight(H, A);
+            }
+        }
+        else if (N == TEXT("hud_pet_command"))
+        {
+            CirePets::Command(H, ECirePetCommand::Special, nullptr);
+            CirePets::Command(H, ECirePetCommand::Stay, nullptr);
+            UE_LOG(LogCireNewChampionsGallery, Display, TEXT("CIRE_NEW_CHAMPIONS_GALLERY_CAST pet commands: %s"), *H->Notice);
+        }
+        else if (N == TEXT("hud_pet_fallen"))
+        {
+            if (ACirePet* Pet = CirePets::PetOf(H)) Pet->TakeDamage(Pet->MaxHealth * 10.f, FDamageEvent(), nullptr, G.Mode->Monsters.Num() ? G.Mode->Monsters[0] : nullptr);
+        }
+        G.Focus = H; if (H) GameplayCamera(H, 900, -30);
     }
     else if (N == TEXT("combat_huntress_storm"))
     {
@@ -321,6 +391,13 @@ void Diagnose()
                     if (auto* Seq = Cast<UAnimSequence>(Sample.Animation.Get())) Line += FString::Printf(TEXT(" %s:%d"), *Seq->GetName().Right(12), Seq->IsCompressedDataValid() ? 1 : 0);
         UE_LOG(LogCireNewChampionsGallery, Display, TEXT("%s"), *Line);
     }
+    for (TActorIterator<ACirePet> It(World()); It; ++It)
+    {
+        const UCireCreatureArt* Body = It->ChampionArt ? It->ChampionArt->GetCreature() : nullptr;
+        UE_LOG(LogCireNewChampionsGallery, Display, TEXT("CIRE_NEW_CHAMPIONS_GALLERY_PET %s kind=%s mesh=%s hp=%.0f/%.0f order=%d stance=%d dead=%d leaping=%d"), *It->HeroName,
+            Body ? *Body->GetKind() : TEXT("none"), It->GetMesh()->GetSkeletalMeshAsset() ? *It->GetMesh()->GetSkeletalMeshAsset()->GetName() : TEXT("none"),
+            It->Health, It->MaxHealth, static_cast<int32>(It->Order), static_cast<int32>(It->Stance), It->bDead ? 1 : 0, It->IsLeaping() ? 1 : 0);
+    }
 }
 void Capture(const FStage& S)
 {
@@ -353,11 +430,12 @@ bool Build(ACireGameMode& Mode, ACireController& Controller)
     auto& Post = Camera->PostProcessSettings;
     Post.bOverride_MotionBlurAmount = true; Post.MotionBlurAmount = 0;
     Controller.SetViewTarget(G.Camera.Get());
-    const FStage All[] = {{TEXT("lineup"), 3.f}, {TEXT("gunblade_close"), 2.5f}, {TEXT("witch_close"), 2.5f}, {TEXT("huntress_mount"), 2.5f}, {TEXT("aetheri_close"), 2.5f},
+    const FStage All[] = {{TEXT("lineup"), 3.f}, {TEXT("gunblade_close"), 2.5f}, {TEXT("witch_close"), 2.5f}, {TEXT("huntress_close"), 2.5f}, {TEXT("aetheri_close"), 2.5f},
         {TEXT("combat_gunblade"), .45f}, {TEXT("combat_gunblade_melee"), 1.1f}, {TEXT("combat_witch_blunderbuss"), .1f}, {TEXT("combat_witch_slayer"), .55f},
-        {TEXT("combat_huntress"), .35f}, {TEXT("combat_huntress_storm"), 1.2f},
+        {TEXT("combat_huntress"), .35f}, {TEXT("combat_huntress_pet"), 1.4f}, {TEXT("pet_roar"), .35f}, {TEXT("combat_huntress_storm"), 1.2f},
         {TEXT("constructs_place"), 1.4f}, {TEXT("constructs_close"), .6f, true}, {TEXT("constructs_fight"), 3.2f, true},
-        {TEXT("aetheri_wave"), 1.6f}, {TEXT("aetheri_wave_fight"), 3.5f, true}};
+        {TEXT("aetheri_wave"), 1.6f}, {TEXT("aetheri_wave_fight"), 3.5f, true},
+        {TEXT("hud_pet_frame"), 2.5f}, {TEXT("hud_pet_command"), .6f, true}, {TEXT("hud_pet_fallen"), 1.5f, true}};
     for (const FStage& S : All)
         if (G.Only.IsEmpty() || G.Only.ContainsByPredicate([&S](const FString& Prefix) { return S.Name.StartsWith(Prefix); })) G.Stages.Add(S);
     G.bBuilt = true;

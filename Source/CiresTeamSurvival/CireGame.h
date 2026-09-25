@@ -143,6 +143,12 @@ public:
     UPROPERTY(Replicated) float SlowUntil = 0;
     float BotDecisionTimer = 0;
     UPROPERTY(Replicated) bool bAutoAttack = false;
+    // pets: the owner's companion timers and chosen stance (the pet actor may be away; CirePets.h).
+    UPROPERTY(Replicated) float PetResummonAt = 0;
+    UPROPERTY(Replicated) float PetReviveReadyAt = 0;
+    UPROPERTY(Replicated) uint8 PetStance = 1;
+    // pets: a companion granted by a talent / skill to any champion (overrides the profile's own pet).
+    UPROPERTY(Replicated) FName PetGrant;
     FVector HomePosition;
     void Draft(int32 Choice);
     bool DraftProfile(const FString& Id);
@@ -320,6 +326,7 @@ public:
     UFUNCTION(Server,Reliable) void ServerDraftHover(const FString& ProfileId); // champion-select: selected, not locked
     UFUNCTION(Server,Reliable) void ServerCastAt(int32 Slot,FVector_NetQuantize Aim);
     UFUNCTION(Server,Reliable) void ServerSummonCommand(int32 Command,AActor* Target,FVector_NetQuantize Destination);
+    UFUNCTION(Server,Reliable) void ServerPetCommand(uint8 Command); // pets: ECirePetCommand on the caller's companion
     UFUNCTION(Server,Reliable) void ServerSendChat(const FString& Message, bool bTeamOnly);
     UFUNCTION(Client,Reliable) void ClientChatMessage(const FCireChatMessage& Message);
     UFUNCTION(Client,Unreliable) void ClientCombatEvent(const FCireCombatEvent& Event);

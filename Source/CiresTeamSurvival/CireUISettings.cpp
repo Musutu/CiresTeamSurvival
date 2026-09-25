@@ -75,7 +75,7 @@ void FCireUISettings::Reset()
     // The WoW-style default tooltip grows up/left from this panel's lower-right
     // corner: right of the reticle, above the action bar and meter.
     Add(TEXT("Tooltip"), 690.f, 368.f, 340.f, 150.f);
-    Add(TEXT("Pet"), 290.f, 306.f, 210.f, 90.f); // under the focus frame; the bag bar owns 20,420
+    Add(TEXT("Pet"), 290.f, 306.f, 250.f, 112.f); // under the focus frame; the bag bar owns 20,420. pets: companion frame
     // Right column under the minimap: boss frames, then threat, then the damage meter.
     Add(TEXT("Boss"), 1040.f, 208.f, 220.f, 150.f);
     Add(TEXT("Threat"), 1040.f, 372.f, 220.f, 124.f);

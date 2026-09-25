@@ -4,7 +4,7 @@ This page covers five DPS and hybrid champions and the systems that came with th
 
 - **Gunblade** (Bounty Hunter)
 - **Witch Slayer**
-- **Huntress** (mounted glaive thrower)
+- **Huntress** (glaive thrower with the sabercat companion Ashfang)
 - **Aetheri Artificer**
 - **Aetheri Warden**
 
@@ -55,22 +55,24 @@ An anti-caster who carries a blunderbuss and a spectral blade. His tools are int
 | Witchbane | passive | +20% damage (cap 40%) to enemies that are casting, silenced or marked. |
 | **Hexbane Judgment** | ultimate (aim) | A 4.5m circle that bursts after 1s: 200 + 3x INT, strips all buffs and silences for 3s. CD 80s. |
 
-## Huntress: Mounted Glaive Thrower
+## Huntress: Glaive Huntress
 
 AGI, energy. Difficulty 2. Race: sylvan. Basic attack range 1300.
 
-She rides the sabercat Ashfang. Her glaives bounce between targets, the cat fights at close range, and an owl scouts.
+She fights on foot. The sabercat Ashfang is her companion pet ([Pets.md](Pets.md)): it follows her, fights by stance and order, and takes her sabercat skills as commands. Her glaives bounce between targets and an owl scouts.
 
 | Skill | Kind | Summary |
 |---|---|---|
 | Bouncing Glaive | active (enemy) | Hits the target, then bounces to 4 more within 5m, losing 20% per bounce. 80 + 1.5x AGI. CD 8s. |
-| Sabercat Pounce | active (aim) | 7m leap; mauls everything in 2.6m for 75 + 1x AGI and slows 40% for 2s. CD 12s. |
+| Ashfang: Pounce | active (enemy) | Ashfang leaps up to 7m onto her target; mauls everything in 2.6m for 75 + 1x AGI and slows 40% for 2s. CD 12s. Needs the companion. |
 | Owl Scout | active (aim) | Reveals and tracks enemies in 4.5m for 8s; they take +10% damage from her. CD 14s. |
 | Moonlit Sprint | active (self) | +40% move speed for 4s and cleanses slows. CD 16s. |
 | Crescent Volley | active (line) | A 14m line glaive that pierces up to five enemies: 90 + 1.4x AGI. CD 10s. |
-| Sabercat Rake | active (cone) | A 70-degree arc of 3.2m in front of her: 70 + 1.2x AGI. CD 7s. |
+| Ashfang: Maul | active (enemy) | Ashfang mauls her target for 70 + 1.2x AGI with +50% threat. CD 7s. Needs the companion. |
 | Moon Glaive | passive | Glaive throws bounce to 2 more enemies within 4.5m, for 60% and then 36% damage. |
 | **Glaive Storm** | ultimate (self) | Whirling glaives for 6s: 45 + 0.5x AGI every 0.5s within 4.8m. CD 75s. |
+
+Her identity kit also offers **Ashfang: Dread Roar** (`sabercat_roar`, also the pet's special command): enemies within 4.5m of the cat take 30 + 0.4x AGI, are slowed 35% for 3s and are taunted onto Ashfang for 2s. CD 16s.
 
 ## Aetheri Artificer
 
@@ -169,7 +171,7 @@ Two reviews show the current bindings:
 |---|---|---|
 | Gunblade | Tripo `CTS_Champ_Gunblade` (ready row, idle arms relaxed at runtime) | falchion (primary), flintlock; basic attack switches pistol/falchion by range |
 | Witch Slayer | Tripo `CTS_Champ_WitchSlayer` | arcane blunderbuss (primary), spectral blade on the hip |
-| Huntress | Tripo `CTS_Champ_Huntress` **rider** seated on the Quaternius **wolf**, tinted as a sabercat | glaive (released on throw), glaive launcher |
+| Huntress | Tripo `CTS_Champ_Huntress` on foot (normal locomotion and attack clips); her sabercat companion is a pet (Pets.md) | glaive (released on throw), glaive launcher |
 | Aetheri Artificer | Tripo `CTS_Champ_AetheriArtificer` | aether staff |
 | Aetheri Warden | Tripo `CTS_Champ_AetheriWarden` | aether halberd |
 
@@ -177,11 +179,12 @@ The pre-Tripo temporary bodies are kept in `AuthorNewChampions.BINDINGS`. They a
 
 - **Icons.** All 40 kit icons (`/Game/UI/Abilities/T_<skill>`) are painted (ChatGPT sheets `Art/Icons/ChatGPT/abilities_<champion>.png`, sliced into `Art/Icons/ChatGPT/Abilities/`).
 - **Buffs and aiming.** Buff registry rows exist for every construct field effect. Every aimed skill has a ground-aim descriptor.
-- **Champion select.** All five champions have portraits (`/Game/UI/Draft/Portraits/T_Portrait_<id>`); the mounted Huntress is framed on the rider. Each has a painted background (`/Game/UI/Draft/Backgrounds/T_DraftBg_<background>`, `"status": "painted"` in `DraftBackgrounds.json`): gunblade, witch_slayer, huntress, aetheri (Artificer) and aetheri_warden. The role-themed fallback (ranger, summoner, dryad, ether_golem) is only used if a texture goes missing. The painting prompts are stored in the same file.
+- **Champion select.** All five champions have portraits (`/Game/UI/Draft/Portraits/T_Portrait_<id>`). Each has a painted background (`/Game/UI/Draft/Backgrounds/T_DraftBg_<background>`, `"status": "painted"` in `DraftBackgrounds.json`): gunblade, witch_slayer, huntress, aetheri (Artificer) and aetheri_warden. The role-themed fallback (ranger, summoner, dryad, ether_golem) is only used if a texture goes missing. The painting prompts are stored in the same file.
 
 ## Known limits
 
-- **Sabercat mount.** The Tripo sabercat (`/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat`) is rigged but has **no animation clips**. The animated wolf stands in as the mount. Once idle, walk, run and attack clips exist, `final_bindings()` in `AuthorNewChampions.py` must be changed to bind the sabercat; today it always keeps the wolf for a mounted row.
+- **No mount.** The mount was removed: the Huntress fights on foot, and `final_bindings()` binds every ready Tripo body the same way. Riding units are future work; the `mounted` creature motion is kept in `CireCreatureArt` for them.
+- **Sabercat clips.** The Tripo sabercat (`/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat`) has no clips; as the companion it moves procedurally until `Content/Data/PetArt.tripo.json` provides them (Pets.md).
 - **Aetheri monster bodies.** The Aetheri monster units use tinted fallback bodies from other races. Races.md holds their Tripo prompts.
 - **Placeholder props.** The props (flintlock, falchion, blunderbuss, glaives, staff, halberd) are original prototype meshes authored in `Tools/BuildNewChampionContent.py`, not final art.
 - **Balance.** Numbers are first-pass design values and have not been through the Balance Lab.

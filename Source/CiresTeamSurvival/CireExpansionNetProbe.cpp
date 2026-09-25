@@ -6,6 +6,7 @@
 #include "CireConstruct.h"
 #include "CireTechConstructs.h" // new-champions: replicated Aetheri constructs
 #include "CireSummon.h"
+#include "CirePets.h" // pets: replicated companions
 #include "CireLanePath.h"
 #include "CireMobility.h"
 #include "Components/BoxComponent.h"
@@ -43,6 +44,7 @@ struct FClient
     FVector FirstShotPosition = FVector::ZeroVector;
     bool bDraftSent = false, bDone = false;
     bool bRollSent = false, bSawRoll = false;
+    bool bPetCommandSent = false; // pets
     FVector RollOrigin = FVector::ZeroVector;
 } Client;
 void Fail(const TCHAR* Side, const TCHAR* Message)
@@ -85,12 +87,15 @@ bool SpawnObjects(ACireHero* Hero, FVector Ground, bool bArena)
     if (!bArena && CireTechConstructs::Deploy(Hero, TEXT("photon_turret"), Ground + FVector(-450, 320, 0)).Num() != 1) return false;
     Server.Summons[Team] = Group[0]; Group[0]->HeroName = FString::Printf(TEXT("CIRE_EXP_NET_SUMMON_%d"), Team);
     Group[0]->Command(ECireSummonCommand::Hold, Group[0]->GetActorLocation()); Group[0]->ForceNetUpdate();
+    // pets: every probe champion gets the sabercat through the pet-talent grant, Passive so it never touches the stage targets.
+    Hero->PetGrant = TEXT("sabercat"); Hero->PetStance = static_cast<uint8>(ECirePetStance::Passive); Hero->ForceNetUpdate();
+    if (!CirePets::Summon(Hero)) return false;
     FCireSkillshotSpec Shot; Shot.Speed = 100; Shot.Radius = 12; Shot.MaxRange = 5000; Shot.LifetimeSeconds = 30;
     Shot.WarningSeconds = 0; Shot.Damage = 0; Shot.PlayerCollision = Shot.MonsterCollision = ECireProjectileCollision::Ignore;
     auto* Projectile = ACireSkillshot::Spawn(Hero, Shot, Hero->GetActorLocation() + (bArena ? FVector(0, 900, 0) : FVector(1000, 0, 0)), FString::Printf(TEXT("CIRE_EXP_NET_SHOT_%d"), Team));
     return Projectile != nullptr;
 }
-struct FCounts { int32 Wall[2] = {0, 0}, Shot[2] = {0, 0}, Summon[2] = {0, 0}, Turret[2] = {0, 0}; ACireSkillshot* OwnShot = nullptr; ACireSummon* FirstSummon = nullptr; ACireConstruct* OwnTurret = nullptr; };
+struct FCounts { int32 Wall[2] = {0, 0}, Shot[2] = {0, 0}, Summon[2] = {0, 0}, Turret[2] = {0, 0}, Pet[2] = {0, 0}; ACireSkillshot* OwnShot = nullptr; ACireSummon* FirstSummon = nullptr; ACireConstruct* OwnTurret = nullptr; ACirePet* OwnPet = nullptr; ACirePet* FirstPet = nullptr; };
 FCounts Count(UWorld* World, int32 Self)
 {
     FCounts R;
@@ -106,6 +111,9 @@ FCounts Count(UWorld* World, int32 Self)
     for (TActorIterator<ACireSummon> It(World); It; ++It)
         if (!It->IsActorBeingDestroyed() && It->HeroName.StartsWith(TEXT("CIRE_EXP_NET_SUMMON_")) && It->TeamId >= 0 && It->TeamId < 2)
         { ++R.Summon[It->TeamId]; if (It->TeamId == 0) R.FirstSummon = *It; }
+    for (TActorIterator<ACirePet> It(World); It; ++It) // pets
+        if (!It->IsActorBeingDestroyed() && It->TeamId >= 0 && It->TeamId < 2)
+        { ++R.Pet[It->TeamId]; if (It->TeamId == Self) R.OwnPet = *It; if (It->TeamId == 0) R.FirstPet = *It; }
     return R;
 }
 }
@@ -199,7 +207,8 @@ bool CireExpansionNetProbe::TickServer(ACireGameMode* Mode)
         if (Critical != CireClassTraits::ModifyIncomingDamage(Players[1], 20) || !Server.Walls[0].IsValid() || !Server.Summons[0].IsValid() ||
             CireCombat::ApplyDamage(Players[0], Server.Walls[0].Get(), 10, TEXT("forbidden friendly wall")) != 0 ||
             CireCombat::ApplyDamage(Players[1], Server.Walls[0].Get(), 1000, TEXT("CIRE_EXP_WALL_BREAK")) != 200 ||
-            CireCombat::ApplyDamage(Players[1], Server.Summons[0].Get(), 10, TEXT("CIRE_EXP_SUMMON_HIT")) != 10)
+            CireCombat::ApplyDamage(Players[1], Server.Summons[0].Get(), 10, TEXT("CIRE_EXP_SUMMON_HIT")) != 10 ||
+            !CirePets::PetOf(Players[0]) || !FMath::IsNearlyEqual(CireCombat::ApplyDamage(Players[1], CirePets::PetOf(Players[0]), 20, TEXT("CIRE_EXP_PET_HIT")), 17.f, .01f)) // pets: 85% damage taken
         { Abort(TEXT("arena crit/wall/summon authorization mismatch")); return true; }
         FCireSkillshotSpec Shot; Shot.Speed = 1800; Shot.Radius = 20; Shot.MaxRange = 1800; Shot.WarningSeconds = 0; Shot.Damage = 30; Shot.bCanCrit = false;
         Server.CombatShot = ACireSkillshot::Spawn(Players[0], Shot, Players[1]->GetActorLocation(), TEXT("CIRE_EXP_PVP_SKILLSHOT"));
@@ -238,7 +247,7 @@ bool CireExpansionNetProbe::TickServer(ACireGameMode* Mode)
     else if (Server.Stage == 6 && Server.Acks == 3) Stage(7);
     else if (Server.Stage == 7 && Now - Server.ChangedAt > 3)
     {
-        UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_EXPANSION_NET_SERVER_PASS clients=2 pve_privacy=1 replicated_motion=1 critical_events=1 owner_cleanup=1 pvp_projectile=1 wall_damage=1 summon_damage=1 phase_cleanup=1 movement_rpc=1"));
+        UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_EXPANSION_NET_SERVER_PASS clients=2 pve_privacy=1 replicated_motion=1 critical_events=1 owner_cleanup=1 pvp_projectile=1 wall_damage=1 summon_damage=1 phase_cleanup=1 movement_rpc=1 pets=1"));
         Server.bDone = true; FPlatformMisc::RequestExitWithStatus(false, 0);
     }
     return true;
@@ -272,7 +281,7 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
         UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_EXPANSION_NET_CLIENT_STAGE_PASS team=%d stage=%d"), Team, Client.Stage);
     };
     if (Now - Client.ChangedAt < .3 && Client.Stage != 9) return true;
-    if (Client.Stage <= 2 && State->Phase == 0 && (Counts.Wall[Enemy] || Counts.Shot[Enemy] || Counts.Summon[Enemy] || Counts.Turret[Enemy] || Event(FString::Printf(TEXT("CIRE_EXP_PVE_CRIT_%d"), Enemy))))
+    if (Client.Stage <= 2 && State->Phase == 0 && (Counts.Wall[Enemy] || Counts.Shot[Enemy] || Counts.Summon[Enemy] || Counts.Turret[Enemy] || Counts.Pet[Enemy] /* pets */ || Event(FString::Printf(TEXT("CIRE_EXP_PVE_CRIT_%d"), Enemy))))
     { Abort(TEXT("opposing survival actors or critical event leaked")); return true; }
     if (Client.Stage == 1)
     {
@@ -301,6 +310,13 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
         if (const auto* Aura = Hero->FindComponentByClass<UCireAuraComponent>(); !Aura || !Aura->Instances.ContainsByPredicate([](const FCireAuraInstance& I) { return I.Id == TEXT("blood_rage"); })) return true;
         for (TActorIterator<ACireHero> It(Controller->GetWorld()); It; ++It) if (It->TeamId == Enemy) if (const auto* Aura = It->FindComponentByClass<UCireAuraComponent>(); Aura && Aura->CountVertices() > 0) { Abort(TEXT("opposing hero aura rendered outside the arena")); return true; }
         if (FVector::Dist2D(Counts.OwnShot->GetActorLocation(), Client.FirstShotPosition) < 20) return true;
+        // pets: the owner's companion replicates (id, stance, cooldowns, health); a Stay order sent over RPC comes back replicated.
+        ACirePet* Pet = Counts.OwnPet;
+        if (!Pet || Pet->HasAuthority() || Pet->OwnerHero != Hero || Pet->PetId != TEXT("sabercat") || Pet->Stance != ECirePetStance::Passive ||
+            Pet->AbilityReadyAt.Num() != 3 || Pet->Health <= 0 || Pet->Health != Pet->MaxHealth || Hero->PetGrant != TEXT("sabercat")) return true;
+        if (!Client.bPetCommandSent) { Controller->ServerPetCommand(static_cast<uint8>(ECirePetCommand::Stay)); Client.bPetCommandSent = true; return true; }
+        if (Pet->Order != ECirePetOrder::Stay) return true;
+        UE_LOG(LogCireExpansionNet, Display, TEXT("CIRE_PET_NET_CLIENT_PASS team=%d hp=%.0f stance=%d order=%d"), Team, Pet->Health, static_cast<int32>(Pet->Stance), static_cast<int32>(Pet->Order));
         Ack();
     }
     else if (Client.Stage == 2)
@@ -315,11 +331,12 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
     }
     else if (Client.Stage == 3)
     {
-        if ((Team == 0 && Hero->bDead && CireBuffs::Get(Hero) && CireBuffs::Get(Hero)->Buffs.IsEmpty() /* aura-vfx */ && Counts.Wall[0] == 0 && Counts.Shot[0] == 0 && Counts.Summon[0] == 0 && Counts.Turret[0] == 0 /* new-champions */) ||
-            (Team == 1 && Counts.Wall[1] == 1 && Counts.Shot[1] == 1 && Counts.Summon[1] == 1 && Counts.Turret[1] == 1)) Ack();
+        if ((Team == 0 && Hero->bDead && CireBuffs::Get(Hero) && CireBuffs::Get(Hero)->Buffs.IsEmpty() /* aura-vfx */ && Counts.Wall[0] == 0 && Counts.Shot[0] == 0 && Counts.Summon[0] == 0 && Counts.Turret[0] == 0 /* new-champions */ && Counts.Pet[0] == 0 /* pets: leaves with its dead owner */) ||
+            (Team == 1 && Counts.Wall[1] == 1 && Counts.Shot[1] == 1 && Counts.Summon[1] == 1 && Counts.Turret[1] == 1 && Counts.Pet[1] == 1)) Ack();
     }
     else if (Client.Stage == 4 && State->Phase == 2)
-    { if (Counts.Wall[0] == 1 && Counts.Wall[1] == 1 && Counts.Shot[0] == 1 && Counts.Shot[1] == 1 && Counts.Summon[0] == 1 && Counts.Summon[1] == 1 && CireBuffs::Get(Hero) && CireBuffs::Get(Hero)->Buffs.IsEmpty() /* aura-vfx: phase change drops records */) Ack(); }
+    { if (Counts.Wall[0] == 1 && Counts.Wall[1] == 1 && Counts.Shot[0] == 1 && Counts.Shot[1] == 1 && Counts.Summon[0] == 1 && Counts.Summon[1] == 1 && CireBuffs::Get(Hero) && CireBuffs::Get(Hero)->Buffs.IsEmpty() /* aura-vfx: phase change drops records */ &&
+        Counts.Pet[0] == 1 && Counts.Pet[1] == 1 /* pets: both companions are observable in the arena */) Ack(); }
     else if (Client.Stage == 5)
     {
         const auto* Critical = Event(TEXT("CIRE_EXP_PVP_CRIT")); const auto* Impact = Event(TEXT("CIRE_EXP_PVP_SKILLSHOT"));
@@ -333,7 +350,8 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
         // aura-vfx: an arena buff record on the team-1 hero reaches both clients (opponents are observable in the arena).
         bool bArenaBuff = false; for (TActorIterator<ACireHero> It(Controller->GetWorld()); It; ++It) if (!Cast<ACireSummon>(*It) && It->TeamId == 1 && CireBuffs::IsActive(*It, TEXT("bastion_of_dawn"))) bArenaBuff = true;
         if (!bArenaBuff) return true;
-        if (bHealth && Counts.Wall[0] == 0 && Counts.Wall[1] == 1 && Counts.FirstSummon && Counts.FirstSummon->Health == 90) Ack();
+        if (bHealth && Counts.Wall[0] == 0 && Counts.Wall[1] == 1 && Counts.FirstSummon && Counts.FirstSummon->Health == 90 &&
+            Counts.FirstPet && FMath::IsNearlyEqual(Counts.FirstPet->Health, Counts.FirstPet->MaxHealth - 17.f, .05f) /* pets: enemy champion damage replicated */) Ack();
     }
     else if(Client.Stage==8||Client.Stage==9)
     {

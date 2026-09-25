@@ -711,6 +711,12 @@
       "accent": "#aac8e6",
       "pool": false
     },
+    "sabercat_maul": {
+      "school": "blood",
+      "glyph": "paw",
+      "accent": "#e62832",
+      "pool": false
+    },
     "sabercat_pounce": {
       "school": "primal",
       "glyph": "claw",
@@ -721,6 +727,12 @@
       "school": "blood",
       "glyph": "claw",
       "accent": "#e62832",
+      "pool": false
+    },
+    "sabercat_roar": {
+      "school": "primal",
+      "glyph": "war_cry",
+      "accent": "#e69646",
       "pool": false
     },
     "sanctuary": {

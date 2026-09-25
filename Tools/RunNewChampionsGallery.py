@@ -1,9 +1,10 @@
 """Render the new-champions review gallery (Source/CiresTeamSurvival/CireNewChampionsGallery.cpp).
 
 Offscreen 1920x1080 captures land in Saved/NewChampionsGallery/<stamp>/: the five new champions on the lane,
-close-ups (Gunblade, Witch Slayer, the mounted Huntress, the Aetheri), each champion in combat casting signature
+close-ups (Gunblade, Witch Slayer, the Huntress on foot with her sabercat companion, the Aetheri), each champion in combat casting signature
 skills, the Aetheri Constructs being placed and fighting (turret, traps, pylons, skitter bombs), and an Aetheri
-monster wave deploying its own constructs. Usage: python Tools/RunNewChampionsGallery.py [--only lineup,constructs,...]
+monster wave deploying its own constructs, and (pets) Ashfang pouncing, mauling and roaring plus the HUD pet frame
+(hud_pet_frame, hud_pet_command, hud_pet_fallen). Usage: python Tools/RunNewChampionsGallery.py [--only lineup,constructs,...]
 Only the editor process started here is stopped. Captures still need visual review.
 """
 from __future__ import annotations
