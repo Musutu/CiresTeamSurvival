@@ -1,6 +1,7 @@
 #include "CireMobility.h"
 #include "CireItems.h" // items-v2: dodge charges, Tailwind
 #include "CireGame.h"
+#include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/RootMotionSource.h"
@@ -127,6 +128,7 @@ bool UCireMobility::StartRoll(FVector Direction)
     InvulnerableFrom=RollStartedAt+V.InvulnerableStart;InvulnerableUntil=RollStartedAt+V.InvulnerableEnd;
     H->PendingAttackTarget.Reset();H->GlobalCooldown=FMath::Max(H->GlobalCooldown,V.RollDuration);H->Notice=TEXT("Dodge roll");
     CireItems::OnDodgeRoll(H); // items-v2: Windrunner Boots (Tailwind)
+    CireRollSkills::OnRoll(H,Direction); // champion-draft: roll skills fire per roll (and per roll charge)
     MulticastRoll(RollStartedAt,RollDuration,RollDirection,V.RollSpeed);H->ForceNetUpdate();return true;
 }
 void UCireMobility::MulticastRoll_Implementation(float Started,float Duration,FVector_NetQuantizeNormal Direction,float Speed)

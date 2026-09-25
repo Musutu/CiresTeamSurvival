@@ -1,5 +1,6 @@
 #include "CireCrowdControl.h"
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
+#include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireAbilityDB.h"
 #include "CireBuffs.h"
 #include "CireCombatEvents.h"
@@ -163,6 +164,7 @@ bool CireCrowdControl::GateCast(ACireHero* H,int32 Slot,const FString& Id)
     if(IsCasting(H)){H->Notice=TEXT("Already casting.");return true;}
     if(!D||D->CastTime<=0)return false;
     if(!CireSkillShop::CanPayCast(H,Id,D->Base.ManaCost,D->Base.EnergyCost)){H->Notice=CireSkillShop::CostFailText();return true;} // items-v2: scaled cost
+    if(CireRollSkills::ConsumeInstantCast(H))return false; // champion-draft: Quickened Mind (instant after a roll)
     FPendingCast P;P.Slot=Slot;P.Id=Id;P.Target=H->Target;P.bAim=H->bHasCastAim;P.Aim=H->CastAimPoint;
     State().Casts.Add(H,P);
     const float T=Now(H->GetWorld());
@@ -183,6 +185,7 @@ void CireCrowdControl::TickHero(ACireHero* H,float Delta)
 {
     RegisterCastProvider();
     if(!H||!H->HasAuthority())return;
+    CireRollSkills::Tick(H,Delta); // champion-draft: roll mines, bot rolling
     const float T=Now(H->GetWorld());
     if(IsCasting(H))
     {
