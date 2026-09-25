@@ -212,8 +212,8 @@ bool CireRaces::RunSmoke(ACireGameMode* Mode)
                 Check(RankColorValue.Equals(Rank(ECireNPCRank::Champion).Color, .01f) && RimStrength > 0, TEXT("rank colour and rim parameters applied"));
                 Check(RaceTint.Equals(FindRace(TEXT("drowned_deep"))->Palette(1).Base, .01f) && RaceStrength > .5f, TEXT("race palette variant parameters applied to a borrowed body"));
                 UTexture* Base = nullptr;
-                Check(MID && MID->GetTextureParameterValue(FHashedMaterialParameterInfo(TEXT("BaseColorTex")), Base) && Base && Base->GetName().Contains(TEXT("BlightCaster")),
-                    TEXT("skin keeps the body's own base colour texture"));
+                Check(MID && MID->GetTextureParameterValue(FHashedMaterialParameterInfo(TEXT("BaseColorTex")), Base) && Base && (Base->GetName().Contains(TEXT("BlightCaster")) || Base->GetName().Contains(TEXT("Tidecaller"))),
+                    TEXT("skin keeps the body's own base colour texture")); // tripo-races: the Tidecaller now has its own body
                 ApplyRank(M, ECireNPCRank::Veteran, 0);
                 FLinearColor Again; MID = Cast<UMaterialInstanceDynamic>(M->GetMesh()->GetMaterial(0));
                 Check(MID && MID->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("RankColor")), Again) && Again.Equals(Rank(ECireNPCRank::Veteran).Color, .01f),
