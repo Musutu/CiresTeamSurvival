@@ -20,7 +20,7 @@ INI = ROOT / "Config" / "DefaultEngine.ini"
 
 def redirects():
     lines = []
-    for folder in sorted((ROOT / "Content" / "TripoModels").glob("CTS_Race_*")):
+    for folder in sorted((ROOT / "Content" / "TripoModels").glob("CTS_*")):
         new = "/Game/TripoModels/%s/%s_Skeleton" % (folder.name, folder.name)
         olds = set()
         for clip in folder.glob("Animations/*.uasset"):
@@ -52,7 +52,7 @@ def main():
         print(error)
     # With core redirects active the rename leaves the original Bridge packages behind; drop the moved ones.
     moved = {m["from"].rsplit("/", 1)[1] for m in report.get("moved", [])}
-    for folder in (ROOT / "Content" / "TripoModels").glob("CTS_Race_*"):
+    for folder in (ROOT / "Content" / "TripoModels").glob("CTS_*"):
         if folder.name in moved:
             shutil.rmtree(folder)
 

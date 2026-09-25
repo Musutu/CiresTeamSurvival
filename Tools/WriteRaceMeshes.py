@@ -76,6 +76,41 @@ SPEC = {
     "stoneborn_colossus": (240, "slash", "boulder fists", ["hand_r"],
                            {"stoneborn_quake": "ground_slam", "stoneborn_crush": "ground_slam", "stoneborn_colossus_rage": "war_cry",
                             "stoneborn_boulder_toss": "slash"}),
+    # The Feral Kin (dire_wolf and bristleback keep the CC0 quadrupeds in RaceMeshes.free.json)
+    "werebear_mauler": (220, "slash", "claws", ["hand_r"], {"feral_rage": "war_cry"}),
+    "wild_outrider": (195, "attack_bow", None, [], {}),
+    "feral_ursoth": (210, "slash", "claws; antler mantle and tree on the back", ["hand_r", "spine_03"],
+                     {"feral_elder_roar": "war_cry", "feral_call_of_the_wild": "war_cry", "feral_elder_fury": "war_cry",
+                      "feral_rending_maul": "slash", "feral_ursoth_charge": "ground_slam"}),
+    "feral_mammoth": (240, "slash", "stone-capped tusks", ["hand_r"],
+                      {"feral_mammoth_stomp": "ground_slam", "feral_earthquake": "ground_slam", "feral_mammoth_trample": "ground_slam",
+                       "feral_tusk_sweep": "slash", "feral_mammoth_rage": "war_cry"}),
+    "tusked_behemoth": (205, "slash", None, [], {}),
+    "feral_shaman": (185, "cast_a_spell", "bone-and-antler staff (right hand)", ["hand_r"], {}),
+    # The Fallen Order
+    "fallen_squire": (180, "slash", None, [], {}),
+    "dread_knight": (200, "slash", None, [], {}),
+    "oathbreaker_templar": (200, "slash", None, [], {}),
+    "blighted_chaplain": (180, "cast_a_spell", "brass censer (right hand)", ["hand_r"], {}),
+    "fallen_inquisitor_crossbow": (185, "attack_crossbow", "repeating crossbow (right hand)", ["hand_l", "hand_r"], {}),
+    "flagellant": (170, "slash", "barbed flails (both hands)", ["hand_r"], {}),
+    "fallen_high_inquisitor": (205, "cast_a_spell", "sun-relic staff (right hand)", ["hand_r"],
+                               {"fallen_inquisitor_zeal": "war_cry", "fallen_summon_flagellants": "war_cry"}),
+    "fallen_crusader": (240, "slash", "greatsword (right hand)", ["hand_r"],
+                        {"fallen_judgment_slam": "ground_slam", "fallen_crusader_cleave": "slash", "fallen_crusader_wrath": "war_cry",
+                         "fallen_crusade": "war_cry"}),
+    # The Voidborn
+    "rift_stalker": (190, "slash", "scythe finger-blades", ["hand_r"], {}),
+    "void_ravager": (210, "slash", "mandible claws", ["hand_r"], {}),
+    "null_warden": (200, "slash", None, [], {}),
+    "rift_weaver": (195, "cast_a_spell", None, ["hand_r"], {}),
+    "rift_gazer": (175, "cast_a_spell", None, ["hand_l"], {}),
+    "voidling": (90, "slash", "claws", ["hand_r"], {}),
+    "voidborn_herald": (205, "cast_a_spell", "rift-shard staff (right hand)", ["hand_r"],
+                        {"void_herald_ascension": "war_cry", "void_open_the_rift": "war_cry"}),
+    "voidborn_devourer": (245, "slash", "claws", ["hand_r"],
+                          {"void_titan_slam": "ground_slam", "void_singularity": "ground_slam", "void_devourer_hunger": "war_cry",
+                           "void_breath": "fire_breath", "void_devour": "slash"}),
 }
 EXTRA_WINDOWS = {"tentacle_sweep": {"start": 0.3, "contact": 1.7, "end": 3.4, "recoverRate": 1.4},
                  "axe_throw": {"start": 0.2, "contact": 1.2, "end": 2.6, "recoverRate": 1.4},
@@ -98,7 +133,9 @@ def main():
         r = report.get(unit)
         if not r or not r.get("skeletal"):
             continue
-        clips = r["animations"]
+        # The Bridge mangles some library clip names (e.g. "Huge_w_rlord..."); committed (read-only) clips keep the
+        # raw name, so alias them to their role here.
+        clips = {("war_cry" if k.startswith("Huge_") and "rlord" in k else k): v for k, v in r["animations"].items()}
         if attack not in clips:
             attack = "slash" if "slash" in clips else next(iter(clips))
         variant = r["mesh"].rsplit("/", 1)[1].split(".")[0].replace("CTS_Race_", "")

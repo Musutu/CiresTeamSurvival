@@ -70,8 +70,9 @@ def build_material(folder, name):
 
 
 def integrate(unit):
-    export, race, name = unit["export"], unit["race"], unit["folder"]
-    src, dst = "/Game/TripoModels/" + export, "/Game/Tripo/Races/%s/%s" % (race, name)
+    export, race, name = unit["export"], unit.get("race", ""), unit["folder"]
+    src = "/Game/TripoModels/" + export
+    dst = unit.get("dest") or "/Game/Tripo/Races/%s/%s" % (race, name)
     if EAL.does_directory_exist(src) and assets_in(src):
         move_folder(src, dst)
     elif not EAL.does_directory_exist(dst):
@@ -98,6 +99,10 @@ def integrate(unit):
     else:
         for i in range(len(static.get_editor_property("static_materials"))):
             static.set_material(i, mi)
+        sms = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem)
+        nanite = static.get_editor_property("nanite_settings")
+        nanite.set_editor_property("enabled", True)  # weapon props: M_Tripo_PBR_Master carries the Nanite usage flag
+        sms.set_nanite_settings(static, nanite, apply_changes=True)
     anims = {}
     for p in assets_in(dst + "/Animations"):
         a = unreal.load_asset(p)
@@ -137,6 +142,11 @@ def fix_redirectors(root):
 
 def run():
     units = [u for u in json.loads(SOURCE.read_text(encoding="utf-8"))["units"] if u.get("export")]
+    champions = PROJECT / "Art" / "TripoChampions.json"  # new playable champions, mounts and weapon props
+    if champions.exists():
+        for item in json.loads(champions.read_text(encoding="utf-8"))["items"]:
+            if item.get("export"):
+                units.append(dict(item, unit=item["id"], race=item.get("race", "champions")))
     done = 0
     for unit in units:
         try:

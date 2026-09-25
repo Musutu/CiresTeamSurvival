@@ -313,7 +313,7 @@
       "importStatus": "Saved and integrated with verified matching locomotion and prototype attack; production polish remains"
     }
   ],
-  "last_observed_account_balance": 5445,
+  "last_observed_account_balance": 1575,
   "total_recorded_credit_usage": 2320,
   "last_local_pipeline_update_utc": "2026-09-23T16:19:54.235013-04:00",
   "retarget_summary": {
@@ -336,7 +336,7 @@
       "Combat animation coverage"
     ]
   },
-  "last_observed_credit_balance": 5445,
+  "last_observed_credit_balance": 1575,
   "lastIntegrationUpdateUtc": "2026-09-24T01:00:09.893916+00:00",
   "batch03": {
     "manifest": "Art/TripoBatch03.json",
@@ -356,7 +356,14 @@
     "creditCap": 5500,
     "balanceBefore": 6990,
     "balanceAtRaceBoundary": {
-      "drowned_deep": 6370
+      "drowned_deep": 6370,
+      "blightwood": 5715,
+      "ironhide": 5095,
+      "drakkari": 4420,
+      "stoneborn_bipeds": 3970,
+      "feral_kin": 3520,
+      "fallen_order": 2920,
+      "voidborn": 2320
     },
     "dataFiles": [
       "Content/Data/RaceMeshes.tripo.json",
@@ -364,7 +371,20 @@
     ],
     "contents": "Race-unit bodies from Docs/Races.md in /Game/Tripo/Races/<race>/<Unit>/ (rigged UE5-mannequin skeleton, preset clips + text-to-motion)",
     "racesDone": [
-      "drowned_deep"
-    ]
+      "drowned_deep",
+      "blightwood",
+      "ironhide",
+      "drakkari",
+      "stoneborn (6 of 8)",
+      "feral_kin (6 of 8)",
+      "fallen_order",
+      "voidborn"
+    ],
+    "raceCredits": 4670
+  },
+  "champions": {
+    "manifest": "Art/TripoChampions.json",
+    "credits": 745,
+    "contents": "Gunblade, Huntress (+sabercat mount), Witch Slayer, Aetheri Artificer, Aetheri Warden in /Game/Tripo/Champions; 5 weapon props in /Game/Tripo/Props"
   }
 }

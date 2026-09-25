@@ -35,7 +35,14 @@
     "drakkari_broodmother": { "abilityClips": {"drakkari_broodmother_wrath": "war_cry", "drakkari_hatch_the_brood": "war_cry"} },
     "drakkari_ashwing": { "abilityClips": {"drakkari_inferno_breath": "fire_breath", "drakkari_ash_fall": "fire_breath", "drakkari_ashwing_stomp": "ground_slam", "drakkari_ashwing_fury": "war_cry", "drakkari_ashwing_tail": "slash"} },
     "stoneborn_forgelord": { "abilityClips": {"stoneborn_forge_fury": "war_cry", "stoneborn_forge_sentinels": "war_cry", "stoneborn_slag_eruption": "ground_slam", "stoneborn_anvil_cleave": "slash", "stoneborn_runic_shockwave": "ground_slam"} },
-    "stoneborn_colossus": { "abilityClips": {"stoneborn_quake": "ground_slam", "stoneborn_crush": "ground_slam", "stoneborn_colossus_rage": "war_cry", "stoneborn_boulder_toss": "slash"} }
+    "stoneborn_colossus": { "abilityClips": {"stoneborn_quake": "ground_slam", "stoneborn_crush": "ground_slam", "stoneborn_colossus_rage": "war_cry", "stoneborn_boulder_toss": "slash"} },
+    "werebear_mauler": { "abilityClips": {"feral_rage": "war_cry"} },
+    "feral_ursoth": { "abilityClips": {"feral_elder_roar": "war_cry", "feral_call_of_the_wild": "war_cry", "feral_elder_fury": "war_cry", "feral_rending_maul": "slash", "feral_ursoth_charge": "ground_slam"} },
+    "feral_mammoth": { "abilityClips": {"feral_mammoth_stomp": "ground_slam", "feral_earthquake": "ground_slam", "feral_mammoth_trample": "ground_slam", "feral_tusk_sweep": "slash", "feral_mammoth_rage": "war_cry"} },
+    "fallen_high_inquisitor": { "abilityClips": {"fallen_inquisitor_zeal": "war_cry", "fallen_summon_flagellants": "war_cry"} },
+    "fallen_crusader": { "abilityClips": {"fallen_judgment_slam": "ground_slam", "fallen_crusader_cleave": "slash", "fallen_crusader_wrath": "war_cry", "fallen_crusade": "war_cry"} },
+    "voidborn_herald": { "abilityClips": {"void_herald_ascension": "war_cry", "void_open_the_rift": "war_cry"} },
+    "voidborn_devourer": { "abilityClips": {"void_titan_slam": "ground_slam", "void_singularity": "ground_slam", "void_devourer_hunger": "war_cry", "void_breath": "fire_breath", "void_devour": "slash"} }
   },
   "bodies": {
     "BlightCaster":       { "dropPropBones": ["hand_r"], "note": "bone staff is part of the mesh" },
