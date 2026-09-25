@@ -2,6 +2,7 @@
 #include "CireWaves.h" // wave-director
 #include "CireClassTraits.h"
 #include "CireAbilityDB.h"
+#include "CireCrowdControl.h"
 #include "CireArenas.h" // arenas
 #include "CireAudio.h" // audio:
 #include "CireLoot.h" // progression-shop
@@ -75,6 +76,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireChampionProfiles::RunSmoke(Mode)&&Good;
     Good=CireClassTraits::RunSmoke(Mode)&&Good; // champion-draft: class traits
     Good=CireAbilityDB::RunSmoke()&&Good; // champion-draft: ability database
+    Good=CireCrowdControl::RunSmoke(Mode)&&Good; // champion-draft: crowd control, casts, execute skills
     Good=CireWeapons::RunValidationSmoke()&&Good;
     Good=CireMovement::RunSmoke(Mode)&&Good;
     Good=CireRoleSkills::RunSmoke(Mode)&&Good;

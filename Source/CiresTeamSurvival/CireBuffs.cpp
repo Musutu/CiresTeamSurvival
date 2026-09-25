@@ -122,6 +122,8 @@ const TArray<FName>& CireBuffs::KnownIds()
         // monster-races: race-skill riders and themed marks (CireRaces::OnAbilityReleased).
         TEXT("npc_rooted"),TEXT("npc_silenced"),TEXT("npc_tide"),TEXT("npc_ink"),TEXT("npc_mind"),TEXT("npc_thorns"),TEXT("npc_spores"),
         TEXT("npc_bloodlust"),TEXT("npc_sundered"),TEXT("npc_dragonfire"),TEXT("npc_scaleward"),TEXT("npc_runic"),TEXT("npc_feral"),
-        TEXT("npc_profane"),TEXT("npc_void")};
+        TEXT("npc_profane"),TEXT("npc_void"),
+        // champion-draft: crowd control, heal cuts, armor break and Executioner (CireCrowdControl).
+        TEXT("silenced"),TEXT("school_locked"),TEXT("heal_cut"),TEXT("heal_cut_done"),TEXT("armor_broken"),TEXT("executioner_ready")};
     return Ids;
 }

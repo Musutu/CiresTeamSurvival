@@ -109,6 +109,10 @@ public:
     UPROPERTY(Replicated) FVector_NetQuantize AttackAimLocation;
     UPROPERTY(Replicated) float AttackStartedServerTime = 0;
     UPROPERTY(Replicated) float AttackDuration = .65f;
+    // champion-draft: timed casts (heals etc.); replicated for cast bars. See CireCrowdControl.
+    UPROPERTY(Replicated) FName CastSkill;
+    UPROPERTY(Replicated) float CastStartTime = 0;
+    UPROPERTY(Replicated) float CastEndTime = 0;
     UPROPERTY(Replicated) TArray<FString> Skills;
     UPROPERTY(Replicated) TArray<FString> Offers;
     UPROPERTY(Replicated) TArray<float> Cooldowns;
