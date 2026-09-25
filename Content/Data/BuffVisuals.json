@@ -392,7 +392,7 @@
         { "shape": "ring", "attach": "ground", "speed": 0.5 }
       ],
       "lifecycle": { "burstSeconds": 0.35, "fadeSeconds": 0.3 },
-      "sound": { "start": "item.vigil.start", "end": "item.vigil.end" }
+      "sound": { "start": "item.oathshield.start", "end": "item.oathshield.end" }
     },
     "apotheosis": {
       "name": "Apotheosis", "kind": "buff", "school": "holy", "source": "items-v2: Sigil of Apotheosis: the extra effect an ultimate grants allies (party aura)",
@@ -404,7 +404,7 @@
         { "shape": "ring", "attach": "ground", "style": "runes", "count": 8, "speed": 0.6 }
       ],
       "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
-      "sound": { "start": "item.apotheosis.start", "end": "item.apotheosis.end" }
+      "sound": { "start": "item.oathshield.start", "end": "item.oathshield.end" }
     },
     "toll_of_the_grave": {
       "name": "Toll of the Grave", "kind": "stance", "school": "death", "source": "Gravebell active: every monster within 8m must attack you for 3s",
