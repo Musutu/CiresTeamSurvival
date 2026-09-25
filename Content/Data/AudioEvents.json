@@ -77,6 +77,7 @@
     "protection_dome": {"name": "Aegis Dome", "element": "holy", "kind": "summon"},
     "oathbound_guardian": {"name": "Oathbound Guardian", "element": "shadow", "kind": "summon"},
     "spectral_pack": {"name": "Spectral Pack", "element": "shadow", "kind": "summon"},
+    "polymorph": {"name": "Polymorph", "element": "arcane", "kind": "spell"},
     "second_wind": {"name": "Second Wind", "element": "nature", "kind": "heal"},
     "decimating_strike": {"name": "Decimating Strike", "element": "physical", "kind": "melee", "weapon": "caster"},
     "stone_skin": {"name": "Stone Skin", "element": "earth", "kind": "guard"},

@@ -35,6 +35,9 @@ struct CIRESTEAMSURVIVAL_API FCireSkillShopData
 {
     Cires::Items::SkillShopRules Rules;
     bool bBreather = true, bPrep = true, bRecovery = true, bAutoOpen = true;
+    // Ready to Continue gate (Skill Shop mode): the post-wave shop phase waits for every human.
+    bool bReadyGate = true;
+    float ReadyMaxSeconds = 180.f;   // safety cap for AFK players; 0 = none
     float BotSkillShare = .6f;
     FString Error;
     bool bValid = false;
@@ -79,6 +82,10 @@ namespace CireSkillShop
     CIRESTEAMSURVIVAL_API bool Buy(ACireHero* Hero, const FString& Id, FString& Message);
     CIRESTEAMSURVIVAL_API bool LevelUp(ACireHero* Hero, const FString& Id, FString& Message);
     CIRESTEAMSURVIVAL_API void BotShop(ACireHero* Hero);
+    // Server, from the match tick during the breather: true = hold the countdown (not every human is
+    // ready and the safety cap has not run out). Clamps WaveTimer to 1 s when everyone is ready or the
+    // cap expires. Classic Draft mode and bots-only matches never hold.
+    CIRESTEAMSURVIVAL_API bool HoldBreather(ACireGameMode* Mode, float DeltaSeconds, float& WaveTimer);
 
     // ---- per-level scaling (CireAbilityDB::EffectiveStats(Id, Level) relative to level 1) ----
     CIRESTEAMSURVIVAL_API FCireCastScale CastScale(const ACireHero* Hero, const FString& Id);

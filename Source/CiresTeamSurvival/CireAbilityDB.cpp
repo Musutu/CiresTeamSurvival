@@ -49,7 +49,7 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
         const TSharedPtr<FJsonObject>& J=*O;FCireAbilityDef D;
         D.Id=Str(J,TEXT("id"));D.Name=Str(J,TEXT("name"));D.Icon=Str(J,TEXT("icon"));D.Kind=Str(J,TEXT("kind"));D.School=Str(J,TEXT("school"));
         D.Targeting=Str(J,TEXT("targeting"));D.Status=Str(J,TEXT("status"));D.Description=Str(J,TEXT("description"));D.EffectLabel=Str(J,TEXT("effectLabel"));D.Category=Str(J,TEXT("category"));
-        D.Types=Strings(J,TEXT("types"));D.EffectTags=Strings(J,TEXT("effectTags"));D.Categories=Strings(J,TEXT("categories"));D.Champions=Strings(J,TEXT("champions"));D.SignatureOf=Strings(J,TEXT("signatureOf"));
+        D.Types=Strings(J,TEXT("types"));D.Section=Str(J,TEXT("section"));D.EffectTags=Strings(J,TEXT("effectTags"));D.Categories=Strings(J,TEXT("categories"));D.Champions=Strings(J,TEXT("champions"));D.SignatureOf=Strings(J,TEXT("signatureOf"));
         D.CastTime=Num(J,TEXT("castTime"));
         // feat/camera-movement: optional; missing means WoW behaviour (instants move, cast-time spells stand still).
         if(!J->TryGetBoolField(TEXT("castWhileMoving"),D.bCastWhileMoving))D.bCastWhileMoving=D.CastTime<=0;

@@ -7,6 +7,11 @@
     "recovery": true,
     "autoOpenOnWaveClear": true
   },
+  "readyGate": {
+    "_comment": "Skill Shop mode: the next wave waits until every human presses READY TO CONTINUE (bots auto-ready); maxSeconds is the AFK safety cap (0 = none), counted down on screen in its last 30 s. Edit live in F8 > Economy.",
+    "enabled": true,
+    "maxSeconds": 180
+  },
   "prices": {
     "active": 15,
     "passive": 30,

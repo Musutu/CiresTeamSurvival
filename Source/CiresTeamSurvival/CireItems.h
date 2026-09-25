@@ -198,6 +198,7 @@ public:
     UPROPERTY(Replicated) int32 UndoDepth = 0;
     UPROPERTY(Replicated) bool bShopVisit = false;
     UPROPERTY(Replicated) TArray<FCireSkillRank> SkillRanks;   // Skill Shop levels
+    UPROPERTY(Replicated) bool bReadyToContinue = false;       // breather READY TO CONTINUE (bots: always)
 
     // ---- client requests (owning client only) ----
     UFUNCTION(Server, Reliable) void ServerBuy(FName ItemId);

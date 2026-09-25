@@ -15,6 +15,16 @@
   "arcane",
   "storm"
  ],
+ "sections": [
+  "spell",
+  "attack",
+  "defensive",
+  "control",
+  "summon",
+  "construct",
+  "passive",
+  "ultimate"
+ ],
  "types": [
   "TANK",
   "DPS",
@@ -120,7 +130,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Guard"
+   ]
   },
   "shield_slam": {
    "id": "shield_slam",
@@ -211,7 +225,14 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Interrupt",
+    "Taunt",
+    "Damage"
+   ]
   },
   "war_cry": {
    "id": "war_cry",
@@ -296,7 +317,12 @@
     "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Taunt",
+    "Guard"
+   ]
   },
   "chain_spark": {
    "id": "chain_spark",
@@ -371,7 +397,11 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "frost_bind": {
    "id": "frost_bind",
@@ -463,7 +493,12 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Damage"
+   ]
   },
   "cleaving_strike": {
    "id": "cleaving_strike",
@@ -542,7 +577,11 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "shadow_step": {
    "id": "shadow_step",
@@ -631,7 +670,13 @@
     "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "restoring_light": {
    "id": "restoring_light",
@@ -699,7 +744,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "sanctuary": {
    "id": "sanctuary",
@@ -775,7 +824,12 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal",
+    "Guard"
+   ]
   },
   "purify": {
    "id": "purify",
@@ -851,7 +905,12 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal",
+    "Cleanse"
+   ]
   },
   "summoned_wall": {
    "id": "summoned_wall",
@@ -934,7 +993,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "protection_dome": {
    "id": "protection_dome",
@@ -1019,7 +1082,11 @@
     "label": "Lv 15: +healing on the target -40% for 4s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "oathbound_guardian": {
    "id": "oathbound_guardian",
@@ -1100,7 +1167,12 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Damage"
+   ]
   },
   "spectral_pack": {
    "id": "spectral_pack",
@@ -1165,7 +1237,96 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Damage"
+   ]
+  },
+  "polymorph": {
+   "id": "polymorph",
+   "name": "Polymorph",
+   "icon": "/Game/UI/Abilities/T_polymorph",
+   "types": [
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "enemy",
+   "castTime": 1.5,
+   "base": {
+    "effect": 8,
+    "manaCost": 50,
+    "energyCost": 0,
+    "cooldown": 20,
+    "castTime": 1.5,
+    "range": 1100,
+    "radius": 0,
+    "duration": 8
+   },
+   "effectLabel": "seconds",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 12,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Cast 1.5s: turn an enemy into a harmless critter for {effect}s (half on elites, 3s on champions; bosses and Pack Leaders are immune). Any damage breaks it.",
+   "effects": [
+    {
+     "type": "polymorph",
+     "zone": "target",
+     "duration": 8,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Polymorphed"
+    }
+   ],
+   "champions": [
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "paladin_holy",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "none",
+    "base": 0,
+    "primary": 0
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "castWhileMoving": false,
+   "section": "control",
+   "effectTags": [
+    "Polymorph"
+   ]
   },
   "second_wind": {
    "id": "second_wind",
@@ -1250,7 +1411,11 @@
     "label": "Lv 15: +healing on the target -40% for 4s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "decimating_strike": {
    "id": "decimating_strike",
@@ -1343,7 +1508,13 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Execute",
+    "Armor Break",
+    "Damage"
+   ]
   },
   "stone_skin": {
    "id": "stone_skin",
@@ -1424,7 +1595,9 @@
     "aura": "armor",
     "label": "Lv 15 aura: party +15 armour"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "battle_rhythm": {
    "id": "battle_rhythm",
@@ -1505,7 +1678,9 @@
     "aura": "attackSpeed",
     "label": "Lv 15 aura: party +30% attack speed"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "deep_reserves": {
    "id": "deep_reserves",
@@ -1586,7 +1761,9 @@
     "aura": "magicResist",
     "label": "Lv 15 aura: party +15 magic resist"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "soul_conduit": {
    "id": "soul_conduit",
@@ -1668,7 +1845,11 @@
     "aura": "magicLifesteal",
     "label": "Lv 15 aura: party 5% magic lifesteal"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "executioner": {
    "id": "executioner",
@@ -1742,7 +1923,12 @@
     "aura": "crit",
     "label": "Lv 15 aura: party +5% critical chance"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Execute",
+    "Damage"
+   ]
   },
   "bastion_of_dawn": {
    "id": "bastion_of_dawn",
@@ -1839,7 +2025,12 @@
       "healthScaling": 0.1
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Guard"
+   ]
   },
   "cataclysm": {
    "id": "cataclysm",
@@ -1922,7 +2113,11 @@
       "duration": 5
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "executioners_verdict": {
    "id": "executioners_verdict",
@@ -2007,7 +2202,11 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "renewal": {
    "id": "renewal",
@@ -2095,7 +2294,12 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Cleanse"
+   ]
   },
   "last_stand": {
    "id": "last_stand",
@@ -2177,7 +2381,12 @@
       "healthScaling": 0.12
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Cleanse"
+   ]
   },
   "challenge_of_iron": {
    "id": "challenge_of_iron",
@@ -2266,7 +2475,12 @@
       "duration": 1.5
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Taunt",
+    "Guard"
+   ]
   },
   "seismic_reprisal": {
    "id": "seismic_reprisal",
@@ -2356,7 +2570,12 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Stun",
+    "Damage"
+   ]
   },
   "starfall": {
    "id": "starfall",
@@ -2436,7 +2655,11 @@
       "magnitude": 0.2
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "spectral_hunt": {
    "id": "spectral_hunt",
@@ -2515,7 +2738,11 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "mass_aegis": {
    "id": "mass_aegis",
@@ -2606,7 +2833,12 @@
       "scaling": 2
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Cleanse",
+    "Guard"
+   ]
   },
   "wellspring": {
    "id": "wellspring",
@@ -2693,7 +2925,12 @@
       "magnitude": 0.15
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Guard"
+   ]
   },
   "venom_ground": {
    "id": "venom_ground",
@@ -2760,7 +2997,11 @@
     "label": "Lv 15: +healing on the target -40% for 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "cinder_cone": {
    "id": "cinder_cone",
@@ -2826,7 +3067,11 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "grave_line": {
    "id": "grave_line",
@@ -2901,7 +3146,12 @@
     "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Silence",
+    "Damage"
+   ]
   },
   "ashen_square": {
    "id": "ashen_square",
@@ -2967,7 +3217,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "blight_sigil": {
    "id": "blight_sigil",
@@ -3039,7 +3293,12 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Heal Cut",
+    "Damage"
+   ]
   },
   "piercing_shot": {
    "id": "piercing_shot",
@@ -3105,7 +3364,11 @@
     "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "ember_lance": {
    "id": "ember_lance",
@@ -3179,7 +3442,11 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "shield_bash": {
    "id": "shield_bash",
@@ -3251,7 +3518,14 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Shield",
+    "Stun",
+    "Interrupt",
+    "Damage"
+   ]
   },
   "shield_toss": {
    "id": "shield_toss",
@@ -3313,7 +3587,13 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Shield",
+    "Taunt",
+    "Damage"
+   ]
   },
   "shield_wall": {
    "id": "shield_wall",
@@ -3376,7 +3656,13 @@
     "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Shield",
+    "Guard",
+    "Damage"
+   ]
   },
   "pavise": {
    "id": "pavise",
@@ -3431,7 +3717,12 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Shield",
+    "Construct"
+   ]
   },
   "mechanical_tank": {
    "id": "mechanical_tank",
@@ -3494,7 +3785,14 @@
     "special": "mechSlam",
     "label": "Lv 15: +the mech's slam also cuts enemy attack speed by 10% for 4s"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Shield",
+    "Construct",
+    "Summon",
+    "Taunt"
+   ]
   },
   "artillery": {
    "id": "artillery",
@@ -3555,7 +3853,9 @@
     "special": "artilleryBomb",
     "label": "Lv 15: +when Artillery ends, a bomb hits a 7m radius for all the damage Artillery dealt"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": []
   },
   "eagle_eye": {
    "id": "eagle_eye",
@@ -3616,7 +3916,9 @@
     "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": []
   },
   "longshot": {
    "id": "longshot",
@@ -3677,7 +3979,11 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "headshot": {
    "id": "headshot",
@@ -3738,7 +4044,11 @@
     "special": "headshotTriple",
     "label": "Lv 15: +Headshot's extra hit deals 3x instead of 2x"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "artillery_training": {
    "id": "artillery_training",
@@ -3798,7 +4108,9 @@
     "aura": "rangedDamage",
     "label": "Lv 15 aura: party +10% ranged damage"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "silver_shot": {
    "id": "silver_shot",
@@ -3852,7 +4164,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "hex_mark": {
    "id": "hex_mark",
@@ -3915,7 +4231,12 @@
     "label": "Lv 15: +healing on the target -40% for 4s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Mark",
+    "Damage"
+   ]
   },
   "powder_flask": {
    "id": "powder_flask",
@@ -3979,7 +4300,12 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Damage"
+   ]
   },
   "blade_flurry": {
    "id": "blade_flurry",
@@ -4033,7 +4359,11 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "hunters_stride": {
    "id": "hunters_stride",
@@ -4087,7 +4417,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "warding_talisman": {
    "id": "warding_talisman",
@@ -4157,7 +4491,12 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Cleanse",
+    "Guard"
+   ]
   },
   "price_on_every_soul": {
    "id": "price_on_every_soul",
@@ -4210,7 +4549,9 @@
     "aura": "physicalLifesteal",
     "label": "Lv 15 aura: party 5% physical lifesteal"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "collect_the_bounty": {
    "id": "collect_the_bounty",
@@ -4293,7 +4634,12 @@
       "magnitude": 0.3
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Execute",
+    "Damage"
+   ]
   },
   "arcane_blunderbuss": {
    "id": "arcane_blunderbuss",
@@ -4357,7 +4703,12 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Interrupt",
+    "Damage"
+   ]
   },
   "spirit_lantern": {
    "id": "spirit_lantern",
@@ -4421,7 +4772,13 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Silence",
+    "Damage"
+   ]
   },
   "purge": {
    "id": "purge",
@@ -4491,7 +4848,13 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Silence",
+    "Purge",
+    "Damage"
+   ]
   },
   "banishment": {
    "id": "banishment",
@@ -4554,7 +4917,12 @@
     "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Banish",
+    "Damage"
+   ]
   },
   "witchfinders_mark": {
    "id": "witchfinders_mark",
@@ -4617,7 +4985,12 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Mark",
+    "Damage"
+   ]
   },
   "spectral_blade": {
    "id": "spectral_blade",
@@ -4671,7 +5044,11 @@
     "label": "Lv 15: +healing on the target -40% for 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "witchbane": {
    "id": "witchbane",
@@ -4724,7 +5101,11 @@
     "aura": "stunIgnore",
     "label": "Lv 15 aura: party 5% chance to ignore stuns"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "hexbane_judgment": {
    "id": "hexbane_judgment",
@@ -4817,7 +5198,13 @@
       "atSelf": true
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Silence",
+    "Purge",
+    "Damage"
+   ]
   },
   "bouncing_glaive": {
    "id": "bouncing_glaive",
@@ -4871,7 +5258,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "sabercat_pounce": {
    "id": "sabercat_pounce",
@@ -4935,7 +5326,13 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Slow",
+    "Damage"
+   ]
   },
   "owl_scout": {
    "id": "owl_scout",
@@ -4998,7 +5395,12 @@
     "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Mark",
+    "Damage"
+   ]
   },
   "moonlit_sprint": {
    "id": "moonlit_sprint",
@@ -5068,7 +5470,12 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Cleanse",
+    "Haste"
+   ]
   },
   "crescent_volley": {
    "id": "crescent_volley",
@@ -5122,7 +5529,11 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "sabercat_maul": {
    "id": "sabercat_maul",
@@ -5177,7 +5588,12 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Damage"
+   ]
   },
   "sabercat_roar": {
    "id": "sabercat_roar",
@@ -5249,7 +5665,14 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Slow",
+    "Taunt",
+    "Damage"
+   ]
   },
   "moon_glaive": {
    "id": "moon_glaive",
@@ -5302,7 +5725,11 @@
     "aura": "doubleAttack",
     "label": "Lv 15 aura: party 10% chance to attack twice"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "glaive_storm": {
    "id": "glaive_storm",
@@ -5379,7 +5806,11 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "photon_turret": {
    "id": "photon_turret",
@@ -5434,7 +5865,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "skitter_swarm": {
    "id": "skitter_swarm",
@@ -5489,7 +5924,12 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Damage"
+   ]
   },
   "arc_mine": {
    "id": "arc_mine",
@@ -5544,7 +5984,12 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Damage"
+   ]
   },
   "disruption_pylon": {
    "id": "disruption_pylon",
@@ -5608,7 +6053,13 @@
     "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Weaken",
+    "Damage"
+   ]
   },
   "phase_lance": {
    "id": "phase_lance",
@@ -5662,7 +6113,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "overcharge": {
    "id": "overcharge",
@@ -5717,7 +6172,11 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "aether_engineering": {
    "id": "aether_engineering",
@@ -5771,7 +6230,11 @@
     "aura": "stunOnHit",
     "label": "Lv 15 aura: party 0.5% chance to stun on basic attacks"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "warp_obelisk": {
    "id": "warp_obelisk",
@@ -5849,7 +6312,11 @@
       "atSelf": true
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "aegis_pylon": {
    "id": "aegis_pylon",
@@ -5915,7 +6382,12 @@
     "label": "Lv 15: +healing on the target -40% for 4s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Shield"
+   ]
   },
   "haste_pylon": {
    "id": "haste_pylon",
@@ -5980,7 +6452,12 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Haste"
+   ]
   },
   "gravity_pylon": {
    "id": "gravity_pylon",
@@ -6045,7 +6522,12 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Slow"
+   ]
   },
   "stasis_snare": {
    "id": "stasis_snare",
@@ -6110,7 +6592,13 @@
     "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Stun",
+    "Damage"
+   ]
   },
   "aether_mend": {
    "id": "aether_mend",
@@ -6164,7 +6652,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "repulsor_pulse": {
    "id": "repulsor_pulse",
@@ -6235,7 +6727,13 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Taunt",
+    "Damage"
+   ]
   },
   "resonant_lattice": {
    "id": "resonant_lattice",
@@ -6290,7 +6788,11 @@
     "aura": "aoeResist",
     "label": "Lv 15 aura: party 15% chance to resist area damage"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "aether_nexus": {
    "id": "aether_nexus",
@@ -6375,7 +6877,12 @@
       "amount": 150
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Construct",
+    "Guard"
+   ]
   },
   "riposte_roll": {
    "id": "riposte_roll",
@@ -8148,7 +8655,11 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "bear_roar": {
    "id": "bear_roar",
@@ -8211,7 +8722,12 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Interrupt",
+    "Damage"
+   ]
   },
   "bear_charge": {
    "id": "bear_charge",
@@ -8275,7 +8791,13 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "bear_hibernate": {
    "id": "bear_hibernate",
@@ -8328,7 +8850,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "bear_ancient_hide": {
    "id": "bear_ancient_hide",
@@ -8380,7 +8906,11 @@
     "aura": "aoeResist",
     "label": "Lv 15 aura: party 15% chance to resist area damage"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "bear_colossus": {
    "id": "bear_colossus",
@@ -8449,7 +8979,11 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "paladin_righteous_flail": {
    "id": "paladin_righteous_flail",
@@ -8502,7 +9036,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "paladin_relic_vow": {
    "id": "paladin_relic_vow",
@@ -8557,7 +9095,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "paladin_holy_flail": {
    "id": "paladin_holy_flail",
@@ -8610,7 +9152,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "paladin_pilgrim_light": {
    "id": "paladin_pilgrim_light",
@@ -8663,7 +9209,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "miner_pickfall": {
    "id": "miner_pickfall",
@@ -8716,7 +9266,11 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "miner_faultline": {
    "id": "miner_faultline",
@@ -8778,7 +9332,12 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Damage"
+   ]
   },
   "miner_lantern": {
    "id": "miner_lantern",
@@ -8831,7 +9390,11 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "miner_orehide": {
    "id": "miner_orehide",
@@ -8883,7 +9446,11 @@
     "aura": "armor",
     "label": "Lv 15 aura: party +15 armour"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "miner_mountain": {
    "id": "miner_mountain",
@@ -8949,7 +9516,11 @@
       "duration": 1
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "golem_granite_fist": {
    "id": "golem_granite_fist",
@@ -9002,7 +9573,11 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "golem_ether_anchor": {
    "id": "golem_ether_anchor",
@@ -9055,7 +9630,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "golem_construct_core": {
    "id": "golem_construct_core",
@@ -9109,7 +9688,9 @@
     "aura": "crit",
     "label": "Lv 15 aura: party +5% critical chance"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "golem_worldstone": {
    "id": "golem_worldstone",
@@ -9181,7 +9762,11 @@
       "healthScaling": 0.08
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "golem_moss_bloom": {
    "id": "golem_moss_bloom",
@@ -9234,7 +9819,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "golem_living_granite": {
    "id": "golem_living_granite",
@@ -9287,7 +9876,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "golem_fel_fist": {
    "id": "golem_fel_fist",
@@ -9340,7 +9933,11 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "golem_ether_furnace": {
    "id": "golem_ether_furnace",
@@ -9393,7 +9990,11 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "chieftain_axe_hook": {
    "id": "chieftain_axe_hook",
@@ -9446,7 +10047,11 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "chieftain_banner": {
    "id": "chieftain_banner",
@@ -9499,7 +10104,11 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "chieftain_courage": {
    "id": "chieftain_courage",
@@ -9551,7 +10160,9 @@
     "aura": "stunIgnore",
     "label": "Lv 15 aura: party 5% chance to ignore stuns"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "chieftain_earthshout": {
    "id": "chieftain_earthshout",
@@ -9630,7 +10241,12 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Silence"
+   ]
   },
   "behemoth_totem_sweep": {
    "id": "behemoth_totem_sweep",
@@ -9683,7 +10299,11 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "behemoth_tusk_line": {
    "id": "behemoth_tusk_line",
@@ -9736,7 +10356,11 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "behemoth_totem_bulwark": {
    "id": "behemoth_totem_bulwark",
@@ -9789,7 +10413,11 @@
     "label": "Lv 15: +0.75s stun",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "behemoth_ancestral_weight": {
    "id": "behemoth_ancestral_weight",
@@ -9841,7 +10469,9 @@
     "aura": "stunOnHit",
     "label": "Lv 15 aura: party 0.5% chance to stun on basic attacks"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "behemoth_stampede": {
    "id": "behemoth_stampede",
@@ -9921,7 +10551,12 @@
       "duration": 5
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Stun",
+    "Damage"
+   ]
   },
   "drakish_dragon_oath": {
    "id": "drakish_dragon_oath",
@@ -9974,7 +10609,11 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "drakish_scale_guard": {
    "id": "drakish_scale_guard",
@@ -10027,7 +10666,11 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "pulse"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "drakish_wing_rebuke": {
    "id": "drakish_wing_rebuke",
@@ -10080,7 +10723,11 @@
     "label": "Lv 15: +burn for 40% of the hit over 4s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "drakish_ember_memory": {
    "id": "drakish_ember_memory",
@@ -10132,7 +10779,9 @@
     "aura": "armor",
     "label": "Lv 15 aura: party +15 armour"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "drakish_ancient_pact": {
    "id": "drakish_ancient_pact",
@@ -10202,7 +10851,11 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "troll_axe_frenzy": {
    "id": "troll_axe_frenzy",
@@ -10255,7 +10908,11 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "troll_blood_leap": {
    "id": "troll_blood_leap",
@@ -10319,7 +10976,13 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "troll_hunger": {
    "id": "troll_hunger",
@@ -10373,7 +11036,11 @@
     "aura": "attackSpeed",
     "label": "Lv 15 aura: party +30% attack speed"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "troll_red_moon": {
    "id": "troll_red_moon",
@@ -10445,7 +11112,11 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "troll_twin_throw": {
    "id": "troll_twin_throw",
@@ -10498,7 +11169,11 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "troll_returning_axes": {
    "id": "troll_returning_axes",
@@ -10551,7 +11226,11 @@
     "label": "Lv 15: +target takes 12% more damage for 5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "attack",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "dryad_root_snare": {
    "id": "dryad_root_snare",
@@ -10613,7 +11292,12 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Damage"
+   ]
   },
   "dryad_seed_mend": {
    "id": "dryad_seed_mend",
@@ -10666,7 +11350,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "dryad_thorn_line": {
    "id": "dryad_thorn_line",
@@ -10719,7 +11407,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "dryad_green_covenant": {
    "id": "dryad_green_covenant",
@@ -10771,7 +11463,11 @@
     "aura": "magicLifesteal",
     "label": "Lv 15 aura: party 5% magic lifesteal"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "dryad_grove_renewal": {
    "id": "dryad_grove_renewal",
@@ -10843,7 +11539,11 @@
       "scaling": 2
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "whisp_guiding_mote": {
    "id": "whisp_guiding_mote",
@@ -10896,7 +11596,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "whisp_spirit_tether": {
    "id": "whisp_spirit_tether",
@@ -10949,7 +11653,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "whisp_fey_trail": {
    "id": "whisp_fey_trail",
@@ -11013,7 +11721,13 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "control",
+   "effectTags": [
+    "Heal",
+    "Stun",
+    "Slow"
+   ]
   },
   "whisp_lantern_soul": {
    "id": "whisp_lantern_soul",
@@ -11065,7 +11779,9 @@
     "aura": "magicResist",
     "label": "Lv 15 aura: party +15 magic resist"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": []
   },
   "whisp_constellation": {
    "id": "whisp_constellation",
@@ -11136,7 +11852,11 @@
       "magnitude": 0.15
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "centaur_grove_javelin": {
    "id": "centaur_grove_javelin",
@@ -11189,7 +11909,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "centaur_trailblaze": {
    "id": "centaur_trailblaze",
@@ -11253,7 +11977,13 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "centaur_herd_call": {
    "id": "centaur_herd_call",
@@ -11306,7 +12036,11 @@
     "label": "Lv 15: +35% slow for 2.5s",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "centaur_steady_gait": {
    "id": "centaur_steady_gait",
@@ -11358,7 +12092,11 @@
     "aura": "physicalLifesteal",
     "label": "Lv 15 aura: party 5% physical lifesteal"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "centaur_spring_march": {
    "id": "centaur_spring_march",
@@ -11431,7 +12169,11 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "keeper_dawn_beam": {
    "id": "keeper_dawn_beam",
@@ -11493,7 +12235,12 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal",
+    "Heal Cut"
+   ]
   },
   "keeper_lantern_ward": {
    "id": "keeper_lantern_ward",
@@ -11546,7 +12293,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "pulse"
    },
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "keeper_beacon": {
    "id": "keeper_beacon",
@@ -11599,7 +12350,11 @@
     "label": "Lv 15: +purge the target's buffs",
     "trigger": "hit"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "spell",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "keeper_last_light": {
    "id": "keeper_last_light",
@@ -11651,7 +12406,11 @@
     "aura": "aoeResist",
     "label": "Lv 15 aura: party 15% chance to resist area damage"
    },
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "section": "passive",
+   "effectTags": [
+    "Heal"
+   ]
   },
   "keeper_sunrise": {
    "id": "keeper_sunrise",
@@ -11721,7 +12480,11 @@
       }
      }
     ]
-   }
+   },
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
+   ]
   }
  },
  "champions": {
@@ -11889,6 +12652,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -11939,6 +12703,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -11999,6 +12764,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -12026,6 +12792,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -12098,6 +12865,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "decimating_strike",
     "stone_skin",
     "deep_reserves",
@@ -12147,6 +12915,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "decimating_strike",
     "stone_skin",
     "deep_reserves",
@@ -12195,6 +12964,7 @@
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -12229,6 +12999,7 @@
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -12453,6 +13224,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -12475,6 +13247,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -12651,6 +13424,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -12672,6 +13446,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -12735,6 +13510,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -12778,6 +13554,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -12855,6 +13632,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -12893,6 +13671,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -13121,6 +13900,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -13166,6 +13946,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -13252,6 +14033,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "stone_skin",
     "battle_rhythm",
     "deep_reserves",
@@ -13295,6 +14077,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "stone_skin",
     "battle_rhythm",
     "deep_reserves",
@@ -13374,6 +14157,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -13422,6 +14206,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -13489,6 +14274,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -13517,6 +14303,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -13572,6 +14359,7 @@
     "sanctuary",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -13599,6 +14387,7 @@
     "sanctuary",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -13658,6 +14447,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -13705,6 +14495,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -13765,6 +14556,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -13786,6 +14578,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -13862,6 +14655,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -13919,6 +14713,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -14008,6 +14803,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -14065,6 +14861,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -14158,6 +14955,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -14217,6 +15015,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -14282,6 +15081,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -14327,6 +15127,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -14403,6 +15204,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -14446,6 +15248,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -14464,6 +15267,19 @@
   }
  },
  "buffModifiers": {
+  "polymorphed": {
+   "type": "arcane",
+   "control": "incapacitate",
+   "mods": [
+    {
+     "stat": "Actions",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Turned into a harmless critter: cannot attack or cast. Damage breaks it.",
+   "name": "Polymorphed"
+  },
   "heal_cut_done": {
    "type": "curse",
    "control": "none",

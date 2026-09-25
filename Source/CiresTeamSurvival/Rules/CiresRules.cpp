@@ -452,6 +452,7 @@ std::vector<SkillDefinition> StarterSkillPool()
         {"blight_sigil", "Blight Sigil", SkillKind::Active},
 
         {"frost_bind", "Frost Bind", SkillKind::Active},
+        {"polymorph", "Polymorph", SkillKind::Active}, // progression-shop
         {"cleaving_strike", "Cleaving Strike", SkillKind::Active},
         {"piercing_shot", "Piercing Shot", SkillKind::Active},
         {"shadow_step", "Shadow Step", SkillKind::Active},
@@ -507,7 +508,7 @@ RoleMask SkillRoleTags(const std::string& id)
         {"chain_spark", RoleDamage | RoleSupport}, {"ember_lance", RoleDamage | RoleSupport},
         {"venom_ground", RoleDamage}, {"cinder_cone", RoleDamage}, {"grave_line", RoleDamage},
         {"ashen_square", RoleDamage}, {"blight_sigil", RoleDamage},
-        {"frost_bind", RoleAll}, {"cleaving_strike", RoleTank | RoleDamage},
+        {"frost_bind", RoleAll}, {"polymorph", RoleDamage | RoleSupport}, {"cleaving_strike", RoleTank | RoleDamage},
         {"piercing_shot", RoleDamage}, {"shadow_step", RoleTank | RoleDamage},
         {"restoring_light", RoleSupport}, {"sanctuary", RoleSupport}, {"purify", RoleSupport},
         {"summoned_wall", RoleAll}, {"protection_dome", RoleAll}, {"oathbound_guardian", RoleAll},

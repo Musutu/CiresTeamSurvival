@@ -6,7 +6,7 @@ Every Ability DB entry maps to an element and a kind; the kind picks the cue for
 a critical adds `combat.crit`, and a melee/shot hit of another element adds that element's impact.
 `pack` = the cue has installed Fab pack members listed in `Art/Audio/FabAudioMap.json`; otherwise the shipped fallback plays.
 
-**173 / 173 abilities have a sound set** (cast and hit resolve to cues whose fallback sounds exist). 173 use at least one Fab pack cue.
+**174 / 174 abilities have a sound set** (cast and hit resolve to cues whose fallback sounds exist). 174 use at least one Fab pack cue.
 
 Gaps: none.
 
@@ -15,7 +15,7 @@ Gaps: none.
 | passive | 33 |
 | summon | 28 |
 | melee | 25 |
-| spell | 23 |
+| spell | 24 |
 | heal | 22 |
 | buff | 14 |
 | shot | 11 |
@@ -25,7 +25,7 @@ Gaps: none.
 | Element | Abilities |
 |---|---|
 | physical | 53 |
-| arcane | 35 |
+| arcane | 36 |
 | nature | 22 |
 | holy | 21 |
 | earth | 14 |
@@ -89,6 +89,7 @@ Gaps: none.
 | `protection_dome` | holy | holy | summon | - | `ability.summon` | `spell.holy.impact` | yes |
 | `oathbound_guardian` | void | shadow | summon | - | `ability.summon` | `spell.shadow.impact` | yes |
 | `spectral_pack` | void | shadow | summon | - | `ability.summon` | `spell.shadow.impact` | yes |
+| `polymorph` | arcane | arcane | spell | - | `spell.arcane.cast` | `spell.arcane.impact` | yes |
 | `second_wind` | nature | nature | heal | - | `spell.nature.cast` | `spell.nature.heal` | yes |
 | `decimating_strike` | physical | physical | melee | caster | `weapon.sword.swing` | `weapon.sword.impact` | yes |
 | `stone_skin` | earth | earth | guard | - | `ability.guard` | `ability.guard` | yes |
