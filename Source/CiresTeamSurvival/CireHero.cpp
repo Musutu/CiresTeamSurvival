@@ -30,6 +30,7 @@
 #include "CireBuffs.h" // aura-vfx
 #include "CireItems.h" // progression-shop
 #include "CireScalingKits.h" // scaling-kits
+#include "CireAbilityDB.h" // scaling-kits
 #include "CireMonsterArt.h" // creature-anim
 #include "EngineUtils.h"
 
@@ -861,6 +862,7 @@ FString ACireHero::SkillName(const FString& Id)
 {
     if(CireSignatureSkills::Knows(Id))return CireSignatureSkills::Name(Id); // new-champions
     if(CireRollSkills::Knows(Id))return CireRollSkills::Name(Id); // champion-draft: roll skills
+    if(CireKits::Handles(Id)||Id==TEXT("headshot")||Id==TEXT("artillery_training"))if(const auto* D=CireAbilityDB::Find(Id))return D->Name; // scaling-kits
     if(CireSkillCasting::Handles(Id))return CireSkillCasting::Name(Id);
     if(Id==TEXT("npc_shadow_bolt"))return TEXT("Shadow Bolt");
     if(Id==TEXT("npc_barbed_shot"))return TEXT("Barbed Shot");
@@ -871,6 +873,7 @@ FString ACireHero::SkillName(const FString& Id)
 
 FString ACireHero::SkillDescription(const FString& Id)
 {
+    if(CireKits::Handles(Id)||Id==TEXT("headshot")||Id==TEXT("artillery_training"))return CireKits::Description(Id); // scaling-kits
     if(CireSignatureSkills::Knows(Id))return CireSignatureSkills::Description(Id); // new-champions
     if(CireRollSkills::Knows(Id))return CireRollSkills::Description(Id); // champion-draft: roll skills
     if(CireCrowdControl::HandlesSkill(Id))return CireCrowdControl::Description(Id); // champion-draft

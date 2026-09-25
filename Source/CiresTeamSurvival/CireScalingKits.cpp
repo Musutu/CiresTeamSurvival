@@ -113,8 +113,11 @@ FString CireKits::ScalingLine(const ACireHero* H,const FString& Id)
     const FString Verb=D->ScaleComponent==TEXT("heal")?TEXT("Heals"):D->ScaleComponent==TEXT("shield")?TEXT("Barrier of"):TEXT("Deals");
     const FString Coef=FString::SanitizeFloat(D->ScalePrimary,0);
     if(!H)return FString::Printf(TEXT("%s %.0f + %s× Primary %s"),*Verb,D->ScaleBase,*Coef,*CireAbilityDB::ScalingWord(*D));
-    return FString::Printf(TEXT("%s %.0f + %s× Primary (%s %d) %s = %.0f"),*Verb,D->ScaleBase,*Coef,*PrimaryName(H),PrimaryOf(H),
-        *CireAbilityDB::ScalingWord(*D),Amount(H,Id));
+    const int32 Level=FMath::Max(1,SkillLevel(H,Id));
+    const float LevelScale=D->Base.Effect>0?CireAbilityDB::EffectiveStats(Id,Level).Effect/D->Base.Effect:1.f;
+    FString Line=FString::Printf(TEXT("%s %.0f + %s× Primary (%s %d) %s = %.0f"),*Verb,D->ScaleBase,*Coef,*PrimaryName(H),PrimaryOf(H),*CireAbilityDB::ScalingWord(*D),Amount(H,Id));
+    if(Level>1&&!FMath::IsNearlyEqual(LevelScale,1.f))Line+=FString::Printf(TEXT(" (x%.2f at level %d = %.0f)"),LevelScale,Level,Amount(H,Id)*LevelScale);
+    return Line;
 }
 FString CireKits::DescribeFor(const ACireHero* H,const FString& Id,int32 Level)
 {

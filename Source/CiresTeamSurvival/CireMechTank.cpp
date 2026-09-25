@@ -46,7 +46,7 @@ ACireMechTank* ACireMechTank::SpawnFor(ACireHero* Owner, FVector Point, FString*
     if (!Mech) return Fail(TEXT("spawn failed"));
     Mech->OwnerHero = Owner; Mech->TeamId = Owner->TeamId; Mech->SummonSpec = Spec; Mech->bCommandable = false;
     Mech->OriginPhase = CireSkillRuntime::Phase(World); Mech->ExpiresServerTime = World->GetTimeSeconds() + Spec.DurationSeconds;
-    Mech->Draft(Spec.ArchetypeVisual);
+    if (!Mech->DraftProfile(TEXT("ether_golem_tank"))) Mech->Draft(Spec.ArchetypeVisual); // a construct body reads as a machine
     Mech->HeroName = TEXT("Mechanical Tank");
     Mech->MaxHealth = Mech->Health = Spec.Health;
     Mech->Gold = 0; Mech->Skills.Reset(); Mech->Offers.Reset(); Mech->Cooldowns.Reset();

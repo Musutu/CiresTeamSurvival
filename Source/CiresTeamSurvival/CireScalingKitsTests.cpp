@@ -12,6 +12,7 @@
 #include "CireCrowdControl.h"
 #include "CireGame.h"
 #include "CireItems.h"
+#include "CireLanePath.h"
 #include "CireMechTank.h"
 #include "CireSkillShop.h"
 #include "CireTechConstructs.h"
@@ -126,9 +127,17 @@ bool CireKits::RunSmoke(ACireGameMode* Mode)
         CireThreat::Clear(M2);
         CireCombat::ApplyDamage(Mech, M2, 50.f, TEXT("Mech Slam"));
         Check(M2->Threat.Contains(Mech) && M2->Victim == Mech, TEXT("a summon's damage makes it the monster's victim"));
+        // Constructs need level ground: stage the owner on the lane for the placement, then return it.
         TArray<ACireConstruct*> Built; FString DeployWhy;
-        for (const FVector Offset : {FVector(700, -300, 0), FVector(-400, -400, 0), FVector(300, 300, 0), FVector(-600, 200, 0), FVector(0, -700, 0)})
-            if (Built.IsEmpty()) Built = CireTechConstructs::Deploy(Wizard, TEXT("photon_turret"), Origin + Offset, &DeployWhy);
+        const FVector WizardHome = Wizard->GetActorLocation();
+        FVector Lane = CireLanePath::PointAlongRoute(World, 0, .5f);
+        FHitResult Floor; FCollisionQueryParams Q(SCENE_QUERY_STAT(CireKitsFloor), false);
+        for (AActor* A : Actors) Q.AddIgnoredActor(A);
+        if (World->LineTraceSingleByObjectType(Floor, Lane + FVector(0, 0, 3000), Lane - FVector(0, 0, 6000), FCollisionObjectQueryParams(ECC_WorldStatic), Q)) Lane = Floor.ImpactPoint;
+        Wizard->SetActorLocation(Lane + FVector(0, 0, 100));
+        for (const FVector Offset : {FVector(300, 0, 0), FVector(-300, 0, 0), FVector(0, 300, 0), FVector(0, -300, 0), FVector(200, 200, 0)})
+            if (Built.IsEmpty()) Built = CireTechConstructs::Deploy(Wizard, TEXT("photon_turret"), Lane + Offset, &DeployWhy);
+        Wizard->SetActorLocation(WizardHome);
         ACireConstruct* Tower = Built.Num() ? Built[0] : nullptr;
         if (!Tower) UE_LOG(LogCireKitsTests, Error, TEXT("CIRE_KITS_TURRET_DEPLOY %s"), *DeployWhy);
         Check(Tower != nullptr, TEXT("turret deploys"));

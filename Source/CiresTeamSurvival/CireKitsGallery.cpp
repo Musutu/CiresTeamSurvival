@@ -176,6 +176,7 @@ void EnterStage(const FStage& S)
         SetPhase(0);
         if (!P) { Fail(TEXT("player pawn")); return; }
         P->DraftProfile(TEXT("knight")); P->TeamId = 0; P->Health = P->MaxHealth = 1.e6f; P->SetActorHiddenInGame(false); P->SetActorEnableCollision(true);
+        P->Offers.Reset(); P->CurrentOffer = {}; P->Skills = {TEXT("shield_slam"), TEXT("shield_bash"), TEXT("iron_guard"), TEXT("stone_skin")}; P->Cooldowns.Init(0, 4);
         Place(P, 0, 0, (-G.Forward).Rotation().Yaw);
         ACireMonster* A = Monster(TEXT("ironbound_bruiser"), -170, 0, false);
         if (!A) { Fail(TEXT("block attacker")); return; }
@@ -192,7 +193,8 @@ void EnterStage(const FStage& S)
         const FName Ids[] = {TEXT("hollow_infantry"), TEXT("ironbound_bruiser"), TEXT("hollow_infantry"), TEXT("blight_caster"), TEXT("hollow_infantry")};
         for (int32 I = 0; I < 5; ++I) if (auto* M = Monster(Ids[I], -1400 + (I % 2) * 160, -300 + I * 150, false)) Pack.Add(M);
         if (Pack.Num() < 3) { Fail(TEXT("artillery pack")); return; }
-        Learn(Ranger, TEXT("artillery"), 15);
+        Learn(Ranger, TEXT("artillery"), 15); G.Pulses = 0;
+        if (auto* Sub = UCireKitsSubsystem::Get(World())) Sub->LastBombDamage = 0;
         Ranger->Target = Pack[2]; Ranger->Energy = 100;
         if (!CireKits::Cast(Ranger, Ranger->Skills.IndexOfByKey(TEXT("artillery")), TEXT("artillery"))) Fail(TEXT("artillery cast: ") + Ranger->Notice);
         // Eight seconds of volleys, compressed: the window records every basic hit, then ends.
@@ -205,7 +207,7 @@ void EnterStage(const FStage& S)
     {
         SetPhase(1);
         if (!P || !G.Controller.IsValid()) { Fail(TEXT("player pawn")); return; }
-        P->DraftProfile(TEXT("knight")); P->TeamId = 0; P->Gold = 900;
+        P->DraftProfile(TEXT("knight")); P->TeamId = 0; P->Gold = 900; P->Offers.Reset(); P->CurrentOffer = {};
         P->Skills.Reset(); P->Cooldowns.Reset(); if (P->Inventory) P->Inventory->SkillRanks.Reset();
         Learn(P, TEXT("shield_bash"), 15); Learn(P, TEXT("shield_slam"), 9); Learn(P, TEXT("war_cry"), 4); Learn(P, TEXT("stone_skin"), 15);
         Place(P, 0, 0, (-G.Forward).Rotation().Yaw);
@@ -225,6 +227,13 @@ void TickStage(const FStage& S, double Now)
         G.LastPulse = Now; ++G.Pulses;
         CireCombat::ApplyDamage(G.Attacker.Get(), G.Player.Get(), 60.f, TEXT("Monster attack"));
     }
+    if (S.Name == TEXT("artillery_bomb") && G.Pulses == 0)
+        if (auto* Sub = UCireKitsSubsystem::Get(World()); Sub && Sub->LastBombDamage > 0)
+        {
+            G.Pulses = 1;
+            Label(Sub->LastBombCenter + FVector(0, 0, 420), FString::Printf(TEXT("ARTILLERY BOMB: %.0f damage"), Sub->LastBombDamage), FColor(255, 170, 70), 60);
+            if (G.Player.IsValid()) CireCombat::PlayCue(G.Player.Get(), nullptr, TEXT("cataclysm"), Sub->LastBombCenter, Sub->LastBombCenter, ECireSpellCue::Impact, 3.f, true);
+        }
     if (S.Name == TEXT("skill_shop_lv15"))
     {
         const FVector2D Pos = CireShopUI::DebugSkillGridPos(TEXT("shield_bash"));

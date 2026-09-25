@@ -391,7 +391,7 @@ bool CireCombat::RunTelemetrySmoke(ACireGameMode* Mode)
     PrepareUltimate(TEXT("cataclysm"));
     Source->CDR = 0.25f;
     float PreviousDamage = Source->DamageDone;
-    const float CataclysmHit = Hit(Enemy, (160 + Source->Intelligence * 3.5f) * Mode->Power(Source->TeamId));
+    const float CataclysmHit = Hit(Enemy, CireKits::Amount(Source, TEXT("cataclysm")) * Mode->Power(Source->TeamId)); // scaling-kits: DB base + coef x PRIMARY
     Source->Cast(0);
     Check(Near(Enemy->Health, 1000 - CataclysmHit) && Near(NearEnemy->Health, 1000 - CataclysmHit) && Near(FarEnemy->Health, 1000) && Near(Ally->Health, Ally->MaxHealth),
         TEXT("cataclysm hits nearby enemies only"));
@@ -415,7 +415,7 @@ bool CireCombat::RunTelemetrySmoke(ACireGameMode* Mode)
     Enemy->Health = 3000;
     PreviousDamage = Source->DamageDone;
     // 100 + 3 x primary + missing-health bonus capped at 300 (2000 missing -> 300).
-    const float VerdictHit = Hit(Enemy, (100 + Source->PrimaryAttribute() * 3.f + 300.f) * Mode->Power(Source->TeamId));
+    const float VerdictHit = Hit(Enemy, (CireKits::Amount(Source, TEXT("executioners_verdict")) + 300.f) * Mode->Power(Source->TeamId)); // scaling-kits
     Source->Cast(0);
     Check(Near(Enemy->Health, 3000 - VerdictHit) && Near(Source->DamageDone - PreviousDamage, VerdictHit), TEXT("executioner missing health bonus capped"));
     Check(Near(Source->Energy, 40) && Near(Source->Cooldowns[0], 60), TEXT("executioner energy and cooldown"));
