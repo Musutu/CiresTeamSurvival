@@ -17,6 +17,8 @@ drawn by the HUD (wow-ui) on top of the API below.
 | | ToggleWalk | Caps Lock |
 | | DodgeRoll | Left Ctrl, Right Ctrl |
 | Combat | ToggleAutoAttack | T |
+| | PetAttack / PetFollow / PetStay / PetSpecial / PetRevive (companion commands, Docs/Pets.md) | Y / U / I / O / P |
+| | PetStanceAggressive / PetStanceDefensive / PetStancePassive | Shift+Y / Shift+U / Shift+I |
 | Targeting | TargetNextEnemy / TargetPreviousEnemy | Tab / Shift+Tab |
 | | TargetNextAlly / TargetSelf | F / F1 |
 | Interface | OpenChat, ToggleShop, ToggleSkillShop, ToggleHelp, ToggleStats, ToggleLootLog | Enter, B, K, H, C, L |

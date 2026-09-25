@@ -150,6 +150,7 @@ POOL = {
 # kit lists them. Same tuple layout as POOL; extra "category": "construct" marks the Skill Shop's
 # Constructs tab. Construct numbers beyond the headline effect live in CireTechConstructs.cpp.
 CONSTRUCT = {"category": "construct"}
+PET = {"category": "pet"}  # pets: companion commands (Skill Shop "COMPANION" filter)
 NEW_CHAMPION_SKILLS = {
     # ---- Gunblade (Bounty Hunter): AGI, energy ----
     "silver_shot": ("Silver Shot", ["dps"], "active", "holy", "aim", 0, 0, 30, 8, 95, "damage", 1300, 28, 0,
@@ -195,12 +196,12 @@ NEW_CHAMPION_SKILLS = {
     "hexbane_judgment": ("Hexbane Judgment", ["dps"], "ultimate", "arcane", "aim", 0, 130, 0, 80, 200, "damage", 1100, 450, 3,
                          "Aim a 4.5m circle; after 1s it bursts for {effect} + 3x INT damage, strips every buff and silences for 3s.",
                          [fx("silence", "area", 3, radius=450, label="Silenced"), fx("purge", "area", radius=450)], {}),
-    # ---- Huntress (mounted glaive thrower): AGI, energy ----
+    # ---- Huntress (glaive thrower on foot): AGI, energy. The sabercat skills command her companion Ashfang (CirePets, Docs/Pets.md) ----
     "bouncing_glaive": ("Bouncing Glaive", ["dps"], "active", "physical", "enemy", 0, 0, 30, 8, 80, "damage", 1300, 500, 0,
                         "Hurl a glaive that strikes the target and bounces to 4 more enemies within 5m, losing 20% per bounce: {effect} + 1.5x AGI.", [], {}),
-    "sabercat_pounce": ("Sabercat Pounce", ["dps"], "active", "physical", "aim", 0, 0, 35, 12, 75, "damage", 700, 260, 2,
-                        "The sabercat leaps up to 7m and mauls everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s.",
-                        [fx("slow", "area", 2, 0.4, 260, label="Move -40%")], {}),
+    "sabercat_pounce": ("Ashfang: Pounce", ["dps"], "active", "physical", "enemy", 0, 0, 35, 12, 75, "damage", 700, 260, 2,
+                        "Command Ashfang to leap up to 7m onto your target and maul everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s. Needs your companion.",
+                        [fx("slow", "area", 2, 0.4, 260, label="Move -40%")], PET),
     "owl_scout": ("Owl Scout", ["dps"], "active", "nature", "aim", 0, 0, 20, 14, 10, "% damage taken", 1600, 450, 8,
                   "Send the owl to a point: enemies within 4.5m are revealed and tracked for 8s, taking {effect}% more damage from you.",
                   [fx("mark", "area", 8, 0.10, 450, label="Tracked")], {}),
@@ -209,8 +210,11 @@ NEW_CHAMPION_SKILLS = {
                        [fx("haste", "self", 4, 0.4, label="Move +40%"), fx("cleanse", "self")], {"curve": {"effectCap": 70}}),
     "crescent_volley": ("Crescent Volley", ["dps"], "active", "physical", "aim", 0, 0, 30, 10, 90, "damage", 1400, 40, 0,
                         "Loose a crescent glaive that flies 14m in a line and cuts through up to five enemies: {effect} + 1.4x AGI.", [], {}),
-    "sabercat_rake": ("Sabercat Rake", ["dps"], "active", "nature", "aim", 0, 0, 25, 7, 70, "damage", 320, 320, 0,
-                      "The sabercat rakes a 70-degree arc in front of you (3.2m): {effect} + 1.2x AGI.", [], {}),
+    "sabercat_maul": ("Ashfang: Maul", ["dps"], "active", "physical", "enemy", 0, 0, 25, 7, 70, "damage", 1600, 0, 0,
+                      "Command Ashfang to maul your target: {effect} + 1.2x AGI, with 50% bonus threat so the cat holds it off you. Needs your companion.", [], PET),
+    "sabercat_roar": ("Ashfang: Dread Roar", ["dps"], "active", "nature", "self", 0, 0, 20, 16, 30, "damage", 0, 450, 3,
+                      "Ashfang roars: enemies within 4.5m of the cat take {effect} + 0.4x AGI, are slowed 35% for 3s and turn on Ashfang for 2s. Also the pet's special command. Needs your companion.",
+                      [fx("slow", "area", 3, 0.35, 450, label="Move -35%"), fx("taunt", "area", 2, radius=450, label="Taunted by Ashfang")], PET),
     "moon_glaive": ("Moon Glaive", ["dps"], "passive", "physical", "passive", 0, 0, 0, 0, 60, "% bounce damage", 0, 450, 0,
                     "Your glaive throws bounce to 2 more enemies within 4.5m, for {effect}% and then 36% damage.", [], {"curve": {"effectCap": 85}}),
     "glaive_storm": ("Glaive Storm", ["dps"], "ultimate", "physical", "self", 0, 0, 70, 75, 45, "damage per tick", 0, 480, 6,
@@ -269,6 +273,7 @@ DELIVERY_TARGET = {"targeted": "enemy", "ground_cone": "aim", "ground_line": "ai
 ROLE_OF = {"tank": "tank", "damage": "dps", "healer": "heal", "support": "heal"}
 # Extra signature assignments for the new skills (identity kits).
 SIGNATURE_EXTRA = {
+    "sabercat_roar": ["huntress"],  # pets: the companion's third command joins her identity kit
     "decimating_strike": ["drakish_footman", "ether_golem_bruiser", "orc_chieftain", "troll_berserker_melee"],
     "executioner": ["ranger", "lancer", "troll_berserker_melee", "troll_berserker_ranged"],
 }

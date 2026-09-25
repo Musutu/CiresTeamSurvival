@@ -202,6 +202,7 @@ private:
     bool bEffectsSeeded = false;
     TMap<FString, FVector2D> OverheadSeen;
     void DrawPet(ACireHero* Hero,ACireController* Controller);
+    void DrawCompanion(ACireHero* Hero,ACireController* Controller,const struct FCirePetDef& Def); // pets: CireHUDPets.cpp
     void Tip(const FString& Title,const FString& Body,float X,float Y,float W,float H);
     void DrawTooltip();
     void PlayUIFeedback();

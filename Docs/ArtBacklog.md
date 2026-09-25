@@ -17,14 +17,14 @@ Everything below works in-game today with a stand-in. This list tracks what stil
 | B1 | Aetheri monster race: 6 units + 2 bosses | Tinted bodies from other races | Tripo models from the A5 sheets, rigged and animated |
 | B2 | Quadrupeds: dire_wolf, bristleback (feral_kin), grave_hound (hollow) | Low-poly CC0 Quaternius animals | Realistic Tripo quadrupeds (quadruped rig) |
 | B3 | Stoneborn crystal_ballista, ether_mote | CC0 spider / borrowed body | Tripo models |
-| B4 | Sabercat, now the Huntress's **companion pet** | Rigged, no animation clips | Idle / walk / run / attack / death clips, or procedural motion |
+| B4 | Sabercat, now the Huntress's **companion pet** | Rigged, no animation clips; driven procedurally (Pets.md), wolf fallback | Idle / walk / run / attack / death clips in Content/Data/PetArt.tripo.json (override the procedural body) |
 | B5 | Aetheri champion weapons (staff, halberd), Huntress glaives | Prototype meshes | Tripo props |
 
 ## C. Code (collector: pets-companions)
 | # | Item |
 |---|---|
-| C1 | Remove the Huntress mount; she fights on foot |
-| C2 | A pet/companion system as a class capability; the Huntress gets the sabercat companion (uses B4) |
+| C1 | Remove the Huntress mount; she fights on foot (done, feat/pets) |
+| C2 | A pet/companion system as a class capability; the Huntress gets the sabercat companion (uses B4) (done, feat/pets: Docs/Pets.md) |
 
 ## D. Coming from the Fab purchase (Eric's cart)
 - Animation packs, Niagara VFX, medieval environment kit, weapons. These stay local (Fab licence), and an integration agent wires them in once they're added to the project.
