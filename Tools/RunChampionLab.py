@@ -82,7 +82,9 @@ def row_from(case, path, data):
                          dps=h['dps'], hps=h['hps'], dtps=h.get('dtps', 0), damageTaken=h.get('damageTaken', 0),
                          maxHealth=h.get('maxHealth', 0), dead=bool(h.get('dead')), share=h.get('teamDamageShare', 0),
                          result=data['result'], seconds=seconds, teamDps=data['dps'], teamHps=data['hps'],
-                         teamDtps=team_taken / seconds, alliesAlive=data['alliesAlive'], report=str(path)))
+                         teamDtps=team_taken / seconds, alliesAlive=data['alliesAlive'], report=str(path),
+                         petDtps=h.get('petDamageTaken', 0) / seconds, petDeaths=h.get('petDeaths', 0), petTargetShare=h.get('petTargetShare', 0),
+                         tankShare=data.get('tankTargetShare', 0)))
     return rows
 
 
@@ -107,7 +109,9 @@ def summarize(rows):
             stats[name] = dict(samples=len(own), dps=median(r['dps'] for r in own), hps=median(r['hps'] for r in own),
                                dtps=median(r['dtps'] for r in own), deaths=sum(r['dead'] for r in own) / max(1, len(own)),
                                teamDtps=median(r['teamDtps'] for r in own), teamSeconds=median(r['seconds'] for r in own),
-                               wins=sum(r['result'] == 'allies_won' for r in own), share=median(r['share'] for r in own))
+                               wins=sum(r['result'] == 'allies_won' for r in own), share=median(r['share'] for r in own),
+                               petDtps=median(r.get('petDtps', 0) for r in own), petDeaths=median(r.get('petDeaths', 0) for r in own),
+                               petTargetShare=median(r.get('petTargetShare', 0) for r in own), tankShare=median(r.get('tankShare', 0) for r in own))
         dps_median = median(stats[c]['dps'] for c in DPS if c in stats)
         heal_median = median(stats[c]['hps'] for c in HEALERS if c in stats)
         flags = {}
@@ -138,6 +142,10 @@ def write(output, rows):
             ratio = s.get('dpsVsRole', s.get('hpsVsRole'))
             lines.append(f"| {name} | {s['samples']} | {s['dps']:.1f} | {'' if ratio is None else f'{ratio:.2f}'} | {s['hps']:.1f} | {s['dtps']:.1f} | "
                          f"{s['deaths']:.0%} | {s['teamDtps']:.1f} | {s['teamSeconds']:.1f} | {s['wins']} | {', '.join(s['flags']) or '-'} |")
+        pets = [(n, s) for n, s in sorted(block['stats'].items()) if s.get('petDtps') or s.get('petTargetShare')]
+        if pets:
+            lines += ['', 'Companions (credited to the owner above: pet damage is in the owner DPS):', '', '| Owner | pet DTPS | pet deaths / fight | share of monster targeting on the pet |', '|---|---:|---:|---:|']
+            lines += [f"| {n} | {s['petDtps']:.1f} | {s['petDeaths']:.2f} | {s['petTargetShare']:.0%} |" for n, s in pets]
         lines.append('')
     (output / 'champions.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
     return summary

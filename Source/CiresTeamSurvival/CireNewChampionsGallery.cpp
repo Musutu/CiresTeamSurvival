@@ -13,6 +13,7 @@
 #include "CireSignatureSkills.h"
 #include "CireTechConstructs.h"
 #include "CirePets.h" // pets
+#include "HAL/IConsoleManager.h" // balance: pylon A/B
 #include "CireCreatureArt.h"
 #include "GameFramework/HUD.h"
 #include "Camera/CameraActor.h"
@@ -331,6 +332,26 @@ void EnterStage(const FStage& S)
         }
         G.Focus = A; if (A) { const FVector C = Ground(-450, 0); Look(C + (-G.Forward) * -1100 + G.Right * 520 + FVector(0, 0, 820), C, 70); }
     }
+    else if (N == TEXT("pylons_legacy") || N == TEXT("pylons_calm"))
+    {
+        // balance: four overlapping pylon fields + the Aether Nexus, drawn the previous way (legacy) and calm (overlap-capped).
+        if (IConsoleVariable* Calm = IConsoleManager::Get().FindConsoleVariable(TEXT("cire.PylonFieldCalm"))) Calm->Set(N == TEXT("pylons_calm") ? 1 : 0, ECVF_SetByCode);
+        if (N == TEXT("pylons_legacy"))
+        {
+            auto* A = Hero(TEXT("aetheri_artificer"), 0, -200, Face);
+            auto* W = Hero(TEXT("aetheri_warden"), 0, 200, Face);
+            if (A && W)
+            {
+                CastAt(W, TEXT("aegis_pylon"), Ground(-420, 0));
+                CastAt(W, TEXT("haste_pylon"), Ground(-620, 260));
+                CastAt(W, TEXT("gravity_pylon"), Ground(-680, -240));
+                CastAt(A, TEXT("disruption_pylon"), Ground(-880, 60));
+                CastAt(W, TEXT("aether_nexus"), Ground(-600, 20));
+            }
+        }
+        const FVector C = Ground(-620, 20);
+        Look(C + G.Forward * 950 + FVector(0, 0, 1250), C, 70);
+    }
     else if (N == TEXT("constructs_close"))
     {
         const FVector C = Ground(-420, -130);
@@ -435,6 +456,7 @@ bool Build(ACireGameMode& Mode, ACireController& Controller)
         {TEXT("combat_huntress"), .35f}, {TEXT("combat_huntress_pet"), 1.4f}, {TEXT("pet_roar"), .35f}, {TEXT("combat_huntress_storm"), 1.2f},
         {TEXT("constructs_place"), 1.4f}, {TEXT("constructs_close"), .6f, true}, {TEXT("constructs_fight"), 3.2f, true},
         {TEXT("aetheri_wave"), 1.6f}, {TEXT("aetheri_wave_fight"), 3.5f, true},
+        {TEXT("pylons_legacy"), 1.2f}, {TEXT("pylons_calm"), .8f, true},
         {TEXT("hud_pet_frame"), 2.5f}, {TEXT("hud_pet_command"), .6f, true}, {TEXT("hud_pet_fallen"), 1.5f, true}};
     for (const FStage& S : All)
         if (G.Only.IsEmpty() || G.Only.ContainsByPredicate([&S](const FString& Prefix) { return S.Name.StartsWith(Prefix); })) G.Stages.Add(S);

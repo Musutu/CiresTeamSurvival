@@ -8,6 +8,7 @@
 #include "CireSkillshot.h"
 #include "CireConstruct.h"
 #include "CireSummon.h"
+#include "CirePets.h"
 #include "CireSkillTuning.h"
 #include "CireDeveloperTools.h"
 #include "CireAttackSystem.h"
@@ -53,6 +54,7 @@ struct FRun
     // balance: one roster champion replaces a fixture slot; survival is measured as health lost per hero.
     FString Champion;int32 ChampionSlot=INDEX_NONE;
     TMap<TWeakObjectPtr<ACireHero>,float> LastHealth,DamageTaken,DiedAt;
+    TMap<TWeakObjectPtr<ACireHero>,float> PetLastHealth,PetDamageTaken,PetTargetSeconds;TMap<TWeakObjectPtr<ACireHero>,int32> PetDeaths;TSet<TWeakObjectPtr<ACireHero>> PetWasDead;
 };
 TUniquePtr<FRun> Active;
 FCireBalanceSnapshot Last;
@@ -89,6 +91,15 @@ void Sample(FRun& R,float Delta)
             if(H->Health<Previous)R.DamageTaken.FindOrAdd(H)+=Previous-H->Health;
             Previous=H->Health;
             if((H->bDead||H->Health<=0)&&!R.DiedAt.Contains(H))R.DiedAt.Add(H,R.View.ElapsedSeconds);
+            // Companion survivability (pets): health lost and deaths, credited to the owner.
+            if(const ACirePet* Pet=H->TeamId==0?CirePets::PetOf(H):nullptr)
+            {
+                float& PetPrevious=R.PetLastHealth.FindOrAdd(H,Pet->Health);
+                if(Pet->Health<PetPrevious)R.PetDamageTaken.FindOrAdd(H)+=PetPrevious-Pet->Health;
+                PetPrevious=Pet->Health;
+                if(Pet->bDead&&!R.PetWasDead.Contains(H)){R.PetWasDead.Add(H);R.PetDeaths.FindOrAdd(H)++;}
+                else if(!Pet->bDead)R.PetWasDead.Remove(H);
+            }
         }
         // The lab measures one encounter, with no resurrection after elimination.
         if(H->bDead)H->RespawnTimer=600;
@@ -99,6 +110,7 @@ void Sample(FRun& R,float Delta)
         if(IsValid(M->Victim))
         {
             R.TargetSeconds+=Delta;if(CireChampionProfiles::DraftRole(M->Victim)==Cires::SkillDraftRole::Tank)R.TankTargetSeconds+=Delta;
+            if(const auto* Pet=Cast<ACirePet>(M->Victim);Pet&&Pet->GetOwnerHero())R.PetTargetSeconds.FindOrAdd(Pet->GetOwnerHero())+=Delta;
             auto& Previous=R.LastVictim.FindOrAdd(M);
             if(Previous.IsValid()&&Previous.Get()!=M->Victim)++V.VictimSwitches;Previous=M->Victim;
         }
@@ -149,6 +161,11 @@ void WriteReport(FRun& R)
         const float Taken=R.DamageTaken.FindRef(H);P->SetNumberField(TEXT("damageTaken"),Taken);
         P->SetNumberField(TEXT("dtps"),Taken/FMath::Max(.001f,R.View.ElapsedSeconds));
         P->SetNumberField(TEXT("diedAtSeconds"),R.DiedAt.Contains(H)?R.DiedAt.FindRef(H):-1.f);
+        if(CirePets::ForOwner(H))
+        {
+            P->SetNumberField(TEXT("petDamageTaken"),R.PetDamageTaken.FindRef(H));P->SetNumberField(TEXT("petDeaths"),R.PetDeaths.FindRef(H));
+            P->SetNumberField(TEXT("petTargetShare"),R.TargetSeconds>0?R.PetTargetSeconds.FindRef(H)/R.TargetSeconds:0.f);
+        }
         P->SetBoolField(TEXT("labChampion"),H->TeamId==0&&!R.Champion.IsEmpty()&&H->ChampionProfileId==R.Champion);
         End.Add(MakeShared<FJsonValueObject>(P));
     }
