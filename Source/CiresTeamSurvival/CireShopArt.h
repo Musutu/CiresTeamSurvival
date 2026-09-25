@@ -19,9 +19,10 @@ namespace CireShopArt
     CIRESTEAMSURVIVAL_API UTexture2D* CrestTexture(EScroll Tier);
 
     // Ink colours for text on parchment.
-    inline const FLinearColor Ink(.20f, .12f, .05f, 1.f);
-    inline const FLinearColor InkSoft(.36f, .25f, .13f, 1.f);
-    inline const FLinearColor InkRed(.52f, .10f, .07f, 1.f);
+    // Linear colours (the canvas is sRGB): these read as deep brown / red ink.
+    inline const FLinearColor Ink(.022f, .011f, .004f, 1.f);
+    inline const FLinearColor InkSoft(.055f, .03f, .011f, 1.f);
+    inline const FLinearColor InkRed(.22f, .018f, .01f, 1.f);
     inline const FLinearColor Filigree(.83f, .66f, .36f, 1.f);
 
     // Near-black panel, double thin gold border, corner ornaments; the top edge rises into a
