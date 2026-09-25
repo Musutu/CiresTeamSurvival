@@ -46,7 +46,7 @@ CHAMPION = {
     "battle_rhythm": ("Passive; bow shot.", "Arrow barely visible.", "Basic arrow gets a lit head + wake (ranged basics)."),
     "restoring_light": ("Life helix drawn on the selected ENEMY when one was targeted (heal went to self).", "Wrong placement.",
                         "Re-anchored on the real heal target; ground streak to allies; life rays impact."),
-    "sanctuary": ("Holy sigil at the caster.", "600 cm heal reach not shown.", "Shockwave to 600 cm, holy flourish."),
+    "sanctuary": ("Holy sigil/helix drawn on the SELECTED ENEMY (heal is around the caster).", "Wrong placement; 600 cm heal reach not shown.", "Shockwave to 600 cm, holy flourish."),
     "purify": ("Life helix on the selected enemy.", "Wrong placement.", "Re-anchored on the ally / self."),
     "renewal": ("Life sigil at caster.", "1000 cm reach not shown.", "Shockwave to 1000 cm."),
     "soul_conduit": ("Passive.", "None.", "No telegraph by design."),

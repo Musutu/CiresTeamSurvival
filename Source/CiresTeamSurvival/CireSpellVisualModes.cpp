@@ -213,7 +213,7 @@ bool ACireSpellVisual::RebuildModes(FCireSpellMesh& M,FCireSoftMesh& Soft,float 
     {
     case EMode::AreaFollow:
     {
-        if(bHarmlessArea)return true; // harmless buff radius: ground ring only
+        if(bHarmlessArea){DrawAreaParticles(M,Soft,0);return true;} // harmless buff radius: ring + border sparks
         const float Burst=AreaActiveAge>=0&&!bAreaPersistent?FMath::Clamp(1-(Age-AreaActiveAge)/.4f,0.f,1.f):0.f;
         DrawAreaParticles(M,Soft,Burst);return true;
     }
@@ -268,9 +268,24 @@ void ACireSpellVisual::DrawAreaParticles(FCireSpellMesh& M,FCireSoftMesh& Soft,f
 {
     const FCireAreaSpec& Spec=FollowedArea.IsValid()?FollowedArea->AreaSpec:CachedArea;
     const bool bActive=AreaActiveAge>=0;
-    if(!bActive)return; // the ground telegraph carries the warning; no clutter over the boundary
     const float Fade=FadeOutAt>=0?FMath::Clamp(1-(Age-FadeOutAt)/.3f,0.f,1.f):1.f;
     const auto Boundary=ACireAreaEffect::BoundaryPoints(Spec);
+    if(!bActive||bHarmlessArea)
+    {
+        // Warning: a few sparks drift up off the true border (never over the interior), so the edge reads
+        // even where the ground is busy. Amber for enemies, school colour for your own team.
+        const FLinearColor Edge=bHostile&&!bHarmlessArea?FLinearColor(2.2f,.8f,.12f,1):Tint;
+        for(int32 J=0;J<10&&Boundary.Num()>1;++J)
+        {
+            const float U=Fract(J*.1f+Age*.07f);const float Rise=Fract(Age*.8f+J*.37f);
+            const float At=U*Boundary.Num();const int32 K=FMath::FloorToInt(At)%Boundary.Num();
+            const FVector2D P=FMath::Lerp(Boundary[K],Boundary[(K+1)%Boundary.Num()],At-FMath::FloorToFloat(At));
+            FLinearColor C=Edge;C.A=FMath::Sin(Rise*PI)*.75f*Fade;
+            M.Star(FVector(P.X,P.Y,6+Rise*38),2.2f+Rise*1.5f,C,J+Age);
+            if(J%3==0)Soft.Glow(FVector(P.X,P.Y,10+Rise*30),8,WithAlpha(Edge*.5f,C.A*.3f));
+        }
+        return;
+    }
     FVector2D Lo(MAX_flt,MAX_flt),Hi(-MAX_flt,-MAX_flt);
     for(auto P:Boundary){Lo.X=FMath::Min(Lo.X,P.X);Lo.Y=FMath::Min(Lo.Y,P.Y);Hi.X=FMath::Max(Hi.X,P.X);Hi.Y=FMath::Max(Hi.Y,P.Y);}
     const ECireSchool School=Shape.School!=ECireSchool::Steel?Shape.School:static_cast<ECireSchool>(FMath::Clamp(Family,0,static_cast<int32>(ECireSchool::Count)-1));
