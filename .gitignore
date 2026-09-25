@@ -28,3 +28,6 @@ Art/Downloads/
 
 # Fab import staging (isolated ContentBuilder output; results are copied to Content/Fab)
 Tools/ContentBuilder/Content/Fab/
+
+# Fab / Epic-licensed content: licensed for use, not redistribution. Kept local only (repo is public).
+Content/Fab/
