@@ -103,6 +103,26 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 | Sabercat Rake (`sabercat_rake`) | huntress | DPS | active | nature | aim | 25 EN | 7s | 70 / 99 / 133 damage |  |
 | Moon Glaive (`moon_glaive`) | huntress | DPS | passive | physical | passive | - | 0s | 60 / 75 / 85 % bounce damage |  |
 | Glaive Storm (`glaive_storm`) | huntress | DPS | ultimate | physical | self | 70 EN | 75s | 45 / 59 / 77 damage per tick |  |
+| Taunting Tumble (`taunting_tumble`) | knight, bear, paladin_righteous, dwarf_miner, ether_golem_tank, ether_golem_bruiser, orc_chieftain, totemic_behemoth, drakish_footman | TANK | active | physical | self | 25 EN | 18s | 3 / 4 / 6 s taunt | taunt, DEF +20% |
+| Evasive Stance (`evasive_stance`) | knight, ranger, lancer, paladin_righteous, ether_golem_bruiser, orc_chieftain, drakish_footman, troll_berserker_melee, troll_berserker_ranged, gunblade, witch_slayer, huntress | DPS/TANK | active | physical | self | 20 EN | 24s | 3 / 4 / 6 % max health per dodge |  |
+| Tumble Strike (`tumble_strike`) | knight, ranger, lancer, paladin_righteous, ether_golem_bruiser, orc_chieftain, drakish_footman, troll_berserker_melee, troll_berserker_ranged, gunblade, witch_slayer, huntress | DPS/TANK | active | physical | enemy | 30 EN | 10s | 70 / 99 / 133 damage |  |
+| Bloodrush (`bloodrush`) | knight, ranger, lancer, paladin_righteous, ether_golem_bruiser, orc_chieftain, drakish_footman, troll_berserker_melee, troll_berserker_ranged, gunblade, witch_slayer, huntress | DPS/TANK | passive | physical | passive | - | 0s | 100 / 100 / 100 % roll reset |  |
+| Momentum (`momentum`) | knight, ranger, lancer, paladin_righteous, ether_golem_bruiser, orc_chieftain, drakish_footman, troll_berserker_melee, troll_berserker_ranged, gunblade, witch_slayer, huntress | DPS/TANK | passive | physical | passive | - | 0s | 4 / 5 / 6 % damage per stack |  |
+| Riposte (`riposte_roll`) | knight, ranger, lancer, paladin_righteous, ether_golem_bruiser, orc_chieftain, drakish_footman, troll_berserker_melee, troll_berserker_ranged, gunblade, witch_slayer, huntress | DPS/TANK | passive | physical | passive | - | 0s | 60 / 75 / 96 counter damage |  |
+| Frost Wake (`frost_wake`) | knight, ranger, lancer, paladin_righteous, orc_chieftain, wizard, huntress | DPS/TANK | passive | cold | passive | - | 0s | 25 / 31 / 40 frost damage | Move -40% |
+| Fleet Recovery (`fleet_recovery`) | knight, ranger, scholar, lancer, paladin_righteous, ether_golem_bruiser, orc_chieftain, drakish_footman, troll_berserker_melee, troll_berserker_ranged, dryad, whisp, evergrove_centaur, gunblade, witch_slayer, huntress, aetheri_warden | TANK/DPS/HEAL | passive | nature | passive | - | 0s | 5 / 6 / 8 % max health per roll |  |
+| Slippery (`slippery_roll`) | knight, ranger, scholar, lancer, paladin_righteous, ether_golem_bruiser, orc_chieftain, drakish_footman, troll_berserker_melee, troll_berserker_ranged, dryad, whisp, evergrove_centaur, gunblade, witch_slayer, huntress, aetheri_warden | TANK/DPS/HEAL | passive | nature | passive | - | 0s | 1 / 1 / 1 debuff cleansed per roll | cleanse |
+| Shield Tumble (`shield_tumble`) | knight, scholar, paladin_righteous, paladin_holy, dryad, whisp, evergrove_centaur, aetheri_warden | HEAL/TANK | active | holy | self | 40 MP | 20s | 5 / 7 / 10 % max health heal | DEF +40% |
+| Ember Wake (`ember_wake`) | lancer, drakish_footman, wizard, troll_berserker_melee, gunblade | DPS | passive | fire | passive | - | 0s | 40 / 50 / 64 fire damage |  |
+| Caltrop Mine (`mine_layer`) | ranger, dwarf_miner, gunblade, huntress, aetheri_artificer | DPS/TANK | active | physical | self | 25 EN | 16s | 80 / 113 / 152 mine damage | Move -50% construct |
+| Shadow Dance (`shadow_dance`) | ranger, lancer, troll_berserker_melee, troll_berserker_ranged, gunblade, witch_slayer, huntress | DPS | active | shadow | self | 20 EN | 30s | 70 / 85 / 85 % roll cooldown cut |  |
+| Blur (`blur_step`) | ranger, lancer, troll_berserker_melee, troll_berserker_ranged, gunblade, witch_slayer, huntress | DPS | passive | shadow | passive | - | 0s | 25 / 31 / 40 % dodge chance |  |
+| Killer Instinct (`killer_instinct`) | ranger, lancer, troll_berserker_melee, troll_berserker_ranged, gunblade, witch_slayer, huntress | DPS | passive | physical | passive | - | 0s | 100 / 100 / 100 % crit chance |  |
+| Tumbler's Edge (`tumblers_edge`) | ranger, lancer, troll_berserker_melee, troll_berserker_ranged, gunblade, witch_slayer, huntress | DPS | passive | physical | passive | - | 0s | 50 / 63 / 80 % next attack damage |  |
+| Windrunner (`windrunner`) | ranger, scholar, lancer, troll_berserker_melee, troll_berserker_ranged, dryad, whisp, evergrove_centaur, gunblade, witch_slayer, huntress, aetheri_warden | DPS/HEAL | passive | storm | passive | - | 0s | 10 / 13 / 16 % move speed |  |
+| Hasted Tumble (`hasted_tumble`) | ranger, scholar, lancer, wizard, troll_berserker_melee, troll_berserker_ranged, dryad, whisp, evergrove_centaur, gunblade, witch_slayer, huntress, aetheri_artificer, aetheri_warden | TANK/DPS/HEAL | passive | arcane | passive | - | 0s | 15 / 19 / 24 % cooldown cut per roll |  |
+| Venom Tumble (`venom_tumble`) | ranger, troll_berserker_ranged, dryad, witch_slayer, huntress | DPS | active | poison | self | 25 EN | 16s | 30 / 42 / 57 poison damage | Healing -30% |
+| Quickened Mind (`quickened_mind`) | scholar, wizard, dryad, whisp, evergrove_centaur, witch_slayer, aetheri_artificer, aetheri_warden | HEAL/DPS | passive | arcane | passive | - | 0s | 6 / 8 / 10 s window |  |
 | Arcane Blunderbuss (`arcane_blunderbuss`) | witch_slayer | DPS | active | arcane | aim | 40 MP | 8s | 110 / 155 / 209 damage | Interrupted |
 | Banishment (`banishment`) | witch_slayer | DPS | active | void | enemy | 55 MP | 22s | 80 / 113 / 152 damage on return | Banished |
 | Purge (`purge`) | witch_slayer | DPS | active | holy | enemy | 40 MP | 14s | 60 / 85 / 114 damage | purge, Silenced |
@@ -250,6 +270,7 @@ makes its extra hit 3x). Native: `CireScalingKits` (reuses CireCrowdControl / Ci
 | Disruption Pylon (`disruption_pylon`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
 | Eagle Eye (`eagle_eye`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
 | Ember Lance (`ember_lance`) | active | Lv 15: +burn for 40% of the hit over 4s |
+| Evasive Stance (`evasive_stance`) | active | Lv 15: +target takes 12% more damage for 5s |
 | Frost Bind (`frost_bind`) | active | Lv 15: +target takes 12% more damage for 5s |
 | Grave Line (`grave_line`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
 | Gravity Pylon (`gravity_pylon`) | active | Lv 15: +0.75s stun |
@@ -259,6 +280,7 @@ makes its extra hit 3x). Native: `CireScalingKits` (reuses CireCrowdControl / Ci
 | Iron Guard (`iron_guard`) | active | Lv 15: +35% slow for 2.5s |
 | Longshot Stance (`longshot`) | active | Lv 15: +target takes 12% more damage for 5s |
 | Construct: Mechanical Tank (`mechanical_tank`) | active | Lv 15: +the mech's slam also cuts enemy attack speed by 10% for 4s |
+| Caltrop Mine (`mine_layer`) | active | Lv 15: +target takes 12% more damage for 5s |
 | Moonlit Sprint (`moonlit_sprint`) | active | Lv 15: +35% slow for 2.5s |
 | Oathbound Guardian (`oathbound_guardian`) | active | Lv 15: +0.75s stun |
 | Overcharge (`overcharge`) | active | Lv 15: +target takes 12% more damage for 5s |
@@ -277,10 +299,12 @@ makes its extra hit 3x). Native: `CireScalingKits` (reuses CireCrowdControl / Ci
 | Sabercat Rake (`sabercat_rake`) | active | Lv 15: +burn for 40% of the hit over 4s |
 | Sanctuary (`sanctuary`) | active | Lv 15: +35% slow for 2.5s |
 | Second Wind (`second_wind`) | active | Lv 15: +healing on the target -40% for 4s |
+| Shadow Dance (`shadow_dance`) | active | Lv 15: +healing on the target -40% for 4s |
 | Shadow Step (`shadow_step`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
 | Shield Bash (`shield_bash`) | active | Lv 15: +target takes 12% more damage for 5s |
 | Shield Slam (`shield_slam`) | active | Lv 15: +0.75s stun |
 | Shield Toss (`shield_toss`) | active | Lv 15: +35% slow for 2.5s |
+| Shield Tumble (`shield_tumble`) | active | Lv 15: +purge the target's buffs |
 | Shield Wall (`shield_wall`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
 | Silver Shot (`silver_shot`) | active | Lv 15: +purge the target's buffs |
 | Skitter Swarm (`skitter_swarm`) | active | Lv 15: +burn for 40% of the hit over 4s |
@@ -289,21 +313,37 @@ makes its extra hit 3x). Native: `CireScalingKits` (reuses CireCrowdControl / Ci
 | Spirit Lantern (`spirit_lantern`) | active | Lv 15: +target takes 12% more damage for 5s |
 | Stasis Snare (`stasis_snare`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
 | Runestone Wall (`summoned_wall`) | active | Lv 15: +35% slow for 2.5s |
+| Taunting Tumble (`taunting_tumble`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Tumble Strike (`tumble_strike`) | active | Lv 15: +target takes 12% more damage for 5s |
 | Venom Ground (`venom_ground`) | active | Lv 15: +healing on the target -40% for 4s |
+| Venom Tumble (`venom_tumble`) | active | Lv 15: +burn for 40% of the hit over 4s |
 | War Cry (`war_cry`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
 | Warding Talisman (`warding_talisman`) | active | Lv 15: +purge the target's buffs |
 | Witchfinder's Mark (`witchfinders_mark`) | active | Lv 15: +purge the target's buffs |
 | Aether Engineering (`aether_engineering`) | passive | Lv 15 aura: party 0.5% chance to stun on basic attacks |
 | Artillery Training (`artillery_training`) | passive | Lv 15 aura: party +10% ranged damage |
 | Battle Rhythm (`battle_rhythm`) | passive | Lv 15 aura: party +30% attack speed |
+| Bloodrush (`bloodrush`) | passive | Lv 15 aura: party 15% chance to resist area damage |
+| Blur (`blur_step`) | passive | Lv 15 aura: party 5% chance to ignore stuns |
 | Deep Reserves (`deep_reserves`) | passive | Lv 15 aura: party +15 magic resist |
+| Ember Wake (`ember_wake`) | passive | Lv 15 aura: party +15 magic resist |
 | Executioner (`executioner`) | passive | Lv 15 aura: party +5% critical chance |
+| Fleet Recovery (`fleet_recovery`) | passive | Lv 15 aura: party +15 magic resist |
+| Frost Wake (`frost_wake`) | passive | Lv 15 aura: party 10% chance to attack twice |
+| Hasted Tumble (`hasted_tumble`) | passive | Lv 15 aura: party 10% chance to attack twice |
 | Headshot (`headshot`) | passive | Lv 15: +Headshot's extra hit deals 3x instead of 2x |
+| Killer Instinct (`killer_instinct`) | passive | Lv 15 aura: party +5% critical chance |
+| Momentum (`momentum`) | passive | Lv 15 aura: party +15 magic resist |
 | Moon Glaive (`moon_glaive`) | passive | Lv 15 aura: party 10% chance to attack twice |
 | Price on Every Soul (`price_on_every_soul`) | passive | Lv 15 aura: party 5% physical lifesteal |
+| Quickened Mind (`quickened_mind`) | passive | Lv 15 aura: party +15 magic resist |
 | Resonant Lattice (`resonant_lattice`) | passive | Lv 15 aura: party 15% chance to resist area damage |
+| Riposte (`riposte_roll`) | passive | Lv 15 aura: party +15 armour |
+| Slippery (`slippery_roll`) | passive | Lv 15 aura: party +5% critical chance |
 | Soul Conduit (`soul_conduit`) | passive | Lv 15 aura: party 5% magic lifesteal |
 | Stone Skin (`stone_skin`) | passive | Lv 15 aura: party +15 armour |
+| Tumbler's Edge (`tumblers_edge`) | passive | Lv 15 aura: party 15% chance to resist area damage |
+| Windrunner (`windrunner`) | passive | Lv 15 aura: party +15 armour |
 | Witchbane (`witchbane`) | passive | Lv 15 aura: party 5% chance to ignore stuns |
 | Aether Nexus (`aether_nexus`) | ultimate | Lv 15: +target takes 12% more damage for 5s |
 | Bastion of Dawn (`bastion_of_dawn`) | ultimate | Lv 15: +35% slow for 2.5s |
@@ -330,33 +370,33 @@ cycle through the aura list.
 
 | Champion | Roles | Signature | Implemented purchasable |
 |---|---|---|---|
-| Iron Warden (`knight`) | TANK | shield_slam, iron_guard, war_cry, cleaving_strike, second_wind, protection_dome, stone_skin, bastion_of_dawn | 24 |
-| Ash Ranger (`ranger`) | DPS | piercing_shot, frost_bind, shadow_step, venom_ground, grave_line, spectral_pack, battle_rhythm, executioners_verdict, executioner | 32 |
-| Veil Scholar (`scholar`) | HEAL | restoring_light, sanctuary, purify, chain_spark, ember_lance, protection_dome, soul_conduit, renewal | 19 |
-| Dusk Lancer (`lancer`) | DPS | cleaving_strike, piercing_shot, shadow_step, iron_guard, second_wind, ashen_square, battle_rhythm, executioners_verdict, executioner | 32 |
+| Iron Warden (`knight`) | TANK | shield_slam, iron_guard, war_cry, cleaving_strike, second_wind, protection_dome, stone_skin, bastion_of_dawn, riposte_roll, fleet_recovery, frost_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, shield_tumble, evasive_stance | 34 |
+| Ash Ranger (`ranger`) | DPS | piercing_shot, frost_bind, shadow_step, venom_ground, grave_line, spectral_pack, battle_rhythm, executioners_verdict, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, venom_tumble, shadow_dance, evasive_stance | 48 |
+| Veil Scholar (`scholar`) | HEAL | restoring_light, sanctuary, purify, chain_spark, ember_lance, protection_dome, soul_conduit, renewal, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 25 |
+| Dusk Lancer (`lancer`) | DPS | cleaving_strike, piercing_shot, shadow_step, iron_guard, second_wind, ashen_square, battle_rhythm, executioners_verdict, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, ember_wake, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, shadow_dance, evasive_stance | 47 |
 | Rift Summoner (`summoner`) | DPS | oathbound_guardian, spectral_pack, summoned_wall, protection_dome, chain_spark, venom_ground, deep_reserves, cataclysm | 32 |
-| Gravewood Bear (`bear`) | TANK | bear_maul, bear_roar, bear_charge, bear_hibernate, iron_guard, war_cry, bear_ancient_hide, bear_colossus | 19 |
-| Relic Paladin (`paladin_righteous`) | TANK | paladin_righteous_flail, paladin_relic_vow, shield_slam, iron_guard, war_cry, second_wind, stone_skin, bastion_of_dawn | 24 |
-| Relic Paladin (`paladin_holy`) | HEAL | paladin_holy_flail, paladin_pilgrim_light, paladin_relic_vow, restoring_light, sanctuary, purify, soul_conduit, renewal | 19 |
-| Deepdelve Miner (`dwarf_miner`) | TANK | miner_pickfall, miner_faultline, miner_lantern, summoned_wall, iron_guard, war_cry, miner_orehide, miner_mountain | 19 |
-| Ether Golem (`ether_golem_tank`) | TANK | golem_granite_fist, golem_ether_anchor, iron_guard, war_cry, summoned_wall, shield_slam, golem_construct_core, golem_worldstone | 19 |
+| Gravewood Bear (`bear`) | TANK | bear_maul, bear_roar, bear_charge, bear_hibernate, iron_guard, war_cry, bear_ancient_hide, bear_colossus, taunting_tumble | 20 |
+| Relic Paladin (`paladin_righteous`) | TANK | paladin_righteous_flail, paladin_relic_vow, shield_slam, iron_guard, war_cry, second_wind, stone_skin, bastion_of_dawn, riposte_roll, fleet_recovery, frost_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, shield_tumble, evasive_stance | 34 |
+| Relic Paladin (`paladin_holy`) | HEAL | paladin_holy_flail, paladin_pilgrim_light, paladin_relic_vow, restoring_light, sanctuary, purify, soul_conduit, renewal, shield_tumble | 20 |
+| Deepdelve Miner (`dwarf_miner`) | TANK | miner_pickfall, miner_faultline, miner_lantern, summoned_wall, iron_guard, war_cry, miner_orehide, miner_mountain, mine_layer, taunting_tumble | 21 |
+| Ether Golem (`ether_golem_tank`) | TANK | golem_granite_fist, golem_ether_anchor, iron_guard, war_cry, summoned_wall, shield_slam, golem_construct_core, golem_worldstone, taunting_tumble | 20 |
 | Ether Golem (`ether_golem_support`) | HEAL | golem_moss_bloom, golem_living_granite, restoring_light, sanctuary, purify, protection_dome, soul_conduit, golem_worldstone | 19 |
-| Ether Golem (`ether_golem_bruiser`) | TANK/DPS | golem_fel_fist, golem_ether_furnace, cleaving_strike, cinder_cone, shadow_step, iron_guard, golem_construct_core, golem_worldstone, decimating_strike | 33 |
-| Blood-Oath Chieftain (`orc_chieftain`) | TANK/HEAL | chieftain_axe_hook, chieftain_banner, war_cry, iron_guard, cleaving_strike, shield_slam, chieftain_courage, chieftain_earthshout, decimating_strike | 27 |
-| Totemic Behemoth (`totemic_behemoth`) | TANK | behemoth_totem_sweep, behemoth_tusk_line, behemoth_totem_bulwark, war_cry, iron_guard, cleaving_strike, behemoth_ancestral_weight, behemoth_stampede | 19 |
-| Drakish Footman (`drakish_footman`) | TANK | drakish_dragon_oath, drakish_scale_guard, drakish_wing_rebuke, shield_slam, war_cry, iron_guard, drakish_ember_memory, drakish_ancient_pact, decimating_strike | 24 |
-| Cinder Arcanist (`wizard`) | DPS/HEAL | ember_lance, frost_bind, chain_spark, cinder_cone, grave_line, ashen_square, deep_reserves, cataclysm | 39 |
-| Red-Moon Berserker (`troll_berserker_melee`) | DPS | troll_axe_frenzy, troll_blood_leap, cleaving_strike, shadow_step, iron_guard, second_wind, troll_hunger, troll_red_moon, decimating_strike, executioner | 27 |
-| Red-Moon Berserker (`troll_berserker_ranged`) | DPS | troll_twin_throw, troll_returning_axes, piercing_shot, frost_bind, shadow_step, venom_ground, troll_hunger, troll_red_moon, executioner | 32 |
-| Thornweave Dryad (`dryad`) | HEAL | dryad_root_snare, dryad_seed_mend, dryad_thorn_line, restoring_light, sanctuary, purify, dryad_green_covenant, dryad_grove_renewal | 19 |
-| Lantern Whisp (`whisp`) | HEAL | whisp_guiding_mote, whisp_spirit_tether, whisp_fey_trail, restoring_light, purify, protection_dome, whisp_lantern_soul, whisp_constellation | 19 |
-| Evergrove Centaur (`evergrove_centaur`) | DPS/HEAL | centaur_grove_javelin, centaur_trailblaze, centaur_herd_call, restoring_light, sanctuary, purify, centaur_steady_gait, centaur_spring_march | 39 |
+| Ether Golem (`ether_golem_bruiser`) | TANK/DPS | golem_fel_fist, golem_ether_furnace, cleaving_strike, cinder_cone, shadow_step, iron_guard, golem_construct_core, golem_worldstone, decimating_strike, riposte_roll, fleet_recovery, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, evasive_stance | 41 |
+| Blood-Oath Chieftain (`orc_chieftain`) | TANK/HEAL | chieftain_axe_hook, chieftain_banner, war_cry, iron_guard, cleaving_strike, shield_slam, chieftain_courage, chieftain_earthshout, decimating_strike, riposte_roll, fleet_recovery, frost_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, evasive_stance | 36 |
+| Totemic Behemoth (`totemic_behemoth`) | TANK | behemoth_totem_sweep, behemoth_tusk_line, behemoth_totem_bulwark, war_cry, iron_guard, cleaving_strike, behemoth_ancestral_weight, behemoth_stampede, taunting_tumble | 20 |
+| Drakish Footman (`drakish_footman`) | TANK | drakish_dragon_oath, drakish_scale_guard, drakish_wing_rebuke, shield_slam, war_cry, iron_guard, drakish_ember_memory, drakish_ancient_pact, decimating_strike, riposte_roll, fleet_recovery, ember_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, evasive_stance | 33 |
+| Cinder Arcanist (`wizard`) | DPS/HEAL | ember_lance, frost_bind, chain_spark, cinder_cone, grave_line, ashen_square, deep_reserves, cataclysm, quickened_mind, hasted_tumble, ember_wake, frost_wake | 43 |
+| Red-Moon Berserker (`troll_berserker_melee`) | DPS | troll_axe_frenzy, troll_blood_leap, cleaving_strike, shadow_step, iron_guard, second_wind, troll_hunger, troll_red_moon, decimating_strike, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, ember_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, shadow_dance, evasive_stance | 41 |
+| Red-Moon Berserker (`troll_berserker_ranged`) | DPS | troll_twin_throw, troll_returning_axes, piercing_shot, frost_bind, shadow_step, venom_ground, troll_hunger, troll_red_moon, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, venom_tumble, shadow_dance, evasive_stance | 46 |
+| Thornweave Dryad (`dryad`) | HEAL | dryad_root_snare, dryad_seed_mend, dryad_thorn_line, restoring_light, sanctuary, purify, dryad_green_covenant, dryad_grove_renewal, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble, venom_tumble | 26 |
+| Lantern Whisp (`whisp`) | HEAL | whisp_guiding_mote, whisp_spirit_tether, whisp_fey_trail, restoring_light, purify, protection_dome, whisp_lantern_soul, whisp_constellation, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 25 |
+| Evergrove Centaur (`evergrove_centaur`) | DPS/HEAL | centaur_grove_javelin, centaur_trailblaze, centaur_herd_call, restoring_light, sanctuary, purify, centaur_steady_gait, centaur_spring_march, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 45 |
 | Keeper of the Light (`keeper_of_light`) | HEAL | keeper_dawn_beam, keeper_lantern_ward, keeper_beacon, restoring_light, sanctuary, purify, keeper_last_light, keeper_sunrise | 19 |
-| Gunblade (`gunblade`) | DPS | silver_shot, hex_mark, powder_flask, blade_flurry, hunters_stride, warding_talisman, price_on_every_soul, collect_the_bounty | 40 |
-| Witch Slayer (`witch_slayer`) | DPS | arcane_blunderbuss, spirit_lantern, purge, banishment, witchfinders_mark, spectral_blade, witchbane, hexbane_judgment | 40 |
-| Huntress (`huntress`) | DPS | bouncing_glaive, sabercat_pounce, owl_scout, moonlit_sprint, crescent_volley, sabercat_rake, moon_glaive, glaive_storm | 40 |
-| Aetheri Artificer (`aetheri_artificer`) | DPS | photon_turret, skitter_swarm, arc_mine, disruption_pylon, phase_lance, overcharge, aether_engineering, warp_obelisk | 40 |
-| Aetheri Warden (`aetheri_warden`) | TANK/HEAL | aegis_pylon, haste_pylon, gravity_pylon, stasis_snare, aether_mend, repulsor_pulse, resonant_lattice, aether_nexus | 35 |
+| Gunblade (`gunblade`) | DPS | silver_shot, hex_mark, powder_flask, blade_flurry, hunters_stride, warding_talisman, price_on_every_soul, collect_the_bounty, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, ember_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, shadow_dance, evasive_stance | 55 |
+| Witch Slayer (`witch_slayer`) | DPS | arcane_blunderbuss, spirit_lantern, purge, banishment, witchfinders_mark, spectral_blade, witchbane, hexbane_judgment, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, quickened_mind, hasted_tumble, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, venom_tumble, shadow_dance, evasive_stance | 55 |
+| Huntress (`huntress`) | DPS | bouncing_glaive, sabercat_pounce, owl_scout, moonlit_sprint, crescent_volley, sabercat_rake, moon_glaive, glaive_storm, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, venom_tumble, shadow_dance, evasive_stance | 56 |
+| Aetheri Artificer (`aetheri_artificer`) | DPS | photon_turret, skitter_swarm, arc_mine, disruption_pylon, phase_lance, overcharge, aether_engineering, warp_obelisk, quickened_mind, hasted_tumble, mine_layer | 43 |
+| Aetheri Warden (`aetheri_warden`) | TANK/HEAL | aegis_pylon, haste_pylon, gravity_pylon, stasis_snare, aether_mend, repulsor_pulse, resonant_lattice, aether_nexus, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 41 |
 
 ## Runtime API (`CireAbilityDB.h`) — for the Skill Shop
 
@@ -434,3 +474,54 @@ curve is monotone with floors/caps for 200 levels before writing).
 - Maths: `Cires::CC` (DiminishedDuration, ClassifyVoidZone, ApplyHealingCut, ArmorAfterBreak,
   ExecuteDamage) in the rules module, covered by the native rules tests; runtime smoke
   `CIRE_CC_PASS` in the in-engine checks.
+
+## Dodge-roll skills (`CireRollSkills.h`)
+
+Twenty skills built around the dodge roll (`UCireMobility::StartRoll`). Data rows are generated from
+`ROLL_SKILLS` in `Tools/BuildAbilityDB.py` (signature-only: buyable by the champions listed in each row's
+`champions`). Each row carries `section` (Skill Shop periodic-table section), `categories` (player-facing
+groups, primary first: Offensive, Defensive, Crowd Control, Constructs, Passives), `effectTags` (card tags,
+`Roll` first), `scaling` (`{"stat": "primary", "ratio": r}`) and an empty `level15` object reserved for
+the level-15 bonus / team-aura pass. Icons: `/Game/UI/Abilities/T_<id>` (procedural placeholders from
+`Tools/BuildAbilityIcons.py` `ROLL_SKILLS`: a tumbling arc around a glyph; to be painted by the 2D art pass).
+
+**Primary-stat rule.** Every damage, heal and shield amount is `base effect + ratio x primary stat`
+(STR, AGI or INT, whichever is the owner's primary); damage is also multiplied by the team power scalar.
+
+**Hooks.** Every trigger runs on the server from `StartRoll` after it succeeds, so it fires once per roll
+and again for every extra roll charge (items-v2 double-dodge boots). Other hooks: an i-frame dodge in
+`ACireHero::TakeDamage` (`OnDodgedHit`), Blur (`TryBlur`, before armor), outgoing damage
+(`ModifyOutgoingDamage` in `CireCombat::ApplyDamage`; Killer Instinct flags the hit critical),
+`MoveSpeedMultiplier` (client and server walk speed), `ConsumeInstantCast` in `CireCrowdControl::GateCast`,
+`OnKill` (hero and monster deaths), and `Tick` from `CireCrowdControl::TickHero` (mines, bots). Timed
+states are `CireBuffs` records (replicated) with BuffVisuals and modifier-registry rows.
+
+| Skill | Type | Effect | Primary ratio |
+| --- | --- | --- | --- |
+| Riposte (`riposte_roll`) | passive | a hit dodged in the i-frames counter-strikes the attacker (once per roll) | 1.0 |
+| Tumbler's Edge (`tumblers_edge`) | passive | next basic attack within 4s: +50% damage | - |
+| Killer Instinct (`killer_instinct`) | passive | next basic attack within 4s is a guaranteed crit | - |
+| Fleet Recovery (`fleet_recovery`) | passive | every roll heals 5% max health + 0.5x primary | 0.5 |
+| Windrunner (`windrunner`) | passive | every roll: +10% move speed for 5s | - |
+| Quickened Mind (`quickened_mind`) | passive | next spell with a cast time (within 6s) is instant; consumed on use | - |
+| Hasted Tumble (`hasted_tumble`) | passive | every roll cuts remaining active cooldowns by 15% (compounds per charge) | - |
+| Ember Wake (`ember_wake`) | passive | fire trail: enemies within 1.8m of the roll path take damage | 0.6 |
+| Frost Wake (`frost_wake`) | passive | frost trail: damage and a 40% slow for 3s | 0.4 |
+| Momentum (`momentum`) | passive | each roll adds a stack for 8s (max 5): +4% damage per stack | - |
+| Blur (`blur_step`) | passive | 3s after a roll: 25% chance to dodge attacks | - |
+| Slippery (`slippery_roll`) | passive | every roll cleanses one debuff (slow, heal cut, silence, armor break, root) | - |
+| Bloodrush (`bloodrush`) | passive | a kill resets the roll cooldown and refunds its energy | - |
+| Tumble Strike (`tumble_strike`) | active, 30 EN, 10s | free roll to the target (triggers roll skills), then a strike | 1.5 |
+| Caltrop Mine (`mine_layer`) | active, 25 EN, 16s | next roll within 8s drops a mine (20s, max 2): damage + 50% slow in 2.5m | 1.0 |
+| Taunting Tumble (`taunting_tumble`) | active, 25 EN, 18s | 8s: each roll taunts monsters in 5m for 3s and guards you | - |
+| Shield Tumble (`shield_tumble`) | active, 40 mana, 20s | 10s: each roll guards the nearest ally (40%, 3s) and heals them | 1.0 |
+| Venom Tumble (`venom_tumble`) | active, 25 EN, 16s | 8s: rolls leave venom, damage + 30% healing cut for 5s | 0.5 |
+| Shadow Dance (`shadow_dance`) | active, 20 EN, 30s | 10s: the roll recovers 70% faster and refunds its energy | - |
+| Evasive Stance (`evasive_stance`) | active, 20 EN, 24s | 6s: rolls refund energy; each i-frame dodge heals 3% max health | 0.4 |
+
+**Bots** with a roll skill open their roll stance/active and dodge sideways in combat every 5-8s
+(`CireRollSkills::Tick`). **Tests:** rules `RollRules` (cooldown cut, compounding per charge, trail
+distance, Momentum cap, Shadow Dance recovery, Blur odds); native `CIRE_ROLL_SKILLS_PASS` in the expansion
+checks (heal per roll and per charge, cooldown %, instant cast consumed once, next-attack empower and crit,
+Momentum cap, cleanse order, Shadow Dance, Bloodrush, Riposte once per roll, Evasive Stance, Frost Wake,
+mines, bots roll, 20 DB rows); `CireMobilityTests` drives the real `StartRoll` twice and a real i-frame hit.

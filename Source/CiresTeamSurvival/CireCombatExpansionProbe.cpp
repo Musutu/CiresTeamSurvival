@@ -1,6 +1,7 @@
 #include "CireCombatExpansionProbe.h"
 #include "CireScalingKits.h" // scaling-kits
 #include "CireWaves.h" // wave-director
+#include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireClassTraits.h"
 #include "CireAbilityDB.h"
 #include "CireCrowdControl.h"
@@ -84,6 +85,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireWeapons::RunValidationSmoke()&&Good;
     Good=CireMovement::RunSmoke(Mode)&&Good;
     Good=CireRoleSkills::RunSmoke(Mode)&&Good;
+    Good=CireRollSkills::RunSmoke(Mode)&&Good; // champion-draft: dodge-roll skills
     Good=CireTargeting::RunDescriptorSmoke()&&Good;
     Good=CireTargeting::RunRuntimeSmoke(Mode)&&Good;
     Good=CireLanePath::RunSmoke(Mode)&&Good;

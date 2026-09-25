@@ -1,6 +1,7 @@
 #include "CireSkillCasting.h"
 #include "CireScalingKits.h" // scaling-kits
 #include "CireSignatureSkills.h" // new-champions
+#include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireRoleSkills.h"
 #include "CireDeveloperTools.h"
@@ -50,11 +51,12 @@ bool PlacementSight(ACireHero* Hero, FVector Ground)
 }
 }
 
-bool CireSkillCasting::Handles(const FString& Id) { return CireSignatureSkills::Handles(Id)||CireRoleSkills::Handles(Id)||PlayerShot(Id) || PlayerConstruct(Id) || PlayerSummon(Id); }
+bool CireSkillCasting::Handles(const FString& Id) { return CireSignatureSkills::Handles(Id)||CireRollSkills::IsActive(Id)||CireRoleSkills::Handles(Id)||PlayerShot(Id) || PlayerConstruct(Id) || PlayerSummon(Id); }
 FString CireSkillCasting::Name(const FString& Id)
 {
     if(CireSignatureSkills::Knows(Id))return CireSignatureSkills::Name(Id); // new-champions
     if(CireRoleSkills::Handles(Id))return CireRoleSkills::Name(Id);
+    if(CireRollSkills::Knows(Id))return CireRollSkills::Name(Id); // champion-draft
     if (Id == TEXT("ember_lance")) return TEXT("Ember Lance");
     if (Id == TEXT("frost_bind")) return TEXT("Frost Bind");
     if (Id == TEXT("piercing_shot")) return TEXT("Piercing Shot");
@@ -68,6 +70,7 @@ FString CireSkillCasting::Description(const FString& Id)
 {
     if(CireSignatureSkills::Knows(Id))return CireSignatureSkills::Description(Id); // new-champions
     if(CireRoleSkills::Handles(Id))return CireRoleSkills::Description(Id);
+    if(CireRollSkills::Knows(Id))return CireRollSkills::Description(Id); // champion-draft
     FCost Cost;
     if (!CostFor(Id, Cost)) return TEXT("Combat recipe unavailable.");
     FString Detail;
@@ -95,6 +98,7 @@ bool CireSkillCasting::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
 {
     if(CireSignatureSkills::Handles(Id))return CireSignatureSkills::Cast(Hero,Slot,Id); // new-champions
     if(CireRoleSkills::Handles(Id))return CireRoleSkills::Cast(Hero,Slot,Id);
+    if(CireRollSkills::IsActive(Id))return CireRollSkills::Cast(Hero,Slot,Id); // champion-draft: dodge-roll actives
     if (!IsValid(Hero) || !Hero->HasAuthority() || !CireSkillRuntime::Alive(Hero) || !Handles(Id) ||
         !Hero->Skills.IsValidIndex(Slot) || Hero->Skills[Slot] != Id || !Hero->Cooldowns.IsValidIndex(Slot) ||
         Hero->Cooldowns[Slot] > 0 || Hero->GlobalCooldown > 0) return false;

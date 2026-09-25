@@ -11,6 +11,27 @@ ROOT = Path(__file__).resolve().parent.parent
 EDITOR = Path("F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe")
 
 
+def run_editor(command, timeout, env=None, **kwargs) -> subprocess.CompletedProcess:
+    """subprocess.run() for an editor that skips UBT SDK setup and kills the whole process tree on timeout."""
+    # AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+    # and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Editors here target Win64.
+    child = subprocess.Popen(command, env={**(env or os.environ), "UE_SKIP_UBT_SDK_SETUP": "1"}, **kwargs)
+    try:
+        return subprocess.CompletedProcess(command, child.wait(timeout=timeout))
+    except subprocess.TimeoutExpired:
+        kill_tree(child)
+        child.kill()
+        child.wait()
+        raise
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--only", choices=("features", "telemetry", "art"))
@@ -37,8 +58,8 @@ def main():
             command += ["-nullrhi"]
         with (output / f"{name}-console.log").open("w", encoding="utf-8") as stream:
             try:
-                result = subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT, timeout=140,
-                                        creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+                result = run_editor(command, 140, stdout=stream, stderr=subprocess.STDOUT,
+                                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
                 code = result.returncode
             except subprocess.TimeoutExpired:
                 code = -1

@@ -1,5 +1,6 @@
 #include "CireCombatEvents.h"
 #include "CireSignatureSkills.h" // new-champions
+#include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireClassTraits.h"
 #include "CireItems.h" // progression-shop
@@ -165,6 +166,7 @@ float CireCombat::ApplyDamage(AActor* Source, AActor* Target, float Amount, cons
     Amount = CireClassTraits::ModifyOutgoingDamage(Source, Amount); // champion-draft: Support -20% damage
     Amount = CireCrowdControl::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // champion-draft: Executioner
     Amount = CireSignatureSkills::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // new-champions: marks, fields, silver, banishment
+    Amount = CireRollSkills::ModifyOutgoingDamage(Source, Target, Amount, AbilityName, &bCritical); // champion-draft: roll empowerment, crit, Momentum
     Amount = CireKits::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // scaling-kits: level-15 amp, Longshot, ranged-damage aura
     if (Amount <= 0) return 0;
     const FCireDamageEvent Event(AbilityName,bCritical);

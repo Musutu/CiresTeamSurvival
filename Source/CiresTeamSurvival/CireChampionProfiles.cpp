@@ -1,6 +1,7 @@
 #include "CireChampionProfiles.h"
 #include "CireScalingKits.h" // scaling-kits
 #include "CireChampionRoster.h"
+#include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireGame.h"
 #include "CireSkillTuning.h"
 #include "CireSummon.h"
@@ -76,6 +77,7 @@ FString CireChampionProfiles::SkillTargeting(const FString& Id)
 {
     if(CireRoleSkills::Handles(Id))return CireRoleSkills::Targeting(Id);
     if(ACireHero::IsPassive(Id))return TEXT("Self / passive");
+    if(CireRollSkills::IsActive(Id))return Id==TEXT("tumble_strike")?TEXT("Hostile / selected target (rolls to it)"):TEXT("Self / empowers your next rolls"); // champion-draft
     if(Id==TEXT("restoring_light")||Id==TEXT("purify"))return TEXT("Friendly / self fallback");
     if(Id==TEXT("sanctuary")||Id==TEXT("renewal"))return TEXT("Friendly area / centered on self");
     if(Id==TEXT("bastion_of_dawn"))return TEXT("Self heal / friendly area guard");
