@@ -26,6 +26,9 @@ struct CIRESTEAMSURVIVAL_API FCireItemData
     TMap<FName, FString> UseText;
     TMap<FName, TArray<FString>> PassiveText;
     TArray<FName> Order; // catalog order for the shop grid
+    TMap<FName, FString> EffectLine;          // items-v2: one-line effect per item ("effect")
+    Cires::Items::ManaRules Mana;             // items-v2: "manaEconomy"
+    TArray<FString> RoleOrder;                // recommended keys in file order
     FString Error;
     bool bValid = false;
 };
@@ -79,7 +82,39 @@ namespace CireItems
     CIRESTEAMSURVIVAL_API void OnPhaseChanged(ACireGameMode* Mode, int32 NewPhase);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSmoke(ACireGameMode* Mode);
+    CIRESTEAMSURVIVAL_API bool RunV2Smoke(ACireGameMode* Mode);   // items-v2 (CireItemsV2Tests.cpp)
 #endif
+
+    // ---- items-v2 (CireItemsV2.cpp) ----
+    /** The champion that owns a unit: itself, a summon's/pet's owner, a construct's source. */
+    CIRESTEAMSURVIVAL_API ACireHero* OwningHero(const AActor* Unit);
+    /** Mana economy: base regen per second (without item regen) and the level cost multiplier. */
+    CIRESTEAMSURVIVAL_API float BaseManaRegen(const ACireHero* Hero, float RegenMultiplier = 1.f);
+    CIRESTEAMSURVIVAL_API float ManaCostScale(const ACireHero* Hero);
+    /** "Not enough mana (32 / 48)." plus the HUD flash counter (server). */
+    CIRESTEAMSURVIVAL_API FString NoteShortfall(const ACireHero* Hero, float NeedMana, float NeedEnergy);
+    /** Every paid ability cast (CireSkillShop::ApplyCastLevel): mana refund, ultimate upgrade. */
+    CIRESTEAMSURVIVAL_API void OnAbilityCast(ACireHero* Hero, const FString& Id, float ManaSpent);
+    CIRESTEAMSURVIVAL_API int32 ConstructLimitBonus(const AActor* Source);
+    CIRESTEAMSURVIVAL_API float ConstructHealthMultiplier(const AActor* Source);
+    CIRESTEAMSURVIVAL_API float ConstructShieldFraction(const AActor* Source);
+    /** Summons and pets: health/damage multiplier from the owner's path unique (pets may call this too). */
+    CIRESTEAMSURVIVAL_API float SummonMultiplier(const AActor* OwnerOrSummon);
+    CIRESTEAMSURVIVAL_API float AreaRadiusMultiplier(const AActor* Source);
+    CIRESTEAMSURVIVAL_API float ControlDurationMultiplier(const AActor* Source);
+    CIRESTEAMSURVIVAL_API bool IsAreaAbility(const FString& AbilityName);
+    CIRESTEAMSURVIVAL_API bool IsControlled(const AActor* Unit);
+    /** Dodge-roll charges (1 + boots). */
+    CIRESTEAMSURVIVAL_API int32 MaxDodgeCharges(const ACireHero* Hero);
+    CIRESTEAMSURVIVAL_API void OnDodgeRoll(ACireHero* Hero);
+    /** Absorb shield on a champion (party shields, ultimate upgrades). Returns the shield now held. */
+    CIRESTEAMSURVIVAL_API float GrantBarrier(ACireHero* Hero, float Amount, float Duration, AActor* Source);
+    /** Timed stat buff: an item id with stats (party buffs) or "ult:<abilityId>" (ultimate upgrade). */
+    CIRESTEAMSURVIVAL_API void GrantStatBuff(ACireHero* Hero, FName BuffId, float Duration, AActor* Source);
+    CIRESTEAMSURVIVAL_API bool BuffStats(FName BuffId, Cires::Items::StatBlock& Out);
+    /** Upgrade/effect helpers shared with CireUltimateUpgrades. */
+    CIRESTEAMSURVIVAL_API TArray<ACireHero*> AlliesNear(const ACireHero* Source, FVector Center, float Radius);
+    CIRESTEAMSURVIVAL_API TArray<AActor*> EnemiesNear(const ACireHero* Source, FVector Center, float Radius);
 }
 
 USTRUCT()
@@ -147,7 +182,14 @@ public:
     // ---- replicated state ----
     UPROPERTY(ReplicatedUsing=OnRep_Items) TArray<FCireItemSlot> Equipment;
     UPROPERTY(ReplicatedUsing=OnRep_Items) TArray<FCireItemSlot> Belt;
-    UPROPERTY(Replicated) TArray<FCireTimedBuff> Buffs;
+    UPROPERTY(ReplicatedUsing=OnRep_Items) TArray<FCireTimedBuff> Buffs; // items-v2: stat buffs change totals on clients too
+    // items-v2: absorb shield (party shields, ultimate upgrades) and the "not enough mana" flash.
+    UPROPERTY(Replicated) float BarrierHP = 0;
+    UPROPERTY(Replicated) float BarrierMax = 0;
+    UPROPERTY(Replicated) float BarrierEndsAt = 0;
+    UPROPERTY(Replicated) int32 ResourceFailSerial = 0;
+    UPROPERTY(Replicated) uint8 ResourceFailKind = 0;   // 1 mana, 2 energy
+    UPROPERTY(Replicated) float ResourceFailNeed = 0;
     UPROPERTY(Replicated) float TeleportChannelStart = -1;
     UPROPERTY(Replicated) float TeleportChannelEnd = -1;
     UPROPERTY(Replicated) float TeleportReadyAt = 0;
@@ -156,6 +198,7 @@ public:
     UPROPERTY(Replicated) int32 UndoDepth = 0;
     UPROPERTY(Replicated) bool bShopVisit = false;
     UPROPERTY(Replicated) TArray<FCireSkillRank> SkillRanks;   // Skill Shop levels
+    UPROPERTY(Replicated) bool bReadyToContinue = false;       // breather READY TO CONTINUE (bots: always)
 
     // ---- client requests (owning client only) ----
     UFUNCTION(Server, Reliable) void ServerBuy(FName ItemId);

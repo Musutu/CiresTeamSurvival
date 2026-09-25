@@ -191,7 +191,7 @@ def main() -> int:
 
     if args.only in ("gallery", "all"):
         # Full gallery at 1920x1080, then the shop screens (Skill Shop + Armory) again at 1600x900.
-        for width, height, shop_only in ((1920, 1080, False), (1600, 900, True)):
+        for width, height, shop_only in ((1920, 1080, False), (1600, 900, True), (1280, 720, True)):
             name = "gallery" if not shop_only else f"gallery_{width}x{height}"
             log, child, failure = output / f"{name}.log", None, ""
             try:

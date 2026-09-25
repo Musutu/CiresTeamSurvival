@@ -74,6 +74,15 @@ TArray<FCireActionInfo> BuildActions()
     for(int32 Item=1;Item<=6;++Item)
         Add(*FString::Printf(TEXT("UseItem%d"),Item),FText::Format(LOCTEXT("UseItem","Use item in bag slot {0}"),Item),C::Combat,FCireKeyChord());
     // progression-shop: end
+    // pets: companion commands (CirePets). WoW keeps its pet bar on Ctrl, which is the dodge roll here.
+    Add(TEXT("PetAttack"),LOCTEXT("PetAttack","Pet: attack my target"),C::Combat,EKeys::Y);
+    Add(TEXT("PetFollow"),LOCTEXT("PetFollow","Pet: follow"),C::Combat,EKeys::U);
+    Add(TEXT("PetStay"),LOCTEXT("PetStay","Pet: stay"),C::Combat,EKeys::I);
+    Add(TEXT("PetSpecial"),LOCTEXT("PetSpecial","Pet: special ability"),C::Combat,EKeys::O);
+    Add(TEXT("PetRevive"),LOCTEXT("PetRevive","Pet: revive / call"),C::Combat,EKeys::P);
+    Add(TEXT("PetStanceAggressive"),LOCTEXT("PetStanceAggressive","Pet stance: aggressive"),C::Combat,FCireKeyChord(EKeys::Y,true));
+    Add(TEXT("PetStanceDefensive"),LOCTEXT("PetStanceDefensive","Pet stance: defensive"),C::Combat,FCireKeyChord(EKeys::U,true));
+    Add(TEXT("PetStancePassive"),LOCTEXT("PetStancePassive","Pet stance: passive"),C::Combat,FCireKeyChord(EKeys::I,true));
     Add(TEXT("ToggleSkillOffer"),LOCTEXT("ToggleSkillOffer","New skill choice: open / decide later"),C::Interface,EKeys::N);
     const FKey Digits[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight,EKeys::Nine,EKeys::Zero};
     for(int32 Bar=1;Bar<=FCireKeybindings::NumBars;++Bar)for(int32 Slot=1;Slot<=FCireKeybindings::SlotsPerBar;++Slot)
@@ -400,7 +409,7 @@ bool CireKeybindings::RunSmoke()
     Check(B.Get(TEXT("TurnLeft"),0)==FCireKeyChord(EKeys::A)&&B.Get(TEXT("TargetPreviousEnemy"),0)==FCireKeyChord(EKeys::Tab,true),TEXT("A turn, Shift+Tab previous enemy"));
     Check(B.Get(SlotAction(1,1),0)==FCireKeyChord(EKeys::One)&&B.Get(SlotAction(2,3),0)==FCireKeyChord(EKeys::Three,true)&&
         B.Get(SlotAction(3,6),0)==FCireKeyChord(EKeys::Six,false,false,true)&&!B.Get(SlotAction(1,7),0).IsBound()&&!B.Get(SlotAction(3,12),0).IsBound(),TEXT("action bar defaults"));
-    Check(Actions().Num()==25+12/*progression-shop: stats, loot log, skill shop, 3 belt, 6 item; champion-draft: +1 skill offer toggle*/+FCireKeybindings::NumBars*FCireKeybindings::SlotsPerBar,TEXT("action list size"));
+    Check(Actions().Num()==25+12/*progression-shop: stats, loot log, skill shop, 3 belt, 6 item; champion-draft: +1 skill offer toggle*/+8/*pets: 5 commands, 3 stances*/+FCireKeybindings::NumBars*FCireKeybindings::SlotsPerBar,TEXT("action list size"));
     {
         TSet<FString> Seen;bool Unique=true;
         for(const auto& I:Actions())for(int32 K=0;K<2;++K)if(I.Default[K].IsBound()){const FString Id=I.Default[K].ToString();Unique&=!Seen.Contains(Id);Seen.Add(Id);}

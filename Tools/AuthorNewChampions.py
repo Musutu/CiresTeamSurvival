@@ -1,6 +1,6 @@
 """Author the new champions (Docs/NewChampions.md) into the shared data files.
 
-Gunblade (Bounty Hunter), Witch Slayer, Huntress (mounted glaive thrower) and the two Aetheri
+Gunblade (Bounty Hunter), Witch Slayer, Huntress (glaive thrower with the sabercat companion Ashfang, Docs/Pets.md) and the two Aetheri
 champions (Artificer, Warden). Skill names and descriptions come from Tools/BuildAbilityDB.py
 (NEW_CHAMPION_SKILLS) so the roster, the Ability Database and the runtime never disagree.
 
@@ -38,8 +38,8 @@ DELIVERY = {  # roster delivery vocabulary (CireChampionRoster.cpp)
     "warding_talisman": "self", "price_on_every_soul": "passive", "collect_the_bounty": "targeted",
     "arcane_blunderbuss": "ground_cone", "spirit_lantern": "construct", "purge": "targeted", "banishment": "targeted", "witchfinders_mark": "targeted",
     "spectral_blade": "targeted", "witchbane": "passive", "hexbane_judgment": "ground_circle",
-    "bouncing_glaive": "chain", "sabercat_pounce": "ground_circle", "owl_scout": "ground_circle", "moonlit_sprint": "self", "crescent_volley": "projectile",
-    "sabercat_rake": "ground_cone", "moon_glaive": "passive", "glaive_storm": "self",
+    "bouncing_glaive": "chain", "sabercat_pounce": "targeted", "owl_scout": "ground_circle", "moonlit_sprint": "self", "crescent_volley": "projectile",
+    "sabercat_maul": "targeted", "sabercat_roar": "self", "moon_glaive": "passive", "glaive_storm": "self",
     "photon_turret": "construct", "skitter_swarm": "construct", "arc_mine": "construct", "disruption_pylon": "construct", "phase_lance": "projectile",
     "overcharge": "self", "aether_engineering": "passive", "warp_obelisk": "construct",
     "aegis_pylon": "construct", "haste_pylon": "construct", "gravity_pylon": "construct", "stasis_snare": "construct", "aether_mend": "ally",
@@ -63,13 +63,13 @@ CHAMPIONS = [
          artFamily="pointed hat, green-and-dark long coat, arcane blunderbuss with glowing blue orbs, spectral arcane blade",
          actives=["arcane_blunderbuss", "spirit_lantern", "purge", "banishment", "witchfinders_mark", "spectral_blade"],
          passive="witchbane", ultimate="hexbane_judgment"),
-    dict(id="huntress", displayName="Huntress", familyId="huntress", race="sylvan", variant="Glaive Thrower", classType="Mounted Glaive Thrower", difficulty=2,
-         lore="Masked and hooded, she rides the great sabercat Ashfang, and her glaives come back for more.",
+    dict(id="huntress", displayName="Huntress", familyId="huntress", race="sylvan", variant="Glaive Thrower", classType="Glaive Huntress", difficulty=2,
+         lore="Masked and hooded, she stalks the treeline with the great sabercat Ashfang at her side, and her glaives come back for more.",
          quote="Track. Strike. Survive.",
-         description="A mounted ranged hunter: a glaive launcher whose glaives bounce between foes, a sabercat that pounces, and an owl that finds prey.",
+         description="A ranged hunter on foot with a companion: glaives that bounce between foes, the sabercat Ashfang who pounces, mauls and roars on command, and an owl that finds prey.",
          runtimeArchetype=1, primaryStat="agility", basicAttackRange=1300, attackSeconds=1.5, attackStyle="glaive", threatRole="damage", roles=["damage"],
-         artFamily="masked hooded huntress in leather and red cloth riding a great sabercat, mounted glaive launcher, bouncing glaives",
-         actives=["bouncing_glaive", "sabercat_pounce", "owl_scout", "moonlit_sprint", "crescent_volley", "sabercat_rake"],
+         artFamily="masked hooded huntress in leather and red cloth on foot beside a great sabercat, glaive launcher, bouncing glaives",
+         actives=["bouncing_glaive", "sabercat_pounce", "owl_scout", "moonlit_sprint", "crescent_volley", "sabercat_maul"],
          passive="moon_glaive", ultimate="glaive_storm"),
     dict(id="aetheri_artificer", displayName="Aetheri Artificer", familyId="aetheri", race="aetheri", variant="Forge-Caller", classType="Construct Artificer", difficulty=3,
          lore="Aetheri artificers speak to machines in light; turrets rise where they point.",
@@ -129,22 +129,13 @@ BINDINGS = [
      "tripoSlot": {"unit": "witch_slayer", "skeleton": "Tripo humanoid biped (champion batch rig)", "sheet": "Saved/Reference/witchslayer-sheet.png",
                    "props": ["arcane blunderbuss with blue orb drum (hand_l)", "spectral arcane blade (hand_r / back)", "spirit lantern (belt)"]},
      "note": "Temporary body: the Rift Summoner rig re-tinted dark green with blue arcane accents."},
-    {"profileId": "huntress", "status": "custom_ready", "motion": "mounted",
-     "mesh": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/Wolf.Wolf", "heightCm": 175, "yaw": -90, "lockRoot": True,
-     "walkSpeedRaw": 180.4, "runSpeedRaw": 759.1,
-     "animations": {"idle": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle.WolfAnimalArmature_Idle",
-                    "walk": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Walk.WolfAnimalArmature_Walk",
-                    "run": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Gallop.WolfAnimalArmature_Gallop",
-                    "attack": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Attack.WolfAnimalArmature_Attack"},
-     "tint": {"base": [0.52, 0.4, 0.28], "accent": [0.55, 0.12, 0.08], "strength": 0.8},
-     "rider": {"mesh": "/Game/TripoModels/armored_archer_3d_model/armored_archer_3d_model.armored_archer_3d_model",
-               "locomotion": "/Game/Art/Characters/TripoRetarget/Preview02/Ranger/Animations/BS_Idle_Walk_Run_Ranger.BS_Idle_Walk_Run_Ranger",
-               "attack": "/Game/Art/Characters/CombatPrototype01/Ranger/A_Ranger_Attack.A_Ranger_Attack", "heightCm": 172,
-               "seatHeight": 0.62, "seatForward": -0.08,
-               "props": [{"asset": "/Game/Art/NewChampions01/Props/SM_GlaiveLauncher.SM_GlaiveLauncher", "bone": "hand_r"}]},
-     "tripoSlot": {"unit": "huntress (rider) + huntress_sabercat (mount)", "skeleton": "rider: Tripo humanoid biped seated; mount: quadruped (sabercat) rig",
-                   "sheet": "Saved/Reference/huntress-sheet.png", "props": ["mounted glaive launcher (rider hand_r)", "glaive ammo (back)", "mount barding"]},
-     "note": "Temporary body: the Quaternius wolf (tinted as a dark sabercat) carrying the Ash Ranger rig seated on its back (Centaur-style creature presentation)."},
+    {"profileId": "huntress", "status": "ready",
+     "mesh": "/Game/TripoModels/armored_archer_3d_model/armored_archer_3d_model.armored_archer_3d_model",
+     "locomotion": "/Game/Art/Characters/TripoRetarget/Preview02/Ranger/Animations/BS_Idle_Walk_Run_Ranger.BS_Idle_Walk_Run_Ranger",
+     "attack": "/Game/Art/Characters/CombatPrototype01/Ranger/A_Ranger_Attack.A_Ranger_Attack", "heightCm": 172,
+     "tripoSlot": {"unit": "huntress", "skeleton": "Tripo humanoid biped (champion batch rig)",
+                   "sheet": "Saved/Reference/huntress-sheet.png", "props": ["glaive launcher (hand_l)", "glaive (hand_r)", "glaive ammo (back)"]},
+     "note": "Temporary body: the Ash Ranger rig on foot. Her sabercat Ashfang is a companion pet (Content/Data/Pets.json), not a mount."},
     {"profileId": "aetheri_artificer", "status": "ready",
      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/wizard/SK_wizard.SK_wizard",
      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/wizard/Animations/BS_Idle_Walk_Run_wizard.BS_Idle_Walk_Run_wizard",
@@ -328,24 +319,13 @@ def tripo_rows() -> dict:
 
 
 def final_bindings() -> list:
-    """Tripo bodies replace the temporary ones (status ready: attack clips + grips, no tint). The Huntress keeps the
-    animated wolf mount (the Tripo sabercat has no clips yet) and seats the Tripo Huntress as its rider."""
+    """Tripo bodies replace the temporary ones (status ready: attack clips + grips, no tint). Every champion fights on foot:
+    the Huntress uses her Tripo body with normal locomotion and her sabercat is a companion pet (Content/Data/Pets.json)."""
     tripo = tripo_rows()
     out = []
     for row in copy.deepcopy(BINDINGS):
         t = tripo.get(row["profileId"])
         if not t:
-            out.append(row)
-            continue
-        if row.get("motion") == "mounted":
-            rider = copy.deepcopy(t.get("riderBinding") or {})
-            if rider and row["profileId"] in RELAX_ARMS:
-                rider["relaxArms"] = True
-            if rider:
-                row["rider"] = rider
-            row["tripoSlot"]["delivered"] = "rider: " + t["mesh"] + "; mount (no clips yet): " + t.get("mount", {}).get("mesh", "")
-            row["note"] = ("Tripo Huntress seated on the Quaternius wolf (tinted as a sabercat) until the Tripo sabercat mount "
-                           "(" + t.get("mount", {}).get("mesh", "") + ") has animation clips.")
             out.append(row)
             continue
         bound = {k: t[k] for k in BINDING_KEYS}

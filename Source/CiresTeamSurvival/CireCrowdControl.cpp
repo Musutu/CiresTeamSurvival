@@ -1,4 +1,7 @@
 #include "CireCrowdControl.h"
+#include "CirePolymorph.h" // progression-shop
+#include "CireScalingKits.h" // scaling-kits
+#include "CireMobility.h" // feat/camera-movement
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireAbilityDB.h"
@@ -72,7 +75,9 @@ template<typename Fn> void ForEachHostileNear(ACireHero* Source,FVector Center,f
 }
 
 // ---------------------------------------------------------------- queries
-bool CireCrowdControl::IsStunned(const AActor* U){return U&&CireBuffs::IsActive(U,StunnedId);}
+// progression-shop: a polymorphed unit is incapacitated like a stunned one (no attacks, casts or movement input).
+bool CireCrowdControl::IsStunned(const AActor* U){return U&&(CireBuffs::IsActive(U,StunnedId)||CirePolymorph::IsPolymorphed(U));}
+float CireCrowdControl::DiminishedSeconds(AActor* Target,AActor* Source,FName Category,float Seconds){return IsValid(Target)?Diminish(Target,Source,Category,Seconds):0.f;}
 bool CireCrowdControl::IsSilenced(const AActor* U){return U&&(CireBuffs::IsActive(U,SilencedId)||CireBuffs::IsActive(U,NpcSilencedId));}
 float CireCrowdControl::HealingReceivedCut(const AActor* U){return BuffMagnitude(U,HealCutId);}
 float CireCrowdControl::HealingDoneCut(const AActor* U){return BuffMagnitude(U,HealCutDoneId);}
@@ -93,6 +98,8 @@ float CireCrowdControl::CastProgress(const ACireHero* H)
 float CireCrowdControl::Stun(AActor* Target,float Seconds,AActor* Source)
 {
     if(!IsValid(Target)||!Target->HasAuthority()||IsBossUnit(Target)||Seconds<=0)return 0.f;
+    if(CireKits::IgnoresStun(Target))return 0.f; // scaling-kits: level-15 stun-ignore aura
+    Seconds*=CireItems::ControlDurationMultiplier(Source); // items-v2: Shackles of the Pale King
     const float Applied=Diminish(Target,Source,StunnedId,Seconds);if(Applied<=0)return 0.f;
     CireBuffs::Apply(Target,StunnedId,Applied,Source);
     if(auto* H=Cast<ACireHero>(Target))
@@ -106,6 +113,7 @@ float CireCrowdControl::Stun(AActor* Target,float Seconds,AActor* Source)
 float CireCrowdControl::Silence(AActor* Target,float Seconds,AActor* Source)
 {
     if(!IsValid(Target)||!Target->HasAuthority()||IsBossUnit(Target)||Seconds<=0)return 0.f;
+    Seconds*=CireItems::ControlDurationMultiplier(Source); // items-v2
     const float Applied=Diminish(Target,Source,SilencedId,Seconds);if(Applied<=0)return 0.f;
     CireBuffs::Apply(Target,SilencedId,Applied,Source);
     if(auto* H=Cast<ACireHero>(Target)){CancelCast(H,TEXT("Silenced"));H->Notice=TEXT("Silenced: you cannot cast right now.");}
@@ -115,6 +123,7 @@ float CireCrowdControl::Silence(AActor* Target,float Seconds,AActor* Source)
 float CireCrowdControl::Slow(AActor* Target,float Seconds,AActor* Source)
 {
     if(!IsValid(Target)||!Target->HasAuthority()||Seconds<=0)return 0.f;
+    Seconds*=CireItems::ControlDurationMultiplier(Source); // items-v2
     const float Until=Now(Target->GetWorld())+Seconds;
     if(auto* H=Cast<ACireHero>(Target))H->SlowUntil=FMath::Max(H->SlowUntil,Until);
     else if(auto* M=Cast<ACireMonster>(Target))M->SlowUntil=FMath::Max(M->SlowUntil,Until);
@@ -160,7 +169,9 @@ bool CireCrowdControl::GateCast(ACireHero* H,int32 Slot,const FString& Id)
     {H->Notice=FString::Printf(TEXT("%s spells are locked out."),*D->School);return true;}
     if(IsCasting(H)){H->Notice=TEXT("Already casting.");return true;}
     if(!D||D->CastTime<=0)return false;
-    if(H->Mana<D->Base.ManaCost||H->Energy<D->Base.EnergyCost){H->Notice=TEXT("Not enough mana or energy.");return true;}
+    // feat/camera-movement: WoW rule, data-driven per ability (Abilities.json castWhileMoving).
+    if(CireMovement::BlocksCast(*H,Id)){H->Notice=TEXT("Can't cast while moving.");H->ForceNetUpdate();return true;}
+    if(!CireSkillShop::CanPayCast(H,Id,D->Base.ManaCost,D->Base.EnergyCost)){H->Notice=CireSkillShop::CostFailText();return true;} // items-v2: scaled cost
     if(CireRollSkills::ConsumeInstantCast(H))return false; // champion-draft: Quickened Mind (instant after a roll)
     FPendingCast P;P.Slot=Slot;P.Id=Id;P.Target=H->Target;P.bAim=H->bHasCastAim;P.Aim=H->CastAimPoint;
     State().Casts.Add(H,P);
@@ -188,6 +199,7 @@ void CireCrowdControl::TickHero(ACireHero* H,float Delta)
     {
         auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();
         if(H->bDead||!Mode||!Mode->IsCombatPhase()){CancelCast(H,H->bDead?TEXT(""):TEXT("Phase changed"));}
+        else if(CireMovement::BlocksCast(*H,H->CastSkill.ToString())){CancelCast(H,TEXT("Moved"));} // feat/camera-movement: moving cancels (WoW)
         else if(T>=H->CastEndTime)
         {
             const FPendingCast P=State().Casts.FindRef(H);State().Casts.Remove(H);
@@ -276,7 +288,7 @@ float CireCrowdControl::ModifyOutgoingDamage(AActor* Source,AActor* Target,float
     return Result;
 }
 
-bool CireCrowdControl::HandlesSkill(const FString& Id){return Id==TEXT("decimating_strike");}
+bool CireCrowdControl::HandlesSkill(const FString& Id){return Id==TEXT("decimating_strike")||CirePolymorph::Handles(Id);} // progression-shop: Polymorph
 FString CireCrowdControl::Description(const FString& Id)
 {
     const FCireAbilityDef* D=CireAbilityDB::Find(Id);if(!D)return FString();
@@ -284,18 +296,19 @@ FString CireCrowdControl::Description(const FString& Id)
 }
 bool CireCrowdControl::CastSkill(ACireHero* H,int32 Slot,const FString& Id)
 {
+    if(CirePolymorph::Handles(Id))return CirePolymorph::CastSkill(H,Slot,Id); // progression-shop
     if(!H||!H->HasAuthority()||!H->Cooldowns.IsValidIndex(Slot))return false;
     const FCireAbilityDef* D=CireAbilityDB::Find(Id);if(!D)return false;
     auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();if(!Mode)return false;
     AActor* Target=H->Target;
     if(!H->IsHostile(Target)||!H->InRange(Target,D->Range)){H->Notice=TEXT("Select a hostile target in melee range.");return false;}
-    if(!CireSkillShop::CanPayCast(H,Id,D->Base.ManaCost,D->Base.EnergyCost)){H->Notice=TEXT("Not enough mana or energy.");return false;} // progression-shop: Skill Shop level (Ability DB curve)
+    if(!CireSkillShop::CanPayCast(H,Id,D->Base.ManaCost,D->Base.EnergyCost)){H->Notice=CireSkillShop::CostFailText();return false;} // progression-shop: Skill Shop level (Ability DB curve)
     H->Energy-=D->Base.EnergyCost;H->Mana-=D->Base.ManaCost;
     H->Cooldowns[Slot]=static_cast<float>(Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(H->GetWorld(),D->Base.Cooldown),H->CDR));
     CireSkillShop::ApplyCastLevel(H,Slot,Id,D->Base.ManaCost,D->Base.EnergyCost); // progression-shop: Skill Shop level (Ability DB curve)
     H->GlobalCooldown=.9f;
     const auto* M=Cast<ACireMonster>(Target);const auto* Victim=Cast<ACireHero>(Target);
-    const float Normal=(D->Base.Effect+2.f*H->PrimaryAttribute())*Mode->Power(H->TeamId);
+    const float Normal=CireKits::Amount(H,Id,D->Base.Effect,2.f)*Mode->Power(H->TeamId); // scaling-kits
     const Cires::CC::ExecuteTarget Kind=IsBossUnit(Target)?Cires::CC::ExecuteTarget::Boss:M?Cires::CC::ExecuteTarget::Monster:Cires::CC::ExecuteTarget::Hero;
     const float Health=M?M->Health:Victim?Victim->Health:0.f,MaxHealth=M?M->MaxHealth:Victim?Victim->MaxHealth:0.f;
     float Amount=static_cast<float>(Cires::CC::ExecuteDamage(Kind,Health,MaxHealth,Normal));
@@ -319,7 +332,7 @@ int32 CireCrowdControl::VoidBurst(ACireHero* H,FVector Center,const FString& Abi
         const auto Zone=Cires::CC::ClassifyVoidZone(Distance,Z.InnerRadius,Z.OuterRadius);
         if(Zone==Cires::CC::VoidZone::None)return;
         ++Hits;
-        if(Z.Damage>0)CireCombat::ApplyDamage(H,U,Z.Damage,D->Name+TEXT(" (void)"));
+        if(Z.Damage>0)CireCombat::ApplyDamage(H,U,Z.Damage+.3f*H->PrimaryAttribute(),D->Name+TEXT(" (void)")); // scaling-kits: + primary
         if(Zone==Cires::CC::VoidZone::Inner)Stun(U,Z.InnerDuration,H);
         else {Slow(U,Z.OuterDuration,H);CireBuffs::Apply(U,TEXT("slowed"),Z.OuterDuration,H);}
     });

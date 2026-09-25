@@ -1,6 +1,7 @@
 // wave-director: authoritative wave runtime, neutral challenge packs and bot lane defence.
 #include "CireWaves.h"
 #include "CireGame.h"
+#include "CireItems.h" // progression-shop: ready flags on the inventory
 #include "CireLanePath.h"
 #include "CireLoot.h"
 #include "CireNPCArchetypes.h"
@@ -858,6 +859,13 @@ bool CireWaveDirector::UpdateBreatherReady(ACireGameMode* Mode)
     int32 Humans = 0, Ready = 0;
     for (auto* H : Mode->Heroes)
         if (IsValid(H) && !H->bBot && H->bDrafted) { ++Humans; if (R.Ready.Contains(H)) ++Ready; }
+    // progression-shop: mirror each hero's ready state for the Skill Shop's team panel (bots auto-ready).
+    for (auto* H : Mode->Heroes)
+        if (IsValid(H) && H->Inventory)
+        {
+            const bool bReady = IsBreather(Mode) && (H->bBot || R.Ready.Contains(H));
+            if (H->Inventory->bReadyToContinue != bReady) H->Inventory->bReadyToContinue = bReady;
+        }
     if (S->BreatherReady != Ready || S->BreatherPlayers != Humans) { S->BreatherReady = Ready; S->BreatherPlayers = Humans; S->ForceNetUpdate(); }
     // Bots-only matches (soak) keep the full breather: early continue needs at least one human.
     return R.Config.bEarlyContinue && Humans > 0 && Ready >= Humans && IsBreather(Mode);

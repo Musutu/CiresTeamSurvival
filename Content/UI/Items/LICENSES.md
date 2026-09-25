@@ -12,6 +12,14 @@ This covers every shop item plus the toast icons `T_Item_gold`, `T_Item_teleport
 
 Any item without a painted PNG falls back to the procedural icon below.
 
+## Items v2 (art-2d)
+
+The 12 items-v2 icons (`aether_conduit`, `oathkeeper_charm`, `windrunner_boots`, `twinstep_treads`,
+`moonwell_codex`, `lifebinders_reliquary` and the six path uniques `artificers_heartforge`, `soulbinders_crook`,
+`heart_of_cataclysm`, `shackles_of_the_pale_king`, `sigil_of_apotheosis`, `stormhowl_ravager`) are painted icons
+**generated for Eric via ChatGPT (OpenAI), 2026-09-25**, from `Art/Icons/ChatGPT/items_v2_paths.png` (3x3) and
+`items_v2_uniques.png` (2x2; its 4th tile, a coin purse, is unused).
+
 ## Procedural fallback
 
 `Tools/BuildItemIcons.py` draws original procedural icons (signed-distance shapes, gradients and

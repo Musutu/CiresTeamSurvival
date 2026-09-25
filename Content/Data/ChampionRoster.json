@@ -2261,11 +2261,11 @@
       "familyId": "huntress",
       "race": "sylvan",
       "variant": "Glaive Thrower",
-      "classType": "Mounted Glaive Thrower",
+      "classType": "Glaive Huntress",
       "difficulty": 2,
-      "lore": "Masked and hooded, she rides the great sabercat Ashfang, and her glaives come back for more.",
+      "lore": "Masked and hooded, she stalks the treeline with the great sabercat Ashfang at her side, and her glaives come back for more.",
       "quote": "Track. Strike. Survive.",
-      "description": "A mounted ranged hunter: a glaive launcher whose glaives bounce between foes, a sabercat that pounces, and an owl that finds prey.",
+      "description": "A ranged hunter on foot with a companion: glaives that bounce between foes, the sabercat Ashfang who pounces, mauls and roars on command, and an owl that finds prey.",
       "runtimeArchetype": 1,
       "primaryStat": "agility",
       "strength": 10,
@@ -2278,7 +2278,7 @@
       "roles": [
         "damage"
       ],
-      "artFamily": "masked hooded huntress in leather and red cloth riding a great sabercat, mounted glaive launcher, bouncing glaives",
+      "artFamily": "masked hooded huntress in leather and red cloth on foot beside a great sabercat, glaive launcher, bouncing glaives",
       "artStatus": "prototype_fallback",
       "artProvenance": "Original design for Cire's Team Survival from Eric's reference sheets (inspiration only, no third-party names, text or likeness); temporary body until the Tripo agent delivers the bound model.",
       "startsWithSkills": [],
@@ -2293,11 +2293,11 @@
         },
         {
           "id": "sabercat_pounce",
-          "displayName": "Sabercat Pounce",
+          "displayName": "Ashfang: Pounce",
           "status": "implemented",
-          "mechanic": "The sabercat leaps up to 7m and mauls everything within 2.6m on landing: 75 + 1x AGI and a 40% slow for 2s.",
+          "mechanic": "Command Ashfang to leap up to 7m onto your target and maul everything within 2.6m on landing: 75 + 1x AGI and a 40% slow for 2s. Needs your companion.",
           "vfxFamily": "steel",
-          "delivery": "ground_circle"
+          "delivery": "targeted"
         },
         {
           "id": "owl_scout",
@@ -2324,12 +2324,12 @@
           "delivery": "projectile"
         },
         {
-          "id": "sabercat_rake",
-          "displayName": "Sabercat Rake",
+          "id": "sabercat_maul",
+          "displayName": "Ashfang: Maul",
           "status": "implemented",
-          "mechanic": "The sabercat rakes a 70-degree arc in front of you (3.2m): 70 + 1.2x AGI.",
-          "vfxFamily": "nature",
-          "delivery": "ground_cone"
+          "mechanic": "Command Ashfang to maul your target: 70 + 1.2x AGI, with 50% bonus threat so the cat holds it off you. Needs your companion.",
+          "vfxFamily": "steel",
+          "delivery": "targeted"
         }
       ],
       "passive": {

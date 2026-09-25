@@ -13,6 +13,7 @@ class UMeshComponent;
 class UStaticMeshComponent;
 class UAnimSequence;
 class UBlendSpace;
+class USkeletalMesh;
 
 /** Imported custom quadruped rig, evaluated in local space without root motion. */
 UCLASS(Transient)
@@ -23,6 +24,36 @@ public:
     float Phase=0,Stride=0,Attack=0,Time=0,Air=0,Roll=0;
     /** Peak leg swing in degrees for the current speed and the hip-to-paw length in mesh units. */
     float Amplitude=0,LegUnits=34;
+protected:
+    virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;
+};
+
+/**
+ * pets: a quadruped rig found from the reference skeleton alone (no bone-name table): the four
+ * ground chains become legs (front/rear, left/right by the mesh's facing), the path between the
+ * hip and shoulder branches is the spine, and the forward-most and rear-most free chains are the
+ * neck/head and the tail. Positions are in mesh (component) space.
+ */
+struct CIRESTEAMSURVIVAL_API FCireQuadRig
+{
+    FName Legs[4][3];            // FL, FR, RL, RR: upper, middle, lower joint (None when the chain is shorter)
+    TArray<FName> Spine, Neck, Tail;
+    FName Root;
+    FVector Forward = FVector::ForwardVector, Lateral = FVector::RightVector;
+    float SwingSign = 1.f;       // sign that swings a hanging leg forward about Lateral
+    float LegUnits = 30.f;       // hip-to-paw height, mesh units
+    bool bValid = false;
+    static bool Analyze(const USkeletalMesh& Mesh, float MeshYaw, FCireQuadRig& Out, FString* Why = nullptr);
+};
+
+/** pets: procedural trot / idle / lunge / collapse for any FCireQuadRig (the clip-less Tripo sabercat). */
+UCLASS(Transient)
+class CIRESTEAMSURVIVAL_API UCireQuadrupedAnimInstance : public UAnimInstance
+{
+    GENERATED_BODY()
+public:
+    FCireQuadRig Rig;
+    float Phase = 0, Stride = 0, Amplitude = 0, Attack = -1, Time = 0, Air = 0, Dead = 0;
 protected:
     virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;
 };
@@ -48,13 +79,18 @@ public:
     /**
      * new-champions: data-driven bodies from ChampionArtBindings.json.
      *  monster_native  a Tripo monster body driven natively (idle/walk/run/attack clips) with props on its bones (Gunblade)
-     *  mounted         a quadruped mount (idle/walk/run/attack) with a humanoid rider seated on its back (Huntress)
+     *  mounted         a quadruped mount (idle/walk/run/attack) with a humanoid rider seated on its back (kept for future riding units)
+     *  quadruped_procedural  pets: a clip-less quadruped driven procedurally (FCireQuadRig)
      */
     bool ApplyBinding(ACireHero& Hero,const FString& Profile,const FString& Motion,const FString& MeshPath,float HeightCm,const TSharedPtr<FJsonObject>& Binding);
     USkeletalMeshComponent* GetRider() const { return Rider; }
     USkeletalMeshComponent* GetNativeBody() const { return Native; }
     FName GetSeatBone() const { return SeatBone; }
     int32 GetPropCount() const { return Props.Num(); }
+    /** pets: the procedural quadruped body and its rig (null / invalid for other kinds). */
+    USkeletalMeshComponent* GetQuadBody() const { return Quad; }
+    const FCireQuadRig* GetQuadRig() const;
+    const FString& GetKind() const { return Kind; }
     void Update(ACireHero& Hero,float Delta);
     void Clear();
     UMeshComponent* VisualMesh() const;
@@ -77,6 +113,12 @@ private:
     UPROPERTY(Transient) TObjectPtr<USkeletalMeshComponent> Rider;
     UPROPERTY(Transient) TArray<TObjectPtr<UStaticMeshComponent>> Props;
     UPROPERTY(Transient) TObjectPtr<UAnimSequence> AttackClip;
+    // pets: procedural quadruped body, and the native death clip (the corpse stays down).
+    UPROPERTY(Transient) TObjectPtr<USkeletalMeshComponent> Quad;
+    UPROPERTY(Transient) TObjectPtr<UAnimSequence> DeathClip;
+    float DeadAge = 0, DeadWeight = 0;
+    bool ApplyQuad(ACireHero& Hero, const FString& MeshPath, float HeightCm, const TSharedPtr<FJsonObject>& Binding);
+    void UpdateQuad(ACireHero& Hero, float Delta);
     UPROPERTY(Transient) TObjectPtr<UAnimSequence> RiderAttack;
     UPROPERTY(Transient) TObjectPtr<UBlendSpace> RiderLocomotion;
     FName SeatBone;

@@ -23,7 +23,7 @@ SCHOOLS = ["physical", "fire", "cold", "earth", "tide", "holy", "shadow", "void"
 TYPES = {"tank": "TANK", "dps": "DPS", "heal": "HEAL"}
 TARGETING = ["self", "ally", "enemy", "aim", "passive"]
 EFFECT_TYPES = ["stun", "slow", "silence", "interrupt", "healCut", "healCutDone", "armorBreak", "taunt", "guard", "lethal", "cleanse",
-                "mark", "purge", "banish", "haste", "weaken", "shield"]  # new-champions: marks, purges, banishment, construct fields
+                "mark", "purge", "banish", "haste", "weaken", "shield", "polymorph", "root"]  # new-champions: marks, purges, banishment, construct fields
 
 # Default curves by kind. Scale() in CiresRules.cpp is the authority; the docs table mirrors it.
 CURVES = {
@@ -89,6 +89,12 @@ POOL = {
                            "Summon a commandable guardian ({effect} health, 22 damage) for 30s.", [], {}),
     "spectral_pack": ("Spectral Pack", ["dps"], "active", "void", "aim", 0, 55, 0, 24, 14, "damage per hit", 600, 230, 18,
                       "Summon three spectral hunters that attack your target for {effect} per hit for 18s.", [], {}),
+    # progression-shop: Polymorph (WoW "Polymorph: Sheep" style). Effect = seconds; elites get half, bosses and
+    # Pack Leaders are immune, champions get 3s with diminishing returns. Any damage breaks it.
+    "polymorph": ("Polymorph", ["dps", "heal"], "active", "arcane", "enemy", 1.5, 50, 0, 20, 8, "seconds", 1100, 0, 8,
+                  "Cast 1.5s: turn an enemy into a harmless critter for {effect}s (half on elites, 3s on champions; bosses and "
+                  "Pack Leaders are immune). Any damage breaks it.", [fx("polymorph", "target", 8, label="Polymorphed")],
+                  {"curve": {"effectCap": 12}}),
     "second_wind": ("Second Wind", ["tank", "dps", "heal"], "active", "nature", "self", 0, 0, 30, 20, 18, "% max health", 0, 0, 0,
                     "Heal only yourself for {effect}% of your maximum health.", [], {"curve": {"effectCap": 35}}),
     "decimating_strike": ("Decimating Strike", ["tank", "dps"], "active", "physical", "enemy", 0, 0, 40, 300, 150, "damage (non-lethal targets)", 300, 500, 10,
@@ -150,6 +156,7 @@ POOL = {
 # kit lists them. Same tuple layout as POOL; extra "category": "construct" marks the Skill Shop's
 # Constructs tab. Construct numbers beyond the headline effect live in CireTechConstructs.cpp.
 CONSTRUCT = {"category": "construct"}
+PET = {"category": "pet"}  # pets: companion commands (Skill Shop "COMPANION" filter)
 NEW_CHAMPION_SKILLS = {
     # ---- Gunblade (Bounty Hunter): AGI, energy ----
     "silver_shot": ("Silver Shot", ["dps"], "active", "holy", "aim", 0, 0, 30, 8, 95, "damage", 1300, 28, 0,
@@ -195,12 +202,12 @@ NEW_CHAMPION_SKILLS = {
     "hexbane_judgment": ("Hexbane Judgment", ["dps"], "ultimate", "arcane", "aim", 0, 130, 0, 80, 200, "damage", 1100, 450, 3,
                          "Aim a 4.5m circle; after 1s it bursts for {effect} + 3x INT damage, strips every buff and silences for 3s.",
                          [fx("silence", "area", 3, radius=450, label="Silenced"), fx("purge", "area", radius=450)], {}),
-    # ---- Huntress (mounted glaive thrower): AGI, energy ----
+    # ---- Huntress (glaive thrower on foot): AGI, energy. The sabercat skills command her companion Ashfang (CirePets, Docs/Pets.md) ----
     "bouncing_glaive": ("Bouncing Glaive", ["dps"], "active", "physical", "enemy", 0, 0, 30, 8, 80, "damage", 1300, 500, 0,
                         "Hurl a glaive that strikes the target and bounces to 4 more enemies within 5m, losing 20% per bounce: {effect} + 1.5x AGI.", [], {}),
-    "sabercat_pounce": ("Sabercat Pounce", ["dps"], "active", "physical", "aim", 0, 0, 35, 12, 75, "damage", 700, 260, 2,
-                        "The sabercat leaps up to 7m and mauls everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s.",
-                        [fx("slow", "area", 2, 0.4, 260, label="Move -40%")], {}),
+    "sabercat_pounce": ("Ashfang: Pounce", ["dps"], "active", "physical", "enemy", 0, 0, 35, 12, 75, "damage", 700, 260, 2,
+                        "Command Ashfang to leap up to 7m onto your target and maul everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s. Needs your companion.",
+                        [fx("slow", "area", 2, 0.4, 260, label="Move -40%")], PET),
     "owl_scout": ("Owl Scout", ["dps"], "active", "nature", "aim", 0, 0, 20, 14, 10, "% damage taken", 1600, 450, 8,
                   "Send the owl to a point: enemies within 4.5m are revealed and tracked for 8s, taking {effect}% more damage from you.",
                   [fx("mark", "area", 8, 0.10, 450, label="Tracked")], {}),
@@ -209,8 +216,11 @@ NEW_CHAMPION_SKILLS = {
                        [fx("haste", "self", 4, 0.4, label="Move +40%"), fx("cleanse", "self")], {"curve": {"effectCap": 70}}),
     "crescent_volley": ("Crescent Volley", ["dps"], "active", "physical", "aim", 0, 0, 30, 10, 90, "damage", 1400, 40, 0,
                         "Loose a crescent glaive that flies 14m in a line and cuts through up to five enemies: {effect} + 1.4x AGI.", [], {}),
-    "sabercat_rake": ("Sabercat Rake", ["dps"], "active", "nature", "aim", 0, 0, 25, 7, 70, "damage", 320, 320, 0,
-                      "The sabercat rakes a 70-degree arc in front of you (3.2m): {effect} + 1.2x AGI.", [], {}),
+    "sabercat_maul": ("Ashfang: Maul", ["dps"], "active", "physical", "enemy", 0, 0, 25, 7, 70, "damage", 1600, 0, 0,
+                      "Command Ashfang to maul your target: {effect} + 1.2x AGI, with 50% bonus threat so the cat holds it off you. Needs your companion.", [], PET),
+    "sabercat_roar": ("Ashfang: Dread Roar", ["dps"], "active", "nature", "self", 0, 0, 20, 16, 30, "damage", 0, 450, 3,
+                      "Ashfang roars: enemies within 4.5m of the cat take {effect} + 0.4x AGI, are slowed 35% for 3s and turn on Ashfang for 2s. Also the pet's special command. Needs your companion.",
+                      [fx("slow", "area", 3, 0.35, 450, label="Move -35%"), fx("taunt", "area", 2, radius=450, label="Taunted by Ashfang")], PET),
     "moon_glaive": ("Moon Glaive", ["dps"], "passive", "physical", "passive", 0, 0, 0, 0, 60, "% bounce damage", 0, 450, 0,
                     "Your glaive throws bounce to 2 more enemies within 4.5m, for {effect}% and then 36% damage.", [], {"curve": {"effectCap": 85}}),
     "glaive_storm": ("Glaive Storm", ["dps"], "ultimate", "physical", "self", 0, 0, 70, 75, 45, "damage per tick", 0, 480, 6,
@@ -259,6 +269,207 @@ NEW_CHAMPION_SKILLS = {
                      [fx("guard", "area", 0, 0.4, 650, label="DEF +40%")], dict(CONSTRUCT, curve={"effectCap": 8})),
 }
 
+# ---------------------------------------------------------------------------------------------------
+# scaling-kits: shield skills, range skills, Headshot (native: CireScalingKits / CireMechTank).
+# "requires": "shield" -> only champions whose WeaponLoadouts preset carries a shield may buy it;
+# "ranged" -> only champions with a ranged basic attack (basicAttackRange >= 500).
+KIT_SKILLS = {
+    "shield_bash": ("Shield Bash", ["tank"], "active", "physical", "enemy", 0, 0, 20, 9, 40, "damage", 260, 0, 1.0,
+                    "Bash with your shield for {effect} damage: interrupts the target's cast (2s school lockout) and stuns it for 1s.",
+                    [fx("interrupt", "target", 0, 0, lockout=2.0, label="Interrupted"), fx("stun", "target", 1.0, label="Stunned")], {"requires": "shield"}),
+    "shield_toss": ("Shield Toss", ["tank"], "active", "physical", "enemy", 0, 0, 25, 10, 50, "damage per bounce", 900, 500, 0,
+                    "Hurl your shield at an enemy for {effect} damage; it ricochets to 2 more enemies within 5m (-20% per bounce) and draws their attention.",
+                    [fx("taunt", "target", 2)], {"requires": "shield"}),
+    "shield_wall": ("Shield Wall", ["tank"], "active", "physical", "self", 0, 0, 30, 20, 60, "% frontal damage reduction", 0, 0, 6,
+                    "Raise your shield for 6s: damage from the front is reduced by {effect}% and physical hits from the front are always blocked.",
+                    [fx("guard", "self", 6, 0.6, label="Frontal DEF +60%")], {"requires": "shield", "curve": {"effectCap": 80}}),
+    "pavise": ("Construct: Pavise", ["tank"], "active", "earth", "aim", 0, 0, 30, 18, 500, "barrier health", 600, 160, 12,
+               "Plant a tall pavise shield for 12s ({effect} health): it blocks enemy projectiles and allies behind it take 25% less damage (cover).",
+               [], {"requires": "shield", "category": "construct"}),
+    "mechanical_tank": ("Construct: Mechanical Tank", ["tank"], "active", "physical", "aim", 0, 0, 40, 40, 800, "mech health", 600, 250, 25,
+                        "Summon a mechanical tank for 25s ({effect} health). It guards your allies: it attacks enemies that are hitting allies other than you, "
+                        "Taunts enemies that are not attacking you, and ground-slams nearby enemies (small AoE, generates threat).",
+                        [fx("taunt", "target", 3)], {"requires": "shield", "category": "construct"}),
+    "artillery": ("Artillery", ["dps"], "active", "physical", "self", 0, 0, 35, 45, 100, "% attack speed", 0, 700, 8,
+                  "For 8s you only basic-attack, with unlimited range and {effect}% more attack speed.", [], {"requires": "ranged", "curve": {"effectCap": 100}}),
+    "eagle_eye": ("Eagle Eye", ["dps"], "active", "nature", "self", 0, 0, 20, 16, 400, "range", 0, 0, 8,
+                  "Your basic attacks and aimed skills reach {effect}cm further for 8s.", [], {"requires": "ranged", "curve": {"effectCap": 800}}),
+    "longshot": ("Longshot Stance", ["dps"], "active", "physical", "self", 0, 0, 25, 20, 25, "% damage beyond 8m", 0, 0, 10,
+                 "Plant your feet for 10s: +250cm range and your basic attacks deal {effect}% more damage to targets beyond 8m, but you move 30% slower.",
+                 [], {"requires": "ranged", "curve": {"effectCap": 50}}),
+    "headshot": ("Headshot", ["dps"], "passive", "physical", "passive", 0, 0, 0, 0, 10, "% proc chance", 0, 0, 0,
+                 "Each hit has a {effect}% chance to strike again for 2x the original hit's damage, on top of the normal hit.",
+                 [], {"requires": "ranged", "curve": {"effectCap": 10}}),
+    "artillery_training": ("Artillery Training", ["dps"], "passive", "physical", "passive", 0, 0, 0, 0, 150, "range", 0, 0, 0,
+                           "Your basic attacks reach {effect}cm further.", [], {"requires": "ranged", "curve": {"effectCap": 400}}),
+}
+
+# ---- Level 15: one bonus mechanic per active / ultimate (Eric's list) ----
+L15_LABEL = {
+    "dot": "burn for 40% of the hit over 4s",
+    "healCut": "healing on the target -40% for 4s",
+    "stun": "0.75s stun",
+    "slow": "35% slow for 2.5s",
+    "damageAmp": "target takes 12% more damage for 5s",
+    "vulnerability": "Vulnerability: ignore 20% of the target's defences for 5s",
+    "purge": "purge the target's buffs",
+}
+LEVEL15 = {
+    # native pool
+    "iron_guard": "slow", "shield_slam": "stun", "war_cry": "vulnerability", "chain_spark": "stun", "frost_bind": "damageAmp",
+    "cleaving_strike": "dot", "shadow_step": "vulnerability", "restoring_light": "purge", "sanctuary": "slow", "purify": "purge",
+    "summoned_wall": "slow", "protection_dome": "healCut", "oathbound_guardian": "stun", "spectral_pack": "dot", "second_wind": "healCut",
+    "decimating_strike": "purge", "venom_ground": "healCut", "cinder_cone": "dot", "grave_line": "vulnerability", "ashen_square": "slow",
+    "blight_sigil": "damageAmp", "piercing_shot": "vulnerability", "ember_lance": "dot",
+    "bastion_of_dawn": "slow", "cataclysm": "dot", "executioners_verdict": "healCut", "renewal": "purge", "last_stand": "stun",
+    "challenge_of_iron": "vulnerability", "seismic_reprisal": "slow", "starfall": "damageAmp", "spectral_hunt": "dot",
+    "mass_aegis": "purge", "wellspring": "healCut",
+    # new-champion signature kits
+    "silver_shot": "purge", "hex_mark": "healCut", "powder_flask": "stun", "blade_flurry": "dot", "hunters_stride": "slow",
+    "warding_talisman": "purge", "collect_the_bounty": "vulnerability", "arcane_blunderbuss": "slow", "spirit_lantern": "damageAmp",
+    "purge": "stun", "banishment": "vulnerability", "witchfinders_mark": "purge", "spectral_blade": "healCut", "hexbane_judgment": "purge",
+    "bouncing_glaive": "slow", "sabercat_pounce": "stun", "owl_scout": "vulnerability", "moonlit_sprint": "slow", "crescent_volley": "damageAmp",
+    "sabercat_rake": "dot", "glaive_storm": "slow", "photon_turret": "slow", "skitter_swarm": "dot", "arc_mine": "stun",
+    "disruption_pylon": "vulnerability", "phase_lance": "purge", "overcharge": "damageAmp", "warp_obelisk": "stun", "aegis_pylon": "healCut",
+    "haste_pylon": "slow", "gravity_pylon": "stun", "stasis_snare": "vulnerability", "aether_mend": "purge", "repulsor_pulse": "stun",
+    "aether_nexus": "damageAmp",
+    # scaling-kits
+    "shield_bash": "damageAmp", "shield_toss": "slow", "shield_wall": "vulnerability", "pavise": "slow", "eagle_eye": "vulnerability",
+    "longshot": "damageAmp",
+}
+# Specials replace the generic bonus with the skill's own level-15 mechanic (still "Lv 15: +...").
+LEVEL15_SPECIAL = {
+    "mechanical_tank": ("slow", "mechSlam", "the mech's slam also cuts enemy attack speed by 10% for 4s"),
+    "artillery": ("dot", "artilleryBomb", "when Artillery ends, a bomb hits a 7m radius for all the damage Artillery dealt"),
+}
+# Planned signature skills: the bonus that fits their school.
+L15_BY_SCHOOL = {"fire": "dot", "poison": "dot", "cold": "slow", "nature": "slow", "tide": "slow", "earth": "stun", "storm": "stun",
+                 "holy": "purge", "arcane": "purge", "shadow": "healCut", "void": "vulnerability", "physical": "damageAmp"}
+
+# ---- Level 15: one team aura per passive (Eric's list) ----
+AURA_LABEL = {
+    "attackSpeed": "party +30% attack speed", "doubleAttack": "party 10% chance to attack twice", "crit": "party +5% critical chance",
+    "magicLifesteal": "party 5% magic lifesteal", "physicalLifesteal": "party 5% physical lifesteal", "armor": "party +15 armour",
+    "magicResist": "party +15 magic resist", "stunIgnore": "party 5% chance to ignore stuns", "aoeResist": "party 15% chance to resist area damage",
+    "stunOnHit": "party 0.5% chance to stun on basic attacks", "rangedDamage": "party +10% ranged damage",
+}
+AURA15 = {
+    "stone_skin": "armor", "battle_rhythm": "attackSpeed", "deep_reserves": "magicResist", "soul_conduit": "magicLifesteal",
+    "executioner": "crit", "price_on_every_soul": "physicalLifesteal", "witchbane": "stunIgnore", "moon_glaive": "doubleAttack",
+    "aether_engineering": "stunOnHit", "resonant_lattice": "aoeResist", "artillery_training": "rangedDamage",
+}
+AURA_CYCLE = ["armor", "attackSpeed", "magicResist", "magicLifesteal", "crit", "physicalLifesteal", "stunIgnore", "doubleAttack",
+              "aoeResist", "stunOnHit"]
+# Headshot has no aura: at level 15 its extra hit becomes 3x.
+PASSIVE_SPECIAL = {"headshot": ("headshotTriple", "Headshot's extra hit deals 3x instead of 2x")}
+
+# ---- Universal primary-stat scaling (Eric's rule 4) and the power pass (rule 11) ----
+# Every damage / heal / shield / DoT = base + primary x the caster's PRIMARY stat (STR, AGI or INT),
+# whatever the school or role. Coefficients come from the ability's SHAPE, never its school:
+#   single-target active   0.2 x cooldown, clamped 1.0..2.2
+#   multi-target / area    x0.7 of that (cleaves, chains, bounces, ground impacts)
+#   ultimate               3.5 single, 2.8 multi
+#   healing                single active 0.3 x cooldown clamped 1.5..3.0; group x0.6; ultimate 4.0 / 3.0;
+#                          %-max-health heals add a flat 1.0 x primary (2.0 ultimate)
+#   DoT (ground areas)     damage per second = 0.25 x the impact coefficient
+#   shields (walls, domes) health + 6 x primary (Pavise 5 x)
+#   summons / turrets      per hit: 0.4 (packs), 0.5 (guardian), 0.6 (ultimate hunters), Mech Tank 0.6;
+#                          construct recipes keep their per-shot coefficient (CireTechConstructs)
+# Class traits (Support -20% damage, DPS crit, Tank flat reduction) and the level curve sit on top.
+SUMMON_COEF = {"spectral_pack": 0.4, "oathbound_guardian": 0.5, "spectral_hunt": 0.6, "mechanical_tank": 0.6}
+SUMMON_BASE = {"oathbound_guardian": 22, "mechanical_tank": 30}
+CONSTRUCT_BASE = {"photon_turret": 18, "warp_obelisk": 60}
+CONSTRUCT_COEF = {"photon_turret": 0.35, "skitter_swarm": 0.8, "arc_mine": 1.2, "stasis_snare": 0.3, "warp_obelisk": 1.0,
+                  "spirit_lantern": 1.0}
+SHIELD_COEF = {"summoned_wall": 6.0, "protection_dome": 6.0, "pavise": 5.0}
+SINGLE_TARGET = {"shadow_step", "frost_bind", "piercing_shot", "ember_lance", "silver_shot", "phase_lance", "spectral_blade", "purge",
+                 "banishment", "decimating_strike", "shield_slam", "shield_bash", "executioners_verdict", "collect_the_bounty"}
+MULTI_LABEL = ("per target", "per slash", "impact", "blast", "per tick", "per bounce")
+MAX_HEALTH_HEALS = {"second_wind", "bastion_of_dawn", "last_stand", "aegis_pylon", "aether_nexus"}
+
+
+def scaling_for(sid, a):
+    """base + primary coefficient for the ability's damage/heal/shield/DoT component (Docs/Abilities.md)."""
+    label, kind, cd = a["effectLabel"], a["kind"], a["base"]["cooldown"]
+    eff = a["base"]["effect"]
+    ult = kind == "ultimate"
+    if kind == "passive":
+        return dict(component="none", base=0, primary=0)
+    if sid in SUMMON_COEF:
+        return dict(component="summon", base=SUMMON_BASE.get(sid, eff), primary=SUMMON_COEF[sid])
+    if sid in CONSTRUCT_COEF:
+        return dict(component="construct", base=CONSTRUCT_BASE.get(sid, eff if "damage" in label else 0), primary=CONSTRUCT_COEF[sid])
+    if sid in SHIELD_COEF:
+        return dict(component="shield", base=eff, primary=SHIELD_COEF[sid])
+    if sid in MAX_HEALTH_HEALS:
+        return dict(component="heal", base=0, primary=2.0 if ult else 1.0, note="plus the % max health")
+    if "heal" in label:
+        group = "per ally" in label
+        coef = (3.0 if group else 4.0) if ult else min(3.0, max(1.5, 0.3 * cd)) * (0.6 if group else 1.0)
+        if sid == "purify":
+            coef *= 0.5  # a cleanse with a small heal
+        return dict(component="heal", base=eff, primary=round(coef, 2))
+    if "damage" in label and not label.startswith("%"):
+        multi = sid not in SINGLE_TARGET and (any(m in label for m in MULTI_LABEL) or a["base"]["radius"] > 50)
+        coef = (2.8 if multi else 3.5) if ult else min(2.2, max(1.0, 0.2 * cd)) * (0.7 if multi else 1.0)
+        if not ult and any(e["type"] in ("stun", "interrupt") for e in a["effects"]):
+            coef *= 0.75  # hard control pays for itself: stuns / interrupts hit 25% softer
+        out = dict(component="damage", base=eff, primary=round(coef, 2))
+        if "impact" in label and a["base"]["duration"] > 0:
+            out["dotPerSecond"] = round(coef * 0.25, 2)
+        return out
+    return dict(component="none", base=0, primary=0)
+
+
+def shield_profiles():
+    loads = json.loads((ROOT / "Content/Data/WeaponLoadouts.json").read_text(encoding="utf-8"))
+    shielded = {k for k, p in loads["presets"].items() if any("shield" in part["asset"].lower() for part in p["parts"])}
+    return {pid for pid, preset in loads["profiles"].items() if preset in shielded}
+
+
+def apply_kits(abilities):
+    """Adds scaling / level15 / aura15 to every ability (called by build())."""
+    for sid, a in abilities.items():
+        prev = a.get("scaling") or {}
+        a["scaling"] = scaling_for(sid, a)
+        if prev.get("ratio"):  # roll skills (champion-draft) declare their own primary ratio
+            a["scaling"].update(stat="primary", ratio=prev["ratio"])
+            if not a["scaling"]["primary"]:
+                a["scaling"].update(component="heal" if "heal" in a["effectLabel"] else "damage", base=a["base"]["effect"] if "%" not in a["effectLabel"] else 0,
+                                    primary=prev["ratio"])
+        if a["kind"] == "passive":
+            if sid in PASSIVE_SPECIAL:
+                special, label = PASSIVE_SPECIAL[sid]
+                a["level15"] = dict(bonus="none", special=special, label=f"Lv 15: +{label}")
+            else:
+                aura = AURA15.get(sid) or AURA_CYCLE[sum(map(ord, sid)) % len(AURA_CYCLE)]
+                a["aura15"] = dict(aura=aura, label=f"Lv 15 aura: {AURA_LABEL[aura]}")
+            continue
+        if sid in LEVEL15_SPECIAL:
+            bonus, special, label = LEVEL15_SPECIAL[sid]
+            a["level15"] = dict(bonus=bonus, special=special, label=f"Lv 15: +{label}")
+            continue
+        bonus = LEVEL15.get(sid) or L15_BY_SCHOOL.get(a["school"], "damageAmp")
+        a["level15"] = dict(bonus=bonus, label=f"Lv 15: +{L15_LABEL[bonus]}")
+        # Skills without a damaging component trigger their bonus as a pulse where they land.
+        a["level15"]["trigger"] = "hit" if a["scaling"]["component"] in ("damage", "summon", "construct") else "pulse"
+
+
+def scaling_text(a):
+    s = a.get("scaling", {})
+    if not s or s.get("component") == "none" or not s.get("primary"):
+        return ""
+    word = {"damage": "damage", "heal": "healing", "shield": "barrier health", "summon": "damage per hit", "construct": "damage per hit"}[s["component"]]
+    return f"{s['base']:g} + {s['primary']:g}x Primary {word}"
+
+
+def strip_stat_mentions(text):
+    """Descriptions say 'Primary' now; the tooltip adds the exact 'base + coef x Primary (STAT n)' line."""
+    text = re.sub(r"\s*\+\s*(\d+(?:\.\d+)?x\s+)?(INT|STR|AGI|primary)\b", "", text)
+    text = re.sub(r"\b(INT|STR|AGI)\s+(?=(damage|strike|lightning))", "", text)
+    return text.replace("Primary-stat strike", "Strike").replace("Melee strike", "Melee strike")
+
+
 VFX_SCHOOL = {"holy": "holy", "light": "holy", "frost": "cold", "fire": "fire", "ember": "fire", "ash": "fire", "venom": "poison",
               "shadow": "shadow", "steel": "physical", "war": "physical", "blood": "physical", "arcane": "arcane", "spectral": "void",
               "spirit": "arcane", "stone": "earth", "earth": "earth", "primal": "physical", "nature": "nature", "ether": "arcane",
@@ -269,6 +480,7 @@ DELIVERY_TARGET = {"targeted": "enemy", "ground_cone": "aim", "ground_line": "ai
 ROLE_OF = {"tank": "tank", "damage": "dps", "healer": "heal", "support": "heal"}
 # Extra signature assignments for the new skills (identity kits).
 SIGNATURE_EXTRA = {
+    "sabercat_roar": ["huntress"],  # pets: the companion's third command joins her identity kit
     "decimating_strike": ["drakish_footman", "ether_golem_bruiser", "orc_chieftain", "troll_berserker_melee"],
     "executioner": ["ranger", "lancer", "troll_berserker_melee", "troll_berserker_ranged"],
 }
@@ -285,6 +497,8 @@ PLANNED_CC = {
 # Modifier registry rows (Docs/BuffModifiers.md format) for the effect ids this DB adds.
 # stunned / silenced / healing_cut / interrupted rows live in BuffModifiers.json (wow-ui).
 BUFF_MODIFIERS = {
+    "polymorphed": {"type": "arcane", "control": "incapacitate", "mods": [{"stat": "Actions", "value": 0, "unit": ""}],
+                    "line": "Turned into a harmless critter: cannot attack or cast. Damage breaks it.", "name": "Polymorphed"},
     "heal_cut_done": {"type": "curse", "control": "none", "mods": [{"stat": "Healing", "value": -50, "unit": "%"}],
                       "line": "Healing you deal is reduced.", "name": "Enfeebled"},
     "armor_broken": {"type": "physical", "control": "none", "mods": [{"stat": "Armor", "value": -50, "unit": "%", "duration": 10}],
@@ -317,6 +531,58 @@ BUFF_MODIFIERS = {
     "evasive_stance": {"type": "none", "control": "none", "kind": "stance", "mods": [{"stat": "DEF", "value": 0, "unit": ""}],
                        "line": "Rolls refund energy; dodged hits restore health.", "name": "Evasive Stance"},
 }
+
+
+# progression-shop: Skill Shop "periodic table" sections and card tags, derived from each ability's data.
+# One primary section per ability; any number of tags. Order = the shop's section order.
+SECTIONS = ["spell", "attack", "defensive", "control", "summon", "construct", "passive", "ultimate"]
+CC_TAGS = {"stun": "Stun", "silence": "Silence", "slow": "Slow", "root": "Root", "polymorph": "Polymorph", "banish": "Banish",
+           "interrupt": "Interrupt", "taunt": "Taunt"}
+CONTROL_TYPES = {"stun", "silence", "slow", "root", "polymorph", "banish", "interrupt"}
+OTHER_TAGS = {"healCut": "Heal Cut", "healCutDone": "Heal Cut", "armorBreak": "Armor Break", "guard": "Guard", "shield": "Shield",
+              "cleanse": "Cleanse", "lethal": "Execute", "mark": "Mark", "purge": "Purge", "haste": "Haste", "weaken": "Weaken"}
+
+
+def classify(rec, summons, constructs):
+    types = {e["type"] for e in rec["effects"]}
+    if "void" in rec:
+        types |= {rec["void"].get("innerEffect", "stun"), rec["void"].get("outerEffect", "slow")}
+    label = (rec.get("effectLabel") or "").lower()
+    text = (rec.get("description") or "").lower()
+    heal = bool(re.search(r"(?<![a-z])heal(ing|s|ed)?(?![a-z])", label + " " + text)) and "damage" not in label
+    deals = ("damage" in label and "reduction" not in label) or bool(re.search(r"(\{effect\}|\d)[^.]{0,24}damage", text)) and "less damage" not in text
+    tags = []
+    for t in sorted(types, key=lambda t: list(CC_TAGS).index(t) if t in CC_TAGS else 99):
+        tag = CC_TAGS.get(t) or OTHER_TAGS.get(t)
+        if tag and tag not in tags:
+            tags.append(tag)
+    if heal: tags.insert(0, "Heal")
+    is_summon = rec["id"] in summons or "summon" in text and rec["kind"] == "active"
+    is_construct = rec.get("category") == "construct" or rec["id"] in constructs
+    is_summon = is_summon or rec.get("category") == "pet"  # pets: companion skills sit with the summons
+    if is_summon: tags.insert(0, "Summon")
+    if is_construct: tags.insert(0, "Construct")
+    if deals: tags.append("Damage")
+    if rec.get("requires") == "shield": tags.insert(0, "Shield")  # scaling-kits: shield users only
+    if rec["kind"] == "passive": section = "passive"
+    elif rec["kind"] == "ultimate": section = "ultimate"
+    elif is_construct: section = "construct"
+    elif is_summon: section = "summon"
+    elif types & CONTROL_TYPES: section = "control"
+    elif heal and not deals or types & {"guard", "shield", "cleanse", "taunt", "haste"} or rec["targeting"] in ("self", "ally") and not deals:
+        section = "defensive"
+    elif rec["school"] == "physical": section = "attack"
+    else: section = "spell"
+    # Rows that set their own effectTags / categories / section (e.g. champion-draft's dodge rolls) keep
+    # them; only missing fields are derived.
+    if not rec.get("section"):
+        cats = [c for c in rec.get("categories", []) if c in SECTIONS]
+        rec["section"] = cats[0] if cats else section
+    if not rec.get("effectTags"):
+        rec["effectTags"] = tags[:4]
+
+# Cast-time abilities that may still be cast (and keep casting) while moving.
+CAST_WHILE_MOVING = set()
 
 
 # Dodge-roll synergy skills (CireRollSkills, Docs/Abilities.md "Dodge-roll skills"). Signature-only: purchasable by the
@@ -383,6 +649,10 @@ ROLL_SKILLS = {
 ROLL_PRIMARY = {"riposte_roll": 1.0, "fleet_recovery": 0.5, "ember_wake": 0.6, "frost_wake": 0.4, "tumble_strike": 1.5,
                 "mine_layer": 1.0, "shield_tumble": 1.0, "venom_tumble": 0.5, "evasive_stance": 0.4}
 
+
+from UltimateUpgrades import ULTIMATE_UPGRADES, validate as validate_upgrades  # items-v2
+
+
 def build():
     tuning = json.loads((ROOT / "Content/Data/CombatTuning.json").read_text(encoding="utf-8"))
     astra = json.loads((ROOT / "Content/Data/AstraAbilities.json").read_text(encoding="utf-8-sig"))
@@ -420,6 +690,18 @@ def build():
                    description=desc, effects=effects, champions=[], signatureOf=[])
         if "void" in extra:
             rec["void"] = extra["void"]
+        abilities[sid] = rec
+    # scaling-kits: shield / range skills and Headshot (gated by "requires").
+    for sid, row in KIT_SKILLS.items():
+        name, roles, kind, school, targeting, cast, mana, energy, cd, effect, label, rng, radius, dur, desc, effects, extra = row
+        curve = dict(CURVES[kind])
+        curve.update(extra.get("curve", {}))
+        rec = dict(id=sid, name=name, icon=f"/Game/UI/Abilities/T_{sid}", types=[TYPES[r] for r in roles], kind=kind, school=school,
+                   targeting=targeting, castTime=cast, base=dict(effect=effect, manaCost=mana, energyCost=energy, cooldown=cd, castTime=cast,
+                   range=rng, radius=radius, duration=dur), effectLabel=label, curve=curve, status="implemented", requires=extra["requires"],
+                   description=desc, effects=effects, champions=[], signatureOf=[])
+        if extra.get("category"):
+            rec["category"] = extra["category"]
         abilities[sid] = rec
     # new-champions: implemented signature-only kits.
     for sid, row in NEW_CHAMPION_SKILLS.items():
@@ -469,6 +751,11 @@ def build():
                 if s["id"] in VOID_PLANNED:
                     rec["void"] = dict(innerRadius=160, outerRadius=380, innerEffect="stun", innerDuration=0.8, outerEffect="slow", outerDuration=2.0, outerMagnitude=0.35, damage=25, selfHealMaxHealthFraction=0.0)
                 abilities[s["id"]] = rec
+    apply_kits(abilities)  # scaling-kits: primary scaling, level-15 bonuses and auras
+    for a in abilities.values():
+        a["description"] = strip_stat_mentions(a["description"])
+    shields = shield_profiles()
+    ranged = {c["id"] for c in roster["champions"] if c.get("basicAttackRange", 0) >= 500}
     # Champion identity kits.
     role_bits = {"tank": 1, "dps": 2, "heal": 4}
     champions = {}
@@ -479,7 +766,8 @@ def build():
         signature += [sid for sid, owners in SIGNATURE_EXTRA.items() if c["id"] in owners]
         signature += [sid for sid, row in ROLL_SKILLS.items() if c["id"] in row[-1]]
         mask = sum(role_bits[r] for r in roles)
-        pool = [sid for sid, a in abilities.items() if a["status"] == "implemented" and not a.get("signatureOnly") and sum(role_bits[t.lower()] for t in a["types"]) & mask]
+        pool = [sid for sid, a in abilities.items() if a["status"] == "implemented" and not a.get("signatureOnly") and sum(role_bits[t.lower()] for t in a["types"]) & mask
+                and (a.get("requires") != "shield" or c["id"] in shields) and (a.get("requires") != "ranged" or c["id"] in ranged)]
         purchasable = list(dict.fromkeys(signature + pool))
         champions[c["id"]] = dict(name=c["displayName"], primaryRole=TYPES[prim], roles=[TYPES[r] for r in roles], signature=signature,
                                   purchasable=purchasable, purchasableImplemented=[s for s in purchasable if abilities[s]["status"] == "implemented"])
@@ -487,9 +775,22 @@ def build():
             abilities[sid]["champions"].append(c["id"])
         for sid in signature:
             abilities[sid]["signatureOf"].append(c["id"])
-    return dict(schemaVersion=1, generator="Tools/BuildAbilityDB.py", schools=SCHOOLS, types=list(TYPES.values()),
+    # feat/camera-movement: WoW rule - cast-time spells need you to stand still unless listed here.
+    # Instants (castTime 0) always work while moving. See Docs/Targeting.md "Casting while moving".
+    for sid, a in abilities.items():
+        a["castWhileMoving"] = a["castTime"] <= 0 or sid in CAST_WHILE_MOVING
+    # items-v2: every ultimate carries the extra effect the Sigil of Apotheosis unlocks (Tools/UltimateUpgrades.py).
+    for sid, upgrade in ULTIMATE_UPGRADES.items():
+        if sid in abilities:
+            abilities[sid]["ultimateUpgrade"] = upgrade
+    summons = {x["id"] for x in tuning["summons"]}
+    constructs = {x["id"] for x in tuning["constructs"]}
+    for rec in abilities.values():
+        classify(rec, summons, constructs)
+    return dict(schemaVersion=1, generator="Tools/BuildAbilityDB.py", schools=SCHOOLS, sections=SECTIONS, types=list(TYPES.values()),
                 scalingFormula="effect*(1+g*ln(1+(L-1)/h)) capped at effectCap; cost*(1+(cap-1)(L-1)/(L-1+ramp)); cooldown*(floor+(1-floor)e^-((L-1)/decay)), min minCooldownSeconds",
-                abilities=abilities, champions=champions, buffModifiers=BUFF_MODIFIERS)
+                abilities=abilities, champions=champions, buffModifiers=BUFF_MODIFIERS, shieldChampions=sorted(shields), rangedChampions=sorted(ranged),
+                level15Labels=L15_LABEL, auraLabels=AURA_LABEL)
 
 
 def validate(db):
@@ -503,6 +804,7 @@ def validate(db):
         if any(not isinstance(b[k], (int, float)) or b[k] < 0 for k in ("effect", "manaCost", "energyCost", "cooldown", "castTime")): errors.append(f"{sid}: base")
         for e in a["effects"]:
             if e["type"] not in EFFECT_TYPES: errors.append(f"{sid}: effect {e['type']}")
+        if a.get("section") not in SECTIONS: errors.append(f"{sid}: section {a.get('section')}")
         if "void" in a and not 0 < a["void"]["innerRadius"] < a["void"]["outerRadius"]: errors.append(f"{sid}: void radii")
         prev = scale(b, a["curve"], 1)
         for level in range(2, 201):
@@ -510,6 +812,16 @@ def validate(db):
             if cur["effect"] < prev["effect"] - 1e-9 or cur["manaCost"] < prev["manaCost"] - 1e-9 or cur["cooldown"] > prev["cooldown"] + 1e-9:
                 errors.append(f"{sid}: curve not monotone at {level}"); break
             prev = cur
+        # scaling-kits: every active/ultimate has a level-15 bonus, every passive an aura (or a special).
+        if a["kind"] == "passive":
+            if "aura15" not in a and not a.get("level15", {}).get("special"): errors.append(f"{sid}: passive without a level-15 aura")
+            if "aura15" in a and a["aura15"]["aura"] not in AURA_LABEL: errors.append(f"{sid}: aura {a['aura15']['aura']}")
+        elif a.get("level15", {}).get("bonus") not in L15_LABEL: errors.append(f"{sid}: no level-15 bonus")
+        s = a.get("scaling")
+        if not s or s["component"] not in ("none", "damage", "heal", "shield", "summon", "construct") or s["primary"] < 0 or s["primary"] > 6:
+            errors.append(f"{sid}: scaling")
+        if s and s["component"] == "damage" and a["kind"] == "active" and not 0.7 <= s["primary"] <= 2.2: errors.append(f"{sid}: damage coefficient out of band")
+    errors += validate_upgrades(db["abilities"])  # items-v2
     for cid, c in db["champions"].items():
         if len(c["purchasableImplemented"]) < 8: errors.append(f"{cid}: fewer than 8 implemented purchasable skills")
     return errors
@@ -521,8 +833,8 @@ def docs(db):
              "## Scaling (no level cap)", "", "`" + db["scalingFormula"] + "`", "",
              "Level 1 equals the base. Effects grow logarithmically (some capped, e.g. percentage reductions),",
              "costs rise toward a capped multiplier and cooldowns decay toward a floor. Maths: `Cires::Abilities::Scale`.", "",
-             "## Pool skills", "", "| Skill | Type | Kind | School | Target | Cast | Cost | CD | Effect L1 / L10 / L50 | CC / notes |",
-             "|---|---|---|---|---|---|---|---|---|---|"]
+             "## Pool skills", "", "| Skill | Type | Kind | School | Target | Cast | Cost | CD | Effect L1 / L10 / L50 | Scaling | CC / notes |",
+             "|---|---|---|---|---|---|---|---|---|---|---|"]
     for sid, a in sorted(db["abilities"].items(), key=lambda kv: (kv[1]["status"], kv[1]["kind"], kv[0])):
         if a["status"] != "implemented" or a.get("signatureOnly"):
             continue
@@ -533,7 +845,7 @@ def docs(db):
         if "void" in a:
             v = a["void"]; cc += (", " if cc else "") + f"void: stun <= {v['innerRadius']}cm, slow <= {v['outerRadius']}cm"
         lines.append(f"| {a['name']} (`{sid}`) | {'/'.join(a['types'])} | {a['kind']} | {a['school']} | {a['targeting']} | {a['castTime']:g}s | {cost} | {b['cooldown']:g}s | "
-                     f"{b['effect']:g} / {l10['effect']:.0f} / {l50['effect']:.0f} {a['effectLabel']} | {cc} |")
+                     f"{b['effect']:g} / {l10['effect']:.0f} / {l50['effect']:.0f} {a['effectLabel']} | {scaling_text(a) or '-'} | {cc} |")
     lines += ["", "## Champion signature skills (implemented, signature-only)", "",
               "Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampions.md). Only the champions listed can buy them;",
               "`construct` rows appear under the Skill Shop's CONSTRUCTS filter.", "",
@@ -552,20 +864,90 @@ def docs(db):
         if a["status"] == "planned":
             extra = ", ".join(e.get("label", e["type"]) for e in a["effects"]) + (" void zones" if "void" in a else "")
             lines.append(f"| {a['name']} (`{sid}`) | {', '.join(a['signatureOf'])} | {'/'.join(a['types'])} | {a['kind']} | {a['school']} | {a['targeting']} | {extra} |")
+    lines += ["", "## Universal primary-stat scaling and the power pass (scaling-kits)", "",
+              "Every ability's damage, heal, shield and DoT is `base + coefficient x PRIMARY`, where PRIMARY is the caster's",
+              "primary stat (STR, AGI or INT) whatever the ability's school or role: a tank's damaging stun scales with STR, a",
+              "ranger's tether with AGI, mages and healers with INT. There is no per-stat or spell-power-specific ability scaling.",
+              "Summons and constructs hit for `base + coefficient x the OWNER's primary`, attack at the owner's attack speed and",
+              "use the owner's cooldown reduction. Maths: `Cires::Kits` (Rules/CireKitRules.h). Tooltips read",
+              "\"Deals 40 + 1.2x Primary (STR 30) damage\".", "",
+              "Coefficient philosophy: coefficients come from the ability's *shape*, never its school, so roles and schools",
+              "compare fairly; class traits (Support -20% damage, DPS crit, Tank flat reduction) and the level curve sit on top.", "",
+              "| Shape | Primary coefficient |", "|---|---|",
+              "| Single-target active | 0.2 x cooldown, clamped 1.0..2.2 |",
+              "| Multi-target / area active (cleave, chain, bounce, ground impact) | x0.7 of the single-target value |",
+              "| Ultimate | 3.5 single target, 2.8 multi-target |",
+              "| Healing | single active 0.3 x cooldown clamped 1.5..3.0, group x0.6; ultimates 4.0 / 3.0; %-max-health heals add 1.0 (2.0 ult) x primary |",
+              "| DoT (ground areas) | damage per second = 0.25 x the impact coefficient |",
+              "| Shields (walls, domes, Pavise) | health + 6x primary (Pavise 5x) |",
+              "| Hard control (stun / interrupt actives) | x0.75 |",
+              "| Summons (per hit) | packs 0.4, guardian 0.5, ultimate hunters 0.6, Mechanical Tank 0.6 |",
+              "| Constructs (per shot) | the recipe's coefficient (turret 0.35, mine 1.2, obelisk 1.0...) |", "",
+              "Bounded check (`python Tools/BuildAbilityDB.py --sim`): 30 s of rotation at primary 40, level 1, no items.", ""]
+    lines += sim_table(db)
+    lines += ["", "## Level 15 bonuses (actives) and team auras (passives)", "",
+              "At skill level 15 every active gains one extra mechanic and every passive grants a party-wide aura (Headshot instead",
+              "makes its extra hit 3x). Native: `CireScalingKits` (reuses CireCrowdControl / CireBuffs).", "",
+              "| Skill | Kind | Level 15 |", "|---|---|---|"]
+    for sid, a in sorted(db["abilities"].items(), key=lambda kv: (kv[1]["status"], kv[1]["kind"], kv[0])):
+        if a["status"] != "implemented":
+            continue
+        l15 = a.get("aura15", a.get("level15", {})).get("label", "")
+        lines.append(f"| {a['name']} (`{sid}`) | {a['kind']} | {l15} |")
+    lines += ["", "Planned signature skills receive the bonus that fits their school (fire/poison DoT, cold/nature/tide slow,",
+              "earth/storm stun, holy/arcane purge, shadow heal-cut, void Vulnerability, physical damage amp); planned passives",
+              "cycle through the aura list."]
+    lines += ["", "## Ultimate upgrades (Sigil of Apotheosis)", "",
+              "Carrying the path-defining unique **Sigil of Apotheosis** adds one extra effect to your ultimate (numbers unchanged).",
+              "Source: `Tools/UltimateUpgrades.py`; runtime: `CireUltimateUpgrades.cpp`; items: Docs/Items.md.", "",
+              "| Ultimate | Upgrade | Added effect |", "|---|---|---|"]
+    for sid, a in sorted(db["abilities"].items(), key=lambda kv: (kv[1]["status"], kv[0])):
+        if a.get("ultimateUpgrade"):
+            u = a["ultimateUpgrade"]
+            lines.append(f"| {a['name']} (`{sid}`{', planned' if a['status'] == 'planned' else ''}) | {u['name']} | {u['text']} |")
     lines += ["", "## Champion identity kits", "", "| Champion | Roles | Signature | Implemented purchasable |", "|---|---|---|---|"]
     for cid, c in db["champions"].items():
         lines.append(f"| {c['name']} (`{cid}`) | {'/'.join(c['roles'])} | {', '.join(c['signature'])} | {len(c['purchasableImplemented'])} |")
     return "\n".join(lines) + "\n"
 
 
+def sim_table(db, primary=40, seconds=30.0):
+    """Bounded power check: damage (or healing) one cast rotation deals in `seconds` at `primary`, level 1.
+    Area skills count 3 targets, chains/bounces 3, summon packs their unit count x 1 hit/s. Small by design."""
+    rows = []
+    reps = {"Tank": ["shield_slam", "shield_bash", "cleaving_strike", "seismic_reprisal"], "DPS": ["piercing_shot", "ember_lance", "cinder_cone", "cataclysm"],
+            "Healer": ["restoring_light", "sanctuary", "aether_mend", "renewal"], "Summons": ["spectral_pack", "oathbound_guardian", "mechanical_tank", "photon_turret"]}
+    units = {"spectral_pack": 3, "oathbound_guardian": 1, "mechanical_tank": 1, "photon_turret": 1}
+    for group, ids in reps.items():
+        for sid in ids:
+            a = db["abilities"].get(sid)
+            if not a:
+                continue
+            s = a["scaling"]
+            per = s["base"] + s["primary"] * primary
+            if s["component"] in ("summon", "construct"):
+                hits = min(seconds, a["base"]["duration"] or seconds) * units.get(sid, 1) / (1.2 if s["component"] == "summon" else 0.8)
+                total = per * hits
+            else:
+                casts = 1 if a["kind"] == "ultimate" else math.floor(seconds / max(1.0, a["base"]["cooldown"])) + 1
+                targets = 3 if (a["base"]["radius"] > 50 and sid not in SINGLE_TARGET) or "per ally" in a["effectLabel"] else 1
+                total = per * casts * targets + s.get("dotPerSecond", 0) * primary * a["base"]["duration"] * casts * targets
+            rows.append(f"| {group} | {a['name']} | {scaling_text(a)} | {per:.0f} | {total:.0f} |")
+    return ["| Group | Skill | Formula | Per hit @40 | 30 s total |", "|---|---|---|---|---|"] + rows
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--check", action="store_true")
+    p.add_argument("--sim", action="store_true", help="print the bounded power check table")
     a = p.parse_args()
     db = build()
     errors = validate(db)
     if errors:
         raise SystemExit("\n".join(errors))
+    if a.sim:
+        print(chr(10).join(sim_table(db)))
+        return
     if not a.check:
         (ROOT / "Content/Data/Abilities.json").write_text(json.dumps(db, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         tail = (ROOT / "Docs/Abilities.api.md").read_text(encoding="utf-8") if (ROOT / "Docs/Abilities.api.md").is_file() else ""

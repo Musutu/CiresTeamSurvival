@@ -1,5 +1,6 @@
 #include "CireUIStyle.h"
 #include "CireUITheme.h" // ui-themes
+#include "CireAudio.h" // audio: one hover tick for every menu button
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -363,6 +364,7 @@ void CireUIStyle::Button(const FCireUIPainter& P,float X,float Y,float W,float H
 {
     const FAssets& A=Assets();
     const bool bHover=State==ECireButtonState::Hover,bPress=State==ECireButtonState::Pressed,bOff=State==ECireButtonState::Disabled,bSel=State==ECireButtonState::Selected;
+    if(bHover)CireAudio::NoteUIHover(X,Y); // audio: consistent hover tick across menus
     const float Dy=bPress?1.f:0.f;
     if(HasThemeArt())
     {
@@ -665,6 +667,10 @@ void CireUIStyle::Sigil(const FCireUIPainter& P,const FString& Id,float X,float 
         if(Id==TEXT("shield_slam")){L(.77f,.12f,.91f,.08f);L(.82f,.31f,.96f,.33f);}
     } else if(Id==TEXT("restoring_light")||Id==TEXT("purify")||Id==TEXT("soul_conduit")||Id==TEXT("role2")) {
         Ring(.33f); L(.5f,.22f,.5f,.78f,3);L(.22f,.5f,.78f,.5f,3);L(.32f,.32f,.68f,.68f,.7f);L(.68f,.32f,.32f,.68f,.7f);
+    } else if(Id==TEXT("polymorph")) {
+        // progression-shop: placeholder until the painted icon lands: a woolly critter with a sparkle.
+        Ring(.2f); L(.36f,.44f,.64f,.44f); L(.36f,.56f,.64f,.56f); L(.66f,.40f,.80f,.34f); L(.80f,.34f,.82f,.46f); L(.82f,.46f,.68f,.50f);
+        L(.38f,.64f,.36f,.80f); L(.62f,.64f,.64f,.80f); L(.22f,.20f,.30f,.20f); L(.26f,.16f,.26f,.24f);
     } else if(Id==TEXT("frost_bind")) {
         for(int32 I=0;I<6;++I){float A=I*PI/3;float DX=FMath::Cos(A),DY=FMath::Sin(A);L(.5f,.5f,.5f+DX*.37f,.5f+DY*.37f);L(.5f+DX*.24f,.5f+DY*.24f,.5f+DX*.22f-DY*.12f,.5f+DY*.22f+DX*.12f);}
     } else if(Id==TEXT("chain_spark")||Id==TEXT("deep_reserves")) {

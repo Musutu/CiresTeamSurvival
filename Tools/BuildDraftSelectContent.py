@@ -79,7 +79,13 @@ def build_material(report):
     opacity = node(unreal.MaterialExpressionMultiply, -160, 220)
     connect(masked, "", opacity, "A")
     connect(fade, "", opacity, "B")
-    if not edit.connect_material_property(figure, "RGB", unreal.MaterialProperty.MP_EMISSIVE_COLOR):
+    # The sampler decodes the sRGB render target to linear, but the canvas writes this UI
+    # material's output straight to the display-encoded back buffer: re-encode (gamma 1/2.2)
+    # so the champion keeps the capture's true colour and contrast instead of going muddy.
+    encode = node(unreal.MaterialExpressionPower, -300, -60)
+    encode.set_editor_property("const_exponent", 1.0 / 2.2)
+    connect(figure, "RGB", encode, "Base")
+    if not edit.connect_material_property(encode, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR):
         report["errors"].append("cannot connect final colour")
     if not edit.connect_material_property(opacity, "", unreal.MaterialProperty.MP_OPACITY):
         report["errors"].append("cannot connect opacity")
@@ -132,7 +138,9 @@ def import_backgrounds(report):
 def main():
     report = {"material": "", "backgrounds": [], "errors": [], "notes": []}
     build_material(report)
-    import_backgrounds(report)
+    # CIRE_DRAFT_MATERIAL_ONLY=1 rebuilds the material without re-importing the scenes.
+    if os.environ.get("CIRE_DRAFT_MATERIAL_ONLY") != "1":
+        import_backgrounds(report)
     out = os.path.join(PROJECT, "Saved", "DraftSelectContent")
     os.makedirs(out, exist_ok=True)
     with open(os.path.join(out, "report.json"), "w", encoding="utf-8") as stream:

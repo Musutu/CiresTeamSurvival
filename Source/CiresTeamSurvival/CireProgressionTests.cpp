@@ -3,6 +3,7 @@
 // Run by -CireCombatExpansionProbe (Tools/RunExpansionChecks.py --only native) and by
 // Tools/RunProgressionChecks.py. Pure rules are covered natively by Tests/ItemRulesTests.cpp.
 #include "CireItems.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireLoot.h"
 #include "CireSkillShop.h"
 #include "CireGame.h"
@@ -109,7 +110,7 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     FChecker Check{TEXT("ITEMS")};
     FFixture F(Mode);
     const auto& D = Get();
-    Check(D.bValid && D.Order.Num() >= 30 && D.Order.Num() <= 50, TEXT("Items.json loads a 30-50 item catalog"));
+    Check(D.bValid && D.Order.Num() >= 45 && D.Order.Num() <= 60, TEXT("Items.json loads a 45-60 item catalog")); // items-v2
     int32 Tiers[4] = {0, 0, 0, 0}, Actives = 0, Uniques = 0;
     for (const auto& Item : D.Catalog.Items) { ++Tiers[static_cast<int32>(Item.Tier)]; Actives += Item.HasActive(); Uniques += Item.Unique; }
     Check(Tiers[0] >= 6 && Tiers[1] >= 10 && Tiers[2] >= 3 && Tiers[3] >= 12 && Actives >= 5 && Uniques >= 10, TEXT("catalog spans consumables, components, legendaries, actives and uniques"));
@@ -139,24 +140,32 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     auto Total = [&](const char* Id) { const auto* Def = D.Catalog.Find(Id); return Def ? Def->TotalCost : -1; };
     Message.Reset();
     Check(Inv->Buy(N(TEXT("bloodstone_shard")), Message) && Hero->Gold == 5000 - Recipe("bloodstone_shard") && Inv->Equipment[0].Id == N(TEXT("bloodstone_shard")), TEXT("prep: buy anywhere on the map"));
-    Check(FMath::IsNearlyEqual(Hero->MaxHealth, BaseHealth + 160.f), TEXT("item health applied to max health"));
+    // items-v2: item stats come from the catalog (primary stat + flat stats; Eric's universal-scaling ruling).
+    auto StatOf = [&](const char* Id, CI::ItemStat Stat) { const auto* Def = D.Catalog.Find(Id); return Def ? static_cast<float>(Def->Stats.Get(Stat)) : -1.f; };
+    const float Shard = StatOf("bloodstone_shard", CI::ItemStat::Health);
+    Check(Shard > 0 && FMath::IsNearlyEqual(Hero->MaxHealth, BaseHealth + Shard), TEXT("item health applied to max health"));
     // ---- stats application
     const int32 BaseStrength = Hero->Strength;
     const float BaseAD = Hero->AttackDamage();
-    Check(Inv->Buy(N(TEXT("gauntlet_of_the_ox")), Message) && Hero->Strength == BaseStrength + 5 && FMath::IsNearlyEqual(Hero->MaxHealth, BaseHealth + 160.f + 125.f), TEXT("item strength adds attributes and derived health"));
-    Check(FMath::IsNearlyEqual(Hero->AttackDamage(), BaseAD + 5.f), TEXT("primary attribute from items adds attack damage"));
-    Check(Inv->Buy(N(TEXT("rusted_longsword")), Message) && FMath::IsNearlyEqual(Hero->AttackDamage(), BaseAD + 11.f), TEXT("flat attack damage applied"));
-    Check(Inv->Buy(N(TEXT("sandglass_charm")), Message) && FMath::IsNearlyEqual(Hero->CDR, .05f), TEXT("cooldown reduction applied"));
-    Check(Inv->Buy(N(TEXT("ravens_eye")), Message) && FMath::IsNearlyEqual(Hero->CriticalChance, .10f + CireSkillTuning::Get().CritChance, .001f), TEXT("critical chance applied"));
-    Check(FMath::IsNearlyEqual(AttackSpeedBonus(Hero), 0.f) && Inv->Buy(N(TEXT("bone_dagger")), Message) && FMath::IsNearlyEqual(AttackSpeedBonus(Hero), .10f), TEXT("attack speed bonus applied"));
+    const float OxPrimary = StatOf("gauntlet_of_the_ox", CI::ItemStat::Primary), OxHealth = StatOf("gauntlet_of_the_ox", CI::ItemStat::Health);
+    Check(Inv->Buy(N(TEXT("gauntlet_of_the_ox")), Message) && Hero->Strength == BaseStrength + FMath::RoundToInt(OxPrimary) &&
+        FMath::IsNearlyEqual(Hero->MaxHealth, BaseHealth + Shard + OxHealth + 25.f * OxPrimary), TEXT("primary stat lands on STR with its derived health"));
+    Check(FMath::IsNearlyEqual(Hero->AttackDamage(), BaseAD + OxPrimary), TEXT("primary attribute from items adds attack damage"));
+    const float SwordPrimary = StatOf("rusted_longsword", CI::ItemStat::Primary);
+    Check(Inv->Buy(N(TEXT("rusted_longsword")), Message) && FMath::IsNearlyEqual(Hero->AttackDamage(), BaseAD + OxPrimary + SwordPrimary), TEXT("adaptive primary stat applied"));
+    Check(Inv->Buy(N(TEXT("sandglass_charm")), Message) && FMath::IsNearlyEqual(Hero->CDR, StatOf("sandglass_charm", CI::ItemStat::CooldownReduction) / 100.f), TEXT("cooldown reduction applied"));
+    Check(Inv->Buy(N(TEXT("boiled_jerkin")), Message) && FMath::IsNearlyEqual(static_cast<float>(Inv->Totals().Stats.Get(CI::ItemStat::Armor)), StatOf("boiled_jerkin", CI::ItemStat::Armor)), TEXT("flat armor applied"));
+    Check(FMath::IsNearlyEqual(AttackSpeedBonus(Hero), 0.f) && Inv->Buy(N(TEXT("bone_dagger")), Message) && FMath::IsNearlyEqual(AttackSpeedBonus(Hero), StatOf("bone_dagger", CI::ItemStat::AttackSpeed) / 100.f), TEXT("attack speed bonus applied"));
     // ---- slot limit: 6/6 full
     Check(Inv->ToRules().FreeEquipment() == 0 && !Inv->Buy(N(TEXT("hexweave_cloak")), Message) && Message.Contains(TEXT("full")), TEXT("six-slot limit"));
     // ---- recipe consumes owned components and charges only the recipe
     int32 Gold = Hero->Gold;
     Check(Inv->Buy(N(TEXT("serrated_cleaver")), Message) && Hero->Gold == Gold - Recipe("serrated_cleaver") && Inv->ToRules().CountOf("rusted_longsword") == 0 && Inv->ToRules().CountOf("bone_dagger") == 0, TEXT("recipe consumes components, charges recipe cost"));
+    Check(Inv->Buy(N(TEXT("rusted_longsword")), Message), TEXT("second component for the legendary"));
     Gold = Hero->Gold;
     Check(Inv->Buy(N(TEXT("nightfall_reaver")), Message) && Hero->Gold == Gold - Recipe("nightfall_reaver") && Hero->GearRank == 1, TEXT("legendary built from owned epic + component"));
     Check(FMath::IsNearlyEqual(Hero->CriticalMultiplier, CireSkillTuning::Get().CritMultiplier + .25f, .001f), TEXT("unique passive raises crit multiplier"));
+    Check(FMath::IsNearlyEqual(Hero->CriticalChance, StatOf("nightfall_reaver", CI::ItemStat::CritChance) / 100.f + CireSkillTuning::Get().CritChance, .001f), TEXT("completed item adds critical chance"));
     Check(!Inv->Buy(N(TEXT("nightfall_reaver")), Message) && Message.Contains(TEXT("unique")), TEXT("unique item cannot be bought twice"));
     // ---- sell + undo
     Gold = Hero->Gold;
@@ -164,7 +173,8 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     Check(Slot != INDEX_NONE && Inv->SellSlot(Slot, false, Message) && Hero->Gold == Gold + FMath::RoundToInt(Total("bloodstone_shard") * .6f), TEXT("sell returns 60% of total cost"));
     Check(Inv->UndoLast(Message) && Hero->Gold == Gold && Inv->Equipment[Slot].Id == N(TEXT("bloodstone_shard")), TEXT("undo restores the sold item and gold"));
     Gold = Hero->Gold;
-    Check(Inv->UndoLast(Message) && Hero->Gold == Gold + Recipe("nightfall_reaver") && Inv->ToRules().CountOf("nightfall_reaver") == 0 && Inv->ToRules().CountOf("serrated_cleaver") == 1, TEXT("undo reverts a recipe to its parts"));
+    Check(Inv->UndoLast(Message) && Hero->Gold == Gold + Recipe("nightfall_reaver") && Inv->ToRules().CountOf("nightfall_reaver") == 0 && Inv->ToRules().CountOf("serrated_cleaver") == 1 &&
+        Inv->ToRules().CountOf("rusted_longsword") == 1, TEXT("undo reverts a recipe to its parts"));
     Inv->EndShopVisit();
     Check(!Inv->UndoLast(Message) && Inv->UndoDepth == 0, TEXT("closing the shop ends the undo history"));
     // ---- instant tomes and belt consumables
@@ -180,7 +190,8 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     Check(Inv->Buy(N(TEXT("elixir_of_wrath")), Message), TEXT("elixir purchased"));
     const float BeforeElixir = Hero->AttackDamage();
     const int32 ElixirSlot = Inv->Belt.IndexOfByPredicate([](const FCireItemSlot& S) { return S.Id == FName(TEXT("elixir_of_wrath")); });
-    Check(ElixirSlot != INDEX_NONE && Inv->UseSlot(ElixirSlot, true, Message) && FMath::IsNearlyEqual(Hero->AttackDamage(), BeforeElixir + 8.f) && Inv->Buffs.Num() >= 1, TEXT("elixir buff applies stats"));
+    const float ElixirPrimary = D.Catalog.Find("elixir_of_wrath") ? static_cast<float>(D.Catalog.Find("elixir_of_wrath")->Use.Buff.Get(CI::ItemStat::Primary)) : 0.f;
+    Check(ElixirSlot != INDEX_NONE && ElixirPrimary > 0 && Inv->UseSlot(ElixirSlot, true, Message) && FMath::IsNearlyEqual(Hero->AttackDamage(), BeforeElixir + ElixirPrimary) && Inv->Buffs.Num() >= 1, TEXT("elixir buff applies the primary stat"));
     // ---- active item: Void Rupture needs a hostile target, then starts its cooldown
     Hero->Gold = 5000;
     for (auto& Cell : Inv->Equipment) Cell = FCireItemSlot();
@@ -199,13 +210,14 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     // ---- armor / ward mitigation and lifesteal
     for (auto& Cell : Inv->Equipment) Cell = FCireItemSlot();
     Inv->Equipment[0].Id = N(TEXT("gravewarden_bulwark"));
-    Inv->Equipment[1].Id = N(TEXT("bloodletter"));
+    Inv->Equipment[1].Id = N(TEXT("sanguine_sabre"));
     Inv->Invalidate();
-    Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Monster attack"), 100.f), 100.f * (1.f - 25.f / 125.f), .01f), TEXT("armor mitigates basic attacks"));
-    Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), 100.f), TEXT("armor does not mitigate spells"));
+    const float BulwarkArmor = StatOf("gravewarden_bulwark", CI::ItemStat::Armor) * CireKits::DefenseMultiplier(Hero), /* scaling-kits: shield tanks -10% */ Block = StatOf("gravewarden_bulwark", CI::ItemStat::DamageBlock);
+    Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Monster attack"), 100.f), 100.f * (1.f - BulwarkArmor / (BulwarkArmor + 100.f)) - Block, .01f), TEXT("armor mitigates basic attacks, then the block"));
+    Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), 100.f - Block), TEXT("armor does not mitigate spells (the block does)"));
     Hero->Health = 100;
     OnDamageDealt(Hero, Target, 100.f, TEXT("sword strike"));
-    Check(FMath::IsNearlyEqual(Hero->Health, 110.f, .01f), TEXT("lifesteal heals from basic attacks"));
+    Check(FMath::IsNearlyEqual(Hero->Health, 100.f + StatOf("sanguine_sabre", CI::ItemStat::Lifesteal), .01f), TEXT("lifesteal heals from basic attacks"));
     const float MonsterHealth = Target->Health;
     OnHeroDamaged(Hero, Target, TEXT("Monster attack"), 40.f);
     Check(Target->Health < MonsterHealth, TEXT("thorns reflect basic-attack damage"));
@@ -218,10 +230,10 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     Inv->Invalidate();
     int32 Converted = 0;
     Gold = Hero->Gold;
-    Check(!Inv->GrantItem(N(TEXT("ravens_eye")), Converted) && Converted == Total("ravens_eye") && Hero->Gold == Gold + Total("ravens_eye"), TEXT("loot into a full bag converts to gold"));
+    Check(!Inv->GrantItem(N(TEXT("rusted_longsword")), Converted) && Converted == Total("rusted_longsword") && Hero->Gold == Gold + Total("rusted_longsword"), TEXT("loot into a full bag converts to gold"));
     Check(Inv->HasRoomFor(N(TEXT("watchers_lantern"))) && Inv->GrantItem(N(TEXT("watchers_lantern")), Converted), TEXT("loot consumable goes to the belt"));
     UE_LOG(LogCireProgressionTests, Display, TEXT("CIRE_ITEMS_%s checks=%d"), Check.bPass ? TEXT("PASS") : TEXT("FAIL"), Check.Count);
-    return Check.bPass;
+    return RunV2Smoke(Mode) && Check.bPass; // items-v2: uniques, group actives, dodge charges, ultimate upgrades, mana economy
 }
 
 bool CireProgression::RunSmoke(ACireGameMode* Mode)

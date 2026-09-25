@@ -1,4 +1,6 @@
 #include "CireAreaEffects.h"
+#include "CireScalingKits.h" // scaling-kits
+#include "CireItems.h" // items-v2
 #include "CireDeveloperTools.h"
 #include "CireGame.h"
 #include "CireCombatEvents.h"
@@ -208,6 +210,7 @@ ACireAreaEffect::ACireAreaEffect()
 ACireAreaEffect* ACireAreaEffect::Spawn(AActor* Source, const FCireAreaSpec& InputSpec, FVector GroundCenter, FRotator Heading)
 {
     FCireAreaSpec Spec=InputSpec;if(Source)CireDeveloperTools::AdjustArea(Source->GetWorld(),Spec);
+    if(Source){const float Wide=CireItems::AreaRadiusMultiplier(Source);Spec.Radius=FMath::Min(Spec.Radius*Wide,static_cast<float>(MaxDimension));Spec.Length=FMath::Min(Spec.Length*Wide,static_cast<float>(MaxDimension));Spec.Width=FMath::Min(Spec.Width*Wide,static_cast<float>(MaxDimension));} // items-v2: Heart of the Cataclysm
     if (!CireCombat::IsAlive(Source) || !Source->HasAuthority() ||
         !ValidateSpec(Spec) || GroundCenter.ContainsNaN() || Heading.ContainsNaN()) return nullptr;
     UWorld* World = Source->GetWorld();
@@ -290,7 +293,7 @@ void ACireAreaEffect::Tick(float DeltaSeconds)
                 Occupants.GetKeys(Victims);
                 for (auto Victim : Victims)
                     if (IsValid(Victim.Get()) && CireCombat::AreHostile(SourceActor,Victim.Get()))
-                        CireCombat::ApplyDamage(SourceActor, Victim.Get(), AreaSpec.BurstDamage, AreaSpec.AbilityName);
+                        { FCireAreaDamageScope AreaScope; CireCombat::ApplyDamage(SourceActor, Victim.Get(), AreaSpec.BurstDamage, AreaSpec.AbilityName); } // scaling-kits: AoE-resist aura
                 ClearOccupants();
             }
             if (AreaSpec.bPersistent)
@@ -370,7 +373,7 @@ void ACireAreaEffect::DealAccumulatedDamage()
         // the target, so leaving cancels poison at the next post-physics update.
         if (IsValid(Victim.Get()) && IsValid(SourceActor) && CireCombat::AreHostile(SourceActor,Victim.Get()) &&
             ContainsPoint(AreaSpec, GetActorLocation(), GetActorRotation(), Feet(Victim.Get())))
-            CireCombat::ApplyDamage(SourceActor, Victim.Get(), Damage, AreaSpec.AbilityName);
+            { FCireAreaDamageScope AreaScope; CireCombat::ApplyDamage(SourceActor, Victim.Get(), Damage, AreaSpec.AbilityName); } // scaling-kits
         if (!IsValid(Victim.Get()) || !IsValid(SourceActor) || !CireCombat::AreHostile(SourceActor,Victim.Get())) RemoveOccupant(Victim.Get());
     }
 }

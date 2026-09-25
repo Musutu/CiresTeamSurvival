@@ -194,60 +194,24 @@
     },
     {
       "profileId": "huntress",
-      "status": "custom_ready",
-      "motion": "mounted",
-      "mesh": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/Wolf.Wolf",
-      "heightCm": 175,
-      "yaw": -90,
-      "lockRoot": true,
-      "walkSpeedRaw": 180.4,
-      "runSpeedRaw": 759.1,
-      "animations": {
-        "idle": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle.WolfAnimalArmature_Idle",
-        "walk": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Walk.WolfAnimalArmature_Walk",
-        "run": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Gallop.WolfAnimalArmature_Gallop",
-        "attack": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Attack.WolfAnimalArmature_Attack"
-      },
-      "tint": {
-        "base": [
-          0.52,
-          0.4,
-          0.28
-        ],
-        "accent": [
-          0.55,
-          0.12,
-          0.08
-        ],
-        "strength": 0.8
-      },
-      "rider": {
-        "mesh": "/Game/Tripo/Champions/Huntress/CTS_Champ_Huntress.CTS_Champ_Huntress",
-        "locomotion": "/Game/Tripo/Champions/Huntress/Animations/BS_Idle_Walk_Run_Huntress.BS_Idle_Walk_Run_Huntress",
-        "attack": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_attack_bow.CTS_Champ_Huntress_attack_bow",
-        "heightCm": 172,
-        "seatHeight": 0.62,
-        "seatForward": -0.08,
-        "props": [
-          {
-            "asset": "/Game/Tripo/Props/HuntressGlaiveLauncher/CTS_Prop_HuntressGlaiveLauncher.CTS_Prop_HuntressGlaiveLauncher",
-            "bone": "hand_l"
-          }
-        ],
-        "relaxArms": true
-      },
+      "status": "ready",
+      "mesh": "/Game/Tripo/Champions/Huntress/CTS_Champ_Huntress.CTS_Champ_Huntress",
+      "locomotion": "/Game/Tripo/Champions/Huntress/Animations/BS_Idle_Walk_Run_Huntress.BS_Idle_Walk_Run_Huntress",
+      "attack": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_attack_bow.CTS_Champ_Huntress_attack_bow",
+      "heightCm": 172,
+      "relaxArms": true,
+      "note": "Tripo model (tripo-races). Temporary body before it: Temporary body: the Ash Ranger rig on foot. Her sabercat Ashfang is a companion pet (Content/Data/Pets.json), not a mount.",
       "tripoSlot": {
-        "unit": "huntress (rider) + huntress_sabercat (mount)",
-        "skeleton": "rider: Tripo humanoid biped seated; mount: quadruped (sabercat) rig",
+        "unit": "huntress",
+        "skeleton": "Tripo humanoid biped (champion batch rig)",
         "sheet": "Saved/Reference/huntress-sheet.png",
         "props": [
-          "mounted glaive launcher (rider hand_r)",
-          "glaive ammo (back)",
-          "mount barding"
+          "glaive launcher (hand_l)",
+          "glaive (hand_r)",
+          "glaive ammo (back)"
         ],
-        "delivered": "rider: /Game/Tripo/Champions/Huntress/CTS_Champ_Huntress.CTS_Champ_Huntress; mount (no clips yet): /Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat"
-      },
-      "note": "Tripo Huntress seated on the Quaternius wolf (tinted as a sabercat) until the Tripo sabercat mount (/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat) has animation clips."
+        "delivered": "/Game/Tripo/Champions/Huntress/CTS_Champ_Huntress.CTS_Champ_Huntress"
+      }
     },
     {
       "profileId": "aetheri_artificer",

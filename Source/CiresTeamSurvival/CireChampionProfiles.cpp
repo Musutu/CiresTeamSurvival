@@ -1,4 +1,5 @@
 #include "CireChampionProfiles.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireChampionRoster.h"
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireGame.h"
@@ -7,6 +8,7 @@
 #include "CireThreat.h"
 #include "CireAbilityLibrary.h"
 #include "CireRoleSkills.h"
+#include "CirePets.h" // pets
 #include "Engine/World.h"
 #include "EngineUtils.h"
 
@@ -130,7 +132,7 @@ int32 ACireHero::PrimaryAttribute() const
 float ACireHero::BasicAttackRange() const
 {
     if(const auto* Summon=::Cast<ACireSummon>(this))return Summon->SummonSpec.AttackRange;
-    return ProfileBasicAttackRange>0?ProfileBasicAttackRange:Archetype==0?220.f:Archetype==1?1500.f:Archetype==3?1300.f:1200.f;
+    return CireKits::BasicRange(this,ProfileBasicAttackRange>0?ProfileBasicAttackRange:Archetype==0?220.f:Archetype==1?1500.f:Archetype==3?1300.f:1200.f); // scaling-kits: range skills
 }
 float ACireHero::BaseAttackSeconds() const {return ProfileAttackSeconds>0?ProfileAttackSeconds:1.5f;}
 FString ACireHero::BasicAttackStyle() const
@@ -151,6 +153,7 @@ bool ACireHero::HasChampionRole(const FString& RoleName) const
 }
 float ACireHero::DamageThreatMultiplier() const
 {
+    if(const auto* Pet=::Cast<ACirePet>(this))return Pet->PetThreatMultiplier(); // pets: Pets.json threatMultiplier
     const auto& T=CireSkillTuning::Get();
     const bool bTank=ChampionProfileId.IsEmpty()?Archetype==0:ProfileThreatRole==TEXT("tank");
     return bTank?T.TankDamageThreatMultiplier:T.DpsDamageThreatMultiplier;
