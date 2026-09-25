@@ -648,3 +648,11 @@ void ACireSpellVisual::EndPlay(const EEndPlayReason::Type Reason)
     if(auto* Area=FollowedArea.Get())Area->bPresentationOwnsGround=false;
     Super::EndPlay(Reason);
 }
+
+bool CireSpellPresentation::IsAreaPresented(const ACireAreaEffect* Area)
+{
+    if(!IsValid(Area)||!Area->bPresentationOwnsGround)return false;
+    for(TActorIterator<ACireSpellVisual> It(Area->GetWorld());It;++It)
+        if(It->GetOwner()==Area&&!It->IsActorBeingDestroyed()&&!It->IsHidden()&&It->GroundVertexCount()>0&&It->GroundMesh&&It->GroundMesh->IsVisible())return true;
+    return false;
+}

@@ -115,6 +115,8 @@ namespace CireSpellPresentation
     CIRESTEAMSURVIVAL_API ACireSpellVisual* AttachConstruct(AActor* Construct, bool bProtection, FVector HalfExtents);
     CIRESTEAMSURVIVAL_API bool IsSupported(FName SkillId);
     // ability-vfx: presentation delay applied to a cue so it appears on the caster clip's release frame.
+    // ability-vfx: true when a visible follower paints this area's ground (its flat mesh is then not drawn).
+    CIRESTEAMSURVIVAL_API bool IsAreaPresented(const ACireAreaEffect* Area);
     CIRESTEAMSURVIVAL_API float ReleaseDelay(UWorld* World, FName SkillId, ECireSpellCue Cue, FVector From);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSmoke(UWorld* World);

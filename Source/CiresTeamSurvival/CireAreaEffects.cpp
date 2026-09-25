@@ -306,7 +306,10 @@ void ACireAreaEffect::Tick(float DeltaSeconds)
     if (GetNetMode() != NM_DedicatedServer)
     {
         const auto* Local = GetWorld()->GetFirstPlayerController();
-        GroundMesh->SetVisibility(Local && Local->IsLocalController() && CanObserve(Local) && !bPresentationOwnsGround); // ability-vfx
+        GroundMesh->SetVisibility(Local && Local->IsLocalController() && CanObserve(Local));
+        // ability-vfx: the following spell visual paints the animated telegraph of this exact boundary;
+        // the flat mesh keeps its observable state but is not drawn underneath it.
+        GroundMesh->SetHiddenInGame(bPresentationOwnsGround);
     }
 }
 

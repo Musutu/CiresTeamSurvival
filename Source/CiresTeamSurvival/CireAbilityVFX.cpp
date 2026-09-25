@@ -103,7 +103,7 @@ CireAbilityVFX::FStyle CireAbilityVFX::StyleFor(ETone Tone,FLinearColor School)
     {
     case ETone::Hostile:
         // Amber enemy warning: warm fill, hot orange edge, red-orange progress that reads as "about to hit".
-        S.Fill=FLinearColor(1.25f,.42f,.04f,.16f);S.Edge=FLinearColor(2.1f,.72f,.08f,.95f);S.Progress=FLinearColor(1.7f,.28f,.03f,.30f);S.Accent=FLinearColor(2.4f,1.05f,.2f,.9f);break;
+        S.Fill=FLinearColor(1.25f,.42f,.04f,.2f);S.Edge=FLinearColor(2.1f,.72f,.08f,.95f);S.Progress=FLinearColor(1.7f,.28f,.03f,.30f);S.Accent=FLinearColor(2.4f,1.05f,.2f,.9f);break;
     case ETone::AimValid:
         S.Fill=FLinearColor(.08f,1.f,.6f,.13f);S.Edge=FLinearColor(.2f,1.6f,1.f,.92f);S.Progress=S.Fill;S.Accent=FLinearColor(.5f,2.f,1.3f,.9f);break;
     case ETone::AimInvalid:
@@ -218,10 +218,11 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintActive(FCireGroundMesh& G,cons
     if(bConvex)
     {
         const auto Inner=Offset(Boundary,-Feather);
-        FillLoop(G,Inner,true,Pivot,A(.10f*Breathe+.22f*Flash,1+.4f*Flash),A(.2f*Breathe+.22f*Flash,1+.4f*Flash));
-        G.Band(Inner,Boundary,A(.2f*Breathe+.22f*Flash,1+.4f*Flash),A(.36f+.2f*Flash,1.2f+.4f*Flash),true);
+        // Dense enough to read on bright cobbles/snow as well as dark earth (unlit alpha-blended overlay).
+        FillLoop(G,Inner,true,Pivot,A(.17f*Breathe+.2f*Flash,1+.4f*Flash),A(.28f*Breathe+.2f*Flash,1+.4f*Flash));
+        G.Band(Inner,Boundary,A(.28f*Breathe+.2f*Flash,1+.4f*Flash),A(.48f+.2f*Flash,1.2f+.4f*Flash),true);
     }
-    else FillLoop(G,Boundary,false,Pivot,A(.2f+.25f*Flash),A(.26f+.25f*Flash));
+    else FillLoop(G,Boundary,false,Pivot,A(.3f+.25f*Flash),A(.36f+.25f*Flash));
     Outline(G,Boundary,FMath::Clamp(Size*.01f,2.f,4.f),FMath::Clamp(Size*.06f,8.f,26.f),A((.7f+.3f*Breathe)*(bPersistent?1.f:.9f),1.5f),1.2f);
     if(bPersistent)
     {
