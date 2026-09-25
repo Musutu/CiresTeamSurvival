@@ -242,17 +242,28 @@
    "runSpeedCm": 210.5,
    "reachCm": 645.0,
    "animations": {
-    "idle": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_IdleNormal.ANIM_Centaur_IdleNormal",
-    "walk": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_WalkNormal.ANIM_Centaur_WalkNormal",
-    "run": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_GallopNormal.ANIM_Centaur_GallopNormal",
-    "attack": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackNormal.ANIM_Centaur_LegAttackNormal",
-    "attackAlt": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackNormal.ANIM_Centaur_LegAttackNormal",
-    "hit": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_GetHitNormal.ANIM_Centaur_GetHitNormal",
-    "death": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_DeathNormal.ANIM_Centaur_DeathNormal"
+    "idle": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_IdleBow.ANIM_Centaur_IdleBow",
+    "walk": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_WalkBow.ANIM_Centaur_WalkBow",
+    "run": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_GallopBow.ANIM_Centaur_GallopBow",
+    "attack": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_ShootArrowToIdleAiming.ANIM_Centaur_ShootArrowToIdleAiming",
+    "attackAlt": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackBow.ANIM_Centaur_LegAttackBow",
+    "hit": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_GetHitBow.ANIM_Centaur_GetHitBow",
+    "death": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_DeathBow.ANIM_Centaur_DeathBow",
+    "all": {
+     "cast_a_spell": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_IdleNormalToIdleAiming.ANIM_Centaur_IdleNormalToIdleAiming",
+     "war_cry": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackBow.ANIM_Centaur_LegAttackBow"
+    }
    },
    "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
    "soleCm": 18.9,
    "airborneCm": 23.2,
+   "parts": [
+    "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Body_Armor.SK_Body_Armor",
+    "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Shoulder_Pads.SK_Shoulder_Pads",
+    "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Mane.SK_Mane",
+    "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Beard.SK_Beard",
+    "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Bow_Action.SK_Bow_Action"
+   ],
    "rig": "quadruped",
    "sockets": {
     "head": "CENTAUR_-Head",

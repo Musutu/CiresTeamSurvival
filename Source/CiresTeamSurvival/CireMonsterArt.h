@@ -52,6 +52,8 @@ namespace CireMonsterArt
         float SoleCm = 0.f, AirborneCm = 0.f;
         /** fab-integration: body from a purchased Fab pack (authored materials: no race reskin). */
         bool bFab = false;
+        /** fab-integration: skeletal parts on the same skeleton (armour, mane, bow), driven by leader pose. */
+        TArray<FString> Parts;
         /** Socket name -> bone, added to the mesh in memory when the body is applied (head, pelvis, hand_r...). */
         TMap<FName, FName> Sockets;
     };
@@ -168,6 +170,8 @@ private:
     UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> Rim;
     UPROPERTY(Transient) TMap<FString, TObjectPtr<UAnimSequence>> RoleClips;
     UPROPERTY(Transient) TMap<FString, TObjectPtr<UAnimSequence>> NamedClips;
+    UPROPERTY(Transient) TArray<TObjectPtr<USkeletalMeshComponent>> BodyParts; // fab-integration: leader-pose parts
+    void ClearBodyParts();
     FTransform FallbackTransform;
     bool bFallbackCaptured = false;
     bool bTripoApplied = false;
@@ -204,7 +208,8 @@ public:
     virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void Tick(float DeltaSeconds) override;
-    bool Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props, const CireGrip::FHands* Hands = nullptr);
+    bool Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props, const CireGrip::FHands* Hands = nullptr,
+        const TArray<TObjectPtr<USkeletalMeshComponent>>* Parts = nullptr);
     UPROPERTY(VisibleAnywhere) TObjectPtr<USkeletalMeshComponent> Body;
     float Age = 0.f;
     float FallSeconds = 3.f;

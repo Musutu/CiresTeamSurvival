@@ -14,8 +14,10 @@
 #include "CireChampionArt.h" // new-champions: rider combat layer
 #include "CireGrip.h" // new-champions: prop grips
 #include "CireMonsterAnim.h" // new-champions: native monster / mount clips
+#include "CireChampionActions.h" // fab-integration: skill kinds and release leads
 #include "Animation/AnimSequence.h"
 #include "Animation/BlendSpace.h"
+#include "Materials/MaterialInterface.h" // fab-integration: variant material swap
 #if WITH_EDITOR
 #include "SkinnedAssetCompiler.h"
 #endif
@@ -117,6 +119,10 @@ void UCireCreatureArt::Clear()
     // new-champions: the rider and props are ours; the native body is the hero's own mesh (restored by the champion art).
     if(Rider)Rider->DestroyComponent();Rider=nullptr;for(auto& Part:Props)if(Part)Part->DestroyComponent();Props.Reset();Native=nullptr;
     Quad=nullptr;DeathClip=nullptr;DeadAge=DeadWeight=0; // pets
+    // fab-integration: leader-pose parts and the champion reaction state.
+    for(auto& Part:Parts)if(Part)Part->DestroyComponent();Parts.Reset();
+    AttackAltClip=nullptr;HitClip=nullptr;CastClips.Reset();ActionClip=nullptr;Contacts.Reset();ActionStartedAt=-100;ActionContact=ActionRelease=0;ActionWeight=1;
+    bActionIsHit=false;bActionBasic=false;bReactions=false;LastHealth=-1;LastHitAt=-100;LastCooldowns.Reset();
     AttackClip=nullptr;RiderAttack=nullptr;RiderLocomotion=nullptr;SeatBone=NAME_None;NativeWalkRaw=NativeRunRaw=NativePhase=NativeIdleTime=0;SeenAttackSerial=0;AttackSeenAt=-100;
     Sections.Reset();SourceAsset=nullptr;Kind.Reset();Phase=0;SmoothedSpeed=0;AnimationTime=0;UpdateBudget=0;bHasLastYaw=false;
 }
@@ -390,10 +396,15 @@ bool UCireCreatureArt::ApplyBinding(ACireHero& Hero,const FString& Profile,const
     const float Capsule=Hero.GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
     const auto Bounds=Mesh->GetImportedBounds();const float Height=static_cast<float>(Bounds.BoxExtent.Z*2);
     if(Height<1||Height>100000)return false;
-    const float Scale=HeightCm/Height;MeshScale=Scale;
+    float Scale=HeightCm/Height;
+    // fab-integration: vendor skeletal bounds are loose (physics asset); a measured head-height scale is exact.
+    if(double Measured=0;Binding->TryGetNumberField(TEXT("meshScale"),Measured)&&FMath::IsFinite(Measured)&&Measured>.01&&Measured<100)Scale=static_cast<float>(Measured);
+    MeshScale=Scale;
     double Yaw=-90;Binding->TryGetNumberField(TEXT("yaw"),Yaw);
     Parent->SetSkeletalMesh(Mesh);Parent->SetRelativeScale3D(FVector(Scale));
     BasePosition=FVector(0,0,-Capsule-(Bounds.Origin.Z-Bounds.BoxExtent.Z)*Scale);
+    // fab-integration: the vendor packs pivot at the ground between the feet.
+    if(bool bPivot=false;Binding->TryGetBoolField(TEXT("groundAtPivot"),bPivot)&&bPivot)BasePosition=FVector(0,0,-Capsule);
     Parent->SetRelativeLocation(BasePosition);Parent->SetRelativeRotation(FRotator(0,static_cast<float>(Yaw),0));
     Parent->SetAnimInstanceClass(UCireMonsterAnimInstance::StaticClass());
     auto* Anim=Cast<UCireMonsterAnimInstance>(Parent->GetAnimInstance());
@@ -425,6 +436,47 @@ bool UCireCreatureArt::ApplyBinding(ACireHero& Hero,const FString& Profile,const
     }
     const TArray<TSharedPtr<FJsonValue>>* PropList=nullptr;
     if(Binding->TryGetArrayField(TEXT("props"),PropList))AttachProps(Hero,Parent,PropList,Scale);
+    // fab-integration: champion bodies from ChampionArtBindings.fab.json react like the Fab humanoids: alternating
+    // strikes, a clip per cast (skill id, then shout/spell/ability), an upper-body flinch and a held death pose.
+    Binding->TryGetBoolField(TEXT("reactions"),bReactions);bReactions&=Motion==TEXT("monster_native");
+    auto Same=[Mesh](UAnimSequence* S){return S&&S->GetSkeleton()==Mesh->GetSkeleton()?S:nullptr;};
+    AttackAltClip=Same(Clip(*Animations,TEXT("attackAlt")));HitClip=Same(Clip(*Animations,TEXT("hit")));
+    if(const TSharedPtr<FJsonObject>* Casts=nullptr;(*Animations)->TryGetObjectField(TEXT("casts"),Casts))
+        for(const auto& Pair:(*Casts)->Values)if(UAnimSequence* S=Same(Clip(*Casts,*FString(Pair.Key.ToView()))))CastClips.Add(FString(Pair.Key.ToView()),S);
+    // "contact": seconds into each clip (keyed like animations / casts) where the blow or the release lands.
+    if(const TSharedPtr<FJsonObject>* Contact=nullptr;(*Animations)->TryGetObjectField(TEXT("contact"),Contact))
+    {
+        auto Put=[&](const FString& Key,const UAnimSequence* S){double V=0;if(S&&(*Contact)->TryGetNumberField(Key,V)&&FMath::IsFinite(V))Contacts.Add(S,FMath::Clamp(static_cast<float>(V),0.f,S->GetPlayLength()));};
+        Put(TEXT("attack"),AttackClip);Put(TEXT("attackAlt"),AttackAltClip);
+        for(const auto& Pair:CastClips)Put(Pair.Key,Pair.Value);
+    }
+    LastCooldowns=Hero.Cooldowns;LastHealth=Hero.Health;SeenAttackSerial=Hero.AttackSerial;
+    // Leader-pose parts on the same skeleton (the Centaur's armour, mane and bow are separate skeletal meshes).
+    if(const TArray<TSharedPtr<FJsonValue>>* PartList=nullptr;Binding->TryGetArrayField(TEXT("parts"),PartList))
+        for(const auto& Value:*PartList)
+        {
+            FString PartPath;if(!Value->TryGetString(PartPath)||!PartPath.StartsWith(TEXT("/Game/"))||Parts.Num()>=8)continue;
+            auto* PartMesh=LoadObject<USkeletalMesh>(nullptr,*PartPath,nullptr,LOAD_Quiet|LOAD_NoWarn);
+            if(!PartMesh||PartMesh->GetSkeleton()!=Mesh->GetSkeleton())continue;
+            auto* Part=NewObject<USkeletalMeshComponent>(&Hero);Hero.AddInstanceComponent(Part);
+            Part->SetSkeletalMesh(PartMesh);Prepare(*Part);Part->SetCastShadow(true);Part->SetupAttachment(Parent);
+            Part->RegisterComponent();Part->SetLeaderPoseComponent(Parent);Part->SetVisibility(Parent->IsVisible());Parts.Add(Part);
+        }
+    // "materialSwap": vendor variant materials (the Centaur's coat / hair colours) on the body and its parts, so the
+    // champion reads apart from the same pack's monsters.
+    if(const TSharedPtr<FJsonObject>* Swap=nullptr;Binding->TryGetObjectField(TEXT("materialSwap"),Swap))
+    {
+        TMap<FString,UMaterialInterface*> Map;
+        for(const auto& Pair:(*Swap)->Values)
+        {
+            FString To;if(!Pair.Value->TryGetString(To)||!To.StartsWith(TEXT("/Game/")))continue;
+            if(auto* M=LoadObject<UMaterialInterface>(nullptr,*To,nullptr,LOAD_Quiet|LOAD_NoWarn))Map.Add(FString(Pair.Key.ToView()),M);
+        }
+        TArray<USkeletalMeshComponent*> Targets={Parent};for(auto& Part:Parts)Targets.Add(Part);
+        for(USkeletalMeshComponent* Target:Targets)
+            for(int32 I=0;I<Target->GetNumMaterials();++I)
+                if(UMaterialInterface* Current=Target->GetMaterial(I))if(auto* const* To=Map.Find(Current->GetPathName()))Target->SetMaterial(I,*To);
+    }
     if(Motion==TEXT("mounted"))
     {
         const TSharedPtr<FJsonObject>* R=nullptr;FString RiderPath,LocoPath,AttackPath;double RiderHeight=170,SeatHeight=.62,SeatForward=0;
@@ -515,6 +567,7 @@ void UCireCreatureArt::UpdateNative(ACireHero& Hero,float Dt)
     if(UAnimSequence* Idle=Anim->Idle.Sequence){NativeIdleTime=FMath::Fmod(NativeIdleTime+Dt,FMath::Max(.01f,Idle->GetPlayLength()));Anim->Idle.Time=NativeIdleTime;}
     // Attack: every basic attack serial plays the body's attack clip (mount: the sabercat's swipe; gunblade: the aimed shot).
     const double Now=Hero.GetWorld()->GetTimeSeconds();
+    if(bReactions){const auto* GS=Hero.GetWorld()->GetGameState();UpdateReactions(Hero,*Anim,Dt,GS?GS->GetServerWorldTimeSeconds():Now);for(auto& Part:Parts)if(Part)Part->SetOverlayMaterial(Native->GetOverlayMaterial());return;} // fab-integration
     if(Hero.AttackSerial!=SeenAttackSerial){SeenAttackSerial=Hero.AttackSerial;AttackSeenAt=Now;}
     const float Age=static_cast<float>(Now-AttackSeenAt),Window=.85f;
     if(AttackClip&&Age>=0&&Age<Window&&!Hero.bDead)
@@ -543,6 +596,134 @@ void UCireCreatureArt::UpdateNative(ACireHero& Hero,float Dt)
         }
         Rider->SetOverlayMaterial(Native->GetOverlayMaterial());
     }
+}
+
+#if !UE_BUILD_SHIPPING
+bool UCireCreatureArt::RunFabChampionSmoke(UWorld* World)
+{
+    if(!World)return false;
+    bool Pass=true;int32 Checks=0,Fab=0;
+    auto Check=[&](bool Value,const FString& Why){++Checks;if(!Value){Pass=false;UE_LOG(LogTemp,Error,TEXT("CIRE_FAB_CREATURE_CHAMPIONS_FAIL %s"),*Why);}};
+    const bool bForce=GCireForceTripoChampionArt;GCireForceTripoChampionArt=true;
+    const auto* GS=World->GetGameState();
+    auto ServerNow=[World,GS](){return GS?GS->GetServerWorldTimeSeconds():World->GetTimeSeconds();};
+    struct FCase{const TCHAR* Profile;const TCHAR* Skill;int32 MinParts;};
+    for(const FCase& Case:{FCase{TEXT("bear"),TEXT("war_cry"),0},FCase{TEXT("evergrove_centaur"),TEXT("restoring_light"),4}})
+    {
+        FString Mesh,Motion;bool bFab=false;
+        Check(UCireChampionArt::EffectiveCreatureBinding(Case.Profile,Mesh,Motion,bFab),FString(Case.Profile)+TEXT(" has a creature binding"));
+        FActorSpawnParameters Params;Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        auto* Hero=World->SpawnActor<ACireHero>(FVector(600,-9000,9000),FRotator::ZeroRotator,Params);
+        if(!Hero){Check(false,TEXT("fixture hero spawned"));continue;}
+        Hero->SetActorTickEnabled(false);Hero->SetActorEnableCollision(false);Hero->GetCharacterMovement()->SetComponentTickEnabled(false);
+        Hero->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+        Check(Hero->DraftProfile(Case.Profile)&&Hero->ChampionArt&&Hero->ChampionArt->DebugApply(*Hero),FString(Case.Profile)+TEXT(" creature art applies"));
+        UCireCreatureArt* Art=Hero->ChampionArt?Hero->ChampionArt->GetCreature():nullptr;
+        if(!Art||!bFab)
+        {
+            // Clean clone / -CireNoFab: the committed body, never the reaction path.
+            Check(Art&&Art->VisualMesh()&&!Art->HasReactions(),FString(Case.Profile)+TEXT(" keeps its committed creature body without the packs"));
+            Hero->Destroy();continue;
+        }
+        ++Fab;
+        USkeletalMeshComponent* Body=Art->GetNativeBody();
+        Check(Body&&Body==Hero->GetMesh()&&Body->GetSkeletalMeshAsset()&&Body->GetSkeletalMeshAsset()->GetPathName()==Mesh&&Art->HasReactions()&&Cast<UCireMonsterAnimInstance>(Body->GetAnimInstance()),
+            FString(Case.Profile)+TEXT(" wears its Fab body on the native path: ")+Mesh);
+        Check(Art->GetPartCount()>=Case.MinParts,FString::Printf(TEXT("%s leader-pose parts %d >= %d"),Case.Profile,Art->GetPartCount(),Case.MinParts));
+        const float Dt=1.f/30;
+        Hero->Skills={FString(Case.Skill)};Hero->Cooldowns={0.f};Art->Update(*Hero,Dt);
+        // Flinch: a real health drop plays the hit clip.
+        Hero->Health=Hero->MaxHealth*.6f;Art->Update(*Hero,Dt);
+        const UAnimSequence* Hit=Art->GetActionClip();
+        Check(Hit!=nullptr,FString(Case.Profile)+TEXT(" flinches on damage"));
+        // Two basic attacks alternate the strikes (when the body has two).
+        Hero->AttackDuration=.65f;Hero->AttackSerial+=1;Hero->AttackStartedServerTime=ServerNow();Art->Update(*Hero,Dt);
+        const UAnimSequence* First=Art->GetActionClip();
+        Hero->AttackSerial+=1;Hero->AttackStartedServerTime=ServerNow();Art->Update(*Hero,Dt);
+        const UAnimSequence* Second=Art->GetActionClip();
+        Check(First&&Second&&First!=Hit,FString(Case.Profile)+TEXT(" basic attacks play strike clips"));
+        // The strike ends with the replicated attack window.
+        Hero->AttackStartedServerTime=ServerNow()-4.;Art->Update(*Hero,Dt);
+        Check(Art->GetActionClip()==nullptr,FString(Case.Profile)+TEXT(" strike ends and returns to the gait"));
+        // A cooldown starting plays that skill's cast clip.
+        Hero->Cooldowns={12.f};Art->Update(*Hero,Dt);
+        Check(Art->GetActionClip()!=nullptr,FString(Case.Profile)+TEXT(" casts ")+Case.Skill);
+        // Death holds the death clip; the respawn clears it.
+        auto* Anim=Cast<UCireMonsterAnimInstance>(Body->GetAnimInstance());
+        Hero->bDead=true;for(int32 I=0;I<6;++I)Art->Update(*Hero,Dt);
+        Check(Anim&&Anim->Death.Sequence&&Anim->Death.Weight>.5f&&Anim->Action.Weight==0.f,FString(Case.Profile)+TEXT(" plays and holds its death clip"));
+        Hero->bDead=false;Hero->Health=Hero->MaxHealth;Art->Update(*Hero,Dt);
+        Check(Anim&&Anim->Death.Weight==0.f,FString(Case.Profile)+TEXT(" stands again after the respawn"));
+        Hero->Destroy();
+    }
+    GCireForceTripoChampionArt=bForce;
+    UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_CREATURE_CHAMPIONS_%s checks=%d fabBodies=%d"),Pass?TEXT("PASS"):TEXT("FAIL"),Checks,Fab);
+    return Pass;
+}
+#endif
+
+// ================================================================================ fab-integration
+void UCireCreatureArt::StartAction(UAnimSequence* Clip,double StartedAt,float Release,float Weight,bool bHit)
+{
+    if(!Clip)return;
+    ActionClip=Clip;ActionStartedAt=StartedAt;ActionWeight=Weight;bActionIsHit=bHit;
+    const float Length=Clip->GetPlayLength();const float* Contact=Contacts.Find(Clip);
+    // Unmeasured clips land their blow a third of the way in; a hit reaction simply plays from its start.
+    ActionContact=bHit?0.f:FMath::Clamp(Contact?*Contact:Length*.35f,0.f,Length);
+    ActionRelease=bHit?0.f:FMath::Max(0.f,Release);
+}
+
+void UCireCreatureArt::UpdateReactions(ACireHero& Hero,UCireMonsterAnimInstance& Anim,float Dt,double Now)
+{
+    // Basic attack: alternate the two strikes; the contact frame meets the server's release
+    // (0.25 of the 0.65 s authored attack, scaled by attack speed, like the humanoid champions).
+    if(Hero.AttackSerial!=SeenAttackSerial)
+    {
+        SeenAttackSerial=Hero.AttackSerial;
+        UAnimSequence* Strike=(AttackAltClip&&(Hero.AttackSerial&1))?AttackAltClip.Get():AttackClip.Get();
+        const double Started=Hero.AttackStartedServerTime>Now-1.?Hero.AttackStartedServerTime:Now;
+        StartAction(Strike,Started,FMath::Max(.05f,Hero.AttackDuration)*(.25f/.65f),1.f,false);bActionBasic=true;
+    }
+    // The strike follows the replicated attack start (a corrected server time moves it, as for the humanoids).
+    else if(bActionBasic&&ActionClip&&Hero.AttackStartedServerTime>Now-5.)ActionStartedAt=Hero.AttackStartedServerTime;
+    // Casts: a cooldown starting means the server accepted that slot. Skill id first, then shout / spell / ability.
+    for(int32 Slot=0;Slot<Hero.Cooldowns.Num();++Slot)
+    {
+        const float Previous=LastCooldowns.IsValidIndex(Slot)?LastCooldowns[Slot]:0.f;
+        if(Hero.Cooldowns[Slot]>Previous+.5f&&Hero.Skills.IsValidIndex(Slot))
+        {
+            const FString& Skill=Hero.Skills[Slot];const FString SkillKind=CireChampionActions::SkillKind(Skill);
+            const TObjectPtr<UAnimSequence>* Found=CastClips.Find(Skill);
+            if(!Found)Found=CastClips.Find(SkillKind);
+            if(!Found)Found=CastClips.Find(TEXT("ability"));
+            UAnimSequence* Cast=Found?Found->Get():AttackAltClip?AttackAltClip.Get():AttackClip.Get();
+            StartAction(Cast,Now,FMath::Min(.6f,CireChampionActions::SkillWindup(Hero.GetWorld(),Skill)),1.f,false);bActionBasic=false;
+        }
+    }
+    LastCooldowns=Hero.Cooldowns;
+    // Flinch: health dropped by at least 1.5% while nothing plays, at most once per 0.9 s.
+    if(!Hero.bDead&&HitClip&&!ActionClip&&LastHealth>=0&&Hero.Health<LastHealth-.015f*FMath::Max(1.f,Hero.MaxHealth)&&Now-LastHitAt>.9)
+    {StartAction(HitClip,Now,0.f,.7f,true);bActionBasic=false;LastHitAt=Now;}
+    LastHealth=Hero.Health;
+    // Death: the clip plays once and holds its last frame until the respawn.
+    if(Hero.bDead&&DeathClip)
+    {
+        DeadAge+=Dt;ActionClip=nullptr;Anim.Action.Weight=0.f;Anim.Action.Sequence=nullptr;
+        Anim.Death.Sequence=DeathClip;Anim.Death.Time=FMath::Min(DeadAge,DeathClip->GetPlayLength()-.01f);Anim.Death.Weight=FMath::SmoothStep(0.f,1.f,DeadAge/.12f);
+        return;
+    }
+    DeadAge=0;Anim.Death.Weight=0.f;Anim.Death.Sequence=nullptr;
+    if(Hero.bDead)ActionClip=nullptr;
+    if(!ActionClip){Anim.Action.Weight=0.f;Anim.Action.Sequence=nullptr;return;}
+    const float Length=ActionClip->GetPlayLength(),Age=static_cast<float>(Now-ActionStartedAt);
+    // Fast releases skip the slow start of the wind-up (at most 2x speed) instead of racing through it.
+    const float From=ActionRelease>0?FMath::Max(0.f,ActionContact-ActionRelease*2.f):ActionContact;
+    const float Time=Age<ActionRelease?FMath::Lerp(From,ActionContact,FMath::Max(0.f,Age)/ActionRelease):ActionContact+(Age-ActionRelease);
+    if(Time>=Length){ActionClip=nullptr;Anim.Action.Weight=0.f;Anim.Action.Sequence=nullptr;return;}
+    const float Weight=FMath::Min(FMath::SmoothStep(0.f,1.f,FMath::Max(0.f,Age)/.08f),FMath::SmoothStep(0.f,1.f,(Length-Time)/.25f));
+    Anim.Action.Sequence=ActionClip;Anim.Action.Time=FMath::Clamp(Time,0.f,Length);
+    // A flinch while moving reads on the body without freezing the gait.
+    Anim.Action.Weight=Weight*ActionWeight*(bActionIsHit?1.f-.6f*Anim.MoveAlpha:1.f);Anim.Action.LowerBody=1.f-Anim.MoveAlpha;
 }
 
 // ========================================================================================== pets

@@ -13,6 +13,7 @@ class UMeshComponent;
 class UStaticMeshComponent;
 class UAnimSequence;
 class UBlendSpace;
+class UCireMonsterAnimInstance;
 class USkeletalMesh;
 
 /** Imported custom quadruped rig, evaluated in local space without root motion. */
@@ -87,6 +88,12 @@ public:
     USkeletalMeshComponent* GetNativeBody() const { return Native; }
     FName GetSeatBone() const { return SeatBone; }
     int32 GetPropCount() const { return Props.Num(); }
+    /** fab-integration: skeletal parts (armour, mane, bow...) following the native body through leader pose. */
+    int32 GetPartCount() const { return Parts.Num(); }
+    /** fab-integration: the native body plays hit / cast / death clips (champion bodies from ChampionArtBindings.fab.json). */
+    bool HasReactions() const { return bReactions; }
+    /** fab-integration: the clip on the native action layer right now (attack, cast or hit), or null. */
+    const UAnimSequence* GetActionClip() const { return ActionClip; }
     /** pets: the procedural quadruped body and its rig (null / invalid for other kinds). */
     USkeletalMeshComponent* GetQuadBody() const { return Quad; }
     const FCireQuadRig* GetQuadRig() const;
@@ -102,6 +109,12 @@ public:
      * measures planted-paw slip (paw ground speed while lowest / body speed) plus right-rear knee motion.
      */
     static bool RunGaitSmoke(UWorld* World);
+    /**
+     * fab-integration: creature champions on their Fab bodies (ChampionArtBindings.fab.json) when the packs are installed:
+     * native body + parts, flinch, alternating strike, cast clip, held death. Without the packs: the committed binding.
+     * Logs CIRE_FAB_CREATURE_CHAMPIONS_PASS / _FAIL.
+     */
+    static bool RunFabChampionSmoke(UWorld* World);
 #endif
 private:
     UPROPERTY(Transient) TObjectPtr<UObject> SourceAsset;
@@ -119,6 +132,21 @@ private:
     float DeadAge = 0, DeadWeight = 0;
     bool ApplyQuad(ACireHero& Hero, const FString& MeshPath, float HeightCm, const TSharedPtr<FJsonObject>& Binding);
     void UpdateQuad(ACireHero& Hero, float Delta);
+    // fab-integration: champion reactions on the native body (attack alternation, casts, hits, death) and leader-pose parts.
+    UPROPERTY(Transient) TArray<TObjectPtr<USkeletalMeshComponent>> Parts;
+    UPROPERTY(Transient) TObjectPtr<UAnimSequence> AttackAltClip;
+    UPROPERTY(Transient) TObjectPtr<UAnimSequence> HitClip;
+    UPROPERTY(Transient) TMap<FString,TObjectPtr<UAnimSequence>> CastClips;
+    UPROPERTY(Transient) TObjectPtr<UAnimSequence> ActionClip;
+    /** Contact frame (seconds into the clip) per clip; the strike reaches it when the server releases the blow. */
+    TMap<const UAnimSequence*,float> Contacts;
+    double ActionStartedAt=-100;
+    float ActionContact=0,ActionRelease=0,ActionWeight=1;
+    bool bActionIsHit=false,bActionBasic=false,bReactions=false;
+    float LastHealth=-1;double LastHitAt=-100;
+    TArray<float> LastCooldowns;
+    void StartAction(UAnimSequence* Clip,double StartedAt,float Release,float Weight,bool bHit);
+    void UpdateReactions(ACireHero& Hero,UCireMonsterAnimInstance& Anim,float Dt,double Now);
     UPROPERTY(Transient) TObjectPtr<UAnimSequence> RiderAttack;
     UPROPERTY(Transient) TObjectPtr<UBlendSpace> RiderLocomotion;
     FName SeatBone;

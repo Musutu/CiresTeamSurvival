@@ -64,6 +64,18 @@ def binding_plan(root: Path, profiles: str | None, mobility: bool = False) -> di
     if any(not item or item not in ready for item in required) or len(required) != len(set(required)):
         raise ValueError("Every requested profile must have one ready binding; required: " + ", ".join(required))
     selected = {name: ready[name] for name in required} if profiles else ready
+    # fab-integration: a creature champion takes its purchased Fab body (ChampionArtBindings.fab.json) when the pack is
+    # installed locally, exactly like CireChampionArt at runtime (mesh + idle/walk/run packages present).
+    fab_path = root / "Content/Data/ChampionArtBindings.fab.json"
+    if fab_path.is_file():
+        def present(asset: str) -> bool:
+            package = canonical_asset(asset).split(".")[0]
+            return (root / "Content" / (package[len("/Game/"):] + ".uasset")).is_file()
+        for row in json.loads(fab_path.read_text(encoding="utf-8-sig")).get("bindings", []):
+            name, anims = row.get("profileId"), row.get("animations", {})
+            if name in selected and selected[name].get("status") == "custom_ready" and row.get("status") == "custom_ready" \
+                    and all(present(a) for a in (row.get("mesh", ""), anims.get("idle", ""), anims.get("walk", ""), anims.get("run", ""))):
+                selected[name] = dict(row, fab=True)
     if not 1 <= len(selected) <= 32:
         raise ValueError("Gallery supports 1..32 ready profiles")
     for name, row in selected.items():

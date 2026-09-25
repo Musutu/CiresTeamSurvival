@@ -76,6 +76,9 @@ bool ParseBody(const TSharedPtr<FJsonObject>& O, CireMonsterArt::FBody& Body)
         if (O->TryGetNumberField(TEXT("reachCm"), V) && FMath::IsFinite(V)) Body.ReachCm = static_cast<float>(FMath::Clamp(V, 0., 2000.));
         if (O->TryGetNumberField(TEXT("soleCm"), V) && FMath::IsFinite(V)) Body.SoleCm = static_cast<float>(FMath::Clamp(V, 0., 60.)); // fab-integration
         if (O->TryGetNumberField(TEXT("airborneCm"), V) && FMath::IsFinite(V)) Body.AirborneCm = static_cast<float>(FMath::Clamp(V, 0., 60.));
+        const TArray<TSharedPtr<FJsonValue>>* PartList = nullptr; // fab-integration
+        if (O->TryGetArrayField(TEXT("parts"), PartList))
+            for (const auto& Value : *PartList) { FString Part; if (Value->TryGetString(Part) && Part.StartsWith(TEXT("/Game/")) && Body.Parts.Num() < 8) Body.Parts.Add(Part); }
         const TArray<TSharedPtr<FJsonValue>>* Drops = nullptr;
         if (O->TryGetArrayField(TEXT("dropPropBones"), Drops))
             for (const auto& Value : *Drops) { FString Bone; if (Value->TryGetString(Bone)) Body.DropPropBones.Add(FName(*Bone)); }
@@ -467,8 +470,15 @@ void UCireMonsterArt::RestoreFallback()
         if (FallbackAnimClass) Mesh->SetAnimInstanceClass(FallbackAnimClass);
     }
     RoleClips.Reset(); NamedClips.Reset(); Current = FAction();
+    ClearBodyParts();
     bTripoApplied = false; AppliedVariant.Reset(); AppliedArchetype = NAME_None;
     SetComponentTickEnabled(false);
+}
+
+void UCireMonsterArt::ClearBodyParts()
+{
+    for (auto& Part : BodyParts) if (Part) Part->DestroyComponent();
+    BodyParts.Reset();
 }
 
 UAnimSequence* UCireMonsterArt::RoleClip(const FString& Role) const
@@ -639,6 +649,22 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
         OutParts.Add(Part);
     }
     bFabApplied = Body.bFab; // fab-integration
+    // fab-integration: leader-pose parts (the Centaur's armour, mane and bow are separate meshes on its skeleton).
+    ClearBodyParts();
+    for (const FString& PartPath : Body.Parts)
+    {
+        USkeletalMesh* PartMesh = LoadIfPresent<USkeletalMesh>(PartPath);
+        if (!PartMesh || PartMesh->GetSkeleton() != Asset->GetSkeleton()) continue;
+        auto* Part = NewObject<USkeletalMeshComponent>(Monster);
+        Monster->AddInstanceComponent(Part);
+        Part->SetupAttachment(Mesh);
+        Part->SetSkeletalMesh(PartMesh);
+        Part->SetCollisionEnabled(ECollisionEnabled::NoCollision); Part->SetGenerateOverlapEvents(false);
+        Part->SetCanEverAffectNavigation(false); Part->SetCastShadow(true);
+        Part->RegisterComponent();
+        Part->SetLeaderPoseComponent(Mesh); Part->SetVisibility(Mesh->IsVisible());
+        BodyParts.Add(Part);
+    }
     bTripoApplied = true; AppliedArchetype = Archetype.Id; AppliedVariant = Body.Variant; AppliedMeshScale = Body.MeshScale;
     AppliedWalkRaw = Body.WalkSpeedCm / FMath::Max(.01f, Body.MeshScale); AppliedRunRaw = Body.RunSpeedCm / FMath::Max(.01f, Body.MeshScale); // world-dressing
     Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = -1.f; // a cast already under way is picked up mid-bar
@@ -857,6 +883,7 @@ void UCireMonsterArt::UpdatePresentation(float DeltaTime)
     // The off hand lets go of a two-handed weapon while an action clip drives the arms.
     Anim->Hands.TwoHandWeight = GripHands.bTwoHand || GripHands.bCarry ? 1.f - Anim->Action.Weight : 0.f;
     UpdateRim();
+    for (auto& Part : BodyParts) if (Part) Part->SetOverlayMaterial(Monster->GetMesh()->GetOverlayMaterial()); // fab-integration
 }
 
 CireMonsterArt::FClipWindow UCireMonsterArt::WindowOf(const FString& RoleOrName) const
@@ -936,7 +963,7 @@ void UCireMonsterArt::SpawnCorpse()
     if (!Corpse) return;
     TArray<TObjectPtr<UStaticMeshComponent>> Props;
     if (Monster->NPCState) Props = Monster->NPCState->VisualParts;
-    if (!Corpse->Initialize(*Mesh, Fall, RoleClip(TEXT("idle")), Props, &GripHands)) { Corpse->Destroy(); return; }
+    if (!Corpse->Initialize(*Mesh, Fall, RoleClip(TEXT("idle")), Props, &GripHands, &BodyParts)) { Corpse->Destroy(); return; }
     // The live actor is destroyed this frame; hide it now so the body is never drawn twice.
     Mesh->SetVisibility(false, true);
 }
@@ -958,7 +985,8 @@ void ACireMonsterCorpse::EndPlay(const EEndPlayReason::Type Reason) { --GCorpses
 
 int32 ACireMonsterCorpse::LiveCount() { return GCorpses; }
 
-bool ACireMonsterCorpse::Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props, const CireGrip::FHands* Hands)
+bool ACireMonsterCorpse::Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props, const CireGrip::FHands* Hands,
+    const TArray<TObjectPtr<USkeletalMeshComponent>>* Parts)
 {
     if (!Source.GetSkeletalMeshAsset() || !Fall) return false;
     SetActorTransform(Source.GetComponentTransform());
@@ -987,6 +1015,19 @@ bool ACireMonsterCorpse::Initialize(const USkeletalMeshComponent& Source, UAnimS
         Copy->SetRelativeTransform(Prop->GetRelativeTransform());
         Copy->RegisterComponent();
     }
+    // fab-integration: the body's leader-pose parts fall with it.
+    if (Parts)
+        for (const USkeletalMeshComponent* Part : *Parts)
+        {
+            if (!Part || !Part->GetSkeletalMeshAsset()) continue;
+            auto* Copy = NewObject<USkeletalMeshComponent>(this);
+            AddInstanceComponent(Copy);
+            Copy->SetupAttachment(Body);
+            Copy->SetSkeletalMesh(Part->GetSkeletalMeshAsset());
+            Copy->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            Copy->RegisterComponent();
+            Copy->SetLeaderPoseComponent(Body);
+        }
     StartLocation = GetActorLocation();
     return true;
 }

@@ -53,8 +53,11 @@ UNITS = {
     "wild_outrider": dict(variant="FabCentaur", mesh=Q + "/Centaur/Meshes/SK_Centaur", head=215, rig="quadruped",
         sockets=dict(head="CENTAUR_-Head", pelvis="CENTAUR_-Spine", spine_03="CENTAUR_-Spine2", hand_l="CENTAUR_HAND_L", hand_r="CENTAUR_HAND_R",
                      foot_l="CENTAUR_-L-Foot", foot_r="CENTAUR_-R-Foot", ball_l="CENTAUR_-L-Foot", ball_r="CENTAUR_-R-Foot"),
-        roles=dict(idle="ANIM_Centaur_IdleNormal", walk="ANIM_Centaur_WalkNormal", run="ANIM_Centaur_GallopNormal", attack="ANIM_Centaur_LegAttackNormal",
-                   attackAlt="ANIM_Centaur_LegAttackNormal", hit="ANIM_Centaur_GetHitNormal", death="ANIM_Centaur_DeathNormal"), named=dict(),
+        # The outrider is the feral kin's archer: the bow set, the loose on every shot, bow + armour + mane as parts.
+        roles=dict(idle="ANIM_Centaur_IdleBow", walk="ANIM_Centaur_WalkBow", run="ANIM_Centaur_GallopBow", attack="ANIM_Centaur_ShootArrowToIdleAiming",
+                   attackAlt="ANIM_Centaur_LegAttackBow", hit="ANIM_Centaur_GetHitBow", death="ANIM_Centaur_DeathBow"),
+        named=dict(cast_a_spell="ANIM_Centaur_IdleNormalToIdleAiming", war_cry="ANIM_Centaur_LegAttackBow"),
+        parts=["SK_Body_Armor", "SK_Shoulder_Pads", "SK_Mane", "SK_Beard", "SK_Bow_Action"],
         folder=Q + "/Centaur/Animations"),
     "hollow_infantry": dict(variant="FabSkeleton", mesh=UD + "/SkeletonEnemy/Mesh/SK_Skeleton", head=172, humanoid=True,
         roles=dict(idle="Anim_Idle_Sword", walk="Anim_Walk_Sword", run="Anim_Run_Sword", attack="Anim_Attack_Sword_1", attackAlt="Anim_Attack_Sword_2",
@@ -208,6 +211,14 @@ def main():
             air = m["clips"]["run"]["maxLowestFoot"] * scale - 30.0
             if air > 0:
                 row["airborneCm"] = round(min(60.0, air + 5.0), 1)
+            parts = []  # leader-pose parts on the same skeleton (UCireMonsterArt::ApplyBody)
+            for p in spec.get("parts", []):
+                path = "%s/%s" % (spec["mesh"].rsplit("/", 1)[0], p)
+                part = u.load_asset(path) if exists(path) else None
+                if part and part.get_editor_property("skeleton") == u.load_asset(spec["mesh"]).get_editor_property("skeleton"):
+                    parts.append("%s.%s" % (path, p))
+            if parts:
+                row["parts"] = parts
             if spec.get("rig"):
                 row["rig"] = spec["rig"]
                 row["sockets"] = spec["sockets"]
@@ -234,4 +245,5 @@ def main():
         (ROOT / "Saved/FabCreatures.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
 
 
-main()
+if not globals().get("CIRE_IMPORT_ONLY"):  # Tools/BuildFabChampionCreatures.py reuses measure()
+    main()
