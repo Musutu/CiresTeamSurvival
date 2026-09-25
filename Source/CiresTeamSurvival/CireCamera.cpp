@@ -35,10 +35,13 @@ struct FCameraState
     double LastManualOrbit = -100.0;
     bool bFaceSent = false;
     bool bAutoRun = false;
+    bool bRightWorld = false;
+    float RightTravel = 0.f;
+    double RightPressTime = 0.0;
 };
 TMap<TWeakObjectPtr<ACireController>, FCameraState> States;
 
-constexpr float ClickTravel = 5.f;        // raw counts before a left press is a drag, not a click
+constexpr float ClickTravel = 8.f;        // raw counts before a press is a drag, not a click
 constexpr float ZoomStepFraction = .14f;  // per wheel notch
 constexpr float MinZoomStep = 45.f;
 
@@ -104,18 +107,20 @@ CireCamera::FResult CireCamera::Tick(ACireController* C, ACireHero* H, float Dt,
     // Hide and lock the cursor while a world drag is held (engine restores it on release).
     // Drags that start on HUD panels keep the normal cursor so sliders/layout editing work.
     if (auto* LP = C->GetLocalPlayer(); LP && LP->ViewportClient && !C->IsInputKeyDown(EKeys::LeftMouseButton) && !C->IsInputKeyDown(EKeys::RightMouseButton))
-        LP->ViewportClient->SetHideCursorDuringCapture(Frame.bMouseAllowed && !Frame.bPointerOverInterface && Frame.bPressEligible && H->bDrafted);
+        LP->ViewportClient->SetHideCursorDuringCapture(Frame.bMouseAllowed && !Frame.bPointerOverInterface && (Frame.bPressEligible || Frame.bAiming) && H->bDrafted);
 
     // ---- mouse gestures -------------------------------------------------------------
     const bool bWorldPress = Frame.bMouseAllowed && !Frame.bPointerOverInterface;
     if (C->WasInputKeyJustPressed(EKeys::LeftMouseButton))
     {
-        S.bLeft = bWorldPress; S.LeftTravel = 0.f; S.bLeftClickEligible = bWorldPress && Frame.bPressEligible;
+        // Clean left clicks select, or confirm an armed reticle; a drag only orbits the camera.
+        S.bLeft = bWorldPress; S.LeftTravel = 0.f; S.bLeftClickEligible = bWorldPress && (Frame.bPressEligible || Frame.bAiming);
         float X = 0, Y = 0; C->GetMousePosition(X, Y); S.LeftPress = FVector2D(X, Y);
     }
     if (C->WasInputKeyJustPressed(EKeys::RightMouseButton))
     {
-        S.bRight = bWorldPress && Frame.bPressEligible;
+        // Steering works while a reticle is armed (aiming never blocks mouselook).
+        S.bRight = bWorldPress; S.bRightWorld = bWorldPress; S.RightTravel = 0.f; S.RightPressTime = Now;
         // WoW: pressing the steering button snaps the character to the camera heading.
         if (S.bRight && Frame.bSteeringAllowed) { FRotator R = C->GetControlRotation(); R.Yaw = S.Yaw; C->SetControlRotation(R); }
     }
@@ -125,6 +130,7 @@ CireCamera::FResult CireCamera::Tick(ACireController* C, ACireHero* H, float Dt,
     {
         const float X = MouseAxis(C, EKeys::MouseX), Y = MouseAxis(C, EKeys::MouseY);
         if (bLeftHeld) S.LeftTravel += FMath::Abs(X) + FMath::Abs(Y);
+        if (S.bRight) S.RightTravel += FMath::Abs(X) + FMath::Abs(Y);
         if (Frame.bMouseAllowed)
         {
             S.Yaw = FRotator::NormalizeAxis(S.Yaw + X * YawSpeed);
@@ -132,6 +138,11 @@ CireCamera::FResult CireCamera::Tick(ACireController* C, ACireHero* H, float Dt,
             S.Pitch = FMath::Clamp(S.Pitch + Y * PitchSpeed * Invert, MinPitch, MaxPitch);
             if (!FMath::IsNearlyZero(X) || !FMath::IsNearlyZero(Y)) S.LastManualOrbit = Now;
         }
+    }
+    if (C->WasInputKeyJustReleased(EKeys::RightMouseButton))
+    {
+        if (S.bRightWorld && S.RightTravel < ClickTravel && Now - S.RightPressTime < .35) Result.bRightClick = true;
+        S.bRightWorld = false;
     }
     if (C->WasInputKeyJustReleased(EKeys::LeftMouseButton))
     {
@@ -141,7 +152,7 @@ CireCamera::FResult CireCamera::Tick(ACireController* C, ACireHero* H, float Dt,
 
     // ---- keyboard steering ---------------------------------------------------------
     const bool bMouselook = S.bRight && Frame.bSteeringAllowed;
-    const bool bBoth = bMouselook && bLeftHeld;
+    bool bBoth = bMouselook && bLeftHeld;
     const auto& Tuning = CireMovement::Tuning();
     FSteer Steer;
     const FCireKeybindings& Keys = Frame.Bindings ? *Frame.Bindings : CireKeybindings::Defaults();
@@ -155,6 +166,13 @@ CireCamera::FResult CireCamera::Tick(ACireController* C, ACireHero* H, float Dt,
         K.StrafeLeft = Keys.IsDown(C, TEXT("StrafeLeft")); K.StrafeRight = Keys.IsDown(C, TEXT("StrafeRight"));
         // WoW: pressing forward/back (or running with both buttons) cancels autorun.
         if (S.bAutoRun && (Keys.WasPressed(C, TEXT("MoveForward")) || Keys.WasPressed(C, TEXT("MoveBackward")) || bBoth)) S.bAutoRun = false;
+        Result.bMovementPressed = Keys.WasPressed(C, TEXT("MoveForward")) || Keys.WasPressed(C, TEXT("MoveBackward")) ||
+            Keys.WasPressed(C, TEXT("StrafeLeft")) || Keys.WasPressed(C, TEXT("StrafeRight")) || (bBoth && C->WasInputKeyJustPressed(EKeys::LeftMouseButton));
+        if (Frame.bHoldMovement && !Result.bMovementPressed)
+        {   // Stop to cast: held keys do not drive/strafe; turning in place is still allowed (WoW).
+            S.bAutoRun = false; K.Forward = K.Back = K.StrafeLeft = K.StrafeRight = false; bBoth = false;
+            if (bMouselook) K.TurnLeft = K.TurnRight = false;
+        }
         K.bMouselook = bMouselook; K.bBothButtons = bBoth; K.bAutoRun = S.bAutoRun;
         Steer = MapSteering(K, Tuning.BackpedalScale);
     }
@@ -184,7 +202,8 @@ CireCamera::FResult CireCamera::Tick(ACireController* C, ACireHero* H, float Dt,
         H->AddMovementInput(Basis.GetUnitAxis(EAxis::Y), Steer.Right);
     }
     // Optional follow: swing behind a moving character when no mouse button is held.
-    if (Options && Options->bCameraAutoFollow && !bLeftHeld && !S.bRight && Now - S.LastManualOrbit > .75 &&
+    // Paused while a ground reticle is armed so the aim point never drifts under the cursor.
+    if (Options && Options->bCameraAutoFollow && !Frame.bAiming && !bLeftHeld && !S.bRight && Now - S.LastManualOrbit > .75 &&
         H->GetVelocity().Size2D() > 60.f && Steer.Forward > 0.f)
     {
         const float Delta = FRotator::NormalizeAxis(H->GetActorRotation().Yaw - S.Yaw);

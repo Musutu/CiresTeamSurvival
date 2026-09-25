@@ -2,6 +2,7 @@
 #include "CireGame.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "CireAbilityDB.h"
 #include "GameFramework/RootMotionSource.h"
 #include "Net/UnrealNetwork.h"
 #include "Dom/JsonObject.h"
@@ -78,6 +79,18 @@ float UCireMobility::MovementSpeed(bool bSlowed)const{return (bWalking?CireMovem
 void UCireMobility::ServerSetWalk_Implementation(bool Walking){bWalking=Walking;}
 void UCireMobility::ServerSetStrafe_Implementation(bool Strafing){bStrafing=Strafing;}
 void UCireMobility::ServerSetFaceControl_Implementation(bool Face){bFaceControl=Face;}
+bool CireMovement::IsMovingForCast(const ACireHero& Hero)
+{
+    const auto* Move=Hero.GetCharacterMovement();if(!Move)return false;
+    if(Move->IsFalling())return true;
+    return Move->GetCurrentAcceleration().SizeSquared2D()>1.f&&Hero.GetVelocity().Size2D()>10.f;
+}
+bool CireMovement::BlocksCast(const ACireHero& Hero,const FString& AbilityId)
+{
+    if(Hero.bBot)return false;
+    const auto* D=CireAbilityDB::Find(AbilityId);
+    return D&&D->CastTime>0&&!D->bCastWhileMoving&&IsMovingForCast(Hero);
+}
 float CireMovement::BodyScaleFor(const ACireHero& Hero)
 {
     return Hero.bDrafted&&Hero.HasChampionRole(TEXT("tank"))?Tuning().TankBodyScale:1.f;
@@ -93,7 +106,9 @@ void CireMovement::ApplyToHero(ACireHero& Hero)
         // RMB mouselook (bStrafing) and WoW keyboard steering (bFaceControl) face the controller yaw;
         // otherwise (bots, idle players, rolls) the body turns toward its velocity.
         const bool bFaceController=(Mobility->bStrafing||Mobility->bFaceControl)&&!Mobility->IsRolling();
-        Move->bOrientRotationToMovement=!bFaceController&&!Mobility->IsRolling();
+        // Player-controlled heroes never auto-turn toward their velocity: braking after a strafe or a
+        // knockback must not swing the body (and the next W direction) sideways. Bots/AI still do.
+        Move->bOrientRotationToMovement=!bFaceController&&!Mobility->IsRolling()&&!Hero.IsPlayerControlled();
         Hero.bUseControllerRotationYaw=bFaceController;
     }
     // Tanks are physically larger: actor scale keeps mesh, capsule, selection ring and camera pivot consistent.

@@ -1,6 +1,8 @@
 #include "CireMobility.h"
 #include "CireClassTraits.h" // champion-draft: class-trait-aware expectations
 #include "CireGame.h"
+#include "CireCrowdControl.h"
+#include "CireAbilityDB.h"
 #include "CireCamera.h"
 #include "CireKeybindings.h"
 #include "CireCreatureArt.h"
@@ -152,6 +154,29 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
         (!Remaining||Remaining->Status.HasFlag(ERootMotionSourceStatusFlags::MarkedForRemoval))&&Mobility->ReadyAt==ReadyBeforeRevive,
         TEXT("revive cancels root motion and invulnerability without resetting dodge cooldown"));
     {
+        // feat/camera-movement: WoW cast rule (Abilities.json castWhileMoving).
+        Move->StopMovementImmediately();Move->SetMovementMode(MOVE_Walking);Move->TickComponent(.02f,LEVELTICK_All,nullptr);
+        Check(!IsMovingForCast(*Hero)&&!BlocksCast(*Hero,TEXT("restoring_light")),TEXT("standing still: cast-time heal allowed"));
+        for(int32 I=0;I<6;++I){Hero->AddMovementInput(FVector(0,1,0),1.f);Move->TickComponent(.02f,LEVELTICK_All,nullptr);}
+        Check(IsMovingForCast(*Hero)&&BlocksCast(*Hero,TEXT("restoring_light")),TEXT("moving under input blocks a cast-time heal"));
+        Check(!BlocksCast(*Hero,TEXT("shield_slam")),TEXT("instant spells are castable while moving"));
+        {
+            const auto* Heal=CireAbilityDB::Find(TEXT("restoring_light"));const auto* Slam=CireAbilityDB::Find(TEXT("shield_slam"));
+            Check(Heal&&!Heal->bCastWhileMoving&&Slam&&Slam->bCastWhileMoving,TEXT("Abilities.json castWhileMoving: WoW default for cast-time vs instant"));
+        }
+        Hero->bBot=true;Check(!BlocksCast(*Hero,TEXT("restoring_light")),TEXT("bots are never gated"));Hero->bBot=false;
+        {
+            const auto SavedSkills=Hero->Skills;const auto SavedCd=Hero->Cooldowns;Hero->Skills={TEXT("restoring_light")};Hero->Cooldowns={0};Hero->Mana=Hero->MaxMana=5000;
+            Hero->AddMovementInput(FVector(0,1,0),1.f);Move->TickComponent(.02f,LEVELTICK_All,nullptr);
+            const bool bHandled=CireCrowdControl::GateCast(Hero,0,TEXT("restoring_light"));
+            Check(bHandled&&!CireCrowdControl::IsCasting(Hero)&&Hero->Notice.Contains(TEXT("Can't cast while moving")),TEXT("moving cast-time spell answers 'Can't cast while moving'"));
+            Move->StopMovementImmediately();Move->TickComponent(.02f,LEVELTICK_All,nullptr);
+            Check(CireCrowdControl::GateCast(Hero,0,TEXT("restoring_light"))&&CireCrowdControl::IsCasting(Hero),TEXT("standing cast starts"));
+            for(int32 I=0;I<4;++I){Hero->AddMovementInput(FVector(0,1,0),1.f);Move->TickComponent(.02f,LEVELTICK_All,nullptr);}
+            CireCrowdControl::TickHero(Hero,.02f);
+            Check(!CireCrowdControl::IsCasting(Hero)&&Hero->Notice.Contains(TEXT("Moved")),TEXT("moving cancels the cast (WoW)"));
+            Move->StopMovementImmediately();Hero->Skills=SavedSkills;Hero->Cooldowns=SavedCd;
+        }
         // Action-bar slots: automatic bar-1 layout, then explicit per-champion placement.
         FCireKeybindings Keys;const FName S1=CireKeybindings::SlotAction(1,1),S7=CireKeybindings::SlotAction(1,7),S8=CireKeybindings::SlotAction(1,8),B2=CireKeybindings::SlotAction(2,1);
         const auto SavedSkills=Hero->Skills;const FString SavedProfile=Hero->ChampionProfileId;
@@ -177,7 +202,7 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
     Mobility->ServerSetFaceControl(true);ApplyToHero(*Hero);
     Check(Mobility->bFaceControl&&Hero->bUseControllerRotationYaw&&!Move->bOrientRotationToMovement,TEXT("face-control RPC faces controller yaw"));
     Mobility->ServerSetFaceControl(false);ApplyToHero(*Hero);
-    Check(!Hero->bUseControllerRotationYaw&&Move->bOrientRotationToMovement,TEXT("idle players and bots turn toward movement"));
+    Check(!Hero->bUseControllerRotationYaw&&Move->bOrientRotationToMovement,TEXT("uncontrolled heroes (bots) turn toward movement"));
     Check(FMath::IsNearlyEqual(Move->MaxAcceleration,V.Acceleration)&&FMath::IsNearlyEqual(Move->BrakingDecelerationWalking,V.BrakingDeceleration)&&
         FMath::IsNearlyEqual(Move->GroundFriction,V.GroundFriction),TEXT("responsiveness tuning applied to character movement"));
     // Tank body scale: capsule, mesh and feet stay consistent.

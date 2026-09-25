@@ -51,6 +51,8 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
         D.Targeting=Str(J,TEXT("targeting"));D.Status=Str(J,TEXT("status"));D.Description=Str(J,TEXT("description"));D.EffectLabel=Str(J,TEXT("effectLabel"));D.Category=Str(J,TEXT("category"));
         D.Types=Strings(J,TEXT("types"));D.Champions=Strings(J,TEXT("champions"));D.SignatureOf=Strings(J,TEXT("signatureOf"));
         D.CastTime=Num(J,TEXT("castTime"));
+        // feat/camera-movement: optional; missing means WoW behaviour (instants move, cast-time spells stand still).
+        if(!J->TryGetBoolField(TEXT("castWhileMoving"),D.bCastWhileMoving))D.bCastWhileMoving=D.CastTime<=0;
         if(D.Id!=FString(Pair.Key)||D.Id.IsEmpty()||Seen.Contains(D.Id)||D.Name.IsEmpty()||!Kinds.Contains(D.Kind)||!Schools.Contains(D.School)||
             !Targets.Contains(D.Targeting)||D.Types.IsEmpty()||D.CastTime<0||D.CastTime>10)return Fail(TEXT("Invalid ability identity: ")+D.Id);
         for(const FString& T:D.Types)if(!Types.Contains(T))return Fail(TEXT("Invalid type: ")+D.Id);

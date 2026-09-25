@@ -4,6 +4,8 @@
 #include "CireAbilityDB.h" // new-champions
 #include "CireAbilityShapes.h" // new-champions
 #include "CireSelection.h"
+#include "CireMobility.h" // feat/camera-movement
+#include "CireCamera.h" // feat/camera-movement
 #include "CireGame.h"
 #include "CireArenas.h" // arenas
 #include "CireHUD.h"
@@ -38,6 +40,17 @@ struct FTargetState
     CireAbilityVFX::FVoidResult LastVoid; // ability-vfx: void zone drawn in the preview (tests)
 };
 TMap<TWeakObjectPtr<ACireController>,FTargetState> States;
+// feat/camera-movement: stop-to-cast. A cast-time spell pressed while moving waits until the character stopped.
+struct FDeferredCast
+{
+    int32 Slot=INDEX_NONE;TWeakObjectPtr<AActor> Explicit;bool bAt=false;FVector Point=FVector::ZeroVector;
+    double Since=0;bool bSent=false,bSawCast=false;double SentAt=0;
+};
+TMap<TWeakObjectPtr<ACireController>,FDeferredCast> Deferred;
+void SendNow(ACireController* C,int32 Slot,AActor* Explicit,bool bAt,FVector Point)
+{
+    if(bAt)C->ServerCastAt(Slot,Point);else C->ServerAction(2,Slot,Explicit);
+}
 // ability-vfx: hover void preview (targeted skills have no aim mode).
 struct FHoverState { TWeakObjectPtr<AActor> Preview; TWeakObjectPtr<UProceduralMeshComponent> Mesh; FString SkillId; uint64 Frame=0; CireAbilityVFX::FVoidResult Last;
     TArray<FVector> V; TArray<int32> I; TArray<FLinearColor> C; };
@@ -288,23 +301,87 @@ void CireTargeting::Request(ACireController* C,int32 Slot)
     if(!IsValid(C)||!C->IsLocalController())return;
     auto* H=Cast<ACireHero>(C->GetPawn());auto* HUD=Cast<ACireHUD>(C->GetHUD());
     if(!H||H->bDead||!H->bDrafted||!H->Skills.IsValidIndex(Slot)||!H->Cooldowns.IsValidIndex(Slot)||H->Cooldowns[Slot]>0)return;
-    const FString Id=H->Skills[Slot];const auto D=Describe(Id);Cancel(C);
+    const FString Id=H->Skills[Slot];const auto D=Describe(Id);
+    const bool bSmart=!HUD||HUD->UISettings.bSmartCast,bMouseover=HUD&&HUD->UISettings.bMouseoverCast;
+    // feat/camera-movement: pressing the armed ground ability again casts it at the reticle.
+    if(const auto* Armed=States.Find(TWeakObjectPtr<ACireController>(C));Armed&&Armed->View.Slot==Slot&&HUD&&HUD->UISettings.bPressAgainToCast)
+    {Confirm(C);return;}
+    Cancel(C);
     const int32 Phase=CireSkillRuntime::Phase(H->GetWorld());if(Phase!=0&&Phase!=2){H->Notice=TEXT("Abilities require an active combat phase.");return;}
     if(D.Kind==ECireTargetKind::None){H->Notice=TEXT("This passive is always active.");return;}
-    if(D.Kind==ECireTargetKind::Hostile&&(!H->IsHostile(H->Target)||!H->InRange(H->Target,D.Range))){H->Notice=TEXT("Select an Enemy within the ability range.");return;}
-    if(D.Kind!=ECireTargetKind::Ground){C->ServerAction(2,Slot,nullptr);return;}
-    if(D.bNeedsHostile&&!H->IsHostile(H->Target)){H->Notice=TEXT("Select an Enemy before placing these summons.");return;}
+    AActor* Hover=(bSmart||bMouseover)?CireSelection::UnitUnderCursor(C):nullptr;
+    AActor* Explicit=nullptr;
+    // Smart cast: an enemy spell/summon with no valid hostile target picks the enemy under the cursor,
+    // else the best one in front. It selects that enemy (WoW auto-targeting) so the player sees it.
+    const auto SmartHostile=[&](float Range)->AActor*
+    {
+        AActor* Pick=bSmart?CireSelection::BestHostile(C,Range,Hover):nullptr;
+        if(Pick&&Pick!=H->Target)C->ServerAction(0,0,Pick);
+        return Pick;
+    };
+    if(D.Kind==ECireTargetKind::Hostile)
+    {
+        if(bMouseover&&Hover&&H->IsHostile(Hover)&&H->InRange(Hover,D.Range))Explicit=Hover;
+        else if(H->IsHostile(H->Target)){if(!H->InRange(H->Target,D.Range)){H->Notice=TEXT("Out of range.");return;}}
+        else if(!(Explicit=SmartHostile(D.Range))){H->Notice=H->IsHostile(H->Target)?TEXT("Out of range."):TEXT("No target.");return;}
+    }
+    if(D.Kind==ECireTargetKind::Friendly&&bMouseover)
+        if(auto* Ally=Cast<ACireHero>(Hover);Ally&&Ally->TeamId==H->TeamId&&!Ally->bDead)Explicit=Ally;
+    if(D.Kind!=ECireTargetKind::Ground){Dispatch(C,Slot,Explicit);return;}
+    if(D.bNeedsHostile&&!H->IsHostile(H->Target)&&!SmartHostile(CireSelection::TabRange))
+    {H->Notice=TEXT("No enemy nearby for these summons.");return;}
     if(HUD&&HUD->UISettings.bQuickGroundCast)
     {
         FVector Point,Center;FRotator Heading;FString Reason;
-        if(CursorGround(C,Point)&&ValidateGround(H,Id,Point,Center,Heading,Reason))C->ServerCastAt(Slot,Point);
+        if(!CursorGround(C,Point)||!ValidateGround(H,Id,Point,Center,Heading,Reason))Point=FrontPoint(H,D.Range);
+        if(ValidateGround(H,Id,Point,Center,Heading,Reason))Dispatch(C,Slot,nullptr,true,Point);
         else H->Notice=Reason.IsEmpty()?TEXT("Aim at battlefield ground."):Reason;
         return;
     }
     auto& S=States.Add(TWeakObjectPtr<ACireController>(C));S.Hero=H;S.Phase=CireSkillRuntime::Phase(C->GetWorld());S.ArmedFrame=GFrameCounter;
-    S.View.bActive=true;S.View.Slot=Slot;S.View.SkillId=Id;S.View.Range=D.Range;S.View.Message=TEXT("Aim at ground, then left click. Esc/right mouse cancels.");
+    S.View.bActive=true;S.View.Slot=Slot;S.View.SkillId=Id;S.View.Range=D.Range;
+    S.View.Message=TEXT("Aim, then left click (drag to turn the camera). Esc or a right click cancels.");
     C->bSummonMoveTargeting=false;
 }
+FVector CireTargeting::FrontPoint(ACireHero* H,float Range)
+{
+    if(!H)return FVector::ZeroVector;
+    const FVector Want=H->GetActorLocation()+H->GetActorForwardVector()*FMath::Clamp(Range*.5f,150.f,450.f);
+    FVector Ground=Want;FloorAt(H,Want,Ground);return Ground;
+}
+bool CireTargeting::Confirm(ACireController* C)
+{
+    auto* S=States.Find(TWeakObjectPtr<ACireController>(C));if(!S)return false;
+    auto* H=Cast<ACireHero>(C->GetPawn());if(!H)return false;
+    if(!S->View.bValid)
+    {
+        // "In front of you" fallback when the reticle has no ground (e.g. aiming at the sky while steering).
+        FVector Center;FRotator Heading;FString Reason;const FVector Front=FrontPoint(H,S->View.Range);
+        if(!ValidateGround(H,S->View.SkillId,Front,Center,Heading,Reason)){H->Notice=S->View.Message;return true;}
+        S->View.Point=Front;
+    }
+    const int32 Slot=S->View.Slot;const FVector Point=S->View.Point;Cancel(C);Dispatch(C,Slot,nullptr,true,Point);
+    return true;
+}
+void CireTargeting::Dispatch(ACireController* C,int32 Slot,AActor* Explicit,bool bAt,FVector Point)
+{
+    auto* H=C?Cast<ACireHero>(C->GetPawn()):nullptr;if(!H||!H->Skills.IsValidIndex(Slot))return;
+    auto* HUD=Cast<ACireHUD>(C->GetHUD());
+    Deferred.Remove(TWeakObjectPtr<ACireController>(C));
+    if(CireMovement::BlocksCast(*H,H->Skills[Slot])&&(!HUD||HUD->UISettings.bAutoStopToCast))
+    {
+        // Stop to cast: the movement keys are held back until the character has stopped, then the cast is sent.
+        auto& Q=Deferred.Add(TWeakObjectPtr<ACireController>(C));Q.Slot=Slot;Q.Explicit=Explicit;Q.bAt=bAt;Q.Point=Point;
+        Q.Since=C->GetWorld()->GetRealTimeSeconds();
+        return;
+    }
+    SendNow(C,Slot,Explicit,bAt,Point);
+}
+bool CireTargeting::HoldsMovement(const ACireController* C)
+{
+    return Deferred.Contains(TWeakObjectPtr<ACireController>(const_cast<ACireController*>(C)));
+}
+void CireTargeting::ReleaseMovementHold(ACireController* C){Deferred.Remove(TWeakObjectPtr<ACireController>(C));}
 void CireTargeting::HoverPreview(ACireController* C,const FString& Id)
 {
     if(!IsValid(C)||!C->IsLocalController()||!CireAbilityVFX::Enabled())return;
@@ -345,12 +422,30 @@ void TickHover(ACireController* C)
 bool CireTargeting::Tick(ACireController* C)
 {
     TickHover(C); // ability-vfx
+    // feat/camera-movement: stop-to-cast pump. Send once stopped; release the hold when the cast ends.
+    if(auto* Q=Deferred.Find(TWeakObjectPtr<ACireController>(C)))
+    {
+        auto* H=Cast<ACireHero>(C->GetPawn());const double Now=C->GetWorld()->GetRealTimeSeconds();
+        if(!H||H->bDead||!H->Skills.IsValidIndex(Q->Slot))Deferred.Remove(TWeakObjectPtr<ACireController>(C));
+        else if(!Q->bSent)
+        {
+            if(!CireMovement::IsMovingForCast(*H)||Now-Q->Since>.6)
+            {Q->bSent=true;Q->SentAt=Now;SendNow(C,Q->Slot,Q->Explicit.Get(),Q->bAt,Q->Point);}
+        }
+        else
+        {
+            const bool bCasting=!H->CastSkill.IsNone();Q->bSawCast|=bCasting;
+            if((Q->bSawCast&&!bCasting)||(!Q->bSawCast&&Now-Q->SentAt>1.0))Deferred.Remove(TWeakObjectPtr<ACireController>(C));
+        }
+    }
     for(auto It=States.CreateIterator();It;++It)if(!It.Key().IsValid()){if(It.Value().Preview.IsValid())It.Value().Preview->Destroy();It.RemoveCurrent();}
     auto* S=States.Find(TWeakObjectPtr<ACireController>(C));if(!S)return false;
     auto* H=Cast<ACireHero>(C->GetPawn());auto* HUD=Cast<ACireHUD>(C->GetHUD());
     if(H!=S->Hero.Get()||!H||H->bDead||!H->bDrafted||!H->Skills.IsValidIndex(S->View.Slot)||H->Skills[S->View.Slot]!=S->View.SkillId||
         S->Phase!=CireSkillRuntime::Phase(C->GetWorld())||C->bShop||C->bChatInput||(H->Offers.Num()>0&&(!HUD||HUD->IsSkillOfferOpen()))||(HUD&&HUD->IsBlockingGameplayInput())){Cancel(C);return false;}
-    if(C->WasInputKeyJustPressed(EKeys::Escape)||C->WasInputKeyJustPressed(EKeys::RightMouseButton)){Cancel(C);return true;}
+    // feat/camera-movement: only Escape cancels here. Movement and right-drag steering never cancel;
+    // a clean right click (option) and the confirming clean left click come from CireCamera via the controller.
+    if(C->WasInputKeyJustPressed(EKeys::Escape)){Cancel(C);return true;}
     const auto D=RuntimeDescriptor(C->GetWorld(),S->View.SkillId);FVector Center=FVector::ZeroVector;FRotator Heading=FRotator::ZeroRotator;
     const bool bGround=CursorGround(C,S->View.Point);S->View.bValid=bGround&&ValidateGround(H,S->View.SkillId,S->View.Point,Center,Heading,S->View.Message);
     if(!bGround){S->View.Message=TEXT("Aim at battlefield ground.");if(S->Preview.IsValid())S->Preview->SetActorHiddenInGame(true);}
@@ -359,11 +454,7 @@ bool CireTargeting::Tick(ACireController* C)
         if(!S->View.bValid){Center=S->View.Point;Heading=(Center-H->GetActorLocation()).GetSafeNormal2D().Rotation();if(D.bDirectional)FloorAt(H,H->GetActorLocation(),Center);}
         Render(C,*S,D,Center,Heading);
     }
-    if(C->WasInputKeyJustPressed(EKeys::LeftMouseButton)&&GFrameCounter>S->ArmedFrame&&(!HUD||!HUD->IsPointerOverInterface()))
-    {
-        if(S->View.bValid){const int32 Slot=S->View.Slot;const FVector Point=S->View.Point;Cancel(C);C->ServerCastAt(Slot,Point);}
-        return true;
-    }
+
     return false;
 }
 
@@ -503,6 +594,15 @@ bool CireTargeting::RunRuntimeSmoke(ACireGameMode* Mode)
             Hero->Target=nullptr;Behind->Health=0;
             T=CireSelection::NextTarget(Controller,false,false,&Side);
             Check(T==Near,TEXT("no candidate in view falls back to nearest living hostile around the hero"));
+            // feat/camera-movement: smart cast selection.
+            Check(CireSelection::BestHostile(Controller,400,nullptr,&Front)==Near,TEXT("smart cast picks the nearest hostile in front within the spell range"));
+            Check(CireSelection::BestHostile(Controller,1000,Far,&Front)==Far,TEXT("smart cast prefers the hostile under the cursor"));
+            Check(CireSelection::BestHostile(Controller,150,nullptr,&Front)==nullptr,TEXT("smart cast finds nothing when no hostile is in range (No target)"));
+            Check(CireSelection::BestHostile(Controller,1000,OtherRealm,&Front)!=OtherRealm,TEXT("smart cast never picks an other-realm unit under the cursor"));
+            {
+                const FVector Front2=CireTargeting::FrontPoint(Hero,600);
+                Check(FVector::Dist2D(Front2,Hero->GetActorLocation())>200&&FMath::Abs(Front2.Z-Ground.Z)<5,TEXT("fallback placement point lies on the ground in front of the hero"));
+            }
             Behind->Health=100;
             Hero->Target=Near;CireSelection::HandleTargetLoss(Controller,false);Near->Health=0;CireSelection::HandleTargetLoss(Controller,false);
             Check(Hero->Target==nullptr,TEXT("target clears when the hostile target dies"));

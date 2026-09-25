@@ -109,7 +109,8 @@
     "totemic_behemoth",
     "drakish_footman",
     "troll_berserker_melee"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "shield_slam": {
    "id": "shield_slam",
@@ -189,7 +190,8 @@
     "ether_golem_tank",
     "orc_chieftain",
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "war_cry": {
    "id": "war_cry",
@@ -263,7 +265,8 @@
     "orc_chieftain",
     "totemic_behemoth",
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "chain_spark": {
    "id": "chain_spark",
@@ -327,7 +330,8 @@
     "scholar",
     "summoner",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "frost_bind": {
    "id": "frost_bind",
@@ -408,7 +412,8 @@
     "ranger",
     "wizard",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "cleaving_strike": {
    "id": "cleaving_strike",
@@ -476,7 +481,8 @@
     "orc_chieftain",
     "totemic_behemoth",
     "troll_berserker_melee"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "shadow_step": {
    "id": "shadow_step",
@@ -554,7 +560,8 @@
     "outerMagnitude": 0.4,
     "damage": 30,
     "selfHealMaxHealthFraction": 0.05
-   }
+   },
+   "castWhileMoving": true
   },
   "restoring_light": {
    "id": "restoring_light",
@@ -611,7 +618,8 @@
     "whisp",
     "evergrove_centaur",
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "sanctuary": {
    "id": "sanctuary",
@@ -676,7 +684,8 @@
     "dryad",
     "evergrove_centaur",
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "purify": {
    "id": "purify",
@@ -741,7 +750,8 @@
     "whisp",
     "evergrove_centaur",
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "summoned_wall": {
    "id": "summoned_wall",
@@ -813,7 +823,8 @@
     "summoner",
     "dwarf_miner",
     "ether_golem_tank"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "protection_dome": {
    "id": "protection_dome",
@@ -887,7 +898,8 @@
     "summoner",
     "ether_golem_support",
     "whisp"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "oathbound_guardian": {
    "id": "oathbound_guardian",
@@ -957,7 +969,8 @@
    ],
    "signatureOf": [
     "summoner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "spectral_pack": {
    "id": "spectral_pack",
@@ -1011,7 +1024,8 @@
    "signatureOf": [
     "ranger",
     "summoner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "second_wind": {
    "id": "second_wind",
@@ -1084,7 +1098,8 @@
     "lancer",
     "paladin_righteous",
     "troll_berserker_melee"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "decimating_strike": {
    "id": "decimating_strike",
@@ -1166,7 +1181,8 @@
     "orc_chieftain",
     "drakish_footman",
     "troll_berserker_melee"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "stone_skin": {
    "id": "stone_skin",
@@ -1237,7 +1253,8 @@
    "signatureOf": [
     "knight",
     "paladin_righteous"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "battle_rhythm": {
    "id": "battle_rhythm",
@@ -1308,7 +1325,8 @@
    "signatureOf": [
     "ranger",
     "lancer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "deep_reserves": {
    "id": "deep_reserves",
@@ -1379,7 +1397,8 @@
    "signatureOf": [
     "summoner",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "soul_conduit": {
    "id": "soul_conduit",
@@ -1451,7 +1470,8 @@
     "scholar",
     "paladin_holy",
     "ether_golem_support"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "executioner": {
    "id": "executioner",
@@ -1515,7 +1535,8 @@
     "lancer",
     "troll_berserker_melee",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bastion_of_dawn": {
    "id": "bastion_of_dawn",
@@ -1585,7 +1606,8 @@
    "signatureOf": [
     "knight",
     "paladin_righteous"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "cataclysm": {
    "id": "cataclysm",
@@ -1639,7 +1661,8 @@
    "signatureOf": [
     "summoner",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "executioners_verdict": {
    "id": "executioners_verdict",
@@ -1693,7 +1716,8 @@
    "signatureOf": [
     "ranger",
     "lancer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "renewal": {
    "id": "renewal",
@@ -1753,7 +1777,8 @@
    "signatureOf": [
     "scholar",
     "paladin_holy"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "last_stand": {
    "id": "last_stand",
@@ -1810,7 +1835,8 @@
     "drakish_footman",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "castWhileMoving": true
   },
   "challenge_of_iron": {
    "id": "challenge_of_iron",
@@ -1875,7 +1901,8 @@
     "drakish_footman",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "castWhileMoving": true
   },
   "seismic_reprisal": {
    "id": "seismic_reprisal",
@@ -1933,7 +1960,8 @@
     "drakish_footman",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "castWhileMoving": true
   },
   "starfall": {
    "id": "starfall",
@@ -1984,7 +2012,8 @@
     "huntress",
     "aetheri_artificer"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "castWhileMoving": true
   },
   "spectral_hunt": {
    "id": "spectral_hunt",
@@ -2035,7 +2064,8 @@
     "huntress",
     "aetheri_artificer"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "castWhileMoving": true
   },
   "mass_aegis": {
    "id": "mass_aegis",
@@ -2100,7 +2130,8 @@
     "keeper_of_light",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "castWhileMoving": true
   },
   "wellspring": {
    "id": "wellspring",
@@ -2158,7 +2189,8 @@
     "keeper_of_light",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "castWhileMoving": false
   },
   "venom_ground": {
    "id": "venom_ground",
@@ -2213,7 +2245,8 @@
     "ranger",
     "summoner",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "cinder_cone": {
    "id": "cinder_cone",
@@ -2267,7 +2300,8 @@
    "signatureOf": [
     "ether_golem_bruiser",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "grave_line": {
    "id": "grave_line",
@@ -2330,7 +2364,8 @@
    "signatureOf": [
     "ranger",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "ashen_square": {
    "id": "ashen_square",
@@ -2384,7 +2419,8 @@
    "signatureOf": [
     "lancer",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "blight_sigil": {
    "id": "blight_sigil",
@@ -2444,7 +2480,8 @@
     "huntress",
     "aetheri_artificer"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "castWhileMoving": true
   },
   "piercing_shot": {
    "id": "piercing_shot",
@@ -2499,7 +2536,8 @@
     "ranger",
     "lancer",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "ember_lance": {
    "id": "ember_lance",
@@ -2562,7 +2600,8 @@
    "signatureOf": [
     "scholar",
     "wizard"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "silver_shot": {
    "id": "silver_shot",
@@ -2605,7 +2644,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "hex_mark": {
    "id": "hex_mark",
@@ -2657,7 +2697,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "powder_flask": {
    "id": "powder_flask",
@@ -2709,7 +2750,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "blade_flurry": {
    "id": "blade_flurry",
@@ -2752,7 +2794,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "hunters_stride": {
    "id": "hunters_stride",
@@ -2795,7 +2838,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "warding_talisman": {
    "id": "warding_talisman",
@@ -2854,7 +2898,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "price_on_every_soul": {
    "id": "price_on_every_soul",
@@ -2897,7 +2942,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "collect_the_bounty": {
    "id": "collect_the_bounty",
@@ -2948,7 +2994,8 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "arcane_blunderbuss": {
    "id": "arcane_blunderbuss",
@@ -3001,7 +3048,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "spirit_lantern": {
    "id": "spirit_lantern",
@@ -3054,7 +3102,8 @@
    "signatureOf": [
     "witch_slayer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "purge": {
    "id": "purge",
@@ -3113,7 +3162,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "banishment": {
    "id": "banishment",
@@ -3165,7 +3215,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "witchfinders_mark": {
    "id": "witchfinders_mark",
@@ -3217,7 +3268,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "spectral_blade": {
    "id": "spectral_blade",
@@ -3260,7 +3312,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "witchbane": {
    "id": "witchbane",
@@ -3303,7 +3356,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "hexbane_judgment": {
    "id": "hexbane_judgment",
@@ -3362,7 +3416,8 @@
    ],
    "signatureOf": [
     "witch_slayer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bouncing_glaive": {
    "id": "bouncing_glaive",
@@ -3405,7 +3460,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "sabercat_pounce": {
    "id": "sabercat_pounce",
@@ -3457,7 +3513,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "owl_scout": {
    "id": "owl_scout",
@@ -3509,7 +3566,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "moonlit_sprint": {
    "id": "moonlit_sprint",
@@ -3568,7 +3626,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "crescent_volley": {
    "id": "crescent_volley",
@@ -3611,7 +3670,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "sabercat_rake": {
    "id": "sabercat_rake",
@@ -3654,7 +3714,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "moon_glaive": {
    "id": "moon_glaive",
@@ -3697,7 +3758,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "glaive_storm": {
    "id": "glaive_storm",
@@ -3740,7 +3802,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "photon_turret": {
    "id": "photon_turret",
@@ -3784,7 +3847,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "skitter_swarm": {
    "id": "skitter_swarm",
@@ -3828,7 +3892,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "arc_mine": {
    "id": "arc_mine",
@@ -3872,7 +3937,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "disruption_pylon": {
    "id": "disruption_pylon",
@@ -3925,7 +3991,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "phase_lance": {
    "id": "phase_lance",
@@ -3968,7 +4035,8 @@
    ],
    "signatureOf": [
     "aetheri_artificer"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "overcharge": {
    "id": "overcharge",
@@ -4012,7 +4080,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "aether_engineering": {
    "id": "aether_engineering",
@@ -4056,7 +4125,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "warp_obelisk": {
    "id": "warp_obelisk",
@@ -4100,7 +4170,8 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "aegis_pylon": {
    "id": "aegis_pylon",
@@ -4154,7 +4225,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "haste_pylon": {
    "id": "haste_pylon",
@@ -4208,7 +4280,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "gravity_pylon": {
    "id": "gravity_pylon",
@@ -4262,7 +4335,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "stasis_snare": {
    "id": "stasis_snare",
@@ -4316,7 +4390,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "aether_mend": {
    "id": "aether_mend",
@@ -4359,7 +4434,8 @@
    ],
    "signatureOf": [
     "aetheri_warden"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "repulsor_pulse": {
    "id": "repulsor_pulse",
@@ -4419,7 +4495,8 @@
    ],
    "signatureOf": [
     "aetheri_warden"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "resonant_lattice": {
    "id": "resonant_lattice",
@@ -4464,7 +4541,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "aether_nexus": {
    "id": "aether_nexus",
@@ -4518,7 +4596,8 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "castWhileMoving": true
   },
   "bear_maul": {
    "id": "bear_maul",
@@ -4560,7 +4639,8 @@
    ],
    "signatureOf": [
     "bear"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bear_roar": {
    "id": "bear_roar",
@@ -4612,7 +4692,8 @@
    ],
    "signatureOf": [
     "bear"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bear_charge": {
    "id": "bear_charge",
@@ -4665,7 +4746,8 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "castWhileMoving": true
   },
   "bear_hibernate": {
    "id": "bear_hibernate",
@@ -4707,7 +4789,8 @@
    ],
    "signatureOf": [
     "bear"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bear_ancient_hide": {
    "id": "bear_ancient_hide",
@@ -4749,7 +4832,8 @@
    ],
    "signatureOf": [
     "bear"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "bear_colossus": {
    "id": "bear_colossus",
@@ -4791,7 +4875,8 @@
    ],
    "signatureOf": [
     "bear"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "paladin_righteous_flail": {
    "id": "paladin_righteous_flail",
@@ -4833,7 +4918,8 @@
    ],
    "signatureOf": [
     "paladin_righteous"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "paladin_relic_vow": {
    "id": "paladin_relic_vow",
@@ -4877,7 +4963,8 @@
    "signatureOf": [
     "paladin_righteous",
     "paladin_holy"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "paladin_holy_flail": {
    "id": "paladin_holy_flail",
@@ -4919,7 +5006,8 @@
    ],
    "signatureOf": [
     "paladin_holy"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "paladin_pilgrim_light": {
    "id": "paladin_pilgrim_light",
@@ -4961,7 +5049,8 @@
    ],
    "signatureOf": [
     "paladin_holy"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "miner_pickfall": {
    "id": "miner_pickfall",
@@ -5003,7 +5092,8 @@
    ],
    "signatureOf": [
     "dwarf_miner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "miner_faultline": {
    "id": "miner_faultline",
@@ -5054,7 +5144,8 @@
    ],
    "signatureOf": [
     "dwarf_miner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "miner_lantern": {
    "id": "miner_lantern",
@@ -5096,7 +5187,8 @@
    ],
    "signatureOf": [
     "dwarf_miner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "miner_orehide": {
    "id": "miner_orehide",
@@ -5138,7 +5230,8 @@
    ],
    "signatureOf": [
     "dwarf_miner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "miner_mountain": {
    "id": "miner_mountain",
@@ -5180,7 +5273,8 @@
    ],
    "signatureOf": [
     "dwarf_miner"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "golem_granite_fist": {
    "id": "golem_granite_fist",
@@ -5222,7 +5316,8 @@
    ],
    "signatureOf": [
     "ether_golem_tank"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "golem_ether_anchor": {
    "id": "golem_ether_anchor",
@@ -5264,7 +5359,8 @@
    ],
    "signatureOf": [
     "ether_golem_tank"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "golem_construct_core": {
    "id": "golem_construct_core",
@@ -5308,7 +5404,8 @@
    "signatureOf": [
     "ether_golem_tank",
     "ether_golem_bruiser"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "golem_worldstone": {
    "id": "golem_worldstone",
@@ -5354,7 +5451,8 @@
     "ether_golem_tank",
     "ether_golem_support",
     "ether_golem_bruiser"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "golem_moss_bloom": {
    "id": "golem_moss_bloom",
@@ -5396,7 +5494,8 @@
    ],
    "signatureOf": [
     "ether_golem_support"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "golem_living_granite": {
    "id": "golem_living_granite",
@@ -5438,7 +5537,8 @@
    ],
    "signatureOf": [
     "ether_golem_support"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "golem_fel_fist": {
    "id": "golem_fel_fist",
@@ -5480,7 +5580,8 @@
    ],
    "signatureOf": [
     "ether_golem_bruiser"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "golem_ether_furnace": {
    "id": "golem_ether_furnace",
@@ -5522,7 +5623,8 @@
    ],
    "signatureOf": [
     "ether_golem_bruiser"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "chieftain_axe_hook": {
    "id": "chieftain_axe_hook",
@@ -5564,7 +5666,8 @@
    ],
    "signatureOf": [
     "orc_chieftain"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "chieftain_banner": {
    "id": "chieftain_banner",
@@ -5606,7 +5709,8 @@
    ],
    "signatureOf": [
     "orc_chieftain"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "chieftain_courage": {
    "id": "chieftain_courage",
@@ -5648,7 +5752,8 @@
    ],
    "signatureOf": [
     "orc_chieftain"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "chieftain_earthshout": {
    "id": "chieftain_earthshout",
@@ -5699,7 +5804,8 @@
    ],
    "signatureOf": [
     "orc_chieftain"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "behemoth_totem_sweep": {
    "id": "behemoth_totem_sweep",
@@ -5741,7 +5847,8 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "behemoth_tusk_line": {
    "id": "behemoth_tusk_line",
@@ -5783,7 +5890,8 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "behemoth_totem_bulwark": {
    "id": "behemoth_totem_bulwark",
@@ -5825,7 +5933,8 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "behemoth_ancestral_weight": {
    "id": "behemoth_ancestral_weight",
@@ -5867,7 +5976,8 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "behemoth_stampede": {
    "id": "behemoth_stampede",
@@ -5918,7 +6028,8 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "drakish_dragon_oath": {
    "id": "drakish_dragon_oath",
@@ -5960,7 +6071,8 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "drakish_scale_guard": {
    "id": "drakish_scale_guard",
@@ -6002,7 +6114,8 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "drakish_wing_rebuke": {
    "id": "drakish_wing_rebuke",
@@ -6044,7 +6157,8 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "drakish_ember_memory": {
    "id": "drakish_ember_memory",
@@ -6086,7 +6200,8 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "drakish_ancient_pact": {
    "id": "drakish_ancient_pact",
@@ -6128,7 +6243,8 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "troll_axe_frenzy": {
    "id": "troll_axe_frenzy",
@@ -6170,7 +6286,8 @@
    ],
    "signatureOf": [
     "troll_berserker_melee"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "troll_blood_leap": {
    "id": "troll_blood_leap",
@@ -6223,7 +6340,8 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "castWhileMoving": true
   },
   "troll_hunger": {
    "id": "troll_hunger",
@@ -6267,7 +6385,8 @@
    "signatureOf": [
     "troll_berserker_melee",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "troll_red_moon": {
    "id": "troll_red_moon",
@@ -6311,7 +6430,8 @@
    "signatureOf": [
     "troll_berserker_melee",
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "troll_twin_throw": {
    "id": "troll_twin_throw",
@@ -6353,7 +6473,8 @@
    ],
    "signatureOf": [
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "troll_returning_axes": {
    "id": "troll_returning_axes",
@@ -6395,7 +6516,8 @@
    ],
    "signatureOf": [
     "troll_berserker_ranged"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "dryad_root_snare": {
    "id": "dryad_root_snare",
@@ -6446,7 +6568,8 @@
    ],
    "signatureOf": [
     "dryad"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "dryad_seed_mend": {
    "id": "dryad_seed_mend",
@@ -6488,7 +6611,8 @@
    ],
    "signatureOf": [
     "dryad"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "dryad_thorn_line": {
    "id": "dryad_thorn_line",
@@ -6530,7 +6654,8 @@
    ],
    "signatureOf": [
     "dryad"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "dryad_green_covenant": {
    "id": "dryad_green_covenant",
@@ -6572,7 +6697,8 @@
    ],
    "signatureOf": [
     "dryad"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "dryad_grove_renewal": {
    "id": "dryad_grove_renewal",
@@ -6614,7 +6740,8 @@
    ],
    "signatureOf": [
     "dryad"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "whisp_guiding_mote": {
    "id": "whisp_guiding_mote",
@@ -6656,7 +6783,8 @@
    ],
    "signatureOf": [
     "whisp"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "whisp_spirit_tether": {
    "id": "whisp_spirit_tether",
@@ -6698,7 +6826,8 @@
    ],
    "signatureOf": [
     "whisp"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "whisp_fey_trail": {
    "id": "whisp_fey_trail",
@@ -6751,7 +6880,8 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "castWhileMoving": false
   },
   "whisp_lantern_soul": {
    "id": "whisp_lantern_soul",
@@ -6793,7 +6923,8 @@
    ],
    "signatureOf": [
     "whisp"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "whisp_constellation": {
    "id": "whisp_constellation",
@@ -6835,7 +6966,8 @@
    ],
    "signatureOf": [
     "whisp"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "centaur_grove_javelin": {
    "id": "centaur_grove_javelin",
@@ -6877,7 +7009,8 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "centaur_trailblaze": {
    "id": "centaur_trailblaze",
@@ -6930,7 +7063,8 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "castWhileMoving": true
   },
   "centaur_herd_call": {
    "id": "centaur_herd_call",
@@ -6972,7 +7106,8 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "centaur_steady_gait": {
    "id": "centaur_steady_gait",
@@ -7014,7 +7149,8 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "centaur_spring_march": {
    "id": "centaur_spring_march",
@@ -7056,7 +7192,8 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "keeper_dawn_beam": {
    "id": "keeper_dawn_beam",
@@ -7107,7 +7244,8 @@
    ],
    "signatureOf": [
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "keeper_lantern_ward": {
    "id": "keeper_lantern_ward",
@@ -7149,7 +7287,8 @@
    ],
    "signatureOf": [
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   },
   "keeper_beacon": {
    "id": "keeper_beacon",
@@ -7191,7 +7330,8 @@
    ],
    "signatureOf": [
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "keeper_last_light": {
    "id": "keeper_last_light",
@@ -7233,7 +7373,8 @@
    ],
    "signatureOf": [
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": true
   },
   "keeper_sunrise": {
    "id": "keeper_sunrise",
@@ -7275,7 +7416,8 @@
    ],
    "signatureOf": [
     "keeper_of_light"
-   ]
+   ],
+   "castWhileMoving": false
   }
  },
  "champions": {

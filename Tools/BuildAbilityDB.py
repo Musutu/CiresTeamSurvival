@@ -294,6 +294,10 @@ BUFF_MODIFIERS = {
 }
 
 
+# Cast-time abilities that may still be cast (and keep casting) while moving.
+CAST_WHILE_MOVING = set()
+
+
 def build():
     tuning = json.loads((ROOT / "Content/Data/CombatTuning.json").read_text(encoding="utf-8"))
     astra = json.loads((ROOT / "Content/Data/AstraAbilities.json").read_text(encoding="utf-8-sig"))
@@ -386,6 +390,10 @@ def build():
             abilities[sid]["champions"].append(c["id"])
         for sid in signature:
             abilities[sid]["signatureOf"].append(c["id"])
+    # feat/camera-movement: WoW rule - cast-time spells need you to stand still unless listed here.
+    # Instants (castTime 0) always work while moving. See Docs/Targeting.md "Casting while moving".
+    for sid, a in abilities.items():
+        a["castWhileMoving"] = a["castTime"] <= 0 or sid in CAST_WHILE_MOVING
     return dict(schemaVersion=1, generator="Tools/BuildAbilityDB.py", schools=SCHOOLS, types=list(TYPES.values()),
                 scalingFormula="effect*(1+g*ln(1+(L-1)/h)) capped at effectCap; cost*(1+(cap-1)(L-1)/(L-1+ramp)); cooldown*(floor+(1-floor)e^-((L-1)/decay)), min minCooldownSeconds",
                 abilities=abilities, champions=champions, buffModifiers=BUFF_MODIFIERS)

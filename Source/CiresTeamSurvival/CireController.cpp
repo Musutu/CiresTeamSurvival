@@ -25,6 +25,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "CireCamera.h"
 #include "CireKeybindings.h"
+#include "CirePlaySession.h"
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireNetClient, Log, All);
@@ -157,6 +158,7 @@ void CycleTargetDirected(ACireController* C,bool bFriendly,bool bReverse) {
 void ACireController::CycleTarget(bool bFriendly) {CycleTargetDirected(this,bFriendly,false);}
 void ACireController::PlayerTick(float Dt) {
     Super::PlayerTick(Dt); if(!IsLocalController())return;
+    CirePlaySession::Tick(this,Dt); // feat/camera-movement: -CirePlaySession simulated inputs (development only)
 #if !UE_BUILD_SHIPPING
     if(CireExpansionNetProbe::TickClient(this))return;
     if(CireInterfaceProbe::TickClient(this))return;
@@ -183,7 +185,7 @@ void ACireController::PlayerTick(float Dt) {
     if(!IsValid(FocusTarget)||!CireRealm::CanObserve(H,FocusTarget))FocusTarget=nullptr;
     // WoW camera/steering runs every frame so the boom, zoom and facing stay consistent in menus.
     const bool bBlockingUI=Interface&&Interface->IsBlockingGameplayInput();
-    const bool bOverUI=Interface&&Interface->IsPointerOverInterface();
+    const bool bOverUI=Interface&&Interface->IsPointerOverInterface()&&!CirePlaySession::IsActive(); // offscreen session: pointer is over the world
     CireCamera::FFrame CameraFrame;
     CameraFrame.bMouseAllowed=!bBlockingUI;
     CameraFrame.bSteeringAllowed=!bChatInput&&!bBlockingUI&&H->bDrafted&&!H->bDead&&!bShop;
@@ -193,6 +195,8 @@ void ACireController::PlayerTick(float Dt) {
     if(!bOverUI&&!bBlockingUI)CameraFrame.WheelSteps=(WasInputKeyJustPressed(EKeys::MouseScrollUp)?1.f:0.f)-(WasInputKeyJustPressed(EKeys::MouseScrollDown)?1.f:0.f);
     CameraFrame.Options=Interface?&Interface->UISettings:nullptr;
     CameraFrame.Bindings=&Keys;
+    CameraFrame.bAiming=CireTargeting::Snapshot(this).bActive;            // feat/camera-movement
+    CameraFrame.bHoldMovement=CireTargeting::HoldsMovement(this);         // feat/camera-movement: stop to cast
     // Rebinding capture (keybinding screen) owns the keyboard until it binds, unbinds or cancels.
     if(MutableKeys&&MutableKeys->IsCapturing())CameraFrame.bSteeringAllowed=false;
     const auto Camera=CireCamera::Tick(this,H,Dt,CameraFrame);
@@ -202,6 +206,14 @@ void ACireController::PlayerTick(float Dt) {
         return;
     }
     CireSelection::HandleTargetLoss(this,Interface&&Interface->UISettings.bAutoReacquireTarget);
+    // feat/camera-movement: armed ground aim survives movement and right-drag steering.
+    // A clean left click confirms at the reticle (movement continues); a clean right click cancels (option).
+    if(Camera.bMovementPressed)CireTargeting::ReleaseMovementHold(this);
+    bool bClickUsed=false;
+    if(CameraFrame.bAiming&&!bChatInput&&!bBlockingUI) {
+        if(Camera.bClick){CireTargeting::Confirm(this);bClickUsed=true;}
+        else if(Camera.bRightClick&&(!Interface||Interface->UISettings.bRightClickCancelsAim)){CireTargeting::Cancel(this);H->Notice=TEXT("Aim cancelled.");}
+    }
     // champion-select: while the draft search box is focused it owns the keyboard.
     if(bDraftSearch) {
         if(H->bDrafted){bDraftSearch=false;}
@@ -228,7 +240,9 @@ void ACireController::PlayerTick(float Dt) {
         if(bAimInputConsumed)return;
         if(bSummonMoveTargeting){bSummonMoveTargeting=false;H->Notice=TEXT("Summon order cancelled.");return;}
         if(Interface&&Interface->HandleEscape())return;
-        bShop=false;bHelp=false;
+        // feat/camera-movement: WoW Escape clears the target once nothing else is open.
+        const bool bHadPanel=bShop||bHelp;bShop=false;bHelp=false;
+        if(!bHadPanel&&IsValid(H->Target))ServerAction(6,0,nullptr);
     }
     if(Interface) {
         // Wheel over HUD panels scrolls them (chat); over the world it zooms the camera (CireCamera).
@@ -277,13 +291,14 @@ void ACireController::PlayerTick(float Dt) {
         ServerSummonCommand(1,nullptr,CursorAim());bSummonMoveTargeting=false;return;
     }
     // WoW: a left click (released without dragging the camera) selects; a left drag only orbits.
-    if(Camera.bClick&&H->bDrafted&&!bShop&&!bOfferModal&&!CireTargeting::Snapshot(this).bActive
+    if(Camera.bClick&&!bClickUsed&&H->bDrafted&&!bShop&&!bOfferModal&&!CireTargeting::Snapshot(this).bActive
         &&!IsInputKeyDown(EKeys::RightMouseButton)) {
         FHitResult CursorHit;
         if(GetHitResultAtScreenPosition(Camera.ClickPosition,UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1),false,CursorHit)) {
             AActor* Selected=CursorHit.GetActor();
+            // feat/camera-movement: clicking empty ground keeps the target (a quick camera tap while
+            // strafing must never drop it); Escape clears it.
             if((Cast<ACireHero>(Selected)||Cast<ACireMonster>(Selected)||Cast<ACireConstruct>(Selected))&&CireRealm::CanObserve(H,Selected))ServerAction(0,0,Selected);
-            else ServerAction(6,0,nullptr);
         }
     }
     if(H->bDead||!H->bDrafted||bShop||CireCrowdControl::IsStunned(H))return; // champion-draft: stunned: no movement, jump or dodge
@@ -318,7 +333,15 @@ void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActo
     if(H->bDead)return;
     switch(Action) {
         case 1: H->bAutoAttack=!H->bAutoAttack;H->Notice=H->bAutoAttack?TEXT("Basic attack enabled"):TEXT("Basic attack stopped");break;
-        case 2: if(Value>=0&&Value<Cires::MaxSkills&&H->Skills.IsValidIndex(Value)&&CireTargeting::Describe(H->Skills[Value]).Kind!=ECireTargetKind::Ground)H->Cast(Value);break;
+        case 2: if(Value>=0&&Value<Cires::MaxSkills&&H->Skills.IsValidIndex(Value)&&CireTargeting::Describe(H->Skills[Value]).Kind!=ECireTargetKind::Ground) {
+            // feat/camera-movement: smart/mouseover casts name an explicit unit; it is used for this cast only
+            // (timed casts capture it at start) and the selection is restored afterwards.
+            AActor* Previous=H->Target;
+            const bool bExplicit=IsValid(Selected)&&Selected!=Previous&&(Cast<ACireHero>(Selected)||Cast<ACireMonster>(Selected)||Cast<ACireConstruct>(Selected))&&CireRealm::CanObserve(H,Selected);
+            if(bExplicit)H->Target=Selected;
+            H->Cast(Value);
+            if(bExplicit&&H->Target==Selected)H->Target=Previous;
+        } break;
         case 4: if(Value>=0&&Value<4)H->Purchase(Value);break;
         // progression-shop: town recall merged into Teleport to Base: instant during prep/recovery,
         // a 6 s hearthstone channel during waves (damage or moving cancels), 120 s cooldown.
@@ -365,7 +388,15 @@ void ACireController::ServerCastAt_Implementation(int32 Slot,FVector_NetQuantize
 void ACireController::ServerSummonCommand_Implementation(int32 Command,AActor* Selected,FVector_NetQuantize Point){
     auto* H=Cast<ACireHero>(GetPawn());
     if(!H||H->bDead||!H->bDrafted||Command<0||Command>3||FVector(Point).ContainsNaN())return;
-    if(Command==2&&!H->IsHostile(Selected))return;
+    if(Command==2&&!H->IsHostile(Selected)) {
+        // feat/camera-movement: pet/summon "attack" with no hostile selected takes the nearest hostile
+        // the hero can see within tab range (server-side; the client camera is not known here).
+        AActor* Best=nullptr;double BestD=FMath::Square(CireSelection::TabRange);
+        for(TActorIterator<ACireMonster> It(GetWorld());It;++It)if(H->IsHostile(*It)&&CireRealm::CanObserve(H,*It)){const double D=FVector::DistSquared(H->GetActorLocation(),It->GetActorLocation());if(D<BestD){BestD=D;Best=*It;}}
+        for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(H->IsHostile(*It)&&CireRealm::CanObserve(H,*It)){const double D=FVector::DistSquared(H->GetActorLocation(),It->GetActorLocation());if(D<BestD){BestD=D;Best=*It;}}
+        if(!Best){H->Notice=TEXT("No enemy nearby to attack.");return;}
+        Selected=Best;
+    }
     for(TActorIterator<ACireSummon> It(GetWorld());It;++It)
         if(It->GetOwnerHero()==H&&It->bCommandable)It->Command(static_cast<ECireSummonCommand>(Command),Point,Selected);
 }

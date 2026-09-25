@@ -36,6 +36,8 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     FString Category;                    // new-champions: "construct" for Aetheri Constructs (Skill Shop tab); empty otherwise
     TArray<FString> Types;               // "DPS", "TANK", "HEAL"
     float CastTime = 0, Range = 0, Radius = 0, Duration = 0;
+    /** feat/camera-movement: cast-time spell may start/continue while moving (WoW default: false). Instants always true. */
+    bool bCastWhileMoving = true;
     Cires::Abilities::Base Base;
     Cires::Abilities::Curve Curve;
     TArray<FCireAbilityEffect> Effects;
