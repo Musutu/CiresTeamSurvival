@@ -1,0 +1,2246 @@
+{
+  "sources": [
+    "Poly Haven public API",
+    "ambientCG"
+  ],
+  "license": "CC0 1.0 Universal",
+  "fetched": "2026-09-25T02:26:37Z",
+  "assets": [
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "CheeseBox_01",
+      "name": "CheeseBox_01",
+      "authors": "Gabriel Radi\u0107",
+      "resolution": "1k",
+      "purpose": "cheese box, market goods",
+      "page": "https://polyhaven.com/a/CheeseBox_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/CheeseBox_01/CheeseBox_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/CheeseBox_01/CheeseBox_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/CheeseBox_01/CheeseBox_01_1k.gltf",
+          "bytes": 4069,
+          "md5": "816d73601ea86ceaa4551002f0db7fb9",
+          "sha256": "2d6fe3d6034f41fb724c6d4ef3016e0c9a8c6fc6d250aea1e2ce2e1317b32d45"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/CheeseBox_01/CheeseBox_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/CheeseBox_01/textures/CheeseBox_01_diff_1k.jpg",
+          "bytes": 179902,
+          "md5": "4ab5e5ba0370e690924400c1d6cefd6c",
+          "sha256": "716ebe4968254942aff4d60390ea405f0ea1d427bf43564745371739cbd6556c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/CheeseBox_01/CheeseBox_01.bin",
+          "file": "Saved/DressingSources/Models/CheeseBox_01/CheeseBox_01.bin",
+          "bytes": 31960,
+          "md5": "283aff7d88c087c7c991df9a62f6803f",
+          "sha256": "a5bc913c3aee6f922a59723596994e4a69fe44be756d7198513cae797eaa9a7e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/CheeseBox_01/CheeseBox_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/CheeseBox_01/textures/CheeseBox_01_arm_1k.jpg",
+          "bytes": 165319,
+          "md5": "4dd96acb3fca36eaa356c9c180a22dcf",
+          "sha256": "cb82aa0b4061ef61738fcf59dc8d927e0af3e2db3d6d98fed099b03e7bb330b7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/CheeseBox_01/CheeseBox_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/CheeseBox_01/textures/CheeseBox_01_nor_gl_1k.jpg",
+          "bytes": 112602,
+          "md5": "8ad6b04303e8a6f4c1df7e7fdf8f40fc",
+          "sha256": "43a940349f2008c0b86aa081fa4c88ed039029731da78789d0f3529cc1389d47"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "wooden_bowl_02",
+      "name": "Wooden Bowl 02",
+      "authors": "Kuutti Siitonen",
+      "resolution": "1k",
+      "purpose": "wooden bowl, stall wares",
+      "page": "https://polyhaven.com/a/wooden_bowl_02",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/wooden_bowl_02/wooden_bowl_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_bowl_02/wooden_bowl_02_1k.gltf",
+          "file": "Saved/DressingSources/Models/wooden_bowl_02/wooden_bowl_02_1k.gltf",
+          "bytes": 2800,
+          "md5": "7e1269b42d3cf9e96d3a7a43784a9fc5",
+          "sha256": "18ba4fb40b1880d9b776f6d98eefdaa9e01e41fbe362ba1dc40a831422e38336"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_bowl_02/wooden_bowl_02_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_bowl_02/textures/wooden_bowl_02_arm_1k.jpg",
+          "bytes": 770851,
+          "md5": "a416eec6afe81cfc5b2a94cabe241f69",
+          "sha256": "0715dde81d3a8acbdf67031702c80e994e0b418a9973237f2964f1d0be9f4645"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_bowl_02/wooden_bowl_02.bin",
+          "file": "Saved/DressingSources/Models/wooden_bowl_02/wooden_bowl_02.bin",
+          "bytes": 116156,
+          "md5": "92850bb8ba7e6dfd53f4b157276a8536",
+          "sha256": "6e3e1fb30969e9a52db3519b01ace016628a361c2cd9e2817c5e50c1ffb8a1dd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_bowl_02/wooden_bowl_02_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_bowl_02/textures/wooden_bowl_02_nor_gl_1k.jpg",
+          "bytes": 816221,
+          "md5": "76dedcb76919daaed23a3d7510c43257",
+          "sha256": "1951d9aae111412f4bd262c18e232b0b11962f33145e46acb936e314a442ec7d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_bowl_02/wooden_bowl_02_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_bowl_02/textures/wooden_bowl_02_diff_1k.jpg",
+          "bytes": 805338,
+          "md5": "69dfe9fa89f7458fbeb03300267a279d",
+          "sha256": "a3bb80f6ea747491fe91628badc0b98d320fc6d427682564095aba6033a523dc"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "carved_wooden_plate",
+      "name": "Carved Wooden Plate",
+      "authors": "Jan Martens",
+      "resolution": "1k",
+      "purpose": "carved plate, stall wares",
+      "page": "https://polyhaven.com/a/carved_wooden_plate",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/carved_wooden_plate/carved_wooden_plate_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/carved_wooden_plate/carved_wooden_plate_1k.gltf",
+          "file": "Saved/DressingSources/Models/carved_wooden_plate/carved_wooden_plate_1k.gltf",
+          "bytes": 2836,
+          "md5": "c4866bc4fcdf070b992f9b35acf8d13e",
+          "sha256": "90ec83004a3fd256fb846c7b04fbf0b2514f0e99b2bb7aeb586f62b844ed9219"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/carved_wooden_plate/carved_wooden_plate_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/carved_wooden_plate/textures/carved_wooden_plate_diff_1k.jpg",
+          "bytes": 476516,
+          "md5": "f4c0f569c128db22906a209905cf3e90",
+          "sha256": "ae95d5de9e1dc18e5102d648b589f2043b1c712ac4103f624e1a9c5c5f05a7da"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/carved_wooden_plate/carved_wooden_plate_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/carved_wooden_plate/textures/carved_wooden_plate_arm_1k.jpg",
+          "bytes": 450417,
+          "md5": "e9a523f6b0a9851b7b9e9855fa83f896",
+          "sha256": "54f106d208fd68e93d8f0f8da30284189bf0796e9e04425296719a9dc71dd6e8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/carved_wooden_plate/carved_wooden_plate_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/carved_wooden_plate/textures/carved_wooden_plate_nor_gl_1k.jpg",
+          "bytes": 582309,
+          "md5": "b492a0465ff80fc5aff3433991fdc554",
+          "sha256": "3a6c6dc2f9a7def9e6a02847743f448bd855d47dbbc36cc0b80a557faf633b61"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/carved_wooden_plate/carved_wooden_plate.bin",
+          "file": "Saved/DressingSources/Models/carved_wooden_plate/carved_wooden_plate.bin",
+          "bytes": 52160,
+          "md5": "70499c8019359d859577d9f7eef46091",
+          "sha256": "4a605b576b1e79968f668c8624733e2e0fff073ae9fc1107b55ad4d976b99787"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "wooden_cutting_board",
+      "name": "Wooden Cutting Board",
+      "authors": "Kuutti Siitonen",
+      "resolution": "1k",
+      "purpose": "cutting board, stall wares",
+      "page": "https://polyhaven.com/a/wooden_cutting_board",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/wooden_cutting_board/wooden_cutting_board_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_cutting_board/wooden_cutting_board_1k.gltf",
+          "file": "Saved/DressingSources/Models/wooden_cutting_board/wooden_cutting_board_1k.gltf",
+          "bytes": 2852,
+          "md5": "557750a30841a91f5d9a8f734bd9ee20",
+          "sha256": "89fa89f6987c5087c0c7a8ac8ccbe451cfa8976ae46377d83a423e658cff9de4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_cutting_board/wooden_cutting_board_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_cutting_board/textures/wooden_cutting_board_arm_1k.jpg",
+          "bytes": 401619,
+          "md5": "b391b4029d163e0bde43096d7b39013d",
+          "sha256": "f35dec51ff94e279a9d43a4ee64b75235cc3d6701107ae22a1eea797e3d236d3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_cutting_board/wooden_cutting_board_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_cutting_board/textures/wooden_cutting_board_diff_1k.jpg",
+          "bytes": 788732,
+          "md5": "11be431e04b3a108eb74d3dd0559a9a4",
+          "sha256": "79274fb86cc7f62363e4448b4597f06933d640a79c746ff6f823d2e4e27ad143"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_cutting_board/wooden_cutting_board_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_cutting_board/textures/wooden_cutting_board_nor_gl_1k.jpg",
+          "bytes": 677881,
+          "md5": "c57c50618d604c9a742847f4333f3058",
+          "sha256": "b123d7ca0d0be01a31686240c925e85a1d2499172586f119482924b06b0b0c93"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_cutting_board/wooden_cutting_board.bin",
+          "file": "Saved/DressingSources/Models/wooden_cutting_board/wooden_cutting_board.bin",
+          "bytes": 94688,
+          "md5": "ce582ea49488bb7def153bdf37082016",
+          "sha256": "d7fa7549afcae99eb4739dfb13039f1e56f03327c2936cb021bfd05c3afad839"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "brass_goblets",
+      "name": "Brass Goblets",
+      "authors": "Tina",
+      "resolution": "1k",
+      "purpose": "goblets, stall wares / tavern tables",
+      "page": "https://polyhaven.com/a/brass_goblets",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/brass_goblets/brass_goblets_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/brass_goblets/brass_goblets_1k.gltf",
+          "file": "Saved/DressingSources/Models/brass_goblets/brass_goblets_1k.gltf",
+          "bytes": 7782,
+          "md5": "9e76131d099b3dcdadb82c1d2d8bd536",
+          "sha256": "f78416e66ef2dc2de3aadfbd3bcd5da78902bc129764bc92bf62436cea6c4c65"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_goblets/brass_goblet_03_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_goblets/textures/brass_goblet_03_nor_gl_1k.jpg",
+          "bytes": 340910,
+          "md5": "6f2a231d3514d414d60abcba0d9250f6",
+          "sha256": "60cf06c6d80de97ef36741bbfe077dc8a6f1f624622defc92dd06307301e8a45"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_goblets/brass_goblet_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_goblets/textures/brass_goblet_01_arm_1k.jpg",
+          "bytes": 548137,
+          "md5": "c9bdf5da73aef25e691da7a35e788873",
+          "sha256": "d0a038e368f11a819229c5cd81ef3e9a932b141fe55468b14734437bb7876c8b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_goblets/brass_goblet_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_goblets/textures/brass_goblet_01_nor_gl_1k.jpg",
+          "bytes": 465530,
+          "md5": "3089d0223399a4c52e8dabc046c09d57",
+          "sha256": "d61c14515de7937b8503011597134196e783ee6f919b833ec881f4304ad1763c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_goblets/brass_goblet_02_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_goblets/textures/brass_goblet_02_diff_1k.jpg",
+          "bytes": 656888,
+          "md5": "5eadfe540b3eab26739ba84f61b95fc7",
+          "sha256": "4908e0e92bdbfa931337101d9c1d43b0da881d62ec3333f25a60b7a3a3a41c19"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/brass_goblets/brass_goblets.bin",
+          "file": "Saved/DressingSources/Models/brass_goblets/brass_goblets.bin",
+          "bytes": 261728,
+          "md5": "56e8be5f54fa2f3567abc1ea7d0f3fbc",
+          "sha256": "a9f5a889632e96a78cf2491b28a9947eff05a7d0507329d20a757dfab1a3c7cd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_goblets/brass_goblet_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_goblets/textures/brass_goblet_01_diff_1k.jpg",
+          "bytes": 653366,
+          "md5": "0d4d1e7376965e48539a1fc27b17e1cd",
+          "sha256": "fdc7000d8e83490e345ccf952f219aa47460b631d74018f0c12864c660d901ba"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_goblets/brass_goblet_03_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_goblets/textures/brass_goblet_03_arm_1k.jpg",
+          "bytes": 355069,
+          "md5": "28de0acc731a5acf1c07b505a753c3f6",
+          "sha256": "f583aaf07f5d8e36570e87599d8aa7b71db44e8483f5fd5c0a42a9ac4b3c3aef"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_goblets/brass_goblet_02_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_goblets/textures/brass_goblet_02_arm_1k.jpg",
+          "bytes": 544177,
+          "md5": "253f069532a05cb23540fa3cf1b84866",
+          "sha256": "8ed09a195d37d6bf9b21f8a99cb0e4fa7aad894d7fa3908555c6d698e3f75483"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_goblets/brass_goblet_02_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_goblets/textures/brass_goblet_02_nor_gl_1k.jpg",
+          "bytes": 409051,
+          "md5": "96d50a779c628ac10a1ac50eb5a52a3c",
+          "sha256": "8a2b13183431b80060e46ee6a7a753f2b0ec92c5d2c1c22a0a2f81fee84be8cf"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_goblets/brass_goblet_03_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_goblets/textures/brass_goblet_03_diff_1k.jpg",
+          "bytes": 533840,
+          "md5": "ea621239d3e707d4fdbfd0f0c1266d71",
+          "sha256": "fe02509e3954d97d1e487c2e072238ffe1365a280837a6c85c9ab901ec13f690"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "brass_pot_01",
+      "name": "Brass Pot 01",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "brass cooking pot, stall wares",
+      "page": "https://polyhaven.com/a/brass_pot_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/brass_pot_01/brass_pot_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/brass_pot_01/brass_pot_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/brass_pot_01/brass_pot_01_1k.gltf",
+          "bytes": 2681,
+          "md5": "f7494994ac15f801c5a9e4d2d4bb22dc",
+          "sha256": "972fa20a81e322159a79cadf3812e1513a0001424198c7d9b423ced4cbf84473"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_pot_01/brass_pot_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_pot_01/textures/brass_pot_01_nor_gl_1k.jpg",
+          "bytes": 313819,
+          "md5": "77c56abc2eec2e40aa45eaad12ff76c5",
+          "sha256": "1de8554794d82812bd35b68655c38d81bea1554736d3cba4b1b28bdd911c6c5f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/brass_pot_01/brass_pot_01.bin",
+          "file": "Saved/DressingSources/Models/brass_pot_01/brass_pot_01.bin",
+          "bytes": 94560,
+          "md5": "3b3a13f078933ec94b4cbf55c95f12a0",
+          "sha256": "ffa78e52e5138d37b3184ceb5b2f95459f7a7a251bb645b12f935715fa58c654"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_pot_01/brass_pot_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_pot_01/textures/brass_pot_01_diff_1k.jpg",
+          "bytes": 648842,
+          "md5": "dd37598e39de2c9415329868e6d5c8dd",
+          "sha256": "6694da42ed8df023265a8245e125fb5048ea6ff998fdc8fc0ece6d61ca359780"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_pot_01/brass_pot_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/brass_pot_01/textures/brass_pot_01_arm_1k.jpg",
+          "bytes": 463572,
+          "md5": "6416768f2c7012fb1ad15513d6f345c3",
+          "sha256": "c99e0f27b65919eb1f378bcbce897114f3907d2f6175a120466b119bfa3825e6"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "ceramic_vase_01",
+      "name": "Ceramic Vase 01",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "earthenware vase, pottery stall",
+      "page": "https://polyhaven.com/a/ceramic_vase_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/ceramic_vase_01/ceramic_vase_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/ceramic_vase_01/ceramic_vase_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/ceramic_vase_01/ceramic_vase_01_1k.gltf",
+          "bytes": 2706,
+          "md5": "8f11b5472424578c2c505dee271a0868",
+          "sha256": "4e2c69eb5bbccf86e9fbf92af438464669d804c1f0eae041ee28651a5b57d91e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_vase_01/ceramic_vase_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/ceramic_vase_01/textures/ceramic_vase_01_nor_gl_1k.jpg",
+          "bytes": 36504,
+          "md5": "46081f52a4e9bb58d706477318627a22",
+          "sha256": "c35b59d15e0f08db44b0bc8a5870bc65ae781819e5abf0447996d0faf05b7722"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_vase_01/ceramic_vase_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/ceramic_vase_01/textures/ceramic_vase_01_diff_1k.jpg",
+          "bytes": 32351,
+          "md5": "52337c4fedc46490476d46a8950e1d6b",
+          "sha256": "5f7d22178b74a59fe92aa0ccc958b897e2fb80df514eb28b97000097c0e71beb"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_vase_01/ceramic_vase_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/ceramic_vase_01/textures/ceramic_vase_01_arm_1k.jpg",
+          "bytes": 74240,
+          "md5": "14e56f6d0f810525ddcf9305fa09f495",
+          "sha256": "121469880a7900513717685e9035dfc1b04613f85c778ab4e9dba98c1675d660"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/ceramic_vase_01/ceramic_vase_01.bin",
+          "file": "Saved/DressingSources/Models/ceramic_vase_01/ceramic_vase_01.bin",
+          "bytes": 272656,
+          "md5": "73f8a0f911f2d377e3b925b0ae9c7d4c",
+          "sha256": "56ffadcafff3f56538d04b0b43c06c9704baeec2ac3ec286ef01c313c82906f0"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "ceramic_vase_03",
+      "name": "Ceramic Vase 03",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "earthenware vase, pottery stall",
+      "page": "https://polyhaven.com/a/ceramic_vase_03",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/ceramic_vase_03/ceramic_vase_03_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/ceramic_vase_03/ceramic_vase_03_1k.gltf",
+          "file": "Saved/DressingSources/Models/ceramic_vase_03/ceramic_vase_03_1k.gltf",
+          "bytes": 2690,
+          "md5": "5c5ad889be3b7464bc87d29f0d85cd73",
+          "sha256": "72ea418ae3a761a651ea6bc4ce6daced649a2bd6c1c570227ba73af9e25d07f4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_vase_03/ceramic_vase_03_rough_1k.jpg",
+          "file": "Saved/DressingSources/Models/ceramic_vase_03/textures/ceramic_vase_03_rough_1k.jpg",
+          "bytes": 154214,
+          "md5": "f7b93888bf3bb21f280f38635f2fb401",
+          "sha256": "5db8b7b46da1c0354aec3ace7c3c0234c35211614d4cc82b5d1dd6257d11ada3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_vase_03/ceramic_vase_03_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/ceramic_vase_03/textures/ceramic_vase_03_nor_gl_1k.jpg",
+          "bytes": 181966,
+          "md5": "e8ea6ff7afcb3b2dd57bc5a9b7d61d6d",
+          "sha256": "bf5afd92bcf977af46f2f279d8fc025ce1dd5f69f4205dc6ac2a97df1759d426"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/ceramic_vase_03/ceramic_vase_03.bin",
+          "file": "Saved/DressingSources/Models/ceramic_vase_03/ceramic_vase_03.bin",
+          "bytes": 299232,
+          "md5": "4ad56bfebd58d98eb20f13a5e4fb6476",
+          "sha256": "19ced3c9a4231e0e0f0d2693661e40db15590ad99b3c84feecaa19067311fa6b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ceramic_vase_03/ceramic_vase_03_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/ceramic_vase_03/textures/ceramic_vase_03_diff_1k.jpg",
+          "bytes": 127057,
+          "md5": "f5688bd3b1835b5dd94f701704d5dc5d",
+          "sha256": "a939cd965fa2a3b5240e2c2a3cecdd404ae66542abb967d1ebcbdfa9657a0212"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "antique_ceramic_vase_01",
+      "name": "Antique Ceramic Vase 01",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "amphora-like jar, pottery stall",
+      "page": "https://polyhaven.com/a/antique_ceramic_vase_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf",
+          "bytes": 2789,
+          "md5": "b5a82c883c3a29b54eccd2f8400bd479",
+          "sha256": "c99f063c1ba4e649e87218265b5ca34f89e3c288ff6560c76b7d9d2dd46aa8cd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/antique_ceramic_vase_01/antique_ceramic_vase_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/antique_ceramic_vase_01/textures/antique_ceramic_vase_01_nor_gl_1k.jpg",
+          "bytes": 33062,
+          "md5": "07fef9d384b8e73d1b03604103ed0b65",
+          "sha256": "98cf0dceb4a95b73f41cb63f26ad6c26cf84ff6ff642bd216f4ce5343cb66cf7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/antique_ceramic_vase_01/antique_ceramic_vase_01.bin",
+          "file": "Saved/DressingSources/Models/antique_ceramic_vase_01/antique_ceramic_vase_01.bin",
+          "bytes": 217216,
+          "md5": "0758bc04ce9826b1ae61c931aed19715",
+          "sha256": "ff3224b67b0a20e5033e651c405382fbfcc26ceb034f8dc59065ea0e0b6b708e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/antique_ceramic_vase_01/antique_ceramic_vase_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/antique_ceramic_vase_01/textures/antique_ceramic_vase_01_diff_1k.jpg",
+          "bytes": 192337,
+          "md5": "a3de8212967f9e230364c5948e1581a5",
+          "sha256": "8ee51247bf13d76d3d4da3b99ca7d58bc9b14476250800d98385718887dd58de"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/antique_ceramic_vase_01/antique_ceramic_vase_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/antique_ceramic_vase_01/textures/antique_ceramic_vase_01_arm_1k.jpg",
+          "bytes": 80537,
+          "md5": "ca1d7269913774a351bdf10058d7f06f",
+          "sha256": "d4315346ead607ee6dada9e8e3710c0d804f47942056a2548e083133c0f8b5ce"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "yellow_onion",
+      "name": "Yellow Onion",
+      "authors": "Kuutti Siitonen",
+      "resolution": "1k",
+      "purpose": "onions, produce",
+      "page": "https://polyhaven.com/a/yellow_onion",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/yellow_onion/yellow_onion_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/yellow_onion/yellow_onion_1k.gltf",
+          "file": "Saved/DressingSources/Models/yellow_onion/yellow_onion_1k.gltf",
+          "bytes": 2785,
+          "md5": "dae6fea89c74167e9140866b0b16201d",
+          "sha256": "0d4aaa4046c5b471ea7f9197c453f3d48699bc85e06fd13606c8ea09a1dce699"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/yellow_onion/yellow_onion_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/yellow_onion/textures/yellow_onion_nor_gl_1k.jpg",
+          "bytes": 715114,
+          "md5": "649caf0e1fa5a79a9aa1319012def387",
+          "sha256": "f471dbeb82baaf3d743f28a254ed94587f83bd6131f03e656655c6d48717f137"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/yellow_onion/yellow_onion_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/yellow_onion/textures/yellow_onion_diff_1k.jpg",
+          "bytes": 455175,
+          "md5": "65504103b6b8af63ba39e2b7d8f6805a",
+          "sha256": "ad28b9926c9190398f1006fcf0b89c44255eb41aee5d52391a41ad5fc0f13e80"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/yellow_onion/yellow_onion_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/yellow_onion/textures/yellow_onion_arm_1k.jpg",
+          "bytes": 492495,
+          "md5": "b3cf49965fa2ee909b819a19ba321c6f",
+          "sha256": "77398ea7072602555a86510bfe37a7427a22932efc13de799c6fe2bbe62d2b8d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/yellow_onion/yellow_onion.bin",
+          "file": "Saved/DressingSources/Models/yellow_onion/yellow_onion.bin",
+          "bytes": 139832,
+          "md5": "d85feec8c46d2aa13479cabbaf6a27cc",
+          "sha256": "586c1e459e31e0647d090df4497e88c4e905e598607e9632590fb74cce7ef5f5"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "sweet_potato",
+      "name": "Sweet Potato",
+      "authors": "Jan Martens",
+      "resolution": "1k",
+      "purpose": "root vegetables, produce",
+      "page": "https://polyhaven.com/a/sweet_potato",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/sweet_potato/sweet_potato_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/sweet_potato/sweet_potato_1k.gltf",
+          "file": "Saved/DressingSources/Models/sweet_potato/sweet_potato_1k.gltf",
+          "bytes": 2778,
+          "md5": "b98aed418751d30349734b63b9c2803e",
+          "sha256": "36a226b95a63b2e22711d75e17818f33f99a17e54737e5469a8c7d2a41896097"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/sweet_potato/sweet_potato.bin",
+          "file": "Saved/DressingSources/Models/sweet_potato/sweet_potato.bin",
+          "bytes": 50044,
+          "md5": "99cf4fdf834236f7bac73f432b42fb6e",
+          "sha256": "37608ecca6f9a9c2d25bc166819fb56f2a61076247e732852239662d75295f82"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/sweet_potato/sweet_potato_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/sweet_potato/textures/sweet_potato_diff_1k.jpg",
+          "bytes": 633542,
+          "md5": "eaa396dc2a730e603024b55bc18dee02",
+          "sha256": "f236b36b78fd82fa6861c7e256435885bb72c4f4d7c8137989061cdda14a3d69"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/sweet_potato/sweet_potato_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/sweet_potato/textures/sweet_potato_nor_gl_1k.jpg",
+          "bytes": 617315,
+          "md5": "9432aeb9bf8cc3b1677419e4839657ea",
+          "sha256": "58e724f0cd776b898ab479f49edfae441b5f97d02a4941112f91106898135140"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/sweet_potato/sweet_potato_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/sweet_potato/textures/sweet_potato_arm_1k.jpg",
+          "bytes": 465796,
+          "md5": "bd400b4593c4c58a213a03ae1f20d94b",
+          "sha256": "74e4d5b33dd0ffa0217a3c65e99e7464d72b16d2c00aafe88d837dd606a6a37a"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "food_pears_asian_01",
+      "name": "Pears Asian 01",
+      "authors": "Amal Kumar",
+      "resolution": "1k",
+      "purpose": "pears, produce",
+      "page": "https://polyhaven.com/a/food_pears_asian_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/food_pears_asian_01/food_pears_asian_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/food_pears_asian_01/food_pears_asian_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/food_pears_asian_01/food_pears_asian_01_1k.gltf",
+          "bytes": 9955,
+          "md5": "de92255775de37f9dd685fd73fa2e0ec",
+          "sha256": "ff3373b91eef143a3921198f61a3b10aa87bcb870f905b2271ce3917b34ff300"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/food_pears_asian_01/food_pears_asian_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/food_pears_asian_01/textures/food_pears_asian_01_arm_1k.jpg",
+          "bytes": 629396,
+          "md5": "050560a051eae1544158164078cb7823",
+          "sha256": "e62f7cb1045a7b82906940c3c9e1f7ae1b733cb39e9532c4ec79988f1ba1aa51"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/food_pears_asian_01/food_pears_asian_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/food_pears_asian_01/textures/food_pears_asian_01_nor_gl_1k.jpg",
+          "bytes": 245203,
+          "md5": "78c8a12170c49d9217f86f7c04135e5b",
+          "sha256": "5e31717c809fd7237e3be31b191dcbe52e317b8d4cc7af27abcb404658dceb05"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/food_pears_asian_01/food_pears_asian_01.bin",
+          "file": "Saved/DressingSources/Models/food_pears_asian_01/food_pears_asian_01.bin",
+          "bytes": 300136,
+          "md5": "77ae4efe197087f8441a8c98fe719f93",
+          "sha256": "a647edc202dbdeec6e4eb3c4d721f0acb91ddf5a82f26a3a751ec709cebdd77e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/food_pears_asian_01/food_pears_asian_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/food_pears_asian_01/textures/food_pears_asian_01_diff_1k.jpg",
+          "bytes": 539427,
+          "md5": "aab0f3b8e260a7a17216fefad72cb0c1",
+          "sha256": "c07a55c97b966d49a0a3e6a628fcd38ce9d2abdddc57e24a742110245f4085c5"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "food_pomegranate_01",
+      "name": "Food Pomegranate 01",
+      "authors": "Oliver Harries",
+      "resolution": "1k",
+      "purpose": "pomegranates, produce",
+      "page": "https://polyhaven.com/a/food_pomegranate_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/food_pomegranate_01/food_pomegranate_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/food_pomegranate_01/food_pomegranate_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/food_pomegranate_01/food_pomegranate_01_1k.gltf",
+          "bytes": 2761,
+          "md5": "09a7ca6cb1d8754ce5bbb713d9aefc8e",
+          "sha256": "75e8bac9feda588189245fe8d145313fe382ee11766101d4b97f1c63476d6698"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/food_pomegranate_01/food_pomegranate_01_rough_1k.jpg",
+          "file": "Saved/DressingSources/Models/food_pomegranate_01/textures/food_pomegranate_01_rough_1k.jpg",
+          "bytes": 154956,
+          "md5": "24b9aba6a3d4b8b262a4612937450529",
+          "sha256": "9d7de886f101623d0d5beec5067734eed455a760445d27fbc7cdf4c7a9704898"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/food_pomegranate_01/food_pomegranate_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/food_pomegranate_01/textures/food_pomegranate_01_diff_1k.jpg",
+          "bytes": 164205,
+          "md5": "a1775d44f6e38487fbe0c0ad89c6f766",
+          "sha256": "b5223d9988b083d850404faf995a23c607ecbcc6ddefed341f67d20fc4a495aa"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/food_pomegranate_01/food_pomegranate_01.bin",
+          "file": "Saved/DressingSources/Models/food_pomegranate_01/food_pomegranate_01.bin",
+          "bytes": 195828,
+          "md5": "9cada4f5f04b70cb224de5f027ce1c6b",
+          "sha256": "29df7ac780b968c82958f881dba50837811c6d0b428db5099ba3f418969a1951"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/food_pomegranate_01/food_pomegranate_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/food_pomegranate_01/textures/food_pomegranate_01_nor_gl_1k.jpg",
+          "bytes": 93096,
+          "md5": "55f2e1762133bafd5fc4f68db20d7e83",
+          "sha256": "1e040ab1af8c27f390eaf70d0dbef973554df31ecac6395375f1aed9d2d64df9"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "wine_bottles_01",
+      "name": "Wine Bottles 01",
+      "authors": "Rico Cilliers, Jurita Burger",
+      "resolution": "1k",
+      "purpose": "wine bottles, tavern / wine stall",
+      "page": "https://polyhaven.com/a/wine_bottles_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/wine_bottles_01/wine_bottles_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wine_bottles_01/wine_bottles_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/wine_bottles_01_1k.gltf",
+          "bytes": 29107,
+          "md5": "56ed090c274714cccafefe08f5b9c1a8",
+          "sha256": "70a8a5eabeac24cf298774aca78bbcf39145ca6bf5ebdf2f296edab73fbce039"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_label_ftero_vinea_02_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_label_ftero_vinea_02_arm_1k.jpg",
+          "bytes": 152387,
+          "md5": "45938162f0a40c5336a13020f260833a",
+          "sha256": "c07bcbd4cde7bf713b0512d52345b949c4684ec0735c5798ac79a0fb4719b92c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_label_ftero_vinea_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_label_ftero_vinea_01_diff_1k.jpg",
+          "bytes": 323568,
+          "md5": "030a590777a7d7da9aa4b5b3b4b9014a",
+          "sha256": "3d1f02a201c8d573b155b2ea2265b31bf1d532e4c9a7baf2dfe54e2633e5e9c0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_label_intertwine_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_label_intertwine_01_arm_1k.jpg",
+          "bytes": 104730,
+          "md5": "8fd5a9a2a55346b04fb7131708d32bd5",
+          "sha256": "712d20fa4caabdf830e454ddc240643319700843e3bda349ae0c3c98dccbd582"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_label_clearwater_crystals_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_label_clearwater_crystals_01_diff_1k.jpg",
+          "bytes": 148172,
+          "md5": "3120c575d3b241e49805a5e6b7f0dcf1",
+          "sha256": "fca5e598c73d877c636e3c28345254fb9f6320e765fdd0b923fdb4ead5769ccf"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_label_ftero_vinea_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_label_ftero_vinea_01_arm_1k.jpg",
+          "bytes": 214807,
+          "md5": "1ab2d2ae76354374153f197319087e4b",
+          "sha256": "5808aed6b27b1812bbead8c6d733d412c1ed56adf587770dedf5f5e9d2e5310f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_label_clearwater_crystals_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_label_clearwater_crystals_01_arm_1k.jpg",
+          "bytes": 148023,
+          "md5": "961b508053ef1efa61fad81c28938cbb",
+          "sha256": "67041443fc09702bc93c9481d1492aeaad659cdb9a5a5dab478a86f41017e83c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_label_ftero_vinea_02_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_label_ftero_vinea_02_diff_1k.jpg",
+          "bytes": 207588,
+          "md5": "866fdd9058077ebd52f57e9725ccc05e",
+          "sha256": "5a35e83b08e3be62ae42773727d94d5c41da3df55b79fd7e53fca3fadc382a17"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_paper_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_paper_nor_gl_1k.jpg",
+          "bytes": 980529,
+          "md5": "4e2db4d9272da914123d244f3f81eb32",
+          "sha256": "b05b6f021b942032d45f23e46066da715c4f9624acea7d8db77928a90076a049"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wine_bottles_01/wine_bottles_01.bin",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/wine_bottles_01.bin",
+          "bytes": 688000,
+          "md5": "3b85db3b871a0392cfcb49ae501e3293",
+          "sha256": "a520b717c7f9d15b7f114d1be5f454f18b2cfd056757fb4d4c5f5054de5db6d6"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_label_intertwine_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_label_intertwine_01_diff_1k.jpg",
+          "bytes": 143130,
+          "md5": "a94f8a59cdc95725bfa40efbe10fe22c",
+          "sha256": "e5571a24e0f025361dfeecd7a09f4c3ee9be36dadf817177ee75919078002513"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_diff_1k.jpg",
+          "bytes": 110230,
+          "md5": "e84ada778c6479c2abdd8087fb8eee19",
+          "sha256": "f440b6364c87eb440c9ca201759cfdaf2735e3147488eadc24be334f1e457a09"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_nor_gl_1k.jpg",
+          "bytes": 194721,
+          "md5": "dc89329d642d0d11c4d4dd5340608342",
+          "sha256": "ed92387b827b7aebf4602e655c8e9cbaf53bbed24b7228106b04b3456e2d779c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wine_bottles_01/wine_bottles_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wine_bottles_01/textures/wine_bottles_01_arm_1k.jpg",
+          "bytes": 464325,
+          "md5": "8e5cb44e88727fe72ca05e171d93ceb1",
+          "sha256": "c3deadf0db4c9c98ad39f389e95fe2b09d8df0e3abb95a47f01478f31fd261a9"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "wooden_display_shelves_01",
+      "name": "Wooden Display Shelves 01",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "open display shelves for stalls",
+      "page": "https://polyhaven.com/a/wooden_display_shelves_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/wooden_display_shelves_01/wooden_display_shelves_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_display_shelves_01/wooden_display_shelves_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/wooden_display_shelves_01/wooden_display_shelves_01_1k.gltf",
+          "bytes": 6795,
+          "md5": "e807901382c7223238c5c3fd5bad5d8e",
+          "sha256": "3784953c451b088d24ac1b0e6946c7f7bd589115f51e6549fdb8fe9f7c10600e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_display_shelves_01/wooden_display_shelves_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_display_shelves_01/textures/wooden_display_shelves_01_arm_1k.jpg",
+          "bytes": 164353,
+          "md5": "526dc6c49a7ce366b61f04ab794107ee",
+          "sha256": "33d6b769eafab3b1d8605b202cd41b0994b8c43df02dca5bdd86e942e390ff6a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_display_shelves_01/wooden_display_shelves_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_display_shelves_01/textures/wooden_display_shelves_01_nor_gl_1k.jpg",
+          "bytes": 54739,
+          "md5": "696f1c48d08ffcc4bfc90e4aabc91286",
+          "sha256": "04191c25bfb8e76314863b624233807792df64fa1a638c75d20788becb4cbb8c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_display_shelves_01/wooden_display_shelves_01.bin",
+          "file": "Saved/DressingSources/Models/wooden_display_shelves_01/wooden_display_shelves_01.bin",
+          "bytes": 105988,
+          "md5": "d26e27c0c3a7c6b247b220a49379298f",
+          "sha256": "e6c000a780626e618c1f1c0c1ec2ec29e1452e7824055ba53b40963d857edfbe"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_display_shelves_01/wooden_display_shelves_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_display_shelves_01/textures/wooden_display_shelves_01_diff_1k.jpg",
+          "bytes": 139254,
+          "md5": "b3f7519052957a3f0199e5fcd742a0b6",
+          "sha256": "cb57e90d9588ce81e58ff7300e89956a6a3c45119165b858d921a5a2439cbeaf"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "wooden_bucket_02",
+      "name": "Wooden Bucket 02",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "second bucket variant",
+      "page": "https://polyhaven.com/a/wooden_bucket_02",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/wooden_bucket_02/wooden_bucket_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_bucket_02/wooden_bucket_02_1k.gltf",
+          "file": "Saved/DressingSources/Models/wooden_bucket_02/wooden_bucket_02_1k.gltf",
+          "bytes": 5625,
+          "md5": "d4f4c816e7f21e7532862935a9b8389c",
+          "sha256": "9ced8ec4849e59e7135d1ab342dbb106adc8c927d2178b1643f1089f19d548b5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_bucket_02/wooden_bucket_02_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_bucket_02/textures/wooden_bucket_02_nor_gl_1k.jpg",
+          "bytes": 756137,
+          "md5": "2c85542496f2ca81528b2bf217774d39",
+          "sha256": "206d606d5ce5d27fcc13e5a0c34e338d7841f6f26a3dd3f3a4f9d45644da45be"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_bucket_02/wooden_bucket_02_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_bucket_02/textures/wooden_bucket_02_diff_1k.jpg",
+          "bytes": 648386,
+          "md5": "767e56a66acea53b9f6600f8895fcdb4",
+          "sha256": "473693e53010cf87e0800037c39d8a5843351888b907c213e775bf1c10aac559"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_bucket_02/wooden_bucket_02.bin",
+          "file": "Saved/DressingSources/Models/wooden_bucket_02/wooden_bucket_02.bin",
+          "bytes": 227128,
+          "md5": "1795ede198f19fe6b81c92690a90fd79",
+          "sha256": "d733864312ab54d3d7908b930e858acde4eabe332ea742e0d1d15097c09aab93"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_bucket_02/wooden_bucket_02_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_bucket_02/textures/wooden_bucket_02_arm_1k.jpg",
+          "bytes": 875674,
+          "md5": "5c84ac7cecbf56c17d173ec77689516f",
+          "sha256": "4873fc1f3cda8a0e49f254861b1a6761bc9d8f192509e7f9b2163fdc84d7e86d"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "spinning_wheel_01",
+      "name": "Spinning Wheel 01",
+      "authors": "Sofia Pahaoja",
+      "resolution": "1k",
+      "purpose": "spinning wheel, residential doorstep",
+      "page": "https://polyhaven.com/a/spinning_wheel_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/spinning_wheel_01/spinning_wheel_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/spinning_wheel_01/spinning_wheel_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/spinning_wheel_01/spinning_wheel_01_1k.gltf",
+          "bytes": 2737,
+          "md5": "7cafc1cb742c3498a693669b1d7075c9",
+          "sha256": "a56305f75df7a6cb143875c2b5c3c4cf736b2d8ad0f040f942188b7fcc847a93"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/spinning_wheel_01/spinning_wheel_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/spinning_wheel_01/textures/spinning_wheel_01_diff_1k.jpg",
+          "bytes": 233457,
+          "md5": "fafaee776a28fba00a99751aeed9997f",
+          "sha256": "b81f7849d93841e34c68292a26cb7825ceeff204b51717c3703b6c6a0b86450e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/spinning_wheel_01/spinning_wheel_01.bin",
+          "file": "Saved/DressingSources/Models/spinning_wheel_01/spinning_wheel_01.bin",
+          "bytes": 1444300,
+          "md5": "2db8e2c16dbe4b28305704ba7602cf6e",
+          "sha256": "2764af36cbfcf6ba26e5175f63ba9aa72347bb52a7b7f06ad26895d89b14f099"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/spinning_wheel_01/spinning_wheel_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/spinning_wheel_01/textures/spinning_wheel_01_nor_gl_1k.jpg",
+          "bytes": 209097,
+          "md5": "d46c99ff191e82a57f91436dfc7af8a9",
+          "sha256": "51c087cac58416d320859848433a378b75f1177444707bf1237d0e707862273a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/spinning_wheel_01/spinning_wheel_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/spinning_wheel_01/textures/spinning_wheel_01_arm_1k.jpg",
+          "bytes": 235836,
+          "md5": "069808ba8a4a563f6c9933641427a7d3",
+          "sha256": "1cc2a9e7b2d3d4b5dd5fd04044b709708e05af463530ffac6894cd34d587cea2"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "wooden_broom",
+      "name": "Wooden Broom",
+      "authors": "Balen",
+      "resolution": "1k",
+      "purpose": "broom leaning on walls",
+      "page": "https://polyhaven.com/a/wooden_broom",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/wooden_broom/wooden_broom_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_broom/wooden_broom_1k.gltf",
+          "file": "Saved/DressingSources/Models/wooden_broom/wooden_broom_1k.gltf",
+          "bytes": 7588,
+          "md5": "11da4c522ca1a479ec65b17866f2e7be",
+          "sha256": "0849b601ff9b967b8d891edcee64fd39cf1e192161d989720ca6a93caf242d70"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_broom/wooden_broom_bristles_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_broom/textures/wooden_broom_bristles_diff_1k.jpg",
+          "bytes": 388640,
+          "md5": "463e5bd2311720359f4e5cd19720601c",
+          "sha256": "deebfae62affe0007c73bc57b5afcd216d920ec69c2f67d8399a5aab6a9088a8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_broom/wooden_broom_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_broom/textures/wooden_broom_nor_gl_1k.jpg",
+          "bytes": 873442,
+          "md5": "20fee130def21a2365679b78bb4e2cbb",
+          "sha256": "6ecda3297647a6b8b36b6a2d96240fa6c3ba973e4c795d307a5e8829e661b1be"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_broom/wooden_broom_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_broom/textures/wooden_broom_diff_1k.jpg",
+          "bytes": 759771,
+          "md5": "ff42e9a9b701b859e232d19474e62618",
+          "sha256": "525f5ba0cb4669b4e0c9d1ea0ca45471bcc28d3e061e0e1e5ab72a3c0c8edb81"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_broom/wooden_broom_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_broom/textures/wooden_broom_arm_1k.jpg",
+          "bytes": 885939,
+          "md5": "5877e946e33ec34b2d344bbda0946ac6",
+          "sha256": "43692c6109afa9a3a694a4295c69051e21edcbe30d8750ba434cc1674bb9db0c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/wooden_broom/wooden_broom.bin",
+          "file": "Saved/DressingSources/Models/wooden_broom/wooden_broom.bin",
+          "bytes": 508940,
+          "md5": "88cabae1cd73ba54ae7ef0155ed3d3ef",
+          "sha256": "35007174a2e19607154914d21f21116aaac67adf152f3f1c4e91163f43d4443e"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "sledgehammer_01",
+      "name": "Sledgehammer 01",
+      "authors": "Dylan Guzman",
+      "resolution": "1k",
+      "purpose": "sledgehammer, workshop clutter",
+      "page": "https://polyhaven.com/a/sledgehammer_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/sledgehammer_01/sledgehammer_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/sledgehammer_01/sledgehammer_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/sledgehammer_01/sledgehammer_01_1k.gltf",
+          "bytes": 2796,
+          "md5": "fdf943897a18bd862a3e547aaf8be0b0",
+          "sha256": "ff0a88b9e5d9a708e582e646d86d35654254a2fc73b9af4fe5d25393a7268e2a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/sledgehammer_01/sledgehammer_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/sledgehammer_01/textures/sledgehammer_01_diff_1k.jpg",
+          "bytes": 634798,
+          "md5": "4ad307a3d4b4207a26a2cb95850bb755",
+          "sha256": "7da22edba16c2bc18d4ff82b475adf016714e5780c119fa79245bb64aa728c52"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/sledgehammer_01/sledgehammer_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/sledgehammer_01/textures/sledgehammer_01_arm_1k.jpg",
+          "bytes": 656760,
+          "md5": "e23c3430ba00ef62607d8aed59ea5c38",
+          "sha256": "4b232405acdf35d8b2fa9a498d10df8f159c4f88f4c0ec8931b045a39ceea385"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/sledgehammer_01/sledgehammer_01.bin",
+          "file": "Saved/DressingSources/Models/sledgehammer_01/sledgehammer_01.bin",
+          "bytes": 66872,
+          "md5": "2194707d7c8362e9b212684204241e8f",
+          "sha256": "9194d3f758bdb9ad93742345a7cc67742f8a1711ceefcae53a4934cbefcd5d3e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/sledgehammer_01/sledgehammer_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/sledgehammer_01/textures/sledgehammer_01_nor_gl_1k.jpg",
+          "bytes": 422903,
+          "md5": "346fed1051aa194d6d11f64ba5066943",
+          "sha256": "876cb4773511179ce459e73ea85fbdaf2639c7edab0bb56220650c50156ecfb9"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "hatchet",
+      "name": "Hatchet",
+      "authors": "James Ray Cock, Ulan Cabanilla",
+      "resolution": "1k",
+      "purpose": "hatchet on the woodpile",
+      "page": "https://polyhaven.com/a/hatchet",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/hatchet/hatchet_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/hatchet/hatchet_1k.gltf",
+          "file": "Saved/DressingSources/Models/hatchet/hatchet_1k.gltf",
+          "bytes": 2718,
+          "md5": "df2b0ec1772498e34029564dd4a69629",
+          "sha256": "db11c85ef102708ca71a4a53a6367703fd325be6a7bc7d06522d37eaab7dbf61"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/hatchet/hatchet.bin",
+          "file": "Saved/DressingSources/Models/hatchet/hatchet.bin",
+          "bytes": 164524,
+          "md5": "8bd5390cfa607c765015987b4ca08560",
+          "sha256": "f4dc3fe12fc317eadae59d1c3ebd2ce8475bbfe0743c91a3bb754648781fda4b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/hatchet/hatchet_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/hatchet/textures/hatchet_arm_1k.jpg",
+          "bytes": 690773,
+          "md5": "f32397f946c5afd043c273291e5f74ec",
+          "sha256": "25bfecb4758c3f49f14804c5cfd40e55353c8fe10a00a58e01b45c464a051db5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/hatchet/hatchet_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/hatchet/textures/hatchet_nor_gl_1k.jpg",
+          "bytes": 592465,
+          "md5": "aca9618cbd4bb3b16a7f06696e72d6cc",
+          "sha256": "dc5c088475267262496c0d0e477c3a0f4626b9d9f079ce909e6540d0dbb342ea"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/hatchet/hatchet_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/hatchet/textures/hatchet_diff_1k.jpg",
+          "bytes": 517540,
+          "md5": "348d694ebb19250cbfb2645d0eeaa27c",
+          "sha256": "da58deb8065cb3f86883f4255e767b376b3ca9d1a238a2f3eafd3c78c2b1cc5f"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "handsaw_wood",
+      "name": "Handsaw Wood",
+      "authors": "Konrad Sza\u0142ankiewicz",
+      "resolution": "1k",
+      "purpose": "saw, workshop clutter",
+      "page": "https://polyhaven.com/a/handsaw_wood",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/handsaw_wood/handsaw_wood_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/handsaw_wood/handsaw_wood_1k.gltf",
+          "file": "Saved/DressingSources/Models/handsaw_wood/handsaw_wood_1k.gltf",
+          "bytes": 2762,
+          "md5": "2b685f9c8f55c9d7b6c1268be3357eae",
+          "sha256": "b2815ea7de69c2cec56f16cbdf65822aa0380673c76039edac1f92b9a6c4da79"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/handsaw_wood/handsaw_wood.bin",
+          "file": "Saved/DressingSources/Models/handsaw_wood/handsaw_wood.bin",
+          "bytes": 89624,
+          "md5": "a6c9236ed8f9201bbd13f1ef984b21ca",
+          "sha256": "15563872e8c8e55bf24b00f1aafb9722d38d06f8c395bc7441914543761fc58b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/handsaw_wood/handsaw_wood_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/handsaw_wood/textures/handsaw_wood_nor_gl_1k.jpg",
+          "bytes": 716898,
+          "md5": "3d4b36392ce0517862f9c45fce6ca5eb",
+          "sha256": "e6500ee722af2de1bce76d341c3a334588f83a426bc3bb3a1792b461c7016327"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/handsaw_wood/handsaw_wood_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/handsaw_wood/textures/handsaw_wood_diff_1k.jpg",
+          "bytes": 737874,
+          "md5": "87f284a7b1b1ef73a72acbd67082accb",
+          "sha256": "bf210b9862fc8d13e7ad6d2066c10d4aa577f50467ac75a25a1117f2b5935ed4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/handsaw_wood/handsaw_wood_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/handsaw_wood/textures/handsaw_wood_arm_1k.jpg",
+          "bytes": 932131,
+          "md5": "d17f9336d40d0dffd54bece4918cf435",
+          "sha256": "548e7436ec0cd42d8a4ad254187b76eb25947dabc5f4de56daeca89fb446372f"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "wooden_axe_02",
+      "name": "Wooden Axe 02",
+      "authors": "Ulan Cabanilla",
+      "resolution": "1k",
+      "purpose": "axe variant, woodpiles",
+      "page": "https://polyhaven.com/a/wooden_axe_02",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/wooden_axe_02/wooden_axe_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_axe_02/wooden_axe_02_1k.gltf",
+          "file": "Saved/DressingSources/Models/wooden_axe_02/wooden_axe_02_1k.gltf",
+          "bytes": 2774,
+          "md5": "97e01f495fa220f363498b3a2e3f8dc6",
+          "sha256": "c89b229b673b10e3e6af575f20478f0071a2a5e0b72d0f75ebac5a7d1f552ebd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_axe_02/wooden_axe_02_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_axe_02/textures/wooden_axe_02_nor_gl_1k.jpg",
+          "bytes": 530311,
+          "md5": "502fbd0b210a34c6c4ae38c449130e3e",
+          "sha256": "dcdffc034434dd640b620b5ef7a9e44992e62b46fd94beb476d32e1b27016ce2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/wooden_axe_02/wooden_axe_02.bin",
+          "file": "Saved/DressingSources/Models/wooden_axe_02/wooden_axe_02.bin",
+          "bytes": 59196,
+          "md5": "b4a0979c424f7abc64767fc6a4f96b6e",
+          "sha256": "8af8b62e3e36b986cdb510b6e7b3fbcfffe3b030c408d89261351041ab69565f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_axe_02/wooden_axe_02_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_axe_02/textures/wooden_axe_02_diff_1k.jpg",
+          "bytes": 748938,
+          "md5": "67596c95bb31ab05d9392e9cb127fc58",
+          "sha256": "3e31ee8bd5deb7c059ada8c2943c84af44a03dbf470ec0b02e317d04d6bced40"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_axe_02/wooden_axe_02_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_axe_02/textures/wooden_axe_02_arm_1k.jpg",
+          "bytes": 821376,
+          "md5": "95c1daa059dc0f55c4f803df7d9da458",
+          "sha256": "135ba6e4d3fa8e0672f78ccea8f740a59e2eee4a6418296bd066dab3d11fce92"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "wooden_hammer_01",
+      "name": "Wooden Hammer 01",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "mallet, workshop clutter",
+      "page": "https://polyhaven.com/a/wooden_hammer_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/wooden_hammer_01/wooden_hammer_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_hammer_01/wooden_hammer_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/wooden_hammer_01/wooden_hammer_01_1k.gltf",
+          "bytes": 2709,
+          "md5": "1fa784bf9596aabe6ae63b07541ec8f8",
+          "sha256": "c2149d9f54bd2115af7edeac528e4890e8e68f0d2e3e939367268547837c6b29"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_hammer_01/wooden_hammer_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_hammer_01/textures/wooden_hammer_01_nor_gl_1k.jpg",
+          "bytes": 577022,
+          "md5": "a1e06da5b306f9b053353009d1f172ed",
+          "sha256": "ee7c8f5206c22e358aeab11a5054a5769f72e70b4ac437624d7757e0499b4dd9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_hammer_01/wooden_hammer_01.bin",
+          "file": "Saved/DressingSources/Models/wooden_hammer_01/wooden_hammer_01.bin",
+          "bytes": 101960,
+          "md5": "1c6495d23cf3d120897a1655f93750e5",
+          "sha256": "06a8e9c61402fba101a538b7e30f87a76bbea45b65a0b4972789c56050660ec8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_hammer_01/wooden_hammer_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_hammer_01/textures/wooden_hammer_01_arm_1k.jpg",
+          "bytes": 686781,
+          "md5": "7398afa41fa7dc36fc7d08621a9ee0e3",
+          "sha256": "f4a09a140d3bfe8d542f0facf15d0fcfcf34a58b4e5772b8970c526079c01652"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_hammer_01/wooden_hammer_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_hammer_01/textures/wooden_hammer_01_diff_1k.jpg",
+          "bytes": 517825,
+          "md5": "f0647f60301b547bf717eab1147c1d30",
+          "sha256": "f4b2f9e151acd26028dc731677a776b885f51fc26e8f9155ae7ba5a959daed77"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "folding_wooden_stool",
+      "name": "Folding Wooden Stool",
+      "authors": "Ulan Cabanilla",
+      "resolution": "1k",
+      "purpose": "stool variant",
+      "page": "https://polyhaven.com/a/folding_wooden_stool",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/folding_wooden_stool/folding_wooden_stool_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/folding_wooden_stool/folding_wooden_stool_1k.gltf",
+          "file": "Saved/DressingSources/Models/folding_wooden_stool/folding_wooden_stool_1k.gltf",
+          "bytes": 2842,
+          "md5": "a19174156f8a643c4f2cb14345beb204",
+          "sha256": "c8ae926ce28737ca8b8f2ef928094fe114d7c71ca32e1040bace53337290a819"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/folding_wooden_stool/folding_wooden_stool_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/folding_wooden_stool/textures/folding_wooden_stool_nor_gl_1k.jpg",
+          "bytes": 726559,
+          "md5": "599b7f28e1f37de954e103deb03bca88",
+          "sha256": "f1c2220760d244a846cf2f0281597f18052b2d96ebb84b5eef473a72c7fd4586"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/folding_wooden_stool/folding_wooden_stool.bin",
+          "file": "Saved/DressingSources/Models/folding_wooden_stool/folding_wooden_stool.bin",
+          "bytes": 193016,
+          "md5": "d80f2c158986ebd3f343e19156d691fb",
+          "sha256": "84fcfeea3355ff011b9e821691fca04110705cfddba8b8617db868b4c33864fa"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/folding_wooden_stool/folding_wooden_stool_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/folding_wooden_stool/textures/folding_wooden_stool_diff_1k.jpg",
+          "bytes": 661939,
+          "md5": "d3810ba0c43af48a0fb0039a52f28ca8",
+          "sha256": "e5927deb2ce44e6204cfd39a05960f4811cf752bacb2b687d96e04af12a4d3ad"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/folding_wooden_stool/folding_wooden_stool_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/folding_wooden_stool/textures/folding_wooden_stool_arm_1k.jpg",
+          "bytes": 683576,
+          "md5": "2251302db3afb4b81293e593f1feb4ae",
+          "sha256": "1133c852e5ba6b1b05fe643926847d8a9b710e8ba869d825076c3d94cafa700b"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "painted_wooden_bench",
+      "name": "Painted Wooden Bench",
+      "authors": "Kirill Sannikov",
+      "resolution": "1k",
+      "purpose": "bench along facades",
+      "page": "https://polyhaven.com/a/painted_wooden_bench",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/painted_wooden_bench/painted_wooden_bench_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/painted_wooden_bench/painted_wooden_bench_1k.gltf",
+          "file": "Saved/DressingSources/Models/painted_wooden_bench/painted_wooden_bench_1k.gltf",
+          "bytes": 2835,
+          "md5": "784a49250144aa5299a93c1f3b6968d7",
+          "sha256": "2289ab82f3fe3045bf18f7b9541743d2c65b9f071cb34bbe424d2bc998f3e507"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/painted_wooden_bench/painted_wooden_bench_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/painted_wooden_bench/textures/painted_wooden_bench_diff_1k.jpg",
+          "bytes": 545216,
+          "md5": "60c7d0f34f52b1003345d318e35f468d",
+          "sha256": "9bc533313091ee71eaca5fa6334b71d27935d9d75311f64df6a53c28a67c435c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/painted_wooden_bench/painted_wooden_bench_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/painted_wooden_bench/textures/painted_wooden_bench_nor_gl_1k.jpg",
+          "bytes": 830104,
+          "md5": "08b74bebcff262c14beae35a4f7b3405",
+          "sha256": "a0f53740d77fc61aac01de0b7e1ae6109445d1756839f739ae31fdf10c9911f2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/painted_wooden_bench/painted_wooden_bench_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/painted_wooden_bench/textures/painted_wooden_bench_arm_1k.jpg",
+          "bytes": 586040,
+          "md5": "754ecc7f47b1e5d032e45e22334954f1",
+          "sha256": "878785565eeff706b8f1e4db7e3d794a544e9cf0e56cee424d9a271ab4ead47e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/painted_wooden_bench/painted_wooden_bench.bin",
+          "file": "Saved/DressingSources/Models/painted_wooden_bench/painted_wooden_bench.bin",
+          "bytes": 25444,
+          "md5": "ed331b50f955852f007313c1a75c2e2d",
+          "sha256": "5799bcb20924105cccd6424de8cdb8e67eb57fddc19c395befeac634a7b2e013"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "wooden_stool_01",
+      "name": "Wooden Stool 01",
+      "authors": "Kuutti Siitonen",
+      "resolution": "1k",
+      "purpose": "stool variant",
+      "page": "https://polyhaven.com/a/wooden_stool_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/wooden_stool_01/wooden_stool_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_stool_01/wooden_stool_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/wooden_stool_01/wooden_stool_01_1k.gltf",
+          "bytes": 2715,
+          "md5": "6a3c9169ce7ade1796efca8b88c75c50",
+          "sha256": "f28566454af27175839c10645a37a2a16b373e4be8aecddd0d8a3d704cfc0330"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_stool_01/wooden_stool_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_stool_01/textures/wooden_stool_01_diff_1k.jpg",
+          "bytes": 233863,
+          "md5": "11e0ab4da421bf248e8d9de2c34a95fb",
+          "sha256": "cb5c7ec2e27f5ad2ced7791da5e2cc9f1d03ab2c6ffbb63df8256dc271869206"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_stool_01/wooden_stool_01_rough_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_stool_01/textures/wooden_stool_01_rough_1k.jpg",
+          "bytes": 203406,
+          "md5": "339c0ab3c8c1618a0ebcd281004ea5ba",
+          "sha256": "23b43e05961731de864e4902a14c614b33d804fd91821c284fa90a8d2ca23fe1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_stool_01/wooden_stool_01.bin",
+          "file": "Saved/DressingSources/Models/wooden_stool_01/wooden_stool_01.bin",
+          "bytes": 290924,
+          "md5": "883e9617a69e90be7e19447dca83041c",
+          "sha256": "a9b21b8c75719057db549dfee5b8c1cc76edc2727367790fb9fc49963e34ae7a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_stool_01/wooden_stool_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_stool_01/textures/wooden_stool_01_nor_gl_1k.jpg",
+          "bytes": 230812,
+          "md5": "99541327d77d7f8a740aad45ff86760f",
+          "sha256": "10b587d76b74e752f15d03d2c4725cddb439b174dcddae2444e1534de61d77dc"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "round_wooden_table_02",
+      "name": "Round Wooden Table 02",
+      "authors": "Ulan Cabanilla",
+      "resolution": "1k",
+      "purpose": "round tavern table",
+      "page": "https://polyhaven.com/a/round_wooden_table_02",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/round_wooden_table_02/round_wooden_table_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/round_wooden_table_02/round_wooden_table_02_1k.gltf",
+          "file": "Saved/DressingSources/Models/round_wooden_table_02/round_wooden_table_02_1k.gltf",
+          "bytes": 2851,
+          "md5": "d0d30c21d878a5f1f36a96b33458aba0",
+          "sha256": "df65c35148280a06efcc06bfa75432bb13f29318e869597fc94f364ce2b55974"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/round_wooden_table_02/round_wooden_table_02_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/round_wooden_table_02/textures/round_wooden_table_02_nor_gl_1k.jpg",
+          "bytes": 635637,
+          "md5": "0f04a60c2f59f09808b26eb594732eed",
+          "sha256": "34989b9a15753b964a4d9d6b2673c048ff2c14feedbe4e6adbeb4bf32be8bc8c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/round_wooden_table_02/round_wooden_table_02_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/round_wooden_table_02/textures/round_wooden_table_02_diff_1k.jpg",
+          "bytes": 470007,
+          "md5": "2f16277bfd0ff661de3245c11d0b556e",
+          "sha256": "9872acedc6be92ef232c581c8e9ce435e4aa0d8f5c4b75e4ce445995a3ef8c28"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/round_wooden_table_02/round_wooden_table_02_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/round_wooden_table_02/textures/round_wooden_table_02_arm_1k.jpg",
+          "bytes": 677385,
+          "md5": "bd5ba146734d7aa0acdfcae0c66b727f",
+          "sha256": "613d051b4c4e093c5e65eec37d39f6f48ac5476e2cb1b59c4b034f308ef1a7ee"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/round_wooden_table_02/round_wooden_table_02.bin",
+          "file": "Saved/DressingSources/Models/round_wooden_table_02/round_wooden_table_02.bin",
+          "bytes": 135412,
+          "md5": "026ad1fd824b6eb38a4a260565471243",
+          "sha256": "fa9a0ed80be31d9160207913762cedc5de21d1cb37b01a5ae6caa23ce7a741b6"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "wooden_ladder_02",
+      "name": "Wooden Ladder 02",
+      "authors": "JN_3DPRINTINGNERD",
+      "resolution": "1k",
+      "purpose": "ladder against walls",
+      "page": "https://polyhaven.com/a/wooden_ladder_02",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/wooden_ladder_02/wooden_ladder_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_ladder_02/wooden_ladder_02_1k.gltf",
+          "file": "Saved/DressingSources/Models/wooden_ladder_02/wooden_ladder_02_1k.gltf",
+          "bytes": 2800,
+          "md5": "0b751a899654330ba1749b737f2e94ef",
+          "sha256": "8fbb14700a4d0f6e44f538538f9294e4b3395d1923c719f18cb6dba9fd20a06a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_ladder_02/wooden_ladder_02_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_ladder_02/textures/wooden_ladder_02_nor_gl_1k.jpg",
+          "bytes": 788043,
+          "md5": "f49bbb01e92846e97058b4da2badd5eb",
+          "sha256": "6a7308af0bcbd027812801ed34fa5193f0b4a443a672e046a99a73b15199c8cd"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_ladder_02/wooden_ladder_02_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_ladder_02/textures/wooden_ladder_02_diff_1k.jpg",
+          "bytes": 688874,
+          "md5": "de80fb92a09963214a336657e632afc6",
+          "sha256": "3c99e631dd30fb0d707a913fd7ffcd0d9f05161f73a93870d8ff499e78338254"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_ladder_02/wooden_ladder_02_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/wooden_ladder_02/textures/wooden_ladder_02_arm_1k.jpg",
+          "bytes": 681051,
+          "md5": "0d11d250474a472f7b5a9ba41ed821a8",
+          "sha256": "2830f8a73e4dd25412568dea16ca5338378f2017879249f0fc64c91f8a5d8f71"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_ladder_02/wooden_ladder_02.bin",
+          "file": "Saved/DressingSources/Models/wooden_ladder_02/wooden_ladder_02.bin",
+          "bytes": 175892,
+          "md5": "735a43bc397ebbc9e245c64313f7bf15",
+          "sha256": "bfbef75055bcd25fd680394fc22827817a9e78f30c21c3fde99d3d9af086d9be"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "ornate_war_hammer",
+      "name": "Ornate War Hammer",
+      "authors": "James Ray Cock, Ulan Cabanilla",
+      "resolution": "1k",
+      "purpose": "weapon rack, castle",
+      "page": "https://polyhaven.com/a/ornate_war_hammer",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/ornate_war_hammer/ornate_war_hammer_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/ornate_war_hammer/ornate_war_hammer_1k.gltf",
+          "file": "Saved/DressingSources/Models/ornate_war_hammer/ornate_war_hammer_1k.gltf",
+          "bytes": 2814,
+          "md5": "4bab96ac22c8abb92428dc53146ff4a5",
+          "sha256": "041d46492319e0ec6774151f5ae98ef363d15a6c46deee035f4924002b467dac"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ornate_war_hammer/ornate_war_hammer_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/ornate_war_hammer/textures/ornate_war_hammer_nor_gl_1k.jpg",
+          "bytes": 539947,
+          "md5": "38370d43919061c6dbae4a8cd645b904",
+          "sha256": "755184ba8605744bc74b3afc671c8a93ed4722ada5eb4b3bb28bbd8238e2f21a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ornate_war_hammer/ornate_war_hammer_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/ornate_war_hammer/textures/ornate_war_hammer_diff_1k.jpg",
+          "bytes": 674407,
+          "md5": "9f7c0dc6a84c09c96ac1d44a182d71c0",
+          "sha256": "ea2dc7bdf58e879fa1db7a4e9ead2a0daf61e953fb55f1ffc8c7ef4643cf1b4b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ornate_war_hammer/ornate_war_hammer_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/ornate_war_hammer/textures/ornate_war_hammer_arm_1k.jpg",
+          "bytes": 724699,
+          "md5": "7478b0bb549c14ee671855b1c5b59d7c",
+          "sha256": "5cab498a070f3786d0ecb45e9e94818c44f4ef6fdd5425162301ae40dd0351b8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/ornate_war_hammer/ornate_war_hammer.bin",
+          "file": "Saved/DressingSources/Models/ornate_war_hammer/ornate_war_hammer.bin",
+          "bytes": 147952,
+          "md5": "3ec3e6ad950e7e6c39b47ffc6aa11697",
+          "sha256": "df61f2ff67862804077de605196759375747ff64c367599348bc619fc83ca550"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "ornate_medieval_mace",
+      "name": "Ornate Medieval Mace",
+      "authors": "Ulan Cabanilla",
+      "resolution": "1k",
+      "purpose": "weapon rack, castle",
+      "page": "https://polyhaven.com/a/ornate_medieval_mace",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/ornate_medieval_mace/ornate_medieval_mace_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/ornate_medieval_mace/ornate_medieval_mace_1k.gltf",
+          "file": "Saved/DressingSources/Models/ornate_medieval_mace/ornate_medieval_mace_1k.gltf",
+          "bytes": 2849,
+          "md5": "6fb9454feff56ddcd601d71839454cd9",
+          "sha256": "e79fb8f805fd52d5e5b33e94c290be2a2b195adc01d1b4bbafad815f55ada5de"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ornate_medieval_mace/ornate_medieval_mace_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/ornate_medieval_mace/textures/ornate_medieval_mace_nor_gl_1k.jpg",
+          "bytes": 720625,
+          "md5": "2a8463f0b8c5dc9b57b89842d93e1908",
+          "sha256": "fef7c8ce5a2388636a7385b7f7e9ac8760429ee53215ea533702a83b57fb9f06"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ornate_medieval_mace/ornate_medieval_mace_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/ornate_medieval_mace/textures/ornate_medieval_mace_diff_1k.jpg",
+          "bytes": 682413,
+          "md5": "45dd4936cf394136e63e201bc65a6c60",
+          "sha256": "fb312fb03eac47b9a596b42018cf553eed9fb6bbb94e0847342fbce7718277d5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ornate_medieval_mace/ornate_medieval_mace_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/ornate_medieval_mace/textures/ornate_medieval_mace_arm_1k.jpg",
+          "bytes": 950262,
+          "md5": "d09dd5b6b6b40922b0e828e3b19f3495",
+          "sha256": "dd007d4e418f141d7037a44e2fce77b19ff55370b3298865523bb4fd8fc64de3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/ornate_medieval_mace/ornate_medieval_mace.bin",
+          "file": "Saved/DressingSources/Models/ornate_medieval_mace/ornate_medieval_mace.bin",
+          "bytes": 405980,
+          "md5": "aa46c1cf00be3dabb16805ac9853855d",
+          "sha256": "0af21aacc8abfea56898b11577d6fc32e9b22ae4a60c5ed906341e4d6933b1fe"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "antique_estoc",
+      "name": "Antique Estoc",
+      "authors": "James Ray Cock, Ulan Cabanilla",
+      "resolution": "1k",
+      "purpose": "weapon rack, castle",
+      "page": "https://polyhaven.com/a/antique_estoc",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/antique_estoc/antique_estoc_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/antique_estoc/antique_estoc_1k.gltf",
+          "file": "Saved/DressingSources/Models/antique_estoc/antique_estoc_1k.gltf",
+          "bytes": 2884,
+          "md5": "ea69fd266eaa44c0b283b02b69674488",
+          "sha256": "8b89790cb865aade4992cafc6310292318528a6bad6b2445b194733a1ba924e8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/antique_estoc/antique_estoc_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/antique_estoc/textures/antique_estoc_arm_1k.jpg",
+          "bytes": 895669,
+          "md5": "caa6a1981a7ca3d450858f714bb3f1ab",
+          "sha256": "f8b8b340672af212d019c49e51dcd7a0f1ebac1db361f0a64b363352038e7dc9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/antique_estoc/antique_estoc_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/antique_estoc/textures/antique_estoc_nor_gl_1k.jpg",
+          "bytes": 719026,
+          "md5": "e730863ddea4077defb5e007ac9d2db4",
+          "sha256": "0f8bbbcc2ab273d87d66711c65bd61cb44de654543db8576c5fcb2139ae51df2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/antique_estoc/antique_estoc_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/antique_estoc/textures/antique_estoc_diff_1k.jpg",
+          "bytes": 683853,
+          "md5": "6ad2700bf2642214d888659ecd3ad8ab",
+          "sha256": "a67b7f734e8eaaed7584fb35f55166209e2df4d62e349c379309b44def844dd4"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/antique_estoc/antique_estoc.bin",
+          "file": "Saved/DressingSources/Models/antique_estoc/antique_estoc.bin",
+          "bytes": 226660,
+          "md5": "3b6fe4da7cb5b8dc322729c1980ae158",
+          "sha256": "ef986112b317dd667f0bc8ca80647621572e82b04dacddbe4eed078121af89d7"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "lantern_chandelier_01",
+      "name": "Lantern Chandelier 01",
+      "authors": "Kirill Sannikov",
+      "resolution": "1k",
+      "purpose": "hanging iron lantern ring, market hall",
+      "page": "https://polyhaven.com/a/lantern_chandelier_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/lantern_chandelier_01/lantern_chandelier_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/lantern_chandelier_01/lantern_chandelier_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/lantern_chandelier_01/lantern_chandelier_01_1k.gltf",
+          "bytes": 7774,
+          "md5": "1692aed50765a13f631d65cb64bf9a4f",
+          "sha256": "dc5480e03b82d12521fc46bdb73d4a0291641cfa0d4e4c0fe21f3a087bc69468"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lantern_chandelier_01/lantern_chandelier_01_glass_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/lantern_chandelier_01/textures/lantern_chandelier_01_glass_arm_1k.jpg",
+          "bytes": 23669,
+          "md5": "034728b008419f7e58c3100519d42c77",
+          "sha256": "0946fcf83e9839caaa91e978d851cebcdb080f5e58e41cb912a967efdda8eca2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lantern_chandelier_01/lantern_chandelier_01_glass_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/lantern_chandelier_01/textures/lantern_chandelier_01_glass_nor_gl_1k.jpg",
+          "bytes": 504041,
+          "md5": "ae5f7fddd9b158f308e092216fcce457",
+          "sha256": "b2b71d166f9f42ac916c3d3139652cd2bbb8158ba69003777ecb9ec326ecfdc7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lantern_chandelier_01/lantern_chandelier_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/lantern_chandelier_01/textures/lantern_chandelier_01_arm_1k.jpg",
+          "bytes": 307956,
+          "md5": "c3f81f516235c19f5529db8eeed82967",
+          "sha256": "759c5d302fb6b6443677d221b16010395f70018d0f5eb83913c4c9ebad5efb0e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lantern_chandelier_01/lantern_chandelier_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/lantern_chandelier_01/textures/lantern_chandelier_01_diff_1k.jpg",
+          "bytes": 166693,
+          "md5": "37d15a3440e919c20a6dfb4f8a9e68c9",
+          "sha256": "72b46da4e813c1e3ef27a9ddc4cc849a4c6de313ac2925b189c58a8813233313"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lantern_chandelier_01/lantern_chandelier_01_glass_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/lantern_chandelier_01/textures/lantern_chandelier_01_glass_diff_1k.jpg",
+          "bytes": 22100,
+          "md5": "3d1c653ffd71bad4cd59ac3c7b323faa",
+          "sha256": "b7f9a93f77db82980c2e5f5e5667e1e073118e881bd500e9e1a45e5de5551103"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lantern_chandelier_01/lantern_chandelier_01_glass_alpha_1k.jpg",
+          "file": "Saved/DressingSources/Models/lantern_chandelier_01/textures/lantern_chandelier_01_glass_alpha_1k.jpg",
+          "bytes": 19893,
+          "md5": "4baa22e6d91bdfc1784828914bb99410",
+          "sha256": "facc4b2c8b0530175cb669c3230ad42c001402d6125d7954aa6506a76f7a423f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/lantern_chandelier_01/lantern_chandelier_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/lantern_chandelier_01/textures/lantern_chandelier_01_nor_gl_1k.jpg",
+          "bytes": 163651,
+          "md5": "dc586af8f1abf9950241eac67e5a6ba5",
+          "sha256": "c09551358d2f95467e3af5ec5b2cd9338f84a23980c1536157e9291e01c3d94d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/lantern_chandelier_01/lantern_chandelier_01.bin",
+          "file": "Saved/DressingSources/Models/lantern_chandelier_01/lantern_chandelier_01.bin",
+          "bytes": 264348,
+          "md5": "5a341ffae56b0f2defcad4c3f37bb35d",
+          "sha256": "2431ab40b0c336600ba58c3144b6cb257370245a5096938363aa4b796aaa5cee"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "planter_box_01",
+      "name": "Planter Box 01",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "flower box",
+      "page": "https://polyhaven.com/a/planter_box_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/planter_box_01/planter_box_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/planter_box_01/planter_box_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/planter_box_01/planter_box_01_1k.gltf",
+          "bytes": 2787,
+          "md5": "731d186af61b042dc4b4a2cd4744c35a",
+          "sha256": "15c7ff7396d872e5cad6743c796ff0f42e1f3f831fd334a26aa1fdbd11834a1f"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_box_01/planter_box_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_box_01/textures/planter_box_01_nor_gl_1k.jpg",
+          "bytes": 707323,
+          "md5": "a1b6f6fd3d45f05c9554e6a59fe0cab2",
+          "sha256": "7d2ad01fdfc8ea9e39af0ddc1db710380afad859dc3848302ff72d21a6e21a27"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_box_01/planter_box_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_box_01/textures/planter_box_01_arm_1k.jpg",
+          "bytes": 745610,
+          "md5": "201a4279feacf18a18e15af184fb4e52",
+          "sha256": "b80b08f88166360af32a076082daaed820f0d364a5bef0acea651485017ccbd6"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/planter_box_01/planter_box_01.bin",
+          "file": "Saved/DressingSources/Models/planter_box_01/planter_box_01.bin",
+          "bytes": 250580,
+          "md5": "644c9dedd7c8b090a10fa2be597d36bb",
+          "sha256": "cc97bc9ee05a90c78e27ca575a83eba86955e863dea8a12826f6ff02c2c11db3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_box_01/planter_box_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_box_01/textures/planter_box_01_diff_1k.jpg",
+          "bytes": 633117,
+          "md5": "f30b51ecd4af4d14cfa94794d6b47787",
+          "sha256": "5ad77068bf07ca371e18322c04641754a7758f4479e2835b93f671b4a5143bee"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "planter_box_02",
+      "name": "Planter Box 02",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "flower box",
+      "page": "https://polyhaven.com/a/planter_box_02",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/planter_box_02/planter_box_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/planter_box_02/planter_box_02_1k.gltf",
+          "file": "Saved/DressingSources/Models/planter_box_02/planter_box_02_1k.gltf",
+          "bytes": 2787,
+          "md5": "8b5852d5b04c044895afd64cdcb30577",
+          "sha256": "9ae29e813136cb056c672edbc5833ff5af2042b3cd15abc652e9d3fc338dca71"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_box_02/planter_box_02_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_box_02/textures/planter_box_02_diff_1k.jpg",
+          "bytes": 620574,
+          "md5": "96fa881a3ac88e033669a2ad8ca20b6c",
+          "sha256": "0500b512d922e2dc311fb4d1bd23dd982732f1ed2d79264f608487e69ef193c1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_box_02/planter_box_02_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_box_02/textures/planter_box_02_nor_gl_1k.jpg",
+          "bytes": 735299,
+          "md5": "9348a31f18fd4136a74ae7e7d5e7ac11",
+          "sha256": "c55e6d9db96b71cf4c863735927a80c0a3e4fed1c48229b386e8e1d29af8da58"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_box_02/planter_box_02_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_box_02/textures/planter_box_02_arm_1k.jpg",
+          "bytes": 750404,
+          "md5": "1a35f166fda4a2b2846b9d2b3bc4181d",
+          "sha256": "dcb9a181bd084811fdecb3412b5cb5167d9acedda53eb2eae50455e0b4b63b40"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/planter_box_02/planter_box_02.bin",
+          "file": "Saved/DressingSources/Models/planter_box_02/planter_box_02.bin",
+          "bytes": 359296,
+          "md5": "436a7737e128fa0736c4318834bf675a",
+          "sha256": "eedaf12238996e02f5aa8e44515ec8746cc1bac19cb3480a5914a7b4ea20dcda"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "planter_box_03",
+      "name": "Planter Box 03",
+      "authors": "James Ray Cock",
+      "resolution": "1k",
+      "purpose": "flower box",
+      "page": "https://polyhaven.com/a/planter_box_03",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/planter_box_03/planter_box_03_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/planter_box_03/planter_box_03_1k.gltf",
+          "file": "Saved/DressingSources/Models/planter_box_03/planter_box_03_1k.gltf",
+          "bytes": 2790,
+          "md5": "c95c3eae7e3c3fb91c4261287571f384",
+          "sha256": "56a1a36abdfcbdec20e379392c0c3d5d9ba0fff1003cf8f3858fdb58ef9ba9e5"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_box_03/planter_box_03_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_box_03/textures/planter_box_03_diff_1k.jpg",
+          "bytes": 643298,
+          "md5": "90cf87584d2d2d0cfa9ecd4d1c729ab6",
+          "sha256": "0cb9ed4e292860bce7f1fcb65820f8292d331d5b654ac09904028c149b5bb4a0"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_box_03/planter_box_03_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_box_03/textures/planter_box_03_arm_1k.jpg",
+          "bytes": 743133,
+          "md5": "7b10b71ef205e218697a3d00b5cebfc6",
+          "sha256": "dcb2eb57ee82838bcd9c65227b2780dbdc1d1f33aa7ec00a198130344334385d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_box_03/planter_box_03_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_box_03/textures/planter_box_03_nor_gl_1k.jpg",
+          "bytes": 749007,
+          "md5": "8506780b960012f075adea5542710544",
+          "sha256": "1c27f3533f68d6680d756e2a02fb01e052219d47a299b86d2c71be8f3443ac68"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/planter_box_03/planter_box_03.bin",
+          "file": "Saved/DressingSources/Models/planter_box_03/planter_box_03.bin",
+          "bytes": 420144,
+          "md5": "e039dd4123eb4d991f10a6716e4a678a",
+          "sha256": "ef816549229850ba3015ca8df20c8df6a076c594575d4dc4d952e71e518fd70d"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "planter_pot_clay",
+      "name": "Planter Pot Clay",
+      "authors": "Amal Kumar",
+      "resolution": "1k",
+      "purpose": "clay flower pot",
+      "page": "https://polyhaven.com/a/planter_pot_clay",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/planter_pot_clay/planter_pot_clay_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/planter_pot_clay/planter_pot_clay_1k.gltf",
+          "file": "Saved/DressingSources/Models/planter_pot_clay/planter_pot_clay_1k.gltf",
+          "bytes": 2813,
+          "md5": "1c78fcfd6144747c97e2b822a6229c0d",
+          "sha256": "f2989068dcff9737c9f3d49d435b70e36d553822ac87134daac055ae9706af1e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_pot_clay/planter_pot_clay_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_pot_clay/textures/planter_pot_clay_diff_1k.jpg",
+          "bytes": 596319,
+          "md5": "6823eb18ca73c8cdcb3cbc04704c443b",
+          "sha256": "4f2962fd238401e49fd400596fdccd1ee9e2cca9ed21e44bb924dca3076f524c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/planter_pot_clay/planter_pot_clay.bin",
+          "file": "Saved/DressingSources/Models/planter_pot_clay/planter_pot_clay.bin",
+          "bytes": 78096,
+          "md5": "93aa55f6378a47c3e2d03eb5b98da8b0",
+          "sha256": "effd0a038a75a054e55e2f5f71a84c57c1c6efc4e453ae3e62d4ce5167a2913c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_pot_clay/planter_pot_clay_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_pot_clay/textures/planter_pot_clay_arm_1k.jpg",
+          "bytes": 613484,
+          "md5": "ec397ae29f1f52292cbc9482037c11c4",
+          "sha256": "68e9e509db4e330b48924c606d4a9a99b54e105c1fe1690ff2811a05d95a0def"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/planter_pot_clay/planter_pot_clay_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/planter_pot_clay/textures/planter_pot_clay_nor_gl_1k.jpg",
+          "bytes": 506446,
+          "md5": "269b48d6a5038e97acf9d670b7381b3a",
+          "sha256": "25a564e55b247a94863b513853b1aeaad5c894dd78e92e1fd89e794b83b483c4"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "nettle_plant",
+      "name": "Nettle Plant",
+      "authors": "Rob Tuytel, Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "nettles along walls",
+      "page": "https://polyhaven.com/a/nettle_plant",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/nettle_plant/nettle_plant_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/nettle_plant/nettle_plant_1k.gltf",
+          "file": "Saved/DressingSources/Models/nettle_plant/nettle_plant_1k.gltf",
+          "bytes": 10450,
+          "md5": "474e138cdee694335ca4270ac43f9d49",
+          "sha256": "45baafa16feb0017e6a46712e2aa7afe7841fd00905075ead8316a5fc8314b0e"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/nettle_plant/nettle_plant_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/nettle_plant/textures/nettle_plant_arm_1k.jpg",
+          "bytes": 467172,
+          "md5": "7244d9f04fdc0b53212c3d38f5a215b4",
+          "sha256": "8fb33e5e939b4e089f08c867bf449d9e27aa32af94990c3cad1a89dcabd44f14"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/nettle_plant/nettle_plant_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/nettle_plant/textures/nettle_plant_nor_gl_1k.jpg",
+          "bytes": 654754,
+          "md5": "471821200314d7eee64cbd35bf3e5bd0",
+          "sha256": "ab5d0cdc9a487a8874b6e9a11bf67ef90319f02bbd74579576198aca90b0fa85"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/nettle_plant/nettle_plant_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/nettle_plant/textures/nettle_plant_diff_1k.jpg",
+          "bytes": 388629,
+          "md5": "efa546b37e9a8669b214b1fea1422892",
+          "sha256": "7172a9971818a18a7cb7ebaa144d9d2313b83d2a6180c9582000f7260542ea7b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/nettle_plant/nettle_plant.bin",
+          "file": "Saved/DressingSources/Models/nettle_plant/nettle_plant.bin",
+          "bytes": 956560,
+          "md5": "975cb59d9f42871bb448de70aeecbc01",
+          "sha256": "24810f9d80b5fafdd71e1599b0cc81afa3eb9b744cfa8bf388c5e9f30271ba46"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "weed_plant_02",
+      "name": "Weed Plant 02",
+      "authors": "Rob Tuytel, Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "weeds between cobbles",
+      "page": "https://polyhaven.com/a/weed_plant_02",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/weed_plant_02/weed_plant_02_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/weed_plant_02/weed_plant_02_1k.gltf",
+          "file": "Saved/DressingSources/Models/weed_plant_02/weed_plant_02_1k.gltf",
+          "bytes": 9128,
+          "md5": "7716ffcf325cbec5c433085a0c0e5f1f",
+          "sha256": "20fe9aa14ec8160de54d8027422ce6db93bcc6211299509067ee3edbceff218b"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/weed_plant_02/weed_plant_02_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/weed_plant_02/textures/weed_plant_02_nor_gl_1k.jpg",
+          "bytes": 679362,
+          "md5": "1f58acb112882c7d0eb7b7d8e58d65c0",
+          "sha256": "53e277362656eaea87a59bc7c5b551e73d2cdb5b852b21d0ffb84becfc7b941d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/weed_plant_02/weed_plant_02_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/weed_plant_02/textures/weed_plant_02_diff_1k.jpg",
+          "bytes": 457595,
+          "md5": "147c346358cf123ca50473cf05df7b86",
+          "sha256": "6bcbf7f0b8eaf5156b9021f998dd9233ba4b095aa590f3621b94f47550e21eb9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/weed_plant_02/weed_plant_02_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/weed_plant_02/textures/weed_plant_02_arm_1k.jpg",
+          "bytes": 571490,
+          "md5": "ef589b514bd7515ded97f81466e27dd8",
+          "sha256": "82dd00b135a605aecf09d46bdaa6e71cdfc221d7b53e20e6f446da6e9e5bf942"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/weed_plant_02/weed_plant_02.bin",
+          "file": "Saved/DressingSources/Models/weed_plant_02/weed_plant_02.bin",
+          "bytes": 330884,
+          "md5": "31440e5d2ad17eff90fcf83f3dbe989e",
+          "sha256": "2b77b91a881055365a56156e8a131277187f72b82c1d55806bb5b0a5053e5e9d"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "shrub_sorrel_01",
+      "name": "Shrub Sorrel 01",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "sorrel clumps",
+      "page": "https://polyhaven.com/a/shrub_sorrel_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/shrub_sorrel_01/shrub_sorrel_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/shrub_sorrel_01/shrub_sorrel_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/shrub_sorrel_01/shrub_sorrel_01_1k.gltf",
+          "bytes": 17428,
+          "md5": "d56d50a8492bd7d7c7a0a571f42239c6",
+          "sha256": "97e2c9b564610a1077de9e15de07acbf19f2e66619016aeebb7987e191ad3ce1"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_sorrel_01/shrub_sorrel_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/shrub_sorrel_01/textures/shrub_sorrel_01_nor_gl_1k.jpg",
+          "bytes": 470891,
+          "md5": "71c6c432b91a8d64f2c480366fd61dfb",
+          "sha256": "0bb2e2aba7831a4e642ad6b1985ad82b0a574930ec6982f9a1a66ad8b41a94b3"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/shrub_sorrel_01/shrub_sorrel_01.bin",
+          "file": "Saved/DressingSources/Models/shrub_sorrel_01/shrub_sorrel_01.bin",
+          "bytes": 110936,
+          "md5": "5b6481fc43f4dc36ab4e80d79a19119f",
+          "sha256": "725f46bf6d330486bf22d4b897fa1d8ef01cdc77a72f1400a3939f86740b4e5d"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_sorrel_01/shrub_sorrel_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/shrub_sorrel_01/textures/shrub_sorrel_01_arm_1k.jpg",
+          "bytes": 201949,
+          "md5": "6230445a48867ef8196ee1ab052d346d",
+          "sha256": "a1b49322e2b0ea988336fca959145dbb53b483b8f9ff2ec5f23dda20c486bdb8"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/shrub_sorrel_01/shrub_sorrel_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/shrub_sorrel_01/textures/shrub_sorrel_01_diff_1k.jpg",
+          "bytes": 385129,
+          "md5": "bef299def81bd55c2b378d53dad803b5",
+          "sha256": "9aa62e57767f5b964b8d52e6406ebadb0205fa469d5a369a946fba13a3bc950f"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "dry_branches_medium_01",
+      "name": "Dry Branches Medium 01",
+      "authors": "Rico Cilliers",
+      "resolution": "1k",
+      "purpose": "dry branch litter",
+      "page": "https://polyhaven.com/a/dry_branches_medium_01",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/dry_branches_medium_01/dry_branches_medium_01_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/dry_branches_medium_01/dry_branches_medium_01_1k.gltf",
+          "file": "Saved/DressingSources/Models/dry_branches_medium_01/dry_branches_medium_01_1k.gltf",
+          "bytes": 5844,
+          "md5": "bd6d60dff97c59a80d770f94f23b566b",
+          "sha256": "23f328ded9be1e151ccd7994b303c70221551544c4857a71474c1c01a14b8a22"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dry_branches_medium_01/dry_branches_medium_01_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/dry_branches_medium_01/textures/dry_branches_medium_01_arm_1k.jpg",
+          "bytes": 831180,
+          "md5": "a0c5fface8ffdf81a806fcd5cf05788f",
+          "sha256": "6d1ba6f4763d2815301a15bf62eaf68c345cecafb107e2681d12f26fbc657f5a"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dry_branches_medium_01/dry_branches_medium_01_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/dry_branches_medium_01/textures/dry_branches_medium_01_diff_1k.jpg",
+          "bytes": 778799,
+          "md5": "2b01d9d1613c88496250f64828566f7c",
+          "sha256": "1fbaf810a9ca29d2faf0a179834e8dce10cf4854bafe13f63af111030b3ec660"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/dry_branches_medium_01/dry_branches_medium_01_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/dry_branches_medium_01/textures/dry_branches_medium_01_nor_gl_1k.jpg",
+          "bytes": 1170647,
+          "md5": "d374fbbd8c4829310104cce0de7cd826",
+          "sha256": "62f5205bfec599000bb7a430e003bbada939bc8d7976a7d3ab7709fd5893413c"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/dry_branches_medium_01/dry_branches_medium_01.bin",
+          "file": "Saved/DressingSources/Models/dry_branches_medium_01/dry_branches_medium_01.bin",
+          "bytes": 465172,
+          "md5": "10de852c8bf38e3f3ca5fb1d6c8de9d0",
+          "sha256": "969da1e8cbb2d8201e7fa0fc0dac5b19ef354b32c3d8c62dd9faa7cb3833d8ca"
+        }
+      ]
+    },
+    {
+      "kind": "model",
+      "source": "Poly Haven",
+      "id": "street_rat",
+      "name": "Street Rat",
+      "authors": "Sean Buckley",
+      "resolution": "1k",
+      "purpose": "rats in alleys (static)",
+      "page": "https://polyhaven.com/a/street_rat",
+      "license": "CC0 1.0 Universal (https://polyhaven.com/license)",
+      "entry": "Saved/DressingSources/Models/street_rat/street_rat_1k.gltf",
+      "files": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/street_rat/street_rat_1k.gltf",
+          "file": "Saved/DressingSources/Models/street_rat/street_rat_1k.gltf",
+          "bytes": 2770,
+          "md5": "b6bf11e09d7a1efe0f03d4913216546c",
+          "sha256": "66d822f0828838a5ffd1f82b846bdf90c962c73781bf8f1da22b487eef6950b2"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/street_rat/street_rat_nor_gl_1k.jpg",
+          "file": "Saved/DressingSources/Models/street_rat/textures/street_rat_nor_gl_1k.jpg",
+          "bytes": 730495,
+          "md5": "a750181da724f3b6f9594868c95678fb",
+          "sha256": "22b82eb903e46be050c454903879d0ff867b8cbc58f2c3e8c87b52085154f8b9"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/street_rat/street_rat_diff_1k.jpg",
+          "file": "Saved/DressingSources/Models/street_rat/textures/street_rat_diff_1k.jpg",
+          "bytes": 529505,
+          "md5": "de1c29cf4020629b4d9479b84b1d4f2a",
+          "sha256": "afdbbe2bb1dd7176561c2dce1bf401930e109c5669ad6496384d0fbae24d62a7"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/street_rat/street_rat.bin",
+          "file": "Saved/DressingSources/Models/street_rat/street_rat.bin",
+          "bytes": 1365280,
+          "md5": "f7cf930cf7af0c11283938250bdeb197",
+          "sha256": "8b7a6b9bba805537b2009a5e3f7678558edc8a365fb8e5ee2af8dc7ed0bf9f56"
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/street_rat/street_rat_arm_1k.jpg",
+          "file": "Saved/DressingSources/Models/street_rat/textures/street_rat_arm_1k.jpg",
+          "bytes": 982063,
+          "md5": "d56f60a7ba19fc823713337906ea9b70",
+          "sha256": "c511beb5d626f9fc9ec02be9d96322d309904f50746146b7ec1188200e7582c2"
+        }
+      ]
+    },
+    {
+      "kind": "texture",
+      "source": "ambientCG",
+      "id": "LeafSet017",
+      "name": "LeafSet017",
+      "authors": "Lennart Demes (ambientCG)",
+      "resolution": "2K-JPG",
+      "purpose": "ivy leaf atlas (colour + opacity + normal) for ivy cards on walls",
+      "page": "https://ambientcg.com/a/LeafSet017",
+      "license": "CC0 1.0 Universal (https://docs.ambientcg.com/license/)",
+      "files": [
+        {
+          "url": "https://ambientcg.com/get?file=LeafSet017_2K-JPG.zip",
+          "file": "Saved/DressingSources/AmbientCG/LeafSet017_2K-JPG.zip",
+          "bytes": 11557785,
+          "md5": null,
+          "sha256": "33a80b2ea270fa14db3b423c59cb339eb1d52b76e889d707d5f1bfa887650f4b"
+        }
+      ],
+      "extracted": [
+        "LeafSet017.png",
+        "LeafSet017_2K-JPG_Color.jpg",
+        "LeafSet017_2K-JPG_Displacement.jpg",
+        "LeafSet017_2K-JPG_NormalDX.jpg",
+        "LeafSet017_2K-JPG_NormalGL.jpg",
+        "LeafSet017_2K-JPG_Opacity.jpg",
+        "LeafSet017_2K-JPG_Roughness.jpg"
+      ]
+    },
+    {
+      "kind": "texture",
+      "source": "ambientCG",
+      "id": "Leaking003",
+      "name": "Leaking003",
+      "authors": "Lennart Demes (ambientCG)",
+      "resolution": "1K-JPG",
+      "purpose": "moisture / grime streak under windows and eaves",
+      "page": "https://ambientcg.com/a/Leaking003",
+      "license": "CC0 1.0 Universal (https://docs.ambientcg.com/license/)",
+      "files": [
+        {
+          "url": "https://ambientcg.com/get?file=Leaking003_1K-JPG.zip",
+          "file": "Saved/DressingSources/AmbientCG/Leaking003_1K-JPG.zip",
+          "bytes": 4050906,
+          "md5": null,
+          "sha256": "d3c3d45b1db3369ef755ff0d92e9e7b5f8bf6e832309f4970ed99f3d45dec9fa"
+        }
+      ],
+      "extracted": [
+        "Leaking003.png",
+        "Leaking003_1K-JPG_Color.jpg",
+        "Leaking003_1K-JPG_Displacement.jpg",
+        "Leaking003_1K-JPG_NormalDX.jpg",
+        "Leaking003_1K-JPG_NormalGL.jpg",
+        "Leaking003_1K-JPG_Opacity.jpg",
+        "Leaking003_1K-JPG_Roughness.jpg"
+      ]
+    },
+    {
+      "kind": "texture",
+      "source": "ambientCG",
+      "id": "ScatteredLeaves007",
+      "name": "ScatteredLeaves007",
+      "authors": "Lennart Demes (ambientCG)",
+      "resolution": "1K-JPG",
+      "purpose": "fallen-leaf litter patches (colour + opacity)",
+      "page": "https://ambientcg.com/a/ScatteredLeaves007",
+      "license": "CC0 1.0 Universal (https://docs.ambientcg.com/license/)",
+      "files": [
+        {
+          "url": "https://ambientcg.com/get?file=ScatteredLeaves007_1K-JPG.zip",
+          "file": "Saved/DressingSources/AmbientCG/ScatteredLeaves007_1K-JPG.zip",
+          "bytes": 7767949,
+          "md5": null,
+          "sha256": "38c281e758c8b76107c9222284fe4230964f8858ad142702f587d13add9804fc"
+        }
+      ],
+      "extracted": [
+        "ScatteredLeaves007.png",
+        "ScatteredLeaves007_1K-JPG_Color.jpg",
+        "ScatteredLeaves007_1K-JPG_Displacement.jpg",
+        "ScatteredLeaves007_1K-JPG_NormalDX.jpg",
+        "ScatteredLeaves007_1K-JPG_NormalGL.jpg",
+        "ScatteredLeaves007_1K-JPG_Opacity.jpg",
+        "ScatteredLeaves007_1K-JPG_Roughness.jpg"
+      ]
+    }
+  ]
+}

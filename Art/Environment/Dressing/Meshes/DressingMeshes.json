@@ -1,0 +1,355 @@
+{
+  "generator": "Tools/BuildDressingMeshes.py",
+  "units": "cm",
+  "up": "Z",
+  "front": "+X",
+  "meshes": [
+    {
+      "name": "SM_Dress_ShopSignBoot",
+      "triangles": 144,
+      "materials": [
+        "Iron",
+        "Planks",
+        "Timber"
+      ],
+      "boundsMin": [
+        -0.7,
+        -8.0,
+        -85.5
+      ],
+      "boundsMax": [
+        120.0,
+        8.0,
+        20.0
+      ]
+    },
+    {
+      "name": "SM_Dress_ShopSignTankard",
+      "triangles": 168,
+      "materials": [
+        "Iron",
+        "Planks",
+        "Timber"
+      ],
+      "boundsMin": [
+        -0.7,
+        -8.0,
+        -85.5
+      ],
+      "boundsMax": [
+        120.0,
+        8.0,
+        20.0
+      ]
+    },
+    {
+      "name": "SM_Dress_ShopSignKey",
+      "triangles": 168,
+      "materials": [
+        "Iron",
+        "Planks",
+        "Timber"
+      ],
+      "boundsMin": [
+        -0.7,
+        -8.0,
+        -85.5
+      ],
+      "boundsMax": [
+        120.0,
+        8.0,
+        20.0
+      ]
+    },
+    {
+      "name": "SM_Dress_WallBannerRed",
+      "triangles": 82,
+      "materials": [
+        "BannerCloth",
+        "Iron"
+      ],
+      "boundsMin": [
+        0.0,
+        -53.0,
+        -230.0
+      ],
+      "boundsMax": [
+        38.0,
+        53.0,
+        10.0
+      ]
+    },
+    {
+      "name": "SM_Dress_WallBannerPale",
+      "triangles": 82,
+      "materials": [
+        "CanvasAlt",
+        "Iron"
+      ],
+      "boundsMin": [
+        0.0,
+        -48.0,
+        -200.0
+      ],
+      "boundsMax": [
+        38.0,
+        48.0,
+        10.0
+      ]
+    },
+    {
+      "name": "SM_Dress_Laundry",
+      "triangles": 352,
+      "materials": [
+        "Canvas",
+        "CanvasAlt",
+        "Cloth",
+        "Iron",
+        "Sack",
+        "Timber"
+      ],
+      "boundsMin": [
+        0.0,
+        -193.0,
+        -130.7
+      ],
+      "boundsMax": [
+        31.0,
+        193.0,
+        6.0
+      ]
+    },
+    {
+      "name": "SM_Dress_LaundryShort",
+      "triangles": 312,
+      "materials": [
+        "Canvas",
+        "CanvasAlt",
+        "Iron",
+        "Sack",
+        "Timber"
+      ],
+      "boundsMin": [
+        0.0,
+        -133.0,
+        -128.2
+      ],
+      "boundsMax": [
+        30.8,
+        143.0,
+        10.6
+      ]
+    },
+    {
+      "name": "SM_Dress_IvyTall",
+      "triangles": 1800,
+      "materials": [
+        "Bark",
+        "Ivy"
+      ],
+      "boundsMin": [
+        0.5,
+        -126.0,
+        -19.4
+      ],
+      "boundsMax": [
+        23.6,
+        135.3,
+        434.5
+      ]
+    },
+    {
+      "name": "SM_Dress_IvyLow",
+      "triangles": 1480,
+      "materials": [
+        "Bark",
+        "Ivy"
+      ],
+      "boundsMin": [
+        0.5,
+        -202.9,
+        -20.0
+      ],
+      "boundsMax": [
+        22.5,
+        206.4,
+        207.3
+      ]
+    },
+    {
+      "name": "SM_Dress_PuddleA",
+      "triangles": 22,
+      "materials": [
+        "Puddle"
+      ],
+      "boundsMin": [
+        -104.1,
+        -89.0,
+        0.6
+      ],
+      "boundsMax": [
+        130.2,
+        78.1,
+        0.6
+      ]
+    },
+    {
+      "name": "SM_Dress_PuddleB",
+      "triangles": 22,
+      "materials": [
+        "Puddle"
+      ],
+      "boundsMin": [
+        -194.9,
+        -118.9,
+        0.6
+      ],
+      "boundsMax": [
+        143.8,
+        137.8,
+        0.6
+      ]
+    },
+    {
+      "name": "SM_Dress_GrimeStreak",
+      "triangles": 2,
+      "materials": [
+        "Grime"
+      ],
+      "boundsMin": [
+        1.2,
+        -130.0,
+        -130
+      ],
+      "boundsMax": [
+        1.2,
+        130.0,
+        0
+      ]
+    },
+    {
+      "name": "SM_Dress_LeafLitter",
+      "triangles": 2,
+      "materials": [
+        "Litter"
+      ],
+      "boundsMin": [
+        -130.0,
+        -130.0,
+        0.8
+      ],
+      "boundsMax": [
+        130.0,
+        130.0,
+        0.8
+      ]
+    },
+    {
+      "name": "SM_Dress_Smoke",
+      "triangles": 60,
+      "materials": [
+        "Smoke"
+      ],
+      "boundsMin": [
+        -58.6,
+        -200.0,
+        0.0
+      ],
+      "boundsMax": [
+        333.2,
+        200.0,
+        1100.0
+      ]
+    },
+    {
+      "name": "SM_Dress_CrowPerched",
+      "triangles": 44,
+      "materials": [
+        "Crow"
+      ],
+      "boundsMin": [
+        -28.0,
+        -7.0,
+        -0.1
+      ],
+      "boundsMax": [
+        33.0,
+        7.0,
+        24.0
+      ]
+    },
+    {
+      "name": "SM_Dress_CrowFlock",
+      "triangles": 168,
+      "materials": [
+        "CrowFlight"
+      ],
+      "boundsMin": [
+        -611.6,
+        -619.9,
+        -65.5
+      ],
+      "boundsMax": [
+        899.5,
+        590.3,
+        136.6
+      ]
+    },
+    {
+      "name": "SM_Dress_WallTorch",
+      "triangles": 108,
+      "materials": [
+        "Flame",
+        "Iron",
+        "Sack",
+        "Timber"
+      ],
+      "boundsMin": [
+        0.0,
+        -7.0,
+        -40.6
+      ],
+      "boundsMax": [
+        31.0,
+        7.0,
+        44
+      ]
+    },
+    {
+      "name": "SM_Dress_WeaponRack",
+      "triangles": 180,
+      "materials": [
+        "Iron",
+        "Planks",
+        "Timber"
+      ],
+      "boundsMin": [
+        -38.9,
+        -108.0,
+        -0.9
+      ],
+      "boundsMax": [
+        38.9,
+        108.0,
+        170.0
+      ]
+    },
+    {
+      "name": "SM_Dress_HayPile",
+      "triangles": 312,
+      "materials": [
+        "Thatch"
+      ],
+      "boundsMin": [
+        -115.4,
+        -97.2,
+        0.0
+      ],
+      "boundsMax": [
+        111.4,
+        117.3,
+        55.0
+      ]
+    }
+  ]
+}

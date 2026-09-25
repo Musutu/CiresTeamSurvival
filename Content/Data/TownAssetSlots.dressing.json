@@ -1,0 +1,762 @@
+{
+ "schemaVersion": 1,
+ "priority": 5,
+ "source": "dressing",
+ "description": "World dressing slots (world-dressing): CC0 Poly Haven props, ambientCG-textured cards and the original dressing kit under /Game/Free/Dressing. New slot ids only (dress_*), so no base slot is replaced. 'cullDistance' [start, end] cm fades small clutter out; 'light.flicker' animates torches. Written by Tools/AuthorWorldDressing.py.",
+ "slots": {
+  "dress_cheese": {
+   "mesh": "/Game/Free/Dressing/Props/CheeseBox_01/CheeseBox_01_1k/StaticMeshes/CheeseBox_01.CheeseBox_01",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/CheeseBox_01/CheeseBox_01_1k/StaticMeshes/CheeseBox_01_lid.CheeseBox_01_lid"
+   ],
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_bowl": {
+   "mesh": "/Game/Free/Dressing/Props/wooden_bowl_02/wooden_bowl_02_1k/StaticMeshes/wooden_bowl_02_1k.wooden_bowl_02_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_plate": {
+   "mesh": "/Game/Free/Dressing/Props/carved_wooden_plate/carved_wooden_plate_1k/StaticMeshes/carved_wooden_plate_1k.carved_wooden_plate_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_board": {
+   "mesh": "/Game/Free/Dressing/Props/wooden_cutting_board/wooden_cutting_board_1k/StaticMeshes/wooden_cutting_board_1k.wooden_cutting_board_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_goblets": {
+   "mesh": "/Game/Free/Dressing/Props/brass_goblets/brass_goblets_1k/StaticMeshes/brass_goblet_01.brass_goblet_01",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/brass_goblets/brass_goblets_1k/StaticMeshes/brass_goblet_02.brass_goblet_02",
+    "/Game/Free/Dressing/Props/brass_goblets/brass_goblets_1k/StaticMeshes/brass_goblet_03.brass_goblet_03"
+   ],
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_pot_brass": {
+   "mesh": "/Game/Free/Dressing/Props/brass_pot_01/brass_pot_01_1k/StaticMeshes/brass_pot_01_1k.brass_pot_01_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_vase_a": {
+   "mesh": "/Game/Free/Dressing/Props/ceramic_vase_01/ceramic_vase_01_1k/StaticMeshes/ceramic_vase_01_1k.ceramic_vase_01_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_vase_b": {
+   "mesh": "/Game/Free/Dressing/Props/ceramic_vase_03/ceramic_vase_03_1k/StaticMeshes/ceramic_vase_03_1k.ceramic_vase_03_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_jar": {
+   "mesh": "/Game/Free/Dressing/Props/antique_ceramic_vase_01/antique_ceramic_vase_01_1k/StaticMeshes/antique_ceramic_vase_01_1k.antique_ceramic_vase_01_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_onion": {
+   "mesh": "/Game/Free/Dressing/Props/yellow_onion/yellow_onion_1k/StaticMeshes/yellow_onion_1k.yellow_onion_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_pomegranate": {
+   "mesh": "/Game/Free/Dressing/Props/food_pomegranate_01/food_pomegranate_01_1k/StaticMeshes/food_pomegranate_01_1k.food_pomegranate_01_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_pears": {
+   "mesh": "/Game/Free/Dressing/Props/food_pears_asian_01/food_pears_asian_01_1k/StaticMeshes/food_pears_asian_01_a.food_pears_asian_01_a",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/food_pears_asian_01/food_pears_asian_01_1k/StaticMeshes/food_pears_asian_01_b.food_pears_asian_01_b",
+    "/Game/Free/Dressing/Props/food_pears_asian_01/food_pears_asian_01_1k/StaticMeshes/food_pears_asian_01_c.food_pears_asian_01_c",
+    "/Game/Free/Dressing/Props/food_pears_asian_01/food_pears_asian_01_1k/StaticMeshes/food_pears_asian_01_d.food_pears_asian_01_d",
+    "/Game/Free/Dressing/Props/food_pears_asian_01/food_pears_asian_01_1k/StaticMeshes/food_pears_asian_01_e.food_pears_asian_01_e"
+   ],
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_bottles": {
+   "mesh": "/Game/Free/Dressing/Props/wine_bottles_01/wine_bottles_01_1k/StaticMeshes/wine_bottles_01_alsace.wine_bottles_01_alsace",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/wine_bottles_01/wine_bottles_01_1k/StaticMeshes/wine_bottles_01_bordeaux.wine_bottles_01_bordeaux",
+    "/Game/Free/Dressing/Props/wine_bottles_01/wine_bottles_01_1k/StaticMeshes/wine_bottles_01_burgundy.wine_bottles_01_burgundy",
+    "/Game/Free/Dressing/Props/wine_bottles_01/wine_bottles_01_1k/StaticMeshes/wine_bottles_01_champagne.wine_bottles_01_champagne"
+   ],
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_flowerpot": {
+   "mesh": "/Game/Free/Dressing/Props/planter_pot_clay/planter_pot_clay_1k/StaticMeshes/planter_pot_clay_1k.planter_pot_clay_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_sweet_potato": {
+   "mesh": "/Game/Free/Dressing/Props/sweet_potato/sweet_potato_1k/StaticMeshes/sweet_potato_1k.sweet_potato_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_shelves": {
+   "mesh": "/Game/Free/Dressing/Props/wooden_display_shelves_01/wooden_display_shelves_01_1k/StaticMeshes/wooden_display_shelves_01.wooden_display_shelves_01",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/wooden_display_shelves_01/wooden_display_shelves_01_1k/StaticMeshes/wooden_display_shelves_01_drawer_01.wooden_display_shelves_01_drawer_01",
+    "/Game/Free/Dressing/Props/wooden_display_shelves_01/wooden_display_shelves_01_1k/StaticMeshes/wooden_display_shelves_01_drawer_02.wooden_display_shelves_01_drawer_02",
+    "/Game/Free/Dressing/Props/wooden_display_shelves_01/wooden_display_shelves_01_1k/StaticMeshes/wooden_display_shelves_01_drawer_03.wooden_display_shelves_01_drawer_03"
+   ],
+   "collision": true,
+   "cullDistance": [
+    9000,
+    16000
+   ]
+  },
+  "dress_barrel": {
+   "mesh": "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01.wine_barrel_01",
+   "fit": "none",
+   "parts": [
+    "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_base.wine_barrel_01_base",
+    "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_bung.wine_barrel_01_bung",
+    "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_Lid.wine_barrel_01_Lid"
+   ],
+   "collision": true,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_bucket": {
+   "mesh": "/Game/Free/Dressing/Props/wooden_bucket_02/wooden_bucket_02_1k/StaticMeshes/wooden_bucket_02.wooden_bucket_02",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/wooden_bucket_02/wooden_bucket_02_1k/StaticMeshes/wooden_bucket_02_handle_01.wooden_bucket_02_handle_01",
+    "/Game/Free/Dressing/Props/wooden_bucket_02/wooden_bucket_02_1k/StaticMeshes/wooden_bucket_02_handle_02.wooden_bucket_02_handle_02"
+   ],
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_broom": {
+   "mesh": "/Game/Free/Dressing/Props/wooden_broom/wooden_broom_1k/StaticMeshes/wooden_broom.wooden_broom",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/wooden_broom/wooden_broom_1k/StaticMeshes/wooden_broom_bristles.wooden_broom_bristles",
+    "/Game/Free/Dressing/Props/wooden_broom/wooden_broom_1k/StaticMeshes/wooden_broom_handle.wooden_broom_handle"
+   ],
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_sledge": {
+   "mesh": "/Game/Free/Dressing/Props/sledgehammer_01/sledgehammer_01_1k/StaticMeshes/sledgehammer_01_1k.sledgehammer_01_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_hatchet": {
+   "mesh": "/Game/Free/Dressing/Props/hatchet/hatchet_1k/StaticMeshes/hatchet_1k.hatchet_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_saw": {
+   "mesh": "/Game/Free/Dressing/Props/handsaw_wood/handsaw_wood_1k/StaticMeshes/handsaw_wood_1k.handsaw_wood_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_axe": {
+   "mesh": "/Game/Free/Dressing/Props/wooden_axe_02/wooden_axe_02_1k/StaticMeshes/wooden_axe_02_1k.wooden_axe_02_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_mallet": {
+   "mesh": "/Game/Free/Dressing/Props/wooden_hammer_01/wooden_hammer_01_1k/StaticMeshes/wooden_hammer_01_1k.wooden_hammer_01_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_stool_fold": {
+   "mesh": "/Game/Free/Dressing/Props/folding_wooden_stool/folding_wooden_stool_1k/StaticMeshes/folding_wooden_stool_1k.folding_wooden_stool_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_stool": {
+   "mesh": "/Game/Free/Dressing/Props/wooden_stool_01/wooden_stool_01_1k/StaticMeshes/wooden_stool_01_1k.wooden_stool_01_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_ladder": {
+   "mesh": "/Game/Free/Dressing/Props/wooden_ladder_02/wooden_ladder_02_1k/StaticMeshes/wooden_ladder_02_1k.wooden_ladder_02_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_spinning_wheel": {
+   "mesh": "/Game/Free/Dressing/Props/spinning_wheel_01/spinning_wheel_01_1k/StaticMeshes/spinning_wheel_01_1k.spinning_wheel_01_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_bench": {
+   "mesh": "/Game/Free/Dressing/Props/painted_wooden_bench/painted_wooden_bench_1k/StaticMeshes/painted_wooden_bench_1k.painted_wooden_bench_1k",
+   "fit": "none",
+   "collision": true,
+   "cullDistance": [
+    9000,
+    16000
+   ]
+  },
+  "dress_round_table": {
+   "mesh": "/Game/Free/Dressing/Props/round_wooden_table_02/round_wooden_table_02_1k/StaticMeshes/round_wooden_table_02_1k.round_wooden_table_02_1k",
+   "fit": "none",
+   "collision": true,
+   "cullDistance": [
+    9000,
+    16000
+   ]
+  },
+  "dress_chandelier": {
+   "mesh": "/Game/Free/Dressing/Props/lantern_chandelier_01/lantern_chandelier_01_1k/StaticMeshes/lantern_chandelier_01_1k.lantern_chandelier_01_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    9000,
+    16000
+   ],
+   "light": {
+    "offset": [
+     0,
+     0,
+     -45
+    ],
+    "color": [
+     1.0,
+     0.52,
+     0.2
+    ],
+    "intensity": 2400,
+    "radius": 700,
+    "flicker": 0.25
+   }
+  },
+  "dress_warhammer": {
+   "mesh": "/Game/Free/Dressing/Props/ornate_war_hammer/ornate_war_hammer_1k/StaticMeshes/ornate_war_hammer_1k.ornate_war_hammer_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_mace": {
+   "mesh": "/Game/Free/Dressing/Props/ornate_medieval_mace/ornate_medieval_mace_1k/StaticMeshes/ornate_medieval_mace_1k.ornate_medieval_mace_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_estoc": {
+   "mesh": "/Game/Free/Dressing/Props/antique_estoc/antique_estoc_1k/StaticMeshes/antique_estoc_1k.antique_estoc_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_flowerbox_1": {
+   "mesh": "/Game/Free/Dressing/Props/planter_box_01/planter_box_01_1k/StaticMeshes/planter_box_01_1k.planter_box_01_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_flowerbox_2": {
+   "mesh": "/Game/Free/Dressing/Props/planter_box_02/planter_box_02_1k/StaticMeshes/planter_box_02_1k.planter_box_02_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_flowerbox_3": {
+   "mesh": "/Game/Free/Dressing/Props/planter_box_03/planter_box_03_1k/StaticMeshes/planter_box_03_1k.planter_box_03_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_nettles": {
+   "mesh": "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_medium_a_LOD0.nettle_plant_medium_a_LOD0",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_medium_b_LOD0.nettle_plant_medium_b_LOD0",
+    "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_small_a_LOD0.nettle_plant_small_a_LOD0",
+    "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_small_b_LOD0.nettle_plant_small_b_LOD0",
+    "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_tall_a_LOD0.nettle_plant_tall_a_LOD0",
+    "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_tall_b_LOD0.nettle_plant_tall_b_LOD0"
+   ],
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_weeds": {
+   "mesh": "/Game/Free/Dressing/Props/weed_plant_02/weed_plant_02_1k/StaticMeshes/weed_plant_02_a_LOD0.weed_plant_02_a_LOD0",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/weed_plant_02/weed_plant_02_1k/StaticMeshes/weed_plant_02_b_LOD0.weed_plant_02_b_LOD0",
+    "/Game/Free/Dressing/Props/weed_plant_02/weed_plant_02_1k/StaticMeshes/weed_plant_02_c_LOD0.weed_plant_02_c_LOD0",
+    "/Game/Free/Dressing/Props/weed_plant_02/weed_plant_02_1k/StaticMeshes/weed_plant_02_d_LOD0.weed_plant_02_d_LOD0",
+    "/Game/Free/Dressing/Props/weed_plant_02/weed_plant_02_1k/StaticMeshes/weed_plant_02_e_LOD0.weed_plant_02_e_LOD0"
+   ],
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_sorrel": {
+   "mesh": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_a.shrub_sorrel_01_a",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_b.shrub_sorrel_01_b",
+    "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_c.shrub_sorrel_01_c",
+    "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_d.shrub_sorrel_01_d",
+    "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_e.shrub_sorrel_01_e",
+    "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_f.shrub_sorrel_01_f",
+    "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_g.shrub_sorrel_01_g",
+    "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_h.shrub_sorrel_01_h",
+    "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_i.shrub_sorrel_01_i",
+    "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_j.shrub_sorrel_01_j",
+    "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_k.shrub_sorrel_01_k"
+   ],
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_branches": {
+   "mesh": "/Game/Free/Dressing/Props/dry_branches_medium_01/dry_branches_medium_01_1k/StaticMeshes/dry_branches_medium_01_a.dry_branches_medium_01_a",
+   "fit": "none",
+   "parts": [
+    "/Game/Free/Dressing/Props/dry_branches_medium_01/dry_branches_medium_01_1k/StaticMeshes/dry_branches_medium_01_b.dry_branches_medium_01_b",
+    "/Game/Free/Dressing/Props/dry_branches_medium_01/dry_branches_medium_01_1k/StaticMeshes/dry_branches_medium_01_c.dry_branches_medium_01_c"
+   ],
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_rat": {
+   "mesh": "/Game/Free/Dressing/Props/street_rat/street_rat_1k/StaticMeshes/street_rat_1k.street_rat_1k",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "castShadow": false,
+   "cullDistance": [
+    1500,
+    2600
+   ]
+  },
+  "dress_sign_boot": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_ShopSignBoot.SM_Dress_ShopSignBoot",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_sign_tankard": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_ShopSignTankard.SM_Dress_ShopSignTankard",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_sign_key": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_ShopSignKey.SM_Dress_ShopSignKey",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_banner_red": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_WallBannerRed.SM_Dress_WallBannerRed",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "cullDistance": [
+    9000,
+    16000
+   ]
+  },
+  "dress_banner_pale": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_WallBannerPale.SM_Dress_WallBannerPale",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "cullDistance": [
+    9000,
+    16000
+   ]
+  },
+  "dress_laundry": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_Laundry.SM_Dress_Laundry",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_laundry_short": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_LaundryShort.SM_Dress_LaundryShort",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_ivy_tall": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_IvyTall.SM_Dress_IvyTall",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "castShadow": false,
+   "cullDistance": [
+    9000,
+    16000
+   ]
+  },
+  "dress_ivy_low": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_IvyLow.SM_Dress_IvyLow",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "castShadow": false,
+   "cullDistance": [
+    9000,
+    16000
+   ]
+  },
+  "dress_puddle_a": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_PuddleA.SM_Dress_PuddleA",
+   "fit": "none",
+   "collision": false,
+   "clearance": "none",
+   "castShadow": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_puddle_b": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_PuddleB.SM_Dress_PuddleB",
+   "fit": "none",
+   "collision": false,
+   "clearance": "none",
+   "castShadow": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_grime": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_GrimeStreak.SM_Dress_GrimeStreak",
+   "fit": "none",
+   "collision": false,
+   "clearance": "none",
+   "castShadow": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_litter": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_LeafLitter.SM_Dress_LeafLitter",
+   "fit": "none",
+   "collision": false,
+   "clearance": "none",
+   "castShadow": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_smoke": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_Smoke.SM_Dress_Smoke",
+   "fit": "none",
+   "collision": false,
+   "clearance": "none",
+   "castShadow": false
+  },
+  "dress_crow": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_CrowPerched.SM_Dress_CrowPerched",
+   "fit": "none",
+   "collision": false,
+   "clearance": "none",
+   "cullDistance": [
+    3500,
+    5000
+   ]
+  },
+  "dress_crow_flock": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_CrowFlock.SM_Dress_CrowFlock",
+   "fit": "none",
+   "collision": false,
+   "clearance": "none"
+  },
+  "dress_torch": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_WallTorch.SM_Dress_WallTorch",
+   "fit": "none",
+   "collision": false,
+   "clearance": "bays",
+   "castShadow": false,
+   "cullDistance": [
+    9000,
+    16000
+   ],
+   "light": {
+    "offset": [
+     24,
+     0,
+     30
+    ],
+    "color": [
+     1.0,
+     0.46,
+     0.14
+    ],
+    "intensity": 3800,
+    "radius": 780,
+    "flicker": 0.35
+   }
+  },
+  "dress_weapon_rack": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_WeaponRack.SM_Dress_WeaponRack",
+   "fit": "none",
+   "collision": true,
+   "cullDistance": [
+    9000,
+    16000
+   ]
+  },
+  "dress_haypile": {
+   "mesh": "/Game/Free/Dressing/Meshes/SM_Dress_HayPile.SM_Dress_HayPile",
+   "fit": "none",
+   "collision": true,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_shrub": {
+   "mesh": "/Game/Arenas/Props/shrub_03/shrub_03_1k/StaticMeshes/shrub_03_a.shrub_03_a",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_shrub_b": {
+   "mesh": "/Game/Arenas/Props/shrub_03/shrub_03_1k/StaticMeshes/shrub_03_c.shrub_03_c",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_roots": {
+   "mesh": "/Game/Arenas/Props/root_cluster_01/root_cluster_01_1k/StaticMeshes/root_cluster_01_1k.root_cluster_01_1k",
+   "fit": "none",
+   "collision": false,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_chest": {
+   "mesh": "/Game/Arenas/Props/treasure_chest/treasure_chest_1k/StaticMeshes/treasure_chest_bottom.treasure_chest_bottom",
+   "fit": "none",
+   "parts": [
+    "/Game/Arenas/Props/treasure_chest/treasure_chest_1k/StaticMeshes/treasure_chest_handle_left.treasure_chest_handle_left",
+    "/Game/Arenas/Props/treasure_chest/treasure_chest_1k/StaticMeshes/treasure_chest_handle_right.treasure_chest_handle_right",
+    "/Game/Arenas/Props/treasure_chest/treasure_chest_1k/StaticMeshes/treasure_chest_lid.treasure_chest_lid",
+    "/Game/Arenas/Props/treasure_chest/treasure_chest_1k/StaticMeshes/treasure_chest_lock.treasure_chest_lock"
+   ],
+   "collision": true,
+   "cullDistance": [
+    4500,
+    7500
+   ]
+  },
+  "dress_basket": {
+   "mesh": "/Game/Environment/Town/Props/wicker_basket_01/wicker_basket_01_1k/StaticMeshes/wicker_basket_01_1k.wicker_basket_01_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "dress_apple": {
+   "mesh": "/Game/Environment/Town/Props/food_apple_01/food_apple_01_1k/StaticMeshes/food_apple_01_1k.food_apple_01_1k",
+   "fit": "none",
+   "collision": false,
+   "castShadow": false,
+   "cullDistance": [
+    2500,
+    4200
+   ]
+  },
+  "barrel": {
+   "mesh": "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01.wine_barrel_01",
+   "parts": [
+    "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_base.wine_barrel_01_base",
+    "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_bung.wine_barrel_01_bung",
+    "/Game/Environment/Town/Props/wine_barrel_01/wine_barrel_01_1k/StaticMeshes/wine_barrel_01_Lid.wine_barrel_01_Lid"
+   ],
+   "fit": "none",
+   "note": "world-dressing: wooden barrel instead of the Poly Haven Barrel_01 hazard drum"
+  }
+ }
+}

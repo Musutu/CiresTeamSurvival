@@ -589,6 +589,36 @@ ARENAS.append(a)
 
 
 # ============================================================ validation (mirrors CireArenas::Validate)
+# ------------------------------------------------------------ world-dressing: light life in two arenas
+# Decoration only (never blockers): collision proxies, symmetry and sight lines are unchanged. Assets are the CC0 /
+# original world-dressing kit (Tools/ImportWorldDressing.py, /Game/Free/Dressing).
+DRESS = "/Game/Free/Dressing"
+slot("dress_crow_flock", [f"{DRESS}/Meshes/SM_Dress_CrowFlock.SM_Dress_CrowFlock"], footprint=(1511, 1210, 202), fit="none",
+     shadow=True, wpo=True, wpo_distance=12000)
+slot("dress_crow", [f"{DRESS}/Meshes/SM_Dress_CrowPerched.SM_Dress_CrowPerched"], footprint=(61, 14, 24), fit="none", cull=5000)
+slot("dress_litter", [f"{DRESS}/Meshes/SM_Dress_LeafLitter.SM_Dress_LeafLitter"], footprint=(260, 260, 2), fit="none", shadow=False, cull=7000)
+slot("dress_branches", [f"{DRESS}/Props/dry_branches_medium_01/dry_branches_medium_01_1k/StaticMeshes/dry_branches_medium_01_a.dry_branches_medium_01_a"],
+     footprint=(32, 130, 34), fit="uniform", shadow=False, cull=6000)
+slot("dress_haypile", [f"{DRESS}/Meshes/SM_Dress_HayPile.SM_Dress_HayPile"], footprint=(227, 214, 55), fit="none", cull=9000,
+     materials=mat_all(M("MI_Arena_Straw")))
+_by_id = {x.d["id"]: x for x in ARENAS}
+if "sunlit_fields" in _by_id:
+    a = _by_id["sunlit_fields"]
+    a.add("dress_crow_flock", 0, 0, z=1900, yaw=30)                 # crows wheel over the centre bales
+    a.add("dress_crow_flock", 5200, 2600, z=2300, yaw=200, scale=1.3)  # and over the windmill side
+    a.pair("dress_crow", -1180, 1020, z=176, yaw=70)               # on the scarecrows' arms (mirrored twin)
+    a.pair("dress_haypile", -2350, 300, yaw=40)                    # loose straw behind the spawns
+    a.pair("dress_haypile", -2380, -420, yaw=-20, scale=0.8)
+if "hornbeam_glade" in _by_id:
+    a = _by_id["hornbeam_glade"]
+    H = a.half
+    a.scatter("dress_litter", (-H[0], -H[1], H[0], H[1]), 26, 81, scale=(0.8, 1.4), clearance=40)
+    a.scatter("dress_litter", (-7000, -7000, 7000, 7000), 120, 82, scale=(1.0, 2.0), outside=True, margin=40)
+    a.scatter("dress_branches", (-H[0], -H[1], H[0], H[1]), 40, 83, scale=(0.8, 1.6), clearance=60)
+    a.pair("dress_crow", -760, 1180, z=62, yaw=150)                # on the fallen logs
+    a.add("dress_crow_flock", 0, 0, z=2400, yaw=120, scale=0.8)
+
+
 def footprints(arena):
     out = []
     for s, x, y, z, yaw, sx, sy, sz, blk in arena["pieces"]:

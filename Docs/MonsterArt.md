@@ -193,3 +193,13 @@ Close-ups: `Tools/RunMonsterGallery.py --only hand_,grips_,styles_`.
 * **Renders.** `python Tools/RunMonsterGallery.py --only races_,ranks_,reskins,palettes_` -> `Saved/MonsterGallery/<stamp>/`:
   each race's 6 units + 2 bosses, one body in all six ranks (close and at gameplay distance), one body under six race
   palettes, and the Blightwood / Drowned reskin sets.
+
+## Free CC0 creature bodies (world-dressing)
+
+`Content/Data/RaceMeshes.free.json` is read after `NPCMeshes.tripo.json` and `RaceMeshes.tripo.json`: a race unit with
+no art takes a free body (Quaternius CC0 wolf, stag, bull, boar, spider for dire_wolf, grave_hound, feral_shaman,
+tusked_behemoth, bristleback, crystal_ballista) only if nobody else gave it one and its package exists. Extra body
+fields: `rig`, `sockets` (added to the mesh in memory: `head`, `pelvis`, `hand_r`... on animal bones), `walkSpeedCm` /
+`runSpeedCm` (natural speed of in-place clips), `reachCm`, `lockRoot` (the anim proxy holds the root joint at its bind
+transform), `dropPropBones`. The native checks accept sockets and the reach bound for quadrupeds. Sources, licenses,
+the local-only Fab/Paragon options and how to add a body: `Docs/FreeCreatureSources.md`.

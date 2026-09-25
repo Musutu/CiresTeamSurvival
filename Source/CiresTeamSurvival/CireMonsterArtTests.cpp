@@ -152,7 +152,8 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
             }
             // Aura sockets, footstep feet and the armour class resolve on the animated body.
             for (const TCHAR* Bone : {TEXT("hand_l"), TEXT("hand_r"), TEXT("spine_03"), TEXT("head"), TEXT("foot_l"), TEXT("foot_r")})
-                Check(M->GetMesh()->GetBoneIndex(Bone) != INDEX_NONE, Tag + TEXT(" has aura/footstep bone ") + Bone);
+                Check(M->GetMesh()->GetBoneIndex(Bone) != INDEX_NONE || (Body.Rig == TEXT("quadruped") && M->GetMesh()->DoesSocketExist(Bone)), // world-dressing: animal sockets
+                    Tag + TEXT(" has aura/footstep bone ") + Bone);
             Check(CireFootsteps::ForCharacter(M).Class == CireFootsteps::ForMonster(Pair.Key.ToString()).Class, Tag + TEXT(" footstep armour class"));
             // Selection highlight: an overlay swapped in and out leaves the body's own overlay (elite/boss rim) in place.
             {
@@ -179,7 +180,8 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
                     const bool bEvaluated = Presentation->PoseForTest(Role, T);
                     const FPoseStats P = Measure(*M); ++Poses;
                     const FString Where = FString::Printf(TEXT("%s %s@%.2f"), *Tag, Role, T);
-                    Check(bEvaluated && P.bFinite && P.MaxDistance < 1.6f * Height, Where + FString::Printf(TEXT(" compact (max %.0fcm)"), P.MaxDistance));
+                    const float Reach = FMath::Max(1.6f * Height, Body.ReachCm * Scale); // world-dressing: long-bodied animals
+                    Check(bEvaluated && P.bFinite && P.MaxDistance < Reach, Where + FString::Printf(TEXT(" compact (max %.0fcm)"), P.MaxDistance));
                     Check(P.FeetZ - Bottom > -10.f * Scale, Where + FString::Printf(TEXT(" feet above ground (%.1f)"), P.FeetZ - Bottom));
                     if (FCString::Strcmp(Role, TEXT("death")) != 0)
                     {
