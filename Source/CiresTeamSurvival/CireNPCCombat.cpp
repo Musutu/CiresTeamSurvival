@@ -647,6 +647,28 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
 #include "Components/BoxComponent.h"
 #include "Misc/ScopeExit.h"
 
+// ability-vfx: start one authored ability through the real StartAbility rules (galleries/tests).
+bool CireNPCCombat::DebugStartAbility(ACireMonster* M,FName AbilityId,ACireHero* Victim)
+{
+    auto* Mode=IsValid(M)?M->GetWorld()->GetAuthGameMode<ACireGameMode>():nullptr;
+    const auto* A=Arch(M);const FCireNPCAbility* Ability=A?A->FindAbility(AbilityId):nullptr;
+    if(!Mode||!Ability||!M->HasAuthority()||!M->CastingAbility.IsEmpty())return false;
+    if(IsValid(Victim)){CireThreat::Engage(M,Victim);M->Victim=Victim;}
+    const float Distance=Victim?static_cast<float>(FVector::Dist2D(M->GetActorLocation(),Victim->GetActorLocation())):0.f;
+    const bool bSight=Victim&&ClearSight(M,Victim);
+    if(Ability->Kind==ECireNPCAbilityKind::Projectile&&Ability->bBasic)
+    {
+        if(!Victim||!CireSkillTuning::FindSkillshot(Ability->Skillshot))return false;
+        BeginCast(M,*Ability,Victim->GetActorLocation(),true);return true;
+    }
+    if(Ability->Kind==ECireNPCAbilityKind::Melee)
+    {
+        if(!Victim)return false;
+        M->AttackTimer=0;M->AbilityTimer=5.f;return true; // the next Tick swings through the normal basic path
+    }
+    return StartAbility(M,Mode,*Ability,Victim,Distance,bSight);
+}
+
 bool CireNPCCombat::RunSmoke(ACireGameMode* Mode)
 {
     if(!IsValid(Mode)||!Mode->HasAuthority())return false;

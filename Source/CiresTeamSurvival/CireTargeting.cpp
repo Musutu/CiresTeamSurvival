@@ -64,8 +64,14 @@ bool Sight(ACireHero* H,FVector P)
         if(Hit.GetComponent()&&Hit.GetComponent()->GetCollisionResponseToChannel(ECC_Pawn)==ECR_Block)return false;
     return true;
 }
+#if !UE_BUILD_SHIPPING
+TOptional<FVector> GAimOverride; // ability-vfx: galleries aim without a real cursor
+#endif
 bool CursorGround(ACireController* C,FVector& P)
 {
+#if !UE_BUILD_SHIPPING
+    if(GAimOverride.IsSet()){P=GAimOverride.GetValue();return true;} // ability-vfx
+#endif
     FVector Origin,Direction;if(!C->DeprojectMousePositionToWorld(Origin,Direction))return false;
     FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(CireAimCursor),false,C->GetPawn());
     if(!C->GetWorld()->LineTraceSingleByObjectType(Hit,Origin,Origin+Direction*50000,FCollisionObjectQueryParams(ECC_WorldStatic),Q)||Hit.ImpactNormal.Z<.8f)return false;
@@ -272,6 +278,8 @@ bool CireTargeting::Tick(ACireController* C)
 #include "Components/BoxComponent.h"
 #include "EngineUtils.h"
 #include "Misc/ScopeExit.h"
+
+void CireTargeting::DebugSetAimOverride(TOptional<FVector> Point){GAimOverride=Point;} // ability-vfx
 
 bool CireTargeting::RunDescriptorSmoke()
 {

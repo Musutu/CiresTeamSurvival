@@ -32,6 +32,7 @@
 #include "CireSummon.h"
 #include "CireSpellGallery.h"
 #include "CireAuraGallery.h" // aura-vfx
+#include "CireAbilityVFXGallery.h" // ability-vfx
 #include "CireOptionsGallery.h"
 #include "CireCombatExpansionProbe.h"
 #include "CireNPCArchetypes.h"
@@ -193,6 +194,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireOptionsGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireSpellGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireAuraGallery::Initialize(this); // aura-vfx
+    if(!bFeedbackPreview)bFeedbackPreview = CireAbilityVFXGallery::Initialize(this); // ability-vfx
     if(!bFeedbackPreview)bFeedbackPreview = CireCombatArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireFeedbackPreview::Initialize(this);
@@ -412,6 +414,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireOptionsGallery::Tick(this)) return;
     if(CireSpellGallery::Tick(this)) return;
     if(CireAuraGallery::Tick(this)) return; // aura-vfx
+    if(CireAbilityVFXGallery::Tick(this)) return; // ability-vfx
     if(CireCombatArtPreview::Tick(this)) return;
     if(CireArtPreview::Tick(this)) return;
     if(CireFeedbackPreview::Tick(this)) return;
