@@ -953,6 +953,7 @@ void ACireMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ACireMonster, Lane);
     DOREPLIFETIME(ACireMonster, Tier);
     DOREPLIFETIME(ACireMonster, PackId);
+    DOREPLIFETIME(ACireMonster, SpecialSpawn); // monster-expansion
     DOREPLIFETIME(ACireMonster, bBoss);
     DOREPLIFETIME(ACireMonster, bArmoredEscort);
     DOREPLIFETIME(ACireMonster, bNeutral); // wave-director

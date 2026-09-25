@@ -11,6 +11,7 @@
 #include "CireSummon.h"
 #include "CireDeveloperTools.h"
 #include "CireNav.h" // nav-paths
+#include "CireMonsterExpansion.h" // monster-expansion
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -49,6 +50,7 @@ struct FOrder
     bool bMustClear = true;
     float Reward = 1;
     ECireNPCRank Rank = ECireNPCRank::Normal; // monster-races: row rank plus campaign promotion
+    bool bBonus = false; // monster-expansion: bonus loot wave creature
 };
 struct FBotState
 {
@@ -71,6 +73,8 @@ struct FRuntime
     int32 Nudges = 0, Marches = 0, Despawns = 0; // nav-paths: rescue totals for the navigation probe
     TSet<TWeakObjectPtr<ACireHero>> Ready; // breather Ready presses since the last wave started
     int32 LastWaveNumber = 0;
+    // monster-expansion: rare spawns and bonus waves this cycle and this match.
+    int32 RaresThisCycle = 0, BonusThisCycle = 0, RaresTotal = 0, BonusTotal = 0;
 };
 /** Phase clock and breather from the pacing block (normal matches only; smoke/probes keep their own timing). */
 void ApplyPacing(ACireGameMode* Mode, const FCireWaveConfig& C)
@@ -245,8 +249,9 @@ FCireWaveDef CireWaveDirector::ResolveWave(const FCireWaveConfig& C, int32 WaveI
 // ---------------------------------------------------------------- spawning
 namespace
 {
-void QueueWave(FRuntime& R, const FCireWaveDef& W, int32 Serial, bool bFast, int32 Cycle = 0)
+void QueueWave(FRuntime& R, const FCireWaveDef& W, int32 Serial, bool bFast, int32 Cycle = 0, bool bBonus = false, bool bVariants = false)
 {
+    TMap<FName, int32> VariantCounters; // monster-expansion: per race-slot counter for Bestiary.json race variants
     // Escortees lead, bosses close the column; other rows interleave for a mixed wave.
     TArray<FCireWaveUnit> Lead, Mixed, Bosses;
     for (const auto& U : W.Units) (U.bEscortee ? Lead : U.bBoss ? Bosses : Mixed).Add(U);
@@ -260,7 +265,12 @@ void QueueWave(FRuntime& R, const FCireWaveDef& W, int32 Serial, bool bFast, int
     auto Emit = [&](const FCireWaveUnit& U)
     {
         FOrder O; O.Unit = U; O.Slot = Slot++; O.Serial = Serial; O.bMustClear = W.bMustClear; O.Reward = W.RewardMultiplier; O.Rank = U.EffectiveRank();
-        if (O.Rank == ECireNPCRank::Normal && !U.bBoss && !U.bNonAttacking && Promotion != ECireNPCRank::Normal && ++Promotable % FMath::Max(1, K.PromoteEvery) == 0)
+        // monster-expansion: bonus-wave creatures (an authored bonus_loot wave, or the occasional bonus wave) never block
+        // the cycle and are never promoted; rares keep their own look instead of a promotion.
+        O.bBonus = bBonus || W.Type == ECireWaveType::BonusLoot;
+        if (O.bBonus) O.bMustClear = false;
+        if (bVariants && !O.bBonus && !U.bRare && !U.bBoss && !U.bNonAttacking) O.Unit.Archetype = CireMonsterExpansion::VariantFor(U.Archetype, VariantCounters);
+        if (O.Rank == ECireNPCRank::Normal && !U.bBoss && !U.bNonAttacking && !O.bBonus && !U.bRare && Promotion != ECireNPCRank::Normal && ++Promotable % FMath::Max(1, K.PromoteEvery) == 0)
             O.Rank = Promotion;
         R.Queue.Add(O);
     };
@@ -298,11 +308,16 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
     {
         ECireNPCRank Rank = O.Rank;
         if (M->NPCState && M->NPCState->Classification == ECireNPCClass::Boss && Rank < ECireNPCRank::Warlord) Rank = ECireNPCRank::Warlord;
+        if (U.bRare && !O.bBonus && Rank < ECireNPCRank::Elite) Rank = ECireNPCRank::Elite; // monster-expansion: rares are at least elite (+1 skill)
         CireRaces::ApplyRank(M, Rank, FMath::Max(0, U.Palette));
         CireRaces::ApplyLoadout(M, R.Config.Skills, GlobalWave, U.SkillCount, U.SkillTier);
     }
+    // monster-expansion: rare look/stats/plate, or a fleeing bonus creature with its escape clock.
+    float SpecialSize = 1.f;
+    if (O.bBonus) SpecialSize = CireMonsterExpansion::ApplyBonus(M, R.Config.Bonus);
+    else if (U.bRare) SpecialSize = CireMonsterExpansion::ApplyRare(M, R.Config.Rare, GlobalWave);
     FTrack T;
-    T.Serial = O.Serial; T.SpawnedAt = Now(M); T.Size = U.SizeScale; T.Reward = O.Reward; T.bMustClear = O.bMustClear;
+    T.Serial = O.Serial; T.SpawnedAt = Now(M); T.Size = U.SizeScale * SpecialSize; T.Reward = O.Reward; T.bMustClear = O.bMustClear;
     T.bEscortee = U.bEscortee; T.Anchor = Position; T.SampleAt = T.SpawnedAt + 1.f;
     if (const FWaveRecord* Rec = R.Records.Find(O.Serial))
     {
@@ -311,7 +326,8 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
     else { T.Info.bValid = true; T.Info.WaveNumber = GlobalWave; T.Info.Cycle = Mode->Clock.Round(); }
     T.Info.bArmored = U.bNonAttacking; T.Info.bEscortee = U.bEscortee; T.Info.bBoss = U.bBoss;
     T.Info.bElite = !U.bBoss && O.Rank >= ECireNPCRank::Elite;
-    if (U.bNonAttacking)
+    T.Info.bRare = U.bRare && !O.bBonus; T.Info.bBonus = O.bBonus; // monster-expansion
+    if (U.bNonAttacking && !O.bBonus)
     {
         // Non-attacking marchers reuse the armored-escort behaviour: they ignore combat,
         // walk through heroes and must be killed before they reach the castle.
@@ -335,20 +351,25 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
     M->ForceNetUpdate();
     Mode->Monsters.Add(M);
     R.Tracks.Add(M, T);
-    R.LeakCostSpawned[Team] += LeakCost(M);
+    if (!O.bBonus) R.LeakCostSpawned[Team] += LeakCost(M); // monster-expansion: bonus creatures escape, they never leak
     if (M->bBoss) ++R.BossesSpawned;
+    if (Team == 0 && (O.bBonus || U.bRare))
+        UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_SPECIAL kind=%s archetype=%s name=\"%s\" health=%.0f"), O.bBonus ? TEXT("bonus") : TEXT("rare"), *U.Archetype.ToString(), *M->GetNPCDisplayName(), M->MaxHealth);
     return M;
 }
 }
 
-bool CireWaveDirector::StartWave(ACireGameMode* Mode)
+bool CireWaveDirector::StartWave(ACireGameMode* Mode, bool bLive)
 {
     auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
     if (!S || Mode->Clock.Phase() != Cires::MatchPhase::Survival || Mode->CycleWavesSpawned >= S->WavesPerCycle) return false;
     FRuntime& R = Get(Mode);
     const int32 WaveInCycle = Mode->CycleWavesSpawned;
-    const FCireWaveDef W = ResolveWave(R.Config, WaveInCycle, Mode->Clock.Round() - 1);
+    FCireWaveDef W = ResolveWave(R.Config, WaveInCycle, Mode->Clock.Round() - 1);
     ++S->Wave; ++Mode->CycleWavesSpawned;
+    // monster-expansion: a rare creature may join this wave (both lanes; deterministic per match seed and wave).
+    const bool bRareJoined = bLive && !Mode->bSmoke && RollRare(R.Config, W, S->Wave, CireRaces::MatchSeed(Mode->GetWorld()), R.RaresThisCycle);
+    if (bRareJoined) { ++R.RaresThisCycle; ++R.RaresTotal; }
     S->NextWaveSeconds = 0;
     const int32 Serial = ++R.Serial;
     R.CurrentSerial = Serial;
@@ -361,11 +382,12 @@ bool CireWaveDirector::StartWave(ACireGameMode* Mode)
     const FString Race = RaceLabel(R.Config, W, Cycle);
     if (!Race.IsEmpty()) Rec.Label = FString::Printf(TEXT("%s (%s)"), *W.Label, *Race);
     S->WaveRace = RaceFor(R.Config, W, Cycle, 0);
-    QueueWave(R, W, Serial, Mode->bSmoke, Cycle);
+    QueueWave(R, W, Serial, Mode->bSmoke, Cycle, false, bLive && !Mode->bSmoke);
     const TCHAR* Lead = W.Type == ECireWaveType::Armored ? TEXT("ARMORED | They will not fight back. Stop them before the gate!") :
         W.Type == ECireWaveType::ArmoredEscort ? TEXT("ARMORED ESCORT | Break the escorted tank; its guards will defend it.") :
         W.Type == ECireWaveType::Boss ? TEXT("SIEGE | A lane boss marches with this wave. A leak costs 10 lives.") : TEXT("DEFEND THE GATES");
     S->Announcement = FString::Printf(TEXT("%s | Wave %d of %d: %s"), Lead, Mode->CycleWavesSpawned, S->WavesPerCycle, *Rec.Label);
+    if (bRareJoined) S->Announcement += TEXT(" | A RARE creature marches with it!"); // monster-expansion
     Publish(Mode);
     UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_START round=%d wave=%d cycle=%d/%d type=%s label=\"%s\" units=%d race=%s"), S->Round, S->Wave, Mode->CycleWavesSpawned,
         S->WavesPerCycle, TypeName(W.Type), *W.Label, W.UnitsPerLane(), *S->WaveRace.ToString());
@@ -506,7 +528,7 @@ void CireWaveDirector::OnPhaseChanged(ACireGameMode* Mode, int32 NewPhase)
     if (!Mode) return;
     FRuntime& R = Get(Mode);
     R.Queue.Reset(); R.SpawnTimer = 0; R.Ready.Reset();
-    if (NewPhase == 0) { R.Records.Reset(); R.CurrentSerial = 0; }
+    if (NewPhase == 0) { R.Records.Reset(); R.CurrentSerial = 0; R.RaresThisCycle = 0; R.BonusThisCycle = 0; } // monster-expansion: per-cycle caps
     Publish(Mode);
 }
 
@@ -772,6 +794,68 @@ bool CireWaveDirector::BotDestination(ACireHero* Bot, FVector& Out)
     const FVector Anchor = CireLanePath::PointAlongRoute(World, Team, .80f, Bot->GetActorLocation().Z);
     Out = CireLanePath::ClampToLane(World, Team, Anchor + FVector(((Index / 5) % 2) * -160.f, (Index % 5 - 2) * 150.f, 0), 120);
     return FVector::DistSquared2D(Out, Bot->GetActorLocation()) > FMath::Square(180.f);
+}
+
+// ---------------------------------------------------------------- monster-expansion: rare spawns and bonus waves
+bool CireWaveDirector::RollRare(const FCireWaveConfig& C, FCireWaveDef& W, int32 GlobalWave, int32 Seed, int32 RaresThisCycle, bool bForce)
+{
+    const FCireRareSpawnRules& Rr = C.Rare;
+    const bool bEligibleType = W.Type == ECireWaveType::Normal || W.Type == ECireWaveType::CasterPack || W.Type == ECireWaveType::MeleePack ||
+        W.Type == ECireWaveType::RangedPack || W.Type == ECireWaveType::HybridPack || W.Type == ECireWaveType::Custom;
+    if (Rr.Pool.IsEmpty() || W.Units.Num() >= 8) return false;
+    FRandomStream Stream(static_cast<int32>(HashCombine(GetTypeHash(Seed), GetTypeHash(GlobalWave * 7919 + 17))));
+    const float Roll = Stream.FRand();
+    const int32 Pick = Stream.RandRange(0, Rr.Pool.Num() - 1);
+    if (!bForce && (!Rr.bEnabled || !bEligibleType || GlobalWave < Rr.FromWave || RaresThisCycle >= Rr.MaxPerCycle || Roll >= Rr.Chance)) return false;
+    if (W.UnitsPerLane() >= 30) return false;
+    FCireWaveUnit U; U.Archetype = Rr.Pool[Pick]; U.Count = 1; U.bRare = true;
+    // The rare inherits the wave's pressure (its health/damage rows), then Rare.health/damage on top (ApplyRare).
+    if (!W.Units.IsEmpty()) { U.HealthScale = W.Units[0].HealthScale; U.DamageScale = W.Units[0].DamageScale; }
+    W.Units.Add(U);
+    return true;
+}
+
+float CireWaveDirector::OnWaveCleared(ACireGameMode* Mode, int32 WaveInCycle, bool bForce)
+{
+    auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    if (!S || !Mode->HasAuthority() || Mode->Clock.Phase() != Cires::MatchPhase::Survival) return 0.f;
+    FRuntime& R = Get(Mode);
+    const FCireBonusWaveRules& B = R.Config.Bonus;
+    if (!bForce)
+    {
+        // Never after the cycle's last wave (prep follows), never in smoke runs, capped per cycle.
+        if (Mode->bSmoke || !B.bEnabled || WaveInCycle >= S->WavesPerCycle || S->Wave < B.FromWave || R.BonusThisCycle >= B.MaxPerCycle) return 0.f;
+        FRandomStream Stream(static_cast<int32>(HashCombine(GetTypeHash(CireRaces::MatchSeed(Mode->GetWorld())), GetTypeHash(S->Wave * 104729 + 3))));
+        if (Stream.FRand() >= B.Chance) return 0.f;
+    }
+    return StartBonusWave(Mode) ? B.ExtraBreatherSeconds : 0.f;
+}
+
+bool CireWaveDirector::StartBonusWave(ACireGameMode* Mode, FString* Error)
+{
+    auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    if (!S || Mode->Clock.Phase() != Cires::MatchPhase::Survival) { if (Error) *Error = TEXT("Bonus waves run during the survival phase."); return false; }
+    FRuntime& R = Get(Mode);
+    FCireWaveDef W = R.Config.Bonus.Wave;
+    if (W.Units.IsEmpty()) { if (Error) *Error = TEXT("The bonus wave has no creatures."); return false; }
+    W.Type = ECireWaveType::BonusLoot; W.bMustClear = false;
+    const int32 Serial = ++R.Serial;
+    FWaveRecord& Rec = R.Records.Add(Serial);
+    Rec.Label = W.Label + TEXT(" (bonus)"); Rec.Type = TypeName(W.Type); Rec.StartedAt = Rec.LastSpawnAt = Now(Mode); Rec.bMustClear = false;
+    Rec.WaveNumber = FMath::Max(1, S->Wave); Rec.WaveInCycle = FMath::Max(1, Mode->CycleWavesSpawned); Rec.Cycle = Mode->Clock.Round(); Rec.WaveType = W.Type;
+    QueueWave(R, W, Serial, Mode->bSmoke, Mode->Clock.Round() - 1, true);
+    ++R.BonusThisCycle; ++R.BonusTotal;
+    S->Announcement = FString::Printf(TEXT("BONUS LOOT WAVE | %s: treasure creatures flee down your lane. Catch them before they escape (%.0f s)!"), *W.Label, R.Config.Bonus.EscapeSeconds);
+    S->ForceNetUpdate();
+    UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_BONUS_START label=\"%s\" units=%d escape=%.0f extra_breather=%.0f wave=%d"), *W.Label, W.UnitsPerLane(),
+        R.Config.Bonus.EscapeSeconds, R.Config.Bonus.ExtraBreatherSeconds, S->Wave);
+    return true;
+}
+
+void CireWaveDirector::SpecialCounts(const ACireGameMode* Mode, int32& Rares, int32& BonusWaves)
+{
+    const FRuntime* R = Mode ? Find(Mode->GetWorld()) : nullptr;
+    Rares = R ? R->RaresTotal : 0; BonusWaves = R ? R->BonusTotal : 0;
 }
 
 // ---------------------------------------------------------------- HUD summary

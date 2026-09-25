@@ -13,7 +13,9 @@ class UWorld;
 
 enum class ECireWaveType : uint8
 {
-    Normal, Armored, ArmoredEscort, Boss, CasterPack, MeleePack, RangedPack, HybridPack, Custom, Count
+    Normal, Armored, ArmoredEscort, Boss, CasterPack, MeleePack, RangedPack, HybridPack, Custom,
+    BonusLoot, // monster-expansion: fleeing treasure creatures, big payout, never costs lives (Waves.json "bonusWave")
+    Count
 };
 
 enum class ECireWaveFailsafe : uint8 { March, Despawn };
@@ -45,6 +47,8 @@ struct CIRESTEAMSURVIVAL_API FCireWaveUnit
     /** Skill count / tier overrides; -1 / 0 = the wave schedule (Waves.json skillProgression). */
     int32 SkillCount = -1;
     int32 SkillTier = 0;
+    /** monster-expansion: Rare Spawn (tougher, glowing, "Rare" plate, much better personal loot; Waves.json "rareSpawn"). */
+    bool bRare = false;
     ECireNPCRank EffectiveRank() const { return bElite && Rank < ECireNPCRank::Elite ? ECireNPCRank::Elite : Rank; }
     bool operator==(const FCireWaveUnit& O) const;
 };
@@ -66,6 +70,45 @@ struct CIRESTEAMSURVIVAL_API FCireWaveDef
     FName Race;
     int32 UnitsPerLane() const;
     bool operator==(const FCireWaveDef& O) const;
+};
+
+/** monster-expansion: Waves.json "rareSpawn". A rare creature occasionally joins a normal wave (both lanes). */
+struct CIRESTEAMSURVIVAL_API FCireRareSpawnRules
+{
+    bool bEnabled = true;
+    /** Chance per eligible wave (normal / pack / hybrid / custom types). */
+    float Chance = .3f;
+    /** First global wave that can roll a rare (early waves stay readable). */
+    int32 FromWave = 2;
+    int32 MaxPerCycle = 2;
+    /** On top of the creature's archetype and the wave's scaling. */
+    float Health = 3.f, Damage = 1.3f, Size = 1.15f;
+    /** Kill bounty in mob values (a normal mob is 1). */
+    float Bounty = 5.f;
+    /** Rare creature archetypes (Bestiary.json); one is drawn per rare. */
+    TArray<FName> Pool;
+    bool operator==(const FCireRareSpawnRules& O) const;
+};
+
+/** monster-expansion: Waves.json "bonusWave". After a cleared wave (never the cycle's last) a short Bonus Loot
+ *  Wave may run during the breather: greedy creatures flee down the lane and escape after EscapeSeconds. */
+struct CIRESTEAMSURVIVAL_API FCireBonusWaveRules
+{
+    bool bEnabled = true;
+    float Chance = .4f;
+    int32 FromWave = 2;
+    int32 MaxPerCycle = 1;
+    /** Added to the breather when the bonus wave runs (the match grows by at most this). */
+    float ExtraBreatherSeconds = 6.f;
+    /** Seconds before a bonus creature escapes with its loot (no lives lost). */
+    float EscapeSeconds = 26.f;
+    /** A bonus creature bolts away from a champion closer than this. */
+    float FleeRadius = 950.f;
+    /** Kill bounty in mob values. */
+    float Bounty = 4.f;
+    FCireWaveDef Wave;
+    FCireBonusWaveRules(); // Wave = the goblin hoard template (CireWaveDirector::BonusTemplate)
+    bool operator==(const FCireBonusWaveRules& O) const;
 };
 
 struct CIRESTEAMSURVIVAL_API FCireWaveConfig
@@ -96,6 +139,9 @@ struct CIRESTEAMSURVIVAL_API FCireWaveConfig
     /** monster-races: when monsters get skills, and which race each cycle fields. */
     FCireSkillProgression Skills;
     FCireCampaign Campaign;
+    /** monster-expansion: rare spawns and the bonus loot wave. */
+    FCireRareSpawnRules Rare;
+    FCireBonusWaveRules Bonus;
     bool operator==(const FCireWaveConfig& O) const;
 };
 
@@ -109,6 +155,7 @@ struct CIRESTEAMSURVIVAL_API FCireWaveUnitInfo
     ECireWaveType Type = ECireWaveType::Normal;
     bool bArmored = false;  // non-attacking marcher (armored wave or escortee)
     bool bEscortee = false, bBoss = false, bElite = false;
+    bool bRare = false, bBonus = false; // monster-expansion
 };
 
 /** Replicated one-line summary for the HUD match plate. */
@@ -142,8 +189,9 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API bool ApplyLive(ACireGameMode* Mode, const FCireWaveConfig& Config, FString* Error = nullptr);
     /** Wave definition used for global wave number (1-based), with the cycle scaling applied. */
     CIRESTEAMSURVIVAL_API FCireWaveDef ResolveWave(const FCireWaveConfig& Config, int32 WaveInCycle, int32 Cycle);
-    /** Starts the next wave of the cycle (queues its spawns). */
-    CIRESTEAMSURVIVAL_API bool StartWave(ACireGameMode* Mode);
+    /** Starts the next wave of the cycle (queues its spawns). bLive = the match flow (ACireGameMode::SpawnWave): only live
+     *  waves roll rare spawns and race variants (monster-expansion), so direct test/developer starts stay deterministic. */
+    CIRESTEAMSURVIVAL_API bool StartWave(ACireGameMode* Mode, bool bLive = false);
     /** Developer: make wave N (1-based within the cycle) the next one; optionally spawn it now. */
     CIRESTEAMSURVIVAL_API bool SkipTo(ACireGameMode* Mode, int32 WaveInCycle, bool bSpawnNow, FString* Error = nullptr);
     /** Developer: spawn a specific definition immediately as an extra wave. */
@@ -192,6 +240,18 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API void CycleRowRank(FCireWaveUnit& Row);
     /** F8 editor: short label of a row's unit ("Caster: Tidecaller" or "Tidecaller"). */
     CIRESTEAMSURVIVAL_API FString RowUnitLabel(const FCireWaveUnit& Row, FName Race, int32 Cycle = 0);
+
+    // ---- monster-expansion: rare spawns and bonus loot waves ----
+    /** Template of the bonus loot wave (goblin hoard). */
+    CIRESTEAMSURVIVAL_API FCireWaveDef BonusTemplate();
+    /** Called when a wave clears: may start a bonus loot wave. Returns extra breather seconds (0 = none). */
+    CIRESTEAMSURVIVAL_API float OnWaveCleared(ACireGameMode* Mode, int32 WaveInCycle, bool bForce = false);
+    /** Starts the configured bonus wave now (developer / tests). */
+    CIRESTEAMSURVIVAL_API bool StartBonusWave(ACireGameMode* Mode, FString* Error = nullptr);
+    /** Rare spawns / bonus waves started this match (server; tests and soaks). */
+    CIRESTEAMSURVIVAL_API void SpecialCounts(const ACireGameMode* Mode, int32& Rares, int32& BonusWaves);
+    /** Rare roll for a wave (deterministic per match seed and wave number). Appends the rare row when it hits. */
+    CIRESTEAMSURVIVAL_API bool RollRare(const FCireWaveConfig& Config, FCireWaveDef& Wave, int32 GlobalWave, int32 Seed, int32 RaresThisCycle, bool bForce = false);
 
     // ---- neutral challenge packs ----
     /** Challenge-pack units start neutral; a player's attack turns the whole pack hostile. */

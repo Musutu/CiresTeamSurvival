@@ -11,6 +11,8 @@
 #include "CireRealm.h"
 #include "CireThreat.h"
 #include "CireWaves.h"
+#include "CireMonsterExpansion.h" // monster-expansion
+#include "Engine/Texture.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -311,7 +313,12 @@ ECireNPCRank CireRaces::RankOf(const ACireMonster* M)
     const auto* S = St(M);
     return S ? static_cast<ECireNPCRank>(FMath::Min<uint8>(S->Rank, static_cast<uint8>(ECireNPCRank::Mythic))) : ECireNPCRank::Normal;
 }
-FLinearColor CireRaces::RankColor(const ACireMonster* M) { return Rank(RankOf(M)).Color; }
+FLinearColor CireRaces::RankColor(const ACireMonster* M)
+{
+    // monster-expansion: Rare Spawns and Bonus Loot creatures wear their own colour (plate, frame, rim, skin).
+    if (M && M->SpecialSpawn != 0) return CireMonsterExpansion::SpecialColor(M->SpecialSpawn);
+    return Rank(RankOf(M)).Color;
+}
 
 // ============================================================================================ skills
 FCireSkillPlan CireRaces::Plan(const FCireSkillProgression& R, int32 Wave, ECireNPCRank RankValue)
@@ -575,12 +582,52 @@ bool CireRaces::ApplySkin(ACireMonster* M)
     const auto* S = St(M); const auto* A = Arch(M);
     if (!S || !A) return false;
     const FCireRace* Race = FindRace(A->RaceId);
-    const FCireRankStyle& Style = Rank(RankOf(M));
+    // monster-expansion: a special spawn keeps its rank stats but takes the special colour with a strong rim and glow.
+    FCireRankStyle Style = Rank(RankOf(M));
+    if (M->SpecialSpawn != 0)
+    {
+        Style.Color = Style.Trim = CireMonsterExpansion::SpecialColor(M->SpecialSpawn);
+        Style.Rim = FMath::Max(Style.Rim, 2.4f); Style.Glow = FMath::Max(Style.Glow, 2.5f); Style.BodyTint = FMath::Max(Style.BodyTint, .1f);
+    }
     const FCireRacePalette Palette = Race ? Race->Palette(S->PaletteIndex) : FCireRacePalette();
     // A unit drawn on its own art keeps its authored colours on its base palette; borrowed bodies and reskin sets recolour.
     const bool bOwnBody = A->FallbackBody.IsNone() || A->FallbackBody == A->Id || CireMonsterArt::HasOwnBody(A->Id);
     const float RaceStrength = !Race ? 0.f : (bOwnBody && S->PaletteIndex == 0) ? 0.f : .88f;
     USkeletalMeshComponent* Mesh = M->GetMesh();
+    // monster-expansion: a reskinned Fab creature (RaceMeshes.fabx.json "reskin") takes the race skin on its listed slots:
+    // the vendor's base colour/normal feed M_CireMonsterSkin, recoloured by the reskin tint (no armour mask on vendor maps).
+    if (M->MonsterArt && M->MonsterArt->IsFabApplied())
+        if (const CireMonsterArt::FBody* Reskin = M->MonsterArt->AppliedReskin())
+        {
+            UMaterialInterface* Skin = SkinMaterial();
+            if (!Skin) return false;
+            for (const auto& Slot : Reskin->ReskinTextures)
+            {
+                if (Slot.Key < 0 || Slot.Key >= Mesh->GetNumMaterials()) continue;
+                auto* MID = Cast<UMaterialInstanceDynamic>(Mesh->GetMaterial(Slot.Key));
+                if (!MID || MID->Parent != Skin)
+                {
+                    MID = UMaterialInstanceDynamic::Create(Skin, M);
+                    if (!MID) continue;
+                    for (const auto& Tex : Slot.Value)
+                        if (UTexture* Texture = LoadObject<UTexture>(nullptr, *Tex.Value)) MID->SetTextureParameterValue(Tex.Key, Texture);
+                    Mesh->SetMaterial(Slot.Key, MID);
+                }
+                const FLinearColor Rim = M->SpecialSpawn != 0 || RankOf(M) != ECireNPCRank::Normal ? Style.Color : Reskin->ReskinRim;
+                MID->SetVectorParameterValue(TEXT("RaceTint"), Reskin->ReskinTint);
+                MID->SetScalarParameterValue(TEXT("RaceTintStrength"), Reskin->ReskinTintStrength);
+                MID->SetScalarParameterValue(TEXT("RaceAccentStrength"), 0.f);
+                MID->SetScalarParameterValue(TEXT("ArmorMaskGain"), 0.f);
+                MID->SetVectorParameterValue(TEXT("RankColor"), Style.Color);
+                MID->SetVectorParameterValue(TEXT("TrimColor"), Style.Trim);
+                MID->SetScalarParameterValue(TEXT("RankArmor"), 0.f);
+                MID->SetScalarParameterValue(TEXT("RankBody"), FMath::Max(Reskin->ReskinBody, Style.BodyTint));
+                MID->SetScalarParameterValue(TEXT("RankGlow"), 0.f);
+                MID->SetVectorParameterValue(TEXT("RimColor"), Rim);
+                MID->SetScalarParameterValue(TEXT("RimStrength"), FMath::Max(Reskin->ReskinRimStrength, Style.Rim));
+            }
+            return true;
+        }
     // fab-integration: purchased Fab bodies keep their authored (non-Tripo) materials; the rank shows as the rim overlay.
     if (M->MonsterArt && M->MonsterArt->IsFabApplied()) return false;
     if (M->MonsterArt && M->MonsterArt->IsTripoApplied())

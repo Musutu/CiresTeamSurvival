@@ -107,3 +107,14 @@ clips without rebuilding an existing locomotion BlendSpace.
 
 Switches: `-CireNoFab` hides every overlay (VFX, animation, creatures, weapons, town) for before/after captures; the galleries
 take `--no-fab` (ability VFX, monster, new champions, environment).
+
+## Monster expansion (every remaining pack creature)
+
+`Tools/InventoryCreatures.py` lists every creature mesh in the packs; `Tools/BuildFabExpansionCreatures.py` brings the unused
+ones in through the same native path, into `Content/Data/RaceMeshes.fabx.json` (read right after `RaceMeshes.fab.json`):
+treasure goblin, gilded stag, rotting shambler (the Undead zombie, reskinned), bone archer, centaur blademaster, horned brute
+(Khornes monster, with the Undead sword set retargeted onto it), lich revenant, storm griffon, cinder drake (the mountain
+dragon at ~5 m) and frostfang alpha (the white ROG wolf). New body fields: `reskin` (vendor textures on `M_CireMonsterSkin`),
+`attachments` (skeletal props on their own skeleton), `spectral`. `WeaponGrips.fabx.json` and `AudioCues.expansion.json` are
+overlay files read after the base ones. Derived clips live in `/Game/FabDerived/Expansion` (local only).
+See `Docs/MonsterExpansion.md`.
