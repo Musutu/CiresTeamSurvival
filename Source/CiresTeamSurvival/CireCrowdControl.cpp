@@ -1,4 +1,5 @@
 #include "CireCrowdControl.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireAbilityDB.h"
 #include "CireBuffs.h"
@@ -92,6 +93,7 @@ float CireCrowdControl::CastProgress(const ACireHero* H)
 float CireCrowdControl::Stun(AActor* Target,float Seconds,AActor* Source)
 {
     if(!IsValid(Target)||!Target->HasAuthority()||IsBossUnit(Target)||Seconds<=0)return 0.f;
+    if(CireKits::IgnoresStun(Target))return 0.f; // scaling-kits: level-15 stun-ignore aura
     const float Applied=Diminish(Target,Source,StunnedId,Seconds);if(Applied<=0)return 0.f;
     CireBuffs::Apply(Target,StunnedId,Applied,Source);
     if(auto* H=Cast<ACireHero>(Target))
@@ -292,7 +294,7 @@ bool CireCrowdControl::CastSkill(ACireHero* H,int32 Slot,const FString& Id)
     CireSkillShop::ApplyCastLevel(H,Slot,Id,D->Base.ManaCost,D->Base.EnergyCost); // progression-shop: Skill Shop level (Ability DB curve)
     H->GlobalCooldown=.9f;
     const auto* M=Cast<ACireMonster>(Target);const auto* Victim=Cast<ACireHero>(Target);
-    const float Normal=(D->Base.Effect+2.f*H->PrimaryAttribute())*Mode->Power(H->TeamId);
+    const float Normal=CireKits::Amount(H,Id,D->Base.Effect,2.f)*Mode->Power(H->TeamId); // scaling-kits
     const Cires::CC::ExecuteTarget Kind=IsBossUnit(Target)?Cires::CC::ExecuteTarget::Boss:M?Cires::CC::ExecuteTarget::Monster:Cires::CC::ExecuteTarget::Hero;
     const float Health=M?M->Health:Victim?Victim->Health:0.f,MaxHealth=M?M->MaxHealth:Victim?Victim->MaxHealth:0.f;
     float Amount=static_cast<float>(Cires::CC::ExecuteDamage(Kind,Health,MaxHealth,Normal));
@@ -316,7 +318,7 @@ int32 CireCrowdControl::VoidBurst(ACireHero* H,FVector Center,const FString& Abi
         const auto Zone=Cires::CC::ClassifyVoidZone(Distance,Z.InnerRadius,Z.OuterRadius);
         if(Zone==Cires::CC::VoidZone::None)return;
         ++Hits;
-        if(Z.Damage>0)CireCombat::ApplyDamage(H,U,Z.Damage,D->Name+TEXT(" (void)"));
+        if(Z.Damage>0)CireCombat::ApplyDamage(H,U,Z.Damage+.3f*H->PrimaryAttribute(),D->Name+TEXT(" (void)")); // scaling-kits: + primary
         if(Zone==Cires::CC::VoidZone::Inner)Stun(U,Z.InnerDuration,H);
         else {Slow(U,Z.OuterDuration,H);CireBuffs::Apply(U,TEXT("slowed"),Z.OuterDuration,H);}
     });

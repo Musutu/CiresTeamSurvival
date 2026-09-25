@@ -601,7 +601,7 @@ void ACireHUD::DrawMeters(ACireHero* Hero,ACireController* Controller)
             for(int32 I=Start;I<Controller->CombatEvents.Num();++I) {
                 const auto& E=Controller->CombatEvents[I];const float Y=30+(I-Start)*28;
                 const FString Result=E.Outcome==ECireHitOutcome::Hit?FString::Printf(TEXT("%s%.0f%s"),E.bHealing?TEXT("+"):TEXT("-"),E.Amount,E.bCritical?TEXT(" CRIT"):TEXT("")):
-                    E.Outcome==ECireHitOutcome::Miss?TEXT("MISS"):TEXT("DODGE");
+                    (E.Amount>0?FString::Printf(TEXT("%s %.0f"),*CireCombat::OutcomeText(E.Outcome).ToUpper(),E.Amount):CireCombat::OutcomeText(E.Outcome).ToUpper()); // scaling-kits: BLOCK / RESIST
                 const FString Desc=FString::Printf(TEXT("%s > %s  %s"),*ShortName(E.SourceName,12),*ShortName(E.TargetName,12),*Result);
                 Label(ShortName(Desc,48),12,Y,9,E.bHealing?Teal:Muted);
                 Label(ShortName(E.AbilityName,48),12,Y+12,8,Muted*.8f);

@@ -1,4 +1,5 @@
 #include "CireChampionProfiles.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireChampionRoster.h"
 #include "CireGame.h"
 #include "CireSkillTuning.h"
@@ -128,7 +129,7 @@ int32 ACireHero::PrimaryAttribute() const
 float ACireHero::BasicAttackRange() const
 {
     if(const auto* Summon=::Cast<ACireSummon>(this))return Summon->SummonSpec.AttackRange;
-    return ProfileBasicAttackRange>0?ProfileBasicAttackRange:Archetype==0?220.f:Archetype==1?1500.f:Archetype==3?1300.f:1200.f;
+    return CireKits::BasicRange(this,ProfileBasicAttackRange>0?ProfileBasicAttackRange:Archetype==0?220.f:Archetype==1?1500.f:Archetype==3?1300.f:1200.f); // scaling-kits: range skills
 }
 float ACireHero::BaseAttackSeconds() const {return ProfileAttackSeconds>0?ProfileAttackSeconds:1.5f;}
 FString ACireHero::BasicAttackStyle() const

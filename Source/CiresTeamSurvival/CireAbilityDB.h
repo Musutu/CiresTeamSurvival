@@ -42,6 +42,14 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     FCireVoidZone Void;
     TArray<FString> Champions;           // champions that can learn it
     TArray<FString> SignatureOf;         // champions whose identity kit lists it
+    // scaling-kits (Docs/Abilities.md): damage/heal/shield/DoT = ScaleBase + ScalePrimary x caster PRIMARY stat.
+    FString ScaleComponent;              // damage, heal, shield, summon, construct, none
+    float ScaleBase = 0, ScalePrimary = 0, DotPerSecondPrimary = 0;
+    FString Requires;                    // "shield" (shield users only), "ranged" (ranged basic attack), empty
+    FName Level15Bonus;                  // dot, healCut, stun, slow, damageAmp, vulnerability, purge (actives/ultimates)
+    FString Level15Special, Level15Label, Level15Trigger; // special: mechSlam, artilleryBomb, headshotTriple; trigger: hit|pulse
+    FName Aura15;                        // passives: attackSpeed, doubleAttack, crit, ... (team aura at level 15)
+    FString Aura15Label;
     bool IsImplemented() const { return Status == TEXT("implemented"); }
     bool IsPassive() const { return Kind == TEXT("passive"); }
     bool IsUltimate() const { return Kind == TEXT("ultimate"); }
@@ -72,6 +80,8 @@ namespace CireAbilityDB
     CIRESTEAMSURVIVAL_API FCireAbilityStats EffectiveStats(const FString& Id, int32 Level);
     /** Tooltip text: current values at Level and what Level+1 adds. */
     CIRESTEAMSURVIVAL_API FString Describe(const FString& Id, int32 Level);
+    /** scaling-kits: "damage", "healing", "barrier health", "damage per hit". */
+    CIRESTEAMSURVIVAL_API FString ScalingWord(const FCireAbilityDef& Def);
     /** Identity kit of a champion profile (ChampionRoster id). */
     CIRESTEAMSURVIVAL_API const FCireChampionKit* Kit(const FString& ProfileId);
     /** Everything this champion may buy (role pool + hybrid roles + signature). */

@@ -1022,11 +1022,12 @@ void ACireHUD::DrawCombatText(ACireHero* Hero,ACireController* Controller)
     {
         if(!E.bLocalTarget&&!E.bLocalSource)return false;
         if(!(E.bLocalTarget&&UISettings.bShowIncoming)&&!(E.bLocalSource&&UISettings.bShowOutgoing))return false;
-        if(E.Outcome!=ECireHitOutcome::Hit&&!UISettings.bShowMisses)return false;
+        if(E.Outcome!=ECireHitOutcome::Hit&&E.Outcome!=ECireHitOutcome::Block&&!UISettings.bShowMisses)return false; // scaling-kits: BLOCK always shows
         return E.bHealing?UISettings.bShowHealing:UISettings.bShowDamage;
     };
     auto ColorFor=[&](const FCireCombatEvent& E,bool bIncomingLane)
     {
+        if(E.Outcome==ECireHitOutcome::Block)return FLinearColor(.55f,.8f,1.f,1); // scaling-kits: shield block
         if(E.Outcome!=ECireHitOutcome::Hit)return FLinearColor(.78f,.83f,.9f,1);
         if(E.bHealing)return FLinearColor(.35f,1.f,.55f,1);
         if(bIncomingLane)return FLinearColor(1.f,.28f,.24f,1);
@@ -1035,7 +1036,7 @@ void ACireHUD::DrawCombatText(ACireHero* Hero,ACireController* Controller)
     };
     auto NumberFor=[](const FCireCombatEvent& E,float Amount,bool bIncoming)
     {
-        if(E.Outcome!=ECireHitOutcome::Hit)return FString(E.Outcome==ECireHitOutcome::Miss?TEXT("Miss"):TEXT("Dodge"));
+        if(E.Outcome!=ECireHitOutcome::Hit)return E.Outcome==ECireHitOutcome::Block?FString(TEXT("BLOCK")):CireCombat::OutcomeText(E.Outcome); // scaling-kits: shield block
         return FString::Printf(TEXT("%s%.0f"),E.bHealing?TEXT("+"):bIncoming?TEXT("-"):TEXT(""),Amount);
     };
     // Crit "pop": starts large and settles, WoW style.

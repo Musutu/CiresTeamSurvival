@@ -1,4 +1,5 @@
 #include "CireBuffs.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireGame.h"
 #include "CireSkillRuntime.h"
 #include "Engine/World.h"
@@ -103,7 +104,7 @@ bool CireBuffs::IsActive(const AActor* Unit,FName Id)
 }
 const TArray<FName>& CireBuffs::KnownIds()
 {
-    static const TArray<FName> Ids={
+    static const TArray<FName> BaseIds={
         // Champion skills recorded with Apply.
         TEXT("iron_guard"),TEXT("war_cry"),TEXT("challenge_of_iron"),TEXT("sanctuary"),TEXT("bastion_of_dawn"),
         TEXT("mass_aegis"),TEXT("wellspring"),TEXT("frost_bind"),TEXT("shield_slam"),
@@ -128,5 +129,6 @@ const TArray<FName>& CireBuffs::KnownIds()
         // new-champions: bounty/witch marks, tracking, banishment, self buffs and Aetheri construct fields.
         TEXT("bounty_mark"),TEXT("witch_mark"),TEXT("tracked"),TEXT("banished"),TEXT("hunters_stride"),TEXT("warding_talisman"),TEXT("moonlit_sprint"),TEXT("overcharge"),
         TEXT("aether_aegis"),TEXT("aether_haste"),TEXT("aether_weakened"),TEXT("aether_nexus"),TEXT("npc_aether_empowered")};
+    static const TArray<FName> Ids=[]{TArray<FName> Out=BaseIds;for(const FName Id:CireKits::BuffIds())Out.AddUnique(Id);return Out;}(); // scaling-kits
     return Ids;
 }

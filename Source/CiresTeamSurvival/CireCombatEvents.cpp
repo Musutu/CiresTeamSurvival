@@ -10,6 +10,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "Misc/ScopeExit.h"
+#include "CireScalingKits.h" // scaling-kits
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireCombat, Log, All);
 
@@ -141,7 +142,7 @@ bool CireCombat::AreHostile(AActor* Source,AActor* Target){
 float CireCombat::ApplyStrike(AActor* Source,AActor* Target,float Amount,const FString& AbilityName,bool bCanCrit){
     if(!IsValid(Source)||!Source->HasAuthority()||!AreHostile(Source,Target))return 0;
     const auto* H=Cast<ACireHero>(Source);
-    const bool Critical=bCanCrit&&H&&FMath::FRand()<FMath::Clamp(H->CriticalChance,0.f,1.f);
+    const bool Critical=bCanCrit&&H&&FMath::FRand()<FMath::Clamp(H->CriticalChance+CireKits::CritBonus(H),0.f,1.f); // scaling-kits: crit aura
     return ApplyDamage(Source,Target,Amount*(Critical?FMath::Clamp(H->CriticalMultiplier,1.f,5.f):1.f),AbilityName,Critical);
 }
 void CireCombat::PlayCue(AActor* Source,AActor* Target,FName SkillId,FVector From,FVector To,ECireSpellCue Cue,float Scale,bool bSound){
@@ -158,11 +159,13 @@ float CireCombat::ApplyDamage(AActor* Source, AActor* Target, float Amount, cons
 {
     if (!IsValid(Source) || !Source->HasAuthority() || !IsValid(Target) ||
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
+    const float OriginalAmount = Amount; // scaling-kits: Headshot / double attack repeat the original hit
     // progression-shop: spell power, execute, every-Nth-hit and lantern marks scale outgoing damage.
     Amount = CireItems::ModifyOutgoingDamage(Source, Target, Amount, AbilityName);
     Amount = CireClassTraits::ModifyOutgoingDamage(Source, Amount); // champion-draft: Support -20% damage
     Amount = CireCrowdControl::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // champion-draft: Executioner
     Amount = CireSignatureSkills::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // new-champions: marks, fields, silver, banishment
+    Amount = CireKits::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // scaling-kits: level-15 amp, Longshot, ranged-damage aura
     if (Amount <= 0) return 0;
     const FCireDamageEvent Event(AbilityName,bCritical);
     const float Applied = Target->TakeDamage(Amount, Event, Source->GetInstigatorController(), Source);
@@ -170,6 +173,7 @@ float CireCombat::ApplyDamage(AActor* Source, AActor* Target, float Amount, cons
     CireClassTraits::OnDamageDealt(Source, Target, Applied); // champion-draft: Support Mending Strikes
     if (Applied > 0) CireCrowdControl::OnAbilityHit(Source, Target, AbilityName); // champion-draft: ability CC from Abilities.json
     if (Applied > 0) CireSignatureSkills::OnAbilityHit(Source, Target, AbilityName, Applied); // new-champions: slows, purges
+    if (Applied > 0) CireKits::OnDamageDealt(Source, Target, OriginalAmount, Applied, AbilityName); // scaling-kits: level 15, auras, Headshot, Artillery
     return Applied;
 }
 
@@ -207,10 +211,15 @@ void CireCombat::BroadcastDamage(AActor* Source, AActor* Target, float AppliedAm
     PlayCue(Source,Target,FName(*AbilityName),Source->GetActorLocation(),Target->GetActorLocation(),Event.bCritical?ECireSpellCue::Critical:ECireSpellCue::Impact);
 }
 
-void CireCombat::BroadcastAvoidance(AActor* Source, AActor* Target, ECireHitOutcome Outcome, const FString& AbilityName)
+FString CireCombat::OutcomeText(ECireHitOutcome O)
+{
+    return O==ECireHitOutcome::Miss?TEXT("Miss"):O==ECireHitOutcome::Block?TEXT("Block"):O==ECireHitOutcome::Resist?TEXT("Resist"):TEXT("Dodge");
+}
+
+void CireCombat::BroadcastAvoidance(AActor* Source, AActor* Target, ECireHitOutcome Outcome, const FString& AbilityName, float PreventedAmount)
 {
     if (!IsValid(Source) || !Source->HasAuthority() || !IsValid(Target) || Outcome == ECireHitOutcome::Hit) return;
-    FCireCombatEvent Event = MakeEvent(Source, Target, 0, AbilityName, false);
+    FCireCombatEvent Event = MakeEvent(Source, Target, FMath::IsFinite(PreventedAmount) ? FMath::Max(0.f, PreventedAmount) : 0.f, AbilityName, false);
     Event.Outcome = Outcome;
     Broadcast(Event, Source->GetWorld());
 }

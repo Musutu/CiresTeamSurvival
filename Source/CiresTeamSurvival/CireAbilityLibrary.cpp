@@ -1,4 +1,5 @@
 #include "CireAbilityLibrary.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireDeveloperTools.h"
 #include "CireGame.h"
@@ -79,7 +80,7 @@ bool CireAbilityLibrary::Cast(ACireHero* Hero,int32 Slot,const FCireAuthoredAbil
     if(Hero->GetWorld()->LineTraceSingleByObjectType(Wall,Hero->GetActorLocation()+FVector(0,0,35),Center+FVector(0,0,60),FCollisionObjectQueryParams(ECC_WorldStatic),Q)||ACireConstruct::FindBlockingConstruct(Hero,Center)){
         Hero->Notice=TEXT("Ground target is blocked.");return false;}
     FCireAreaSpec Spec=A.Area;const auto* Mode=Hero->GetWorld()->GetAuthGameMode<ACireGameMode>();
-    const float Power=Mode?Mode->Power(Hero->TeamId):1.f;Spec.BurstDamage*=Power;Spec.DamagePerSecond*=Power;
+    const float Power=Mode?Mode->Power(Hero->TeamId):1.f;Spec.BurstDamage=CireKits::Amount(Hero,A.Id,Spec.BurstDamage)*Power;Spec.DamagePerSecond=(Spec.DamagePerSecond+CireKits::DotPerSecondBonus(Hero,A.Id))*Power; // scaling-kits: base + coef x PRIMARY
     if(!ACireAreaEffect::Spawn(Hero,Spec,Center,Heading)){Hero->Notice=TEXT("Area could not be created.");return false;}
     Hero->Mana-=A.ManaCost;Hero->Energy-=A.EnergyCost;Hero->Cooldowns[Slot]=Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(Hero->GetWorld(),A.CooldownSeconds),Hero->CDR);Hero->GlobalCooldown=.9f;Hero->Notice=A.Name;
     CireSkillShop::ApplyCastLevel(Hero,Slot,A.Id,A.ManaCost,A.EnergyCost); // progression-shop: Skill Shop level (Ability DB curve)

@@ -1,4 +1,5 @@
 #include "CireAreaEffects.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireDeveloperTools.h"
 #include "CireGame.h"
 #include "CireCombatEvents.h"
@@ -290,7 +291,7 @@ void ACireAreaEffect::Tick(float DeltaSeconds)
                 Occupants.GetKeys(Victims);
                 for (auto Victim : Victims)
                     if (IsValid(Victim.Get()) && CireCombat::AreHostile(SourceActor,Victim.Get()))
-                        CireCombat::ApplyDamage(SourceActor, Victim.Get(), AreaSpec.BurstDamage, AreaSpec.AbilityName);
+                        { FCireAreaDamageScope AreaScope; CireCombat::ApplyDamage(SourceActor, Victim.Get(), AreaSpec.BurstDamage, AreaSpec.AbilityName); } // scaling-kits: AoE-resist aura
                 ClearOccupants();
             }
             if (AreaSpec.bPersistent)
@@ -370,7 +371,7 @@ void ACireAreaEffect::DealAccumulatedDamage()
         // the target, so leaving cancels poison at the next post-physics update.
         if (IsValid(Victim.Get()) && IsValid(SourceActor) && CireCombat::AreHostile(SourceActor,Victim.Get()) &&
             ContainsPoint(AreaSpec, GetActorLocation(), GetActorRotation(), Feet(Victim.Get())))
-            CireCombat::ApplyDamage(SourceActor, Victim.Get(), Damage, AreaSpec.AbilityName);
+            { FCireAreaDamageScope AreaScope; CireCombat::ApplyDamage(SourceActor, Victim.Get(), Damage, AreaSpec.AbilityName); } // scaling-kits
         if (!IsValid(Victim.Get()) || !IsValid(SourceActor) || !CireCombat::AreHostile(SourceActor,Victim.Get())) RemoveOccupant(Victim.Get());
     }
 }

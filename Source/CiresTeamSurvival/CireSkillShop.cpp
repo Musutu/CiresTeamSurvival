@@ -1,4 +1,5 @@
 #include "CireSkillShop.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 // progression-shop: see CireSkillShop.h and Docs/Progression.md (Skill Shop).
@@ -285,6 +286,7 @@ FString CireSkillShop::BuyBlocker(const ACireHero* Hero, const FString& Id)
 {
     FString Why;
     if (!IsOpen(Hero, &Why)) return Why;
+    if (!CireKits::MeetsRequirement(Hero, Id, &Why)) return Why; // scaling-kits: shield / ranged skills
     const CI::ShopSkillKind Kind = KindOf(Id);
     const bool bAllowed = CatalogFor(Hero).ContainsByPredicate([&](const FCireShopSkill& S) { return S.Id == Id; });
     int32 Price = 0;
@@ -421,6 +423,7 @@ bool CireSkillShop::CanPayCast(const ACireHero* Hero, const FString& Id, float B
 void CireSkillShop::ApplyCastLevel(ACireHero* Hero, int32 Slot, const FString& Id, float BaseMana, float BaseEnergy)
 {
     if (!Hero || !Hero->HasAuthority()) return;
+    CireKits::OnSkillCast(Hero, Id); // scaling-kits: level-15 pulse bonus for non-damaging skills
     const FCireCastScale Scale = CastScale(Hero, Id);
     if (Scale.Level <= 1) return;
     const float Extra = FMath::Max(0.f, Scale.Cost - 1.f);

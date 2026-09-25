@@ -1,4 +1,5 @@
 #include "CireCombatExpansionProbe.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireWaves.h" // wave-director
 #include "CireClassTraits.h"
 #include "CireAbilityDB.h"
@@ -107,6 +108,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireAbilityVFX::RunTests(Mode)&&Good; // ability-vfx: shape-true telegraphs, line indicators, lifecycles, release sync
     Good=CireTechConstructs::RunSmoke(Mode)&&Good; // new-champions: Aetheri Constructs (place, attack/aura, expire, limits, destroy, skitters, monsters, arena)
     Good=CireSignatureSkills::RunSmoke(Mode)&&Good; // new-champions: kits, gunblade basic, glaive bounces, marks, mount, Aetheri race
+    Good=CireKits::RunSmoke(Mode)&&Good; // scaling-kits: primary scaling, inheritance, construct threat, shield block, Mech Tank, level 15, Headshot, Artillery
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }
 #endif

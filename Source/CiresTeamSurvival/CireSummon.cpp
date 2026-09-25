@@ -6,6 +6,7 @@
 #include "CireSkillRuntime.h"
 #include "CireCombatEvents.h"
 #include "CireThreat.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "Components/CapsuleComponent.h"
 #include "Engine/OverlapResult.h"
 #include "EngineUtils.h"
@@ -136,7 +137,11 @@ void ACireSummon::Tick(float Delta)
             SetActorRotation(Direction.Rotation());
             const uint32 PreviousSerial = AttackSerial;
             BasicAttack();
-            if (AttackSerial != PreviousSerial) PendingAttackDamage = SummonSpec.Damage;
+            if (AttackSerial != PreviousSerial)
+            {
+                PendingAttackDamage = SummonSpec.Damage;
+                BasicTimer = CireKits::InheritedInterval(this, BaseAttackSeconds()); // scaling-kits: the owner's attack speed drives the summon
+            }
         }
     }
 }

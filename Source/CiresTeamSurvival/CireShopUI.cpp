@@ -1,4 +1,5 @@
 #include "CireShopUI.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireShopArt.h" // progression-shop: scroll cards and ornate framing
 #include "CireSkillShop.h" // progression-shop: Skill Shop tab
 #include "CireAbilityDB.h" // progression-shop: scroll card numbers
@@ -910,7 +911,7 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
         if (Id == HoverId)
         {
             const float Nx = bOwned ? Level + 1 : 1;
-            const FString Db = CireAbilityDB::Describe(Id, FMath::Max(1, Level));
+            const FString Db = CireKits::DescribeFor(Hero, Id, FMath::Max(1, Level)); // scaling-kits: "40 + 1.2x Primary (STR 30)", "Lv 15: +..."
             FString Body = Db.IsEmpty() ? ACireHero::SkillDescription(Id) : Db;
             if (!Db.IsEmpty()) Body += FString::Printf(TEXT("\n%s  |  %s"), *CireSkillShop::SchoolOf(Id), *CireSkillShop::RoleTags(Id));
             else Body += bOwned ? FString::Printf(TEXT("\n\nLevel %d -> %d: effect +%.0f%%, cooldown -%.0f%%, mana/energy cost +%.0f%% (totals). No level cap."), Level, Level + 1,
