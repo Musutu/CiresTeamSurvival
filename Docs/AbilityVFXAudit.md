@@ -538,3 +538,16 @@ sigil is about 26% of the radius, cone glyphs fill the wedge, lane glyphs are ab
 edge motifs are thicker and scale with the shape, and the aim fill and rim keep the school hue. Evidence:
 `Saved/AbilityVFX/gpb20-all-20260925-065818`, `gpb50-all-20260925-065914`, `gpc50-all-20260925-070043`.
 Shadow Step's rift is violet for the caster's team (the earlier gold capture predated the allegiance fix, 45876e0).
+
+### Playtest 3: brightness
+- Fills are a subtle translucent tint (about 15-25% at the default intensity); readability comes from the
+  crisp rim, the school runes and the edge motion. `CireAbilityVFX::Temper` scales fill alpha by
+  intensity x overlap, keeps rims/runes stronger, and hue-caps every colour (fill 0.9, rim 1.2) under the
+  bloom threshold. Release flashes of active zones no longer go near-solid.
+- Overlap: each area visual counts the zones overlapping it; they share one brightness budget
+  (1/sqrt(count) for fills, count^-0.75 for rims/runes). Buff fields such as pylons show runes at 35%.
+- Options > Graphics: **Ground telegraph intensity** (0.3-1.0, default 0.6, saved in the profile); the aura
+  slider is now labelled **Ally / other units' effects**.
+- Evidence (gameplay camera): `Saved/AbilityVFX/dim3-all-20260925-133126` including `overlap_town`
+  (4 pylon fields + poison pool + fire cone + an enemy cleave on the town road under dusk lighting).
+- The Niagara packs Eric is buying will replace much of this procedural art in a later pass.
