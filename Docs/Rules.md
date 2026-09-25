@@ -37,6 +37,27 @@ The four ultimate options are Bastion of Dawn (self-healing and nearby ally prot
 
 Bots use the same resource and cooldown gates. They favor survival waves over unengaged challenges, seek wounded allies for healing, and shop during the town window. Their current steering follows direct movement vectors and has no navigation/pathfinding integration; complex obstacle arenas require that work before serious balance testing.
 
+## Combat scaling and kits (scaling-kits)
+
+`Rules/CireKitRules.h` (`Cires::Kits`, tests: `Tests/KitRulesTests.cpp`) holds Eric's scaling rulings; the engine layer is
+`CireScalingKits` (hooks in the damage, stat, cast and NPC pipelines) and `CireMechTank`.
+
+- **Universal primary scaling.** Every ability's damage, heal, shield and DoT is `base + coefficient x PRIMARY` (STR, AGI or INT,
+  whichever is the caster's primary), whatever the school or role. Numbers live in `Abilities.json` `scaling`; the coefficient
+  philosophy and a bounded power check are in `Docs/Abilities.md`.
+- **Summons and constructs** hit off the owner's primary, attack at the owner's attack speed and use the owner's cooldown
+  reduction. Monsters hold threat on summons (they are units) and on constructs (turret shots build construct threat); a
+  construct that out-threatens the current victim by the pull ratio is attacked. Enemy bots in the arena consider summons and
+  constructs as targets.
+- **Shield-bearing tanks** (profiles whose `WeaponLoadouts.json` preset carries a shield, main role Tank): -10% armour and magic
+  resist, and a 30% chance to block 50% of a physical hit ("BLOCK" floating text and combat-log entry).
+- **Level 15.** Every active gains one bonus (DoT, heal cut, stun, slow, damage amp, Vulnerability = ignore 20% of defences, purge)
+  applied when its hit lands (or as a pulse where a non-damaging skill lands); every passive grants a party aura (buff records
+  `aura15_*`). Headshot instead turns its 2x extra hit into 3x.
+- **Shield skills** (shield users only): Shield Bash, Shield Toss, Shield Wall, Construct: Pavise, Construct: Mechanical Tank.
+  **Range skills** (ranged champions only): Artillery (8 s of basic attacks with unlimited range and +100% attack speed; level 15:
+  a 7 m bomb for all the damage dealt), Artillery Training, Eagle Eye, Longshot Stance, Headshot.
+
 ## Verification
 
 Run `Tests/Run-Tests.ps1`. It uses CMake when available, or automatically locates Visual Studio C++ Build Tools and runs `Tests/Run-MSVC.cmd`. A portable CMake entry point is also supplied for other C++17 toolchains.

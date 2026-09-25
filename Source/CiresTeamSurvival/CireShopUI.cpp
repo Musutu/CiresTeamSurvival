@@ -1,4 +1,5 @@
 #include "CireShopUI.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireShopArt.h" // progression-shop: scroll cards and ornate framing
 #include "CireSkillShop.h" // progression-shop: Skill Shop tab
 #include "CireAbilityDB.h" // progression-shop: scroll card numbers
@@ -1086,8 +1087,8 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
             WaxSeal(P, Mid, Pr.Y + Pr.H * .5f, FMath::Clamp(Pr.W * .3f, 14.f, 28.f), static_cast<float>(StampAge / 1.5), FString::FromInt(FMath::Max(1, Level)));
         if (Id == HoverId)
         {
-            // Full numbers live in the tooltip: level -> next from the Ability DB, tags, section, price.
-            const FString Db = CireAbilityDB::Describe(Id, FMath::Max(1, Level));
+            // Full numbers live in the tooltip (scaling-kits: primary-stat scaling and the Lv 15 bonus).
+            const FString Db = CireKits::DescribeFor(Hero, Id, FMath::Max(1, Level));
             FString Body = Db.IsEmpty() ? ACireHero::SkillDescription(Id) : Db;
             const FCireAbilityDef* Def = CireAbilityDB::Find(Id);
             Body += FString::Printf(TEXT("\n%s  |  %s  |  %s"), *FString(SkillSections[SectionOf(Id)].Label), *CireSkillShop::SchoolOf(Id), *CireSkillShop::RoleTags(Id));

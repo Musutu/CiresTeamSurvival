@@ -1,4 +1,5 @@
 #include "CireSkillShop.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 // progression-shop: see CireSkillShop.h and Docs/Progression.md (Skill Shop).
@@ -190,6 +191,8 @@ TArray<FCireShopSkill> CireSkillShop::CatalogFor(const ACireHero* Hero)
     // No profile (legacy archetype heroes, fixtures): the role-tagged skill pool.
     if (Ids.IsEmpty())
         for (const auto& Skill : Cires::StarterSkillPoolForRoles(HeroRoles(Hero))) Ids.Add(UTF8_TO_TCHAR(Skill.Id.c_str()));
+    // scaling-kits "requires": shield skills only for shield users, ranged skills only for ranged attackers.
+    Ids.RemoveAll([Hero](const FString& Id) { return Hero && !CireKits::MeetsRequirement(Hero, Id, nullptr); });
     // Owned skills (e.g. an opening pick from another list) are always listed so they can level.
     if (Hero) for (const FString& Id : Hero->Skills) Ids.AddUnique(Id);
     TArray<FCireShopSkill> Out;
@@ -293,6 +296,7 @@ FString CireSkillShop::BuyBlocker(const ACireHero* Hero, const FString& Id)
 {
     FString Why;
     if (!IsOpen(Hero, &Why)) return Why;
+    if (!CireKits::MeetsRequirement(Hero, Id, &Why)) return Why; // scaling-kits: shield / ranged skills
     const CI::ShopSkillKind Kind = KindOf(Id);
     const bool bAllowed = CatalogFor(Hero).ContainsByPredicate([&](const FCireShopSkill& S) { return S.Id == Id; });
     int32 Price = 0;
@@ -441,6 +445,7 @@ bool CireSkillShop::CanPayCast(const ACireHero* Hero, const FString& Id, float B
 void CireSkillShop::ApplyCastLevel(ACireHero* Hero, int32 Slot, const FString& Id, float BaseMana, float BaseEnergy)
 {
     if (!Hero || !Hero->HasAuthority()) return;
+    CireKits::OnSkillCast(Hero, Id); // scaling-kits: level-15 pulse bonus for non-damaging skills
     const FCireCastScale Scale = CastScale(Hero, Id);
     // items-v2: the caller already paid the base cost; charge the level-scaled remainder, then refunds/upgrades.
     float Mana = 0, Energy = 0;

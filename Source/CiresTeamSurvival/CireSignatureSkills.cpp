@@ -1,5 +1,6 @@
 // new-champions: signature kits of the Gunblade, Witch Slayer, Huntress, Aetheri Artificer and Aetheri Warden.
 #include "CireSignatureSkills.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireAbilityDB.h"
 #include "CireAbilityShapes.h"
 #include "CireAreaEffects.h"
@@ -180,7 +181,8 @@ int32 Purge(AActor* Target)
     static const TSet<FName> Positive = {TEXT("iron_guard"), TEXT("war_cry"), TEXT("challenge_of_iron"), TEXT("sanctuary"), TEXT("bastion_of_dawn"),
         TEXT("mass_aegis"), TEXT("wellspring"), TEXT("blood_rage"), TEXT("frost_weapon"), TEXT("blessing"), TEXT("regeneration"), TEXT("oathshield"),
         TEXT("borrowed_time"), TEXT("npc_bloodlust"), TEXT("npc_scaleward"), TEXT("aether_aegis"), TEXT("aether_haste"), TEXT("aether_nexus"),
-        TEXT("npc_aether_empowered"), TEXT("moonlit_sprint"), TEXT("warding_talisman"), TEXT("hunters_stride"), TEXT("overcharge")};
+        TEXT("npc_aether_empowered"), TEXT("moonlit_sprint"), TEXT("warding_talisman"), TEXT("hunters_stride"), TEXT("overcharge"),
+        TEXT("shield_wall"), TEXT("eagle_eye"), TEXT("longshot")}; // scaling-kits
     int32 Removed = 0;
     if (const auto* State = CireBuffs::Get(Target))
     {
@@ -249,7 +251,7 @@ bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     if (!CireSkillShop::CanPayCast(Hero, Id, Mana, Energy)) return Fail(*CireSkillShop::CostFailText());
     const float Range = Def->Range > 0 ? Def->Range : 900.f;
     const float Power = Mode->Power(Hero->TeamId);
-    const float Amount = FMath::Min(10000.f, (Def->Base.Effect + Sig->Scaling * Hero->PrimaryAttribute()) * Power);
+    const float Amount = FMath::Min(10000.f, CireKits::Amount(Hero, Id, Def->Base.Effect, Sig->Scaling) * Power); // scaling-kits: DB base + coef x PRIMARY
     AActor* Target = Hero->Target;
     const bool bHostile = CireCombat::AreHostile(Hero, Target);
     FVector Aim = Hero->bHasCastAim ? Hero->CastAimPoint : bHostile ? Target->GetActorLocation() :
@@ -616,3 +618,5 @@ void CireSignatureSkills::OnBasicProjectileHit(ACireHero* Hero, AActor* Victim, 
         Hit.Add(Best); From = Best; Next *= .6f;
     }
 }
+
+int32 CireSignatureSkills::PurgeBuffs(AActor* Target) { return Purge(Target); } // scaling-kits

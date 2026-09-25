@@ -39,6 +39,18 @@
       "accent": "#6eaaff",
       "pool": false
     },
+    "artillery": {
+      "school": "ember",
+      "glyph": "cataclysm",
+      "accent": "#ff8c32",
+      "pool": false
+    },
+    "artillery_training": {
+      "school": "war",
+      "glyph": "piercing",
+      "accent": "#f0503c",
+      "pool": false
+    },
     "ashen_square": {
       "school": "ash",
       "glyph": "square_ward",
@@ -333,6 +345,12 @@
       "accent": "#82e664",
       "pool": false
     },
+    "eagle_eye": {
+      "school": "nature",
+      "glyph": "eye",
+      "accent": "#82e664",
+      "pool": false
+    },
     "ember_lance": {
       "school": "fire",
       "glyph": "ember_lance",
@@ -465,6 +483,12 @@
       "accent": "#5abeff",
       "pool": false
     },
+    "headshot": {
+      "school": "ember",
+      "glyph": "skull",
+      "accent": "#ff8c32",
+      "pool": false
+    },
     "hex_mark": {
       "school": "blood",
       "glyph": "eye",
@@ -531,11 +555,23 @@
       "accent": "#f0503c",
       "pool": true
     },
+    "longshot": {
+      "school": "steel",
+      "glyph": "arrow",
+      "accent": "#aac8e6",
+      "pool": false
+    },
     "mass_aegis": {
       "school": "light",
       "glyph": "aegis",
       "accent": "#ffe28c",
       "pool": true
+    },
+    "mechanical_tank": {
+      "school": "war",
+      "glyph": "gear",
+      "accent": "#f0503c",
+      "pool": false
     },
     "mine_layer": {
       "school": "ash",
@@ -631,6 +667,12 @@
       "school": "holy",
       "glyph": "cleave",
       "accent": "#ffc45a",
+      "pool": false
+    },
+    "pavise": {
+      "school": "stone",
+      "glyph": "tower",
+      "accent": "#c8b48c",
       "pool": false
     },
     "phase_lance": {
@@ -771,16 +813,34 @@
       "accent": "#a05aff",
       "pool": true
     },
+    "shield_bash": {
+      "school": "steel",
+      "glyph": "shield_slam",
+      "accent": "#aac8e6",
+      "pool": false
+    },
     "shield_slam": {
       "school": "holy",
       "glyph": "shield_slam",
       "accent": "#ffc45a",
       "pool": true
     },
+    "shield_toss": {
+      "school": "ember",
+      "glyph": "glaive",
+      "accent": "#ff8c32",
+      "pool": false
+    },
     "shield_tumble": {
       "school": "holy",
       "glyph": "tumble",
       "accent": "#ffc45a",
+      "pool": false
+    },
+    "shield_wall": {
+      "school": "steel",
+      "glyph": "aegis",
+      "accent": "#aac8e6",
       "pool": false
     },
     "silver_shot": {
