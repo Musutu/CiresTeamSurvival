@@ -49,6 +49,9 @@ namespace CireShopUI
     CIRESTEAMSURVIVAL_API void DebugSkillTab(const FString& SkillId);
     CIRESTEAMSURVIVAL_API void DebugItemTab();
     CIRESTEAMSURVIVAL_API FVector2D DebugSkillGridPos(const FString& SkillId);
+    // Freezes UI time at (last wax-seal stamp + Age); the current shop tab (0 items, 1 skills).
+    CIRESTEAMSURVIVAL_API void DebugFreezeAfterStamp(float Age);
+    CIRESTEAMSURVIVAL_API int32 DebugTab();
     // Freezes UI animation time at (latest feedback event + Age); Age < 0 unfreezes.
     CIRESTEAMSURVIVAL_API void DebugFreezeAfterLastEvent(float Age);
     CIRESTEAMSURVIVAL_API FVector2D DebugGridPos(FName ItemId);

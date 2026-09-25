@@ -5,8 +5,8 @@
                   teleport, loot chests, fair distribution, pack gating, NPC prep pause)
   --only network  dedicated server + remote client (-CireShopNetServer/-CireShopNetClient):
                   server-enforced shop, replicated inventory/gold/feedback, undo, teleport
-  --only gallery  offscreen 1920x1080 captures (-CireShopGallery) of the shop, feedback moments,
-                  stats window, loot chest and teleport button
+  --only gallery  offscreen 1920x1080 captures (-CireShopGallery) of the shop, Skill Shop, purchase/feedback moments,
+                  stats window, loot chest and teleport button; then the shop screens again at 1600x900
   (default: all)
 
 Only child processes started here are ever stopped. Reports: Saved/ProgressionChecks/<stamp>/report.json
@@ -176,27 +176,34 @@ def main() -> int:
         save("network", result(logs, codes, ["CIRE_SHOP_NET_SERVER_PASS", "CIRE_SHOP_NET_CLIENT_PASS"], failure))
 
     if args.only in ("gallery", "all"):
-        log, child, failure = output / "gallery.log", None, ""
-        try:
-            child = launch("/Game/Maps/Citadel", ["-game", "-CireShopGallery", "-RenderOffscreen", "-ForceRes", "-ResX=1920", "-ResY=1080",
-                                                  "-ExecCmds=t.MaxFPS 60"], log, ["-nosound"])
-            child.wait(timeout=300)
-        except subprocess.TimeoutExpired:
-            failure = "gallery timed out"
-        finally:
-            stop(child)
-        record = result([log], [child.returncode if child else None], ["CIRE_SHOP_GALLERY_PASS"], failure)
-        match = re.search(r"CIRE_SHOP_GALLERY_PASS captures=(\d+) directory=(.+)", read(log))
-        captures = []
-        if match:
-            for path in sorted(Path(match.group(2).strip()).glob("*.png")):
-                header = path.read_bytes()[:24]
-                size = struct.unpack(">II", header[16:24]) if header[:8] == b"\x89PNG\r\n\x1a\n" else (0, 0)
-                captures.append({"path": str(path), "width": size[0], "height": size[1], "bytes": path.stat().st_size})
-                record["passed"] = record["passed"] and size == (1920, 1080)
-        record["captures"] = captures
-        record["visualReviewAccepted"] = False
-        save("gallery", record)
+        # Full gallery at 1920x1080, then the shop screens (Skill Shop + Armory) again at 1600x900.
+        for width, height, shop_only in ((1920, 1080, False), (1600, 900, True)):
+            name = "gallery" if not shop_only else f"gallery_{width}x{height}"
+            log, child, failure = output / f"{name}.log", None, ""
+            try:
+                switches = ["-game", "-CireShopGallery", "-RenderOffscreen", "-ForceRes", f"-ResX={width}", f"-ResY={height}", "-ExecCmds=t.MaxFPS 60"]
+                if shop_only:
+                    switches.insert(2, "-CireShopGalleryShopOnly")
+                child = launch("/Game/Maps/Citadel", switches, log, ["-nosound"])
+                child.wait(timeout=360)
+            except subprocess.TimeoutExpired:
+                failure = "gallery timed out"
+            finally:
+                stop(child)
+            record = result([log], [child.returncode if child else None], ["CIRE_SHOP_GALLERY_PASS"], failure)
+            match = re.search(r"CIRE_SHOP_GALLERY_PASS captures=(\d+) directory=(.+)", read(log))
+            captures = []
+            if match:
+                for path in sorted(Path(match.group(2).strip()).glob("*.png")):
+                    header = path.read_bytes()[:24]
+                    size = struct.unpack(">II", header[16:24]) if header[:8] == b"PNG
+
+" else (0, 0)
+                    captures.append({"path": str(path), "width": size[0], "height": size[1], "bytes": path.stat().st_size})
+                    record["passed"] = record["passed"] and size == (width, height)
+            record["captures"] = captures
+            record["visualReviewAccepted"] = False
+            save(name, record)
 
     print(f"Report: {output / 'report.json'}")
     return 0 if reports and all(r["passed"] for r in reports.values()) else 1

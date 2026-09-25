@@ -4,6 +4,7 @@
 //  -CireShopNetServer/Client dedicated server + remote client: server-enforced shop, replicated
 //                            inventory/gold/feedback, undo, consumables and teleport (--only network)
 //  -CireProgressionProbe     runs only the progression smoke suites and exits (--only native)
+//  -CireShopGalleryShopOnly  with -CireShopGallery: only the shop screens (Skill Shop + Armory), for a second resolution
 #include "CireShopFixtures.h"
 #if !UE_BUILD_SHIPPING
 #include "CireGame.h"
@@ -11,6 +12,7 @@
 #include "CireItems.h"
 #include "CireLoot.h"
 #include "CireShopUI.h"
+#include "CireSkillShop.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -41,6 +43,9 @@ struct FGallery
     double Start = 0, Ready = -1, StageStart = 0;
     int32 Stage = -1;
     bool bCaptured = false, bDone = false, bPass = true;
+    bool bShopOnly = false;   // -CireShopGalleryShopOnly
+    int32 Expected = 0;
+    bool bAutoOpenArmed = false, bAutoOpenChecked = false;
     // network
     int32 NetStep = 0;
     double NetStepAt = 0;
@@ -54,6 +59,13 @@ void Finish(bool bPass, const TCHAR* Marker)
     UE_LOG(LogCireShopFixtures, Display, TEXT("%s_%s captures=%d directory=%s"), Marker, bPass ? TEXT("PASS") : TEXT("FAIL"), G.Files.Num(), *G.Directory);
     FPlatformMisc::RequestExitWithStatus(false, bPass ? 0 : 1);
 }
+
+// Prices come from Items.json (they follow the economy), never literals.
+int32 ItemTotal(const char* Id) { const auto* Def = CireItems::Get().Catalog.Find(Id); return Def ? Def->TotalCost : -100000; }
+int32 ItemRecipe(const char* Id) { const auto* Def = CireItems::Get().Catalog.Find(Id); return Def ? Def->RecipeCost : -100000; }
+int32 AfterParts() { return 2000 - ItemTotal("rusted_longsword") - ItemTotal("bone_dagger"); }
+int32 AfterCleaver() { return AfterParts() - ItemRecipe("serrated_cleaver"); }
+int32 AfterVials() { return AfterCleaver() - 2 * ItemTotal("vial_of_crimson"); }
 
 UCireInventory* Inv() { return G.Hero.IsValid() ? G.Hero->Inventory.Get() : nullptr; }
 
@@ -115,7 +127,11 @@ const FStage Stages[] = {
     {TEXT("shop_all_items_hover"), 2.2f}, {TEXT("shop_recommended"), 1.2f}, {TEXT("shop_buy_feedback"), .8f},
     {TEXT("shop_error_shake"), .8f}, {TEXT("shop_sell_feedback"), .8f}, {TEXT("hud_stats_window_hover"), 1.2f},
     {TEXT("loot_chest_drop"), 1.6f}, {TEXT("loot_chest_opened"), .9f}, {TEXT("teleport_channel"), 2.2f}, {TEXT("teleport_cooldown"), 1.0f},
-    {TEXT("loot_personal_own_vs_teammate"), 1.6f}, {TEXT("loot_window_and_toasts"), .9f}, {TEXT("loot_autocollect_summary_and_log"), 1.0f}};
+    {TEXT("loot_personal_own_vs_teammate"), 1.6f}, {TEXT("loot_window_and_toasts"), .9f}, {TEXT("loot_autocollect_summary_and_log"), 1.0f},
+    // progression-shop: the Skill Shop (Eric's target image) and its purchase moments.
+    {TEXT("skill_shop_hover"), 2.4f}, {TEXT("skill_shop_seal_stamp"), .9f}, {TEXT("skill_shop_scroll_flight"), .9f},
+    {TEXT("skill_shop_unaffordable_error"), .8f}, {TEXT("skill_shop_auto_open_after_wave"), 1.8f}};
+bool InSubset(int32 Stage) { return !G.bShopOnly || FString(Stages[Stage].Name).StartsWith(TEXT("shop_")) || FString(Stages[Stage].Name).StartsWith(TEXT("skill_")); }
 constexpr int32 StageCount = UE_ARRAY_COUNT(Stages);
 
 void EnterStage(ACireGameMode* Mode, int32 Stage)
@@ -212,6 +228,46 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
         HUD->UISettings.bShowLootLog = true;
         break;
     }
+    case 13:
+    {
+        // Wave 7 prep: 4 active / 1 passive slots open, the ultimate opens at wave 10.
+        SetPhase(Mode, 1);
+        if (auto* S = Mode->GetGameState<ACireGameState>()) S->Wave = 7;
+        HUD->UISettings.bShowLootLog = false;
+        HUD->UISettings.bTooltips = true;
+        H->Skills = {TEXT("shield_slam"), TEXT("war_cry"), TEXT("cleaving_strike"), TEXT("stone_skin")};
+        H->Cooldowns.Init(0, H->Skills.Num());
+        I->SkillRanks.Reset();
+        const TPair<const TCHAR*, int32> Ranks[] = {{TEXT("shield_slam"), 3}, {TEXT("war_cry"), 2}, {TEXT("cleaving_strike"), 1}, {TEXT("stone_skin"), 2}};
+        for (const auto& Rank : Ranks) { FCireSkillRank R; R.Id = Rank.Key; R.Level = Rank.Value; I->SkillRanks.Add(R); }
+        H->Gold = 70;
+        CireShopUI::DebugReset();
+        PC->bShop = true;
+        CireShopUI::DebugSkillTab(FString());
+        break;
+    }
+    case 14: // real level-up through the server path: seal stamp on the scroll
+        I->ServerLevelSkill(TEXT("war_cry"));
+        break;
+    case 15: // real purchase of a new active: the scroll flies to the skill bar
+        H->Gold += 120;
+        I->ServerBuySkill(TEXT("iron_guard"));
+        break;
+    case 16: // the ultimate slot opens at wave 10: rejected with the reason, the scroll shakes
+        I->ServerBuySkill(TEXT("last_stand"));
+        break;
+    case 17:
+    {
+        // A wave is cleared (breather): the Skill Shop opens by itself on the skills tab.
+        PC->bShop = false;
+        CireShopUI::DebugItemTab();
+        SetPhase(Mode, 0);
+        Mode->CycleWavesSpawned = 1;
+        if (auto* S = Mode->GetGameState<ACireGameState>()) { S->CycleWavesDone = 1; S->NextWaveSeconds = 8.f; S->Wave = 7; }
+        H->Gold = 400;
+        G.bAutoOpenArmed = true;
+        break;
+    }
     default: break;
     }
 }
@@ -219,7 +275,7 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
 bool TickGallery(ACireGameMode* Mode)
 {
     if (G.bDone) return true;
-    if (FPlatformTime::Seconds() - G.Start > 140) { Finish(false, TEXT("CIRE_SHOP_GALLERY")); return true; }
+    if (FPlatformTime::Seconds() - G.Start > 220) { Finish(false, TEXT("CIRE_SHOP_GALLERY")); return true; }
     if (G.Ready < 0)
     {
         auto* PC = Cast<ACireController>(Mode->GetWorld()->GetFirstPlayerController());
@@ -231,10 +287,13 @@ bool TickGallery(ACireGameMode* Mode)
     if (Now - G.Ready < 3.0) return true; // fonts/textures streaming, first layout pass
     if (G.Stage < 0 || (G.bCaptured && Now - G.StageStart > Stages[G.Stage].Delay + .6f))
     {
-        if (++G.Stage >= StageCount)
+        do { ++G.Stage; } while (G.Stage < StageCount && !InSubset(G.Stage));
+        if (G.Stage >= StageCount)
         {
             for (const FString& File : G.Files) G.bPass &= IFileManager::Get().FileSize(*File) > 10000;
-            Finish(G.bPass && G.Files.Num() == StageCount, TEXT("CIRE_SHOP_GALLERY"));
+            int32 Expected = 0;
+            for (int32 Stage = 0; Stage < StageCount; ++Stage) Expected += InSubset(Stage);
+            Finish(G.bPass && G.Files.Num() == Expected, TEXT("CIRE_SHOP_GALLERY"));
             return true;
         }
         EnterStage(Mode, G.Stage);
@@ -246,6 +305,31 @@ bool TickGallery(ACireGameMode* Mode)
     {
         const FVector2D Pos = CireShopUI::DebugGridPos(TEXT("sanguine_sabre"));
         if (Pos.X >= 0) CireShopUI::DebugMouse(Pos);
+    }
+    // Skill Shop hover: the pointer rests on a scroll so it lifts and shows its tooltip.
+    if (G.Stage == 13)
+    {
+        const FVector2D Pos = CireShopUI::DebugSkillGridPos(TEXT("frost_bind"));
+        if (Pos.X >= 0) CireShopUI::DebugMouse(Pos);
+    }
+    // Seal stamp mid-impact, then the scroll mid-flight to the skill bar.
+    if ((G.Stage == 14 || G.Stage == 15) && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f)
+        CireShopUI::DebugFreezeAfterStamp(G.Stage == 14 ? .2f : .62f);
+    if (G.Stage == 16 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f) CireShopUI::DebugFreezeAfterLastEvent(.1f);
+    // Auto-open: the second cleared wave arrives a moment later (the HUD has seen the first).
+    if (G.Stage == 17 && G.bAutoOpenArmed && Now - G.StageStart >= .4f)
+    {
+        G.bAutoOpenArmed = false;
+        Mode->CycleWavesSpawned = 2;
+        if (auto* S = Mode->GetGameState<ACireGameState>()) { S->CycleWavesDone = 2; S->NextWaveSeconds = 8.f; }
+    }
+    if (G.Stage == 17 && !G.bCaptured && !G.bAutoOpenChecked && Now - G.StageStart >= Stages[G.Stage].Delay - .05f)
+    {
+        const bool bOpened = G.PC.IsValid() && G.PC->bShop && CireShopUI::DebugTab() == 1;
+        if (bOpened) { UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_GALLERY_SKILLSHOP_AUTOOPEN_PASS tab=skills after_wave_clear=1")); }
+        else { UE_LOG(LogCireShopFixtures, Error, TEXT("CIRE_SHOP_GALLERY_FAIL the Skill Shop did not open after a cleared wave")); }
+        G.bPass &= bOpened;
+        G.bAutoOpenChecked = true;
     }
     // Feedback shots freeze the UI clock mid-animation so the capture shows the moment itself.
     if (((G.Stage >= 2 && G.Stage <= 4) || G.Stage == 11) && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f)
@@ -297,7 +381,7 @@ bool TickNetServer(ACireGameMode* Mode)
     if (G.NetStep == 1 && I->Belt[0].Id == FName(TEXT("vial_of_crimson")) && I->Belt[0].Charges == 1 && I->Restores.Num() > 0)
     {
         // Client finished its prep script (bought, sold, undid, used a potion). Waves resume.
-        const bool bState = I->ToRules().CountOf("serrated_cleaver") == 1 && Hero->Gold == 2000 - 390 - 100;
+        const bool bState = I->ToRules().CountOf("serrated_cleaver") == 1 && Hero->Gold == AfterVials();
         if (!bState) { Fail(TEXT("authoritative inventory/gold mismatch after prep script")); return true; }
         SetPhase(Mode, 0);
         Hero->SetActorLocation(Mode->BasePosition(Hero->TeamId) + FVector(3000, 0, 0));
@@ -359,6 +443,7 @@ bool CireShopFixtures::Initialize(ACireGameMode* Mode)
     {
         G.Kind = EFixture::Gallery;
         G.Mode = Mode; G.Start = FPlatformTime::Seconds();
+        G.bShopOnly = FParse::Param(Command, TEXT("CireShopGalleryShopOnly"));
         G.Directory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("ShopGallery"), FDateTime::UtcNow().ToString(TEXT("%Y%m%d-%H%M%S"))));
         if (!Mode || Mode->GetNetMode() != NM_Standalone || !IFileManager::Get().MakeDirectory(*G.Directory, true)) { Finish(false, TEXT("CIRE_SHOP_GALLERY")); return true; }
         Mode->bBotsFilled = true; Mode->BotFillTimer = MAX_flt; Mode->WaveTimer = MAX_flt;
@@ -449,23 +534,23 @@ bool CireShopFixtures::TickClient(ACireController* Controller)
         Next();
         break;
     case 2:
-        if (!(Has(TEXT("rusted_longsword"), 0) && Has(TEXT("bone_dagger"), 1) && Hero->Gold == 1730)) return true;
+        if (!(Has(TEXT("rusted_longsword"), 0) && Has(TEXT("bone_dagger"), 1) && Hero->Gold == AfterParts())) return true;
         I->ServerBuy(TEXT("serrated_cleaver"));
         Next();
         break;
     case 3:
-        if (!(Has(TEXT("serrated_cleaver"), 0) && I->Equipment[1].Id.IsNone() && Hero->Gold == 1610 && Saw(ECireShopAction::Buy, true))) return true;
+        if (!(Has(TEXT("serrated_cleaver"), 0) && I->Equipment[1].Id.IsNone() && Hero->Gold == AfterCleaver() && Saw(ECireShopAction::Buy, true))) return true;
         UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_RECIPE_PASS gold=%d gear=%d"), Hero->Gold, Hero->GearRank);
         I->ServerSell(0, false);
         Next();
         break;
     case 4:
-        if (!(I->Equipment[0].Id.IsNone() && Hero->Gold == 1610 + 234 && Saw(ECireShopAction::Sell, true))) return true;
+        if (!(I->Equipment[0].Id.IsNone() && Hero->Gold == AfterCleaver() + FMath::RoundToInt(ItemTotal("serrated_cleaver") * .6f) && Saw(ECireShopAction::Sell, true))) return true;
         I->ServerUndo();
         Next();
         break;
     case 5:
-        if (!(Has(TEXT("serrated_cleaver"), 0) && Hero->Gold == 1610 && Saw(ECireShopAction::Undo, true))) return true;
+        if (!(Has(TEXT("serrated_cleaver"), 0) && Hero->Gold == AfterCleaver() && Saw(ECireShopAction::Undo, true))) return true;
         UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_SELL_UNDO_PASS gold=%d"), Hero->Gold);
         I->ServerBuy(TEXT("no_such_item"));
         Next();
@@ -475,13 +560,13 @@ bool CireShopFixtures::TickClient(ACireController* Controller)
         Next();
         break;
     case 7:
-        if (!(Has(TEXT("serrated_cleaver"), 0) && Hero->Gold == 1610)) return true;
+        if (!(Has(TEXT("serrated_cleaver"), 0) && Hero->Gold == AfterCleaver())) return true;
         I->ServerBuy(TEXT("vial_of_crimson"));
         I->ServerBuy(TEXT("vial_of_crimson"));
         Next();
         break;
     case 8:
-        if (!(I->Belt[0].Id == FName(TEXT("vial_of_crimson")) && I->Belt[0].Charges == 2 && Hero->Gold == 1510)) return true;
+        if (!(I->Belt[0].Id == FName(TEXT("vial_of_crimson")) && I->Belt[0].Charges == 2 && Hero->Gold == AfterVials())) return true;
         I->ServerUse(0, true);
         Next();
         break;
@@ -498,7 +583,7 @@ bool CireShopFixtures::TickClient(ACireController* Controller)
         Next();
         break;
     case 11:
-        if (!(!I->IsChanneling() && I->TeleportCooldownRemaining() > 100 && Hero->Gold == 1510)) { if (Now - C.StepAt > 15) Fail(TEXT("teleport did not complete")); return true; }
+        if (!(!I->IsChanneling() && I->TeleportCooldownRemaining() > 100 && Hero->Gold == AfterVials())) { if (Now - C.StepAt > 15) Fail(TEXT("teleport did not complete")); return true; }
         UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_TELEPORT_PASS teleport_cooldown=%.0f gold=%d"), I->TeleportCooldownRemaining(), Hero->Gold);
         I->PendingLoot.Reset();
         Next();

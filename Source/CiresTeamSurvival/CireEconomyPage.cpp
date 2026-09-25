@@ -4,6 +4,7 @@
 #include "CireGame.h"
 #include "CireLoot.h"
 #include "CireSkillShop.h"
+#include "CireItems.h"
 #include "CireDeveloperTools.h"
 #include "Engine/World.h"
 #include "InputCoreTypes.h"
@@ -71,5 +72,18 @@ void ACireHUD::DrawEconomyPage(float X, float Y)
         DeveloperMessage = CireLoot::SaveEconomy(&Error) && CireSkillShop::Save(&Error) ? TEXT("Saved LootTables.json economy and SkillShop.json.") : Error;
     if (Button(TEXT("RELOAD FROM DATA"), Rt + 145, T + 34 + Step * 10, 140))
     { CireLoot::Reload(); CireSkillShop::Reload(); DeveloperMessage = TEXT("Reloaded economy and Skill Shop data."); }
+    // Progression mode (replicated game-mode setting; host only, before the first wave).
+    const bool bShopMode = CireSkillShop::IsSkillShopMode(GetWorld());
+    Label(FString::Printf(TEXT("MODE: %s"), *CireSkillShop::ModeName(bShopMode).ToUpper()), Rt, T + 66 + Step * 10, 10, GoldC);
+    for (int32 Index = 0; Index < 2; ++Index)
+    {
+        const bool bWantShop = Index == 0;
+        if (!Button(bWantShop ? TEXT("SKILL SHOP") : TEXT("CLASSIC DRAFT"), Rt + 145 * Index, T + 80 + Step * 10, 140)) continue;
+        FString Why;
+        if (ACireGameMode* Mode = GetWorld()->GetAuthGameMode<ACireGameMode>())
+            DeveloperMessage = CireSkillShop::SetMode(Mode, bWantShop, &Why) ? FString::Printf(TEXT("Progression mode: %s."), *CireSkillShop::ModeName(bWantShop)) : Why;
+        else if (ACireHero* Hero = PlayerOwner ? Cast<ACireHero>(PlayerOwner->GetPawn()) : nullptr; Hero && Hero->Inventory)
+        { Hero->Inventory->ServerSetProgressionMode(bWantShop ? 1 : 0); DeveloperMessage = TEXT("Mode change requested from the host."); }
+    }
 #endif
 }

@@ -14,7 +14,8 @@ class USoundBase;
 class UWorld;
 
 /** Font hierarchy. Auto picks by text content: digits -> Numbers, ALL CAPS -> Heading, >=14 -> Bold, else Body. */
-enum class ECireFont : uint8 { Auto, Body, Heading, Bold, Numbers };
+// Display: Cinzel wide serif caps for ornate titles (Skill Shop / Armory); falls back to Heading.
+enum class ECireFont : uint8 { Auto, Body, Heading, Bold, Numbers, Display };
 
 /** Palette. */
 namespace CireUIColors
@@ -120,8 +121,8 @@ namespace CireUIStyle
 {
     struct FAssets
     {
-        UFont* Fonts[4] = {};        // Body, Heading, Bold, Numbers
-        float Calibration[4] = {1, 1, 1, 1};
+        UFont* Fonts[5] = {};        // Body, Heading, Bold, Numbers, Display (optional)
+        float Calibration[5] = {1, 1, 1, 1, 1};
         UTexture2D *Panel = nullptr, *Border = nullptr, *Button = nullptr, *ButtonUlt = nullptr, *ButtonPassive = nullptr;
         UTexture2D *Glow = nullptr, *Gloss = nullptr, *IconBg = nullptr, *Gem = nullptr, *Header = nullptr;
         bool bFonts = false, bTextures = false;

@@ -1,4 +1,5 @@
 #include "CireShopUI.h"
+#include "CireShopArt.h" // progression-shop: scroll cards and ornate framing
 #include "CireSkillShop.h" // progression-shop: Skill Shop tab
 // progression-shop: League-style shop, bag/belt/teleport bar and purchase/loot feedback.
 #include "CireHUD.h"
@@ -67,6 +68,10 @@ struct FShopState
     TMap<FString, FVector2D> SkillGridPos;
     FVector2D SkillSlotPos[8];
     FVector2D SkillDetailPos = FVector2D::ZeroVector;
+    FString StampId; double StampStart = -10; int32 StampLevel = 1;   // wax-seal purchase moment
+    TMap<FString, float> SkillLift;  // hover lift 0..1 per scroll
+    double LastSkillFrame = 0;
+    int32 LastPhaseSeen = -1;
     int32 LastClearedSeen = -1;
     TArray<FWorldGold> WorldGold;
     double LastClickTime = 0; FName LastClickId;
@@ -205,7 +210,8 @@ void ProcessFeedback(ACireHUD& HUD, ACireHero* Hero)
             const bool bLevel = F.Action == ECireShopAction::SkillLevel;
             const FString SkillId = F.ItemId.ToString();
             State.Flash = {F.ItemId, -1, false, Now(), false};
-            FFly Fly; Fly.Id = F.ItemId; Fly.Start = Now(); Fly.bSkill = true; Fly.Size = 44;
+            State.StampId = F.ItemId.ToString(); State.StampStart = Now(); // wax seal on the scroll
+            FFly Fly; Fly.Id = F.ItemId; Fly.Start = Now() + .32; Fly.bSkill = true; Fly.Size = 44; // after the seal lands
             const FVector2D* From = State.SkillGridPos.Find(SkillId);
             Fly.From = From ? *From : State.SkillDetailPos;
             Fly.ToSkillSlot = FMath::Clamp(F.Slot, 0, 7);
@@ -511,7 +517,12 @@ void DrawLootWindow(ACireHUD& HUD, const FCireUIPainter& Base, FVector2D View, d
 
 FLinearColor SkillKindColor(CI::ShopSkillKind Kind)
 {
-    return Kind == CI::ShopSkillKind::Ultimate ? Gold : Kind == CI::ShopSkillKind::Passive ? Purple : Teal;
+    return Kind == CI::ShopSkillKind::Ultimate ? Purple : Kind == CI::ShopSkillKind::Passive ? Parchment : BrightGold;
+}
+
+CireShopArt::EScroll ScrollOf(CI::ShopSkillKind Kind)
+{
+    return Kind == CI::ShopSkillKind::Ultimate ? CireShopArt::EScroll::Prismatic : Kind == CI::ShopSkillKind::Passive ? CireShopArt::EScroll::Plain : CireShopArt::EScroll::Golden;
 }
 
 void DrawSkillIcon(const FCireUIPainter& P, const FString& Id, float X, float Y, float S, bool bHover, bool bDim, int32 Level, const FString& Key = FString())
@@ -521,7 +532,7 @@ void DrawSkillIcon(const FCireUIPainter& P, const FString& Id, float X, float Y,
     Slot.IconId = Id;
     Slot.IconTexture = CireUIStyle::FindAbilityIcon(Id);
     const CI::ShopSkillKind Kind = CireSkillShop::KindOf(Id);
-    Slot.Tint = SkillKindColor(Kind);
+    Slot.Tint = Kind == CI::ShopSkillKind::Ultimate ? Purple : Kind == CI::ShopSkillKind::Passive ? Silver : Gold;
     Slot.Kind = Kind == CI::ShopSkillKind::Ultimate ? ECireSlotKind::Ultimate : Kind == CI::ShopSkillKind::Passive ? ECireSlotKind::Passive : ECireSlotKind::Normal;
     Slot.KeyLabel = Key;
     CireUIStyle::IconSlot(P, X, Y, S, Slot, Now());
@@ -531,188 +542,346 @@ void DrawSkillIcon(const FCireUIPainter& P, const FString& Id, float X, float Y,
     if (Level > 0)
     {
         const FString Tag = FString::Printf(TEXT("%d"), Level);
-        const float TW = FMath::Max(12.f, P.TextWidth(Tag, S * .24f, ECireFont::Numbers) + 6);
-        P.Rect(X + 1, Y + S - S * .3f, TW, S * .3f, FLinearColor(.05f, .04f, .02f, .92f));
-        P.Line(X + 1, Y + S - S * .3f, X + 1 + TW, Y + S - S * .3f, Gold, 1.f);
-        P.Text(Tag, X + 4, Y + S - S * .3f, S * .24f, BrightGold, ECireFont::Numbers, false, false);
+        const float TW = FMath::Max(12.f, P.TextWidth(Tag, S * .26f, ECireFont::Numbers) + 6);
+        P.Rect(X + 1, Y + S - S * .32f, TW, S * .32f, FLinearColor(.05f, .04f, .02f, .92f));
+        P.Line(X + 1, Y + S - S * .32f, X + 1 + TW, Y + S - S * .32f, Gold, 1.f);
+        P.Text(Tag, X + 4, Y + S - S * .32f, S * .26f, BrightGold, ECireFont::Numbers, false, false);
     }
 }
 
-void RoleChips(const FCireUIPainter& P, const FString& Id, float X, float Y)
+// Icon in a small gold crest ring (the scroll cards' medallion).
+void SkillMedallion(const FCireUIPainter& P, const FString& Id, float CX, float CY, float R, int32 Level, float Time)
 {
-    const Cires::RoleMask Tags = Cires::SkillRoleTags(std::string(TCHAR_TO_UTF8(*Id)));
-    float CX = X;
-    auto Chip = [&](const TCHAR* Text, FLinearColor C)
+    const CI::ShopSkillKind Kind = CireSkillShop::KindOf(Id);
+    CireShopArt::CrestRing(P, CX, CY, R, Kind == CI::ShopSkillKind::Ultimate ? Purple : Kind == CI::ShopSkillKind::Active ? Orange : FLinearColor(0, 0, 0, 0), Time);
+    const float S = R * 1.44f;
+    if (UTexture2D* Icon = CireUIStyle::FindAbilityIcon(Id)) P.Tex(Icon, CX - S * .5f, CY - S * .5f, S, S, FLinearColor::White);
+    else CireShopArt::Diamond(P, CX, CY, R * .5f, SkillKindColor(Kind));
+    if (Level > 0)
     {
-        const float TW = P.TextWidth(Text, 8, ECireFont::Heading) + 10;
-        P.Rect(CX, Y, TW, 13, C * FLinearColor(.28f, .28f, .28f, .9f));
-        P.Line(CX, Y + 13, CX + TW, Y + 13, C, 1.f);
-        P.Text(Text, CX + 5, Y + 1, 8, C * 1.25f, ECireFont::Heading, false, false);
-        CX += TW + 4;
-    };
-    if (Tags & Cires::RoleTank) Chip(TEXT("TANK"), FLinearColor(.45f, .65f, 1.f, 1));
-    if (Tags & Cires::RoleDamage) Chip(TEXT("DPS"), FLinearColor(1.f, .4f, .3f, 1));
-    if (Tags & Cires::RoleSupport) Chip(TEXT("HEAL"), FLinearColor(.4f, 1.f, .5f, 1));
+        const FString Tag = FString::FromInt(Level);
+        const float BR = FMath::Max(6.f, R * .42f);
+        const float BX = CX + R * .78f, BY = CY + R * .72f;
+        P.Disc(BX, BY, BR, FLinearColor(.07f, .05f, .03f, 1), 16);
+        P.Circle(BX, BY, BR, CireShopArt::Filigree, 1.f, 16);
+        const float TS = BR * 1.2f;
+        P.Text(Tag, BX - P.TextWidth(Tag, TS, ECireFont::Numbers) * .5f, BY - TS * .62f, TS, BrightGold, ECireFont::Numbers, false, false);
+    }
 }
 
-// The Skill Shop tab of the shop window.
-void DrawSkillTab(ACireHUD& HUD, ACireHero* Hero, ACireGameState* GameState, const FCireUIPainter& P, float X, float Y, float W, float H,
+// A small rolled scroll with the skill medallion: what flies from the card to the skill bar.
+void DrawMiniScroll(const FCireUIPainter& P, const FString& Id, float X, float Y, float Size)
+{
+    const CireShopArt::EScroll Tier = ScrollOf(CireSkillShop::KindOf(Id));
+    const float H = CireShopArt::NaturalHeight(Tier, Size) * 1.15f;
+    const float Time = static_cast<float>(FMath::Fmod(Now(), 10000.0));
+    const CireShopArt::FRectF Pr = CireShopArt::Scroll(P, Tier, X, Y + (Size - H) * .5f, Size, H, Time, GetTypeHash(Id), 0.f, 1.f);
+    SkillMedallion(P, Id, Pr.X + Pr.W * .5f, Pr.Y + Pr.H * .5f, FMath::Max(6.f, Size * .2f), 0, Time);
+}
+
+// Word-wrapped text centred in a column; returns the lines drawn.
+int32 CentredWrap(const FCireUIPainter& P, const FString& Text, float CX, float Y, float Width, float Size, FLinearColor Color, ECireFont Font, int32 MaxLines, float Gap = 1.5f)
+{
+    TArray<FString> Words, Lines;
+    Text.ParseIntoArray(Words, TEXT(" "));
+    FString Row;
+    for (const FString& Word : Words)
+    {
+        const FString Next = Row.IsEmpty() ? Word : Row + TEXT(" ") + Word;
+        if (!Row.IsEmpty() && P.TextWidth(Next, Size, Font) > Width) { Lines.Add(Row); Row = Word; }
+        else Row = Next;
+    }
+    if (!Row.IsEmpty()) Lines.Add(Row);
+    if (Lines.Num() > MaxLines) { Lines.SetNum(MaxLines); Lines.Last() = P.Fit(Lines.Last() + TEXT(" ..."), Size, Width, Font); }
+    for (int32 I = 0; I < Lines.Num(); ++I)
+    {
+        const FString Line = P.Fit(Lines[I], Size, Width, Font);
+        P.Text(Line, CX - P.TextWidth(Line, Size, Font) * .5f, Y + I * (Size + Gap), Size, Color, Font, false, false);
+    }
+    return Lines.Num();
+}
+
+FString FirstSentence(const FString& Text)
+{
+    int32 At = INDEX_NONE;
+    if (Text.FindChar(TEXT('.'), At) && At > 0) return Text.Left(At + 1);
+    return Text;
+}
+
+// Why a scroll cannot be bought/levelled now (empty when it can), plus a short ribbon label.
+FString SkillBlocker(const ACireHero* Hero, const FString& Id, bool bOwned, int32 Price, FString& Short)
+{
+    FString Why;
+    if (!CireSkillShop::IsOpen(Hero, &Why)) { Short = TEXT("BETWEEN WAVES"); return Why; }
+    if (bOwned)
+    {
+        if (Hero->Gold < Price) { Short = FString::Printf(TEXT("NEED %dg"), Price - Hero->Gold); return FString::Printf(TEXT("Not enough gold: %d more needed."), Price - Hero->Gold); }
+        return FString();
+    }
+    Why = CireSkillShop::BuyBlocker(Hero, Id);
+    if (Why.IsEmpty()) return Why;
+    if (Why.StartsWith(TEXT("Not enough gold"))) Short = FString::Printf(TEXT("NEED %dg"), Price - Hero->Gold);
+    else if (Why.Contains(TEXT("opens at wave")))
+    {
+        const int32 Next = CI::NextSlotWave(CireSkillShop::Get().Rules, CireSkillShop::KindOf(Id), CireSkillShop::CurrentWave(Hero->GetWorld()));
+        Short = FString::Printf(TEXT("SLOT AT WAVE %d"), Next);
+    }
+    else if (Why.Contains(TEXT("slots are filled"))) Short = TEXT("SLOTS FULL");
+    else if (Why.Contains(TEXT("book is full"))) Short = TEXT("BOOK FULL");
+    else Short = TEXT("UNAVAILABLE");
+    return Why;
+}
+
+struct FSkillGrid { int32 Cols = 1; float CardW = 0, CardH = 0, GapX = 10, GapY = 10; };
+
+// Picks the column count that gives the most readable scroll cards in the area.
+FSkillGrid SolveGrid(int32 Count, float AW, float AH, CireShopArt::EScroll Tier)
+{
+    FSkillGrid Best;
+    float BestScore = -1;
+    const float Aspect = CireShopArt::NaturalHeight(Tier, 100.f) / 100.f;
+    for (int32 Cols = 1; Cols <= 8; ++Cols)
+    {
+        const int32 Rows = FMath::DivideAndRoundUp(FMath::Max(1, Count), Cols);
+        const float GapX = 8, GapY = 8;
+        const float W = (AW - GapX * (Cols - 1)) / Cols, H = (AH - GapY * (Rows - 1)) / Rows;
+        if (W <= 20 || H <= 20) continue;
+        const float CardW = FMath::Min3(W, H / (Aspect * .95f), 176.f);
+        const float CardH = FMath::Min(H, CardW * Aspect * 1.3f); // keep the scroll close to its painted shape
+        const float ParchH = CardH - CardW * Aspect * .42f;
+        const float Score = FMath::Min(CardW, ParchH * 1.35f);
+        if (Score > BestScore) { BestScore = Score; Best.Cols = Cols; Best.CardW = CardW; Best.CardH = CardH; Best.GapX = GapX; Best.GapY = GapY; }
+    }
+    return Best;
+}
+
+// The Skill Shop screen (Eric's target image): three columns of scroll cards, one per skill tier.
+void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller, ACireGameState* GameState, const FCireUIPainter& P, FVector2D View,
     FVector2D M, bool bInteractive, bool bRightClick)
 {
-    const auto& D = CireSkillShop::Get();
-    const auto& R = D.Rules;
+    using namespace CireShopArt;
+    const double T = Now();
+    const float Time = static_cast<float>(FMath::Fmod(T, 10000.0));
+    const float Dt = FMath::Clamp(static_cast<float>(T - State.LastSkillFrame), 0.f, .1f);
+    State.LastSkillFrame = T;
+    const auto& R = CireSkillShop::Get().Rules;
     const int32 Wave = CireSkillShop::CurrentWave(HUD.GetWorld());
+    const float W = FMath::Min(View.X - 20.f, 1256.f), H = FMath::Min(View.Y - 16.f, 704.f);
+    const float X = FMath::RoundToFloat((View.X - W) * .5f), Y = FMath::RoundToFloat((View.Y - H) * .5f);
     auto Click = [&](float BX, float BY, float BW, float BH) { if (bInteractive && HUD.HasClick() && In(M, BX, BY, BW, BH)) { HUD.TakeClick(); return true; } return false; };
+    P.Rect(0, 0, View.X, View.Y, FLinearColor(0, 0, 0, .35f));
+    Panel(P, X, Y, W, H, 330);
+    CireShopArt::Title(P, X + W * .5f, Y + 13, TEXT("SKILLS"), TEXT("POWER LIVES WITHIN"), 31);
+
+    // Corners: champion + shop status (left), gold (right), in the target's small spaced caps.
+    FString Why;
+    const bool bOpen = CireSkillShop::IsOpen(Hero, &Why);
+    FString Status;
+    if (!bOpen) Status = TEXT("CLOSED  ·  OPENS BETWEEN WAVES");
+    else if (CireSkillShop::IsBreather(HUD.GetWorld())) Status = FString::Printf(TEXT("BREATHER  ·  NEXT WAVE IN %.0fs"), GameState ? GameState->NextWaveSeconds : 0.f);
+    else Status = GameState && GameState->Phase == 1 ? TEXT("PREP  ·  THE SHOP IS OPEN") : TEXT("RECOVERY  ·  THE SHOP IS OPEN");
+    CompassStar(P, X + 40, Y + 46, 15, Filigree * FLinearColor(1, 1, 1, .8f));
+    Spaced(P, TEXT("YOUR CHAMPION"), X + 66, Y + 28, 7.f, .38f, Filigree * .85f, ECireFont::Display, false, false);
+    P.Text(P.Fit(Hero->HeroName, 12, 230, ECireFont::Bold), X + 66, Y + 39, 12, Parchment, ECireFont::Bold);
+    Spaced(P, Status, X + 66, Y + 57, 7.f, .3f, bOpen ? Teal : FLinearColor(1.f, .45f, .4f, 1), ECireFont::Display, false, false);
+    CompassStar(P, X + W - 40, Y + 46, 15, Filigree * FLinearColor(1, 1, 1, .8f));
+    {
+        const float RX = X + W - 66;
+        const float GW = SpacedWidth(P, TEXT("YOUR GOLD"), 7.f, .38f);
+        Spaced(P, TEXT("YOUR GOLD"), RX - GW, Y + 28, 7.f, .38f, Filigree * .85f, ECireFont::Display, false, false);
+        State.GoldPos = FVector2D(RX - 90, Y + 38);
+        DrawGoldCounter(P, Hero, RX, Y + 37, 15, true);
+        const FString Mob = FString::Printf(TEXT("WAVE %d  ·  A MOB IS WORTH %dg"), FMath::Max(1, Wave), CireLoot::MobValueNow(HUD.GetWorld()));
+        const float MW = SpacedWidth(P, Mob, 7.f, .3f);
+        Spaced(P, Mob, RX - MW, Y + 57, 7.f, .3f, Muted * 1.25f, ECireFont::Display, false, false);
+    }
+    // Close.
+    {
+        const float CX = X + W - 30, CY = Y + 22;
+        const bool bOver = In(M, CX - 11, CY - 11, 22, 22);
+        const FLinearColor C = bOver ? BrightGold : Filigree * .8f;
+        P.Line(CX - 6, CY - 6, CX + 6, CY + 6, C, 1.6f); P.Line(CX - 6, CY + 6, CX + 6, CY - 6, C, 1.6f);
+        if (Click(CX - 11, CY - 11, 22, 22) && Controller) Controller->bShop = false;
+    }
+
+    // Columns: Active (golden) | Passive (plain) | Ultimate (prismatic).
     const TArray<FCireShopSkill> Catalog = CireSkillShop::CatalogFor(Hero);
-    if (State.SelectedSkill.IsEmpty() || !Catalog.ContainsByPredicate([&](const FCireShopSkill& S) { return S.Id == State.SelectedSkill; }))
-        State.SelectedSkill = Catalog.Num() ? Catalog[0].Id : FString();
-    // Left column: class, slots and when the shop is open.
-    const float LX = X + 14, LY = Y + 56;
-    const FString RoleKey = CireItems::RoleKey(Hero);
-    P.Text(TEXT("YOUR CLASS"), LX + 2, LY, 9, Gold, ECireFont::Heading);
-    P.Text(Hero->HeroName, LX + 2, LY + 14, 13, Parchment, ECireFont::Bold);
-    RoleChips(P, Catalog.Num() ? Catalog[0].Id : FString(), LX + 2, LY + 34);
-    P.Wrapped(FString::Printf(TEXT("%d skills in your class list (%s role and hybrids)."), Catalog.Num(), *RoleKey), LX + 2, LY + 52, 150, 9, Muted, 2);
-    P.Text(TEXT("SKILL SLOTS"), LX + 2, LY + 88, 9, Gold, ECireFont::Heading);
     const CI::ShopSkillKind Kinds[] = {CI::ShopSkillKind::Active, CI::ShopSkillKind::Passive, CI::ShopSkillKind::Ultimate};
-    const TCHAR* KindNames[] = {TEXT("Active"), TEXT("Passive"), TEXT("Ultimate")};
+    const TCHAR* Names[] = {TEXT("ACTIVE SKILLS"), TEXT("PASSIVE SKILLS"), TEXT("ULTIMATE SKILLS")};
+    const TCHAR* Keywords[] = {TEXT("STRIKE  ·  CAST  ·  UNLEASH"), TEXT("ENDURE  ·  ADAPT  ·  PERSEVERE"), TEXT("TRANSCEND  ·  DOMINATE  ·  ASCEND")};
+    const TCHAR* Taglines[] = {TEXT("TAKE ACTION. MAKE AN IMPACT."), TEXT("QUIET STRENGTH, LASTING POWER."), TEXT("UNLEASH THE EXTRAORDINARY.")};
+    const float Shares[] = {.54f, .23f, .23f};
+    const float BandH = 60, FootH = 98;
+    const float Left = X + 20, Inner = W - 40;
+    const float ColTop = Y + 80, ColBottom = Y + H - BandH - FootH;
+    float ColX = Left;
+    struct FCard { FString Id; float X, Y, W, H; EScroll Tier; int32 Column; };
+    TArray<FCard> Cards;
     for (int32 K = 0; K < 3; ++K)
     {
-        const float SY = LY + 104 + K * 40;
+        const float ColW = Inner * Shares[K];
+        if (K > 0) Divider(P, ColX - 1, ColTop - 6, Y + H - BandH - 8, Filigree * FLinearColor(1, 1, 1, .55f));
+        TArray<const FCireShopSkill*> Skills;
+        for (const FCireShopSkill& Skill : Catalog) if (Skill.Kind == Kinds[K]) Skills.Add(&Skill);
+        // Slot status above the cards.
         const int32 Owned = CireSkillShop::OwnedOfKind(Hero, Kinds[K]);
         const int32 Open = CI::SlotsAvailable(R, Kinds[K], Wave);
-        const int32 Max = K == 0 ? R.MaxActive : 1;
-        P.Rect(LX, SY, 150, 34, FLinearColor(.03f, .04f, .05f, .8f));
-        P.Text(KindNames[K], LX + 8, SY + 3, 10, SkillKindColor(Kinds[K]), ECireFont::Bold);
-        P.Text(FString::Printf(TEXT("%d / %d"), Owned, Open), LX + 112, SY + 3, 10, Parchment, ECireFont::Numbers);
-        for (int32 I = 0; I < Max; ++I)
-            P.Rect(LX + 8 + I * 22, SY + 22, 18, 5, I < Owned ? SkillKindColor(Kinds[K]) : I < Open ? FLinearColor(.35f, .35f, .3f, 1) : FLinearColor(.12f, .12f, .12f, 1));
+        const int32 Max = K == 0 ? R.MaxActive : K == 1 ? R.MaxPassive : R.MaxUltimate;
         const int32 Next = CI::NextSlotWave(R, Kinds[K], Wave);
-        if (Next > 0 && Open < Max) P.Text(FString::Printf(TEXT("next: wave %d"), Next), LX + 8 + Max * 22, SY + 19, 8, Muted, ECireFont::Body);
+        FString Slots = FString::Printf(TEXT("%d / %d LEARNED"), Owned, Open);
+        if (Open < Max && Next > 0) Slots += FString::Printf(TEXT("  ·  NEXT SLOT AT WAVE %d"), Next);
+        else if (Open >= Max) Slots += TEXT("  ·  ALL SLOTS OPEN");
+        Spaced(P, Slots, ColX + ColW * .5f, ColTop - 2, 7.f, .28f, Owned < Open ? Teal * 1.1f : Filigree * .8f, ECireFont::Display, true, false);
+        const float AreaY = ColTop + 14, AreaH = ColBottom - AreaY - 6, AreaX = ColX + 8, AreaW = ColW - 16;
+        const EScroll Tier = ScrollOf(Kinds[K]);
+        const FSkillGrid G = SolveGrid(Skills.Num(), AreaW, AreaH, Tier);
+        const int32 Rows = FMath::DivideAndRoundUp(FMath::Max(1, Skills.Num()), G.Cols);
+        const float GridW = G.Cols * G.CardW + (G.Cols - 1) * G.GapX, GridH = Rows * G.CardH + (Rows - 1) * G.GapY;
+        const float GX = AreaX + (AreaW - GridW) * .5f, GY = AreaY + FMath::Max(0.f, (AreaH - GridH) * .5f);
+        for (int32 Index = 0; Index < Skills.Num(); ++Index)
+        {
+            const int32 Row = Index / G.Cols, Col = Index % G.Cols;
+            const int32 InRow = FMath::Min(G.Cols, Skills.Num() - Row * G.Cols);
+            const float RowOffset = (G.Cols - InRow) * (G.CardW + G.GapX) * .5f; // centre a short last row
+            Cards.Add({Skills[Index]->Id, GX + RowOffset + Col * (G.CardW + G.GapX), GY + Row * (G.CardH + G.GapY), G.CardW, G.CardH, Tier, K});
+        }
+        if (Skills.Num() == 0) Spaced(P, TEXT("NONE FOR YOUR CLASS"), ColX + ColW * .5f, AreaY + AreaH * .45f, 8.f, .3f, Muted, ECireFont::Display, true, false);
+        // Category footer: crest, name, keywords, tagline.
+        const float CX = ColX + ColW * .5f, FY = ColBottom + 4;
+        Crest(P, Tier, CX, FY + 22, 21, FMath::Min(110.f, ColW * .28f));
+        Spaced(P, Names[K], CX, FY + 48, 15.5f, .12f, FLinearColor(.95f, .83f, .58f, 1), ECireFont::Display, true, true);
+        Spaced(P, Keywords[K], CX, FY + 70, 7.5f, .42f, Parchment * .9f, ECireFont::Display, true, false);
+        Spaced(P, Taglines[K], CX, FY + 84, 6.5f, .42f, Filigree * .75f, ECireFont::Display, true, false);
+        ColX += ColW;
     }
-    P.Text(TEXT("PRICES FOLLOW YOUR GOLD"), LX + 2, LY + 232, 9, Gold, ECireFont::Heading);
-    P.Wrapped(FString::Printf(TEXT("Wave %d: a mob is worth %dg. Skills cost %g / %g / %g mob values (active / passive / ultimate); each owned active adds %d%%. Levels have no cap."),
-        FMath::Max(1, Wave), CireLoot::MobValueNow(HUD.GetWorld()), R.ActivePrice, R.PassivePrice, R.UltimatePrice, FMath::RoundToInt(R.ActiveOwnedGrowth * 100)), LX + 2, LY + 248, 150, 9, Muted, 6);
-    // Centre grid: every skill of the class, by kind.
-    const float GX = X + 176, GY = Y + 56, GW = 470;
-    CireUIStyle::Frame(P, GX - 4, GY - 4, GW + 8, H - 144, Gold * .6f, ECireFrame::Inset);
-    float CY = GY + 4;
-    constexpr float Icon = 46, Step = 58, RowH = 70;
-    const int32 PerRow = FMath::FloorToInt((GW - 8) / Step);
+
+    // Hover lift (eased), hovered card drawn last so it rises above its neighbours.
     FString HoverId;
-    for (int32 K = 0; K < 3; ++K)
+    for (const FCard& Sc : Cards) if (bInteractive && In(M, Sc.X, Sc.Y, Sc.W, Sc.H)) HoverId = Sc.Id;
+    for (const FCard& Sc : Cards)
     {
-        TArray<const FCireShopSkill*> Ids;
-        for (const FCireShopSkill& Skill : Catalog) if (Skill.Kind == Kinds[K]) Ids.Add(&Skill);
-        if (Ids.Num() == 0) continue;
-        const FString Caption = FString::Printf(TEXT("%s SKILLS"), *FString(KindNames[K]).ToUpper());
-        P.Text(Caption, GX + 4, CY, 9, SkillKindColor(Kinds[K]), ECireFont::Heading);
-        P.Line(GX + 8 + P.TextWidth(Caption, 9, ECireFont::Heading), CY + 6, GX + GW - 6, CY + 6, SkillKindColor(Kinds[K]) * FLinearColor(1, 1, 1, .35f), 1);
-        CY += 14;
-        for (int32 Index = 0; Index < Ids.Num(); ++Index)
-        {
-            const FCireShopSkill& Skill = *Ids[Index];
-            const float IX = GX + 8 + (Index % PerRow) * Step + ShakeOffset(FName(*Skill.Id)), IY = CY + (Index / PerRow) * RowH;
-            const bool bOver = bInteractive && In(M, IX, IY, Icon, Icon + 16);
-            const int32 Level = CireSkillShop::Level(Hero, Skill.Id);
-            const bool bOwned = Level > 0;
-            const int32 Price = bOwned ? CireSkillShop::LevelPrice(Hero, Skill.Id) : CireSkillShop::BuyPrice(Hero, Skill.Id);
-            const bool bBlocked = bOwned ? Hero->Gold < Price : !CireSkillShop::BuyBlocker(Hero, Skill.Id).IsEmpty();
-            if (State.SelectedSkill == Skill.Id) SoftGlow(P, IX - 3, IY - 3, Icon + 6, Icon + 6, FLinearColor(1.f, .85f, .4f, .55f));
-            DrawSkillIcon(P, Skill.Id, IX, IY, Icon, bOver, bBlocked && !bOwned, Level);
-            if (ShakeOffset(FName(*Skill.Id)) != 0.f) { P.Rect(IX + 2, IY + 2, Icon - 4, Icon - 4, FLinearColor(.9f, .1f, .08f, .25f)); Border(P, IX - 1, IY - 1, Icon + 2, Icon + 2, FLinearColor(1.f, .25f, .2f, 1), 2.5f); }
-            const FString Label = bOwned ? FString::Printf(TEXT("+%dg"), Price) : FString::Printf(TEXT("%dg"), Price);
-            const FLinearColor LabelColor = bOwned ? (Hero->Gold >= Price ? Teal : FLinearColor(.85f, .32f, .3f, 1)) : (bBlocked ? FLinearColor(.85f, .32f, .3f, 1) : BrightGold);
-            P.Text(Label, IX + (Icon - P.TextWidth(Label, 10, ECireFont::Numbers)) * .5f, IY + Icon + 2, 10, LabelColor, ECireFont::Numbers, true, false);
-            State.SkillGridPos.Add(Skill.Id, FVector2D(IX, IY));
-            if (bOver) HoverId = Skill.Id;
-            if (bOver && HUD.HasClick())
-            {
-                HUD.TakeClick();
-                const double T = FPlatformTime::Seconds();
-                if (State.LastClickId == FName(*Skill.Id) && T - State.LastClickTime < .35)
-                { if (bOwned) Hero->Inventory->ServerLevelSkill(Skill.Id); else Hero->Inventory->ServerBuySkill(Skill.Id); }
-                State.SelectedSkill = Skill.Id; State.LastClickId = FName(*Skill.Id); State.LastClickTime = T;
-                Play(HUD, TEXT("S_ShopTab"), .3f);
-            }
-            if (bOver && bRightClick) { State.SelectedSkill = Skill.Id; if (bOwned) Hero->Inventory->ServerLevelSkill(Skill.Id); else Hero->Inventory->ServerBuySkill(Skill.Id); }
-        }
-        CY += FMath::DivideAndRoundUp(Ids.Num(), PerRow) * RowH + 4;
+        float& Lift = State.SkillLift.FindOrAdd(Sc.Id);
+        Lift = FMath::FInterpTo(Lift, Sc.Id == HoverId ? 1.f : 0.f, Dt > 0 ? Dt : .016f, 14.f);
     }
-    if (!HoverId.IsEmpty()) CireShopUI::Tip(HUD, ACireHero::SkillName(HoverId), ACireHero::SkillDescription(HoverId));
-    // Right: the selected skill, current vs next level, buy / level up.
-    const float DX = X + 660, DY = Y + 52, DWd = 336, DHt = H - 140;
-    CireUIStyle::Frame(P, DX, DY, DWd, DHt, Gold * .6f, ECireFrame::Inset);
-    if (!State.SelectedSkill.IsEmpty())
+    Cards.StableSort([&](const FCard& A, const FCard& B) { return State.SkillLift.FindRef(A.Id) < State.SkillLift.FindRef(B.Id); });
+    const double StampAge = T - State.StampStart;
+    for (const FCard& Sc : Cards)
     {
-        const FString& Id = State.SelectedSkill;
-        const CI::ShopSkillKind Kind = CireSkillShop::KindOf(Id);
+        const FString& Id = Sc.Id;
+        const float Lift = State.SkillLift.FindRef(Id);
         const int32 Level = CireSkillShop::Level(Hero, Id);
-        State.SkillDetailPos = FVector2D(DX + 14, DY + 14);
-        DrawSkillIcon(P, Id, DX + 14 + ShakeOffset(FName(*Id)), DY + 14, 64, false, false, Level);
-        P.Text(ACireHero::SkillName(Id), DX + 90, DY + 16, 15, SkillKindColor(Kind), ECireFont::Bold);
-        P.Text(FString::Printf(TEXT("%s SKILL%s"), *FString(KindNames[static_cast<int32>(Kind)]).ToUpper(), Level > 0 ? *FString::Printf(TEXT("  |  LEVEL %d"), Level) : TEXT("  |  NOT LEARNED")),
-            DX + 90, DY + 38, 9, Muted, ECireFont::Heading);
-        RoleChips(P, Id, DX + 90, DY + 54);
-        float TY = DY + 90;
-        TY += P.Wrapped(ACireHero::SkillDescription(Id), DX + 14, TY, DWd - 28, 10, Parchment, 6) * 14 + 8;
-        // Current vs next level (no cap).
-        const int32 Cur = FMath::Max(1, Level), Next = Level > 0 ? Level + 1 : 1;
-        P.Text(Level > 0 ? FString::Printf(TEXT("LEVEL %d  ->  %d"), Cur, Next) : TEXT("LEARN AT LEVEL 1"), DX + 14, TY, 10, Gold, ECireFont::Heading);
-        TY += 16;
-        struct FStatRow { const TCHAR* Name; double Now, After; bool bLowerBetter; };
-        const FStatRow Rows[] = {
-            {TEXT("Damage / healing"), CI::SkillEffectScale(R, Cur), CI::SkillEffectScale(R, Next), false},
-            {TEXT("Mana / energy cost"), CI::SkillCostScale(R, Cur), CI::SkillCostScale(R, Next), true},
-            {TEXT("Cooldown"), CI::SkillCooldownScale(R, Cur), CI::SkillCooldownScale(R, Next), true}};
-        for (const FStatRow& Row : Rows)
-        {
-            P.Rect(DX + 14, TY, DWd - 28, 18, FLinearColor(0, 0, 0, .25f));
-            P.Text(Row.Name, DX + 20, TY + 2, 10, Muted, ECireFont::Body);
-            const FString NowText = FString::Printf(TEXT("%+.0f%%"), (Row.Now - 1) * 100), AfterText = FString::Printf(TEXT("%+.0f%%"), (Row.After - 1) * 100);
-            P.Text(Level > 0 ? NowText : TEXT("-"), DX + 190, TY + 2, 10, Parchment, ECireFont::Numbers);
-            P.Text(TEXT("->"), DX + 236, TY + 2, 10, Muted, ECireFont::Body);
-            const bool bBetter = Row.bLowerBetter ? Row.After < Row.Now : Row.After > Row.Now;
-            P.Text(AfterText, DX + 262, TY + 2, 10, Row.bLowerBetter && Row.Name[0] == TEXT('M') ? Orange : bBetter ? FLinearColor(.45f, .95f, .5f, 1) : Parchment, ECireFont::Numbers);
-            TY += 20;
-        }
-        P.Wrapped(TEXT("Every level: slightly stronger, slightly more expensive to cast, slightly shorter cooldown. There is no level cap."), DX + 14, TY + 4, DWd - 28, 8, Muted, 2);
-        const float BY = DY + DHt - 44;
         const bool bOwned = Level > 0;
         const int32 Price = bOwned ? CireSkillShop::LevelPrice(Hero, Id) : CireSkillShop::BuyPrice(Hero, Id);
-        FString Blocker = bOwned ? FString() : CireSkillShop::BuyBlocker(Hero, Id);
-        FString OpenWhy;
-        if (bOwned && !CireSkillShop::IsOpen(Hero, &OpenWhy)) Blocker = OpenWhy;
-        else if (bOwned && Hero->Gold < Price) Blocker = FString::Printf(TEXT("Not enough gold: %d more needed."), Price - Hero->Gold);
-        if (!Blocker.IsEmpty()) P.Wrapped(Blocker, DX + 14, BY - 30, DWd - 28, 9, FLinearColor(1.f, .45f, .4f, 1), 2);
-        const bool bOver = In(M, DX + 12, BY, DWd - 24, 34);
-        ShopButton(P, DX + 12 + ShakeOffset(FName(*Id)), BY, DWd - 24, 34, bOwned ? FString::Printf(TEXT("LEVEL UP TO %d  %dg"), Level + 1, Price) : FString::Printf(TEXT("LEARN  %dg"), Price),
-            bOver, false, !Blocker.IsEmpty(), bOwned ? Teal : BrightGold, 13);
-        if (Click(DX + 12, BY, DWd - 24, 34))
+        FString Short;
+        const FString Blocker = SkillBlocker(Hero, Id, bOwned, Price, Short);
+        const bool bBlocked = !Blocker.IsEmpty();
+        const float Grow = 1.f + .1f * Lift;
+        const float CW = Sc.W * Grow, CH = Sc.H * Grow;
+        const float CX = Sc.X - (CW - Sc.W) * .5f + ShakeOffset(FName(*Id)), CY = Sc.Y - (CH - Sc.H) * .5f - 7.f * Lift;
+        const uint32 Seed = GetTypeHash(Id);
+        const FRectF Pr = CireShopArt::Scroll(P, Sc.Tier, CX, CY, CW, CH, Time, Seed, bBlocked ? 1.f : 0.f, Lift);
+        State.SkillGridPos.Add(Id, FVector2D(CX + CW * .5f - 22, CY + CH * .35f - 22));
+        const float Mid = Pr.X + Pr.W * .5f;
+        // Ink scales with the card; passives/ultimates are taller and show more of the description.
+        const float K = FMath::Clamp(Pr.W / 62.f, .85f, 1.5f);
+        const float Ring = FMath::Clamp(Pr.W * .24f, 11.f, 20.f);
+        float TY = Pr.Y + 2;
+        SkillMedallion(P, Id, Mid, TY + Ring, Ring, Level, Time);
+        TY += Ring * 2 + 4;
+        const FLinearColor InkC = CireShopArt::Ink;
+        TY += CentredWrap(P, ACireHero::SkillName(Id), Mid, TY, Pr.W + 6, 8.5f * K, InkC, ECireFont::Bold, 2, 0.f) * (8.5f * K + .5f) + 1;
+        const FString LevelLine = bOwned ? FString::Printf(TEXT("LV %d » %d"), Level, Level + 1) : TEXT("NEW  ·  LV 1");
+        P.Text(LevelLine, Mid - P.TextWidth(LevelLine, 7.f * K, ECireFont::Heading) * .5f, TY, 7.f * K, InkRed, ECireFont::Heading, false, false);
+        TY += 7.f * K + 3;
+        const float Room = Pr.Y + Pr.H - TY;
+        if (bOwned)
         {
-            if (!Blocker.IsEmpty()) ShowError(HUD, FName(*Id), -1, false, Blocker);
-            else if (bOwned) Hero->Inventory->ServerLevelSkill(Id);
-            else Hero->Inventory->ServerBuySkill(Id);
+            const int32 Nx = Level + 1;
+            const FString Effect = FString::Printf(TEXT("+%.0f%% effect"), (CI::SkillEffectScale(R, Nx) - 1) * 100);
+            const FString Cost = FString::Printf(TEXT("cd -%.0f%%  ·  cost +%.0f%%"), (1 - CI::SkillCooldownScale(R, Nx)) * 100, (CI::SkillCostScale(R, Nx) - 1) * 100);
+            P.Text(Effect, Mid - P.TextWidth(Effect, 7.2f * K, ECireFont::Bold) * .5f, TY, 7.2f * K, FLinearColor(.12f, .32f, .1f, 1), ECireFont::Bold, false, false);
+            TY += 7.2f * K + 1.5f;
+            if (Room > 16 * K) P.Text(P.Fit(Cost, 6.6f * K, Pr.W + 4, ECireFont::Body), Mid - FMath::Min(Pr.W + 4, P.TextWidth(Cost, 6.6f * K, ECireFont::Body)) * .5f, TY, 6.6f * K, InkSoft, ECireFont::Body, false, false);
+        }
+        else if (Room > 9 * K)
+        {
+            const int32 Lines = FMath::Clamp(FMath::FloorToInt(Room / (6.8f * K + 1.5f)), 1, 5);
+            CentredWrap(P, FirstSentence(ACireHero::SkillDescription(Id)), Mid, TY, Pr.W + 4, 6.8f * K, InkSoft, ECireFont::Body, Lines, 1.5f);
+        }
+        // Price on the lower roll; the reason ribbon when it cannot be bought.
+        const float RollH = CH - (Pr.Y - CY) - Pr.H;
+        const float PY = Pr.Y + Pr.H + RollH * .5f;
+        const FString PriceText = FString::Printf(TEXT("%s  %dg"), bOwned ? TEXT("LEVEL UP") : TEXT("LEARN"), Price);
+        const float PS = FMath::Clamp(CW * .082f, 7.5f, 10.5f);
+        const float PW = P.TextWidth(PriceText, PS, ECireFont::Numbers);
+        P.Rect(CX + CW * .5f - PW * .5f - 7, PY - PS * .72f, PW + 14, PS * 1.44f, FLinearColor(.06f, .04f, .02f, bBlocked ? .55f : .78f));
+        P.Line(CX + CW * .5f - PW * .5f - 7, PY - PS * .72f, CX + CW * .5f + PW * .5f + 7, PY - PS * .72f, Filigree * .8f, .8f);
+        P.Line(CX + CW * .5f - PW * .5f - 7, PY + PS * .72f, CX + CW * .5f + PW * .5f + 7, PY + PS * .72f, Filigree * .8f, .8f);
+        P.Text(PriceText, CX + CW * .5f - PW * .5f, PY - PS * .62f, PS, bBlocked ? FLinearColor(1.f, .5f, .42f, 1) : BrightGold, ECireFont::Numbers, false, false);
+        if (bBlocked && !Short.IsEmpty())
+        {
+            const float SS = FMath::Clamp(CW * .06f, 6.2f, 8.f);
+            const float SW = SpacedWidth(P, Short, SS, .2f, ECireFont::Heading) + 12;
+            const float RY = Pr.Y + Pr.H - SS * 1.9f;
+            P.Rect(Mid - SW * .5f, RY, SW, SS * 1.7f, FLinearColor(.36f, .05f, .04f, .92f));
+            Diamond(P, Mid - SW * .5f, RY + SS * .85f, SS * .85f, FLinearColor(.36f, .05f, .04f, .92f));
+            Diamond(P, Mid + SW * .5f, RY + SS * .85f, SS * .85f, FLinearColor(.36f, .05f, .04f, .92f));
+            Spaced(P, Short, Mid, RY + SS * .3f, SS, .2f, FLinearColor(1.f, .86f, .78f, 1), ECireFont::Heading, true, false);
+        }
+        if (ShakeOffset(FName(*Id)) != 0.f) Glow(P, CX - CW * .1f, CY - CH * .05f, CW * 1.2f, CH * 1.1f, FLinearColor(.6f, .05f, .03f, 1));
+        FlashOver(P, Pr.X, Pr.Y, FMath::Min(Pr.W, Pr.H), FlashAmount(FName(*Id)) * .6f);
+        // Seal stamp on purchase / level-up.
+        if (State.StampId == Id && StampAge >= 0 && StampAge < 1.5)
+            WaxSeal(P, Mid, Pr.Y + Pr.H * .5f, FMath::Clamp(Pr.W * .3f, 12.f, 26.f), static_cast<float>(StampAge / 1.5), FString::FromInt(FMath::Max(1, Level)));
+        if (Id == HoverId)
+        {
+            const float Nx = bOwned ? Level + 1 : 1;
+            FString Body = ACireHero::SkillDescription(Id);
+            Body += bOwned ? FString::Printf(TEXT("\n\nLevel %d -> %d: effect +%.0f%%, cooldown -%.0f%%, mana/energy cost +%.0f%% (totals). No level cap."), Level, Level + 1,
+                (CI::SkillEffectScale(R, Nx) - 1) * 100, (1 - CI::SkillCooldownScale(R, Nx)) * 100, (CI::SkillCostScale(R, Nx) - 1) * 100)
+                : FString::Printf(TEXT("\n\n%s skill  |  %s"), *FString(Sc.Tier == EScroll::Golden ? TEXT("Active") : Sc.Tier == EScroll::Plain ? TEXT("Passive") : TEXT("Ultimate")), *CireSkillShop::RoleTags(Id));
+            Body += FString::Printf(TEXT("\n%s: %dg"), bOwned ? TEXT("Level up") : TEXT("Learn"), Price);
+            if (bBlocked) Body += TEXT("\n") + Blocker;
+            CireShopUI::Tip(HUD, ACireHero::SkillName(Id), Body);
+            if (Click(Sc.X, Sc.Y, Sc.W, Sc.H) || bRightClick)
+            {
+                if (bBlocked) ShowError(HUD, FName(*Id), -1, false, Blocker);
+                else if (bOwned) Hero->Inventory->ServerLevelSkill(Id);
+                else Hero->Inventory->ServerBuySkill(Id);
+                State.SelectedSkill = Id;
+            }
         }
     }
-    // Bottom strip: your eight skill slots with levels.
-    const float BX = X + 176, BYs = Y + H - 78;
-    CireUIStyle::Frame(P, X + 14, BYs - 4, W - 28, 62, Gold * .6f, ECireFrame::Inset);
-    P.Text(TEXT("YOUR SKILLS"), X + 26, BYs + 4, 9, Gold, ECireFont::Heading);
-    P.Text(FString::Printf(TEXT("%d / %d learned"), Hero->Skills.Num(), Cires::MaxSkills), X + 26, BYs + 20, 9, Parchment, ECireFont::Body);
-    P.Text(TEXT("DOUBLE / RIGHT-CLICK: BUY"), X + 26, BYs + 34, 8, Muted, ECireFont::Heading);
-    for (int32 Index = 0; Index < 8; ++Index)
+
+    // Bottom band: your skill bar (where bought scrolls fly), controls, tabs, motto.
+    const float BandY = Y + H - BandH;
+    Rule(P, X + 190, X + W - 190, BandY + 2, Filigree * FLinearColor(1, 1, 1, .7f), true);
     {
-        const FString Id = Hero->Skills.IsValidIndex(Index) ? Hero->Skills[Index] : FString();
-        const float IX = BX + Index * 56, IY = BYs + 2;
-        const bool bOver = bInteractive && !Id.IsEmpty() && In(M, IX, IY, 46, 46);
-        DrawSkillIcon(P, Id, IX, IY, 46, bOver, false, Id.IsEmpty() ? 0 : CireSkillShop::Level(Hero, Id));
-        State.SkillSlotPos[Index] = FVector2D(IX, IY);
-        if (bOver) { CireShopUI::Tip(HUD, ACireHero::SkillName(Id), FString::Printf(TEXT("Level %d. %s"), CireSkillShop::Level(Hero, Id), *ACireHero::SkillDescription(Id))); if (HUD.HasClick()) { HUD.TakeClick(); State.SelectedSkill = Id; } }
+        const int32 SlotsShown = Cires::MaxSkills;
+        const float S = 30, Step = 36;
+        const float BX = X + W * .5f - (SlotsShown * Step - (Step - S)) * .5f, BY = BandY + 11;
+        for (int32 Index = 0; Index < SlotsShown && Index < 8; ++Index)
+        {
+            const FString Id = Hero->Skills.IsValidIndex(Index) ? Hero->Skills[Index] : FString();
+            const float IX = BX + Index * Step;
+            const bool bOver = bInteractive && !Id.IsEmpty() && In(M, IX, BY, S, S);
+            DrawSkillIcon(P, Id, IX, BY, S, bOver, false, Id.IsEmpty() ? 0 : CireSkillShop::Level(Hero, Id));
+            State.SkillSlotPos[Index] = FVector2D(IX, BY);
+            if (bOver) CireShopUI::Tip(HUD, ACireHero::SkillName(Id), FString::Printf(TEXT("Level %d. %s"), CireSkillShop::Level(Hero, Id), *ACireHero::SkillDescription(Id)));
+        }
+        Spaced(P, TEXT("CHAMPIONS ARE BUILT, NOT BORN."), X + W * .5f, BandY + 41, 6.5f, .45f, Filigree * .7f, ECireFont::Display, true, false);
     }
-    const FString Keys = FString::Printf(TEXT("LEFT-CLICK select   |   DOUBLE-CLICK / RIGHT-CLICK learn or level up   |   %s skills   |   %s items   |   ESC close"),
-        *KeyLabel(HUD, TEXT("ToggleSkillShop")), *KeyLabel(HUD, TEXT("ToggleShop")));
-    P.Text(Keys, X + W - 14 - P.TextWidth(Keys, 8, ECireFont::Heading), Y + H - 14, 8, Muted, ECireFont::Heading);
+    const FString Keys[] = {TEXT("CLICK A SCROLL  ·  LEARN OR LEVEL UP"), TEXT("HOVER  ·  FULL DETAILS"), FString::Printf(TEXT("%s  ·  CLOSE"), *KeyLabel(HUD, TEXT("ToggleSkillShop")))};
+    for (int32 Index = 0; Index < 3; ++Index) Spaced(P, Keys[Index], X + 26, BandY + 12 + Index * 12, 6.5f, .3f, Muted * 1.2f, ECireFont::Display, false, false);
+    const TCHAR* Tabs[] = {TEXT("ITEMS"), TEXT("SKILLS")};
+    const FName TabKeys[] = {TEXT("ToggleShop"), TEXT("ToggleSkillShop")};
+    for (int32 Index = 0; Index < 2; ++Index)
+    {
+        const float TX = X + W - 26 - 2 * 104 + Index * 104, TYb = BandY + 14;
+        const bool bOver = In(M, TX, TYb, 98, 24);
+        ShopButton(P, TX, TYb, 98, 24, FString::Printf(TEXT("%s  [%s]"), Tabs[Index], *KeyLabel(HUD, TabKeys[Index])), bOver, State.Tab == Index, false, Gold, 9);
+        if (Click(TX, TYb, 98, 24)) { State.Tab = Index; Play(HUD, TEXT("S_ShopTab"), .4f); }
+    }
 }
 
 // Hand-drawn glyph for the teleport button: a hearth-portal arch with a rising spark.
@@ -839,15 +1008,26 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
     ProcessFeedback(HUD, Hero);
     ProcessLoot(HUD, Hero);
     ProcessGold(HUD, Hero);
-    // Skill Shop opens after every cleared wave (the breather), when something is buyable.
+    // Skill Shop mode: the shop opens after every cleared wave (the breather) and when prep
+    // begins (the cycle's last clear), on the skills tab, when something is buyable.
     if (GameState && Controller)
     {
-        if (State.LastClearedSeen >= 0 && GameState->CycleWavesDone > State.LastClearedSeen && GameState->Phase == 0)
+        const bool bCleared = State.LastClearedSeen >= 0 && GameState->CycleWavesDone > State.LastClearedSeen && GameState->Phase == 0 &&
+            GameState->CycleWavesDone < GameState->WavesPerCycle;
+        const bool bPrepBegan = State.LastPhaseSeen >= 0 && State.LastPhaseSeen != 1 && GameState->Phase == 1;
+        if ((bCleared || bPrepBegan) && Hero->bDrafted && CireSkillShop::IsSkillShopMode(HUD.GetWorld()))
         {
-            AddToast(TEXT("SKILL SHOP OPEN"), FString::Printf(TEXT("Wave cleared: buy or level skills before the next wave (%s)."), *KeyLabel(HUD, TEXT("ToggleSkillShop"))), TEXT("challenge"), Teal, 6.f);
-            if (CireSkillShop::Get().bAutoOpen && AnySkillAffordable(Hero) && !Controller->bShop) { Controller->bShop = true; State.PendingTab = 1; }
+            AddToast(TEXT("SKILL SHOP OPEN"), FString::Printf(TEXT("%s: learn or level skills (%s)."), bPrepBegan ? TEXT("Prep") : TEXT("Wave cleared"),
+                *KeyLabel(HUD, TEXT("ToggleSkillShop"))), TEXT("challenge"), BrightGold, 6.f);
+            if (CireSkillShop::Get().bAutoOpen && AnySkillAffordable(Hero))
+            {
+                if (!Controller->bShop) { Controller->bShop = true; State.PendingTab = 1; }
+                else State.Tab = 1;
+                UE_LOG(LogTemp, Display, TEXT("CIRE_SKILLSHOP_AUTO_OPEN reason=%s wave=%d"), bPrepBegan ? TEXT("prep") : TEXT("wave_clear"), GameState->Wave);
+            }
         }
         State.LastClearedSeen = GameState->Phase == 0 ? GameState->CycleWavesDone : 0;
+        State.LastPhaseSeen = GameState->Phase;
     }
     // Tell the server when the shop window opens/closes: a visit bounds the undo history.
     const bool bShopOpen = Controller && Controller->bShop;
@@ -1005,6 +1185,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     const bool bRightClick = bInteractive && HUD.GetOwningPlayerController() && HUD.GetOwningPlayerController()->WasInputKeyJustPressed(EKeys::RightMouseButton);
     const bool bCtrl = HUD.GetOwningPlayerController() && (HUD.GetOwningPlayerController()->IsInputKeyDown(EKeys::LeftControl) || HUD.GetOwningPlayerController()->IsInputKeyDown(EKeys::RightControl));
     if (bInteractive && bCtrl && HUD.GetOwningPlayerController()->WasInputKeyJustPressed(EKeys::Z)) Hero->Inventory->ServerUndo();
+    if (State.Tab == 1) { DrawSkillScreen(HUD, Hero, Controller, GameState, P, View, M, bInteractive, bRightClick); return; }
     auto Click = [&](float BX, float BY, float BW, float BH) { if (bInteractive && HUD.HasClick() && In(M, BX, BY, BW, BH)) { HUD.TakeClick(); return true; } return false; };
     CireUIStyle::Frame(P, X, Y, W, H, Gold, ECireFrame::Panel);
 
@@ -1046,7 +1227,6 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
             if (Click(TX, Y + 12, 112, 26)) { State.Tab = Index; Play(HUD, TEXT("S_ShopTab"), .4f); }
         }
     }
-    if (State.Tab == 1) { DrawSkillTab(HUD, Hero, GameState, P, X, Y, W, H, M, bInteractive, bRightClick); return; }
 
     // Left column: categories and stat filters.
     const float LX = X + 14, LY = Y + 56;
@@ -1370,13 +1550,13 @@ void CireShopUI::DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Co
                 const float TK = FMath::Max(0.f, K - Trail * .07f), TE = 1.f - FMath::Pow(1.f - TK, 3.f);
                 FVector2D TP = FMath::Lerp(Fly.From, Fly.To, TE); TP.Y -= FMath::Sin(TK * PI) * 70.f;
                 FCireUIPainter Ghost = Q; Ghost.Alpha *= .28f / Trail;
-                if (Fly.bSkill) DrawSkillIcon(Ghost, Fly.Id.ToString(), TP.X, TP.Y, Size * (1.f - .08f * Trail), false, false, 0);
+                if (Fly.bSkill) DrawMiniScroll(Ghost, Fly.Id.ToString(), TP.X, TP.Y, Size * (1.f - .08f * Trail));
                 else DrawItemIcon(Ghost, Fly.Id, TP.X, TP.Y, Size * (1.f - .08f * Trail), false);
             }
             bSuppressFlash = false;
             SoftGlow(Q, Pos.X, Pos.Y, Size, Size, FLinearColor(1.f, .8f, .35f, .5f));
             bSuppressFlash = true;
-            if (Fly.bSkill) DrawSkillIcon(Q, Fly.Id.ToString(), Pos.X, Pos.Y, Size, false, false, 0);
+            if (Fly.bSkill) DrawMiniScroll(Q, Fly.Id.ToString(), Pos.X, Pos.Y, Size);
             else DrawItemIcon(Q, Fly.Id, Pos.X, Pos.Y, Size, false);
             bSuppressFlash = false;
         }
@@ -1538,6 +1718,8 @@ void CireShopUI::DebugFreezeAfterLastEvent(float Age)
 void CireShopUI::DebugSkillTab(const FString& SkillId) { State.Tab = 1; State.PendingTab = 1; State.SelectedSkill = SkillId; }
 FVector2D CireShopUI::DebugSkillGridPos(const FString& SkillId) { const FVector2D* P = State.SkillGridPos.Find(SkillId); return P ? *P + FVector2D(23, 23) : FVector2D(-1, -1); }
 void CireShopUI::DebugItemTab() { State.Tab = 0; State.PendingTab = 0; }
+void CireShopUI::DebugFreezeAfterStamp(float Age) { if (State.StampStart > 0) State.DebugNow = State.StampStart + Age; }
+int32 CireShopUI::DebugTab() { return State.Tab; }
 void CireShopUI::DebugMouse(FVector2D Logical) { VirtualPointer = Logical; }
 FVector2D CireShopUI::DebugGridPos(FName ItemId) { const FVector2D* P = State.GridPos.Find(ItemId); return P ? *P + FVector2D(21, 21) : FVector2D(-1, -1); }
 void CireShopUI::DebugReset() { const FName Keep = State.Selected; State = FShopState(); State.Selected = Keep; }
