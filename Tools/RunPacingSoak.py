@@ -33,11 +33,13 @@ def parse(text):
     last_clear_t, spawn_t = None, {}
     cycle = dict(waves=0.0, breathers=0.0, prep=0.0, arena=0.0, recovery=0.0, first_delay=0.0)
     t_first_spawn = None
+    survival_since = 0.0
     for e in events:
         if e[0] == 'spawn':
             t = e[1]; spawn_t[e[2]] = t
             if t_first_spawn is None: t_first_spawn = t; cycle['first_delay'] = t
-            elif last_clear_t is not None: breathers.append(t - last_clear_t); cycle['breathers'] += t - last_clear_t
+            elif last_clear_t is not None and last_clear_t >= survival_since: breathers.append(t - last_clear_t); cycle['breathers'] += t - last_clear_t
+            elif last_clear_t is not None: cycle['first_delay'] += t - survival_since  # recovery -> the cycle's first spawn
             last_clear_t = None
         elif e[0] == 'clear':
             waves.append(e[3]); cycle['waves'] += e[3]
@@ -47,7 +49,7 @@ def parse(text):
             name = PHASES.get(old, str(old))
             if old in (1, 2, 4):
                 phase_time.setdefault(name, []).append(waited); cycle[name] += waited
-            if old == 0: last_clear_t = None  # the last clear of a cycle leads into prep, not a breather
+            if new == 0: survival_since = t
             if new == 0 or new == 3:
                 cycle['total'] = sum(v for k, v in cycle.items() if k != 'total'); cycles.append(cycle)
                 cycle = dict(waves=0.0, breathers=0.0, prep=0.0, arena=0.0, recovery=0.0, first_delay=0.0)

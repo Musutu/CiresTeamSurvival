@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "_comment": "Wave composer data (Docs/Waves.md). Edited live with F8 > Waves; counts are per lane.",
-  "breatherSeconds": 15,
+  "breatherSeconds": 12,
   "wavesPerCycle": 5,
-  "cycles": 0,
+  "cycles": 3,
   "cycleScaling": {
-    "healthGrowth": 0.1,
+    "healthGrowth": 0.08,
     "damageGrowth": 0.1,
     "extraUnits": 0
   },
@@ -19,12 +19,12 @@
   "pacing": {
     "_comment": "breatherSeconds is the Skill Shop window after each cleared wave; earlyContinue ends it once every human is Ready. Waves appear spawnAlongRoute of the way down the road (0 = at the rift, per Eric) and walk marchSpeed x faster while not fighting (Docs/Waves.md).",
     "spawnAlongRoute": 0.0,
-    "marchSpeed": 1.25,
+    "marchSpeed": 1.4,
     "firstWaveDelay": 8,
     "earlyContinue": true,
-    "prepSeconds": 30,
+    "prepSeconds": 25,
     "arenaSeconds": 60,
-    "recoverySeconds": 10
+    "recoverySeconds": 8
   },
   "skillProgression": {
     "_comment": "Monster skills: none before firstSkillWave (global wave number); then 1 skill, +1 every unlockEveryWaves up to maxSkills (+ rank bonus); tier II/III every tierEveryWaves (Docs/Races.md).",

@@ -39,15 +39,15 @@ TArray<FCireTechRecipe> BuildRecipes()
     TArray<FCireTechRecipe> Out;
     // ---- Aetheri Artificer ----
     { auto X = R(TEXT("photon_turret"), TEXT("Photon Turret"), K::Turret, nullptr, 240, 25, 70, 150, Violet);
-      X.Range = 950; X.Interval = .8f; X.Damage = 18; X.Scaling = .35f; X.Limit = 2; Out.Add(X); }
+      X.Range = 950; X.Interval = .8f; X.Damage = 12; X.Scaling = .35f; X.Limit = 2; Out.Add(X); } // balance: 18 -> 12
     { auto X = R(TEXT("skitter_swarm"), TEXT("Skitter Swarm"), K::Skitter, TEXT("mine"), 30, 12, 40, 40, Cyan);
-      X.Range = 1400; X.Damage = 70; X.Scaling = .8f; X.Trigger = 110; X.Radius = 200; X.Speed = 520; X.Limit = 6; X.Count = 3; Out.Add(X); }
+      X.Range = 1400; X.Damage = 45; X.Scaling = .6f; X.Trigger = 110; X.Radius = 200; X.Speed = 520; X.Limit = 3; X.Count = 3; Out.Add(X); } // balance: 70+.8 -> 45+.6, 6 -> 3 live
     { auto X = R(TEXT("arc_mine"), TEXT("Arc Mine"), K::Trap, TEXT("mine"), 60, 30, 50, 20, Cyan);
-      X.Damage = 110; X.Scaling = 1.2f; X.Trigger = 150; X.Radius = 240; X.Limit = 3; Out.Add(X); }
+      X.Damage = 70; X.Scaling = .9f; X.Trigger = 150; X.Radius = 240; X.Limit = 2; Out.Add(X); } // balance: 110+1.2 -> 70+.9, 3 -> 2 live
     { auto X = R(TEXT("disruption_pylon"), TEXT("Disruption Pylon"), K::Pylon, TEXT("weaken"), 200, 15, 60, 200, Rose);
       X.Interval = .5f; X.Radius = 450; X.Magnitude = .25f; X.Limit = 1; Out.Add(X); }
     { auto X = R(TEXT("warp_obelisk"), TEXT("Warp Obelisk"), K::Turret, nullptr, 600, 15, 110, 320, White);
-      X.Range = 1300; X.Interval = 1.2f; X.Damage = 60; X.Scaling = 1.f; X.Splash = 200; X.Limit = 1; Out.Add(X); }
+      X.Range = 1300; X.Interval = 1.2f; X.Damage = 45; X.Scaling = .8f; X.Splash = 200; X.Limit = 1; Out.Add(X); } // balance: 60+1 -> 45+.8
     // ---- Witch Slayer (a trap drawn from the same system) ----
     { auto X = R(TEXT("spirit_lantern"), TEXT("Spirit Lantern"), K::Trap, TEXT("silence"), 60, 20, 40, 80, Spirit);
       X.Damage = 60; X.Scaling = 1.f; X.Trigger = 150; X.Radius = 260; X.Magnitude = 2.f; X.Limit = 2; Out.Add(X); }

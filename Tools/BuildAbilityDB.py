@@ -153,15 +153,15 @@ CONSTRUCT = {"category": "construct"}
 PET = {"category": "pet"}  # pets: companion commands (Skill Shop "COMPANION" filter)
 NEW_CHAMPION_SKILLS = {
     # ---- Gunblade (Bounty Hunter): AGI, energy ----
-    "silver_shot": ("Silver Shot", ["dps"], "active", "holy", "aim", 0, 0, 30, 8, 95, "damage", 1300, 28, 0,
+    "silver_shot": ("Silver Shot", ["dps"], "active", "holy", "aim", 0, 0, 20, 8, 150, "damage", 1300, 28, 0,
                     "Aimed silver round: {effect} + 1.6x AGI damage; +60% against undead and void monsters.", [], {}),
-    "hex_mark": ("Hex Mark", ["dps"], "active", "shadow", "enemy", 0, 0, 20, 12, 15, "% damage taken", 1100, 0, 12,
+    "hex_mark": ("Hex Mark", ["dps"], "active", "shadow", "enemy", 0, 0, 20, 12, 20, "% damage taken", 1100, 0, 12,
                  "Put a bounty on an enemy for 12s: it takes {effect}% more damage from every source, and killing it pays bounty gold (25, elites 60, bosses 150).",
-                 [fx("mark", "target", 12, 0.15, label="Damage taken +15%")], {}),
-    "powder_flask": ("Powder Flask", ["dps"], "active", "fire", "aim", 0, 0, 30, 12, 70, "impact damage", 900, 260, 2.5,
+                 [fx("mark", "target", 12, 0.20, label="Damage taken +20%")], {}),
+    "powder_flask": ("Powder Flask", ["dps"], "active", "fire", "aim", 0, 0, 20, 12, 110, "impact damage", 900, 260, 2.5,
                      "Hurl a powder flask: after a short fuse it bursts for {effect} + 1x AGI fire damage in 2.6m and slows by 35% for 2.5s.",
                      [fx("slow", "area", 2.5, 0.35, 260, label="Move -35%")], {}),
-    "blade_flurry": ("Blade Flurry", ["dps"], "active", "physical", "self", 0, 0, 35, 9, 40, "damage per slash", 0, 320, 0,
+    "blade_flurry": ("Blade Flurry", ["dps"], "active", "physical", "self", 0, 0, 25, 9, 60, "damage per slash", 0, 420, 0,
                      "Three quick falchion slashes around you, each {effect} + 0.8x AGI damage.", [], {}),
     "hunters_stride": ("Hunter's Stride", ["dps"], "active", "physical", "aim", 0, 0, 25, 11, 50, "% next shot damage", 550, 0, 4,
                        "Dash up to 5.5m; your next basic attack within 4s deals {effect}% more damage.", [], {}),
@@ -171,10 +171,10 @@ NEW_CHAMPION_SKILLS = {
     "price_on_every_soul": ("Price on Every Soul", ["dps"], "passive", "physical", "passive", 0, 0, 0, 0, 5, "bonus gold per kill", 0, 0, 0,
                             "Your killing blows pay {effect} bonus gold (x3 elites, x8 bosses) and restore 15 energy.", [], {}),
     "collect_the_bounty": ("Collect the Bounty", ["dps"], "ultimate", "physical", "enemy", 0, 0, 60, 70, 180, "damage", 950, 0, 0,
-                           "Execution shot: {effect} + 3x AGI plus 40% of missing health (bonus capped at 400). Non-boss monsters under 20% health die; a kill refunds half the cooldown and pays a marked bounty twice.",
-                           [fx("lethal", "target")], {}),
+                           "Execution shot: {effect} + 3x AGI plus 40% of missing health (bonus capped at 400). Non-boss monsters under 15% health die; a kill refunds half the cooldown and pays a marked bounty twice.",
+                           [fx("lethal", "target", 0, 0.15, label="Execute below 15%")], {}),
     # ---- Witch Slayer: INT, mana ----
-    "arcane_blunderbuss": ("Arcane Blunderbuss", ["dps"], "active", "arcane", "aim", 0, 40, 0, 8, 110, "damage", 550, 550, 0,
+    "arcane_blunderbuss": ("Arcane Blunderbuss", ["dps"], "active", "arcane", "aim", 0, 40, 0, 8, 135, "damage", 550, 550, 0,
                            "A 60-degree cone of arcane shot (5.5m): {effect} + 1.8x INT damage; +40% against casting enemies and interrupts their cast.",
                            [fx("interrupt", "area", 0, 0, 550, lockout=1.5, label="Interrupted")], {}),
     "spirit_lantern": ("Spirit Lantern", ["dps"], "active", "arcane", "aim", 0, 45, 0, 14, 60, "damage", 800, 260, 20,
@@ -189,7 +189,7 @@ NEW_CHAMPION_SKILLS = {
     "witchfinders_mark": ("Witchfinder's Mark", ["dps"], "active", "arcane", "enemy", 0, 25, 0, 10, 12, "% damage taken", 1200, 0, 10,
                           "Mark an enemy for 10s: it is revealed and takes {effect}% more damage, tripled while it casts.",
                           [fx("mark", "target", 10, 0.12, label="Exposed")], {}),
-    "spectral_blade": ("Spectral Blade", ["dps"], "active", "arcane", "enemy", 0, 30, 0, 7, 90, "damage", 600, 0, 0,
+    "spectral_blade": ("Spectral Blade", ["dps"], "active", "arcane", "enemy", 0, 30, 0, 7, 115, "damage", 600, 0, 0,
                        "Lunge up to 6m with the spectral blade: {effect} + 1.4x INT damage.", [], {}),
     "witchbane": ("Witchbane", ["dps"], "passive", "arcane", "passive", 0, 0, 0, 0, 20, "% bonus damage", 0, 0, 0,
                   "You deal {effect}% more damage to enemies that are casting, silenced or marked.", [], {"curve": {"effectCap": 40}}),
@@ -221,11 +221,11 @@ NEW_CHAMPION_SKILLS = {
                      "A whirling storm of glaives surrounds you for 6s, striking enemies within 4.8m for {effect} + 0.5x AGI every 0.5s.", [], {}),
     # ---- Aetheri Artificer: INT, mana; Constructs ----
     "photon_turret": ("Photon Turret", ["dps"], "active", "arcane", "aim", 0, 55, 0, 14, 240, "turret health", 800, 950, 25,
-                      "Warp in a turret for 25s ({effect} health, up to 2) that fires energy bolts at enemies within 9.5m: 18 + 0.35x INT every 0.8s.", [], CONSTRUCT),
-    "skitter_swarm": ("Skitter Swarm", ["dps"], "active", "arcane", "aim", 0, 45, 0, 15, 70, "blast damage", 700, 200, 12,
-                      "Deploy three skitter bombs (up to 6) that race at the nearest enemies and explode for {effect} + 0.8x INT in 2m.", [], CONSTRUCT),
-    "arc_mine": ("Arc Mine", ["dps"], "active", "arcane", "aim", 0, 35, 0, 9, 110, "blast damage", 800, 240, 30,
-                 "Plant a mine (30s, up to 3): the first enemy within 1.5m detonates it for {effect} + 1.2x INT in 2.4m.", [], CONSTRUCT),
+                      "Warp in a turret for 25s ({effect} health, up to 2) that fires energy bolts at enemies within 9.5m: 12 + 0.35x INT every 0.8s.", [], CONSTRUCT),
+    "skitter_swarm": ("Skitter Swarm", ["dps"], "active", "arcane", "aim", 0, 45, 0, 15, 45, "blast damage", 700, 200, 12,
+                      "Deploy three skitter bombs (up to 3 live) that race at the nearest enemies and explode for {effect} + 0.6x INT in 2m.", [], CONSTRUCT),
+    "arc_mine": ("Arc Mine", ["dps"], "active", "arcane", "aim", 0, 35, 0, 9, 70, "blast damage", 800, 240, 30,
+                 "Plant a mine (30s, up to 2): the first enemy within 1.5m detonates it for {effect} + 0.9x INT in 2.4m.", [], CONSTRUCT),
     "disruption_pylon": ("Disruption Pylon", ["dps"], "active", "arcane", "aim", 0, 50, 0, 20, 25, "% damage dealt", 800, 450, 15,
                          "Warp in a pylon (15s): enemies inside its 4.5m field deal {effect}% less damage.",
                          [fx("weaken", "area", 0, 0.25, 450, label="Damage -25%")], dict(CONSTRUCT, curve={"effectCap": 40})),
@@ -236,11 +236,11 @@ NEW_CHAMPION_SKILLS = {
     "aether_engineering": ("Aether Engineering", ["dps"], "passive", "arcane", "passive", 0, 0, 0, 0, 25, "% construct health", 0, 0, 0,
                            "Your constructs have {effect}% more health and last 20% longer.", [], CONSTRUCT),
     "warp_obelisk": ("Warp Obelisk", ["dps"], "ultimate", "arcane", "aim", 0, 130, 0, 80, 600, "obelisk health", 800, 1300, 15,
-                     "Warp in a siege obelisk for 15s ({effect} health): heavy beams at enemies within 13m for 60 + 1x INT, splashing 2m.", [], CONSTRUCT),
+                     "Warp in a siege obelisk for 15s ({effect} health): heavy beams at enemies within 13m for 45 + 0.8x INT, splashing 2m.", [], CONSTRUCT),
     # ---- Aetheri Warden: INT, mana; Constructs; Support with Tank hybrid ----
     "aegis_pylon": ("Aegis Pylon", ["heal", "tank"], "active", "arcane", "aim", 0, 55, 0, 18, 2, "% max health per second", 800, 450, 15,
-                    "Warp in a pylon (15s): allies inside its 4.5m field regenerate {effect}% max health per second and take 15% less damage.",
-                    [fx("shield", "area", 0, 0.15, 450, label="DEF +15%")], dict(CONSTRUCT, curve={"effectCap": 4})),
+                    "Warp in a pylon (15s): allies inside its 4.5m field regenerate {effect}% max health per second and take 10% less damage.",
+                    [fx("shield", "area", 0, 0.10, 450, label="DEF +10%")], dict(CONSTRUCT, curve={"effectCap": 4})),
     "haste_pylon": ("Haste Pylon", ["heal", "tank"], "active", "arcane", "aim", 0, 45, 0, 20, 25, "% move and attack speed", 800, 450, 12,
                     "Warp in a pylon (12s): allies inside its 4.5m field move and attack {effect}% faster.",
                     [fx("haste", "area", 0, 0.25, 450, label="Haste +25%")], dict(CONSTRUCT, curve={"effectCap": 40})),
@@ -259,8 +259,8 @@ NEW_CHAMPION_SKILLS = {
                          "Allies inside your Aegis Pylon or Nexus take a further {effect}% less damage, and your pylons last 20% longer.",
                          [], dict(CONSTRUCT, curve={"effectCap": 20})),
     "aether_nexus": ("Aether Nexus", ["heal", "tank"], "ultimate", "arcane", "aim", 0, 120, 0, 85, 5, "% max health per second", 800, 650, 10,
-                     "Warp in a Nexus for 10s: allies inside its 6.5m field take 40% less damage and regenerate {effect}% max health per second; enemies inside are slowed.",
-                     [fx("guard", "area", 0, 0.4, 650, label="DEF +40%")], dict(CONSTRUCT, curve={"effectCap": 8})),
+                     "Warp in a Nexus for 10s: allies inside its 6.5m field take 25% less damage and regenerate {effect}% max health per second; enemies inside are slowed.",
+                     [fx("guard", "area", 0, 0.25, 650, label="DEF +25%")], dict(CONSTRUCT, curve={"effectCap": 8})),
 }
 
 # ---------------------------------------------------------------------------------------------------
@@ -372,8 +372,8 @@ PASSIVE_SPECIAL = {"headshot": ("headshotTriple", "Headshot's extra hit deals 3x
 # Class traits (Support -20% damage, DPS crit, Tank flat reduction) and the level curve sit on top.
 SUMMON_COEF = {"spectral_pack": 0.4, "oathbound_guardian": 0.5, "spectral_hunt": 0.6, "mechanical_tank": 0.6}
 SUMMON_BASE = {"oathbound_guardian": 22, "mechanical_tank": 30}
-CONSTRUCT_BASE = {"photon_turret": 18, "warp_obelisk": 60}
-CONSTRUCT_COEF = {"photon_turret": 0.35, "skitter_swarm": 0.8, "arc_mine": 1.2, "stasis_snare": 0.3, "warp_obelisk": 1.0,
+CONSTRUCT_BASE = {"photon_turret": 12, "warp_obelisk": 45}  # balance: mirrors CireTechConstructs recipes
+CONSTRUCT_COEF = {"photon_turret": 0.35, "skitter_swarm": 0.6, "arc_mine": 0.9, "stasis_snare": 0.3, "warp_obelisk": 0.8,
                   "spirit_lantern": 1.0}
 SHIELD_COEF = {"summoned_wall": 6.0, "protection_dome": 6.0, "pavise": 5.0}
 SINGLE_TARGET = {"shadow_step", "frost_bind", "piercing_shot", "ember_lance", "silver_shot", "phase_lance", "spectral_blade", "purge",

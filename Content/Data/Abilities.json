@@ -3812,9 +3812,9 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 95,
+    "effect": 150,
     "manaCost": 0,
-    "energyCost": 30,
+    "energyCost": 20,
     "cooldown": 8,
     "castTime": 0,
     "range": 1300,
@@ -3844,7 +3844,7 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 95,
+    "base": 150,
     "primary": 1.6
    },
    "level15": {
@@ -3866,7 +3866,7 @@
    "targeting": "enemy",
    "castTime": 0,
    "base": {
-    "effect": 15,
+    "effect": 20,
     "manaCost": 0,
     "energyCost": 20,
     "cooldown": 12,
@@ -3894,9 +3894,9 @@
      "type": "mark",
      "zone": "target",
      "duration": 12,
-     "magnitude": 0.15,
+     "magnitude": 0.2,
      "radius": 0.0,
-     "label": "Damage taken +15%"
+     "label": "Damage taken +20%"
     }
    ],
    "champions": [
@@ -3929,9 +3929,9 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 70,
+    "effect": 110,
     "manaCost": 0,
-    "energyCost": 30,
+    "energyCost": 20,
     "cooldown": 12,
     "castTime": 0,
     "range": 900,
@@ -3970,7 +3970,7 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 70,
+    "base": 110,
     "primary": 1.54,
     "dotPerSecond": 0.39
    },
@@ -3993,13 +3993,13 @@
    "targeting": "self",
    "castTime": 0,
    "base": {
-    "effect": 40,
+    "effect": 60,
     "manaCost": 0,
-    "energyCost": 35,
+    "energyCost": 25,
     "cooldown": 9,
     "castTime": 0,
     "range": 0,
-    "radius": 320,
+    "radius": 420,
     "duration": 0
    },
    "effectLabel": "damage per slash",
@@ -4025,7 +4025,7 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 40,
+    "base": 60,
     "primary": 1.26
    },
    "level15": {
@@ -4246,14 +4246,15 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Execution shot: {effect} plus 40% of missing health (bonus capped at 400). Non-boss monsters under 20% health die; a kill refunds half the cooldown and pays a marked bounty twice.",
+   "description": "Execution shot: {effect} plus 40% of missing health (bonus capped at 400). Non-boss monsters under 15% health die; a kill refunds half the cooldown and pays a marked bounty twice.",
    "effects": [
     {
      "type": "lethal",
      "zone": "target",
-     "duration": 0.0,
-     "magnitude": 0.0,
-     "radius": 0.0
+     "duration": 0,
+     "magnitude": 0.15,
+     "radius": 0.0,
+     "label": "Execute below 15%"
     }
    ],
    "champions": [
@@ -4307,7 +4308,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 110,
+    "effect": 135,
     "manaCost": 40,
     "energyCost": 0,
     "cooldown": 8,
@@ -4349,7 +4350,7 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 110,
+    "base": 135,
     "primary": 0.84
    },
    "level15": {
@@ -4631,7 +4632,7 @@
    "targeting": "enemy",
    "castTime": 0,
    "base": {
-    "effect": 90,
+    "effect": 115,
     "manaCost": 30,
     "energyCost": 0,
     "cooldown": 7,
@@ -4663,7 +4664,7 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 90,
+    "base": 115,
     "primary": 1.4
    },
    "level15": {
@@ -5415,7 +5416,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Warp in a turret for 25s ({effect} health, up to 2) that fires energy bolts at enemies within 9.5m: 18 every 0.8s.",
+   "description": "Warp in a turret for 25s ({effect} health, up to 2) that fires energy bolts at enemies within 9.5m: 12 every 0.8s.",
    "effects": [],
    "champions": [
     "aetheri_artificer"
@@ -5426,7 +5427,7 @@
    "category": "construct",
    "scaling": {
     "component": "construct",
-    "base": 18,
+    "base": 12,
     "primary": 0.35
    },
    "level15": {
@@ -5448,7 +5449,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 70,
+    "effect": 45,
     "manaCost": 45,
     "energyCost": 0,
     "cooldown": 15,
@@ -5470,7 +5471,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Deploy three skitter bombs (up to 6) that race at the nearest enemies and explode for {effect} in 2m.",
+   "description": "Deploy three skitter bombs (up to 3 live) that race at the nearest enemies and explode for {effect} in 2m.",
    "effects": [],
    "champions": [
     "aetheri_artificer"
@@ -5481,8 +5482,8 @@
    "category": "construct",
    "scaling": {
     "component": "construct",
-    "base": 70,
-    "primary": 0.8
+    "base": 45,
+    "primary": 0.6
    },
    "level15": {
     "bonus": "dot",
@@ -5503,7 +5504,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 110,
+    "effect": 70,
     "manaCost": 35,
     "energyCost": 0,
     "cooldown": 9,
@@ -5525,7 +5526,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Plant a mine (30s, up to 3): the first enemy within 1.5m detonates it for {effect} in 2.4m.",
+   "description": "Plant a mine (30s, up to 2): the first enemy within 1.5m detonates it for {effect} in 2.4m.",
    "effects": [],
    "champions": [
     "aetheri_artificer"
@@ -5536,8 +5537,8 @@
    "category": "construct",
    "scaling": {
     "component": "construct",
-    "base": 110,
-    "primary": 1.2
+    "base": 70,
+    "primary": 0.9
    },
    "level15": {
     "bonus": "stun",
@@ -5807,7 +5808,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Warp in a siege obelisk for 15s ({effect} health): heavy beams at enemies within 13m for 60, splashing 2m.",
+   "description": "Warp in a siege obelisk for 15s ({effect} health): heavy beams at enemies within 13m for 45, splashing 2m.",
    "effects": [],
    "champions": [
     "aetheri_artificer"
@@ -5818,8 +5819,8 @@
    "category": "construct",
    "scaling": {
     "component": "construct",
-    "base": 60,
-    "primary": 1.0
+    "base": 45,
+    "primary": 0.8
    },
    "level15": {
     "bonus": "stun",
@@ -5886,15 +5887,15 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Warp in a pylon (15s): allies inside its 4.5m field regenerate {effect}% max health per second and take 15% less damage.",
+   "description": "Warp in a pylon (15s): allies inside its 4.5m field regenerate {effect}% max health per second and take 10% less damage.",
    "effects": [
     {
      "type": "shield",
      "zone": "area",
      "duration": 0,
-     "magnitude": 0.15,
+     "magnitude": 0.1,
      "radius": 450,
-     "label": "DEF +15%"
+     "label": "DEF +10%"
     }
    ],
    "champions": [
@@ -6327,15 +6328,15 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Warp in a Nexus for 10s: allies inside its 6.5m field take 40% less damage and regenerate {effect}% max health per second; enemies inside are slowed.",
+   "description": "Warp in a Nexus for 10s: allies inside its 6.5m field take 25% less damage and regenerate {effect}% max health per second; enemies inside are slowed.",
    "effects": [
     {
      "type": "guard",
      "zone": "area",
      "duration": 0,
-     "magnitude": 0.4,
+     "magnitude": 0.25,
      "radius": 650,
-     "label": "DEF +40%"
+     "label": "DEF +25%"
     }
    ],
    "champions": [

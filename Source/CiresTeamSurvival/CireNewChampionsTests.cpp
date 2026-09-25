@@ -197,7 +197,7 @@ bool CireTechConstructs::RunSmoke(ACireGameMode* Mode)
         if (Aegis.Num()) Aegis[0]->Tick(.1f);
         T.Check(Aegis.Num() == 1 && Ally->Health > 1000 && CireBuffs::IsActive(Ally, TEXT("aether_aegis")), TEXT("aegis field regenerates allies"));
         const float Guarded = CireSignatureSkills::ModifyOutgoingDamage(M, Ally, 100.f, TEXT("Test"));
-        T.Check(Guarded < 90.f, TEXT("aegis field reduces damage taken"));
+        T.Check(Guarded < 95.f, FString::Printf(TEXT("aegis field reduces damage taken (%.1f of 100)"), Guarded)); // balance: aegis DR is 10% (Ability DB)
         // balance: pylon fields are recognised and overlapping ones share one fill budget (CirePylonField).
         TArray<ACireAreaEffect*> Fields;
         for (TActorIterator<ACireAreaEffect> It(World); It; ++It) if (!It->IsActorBeingDestroyed() && CirePylonField::IsPylonField(*It)) Fields.Add(*It);
