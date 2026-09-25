@@ -324,6 +324,10 @@ BUFF_MODIFIERS = {
 }
 
 
+# Cast-time abilities that may still be cast (and keep casting) while moving.
+CAST_WHILE_MOVING = set()
+
+
 # Dodge-roll synergy skills (CireRollSkills, Docs/Abilities.md "Dodge-roll skills"). Signature-only: purchasable by the
 # champions listed in ROLL_AVAILABLE (agile DPS, rogue-likes, Gunblade, Huntress, bruiser tanks,
 # mobile supports). "section" is the Skill Shop periodic-table section (progression-shop SECTIONS),
@@ -387,6 +391,10 @@ ROLL_SKILLS = {
 # and shields of the roll skills = base effect + ratio x primary stat (CireRollSkills uses the same ratios).
 ROLL_PRIMARY = {"riposte_roll": 1.0, "fleet_recovery": 0.5, "ember_wake": 0.6, "frost_wake": 0.4, "tumble_strike": 1.5,
                 "mine_layer": 1.0, "shield_tumble": 1.0, "venom_tumble": 0.5, "evasive_stance": 0.4}
+
+
+from UltimateUpgrades import ULTIMATE_UPGRADES, validate as validate_upgrades  # items-v2
+
 
 def build():
     tuning = json.loads((ROOT / "Content/Data/CombatTuning.json").read_text(encoding="utf-8"))
@@ -492,6 +500,14 @@ def build():
             abilities[sid]["champions"].append(c["id"])
         for sid in signature:
             abilities[sid]["signatureOf"].append(c["id"])
+    # feat/camera-movement: WoW rule - cast-time spells need you to stand still unless listed here.
+    # Instants (castTime 0) always work while moving. See Docs/Targeting.md "Casting while moving".
+    for sid, a in abilities.items():
+        a["castWhileMoving"] = a["castTime"] <= 0 or sid in CAST_WHILE_MOVING
+    # items-v2: every ultimate carries the extra effect the Sigil of Apotheosis unlocks (Tools/UltimateUpgrades.py).
+    for sid, upgrade in ULTIMATE_UPGRADES.items():
+        if sid in abilities:
+            abilities[sid]["ultimateUpgrade"] = upgrade
     return dict(schemaVersion=1, generator="Tools/BuildAbilityDB.py", schools=SCHOOLS, types=list(TYPES.values()),
                 scalingFormula="effect*(1+g*ln(1+(L-1)/h)) capped at effectCap; cost*(1+(cap-1)(L-1)/(L-1+ramp)); cooldown*(floor+(1-floor)e^-((L-1)/decay)), min minCooldownSeconds",
                 abilities=abilities, champions=champions, buffModifiers=BUFF_MODIFIERS)
@@ -515,6 +531,7 @@ def validate(db):
             if cur["effect"] < prev["effect"] - 1e-9 or cur["manaCost"] < prev["manaCost"] - 1e-9 or cur["cooldown"] > prev["cooldown"] + 1e-9:
                 errors.append(f"{sid}: curve not monotone at {level}"); break
             prev = cur
+    errors += validate_upgrades(db["abilities"])  # items-v2
     for cid, c in db["champions"].items():
         if len(c["purchasableImplemented"]) < 8: errors.append(f"{cid}: fewer than 8 implemented purchasable skills")
     return errors
@@ -557,6 +574,14 @@ def docs(db):
         if a["status"] == "planned":
             extra = ", ".join(e.get("label", e["type"]) for e in a["effects"]) + (" void zones" if "void" in a else "")
             lines.append(f"| {a['name']} (`{sid}`) | {', '.join(a['signatureOf'])} | {'/'.join(a['types'])} | {a['kind']} | {a['school']} | {a['targeting']} | {extra} |")
+    lines += ["", "## Ultimate upgrades (Sigil of Apotheosis)", "",
+              "Carrying the path-defining unique **Sigil of Apotheosis** adds one extra effect to your ultimate (numbers unchanged).",
+              "Source: `Tools/UltimateUpgrades.py`; runtime: `CireUltimateUpgrades.cpp`; items: Docs/Items.md.", "",
+              "| Ultimate | Upgrade | Added effect |", "|---|---|---|"]
+    for sid, a in sorted(db["abilities"].items(), key=lambda kv: (kv[1]["status"], kv[0])):
+        if a.get("ultimateUpgrade"):
+            u = a["ultimateUpgrade"]
+            lines.append(f"| {a['name']} (`{sid}`{', planned' if a['status'] == 'planned' else ''}) | {u['name']} | {u['text']} |")
     lines += ["", "## Champion identity kits", "", "| Champion | Roles | Signature | Implemented purchasable |", "|---|---|---|---|"]
     for cid, c in db["champions"].items():
         lines.append(f"| {c['name']} (`{cid}`) | {'/'.join(c['roles'])} | {', '.join(c['signature'])} | {len(c['purchasableImplemented'])} |")

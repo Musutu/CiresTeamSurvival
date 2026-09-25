@@ -1,8 +1,10 @@
 #include "CireMobility.h"
+#include "CireItems.h" // items-v2: dodge charges, Tailwind
 #include "CireGame.h"
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "CireAbilityDB.h"
 #include "GameFramework/RootMotionSource.h"
 #include "Net/UnrealNetwork.h"
 #include "Dom/JsonObject.h"
@@ -67,18 +69,34 @@ void UCireMobility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(UCireMobility,bWalking);DOREPLIFETIME(UCireMobility,bStrafing);DOREPLIFETIME(UCireMobility,bFaceControl);DOREPLIFETIME(UCireMobility,RollStartedAt);
-    DOREPLIFETIME(UCireMobility,RollDuration);DOREPLIFETIME(UCireMobility,ReadyAt);DOREPLIFETIME(UCireMobility,RollDirection);
+    DOREPLIFETIME(UCireMobility,RollDuration);DOREPLIFETIME(UCireMobility,ReadyAt);DOREPLIFETIME(UCireMobility,RollCharges);DOREPLIFETIME(UCireMobility,MaxRollCharges);DOREPLIFETIME(UCireMobility,RollDirection);
     DOREPLIFETIME(UCireMobility,InvulnerableFrom);DOREPLIFETIME(UCireMobility,InvulnerableUntil);
 }
 double UCireMobility::Now()const{const auto* S=GetWorld()?GetWorld()->GetGameState():nullptr;return S?S->GetServerWorldTimeSeconds():GetWorld()?GetWorld()->GetTimeSeconds():0;}
 bool UCireMobility::IsRolling()const{return Now()>=RollStartedAt&&Now()<RollStartedAt+RollDuration;}
 bool UCireMobility::IsInvulnerable()const{return IsRolling()&&Now()>=InvulnerableFrom&&Now()<InvulnerableUntil;}
 float UCireMobility::RollProgress()const{return IsRolling()?FMath::Clamp(static_cast<float>((Now()-RollStartedAt)/FMath::Max(.01f,RollDuration)),0.f,1.f):-1.f;}
-float UCireMobility::CooldownRemaining()const{return FMath::Max(0.f,static_cast<float>(ReadyAt-Now()));}
+// items-v2: charges (Rules/CireItemRules ChargeState). With one charge this is the old single cooldown.
+int32 UCireMobility::AvailableCharges()const{return Cires::Items::AvailableCharges({RollCharges,ReadyAt},MaxRollCharges,CireMovement::Tuning().RollCooldown,Now());}
+float UCireMobility::NextChargeIn()const{return static_cast<float>(Cires::Items::ChargeCooldown({RollCharges,ReadyAt},MaxRollCharges,CireMovement::Tuning().RollCooldown,Now()));}
+float UCireMobility::CooldownRemaining()const{return AvailableCharges()>0?0.f:NextChargeIn();}
 float UCireMobility::MovementSpeed(bool bSlowed)const{return (bWalking?CireMovement::Tuning().WalkSpeed:CireMovement::Tuning().RunSpeed)*(bSlowed?.65f:1.f);}
 void UCireMobility::ServerSetWalk_Implementation(bool Walking){bWalking=Walking;}
 void UCireMobility::ServerSetStrafe_Implementation(bool Strafing){bStrafing=Strafing;}
 void UCireMobility::ServerSetFaceControl_Implementation(bool Face){bFaceControl=Face;}
+bool CireMovement::IsMovingForCast(const ACireHero& Hero)
+{
+    const auto* Move=Hero.GetCharacterMovement();if(!Move)return false;
+    // Jumping/falling counts (WoW), but a parked actor in the falling state with no velocity does not.
+    if(Move->IsFalling())return Hero.GetVelocity().SizeSquared()>100.f;
+    return Move->GetCurrentAcceleration().SizeSquared2D()>1.f&&Hero.GetVelocity().Size2D()>10.f;
+}
+bool CireMovement::BlocksCast(const ACireHero& Hero,const FString& AbilityId)
+{
+    if(Hero.bBot)return false;
+    const auto* D=CireAbilityDB::Find(AbilityId);
+    return D&&D->CastTime>0&&!D->bCastWhileMoving&&IsMovingForCast(Hero);
+}
 float CireMovement::BodyScaleFor(const ACireHero& Hero)
 {
     return Hero.bDrafted&&Hero.HasChampionRole(TEXT("tank"))?Tuning().TankBodyScale:1.f;
@@ -94,7 +112,9 @@ void CireMovement::ApplyToHero(ACireHero& Hero)
         // RMB mouselook (bStrafing) and WoW keyboard steering (bFaceControl) face the controller yaw;
         // otherwise (bots, idle players, rolls) the body turns toward its velocity.
         const bool bFaceController=(Mobility->bStrafing||Mobility->bFaceControl)&&!Mobility->IsRolling();
-        Move->bOrientRotationToMovement=!bFaceController&&!Mobility->IsRolling();
+        // Player-controlled heroes never auto-turn toward their velocity: braking after a strafe or a
+        // knockback must not swing the body (and the next W direction) sideways. Bots/AI still do.
+        Move->bOrientRotationToMovement=!bFaceController&&!Mobility->IsRolling()&&!Hero.IsPlayerControlled();
         Hero.bUseControllerRotationYaw=bFaceController;
     }
     // Tanks are physically larger: actor scale keeps mesh, capsule, selection ring and camera pivot consistent.
@@ -115,12 +135,15 @@ bool UCireMobility::StartRoll(FVector Direction)
     if(!H||!H->HasAuthority()||!Mode||H->bDead||!H->bDrafted||Mode->Clock.Phase()==Cires::MatchPhase::Finished||
         Direction.ContainsNaN()||!H->GetCharacterMovement()->IsMovingOnGround())return false;
     const auto V=CireMovement::Tuning();
-    if(IsRolling()||CooldownRemaining()>0){H->Notice=TEXT("Dodge is recovering.");return false;}
+    MaxRollCharges=CireItems::MaxDodgeCharges(H); // items-v2: Galeborn Twinstep
+    if(IsRolling()||AvailableCharges()<=0){H->Notice=TEXT("Dodge is recovering.");return false;}
     if(H->Energy<V.RollEnergy){H->Notice=TEXT("Not enough energy to dodge.");return false;}
     Direction=Direction.GetSafeNormal2D();if(Direction.IsNearlyZero())Direction=H->GetActorForwardVector();
     H->Energy-=V.RollEnergy;RollStartedAt=Now();RollDuration=V.RollDuration;RollDirection=Direction;
-    ReadyAt=RollStartedAt+V.RollCooldown;InvulnerableFrom=RollStartedAt+V.InvulnerableStart;InvulnerableUntil=RollStartedAt+V.InvulnerableEnd;
+    {Cires::Items::ChargeState Charge{RollCharges,ReadyAt};Cires::Items::SpendCharge(Charge,MaxRollCharges,V.RollCooldown,RollStartedAt);RollCharges=Charge.Charges;ReadyAt=static_cast<float>(Charge.ReadyAt);}
+    InvulnerableFrom=RollStartedAt+V.InvulnerableStart;InvulnerableUntil=RollStartedAt+V.InvulnerableEnd;
     H->PendingAttackTarget.Reset();H->GlobalCooldown=FMath::Max(H->GlobalCooldown,V.RollDuration);H->Notice=TEXT("Dodge roll");
+    CireItems::OnDodgeRoll(H); // items-v2: Windrunner Boots (Tailwind)
     CireRollSkills::OnRoll(H,Direction); // champion-draft: roll skills fire per roll (and per roll charge)
     MulticastRoll(RollStartedAt,RollDuration,RollDirection,V.RollSpeed);H->ForceNetUpdate();return true;
 }

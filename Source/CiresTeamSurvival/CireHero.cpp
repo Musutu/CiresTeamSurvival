@@ -429,7 +429,7 @@ void ACireHero::Cast(int32 Slot)
     else if (Id == TEXT("executioners_verdict")) { EnergyCost = 60; Cooldown = 60; Range = 1500; bNeedsEnemy = true; }
     else if (Id == TEXT("renewal")) { ManaCost = 140; Cooldown = 90; }
     else return;
-    if (!CireSkillShop::CanPayCast(this, Id, ManaCost, EnergyCost)) { Notice = TEXT("Not enough mana or energy."); return; } // progression-shop: Skill Shop level (Ability DB curve)
+    if (!CireSkillShop::CanPayCast(this, Id, ManaCost, EnergyCost)) { Notice = CireSkillShop::CostFailText(); return; } // progression-shop: Skill Shop level (Ability DB curve)
     if (bNeedsEnemy && (!IsHostile(Target) || !InRange(Target, Range) || !ClearSight(this, Target)))
     { Notice = TEXT("Select a hostile target in range and line of sight."); return; }
     ACireHero* Ally = ::Cast<ACireHero>(Target);
@@ -704,7 +704,7 @@ void ACireHero::Tick(float DeltaSeconds)
     GlobalCooldown = FMath::Max(0.f, GlobalCooldown - DeltaSeconds);
     for (float& Cooldown : Cooldowns) Cooldown = FMath::Max(0.f, Cooldown - DeltaSeconds);
     const float Regen = HasSkill(TEXT("deep_reserves")) ? 1.5f : 1.f;
-    Mana = FMath::Min(MaxMana, Mana + DeltaSeconds * MaxMana * 0.015f * Regen);
+    Mana = FMath::Min(MaxMana, Mana + DeltaSeconds * CireItems::BaseManaRegen(this, Regen)); // items-v2: flat + % regen (Items.json manaEconomy)
     Energy = FMath::Min(100.f, Energy + DeltaSeconds * 9.f * Regen);
     CireItems::ApplyRegen(this, DeltaSeconds); // progression-shop: item health/mana/energy regeneration
     if ((Mode->Clock.Phase() == Cires::MatchPhase::Intermission || Mode->Clock.Phase() == Cires::MatchPhase::Recovery) &&

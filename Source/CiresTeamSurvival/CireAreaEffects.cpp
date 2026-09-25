@@ -1,4 +1,5 @@
 #include "CireAreaEffects.h"
+#include "CireItems.h" // items-v2
 #include "CireDeveloperTools.h"
 #include "CireGame.h"
 #include "CireCombatEvents.h"
@@ -208,6 +209,7 @@ ACireAreaEffect::ACireAreaEffect()
 ACireAreaEffect* ACireAreaEffect::Spawn(AActor* Source, const FCireAreaSpec& InputSpec, FVector GroundCenter, FRotator Heading)
 {
     FCireAreaSpec Spec=InputSpec;if(Source)CireDeveloperTools::AdjustArea(Source->GetWorld(),Spec);
+    if(Source){const float Wide=CireItems::AreaRadiusMultiplier(Source);Spec.Radius=FMath::Min(Spec.Radius*Wide,static_cast<float>(MaxDimension));Spec.Length=FMath::Min(Spec.Length*Wide,static_cast<float>(MaxDimension));Spec.Width=FMath::Min(Spec.Width*Wide,static_cast<float>(MaxDimension));} // items-v2: Heart of the Cataclysm
     if (!CireCombat::IsAlive(Source) || !Source->HasAuthority() ||
         !ValidateSpec(Spec) || GroundCenter.ContainsNaN() || Heading.ContainsNaN()) return nullptr;
     UWorld* World = Source->GetWorld();

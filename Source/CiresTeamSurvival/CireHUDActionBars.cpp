@@ -13,6 +13,8 @@
 #include "CireNPCState.h"
 #include "CireUIStyle.h"
 #include "CireItems.h"
+#include "CireAbilityDB.h" // items-v2
+#include "CireSkillShop.h" // items-v2
 #include "CireShopUI.h"
 #include "Engine/Canvas.h"
 #include "Engine/World.h"
@@ -142,7 +144,8 @@ bool ACireHUD::DrawActionButton(ACireHero* Hero, ACireController* Controller, in
         if (bLearned && Slot.Kind != ECireSlotKind::Passive)
         {
             const FFacts F = AbilityFacts(Id);
-            Slot.bNoResource = Hero->Mana < F.Mana || Hero->Energy < F.Energy;
+            float NeedMana = F.Mana, NeedEnergy = F.Energy; CireSkillShop::ScaledCost(Hero, Id, F.Mana, F.Energy, NeedMana, NeedEnergy); // items-v2
+            Slot.bNoResource = Hero->Mana < NeedMana || Hero->Energy < NeedEnergy;
             const auto D = CireTargeting::Describe(Id);
             if (bOver) if (auto* PC = Cast<ACireController>(PlayerOwner)) CireTargeting::HoverPreview(PC, Id); // ability-vfx: void rift preview
             if (D.bNeedsHostile && IsValid(Hero->Target) && D.Range > 0 && Hero->IsHostile(Hero->Target))
@@ -345,7 +348,8 @@ void ACireHUD::DrawAbilityTooltip(const FString& Id, FVector2D Cursor)
     const FFacts F = AbilityFacts(Id);
     const auto D = CireTargeting::Describe(Id);
     const FLinearColor Tint = SchoolTint(Id, Name);
-    FString CostText = F.Mana > 0 ? FString::Printf(TEXT("%.0f Mana"), F.Mana) : F.Energy > 0 ? FString::Printf(TEXT("%.0f Energy"), F.Energy) : FString(TEXT("No cost"));
+    float NeedMana = F.Mana, NeedEnergy = F.Energy; if (Hero) CireSkillShop::ScaledCost(Hero, Id, F.Mana, F.Energy, NeedMana, NeedEnergy); // items-v2: level-scaled mana
+    FString CostText = NeedMana > 0 ? FString::Printf(TEXT("%.0f Mana"), NeedMana) : NeedEnergy > 0 ? FString::Printf(TEXT("%.0f Energy"), NeedEnergy) : FString(TEXT("No cost"));
     const FString RangeText = D.Range > 0 ? FString::Printf(TEXT("%.1f m range"), D.Range / 100) : D.Kind == ECireTargetKind::Self ? FString(TEXT("Self")) : FString(TEXT("Melee"));
     const FString CastText = ACireHero::IsPassive(Id) ? FString(TEXT("Always active")) : F.Windup > .05f ? FString::Printf(TEXT("%.1f sec telegraph"), F.Windup) : FString(TEXT("Instant"));
     const float CDR = Hero ? Hero->CDR : 0.f;
@@ -359,7 +363,10 @@ void ACireHUD::DrawAbilityTooltip(const FString& Id, FVector2D Cursor)
     // Body wrap.
     const float BS = 10.5f * S;
     TArray<FString> Lines; {
-        TArray<FString> Words; ACireHero::SkillDescription(Id).ParseIntoArrayWS(Words); FString Row;
+        FString Desc = ACireHero::SkillDescription(Id);
+        if (const FCireAbilityDef* Def = CireAbilityDB::Find(Id); Def && Def->Upgrade.bValid) // items-v2: what the Sigil of Apotheosis adds
+            Desc += FString::Printf(TEXT(" -- APOTHEOSIS (%s%s): %s"), *Def->Upgrade.Name, Hero && CireItems::TotalsOf(Hero).UltimateUpgrade ? TEXT(", active") : TEXT(", with Sigil of Apotheosis"), *Def->Upgrade.Text);
+        TArray<FString> Words; Desc.ParseIntoArrayWS(Words); FString Row;
         for (const FString& Word : Words) { const FString Next = Row.IsEmpty() ? Word : Row + TEXT(" ") + Word; if (!Row.IsEmpty() && P.TextWidth(Next, BS, ECireFont::Body) > W - 2 * Pad) { Lines.Add(Row); Row = Word; } else Row = Next; }
         if (!Row.IsEmpty()) Lines.Add(Row); }
     const float TS = 15 * S, RS = 10.5f * S;
@@ -377,7 +384,7 @@ void ACireHUD::DrawAbilityTooltip(const FString& Id, FVector2D Cursor)
     P.Text(Name, Box.X + Pad, Y, TS, FLinearColor::White, ECireFont::Bold);
     P.Text(Kind, Box.X + W - Pad - P.TextWidth(Kind, 10 * S, ECireFont::Heading), Y + 3 * S, 10 * S, ACireHero::IsUltimate(Id) ? BrightGold : Muted, ECireFont::Heading);
     Y += TS + 6 * S;
-    const bool bShort = Hero && ((F.Mana > 0 && Hero->Mana < F.Mana) || (F.Energy > 0 && Hero->Energy < F.Energy));
+    const bool bShort = Hero && ((NeedMana > 0 && Hero->Mana < NeedMana) || (NeedEnergy > 0 && Hero->Energy < NeedEnergy));
     TwoCol(CostText, RangeText, bShort ? FLinearColor(1.f, .35f, .3f, 1) : FLinearColor::White, FLinearColor::White, RS);
     TwoCol(CastText, CooldownText, FLinearColor::White, FLinearColor::White, RS);
     P.Text(TagLine, Box.X + Pad, Y, 9 * S, Tint, ECireFont::Heading); Y += RS + 6 * S;

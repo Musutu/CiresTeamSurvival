@@ -441,6 +441,55 @@ def icons():
                L(lambda x, y: seg(x, y, -.66, .66, .5, -.5, .03), "silver"),
                L(lambda x, y: circle(x, y, -.58, .58, .07), "sapphire", False, True)]
     I["ravenfeather_mantle"] = ("spell", (.4, .6, 1.0), feather)
+    # ---- items-v2 placeholders (procedural until the 2D art pass paints them)
+    I["aether_conduit"] = ("spell", (.35, .7, 1.0), [
+        L(lambda x, y: seg(x, y, -.55, .6, .45, -.5, .07), "wood"),
+        L(lambda x, y: ring(x, y, .45, -.5, .2, .05), "silver"),
+        L(lambda x, y: circle(x, y, .45, -.5, .12), "sapphire", False, True),
+        L(lambda x, y: union(*[circle(x, y, -.2 + k * .22, .15 - k * .22, .045) for k in range(3)]), "blueflame", False, True)])
+    I["oathkeeper_charm"] = ("support", (1.0, .8, .4), [
+        L(lambda x, y: arc(x, y, 0, -.35, .3, .04, math.pi, 2 * math.pi), "gold"),
+        L(lambda x, y: union(poly(x, y, [(-.32, -.3), (.32, -.3), (.08, .05), (.32, .45), (-.32, .45), (-.08, .05)])), "gold"),
+        L(lambda x, y: union(poly(x, y, [(-.22, -.22), (.22, -.22), (.03, .02)]), poly(x, y, [(-.2, .38), (.2, .38), (0, .18)])), "potion_amber", False, True),
+        L(lambda x, y: circle(x, y, 0, .6, .09), "ruby")])
+    I["windrunner_boots"] = ("speed", (.5, 1.0, .8), boots("cloth_grey", "silver", wings=True) + [
+        L(lambda x, y: union(seg(x, y, -.8, -.1, -.35, -.1, .025), seg(x, y, -.85, .12, -.4, .12, .025), seg(x, y, -.78, .34, -.42, .34, .025)), "white", False, True)])
+    I["twinstep_treads"] = ("speed", (.4, .9, 1.0), [
+        L(lambda x, y: box(x, y, -.22, -.1, .16, .34, .15, .05), "darkleather"), L(lambda x, y: box(x, y, -.1, .3, .32, .12, .15, .05), "darkleather"),
+        L(lambda x, y: box(x, y, .26, -.2, .16, .34, .15, .05), "leather"), L(lambda x, y: box(x, y, .38, .2, .32, .12, .15, .05), "leather"),
+        L(lambda x, y: union(ring(x, y, -.2, -.55, .12, .03), ring(x, y, .26, -.65, .12, .03)), "sapphire", False, True),
+        L(lambda x, y: union(seg(x, y, -.75, .6, .75, .6, .02)), "blueflame", False, True)])
+    I["moonwell_codex"] = ("spell", (.45, .65, 1.0), book("cloth_purple", "sapphire") + [
+        L(lambda x, y: sub(circle(x, y, 0, -.02, .2), circle(x, y, .08, -.07, .17)), "silver", False, True)])
+    I["lifebinders_reliquary"] = ("support", (.5, 1.0, .6), [
+        L(lambda x, y: box(x, y, 0, .15, .42, .42, 0, .06), "gold"),
+        L(lambda x, y: box(x, y, 0, .15, .32, .32, 0, .04), "glass"),
+        L(lambda x, y: union(box(x, y, 0, .15, .06, .22), box(x, y, 0, .08, .2, .06)), "emerald", False, True),
+        L(lambda x, y: poly(x, y, [(-.46, -.27), (.46, -.27), (0, -.62)]), "gold")])
+    I["artificers_heartforge"] = ("spell", (1.0, .6, .25), [
+        L(lambda x, y: sub(circle(x, y, 0, 0, .62), circle(x, y, 0, 0, .44)), "bronze"),
+        L(lambda x, y: union(*[box(x, y, .66 * math.cos(k * math.pi / 4), .66 * math.sin(k * math.pi / 4), .08, .08, k * math.pi / 4) for k in range(8)]), "bronze"),
+        L(lambda x, y: union(circle(x, y, -.1, -.05, .2), circle(x, y, .1, -.05, .2), poly(x, y, [(-.28, .02), (.28, .02), (0, .32)])), "ruby", False, True),
+        L(lambda x, y: ring(x, y, 0, 0, .44, .03), "flame", False, True)])
+    I["soulbinders_crook"] = ("spell", (.5, 1.0, .75), [
+        L(lambda x, y: union(seg(x, y, .1, .85, .1, -.3, .05), arc(x, y, -.15, -.3, .25, .05, math.pi, 2 * math.pi)), "bone"),
+        L(lambda x, y: circle(x, y, -.4, -.3, .1), "emerald", False, True),
+        L(lambda x, y: union(circle(x, y, .45, -.1, .08), circle(x, y, .55, .2, .06), circle(x, y, .35, .35, .05)), "blueflame", False, True)])
+    I["heart_of_cataclysm"] = ("attack", (1.0, .45, .15), [
+        L(lambda x, y: union(circle(x, y, -.16, -.08, .3), circle(x, y, .16, -.08, .3), poly(x, y, [(-.44, .02), (.44, .02), (0, .52)])), "obsidian"),
+        L(lambda x, y: union(seg(x, y, -.2, -.2, .05, .1, .03), seg(x, y, .05, .1, -.05, .3, .03), seg(x, y, .15, -.25, .05, .1, .03)), "flame", False, True),
+        L(lambda x, y: ring(x, y, 0, .05, .72, .03), "flame", False, True)])
+    I["shackles_of_the_pale_king"] = ("defense", (.7, .8, 1.0), [
+        L(lambda x, y: union(ring(x, y, -.3, .1, .26, .08), ring(x, y, .3, .1, .26, .08)), "darksteel"),
+        L(lambda x, y: union(*[ring(x, y, 0, -.18 - k * .2, .09, .035) for k in range(3)]), "silver"),
+        L(lambda x, y: poly(x, y, [(-.3, -.7), (-.18, -.86), (0, -.72), (.18, -.86), (.3, -.7)]), "white", False, True)])
+    I["sigil_of_apotheosis"] = ("tome", (1.0, .8, .35), [
+        L(lambda x, y: ring(x, y, 0, 0, .6, .06), "gold"),
+        L(lambda x, y: poly(x, y, [(0, -.52), (.14, -.14), (.52, 0), (.14, .14), (0, .52), (-.14, .14), (-.52, 0), (-.14, -.14)]), "gold"),
+        L(lambda x, y: circle(x, y, 0, 0, .16), "topaz", False, True),
+        L(lambda x, y: union(*[circle(x, y, .6 * math.cos(k * math.pi / 3 + .5), .6 * math.sin(k * math.pi / 3 + .5), .05) for k in range(6)]), "amethyst", False, True)])
+    I["stormhowl_ravager"] = ("attack", (.55, .8, 1.0), sword(-.785, "darksteel", "silver", "darkleather", "sapphire", broad=1.35, length=1.05, curve=.12) + [
+        L(lambda x, y: union(seg(x, y, .2, -.55, .45, -.3, .025), seg(x, y, .45, -.3, .3, -.2, .025), seg(x, y, .3, -.2, .6, .05, .025)), "blueflame", False, True)])
     return I
 
 

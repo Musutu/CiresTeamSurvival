@@ -108,7 +108,7 @@ bool CireSkillCasting::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     if (!CostFor(Id, Cost)) return Fail(TEXT("This combat recipe is unavailable."));
     if (!FMath::IsFinite(Cost.Mana) || Cost.Mana < 0 || !FMath::IsFinite(Cost.Energy) || Cost.Energy < 0 ||
         !FMath::IsFinite(Cost.Cooldown) || Cost.Cooldown < 0 || !FMath::IsFinite(Cost.Range) || Cost.Range < 0) return Fail(TEXT("Combat recipe has invalid costs or range."));
-    if (!CireSkillShop::CanPayCast(Hero, Id, Cost.Mana, Cost.Energy)) return Fail(TEXT("Not enough mana or energy.")); // progression-shop: Skill Shop level (Ability DB curve)
+    if (!CireSkillShop::CanPayCast(Hero, Id, Cost.Mana, Cost.Energy)) return Fail(*CireSkillShop::CostFailText()); // progression-shop: Skill Shop level (Ability DB curve)
     const bool bTargetHostile = CireCombat::AreHostile(Hero, Hero->Target);
     FVector Aim = Hero->bHasCastAim ? Hero->CastAimPoint : bTargetHostile ? Hero->Target->GetActorLocation() :
         Hero->GetActorLocation() + Hero->GetActorForwardVector().GetSafeNormal2D() * FMath::Min(500.f, Cost.Range);

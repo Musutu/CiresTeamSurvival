@@ -30,6 +30,26 @@ struct CIRESTEAMSURVIVAL_API FCireVoidZone
     float SelfHealMaxHealthFraction = 0;        // caster mends this fraction of max health
 };
 
+/** items-v2: one extra effect of an ultimate upgrade (Tools/UltimateUpgrades.py documents the primitives). */
+struct CIRESTEAMSURVIVAL_API FCireUpgradeEffect
+{
+    FName Type;              // partyBuff, barrier, heal, restore, cleanse, stun, silence, slow, armorBreak, damage, cooldownRefund
+    float Radius = 0;        // cm; 0 = only the caster (ally effects)
+    float Duration = 0, Amount = 0, Scaling = 0, HealthScaling = 0, PrimaryScaling = 0, Magnitude = 0;
+    TMap<FString, float> Stats;  // partyBuff: item stat keys
+    int8 CenterOverride = 0;     // 0 = upgrade center, 1 = self, 2 = target
+};
+
+/** items-v2: what the Sigil of Apotheosis adds to this ultimate. */
+struct CIRESTEAMSURVIVAL_API FCireUltimateUpgrade
+{
+    bool bValid = false;
+    FString Name, Text;
+    bool bAtTarget = false;  // "center": "target" (aimed point or hostile target)
+    float Delay = 0;
+    TArray<FCireUpgradeEffect> Effects;
+};
+
 struct CIRESTEAMSURVIVAL_API FCireAbilityDef
 {
     FString Id, Name, Icon, Kind, School, Targeting, Status, Description, EffectLabel;
@@ -38,12 +58,15 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     TArray<FString> EffectTags;          // Skill Shop card tags ("Roll", "Slow", "Heal", ...)
     TArray<FString> Categories;          // Skill Shop groups, primary first ("Passives", "Offensive", "Crowd Control", ...)
     float CastTime = 0, Range = 0, Radius = 0, Duration = 0;
+    /** feat/camera-movement: cast-time spell may start/continue while moving (WoW default: false). Instants always true. */
+    bool bCastWhileMoving = true;
     Cires::Abilities::Base Base;
     Cires::Abilities::Curve Curve;
     TArray<FCireAbilityEffect> Effects;
     FCireVoidZone Void;
     TArray<FString> Champions;           // champions that can learn it
     TArray<FString> SignatureOf;         // champions whose identity kit lists it
+    FCireUltimateUpgrade Upgrade;        // items-v2: ultimates only ("ultimateUpgrade")
     bool IsImplemented() const { return Status == TEXT("implemented"); }
     bool IsPassive() const { return Kind == TEXT("passive"); }
     bool IsUltimate() const { return Kind == TEXT("ultimate"); }

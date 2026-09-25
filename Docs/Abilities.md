@@ -191,6 +191,41 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 | Lantern Soul (`whisp_lantern_soul`) | whisp | HEAL | passive | arcane | passive |  |
 | Spirit Tether (`whisp_spirit_tether`) | whisp | HEAL | active | arcane | ally |  |
 
+## Ultimate upgrades (Sigil of Apotheosis)
+
+Carrying the path-defining unique **Sigil of Apotheosis** adds one extra effect to your ultimate (numbers unchanged).
+Source: `Tools/UltimateUpgrades.py`; runtime: `CireUltimateUpgrades.cpp`; items: Docs/Items.md.
+
+| Ultimate | Upgrade | Added effect |
+|---|---|---|
+| Aether Nexus (`aether_nexus`) | Resonant Field | Allies within 9 m of you restore 20% of their max mana and gain a shield absorbing 150 for 10 s. |
+| Bastion of Dawn (`bastion_of_dawn`) | Dawnward | Allies within 7 m also gain a shield absorbing 150 + 10% of your max health for 8 s. |
+| Cataclysm (`cataclysm`) | Scorched Earth | Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s. |
+| Challenge of Iron (`challenge_of_iron`) | Iron Echo | Enemies within 8.5 m are also stunned for 1.5 s. |
+| Collect the Bounty (`collect_the_bounty`) | Bounty Hunter | You gain +30% move speed and +12 primary stat for 6 s; other cooldowns shrink by 30%. |
+| Executioner's Verdict (`executioners_verdict`) | Verdict Rendered | Your other cooldowns shrink by 50% and you gain +25% attack speed for 6 s. |
+| Glaive Storm (`glaive_storm`) | Eye of the Storm | You gain a shield absorbing 200 + 2x primary stat and +20% move speed for 6 s. |
+| Hexbane Judgment (`hexbane_judgment`) | Witchlight | Enemies in the circle are also armor-broken for 6 s; allies within 9 m of you gain +25 ward for 8 s. |
+| Last Stand (`last_stand`) | Rallying Stand | Allies within 8 m are also healed for 12% of your max health. |
+| Mass Aegis (`mass_aegis`) | Aegis Bloom | Allies within 9 m also gain a shield absorbing 200 + 2x primary stat for 12 s. |
+| Renewal (`renewal`) | Second Dawn | Allies within 9 m also gain +30 armor and +30 ward for 8 s (a party aura). |
+| Seismic Reprisal (`seismic_reprisal`) | Aftershock | The burst also breaks enemy armor for 6 s, and allies within 6 m gain +40 armor for 8 s. |
+| Spectral Hunt (`spectral_hunt`) | Pack Leader | You and allies within 9 m gain +20% attack speed and +10% move speed for 8 s. |
+| Starfall (`starfall`) | Falling Sky | The impact also silences enemies for 2 s, and you restore 20% of your max mana. |
+| Warp Obelisk (`warp_obelisk`) | Siege Protocol | Enemies within 6 m of the obelisk are stunned for 1 s; you gain +12 primary stat for 15 s. |
+| Wellspring (`wellspring`) | Overflow | Allies within 6 m of you also heal 150 and restore 15% of their max mana. |
+| Elder of the Deepwood (`bear_colossus`, planned) | Den Mother | Allies within 8 m gain +40 armor for 8 s. |
+| Ancestral Stampede (`behemoth_stampede`, planned) | Trampled | Enemies within 6 m are slowed for 3 s and armor-broken for 5 s. |
+| Spring March (`centaur_spring_march`, planned) | Spring Stride | Allies within 9 m lose their slows and gain +20% move speed for 8 s. |
+| Earthshout (`chieftain_earthshout`, planned) | Warband | Allies within 9 m gain +8 primary stat and +15% attack speed for 8 s. |
+| Ancient Pact (`drakish_ancient_pact`, planned) | Scaled Oath | Allies within 8 m gain +40 ward and +20 armor for 8 s. |
+| Grove Renewal (`dryad_grove_renewal`, planned) | Heartwood | Allies within 8 m lose their slows and gain a shield absorbing 150 + 2x primary stat for 8 s. |
+| Worldstone Awakened (`golem_worldstone`, planned) | Worldstone Ward | Allies within 7 m gain a shield absorbing 200 + 8% of your max health for 8 s. |
+| Sunrise Vigil (`keeper_sunrise`, planned) | High Noon | Allies within 9 m gain +8 primary stat and +20 ward for 8 s. |
+| Heart of the Mountain (`miner_mountain`, planned) | Rockfall | Enemies within 4 m of the ring are stunned for 1 s. |
+| Red Moon Frenzy (`troll_red_moon`, planned) | Blood Moon | You gain +20% lifesteal and +20% attack speed for 8 s. |
+| Kindred Constellation (`whisp_constellation`, planned) | Starlit Well | Allies within 9 m heal 150 and restore 15% of their max mana. |
+
 ## Champion identity kits
 
 | Champion | Roles | Signature | Implemented purchasable |
@@ -307,8 +342,8 @@ Twenty skills built around the dodge roll (`UCireMobility::StartRoll`). Data row
 `champions`). Each row carries `section` (Skill Shop periodic-table section), `categories` (player-facing
 groups, primary first: Offensive, Defensive, Crowd Control, Constructs, Passives), `effectTags` (card tags,
 `Roll` first), `scaling` (`{"stat": "primary", "ratio": r}`) and an empty `level15` object reserved for
-the level-15 bonus / team-aura pass. Icons: `/Game/UI/Abilities/T_<id>` (painted; the procedural placeholders from
-`Tools/BuildAbilityIcons.py` `ROLL_SKILLS` stay as the fallback; sources `Art/Icons/ChatGPT/abilities_roll*.png`).
+the level-15 bonus / team-aura pass. Icons: `/Game/UI/Abilities/T_<id>` (procedural placeholders from
+`Tools/BuildAbilityIcons.py` `ROLL_SKILLS`: a tumbling arc around a glyph; to be painted by the 2D art pass).
 
 **Primary-stat rule.** Every damage, heal and shield amount is `base effect + ratio x primary stat`
 (STR, AGI or INT, whichever is the owner's primary); damage is also multiplied by the team power scalar.
