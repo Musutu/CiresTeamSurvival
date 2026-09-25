@@ -158,6 +158,11 @@ bool ACireHUD::Hit(float X,float Y,float W,float H) const
     return MX>=Origin.X+X*Stretch.X && MX<=Origin.X+(X+W)*Stretch.X &&
         MY>=Origin.Y+Y*Stretch.Y && MY<=Origin.Y+(Y+H)*Stretch.Y;
 }
+static FString PaintedRoleIcon(int32 Archetype)
+{
+    // Painted role emblems (T_role_*): tank, support, everything else reads as damage.
+    return Archetype==0?TEXT("role_tank"):Archetype==2?TEXT("role_support"):TEXT("role_damage");
+}
 void ACireHUD::Icon(const FString& Id,float X,float Y,float S,FLinearColor Color)
 {
     // icon-art: role portraits (unit frames) use the painted role emblems when drawn large enough.
@@ -256,8 +261,11 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
         CireUIStyle::Frame(Painter(),0,0,260,132,Aggro>0?FLinearColor(1.f,.25f,.2f,1):Gold,ECireFrame::Unit);
         // Larger ring (concept); the painted role emblem is inscribed in the circle so no square corners show.
         Disc(41,45,34,FLinearColor(0,0,0,.9f));Disc(41,45,32,FLinearColor(.035f,.04f,.06f,1));
-        Icon(FString::Printf(TEXT("role%d"),Hero->Archetype),41-22.f,45-22.f,44,Accent);
+        // hud-art: the painted champion portrait fills the ring; the role emblem becomes a small badge.
+        const bool bFace=CireUIStyle::PortraitFace(Painter(),Hero->ChampionProfileId,41,45,32,Hero->bDead);
+        if(!bFace)Icon(FString::Printf(TEXT("role%d"),Hero->Archetype),41-22.f,45-22.f,44,Accent);
         CireUIStyle::PortraitRing(Painter(),41,45,32);
+        if(bFace)CireUIStyle::RoleBadge(Painter(),41+32*.74f,45+32*.7f,9.f,FString::Printf(TEXT("role%d"),Hero->Archetype),Accent,PaintedRoleIcon(Hero->Archetype));
     }
     else{Frame(0,0,260,132,Aggro>0?FLinearColor(1.f,.25f,.2f,1):Accent);Frame(8,9,49,59,Accent);Icon(FString::Printf(TEXT("role%d"),Hero->Archetype),10,13,44,Accent);}
     if(Aggro>0){Panel(186,116,66,14,FLinearColor(.35f,.03f,.02f,.9f));Label(FString::Printf(TEXT("AGGRO x%d"),Aggro),191,116,9,FLinearColor(1.f,.55f,.5f,1));
@@ -331,8 +339,11 @@ void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
         // was cropped by the ring into a red "slash" glyph); the ring sits on top.
         if(bThemedParty)
         {
-            CireUIStyle::Sigil(Painter(),FString::Printf(TEXT("role%d"),Ally->Archetype),7.f,Y+13.f,24.f,Ally->bDead?Muted:RoleColor(Ally->Archetype)*1.1f+FLinearColor(.08f,.08f,.08f,0));
+            // hud-art: painted champion portrait in the ring (role emblem as a badge); sigil fallback.
+            const bool bFace=CireUIStyle::PortraitFace(Painter(),Ally->ChampionProfileId,19.f,Y+25.f,15.5f,Ally->bDead);
+            if(!bFace)CireUIStyle::Sigil(Painter(),FString::Printf(TEXT("role%d"),Ally->Archetype),7.f,Y+13.f,24.f,Ally->bDead?Muted:RoleColor(Ally->Archetype)*1.1f+FLinearColor(.08f,.08f,.08f,0));
             CireUIStyle::PortraitRing(Painter(),19.f,Y+25.f,15.5f);
+            if(bFace)CireUIStyle::RoleBadge(Painter(),19.f+12.f,Y+37.f,6.f,FString::Printf(TEXT("role%d"),Ally->Archetype),Ally->bDead?Muted:RoleColor(Ally->Archetype)*1.1f+FLinearColor(.08f,.08f,.08f,0));
         }
         else Icon(FString::Printf(TEXT("role%d"),Ally->Archetype),4,Y+10,29,Ally->bDead?Muted:RoleColor(Ally->Archetype));
         Label(ShortName(Ally->HeroName,18),39,Y+4,11,Ally->bDead?Muted:Parchment);

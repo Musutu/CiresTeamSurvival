@@ -96,3 +96,67 @@ crest, bar fill, fill swatch), transparent PNGs. Pieces are found as alpha compo
   during an active wave, and saves `Saved/UIWaveCapture/<utc>/wave_fight_NN.png`.
 * **Concept pass.** Themed action slots show the bevelled frame just inside the slot with the icon
   inset (a dark gap separates neighbours); themed buttons use brighter, larger engraved caps.
+
+## Per-piece frame art (hud-art)
+
+The frames were rebuilt from **individually generated pieces** (ChatGPT image generation for Eric, one
+image per piece, front-on on a flat key colour: magenta for Gilded Citadel / Ironbound, green planned
+for Arcane Veil, blue for Verdant Bloom). Raw captures: `Art/UI/Themes/ChatGPT/Pieces/<key>/<Piece>.png`.
+
+```
+python Tools/BuildHUDArt.py --pylib <dir with Pillow+numpy> [--theme GildedCitadel] [--no-import | --import-only]
+```
+
+`BuildHUDArt.py` keys the background to alpha (colour unmixing, no fringe), rebuilds nine-slice frames
+from four corners plus straight edge strips whose cross-section is the mean of the whole straight run
+(tileable, corners feathered into the profile), 3-slices the strips (cast frame, bar frame, title plate,
+divider), squares the slots/rings (the portrait ring's hole is placed at 72% of the piece), splits the
+state sheets (`SlotStates` → `Slot, SlotHover, SlotPressed, SlotCooldown, SlotDisabled`; `ButtonStates`
+→ `Button, ButtonHover, ButtonPressed, ButtonDisabled`; `Card` stays the slimmer card frame because party rows and list rows draw it behind text), grades
+every piece of a theme to one metal colour, deepens recesses and adds an S-curve so bevels read at
+15-20 px, adds a faint theme-coloured halo, packs the atlas with the shared packer of
+`BuildUIThemes.py` and writes rects/slices into `UIThemes.json`. The drawn corner size is solved from
+the measured band thickness so every frame's band has a set logical width (`NINE[...]["band"]`),
+capped by `CORNER_MAX` so corner ornaments never cover the panels' corner labels. Pieces without a new
+file keep their previous slice. Recess darkening, S-curve and saturation are per theme (`DIMENSION`): Gilded Citadel and Ironbound
+push recesses toward black, Arcane Veil keeps its violet rune channel and Verdant Bloom its mossy
+living wood (Eric: "vibrant and fun looking, and crisp").
+
+All four themes now have the same 14 per-piece files (Panel, Tooltip, Card, ButtonStates, Minimap,
+SlotStates, SlotPassive, SlotUltimate, Ring, BarFrame, CastFrame, Banner, Divider, BuffBorder); the
+panel fill, bar fill and crest ornament keep the sheet slices. Key colours: magenta (Gilded Citadel,
+Ironbound), green (Arcane Veil), blue (Verdant Bloom). Prompts follow one recipe per theme (rails,
+corner ornament, small cap, gem, crest, hover / disabled look, face colour) so every piece of a theme
+shares one material language.
+
+### Painted state pieces
+
+`ECireThemePiece` has optional pieces after the 14 required ones (`RequiredCount`): `SlotHover`,
+`SlotPressed`, `SlotCooldown`, `SlotDisabled`, `Button`, `ButtonHover`, `ButtonPressed`,
+`ButtonDisabled`, `BuffBorder`. A theme without them validates and falls back to the base piece plus a
+tint. When present:
+
+* `CireUIStyle::IconSlot` draws the painted hover / pressed / cooldown frame of normal slots (passive
+  and ultimate keep their own frames);
+* `CireUIStyle::Button` draws the painted button state (opaque face + frame) instead of fill + card
+  frame, so every menu button, tab and HUD button switches together;
+* buff / debuff icons draw the theme's `BuffBorder`, tinted toward the dispel colour so the colour code
+  still reads (plain dispel-coloured lines under 16 px or without theme art).
+
+`CireUITheme::RunSmoke` checks that every shipped theme resolves the state pieces too.
+
+### Portraits in the unit frames
+
+`CireUIStyle::PortraitFace` draws the painted champion portrait (`/Game/UI/Draft/Portraits/
+T_Portrait_<ChampionProfileId>`, the same art as champion select) clipped round (`FCireUIPainter::
+TexDisc`, a textured triangle fan, so no square corners show) inside the theme's portrait ring, with a
+soft top light. The player frame, party rows and hero target / focus frames use it; the role emblem
+moves to a small `CireUIStyle::RoleBadge` (the theme's ring as a medallion) at the ring's lower right.
+Monsters and constructs keep the role sigil in the ring. Missing portraits fall back to the sigil.
+
+### Corner clearance
+
+`CireUIStyle::FrameCornerClear(W, H)` returns how far the active theme's panel corner ornament reaches
+into a Panel / Unit frame; the target / focus caption (e.g. `ELITE / CASTER`) starts past it. The
+caption itself comes from `CireUnitFrameHeader` (monster, hero and construct are separate branches:
+an unranked monster used to fall through to `...CONSTRUCT`), checked by the native smoke.
