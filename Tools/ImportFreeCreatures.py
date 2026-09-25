@@ -66,6 +66,14 @@ UNITS = {
     "bristleback": ("Pig", 75, "FreePig", 1.0),
     "crystal_ballista": ("Spider", 95, "FreeSpider", 2.2),
 }
+# Darker, realistic palettes for the flat Quaternius colours (linear RGB per material slot, "*" = every slot).
+# Race palettes and rank colours are applied on top by CireRaces::ApplySkin.
+COLOURS = {
+    "Wolf": {"Main": (0.040, 0.028, 0.019), "Main_Light": (0.15, 0.13, 0.10)},
+    "Stag": {"Material": (0.075, 0.045, 0.024), "Material.003": (0.20, 0.17, 0.12)},
+    "Pig": {"*": (0.030, 0.022, 0.017)},
+    "Spider": {"Material": (0.022, 0.024, 0.030), "Material.001": (0.22, 0.03, 0.02)},
+}
 HAND_PROPS = ["hand_r", "hand_l", "spine_03", "head", "back", "spine_02"]
 
 
@@ -79,6 +87,29 @@ def glb_materials(path: Path):
         out.append({"name": m.get("name"), "color": pbr.get("baseColorFactor", [1, 1, 1, 1])[:3],
                     "roughness": pbr.get("roughnessFactor", 1.0), "textured": "baseColorTexture" in pbr})
     return out
+
+
+def normalized_glb(model: str) -> Path:
+    """Copy of the GLB whose skinned mesh nodes have an identity transform.
+
+    Per the glTF spec a skinned mesh's node transform is ignored (the joints place the skin), but these Blender
+    exports carry scale 100 / -90 deg X on the mesh node and Interchange bakes it into the vertices, so the skin
+    rendered 100x too large while every bone measured correctly. Only that node transform changes."""
+    data = (SRC / f"{model}.glb").read_bytes()
+    length = struct.unpack("<I", data[12:16])[0]
+    gltf = json.loads(data[20:20 + length])
+    for node in gltf["nodes"]:
+        if "skin" in node:
+            for key in ("translation", "rotation", "scale", "matrix"):
+                node.pop(key, None)
+    text = json.dumps(gltf, separators=(",", ":")).encode("utf-8")
+    text += b" " * ((4 - len(text) % 4) % 4)
+    rest = data[20 + length:]
+    out = struct.pack("<III", 0x46546C67, 2, 12 + 8 + len(text) + len(rest)) + struct.pack("<I", len(text)) + b"JSON" + text + rest
+    target = SRC / "Normalized" / f"{model}.glb"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(out)
+    return target
 
 
 def solid_png(path: Path, rgb):
@@ -142,7 +173,7 @@ def run(u):
         dest = f"{PKG}/{model}"
         if lib.does_directory_exist(dest):
             lib.delete_directory(dest)
-        import_file(SRC / f"{model}.glb", dest)
+        import_file(SRC / "Normalized" / f"{model}.glb", dest)
         mesh, anims = None, {}
         for p in lib.list_assets(dest, recursive=True):
             a = lib.load_asset(p)
@@ -182,7 +213,8 @@ def run(u):
             edit.set_material_instance_parent(mi, skin)
             old = slot.get_editor_property("material_interface")
             atlas = edit.get_material_instance_texture_parameter_value(old, "BaseColorTexture") if isinstance(old, u.MaterialInstanceConstant) else None
-            base = atlas if (src["textured"] and atlas) else texture(f"T_{model}_{slot_name.replace('.', '_')}_Col", f"{dest}/Textures", src["color"], "BaseColorTex")
+            override = COLOURS.get(model, {}).get(slot_name) or COLOURS.get(model, {}).get("*")
+            base = atlas if (src["textured"] and atlas and not override) else                 texture(f"T_{model}_{slot_name.replace('.', '_')}_Col", f"{dest}/Textures", override or src["color"], "BaseColorTex")
             rough = texture(f"T_{model}_{slot_name.replace('.', '_')}_Rough", f"{dest}/Textures", (min(1, src["roughness"]) * .85,) * 3, "RoughnessTex")
             for role, t in (("BaseColorTex", base), ("NormalTex", normal), ("MetallicTex", black), ("RoughnessTex", rough)):
                 edit.set_material_instance_texture_parameter_value(mi, role, t)
@@ -271,6 +303,8 @@ def write_data() -> None:
 def launch(args):
     if "--data-only" not in args:
         import stat
+        for model in RIGS:
+            normalized_glb(model)
         for path in (ROOT / "Content/Free/Creatures").rglob("*"):
             if path.is_file():
                 path.chmod(path.stat().st_mode | stat.S_IWRITE)
