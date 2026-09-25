@@ -11,6 +11,7 @@
 #include "CireNPCState.h"
 #include "CireSkillshot.h"
 #include "CireAbilityDB.h"
+#include "CirePylonField.h"
 #include "Components/AudioComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Engine/World.h"
@@ -192,6 +193,8 @@ bool ACireSpellVisual::TickModes(float DeltaSeconds)
             Rebuild();return true;
         }
         CachedArea=Area->AreaSpec;Area->bPresentationOwnsGround=true;bAreaPersistent=Area->AreaSpec.bPersistent;
+        // balance: pylon fields share one fill budget with the pylon fields they overlap (re-counted 4x a second).
+        if(PylonCheckedAt<0||Age-PylonCheckedAt>.25f){PylonCheckedAt=Age;bPylonField=CirePylonField::IsPylonField(Area);PylonOverlaps=bPylonField?CirePylonField::CountOverlaps(Area):1;}
         bHostile=Cast<ACireMonster>(Area->GetOwner())!=nullptr||HostileToLocal(GetWorld(),Area->GetOwner());
         if(Area->IsActive()&&AreaActiveAge<0)AreaActiveAge=Age;
         // A monster's zero-damage area is a buff radius (rally), not a threat.
@@ -293,7 +296,8 @@ bool ACireSpellVisual::RebuildModes(FCireSpellMesh& M,FCireSoftMesh& Soft,float 
     }
     case EMode::AreaFollow:
     {
-        if(bHarmlessArea){DrawAreaParticles(M,Soft,0);return true;} // harmless buff radius: ring + border sparks
+        if(bHarmlessArea&&!bPylonField){DrawAreaParticles(M,Soft,0);return true;} // harmless buff radius: ring + border sparks
+        if(bPylonField){DrawAreaParticles(M,Soft,0);return true;} // balance: pylon fields never detonate
         const float Burst=AreaActiveAge>=0&&!bAreaPersistent?FMath::Clamp(1-(Age-AreaActiveAge)/.4f,0.f,1.f):0.f;
         DrawAreaParticles(M,Soft,Burst);return true;
     }
@@ -350,7 +354,7 @@ void ACireSpellVisual::DrawAreaParticles(FCireSpellMesh& M,FCireSoftMesh& Soft,f
     const bool bActive=AreaActiveAge>=0;
     const float Fade=FadeOutAt>=0?FMath::Clamp(1-(Age-FadeOutAt)/.3f,0.f,1.f):1.f;
     const auto Boundary=ACireAreaEffect::BoundaryPoints(Spec);
-    if(!bActive||bHarmlessArea)
+    if(!bActive||(bHarmlessArea&&!bPylonField))
     {
         // Warning: a few sparks drift up off the true border (never over the interior), so the edge reads
         // even where the ground is busy. Amber for enemies, school colour for your own team.
@@ -370,7 +374,7 @@ void ACireSpellVisual::DrawAreaParticles(FCireSpellMesh& M,FCireSoftMesh& Soft,f
     for(auto P:Boundary){Lo.X=FMath::Min(Lo.X,P.X);Lo.Y=FMath::Min(Lo.Y,P.Y);Hi.X=FMath::Max(Hi.X,P.X);Hi.Y=FMath::Max(Hi.Y,P.Y);}
     const ECireSchool School=Shape.School!=ECireSchool::Steel?Shape.School:static_cast<ECireSchool>(FMath::Clamp(Family,0,static_cast<int32>(ECireSchool::Count)-1));
     const float AreaScale=FMath::Clamp(FMath::Sqrt(FMath::Max(1.f,float((Hi.X-Lo.X)*(Hi.Y-Lo.Y))))/300.f,.6f,2.2f);
-    const int32 Want=FMath::Clamp(FMath::RoundToInt(16*AreaScale),10,30);
+    const int32 Want=bPylonField?CirePylonField::ParticleBudget(PylonOverlaps):FMath::Clamp(FMath::RoundToInt(16*AreaScale),10,30); // balance: pylon overlap budget
     int32 Spawned=0;
     for(int32 I=0;I<120&&Spawned<Want;++I)
     {
@@ -610,8 +614,17 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
         const float Alpha=FadeOutAt>=0?FMath::Clamp(1-(Age-FadeOutAt)/.3f,0.f,1.f):1.f;
         G.Z=4.f;
         CireAbilityVFX::FPaintResult R;
+        if(bPylonField)
+        {
+            // balance: construct pylon field: flat 15-25% fill shared across overlaps, readable rim (CirePylonField).
+            // The pylon's own tint (gold haste, ice gravity, cyan aegis, rose disruption) so stacked fields stay distinguishable.
+            FLinearColor C=Spec.Color*1.25f;
+            const float Rise=AreaActiveAge<0?1.f:FMath::Clamp((Age-AreaActiveAge)/.35f,0.f,1.f);
+            CirePylonField::Paint(G,Spec.Radius,C,Age,Alpha*FMath::Max(.2f,Rise),CirePylonField::Intensity(GetWorld()),PylonOverlaps);
+            LastFill=FBox2D(FVector2D(-Spec.Radius,-Spec.Radius),FVector2D(Spec.Radius,Spec.Radius));
+        }
         // Harmless zones (a rally's buff radius) are information, not danger: a calm ring, never amber, no detonation.
-        if(bHarmlessArea)
+        else if(bHarmlessArea)
         {
             FLinearColor C=Spec.Color*1.6f;C.A=.55f*Alpha*(AreaActiveAge<0?1.f:FMath::Clamp(1-(Age-AreaActiveAge)/.4f,0.f,1.f));
             G.Ring(FVector2D::ZeroVector,Spec.Shape==ECireAreaShape::Circle?Spec.Radius:FMath::Max(Spec.Radius,Spec.Width*.5f),2.5f,14.f,C,72);
@@ -785,6 +798,8 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
                 if(FVector::Dist2D(It->GetActorLocation(),GetActorLocation())<(Mine+Other)*.7f)++OverlapCount;
             }
     }
+    // balance: pylon fields already paint their final, overlap-shared alpha from the same slider (CirePylonField).
+    if(!(Mode==EMode::AreaFollow&&bPylonField))
     CireAbilityVFX::Temper(G.C,0,CireAbilityVFX::GroundIntensity(GetWorld()),Mode==EMode::AreaFollow?1.f/FMath::Sqrt(static_cast<float>(FMath::Max(1,OverlapCount))):1.f);
     if(G.V.IsEmpty()){GroundMesh->ClearMeshSection(0);return;}
     const auto* Section=GroundMesh->GetProcMeshSection(0);

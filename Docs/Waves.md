@@ -139,6 +139,34 @@ that one boss wave. If playtests still feel long, lower the boss row's `health` 
 in F8 → Waves before anything else. The first level-up now comes at about 50 s and level 3 by about 2
 minutes (before: 78 s and 173 s). Wave 1 clears and opens the Skill Shop at about 1 minute.
 
+### Balance pass (feat/balance, September 25: spawns at the rift, early waves harder)
+
+Spawns stay at the rift (`spawnAlongRoute` 0). Pace comes from wave health/speed, the clock and the
+failsafe; early waves hit harder instead of dying faster.
+
+| Knob | Before | Now |
+| --- | --- | --- |
+| `cycles` | 0 (endless) | 3 (match ends after cycle 3, most lives wins) |
+| `breatherSeconds` / prep / recovery | 15 / 30 / 10 s | 12 / 25 / 8 s |
+| `marchSpeed` | 1.25 | 1.4 |
+| `cycleScaling.healthGrowth` | 0.10 | 0.08 |
+| wave 1 damage | ×1.25 | ×1.4 |
+| wave 2 health / damage | ×0.95 / ×1.3 | ×0.85 / ×1.45 |
+| boss row health | ×0.4 | ×0.3 |
+| `failsafe.maxWaveSeconds` / grace | 120 / 30 s | 100 / 20 s |
+
+`python Tools/RunPacingSoak.py --cycles 3 --label <name>` (bots only, `Saved/WaveSoak/pacing-*.txt`):
+
+| Run | Cycle lengths | Mean / longest wave | Lives left (Ember / Dusk) | Match |
+| --- | --- | --- | --- | --- |
+| Before (1a5d2f3) | 9.3, 9.5, 10.9 (+12.4 for cycle 4) min | 94 / 153 s (first 3 cycles) | 75 / 75 after 3 cycles | 42.0 min, never ends by itself |
+| Clock + march + growth (`after-round1`) | 9.0, 8.8, 10.8 min | 93 / 153 s | 74 / 73 | 28.6 min |
+| + early-wave damage, wave 2 / boss health (`after-round2`) | 8.6, 9.0, 10.5 min | 91 / 152 s | 73 / 71 | 28.1 min |
+| **+ failsafe 100 / 20 s (`after-round3`)** | **8.0, 8.7, 9.9 min** | **85 / 123 s** | **68 / 73** | **26.6 min** |
+
+The longest waves are the wave-2 slot and the boss wave in cycles 2-3, held by one or two stragglers
+until the failsafe marches them; the tighter failsafe turns that dead time into leaked lives.
+
 ### Skill Shop breather and Ready-up
 
 `breatherSeconds` is the window between a cleared wave and the next spawn. The progression-shop Skill

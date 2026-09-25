@@ -72,30 +72,30 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 
 | Skill | Champion | Type | Kind | School | Target | Cost | CD | Effect L1 / L10 / L50 | CC / notes |
 |---|---|---|---|---|---|---|---|---|---|
-| Arc Mine (`arc_mine`) | aetheri_artificer | DPS | active | arcane | aim | 35 MP | 9s | 110 / 155 / 209 blast damage |  construct |
+| Arc Mine (`arc_mine`) | aetheri_artificer | DPS | active | arcane | aim | 35 MP | 9s | 70 / 99 / 133 blast damage |  construct |
 | Disruption Pylon (`disruption_pylon`) | aetheri_artificer | DPS | active | arcane | aim | 50 MP | 20s | 25 / 35 / 40 % damage dealt | Damage -25% construct |
 | Overcharge (`overcharge`) | aetheri_artificer | DPS | active | arcane | self | 40 MP | 20s | 100 / 141 / 190 % turret fire rate |  construct |
 | Phase Lance (`phase_lance`) | aetheri_artificer | DPS | active | arcane | aim | 40 MP | 6s | 100 / 141 / 190 damage |  |
 | Photon Turret (`photon_turret`) | aetheri_artificer | DPS | active | arcane | aim | 55 MP | 14s | 240 / 339 / 457 turret health |  construct |
-| Skitter Swarm (`skitter_swarm`) | aetheri_artificer | DPS | active | arcane | aim | 45 MP | 15s | 70 / 99 / 133 blast damage |  construct |
+| Skitter Swarm (`skitter_swarm`) | aetheri_artificer | DPS | active | arcane | aim | 45 MP | 15s | 45 / 64 / 86 blast damage |  construct |
 | Aether Engineering (`aether_engineering`) | aetheri_artificer | DPS | passive | arcane | passive | - | 0s | 25 / 31 / 40 % construct health |  construct |
 | Warp Obelisk (`warp_obelisk`) | aetheri_artificer | DPS | ultimate | arcane | aim | 130 MP | 80s | 600 / 785 / 1028 obelisk health |  construct |
-| Aegis Pylon (`aegis_pylon`) | aetheri_warden | HEAL/TANK | active | arcane | aim | 55 MP | 18s | 2 / 3 / 4 % max health per second | DEF +15% construct |
+| Aegis Pylon (`aegis_pylon`) | aetheri_warden | HEAL/TANK | active | arcane | aim | 55 MP | 18s | 2 / 3 / 4 % max health per second | DEF +10% construct |
 | Aether Mend (`aether_mend`) | aetheri_warden | HEAL | active | arcane | ally | 40 MP | 6s | 85 / 120 / 162 healing |  |
 | Gravity Pylon (`gravity_pylon`) | aetheri_warden | HEAL/TANK | active | arcane | aim | 45 MP | 18s | 35 / 49 / 50 % slow | Move -35% construct |
 | Haste Pylon (`haste_pylon`) | aetheri_warden | HEAL/TANK | active | arcane | aim | 45 MP | 20s | 25 / 35 / 40 % move and attack speed | Haste +25% construct |
 | Repulsor Pulse (`repulsor_pulse`) | aetheri_warden | TANK/HEAL | active | arcane | self | 35 MP | 10s | 60 / 85 / 114 damage | Move -30%, taunt |
 | Stasis Snare (`stasis_snare`) | aetheri_warden | HEAL/TANK | active | arcane | aim | 35 MP | 14s | 20 / 28 / 38 damage | Stasis construct |
 | Resonant Lattice (`resonant_lattice`) | aetheri_warden | HEAL/TANK | passive | arcane | passive | - | 0s | 10 / 13 / 16 % damage reduction in fields |  construct |
-| Aether Nexus (`aether_nexus`) | aetheri_warden | HEAL/TANK | ultimate | arcane | aim | 120 MP | 85s | 5 / 7 / 8 % max health per second | DEF +40% construct |
-| Blade Flurry (`blade_flurry`) | gunblade | DPS | active | physical | self | 35 EN | 9s | 40 / 57 / 76 damage per slash |  |
-| Hex Mark (`hex_mark`) | gunblade | DPS | active | shadow | enemy | 20 EN | 12s | 15 / 21 / 29 % damage taken | Damage taken +15% |
+| Aether Nexus (`aether_nexus`) | aetheri_warden | HEAL/TANK | ultimate | arcane | aim | 120 MP | 85s | 5 / 7 / 8 % max health per second | DEF +25% construct |
+| Blade Flurry (`blade_flurry`) | gunblade | DPS | active | physical | self | 25 EN | 9s | 60 / 85 / 114 damage per slash |  |
+| Hex Mark (`hex_mark`) | gunblade | DPS | active | shadow | enemy | 20 EN | 12s | 20 / 28 / 38 % damage taken | Damage taken +20% |
 | Hunter's Stride (`hunters_stride`) | gunblade | DPS | active | physical | aim | 25 EN | 11s | 50 / 71 / 95 % next shot damage |  |
-| Powder Flask (`powder_flask`) | gunblade | DPS | active | fire | aim | 30 EN | 12s | 70 / 99 / 133 impact damage | Move -35% |
-| Silver Shot (`silver_shot`) | gunblade | DPS | active | holy | aim | 30 EN | 8s | 95 / 134 / 181 damage |  |
+| Powder Flask (`powder_flask`) | gunblade | DPS | active | fire | aim | 20 EN | 12s | 110 / 155 / 209 impact damage | Move -35% |
+| Silver Shot (`silver_shot`) | gunblade | DPS | active | holy | aim | 20 EN | 8s | 150 / 212 / 286 damage |  |
 | Warding Talisman (`warding_talisman`) | gunblade | DPS | active | holy | self | 25 EN | 18s | 30 / 42 / 45 % damage reduction | DEF +30%, cleanse |
 | Price on Every Soul (`price_on_every_soul`) | gunblade | DPS | passive | physical | passive | - | 0s | 5 / 6 / 8 bonus gold per kill |  |
-| Collect the Bounty (`collect_the_bounty`) | gunblade | DPS | ultimate | physical | enemy | 60 EN | 70s | 180 / 236 / 308 damage | lethal |
+| Collect the Bounty (`collect_the_bounty`) | gunblade | DPS | ultimate | physical | enemy | 60 EN | 70s | 180 / 236 / 308 damage | Execute below 15% |
 | Bouncing Glaive (`bouncing_glaive`) | huntress | DPS | active | physical | enemy | 30 EN | 8s | 80 / 113 / 152 damage |  |
 | Crescent Volley (`crescent_volley`) | huntress | DPS | active | physical | aim | 30 EN | 10s | 90 / 127 / 171 damage |  |
 | Moonlit Sprint (`moonlit_sprint`) | huntress | DPS | active | arcane | self | 20 EN | 16s | 40 / 57 / 70 % move speed | Move +40%, cleanse |
@@ -125,10 +125,10 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 | Hasted Tumble (`hasted_tumble`) | ranger, scholar, lancer, wizard, troll_berserker_melee, troll_berserker_ranged, dryad, whisp, evergrove_centaur, gunblade, witch_slayer, huntress, aetheri_artificer, aetheri_warden | TANK/DPS/HEAL | passive | arcane | passive | - | 0s | 15 / 19 / 24 % cooldown cut per roll |  |
 | Venom Tumble (`venom_tumble`) | ranger, troll_berserker_ranged, dryad, witch_slayer, huntress | DPS | active | poison | self | 25 EN | 16s | 30 / 42 / 57 poison damage | Healing -30% |
 | Quickened Mind (`quickened_mind`) | scholar, wizard, dryad, whisp, evergrove_centaur, witch_slayer, aetheri_artificer, aetheri_warden | HEAL/DPS | passive | arcane | passive | - | 0s | 6 / 8 / 10 s window |  |
-| Arcane Blunderbuss (`arcane_blunderbuss`) | witch_slayer | DPS | active | arcane | aim | 40 MP | 8s | 110 / 155 / 209 damage | Interrupted |
+| Arcane Blunderbuss (`arcane_blunderbuss`) | witch_slayer | DPS | active | arcane | aim | 40 MP | 8s | 135 / 191 / 257 damage | Interrupted |
 | Banishment (`banishment`) | witch_slayer | DPS | active | void | enemy | 55 MP | 22s | 80 / 113 / 152 damage on return | Banished |
 | Purge (`purge`) | witch_slayer | DPS | active | holy | enemy | 40 MP | 14s | 60 / 85 / 114 damage | purge, Silenced |
-| Spectral Blade (`spectral_blade`) | witch_slayer | DPS | active | arcane | enemy | 30 MP | 7s | 90 / 127 / 171 damage |  |
+| Spectral Blade (`spectral_blade`) | witch_slayer | DPS | active | arcane | enemy | 30 MP | 7s | 115 / 162 / 219 damage |  |
 | Spirit Lantern (`spirit_lantern`) | witch_slayer | DPS | active | arcane | aim | 45 MP | 14s | 60 / 85 / 114 damage | Silenced construct |
 | Witchfinder's Mark (`witchfinders_mark`) | witch_slayer | DPS | active | arcane | enemy | 25 MP | 10s | 12 / 17 / 23 % damage taken | Exposed |
 | Witchbane (`witchbane`) | witch_slayer | DPS | passive | arcane | passive | - | 0s | 20 / 25 / 32 % bonus damage |  |
@@ -245,7 +245,7 @@ Bounded check (`python Tools/BuildAbilityDB.py --sim`): 30 s of rotation at prim
 | Summons | Spectral Pack | 14 + 0.4x Primary damage per hit | 30 | 1350 |
 | Summons | Oathbound Guardian | 22 + 0.5x Primary damage per hit | 42 | 1050 |
 | Summons | Construct: Mechanical Tank | 30 + 0.6x Primary damage per hit | 54 | 1125 |
-| Summons | Photon Turret | 18 + 0.35x Primary damage per hit | 32 | 1000 |
+| Summons | Photon Turret | 12 + 0.35x Primary damage per hit | 26 | 812 |
 
 ## Level 15 bonuses (actives) and team auras (passives)
 

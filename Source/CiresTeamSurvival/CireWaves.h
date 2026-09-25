@@ -71,25 +71,25 @@ struct CIRESTEAMSURVIVAL_API FCireWaveDef
 struct CIRESTEAMSURVIVAL_API FCireWaveConfig
 {
     /** Seconds between a cleared wave and the next spawn: the Skill Shop window (progression-shop reads it). */
-    float BreatherSeconds = 15.f;
+    float BreatherSeconds = 12.f; // balance (pacing): 15 -> 12
     /** Pacing (Waves.json "pacing"): where on the route waves appear (0 = breach gate, 0.7 max), the march-speed
      *  multiplier while a wave unit is not fighting, the first wave's delay and the phase clock after a cycle. */
-    float SpawnAlongRoute = 0.f, MarchSpeedMultiplier = 1.25f, FirstWaveDelay = 8.f;
-    float PrepSeconds = 30.f, ArenaSeconds = 60.f, RecoverySeconds = 10.f;
+    float SpawnAlongRoute = 0.f, MarchSpeedMultiplier = 1.4f, FirstWaveDelay = 8.f; // balance (pacing): march 1.25 -> 1.4
+    float PrepSeconds = 25.f, ArenaSeconds = 60.f, RecoverySeconds = 8.f; // balance (pacing): prep 30 -> 25, recovery 10 -> 8
     /** Breather ends early (1 s) once every human player has pressed Ready; bots are always ready. */
     bool bEarlyContinue = true;
     /** Cleared waves per cycle before prep -> arena -> recovery. Waves[] wraps if shorter. */
     int32 WavesPerCycle = 5;
     /** 0 = loop cycles forever with scaling; N = the match ends after cycle N (most lives wins). */
-    int32 Cycles = 0;
+    int32 Cycles = 3; // balance (pacing): a full match is three cycles (about 25-30 minutes), not an endless loop
     /** Per completed cycle: health/damage multiplier growth and extra units per composition row. */
-    float CycleHealthGrowth = .10f, CycleDamageGrowth = .10f;
+    float CycleHealthGrowth = .08f, CycleDamageGrowth = .10f; // balance (pacing): health growth .10 -> .08
     int32 CycleExtraUnits = 0;
     /** Stall failsafe: a wave older than this (seconds after its last spawn) has its leftovers march, then despawn. */
     bool bStallFailsafe = true;
-    float MaxWaveSeconds = 120.f;
+    float MaxWaveSeconds = 100.f; // balance (pacing): 120 -> 100, stragglers held whole cycles
     ECireWaveFailsafe FailsafeAction = ECireWaveFailsafe::March;
-    float FailsafeGraceSeconds = 30.f;
+    float FailsafeGraceSeconds = 20.f; // balance (pacing): 30 -> 20
     /** Stuck detection: a wave unit that makes no progress for this long is nudged along its route. */
     float StuckSeconds = 5.f;
     TArray<FCireWaveDef> Waves;
