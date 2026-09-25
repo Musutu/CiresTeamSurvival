@@ -11,6 +11,7 @@
 #include "CireSummon.h"
 #include "CireThreat.h"
 #include "Engine/World.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "EngineUtils.h"
 #include "Misc/ScopeExit.h"
 #include "Rules/CiresRules.h"
@@ -361,7 +362,8 @@ bool CireRollSkills::RunSmoke(ACireGameMode* Mode)
         Check(Enemy->Health<Before&&State().Mines.IsEmpty(),TEXT("mine triggers on an enemy"));
         // Bots: a bot with a roll kit rolls in combat.
         H->bBot=true;H->Target=Enemy;H->Energy=100;H->Mobility->ReadyAt=0;State().NextBotRoll.Add(H,0.f);
-        Learn({TEXT("windrunner")});Tick(H,.1f);
+        Learn({TEXT("windrunner"),TEXT("shadow_dance")});H->GlobalCooldown=0;Tick(H,.1f);
+        Check(H->Cooldowns[1]>0&&CireBuffs::IsActive(H,DanceId),TEXT("bots open their roll active"));
         Check(H->Mobility->IsRolling()||!H->GetCharacterMovement()->IsMovingOnGround(),TEXT("bots roll to use their kit (or are airborne in the fixture)"));
         H->bBot=false;
     }
