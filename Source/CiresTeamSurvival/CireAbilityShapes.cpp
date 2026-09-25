@@ -39,7 +39,7 @@ ECireSchool MonsterSchool(const FString& Id,const FCireNPCArchetype* A,const FCi
     if(Buff==TEXT("npc_spores"))return ECireSchool::Poison;
     if(Buff==TEXT("npc_thorns")||(Race==TEXT("blightwood")&&Buff==TEXT("npc_rooted")))return ECireSchool::Nature;
     if(Buff==TEXT("npc_runic"))return ECireSchool::Arcane;
-    if(Buff==TEXT("npc_dragonfire")||Buff==TEXT("npc_scaleward"))return ECireSchool::Fire;
+    if(Buff==TEXT("npc_dragonfire")||(Buff==TEXT("npc_scaleward")&&Race==TEXT("drakkari")))return ECireSchool::Fire;
     if(Buff==TEXT("npc_tide")||Buff==TEXT("npc_ink"))return ECireSchool::Tide;
     if(Buff==TEXT("npc_void")||Buff==TEXT("npc_mind"))return ECireSchool::Void;
     if(Buff==TEXT("npc_profane"))return ECireSchool::Shadow;

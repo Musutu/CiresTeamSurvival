@@ -156,6 +156,7 @@ bool ACireSpellVisual::TickModes(float DeltaSeconds)
         if(Area->IsActive()&&AreaActiveAge<0)AreaActiveAge=Age;
         // A monster's zero-damage area is a buff radius (rally), not a threat.
         bHarmlessArea=Cast<ACireMonster>(Area->GetOwner())&&(Area->AreaSpec.bPersistent?Area->AreaSpec.DamagePerSecond<=0:Area->AreaSpec.BurstDamage<=0);
+        if(Shape.School==ECireSchool::Steel&&!Cast<ACireMonster>(Area->GetOwner()))Shape.School=CireAbilityShapes::SchoolFor(FName(*Area->AreaSpec.AbilityName));
         if(const auto* Arch=ArchetypeOf(Area->GetOwner()))
             for(const auto& Ab:Arch->Abilities)if(Ab.Name.Left(80)==Area->AreaSpec.AbilityName){Shape.School=CireAbilityShapes::DescribeMonster(Ab,Arch).School;break;}
         return false;
@@ -514,7 +515,10 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
         else
         {
             const float Burst=bAreaPersistent?FMath::Clamp(1-(Age-AreaActiveAge)/.35f,0.f,1.f)*.8f:FMath::Clamp(1-(Age-AreaActiveAge)/.4f,0.f,1.f);
-            FLinearColor C=Spec.Color*1.7f;C.A=1;
+            // Pale authored colours washed out to white on release: pull the zone toward its school colour.
+            FLinearColor C=Spec.Color*1.7f;
+            if(Shape.School!=ECireSchool::Steel)C=FMath::Lerp(C,CireAbilityShapes::SchoolColor(Shape.School)*.9f,.55f);
+            C.A=1;
             R=CireAbilityVFX::PaintActive(G,Spec,C,Age,Alpha*(bAreaPersistent?1.f:FMath::Clamp(1-(Age-AreaActiveAge)/.5f,0.f,1.f)*1.2f),Burst,bAreaPersistent);
         }
         LastFill=R.FillBounds;LastArrowTip=R.ArrowTip;LastChevrons=R.Chevrons;

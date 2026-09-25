@@ -366,7 +366,13 @@ bool CireAbilityVFXGallery::Tick(ACireGameMode* Mode)
     }
     const float Since=Now()-G.CastAt;
     while(G.FrameIndex<G.Frames.Num()&&G.Frames[G.FrameIndex].At<0)++G.FrameIndex;
-    if(G.FrameIndex<G.Frames.Num()&&Since>=G.Frames[G.FrameIndex].At){Capture(G.Frames[G.FrameIndex].Name);++G.FrameIndex;return true;}
+    if(G.FrameIndex<G.Frames.Num()&&Since>=G.Frames[G.FrameIndex].At)
+    {
+        Capture(G.Frames[G.FrameIndex].Name);++G.FrameIndex;
+        // After the release has landed, pause the caster so linger/end frames show this ability, not its next one.
+        if(E.bMonster&&G.FrameIndex==4)for(auto& A:G.Actors)if(auto* M=Cast<ACireMonster>(A.Get());M&&M->CastingAbility.IsEmpty())M->Damage=0;
+        return true;
+    }
     if(G.FrameIndex>=G.Frames.Num()&&Since>=(G.Frames.Num()?G.Frames.Last().At:0)+.15f)
     {
         EndEntry();
