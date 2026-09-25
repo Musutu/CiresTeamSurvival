@@ -9,7 +9,7 @@
       "tagline": "Dark navy and black with fine gold filigree. The default.",
       "atlas": "/Game/UI/Themes/GildedCitadel/T_GildedCitadel_Atlas",
       "fill": "/Game/UI/Themes/GildedCitadel/T_GildedCitadel_Fill",
-      "atlasSize": [2048, 512],
+      "atlasSize": [2048, 1024],
       "palette": {
         "trim": [0.72, 0.47, 0.17, 1],
         "brightTrim": [1.0, 0.74, 0.18, 1],
@@ -34,74 +34,119 @@
       "cornerOrnaments": true,
       "pieces": {
         "Panel": {
-          "rect": [940, 6, 197, 197],
-          "slice": 0.4873,
-          "corner": 30
+          "rect": [314, 6, 296, 296],
+          "slice": 0.4865,
+          "corner": 28.3
         },
         "Tooltip": {
-          "rect": [729, 6, 199, 199],
-          "slice": 0.4824,
-          "corner": 20
+          "rect": [890, 6, 235, 235],
+          "slice": 0.4766,
+          "corner": 17.5
         },
         "Minimap": {
-          "rect": [1149, 6, 196, 196],
-          "slice": 0.4898,
-          "corner": 30
+          "rect": [6, 6, 296, 296],
+          "slice": 0.4865,
+          "corner": 24.3
         },
         "Card": {
-          "rect": [510, 6, 207, 207],
-          "slice": 0.4638,
-          "corner": 14
+          "rect": [1608, 6, 222, 222],
+          "slice": 0.4324,
+          "corner": 6.0
         },
         "Slot": {
-          "rect": [1357, 6, 192, 192],
+          "rect": [912, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotPassive": {
-          "rect": [1561, 6, 192, 192],
+          "rect": [708, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotUltimate": {
-          "rect": [274, 6, 224, 224],
+          "rect": [1137, 6, 224, 224],
           "slice": 0,
           "corner": 0
         },
         "Ring": {
-          "rect": [6, 6, 256, 256],
+          "rect": [622, 6, 256, 256],
           "slice": 0,
           "corner": 0
         },
         "BarFrame": {
-          "rect": [531, 274, 268, 64],
-          "slice": 0.4851,
+          "rect": [771, 548, 96, 64],
+          "slice": 0.4167,
           "corner": 0
         },
         "CastFrame": {
-          "rect": [811, 274, 170, 64],
-          "slice": 0.4765,
+          "rect": [611, 548, 148, 72],
+          "slice": 0.4459,
           "corner": 0
         },
         "Banner": {
-          "rect": [6, 274, 384, 112],
-          "slice": 0.4896,
+          "rect": [6, 548, 324, 128],
+          "slice": 0.4753,
           "corner": 0
         },
         "Divider": {
-          "rect": [993, 274, 184, 40],
-          "slice": 0.4783,
+          "rect": [879, 548, 188, 48],
+          "slice": 0.4574,
           "corner": 0
         },
         "Ornament": {
-          "rect": [402, 274, 117, 96],
+          "rect": [482, 548, 117, 96],
           "slice": 0,
           "corner": 0
         },
         "BarFill": {
-          "rect": [1189, 274, 64, 32],
+          "rect": [1079, 548, 64, 32],
           "slice": 0,
           "corner": 0
+        },
+        "SlotHover": {
+          "rect": [1116, 314, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotPressed": {
+          "rect": [1320, 314, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotCooldown": {
+          "rect": [1524, 314, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotDisabled": {
+          "rect": [1728, 314, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "BuffBorder": {
+          "rect": [342, 548, 128, 128],
+          "slice": 0,
+          "corner": 0
+        },
+        "ButtonPressed": {
+          "rect": [1373, 6, 223, 223],
+          "slice": 0.4305,
+          "corner": 5.8
+        },
+        "Button": {
+          "rect": [6, 314, 222, 222],
+          "slice": 0.4324,
+          "corner": 6.0
+        },
+        "ButtonHover": {
+          "rect": [240, 314, 222, 222],
+          "slice": 0.4324,
+          "corner": 6.0
+        },
+        "ButtonDisabled": {
+          "rect": [474, 314, 222, 222],
+          "slice": 0.4324,
+          "corner": 6.0
         }
       }
     },
@@ -111,7 +156,7 @@
       "tagline": "Forged iron and blackened steel, riveted plates and ember-orange light.",
       "atlas": "/Game/UI/Themes/Ironbound/T_Ironbound_Atlas",
       "fill": "/Game/UI/Themes/Ironbound/T_Ironbound_Fill",
-      "atlasSize": [2048, 512],
+      "atlasSize": [2048, 1024],
       "palette": {
         "trim": [0.56, 0.55, 0.54, 1],
         "brightTrim": [1.0, 0.5, 0.1, 1],
@@ -136,72 +181,92 @@
       "cornerOrnaments": true,
       "pieces": {
         "Panel": {
-          "rect": [940, 6, 197, 197],
-          "slice": 0.4873,
-          "corner": 30
+          "rect": [6, 6, 296, 296],
+          "slice": 0.4865,
+          "corner": 32.5
         },
         "Tooltip": {
-          "rect": [729, 6, 199, 199],
-          "slice": 0.4824,
-          "corner": 20
+          "rect": [582, 6, 235, 235],
+          "slice": 0.4766,
+          "corner": 20.5
         },
         "Minimap": {
-          "rect": [1149, 6, 196, 196],
+          "rect": [1284, 6, 196, 196],
           "slice": 0.4898,
           "corner": 30
         },
         "Card": {
-          "rect": [510, 6, 207, 207],
+          "rect": [1065, 6, 207, 207],
           "slice": 0.4638,
           "corner": 14
         },
         "Slot": {
-          "rect": [1357, 6, 192, 192],
+          "rect": [1492, 6, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotPassive": {
-          "rect": [1561, 6, 192, 192],
+          "rect": [618, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotUltimate": {
-          "rect": [274, 6, 224, 224],
+          "rect": [829, 6, 224, 224],
           "slice": 0,
           "corner": 0
         },
         "Ring": {
-          "rect": [6, 6, 256, 256],
+          "rect": [314, 6, 256, 256],
           "slice": 0,
           "corner": 0
         },
         "BarFrame": {
-          "rect": [544, 274, 282, 64],
+          "rect": [1586, 314, 282, 64],
           "slice": 0.4858,
           "corner": 0
         },
         "CastFrame": {
-          "rect": [838, 274, 214, 64],
+          "rect": [1360, 314, 214, 64],
           "slice": 0.4813,
           "corner": 0
         },
         "Banner": {
-          "rect": [6, 274, 368, 112],
+          "rect": [822, 314, 368, 112],
           "slice": 0.4891,
           "corner": 0
         },
         "Divider": {
-          "rect": [1064, 274, 162, 40],
+          "rect": [1880, 314, 162, 40],
           "slice": 0.4753,
           "corner": 0
         },
         "Ornament": {
-          "rect": [386, 274, 146, 96],
+          "rect": [1202, 314, 146, 96],
           "slice": 0,
           "corner": 0
         },
         "BarFill": {
-          "rect": [1238, 274, 64, 32],
+          "rect": [6, 518, 64, 32],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotHover": {
+          "rect": [1696, 6, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotPressed": {
+          "rect": [6, 314, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotCooldown": {
+          "rect": [210, 314, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotDisabled": {
+          "rect": [414, 314, 192, 192],
           "slice": 0,
           "corner": 0
         }
