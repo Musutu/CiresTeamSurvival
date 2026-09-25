@@ -92,7 +92,7 @@ UNITS = {
         named=dict(cast_a_spell="ANIM_MOUNTAIN_DRAGON_spitFireBall", ground_slam="ANIM_MOUNTAIN_DRAGON_ClawsAttack2HitComboForward",
                    war_cry="ANIM_MOUNTAIN_DRAGON_LeftClawsAttackForward"), folder=QD + "/Animations",
         # Re-lit as a cinder drake: charred red scales with an ember rim (the vendor's sandy mountain hide read as dull).
-        reskin=dict(tint=[0.34, 0.07, 0.03], tintStrength=0.85, rim=[1.0, 0.35, 0.04], rimStrength=0.8, body=0.0,
+        reskin=dict(tint=[0.2, 0.045, 0.03], tintStrength=0.9, rim=[1.0, 0.3, 0.03], rimStrength=0.35, body=0.0,
                     textures={"BaseColorTex": QD + "/Textures/T_MOUNTAIN_DRAGON_ALBEDO.T_MOUNTAIN_DRAGON_ALBEDO", "NormalTex": QD + "/Textures/T_MOUNTAIN_DRAGON_NRM.T_MOUNTAIN_DRAGON_NRM"})),
     # Rare: the ROG wolf's white coat (the grey one is the dire wolf), a size up.
     "frostfang_alpha": dict(variant="FabFrostfang", mesh=R + "/Wolf/Meshes/SK_Wolf_Fur_Full_W", head=175, rig="quadruped",

@@ -1273,7 +1273,9 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
             State.Toasts.RemoveAll([](const FToast& T) { return T.Title == TEXT("SKILL SHOP OPEN"); });
             AddToast(TEXT("SKILL SHOP OPEN"), FString::Printf(TEXT("%s: learn or level skills (%s)."), bPrepBegan ? TEXT("Prep") : TEXT("Wave cleared"),
                 *KeyLabel(HUD, TEXT("ToggleSkillShop"))), TEXT("challenge"), BrightGold, 6.f);
-            if (CireSkillShop::Get().bAutoOpen && AnySkillAffordable(Hero))
+            // monster-expansion: a bonus loot wave runs in this breather: leave the field open for the chase (the key still opens the shop).
+            const bool bBonusChase = GameState->Announcement.StartsWith(TEXT("BONUS LOOT WAVE"));
+            if (CireSkillShop::Get().bAutoOpen && AnySkillAffordable(Hero) && !bBonusChase)
             {
                 if (!Controller->bShop) { Controller->bShop = true; State.PendingTab = 1; }
                 else State.Tab = 1;

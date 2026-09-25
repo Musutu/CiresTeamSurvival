@@ -191,9 +191,10 @@ bool CireMonsterExpansion::TickSpecial(ACireMonster* M, ACireGameMode* Mode, flo
     }
     auto* Movement = M->GetCharacterMovement();
     const FVector From = M->GetActorLocation();
+    const float Slowed = M->SlowUntil > NowOf(M) ? .65f : 1.f; // champions' slows and roots are how you catch a goblin
     if (Near)
     {
-        Movement->MaxWalkSpeed = M->BaseMoveSpeed * 1.15f;
+        Movement->MaxWalkSpeed = M->BaseMoveSpeed * 1.15f * Slowed;
         const FVector Away = (From - Near->GetActorLocation()).GetSafeNormal2D();
         const float Length = FMath::Max(1.f, CireLanePath::RouteLength(World, M->Lane));
         const float Progress = CireLanePath::RouteProgress(World, M->Lane, From);
@@ -205,7 +206,7 @@ bool CireMonsterExpansion::TickSpecial(ACireMonster* M, ACireGameMode* Mode, flo
     }
     else
     {
-        Movement->MaxWalkSpeed = M->BaseMoveSpeed;
+        Movement->MaxWalkSpeed = M->BaseMoveSpeed * Slowed;
         M->AddMovementInput(CireNav::Steer(M, CireNPCCombat::RouteDestination(M)));
     }
     return true;

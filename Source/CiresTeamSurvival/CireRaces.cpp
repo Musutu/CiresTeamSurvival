@@ -624,7 +624,7 @@ bool CireRaces::ApplySkin(ACireMonster* M)
                 MID->SetScalarParameterValue(TEXT("RankBody"), FMath::Max(Reskin->ReskinBody, Style.BodyTint));
                 MID->SetScalarParameterValue(TEXT("RankGlow"), 0.f);
                 MID->SetVectorParameterValue(TEXT("RimColor"), Rim);
-                MID->SetScalarParameterValue(TEXT("RimStrength"), FMath::Max(Reskin->ReskinRimStrength, Style.Rim));
+                MID->SetScalarParameterValue(TEXT("RimStrength"), FMath::Max(Reskin->ReskinRimStrength, Style.Rim * .5f)); // vendor albedo is brighter than Tripo maps
             }
             return true;
         }

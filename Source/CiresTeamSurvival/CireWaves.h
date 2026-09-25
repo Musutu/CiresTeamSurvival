@@ -82,7 +82,7 @@ struct CIRESTEAMSURVIVAL_API FCireRareSpawnRules
     int32 FromWave = 2;
     int32 MaxPerCycle = 2;
     /** On top of the creature's archetype and the wave's scaling. */
-    float Health = 3.f, Damage = 1.3f, Size = 1.15f;
+    float Health = 1.8f, Damage = 1.2f, Size = 1.15f; // x elite (1.6 health, 1.25 damage): about 4x a mob of its wave
     /** Kill bounty in mob values (a normal mob is 1). */
     float Bounty = 5.f;
     /** Rare creature archetypes (Bestiary.json); one is drawn per rare. */

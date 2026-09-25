@@ -80,14 +80,14 @@ slot, so developer/test starts stay deterministic. No monster skills before `ski
 
 ```jsonc
 "rareSpawn": { "enabled": true, "chance": 0.3, "fromWave": 2, "maxPerCycle": 2,
-               "health": 3, "damage": 1.3, "size": 1.15, "bounty": 5,
+               "health": 1.8, "damage": 1.2, "size": 1.15, "bounty": 5,
                "pool": ["lich_revenant", "storm_griffon", "cinder_drake", "frostfang_alpha", "horned_brute"] }
 ```
 
 - **When.** From global wave `fromWave`, each Normal / pack / Custom wave rolls `chance` (seeded per match and wave, both
   lanes get the same rare) until `maxPerCycle` rares have come this cycle. Armored, escort, boss and bonus waves never roll.
   A wave row can also be a fixed rare (`"rare": true`, the `$` flag in F8).
-- **Look.** At least Elite rank (+1 skill once skills unlock), then `health` / `damage` / `size` on top. It wears the Rare
+- **Look.** At least Elite rank (+1 skill once skills unlock), then `health` / `damage` / `size` on top (about 4x the health of a mob of its wave, so a rare adds roughly half a wave of work). It wears the Rare
   colour (cyan `#33f2ff`, `Bestiary.json specialColors`) on its skin, rim, name plate and target frame, an arcane aura
   (`FabVFX.json` school aura, tinted), and the plate reads "Rare Storm Griffon". A `RARE SPAWN` banner and the
   `sting.rare` cue (Fantasy UI dark alert / bell) announce it to its lane.
@@ -108,7 +108,7 @@ slot, so developer/test starts stay deterministic. No monster skills before `ski
   `maxPerCycle` per cycle. The creatures spawn at the rift (Eric's ruling) during the breather.
 - **Behaviour.** They never attack and never cost lives. They trot down the lane; a champion of their lane within `fleeRadius`
   makes them bolt away (back up the road) at +15% speed. After `escapeSeconds`, or on reaching the gate, they escape with a
-  puff and the `bonus.escape` jingle. They never block the next wave (`mustClear` false).
+  puff and the `bonus.escape` jingle. They never block the next wave (`mustClear` false). Slows and roots slow their escape; while a bonus wave runs the Skill Shop does not auto-open (its key still opens it).
 - **Pacing.** The breather grows by `extraBreatherSeconds` (6 s) only when a bonus wave runs: at most one per cycle, 40%
   chance, so about +2.4 s per 8-minute cycle on average. Ready-up still ends the breather early; uncaught creatures just flee.
 - **Telegraph.** A `BONUS LOOT WAVE` banner with the `sting.bonus_wave` cue and the announcement line; every creature wears the
