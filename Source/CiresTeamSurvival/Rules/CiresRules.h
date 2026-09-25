@@ -261,4 +261,18 @@ namespace CC
     // on bosses, and max(normal, 30% of max health) against champions (PvP).
     double ExecuteDamage(ExecuteTarget target, double targetHealth, double targetMaxHealth, double normalDamage);
 }
+// Dodge-roll synergy maths (engine: CireRollSkills).
+namespace Roll
+{
+    constexpr int MaxMomentumStacks = 5;
+    // Remaining cooldown after a roll cuts it by percent (0..100).
+    double ReducedCooldown(double remainingSeconds, double percent);
+    // Distance from point P to the segment AB in the ground plane (roll trails).
+    double PointSegmentDistance2D(double px, double py, double ax, double ay, double bx, double by);
+    double MomentumMultiplier(int stacks, double perStackPercent);
+    // Roll recovery shortened by cutPercent (Shadow Dance): readyAt measured from startedAt.
+    double ShortenedReadyAt(double startedAt, double readyAt, double cutPercent);
+    // Blur: a roll in [0,1) dodges when below chancePercent/100.
+    bool BlurDodges(double roll01, double chancePercent);
+}
 } // namespace Cires

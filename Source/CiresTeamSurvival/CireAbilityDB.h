@@ -35,6 +35,7 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     FString Id, Name, Icon, Kind, School, Targeting, Status, Description, EffectLabel;
     FString Category;                    // new-champions: "construct" for Aetheri Constructs (Skill Shop tab); empty otherwise
     TArray<FString> Types;               // "DPS", "TANK", "HEAL"
+    TArray<FString> EffectTags;          // Skill Shop groups, e.g. "roll", "trail", "instantCast"
     float CastTime = 0, Range = 0, Radius = 0, Duration = 0;
     Cires::Abilities::Base Base;
     Cires::Abilities::Curve Curve;

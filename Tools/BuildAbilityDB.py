@@ -294,6 +294,63 @@ BUFF_MODIFIERS = {
 }
 
 
+# Dodge-roll synergy skills (CireRollSkills, Docs/RollSkills.md). Signature-only: purchasable by the
+# champions listed in ROLL_AVAILABLE (agile DPS, rogue-likes, Gunblade, Huntress, bruiser tanks,
+# mobile supports). "category" is the Skill Shop group; "effectTags" drive the periodic-table cells.
+AGILE = ["ranger", "lancer", "troll_berserker_melee", "troll_berserker_ranged", "gunblade", "huntress", "witch_slayer"]
+BRUISER = ["ether_golem_bruiser", "orc_chieftain", "drakish_footman", "paladin_righteous", "knight"]
+MOBILE_SUPPORT = ["dryad", "whisp", "evergrove_centaur", "aetheri_warden", "scholar"]
+CASTERS = ["wizard", "aetheri_artificer", "witch_slayer"]
+ROLL_SKILLS = {
+    # id: (name, roles, kind, school, targeting, mana, energy, cooldown, effect, effectLabel, range, radius, duration, category, tags, description, effects, curveExtra, available)
+    "riposte_roll": ("Riposte", ["dps", "tank"], "passive", "physical", "passive", 0, 0, 0, 60, "counter damage", 700, 0, 0, "offensive", ["roll", "iframe", "counter"],
+                     "A hit you dodge during the roll's i-frames triggers a counter strike on the attacker for {effect} + 1x primary damage (once per roll).", [], {}, AGILE + BRUISER),
+    "tumblers_edge": ("Tumbler's Edge", ["dps"], "passive", "physical", "passive", 0, 0, 0, 50, "% next attack damage", 0, 0, 4, "offensive", ["roll", "nextAttack", "empower"],
+                      "After a roll, your next basic attack within 4s deals {effect}% more damage.", [], {"effectCap": 120}, AGILE),
+    "killer_instinct": ("Killer Instinct", ["dps"], "passive", "physical", "passive", 0, 0, 0, 100, "% crit chance", 0, 0, 4, "offensive", ["roll", "nextAttack", "crit"],
+                        "After a roll, your next basic attack within 4s is a guaranteed critical strike.", [], {"effectCap": 100}, AGILE),
+    "fleet_recovery": ("Fleet Recovery", ["tank", "dps", "heal"], "passive", "nature", "passive", 0, 0, 0, 5, "% max health per roll", 0, 0, 0, "defensive", ["roll", "heal", "sustain"],
+                       "Every dodge roll restores {effect}% of your maximum health.", [], {"effectCap": 12}, AGILE + BRUISER + MOBILE_SUPPORT),
+    "windrunner": ("Windrunner", ["dps", "heal"], "passive", "storm", "passive", 0, 0, 0, 10, "% move speed", 0, 0, 5, "mobility", ["roll", "haste", "moveSpeed"],
+                   "Every dodge roll grants {effect}% movement speed for 5s.", [], {"effectCap": 25}, AGILE + MOBILE_SUPPORT),
+    "quickened_mind": ("Quickened Mind", ["heal", "dps"], "passive", "arcane", "passive", 0, 0, 0, 6, "s window", 0, 0, 6, "utility", ["roll", "instantCast", "caster"],
+                       "After a roll, your next spell with a cast time (within {effect}s) is cast instantly.", [], {"effectCap": 10}, MOBILE_SUPPORT + CASTERS),
+    "hasted_tumble": ("Hasted Tumble", ["tank", "dps", "heal"], "passive", "arcane", "passive", 0, 0, 0, 15, "% cooldown cut per roll", 0, 0, 0, "utility", ["roll", "cooldown"],
+                      "Every dodge roll shortens the remaining cooldowns of your active skills by {effect}%.", [], {"effectCap": 30}, AGILE + MOBILE_SUPPORT + CASTERS),
+    "ember_wake": ("Ember Wake", ["dps"], "passive", "fire", "passive", 0, 0, 0, 40, "fire damage", 0, 180, 0, "offensive", ["roll", "trail", "fire"],
+                   "Your roll leaves a line of embers: enemies within 1.8m of the path take {effect} + 0.6x primary fire damage.", [], {}, ["gunblade", "wizard", "troll_berserker_melee", "lancer", "drakish_footman"]),
+    "frost_wake": ("Frost Wake", ["dps", "tank"], "passive", "cold", "passive", 0, 0, 0, 25, "frost damage", 0, 180, 3, "crowdControl", ["roll", "trail", "slow", "cold"],
+                   "Your roll leaves a frost trail: enemies within 1.8m of the path take {effect} damage and are slowed 40% for 3s.",
+                   [fx("slow", "area", 3, 0.4, 180, label="Move -40%")], {}, ["ranger", "huntress", "wizard", "lancer", "knight", "paladin_righteous", "orc_chieftain"]),
+    "momentum": ("Momentum", ["dps", "tank"], "passive", "physical", "passive", 0, 0, 0, 4, "% damage per stack", 0, 0, 8, "offensive", ["roll", "stacking", "empower"],
+                 "Each roll grants a Momentum stack for 8s (max 5): +{effect}% damage per stack.", [], {"effectCap": 8}, AGILE + BRUISER),
+    "blur_step": ("Blur", ["dps"], "passive", "shadow", "passive", 0, 0, 0, 25, "% dodge chance", 0, 0, 3, "defensive", ["roll", "dodge", "stealth"],
+                  "After a roll you blur for 3s: {effect}% chance to dodge incoming attacks.", [], {"effectCap": 50}, AGILE),
+    "slippery_roll": ("Slippery", ["tank", "dps", "heal"], "passive", "nature", "passive", 0, 0, 0, 1, "debuff cleansed per roll", 0, 0, 0, "defensive", ["roll", "cleanse"],
+                      "Every dodge roll cleanses one debuff: slows first, then healing cuts, silences and armor breaks.", [fx("cleanse", "self")], {"effectCap": 1}, AGILE + BRUISER + MOBILE_SUPPORT),
+    "bloodrush": ("Bloodrush", ["dps", "tank"], "passive", "physical", "passive", 0, 0, 0, 100, "% roll reset", 0, 0, 0, "mobility", ["roll", "reset", "onKill"],
+                  "Killing an enemy resets your dodge roll cooldown and refunds its energy.", [], {"effectCap": 100}, AGILE + BRUISER),
+    "tumble_strike": ("Tumble Strike", ["dps", "tank"], "active", "physical", "enemy", 0, 30, 10, 70, "damage", 700, 0, 0, "offensive", ["roll", "gapCloser", "strike"],
+                      "Roll toward your target (ignores the dodge cooldown and triggers your roll skills), then strike for {effect} + 1.5x primary damage.", [], {}, AGILE + BRUISER),
+    "mine_layer": ("Caltrop Mine", ["dps", "tank"], "active", "physical", "self", 0, 25, 16, 80, "mine damage", 0, 250, 20, "construct", ["roll", "trap", "construct", "slow"],
+                   "For 8s your next roll drops a caltrop mine (20s, up to 2): the first enemy within 1.5m sets it off for {effect} + 1x primary damage and a 50% slow for 2s in 2.5m.",
+                   [fx("slow", "area", 2, 0.5, 250, label="Move -50%")], {}, ["gunblade", "huntress", "ranger", "aetheri_artificer", "dwarf_miner"]),
+    "taunting_tumble": ("Taunting Tumble", ["tank"], "active", "physical", "self", 0, 25, 18, 3, "s taunt", 0, 500, 8, "crowdControl", ["roll", "taunt", "guard"],
+                        "For 8s each roll taunts monsters within 5m for {effect}s and guards you (20% damage reduction) briefly.",
+                        [fx("taunt", "area", 3, radius=500), fx("guard", "self", 1.5, 0.2, label="DEF +20%")], {}, BRUISER + ["bear", "ether_golem_tank", "totemic_behemoth", "dwarf_miner"]),
+    "shield_tumble": ("Shield Tumble", ["heal", "tank"], "active", "holy", "self", 40, 0, 20, 5, "% max health heal", 0, 800, 10, "support", ["roll", "shield", "ally"],
+                      "For 10s each roll grants the nearest ally within 8m a 40% guard for 3s and heals them for {effect}% of their max health.",
+                      [fx("guard", "target", 3, 0.4, label="DEF +40%")], {"effectCap": 10}, MOBILE_SUPPORT + ["paladin_righteous", "paladin_holy", "knight"]),
+    "venom_tumble": ("Venom Tumble", ["dps"], "active", "poison", "self", 0, 25, 16, 30, "poison damage", 0, 180, 8, "crowdControl", ["roll", "trail", "poison", "healCut"],
+                     "For 8s your rolls leave venom: enemies within 1.8m of the path take {effect} damage and receive 30% less healing for 5s.",
+                     [fx("healCut", "area", 5, 0.3, 180, label="Healing -30%")], {}, ["ranger", "huntress", "troll_berserker_ranged", "dryad", "witch_slayer"]),
+    "shadow_dance": ("Shadow Dance", ["dps"], "active", "shadow", "self", 0, 20, 30, 70, "% roll cooldown cut", 0, 0, 10, "mobility", ["roll", "cooldown", "stance"],
+                     "For 10s your dodge roll recovers {effect}% faster and refunds its energy.", [], {"effectCap": 85}, AGILE),
+    "evasive_stance": ("Evasive Stance", ["dps", "tank"], "active", "physical", "self", 0, 20, 24, 3, "% max health per dodge", 0, 0, 6, "defensive", ["roll", "iframe", "heal", "stance"],
+                       "For 6s rolls refund their energy and every hit you dodge during i-frames restores {effect}% max health.", [], {"effectCap": 8}, AGILE + BRUISER),
+}
+
+
 def build():
     tuning = json.loads((ROOT / "Content/Data/CombatTuning.json").read_text(encoding="utf-8"))
     astra = json.loads((ROOT / "Content/Data/AstraAbilities.json").read_text(encoding="utf-8-sig"))
@@ -344,6 +401,14 @@ def build():
         if extra.get("category"):
             rec["category"] = extra["category"]
         abilities[sid] = rec
+    # Dodge-roll synergy skills.
+    for sid, row in ROLL_SKILLS.items():
+        name, roles, kind, school, targeting, mana, energy, cd, effect, label, rng, radius, dur, category, tags, desc, effects, cx, _avail = row
+        curve = dict(CURVES[kind]); curve.update(cx)
+        abilities[sid] = dict(id=sid, name=name, icon=f"/Game/UI/Abilities/T_{sid}", types=[TYPES[r] for r in roles], kind=kind, school=school,
+                              targeting=targeting, castTime=0, base=dict(effect=effect, manaCost=mana, energyCost=energy, cooldown=cd, castTime=0,
+                              range=rng, radius=radius, duration=dur), effectLabel=label, curve=curve, status="implemented", signatureOnly=True,
+                              category=category, effectTags=tags, description=desc, effects=effects, champions=[], signatureOf=[])
     # Planned signature skills from the roster.
     for c in roster["champions"]:
         prim = ROLE_OF[c["threatRole"]]
@@ -377,6 +442,7 @@ def build():
         roles = sorted({ROLE_OF[r] for r in c["roles"]} | {prim}, key=["tank", "dps", "heal"].index)
         signature = [s["id"] for s in c["actives"] + [c["passive"], c["ultimate"]]]
         signature += [sid for sid, owners in SIGNATURE_EXTRA.items() if c["id"] in owners]
+        signature += [sid for sid, row in ROLL_SKILLS.items() if c["id"] in row[-1]]
         mask = sum(role_bits[r] for r in roles)
         pool = [sid for sid, a in abilities.items() if a["status"] == "implemented" and not a.get("signatureOnly") and sum(role_bits[t.lower()] for t in a["types"]) & mask]
         purchasable = list(dict.fromkeys(signature + pool))
