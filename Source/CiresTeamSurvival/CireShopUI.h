@@ -49,6 +49,8 @@ namespace CireShopUI
     CIRESTEAMSURVIVAL_API void DebugSkillTab(const FString& SkillId);
     CIRESTEAMSURVIVAL_API void DebugSkillFilter(int32 Filter); // new-champions: 0 all, 1 Constructs
     CIRESTEAMSURVIVAL_API void DebugItemTab();
+    /** items-v2 gallery: set the stat filter mask (bit 0 = Path Uniques). */
+    CIRESTEAMSURVIVAL_API void DebugFilter(uint32 Mask);
     CIRESTEAMSURVIVAL_API FVector2D DebugSkillGridPos(const FString& SkillId);
     // Freezes UI time at (last wax-seal stamp + Age); the current shop tab (0 items, 1 skills).
     CIRESTEAMSURVIVAL_API void DebugFreezeAfterStamp(float Age);

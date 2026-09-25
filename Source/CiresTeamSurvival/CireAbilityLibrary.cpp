@@ -65,7 +65,7 @@ const FCireAuthoredAbility* CireAbilityLibrary::Find(const FString& Id){Load();r
 int32 CireAbilityLibrary::Count(){Load();return Abilities.Num();}
 bool CireAbilityLibrary::Cast(ACireHero* Hero,int32 Slot,const FCireAuthoredAbility& A){
     if(!IsValid(Hero)||!Hero->HasAuthority()||!Hero->Cooldowns.IsValidIndex(Slot))return false;
-    if(!CireSkillShop::CanPayCast(Hero,A.Id,A.ManaCost,A.EnergyCost)){Hero->Notice=TEXT("Not enough mana or energy.");return false;} // progression-shop: Skill Shop level (Ability DB curve)
+    if(!CireSkillShop::CanPayCast(Hero,A.Id,A.ManaCost,A.EnergyCost)){Hero->Notice=CireSkillShop::CostFailText();return false;} // progression-shop: Skill Shop level (Ability DB curve)
     const bool Directional=A.Area.Shape==ECireAreaShape::Cone||A.Area.Shape==ECireAreaShape::Line;
     FVector Aim=Hero->bHasCastAim?Hero->CastAimPoint:(Hero->IsHostile(Hero->Target)?Hero->Target->GetActorLocation():Hero->GetActorLocation()+Hero->GetActorForwardVector()*FMath::Min(500.f,A.CastRange));
     if(!CireSkillRuntime::InRealmBounds(Hero->GetWorld()->GetAuthGameMode<ACireGameMode>(),Hero->TeamId,Aim)){Hero->Notice=TEXT("Choose ground inside your battlefield.");return false;}

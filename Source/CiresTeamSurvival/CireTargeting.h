@@ -27,6 +27,18 @@ namespace CireTargeting
     FCireTargetDescriptor Describe(const FString& Id);
     FCireTargetingSnapshot Snapshot(const ACireController* Controller);
     void Request(ACireController* Controller,int32 Slot);
+    // feat/camera-movement: casting while moving.
+    // Casts the armed ground ability at the reticle (clean left click / key pressed again). False if nothing armed.
+    bool Confirm(ACireController* Controller);
+    // Sends a cast to the server. Cast-time spells that cannot be cast while moving either wait for the
+    // character to stop (Stop moving to cast, movement keys held) or let the server answer "Can't cast while moving".
+    void Dispatch(ACireController* Controller,int32 Slot,AActor* ExplicitTarget,bool bAtPoint=false,FVector Point=FVector::ZeroVector);
+    // True while a stop-to-cast is holding the movement keys (CireCamera zeroes drive/strafe input).
+    bool HoldsMovement(const ACireController* Controller);
+    // A movement key was newly pressed: release the hold (the server then cancels a stationary cast).
+    void ReleaseMovementHold(ACireController* Controller);
+    // Ground point used when the cursor is not over valid ground (summons/quick cast "in front of you").
+    FVector FrontPoint(ACireHero* Hero,float Range);
     // Returns true only when it consumed a confirmation/cancellation click.
     bool Tick(ACireController* Controller);
     void Cancel(ACireController* Controller);

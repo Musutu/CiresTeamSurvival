@@ -101,7 +101,7 @@ void CireShopUI::DrawStatsWindow(ACireHUD& HUD, ACireHero* Hero)
     const float Armor = static_cast<float>(T.Stats.Get(CI::ItemStat::Armor)), Ward = static_cast<float>(T.Stats.Get(CI::ItemStat::Ward));
     const float Speed = Hero->GetCharacterMovement() ? Hero->GetCharacterMovement()->MaxWalkSpeed : 0.f;
     const float RegenMult = Hero->HasSkill(TEXT("deep_reserves")) ? 1.5f : 1.f;
-    const float ManaRegen = Hero->MaxMana * .015f * RegenMult + static_cast<float>(T.Stats.Get(CI::ItemStat::ManaRegen));
+    const float ManaRegen = CireItems::BaseManaRegen(Hero, RegenMult) + static_cast<float>(T.Stats.Get(CI::ItemStat::ManaRegen)); // items-v2
     const float EnergyRegen = 9.f * RegenMult + static_cast<float>(T.Stats.Get(CI::ItemStat::EnergyRegen));
     const int32 Tomes = Hero->Inventory ? Hero->Inventory->PrimaryTomePoints : 0;
     auto AttributeBody = [&](int32 Total, CI::ItemStat Stat, bool bPrimary, const TCHAR* Benefit)
@@ -143,7 +143,7 @@ void CireShopUI::DrawStatsWindow(ACireHUD& HUD, ACireHero* Hero)
         FString::Printf(TEXT("Items restore %.1f health per second. At your town during prep or recovery you also regain 15%% health per second.%s"),
             T.Stats.Get(CI::ItemStat::HealthRegen), *ItemSources(Hero, CI::ItemStat::HealthRegen, false)), Health});
     Rows.Add({TEXT("Mana | Energy"), FString::Printf(TEXT("%.1f | %.0f"), ManaRegen, EnergyRegen), TEXT("Resource Regeneration"),
-        FString::Printf(TEXT("Mana: 1.5%% of max mana (%.0f)%s + items %.1f = %.1f/s.\nEnergy: 9/s%s + items %.1f = %.1f/s (100 max).%s"), Hero->MaxMana,
+        FString::Printf(TEXT("Mana: 2 + 0.8%% of max mana (%.0f)%s + items %.1f = %.1f/s. Mana costs rise 5%% per level.\nEnergy: 9/s%s + items %.1f = %.1f/s (100 max).%s"), Hero->MaxMana,
             RegenMult > 1 ? TEXT(" x 1.5 Deep Reserves") : TEXT(""), T.Stats.Get(CI::ItemStat::ManaRegen), ManaRegen, RegenMult > 1 ? TEXT(" x 1.5") : TEXT(""),
             T.Stats.Get(CI::ItemStat::EnergyRegen), EnergyRegen, *ItemSources(Hero, CI::ItemStat::ManaRegen, false)), Mana});
     const bool bSTR = Hero->PrimaryStat() == Cires::PrimaryStat::Strength, bAGI = Hero->PrimaryStat() == Cires::PrimaryStat::Agility, bINT = !bSTR && !bAGI;

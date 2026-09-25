@@ -53,6 +53,8 @@ namespace CireKits
     CIRESTEAMSURVIVAL_API ACireHero* OwnerOf(const AActor* Unit);
     /** Interval of a summon / construct attack after the owner's attack speed. */
     CIRESTEAMSURVIVAL_API float InheritedInterval(const AActor* Unit, float BaseInterval);
+    /** Base cooldown after an owner's CDR (pets, summons, constructs share this). */
+    CIRESTEAMSURVIVAL_API float OwnerCooldown(const ACireHero* Owner, float BaseSeconds);
     /** A summon / construct ability cooldown after the owner's CDR. */
     CIRESTEAMSURVIVAL_API float InheritedCooldown(const AActor* Unit, float BaseSeconds);
 

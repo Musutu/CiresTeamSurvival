@@ -868,6 +868,12 @@ ROLL_SKILLS = {
     'shield_tumble': ('shield', 'holy'), 'venom_tumble': ('venom', 'venom'), 'shadow_dance': ('moon', 'shadow'), 'evasive_stance': ('dash', 'spirit'),
 }
 # Class baseline traits (CireClassTraits): Support / Tank / DPS.
+# scaling-kits: shield / range skills and Headshot (procedural placeholders until the 2D art pass).
+KIT_SKILLS = {
+    'shield_bash': ('shield_slam', 'steel'), 'shield_toss': ('glaive', 'ember'), 'shield_wall': ('aegis', 'steel'), 'pavise': ('tower', 'stone'),
+    'mechanical_tank': ('gear', 'war'), 'artillery': ('cataclysm', 'ember'), 'artillery_training': ('piercing', 'war'), 'eagle_eye': ('eye', 'nature'),
+    'longshot': ('arrow', 'steel'), 'headshot': ('skull', 'ember'),
+}
 TRAITS = {'trait_mending_strikes': ('heart', 'spirit'), 'trait_natural_defense': ('shield', 'earth'), 'trait_keen_edge': ('sword', 'blood')}
 # Planned roster skills: keyword -> glyph, falling back to the delivery shape.
 KEYWORDS = [
@@ -983,6 +989,8 @@ def main() -> int:
         jobs[sid] = (glyph, pal, None)
     for sid, (glyph, pal) in ROLL_SKILLS.items():
         jobs[sid] = ('tumble', pal, dict(inner=glyph))
+    for sid, (glyph, pal) in KIT_SKILLS.items():
+        jobs[sid] = (glyph, pal, None)
     for c in roster['champions']:
         for s in c['actives'] + [c['passive'], c['ultimate']]:
             if s['id'] not in jobs:

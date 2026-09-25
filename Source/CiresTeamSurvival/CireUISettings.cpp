@@ -119,6 +119,7 @@ void FCireUISettings::Reset()
     bShowActionBar2=true; bShowActionBar3=false; bLockActionBars=false; bMeterCollapsed=false; bThreatCollapsed=false;
     bEffectCallouts=true; bControlAlerts=true; bPlayerCastBar=true; OverheadStatusMode=0;
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
+    bSmartCast=true; bMouseoverCast=false; bRightClickCancelsAim=true; bPressAgainToCast=true; bAutoStopToCast=true; // feat/camera-movement
     OtherEffectsIntensity=1.f; // aura-vfx
     GroundTelegraphIntensity=.6f; // ability-vfx
     UITheme=CireUITheme::DefaultId().IsNone()?FString(TEXT("GildedCitadel")):CireUITheme::DefaultId().ToString(); // ui-themes
@@ -282,6 +283,7 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bMeterCollapsed); CIRE_LOAD_BOOL(bThreatCollapsed);
     CIRE_LOAD_BOOL(bEffectCallouts); CIRE_LOAD_BOOL(bControlAlerts); CIRE_LOAD_BOOL(bPlayerCastBar);
     CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
+    CIRE_LOAD_BOOL(bSmartCast); CIRE_LOAD_BOOL(bMouseoverCast); CIRE_LOAD_BOOL(bRightClickCancelsAim); CIRE_LOAD_BOOL(bPressAgainToCast); CIRE_LOAD_BOOL(bAutoStopToCast); // feat/camera-movement
     CIRE_LOAD_BOOL(bMusicEnabled); CIRE_LOAD_BOOL(bFootstepCameraShake); // audio: absent keys keep the defaults
     CIRE_LOAD_BOOL(bImpactCameraShake); // ability-vfx
     CIRE_LOAD_BOOL(bShowStats); CIRE_LOAD_BOOL(bShowLootLog); // progression-shop
@@ -375,6 +377,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bMeterCollapsed); CIRE_SAVE_BOOL(bThreatCollapsed);
     CIRE_SAVE_BOOL(bEffectCallouts); CIRE_SAVE_BOOL(bControlAlerts); CIRE_SAVE_BOOL(bPlayerCastBar);
     CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
+    CIRE_SAVE_BOOL(bSmartCast); CIRE_SAVE_BOOL(bMouseoverCast); CIRE_SAVE_BOOL(bRightClickCancelsAim); CIRE_SAVE_BOOL(bPressAgainToCast); CIRE_SAVE_BOOL(bAutoStopToCast); // feat/camera-movement
     CIRE_SAVE_BOOL(bMusicEnabled); CIRE_SAVE_BOOL(bFootstepCameraShake); // audio:
     CIRE_SAVE_BOOL(bImpactCameraShake); // ability-vfx
     CIRE_SAVE_BOOL(bShowStats); CIRE_SAVE_BOOL(bShowLootLog); // progression-shop

@@ -1,4 +1,6 @@
 #include "CireHUD.h"
+#include "GameFramework/GameStateBase.h" // items-v2
+#include "CireItems.h" // items-v2
 #include "CireUITheme.h" // ui-themes
 #include "CireArenas.h" // arenas
 #include "CireShopUI.h" // progression-shop
@@ -268,8 +270,31 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
     if(Poisoned>0){Panel(165,8,84,17,Card);Label(PoisonLabel(Poisoned),170,10,9,Poison);}
     Bar(BX,31,BW,20,Fraction(Hero->Health,Hero->MaxHealth),LifeGreen);
     Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Health,Hero->MaxHealth),BX+7,33,12,Parchment);
-    Bar(BX,55,BW,13,Fraction(Hero->Mana,Hero->MaxMana),Blue);
-    Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Mana,Hero->MaxMana),BX+7,55,10,Parchment);
+    // items-v2: absorb shield (party shields, ultimate upgrades) overlays the health bar.
+    const UCireInventory* Inv=Hero->Inventory.Get();
+    const float WorldNowS=GetWorld()->GetGameState()?GetWorld()->GetGameState()->GetServerWorldTimeSeconds():GetWorld()->GetTimeSeconds();
+    if(Inv&&Inv->BarrierHP>0&&Inv->BarrierEndsAt>WorldNowS){const float SW=BW*Fraction(Inv->BarrierHP,FMath::Max(Hero->MaxHealth,1.f));
+        Panel(BX+BW-SW,31,SW,20,FLinearColor(1.f,.93f,.62f,.55f));Label(FString::Printf(TEXT("+%.0f"),Inv->BarrierHP),BX+BW-TextWidth(FString::Printf(TEXT("+%.0f"),Inv->BarrierHP),11)-5,33,11,FLinearColor(1.f,.96f,.8f,1));}
+    // items-v2: mana is a real budget now: pulse when low, flash red on "Not enough mana", show regen.
+    const float RealNow=GetWorld()->GetRealTimeSeconds();
+    static TMap<TWeakObjectPtr<const ACireHero>,TPair<int32,float>> ShortfallSeen;
+    TPair<int32,float>& Seen=ShortfallSeen.FindOrAdd(Hero);
+    if(Inv&&Inv->ResourceFailSerial!=Seen.Key){if(Seen.Key!=0||Inv->ResourceFailSerial==1)Seen.Value=RealNow;Seen.Key=Inv->ResourceFailSerial;if(Seen.Value==RealNow)PlayWowSound(2,.5f);}
+    const float Flash=FMath::Clamp(1.f-(RealNow-Seen.Value)/.9f,0.f,1.f);
+    const bool bManaFlash=Flash>0&&Inv&&Inv->ResourceFailKind!=2;
+    const float Shake=bManaFlash?FMath::Sin(RealNow*70.f)*3.f*Flash:0.f;
+    const float ManaFrac=Fraction(Hero->Mana,Hero->MaxMana);
+    if(bManaFlash)Panel(BX-3+Shake,52,BW+6,19,FLinearColor(1.f,.12f,.08f,.75f*Flash));
+    else if(ManaFrac<.25f&&Hero->MaxMana>0){const float P=.5f+.5f*FMath::Sin(RealNow*5.f);Panel(BX-2,53,BW+4,17,FLinearColor(.3f,.45f,1.f,.25f+.3f*P));}
+    Bar(BX+Shake,55,BW,13,ManaFrac,Blue);
+    const float ItemManaRegen=Inv?static_cast<float>(Inv->Totals().Stats.Get(Cires::Items::ItemStat::ManaRegen)):0.f;
+    const float ManaRegenNow=CireItems::BaseManaRegen(Hero,Hero->HasSkill(TEXT("deep_reserves"))?1.5f:1.f)+ItemManaRegen;
+    Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Mana,Hero->MaxMana),BX+7+Shake,55,10,Parchment);
+    const FString RegenText=FString::Printf(TEXT("+%.1f/s"),ManaRegenNow);Label(RegenText,BX+BW-TextWidth(RegenText,9)-5+Shake,56,9,FLinearColor(.72f,.84f,1.f,1));
+    if(bManaFlash){const FString Warn=FString::Printf(TEXT("NOT ENOUGH MANA  %.0f / %.0f"),Hero->Mana,Inv->ResourceFailNeed);
+        Label(Warn,(ViewW-TextWidth(Warn,16))*.5f+Shake,ViewH-236,16,FLinearColor(.55f,.72f,1.f,Flash));}
+    else if(Flash>0&&Inv&&Inv->ResourceFailKind==2){const FString Warn=FString::Printf(TEXT("NOT ENOUGH ENERGY  %.0f / %.0f"),Hero->Energy,Inv->ResourceFailNeed);
+        Label(Warn,(ViewW-TextWidth(Warn,16))*.5f,ViewH-236,16,FLinearColor(1.f,.85f,.25f,Flash));}
     Bar(BX,72,BW,5,Hero->Energy/100.f,CireUIColors::Energy); // energy stays yellow in every theme
     Label(FString::Printf(TEXT("STR %d  AGI %d  INT %d"),Hero->Strength,Hero->Agility,Hero->Intelligence),10,116,10,Muted);
     if(Aggro==0)Label(FString::Printf(TEXT("EN %.0f"),Hero->Energy),210,116,10,Gold);
@@ -660,7 +685,7 @@ void ACireHUD::DrawHUD()
     {
         const auto Aim=CireTargeting::Snapshot(Controller);
         if(Aim.bActive){const FString Text=ACireHero::SkillName(Aim.SkillId)+TEXT(" | ")+Aim.Message;const float W=FMath::Min(750.f,TextWidth(Text,12)+28);Frame((ViewW-W)/2,ViewH-248,W,31,Aim.bValid?Teal:Red);Label(Text,(ViewW-W)/2+14,ViewH-240,12,Aim.bValid?Parchment:Red);}
-        if(Hero->Mobility){const float CD=Hero->Mobility->CooldownRemaining();const FString Move=FString::Printf(TEXT("[%s] JUMP   [%s] DODGE %s   [%s] %s"),*UISettings.Keybindings.Label(TEXT("Jump")).ToUpper(),*UISettings.Keybindings.Label(TEXT("DodgeRoll")).ToUpper(),CD>0?*FString::Printf(TEXT("%.1fs"),CD):TEXT("READY"),*UISettings.Keybindings.Label(TEXT("ToggleWalk")).ToUpper(),Hero->Mobility->bWalking?TEXT("WALK"):TEXT("RUN"));float HintY=ViewH-185;for(const TCHAR* BarId:{TEXT("Bar2"),TEXT("Bar3")})if(VisiblePanels.Contains(FName(BarId)))HintY=FMath::Min(HintY,PanelRect(FName(BarId)).Y-14);
+        if(Hero->Mobility){const float CD=Hero->Mobility->CooldownRemaining();const FString Move=FString::Printf(TEXT("[%s] JUMP   [%s] DODGE %s   [%s] %s"),*UISettings.Keybindings.Label(TEXT("Jump")).ToUpper(),*UISettings.Keybindings.Label(TEXT("DodgeRoll")).ToUpper(),CD>0?*FString::Printf(TEXT("%.1fs"),CD):Hero->Mobility->MaxRollCharges>1?*FString::Printf(TEXT("%d/%d"),Hero->Mobility->AvailableCharges(),Hero->Mobility->MaxRollCharges):TEXT("READY"),*UISettings.Keybindings.Label(TEXT("ToggleWalk")).ToUpper(),Hero->Mobility->bWalking?TEXT("WALK"):TEXT("RUN"));float HintY=ViewH-185;for(const TCHAR* BarId:{TEXT("Bar2"),TEXT("Bar3")})if(VisiblePanels.Contains(FName(BarId)))HintY=FMath::Min(HintY,PanelRect(FName(BarId)).Y-14);
             Label(Move,(ViewW-TextWidth(Move,9))/2,HintY,9,Hero->Mobility->IsInvulnerable()?Teal:Muted);}
     }
     if(!Hero->Notice.IsEmpty()&&!bModal) {

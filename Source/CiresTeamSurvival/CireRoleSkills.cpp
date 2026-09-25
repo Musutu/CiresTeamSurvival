@@ -89,7 +89,7 @@ bool CireRoleSkills::Cast(ACireHero* Hero,int32 Slot,const FString& Id)
     if(!Mode||!Mode->IsCombatPhase()||!Recipe)return false;
     const auto S=*Recipe;
     auto Fail=[&](const TCHAR* Why){Hero->Notice=Why;return false;};
-    if(!CireSkillShop::CanPayCast(Hero,Id,S.ManaCost,S.EnergyCost))return Fail(TEXT("Not enough mana or energy.")); // progression-shop: Skill Shop level (Ability DB curve)
+    if(!CireSkillShop::CanPayCast(Hero,Id,S.ManaCost,S.EnergyCost))return Fail(*CireSkillShop::CostFailText()); // progression-shop: Skill Shop level (Ability DB curve)
     const float Now=Hero->GetWorld()->GetTimeSeconds(),Duration=CireDeveloperTools::EffectSeconds(Hero->GetWorld(),S.DurationSeconds);
     const float Power=Mode->Power(Hero->TeamId),Amount=FMath::Min(10000.f,CireKits::Amount(Hero,Id,S.FlatPower,S.PrimaryScaling)*Power); // scaling-kits: DB base + coef x PRIMARY
     FVector Aim=Hero->GetActorLocation();ACireHero* Ally=Hero;

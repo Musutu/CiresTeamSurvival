@@ -142,7 +142,8 @@ float CireKits::AttackSpeedMultiplier(const ACireHero* H)
 {
     if(!H)return 1.f;
     const float Passive=H->HasSkill(TEXT("battle_rhythm"))?1.20f:1.f;
-    return (1.f+H->Agility*0.01f+CireItems::AttackSpeedBonus(H)+CireClassTraits::AttackSpeedBonus(H)+CireSignatureSkills::AttackSpeedBonus(H)+AttackSpeedBonus(H))*Passive;
+    const float Speed=(1.f+H->Agility*0.01f+CireItems::AttackSpeedBonus(H)+CireClassTraits::AttackSpeedBonus(H)+CireSignatureSkills::AttackSpeedBonus(H)+AttackSpeedBonus(H))*Passive;
+    return FMath::Clamp(FMath::IsFinite(Speed)?Speed:1.f,.25f,5.f);
 }
 ACireHero* CireKits::OwnerOf(const AActor* Unit)
 {
@@ -156,11 +157,11 @@ float CireKits::InheritedInterval(const AActor* Unit,float Base)
     if(!O||O==Unit)return Base;
     return static_cast<float>(K::InheritedAttackInterval(Base,AttackSpeedMultiplier(O)));
 }
-float CireKits::InheritedCooldown(const AActor* Unit,float Base)
+float CireKits::OwnerCooldown(const ACireHero* O,float Base)
 {
-    const ACireHero* O=OwnerOf(Unit);
-    return static_cast<float>(K::InheritedCooldown(Base,O?O->CDR:0.f));
+    return static_cast<float>(Cires::CooldownSeconds(Base,IsValid(O)?O->CDR:0.f));
 }
+float CireKits::InheritedCooldown(const AActor* Unit,float Base){return OwnerCooldown(OwnerOf(Unit),Base);}
 
 // ============================================================================ stat hooks
 int32 CireKits::SkillLevel(const ACireHero* H,const FString& Id){return CireSkillShop::Level(H,Id);}

@@ -11,6 +11,7 @@
 #include "CireChampionProfiles.h"
 #include "CireNPCState.h"
 #include "CireKeybindings.h"
+#include "CireUltimateUpgrades.h" // items-v2: primary-stat scaling of item actives
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -123,6 +124,14 @@ bool CireItems::ParseJson(const FString& Json, FCireItemData& Out, FString& Erro
         Out.Shop.TownShoppingDuringRecovery = Flag(*Shop, TEXT("townShoppingDuringRecovery"), true);
         Out.Shop.TownRadius = FMath::Clamp(Number(*Shop, TEXT("townRadius"), 900), 100., 5000.);
     }
+    const TSharedPtr<FJsonObject>* ManaEconomy = nullptr; // items-v2
+    if (Root->TryGetObjectField(TEXT("manaEconomy"), ManaEconomy))
+    {
+        Out.Mana.RegenFlat = FMath::Clamp(Number(*ManaEconomy, TEXT("regenFlat"), 2), 0., 100.);
+        Out.Mana.RegenPercent = FMath::Clamp(Number(*ManaEconomy, TEXT("regenPercent"), .008), 0., .2);
+        Out.Mana.CostPerLevel = FMath::Clamp(Number(*ManaEconomy, TEXT("costPerLevel"), .05), 0., 1.);
+        Out.Mana.MaxCostScale = FMath::Clamp(Number(*ManaEconomy, TEXT("maxCostScale"), 3), 1., 10.);
+    }
     const TSharedPtr<FJsonObject>* Teleport = nullptr;
     if (Root->TryGetObjectField(TEXT("teleport"), Teleport))
     {
@@ -179,6 +188,7 @@ bool CireItems::ParseJson(const FString& Json, FCireItemData& Out, FString& Erro
             if ((*Use)->TryGetObjectField(TEXT("buff"), Buff) && !ParseStats(*Buff, Item.Use.Buff, Error, Owner)) return false;
             Out.UseText.Add(FName(*Owner), Text(*Use, TEXT("text")));
         }
+        if (!Text(Object, TEXT("effect")).IsEmpty()) Out.EffectLine.Add(FName(*Owner), Text(Object, TEXT("effect"))); // items-v2
         const TArray<TSharedPtr<FJsonValue>>* Passives = nullptr;
         if (Object->TryGetArrayField(TEXT("passives"), Passives))
         {
@@ -204,6 +214,8 @@ bool CireItems::ParseJson(const FString& Json, FCireItemData& Out, FString& Erro
     }
     const std::string CatalogError = Out.Catalog.Finalize();
     if (!CatalogError.empty()) { Error = UTF8_TO_TCHAR(CatalogError.c_str()); return false; }
+    const std::string PolicyError = ValidateStatPolicy(Out.Catalog); // items-v2: primary stat + flat stats only
+    if (!PolicyError.empty()) { Error = UTF8_TO_TCHAR(PolicyError.c_str()); return false; }
     const TSharedPtr<FJsonObject>* Recommended = nullptr;
     if (Root->TryGetObjectField(TEXT("recommended"), Recommended))
         for (const auto& Role : (*Recommended)->Values)
@@ -223,6 +235,12 @@ bool CireItems::ParseJson(const FString& Json, FCireItemData& Out, FString& Erro
                     }
                 Lists.Add(Ids);
             }
+            // items-v2: the core build must be carryable (six slots, one path unique, one boots).
+            std::vector<std::string> Core;
+            for (const FName& Id : Lists[1]) Core.push_back(Utf8(Id.ToString()));
+            const std::string BuildError = ValidateBuild(Out.Catalog, Core);
+            if (!BuildError.empty()) { Error = FString(TEXT("Recommended ")) + FString(Role.Key) + TEXT(" core: ") + UTF8_TO_TCHAR(BuildError.c_str()); return false; }
+            Out.RoleOrder.Add(FString(Role.Key));
             Out.Recommended.Add(FString(*Role.Key), Lists);
         }
     Out.bValid = true;
@@ -268,6 +286,9 @@ FString CireItems::DisplayName(FName Id)
 FString CireItems::RoleKey(const ACireHero* Hero)
 {
     if (!Hero) return TEXT("physical");
+    // items-v2: construct and summon champions follow their path build when the data has one.
+    if (Hero->ChampionProfileId == TEXT("aetheri_artificer") && Get().Recommended.Contains(TEXT("constructor"))) return TEXT("constructor");
+    if (Hero->ChampionProfileId == TEXT("summoner") && Get().Recommended.Contains(TEXT("summoner"))) return TEXT("summoner");
     if (Hero->HasChampionRole(TEXT("tank"))) return TEXT("tank");
     if (Hero->HasChampionRole(TEXT("healer")) || Hero->HasChampionRole(TEXT("support"))) return TEXT("support");
     return Hero->PrimaryStat() == Cires::PrimaryStat::Intelligence ? TEXT("caster") : TEXT("physical");
@@ -311,6 +332,15 @@ void CireItems::AddAttributes(const ACireHero* Hero, Cires::StatBlock& Attribute
     Attributes.Strength += FMath::RoundToInt(T.Stats.Get(ItemStat::Strength));
     Attributes.Agility += FMath::RoundToInt(T.Stats.Get(ItemStat::Agility));
     Attributes.Intelligence += FMath::RoundToInt(T.Stats.Get(ItemStat::Intelligence));
+    // items-v2: "+X Primary Stat" lands on whichever attribute is this champion's primary.
+    const int32 Primary = FMath::RoundToInt(T.Stats.Get(ItemStat::Primary));
+    if (Primary != 0 && Hero)
+        switch (Hero->PrimaryStat())
+        {
+        case Cires::PrimaryStat::Strength: Attributes.Strength += Primary; break;
+        case Cires::PrimaryStat::Agility: Attributes.Agility += Primary; break;
+        default: Attributes.Intelligence += Primary; break;
+        }
 }
 
 double CireItems::CooldownReductionFor(ACireHero* Hero, float CurrentCDR)
@@ -354,6 +384,7 @@ float CireItems::MoveSpeedMultiplier(const ACireHero* Hero)
         if (Buff.EndsAt > Now)
             if (const ItemDef* Item = Find(Buff.Id); Item && Item->Use.Kind == EffectKind::Haste)
                 Bonus += static_cast<float>(Item->Use.Amount / 100.);
+            else if (Item) { for (const Passive& P : Item->Passives) if (P.Kind == PassiveKind::RollHaste) Bonus += static_cast<float>(P.Amount / 100.); } // items-v2: Tailwind
     return FMath::Clamp(1.f + Bonus, .5f, 2.f);
 }
 
@@ -378,8 +409,14 @@ float CireItems::ModifyOutgoingDamage(AActor* Source, AActor* Target, float Amou
         if (IsBasicAttack(Source, AbilityName))
         {
             if (T.EveryNthCount > 0 && ++Inventory->BasicHitCounter % T.EveryNthCount == 0) Amount += static_cast<float>(T.EveryNthDamage);
+            Amount *= 1.f + static_cast<float>(T.BasicDamageBonus / 100.); // items-v2: Stormhowl Ravager
         }
-        else Amount *= (1.f + static_cast<float>(T.Stats.Get(ItemStat::SpellPower) / 100.)) * CireSkillShop::EffectScale(Hero, AbilityName);
+        else
+        {
+            Amount *= (1.f + static_cast<float>(T.Stats.Get(ItemStat::SpellPower) / 100.)) * CireSkillShop::EffectScale(Hero, AbilityName);
+            if (T.AreaDamage > 0 && IsAreaAbility(AbilityName)) Amount *= 1.f + static_cast<float>(T.AreaDamage / 100.); // items-v2: Heart of the Cataclysm
+        }
+        if (T.ControlDamage > 0 && IsControlled(Target)) Amount *= 1.f + static_cast<float>(T.ControlDamage / 100.); // items-v2: Shackles
         if (T.ExecuteBonus > 0)
         {
             float Health = 0, MaxHealth = 0;
@@ -388,6 +425,7 @@ float CireItems::ModifyOutgoingDamage(AActor* Source, AActor* Target, float Amou
             if (MaxHealth > 0 && Health / MaxHealth * 100.f < T.ExecuteThreshold) Amount *= 1.f + static_cast<float>(T.ExecuteBonus / 100.);
         }
     }
+    else if (IsSummon(Source)) Amount *= SummonMultiplier(Source); // items-v2: Soulbinder's Crook
     const int32 Team = CireCombat::TeamOf(Source);
     if (Team >= 0) Amount *= 1.f + ACireLanternWard::MarkBonus(Target, Team);
     return Amount;
@@ -402,6 +440,9 @@ void CireItems::OnDamageDealt(AActor* Source, AActor* Target, float Applied, con
     const Totals& T = Inventory->Totals();
     const double Percent = IsBasicAttack(Source, AbilityName) ? T.Stats.Get(ItemStat::Lifesteal) : T.AbilityLifesteal;
     if (Percent > 0) HealDirect(Hero, Applied * static_cast<float>(Percent / 100.));
+    if (T.SplashPercent > 0 && T.SplashRadius > 0 && IsBasicAttack(Source, AbilityName) && IsValid(Target)) // items-v2: Howling Cleave
+        for (AActor* Other : EnemiesNear(Hero, Target->GetActorLocation(), static_cast<float>(T.SplashRadius)))
+            if (Other != Target) CireCombat::ApplyDamage(Hero, Other, Applied * static_cast<float>(T.SplashPercent / 100.), TEXT("Howling Cleave"));
 }
 
 float CireItems::ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FString& AbilityName, float Amount)
@@ -412,11 +453,20 @@ float CireItems::ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FSt
     const bool bPhysical = IsBasicAttack(Causer, AbilityName);
     // champion-draft: armor break; scaling-kits: party armour / MR aura, shield-tank -10% and Vulnerability.
     Amount *= 1.f - static_cast<float>(Mitigation((T.Stats.Get(bPhysical ? ItemStat::Armor : ItemStat::Ward) + CireKits::FlatDefense(Hero, bPhysical)) * (bPhysical ? CireCrowdControl::ArmorMultiplier(Hero) : 1.f) * CireKits::DefenseMultiplier(Hero)));
+    // items-v2: completed-item mitigation specials (percent, then flat block per hit).
+    Amount = static_cast<float>(ApplyItemMitigation(Amount, T.Stats.Get(ItemStat::DamageReduction), T.Stats.Get(ItemStat::DamageBlock)));
     const double Now = Inventory->Now();
     for (const auto& Buff : Inventory->Buffs)
         if (Buff.EndsAt > Now)
             if (const ItemDef* Item = Find(Buff.Id); Item && Item->Use.Kind == EffectKind::SelfBarrier)
                 Amount *= 1.f - FMath::Clamp(static_cast<float>(Item->Use.Amount / 100.), 0.f, .9f);
+    if (Inventory->BarrierHP > 0 && Inventory->BarrierEndsAt > Now) // items-v2: party shield absorbs first
+    {
+        const float Absorbed = FMath::Min(Inventory->BarrierHP, Amount);
+        Inventory->BarrierHP -= Absorbed;
+        Amount -= Absorbed;
+        if (Inventory->BarrierHP <= .5f) { Inventory->BarrierHP = 0; CireBuffs::Remove(Hero, TEXT("party_barrier")); }
+    }
     return Amount;
 }
 
@@ -561,6 +611,9 @@ void UCireInventory::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(UCireInventory, Equipment);
     DOREPLIFETIME(UCireInventory, Belt);
     DOREPLIFETIME(UCireInventory, Buffs);
+    DOREPLIFETIME(UCireInventory, BarrierHP); DOREPLIFETIME(UCireInventory, BarrierMax); DOREPLIFETIME(UCireInventory, BarrierEndsAt); // items-v2
+    DOREPLIFETIME_CONDITION(UCireInventory, ResourceFailSerial, COND_OwnerOnly); DOREPLIFETIME_CONDITION(UCireInventory, ResourceFailKind, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(UCireInventory, ResourceFailNeed, COND_OwnerOnly);
     DOREPLIFETIME(UCireInventory, TeleportChannelStart);
     DOREPLIFETIME(UCireInventory, TeleportChannelEnd);
     DOREPLIFETIME(UCireInventory, TeleportReadyAt);
@@ -622,7 +675,7 @@ const Totals& UCireInventory::Totals() const
         const double NowTime = Now();
         for (const auto& Buff : Buffs)
             if (Buff.EndsAt > NowTime)
-                if (const ItemDef* Item = CireItems::Find(Buff.Id); Item && Item->Use.Kind == EffectKind::Elixir) Active.push_back(Item->Use.Buff);
+            { StatBlock Stats; if (CireItems::BuffStats(Buff.Id, Stats)) Active.push_back(Stats); } // items-v2: elixirs, party buffs, ultimate upgrades
         CachedTotals = ComputeTotals(CireItems::Get().Catalog, ToRules(), Active);
         bTotalsDirty = false;
     }
@@ -820,6 +873,7 @@ bool UCireInventory::HasRoomFor(FName ItemId) const
         return false;
     }
     if (Item->Unique && ToRules().CountOf(Item->Id) > 0) return false;
+    if (UniqueGroupConflict(CireItems::Get().Catalog, ToRules(), Item->Id)) return false; // items-v2: one path unique, one boots
     for (const auto& Cell : Equipment) if (Cell.Id.IsNone()) return true;
     return false;
 }
@@ -935,7 +989,7 @@ bool UCireInventory::ApplyEffect(const Effect& Use, FName ItemId, FString& Messa
         AActor* Target = Owner->Target;
         if (!Owner->IsHostile(Target) || !Owner->InRange(Target, 1200.f)) { Message = TEXT("Select a hostile target within 12 m."); return false; }
         const FVector Center = Target->GetActorLocation();
-        const float Amount = static_cast<float>(Use.Amount + Use.Scaling * Owner->Intelligence) * Power;
+        const float Amount = static_cast<float>(Use.Amount + Use.Scaling * CireUltimateUpgrades::PrimaryValue(Owner)) * Power; // items-v2: primary stat
         TArray<AActor*> Victims{Target};
         for (ACireMonster* Monster : Mode->Monsters)
             if (Monster != Target && Owner->IsHostile(Monster) && FVector::DistSquared2D(Center, Monster->GetActorLocation()) <= FMath::Square(Use.Radius)) Victims.Add(Monster);
@@ -976,7 +1030,7 @@ bool UCireInventory::ApplyEffect(const Effect& Use, FName ItemId, FString& Messa
     }
     case EffectKind::HealAllies:
     {
-        const float Amount = static_cast<float>(Use.Amount + Use.Scaling * Owner->Intelligence) * Power;
+        const float Amount = static_cast<float>(Use.Amount + Use.Scaling * CireUltimateUpgrades::PrimaryValue(Owner)) * Power; // items-v2: primary stat
         for (ACireHero* Ally : Mode->Heroes)
         {
             if (!IsValid(Ally) || Ally->bDead || !Ally->bDrafted || Ally->TeamId != Owner->TeamId || !Owner->InRange(Ally, static_cast<float>(Use.Radius))) continue;
@@ -984,6 +1038,36 @@ bool UCireInventory::ApplyEffect(const Effect& Use, FName ItemId, FString& Messa
             else HealDirect(Ally, Amount * CireItems::HealingMultiplier(Owner));
         }
         Message = EffectName;
+        return true;
+    }
+    case EffectKind::PartyBarrier: // items-v2: shield the party in a radius
+    {
+        const float Amount = static_cast<float>(Use.Amount + Use.Scaling * CireUltimateUpgrades::PrimaryValue(Owner));
+        int32 Count = 0;
+        for (ACireHero* Ally : CireItems::AlliesNear(Owner, Owner->GetActorLocation(), static_cast<float>(Use.Radius)))
+            { CireItems::GrantBarrier(Ally, Amount, static_cast<float>(Use.Duration), Owner); ++Count; }
+        CireCombat::PlayCue(Owner, Owner, TEXT("bastion_of_dawn"), Owner->GetActorLocation(), Owner->GetActorLocation(), ECireSpellCue::Impact);
+        Message = FString::Printf(TEXT("%s: %d shielded"), *EffectName, Count);
+        return true;
+    }
+    case EffectKind::PartyBuff: // items-v2: e.g. allies +250 armor for 10 s
+    {
+        int32 Count = 0;
+        for (ACireHero* Ally : CireItems::AlliesNear(Owner, Owner->GetActorLocation(), static_cast<float>(Use.Radius)))
+            { CireItems::GrantStatBuff(Ally, ItemId, static_cast<float>(Use.Duration), Owner); ++Count; }
+        CireCombat::PlayCue(Owner, Owner, TEXT("war_cry"), Owner->GetActorLocation(), Owner->GetActorLocation(), ECireSpellCue::Impact);
+        Message = FString::Printf(TEXT("%s: %d allies"), *EffectName, Count);
+        return true;
+    }
+    case EffectKind::HealTarget: // items-v2: heal one ally for a large amount
+    {
+        ACireHero* Ally = ::Cast<ACireHero>(Owner->Target);
+        if (!IsValid(Ally) || IsSummon(Ally) || Ally->bDead || !Ally->bDrafted || Ally->TeamId != Owner->TeamId || !Owner->InRange(Ally, static_cast<float>(Use.Radius))) Ally = Owner;
+        const float Amount = static_cast<float>(Use.Amount + Use.Scaling * CireUltimateUpgrades::PrimaryValue(Owner));
+        if (Mode->IsCombatPhase()) CireCombat::ApplyHealing(Owner, Ally, Amount, EffectName);
+        else HealDirect(Ally, Amount * CireItems::HealingMultiplier(Owner));
+        CireBuffs::Apply(Ally, TEXT("renewal"), 1.5f, Owner);
+        Message = Ally == Owner ? EffectName : FString::Printf(TEXT("%s: %s"), *EffectName, *Ally->HeroName);
         return true;
     }
     case EffectKind::Haste:

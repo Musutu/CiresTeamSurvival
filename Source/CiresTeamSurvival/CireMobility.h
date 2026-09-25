@@ -28,6 +28,11 @@ namespace CireMovement
     float BodyScaleFor(const ACireHero& Hero);
     /** Applies acceleration/braking/rotation/scale tuning to a hero. Safe on server and clients. */
     void ApplyToHero(ACireHero& Hero);
+    /** WoW cast rule: the hero is moving under its own input (walk/strafe/backpedal) or airborne.
+     *  Knockbacks and residual braking without input do not count. Bots are never gated. */
+    bool IsMovingForCast(const ACireHero& Hero);
+    /** True when a cast-time ability may not start/continue for this hero right now. */
+    bool BlocksCast(const ACireHero& Hero, const FString& AbilityId);
 }
 UCLASS()
 class CIRESTEAMSURVIVAL_API UCireMobility : public UActorComponent
@@ -42,7 +47,13 @@ public:
     UPROPERTY(Replicated) bool bFaceControl=false;
     UPROPERTY(Replicated) float RollStartedAt=-100;
     UPROPERTY(Replicated) float RollDuration=.55f;
-    UPROPERTY(Replicated) float ReadyAt=0;
+    UPROPERTY(Replicated) float ReadyAt=0;   // items-v2: when the next missing dodge charge returns
+    /** items-v2: dodge-roll charges (Galeborn Twinstep adds one); they refill one at a time. */
+    UPROPERTY(Replicated) int32 RollCharges=1;
+    UPROPERTY(Replicated) int32 MaxRollCharges=1;
+    int32 AvailableCharges() const;
+    /** Seconds until the next charge returns (0 when full). */
+    float NextChargeIn() const;
     UPROPERTY(Replicated) float InvulnerableFrom=-100;
     UPROPERTY(Replicated) float InvulnerableUntil=-100;
     UPROPERTY(Replicated) FVector RollDirection=FVector::ForwardVector;

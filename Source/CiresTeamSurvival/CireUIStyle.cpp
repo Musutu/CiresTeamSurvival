@@ -1,5 +1,6 @@
 #include "CireUIStyle.h"
 #include "CireUITheme.h" // ui-themes
+#include "CireAudio.h" // audio: one hover tick for every menu button
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -363,6 +364,7 @@ void CireUIStyle::Button(const FCireUIPainter& P,float X,float Y,float W,float H
 {
     const FAssets& A=Assets();
     const bool bHover=State==ECireButtonState::Hover,bPress=State==ECireButtonState::Pressed,bOff=State==ECireButtonState::Disabled,bSel=State==ECireButtonState::Selected;
+    if(bHover)CireAudio::NoteUIHover(X,Y); // audio: consistent hover tick across menus
     const float Dy=bPress?1.f:0.f;
     if(HasThemeArt())
     {
