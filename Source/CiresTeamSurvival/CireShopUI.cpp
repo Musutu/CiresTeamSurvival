@@ -1719,7 +1719,12 @@ void CireShopUI::DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Co
         const bool bLong = Toast.Body.Len() > 46;
         const float H = bLong ? 56 : 46;
         CireUIStyle::Frame(Q, X, TY, W, H, Toast.Accent, ECireFrame::Card);
-        if (Toast.Icon == FName(TEXT("gold"))) { Q.Disc(X + 23, TY + 23, 14, FLinearColor(.62f, .43f, .1f, 1), 20); Q.Disc(X + 23, TY + 22, 11.5f, FLinearColor(1.f, .8f, .28f, 1), 20); }
+        if (UTexture2D* Painted = (Toast.Icon == FName(TEXT("gold")) || Toast.Icon == FName(TEXT("teleport")) || Toast.Icon == FName(TEXT("challenge"))) ? FindItemIcon(Toast.Icon) : nullptr)
+        {   // icon-art: painted coin / hearthstone / war horn (T_Item_gold, _teleport, _challenge)
+            FCireIconSlot Slot; Slot.IconTexture = Painted; Slot.Tint = Toast.Accent;
+            CireUIStyle::IconSlot(Q, X + 6, TY + 6, 34, Slot, T);
+        }
+        else if (Toast.Icon == FName(TEXT("gold"))) { Q.Disc(X + 23, TY + 23, 14, FLinearColor(.62f, .43f, .1f, 1), 20); Q.Disc(X + 23, TY + 22, 11.5f, FLinearColor(1.f, .8f, .28f, 1), 20); }
         else if (Toast.Icon == FName(TEXT("teleport"))) DrawTeleportGlyph(Q, X + 6, TY + 6, 34, FLinearColor(.55f, .95f, 1.f, 1));
         else if (Toast.Icon.IsNone() || Toast.Icon == FName(TEXT("challenge")))
         {

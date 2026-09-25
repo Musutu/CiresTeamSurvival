@@ -3,6 +3,10 @@
 Runs Tools/BuildAbilityIcons.py (Pillow) then Tools/ImportDraftPortraits.py in
 UnrealEditor-Cmd with the ability destination/prefix. Only the child processes
 started here are ever stopped. See Docs/Roster.md "Ability icons".
+
+Painted overrides: Art/Icons/ChatGPT/Abilities/<id>.png (256x256 icons generated for Eric via
+ChatGPT, sliced by Tools/SliceIconSheet.py) replace the procedural render of that id before import;
+pass --procedural to ignore them.
 """
 from __future__ import annotations
 
@@ -24,6 +28,7 @@ def main() -> int:
     parser.add_argument("--project", type=Path, default=ROOT / "CiresTeamSurvival.uproject")
     parser.add_argument("--pylib", type=Path, help="Directory containing Pillow, if not installed")
     parser.add_argument("--ids", help="Comma-separated subset")
+    parser.add_argument("--procedural", action="store_true", help="Ignore the painted overrides")
     args = parser.parse_args()
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out = ROOT / "Saved/AbilityIcons" / stamp
@@ -35,6 +40,13 @@ def main() -> int:
         build += ["--ids", args.ids]
     subprocess.run(build, check=True, cwd=ROOT)
     (out / "contact-sheet.png").rename(out.parent / f"{stamp}-contact-sheet.png")
+    painted = 0
+    if not args.procedural:
+        for override in (ROOT / "Art/Icons/ChatGPT/Abilities").glob("*.png"):
+            target = out / override.name
+            if target.is_file() or not args.ids:  # painted-only ids (status_*) too, unless a subset was asked
+                target.write_bytes(override.read_bytes())
+                painted += 1
     log = out.parent / f"{stamp}-import.log"
     for existing in (ROOT / "Content/UI/Abilities").glob("*.uasset"):
         os.chmod(existing, 0o666)  # LFS-lockable assets check out read-only
@@ -48,7 +60,7 @@ def main() -> int:
     expected = len(list(out.glob("*.png")))
     missing = [p.stem for p in out.glob("*.png") if not (ROOT / "Content/UI/Abilities" / f"T_{p.stem}.uasset").is_file()]
     passed = code == 0 and match is not None and int(match.group(1)) == expected and not missing
-    print(json.dumps(dict(passed=passed, exitCode=code, icons=expected, imported=int(match.group(1)) if match else 0,
+    print(json.dumps(dict(passed=passed, exitCode=code, icons=expected, painted=painted, imported=int(match.group(1)) if match else 0,
                           missing=missing, directory=str(out), log=str(log)), indent=2))
     return 0 if passed else 1
 

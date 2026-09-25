@@ -184,6 +184,7 @@ private:
     void DrawNameplates(ACireHero* Hero);
     void DrawStatuses(AActor* Actor,float X,float Y,float Size,int32 MaxIcons=4);
     FString EffectSigil(FName Id,const struct FCireEffectInfo& I);
+    FString StatusIconId(const struct FCireEffectInfo& I);
     void DrawEffectIcon(const struct FCireActiveEffect& E,const struct FCireEffectInfo& I,float X,float Y,float Size,float Remaining,float Total);
     // ---- buff/debuff callouts, CC and cast bars (CireHUDEffects.cpp) ----
     void UpdateEffectCallouts(ACireHero* Hero);
