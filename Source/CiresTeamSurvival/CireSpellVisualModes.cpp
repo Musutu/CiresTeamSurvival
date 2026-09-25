@@ -10,6 +10,7 @@
 #include "CireNPCArchetypes.h"
 #include "CireNPCState.h"
 #include "CireSkillshot.h"
+#include "CireAbilityDB.h"
 #include "Components/AudioComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Engine/World.h"
@@ -94,6 +95,20 @@ void ACireSpellVisual::ClassifyCue()
     if(Arch||bMonster){Family=static_cast<int32>(Shape.School);}
     const FVector Aim=(End-Start).GetSafeNormal2D();
     auto Anchor=[&]{SetActorLocation(Start);SetActorRotation(Aim.IsNearlyZero()?FRotator::ZeroRotator:Aim.Rotation());};
+    if(Cue==ECireSpellCue::Impact&&NormId(Skill)==TEXT("void_rift"))
+    {
+        // CireCrowdControl::VoidBurst: the rift opens exactly here. The cue carries the outer radius (scale x 250);
+        // the inner radius comes from the ability that owns that outer radius in the Ability Database.
+        Mode=EMode::VoidZone;const float Outer=FMath::Max(60.f,Size*250.f);
+        Shape=FCireHitShape();Shape.Id=Skill;Shape.School=ECireSchool::Void;Shape.VoidOuter=Outer;Shape.VoidInner=Outer*.43f;Shape.VoidSeconds=1.6f;
+        float Best=1e9f;
+        for(const FCireAbilityDef& D:CireAbilityDB::All())
+            if(D.Void.bValid&&FMath::Abs(D.Void.OuterRadius-Outer)<Best)
+            {Best=FMath::Abs(D.Void.OuterRadius-Outer);Shape.VoidInner=D.Void.InnerRadius*Outer/FMath::Max(1.f,D.Void.OuterRadius);
+             Shape.VoidSeconds=FMath::Max(D.Void.InnerDuration,D.Void.OuterDuration);Shape.bVoidHeal=D.Void.SelfHealMaxHealthFraction>0;}
+        Duration=FMath::Clamp(Shape.VoidSeconds,.8f,3.f)+.3f;Size=1.f;bHostile=HostileToLocal(GetWorld(),SourceAt(GetWorld(),Start));
+        SetActorRotation(FRotator::ZeroRotator);return;
+    }
     if(Cue==ECireSpellCue::Impact||Cue==ECireSpellCue::Critical)
     {
         Mode=Cue==ECireSpellCue::Impact?EMode::Impact:EMode::Legacy;bChainHop=false;
@@ -110,7 +125,21 @@ void ACireSpellVisual::ClassifyCue()
     }
     if(Cue!=ECireSpellCue::Cast)return;
     const bool bSelfCircle=Shape.Kind==ECireHitShape::Circle&&Shape.bFromCaster;
-    if(Shape.HasVoidZone())
+    if(const auto* Hero=Cast<ACireHero>(Source);Hero&&!Hero->CastSkill.IsNone()&&NormId(Hero->CastSkill)==NormId(Skill)&&FMath::IsNearlyEqual(Size,.7f,.05f))
+    {
+        // Timed cast start (CireCrowdControl::GateCast): the telegraph reads during the whole cast bar.
+        Mode=EMode::Channel;Duration=FMath::Max(.3f,Hero->CastEndTime-Hero->CastStartTime)+.25f;Size=1.f;Anchor();
+        if(!(Shape.Kind==ECireHitShape::Circle&&Shape.bFromCaster))
+            if(AActor* Target=Hero->Target;IsValid(Target)&&Shape.Kind==ECireHitShape::Unit)
+            {
+                const auto* Ally=Cast<ACireHero>(Target);
+                if(!Shape.bHeal||(Ally&&Ally->TeamId==Hero->TeamId))SetActorLocation(Target->GetActorLocation());
+            }
+        return;
+    }
+    // Void zones on a cast: ground-aimed portals and monster teleports. Targeted champion rifts (Shadow Step)
+    // arrive as the authoritative "void_rift" impact at their true destination instead.
+    if(Shape.HasVoidZone()&&!(Cast<ACireHero>(Source)&&Shape.Kind==ECireHitShape::Unit))
     {
         // Teleport / portal: the void zone (outer slow ring, inner stun circle) appears where the portal opens.
         Mode=EMode::VoidZone;Duration=FMath::Max(Shape.VoidSeconds,.6f)+.3f;
@@ -208,6 +237,13 @@ bool ACireSpellVisual::TickModes(float DeltaSeconds)
         else if(ReleasedAge<0)ReleasedAge=Age;
         return false;
     }
+    if(Mode==EMode::Channel)
+    {
+        const auto* Hero=Cast<ACireHero>(CastSource.Get());
+        const bool bCasting=Hero&&!Hero->CastSkill.IsNone()&&NormId(Hero->CastSkill)==NormId(Skill);
+        if(!bCasting&&Age>.15f&&FadeOutAt<0){FadeOutAt=Age;Duration=FMath::Min(Duration,Age+.25f);}
+        return false;
+    }
     if(Mode==EMode::Lane||Mode==EMode::Gather)
     {
         // A monster whose cast is interrupted (kick, stun, death) drops its telegraph immediately.
@@ -224,7 +260,7 @@ bool ACireSpellVisual::RebuildModes(FCireSpellMesh& M,FCireSoftMesh& Soft,float 
     FLinearColor Main=Tint;Main.A=Fade;
     FLinearColor Glow=Tint*.55f;Glow.A=Fade*.22f;
     FLinearColor Core=FMath::Lerp(Tint,FLinearColor(2.3f,2.3f,2.1f,1),.45f);Core.A=Fade*.9f;
-    if(Shape.bHeal&&(Mode==EMode::SelfShock||Mode==EMode::TargetMark||Mode==EMode::Gather))
+    if(Shape.bHeal&&(Mode==EMode::SelfShock||Mode==EMode::TargetMark||Mode==EMode::Gather||Mode==EMode::Channel))
     {
         // Healing is unmistakable: soft green/gold "+" motes shimmer upward around the healed unit.
         const FLinearColor Green=CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal),Gold(1.55f,1.15f,.25f,1);
@@ -642,6 +678,28 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
         const auto Theme=CireAbilityVFX::ThemeFor(Shape);
         CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,FMath::Max(40.f,Shape.Radius),Shape.bHeal?CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal):Tint,
             FMath::Clamp(Age/(Shape.bHeal||Shape.bBuff?.8f:.55f),0.f,1.f),Fade,&Theme);
+        break;
+    }
+    case EMode::Channel:
+    {
+        // Cast-time telegraph: the true area (self circles) or a rune ring on the target, filling until release.
+        const auto* Hero=Cast<ACireHero>(CastSource.Get());
+        float Progress=FMath::Clamp(Age/FMath::Max(Duration-.25f,.1f),0.f,1.f);
+        if(Hero&&Hero->CastEndTime>Hero->CastStartTime)Progress=FMath::Clamp(float((ServerNow(GetWorld())-Hero->CastStartTime)/(Hero->CastEndTime-Hero->CastStartTime)),0.f,1.f);
+        const float Alpha=FMath::Clamp(Age/.1f,0.f,1.f)*(FadeOutAt>=0?FMath::Clamp(1-(Age-FadeOutAt)/.25f,0.f,1.f):1.f);
+        if(Shape.Kind==ECireHitShape::Circle&&Shape.Radius>0)
+        {
+            FCireAreaSpec Spec=Shape.AsArea();
+            const auto Style=CireAbilityVFX::ThemedStyle(bHostile?CireAbilityVFX::ETone::Hostile:CireAbilityVFX::ETone::Friendly,Shape);
+            const auto R=CireAbilityVFX::PaintTelegraph(G,Spec,Style,Progress,Age,Alpha,CireAbilityVFX::PaintProgress|CireAbilityVFX::PaintPulse);
+            LastFill=R.FillBounds;
+        }
+        else
+        {
+            const auto Theme=CireAbilityVFX::ThemeFor(Shape);
+            CireAbilityVFX::PaintRuneRing(G,FVector2D::ZeroVector,90.f,Theme,Age,.9f*Alpha);
+            FLinearColor C=Theme.Glyph;C.A=.5f*Alpha;G.Ring(FVector2D::ZeroVector,40.f+60.f*Progress,2.f,6.f,C,40);
+        }
         break;
     }
     case EMode::VoidZone:

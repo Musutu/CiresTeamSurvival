@@ -1,4 +1,5 @@
 #include "CireUISettings.h"
+#include "CireEffects.h"
 #if !UE_BUILD_SHIPPING
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
@@ -93,6 +94,8 @@ bool CireOptions::RunSettingsSmoke()
     Check(FMath::IsNearlyEqual(G.UIScale,1.15f)&&FMath::IsNearlyEqual(G.TooltipOpacity,.3f)&&G.SCTDirection==2&&G.ThreatWarningPercent==60,TEXT("v4 bounds"));
     Check(IFileManager::Get().Delete(*File),TEXT("isolated fixture cleanup"));
     UE_LOG(LogTemp,Display,TEXT("CIRE_OPTIONS_SETTINGS_%s checks=%d schema=5"),Pass?TEXT("PASS"):TEXT("FAIL"),Count);
+    // wow-ui: buff/debuff registry coverage, symbol formatting, callout throttling, cast states.
+    Pass &= CireEffects::RunSmoke();
     return Pass;
 }
 #endif

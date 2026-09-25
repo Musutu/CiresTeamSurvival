@@ -31,12 +31,15 @@ struct FTrack
     float SampleAt = 0, StuckFor = 0, SuppressUntil = 0, GhostRefreshAt = 0, ForcedAt = 0;
     int32 Nudges = 0;
     bool bForcedMarch = false;
+    FCireWaveUnitInfo Info; // economy hook
 };
 struct FWaveRecord
 {
     FString Label, Type;
     float StartedAt = 0, LastSpawnAt = 0;
     bool bMustClear = true;
+    int32 WaveNumber = 0, WaveInCycle = 0, Cycle = 1;
+    ECireWaveType WaveType = ECireWaveType::Normal;
 };
 struct FOrder
 {
@@ -65,7 +68,17 @@ struct FRuntime
     int32 LeakCostSpawned[2] = {0, 0};
     int32 BossesSpawned = 0;
     int32 Nudges = 0, Marches = 0, Despawns = 0; // nav-paths: rescue totals for the navigation probe
+    TSet<TWeakObjectPtr<ACireHero>> Ready; // breather Ready presses since the last wave started
+    int32 LastWaveNumber = 0;
 };
+/** Phase clock and breather from the pacing block (normal matches only; smoke/probes keep their own timing). */
+void ApplyPacing(ACireGameMode* Mode, const FCireWaveConfig& C)
+{
+    if (Mode->bSmoke) return;
+    Mode->Clock.SetDurations({C.PrepSeconds, C.ArenaSeconds, C.RecoverySeconds});
+    Mode->RecoverySeconds = C.RecoverySeconds;
+    Mode->WaveBreatherSeconds = C.BreatherSeconds;
+}
 TMap<TWeakObjectPtr<UWorld>, FRuntime> Runtimes;
 FCireWaveConfig FileConfig;
 bool bFileLoaded = false;
@@ -169,7 +182,7 @@ void CireWaveDirector::Initialize(ACireGameMode* Mode)
     FRuntime& R = Get(Mode);
     CireRaces::BeginMatch(Mode); // monster-races: this match's seeded skill draw
     if (auto* S = Mode->GetGameState<ACireGameState>()) S->WavesPerCycle = R.Config.WavesPerCycle;
-    if (!Mode->bSmoke) Mode->WaveBreatherSeconds = R.Config.BreatherSeconds;
+    ApplyPacing(Mode, R.Config);
     Publish(Mode);
     UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_READY waves=%d per_cycle=%d cycles=%d breather=%.1f failsafe=%d max=%.0f stuck=%.1f"), R.Config.Waves.Num(),
         R.Config.WavesPerCycle, R.Config.Cycles, R.Config.BreatherSeconds, R.Config.bStallFailsafe ? 1 : 0, R.Config.MaxWaveSeconds, R.Config.StuckSeconds);
@@ -185,7 +198,7 @@ bool CireWaveDirector::ApplyLive(ACireGameMode* Mode, const FCireWaveConfig& In,
     if (auto* S = Mode->GetGameState<ACireGameState>()) S->WavesPerCycle = R.Config.WavesPerCycle;
     if (!Mode->bSmoke)
     {
-        Mode->WaveBreatherSeconds = R.Config.BreatherSeconds;
+        ApplyPacing(Mode, R.Config);
         Mode->WaveTimer = FMath::Min(Mode->WaveTimer, R.Config.BreatherSeconds);
     }
     Publish(Mode);
@@ -265,7 +278,9 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
 {
     auto* S = Mode->GetGameState<ACireGameState>();
     FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-    const FVector Start = CireLanePath::SpawnPosition(Mode->GetWorld(), Team);
+    // pacing: waves appear SpawnAlongRoute of the way down the road (0 = the breach gate).
+    const FVector Breach = CireLanePath::SpawnPosition(Mode->GetWorld(), Team);
+    const FVector Start = R.Config.SpawnAlongRoute > .001f ? CireLanePath::PointAlongRoute(Mode->GetWorld(), Team, R.Config.SpawnAlongRoute, Breach.Z) : Breach;
     const FVector Default = CireLanePath::ClampToLane(Mode->GetWorld(), Team, Start + FVector(((O.Slot / 3) % 2) * 90.f, ((O.Slot % 3) - 1) * 170.f, 0), 80);
     const FVector Position = CireDeveloperTools::SpawnPosition(Mode->GetWorld(), Team, O.Slot, Default);
     auto* M = Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(), Position, FRotator(0, 180, 0), Params);
@@ -288,6 +303,13 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
     FTrack T;
     T.Serial = O.Serial; T.SpawnedAt = Now(M); T.Size = U.SizeScale; T.Reward = O.Reward; T.bMustClear = O.bMustClear;
     T.bEscortee = U.bEscortee; T.Anchor = Position; T.SampleAt = T.SpawnedAt + 1.f;
+    if (const FWaveRecord* Rec = R.Records.Find(O.Serial))
+    {
+        T.Info.bValid = true; T.Info.WaveNumber = Rec->WaveNumber; T.Info.WaveInCycle = Rec->WaveInCycle; T.Info.Cycle = Rec->Cycle; T.Info.Type = Rec->WaveType;
+    }
+    else { T.Info.bValid = true; T.Info.WaveNumber = GlobalWave; T.Info.Cycle = Mode->Clock.Round(); }
+    T.Info.bArmored = U.bNonAttacking; T.Info.bEscortee = U.bEscortee; T.Info.bBoss = U.bBoss;
+    T.Info.bElite = !U.bBoss && O.Rank >= ECireNPCRank::Elite;
     if (U.bNonAttacking)
     {
         // Non-attacking marchers reuse the armored-escort behaviour: they ignore combat,
@@ -331,6 +353,8 @@ bool CireWaveDirector::StartWave(ACireGameMode* Mode)
     R.CurrentSerial = Serial;
     FWaveRecord& Rec = R.Records.Add(Serial);
     Rec.Label = W.Label; Rec.Type = TypeName(W.Type); Rec.StartedAt = Now(Mode); Rec.LastSpawnAt = Rec.StartedAt; Rec.bMustClear = W.bMustClear;
+    Rec.WaveNumber = S->Wave; Rec.WaveInCycle = Mode->CycleWavesSpawned; Rec.Cycle = Mode->Clock.Round(); Rec.WaveType = W.Type;
+    R.LastWaveNumber = S->Wave; R.Ready.Reset();
     // monster-races: the wave's race rides with its label and on the replicated game state.
     const int32 Cycle = Mode->Clock.Round() - 1;
     const FString Race = RaceLabel(R.Config, W, Cycle);
@@ -369,6 +393,8 @@ bool CireWaveDirector::SpawnNow(ACireGameMode* Mode, const FCireWaveDef& In, FSt
     const int32 Serial = ++R.Serial;
     FWaveRecord& Rec = R.Records.Add(Serial);
     Rec.Label = Probe.Waves[0].Label + TEXT(" (test)"); Rec.Type = TypeName(Probe.Waves[0].Type); Rec.StartedAt = Rec.LastSpawnAt = Now(Mode);
+    if (const auto* S = Mode->GetGameState<ACireGameState>()) { Rec.WaveNumber = FMath::Max(1, S->Wave); Rec.WaveInCycle = FMath::Max(1, Mode->CycleWavesSpawned); }
+    Rec.Cycle = Mode->Clock.Round(); Rec.WaveType = Probe.Waves[0].Type;
     // monster-races: a test spawn resolves its race slots like a real wave of the current cycle.
     Probe.Skills = R.Config.Skills; Probe.Campaign = R.Config.Campaign;
     const FCireWaveDef Resolved = ResolveWave(Probe, 0, FMath::Max(0, Mode->Clock.Round() - 1));
@@ -478,7 +504,7 @@ void CireWaveDirector::OnPhaseChanged(ACireGameMode* Mode, int32 NewPhase)
 {
     if (!Mode) return;
     FRuntime& R = Get(Mode);
-    R.Queue.Reset(); R.SpawnTimer = 0;
+    R.Queue.Reset(); R.SpawnTimer = 0; R.Ready.Reset();
     if (NewPhase == 0) { R.Records.Reset(); R.CurrentSerial = 0; }
     Publish(Mode);
 }
@@ -782,3 +808,57 @@ void CireWaveDirector::DebugAge(ACireGameMode* Mode, float Seconds)
     for (auto& Pair : R.Bots) { Pair.Value.AnchorAt -= Seconds; Pair.Value.DetourUntil -= Seconds; Pair.Value.RetreatUntil -= Seconds; }
 }
 #endif
+
+// ---------------------------------------------------------------- pacing / economy hooks
+int32 CireWaveDirector::CurrentWaveIndex(const ACireGameMode* Mode)
+{
+    const auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    return S ? S->Wave : 0;
+}
+FCireWaveUnitInfo CireWaveDirector::UnitFlags(const ACireMonster* M)
+{
+    const FTrack* T = TrackOf(M);
+    if (T && T->Info.bValid) return T->Info;
+    FCireWaveUnitInfo Out;
+    if (IsValid(M) && M->PackId < 0 && M->Lane >= 0)
+    {
+        // Wave units spawned outside the director (legacy/dev paths): best effort from the actor.
+        Out.bValid = true; Out.bArmored = M->bArmoredEscort; Out.bBoss = M->bBoss;
+        if (const auto* Mode = M->GetWorld()->GetAuthGameMode<ACireGameMode>()) { Out.WaveNumber = CurrentWaveIndex(Mode); Out.Cycle = Mode->Clock.Round(); Out.WaveInCycle = Mode->CycleWavesSpawned; }
+    }
+    return Out;
+}
+float CireWaveDirector::MarchSpeed(const ACireMonster* M)
+{
+    if (!IsValid(M) || M->PackId >= 0 || IsValid(M->Victim)) return 1.f;
+    const FTrack* T = TrackOf(M);
+    if (!T) return 1.f;
+    return Config(M->GetWorld()).MarchSpeedMultiplier;
+}
+bool CireWaveDirector::IsBreather(const ACireGameMode* Mode)
+{
+    const auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    return S && Mode->Clock.Phase() == Cires::MatchPhase::Survival && S->CycleWavesDone < S->WavesPerCycle &&
+        Mode->CycleWavesSpawned == S->CycleWavesDone && !BlocksNextWave(Mode);
+}
+bool CireWaveDirector::SetPlayerReady(ACireHero* Hero, bool bReady)
+{
+    auto* Mode = IsValid(Hero) ? Hero->GetWorld()->GetAuthGameMode<ACireGameMode>() : nullptr;
+    if (!Mode || Hero->bBot || !IsBreather(Mode)) return false;
+    FRuntime& R = Get(Mode);
+    if (bReady) R.Ready.Add(Hero); else R.Ready.Remove(Hero);
+    UpdateBreatherReady(Mode);
+    return true;
+}
+bool CireWaveDirector::UpdateBreatherReady(ACireGameMode* Mode)
+{
+    auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    if (!S) return false;
+    FRuntime& R = Get(Mode);
+    int32 Humans = 0, Ready = 0;
+    for (auto* H : Mode->Heroes)
+        if (IsValid(H) && !H->bBot && H->bDrafted) { ++Humans; if (R.Ready.Contains(H)) ++Ready; }
+    if (S->BreatherReady != Ready || S->BreatherPlayers != Humans) { S->BreatherReady = Ready; S->BreatherPlayers = Humans; S->ForceNetUpdate(); }
+    // Bots-only matches (soak) keep the full breather: early continue needs at least one human.
+    return R.Config.bEarlyContinue && Humans > 0 && Ready >= Humans && IsBreather(Mode);
+}

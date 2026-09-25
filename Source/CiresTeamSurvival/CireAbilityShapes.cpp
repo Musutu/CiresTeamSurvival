@@ -6,6 +6,7 @@
 #include "CireNPCArchetypes.h"
 #include "CireRaces.h"
 #include "CireSkillTuning.h"
+#include "CireAbilityDB.h" // champion-draft Ability Database: school, void zones, heal type
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -15,7 +16,7 @@
 namespace
 {
 // Ability Database entries: school override and the void zone of teleport/portal skills.
-struct FDbEntry { bool bSchool=false; ECireSchool School=ECireSchool::Steel; FCireHitShape Void; };
+struct FDbEntry { bool bSchool=false; ECireSchool School=ECireSchool::Steel; FCireHitShape Void; bool bHealType=false; };
 TMap<FName,FDbEntry> GDatabase;bool bDatabaseLoaded=false;
 const FDbEntry* DbFind(FName Id)
 {
@@ -27,7 +28,7 @@ const FDbEntry* DbFind(FName Id)
 void StubVoid(FName Id,FCireHitShape& S)
 {
     struct FStub{const TCHAR* Id;float Outer,Inner,Seconds;bool bHeal,bOrigin;};
-    static const FStub Stubs[]={{TEXT("shadow_step"),260.f,110.f,2.f,false,false},{TEXT("void_blink"),240.f,100.f,2.f,false,true},
+    static const FStub Stubs[]={{TEXT("void_blink"),240.f,100.f,2.f,false,true},
         {TEXT("void_warp"),240.f,100.f,2.f,false,true}};
     for(const FStub& X:Stubs)if(Id==FName(X.Id)){S.VoidOuter=X.Outer;S.VoidInner=X.Inner;S.VoidSeconds=X.Seconds;S.bVoidHeal=X.bHeal;S.bVoidAtOrigin=X.bOrigin;return;}
 }
@@ -36,6 +37,7 @@ void ApplyDatabase(FName Id,FCireHitShape& S)
     if(const FDbEntry* E=DbFind(Id))
     {
         if(E->bSchool)S.School=E->School;
+        if(E->bHealType&&!S.bHostileOnly)S.bHeal=true;
         if(E->Void.HasVoidZone()){S.VoidOuter=E->Void.VoidOuter;S.VoidInner=E->Void.VoidInner;S.VoidSeconds=E->Void.VoidSeconds;
             S.bVoidHeal=E->Void.bVoidHeal;S.bVoidAtOrigin=E->Void.bVoidAtOrigin;S.bVoidFromDatabase=true;return;}
     }
@@ -225,6 +227,8 @@ bool CireAbilityShapes::ParseDatabase(const FString& Json,TMap<FName,TPair<ECire
             bool B=false;if((*V)->TryGetBoolField(TEXT("selfHeal"),B)||(*V)->TryGetBoolField(TEXT("heal"),B))Shape.bVoidHeal=B;
             if(Num(*V,{TEXT("selfHeal"),TEXT("heal")},0.f)>0)Shape.bVoidHeal=true;
             FString At;if((*V)->TryGetStringField(TEXT("at"),At))Shape.bVoidAtOrigin=At.Equals(TEXT("origin"),ESearchCase::IgnoreCase);
+            if(Num(*V,{TEXT("selfHealMaxHealthFraction")},0.f)>0)Shape.bVoidHeal=true;
+            Shape.VoidSeconds=FMath::Max(Shape.VoidSeconds,Num(*V,{TEXT("outerDuration")},0.f));
         }
         Out.Add(FName(*Row.Key.ToLower()),TPair<ECireSchool,FCireHitShape>(School,Shape));
     }
@@ -233,13 +237,22 @@ bool CireAbilityShapes::ParseDatabase(const FString& Json,TMap<FName,TPair<ECire
 
 bool CireAbilityShapes::ReloadDatabase(FString* Error)
 {
+    // The champion-draft Ability Database (CireAbilityDB, Content/Data/Abilities.json) is the source of truth.
     bDatabaseLoaded=true;GDatabase.Reset();
-    FString Json;const FString Path=FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/Abilities.json"));
-    if(!FFileHelper::LoadFileToString(Json,*Path)){if(Error)*Error=TEXT("Content/Data/Abilities.json not present (built-in schools)");return false;}
-    TMap<FName,TPair<ECireSchool,FCireHitShape>> Rows;
-    if(!ParseDatabase(Json,Rows,Error))return false;
-    for(const auto& Pair:Rows){FDbEntry E;E.bSchool=Pair.Value.Key!=ECireSchool::Count;E.School=E.bSchool?Pair.Value.Key:ECireSchool::Steel;E.Void=Pair.Value.Value;GDatabase.Add(Pair.Key,E);}
-    return true;
+    for(const FCireAbilityDef& D:CireAbilityDB::All())
+    {
+        FDbEntry E;ECireSchool School;
+        if(ParseSchool(D.School,School)){E.bSchool=true;E.School=School;}
+        E.bHealType=D.Types.Contains(TEXT("HEAL"))&&!D.Types.Contains(TEXT("DPS"));
+        if(D.Void.bValid)
+        {
+            E.Void.VoidOuter=D.Void.OuterRadius;E.Void.VoidInner=D.Void.InnerRadius;
+            E.Void.VoidSeconds=FMath::Max(D.Void.InnerDuration,D.Void.OuterDuration);E.Void.bVoidHeal=D.Void.SelfHealMaxHealthFraction>0;
+        }
+        GDatabase.Add(FName(*D.Id.ToLower()),E);
+    }
+    if(GDatabase.IsEmpty()&&Error)*Error=TEXT("Ability Database empty (built-in schools)");
+    return !GDatabase.IsEmpty();
 }
 #if !UE_BUILD_SHIPPING
 bool CireAbilityShapes::DebugUseDatabase(const FString& Json)

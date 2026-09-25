@@ -34,6 +34,7 @@ struct FSoak
     int32 WavesSpawned = 0, WavesCleared = 0, StallDumps = 0, Failsafes = 0;
     TArray<FString> Lines;
     TMap<FString, int32> TypeCounts;
+    float MeanLevelSeen = 1.f, CycleStartedAt = 0; // pacing: power spikes and cycle length
 };
 FSoak Soak;
 
@@ -146,6 +147,7 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
         {
             ++Soak.Transitions;
             Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_PHASE %d->%d round=%d t=%.1f waited=%.1f"), Soak.LastPhase, S->Phase, S->Round, Now, Now - Soak.PhaseEnteredAt));
+            if (S->Phase == 0) { Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_CYCLE round=%d took=%.1f"), S->Round - 1, Now - Soak.CycleStartedAt)); Soak.CycleStartedAt = Now; }
         }
         Soak.LastPhase = S->Phase; Soak.PhaseEnteredAt = Now;
     }
@@ -165,6 +167,15 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
             Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_CLEAR wave=%d took=%.1f lives=%d/%d"), S->Wave, Now - Soak.WaveSpawnedAt, S->EmberLives, S->DuskLives));
         }
         Soak.LastCleared = S->CycleWavesDone;
+    }
+    // Pacing evidence: every time the mean hero level rises a whole level, and each full cycle's length.
+    {
+        float Sum = 0; int32 N = 0;
+        for (auto* H : Mode->Heroes) if (IsValid(H) && H->bDrafted) { Sum += H->Level; ++N; }
+        const float Mean = N ? Sum / N : 1.f;
+        if (FMath::FloorToFloat(Mean) > FMath::FloorToFloat(Soak.MeanLevelSeen))
+            Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_LEVEL mean=%.2f t=%.1f wave=%d"), Mean, Now, S->Wave));
+        Soak.MeanLevelSeen = FMath::Max(Soak.MeanLevelSeen, Mean);
     }
     bool bWaveAlive = false;
     for (auto* M : Mode->Monsters) if (IsValid(M) && M->PackId < 0 && M->Health > 0) { bWaveAlive = true; break; }

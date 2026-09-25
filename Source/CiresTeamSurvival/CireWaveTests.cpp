@@ -141,6 +141,18 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
         for (auto* M : Lane0(0)) if (!M->bArmoredEscort && EscortCharge(M) == Escortee && Escortee) ++Guards;
         Check(Total == 5 && Marchers == 1 && Guards == 4, TEXT("runtime escort wave: 1 non-attacking escortee defended by 4 attackers"));
         Check(Escortee && Escortee->Damage > 0 && Escortee->LeakCostOverride == 5, TEXT("escortee keeps positive damage (no NPC pause) and its leak cost"));
+        // pacing + economy hooks: waves appear SpawnAlongRoute down the road; unit flags survive to death.
+        {
+            const FCireWaveUnitInfo EI = UnitFlags(Escortee);
+            ACireMonster* Guard = nullptr; for (auto* M : Lane0(0)) if (!M->bArmoredEscort) { Guard = M; break; }
+            const FCireWaveUnitInfo GI = UnitFlags(Guard);
+            Check(EI.bValid && EI.bArmored && EI.bEscortee && !EI.bBoss && EI.WaveNumber == State->Wave && EI.WaveInCycle == 1 && EI.Type == ECireWaveType::ArmoredEscort &&
+                GI.bValid && !GI.bArmored && !GI.bBoss && CurrentWaveIndex(Mode) == State->Wave, TEXT("UnitFlags reports wave number, type and armored/escortee flags"));
+            const float Progress = Guard ? CireLanePath::RouteProgress(Mode->GetWorld(), 0, Guard->GetActorLocation()) : -1.f;
+            Check(FMath::Abs(Progress - C.SpawnAlongRoute) < .06f, TEXT("waves spawn SpawnAlongRoute of the way down the road"));
+            Check(Guard && FMath::IsNearlyEqual(MarchSpeed(Guard), C.MarchSpeedMultiplier) && FMath::IsNearlyEqual(MarchSpeed(Escortee), C.MarchSpeedMultiplier),
+                TEXT("wave units march faster while not fighting"));
+        }
         FActorSpawnParameters HeroParams; HeroParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
         auto* Hero = Mode->GetWorld()->SpawnActor<ACireHero>(Escortee ? Escortee->GetActorLocation() + FVector(-150, 0, 0) : FVector::ZeroVector, FRotator::ZeroRotator, HeroParams);
         if (Hero) { Actors.Add(Hero); Hero->SetActorTickEnabled(false); Hero->TeamId = 0; Hero->Draft(2); Hero->CriticalChance = 0; Mode->Heroes.Add(Hero); }
@@ -153,6 +165,43 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
             Check(Defending == 4 && Escortee->Threat.IsEmpty(), TEXT("guards turn on the escortee's attacker; the escortee never retaliates"));
         }
         KillWaves();
+        Mode->Heroes.Reset();
+    }
+    // ---------------------------------------------------------------- pacing: clock, boss flags, breather ready
+    {
+        FCireWaveConfig C = Defaults(); C.WavesPerCycle = 2; C.PrepSeconds = 33; C.ArenaSeconds = 44; C.RecoverySeconds = 7; C.BreatherSeconds = 16;
+        C.Waves = {Template(ECireWaveType::Boss)}; C.Waves[0].SpawnInterval = 0;
+        Mode->CycleWavesSpawned = 0; State->CycleWavesDone = 0;
+        Check(ApplyLive(Mode, C) && Mode->Clock.GetDurations().Intermission == 33 && Mode->Clock.GetDurations().Arena == 44 &&
+            Mode->Clock.GetDurations().Recovery == 7 && Mode->RecoverySeconds == 7 && Mode->WaveBreatherSeconds == 16, TEXT("pacing block drives the phase clock and breather"));
+        Check(StartWave(Mode), TEXT("boss wave starts"));
+        SpawnAll();
+        ACireMonster* Boss = nullptr; for (auto* M : Lane0(0)) if (M->bBoss) Boss = M;
+        const FCireWaveUnitInfo BI = UnitFlags(Boss);
+        Check(Boss && BI.bValid && BI.bBoss && !BI.bArmored && BI.Type == ECireWaveType::Boss && FMath::IsNearlyEqual(MarchSpeed(Boss), C.MarchSpeedMultiplier), TEXT("boss flag reported; the boss marches at the pacing speed too"));
+        KillWaves();
+        State->CycleWavesDone = Mode->CycleWavesSpawned; // what the match tick does on a clear
+        Check(IsBreather(Mode), TEXT("a cleared mid-cycle wave opens the breather"));
+        FActorSpawnParameters HeroParams; HeroParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        auto* Human = Mode->GetWorld()->SpawnActor<ACireHero>(FVector(0, -2100, 3200), FRotator::ZeroRotator, HeroParams);
+        auto* Bot = Mode->GetWorld()->SpawnActor<ACireHero>(FVector(0, -1900, 3200), FRotator::ZeroRotator, HeroParams);
+        if (Human && Bot)
+        {
+            Actors.Add(Human); Actors.Add(Bot);
+            for (auto* H : {Human, Bot}) { H->SetActorTickEnabled(false); H->TeamId = 0; H->Draft(1); Mode->Heroes.Add(H); }
+            Human->bBot = false; Bot->bBot = true;
+            Check(!UpdateBreatherReady(Mode) && State->BreatherPlayers == 1 && State->BreatherReady == 0, TEXT("breather waits for the human player"));
+            Check(!SetPlayerReady(Bot, true), TEXT("bots cannot press Ready"));
+            Check(SetPlayerReady(Human, true) && UpdateBreatherReady(Mode) && State->BreatherReady == 1, TEXT("every human ready ends the breather early"));
+            SetPlayerReady(Human, false);
+            Check(!UpdateBreatherReady(Mode), TEXT("un-ready restores the full breather"));
+            Human->bBot = true;
+            Check(!UpdateBreatherReady(Mode) && State->BreatherPlayers == 0, TEXT("bots-only matches keep the full breather"));
+            FCireWaveConfig Off = C; Off.bEarlyContinue = false; ApplyLive(Mode, Off); Human->bBot = false; SetPlayerReady(Human, true);
+            Check(!UpdateBreatherReady(Mode), TEXT("ready-up can be switched off"));
+        }
+        if (Human) Human->Destroy();
+        if (Bot) Bot->Destroy();
         Mode->Heroes.Reset();
     }
     // ---------------------------------------------------------------- stuck nudge and stall failsafe

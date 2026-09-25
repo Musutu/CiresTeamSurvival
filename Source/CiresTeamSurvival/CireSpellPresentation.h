@@ -39,7 +39,7 @@ public:
     UPROPERTY(VisibleAnywhere) TObjectPtr<UAudioComponent> Audio;
     // ability-vfx: flat ground layer (telegraphs, shock rings, splash/scorch) in actor-local space.
     UPROPERTY(VisibleAnywhere) TObjectPtr<UProceduralMeshComponent> GroundMesh;
-    enum class EMode : uint8 { Legacy, AreaFollow, Projectile, Lane, CasterFlare, SelfShock, TargetMark, Chain, Gather, Impact, VoidZone };
+    enum class EMode : uint8 { Legacy, AreaFollow, Projectile, Lane, CasterFlare, SelfShock, TargetMark, Chain, Gather, Impact, VoidZone, Channel };
     EMode GetMode() const { return Mode; }
     // Hidden (no geometry, light or sound) until the caster's clip reaches its release frame.
     void SetStartDelay(float Seconds);

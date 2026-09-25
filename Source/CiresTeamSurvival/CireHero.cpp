@@ -1,4 +1,5 @@
 #include "CireDeveloperTools.h"
+#include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireRaces.h" // monster-races
 #include "CireGame.h"
 #include "CireCombatEvents.h"
@@ -149,6 +150,7 @@ void ACireHero::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ACireHero, TeamId);
     DOREPLIFETIME(ACireHero, Archetype);
+    DOREPLIFETIME(ACireHero, CastSkill); DOREPLIFETIME(ACireHero, CastStartTime); DOREPLIFETIME(ACireHero, CastEndTime); // champion-draft
     DOREPLIFETIME(ACireHero, ChampionProfileId);
     DOREPLIFETIME(ACireHero, StatPrimaryOverride);
     DOREPLIFETIME(ACireHero, ProfileBasicAttackRange);
@@ -320,7 +322,7 @@ bool ACireHero::IsUltimate(const FString& Id)
 bool ACireHero::IsPassive(const FString& Id)
 {
     return Id == TEXT("stone_skin") || Id == TEXT("battle_rhythm") ||
-        Id == TEXT("deep_reserves") || Id == TEXT("soul_conduit");
+        Id == TEXT("deep_reserves") || Id == TEXT("soul_conduit") || Id == TEXT("executioner"); // champion-draft: Executioner passive
 }
 
 bool ACireHero::IsHostile(AActor* Other) const
@@ -362,6 +364,7 @@ float ACireHero::AttackDamage() const
 void ACireHero::BasicAttack()
 {
     if(Mobility&&Mobility->IsRolling())return;
+    if(CireCrowdControl::IsStunned(this))return; // champion-draft: stunned units cannot attack
     const auto* Mode = ModeFor(this);
     if (!HasAuthority() || !Mode || !Mode->IsCombatPhase() || bDead || !bDrafted || BasicTimer > 0 ||
         !IsHostile(Target) || !InRange(Target, BasicRange(this)) || !ClearSight(this, Target)) return;
@@ -390,6 +393,8 @@ void ACireHero::Cast(int32 Slot)
         (Mobility&&Mobility->IsRolling()) || GlobalCooldown > 0 || !Skills.IsValidIndex(Slot) || !Cooldowns.IsValidIndex(Slot) || Cooldowns[Slot] > 0) return;
     const FString Id = Skills[Slot];
     if (CireRaces::IsSilenced(this) && !IsPassive(Id)) { Notice = TEXT("Silenced: you cannot cast right now."); return; } // monster-races
+    if (CireCrowdControl::GateCast(this, Slot, Id)) return; // champion-draft: stun/silence/lockout gates and timed casts
+    if (CireCrowdControl::HandlesSkill(Id)) { CireCrowdControl::CastSkill(this, Slot, Id); return; } // champion-draft: Decimating Strike
     if(CireSkillCasting::Handles(Id)){CireSkillCasting::Cast(this,Slot,Id);return;}
     if (const auto* Authored = CireAbilityLibrary::Find(Id)) { CireAbilityLibrary::Cast(this, Slot, *Authored); return; }
     if (IsPassive(Id)) { Notice = TEXT("This passive is always active."); return; }
@@ -485,6 +490,7 @@ void ACireHero::Cast(int32 Slot)
         if (SetActorLocation(Target->GetActorLocation() + Direction * 170, true))
             ACireAreaEffect::ClearForActor(this);
         if (InRange(Target, 240)) Hit(Target, 30 + Agility * 1.5f, FLinearColor(0.6f, 0.2f, 0.9f));
+        if (IsValid(Target)) CireCrowdControl::VoidBurst(this, Target->GetActorLocation(), Id); // champion-draft: void rift (stun inside, slow the ring, self-mend)
     }
     else if (Id == TEXT("restoring_light")) CireCombat::ApplyHealing(this, Ally, (90 + Intelligence * 3.f) * Power, SkillName(Id));
     else if (Id == TEXT("sanctuary"))
@@ -654,6 +660,7 @@ void ACireHero::Tick(float DeltaSeconds)
         GetCharacterMovement()->MaxWalkSpeed = Mobility?Mobility->MovementSpeed(SlowUntil>ServerTime):(SlowUntil>ServerTime?338.f:520.f);
         GetCharacterMovement()->MaxWalkSpeed *= CireItems::MoveSpeedMultiplier(this); // progression-shop
         if (CireRaces::IsRooted(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // monster-races: rooted by a monster skill
+        if (CireCrowdControl::IsStunned(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // champion-draft: stunned
         return;
     }
     auto* Mode = ModeFor(this);
@@ -691,6 +698,8 @@ void ACireHero::Tick(float DeltaSeconds)
     GetCharacterMovement()->MaxWalkSpeed = Mobility?Mobility->MovementSpeed(SlowUntil>GetWorld()->GetTimeSeconds()):(SlowUntil>GetWorld()->GetTimeSeconds()?338.f:520.f);
     GetCharacterMovement()->MaxWalkSpeed *= CireItems::MoveSpeedMultiplier(this); // progression-shop
     if (CireRaces::IsRooted(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // monster-races: rooted by a monster skill
+    if (CireCrowdControl::IsStunned(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // champion-draft: stunned
+    CireCrowdControl::TickHero(this, DeltaSeconds); // champion-draft: completes timed casts, Executioner charge
     if (bBot) BotThink(DeltaSeconds);
     if (bAutoAttack) BasicAttack();
 }
@@ -834,6 +843,8 @@ FString ACireHero::SkillName(const FString& Id)
 
 FString ACireHero::SkillDescription(const FString& Id)
 {
+    if(CireCrowdControl::HandlesSkill(Id))return CireCrowdControl::Description(Id); // champion-draft
+    if(Id==TEXT("executioner"))return TEXT("PASSIVE: every 5 minutes your next basic attack is lethal. Bosses take a normal hit (the charge is kept); champions take 30% of their max health."); // champion-draft
     if(CireSkillCasting::Handles(Id))return CireSkillCasting::Description(Id);
     if(const auto* A=CireAbilityLibrary::Find(Id))return FString::Printf(TEXT("%.0f mana | %.0fs CD. Ground area: %.0f impact + %.0f damage/sec for %.1fs. Warning %.2fs. Aim at target, or forward when none selected."),A->ManaCost,A->CooldownSeconds,A->Area.BurstDamage,A->Area.bPersistent?A->Area.DamagePerSecond:0,A->Area.DurationSeconds,A->Area.WarningSeconds);
     if (Id == TEXT("iron_guard")) return TEXT("25 energy | 14s CD. Take 40% less damage for 8s.");
@@ -945,6 +956,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
 void ACireMonster::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+    if(CireCrowdControl::TickMonster(this,DeltaSeconds))return; // champion-draft: stunned monsters skip their AI
     CireNPCCombat::Tick(this,DeltaSeconds);
 }
 

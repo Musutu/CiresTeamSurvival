@@ -56,6 +56,8 @@ def main() -> int:
     parser.add_argument("--project", type=Path, default=ROOT / "CiresTeamSurvival.uproject")
     parser.add_argument("--port", type=int, default=7784)
     parser.add_argument("--fps", type=int, default=60, help="development probe frame limit, 15..240")
+    # Generous by default: editors started while other worktrees hold the UnrealBuildTool mutex stall at startup.
+    parser.add_argument("--timeout", type=int, default=600, help="seconds allowed per native probe / server startup")
     args = parser.parse_args()
     if not args.editor.is_file() or not args.project.is_file():
         parser.error("editor executable or project is missing")
@@ -94,9 +96,9 @@ def main() -> int:
         try:
             print(f"Starting {name} checks", flush=True)
             child = launch("/Game/Maps/Citadel", ["-game", f"-{flag}"], log)
-            child.wait(timeout=140)
+            child.wait(timeout=args.timeout)
         except subprocess.TimeoutExpired:
-            failure = f"{name} probe timed out after 140 seconds"
+            failure = f"{name} probe timed out after {args.timeout} seconds"
         except OSError as error:
             failure = str(error)
         finally:
@@ -112,7 +114,7 @@ def main() -> int:
                 check.bind(("127.0.0.1", args.port))
             print(f"Starting dedicated server and two remote clients on UDP {args.port}", flush=True)
             children.append(launch("/Game/Maps/Citadel", ["-server", f"-port={args.port}", "-CireExpansionNetServer"], logs[0]))
-            deadline = time.monotonic() + 60
+            deadline = time.monotonic() + args.timeout
             while "CIRE_EXPANSION_NET_SERVER_READY" not in read(logs[0]):
                 if children[0].poll() is not None:
                     raise RuntimeError(f"server exited before readiness: {children[0].returncode}")
@@ -121,7 +123,7 @@ def main() -> int:
                 time.sleep(.25)
             for index in (1, 2):
                 children.append(launch(f"127.0.0.1:{args.port}", ["-game", "-CireExpansionNetClient"], logs[index]))
-            deadline = time.monotonic() + 95
+            deadline = time.monotonic() + max(95, args.timeout)
             while any(child.poll() is None for child in children):
                 if time.monotonic() >= deadline:
                     raise TimeoutError("two-client expansion probe timeout")

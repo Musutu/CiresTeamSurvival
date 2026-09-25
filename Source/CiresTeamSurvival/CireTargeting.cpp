@@ -34,6 +34,10 @@ struct FTargetState
     CireAbilityVFX::FVoidResult LastVoid; // ability-vfx: void zone drawn in the preview (tests)
 };
 TMap<TWeakObjectPtr<ACireController>,FTargetState> States;
+// ability-vfx: hover void preview (targeted skills have no aim mode).
+struct FHoverState { TWeakObjectPtr<AActor> Preview; TWeakObjectPtr<UProceduralMeshComponent> Mesh; FString SkillId; uint64 Frame=0; CireAbilityVFX::FVoidResult Last;
+    TArray<FVector> V; TArray<int32> I; TArray<FLinearColor> C; };
+TMap<TWeakObjectPtr<ACireController>,FHoverState> Hovers;
 FCireTargetDescriptor RuntimeDescriptor(UWorld* World,const FString& Id)
 {
     auto D=CireTargeting::Describe(Id);
@@ -200,7 +204,7 @@ FCireTargetDescriptor CireTargeting::Describe(const FString& Id)
     bool Known=false;for(const auto& Skill:Cires::StarterSkillPool())Known|=Id==UTF8_TO_TCHAR(Skill.Id.c_str());
     if(!Known)return D;
     D.Kind=ECireTargetKind::Hostile;D.Label=TEXT("Enemy");D.Range=1200;
-    if(Id==TEXT("shield_slam"))D.Range=240;else if(Id==TEXT("cleaving_strike"))D.Range=300;else if(Id==TEXT("shadow_step"))D.Range=850;
+    if(Id==TEXT("shield_slam"))D.Range=240;else if(Id==TEXT("cleaving_strike"))D.Range=300;else if(Id==TEXT("shadow_step"))D.Range=850;else if(Id==TEXT("decimating_strike"))D.Range=300; // champion-draft
     else if(Id==TEXT("cataclysm")||Id==TEXT("executioners_verdict"))D.Range=1500;
     if(const auto* S=CireSkillTuning::FindRoleSkill(Id))D.Range=S->CastRange;
     return D;
@@ -279,8 +283,46 @@ void CireTargeting::Request(ACireController* C,int32 Slot)
     S.View.bActive=true;S.View.Slot=Slot;S.View.SkillId=Id;S.View.Range=D.Range;S.View.Message=TEXT("Aim at ground, then left click. Esc/right mouse cancels.");
     C->bSummonMoveTargeting=false;
 }
+void CireTargeting::HoverPreview(ACireController* C,const FString& Id)
+{
+    if(!IsValid(C)||!C->IsLocalController()||!CireAbilityVFX::Enabled())return;
+    auto& H=Hovers.FindOrAdd(TWeakObjectPtr<ACireController>(C));H.SkillId=Id;H.Frame=GFrameCounter;
+}
+namespace
+{
+void TickHover(ACireController* C)
+{
+    auto* H=Hovers.Find(TWeakObjectPtr<ACireController>(C));if(!H)return;
+    auto* Hero=Cast<ACireHero>(C->GetPawn());
+    const auto Shape=CireAbilityShapes::Describe(FName(*H->SkillId));
+    const bool bArmed=States.Contains(TWeakObjectPtr<ACireController>(C));
+    AActor* Target=Hero?Hero->Target:nullptr;
+    const bool bShow=GFrameCounter-H->Frame<=1&&!bArmed&&Hero&&Shape.HasVoidZone()&&Hero->IsHostile(Target);
+    if(!bShow){if(H->Preview.IsValid())H->Preview->SetActorHiddenInGame(true);return;}
+    // Shadow Step lands 170 cm in front of its target, on the caster's side (CireHero.cpp).
+    const FVector Toward=(Hero->GetActorLocation()-Target->GetActorLocation()).GetSafeNormal2D();
+    FVector At=Target->GetActorLocation()+Toward*170.f;
+    FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(CireHoverVoid),false,Hero);Q.AddIgnoredActor(Target);
+    if(C->GetWorld()->LineTraceSingleByObjectType(Hit,At+FVector(0,0,150),At-FVector(0,0,600),FCollisionObjectQueryParams(ECC_WorldStatic),Q))At=Hit.ImpactPoint;
+    if(!H->Preview.IsValid())
+    {
+        FActorSpawnParameters P;P.Owner=C;P.ObjectFlags|=RF_Transient;
+        auto* A=C->GetWorld()->SpawnActor<AActor>(AActor::StaticClass(),At,FRotator::ZeroRotator,P);if(!A)return;
+        A->SetReplicates(false);A->SetActorEnableCollision(false);
+        auto* Mesh=NewObject<UProceduralMeshComponent>(A,TEXT("VoidHoverPreview"));A->SetRootComponent(Mesh);A->AddInstanceComponent(Mesh);
+        Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);Mesh->SetCanEverAffectNavigation(false);Mesh->SetCastShadow(false);Mesh->RegisterComponent();
+        Mesh->SetMaterial(0,LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_GroundArea.M_GroundArea")));
+        H->Preview=A;H->Mesh=Mesh;
+    }
+    H->Preview->SetActorHiddenInGame(false);H->Preview->SetActorLocation(At);
+    FCireGroundMesh G(H->V,H->I,H->C);G.Z=6.f;
+    H->Last=CireAbilityVFX::PaintVoidZone(G,FVector2D::ZeroVector,Shape.VoidOuter,Shape.VoidInner,CireAbilityVFX::ETone::AimValid,C->GetWorld()->GetTimeSeconds(),.85f,Shape.bVoidHeal);
+    H->Mesh->CreateMeshSection_LinearColor(0,G.V,G.I,TArray<FVector>(),TArray<FVector2D>(),G.C,TArray<FProcMeshTangent>(),false);
+}
+}
 bool CireTargeting::Tick(ACireController* C)
 {
+    TickHover(C); // ability-vfx
     for(auto It=States.CreateIterator();It;++It)if(!It.Key().IsValid()){if(It.Value().Preview.IsValid())It.Value().Preview->Destroy();It.RemoveCurrent();}
     auto* S=States.Find(TWeakObjectPtr<ACireController>(C));if(!S)return false;
     auto* H=Cast<ACireHero>(C->GetPawn());auto* HUD=Cast<ACireHUD>(C->GetHUD());
@@ -311,7 +353,10 @@ bool CireTargeting::Tick(ACireController* C)
 void CireTargeting::DebugSetAimOverride(TOptional<FVector> Point){GAimOverride=Point;} // ability-vfx
 FVector CireTargeting::DebugPreviewVoid(const ACireController* C) // ability-vfx
 {
-    const auto* S=States.Find(TWeakObjectPtr<ACireController>(const_cast<ACireController*>(C)));
+    const TWeakObjectPtr<ACireController> Key(const_cast<ACireController*>(C));
+    if(const auto* H=Hovers.Find(Key);H&&H->Preview.IsValid()&&!H->Preview->IsHidden())
+        return FVector(H->Last.Outer,H->Last.Inner,H->Last.SlowIcons+H->Last.StunIcons);
+    const auto* S=States.Find(Key);
     return S?FVector(S->LastVoid.Outer,S->LastVoid.Inner,S->LastVoid.SlowIcons+S->LastVoid.StunIcons):FVector::ZeroVector;
 }
 
