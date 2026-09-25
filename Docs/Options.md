@@ -113,3 +113,9 @@ Panel descriptions (combat text area, player, meter, threat, pet and other panel
 while arranging the interface (F10). During play, only unit, ability, item, buff and control tooltips
 appear; hovering the combat text area, the screen centre or the world never pops a panel tooltip
 (checked by the WoW UI gallery stages 21-23).
+
+## UI theme (Interface page 5)
+
+**Options → Interface → UI theme** shows one live preview card per theme (Gilded Citadel, Ironbound,
+Arcane Veil, Verdant Bloom): each card is drawn in its own theme (unit frame, action slots, cast bar,
+tooltip). Clicking a card applies it to the whole interface at once and saves it in the profile.

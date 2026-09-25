@@ -269,7 +269,7 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
     Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Health,Hero->MaxHealth),BX+7,33,12,Parchment);
     Bar(BX,55,BW,13,Fraction(Hero->Mana,Hero->MaxMana),Blue);
     Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Mana,Hero->MaxMana),BX+7,55,10,Parchment);
-    Bar(BX,72,BW,5,Hero->Energy/100.f,Gold);
+    Bar(BX,72,BW,5,Hero->Energy/100.f,CireUIColors::Energy); // energy stays yellow in every theme
     Label(FString::Printf(TEXT("STR %d  AGI %d  INT %d"),Hero->Strength,Hero->Agility,Hero->Intelligence),10,116,10,Muted);
     if(Aggro==0)Label(FString::Printf(TEXT("EN %.0f"),Hero->Energy),210,116,10,Gold);
     // (Health/mana/energy help text now lives in the F10 panel description; no gameplay popups.)
@@ -296,11 +296,12 @@ void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
         if(bThemedParty)
         {
             CireUIStyle::Frame(Painter(),2,Y,206,50,Selected?CireUIColors::ThemeAccent*1.3f:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):Gold,ECireFrame::Card);
-            Disc(18.5f,Y+24.5f,15,FLinearColor(0,0,0,.85f));CireUIStyle::PortraitRing(Painter(),18.5f,Y+24.5f,14.5f);
+            Disc(18.5f,Y+24.5f,15,FLinearColor(0,0,0,.85f));
         }
         else Frame(0,Y,210,50,Selected?Parchment:AllyAggro>0?FLinearColor(1.f,.25f,.2f,1):RoleColor(Ally->Archetype)*.65f);
         if(Over)Panel(1,Y+1,208,48,FLinearColor(.3f,.45f,.48f,.12f));
         Icon(FString::Printf(TEXT("role%d"),Ally->Archetype),4,Y+10,29,Ally->bDead?Muted:RoleColor(Ally->Archetype));
+        if(bThemedParty)CireUIStyle::PortraitRing(Painter(),18.5f,Y+24.5f,14.5f); // ui-themes: ring over the emblem
         Label(ShortName(Ally->HeroName,18),39,Y+4,11,Ally->bDead?Muted:Parchment);
         Label(FString::FromInt(Ally->Level),158,Y+4,10,Gold);
         Bar(39,Y+21,130,13,Fraction(Ally->Health,Ally->MaxHealth),Ally->bDead?Muted:LifeGreen);

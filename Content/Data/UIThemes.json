@@ -25,7 +25,7 @@
         "barBack": [0.0, 0.0, 0.01, 0.88],
         "title": [1.0, 0.78, 0.32, 1],
         "filigree": [0.83, 0.66, 0.36, 1],
-        "panelTint": [1, 1, 1, 1]
+        "panelTint": [0.95, 1.05, 1.4, 1]
       },
       "glowStrength": 1.0,
       "fillScale": 256,
@@ -36,22 +36,22 @@
         "Panel": {
           "rect": [940, 6, 197, 197],
           "slice": 0.4873,
-          "corner": 34
+          "corner": 30
         },
         "Tooltip": {
           "rect": [729, 6, 199, 199],
           "slice": 0.4824,
-          "corner": 22
+          "corner": 20
         },
         "Minimap": {
           "rect": [1149, 6, 196, 196],
           "slice": 0.4898,
-          "corner": 32
+          "corner": 30
         },
         "Card": {
           "rect": [510, 6, 207, 207],
           "slice": 0.4638,
-          "corner": 15
+          "corner": 14
         },
         "Slot": {
           "rect": [1357, 6, 192, 192],
@@ -138,22 +138,22 @@
         "Panel": {
           "rect": [940, 6, 197, 197],
           "slice": 0.4873,
-          "corner": 34
+          "corner": 30
         },
         "Tooltip": {
           "rect": [729, 6, 199, 199],
           "slice": 0.4824,
-          "corner": 22
+          "corner": 20
         },
         "Minimap": {
           "rect": [1149, 6, 196, 196],
           "slice": 0.4898,
-          "corner": 32
+          "corner": 30
         },
         "Card": {
           "rect": [510, 6, 207, 207],
           "slice": 0.4638,
-          "corner": 15
+          "corner": 14
         },
         "Slot": {
           "rect": [1357, 6, 192, 192],
@@ -213,7 +213,7 @@
       "tagline": "Violet obsidian and rune-etched silver with a soft arcane glow.",
       "atlas": "/Game/UI/Themes/ArcaneVeil/T_ArcaneVeil_Atlas",
       "fill": "/Game/UI/Themes/ArcaneVeil/T_ArcaneVeil_Fill",
-      "atlasSize": [2048, 2048],
+      "atlasSize": [2048, 512],
       "palette": {
         "trim": [0.7, 0.72, 0.82, 1],
         "brightTrim": [0.86, 0.7, 1.0, 1],
@@ -229,14 +229,85 @@
         "barBack": [0.004, 0.0, 0.01, 0.88],
         "title": [0.86, 0.74, 1.0, 1],
         "filigree": [0.78, 0.78, 0.9, 1],
-        "panelTint": [1, 1, 1, 1]
+        "panelTint": [0.5, 0.47, 0.6, 1]
       },
       "glowStrength": 1.2,
       "fillScale": 256,
       "panelOpacity": 0.95,
       "gem": true,
       "cornerOrnaments": true,
-      "pieces": {}
+      "pieces": {
+        "Panel": {
+          "rect": [937, 6, 197, 197],
+          "slice": 0.4873,
+          "corner": 30
+        },
+        "Tooltip": {
+          "rect": [726, 6, 199, 199],
+          "slice": 0.4824,
+          "corner": 20
+        },
+        "Minimap": {
+          "rect": [1146, 6, 196, 196],
+          "slice": 0.4898,
+          "corner": 30
+        },
+        "Card": {
+          "rect": [510, 6, 204, 204],
+          "slice": 0.4706,
+          "corner": 14
+        },
+        "Slot": {
+          "rect": [1354, 6, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotPassive": {
+          "rect": [1558, 6, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotUltimate": {
+          "rect": [274, 6, 224, 224],
+          "slice": 0,
+          "corner": 0
+        },
+        "Ring": {
+          "rect": [6, 6, 256, 256],
+          "slice": 0,
+          "corner": 0
+        },
+        "BarFrame": {
+          "rect": [512, 274, 256, 64],
+          "slice": 0.4844,
+          "corner": 0
+        },
+        "CastFrame": {
+          "rect": [780, 274, 168, 64],
+          "slice": 0.4762,
+          "corner": 0
+        },
+        "Banner": {
+          "rect": [6, 274, 344, 112],
+          "slice": 0.4884,
+          "corner": 0
+        },
+        "Divider": {
+          "rect": [960, 274, 164, 40],
+          "slice": 0.4756,
+          "corner": 0
+        },
+        "Ornament": {
+          "rect": [362, 274, 138, 96],
+          "slice": 0,
+          "corner": 0
+        },
+        "BarFill": {
+          "rect": [1136, 274, 64, 32],
+          "slice": 0,
+          "corner": 0
+        }
+      }
     },
     {
       "id": "VerdantBloom",
@@ -267,7 +338,78 @@
       "panelOpacity": 0.95,
       "gem": true,
       "cornerOrnaments": true,
-      "pieces": {}
+      "pieces": {
+        "Panel": {
+          "rect": [939, 6, 197, 197],
+          "slice": 0.4873,
+          "corner": 30
+        },
+        "Tooltip": {
+          "rect": [728, 6, 199, 199],
+          "slice": 0.4824,
+          "corner": 20
+        },
+        "Minimap": {
+          "rect": [1148, 6, 196, 196],
+          "slice": 0.4898,
+          "corner": 30
+        },
+        "Card": {
+          "rect": [510, 6, 206, 206],
+          "slice": 0.466,
+          "corner": 14
+        },
+        "Slot": {
+          "rect": [1356, 6, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotPassive": {
+          "rect": [1560, 6, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotUltimate": {
+          "rect": [274, 6, 224, 224],
+          "slice": 0,
+          "corner": 0
+        },
+        "Ring": {
+          "rect": [6, 6, 256, 256],
+          "slice": 0,
+          "corner": 0
+        },
+        "BarFrame": {
+          "rect": [246, 274, 208, 64],
+          "slice": 0.4808,
+          "corner": 0
+        },
+        "CastFrame": {
+          "rect": [466, 274, 202, 64],
+          "slice": 0.4802,
+          "corner": 0
+        },
+        "Banner": {
+          "rect": [1764, 6, 278, 112],
+          "slice": 0.4856,
+          "corner": 0
+        },
+        "Divider": {
+          "rect": [680, 274, 162, 40],
+          "slice": 0.4753,
+          "corner": 0
+        },
+        "Ornament": {
+          "rect": [6, 274, 228, 96],
+          "slice": 0,
+          "corner": 0
+        },
+        "BarFill": {
+          "rect": [854, 274, 64, 32],
+          "slice": 0,
+          "corner": 0
+        }
+      }
     }
   ]
 }

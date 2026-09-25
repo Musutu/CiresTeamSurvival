@@ -131,6 +131,26 @@ def rows_of(boxes):
     return [sorted(r, key=lambda b: b[0]) for r in rows]
 
 
+def split_wide(boxes, alpha, expected):
+    """Pieces whose glow touches merge into one component: split the widest box at its emptiest
+    column (between 30% and 70% of its width) until the expected count is reached."""
+    boxes = list(boxes)
+    while len(boxes) < expected:
+        b = max(boxes, key=lambda o: o[2] - o[0])
+        x0, y0, x1, y1 = b
+        if x1 - x0 < alpha.shape[1] * .6:
+            break
+        cols = alpha[y0:y1, x0:x1].sum(0)
+        lo, hi = int((x1 - x0) * .3), int((x1 - x0) * .7)
+        cut = x0 + lo + int(np.argmin(cols[lo:hi]))
+        boxes.remove(b)
+        for nx0, nx1 in ((x0, cut), (cut, x1)):
+            m = alpha[y0:y1, nx0:nx1] > .15
+            ys, xs = np.where(m)
+            boxes.append((nx0 + xs.min(), y0 + ys.min(), nx0 + xs.max() + 1, y0 + ys.max() + 1))
+    return boxes
+
+
 def crop(rgba, box, pad=2):
     x0, y0, x1, y1 = box
     h, w = rgba.shape[:2]
@@ -269,7 +289,8 @@ def slice_theme(theme, key):
     pieces, meta = {}, {}
 
     frames = to_rgba(Image.open(frames_path))
-    boxes = [b for row in rows_of(components(frames[..., 3])) for b in row]
+    boxes = split_wide(components(frames[..., 3]), frames[..., 3], 4)
+    boxes = [b for row in rows_of(boxes) for b in row]
     if len(boxes) != 4:
         raise SystemExit(f"{frames_path.name}: expected 4 frame pieces, found {len(boxes)} {boxes}")
     for name, box in zip(FRAME_ORDER, boxes):
@@ -412,7 +433,7 @@ def main():
         for theme, key in THEMES:
             if args.theme and theme not in args.theme:
                 continue
-            if not (ART / f"{key}_frames.png").exists():
+            if not (ART / f"{key}_frames.png").exists() or not (ART / f"{key}_parts.png").exists():
                 print(f"CIRE_UITHEME_SKIPPED {theme} (no sheets yet)")
                 continue
             results[theme] = slice_theme(theme, key)
