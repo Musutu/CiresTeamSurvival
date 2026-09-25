@@ -3409,14 +3409,14 @@
   },
   "sabercat_pounce": {
    "id": "sabercat_pounce",
-   "name": "Sabercat Pounce",
+   "name": "Ashfang: Pounce",
    "icon": "/Game/UI/Abilities/T_sabercat_pounce",
    "types": [
     "DPS"
    ],
    "kind": "active",
    "school": "physical",
-   "targeting": "aim",
+   "targeting": "enemy",
    "castTime": 0,
    "base": {
     "effect": 75,
@@ -3441,7 +3441,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "The sabercat leaps up to 7m and mauls everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s.",
+   "description": "Command Ashfang to leap up to 7m onto your target and maul everything within 2.6m on landing: {effect} + 1x AGI and a 40% slow for 2s. Needs your companion.",
    "effects": [
     {
      "type": "slow",
@@ -3457,7 +3457,8 @@
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "category": "pet"
   },
   "owl_scout": {
    "id": "owl_scout",
@@ -3613,16 +3614,16 @@
     "huntress"
    ]
   },
-  "sabercat_rake": {
-   "id": "sabercat_rake",
-   "name": "Sabercat Rake",
-   "icon": "/Game/UI/Abilities/T_sabercat_rake",
+  "sabercat_maul": {
+   "id": "sabercat_maul",
+   "name": "Ashfang: Maul",
+   "icon": "/Game/UI/Abilities/T_sabercat_maul",
    "types": [
     "DPS"
    ],
    "kind": "active",
-   "school": "nature",
-   "targeting": "aim",
+   "school": "physical",
+   "targeting": "enemy",
    "castTime": 0,
    "base": {
     "effect": 70,
@@ -3630,8 +3631,8 @@
     "energyCost": 25,
     "cooldown": 7,
     "castTime": 0,
-    "range": 320,
-    "radius": 320,
+    "range": 1600,
+    "radius": 0,
     "duration": 0
    },
    "effectLabel": "damage",
@@ -3647,14 +3648,76 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "The sabercat rakes a 70-degree arc in front of you (3.2m): {effect} + 1.2x AGI.",
+   "description": "Command Ashfang to maul your target: {effect} + 1.2x AGI, with 50% bonus threat so the cat holds it off you. Needs your companion.",
    "effects": [],
    "champions": [
     "huntress"
    ],
    "signatureOf": [
     "huntress"
-   ]
+   ],
+   "category": "pet"
+  },
+  "sabercat_roar": {
+   "id": "sabercat_roar",
+   "name": "Ashfang: Dread Roar",
+   "icon": "/Game/UI/Abilities/T_sabercat_roar",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 30,
+    "manaCost": 0,
+    "energyCost": 20,
+    "cooldown": 16,
+    "castTime": 0,
+    "range": 0,
+    "radius": 450,
+    "duration": 3
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "description": "Ashfang roars: enemies within 4.5m of the cat take {effect} + 0.4x AGI, are slowed 35% for 3s and turn on Ashfang for 2s. Also the pet's special command. Needs your companion.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "area",
+     "duration": 3,
+     "magnitude": 0.35,
+     "radius": 450,
+     "label": "Move -35%"
+    },
+    {
+     "type": "taunt",
+     "zone": "area",
+     "duration": 2,
+     "magnitude": 0.0,
+     "radius": 450,
+     "label": "Taunted by Ashfang"
+    }
+   ],
+   "champions": [
+    "huntress"
+   ],
+   "signatureOf": [
+    "huntress"
+   ],
+   "category": "pet"
   },
   "moon_glaive": {
    "id": "moon_glaive",
@@ -11128,9 +11191,10 @@
     "owl_scout",
     "moonlit_sprint",
     "crescent_volley",
-    "sabercat_rake",
+    "sabercat_maul",
     "moon_glaive",
     "glaive_storm",
+    "sabercat_roar",
     "riposte_roll",
     "tumblers_edge",
     "killer_instinct",
@@ -11154,9 +11218,10 @@
     "owl_scout",
     "moonlit_sprint",
     "crescent_volley",
-    "sabercat_rake",
+    "sabercat_maul",
     "moon_glaive",
     "glaive_storm",
+    "sabercat_roar",
     "riposte_roll",
     "tumblers_edge",
     "killer_instinct",
@@ -11207,9 +11272,10 @@
     "owl_scout",
     "moonlit_sprint",
     "crescent_volley",
-    "sabercat_rake",
+    "sabercat_maul",
     "moon_glaive",
     "glaive_storm",
+    "sabercat_roar",
     "riposte_roll",
     "tumblers_edge",
     "killer_instinct",

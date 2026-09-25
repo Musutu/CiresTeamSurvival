@@ -734,21 +734,25 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
     // Columns: Active (golden) | Passive (plain) | Ultimate (prismatic).
     TArray<FCireShopSkill> Catalog = CireSkillShop::CatalogFor(Hero);
     // new-champions: champions with Constructs get an ALL / CONSTRUCTS filter under the title.
+    // pets: champions with a companion get an ALL / COMPANION filter the same way.
     {
-        const bool bHasConstructs = Catalog.ContainsByPredicate([](const FCireShopSkill& S) { const auto* D = CireAbilityDB::Find(S.Id); return D && D->IsConstruct(); });
-        if (!bHasConstructs) State.SkillFilter = 0;
+        auto IsCategory = [](const FCireShopSkill& S, bool bPet) { const auto* D = CireAbilityDB::Find(S.Id); return D && (bPet ? D->IsPet() : D->IsConstruct()); };
+        const bool bHasConstructs = Catalog.ContainsByPredicate([&](const FCireShopSkill& S) { return IsCategory(S, false); });
+        const bool bHasPet = !bHasConstructs && Catalog.ContainsByPredicate([&](const FCireShopSkill& S) { return IsCategory(S, true); });
+        if (!bHasConstructs && !bHasPet) State.SkillFilter = 0;
         else
         {
-            const TCHAR* Labels[] = {TEXT("ALL SKILLS"), TEXT("CONSTRUCTS")};
+            const TCHAR* Labels[] = {TEXT("ALL SKILLS"), bHasPet ? TEXT("COMPANION") : TEXT("CONSTRUCTS")};
+            const FLinearColor FilterTint = bHasPet ? FLinearColor(.93f, .55f, .22f, 1) : FLinearColor(.45f, .6f, 1.f, 1);
             const float FW = 118, FH = 22, FX = X + W * .5f - FW - 4, FY = Y + 54;
             for (int32 Index = 0; Index < 2; ++Index)
             {
                 const float BX = FX + Index * (FW + 8);
-                ShopButton(P, BX, FY, FW, FH, Labels[Index], In(M, BX, FY, FW, FH), State.SkillFilter == Index, false, Index == 1 ? FLinearColor(.45f, .6f, 1.f, 1) : Gold, 8.5f);
+                ShopButton(P, BX, FY, FW, FH, Labels[Index], In(M, BX, FY, FW, FH), State.SkillFilter == Index, false, Index == 1 ? FilterTint : Gold, 8.5f);
                 if (Click(BX, FY, FW, FH)) { State.SkillFilter = Index; Play(HUD, TEXT("S_ShopTab"), .4f); }
             }
             if (State.SkillFilter == 1)
-                Catalog.RemoveAll([](const FCireShopSkill& S) { const auto* D = CireAbilityDB::Find(S.Id); return !D || !D->IsConstruct(); });
+                Catalog.RemoveAll([&](const FCireShopSkill& S) { return !IsCategory(S, bHasPet); });
         }
     }
     const CI::ShopSkillKind Kinds[] = {CI::ShopSkillKind::Active, CI::ShopSkillKind::Passive, CI::ShopSkillKind::Ultimate};

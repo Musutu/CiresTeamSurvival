@@ -136,7 +136,7 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintTelegraph(FCireGroundMesh& G,c
     {
         const auto Inner=Offset(Boundary,-Feather);
         FillLoop(G,Inner,true,Pivot,A(Style.Fill,.55f*FillScale),A(Style.Fill,.9f*FillScale));
-        G.Band(Inner,Boundary,A(Style.Fill,.9f*FillScale),A(Style.Fill,1.9f),true);
+        G.Band(Inner,Boundary,A(Style.Fill,.9f*FillScale),A(Style.Fill,1.5f),true);
     }
     else FillLoop(G,Boundary,false,Pivot,A(Style.Fill),A(Style.Fill,1.2f));
     // 2. Progress: fills from the caster (lines/cones) or the centre (circles) until release.
@@ -228,8 +228,8 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintActive(FCireGroundMesh& G,cons
     {
         const auto Inner=Offset(Boundary,-Feather);
         // Dense enough to read on bright cobbles/snow as well as dark earth (unlit alpha-blended overlay).
-        FillLoop(G,Inner,true,Pivot,A(.17f*Breathe+.2f*Flash,1+.4f*Flash),A(.28f*Breathe+.2f*Flash,1+.4f*Flash));
-        G.Band(Inner,Boundary,A(.28f*Breathe+.2f*Flash,1+.4f*Flash),A(.48f+.2f*Flash,1.2f+.4f*Flash),true);
+        FillLoop(G,Inner,true,Pivot,A(.1f*Breathe+.12f*Flash,1+.2f*Flash),A(.22f*Breathe+.12f*Flash,1+.2f*Flash));
+        G.Band(Inner,Boundary,A(.22f*Breathe+.12f*Flash,1+.2f*Flash),A(.3f+.12f*Flash,1.1f+.2f*Flash),true); // playtest 3: translucent, never near-solid
     }
     else FillLoop(G,Boundary,false,Pivot,A(.3f+.25f*Flash),A(.36f+.25f*Flash));
     Outline(G,Boundary,FMath::Clamp(Size*.01f,2.f,4.f),FMath::Clamp(Size*.06f,8.f,26.f),A((.7f+.3f*Breathe)*(bPersistent?1.f:.9f),1.5f),1.2f);
@@ -244,7 +244,9 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintActive(FCireGroundMesh& G,cons
         }
     }
     // Lingering zones keep their school runes, dimmer and slowly turning.
-    if(Theme&&bPersistent)PaintRunes(G,Spec,*Theme,Time,Alpha*.7f,true);
+    // Buff fields (zero damage, e.g. pylons) stay calm and subtle; damaging pools keep clearer runes.
+    const bool bBuffField=Spec.DamagePerSecond<=0&&Spec.BurstDamage<=0;
+    if(Theme&&bPersistent)PaintRunes(G,Spec,*Theme,Time,Alpha*(bBuffField?.35f:.6f),true);
     if(Flash>0)
     {
         // Detonation: shock front races from the pivot to the true edge.
@@ -269,6 +271,27 @@ void CireAbilityVFX::PaintShock(FCireGroundMesh& G,FVector2D Center,float Radius
     {
         const float Hold=Theme->bSharp?0.f:FMath::Clamp((U-.6f)/.4f,0.f,1.f);
         PaintRuneRing(G,Center,FMath::Max(30.f,R*(Theme->bSharp?.82f:.78f)),*Theme,U*3.f,Alpha*(Theme->bSharp?(1-U*.7f):(.85f-.35f*Hold)));
+    }
+}
+
+float CireAbilityVFX::GroundIntensity(const UWorld* World)
+{
+    const auto* PC=World?World->GetFirstPlayerController():nullptr;const auto* HUD=PC?Cast<ACireHUD>(PC->GetHUD()):nullptr;
+    return HUD?FMath::Clamp(HUD->UISettings.GroundTelegraphIntensity,.3f,1.f):.6f;
+}
+void CireAbilityVFX::Temper(TArray<FLinearColor>& Colors,int32 From,float Intensity,float Overlap)
+{
+    Intensity=FMath::Clamp(Intensity,.1f,1.f);Overlap=FMath::Clamp(Overlap,.25f,1.f);
+    const float FillScale=Intensity*Overlap,LineScale=FMath::Sqrt(Intensity)*.95f*FMath::Pow(Overlap,.75f);
+    for(int32 J=FMath::Max(0,From);J<Colors.Num();++J)
+    {
+        FLinearColor& C=Colors[J];
+        // Low-alpha vertices are fills/feathers; high-alpha ones are rims, runes and arrows.
+        const float Line=FMath::SmoothStep(.3f,.7f,C.A);
+        C.A=FMath::Clamp(C.A*FMath::Lerp(FillScale,LineScale,Line),0.f,1.f);
+        const float Cap=FMath::Lerp(FillEmissiveCap,RimEmissiveCap,Line);
+        const float Peak=FMath::Max3(C.R,C.G,C.B);
+        if(Peak>Cap){const float K=Cap/Peak;C.R*=K;C.G*=K;C.B*=K;}
     }
 }
 

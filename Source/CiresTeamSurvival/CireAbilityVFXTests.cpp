@@ -14,6 +14,7 @@
 #include "CireSkillshot.h"
 #include "CireSkillTuning.h"
 #include "CireSpellMesh.h"
+#include "CireUISettings.h"
 #include "CireSpellPresentation.h"
 #include "CireTargeting.h"
 #include "CireThreat.h"
@@ -541,6 +542,32 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             Mode->Monsters.Remove(M);AddedMonsters.Remove(M);M->Destroy();
         }
         PurgeNew();
+    }
+    // ---------------------------------------------------------------- 10. brightness (playtest 3)
+    {
+        TArray<FVector> V;TArray<int32> I;TArray<FLinearColor> C;
+        FCireAreaSpec Spec;Spec.Shape=ECireAreaShape::Circle;Spec.Radius=300;
+        auto MaxStats=[&](float Intensity,float Overlap,float& FillA,float& RimA,float& Peak)
+        {
+            FCireGroundMesh G(V,I,C);
+            PaintTelegraph(G,Spec,ThemedStyle(ETone::Hostile,CireAbilityShapes::Describe(TEXT("venom_ground"))),.5f,1.f,1.f,PaintProgress|PaintPulse|PaintCenter);
+            PaintActive(G,Spec,FLinearColor(1.5f,2.5f,.5f,1),1.f,1.f,1.f,true);
+            Temper(G.C,0,Intensity,Overlap);
+            FillA=0;RimA=0;Peak=0;
+            for(const FLinearColor& X:G.C){Peak=FMath::Max(Peak,FMath::Max3(X.R,X.G,X.B));if(X.A<.45f)FillA=FMath::Max(FillA,X.A);RimA=FMath::Max(RimA,X.A);}
+        };
+        float Fill=0,Rim=0,Peak=0;
+        MaxStats(.6f,1.f,Fill,Rim,Peak);
+        Check(Peak<=RimEmissiveCap+.001f,FString::Printf(TEXT("ground emissive capped below bloom (peak %.2f)"),Peak));
+        // Temper on the painter's own fill (0.3) and rim (0.95) alphas.
+        auto Tempered=[&](float A,float Intensity,float Overlap){TArray<FLinearColor> X={FLinearColor(3,2,1,A)};Temper(X,0,Intensity,Overlap);return X[0];};
+        Check(Tempered(.3f,.6f,1.f).A<=.25f&&Tempered(.3f,.6f,1.f).A>=.15f&&Tempered(.95f,.6f,1.f).A>=.6f,
+            FString::Printf(TEXT("default intensity: fill %.2f (15-25%%), rim %.2f stays crisp"),Tempered(.3f,.6f,1.f).A,Tempered(.95f,.6f,1.f).A));
+        Check(Tempered(.3f,.6f,.5f).A<Tempered(.3f,.6f,1.f).A&&Tempered(.95f,.6f,.5f).A<Tempered(.95f,.6f,1.f).A,TEXT("four overlapping zones share one brightness budget"));
+        Check(Tempered(.95f,.3f,1.f).A>=.45f&&Tempered(.3f,.3f,1.f).A<.12f,TEXT("lowest intensity: faint fill, readable rim"));
+        Check(FMath::Max3(Tempered(.3f,1.f,1.f).R,Tempered(.3f,1.f,1.f).G,Tempered(.3f,1.f,1.f).B)<=FillEmissiveCap+.001f,TEXT("fill colour hue-capped under the bloom threshold"));
+        Check(FMath::IsNearlyEqual(FCireUISettings().GroundTelegraphIntensity,.6f),TEXT("ground telegraph intensity defaults to 0.6"));
+        Check(FMath::IsNearlyEqual(GroundIntensity(nullptr),.6f),TEXT("no HUD: default ground intensity"));
     }
     UE_LOG(LogCireAbilityVFX,Display,TEXT("CIRE_ABILITY_VFX_TESTS_%s checks=%d failed=%d"),S.Failed==0?TEXT("PASS"):TEXT("FAIL"),S.Checks,S.Failed);
     return S.Failed==0;

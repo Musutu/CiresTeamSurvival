@@ -25,6 +25,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "CireCamera.h"
 #include "CireKeybindings.h"
+#include "CirePets.h" // pets
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireNetClient, Log, All);
@@ -270,6 +271,10 @@ void ACireController::PlayerTick(float Dt) {
             const int32 Skill=CireKeybindings::ResolveSlot(Keys,*H,Slot);if(Skill!=INDEX_NONE)RequestCast(Skill);
         }
     }
+    // pets: companion commands and stances (CireKeybindings "Pet*" actions).
+    if(H->bDrafted&&!bShop&&CirePets::ForOwner(H))
+        for(uint8 Command=0;Command<static_cast<uint8>(ECirePetCommand::Count);++Command)
+            if(Keys.WasPressed(this,CirePets::CommandAction(static_cast<ECirePetCommand>(Command))))ServerPetCommand(Command);
     const bool bOfferModal=H->Offers.Num()>0&&(!Interface||Interface->IsSkillOfferOpen()); // champion-draft
     if(H->bDrafted&&!bShop&&!bOfferModal&&WasInputKeyJustPressed(EKeys::LeftMouseButton)
         &&!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive&&(!Interface||!Interface->IsPointerOverInterface())
@@ -368,6 +373,12 @@ void ACireController::ServerSummonCommand_Implementation(int32 Command,AActor* S
     if(Command==2&&!H->IsHostile(Selected))return;
     for(TActorIterator<ACireSummon> It(GetWorld());It;++It)
         if(It->GetOwnerHero()==H&&It->bCommandable)It->Command(static_cast<ECireSummonCommand>(Command),Point,Selected);
+}
+void ACireController::ServerPetCommand_Implementation(uint8 Command){
+    // pets: the server acts on its own view of the caller's target (never a client-supplied actor).
+    auto* H=Cast<ACireHero>(GetPawn());
+    if(!H||Command>=static_cast<uint8>(ECirePetCommand::Count))return;
+    CirePets::Command(H,static_cast<ECirePetCommand>(Command),H->Target);
 }
 void ACireController::ClientSpellEffect_Implementation(FName Skill,FVector_NetQuantize From,FVector_NetQuantize To,ECireSpellCue Cue,float Size,bool bSound){
     if(IsLocalController()&&!FVector(From).ContainsNaN()&&!FVector(To).ContainsNaN()&&FMath::IsFinite(Size))

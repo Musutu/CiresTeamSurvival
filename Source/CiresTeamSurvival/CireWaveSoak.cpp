@@ -2,6 +2,7 @@
 // clock and real wave flow. Logs a stall report whenever a wave outlives its
 // expected duration and writes a summary when the requested cycles complete.
 #include "CireWaves.h"
+#include "CireUIWaveCapture.h" // ui-themes
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireLoot.h"
@@ -123,6 +124,7 @@ void CireWaveDirector::DumpWave(ACireGameMode* Mode, const TCHAR* Reason)
 bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
 {
     if (!Soak.bEnabled || Soak.bDone || !Mode) return false;
+    CireUIWaveCapture::Tick(Mode); // ui-themes: HUD captures during real wave fights (-CireUIWaveCapture)
     auto* S = Mode->GetGameState<ACireGameState>();
     if (!S) return false;
     // The local standalone player is converted into a bot so the match runs unattended.

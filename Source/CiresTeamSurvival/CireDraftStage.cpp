@@ -107,16 +107,22 @@ void ACireDraftStage::BuildStage()
     Capture->ShowFlags.SetFog(false);Capture->ShowFlags.SetVolumetricFog(false);Capture->ShowFlags.SetAtmosphere(false);
     Capture->ShowFlags.SetCloud(false);Capture->ShowFlags.SetDirectionalLights(false);Capture->ShowFlags.SetSkyLighting(false);
     Capture->ShowFlags.SetMotionBlur(false);Capture->ShowFlags.SetLensFlares(false);
+    // Crisp stills: no temporal AA (no history smear or ghosting while the champion idles);
+    // the draft screen supersamples the target instead (SetPreviewHeight).
+    Capture->ShowFlags.SetTemporalAA(false);
     auto& PP=Capture->PostProcessSettings;Capture->PostProcessBlendWeight=1.f;
     PP.bOverride_AutoExposureMethod=true;PP.AutoExposureMethod=EAutoExposureMethod::AEM_Manual;
     PP.bOverride_AutoExposureApplyPhysicalCameraExposure=true;PP.AutoExposureApplyPhysicalCameraExposure=false;
-    PP.bOverride_AutoExposureBias=true;PP.AutoExposureBias=-1.5f;
+    PP.bOverride_AutoExposureBias=true;PP.AutoExposureBias=-2.1f;
     PP.bOverride_DynamicGlobalIlluminationMethod=true;PP.DynamicGlobalIlluminationMethod=EDynamicGlobalIlluminationMethod::None;
     PP.bOverride_ReflectionMethod=true;PP.ReflectionMethod=EReflectionMethod::ScreenSpace;
-    PP.bOverride_BloomIntensity=true;PP.BloomIntensity=.55f;
+    PP.bOverride_BloomIntensity=true;PP.BloomIntensity=.18f;
     PP.bOverride_VignetteIntensity=true;PP.VignetteIntensity=.55f;
     PP.bOverride_MotionBlurAmount=true;PP.MotionBlurAmount=0.f;
-    PP.bOverride_ColorSaturation=true;PP.ColorSaturation=FVector4(.92f,.92f,.92f,1.f);
+    // Full-strength colour and a touch of contrast so PBR materials read true, not flat.
+    PP.bOverride_ColorSaturation=true;PP.ColorSaturation=FVector4(1.06f,1.06f,1.06f,1.f);
+    PP.bOverride_ColorContrast=true;PP.ColorContrast=FVector4(1.08f,1.08f,1.08f,1.f);
+    PP.bOverride_SceneFringeIntensity=true;PP.SceneFringeIntensity=0.f;
     Capture->RegisterComponent();AddInstanceComponent(Capture);
     Capture->ShowOnlyActors.Add(this);
     // Cutout depth: same camera, scene depth only (see SetCutout / GetDepthTarget).
@@ -147,8 +153,8 @@ void ACireDraftStage::BuildStage()
         FireLights.Add(Light<UPointLightComponent>(this,*FString::Printf(TEXT("StageFire%d"),I),FLinearColor(1.f,.42f,.12f),2600.f,900.f,false));
     }
     KeyLight=Light<USpotLightComponent>(this,TEXT("StageKey"),FLinearColor(1.f,.90f,.78f),5200.f,2600.f,true);
-    RimLight=Light<USpotLightComponent>(this,TEXT("StageRim"),FLinearColor(.52f,.68f,1.f),7000.f,2600.f,false);
-    FillLight=Light<UPointLightComponent>(this,TEXT("StageFill"),FLinearColor(.55f,.60f,.72f),900.f,2400.f,false);
+    RimLight=Light<USpotLightComponent>(this,TEXT("StageRim"),FLinearColor(.52f,.68f,1.f),11000.f,2600.f,false);
+    FillLight=Light<UPointLightComponent>(this,TEXT("StageFill"),FLinearColor(.55f,.60f,.72f),450.f,2400.f,false);
     Cast<USpotLightComponent>(KeyLight)->SetOuterConeAngle(26.f);Cast<USpotLightComponent>(KeyLight)->SetInnerConeAngle(10.f);
     Cast<USpotLightComponent>(RimLight)->SetOuterConeAngle(30.f);Cast<USpotLightComponent>(RimLight)->SetInnerConeAngle(10.f);
     FitStage(185.f);
@@ -263,7 +269,7 @@ float ACireDraftStage::StoredExposure(const FString& Id)
 void ACireDraftStage::SetExposureOffset(float Stops)
 {
     ExposureOffset=FMath::Clamp(Stops,-3.f,2.f);
-    if(Capture){Capture->PostProcessSettings.AutoExposureBias=-1.5f+ExposureOffset;}
+    if(Capture){Capture->PostProcessSettings.AutoExposureBias=-2.1f+ExposureOffset;}
 }
 void ACireDraftStage::SetTurntable(bool bInSpin,float FixedYaw){bSpin=bInSpin;if(!bSpin)Yaw=FixedYaw;}
 
@@ -372,6 +378,14 @@ void ACireDraftStage::RefreshCutoutParts()
         for(const USceneComponent* Up=Part->GetAttachParent();Up&&!bBody;Up=Up->GetAttachParent())bBody=Up->IsA<USkeletalMeshComponent>();
         if(bBody&&(Part->IsA<USkeletalMeshComponent>()||Part->IsA<UStaticMeshComponent>())){Capture->ShowOnlyComponents.Add(Part);if(DepthCapture)DepthCapture->ShowOnlyComponents.Add(Part);}
     }
+}
+void ACireDraftStage::SetPreviewHeight(int32 Pixels)
+{
+    Pixels=FMath::Clamp(Pixels,960,2560)&~7;
+    if(!Target||FMath::Abs(static_cast<int32>(Target->SizeY)-Pixels)<Pixels/8)return;
+    const int32 W=(Pixels*3/4)&~7;
+    Target->InitAutoFormat(W,Pixels);Target->UpdateResourceImmediate(true);
+    if(DepthTarget){DepthTarget->InitAutoFormat(W,Pixels);DepthTarget->UpdateResourceImmediate(true);}
 }
 void ACireDraftStage::SetMood(const FLinearColor& Key,const FLinearColor& Rim,const FLinearColor& Fill)
 {

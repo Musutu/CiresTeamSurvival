@@ -199,6 +199,12 @@ namespace CireUIStyle
         const FString& Name, const FString& Time, float TextSize = 0.f);
     /** Frame around an existing bar (bars drawn with Bar() get it automatically when tall enough). */
     CIRESTEAMSURVIVAL_API void BarFrame(const FCireUIPainter& P, float X, float Y, float W, float H);
+    /** Rounded (capsule) shape clipped to Fraction of its width, 3-sliced so the ends stay round.
+     *  Layer 0 = body with a soft vertical gradient, 1 = glossy sheen. False when the texture is missing. */
+    CIRESTEAMSURVIVAL_API bool Capsule(const FCireUIPainter& P, float X, float Y, float W, float H, float Fraction, FLinearColor Color, int32 Layer = 0);
+    /** WoW-style rounded bar: faint theme trim, thin dark border, dark back, pale trailing chunk, rounded
+     *  fill that follows the ends, sheen. Trail < 0 = no chunk. */
+    CIRESTEAMSURVIVAL_API void RoundBar(const FCireUIPainter& P, float X, float Y, float W, float H, float Fraction, FLinearColor Color, float Trail = -1.f);
     /** True when the active theme has art loaded (painters use it). */
     CIRESTEAMSURVIVAL_API bool HasThemeArt();
 }

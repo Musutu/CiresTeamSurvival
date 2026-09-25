@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "doc": "Companion pets (Docs/Pets.md). Loaded by Source/CiresTeamSurvival/CirePets.cpp. Ability numbers (effect, cooldown, range, radius, duration) come from the Ability Database row of the same id; this file holds the pet's body, stats, scaling and autocast rules.",
+  "rules": {
+    "followDistanceCm": 190,
+    "leashCm": 2400,
+    "teleportCm": 3600,
+    "assistRangeCm": 2000,
+    "defendRadiusCm": 1100,
+    "aggressiveRadiusCm": 900,
+    "reviveRangeCm": 1500,
+    "reviveHealthFraction": 0.5,
+    "reviveCooldownSeconds": 30,
+    "resummonCooldownSeconds": 20,
+    "orderedAbilitySeconds": 4,
+    "ownerThreatShare": 0.3
+  },
+  "owners": {
+    "huntress": "sabercat"
+  },
+  "pets": [
+    {
+      "id": "sabercat",
+      "displayName": "Ashfang",
+      "family": "Sabercat",
+      "description": "The Huntress's great sabercat: a melee bruiser that pounces on prey, mauls it and roars to slow a pack.",
+      "stats": {
+        "health": 420,
+        "healthPerLevel": 60,
+        "ownerHealthShare": 0.35,
+        "damage": 20,
+        "damagePerLevel": 3.5,
+        "ownerPrimaryScale": 0.45,
+        "attackSeconds": 1.25,
+        "attackRangeCm": 190,
+        "moveSpeed": 600,
+        "threatMultiplier": 2.0,
+        "damageTakenMultiplier": 0.85
+      },
+      "abilities": [
+        {"id": "sabercat_pounce", "kind": "leap", "scaling": 1.0, "autocast": true, "minRangeCm": 320},
+        {"id": "sabercat_maul", "kind": "strike", "scaling": 1.2, "autocast": true, "threatBonus": 1.5},
+        {"id": "sabercat_roar", "kind": "roar", "scaling": 0.4, "autocast": false, "special": true, "tauntSeconds": 2.0}
+      ],
+      "art": {
+        "motion": "quadruped_procedural",
+        "mesh": "/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat",
+        "heightCm": 118,
+        "yaw": -90,
+        "capsuleRadius": 44,
+        "capsuleHalfHeight": 62,
+        "portrait": "sabercat_pounce",
+        "clipsFile": "Content/Data/PetArt.tripo.json",
+        "fallback": {
+          "motion": "monster_native",
+          "mesh": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/Wolf.Wolf",
+          "heightCm": 120,
+          "yaw": -90,
+          "lockRoot": true,
+          "walkSpeedRaw": 180.4,
+          "runSpeedRaw": 759.1,
+          "animations": {
+            "idle": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle.WolfAnimalArmature_Idle",
+            "walk": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Walk.WolfAnimalArmature_Walk",
+            "run": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Gallop.WolfAnimalArmature_Gallop",
+            "attack": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Attack.WolfAnimalArmature_Attack",
+            "death": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Death.WolfAnimalArmature_Death"
+          },
+          "tint": {"base": [0.52, 0.4, 0.28], "accent": [0.55, 0.12, 0.08], "strength": 0.8}
+        }
+      }
+    }
+  ]
+}

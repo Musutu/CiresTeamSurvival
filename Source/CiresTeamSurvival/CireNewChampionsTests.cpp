@@ -23,9 +23,11 @@
 #include "CireNPCState.h"
 #include "CireRaces.h"
 #include "CireSkillshot.h"
+#include "CirePets.h" // pets
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -284,6 +286,7 @@ bool CireSignatureSkills::RunSmoke(ACireGameMode* Mode)
         T.Check(Profile && Kit && !Profile->Quote.IsEmpty() && !Profile->Lore.IsEmpty(), FString(P) + TEXT(": roster profile with lore and quote"));
         if (!Profile || !Kit) continue;
         TArray<FString> Signature; for (const auto& A : Profile->Actives) Signature.Add(A.Id); Signature.Add(Profile->Passive.Id); Signature.Add(Profile->Ultimate.Id);
+        for (const FString& S : Kit->Signature) if (Knows(S)) Signature.AddUnique(S); // identity-kit extras of this module (pets: the Huntress's Dread Roar)
         for (const FString& S : Signature) T.Check(Kit->PurchasableImplemented.Contains(S) && Knows(S), FString(P) + TEXT(" can buy ") + S);
         for (const FString& S : AllIds()) if (!Signature.Contains(S)) T.Check(!Kit->Purchasable.Contains(S), FString(P) + TEXT(" cannot buy another champion's ") + S);
     }
@@ -302,6 +305,8 @@ bool CireSignatureSkills::RunSmoke(ACireGameMode* Mode)
         TArray<FString> Kit; for (const auto& A : Profile->Actives) Kit.Add(A.Id); Kit.Add(Profile->Ultimate.Id);
         // Overcharge needs a construct of the caster's.
         if (Kit.Contains(TEXT("overcharge"))) Kit.Swap(Kit.IndexOfByKey(TEXT("overcharge")), Kit.Num() - 1);
+        // pets: the Huntress's sabercat skills command her companion, so she needs it at her side.
+        if (Kit.ContainsByPredicate([](const FString& S) { return CirePets::IsPetSkill(S); })) { if (ACirePet* Pet = CirePets::Summon(H)) Pet->SetActorTickEnabled(false); }
         for (const FString& Id : Kit)
         {
             for (auto* Mon : {M, M2, M3}) { Mon->Health = Mon->MaxHealth; CireBuffs::ClearAll(Mon); }
@@ -388,25 +393,16 @@ bool CireSignatureSkills::RunSmoke(ACireGameMode* Mode)
             W->Destroy(); Mode->Heroes.Remove(W);
         }
     }
-    // ---- art: temporary bodies and the mount ----
+    // ---- art: temporary bodies; the Huntress fights on foot (pets: her sabercat is a companion, CirePetsTests) ----
     {
         const bool bForce = GCireForceTripoChampionArt; GCireForceTripoChampionArt = true;
         auto* Hn = F.Hero(0, FVector(-300, 400, 0), TEXT("huntress"));
         if (Hn && Hn->ChampionArt)
         {
             const bool bApplied = Hn->ChampionArt->DebugApply(*Hn);
-            UCireCreatureArt* Creature = Hn->ChampionArt->GetCreature();
-            USkeletalMeshComponent* Rider = Creature ? Creature->GetRider() : nullptr;
-            T.Check(bApplied && Creature && Creature->GetNativeBody() == Hn->GetMesh() && Cast<UCireMonsterAnimInstance>(Hn->GetMesh()->GetAnimInstance()) != nullptr,
-                TEXT("huntress mount body applied with native clips"));
-            T.Check(Rider && Rider->GetAttachParent() == Hn->GetMesh() && Rider->GetAttachSocketName() == Creature->GetSeatBone() && !Creature->GetSeatBone().IsNone(),
-                TEXT("rider attached to the mount's seat bone"));
-            if (Rider)
-            {
-                const float Feet = static_cast<float>(Hn->GetActorLocation().Z - Hn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-                const float Pelvis = static_cast<float>(Rider->GetBoneLocation(TEXT("pelvis")).Z) - Feet;
-                T.Check(Pelvis > 60.f, FString::Printf(TEXT("rider sits on the mount's back (pelvis %.0f cm above the ground)"), Pelvis));
-            }
+            const USkeletalMesh* Body = Hn->GetMesh()->GetSkeletalMeshAsset();
+            T.Check(bApplied && !Hn->ChampionArt->GetCreature() && Body && !Body->GetName().Contains(TEXT("Wolf")),
+                TEXT("huntress drawn on foot with humanoid locomotion (no mount, no rider)"));
         }
         auto* G = F.Hero(0, FVector(-300, -400, 0), TEXT("gunblade"));
         if (G && G->ChampionArt)

@@ -853,7 +853,7 @@ NEW_CHAMPIONS = {
     'arcane_blunderbuss': ('ground_cone', 'arcane'), 'spirit_lantern': ('lantern', 'spectral'), 'purge': ('purify', 'arcane'), 'banishment': ('spiral', 'shadow'),
     'witchfinders_mark': ('eye', 'arcane'), 'spectral_blade': ('sword', 'spectral'), 'witchbane': ('witch_hat', 'shadow'), 'hexbane_judgment': ('sigil', 'spirit'),
     'bouncing_glaive': ('glaive', 'steel'), 'sabercat_pounce': ('claw', 'primal'), 'owl_scout': ('feather', 'nature'), 'moonlit_sprint': ('moon', 'frost'),
-    'crescent_volley': ('arrow', 'spirit'), 'sabercat_rake': ('claw', 'blood'), 'moon_glaive': ('glaive', 'frost'), 'glaive_storm': ('glaive', 'war'),
+    'crescent_volley': ('arrow', 'spirit'), 'sabercat_maul': ('paw', 'blood'), 'sabercat_roar': ('war_cry', 'primal'), 'moon_glaive': ('glaive', 'frost'), 'glaive_storm': ('glaive', 'war'),
     'photon_turret': ('turret', 'ether'), 'skitter_swarm': ('skitter', 'ether'), 'arc_mine': ('bolt', 'arcane'), 'disruption_pylon': ('pylon', 'shadow'),
     'phase_lance': ('beam', 'arcane'), 'overcharge': ('gear', 'ether'), 'aether_engineering': ('gear', 'light'), 'warp_obelisk': ('tower', 'ether'),
     'aegis_pylon': ('pylon', 'frost'), 'haste_pylon': ('pylon', 'light'), 'gravity_pylon': ('pylon', 'arcane'), 'stasis_snare': ('hourglass', 'ether'),
