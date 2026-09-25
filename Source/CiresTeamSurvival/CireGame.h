@@ -45,6 +45,8 @@ public:
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) TArray<FVector2D> LanePoints0;
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) TArray<FVector2D> LanePoints1;
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) uint32 LaneRouteVersion = 0;
+    // nav-paths: lane width, goal zone and challenge bay overrides (packed by CireLanePath::PublishState).
+    UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) TArray<float> LaneLayout;
     UFUNCTION() void OnRepLaneRoutes();
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out) const override;
 };
@@ -229,6 +231,8 @@ public:
     virtual void Tick(float DeltaSeconds) override;
     void RefreshRouteVisuals();
     uint32 RenderedRouteRevision = MAX_uint32;
+    // nav-paths: the castle goal actors follow the (editable) goal zone on the server.
+    void SyncGoalZones();
     UPROPERTY() TObjectPtr<class UInstancedStaticMeshComponent> RouteRoad;
     UPROPERTY() TObjectPtr<class UInstancedStaticMeshComponent> RouteEdge;
     UPROPERTY() TObjectPtr<class UInstancedStaticMeshComponent> RouteArrows;

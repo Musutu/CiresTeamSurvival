@@ -46,7 +46,15 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void DrawHUD() override;
     bool IsEditingLayout() const { return bEditLayout; }
-    bool IsBlockingGameplayInput() const { return bEditLayout || bSettings || bQuickKeybind; }
+    bool IsBlockingGameplayInput() const { return bEditLayout || bSettings || bQuickKeybind || bRouteEditor; } // nav-paths: + route editor
+    // nav-paths: in-world route editor (F8 > Developer > Paths; CireRouteEditorHUD.cpp, Docs/Navigation.md).
+    bool IsRouteEditorOpen() const { return bRouteEditor; }
+    void OpenRouteEditor(bool bOpen);
+#if !UE_BUILD_SHIPPING
+    /** Gallery/tests: frame the editor camera and hold a waypoint drag at a world point (bRelease ends it). */
+    void DebugRouteView(const FVector& Focus, float Distance, float Pitch, float Yaw);
+    void DebugRouteDrag(int32 Team, int32 Index, const FVector& World, bool bRelease);
+#endif
     /** WoW Quick Keybind mode: hover an action button and press a key to bind it. */
     void ToggleQuickKeybind();
     bool IsQuickKeybind() const { return bQuickKeybind; }
@@ -174,6 +182,12 @@ private:
     void PlayUIFeedback();
     void DrawDiagnostics();
     void DrawDeveloperPanel(float X,float Y);
+    // nav-paths: F8 > Paths page, the in-world editor overlay/toolbar and the minimap navmesh overlay.
+    void DrawRoutePage(float X,float Y);
+    void TickRouteEditor();
+    void DrawRouteMinimap(int32 Team,TFunctionRef<FVector2D(FVector,int32)> Map);
+    bool bRouteEditor=false,bMinimapNav=false;
+    TSharedPtr<struct FCireRouteEditorState> RouteEditor;
     // wave-director: F8 > Waves live wave composer (CireWaveEditor.cpp).
     void DrawWaveEditor(float X,float Y);
     FCireWaveConfig WaveDraft;

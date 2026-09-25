@@ -38,6 +38,7 @@
 #include "CireNPCPackPreview.h"
 #include "CireMonsterGallery.h" // creature-anim
 #include "CireNPCNetProbe.h"
+#include "CireNav.h" // nav-paths
 #include "CireArenas.h" // arenas
 #include "CireArenaGallery.h" // arenas
 #include "CireWaves.h" // wave-director
@@ -202,6 +203,9 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)SpawnPacks();
     if(!bFeedbackPreview)CireBalanceLab::Initialize(this);
     if(!bFeedbackPreview)CireWaveDirector::InitializeSoak(this); // wave-director
+#if !UE_BUILD_SHIPPING
+    if(!bFeedbackPreview)CireNav::InitializeProbe(this); // nav-paths: -CireNavProbe march + performance probe
+#endif
     UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / 60s prep / 90s arena / %.0fs recovery | server authority"),S->WavesPerCycle,RecoverySeconds);
 #if !UE_BUILD_SHIPPING
     if(ServerProbe.Enabled)UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_READY dedicated=1 timeout=40"));
@@ -209,6 +213,8 @@ void ACireGameMode::BeginPlay() {
         FPlatformMisc::RequestExitWithStatus(false,CireCombatFeatures::Run(this)?0:1);
     if(FParse::Param(FCommandLine::Get(),TEXT("CireCombatExpansionProbe")))
         FPlatformMisc::RequestExitWithStatus(false,CireCombatExpansion::Run(this)?0:1);
+    if(FParse::Param(FCommandLine::Get(),TEXT("CireNavTests"))) // nav-paths: the navigation checks alone
+        FPlatformMisc::RequestExitWithStatus(false,CireNav::RunTests(this)?0:1);
     if(FParse::Param(FCommandLine::Get(),TEXT("CireTelemetryProbe")))
         FPlatformMisc::RequestExitWithStatus(false,CireCombat::RunTelemetrySmoke(this)?0:1);
 #endif
@@ -417,6 +423,8 @@ void ACireGameMode::Tick(float Dt) {
     TickServerProbe(this);
     CireWaveDirector::TickSoak(this,Dt); // wave-director: headless soak bookkeeping
     CireWaveDirector::TickGallery(this); // wave-director: -CireWaveGallery captures
+    if(CireNav::TickGallery(this)) return; // nav-paths: -CireNavGallery captures
+    CireNav::TickProbe(this,Dt); // nav-paths: -CireNavProbe
 #endif
     auto* S=GetGameState<ACireGameState>(); if(!S) return;
     if(!bSmoke&&GetNetMode()==NM_Standalone) {

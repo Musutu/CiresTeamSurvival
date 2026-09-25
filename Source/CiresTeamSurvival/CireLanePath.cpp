@@ -10,6 +10,8 @@
 #include "HAL/IConsoleManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "HAL/FileManager.h"
+#include "HAL/PlatformFileManager.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -97,7 +99,8 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
     TSharedPtr<FJsonObject> Root;
     if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Root) || !Root) return Fail(TEXT("Invalid battlefield route JSON"));
     int32 Schema = 0; FString Units;
-    if (!Keys(Root,{TEXT("schemaVersion"),TEXT("units"),TEXT("bounds"),TEXT("lanes"),TEXT("armoredEscort")}) ||
+    // nav-paths: optional "laneWidth" and "goal" (path editor); per-lane optional "bays".
+    if (!Keys(Root,{TEXT("schemaVersion"),TEXT("units"),TEXT("bounds"),TEXT("lanes"),TEXT("armoredEscort"),TEXT("laneWidth"),TEXT("goal")}) ||
         !Integer(Root,TEXT("schemaVersion"),Schema,1,1) || !Root->TryGetStringField(TEXT("units"),Units) || Units != TEXT("centimeters"))
         return Fail(TEXT("Expected battlefield route schema 1 in centimeters"));
     const TSharedPtr<FJsonObject>* Bounds = nullptr; const TSharedPtr<FJsonObject>* Escort = nullptr;
@@ -107,12 +110,22 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
         !Keys(*Bounds,{TEXT("minX"),TEXT("maxX"),TEXT("halfWidth")}) ||
         !Number(*Bounds,TEXT("minX"),Candidate.MinX,-10000,-2350) || !Number(*Bounds,TEXT("maxX"),Candidate.MaxX,4000,30000) ||
         !Number(*Bounds,TEXT("halfWidth"),Candidate.HalfWidth,900,1400)) return Fail(TEXT("Invalid lane bounds; realms must remain separate and contain the towns"));
+    // nav-paths: lane width and goal zone (defaults keep older documents valid).
+    if (Root->HasField(TEXT("laneWidth")) && !Number(Root,TEXT("laneWidth"),Candidate.LaneWidth,360,1000)) return Fail(TEXT("laneWidth must be 360..1000 cm"));
+    if (Root->HasField(TEXT("goal")))
+    {
+        const TSharedPtr<FJsonObject>* Goal = nullptr; float GX = 0, GY = 0, GD = 0, GW = 0;
+        if (!Root->TryGetObjectField(TEXT("goal"),Goal) || !Goal || !Keys(*Goal,{TEXT("x"),TEXT("y"),TEXT("depth"),TEXT("width")}) ||
+            !Number(*Goal,TEXT("x"),GX,-10000,0) || !Number(*Goal,TEXT("y"),GY,-1400,1400) || !Number(*Goal,TEXT("depth"),GD,300,1600) || !Number(*Goal,TEXT("width"),GW,400,2800))
+            return Fail(TEXT("goal needs x, y, depth and width in centimeters"));
+        Candidate.GoalCenter = FVector2D(GX,GY); Candidate.GoalSize = FVector2D(GD,GW);
+    }
     if (!Root->TryGetArrayField(TEXT("lanes"),Lanes) || !Lanes || Lanes->Num() != 2) return Fail(TEXT("Provide exactly two lane routes"));
     bool Seen[2] = {false,false};
     for (const auto& Value : *Lanes)
     {
         const TSharedPtr<FJsonObject>* Lane = nullptr; const TArray<TSharedPtr<FJsonValue>>* Points = nullptr; int32 Team = -1;
-        if (!Value || !Value->TryGetObject(Lane) || !Lane || !Keys(*Lane,{TEXT("team"),TEXT("points")}) ||
+        if (!Value || !Value->TryGetObject(Lane) || !Lane || !Keys(*Lane,{TEXT("team"),TEXT("points"),TEXT("bays")}) ||
             !Integer(*Lane,TEXT("team"),Team,0,1) || Seen[Team] || !(*Lane)->TryGetArrayField(TEXT("points"),Points) ||
             !Points || Points->Num() < 3 || Points->Num() > 64) return Fail(TEXT("Each unique team needs 3..64 local XY points"));
         Seen[Team] = true;
@@ -120,17 +133,23 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
         {
             const TArray<TSharedPtr<FJsonValue>>* XY = nullptr; double X = 0, Y = 0;
             if (!Point || !Point->TryGetArray(XY) || !XY || XY->Num() != 2 || !(*XY)[0]->TryGetNumber(X) || !(*XY)[1]->TryGetNumber(Y) ||
-                !FMath::IsFinite(X) || !FMath::IsFinite(Y) || X < Candidate.MinX + 100 || X > Candidate.MaxX - 100 || FMath::Abs(Y) > Candidate.HalfWidth - 150)
+                !FMath::IsFinite(X) || !FMath::IsFinite(Y))
                 return Fail(TEXT("Route points must be finite and inside their realm with unit clearance"));
-            auto& Result = Candidate.LocalPoints[Team];
-            if (!Result.IsEmpty() && FVector2D::DistSquared(Result.Last(),FVector2D(X,Y)) < 2500) return Fail(TEXT("Adjacent route points must be at least 50 cm apart"));
-            Result.Add(FVector2D(X,Y));
+            Candidate.LocalPoints[Team].Add(FVector2D(X,Y));
         }
-        const auto& Result = Candidate.LocalPoints[Team];
-        if (Result[0].X < 3000 || FVector2D::DistSquared(Result.Last(),FVector2D(-1850,0)) > 10000)
-            return Fail(TEXT("Routes must start outside the town and end within 100 cm of its center"));
-        for (int32 I = 0; I + 1 < Result.Num(); ++I)
-            if (Result[I].X < -1300 && FMath::Abs(Result[I].Y) < 950) return Fail(TEXT("Only the final point may enter the town defense zone"));
+        // nav-paths: optional challenge bay overrides, exactly three [x, y] points (tiers 1..3).
+        const TArray<TSharedPtr<FJsonValue>>* Bays = nullptr;
+        if ((*Lane)->HasField(TEXT("bays")))
+        {
+            if (!(*Lane)->TryGetArrayField(TEXT("bays"),Bays) || !Bays || Bays->Num() != 3) return Fail(TEXT("Challenge bays need exactly three [x, y] points"));
+            for (const auto& Bay : *Bays)
+            {
+                const TArray<TSharedPtr<FJsonValue>>* XY = nullptr; double X = 0, Y = 0;
+                if (!Bay || !Bay->TryGetArray(XY) || !XY || XY->Num() != 2 || !(*XY)[0]->TryGetNumber(X) || !(*XY)[1]->TryGetNumber(Y) || !FMath::IsFinite(X) || !FMath::IsFinite(Y))
+                    return Fail(TEXT("Challenge bays need exactly three [x, y] points"));
+                Candidate.Bays[Team].Add(FVector2D(X,Y));
+            }
+        }
     }
     if (!Root->TryGetObjectField(TEXT("armoredEscort"),Escort) || !Escort ||
         !Keys(*Escort,{TEXT("everyWaves"),TEXT("count"),TEXT("leakCost"),TEXT("healthMultiplier"),TEXT("moveSpeed")}) ||
@@ -138,8 +157,143 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
         !Integer(*Escort,TEXT("leakCost"),Candidate.EscortLeakCost,1,100) ||
         !Number(*Escort,TEXT("healthMultiplier"),Candidate.EscortHealthMultiplier,1,50) || !Number(*Escort,TEXT("moveSpeed"),Candidate.EscortMoveSpeed,50,500))
         return Fail(TEXT("Invalid armored escort schedule or stats"));
+    if (!Validate(Candidate,Error)) return false;
     Out = MoveTemp(Candidate); Error.Reset(); return true;
 }
+// nav-paths: semantic rules shared by the JSON loader and the live path editor.
+bool CireLanePath::Validate(const FCireBattlefieldRoutes& R, FString& Error)
+{
+    auto Fail = [&](const TCHAR* Reason) { Error = Reason; return false; };
+    auto Finite2 = [](const FVector2D& P) { return FMath::IsFinite(P.X) && FMath::IsFinite(P.Y); };
+    if (!FMath::IsFinite(R.MinX) || !FMath::IsFinite(R.MaxX) || !FMath::IsFinite(R.HalfWidth) || R.MinX < -10000 || R.MinX > -2350 ||
+        R.MaxX < 4000 || R.MaxX > 30000 || R.HalfWidth < 900 || R.HalfWidth > 1400)
+        return Fail(TEXT("Invalid lane bounds; realms must remain separate and contain the towns"));
+    if (!FMath::IsFinite(R.LaneWidth) || R.LaneWidth < 360 || R.LaneWidth > 1000) return Fail(TEXT("laneWidth must be 360..1000 cm"));
+    const FVector2D GoalHalf = R.GoalSize * .5;
+    if (!Finite2(R.GoalCenter) || !Finite2(R.GoalSize) || R.GoalSize.X < 300 || R.GoalSize.X > 1600 || R.GoalSize.Y < 400 || R.GoalSize.Y > 2 * R.HalfWidth ||
+        R.GoalCenter.X - GoalHalf.X < R.MinX || R.GoalCenter.X + GoalHalf.X > -900 || FMath::Abs(R.GoalCenter.Y) + GoalHalf.Y > R.HalfWidth)
+        return Fail(TEXT("The castle goal zone must stay inside the castle ward (x <= -900) and the realm"));
+    auto InGoal = [&](const FVector2D& P, double Margin)
+    { return FMath::Abs(P.X - R.GoalCenter.X) <= GoalHalf.X + Margin && FMath::Abs(P.Y - R.GoalCenter.Y) <= GoalHalf.Y + Margin; };
+    for (int32 Team = 0; Team < 2; ++Team)
+    {
+        const auto& Points = R.LocalPoints[Team];
+        if (Points.Num() < 3 || Points.Num() > 64) return Fail(TEXT("Each unique team needs 3..64 local XY points"));
+        for (int32 I = 0; I < Points.Num(); ++I)
+        {
+            const FVector2D& P = Points[I];
+            if (!Finite2(P) || P.X < R.MinX + 100 || P.X > R.MaxX - 100 || FMath::Abs(P.Y) > R.HalfWidth - 150)
+                return Fail(TEXT("Route points must be finite and inside their realm with unit clearance"));
+            if (I > 0 && FVector2D::DistSquared(Points[I - 1], P) < 2500) return Fail(TEXT("Adjacent route points must be at least 50 cm apart"));
+        }
+        if (Points[0].X < 3000 || !InGoal(Points.Last(), 0))
+            return Fail(TEXT("Routes must start outside the town and end inside the castle goal zone"));
+        for (int32 I = 0; I + 1 < Points.Num(); ++I)
+            if (InGoal(Points[I], 100)) return Fail(TEXT("Only the final point may enter the town defense zone"));
+        const auto& Bays = R.Bays[Team];
+        if (Bays.Num() != 0 && Bays.Num() != 3) return Fail(TEXT("Challenge bays need exactly three [x, y] points"));
+        for (const FVector2D& B : Bays)
+            if (!Finite2(B) || B.X < R.MinX + 220 || B.X > R.MaxX - 220 || FMath::Abs(B.Y) > R.HalfWidth - 220 || InGoal(B, 200) ||
+                FVector2D::DistSquared(B, Points[0]) < FMath::Square(450.))
+                return Fail(TEXT("Challenge bays must stay inside the realm, clear of the breach and the castle zone"));
+    }
+    if (R.EscortEveryWaves < 0 || R.EscortEveryWaves > 100 || R.EscortCount < 1 || R.EscortCount > 4 || R.EscortLeakCost < 1 || R.EscortLeakCost > 100 ||
+        !(R.EscortHealthMultiplier >= 1 && R.EscortHealthMultiplier <= 50) || !(R.EscortMoveSpeed >= 50 && R.EscortMoveSpeed <= 500))
+        return Fail(TEXT("Invalid armored escort schedule or stats"));
+    Error.Reset(); return true;
+}
+FCireBattlefieldRoutes CireLanePath::TownDefaults()
+{
+    FCireBattlefieldRoutes R; R.MinX = -2350; R.MaxX = 13000; R.HalfWidth = 1400;
+    const TArray<FVector2D> Points = {{12500,0},{10800,0},{10100,-550},{8700,-550},{7400,500},{5800,500},{4700,-550},{3300,-550},{2400,500},{1000,500},{0,0},{-1850,0}};
+    R.LocalPoints[0] = R.LocalPoints[1] = Points; return R;
+}
+bool CireLanePath::SameLayout(const FCireBattlefieldRoutes& A, const FCireBattlefieldRoutes& B)
+{
+    return A.MinX == B.MinX && A.MaxX == B.MaxX && A.HalfWidth == B.HalfWidth && A.LocalPoints[0] == B.LocalPoints[0] && A.LocalPoints[1] == B.LocalPoints[1] &&
+        A.LaneWidth == B.LaneWidth && A.GoalCenter == B.GoalCenter && A.GoalSize == B.GoalSize && A.Bays[0] == B.Bays[0] && A.Bays[1] == B.Bays[1] &&
+        A.EscortEveryWaves == B.EscortEveryWaves && A.EscortCount == B.EscortCount && A.EscortLeakCost == B.EscortLeakCost &&
+        A.EscortHealthMultiplier == B.EscortHealthMultiplier && A.EscortMoveSpeed == B.EscortMoveSpeed;
+}
+FString CireLanePath::DataPath() { return FPaths::ProjectContentDir() / TEXT("Data/BattlefieldRoutes.json"); }
+FString CireLanePath::ToJson(const FCireBattlefieldRoutes& R)
+{
+    auto N = [](double V)
+    {
+        const double Rounded = FMath::RoundToDouble(V * 10.) / 10.;
+        return FMath::IsNearlyEqual(Rounded, FMath::RoundToDouble(Rounded)) ? FString::Printf(TEXT("%lld"), static_cast<long long>(FMath::RoundToDouble(Rounded))) : FString::Printf(TEXT("%.1f"), Rounded);
+    };
+    auto List = [&](const TArray<FVector2D>& Points)
+    {
+        TArray<FString> Items; for (const FVector2D& P : Points) Items.Add(FString::Printf(TEXT("[%s,%s]"), *N(P.X), *N(P.Y)));
+        return FString(TEXT("[")) + FString::Join(Items, TEXT(",")) + TEXT("]");
+    };
+    FString Out = TEXT("{\n  \"schemaVersion\": 1,\n  \"units\": \"centimeters\",\n");
+    Out += FString::Printf(TEXT("  \"bounds\": { \"minX\": %s, \"maxX\": %s, \"halfWidth\": %s },\n"), *N(R.MinX), *N(R.MaxX), *N(R.HalfWidth));
+    Out += FString::Printf(TEXT("  \"laneWidth\": %s,\n"), *N(R.LaneWidth));
+    Out += FString::Printf(TEXT("  \"goal\": { \"x\": %s, \"y\": %s, \"depth\": %s, \"width\": %s },\n"), *N(R.GoalCenter.X), *N(R.GoalCenter.Y), *N(R.GoalSize.X), *N(R.GoalSize.Y));
+    Out += TEXT("  \"lanes\": [\n");
+    for (int32 Team = 0; Team < 2; ++Team)
+    {
+        Out += FString::Printf(TEXT("    { \"team\": %d, \"points\": %s"), Team, *List(R.LocalPoints[Team]));
+        if (R.Bays[Team].Num() == 3) Out += FString::Printf(TEXT(", \"bays\": %s"), *List(R.Bays[Team]));
+        Out += Team == 0 ? TEXT(" },\n") : TEXT(" }\n");
+    }
+    Out += TEXT("  ],\n");
+    Out += FString::Printf(TEXT("  \"armoredEscort\": { \"everyWaves\": %d, \"count\": %d, \"leakCost\": %d, \"healthMultiplier\": %s, \"moveSpeed\": %s }\n}\n"),
+        R.EscortEveryWaves, R.EscortCount, R.EscortLeakCost, *N(R.EscortHealthMultiplier), *N(R.EscortMoveSpeed));
+    return Out;
+}
+bool CireLanePath::LoadFile(FCireBattlefieldRoutes& Out, FString* Error, const FString& Path)
+{
+    FString Json, Why; FCireBattlefieldRoutes Candidate;
+    if (!FFileHelper::LoadFileToString(Json, *(Path.IsEmpty() ? DataPath() : Path))) Why = TEXT("BattlefieldRoutes.json could not be read");
+    else if (ParseJson(Json, Candidate, Why)) { Out = MoveTemp(Candidate); if (Error) Error->Reset(); return true; }
+    if (Error) *Error = Why;
+    return false;
+}
+bool CireLanePath::SaveFile(const FCireBattlefieldRoutes& Document, FString* Error, const FString& Path)
+{
+    FString Why; FCireBattlefieldRoutes RoundTrip;
+    const FString Json = ToJson(Document);
+    if (!Validate(Document, Why) || !ParseJson(Json, RoundTrip, Why)) { if (Error) *Error = Why; return false; }
+    const FString Target = Path.IsEmpty() ? DataPath() : Path;
+    IFileManager::Get().MakeDirectory(*FPaths::GetPath(Target), true);
+    // Committed data files may be checked out read-only; a developer save is an explicit overwrite.
+    if (IFileManager::Get().IsReadOnly(*Target)) FPlatformFileManager::Get().GetPlatformFile().SetReadOnly(*Target, false);
+    if (!FFileHelper::SaveStringToFile(Json, *Target, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+    { if (Error) *Error = FString::Printf(TEXT("Could not write %s"), *Target); return false; }
+    if (Error) Error->Reset();
+    return true;
+}
+bool CireLanePath::ApplyLive(UWorld* World, const FCireBattlefieldRoutes& Document, FString* Error)
+{
+    FString Why;
+    if (!World || !World->GetAuthGameMode<ACireGameMode>()) Why = TEXT("Only the authoritative match may edit routes");
+    else if (Validate(Document, Why))
+    {
+        const auto& Old = Get(World);
+        if (Document.MinX != Old.MinX || Document.MaxX != Old.MaxX || Document.HalfWidth != Old.HalfWidth)
+            Why = TEXT("Lane bounds changes require a match restart; live edits support paths, lane width, goal zone and bays");
+        else
+        {
+            auto& Entry = ForWorld(World); Entry.Data = Document; ++Entry.Revision;
+            PublishState(World->GetGameState<ACireGameState>());
+            if (Error) Error->Reset();
+            UE_LOG(LogCireLanePath, Display, TEXT("CIRE_LANE_ROUTES_EDITED revision=%u points=%d/%d laneWidth=%.0f"), Entry.Revision, Document.LocalPoints[0].Num(), Document.LocalPoints[1].Num(), Document.LaneWidth);
+            return true;
+        }
+    }
+    if (Error) *Error = Why;
+    UE_LOG(LogCireLanePath, Warning, TEXT("Route edit rejected; existing routes retained: %s"), *Why);
+    return false;
+}
+FVector CireLanePath::GoalZoneCenter(const UWorld* World, int32 Team, float Z)
+{
+    Team = FMath::Clamp(Team, 0, 1); return WorldPoint(Team, Get(World).GoalCenter, Z);
+}
+FVector2D CireLanePath::GoalZoneExtent(const UWorld* World) { return Get(World).GoalSize * .5; }
+float CireLanePath::LaneWidth(const UWorld* World) { return Get(World).LaneWidth; }
 bool CireLanePath::Reload(FString* Error)
 {
     FString Json, Why; FCireBattlefieldRoutes Candidate; bLoaded = true;
@@ -175,7 +329,12 @@ void CireLanePath::PublishState(ACireGameState* State)
 {
     if(!IsValid(State)||!State->HasAuthority())return;
     const auto& R=Get(State->GetWorld());State->LaneBounds=FVector(R.MinX,R.MaxX,R.HalfWidth);
-    State->LanePoints0=R.LocalPoints[0];State->LanePoints1=R.LocalPoints[1];State->LaneRouteVersion=Revision(State->GetWorld());State->ForceNetUpdate();
+    State->LanePoints0=R.LocalPoints[0];State->LanePoints1=R.LocalPoints[1];State->LaneRouteVersion=Revision(State->GetWorld());
+    // nav-paths: lane width, goal zone and bay overrides ride along with the points.
+    TArray<float>& L=State->LaneLayout;L.Reset();
+    L.Add(R.LaneWidth);L.Add(R.GoalCenter.X);L.Add(R.GoalCenter.Y);L.Add(R.GoalSize.X);L.Add(R.GoalSize.Y);
+    for(int32 Team=0;Team<2;++Team){L.Add(R.Bays[Team].Num());for(const FVector2D& B:R.Bays[Team]){L.Add(B.X);L.Add(B.Y);}}
+    State->ForceNetUpdate();
 }
 void CireLanePath::ReceiveState(ACireGameState* State)
 {
@@ -184,6 +343,23 @@ void CireLanePath::ReceiveState(ACireGameState* State)
     auto& Entry=ForWorld(State->GetWorld());if(Entry.ReceivedVersion==State->LaneRouteVersion)return;
     Entry.Data.MinX=State->LaneBounds.X;Entry.Data.MaxX=State->LaneBounds.Y;Entry.Data.HalfWidth=State->LaneBounds.Z;
     Entry.Data.LocalPoints[0]=State->LanePoints0;Entry.Data.LocalPoints[1]=State->LanePoints1;
+    // nav-paths: unpack the layout extras (ignored when malformed; the points still apply).
+    const TArray<float>& L=State->LaneLayout;
+    if(L.Num()>=7)
+    {
+        int32 At=5;TArray<FVector2D> Bays[2];bool bOk=true;
+        for(int32 Team=0;Team<2&&bOk;++Team)
+        {
+            const int32 Count=At<L.Num()?FMath::RoundToInt(L[At]):-1;++At;
+            if((Count!=0&&Count!=3)||At+Count*2>L.Num()){bOk=false;break;}
+            for(int32 I=0;I<Count;++I){Bays[Team].Add(FVector2D(L[At],L[At+1]));At+=2;}
+        }
+        if(bOk)
+        {
+            Entry.Data.LaneWidth=L[0];Entry.Data.GoalCenter=FVector2D(L[1],L[2]);Entry.Data.GoalSize=FVector2D(L[3],L[4]);
+            Entry.Data.Bays[0]=Bays[0];Entry.Data.Bays[1]=Bays[1];
+        }
+    }
     Entry.ReceivedVersion=State->LaneRouteVersion;++Entry.Revision;
 }
 bool CireLanePath::Contains(int32 Team,const FVector& P,float Margin) { return Contains(nullptr,Team,P,Margin); }
@@ -213,7 +389,14 @@ FVector CireLanePath::SpawnPosition(const UWorld* World,int32 Team,float Z)
 }
 FVector CireLanePath::ChallengePosition(const UWorld* World,int32 Team,int32 Tier,float Z)
 {
-    const auto& R=Get(World);Team=FMath::Clamp(Team,0,1);Tier=FMath::Clamp(Tier,1,3);
+    Team=FMath::Clamp(Team,0,1);
+    return WorldPoint(Team,BayPoint(Get(World),Team,Tier),FMath::IsFinite(Z)?Z:110.f);
+}
+FVector2D CireLanePath::BayPoint(const FCireBattlefieldRoutes& R,int32 Team,int32 Tier)
+{
+    Team=FMath::Clamp(Team,0,1);Tier=FMath::Clamp(Tier,1,3);
+    // nav-paths: path-editor bay override.
+    if(R.Bays[Team].Num()==3)return R.Bays[Team][Tier-1];
     const auto& Points=R.LocalPoints[Team];double Length=0;
     for(int32 I=0;I+1<Points.Num();++I)Length+=FVector2D::Distance(Points[I],Points[I+1]);
     double Remaining=Length*(1.-Tier*.25);FVector2D Anchor=Points.Last();
@@ -233,7 +416,7 @@ FVector CireLanePath::ChallengePosition(const UWorld* World,int32 Team,int32 Tie
         const double Score=FMath::Sqrt(DistanceToPathSquared(Points,Candidate))-FMath::Abs(Offset)*25.;
         if(Score>BestScore){BestScore=Score;Best=Candidate;}
     }
-    return WorldPoint(Team,Best,FMath::IsFinite(Z)?Z:110.f);
+    return Best;
 }
 TArray<FVector> CireLanePath::RoutePoints(const UWorld* World,int32 Team,float Z)
 {
@@ -291,7 +474,8 @@ FVector CireLanePath::NextWaypoint(ACireMonster* M)
     if (M->LaneRouteRevision != Revision(M->GetWorld()) || M->LaneWaypointIndex < 1 || M->LaneWaypointIndex >= R.LocalPoints[M->Lane].Num()) InitializeProgress(M);
     const auto& Points = R.LocalPoints[M->Lane]; const FVector P = M->GetActorLocation();
     const FVector2D Local(P.X,P.Y-CenterY(M->Lane));
-    while (M->LaneWaypointIndex + 1 < Points.Num() && FVector2D::DistSquared(Local,Points[M->LaneWaypointIndex]) <= FMath::Square(100.f)) ++M->LaneWaypointIndex;
+    // nav-paths: 150 cm arrival radius (was 100): navmesh-steered units in a crowd rarely stand exactly on the point.
+    while (M->LaneWaypointIndex + 1 < Points.Num() && FVector2D::DistSquared(Local,Points[M->LaneWaypointIndex]) <= FMath::Square(150.f)) ++M->LaneWaypointIndex;
     return WorldPoint(M->Lane,Points[M->LaneWaypointIndex],P.Z);
 }
 bool CireLanePath::ShouldSpawnEscort(int32 Wave)

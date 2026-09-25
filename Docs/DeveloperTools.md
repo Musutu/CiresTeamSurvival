@@ -12,6 +12,7 @@ does not enable it in future sessions; use Load, review, then Apply.
 | Effects | Future projectile speed/collision radius, warning/lifetime multipliers, construct/summon health, category-specific world/player/monster/protection/wall collision policies |
 | Balance lab | Actual wave or arena combat with role bots, optional player participation, counts, wave tier, NPC role and bounded runtime |
 | Replays | Start/stop Unreal recording, refresh saved recordings, page through local metadata and play a finished recording |
+| Paths (nav-paths) | Route and navmesh status, per-segment reachability, world/minimap navmesh toggles, and the in-world path editor: drag waypoints, the breach, challenge bays and the goal zone; lane width; apply live, save/load `BattlefieldRoutes.json`, defaults. See `Docs/Navigation.md` |
 
 The first Apply captures original match timing, wave count and world speed.
 **Restore original tuning** restores that snapshot and neutralizes future-spawn

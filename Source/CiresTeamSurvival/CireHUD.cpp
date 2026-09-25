@@ -180,7 +180,7 @@ void ACireHUD::ToggleDeveloperTools()
     if(bEditLayout)ToggleLayoutEditor();
     RevertVideoPreview();bSettings=true;OptionsTab=5;DeveloperPage=5;bVideoLoaded=false;
 }
-bool ACireHUD::HandleEscape() { if(bQuickKeybind){ToggleQuickKeybind();return true;}if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
+bool ACireHUD::HandleEscape() { if(bQuickKeybind){ToggleQuickKeybind();return true;}if(bRouteEditor&&!bSettings){OpenRouteEditor(false);return true;}/* nav-paths */if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
 void ACireHUD::HandleMouseWheel(float Delta)
 {
     if(bSettings&&OptionsTab==0&&ControlsPage==1){KeybindScroll=FMath::Max(0,KeybindScroll+(Delta>0?-2:2));return;}
@@ -376,7 +376,8 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
             }
             const auto Spawn=Map(CireLanePath::SpawnPosition(GetWorld(),Team),Team);
             Panel(Spawn.X-9,Spawn.Y-3,18,6,Red);Label(TEXT("BREACH"),X+25,30,8,Muted);
-            const auto Base=Map(FVector(-1850,CireLanePath::CenterY(Team),0),Team);
+            DrawRouteMinimap(Team,Map); // nav-paths: navmesh coverage and the path editor draft
+            const auto Base=Map(CireLanePath::GoalZoneCenter(GetWorld(),Team,0),Team); // nav-paths: editable goal zone
             Panel(Base.X-12,Base.Y-3,24,6,Teal);Label(TEXT("KEEP"),X+32,139,8,Teal);
             for(int32 Tier=1;Tier<=3;++Tier) {
                 const auto P=Map(CireLanePath::ChallengePosition(GetWorld(),Team,Tier),Team);
@@ -575,6 +576,8 @@ void ACireHUD::DrawHUD()
     LayoutInteraction();VisiblePanels.Reset();ResetTransform();
     if(DrawReplayScreen()){DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();return;}
     if(!Hero){Label(TEXT("Joining the battlefield..."),ViewW*.5f-130,ViewH*.5f,20,Parchment);return;}
+    // nav-paths: the in-world path editor replaces the gameplay HUD (minimap, editor overlay, toolbar, F8).
+    if(bRouteEditor){DrawMinimap(Hero,State);ResetTransform();TickRouteEditor();ResetTransform();DrawSettings();DrawTooltip();ResetTransform();return;}
     UpdateLevelUps(Hero);UpdateThreatAlerts(Hero);UpdateBanners(Hero,State);
     if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;TargetChangedAt=GetWorld()->GetRealTimeSeconds();}
     if(!bModal)DrawNameplates(Hero);

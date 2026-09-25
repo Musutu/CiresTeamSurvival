@@ -21,6 +21,7 @@
 #include "CireBuffs.h" // aura-vfx
 #include "CireMonsterArt.h" // creature-anim
 #include "CireWaves.h" // wave-director
+#include "CireNav.h" // nav-paths: navmesh steering
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireNPCCombat,Log,All);
 
@@ -106,7 +107,21 @@ void MarchLane(ACireMonster* M,ACireGameMode* Mode)
 {
     if(CireNPCCombat::ReachedGoal(M)){Mode->Leak(M);return;}
     const FVector Destination=CireNPCCombat::RouteDestination(M);
-    if(!HandleWall(M,Destination))M->AddMovementInput((Destination-M->GetActorLocation()).GetSafeNormal2D());
+    // nav-paths: follow the navmesh path to the next route waypoint (straight line only without a navmesh).
+    if(!HandleWall(M,Destination))M->AddMovementInput(CireNav::Steer(M,Destination));
+}
+// nav-paths: back away from melee along open navmesh instead of into a wall (keeps facing away from the victim).
+FVector KiteDirection(ACireMonster* M,const FVector& TowardVictim)
+{
+    const FVector Away=-TowardVictim,From=M->GetActorLocation();
+    UWorld* World=M->GetWorld();FVector OnNav;
+    if(!CireNav::IsEnabled()||!CireNav::Project(World,From,OnNav,FVector(80,80,300),CireNav::AgentRadius(M)))return Away;
+    for(const float Yaw:{0.f,45.f,-45.f,75.f,-75.f})
+    {
+        const FVector Dir=Away.RotateAngleAxis(Yaw,FVector::UpVector);
+        if(CireNav::Walkable(World,OnNav,OnNav+Dir*300.f,CireNav::AgentRadius(M)))return Dir;
+    }
+    return Away;
 }
 float AttackPeriod(const ACireMonster* M,const FCireNPCArchetype* A)
 {
@@ -474,7 +489,8 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     {
         if(!M->Threat.IsEmpty()||M->Victim)CireThreat::Clear(M);
         M->bEngaged=false;M->LeashTimer=0;
-        if(FVector::DistSquared2D(M->GetActorLocation(),M->SpawnPosition)>FMath::Square(90.f))M->AddMovementInput((M->SpawnPosition-M->GetActorLocation()).GetSafeNormal2D());
+        // nav-paths: a displaced neutral pack paths back to its camp.
+        if(FVector::DistSquared2D(M->GetActorLocation(),M->SpawnPosition)>FMath::Square(90.f))M->AddMovementInput(CireNav::Steer(M,M->SpawnPosition));
         else Movement->StopMovementImmediately();
         return;
     }
@@ -495,7 +511,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
             M->LeashTimer=FMath::Max(.05f,M->LeashTimer-Delta);
             // Resetting packs cannot acquire fresh victims; solid summoned walls
             // still need to be breached on the route back to their spawn.
-            if(!HandleWall(M,M->SpawnPosition))M->AddMovementInput((M->SpawnPosition-M->GetActorLocation()).GetSafeNormal2D());
+            if(!HandleWall(M,M->SpawnPosition))M->AddMovementInput(CireNav::Steer(M,M->SpawnPosition)); // nav-paths: path home after a reset
         }
         else
         {
@@ -553,9 +569,20 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
             // Casters and hunters hold their distance: back off from melee, then shoot.
             if(Distance<A->KiteRange&&S->KiteReadyAt<=Now&&bSight)
             {S->KiteUntil=Now+(A->Role==ECireNPCRole::Caster?.8f:1.f);S->KiteReadyAt=Now+(A->Role==ECireNPCRole::Caster?4.f:3.f);}
-            if(S->KiteUntil>Now){M->AddMovementInput(-Direction);M->SetActorRotation(Direction.Rotation());return;}
+            if(S->KiteUntil>Now){M->AddMovementInput(KiteDirection(M,Direction));M->SetActorRotation(Direction.Rotation());return;} // nav-paths
         }
-        if(Distance>Reach||!bSight){M->AddMovementInput(Direction);return;}
+        if(Distance>Reach||!bSight)
+        {
+            // nav-paths: path to the victim (around houses, into line of sight). A victim the navmesh cannot
+            // reach is dropped by wave units (they return to the lane) and makes a pack reset home.
+            M->AddMovementInput(CireNav::Steer(M,Victim->GetActorLocation()));
+            if(CireNav::GoalUnreachable(M,2.5f))
+            {
+                if(M->PackId>=0)StartLeash(M);
+                else{CireThreat::Clear(M);CireWaveDirector::SuppressAggro(M,6.f);}
+            }
+            return;
+        }
         Movement->StopMovementImmediately();M->SetActorRotation(Direction.Rotation());
         if(M->AttackTimer<=0)
         {
@@ -583,7 +610,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     {
         const FVector Offset=FVector(0,(M->GetUniqueID()%2?1.f:-1.f)*170.f,0);
         const FVector Beside=Charge->GetActorLocation()+Offset;
-        if(FVector::DistSquared2D(M->GetActorLocation(),Beside)>FMath::Square(260.f)){M->AddMovementInput((Beside-M->GetActorLocation()).GetSafeNormal2D());return;}
+        if(FVector::DistSquared2D(M->GetActorLocation(),Beside)>FMath::Square(260.f)){M->AddMovementInput(CireNav::Steer(M,Beside));return;} // nav-paths
         const UWorld* World=M->GetWorld();
         if(CireLanePath::RouteProgress(World,M->Lane,M->GetActorLocation())>CireLanePath::RouteProgress(World,Charge->Lane,Charge->GetActorLocation())+.01f)
         {Movement->StopMovementImmediately();return;}

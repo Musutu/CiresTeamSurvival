@@ -9,6 +9,7 @@
 #include "CireThreat.h"
 #include "CireSummon.h"
 #include "CireDeveloperTools.h"
+#include "CireNav.h" // nav-paths
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -62,6 +63,7 @@ struct FRuntime
     TMap<TWeakObjectPtr<ACireHero>, FBotState> Bots;
     int32 LeakCostSpawned[2] = {0, 0};
     int32 BossesSpawned = 0;
+    int32 Nudges = 0, Marches = 0, Despawns = 0; // nav-paths: rescue totals for the navigation probe
 };
 TMap<TWeakObjectPtr<UWorld>, FRuntime> Runtimes;
 FCireWaveConfig FileConfig;
@@ -380,7 +382,7 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
             { Despawn.Add(M); continue; }
             if (!T.bForcedMarch)
             {
-                T.bForcedMarch = true; T.ForcedAt = Time;
+                T.bForcedMarch = true; T.ForcedAt = Time; ++R.Marches;
                 CireNPCCombat::Interrupt(M); CireThreat::Clear(M); M->bEngaged = false;
                 NoteFailsafe(FString::Printf(TEXT("march %s lane=%d age=%.0f"), *M->GetNPCDisplayName(), M->Lane, Age));
                 UE_LOG(LogCireWaves, Warning, TEXT("CIRE_WAVES_RESCUE_MARCH %s lane=%d age=%.0f"), *M->GetNPCDisplayName(), M->Lane, Age);
@@ -417,13 +419,14 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
         const bool bChasing = IsValid(M->Victim);
         if (bChasing) { CireThreat::Clear(M); T.SuppressUntil = Time + 6.f; }
         NudgeAlong(M, 450.f);
-        ++T.Nudges; T.StuckFor = 0; T.Anchor = M->GetActorLocation();
+        ++T.Nudges; ++R.Nudges; T.StuckFor = 0; T.Anchor = M->GetActorLocation();
         UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_STUCK_NUDGE %s lane=%d from=(%.0f,%.0f) to=(%.0f,%.0f) chasing=%d nudges=%d"), *M->GetNPCDisplayName(), M->Lane,
             From.X, From.Y, M->GetActorLocation().X, M->GetActorLocation().Y, bChasing ? 1 : 0, T.Nudges);
     }
     for (ACireMonster* M : Despawn)
     {
         UE_LOG(LogCireWaves, Warning, TEXT("CIRE_WAVES_RESCUE_DESPAWN %s lane=%d"), *M->GetNPCDisplayName(), M->Lane);
+        ++R.Despawns;
         NoteFailsafe(FString::Printf(TEXT("despawn %s lane=%d"), *M->GetNPCDisplayName(), M->Lane));
         Forget(M); Mode->Monsters.Remove(M); CireThreat::Clear(M); CireNPCCombat::Interrupt(M); M->Destroy();
     }
@@ -484,6 +487,17 @@ ACireMonster* CireWaveDirector::EscortCharge(const ACireMonster* M)
     const FTrack* T = TrackOf(M);
     ACireMonster* Charge = T && T->bGuard ? T->Charge.Get() : nullptr;
     return AliveUnit(Charge) ? Charge : nullptr;
+}
+// nav-paths: a wave unit whose victim the navmesh cannot reach drops it and holds the lane for a while.
+void CireWaveDirector::SuppressAggro(ACireMonster* M, float Seconds)
+{
+    FRuntime* R = M ? Find(M->GetWorld()) : nullptr;
+    if (FTrack* T = R ? R->Tracks.Find(TWeakObjectPtr<ACireMonster>(M)) : nullptr) T->SuppressUntil = FMath::Max(T->SuppressUntil, Now(M) + Seconds);
+}
+void CireWaveDirector::RescueCounts(const ACireGameMode* Mode, int32& Nudges, int32& Marches, int32& Despawns)
+{
+    const FRuntime* R = Mode ? Find(Mode->GetWorld()) : nullptr;
+    Nudges = R ? R->Nudges : 0; Marches = R ? R->Marches : 0; Despawns = R ? R->Despawns : 0;
 }
 void CireWaveDirector::Forget(const ACireMonster* M)
 {
@@ -564,6 +578,14 @@ bool CireWaveDirector::ShouldBotRetreat(ACireHero* Bot)
 FVector CireWaveDirector::BotSteer(ACireHero* Bot, const FVector& Goal)
 {
     const FVector Straight = IsValid(Bot) ? (Goal - Bot->GetActorLocation()).GetSafeNormal2D() : FVector::ZeroVector;
+    // nav-paths: bots path on the navmesh in every phase (lane, targets, healers, castle hold, arena).
+    // The road detour below remains the fallback where no navmesh covers the bot.
+    if (IsValid(Bot))
+    {
+        bool bUsedNav = false;
+        const FVector Dir = CireNav::Steer(Bot, Goal, &bUsedNav);
+        if (bUsedNav) return Dir;
+    }
     auto* Mode = IsValid(Bot) ? Bot->GetWorld()->GetAuthGameMode<ACireGameMode>() : nullptr;
     if (!Mode || Mode->Clock.Phase() != Cires::MatchPhase::Survival) return Straight;
     FRuntime& R = Get(Mode);

@@ -1,6 +1,10 @@
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireEnvironmentProps.h"
+#include "CireNav.h" // nav-paths
+#include "CireTownGoal.h" // nav-paths
+#include "Components/BoxComponent.h" // nav-paths
+#include "EngineUtils.h" // nav-paths
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -172,18 +176,32 @@ void ACireWorld::BeginPlay() {
     Fog->GetComponent()->SetVolumetricFogScatteringDistribution(.45f);
     Fog->GetComponent()->SetVolumetricFogExtinctionScale(.8f);
     CireEnvironmentProps::Build(this);
+    // nav-paths: the navmesh is generated once the town, its props and the collision floor exist
+    // (server/standalone only; clients have no navigation system).
+    if(HasAuthority())CireNav::Initialize(GetWorld());
+}
+void ACireWorld::SyncGoalZones() {
+    // nav-paths: the castle leak zone follows the editable goal zone (BattlefieldRoutes.json "goal").
+    if(!HasAuthority())return;
+    const FVector2D Extent=CireLanePath::GoalZoneExtent(GetWorld());
+    for(TActorIterator<ACireTownGoal> It(GetWorld());It;++It) {
+        const FVector Center=CireLanePath::GoalZoneCenter(GetWorld(),It->TeamId,150);
+        if(!It->GetActorLocation().Equals(Center,1.))It->SetActorLocation(Center);
+        if(It->GoalVolume&&!FVector2D(It->GoalVolume->GetUnscaledBoxExtent()).Equals(Extent,1.))It->GoalVolume->SetBoxExtent(FVector(Extent.X,Extent.Y,250));
+    }
 }
 
 void ACireWorld::Tick(float DeltaSeconds) {
     Super::Tick(DeltaSeconds);
-    if(RenderedRouteRevision!=CireLanePath::Revision(GetWorld())){RefreshRouteVisuals();CireEnvironmentProps::Refresh(this);}
+    if(RenderedRouteRevision!=CireLanePath::Revision(GetWorld())){RefreshRouteVisuals();CireEnvironmentProps::Refresh(this);CireNav::InvalidatePaths(GetWorld());}
+    SyncGoalZones(); // nav-paths: cheap (two actors); also covers a goal authored in the JSON at startup
 }
 void ACireWorld::RefreshRouteVisuals() {
     if(!RouteRoad||!RouteEdge||!RouteArrows)return;
     RouteRoad->ClearInstances();RouteEdge->ClearInstances();RouteArrows->ClearInstances();
     const auto& R=CireLanePath::Get(GetWorld());
     auto Add=[](UInstancedStaticMeshComponent* C,FVector P,FVector Size,FRotator Rot=FRotator::ZeroRotator){C->AddInstance(FTransform(Rot,P,Size/100.f));};
-    constexpr float RoadWidth=520.f;
+    const float RoadWidth=R.LaneWidth; // nav-paths: editable lane width (was a fixed 520 cm)
     for(int Team=0;Team<2;++Team) {
         const auto& Points=R.LocalPoints[Team];
         for(int I=1;I<Points.Num();++I) {

@@ -185,3 +185,22 @@ shows the replicated current and next wave.
 - `-CireSmoke` now computes its expected lives and boss leaks from what the director spawned.
 - Captures: `-CireWaveGallery -RenderOffscreen -ForceRes -windowed -ResX=1920 -ResY=1080` writes the
   Waves editor, a neutral (yellow) pack and the same pack provoked to `Saved/WaveGallery/<stamp>/`.
+
+## Navmesh pathing (nav-paths, September 24)
+
+Monsters and bots now follow a runtime navmesh (`Docs/Navigation.md`); the stuck nudge and the stall
+failsafe stay as the last resort. Headless soak, bots only, 4 cycles, same command as above
+(`Saved/WaveSoak/baseline-bots.*` on main 4adb135, `nav-bots-1.*` and `nav-bots-2.*` on the branch,
+summary in `Saved/WaveSoak/summary-nav-paths.txt`):
+
+| Run | Lives lost (Ember + Dusk) | Mean wave | Longest wave | Waves over 210 s | Failsafe march / despawn | Stuck nudges |
+| --- | --- | --- | --- | --- | --- | --- |
+| Before (straight lines) | 59 + 53 = 112 | 158.1 s | 265.8 s | 3 | 59 / 52 | 83 |
+| Navmesh, run 1 | 53 + 57 = 110 | 151.9 s | 265.8 s | 3 | 31 / 24 | 3 |
+| Navmesh, run 2 | 52 + 52 = 104 | 165.6 s | 263.7 s | 6 | 49 / 31 | 6 |
+
+Stuck nudges (straight-line stalls on geometry) fell from 83 to 3-6 and failsafe actions from 111
+to 55-80. Lives lost and wave length are within run-to-run noise. What still trips the failsafe is
+the cycle 3-4 boss wave: the stall reports show every unit engaged in melee with a tank that the
+healer keeps up and a Siegebreaker losing health too slowly (for example 13.7k of 23.4k left at
+210 s), which is bot damage output against cycle scaling, not pathing.

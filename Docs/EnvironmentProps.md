@@ -112,7 +112,7 @@ street lamps, braziers, wall lanterns and lit windows. The legacy `EnvironmentPl
 - The Poly Haven tree has no convincing leaves at 1k resolution; it is deliberately re-materialed as a
   dark, near-leafless town tree. Backdrop hills are scaled rock scans and read as blobs from above.
 - The Sundering Cliff is a textured box with a stepped top, not a sculpted cliff.
-- Monsters and bots still move in straight lines between points (no navmesh); the town keeps the marching
-  corridor clear, but a bot chasing a target on the far side of a house can slide along a wall briefly.
+- (Superseded by nav-paths, `Docs/Navigation.md`: monsters and bots now follow a runtime navmesh that
+  colliding town pieces carve; the route-clearance margin follows the editable `laneWidth`.)
 - Performance was not profiled against a budget: several hundred instances per realm, Nanite on
   buildings, up to 56 unshadowed lights per realm, volumetric fog and Lumen. Profile before shipping.

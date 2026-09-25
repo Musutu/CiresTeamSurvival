@@ -25,7 +25,8 @@ ROUTES = json.loads((DATA / "BattlefieldRoutes.json").read_text())
 ROUTE = [tuple(p) for p in ROUTES["lanes"][0]["points"]]
 HW = ROUTES["bounds"]["halfWidth"]
 MAXX = ROUTES["bounds"]["maxX"]
-ROUTE_MARGIN, BAY_MARGIN, SPAWN_MARGIN = 330, 450, 420
+# nav-paths: the route margin follows the editable lane width (half the road + 70 cm; 330 at the default 520).
+ROUTE_MARGIN, BAY_MARGIN, SPAWN_MARGIN = ROUTES.get("laneWidth", 520) / 2 + 70, 450, 420
 INNER_LIMIT = 2100 - 60  # local |y| that stays clear of the realm divider
 
 G = "/Game/Environment/Town/Meshes/"
