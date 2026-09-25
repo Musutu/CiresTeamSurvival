@@ -18,6 +18,13 @@ passives, ultimates and Construct skills) and the redrawn `sanctuary` (healing s
 `Art/Icons/ChatGPT/abilities_{gunblade,witch_slayer,huntress,aetheri_artificer,aetheri_warden}.png`
 (the Aetheri sheets' 9th tile is an unused emblem).
 
+## Dodge-roll skills and Ashfang companion (art-2d)
+
+The 20 dodge-roll skill icons (`riposte_roll` ... `evasive_stance`; one family: a hooded figure mid-roll inside a
+school-coloured tumbling arc) and the Huntress companion icons `sabercat_maul` (Ashfang: Maul) and `sabercat_roar`
+(Ashfang: Dread Roar) are painted icons **generated for Eric via ChatGPT (OpenAI), 2026-09-25**, from
+`Art/Icons/ChatGPT/abilities_roll1.png`, `abilities_roll2.png` and `abilities_roll3_pet.png` (2x2).
+
 ## Procedural icons
 
 Any future `T_<id>` without a painted PNG falls back to original procedural art from `Tools/BuildAbilityIcons.py`

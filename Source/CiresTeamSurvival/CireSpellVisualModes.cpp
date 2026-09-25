@@ -773,6 +773,19 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
             CireAbilityVFX::ImpactShake(GetWorld(),End,Cue==ECireSpellCue::Critical?2.2f:1.2f*FMath::Clamp(Size,.5f,1.5f));
     }
     // Ground radii above already carry Size; the modeled core is scaled separately by Rebuild.
+    // Brightness: player intensity, and overlapping zones share one brightness budget.
+    if(Mode==EMode::AreaFollow&&(Age-OverlapCheckedAt>.25f||OverlapCount<1))
+    {
+        OverlapCheckedAt=Age;OverlapCount=1;
+        const float Mine=LastFill.bIsValid?static_cast<float>(LastFill.GetExtent().Size()):200.f;
+        for(TActorIterator<ACireSpellVisual> It(GetWorld());It;++It)
+            if(*It!=this&&!It->IsActorBeingDestroyed()&&!It->IsHidden()&&It->GetMode()==EMode::AreaFollow)
+            {
+                const float Other=It->GroundFillBounds().bIsValid?static_cast<float>(It->GroundFillBounds().GetExtent().Size()):200.f;
+                if(FVector::Dist2D(It->GetActorLocation(),GetActorLocation())<(Mine+Other)*.7f)++OverlapCount;
+            }
+    }
+    CireAbilityVFX::Temper(G.C,0,CireAbilityVFX::GroundIntensity(GetWorld()),Mode==EMode::AreaFollow?1.f/FMath::Sqrt(static_cast<float>(FMath::Max(1,OverlapCount))):1.f);
     if(G.V.IsEmpty()){GroundMesh->ClearMeshSection(0);return;}
     const auto* Section=GroundMesh->GetProcMeshSection(0);
     if(Section&&Section->ProcVertexBuffer.Num()==G.V.Num()&&Section->ProcIndexBuffer.Num()==G.I.Num())

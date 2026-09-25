@@ -46,6 +46,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "CirePets.h" // pets
 #include "UObject/ConstructorHelpers.h"
 
 namespace
@@ -170,6 +171,7 @@ void ACireHero::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
     DOREPLIFETIME(ACireHero, DraftHoverId);
     DOREPLIFETIME(ACireHero, bDead);
     DOREPLIFETIME(ACireHero, bAutoAttack);
+    DOREPLIFETIME(ACireHero, PetResummonAt); DOREPLIFETIME(ACireHero, PetReviveReadyAt); DOREPLIFETIME(ACireHero, PetStance); DOREPLIFETIME(ACireHero, PetGrant); // pets
     DOREPLIFETIME(ACireHero, HeroName);
     DOREPLIFETIME(ACireHero, Health);
     DOREPLIFETIME(ACireHero, MaxHealth);
@@ -722,6 +724,7 @@ void ACireHero::Tick(float DeltaSeconds)
     if (CireRaces::IsRooted(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // monster-races: rooted by a monster skill
     if (CireCrowdControl::IsStunned(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // champion-draft: stunned
     CireCrowdControl::TickHero(this, DeltaSeconds); // champion-draft: completes timed casts, Executioner charge
+    CirePets::TickOwner(this, DeltaSeconds); // pets: summon the companion when due
     if (bBot) BotThink(DeltaSeconds);
     if (bAutoAttack) BasicAttack();
 }

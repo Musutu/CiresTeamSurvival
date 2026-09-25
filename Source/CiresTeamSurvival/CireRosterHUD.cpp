@@ -317,7 +317,6 @@ UTexture2D* Background(const FString& Id)
 TArray<FString> HowItPlays(const FCireChampionProfile& P)
 {
     TArray<FString> Out;
-    Out.Add(Playstyle(P));
     const bool bRanged=P.BasicAttackRange>300;
     TMap<FString,int32> Themes;
     TArray<const FCireChampionSkill*> Kit;for(const auto& A:P.Actives)Kit.Add(&A);Kit.Add(&P.Passive);Kit.Add(&P.Ultimate);
@@ -337,15 +336,15 @@ TArray<FString> HowItPlays(const FCireChampionProfile& P)
         if(!T.IsEmpty())Themes.FindOrAdd(T)++;
     }
     Themes.ValueSort([](int32 A,int32 B){return A>B;});
-    TArray<FString> Top;for(const auto& Pair:Themes)if(Top.Num()<3)Top.Add(Pair.Key);
+    TArray<FString> Top;for(const auto& Pair:Themes)if(Top.Num()<2)Top.Add(Pair.Key);
     if(Top.Num()>0)
     {
-        FString Line=TEXT("Skill themes: ");
+        FString Line=TEXT("Fights with ");
         for(int32 I=0;I<Top.Num();++I)Line+=(I==0?TEXT(""):I+1==Top.Num()?TEXT(" and "):TEXT(", "))+Top[I];
         Out.Add(Line+TEXT("."));
     }
     if(!P.Passive.DisplayName.IsEmpty())Out.Add(FString::Printf(TEXT("Signature passive: %s."),*P.Passive.DisplayName));
-    Out.Add(FString::Printf(TEXT("Lock in, choose an opening %s ability, then earn more in the Skill Shop."),RoleName(CireChampionProfiles::PrimaryRole(P))));
+    Out.Add(FString::Printf(TEXT("Starts with one %s ability; buy more in the Skill Shop."),RoleName(CireChampionProfiles::PrimaryRole(P))));
     return Out;
 }
 FString Capitalized(FString S){if(!S.IsEmpty())S[0]=FChar::ToUpper(S[0]);return S;}
@@ -353,25 +352,19 @@ FString Capitalized(FString S){if(!S.IsEmpty())S[0]=FChar::ToUpper(S[0]);return 
 struct FSceneMood{FLinearColor Key,Rim,Fill;};
 FSceneMood MoodFor(const FString& Bg)
 {
-    // new-champions: freshly painted scenes pick their stage lighting by name (DraftBackgrounds.json "mood").
-    for(const auto& Pair:DraftBackgroundRows())if(Pair.Value.Background==Bg&&HasBackgroundTexture(Bg))
-    {
-        const FString& Mood=Pair.Value.Mood;
-        if(Mood==TEXT("violet"))return MoodFor(TEXT("summoner"));
-        if(Mood==TEXT("moon"))return MoodFor(TEXT("dryad"));
-        if(Mood==TEXT("ether"))return MoodFor(TEXT("ether_golem"));
-        return MoodFor(TEXT("wizard"));
-    }
-    const FLinearColor Candle(1.f,.78f,.52f),Fire(1.f,.55f,.25f),Moon(.55f,.70f,1.f),Ether(.45f,1.f,.85f),Blood(1.f,.35f,.30f),Dawn(1.f,.88f,.70f),Violet(.70f,.55f,1.f);
-    if(Bg==TEXT("wizard")||Bg==TEXT("drakish_footman")||Bg==TEXT("dwarf_miner")||Bg==TEXT("orc_chieftain"))return {Candle,Fire,FLinearColor(.60f,.45f,.40f)};
-    if(Bg==TEXT("dryad")||Bg==TEXT("whisp")||Bg==TEXT("bear")||Bg==TEXT("ranger"))return {FLinearColor(.95f,.92f,.85f),Moon,FLinearColor(.45f,.55f,.60f)};
-    if(Bg==TEXT("ether_golem"))return {FLinearColor(.90f,.95f,.95f),Ether,FLinearColor(.40f,.60f,.60f)};
-    if(Bg==TEXT("troll_berserker"))return {Candle,Blood,FLinearColor(.55f,.35f,.35f)};
-    if(Bg==TEXT("summoner")||Bg==TEXT("lancer"))return {FLinearColor(.95f,.88f,.85f),Violet,FLinearColor(.50f,.45f,.65f)};
-    if(Bg==TEXT("evergrove_centaur")||Bg==TEXT("totemic_behemoth"))return {Dawn,FLinearColor(1.f,.80f,.55f),FLinearColor(.60f,.58f,.50f)};
-    if(Bg==TEXT("keeper_of_light"))return {Candle,Moon,FLinearColor(.45f,.52f,.65f)};
-    return {Candle,FLinearColor(1.f,.70f,.40f),FLinearColor(.55f,.60f,.72f)}; // knight, paladin, scholar: warm candle rim
+    // Key stays near-white (true material colour); the rim carries the scene's light.
+    const FLinearColor Key(1.f,.94f,.86f),Fire(1.f,.50f,.18f),Candle(1.f,.72f,.38f),Moon(.50f,.68f,1.f),Ether(.40f,1.f,.80f),Blood(1.f,.30f,.25f),Violet(.68f,.50f,1.f),Dawn(1.f,.82f,.55f);
+    const auto Fill=[](const FLinearColor& C){return C*.30f+FLinearColor(.18f,.18f,.20f);};
+    FLinearColor Rim=Candle;
+    if(Bg==TEXT("wizard")||Bg==TEXT("drakish_footman")||Bg==TEXT("dwarf_miner")||Bg==TEXT("orc_chieftain"))Rim=Fire;
+    else if(Bg==TEXT("dryad")||Bg==TEXT("whisp")||Bg==TEXT("bear")||Bg==TEXT("ranger")||Bg==TEXT("keeper_of_light"))Rim=Moon;
+    else if(Bg==TEXT("ether_golem"))Rim=Ether;
+    else if(Bg==TEXT("troll_berserker"))Rim=Blood;
+    else if(Bg==TEXT("summoner")||Bg==TEXT("lancer"))Rim=Violet;
+    else if(Bg==TEXT("evergrove_centaur")||Bg==TEXT("totemic_behemoth"))Rim=Dawn;
+    return {Key,Rim,Fill(Rim)};
 }
+
 // First word of the variant ("Granite", "Thrown", "Holy") tells look-alike champions apart.
 FString VariantWord(const FCireChampionProfile& P){FString W=P.Variant;int32 Space;if(W.FindChar(TEXT(' '),Space))W.LeftInline(Space);return W;}
 bool HasTwin(const FCireChampionProfile& P){int32 N=0;for(const auto& Q:CireChampionRoster::All())N+=Q.DisplayName==P.DisplayName;return N>1;}
@@ -547,7 +540,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     const float Gap=FMath::Clamp(CW*.011f,10.f,18.f);
     const float MidX=LX+CW*.5f;
     // Header.
-    const float TitleSize=24.f,TitleLH=LH(TitleSize,ECireFont::Heading);
+    const float TitleSize=24.f,TitleLH=LH(TitleSize,ECireFont::Display);
     const float RingR=FMath::Clamp(VH*.042f,24.f,40.f),RingCY=M+TitleLH+RingR-2.f;
     const float PrepSize=11.f,PrepY=RingCY+RingR+4.f,PrepLH=LH(PrepSize,ECireFont::Heading);
     const float BodyY=PrepY+PrepLH+8.f;
@@ -767,6 +760,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         // the champion fills the column, and never stretch (UV window keeps the target's aspect).
         const float BH=FigureR.H,BW=FMath::Min(FigureR.W,BH*.80f);
         const FRect Box{FigureR.X+(FigureR.W-BW)*.5f,FigureR.Y,BW,BH};
+        // Never upscale: the target is ~1.5x the on-screen height of its visible 86% (supersampled AA).
+        if(Stage&&!S.Portraits.bActive)Stage->SetPreviewHeight(FMath::RoundToInt(PX(BH)/.86f*1.5f));
         const bool bLive=Stage&&!S.Portraits.bActive&&Stage->GetProfileId()==Shown->Id&&Stage->IsPreviewReady();
         // Ground shadow and a role-coloured halo behind the figure.
         CireUIStyle::Glow(Pen(),Box.X+Box.W*.2f,Box.Y+Box.H*.15f,Box.W*.6f,Box.H*.7f,WithAlpha(ShownColor,.10f*Ease));
@@ -807,7 +802,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         Diamond(MidX-RingR-20,RuleY,3.5f,Gold);Diamond(MidX+RingR+20,RuleY,3.5f,Gold);
         const FString Title=TEXT("CHOOSE YOUR CHAMPION");
         const FRect HeaderR{LX,M,CW,BodyY-M};
-        Txt(Title,MidX-TW(Title,TitleSize,ECireFont::Heading)*.5f,M,TitleSize,Text,Safe,ECireFont::Heading,true,3);
+        Txt(Title,MidX-TW(Title,TitleSize,ECireFont::Display)*.5f,M,TitleSize,SRGB(248,236,208),Safe,ECireFont::Display,true,3);
         // Timer ring: dark disc, gold rings, a progress arc, the seconds inside.
         const bool bLow=Remaining>=0&&Remaining<=10.f&&!bLockedView;
         Disc(MidX,RingCY,RingR,SRGB(8,12,20,235));
@@ -831,7 +826,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         // Team (left): you and four slots; ghosted = selected but not locked, solid = locked.
         {
             int32 Locked=bLockedView?1:0;for(const auto* Mate:Mates)Locked+=Mate->bDrafted;
-            const float Room=MidX-TW(Title,TitleSize,ECireFont::Heading)*.5f-20-LX;
+            const float Room=MidX-TW(Title,TitleSize,ECireFont::Display)*.5f-20-LX;
             const FString Head=FString::Printf(TEXT("YOUR TEAM  |  %d / %d LOCKED"),Locked,TeamSlots);
             Line(Head,LX,M,Room,11,Gold,HeaderR,ECireFont::Heading);
             const float SlotS=FMath::Clamp(BodyY-M-LH(11,ECireFont::Heading)-14,26.f,40.f),SY=M+LH(11,ECireFont::Heading)+5;
@@ -860,7 +855,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             {
                 const float W=TW(Items[I],NS2,ECireFont::Heading)+22;X-=W;
                 const FRect R{X,NY-2,W,LH(NS2,ECireFont::Heading)+8};
-                if(R.X<MidX+TW(Title,TitleSize,ECireFont::Heading)*.5f+16)break;
+                if(R.X<MidX+TW(Title,TitleSize,ECireFont::Display)*.5f+16)break;
                 const bool bHere=I==2,bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H);
                 Circle(R.X+6,R.Y+R.H*.5f,4.5f,bHere?Gold:Muted,1.2f,16);
                 Txt(Items[I],R.X+16,R.Y+4,NS2,bHere?Gold:bOver?Text:Muted,R,ECireFont::Heading);
@@ -945,7 +940,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         Outline(C,BW,bSel?BrightGold:bOver?WithAlpha(Gold,.9f):bKey?GoldDim:bHumanTaken?Faint:SRGB(58,72,96));
         Panel(C.X,C.Y,PW,PW,SRGB(14,20,30));
         // Portrait graded toward the target's painted look: warm key, role-tinted base, dark vignette.
-        const FLinearColor FaceTint=bHumanTaken?SRGB(70,70,70):T.bSecondary?FLinearColor(.80f,.74f,.64f):FLinearColor(1.f,.90f,.76f);
+        // Painted portraits are shown untinted (their own colour); only taken/hybrid listings dim.
+        const FLinearColor FaceTint=bHumanTaken?SRGB(70,70,70):T.bSecondary?FLinearColor(.82f,.82f,.82f):FLinearColor::White;
         if(UTexture2D* Face=Portrait(P.Id))Tex(Face,FRect{C.X,C.Y,PW,PW},.15f,.08f,.70f,.70f,FaceTint);
         else
         {
@@ -956,7 +952,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             const int32 VS=8;const float E=PW*.18f/VS;
             for(int32 V=0;V<VS;++V)
             {
-                const float A=.42f*(1.f-(V+.5f)/VS);
+                const float A=.26f*(1.f-(V+.5f)/VS);
                 Panel(C.X+V*E,C.Y,E,PW,FLinearColor(0,0,0,A));Panel(C.R()-(V+1)*E,C.Y,E,PW,FLinearColor(0,0,0,A));
                 Panel(C.X,C.Y+V*E,PW,E,FLinearColor(0,0,0,A*.8f));
                 Panel(C.X,C.Y+PW-(V+1)*E*1.6f,PW,E*1.6f,WithAlpha(Tint(Col,.30f),A*.9f));
@@ -1050,99 +1046,121 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         if(Clicked&&!Hit(L.X,L.Y,L.W,L.H)){S.bDropdown=false;}
     }
 
-    // ---------- Identity column (right): quote, name, class, roles, how it plays, class trait card ----------
+    // ---------- Identity column (right): who they are, the key facts, the trait, how they play ----------
     {
         const float Age=static_cast<float>(Now-S.SplashSince),T=FMath::Clamp(Age/.45f,0.f,1.f),Ease=1.f-FMath::Pow(1.f-T,3.f);
-        PanelAlpha=Fade*Ease;
         const float Slide=18.f*(1.f-Ease);
         PanelAlpha=Fade;
-        Panel(RightR.X-12,RightR.Y-8,RightR.W+24,RightR.H+8,SRGB(6,9,15,150));
-        for(int32 I=0;I<6;++I){const float A=(6-I)/6.f*.5f;Panel(RightR.X-12-(I+1)*3.f,RightR.Y-8,3.f,RightR.H+8,SRGB(6,9,15,uint8(150*A)));}
+        // Dark panel behind the text so it reads over any painted scene.
+        const FRect Back{RightR.X-14,RightR.Y-10,RightR.W+28,RightR.H+10};
+        Panel(Back.X,Back.Y,Back.W,Back.H,SRGB(6,9,15,196));
+        for(int32 I=0;I<8;++I){const float A=(8-I)/8.f*.6f;Panel(Back.X-(I+1)*3.f,Back.Y,3.f,Back.H,SRGB(6,9,15,uint8(196*A)));}
+        Outline(Back,1,WithAlpha(Gold,.22f));
         PanelAlpha=Fade*Ease;
         const FRect R{RightR.X+Slide,RightR.Y,RightR.W-Slide,RightR.H};
-        float Y=R.Y+4;
-        const float RK=FMath::Clamp(RightW/260.f,1.f,1.22f);
-        const float QS=13.5f*RK;
+        const float RK=FMath::Clamp(RightW/260.f,1.f,1.25f);
+        float Y=R.Y+2;
+        const auto Section=[&](const FString& Head)
+        {
+            const float HS=12.5f*RK,HL=LH(HS,ECireFont::Display);
+            Diamond(R.X+4,Y+HL*.5f,3.5f,Gold);
+            const float W=Line(Head,R.X+14,Y,R.W-30,HS,Gold,R,ECireFont::Display);
+            Seg(R.X+14+W+10,Y+HL*.5f,R.R()-8,Y+HL*.5f,WithAlpha(Gold,.35f),1.f);Diamond(R.R()-4,Y+HL*.5f,2.5f,WithAlpha(Gold,.7f));
+            Y+=HL+6;
+        };
+        // Quote.
         if(!Shown->Lore.IsEmpty())
         {
-            const int32 QL=FMath::Clamp(FMath::FloorToInt(R.H*.18f/LH(QS,ECireFont::Body)),2,5);
-            Y+=Para(TEXT("\"")+Shown->Lore+TEXT("\""),R.X,Y,R.W,QS,SRGB(226,190,120),QL,R,ECireFont::Body)+12;
+            const float QS=12.5f*RK;
+            Y+=Para(TEXT("\"")+Shown->Lore+TEXT("\""),R.X,Y,R.W,QS,SRGB(226,196,140),3,R,ECireFont::Body)+10;
         }
-        const float NS=FMath::Clamp(R.W*.12f,22.f,34.f);
-        Y+=Para(FullName(*Shown),R.X,Y,R.W,NS,Text,2,R,ECireFont::Bold)+2;
-        FString Caption=Shown->ClassType.ToUpper();if(!Shown->Race.IsEmpty())Caption+=TEXT("  |  ")+Shown->Race.ToUpper();
-        Y+=Para(Caption,R.X,Y,R.W,12.f*RK,Gold,2,R,ECireFont::Heading)+8;
-        // Role chips + difficulty.
+        // Name (display serif), then class and race in small caps.
+        const float NS=FMath::Clamp(R.W*.125f,24.f,40.f);
+        Y+=Para(FullName(*Shown),R.X,Y,R.W,NS,SRGB(248,236,208),2,R,ECireFont::Display);
+        FString Caption=Shown->ClassType.ToUpper();if(!Shown->Race.IsEmpty())Caption+=TEXT("   ·   ")+Shown->Race.ToUpper();
+        Y+=Para(Caption,R.X,Y+2,R.W,11.5f*RK,Gold,2,R,ECireFont::Heading)+12;
+        // Role badge + one-line identity.
         {
-            float ChipX=R.X;const float CS=10.5f,ChipH=FMath::Max(22.f,LH(CS,ECireFont::Heading)+8);
+            float ChipX=R.X;const float CS=11.f*RK,ChipH=FMath::Max(24.f,LH(CS,ECireFont::Heading)+10);
             const auto Chip=[&](Cires::SkillDraftRole ChipRole,bool bPrimaryRole)
             {
                 const FString RoleText=bPrimaryRole?FString(RoleName(ChipRole)):FString(RoleName(ChipRole))+TEXT(" HYBRID");
-                const float W=TW(RoleText,CS,ECireFont::Heading)+28;const FLinearColor Col=RoleColor(ChipRole);
+                const float W=TW(RoleText,CS,ECireFont::Heading)+32;const FLinearColor Col=RoleColor(ChipRole);
                 if(ChipX+W>R.R())return;
                 const FRect ChipR{ChipX,Y,W,ChipH};
-                Panel(ChipR.X,ChipR.Y,ChipR.W,ChipR.H,bPrimaryRole?Tint(Col,.45f,.95f):SRGB(10,14,22,220));Panel(ChipR.X,ChipR.Y,3,ChipR.H,Col);
-                Icon(RoleSigil(ChipRole),ChipR.X+6,ChipR.Y+(ChipH-15)*.5f,15,bPrimaryRole?Text:Col);
-                Txt(RoleText,ChipR.X+24,ChipR.Y+(ChipH-LH(CS,ECireFont::Heading))*.5f,CS,bPrimaryRole?Text:Col,ChipR,ECireFont::Heading);ChipX+=W+6;
+                Panel(ChipR.X,ChipR.Y,ChipR.W,ChipR.H,bPrimaryRole?Tint(Col,.50f,.97f):SRGB(10,14,22,230));Outline(ChipR,1,WithAlpha(Col,.8f));
+                Icon(RoleSigil(ChipRole),ChipR.X+7,ChipR.Y+(ChipH-16)*.5f,16,bPrimaryRole?Text:Col);
+                Txt(RoleText,ChipR.X+27,ChipR.Y+(ChipH-LH(CS,ECireFont::Heading))*.5f,CS,bPrimaryRole?Text:Col,ChipR,ECireFont::Heading);ChipX+=W+6;
             };
             Chip(ShownPrimary,true);
             for(const auto Extra:HybridRoles(*Shown))Chip(Extra,false);
-            Y+=ChipH+12;
+            Y+=ChipH+8;
+            Y+=Para(Playstyle(*Shown),R.X,Y,R.W,13.f*RK,Text,2,R,ECireFont::Bold)+12;
         }
-        // Class trait card at the bottom (art thumbnail from the champion's scene).
-        const FCireClassTrait Trait=CireClassTraits::Info(ShownPrimary);
-        const float BS=11.5f,BL=LH(BS,ECireFont::Body),HS=11.f,HL=LH(HS,ECireFont::Heading);
-        const TArray<FString> TraitLines=WrapLines(Pen(),Trait.Summary,R.W-20,BS,ECireFont::Body,3);
-        const float ArtH=FMath::Clamp(R.H*.14f,0.f,110.f);
-        const float CardH=ArtH+12+HL*2+4+TraitLines.Num()*BL+12;
-        const FRect CardR{R.X,R.B()-CardH,R.W,CardH};
-        // How it plays: 3-4 short bullets (no skill list; skills come from the Skill Shop).
+        // Key facts: labelled cells in a 2x2 grid.
         {
-            Line(TEXT("HOW IT PLAYS"),R.X,Y,R.W,11.5f*RK,Gold,R,ECireFont::Heading);Y+=LH(11.5f*RK,ECireFont::Heading)+6;
+            const float LS=9.5f*RK,VS=12.5f*RK,LL=LH(LS,ECireFont::Heading),VL=LH(VS,ECireFont::Bold);
+            const float CellW=(R.W-8)*.5f,CellH=LL+VL+12;
+            const bool bRanged=Shown->BasicAttackRange>300;
+            const FLinearColor PrimeCol=Shown->PrimaryStat==TEXT("strength")?SRGB(232,120,90):Shown->PrimaryStat==TEXT("agility")?SRGB(120,210,120):SRGB(120,160,240);
+            struct FCell{const TCHAR* Label;FString Value;FLinearColor Color;int32 Pips;};
+            const FCell Cells[]={
+                {TEXT("DIFFICULTY"),Capitalized(FString(DifficultyWord(Shown->Difficulty)).ToLower()),Gold,Shown->Difficulty},
+                {TEXT("PRIMARY STAT"),Capitalized(PrimaryName(Shown->PrimaryStat).ToLower()),PrimeCol,0},
+                {TEXT("ATTACK RANGE"),FString::Printf(TEXT("%s  %.1f m"),bRanged?TEXT("Ranged"):TEXT("Melee"),Shown->BasicAttackRange/100.f),Text,0},
+                {TEXT("WEAPON"),FString::Printf(TEXT("%s  %.1f s"),*StyleLabel(Shown->AttackStyle),Shown->AttackSeconds),Text,0}};
+            for(int32 I=0;I<4;++I)
+            {
+                const FRect C{R.X+(I%2)*(CellW+8),Y+(I/2)*(CellH+6),CellW,CellH};
+                Panel(C.X,C.Y,C.W,C.H,SRGB(14,19,30,225));Panel(C.X,C.Y,2,C.H,WithAlpha(Cells[I].Color,.9f));
+                Line(Cells[I].Label,C.X+9,C.Y+5,C.W-14,LS,Muted,C,ECireFont::Heading);
+                float VX=C.X+9;
+                if(Cells[I].Pips>0){for(int32 D=0;D<3;++D)Panel(VX+D*12,C.Y+5+LL+VL*.5f-3,9,6,D<Cells[I].Pips?Gold:Faint);VX+=40;}
+                Line(Cells[I].Value,VX,C.Y+6+LL,C.R()-VX-5,VS,Cells[I].Color,C,ECireFont::Bold);
+            }
+            Y+=2*CellH+6+14;
+        }
+        // Class trait: short and bold.
+        {
+            const FCireClassTrait Trait=CireClassTraits::Info(ShownPrimary);
+            if(!Trait.Id.IsEmpty())
+            {
+                Section(TEXT("Class Trait"));
+                const float TS=13.f*RK,BS=11.5f*RK,IS=34.f;
+                FCireIconSlot Slot;Slot.IconId=Trait.Id;Slot.IconTexture=CireAbilityIcons::Texture(Trait.Id);Slot.Tint=Trait.Color;Slot.Kind=ECireSlotKind::Passive;
+                CireUIStyle::IconSlot(Pen(),R.X+2,Y+2,IS,Slot,Now);
+                const float TX=R.X+IS+12;
+                Line(Trait.Name,TX,Y,R.R()-TX,TS,Trait.Color,R,ECireFont::Bold);
+                const float Used=Para(Trait.Summary,TX,Y+LH(TS,ECireFont::Bold),R.R()-TX,BS,SRGB(226,220,206),2,R,ECireFont::Body);
+                Tip(Trait.Name+TEXT("  (class trait)"),Trait.Tooltip,R.X,Y,R.W,FMath::Max(IS,LH(TS,ECireFont::Bold)+Used));
+                Y+=FMath::Max(IS+4,LH(TS,ECireFont::Bold)+Used)+14;
+            }
+        }
+        // How it plays: three short bullets.
+        {
+            Section(TEXT("How It Plays"));
             const float PS=12.f*RK,PL=LH(PS,ECireFont::Body);
             for(const FString& B:HowItPlays(*Shown))
             {
-                const int32 MaxLines=FMath::Min(3,FMath::FloorToInt((CardR.Y-10-Y)/PL));
+                const int32 MaxLines=FMath::Min(2,FMath::FloorToInt((R.B()-4-Y)/PL));
                 if(MaxLines<1)break;
-                Diamond(R.X+4,Y+PL*.5f,3,Gold);
-                Y+=Para(B,R.X+14,Y,R.W-14,PS,SRGB(222,216,200),MaxLines,R,ECireFont::Body)+5;
+                Diamond(R.X+5,Y+PL*.5f,3,Gold);
+                Y+=Para(B,R.X+16,Y,R.W-16,PS,SRGB(226,220,206),MaxLines,R,ECireFont::Body)+6;
             }
-        }
-        if(!Trait.Id.IsEmpty()&&CardR.Y>Y)
-        {
-            Ornate(CardR,.78f,Gold);
-            if(ArtH>24)
-            {
-                const FRect Art{CardR.X+6,CardR.Y+6,CardR.W-12,ArtH};
-                if(UTexture2D* Bg=Background(BackgroundId(Shown->Id)))
-                {
-                    const float TA=Bg->GetSizeX()/FMath::Max(1.f,static_cast<float>(Bg->GetSizeY())),AA=Art.W/Art.H,UW=FMath::Min(1.f,AA/TA*.5f),VHt=UW*TA/AA;
-                    Tex(Bg,Art,.5f-UW*.5f,FMath::Clamp(.35f-VHt*.5f,0.f,1.f-VHt),UW,VHt,FLinearColor::White);
-                }
-                else for(int32 I=0;I<6;++I)Panel(Art.X,Art.Y+I*Art.H/6,Art.W,Art.H/6+.5f,Tint(Trait.Color,.35f-.05f*I));
-                for(int32 I=0;I<5;++I)Panel(Art.X,Art.B()-(I+1)*Art.H*.08f,Art.W,Art.H*.08f,FLinearColor(0,0,0,.12f*(5-I)));
-                FCireIconSlot Slot;Slot.IconId=Trait.Id;Slot.IconTexture=CireAbilityIcons::Texture(Trait.Id);Slot.Tint=Trait.Color;Slot.Kind=ECireSlotKind::Passive;
-                CireUIStyle::IconSlot(Pen(),Art.X+6,Art.B()-34,28,Slot,Now);
-            }
-            float CY=CardR.Y+6+ArtH+8;
-            Line(TEXT("CLASS TRAIT"),CardR.X+10,CY,CardR.W-20,HS,Muted,CardR,ECireFont::Heading);CY+=HL;
-            Line(Trait.Name.ToUpper(),CardR.X+10,CY,CardR.W-20,HS,Trait.Color,CardR,ECireFont::Heading);CY+=HL+4;
-            for(const FString& L:TraitLines){Txt(L,CardR.X+10,CY,BS,Text,CardR,ECireFont::Body);CY+=BL;}
-            Tip(Trait.Name+TEXT("  (class trait)"),Trait.Tooltip,CardR.X,CardR.Y,CardR.W,CardR.H);
         }
         PanelAlpha=Fade;
     }
 
     // ---------- Info panel (centre): OVERVIEW | ABILITIES | LORE ----------
     {
-        Ornate(InfoR,.80f,Gold);
+        Ornate(InfoR,.88f,Gold);
         static const TCHAR* Tabs[]={TEXT("OVERVIEW"),TEXT("ABILITIES"),TEXT("LORE")};
-        const float TabRowH=FMath::Max(30.f,LH(12.5f,ECireFont::Heading)+12),TW3=InfoR.W/3.f;
+        const float TabRowH=FMath::Max(30.f,LH(13.5f,ECireFont::Display)+12),TW3=InfoR.W/3.f;
         for(int32 I=0;I<3;++I)
         {
             const FRect R{InfoR.X+I*TW3,InfoR.Y+2,TW3,TabRowH};
             const bool bActive=S.InfoTab==I,bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H);
-            Line(Tabs[I],R.X,R.Y+(TabRowH-LH(12.5f,ECireFont::Heading))*.5f,R.W,12.5f,bActive?Text:bOver?Gold:SRGB(120,150,190),R,ECireFont::Heading,1);
+            Line(Tabs[I],R.X,R.Y+(TabRowH-LH(13.5f,ECireFont::Display))*.5f,R.W,13.5f,bActive?SRGB(248,236,208):bOver?Gold:SRGB(140,165,200),R,ECireFont::Display,1);
             if(bActive){Panel(R.X+R.W*.25f,R.B()-2,R.W*.5f,2,SRGB(120,170,230));Diamond(R.X+R.W*.5f,R.B()-1,3,SRGB(160,200,240));}
             if(bOver&&Clicked){S.InfoTab=I;Clicked=false;}
         }
@@ -1152,7 +1170,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         PanelAlpha=Fade*T;
         // Larger type when the panel has room (tall and wide screens).
         const float TK=FMath::Clamp(FMath::Min(InfoH/200.f,CWc/560.f),1.f,1.3f);
-        const float HS=11.f*TK,HL=LH(HS,ECireFont::Heading),BS=11.5f*TK,BL=LH(BS,ECireFont::Body);
+        const float HS=11.f*TK,HL=FMath::Max(LH(HS,ECireFont::Heading),LH(HS,ECireFont::Display)),BS=11.5f*TK,BL=LH(BS,ECireFont::Body);
         const float HalfW=(Body.W-20)*.5f;
         const FRect L{Body.X,Body.Y,HalfW,Body.H},Rr{Body.X+HalfW+20,Body.Y,HalfW,Body.H};
         const Cires::RoleMask Bit=Cires::RoleBit(ShownPrimary);
@@ -1160,7 +1178,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         {
             // Base attributes + difficulty, combat style | class trait summary + opening ability.
             float Y=L.Y;
-            Line(TEXT("BASE ATTRIBUTES"),L.X,Y,L.W*.6f,HS,Gold,L,ECireFont::Heading);
+            Line(TEXT("BASE ATTRIBUTES"),L.X,Y,L.W*.6f,HS,Gold,L,ECireFont::Display);
             for(int32 D=0;D<3;++D)Panel(L.R()-3*20+D*20,Y+HL*.5f-3,16,6,D<Shown->Difficulty?Gold:Faint);
             Y+=HL+4;
             struct FStatRow {const TCHAR* Key;int32 Value;const TCHAR* Stat;};
@@ -1177,17 +1195,15 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 Y+=RowStep;
             }
             const bool bRanged=Shown->BasicAttackRange>300;
-            Line(TEXT("COMBAT STYLE"),L.X,Y+2,L.W,HS,Gold,L,ECireFont::Heading);
+            Line(TEXT("COMBAT STYLE"),L.X,Y+2,L.W,HS,Gold,L,ECireFont::Display);
             Line(FString::Printf(TEXT("%s  |  %s  |  %.1f m  |  %.1f s"),bRanged?TEXT("RANGED"):TEXT("MELEE"),*StyleLabel(Shown->AttackStyle),Shown->BasicAttackRange/100.f,Shown->AttackSeconds),L.X,Y+2+HL+2,L.W,BS,Text,L,ECireFont::Body);
             Panel(Rr.X-10,Rr.Y,1,Rr.H,WithAlpha(Gold,.25f));
             float RY=Rr.Y;
-            Line(TEXT("DIFFICULTY"),Rr.X,RY,Rr.W*.5f,HS,Gold,Rr,ECireFont::Heading);
-            Line(DifficultyWord(Shown->Difficulty),Rr.X+Rr.W*.5f,RY,Rr.W*.5f,HS,Text,Rr,ECireFont::Heading,2);RY+=HL+8;
-            Line(TEXT("OPENING ABILITY"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Heading);RY+=HL+2;
+            Line(TEXT("OPENING ABILITY"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;
             RY+=Para(FString::Printf(TEXT("Right after lock-in you choose 1 of 4 %s actives. Passives and ultimates come from level 3."),RoleName(ShownPrimary)),Rr.X,RY,Rr.W,BS,SRGB(222,216,200),FMath::FloorToInt((Rr.B()-RY)/BL*.6f),Rr,ECireFont::Body)+8;
             if(RY+HL+BL<=Rr.B())
             {
-                Line(TEXT("SKILL SHOP"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Heading);RY+=HL+2;
+                Line(TEXT("SKILL SHOP"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;
                 Para(TEXT("Earn and buy more skills from your role's pool as you level."),Rr.X,RY,Rr.W,BS,SRGB(222,216,200),FMath::FloorToInt((Rr.B()-RY)/BL),Rr,ECireFont::Body);
             }
         }
@@ -1195,9 +1211,9 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         {
             // What the skills are like (no list): themes, role pool size, where they come from.
             float Y=L.Y;
-            Line(TEXT("SKILL STYLE"),L.X,Y,L.W,HS,Gold,L,ECireFont::Heading);Y+=HL+4;
+            Line(TEXT("SKILL STYLE"),L.X,Y,L.W,HS,Gold,L,ECireFont::Display);Y+=HL+4;
             const TArray<FString> Bullets=HowItPlays(*Shown);
-            for(int32 I=1;I<Bullets.Num();++I)
+            for(int32 I=0;I<Bullets.Num();++I)
             {
                 const int32 MaxLines=FMath::FloorToInt((L.B()-Y)/BL);if(MaxLines<1)break;
                 Diamond(L.X+4,Y+BL*.5f,3,Gold);Y+=Para(Bullets[I],L.X+14,Y,L.W-14,BS,SRGB(222,216,200),FMath::Min(3,MaxLines),L,ECireFont::Body)+4;
@@ -1208,12 +1224,12 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             Panel(Rr.X-10,Rr.Y,1,Rr.H,WithAlpha(Gold,.25f));
             float RY=Rr.Y;
             FString PoolName=RoleName(ShownPrimary);for(const auto Extra:HybridRoles(*Shown))PoolName+=FString(TEXT(" + "))+RoleName(Extra);
-            Line(PoolName+TEXT(" SKILL POOL"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Heading);RY+=HL+4;
+            Line(PoolName+TEXT(" SKILL POOL"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+4;
             RY+=Para(FString::Printf(TEXT("%d actives, %d passives and %d ultimates to draft from, shared with the rest of your role."),Actives,Passives,Ultimates),Rr.X,RY,Rr.W,BS,Text,3,Rr,ECireFont::Body)+8;
             (void)Bit;
             if(RY+HL<=Rr.B())
             {
-                Line(TEXT("CLASS TRAIT"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Heading);RY+=HL+2;
+                Line(TEXT("CLASS TRAIT"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;
                 const FCireClassTrait Trait=CireClassTraits::Info(ShownPrimary);
                 Para(Trait.Name+TEXT(": ")+Trait.Summary,Rr.X,RY,Rr.W,BS,SRGB(222,216,200),FMath::FloorToInt((Rr.B()-RY)/BL),Rr,ECireFont::Body);
             }

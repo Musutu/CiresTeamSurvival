@@ -71,6 +71,7 @@ def run_one(args, width: int, height: int, folder: Path) -> dict:
         command.append(f"-CireDraftGalleryChampions={args.champions}")
     elif args.shots < len(EXPECTED):
         command.append(f"-CireDraftGalleryShots={args.shots}")
+    command.extend(args.extra)
     if not args.mannequin:
         command.insert(5, "-CireTripoChampions")
     started = time.monotonic(); failure = ""
@@ -124,6 +125,7 @@ def main() -> int:
     parser.add_argument("--timeout", type=int, default=300, help="Seconds per resolution")
     parser.add_argument("--shots", type=int, default=len(EXPECTED), help="Capture only the first N states (iteration)")
     parser.add_argument("--champions", default="", help="Comma-separated profile ids: review these champions instead of the fixed states")
+    parser.add_argument("--extra", action="append", default=[], help="Extra engine argument (debug fixtures)")
     parser.add_argument("--res", action="append", default=[], help="WIDTHxHEIGHT; repeat to pick resolutions (default: all six)")
     args = parser.parse_args()
     resolutions = [tuple(int(v) for v in r.lower().split("x")) for r in args.res] or RESOLUTIONS

@@ -1,6 +1,7 @@
 #include "CireHUD.h"
 #include "CireGame.h"
 #include "CireSummon.h"
+#include "CirePets.h" // pets
 #include "CireBuffs.h"
 #include "CireEffects.h"
 #include "CireUIStyle.h"
@@ -142,8 +143,9 @@ void ACireHUD::DrawEffectIcon(const FCireActiveEffect& E,const FCireEffectInfo& 
 void ACireHUD::DrawPet(ACireHero* Hero,ACireController* Controller)
 {
     if(!Hero||!Controller)return;
+    if(const FCirePetDef* Def=CirePets::ForOwner(Hero)){DrawCompanion(Hero,Controller,*Def);return;} // pets
     TArray<ACireSummon*> Pets;
-    for(TActorIterator<ACireSummon> It(GetWorld());It;++It)if(It->GetOwnerHero()==Hero&&!It->bDead)Pets.Add(*It);
+    for(TActorIterator<ACireSummon> It(GetWorld());It;++It)if(It->GetOwnerHero()==Hero&&!It->bDead&&!It->IsA<ACirePet>())Pets.Add(*It);
     if(Pets.IsEmpty()&&!bEditLayout)return;
     UsePanel(TEXT("Pet"),250,90);Frame(0,0,250,90,Purple);
     Label(FString::Printf(TEXT("SUMMONS / %d ACTIVE"),Pets.Num()),9,7,10,Gold);

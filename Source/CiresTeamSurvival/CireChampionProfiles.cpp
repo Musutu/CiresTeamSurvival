@@ -8,6 +8,7 @@
 #include "CireThreat.h"
 #include "CireAbilityLibrary.h"
 #include "CireRoleSkills.h"
+#include "CirePets.h" // pets
 #include "Engine/World.h"
 #include "EngineUtils.h"
 
@@ -152,6 +153,7 @@ bool ACireHero::HasChampionRole(const FString& RoleName) const
 }
 float ACireHero::DamageThreatMultiplier() const
 {
+    if(const auto* Pet=::Cast<ACirePet>(this))return Pet->PetThreatMultiplier(); // pets: Pets.json threatMultiplier
     const auto& T=CireSkillTuning::Get();
     const bool bTank=ChampionProfileId.IsEmpty()?Archetype==0:ProfileThreatRole==TEXT("tank");
     return bTank?T.TankDamageThreatMultiplier:T.DpsDamageThreatMultiplier;

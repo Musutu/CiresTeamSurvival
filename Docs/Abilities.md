@@ -99,8 +99,9 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 | Crescent Volley (`crescent_volley`) | huntress | DPS | active | physical | aim | 30 EN | 10s | 90 / 127 / 171 damage |  |
 | Moonlit Sprint (`moonlit_sprint`) | huntress | DPS | active | arcane | self | 20 EN | 16s | 40 / 57 / 70 % move speed | Move +40%, cleanse |
 | Owl Scout (`owl_scout`) | huntress | DPS | active | nature | aim | 20 EN | 14s | 10 / 14 / 19 % damage taken | Tracked |
-| Sabercat Pounce (`sabercat_pounce`) | huntress | DPS | active | physical | aim | 35 EN | 12s | 75 / 106 / 143 damage | Move -40% |
-| Sabercat Rake (`sabercat_rake`) | huntress | DPS | active | nature | aim | 25 EN | 7s | 70 / 99 / 133 damage |  |
+| Ashfang: Maul (`sabercat_maul`) | huntress | DPS | active | physical | enemy | 25 EN | 7s | 70 / 99 / 133 damage |  |
+| Ashfang: Pounce (`sabercat_pounce`) | huntress | DPS | active | physical | enemy | 35 EN | 12s | 75 / 106 / 143 damage | Move -40% |
+| Ashfang: Dread Roar (`sabercat_roar`) | huntress | DPS | active | nature | self | 20 EN | 16s | 30 / 42 / 57 damage | Move -35%, Taunted by Ashfang |
 | Moon Glaive (`moon_glaive`) | huntress | DPS | passive | physical | passive | - | 0s | 60 / 75 / 85 % bounce damage |  |
 | Glaive Storm (`glaive_storm`) | huntress | DPS | ultimate | physical | self | 70 EN | 75s | 45 / 59 / 77 damage per tick |  |
 | Taunting Tumble (`taunting_tumble`) | knight, bear, paladin_righteous, dwarf_miner, ether_golem_tank, ether_golem_bruiser, orc_chieftain, totemic_behemoth, drakish_footman | TANK | active | physical | self | 25 EN | 18s | 3 / 4 / 6 s taunt | taunt, DEF +20% |
@@ -295,8 +296,9 @@ makes its extra hit 3x). Native: `CireScalingKits` (reuses CireCrowdControl / Ci
 | Purify (`purify`) | active | Lv 15: +purge the target's buffs |
 | Repulsor Pulse (`repulsor_pulse`) | active | Lv 15: +0.75s stun |
 | Restoring Light (`restoring_light`) | active | Lv 15: +purge the target's buffs |
-| Sabercat Pounce (`sabercat_pounce`) | active | Lv 15: +0.75s stun |
-| Sabercat Rake (`sabercat_rake`) | active | Lv 15: +burn for 40% of the hit over 4s |
+| Ashfang: Maul (`sabercat_maul`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Ashfang: Pounce (`sabercat_pounce`) | active | Lv 15: +0.75s stun |
+| Ashfang: Dread Roar (`sabercat_roar`) | active | Lv 15: +35% slow for 2.5s |
 | Sanctuary (`sanctuary`) | active | Lv 15: +35% slow for 2.5s |
 | Second Wind (`second_wind`) | active | Lv 15: +healing on the target -40% for 4s |
 | Shadow Dance (`shadow_dance`) | active | Lv 15: +healing on the target -40% for 4s |
@@ -394,7 +396,7 @@ cycle through the aura list.
 | Keeper of the Light (`keeper_of_light`) | HEAL | keeper_dawn_beam, keeper_lantern_ward, keeper_beacon, restoring_light, sanctuary, purify, keeper_last_light, keeper_sunrise | 19 |
 | Gunblade (`gunblade`) | DPS | silver_shot, hex_mark, powder_flask, blade_flurry, hunters_stride, warding_talisman, price_on_every_soul, collect_the_bounty, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, ember_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, shadow_dance, evasive_stance | 55 |
 | Witch Slayer (`witch_slayer`) | DPS | arcane_blunderbuss, spirit_lantern, purge, banishment, witchfinders_mark, spectral_blade, witchbane, hexbane_judgment, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, quickened_mind, hasted_tumble, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, venom_tumble, shadow_dance, evasive_stance | 55 |
-| Huntress (`huntress`) | DPS | bouncing_glaive, sabercat_pounce, owl_scout, moonlit_sprint, crescent_volley, sabercat_rake, moon_glaive, glaive_storm, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, venom_tumble, shadow_dance, evasive_stance | 56 |
+| Huntress (`huntress`) | DPS | bouncing_glaive, sabercat_pounce, owl_scout, moonlit_sprint, crescent_volley, sabercat_maul, moon_glaive, glaive_storm, sabercat_roar, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, venom_tumble, shadow_dance, evasive_stance | 57 |
 | Aetheri Artificer (`aetheri_artificer`) | DPS | photon_turret, skitter_swarm, arc_mine, disruption_pylon, phase_lance, overcharge, aether_engineering, warp_obelisk, quickened_mind, hasted_tumble, mine_layer | 43 |
 | Aetheri Warden (`aetheri_warden`) | TANK/HEAL | aegis_pylon, haste_pylon, gravity_pylon, stasis_snare, aether_mend, repulsor_pulse, resonant_lattice, aether_nexus, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 41 |
 

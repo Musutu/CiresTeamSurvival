@@ -202,6 +202,7 @@ private:
     bool bEffectsSeeded = false;
     TMap<FString, FVector2D> OverheadSeen;
     void DrawPet(ACireHero* Hero,ACireController* Controller);
+    void DrawCompanion(ACireHero* Hero,ACireController* Controller,const struct FCirePetDef& Def); // pets: CireHUDPets.cpp
     void Tip(const FString& Title,const FString& Body,float X,float Y,float W,float H);
     void DrawTooltip();
     void PlayUIFeedback();
@@ -230,6 +231,10 @@ private:
     bool IsInBossFrames(const AActor* Actor) const;
     bool bShowDevLauncher = false;
     TArray<FBox2D> LastPanelBoxes;
+public:
+    /** ui-themes: nameplate boxes after de-overlap (last frame), for the gallery's overlap check. */
+    TArray<FBox2D> LastPlateBoxes;
+private:
     TArray<TWeakObjectPtr<AActor>> BossFrameUnits;
     FCireMovementTuning MovementDraft;
     bool bMovementLoaded=false;

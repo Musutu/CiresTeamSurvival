@@ -334,6 +334,30 @@ def slice_theme(theme, key):
     return meta, size
 
 
+def write_capsule():
+    """T_BarCapsule (128x64): top half a white capsule with a soft vertical gradient (bar back / fill /
+    border, tinted at draw time), bottom half the glossy sheen (white highlight in the upper part),
+    both capsule-masked and anti-aliased (4x supersampled). Drawn 3-sliced: caps = height / 2."""
+    ss, w, h = 4, 128, 32
+    W, H = w * ss, h * ss
+    ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
+    r = H / 2
+    cx = np.clip(xs + .5, r, W - r)
+    d = np.hypot(xs + .5 - cx, ys + .5 - r)
+    mask = np.clip(r - d, 0, 1)
+    t = (ys + .5) / H
+    body = .78 + .22 * np.clip(1 - t * 1.4, 0, 1) - .12 * np.clip((t - .7) / .3, 0, 1)
+    sheen = np.clip(1 - t / .48, 0, 1) ** 1.6 * .55 + np.exp(-((t - .9) / .06) ** 2) * .08
+    top = np.dstack([body, body, body, mask])
+    bot = np.dstack([np.ones_like(t), np.ones_like(t), np.ones_like(t), sheen * mask])
+    out = np.concatenate([top, bot], 0)
+    im = img(out).resize((w, h * 2), Image.LANCZOS)
+    dest = OUT / "Common" / "src"
+    dest.mkdir(parents=True, exist_ok=True)
+    im.save(dest / "T_BarCapsule.png")
+    print("CIRE_UITHEME_CAPSULE", dest / "T_BarCapsule.png")
+
+
 def update_json(results):
     data = json.loads(DATA.read_text(encoding="utf-8"))
     for theme in data["themes"]:
@@ -363,9 +387,9 @@ def build(unreal):
     tools = unreal.AssetToolsHelpers.get_asset_tools()
     library = unreal.EditorAssetLibrary
     tasks, targets = [], []
-    for theme, _ in THEMES:
-        for kind in ("Atlas", "Fill"):
-            png = OUT / theme / "src" / f"T_{theme}_{kind}.png"
+    for theme, _ in THEMES + [("Common", "")]:
+        for kind in (("Atlas", "Fill") if theme != "Common" else ("BarCapsule",)):
+            png = OUT / theme / "src" / (f"T_{theme}_{kind}.png" if theme != "Common" else f"T_{kind}.png")
             if not png.exists():
                 continue
             t = unreal.AssetImportTask()
@@ -383,7 +407,7 @@ def build(unreal):
         if not texture:
             raise RuntimeError("Theme texture import failed: " + path)
         texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_EDITOR_ICON)
-        texture.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_SIMPLE_AVERAGE)
+        texture.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS if kind == "BarCapsule" else unreal.TextureMipGenSettings.TMGS_SIMPLE_AVERAGE)
         texture.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_UI)
         texture.set_editor_property("never_stream", True)
         texture.set_editor_property("srgb", True)
@@ -405,11 +429,11 @@ def import_assets():
     command = [EDITOR, str(STAGING / "UIThemesBuilder.uproject"), "-unattended", "-RenderOffscreen", "-nosplash", "-nosound",
                "-nop4", "-NoLiveCoding", f"-ExecutePythonScript={Path(__file__).resolve()}", f"-abslog={log}"]
     with (logs / "UIThemes-console.log").open("w", encoding="utf-8") as output:
-        subprocess.run(command, stdout=output, stderr=subprocess.STDOUT, timeout=1800,
+        subprocess.run(command, stdout=output, stderr=subprocess.STDOUT, timeout=1800, env={**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"},
                        creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
     if "CIRE_UITHEMES_IMPORT_PASS" not in log.read_text(encoding="utf-8", errors="replace"):
         raise SystemExit(f"UI theme import failed: {log}")
-    for theme, _ in THEMES:
+    for theme, _ in THEMES + [("Common", "")]:
         source, destination = STAGING / "Content/UI/Themes" / theme, OUT / theme
         destination.mkdir(parents=True, exist_ok=True)
         for asset in source.glob("*.uasset"):
@@ -437,6 +461,7 @@ def main():
                 print(f"CIRE_UITHEME_SKIPPED {theme} (no sheets yet)")
                 continue
             results[theme] = slice_theme(theme, key)
+        write_capsule()
         update_json(results)
     if not args.no_import:
         import_assets()

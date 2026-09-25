@@ -56,6 +56,7 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     bool IsPassive() const { return Kind == TEXT("passive"); }
     bool IsUltimate() const { return Kind == TEXT("ultimate"); }
     bool IsConstruct() const { return Category == TEXT("construct"); }
+    bool IsPet() const { return Category == TEXT("pet"); } // pets: companion commands (Skill Shop COMPANION filter)
 };
 
 /** Scaled numbers at a level (level >= 1, no cap). */
