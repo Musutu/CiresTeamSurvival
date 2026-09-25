@@ -1,0 +1,1164 @@
+{
+  "schemaVersion": 1,
+  "batch": "art-3d",
+  "createdUtc": "2026-09-25",
+  "operator": "Claude (feat/art-3d worktree, art-collector-3d)",
+  "provider": "Tripo Studio (logged-in browser), DCC Bridge -> Tripo3DUEBridge",
+  "purpose": "Docs/ArtBacklog.md section B: B1 Aetheri monster race, B4 sabercat companion clips, B2 realistic quadrupeds, B5 props.",
+  "balanceLog": [
+    {
+      "when": "start",
+      "balance": 1575
+    },
+    {
+      "when": "after 8 Aetheri + 3 quadruped generations",
+      "balance": 970
+    },
+    {
+      "when": "after 8 Aetheri rigs + dire wolf rig",
+      "balance": 790
+    },
+    {
+      "when": "after bristleback + grave hound rigs",
+      "balance": 750
+    },
+    {
+      "when": "after 3 props",
+      "balance": 585
+    },
+    {
+      "when": "Eric upgraded the plan mid-batch",
+      "balance": 7686
+    },
+    {
+      "when": "after crystal_ballista + ether_mote HQ generations",
+      "balance": 7476
+    },
+    {
+      "when": "after 15 HQ generations",
+      "balance": 6501
+    },
+    {
+      "when": "after retopo/rig/clips of the HQ set, at mechanical_tank generation",
+      "balance": 5881
+    }
+  ],
+  "pipelineNotes": [
+    "Same as Art/TripoRaces.json pipelineNotes, plus: Send To is a hover menu on the Export dialog's 'Send To' button (pick 'Send To Unreal'); the DCC Bridge Unreal switch must be re-enabled after every page load (the first click in the popover is often swallowed, so check it says Connected).",
+    "Start the Bridge editor with -Multiprocess while other worktrees are building: otherwise its AutoSDK 'Build.bat -Mode=ValidatePlatforms' call queues behind the global Build.bat lock and startup hangs after 'Completed SDK detection'.",
+    "Integration: set CIRE_TRIPO_PENDING_ONLY=1 so Tools/IntegrateTripoRaces.py only touches units with a pending Bridge import (it now also reads this file)."
+  ],
+  "sabercat": {
+    "taskId": "a27f1777-7570-49e1-8982-48e358154e8f",
+    "result": "failed",
+    "detail": "The Studio's only quadruped preset ('Walk') still fails to retarget on the sabercat rig (no clip produced) and on a fresh neutral-stance Other rig (dire wolf: 'Invalid user input'). No other quadruped presets exist; text-to-motion failed in the previous batch. The pets agent drives the sabercat procedurally (Content/Data/PetArt.tripo.json)."
+  },
+  "units": [
+    {
+      "race": "aetheri",
+      "unit": "aetheri_phaseblade",
+      "export": "CTS_Race_AetheriPhaseblade",
+      "folder": "AetheriPhaseblade",
+      "taskId": "0b714cdd-9abd-48c4-989f-0a8c3c2a2c74",
+      "url": "https://studio.tripo3d.ai/workspace/generate/0b714cdd-9abd-48c4-989f-0a8c3c2a2c74",
+      "prompt": "Full body game character, dark fantasy sci-fi alien warrior of a luminous crystal race, slender tall graceful humanoid, smooth elongated crested helm with a thin glowing visor slit and no mouth, segmented armour of pale gold and white alloy, long glowing blue-violet energy blades projecting forward from both wrist gauntlets, a tattered violet cloth sash hanging from the waist, digitigrade armoured legs. Highly detailed realistic PBR polished pale gold and white alloy plates, glowing blue-violet energy seams and faceted violet crystal inlays, original design, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": true
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)"
+    },
+    {
+      "race": "aetheri",
+      "unit": "aetheri_warframe",
+      "export": "CTS_Race_AetheriWarframe",
+      "folder": "AetheriWarframe",
+      "taskId": "c68a2456-1d1e-4424-a8ea-3c2e13b8df60",
+      "url": "https://studio.tripo3d.ai/workspace/generate/c68a2456-1d1e-4424-a8ea-3c2e13b8df60",
+      "prompt": "Full body game character, dark fantasy sci-fi alien bipedal war-suit, hulking broad-shouldered armoured mech walker with two thick legs and two huge gauntlet fists, heavy pale gold and white alloy plates, a glowing violet crystal reactor core in the chest, a small crystalline pilot head behind a curved translucent blue canopy on top, cables and vents on the back. Highly detailed realistic PBR polished pale gold and white alloy plates, glowing blue-violet energy seams and faceted violet crystal inlays, original design, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": true
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)"
+    },
+    {
+      "race": "aetheri",
+      "unit": "aetheri_bulwark",
+      "export": "CTS_Race_AetheriBulwark",
+      "folder": "AetheriBulwark",
+      "taskId": "3a4f81c2-a6bc-40b2-a9a0-d3c9ada2991e",
+      "url": "https://studio.tripo3d.ai/workspace/generate/3a4f81c2-a6bc-40b2-a9a0-d3c9ada2991e",
+      "prompt": "Full body game character, dark fantasy sci-fi alien guardian of a luminous crystal race, tall heavy armoured humanoid, a large tall kite tower shield of pale gold frame with a translucent blue-violet crystal face strapped to the left forearm, a faceted violet prism crystal mounted between the shoulder plates, crested helm with glowing visor, pale white-gold heavy plating. Highly detailed realistic PBR polished pale gold and white alloy plates, glowing blue-violet energy seams and faceted violet crystal inlays, original design, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": true
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)"
+    },
+    {
+      "race": "aetheri",
+      "unit": "aetheri_engineer",
+      "export": "CTS_Race_AetheriEngineer",
+      "folder": "AetheriEngineer",
+      "taskId": "610abb1e-bcee-40da-9727-c1ff9cacf6d6",
+      "url": "https://studio.tripo3d.ai/workspace/generate/610abb1e-bcee-40da-9727-c1ff9cacf6d6",
+      "prompt": "Full body game character, dark fantasy sci-fi alien engineer of a luminous crystal race, slender humanoid in layered long white cloth robes over pale gold alloy armour, a backpack frame carrying folded mechanical turret parts and small crystal shards, glowing blue-violet hands, a smooth hooded helm with a glowing visor, tool belt with crystal instruments. Highly detailed realistic PBR polished pale gold and white alloy plates, glowing blue-violet energy seams and faceted violet crystal inlays, original design, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": true
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)"
+    },
+    {
+      "race": "aetheri",
+      "unit": "aetheri_lancer",
+      "export": "CTS_Race_AetheriLancer",
+      "folder": "AetheriLancer",
+      "taskId": "532d3db4-95c7-4838-bb71-fa3c88eb0758",
+      "url": "https://studio.tripo3d.ai/workspace/generate/532d3db4-95c7-4838-bb71-fa3c88eb0758",
+      "prompt": "Full body game character, dark fantasy sci-fi alien marksman of a luminous crystal race, lean tall humanoid in gold-trimmed white alloy armour, a long slim photon lance-rifle with a violet crystal focusing lens held in the right hand, glowing blue visor helm, energy cables running along both arms, a short cape. Highly detailed realistic PBR polished pale gold and white alloy plates, glowing blue-violet energy seams and faceted violet crystal inlays, original design, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": true
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)"
+    },
+    {
+      "race": "aetheri",
+      "unit": "skitter_drone",
+      "export": "CTS_Race_SkitterDrone",
+      "folder": "SkitterDrone",
+      "taskId": "d7c57b3a-31d0-4ff5-be50-2a8c618f3e1b",
+      "url": "https://studio.tripo3d.ai/workspace/generate/d7c57b3a-31d0-4ff5-be50-2a8c618f3e1b",
+      "prompt": "Full body game character, small dark fantasy sci-fi alien construct drone, hunched compact two-legged robot walker with short digitigrade legs and two thin claw arms, a rounded pale gold alloy carapace shell, a single large glowing blue-violet eye lens, a pulsing violet crystal energy core on its back. Highly detailed realistic PBR polished pale gold and white alloy plates, glowing blue-violet energy seams and faceted violet crystal inlays, original design, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": true
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "note": "Races.md asks for six spider legs; generated as its documented fallback (hunched two-legged construct) so the UE5 Mannequin rig and preset clips apply."
+    },
+    {
+      "race": "aetheri",
+      "unit": "aetheri_hierarch",
+      "export": "CTS_Race_AetheriHierarch",
+      "folder": "AetheriHierarch",
+      "taskId": "bbadc983-ff75-4651-97c9-c176952fb968",
+      "url": "https://studio.tripo3d.ai/workspace/generate/bbadc983-ff75-4651-97c9-c176952fb968",
+      "prompt": "Full body game character, dark fantasy sci-fi alien priest-king of a luminous crystal race, towering slender humanoid in long ceremonial white and gold alloy robes, a tall crown of violet crystal shards, a smooth featureless golden face mask with glowing blue-violet eyes, ornate pauldrons with crystal spikes, holding a tall golden warp staff topped with a ring and a violet crystal in the right hand. Highly detailed realistic PBR polished pale gold and white alloy plates, glowing blue-violet energy seams and faceted violet crystal inlays, original design, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": true
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "cast_a_spell",
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)"
+    },
+    {
+      "race": "aetheri",
+      "unit": "aetheri_colossus",
+      "export": "CTS_Race_AetheriColossusB",
+      "folder": "AetheriColossus",
+      "taskId": "3476349e-fad7-49bb-a663-48fa03464277",
+      "url": "https://studio.tripo3d.ai/workspace/generate/3476349e-fad7-49bb-a663-48fa03464277",
+      "prompt": "Full body game character, dark fantasy sci-fi alien colossal bipedal war engine, massive armoured mech golem with two thick legs and two huge arms ending in heavy clawed hands, pale gold and white alloy hull, a glowing violet crystal reactor dome for a head with a beam emitter, turret pods on both shoulders, glowing energy cables and seams across the hull. Highly detailed realistic PBR polished pale gold and white alloy plates, glowing blue-violet energy seams and faceted violet crystal inlays, original design, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": true
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, all animations, not in place)",
+      "note": "Races.md describes a three-legged engine; generated bipedal so it can be Humanoid-rigged. The first send carried only 4 clips, so it was re-sent with all 6 as CTS_Race_AetheriColossusB and the partial import discarded."
+    },
+    {
+      "race": "feral_kin",
+      "unit": "dire_wolf",
+      "export": "CTS_Race_DireWolf",
+      "folder": "DireWolf",
+      "taskId": "5193be5f-528c-4bb0-88db-e490f738cc16",
+      "url": "https://studio.tripo3d.ai/workspace/generate/5193be5f-528c-4bb0-88db-e490f738cc16",
+      "prompt": "Full body game creature, realistic dark fantasy huge dire wolf, four legs, massive muscular wolf shoulder-high to a man, thick shaggy dark brown fur with a pale grey mane, scarred muzzle, yellow eyes, small bone fetishes and leather cords tied into its fur. Highly detailed realistic PBR fur texture, natural anatomy, standing neutral on all four legs, legs straight, head forward, tail straight back, mouth closed, single creature, no base, no background, no saddle, no rider.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": false
+      },
+      "rig": {
+        "type": "Other (auto quadruped)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, skeleton, no animations)",
+      "status": "rigged, no clips",
+      "note": "Tripo offers only a quadruped 'Walk' preset for Other rigs and its retarget fails ('Invalid user input', retarget tasks 39eb1eaa-cde5-42ef-a8fb-9dd697347107 and 1cf85b28-e5fd-4f8c-af93-71d4f04ff626). Imported rigged without clips; the unit keeps its animated CC0 body in RaceMeshes until clips are retargeted or driven procedurally."
+    },
+    {
+      "race": "feral_kin",
+      "unit": "bristleback",
+      "export": "CTS_Race_Bristleback",
+      "folder": "Bristleback",
+      "taskId": "a34fa709-89e3-449c-91f9-f669c94be909",
+      "url": "https://studio.tripo3d.ai/workspace/generate/a34fa709-89e3-449c-91f9-f669c94be909",
+      "prompt": "Full body game creature, realistic dark fantasy feral wild boar, four legs, stocky muscular knee-high boar with a tall ridge of long quill-like black bristles along its spine, curved yellowed tusks, muddy coarse black hide, small furious red eyes, scarred snout. Highly detailed realistic PBR hide and bristle texture, natural anatomy, standing neutral on all four legs, legs straight, head forward, single creature, no base, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": false
+      },
+      "rig": {
+        "type": "Other (auto quadruped)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, skeleton, no animations)",
+      "status": "rigged, no clips",
+      "note": "Tripo offers only a quadruped 'Walk' preset for Other rigs and its retarget fails ('Invalid user input', retarget tasks 39eb1eaa-cde5-42ef-a8fb-9dd697347107 and 1cf85b28-e5fd-4f8c-af93-71d4f04ff626). Imported rigged without clips; the unit keeps its animated CC0 body in RaceMeshes until clips are retargeted or driven procedurally."
+    },
+    {
+      "race": "hollow",
+      "unit": "grave_hound",
+      "export": "CTS_Race_GraveHound",
+      "folder": "GraveHound",
+      "taskId": "1c4e6e91-5cc8-4103-8d06-283acbf803bd",
+      "url": "https://studio.tripo3d.ai/workspace/generate/1c4e6e91-5cc8-4103-8d06-283acbf803bd",
+      "prompt": "Full body game creature, realistic dark fantasy undead grave hound, four legs, emaciated wolf-sized undead dog, exposed ribs and spine showing through torn rotting grey hide, long skeletal jaw with bared fangs, glowing pale green eyes, a rusted iron collar with a short broken chain. Highly detailed realistic PBR rotting hide and bone texture, natural canine anatomy, standing neutral on all four legs, legs straight, head forward, tail straight back, single creature, no base, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": false
+      },
+      "rig": {
+        "type": "Other (auto quadruped)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [],
+      "generateCredits": 55,
+      "creditsTotal": 75,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, skeleton, no animations)",
+      "status": "rigged, no clips",
+      "note": "Tripo offers only a quadruped 'Walk' preset for Other rigs and its retarget fails ('Invalid user input', retarget tasks 39eb1eaa-cde5-42ef-a8fb-9dd697347107 and 1cf85b28-e5fd-4f8c-af93-71d4f04ff626). Imported rigged without clips; the unit keeps its animated CC0 body in RaceMeshes until clips are retargeted or driven procedurally."
+    },
+    {
+      "race": "props",
+      "unit": "aetheri_staff",
+      "kind": "prop",
+      "export": "CTS_Prop_AetheriStaff",
+      "folder": "AetheriStaff",
+      "dest": "/Game/Tripo/Props/AetheriStaff",
+      "taskId": "4efffb34-3085-441f-bb18-3c349dae0afc",
+      "url": "https://studio.tripo3d.ai/workspace/generate/4efffb34-3085-441f-bb18-3c349dae0afc",
+      "prompt": "Single game weapon prop, a tall ornate two-handed staff of an alien luminous crystal race, slender shaft of polished pale gold and white alloy with thin glowing blue-violet energy seams, the head is an open crescent ring of gold alloy cradling a large faceted floating-looking violet crystal fused to the ring, small crystal shards at the ring tips, a pointed gold ferrule at the bottom, dark fantasy sci-fi, original design. Highly detailed realistic PBR metal and crystal, the whole staff straight and vertical, single object, no hands, no character, no base, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": false
+      },
+      "generateCredits": 55,
+      "creditsTotal": 55,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, static)"
+    },
+    {
+      "race": "props",
+      "unit": "aetheri_halberd",
+      "kind": "prop",
+      "export": "CTS_Prop_AetheriHalberd",
+      "folder": "AetheriHalberd",
+      "dest": "/Game/Tripo/Props/AetheriHalberd",
+      "taskId": "d43de6a0-6480-4b39-9987-f6c85e4d8d08",
+      "url": "https://studio.tripo3d.ai/workspace/generate/d43de6a0-6480-4b39-9987-f6c85e4d8d08",
+      "prompt": "Single game weapon prop, a long elegant halberd polearm of an alien luminous crystal race, long slender shaft of polished pale gold and white alloy with glowing blue-violet energy seams, a large curved crescent axe blade of translucent violet crystal framed in gold alloy on one side, a short spike on the back, a long faceted crystal spear tip on top, a gold pommel spike at the bottom, dark fantasy sci-fi, original design. Highly detailed realistic PBR metal and crystal, the whole weapon straight and vertical, single object, no hands, no character, no base, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": false
+      },
+      "generateCredits": 55,
+      "creditsTotal": 55,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, static)"
+    },
+    {
+      "race": "props",
+      "unit": "huntress_glaive",
+      "kind": "prop",
+      "export": "CTS_Prop_HuntressGlaive",
+      "folder": "HuntressGlaive",
+      "dest": "/Game/Tripo/Props/HuntressGlaive",
+      "taskId": "8f6881a7-8be2-462d-acab-16ec494db255",
+      "url": "https://studio.tripo3d.ai/workspace/generate/8f6881a7-8be2-462d-acab-16ec494db255",
+      "prompt": "Single game weapon prop, a throwing glaive for a dark fantasy huntress, a flat circular moon-blade ring of dark blued steel with three curved crescent blades sweeping around the rim, a wrapped leather cross-grip in the centre, small engraved runes and a bone inlay, realistic dark fantasy, original design. Highly detailed realistic PBR steel, leather and bone, lying flat seen from above, single object, no hands, no character, no base, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D",
+        "ultraMeshQuality": true,
+        "polycount": 60000,
+        "topology": "triangle",
+        "texture": "4K PBR, remove lighting",
+        "privacy": "Sharing Only",
+        "tPose": false
+      },
+      "generateCredits": 55,
+      "creditsTotal": 55,
+      "transfer": "DCC Bridge Send To Unreal (FBX, 4K, static)"
+    },
+    {
+      "race": "drowned_deep",
+      "unit": "barbspitter",
+      "export": "CTS_Race_BarbspitterHQ",
+      "folder": "BarbspitterHQ",
+      "taskId": "f42dd0fe-6064-4c92-aed4-86bc1e9804cd",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f42dd0fe-6064-4c92-aed4-86bc1e9804cd",
+      "prompt": "Full body game character, realistic dark fantasy frog-postured cephalopod creature, squat wide-legged frog stance with slightly bent knees, bulbous glossy head with a tube-like siphon mouth and small face tentacles, a large inflated throat sac, a crest of long barbed dorsal quills along its back and shoulders, wet mottled teal-green and violet skin, yellow slit eyes, a whalebone harpoon strapped diagonally across its back, tarnished iron armbands, empty webbed hands. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/drowned_deep/Barbspitter",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "blightwood",
+      "unit": "rotbloom_shaman",
+      "export": "CTS_Race_RotbloomShamanHQ",
+      "folder": "RotbloomShamanHQ",
+      "taskId": "5df58ae7-a3ac-4a5f-9d46-2e477a762dd6",
+      "url": "https://studio.tripo3d.ai/workspace/generate/5df58ae7-a3ac-4a5f-9d46-2e477a762dd6",
+      "prompt": "Full body game character, realistic dark fantasy bulky hunched fungal treant shaman, heavy body of dark bark, the head is a huge drooping rotten flower bloom with a fungal cap and a sickly green glowing core, bark robe hung with mushroom shelves, thick branch arms, a crooked branch staff held vertically in the right hand beside the body sprouting pale fungus, left hand open. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 95,
+      "note": "a first retopo came out at 10k (slider bug) and was restored and redone (+5)",
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/blightwood/RotbloomShaman",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "ironhide",
+      "unit": "ironhide_drummer",
+      "export": "CTS_Race_IronhideDrummerHQ",
+      "folder": "IronhideDrummerHQ",
+      "taskId": "9bf8964a-e30f-4c51-a7e3-dd460dd3e08e",
+      "url": "https://studio.tripo3d.ai/workspace/generate/9bf8964a-e30f-4c51-a7e3-dd460dd3e08e",
+      "prompt": "Full body game character, realistic dark fantasy stocky muscular green-skinned orc war drummer, a large round hide war drum strapped at its belly on a leather harness, the tusked roaring face clearly visible above the drum, trophy skulls on the drum rim, fur cloak, black-iron shoulder guards, a bone drumstick in each hand. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/ironhide/IronhideDrummer",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "drakkari",
+      "unit": "drakkari_flamecaller",
+      "export": "CTS_Race_DrakkariFlamecallerHQ",
+      "folder": "DrakkariFlamecallerHQ",
+      "taskId": "c9bd5ba4-8867-4534-b3ba-cab4471e9c80",
+      "url": "https://studio.tripo3d.ai/workspace/generate/c9bd5ba4-8867-4534-b3ba-cab4471e9c80",
+      "prompt": "Full body game character, realistic dark fantasy slender horned dragonkin pyromancer, crimson-scaled head with swept-back horns, charred crimson robes with tarnished gold trim, long tail, clawed fingers, a tall dark iron staff topped with a caged burning coal held upright in the right hand beside the body and not crossing it, left hand open. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/drakkari/DrakkariFlamecaller",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "stoneborn",
+      "unit": "rune_sentinel",
+      "export": "CTS_Race_RuneSentinelHQ",
+      "folder": "RuneSentinelHQ",
+      "taskId": "df6c04b6-4215-43db-8b7b-72084bc20646",
+      "url": "https://studio.tripo3d.ai/workspace/generate/df6c04b6-4215-43db-8b7b-72084bc20646",
+      "prompt": "Full body game character, realistic dark fantasy heavy man-sized stone construct soldier built from carved grey runestone blocks, deep chiselled glowing blue dwarven runes across its limbs, no sci-fi panels, right forearm ends in a broad stone blade, left hand a stone fist, faceless helm-shaped stone head with a single glowing rune slit, bronze joint rings at elbows and knees, heavy squat build. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 155,
+      "note": "first HQ task 386b1998-090f-49bc-b3d7-540e42ddf4fc was retopo'd to 10k by an interrupted batch and discarded (+70); regenerated at 80k generation polycount so no retopo",
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/stoneborn/RuneSentinel",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "stoneborn",
+      "unit": "granite_crusher",
+      "export": "CTS_Race_GraniteCrusherHQ",
+      "folder": "GraniteCrusherHQ",
+      "taskId": "b6f2ad4a-83c9-46aa-b8f1-6ed55f9a8e43",
+      "url": "https://studio.tripo3d.ai/workspace/generate/b6f2ad4a-83c9-46aa-b8f1-6ed55f9a8e43",
+      "prompt": "Full body game character, realistic dark fantasy hulking boulder golem, one solid continuous body of rough grey granite with no floating pieces, thick pillar legs, huge distinct granite fists on long heavy arms, a small head sunk between massive rock shoulders, glowing pale blue cracks across the chest, green moss in the crevices, bronze bands around the wrists. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/stoneborn/GraniteCrusher",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "feral_kin",
+      "unit": "werebear_mauler",
+      "export": "CTS_Race_WerebearMaulerHQ",
+      "folder": "WerebearMaulerHQ",
+      "taskId": "2a4067ca-7e9f-4805-9bc2-d71d9aae5c6e",
+      "url": "https://studio.tripo3d.ai/workspace/generate/2a4067ca-7e9f-4805-9bc2-d71d9aae5c6e",
+      "prompt": "Full body game character, realistic dark fantasy towering upright humanoid werebear warrior, taller and broader than an orc, long muscular arms, huge curved claws, thick dark brown fur, roaring jaws with fangs, amber eyes, red war paint stripes on the face and chest, torn leather armour straps and a broken iron shackle on one wrist, moss on the shoulders. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/feral_kin/WerebearMauler",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "feral_kin",
+      "unit": "tusked_behemoth",
+      "export": "CTS_Race_TuskedBehemothHQ",
+      "folder": "TuskedBehemothHQ",
+      "taskId": "3177d4f4-3bc1-4a21-8ee9-f7c5f5c0d9c1",
+      "url": "https://studio.tripo3d.ai/workspace/generate/3177d4f4-3bc1-4a21-8ee9-f7c5f5c0d9c1",
+      "prompt": "Full body game character, realistic dark fantasy massive upright elephant-rhino hybrid warrior with broad heroic proportions and a smaller head relative to its huge body, grey leathery hide, curved ivory tusks with bronze rings, a nose horn, carved stone armour plates tied on with rope, painted tribal markings, pillar-thick legs, a thick heavy stone tower shield strapped to the left forearm, right hand empty. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/feral_kin/TuskedBehemoth",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true,
+      "note": "stone tower shield baked on the left forearm; prototype sword/shield props dropped"
+    },
+    {
+      "race": "fallen_order",
+      "unit": "fallen_inquisitor_crossbow",
+      "export": "CTS_Race_FallenInquisitorCrossbowHQ",
+      "folder": "FallenInquisitorCrossbowHQ",
+      "taskId": "6c2daa01-a7de-4c7c-beb9-6ddc8509c98d",
+      "url": "https://studio.tripo3d.ai/workspace/generate/6c2daa01-a7de-4c7c-beb9-6ddc8509c98d",
+      "prompt": "Full body game character, realistic dark fantasy lean inquisitor in a wide-brimmed hat and a long dark leather coat with crimson lining and accents over a polished steel breastplate, bandolier of silver bolts, cracked gold sun pendant, pale face with glowing gold eyes, a large heavy repeating crossbow clearly held in the right hand, left hand open. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/fallen_order/FallenInquisitorCrossbow",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": false,
+      "heldReason": "HQ mesh has no crossbow and no attack_crossbow clip; the old body stays bound (Tools/WriteRaceMeshes.py HOLD_HQ). Fix: retarget the library 'Standing_marksman' crossbow clip (free) and regenerate with the crossbow, or give monsters a crossbow prop."
+    },
+    {
+      "race": "voidborn",
+      "unit": "rift_stalker",
+      "export": "CTS_Race_RiftStalkerHQ",
+      "folder": "RiftStalkerHQ",
+      "taskId": "d358a379-273b-41fa-93eb-60480013ac2b",
+      "url": "https://studio.tripo3d.ai/workspace/generate/d358a379-273b-41fa-93eb-60480013ac2b",
+      "prompt": "Full body game character, realistic dark fantasy lanky void predator humanoid with elongated limbs, dark violet chitin plating with lighter violet highlights over starry black skin, glowing magenta rift seams along the limbs, featureless head split by a vertical glowing magenta slit, long blade forearms ending in scythe claws. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/voidborn/RiftStalker",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "voidborn",
+      "unit": "rift_weaver",
+      "export": "CTS_Race_RiftWeaverHQ",
+      "folder": "RiftWeaverHQ",
+      "taskId": "38a83c95-5491-4ffd-9bd9-ddf1f5f4f6f5",
+      "url": "https://studio.tripo3d.ai/workspace/generate/38a83c95-5491-4ffd-9bd9-ddf1f5f4f6f5",
+      "prompt": "Full body game character, realistic dark fantasy tall void sorcerer in deep violet and black robes with star-field rift tears glowing through the cloth, silver-grey trim, a deep hood with an empty glowing violet void instead of a face, four thin spectral arms folded on its back, glyph-covered silver bracers, small violet void crystals fused to the shoulders, empty long-fingered hands. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/voidborn/RiftWeaver",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "voidborn",
+      "unit": "null_warden",
+      "export": "CTS_Race_NullWardenHQ",
+      "folder": "NullWardenHQ",
+      "taskId": "96ab8759-3d5f-4b8b-bac6-17f38dc717c9",
+      "url": "https://studio.tripo3d.ai/workspace/generate/96ab8759-3d5f-4b8b-bac6-17f38dc717c9",
+      "prompt": "Full body game character, realistic dark fantasy tall armoured void aberration with uneven alien proportions, a hollow cracked obsidian armour shell leaking glowing violet void energy through the cracks, a single huge eye in its chest, a jagged obsidian shield grown out of its left forearm, right hand a long clawed hand, dark steel trim. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/voidborn/NullWarden",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true,
+      "note": "Tripo omitted the forearm shield; bound as a clawed tank, the prototype sword/shield props are dropped"
+    },
+    {
+      "race": "voidborn",
+      "unit": "voidling",
+      "export": "CTS_Race_VoidlingHQ",
+      "folder": "VoidlingHQ",
+      "taskId": "515aa457-adce-46f5-a8f0-56ad5035c3e8",
+      "url": "https://studio.tripo3d.ai/workspace/generate/515aa457-adce-46f5-a8f0-56ad5035c3e8",
+      "prompt": "Full body game character, realistic dark fantasy small hunched void imp on two short clawed legs, round body of glossy black chitin split by bright glowing violet cracks, a distinct horned head with a wide mouth of needle teeth and two glowing magenta eyes, oversized clawed arms, stubby spiked tail, high colour contrast. Highly detailed realistic PBR textures with crisp surface detail and strong readable colour contrast, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "hq": true,
+      "replaces": "/Game/Tripo/Races/voidborn/Voidling",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": false,
+      "heldReason": "CIRE_MONSTER_ART checks: walk stride 28 cm/s (< 40) and the slash drops to all fours (head 28 cm at 0.75); the old voidling stays bound (HOLD_HQ). Fix: a text-to-motion upright claw swipe + a longer-stride walk, or regenerate taller/upright."
+    },
+    {
+      "race": "stoneborn",
+      "unit": "crystal_ballista",
+      "export": "CTS_Race_CrystalBallista",
+      "folder": "CrystalBallista",
+      "taskId": "dde21d0b-6f62-43e7-a9d7-825f86bb8cd9",
+      "url": "https://studio.tripo3d.ai/workspace/generate/dde21d0b-6f62-43e7-a9d7-825f86bb8cd9",
+      "prompt": "Full body game character, dark fantasy stone construct siege walker, squat heavy two-legged golem built from carved grey granite blocks bound with bronze bands and bronze gear joints at the knees and shoulders, a large crystal launcher mounted on its back like a heavy crossbow with a rack of glowing pale blue crystal shards, a round glowing blue lens-eye set in its chest, two short thick stone arms with blocky fists, glowing blue rune lines carved into the stone. Highly detailed realistic PBR stone, bronze and crystal, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 115,
+      "note": "bipedal siege-walker construct instead of the spider-legged prompt so it can take the Humanoid rig; its first rig ran on a 10k retopo and was redone (+25)",
+      "hq": true,
+      "replaces": "RaceMeshes.free.json / fallback body",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "stoneborn",
+      "unit": "ether_mote",
+      "export": "CTS_Race_EtherMote",
+      "folder": "EtherMote",
+      "taskId": "cb701873-b2ff-4882-b4a5-1a0b3b8c1cab",
+      "url": "https://studio.tripo3d.ai/workspace/generate/cb701873-b2ff-4882-b4a5-1a0b3b8c1cab",
+      "prompt": "Full body game character, small dark fantasy ether construct, a glowing pale blue ether crystal core forming the chest, held inside a cage of carved grey stone rings and plates that make up its body, a small faceless stone head with one glowing blue eye slit, two thin stone arms, two short tapered stone legs ending in points, bronze pins joining the stone plates, glowing blue rune lines. Highly detailed realistic PBR stone, bronze and crystal, symmetrical T-pose, arms straight out to the sides, legs straight, feet planted apart, single character, no base, no background, no floating particles, no separate floating parts.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 120000,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "Retopology to 80,000 triangles (Smart Mesh off) before rigging: 120k faces exceed the auto-rig limit"
+      },
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin (61-bone UE4-style)",
+        "credits": 20,
+        "status": "rigged"
+      },
+      "presetAnimations": [
+        "fall",
+        "hit_to_body_01",
+        "idle",
+        "run",
+        "slash",
+        "walk"
+      ],
+      "generateCredits": 65,
+      "retopoCredits": 5,
+      "creditsTotal": 90,
+      "note": "small legged ether construct (short tapered stone legs) instead of a legless floater so it can take the Humanoid rig",
+      "hq": true,
+      "replaces": "RaceMeshes.free.json / fallback body",
+      "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
+      "bound": true
+    },
+    {
+      "race": "props",
+      "unit": "pavise",
+      "export": "CTS_Prop_Pavise",
+      "folder": "Pavise",
+      "dest": "/Game/Tripo/Props/Pavise",
+      "taskId": "f992e832-9db7-4ada-b39d-4bbe38018311",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f992e832-9db7-4ada-b39d-4bbe38018311",
+      "prompt": "Single game prop, a large standing pavise tower shield planted upright in the ground on a short spiked foot and a rear prop leg, tall rectangular dark fantasy shield of thick weathered oak planks with blackened iron rim, iron rivets and a central iron boss, a painted faded crimson heraldic sigil, arrow nicks and scratches, a narrow viewing slit near the top. Highly detailed realistic PBR wood and iron, standing vertical, single object, no hands, no character, no base, no background.",
+      "settings": {
+        "model": "HD Model, H3.1 Best Quality, text to 3D (upgraded plan)",
+        "ultraMeshQuality": true,
+        "polycount": 73143,
+        "topology": "triangle",
+        "texture": "8K PBR, remove lighting",
+        "aiComplete": true,
+        "tPose": true,
+        "privacy": "Sharing Only",
+        "retopology": "none (static prop)"
+      },
+      "generateCredits": 65,
+      "creditsTotal": 65,
+      "purpose": "Construct: Pavise shield skill (deployable barrier)",
+      "transfer": "DCC Bridge Send To Unreal (static FBX)"
+    }
+  ],
+  "notDone": {
+    "bastion_golem_hq": "HQ generated (50f90f6d-47f6-44d2-bff4-641611063091) but its 80k retopo timed out; not rigged/exported yet",
+    "mechanical_tank": "generated 48b4d4ce-49fc-4585-bc23-3c799e4f76fb, rigged UE5 + presets + AI 'Two-Handed Maul Slam'; not exported yet",
+    "huntress_sabercat_hq": "HQ generated 05281f2f-78d2-4730-ab2f-60c0a773cd08, retopo 80k, Other rig; no clips (quadruped retarget broken)",
+    "hqQueue": {
+      "note": "Remaining first-batch race bodies to regenerate at HQ (~90 credits each: 65 gen + 5 retopo to 80k + 20 UE5 rig; preset and library text-to-motion clips retarget free). Blocked 2026-09-25 afternoon: Chrome's Tripo session was logged out after the reboot.",
+      "order": [
+        "drowned_deep: maw_of_the_deep, drowned_prophet, deepspawn_thrall, coralshell_guardian, tidecaller, abyssal_stalker, mind_leech",
+        "blightwood: elder_oakheart, withered_matron, sapling_brute, barkhide_warden, vinelasher, thornspitter, sporeling",
+        "stoneborn: bastion_golem (HQ gen 50f90f6d exists, needs 80k retopo + rig), stoneborn_colossus, stoneborn_forgelord, deepforge_runesmith",
+        "fixes: fallen_inquisitor_crossbow (retarget Standing_marksman crossbow clip; crossbow missing from mesh), voidling (upright swipe clip / longer walk)",
+        "then ironhide, drakkari, feral_kin, fallen_order, voidborn remaining units and bosses",
+        "exports pending: mechanical_tank (48b4d4ce, rigged + clips), huntress_sabercat HQ (05281f2f, Other rig)"
+      ]
+    }
+  },
+  "creditsTotal": 990
+}

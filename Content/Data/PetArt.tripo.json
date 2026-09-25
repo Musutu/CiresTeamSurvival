@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "source": "tripo",
+  "description": "Tripo pet bodies for the pets-companions agent (art-collector-3d, Art/TripoArt3D.json). Tripo bodies face +Y, so yaw -90 turns them to actor +X; meshScale brings the raw Tripo bounds to heightCm (scale is never baked). clips is empty when Tripo could not animate the rig: drive the body procedurally (CireCreatureArt precedent).",
+  "pets": {
+    "huntress_sabercat": {
+      "owner": "huntress",
+      "mesh": "/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat",
+      "skeleton": "/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat_Skeleton.CTS_Mount_HuntressSabercat_Skeleton",
+      "material": "/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat_Mat.CTS_Mount_HuntressSabercat_Mat",
+      "rig": "Tripo 'Other' auto quadruped rig",
+      "rawHeightCm": 61.55,
+      "boundsExtentCm": [22.2, 49.2, 30.8],
+      "heightCm": 110,
+      "meshScale": 1.787,
+      "yaw": -90,
+      "clips": {},
+      "motion": "procedural",
+      "note": "Tripo quadruped animation failed again on 2026-09-25: the Studio's only quadruped preset ('Walk') produces no clip on this rig, and on a fresh neutral-stance quadruped rig (dire wolf) it fails with 'Invalid user input'. There are no idle/run/attack/death presets for quadrupeds. The body still carries the saddle and barding from its mount prompt."
+    }
+  }
+}

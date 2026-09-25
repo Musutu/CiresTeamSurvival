@@ -494,6 +494,27 @@ void PaletteSets(FName Unit)
     Look(C + FVector(1400, 0, 380), C + FVector(0, 0, 130), 55);
 }
 
+void Closeup(const FString& Spec)
+{
+    // close_<unit>+<unit>+...: art review of new bodies. Front row idle, back row at attack contact.
+    TArray<FString> Units; Spec.ParseIntoArray(Units, TEXT("+"), true);
+    const FVector C = G.Studio;
+    for (int32 I = 0; I < Units.Num(); ++I)
+    {
+        const float Y = (I - (Units.Num() - 1) * .5f) * 330.f;
+        for (int32 Row = 0; Row < 2; ++Row)
+        {
+            const FVector At = C + FVector(Row ? -420.f : 0.f, Y, 0);
+            ACireMonster* M = Spawn(FName(*Units[I]), 0, At, Row ? 35.f : 0.f);
+            if (!M) continue;
+            CireRaces::ApplyRank(M, ECireNPCRank::Normal, 0);
+            if (Row && M->MonsterArt) Pose(M, TEXT("attack"), M->MonsterArt->WindowOf(TEXT("attack")).Contact);
+            if (!Row) Label(At + FVector(0, 0, M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2 + 30), M->GetNPCDisplayName() + TEXT("\n") + VariantName(M), FColor::White, 13, 0);
+        }
+    }
+    Look(C + FVector(330.f * Units.Num() + 250.f, 0, 260), C + FVector(-200, 0, 110), 50);
+}
+
 void EnterStage(const FStage& S)
 {
     if (!S.bKeepScene) ClearScene();
@@ -507,6 +528,7 @@ void EnterStage(const FStage& S)
     else if (N == TEXT("deaths")) Deaths();
     else if (N == TEXT("champions")) Champions();
     else if (N.StartsWith(TEXT("races_"))) RaceLineup(FName(*N.Mid(6))); // monster-races
+    else if (N.StartsWith(TEXT("close_"))) Closeup(N.Mid(6));
     else if (N == TEXT("ranks_close")) RankLineup(TEXT("tidecaller"), false);
     else if (N == TEXT("ranks_close_hollow")) RankLineup(TEXT("hollow_infantry"), false);
     else if (N == TEXT("ranks_gameplay")) RankLineup(TEXT("deepspawn_thrall"), true);
@@ -616,6 +638,7 @@ bool Build(ACireGameMode& Mode, ACireController& Controller)
         for (const FString& Name : RaceStages)
             if (G.Only.IsEmpty() || G.Only.ContainsByPredicate([&Name](const FString& Prefix) { return Name.StartsWith(Prefix); })) G.Stages.Add({Name, 3.f, false});
     }
+    for (const FString& Only : G.Only) if (Only.StartsWith(TEXT("close_"))) G.Stages.Add({Only, 3.f, false});
     if (G.Only.IsEmpty() || G.Only.Contains(TEXT("town")))
     {
         G.Stages.Add({TEXT("town_march"), 4.f, false});

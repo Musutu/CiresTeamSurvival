@@ -61,7 +61,7 @@ def main():
         if extra:
             with INI.open("a", encoding="utf-8", newline="\r\n") as stream:
                 stream.write("\n[CoreRedirects]\n" + "\n".join(extra) + "\n")
-        run_editor([ENGINE + "UnrealEditor.exe", str(ROOT / "CiresTeamSurvival.uproject"), "-unattended", "-nosplash",
+        run_editor([ENGINE + "UnrealEditor.exe", str(ROOT / "CiresTeamSurvival.uproject"), "-unattended", "-nosplash", "-Multiprocess",
                     "-NoLiveCoding", "-RenderOffscreen", "-nosound",
                     "-ExecCmds=py " + (ROOT / "Tools" / "IntegrateTripoRaces.py").as_posix(),
                     "-abslog=" + str(ROOT / "Saved" / "Logs" / "TripoRaces-Integrate.log")], 2400).check_returncode()

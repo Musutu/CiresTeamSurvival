@@ -69,6 +69,8 @@ SPEC = {
     "rune_sentinel": (190, "slash", "stone blade forearm (right arm)", ["hand_r"], {}),
     "granite_crusher": (205, "slash", "granite fists", ["hand_r"], {}),
     "bastion_golem": (200, "slash", "stone slab shield fused to the left forearm", ["hand_l", "hand_r"], {}),
+    "crystal_ballista": (175, "cast_a_spell", "crystal launcher on its back; fires crystal shards", ["hand_l", "hand_r"], {}),
+    "ether_mote": (125, "cast_a_spell", None, ["hand_r"], {}),
     "deepforge_runesmith": (170, "cast_a_spell", "forge-hammer staff (right hand)", ["hand_r"], {}),
     "stoneborn_forgelord": (200, "slash", "glowing forge hammer (right hand)", ["hand_r", "spine_03"],
                             {"stoneborn_forge_fury": "war_cry", "stoneborn_forge_sentinels": "war_cry", "stoneborn_slag_eruption": "ground_slam",
@@ -85,7 +87,7 @@ SPEC = {
     "feral_mammoth": (240, "slash", "stone-capped tusks", ["hand_r"],
                       {"feral_mammoth_stomp": "ground_slam", "feral_earthquake": "ground_slam", "feral_mammoth_trample": "ground_slam",
                        "feral_tusk_sweep": "slash", "feral_mammoth_rage": "war_cry"}),
-    "tusked_behemoth": (205, "slash", None, [], {}),
+    "tusked_behemoth": (205, "slash", "stone tower shield strapped to the left forearm", ["hand_l", "hand_r"], {}),
     "feral_shaman": (185, "cast_a_spell", "bone-and-antler staff (right hand)", ["hand_r"], {}),
     # The Fallen Order
     "fallen_squire": (180, "slash", None, [], {}),
@@ -102,7 +104,7 @@ SPEC = {
     # The Voidborn
     "rift_stalker": (190, "slash", "scythe finger-blades", ["hand_r"], {}),
     "void_ravager": (210, "slash", "mandible claws", ["hand_r"], {}),
-    "null_warden": (200, "slash", None, [], {}),
+    "null_warden": (200, "slash", "clawed hands (HQ body)", ["hand_l", "hand_r"], {}),
     "rift_weaver": (195, "cast_a_spell", None, ["hand_r"], {}),
     "rift_gazer": (175, "cast_a_spell", None, ["hand_l"], {}),
     "voidling": (90, "slash", "claws", ["hand_r"], {}),
@@ -111,6 +113,20 @@ SPEC = {
     "voidborn_devourer": (245, "slash", "claws", ["hand_r"],
                           {"void_titan_slam": "ground_slam", "void_singularity": "ground_slam", "void_devourer_hunger": "war_cry",
                            "void_breath": "fire_breath", "void_devour": "slash"}),
+    # The Aetheri Remnant (art-collector-3d, Art/TripoArt3D.json)
+    "aetheri_phaseblade": (185, "slash", "energy blades on both wrist gauntlets", ["hand_r"], {}),
+    "aetheri_warframe": (225, "slash", "oversized gauntlet fists", ["hand_r"], {}),
+    "aetheri_bulwark": (210, "slash", "hard-light tower shield (left arm)", ["hand_l"], {}),
+    "aetheri_engineer": (185, "cast_a_spell", None, ["hand_r"], {}),
+    "aetheri_lancer": (190, "cast_a_spell", "photon lance-rifle (right hand)", ["hand_r"], {}),
+    "skitter_drone": (110, "slash", "claw arms", ["hand_r"], {}),
+    "aetheri_hierarch": (235, "cast_a_spell", "warp staff (right hand)", ["hand_r"], {}),
+    "aetheri_colossus": (260, "slash", "clawed war-engine hands", ["hand_r"], {}),
+}
+# Integrated HQ regenerations that must NOT replace the bound body yet (reason). The earlier body stays bound.
+HOLD_HQ = {
+    "fallen_inquisitor_crossbow": "HQ mesh came out without its crossbow and has no attack_crossbow clip; keep the old body",
+    "voidling": "HQ imp's walk barely travels (28 cm/s) and its slash drops to all fours (head 28 cm); fails the native pose checks",
 }
 EXTRA_WINDOWS = {"tentacle_sweep": {"start": 0.3, "contact": 1.7, "end": 3.4, "recoverRate": 1.4},
                  "axe_throw": {"start": 0.2, "contact": 1.2, "end": 2.6, "recoverRate": 1.4},
@@ -127,11 +143,15 @@ def main():
                            "named). Written by Tools/WriteRaceMeshes.py from Saved/TripoRacesIntegration.json; prompts, "
                            "task ids and credits in Art/TripoRaces.json."),
            "archetypes": {}}
+    if OUT.exists():  # keep bodies integrated by earlier batches (their Saved report may live in another worktree)
+        out["archetypes"].update(json.loads(OUT.read_text(encoding="utf-8")).get("archetypes", {}))
     art_text = ART.read_text(encoding="utf-8")
     art = json.loads(art_text)
     for unit, (height, attack, baked, drops, ability_clips) in SPEC.items():
         r = report.get(unit)
         if not r or not r.get("skeletal"):
+            continue
+        if unit in HOLD_HQ and "HQ/" in r["mesh"]:
             continue
         # The Bridge mangles some library clip names (e.g. "Huge_w_rlord..."); committed (read-only) clips keep the
         # raw name, so alias them to their role here.
