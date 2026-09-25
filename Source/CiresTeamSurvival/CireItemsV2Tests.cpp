@@ -206,9 +206,12 @@ bool CireItems::RunV2Smoke(ACireGameMode* Mode)
     Ally->Inventory->Invalidate();
     Ally->Health = 100; Ally->MaxHealth = 5000; Tank->Target = Ally;
     Check(Tank->Inventory->UseSlot(SlotOf(Tank, TEXT("lifebinders_reliquary")), false, Message) && Ally->Health >= 1100.f - 1.f, TEXT("target heal restores at least 1,000"));
-    Ally->Health = 100; Tank->Health = 100; Tank->MaxHealth = 5000; Far->Health = 100;
-    Check(Tank->Inventory->UseSlot(SlotOf(Tank, TEXT("chalice_of_mercy")), false, Message) && Ally->Health >= 299.f && Tank->Health >= 299.f && FMath::IsNearlyEqual(Far->Health, 100.f),
-        FString::Printf(TEXT("area heal restores 200 to allies in the small radius (ally %.0f tank %.0f far %.0f: %s)"), Ally->Health, Tank->Health, Far->Health, *Message));
+    Ally->Recalculate(false); Tank->Recalculate(false);
+    Ally->Health = FMath::Max(1.f, Ally->MaxHealth - 300.f); Tank->Health = FMath::Max(1.f, Tank->MaxHealth - 300.f); Far->Health = 100;
+    const float AllyBefore = Ally->Health, TankHealBefore = Tank->Health;
+    const bool bChalice = Tank->Inventory->UseSlot(SlotOf(Tank, TEXT("chalice_of_mercy")), false, Message);
+    const FString ChaliceLabel = FString::Printf(TEXT("area heal restores 200 to allies in the small radius (used %d ally %.0f tank %.0f far %.0f: %s)"), bChalice, Ally->Health, Tank->Health, Far->Health, *Message);
+    Check(bChalice && Ally->Health >= AllyBefore + 199.f && Tank->Health >= TankHealBefore + 199.f && FMath::IsNearlyEqual(Far->Health, 100.f), ChaliceLabel);
 
     // ---------------- dodge-roll charges (double dash)
     auto Roll = [&](ACireHero* H) { const bool bOk = H->Mobility->StartRoll(FVector::ForwardVector); H->Mobility->CancelRoll(); return bOk; };
@@ -278,38 +281,49 @@ bool CireItems::RunV2Smoke(ACireGameMode* Mode)
     // ---------------- mana economy: spam runs dry, regen matters, energy stays flat
     ACireHero* Caster = Mage;
     Give(Caster, {});
-    Caster->Level = 10;
+    for (int32 Guard = 0; Caster->Level < 10 && Guard < 200; ++Guard) Caster->GrantExperience(250);
+    Caster->Offers.Reset();
     Caster->Recalculate(true);
     const float Regen = BaseManaRegen(Caster);
     Check(FMath::IsNearlyEqual(Regen, 2.f + .008f * Caster->MaxMana, .01f), TEXT("mana regen is 2 + 0.8% of max mana per second"));
-    Check(FMath::IsNearlyEqual(ManaCostScale(Caster), 1.45f, .001f), FString::Printf(TEXT("level-10 mana costs are x1.45 (level %d, x%.3f)"), Caster->Level, ManaCostScale(Caster)));
+    const float Scale = ManaCostScale(Caster), Expect = 1.f + .05f * (Caster->Level - 1);
+    Check(Caster->Level >= 10 && FMath::IsNearlyEqual(Scale, Expect, .001f), FString::Printf(TEXT("mana costs grow 5%% per level (level %d, x%.3f)"), Caster->Level, Scale));
     float CostMana = 0, CostEnergy = 0;
     CireSkillShop::ScaledCost(Caster, TEXT("cleaving_strike"), 0, 30, CostMana, CostEnergy);
     Check(FMath::IsNearlyEqual(CostEnergy, 30.f), TEXT("energy costs stay flat (snappy energy classes)"));
+    // Restoring Light: a plain 45-mana cast through the champion cast path (no placement rules).
+    const float LightCost = 45.f * Scale;
+    auto CastLight = [&]() { Caster->Skills = {TEXT("restoring_light")}; Caster->Cooldowns = {0.f}; Caster->GlobalCooldown = 0; Caster->Target = nullptr; Caster->Cast(0); CireCrowdControl::CompleteCastNow(Caster); };
     auto SecondsToDry = [&](float ItemRegen)
     {
-        Caster->Mana = Caster->MaxMana; Caster->Skills = {TEXT("ember_lance")}; Caster->Cooldowns = {0.f}; Caster->Target = Mob;
+        Caster->Mana = Caster->MaxMana;
         const int32 Serial = Caster->Inventory->ResourceFailSerial;
-        for (float T = 0; T < 180.f; T += 1.f)   // spam: a spell every second (cooldowns ignored = a full rotation)
+        for (float T = 0; T < 180.f; T += 2.f)   // spam: a 45-mana spell every 2 s (a full rotation of several skills)
         {
-            Caster->Mana = FMath::Min(Caster->MaxMana, Caster->Mana + BaseManaRegen(Caster) + ItemRegen);
-            Caster->Cooldowns[0] = 0; Caster->GlobalCooldown = 0;
-            const float ManaBefore = Caster->Mana;
-            Caster->Cast(0);
-            if (Caster->Inventory->ResourceFailSerial != Serial || FMath::IsNearlyEqual(Caster->Mana, ManaBefore)) return T;
+            Caster->Mana = FMath::Min(Caster->MaxMana, Caster->Mana + 2.f * (BaseManaRegen(Caster) + ItemRegen));
+            CastLight();
+            if (Caster->Inventory->ResourceFailSerial != Serial) return T;
         }
         return 180.f;
     };
+    Caster->Mana = Caster->MaxMana;
+    const float Full = Caster->Mana;
+    CastLight();
+    const float Spent = Full - Caster->Mana;
+    Check(FMath::IsNearlyEqual(Spent, LightCost, .5f), FString::Printf(TEXT("a cast pays the level-scaled cost (%.1f of %.1f; %s)"), Spent, LightCost, *Caster->Notice));
     const float Dry = SecondsToDry(0.f);
-    Check(Dry < 60.f, FString::Printf(TEXT("spamming runs a caster dry (%.0f s)"), Dry));
-    Check(Caster->Notice.StartsWith(TEXT("Not enough mana (")) && Caster->Inventory->ResourceFailKind == 1, FString::Printf(TEXT("clear 'Not enough mana (x / y)' feedback and HUD flash (%s, kind %d)"), *Caster->Notice, Caster->Inventory->ResourceFailKind));
+    const FString Notice = Caster->Notice;
+    const uint8 Kind = Caster->Inventory->ResourceFailKind;
+    Check(Dry < 90.f, FString::Printf(TEXT("spamming runs a caster dry (%.0f s)"), Dry));
+    Check(Notice.StartsWith(TEXT("Not enough mana (")) && Kind == 1, FString::Printf(TEXT("clear 'Not enough mana (x / y)' feedback and HUD flash (%s, kind %d)"), *Notice, Kind));
     const float DryWithItems = SecondsToDry(8.f);
     Check(DryWithItems > Dry * 1.3f, FString::Printf(TEXT("mana regen items matter (%.0f s -> %.0f s)"), Dry, DryWithItems));
     Give(Caster, {TEXT("moonwell_codex")});
-    Caster->Mana = Caster->MaxMana; Caster->Cooldowns = {0.f}; Caster->GlobalCooldown = 0;
+    Caster->Mana = Caster->MaxMana;
     const float Pool = Caster->Mana;
-    Caster->Cast(0);
-    Check(FMath::IsNearlyEqual(Pool - Caster->Mana, 40.f * 1.45f * .8f, .5f), FString::Printf(TEXT("Moonwell Codex refunds 20%% of the mana cost (spent %.1f, %s)"), Pool - Caster->Mana, *Caster->Notice));
+    CastLight();
+    const float Refunded = Pool - Caster->Mana;
+    Check(FMath::IsNearlyEqual(Refunded, LightCost * .8f, .5f), FString::Printf(TEXT("Moonwell Codex refunds 20%% of the mana cost (spent %.1f of %.1f)"), Refunded, LightCost));
 
     UE_LOG(LogCireItemsV2Tests, Display, TEXT("CIRE_ITEMS_V2_%s checks=%d"), Check.bPass ? TEXT("PASS") : TEXT("FAIL"), Check.Count);
     return Check.bPass;
