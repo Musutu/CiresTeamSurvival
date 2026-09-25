@@ -135,7 +135,7 @@ CireAbilityVFX::FStyle CireAbilityVFX::ThemedStyle(ETone Tone, const FCireHitSha
         // Amber stays the urgency colour; the school must still read inside it: amber-adjacent schools shift
         // hue (fire -> deep red, earth -> dark umber, holy -> white-gold) and every glyph gets a heavy backing.
         if (Theme.Set == ERuneSet::Fire) Theme.Glyph = FLinearColor(1.6f, .08f, .02f, 1);
-        else if (Theme.Set == ERuneSet::Earth || Theme.Set == ERuneSet::Physical) Theme.Glyph = FLinearColor(.35f, .16f, .05f, 1);
+        else if (Theme.Set == ERuneSet::Earth || Theme.Set == ERuneSet::Physical) Theme.Glyph = FLinearColor(.5f, .22f, .05f, 1);
         else if (Theme.Set == ERuneSet::Holy) Theme.Glyph = FLinearColor(1.7f, 1.6f, 1.2f, 1);
         Theme.Edge = Theme.Glyph; Theme.Underlay = .7f;
     }

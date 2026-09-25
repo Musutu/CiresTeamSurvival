@@ -468,3 +468,57 @@ python Tools/BuildAbilityVFXAudit.py BEFORE AFTER COMPARE               # regene
 | 342 | Titan Slam `void_titan_slam` | voidborn circle / void (voidborn_devourer) | Flat amber disc; family ring at the victim. | No timing cue; duplicate marker. | Amber disc with growing fill, spot marker, detonation front, school particles; pools ripple while active. | 341_void_titan_slam.jpg |
 | 343 | Endless Hunger `void_devourer_hunger` | voidborn self / void (voidborn_devourer) | Cast cue ring drawn at the victim's feet or the steel crescent. | Wrong place; unclear it is a self buff. | School wind-up motes and rune ring at the caster; aura from BuffVisuals on release. | 342_void_devourer_hunger.jpg |
 <!-- audit-table:end -->
+
+## Playtest 2: themed rune telegraphs, heal style, void zones, CC visuals
+
+Eric: "they are just shaded colours and not specific to what they might do... detailed runes in the colour
+of the damage type... healing-related things should also be obvious."
+
+- **Rune sets per school** (`CireAbilityRunes.cpp`, `CireAbilityVFX::PaintRunes`): every ground telegraph
+  (aim preview, own-team zone, enemy warning, lingering pool, self shock) carries a framed band of school
+  glyphs, an inward edge treatment and a centre sigil (inside the designated-spot marker for aimed/warned
+  circles). Lines get glyphs marching along the lane; cones along their arc. Everything stays inside the true
+  boundary (tested for every set on circle, cone, line and square).
+
+  | School | Glyph | Edge treatment / motif |
+  |---|---|---|
+  | physical | etched crossed blades in a notched circle (dusty steel/earth tan) | etched ticks, drifting dust |
+  | fire | flame glyph with inner tongue, flickering | flame licks |
+  | cold | six-armed frost crystal | icy crystal spikes, white rim |
+  | earth | angular stone rune split by a crack | jagged cracks running inward |
+  | water / tide | two flowing waves | rolling wave scallops |
+  | holy | radiant script (ring, rays, cross) | alternating rays of light |
+  | shadow | thorny sigil with crescent crown | hooked thorns |
+  | void | rift star with orbiting specks | twinkling starfield band |
+  | poison | swelling / popping bubbles | bubbles rising off the rim |
+  | nature | leaf knot (vesica, midrib, veins) | curling vine with leaf buds |
+  | storm | lightning glyph | zigzag arcs re-rolled each beat |
+  | arcane | circle with counter-rotating triangles | dashed rim with diamonds |
+  | blood / spirit | drop with a cut / spiral wisp | drips / wisps |
+  | **heal** | thick green "+" with gold outline | small gold/green "+" shimmering upward |
+
+- **Heals are unmistakable**: green/gold cross runes on the ground, calm breathing, and "+" motes rising
+  around the healed unit (sanctuary, renewal, restoring light, purify, wellspring, second wind, last stand,
+  bastion's self heal, monster heal-ally casts). **Buff zones are calm** (slow breathing, no sharp pulse);
+  **damage zones are sharp**.
+- **Enemy warnings keep amber urgency**: amber fill and rim, school runes inside on a heavy dark backing;
+  amber-adjacent schools shift hue so they still read (fire deep red, earth/physical dark umber, holy white-gold).
+- **Aim preview** is tinted and runed with the ability's school; invalid aim dims the runes toward red.
+- **Void zones** (teleport/portal skills): outer ring = slow (dashed rim, void starfield glyphs, slow double-
+  chevrons), inner circle = stun (solid double ring, orbiting stun stars, rift swirl), optional heal "+".
+  Shown in the aim preview, on cast (own team: violet) and as amber monster warnings. Radii and placement come
+  from `Content/Data/Abilities.json` `voidZone` (`outerRadius`, `innerRadius`, `duration`, `selfHeal`,
+  `at: origin|destination`); until the champion-draft Ability Database lands they are stubbed for
+  `shadow_step` (260/110 at the destination) and the voidborn `void_blink`/`void_warp` (240/100 at the origin).
+- **School source**: `Content/Data/Abilities.json` `school` wins when present (physical, fire, cold, earth,
+  water, holy, shadow, void, poison, nature, storm, arcane, blood, spirit, heal); otherwise the built-in
+  `CireAbilityShapes` mapping. The file is optional and reloads via `CireAbilityShapes::ReloadDatabase`.
+- **CC visuals**: stun (existing daze stars), silence now a sealed-mouth glyph (`npc_silenced`), heal-cut a
+  broken green cross (`heal_cut`, data-ready in BuffVisuals.json), interrupt a shatter flash where the cast
+  circle breaks into falling shards (`npc_interrupted` cue), root unchanged.
+- Budgets: 6144 ground vertices per effect (was 3072), same 64-actor / 8-light caps.
+- Tests (in `CireAbilityVFX::RunTests`, 3365 checks): distinct glyph per set, a rune set for every ability,
+  heal style for every heal, buffs calm / damage sharp, runes inside every boundary, amber + school runes on
+  enemy warnings, Ability Database overrides, void zones draw both radii with icons in the preview (armed
+  cursor), on cast and as a monster warning, and clean up.
+- Gallery: `python Tools/RunAbilityVFXGallery.py --only <ids> --tag runes` (`--db file.json` previews DB overrides).
