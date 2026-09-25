@@ -40,6 +40,8 @@ constexpr KeyedEffect EffectTable[] = {
     {"selfBarrier", EffectKind::SelfBarrier}, {"shieldAllies", EffectKind::ShieldAllies},
     {"tauntArea", EffectKind::TauntArea}, {"healAllies", EffectKind::HealAllies},
     {"haste", EffectKind::Haste},
+    {"partyBarrier", EffectKind::PartyBarrier}, {"partyBuff", EffectKind::PartyBuff},
+    {"healTarget", EffectKind::HealTarget},
 };
 
 struct KeyedPassive { const char* Key; PassiveKind Kind; };
@@ -49,6 +51,11 @@ constexpr KeyedPassive PassiveTable[] = {
     {"spellPowerAmp", PassiveKind::SpellPowerAmp}, {"thorns", PassiveKind::Thorns},
     {"lowHealthShield", PassiveKind::LowHealthShield}, {"healAmp", PassiveKind::HealAmp},
     {"auraRegen", PassiveKind::AuraRegen},
+    {"constructLimit", PassiveKind::ConstructLimit}, {"constructShield", PassiveKind::ConstructShield},
+    {"summonPower", PassiveKind::SummonPower}, {"areaAmp", PassiveKind::AreaAmp},
+    {"controlAmp", PassiveKind::ControlAmp}, {"ultimateUpgrade", PassiveKind::UltimateUpgrade},
+    {"attackSplash", PassiveKind::AttackSplash}, {"manaRefund", PassiveKind::ManaRefund},
+    {"dodgeCharges", PassiveKind::DodgeCharges}, {"rollHaste", PassiveKind::RollHaste},
 };
 
 // SplitMix64: portable, identical across standard libraries and the Unreal build.
@@ -308,7 +315,7 @@ PurchasePlan PlanPurchase(const Catalog& catalog, const Inventory& inventory, co
             if (item->Unique && slot.Id == id) { plan.Error = item->Name + " is unique: you already own one."; return plan; }
             const ItemDef* owned = catalog.Find(slot.Id);
             if (owned && !item->UniqueGroup.empty() && owned->UniqueGroup == item->UniqueGroup)
-            { plan.Error = "Only one " + item->UniqueGroup + " item may be carried (" + owned->Name + ")."; return plan; }
+            { plan.Error = "Only one " + UniqueGroupLabel(item->UniqueGroup) + " may be carried (" + owned->Name + ")."; return plan; }
         }
         if (!plan.ConsumedEquipment.empty())
             plan.TargetSlot = *std::min_element(plan.ConsumedEquipment.begin(), plan.ConsumedEquipment.end());
@@ -424,6 +431,33 @@ Totals ComputeTotals(const Catalog& catalog, const Inventory& inventory, const s
             case PassiveKind::AuraRegen:
                 totals.AuraRegen += passive.Amount;
                 totals.AuraRadius = std::max(totals.AuraRadius, passive.Radius);
+                break;
+            // items-v2
+            case PassiveKind::ConstructLimit: totals.ConstructLimitBonus += std::max(0, passive.Count); break;
+            case PassiveKind::ConstructShield:
+                totals.ConstructShield += passive.Amount;
+                totals.ConstructHealth += passive.Threshold;
+                break;
+            case PassiveKind::SummonPower: totals.SummonPower += passive.Amount; break;
+            case PassiveKind::AreaAmp:
+                totals.AreaDamage += passive.Amount;
+                totals.AreaRadius += passive.Radius;
+                break;
+            case PassiveKind::ControlAmp:
+                totals.ControlDuration += passive.Amount;
+                totals.ControlDamage += passive.Threshold;
+                break;
+            case PassiveKind::UltimateUpgrade: totals.UltimateUpgrade = true; break;
+            case PassiveKind::AttackSplash:
+                totals.SplashPercent += passive.Amount;
+                totals.SplashRadius = std::max(totals.SplashRadius, passive.Radius);
+                totals.BasicDamageBonus += passive.Threshold;
+                break;
+            case PassiveKind::ManaRefund: totals.ManaRefund += passive.Amount; break;
+            case PassiveKind::DodgeCharges: totals.DodgeCharges += std::max(0, passive.Count); break;
+            case PassiveKind::RollHaste:
+                totals.RollHaste = std::max(totals.RollHaste, passive.Amount);
+                totals.RollHasteDuration = std::max(totals.RollHasteDuration, passive.Duration);
                 break;
             default: break;
             }
@@ -693,6 +727,112 @@ double ShiftForPause(double timestamp, double pausedAt, double pauseSeconds)
 {
     if (!Finite(timestamp) || !Finite(pausedAt) || !Finite(pauseSeconds) || pauseSeconds <= 0) return timestamp;
     return timestamp > pausedAt ? timestamp + pauseSeconds : timestamp;
+}
+} // namespace Items
+} // namespace Cires
+
+// ---------------------------------------------------------------- items-v2
+namespace Cires
+{
+namespace Items
+{
+std::string UniqueGroupLabel(const std::string& group)
+{
+    if (group == "path") return "path-defining unique";
+    if (group == "boots") return "boots item";
+    return group + " item";
+}
+
+const ItemDef* UniqueGroupConflict(const Catalog& catalog, const Inventory& inventory, const std::string& id)
+{
+    const ItemDef* item = catalog.Find(id);
+    if (!item) return nullptr;
+    for (const auto& slot : inventory.Equipment)
+    {
+        if (slot.Empty()) continue;
+        const ItemDef* owned = catalog.Find(slot.Id);
+        if (!owned) continue;
+        if (item->Unique && owned->Id == item->Id) return owned;
+        if (!item->UniqueGroup.empty() && owned->UniqueGroup == item->UniqueGroup) return owned;
+    }
+    return nullptr;
+}
+
+std::string ValidateBuild(const Catalog& catalog, const std::vector<std::string>& ids)
+{
+    std::vector<std::string> groups, uniques;
+    int bag = 0;
+    for (const auto& id : ids)
+    {
+        const ItemDef* item = catalog.Find(id);
+        if (!item) return "unknown item " + id;
+        if (!item->Purchasable) return id + " is not sold in the shop";
+        if (item->Instant || item->Belt) continue;
+        if (++bag > EquipmentSlots) return "more than six bag items";
+        if (item->Unique)
+        {
+            if (std::find(uniques.begin(), uniques.end(), id) != uniques.end()) return id + " is unique";
+            uniques.push_back(id);
+        }
+        if (!item->UniqueGroup.empty())
+        {
+            if (std::find(groups.begin(), groups.end(), item->UniqueGroup) != groups.end()) return "two " + UniqueGroupLabel(item->UniqueGroup) + "s (" + id + ")";
+            groups.push_back(item->UniqueGroup);
+        }
+    }
+    return {};
+}
+
+double ManaRegenPerSecond(const ManaRules& rules, double maxMana, double itemRegen, double regenMultiplier)
+{
+    const double base = std::max(0.0, rules.RegenFlat) + std::max(0.0, maxMana) * std::max(0.0, rules.RegenPercent);
+    return base * std::max(0.0, regenMultiplier) + std::max(0.0, itemRegen);
+}
+
+double ManaCostScale(const ManaRules& rules, int heroLevel)
+{
+    const double scale = 1.0 + std::max(0.0, rules.CostPerLevel) * std::max(0, heroLevel - 1);
+    return std::clamp(scale, 1.0, std::max(1.0, rules.MaxCostScale));
+}
+
+namespace
+{
+void Refill(ChargeState& state, int maxCharges, double rechargeSeconds, double now)
+{
+    maxCharges = std::max(1, maxCharges);
+    const double step = std::max(0.01, rechargeSeconds);
+    // Bounded: at most maxCharges refills per call.
+    for (int guard = 0; guard < maxCharges && state.Charges < maxCharges && now >= state.ReadyAt; ++guard)
+    {
+        ++state.Charges;
+        if (state.Charges < maxCharges) state.ReadyAt += step;
+    }
+    if (state.Charges >= maxCharges) state.Charges = maxCharges;
+    if (state.Charges < maxCharges && state.ReadyAt < now - step) state.ReadyAt = now; // long gaps never bank time
+}
+}
+
+int AvailableCharges(const ChargeState& state, int maxCharges, double rechargeSeconds, double now)
+{
+    ChargeState copy = state;
+    Refill(copy, maxCharges, rechargeSeconds, now);
+    return copy.Charges;
+}
+
+bool SpendCharge(ChargeState& state, int maxCharges, double rechargeSeconds, double now)
+{
+    Refill(state, maxCharges, rechargeSeconds, now);
+    if (state.Charges <= 0) return false;
+    if (state.Charges >= std::max(1, maxCharges)) state.ReadyAt = now + std::max(0.01, rechargeSeconds);
+    --state.Charges;
+    return true;
+}
+
+double ChargeCooldown(const ChargeState& state, int maxCharges, double rechargeSeconds, double now)
+{
+    ChargeState copy = state;
+    Refill(copy, maxCharges, rechargeSeconds, now);
+    return copy.Charges >= std::max(1, maxCharges) ? 0.0 : std::max(0.0, copy.ReadyAt - now);
 }
 } // namespace Items
 } // namespace Cires

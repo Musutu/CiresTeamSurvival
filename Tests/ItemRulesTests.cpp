@@ -579,8 +579,112 @@ void EconomyAndSkillShopRules()
         CHECK(SkillEffectScale(rules, level) > SkillEffectScale(rules, level - 1) && SkillCooldownScale(rules, level) <= SkillCooldownScale(rules, level - 1));
 }
 
+// items-v2: path uniques (shared group), new passives in totals, build validation, mana economy, dodge charges.
+void ItemsV2Rules()
+{
+    Catalog catalog = TestCatalog();
+    auto forge = Make("forge", ItemTier::Legendary, 400, {"stone"}); forge.Unique = true; forge.UniqueGroup = "path";
+    forge.Passives.push_back({PassiveKind::ConstructLimit, "Heartforge", 0, 0, 0, 0, 0, 1});
+    forge.Passives.push_back({PassiveKind::ConstructShield, "Aegis Plating", 30, 20, 0, 0, 0, 0});
+    auto apex = Make("apex", ItemTier::Legendary, 400, {"wand"}); apex.Unique = true; apex.UniqueGroup = "path";
+    apex.Passives.push_back({PassiveKind::UltimateUpgrade, "Apotheosis", 0, 0, 0, 0, 0, 0});
+    auto storm = Make("storm", ItemTier::Legendary, 400, {"sword"}); storm.Unique = true; storm.UniqueGroup = "path";
+    storm.Passives.push_back({PassiveKind::AttackSplash, "Cleave", 40, 15, 250, 0, 0, 0});
+    auto twin = Make("twinstep", ItemTier::Legendary, 200, {"boots"}); twin.UniqueGroup = "boots";
+    twin.Passives.push_back({PassiveKind::DodgeCharges, "Twinstep", 0, 0, 0, 0, 0, 1});
+    auto banner = Make("banner", ItemTier::Legendary, 300, {"stone"}); banner.Unique = true;
+    banner.Use.Kind = EffectKind::PartyBuff; banner.Use.Radius = 900; banner.Use.Duration = 10; banner.Use.Cooldown = 60;
+    banner.Use.Buff[ItemStat::Armor] = 250;
+    auto codex = Make("codex", ItemTier::Legendary, 300, {"wand"});
+    codex.Passives.push_back({PassiveKind::ManaRefund, "Moonwell", 20, 0, 0, 0, 0, 0});
+    for (auto* item : {&forge, &apex, &storm, &twin, &banner, &codex}) catalog.Items.push_back(*item);
+    CHECK(catalog.Finalize().empty());
+
+    // Unique groups: one path-defining unique, one pair of boots, and a unique id only once.
+    Inventory bag;
+    int gold = 99999;
+    CHECK(ApplyPurchase(catalog, bag, gold, "forge", PlanPurchase(catalog, bag, "forge", gold)));
+    PurchasePlan plan = PlanPurchase(catalog, bag, "apex", gold);
+    CHECK(!plan.Ok && plan.Error.find("path-defining unique") != std::string::npos && plan.Error.find("forge") != std::string::npos);
+    CHECK(!PlanPurchase(catalog, bag, "storm", gold).Ok);
+    CHECK(UniqueGroupConflict(catalog, bag, "storm") == catalog.Find("forge"));
+    CHECK(UniqueGroupConflict(catalog, bag, "banner") == nullptr);
+    CHECK(ApplyPurchase(catalog, bag, gold, "banner", PlanPurchase(catalog, bag, "banner", gold)));
+    CHECK(!PlanPurchase(catalog, bag, "banner", gold).Ok);
+    CHECK(ApplyPurchase(catalog, bag, gold, "twinstep", PlanPurchase(catalog, bag, "twinstep", gold)));
+    CHECK(!PlanPurchase(catalog, bag, "boots", gold).Ok && !PlanPurchase(catalog, bag, "treads", gold).Ok);
+    // Selling the path unique frees the group.
+    int forgeSlot = -1;
+    for (int i = 0; i < EquipmentSlots; ++i) if (bag.Equipment[i].Id == "forge") forgeSlot = i;
+    CHECK(forgeSlot >= 0 && Sell(catalog, bag, gold, forgeSlot, false, ShopRules{}) > 0);
+    CHECK(PlanPurchase(catalog, bag, "apex", gold).Ok);
+
+    // New passives reach the totals (and same-name passives never stack).
+    Inventory kit;
+    kit.Equipment[0].Id = "forge"; kit.Equipment[1].Id = "twinstep"; kit.Equipment[2].Id = "codex";
+    Totals totals = ComputeTotals(catalog, kit);
+    CHECK(totals.ConstructLimitBonus == 1 && Near(totals.ConstructShield, 30) && Near(totals.ConstructHealth, 20));
+    CHECK(totals.DodgeCharges == 1 && Near(totals.ManaRefund, 20) && !totals.UltimateUpgrade);
+    kit.Equipment[3].Id = "apex"; kit.Equipment[4].Id = "storm";
+    totals = ComputeTotals(catalog, kit);
+    CHECK(totals.UltimateUpgrade && Near(totals.SplashPercent, 40) && Near(totals.SplashRadius, 250) && Near(totals.BasicDamageBonus, 15));
+    kit.Equipment[5].Id = "codex";
+    CHECK(Near(ComputeTotals(catalog, kit).ManaRefund, 20));
+    // Party buff actives carry their stat block (applied to allies as a timed buff).
+    CHECK(Near(catalog.Find("banner")->Use.Buff.Get(ItemStat::Armor), 250) && catalog.Find("banner")->HasActive());
+    EffectKind kind{};
+    for (const char* name : {"partyBarrier", "partyBuff", "healTarget"}) CHECK(ParseEffectKind(name, kind) && std::string(EffectKey(kind)) == name);
+    PassiveKind passive{};
+    for (const char* name : {"constructLimit", "constructShield", "summonPower", "areaAmp", "controlAmp", "ultimateUpgrade", "attackSplash", "manaRefund", "dodgeCharges", "rollHaste"})
+        CHECK(ParsePassiveKind(name, passive));
+
+    // Recommended builds.
+    CHECK(ValidateBuild(catalog, {"forge", "banner", "twinstep", "codex", "potion"}).empty());
+    CHECK(!ValidateBuild(catalog, {"forge", "apex"}).empty());
+    CHECK(!ValidateBuild(catalog, {"boots", "twinstep"}).empty());
+    CHECK(!ValidateBuild(catalog, {"banner", "banner"}).empty());
+    CHECK(!ValidateBuild(catalog, {"relic"}).empty() && !ValidateBuild(catalog, {"nope"}).empty());
+    CHECK(!ValidateBuild(catalog, {"sword", "dagger", "eye", "wand", "stone", "cleaver", "crown"}).empty());
+
+    // Mana economy: flat + percent regen, level-scaled costs, bounded.
+    ManaRules mana;
+    CHECK(Near(ManaRegenPerSecond(mana, 600, 0), 2 + 4.8) && Near(ManaRegenPerSecond(mana, 600, 5), 11.8));
+    CHECK(Near(ManaRegenPerSecond(mana, 600, 0, 1.5), (2 + 4.8) * 1.5));
+    CHECK(Near(ManaCostScale(mana, 1), 1) && Near(ManaCostScale(mana, 11), 1.5) && Near(ManaCostScale(mana, 10000), 3));
+    CHECK(Near(ManaCostScale(mana, -5), 1) && ManaRegenPerSecond(mana, -100, -3) >= 0);
+    // Spam drains: a level-12 caster (1260 mana) casting 40-mana spells every 1.5 s runs dry; regen items extend it.
+    const auto secondsToEmpty = [&](double itemRegen)
+    {
+        double pool = 1260, t = 0;
+        const double cost = 40 * ManaCostScale(mana, 12);
+        for (; t < 600; t += 1.5)
+        {
+            pool = std::min(1260.0, pool + 1.5 * ManaRegenPerSecond(mana, 1260, itemRegen));
+            if (pool < cost) break;
+            pool -= cost;
+        }
+        return t;
+    };
+    CHECK(secondsToEmpty(0) < 120 && secondsToEmpty(8) > secondsToEmpty(0) * 1.3);
+    // A measured rotation (one spell every 6 s) is sustainable.
+    CHECK(40 * ManaCostScale(mana, 12) / 6.0 < ManaRegenPerSecond(mana, 1260, 0));
+
+    // Dodge-roll charges.
+    ChargeState roll;
+    CHECK(AvailableCharges(roll, 2, 3.5, 0) == 2);          // buying the boots fills the new charge
+    CHECK(SpendCharge(roll, 2, 3.5, 10) && SpendCharge(roll, 2, 3.5, 10.5));
+    CHECK(!SpendCharge(roll, 2, 3.5, 11) && AvailableCharges(roll, 2, 3.5, 13) == 0);
+    CHECK(AvailableCharges(roll, 2, 3.5, 13.6) == 1 && Near(ChargeCooldown(roll, 2, 3.5, 13.6), 3.4, 1e-6));
+    CHECK(AvailableCharges(roll, 2, 3.5, 17.1) == 2 && Near(ChargeCooldown(roll, 2, 3.5, 17.1), 0));
+    ChargeState single;
+    CHECK(SpendCharge(single, 1, 3.5, 5) && !SpendCharge(single, 1, 3.5, 8) && SpendCharge(single, 1, 3.5, 8.6));
+    single.ReadyAt = 0; single.Charges = 0;                     // legacy "ReadyAt = 0" reset still refills
+    CHECK(AvailableCharges(single, 1, 3.5, 1) == 1);
+}
+
 int main()
 {
+    ItemsV2Rules();
     EconomyAndSkillShopRules();
     CatalogRules();
     RecipeRules();
