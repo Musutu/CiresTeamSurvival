@@ -10,6 +10,8 @@
 #include "CireRealm.h"
 #include "CireBanners.h"
 #include "CireKeybindings.h"
+#include "CireBuffs.h"
+#include "CireEffects.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HAL/FileManager.h"
@@ -99,7 +101,8 @@ const FStage Stages[]={
     {TEXT("09_level_up")},{TEXT("10_scale_070")},{TEXT("11_scale_115")},{TEXT("12_options_scale_threat")},
     {TEXT("13_options_combat_text")},{TEXT("14_options_tooltips")},{TEXT("15_layout_editor")},
     {TEXT("16_action_bars_states")},{TEXT("17_quick_keybind")},{TEXT("18_keybindings_page")},{TEXT("19_banner_wave")},{TEXT("20_ability_tooltip")},
-    {TEXT("21_gameplay_hover_combat_text")},{TEXT("22_gameplay_hover_centre")},{TEXT("23_layout_panel_help")}};
+    {TEXT("21_gameplay_hover_combat_text")},{TEXT("22_gameplay_hover_centre")},{TEXT("23_layout_panel_help")},
+    {TEXT("24_callout_buff")},{TEXT("25_callout_stunned")},{TEXT("26_buff_rows_tooltip")},{TEXT("27_cast_bars")},{TEXT("28_overhead_status")}};
 constexpr int32 StageCount=UE_ARRAY_COUNT(Stages);
 struct FState
 {
@@ -113,7 +116,7 @@ struct FState
     TArray<FString> Files,Failures;
     double Start=0,Ready=-1;
     int32 Stage=-1,Captured=-1,Checks=0;
-    bool bDone=false,bLevelFired=false,bEditing=false,bSweepSet=false;
+    bool bDone=false,bLevelFired=false,bEditing=false,bSweepSet=false,bEffectFired=false;
 } W;
 void Check(bool bValue,const FString& Why){++W.Checks;if(!bValue){W.Failures.Add(Why);UE_LOG(LogTemp,Error,TEXT("CIRE_WOWUI_CHECK_FAIL %s"),*Why);}}
 void Finish()
@@ -185,6 +188,9 @@ void Configure(int32 Stage)
     HUD->DebugTooltipClear();HUD->DebugUnitTooltip(nullptr,FVector2D::ZeroVector);HUD->DebugAbilityTooltip(FString(),FVector2D::ZeroVector);HUD->DebugOptionsPage(0,0,false);
     if(W.bEditing){HUD->ToggleLayoutEditor();W.bEditing=false;}
     HUD->DebugSetPointer(FVector2D(-1,-1));
+    // Effect stages start clean: no records, no synthetic casts.
+    for(AActor* U:TArray<AActor*>{W.Hero.Get(),W.Elite.Get(),W.Boss.Get(),W.Bruiser.Get(),W.Hunter.Get(),W.Allies[0].Get(),W.Allies[1].Get()})if(U)CireBuffs::ClearAll(U);
+    CireCasts::DebugClear();W.bEffectFired=false;W.Hunter->SlowUntil=0;W.Leader->SlowUntil=0;W.Allies[0]->PoisonAreaCount=0;
     if(HUD->IsQuickKeybind()){HUD->UISettings.Keybindings.CancelCapture();HUD->ToggleQuickKeybind();}
     W.Hero->Mana=300;W.Hero->Energy=100;W.Hero->Cooldowns.Init(0,W.Hero->Skills.Num());
     HUD->UISettings.bAutoUIScale=true;HUD->UISettings.TooltipMode=3;
@@ -248,6 +254,34 @@ void Configure(int32 Stage)
     case 17: HUD->DebugKeybindCategory(4);HUD->DebugOptionsPage(0,1,true);break;
     case 20: HUD->DebugSetPointer(FVector2D(640+160,350));break;   // inside the CombatText panel, off the character
     case 21: HUD->DebugSetPointer(FVector2D(640,300));break;       // screen centre
+    case 23: case 24: break; // effects fire just before the capture (Tick)
+    case 25:
+    {
+        // Buff rows: player (buffs + a debuff), target (debuffs, one applied by you), party member.
+        CireBuffs::Apply(H,TEXT("blessing"),30,H);CireBuffs::Apply(H,TEXT("scatter"),6,H);CireBuffs::Apply(H,TEXT("npc_sundered"),9,E);
+        CireBuffs::Apply(E,TEXT("frost_bind"),5,H);E->SlowUntil=Now+5;CireBuffs::Apply(E,TEXT("npc_runic"),12,E);CireBuffs::Apply(E,TEXT("healing_cut"),8,H);
+        CireBuffs::Apply(W.Allies[0].Get(),TEXT("regeneration"),10,W.Allies[1].Get());W.Allies[0]->PoisonAreaCount=1;W.Allies[0]->PoisonEndsAt=Now+6;
+        HUD->DebugSetPointer(FVector2D(20+66+12,20+83+10)); // first icon of the player's buff row
+        break;
+    }
+    case 26:
+    {
+        FCireCastView Mine;Mine.bCasting=true;Mine.Name=TEXT("Restoring Light");Mine.Progress=.62f;Mine.Remaining=.7f;Mine.Duration=1.8f;Mine.bHeal=true;
+        CireCasts::DebugSet(H,Mine);
+        FCireCastView Kick;Kick.Result=ECireCastResult::Interrupted;Kick.ResultAge=.25f;Kick.ResultName=TEXT("Dark Mending");CireCasts::DebugSet(E,Kick);
+        FCireCastView Hush;Hush.Result=ECireCastResult::Silenced;Hush.ResultAge=.3f;CireCasts::DebugSet(W.Hunter.Get(),Hush);
+        FCireCastView Heal;Heal.bCasting=true;Heal.Name=TEXT("Dark Mending");Heal.Progress=.4f;Heal.Remaining=1.2f;Heal.bHeal=true;Heal.bInterruptible=true;CireCasts::DebugSet(W.Bruiser.Get(),Heal);
+        break;
+    }
+    case 27:
+    {
+        // Gameplay distance: a monster stunned + slowed, an ally with an attack buff, yourself with a defense debuff.
+        H->Target=nullptr;
+        CireBuffs::Apply(W.Leader.Get(),TEXT("stunned"),2.5f,H);W.Leader->SlowUntil=Now+6;CireBuffs::Apply(W.Leader.Get(),TEXT("frost_bind"),6,H);
+        CireBuffs::Apply(W.Allies[0].Get(),TEXT("blood_rage"),10,W.Allies[0].Get());CireBuffs::Apply(W.Allies[1].Get(),TEXT("blessing"),10,W.Allies[1].Get());
+        CireBuffs::Apply(H,TEXT("npc_sundered"),8,W.Bruiser.Get());CireBuffs::Apply(W.Bruiser.Get(),TEXT("npc_silenced"),3,H);CireBuffs::Apply(W.Bruiser.Get(),TEXT("healing_cut"),6,H);
+        break;
+    }
     case 22: HUD->ToggleLayoutEditor();W.bEditing=true;HUD->DebugSetPointer(FVector2D(640+160,350));break;
     case 18: CireBanners::Show(ECireBanner::WaveIncoming,TEXT("Wave 5"),TEXT("Incoming in 5 seconds."));break;
     default: break;
@@ -291,6 +325,11 @@ void Capture(int32 Stage)
         const FString T=HUD->DebugLastTooltipTitle();
         for(const FName Id:HUD->UISettings.GetPanelIds())Check(T!=Id.ToString(),FString::Printf(TEXT("%s: no panel tooltip during play (got '%s')"),Stages[Stage].Name,*T));
     }
+    if(Stage==23||Stage==24)
+    {
+        FName Shown;Check(HUD->DebugCalloutActive(Shown)&&Shown==(Stage==23?FName(TEXT("blood_rage")):FName(TEXT("stunned"))),FString(Stages[Stage].Name)+TEXT(": callout on screen for the gained effect"));
+    }
+    if(Stage==25)Check(HUD->DebugLastTooltipTitle()==TEXT("Sundered")||HUD->DebugLastTooltipTitle()==TEXT("Blessing")||HUD->DebugLastTooltipTitle()==TEXT("Scatter"),FString(TEXT("buff icon tooltip (got '"))+HUD->DebugLastTooltipTitle()+TEXT("')"));
     if(Stage==22)Check(HUD->DebugLastTooltipTitle()==TEXT("CombatText"),FString(TEXT("layout editing shows the panel description (got '"))+HUD->DebugLastTooltipTitle()+TEXT("')"));
     if(Stage>=1&&Stage<=3)
     {
@@ -335,6 +374,13 @@ bool Tick(ACireGameMode* Mode)
     const float Now=Mode->GetWorld()->GetTimeSeconds();
     if(W.Elite->CastEndsAt<Now+.5f){W.Elite->CastStartedAt=Now-.9f;W.Elite->CastEndsAt=Now+1.1f;}
     if(W.Boss->CastEndsAt<Now+.3f){W.Boss->CastStartedAt=Now-.5f;W.Boss->CastEndsAt=Now+.8f;}
+    // Gained effects fire shortly before the capture so their callouts are fully visible.
+    if((Stage==23||Stage==24)&&!W.bEffectFired&&Age>=5+Stage*3-.9)
+    {
+        if(Stage==23)CireBuffs::Apply(W.Hero.Get(),TEXT("blood_rage"),10,W.Hero.Get());
+        else CireBuffs::Apply(W.Hero.Get(),TEXT("stunned"),2.5f,W.Hunter.Get());
+        W.bEffectFired=true;
+    }
     if(Stage==8&&!W.bLevelFired&&Age>=5+Stage*3-.8){W.Hero->Level=13;W.HUD->DebugLevelUp(W.Hero.Get(),true);W.bLevelFired=true;}
     // Partial cooldown sweeps: the HUD learns each full cooldown when it starts, then we advance it.
     if((Stage==15||Stage==19)&&!W.bSweepSet&&Age>=4+Stage*3){for(int32 I=0;I<W.Hero->Skills.Num();++I)if(W.Hero->Cooldowns[I]>0)W.Hero->Cooldowns[I]*=I==3?.8f:.4f;W.bSweepSet=true;}
