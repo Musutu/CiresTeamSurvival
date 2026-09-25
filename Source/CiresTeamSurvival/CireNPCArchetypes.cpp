@@ -1,4 +1,5 @@
 #include "CireNPCArchetypes.h"
+#include "CireMonsterExpansion.h" // monster-expansion
 #include "CireSkillTuning.h"
 #include "CireRaces.h" // monster-races
 #include "Dom/JsonObject.h"
@@ -280,7 +281,9 @@ bool CireNPCArchetypes::Reload(FString* OutError)
     if(Error.IsEmpty())
     {
         FString RaceError;
-        if(!CireRaces::MergeInto(Candidate,RaceError))UE_LOG(LogCireNPCData,Error,TEXT("CIRE_RACE_DATA_ERROR %s"),*RaceError);
+        if(!CireRaces::MergeInto(Candidate,RaceError)){UE_LOG(LogCireNPCData,Error,TEXT("CIRE_RACE_DATA_ERROR %s"),*RaceError);}
+        // monster-expansion: Bestiary.json creatures (rares, bonus loot creatures, race variants).
+        else if(!CireMonsterExpansion::MergeInto(Candidate,RaceError)){UE_LOG(LogCireNPCData,Error,TEXT("CIRE_BESTIARY_DATA_ERROR %s"),*RaceError);}
     }
     if(!Error.IsEmpty())
     {

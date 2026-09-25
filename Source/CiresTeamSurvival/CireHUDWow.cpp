@@ -163,7 +163,7 @@ TArray<FAbility> NpcAbilities(const ACireMonster* M)
         Out.Add({AbilityIcon(A.Kind,Role),A.Name,Facts+TEXT(". ")+A.Description});
     }
     if(M->IsLaneBoss())Out.Add({TEXT("war_cry"),TEXT("Siege Boss"),TEXT("If it reaches your keep it costs 10 lives instead of 1.")});
-    if(M->PackId>=0)Out.Add({TEXT("shadow_step"),TEXT("Pack Leash"),TEXT("Pulled more than 17m from its camp, the pack resets to full health.")});
+    if(M->PackId>=0)Out.Add({TEXT("shadow_step"),TEXT("Pack Reset"),TEXT("The pack chases at any distance. Only when every champion it hates is dead does it walk home and heal.")});
     return Out;
 }
 FString NpcStatus(const ACireMonster* M,float Now)
@@ -322,6 +322,23 @@ void ACireHUD::PlayWowSound(int32 Index,float Volume)
 // ---------------------------------------------------------------------------
 // Portrait, target / focus frame
 // ---------------------------------------------------------------------------
+FString CireUnitFrameHeader(bool bMonster,bool bHero,bool bSelf,int32 Reaction,int32 Class,int32 Rank,bool bLaneBoss,const FString& RoleName,const FString& RankLabel,bool bFocus)
+{
+    // Classification / rank / relation caption of the target and focus frames. Monsters, heroes and
+    // constructs are separate branches (a monster without a rank used to fall through to "CONSTRUCT").
+    const FString Prefix=bFocus?TEXT("FOCUS  "):TEXT("");
+    const FString Role=RoleName.ToUpper();
+    if(bMonster)
+    {
+        if(Rank>0&&Class!=1&&!(Class==3&&bLaneBoss))return Prefix+RankLabel.ToUpper()+TEXT("  /  ")+Role; // monster-races rank
+        if(Class==3)return Prefix+(bLaneBoss?FString(TEXT("BOSS  /  10 LIVES AT RISK")):TEXT("BOSS  /  ")+Role);
+        if(Class==2)return Prefix+TEXT("ELITE  /  ")+Role;
+        if(Class==1)return Prefix+TEXT("ARMORED  /  ")+Role;
+        return Prefix+Role;
+    }
+    if(bHero)return Prefix+(bSelf?TEXT("YOU"):Reaction==2?TEXT("ALLY"):TEXT("ENEMY"))+TEXT("  /  ")+Role;
+    return Prefix+TEXT("CONSTRUCT");
+}
 void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
 {
     const auto* Self=Cast<ACireHero>(PlayerOwner?PlayerOwner->GetPawn():nullptr);
@@ -351,6 +368,9 @@ void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
     Disc(CX,CY,R,FLinearColor(.035f,.04f,.06f,1));
     Disc(CX,CY-R*.25f,R*.72f,ReactionColor(U)*FLinearColor(1,1,1,.12f));
     const FString IconId=U.bConstruct?TEXT("runic_wall"):RoleIcon(U.Role);
+    // hud-art: heroes show their painted champion portrait in the ring (the role emblem is the badge).
+    const ACireHero* PortraitHero=U.bHero?Cast<ACireHero>(Actor):nullptr;
+    if(!(PortraitHero&&CireUIStyle::HasThemeArt()&&CireUIStyle::PortraitFace(Painter(),PortraitHero->ChampionProfileId,CX,CY,R,U.bDead)))
     Icon(IconId,CX-R*.62f,CY-R*.62f,R*1.24f,U.bDead?Muted:U.bMonster?RoleTint(U.Role):ReactionColor(U)*.9f+FLinearColor(.1f,.1f,.1f,0));
     if(U.bDead){Disc(CX,CY,R,FLinearColor(0,0,0,.55f));}
     const bool bThemed=CireUIStyle::HasThemeArt();
@@ -375,8 +395,10 @@ void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
     if(U.Role!=ERole::None)
     {
         const float RX=CX+R*.78f,RY=CY+R*.74f;
-        Disc(RX,RY,BR+1.5f,FLinearColor(0,0,0,.9f));Disc(RX,RY,BR,FLinearColor(.05f,.05f,.07f,1));Circle(RX,RY,BR,RoleTint(U.Role),1.2f,20);
-        Icon(RoleIcon(U.Role),RX-BR*.7f,RY-BR*.7f,BR*1.4f,RoleTint(U.Role));
+        // hud-art: themed role badge (the theme's ring as a medallion), same kit call as the unit frames.
+        if(bThemed)CireUIStyle::RoleBadge(Painter(),RX,RY,BR,RoleIcon(U.Role),RoleTint(U.Role));
+        else{Disc(RX,RY,BR+1.5f,FLinearColor(0,0,0,.9f));Disc(RX,RY,BR,FLinearColor(.05f,.05f,.07f,1));Circle(RX,RY,BR,RoleTint(U.Role),1.2f,20);
+        Icon(RoleIcon(U.Role),RX-BR*.7f,RY-BR*.7f,BR*1.4f,RoleTint(U.Role));}
         Tip(FString(RoleLabel(U.Role))+TEXT(" role"),RoleExplain(U.Role,U.bMonster),RX-BR,RY-BR,BR*2,BR*2);
     }
 }
@@ -406,12 +428,10 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     UnitTip(Actor,0,0,W,H);
     const float PR=bFocus?26.f:33.f,PCX=W-10-PR,PCY=bFocus?44.f:50.f,BW=PCX-PR-18;
     // Header: classification and role; threat % badge on hostile NPCs.
-    FString Header=bFocus?TEXT("FOCUS  "):FString();
-    if(U.bMonster)Header+=(U.Class==3?(Mob&&Mob->IsLaneBoss()?FString(TEXT("BOSS  /  10 LIVES AT RISK")):TEXT("BOSS  /  ")+U.RoleName.ToUpper()):U.Class==2?TEXT("ELITE  /  ")+U.RoleName.ToUpper():U.Class==1?TEXT("ARMORED  /  ")+U.RoleName.ToUpper():U.RoleName.ToUpper());
-    if(U.bMonster&&U.Rank>0&&U.Class!=1&&!(U.Class==3&&Mob&&Mob->IsLaneBoss()))Header=(bFocus?TEXT("FOCUS  "):TEXT(""))+U.RankLabel.ToUpper()+TEXT("  /  ")+U.RoleName.ToUpper(); // monster-races
-    else if(U.bHero)Header+=(U.bSelf?TEXT("YOU"):U.Reaction==2?TEXT("ALLY"):TEXT("ENEMY"))+FString(TEXT("  /  "))+U.RoleName.ToUpper();
-    else Header+=TEXT("CONSTRUCT");
-    Label(Painter().Fit(Header,bFocus?8.f:9.f,BW-(Mob&&!bFocus?40.f:0.f),ECireFont::Heading),10,4,bFocus?8.f:9.f,bRankFrame?U.RankColor:U.Class==3?Hostile:U.Class>=1?WowGold:Muted);
+    const FString Header=CireUnitFrameHeader(U.bMonster,U.bHero,U.bSelf,U.Reaction,U.Class,U.Rank,Mob&&Mob->IsLaneBoss(),U.RoleName,U.RankLabel,bFocus);
+    // hud-art: the caption starts past the theme's corner ornament (it covered "ELITE / CASTER").
+    const float HX=FMath::Max(10.f,CireUIStyle::FrameCornerClear(W,H)+2.f);
+    Label(Painter().Fit(Header,bFocus?8.f:9.f,BW-(HX-10.f)-(Mob&&!bFocus?40.f:0.f),ECireFont::Heading),HX,5.5f,bFocus?8.f:9.f,bRankFrame?U.RankColor:U.Class==3?Hostile:U.Class>=1?WowGold:Muted);
     bool bKnown=false;const float Threat=Mob&&Self?ThreatPercent(Mob,Self,bKnown):0.f;
     if(Mob&&bKnown&&!bFocus)
     {

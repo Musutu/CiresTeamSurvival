@@ -83,6 +83,39 @@ bool ParseBody(const TSharedPtr<FJsonObject>& O, CireMonsterArt::FBody& Body)
         const TArray<TSharedPtr<FJsonValue>>* Drops = nullptr;
         if (O->TryGetArrayField(TEXT("dropPropBones"), Drops))
             for (const auto& Value : *Drops) { FString Bone; if (Value->TryGetString(Bone)) Body.DropPropBones.Add(FName(*Bone)); }
+        // monster-expansion: skeletal attachments and the Fab reskin (RaceMeshes.fabx.json).
+        const TArray<TSharedPtr<FJsonValue>>* Attach = nullptr;
+        if (O->TryGetArrayField(TEXT("attachments"), Attach))
+            for (const auto& Value : *Attach)
+            {
+                const TSharedPtr<FJsonObject>* A = nullptr; FString Path, Socket;
+                if (Value->TryGetObject(A) && (*A)->TryGetStringField(TEXT("mesh"), Path) && Path.StartsWith(TEXT("/Game/")) && (*A)->TryGetStringField(TEXT("socket"), Socket) && Body.Attachments.Num() < 4)
+                    Body.Attachments.Emplace(Path, FName(*Socket));
+            }
+        O->TryGetBoolField(TEXT("spectral"), Body.bSpectral);
+        const TSharedPtr<FJsonObject>* Reskin = nullptr;
+        if (O->TryGetObjectField(TEXT("reskin"), Reskin))
+        {
+            auto ReadColor = [](const TSharedPtr<FJsonObject>& R, const TCHAR* Key, FLinearColor& Out)
+            {
+                const TArray<TSharedPtr<FJsonValue>>* V = nullptr;
+                if (R->TryGetArrayField(Key, V) && V->Num() >= 3) Out = FLinearColor((*V)[0]->AsNumber(), (*V)[1]->AsNumber(), (*V)[2]->AsNumber(), 1.f);
+            };
+            ReadColor(*Reskin, TEXT("tint"), Body.ReskinTint); ReadColor(*Reskin, TEXT("rim"), Body.ReskinRim);
+            double N = 0;
+            if ((*Reskin)->TryGetNumberField(TEXT("tintStrength"), N)) Body.ReskinTintStrength = FMath::Clamp(static_cast<float>(N), 0.f, 1.f);
+            if ((*Reskin)->TryGetNumberField(TEXT("rimStrength"), N)) Body.ReskinRimStrength = FMath::Clamp(static_cast<float>(N), 0.f, 5.f);
+            if ((*Reskin)->TryGetNumberField(TEXT("body"), N)) Body.ReskinBody = FMath::Clamp(static_cast<float>(N), 0.f, 1.f);
+            const TSharedPtr<FJsonObject>* Slots = nullptr;
+            if ((*Reskin)->TryGetObjectField(TEXT("slots"), Slots))
+                for (const auto& Pair : (*Slots)->Values)
+                {
+                    const TSharedPtr<FJsonObject>* T = nullptr;
+                    if (!Pair.Value->TryGetObject(T)) continue;
+                    TMap<FName, FString>& Textures = Body.ReskinTextures.FindOrAdd(FCString::Atoi(*FString(Pair.Key.ToView())));
+                    for (const auto& Tex : (*T)->Values) { FString Path; if (Tex.Value->TryGetString(Path) && Path.StartsWith(TEXT("/Game/"))) Textures.Add(FName(FString(Tex.Key.ToView())), Path); }
+                }
+        }
         const TSharedPtr<FJsonObject>* Sockets = nullptr;
         if (O->TryGetObjectField(TEXT("sockets"), Sockets))
             for (const auto& Pair : (*Sockets)->Values) { FString Bone; if (Pair.Value->TryGetString(Bone)) Body.Sockets.Add(FName(FString(Pair.Key.ToView())), FName(*Bone)); }
@@ -174,7 +207,9 @@ void Load()
         const TSharedPtr<FJsonObject>* FabUnits = nullptr;
         auto Present = [](const FString& Path) { const FString Package = FPackageName::ObjectPathToPackageName(Path);
             return FPackageName::IsValidLongPackageName(Package) && FPackageName::DoesPackageExist(Package); };
-        if (!FParse::Param(FCommandLine::Get(), TEXT("CireNoFabCreatures")) && !FParse::Param(FCommandLine::Get(), TEXT("CireNoFab")) && ReadFile(TEXT("RaceMeshes.fab.json"), FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
+        // monster-expansion: RaceMeshes.fabx.json (the Bestiary.json creatures, Tools/BuildFabExpansionCreatures.py) is read the same way.
+        for (const TCHAR* FabFile : {TEXT("RaceMeshes.fab.json"), TEXT("RaceMeshes.fabx.json")})
+        if (!FParse::Param(FCommandLine::Get(), TEXT("CireNoFabCreatures")) && !FParse::Param(FCommandLine::Get(), TEXT("CireNoFab")) && ReadFile(FabFile, FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
             for (const auto& Pair : (*FabUnits)->Values)
             {
                 const FName Id(FString(Pair.Key.ToView()));
@@ -707,6 +742,24 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
         Part->SetLeaderPoseComponent(Mesh); Part->SetVisibility(Mesh->IsVisible());
         BodyParts.Add(Part);
     }
+    // monster-expansion: skeletal props on their own skeleton ride a socket/bone of the body (not leader pose).
+    for (const auto& Attachment : Body.Attachments)
+    {
+        USkeletalMesh* PartMesh = LoadIfPresent<USkeletalMesh>(Attachment.Key);
+        if (!PartMesh || (!Asset->FindSocket(Attachment.Value) && Asset->GetRefSkeleton().FindBoneIndex(Attachment.Value) == INDEX_NONE)) continue;
+        auto* Part = NewObject<USkeletalMeshComponent>(Monster);
+        Monster->AddInstanceComponent(Part);
+        Part->SetupAttachment(Mesh, Attachment.Value);
+        Part->SetSkeletalMesh(PartMesh);
+        Part->SetCollisionEnabled(ECollisionEnabled::NoCollision); Part->SetGenerateOverlapEvents(false);
+        Part->SetCanEverAffectNavigation(false); Part->SetCastShadow(true);
+        Part->ComponentTags.AddUnique(TEXT("CireAttachment"));
+        Part->RegisterComponent();
+        Part->SetVisibility(Mesh->IsVisible());
+        BodyParts.Add(Part);
+    }
+    AppliedReskinBody = Body.ReskinTextures.IsEmpty() ? CireMonsterArt::FBody() : Body; // monster-expansion
+    bAppliedSpectral = Body.bSpectral;
     bTripoApplied = true; AppliedArchetype = Archetype.Id; AppliedVariant = Body.Variant; AppliedMeshScale = Body.MeshScale;
     AppliedWalkRaw = Body.WalkSpeedCm / FMath::Max(.01f, Body.MeshScale); AppliedRunRaw = Body.RunSpeedCm / FMath::Max(.01f, Body.MeshScale); // world-dressing
     Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = -1.f; // a cast already under way is picked up mid-bar
@@ -772,7 +825,8 @@ void UCireMonsterArt::UpdateRim()
             Rim = UMaterialInstanceDynamic::Create(Edge, this);
     if (!Rim) return;
     // A dim fresnel rim: readable at gameplay distance without competing with the selection edge.
-    Rim->SetVectorParameterValue(TEXT("SelectionTint"), Want * .55f);
+    // monster-expansion: rares and bonus creatures glow much brighter than the rank rim.
+    Rim->SetVectorParameterValue(TEXT("SelectionTint"), Want * (Monster->SpecialSpawn != 0 ? 1.6f : .55f));
     // Never replace another overlay (the selection highlight stores and restores ours).
     if (!Mesh->GetOverlayMaterial()) Mesh->SetOverlayMaterial(Rim);
 }
@@ -1006,6 +1060,7 @@ void UCireMonsterArt::SpawnCorpse()
     TArray<TObjectPtr<UStaticMeshComponent>> Props;
     if (Monster->NPCState) Props = Monster->NPCState->VisualParts;
     if (!Corpse->Initialize(*Mesh, Fall, RoleClip(TEXT("idle")), Props, &GripHands, &BodyParts)) { Corpse->Destroy(); return; }
+    if (bAppliedSpectral) { Corpse->HoldSeconds = .4f; Corpse->SinkSeconds = 1.6f; Corpse->SinkCm = 320.f; } // monster-expansion: a spirit sinks away
     // The live actor is destroyed this frame; hide it now so the body is never drawn twice.
     Mesh->SetVisibility(false, true);
 }
@@ -1064,11 +1119,14 @@ bool ACireMonsterCorpse::Initialize(const USkeletalMeshComponent& Source, UAnimS
             if (!Part || !Part->GetSkeletalMeshAsset()) continue;
             auto* Copy = NewObject<USkeletalMeshComponent>(this);
             AddInstanceComponent(Copy);
-            Copy->SetupAttachment(Body);
+            const bool bAttachment = Part->ComponentHasTag(TEXT("CireAttachment")); // monster-expansion: socketed prop, own skeleton
+            Copy->SetupAttachment(Body, bAttachment ? Part->GetAttachSocketName() : NAME_None);
             Copy->SetSkeletalMesh(Part->GetSkeletalMeshAsset());
             Copy->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            for (int32 Slot = 0; Slot < Part->GetNumMaterials(); ++Slot) Copy->SetMaterial(Slot, Part->GetMaterial(Slot));
+            if (bAttachment) Copy->SetRelativeTransform(Part->GetRelativeTransform());
             Copy->RegisterComponent();
-            Copy->SetLeaderPoseComponent(Body);
+            if (!bAttachment) Copy->SetLeaderPoseComponent(Body);
         }
     StartLocation = GetActorLocation();
     return true;

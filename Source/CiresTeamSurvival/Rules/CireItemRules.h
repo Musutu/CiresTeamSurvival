@@ -33,10 +33,13 @@ const char* StatKey(ItemStat stat);            // JSON key, e.g. "attackDamage"
 const char* StatLabel(ItemStat stat);          // UI label, e.g. "Attack Damage"
 bool StatIsPercent(ItemStat stat);
 bool ParseStatKey(const std::string& key, ItemStat& out);
-// items-v2 stat policy: every item may grant Primary, flat Health/Mana, flat Armor/Ward, regen,
-// attack speed, cooldown reduction and move speed; only legendary (completed) items may add
-// DamageReduction, DamageBlock, CritChance or Lifesteal; nothing grants STR/AGI/INT directly,
-// Attack Damage or Spell Power. Returns "" when the catalog follows the policy.
+// Stat policy (Eric's universal-scaling ruling, 2026-09-25): items grant ONLY the owner's primary
+// stat plus flat Health/Mana/Armor/Ward. Completed (legendary) items may add damage-reduction
+// effects: DamageReduction (flat % of every hit), DamageBlock (flat per hit) and the HitGuard
+// passive (reduce the next instances of incoming damage). Boots (unique group "boots") are the
+// one stat exception: they grant move speed. Attack speed, cooldown reduction, regeneration,
+// crit, lifesteal, STR/AGI/INT, Attack Damage and Spell Power are rejected everywhere (the engine
+// keys still exist for skills, buffs and class traits). Returns "" when the catalog follows it.
 constexpr double MaxItemDamageReduction = 40.0;   // percent
 constexpr double MinBlockedFraction = 0.25;       // a block never removes more than 75% of a hit
 // Incoming hit after the item mitigation specials (percent reduction, then flat block).
@@ -110,7 +113,10 @@ enum class PassiveKind : std::uint8_t
     AttackSplash,     // basic attacks deal +Threshold % damage and splash Amount % to enemies within Radius cm
     ManaRefund,       // abilities refund Amount % of their mana cost
     DodgeCharges,     // +Count dodge-roll charges
-    RollHaste         // a dodge roll grants +Amount % move speed for Duration seconds
+    RollHaste,        // a dodge roll grants +Amount % move speed for Duration seconds
+    // rules-conformance: "reduce instances of incoming damage" (completed items only)
+    HitGuard          // hold Count guard charges (one returns every Cooldown s); each incoming hit spends one
+                      // and is reduced by Amount % and then by Threshold flat (never below 0)
 };
 bool ParsePassiveKind(const std::string& key, PassiveKind& out);
 
@@ -189,7 +195,10 @@ private:
     int ComputeTotal(std::size_t index, std::vector<int>& state, std::string& error);
 };
 
-bool StatAllowed(ItemStat stat, ItemTier tier);          // items-v2 stat policy (see above)
+bool StatAllowed(ItemStat stat, ItemTier tier, bool boots = false);   // stat policy (see above); boots = unique group "boots"
+// One incoming hit after a HitGuard charge: percent first (capped at 90%), then flat, never below 0.
+double ApplyHitGuard(double amount, double percent, double flat);
+constexpr double MaxHitGuardPercent = 90.0;
 std::string ValidateStatPolicy(const Catalog& catalog);
 
 // Where an item lands after purchase and which owned parts the recipe consumes.
@@ -255,6 +264,9 @@ struct Totals
     double ManaRefund = 0;
     int DodgeCharges = 0;
     double RollHaste = 0, RollHasteDuration = 0;
+    // rules-conformance: HitGuard (charges add up; the strongest percent/flat and fastest recharge win)
+    int HitGuardCharges = 0;
+    double HitGuardPercent = 0, HitGuardFlat = 0, HitGuardRecharge = 0;
 };
 Totals ComputeTotals(const Catalog& catalog, const Inventory& inventory,
                      const std::vector<StatBlock>& activeBuffs = {});

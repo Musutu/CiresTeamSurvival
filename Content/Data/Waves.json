@@ -1,9 +1,10 @@
 {
   "schemaVersion": 1,
-  "_comment": "Wave composer data (Docs/Waves.md). Edited live with F8 > Waves; counts are per lane.",
+  "_comment": "Wave composer data (Docs/Waves.md). Edited live with F8 > Waves; counts are per lane. waveOrder \"campaign\": the 15 waves are played straight through the 3-cycle match (wavesPerCycle 5 each) and wrap; \"cycle\" replays the list every cycle.",
   "breatherSeconds": 12,
   "wavesPerCycle": 5,
   "cycles": 3,
+  "waveOrder": "campaign",
   "cycleScaling": {
     "healthGrowth": 0.08,
     "damageGrowth": 0.1,
@@ -38,27 +39,84 @@
     "tierDuration": 0.15
   },
   "campaign": {
-    "_comment": "Race per cycle (wraps; 'a+b' mixes races row by row). Rows with a slot follow the wave's race. The second lap reskins with palette variant 1, and so on.",
+    "_comment": "Race per wave (rotateEvery \"wave\") or per cycle (\"cycle\"); wraps; 'a+b' mixes races row by row. Rows with a slot follow the wave's race. The second lap reskins with palette variant 1, and so on. Champions alternate with elites once both are unlocked.",
     "raceRotation": [
       "hollow",
       "blightwood",
-      "drowned_deep",
       "ironhide",
-      "hollow+blightwood",
+      "drowned_deep",
+      "hollow",
       "stoneborn",
-      "drakkari",
-      "drowned_deep+voidborn",
+      "aetheri",
       "feral_kin",
-      "fallen_order",
+      "drakkari",
+      "blightwood",
       "voidborn",
-      "ironhide+drakkari"
+      "fallen_order",
+      "aetheri+ironhide",
+      "stoneborn+feral_kin",
+      "drowned_deep"
     ],
     "reskinOnWrap": true,
     "veteranFromCycle": 2,
     "eliteFromCycle": 3,
-    "championFromCycle": 4,
+    "championFromCycle": 3,
     "mythicBossFromCycle": 3,
-    "promoteEvery": 4
+    "promoteEvery": 4,
+    "rotateEvery": "wave"
+  },
+  "rareSpawn": {
+    "_comment": "Rare Spawn: from fromWave, each normal/pack wave has `chance` to add one rare creature from `pool` (both lanes, at most maxPerCycle per cycle). It glows, wears a 'Rare' plate, is tougher (health/damage/size x) and pays `bounty` mob values plus a personal rare chest (LootTables.json sources.rareSpawn). Docs/MonsterExpansion.md.",
+    "enabled": true,
+    "chance": 0.3,
+    "fromWave": 2,
+    "maxPerCycle": 2,
+    "health": 1.8,
+    "damage": 1.2,
+    "size": 1.15,
+    "bounty": 5,
+    "pool": [
+      "lich_revenant",
+      "storm_griffon",
+      "cinder_drake",
+      "frostfang_alpha",
+      "horned_brute"
+    ]
+  },
+  "bonusWave": {
+    "_comment": "Bonus Loot Wave: after a cleared wave (never the cycle's last), from fromWave, `chance` to run `wave` during the breather (at most maxPerCycle). Its creatures flee champions closer than fleeRadius, never attack, never cost lives and escape after escapeSeconds. Each pays `bounty` mob values plus a personal chest (LootTables.json sources.bonusWave). The breather grows by extraBreatherSeconds only when it runs. Docs/MonsterExpansion.md.",
+    "enabled": true,
+    "chance": 0.4,
+    "fromWave": 2,
+    "maxPerCycle": 1,
+    "extraBreatherSeconds": 6,
+    "escapeSeconds": 26,
+    "fleeRadius": 950,
+    "bounty": 4,
+    "wave": {
+      "label": "Goblin Hoard",
+      "type": "bonus_loot",
+      "spawnInterval": 0.35,
+      "delayBefore": 0,
+      "mustClear": false,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "treasure_goblin",
+          "count": 3,
+          "health": 0.8,
+          "damage": 1,
+          "size": 1
+        },
+        {
+          "archetype": "gilded_stag",
+          "count": 1,
+          "health": 1.1,
+          "damage": 1,
+          "size": 1
+        }
+      ]
+    }
   },
   "waves": [
     {
@@ -254,6 +312,366 @@
           "archetype": "hollow_siegebreaker",
           "count": 1,
           "health": 0.3,
+          "damage": 1,
+          "size": 1,
+          "boss": true,
+          "slot": "boss"
+        }
+      ]
+    },
+    {
+      "label": "Shield Wall",
+      "type": "melee_pack",
+      "spawnInterval": 0.4,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "hollow_shieldbearer",
+          "count": 1,
+          "health": 0.8,
+          "damage": 1.35,
+          "size": 1,
+          "slot": "tank"
+        },
+        {
+          "archetype": "hollow_infantry",
+          "count": 3,
+          "health": 0.8,
+          "damage": 1.35,
+          "size": 1,
+          "slot": "line"
+        },
+        {
+          "archetype": "ironbound_bruiser",
+          "count": 3,
+          "health": 0.8,
+          "damage": 1.35,
+          "size": 1,
+          "slot": "bruiser"
+        }
+      ]
+    },
+    {
+      "label": "Hex Circle",
+      "type": "caster_pack",
+      "spawnInterval": 0.4,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "hollow_shieldbearer",
+          "count": 1,
+          "health": 0.75,
+          "damage": 1.35,
+          "size": 1,
+          "slot": "tank"
+        },
+        {
+          "archetype": "blight_caster",
+          "count": 5,
+          "health": 0.75,
+          "damage": 1.35,
+          "size": 1,
+          "slot": "caster"
+        }
+      ]
+    },
+    {
+      "label": "Iron Procession",
+      "type": "armored",
+      "spawnInterval": 0.8,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "hollow_shieldbearer",
+          "count": 4,
+          "health": 1.3,
+          "damage": 1,
+          "size": 1.2,
+          "nonAttacking": true,
+          "leakCost": 2,
+          "slot": "tank"
+        }
+      ]
+    },
+    {
+      "label": "Armored Escort",
+      "type": "armored_escort",
+      "spawnInterval": 0.5,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1.25,
+      "units": [
+        {
+          "archetype": "hollow_shieldbearer",
+          "count": 1,
+          "health": 4,
+          "damage": 1,
+          "size": 1.45,
+          "nonAttacking": true,
+          "escortee": true,
+          "leakCost": 5,
+          "slot": "tank"
+        },
+        {
+          "archetype": "hollow_infantry",
+          "count": 2,
+          "health": 0.85,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "line"
+        },
+        {
+          "archetype": "ironbound_bruiser",
+          "count": 1,
+          "health": 0.85,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "bruiser"
+        },
+        {
+          "archetype": "barbed_hunter",
+          "count": 1,
+          "health": 0.85,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "ranged"
+        }
+      ]
+    },
+    {
+      "label": "Siege Host",
+      "type": "boss",
+      "spawnInterval": 0.5,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1.5,
+      "units": [
+        {
+          "archetype": "hollow_infantry",
+          "count": 2,
+          "health": 0.85,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "line"
+        },
+        {
+          "archetype": "ironbound_bruiser",
+          "count": 2,
+          "health": 0.85,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "bruiser"
+        },
+        {
+          "archetype": "blight_caster",
+          "count": 1,
+          "health": 0.85,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "caster"
+        },
+        {
+          "archetype": "hollow_siegebreaker",
+          "count": 1,
+          "health": 0.3,
+          "damage": 1,
+          "size": 1,
+          "boss": true,
+          "slot": "boss"
+        }
+      ]
+    },
+    {
+      "label": "Arrow Storm",
+      "type": "ranged_pack",
+      "spawnInterval": 0.4,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "hollow_shieldbearer",
+          "count": 1,
+          "health": 0.7,
+          "damage": 1.35,
+          "size": 1,
+          "slot": "tank"
+        },
+        {
+          "archetype": "barbed_hunter",
+          "count": 5,
+          "health": 0.7,
+          "damage": 1.35,
+          "size": 1,
+          "slot": "ranged"
+        }
+      ]
+    },
+    {
+      "label": "Warband",
+      "type": "hybrid_pack",
+      "spawnInterval": 0.4,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "hollow_shieldbearer",
+          "count": 1,
+          "health": 0.6,
+          "damage": 1.4,
+          "size": 1,
+          "slot": "tank"
+        },
+        {
+          "archetype": "hollow_infantry",
+          "count": 2,
+          "health": 0.6,
+          "damage": 1.4,
+          "size": 1,
+          "slot": "line"
+        },
+        {
+          "archetype": "ironbound_bruiser",
+          "count": 2,
+          "health": 0.6,
+          "damage": 1.4,
+          "size": 1,
+          "slot": "bruiser"
+        },
+        {
+          "archetype": "blight_caster",
+          "count": 1,
+          "health": 0.6,
+          "damage": 1.4,
+          "size": 1,
+          "slot": "caster"
+        },
+        {
+          "archetype": "barbed_hunter",
+          "count": 1,
+          "health": 0.6,
+          "damage": 1.4,
+          "size": 1,
+          "slot": "ranged"
+        },
+        {
+          "archetype": "grave_hound",
+          "count": 2,
+          "health": 0.6,
+          "damage": 1.4,
+          "size": 1,
+          "slot": "special"
+        }
+      ]
+    },
+    {
+      "label": "Iron Procession",
+      "type": "armored",
+      "spawnInterval": 0.8,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "hollow_shieldbearer",
+          "count": 4,
+          "health": 1.3,
+          "damage": 1,
+          "size": 1.2,
+          "nonAttacking": true,
+          "leakCost": 2,
+          "slot": "tank"
+        }
+      ]
+    },
+    {
+      "label": "Armored Escort",
+      "type": "armored_escort",
+      "spawnInterval": 0.5,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1.25,
+      "units": [
+        {
+          "archetype": "hollow_shieldbearer",
+          "count": 1,
+          "health": 3,
+          "damage": 1,
+          "size": 1.45,
+          "nonAttacking": true,
+          "escortee": true,
+          "leakCost": 5,
+          "slot": "tank"
+        },
+        {
+          "archetype": "hollow_infantry",
+          "count": 2,
+          "health": 0.7,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "line"
+        },
+        {
+          "archetype": "ironbound_bruiser",
+          "count": 1,
+          "health": 0.7,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "bruiser"
+        },
+        {
+          "archetype": "barbed_hunter",
+          "count": 1,
+          "health": 0.7,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "ranged"
+        }
+      ]
+    },
+    {
+      "label": "Siege Host",
+      "type": "boss",
+      "spawnInterval": 0.5,
+      "delayBefore": 0,
+      "mustClear": true,
+      "rewardMultiplier": 1.5,
+      "units": [
+        {
+          "archetype": "hollow_infantry",
+          "count": 2,
+          "health": 0.7,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "line"
+        },
+        {
+          "archetype": "ironbound_bruiser",
+          "count": 2,
+          "health": 0.7,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "bruiser"
+        },
+        {
+          "archetype": "blight_caster",
+          "count": 1,
+          "health": 0.7,
+          "damage": 1.2,
+          "size": 1,
+          "slot": "caster"
+        },
+        {
+          "archetype": "hollow_siegebreaker",
+          "count": 1,
+          "health": 0.2,
           "damage": 1,
           "size": 1,
           "boss": true,

@@ -130,8 +130,8 @@ void BuildPages()
     }
     {
         TArray<FUnit> U={Hero(TEXT("ranger"),{},TEXT("BORROWED TIME (HOURGLASS)")),Hero(TEXT("knight"),{TEXT("oathshield")},TEXT("OATHSHIELD (AEGIS OF THE LAST OATH)")),
-            Hero(TEXT("dwarf_miner"),{TEXT("toll_of_the_grave")},TEXT("TOLL OF THE GRAVE (GRAVEBELL)")),Hero(TEXT("summoner"),{},TEXT("SCATTER (RAVENFEATHER)")),Hero(TEXT("scholar"),{},TEXT("AETHER PHIAL (MANA)"))};
-        U[0].Items={TEXT("hourglass_of_ages")};U[3].Items={TEXT("ravenfeather_mantle")};U[4].Items={TEXT("aether_phial")};
+            Hero(TEXT("dwarf_miner"),{TEXT("toll_of_the_grave")},TEXT("TOLL OF THE GRAVE (GRAVEBELL)")),Hero(TEXT("scholar"),{},TEXT("AETHER PHIAL (MANA)"))}; // rules-conformance: Ravenfeather's Scatter active became a hit guard
+        U[0].Items={TEXT("hourglass_of_ages")};U[3].Items={TEXT("aether_phial")};
         const int32 Index=Add(TEXT("ITEM ACTIVES + CONSUMABLES"),TEXT("item_actives"),U);G.Pages[Index].Spacing=320;G.Pages[Index].Distance=1650;
     }
     // items-v2: group on-use actives and the Sigil of Apotheosis ultimate upgrade.

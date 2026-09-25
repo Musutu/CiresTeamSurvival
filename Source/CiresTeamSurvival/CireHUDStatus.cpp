@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireUITheme.h"
 #include "CireGame.h"
 #include "CireSummon.h"
 #include "CirePets.h" // pets
@@ -132,7 +133,12 @@ void ACireHUD::DrawEffectIcon(const FCireActiveEffect& E,const FCireEffectInfo& 
     }
     if(Total>0&&Remaining>0)CireUIStyle::CooldownSweep(P,X+1,Y+1,Size-2,1.f-Remaining/Total);
     const float W=E.bFromLocalPlayer?2.f:1.3f;
-    P.Line(X,Y,X+Size,Y,Border,W);P.Line(X,Y+Size,X+Size,Y+Size,Border,W);P.Line(X,Y,X,Y+Size,Border,W);P.Line(X+Size,Y,X+Size,Y+Size,Border,W);
+    // hud-art: the theme's painted buff border, tinted toward the dispel colour (the colour stays readable);
+    // plain dispel-coloured lines when the theme has no border art or the icon is tiny.
+    const float BO=Size*.1f;
+    if(!(Size>=16&&CireUIStyle::HasThemeArt()&&CireUITheme::Draw(P,ECireThemePiece::BuffBorder,X-BO,Y-BO,Size+2*BO,Size+2*BO,FMath::Lerp(FLinearColor::White,Border,.6f)*FLinearColor(1.2f,1.2f,1.2f,1))))
+    {P.Line(X,Y,X+Size,Y,Border,W);P.Line(X,Y+Size,X+Size,Y+Size,Border,W);P.Line(X,Y,X,Y+Size,Border,W);P.Line(X+Size,Y,X+Size,Y+Size,Border,W);}
+    else if(E.bFromLocalPlayer)P.Line(X+1,Y+Size-1,X+Size-1,Y+Size-1,Border,1.5f);
     if(E.Stacks>1)P.Text(FString::FromInt(E.Stacks),X+Size-P.TextWidth(FString::FromInt(E.Stacks),Size*.42f,ECireFont::Numbers)-1,Y+Size*.5f,Size*.42f,FLinearColor::White,ECireFont::Numbers,true,false);
     if(UISettings.bShowStatusDurations&&Remaining>0&&Size>=15)
     {

@@ -91,11 +91,12 @@ bool bSuppressFlash = false;
 double Now() { return State.DebugNow >= 0 ? State.DebugNow : FPlatformTime::Seconds(); }
 FVector2D VirtualPointer(-1, -1);
 
-// items-v2: items grant the primary stat and flat stats; path-defining uniques get their own filter.
-const TCHAR* FilterTags[] = {TEXT("path"), TEXT("primary"), TEXT("attack"), TEXT("crit"), TEXT("mana"), TEXT("health"), TEXT("armor"),
-    TEXT("ward"), TEXT("defense"), TEXT("cooldown"), TEXT("boots"), TEXT("support"), TEXT("active"), TEXT("consumable")};
-const TCHAR* FilterNames[] = {TEXT("Path Uniques"), TEXT("Primary Stat"), TEXT("Attack & Speed"), TEXT("Crit & Lifesteal"), TEXT("Mana & Regen"),
-    TEXT("Health"), TEXT("Armor"), TEXT("Spell Ward"), TEXT("Mitigation"), TEXT("Cooldowns"), TEXT("Boots"), TEXT("Support"), TEXT("Active Use"), TEXT("Consumables")};
+// items-v2 / rules-conformance: items grant the primary stat and flat stats (completed items add damage
+// reduction); path-defining uniques get their own filter.
+const TCHAR* FilterTags[] = {TEXT("path"), TEXT("primary"), TEXT("attack"), TEXT("block"), TEXT("mana"), TEXT("health"), TEXT("armor"),
+    TEXT("ward"), TEXT("defense"), TEXT("heal"), TEXT("boots"), TEXT("support"), TEXT("active"), TEXT("consumable")};
+const TCHAR* FilterNames[] = {TEXT("Path Uniques"), TEXT("Primary Stat"), TEXT("Attack"), TEXT("Damage Reduction"), TEXT("Mana"),
+    TEXT("Health"), TEXT("Armor"), TEXT("Spell Ward"), TEXT("Mitigation"), TEXT("Healing"), TEXT("Boots"), TEXT("Support"), TEXT("Active Use"), TEXT("Consumables")};
 TWeakObjectPtr<const ACireHero> GShopViewer; // items-v2: whose primary stat "+X Primary Stat" names
 bool IsPathUnique(const CI::ItemDef& Item) { return Item.UniqueGroup == "path"; }
 constexpr int32 FilterCount = UE_ARRAY_COUNT(FilterTags);
@@ -1273,7 +1274,9 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
             State.Toasts.RemoveAll([](const FToast& T) { return T.Title == TEXT("SKILL SHOP OPEN"); });
             AddToast(TEXT("SKILL SHOP OPEN"), FString::Printf(TEXT("%s: learn or level skills (%s)."), bPrepBegan ? TEXT("Prep") : TEXT("Wave cleared"),
                 *KeyLabel(HUD, TEXT("ToggleSkillShop"))), TEXT("challenge"), BrightGold, 6.f);
-            if (CireSkillShop::Get().bAutoOpen && AnySkillAffordable(Hero))
+            // monster-expansion: a bonus loot wave runs in this breather: leave the field open for the chase (the key still opens the shop).
+            const bool bBonusChase = GameState->Announcement.StartsWith(TEXT("BONUS LOOT WAVE"));
+            if (CireSkillShop::Get().bAutoOpen && AnySkillAffordable(Hero) && !bBonusChase)
             {
                 if (!Controller->bShop) { Controller->bShop = true; State.PendingTab = 1; }
                 else State.Tab = 1;

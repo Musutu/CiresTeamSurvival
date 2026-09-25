@@ -1,5 +1,6 @@
 // ui-themes: native checks for the UI theme layer (run by RunExpansionChecks --only native).
 #include "CireUITheme.h"
+#include "CireHUD.h"
 #include "CireUIStyle.h"
 #include "CireUISettings.h"
 #if !UE_BUILD_SHIPPING
@@ -33,7 +34,7 @@ bool CireUITheme::RunSmoke()
         Check(CireUIStyle::HasThemeArt(), TEXT("art loaded for ") + T.Id.ToString());
         Check(CireUIColors::Gold.Equals(T.Trim) && CireUIColors::Parchment.Equals(T.Text) && CireUIColors::Ink.Equals(T.Ink),
             TEXT("palette applied for ") + T.Id.ToString());
-        for (int32 I = 0; I < static_cast<int32>(ECireThemePiece::Count); ++I)
+        for (int32 I = 0; I < static_cast<int32>(ECireThemePiece::RequiredCount); ++I)
         {
             const ECireThemePiece Piece = static_cast<ECireThemePiece>(I);
             const bool bResolved = Piece == ECireThemePiece::BarFill ? DrawBarFill(P, 0, 0, 10, 10, FLinearColor::White) : Draw(P, Piece, 0, 0, 64, 32);
@@ -43,9 +44,19 @@ bool CireUITheme::RunSmoke()
                 FString::Printf(TEXT("%s %s uv inside the atlas"), *T.Id.ToString(), PieceName(Piece)));
         }
         Check(DrawFill(P, 0, 0, 10, 10, FLinearColor::White), TEXT("fill resolves for ") + T.Id.ToString());
+        // hud-art: every shipped theme also has the painted state pieces (slot/button states, buff border).
+        for (int32 I = static_cast<int32>(ECireThemePiece::RequiredCount); I < static_cast<int32>(ECireThemePiece::Count); ++I)
+            Check(Draw(P, static_cast<ECireThemePiece>(I), 0, 0, 64, 32), FString::Printf(TEXT("%s resolves state piece %s"), *T.Id.ToString(), PieceName(static_cast<ECireThemePiece>(I))));
     }
     Check(SetActive(FName(TEXT("NoSuchTheme"))) == DefaultId(), TEXT("unknown theme falls back to the default"));
     SetActive(Before);
+
+    // Unit-frame captions: a normal (unranked) monster never reads as a construct ("BRUISERCONSTRUCT").
+    Check(CireUnitFrameHeader(true, false, false, 0, 0, 0, false, TEXT("Bruiser"), FString(), false) == TEXT("BRUISER"), TEXT("normal monster header"));
+    Check(!CireUnitFrameHeader(true, false, false, 0, 2, 0, false, TEXT("Caster"), FString(), true).Contains(TEXT("CONSTRUCT")), TEXT("elite monster header has no CONSTRUCT"));
+    Check(CireUnitFrameHeader(true, false, false, 0, 0, 2, false, TEXT("Bruiser"), TEXT("Veteran"), false) == TEXT("VETERAN  /  BRUISER"), TEXT("ranked monster header"));
+    Check(CireUnitFrameHeader(false, true, false, 2, 0, 0, false, TEXT("Tank"), FString(), false) == TEXT("ALLY  /  TANK"), TEXT("ally hero header"));
+    Check(CireUnitFrameHeader(false, false, false, 0, 0, 0, false, FString(), FString(), false) == TEXT("CONSTRUCT"), TEXT("construct header"));
 
     // Parser rejects broken data with readable errors.
     {

@@ -59,6 +59,7 @@ constexpr KeyedPassive PassiveTable[] = {
     {"controlAmp", PassiveKind::ControlAmp}, {"ultimateUpgrade", PassiveKind::UltimateUpgrade},
     {"attackSplash", PassiveKind::AttackSplash}, {"manaRefund", PassiveKind::ManaRefund},
     {"dodgeCharges", PassiveKind::DodgeCharges}, {"rollHaste", PassiveKind::RollHaste},
+    {"hitGuard", PassiveKind::HitGuard},
 };
 
 // SplitMix64: portable, identical across standard libraries and the Unreal build.
@@ -462,6 +463,13 @@ Totals ComputeTotals(const Catalog& catalog, const Inventory& inventory, const s
                 totals.RollHaste = std::max(totals.RollHaste, passive.Amount);
                 totals.RollHasteDuration = std::max(totals.RollHasteDuration, passive.Duration);
                 break;
+            case PassiveKind::HitGuard:
+                totals.HitGuardCharges += std::max(0, passive.Count);
+                totals.HitGuardPercent = std::max(totals.HitGuardPercent, passive.Amount);
+                totals.HitGuardFlat = std::max(totals.HitGuardFlat, passive.Threshold);
+                totals.HitGuardRecharge = totals.HitGuardRecharge > 0 && passive.Cooldown > 0 ? std::min(totals.HitGuardRecharge, passive.Cooldown)
+                                                                                                : std::max(totals.HitGuardRecharge, passive.Cooldown);
+                break;
             default: break;
             }
         }
@@ -844,33 +852,50 @@ namespace Cires
 {
 namespace Items
 {
-bool StatAllowed(ItemStat stat, ItemTier tier)
+bool StatAllowed(ItemStat stat, ItemTier tier, bool boots)
 {
     switch (stat)
     {
     case ItemStat::Primary: case ItemStat::Health: case ItemStat::Mana: case ItemStat::Armor: case ItemStat::Ward:
-    case ItemStat::AttackSpeed: case ItemStat::CooldownReduction: case ItemStat::MoveSpeed:
-    case ItemStat::HealthRegen: case ItemStat::ManaRegen: case ItemStat::EnergyRegen:
         return true;
-    case ItemStat::DamageReduction: case ItemStat::DamageBlock: case ItemStat::CritChance: case ItemStat::Lifesteal:
+    case ItemStat::MoveSpeed:
+        return boots;       // unique boots: speed (Eric's exception)
+    case ItemStat::DamageReduction: case ItemStat::DamageBlock:
         return tier == ItemTier::Legendary;
     default:
-        return false;   // Strength/Agility/Intelligence, Attack Damage, Spell Power
+        return false;       // attack speed, CDR, regen, crit, lifesteal, STR/AGI/INT, Attack Damage, Spell Power
     }
 }
 
 std::string ValidateStatPolicy(const Catalog& catalog)
 {
     for (const auto& item : catalog.Items)
+    {
+        const bool boots = item.UniqueGroup == "boots";
         for (int index = 0; index < StatCount; ++index)
         {
             const auto stat = static_cast<ItemStat>(index);
-            if (item.Stats.Get(stat) != 0 && !StatAllowed(stat, item.Tier))
-                return item.Id + " grants " + StatKey(stat) + " (items grant the primary stat and flat stats only)";
+            if (item.Stats.Get(stat) != 0 && !StatAllowed(stat, item.Tier, boots))
+                return item.Id + " grants " + StatKey(stat) + " (items grant the primary stat and flat HP/mana/armor/ward only)";
             if (item.Use.Buff.Get(stat) != 0 && !StatAllowed(stat, ItemTier::Legendary))
                 return item.Id + " buff grants " + StatKey(stat);
         }
+        for (const auto& passive : item.Passives)
+        {
+            if (passive.Kind == PassiveKind::HitGuard && item.Tier != ItemTier::Legendary)
+                return item.Id + " has a damage-reduction passive (completed items only)";
+            if (passive.Kind == PassiveKind::AbilityLifesteal || passive.Kind == PassiveKind::AuraRegen)
+                return item.Id + " has a lifesteal/regeneration passive (items grant the primary stat and flat stats only)";
+        }
+    }
     return {};
+}
+
+double ApplyHitGuard(double amount, double percent, double flat)
+{
+    if (!(amount > 0)) return 0;
+    const double reduced = amount * (1.0 - std::clamp(Finite(percent) ? percent : 0.0, 0.0, MaxHitGuardPercent) / 100.0);
+    return std::max(0.0, reduced - std::max(0.0, Finite(flat) ? flat : 0.0));
 }
 
 double ApplyItemMitigation(double amount, double reductionPercent, double block)

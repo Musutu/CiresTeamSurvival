@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "_comment": "items-v2: items grant the owner's primary stat (\"primaryStat\": STR, AGI or INT, whichever is primary), flat health/mana/armor/ward, regen, attack speed, CDR and move speed; completed items add mitigation specials and the path-defining uniques (uniqueGroup \"path\": one per player). Docs/Items.md explains every field and number.",
+  "_comment": "Items grant ONLY the owner's primary stat (\"primaryStat\": STR, AGI or INT, whichever is primary) plus flat health/mana/armor/ward (Eric's universal-scaling ruling). Completed (legendary) items may add damage-reduction effects: damageReduction (% of every hit), damageBlock (flat per hit) and the hitGuard passive (the next hits you take are reduced). Exceptions Eric asked for: boots (move speed; unique boots add a roll burst or +1 dodge charge), the path-defining uniques (uniqueGroup \"path\": one per player; their mechanics) and the group on-use actives. Docs/Items.md explains every field and number.",
   "shopRules": {
     "sellRatio": 0.6,
     "buyAnywhereInPrep": true,
@@ -224,20 +224,19 @@
       "tags": [
         "consumable",
         "attack",
-        "attackspeed"
+        "primary"
       ],
       "use": {
         "kind": "elixir",
         "duration": 180,
         "cooldown": 1,
         "buff": {
-          "primaryStat": 6,
-          "attackSpeed": 12
+          "primaryStat": 10
         },
-        "text": "For 3 minutes: +6 primary stat and +12% attack speed. Persists through death."
+        "text": "For 3 minutes: +10 primary stat. Persists through death."
       },
       "lore": "Distilled from a berserker's last breath.",
-      "effect": "3 min: +6 primary stat, +12% attack speed."
+      "effect": "3 min: +10 primary stat."
     },
     {
       "id": "elixir_of_black_sorcery",
@@ -257,12 +256,12 @@
         "cooldown": 1,
         "buff": {
           "primaryStat": 6,
-          "manaRegen": 3
+          "mana": 300
         },
-        "text": "For 3 minutes: +6 primary stat and +3 mana per second. Persists through death."
+        "text": "For 3 minutes: +6 primary stat and +300 mana. Persists through death."
       },
       "lore": "Ink of a forbidden grimoire, boiled until it screamed.",
-      "effect": "3 min: +6 primary stat, +3 mana/s."
+      "effect": "3 min: +6 primary stat, +300 mana."
     },
     {
       "id": "watchers_lantern",
@@ -398,15 +397,15 @@
       "id": "bone_dagger",
       "name": "Bone Dagger",
       "tier": "basic",
-      "cost": 155,
+      "cost": 140,
       "stats": {
-        "attackSpeed": 12
+        "primaryStat": 4
       },
       "tags": [
-        "speed",
+        "primary",
         "attack"
       ],
-      "effect": "Attack speed (you and your summons).",
+      "effect": "+4 primary stat (the cheap blade).",
       "lore": "Carved from a thighbone. Quick in the hand."
     },
     {
@@ -488,14 +487,17 @@
       "id": "sandglass_charm",
       "name": "Sandglass Charm",
       "tier": "basic",
-      "cost": 190,
+      "cost": 150,
       "stats": {
-        "cooldownReduction": 6
+        "health": 120,
+        "mana": 120
       },
       "tags": [
-        "cooldown"
+        "health",
+        "mana",
+        "support"
       ],
-      "effect": "Cooldown reduction (you, your summons and constructs).",
+      "effect": "Health and mana.",
       "lore": "The sand falls upward when no one watches."
     },
     {
@@ -504,13 +506,15 @@
       "tier": "basic",
       "cost": 130,
       "stats": {
-        "manaRegen": 3
+        "mana": 160,
+        "ward": 8
       },
       "tags": [
         "mana",
-        "regen"
+        "ward",
+        "support"
       ],
-      "effect": "Mana regeneration.",
+      "effect": "Mana and a little ward.",
       "lore": "A small saint, face worn away by prayers."
     },
     {
@@ -523,15 +527,13 @@
         "bone_dagger"
       ],
       "stats": {
-        "primaryStat": 8,
-        "attackSpeed": 15
+        "primaryStat": 12
       },
       "tags": [
         "primary",
-        "attack",
-        "speed"
+        "attack"
       ],
-      "effect": "Primary stat and attack speed.",
+      "effect": "A large primary stat bonus.",
       "lore": "Butcher's work, soldier's grip."
     },
     {
@@ -629,15 +631,16 @@
       ],
       "stats": {
         "primaryStat": 6,
-        "manaRegen": 4
+        "mana": 250,
+        "ward": 10
       },
       "tags": [
         "primary",
         "mana",
-        "regen",
+        "ward",
         "support"
       ],
-      "effect": "Primary stat and mana regeneration.",
+      "effect": "Primary stat, mana and ward.",
       "lore": "A wand bored hollow so the idol's trickle runs straight through it."
     },
     {
@@ -650,15 +653,15 @@
         "bloodstone_shard"
       ],
       "stats": {
-        "cooldownReduction": 8,
-        "health": 250
+        "health": 350,
+        "mana": 200
       },
       "tags": [
-        "cooldown",
         "health",
+        "mana",
         "support"
       ],
-      "effect": "Cooldown reduction and health.",
+      "effect": "Health and mana.",
       "lore": "Every grain of sand in it is a promise someone kept."
     },
     {
@@ -695,14 +698,15 @@
       ],
       "stats": {
         "moveSpeed": 12,
-        "attackSpeed": 18
+        "primaryStat": 6
       },
       "tags": [
         "speed",
         "attack",
+        "primary",
         "boots"
       ],
-      "effect": "Boots: speed and attack speed.",
+      "effect": "Boots: speed and primary stat.",
       "lore": "Soft-soled, silent, and quick to the kill."
     },
     {
@@ -717,14 +721,15 @@
       ],
       "stats": {
         "moveSpeed": 12,
-        "cooldownReduction": 10
+        "mana": 250,
+        "health": 100
       },
       "tags": [
         "speed",
-        "cooldown",
+        "mana",
         "boots"
       ],
-      "effect": "Boots: speed and cooldown reduction.",
+      "effect": "Boots: speed, mana and health.",
       "lore": "Each step lands a heartbeat before it is taken."
     },
     {
@@ -769,7 +774,7 @@
       ],
       "stats": {
         "moveSpeed": 12,
-        "attackSpeed": 10
+        "health": 150
       },
       "tags": [
         "speed",
@@ -798,9 +803,7 @@
         "rusted_longsword"
       ],
       "stats": {
-        "primaryStat": 16,
-        "attackSpeed": 20,
-        "critChance": 20
+        "primaryStat": 26
       },
       "tags": [
         "primary",
@@ -815,7 +818,7 @@
           "amount": 0.25
         }
       ],
-      "effect": "+20% crit chance; crits deal 175%.",
+      "effect": "Your critical strikes deal 175% (crits come from the DPS trait and skills).",
       "lore": "Forged at dusk, quenched at midnight, never shown the sun."
     },
     {
@@ -829,25 +832,26 @@
         "rusted_longsword"
       ],
       "stats": {
-        "primaryStat": 16,
-        "health": 250,
-        "lifesteal": 12
+        "primaryStat": 20,
+        "health": 350
       },
       "tags": [
         "primary",
         "attack",
-        "lifesteal",
-        "health"
+        "health",
+        "block"
       ],
       "passives": [
         {
-          "kind": "abilityLifesteal",
-          "name": "Blood Tithe",
-          "text": "Your abilities also heal you for 6% of the damage they deal.",
-          "amount": 6
+          "kind": "hitGuard",
+          "name": "Blood Parry",
+          "text": "You hold 2 parry charges (one returns every 8 seconds). Each hit you take spends one and is reduced by 35%.",
+          "amount": 35,
+          "count": 2,
+          "cooldown": 8
         }
       ],
-      "effect": "12% attack lifesteal; abilities heal 6% of their damage.",
+      "effect": "The next 2 hits you take are reduced by 35% (a charge returns every 8 s).",
       "lore": "The duelist who carried it never lost a drop of his own."
     },
     {
@@ -861,8 +865,7 @@
         "bone_dagger"
       ],
       "stats": {
-        "primaryStat": 18,
-        "attackSpeed": 12,
+        "primaryStat": 22,
         "health": 200
       },
       "tags": [
@@ -893,13 +896,11 @@
         "bone_dagger"
       ],
       "stats": {
-        "primaryStat": 10,
-        "attackSpeed": 32
+        "primaryStat": 22
       },
       "tags": [
         "primary",
-        "attack",
-        "speed"
+        "attack"
       ],
       "passives": [
         {
@@ -956,14 +957,12 @@
         "pilgrims_idol"
       ],
       "stats": {
-        "primaryStat": 10,
-        "mana": 500,
-        "manaRegen": 5
+        "primaryStat": 12,
+        "mana": 700
       },
       "tags": [
         "primary",
-        "mana",
-        "regen"
+        "mana"
       ],
       "passives": [
         {
@@ -987,13 +986,13 @@
         "ashwood_wand"
       ],
       "stats": {
-        "primaryStat": 8,
-        "cooldownReduction": 12,
-        "health": 200
+        "primaryStat": 14,
+        "health": 250
       },
       "tags": [
         "primary",
-        "cooldown",
+        "health",
+        "defense",
         "active"
       ],
       "use": {
@@ -1052,16 +1051,15 @@
         "gauntlet_of_the_ox"
       ],
       "stats": {
-        "health": 600,
-        "primaryStat": 6,
-        "healthRegen": 4,
+        "health": 700,
+        "primaryStat": 8,
         "damageReduction": 6
       },
       "tags": [
         "health",
         "primary",
-        "regen",
-        "defense"
+        "defense",
+        "block"
       ],
       "passives": [
         {
@@ -1119,8 +1117,8 @@
         "aether_conduit"
       ],
       "stats": {
-        "primaryStat": 10,
-        "manaRegen": 5
+        "primaryStat": 12,
+        "mana": 300
       },
       "tags": [
         "primary",
@@ -1151,24 +1149,27 @@
       ],
       "stats": {
         "ward": 20,
-        "attackSpeed": 10,
-        "moveSpeed": 5
+        "primaryStat": 8,
+        "health": 150
       },
       "tags": [
         "ward",
-        "speed",
-        "active"
+        "primary",
+        "defense",
+        "block"
       ],
-      "use": {
-        "kind": "haste",
-        "name": "Scatter",
-        "amount": 40,
-        "duration": 3,
-        "cooldown": 40,
-        "text": "Gain 40% move speed for 3 seconds and shake off slows. 40 s cooldown."
-      },
-      "effect": "Active: burst of speed that shakes off slows.",
-      "lore": "When the flock scatters, look for the one that stayed."
+      "effect": "The next 3 hits you take lose 40 damage each (a charge returns every 10 s).",
+      "lore": "When the flock scatters, look for the one that stayed.",
+      "passives": [
+        {
+          "kind": "hitGuard",
+          "name": "Scatter",
+          "text": "You hold 3 feather charges (one returns every 10 seconds). Each hit you take spends one and loses 40 damage.",
+          "threshold": 40,
+          "count": 3,
+          "cooldown": 10
+        }
+      ]
     },
     {
       "id": "aegis_of_the_last_oath",
@@ -1217,14 +1218,12 @@
         "boiled_jerkin"
       ],
       "stats": {
-        "health": 300,
-        "armor": 20,
-        "cooldownReduction": 10
+        "health": 400,
+        "armor": 25
       },
       "tags": [
         "health",
         "armor",
-        "cooldown",
         "support",
         "active",
         "aura"
@@ -1254,9 +1253,8 @@
         "nightglass_shard"
       ],
       "stats": {
-        "primaryStat": 6,
-        "mana": 300,
-        "manaRegen": 4
+        "primaryStat": 8,
+        "mana": 500
       },
       "tags": [
         "primary",
@@ -1288,15 +1286,16 @@
         "bloodstone_shard"
       ],
       "stats": {
-        "primaryStat": 8,
+        "primaryStat": 10,
         "health": 300,
-        "manaRegen": 3
+        "mana": 150
       },
       "tags": [
         "primary",
         "support",
         "heal",
         "health",
+        "mana",
         "active"
       ],
       "use": {
@@ -1322,15 +1321,14 @@
         "ashwood_wand"
       ],
       "stats": {
-        "primaryStat": 16,
-        "cooldownReduction": 10,
-        "mana": 200
+        "primaryStat": 18,
+        "mana": 300
       },
       "tags": [
         "path",
         "construct",
         "primary",
-        "cooldown"
+        "mana"
       ],
       "passives": [
         {
@@ -1362,9 +1360,8 @@
         "bone_dagger"
       ],
       "stats": {
-        "primaryStat": 18,
-        "mana": 300,
-        "attackSpeed": 10
+        "primaryStat": 20,
+        "mana": 300
       },
       "tags": [
         "path",
@@ -1428,10 +1425,9 @@
         "sandglass_charm"
       ],
       "stats": {
-        "primaryStat": 8,
+        "primaryStat": 10,
         "health": 350,
-        "ward": 25,
-        "cooldownReduction": 10
+        "ward": 25
       },
       "tags": [
         "path",
@@ -1464,15 +1460,14 @@
         "gauntlet_of_the_ox"
       ],
       "stats": {
-        "primaryStat": 10,
-        "health": 350,
-        "cooldownReduction": 15
+        "primaryStat": 16,
+        "health": 350
       },
       "tags": [
         "path",
         "ultimate",
         "primary",
-        "cooldown"
+        "health"
       ],
       "passives": [
         {
@@ -1496,15 +1491,14 @@
         "gauntlet_of_the_ox"
       ],
       "stats": {
-        "primaryStat": 18,
-        "attackSpeed": 20,
+        "primaryStat": 24,
         "health": 200
       },
       "tags": [
         "path",
         "attack",
         "primary",
-        "speed"
+        "health"
       ],
       "passives": [
         {

@@ -13,6 +13,7 @@
 #include "CireRaces.h" // monster-races
 #include "CireFabAnimation.h" // paladin-hq
 #include "CireMobility.h" // paladin-hq: tank body scale
+#include "CireMonsterExpansion.h" // monster-expansion
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -577,6 +578,103 @@ void Paladins(const FString& Mode)
     Look(Target + ToCamera * Distance + FVector(0, 0, Mode == TEXT("detail") ? 30.f : 45.f), Target, Mode == TEXT("detail") ? 34.f : 45.f);
 }
 
+// monster-expansion: the Bestiary creatures (Docs/MonsterExpansion.md). One creature in four states side by side
+// (idle, walk mid-stride, attack at contact, end of death), the full lineup next to a hollow infantry for scale,
+// and the Rare Spawn / Bonus Loot looks.
+float BodyHeight(const ACireMonster* M) { return M ? M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.f : 180.f; }
+float BodyWidth(const ACireMonster* M)
+{
+    if (!M || !M->GetMesh()) return 200.f;
+    const FBoxSphereBounds B = M->GetMesh()->CalcBounds(M->GetMesh()->GetComponentTransform());
+    return FMath::Clamp(static_cast<float>(FMath::Max(B.BoxExtent.X, B.BoxExtent.Y)) * 2.f, 120.f, 900.f);
+}
+void CreaturePhases(FName Id)
+{
+    const FVector C = G.Studio;
+    const TCHAR* Roles[] = {TEXT("idle"), TEXT("walk"), TEXT("attack"), TEXT("death")};
+    const TCHAR* Captions[] = {TEXT("idle"), TEXT("walk"), TEXT("attack (contact)"), TEXT("death")};
+    ACireMonster* Probe = Spawn(Id, 0, C + FVector(0, 4000, 0), 0);
+    const float Width = BodyWidth(Probe), Height = BodyHeight(Probe);
+    if (Probe) { G.Scene.Remove(Probe); Probe->Destroy(); }
+    const float Step = FMath::Max(300.f, Width * .9f);
+    for (int32 I = 0; I < 4; ++I)
+    {
+        const FVector At = C + FVector(0, (1.5f - I) * Step, 0); // left to right on screen: idle, walk, attack, death
+        ACireMonster* M = Spawn(Id, 0, At, 0);
+        if (!M || !M->MonsterArt) continue;
+        const CireMonsterArt::FClipWindow W = M->MonsterArt->WindowOf(Roles[I]);
+        const float T = I == 0 ? W.End * .3f : I == 1 ? W.End * .35f : I == 2 ? W.Contact : FMath::Max(0.f, W.End - .05f);
+        Pose(M, Roles[I], T);
+        Label(At + FVector(0, 0, Height + 40), Captions[I], FColor(246, 219, 155), FMath::Clamp(Height * .09f, 13.f, 30.f), 0);
+    }
+    const FCireNPCArchetype* A = CireNPCArchetypes::Find(Id);
+    Label(C + FVector(0, 0, Height + 140), (A ? A->DisplayName : Id.ToString()) + TEXT("  (") + (Probe ? VariantName(Probe) : FString()) + TEXT(")"), FColor::White, FMath::Clamp(Height * .12f, 20.f, 40.f), 0);
+    const float Span = Step * 4.f;
+    Look(C + FVector(FMath::Max(1400.f, Span * 1.05f), 0, Height * .7f + 120.f), C + FVector(0, 0, Height * .42f), 50);
+}
+void BestiaryLineup()
+{
+    const FVector C = G.Studio;
+    TArray<FName> Ids = {TEXT("hollow_infantry")};
+    for (const auto& Creature : CireMonsterExpansion::Creatures()) Ids.Add(Creature.Id);
+    TArray<ACireMonster*> Bodies; TArray<float> Widths; float Total = 0.f, Tallest = 0.f;
+    for (const FName Id : Ids)
+    {
+        ACireMonster* M = Spawn(Id, 0, C + FVector(0, 6000 + Bodies.Num() * 900.f, 0), 0);
+        Bodies.Add(M); const float Wd = FMath::Max(180.f, BodyWidth(M) * .75f); Widths.Add(Wd); Total += Wd; Tallest = FMath::Max(Tallest, BodyHeight(M));
+    }
+    float Y = -Total * .5f;
+    for (int32 I = 0; I < Bodies.Num(); ++I)
+    {
+        ACireMonster* M = Bodies[I];
+        Y += Widths[I] * .5f;
+        if (M)
+        {
+            const FVector At = C + FVector(0, Y, 0);
+            M->SetActorLocation(FVector(At.X, At.Y, FloorZ(At) + M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+            Label(At + FVector(0, 0, BodyHeight(M) + 30), M->GetNPCDisplayName(), FColor::White, 15, 0);
+        }
+        Y += Widths[I] * .5f;
+    }
+    Label(C + FVector(0, 0, Tallest + 120), TEXT("Bestiary: the new creatures next to a Hollow Infantry"), FColor::White, 26, 0);
+    Look(C + FVector(FMath::Max(1600.f, Total * 1.2f), 0, Tallest * .6f + 150.f), C + FVector(0, 0, Tallest * .35f), 52);
+}
+void SpecialLook(uint8 Kind)
+{
+    const FVector C = G.Studio;
+    TArray<FName> Ids;
+    if (Kind == 2) Ids = {TEXT("treasure_goblin"), TEXT("treasure_goblin"), TEXT("gilded_stag"), TEXT("treasure_goblin")};
+    else Ids = {TEXT("lich_revenant"), TEXT("horned_brute"), TEXT("frostfang_alpha"), TEXT("storm_griffon"), TEXT("cinder_drake")};
+    float Tallest = 0.f, Total = 0.f;
+    TArray<ACireMonster*> Bodies; TArray<float> Widths;
+    for (int32 I = 0; I < Ids.Num(); ++I)
+    {
+        ACireMonster* M = Spawn(Ids[I], 0, C + FVector(0, 6000 + I * 900.f, 0), Kind == 2 ? 20.f * (I - 1.5f) : 0.f);
+        Bodies.Add(M); Widths.Add(FMath::Max(300.f, BodyWidth(M) * .8f)); Total += Widths.Last();
+    }
+    float Y = Total * .5f;
+    for (int32 I = 0; I < Ids.Num(); ++I)
+    {
+        ACireMonster* M = Bodies[I];
+        Y -= Widths[I] * .5f;
+        const FVector At = C + FVector(0, Y, 0);
+        Y -= Widths[I] * .5f;
+        if (!M) continue;
+        M->SetActorLocation(FVector(At.X, At.Y, FloorZ(At) + M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+        CireRaces::ApplyRank(M, Kind == 1 ? ECireNPCRank::Elite : ECireNPCRank::Normal, 0);
+        const FCireNPCArchetype* A = M->NPCState ? M->NPCState->Archetype() : nullptr;
+        M->SpecialSpawn = Kind;
+        M->MonsterName = Kind == 1 ? FString(TEXT("Rare ")) + (A ? A->DisplayName : FString()) : (A ? A->DisplayName : FString());
+        CireRaces::ApplySkin(M);
+        if (Kind == 2 && M->MonsterArt) Pose(M, TEXT("run"), M->MonsterArt->WindowOf(TEXT("run")).End * (.2f + .15f * I));
+        Tallest = FMath::Max(Tallest, BodyHeight(M));
+        Label(M->GetActorLocation() + FVector(0, 0, BodyHeight(M) * .5f + 30), M->GetNPCDisplayName(),
+            Kind == 1 ? FColor(51, 242, 255) : FColor(255, 199, 31), 15, 0);
+    }
+    Label(C + FVector(0, 0, Tallest + 130), Kind == 1 ? TEXT("Rare Spawns: rare glow, Rare plate, aura") : TEXT("Bonus Loot Wave: the goblin hoard fleeing"), FColor::White, 24, 0);
+    Look(C + FVector(FMath::Max(1500.f, Total * 1.15f), 0, Tallest * .6f + 150.f), C + FVector(0, 0, Tallest * .35f), 55);
+}
+
 void EnterStage(const FStage& S)
 {
     if (!S.bKeepScene) ClearScene();
@@ -592,6 +690,10 @@ void EnterStage(const FStage& S)
     else if (N.StartsWith(TEXT("races_"))) RaceLineup(FName(*N.Mid(6))); // monster-races
     else if (N.StartsWith(TEXT("close_"))) Closeup(N.Mid(6));
     else if (N.StartsWith(TEXT("pala_"))) Paladins(N.Mid(5)); // paladin-hq
+    else if (N.StartsWith(TEXT("creature_"))) CreaturePhases(FName(*N.Mid(9))); // monster-expansion
+    else if (N == TEXT("bestiary")) BestiaryLineup();
+    else if (N == TEXT("rare_look")) SpecialLook(1);
+    else if (N == TEXT("bonus_look")) SpecialLook(2);
     else if (N == TEXT("ranks_close")) RankLineup(TEXT("tidecaller"), false);
     else if (N == TEXT("ranks_close_hollow")) RankLineup(TEXT("hollow_infantry"), false);
     else if (N == TEXT("ranks_gameplay")) RankLineup(TEXT("deepspawn_thrall"), true);
@@ -704,6 +806,14 @@ bool Build(ACireGameMode& Mode, ACireController& Controller)
     for (const FString& Only : G.Only) if (Only.StartsWith(TEXT("close_"))) G.Stages.Add({Only, 3.f, false});
     for (const TCHAR* Name : {TEXT("pala_front"), TEXT("pala_back"), TEXT("pala_idle"), TEXT("pala_run"), TEXT("pala_attack"), TEXT("pala_cast"), TEXT("pala_roll"), TEXT("pala_death"), TEXT("pala_game"), TEXT("pala_detail")})
         if (G.Only.ContainsByPredicate([Name](const FString& Prefix) { return FString(Name).StartsWith(Prefix); })) G.Stages.Add({Name, 4.f, false}); // paladin-hq
+    // monster-expansion: bestiary lineup, every creature in four states, rare and bonus looks.
+    {
+        TArray<FString> Expansion = {TEXT("bestiary")};
+        for (const auto& Creature : CireMonsterExpansion::Creatures()) Expansion.Add(TEXT("creature_") + Creature.Id.ToString());
+        Expansion.Append({TEXT("rare_look"), TEXT("bonus_look")});
+        for (const FString& Name : Expansion)
+            if (G.Only.IsEmpty() || G.Only.ContainsByPredicate([&Name](const FString& Prefix) { return Name.StartsWith(Prefix); })) G.Stages.Add({Name, 3.f, false});
+    }
     if (G.Only.IsEmpty() || G.Only.Contains(TEXT("town")))
     {
         G.Stages.Add({TEXT("town_march"), 4.f, false});
