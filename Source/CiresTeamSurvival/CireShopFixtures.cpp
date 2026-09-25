@@ -16,6 +16,7 @@
 #include "CireShopUI.h"
 #include "CireSkillShop.h"
 #include "CirePolymorph.h"
+#include "CireCrowdControl.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -472,7 +473,14 @@ bool TickNetServer(ACireGameMode* Mode)
         const FCireSkillRank* Rank = I->SkillRanks.FindByPredicate([](const FCireSkillRank& R) { return R.Level == 2; });
         const int32 Spent = CireSkillShop::BuyPrice(Hero, Rank->Id) > 0 ? 500 - Hero->Gold : -1;
         if (!S || S->ProgressionMode != 1 || !Hero->Skills.Contains(Rank->Id) || Spent <= 0) { Fail(TEXT("server Skill Shop state")); return true; }
-        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_PASS skill=%s level=2 spent=%d mode=SkillShop (client could not change it)"), *Rank->Id, Spent);
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_SKILL_PASS skill=%s level=2 spent=%d mode=SkillShop (client could not change it)"), *Rank->Id, Spent);
+        // Polymorph replication: a monster next to the client's hero becomes a Piglet.
+        SetPhase(Mode, 0);
+        FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        ACireMonster* Critter = Mode->GetWorld()->SpawnActor<ACireMonster>(Hero->GetActorLocation() + Hero->GetActorForwardVector() * 450.f, FRotator::ZeroRotator, Params);
+        if (Critter) { Critter->Lane = Hero->TeamId; Critter->Health = Critter->MaxHealth = 5000; Mode->Monsters.Add(Critter); }
+        if (!Critter || CirePolymorph::Apply(Critter, 60.f, Hero, 1) <= 0) { Fail(TEXT("polymorph fixture")); return true; }
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_PASS polymorph=Piglet"));
         G.NetStep = 7;
     }
     else if (G.NetStep == 5 && Now - G.NetStepAt > 8.0) { Fail(TEXT("owner could not open their chest")); return true; }
@@ -693,10 +701,23 @@ bool CireShopFixtures::TickClient(ACireController* Controller)
         break;
     case 16:
         if (!(CireSkillShop::Level(Hero, C.SkillId) == 2 && Hero->Gold == 500 - C.SkillPrice - C.LevelPrice && Saw(ECireShopAction::SkillLevel, true))) return true;
-        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_PASS skill=%s level=2 gold=%d replicated_ranks=1 mode_unchanged=1"), *C.SkillId, Hero->Gold);
-        C.bDone = true;
-        FPlatformMisc::RequestExitWithStatus(false, 0);
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_SKILL_PASS skill=%s level=2 gold=%d replicated_ranks=1 mode_unchanged=1"), *C.SkillId, Hero->Gold);
+        Next();
         break;
+    case 17:
+    {
+        // The server polymorphed a monster: the buff record (critter = Piglet) replicates and the
+        // client draws the critter body.
+        for (TActorIterator<ACireMonster> It(Controller->GetWorld()); It; ++It)
+            if (CirePolymorph::CritterOf(*It) == 1 && CirePolymorph::HasCritterVisual(*It) && CireCrowdControl::IsStunned(*It))
+            {
+                UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_PASS polymorph_replicated=1 critter=Piglet visual=1"));
+                C.bDone = true;
+                FPlatformMisc::RequestExitWithStatus(false, 0);
+                return true;
+            }
+        return true;
+    }
     default: break;
     }
     if (Now - C.StepAt > 20) Fail(TEXT("step timed out"));
