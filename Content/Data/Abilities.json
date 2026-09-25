@@ -1323,8 +1323,8 @@
    ],
    "section": "attack",
    "effectTags": [
-    "Armor Break",
     "Execute",
+    "Armor Break",
     "Damage"
    ]
   },
@@ -3916,8 +3916,8 @@
    ],
    "section": "defensive",
    "effectTags": [
-    "Cleanse",
-    "Haste"
+    "Haste",
+    "Cleanse"
    ]
   },
   "crescent_volley": {
@@ -4961,6 +4961,1588 @@
     "Construct",
     "Guard"
    ]
+  },
+  "riposte_roll": {
+   "id": "riposte_roll",
+   "name": "Riposte",
+   "icon": "/Game/UI/Abilities/T_riposte_roll",
+   "types": [
+    "DPS",
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 60,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 700,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "counter damage",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Counter",
+    "I-Frame",
+    "Damage"
+   ],
+   "description": "A hit you dodge during the roll's i-frames triggers a counter strike on the attacker for {effect} + 1x primary stat damage (once per roll).",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "signatureOf": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 1.0
+   },
+   "level15": {}
+  },
+  "tumblers_edge": {
+   "id": "tumblers_edge",
+   "name": "Tumbler's Edge",
+   "icon": "/Game/UI/Abilities/T_tumblers_edge",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 50,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 4
+   },
+   "effectLabel": "% next attack damage",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 120,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Empower",
+    "Next Attack"
+   ],
+   "description": "After a roll, your next basic attack within 4s deals {effect}% more damage.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "signatureOf": [
+    "ranger",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "killer_instinct": {
+   "id": "killer_instinct",
+   "name": "Killer Instinct",
+   "icon": "/Game/UI/Abilities/T_killer_instinct",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 100,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 4
+   },
+   "effectLabel": "% crit chance",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 100,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Crit",
+    "Next Attack"
+   ],
+   "description": "After a roll, your next basic attack within 4s is a guaranteed critical strike.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "signatureOf": [
+    "ranger",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "fleet_recovery": {
+   "id": "fleet_recovery",
+   "name": "Fleet Recovery",
+   "icon": "/Game/UI/Abilities/T_fleet_recovery",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "nature",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 5,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% max health per roll",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 12,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Defensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Heal"
+   ],
+   "description": "Every dodge roll restores {effect}% of your maximum health + 0.5x primary stat.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_warden"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0.5
+   },
+   "level15": {}
+  },
+  "windrunner": {
+   "id": "windrunner",
+   "name": "Windrunner",
+   "icon": "/Game/UI/Abilities/T_windrunner",
+   "types": [
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "storm",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 5
+   },
+   "effectLabel": "% move speed",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 25,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Defensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Haste",
+    "Move Speed"
+   ],
+   "description": "Every dodge roll grants {effect}% movement speed for 5s.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "scholar",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "ranger",
+    "scholar",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_warden"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "quickened_mind": {
+   "id": "quickened_mind",
+   "name": "Quickened Mind",
+   "icon": "/Game/UI/Abilities/T_quickened_mind",
+   "types": [
+    "HEAL",
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "arcane",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 6,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 6
+   },
+   "effectLabel": "s window",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 10,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Instant Cast"
+   ],
+   "description": "After a roll, your next spell with a cast time (within {effect}s) is cast instantly.",
+   "effects": [],
+   "champions": [
+    "scholar",
+    "wizard",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "witch_slayer",
+    "aetheri_artificer",
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "scholar",
+    "wizard",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "witch_slayer",
+    "aetheri_artificer",
+    "aetheri_warden"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "hasted_tumble": {
+   "id": "hasted_tumble",
+   "name": "Hasted Tumble",
+   "icon": "/Game/UI/Abilities/T_hasted_tumble",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "arcane",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 15,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% cooldown cut per roll",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 30,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Cooldown"
+   ],
+   "description": "Every dodge roll shortens the remaining cooldowns of your active skills by {effect}%.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "scholar",
+    "lancer",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "ranger",
+    "scholar",
+    "lancer",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "ember_wake": {
+   "id": "ember_wake",
+   "name": "Ember Wake",
+   "icon": "/Game/UI/Abilities/T_ember_wake",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "fire",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 40,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 180,
+    "duration": 0
+   },
+   "effectLabel": "fire damage",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Trail",
+    "Damage"
+   ],
+   "description": "Your roll leaves a line of embers: enemies within 1.8m of the path take {effect} + 0.6x primary stat fire damage.",
+   "effects": [],
+   "champions": [
+    "lancer",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "gunblade"
+   ],
+   "signatureOf": [
+    "lancer",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "gunblade"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0.6
+   },
+   "level15": {}
+  },
+  "frost_wake": {
+   "id": "frost_wake",
+   "name": "Frost Wake",
+   "icon": "/Game/UI/Abilities/T_frost_wake",
+   "types": [
+    "DPS",
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "cold",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 25,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 180,
+    "duration": 3
+   },
+   "effectLabel": "frost damage",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Crowd Control"
+   ],
+   "effectTags": [
+    "Roll",
+    "Slow",
+    "Trail",
+    "Damage"
+   ],
+   "description": "Your roll leaves a frost trail: enemies within 1.8m of the path take {effect} + 0.4x primary stat damage and are slowed 40% for 3s.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "area",
+     "duration": 3,
+     "magnitude": 0.4,
+     "radius": 180,
+     "label": "Move -40%"
+    }
+   ],
+   "champions": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "orc_chieftain",
+    "wizard",
+    "huntress"
+   ],
+   "signatureOf": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "orc_chieftain",
+    "wizard",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0.4
+   },
+   "level15": {}
+  },
+  "momentum": {
+   "id": "momentum",
+   "name": "Momentum",
+   "icon": "/Game/UI/Abilities/T_momentum",
+   "types": [
+    "DPS",
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 4,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 8
+   },
+   "effectLabel": "% damage per stack",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 8,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Stacking",
+    "Empower"
+   ],
+   "description": "Each roll grants a Momentum stack for 8s (max 5): +{effect}% damage per stack.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "signatureOf": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "blur_step": {
+   "id": "blur_step",
+   "name": "Blur",
+   "icon": "/Game/UI/Abilities/T_blur_step",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "shadow",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 25,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 3
+   },
+   "effectLabel": "% dodge chance",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 50,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Defensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Dodge"
+   ],
+   "description": "After a roll you blur for 3s: {effect}% chance to dodge incoming attacks.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "signatureOf": [
+    "ranger",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "slippery_roll": {
+   "id": "slippery_roll",
+   "name": "Slippery",
+   "icon": "/Game/UI/Abilities/T_slippery_roll",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "nature",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 1,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "debuff cleansed per roll",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 1,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Defensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Cleanse"
+   ],
+   "description": "Every dodge roll cleanses one debuff: slows first, then healing cuts, silences and armor breaks.",
+   "effects": [
+    {
+     "type": "cleanse",
+     "zone": "self",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_warden"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "bloodrush": {
+   "id": "bloodrush",
+   "name": "Bloodrush",
+   "icon": "/Game/UI/Abilities/T_bloodrush",
+   "types": [
+    "DPS",
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 100,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% roll reset",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 100,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "passive",
+   "categories": [
+    "Passives",
+    "Offensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Reset"
+   ],
+   "description": "Killing an enemy resets your dodge roll cooldown and refunds its energy.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "signatureOf": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "tumble_strike": {
+   "id": "tumble_strike",
+   "name": "Tumble Strike",
+   "icon": "/Game/UI/Abilities/T_tumble_strike",
+   "types": [
+    "DPS",
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 70,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 700,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "attack",
+   "categories": [
+    "Offensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Gap Closer",
+    "Damage"
+   ],
+   "description": "Roll toward your target (ignores the dodge cooldown and triggers your roll skills), then strike for {effect} + 1.5x primary stat damage.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "signatureOf": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 1.5
+   },
+   "level15": {}
+  },
+  "mine_layer": {
+   "id": "mine_layer",
+   "name": "Caltrop Mine",
+   "icon": "/Game/UI/Abilities/T_mine_layer",
+   "types": [
+    "DPS",
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 80,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 16,
+    "castTime": 0,
+    "range": 0,
+    "radius": 250,
+    "duration": 20
+   },
+   "effectLabel": "mine damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "construct",
+   "categories": [
+    "Constructs",
+    "Crowd Control"
+   ],
+   "effectTags": [
+    "Roll",
+    "Trap",
+    "Slow",
+    "Damage"
+   ],
+   "description": "For 8s your next roll drops a caltrop mine (20s, up to 2): the first enemy within 1.5m sets it off for {effect} + 1x primary stat damage and a 50% slow for 2s in 2.5m.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "area",
+     "duration": 2,
+     "magnitude": 0.5,
+     "radius": 250,
+     "label": "Move -50%"
+    }
+   ],
+   "champions": [
+    "ranger",
+    "dwarf_miner",
+    "gunblade",
+    "huntress",
+    "aetheri_artificer"
+   ],
+   "signatureOf": [
+    "ranger",
+    "dwarf_miner",
+    "gunblade",
+    "huntress",
+    "aetheri_artificer"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 1.0
+   },
+   "level15": {},
+   "category": "construct"
+  },
+  "taunting_tumble": {
+   "id": "taunting_tumble",
+   "name": "Taunting Tumble",
+   "icon": "/Game/UI/Abilities/T_taunting_tumble",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 3,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 18,
+    "castTime": 0,
+    "range": 0,
+    "radius": 500,
+    "duration": 8
+   },
+   "effectLabel": "s taunt",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "control",
+   "categories": [
+    "Crowd Control",
+    "Defensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Taunt",
+    "Guard"
+   ],
+   "description": "For 8s each roll taunts monsters within 5m for {effect}s and guards you (20% damage reduction) briefly.",
+   "effects": [
+    {
+     "type": "taunt",
+     "zone": "area",
+     "duration": 3,
+     "magnitude": 0.0,
+     "radius": 500
+    },
+    {
+     "type": "guard",
+     "zone": "self",
+     "duration": 1.5,
+     "magnitude": 0.2,
+     "radius": 0.0,
+     "label": "DEF +20%"
+    }
+   ],
+   "champions": [
+    "knight",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman"
+   ],
+   "signatureOf": [
+    "knight",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "shield_tumble": {
+   "id": "shield_tumble",
+   "name": "Shield Tumble",
+   "icon": "/Game/UI/Abilities/T_shield_tumble",
+   "types": [
+    "HEAL",
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 5,
+    "manaCost": 40,
+    "energyCost": 0,
+    "cooldown": 20,
+    "castTime": 0,
+    "range": 0,
+    "radius": 800,
+    "duration": 10
+   },
+   "effectLabel": "% max health heal",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 10,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "defensive",
+   "categories": [
+    "Defensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Shield",
+    "Heal",
+    "Guard"
+   ],
+   "description": "For 10s each roll grants the nearest ally within 8m a 40% guard for 3s and heals them for {effect}% of their max health + 1x your primary stat.",
+   "effects": [
+    {
+     "type": "guard",
+     "zone": "target",
+     "duration": 3,
+     "magnitude": 0.4,
+     "radius": 0.0,
+     "label": "DEF +40%"
+    }
+   ],
+   "champions": [
+    "knight",
+    "scholar",
+    "paladin_righteous",
+    "paladin_holy",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "aetheri_warden"
+   ],
+   "signatureOf": [
+    "knight",
+    "scholar",
+    "paladin_righteous",
+    "paladin_holy",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "aetheri_warden"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 1.0
+   },
+   "level15": {}
+  },
+  "venom_tumble": {
+   "id": "venom_tumble",
+   "name": "Venom Tumble",
+   "icon": "/Game/UI/Abilities/T_venom_tumble",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "poison",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 30,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 16,
+    "castTime": 0,
+    "range": 0,
+    "radius": 180,
+    "duration": 8
+   },
+   "effectLabel": "poison damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "control",
+   "categories": [
+    "Crowd Control",
+    "Offensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Trail",
+    "Heal Cut",
+    "Damage"
+   ],
+   "description": "For 8s your rolls leave venom: enemies within 1.8m of the path take {effect} + 0.5x primary stat damage and receive 30% less healing for 5s.",
+   "effects": [
+    {
+     "type": "healCut",
+     "zone": "area",
+     "duration": 5,
+     "magnitude": 0.3,
+     "radius": 180,
+     "label": "Healing -30%"
+    }
+   ],
+   "champions": [
+    "ranger",
+    "troll_berserker_ranged",
+    "dryad",
+    "witch_slayer",
+    "huntress"
+   ],
+   "signatureOf": [
+    "ranger",
+    "troll_berserker_ranged",
+    "dryad",
+    "witch_slayer",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0.5
+   },
+   "level15": {}
+  },
+  "shadow_dance": {
+   "id": "shadow_dance",
+   "name": "Shadow Dance",
+   "icon": "/Game/UI/Abilities/T_shadow_dance",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "shadow",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 70,
+    "manaCost": 0,
+    "energyCost": 20,
+    "cooldown": 30,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 10
+   },
+   "effectLabel": "% roll cooldown cut",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 85,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "defensive",
+   "categories": [
+    "Defensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "Cooldown",
+    "Haste"
+   ],
+   "description": "For 10s your dodge roll recovers {effect}% faster and refunds its energy.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "signatureOf": [
+    "ranger",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0
+   },
+   "level15": {}
+  },
+  "evasive_stance": {
+   "id": "evasive_stance",
+   "name": "Evasive Stance",
+   "icon": "/Game/UI/Abilities/T_evasive_stance",
+   "types": [
+    "DPS",
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 3,
+    "manaCost": 0,
+    "energyCost": 20,
+    "cooldown": 24,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 6
+   },
+   "effectLabel": "% max health per dodge",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 8,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "signatureOnly": true,
+   "section": "defensive",
+   "categories": [
+    "Defensive"
+   ],
+   "effectTags": [
+    "Roll",
+    "I-Frame",
+    "Heal"
+   ],
+   "description": "For 6s rolls refund their energy and every hit you dodge during i-frames restores {effect}% max health + 0.4x primary stat.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "signatureOf": [
+    "knight",
+    "ranger",
+    "lancer",
+    "paladin_righteous",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "gunblade",
+    "witch_slayer",
+    "huntress"
+   ],
+   "scaling": {
+    "stat": "primary",
+    "ratio": 0.4
+   },
+   "level15": {}
   },
   "bear_maul": {
    "id": "bear_maul",
@@ -7991,7 +9573,17 @@
     "second_wind",
     "protection_dome",
     "stone_skin",
-    "bastion_of_dawn"
+    "bastion_of_dawn",
+    "riposte_roll",
+    "fleet_recovery",
+    "frost_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "shield_tumble",
+    "evasive_stance"
    ],
    "purchasable": [
     "shield_slam",
@@ -8002,6 +9594,16 @@
     "protection_dome",
     "stone_skin",
     "bastion_of_dawn",
+    "riposte_roll",
+    "fleet_recovery",
+    "frost_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "shield_tumble",
+    "evasive_stance",
     "frost_bind",
     "shadow_step",
     "summoned_wall",
@@ -8023,6 +9625,16 @@
     "protection_dome",
     "stone_skin",
     "bastion_of_dawn",
+    "riposte_roll",
+    "fleet_recovery",
+    "frost_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "shield_tumble",
+    "evasive_stance",
     "frost_bind",
     "shadow_step",
     "summoned_wall",
@@ -8051,7 +9663,23 @@
     "spectral_pack",
     "battle_rhythm",
     "executioners_verdict",
-    "executioner"
+    "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "frost_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "mine_layer",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance"
    ],
    "purchasable": [
     "piercing_shot",
@@ -8063,6 +9691,22 @@
     "battle_rhythm",
     "executioners_verdict",
     "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "frost_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "mine_layer",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance",
     "iron_guard",
     "chain_spark",
     "cleaving_strike",
@@ -8093,6 +9737,22 @@
     "battle_rhythm",
     "executioners_verdict",
     "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "frost_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "mine_layer",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance",
     "iron_guard",
     "chain_spark",
     "cleaving_strike",
@@ -8128,7 +9788,13 @@
     "ember_lance",
     "protection_dome",
     "soul_conduit",
-    "renewal"
+    "renewal",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble"
    ],
    "purchasable": [
     "restoring_light",
@@ -8139,6 +9805,12 @@
     "protection_dome",
     "soul_conduit",
     "renewal",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
     "iron_guard",
     "frost_bind",
     "summoned_wall",
@@ -8161,6 +9833,12 @@
     "protection_dome",
     "soul_conduit",
     "renewal",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
     "iron_guard",
     "frost_bind",
     "summoned_wall",
@@ -8190,7 +9868,22 @@
     "ashen_square",
     "battle_rhythm",
     "executioners_verdict",
-    "executioner"
+    "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "ember_wake",
+    "frost_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "shadow_dance",
+    "evasive_stance"
    ],
    "purchasable": [
     "cleaving_strike",
@@ -8202,6 +9895,21 @@
     "battle_rhythm",
     "executioners_verdict",
     "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "ember_wake",
+    "frost_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "shadow_dance",
+    "evasive_stance",
     "chain_spark",
     "frost_bind",
     "summoned_wall",
@@ -8232,6 +9940,21 @@
     "battle_rhythm",
     "executioners_verdict",
     "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "ember_wake",
+    "frost_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "shadow_dance",
+    "evasive_stance",
     "chain_spark",
     "frost_bind",
     "summoned_wall",
@@ -8344,7 +10067,8 @@
     "iron_guard",
     "war_cry",
     "bear_ancient_hide",
-    "bear_colossus"
+    "bear_colossus",
+    "taunting_tumble"
    ],
    "purchasable": [
     "bear_maul",
@@ -8355,6 +10079,7 @@
     "war_cry",
     "bear_ancient_hide",
     "bear_colossus",
+    "taunting_tumble",
     "shield_slam",
     "frost_bind",
     "cleaving_strike",
@@ -8376,6 +10101,7 @@
    "purchasableImplemented": [
     "iron_guard",
     "war_cry",
+    "taunting_tumble",
     "shield_slam",
     "frost_bind",
     "cleaving_strike",
@@ -8409,7 +10135,17 @@
     "war_cry",
     "second_wind",
     "stone_skin",
-    "bastion_of_dawn"
+    "bastion_of_dawn",
+    "riposte_roll",
+    "fleet_recovery",
+    "frost_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "shield_tumble",
+    "evasive_stance"
    ],
    "purchasable": [
     "paladin_righteous_flail",
@@ -8420,6 +10156,16 @@
     "second_wind",
     "stone_skin",
     "bastion_of_dawn",
+    "riposte_roll",
+    "fleet_recovery",
+    "frost_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "shield_tumble",
+    "evasive_stance",
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
@@ -8441,6 +10187,16 @@
     "second_wind",
     "stone_skin",
     "bastion_of_dawn",
+    "riposte_roll",
+    "fleet_recovery",
+    "frost_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "shield_tumble",
+    "evasive_stance",
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
@@ -8470,7 +10226,8 @@
     "sanctuary",
     "purify",
     "soul_conduit",
-    "renewal"
+    "renewal",
+    "shield_tumble"
    ],
    "purchasable": [
     "paladin_holy_flail",
@@ -8481,6 +10238,7 @@
     "purify",
     "soul_conduit",
     "renewal",
+    "shield_tumble",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -8503,6 +10261,7 @@
     "purify",
     "soul_conduit",
     "renewal",
+    "shield_tumble",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -8534,7 +10293,9 @@
     "iron_guard",
     "war_cry",
     "miner_orehide",
-    "miner_mountain"
+    "miner_mountain",
+    "mine_layer",
+    "taunting_tumble"
    ],
    "purchasable": [
     "miner_pickfall",
@@ -8545,6 +10306,8 @@
     "war_cry",
     "miner_orehide",
     "miner_mountain",
+    "mine_layer",
+    "taunting_tumble",
     "shield_slam",
     "frost_bind",
     "cleaving_strike",
@@ -8566,6 +10329,8 @@
     "summoned_wall",
     "iron_guard",
     "war_cry",
+    "mine_layer",
+    "taunting_tumble",
     "shield_slam",
     "frost_bind",
     "cleaving_strike",
@@ -8598,7 +10363,8 @@
     "summoned_wall",
     "shield_slam",
     "golem_construct_core",
-    "golem_worldstone"
+    "golem_worldstone",
+    "taunting_tumble"
    ],
    "purchasable": [
     "golem_granite_fist",
@@ -8609,6 +10375,7 @@
     "shield_slam",
     "golem_construct_core",
     "golem_worldstone",
+    "taunting_tumble",
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
@@ -8630,6 +10397,7 @@
     "war_cry",
     "summoned_wall",
     "shield_slam",
+    "taunting_tumble",
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
@@ -8727,7 +10495,15 @@
     "iron_guard",
     "golem_construct_core",
     "golem_worldstone",
-    "decimating_strike"
+    "decimating_strike",
+    "riposte_roll",
+    "fleet_recovery",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "evasive_stance"
    ],
    "purchasable": [
     "golem_fel_fist",
@@ -8739,6 +10515,14 @@
     "golem_construct_core",
     "golem_worldstone",
     "decimating_strike",
+    "riposte_roll",
+    "fleet_recovery",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "evasive_stance",
     "shield_slam",
     "war_cry",
     "chain_spark",
@@ -8775,6 +10559,14 @@
     "shadow_step",
     "iron_guard",
     "decimating_strike",
+    "riposte_roll",
+    "fleet_recovery",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "evasive_stance",
     "shield_slam",
     "war_cry",
     "chain_spark",
@@ -8822,7 +10614,16 @@
     "shield_slam",
     "chieftain_courage",
     "chieftain_earthshout",
-    "decimating_strike"
+    "decimating_strike",
+    "riposte_roll",
+    "fleet_recovery",
+    "frost_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "evasive_stance"
    ],
    "purchasable": [
     "chieftain_axe_hook",
@@ -8834,6 +10635,15 @@
     "chieftain_courage",
     "chieftain_earthshout",
     "decimating_strike",
+    "riposte_roll",
+    "fleet_recovery",
+    "frost_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "evasive_stance",
     "chain_spark",
     "frost_bind",
     "shadow_step",
@@ -8864,6 +10674,15 @@
     "cleaving_strike",
     "shield_slam",
     "decimating_strike",
+    "riposte_roll",
+    "fleet_recovery",
+    "frost_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "evasive_stance",
     "chain_spark",
     "frost_bind",
     "shadow_step",
@@ -8903,7 +10722,8 @@
     "iron_guard",
     "cleaving_strike",
     "behemoth_ancestral_weight",
-    "behemoth_stampede"
+    "behemoth_stampede",
+    "taunting_tumble"
    ],
    "purchasable": [
     "behemoth_totem_sweep",
@@ -8914,6 +10734,7 @@
     "cleaving_strike",
     "behemoth_ancestral_weight",
     "behemoth_stampede",
+    "taunting_tumble",
     "shield_slam",
     "frost_bind",
     "shadow_step",
@@ -8935,6 +10756,7 @@
     "war_cry",
     "iron_guard",
     "cleaving_strike",
+    "taunting_tumble",
     "shield_slam",
     "frost_bind",
     "shadow_step",
@@ -8968,7 +10790,16 @@
     "iron_guard",
     "drakish_ember_memory",
     "drakish_ancient_pact",
-    "decimating_strike"
+    "decimating_strike",
+    "riposte_roll",
+    "fleet_recovery",
+    "ember_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "evasive_stance"
    ],
    "purchasable": [
     "drakish_dragon_oath",
@@ -8980,6 +10811,15 @@
     "drakish_ember_memory",
     "drakish_ancient_pact",
     "decimating_strike",
+    "riposte_roll",
+    "fleet_recovery",
+    "ember_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "evasive_stance",
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
@@ -9001,6 +10841,15 @@
     "war_cry",
     "iron_guard",
     "decimating_strike",
+    "riposte_roll",
+    "fleet_recovery",
+    "ember_wake",
+    "momentum",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "taunting_tumble",
+    "evasive_stance",
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
@@ -9033,7 +10882,11 @@
     "grave_line",
     "ashen_square",
     "deep_reserves",
-    "cataclysm"
+    "cataclysm",
+    "quickened_mind",
+    "hasted_tumble",
+    "ember_wake",
+    "frost_wake"
    ],
    "purchasable": [
     "ember_lance",
@@ -9044,6 +10897,10 @@
     "ashen_square",
     "deep_reserves",
     "cataclysm",
+    "quickened_mind",
+    "hasted_tumble",
+    "ember_wake",
+    "frost_wake",
     "iron_guard",
     "cleaving_strike",
     "shadow_step",
@@ -9081,6 +10938,10 @@
     "ashen_square",
     "deep_reserves",
     "cataclysm",
+    "quickened_mind",
+    "hasted_tumble",
+    "ember_wake",
+    "frost_wake",
     "iron_guard",
     "cleaving_strike",
     "shadow_step",
@@ -9126,7 +10987,21 @@
     "troll_hunger",
     "troll_red_moon",
     "decimating_strike",
-    "executioner"
+    "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "ember_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "shadow_dance",
+    "evasive_stance"
    ],
    "purchasable": [
     "troll_axe_frenzy",
@@ -9139,6 +11014,20 @@
     "troll_red_moon",
     "decimating_strike",
     "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "ember_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "shadow_dance",
+    "evasive_stance",
     "chain_spark",
     "frost_bind",
     "summoned_wall",
@@ -9169,6 +11058,20 @@
     "second_wind",
     "decimating_strike",
     "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "ember_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "shadow_dance",
+    "evasive_stance",
     "chain_spark",
     "frost_bind",
     "summoned_wall",
@@ -9208,7 +11111,21 @@
     "venom_ground",
     "troll_hunger",
     "troll_red_moon",
-    "executioner"
+    "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance"
    ],
    "purchasable": [
     "troll_twin_throw",
@@ -9220,6 +11137,20 @@
     "troll_hunger",
     "troll_red_moon",
     "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance",
     "iron_guard",
     "chain_spark",
     "cleaving_strike",
@@ -9250,6 +11181,20 @@
     "shadow_step",
     "venom_ground",
     "executioner",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance",
     "iron_guard",
     "chain_spark",
     "cleaving_strike",
@@ -9289,7 +11234,14 @@
     "sanctuary",
     "purify",
     "dryad_green_covenant",
-    "dryad_grove_renewal"
+    "dryad_grove_renewal",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
+    "venom_tumble"
    ],
    "purchasable": [
     "dryad_root_snare",
@@ -9300,6 +11252,13 @@
     "purify",
     "dryad_green_covenant",
     "dryad_grove_renewal",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
+    "venom_tumble",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9322,6 +11281,13 @@
     "restoring_light",
     "sanctuary",
     "purify",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
+    "venom_tumble",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9355,7 +11321,13 @@
     "purify",
     "protection_dome",
     "whisp_lantern_soul",
-    "whisp_constellation"
+    "whisp_constellation",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble"
    ],
    "purchasable": [
     "whisp_guiding_mote",
@@ -9366,6 +11338,12 @@
     "protection_dome",
     "whisp_lantern_soul",
     "whisp_constellation",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9388,6 +11366,12 @@
     "restoring_light",
     "purify",
     "protection_dome",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9422,7 +11406,13 @@
     "sanctuary",
     "purify",
     "centaur_steady_gait",
-    "centaur_spring_march"
+    "centaur_spring_march",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble"
    ],
    "purchasable": [
     "centaur_grove_javelin",
@@ -9433,6 +11423,12 @@
     "purify",
     "centaur_steady_gait",
     "centaur_spring_march",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9470,6 +11466,12 @@
     "restoring_light",
     "sanctuary",
     "purify",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9584,7 +11586,22 @@
     "hunters_stride",
     "warding_talisman",
     "price_on_every_soul",
-    "collect_the_bounty"
+    "collect_the_bounty",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "ember_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "mine_layer",
+    "shadow_dance",
+    "evasive_stance"
    ],
    "purchasable": [
     "silver_shot",
@@ -9595,6 +11612,21 @@
     "warding_talisman",
     "price_on_every_soul",
     "collect_the_bounty",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "ember_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "mine_layer",
+    "shadow_dance",
+    "evasive_stance",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9633,6 +11665,21 @@
     "warding_talisman",
     "price_on_every_soul",
     "collect_the_bounty",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "ember_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "mine_layer",
+    "shadow_dance",
+    "evasive_stance",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9677,7 +11724,22 @@
     "witchfinders_mark",
     "spectral_blade",
     "witchbane",
-    "hexbane_judgment"
+    "hexbane_judgment",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance"
    ],
    "purchasable": [
     "arcane_blunderbuss",
@@ -9688,6 +11750,21 @@
     "spectral_blade",
     "witchbane",
     "hexbane_judgment",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9726,6 +11803,21 @@
     "spectral_blade",
     "witchbane",
     "hexbane_judgment",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9770,7 +11862,23 @@
     "crescent_volley",
     "sabercat_rake",
     "moon_glaive",
-    "glaive_storm"
+    "glaive_storm",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "frost_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "mine_layer",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance"
    ],
    "purchasable": [
     "bouncing_glaive",
@@ -9781,6 +11889,22 @@
     "sabercat_rake",
     "moon_glaive",
     "glaive_storm",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "frost_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "mine_layer",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9819,6 +11943,22 @@
     "sabercat_rake",
     "moon_glaive",
     "glaive_storm",
+    "riposte_roll",
+    "tumblers_edge",
+    "killer_instinct",
+    "fleet_recovery",
+    "windrunner",
+    "hasted_tumble",
+    "frost_wake",
+    "momentum",
+    "blur_step",
+    "slippery_roll",
+    "bloodrush",
+    "tumble_strike",
+    "mine_layer",
+    "venom_tumble",
+    "shadow_dance",
+    "evasive_stance",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9863,7 +12003,10 @@
     "phase_lance",
     "overcharge",
     "aether_engineering",
-    "warp_obelisk"
+    "warp_obelisk",
+    "quickened_mind",
+    "hasted_tumble",
+    "mine_layer"
    ],
    "purchasable": [
     "photon_turret",
@@ -9874,6 +12017,9 @@
     "overcharge",
     "aether_engineering",
     "warp_obelisk",
+    "quickened_mind",
+    "hasted_tumble",
+    "mine_layer",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9912,6 +12058,9 @@
     "overcharge",
     "aether_engineering",
     "warp_obelisk",
+    "quickened_mind",
+    "hasted_tumble",
+    "mine_layer",
     "iron_guard",
     "chain_spark",
     "frost_bind",
@@ -9957,7 +12106,13 @@
     "aether_mend",
     "repulsor_pulse",
     "resonant_lattice",
-    "aether_nexus"
+    "aether_nexus",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble"
    ],
    "purchasable": [
     "aegis_pylon",
@@ -9968,6 +12123,12 @@
     "repulsor_pulse",
     "resonant_lattice",
     "aether_nexus",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
     "iron_guard",
     "shield_slam",
     "war_cry",
@@ -10006,6 +12167,12 @@
     "repulsor_pulse",
     "resonant_lattice",
     "aether_nexus",
+    "fleet_recovery",
+    "windrunner",
+    "quickened_mind",
+    "hasted_tumble",
+    "slippery_roll",
+    "shield_tumble",
     "iron_guard",
     "shield_slam",
     "war_cry",
@@ -10091,6 +12258,178 @@
    ],
    "line": "Your next basic attack is lethal (bosses excepted; champions lose 30% max health).",
    "name": "Executioner Ready"
+  },
+  "tumblers_edge": {
+   "type": "none",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "ATK",
+     "value": 50,
+     "unit": "%"
+    }
+   ],
+   "line": "Your next basic attack deals more damage.",
+   "name": "Tumbler's Edge"
+  },
+  "killer_instinct": {
+   "type": "none",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "ATK",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Your next basic attack is a guaranteed critical strike.",
+   "name": "Killer Instinct"
+  },
+  "windrunner": {
+   "type": "magic",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "Move",
+     "value": 10,
+     "unit": "%"
+    }
+   ],
+   "line": "Moves faster after a roll.",
+   "name": "Windrunner"
+  },
+  "quickened_mind": {
+   "type": "magic",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "Haste",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Your next spell with a cast time is instant.",
+   "name": "Quickened Mind"
+  },
+  "momentum": {
+   "type": "none",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "Damage Dealt",
+     "value": 4,
+     "unit": "%"
+    }
+   ],
+   "line": "More damage per stack; each roll adds a stack (max 5).",
+   "name": "Momentum"
+  },
+  "blur_step": {
+   "type": "magic",
+   "control": "none",
+   "kind": "buff",
+   "mods": [
+    {
+     "stat": "DEF",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Blurred: a chance to dodge incoming attacks.",
+   "name": "Blur"
+  },
+  "mine_layer": {
+   "type": "none",
+   "control": "none",
+   "kind": "stance",
+   "callout": false,
+   "mods": [
+    {
+     "stat": "ATK",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Your next roll drops a caltrop mine.",
+   "name": "Caltrop Mine"
+  },
+  "taunting_tumble": {
+   "type": "none",
+   "control": "none",
+   "kind": "stance",
+   "mods": [
+    {
+     "stat": "DEF",
+     "value": 20,
+     "unit": "%",
+     "duration": 1.5
+    }
+   ],
+   "line": "Each roll taunts nearby monsters and guards you briefly.",
+   "name": "Taunting Tumble"
+  },
+  "shield_tumble": {
+   "type": "magic",
+   "control": "none",
+   "kind": "stance",
+   "mods": [
+    {
+     "stat": "DEF",
+     "value": 40,
+     "unit": "%",
+     "duration": 3
+    }
+   ],
+   "line": "Each roll shields and heals the nearest ally.",
+   "name": "Shield Tumble"
+  },
+  "venom_tumble": {
+   "type": "poison",
+   "control": "none",
+   "kind": "stance",
+   "mods": [
+    {
+     "stat": "Healing",
+     "value": -30,
+     "unit": "%",
+     "duration": 5
+    }
+   ],
+   "line": "Your rolls leave venom that cuts enemy healing.",
+   "name": "Venom Tumble"
+  },
+  "shadow_dance": {
+   "type": "magic",
+   "control": "none",
+   "kind": "stance",
+   "mods": [
+    {
+     "stat": "Haste",
+     "value": 70,
+     "unit": "%"
+    }
+   ],
+   "line": "Your dodge roll recovers faster and refunds its energy.",
+   "name": "Shadow Dance"
+  },
+  "evasive_stance": {
+   "type": "none",
+   "control": "none",
+   "kind": "stance",
+   "mods": [
+    {
+     "stat": "DEF",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Rolls refund energy; dodged hits restore health.",
+   "name": "Evasive Stance"
   }
  }
 }

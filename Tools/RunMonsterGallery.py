@@ -17,6 +17,18 @@ import subprocess
 ROOT = Path(__file__).resolve().parent.parent
 
 
+# AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+# and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Probes only target Win64.
+EDITOR_ENV = {**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"}
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--only", default="")
@@ -30,10 +42,11 @@ def main() -> int:
     if args.only:
         command.append(f"-CireMonsterGalleryOnly={args.only}")
     creation = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
-    child = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation)
+    child = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation, env=EDITOR_ENV)
     try:
         code = child.wait(timeout=900)
     except subprocess.TimeoutExpired:
+        kill_tree(child)
         child.kill()
         code = -1
     text = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""

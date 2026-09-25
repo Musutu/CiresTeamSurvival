@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import re
 import struct
@@ -20,6 +21,18 @@ import time
 ROOT = Path(__file__).resolve().parent.parent
 FAILURE = re.compile(r"CIRE_SKILL_OFFER\S*FAIL|Fatal error:|Assertion failed:")
 EXPECTED = ["01_normal_offer_hover", "02_ultimate_offer", "03_passive_only_offer", "04_deferred_reminder", "05_pick_animation", "06_opening_offer_tank", "07_opening_offer_support"]
+
+
+# AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+# and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Probes only target Win64.
+EDITOR_ENV = {**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"}
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
 
 
 def png_size(path: Path) -> tuple[int, int]:
@@ -49,10 +62,11 @@ def main() -> int:
     started = time.monotonic(); failure = ""
     with (folder / "console.log").open("wb") as stream:
         child = subprocess.Popen(command, cwd=root, stdout=stream, stderr=subprocess.STDOUT,
-                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0), env=EDITOR_ENV)
         try:
             code = child.wait(timeout=args.timeout)
         except subprocess.TimeoutExpired:
+            kill_tree(child)
             child.terminate()
             try:
                 code = child.wait(timeout=10)

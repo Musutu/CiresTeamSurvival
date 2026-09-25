@@ -9,11 +9,24 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import socket
 import subprocess
 import sys
 import time
+
+
+# AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+# and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Probes only target Win64.
+EDITOR_ENV = {**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"}
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
 
 
 def read_log(path: Path) -> str:
@@ -26,6 +39,7 @@ def read_log(path: Path) -> str:
 def stop_child(child: subprocess.Popen[bytes] | None) -> None:
     if child is None or child.poll() is not None:
         return
+    kill_tree(child)
     child.terminate()
     try:
         child.wait(timeout=5)
@@ -72,7 +86,7 @@ def main() -> int:
     try:
         print(f"Starting dedicated network probe on 127.0.0.1:{args.port}", flush=True)
         server = subprocess.Popen(server_command, cwd=args.project.resolve().parent,
-                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation_flags)
+                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation_flags, env=EDITOR_ENV)
         deadline = time.monotonic() + args.startup_timeout
         while "CIRE_NET_SERVER_READY" not in read_log(server_log):
             if server.poll() is not None:
@@ -82,7 +96,7 @@ def main() -> int:
             time.sleep(0.25)
         print("Dedicated server ready; starting separate remote client.", flush=True)
         client = subprocess.Popen(client_command, cwd=args.project.resolve().parent,
-                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation_flags)
+                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation_flags, env=EDITOR_ENV)
         deadline = time.monotonic() + args.probe_timeout
         while client.poll() is None or server.poll() is None:
             if time.monotonic() > deadline:

@@ -27,13 +27,24 @@ import time
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+
+
 def run(command: list[str], log_dir: Path, name: str, timeout: int, env=None) -> tuple[int, str]:
+    # AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+    # and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Editors here target Win64.
     with (log_dir / f"{name}-console.log").open("wb") as stream:
-        child = subprocess.Popen(command, cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT, env=env,
+        child = subprocess.Popen(command, cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT,
+                                 env={**(env or os.environ), "UE_SKIP_UBT_SDK_SETUP": "1"},
                                  creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         try:
             return child.wait(timeout=timeout), ""
         except subprocess.TimeoutExpired:
+            kill_tree(child)
             child.terminate()
             try:
                 child.wait(timeout=10)
