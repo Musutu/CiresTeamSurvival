@@ -16,6 +16,7 @@
 #include "Materials/MaterialInterface.h"
 #include "ProceduralMeshComponent.h"
 #include "NiagaraComponent.h" // fab-integration
+#include "NiagaraSystem.h"
 #include "Sound/SoundWave.h"
 #include "Sound/SoundConcurrency.h"
 #include <limits>
@@ -593,12 +594,14 @@ void ACireSpellVisual::UpdateFabVFX()
     const ECireSchool School=Shape.bHeal?ECireSchool::Life:static_cast<ECireSchool>(FMath::Clamp(Family,0,static_cast<int32>(ECireSchool::Count)-1));
     const CireFabVFX::FEntry* Entry=CireFabVFX::Find(School,FabRole);
     UNiagaraSystem* System=CireFabVFX::Resolve(Entry);
-    if(!System)return; // pack not installed: the procedural presentation carries the cue alone
+    if(!System){UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_NONE skill=%s role=%s"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole));return;} // pack not installed: the procedural presentation carries the cue alone
     const float Scale=Entry->Scale*Extra*(bFollowArea?1.f:Size);
     UNiagaraComponent* C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)
         :CireFabVFX::SpawnAt(GetWorld(),System,GetActorLocation(),GetActorRotation(),Scale);
     CireFabVFX::ApplyTint(C,Entry->Tint);
     FabFX=C;
+    UE_LOG(LogTemp,Log,TEXT("CIRE_FAB_VFX_SPAWN skill=%s role=%s school=%s system=%s ok=%d"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole),
+        *CireAbilityShapes::SchoolName(School),*System->GetName(),C!=nullptr);
 }
 
 ACireSpellVisual* CireSpellPresentation::Play(UWorld* World,FName SkillId,FVector From,FVector To,ECireSpellCue Cue,float Scale,bool bSound)

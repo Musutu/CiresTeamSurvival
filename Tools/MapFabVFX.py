@@ -155,8 +155,9 @@ def build(found, existing):
     for (school, role), paths in sorted(slots.items()):
         paths = sorted(set(paths), key=lambda p: (pack_rank(p), len(p), p))[:4]
         schools.setdefault(school, {})[role] = {"paths": paths, "scale": 1.0}
+    role_scale = {"impact": 1.35, "cast": 1.0, "projectile": 1.0, "area": 1.0, "aura": 1.0}  # tuned on the gameplay camera
     for (school, role), paths in curated.items():
-        schools.setdefault(school, {})[role] = {"paths": paths, "scale": 1.0}
+        schools.setdefault(school, {})[role] = {"paths": paths, "scale": role_scale.get(role, 1.0)}
     # Physical hits: blood on flesh reads best in the dark-fantasy tone.
     # Only realistic blood (not the glowing blood-magic set) may stand in for steel.
     gore = [f["path"] for f in found if f["school"] == "blood" and f["role"] == "impact" and "magic" not in f["path"].lower()]

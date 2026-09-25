@@ -26,7 +26,7 @@
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Hit.NS_Blood_Magic_Hit",
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Explo.NS_Blood_Magic_Explo"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "projectile": {
         "paths": [
@@ -61,7 +61,7 @@
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Hit.NS_Earth_Magic_Hit",
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Earth_Magic/VFX_Niagara/NS_Earth_Magic_Splash.NS_Earth_Magic_Splash"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "projectile": {
         "paths": [
@@ -96,7 +96,7 @@
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Hit.NS_Fire_Magic_Hit",
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_Explosion.NS_Fire_Magic_Explosion"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "projectile": {
         "paths": [
@@ -131,7 +131,7 @@
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Ice_Magic/VFX_Niagara/NS_Ice_Magic_Hit.NS_Ice_Magic_Hit",
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Ice_Magic/VFX_Niagara/NS_Ice_Magic_Splash.NS_Ice_Magic_Splash"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "projectile": {
         "paths": [
@@ -167,7 +167,7 @@
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Hit1.NS_Light_Magic_Hit1",
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Explosion1.NS_Light_Magic_Explosion1"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "projectile": {
         "paths": [
@@ -202,7 +202,7 @@
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Hit.NS_Posion_Magic_Hit",
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Explosion1.NS_Posion_Magic_Explosion1"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "projectile": {
         "paths": [
@@ -237,7 +237,7 @@
           "/Game/Shadow_Magic/VFX_Niagara/NS_Shadow_Magic_Hit1.NS_Shadow_Magic_Hit1",
           "/Game/Shadow_Magic/VFX_Niagara/NS_Shadow_Magic_Explosion1.NS_Shadow_Magic_Explosion1"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "projectile": {
         "paths": [
@@ -272,7 +272,7 @@
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Lightning_Magic/VFX_Niagara/NS_Lightning_Magic_Tunder.NS_Lightning_Magic_Tunder",
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Lightning_Magic/VFX_Niagara/NS_Lightning_Magic_Shockwave.NS_Lightning_Magic_Shockwave"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "projectile": {
         "paths": [
@@ -307,7 +307,7 @@
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_Hit.NS_Water_Magic_Hit",
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_Splash1.NS_Water_Magic_Splash1"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "projectile": {
         "paths": [
@@ -330,7 +330,7 @@
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Dark_Magic/VFX_Niagara/NS_Dark_Magic_Hit.NS_Dark_Magic_Hit",
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Dark_Magic/VFX_Niagara/NS_Dark_Flame_Burst.NS_Dark_Flame_Burst"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "cast": {
         "paths": [
@@ -363,7 +363,7 @@
         "paths": [
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Heal_Hit.NS_Light_Magic_Heal_Hit"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "area": {
         "paths": [
@@ -398,7 +398,7 @@
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Hit1.NS_Air_Magic_Hit1",
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Splash.NS_Air_Magic_Splash"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "cast": {
         "paths": [
@@ -430,7 +430,7 @@
         "paths": [
           "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_Hit2.NS_Air_Magic_Hit2"
         ],
-        "scale": 1.0
+        "scale": 1.35
       },
       "cast": {
         "paths": [
