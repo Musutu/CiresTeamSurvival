@@ -25,6 +25,13 @@ school-coloured tumbling arc) and the Huntress companion icons `sabercat_maul` (
 (Ashfang: Dread Roar) are painted icons **generated for Eric via ChatGPT (OpenAI), 2026-09-25**, from
 `Art/Icons/ChatGPT/abilities_roll1.png`, `abilities_roll2.png` and `abilities_roll3_pet.png` (2x2).
 
+## Scaling-kits skills (art-2d)
+
+`shield_bash`, `shield_toss`, `shield_wall`, `pavise`, `mechanical_tank`, `artillery`, `artillery_training`,
+`eagle_eye`, `longshot` and `headshot` are painted icons **generated for Eric via ChatGPT (OpenAI), 2026-09-25**,
+from `Art/Icons/ChatGPT/abilities_scaling_kits.png` (3x3) and `abilities_scaling_kits2.png` (2x2; only the
+first tile is used).
+
 ## Procedural icons
 
 Any future `T_<id>` without a painted PNG falls back to original procedural art from `Tools/BuildAbilityIcons.py`
