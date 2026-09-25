@@ -32,7 +32,9 @@ namespace
 const FName ArtilleryBuff(TEXT("artillery")), EagleEyeBuff(TEXT("eagle_eye")), LongshotBuff(TEXT("longshot")), ShieldWallBuff(TEXT("shield_wall")),
     AmpBuff(TEXT("l15_amped")), VulnerableBuff(TEXT("l15_vulnerable")), MechWeakBuff(TEXT("mech_weakened"));
 const FString PaviseName(TEXT("Construct: Pavise"));
-int32 GProcDepth = 0; // extra hits (Headshot, double attack, DoT ticks) never proc again
+int32 GProcDepth = 0;
+bool GRandomProcs = true;
+float Roll() { return GRandomProcs ? FMath::FRand() : 2.f; } // 2 never passes a chance check // extra hits (Headshot, double attack, DoT ticks) never proc again
 
 struct FProcGuard { FProcGuard() { ++GProcDepth; } ~FProcGuard() { --GProcDepth; } };
 
@@ -217,7 +219,7 @@ float CireKits::ModifyIncomingDamage(ACireHero* H,AActor* Causer,const FString& 
     if(IsAreaAbility(Name))
     {
         const double Chance=PartyAuras(H).AoeResistChance;
-        if(Chance>0&&FMath::FRand()<Chance){CireCombat::BroadcastAvoidance(Causer,H,ECireHitOutcome::Resist,Name,Amount);return 0.f;}
+        if(Chance>0&&Roll()<Chance){CireCombat::BroadcastAvoidance(Causer,H,ECireHitOutcome::Resist,Name,Amount);return 0.f;}
     }
     // Pavise cover: an allied pavise within 3m that stands between the hero and the attacker.
     if(IsValid(Causer))
@@ -245,7 +247,7 @@ float CireKits::ModifyIncomingDamage(ACireHero* H,AActor* Causer,const FString& 
     // Shield-bearing tank: 30% chance to block 50% of a physical hit.
     if(!bFrontalWall)
     {
-        const auto R=K::ResolveShieldBlock(Amount,bPhysical,IsShieldTank(H),FMath::FRand());
+        const auto R=K::ResolveShieldBlock(Amount,bPhysical,IsShieldTank(H),Roll());
         if(R.Blocked){CireCombat::BroadcastAvoidance(Causer,H,ECireHitOutcome::Block,Name,static_cast<float>(R.Prevented));return static_cast<float>(R.Damage);}
     }
     return Amount;
@@ -254,7 +256,7 @@ bool CireKits::IgnoresStun(AActor* Target)
 {
     const auto* H=::Cast<ACireHero>(Target);if(!H||H->IsA<ACireSummon>())return false;
     const double Chance=PartyAuras(H).StunIgnoreChance;
-    if(Chance>0&&FMath::FRand()<Chance){CireCombat::BroadcastAvoidance(Target,Target,ECireHitOutcome::Resist,TEXT("Stun (aura)"));return true;}
+    if(Chance>0&&Roll()<Chance){CireCombat::BroadcastAvoidance(Target,Target,ECireHitOutcome::Resist,TEXT("Stun (aura)"));return true;}
     return false;
 }
 float CireKits::MonsterAttackRate(const ACireMonster* M)
@@ -320,13 +322,13 @@ void CireKits::OnDamageDealt(AActor* Source,AActor* Target,float Original,float 
     // Headshot: an extra hit for 2x (3x at level 15) of the original hit, on top of it.
     if(H->HasSkill(TEXT("headshot"))&&CireCombat::IsAlive(Target))
     {
-        const double Extra=K::HeadshotExtra(Original,SkillLevel(H,TEXT("headshot")),FMath::FRand());
+        const double Extra=K::HeadshotExtra(Original,SkillLevel(H,TEXT("headshot")),Roll());
         if(Extra>0)CireCombat::ApplyDamage(H,Target,static_cast<float>(Extra),TEXT("Headshot"));
     }
     if(bBasic&&CireCombat::IsAlive(Target))
     {
-        if(Auras.DoubleAttackChance>0&&FMath::FRand()<Auras.DoubleAttackChance)CireCombat::ApplyDamage(H,Target,Original,Name);
-        if(Auras.StunOnHitChance>0&&FMath::FRand()<Auras.StunOnHitChance)CireCrowdControl::Stun(Target,.75f,H);
+        if(Auras.DoubleAttackChance>0&&Roll()<Auras.DoubleAttackChance)CireCombat::ApplyDamage(H,Target,Original,Name);
+        if(Auras.StunOnHitChance>0&&Roll()<Auras.StunOnHitChance)CireCrowdControl::Stun(Target,.75f,H);
     }
     const FCireAbilityDef* D=CireAbilityDB::FindByName(Name);
     const bool bPhysical=bBasic||(D&&D->School==TEXT("physical"));
@@ -579,3 +581,4 @@ void UCireKitsSubsystem::RefreshAuras()
         for(const auto& R:Rows)if(R.second>0)CireBuffs::Apply(H,CireKits::AuraBuffId(R.first),1.6f,H);
     }
 }
+void CireKits::SetRandomProcs(bool bEnabled){GRandomProcs=bEnabled;}

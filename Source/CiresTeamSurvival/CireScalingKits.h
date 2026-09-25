@@ -105,6 +105,8 @@ namespace CireKits
     /** Skill Shop gate: "requires": shield / ranged. */
     CIRESTEAMSURVIVAL_API bool MeetsRequirement(const ACireHero* Hero, const FString& Id, FString* Why = nullptr);
     CIRESTEAMSURVIVAL_API const TArray<FName>& BuffIds();
+    /** Tests / telemetry: false disables random procs (shield block, Headshot, aura chances). */
+    CIRESTEAMSURVIVAL_API void SetRandomProcs(bool bEnabled);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSmoke(ACireGameMode* Mode);
 #endif

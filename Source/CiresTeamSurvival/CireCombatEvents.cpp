@@ -242,8 +242,10 @@ bool CireCombat::RunTelemetrySmoke(ACireGameMode* Mode)
     const auto SavedHeroes = Mode->Heroes;
     const auto SavedMonsters = Mode->Monsters;
     TArray<AActor*> Fixtures;
+    CireKits::SetRandomProcs(false); // scaling-kits: deterministic telemetry (no shield blocks / Headshot rolls)
     ON_SCOPE_EXIT
     {
+        CireKits::SetRandomProcs(true);
         Mode->Clock = SavedClock;
         Mode->Heroes = SavedHeroes;
         Mode->Monsters = SavedMonsters;
@@ -379,14 +381,17 @@ bool CireCombat::RunTelemetrySmoke(ACireGameMode* Mode)
     PrepareUltimate(TEXT("bastion_of_dawn"));
     Source->Health = Source->MaxHealth - 200;
     float PreviousHealing = Source->HealingDone;
+    // scaling-kits: 30% max health + the DB primary term, capped by the missing 200.
+    const float BastionHeal = FMath::Min(200.f, (Source->MaxHealth * .30f + CireKits::Amount(Source, TEXT("bastion_of_dawn"))) * Mode->Power(Source->TeamId));
+    const float BastionBefore = Source->Health;
     Source->Cast(0);
-    Check(Near(Source->Health, 450) && Source->ShieldUntil > Now && Ally->ShieldUntil > Now && Enemy->ShieldUntil == 0,
+    Check(Near(Source->Health, BastionBefore + BastionHeal) && Source->ShieldUntil > Now && Ally->ShieldUntil > Now && Enemy->ShieldUntil == 0,
         TEXT("bastion self healing and allied guard only"));
     Check(Near(Source->Energy, 55) && Near(Source->Cooldowns[0], 75), TEXT("bastion energy and cooldown"));
-    Check(Near(Source->HealingDone - PreviousHealing, 150), TEXT("bastion meter counts healing not shields"));
+    Check(Near(Source->HealingDone - PreviousHealing, BastionHeal), TEXT("bastion meter counts healing not shields"));
     Source->GlobalCooldown = 0;
     Source->Cast(0);
-    Check(Near(Source->Energy, 55) && Near(Source->HealingDone - PreviousHealing, 150), TEXT("ultimate cooldown rejects repeated cast"));
+    Check(Near(Source->Energy, 55) && Near(Source->HealingDone - PreviousHealing, BastionHeal), TEXT("ultimate cooldown rejects repeated cast"));
 
     PrepareUltimate(TEXT("cataclysm"));
     Source->CDR = 0.25f;
