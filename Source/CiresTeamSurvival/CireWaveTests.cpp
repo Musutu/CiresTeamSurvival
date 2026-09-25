@@ -150,12 +150,23 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
                 GI.bValid && !GI.bArmored && !GI.bBoss && CurrentWaveIndex(Mode) == State->Wave, TEXT("UnitFlags reports wave number, type and armored/escortee flags"));
             const float Progress = Guard ? CireLanePath::RouteProgress(Mode->GetWorld(), 0, Guard->GetActorLocation()) : -1.f;
             Check(FMath::Abs(Progress - C.SpawnAlongRoute) < .06f, TEXT("waves spawn SpawnAlongRoute of the way down the road"));
-            Check(Guard && FMath::IsNearlyEqual(MarchSpeed(Guard), C.MarchSpeedMultiplier) && FMath::IsNearlyEqual(MarchSpeed(Escortee), C.MarchSpeedMultiplier),
-                TEXT("wave units march faster while not fighting"));
+            const float Cruise = FMath::Max(C.MarchSpeedMultiplier, C.RallySpeed); // world-scale: no defender near yet
+            const float Marcher = FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed);
+            Check(Guard && FMath::IsNearlyEqual(MarchSpeed(Guard), Cruise) && FMath::IsNearlyEqual(MarchSpeed(Escortee), Marcher),
+                TEXT("wave units march faster while not fighting (rally pace with no defender near; marchers at their own pace)"));
         }
         FActorSpawnParameters HeroParams; HeroParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
         auto* Hero = Mode->GetWorld()->SpawnActor<ACireHero>(Escortee ? Escortee->GetActorLocation() + FVector(-150, 0, 0) : FVector::ZeroVector, FRotator::ZeroRotator, HeroParams);
         if (Hero) { Actors.Add(Hero); Hero->SetActorTickEnabled(false); Hero->TeamId = 0; Hero->Draft(2); Hero->CriticalChance = 0; Mode->Heroes.Add(Hero); }
+        if (Escortee && Hero)
+        {
+            ACireMonster* Near = nullptr; for (auto* M : Lane0(0)) if (!M->bArmoredEscort) { Near = M; break; }
+            if (Near) Hero->SetActorLocation(Near->GetActorLocation() + FVector(-150, 0, 0));
+            Check(Near && FMath::IsNearlyEqual(MarchSpeed(Near), C.MarchSpeedMultiplier) &&
+                FMath::IsNearlyEqual(MarchSpeed(Escortee), FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed)),
+                TEXT("world-scale: attackers slow to the march pace near a defender; the escortee keeps the marcher pace"));
+            Hero->SetActorLocation(Escortee->GetActorLocation() + FVector(-150, 0, 0));
+        }
         if (Escortee && Hero)
         {
             for (auto* M : Lane0(0)) if (M != Escortee) M->SetActorLocation(Escortee->GetActorLocation() + FVector(0, 200, 0));
@@ -178,7 +189,7 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
         SpawnAll();
         ACireMonster* Boss = nullptr; for (auto* M : Lane0(0)) if (M->bBoss) Boss = M;
         const FCireWaveUnitInfo BI = UnitFlags(Boss);
-        Check(Boss && BI.bValid && BI.bBoss && !BI.bArmored && BI.Type == ECireWaveType::Boss && FMath::IsNearlyEqual(MarchSpeed(Boss), C.MarchSpeedMultiplier), TEXT("boss flag reported; the boss marches at the pacing speed too"));
+        Check(Boss && BI.bValid && BI.bBoss && !BI.bArmored && BI.Type == ECireWaveType::Boss && FMath::IsNearlyEqual(MarchSpeed(Boss), FMath::Max(C.MarchSpeedMultiplier, C.RallySpeed)), TEXT("boss flag reported; the boss marches at the pacing speed too"));
         KillWaves();
         State->CycleWavesDone = Mode->CycleWavesSpawned; // what the match tick does on a clear
         Check(IsBreather(Mode), TEXT("a cleared mid-cycle wave opens the breather"));

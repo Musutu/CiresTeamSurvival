@@ -17,9 +17,13 @@
     "stuckSeconds": 5
   },
   "pacing": {
-    "_comment": "breatherSeconds is the Skill Shop window after each cleared wave; earlyContinue ends it once every human is Ready. Waves appear spawnAlongRoute of the way down the road (0 = at the rift, per Eric) and walk marchSpeed x faster while not fighting (Docs/Waves.md).",
+    "_comment": "breatherSeconds is the Skill Shop window after each cleared wave; earlyContinue ends it once every human is Ready. Waves appear spawnAlongRoute of the way down the road (0 = at the rift, per Eric) and walk marchSpeed x faster while not fighting; with no defender within rallyRadius cm they hurry at rallySpeed x (the 3x-longer town); idle bots hold at botHoldAt of the route (Docs/Waves.md).",
     "spawnAlongRoute": 0.0,
     "marchSpeed": 1.4,
+    "rallySpeed": 2.8,
+    "rallyRadius": 3000,
+    "botHoldAt": 0.5,
+    "marcherSpeed": 3,
     "firstWaveDelay": 8,
     "earlyContinue": true,
     "prepSeconds": 25,

@@ -153,3 +153,24 @@ Freesound recordings, licence-checked by the fetch script; see `Art/Arenas/PROVE
 - The build hitch of about 140 ms for the Fields (52k wheat and stubble instances) happens at the start of the prep
   minute, in town. It is not profiled on minimum-spec hardware.
 - The arena music overrides reuse existing tracks; no new music was added.
+
+## World scale: arenas twice as large (September 25)
+
+Eric: "PvP arenas about 2x the size; the wheat field is my favourite, keep its farm doodads." Every arena's playable floor is
+now **104 x 80 m** (half extents 5200 x 4000; was 52 x 40 m). `Tools/AuthorArenas.py` still authors each layout in the original
+coordinates: `K = 2.0` scales every position (never a piece's size) and every scatter region, and `fill()` re-adds the original
+in-bounds pieces at their 1x positions. The inner half therefore keeps exactly the cover it had and the outer ring carries the
+same pattern spread out: **twice the blockers per arena** (Sunlit Fields 34 -> 68 bale stacks, pyramids, round bales, stooks,
+walls, wagons and wells; the others 22-26 -> 44-52), all still mirror-symmetric (validated: 100% of the floor reachable, every
+spawn clear, 20-40 tall sight blockers per arena). Spawns stay 3.5 m inside the short edges (97 m apart), 3 m apart.
+
+Continuous rows (field fences, hangar bulkheads and deck barriers, canyon rim walls, the basalt cliff and lava shelves) are
+authored at half the step so their spacing is unchanged along the doubled edges; attached pieces (windmill sails, stacked
+crates) keep their offsets. Scatter counts are doubled (stubble 3.5x, the Fields' near wheat ring 2.2x) but kept on the
+560 m ground plate: a 1.1 km plate rendered black under distance-field lighting, so open-air plates stay 560 m (the hangar
+deck, 74 m, doubles to 148 m).
+
+Fab (local only): `FAB_OVERRIDES` now puts the Medieval Kingdom scanned European beech on the Fields' oaks and young trees and
+the Hornbeam Glade's trees, saplings, shrubs, stumps and logs, and its wild grass on the glade's grass tufts. `CireArenas`
+skips candidates inside the Fab pack folders when `-CireNoFab` is set, so a machine with the packs can render the clean-clone
+look. Captures: `Tools/RunArenaGallery.py` (the overview and plan cameras now rise with the half extents).

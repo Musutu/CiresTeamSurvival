@@ -179,7 +179,7 @@ bool CireArenaGallery::Tick(ACireGameMode* Mode)
     {
         if (State && Age > .5 && State->Phase != 2) State->Phase = 2; // prep -> arena: the HUD raises the arena banner
         G.Controller->GetHUD()->bShowHUD = false;
-        Look(O + FVector(-H.X - 1500, -H.Y - 2300, 2900), O + FVector(250, 150, 0), 70);
+        Look(O + FVector(-H.X - 1500, -H.Y - 2300, FMath::Max(2900.f, static_cast<float>(H.Y) * .9f)), O + FVector(250, 150, 0), 70); // world-scale: higher for 2x arenas
         if (Age > 1 && Age < 1.3) IStreamingManager::Get().StreamAllResources(1.f);
         if (Age > 5) { Capture(TEXT("overview")); G.Stage = 1; G.StageAt = Now; }
     }
@@ -205,7 +205,7 @@ bool CireArenaGallery::Tick(ACireGameMode* Mode)
     else if (G.Stage == 3)
     {
         // Top-down plan view: the blocker layout at a glance (matches the minimap).
-        Look(O + FVector(0, 0, 9000), O + FVector(1, 0, 0), 50);
+        Look(O + FVector(0, 0, FMath::Max(9000.f, static_cast<float>(H.X) * 2.4f)), O + FVector(1, 0, 0), 50); // world-scale: frame the 2x floor
         if (Age > 1 && Age < 1.3) IStreamingManager::Get().StreamAllResources(1.f);
         if (Age > 3) { Capture(TEXT("plan")); G.Stage = G.bDebugView ? 4 : 5; G.StageAt = Now; }
     }

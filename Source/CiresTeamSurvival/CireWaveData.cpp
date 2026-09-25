@@ -53,6 +53,7 @@ bool FCireWaveConfig::operator==(const FCireWaveConfig& O) const
         bStallFailsafe == O.bStallFailsafe && Near(MaxWaveSeconds, O.MaxWaveSeconds) && FailsafeAction == O.FailsafeAction &&
         Near(FailsafeGraceSeconds, O.FailsafeGraceSeconds) && Near(StuckSeconds, O.StuckSeconds) && Waves == O.Waves &&
         Near(SpawnAlongRoute, O.SpawnAlongRoute) && Near(MarchSpeedMultiplier, O.MarchSpeedMultiplier) && Near(FirstWaveDelay, O.FirstWaveDelay) && // pacing
+        Near(RallySpeed, O.RallySpeed) && Near(RallyRadius, O.RallyRadius) && Near(BotHoldAt, O.BotHoldAt) && Near(MarcherSpeed, O.MarcherSpeed) && // world-scale
         Near(PrepSeconds, O.PrepSeconds) && Near(ArenaSeconds, O.ArenaSeconds) && Near(RecoverySeconds, O.RecoverySeconds) && bEarlyContinue == O.bEarlyContinue &&
         Skills == O.Skills && Campaign == O.Campaign; // monster-races
 }
@@ -168,6 +169,10 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
     // pacing
     C.SpawnAlongRoute = ClampF(C.SpawnAlongRoute, 0, .7f, 0.f); // default: spawn at the rift (Eric)
     C.MarchSpeedMultiplier = ClampF(C.MarchSpeedMultiplier, .5f, 2, 1.25f);
+    C.RallySpeed = ClampF(C.RallySpeed, 1, 4, 1); // world-scale
+    C.RallyRadius = ClampF(C.RallyRadius, 500, 10000, 3000);
+    C.BotHoldAt = ClampF(C.BotHoldAt, .2f, .95f, .8f);
+    C.MarcherSpeed = ClampF(C.MarcherSpeed, .5f, 4, 1);
     C.FirstWaveDelay = ClampF(C.FirstWaveDelay, 0, 120, 8);
     C.PrepSeconds = ClampF(C.PrepSeconds, 5, 600, 30);
     C.ArenaSeconds = ClampF(C.ArenaSeconds, 15, 900, 60);
@@ -270,6 +275,10 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
     {
         C.SpawnAlongRoute = static_cast<float>(Num(*Pacing, TEXT("spawnAlongRoute"), C.SpawnAlongRoute));
         C.MarchSpeedMultiplier = static_cast<float>(Num(*Pacing, TEXT("marchSpeed"), C.MarchSpeedMultiplier));
+        C.RallySpeed = static_cast<float>(Num(*Pacing, TEXT("rallySpeed"), C.RallySpeed)); // world-scale
+        C.RallyRadius = static_cast<float>(Num(*Pacing, TEXT("rallyRadius"), C.RallyRadius));
+        C.BotHoldAt = static_cast<float>(Num(*Pacing, TEXT("botHoldAt"), C.BotHoldAt));
+        C.MarcherSpeed = static_cast<float>(Num(*Pacing, TEXT("marcherSpeed"), C.MarcherSpeed));
         C.FirstWaveDelay = static_cast<float>(Num(*Pacing, TEXT("firstWaveDelay"), C.FirstWaveDelay));
         C.PrepSeconds = static_cast<float>(Num(*Pacing, TEXT("prepSeconds"), C.PrepSeconds));
         C.ArenaSeconds = static_cast<float>(Num(*Pacing, TEXT("arenaSeconds"), C.ArenaSeconds));
@@ -391,9 +400,13 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     Failsafe->SetNumberField(TEXT("stuckSeconds"), C.StuckSeconds);
     Root->SetObjectField(TEXT("failsafe"), Failsafe);
     auto Pacing = MakeShared<FJsonObject>();
-    Pacing->SetStringField(TEXT("_comment"), TEXT("breatherSeconds is the Skill Shop window after each cleared wave; earlyContinue ends it once every human is Ready. Waves appear spawnAlongRoute of the way down the road and walk marchSpeed x faster while not fighting (Docs/Waves.md)."));
+    Pacing->SetStringField(TEXT("_comment"), TEXT("breatherSeconds is the Skill Shop window after each cleared wave; earlyContinue ends it once every human is Ready. Waves appear spawnAlongRoute of the way down the road and walk marchSpeed x faster while not fighting; with no defender within rallyRadius cm they hurry at rallySpeed x (the 3x-longer town); idle bots hold at botHoldAt of the route (Docs/Waves.md)."));
     Pacing->SetNumberField(TEXT("spawnAlongRoute"), C.SpawnAlongRoute);
     Pacing->SetNumberField(TEXT("marchSpeed"), C.MarchSpeedMultiplier);
+    Pacing->SetNumberField(TEXT("rallySpeed"), C.RallySpeed); // world-scale
+    Pacing->SetNumberField(TEXT("rallyRadius"), C.RallyRadius);
+    Pacing->SetNumberField(TEXT("botHoldAt"), C.BotHoldAt);
+    Pacing->SetNumberField(TEXT("marcherSpeed"), C.MarcherSpeed);
     Pacing->SetNumberField(TEXT("firstWaveDelay"), C.FirstWaveDelay);
     Pacing->SetBoolField(TEXT("earlyContinue"), C.bEarlyContinue);
     Pacing->SetNumberField(TEXT("prepSeconds"), C.PrepSeconds);

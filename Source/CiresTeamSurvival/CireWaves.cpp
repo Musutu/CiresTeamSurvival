@@ -769,7 +769,7 @@ bool CireWaveDirector::BotDestination(ACireHero* Bot, FVector& Out)
         return FVector::DistSquared2D(Out, Bot->GetActorLocation()) > FMath::Square(200.f);
     }
     // Hold the castle approach in a loose line across the road.
-    const FVector Anchor = CireLanePath::PointAlongRoute(World, Team, .80f, Bot->GetActorLocation().Z);
+    const FVector Anchor = CireLanePath::PointAlongRoute(World, Team, Config(World).BotHoldAt, Bot->GetActorLocation().Z); // world-scale: data (was .80)
     Out = CireLanePath::ClampToLane(World, Team, Anchor + FVector(((Index / 5) % 2) * -160.f, (Index % 5 - 2) * 150.f, 0), 120);
     return FVector::DistSquared2D(Out, Bot->GetActorLocation()) > FMath::Square(180.f);
 }
@@ -834,7 +834,21 @@ float CireWaveDirector::MarchSpeed(const ACireMonster* M)
     if (!IsValid(M) || M->PackId >= 0 || IsValid(M->Victim)) return 1.f;
     const FTrack* T = TrackOf(M);
     if (!T) return 1.f;
-    return Config(M->GetWorld()).MarchSpeedMultiplier;
+    const FCireWaveConfig& C = Config(M->GetWorld());
+    // world-scale: non-attacking marchers never stop to fight: they keep their own (hero-like) pace the whole way.
+    if (M->bArmoredEscort) return FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed);
+    // world-scale: hurry across the empty outer districts; march at the normal pace once a defender is near.
+    if (C.RallySpeed > C.MarchSpeedMultiplier)
+    {
+        const auto* Mode = M->GetWorld()->GetAuthGameMode<ACireGameMode>();
+        if (!Mode) return C.MarchSpeedMultiplier;
+        const FVector P = M->GetActorLocation();
+        for (const ACireHero* H : Mode->Heroes)
+            if (IsValid(H) && !H->bDead && H->TeamId == M->Lane && FVector::DistSquared2D(H->GetActorLocation(), P) < FMath::Square(C.RallyRadius))
+                return C.MarchSpeedMultiplier;
+        return C.RallySpeed;
+    }
+    return C.MarchSpeedMultiplier;
 }
 bool CireWaveDirector::IsBreather(const ACireGameMode* Mode)
 {

@@ -172,3 +172,48 @@ Limits: the kit is procedural (signs carry iron silhouettes, not painted boards)
 smoke is crossed cards (reads well from the gameplay camera, less so from street level); puddles are dark glossy
 patches, not true water; animals in town are static (rats) or shader-animated (crows), there are no skeletal ambient
 animals; wall dressing skips the Tripo houses. Free animated monster bodies are in `Docs/FreeCreatureSources.md`.
+
+## World scale (world-scale, September 25): a town three times as long, vibrant and crisp
+
+Eric: "make the world 3x the size ... vibrant and fun looking, and crisp; it looks like the game is from 2000." The route,
+districts and new limits are in `Docs/BattlefieldRoutes.md` ("World scale"); pacing is in `Docs/Waves.md` ("World scale").
+
+* **Layout.** The realm is 460 m long (was 153 m). The castle end and the original market / lanes / square keep their
+  coordinates; the gate road, town wall and Breach Fields moved out by `GATE_SHIFT` (30700 cm); seven new districts fill the
+  gap: Guildhall Row, the Temple Green, Weavers' Lanes, the Old Wall, Tanners' Yard, the Outer Farmsteads and Brookfield Hamlet.
+  Each has its own landmarks (guildhall and smithy yard, fountain park and chapel, lane houses, wall towers, sheds, barn and
+  windmill with wheat fields, a cottage green with an orchard), street fronts on both sides and (outer side) a skyline row,
+  farmsteads and woods out to the outer town wall, which now runs the whole length. Placements: 1,002 base rows, 887 dressing
+  rows and 2,561 foliage rows per realm layout (8,506 instances in the two realms, was 1,336); 54 street lamps line the road.
+* **New data.** `TownLayout.json` gains `surfaces` (world-aligned ground per district: plazas, flagstones, the new meadow and
+  the breach fields; `ACireWorld` draws them, the old hard-coded plazas are the fallback), `gateShift` and a `style` per
+  district (market / yard / square / farm / wall / breach) that drives the dressing fill pass. `TownLayout.foliage.json` is a
+  new additive overlay (grass, wildflowers, the farm wheat fields), written by `Tools/AuthorTownLayout.py`. New CC0 slots:
+  `tree_leafy`, `tree_young`, `tree_fir`, `grass_clump`, `wildflowers`, `wheat`, `hay_round`, `hay_bale_stack`, `stook`,
+  `scarecrow`, `hay_wagon`, `barn`, `windmill`, `windmill_sails`, `field_wall` and `mountain` (all from the committed arena kit
+  and Poly Haven imports).
+* **Fab (local only, never committed).** `Tools/BuildFabWorldSlots.py` writes `TownAssetSlots.fabworld.json` (priority 30,
+  object paths only) from the installed Medieval Kingdom (`CastleTown`) pack: scanned European beech trees (leafy trees, the
+  old leafless town tree, bushes, stumps, logs), a silver fir, wild grass, wild carrot flowers, eagle ferns and the Hills
+  mountain. `Tools/MeasureFabWorld.py` (commandlet) measured every candidate: all are Nanite; the mountain's vendor material
+  cannot draw on instanced meshes, so the `mountain` slot uses the new `"component": "static"` (one plain mesh component per
+  placement) and the CC0 mossy-rock blend as `materialOverride`. A clean clone or `-CireNoFab` keeps the CC0 trees, grass and
+  rocks.
+* **Runtime.** `"component": "static"` slots; the route-clearance check skips route segments that cannot reach a piece (the
+  road is three times longer); up to 140 slot lights per realm (was 56), every slot light fades out beyond 90 m; the far plain
+  is 2 km and has its own component outside distance-field lighting (a 2 km scaled cube rendered black under DFAO/Lumen); the
+  sky dome follows the longer realm.
+* **Look.** Golden afternoon instead of murky dusk: sun 30 degrees high, whiter and brighter (7.0), stronger sky light, a thin
+  sky-blue aerial haze instead of the thick brown valley fog (density .0055 from 40 m), and an unbound town colour grade
+  (`TownGrade`: saturation 1.1, contrast 1.1, slightly cool white balance, light bloom and vignette) that `CireArenas` switches
+  off while an arena brings its own. `r.Tonemapper.Sharpen=0.6` keeps detail crisp under TSR. New world-aligned meadow
+  material (`MI_TownW_Meadow`, `Tools/BuildWorldScaleMaterials.py`) greens the park, the farmsteads and the countryside; the
+  scaled backdrop hills and field rocks wear the mossy-rock blend instead of a stretched scan that read as orange sandstone.
+* **Performance / LOD.** Trees, grass, flowers, wheat and stooks have HISM cull distances (grass and flowers 50-65 m, wheat
+  70-90 m, trees 260-360 m); Fab foliage is Nanite; lights fade at 90 m; the navmesh builds 702 + 702 tiles in 2.2-2.7 s at
+  match start (was 252 + 252 in 1.2 s).
+* **Bots cross the whole town now**, so the dressing fill pass keeps 110 cm between colliding pieces (a hero is 96 cm wide) and
+  never adds colliding pieces inside the open market hall: a random table there wedged every bot of both teams in the first
+  soak. The navmesh search budget was raised for 495 m paths (`Docs/Navigation.md`).
+* **Evidence.** `Tools/RunEnvironmentGallery.py` now captures one view per district (14) plus the overview and the escort:
+  16 PNGs, 165 checks. `--no-fab` renders the clean-clone look.

@@ -108,7 +108,7 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
     FCireBattlefieldRoutes Candidate;
     if (!Root->TryGetObjectField(TEXT("bounds"),Bounds) || !Bounds ||
         !Keys(*Bounds,{TEXT("minX"),TEXT("maxX"),TEXT("halfWidth")}) ||
-        !Number(*Bounds,TEXT("minX"),Candidate.MinX,-10000,-2350) || !Number(*Bounds,TEXT("maxX"),Candidate.MaxX,4000,30000) ||
+        !Number(*Bounds,TEXT("minX"),Candidate.MinX,-10000,-2350) || !Number(*Bounds,TEXT("maxX"),Candidate.MaxX,4000,80000) ||
         !Number(*Bounds,TEXT("halfWidth"),Candidate.HalfWidth,900,1400)) return Fail(TEXT("Invalid lane bounds; realms must remain separate and contain the towns"));
     // nav-paths: lane width and goal zone (defaults keep older documents valid).
     if (Root->HasField(TEXT("laneWidth")) && !Number(Root,TEXT("laneWidth"),Candidate.LaneWidth,360,1000)) return Fail(TEXT("laneWidth must be 360..1000 cm"));
@@ -166,7 +166,7 @@ bool CireLanePath::Validate(const FCireBattlefieldRoutes& R, FString& Error)
     auto Fail = [&](const TCHAR* Reason) { Error = Reason; return false; };
     auto Finite2 = [](const FVector2D& P) { return FMath::IsFinite(P.X) && FMath::IsFinite(P.Y); };
     if (!FMath::IsFinite(R.MinX) || !FMath::IsFinite(R.MaxX) || !FMath::IsFinite(R.HalfWidth) || R.MinX < -10000 || R.MinX > -2350 ||
-        R.MaxX < 4000 || R.MaxX > 30000 || R.HalfWidth < 900 || R.HalfWidth > 1400)
+        R.MaxX < 4000 || R.MaxX > 80000 /* world-scale: the realm is 3x longer */ || R.HalfWidth < 900 || R.HalfWidth > 1400)
         return Fail(TEXT("Invalid lane bounds; realms must remain separate and contain the towns"));
     if (!FMath::IsFinite(R.LaneWidth) || R.LaneWidth < 360 || R.LaneWidth > 1000) return Fail(TEXT("laneWidth must be 360..1000 cm"));
     const FVector2D GoalHalf = R.GoalSize * .5;
@@ -204,8 +204,12 @@ bool CireLanePath::Validate(const FCireBattlefieldRoutes& R, FString& Error)
 }
 FCireBattlefieldRoutes CireLanePath::TownDefaults()
 {
-    FCireBattlefieldRoutes R; R.MinX = -2350; R.MaxX = 13000; R.HalfWidth = 1400;
-    const TArray<FVector2D> Points = {{12500,0},{10800,0},{10100,-550},{8700,-550},{7400,500},{5800,500},{4700,-550},{3300,-550},{2400,500},{1000,500},{0,0},{-1850,0}};
+    // world-scale: the three-times-longer town (Tools/AuthorTownLayout.py writes the same route to BattlefieldRoutes.json).
+    FCireBattlefieldRoutes R; R.MinX = -2350; R.MaxX = 43700; R.HalfWidth = 1400;
+    const TArray<FVector2D> Points = {{43200,0},{41500,0},{40800,-550},{39300,-550},{38000,450},{36500,700},{35200,-250},{33600,-700},{32000,-700},
+        {30600,300},{29200,650},{27700,650},{26300,-450},{25000,-450},{24300,0},{22700,0},{21300,-600},{19700,-600},{18300,550},{16900,550},
+        {15500,-250},{14000,-250},{12900,500},{11400,500},{10000,-450},{8700,-550},{7400,500},{5800,500},{4700,-550},{3300,-550},{2400,500},
+        {1000,500},{0,0},{-1850,0}};
     R.LocalPoints[0] = R.LocalPoints[1] = Points; return R;
 }
 bool CireLanePath::SameLayout(const FCireBattlefieldRoutes& A, const FCireBattlefieldRoutes& B)

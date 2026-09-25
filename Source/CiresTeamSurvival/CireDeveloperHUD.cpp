@@ -98,7 +98,7 @@ void ACireHUD::DrawDeveloperPanel(float X,float Y)
             Integer(TEXT("Wave units (0 = normal)"),DeveloperDraft.WaveUnitsOverride,0,40,L,A,TEXT("Overrides regular unit count per team on future waves; the final-wave boss is additional."));
             Slider(TEXT("Monster health multiplier"),DeveloperDraft.MonsterHealthScale,.1f,10,.1f,R,A,TEXT("Applies to newly configured monsters. Existing health is not silently refilled by a tuning change."));
             Slider(TEXT("Monster damage multiplier"),DeveloperDraft.MonsterDamageScale,.05f,5,.05f,L,A+47,TEXT("Multiplies the fixed damage assigned to newly configured NPCs. Default 1 preserves authored static damage."));
-            Slider(TEXT("Spawn origin X (cm)"),DeveloperDraft.SpawnX,-1000,13000,100,R,A+47,TEXT("World X coordinate of the next wave's origin. Future spawn rows clamp within the editable lane bounds."));
+            Slider(TEXT("Spawn origin X (cm)"),DeveloperDraft.SpawnX,-1000,45000,250,R,A+47,TEXT("World X coordinate of the next wave's origin. Future spawn rows clamp within the editable lane bounds."));
             Slider(TEXT("Lane offset Y (cm)"),DeveloperDraft.SpawnOffsetY,-500,500,25,L,A+94,TEXT("Shifts both wave formations within their separate lane without moving the enemy into the friendly realm."));
             Slider(TEXT("Formation half-width"),DeveloperDraft.SpawnSpread,0,600,20,R,A+94,TEXT("Distance of alternating spawn columns from the lane center."));
             Slider(TEXT("Row spacing (cm)"),DeveloperDraft.SpawnSpacing,30,240,10,L,A+141,TEXT("Spacing between rows of two monsters in the spawn formation."));
