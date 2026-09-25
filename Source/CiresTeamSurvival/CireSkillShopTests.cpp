@@ -6,6 +6,8 @@
 #include "CireSkillShop.h"
 #if !UE_BUILD_SHIPPING
 #include "CireAbilityDB.h"
+#include "CirePolymorph.h"
+#include "CireWaves.h"
 #include "CireGame.h"
 #include "CireItems.h"
 #include "CireLoot.h"
@@ -277,6 +279,66 @@ bool CireSkillShop::RunSmoke(ACireGameMode* Mode)
         Check(bKeys, TEXT("each champion maps to a recommended build"));
     }
 
+    // ---- Ready to Continue gate (Skill Shop mode): the next wave waits for every human
+    {
+        auto& Data = CireSkillShop::Mutable();
+        const bool SavedGate = Data.bReadyGate; const float SavedCap = Data.ReadyMaxSeconds;
+        Data.bReadyGate = true; Data.ReadyMaxSeconds = 180.f;
+        Mode->Heroes.Reset(); Mode->Monsters.Reset();
+        Mode->Clock = Cires::MatchClock(); S->Phase = 0; S->Wave = 3;
+        S->WavesPerCycle = 5; S->CycleWavesDone = 1; Mode->CycleWavesSpawned = 1;
+        ACireHero* H1 = Hero(0, 0, FVector(0, -600, 0));
+        ACireHero* H2 = Hero(0, 1, FVector(0, -700, 0));
+        ACireHero* Bot = Hero(0, 2, FVector(0, -800, 0));
+        H1->bBot = H2->bBot = false; Bot->bBot = true;
+        S->ProgressionMode = 0;
+        float Timer = 15.f;
+        Check(!HoldBreather(Mode, .5f, Timer), TEXT("Classic Draft: the breather is never held"));
+        S->ProgressionMode = 1;
+        Timer = 15.f;
+        const bool bHeld = HoldBreather(Mode, .5f, Timer);
+        Check(bHeld && Timer == 15.f && S->bReadyGateHold && S->BreatherPlayers == 2, TEXT("gate holds the countdown while humans are not ready"));
+        Check(Bot->Inventory->bReadyToContinue && !H1->Inventory->bReadyToContinue, TEXT("bots auto-ready; humans start not ready"));
+        CireWaveDirector::SetPlayerReady(H1, true);
+        Check(HoldBreather(Mode, .5f, Timer) && H1->Inventory->bReadyToContinue && S->BreatherReady == 1, TEXT("one of two humans ready: still waiting"));
+        CireWaveDirector::SetPlayerReady(H2, true);
+        Check(!HoldBreather(Mode, .5f, Timer) && Timer <= 1.f && !S->bReadyGateHold, TEXT("every human ready: the next wave starts in 1 s"));
+        // Safety cap (AFK): released after maxSeconds even if nobody is ready.
+        CireWaveDirector::SetPlayerReady(H1, false); CireWaveDirector::SetPlayerReady(H2, false);
+        S->ProgressionMode = 0; HoldBreather(Mode, 0, Timer); S->ProgressionMode = 1; // resets the wait clock
+        Data.ReadyMaxSeconds = 5.f; Timer = 15.f;
+        Check(HoldBreather(Mode, 3.f, Timer) && FMath::IsNearlyEqual(S->ReadyGateLeft, 2.f, .01f), TEXT("cap counts down while waiting"));
+        Check(!HoldBreather(Mode, 3.f, Timer) && Timer <= 1.f, TEXT("safety cap releases the wave for AFK players"));
+        Data.ReadyMaxSeconds = 0.f; S->ProgressionMode = 0; HoldBreather(Mode, 0, Timer); S->ProgressionMode = 1; Timer = 15.f;
+        Check(HoldBreather(Mode, 1000.f, Timer) && S->ReadyGateLeft < 0, TEXT("cap 0 = wait for players with no limit"));
+        // Bots-only matches (soaks) keep the normal breather.
+        H1->bBot = H2->bBot = true; Timer = 15.f;
+        Check(!HoldBreather(Mode, .5f, Timer), TEXT("bots-only match: no gate"));
+        Data.bReadyGate = SavedGate; Data.ReadyMaxSeconds = SavedCap;
+        S->ProgressionMode = 0; HoldBreather(Mode, 0, Timer); S->ProgressionMode = 1;
+        S->CycleWavesDone = SavedDone; Mode->CycleWavesSpawned = 0;
+    }
+
+    // ---- Ability groupings ("periodic table") derived from the Ability DB
+    {
+        auto Is = [](const TCHAR* Id, const TCHAR* Section, const TCHAR* Tag)
+        {
+            const FCireAbilityDef* D = CireAbilityDB::Find(Id);
+            return D && D->Section == Section && (!Tag || D->EffectTags.Contains(Tag));
+        };
+        Check(Is(TEXT("frost_bind"), TEXT("control"), TEXT("Slow")) && Is(TEXT("grave_line"), TEXT("control"), TEXT("Silence")) &&
+            Is(TEXT("polymorph"), TEXT("control"), TEXT("Polymorph")) && Is(TEXT("shadow_step"), TEXT("control"), TEXT("Stun")), TEXT("crowd control grouped with CC tags"));
+        Check(Is(TEXT("spectral_pack"), TEXT("summon"), TEXT("Summon")) && Is(TEXT("summoned_wall"), TEXT("construct"), TEXT("Construct")), TEXT("summons and constructs grouped"));
+        Check(Is(TEXT("restoring_light"), TEXT("defensive"), TEXT("Heal")) && Is(TEXT("iron_guard"), TEXT("defensive"), TEXT("Guard")), TEXT("defensive skills grouped with heal/guard tags"));
+        Check(Is(TEXT("ember_lance"), TEXT("spell"), nullptr) && Is(TEXT("piercing_shot"), TEXT("attack"), nullptr), TEXT("offensive split into spell and attack damage"));
+        Check(Is(TEXT("stone_skin"), TEXT("passive"), nullptr) && Is(TEXT("cataclysm"), TEXT("ultimate"), nullptr), TEXT("passives and ultimates keep their own sections"));
+        bool bAll = true;
+        static const TSet<FString> Valid = {TEXT("spell"), TEXT("attack"), TEXT("defensive"), TEXT("control"), TEXT("summon"), TEXT("construct"), TEXT("passive"), TEXT("ultimate")};
+        for (const FCireAbilityDef& D : CireAbilityDB::All()) bAll &= Valid.Contains(D.Section) && D.EffectTags.Num() <= 4;
+        Check(bAll, TEXT("every ability has one primary section and at most four tags"));
+    }
+
+    bPass = CirePolymorph::RunSmoke(Mode) && bPass;
     UE_LOG(LogCireSkillShopTests, Display, TEXT("CIRE_SKILLSHOP_%s checks=%d"), bPass ? TEXT("PASS") : TEXT("FAIL"), Count);
     return bPass;
 }

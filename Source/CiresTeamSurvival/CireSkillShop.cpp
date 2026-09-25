@@ -7,6 +7,7 @@
 #include "CireLoot.h"
 #include "CireChampionProfiles.h"
 #include "CireAbilityDB.h"
+#include "CireWaves.h" // breather / ready-up (wave director)
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "Misc/FileHelper.h"
@@ -72,6 +73,11 @@ bool CireSkillShop::ParseJson(const FString& Json, FCireSkillShopData& Out, FStr
         (*Section)->TryGetBoolField(TEXT("recovery"), Out.bRecovery);
         (*Section)->TryGetBoolField(TEXT("autoOpenOnWaveClear"), Out.bAutoOpen);
     }
+    if (Root->TryGetObjectField(TEXT("readyGate"), Section))
+    {
+        (*Section)->TryGetBoolField(TEXT("enabled"), Out.bReadyGate);
+        Out.ReadyMaxSeconds = FMath::Clamp(static_cast<float>(Num(*Section, TEXT("maxSeconds"), 180)), 0.f, 3600.f);
+    }
     if (Root->TryGetObjectField(TEXT("prices"), Section))
     {
         R.ActivePrice = FMath::Clamp(Num(*Section, TEXT("active"), 15), 0.5, 1000.);
@@ -108,12 +114,14 @@ FString CireSkillShop::ToJson(const FCireSkillShopData& D)
   "schemaVersion": 1,
   "_comment": "progression-shop: the Skill Shop (Eric's playtest-2 ruling). Replaces level-up skill offers; the free opening role pick at the start stays. Prices are in mob values (LootTables.json economy), so they follow the gold players have. Edit live in F8 > Economy. See Docs/Progression.md.",
   "access": { "breather": %s, "prep": %s, "recovery": %s, "autoOpenOnWaveClear": %s },
+  "readyGate": { "_comment": "Skill Shop mode: the next wave waits until every human presses READY TO CONTINUE (bots auto-ready); maxSeconds is the AFK safety cap (0 = none), counted down on screen in its last 30 s.", "enabled": %s, "maxSeconds": %g },
   "prices": { "active": %g, "passive": %g, "ultimate": %g, "activeOwnedGrowth": %g, "levelUpBase": %g, "levelUpGrowth": %g },
   "scaling": { "effectPerLevel": %g, "costPerLevel": %g, "cooldownPerLevel": %g, "minCooldownFactor": %g },
   "slots": { "activeStart": %d, "activeEveryWaves": %d, "maxActive": %d, "passiveFromWave": %d, "ultimateFromWave": %d },
   "bots": { "skillBudgetShare": %g }
 }
 )"), D.bBreather ? TEXT("true") : TEXT("false"), D.bPrep ? TEXT("true") : TEXT("false"), D.bRecovery ? TEXT("true") : TEXT("false"), D.bAutoOpen ? TEXT("true") : TEXT("false"),
+        D.bReadyGate ? TEXT("true") : TEXT("false"), D.ReadyMaxSeconds,
         R.ActivePrice, R.PassivePrice, R.UltimatePrice, R.ActiveOwnedGrowth, R.LevelUpBase, R.LevelUpGrowth,
         R.EffectPerLevel, R.CostPerLevel, R.CooldownPerLevel, R.MinCooldownFactor,
         R.ActiveSlotsStart, R.ActiveSlotEveryWaves, R.MaxActive, R.PassiveFromWave, R.UltimateFromWave, D.BotSkillShare);
@@ -427,4 +435,37 @@ void CireSkillShop::ApplyCastLevel(ACireHero* Hero, int32 Slot, const FString& I
     Hero->Mana = FMath::Max(0.f, Hero->Mana - BaseMana * Extra);
     Hero->Energy = FMath::Max(0.f, Hero->Energy - BaseEnergy * Extra);
     if (Hero->Cooldowns.IsValidIndex(Slot)) Hero->Cooldowns[Slot] *= Scale.Cooldown;
+}
+
+// ------------------------------------------------------------------ Ready to Continue gate
+bool CireSkillShop::HoldBreather(ACireGameMode* Mode, float DeltaSeconds, float& WaveTimer)
+{
+    static TMap<TWeakObjectPtr<ACireGameMode>, float> Elapsed;
+    auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    if (!S) return false;
+    const auto& D = Get();
+    auto Publish = [S](bool bHold, float Left)
+    {
+        if (S->bReadyGateHold != bHold || !FMath::IsNearlyEqual(S->ReadyGateLeft, Left, .25f)) { S->bReadyGateHold = bHold; S->ReadyGateLeft = Left; S->ForceNetUpdate(); }
+    };
+    CireWaveDirector::UpdateBreatherReady(Mode); // ready counts + per-hero flags
+    if (!D.bReadyGate || !IsSkillShopMode(Mode->GetWorld()) || !CireWaveDirector::IsBreather(Mode) || S->BreatherPlayers <= 0)
+    {
+        Elapsed.Remove(Mode);
+        Publish(false, -1.f);
+        return false;
+    }
+    float& Waited = Elapsed.FindOrAdd(Mode);
+    Waited += FMath::Max(0.f, DeltaSeconds);
+    const bool bAllReady = S->BreatherReady >= S->BreatherPlayers;
+    const bool bCapped = D.ReadyMaxSeconds > 0 && Waited >= D.ReadyMaxSeconds;
+    const float Left = D.ReadyMaxSeconds > 0 ? FMath::Max(0.f, D.ReadyMaxSeconds - Waited) : -1.f;
+    if (bAllReady || bCapped)
+    {
+        WaveTimer = FMath::Min(WaveTimer, 1.f);
+        Publish(false, Left);
+        return false;
+    }
+    Publish(true, Left);
+    return true;
 }

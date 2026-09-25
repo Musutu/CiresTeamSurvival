@@ -15,6 +15,7 @@
 #include "CireLoot.h"
 #include "CireShopUI.h"
 #include "CireSkillShop.h"
+#include "CirePolymorph.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -48,6 +49,7 @@ struct FGallery
     bool bShopOnly = false;   // -CireShopGalleryShopOnly
     int32 Expected = 0;
     bool bAutoOpenArmed = false, bAutoOpenChecked = false;
+    TArray<TWeakObjectPtr<ACireMonster>> Critters;
     // network
     int32 NetStep = 0;
     double NetStepAt = 0;
@@ -132,7 +134,8 @@ const FStage Stages[] = {
     {TEXT("loot_personal_own_vs_teammate"), 1.6f}, {TEXT("loot_window_and_toasts"), .9f}, {TEXT("loot_autocollect_summary_and_log"), 1.0f},
     // progression-shop: the Skill Shop (Eric's target image) and its purchase moments.
     {TEXT("skill_shop_hover"), 2.4f}, {TEXT("skill_shop_seal_stamp"), .9f}, {TEXT("skill_shop_scroll_flight"), .9f},
-    {TEXT("skill_shop_unaffordable_error"), .8f}, {TEXT("skill_shop_auto_open_after_wave"), 1.8f}};
+    {TEXT("skill_shop_unaffordable_error"), .8f}, {TEXT("skill_shop_auto_open_after_wave"), 1.8f},
+    {TEXT("skill_polymorph_critters"), 2.2f}};
 bool InSubset(int32 Stage) { return !G.bShopOnly || FString(Stages[Stage].Name).StartsWith(TEXT("shop_")) || FString(Stages[Stage].Name).StartsWith(TEXT("skill_")); }
 constexpr int32 StageCount = UE_ARRAY_COUNT(Stages);
 
@@ -270,6 +273,25 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
         G.bAutoOpenArmed = true;
         break;
     }
+    case 18:
+    {
+        // Polymorph: three monsters in front of the camera, one per critter (Chicken, Piglet, Frog).
+        PC->bShop = false;
+        HUD->UISettings.bTooltips = false;
+        SetPhase(Mode, 0);
+        const FVector Forward = H->GetActorForwardVector(), Right = H->GetActorRightVector();
+        for (int32 Critter = 0; Critter < 3; ++Critter)
+        {
+            FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+            const FVector At = H->GetActorLocation() + Forward * 520.f + Right * ((Critter - 1) * 170.f);
+            ACireMonster* M = Mode->GetWorld()->SpawnActor<ACireMonster>(At, (-Forward).Rotation(), Params);
+            if (!M) continue;
+            M->Lane = H->TeamId; M->Health = M->MaxHealth = 5000; Mode->Monsters.Add(M);
+            CirePolymorph::Apply(M, 30.f, H, Critter);
+            G.Critters.Add(M);
+        }
+        break;
+    }
     default: break;
     }
 }
@@ -332,6 +354,14 @@ bool TickGallery(ACireGameMode* Mode)
         else { UE_LOG(LogCireShopFixtures, Error, TEXT("CIRE_SHOP_GALLERY_FAIL the Skill Shop did not open after a cleared wave")); }
         G.bPass &= bOpened;
         G.bAutoOpenChecked = true;
+    }
+    if (G.Stage == 18 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .05f)
+    {
+        int32 Shown = 0;
+        for (const auto& M : G.Critters) Shown += M.IsValid() && CirePolymorph::IsPolymorphed(M.Get()) && CirePolymorph::HasCritterVisual(M.Get());
+        if (Shown == 3) { UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_GALLERY_POLYMORPH_PASS critters=3")); }
+        else { UE_LOG(LogCireShopFixtures, Error, TEXT("CIRE_SHOP_GALLERY_FAIL polymorph critter visuals=%d/3"), Shown); }
+        G.bPass &= Shown == 3;
     }
     // Feedback shots freeze the UI clock mid-animation so the capture shows the moment itself.
     if (((G.Stage >= 2 && G.Stage <= 4) || G.Stage == 11) && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f)

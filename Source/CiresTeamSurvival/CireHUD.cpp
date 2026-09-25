@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireSkillShop.h" // progression-shop: ready gate caption
 #include "CireUITheme.h" // ui-themes
 #include "CireArenas.h" // arenas
 #include "CireShopUI.h" // progression-shop
@@ -352,15 +353,18 @@ void ACireHUD::DrawMatch(ACireGameState* State)
         Label(NextWave,(250-TextWidth(NextWave,8))/2,90,8,Muted);
     }
     if(State->Phase==0&&FMath::IsFinite(State->NextWaveSeconds)&&State->NextWaveSeconds>.05f&&State->NextWaveSeconds<3600.f) {
-        const FString Next=FString::Printf(TEXT("NEXT WAVE IN %ds"),FMath::CeilToInt(State->NextWaveSeconds));
+        // progression-shop: in Skill Shop mode the wave waits for every human's READY TO CONTINUE.
+        const FString Next=State->bReadyGateHold?FString::Printf(TEXT("WAITING FOR %d/%d PLAYERS"),FMath::Max(0,State->BreatherPlayers-State->BreatherReady),State->BreatherPlayers)
+            :FString::Printf(TEXT("NEXT WAVE IN %ds"),FMath::CeilToInt(State->NextWaveSeconds));
         Label(Next,(250-TextWidth(Next,9))/2,76,9,Gold);
         // wave-director: breather Ready (the Skill Shop window ends early once every player is ready).
         if(BreatherReadyWave!=State->Wave){BreatherReadyWave=State->Wave;bBreatherReadyLocal=false;}
         auto* Controller=Cast<ACireController>(PlayerOwner);
         if(State->BreatherPlayers>0&&State->NextWaveSeconds>1.2f&&Controller) {
-            const FString Caption=FString::Printf(TEXT("%s  %d/%d"),bBreatherReadyLocal?TEXT("READY"):TEXT("READY UP"),State->BreatherReady,State->BreatherPlayers);
-            const bool Over=Hit(75,104,100,22);
-            CireUIStyle::Button(Painter(),75,104,100,22,Caption,bBreatherReadyLocal?ECireButtonState::Selected:Over?ECireButtonState::Hover:ECireButtonState::Normal,bBreatherReadyLocal?Teal:Gold,8.5f);
+            const bool bGate=CireSkillShop::IsSkillShopMode(GetWorld()); // progression-shop: READY TO CONTINUE gate
+            const FString Caption=FString::Printf(TEXT("%s  %d/%d"),bBreatherReadyLocal?TEXT("READY"):bGate?TEXT("READY TO CONTINUE"):TEXT("READY UP"),State->BreatherReady,State->BreatherPlayers);
+            const bool Over=Hit(bGate?55:75,104,bGate?140:100,22);
+            CireUIStyle::Button(Painter(),bGate?55:75,104,bGate?140:100,22,Caption,bBreatherReadyLocal?ECireButtonState::Selected:Over?ECireButtonState::Hover:ECireButtonState::Normal,bBreatherReadyLocal?Teal:Gold,8.5f);
             Tip(TEXT("Ready"),TEXT("Start the next wave early. It begins 1 second after every player is ready; otherwise the full breather runs."),75,104,100,22);
             if(Over&&Clicked){Clicked=false;PlayUIFeedback();bBreatherReadyLocal=!bBreatherReadyLocal;Controller->ServerAction(10,bBreatherReadyLocal?1:0,nullptr);}
         }

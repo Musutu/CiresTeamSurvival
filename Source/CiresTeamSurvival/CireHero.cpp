@@ -3,6 +3,7 @@
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireRaces.h" // monster-races
 #include "CireGame.h"
+#include "CirePolymorph.h" // progression-shop: Polymorph
 #include "CireCombatEvents.h"
 #include "CireRealm.h"
 #include "CireTownGoal.h"
@@ -573,6 +574,7 @@ float ACireHero::TakeDamage(float Amount, FDamageEvent const& Event, AController
     if (const auto* Enemy = ::Cast<ACireHero>(Causer))
     {
         if (!Mode->CanFight(Enemy, this)) return 0;
+        CirePolymorph::Break(this); // progression-shop: PvP damage breaks Polymorph
     }
     else if (const auto* Monster = ::Cast<ACireMonster>(Causer))
     {
@@ -653,6 +655,7 @@ bool ACireHero::CanJumpInternal_Implementation()const
 void ACireHero::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+    CirePolymorph::TickVisual(this); // progression-shop: PvP Polymorph critter body
     if(Mobility)
     {
         CireMovement::ApplyToHero(*this); // tuning, facing mode and tank body scale
@@ -941,6 +944,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
     if (!HasAuthority() || !Mode || !Attacker || !Attacker->IsHostile(this) || Health <= 0 ||
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
     if (!CireWaveDirector::AllowDamage(this, Attacker)) return 0; // wave-director: neutral packs ignore bots; a player's hit aggroes the pack
+    CirePolymorph::Break(this); // progression-shop: any damage breaks Polymorph
     Amount = CireNPCCombat::ModifyIncomingDamage(this, Attacker, Amount); // npc-boss: armor/guard/shield wall/provoke
     if (Amount <= 0 || Health <= 0) return 0;
     const float Taken = FMath::Min(Health, Amount);
@@ -969,6 +973,8 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
 void ACireMonster::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+    CirePolymorph::TickVisual(this); // progression-shop: critter body while polymorphed
+    if(CirePolymorph::TickMonster(this,DeltaSeconds))return; // progression-shop: polymorphed critters wander, no AI
     if(CireCrowdControl::TickMonster(this,DeltaSeconds))return; // champion-draft: stunned monsters skip their AI
     CireNPCCombat::Tick(this,DeltaSeconds);
 }

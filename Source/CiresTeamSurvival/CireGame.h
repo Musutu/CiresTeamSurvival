@@ -46,6 +46,10 @@ public:
     // wave-director: breather Ready (human players ready / human players; 0/0 = no humans).
     UPROPERTY(Replicated) int32 BreatherReady = 0;
     UPROPERTY(Replicated) int32 BreatherPlayers = 0;
+    // progression-shop: Skill Shop mode holds the breather until every human is READY TO CONTINUE
+    // (CireSkillShop::HoldBreather). ReadyGateLeft = seconds left on the safety cap (-1: no cap).
+    UPROPERTY(Replicated) bool bReadyGateHold = false;
+    UPROPERTY(Replicated) float ReadyGateLeft = -1.f;
     // monster-races: this match's monster skill seed (CireRaces.h) and the race of the current wave.
     UPROPERTY(Replicated) int32 MonsterSkillSeed = 0;
     UPROPERTY(Replicated) FName WaveRace;

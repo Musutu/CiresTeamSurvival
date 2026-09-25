@@ -136,7 +136,7 @@ void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireGameState,EmberLives); DOREPLIFETIME(ACireGameState,DuskLives);
     DOREPLIFETIME(ACireGameState,EmberWins); DOREPLIFETIME(ACireGameState,DuskWins);
     DOREPLIFETIME(ACireGameState,ArenaIndex); DOREPLIFETIME(ACireGameState,Announcement);
-    DOREPLIFETIME(ACireGameState,ProgressionMode); // progression-shop
+    DOREPLIFETIME(ACireGameState,ProgressionMode); DOREPLIFETIME(ACireGameState,bReadyGateHold); DOREPLIFETIME(ACireGameState,ReadyGateLeft); // progression-shop
     DOREPLIFETIME(ACireGameState,WaveLabel); DOREPLIFETIME(ACireGameState,NextWaveLabel); // wave-director
     DOREPLIFETIME(ACireGameState,BreatherReady); DOREPLIFETIME(ACireGameState,BreatherPlayers); // wave-director
     DOREPLIFETIME(ACireGameState,LaneBounds); DOREPLIFETIME(ACireGameState,LanePoints0);
@@ -546,7 +546,9 @@ void ACireGameMode::Tick(float Dt) {
             } else {
                 // wave-director: every human pressed Ready in the Skill Shop window -> start in 1 s.
                 if(CireWaveDirector::UpdateBreatherReady(this))WaveTimer=FMath::Min(WaveTimer,1.f);
-                WaveTimer=FMath::Max(0.f,WaveTimer-Dt);
+                // progression-shop: in Skill Shop mode the breather is a hard gate: the countdown waits for
+                // every human's READY TO CONTINUE (bots auto-ready) or the SkillShop.json safety cap.
+                if(!CireSkillShop::HoldBreather(this,Dt,WaveTimer))WaveTimer=FMath::Max(0.f,WaveTimer-Dt);
                 S->NextWaveSeconds=WaveTimer;
                 if(WaveTimer<=0&&!(Dev.bEnabled&&Dev.bPauseWaveSpawns))SpawnWave();
             }

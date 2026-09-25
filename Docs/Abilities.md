@@ -26,6 +26,7 @@ costs rise toward a capped multiplier and cooldowns decay toward a floor. Maths:
 | Iron Guard (`iron_guard`) | TANK/DPS/HEAL | active | physical | self | 0s | 25 EN | 14s | 40 / 57 / 60 % damage reduction | DEF +40% |
 | Oathbound Guardian (`oathbound_guardian`) | TANK/DPS/HEAL | active | void | aim | 0s | 45 MP | 20s | 400 / 565 / 762 guardian health |  |
 | Piercing Shot (`piercing_shot`) | DPS | active | physical | aim | 0s | 25 EN | 9s | 90 / 127 / 171 damage |  |
+| Polymorph (`polymorph`) | DPS/HEAL | active | arcane | enemy | 1.5s | 50 MP | 20s | 8 / 11 / 12 seconds | Polymorphed |
 | Aegis Dome (`protection_dome`) | TANK/DPS/HEAL | active | holy | aim | 0s | 55 MP | 18s | 300 / 424 / 571 dome health |  |
 | Purify (`purify`) | HEAL | active | holy | ally | 1s | 25 MP | 8s | 40 / 57 / 76 healing | cleanse |
 | Restoring Light (`restoring_light`) | HEAL | active | holy | ally | 1.5s | 45 MP | 6s | 90 / 127 / 171 healing |  |
@@ -175,32 +176,32 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 | Champion | Roles | Signature | Implemented purchasable |
 |---|---|---|---|
 | Iron Warden (`knight`) | TANK | shield_slam, iron_guard, war_cry, cleaving_strike, second_wind, protection_dome, stone_skin, bastion_of_dawn | 19 |
-| Ash Ranger (`ranger`) | DPS | piercing_shot, frost_bind, shadow_step, venom_ground, grave_line, spectral_pack, battle_rhythm, executioners_verdict, executioner | 27 |
-| Veil Scholar (`scholar`) | HEAL | restoring_light, sanctuary, purify, chain_spark, ember_lance, protection_dome, soul_conduit, renewal | 19 |
-| Dusk Lancer (`lancer`) | DPS | cleaving_strike, piercing_shot, shadow_step, iron_guard, second_wind, ashen_square, battle_rhythm, executioners_verdict, executioner | 27 |
-| Rift Summoner (`summoner`) | DPS | oathbound_guardian, spectral_pack, summoned_wall, protection_dome, chain_spark, venom_ground, deep_reserves, cataclysm | 27 |
+| Ash Ranger (`ranger`) | DPS | piercing_shot, frost_bind, shadow_step, venom_ground, grave_line, spectral_pack, battle_rhythm, executioners_verdict, executioner | 28 |
+| Veil Scholar (`scholar`) | HEAL | restoring_light, sanctuary, purify, chain_spark, ember_lance, protection_dome, soul_conduit, renewal | 20 |
+| Dusk Lancer (`lancer`) | DPS | cleaving_strike, piercing_shot, shadow_step, iron_guard, second_wind, ashen_square, battle_rhythm, executioners_verdict, executioner | 28 |
+| Rift Summoner (`summoner`) | DPS | oathbound_guardian, spectral_pack, summoned_wall, protection_dome, chain_spark, venom_ground, deep_reserves, cataclysm | 28 |
 | Gravewood Bear (`bear`) | TANK | bear_maul, bear_roar, bear_charge, bear_hibernate, iron_guard, war_cry, bear_ancient_hide, bear_colossus | 19 |
 | Relic Paladin (`paladin_righteous`) | TANK | paladin_righteous_flail, paladin_relic_vow, shield_slam, iron_guard, war_cry, second_wind, stone_skin, bastion_of_dawn | 19 |
-| Relic Paladin (`paladin_holy`) | HEAL | paladin_holy_flail, paladin_pilgrim_light, paladin_relic_vow, restoring_light, sanctuary, purify, soul_conduit, renewal | 19 |
+| Relic Paladin (`paladin_holy`) | HEAL | paladin_holy_flail, paladin_pilgrim_light, paladin_relic_vow, restoring_light, sanctuary, purify, soul_conduit, renewal | 20 |
 | Deepdelve Miner (`dwarf_miner`) | TANK | miner_pickfall, miner_faultline, miner_lantern, summoned_wall, iron_guard, war_cry, miner_orehide, miner_mountain | 19 |
 | Ether Golem (`ether_golem_tank`) | TANK | golem_granite_fist, golem_ether_anchor, iron_guard, war_cry, summoned_wall, shield_slam, golem_construct_core, golem_worldstone | 19 |
-| Ether Golem (`ether_golem_support`) | HEAL | golem_moss_bloom, golem_living_granite, restoring_light, sanctuary, purify, protection_dome, soul_conduit, golem_worldstone | 19 |
-| Ether Golem (`ether_golem_bruiser`) | TANK/DPS | golem_fel_fist, golem_ether_furnace, cleaving_strike, cinder_cone, shadow_step, iron_guard, golem_construct_core, golem_worldstone, decimating_strike | 33 |
-| Blood-Oath Chieftain (`orc_chieftain`) | TANK/HEAL | chieftain_axe_hook, chieftain_banner, war_cry, iron_guard, cleaving_strike, shield_slam, chieftain_courage, chieftain_earthshout, decimating_strike | 27 |
+| Ether Golem (`ether_golem_support`) | HEAL | golem_moss_bloom, golem_living_granite, restoring_light, sanctuary, purify, protection_dome, soul_conduit, golem_worldstone | 20 |
+| Ether Golem (`ether_golem_bruiser`) | TANK/DPS | golem_fel_fist, golem_ether_furnace, cleaving_strike, cinder_cone, shadow_step, iron_guard, golem_construct_core, golem_worldstone, decimating_strike | 34 |
+| Blood-Oath Chieftain (`orc_chieftain`) | TANK/HEAL | chieftain_axe_hook, chieftain_banner, war_cry, iron_guard, cleaving_strike, shield_slam, chieftain_courage, chieftain_earthshout, decimating_strike | 28 |
 | Totemic Behemoth (`totemic_behemoth`) | TANK | behemoth_totem_sweep, behemoth_tusk_line, behemoth_totem_bulwark, war_cry, iron_guard, cleaving_strike, behemoth_ancestral_weight, behemoth_stampede | 19 |
 | Drakish Footman (`drakish_footman`) | TANK | drakish_dragon_oath, drakish_scale_guard, drakish_wing_rebuke, shield_slam, war_cry, iron_guard, drakish_ember_memory, drakish_ancient_pact, decimating_strike | 19 |
-| Cinder Arcanist (`wizard`) | DPS/HEAL | ember_lance, frost_bind, chain_spark, cinder_cone, grave_line, ashen_square, deep_reserves, cataclysm | 34 |
-| Red-Moon Berserker (`troll_berserker_melee`) | DPS | troll_axe_frenzy, troll_blood_leap, cleaving_strike, shadow_step, iron_guard, second_wind, troll_hunger, troll_red_moon, decimating_strike, executioner | 27 |
-| Red-Moon Berserker (`troll_berserker_ranged`) | DPS | troll_twin_throw, troll_returning_axes, piercing_shot, frost_bind, shadow_step, venom_ground, troll_hunger, troll_red_moon, executioner | 27 |
-| Thornweave Dryad (`dryad`) | HEAL | dryad_root_snare, dryad_seed_mend, dryad_thorn_line, restoring_light, sanctuary, purify, dryad_green_covenant, dryad_grove_renewal | 19 |
-| Lantern Whisp (`whisp`) | HEAL | whisp_guiding_mote, whisp_spirit_tether, whisp_fey_trail, restoring_light, purify, protection_dome, whisp_lantern_soul, whisp_constellation | 19 |
-| Evergrove Centaur (`evergrove_centaur`) | DPS/HEAL | centaur_grove_javelin, centaur_trailblaze, centaur_herd_call, restoring_light, sanctuary, purify, centaur_steady_gait, centaur_spring_march | 34 |
-| Keeper of the Light (`keeper_of_light`) | HEAL | keeper_dawn_beam, keeper_lantern_ward, keeper_beacon, restoring_light, sanctuary, purify, keeper_last_light, keeper_sunrise | 19 |
-| Gunblade (`gunblade`) | DPS | silver_shot, hex_mark, powder_flask, blade_flurry, hunters_stride, warding_talisman, price_on_every_soul, collect_the_bounty | 35 |
-| Witch Slayer (`witch_slayer`) | DPS | arcane_blunderbuss, spirit_lantern, purge, banishment, witchfinders_mark, spectral_blade, witchbane, hexbane_judgment | 35 |
-| Huntress (`huntress`) | DPS | bouncing_glaive, sabercat_pounce, owl_scout, moonlit_sprint, crescent_volley, sabercat_rake, moon_glaive, glaive_storm | 35 |
-| Aetheri Artificer (`aetheri_artificer`) | DPS | photon_turret, skitter_swarm, arc_mine, disruption_pylon, phase_lance, overcharge, aether_engineering, warp_obelisk | 35 |
-| Aetheri Warden (`aetheri_warden`) | TANK/HEAL | aegis_pylon, haste_pylon, gravity_pylon, stasis_snare, aether_mend, repulsor_pulse, resonant_lattice, aether_nexus | 35 |
+| Cinder Arcanist (`wizard`) | DPS/HEAL | ember_lance, frost_bind, chain_spark, cinder_cone, grave_line, ashen_square, deep_reserves, cataclysm | 35 |
+| Red-Moon Berserker (`troll_berserker_melee`) | DPS | troll_axe_frenzy, troll_blood_leap, cleaving_strike, shadow_step, iron_guard, second_wind, troll_hunger, troll_red_moon, decimating_strike, executioner | 28 |
+| Red-Moon Berserker (`troll_berserker_ranged`) | DPS | troll_twin_throw, troll_returning_axes, piercing_shot, frost_bind, shadow_step, venom_ground, troll_hunger, troll_red_moon, executioner | 28 |
+| Thornweave Dryad (`dryad`) | HEAL | dryad_root_snare, dryad_seed_mend, dryad_thorn_line, restoring_light, sanctuary, purify, dryad_green_covenant, dryad_grove_renewal | 20 |
+| Lantern Whisp (`whisp`) | HEAL | whisp_guiding_mote, whisp_spirit_tether, whisp_fey_trail, restoring_light, purify, protection_dome, whisp_lantern_soul, whisp_constellation | 20 |
+| Evergrove Centaur (`evergrove_centaur`) | DPS/HEAL | centaur_grove_javelin, centaur_trailblaze, centaur_herd_call, restoring_light, sanctuary, purify, centaur_steady_gait, centaur_spring_march | 35 |
+| Keeper of the Light (`keeper_of_light`) | HEAL | keeper_dawn_beam, keeper_lantern_ward, keeper_beacon, restoring_light, sanctuary, purify, keeper_last_light, keeper_sunrise | 20 |
+| Gunblade (`gunblade`) | DPS | silver_shot, hex_mark, powder_flask, blade_flurry, hunters_stride, warding_talisman, price_on_every_soul, collect_the_bounty | 36 |
+| Witch Slayer (`witch_slayer`) | DPS | arcane_blunderbuss, spirit_lantern, purge, banishment, witchfinders_mark, spectral_blade, witchbane, hexbane_judgment | 36 |
+| Huntress (`huntress`) | DPS | bouncing_glaive, sabercat_pounce, owl_scout, moonlit_sprint, crescent_volley, sabercat_rake, moon_glaive, glaive_storm | 36 |
+| Aetheri Artificer (`aetheri_artificer`) | DPS | photon_turret, skitter_swarm, arc_mine, disruption_pylon, phase_lance, overcharge, aether_engineering, warp_obelisk | 36 |
+| Aetheri Warden (`aetheri_warden`) | TANK/HEAL | aegis_pylon, haste_pylon, gravity_pylon, stasis_snare, aether_mend, repulsor_pulse, resonant_lattice, aether_nexus | 36 |
 
 ## Runtime API (`CireAbilityDB.h`) — for the Skill Shop
 

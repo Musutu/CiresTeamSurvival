@@ -1,4 +1,5 @@
 #include "CireCrowdControl.h"
+#include "CirePolymorph.h" // progression-shop
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireAbilityDB.h"
 #include "CireBuffs.h"
@@ -71,7 +72,9 @@ template<typename Fn> void ForEachHostileNear(ACireHero* Source,FVector Center,f
 }
 
 // ---------------------------------------------------------------- queries
-bool CireCrowdControl::IsStunned(const AActor* U){return U&&CireBuffs::IsActive(U,StunnedId);}
+// progression-shop: a polymorphed unit is incapacitated like a stunned one (no attacks, casts or movement input).
+bool CireCrowdControl::IsStunned(const AActor* U){return U&&(CireBuffs::IsActive(U,StunnedId)||CirePolymorph::IsPolymorphed(U));}
+float CireCrowdControl::DiminishedSeconds(AActor* Target,AActor* Source,FName Category,float Seconds){return IsValid(Target)?Diminish(Target,Source,Category,Seconds):0.f;}
 bool CireCrowdControl::IsSilenced(const AActor* U){return U&&(CireBuffs::IsActive(U,SilencedId)||CireBuffs::IsActive(U,NpcSilencedId));}
 float CireCrowdControl::HealingReceivedCut(const AActor* U){return BuffMagnitude(U,HealCutId);}
 float CireCrowdControl::HealingDoneCut(const AActor* U){return BuffMagnitude(U,HealCutDoneId);}
@@ -273,7 +276,7 @@ float CireCrowdControl::ModifyOutgoingDamage(AActor* Source,AActor* Target,float
     return Result;
 }
 
-bool CireCrowdControl::HandlesSkill(const FString& Id){return Id==TEXT("decimating_strike");}
+bool CireCrowdControl::HandlesSkill(const FString& Id){return Id==TEXT("decimating_strike")||CirePolymorph::Handles(Id);} // progression-shop: Polymorph
 FString CireCrowdControl::Description(const FString& Id)
 {
     const FCireAbilityDef* D=CireAbilityDB::Find(Id);if(!D)return FString();
@@ -281,6 +284,7 @@ FString CireCrowdControl::Description(const FString& Id)
 }
 bool CireCrowdControl::CastSkill(ACireHero* H,int32 Slot,const FString& Id)
 {
+    if(CirePolymorph::Handles(Id))return CirePolymorph::CastSkill(H,Slot,Id); // progression-shop
     if(!H||!H->HasAuthority()||!H->Cooldowns.IsValidIndex(Slot))return false;
     const FCireAbilityDef* D=CireAbilityDB::Find(Id);if(!D)return false;
     auto* Mode=H->GetWorld()->GetAuthGameMode<ACireGameMode>();if(!Mode)return false;

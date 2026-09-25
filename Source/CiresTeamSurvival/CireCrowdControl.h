@@ -33,6 +33,8 @@ namespace CireCrowdControl
 
     // ---- server: apply control (returns the applied duration after DR / immunity) ----
     CIRESTEAMSURVIVAL_API float Stun(AActor* Target, float Seconds, AActor* Source);
+    // progression-shop: champion-vs-champion diminishing returns for another CC category (Polymorph).
+    CIRESTEAMSURVIVAL_API float DiminishedSeconds(AActor* Target, AActor* Source, FName Category, float Seconds);
     CIRESTEAMSURVIVAL_API float Silence(AActor* Target, float Seconds, AActor* Source);
     CIRESTEAMSURVIVAL_API float Slow(AActor* Target, float Seconds, AActor* Source);
     CIRESTEAMSURVIVAL_API void HealCut(AActor* Target, float Fraction, float Seconds, AActor* Source, bool bHealingDone = false);

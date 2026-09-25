@@ -15,6 +15,16 @@
   "arcane",
   "storm"
  ],
+ "sections": [
+  "spell",
+  "attack",
+  "defensive",
+  "control",
+  "summon",
+  "construct",
+  "passive",
+  "ultimate"
+ ],
  "types": [
   "TANK",
   "DPS",
@@ -109,6 +119,10 @@
     "totemic_behemoth",
     "drakish_footman",
     "troll_berserker_melee"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Guard"
    ]
   },
   "shield_slam": {
@@ -189,6 +203,13 @@
     "ether_golem_tank",
     "orc_chieftain",
     "drakish_footman"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Interrupt",
+    "Taunt",
+    "Damage"
    ]
   },
   "war_cry": {
@@ -263,6 +284,11 @@
     "orc_chieftain",
     "totemic_behemoth",
     "drakish_footman"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Taunt",
+    "Guard"
    ]
   },
   "chain_spark": {
@@ -327,6 +353,10 @@
     "scholar",
     "summoner",
     "wizard"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "frost_bind": {
@@ -408,6 +438,11 @@
     "ranger",
     "wizard",
     "troll_berserker_ranged"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Damage"
    ]
   },
   "cleaving_strike": {
@@ -476,6 +511,10 @@
     "orc_chieftain",
     "totemic_behemoth",
     "troll_berserker_melee"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "shadow_step": {
@@ -554,7 +593,13 @@
     "outerMagnitude": 0.4,
     "damage": 30,
     "selfHealMaxHealthFraction": 0.05
-   }
+   },
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "restoring_light": {
    "id": "restoring_light",
@@ -611,6 +656,10 @@
     "whisp",
     "evergrove_centaur",
     "keeper_of_light"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "sanctuary": {
@@ -676,6 +725,11 @@
     "dryad",
     "evergrove_centaur",
     "keeper_of_light"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal",
+    "Guard"
    ]
   },
   "purify": {
@@ -741,6 +795,11 @@
     "whisp",
     "evergrove_centaur",
     "keeper_of_light"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal",
+    "Cleanse"
    ]
   },
   "summoned_wall": {
@@ -813,6 +872,10 @@
     "summoner",
     "dwarf_miner",
     "ether_golem_tank"
+   ],
+   "section": "construct",
+   "effectTags": [
+    "Construct"
    ]
   },
   "protection_dome": {
@@ -887,6 +950,10 @@
     "summoner",
     "ether_golem_support",
     "whisp"
+   ],
+   "section": "construct",
+   "effectTags": [
+    "Construct"
    ]
   },
   "oathbound_guardian": {
@@ -957,6 +1024,11 @@
    ],
    "signatureOf": [
     "summoner"
+   ],
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Damage"
    ]
   },
   "spectral_pack": {
@@ -1011,6 +1083,84 @@
    "signatureOf": [
     "ranger",
     "summoner"
+   ],
+   "section": "summon",
+   "effectTags": [
+    "Summon",
+    "Damage"
+   ]
+  },
+  "polymorph": {
+   "id": "polymorph",
+   "name": "Polymorph",
+   "icon": "/Game/UI/Abilities/T_polymorph",
+   "types": [
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "enemy",
+   "castTime": 1.5,
+   "base": {
+    "effect": 8,
+    "manaCost": 50,
+    "energyCost": 0,
+    "cooldown": 20,
+    "castTime": 1.5,
+    "range": 1100,
+    "radius": 0,
+    "duration": 8
+   },
+   "effectLabel": "seconds",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 12,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Cast 1.5s: turn an enemy into a harmless critter for {effect}s (half on elites, 3s on champions; bosses and Pack Leaders are immune). Any damage breaks it.",
+   "effects": [
+    {
+     "type": "polymorph",
+     "zone": "target",
+     "duration": 8,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Polymorphed"
+    }
+   ],
+   "champions": [
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "paladin_holy",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light",
+    "gunblade",
+    "witch_slayer",
+    "huntress",
+    "aetheri_artificer",
+    "aetheri_warden"
+   ],
+   "signatureOf": [],
+   "section": "control",
+   "effectTags": [
+    "Polymorph"
    ]
   },
   "second_wind": {
@@ -1084,6 +1234,10 @@
     "lancer",
     "paladin_righteous",
     "troll_berserker_melee"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "decimating_strike": {
@@ -1166,6 +1320,12 @@
     "orc_chieftain",
     "drakish_footman",
     "troll_berserker_melee"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Armor Break",
+    "Execute",
+    "Damage"
    ]
   },
   "stone_skin": {
@@ -1237,7 +1397,9 @@
    "signatureOf": [
     "knight",
     "paladin_righteous"
-   ]
+   ],
+   "section": "passive",
+   "effectTags": []
   },
   "battle_rhythm": {
    "id": "battle_rhythm",
@@ -1308,7 +1470,9 @@
    "signatureOf": [
     "ranger",
     "lancer"
-   ]
+   ],
+   "section": "passive",
+   "effectTags": []
   },
   "deep_reserves": {
    "id": "deep_reserves",
@@ -1379,7 +1543,9 @@
    "signatureOf": [
     "summoner",
     "wizard"
-   ]
+   ],
+   "section": "passive",
+   "effectTags": []
   },
   "soul_conduit": {
    "id": "soul_conduit",
@@ -1451,6 +1617,10 @@
     "scholar",
     "paladin_holy",
     "ether_golem_support"
+   ],
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "executioner": {
@@ -1515,6 +1685,11 @@
     "lancer",
     "troll_berserker_melee",
     "troll_berserker_ranged"
+   ],
+   "section": "passive",
+   "effectTags": [
+    "Execute",
+    "Damage"
    ]
   },
   "bastion_of_dawn": {
@@ -1585,6 +1760,11 @@
    "signatureOf": [
     "knight",
     "paladin_righteous"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Guard"
    ]
   },
   "cataclysm": {
@@ -1639,6 +1819,10 @@
    "signatureOf": [
     "summoner",
     "wizard"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "executioners_verdict": {
@@ -1693,6 +1877,10 @@
    "signatureOf": [
     "ranger",
     "lancer"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "renewal": {
@@ -1753,6 +1941,11 @@
    "signatureOf": [
     "scholar",
     "paladin_holy"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Cleanse"
    ]
   },
   "last_stand": {
@@ -1810,7 +2003,12 @@
     "drakish_footman",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Cleanse"
+   ]
   },
   "challenge_of_iron": {
    "id": "challenge_of_iron",
@@ -1875,7 +2073,12 @@
     "drakish_footman",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "section": "ultimate",
+   "effectTags": [
+    "Taunt",
+    "Guard"
+   ]
   },
   "seismic_reprisal": {
    "id": "seismic_reprisal",
@@ -1933,7 +2136,12 @@
     "drakish_footman",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "section": "ultimate",
+   "effectTags": [
+    "Stun",
+    "Damage"
+   ]
   },
   "starfall": {
    "id": "starfall",
@@ -1984,7 +2192,11 @@
     "huntress",
     "aetheri_artificer"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "spectral_hunt": {
    "id": "spectral_hunt",
@@ -2035,7 +2247,11 @@
     "huntress",
     "aetheri_artificer"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
+   ]
   },
   "mass_aegis": {
    "id": "mass_aegis",
@@ -2100,7 +2316,12 @@
     "keeper_of_light",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "section": "ultimate",
+   "effectTags": [
+    "Cleanse",
+    "Guard"
+   ]
   },
   "wellspring": {
    "id": "wellspring",
@@ -2158,7 +2379,12 @@
     "keeper_of_light",
     "aetheri_warden"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Guard"
+   ]
   },
   "venom_ground": {
    "id": "venom_ground",
@@ -2213,6 +2439,10 @@
     "ranger",
     "summoner",
     "troll_berserker_ranged"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "cinder_cone": {
@@ -2267,6 +2497,10 @@
    "signatureOf": [
     "ether_golem_bruiser",
     "wizard"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "grave_line": {
@@ -2330,6 +2564,11 @@
    "signatureOf": [
     "ranger",
     "wizard"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Silence",
+    "Damage"
    ]
   },
   "ashen_square": {
@@ -2384,6 +2623,10 @@
    "signatureOf": [
     "lancer",
     "wizard"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "blight_sigil": {
@@ -2444,7 +2687,12 @@
     "huntress",
     "aetheri_artificer"
    ],
-   "signatureOf": []
+   "signatureOf": [],
+   "section": "spell",
+   "effectTags": [
+    "Heal Cut",
+    "Damage"
+   ]
   },
   "piercing_shot": {
    "id": "piercing_shot",
@@ -2499,6 +2747,10 @@
     "ranger",
     "lancer",
     "troll_berserker_ranged"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "ember_lance": {
@@ -2562,6 +2814,10 @@
    "signatureOf": [
     "scholar",
     "wizard"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "silver_shot": {
@@ -2605,6 +2861,10 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "hex_mark": {
@@ -2657,6 +2917,11 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Mark",
+    "Damage"
    ]
   },
   "powder_flask": {
@@ -2709,6 +2974,11 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Damage"
    ]
   },
   "blade_flurry": {
@@ -2752,6 +3022,10 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "hunters_stride": {
@@ -2795,6 +3069,10 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "warding_talisman": {
@@ -2854,6 +3132,11 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Cleanse",
+    "Guard"
    ]
   },
   "price_on_every_soul": {
@@ -2897,7 +3180,9 @@
    ],
    "signatureOf": [
     "gunblade"
-   ]
+   ],
+   "section": "passive",
+   "effectTags": []
   },
   "collect_the_bounty": {
    "id": "collect_the_bounty",
@@ -2948,6 +3233,11 @@
    ],
    "signatureOf": [
     "gunblade"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Execute",
+    "Damage"
    ]
   },
   "arcane_blunderbuss": {
@@ -3001,6 +3291,11 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Interrupt",
+    "Damage"
    ]
   },
   "spirit_lantern": {
@@ -3054,7 +3349,13 @@
    "signatureOf": [
     "witch_slayer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Silence",
+    "Damage"
+   ]
   },
   "purge": {
    "id": "purge",
@@ -3113,6 +3414,12 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Silence",
+    "Purge",
+    "Damage"
    ]
   },
   "banishment": {
@@ -3165,6 +3472,11 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Banish",
+    "Damage"
    ]
   },
   "witchfinders_mark": {
@@ -3217,6 +3529,11 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Mark",
+    "Damage"
    ]
   },
   "spectral_blade": {
@@ -3260,6 +3577,10 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "witchbane": {
@@ -3303,6 +3624,10 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "section": "passive",
+   "effectTags": [
+    "Damage"
    ]
   },
   "hexbane_judgment": {
@@ -3362,6 +3687,12 @@
    ],
    "signatureOf": [
     "witch_slayer"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Silence",
+    "Purge",
+    "Damage"
    ]
   },
   "bouncing_glaive": {
@@ -3405,6 +3736,10 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "sabercat_pounce": {
@@ -3457,6 +3792,11 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Damage"
    ]
   },
   "owl_scout": {
@@ -3509,6 +3849,11 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Mark",
+    "Damage"
    ]
   },
   "moonlit_sprint": {
@@ -3568,6 +3913,11 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Cleanse",
+    "Haste"
    ]
   },
   "crescent_volley": {
@@ -3611,6 +3961,10 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "sabercat_rake": {
@@ -3654,6 +4008,10 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "moon_glaive": {
@@ -3697,6 +4055,10 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "section": "passive",
+   "effectTags": [
+    "Damage"
    ]
   },
   "glaive_storm": {
@@ -3740,6 +4102,10 @@
    ],
    "signatureOf": [
     "huntress"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "photon_turret": {
@@ -3784,7 +4150,11 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "construct",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "skitter_swarm": {
    "id": "skitter_swarm",
@@ -3828,7 +4198,12 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Damage"
+   ]
   },
   "arc_mine": {
    "id": "arc_mine",
@@ -3872,7 +4247,12 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Damage"
+   ]
   },
   "disruption_pylon": {
    "id": "disruption_pylon",
@@ -3925,7 +4305,13 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Weaken",
+    "Damage"
+   ]
   },
   "phase_lance": {
    "id": "phase_lance",
@@ -3968,6 +4354,10 @@
    ],
    "signatureOf": [
     "aetheri_artificer"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "overcharge": {
@@ -4012,7 +4402,11 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "construct",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "aether_engineering": {
    "id": "aether_engineering",
@@ -4056,7 +4450,11 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "passive",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "warp_obelisk": {
    "id": "warp_obelisk",
@@ -4100,7 +4498,11 @@
    "signatureOf": [
     "aetheri_artificer"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "ultimate",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "aegis_pylon": {
    "id": "aegis_pylon",
@@ -4154,7 +4556,12 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Shield"
+   ]
   },
   "haste_pylon": {
    "id": "haste_pylon",
@@ -4208,7 +4615,12 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Haste"
+   ]
   },
   "gravity_pylon": {
    "id": "gravity_pylon",
@@ -4262,7 +4674,12 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Slow"
+   ]
   },
   "stasis_snare": {
    "id": "stasis_snare",
@@ -4316,7 +4733,13 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "construct",
+   "effectTags": [
+    "Construct",
+    "Stun",
+    "Damage"
+   ]
   },
   "aether_mend": {
    "id": "aether_mend",
@@ -4359,6 +4782,10 @@
    ],
    "signatureOf": [
     "aetheri_warden"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "repulsor_pulse": {
@@ -4419,6 +4846,12 @@
    ],
    "signatureOf": [
     "aetheri_warden"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Taunt",
+    "Damage"
    ]
   },
   "resonant_lattice": {
@@ -4464,7 +4897,11 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "passive",
+   "effectTags": [
+    "Construct"
+   ]
   },
   "aether_nexus": {
    "id": "aether_nexus",
@@ -4518,7 +4955,12 @@
    "signatureOf": [
     "aetheri_warden"
    ],
-   "category": "construct"
+   "category": "construct",
+   "section": "ultimate",
+   "effectTags": [
+    "Construct",
+    "Guard"
+   ]
   },
   "bear_maul": {
    "id": "bear_maul",
@@ -4560,6 +5002,10 @@
    ],
    "signatureOf": [
     "bear"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "bear_roar": {
@@ -4612,6 +5058,11 @@
    ],
    "signatureOf": [
     "bear"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Interrupt",
+    "Damage"
    ]
   },
   "bear_charge": {
@@ -4665,7 +5116,13 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "bear_hibernate": {
    "id": "bear_hibernate",
@@ -4707,6 +5164,10 @@
    ],
    "signatureOf": [
     "bear"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "bear_ancient_hide": {
@@ -4749,6 +5210,10 @@
    ],
    "signatureOf": [
     "bear"
+   ],
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "bear_colossus": {
@@ -4791,6 +5256,10 @@
    ],
    "signatureOf": [
     "bear"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "paladin_righteous_flail": {
@@ -4833,6 +5302,10 @@
    ],
    "signatureOf": [
     "paladin_righteous"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "paladin_relic_vow": {
@@ -4877,6 +5350,10 @@
    "signatureOf": [
     "paladin_righteous",
     "paladin_holy"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "paladin_holy_flail": {
@@ -4919,6 +5396,10 @@
    ],
    "signatureOf": [
     "paladin_holy"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "paladin_pilgrim_light": {
@@ -4961,6 +5442,10 @@
    ],
    "signatureOf": [
     "paladin_holy"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "miner_pickfall": {
@@ -5003,6 +5488,10 @@
    ],
    "signatureOf": [
     "dwarf_miner"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "miner_faultline": {
@@ -5054,6 +5543,11 @@
    ],
    "signatureOf": [
     "dwarf_miner"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Damage"
    ]
   },
   "miner_lantern": {
@@ -5096,6 +5590,10 @@
    ],
    "signatureOf": [
     "dwarf_miner"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "miner_orehide": {
@@ -5138,6 +5636,10 @@
    ],
    "signatureOf": [
     "dwarf_miner"
+   ],
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "miner_mountain": {
@@ -5180,6 +5682,10 @@
    ],
    "signatureOf": [
     "dwarf_miner"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "golem_granite_fist": {
@@ -5222,6 +5728,10 @@
    ],
    "signatureOf": [
     "ether_golem_tank"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "golem_ether_anchor": {
@@ -5264,6 +5774,10 @@
    ],
    "signatureOf": [
     "ether_golem_tank"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "golem_construct_core": {
@@ -5308,7 +5822,9 @@
    "signatureOf": [
     "ether_golem_tank",
     "ether_golem_bruiser"
-   ]
+   ],
+   "section": "passive",
+   "effectTags": []
   },
   "golem_worldstone": {
    "id": "golem_worldstone",
@@ -5354,6 +5870,10 @@
     "ether_golem_tank",
     "ether_golem_support",
     "ether_golem_bruiser"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "golem_moss_bloom": {
@@ -5396,6 +5916,10 @@
    ],
    "signatureOf": [
     "ether_golem_support"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "golem_living_granite": {
@@ -5438,6 +5962,10 @@
    ],
    "signatureOf": [
     "ether_golem_support"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "golem_fel_fist": {
@@ -5480,6 +6008,10 @@
    ],
    "signatureOf": [
     "ether_golem_bruiser"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "golem_ether_furnace": {
@@ -5522,6 +6054,10 @@
    ],
    "signatureOf": [
     "ether_golem_bruiser"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "chieftain_axe_hook": {
@@ -5564,6 +6100,10 @@
    ],
    "signatureOf": [
     "orc_chieftain"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "chieftain_banner": {
@@ -5606,6 +6146,10 @@
    ],
    "signatureOf": [
     "orc_chieftain"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "chieftain_courage": {
@@ -5648,7 +6192,9 @@
    ],
    "signatureOf": [
     "orc_chieftain"
-   ]
+   ],
+   "section": "passive",
+   "effectTags": []
   },
   "chieftain_earthshout": {
    "id": "chieftain_earthshout",
@@ -5699,6 +6245,11 @@
    ],
    "signatureOf": [
     "orc_chieftain"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Heal",
+    "Silence"
    ]
   },
   "behemoth_totem_sweep": {
@@ -5741,6 +6292,10 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "behemoth_tusk_line": {
@@ -5783,6 +6338,10 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "behemoth_totem_bulwark": {
@@ -5825,6 +6384,10 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "behemoth_ancestral_weight": {
@@ -5867,7 +6430,9 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
-   ]
+   ],
+   "section": "passive",
+   "effectTags": []
   },
   "behemoth_stampede": {
    "id": "behemoth_stampede",
@@ -5918,6 +6483,11 @@
    ],
    "signatureOf": [
     "totemic_behemoth"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Stun",
+    "Damage"
    ]
   },
   "drakish_dragon_oath": {
@@ -5960,6 +6530,10 @@
    ],
    "signatureOf": [
     "drakish_footman"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "drakish_scale_guard": {
@@ -6002,6 +6576,10 @@
    ],
    "signatureOf": [
     "drakish_footman"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "drakish_wing_rebuke": {
@@ -6044,6 +6622,10 @@
    ],
    "signatureOf": [
     "drakish_footman"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "drakish_ember_memory": {
@@ -6086,7 +6668,9 @@
    ],
    "signatureOf": [
     "drakish_footman"
-   ]
+   ],
+   "section": "passive",
+   "effectTags": []
   },
   "drakish_ancient_pact": {
    "id": "drakish_ancient_pact",
@@ -6128,6 +6712,10 @@
    ],
    "signatureOf": [
     "drakish_footman"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "troll_axe_frenzy": {
@@ -6170,6 +6758,10 @@
    ],
    "signatureOf": [
     "troll_berserker_melee"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "troll_blood_leap": {
@@ -6223,7 +6815,13 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "troll_hunger": {
    "id": "troll_hunger",
@@ -6267,6 +6865,10 @@
    "signatureOf": [
     "troll_berserker_melee",
     "troll_berserker_ranged"
+   ],
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "troll_red_moon": {
@@ -6311,6 +6913,10 @@
    "signatureOf": [
     "troll_berserker_melee",
     "troll_berserker_ranged"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Damage"
    ]
   },
   "troll_twin_throw": {
@@ -6353,6 +6959,10 @@
    ],
    "signatureOf": [
     "troll_berserker_ranged"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "troll_returning_axes": {
@@ -6395,6 +7005,10 @@
    ],
    "signatureOf": [
     "troll_berserker_ranged"
+   ],
+   "section": "attack",
+   "effectTags": [
+    "Damage"
    ]
   },
   "dryad_root_snare": {
@@ -6446,6 +7060,11 @@
    ],
    "signatureOf": [
     "dryad"
+   ],
+   "section": "control",
+   "effectTags": [
+    "Slow",
+    "Damage"
    ]
   },
   "dryad_seed_mend": {
@@ -6488,6 +7107,10 @@
    ],
    "signatureOf": [
     "dryad"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "dryad_thorn_line": {
@@ -6530,6 +7153,10 @@
    ],
    "signatureOf": [
     "dryad"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "dryad_green_covenant": {
@@ -6572,6 +7199,10 @@
    ],
    "signatureOf": [
     "dryad"
+   ],
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "dryad_grove_renewal": {
@@ -6614,6 +7245,10 @@
    ],
    "signatureOf": [
     "dryad"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
    ]
   },
   "whisp_guiding_mote": {
@@ -6656,6 +7291,10 @@
    ],
    "signatureOf": [
     "whisp"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "whisp_spirit_tether": {
@@ -6698,6 +7337,10 @@
    ],
    "signatureOf": [
     "whisp"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "whisp_fey_trail": {
@@ -6751,7 +7394,13 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "section": "control",
+   "effectTags": [
+    "Heal",
+    "Stun",
+    "Slow"
+   ]
   },
   "whisp_lantern_soul": {
    "id": "whisp_lantern_soul",
@@ -6793,7 +7442,9 @@
    ],
    "signatureOf": [
     "whisp"
-   ]
+   ],
+   "section": "passive",
+   "effectTags": []
   },
   "whisp_constellation": {
    "id": "whisp_constellation",
@@ -6835,6 +7486,10 @@
    ],
    "signatureOf": [
     "whisp"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
    ]
   },
   "centaur_grove_javelin": {
@@ -6877,6 +7532,10 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "centaur_trailblaze": {
@@ -6930,7 +7589,13 @@
     "outerMagnitude": 0.35,
     "damage": 25,
     "selfHealMaxHealthFraction": 0.0
-   }
+   },
+   "section": "control",
+   "effectTags": [
+    "Stun",
+    "Slow",
+    "Damage"
+   ]
   },
   "centaur_herd_call": {
    "id": "centaur_herd_call",
@@ -6972,6 +7637,10 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "centaur_steady_gait": {
@@ -7014,6 +7683,10 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
+   ],
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "centaur_spring_march": {
@@ -7056,6 +7729,10 @@
    ],
    "signatureOf": [
     "evergrove_centaur"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
    ]
   },
   "keeper_dawn_beam": {
@@ -7107,6 +7784,11 @@
    ],
    "signatureOf": [
     "keeper_of_light"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal",
+    "Heal Cut"
    ]
   },
   "keeper_lantern_ward": {
@@ -7149,6 +7831,10 @@
    ],
    "signatureOf": [
     "keeper_of_light"
+   ],
+   "section": "defensive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "keeper_beacon": {
@@ -7191,6 +7877,10 @@
    ],
    "signatureOf": [
     "keeper_of_light"
+   ],
+   "section": "spell",
+   "effectTags": [
+    "Damage"
    ]
   },
   "keeper_last_light": {
@@ -7233,6 +7923,10 @@
    ],
    "signatureOf": [
     "keeper_of_light"
+   ],
+   "section": "passive",
+   "effectTags": [
+    "Heal"
    ]
   },
   "keeper_sunrise": {
@@ -7275,6 +7969,10 @@
    ],
    "signatureOf": [
     "keeper_of_light"
+   ],
+   "section": "ultimate",
+   "effectTags": [
+    "Heal"
    ]
   }
  },
@@ -7371,6 +8069,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -7400,6 +8099,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -7443,6 +8143,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -7464,6 +8165,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -7506,6 +8208,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "decimating_strike",
     "stone_skin",
     "deep_reserves",
@@ -7535,6 +8238,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "decimating_strike",
     "stone_skin",
     "deep_reserves",
@@ -7578,6 +8282,7 @@
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -7607,6 +8312,7 @@
     "frost_bind",
     "cleaving_strike",
     "shadow_step",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -7781,6 +8487,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -7802,6 +8509,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -7969,6 +8677,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -7990,6 +8699,7 @@
     "frost_bind",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8037,6 +8747,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8072,6 +8783,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8131,6 +8843,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8160,6 +8873,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8340,6 +9054,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -8376,6 +9091,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -8429,6 +9145,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "stone_skin",
     "battle_rhythm",
     "deep_reserves",
@@ -8458,6 +9175,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "stone_skin",
     "battle_rhythm",
     "deep_reserves",
@@ -8509,6 +9227,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -8538,6 +9257,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -8586,6 +9306,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8607,6 +9328,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8650,6 +9372,7 @@
     "sanctuary",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8671,6 +9394,7 @@
     "sanctuary",
     "summoned_wall",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8718,6 +9442,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -8754,6 +9479,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -8809,6 +9535,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8830,6 +9557,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "stone_skin",
     "battle_rhythm",
@@ -8876,6 +9604,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -8913,6 +9642,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -8967,6 +9697,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9004,6 +9735,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9058,6 +9790,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9095,6 +9828,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9149,6 +9883,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9186,6 +9921,7 @@
     "protection_dome",
     "oathbound_guardian",
     "spectral_pack",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9245,6 +9981,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9282,6 +10019,7 @@
     "summoned_wall",
     "protection_dome",
     "oathbound_guardian",
+    "polymorph",
     "second_wind",
     "decimating_strike",
     "stone_skin",
@@ -9300,6 +10038,19 @@
   }
  },
  "buffModifiers": {
+  "polymorphed": {
+   "type": "arcane",
+   "control": "incapacitate",
+   "mods": [
+    {
+     "stat": "Actions",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Turned into a harmless critter: cannot attack or cast. Damage breaks it.",
+   "name": "Polymorphed"
+  },
   "heal_cut_done": {
    "type": "curse",
    "control": "none",
