@@ -227,7 +227,7 @@ bool ACireSpellVisual::RebuildModes(FCireSpellMesh& M,FCireSoftMesh& Soft,float 
     if(Shape.bHeal&&(Mode==EMode::SelfShock||Mode==EMode::TargetMark||Mode==EMode::Gather))
     {
         // Healing is unmistakable: soft green/gold "+" motes shimmer upward around the healed unit.
-        const FLinearColor Green=CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal),Gold(2.3f,1.9f,.55f,1);
+        const FLinearColor Green=CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal),Gold(1.55f,1.15f,.25f,1);
         for(int32 J=0;J<10;++J)
         {
             const float U=Fract(Age*.8f+J*.1f);const float A=J*2.39996f+Age*.6f;

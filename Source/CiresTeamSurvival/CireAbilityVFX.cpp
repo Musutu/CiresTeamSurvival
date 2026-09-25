@@ -129,12 +129,14 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintTelegraph(FCireGroundMesh& G,c
     const float Feather=FMath::Clamp(Size*.2f,10.f,70.f);
     auto A=[&](FLinearColor C,float Scale=1.f){C.A*=Alpha*Scale;return C;};
     // 1. Soft fill: faint interior, denser toward the edge (reads as a disc/lane, not a flat sticker).
+    // With runes the fill steps back so the glyphs carry the colour.
+    const float FillScale=Style.bRunes?.65f:1.f;
     if(Flags&PaintNoFill){}
     else if(bConvex)
     {
         const auto Inner=Offset(Boundary,-Feather);
-        FillLoop(G,Inner,true,Pivot,A(Style.Fill,.55f),A(Style.Fill,.9f));
-        G.Band(Inner,Boundary,A(Style.Fill,.9f),A(Style.Fill,1.9f),true);
+        FillLoop(G,Inner,true,Pivot,A(Style.Fill,.55f*FillScale),A(Style.Fill,.9f*FillScale));
+        G.Band(Inner,Boundary,A(Style.Fill,.9f*FillScale),A(Style.Fill,1.9f),true);
     }
     else FillLoop(G,Boundary,false,Pivot,A(Style.Fill),A(Style.Fill,1.2f));
     // 2. Progress: fills from the caster (lines/cones) or the centre (circles) until release.

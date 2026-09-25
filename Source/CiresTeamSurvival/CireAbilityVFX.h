@@ -26,6 +26,7 @@ namespace CireAbilityVFX
         ERuneSet Set = ERuneSet::Physical;
         FLinearColor Glyph = FLinearColor::White, Edge = FLinearColor::White;
         bool bSharp = true;   // damage: pointed motifs, quick pulse; buffs/heals: calm
+        float Underlay = .38f; // dark backing under each glyph (enemy warnings use more, to stand out on amber)
         bool bValid() const { return Set != ERuneSet::Count; }
     };
     CIRESTEAMSURVIVAL_API ERuneSet RuneSetFor(const FCireHitShape& Shape);
@@ -67,9 +68,9 @@ namespace CireAbilityVFX
     CIRESTEAMSURVIVAL_API FRuneResult PaintRunes(FCireGroundMesh& Ground, const FCireAreaSpec& Spec, const FRuneTheme& Theme,
         float Time, float Alpha, bool bCenterSigil = true);
     // One glyph of a set (unit size ~ Size cm, rotated by Angle).
-    CIRESTEAMSURVIVAL_API void PaintGlyph(FCireGroundMesh& Ground, ERuneSet Set, FVector2D Center, float Size, float Angle, FLinearColor Color, float Time, int32 Seed, float Lift = 1.5f);
+    CIRESTEAMSURVIVAL_API void PaintGlyph(FCireGroundMesh& Ground, ERuneSet Set, FVector2D Center, float Size, float Angle, FLinearColor Color, float Time, int32 Seed, float Lift = 1.5f, float Underlay = .38f);
     // Rune ring for circular shocks/marks (glyphs riding a ring of Radius).
-    CIRESTEAMSURVIVAL_API int32 PaintRuneRing(FCireGroundMesh& Ground, FVector2D Center, float Radius, const FRuneTheme& Theme, float Time, float Alpha);
+    CIRESTEAMSURVIVAL_API int32 PaintRuneRing(FCireGroundMesh& Ground, FVector2D Center, float Radius, const FRuneTheme& Theme, float Time, float Alpha, float GlyphSize = 0.f);
 
     // Void zone (teleport/portal): outer ring slows, inner circle stuns. Distinct rune rings and small slow/stun icons.
     struct FVoidResult { float Outer = 0, Inner = 0; int32 SlowIcons = 0, StunIcons = 0; FBox2D Bounds = FBox2D(ForceInit); };
