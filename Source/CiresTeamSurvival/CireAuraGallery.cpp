@@ -134,6 +134,19 @@ void BuildPages()
         U[0].Items={TEXT("hourglass_of_ages")};U[3].Items={TEXT("ravenfeather_mantle")};U[4].Items={TEXT("aether_phial")};
         const int32 Index=Add(TEXT("ITEM ACTIVES + CONSUMABLES"),TEXT("item_actives"),U);G.Pages[Index].Spacing=320;G.Pages[Index].Distance=1650;
     }
+    // items-v2: group on-use actives and the Sigil of Apotheosis ultimate upgrade.
+    Add(TEXT("ITEMS V2: GROUP ACTIVES + APOTHEOSIS"),TEXT("items_v2_actives"),{Hero(TEXT("knight"),{TEXT("party_barrier")},TEXT("OATHSHIELD BARRIER (AEGIS)")),
+        Hero(TEXT("paladin_righteous"),{TEXT("vigil_banner")},TEXT("RAISE THE VIGIL: +250 ARMOR")),Hero(TEXT("scholar"),{TEXT("apotheosis")},TEXT("APOTHEOSIS (ULTIMATE UPGRADE)")),
+        Hero(TEXT("ranger"),{TEXT("party_barrier"),TEXT("apotheosis")},TEXT("DAWNWARD: UPGRADED BASTION"))});
+    G.Pages.Last().Spacing=300;
+    {
+        // items-v2: in combat, Bastion of Dawn upgraded by the Sigil (Dawnward shields) next to Iron Echo stuns.
+        TArray<FUnit> U={Hero(TEXT("knight"),{TEXT("bastion_of_dawn"),TEXT("apotheosis"),TEXT("party_barrier")},TEXT("")),Monster(TEXT("gravemaw_pack_leader"),0,TEXT("")),
+            Monster(TEXT("hollow_infantry"),0,TEXT("")),Monster(TEXT("hollow_infantry"),0,TEXT("")),Hero(TEXT("paladin_holy"),{TEXT("party_barrier"),TEXT("apotheosis")},TEXT("")),
+            Hero(TEXT("ranger"),{TEXT("party_barrier"),TEXT("apotheosis")},TEXT("")),Monster(TEXT("blight_caster"),0,TEXT(""))};
+        U[2].Buffs={TEXT("stunned")};U[3].Buffs={TEXT("stunned")};U[6].Buffs={TEXT("stunned")};
+        const int32 Index=Add(TEXT("ULTIMATE UPGRADE IN COMBAT"),TEXT("items_v2_apotheosis_combat"),U);G.Pages[Index].bGameplay=true;
+    }
     {
         // Gameplay camera: 650 cm boom behind the player, looking into a lane skirmish.
         TArray<FUnit> U={Hero(TEXT("knight"),{TEXT("war_cry")},TEXT("")),Monster(TEXT("gravemaw_pack_leader"),Enraged,TEXT("")),Monster(TEXT("hollow_shieldbearer"),ShieldWall,TEXT("")),

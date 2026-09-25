@@ -128,6 +128,8 @@ const TArray<FName>& CireBuffs::KnownIds()
         // new-champions: bounty/witch marks, tracking, banishment, self buffs and Aetheri construct fields.
         TEXT("bounty_mark"),TEXT("witch_mark"),TEXT("tracked"),TEXT("banished"),TEXT("hunters_stride"),TEXT("warding_talisman"),TEXT("moonlit_sprint"),TEXT("overcharge"),
         TEXT("aether_aegis"),TEXT("aether_haste"),TEXT("aether_weakened"),TEXT("aether_nexus"),TEXT("npc_aether_empowered"),
+        // items-v2: party shield, armor banner, ultimate-upgrade aura.
+        TEXT("party_barrier"),TEXT("vigil_banner"),TEXT("apotheosis"),
         // champion-draft: dodge-roll skill states (CireRollSkills::BuffIds).
         TEXT("tumblers_edge"),TEXT("killer_instinct"),TEXT("windrunner"),TEXT("quickened_mind"),TEXT("momentum"),TEXT("blur_step"),
         TEXT("mine_layer"),TEXT("taunting_tumble"),TEXT("shield_tumble"),TEXT("venom_tumble"),TEXT("shadow_dance"),TEXT("evasive_stance")};
