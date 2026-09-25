@@ -58,7 +58,7 @@ BUTTON_CORNER = 22.0
 # Largest drawn corner (logical units): bigger ornaments start covering the panels' corner labels.
 CORNER_MAX = {"Panel": 30.0, "Tooltip": 20.0, "Minimap": 30.0, "Card": 24.0}
 # Per-theme multiplier on the drawn band thickness (dark iron needs more width to read).
-THEME_BAND = {"Ironbound": 1.2}
+THEME_BAND = {"Ironbound": 1.2, "ArcaneVeil": 1.25, "VerdantBloom": 1.2}
 # Horizontal strips: rebuilt height (px) and cap width as a fraction of the cropped width.
 STRIPS = {
     "CastFrame": {"height": 72, "cap": .135},
@@ -85,6 +85,13 @@ HALO = {
     "Ironbound": (1.0, .42, .10),
     "ArcaneVeil": (.62, .42, 1.0),
     "VerdantBloom": (1.0, .78, .62),
+}
+# Per-theme recess darkening / S-curve / saturation (dimension()). Gilded and Ironbound read best with
+# near-black recesses; Arcane Veil's violet rune channel and Verdant Bloom's mossy living wood are part of
+# the look (Eric: "vibrant and fun looking, and crisp"), so their recesses keep colour.
+DIMENSION = {
+    "ArcaneVeil": {"shadow": .9, "contrast": .3, "saturation": 1.12},
+    "VerdantBloom": {"shadow": .92, "contrast": .28, "saturation": 1.18},
 }
 # Pieces that get the halo (frames drawn over the dark world / panels).
 HALO_PIECES = {"Panel", "Tooltip", "Minimap", "Ring", "CastFrame", "Banner", "SlotUltimate"}
@@ -348,7 +355,7 @@ def apply_gain(a, gain):
     return out
 
 
-def dimension(a, shadow=.55, contrast=.35):
+def dimension(a, shadow=.55, contrast=.35, saturation=1.0):
     """Reads as dimensional metal at HUD sizes: recesses (enamel channels, bevel undersides) pushed
     toward near-black and desaturated a little, and an S-curve on the metal so the lit edge and the
     lower bevel separate even when a piece is drawn 15-20 px thick."""
@@ -369,6 +376,9 @@ def dimension(a, shadow=.55, contrast=.35):
     x = np.clip((l2 - mid) / max(mid, 1 - mid), -1, 1)
     curved = l2 + contrast * max(mid, 1 - mid) * x * (1 - np.abs(x)) 
     rgb = rgb * (np.clip(curved, 0, 1) / np.maximum(l2, 1e-3))
+    if saturation != 1.0:
+        l3 = rgb.mean(-1, keepdims=True)
+        rgb = l3 + (rgb - l3) * saturation
     out[..., :3] = np.clip(rgb, 0, 1)
     return out
 
@@ -408,7 +418,7 @@ def build_theme(theme):
             a = apply_gain(a, grade_gain(split_sheet(a, len(SHEETS[name]))[0], ref))
         else:
             a = apply_gain(a, grade_gain(a, ref))
-        a = dimension(a)
+        a = dimension(a, **DIMENSION.get(theme, {}))
         if HALO.get(theme) and name in HALO_PIECES:
             a = halo(a, HALO[theme])
         if name in NINE:

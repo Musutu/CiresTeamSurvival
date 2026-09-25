@@ -1,4 +1,6 @@
 #include "CireUIStyle.h"
+#include "UObject/StrongObjectPtr.h"
+#include "Misc/PackageName.h"
 #include "CireUITheme.h" // ui-themes
 #include "CireAudio.h" // audio: one hover tick for every menu button
 #include "CanvasItem.h"
@@ -142,6 +144,23 @@ void FCireUIPainter::Tri(FVector2D A,FVector2D B,FVector2D C,FLinearColor Color)
 {
     if(!Canvas)return;
     FCanvasTriangleItem Item(ToScreen(A.X,A.Y),ToScreen(B.X,B.Y),ToScreen(C.X,C.Y),GWhiteTexture);Item.SetColor(Fade(Color));Item.BlendMode=SE_BLEND_Translucent;Canvas->DrawItem(Item);
+}
+void FCireUIPainter::TexDisc(UTexture2D* Texture,float CX,float CY,float R,FLinearColor Color,float U0,float V0,float U1,float V1,int32 Sides) const
+{
+    if(!Canvas||!Texture||!Texture->GetResource()||R<=0)return;
+    const FLinearColor C=Fade(Color);
+    const FVector2D Centre=ToScreen(CX,CY);const FVector2D UC((U0+U1)*.5f,(V0+V1)*.5f),UR((U1-U0)*.5f,(V1-V0)*.5f);
+    TArray<FCanvasUVTri> Tris;Tris.Reserve(Sides);
+    for(int32 I=0;I<Sides;++I)
+    {
+        const float A=I*2*PI/Sides,B=(I+1)*2*PI/Sides;
+        FCanvasUVTri T;
+        T.V0_Pos=Centre;T.V0_UV=UC;T.V0_Color=C;
+        T.V1_Pos=ToScreen(CX+FMath::Cos(A)*R,CY+FMath::Sin(A)*R);T.V1_UV=FVector2D(UC.X+FMath::Cos(A)*UR.X,UC.Y+FMath::Sin(A)*UR.Y);T.V1_Color=C;
+        T.V2_Pos=ToScreen(CX+FMath::Cos(B)*R,CY+FMath::Sin(B)*R);T.V2_UV=FVector2D(UC.X+FMath::Cos(B)*UR.X,UC.Y+FMath::Sin(B)*UR.Y);T.V2_Color=C;
+        Tris.Add(T);
+    }
+    FCanvasTriangleItem Item(Tris,Texture->GetResource());Item.BlendMode=SE_BLEND_Translucent;Canvas->DrawItem(Item);
 }
 void FCireUIPainter::Tex(UTexture2D* Texture,float X,float Y,float W,float H,FLinearColor Color,float U0,float V0,float U1,float V1,bool bAdditive) const
 {
@@ -719,6 +738,43 @@ void CireUIStyle::PortraitRing(const FCireUIPainter& P,float CX,float CY,float R
     const float Outer=R/.72f;
     if(HasThemeArt()&&CireUITheme::Draw(P,ECireThemePiece::Ring,CX-Outer,CY-Outer,2*Outer,2*Outer,Tint))return;
     P.Circle(CX,CY,R,Gold*Tint,2.2f);P.Circle(CX,CY,R+2.5f,FLinearColor(0,0,0,.9f),1.f);
+}
+float CireUIStyle::FrameCornerClear(float W,float H)
+{
+    const FCireUITheme* T=HasThemeArt()?CireUITheme::Active():nullptr;
+    if(!T)return 0.f;
+    const float CS=CornerScaleFor(W,H);
+    // Mirrors ThemedFrame: the panel piece is drawn 6*CS outside the rectangle; its corner cell is Corner*CS
+    // (the ornament fills most of the cell, so a little under the full cell is enough to clear it).
+    return FMath::Max(0.f,T->Piece(ECireThemePiece::Panel).Corner*CS*.85f-6.f*CS);
+}
+UTexture2D* CireUIStyle::ChampionPortrait(const FString& ProfileId)
+{
+    if(ProfileId.IsEmpty())return nullptr;
+    static TMap<FString,TStrongObjectPtr<UTexture2D>> Cache;
+    if(const auto* Found=Cache.Find(ProfileId))return Found->Get();
+    const FString Path=FString::Printf(TEXT("/Game/UI/Draft/Portraits/T_Portrait_%s.T_Portrait_%s"),*ProfileId,*ProfileId);
+    UTexture2D* Texture=FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))?LoadObject<UTexture2D>(nullptr,*Path,nullptr,LOAD_NoWarn|LOAD_Quiet):nullptr;
+    Cache.Add(ProfileId,TStrongObjectPtr<UTexture2D>(Texture));
+    return Texture;
+}
+bool CireUIStyle::PortraitFace(const FCireUIPainter& P,const FString& ProfileId,float CX,float CY,float R,bool bDead)
+{
+    UTexture2D* Face=ChampionPortrait(ProfileId);
+    if(!Face)return false;
+    // Face crop of the 512 px bust render (same framing as champion select), clipped round so the ring's
+    // opening shows only the face; a soft top light and a rim shade keep it crisp and readable at 30 px.
+    P.Disc(CX,CY,R+1.f,FLinearColor(0,0,0,.95f),40);
+    P.TexDisc(Face,CX,CY,R,bDead?FLinearColor(.32f,.32f,.34f,1):FLinearColor::White,.2f,.06f,.8f,.66f);
+    if(!bDead)P.Disc(CX,CY-R*.35f,R*.55f,FLinearColor(1,.97f,.9f,.05f),28);
+    P.Circle(CX,CY,R-.5f,FLinearColor(0,0,0,.45f),1.5f,40);
+    return true;
+}
+void CireUIStyle::RoleBadge(const FCireUIPainter& P,float CX,float CY,float R,const FString& SigilId,FLinearColor Tint,const FString& PaintedIcon)
+{
+    Medallion(P,CX,CY,R,FString(),FLinearColor::White);
+    if(UTexture2D* Tex=!PaintedIcon.IsEmpty()&&R>=7.f?FindAbilityIcon(PaintedIcon):nullptr)P.TexDisc(Tex,CX,CY,R*.86f,FLinearColor::White,.08f,.08f,.92f,.92f);
+    else Sigil(P,SigilId,CX-R*.72f,CY-R*.72f,R*1.44f,Tint);
 }
 void CireUIStyle::Medallion(const FCireUIPainter& P,float CX,float CY,float R,const FString& Text,FLinearColor TextColor)
 {

@@ -37,6 +37,10 @@ struct FCireLevelBurst
     bool bLocal = false;
 };
 
+/** Target / focus frame caption (classification, rank, relation); exposed for the interface smoke. */
+CIRESTEAMSURVIVAL_API FString CireUnitFrameHeader(bool bMonster, bool bHero, bool bSelf, int32 Reaction, int32 Class, int32 Rank, bool bLaneBoss,
+    const FString& RoleName, const FString& RankLabel, bool bFocus);
+
 UCLASS()
 class CIRESTEAMSURVIVAL_API ACireHUD : public AHUD
 {

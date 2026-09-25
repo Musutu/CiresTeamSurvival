@@ -1,5 +1,6 @@
 // ui-themes: native checks for the UI theme layer (run by RunExpansionChecks --only native).
 #include "CireUITheme.h"
+#include "CireHUD.h"
 #include "CireUIStyle.h"
 #include "CireUISettings.h"
 #if !UE_BUILD_SHIPPING
@@ -49,6 +50,13 @@ bool CireUITheme::RunSmoke()
     }
     Check(SetActive(FName(TEXT("NoSuchTheme"))) == DefaultId(), TEXT("unknown theme falls back to the default"));
     SetActive(Before);
+
+    // Unit-frame captions: a normal (unranked) monster never reads as a construct ("BRUISERCONSTRUCT").
+    Check(CireUnitFrameHeader(true, false, false, 0, 0, 0, false, TEXT("Bruiser"), FString(), false) == TEXT("BRUISER"), TEXT("normal monster header"));
+    Check(!CireUnitFrameHeader(true, false, false, 0, 2, 0, false, TEXT("Caster"), FString(), true).Contains(TEXT("CONSTRUCT")), TEXT("elite monster header has no CONSTRUCT"));
+    Check(CireUnitFrameHeader(true, false, false, 0, 0, 2, false, TEXT("Bruiser"), TEXT("Veteran"), false) == TEXT("VETERAN  /  BRUISER"), TEXT("ranked monster header"));
+    Check(CireUnitFrameHeader(false, true, false, 2, 0, 0, false, TEXT("Tank"), FString(), false) == TEXT("ALLY  /  TANK"), TEXT("ally hero header"));
+    Check(CireUnitFrameHeader(false, false, false, 0, 0, 0, false, FString(), FString(), false) == TEXT("CONSTRUCT"), TEXT("construct header"));
 
     // Parser rejects broken data with readable errors.
     {

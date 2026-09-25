@@ -186,87 +186,112 @@
           "corner": 30.0
         },
         "Tooltip": {
-          "rect": [582, 6, 235, 235],
+          "rect": [889, 6, 235, 235],
           "slice": 0.4766,
           "corner": 20.0
         },
         "Minimap": {
-          "rect": [1284, 6, 196, 196],
-          "slice": 0.4898,
-          "corner": 30
+          "rect": [314, 6, 295, 295],
+          "slice": 0.4881,
+          "corner": 30.0
         },
         "Card": {
-          "rect": [1065, 6, 207, 207],
-          "slice": 0.4638,
-          "corner": 14
+          "rect": [231, 314, 197, 197],
+          "slice": 0.4873,
+          "corner": 24.0
         },
         "Slot": {
-          "rect": [1696, 6, 192, 192],
+          "rect": [644, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotPassive": {
-          "rect": [1492, 6, 192, 192],
+          "rect": [440, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotUltimate": {
-          "rect": [829, 6, 224, 224],
+          "rect": [1136, 6, 224, 224],
           "slice": 0,
           "corner": 0
         },
         "Ring": {
-          "rect": [314, 6, 256, 256],
+          "rect": [621, 6, 256, 256],
           "slice": 0,
           "corner": 0
         },
         "BarFrame": {
-          "rect": [1586, 314, 282, 64],
-          "slice": 0.4858,
+          "rect": [478, 539, 94, 64],
+          "slice": 0.4149,
           "corner": 0
         },
         "CastFrame": {
-          "rect": [1360, 314, 214, 64],
-          "slice": 0.4813,
+          "rect": [304, 539, 162, 72],
+          "slice": 0.4506,
           "corner": 0
         },
         "Banner": {
-          "rect": [822, 314, 368, 112],
-          "slice": 0.4891,
+          "rect": [1664, 314, 364, 128],
+          "slice": 0.478,
           "corner": 0
         },
         "Divider": {
-          "rect": [1880, 314, 162, 40],
-          "slice": 0.4753,
+          "rect": [584, 539, 358, 48],
+          "slice": 0.4777,
           "corner": 0
         },
         "Ornament": {
-          "rect": [1202, 314, 146, 96],
+          "rect": [146, 539, 146, 96],
           "slice": 0,
           "corner": 0
         },
         "BarFill": {
-          "rect": [6, 518, 64, 32],
+          "rect": [954, 539, 64, 32],
           "slice": 0,
           "corner": 0
         },
         "SlotHover": {
-          "rect": [6, 314, 192, 192],
+          "rect": [848, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotPressed": {
-          "rect": [210, 314, 192, 192],
+          "rect": [1052, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotCooldown": {
-          "rect": [414, 314, 192, 192],
+          "rect": [1256, 314, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotDisabled": {
-          "rect": [618, 314, 192, 192],
+          "rect": [1460, 314, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "Button": {
+          "rect": [1372, 6, 213, 213],
+          "slice": 0.4507,
+          "corner": 22.0
+        },
+        "ButtonHover": {
+          "rect": [1597, 6, 213, 213],
+          "slice": 0.4507,
+          "corner": 22.0
+        },
+        "ButtonPressed": {
+          "rect": [1822, 6, 213, 213],
+          "slice": 0.4507,
+          "corner": 22.0
+        },
+        "ButtonDisabled": {
+          "rect": [6, 314, 213, 213],
+          "slice": 0.4507,
+          "corner": 22.0
+        },
+        "BuffBorder": {
+          "rect": [6, 539, 128, 128],
           "slice": 0,
           "corner": 0
         }
@@ -278,7 +303,7 @@
       "tagline": "Violet obsidian and rune-etched silver with a soft arcane glow.",
       "atlas": "/Game/UI/Themes/ArcaneVeil/T_ArcaneVeil_Atlas",
       "fill": "/Game/UI/Themes/ArcaneVeil/T_ArcaneVeil_Fill",
-      "atlasSize": [2048, 512],
+      "atlasSize": [2048, 1024],
       "palette": {
         "trim": [0.7, 0.72, 0.82, 1],
         "brightTrim": [0.86, 0.7, 1.0, 1],
@@ -303,72 +328,117 @@
       "cornerOrnaments": true,
       "pieces": {
         "Panel": {
-          "rect": [937, 6, 197, 197],
-          "slice": 0.4873,
-          "corner": 30
+          "rect": [313, 6, 295, 295],
+          "slice": 0.4881,
+          "corner": 30.0
         },
         "Tooltip": {
-          "rect": [726, 6, 199, 199],
-          "slice": 0.4824,
-          "corner": 20
+          "rect": [888, 6, 233, 233],
+          "slice": 0.4807,
+          "corner": 20.0
         },
         "Minimap": {
-          "rect": [1146, 6, 196, 196],
-          "slice": 0.4898,
-          "corner": 30
+          "rect": [6, 6, 295, 295],
+          "slice": 0.4881,
+          "corner": 30.0
         },
         "Card": {
-          "rect": [510, 6, 204, 204],
-          "slice": 0.4706,
-          "corner": 14
+          "rect": [226, 313, 198, 198],
+          "slice": 0.4848,
+          "corner": 24.0
         },
         "Slot": {
-          "rect": [1354, 6, 192, 192],
+          "rect": [640, 313, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotPassive": {
-          "rect": [1558, 6, 192, 192],
+          "rect": [436, 313, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotUltimate": {
-          "rect": [274, 6, 224, 224],
+          "rect": [1133, 6, 224, 224],
           "slice": 0,
           "corner": 0
         },
         "Ring": {
-          "rect": [6, 6, 256, 256],
+          "rect": [620, 6, 256, 256],
           "slice": 0,
           "corner": 0
         },
         "BarFrame": {
-          "rect": [512, 274, 256, 64],
-          "slice": 0.4844,
+          "rect": [464, 533, 86, 64],
+          "slice": 0.407,
           "corner": 0
         },
         "CastFrame": {
-          "rect": [780, 274, 168, 64],
-          "slice": 0.4762,
+          "rect": [296, 533, 156, 72],
+          "slice": 0.4487,
           "corner": 0
         },
         "Banner": {
-          "rect": [6, 274, 344, 112],
-          "slice": 0.4884,
-          "corner": 0
-        },
-        "Divider": {
-          "rect": [960, 274, 164, 40],
+          "rect": [1660, 313, 328, 128],
           "slice": 0.4756,
           "corner": 0
         },
+        "Divider": {
+          "rect": [562, 533, 200, 48],
+          "slice": 0.46,
+          "corner": 0
+        },
         "Ornament": {
-          "rect": [362, 274, 138, 96],
+          "rect": [146, 533, 138, 96],
           "slice": 0,
           "corner": 0
         },
         "BarFill": {
-          "rect": [1136, 274, 64, 32],
+          "rect": [774, 533, 64, 32],
+          "slice": 0,
+          "corner": 0
+        },
+        "Button": {
+          "rect": [1369, 6, 208, 208],
+          "slice": 0.4615,
+          "corner": 22.0
+        },
+        "ButtonHover": {
+          "rect": [1589, 6, 208, 208],
+          "slice": 0.4615,
+          "corner": 22.0
+        },
+        "ButtonPressed": {
+          "rect": [1809, 6, 208, 208],
+          "slice": 0.4615,
+          "corner": 22.0
+        },
+        "ButtonDisabled": {
+          "rect": [6, 313, 208, 208],
+          "slice": 0.4615,
+          "corner": 22.0
+        },
+        "SlotHover": {
+          "rect": [844, 313, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotPressed": {
+          "rect": [1048, 313, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotCooldown": {
+          "rect": [1252, 313, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotDisabled": {
+          "rect": [1456, 313, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "BuffBorder": {
+          "rect": [6, 533, 128, 128],
           "slice": 0,
           "corner": 0
         }
@@ -380,7 +450,7 @@
       "tagline": "Living wood, vines and blossoms: soft greens with rose and gold light.",
       "atlas": "/Game/UI/Themes/VerdantBloom/T_VerdantBloom_Atlas",
       "fill": "/Game/UI/Themes/VerdantBloom/T_VerdantBloom_Fill",
-      "atlasSize": [2048, 512],
+      "atlasSize": [2048, 1024],
       "palette": {
         "trim": [0.74, 0.56, 0.26, 1],
         "brightTrim": [1.0, 0.8, 0.42, 1],
@@ -405,72 +475,117 @@
       "cornerOrnaments": true,
       "pieces": {
         "Panel": {
-          "rect": [939, 6, 197, 197],
-          "slice": 0.4873,
-          "corner": 30
+          "rect": [313, 6, 295, 295],
+          "slice": 0.4881,
+          "corner": 30.0
         },
         "Tooltip": {
-          "rect": [728, 6, 199, 199],
-          "slice": 0.4824,
-          "corner": 20
+          "rect": [888, 6, 234, 234],
+          "slice": 0.4786,
+          "corner": 20.0
         },
         "Minimap": {
-          "rect": [1148, 6, 196, 196],
-          "slice": 0.4898,
-          "corner": 30
+          "rect": [6, 6, 295, 295],
+          "slice": 0.4881,
+          "corner": 30.0
         },
         "Card": {
-          "rect": [510, 6, 206, 206],
-          "slice": 0.466,
-          "corner": 14
+          "rect": [230, 313, 199, 199],
+          "slice": 0.4824,
+          "corner": 24.0
         },
         "Slot": {
-          "rect": [1356, 6, 192, 192],
+          "rect": [645, 313, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotPassive": {
-          "rect": [1560, 6, 192, 192],
+          "rect": [441, 313, 192, 192],
           "slice": 0,
           "corner": 0
         },
         "SlotUltimate": {
-          "rect": [274, 6, 224, 224],
+          "rect": [1134, 6, 224, 224],
           "slice": 0,
           "corner": 0
         },
         "Ring": {
-          "rect": [6, 6, 256, 256],
+          "rect": [620, 6, 256, 256],
           "slice": 0,
           "corner": 0
         },
         "BarFrame": {
-          "rect": [246, 274, 208, 64],
-          "slice": 0.4808,
+          "rect": [572, 537, 100, 64],
+          "slice": 0.42,
           "corner": 0
         },
         "CastFrame": {
-          "rect": [466, 274, 202, 64],
-          "slice": 0.4802,
+          "rect": [386, 537, 174, 72],
+          "slice": 0.454,
           "corner": 0
         },
         "Banner": {
-          "rect": [1764, 6, 278, 112],
-          "slice": 0.4856,
+          "rect": [1665, 313, 334, 128],
+          "slice": 0.476,
           "corner": 0
         },
         "Divider": {
-          "rect": [680, 274, 162, 40],
-          "slice": 0.4753,
+          "rect": [684, 537, 270, 48],
+          "slice": 0.4704,
           "corner": 0
         },
         "Ornament": {
-          "rect": [6, 274, 228, 96],
+          "rect": [146, 537, 228, 96],
           "slice": 0,
           "corner": 0
         },
         "BarFill": {
-          "rect": [854, 274, 64, 32],
+          "rect": [966, 537, 64, 32],
+          "slice": 0,
+          "corner": 0
+        },
+        "Button": {
+          "rect": [1370, 6, 212, 212],
+          "slice": 0.4528,
+          "corner": 22.0
+        },
+        "ButtonHover": {
+          "rect": [1594, 6, 212, 212],
+          "slice": 0.4528,
+          "corner": 22.0
+        },
+        "ButtonPressed": {
+          "rect": [1818, 6, 212, 212],
+          "slice": 0.4528,
+          "corner": 22.0
+        },
+        "ButtonDisabled": {
+          "rect": [6, 313, 212, 212],
+          "slice": 0.4528,
+          "corner": 22.0
+        },
+        "SlotHover": {
+          "rect": [849, 313, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotPressed": {
+          "rect": [1053, 313, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotCooldown": {
+          "rect": [1257, 313, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotDisabled": {
+          "rect": [1461, 313, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "BuffBorder": {
+          "rect": [6, 537, 128, 128],
           "slice": 0,
           "corner": 0
         }
