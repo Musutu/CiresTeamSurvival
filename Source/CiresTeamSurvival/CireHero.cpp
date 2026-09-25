@@ -320,7 +320,7 @@ bool ACireHero::IsUltimate(const FString& Id)
 bool ACireHero::IsPassive(const FString& Id)
 {
     return Id == TEXT("stone_skin") || Id == TEXT("battle_rhythm") ||
-        Id == TEXT("deep_reserves") || Id == TEXT("soul_conduit");
+        Id == TEXT("deep_reserves") || Id == TEXT("soul_conduit") || Id == TEXT("executioner"); // champion-draft: Executioner passive
 }
 
 bool ACireHero::IsHostile(AActor* Other) const

@@ -1,0 +1,6834 @@
+{
+ "schemaVersion": 1,
+ "generator": "Tools/BuildAbilityDB.py",
+ "schools": [
+  "physical",
+  "fire",
+  "cold",
+  "earth",
+  "tide",
+  "holy",
+  "shadow",
+  "void",
+  "poison",
+  "nature",
+  "arcane",
+  "storm"
+ ],
+ "types": [
+  "TANK",
+  "DPS",
+  "HEAL"
+ ],
+ "scalingFormula": "effect*(1+g*ln(1+(L-1)/h)) capped at effectCap; cost*(1+(cap-1)(L-1)/(L-1+ramp)); cooldown*(floor+(1-floor)e^-((L-1)/decay)), min minCooldownSeconds",
+ "abilities": {
+  "iron_guard": {
+   "id": "iron_guard",
+   "name": "Iron Guard",
+   "icon": "/Game/UI/Abilities/T_iron_guard",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 40,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 14,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 8
+   },
+   "effectLabel": "% damage reduction",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 60,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Take {effect}% less damage for 8s.",
+   "effects": [
+    {
+     "type": "guard",
+     "zone": "self",
+     "duration": 8,
+     "magnitude": 0.4,
+     "radius": 0.0,
+     "label": "DEF +40%"
+    }
+   ],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "knight",
+    "lancer",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "troll_berserker_melee"
+   ]
+  },
+  "shield_slam": {
+   "id": "shield_slam",
+   "name": "Shield Slam",
+   "icon": "/Game/UI/Abilities/T_shield_slam",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 45,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 7,
+    "castTime": 0,
+    "range": 240,
+    "radius": 0,
+    "duration": 2
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Melee STR strike for {effect} damage: interrupts the target's cast (2s school lockout), slows for 2s and draws monster attention.",
+   "effects": [
+    {
+     "type": "interrupt",
+     "zone": "target",
+     "duration": 0,
+     "magnitude": 0,
+     "radius": 0.0,
+     "lockoutSeconds": 2.0,
+     "label": "Interrupted"
+    },
+    {
+     "type": "slow",
+     "zone": "target",
+     "duration": 2,
+     "magnitude": 0.35,
+     "radius": 0.0,
+     "label": "Move -35%"
+    },
+    {
+     "type": "taunt",
+     "zone": "target",
+     "duration": 2,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "knight",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman"
+   ],
+   "signatureOf": [
+    "knight",
+    "paladin_righteous",
+    "ether_golem_tank",
+    "orc_chieftain",
+    "drakish_footman"
+   ]
+  },
+  "war_cry": {
+   "id": "war_cry",
+   "name": "War Cry",
+   "icon": "/Game/UI/Abilities/T_war_cry",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 6,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 18,
+    "castTime": 0,
+    "range": 0,
+    "radius": 600,
+    "duration": 6
+   },
+   "effectLabel": "s taunt",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Taunt nearby monsters/bots for {effect}s; guard yourself for 3s.",
+   "effects": [
+    {
+     "type": "taunt",
+     "zone": "area",
+     "duration": 6,
+     "magnitude": 0.0,
+     "radius": 600
+    },
+    {
+     "type": "guard",
+     "zone": "self",
+     "duration": 3,
+     "magnitude": 0.4,
+     "radius": 0.0,
+     "label": "DEF +40%"
+    }
+   ],
+   "champions": [
+    "knight",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman"
+   ],
+   "signatureOf": [
+    "knight",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman"
+   ]
+  },
+  "chain_spark": {
+   "id": "chain_spark",
+   "name": "Chain Spark",
+   "icon": "/Game/UI/Abilities/T_chain_spark",
+   "types": [
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "storm",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 60,
+    "manaCost": 45,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 1200,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage per target",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Lightning hits up to 4 nearby enemies for {effect} + INT damage.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "paladin_holy",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "scholar",
+    "summoner",
+    "wizard"
+   ]
+  },
+  "frost_bind": {
+   "id": "frost_bind",
+   "name": "Frost Bind",
+   "icon": "/Game/UI/Abilities/T_frost_bind",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "cold",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 65,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 12,
+    "castTime": 0,
+    "range": 1200,
+    "radius": 34,
+    "duration": 4
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Frost projectile: {effect} damage and a 35% slow for 4s.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "target",
+     "duration": 4,
+     "magnitude": 0.35,
+     "radius": 0.0,
+     "label": "Move -35%"
+    }
+   ],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "ranger",
+    "wizard",
+    "troll_berserker_ranged"
+   ]
+  },
+  "cleaving_strike": {
+   "id": "cleaving_strike",
+   "name": "Cleaving Strike",
+   "icon": "/Game/UI/Abilities/T_cleaving_strike",
+   "types": [
+    "TANK",
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 8,
+    "castTime": 0,
+    "range": 300,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Primary-stat strike hits every enemy around you for {effect} damage.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "knight",
+    "lancer",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "troll_berserker_melee"
+   ]
+  },
+  "shadow_step": {
+   "id": "shadow_step",
+   "name": "Shadow Step",
+   "icon": "/Game/UI/Abilities/T_shadow_step",
+   "types": [
+    "TANK",
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "void",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 50,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 14,
+    "castTime": 0,
+    "range": 850,
+    "radius": 420,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Void-blink to an enemy and strike for {effect} AGI damage. The void rift stuns enemies in the inner circle (1s) and slows those in the outer ring (40%, 2.5s); you mend 5% max health.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "ranger",
+    "lancer",
+    "ether_golem_bruiser",
+    "troll_berserker_melee",
+    "troll_berserker_ranged"
+   ],
+   "void": {
+    "innerRadius": 180,
+    "outerRadius": 420,
+    "innerEffect": "stun",
+    "innerDuration": 1.0,
+    "outerEffect": "slow",
+    "outerDuration": 2.5,
+    "outerMagnitude": 0.4,
+    "damage": 30,
+    "selfHealMaxHealthFraction": 0.05
+   }
+  },
+  "restoring_light": {
+   "id": "restoring_light",
+   "name": "Restoring Light",
+   "icon": "/Game/UI/Abilities/T_restoring_light",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "ally",
+   "castTime": 1.5,
+   "base": {
+    "effect": 90,
+    "manaCost": 45,
+    "energyCost": 0,
+    "cooldown": 6,
+    "castTime": 1.5,
+    "range": 1200,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Cast 1.5s: heal an ally (or yourself) for {effect} + 3x INT.",
+   "effects": [],
+   "champions": [
+    "scholar",
+    "paladin_holy",
+    "ether_golem_support",
+    "orc_chieftain",
+    "wizard",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "scholar",
+    "paladin_holy",
+    "ether_golem_support",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ]
+  },
+  "sanctuary": {
+   "id": "sanctuary",
+   "name": "Sanctuary",
+   "icon": "/Game/UI/Abilities/T_sanctuary",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "self",
+   "castTime": 2.0,
+   "base": {
+    "effect": 60,
+    "manaCost": 70,
+    "energyCost": 0,
+    "cooldown": 16,
+    "castTime": 2.0,
+    "range": 0,
+    "radius": 700,
+    "duration": 3
+   },
+   "effectLabel": "healing per ally",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Cast 2s: heal nearby allies for {effect} + INT and guard them for 3s.",
+   "effects": [
+    {
+     "type": "guard",
+     "zone": "area",
+     "duration": 3,
+     "magnitude": 0.4,
+     "radius": 700,
+     "label": "DEF +40%"
+    }
+   ],
+   "champions": [
+    "scholar",
+    "paladin_holy",
+    "ether_golem_support",
+    "orc_chieftain",
+    "wizard",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "scholar",
+    "paladin_holy",
+    "ether_golem_support",
+    "dryad",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ]
+  },
+  "purify": {
+   "id": "purify",
+   "name": "Purify",
+   "icon": "/Game/UI/Abilities/T_purify",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "ally",
+   "castTime": 1.0,
+   "base": {
+    "effect": 40,
+    "manaCost": 25,
+    "energyCost": 0,
+    "cooldown": 8,
+    "castTime": 1.0,
+    "range": 1200,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Cast 1s: remove an ally's slow and restore {effect} + INT health.",
+   "effects": [
+    {
+     "type": "cleanse",
+     "zone": "target",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "scholar",
+    "paladin_holy",
+    "ether_golem_support",
+    "orc_chieftain",
+    "wizard",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "scholar",
+    "paladin_holy",
+    "ether_golem_support",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ]
+  },
+  "summoned_wall": {
+   "id": "summoned_wall",
+   "name": "Runestone Wall",
+   "icon": "/Game/UI/Abilities/T_summoned_wall",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 450,
+    "manaCost": 60,
+    "energyCost": 0,
+    "cooldown": 22,
+    "castTime": 0,
+    "range": 750,
+    "radius": 220,
+    "duration": 8
+   },
+   "effectLabel": "wall health",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Raise a wall that blocks units and projectiles: {effect} health for 8s.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "summoner",
+    "dwarf_miner",
+    "ether_golem_tank"
+   ]
+  },
+  "protection_dome": {
+   "id": "protection_dome",
+   "name": "Aegis Dome",
+   "icon": "/Game/UI/Abilities/T_protection_dome",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 300,
+    "manaCost": 55,
+    "energyCost": 0,
+    "cooldown": 18,
+    "castTime": 0,
+    "range": 750,
+    "radius": 240,
+    "duration": 6
+   },
+   "effectLabel": "dome health",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Place a projectile-blocking dome: {effect} health for 6s.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "knight",
+    "scholar",
+    "summoner",
+    "ether_golem_support",
+    "whisp"
+   ]
+  },
+  "oathbound_guardian": {
+   "id": "oathbound_guardian",
+   "name": "Oathbound Guardian",
+   "icon": "/Game/UI/Abilities/T_oathbound_guardian",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "void",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 400,
+    "manaCost": 45,
+    "energyCost": 0,
+    "cooldown": 20,
+    "castTime": 0,
+    "range": 600,
+    "radius": 45,
+    "duration": 30
+   },
+   "effectLabel": "guardian health",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Summon a commandable guardian ({effect} health, 22 damage) for 30s.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "summoner"
+   ]
+  },
+  "spectral_pack": {
+   "id": "spectral_pack",
+   "name": "Spectral Pack",
+   "icon": "/Game/UI/Abilities/T_spectral_pack",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "void",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 14,
+    "manaCost": 55,
+    "energyCost": 0,
+    "cooldown": 24,
+    "castTime": 0,
+    "range": 600,
+    "radius": 230,
+    "duration": 18
+   },
+   "effectLabel": "damage per hit",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Summon three spectral hunters that attack your target for {effect} per hit for 18s.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "ranger",
+    "summoner"
+   ]
+  },
+  "second_wind": {
+   "id": "second_wind",
+   "name": "Second Wind",
+   "icon": "/Game/UI/Abilities/T_second_wind",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 18,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 20,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% max health",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 35,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Heal only yourself for {effect}% of your maximum health.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "knight",
+    "lancer",
+    "paladin_righteous",
+    "troll_berserker_melee"
+   ]
+  },
+  "decimating_strike": {
+   "id": "decimating_strike",
+   "name": "Decimating Strike",
+   "icon": "/Game/UI/Abilities/T_decimating_strike",
+   "types": [
+    "TANK",
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 150,
+    "manaCost": 0,
+    "energyCost": 40,
+    "cooldown": 300,
+    "castTime": 0,
+    "range": 300,
+    "radius": 500,
+    "duration": 10
+   },
+   "effectLabel": "damage (non-lethal targets)",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 180
+   },
+   "status": "implemented",
+   "description": "Kill the target outright (bosses take {effect} damage; champions take 30% of max health). Enemies within 5m have their armor reduced by 50% for 10s.",
+   "effects": [
+    {
+     "type": "lethal",
+     "zone": "target",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 0.0
+    },
+    {
+     "type": "armorBreak",
+     "zone": "area",
+     "duration": 10,
+     "magnitude": 0.5,
+     "radius": 500,
+     "label": "Armor -50%"
+    }
+   ],
+   "champions": [
+    "knight",
+    "ranger",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "drakish_footman",
+    "troll_berserker_melee"
+   ]
+  },
+  "stone_skin": {
+   "id": "stone_skin",
+   "name": "Stone Skin",
+   "icon": "/Game/UI/Abilities/T_stone_skin",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "earth",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% damage reduction",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 25,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "description": "Take {effect}% less damage.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "knight",
+    "paladin_righteous"
+   ]
+  },
+  "battle_rhythm": {
+   "id": "battle_rhythm",
+   "name": "Battle Rhythm",
+   "icon": "/Game/UI/Abilities/T_battle_rhythm",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 20,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% attack speed",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 45,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "description": "Basic attacks are {effect}% faster.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "ranger",
+    "lancer"
+   ]
+  },
+  "deep_reserves": {
+   "id": "deep_reserves",
+   "name": "Deep Reserves",
+   "icon": "/Game/UI/Abilities/T_deep_reserves",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "arcane",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 50,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% resource regeneration",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 100,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "description": "Mana and energy regenerate {effect}% faster.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "summoner",
+    "wizard"
+   ]
+  },
+  "soul_conduit": {
+   "id": "soul_conduit",
+   "name": "Soul Conduit",
+   "icon": "/Game/UI/Abilities/T_soul_conduit",
+   "types": [
+    "TANK",
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "holy",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 25,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% healing",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 50,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "implemented",
+   "description": "Your healing is {effect}% stronger.",
+   "effects": [],
+   "champions": [
+    "knight",
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "scholar",
+    "paladin_holy",
+    "ether_golem_support"
+   ]
+  },
+  "executioner": {
+   "id": "executioner",
+   "name": "Executioner",
+   "icon": "/Game/UI/Abilities/T_executioner",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 100,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 300,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage vs bosses",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.8,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 180
+   },
+   "status": "implemented",
+   "description": "Every 5 minutes your next basic attack is lethal. Bosses take a normal hit (the charge is kept); champions take 30% of their maximum health.",
+   "effects": [
+    {
+     "type": "lethal",
+     "zone": "target",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "ranger",
+    "lancer",
+    "troll_berserker_melee",
+    "troll_berserker_ranged"
+   ]
+  },
+  "bastion_of_dawn": {
+   "id": "bastion_of_dawn",
+   "name": "Bastion of Dawn",
+   "icon": "/Game/UI/Abilities/T_bastion_of_dawn",
+   "types": [
+    "TANK",
+    "HEAL"
+   ],
+   "kind": "ultimate",
+   "school": "holy",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 30,
+    "manaCost": 0,
+    "energyCost": 45,
+    "cooldown": 75,
+    "castTime": 0,
+    "range": 0,
+    "radius": 700,
+    "duration": 8
+   },
+   "effectLabel": "% max health healed",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 50,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "Heal yourself for {effect}% max health; nearby allies take 40% less damage for 8s.",
+   "effects": [
+    {
+     "type": "guard",
+     "zone": "area",
+     "duration": 8,
+     "magnitude": 0.4,
+     "radius": 700,
+     "label": "DEF +40%"
+    }
+   ],
+   "champions": [
+    "knight",
+    "scholar",
+    "bear",
+    "paladin_righteous",
+    "paladin_holy",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman",
+    "wizard",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "knight",
+    "paladin_righteous"
+   ]
+  },
+  "cataclysm": {
+   "id": "cataclysm",
+   "name": "Cataclysm",
+   "icon": "/Game/UI/Abilities/T_cataclysm",
+   "types": [
+    "DPS"
+   ],
+   "kind": "ultimate",
+   "school": "fire",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 160,
+    "manaCost": 150,
+    "energyCost": 0,
+    "cooldown": 80,
+    "castTime": 0,
+    "range": 1500,
+    "radius": 450,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "Blast up to 12 enemies near your target for {effect} + 3.5x INT damage.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "summoner",
+    "wizard"
+   ]
+  },
+  "executioners_verdict": {
+   "id": "executioners_verdict",
+   "name": "Executioner's Verdict",
+   "icon": "/Game/UI/Abilities/T_executioners_verdict",
+   "types": [
+    "DPS"
+   ],
+   "kind": "ultimate",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 100,
+    "manaCost": 0,
+    "energyCost": 60,
+    "cooldown": 60,
+    "castTime": 0,
+    "range": 1500,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "Deal {effect} + 3x primary, plus 25% of the target's missing health (bonus capped at 300).",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "ranger",
+    "lancer"
+   ]
+  },
+  "renewal": {
+   "id": "renewal",
+   "name": "Renewal",
+   "icon": "/Game/UI/Abilities/T_renewal",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "ultimate",
+   "school": "holy",
+   "targeting": "self",
+   "castTime": 2.5,
+   "base": {
+    "effect": 200,
+    "manaCost": 140,
+    "energyCost": 0,
+    "cooldown": 90,
+    "castTime": 2.5,
+    "range": 0,
+    "radius": 900,
+    "duration": 0
+   },
+   "effectLabel": "healing per ally",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "Cast 2.5s: cleanse nearby allies' slows and heal each for {effect} + 4x INT.",
+   "effects": [
+    {
+     "type": "cleanse",
+     "zone": "area",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 900
+    }
+   ],
+   "champions": [
+    "scholar",
+    "paladin_holy",
+    "ether_golem_support",
+    "orc_chieftain",
+    "wizard",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "scholar",
+    "paladin_holy"
+   ]
+  },
+  "last_stand": {
+   "id": "last_stand",
+   "name": "Last Stand",
+   "icon": "/Game/UI/Abilities/T_last_stand",
+   "types": [
+    "TANK"
+   ],
+   "kind": "ultimate",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 40,
+    "manaCost": 0,
+    "energyCost": 50,
+    "cooldown": 85,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% max health healed",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 60,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "Clear your slow and heal yourself for {effect}% maximum health.",
+   "effects": [
+    {
+     "type": "cleanse",
+     "zone": "self",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "knight",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman"
+   ],
+   "signatureOf": []
+  },
+  "challenge_of_iron": {
+   "id": "challenge_of_iron",
+   "name": "Challenge of Iron",
+   "icon": "/Game/UI/Abilities/T_challenge_of_iron",
+   "types": [
+    "TANK"
+   ],
+   "kind": "ultimate",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 12,
+    "manaCost": 0,
+    "energyCost": 65,
+    "cooldown": 90,
+    "castTime": 0,
+    "range": 0,
+    "radius": 850,
+    "duration": 12
+   },
+   "effectLabel": "s guard",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "Taunt monsters within 8.5m (10s cap) and take 40% less damage for {effect}s.",
+   "effects": [
+    {
+     "type": "taunt",
+     "zone": "area",
+     "duration": 10,
+     "magnitude": 0.0,
+     "radius": 850
+    },
+    {
+     "type": "guard",
+     "zone": "self",
+     "duration": 12,
+     "magnitude": 0.4,
+     "radius": 0.0,
+     "label": "DEF +40%"
+    }
+   ],
+   "champions": [
+    "knight",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman"
+   ],
+   "signatureOf": []
+  },
+  "seismic_reprisal": {
+   "id": "seismic_reprisal",
+   "name": "Seismic Reprisal",
+   "icon": "/Game/UI/Abilities/T_seismic_reprisal",
+   "types": [
+    "TANK"
+   ],
+   "kind": "ultimate",
+   "school": "earth",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 160,
+    "manaCost": 0,
+    "energyCost": 60,
+    "cooldown": 65,
+    "castTime": 0,
+    "range": 0,
+    "radius": 450,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "After 0.8s the ground around you bursts for {effect} + 3x primary damage and stuns for 1s.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "area",
+     "duration": 1.0,
+     "magnitude": 0.0,
+     "radius": 450,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "knight",
+    "bear",
+    "paladin_righteous",
+    "dwarf_miner",
+    "ether_golem_tank",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "totemic_behemoth",
+    "drakish_footman"
+   ],
+   "signatureOf": []
+  },
+  "starfall": {
+   "id": "starfall",
+   "name": "Starfall",
+   "icon": "/Game/UI/Abilities/T_starfall",
+   "types": [
+    "DPS"
+   ],
+   "kind": "ultimate",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 180,
+    "manaCost": 130,
+    "energyCost": 0,
+    "cooldown": 80,
+    "castTime": 0,
+    "range": 1500,
+    "radius": 500,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "Aim a 5m circle; after 1.25s deal {effect} + 3.5x primary damage.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": []
+  },
+  "spectral_hunt": {
+   "id": "spectral_hunt",
+   "name": "Spectral Hunt",
+   "icon": "/Game/UI/Abilities/T_spectral_hunt",
+   "types": [
+    "DPS"
+   ],
+   "kind": "ultimate",
+   "school": "void",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 58,
+    "manaCost": 125,
+    "energyCost": 0,
+    "cooldown": 90,
+    "castTime": 0,
+    "range": 1200,
+    "radius": 0,
+    "duration": 18
+   },
+   "effectLabel": "damage per hit",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "Three hunters attack your target for 18s, {effect} + 0.4x primary per hit.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": []
+  },
+  "mass_aegis": {
+   "id": "mass_aegis",
+   "name": "Mass Aegis",
+   "icon": "/Game/UI/Abilities/T_mass_aegis",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "ultimate",
+   "school": "holy",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 12,
+    "manaCost": 120,
+    "energyCost": 0,
+    "cooldown": 85,
+    "castTime": 0,
+    "range": 0,
+    "radius": 900,
+    "duration": 12
+   },
+   "effectLabel": "s guard",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "Cleanse nearby allies' slows and guard them for {effect}s.",
+   "effects": [
+    {
+     "type": "guard",
+     "zone": "area",
+     "duration": 12,
+     "magnitude": 0.4,
+     "radius": 900,
+     "label": "DEF +40%"
+    },
+    {
+     "type": "cleanse",
+     "zone": "area",
+     "duration": 0.0,
+     "magnitude": 0.0,
+     "radius": 900
+    }
+   ],
+   "champions": [
+    "scholar",
+    "paladin_holy",
+    "ether_golem_support",
+    "orc_chieftain",
+    "wizard",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": []
+  },
+  "wellspring": {
+   "id": "wellspring",
+   "name": "Wellspring",
+   "icon": "/Game/UI/Abilities/T_wellspring",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "ultimate",
+   "school": "tide",
+   "targeting": "ally",
+   "castTime": 2.0,
+   "base": {
+    "effect": 220,
+    "manaCost": 130,
+    "energyCost": 0,
+    "cooldown": 75,
+    "castTime": 2.0,
+    "range": 1200,
+    "radius": 0,
+    "duration": 5
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "implemented",
+   "description": "Cast 2s: heal an ally (or yourself) for {effect} + 4x INT and guard for 5s.",
+   "effects": [
+    {
+     "type": "guard",
+     "zone": "target",
+     "duration": 5,
+     "magnitude": 0.4,
+     "radius": 0.0,
+     "label": "DEF +40%"
+    }
+   ],
+   "champions": [
+    "scholar",
+    "paladin_holy",
+    "ether_golem_support",
+    "orc_chieftain",
+    "wizard",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": []
+  },
+  "venom_ground": {
+   "id": "venom_ground",
+   "name": "Venom Ground",
+   "icon": "/Game/UI/Abilities/T_venom_ground",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "poison",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 60,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 8,
+    "castTime": 0,
+    "range": 900,
+    "radius": 280,
+    "duration": 5
+   },
+   "effectLabel": "impact damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Poison circle: {effect} impact damage, then damage over time for 5s.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "ranger",
+    "summoner",
+    "troll_berserker_ranged"
+   ]
+  },
+  "cinder_cone": {
+   "id": "cinder_cone",
+   "name": "Cinder Cone",
+   "icon": "/Game/UI/Abilities/T_cinder_cone",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "fire",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 95,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 8,
+    "castTime": 0,
+    "range": 900,
+    "radius": 600,
+    "duration": 5
+   },
+   "effectLabel": "impact damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Fire cone: {effect} impact damage, then burning ground for 5s.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "ether_golem_bruiser",
+    "wizard"
+   ]
+  },
+  "grave_line": {
+   "id": "grave_line",
+   "name": "Grave Line",
+   "icon": "/Game/UI/Abilities/T_grave_line",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "shadow",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 85,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 8,
+    "castTime": 0,
+    "range": 900,
+    "radius": 280,
+    "duration": 5
+   },
+   "effectLabel": "impact damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Shadow line: {effect} impact damage and silences enemies it hits for 2s.",
+   "effects": [
+    {
+     "type": "silence",
+     "zone": "area",
+     "duration": 2.0,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Silenced"
+    }
+   ],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "ranger",
+    "wizard"
+   ]
+  },
+  "ashen_square": {
+   "id": "ashen_square",
+   "name": "Ashen Ward",
+   "icon": "/Game/UI/Abilities/T_ashen_square",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "fire",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 60,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 8,
+    "castTime": 0,
+    "range": 900,
+    "radius": 280,
+    "duration": 4
+   },
+   "effectLabel": "impact damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Ash square: {effect} impact damage, then smouldering ground for 4s.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "lancer",
+    "wizard"
+   ]
+  },
+  "blight_sigil": {
+   "id": "blight_sigil",
+   "name": "Blight Sigil",
+   "icon": "/Game/UI/Abilities/T_blight_sigil",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "poison",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 60,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 8,
+    "castTime": 0,
+    "range": 900,
+    "radius": 280,
+    "duration": 5
+   },
+   "effectLabel": "impact damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Blight sigil: {effect} impact damage; victims receive 50% less healing for 6s.",
+   "effects": [
+    {
+     "type": "healCut",
+     "zone": "area",
+     "duration": 6.0,
+     "magnitude": 0.5,
+     "radius": 0.0,
+     "label": "Healing -50%"
+    }
+   ],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": []
+  },
+  "piercing_shot": {
+   "id": "piercing_shot",
+   "name": "Piercing Shot",
+   "icon": "/Game/UI/Abilities/T_piercing_shot",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 90,
+    "manaCost": 0,
+    "energyCost": 25,
+    "cooldown": 9,
+    "castTime": 0,
+    "range": 1500,
+    "radius": 30,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Long-range piercing shot for {effect} AGI-scaled damage.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "lancer",
+    "summoner",
+    "ether_golem_bruiser",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "ranger",
+    "lancer",
+    "troll_berserker_ranged"
+   ]
+  },
+  "ember_lance": {
+   "id": "ember_lance",
+   "name": "Ember Lance",
+   "icon": "/Game/UI/Abilities/T_ember_lance",
+   "types": [
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "fire",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 95,
+    "manaCost": 40,
+    "energyCost": 0,
+    "cooldown": 6,
+    "castTime": 0,
+    "range": 1200,
+    "radius": 30,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Fire skillshot for {effect} + 2x INT damage.",
+   "effects": [],
+   "champions": [
+    "ranger",
+    "scholar",
+    "lancer",
+    "summoner",
+    "paladin_holy",
+    "ether_golem_support",
+    "ether_golem_bruiser",
+    "orc_chieftain",
+    "wizard",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "dryad",
+    "whisp",
+    "evergrove_centaur",
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "scholar",
+    "wizard"
+   ]
+  },
+  "bear_maul": {
+   "id": "bear_maul",
+   "name": "Gravewood Maul",
+   "icon": "/Game/UI/Abilities/T_bear_maul",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Heavy claw strike generates extra threat against its target.",
+   "effects": [],
+   "champions": [
+    "bear"
+   ],
+   "signatureOf": [
+    "bear"
+   ]
+  },
+  "bear_roar": {
+   "id": "bear_roar",
+   "name": "Deepwood Roar",
+   "icon": "/Game/UI/Abilities/T_bear_roar",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "A visible cone roar taunts enemies and weakens their next attack.",
+   "effects": [
+    {
+     "type": "interrupt",
+     "zone": "area",
+     "duration": 0,
+     "magnitude": 0,
+     "radius": 500,
+     "lockoutSeconds": 2.0,
+     "label": "Interrupted"
+    }
+   ],
+   "champions": [
+    "bear"
+   ],
+   "signatureOf": [
+    "bear"
+   ]
+  },
+  "bear_charge": {
+   "id": "bear_charge",
+   "name": "Rootbreaker Charge",
+   "icon": "/Game/UI/Abilities/T_bear_charge",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Telegraphed short rush stops at a blocking wall and stuns the first enemy.",
+   "effects": [],
+   "champions": [
+    "bear"
+   ],
+   "signatureOf": [
+    "bear"
+   ],
+   "void": {
+    "innerRadius": 160,
+    "outerRadius": 380,
+    "innerEffect": "stun",
+    "innerDuration": 0.8,
+    "outerEffect": "slow",
+    "outerDuration": 2.0,
+    "outerMagnitude": 0.35,
+    "damage": 25,
+    "selfHealMaxHealthFraction": 0.0
+   }
+  },
+  "bear_hibernate": {
+   "id": "bear_hibernate",
+   "name": "Ironroot Slumber",
+   "icon": "/Game/UI/Abilities/T_bear_hibernate",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Channel self-healing while stationary; taking damage can interrupt it.",
+   "effects": [],
+   "champions": [
+    "bear"
+   ],
+   "signatureOf": [
+    "bear"
+   ]
+  },
+  "bear_ancient_hide": {
+   "id": "bear_ancient_hide",
+   "name": "Ancient Hide",
+   "icon": "/Game/UI/Abilities/T_bear_ancient_hide",
+   "types": [
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "After sustained incoming attacks gain a short defensive hide buff.",
+   "effects": [],
+   "champions": [
+    "bear"
+   ],
+   "signatureOf": [
+    "bear"
+   ]
+  },
+  "bear_colossus": {
+   "id": "bear_colossus",
+   "name": "Elder of the Deepwood",
+   "icon": "/Game/UI/Abilities/T_bear_colossus",
+   "types": [
+    "TANK"
+   ],
+   "kind": "ultimate",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 140,
+    "manaCost": 0,
+    "energyCost": 110,
+    "cooldown": 70,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "Temporary larger bear form increases threat and defensive reach.",
+   "effects": [],
+   "champions": [
+    "bear"
+   ],
+   "signatureOf": [
+    "bear"
+   ]
+  },
+  "paladin_righteous_flail": {
+   "id": "paladin_righteous_flail",
+   "name": "Righteous Flail",
+   "icon": "/Game/UI/Abilities/T_paladin_righteous_flail",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Shield relic anchors a short flail cleave that marks threatened enemies.",
+   "effects": [],
+   "champions": [
+    "paladin_righteous"
+   ],
+   "signatureOf": [
+    "paladin_righteous"
+   ]
+  },
+  "paladin_relic_vow": {
+   "id": "paladin_relic_vow",
+   "name": "Relic Vow",
+   "icon": "/Game/UI/Abilities/T_paladin_relic_vow",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "ally",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Bind a consenting ally to the relic for temporary shared protection.",
+   "effects": [],
+   "champions": [
+    "paladin_righteous",
+    "paladin_holy"
+   ],
+   "signatureOf": [
+    "paladin_righteous",
+    "paladin_holy"
+   ]
+  },
+  "paladin_holy_flail": {
+   "id": "paladin_holy_flail",
+   "name": "Merciful Censer",
+   "icon": "/Game/UI/Abilities/T_paladin_holy_flail",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "enemy",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Flail impact releases a healing pulse around the struck hostile target.",
+   "effects": [],
+   "champions": [
+    "paladin_holy"
+   ],
+   "signatureOf": [
+    "paladin_holy"
+   ]
+  },
+  "paladin_pilgrim_light": {
+   "id": "paladin_pilgrim_light",
+   "name": "Pilgrim Light",
+   "icon": "/Game/UI/Abilities/T_paladin_pilgrim_light",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "A slow visible orb heals the first allied unit it reaches.",
+   "effects": [],
+   "champions": [
+    "paladin_holy"
+   ],
+   "signatureOf": [
+    "paladin_holy"
+   ]
+  },
+  "miner_pickfall": {
+   "id": "miner_pickfall",
+   "name": "Pickfall",
+   "icon": "/Game/UI/Abilities/T_miner_pickfall",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Armor-chipping pick strike leaves a short vulnerability debuff.",
+   "effects": [],
+   "champions": [
+    "dwarf_miner"
+   ],
+   "signatureOf": [
+    "dwarf_miner"
+   ]
+  },
+  "miner_faultline": {
+   "id": "miner_faultline",
+   "name": "Faultline",
+   "icon": "/Game/UI/Abilities/T_miner_faultline",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Warning line erupts in stone after a delay and briefly slows enemies.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "area",
+     "duration": 0.8,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "dwarf_miner"
+   ],
+   "signatureOf": [
+    "dwarf_miner"
+   ]
+  },
+  "miner_lantern": {
+   "id": "miner_lantern",
+   "name": "Deep Lantern",
+   "icon": "/Game/UI/Abilities/T_miner_lantern",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "fire",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Place a lantern that reveals the local ground and grants allies resistance.",
+   "effects": [],
+   "champions": [
+    "dwarf_miner"
+   ],
+   "signatureOf": [
+    "dwarf_miner"
+   ]
+  },
+  "miner_orehide": {
+   "id": "miner_orehide",
+   "name": "Orehide",
+   "icon": "/Game/UI/Abilities/T_miner_orehide",
+   "types": [
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "earth",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "Blocking damage builds a small temporary mineral shield.",
+   "effects": [],
+   "champions": [
+    "dwarf_miner"
+   ],
+   "signatureOf": [
+    "dwarf_miner"
+   ]
+  },
+  "miner_mountain": {
+   "id": "miner_mountain",
+   "name": "Heart of the Mountain",
+   "icon": "/Game/UI/Abilities/T_miner_mountain",
+   "types": [
+    "TANK"
+   ],
+   "kind": "ultimate",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 140,
+    "manaCost": 0,
+    "energyCost": 110,
+    "cooldown": 70,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "A warned stone ring rises to protect allies and constrain enemy movement.",
+   "effects": [],
+   "champions": [
+    "dwarf_miner"
+   ],
+   "signatureOf": [
+    "dwarf_miner"
+   ]
+  },
+  "golem_granite_fist": {
+   "id": "golem_granite_fist",
+   "name": "Granite Fist",
+   "icon": "/Game/UI/Abilities/T_golem_granite_fist",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Large rocky golem slams a warned cone and generates tank threat.",
+   "effects": [],
+   "champions": [
+    "ether_golem_tank"
+   ],
+   "signatureOf": [
+    "ether_golem_tank"
+   ]
+  },
+  "golem_ether_anchor": {
+   "id": "golem_ether_anchor",
+   "name": "Ether Anchor",
+   "icon": "/Game/UI/Abilities/T_golem_ether_anchor",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Anchor an enemy briefly within a visible stone circle.",
+   "effects": [],
+   "champions": [
+    "ether_golem_tank"
+   ],
+   "signatureOf": [
+    "ether_golem_tank"
+   ]
+  },
+  "golem_construct_core": {
+   "id": "golem_construct_core",
+   "name": "Construct Core",
+   "icon": "/Game/UI/Abilities/T_golem_construct_core",
+   "types": [
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "arcane",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% bonus",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "Incoming damage slowly charges the selected golem role resource.",
+   "effects": [],
+   "champions": [
+    "ether_golem_tank",
+    "ether_golem_bruiser"
+   ],
+   "signatureOf": [
+    "ether_golem_tank",
+    "ether_golem_bruiser"
+   ]
+  },
+  "golem_worldstone": {
+   "id": "golem_worldstone",
+   "name": "Worldstone Awakened",
+   "icon": "/Game/UI/Abilities/T_golem_worldstone",
+   "types": [
+    "TANK"
+   ],
+   "kind": "ultimate",
+   "school": "arcane",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 140,
+    "manaCost": 0,
+    "energyCost": 110,
+    "cooldown": 70,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "Temporary ether overgrowth amplifies the selected tank, support or bruiser function.",
+   "effects": [],
+   "champions": [
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser"
+   ],
+   "signatureOf": [
+    "ether_golem_tank",
+    "ether_golem_support",
+    "ether_golem_bruiser"
+   ]
+  },
+  "golem_moss_bloom": {
+   "id": "golem_moss_bloom",
+   "name": "Verdant Bloom",
+   "icon": "/Game/UI/Abilities/T_golem_moss_bloom",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Mossy rock opens a warned healing garden for allies.",
+   "effects": [],
+   "champions": [
+    "ether_golem_support"
+   ],
+   "signatureOf": [
+    "ether_golem_support"
+   ]
+  },
+  "golem_living_granite": {
+   "id": "golem_living_granite",
+   "name": "Living Granite",
+   "icon": "/Game/UI/Abilities/T_golem_living_granite",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "ally",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Apply a moss-covered shield to an ally; effective healing restores a portion.",
+   "effects": [],
+   "champions": [
+    "ether_golem_support"
+   ],
+   "signatureOf": [
+    "ether_golem_support"
+   ]
+  },
+  "golem_fel_fist": {
+   "id": "golem_fel_fist",
+   "name": "Felfire Fist",
+   "icon": "/Game/UI/Abilities/T_golem_fel_fist",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "fire",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Fel-flamed golem punches through a short cone of enemies.",
+   "effects": [],
+   "champions": [
+    "ether_golem_bruiser"
+   ],
+   "signatureOf": [
+    "ether_golem_bruiser"
+   ]
+  },
+  "golem_ether_furnace": {
+   "id": "golem_ether_furnace",
+   "name": "Ether Furnace",
+   "icon": "/Game/UI/Abilities/T_golem_ether_furnace",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "fire",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Consume stored ether to empower a short sequence of basic attacks.",
+   "effects": [],
+   "champions": [
+    "ether_golem_bruiser"
+   ],
+   "signatureOf": [
+    "ether_golem_bruiser"
+   ]
+  },
+  "chieftain_axe_hook": {
+   "id": "chieftain_axe_hook",
+   "name": "Chieftain Hook",
+   "icon": "/Game/UI/Abilities/T_chieftain_axe_hook",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "An axe hook pulls the first unprotected target a short distance.",
+   "effects": [],
+   "champions": [
+    "orc_chieftain"
+   ],
+   "signatureOf": [
+    "orc_chieftain"
+   ]
+  },
+  "chieftain_banner": {
+   "id": "chieftain_banner",
+   "name": "Blood-Oath Banner",
+   "icon": "/Game/UI/Abilities/T_chieftain_banner",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Plant a destructible banner that bolsters nearby allies.",
+   "effects": [],
+   "champions": [
+    "orc_chieftain"
+   ],
+   "signatureOf": [
+    "orc_chieftain"
+   ]
+  },
+  "chieftain_courage": {
+   "id": "chieftain_courage",
+   "name": "Unbroken Clan",
+   "icon": "/Game/UI/Abilities/T_chieftain_courage",
+   "types": [
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% bonus",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "Nearby allies grant the chieftain a capped resilience bonus.",
+   "effects": [],
+   "champions": [
+    "orc_chieftain"
+   ],
+   "signatureOf": [
+    "orc_chieftain"
+   ]
+  },
+  "chieftain_earthshout": {
+   "id": "chieftain_earthshout",
+   "name": "Earthshout",
+   "icon": "/Game/UI/Abilities/T_chieftain_earthshout",
+   "types": [
+    "TANK"
+   ],
+   "kind": "ultimate",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 140,
+    "manaCost": 0,
+    "energyCost": 110,
+    "cooldown": 70,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "Large delayed shout taunts enemies and shields allies in a visible circle.",
+   "effects": [
+    {
+     "type": "silence",
+     "zone": "area",
+     "duration": 1.5,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Silenced"
+    }
+   ],
+   "champions": [
+    "orc_chieftain"
+   ],
+   "signatureOf": [
+    "orc_chieftain"
+   ]
+  },
+  "behemoth_totem_sweep": {
+   "id": "behemoth_totem_sweep",
+   "name": "Totem Sweep",
+   "icon": "/Game/UI/Abilities/T_behemoth_totem_sweep",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Elephant-rhino hybrid swings its massive totem through a warned cone.",
+   "effects": [],
+   "champions": [
+    "totemic_behemoth"
+   ],
+   "signatureOf": [
+    "totemic_behemoth"
+   ]
+  },
+  "behemoth_tusk_line": {
+   "id": "behemoth_tusk_line",
+   "name": "Tuskbreaker",
+   "icon": "/Game/UI/Abilities/T_behemoth_tusk_line",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "A heavy line charge stops at solid collision.",
+   "effects": [],
+   "champions": [
+    "totemic_behemoth"
+   ],
+   "signatureOf": [
+    "totemic_behemoth"
+   ]
+  },
+  "behemoth_totem_bulwark": {
+   "id": "behemoth_totem_bulwark",
+   "name": "Totem Bulwark",
+   "icon": "/Game/UI/Abilities/T_behemoth_totem_bulwark",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Brace the massive totem as a temporary destructible barricade.",
+   "effects": [],
+   "champions": [
+    "totemic_behemoth"
+   ],
+   "signatureOf": [
+    "totemic_behemoth"
+   ]
+  },
+  "behemoth_ancestral_weight": {
+   "id": "behemoth_ancestral_weight",
+   "name": "Ancestral Weight",
+   "icon": "/Game/UI/Abilities/T_behemoth_ancestral_weight",
+   "types": [
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "earth",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% bonus",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "Standing still briefly increases resistance and threat retention.",
+   "effects": [],
+   "champions": [
+    "totemic_behemoth"
+   ],
+   "signatureOf": [
+    "totemic_behemoth"
+   ]
+  },
+  "behemoth_stampede": {
+   "id": "behemoth_stampede",
+   "name": "Ancestral Stampede",
+   "icon": "/Game/UI/Abilities/T_behemoth_stampede",
+   "types": [
+    "TANK"
+   ],
+   "kind": "ultimate",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 140,
+    "manaCost": 0,
+    "energyCost": 110,
+    "cooldown": 70,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "Warned spectral stampede crosses a broad ground lane.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "area",
+     "duration": 1.0,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "totemic_behemoth"
+   ],
+   "signatureOf": [
+    "totemic_behemoth"
+   ]
+  },
+  "drakish_dragon_oath": {
+   "id": "drakish_dragon_oath",
+   "name": "Dragon Oath",
+   "icon": "/Game/UI/Abilities/T_drakish_dragon_oath",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "fire",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Timed dragon form grants exactly two cleaving slash attacks, then breathes a weak fireball toward the furthest valid enemy to gain ranged threat; returning to human sword/shield form ends the sequence.",
+   "effects": [],
+   "champions": [
+    "drakish_footman"
+   ],
+   "signatureOf": [
+    "drakish_footman"
+   ]
+  },
+  "drakish_scale_guard": {
+   "id": "drakish_scale_guard",
+   "name": "Scale Guard",
+   "icon": "/Game/UI/Abilities/T_drakish_scale_guard",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "fire",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Brief dragon-scale defense protects the sword-and-shield footman.",
+   "effects": [],
+   "champions": [
+    "drakish_footman"
+   ],
+   "signatureOf": [
+    "drakish_footman"
+   ]
+  },
+  "drakish_wing_rebuke": {
+   "id": "drakish_wing_rebuke",
+   "name": "Wing Rebuke",
+   "icon": "/Game/UI/Abilities/T_drakish_wing_rebuke",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "fire",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Warned wing sweep knocks nearby enemies away from allies.",
+   "effects": [],
+   "champions": [
+    "drakish_footman"
+   ],
+   "signatureOf": [
+    "drakish_footman"
+   ]
+  },
+  "drakish_ember_memory": {
+   "id": "drakish_ember_memory",
+   "name": "Ember Memory",
+   "icon": "/Game/UI/Abilities/T_drakish_ember_memory",
+   "types": [
+    "TANK"
+   ],
+   "kind": "passive",
+   "school": "fire",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% bonus",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "The weak threat fireball applies a short, minor burn; no full damage-spell scaling.",
+   "effects": [],
+   "champions": [
+    "drakish_footman"
+   ],
+   "signatureOf": [
+    "drakish_footman"
+   ]
+  },
+  "drakish_ancient_pact": {
+   "id": "drakish_ancient_pact",
+   "name": "Ancient Pact",
+   "icon": "/Game/UI/Abilities/T_drakish_ancient_pact",
+   "types": [
+    "TANK"
+   ],
+   "kind": "ultimate",
+   "school": "fire",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 140,
+    "manaCost": 0,
+    "energyCost": 110,
+    "cooldown": 70,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "Extend one dragon transformation with a visible landing circle and group guard.",
+   "effects": [],
+   "champions": [
+    "drakish_footman"
+   ],
+   "signatureOf": [
+    "drakish_footman"
+   ]
+  },
+  "troll_axe_frenzy": {
+   "id": "troll_axe_frenzy",
+   "name": "Axe Frenzy",
+   "icon": "/Game/UI/Abilities/T_troll_axe_frenzy",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Rapid dual-axe melee sequence with a visible commitment window.",
+   "effects": [],
+   "champions": [
+    "troll_berserker_melee"
+   ],
+   "signatureOf": [
+    "troll_berserker_melee"
+   ]
+  },
+  "troll_blood_leap": {
+   "id": "troll_blood_leap",
+   "name": "Bloodbound Leap",
+   "icon": "/Game/UI/Abilities/T_troll_blood_leap",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Leap to a warned location and cleave on landing.",
+   "effects": [],
+   "champions": [
+    "troll_berserker_melee"
+   ],
+   "signatureOf": [
+    "troll_berserker_melee"
+   ],
+   "void": {
+    "innerRadius": 160,
+    "outerRadius": 380,
+    "innerEffect": "stun",
+    "innerDuration": 0.8,
+    "outerEffect": "slow",
+    "outerDuration": 2.0,
+    "outerMagnitude": 0.35,
+    "damage": 25,
+    "selfHealMaxHealthFraction": 0.0
+   }
+  },
+  "troll_hunger": {
+   "id": "troll_hunger",
+   "name": "Berserker Hunger",
+   "icon": "/Game/UI/Abilities/T_troll_hunger",
+   "types": [
+    "DPS"
+   ],
+   "kind": "passive",
+   "school": "physical",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "Missing health grants a capped attack-speed bonus.",
+   "effects": [],
+   "champions": [
+    "troll_berserker_melee",
+    "troll_berserker_ranged"
+   ],
+   "signatureOf": [
+    "troll_berserker_melee",
+    "troll_berserker_ranged"
+   ]
+  },
+  "troll_red_moon": {
+   "id": "troll_red_moon",
+   "name": "Red Moon Frenzy",
+   "icon": "/Game/UI/Abilities/T_troll_red_moon",
+   "types": [
+    "DPS"
+   ],
+   "kind": "ultimate",
+   "school": "physical",
+   "targeting": "self",
+   "castTime": 0,
+   "base": {
+    "effect": 140,
+    "manaCost": 0,
+    "energyCost": 110,
+    "cooldown": 70,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "Brief ultimate empowers the selected melee or thrown dual-axe form.",
+   "effects": [],
+   "champions": [
+    "troll_berserker_melee",
+    "troll_berserker_ranged"
+   ],
+   "signatureOf": [
+    "troll_berserker_melee",
+    "troll_berserker_ranged"
+   ]
+  },
+  "troll_twin_throw": {
+   "id": "troll_twin_throw",
+   "name": "Twin Throw",
+   "icon": "/Game/UI/Abilities/T_troll_twin_throw",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Launch two visible axes with independent collision and hit limits.",
+   "effects": [],
+   "champions": [
+    "troll_berserker_ranged"
+   ],
+   "signatureOf": [
+    "troll_berserker_ranged"
+   ]
+  },
+  "troll_returning_axes": {
+   "id": "troll_returning_axes",
+   "name": "Returning Axes",
+   "icon": "/Game/UI/Abilities/T_troll_returning_axes",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Recall thrown axes along warned return lanes; each target has a bounded hit count.",
+   "effects": [],
+   "champions": [
+    "troll_berserker_ranged"
+   ],
+   "signatureOf": [
+    "troll_berserker_ranged"
+   ]
+  },
+  "dryad_root_snare": {
+   "id": "dryad_root_snare",
+   "name": "Root Snare",
+   "icon": "/Game/UI/Abilities/T_dryad_root_snare",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Warned roots hold enemies inside a small ground circle.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "area",
+     "duration": 2.5,
+     "magnitude": 0.6,
+     "radius": 0.0,
+     "label": "Move -60%"
+    }
+   ],
+   "champions": [
+    "dryad"
+   ],
+   "signatureOf": [
+    "dryad"
+   ]
+  },
+  "dryad_seed_mend": {
+   "id": "dryad_seed_mend",
+   "name": "Seed Mend",
+   "icon": "/Game/UI/Abilities/T_dryad_seed_mend",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "ally",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Plant a healing seed on an ally that blooms after a short delay.",
+   "effects": [],
+   "champions": [
+    "dryad"
+   ],
+   "signatureOf": [
+    "dryad"
+   ]
+  },
+  "dryad_thorn_line": {
+   "id": "dryad_thorn_line",
+   "name": "Thornweave",
+   "icon": "/Game/UI/Abilities/T_dryad_thorn_line",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "A visible thorn line slows enemies crossing it.",
+   "effects": [],
+   "champions": [
+    "dryad"
+   ],
+   "signatureOf": [
+    "dryad"
+   ]
+  },
+  "dryad_green_covenant": {
+   "id": "dryad_green_covenant",
+   "name": "Green Covenant",
+   "icon": "/Game/UI/Abilities/T_dryad_green_covenant",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "nature",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "Effective healing builds a small, capped regeneration reserve.",
+   "effects": [],
+   "champions": [
+    "dryad"
+   ],
+   "signatureOf": [
+    "dryad"
+   ]
+  },
+  "dryad_grove_renewal": {
+   "id": "dryad_grove_renewal",
+   "name": "Grove Renewal",
+   "icon": "/Game/UI/Abilities/T_dryad_grove_renewal",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "ultimate",
+   "school": "nature",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 140,
+    "manaCost": 110,
+    "energyCost": 0,
+    "cooldown": 70,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "Grow a visible sanctuary of healing trees for living allies.",
+   "effects": [],
+   "champions": [
+    "dryad"
+   ],
+   "signatureOf": [
+    "dryad"
+   ]
+  },
+  "whisp_guiding_mote": {
+   "id": "whisp_guiding_mote",
+   "name": "Guiding Mote",
+   "icon": "/Game/UI/Abilities/T_whisp_guiding_mote",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Send a visible healing mote to the first allied unit in its path.",
+   "effects": [],
+   "champions": [
+    "whisp"
+   ],
+   "signatureOf": [
+    "whisp"
+   ]
+  },
+  "whisp_spirit_tether": {
+   "id": "whisp_spirit_tether",
+   "name": "Spirit Tether",
+   "icon": "/Game/UI/Abilities/T_whisp_spirit_tether",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "ally",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Short-range healing tether breaks immediately outside its range.",
+   "effects": [],
+   "champions": [
+    "whisp"
+   ],
+   "signatureOf": [
+    "whisp"
+   ]
+  },
+  "whisp_fey_trail": {
+   "id": "whisp_fey_trail",
+   "name": "Fey Trail",
+   "icon": "/Game/UI/Abilities/T_whisp_fey_trail",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Leave temporary luminous ground motes that restore allies on contact.",
+   "effects": [],
+   "champions": [
+    "whisp"
+   ],
+   "signatureOf": [
+    "whisp"
+   ],
+   "void": {
+    "innerRadius": 160,
+    "outerRadius": 380,
+    "innerEffect": "stun",
+    "innerDuration": 0.8,
+    "outerEffect": "slow",
+    "outerDuration": 2.0,
+    "outerMagnitude": 0.35,
+    "damage": 25,
+    "selfHealMaxHealthFraction": 0.0
+   }
+  },
+  "whisp_lantern_soul": {
+   "id": "whisp_lantern_soul",
+   "name": "Lantern Soul",
+   "icon": "/Game/UI/Abilities/T_whisp_lantern_soul",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "arcane",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "% bonus",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "Remaining near an injured ally improves resource regeneration.",
+   "effects": [],
+   "champions": [
+    "whisp"
+   ],
+   "signatureOf": [
+    "whisp"
+   ]
+  },
+  "whisp_constellation": {
+   "id": "whisp_constellation",
+   "name": "Kindred Constellation",
+   "icon": "/Game/UI/Abilities/T_whisp_constellation",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "ultimate",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 140,
+    "manaCost": 110,
+    "energyCost": 0,
+    "cooldown": 70,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "Visible links pulse healing to nearby living allies; no revival.",
+   "effects": [],
+   "champions": [
+    "whisp"
+   ],
+   "signatureOf": [
+    "whisp"
+   ]
+  },
+  "centaur_grove_javelin": {
+   "id": "centaur_grove_javelin",
+   "name": "Grove Javelin",
+   "icon": "/Game/UI/Abilities/T_centaur_grove_javelin",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "A root-tipped javelin harms enemies and leaves a small healing bloom.",
+   "effects": [],
+   "champions": [
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "evergrove_centaur"
+   ]
+  },
+  "centaur_trailblaze": {
+   "id": "centaur_trailblaze",
+   "name": "Evergrove Trail",
+   "icon": "/Game/UI/Abilities/T_centaur_trailblaze",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "A warned forward path grants allied movement speed.",
+   "effects": [],
+   "champions": [
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "evergrove_centaur"
+   ],
+   "void": {
+    "innerRadius": 160,
+    "outerRadius": 380,
+    "innerEffect": "stun",
+    "innerDuration": 0.8,
+    "outerEffect": "slow",
+    "outerDuration": 2.0,
+    "outerMagnitude": 0.35,
+    "damage": 25,
+    "selfHealMaxHealthFraction": 0.0
+   }
+  },
+  "centaur_herd_call": {
+   "id": "centaur_herd_call",
+   "name": "Herd Call",
+   "icon": "/Game/UI/Abilities/T_centaur_herd_call",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "nature",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Call a temporary spectral grove companion with a bounded lifetime.",
+   "effects": [],
+   "champions": [
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "evergrove_centaur"
+   ]
+  },
+  "centaur_steady_gait": {
+   "id": "centaur_steady_gait",
+   "name": "Steady Gait",
+   "icon": "/Game/UI/Abilities/T_centaur_steady_gait",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "nature",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "Briefly moving without damage strengthens the next effective heal.",
+   "effects": [],
+   "champions": [
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "evergrove_centaur"
+   ]
+  },
+  "centaur_spring_march": {
+   "id": "centaur_spring_march",
+   "name": "Spring March",
+   "icon": "/Game/UI/Abilities/T_centaur_spring_march",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "ultimate",
+   "school": "nature",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 140,
+    "manaCost": 110,
+    "energyCost": 0,
+    "cooldown": 70,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "A moving grove aura sustains allies during a short formation advance.",
+   "effects": [],
+   "champions": [
+    "evergrove_centaur"
+   ],
+   "signatureOf": [
+    "evergrove_centaur"
+   ]
+  },
+  "keeper_dawn_beam": {
+   "id": "keeper_dawn_beam",
+   "name": "Dawn Beam",
+   "icon": "/Game/UI/Abilities/T_keeper_dawn_beam",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "A warned light line heals allies and lightly damages enemies.",
+   "effects": [
+    {
+     "type": "healCut",
+     "zone": "area",
+     "duration": 4.0,
+     "magnitude": 0.3,
+     "radius": 0.0,
+     "label": "Healing -30%"
+    }
+   ],
+   "champions": [
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "keeper_of_light"
+   ]
+  },
+  "keeper_lantern_ward": {
+   "id": "keeper_lantern_ward",
+   "name": "Lantern Ward",
+   "icon": "/Game/UI/Abilities/T_keeper_lantern_ward",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Place a destructible ward that grants a small allied shield pulse.",
+   "effects": [],
+   "champions": [
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "keeper_of_light"
+   ]
+  },
+  "keeper_beacon": {
+   "id": "keeper_beacon",
+   "name": "Beacon of Return",
+   "icon": "/Game/UI/Abilities/T_keeper_beacon",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "aim",
+   "castTime": 0,
+   "base": {
+    "effect": 55,
+    "manaCost": 35,
+    "energyCost": 0,
+    "cooldown": 10,
+    "castTime": 0,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "planned",
+   "description": "Mark an allied rally point with a visible ground beacon and short haste buff.",
+   "effects": [],
+   "champions": [
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "keeper_of_light"
+   ]
+  },
+  "keeper_last_light": {
+   "id": "keeper_last_light",
+   "name": "Last Light",
+   "icon": "/Game/UI/Abilities/T_keeper_last_light",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "passive",
+   "school": "holy",
+   "targeting": "passive",
+   "castTime": 0,
+   "base": {
+    "effect": 10,
+    "manaCost": 0,
+    "energyCost": 0,
+    "cooldown": 0,
+    "castTime": 0,
+    "range": 0,
+    "radius": 0,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.25,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.0,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 60.0
+   },
+   "status": "planned",
+   "description": "A low-health ally can receive one small emergency shield per cooldown.",
+   "effects": [],
+   "champions": [
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "keeper_of_light"
+   ]
+  },
+  "keeper_sunrise": {
+   "id": "keeper_sunrise",
+   "name": "Sunrise Vigil",
+   "icon": "/Game/UI/Abilities/T_keeper_sunrise",
+   "types": [
+    "HEAL"
+   ],
+   "kind": "ultimate",
+   "school": "holy",
+   "targeting": "aim",
+   "castTime": 1.5,
+   "base": {
+    "effect": 140,
+    "manaCost": 110,
+    "energyCost": 0,
+    "cooldown": 70,
+    "castTime": 1.5,
+    "range": 900,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "healing",
+   "curve": {
+    "effectGrowth": 0.3,
+    "effectHalfLevels": 5,
+    "effectCap": 0,
+    "costCapMultiplier": 1.4,
+    "costRampLevels": 12,
+    "cooldownFloorFraction": 0.7,
+    "cooldownDecayLevels": 20,
+    "minCooldownSeconds": 10.0
+   },
+   "status": "planned",
+   "description": "A broad, clearly warned radiance restores living allies over time.",
+   "effects": [],
+   "champions": [
+    "keeper_of_light"
+   ],
+   "signatureOf": [
+    "keeper_of_light"
+   ]
+  }
+ },
+ "champions": {
+  "knight": {
+   "name": "Iron Warden",
+   "primaryRole": "TANK",
+   "roles": [
+    "TANK"
+   ],
+   "signature": [
+    "shield_slam",
+    "iron_guard",
+    "war_cry",
+    "cleaving_strike",
+    "second_wind",
+    "protection_dome",
+    "stone_skin",
+    "bastion_of_dawn"
+   ],
+   "purchasable": [
+    "shield_slam",
+    "iron_guard",
+    "war_cry",
+    "cleaving_strike",
+    "second_wind",
+    "protection_dome",
+    "stone_skin",
+    "bastion_of_dawn",
+    "frost_bind",
+    "shadow_step",
+    "summoned_wall",
+    "oathbound_guardian",
+    "decimating_strike",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ],
+   "purchasableImplemented": [
+    "shield_slam",
+    "iron_guard",
+    "war_cry",
+    "cleaving_strike",
+    "second_wind",
+    "protection_dome",
+    "stone_skin",
+    "bastion_of_dawn",
+    "frost_bind",
+    "shadow_step",
+    "summoned_wall",
+    "oathbound_guardian",
+    "decimating_strike",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ]
+  },
+  "ranger": {
+   "name": "Ash Ranger",
+   "primaryRole": "DPS",
+   "roles": [
+    "DPS"
+   ],
+   "signature": [
+    "piercing_shot",
+    "frost_bind",
+    "shadow_step",
+    "venom_ground",
+    "grave_line",
+    "spectral_pack",
+    "battle_rhythm",
+    "executioners_verdict",
+    "executioner"
+   ],
+   "purchasable": [
+    "piercing_shot",
+    "frost_bind",
+    "shadow_step",
+    "venom_ground",
+    "grave_line",
+    "spectral_pack",
+    "battle_rhythm",
+    "executioners_verdict",
+    "executioner",
+    "iron_guard",
+    "chain_spark",
+    "cleaving_strike",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "deep_reserves",
+    "soul_conduit",
+    "cataclysm",
+    "starfall",
+    "spectral_hunt",
+    "cinder_cone",
+    "ashen_square",
+    "blight_sigil",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "piercing_shot",
+    "frost_bind",
+    "shadow_step",
+    "venom_ground",
+    "grave_line",
+    "spectral_pack",
+    "battle_rhythm",
+    "executioners_verdict",
+    "executioner",
+    "iron_guard",
+    "chain_spark",
+    "cleaving_strike",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "deep_reserves",
+    "soul_conduit",
+    "cataclysm",
+    "starfall",
+    "spectral_hunt",
+    "cinder_cone",
+    "ashen_square",
+    "blight_sigil",
+    "ember_lance"
+   ]
+  },
+  "scholar": {
+   "name": "Veil Scholar",
+   "primaryRole": "HEAL",
+   "roles": [
+    "HEAL"
+   ],
+   "signature": [
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "chain_spark",
+    "ember_lance",
+    "protection_dome",
+    "soul_conduit",
+    "renewal"
+   ],
+   "purchasable": [
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "chain_spark",
+    "ember_lance",
+    "protection_dome",
+    "soul_conduit",
+    "renewal",
+    "iron_guard",
+    "frost_bind",
+    "summoned_wall",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "bastion_of_dawn",
+    "mass_aegis",
+    "wellspring"
+   ],
+   "purchasableImplemented": [
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "chain_spark",
+    "ember_lance",
+    "protection_dome",
+    "soul_conduit",
+    "renewal",
+    "iron_guard",
+    "frost_bind",
+    "summoned_wall",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "bastion_of_dawn",
+    "mass_aegis",
+    "wellspring"
+   ]
+  },
+  "lancer": {
+   "name": "Dusk Lancer",
+   "primaryRole": "DPS",
+   "roles": [
+    "DPS"
+   ],
+   "signature": [
+    "cleaving_strike",
+    "piercing_shot",
+    "shadow_step",
+    "iron_guard",
+    "second_wind",
+    "ashen_square",
+    "battle_rhythm",
+    "executioners_verdict",
+    "executioner"
+   ],
+   "purchasable": [
+    "cleaving_strike",
+    "piercing_shot",
+    "shadow_step",
+    "iron_guard",
+    "second_wind",
+    "ashen_square",
+    "battle_rhythm",
+    "executioners_verdict",
+    "executioner",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "decimating_strike",
+    "stone_skin",
+    "deep_reserves",
+    "soul_conduit",
+    "cataclysm",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "blight_sigil",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "cleaving_strike",
+    "piercing_shot",
+    "shadow_step",
+    "iron_guard",
+    "second_wind",
+    "ashen_square",
+    "battle_rhythm",
+    "executioners_verdict",
+    "executioner",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "decimating_strike",
+    "stone_skin",
+    "deep_reserves",
+    "soul_conduit",
+    "cataclysm",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "blight_sigil",
+    "ember_lance"
+   ]
+  },
+  "summoner": {
+   "name": "Rift Summoner",
+   "primaryRole": "DPS",
+   "roles": [
+    "DPS"
+   ],
+   "signature": [
+    "oathbound_guardian",
+    "spectral_pack",
+    "summoned_wall",
+    "protection_dome",
+    "chain_spark",
+    "venom_ground",
+    "deep_reserves",
+    "cataclysm"
+   ],
+   "purchasable": [
+    "oathbound_guardian",
+    "spectral_pack",
+    "summoned_wall",
+    "protection_dome",
+    "chain_spark",
+    "venom_ground",
+    "deep_reserves",
+    "cataclysm",
+    "iron_guard",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "soul_conduit",
+    "executioner",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "oathbound_guardian",
+    "spectral_pack",
+    "summoned_wall",
+    "protection_dome",
+    "chain_spark",
+    "venom_ground",
+    "deep_reserves",
+    "cataclysm",
+    "iron_guard",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "soul_conduit",
+    "executioner",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ]
+  },
+  "bear": {
+   "name": "Gravewood Bear",
+   "primaryRole": "TANK",
+   "roles": [
+    "TANK"
+   ],
+   "signature": [
+    "bear_maul",
+    "bear_roar",
+    "bear_charge",
+    "bear_hibernate",
+    "iron_guard",
+    "war_cry",
+    "bear_ancient_hide",
+    "bear_colossus"
+   ],
+   "purchasable": [
+    "bear_maul",
+    "bear_roar",
+    "bear_charge",
+    "bear_hibernate",
+    "iron_guard",
+    "war_cry",
+    "bear_ancient_hide",
+    "bear_colossus",
+    "shield_slam",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ],
+   "purchasableImplemented": [
+    "iron_guard",
+    "war_cry",
+    "shield_slam",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ]
+  },
+  "paladin_righteous": {
+   "name": "Relic Paladin",
+   "primaryRole": "TANK",
+   "roles": [
+    "TANK"
+   ],
+   "signature": [
+    "paladin_righteous_flail",
+    "paladin_relic_vow",
+    "shield_slam",
+    "iron_guard",
+    "war_cry",
+    "second_wind",
+    "stone_skin",
+    "bastion_of_dawn"
+   ],
+   "purchasable": [
+    "paladin_righteous_flail",
+    "paladin_relic_vow",
+    "shield_slam",
+    "iron_guard",
+    "war_cry",
+    "second_wind",
+    "stone_skin",
+    "bastion_of_dawn",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "decimating_strike",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ],
+   "purchasableImplemented": [
+    "shield_slam",
+    "iron_guard",
+    "war_cry",
+    "second_wind",
+    "stone_skin",
+    "bastion_of_dawn",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "decimating_strike",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ]
+  },
+  "paladin_holy": {
+   "name": "Relic Paladin",
+   "primaryRole": "HEAL",
+   "roles": [
+    "HEAL"
+   ],
+   "signature": [
+    "paladin_holy_flail",
+    "paladin_pilgrim_light",
+    "paladin_relic_vow",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "soul_conduit",
+    "renewal"
+   ],
+   "purchasable": [
+    "paladin_holy_flail",
+    "paladin_pilgrim_light",
+    "paladin_relic_vow",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "soul_conduit",
+    "renewal",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "bastion_of_dawn",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "soul_conduit",
+    "renewal",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "bastion_of_dawn",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ]
+  },
+  "dwarf_miner": {
+   "name": "Deepdelve Miner",
+   "primaryRole": "TANK",
+   "roles": [
+    "TANK"
+   ],
+   "signature": [
+    "miner_pickfall",
+    "miner_faultline",
+    "miner_lantern",
+    "summoned_wall",
+    "iron_guard",
+    "war_cry",
+    "miner_orehide",
+    "miner_mountain"
+   ],
+   "purchasable": [
+    "miner_pickfall",
+    "miner_faultline",
+    "miner_lantern",
+    "summoned_wall",
+    "iron_guard",
+    "war_cry",
+    "miner_orehide",
+    "miner_mountain",
+    "shield_slam",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ],
+   "purchasableImplemented": [
+    "summoned_wall",
+    "iron_guard",
+    "war_cry",
+    "shield_slam",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ]
+  },
+  "ether_golem_tank": {
+   "name": "Ether Golem",
+   "primaryRole": "TANK",
+   "roles": [
+    "TANK"
+   ],
+   "signature": [
+    "golem_granite_fist",
+    "golem_ether_anchor",
+    "iron_guard",
+    "war_cry",
+    "summoned_wall",
+    "shield_slam",
+    "golem_construct_core",
+    "golem_worldstone"
+   ],
+   "purchasable": [
+    "golem_granite_fist",
+    "golem_ether_anchor",
+    "iron_guard",
+    "war_cry",
+    "summoned_wall",
+    "shield_slam",
+    "golem_construct_core",
+    "golem_worldstone",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ],
+   "purchasableImplemented": [
+    "iron_guard",
+    "war_cry",
+    "summoned_wall",
+    "shield_slam",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ]
+  },
+  "ether_golem_support": {
+   "name": "Ether Golem",
+   "primaryRole": "HEAL",
+   "roles": [
+    "HEAL"
+   ],
+   "signature": [
+    "golem_moss_bloom",
+    "golem_living_granite",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "protection_dome",
+    "soul_conduit",
+    "golem_worldstone"
+   ],
+   "purchasable": [
+    "golem_moss_bloom",
+    "golem_living_granite",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "protection_dome",
+    "soul_conduit",
+    "golem_worldstone",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "bastion_of_dawn",
+    "renewal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "protection_dome",
+    "soul_conduit",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "bastion_of_dawn",
+    "renewal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ]
+  },
+  "ether_golem_bruiser": {
+   "name": "Ether Golem",
+   "primaryRole": "DPS",
+   "roles": [
+    "TANK",
+    "DPS"
+   ],
+   "signature": [
+    "golem_fel_fist",
+    "golem_ether_furnace",
+    "cleaving_strike",
+    "cinder_cone",
+    "shadow_step",
+    "iron_guard",
+    "golem_construct_core",
+    "golem_worldstone",
+    "decimating_strike"
+   ],
+   "purchasable": [
+    "golem_fel_fist",
+    "golem_ether_furnace",
+    "cleaving_strike",
+    "cinder_cone",
+    "shadow_step",
+    "iron_guard",
+    "golem_construct_core",
+    "golem_worldstone",
+    "decimating_strike",
+    "shield_slam",
+    "war_cry",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "bastion_of_dawn",
+    "cataclysm",
+    "executioners_verdict",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "cleaving_strike",
+    "cinder_cone",
+    "shadow_step",
+    "iron_guard",
+    "decimating_strike",
+    "shield_slam",
+    "war_cry",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "bastion_of_dawn",
+    "cataclysm",
+    "executioners_verdict",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ]
+  },
+  "orc_chieftain": {
+   "name": "Blood-Oath Chieftain",
+   "primaryRole": "TANK",
+   "roles": [
+    "TANK",
+    "HEAL"
+   ],
+   "signature": [
+    "chieftain_axe_hook",
+    "chieftain_banner",
+    "war_cry",
+    "iron_guard",
+    "cleaving_strike",
+    "shield_slam",
+    "chieftain_courage",
+    "chieftain_earthshout",
+    "decimating_strike"
+   ],
+   "purchasable": [
+    "chieftain_axe_hook",
+    "chieftain_banner",
+    "war_cry",
+    "iron_guard",
+    "cleaving_strike",
+    "shield_slam",
+    "chieftain_courage",
+    "chieftain_earthshout",
+    "decimating_strike",
+    "chain_spark",
+    "frost_bind",
+    "shadow_step",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "renewal",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "war_cry",
+    "iron_guard",
+    "cleaving_strike",
+    "shield_slam",
+    "decimating_strike",
+    "chain_spark",
+    "frost_bind",
+    "shadow_step",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "renewal",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ]
+  },
+  "totemic_behemoth": {
+   "name": "Totemic Behemoth",
+   "primaryRole": "TANK",
+   "roles": [
+    "TANK"
+   ],
+   "signature": [
+    "behemoth_totem_sweep",
+    "behemoth_tusk_line",
+    "behemoth_totem_bulwark",
+    "war_cry",
+    "iron_guard",
+    "cleaving_strike",
+    "behemoth_ancestral_weight",
+    "behemoth_stampede"
+   ],
+   "purchasable": [
+    "behemoth_totem_sweep",
+    "behemoth_tusk_line",
+    "behemoth_totem_bulwark",
+    "war_cry",
+    "iron_guard",
+    "cleaving_strike",
+    "behemoth_ancestral_weight",
+    "behemoth_stampede",
+    "shield_slam",
+    "frost_bind",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ],
+   "purchasableImplemented": [
+    "war_cry",
+    "iron_guard",
+    "cleaving_strike",
+    "shield_slam",
+    "frost_bind",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ]
+  },
+  "drakish_footman": {
+   "name": "Drakish Footman",
+   "primaryRole": "TANK",
+   "roles": [
+    "TANK"
+   ],
+   "signature": [
+    "drakish_dragon_oath",
+    "drakish_scale_guard",
+    "drakish_wing_rebuke",
+    "shield_slam",
+    "war_cry",
+    "iron_guard",
+    "drakish_ember_memory",
+    "drakish_ancient_pact",
+    "decimating_strike"
+   ],
+   "purchasable": [
+    "drakish_dragon_oath",
+    "drakish_scale_guard",
+    "drakish_wing_rebuke",
+    "shield_slam",
+    "war_cry",
+    "iron_guard",
+    "drakish_ember_memory",
+    "drakish_ancient_pact",
+    "decimating_strike",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ],
+   "purchasableImplemented": [
+    "shield_slam",
+    "war_cry",
+    "iron_guard",
+    "decimating_strike",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "last_stand",
+    "challenge_of_iron",
+    "seismic_reprisal"
+   ]
+  },
+  "wizard": {
+   "name": "Cinder Arcanist",
+   "primaryRole": "DPS",
+   "roles": [
+    "DPS",
+    "HEAL"
+   ],
+   "signature": [
+    "ember_lance",
+    "frost_bind",
+    "chain_spark",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "deep_reserves",
+    "cataclysm"
+   ],
+   "purchasable": [
+    "ember_lance",
+    "frost_bind",
+    "chain_spark",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "deep_reserves",
+    "cataclysm",
+    "iron_guard",
+    "cleaving_strike",
+    "shadow_step",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "soul_conduit",
+    "executioner",
+    "bastion_of_dawn",
+    "executioners_verdict",
+    "renewal",
+    "starfall",
+    "spectral_hunt",
+    "mass_aegis",
+    "wellspring",
+    "venom_ground",
+    "blight_sigil",
+    "piercing_shot"
+   ],
+   "purchasableImplemented": [
+    "ember_lance",
+    "frost_bind",
+    "chain_spark",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "deep_reserves",
+    "cataclysm",
+    "iron_guard",
+    "cleaving_strike",
+    "shadow_step",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "soul_conduit",
+    "executioner",
+    "bastion_of_dawn",
+    "executioners_verdict",
+    "renewal",
+    "starfall",
+    "spectral_hunt",
+    "mass_aegis",
+    "wellspring",
+    "venom_ground",
+    "blight_sigil",
+    "piercing_shot"
+   ]
+  },
+  "troll_berserker_melee": {
+   "name": "Red-Moon Berserker",
+   "primaryRole": "DPS",
+   "roles": [
+    "DPS"
+   ],
+   "signature": [
+    "troll_axe_frenzy",
+    "troll_blood_leap",
+    "cleaving_strike",
+    "shadow_step",
+    "iron_guard",
+    "second_wind",
+    "troll_hunger",
+    "troll_red_moon",
+    "decimating_strike",
+    "executioner"
+   ],
+   "purchasable": [
+    "troll_axe_frenzy",
+    "troll_blood_leap",
+    "cleaving_strike",
+    "shadow_step",
+    "iron_guard",
+    "second_wind",
+    "troll_hunger",
+    "troll_red_moon",
+    "decimating_strike",
+    "executioner",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "cleaving_strike",
+    "shadow_step",
+    "iron_guard",
+    "second_wind",
+    "decimating_strike",
+    "executioner",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ]
+  },
+  "troll_berserker_ranged": {
+   "name": "Red-Moon Berserker",
+   "primaryRole": "DPS",
+   "roles": [
+    "DPS"
+   ],
+   "signature": [
+    "troll_twin_throw",
+    "troll_returning_axes",
+    "piercing_shot",
+    "frost_bind",
+    "shadow_step",
+    "venom_ground",
+    "troll_hunger",
+    "troll_red_moon",
+    "executioner"
+   ],
+   "purchasable": [
+    "troll_twin_throw",
+    "troll_returning_axes",
+    "piercing_shot",
+    "frost_bind",
+    "shadow_step",
+    "venom_ground",
+    "troll_hunger",
+    "troll_red_moon",
+    "executioner",
+    "iron_guard",
+    "chain_spark",
+    "cleaving_strike",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "piercing_shot",
+    "frost_bind",
+    "shadow_step",
+    "venom_ground",
+    "executioner",
+    "iron_guard",
+    "chain_spark",
+    "cleaving_strike",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "cataclysm",
+    "executioners_verdict",
+    "starfall",
+    "spectral_hunt",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "ember_lance"
+   ]
+  },
+  "dryad": {
+   "name": "Thornweave Dryad",
+   "primaryRole": "HEAL",
+   "roles": [
+    "HEAL"
+   ],
+   "signature": [
+    "dryad_root_snare",
+    "dryad_seed_mend",
+    "dryad_thorn_line",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "dryad_green_covenant",
+    "dryad_grove_renewal"
+   ],
+   "purchasable": [
+    "dryad_root_snare",
+    "dryad_seed_mend",
+    "dryad_thorn_line",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "dryad_green_covenant",
+    "dryad_grove_renewal",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "renewal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "renewal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ]
+  },
+  "whisp": {
+   "name": "Lantern Whisp",
+   "primaryRole": "HEAL",
+   "roles": [
+    "HEAL"
+   ],
+   "signature": [
+    "whisp_guiding_mote",
+    "whisp_spirit_tether",
+    "whisp_fey_trail",
+    "restoring_light",
+    "purify",
+    "protection_dome",
+    "whisp_lantern_soul",
+    "whisp_constellation"
+   ],
+   "purchasable": [
+    "whisp_guiding_mote",
+    "whisp_spirit_tether",
+    "whisp_fey_trail",
+    "restoring_light",
+    "purify",
+    "protection_dome",
+    "whisp_lantern_soul",
+    "whisp_constellation",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "sanctuary",
+    "summoned_wall",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "renewal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "restoring_light",
+    "purify",
+    "protection_dome",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "sanctuary",
+    "summoned_wall",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "renewal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ]
+  },
+  "evergrove_centaur": {
+   "name": "Evergrove Centaur",
+   "primaryRole": "HEAL",
+   "roles": [
+    "DPS",
+    "HEAL"
+   ],
+   "signature": [
+    "centaur_grove_javelin",
+    "centaur_trailblaze",
+    "centaur_herd_call",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "centaur_steady_gait",
+    "centaur_spring_march"
+   ],
+   "purchasable": [
+    "centaur_grove_javelin",
+    "centaur_trailblaze",
+    "centaur_herd_call",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "centaur_steady_gait",
+    "centaur_spring_march",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "bastion_of_dawn",
+    "cataclysm",
+    "executioners_verdict",
+    "renewal",
+    "starfall",
+    "spectral_hunt",
+    "mass_aegis",
+    "wellspring",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "cleaving_strike",
+    "shadow_step",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "spectral_pack",
+    "second_wind",
+    "decimating_strike",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "executioner",
+    "bastion_of_dawn",
+    "cataclysm",
+    "executioners_verdict",
+    "renewal",
+    "starfall",
+    "spectral_hunt",
+    "mass_aegis",
+    "wellspring",
+    "venom_ground",
+    "cinder_cone",
+    "grave_line",
+    "ashen_square",
+    "blight_sigil",
+    "piercing_shot",
+    "ember_lance"
+   ]
+  },
+  "keeper_of_light": {
+   "name": "Keeper of the Light",
+   "primaryRole": "HEAL",
+   "roles": [
+    "HEAL"
+   ],
+   "signature": [
+    "keeper_dawn_beam",
+    "keeper_lantern_ward",
+    "keeper_beacon",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "keeper_last_light",
+    "keeper_sunrise"
+   ],
+   "purchasable": [
+    "keeper_dawn_beam",
+    "keeper_lantern_ward",
+    "keeper_beacon",
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "keeper_last_light",
+    "keeper_sunrise",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "renewal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ],
+   "purchasableImplemented": [
+    "restoring_light",
+    "sanctuary",
+    "purify",
+    "iron_guard",
+    "chain_spark",
+    "frost_bind",
+    "summoned_wall",
+    "protection_dome",
+    "oathbound_guardian",
+    "second_wind",
+    "stone_skin",
+    "battle_rhythm",
+    "deep_reserves",
+    "soul_conduit",
+    "bastion_of_dawn",
+    "renewal",
+    "mass_aegis",
+    "wellspring",
+    "ember_lance"
+   ]
+  }
+ },
+ "buffModifiers": {
+  "stunned": [
+   {
+    "stat": "actions",
+    "value": -1.0,
+    "label": "Stunned"
+   }
+  ],
+  "silenced": [
+   {
+    "stat": "casting",
+    "value": -1.0,
+    "label": "Silenced"
+   }
+  ],
+  "npc_silenced": [
+   {
+    "stat": "casting",
+    "value": -1.0,
+    "label": "Silenced"
+   }
+  ],
+  "school_locked": [
+   {
+    "stat": "casting_school",
+    "value": -1.0,
+    "label": "School locked"
+   }
+  ],
+  "heal_cut": [
+   {
+    "stat": "healing_received",
+    "value": -0.5,
+    "label": "Healing -50%"
+   }
+  ],
+  "heal_cut_done": [
+   {
+    "stat": "healing_done",
+    "value": -0.5,
+    "label": "Healing done -50%"
+   }
+  ],
+  "armor_broken": [
+   {
+    "stat": "armor",
+    "value": -0.5,
+    "label": "Armor -50%"
+   }
+  ],
+  "slowed": [
+   {
+    "stat": "move_speed",
+    "value": -0.35,
+    "label": "Move -35%"
+   }
+  ],
+  "iron_guard": [
+   {
+    "stat": "damage_taken",
+    "value": -0.4,
+    "label": "DEF +40%"
+   }
+  ],
+  "guarded": [
+   {
+    "stat": "damage_taken",
+    "value": -0.4,
+    "label": "DEF +40%"
+   }
+  ],
+  "executioner_ready": [
+   {
+    "stat": "next_attack",
+    "value": 1.0,
+    "label": "Next attack lethal"
+   }
+  ]
+ }
+}
