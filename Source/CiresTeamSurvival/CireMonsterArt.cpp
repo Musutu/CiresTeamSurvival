@@ -73,6 +73,8 @@ bool ParseBody(const TSharedPtr<FJsonObject>& O, CireMonsterArt::FBody& Body)
         if (O->TryGetNumberField(TEXT("walkSpeedCm"), V) && FMath::IsFinite(V)) Body.WalkSpeedCm = static_cast<float>(FMath::Clamp(V, 0., 2000.));
         if (O->TryGetNumberField(TEXT("runSpeedCm"), V) && FMath::IsFinite(V)) Body.RunSpeedCm = static_cast<float>(FMath::Clamp(V, 0., 3000.));
         if (O->TryGetNumberField(TEXT("reachCm"), V) && FMath::IsFinite(V)) Body.ReachCm = static_cast<float>(FMath::Clamp(V, 0., 2000.));
+        if (O->TryGetNumberField(TEXT("soleCm"), V) && FMath::IsFinite(V)) Body.SoleCm = static_cast<float>(FMath::Clamp(V, 0., 60.)); // fab-integration
+        if (O->TryGetNumberField(TEXT("airborneCm"), V) && FMath::IsFinite(V)) Body.AirborneCm = static_cast<float>(FMath::Clamp(V, 0., 60.));
         const TArray<TSharedPtr<FJsonValue>>* Drops = nullptr;
         if (O->TryGetArrayField(TEXT("dropPropBones"), Drops))
             for (const auto& Value : *Drops) { FString Bone; if (Value->TryGetString(Bone)) Body.DropPropBones.Add(FName(*Bone)); }

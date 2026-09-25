@@ -42,6 +42,19 @@ bool PoseIsSane(const FCompactPose& Pose)
 }
 }
 
+namespace
+{
+// fab-integration: vendor rigs name the hip bone b_pelvis / BARGHEST_-Pelvis / CENTAUR_-Pelvis; exact "pelvis" first.
+int32 FindPelvisBone(const FReferenceSkeleton& Reference)
+{
+    const int32 Exact = Reference.FindBoneIndex(TEXT("pelvis"));
+    if (Exact != INDEX_NONE) return Exact;
+    for (int32 Index = 0; Index < Reference.GetNum(); ++Index)
+        if (Reference.GetBoneName(Index).ToString().Contains(TEXT("pelvis"), ESearchCase::IgnoreCase)) return Index;
+    return INDEX_NONE;
+}
+}
+
 const CireAnimClips::FClipInfo& CireAnimClips::Analyze(const UAnimSequence* Sequence)
 {
     static TMap<TWeakObjectPtr<const UAnimSequence>, FClipInfo> Cache;
@@ -51,7 +64,7 @@ const CireAnimClips::FClipInfo& CireAnimClips::Analyze(const UAnimSequence* Sequ
     FClipInfo Info;
     Info.Length = Sequence->GetPlayLength();
     const FReferenceSkeleton& Reference = Sequence->GetSkeleton()->GetReferenceSkeleton();
-    const int32 Pelvis = Reference.FindBoneIndex(TEXT("pelvis"));
+    const int32 Pelvis = FindPelvisBone(Reference);
     const int32 Foot = Reference.FindBoneIndex(TEXT("foot_l"));
     const int32 BallL = Reference.FindBoneIndex(TEXT("ball_l")), BallR = Reference.FindBoneIndex(TEXT("ball_r"));
     if (BallL != INDEX_NONE && BallR != INDEX_NONE)
@@ -101,7 +114,7 @@ void CireAnimClips::RemovePelvisDrift(FCompactPose& Pose, const FVector2D& Drift
     if (Drift.IsNearlyZero()) return;
     const FBoneContainer& Bones = Pose.GetBoneContainer();
     const FReferenceSkeleton& Reference = Bones.GetReferenceSkeleton();
-    const int32 Pelvis = Reference.FindBoneIndex(TEXT("pelvis"));
+    const int32 Pelvis = FindPelvisBone(Reference);
     if (Pelvis == INDEX_NONE) return;
     const FCompactPoseBoneIndex PelvisIndex = Bones.MakeCompactPoseIndex(FMeshPoseBoneIndex(Pelvis));
     if (!PelvisIndex.IsValid()) return;

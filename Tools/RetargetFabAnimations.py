@@ -164,6 +164,8 @@ def retarget_body(folder, mesh, sources, locomotion, report, keep):
     names = [str(comp.get_bone_name(i)) for i in range(comp.get_num_bones())]
     children = [n for n in names if str(comp.get_parent_bone(n)) == "root"]
     require("root" in names and "pelvis" in names, "body without root/pelvis")
+    if not keep and lib.does_directory_exist(rig_dir):
+        lib.delete_directory(rig_dir)  # rigs are rebuilt with the clips (a stale rig would block create_asset)
     # Group source clips by skeleton: one retargeter per (source skeleton, body).
     groups = {}
     for clip, (anim, src_mesh) in list(sources.items()) + [("loco_" + k, v) for k, v in locomotion.items()]:
@@ -266,13 +268,53 @@ def build_locomotion(folder, mesh, done, loco_sources, speeds, lancer, report):
             continue
         for suffix, d in DIRS.items():
             k = gait + "_" + suffix if "loco_" + gait + "_" + suffix in done else fwd
-            add(k, d, speeds.get(gait, 150.0 if gait == "walk" else 420.0))
+            v = speeds.get(gait, 240.0 if gait == "walk" else 520.0) * (speeds.get("back", .65) if suffix.startswith("b") else 1.0)
+            add(k, d, v)
             if suffix == "b":
-                add(k, -180.0, speeds.get(gait, 150.0 if gait == "walk" else 420.0))
+                add(k, -180.0, v)
     blend.set_editor_property("sample_data", samples)
     require(lib.save_loaded_asset(blend, False), "blend save failed")
     report[folder]["locomotion"] = {"blend": path, "samples": sorted(layout), "speeds": speeds}
     return path
+
+
+def measure_window(anim, mesh, kind):
+    """Timing for a clip without authored notifies: attacks contact at peak wrist speed (12%..85% of the clip)."""
+    length = float(anim.get_play_length())
+    if kind in ("death", "roll", "jump"):
+        return {"start": 0.0, "contact": round(min(.1, length * .2), 3), "end": round(length, 3), "recoverRate": 1.0}
+    if kind == "hit":
+        return {"start": 0.0, "contact": round(min(.12, length * .25), 3), "end": round(min(length, .85), 3), "recoverRate": 1.0}
+    o = unreal.AnimPoseEvaluationOptions()
+    o.set_editor_property("evaluation_type", unreal.AnimDataEvalType.RAW)
+    o.set_editor_property("optional_skeletal_mesh", mesh)
+    steps = max(8, int(length * 60))
+    prev, best, best_t = None, -1.0, length * .4
+    for i in range(steps + 1):
+        t = length * i / steps
+        p = unreal.AnimPoseExtensions.get_anim_pose_at_time(anim, t, o)
+        pts = [v3(unreal.AnimPoseExtensions.get_bone_pose(p, b, unreal.AnimPoseSpaces.WORLD).translation) for b in ("hand_r", "hand_l")]
+        if prev is not None and length * .12 <= t <= length * .85:
+            speed = sum(math.dist(a, b) for a, b in zip(pts, prev))
+            if speed > best:
+                best, best_t = speed, t
+        prev = pts
+    end = min(length, best_t + max(.35, (length - best_t) * .7))
+    return {"start": 0.0, "contact": round(best_t, 3), "end": round(end, 3), "recoverRate": 1.2}
+
+
+def foot_speed(anim, mesh):
+    """Ground speed of an in-place loop from the planted foot's sweep: two steps per cycle."""
+    o = unreal.AnimPoseEvaluationOptions()
+    o.set_editor_property("evaluation_type", unreal.AnimDataEvalType.RAW)
+    o.set_editor_property("optional_skeletal_mesh", mesh)
+    length = float(anim.get_play_length())
+    xs = []
+    for i in range(33):
+        p = unreal.AnimPoseExtensions.get_anim_pose_at_time(anim, length * i / 32, o)
+        t = unreal.AnimPoseExtensions.get_bone_pose(p, "foot_l", unreal.AnimPoseSpaces.WORLD).translation
+        xs.append(math.hypot(t.x, t.y) * (1 if (t.x + t.y) >= 0 else -1))
+    return 2.0 * (max(xs) - min(xs)) / max(.1, length)
 
 
 def main():
@@ -288,48 +330,57 @@ def main():
     try:
         cfg = json.loads((ROOT / "Art/Fab/FabAnimMap.json").read_text(encoding="utf-8"))
         bodies = json.loads((ROOT / "Content/Data/ChampionAttacks02.json").read_text(encoding="utf-8"))["bodies"]
-        sources, loco = {}, {}
-        missing = []
-        for clip, row in cfg.get("clips", {}).items():
-            anim = unreal.load_asset(row["path"].split(".")[0])
-            if not isinstance(anim, unreal.AnimSequence):
-                missing.append(row["path"]); continue
-            sources[clip] = (anim, source_mesh_for(anim.get_editor_property("skeleton"), "/Game/" + row["path"].split("/")[2]))
-        for key, p in cfg.get("locomotion", {}).items():
-            anim = unreal.load_asset(p.split(".")[0])
-            if not isinstance(anim, unreal.AnimSequence):
-                missing.append(p); continue
-            loco[key] = (anim, source_mesh_for(anim.get_editor_property("skeleton"), "/Game/" + p.split("/")[2]))
-        report["missing_sources"] = missing
-        require(sources or loco, "no Fab source clips found (packs not installed?)")
+        loaded, windows, speeds_by_set, missing = {}, {}, {}, []
+
+        def src(path):
+            if path not in loaded:
+                anim = unreal.load_asset(path.split(".")[0])
+                loaded[path] = (anim, source_mesh_for(anim.get_editor_property("skeleton"), "/Game/" + path.split("/")[2])) \
+                    if isinstance(anim, unreal.AnimSequence) else None
+                if loaded[path] is None:
+                    missing.append(path)
+            return loaded[path]
+        # Timing is measured once per source clip.
+        for clip, row in cfg["clips"].items():
+            s = src(row["path"])
+            if s:
+                windows[clip] = {k: row[k] for k in ("start", "contact", "end", "recoverRate") if k in row} or measure_window(s[0], s[1], row.get("kind", "attack"))
+        # Samples sit at the game's own speeds (Content/Data/MovementTuning.json), so the blend space plays the
+        # run cycle exactly when the champion runs; backward directions at the backpedal speed.
+        tuning = json.loads((ROOT / "Content/Data/MovementTuning.json").read_text(encoding="utf-8"))
+        game = {"walk": float(tuning.get("WalkSpeed", 240)), "run": float(tuning.get("RunSpeed", 520)), "back": float(tuning.get("BackpedalScale", .65))}
+        for set_name in cfg["locomotion"]:
+            speeds_by_set[set_name] = game
+        report["windows"], report["speeds"], report["missing_sources"] = windows, speeds_by_set, missing
         lancer = unreal.load_asset(LANCER_BS)
-        windows, ok_clips = {}, set()
+        ok_clips = set()
         for mesh_path, folder in sorted(bodies.items(), key=lambda kv: kv[1]):
             if only and folder not in only:
                 continue
+            set_name = cfg.get("bodies", {}).get(folder)
+            if not set_name:
+                report["bodies"][folder] = {"skipped": "no weapon set"}; continue
             mesh = unreal.load_asset(mesh_path.split(".")[0])
             if not isinstance(mesh, unreal.SkeletalMesh):
                 report["bodies"][folder] = {"error": "body missing"}; continue
+            sources = {c: src(r["path"]) for c, r in cfg["clips"].items() if r.get("set") == set_name and src(r["path"])}
+            loco = {k: src(p) for k, p in cfg["locomotion"].get(set_name, {}).items() if src(p)}
             try:
                 done = retarget_body(folder, mesh, sources, loco, report["bodies"], keep)
                 ok_clips.update(c for c in done if not c.startswith("loco_"))
-                # Ground speeds at the body's in-game scale: source travel x (body height / source height).
-                speeds = {}
-                for gait in ("walk", "run"):
-                    if gait + "_f" in loco:
-                        anim, src = loco[gait + "_f"]
-                        src_h = src.get_bounds().box_extent.z * 2
-                        speeds[gait] = round(travel_speed(anim, src) * 180.0 / max(1.0, src_h), 1)
-                build_locomotion(folder, mesh, done, loco, speeds, lancer, report["bodies"])
-            except Exception as error:
+                report["bodies"][folder]["set"] = set_name
+                build_locomotion(folder, mesh, done, loco, speeds_by_set.get(set_name, {}), lancer, report["bodies"])
+            except Exception:
                 report["bodies"].setdefault(folder, {})["error"] = traceback.format_exc()
-        for clip in ok_clips:
-            row = cfg["clips"][clip]
-            windows[clip] = {k: row[k] for k in ("start", "contact", "end", "recoverRate") if k in row}
         data_path = ROOT / "Content/Data/FabAnimations.json"
         data = json.loads(data_path.read_text(encoding="utf-8"))
-        data["clips"] = dict(sorted(windows.items()))
-        data["replace"] = cfg.get("replace", {})
+        merged = dict(data.get("clips", {}))
+        merged.update({c: windows[c] for c in ok_clips if c in windows})
+        data["clips"] = dict(sorted(merged.items()))
+        # Only clips that retargeted onto at least one body (and so have timing) may be named in a replacement.
+        data["replace"] = {row: {kind: [c for c in clips if c in data["clips"]] for kind, clips in kinds.items()}
+                           for row, kinds in cfg.get("replace", {}).items()}
+        data["replace"] = {row: {k: v for k, v in kinds.items() if v} for row, kinds in data["replace"].items()}
         data_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
         errors = sum(len(b.get("errors", {})) + ("error" in b) for b in report["bodies"].values())
         report["status"] = "pass" if not errors else "partial"
@@ -342,7 +393,8 @@ def main():
     finally:
         report["seconds"] = round(time.monotonic() - started, 1)
         saved.mkdir(parents=True, exist_ok=True)
-        (saved / "FabAnimRetarget.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
+        name = "FabAnimRetarget%s.json" % ("-" + "+".join(sorted(only)) if only else "")
+        (saved / name).write_text(json.dumps(report, indent=1), encoding="utf-8")
 
 
 main()

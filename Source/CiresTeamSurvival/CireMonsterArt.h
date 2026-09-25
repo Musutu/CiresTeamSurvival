@@ -47,6 +47,9 @@ namespace CireMonsterArt
         FString Rig;
         bool bLockRoot = false;
         float WalkSpeedCm = 0.f, RunSpeedCm = 0.f, ReachCm = 0.f;
+        /** fab-integration: world cm (at mesh scale) from the lowest foot joint to the sole (hooves end below the joint),
+         *  and the extra foot clearance a galloping run's airborne phase reaches. Both only relax the grounding checks. */
+        float SoleCm = 0.f, AirborneCm = 0.f;
         /** Socket name -> bone, added to the mesh in memory when the body is applied (head, pelvis, hand_r...). */
         TMap<FName, FName> Sockets;
     };

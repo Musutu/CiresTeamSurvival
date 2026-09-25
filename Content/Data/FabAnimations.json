@@ -3,6 +3,1136 @@
   "notes": "Optional champion clips retargeted from the purchased Fab animation packs by Tools/RetargetFabAnimations.py into /Game/FabDerived/Anim/<BodyFolder>/A_<BodyFolder>_<clip> (gitignored; derived from licensed content). clips: timing per clip name (seconds: start, contact = hit/release frame, end, recoverRate). replace: 'style:<WeaponLoadouts preset>' / 'motion:<melee|cast|bow|crossbow|throw|none>' / 'default' -> kind (attack|ability|spell|shout|hit|death|roll|jump) -> clip names (alternatives rotate as a combo). locomotion: use BS_Fab_Locomotion_<BodyFolder> when present. Everything missing falls back to ChampionAttacks02 and the procedural poses.",
   "root": "/Game/FabDerived/Anim",
   "locomotion": true,
-  "clips": {},
-  "replace": {}
+  "clips": {
+    "bow_attack1": {
+      "start": 0.0,
+      "contact": 0.658,
+      "end": 1.201,
+      "recoverRate": 1.2
+    },
+    "bow_attack2": {
+      "start": 0.0,
+      "contact": 0.267,
+      "end": 1.457,
+      "recoverRate": 1.2
+    },
+    "bow_attack3": {
+      "start": 0.0,
+      "contact": 0.456,
+      "end": 1.023,
+      "recoverRate": 1.2
+    },
+    "bow_death": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.767,
+      "recoverRate": 1.0
+    },
+    "bow_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.667,
+      "recoverRate": 1.0
+    },
+    "bow_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    },
+    "bow_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 1.267,
+      "recoverRate": 1.0
+    },
+    "dual_attack1": {
+      "start": 0.0,
+      "contact": 0.733,
+      "end": 0.867,
+      "recoverRate": 1.2
+    },
+    "dual_attack2": {
+      "start": 0.0,
+      "contact": 0.25,
+      "end": 1.195,
+      "recoverRate": 1.2
+    },
+    "dual_attack3": {
+      "start": 0.0,
+      "contact": 0.395,
+      "end": 0.567,
+      "recoverRate": 1.2
+    },
+    "dual_attack4": {
+      "start": 0.0,
+      "contact": 0.65,
+      "end": 0.8,
+      "recoverRate": 1.2
+    },
+    "dual_death": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.5,
+      "recoverRate": 1.0
+    },
+    "dual_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.733,
+      "recoverRate": 1.0
+    },
+    "dual_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    },
+    "dual_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.833,
+      "recoverRate": 1.0
+    },
+    "gun_attack1": {
+      "start": 0.0,
+      "contact": 0.219,
+      "end": 1.232,
+      "recoverRate": 1.2
+    },
+    "gun_attack2": {
+      "start": 0.0,
+      "contact": 0.354,
+      "end": 1.273,
+      "recoverRate": 1.2
+    },
+    "gun_attack4": {
+      "start": 0.0,
+      "contact": 0.283,
+      "end": 1.368,
+      "recoverRate": 1.2
+    },
+    "gun_death": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.667,
+      "recoverRate": 1.0
+    },
+    "gun_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.833,
+      "recoverRate": 1.0
+    },
+    "gun_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    },
+    "one_hand_attack1": {
+      "start": 0.0,
+      "contact": 0.267,
+      "end": 0.4,
+      "recoverRate": 1.2
+    },
+    "one_hand_attack3": {
+      "start": 0.0,
+      "contact": 0.63,
+      "end": 0.767,
+      "recoverRate": 1.2
+    },
+    "one_hand_attack6": {
+      "start": 0.0,
+      "contact": 0.283,
+      "end": 0.633,
+      "recoverRate": 1.2
+    },
+    "one_hand_attack7": {
+      "start": 0.0,
+      "contact": 0.317,
+      "end": 0.433,
+      "recoverRate": 1.2
+    },
+    "one_hand_death": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.6,
+      "recoverRate": 1.0
+    },
+    "one_hand_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.667,
+      "recoverRate": 1.0
+    },
+    "one_hand_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    },
+    "one_hand_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 1.067,
+      "recoverRate": 1.0
+    },
+    "spear_attack1": {
+      "start": 0.0,
+      "contact": 0.417,
+      "end": 0.5,
+      "recoverRate": 1.2
+    },
+    "spear_attack2": {
+      "start": 0.0,
+      "contact": 0.525,
+      "end": 0.881,
+      "recoverRate": 1.2
+    },
+    "spear_attack3": {
+      "start": 0.0,
+      "contact": 1.2,
+      "end": 1.467,
+      "recoverRate": 1.2
+    },
+    "spear_attack4": {
+      "start": 0.0,
+      "contact": 0.696,
+      "end": 0.9,
+      "recoverRate": 1.2
+    },
+    "spear_death": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.5,
+      "recoverRate": 1.0
+    },
+    "spear_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.567,
+      "recoverRate": 1.0
+    },
+    "spear_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    },
+    "spell_attack1": {
+      "start": 0.0,
+      "contact": 0.967,
+      "end": 1.48,
+      "recoverRate": 1.2
+    },
+    "spell_attack2": {
+      "start": 0.0,
+      "contact": 0.417,
+      "end": 0.965,
+      "recoverRate": 1.2
+    },
+    "spell_attack4": {
+      "start": 0.0,
+      "contact": 1.2,
+      "end": 1.853,
+      "recoverRate": 1.2
+    },
+    "spell_attack6": {
+      "start": 0.0,
+      "contact": 0.959,
+      "end": 1.524,
+      "recoverRate": 1.2
+    },
+    "spell_attack8": {
+      "start": 0.0,
+      "contact": 2.529,
+      "end": 3.092,
+      "recoverRate": 1.2
+    },
+    "spell_death": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.733,
+      "recoverRate": 1.0
+    },
+    "spell_heal": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
+      "recoverRate": 1.2
+    },
+    "spell_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.767,
+      "recoverRate": 1.0
+    },
+    "spell_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    },
+    "spell_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.9,
+      "recoverRate": 1.0
+    },
+    "sword_shield_attack1": {
+      "start": 0.0,
+      "contact": 3.394,
+      "end": 4.635,
+      "recoverRate": 1.2
+    },
+    "sword_shield_attack10": {
+      "start": 0.0,
+      "contact": 0.394,
+      "end": 0.633,
+      "recoverRate": 1.2
+    },
+    "sword_shield_attack2": {
+      "start": 0.0,
+      "contact": 1.659,
+      "end": 2.668,
+      "recoverRate": 1.2
+    },
+    "sword_shield_attack3": {
+      "start": 0.0,
+      "contact": 0.567,
+      "end": 0.733,
+      "recoverRate": 1.2
+    },
+    "sword_shield_attack4": {
+      "start": 0.0,
+      "contact": 0.427,
+      "end": 0.7,
+      "recoverRate": 1.2
+    },
+    "sword_shield_attack5": {
+      "start": 0.0,
+      "contact": 1.283,
+      "end": 2.952,
+      "recoverRate": 1.2
+    },
+    "sword_shield_attack6": {
+      "start": 0.0,
+      "contact": 0.9,
+      "end": 1.067,
+      "recoverRate": 1.2
+    },
+    "sword_shield_death": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.6,
+      "recoverRate": 1.0
+    },
+    "sword_shield_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.85,
+      "recoverRate": 1.0
+    },
+    "sword_shield_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    },
+    "sword_shield_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.9,
+      "recoverRate": 1.0
+    },
+    "two_hand_attack2": {
+      "start": 0.0,
+      "contact": 1.017,
+      "end": 1.2,
+      "recoverRate": 1.2
+    },
+    "two_hand_attack3": {
+      "start": 0.0,
+      "contact": 0.696,
+      "end": 0.9,
+      "recoverRate": 1.2
+    },
+    "two_hand_attack4": {
+      "start": 0.0,
+      "contact": 0.253,
+      "end": 1.149,
+      "recoverRate": 1.2
+    },
+    "two_hand_death": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.833,
+      "recoverRate": 1.0
+    },
+    "two_hand_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.733,
+      "recoverRate": 1.0
+    },
+    "two_hand_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    },
+    "two_hand_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.833,
+      "recoverRate": 1.0
+    },
+    "unarmed_attack1": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 3.003,
+      "recoverRate": 1.2
+    },
+    "unarmed_attack2": {
+      "start": 0.0,
+      "contact": 3.394,
+      "end": 4.682,
+      "recoverRate": 1.2
+    },
+    "unarmed_attack3": {
+      "start": 0.0,
+      "contact": 2.15,
+      "end": 4.425,
+      "recoverRate": 1.2
+    },
+    "unarmed_attack4": {
+      "start": 0.0,
+      "contact": 0.853,
+      "end": 3.149,
+      "recoverRate": 1.2
+    },
+    "unarmed_death": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 1.0,
+      "recoverRate": 1.0
+    },
+    "unarmed_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.633,
+      "recoverRate": 1.0
+    },
+    "unarmed_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    }
+  },
+  "replace": {
+    "style:warden": {
+      "attack": [
+        "sword_shield_attack3",
+        "sword_shield_attack4",
+        "sword_shield_attack6",
+        "sword_shield_attack10"
+      ],
+      "ability": [
+        "sword_shield_attack3",
+        "sword_shield_attack4",
+        "sword_shield_attack6",
+        "sword_shield_attack10"
+      ],
+      "hit": [
+        "sword_shield_hit"
+      ],
+      "death": [
+        "sword_shield_death"
+      ],
+      "roll": [
+        "sword_shield_roll"
+      ],
+      "jump": [
+        "sword_shield_jump"
+      ]
+    },
+    "style:footman": {
+      "attack": [
+        "sword_shield_attack3",
+        "sword_shield_attack4",
+        "sword_shield_attack6",
+        "sword_shield_attack10"
+      ],
+      "ability": [
+        "sword_shield_attack3",
+        "sword_shield_attack4",
+        "sword_shield_attack6",
+        "sword_shield_attack10"
+      ],
+      "hit": [
+        "sword_shield_hit"
+      ],
+      "death": [
+        "sword_shield_death"
+      ],
+      "roll": [
+        "sword_shield_roll"
+      ],
+      "jump": [
+        "sword_shield_jump"
+      ]
+    },
+    "style:paladin": {
+      "attack": [
+        "sword_shield_attack3",
+        "sword_shield_attack4",
+        "sword_shield_attack6",
+        "sword_shield_attack10"
+      ],
+      "ability": [
+        "sword_shield_attack3",
+        "sword_shield_attack4",
+        "sword_shield_attack6",
+        "sword_shield_attack10"
+      ],
+      "hit": [
+        "sword_shield_hit"
+      ],
+      "death": [
+        "sword_shield_death"
+      ],
+      "roll": [
+        "sword_shield_roll"
+      ],
+      "jump": [
+        "sword_shield_jump"
+      ]
+    },
+    "style:hammer_shield": {
+      "attack": [
+        "sword_shield_attack3",
+        "sword_shield_attack4",
+        "sword_shield_attack6",
+        "sword_shield_attack10"
+      ],
+      "ability": [
+        "sword_shield_attack3",
+        "sword_shield_attack4",
+        "sword_shield_attack6",
+        "sword_shield_attack10"
+      ],
+      "hit": [
+        "sword_shield_hit"
+      ],
+      "death": [
+        "sword_shield_death"
+      ],
+      "roll": [
+        "sword_shield_roll"
+      ],
+      "jump": [
+        "sword_shield_jump"
+      ]
+    },
+    "style:miner": {
+      "attack": [
+        "one_hand_attack1",
+        "one_hand_attack3",
+        "one_hand_attack6",
+        "one_hand_attack7"
+      ],
+      "ability": [
+        "one_hand_attack1",
+        "one_hand_attack3",
+        "one_hand_attack6",
+        "one_hand_attack7"
+      ],
+      "hit": [
+        "one_hand_hit"
+      ],
+      "death": [
+        "one_hand_death"
+      ],
+      "roll": [
+        "one_hand_roll"
+      ],
+      "jump": [
+        "one_hand_jump"
+      ]
+    },
+    "style:chieftain": {
+      "attack": [
+        "one_hand_attack1",
+        "one_hand_attack3",
+        "one_hand_attack6",
+        "one_hand_attack7"
+      ],
+      "ability": [
+        "one_hand_attack1",
+        "one_hand_attack3",
+        "one_hand_attack6",
+        "one_hand_attack7"
+      ],
+      "hit": [
+        "one_hand_hit"
+      ],
+      "death": [
+        "one_hand_death"
+      ],
+      "roll": [
+        "one_hand_roll"
+      ],
+      "jump": [
+        "one_hand_jump"
+      ]
+    },
+    "style:aetheri_warden": {
+      "attack": [
+        "two_hand_attack2",
+        "two_hand_attack3",
+        "two_hand_attack4"
+      ],
+      "ability": [
+        "two_hand_attack2",
+        "two_hand_attack3",
+        "two_hand_attack4"
+      ],
+      "hit": [
+        "two_hand_hit"
+      ],
+      "death": [
+        "two_hand_death"
+      ],
+      "roll": [
+        "two_hand_roll"
+      ],
+      "jump": [
+        "two_hand_jump"
+      ]
+    },
+    "style:behemoth": {
+      "attack": [
+        "two_hand_attack2",
+        "two_hand_attack3",
+        "two_hand_attack4"
+      ],
+      "ability": [
+        "two_hand_attack2",
+        "two_hand_attack3",
+        "two_hand_attack4"
+      ],
+      "hit": [
+        "two_hand_hit"
+      ],
+      "death": [
+        "two_hand_death"
+      ],
+      "roll": [
+        "two_hand_roll"
+      ],
+      "jump": [
+        "two_hand_jump"
+      ]
+    },
+    "style:troll_melee": {
+      "attack": [
+        "dual_attack1",
+        "dual_attack2",
+        "dual_attack3",
+        "dual_attack4"
+      ],
+      "ability": [
+        "dual_attack1",
+        "dual_attack2",
+        "dual_attack3",
+        "dual_attack4"
+      ],
+      "hit": [
+        "dual_hit"
+      ],
+      "death": [
+        "dual_death"
+      ],
+      "roll": [
+        "dual_roll"
+      ],
+      "jump": [
+        "dual_jump"
+      ]
+    },
+    "style:dual_daggers": {
+      "attack": [
+        "dual_attack1",
+        "dual_attack2",
+        "dual_attack3",
+        "dual_attack4"
+      ],
+      "ability": [
+        "dual_attack1",
+        "dual_attack2",
+        "dual_attack3",
+        "dual_attack4"
+      ],
+      "hit": [
+        "dual_hit"
+      ],
+      "death": [
+        "dual_death"
+      ],
+      "roll": [
+        "dual_roll"
+      ],
+      "jump": [
+        "dual_jump"
+      ]
+    },
+    "style:ranger": {
+      "attack": [
+        "bow_attack1",
+        "bow_attack2",
+        "bow_attack3"
+      ],
+      "ability": [
+        "bow_attack1",
+        "bow_attack2",
+        "bow_attack3"
+      ],
+      "hit": [
+        "bow_hit"
+      ],
+      "death": [
+        "bow_death"
+      ],
+      "roll": [
+        "bow_roll"
+      ],
+      "jump": [
+        "bow_jump"
+      ]
+    },
+    "style:scholar": {
+      "attack": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "ability": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "spell": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8",
+        "spell_heal"
+      ],
+      "hit": [
+        "spell_hit"
+      ],
+      "death": [
+        "spell_death"
+      ],
+      "roll": [
+        "spell_roll"
+      ],
+      "jump": [
+        "spell_jump"
+      ]
+    },
+    "style:summoner": {
+      "attack": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "ability": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "spell": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8",
+        "spell_heal"
+      ],
+      "hit": [
+        "spell_hit"
+      ],
+      "death": [
+        "spell_death"
+      ],
+      "roll": [
+        "spell_roll"
+      ],
+      "jump": [
+        "spell_jump"
+      ]
+    },
+    "style:wizard": {
+      "attack": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "ability": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "spell": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8",
+        "spell_heal"
+      ],
+      "hit": [
+        "spell_hit"
+      ],
+      "death": [
+        "spell_death"
+      ],
+      "roll": [
+        "spell_roll"
+      ],
+      "jump": [
+        "spell_jump"
+      ]
+    },
+    "style:dryad": {
+      "attack": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "ability": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "spell": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8",
+        "spell_heal"
+      ],
+      "hit": [
+        "spell_hit"
+      ],
+      "death": [
+        "spell_death"
+      ],
+      "roll": [
+        "spell_roll"
+      ],
+      "jump": [
+        "spell_jump"
+      ]
+    },
+    "style:keeper": {
+      "attack": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "ability": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "spell": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8",
+        "spell_heal"
+      ],
+      "hit": [
+        "spell_hit"
+      ],
+      "death": [
+        "spell_death"
+      ],
+      "roll": [
+        "spell_roll"
+      ],
+      "jump": [
+        "spell_jump"
+      ]
+    },
+    "style:artificer": {
+      "attack": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "ability": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "spell": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8",
+        "spell_heal"
+      ],
+      "hit": [
+        "spell_hit"
+      ],
+      "death": [
+        "spell_death"
+      ],
+      "roll": [
+        "spell_roll"
+      ],
+      "jump": [
+        "spell_jump"
+      ]
+    },
+    "style:witch_slayer": {
+      "attack": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "ability": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "spell": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8",
+        "spell_heal"
+      ],
+      "hit": [
+        "spell_hit"
+      ],
+      "death": [
+        "spell_death"
+      ],
+      "roll": [
+        "spell_roll"
+      ],
+      "jump": [
+        "spell_jump"
+      ]
+    },
+    "style:tripo_witch_slayer": {
+      "attack": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "ability": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8"
+      ],
+      "spell": [
+        "spell_attack1",
+        "spell_attack2",
+        "spell_attack4",
+        "spell_attack6",
+        "spell_attack8",
+        "spell_heal"
+      ],
+      "hit": [
+        "spell_hit"
+      ],
+      "death": [
+        "spell_death"
+      ],
+      "roll": [
+        "spell_roll"
+      ],
+      "jump": [
+        "spell_jump"
+      ]
+    },
+    "style:lancer": {
+      "attack": [
+        "spear_attack1",
+        "spear_attack2",
+        "spear_attack3",
+        "spear_attack4"
+      ],
+      "ability": [
+        "spear_attack1",
+        "spear_attack2",
+        "spear_attack3",
+        "spear_attack4"
+      ],
+      "hit": [
+        "spear_hit"
+      ],
+      "death": [
+        "spear_death"
+      ],
+      "jump": [
+        "spear_jump"
+      ]
+    },
+    "style:huntress": {
+      "attack": [
+        "spear_attack1",
+        "spear_attack2",
+        "spear_attack3",
+        "spear_attack4"
+      ],
+      "ability": [
+        "spear_attack1",
+        "spear_attack2",
+        "spear_attack3",
+        "spear_attack4"
+      ],
+      "hit": [
+        "spear_hit"
+      ],
+      "death": [
+        "spear_death"
+      ],
+      "jump": [
+        "spear_jump"
+      ]
+    },
+    "style:tripo_huntress": {
+      "attack": [
+        "spear_attack1",
+        "spear_attack2",
+        "spear_attack3",
+        "spear_attack4"
+      ],
+      "ability": [
+        "spear_attack1",
+        "spear_attack2",
+        "spear_attack3",
+        "spear_attack4"
+      ],
+      "hit": [
+        "spear_hit"
+      ],
+      "death": [
+        "spear_death"
+      ],
+      "jump": [
+        "spear_jump"
+      ]
+    },
+    "style:gunblade": {
+      "attack": [
+        "gun_attack1",
+        "gun_attack2",
+        "gun_attack4"
+      ],
+      "ability": [
+        "gun_attack1",
+        "gun_attack2",
+        "gun_attack4"
+      ],
+      "hit": [
+        "gun_hit"
+      ],
+      "death": [
+        "gun_death"
+      ],
+      "jump": [
+        "gun_jump"
+      ]
+    },
+    "style:tripo_gunblade": {
+      "attack": [
+        "gun_attack1",
+        "gun_attack2",
+        "gun_attack4"
+      ],
+      "ability": [
+        "gun_attack1",
+        "gun_attack2",
+        "gun_attack4"
+      ],
+      "hit": [
+        "gun_hit"
+      ],
+      "death": [
+        "gun_death"
+      ],
+      "jump": [
+        "gun_jump"
+      ]
+    },
+    "style:unarmed": {
+      "attack": [
+        "unarmed_attack1",
+        "unarmed_attack2",
+        "unarmed_attack3",
+        "unarmed_attack4"
+      ],
+      "ability": [
+        "unarmed_attack1",
+        "unarmed_attack2",
+        "unarmed_attack3",
+        "unarmed_attack4"
+      ],
+      "hit": [
+        "unarmed_hit"
+      ],
+      "death": [
+        "unarmed_death"
+      ],
+      "jump": [
+        "unarmed_jump"
+      ]
+    }
+  }
 }
