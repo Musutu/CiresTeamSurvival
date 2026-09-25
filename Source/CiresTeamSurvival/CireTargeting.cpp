@@ -36,6 +36,7 @@ struct FTargetState
     bool bMeshBuilt=false,bLastValid=false;
     TArray<FVector> DecorV;TArray<int32> DecorI;TArray<FLinearColor> DecorC; // ability-vfx: animated arrow/chevrons/spot marker
     CireAbilityVFX::FVoidResult LastVoid; // ability-vfx: void zone drawn in the preview (tests)
+    float LastIntensity=-1.f;
 };
 TMap<TWeakObjectPtr<ACireController>,FTargetState> States;
 // ability-vfx: hover void preview (targeted skills have no aim mode).
@@ -144,20 +145,23 @@ void Render(ACireController* C,FTargetState& S,const FCireTargetDescriptor& D,FV
             S.LastVoid=CireAbilityVFX::PaintVoidZone(G,FVector2D(Local.X,Local.Y),Shape.VoidOuter,Shape.VoidInner,
                 S.View.bValid?CireAbilityVFX::ETone::AimValid:CireAbilityVFX::ETone::AimInvalid,C->GetWorld()->GetTimeSeconds(),1.f,Shape.bVoidHeal);
         }
+        CireAbilityVFX::Temper(G.C,0,CireAbilityVFX::GroundIntensity(C->GetWorld()),1.f); // playtest 3 brightness
         const auto* Section=S.Mesh->GetProcMeshSection(2);
         if(G.V.IsEmpty())S.Mesh->ClearMeshSection(2);
         else if(Section&&Section->ProcVertexBuffer.Num()==G.V.Num()&&Section->ProcIndexBuffer.Num()==G.I.Num())
             S.Mesh->UpdateMeshSection_LinearColor(2,G.V,TArray<FVector>(),TArray<FVector2D>(),G.C,TArray<FProcMeshTangent>(),false);
         else S.Mesh->CreateMeshSection_LinearColor(2,G.V,G.I,TArray<FVector>(),TArray<FVector2D>(),G.C,TArray<FProcMeshTangent>(),false);
     }
-    if(S.bMeshBuilt&&S.bLastValid==S.View.bValid&&S.CachedBoundary==Points)return;
-    S.bMeshBuilt=true;S.bLastValid=S.View.bValid;S.CachedBoundary=Points;
+    const float Intensity=CireAbilityVFX::GroundIntensity(C->GetWorld());
+    if(S.bMeshBuilt&&S.bLastValid==S.View.bValid&&S.CachedBoundary==Points&&S.LastIntensity==Intensity)return;
+    S.bMeshBuilt=true;S.LastIntensity=Intensity;S.bLastValid=S.View.bValid;S.CachedBoundary=Points;
     const auto Fill=Triangulate(Points);
     // ability-vfx: valid aim is tinted with the ability's rune colour (school / heal) instead of generic green.
     FLinearColor Tint=S.View.bValid?FLinearColor(.1f,1.1f,.65f,.18f):FLinearColor(1.3f,.12f,.07f,.18f);
     if(S.View.bValid&&CireAbilityVFX::Enabled()){Tint=CireAbilityVFX::ThemeFor(CireAbilityShapes::Describe(FName(*S.View.SkillId))).Glyph*.6f;Tint.A=.15f;}
     TArray<FVector> V,N;TArray<FVector2D> UV;TArray<FLinearColor> Colors;TArray<int32> Indices;
     for(FVector2D P:Points){V.Add(FVector(P.X,P.Y,6));N.Add(FVector::UpVector);UV.Add(P/2000);Colors.Add(Tint);}
+    if(CireAbilityVFX::Enabled())CireAbilityVFX::Temper(Colors,0,Intensity,1.f);
     S.Mesh->CreateMeshSection_LinearColor(0,V,Fill,N,UV,Colors,TArray<FProcMeshTangent>(),false);
     V.Reset();N.Reset();UV.Reset();Colors.Reset();
     for(int32 I=0;I<Points.Num();++I)
@@ -166,6 +170,7 @@ void Render(ACireController* C,FTargetState& S,const FCireTargetDescriptor& D,FV
         for(auto P:{A-Offset,B-Offset,B+Offset,A+Offset}){V.Add(FVector(P.X,P.Y,7));N.Add(FVector::UpVector);UV.Add(P/2000);Colors.Add(FLinearColor(Tint.R,Tint.G,Tint.B,.9f));}
         Indices.Append({First,First+1,First+2,First,First+2,First+3});
     }
+    if(CireAbilityVFX::Enabled())CireAbilityVFX::Temper(Colors,0,Intensity,1.f);
     S.Mesh->CreateMeshSection_LinearColor(1,V,Indices,N,UV,Colors,TArray<FProcMeshTangent>(),false);
 }
 }
@@ -339,6 +344,7 @@ void TickHover(ACireController* C)
     H->Preview->SetActorHiddenInGame(false);H->Preview->SetActorLocation(At);
     FCireGroundMesh G(H->V,H->I,H->C);G.Z=6.f;
     H->Last=CireAbilityVFX::PaintVoidZone(G,FVector2D::ZeroVector,Shape.VoidOuter,Shape.VoidInner,CireAbilityVFX::ETone::AimValid,C->GetWorld()->GetTimeSeconds(),.85f,Shape.bVoidHeal);
+    CireAbilityVFX::Temper(G.C,0,CireAbilityVFX::GroundIntensity(C->GetWorld()),1.f);
     H->Mesh->CreateMeshSection_LinearColor(0,G.V,G.I,TArray<FVector>(),TArray<FVector2D>(),G.C,TArray<FProcMeshTangent>(),false);
 }
 }
