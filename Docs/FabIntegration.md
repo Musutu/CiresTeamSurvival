@@ -33,6 +33,13 @@ Two pack types need extra handling:
   - The procedural signature layers always stay, so each buff keeps its readable signature.
 - **Switches.** `cire.FabVFX 0` or `-CireNoFabVFX` turns the overlay off. `RunAbilityVFXGallery.py --no-fab` captures the "before" pictures.
 - **Tests.** The native probe logs `CIRE_FAB_VFX_TESTS_PASS` and the coverage (`90/90 slots resolve` with both Lord Enot packs installed).
+- **Per-ability signatures (fab-coverage).** `abilities.<skill id>.<role>` gives each champion ability its own system per
+  role; `CireFabVFX::FindFor` tries it before the school set and falls back to the school when its pack is missing. The
+  picks live in `Tools/FabAbilityVFXTable.py` (`ABILITY_VFX`, and `BUFF_VFX` for one overlay per BuffVisuals effect);
+  `Tools/MapFabVFX.py` resolves the stems and writes them. `Tools/AuditFabCoverage.py` reports the coverage
+  (`Docs/FabCoverage.md`).
+- **Cascade.** Candidates may be Cascade `UParticleSystem`s as well as Niagara (Kakky FX Variety Pack, `P_ky_*`):
+  `Resolve` returns a `UFXSystemAsset`, the spawners return a `UFXSystemComponent`, `Release` stops either kind.
 
 ## Champion animation: `CireFabAnimation`
 
@@ -49,6 +56,14 @@ Two pack types need extra handling:
   - `UCireChampionArt::Apply` uses the Fab locomotion BlendSpace when it exists and matches the body's skeleton.
   - Weapons stay seated: `CireGrip` still curls the fingers around the props in every state.
 - **Switches.** `cire.FabAnim 0` or `-CireNoFabAnim`. The native probe logs `CIRE_FAB_ANIM_TESTS_PASS`.
+- **Skills, shouts, casts (fab-coverage).** Every set also carries `skill1..3` (standalone heavy strikes, listed before
+  the combo in the `ability` row), `shout` (Gun & Sword Buff) and, for weapon sets, `cast` (SpellCombat Heal) for the
+  `spell` row; spear, gun and unarmed sets gained a roll; `style:troll_ranged` throws with the GDH Dagger throw set
+  (extra set on the troll body).
+- **Monster shouts and slams (fab-coverage).** `RetargetFabAnimations.py -CireFabAnimMonsters` retargets the Buff and
+  Air-to-Floor strike onto the Tripo monster bodies listed in `FabAnimMap.json` `monsters.bodies` and writes
+  `Content/Data/MonsterFabClips.json`; `CireMonsterArt` adds them as the body's `war_cry` / `ground_slam` only when it
+  has no clip of that name (off with `-CireNoFab` / `cire.FabAnim 0`).
 
 ## Creatures: native clips, not AnimBPs (decision)
 
@@ -87,6 +102,7 @@ Leader-pose **parts**: the Quadruped Fantasy Centaur is modular (body, armour st
 | State VFX (`State_VFX`) | 22 status effects (stun, root, slow, freeze, poison, burn, silence, curse, charm, blind, heal-over-time, mana, shock, bleed) | `FabVFX.json` `buffs` |
 | Earth Spells (`Earth_Spells`), Nature VFX (`Forest_VFX`) | earth and nature schools; nature area heal | `FabVFX.json` |
 | Realistic Blood (`RealisticBlood`) | restrained physical (steel) impacts: low-intensity slash/burst | `FabVFX.json` |
+| FX Variety Pack (`FXVarietyPack`, Cascade) | per-ability signatures: explosion, fire storm, heal aura, laser, shooting stars, muzzle shockwave, wind storm, thunder-ball and water-ball hits (the sky-cloud lightning / storm systems are not used) | `Tools/FabAbilityVFXTable.py` -> `FabVFX.json` `abilities` |
 | Crossbow Animation Set (`CrossbowPackAnim`) | Ranger `ranger_crossbow` loadout: shots, hit, death, roll (extra set on the Ranger body) | `Tools/BuildFabAnimMap.py` `extraSets`, `Tools/RetargetFabAnimations.py -CireFabAnimOnly=Ranger -CireFabAnimKeep` |
 | GDH All Animation Bundle (`GDHBundle`), Male Locomotion (`MaleLocomotionSet`), Gun & Sword (`Gun_and_Sword`) | 22 champion bodies: attacks (combo rotation), casts, hit, death, dodge roll, airborne, 8-direction walk/run per weapon set | `Tools/BuildFabAnimMap.py`, `Tools/RetargetFabAnimations.py` → `FabAnimations.json`, `/Game/FabDerived` |
 | ROG Creatures, Quadruped Fantasy Creatures, Undead Pack | dire_wolf, bristleback, feral_ursoth, feral_mammoth, grave_hound (Barghest), wild_outrider (Centaur archer with bow, armour and mane parts), hollow_infantry (skeleton + ghoul variants) | `Tools/BuildFabCreatures.py` → `RaceMeshes.fab.json` |
