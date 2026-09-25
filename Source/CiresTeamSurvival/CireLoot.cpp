@@ -120,6 +120,17 @@ bool CireLoot::ParseJson(const FString& Json, FCireLootData& Out, FString& Error
         Out.PickupRadius = FMath::Clamp(static_cast<float>(Num(*Pickup, TEXT("radius"), 320)), 80.f, 2000.f);
         (*Pickup)->TryGetBoolField(TEXT("autoCollectOnPrep"), Out.bAutoCollectOnPrep);
     }
+    const TSharedPtr<FJsonObject>* Personal = nullptr;
+    if (Root->TryGetObjectField(TEXT("distribution"), Personal))
+    {
+        FString Mode;
+        (*Personal)->TryGetStringField(TEXT("mode"), Mode);
+        if (!Mode.IsEmpty() && Mode != TEXT("personal") && Mode != TEXT("teamRotation")) { Error = TEXT("distribution.mode must be personal or teamRotation"); return false; }
+        Out.bPersonal = Mode != TEXT("teamRotation");
+        Out.EligibleRadius = FMath::Clamp(static_cast<float>(Num(*Personal, TEXT("eligibleRadius"), 4000)), 500.f, 20000.f);
+        Out.PersonalFactor = FMath::Clamp(Num(*Personal, TEXT("personalItemFactor"), 1.0), 0.1, 5.0);
+        (*Personal)->TryGetBoolField(TEXT("botsAutoLoot"), Out.bBotsAutoLoot);
+    }
     const TSharedPtr<FJsonObject>* Tables = nullptr;
     if (!Root->TryGetObjectField(TEXT("tables"), Tables) || (*Tables)->Values.Num() == 0) { Error = TEXT("LootTables.json needs tables"); return false; }
     const auto& Items = CireItems::Get();
@@ -271,8 +282,167 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
     }
     if (bLeader) Merge(TableFor(D.PackLeader, Tier, Round), Tier, MakeSeed(Monster->PackId, 2));
     if (bPackCompleted) Merge(TableFor(D.PackCompletion, Tier, Round), Tier, MakeSeed(Monster->PackId, 3));
-    if (Bundle.Empty()) return;
-    SpawnDrop(Mode, Monster->Lane, Monster->GetActorLocation(), Bundle, Tier, Label, MakeSeed(Monster->PackId + 7, Round));
+    if (!D.bPersonal)
+    {
+        // Server option: the old shared team chest with lowest-loot-score rotation.
+        if (!Bundle.Empty()) SpawnDrop(Mode, Monster->Lane, Monster->GetActorLocation(), Bundle, Tier, Label, MakeSeed(Monster->PackId + 7, Round));
+        return;
+    }
+    // Personal loot: every eligible teammate rolls the same tables independently; tomes and items
+    // are scaled by 1/eligible so the team's expected drops match one shared roll.
+    struct FSourceRoll { const CI::LootTable* Table; int32 Tier; };
+    TArray<FSourceRoll> Rolls;
+    if (Monster->PackId < 0 && Monster->IsLaneBoss()) Rolls.Add({TableFor(D.LaneBoss, Tier, Round), Tier});
+    if (bLeader) Rolls.Add({TableFor(D.PackLeader, Tier, Round), Tier});
+    if (bPackCompleted) Rolls.Add({TableFor(D.PackCompletion, Tier, Round), Tier});
+    Rolls.RemoveAll([](const FSourceRoll& R) { return R.Table == nullptr; });
+    if (Rolls.Num() == 0) return;
+    const FVector Where = Monster->GetActorLocation();
+    const TArray<ACireHero*> Eligible = EligibleFor(Mode, Monster, Where);
+    const double Share = CI::PersonalItemShare(Eligible.Num(), D.PersonalFactor);
+    const FString SourceName = Monster->GetNPCDisplayName();
+    const FString Why = bPackCompleted ? FString::Printf(TEXT("Personal loot: you helped clear a Tier %d pack (%s)"), Tier, *SourceName)
+        : FString::Printf(TEXT("Personal loot from %s"), *SourceName);
+    const uint64 Base = MakeSeed(static_cast<uint64>(Monster->GetUniqueID()), Round);
+    for (int32 Index = 0; Index < Eligible.Num(); ++Index)
+    {
+        ACireHero* Hero = Eligible[Index];
+        CI::LootBundle Personal;
+        for (int32 R = 0; R < Rolls.Num(); ++R)
+        {
+            const uint64 Seed = Base ^ (static_cast<uint64>(Hero->GetUniqueID()) * 0x9E3779B97F4A7C15ull) ^ (static_cast<uint64>(R + 1) << 40);
+            const CI::LootBundle Part = CI::RollLoot(*Rolls[R].Table, Rolls[R].Tier, Loot, Seed, D.Scaling, Share);
+            Personal.Gold += Part.Gold;
+            Personal.Experience += Part.Experience;
+            Personal.PrimaryTomes.insert(Personal.PrimaryTomes.end(), Part.PrimaryTomes.begin(), Part.PrimaryTomes.end());
+            Personal.Items.insert(Personal.Items.end(), Part.Items.begin(), Part.Items.end());
+        }
+        if (Personal.Empty()) continue;
+        if (Hero->bBot && D.bBotsAutoLoot) GrantPersonal(Hero, Personal, SourceName, Why + TEXT(" (auto-looted)"), false);
+        else SpawnPersonalDrop(Mode, Hero, Where, Personal, Tier, Label.IsEmpty() ? SourceName : Label, Why, Base + Index);
+    }
+    UE_LOG(LogCireLoot, Display, TEXT("CIRE_LOOT_PERSONAL source=%s tier=%d eligible=%d item_share=%.3f"), *SourceName, Tier, Eligible.Num(), Share);
+}
+
+// ------------------------------------------------------------------ personal loot
+namespace
+{
+TMap<int64, TSet<TWeakObjectPtr<ACireHero>>> Contributions;
+int64 SourceKey(const ACireMonster* Monster)
+{
+    return Monster->PackId >= 0 ? static_cast<int64>(Monster->PackId) * 2 : static_cast<int64>(Monster->GetUniqueID()) * 2 + 1;
+}
+const TCHAR* PrimaryName(const ACireHero* Hero)
+{
+    switch (Hero->PrimaryStat())
+    {
+    case Cires::PrimaryStat::Strength: return TEXT("Strength");
+    case Cires::PrimaryStat::Agility: return TEXT("Agility");
+    default: return TEXT("Intelligence");
+    }
+}
+int32 ItemRarity(const CI::ItemDef* Item)
+{
+    if (!Item) return 0;
+    return Item->Tier == CI::ItemTier::Legendary ? 3 : Item->Tier == CI::ItemTier::Epic ? 2 : Item->Tier == CI::ItemTier::Basic ? 1 : 0;
+}
+}
+
+void CireLoot::NoteContribution(AActor* Source, AActor* Target)
+{
+    auto* Monster = Cast<ACireMonster>(Target);
+    ACireHero* Hero = Cast<ACireHero>(Source);
+    if (auto* Summon = Cast<ACireSummon>(Source)) Hero = Summon->GetOwnerHero();
+    if (!Monster || !Hero || !Monster->HasAuthority() || (Monster->PackId < 0 && !Monster->IsLaneBoss())) return;
+    Contributions.FindOrAdd(SourceKey(Monster)).Add(Hero);
+}
+
+void CireLoot::ForgetContributions(ACireGameMode* Mode)
+{
+    (void)Mode;
+    Contributions.Reset();
+}
+
+TArray<ACireHero*> CireLoot::EligibleFor(ACireGameMode* Mode, ACireMonster* Monster, FVector Location)
+{
+    TArray<ACireHero*> Out;
+    if (!Mode || !Monster) return Out;
+    const TSet<TWeakObjectPtr<ACireHero>>* Helpers = Contributions.Find(SourceKey(Monster));
+    const float Radius = Get().EligibleRadius;
+    for (ACireHero* Hero : TeamOf(Mode, Monster->Lane))
+    {
+        const bool bHelped = Helpers && Helpers->Contains(Hero);
+        const bool bNear = !Hero->bDead && FVector::DistSquared2D(Hero->GetActorLocation(), Location) <= FMath::Square(Radius);
+        if (bHelped || bNear) Out.Add(Hero);
+    }
+    return Out;
+}
+
+FCireLootReport CireLoot::GrantPersonal(ACireHero* Hero, const CI::LootBundle& Bundle, const FString& Source, const FString& Why, bool bSendReport)
+{
+    FCireLootReport Report;
+    Report.Source = Source;
+    Report.Why = Why;
+    if (!IsValid(Hero) || !Hero->Inventory) return Report;
+    auto AddLine = [&](FName ItemId, CI::LootKind Kind, int32 Amount, const FString& Text, int32 Rarity) -> FCireLootLine&
+    {
+        FCireLootLine Line;
+        Line.ItemId = ItemId; Line.Kind = static_cast<uint8>(Kind); Line.Amount = Amount; Line.Text = Text; Line.Rarity = Rarity;
+        Report.Rarity = FMath::Max(Report.Rarity, Rarity);
+        return Report.Lines.Add_GetRef(Line);
+    };
+    if (Bundle.Gold > 0)
+    {
+        Hero->Gold += Bundle.Gold;
+        Report.Gold = Bundle.Gold;
+        AddLine(NAME_None, CI::LootKind::Gold, Bundle.Gold, FString::Printf(TEXT("+%d gold"), Bundle.Gold), 0);
+    }
+    if (Bundle.Experience > 0)
+    {
+        Hero->GrantExperience(Bundle.Experience);
+        Report.Experience = Bundle.Experience;
+        AddLine(NAME_None, CI::LootKind::Experience, Bundle.Experience, FString::Printf(TEXT("+%d experience"), Bundle.Experience), 0);
+    }
+    for (const int Points : Bundle.PrimaryTomes)
+    {
+        Hero->Inventory->ApplyPrimaryTome(Points);
+        Hero->Inventory->LootScore += Points * 60;
+        AddLine(Points >= 3 ? FName(TEXT("greater_tome_of_ascendance")) : FName(TEXT("tome_of_ascendance")), CI::LootKind::PrimaryTome, Points,
+            FString::Printf(TEXT("+%d %s (your primary attribute)"), Points, PrimaryName(Hero)), Points >= 3 ? 2 : 1);
+    }
+    for (const auto& Id : Bundle.Items)
+    {
+        const FName ItemId(UTF8_TO_TCHAR(Id.c_str()));
+        const CI::ItemDef* Item = CireItems::Find(ItemId);
+        if (!Item) continue;
+        int32 Converted = 0, Slot = -1;
+        bool bBelt = false;
+        Hero->Inventory->GrantItem(ItemId, Converted, &Slot, &bBelt);
+        Hero->Inventory->LootScore += Item->TotalCost;
+        FCireLootLine& Line = AddLine(ItemId, CI::LootKind::Item, 1, CireItems::DisplayName(ItemId), ItemRarity(Item));
+        Line.Slot = Slot; Line.bBelt = bBelt; Line.ConvertedGold = Converted;
+        if (Converted > 0) Report.Gold += Converted;
+    }
+    FString Summary = Source + TEXT(":");
+    for (const auto& Line : Report.Lines) Summary += TEXT("  ") + Line.Text + TEXT(";");
+    Hero->Notice = Summary.Left(120);
+    if (bSendReport && !Hero->bBot && Hero->IsPlayerControlled()) Hero->Inventory->ClientLootReport(Report);
+    UE_LOG(LogCireLoot, Display, TEXT("CIRE_LOOT_PERSONAL_GRANT hero=%s bot=%d %s"), *Hero->HeroName, Hero->bBot ? 1 : 0, *Summary);
+    return Report;
+}
+
+ACireLootDrop* CireLoot::SpawnPersonalDrop(ACireGameMode* Mode, ACireHero* Owner, FVector Location, const CI::LootBundle& Bundle,
+    int32 Tier, const FString& Label, const FString& Why, uint64 Seed)
+{
+    if (!Owner) return nullptr;
+    ACireLootDrop* Drop = SpawnDrop(Mode, Owner->TeamId, Location, Bundle, Tier, Label, Seed);
+    if (!Drop) return nullptr;
+    Drop->OwnerHero = Owner;
+    Drop->Why = Why;
+    Drop->SetOwner(Owner);
+    Drop->bOnlyRelevantToOwner = true;
+    Drop->ForceNetUpdate();
+    return Drop;
 }
 
 TArray<FCireLootLine> CireLoot::Distribute(ACireGameMode* Mode, int32 Team, const CI::LootBundle& Bundle, const FString& Source, uint64 Seed)
@@ -351,12 +521,35 @@ TArray<FCireLootLine> CireLoot::Distribute(ACireGameMode* Mode, int32 Team, cons
     return Lines;
 }
 
-int32 CireLoot::CollectAll(ACireGameMode* Mode)
+int32 CireLoot::CollectAll(ACireGameMode* Mode, TMap<TWeakObjectPtr<ACireHero>, FCireLootReport>* OutReports)
 {
     int32 Count = 0;
     if (!Mode) return 0;
+    TMap<TWeakObjectPtr<ACireHero>, FCireLootReport> Merged;
     for (TActorIterator<ACireLootDrop> It(Mode->GetWorld()); It; ++It)
-        if (!It->bOpened && It->Open(nullptr)) ++Count;
+    {
+        if (It->bOpened) continue;
+        ACireHero* Owner = It->OwnerHero;
+        FCireLootReport Part;
+        if (!It->Open(nullptr, Owner ? &Part : nullptr)) continue;
+        ++Count;
+        if (!Owner) continue;
+        const bool bFirst = !Merged.Contains(Owner);
+        FCireLootReport& Sum = Merged.FindOrAdd(Owner);
+        Sum.Chests = bFirst ? 1 : Sum.Chests + 1;
+        Sum.Gold += Part.Gold; Sum.Experience += Part.Experience; Sum.Rarity = FMath::Max(Sum.Rarity, Part.Rarity);
+        Sum.Lines.Append(Part.Lines);
+    }
+    for (auto& Pair : Merged)
+    {
+        FCireLootReport& Report = Pair.Value;
+        Report.bAutoCollected = true;
+        Report.Source = TEXT("Auto-collected at prep");
+        Report.Why = FString::Printf(TEXT("%d unopened personal chest%s collected when the prep phase began"), Report.Chests, Report.Chests == 1 ? TEXT("") : TEXT("s"));
+        ACireHero* Owner = Pair.Key.Get();
+        if (Owner && Owner->Inventory && !Owner->bBot && Owner->IsPlayerControlled()) Owner->Inventory->ClientLootReport(Report);
+    }
+    if (OutReports) *OutReports = MoveTemp(Merged);
     return Count;
 }
 
@@ -471,6 +664,7 @@ void CireProgression::ResumeNPC(ACireMonster* Monster, double Now)
 void CireProgression::OnPhaseChanged(ACireGameMode* Mode, int32 NewPhase)
 {
     CireItems::OnPhaseChanged(Mode, NewPhase);
+    if (NewPhase == 0) CireLoot::ForgetContributions(Mode); // packs refresh each cycle
     if (NewPhase == 1 && CireLoot::Get().bAutoCollectOnPrep)
     {
         const int32 Collected = CireLoot::CollectAll(Mode);
@@ -548,13 +742,24 @@ void ACireLootDrop::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
     DOREPLIFETIME(ACireLootDrop, Label);
     DOREPLIFETIME(ACireLootDrop, bOpened);
     DOREPLIFETIME(ACireLootDrop, Manifest);
+    DOREPLIFETIME(ACireLootDrop, Why);
+    DOREPLIFETIME(ACireLootDrop, OwnerHero);
 }
 
 bool ACireLootDrop::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const
 {
     const ACireHero* Viewer = Cast<ACireHero>(ViewTarget);
     if (const auto* Controller = Cast<AController>(RealViewer)) Viewer = Cast<ACireHero>(Controller->GetPawn());
+    // Personal chests replicate only to their owner; nobody else even receives the actor.
+    if (OwnerHero) return Viewer == OwnerHero;
     return Viewer && Viewer->TeamId == TeamId;
+}
+
+bool ACireLootDrop::CanBeOpenedBy(const ACireHero* Opener) const
+{
+    if (!Opener) return false;
+    if (OwnerHero) return Opener == OwnerHero;
+    return Opener->TeamId == TeamId;
 }
 
 void ACireLootDrop::BeginPlay()
@@ -616,15 +821,22 @@ void ACireLootDrop::OnRep_Opened()
     OpenedAt = GetWorld()->GetTimeSeconds();
 }
 
-bool ACireLootDrop::Open(ACireHero* Opener)
+bool ACireLootDrop::Open(ACireHero* Opener, FCireLootReport* OutReport)
 {
     if (!HasAuthority() || bOpened) return false;
+    if (Opener && !CanBeOpenedBy(Opener)) return false; // someone else's personal chest
     auto* Mode = GetWorld()->GetAuthGameMode<ACireGameMode>();
     if (!Mode) return false;
     bOpened = true;
     OpenedAt = GetWorld()->GetTimeSeconds();
     const FString Source = Label.IsEmpty() ? TEXT("Loot") : Label;
-    Manifest = CireLoot::Distribute(Mode, TeamId, Bundle, Opener ? Source + TEXT(" (") + Opener->HeroName + TEXT(")") : Source + TEXT(" (auto-collected)"), Seed);
+    if (OwnerHero)
+    {
+        const FCireLootReport Report = CireLoot::GrantPersonal(OwnerHero, Bundle, Source, Why, OutReport == nullptr);
+        for (const auto& Line : Report.Lines) Manifest.Add(Line);
+        if (OutReport) *OutReport = Report;
+    }
+    else Manifest = CireLoot::Distribute(Mode, TeamId, Bundle, Opener ? Source + TEXT(" (") + Opener->HeroName + TEXT(")") : Source + TEXT(" (auto-collected)"), Seed);
     ForceNetUpdate();
     SetLifeSpan(3.5f);
     return true;
@@ -638,7 +850,7 @@ void ACireLootDrop::Tick(float DeltaSeconds)
     {
         BuildGlow();
         if (const auto* Local = GetWorld()->GetFirstPlayerController())
-            if (const auto* Viewer = Cast<ACireHero>(Local->GetPawn())) SetActorHiddenInGame(Viewer->TeamId != TeamId);
+            if (const auto* Viewer = Cast<ACireHero>(Local->GetPawn())) SetActorHiddenInGame(OwnerHero ? Viewer != OwnerHero : Viewer->TeamId != TeamId);
         const float Age = Now - SpawnedAt;
         const float Pulse = .75f + .25f * FMath::Sin(Now * 3.2f);
         if (!bOpened)
@@ -668,7 +880,7 @@ void ACireLootDrop::Tick(float DeltaSeconds)
     if (!Mode) return;
     const float Radius = CireLoot::Get().PickupRadius;
     for (ACireHero* Hero : Mode->Heroes)
-        if (IsValid(Hero) && Hero->TeamId == TeamId && Hero->bDrafted && !Hero->bDead &&
+        if (IsValid(Hero) && CanBeOpenedBy(Hero) && Hero->bDrafted && !Hero->bDead &&
             FVector::DistSquared2D(Hero->GetActorLocation(), GetActorLocation()) <= FMath::Square(Radius) &&
             FMath::Abs(Hero->GetActorLocation().Z - GetActorLocation().Z) < 300.f)
         { Open(Hero); break; }

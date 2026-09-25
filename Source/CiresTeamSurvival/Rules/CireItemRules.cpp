@@ -469,20 +469,47 @@ bool ParseLootKind(const std::string& key, LootKind& out)
     return true;
 }
 
-LootBundle RollLoot(const LootTable& table, int tier, double lootMultiplier, std::uint64_t seed, const LootScaling& scaling)
+double PersonalItemShare(int eligiblePlayers, double personalFactor)
+{
+    const double factor = Finite(personalFactor) ? std::clamp(personalFactor, 0.0, 10.0) : 1.0;
+    return std::clamp(factor / std::max(1, eligiblePlayers), 0.0, 1.0);
+}
+
+namespace
+{
+double EntryChance(const LootEntry& entry, int tier, double lootMultiplier, const LootScaling& scaling, double itemShare)
+{
+    const bool personalShare = entry.Kind == LootKind::Item || entry.Kind == LootKind::PrimaryTome;
+    const double share = personalShare ? std::clamp(Finite(itemShare) ? itemShare : 1.0, 0.0, 1.0) : 1.0;
+    if (entry.Chance >= 1.0 && share >= 1.0) return 1.0;
+    const double chanceScale = (1.0 + std::max(0.0, scaling.ChancePerTier) * (tier - 1)) * lootMultiplier;
+    const double base = entry.Chance >= 1.0 ? 1.0 : std::min(scaling.MaxChance, std::max(0.0, entry.Chance) * chanceScale);
+    return base * share;
+}
+} // namespace
+
+double ExpectedPersonalDrops(const LootTable& table, int tier, double lootMultiplier, const LootScaling& scaling, double itemShare)
+{
+    tier = std::clamp(tier, 1, 10);
+    lootMultiplier = std::clamp(Finite(lootMultiplier) ? lootMultiplier : 1.0, 1.0, 1.4);
+    double expected = 0;
+    for (const auto& entry : table.Entries)
+        if (entry.Kind == LootKind::Item || entry.Kind == LootKind::PrimaryTome) expected += EntryChance(entry, tier, lootMultiplier, scaling, itemShare);
+    return expected;
+}
+
+LootBundle RollLoot(const LootTable& table, int tier, double lootMultiplier, std::uint64_t seed, const LootScaling& scaling, double itemShare)
 {
     tier = std::clamp(tier, 1, 10);
     lootMultiplier = std::clamp(Finite(lootMultiplier) ? lootMultiplier : 1.0, 1.0, 1.4);
     Random random(seed ^ (static_cast<std::uint64_t>(tier) << 48));
     LootBundle bundle;
     const double amountScale = 1.0 + std::max(0.0, scaling.GoldPerTier) * (tier - 1);
-    const double chanceScale = (1.0 + std::max(0.0, scaling.ChancePerTier) * (tier - 1)) * lootMultiplier;
     for (const auto& entry : table.Entries)
     {
-        const bool guaranteed = entry.Chance >= 1.0;
-        const double chance = guaranteed ? 1.0 : std::min(scaling.MaxChance, std::max(0.0, entry.Chance) * chanceScale);
+        const double chance = EntryChance(entry, tier, lootMultiplier, scaling, itemShare);
         const double roll = random.Unit();
-        if (!guaranteed && roll >= chance) continue;
+        if (chance < 1.0 && roll >= chance) continue;
         const int low = std::min(entry.Min, entry.Max), high = std::max(entry.Min, entry.Max);
         const int amount = low + random.Bounded(high - low + 1);
         switch (entry.Kind)

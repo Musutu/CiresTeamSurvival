@@ -256,8 +256,15 @@ struct LootScaling
     double MaxChance = 0.95;
 };
 // Deterministic for a seed; tier >= 1, lootMultiplier clamped to [1, 1.4].
+// itemShare scales the chance of tome and item entries only (gold/XP untouched):
+// personal loot rolls once per eligible player with itemShare = personalFactor / eligible,
+// so the team's expected tomes/items match one shared roll while gold/XP stay per player.
 LootBundle RollLoot(const LootTable& table, int tier, double lootMultiplier,
-                    std::uint64_t seed, const LootScaling& scaling = {});
+                    std::uint64_t seed, const LootScaling& scaling = {}, double itemShare = 1.0);
+// Per-player share of tome/item chances for personal loot (clamped to (0, 1]).
+double PersonalItemShare(int eligiblePlayers, double personalFactor = 1.0);
+// Expected tomes+items one roll of the table yields (for balance reports/tests).
+double ExpectedPersonalDrops(const LootTable& table, int tier, double lootMultiplier, const LootScaling& scaling, double itemShare);
 
 // Team-fair distribution: the eligible member with the lowest loot score (value
 // received so far) gets the next personal reward; ties break by seed.

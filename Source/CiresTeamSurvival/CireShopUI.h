@@ -21,6 +21,8 @@ namespace CireShopUI
     CIRESTEAMSURVIVAL_API void DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller);
     // Compact movable stats window (CireStatsPanel.cpp).
     CIRESTEAMSURVIVAL_API void DrawStatsWindow(ACireHUD& HUD, ACireHero* Hero);
+    // Personal loot history (toggle: L), newest first.
+    CIRESTEAMSURVIVAL_API void DrawLootLog(ACireHUD& HUD, ACireHero* Hero);
 
     // Shared helpers.
     CIRESTEAMSURVIVAL_API UTexture2D* FindItemIcon(FName ItemId);

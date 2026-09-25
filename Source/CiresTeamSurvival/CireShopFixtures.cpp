@@ -34,6 +34,8 @@ struct FGallery
     TWeakObjectPtr<ACireController> PC;
     TWeakObjectPtr<ACireHero> Hero;
     TWeakObjectPtr<ACireLootDrop> Chest;
+    TWeakObjectPtr<ACireLootDrop> MateChest;
+    TWeakObjectPtr<ACireHero> Mate;
     FString Directory;
     TArray<FString> Files;
     double Start = 0, Ready = -1, StageStart = 0;
@@ -112,7 +114,8 @@ struct FStage { const TCHAR* Name; float Delay; };
 const FStage Stages[] = {
     {TEXT("shop_all_items_hover"), 2.2f}, {TEXT("shop_recommended"), 1.2f}, {TEXT("shop_buy_feedback"), .8f},
     {TEXT("shop_error_shake"), .8f}, {TEXT("shop_sell_feedback"), .8f}, {TEXT("hud_stats_window_hover"), 1.2f},
-    {TEXT("loot_chest_drop"), 1.6f}, {TEXT("loot_chest_opened"), .9f}, {TEXT("teleport_channel"), 2.2f}, {TEXT("teleport_cooldown"), 1.0f}};
+    {TEXT("loot_chest_drop"), 1.6f}, {TEXT("loot_chest_opened"), .9f}, {TEXT("teleport_channel"), 2.2f}, {TEXT("teleport_cooldown"), 1.0f},
+    {TEXT("loot_personal_own_vs_teammate"), 1.6f}, {TEXT("loot_window_and_toasts"), .9f}, {TEXT("loot_autocollect_summary_and_log"), 1.0f}};
 constexpr int32 StageCount = UE_ARRAY_COUNT(Stages);
 
 void EnterStage(ACireGameMode* Mode, int32 Stage)
@@ -174,6 +177,41 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
         I->TeleportReadyAt = static_cast<float>(I->Now()) + 74.f;
         CireShopUI::DebugReset();
         break;
+    case 10:
+    {
+        // Personal loot: your chest and a teammate's chest drop side by side; only yours is visible.
+        CireShopUI::DebugReset();
+        SetPhase(Mode, 0);
+        FActorSpawnParameters Params;
+        Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        const FVector Ahead = H->GetActorLocation() + H->GetActorForwardVector() * 560.f;
+        const FVector Side = FVector::CrossProduct(H->GetActorForwardVector(), FVector::UpVector) * 170.f;
+        G.Mate = Mode->GetWorld()->SpawnActor<ACireHero>(Ahead - Side * 3.f, FRotator::ZeroRotator, Params);
+        if (G.Mate.IsValid()) { G.Mate->TeamId = H->TeamId; G.Mate->Draft(2); G.Mate->HeroName = TEXT("Veil Scholar"); G.Mate->SetActorTickEnabled(false); }
+        Cires::Items::LootBundle Mine;
+        Mine.Gold = 88; Mine.Experience = 200; Mine.PrimaryTomes = {3}; Mine.Items = {"crown_of_cinders", "vial_of_crimson"};
+        Cires::Items::LootBundle Theirs; Theirs.Gold = 74; Theirs.Items = {"censer_of_dawn"};
+        const FString Why = TEXT("Personal loot from Gravemaw, Pack Leader (Tier 4)");
+        G.Chest = CireLoot::SpawnPersonalDrop(Mode, H, Ahead - Side, Mine, 4, TEXT("Gravemaw, Pack Leader"), Why, 11);
+        if (G.Mate.IsValid()) G.MateChest = CireLoot::SpawnPersonalDrop(Mode, G.Mate.Get(), Ahead + Side, Theirs, 4, TEXT("Gravemaw, Pack Leader"), Why, 12);
+        break;
+    }
+    case 11:
+        HUD->UISettings.bShowLootLog = false;
+        if (G.Chest.IsValid()) G.Chest->Open(H);
+        break;
+    case 12:
+    {
+        CireShopUI::DebugReset();
+        Cires::Items::LootBundle A; A.Gold = 61; A.Items = {"bone_dagger"};
+        Cires::Items::LootBundle B; B.Gold = 97; B.Experience = 200; B.PrimaryTomes = {1};
+        const FVector Near = H->GetActorLocation() + H->GetActorForwardVector() * 2500.f;
+        CireLoot::SpawnPersonalDrop(Mode, H, Near, A, 2, TEXT("Outpost cache"), TEXT("Personal loot: you helped clear a Tier 2 pack"), 21);
+        CireLoot::SpawnPersonalDrop(Mode, H, Near + FVector(300, 0, 0), B, 3, TEXT("Hollow Siegebreaker"), TEXT("Personal loot from Hollow Siegebreaker"), 22);
+        CireLoot::CollectAll(Mode);
+        HUD->UISettings.bShowLootLog = true;
+        break;
+    }
     default: break;
     }
 }
@@ -181,7 +219,7 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
 bool TickGallery(ACireGameMode* Mode)
 {
     if (G.bDone) return true;
-    if (FPlatformTime::Seconds() - G.Start > 80) { Finish(false, TEXT("CIRE_SHOP_GALLERY")); return true; }
+    if (FPlatformTime::Seconds() - G.Start > 140) { Finish(false, TEXT("CIRE_SHOP_GALLERY")); return true; }
     if (G.Ready < 0)
     {
         auto* PC = Cast<ACireController>(Mode->GetWorld()->GetFirstPlayerController());
@@ -210,8 +248,17 @@ bool TickGallery(ACireGameMode* Mode)
         if (Pos.X >= 0) CireShopUI::DebugMouse(Pos);
     }
     // Feedback shots freeze the UI clock mid-animation so the capture shows the moment itself.
-    if (G.Stage >= 2 && G.Stage <= 4 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f)
-        CireShopUI::DebugFreezeAfterLastEvent(G.Stage == 2 ? .26f : G.Stage == 3 ? .09f : .3f);
+    if (((G.Stage >= 2 && G.Stage <= 4) || G.Stage == 11) && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f)
+        CireShopUI::DebugFreezeAfterLastEvent(G.Stage == 2 ? .26f : G.Stage == 3 ? .09f : G.Stage == 11 ? .55f : .3f);
+    // Personal loot shot: the teammate's chest must be hidden for us (owner-only visibility).
+    if (G.Stage == 10 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .05f)
+    {
+        const bool bOwnVisible = G.Chest.IsValid() && !G.Chest->IsHidden();
+        const bool bMateHidden = G.MateChest.IsValid() && G.MateChest->IsHidden();
+        if (!bOwnVisible || !bMateHidden) { UE_LOG(LogCireShopFixtures, Error, TEXT("CIRE_SHOP_GALLERY_FAIL personal chest visibility own=%d mate_hidden=%d"), bOwnVisible ? 1 : 0, bMateHidden ? 1 : 0); }
+        else { UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_GALLERY_PERSONAL_VISIBILITY_PASS own_visible=1 teammate_hidden=1")); }
+        G.bPass &= bOwnVisible && bMateHidden;
+    }
     if (!G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay)
     {
         int32 W = 0, H = 0;
@@ -225,6 +272,8 @@ bool TickGallery(ACireGameMode* Mode)
 
 // ------------------------------------------------------------------ network probe (server side)
 TWeakObjectPtr<ACireHero> NetHero;
+TWeakObjectPtr<ACireHero> NetMate;
+TWeakObjectPtr<ACireLootDrop> NetOwnChest, NetMateChest;
 bool TickNetServer(ACireGameMode* Mode)
 {
     if (G.bDone) return true;
@@ -259,10 +308,44 @@ bool TickNetServer(ACireGameMode* Mode)
     else if (G.NetStep == 2 && I->TeleportReadyAt > I->Now() + 60 && FVector::Dist2D(Hero->GetActorLocation(), Mode->BasePosition(Hero->TeamId)) < 600)
     {
         if (Hero->Gold != 2000 - 490) { Fail(TEXT("survival purchase was not rejected")); return true; }
-        G.NetStep = 3;
-        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_PASS teleport_cooldown=%.0f"), I->TeleportCooldownRemaining());
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_TELEPORT_PASS teleport_cooldown=%.0f"), I->TeleportCooldownRemaining());
+        // Personal loot: a chest for the remote player and one for a bot teammate, side by side.
+        FActorSpawnParameters Params;
+        Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        const FVector Here = Hero->GetActorLocation();
+        auto* Mate = Mode->GetWorld()->SpawnActor<ACireHero>(Here + FVector(0, 600, 0), FRotator::ZeroRotator, Params);
+        if (!Mate) { Fail(TEXT("teammate spawn")); return true; }
+        Mate->TeamId = Hero->TeamId; Mate->Draft(1); Mate->bBot = true; Mate->SetActorTickEnabled(false);
+        NetMate = Mate;
+        Cires::Items::LootBundle Mine; Mine.Gold = 50; Mine.Items = {"bone_dagger"};
+        Cires::Items::LootBundle Theirs; Theirs.Gold = 70;
+        NetOwnChest = CireLoot::SpawnPersonalDrop(Mode, Hero, Here + FVector(700, 0, 0), Mine, 2, TEXT("Probe pack"), TEXT("Personal loot from the probe"), 31);
+        NetMateChest = CireLoot::SpawnPersonalDrop(Mode, Mate, Here + FVector(700, 500, 0), Theirs, 2, TEXT("Probe pack"), TEXT("Personal loot from the probe"), 32);
+        if (!NetOwnChest.IsValid() || !NetMateChest.IsValid()) { Fail(TEXT("chest spawn")); return true; }
+        G.NetStep = 3; G.NetStepAt = Now;
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_CHESTS own=%s teammate=%s"), *NetOwnChest->GetName(), *NetMateChest->GetName());
     }
-    else if (G.NetStep == 3 && Mode->GetNumPlayers() == 0) Finish(true, TEXT("CIRE_SHOP_NET_SERVER"));
+    else if (G.NetStep == 3 && Now - G.NetStepAt > 3.0)
+    {
+        // Stand the remote player on the teammate's chest: it must stay closed.
+        Hero->SetActorLocation(NetMateChest->GetActorLocation() + FVector(0, 0, 100));
+        G.NetStep = 4; G.NetStepAt = Now;
+    }
+    else if (G.NetStep == 4 && Now - G.NetStepAt > 2.0)
+    {
+        if (!NetMateChest.IsValid() || NetMateChest->bOpened) { Fail(TEXT("a non-owner opened a personal chest")); return true; }
+        Hero->SetActorLocation(NetOwnChest->GetActorLocation() + FVector(0, 0, 100));
+        G.NetStep = 5; G.NetStepAt = Now;
+    }
+    else if (G.NetStep == 5 && NetOwnChest.IsValid() && NetOwnChest->bOpened)
+    {
+        const bool bMateClosed = NetMateChest.IsValid() && !NetMateChest->bOpened;
+        if (!bMateClosed || I->ToRules().CountOf("bone_dagger") != 1) { Fail(TEXT("personal chest contents or teammate chest state")); return true; }
+        G.NetStep = 6;
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_PASS personal_chest_opened=1 teammate_chest_closed=1"));
+    }
+    else if (G.NetStep == 5 && Now - G.NetStepAt > 8.0) { Fail(TEXT("owner could not open their chest")); return true; }
+    else if (G.NetStep == 6 && Mode->GetNumPlayers() == 0) Finish(true, TEXT("CIRE_SHOP_NET_SERVER"));
     return true;
 }
 } // namespace
@@ -416,10 +499,36 @@ bool CireShopFixtures::TickClient(ACireController* Controller)
         break;
     case 11:
         if (!(!I->IsChanneling() && I->TeleportCooldownRemaining() > 100 && Hero->Gold == 1510)) { if (Now - C.StepAt > 15) Fail(TEXT("teleport did not complete")); return true; }
-        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_PASS teleport_cooldown=%.0f gold=%d"), I->TeleportCooldownRemaining(), Hero->Gold);
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_TELEPORT_PASS teleport_cooldown=%.0f gold=%d"), I->TeleportCooldownRemaining(), Hero->Gold);
+        I->PendingLoot.Reset();
+        Next();
+        break;
+    case 12:
+    case 13:
+    {
+        // Personal loot on a real remote client: we only ever receive our own chest.
+        int32 Own = 0;
+        for (TActorIterator<ACireLootDrop> It(Controller->GetWorld()); It; ++It)
+        {
+            if (It->OwnerHero != Hero) { Fail(TEXT("received another player's personal chest")); return true; }
+            ++Own;
+        }
+        if (C.Step == 12)
+        {
+            if (Own == 0) return true;
+            UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_OWN_CHEST_ONLY chests_seen=%d"), Own);
+            Next();
+            return true;
+        }
+        if (I->PendingLoot.Num() == 0) return true;
+        const FCireLootReport& Report = I->PendingLoot.Last();
+        const bool bDagger = Report.Lines.ContainsByPredicate([](const FCireLootLine& L) { return L.ItemId == FName(TEXT("bone_dagger")) && L.Slot >= 0; });
+        if (!bDagger || Report.Gold != 50 || Report.Why.IsEmpty()) { Fail(TEXT("loot report contents")); return true; }
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_PASS personal_report_lines=%d gold=%d teammate_chest_never_replicated=1"), Report.Lines.Num(), Report.Gold);
         C.bDone = true;
         FPlatformMisc::RequestExitWithStatus(false, 0);
         break;
+    }
     default: break;
     }
     if (Now - C.StepAt > 20) Fail(TEXT("step timed out"));

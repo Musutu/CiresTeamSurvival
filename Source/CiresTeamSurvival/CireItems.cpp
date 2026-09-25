@@ -392,6 +392,7 @@ float CireItems::ModifyOutgoingDamage(AActor* Source, AActor* Target, float Amou
 
 void CireItems::OnDamageDealt(AActor* Source, AActor* Target, float Applied, const FString& AbilityName)
 {
+    if (Applied > 0) CireLoot::NoteContribution(Source, Target); // personal-loot eligibility
     auto* Hero = Cast<ACireHero>(Source);
     UCireInventory* Inventory = InventoryOf(Hero);
     if (!Inventory || Applied <= 0 || Hero->bDead) return;
@@ -632,6 +633,12 @@ void UCireInventory::SendFeedback(ECireShopAction Action, bool bOk, FName ItemId
     if (Owner && !Owner->bBot && Owner->IsPlayerControlled()) ClientFeedback(Feedback);
 }
 
+void UCireInventory::ClientLootReport_Implementation(const FCireLootReport& Report)
+{
+    PendingLoot.Add(Report);
+    if (PendingLoot.Num() > 8) PendingLoot.RemoveAt(0);
+}
+
 void UCireInventory::ClientFeedback_Implementation(const FCireShopFeedback& Feedback)
 {
     PendingFeedback.Add(Feedback);
@@ -792,9 +799,10 @@ bool UCireInventory::HasRoomFor(FName ItemId) const
     return false;
 }
 
-bool UCireInventory::GrantItem(FName ItemId, int32& ConvertedGold)
+bool UCireInventory::GrantItem(FName ItemId, int32& ConvertedGold, int32* OutSlot, bool* OutBelt)
 {
     ConvertedGold = 0;
+    if (OutSlot) *OutSlot = -1;
     ACireHero* Owner = Hero();
     const ItemDef* Item = CireItems::Find(ItemId);
     if (!Owner || !Item) return false;
@@ -818,7 +826,8 @@ bool UCireInventory::GrantItem(FName ItemId, int32& ConvertedGold)
     // Loot is not part of any shop transaction; undoing an earlier buy must not delete it.
     Session.Clear();
     AfterChange();
-    SendFeedback(ECireShopAction::Loot, true, ItemId, Target, Item->Belt, 0, TEXT("Loot: ") + CireItems::DisplayName(ItemId));
+    if (OutSlot) *OutSlot = Target;
+    if (OutBelt) *OutBelt = Item->Belt;
     return true;
 }
 

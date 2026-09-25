@@ -95,6 +95,8 @@ public:
     bool bAutoReacquireTarget = false;
     /** progression-shop: show the compact character stats window (toggle: C). */
     bool bShowStats = true;
+    /** progression-shop: show the personal loot log (toggle: L). */
+    bool bShowLootLog = false;
     // --- end WoW camera / targeting preferences ---
     /** feat/camera-movement: keybindings + action-bar placements, section [CireUI.Keybindings]. */
     FCireKeybindings Keybindings;

@@ -1,6 +1,7 @@
 #include "CireHUD.h"
 #include "CireArenas.h" // arenas
 #include "CireShopUI.h" // progression-shop
+#include "CireLoot.h" // progression-shop: minimap chest markers
 #include "CireKeybindings.h"
 #include "CireLanePath.h"
 #include "CireGame.h"
@@ -392,6 +393,12 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
         if(It->bBoss){Panel(P.X-3,P.Y-3,7,7,Gold);Panel(P.X-2,P.Y-2,5,5,Red);}
         else if(It->bArmoredEscort){Panel(P.X-3,P.Y-3,6,6,Gold);Panel(P.X-1,P.Y-1,2,2,Ink);}
         else Panel(P.X-1,P.Y-1,3,3,It->PackId>=0?Purple:Red);
+    }
+    // progression-shop: your unopened personal loot chests (only the owner receives them).
+    if(!Arena)for(TActorIterator<ACireLootDrop> It(GetWorld());It;++It) {
+        if(It->bOpened||It->OwnerHero!=Hero)continue;
+        const auto P=Map(It->GetActorLocation(),Hero->TeamId);const FLinearColor C=ACireLootDrop::RarityColor(It->Rarity);
+        Panel(P.X-4,P.Y-3,9,7,Ink);Panel(P.X-3,P.Y-2,7,5,C);Line(P.X-3,P.Y,P.X+4,P.Y,Ink,1);
     }
     for(TActorIterator<ACireHero> It(GetWorld());It;++It) {
         if(It->bDead||(!Arena&&It->TeamId!=Hero->TeamId))continue;
