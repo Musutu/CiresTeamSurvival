@@ -6,7 +6,9 @@
    champion on the painted background. The draft stage renders the champion alone with
    post-process alpha, whose alpha channel is inverse opacity, so Opacity = (1 - A) x Fade,
    masked by the stage's depth capture (Depth.R < MaxDepth) because the renderer paints an
-   opaque far "ground" below the horizon. Parameters: Figure, Depth (textures), Fade, MaxDepth.
+   opaque far "ground" below the horizon. The figure is supersampled ~2x: an HLSL pass
+   (COMPOSITE_HLSL) anti-aliases, un-premultiplies, sharpens and sRGB-encodes it.
+   Parameters: Figure, Depth (textures), Fade, MaxDepth, Sharpen.
 2. Imports every Art/DraftBackgrounds/<id>.png as /Game/UI/Draft/Backgrounds/T_DraftBg_<id>
    (UI group, sRGB, capped at 2048 px, not streamed). <id> is a profile id or a body family
    (ether_golem, paladin, troll_berserker); see BackgroundId() in CireRosterHUD.cpp.
@@ -24,6 +26,44 @@ MATERIAL = "M_DraftCutout"
 BACKGROUND_DIR = "/Game/UI/Draft/Backgrounds"
 PROJECT = unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_dir())
 SOURCE = os.path.join(PROJECT, "Art", "DraftBackgrounds")
+
+
+# champ-select-hq: one HLSL pass composites the supersampled figure (the stage renders it at ~2x the
+# on-screen size). Per output pixel it takes a 4x4 grid of bilinear taps inside the pixel's footprint:
+#   coverage = (1 - A) x near-depth mask, averaged over the taps  -> anti-aliased silhouette,
+#              including the lower half where only the depth mask separates figure from the far ground;
+#   colour   = sum(premultiplied RGB x mask) / sum(coverage)       -> no dark fringe around the figure;
+#   Sharpen  = unsharp mask against the one-pixel ring             -> crisp armour and faces;
+#   sRGB     = exact piecewise encode (the canvas writes UI material output raw).
+COMPOSITE_HLSL = r"""
+float2 px = ddx(UV), py = ddy(UV);
+float3 sumC = 0; float sumW = 0;
+for (int j = 0; j < 4; j++)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        float2 uv = UV + px * ((i + 0.5) / 4.0 - 0.5) + py * ((j + 0.5) / 4.0 - 0.5);
+        float4 c = Texture2DSampleLevel(Figure, FigureSampler, uv, 0);
+        float d = Texture2DSampleLevel(Depth, DepthSampler, uv, 0).r;
+        float m = 1.0 - smoothstep(MaxDepth - 120.0, MaxDepth, d);
+        sumC += c.rgb * m; sumW += saturate(1.0 - c.a) * m;
+    }
+}
+float coverage = sumW / 16.0;
+float3 col = sumC / max(sumW, 1e-4);
+float3 ringC = 0; float ringW = 0;
+float2 ring[4] = { px, -px, py, -py };
+for (int k = 0; k < 4; k++)
+{
+    float4 c = Texture2DSampleLevel(Figure, FigureSampler, UV + ring[k], 0);
+    float d = Texture2DSampleLevel(Depth, DepthSampler, UV + ring[k], 0).r;
+    float m = (1.0 - smoothstep(MaxDepth - 120.0, MaxDepth, d)) * saturate(1.0 - c.a);
+    ringC += c.rgb * m; ringW += m;
+}
+if (ringW > 3.5) col = max(col + Sharpen * (col - ringC / ringW), 0);
+float3 enc = lerp(col * 12.92, 1.055 * pow(max(col, 1e-6), 1.0 / 2.4) - 0.055, step(0.0031308, col));
+return float4(saturate(enc), saturate(coverage) * Fade);
+"""
 
 
 def build_material(report):
@@ -47,47 +87,50 @@ def build_material(report):
         if not edit.connect_material_expressions(a, output, b, input_):
             report["errors"].append("cannot connect %s -> %s" % (output, input_))
 
-    figure = node(unreal.MaterialExpressionTextureSampleParameter2D, -700, 0)
+    default = unreal.load_asset("/Engine/EngineResources/DefaultTexture")
+    figure = node(unreal.MaterialExpressionTextureObjectParameter, -900, -100)
     figure.set_editor_property("parameter_name", "Figure")
-    figure.set_editor_property("texture", unreal.load_asset("/Engine/EngineResources/DefaultTexture"))
-    fade = node(unreal.MaterialExpressionScalarParameter, -700, 260)
+    figure.set_editor_property("texture", default)
+    # Colour sampler + engine default: the float depth render target set at runtime is read raw.
+    depth = node(unreal.MaterialExpressionTextureObjectParameter, -900, 120)
+    depth.set_editor_property("parameter_name", "Depth")
+    depth.set_editor_property("texture", default)
+    uv = node(unreal.MaterialExpressionTextureCoordinate, -900, 320)
+    fade = node(unreal.MaterialExpressionScalarParameter, -900, 420)
     fade.set_editor_property("parameter_name", "Fade")
     fade.set_editor_property("default_value", 1.0)
-    inverse = node(unreal.MaterialExpressionOneMinus, -420, 160)
-    connect(figure, "A", inverse, "")
-    # Depth mask: anything farther than MaxDepth (the far "ground" the renderer paints below
-    # the horizon) is dropped; the champion is always nearer.
-    depth = node(unreal.MaterialExpressionTextureSampleParameter2D, -1000, 420)
-    depth.set_editor_property("parameter_name", "Depth")
-    # Colour sampler + engine default: the float render target set at runtime is read raw (not sRGB).
-    depth.set_editor_property("texture", unreal.load_asset("/Engine/EngineResources/DefaultTexture"))
-    max_depth = node(unreal.MaterialExpressionScalarParameter, -1000, 640)
+    # Depth mask: anything farther than MaxDepth (the far "ground" the renderer paints below the
+    # horizon) is dropped; the champion is always nearer.
+    max_depth = node(unreal.MaterialExpressionScalarParameter, -900, 520)
     max_depth.set_editor_property("parameter_name", "MaxDepth")
     max_depth.set_editor_property("default_value", 1.0e7)
-    lower = node(unreal.MaterialExpressionSubtract, -760, 640)
-    lower.set_editor_property("const_b", 120.0)
-    connect(max_depth, "", lower, "A")
-    step = node(unreal.MaterialExpressionSmoothStep, -560, 480)
-    connect(lower, "", step, "Min")
-    connect(max_depth, "", step, "Max")
-    connect(depth, "R", step, "Value")
-    near = node(unreal.MaterialExpressionOneMinus, -400, 480)
-    connect(step, "", near, "")
-    masked = node(unreal.MaterialExpressionMultiply, -300, 260)
-    connect(inverse, "", masked, "A")
-    connect(near, "", masked, "B")
-    opacity = node(unreal.MaterialExpressionMultiply, -160, 220)
-    connect(masked, "", opacity, "A")
-    connect(fade, "", opacity, "B")
-    # The sampler decodes the sRGB render target to linear, but the canvas writes this UI
-    # material's output straight to the display-encoded back buffer: re-encode (gamma 1/2.2)
-    # so the champion keeps the capture's true colour and contrast instead of going muddy.
-    encode = node(unreal.MaterialExpressionPower, -300, -60)
-    encode.set_editor_property("const_exponent", 1.0 / 2.2)
-    connect(figure, "RGB", encode, "Base")
-    if not edit.connect_material_property(encode, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR):
+    sharpen = node(unreal.MaterialExpressionScalarParameter, -900, 620)
+    sharpen.set_editor_property("parameter_name", "Sharpen")
+    sharpen.set_editor_property("default_value", 0.45)
+    inputs = [("Figure", figure), ("Depth", depth), ("UV", uv), ("Fade", fade), ("MaxDepth", max_depth), ("Sharpen", sharpen)]
+    custom_inputs = []
+    for name, _ in inputs:
+        ci = unreal.CustomInput()
+        ci.set_editor_property("input_name", name)
+        custom_inputs.append(ci)
+    composite = node(unreal.MaterialExpressionCustom, -500, 100)
+    composite.set_editor_property("code", COMPOSITE_HLSL)
+    composite.set_editor_property("output_type", unreal.CustomMaterialOutputType.CMOT_FLOAT4)
+    composite.set_editor_property("description", "DraftComposite")
+    composite.set_editor_property("inputs", custom_inputs)
+    for name, source in inputs:
+        connect(source, "", composite, name)
+    rgb = node(unreal.MaterialExpressionComponentMask, -250, 40)
+    for channel, on in (("r", True), ("g", True), ("b", True), ("a", False)):
+        rgb.set_editor_property(channel, on)
+    alpha = node(unreal.MaterialExpressionComponentMask, -250, 200)
+    for channel, on in (("r", False), ("g", False), ("b", False), ("a", True)):
+        alpha.set_editor_property(channel, on)
+    connect(composite, "", rgb, "")
+    connect(composite, "", alpha, "")
+    if not edit.connect_material_property(rgb, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR):
         report["errors"].append("cannot connect final colour")
-    if not edit.connect_material_property(opacity, "", unreal.MaterialProperty.MP_OPACITY):
+    if not edit.connect_material_property(alpha, "", unreal.MaterialProperty.MP_OPACITY):
         report["errors"].append("cannot connect opacity")
     edit.recompile_material(material)
     report["expressions"] = edit.get_num_material_expressions(material)
@@ -105,6 +148,10 @@ def import_backgrounds(report):
     for name in sorted(os.listdir(SOURCE)):
         match = re.fullmatch(r"([a-z][a-z0-9_]{0,63})\.png", name)
         if not match:
+            continue
+        # CIRE_DRAFT_BACKGROUNDS=a,b re-imports only those scenes (the others keep their saved assets).
+        only = [v for v in os.environ.get("CIRE_DRAFT_BACKGROUNDS", "").split(",") if v]
+        if only and match.group(1) not in only:
             continue
         task = unreal.AssetImportTask()
         task.filename = os.path.join(SOURCE, name)
@@ -137,8 +184,12 @@ def import_backgrounds(report):
 
 def main():
     report = {"material": "", "backgrounds": [], "errors": [], "notes": []}
-    build_material(report)
-    # CIRE_DRAFT_MATERIAL_ONLY=1 rebuilds the material without re-importing the scenes.
+    # CIRE_DRAFT_MATERIAL_ONLY=1 rebuilds the material without re-importing the scenes;
+    # CIRE_DRAFT_BACKGROUNDS_ONLY=1 imports scenes without touching the material.
+    if os.environ.get("CIRE_DRAFT_BACKGROUNDS_ONLY") == "1":
+        report["material"] = "(unchanged)"
+    else:
+        build_material(report)
     if os.environ.get("CIRE_DRAFT_MATERIAL_ONLY") != "1":
         import_backgrounds(report)
     out = os.path.join(PROJECT, "Saved", "DraftSelectContent")

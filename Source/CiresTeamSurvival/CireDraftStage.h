@@ -28,8 +28,18 @@ public:
     void ShowProfile(const FString& ProfileId);
     const FString& GetProfileId() const { return ProfileId; }
     UTextureRenderTarget2D* GetRenderTarget() const { return Target; }
-    // True once the body is bound, bounded and framed (animation has had time to settle).
+    // True once the body is bound, bounded, framed and metered (exposure converged or timed out).
     bool IsPreviewReady() const;
+    // champ-select-hq: live exposure metering of the full-body preview. The stage reads its own
+    // render (async GPU readback: colour + depth), measures the champion's pixels only and steps the
+    // manual exposure until the brightest 2% sit just under white and the mid-tones are lit, so no
+    // body is blown out (pale stone, skin, polished steel) or muddy (black plate). Result per profile
+    // is cached for the session.
+    bool IsMetered() const { return bMetered; }
+    float MeteredMedian() const { return MeterMedian; }
+    float MeteredHighlight() const { return MeterHigh; }
+    // Normalised render V of the floor under the champion (contact shadow placement).
+    float GetFeetV() const { return FeetV; }
     float SecondsShown() const;
     void SetTurntable(bool bSpin, float FixedYaw = -28.f);
     // Per-champion exposure trim (stops). Bright albedo bodies (granite, felfire) are
@@ -67,6 +77,9 @@ private:
     void FrameCamera(float DeltaSeconds, bool bSnap);
     void DestroyPreview();
     void RefreshCutoutParts();
+    void UpdateMetering();
+    static void ForceTopDetail(AActor* Actor);
+    void ApplyLook();
     UPROPERTY(Transient) TObjectPtr<USceneCaptureComponent2D> Capture;
     UPROPERTY(Transient) TObjectPtr<UTextureRenderTarget2D> Target;
     UPROPERTY(Transient) TObjectPtr<ACireHero> Preview;
@@ -83,6 +96,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<ULocalLightComponent> KeyLight;
     UPROPERTY(Transient) TObjectPtr<ULocalLightComponent> RimLight;
     UPROPERTY(Transient) TObjectPtr<ULocalLightComponent> FillLight;
+    UPROPERTY(Transient) TObjectPtr<ULocalLightComponent> KickerLight;
     UPROPERTY(Transient) TArray<TObjectPtr<ULocalLightComponent>> FireLights;
     FString ProfileId;
     double ShownAt = 0;
@@ -97,4 +111,13 @@ private:
     float CameraDistance = 600.f;
     float BodyHeight = 180.f;
     float ExposureOffset = 0.f;
+    // Metering state (see IsMetered).
+    TSharedPtr<struct FDraftMeter, ESPMode::ThreadSafe> Meter;
+    bool bMetered = false;
+    int32 MeterPasses = 0;
+    uint64 MeterRequestFrame = 0;
+    uint64 MeterSettleFrame = 0;
+    float MeterMedian = 0.f, MeterHigh = 0.f;
+    double LastPrestream = 0;
+    float FeetV = .92f;
 };

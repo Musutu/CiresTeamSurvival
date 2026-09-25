@@ -6,6 +6,6 @@ public class CiresTeamSurvival : ModuleRules {
         bUseUnity = false;
         PublicDependencyModuleNames.AddRange(new string[] {"Core","CoreUObject","Engine","InputCore","AIModule","NavigationSystem","ProceduralMeshComponent","Niagara","Json","JsonUtilities","NetworkReplayStreaming"});
         // HUD: runtime TTF fonts (SlateCore) and filled canvas primitives (RenderCore white texture).
-        PrivateDependencyModuleNames.AddRange(new string[] {"SlateCore","RenderCore"});
+        PrivateDependencyModuleNames.AddRange(new string[] {"SlateCore","RenderCore","RHI"}); // RHI: async readback (draft preview metering)
     }
 }
