@@ -763,6 +763,7 @@ POOL = {
     'last_stand': ('last_stand', 'war'), 'challenge_of_iron': ('challenge', 'steel'), 'seismic_reprisal': ('seismic', 'earth'),
     'starfall': ('starfall', 'arcane'), 'spectral_hunt': ('hunt', 'spectral'), 'mass_aegis': ('aegis', 'light'),
     'wellspring': ('wellspring', 'frost'),
+    'executioner': ('skull', 'steel'), 'decimating_strike': ('cleave', 'blood'),
 }
 # Class baseline traits (CireClassTraits): Support / Tank / DPS.
 TRAITS = {'trait_mending_strikes': ('heart', 'spirit'), 'trait_natural_defense': ('shield', 'earth'), 'trait_keen_edge': ('sword', 'blood')}

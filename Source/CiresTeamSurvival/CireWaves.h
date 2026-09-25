@@ -55,7 +55,7 @@ struct CIRESTEAMSURVIVAL_API FCireWaveDef
     ECireWaveType Type = ECireWaveType::Normal;
     TArray<FCireWaveUnit> Units;
     /** Seconds between individual spawns within this wave (both lanes spawn together). */
-    float SpawnInterval = .6f;
+    float SpawnInterval = .4f;
     /** Extra delay before this wave, on top of the global breather. */
     float DelayBefore = 0.f;
     /** When false the next wave may start once this one has fully spawned (its units still count for the cycle clear). */
@@ -70,20 +70,26 @@ struct CIRESTEAMSURVIVAL_API FCireWaveDef
 
 struct CIRESTEAMSURVIVAL_API FCireWaveConfig
 {
-    /** Seconds between a cleared wave and the next spawn. */
-    float BreatherSeconds = 8.f;
+    /** Seconds between a cleared wave and the next spawn: the Skill Shop window (progression-shop reads it). */
+    float BreatherSeconds = 15.f;
+    /** Pacing (Waves.json "pacing"): where on the route waves appear (0 = breach gate, 0.7 max), the march-speed
+     *  multiplier while a wave unit is not fighting, the first wave's delay and the phase clock after a cycle. */
+    float SpawnAlongRoute = 0.f, MarchSpeedMultiplier = 1.25f, FirstWaveDelay = 8.f;
+    float PrepSeconds = 30.f, ArenaSeconds = 60.f, RecoverySeconds = 10.f;
+    /** Breather ends early (1 s) once every human player has pressed Ready; bots are always ready. */
+    bool bEarlyContinue = true;
     /** Cleared waves per cycle before prep -> arena -> recovery. Waves[] wraps if shorter. */
     int32 WavesPerCycle = 5;
     /** 0 = loop cycles forever with scaling; N = the match ends after cycle N (most lives wins). */
     int32 Cycles = 0;
     /** Per completed cycle: health/damage multiplier growth and extra units per composition row. */
-    float CycleHealthGrowth = .15f, CycleDamageGrowth = .10f;
-    int32 CycleExtraUnits = 1;
+    float CycleHealthGrowth = .10f, CycleDamageGrowth = .10f;
+    int32 CycleExtraUnits = 0;
     /** Stall failsafe: a wave older than this (seconds after its last spawn) has its leftovers march, then despawn. */
     bool bStallFailsafe = true;
-    float MaxWaveSeconds = 210.f;
+    float MaxWaveSeconds = 120.f;
     ECireWaveFailsafe FailsafeAction = ECireWaveFailsafe::March;
-    float FailsafeGraceSeconds = 45.f;
+    float FailsafeGraceSeconds = 30.f;
     /** Stuck detection: a wave unit that makes no progress for this long is nudged along its route. */
     float StuckSeconds = 5.f;
     TArray<FCireWaveDef> Waves;
@@ -91,6 +97,18 @@ struct CIRESTEAMSURVIVAL_API FCireWaveConfig
     FCireSkillProgression Skills;
     FCireCampaign Campaign;
     bool operator==(const FCireWaveConfig& O) const;
+};
+
+/** Economy hook: what a wave unit was when it spawned. Valid until ACireGameMode::MonsterKilled/Leak return. */
+struct CIRESTEAMSURVIVAL_API FCireWaveUnitInfo
+{
+    bool bValid = false;
+    int32 WaveNumber = 0;   // global wave number (1-based, never resets)
+    int32 WaveInCycle = 0;  // 1..WavesPerCycle
+    int32 Cycle = 1;        // match round
+    ECireWaveType Type = ECireWaveType::Normal;
+    bool bArmored = false;  // non-attacking marcher (armored wave or escortee)
+    bool bEscortee = false, bBoss = false, bElite = false;
 };
 
 /** Replicated one-line summary for the HUD match plate. */
@@ -198,6 +216,20 @@ namespace CireWaveDirector
 
     // ---- HUD ----
     CIRESTEAMSURVIVAL_API FCireWaveSummary Summary(const ACireGameMode* Mode);
+
+    // ---- pacing / economy hooks ----
+    /** Global wave number of the most recently started wave (1-based; 0 before the first wave). */
+    CIRESTEAMSURVIVAL_API int32 CurrentWaveIndex(const ACireGameMode* Mode);
+    /** Spawn-time wave facts for a unit (armored/boss/elite flags, wave number). bValid=false for non-wave units. */
+    CIRESTEAMSURVIVAL_API FCireWaveUnitInfo UnitFlags(const ACireMonster* Monster);
+    /** March-speed multiplier for a wave unit that is walking the route (1 while fighting, for packs and non-wave units). */
+    CIRESTEAMSURVIVAL_API float MarchSpeed(const ACireMonster* Monster);
+    /** True while survival is counting down to the next wave (the Skill Shop window). */
+    CIRESTEAMSURVIVAL_API bool IsBreather(const ACireGameMode* Mode);
+    /** A human player's Ready toggle for the breather (server; CireController ServerAction 10). */
+    CIRESTEAMSURVIVAL_API bool SetPlayerReady(ACireHero* Hero, bool bReady);
+    /** Updates the replicated ready counts; true when the breather should end early. */
+    CIRESTEAMSURVIVAL_API bool UpdateBreatherReady(ACireGameMode* Mode);
 
     // ---- soak / diagnostics (development) ----
     CIRESTEAMSURVIVAL_API bool IsSoak();

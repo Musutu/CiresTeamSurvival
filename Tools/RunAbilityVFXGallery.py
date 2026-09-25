@@ -140,6 +140,9 @@ def main() -> int:
     parser.add_argument("--timeout", type=int, default=2700)
     parser.add_argument("--compose", type=Path, help="only (re)build sheets for an existing capture directory")
     parser.add_argument("--compare", nargs=2, type=Path, metavar=("BEFORE", "AFTER"))
+    parser.add_argument("--camera", choices=("audit", "gameplay"), default="audit", help="gameplay = the player rig (650 cm boom, FOV 80)")
+    parser.add_argument("--pitch", type=float, default=-20.0, help="gameplay camera pitch (default rig -20)")
+    parser.add_argument("--db", type=Path, help="Ability Database JSON override (e.g. void zones on a ground skill)")
     parser.add_argument("--legacy", action="store_true", help="capture the previous presentation (-CireLegacyVFX) for before/after")
     parser.add_argument("--in-pillow", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
@@ -161,6 +164,10 @@ def main() -> int:
                f"-CireVFXSet={args.set}", f"-CireVFXTag={args.tag}", "-CireTripoChampions", "-RenderOffscreen", "-ForceRes",
                f"-ResX={width}", f"-ResY={height}", "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding",
                "-ExecCmds=t.MaxFPS 30,r.AntiAliasingMethod 1", f"-abslog={log}"]
+    if args.camera == "gameplay":
+        command += ["-CireVFXCamera=gameplay", f"-CireVFXPitch={args.pitch}"]
+    if args.db:
+        command.append(f"-CireVFXDb={args.db.resolve()}")
     if args.legacy:
         command.append("-CireLegacyVFX")
     if args.only:

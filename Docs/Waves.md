@@ -6,7 +6,8 @@
 
 ## Match flow
 
-A cycle is **N cleared waves → prep (60 s) → arena (90 s) → recovery (15 s)**. N is
+A cycle is **N cleared waves (15 s Skill Shop breather between them) → prep (30 s) → arena (≤60 s) → recovery (10 s)**,
+all set by the `pacing` block (see **Pacing** below). N is
 `wavesPerCycle` (default **5**, Eric's example progression; it was 3). Waves are pulled
 from `waves[]` in order and wrap if the list is shorter than N; entries after N stay in
 the list but are not played (the editor greys them out). The server is authoritative;
@@ -23,11 +24,13 @@ Challenge packs never count toward a clear.
 ```jsonc
 {
   "schemaVersion": 1,
-  "breatherSeconds": 8,          // cleared wave -> next spawn            (0..120)
+  "breatherSeconds": 15,         // cleared wave -> next spawn: the Skill Shop window (0..120)
   "wavesPerCycle": 5,            //                                      (1..10)
   "cycles": 0,                   // 0 = loop forever with scaling; N = match ends after cycle N, most lives wins (0..50)
-  "cycleScaling": { "healthGrowth": 0.15, "damageGrowth": 0.10, "extraUnits": 1 },  // per completed cycle
-  "failsafe": { "enabled": true, "maxWaveSeconds": 210, "action": "march", "graceSeconds": 45, "stuckSeconds": 5 },
+  "cycleScaling": { "healthGrowth": 0.10, "damageGrowth": 0.10, "extraUnits": 0 },  // per completed cycle
+  "failsafe": { "enabled": true, "maxWaveSeconds": 120, "action": "march", "graceSeconds": 30, "stuckSeconds": 5 },
+  "pacing": { "spawnAlongRoute": 0.3, "marchSpeed": 1.25, "firstWaveDelay": 8, "earlyContinue": true,
+              "prepSeconds": 30, "arenaSeconds": 60, "recoverySeconds": 10 },
   "waves": [
     { "label": "Breach Vanguard", "type": "normal", "spawnInterval": 0.6, "delayBefore": 0,
       "mustClear": true, "rewardMultiplier": 1,
@@ -90,17 +93,84 @@ Tuning reasoning (feedback: "early waves are easy"):
 - **Wave 3** (armored marchers) tests damage throughput, since they don't fight back.
   **Wave 4** tests target priority: the escortee leaks for 5, and its guards peel damage
   dealers off it. **Wave 5** mixes a boss (10 lives) with upgraded mobs.
-- Cycle scaling is gentle (+15% health, +10% damage, +1 unit per row per cycle), because
+- Cycle scaling is gentle (now +10% health, +10% damage, no extra units; see Pacing), because
   health already grows +80 per global wave number (five more waves per cycle). In the first
   soak at +30% the growth compounded to about ×1.8 health per cycle, and bots-only
   teams collapsed in cycle 3.
-- Walking time: the route is about 155 m, so a unit at 2.1 m/s needs roughly 75 s to reach
-  the castle unopposed (the boss needs about 105 s). Clears therefore take about 90–200 s
-  even with good defence. That is the expected pace, not a stall. The stall failsafe's
-  210 s limit sits above it.
+- Walking time: see **Pacing** below. Waves now spawn 30% down the road and march 25% faster,
+  so the unopposed walk is about 35 s instead of 75 s.
 
 Measured with the headless soak (bots only, 30 Hz fixed step). See
 `Saved/WaveSoak/*.txt` for the per-wave clear times and lives.
+
+## Pacing (September 25: "the gameplay seemed to take too long")
+
+Target feel: a wave resolves in about 45-90 s, a full cycle (5 waves + prep + arena + recovery) takes
+6-8 minutes, and the first real power spike lands within 2-3 minutes. All knobs are data (`pacing`,
+`breatherSeconds`, `failsafe`, `cycleScaling` and the wave rows), editable live in F8 → Waves (second
+globals row). The route shape itself stays in F8 → Paths.
+
+| Knob | Before | Now | Why |
+| --- | --- | --- | --- |
+| `spawnAlongRoute` | 0 (breach gate) | 0 (reverted: Eric wants spawns at the rift; tune pace with wave HP/speed instead) — briefly 0.30 | The route is about 155 m, so an unopposed walk took about 75 s before any fight. Waves now appear 30% of the way down the road. That is roughly 108 m of walking, and the challenge bays stay placed along the full route |
+| `marchSpeed` | 1 | 1.25 | Wave units (bosses included) walk 25% faster while they have no victim. Chase and combat speed are unchanged |
+| spawn interval | 0.6 / 1.2 / 0.5 / 0.7 s | 0.4 / 0.8 / 0.5 / 0.5 s | The column arrives together instead of trickling in |
+| `breatherSeconds` | 8 s | **15 s** | The Skill Shop opens after every cleared wave (progression-shop); 15 s is enough to buy, and Ready-up ends it early |
+| prep / arena / recovery | 60 / 90 / 15 s | 30 / 60 / 10 s | Shopping now happens every breather, so prep only needs a final top-up. Arenas usually end in 25-45 s when a team is wiped |
+| unit health | waves 1-2 ×1.1 / ×1.15, boss ×1, escortee ×5 | ×0.9 / ×0.95, boss ×0.4, escortee ×4 | Waves ran long because of kill time, not threat, so damage multipliers are unchanged (×1.25-1.3). Wave 2 keeps its grave hounds and drops to 1 hunter |
+| `cycleScaling` | +15% HP, +1 unit per row | +10% HP, +0 units | Extra units per row grew clear time linearly (wave 2 reached 15 units by cycle 3). Race ranks, skills and per-wave health growth already raise difficulty |
+| `failsafe.maxWaveSeconds` | 210 s (+45 s grace) | 120 s (+30 s) | No wave can hold a cycle more than about 150 s. Leftovers march and cost lives |
+
+Measured with the bots-only headless soak (`-CireWaveSoak`, 30 Hz fixed step,
+`Tools/SummarizeWaveSoak.py`; files in `Saved/WaveSoak/pacing-*`):
+
+| Run | Waves ≤90 s | Mean / median wave | Longest | Cycle lengths | Mean hero level 2 / 3 / 4 | Failsafe march / despawn | Lives lost |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Before (main c48df07, 3 cycles) | 2 / 15 | 150 / 127 s | 264 s | 12.2, 15.7, 18.3 min | 78 / 173 / 209 s | 22 / 17 | 70 (3 cycles) |
+| After, pass 1 (route + speed + phases) | 5 / 15 | 119 / 111 s | 188 s | 10.2, 13.6, 14.4 min | 56 / 120 / 152 s | 61 / 23 | 115 (3 cycles) |
+| After, pass 2 (+ no extra units, boss ×0.6) | 11 / 15 | 90 / 78 s | 183 s | 8.8, 11.2, 11.2 min | 61 / 125 / 161 s | 12 / 8 | 76 (3 cycles) |
+| **Final (4 cycles)** | **16 / 20** | **78 / 66 s** | **143 s** | **8.0, 8.8, 9.3, 9.7 min** | **51 / 114 / 140 s** | **7 / 0** | 99 (4 cycles) |
+
+Reading it: normal, armored and escort waves now resolve in about 53-85 s. The cycle-ending boss wave is
+still 84-143 s against **bots only**. Bots don't shop, and they deal the least damage. In cycles 2+ the
+race boss is a warlord/mythic rank. A human team using the Skill Shop should fall inside the 6-8 minute
+target. The bots-only cycle is an upper bound: 8.0 min for cycle 1, and 8.8-9.7 min later, mostly from
+that one boss wave. If playtests still feel long, lower the boss row's `health` (0.4) or `wavesPerCycle`
+in F8 → Waves before anything else. The first level-up now comes at about 50 s and level 3 by about 2
+minutes (before: 78 s and 173 s). Wave 1 clears and opens the Skill Shop at about 1 minute.
+
+### Skill Shop breather and Ready-up
+
+`breatherSeconds` is the window between a cleared wave and the next spawn. The progression-shop Skill
+Shop reads it from `CireWaveDirector::Config(World).BreatherSeconds`. The live countdown is the
+replicated `ACireGameState::NextWaveSeconds`, and `CireWaveDirector::IsBreather(Mode)` says whether the
+window is open (server).
+
+**Ready-up** (`pacing.earlyContinue`, default on): each human player can press **READY UP** under the
+match plate, or send `ACireController::ServerAction(10, 1|0)`. The server calls
+`CireWaveDirector::SetPlayerReady(Hero, bReady)`. Once every drafted human is ready, the next wave
+starts in 1 s. Bots are always ready, and a bots-only match keeps the full breather, so soaks stay
+comparable. `ACireGameState::BreatherReady` / `BreatherPlayers` replicate the count ("READY 1/2").
+Presses reset when a wave starts or the phase changes.
+
+### Economy hook (monster gold)
+
+Eric's rule: 1 gold per mob at the start, +1 every 3 waves, armored ×2, bosses ×10. progression-shop
+implements the gold; the wave director exposes the inputs:
+
+```cpp
+#include "CireWaves.h"
+int32 Wave = CireWaveDirector::CurrentWaveIndex(Mode);                 // global wave number, 1-based (0 before wave 1)
+FCireWaveUnitInfo Info = CireWaveDirector::UnitFlags(Monster);         // spawn-time facts for this unit
+// Info.bValid (false for challenge packs / non-wave actors), Info.WaveNumber (the wave it spawned in),
+// Info.WaveInCycle, Info.Cycle, Info.Type (ECireWaveType), Info.bArmored (non-attacking marcher:
+// armored wave or escortee), Info.bEscortee, Info.bBoss, Info.bElite (rank elite or higher, not boss)
+```
+
+Use `Info.WaveNumber` rather than `CurrentWaveIndex` when paying out a kill, because a unit can die
+after the next wave has started (non-must-clear waves, test spawns). `UnitFlags` is valid inside
+`ACireGameMode::MonsterKilled` / `CireLoot::OnMonsterKilled` and `Leak`. The director forgets the unit
+after those return.
 
 ## Races, ranks and monster skills (monster-races)
 

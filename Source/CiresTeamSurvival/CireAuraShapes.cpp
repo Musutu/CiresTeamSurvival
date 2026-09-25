@@ -247,6 +247,28 @@ void Glyph(FBuild& M,const FContext& C,const FCireAuraLayer& L,float A)
         const FVector2D Clapper=Rot({0,-G*.72f});M.Diamond(Center+M.R*Clapper.X+M.U*Clapper.Y,G*.14f,Col(C.Core,A));
         for(int32 I=0;I<2;++I){const float Ph=Fract(C.Time*1.1f+I*.5f);M.BillRing(Center-M.U*G*.2f,G*(.9f+Ph*.9f),W*(1.1f-Ph*.6f),Col(C.Primary,A*(1-Ph)*.7f),16,PI*1.1f,PI*.8f);}
     }
+    // ability-vfx: silence = a sealed mouth rune (lips crossed by a stitched seal); heal-cut = a broken green cross.
+    else if(Style==TEXT("muted"))
+    {
+        for(int32 I=0;I<10;++I)
+        {
+            const float X0=-G+2*G*I/10.f,X1=-G+2*G*(I+1)/10.f;
+            const float Y0=FMath::Sin((X0/G+1)*PI*.5f)*.38f*G,Y1=FMath::Sin((X1/G+1)*PI*.5f)*.38f*G;
+            M.Line2(Center,{X0,Y0},{X1,Y1},W,P);M.Line2(Center,{X0,-Y0*.7f},{X1,-Y1*.7f},W,P);
+        }
+        M.Line2(Center,{-G*.9f,0},{G*.9f,0},W*.8f,Dim);
+        for(int32 I=-2;I<=2;++I)M.Line2(Center,{I*G*.34f,-G*.3f},{I*G*.34f,G*.3f},W*.8f,K);   // stitched seal
+        M.Line2(Center,{-G*1.05f,-G*.85f},{G*1.05f,G*.85f},W*1.3f,Col(C.Core,A));                // strike-through
+    }
+    else if(Style==TEXT("healcut"))
+    {
+        const float Split=G*(.12f+.06f*FMath::Sin(C.Time*5.f));
+        // Two halves of a "+" pushed apart along a jagged crack.
+        M.Line2(Center,{-Split,G*.95f},{-Split,G*.12f},W*2.f,P);M.Line2(Center,{Split,-G*.12f},{Split,-G*.95f},W*2.f,P);
+        M.Line2(Center,{-G*.95f,Split*.4f},{-Split,Split*.4f},W*2.f,P);M.Line2(Center,{Split,-Split*.4f},{G*.95f,-Split*.4f},W*2.f,P);
+        M.Line2(Center,{-G*.45f,G*.7f},{G*.1f,G*.15f},W*.7f,K);M.Line2(Center,{G*.1f,G*.15f},{-G*.1f,-G*.1f},W*.7f,K);
+        M.Line2(Center,{-G*.1f,-G*.1f},{G*.45f,-G*.7f},W*.7f,K);
+    }
     else // drop
     {
         for(int32 I=0;I<14;++I)

@@ -1,5 +1,7 @@
+#include "CireWaves.h" // wave-director
 #include "CireGame.h"
 #include "CireChampionRoster.h"
+#include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireShopFixtures.h" // progression-shop
 #include "CireItems.h" // progression-shop
 #include "Engine/World.h"
@@ -282,7 +284,7 @@ void ACireController::PlayerTick(float Dt) {
             else ServerAction(6,0,nullptr);
         }
     }
-    if(H->bDead||!H->bDrafted||bShop)return;
+    if(H->bDead||!H->bDrafted||bShop||CireCrowdControl::IsStunned(H))return; // champion-draft: stunned: no movement, jump or dodge
     if(Keys.WasPressed(this,TEXT("Jump")))H->Jump();
     if(H->Mobility)
     {
@@ -301,6 +303,7 @@ void ACireController::PlayerTick(float Dt) {
 }
 void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActor* Selected) {
     auto* H=Cast<ACireHero>(GetPawn()); auto* M=GetWorld()->GetAuthGameMode<ACireGameMode>();if(!H||!M)return;
+    if(Action==10) {CireWaveDirector::SetPlayerReady(H,Value!=0);return;} // wave-director: breather Ready (Skill Shop window)
     if(Action==9) {if(M->Clock.Phase()==Cires::MatchPhase::Finished)GetWorld()->ServerTravel(TEXT("/Game/Maps/Citadel"));return;}
     if(Action==5) {if(Value>=0&&Value<5&&!H->bDrafted)H->Draft(Value);return;}
     if(!H->bDrafted)return;

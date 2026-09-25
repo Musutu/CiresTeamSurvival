@@ -1,4 +1,5 @@
 #include "CireItems.h"
+#include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireBuffs.h" // aura-vfx
 // progression-shop: see CireItems.h, Docs/Items.md.
 #include "CireGame.h"
@@ -407,7 +408,7 @@ float CireItems::ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FSt
     if (!Inventory || !FMath::IsFinite(Amount) || Amount <= 0) return Amount;
     const Totals& T = Inventory->Totals();
     const bool bPhysical = IsBasicAttack(Causer, AbilityName);
-    Amount *= 1.f - static_cast<float>(Mitigation(T.Stats.Get(bPhysical ? ItemStat::Armor : ItemStat::Ward)));
+    Amount *= 1.f - static_cast<float>(Mitigation(T.Stats.Get(bPhysical ? ItemStat::Armor : ItemStat::Ward) * (bPhysical ? CireCrowdControl::ArmorMultiplier(Hero) : 1.f))); // champion-draft: armor break
     const double Now = Inventory->Now();
     for (const auto& Buff : Inventory->Buffs)
         if (Buff.EndsAt > Now)

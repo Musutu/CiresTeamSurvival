@@ -462,11 +462,13 @@ std::vector<SkillDefinition> StarterSkillPool()
         {"protection_dome", "Aegis Dome", SkillKind::Active},
         {"oathbound_guardian", "Oathbound Guardian", SkillKind::Active},
         {"spectral_pack", "Spectral Pack", SkillKind::Active},
+        {"decimating_strike", "Decimating Strike", SkillKind::Active},
         {"second_wind", "Second Wind", SkillKind::Active},
         {"stone_skin", "Stone Skin", SkillKind::Passive},
         {"battle_rhythm", "Battle Rhythm", SkillKind::Passive},
         {"deep_reserves", "Deep Reserves", SkillKind::Passive},
         {"soul_conduit", "Soul Conduit", SkillKind::Passive},
+        {"executioner", "Executioner", SkillKind::Passive},
         {"bastion_of_dawn", "Bastion of Dawn", SkillKind::Ultimate},
         {"cataclysm", "Cataclysm", SkillKind::Ultimate},
         {"executioners_verdict", "Executioner's Verdict", SkillKind::Ultimate},
@@ -515,7 +517,8 @@ RoleMask SkillRoleTags(const std::string& id)
         {"executioners_verdict", RoleDamage}, {"renewal", RoleSupport},
         {"last_stand", RoleTank}, {"challenge_of_iron", RoleTank}, {"seismic_reprisal", RoleTank},
         {"starfall", RoleDamage}, {"spectral_hunt", RoleDamage},
-        {"mass_aegis", RoleSupport}, {"wellspring", RoleSupport}};
+        {"mass_aegis", RoleSupport}, {"wellspring", RoleSupport},
+        {"decimating_strike", RoleTank | RoleDamage}, {"executioner", RoleDamage}};
     for (const auto& entry : table)
         if (id == entry.Id) return entry.Roles;
     return RoleNone;
@@ -600,6 +603,90 @@ int SelectMendingTarget(const std::vector<PartyMember>& party)
     return best;
 }
 } // namespace Traits
+
+namespace Abilities
+{
+bool ValidCurve(const Curve& c)
+{
+    const auto finite = [](double v) { return std::isfinite(v); };
+    return finite(c.EffectGrowth) && c.EffectGrowth >= 0 && c.EffectGrowth <= 2 &&
+        finite(c.EffectHalfLevels) && c.EffectHalfLevels > 0 && finite(c.EffectCap) && c.EffectCap >= 0 &&
+        finite(c.CostCapMultiplier) && c.CostCapMultiplier >= 1 && c.CostCapMultiplier <= 3 &&
+        finite(c.CostRampLevels) && c.CostRampLevels > 0 &&
+        finite(c.CooldownFloorFraction) && c.CooldownFloorFraction > 0 && c.CooldownFloorFraction <= 1 &&
+        finite(c.CooldownDecayLevels) && c.CooldownDecayLevels > 0 && finite(c.MinCooldownSeconds) && c.MinCooldownSeconds >= 0;
+}
+bool ValidBase(const Base& b)
+{
+    for (double v : {b.Effect, b.ManaCost, b.EnergyCost, b.Cooldown, b.CastTime})
+        if (!std::isfinite(v) || v < 0) return false;
+    return true;
+}
+LevelStats Scale(const Base& base, const Curve& curve, int level)
+{
+    LevelStats out;
+    out.Level = std::max(1, level);
+    out.Effect = base.Effect; out.ManaCost = base.ManaCost; out.EnergyCost = base.EnergyCost;
+    out.Cooldown = base.Cooldown; out.CastTime = base.CastTime;
+    if (!ValidCurve(curve) || !ValidBase(base) || out.Level == 1) return out;
+    const double steps = static_cast<double>(out.Level - 1);
+    double effect = base.Effect * (1.0 + curve.EffectGrowth * std::log1p(steps / curve.EffectHalfLevels));
+    if (curve.EffectCap > 0) effect = std::min(effect, std::max(base.Effect, curve.EffectCap));
+    const double costMultiplier = 1.0 + (curve.CostCapMultiplier - 1.0) * steps / (steps + curve.CostRampLevels);
+    const double cooldownMultiplier = curve.CooldownFloorFraction +
+        (1.0 - curve.CooldownFloorFraction) * std::exp(-steps / curve.CooldownDecayLevels);
+    out.Effect = effect;
+    out.ManaCost = base.ManaCost * costMultiplier;
+    out.EnergyCost = base.EnergyCost * costMultiplier;
+    out.Cooldown = base.Cooldown <= 0 ? 0.0 :
+        std::max(std::min(base.Cooldown, curve.MinCooldownSeconds), base.Cooldown * cooldownMultiplier);
+    return out;
+}
+} // namespace Abilities
+
+namespace CC
+{
+double DiminishedDuration(double baseSeconds, int prior)
+{
+    if (!std::isfinite(baseSeconds) || baseSeconds <= 0) return 0.0;
+    if (prior <= 0) return baseSeconds;
+    if (prior == 1) return baseSeconds * 0.5;
+    if (prior == 2) return baseSeconds * 0.25;
+    return 0.0;
+}
+VoidZone ClassifyVoidZone(double distance, double inner, double outer)
+{
+    if (!std::isfinite(distance) || !std::isfinite(inner) || !std::isfinite(outer) || distance < 0 || inner < 0 || outer < inner)
+        return VoidZone::None;
+    if (distance <= inner) return VoidZone::Inner;
+    if (distance <= outer) return VoidZone::Outer;
+    return VoidZone::None;
+}
+double ApplyHealingCut(double amount, double receivedCut, double doneCut)
+{
+    if (!std::isfinite(amount) || amount <= 0) return 0.0;
+    const auto clamp01 = [](double v) { return std::isfinite(v) ? std::clamp(v, 0.0, 1.0) : 0.0; };
+    return amount * (1.0 - clamp01(receivedCut)) * (1.0 - clamp01(doneCut));
+}
+double ArmorAfterBreak(double armor, double breakFraction)
+{
+    if (!std::isfinite(armor)) return 0.0;
+    const double f = std::isfinite(breakFraction) ? std::clamp(breakFraction, 0.0, 1.0) : 0.0;
+    return armor * (1.0 - f);
+}
+double ExecuteDamage(ExecuteTarget target, double health, double maxHealth, double normal)
+{
+    const double hit = std::isfinite(normal) ? std::max(0.0, normal) : 0.0;
+    switch (target)
+    {
+    case ExecuteTarget::Monster: return std::isfinite(health) ? std::max(hit, health) : hit;
+    case ExecuteTarget::Boss: return hit;
+    case ExecuteTarget::Hero:
+        return std::isfinite(maxHealth) && maxHealth > 0 ? std::max(hit, maxHealth * ExecuteHeroMaxHealthFraction) : hit;
+    }
+    return hit;
+}
+} // namespace CC
 
 RoleMask RoleBit(SkillDraftRole role)
 {
