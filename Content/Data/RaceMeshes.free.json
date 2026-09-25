@@ -1,0 +1,249 @@
+{
+ "schemaVersion": 1,
+ "priority": "lowest",
+ "description": "Free (CC0) animated creature bodies for race units without art (world-dressing). Read by CireMonsterArt after NPCMeshes.tripo.json and RaceMeshes.tripo.json: a unit listed there keeps that art. Same shape as RaceMeshes.tripo.json plus rig/walkSpeedCm/runSpeedCm/reachCm/dropPropBones. Written by Tools/ImportFreeCreatures.py.",
+ "archetypes": {
+  "dire_wolf": {
+   "variant": "FreeWolf",
+   "mesh": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/Wolf.Wolf",
+   "meshScale": 0.7085,
+   "yaw": -90.0,
+   "heightCm": 157.9,
+   "rig": "quadruped",
+   "lockRoot": true,
+   "walkSpeedCm": 127.8,
+   "runSpeedCm": 537.8,
+   "reachCm": 360.0,
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02"
+   ],
+   "sockets": {
+    "head": "Head",
+    "pelvis": "Body",
+    "spine_03": "Torso3",
+    "hand_l": "FF_L",
+    "hand_r": "FF_R",
+    "foot_l": "FFB_L",
+    "foot_r": "FFB_R",
+    "ball_l": "FF_L",
+    "ball_r": "FF_R"
+   },
+   "animations": {
+    "idle": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle.WolfAnimalArmature_Idle",
+    "walk": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Walk.WolfAnimalArmature_Walk",
+    "run": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Gallop.WolfAnimalArmature_Gallop",
+    "attack": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Attack.WolfAnimalArmature_Attack",
+    "hit": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle_HitReact_Left.WolfAnimalArmature_Idle_HitReact_Left",
+    "death": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Death.WolfAnimalArmature_Death"
+   },
+   "source": "Quaternius (CC0 1.0), see Art/Creatures/Free/PROVENANCE.md"
+  },
+  "grave_hound": {
+   "variant": "FreeWolfHound",
+   "mesh": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/Wolf.Wolf",
+   "meshScale": 0.496,
+   "yaw": -90.0,
+   "heightCm": 110.5,
+   "rig": "quadruped",
+   "lockRoot": true,
+   "walkSpeedCm": 89.5,
+   "runSpeedCm": 376.5,
+   "reachCm": 252.0,
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02"
+   ],
+   "sockets": {
+    "head": "Head",
+    "pelvis": "Body",
+    "spine_03": "Torso3",
+    "hand_l": "FF_L",
+    "hand_r": "FF_R",
+    "foot_l": "FFB_L",
+    "foot_r": "FFB_R",
+    "ball_l": "FF_L",
+    "ball_r": "FF_R"
+   },
+   "animations": {
+    "idle": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle.WolfAnimalArmature_Idle",
+    "walk": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Walk.WolfAnimalArmature_Walk",
+    "run": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Gallop.WolfAnimalArmature_Gallop",
+    "attack": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Attack.WolfAnimalArmature_Attack",
+    "hit": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle_HitReact_Left.WolfAnimalArmature_Idle_HitReact_Left",
+    "death": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Death.WolfAnimalArmature_Death"
+   },
+   "source": "Quaternius (CC0 1.0), see Art/Creatures/Free/PROVENANCE.md"
+  },
+  "feral_shaman": {
+   "variant": "FreeStag",
+   "mesh": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/Stag.Stag",
+   "meshScale": 0.5271,
+   "yaw": -90.0,
+   "heightCm": 210.5,
+   "rig": "quadruped",
+   "lockRoot": true,
+   "walkSpeedCm": 101.4,
+   "runSpeedCm": 439.9,
+   "reachCm": 480.0,
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02"
+   ],
+   "sockets": {
+    "head": "Head",
+    "pelvis": "Body",
+    "spine_03": "Torso3",
+    "hand_l": "FF_L",
+    "hand_r": "FF_R",
+    "foot_l": "FFB_L",
+    "foot_r": "FFB_R",
+    "ball_l": "FF_L",
+    "ball_r": "FF_R"
+   },
+   "animations": {
+    "idle": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Idle.StagAnimalArmature_Idle",
+    "walk": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Walk.StagAnimalArmature_Walk",
+    "run": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Gallop.StagAnimalArmature_Gallop",
+    "attack": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Attack_Headbutt.StagAnimalArmature_Attack_Headbutt",
+    "attackAlt": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Attack_Kick.StagAnimalArmature_Attack_Kick",
+    "hit": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Idle_HitReact_Left.StagAnimalArmature_Idle_HitReact_Left",
+    "death": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Death.StagAnimalArmature_Death"
+   },
+   "source": "Quaternius (CC0 1.0), see Art/Creatures/Free/PROVENANCE.md"
+  },
+  "tusked_behemoth": {
+   "variant": "FreeBull",
+   "mesh": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/Bull.Bull",
+   "meshScale": 0.6072,
+   "yaw": -90.0,
+   "heightCm": 247.4,
+   "rig": "quadruped",
+   "lockRoot": true,
+   "walkSpeedCm": 122.4,
+   "runSpeedCm": 447.9,
+   "reachCm": 564.0,
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02"
+   ],
+   "sockets": {
+    "head": "Head",
+    "pelvis": "Body",
+    "spine_03": "Torso3",
+    "hand_l": "FF_L",
+    "hand_r": "FF_R",
+    "foot_l": "FFB_L",
+    "foot_r": "FFB_R",
+    "ball_l": "FF_L",
+    "ball_r": "FF_R"
+   },
+   "animations": {
+    "idle": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Idle.BullAnimalArmature_Idle",
+    "walk": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Walk.BullAnimalArmature_Walk",
+    "run": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Gallop.BullAnimalArmature_Gallop",
+    "attack": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Attack_Kick.BullAnimalArmature_Attack_Kick",
+    "attackAlt": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Attack_Headbutt.BullAnimalArmature_Attack_Headbutt",
+    "hit": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Idle_HitReact_Left.BullAnimalArmature_Idle_HitReact_Left",
+    "death": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Death.BullAnimalArmature_Death"
+   },
+   "source": "Quaternius (CC0 1.0), see Art/Creatures/Free/PROVENANCE.md"
+  },
+  "bristleback": {
+   "variant": "FreePig",
+   "mesh": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/Pig.Pig",
+   "meshScale": 0.6287,
+   "yaw": -90.0,
+   "heightCm": 78.9,
+   "rig": "quadruped",
+   "lockRoot": false,
+   "walkSpeedCm": 62.0,
+   "runSpeedCm": 144.4,
+   "reachCm": 180.0,
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02"
+   ],
+   "sockets": {
+    "head": "Head",
+    "pelvis": "All",
+    "spine_03": "Neck",
+    "hand_l": "FrontLeg_L_end",
+    "hand_r": "FrontLeg_R_end",
+    "foot_l": "BackLeg_L_end",
+    "foot_r": "BackLeg_R_end",
+    "ball_l": "FrontLeg_L_end",
+    "ball_r": "FrontLeg_R_end"
+   },
+   "animations": {
+    "idle": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Idle.PigAnimalArmature_AnimalArmature_AnimalArmature_Idle",
+    "walk": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Walk.PigAnimalArmature_AnimalArmature_AnimalArmature_Walk",
+    "run": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Run.PigAnimalArmature_AnimalArmature_AnimalArmature_Run",
+    "attack": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Headbutt.PigAnimalArmature_AnimalArmature_AnimalArmature_Headbutt",
+    "hit": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Jump_Start.PigAnimalArmature_AnimalArmature_AnimalArmature_Jump_Start",
+    "death": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Death.PigAnimalArmature_AnimalArmature_AnimalArmature_Death"
+   },
+   "source": "Quaternius (CC0 1.0), see Art/Creatures/Free/PROVENANCE.md"
+  },
+  "crystal_ballista": {
+   "variant": "FreeSpider",
+   "mesh": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/Spider.Spider",
+   "meshScale": 0.791,
+   "yaw": 90.8,
+   "heightCm": 100.0,
+   "rig": "quadruped",
+   "lockRoot": false,
+   "walkSpeedCm": 256.0,
+   "runSpeedCm": 619.6,
+   "reachCm": 611.5,
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02"
+   ],
+   "sockets": {
+    "head": "Head",
+    "pelvis": "Body",
+    "spine_03": "Thorax",
+    "hand_l": "FrontFoot_L",
+    "hand_r": "FrontFoot2_R",
+    "foot_l": "BackFoot_L",
+    "foot_r": "BackFoot_R",
+    "ball_l": "FrontFoot_L",
+    "ball_r": "FrontFoot2_R"
+   },
+   "animations": {
+    "idle": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Idle.SpiderSpiderArmature_Spider_Idle",
+    "walk": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Walk.SpiderSpiderArmature_Spider_Walk",
+    "run": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Walk.SpiderSpiderArmature_Spider_Walk",
+    "attack": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Attack.SpiderSpiderArmature_Spider_Attack",
+    "hit": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Attack.SpiderSpiderArmature_Spider_Attack",
+    "death": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Death.SpiderSpiderArmature_Spider_Death"
+   },
+   "source": "Quaternius (CC0 1.0), see Art/Creatures/Free/PROVENANCE.md"
+  }
+ }
+}

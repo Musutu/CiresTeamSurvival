@@ -77,6 +77,8 @@ public:
     CireGrip::FHands Hands;
     /** Set when the last evaluation produced a non-finite pose (reference pose was used). */
     bool bLastPoseRejected = false;
+    /** world-dressing: keep the root joint at its reference transform (glTF animals key their armature proxy root). */
+    bool bLockRootToReference = false;
 protected:
     virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;
 };

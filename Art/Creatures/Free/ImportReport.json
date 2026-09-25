@@ -1,0 +1,513 @@
+{
+  "models": {
+    "Wolf": {
+      "mesh": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/Wolf.Wolf",
+      "skeleton": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/Wolf_Skeleton.Wolf_Skeleton",
+      "yaw": -90.0,
+      "headZ": 211.3,
+      "reach": 366.5,
+      "bones": 68,
+      "clips": {
+        "Idle": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle.WolfAnimalArmature_Idle",
+          "length": 3.333,
+          "stride": 0.9,
+          "headMin": 211.0,
+          "headMax": 211.7,
+          "headEnd": 211.3,
+          "feetMin": 6.9
+        },
+        "Walk": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Walk.WolfAnimalArmature_Walk",
+          "length": 1.042,
+          "stride": 103.4,
+          "headMin": 187.6,
+          "headMax": 195.8,
+          "headEnd": 194.1,
+          "feetMin": 6.9
+        },
+        "Death": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Death.WolfAnimalArmature_Death",
+          "length": 1.042,
+          "stride": 10.8,
+          "headMin": 29.2,
+          "headMax": 235.5,
+          "headEnd": 29.3,
+          "feetMin": 5.1
+        },
+        "Attack": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Attack.WolfAnimalArmature_Attack",
+          "length": 1.333,
+          "stride": 39.5,
+          "headMin": 118.4,
+          "headMax": 212.5,
+          "headEnd": 211.3,
+          "feetMin": 6.9
+        },
+        "Eating": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Eating.WolfAnimalArmature_Eating",
+          "length": 2.5,
+          "stride": 75.2,
+          "headMin": 105.5,
+          "headMax": 221.8,
+          "headEnd": 212.3,
+          "feetMin": 6.9
+        },
+        "Gallop": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Gallop.WolfAnimalArmature_Gallop",
+          "length": 0.542,
+          "stride": 205.7,
+          "headMin": 175.3,
+          "headMax": 218.5,
+          "headEnd": 176.2,
+          "feetMin": 2.5
+        },
+        "Idle_2": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle_2.WolfAnimalArmature_Idle_2",
+          "length": 3.333,
+          "stride": 2.0,
+          "headMin": 211.1,
+          "headMax": 212.4,
+          "headEnd": 211.3,
+          "feetMin": 6.9
+        },
+        "Gallop_Jump": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Gallop_Jump.WolfAnimalArmature_Gallop_Jump",
+          "length": 0.917,
+          "stride": 221.4,
+          "headMin": 177.4,
+          "headMax": 289.0,
+          "headEnd": 181.3,
+          "feetMin": 1.3
+        },
+        "Jump_ToIdle": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Jump_ToIdle.WolfAnimalArmature_Jump_ToIdle",
+          "length": 1.333,
+          "stride": 209.1,
+          "headMin": 177.4,
+          "headMax": 290.0,
+          "headEnd": 211.1,
+          "feetMin": 1.1
+        },
+        "Idle_2_HeadLow": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle_2_HeadLow.WolfAnimalArmature_Idle_2_HeadLow",
+          "length": 4.0,
+          "stride": 2.4,
+          "headMin": 164.0,
+          "headMax": 213.4,
+          "headEnd": 211.3,
+          "feetMin": 6.9
+        },
+        "Idle_HitReact_Left": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle_HitReact_Left.WolfAnimalArmature_Idle_HitReact_Left",
+          "length": 0.667,
+          "stride": 2.4,
+          "headMin": 211.3,
+          "headMax": 231.1,
+          "headEnd": 211.3,
+          "feetMin": 6.9
+        },
+        "Idle_HitReact_Right": {
+          "asset": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/WolfAnimalArmature_Idle_HitReact_Right.WolfAnimalArmature_Idle_HitReact_Right",
+          "length": 0.667,
+          "stride": 2.4,
+          "headMin": 211.3,
+          "headMax": 231.1,
+          "headEnd": 211.3,
+          "feetMin": 6.9
+        }
+      }
+    },
+    "Stag": {
+      "mesh": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/Stag.Stag",
+      "skeleton": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/Stag_Skeleton.Stag_Skeleton",
+      "yaw": -90.0,
+      "headZ": 379.2,
+      "reach": 455.7,
+      "bones": 54,
+      "clips": {
+        "Idle": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Idle.StagAnimalArmature_Idle",
+          "length": 3.333,
+          "stride": 0.9,
+          "headMin": 378.7,
+          "headMax": 379.4,
+          "headEnd": 379.2,
+          "feetMin": 11.5
+        },
+        "Walk": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Walk.StagAnimalArmature_Walk",
+          "length": 1.167,
+          "stride": 123.5,
+          "headMin": 369.6,
+          "headMax": 379.8,
+          "headEnd": 369.6,
+          "feetMin": 8.9
+        },
+        "Death": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Death.StagAnimalArmature_Death",
+          "length": 1.083,
+          "stride": 40.3,
+          "headMin": 11.8,
+          "headMax": 379.2,
+          "headEnd": 16.7,
+          "feetMin": -2.2
+        },
+        "Eating": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Eating.StagAnimalArmature_Eating",
+          "length": 12.083,
+          "stride": 4.5,
+          "headMin": 126.8,
+          "headMax": 379.2,
+          "headEnd": 379.2,
+          "feetMin": 11.5
+        },
+        "Gallop": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Gallop.StagAnimalArmature_Gallop",
+          "length": 0.5,
+          "stride": 208.6,
+          "headMin": 335.4,
+          "headMax": 374.1,
+          "headEnd": 336.0,
+          "feetMin": 4.6
+        },
+        "Idle_2": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Idle_2.StagAnimalArmature_Idle_2",
+          "length": 3.333,
+          "stride": 2.0,
+          "headMin": 378.7,
+          "headMax": 380.2,
+          "headEnd": 379.2,
+          "feetMin": 11.5
+        },
+        "Attack_Kick": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Attack_Kick.StagAnimalArmature_Attack_Kick",
+          "length": 0.792,
+          "stride": 56.1,
+          "headMin": 342.9,
+          "headMax": 383.3,
+          "headEnd": 383.3,
+          "feetMin": 11.5
+        },
+        "Gallop_Jump": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Gallop_Jump.StagAnimalArmature_Gallop_Jump",
+          "length": 1.375,
+          "stride": 251.2,
+          "headMin": 265.5,
+          "headMax": 515.1,
+          "headEnd": 334.0,
+          "feetMin": 1.5
+        },
+        "Jump_toIdle": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Jump_toIdle.StagAnimalArmature_Jump_toIdle",
+          "length": 1.5,
+          "stride": 264.8,
+          "headMin": 260.4,
+          "headMax": 512.9,
+          "headEnd": 377.8,
+          "feetMin": 5.2
+        },
+        "Idle_Headlow": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Idle_Headlow.StagAnimalArmature_Idle_Headlow",
+          "length": 3.333,
+          "stride": 67.3,
+          "headMin": 326.3,
+          "headMax": 379.2,
+          "headEnd": 379.2,
+          "feetMin": 11.5
+        },
+        "Attack_Headbutt": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Attack_Headbutt.StagAnimalArmature_Attack_Headbutt",
+          "length": 0.792,
+          "stride": 42.6,
+          "headMin": 270.2,
+          "headMax": 381.0,
+          "headEnd": 379.2,
+          "feetMin": 11.5
+        },
+        "Idle_HitReact_Left": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Idle_HitReact_Left.StagAnimalArmature_Idle_HitReact_Left",
+          "length": 0.458,
+          "stride": 1.8,
+          "headMin": 379.2,
+          "headMax": 386.7,
+          "headEnd": 379.3,
+          "feetMin": 11.5
+        },
+        "Idle_HitReact_Right": {
+          "asset": "/Game/Free/Creatures/Stag/Stag/SkeletalMeshes/StagAnimalArmature_Idle_HitReact_Right.StagAnimalArmature_Idle_HitReact_Right",
+          "length": 0.5,
+          "stride": 1.8,
+          "headMin": 379.2,
+          "headMax": 387.0,
+          "headEnd": 379.6,
+          "feetMin": 11.5
+        }
+      }
+    },
+    "Bull": {
+      "mesh": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/Bull.Bull",
+      "skeleton": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/Bull_Skeleton.Bull_Skeleton",
+      "yaw": -90.0,
+      "headZ": 385.2,
+      "reach": 524.3,
+      "bones": 57,
+      "clips": {
+        "Idle": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Idle.BullAnimalArmature_Idle",
+          "length": 3.333,
+          "stride": 0.9,
+          "headMin": 385.2,
+          "headMax": 387.0,
+          "headEnd": 385.2,
+          "feetMin": 14.3
+        },
+        "Walk": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Walk.BullAnimalArmature_Walk",
+          "length": 1.167,
+          "stride": 129.4,
+          "headMin": 367.4,
+          "headMax": 382.6,
+          "headEnd": 377.1,
+          "feetMin": 12.0
+        },
+        "Death": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Death.BullAnimalArmature_Death",
+          "length": 1.0,
+          "stride": 47.3,
+          "headMin": 26.1,
+          "headMax": 428.6,
+          "headEnd": 27.7,
+          "feetMin": 2.6
+        },
+        "Eating": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Eating.BullAnimalArmature_Eating",
+          "length": 6.0,
+          "stride": 4.5,
+          "headMin": 131.8,
+          "headMax": 385.2,
+          "headEnd": 385.2,
+          "feetMin": 14.3
+        },
+        "Gallop": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Gallop.BullAnimalArmature_Gallop",
+          "length": 0.583,
+          "stride": 215.0,
+          "headMin": 264.6,
+          "headMax": 365.0,
+          "headEnd": 276.4,
+          "feetMin": 9.5
+        },
+        "Idle_2": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Idle_2.BullAnimalArmature_Idle_2",
+          "length": 3.333,
+          "stride": 2.0,
+          "headMin": 385.2,
+          "headMax": 390.3,
+          "headEnd": 385.2,
+          "feetMin": 14.3
+        },
+        "Attack_Kick": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Attack_Kick.BullAnimalArmature_Attack_Kick",
+          "length": 1.0,
+          "stride": 63.8,
+          "headMin": 258.5,
+          "headMax": 396.4,
+          "headEnd": 396.4,
+          "feetMin": 14.3
+        },
+        "Gallop_Jump": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Gallop_Jump.BullAnimalArmature_Gallop_Jump",
+          "length": 1.458,
+          "stride": 262.2,
+          "headMin": 190.4,
+          "headMax": 523.5,
+          "headEnd": 280.5,
+          "feetMin": 2.1
+        },
+        "Jump_toIdle": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Jump_toIdle.BullAnimalArmature_Jump_toIdle",
+          "length": 1.708,
+          "stride": 273.4,
+          "headMin": 179.0,
+          "headMax": 527.9,
+          "headEnd": 382.9,
+          "feetMin": 6.2
+        },
+        "Idle_Headlow": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Idle_Headlow.BullAnimalArmature_Idle_Headlow",
+          "length": 3.333,
+          "stride": 69.6,
+          "headMin": 272.7,
+          "headMax": 385.2,
+          "headEnd": 385.2,
+          "feetMin": 14.3
+        },
+        "Attack_Headbutt": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Attack_Headbutt.BullAnimalArmature_Attack_Headbutt",
+          "length": 1.0,
+          "stride": 42.5,
+          "headMin": 193.2,
+          "headMax": 397.8,
+          "headEnd": 386.0,
+          "feetMin": 14.3
+        },
+        "Idle_HitReact_Left": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullAnimalArmature_Idle_HitReact_Left.BullAnimalArmature_Idle_HitReact_Left",
+          "length": 0.667,
+          "stride": 1.8,
+          "headMin": 385.2,
+          "headMax": 440.9,
+          "headEnd": 385.2,
+          "feetMin": 14.3
+        },
+        "Idle_HitReact_Right": {
+          "asset": "/Game/Free/Creatures/Bull/Bull/SkeletalMeshes/BullIdle_HitReact_Right.BullIdle_HitReact_Right",
+          "length": 0.667,
+          "stride": 1.8,
+          "headMin": 385.2,
+          "headMax": 440.9,
+          "headEnd": 385.2,
+          "feetMin": 14.3
+        }
+      }
+    },
+    "Pig": {
+      "mesh": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/Pig.Pig",
+      "skeleton": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/Pig_Skeleton.Pig_Skeleton",
+      "yaw": -90.0,
+      "headZ": 119.3,
+      "reach": 166.8,
+      "bones": 18,
+      "clips": {
+        "Run": {
+          "asset": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Run.PigAnimalArmature_AnimalArmature_AnimalArmature_Run",
+          "length": 0.667,
+          "stride": 76.6,
+          "headMin": 117.1,
+          "headMax": 160.3,
+          "headEnd": 117.1,
+          "feetMin": 8.2
+        },
+        "Idle": {
+          "asset": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Idle.PigAnimalArmature_AnimalArmature_AnimalArmature_Idle",
+          "length": 6.667,
+          "stride": 0.0,
+          "headMin": 107.6,
+          "headMax": 119.3,
+          "headEnd": 119.3,
+          "feetMin": 4.4
+        },
+        "Walk": {
+          "asset": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Walk.PigAnimalArmature_AnimalArmature_AnimalArmature_Walk",
+          "length": 1.0,
+          "stride": 54.2,
+          "headMin": 115.9,
+          "headMax": 137.2,
+          "headEnd": 115.9,
+          "feetMin": 2.6
+        },
+        "Death": {
+          "asset": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Death.PigAnimalArmature_AnimalArmature_AnimalArmature_Death",
+          "length": 0.875,
+          "stride": 0.0,
+          "headMin": 35.4,
+          "headMax": 131.0,
+          "headEnd": 35.4,
+          "feetMin": 4.4
+        },
+        "Headbutt": {
+          "asset": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Headbutt.PigAnimalArmature_AnimalArmature_AnimalArmature_Headbutt",
+          "length": 0.625,
+          "stride": 37.2,
+          "headMin": 109.1,
+          "headMax": 138.0,
+          "headEnd": 119.3,
+          "feetMin": 4.4
+        },
+        "Jump_Loop": {
+          "asset": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Jump_Loop.PigAnimalArmature_AnimalArmature_AnimalArmature_Jump_Loop",
+          "length": 1.0,
+          "stride": 6.7,
+          "headMin": 114.3,
+          "headMax": 119.3,
+          "headEnd": 119.3,
+          "feetMin": 12.3
+        },
+        "Jump_Start": {
+          "asset": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Jump_Start.PigAnimalArmature_AnimalArmature_AnimalArmature_Jump_Start",
+          "length": 0.25,
+          "stride": 22.2,
+          "headMin": 98.5,
+          "headMax": 119.3,
+          "headEnd": 119.3,
+          "feetMin": 4.4
+        },
+        "Idle_Eating": {
+          "asset": "/Game/Free/Creatures/Pig/Pig/SkeletalMeshes/PigAnimalArmature_AnimalArmature_AnimalArmature_Idle_Eating.PigAnimalArmature_AnimalArmature_AnimalArmature_Idle_Eating",
+          "length": 3.333,
+          "stride": 10.6,
+          "headMin": 63.6,
+          "headMax": 119.3,
+          "headEnd": 119.3,
+          "feetMin": 4.4
+        }
+      }
+    },
+    "Spider": {
+      "mesh": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/Spider.Spider",
+      "skeleton": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/Spider_Skeleton.Spider_Skeleton",
+      "yaw": 90.8,
+      "headZ": 87.8,
+      "reach": 572.6,
+      "bones": 59,
+      "clips": {
+        "Spider_Idle": {
+          "asset": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Idle.SpiderSpiderArmature_Spider_Idle",
+          "length": 4.167,
+          "stride": 0.0,
+          "headMin": 95.2,
+          "headMax": 120.1,
+          "headEnd": 95.2,
+          "feetMin": 1.9
+        },
+        "Spider_Jump": {
+          "asset": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Jump.SpiderSpiderArmature_Spider_Jump",
+          "length": 0.708,
+          "stride": 115.9,
+          "headMin": 54.9,
+          "headMax": 342.9,
+          "headEnd": 95.2,
+          "feetMin": 1.5
+        },
+        "Spider_Walk": {
+          "asset": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Walk.SpiderSpiderArmature_Spider_Walk",
+          "length": 0.833,
+          "stride": 148.3,
+          "headMin": 95.2,
+          "headMax": 97.8,
+          "headEnd": 95.2,
+          "feetMin": -1.8
+        },
+        "Spider_Death": {
+          "asset": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Death.SpiderSpiderArmature_Spider_Death",
+          "length": 1.042,
+          "stride": 147.6,
+          "headMin": 38.3,
+          "headMax": 363.2,
+          "headEnd": 38.3,
+          "feetMin": 1.6
+        },
+        "Spider_Attack": {
+          "asset": "/Game/Free/Creatures/Spider/Spider/SkeletalMeshes/SpiderSpiderArmature_Spider_Attack.SpiderSpiderArmature_Spider_Attack",
+          "length": 0.75,
+          "stride": 34.9,
+          "headMin": 84.7,
+          "headMax": 95.2,
+          "headEnd": 95.2,
+          "feetMin": 1.4
+        }
+      }
+    }
+  }
+}

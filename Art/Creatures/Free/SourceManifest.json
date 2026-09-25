@@ -1,0 +1,66 @@
+{
+  "source": "poly.pizza (Quaternius, CC0 1.0)",
+  "fetched": "2026-09-25T03:02:16Z",
+  "assets": [
+    {
+      "name": "Wolf",
+      "title": "Wolf",
+      "purpose": "feral_kin Dire Wolf, hollow Grave Hound",
+      "page": "https://poly.pizza/m/P1gU3Qkr9r",
+      "url": "https://static.poly.pizza/f1d12388-e39b-4157-b32a-646a1d089fc4.glb",
+      "licence": "CC0 1.0",
+      "creator": "Quaternius",
+      "file": "Saved/CreatureSources/Wolf.glb",
+      "bytes": 986712,
+      "sha256": "16ac96339d06f7def9af20d5d9b27622d61e53580dab43970c9edb1bffbe8f84"
+    },
+    {
+      "name": "Stag",
+      "title": "Stag",
+      "purpose": "feral_kin Antlered Shaman",
+      "page": "https://poly.pizza/m/tQdzbZ1Cmw",
+      "url": "https://static.poly.pizza/a9c69fbc-bf7c-4585-9a49-a82e0be1ac6b.glb",
+      "licence": "CC0 1.0",
+      "creator": "Quaternius",
+      "file": "Saved/CreatureSources/Stag.glb",
+      "bytes": 1044172,
+      "sha256": "3c2df7c13a3d37c8660684e46aa1e5a2bf7e91a9b279983921d48bd93d0b67ed"
+    },
+    {
+      "name": "Bull",
+      "title": "Bull",
+      "purpose": "feral_kin Tusked Behemoth",
+      "page": "https://poly.pizza/m/a8PIIYwF7r",
+      "url": "https://static.poly.pizza/5704ef69-2c27-4de8-a942-70a29458af21.glb",
+      "licence": "CC0 1.0",
+      "creator": "Quaternius",
+      "file": "Saved/CreatureSources/Bull.glb",
+      "bytes": 1038360,
+      "sha256": "545642d15d4d062efb45915ac6e776c2b5921ff89de3544f65e450bbfd16ce16"
+    },
+    {
+      "name": "Pig",
+      "title": "Pig",
+      "purpose": "feral_kin Bristleback Boar",
+      "page": "https://poly.pizza/m/u35l6uP5vj",
+      "url": "https://static.poly.pizza/6277c120-ea5c-405d-9614-0d3d7e0b829d.glb",
+      "licence": "CC0 1.0",
+      "creator": "Quaternius",
+      "file": "Saved/CreatureSources/Pig.glb",
+      "bytes": 300940,
+      "sha256": "39a6187a43130b6d758090294ff4292c06a113df6b03243e124644eb8c71aee4"
+    },
+    {
+      "name": "Spider",
+      "title": "Spider",
+      "purpose": "stoneborn Crystal Ballista (spider-legged construct)",
+      "page": "https://poly.pizza/m/yRYJiAJyiM",
+      "url": "https://static.poly.pizza/4259fbdb-afb5-4d40-9108-363625dd6b6e.glb",
+      "licence": "CC0 1.0",
+      "creator": "Quaternius",
+      "file": "Saved/CreatureSources/Spider.glb",
+      "bytes": 449008,
+      "sha256": "d759e35f6cf5adc7eb7e3f70135cd2a808787fc36337a523015592ba840ccd6d"
+    }
+  ]
+}

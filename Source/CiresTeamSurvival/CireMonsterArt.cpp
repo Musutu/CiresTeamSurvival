@@ -13,6 +13,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
 #include "Engine/SkeletalMesh.h"
+#include "Engine/SkeletalMeshSocket.h" // world-dressing
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -64,6 +65,21 @@ bool ParseBody(const TSharedPtr<FJsonObject>& O, CireMonsterArt::FBody& Body)
         !O->TryGetNumberField(TEXT("meshScale"), Scale) || !FMath::IsFinite(Scale) || Scale < .05 || Scale > 50) return false;
     O->TryGetNumberField(TEXT("yaw"), Yaw); O->TryGetNumberField(TEXT("heightCm"), Height);
     O->TryGetStringField(TEXT("bakedWeapon"), Body.BakedWeapon);
+    // world-dressing: free creature bodies (RaceMeshes.free.json).
+    {
+        O->TryGetStringField(TEXT("rig"), Body.Rig);
+        O->TryGetBoolField(TEXT("lockRoot"), Body.bLockRoot);
+        double V = 0;
+        if (O->TryGetNumberField(TEXT("walkSpeedCm"), V) && FMath::IsFinite(V)) Body.WalkSpeedCm = static_cast<float>(FMath::Clamp(V, 0., 2000.));
+        if (O->TryGetNumberField(TEXT("runSpeedCm"), V) && FMath::IsFinite(V)) Body.RunSpeedCm = static_cast<float>(FMath::Clamp(V, 0., 3000.));
+        if (O->TryGetNumberField(TEXT("reachCm"), V) && FMath::IsFinite(V)) Body.ReachCm = static_cast<float>(FMath::Clamp(V, 0., 2000.));
+        const TArray<TSharedPtr<FJsonValue>>* Drops = nullptr;
+        if (O->TryGetArrayField(TEXT("dropPropBones"), Drops))
+            for (const auto& Value : *Drops) { FString Bone; if (Value->TryGetString(Bone)) Body.DropPropBones.Add(FName(*Bone)); }
+        const TSharedPtr<FJsonObject>* Sockets = nullptr;
+        if (O->TryGetObjectField(TEXT("sockets"), Sockets))
+            for (const auto& Pair : (*Sockets)->Values) { FString Bone; if (Pair.Value->TryGetString(Bone)) Body.Sockets.Add(FName(FString(Pair.Key.ToView())), FName(*Bone)); }
+    }
     Body.MeshScale = static_cast<float>(Scale); Body.Yaw = static_cast<float>(FMath::Clamp(Yaw, -360., 360.));
     Body.HeightCm = static_cast<float>(FMath::Clamp(Height, 40., 600.));
     const TSharedPtr<FJsonObject>* Animations = nullptr;
@@ -141,6 +157,35 @@ void Load()
                 if (Bodies.IsEmpty()) continue;
                 ByArchetype.Add(Id, Bodies); RaceArt.Add(Id);
                 if (!Recommended.Contains(Id) || !Bodies.Contains(Recommended[Id])) { TArray<FString> Keys; Bodies.GetKeys(Keys); Recommended.Add(Id, Keys[0]); }
+            }
+    }
+    // world-dressing: RaceMeshes.free.json (CC0 animated creatures, /Game/Free/Creatures) is the lowest-priority
+    // overlay: a unit takes a free body only when neither NPCMeshes nor RaceMeshes.tripo.json gave it one, and only
+    // if the mesh package is present (so a missing or local-only pack silently falls back).
+    {
+        TSharedPtr<FJsonObject> FreeMeshes;
+        const TSharedPtr<FJsonObject>* FreeUnits = nullptr;
+        if (ReadFile(TEXT("RaceMeshes.free.json"), FreeMeshes) && (FreeMeshes->TryGetObjectField(TEXT("archetypes"), FreeUnits) || FreeMeshes->TryGetObjectField(TEXT("units"), FreeUnits)))
+            for (const auto& Pair : (*FreeUnits)->Values)
+            {
+                const FName Id(FString(Pair.Key.ToView()));
+                const TSharedPtr<FJsonObject>* Entry = nullptr;
+                if (ByArchetype.Contains(Id) || !Pair.Value->TryGetObject(Entry)) continue;
+                TMap<FString, CireMonsterArt::FBody> Bodies;
+                auto Add = [&](const TSharedPtr<FJsonObject>& O)
+                {
+                    CireMonsterArt::FBody Body;
+                    if (!ParseBody(O, Body)) return;
+                    if (!FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Body.MeshPath))) return;
+                    Bodies.Add(Body.Variant, Body);
+                };
+                if ((*Entry)->HasField(TEXT("mesh"))) Add(*Entry);
+                const TArray<TSharedPtr<FJsonValue>>* Alternates = nullptr;
+                if ((*Entry)->TryGetArrayField(TEXT("alternates"), Alternates))
+                    for (const auto& Value : *Alternates) { const TSharedPtr<FJsonObject>* Alt = nullptr; if (Value->TryGetObject(Alt)) Add(*Alt); }
+                if (Bodies.IsEmpty()) continue;
+                ByArchetype.Add(Id, Bodies); RaceArt.Add(Id);
+                TArray<FString> Keys; Bodies.GetKeys(Keys); Recommended.Add(Id, Keys[0]);
             }
     }
     const TSharedPtr<FJsonObject>* ArtArchetypes = nullptr;
@@ -431,6 +476,19 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
         RestoreFallback();
         return false;
     }
+    // world-dressing: animal bodies get humanoid-named sockets (aura, footsteps, hit points) on their own bones.
+    if (!Body.Sockets.IsEmpty())
+    {
+        bool bAdded = false;
+        for (const auto& Pair : Body.Sockets)
+        {
+            if (Asset->FindSocket(Pair.Key) || Asset->GetRefSkeleton().FindBoneIndex(Pair.Value) == INDEX_NONE) continue;
+            USkeletalMeshSocket* Socket = NewObject<USkeletalMeshSocket>(Asset, NAME_None, RF_Transient);
+            Socket->SocketName = Pair.Key; Socket->BoneName = Pair.Value;
+            Asset->AddSocket(Socket, false); bAdded = true;
+        }
+        if (bAdded) Asset->RebuildSocketMap();
+    }
     CaptureFallback();
     auto* Mesh = Monster->GetMesh();
     UMaterialInterface* Overlay = Mesh->GetOverlayMaterial();
@@ -459,6 +517,7 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
     if (auto* Anim = GetMonsterAnim())
     {
         Anim->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
+        Anim->bLockRootToReference = Body.bLockRoot; // world-dressing
         Anim->Idle.Sequence = RoleClip(TEXT("idle")); Anim->Idle.Weight = 1.f;
         Anim->Walk.Sequence = RoleClip(TEXT("walk")); Anim->Walk.bRemoveDrift = true;
         Anim->Run.Sequence = RoleClip(TEXT("run")); Anim->Run.bRemoveDrift = true;
@@ -545,6 +604,7 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
         OutParts.Add(Part);
     }
     bTripoApplied = true; AppliedArchetype = Archetype.Id; AppliedVariant = Body.Variant; AppliedMeshScale = Body.MeshScale;
+    AppliedWalkRaw = Body.WalkSpeedCm / FMath::Max(.01f, Body.MeshScale); AppliedRunRaw = Body.RunSpeedCm / FMath::Max(.01f, Body.MeshScale); // world-dressing
     Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = -1.f; // a cast already under way is picked up mid-bar
     LastHealth = Monster->Health; Phase = FMath::FRand(); IdleTime = FMath::FRand() * 5.f;
     CireRaces::ApplySkin(Monster); // monster-races: race palette + rank colours on the body's own textures
@@ -579,6 +639,7 @@ FVector2D UCireMonsterArt::GroundSpeeds() const
     const auto* Monster = Cast<ACireMonster>(GetOwner());
     const float Scale = Monster ? static_cast<float>(Monster->GetMesh()->GetComponentScale().X) : 1.f;
     const auto Speed = [&](const TCHAR* Role) { const UAnimSequence* Clip = RoleClip(Role); return Clip ? CireAnimClips::Analyze(Clip).GroundSpeed() * Scale : 0.f; };
+    if (AppliedWalkRaw > 0.f) return FVector2D(AppliedWalkRaw * Scale, FMath::Max(AppliedRunRaw, AppliedWalkRaw * 1.5f) * Scale); // world-dressing
     return FVector2D(Speed(TEXT("walk")), Speed(TEXT("run")));
 }
 
@@ -674,8 +735,10 @@ void UCireMonsterArt::UpdatePresentation(float DeltaTime)
     UAnimSequence* RunClip = Anim->Run.Sequence;
     const CireAnimClips::FClipInfo& WalkInfo = CireAnimClips::Analyze(WalkClip);
     const CireAnimClips::FClipInfo& RunInfo = CireAnimClips::Analyze(RunClip);
-    const float WalkSpeed = FMath::Max(20.f, WalkInfo.GroundSpeed() * Scale);
-    const float RunSpeed = FMath::Max(WalkSpeed + 50.f, RunInfo.GroundSpeed() * Scale);
+    float WalkSpeed = FMath::Max(20.f, WalkInfo.GroundSpeed() * Scale);
+    float RunSpeed = FMath::Max(WalkSpeed + 50.f, RunInfo.GroundSpeed() * Scale);
+    // world-dressing: in-place clips of free creatures carry their natural speeds in data.
+    if (AppliedWalkRaw > 0.f) { WalkSpeed = AppliedWalkRaw * Scale; RunSpeed = FMath::Max(WalkSpeed + 50.f, AppliedRunRaw * Scale); }
     const float RunAlpha = RunClip ? FMath::Clamp((SmoothedSpeed - WalkSpeed) / (RunSpeed - WalkSpeed), 0.f, 1.f) : 0.f;
     const float MoveTarget = FMath::Clamp(SmoothedSpeed / (WalkSpeed * .35f), 0.f, 1.f);
     Anim->MoveAlpha = FMath::FInterpTo(Anim->MoveAlpha, MoveTarget, DeltaTime, 8.f);
@@ -869,6 +932,7 @@ bool ACireMonsterCorpse::Initialize(const USkeletalMeshComponent& Source, UAnimS
     auto* Anim = Cast<UCireMonsterAnimInstance>(Body->GetAnimInstance());
     if (!Anim) return false;
     Anim->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
+    if (const auto* SourceAnim = Cast<UCireMonsterAnimInstance>(Source.GetAnimInstance())) Anim->bLockRootToReference = SourceAnim->bLockRootToReference; // world-dressing
     Anim->Idle.Sequence = Idle; Anim->Idle.Weight = 1.f;
     Anim->Death.Sequence = Fall; Anim->Death.Weight = 0.f; Anim->Death.LowerBody = 1.f;
     if (Hands) { Anim->Hands = *Hands; Anim->Hands.TwoHandWeight = 0.f; }
