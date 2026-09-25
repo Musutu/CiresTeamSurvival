@@ -89,6 +89,11 @@ public:
     UPROPERTY(Replicated) TArray<FString> ProfileRoles;
     UPROPERTY(Replicated) bool bBot = false;
     UPROPERTY(Replicated) bool bDrafted = false;
+    // champion-select: pick timer (server world seconds; 0 = untimed) and the champion this
+    // player has selected but not locked yet (teammates see it in their team column).
+    UPROPERTY(Replicated) float DraftDeadline = 0;
+    UPROPERTY(Replicated) float DraftTimerTotal = 0;
+    UPROPERTY(Replicated) FString DraftHoverId;
     UPROPERTY(Replicated) bool bDead = false;
     UPROPERTY(Replicated) FString HeroName = TEXT("Unbound");
     UPROPERTY(Replicated) float Health = 500;
@@ -261,6 +266,11 @@ public:
     virtual void Logout(AController* Exiting) override;
     virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
     Cires::MatchClock Clock;
+    // champion-select: per-player pick timer; at 0 the selected (else a random free) champion
+    // is locked. Game.ini [/Script/CiresTeamSurvival.CireGameMode] DraftPickSeconds, or
+    // -CireDraftSeconds=N; 0 disables it. Developer probes/galleries run untimed.
+    float DraftPickSeconds = 90.f;
+    void TickDraftTimer();
     Cires::TeamRewards Rewards[2];
     UPROPERTY() TArray<ACireHero*> Heroes;
     UPROPERTY() TArray<ACireMonster*> Monsters;
@@ -307,6 +317,7 @@ public:
     virtual void PawnLeavingGame() override;
     UFUNCTION(Server,Reliable) void ServerAction(int32 Action, int32 Value, AActor* Selected);
     UFUNCTION(Server,Reliable) void ServerDraftProfile(const FString& ProfileId);
+    UFUNCTION(Server,Reliable) void ServerDraftHover(const FString& ProfileId); // champion-select: selected, not locked
     UFUNCTION(Server,Reliable) void ServerCastAt(int32 Slot,FVector_NetQuantize Aim);
     UFUNCTION(Server,Reliable) void ServerSummonCommand(int32 Command,AActor* Target,FVector_NetQuantize Destination);
     UFUNCTION(Server,Reliable) void ServerSendChat(const FString& Message, bool bTeamOnly);
@@ -322,6 +333,10 @@ public:
     void SubmitChat();
     void CancelChat();
     void AppendChatCharacter(TCHAR Character);
+    // champion-select: the draft screen's search box owns typed characters while focused.
+    bool bDraftSearch = false;
+    FString DraftSearch;
+    void AppendDraftSearchCharacter(TCHAR Character);
     bool bChatInput = false;
     bool bChatTeamOnly = true;
     FString ChatDraft;

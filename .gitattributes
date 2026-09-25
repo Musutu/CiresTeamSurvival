@@ -24,3 +24,6 @@
 *.lib filter=lfs diff=lfs merge=lfs -text
 *.archive filter=lfs diff=lfs merge=lfs -text
 *.locres filter=lfs diff=lfs merge=lfs -text
+
+# Champion-select painted backgrounds (source images for Tools/BuildDraftSelectContent.py)
+Art/DraftBackgrounds/*.png filter=lfs diff=lfs merge=lfs -text
