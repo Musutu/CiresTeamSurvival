@@ -213,7 +213,8 @@ bool CirePets::RunSmoke(ACireGameMode* Mode)
     T.Check(FMath::IsNearlyEqual(M->Threat.FindRef(H), OwnerThreat, 1.f), TEXT("a passive pet takes no share"));
     Reset(M);
 
-    // ---- stances ----
+    // ---- stances ---- (autocast held off: a frozen-time fixture would leave a pounce in the air)
+    for (float& Ready : Pet->AbilityReadyAt) Ready = World->GetTimeSeconds() + 100.f;
     Command(H, ECirePetCommand::Follow, nullptr);
     Place(Pet, F.At(FVector(-100, 0, Cat->CapsuleHalfHeight + 4)));
     H->Target = M; H->bAutoAttack = true;
@@ -235,6 +236,7 @@ bool CirePets::RunSmoke(ACireGameMode* Mode)
     Command(H, ECirePetCommand::StanceDefensive, nullptr); Pet->Order_Follow();
 
     // ---- special (roar) and owner skills (maul, pounce) ----
+    for (float& Ready : Pet->AbilityReadyAt) Ready = 0;
     Reset(M); Reset(M2);
     Place(Pet, M->GetActorLocation() - FVector(150, 0, 92 - Cat->CapsuleHalfHeight - 4));
     const int32 Roar = Cat->SpecialIndex();
