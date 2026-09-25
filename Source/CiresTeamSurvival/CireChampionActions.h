@@ -59,6 +59,12 @@ public:
     bool bBasic = false;
     uint32 SeenAttackSerial = 0;
     TArray<float> LastCooldowns;
+    /** fab-integration: the playing clip came from the Fab packs (CireFabAnimation); reactions are weaker, upper-body layers. */
+    bool bFab = false;
+    bool bReaction = false;
+    bool bDeath = false;
+    float LastHealth = -1.f;
+    double LastHitAt = -10.0;
     /** Galleries/tests: hold the layer at an absolute clip time instead of following gameplay. */
     bool bHold = false;
     float HoldTime = 0.f;

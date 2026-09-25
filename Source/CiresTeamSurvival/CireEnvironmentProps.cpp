@@ -1,4 +1,5 @@
 #include "CireEnvironmentProps.h"
+#include "Misc/CommandLine.h"
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireNav.h" // nav-paths
@@ -225,6 +226,8 @@ bool LoadTown()
         // Default quality order when a manifest omits "priority": tripo < fab.
         const FString Source=Name.Mid(15).LeftChop(5);
         const int32 Default=Source.Contains(TEXT("fab"))?20:Source.Contains(TEXT("tripo"))?10:5;
+        // fab-integration: -CireNoFab / -CireNoFabTown hides the purchased-pack overlays (before/after captures).
+        if(Name.Contains(TEXT(".fab"))&&(FParse::Param(FCommandLine::Get(),TEXT("CireNoFab"))||FParse::Param(FCommandLine::Get(),TEXT("CireNoFabTown"))))continue;
         MergeManifest(DataPath(*Name),Default,Source,false);
     }
     for(auto& Pair:Town.Slots)Resolve(Pair.Value);

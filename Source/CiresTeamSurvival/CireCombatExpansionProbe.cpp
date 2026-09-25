@@ -29,6 +29,9 @@
 #include "CireRoleSkills.h"
 #include "CireWeaponPresentation.h"
 #include "CireTargeting.h"
+#include "CireFabVFX.h" // fab-integration
+#include "CireCreatureArt.h" // fab-integration: Fab creature champion smoke
+#include "CireFabAnimation.h" // fab-integration
 #include "Engine/World.h"
 #include "Misc/ScopeExit.h"
 #include "CireAuraVisuals.h" // aura-vfx
@@ -108,6 +111,9 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireArenas::RunSmoke(Mode)&&Good; // arenas: data, symmetry, paths, random no-repeat pick, build and cleanup
     Good=CireWaveDirector::RunTests(Mode)&&Good; // wave-director: data, templates, live edits, escort, stuck/failsafe, neutral packs, bots
     Good=CireNav::RunTests(Mode)&&Good; // nav-paths: navmesh coverage, paths, prop carving, arenas, path editor
+    Good=CireFabAnimation::RunTests()&&Good; // fab-integration: optional Fab champion clips + fallback
+    Good=CireFabVFX::RunTests(Mode->GetWorld())&&Good; // fab-integration: optional Fab Niagara data + clean-clone fallback
+    Good=UCireCreatureArt::RunFabChampionSmoke(Mode->GetWorld())&&Good; // fab-integration: Fab bear / centaur champion bodies + fallback
     Good=CireAbilityVFX::RunTests(Mode)&&Good; // ability-vfx: shape-true telegraphs, line indicators, lifecycles, release sync
     Good=CireTechConstructs::RunSmoke(Mode)&&Good; // new-champions: Aetheri Constructs (place, attack/aura, expire, limits, destroy, skitters, monsters, arena)
     Good=CireSignatureSkills::RunSmoke(Mode)&&Good; // new-champions: kits, gunblade basic, glaive bounces, marks, mount, Aetheri race

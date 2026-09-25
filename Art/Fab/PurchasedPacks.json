@@ -1,20 +1,237 @@
 {
-  "_comment": "Paid Fab packs Eric bought on 2026-09-25 (checked in his Fab library). UE-format only; added with Add to Project into the MAIN checkout, never committed (public repo). 'folders' = the top-level Content folders each pack created, filled in when the pack lands; Tools/LinkFabContent.py junctions them into every worktree. 'installed' is set when the folder exists.",
-  "targetProject": "C:/Users/Eric/Documents/GitHub/CiresTeamSurvival/CiresTeamSurvival.uproject",
-  "packs": [
-    {"order": 1,  "name": "GDH All Animation Bundle", "seller": "GameDevHero", "listing": "de8aa580-9194-4494-8b82-f1f936633e0b", "category": "animation", "ue": "5.5-5.8", "declares58": true, "contents": "~6,872 combat animations (sword, sword & shield, two-hand, dual, dagger, spear, magic, unarmed, defence) on the UE5 Manny skeleton; bundle of GDH packs", "use": "champion attacks, casts, hits, deaths, dodges per weapon archetype", "folders": []},
-    {"order": 2,  "name": "Male Locomotion Set", "seller": "VanillaLoop", "listing": "ad171f97-21c2-40c1-a9ad-1e474e9b2ae2", "category": "animation", "ue": "5.0-5.8", "declares58": true, "contents": "strafe and non-strafe male locomotion (idle, walk, jog, run, starts/stops, turns); extra FBX/MotionBuilder files", "use": "champion idle / run / strafe / backpedal / jump", "folders": []},
-    {"order": 3,  "name": "Gun & Sword Animation Pack", "seller": "9CG", "listing": "db5fe614-0158-4cfa-bc75-08f5eeab72ee", "category": "animation", "ue": "5.0-5.8", "declares58": true, "contents": "pistol + sword combat set on UE5 Manny (Simple)", "use": "pistol / gunblade champions", "folders": []},
-    {"order": 4,  "name": "Crossbow Animation Set", "seller": "2DragoH", "listing": "dbfaa3be-c7d0-4d6c-a775-6a1bc2a2ff56", "category": "animation", "ue": "4.26-5.7", "declares58": false, "contents": "174 crossbow animations, ALS V4 compatible, native UE5 Manny/Quinn skeleton", "use": "crossbow / ranged champions (bow archetype fallback for aim/reload/hit)", "folders": []},
-    {"order": 5,  "name": "Big Pack Magic Effects Niagara", "seller": "Lord Enot Store", "listing": "2cca01c7-e3d0-4343-bf73-9b92b74e1fae", "category": "vfx", "ue": "5.0-5.8", "declares58": true, "contents": "337 Niagara spell effects: earth, air, ice, fire, water, light/holy, dark, lightning, arcane... (Lord Enot packs 1-5)", "use": "projectiles, impacts, casts per damage type", "folders": []},
-    {"order": 6,  "name": "Shadow Magic Niagara", "seller": "Lord Enot Store", "listing": "8076994e", "category": "vfx", "ue": "5.0-5.8", "declares58": true, "contents": "60 shadow effects", "use": "shadow school projectiles/impacts/auras", "folders": []},
-    {"order": 7,  "name": "State VFX Niagara", "seller": "Lord Enot Store", "listing": "9d4081c6-36c7-4277-a834-60dc1a1db176", "category": "vfx", "ue": "5.0-5.8", "declares58": true, "contents": "15 looping character state effects (buff/debuff auras, stun, poison, burning, freeze...)", "use": "buff/debuff/aura signature visuals", "folders": []},
-    {"order": 8,  "name": "[49] Earth Spells Niagara", "seller": "UrtanoVFX", "listing": "d0b2c881-30fe-41d3-bf1d-3787c2f237fc", "category": "vfx", "ue": "5.0-5.8", "declares58": true, "contents": "49 earth magic effects, size/colour user parameters", "use": "earth school", "folders": []},
-    {"order": 9,  "name": "Nature VFX with Vine Growth", "seller": "SoftTofuVFX", "listing": "a830d4a9-9428-43ed-9fe5-2a70c9bd3e0d", "category": "vfx", "ue": "5.2-5.8", "declares58": true, "contents": "vine attack/growth/barrier, wood hide, area buff, heal beam, projectile, grenade, explosions, rune particle", "use": "nature school, heals, roots", "folders": []},
-    {"order": 10, "name": "Realistic Blood VFX", "seller": "Hivemind", "listing": "915d0485-6048-4a9a-9471-ebaa83abcf0b", "category": "vfx", "ue": "5.0-5.8", "declares58": true, "contents": "Niagara blood hits, sprays, splatter decals", "use": "physical hit impacts (dark-fantasy tone)", "folders": []},
-    {"order": 11, "name": "Ultimate Weapons Bundle", "seller": "Hivemind", "listing": "e4b0dc83", "category": "weapons", "ue": "5.0-5.8", "declares58": true, "contents": "medieval weapon static meshes (swords, axes, maces, spears, shields, bows, arrows...)", "use": "champion weapon props where they beat the Tripo props", "folders": []},
-    {"order": 12, "name": "Medieval Kingdom", "seller": "Hivemind", "listing": "42d4a792-2b66-423d-9b20-84d6b2c578d8", "category": "environment", "ue": "5.3-5.8", "declares58": true, "contents": "580 meshes, enterable furnished castle + town, 2K/4K textures, demo map", "use": "town + arena slots", "folders": []},
-    {"order": 13, "name": "Undead Pack", "seller": "Lilpupinduy", "listing": "c25845ff-9f3f-49f8-a846-583ac91ca534", "category": "characters", "ue": "5.0-5.7", "declares58": false, "contents": "Lich, Ghoul, Skeleton, Zombie, Goblin characters, 4 LODs, 2K/4K", "use": "monster races (monster-races agent) - reference only here", "folders": []},
-    {"order": 14, "name": "ROG Creatures Pack", "seller": "Atlant Games", "listing": "025e0331-3ce6-4ee7-948f-c572fd85b0a1", "category": "characters", "ue": "4.22-5.8", "declares58": true, "contents": "animated animal/creature pack (wolf, deer, ... with ABP/BS)", "use": "creatures / pets (creature agents) - reference only here", "folders": []}
-  ]
+ "_comment": "Paid Fab packs Eric bought on 2026-09-25 (checked in his Fab library). UE-format only; added with Add to Project into the MAIN checkout, never committed (public repo). 'folders' = the top-level Content folders each pack created, filled in when the pack lands; Tools/LinkFabContent.py junctions them into every worktree. 'installed' is set when the folder exists.",
+ "targetProject": "C:/Users/Eric/Documents/GitHub/CiresTeamSurvival/CiresTeamSurvival.uproject",
+ "packs": [
+  {
+   "order": 1,
+   "name": "GDH All Animation Bundle",
+   "seller": "GameDevHero",
+   "listing": "de8aa580-9194-4494-8b82-f1f936633e0b",
+   "category": "animation",
+   "ue": "5.5-5.8",
+   "declares58": true,
+   "contents": "~6,872 combat animations (sword, sword & shield, two-hand, dual, dagger, spear, magic, unarmed, defence) on the UE5 Manny skeleton; bundle of GDH packs",
+   "use": "champion attacks, casts, hits, deaths, dodges per weapon archetype",
+   "folders": [
+    "GDHBundle"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 2,
+   "name": "Male Locomotion Set",
+   "seller": "VanillaLoop",
+   "listing": "ad171f97-21c2-40c1-a9ad-1e474e9b2ae2",
+   "category": "animation",
+   "ue": "5.0-5.8",
+   "declares58": true,
+   "contents": "strafe and non-strafe male locomotion (idle, walk, jog, run, starts/stops, turns); extra FBX/MotionBuilder files",
+   "use": "champion idle / run / strafe / backpedal / jump",
+   "folders": [
+    "MaleLocomotionSet"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 3,
+   "name": "Gun & Sword Animation Pack",
+   "seller": "9CG",
+   "listing": "db5fe614-0158-4cfa-bc75-08f5eeab72ee",
+   "category": "animation",
+   "ue": "5.0-5.8",
+   "declares58": true,
+   "contents": "pistol + sword combat set on UE5 Manny (Simple)",
+   "use": "pistol / gunblade champions",
+   "folders": [
+    "Gun_and_Sword"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 4,
+   "name": "Crossbow Animation Set",
+   "seller": "2DragoH",
+   "listing": "dbfaa3be-c7d0-4d6c-a775-6a1bc2a2ff56",
+   "category": "animation",
+   "ue": "4.26-5.7",
+   "declares58": false,
+   "contents": "174 crossbow animations, ALS V4 compatible, native UE5 Manny/Quinn skeleton",
+   "use": "crossbow / ranged champions (bow archetype fallback for aim/reload/hit)",
+   "folders": [
+    "CrossbowPackAnim"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 5,
+   "name": "Big Pack Magic Effects Niagara",
+   "seller": "Lord Enot Store",
+   "listing": "2cca01c7-e3d0-4343-bf73-9b92b74e1fae",
+   "category": "vfx",
+   "ue": "5.0-5.8",
+   "declares58": true,
+   "contents": "337 Niagara spell effects: earth, air, ice, fire, water, light/holy, dark, lightning, arcane... (Lord Enot packs 1-5)",
+   "use": "projectiles, impacts, casts per damage type",
+   "folders": [
+    "Big_Pack_Magic_VFX"
+   ],
+   "installed": "2026-09-25 (copied from Documents/Unreal Projects/BigPackMagicEffectsNiagar)"
+  },
+  {
+   "order": 6,
+   "name": "Shadow Magic Niagara",
+   "seller": "Lord Enot Store",
+   "listing": "8076994e",
+   "category": "vfx",
+   "ue": "5.0-5.8",
+   "declares58": true,
+   "contents": "60 shadow effects",
+   "use": "shadow school projectiles/impacts/auras",
+   "folders": [
+    "Shadow_Magic"
+   ],
+   "installed": "2026-09-25 (copied from Documents/Unreal Projects/ShadowMagicNiagara)"
+  },
+  {
+   "order": 7,
+   "name": "State VFX Niagara",
+   "seller": "Lord Enot Store",
+   "listing": "9d4081c6-36c7-4277-a834-60dc1a1db176",
+   "category": "vfx",
+   "ue": "5.0-5.8",
+   "declares58": true,
+   "contents": "15 looping character state effects (buff/debuff auras, stun, poison, burning, freeze...)",
+   "use": "buff/debuff/aura signature visuals",
+   "folders": [
+    "State_VFX"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 8,
+   "name": "[49] Earth Spells Niagara",
+   "seller": "UrtanoVFX",
+   "listing": "d0b2c881-30fe-41d3-bf1d-3787c2f237fc",
+   "category": "vfx",
+   "ue": "5.0-5.8",
+   "declares58": true,
+   "contents": "49 earth magic effects, size/colour user parameters",
+   "use": "earth school",
+   "folders": [
+    "Earth_Spells"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 9,
+   "name": "Nature VFX with Vine Growth",
+   "seller": "SoftTofuVFX",
+   "listing": "a830d4a9-9428-43ed-9fe5-2a70c9bd3e0d",
+   "category": "vfx",
+   "ue": "5.2-5.8",
+   "declares58": true,
+   "contents": "vine attack/growth/barrier, wood hide, area buff, heal beam, projectile, grenade, explosions, rune particle",
+   "use": "nature school, heals, roots",
+   "folders": [
+    "Forest_VFX"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 10,
+   "name": "Realistic Blood VFX",
+   "seller": "Hivemind",
+   "listing": "915d0485-6048-4a9a-9471-ebaa83abcf0b",
+   "category": "vfx",
+   "ue": "5.0-5.8",
+   "declares58": true,
+   "contents": "Niagara blood hits, sprays, splatter decals",
+   "use": "physical hit impacts (dark-fantasy tone)",
+   "folders": [
+    "RealisticBlood"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 11,
+   "name": "Ultimate Weapons Bundle",
+   "seller": "Hivemind",
+   "listing": "e4b0dc83",
+   "category": "weapons",
+   "ue": "5.0-5.8",
+   "declares58": true,
+   "contents": "medieval weapon static meshes (swords, axes, maces, spears, shields, bows, arrows...)",
+   "use": "champion weapon props where they beat the Tripo props",
+   "folders": [
+    "Medieval_Weapons",
+    "Medieval_Weapons_VOL2"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 12,
+   "name": "Medieval Kingdom",
+   "seller": "Hivemind",
+   "listing": "42d4a792-2b66-423d-9b20-84d6b2c578d8",
+   "category": "environment",
+   "ue": "5.3-5.8",
+   "declares58": true,
+   "contents": "580 meshes, enterable furnished castle + town, 2K/4K textures, demo map",
+   "use": "town + arena slots",
+   "folders": [
+    "CastleTown"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 13,
+   "name": "Undead Pack",
+   "seller": "Lilpupinduy",
+   "listing": "c25845ff-9f3f-49f8-a846-583ac91ca534",
+   "category": "characters",
+   "ue": "5.0-5.7",
+   "declares58": false,
+   "contents": "Lich, Ghoul, Skeleton, Zombie, Goblin characters, 4 LODs, 2K/4K",
+   "use": "monster races (monster-races agent) - reference only here",
+   "folders": [
+    "UndeadPack"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 14,
+   "name": "ROG Creatures Pack",
+   "seller": "Atlant Games",
+   "listing": "025e0331-3ce6-4ee7-948f-c572fd85b0a1",
+   "category": "characters",
+   "ue": "4.22-5.8",
+   "declares58": true,
+   "contents": "animated animal/creature pack (wolf, deer, ... with ABP/BS)",
+   "use": "creatures / pets (creature agents) - reference only here",
+   "folders": [
+    "ROG_Creatures"
+   ],
+   "installed": "2026-09-25 (Launcher added them to Documents/Unreal Projects/CireTeamSurvival; copied into the main checkout)"
+  },
+  {
+   "order": 15,
+   "name": "Quadruped Fantasy Creatures",
+   "seller": "PROTOFACTOR INC",
+   "listing": "52d686b6-1180-4f26-901f-ce3c69a14767",
+   "category": "characters",
+   "ue": "4.15-5.5",
+   "declares58": false,
+   "contents": "Centaur (85 anims), Barghest, Mountain Dragon, Griffon",
+   "use": "grave_hound (Barghest), wild_outrider (Centaur)",
+   "folders": [
+    "QuadrapedCreatures"
+   ],
+   "installed": "2026-09-25"
+  }
+ ],
+ "alsoInstalled": {
+  "Monster": "Khornes 'Monster' (free pass): idle/walk/run/jump only, no attack clips - not used",
+  "Polyphoria": "Paladin RPG Set (MetaHuman heavy armour parts) - not a Wood Monster; MetaHuman assembly needs the editor",
+  "FXVarietyPack": "Kakky FX Variety Pack (free pass) - not mapped yet"
+ }
 }

@@ -7,6 +7,7 @@
 #include "CireSpellMesh.h" // ability-vfx
 #include "CireAbilityShapes.h" // ability-vfx
 #include "CireAbilityVFX.h" // ability-vfx
+#include "CireFabVFX.h" // fab-integration
 #include "Components/AudioComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Engine/World.h"
@@ -14,6 +15,8 @@
 #include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInterface.h"
 #include "ProceduralMeshComponent.h"
+#include "NiagaraComponent.h" // fab-integration
+#include "NiagaraSystem.h"
 #include "Sound/SoundWave.h"
 #include "Sound/SoundConcurrency.h"
 #include "CireSoundEvents.h" // audio-overhaul
@@ -572,6 +575,44 @@ void ACireSpellVisual::Rebuild()
     Light->SetVisibility(bLit);Light->SetLightColor(Tint.GetClamped(0,1));
     Light->SetIntensity(bLit?(Family==Fire?85.f:45.f)*Fade*(.92f+.08f*FMath::Sin(Age*9)):0);
     Light->SetAttenuationRadius(FMath::Clamp(280*Size,140.f,600.f));
+    UpdateFabVFX(); // fab-integration
+}
+
+// fab-integration: one Niagara overlay per presentation, chosen by school and role from Content/Data/FabVFX.json.
+// Warnings (enemy lanes, gathers, void zones, area wind-ups) never get one: telegraphs stay the dim procedural fill.
+bool ACireSpellVisual::HasFabVFX() const { return FabFX.IsValid(); }
+void ACireSpellVisual::UpdateFabVFX()
+{
+    if(bFabTried||IsHidden()||Age<0||!CireFabVFX::Enabled())return;
+    CireFabVFX::ERole FabRole=CireFabVFX::ERole::Count;
+    bool bAttach=true,bLoop=false;float Extra=1.f;
+    switch(Mode)
+    {
+    case EMode::Projectile: FabRole=CireFabVFX::ERole::Projectile;bLoop=true;break;
+    case EMode::Impact: FabRole=CireFabVFX::ERole::Impact;bAttach=false;break;
+    case EMode::TargetMark: FabRole=Shape.bHeal?CireFabVFX::ERole::Cast:CireFabVFX::ERole::Impact;bAttach=false;break;
+    case EMode::CasterFlare: case EMode::SelfShock: case EMode::Channel: FabRole=CireFabVFX::ERole::Cast;break;
+    case EMode::AreaFollow:
+        if(const ACireAreaEffect* Area=FollowedArea.Get();Area&&Area->IsActive()&&!bHarmlessArea)
+        {FabRole=CireFabVFX::ERole::Area;bLoop=Area->AreaSpec.bPersistent;Extra=FMath::Clamp(Area->AreaSpec.Radius/200.f,.4f,3.f);}
+        else return; // still winding up: keep trying until the zone goes live
+        break;
+    default:
+        if(Mode==EMode::Legacy&&Cue==ECireSpellCue::Critical){FabRole=CireFabVFX::ERole::Impact;bAttach=false;break;}
+        bFabTried=true;return;
+    }
+    bFabTried=true;
+    const ECireSchool School=Shape.bHeal?ECireSchool::Life:static_cast<ECireSchool>(FMath::Clamp(Family,0,static_cast<int32>(ECireSchool::Count)-1));
+    const CireFabVFX::FEntry* Entry=CireFabVFX::Find(School,FabRole);
+    UNiagaraSystem* System=CireFabVFX::Resolve(Entry);
+    if(!System){UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_NONE skill=%s role=%s"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole));return;} // pack not installed: the procedural presentation carries the cue alone
+    const float Scale=Entry->Scale*Extra*(bFollowArea?1.f:Size);
+    UNiagaraComponent* C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)
+        :CireFabVFX::SpawnAt(GetWorld(),System,GetActorLocation(),GetActorRotation(),Scale);
+    CireFabVFX::ApplyTint(C,Entry->Tint);
+    FabFX=C;
+    UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_SPAWN skill=%s role=%s school=%s system=%s ok=%d"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole),
+        *CireAbilityShapes::SchoolName(School),*System->GetName(),C!=nullptr);
 }
 
 ACireSpellVisual* CireSpellPresentation::Play(UWorld* World,FName SkillId,FVector From,FVector To,ECireSpellCue Cue,float Scale,bool bSound)

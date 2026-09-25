@@ -47,6 +47,13 @@ namespace CireMonsterArt
         FString Rig;
         bool bLockRoot = false;
         float WalkSpeedCm = 0.f, RunSpeedCm = 0.f, ReachCm = 0.f;
+        /** fab-integration: world cm (at mesh scale) from the lowest foot joint to the sole (hooves end below the joint),
+         *  and the extra foot clearance a galloping run's airborne phase reaches. Both only relax the grounding checks. */
+        float SoleCm = 0.f, AirborneCm = 0.f;
+        /** fab-integration: body from a purchased Fab pack (authored materials: no race reskin). */
+        bool bFab = false;
+        /** fab-integration: skeletal parts on the same skeleton (armour, mane, bow), driven by leader pose. */
+        TArray<FString> Parts;
         /** Socket name -> bone, added to the mesh in memory when the body is applied (head, pelvis, hand_r...). */
         TMap<FName, FName> Sockets;
     };
@@ -111,6 +118,8 @@ public:
     /** Applies the Tripo body for this archetype. False keeps (restores) the mannequin fallback. */
     bool ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObjectPtr<UStaticMeshComponent>>& OutParts);
     bool IsTripoApplied() const { return bTripoApplied; }
+    /** fab-integration: the applied body is a Fab pack body (keeps its authored materials; rank shows as the rim overlay). */
+    bool IsFabApplied() const { return bTripoApplied && bFabApplied; }
     bool HasRoleClip(const FString& Role) const { return RoleClip(Role) != nullptr; }
     const FString& GetAppliedVariant() const { return AppliedVariant; }
     UCireMonsterAnimInstance* GetMonsterAnim() const;
@@ -161,9 +170,12 @@ private:
     UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> Rim;
     UPROPERTY(Transient) TMap<FString, TObjectPtr<UAnimSequence>> RoleClips;
     UPROPERTY(Transient) TMap<FString, TObjectPtr<UAnimSequence>> NamedClips;
+    UPROPERTY(Transient) TArray<TObjectPtr<USkeletalMeshComponent>> BodyParts; // fab-integration: leader-pose parts
+    void ClearBodyParts();
     FTransform FallbackTransform;
     bool bFallbackCaptured = false;
     bool bTripoApplied = false;
+    bool bFabApplied = false;
     bool bDeathPresented = false;
     int32 ForcedVariant = INDEX_NONE;
     FName AppliedArchetype;
@@ -196,7 +208,8 @@ public:
     virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void Tick(float DeltaSeconds) override;
-    bool Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props, const CireGrip::FHands* Hands = nullptr);
+    bool Initialize(const USkeletalMeshComponent& Source, UAnimSequence* Fall, UAnimSequence* Idle, const TArray<TObjectPtr<UStaticMeshComponent>>& Props, const CireGrip::FHands* Hands = nullptr,
+        const TArray<TObjectPtr<USkeletalMeshComponent>>* Parts = nullptr);
     UPROPERTY(VisibleAnywhere) TObjectPtr<USkeletalMeshComponent> Body;
     float Age = 0.f;
     float FallSeconds = 3.f;

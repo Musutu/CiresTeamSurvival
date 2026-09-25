@@ -58,6 +58,8 @@ public:
     UCireCreatureArt* GetCreature() const { return Creature; }
     /** new-champions: the profile is drawn by UCireCreatureArt (bear/whisp/centaur, or a monster_native/mounted binding). */
     static bool IsCreatureProfile(const FString& ProfileId);
+    /** fab-integration: the creature binding in effect (the Fab overlay when installed); false when the profile has none. */
+    static bool EffectiveCreatureBinding(const FString& ProfileId, FString& OutMesh, FString& OutMotion, bool& bOutFab);
     /** new-champions: re-tints a Tripo body with the race skin material (base/accent/rim), e.g. temporary champion bodies. */
     static bool TintBody(class USkeletalMeshComponent* Mesh, UObject* Outer, FLinearColor Base, FLinearColor Accent, float Strength, FLinearColor Rim);
     /** new-champions (tests): apply the profile's art now, as the review flag would. */

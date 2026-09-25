@@ -10,6 +10,7 @@ Saved/TripoRacesIntegration.json. Scale is never baked (meshScale lives in Conte
 """
 from pathlib import Path
 import json
+import os
 import traceback
 import unreal
 
@@ -19,6 +20,8 @@ REPORT = PROJECT / "Saved" / "TripoRacesIntegration.json"
 MASTER = "/Game/TripoModels/Materials/M_Tripo_PBR_Master"
 EAL = unreal.EditorAssetLibrary
 AT = unreal.AssetToolsHelpers.get_asset_tools()
+# CIRE_TRIPO_PENDING_ONLY=1: only integrate units whose Bridge import is still pending under /Game/TripoModels.
+PENDING_ONLY = os.environ.get("CIRE_TRIPO_PENDING_ONLY") == "1"
 TEXTURE_PARAMS = {"_basecolor": "BaseColorTex", "_normal": "NormalTex",
                   "_roughness": "RoughnessTex", "_metallic": "MetallicTex"}
 
@@ -73,6 +76,8 @@ def integrate(unit):
     export, race, name = unit["export"], unit.get("race", ""), unit["folder"]
     src = "/Game/TripoModels/" + export
     dst = unit.get("dest") or "/Game/Tripo/Races/%s/%s" % (race, name)
+    if PENDING_ONLY and not (EAL.does_directory_exist(src) and assets_in(src)):
+        return False  # already integrated (committed, read-only) bodies are left untouched
     if EAL.does_directory_exist(src) and assets_in(src):
         move_folder(src, dst)
     elif not EAL.does_directory_exist(dst):
@@ -147,6 +152,9 @@ def run():
         for item in json.loads(champions.read_text(encoding="utf-8"))["items"]:
             if item.get("export"):
                 units.append(dict(item, unit=item["id"], race=item.get("race", "champions")))
+    art3d = PROJECT / "Art" / "TripoArt3D.json"  # art-collector-3d batch: Aetheri race, realistic quadrupeds, props
+    if art3d.exists():
+        units += [u for u in json.loads(art3d.read_text(encoding="utf-8"))["units"] if u.get("export")]
     done = 0
     for unit in units:
         try:

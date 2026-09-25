@@ -21,6 +21,12 @@ namespace CireWeapons
 }
 
 /** Original local prototype equipment. Visual-only and parented to the visible champion. */
+namespace CireWeaponFab
+{
+    /** fab-integration: the Fab weapon mesh replacing an asset token (WeaponLoadouts.fab.json) when installed, else Fallback. */
+    CIRESTEAMSURVIVAL_API FString ResolveMesh(const FString& Token, const FString& Fallback, float& InOutSize);
+}
+
 UCLASS()
 class CIRESTEAMSURVIVAL_API UCireWeaponPresentation : public UActorComponent
 {

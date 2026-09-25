@@ -43,8 +43,17 @@ const FData& Data()
         return GData;
     }
     const TSharedPtr<FJsonObject>* Weapons = nullptr;
-    if (Root->TryGetObjectField(TEXT("weapons"), Weapons))
-        for (const auto& Pair : (*Weapons)->Values)
+    // fab-integration: WeaponGrips.fab.json (Fab weapon meshes, keyed by full object path) merges in after the base file.
+    TArray<TSharedPtr<FJsonObject>> Sources;
+    if (Root->TryGetObjectField(TEXT("weapons"), Weapons)) Sources.Add(*Weapons);
+    {
+        FString FabText; TSharedPtr<FJsonObject> FabRoot; const TSharedPtr<FJsonObject>* FabWeapons = nullptr;
+        if (FFileHelper::LoadFileToString(FabText, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/WeaponGrips.fab.json"))) &&
+            FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(FabText), FabRoot) && FabRoot && FabRoot->TryGetObjectField(TEXT("weapons"), FabWeapons))
+            Sources.Add(*FabWeapons);
+    }
+    for (const TSharedPtr<FJsonObject>& Source : Sources)
+        for (const auto& Pair : Source->Values)
         {
             const TSharedPtr<FJsonObject>* O = nullptr;
             if (!Pair.Value->TryGetObject(O)) continue;
@@ -173,7 +182,13 @@ FTransform CireGrip::ReferenceComponent(const FReferenceSkeleton& Skeleton, FNam
 }
 
 const CireGrip::FWeapon* CireGrip::FindWeapon(const FString& MeshName) { return Data().Weapons.Find(MeshName); }
-const CireGrip::FWeapon* CireGrip::FindWeapon(const UStaticMesh* Mesh) { return Mesh ? FindWeapon(Mesh->GetName()) : nullptr; }
+const CireGrip::FWeapon* CireGrip::FindWeapon(const UStaticMesh* Mesh)
+{
+    if (!Mesh) return nullptr;
+    // fab-integration: full object path first (Fab packs reuse armory names such as SM_WarHammer), then the name.
+    if (const FWeapon* ByPath = Data().Weapons.Find(Mesh->GetPathName())) return ByPath;
+    return FindWeapon(Mesh->GetName());
+}
 bool CireGrip::SwapsHands(const FString& Preset) { return Data().SwapPresets.Contains(Preset); }
 
 CireGrip::FHandPose CireGrip::BuildHandPose(const USkeletalMesh& Body, bool bRight, EHand Type, float RadiusMesh)

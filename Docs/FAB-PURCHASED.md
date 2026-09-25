@@ -27,8 +27,8 @@ Each pack lands in its own top-level `Content/<PackFolder>`. Licensed content is
 | 2 | [ ] | **Male Locomotion Set** | VanillaLoop | 5.0–5.8 | yes | strafe + non-strafe locomotion | idle / run / strafe / backpedal / jump |
 | 3 | [ ] | **Gun & Sword Animation Pack** | 9CG | 5.0–5.8 | yes | pistol + sword set, UE5 Manny | pistol / gunblade champions |
 | 4 | [ ] | **Crossbow Animation Set** | 2DragoH | 4.26–5.7 | **no → Show all projects** | 174 crossbow anims, UE5 Manny/Quinn | ranged champions |
-| 5 | [ ] | **Big Pack Magic Effects Niagara** | Lord Enot Store | 5.0–5.8 | yes | 337 Niagara spell FX | projectiles / impacts / casts per school |
-| 6 | [ ] | **Shadow Magic Niagara** | Lord Enot Store | 5.0–5.8 | yes | 60 shadow FX | shadow school |
+| 5 | [ ] | **Big Pack Magic Effects Niagara** | Lord Enot Store | 5.0–5.8 | yes | 337 Niagara spell FX. **Complete project: Fab offers Create Project only** (see below) | projectiles / impacts / casts per school |
+| 6 | [ ] | **Shadow Magic Niagara** | Lord Enot Store | 5.0–5.8 | yes | 60 shadow FX. **Complete project: Create Project only** | shadow school |
 | 7 | [ ] | **State VFX Niagara** | Lord Enot Store | 5.0–5.8 | yes | 15 looping state FX | buff / debuff / aura signatures |
 | 8 | [ ] | **[49] Earth Spells Niagara** | UrtanoVFX | 5.0–5.8 | yes | 49 earth FX | earth school |
 | 9 | [ ] | **Nature VFX with Vine Growth** | SoftTofuVFX | 5.2–5.8 | yes | vines, heal beam, area buff | nature school, heals, roots |
@@ -36,7 +36,10 @@ Each pack lands in its own top-level `Content/<PackFolder>`. Licensed content is
 | 11 | [ ] | **Ultimate Weapons Bundle** | Hivemind | 5.0–5.8 | yes | medieval weapon meshes | champion weapon props |
 | 12 | [ ] | **Medieval Kingdom** | Hivemind | 5.3–5.8 | yes | 580 meshes, castle + town (large, 4K) | town + arena slots |
 | 13 | [ ] | **Undead Pack** | Lilpupinduy | 5.0–5.7 | **no → Show all projects** | Lich, Ghoul, Skeleton, Zombie, Goblin | monster races (for the monster agents) |
-| 14 | [ ] | **ROG Creatures Pack** | Atlant Games | 4.22–5.8 | yes | animated creatures (wolf, deer, ...) | creatures / pets (for the creature agents) |
+| 14 | [ ] | **ROG Creatures Pack** | Atlant Games | 4.22–5.8 | yes | Wolf, Boar, Bear, Deer, Mammoth with AnimBPs + blendspaces | **high priority**: dire_wolf, grave_hound, bristleback, Bear champion, feral_ursoth, feral_mammoth |
+| 15 | [ ] | **Quadruped Fantasy Creatures** (owned earlier, free pass) | PROTOFACTOR INC | 4.15–5.5 | **no → Show all projects** | Centaur (85 anims), Barghest, Mountain Dragon, Griffon | **high priority**: Evergrove Centaur, grave_hound, drakkari |
+
+**Complete-project packs** (Big Pack Magic Effects, Shadow Magic): Fab only offers **Create Project**. Create them anywhere outside the repo (e.g. `Documents\Unreal Projects\`). The integration agent waits for the download to finish, then copies the pack's `Content/<PackFolder>` into the main checkout at the same `/Game/` path, so Eric doesn't need to migrate anything.
 
 Animation packs come first because they're the biggest visible upgrade; the order is otherwise free. Large packs (GDH, Medieval Kingdom) take a while to download: let them finish before closing the editor.
 

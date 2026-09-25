@@ -581,6 +581,8 @@ bool CireRaces::ApplySkin(ACireMonster* M)
     const bool bOwnBody = A->FallbackBody.IsNone() || A->FallbackBody == A->Id || CireMonsterArt::HasOwnBody(A->Id);
     const float RaceStrength = !Race ? 0.f : (bOwnBody && S->PaletteIndex == 0) ? 0.f : .88f;
     USkeletalMeshComponent* Mesh = M->GetMesh();
+    // fab-integration: purchased Fab bodies keep their authored (non-Tripo) materials; the rank shows as the rim overlay.
+    if (M->MonsterArt && M->MonsterArt->IsFabApplied()) return false;
     if (M->MonsterArt && M->MonsterArt->IsTripoApplied())
     {
         UMaterialInterface* Skin = SkinMaterial();

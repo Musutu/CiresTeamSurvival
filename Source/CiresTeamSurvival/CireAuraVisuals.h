@@ -113,6 +113,10 @@ public:
     void StopLoops();
     TSet<FName> LoopIds; // effects whose loop is active (kept even without an audio device, for tests)
     TMap<FName,TWeakObjectPtr<class UAudioComponent>> LoopAudio;
+    /** fab-integration: optional Niagara signature per active effect from the Fab State/VFX packs (Content/Data/FabVFX.json
+     *  "buffs"). Purely additive over the procedural layers; nothing spawns when the packs are not installed. */
+    void UpdateFabAuras(bool bAllowed,int32& Budget,float Intensity);
+    TMap<FName,TWeakObjectPtr<class UNiagaraComponent>> FabAuras;
     // Attack bookkeeping (subsystem).
     uint32 LastAttackSerial=0;
     bool bAttackPrimed=false;
@@ -216,6 +220,8 @@ namespace CireAuraVisuals
     CIRESTEAMSURVIVAL_API void PlaySoundCue(const FString& CueId,AActor* Unit,const FVector* Location=nullptr);
     /** Attached loops playing (or wanted, when no audio device exists) across all units; capped by MaxLoops. */
     constexpr int32 MaxLoops=4;
+    /** fab-integration: Niagara aura overlays alive at once (nearest/most important units first). */
+    constexpr int32 MaxFabAuras=8;
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSmoke(ACireGameMode* Mode);
 #endif

@@ -4,6 +4,7 @@
 #include "CireChampionActions.h" // creature-anim
 #include "CireChampionArt.h"
 #include "CireCreatureArt.h"
+#include "CireMonsterAnim.h" // fab-integration: native Fab creature bodies
 #include "CireMobility.h"
 #include "CireChampionRoster.h"
 #include "Animation/AnimSequence.h"
@@ -51,7 +52,7 @@ const TCHAR* StateNames[]={TEXT("idle_front"),TEXT("walk_angled"),TEXT("attack_w
 // creature-anim: Tripo action clips settle by 1.5x the attack duration (0.975 s at base speed).
 const float AttackPhases[]={-1,-1,.15f,.25f,1.05f,-1,-1,-1};
 const FVector StageCenter(0,-2100,5000);
-struct FBinding {FString Id,Mesh,Locomotion,Attack,Motion;float Height=0;bool bCustom=false;};
+struct FBinding {FString Id,Mesh,Locomotion,Attack,Motion;float Height=0;bool bCustom=false,bFab=false;}; // fab-integration: bFab = Fab creature body
 struct FModel
 {
     int32 BindingIndex=0;
@@ -64,6 +65,7 @@ struct FModel
     FVector IdleFoot=FVector::ZeroVector;
     FVector StagePosition=FVector::ZeroVector;
     FVector IdleHand=FVector::ZeroVector,WindupHand=FVector::ZeroVector;
+    FName FootBone,HandBone; // fab-integration: sampled bones of a native (Fab) creature body, chosen on the idle pose
 };
 struct FGallery
 {
@@ -133,7 +135,11 @@ bool ReadBindings()
         {
             if(!Check(UCireCreatureArt::Handles(B.Id)&&(*O)->TryGetStringField(TEXT("mesh"),B.Mesh)&&B.Mesh.StartsWith(TEXT("/Game/"))&&
                 (*O)->TryGetStringField(TEXT("motion"),B.Motion)&&(*O)->TryGetNumberField(TEXT("heightCm"),Height)&&FMath::IsFinite(Height)&&Height>=50&&Height<=400,TEXT("explicit custom body and motion binding")))return false;
-            B.Height=static_cast<float>(Height);Gallery.Bindings.Add(MoveTemp(B));continue;
+            B.Height=static_cast<float>(Height);
+            // fab-integration: the purchased Fab body replaces the committed one when installed (ChampionArtBindings.fab.json).
+            FString FabMesh,FabMotion;bool bFab=false;
+            if(UCireChampionArt::EffectiveCreatureBinding(B.Id,FabMesh,FabMotion,bFab)&&bFab){B.Mesh=FabMesh;B.Motion=FabMotion;B.bFab=true;}
+            Gallery.Bindings.Add(MoveTemp(B));continue;
         }
         if(!Check((*O)->TryGetStringField(TEXT("mesh"),B.Mesh) && (*O)->TryGetStringField(TEXT("locomotion"),B.Locomotion) &&
             (*O)->TryGetStringField(TEXT("attack"),B.Attack) && (*O)->TryGetNumberField(TEXT("heightCm"),Height) && FMath::IsFinite(Height) && Height>=80 && Height<=400 &&
@@ -156,7 +162,8 @@ bool MatchingAssets(FModel& M)
     {
         auto* Creature=H?H->FindComponentByClass<UCireCreatureArt>():nullptr;auto* Visual=Creature?Creature->VisualMesh():nullptr;
         bool bGood=H&&H->ChampionProfileId==B.Id&&H->ChampionArt&&H->ChampionArt->IsApplied()&&Creature&&Visual&&M.ExpectedCustomSource.IsValid()&&Creature->GetSourceAsset()==M.ExpectedCustomSource.Get();
-        if(B.Id==TEXT("bear"))bGood&=Mesh&&Mesh->GetSkeletalMeshAsset()==M.ExpectedCustomSource.Get()&&Cast<UCireBearAnimInstance>(Mesh->GetAnimInstance());
+        if(B.bFab)bGood&=Mesh&&Creature->GetNativeBody()==Mesh&&Mesh->GetSkeletalMeshAsset()==M.ExpectedCustomSource.Get()&&Cast<UCireMonsterAnimInstance>(Mesh->GetAnimInstance())&&Creature->HasReactions();
+        else if(B.Id==TEXT("bear"))bGood&=Mesh&&Mesh->GetSkeletalMeshAsset()==M.ExpectedCustomSource.Get()&&Cast<UCireBearAnimInstance>(Mesh->GetAnimInstance());
         else if(B.Id==TEXT("whisp")){const auto* Static=Cast<UStaticMeshComponent>(Visual);bGood&=Static&&Static->GetStaticMesh()==M.ExpectedCustomSource.Get()&&!Mesh->GetSkeletalMeshAsset();}
         else {const auto* Proc=Cast<UProceduralMeshComponent>(Visual);bGood&=Proc&&Proc->GetNumSections()>0&&!Mesh->GetSkeletalMeshAsset();}
         return Check(bGood,TEXT("exact custom body replaces humanoid fallback: ")+B.Id);
@@ -289,7 +296,26 @@ void Capture(int32 State)
         {
             auto* H=M.Hero.Get();auto* Creature=H->FindComponentByClass<UCireCreatureArt>();auto* Visual=Creature->VisualMesh();
             FVector Foot=Visual->GetComponentLocation(),Hand=Foot;bool bFinite=true;
-            if(B.Id==TEXT("bear"))
+            if(B.bFab)
+            {
+                // Native Fab body: the lowest bone of the idle pose is a foot, the one farthest forward the striking limb.
+                USkeletalMeshComponent* Body=H->GetMesh();
+                if(State==0||M.FootBone.IsNone())
+                {
+                    float Low=TNumericLimits<float>::Max(),Far=-TNumericLimits<float>::Max();const FVector Forward=H->GetActorForwardVector();
+                    for(int32 I=1;I<Body->GetNumBones();++I) // the root sits on the pivot: skip it
+                    {
+                        const FVector P=Body->GetBoneLocation(Body->GetBoneName(I));
+                        if(FVector::Dist(P,Body->GetComponentLocation())<1.f)continue; // IK / root helpers at the pivot
+                        if(P.Z<Low){Low=static_cast<float>(P.Z);M.FootBone=Body->GetBoneName(I);}
+                        const float Ahead=static_cast<float>(FVector::DotProduct(P-H->GetActorLocation(),Forward));
+                        if(Ahead>Far){Far=Ahead;M.HandBone=Body->GetBoneName(I);}
+                    }
+                }
+                Foot=Body->GetBoneLocation(M.FootBone);Hand=Body->GetBoneLocation(M.HandBone);
+                for(int32 I=0;I<Body->GetNumBones();++I)bFinite&=!Body->GetBoneTransform(I).ContainsNaN();
+            }
+            else if(B.Id==TEXT("bear"))
             {
                 Foot=H->GetMesh()->GetSocketLocation(TEXT("0_Right_Limb_5"));Hand=H->GetMesh()->GetSocketLocation(TEXT("0_Left_Limb_5"));
                 for(int32 I=0;I<H->GetMesh()->GetNumBones();++I)bFinite&=!H->GetMesh()->GetBoneTransform(I).ContainsNaN();
@@ -308,7 +334,7 @@ void Capture(int32 State)
             }
             if(State==0){M.IdleFoot=Foot;M.IdleHand=Hand;}if(State==2)M.WindupHand=Hand;
             auto Pose=MakeShared<FJsonObject>();Pose->SetStringField(TEXT("profileId"),B.Id);Pose->SetStringField(TEXT("actualMesh"),Creature->GetSourceAsset()->GetPathName());
-            Pose->SetStringField(TEXT("motion"),B.Motion);Pose->SetStringField(TEXT("skeleton"),B.Id==TEXT("bear")?TEXT("custom_quadruped_45_bones"):TEXT("none_procedural_surface"));
+            Pose->SetStringField(TEXT("motion"),B.Motion);Pose->SetStringField(TEXT("skeleton"),B.bFab?TEXT("fab_native_clips"):B.Id==TEXT("bear")?TEXT("custom_quadruped_45_bones"):TEXT("none_procedural_surface"));
             Pose->SetStringField(TEXT("footSample"),Foot.ToString());Pose->SetStringField(TEXT("attackSample"),Hand.ToString());Pose->SetNumberField(TEXT("motionPhase"),Creature->MotionPhase());
             Pose->SetNumberField(TEXT("walkSampleDistanceCm"),FVector::Dist(Foot,M.IdleFoot));Pose->SetNumberField(TEXT("attackSampleDistanceCm"),FVector::Dist(Hand,M.WindupHand));
             FVector2D CenterPixel;const bool bFramed=Gallery.Controller->ProjectWorldLocationToScreen(Visual->Bounds.Origin,CenterPixel)&&CenterPixel.X>=12&&CenterPixel.X<Width-12&&CenterPixel.Y>=12&&CenterPixel.Y<Height-12;

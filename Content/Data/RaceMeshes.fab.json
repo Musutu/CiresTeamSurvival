@@ -1,0 +1,334 @@
+{
+ "schemaVersion": 1,
+ "priority": "highest",
+ "description": "Purchased Fab creature bodies (ROG Creatures Pack, Quadruped Fantasy Creatures, Undead Pack; Docs/FAB-PURCHASED.md). Read by CireMonsterArt before RaceMeshes.free.json and over NPCMeshes/RaceMeshes.tripo.json, but a body is used only when its mesh and idle clip exist locally (packs are licensed, never committed). Same shape as RaceMeshes.free.json.",
+ "units": {
+  "dire_wolf": {
+   "variant": "FabRogWolf",
+   "mesh": "/Game/ROG_Creatures/Wolf/Meshes/SK_Wolf_Fur_Full_G.SK_Wolf_Fur_Full_G",
+   "meshScale": 1.5658,
+   "yaw": -90.0,
+   "heightCm": 157.9,
+   "lockRoot": true,
+   "walkSpeedCm": 183.9,
+   "runSpeedCm": 488.3,
+   "reachCm": 450.0,
+   "animations": {
+    "idle": "/Game/ROG_Creatures/Wolf/Animations/A_Wolf_Idle_combat.A_Wolf_Idle_Combat",
+    "walk": "/Game/ROG_Creatures/Wolf/Animations/A_Wolf_walk.A_Wolf_Walk",
+    "run": "/Game/ROG_Creatures/Wolf/Animations/A_Wolf_run.A_Wolf_Run",
+    "attack": "/Game/ROG_Creatures/Wolf/Animations/A_Wolf_Attack.A_Wolf_Attack",
+    "attackAlt": "/Game/ROG_Creatures/Wolf/Animations/A_Wolf_Attack_light.A_Wolf_Attack_light",
+    "hit": "/Game/ROG_Creatures/Wolf/Animations/A_Wolf_Hit_body_left_combat.A_Wolf_Hit_body_left_combat",
+    "death": "/Game/ROG_Creatures/Wolf/Animations/A_Wolf_Death.A_Wolf_Death",
+    "all": {
+     "war_cry": "/Game/ROG_Creatures/Wolf/Animations/A_Wolf_howl.A_Wolf_Howl"
+    }
+   },
+   "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
+   "soleCm": 8.1,
+   "rig": "quadruped",
+   "sockets": {
+    "head": "b_head",
+    "pelvis": "b_spine_2",
+    "spine_03": "b_spine_3",
+    "hand_l": "b_L_front_leg_5",
+    "hand_r": "b_R_front_leg_5",
+    "foot_l": "b_L_back_leg_4",
+    "foot_r": "b_R_back_leg_4",
+    "ball_l": "b_L_front_leg_5",
+    "ball_r": "b_R_front_leg_5"
+   },
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02",
+    "pelvis"
+   ]
+  },
+  "bristleback": {
+   "variant": "FabRogBoar",
+   "mesh": "/Game/ROG_Creatures/Boar/Meshes/SK_Boar_Fur_Full.SK_Boar_Fur_Full",
+   "meshScale": 0.7859,
+   "yaw": -90.0,
+   "heightCm": 84.2,
+   "lockRoot": true,
+   "walkSpeedCm": 60.0,
+   "runSpeedCm": 191.7,
+   "reachCm": 240.0,
+   "animations": {
+    "idle": "/Game/ROG_Creatures/Boar/Animations/A_Boar_idle_combat.A_Boar_idle_combat",
+    "walk": "/Game/ROG_Creatures/Boar/Animations/A_Boar_walk.A_Boar_Walk",
+    "run": "/Game/ROG_Creatures/Boar/Animations/A_Boar_run.A_Boar_Run",
+    "attack": "/Game/ROG_Creatures/Boar/Animations/A_Boar_Attack.A_Boar_Attack",
+    "attackAlt": "/Game/ROG_Creatures/Boar/Animations/A_Boar_Attack_2.A_Boar_Attack_2",
+    "hit": "/Game/ROG_Creatures/Boar/Animations/A_Boar_Hit_Body_left.A_Boar_Hit_Body_left",
+    "death": "/Game/ROG_Creatures/Boar/Animations/A_Boar_Death.A_Boar_Death",
+    "all": {
+     "war_cry": "/Game/ROG_Creatures/Boar/Animations/A_Boar_aggressive.A_Boar_Aggressive"
+    }
+   },
+   "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
+   "soleCm": 6.4,
+   "rig": "quadruped",
+   "sockets": {
+    "head": "b_head",
+    "pelvis": "b_spine_2",
+    "spine_03": "b_spine_3",
+    "hand_l": "b_L_front_leg_6",
+    "hand_r": "b_R_front_leg_6",
+    "foot_l": "b_L_back_leg_5",
+    "foot_r": "b_R_back_leg_5",
+    "ball_l": "b_L_front_leg_6",
+    "ball_r": "b_R_front_leg_6"
+   },
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02",
+    "pelvis"
+   ]
+  },
+  "feral_ursoth": {
+   "variant": "FabRogBear",
+   "mesh": "/Game/ROG_Creatures/Bear/Meshes/SK_Bear_Fur_Full.SK_Bear_Fur_Full",
+   "meshScale": 1.1442,
+   "yaw": -90.0,
+   "heightCm": 157.9,
+   "lockRoot": true,
+   "walkSpeedCm": 91.2,
+   "runSpeedCm": 373.0,
+   "reachCm": 450.0,
+   "animations": {
+    "idle": "/Game/ROG_Creatures/Bear/Animations/A_Bear_idle.A_Bear_idle",
+    "walk": "/Game/ROG_Creatures/Bear/Animations/A_Bear_walk.A_Bear_walk",
+    "run": "/Game/ROG_Creatures/Bear/Animations/A_Bear_run.A_Bear_run",
+    "attack": "/Game/ROG_Creatures/Bear/Animations/A_Bear_attack_01.A_Bear_attack_01",
+    "attackAlt": "/Game/ROG_Creatures/Bear/Animations/A_Bear_attack_03.A_Bear_attack_03",
+    "hit": "/Game/ROG_Creatures/Bear/Animations/A_Bear_Hit_Body_Front.A_Bear_Hit_Body_Front",
+    "death": "/Game/ROG_Creatures/Bear/Animations/A_Bear_death.A_Bear_death",
+    "all": {
+     "war_cry": "/Game/ROG_Creatures/Bear/Animations/A_Bear_aggressive_1.A_Bear_aggressive_1",
+     "ground_slam": "/Game/ROG_Creatures/Bear/Animations/A_Bear_attack_04.A_Bear_attack_04"
+    }
+   },
+   "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
+   "soleCm": 5.1,
+   "rig": "quadruped",
+   "sockets": {
+    "head": "b_head",
+    "pelvis": "b_spine_02",
+    "spine_03": "b_spine_03",
+    "hand_l": "b_L_F_toes",
+    "hand_r": "b_R_F_toes",
+    "foot_l": "b_L_B_toes",
+    "foot_r": "b_R_B_toes",
+    "ball_l": "b_L_F_toes",
+    "ball_r": "b_R_F_toes"
+   },
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02",
+    "pelvis"
+   ]
+  },
+  "feral_mammoth": {
+   "variant": "FabRogMammoth",
+   "mesh": "/Game/ROG_Creatures/Mammoth/Meshes/SK_Mammoth_Fur_full.SK_Mammoth_Fur_full",
+   "meshScale": 0.5639,
+   "yaw": -90.0,
+   "heightCm": 252.6,
+   "lockRoot": true,
+   "walkSpeedCm": 60.0,
+   "runSpeedCm": 95.5,
+   "reachCm": 720.0,
+   "animations": {
+    "idle": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_Idle.A_Mammoth_Idle",
+    "walk": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_Walk.A_Mammoth_Walk",
+    "run": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_Run.A_Mammoth_Run",
+    "attack": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_attack_1.A_Mammoth_attack_1",
+    "attackAlt": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_attack_2.A_Mammoth_attack_2",
+    "hit": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_Hit_Body_Front_Left.A_Mammoth_Hit_Body_Front_Left",
+    "death": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_death.A_Mammoth_death",
+    "all": {
+     "war_cry": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_aggressive_1.A_Mammoth_aggressive_1",
+     "ground_slam": "/Game/ROG_Creatures/Mammoth/Animations/A_Mammoth_attack_2.A_Mammoth_attack_2"
+    }
+   },
+   "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
+   "rig": "quadruped",
+   "sockets": {
+    "head": "b_head",
+    "pelvis": "b_spine_3",
+    "spine_03": "b_spine_3",
+    "hand_l": "b_L_F_toe",
+    "hand_r": "b_R_F_toe",
+    "foot_l": "b_L_B_toe",
+    "foot_r": "b_R_B_toe",
+    "ball_l": "b_L_F_toe",
+    "ball_r": "b_R_F_toe"
+   },
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02",
+    "pelvis"
+   ]
+  },
+  "grave_hound": {
+   "variant": "FabBarghest",
+   "mesh": "/Game/QuadrapedCreatures/Barghest/Meshes/SK_BARGHEST.SK_BARGHEST",
+   "meshScale": 1.5845,
+   "yaw": -90.0,
+   "heightCm": 142.1,
+   "lockRoot": true,
+   "walkSpeedCm": 144.7,
+   "runSpeedCm": 428.4,
+   "reachCm": 505.0,
+   "animations": {
+    "idle": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_idleAggressive.BARGHEST_idleAggressive",
+    "walk": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_walk.BARGHEST_walk",
+    "run": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_run.BARGHEST_run",
+    "attack": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_biteAggressive.BARGHEST_biteAggressive",
+    "attackAlt": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_biteNormal.BARGHEST_biteNormal",
+    "hit": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_getHitAggressive.BARGHEST_getHitAggressive",
+    "death": "/Game/QuadrapedCreatures/Barghest/Animations/BARGHEST_deathAggressive.BARGHEST_deathAggressive"
+   },
+   "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
+   "airborneCm": 60.0,
+   "rig": "quadruped",
+   "sockets": {
+    "head": "BARGHEST_-Head",
+    "pelvis": "BARGHEST_-Spine2",
+    "spine_03": "BARGHEST_-Spine2",
+    "hand_l": "BARGHEST_-L-Finger01",
+    "hand_r": "BARGHEST_-R-Finger01",
+    "foot_l": "BARGHEST_-L-Toe0",
+    "foot_r": "BARGHEST_-R-Toe0",
+    "ball_l": "BARGHEST_-L-Finger01",
+    "ball_r": "BARGHEST_-R-Finger01"
+   },
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02",
+    "pelvis"
+   ]
+  },
+  "wild_outrider": {
+   "variant": "FabCentaur",
+   "mesh": "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Centaur.SK_Centaur",
+   "meshScale": 0.8333,
+   "yaw": -90.0,
+   "heightCm": 226.3,
+   "lockRoot": true,
+   "walkSpeedCm": 60.0,
+   "runSpeedCm": 210.5,
+   "reachCm": 645.0,
+   "animations": {
+    "idle": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_IdleBow.ANIM_Centaur_IdleBow",
+    "walk": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_WalkBow.ANIM_Centaur_WalkBow",
+    "run": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_GallopBow.ANIM_Centaur_GallopBow",
+    "attack": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_ShootArrowToIdleAiming.ANIM_Centaur_ShootArrowToIdleAiming",
+    "attackAlt": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackBow.ANIM_Centaur_LegAttackBow",
+    "hit": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_GetHitBow.ANIM_Centaur_GetHitBow",
+    "death": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_DeathBow.ANIM_Centaur_DeathBow",
+    "all": {
+     "cast_a_spell": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_IdleNormalToIdleAiming.ANIM_Centaur_IdleNormalToIdleAiming",
+     "war_cry": "/Game/QuadrapedCreatures/Centaur/Animations/ANIM_Centaur_LegAttackBow.ANIM_Centaur_LegAttackBow"
+    }
+   },
+   "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
+   "soleCm": 18.9,
+   "airborneCm": 23.2,
+   "parts": [
+    "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Body_Armor.SK_Body_Armor",
+    "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Shoulder_Pads.SK_Shoulder_Pads",
+    "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Mane.SK_Mane",
+    "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Beard.SK_Beard",
+    "/Game/QuadrapedCreatures/Centaur/Meshes/SK_Bow_Action.SK_Bow_Action"
+   ],
+   "rig": "quadruped",
+   "sockets": {
+    "head": "CENTAUR_-Head",
+    "pelvis": "CENTAUR_-Spine1",
+    "spine_03": "CENTAUR_-Spine2",
+    "hand_l": "CENTAUR_HAND_L",
+    "hand_r": "CENTAUR_HAND_R",
+    "foot_l": "CENTAUR_-L-Foot",
+    "foot_r": "CENTAUR_-R-Foot",
+    "ball_l": "CENTAUR_-L-Foot",
+    "ball_r": "CENTAUR_-R-Foot"
+   },
+   "dropPropBones": [
+    "hand_r",
+    "hand_l",
+    "spine_03",
+    "head",
+    "back",
+    "spine_02",
+    "pelvis"
+   ]
+  },
+  "hollow_infantry": {
+   "variant": "FabSkeleton",
+   "mesh": "/Game/UndeadPack/SkeletonEnemy/Mesh/SK_Skeleton.SK_Skeleton",
+   "meshScale": 1.1757,
+   "yaw": -90.0,
+   "heightCm": 184.9,
+   "lockRoot": true,
+   "walkSpeedCm": 81.5,
+   "runSpeedCm": 200.7,
+   "reachCm": 516.0,
+   "animations": {
+    "idle": "/Game/UndeadPack/SkeletonEnemy/Animations/Anim_Idle_Sword.Anim_Idle_Sword",
+    "walk": "/Game/UndeadPack/SkeletonEnemy/Animations/Anim_Walk_Sword.Anim_Walk_Sword",
+    "run": "/Game/UndeadPack/SkeletonEnemy/Animations/Anim_Run_Sword.Anim_Run_Sword",
+    "attack": "/Game/UndeadPack/SkeletonEnemy/Animations/Anim_Attack_Sword_1.Anim_Attack_Sword_1",
+    "attackAlt": "/Game/UndeadPack/SkeletonEnemy/Animations/Anim_Attack_Sword_2.Anim_Attack_Sword_2",
+    "hit": "/Game/UndeadPack/SkeletonEnemy/Animations/Anim_Hit_Sword.Anim_Hit_Sword",
+    "death": "/Game/UndeadPack/SkeletonEnemy/Animations/Anim_Death_Sword.Anim_Death_Sword"
+   },
+   "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md",
+   "alternates": [
+    {
+     "variant": "FabGhoul",
+     "mesh": "/Game/UndeadPack/Ghoul/Mesh/SK_Ghoul_Full.SK_Ghoul_Full",
+     "meshScale": 1.4711,
+     "yaw": -90.0,
+     "heightCm": 180.6,
+     "lockRoot": true,
+     "walkSpeedCm": 97.8,
+     "runSpeedCm": 304.1,
+     "reachCm": 504.0,
+     "animations": {
+      "idle": "/Game/UndeadPack/Ghoul/Animations/Anim_Idle.Anim_Idle",
+      "walk": "/Game/UndeadPack/Ghoul/Animations/Anim_Walk.Anim_Walk",
+      "run": "/Game/UndeadPack/Ghoul/Animations/Anim_Run.Anim_Run",
+      "attack": "/Game/UndeadPack/Ghoul/Animations/Anim_Attack_Right.Anim_Attack_Right",
+      "attackAlt": "/Game/UndeadPack/Ghoul/Animations/Anim_Attack_Left.Anim_Attack_Left",
+      "hit": "/Game/UndeadPack/Ghoul/Animations/Anim_Hit.Anim_Hit",
+      "death": "/Game/UndeadPack/Ghoul/Animations/Anim_Death.Anim_Death"
+     },
+     "source": "Fab (licensed, local only): see Docs/FAB-PURCHASED.md"
+    }
+   ]
+  }
+ }
+}

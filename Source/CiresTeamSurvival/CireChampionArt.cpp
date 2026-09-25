@@ -1,4 +1,5 @@
 #include "CireChampionArt.h"
+#include "CireFabAnimation.h" // fab-integration
 #include "CireGame.h"
 #include "CirePets.h" // pets
 #include "CireWeaponPresentation.h"
@@ -9,6 +10,7 @@
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/PackageName.h" // fab-integration: local-only pack presence
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -236,7 +238,49 @@ bool ReviewEnabled()
     static const bool bEnabled = FParse::Param(FCommandLine::Get(), TEXT("CireTripoChampions"));
     return bEnabled || GCireForceTripoChampionArt; // creature-anim: native grip tests
 }
+// fab-integration: Content/Data/ChampionArtBindings.fab.json puts purchased Fab creature bodies (ROG Bear, the
+// Quadruped Fantasy Centaur) on creature champions through the native monster path. The packs are licensed and never
+// committed, so a row is used only when its mesh and every locomotion clip exist locally; otherwise, and with
+// -CireNoFab / -CireNoFabCreatures, the committed binding (procedural bear, spatial-skin centaur) stays in charge.
+const FChampionArtDefinition* FabProfileArt(const FString& Id)
+{
+    static bool bLoaded=false;
+    static TMap<FString,FChampionArtDefinition> Bindings;
+    if(!bLoaded)
+    {
+        bLoaded=true;
+        if(FParse::Param(FCommandLine::Get(),TEXT("CireNoFab"))||FParse::Param(FCommandLine::Get(),TEXT("CireNoFabCreatures")))return nullptr;
+        FString Json;TSharedPtr<FJsonObject> Root;const TArray<TSharedPtr<FJsonValue>>* Rows=nullptr;double Version=0;
+        auto Present=[](const FString& Path){const FString Package=FPackageName::ObjectPathToPackageName(Path);
+            return Path.StartsWith(TEXT("/Game/"))&&FPackageName::IsValidLongPackageName(Package)&&FPackageName::DoesPackageExist(Package);};
+        if(FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/ChampionArtBindings.fab.json")))&&
+           FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),Root)&&Root&&Root->TryGetNumberField(TEXT("schemaVersion"),Version)&&Version==1&&
+           Root->TryGetArrayField(TEXT("bindings"),Rows))
+            for(const auto& Row:*Rows)
+            {
+                const TSharedPtr<FJsonObject>* O=nullptr;const TSharedPtr<FJsonObject>* Animations=nullptr;FString Profile,Status,Idle,Walk,Run;FChampionArtDefinition D;double Height=0;
+                if(!Row->TryGetObject(O)||!(*O)->TryGetStringField(TEXT("profileId"),Profile)||!(*O)->TryGetStringField(TEXT("status"),Status)||Status!=TEXT("custom_ready")||
+                   !(*O)->TryGetStringField(TEXT("motion"),D.Motion)||D.Motion!=TEXT("monster_native")||!(*O)->TryGetStringField(TEXT("mesh"),D.MeshPath)||
+                   !(*O)->TryGetNumberField(TEXT("heightCm"),Height)||Height<50||Height>400||!(*O)->TryGetObjectField(TEXT("animations"),Animations)||
+                   !(*Animations)->TryGetStringField(TEXT("idle"),Idle)||!(*Animations)->TryGetStringField(TEXT("walk"),Walk)||!(*Animations)->TryGetStringField(TEXT("run"),Run))continue;
+                if(!Present(D.MeshPath)||!Present(Idle)||!Present(Walk)||!Present(Run))continue;
+                D.HeightCm=static_cast<float>(Height);D.Raw=*O;Bindings.Add(Profile,MoveTemp(D));
+            }
+    }
+    return Bindings.Find(Id);
+}
+
+const FChampionArtDefinition* ProfileArt(const FString& Id);
+/** fab-integration: the committed binding, ignoring the Fab overlay (fallback when a Fab body fails to apply). */
+const FChampionArtDefinition* BaseProfileArt(const FString& Id);
+
 const FChampionArtDefinition* ProfileArt(const FString& Id)
+{
+    if(!Id.StartsWith(TEXT("pet:")))if(const auto* Fab=FabProfileArt(Id))return Fab; // fab-integration
+    return BaseProfileArt(Id);
+}
+
+const FChampionArtDefinition* BaseProfileArt(const FString& Id)
 {
     // pets: companion bodies come from Pets.json (key "pet:<id>"), never from the champion bindings.
     if(Id.StartsWith(TEXT("pet:")))
@@ -380,6 +424,15 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
         if(Profile && (bBinding?Creature->ApplyBinding(Hero,Hero.ChampionProfileId,Profile->Motion,Profile->MeshPath,Profile->HeightCm,Profile->Raw):
             Creature->Apply(Hero,Hero.ChampionProfileId,Profile->MeshPath,Profile->HeightCm)))
         {AppliedArchetype=Archetype;return true;}
+        // fab-integration: a Fab body that fails to apply falls back to the committed creature binding.
+        if(const auto* Base=BaseProfileArt(Hero.ChampionProfileId);Profile&&Base&&Base!=Profile)
+        {
+            UE_LOG(LogCireChampionArt,Warning,TEXT("%s: Fab creature body failed (%s); using the committed binding."),*Hero.ChampionProfileId,*Profile->MeshPath);
+            Profile=Base;
+            if(UCireCreatureArt::HandlesMotion(Base->Motion)?Creature->ApplyBinding(Hero,Hero.ChampionProfileId,Base->Motion,Base->MeshPath,Base->HeightCm,Base->Raw):
+                Creature->Apply(Hero,Hero.ChampionProfileId,Base->MeshPath,Base->HeightCm))
+            {AppliedArchetype=Archetype;return true;}
+        }
         // pets: a binding may carry a "fallback" body (the procedural sabercat falls back to the animated wolf).
         const TSharedPtr<FJsonObject>* Fallback=nullptr;FString FallbackMotion,FallbackMeshPath;double FallbackHeight=0;
         if(Profile&&Profile->Raw.IsValid()&&Profile->Raw->TryGetObjectField(TEXT("fallback"),Fallback)&&(*Fallback)->TryGetStringField(TEXT("motion"),FallbackMotion)&&
@@ -393,6 +446,8 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
     const auto& Definition = Profile?*Profile:Definitions[Archetype];
     auto* Body = LoadObject<USkeletalMesh>(nullptr, *Definition.MeshPath);
     auto* Blend = LoadObject<UBlendSpace>(nullptr, *Definition.LocomotionPath);
+    // fab-integration: locomotion retargeted from the Fab packs (true strafe/backpedal) when installed for this body.
+    if (UBlendSpace* FabBlend = CireFabAnimation::Locomotion(Body, CireFabAnimation::FolderFor(Body)); FabBlend && HasMatchingLocomotion(Body, FabBlend)) Blend = FabBlend;
     if (!HasMatchingLocomotion(Body, Blend))
     {
         UE_LOG(LogCireChampionArt, Warning, TEXT("Keeping original hero art: missing or mismatched locomotion for archetype %d (%s)."), Archetype, *Definition.LocomotionPath);
@@ -541,6 +596,13 @@ bool UCireChampionArt::IsCreatureProfile(const FString& ProfileId)
     if(UCireCreatureArt::Handles(ProfileId))return true;
     const auto* Profile=ProfileArt(ProfileId);
     return Profile&&UCireCreatureArt::HandlesMotion(Profile->Motion);
+}
+bool UCireChampionArt::EffectiveCreatureBinding(const FString& ProfileId,FString& OutMesh,FString& OutMotion,bool& bOutFab)
+{
+    const auto* Profile=ProfileArt(ProfileId);
+    if(!Profile)return false;
+    OutMesh=Profile->MeshPath;OutMotion=Profile->Motion;bOutFab=!ProfileId.StartsWith(TEXT("pet:"))&&FabProfileArt(ProfileId)==Profile;
+    return true;
 }
 bool UCireChampionArt::DebugApply(ACireHero& Hero)
 {

@@ -1,0 +1,26 @@
+{
+ "schemaVersion": 1,
+ "description": "Fab weapon props that replace a WeaponLoadouts.json asset token when the pack mesh exists locally (Docs/FabIntegration.md). Otherwise the token's own prop is used.",
+ "overrides": {
+  "legacy/Sword": {
+   "mesh": "/Game/Medieval_Weapons/Meshes/SM_Sword_1.SM_Sword_1"
+  },
+  "legacy/Shield": {
+   "mesh": "/Game/Medieval_Weapons/Meshes/SM_Kite_Wood_Shield.SM_Kite_Wood_Shield",
+   "scale": 0.62
+  },
+  "legacy/Lance": {
+   "mesh": "/Game/Medieval_Weapons/Meshes/SM_Spear.SM_Spear",
+   "scale": 0.8
+  },
+  "WarHammer": {
+   "mesh": "/Game/Medieval_Weapons/Meshes/SM_WarHammer.SM_WarHammer"
+  },
+  "Dagger": {
+   "mesh": "/Game/Medieval_Weapons/Meshes/SM_Dagger_1.SM_Dagger_1"
+  },
+  "WarAxe": {
+   "mesh": "/Game/Medieval_Weapons/Meshes/SM_Axe_1.SM_Axe_1"
+  }
+ }
+}
