@@ -84,6 +84,27 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
             Z.bValid=Z.InnerRadius>0&&Z.OuterRadius>Z.InnerRadius&&Z.OuterRadius<=3000&&Z.InnerDuration>=0&&Z.OuterMagnitude>=0&&Z.OuterMagnitude<=1;
             if(!Z.bValid)return Fail(TEXT("Invalid void zone: ")+D.Id);
         }
+        const TSharedPtr<FJsonObject>* Up=nullptr; // items-v2: ultimate upgrade
+        if(J->TryGetObjectField(TEXT("ultimateUpgrade"),Up))
+        {
+            auto& U=D.Upgrade;U.Name=Str(*Up,TEXT("name"));U.Text=Str(*Up,TEXT("text"));U.bAtTarget=Str(*Up,TEXT("center"))==TEXT("target");
+            U.Delay=FMath::Clamp(Num(*Up,TEXT("delay")),0.f,5.f);
+            const TArray<TSharedPtr<FJsonValue>>* List=nullptr;
+            if((*Up)->TryGetArrayField(TEXT("effects"),List))for(const auto& V:*List)
+            {
+                const TSharedPtr<FJsonObject>* E=nullptr;if(!V->TryGetObject(E)||!E)return Fail(TEXT("ultimateUpgrade effect must be an object: ")+D.Id);
+                FCireUpgradeEffect X;X.Type=FName(*Str(*E,TEXT("type")));X.Radius=Num(*E,TEXT("radius"));X.Duration=Num(*E,TEXT("duration"));
+                X.Amount=Num(*E,TEXT("amount"));X.Scaling=Num(*E,TEXT("scaling"));X.HealthScaling=Num(*E,TEXT("healthScaling"));
+                X.PrimaryScaling=Num(*E,TEXT("primaryScaling"));X.Magnitude=Num(*E,TEXT("magnitude"));
+                bool bFlag=false;if((*E)->TryGetBoolField(TEXT("atSelf"),bFlag)&&bFlag)X.CenterOverride=1;if((*E)->TryGetBoolField(TEXT("atTarget"),bFlag)&&bFlag)X.CenterOverride=2;
+                const TSharedPtr<FJsonObject>* Stats=nullptr;
+                if((*E)->TryGetObjectField(TEXT("stats"),Stats))for(const auto& StatPair:(*Stats)->Values)X.Stats.Add(FString(StatPair.Key),static_cast<float>(StatPair.Value->AsNumber()));
+                if(X.Type.IsNone()||X.Radius<0||X.Radius>3000||X.Duration<0||X.Duration>60||X.Magnitude<0||X.Magnitude>1)return Fail(TEXT("Invalid ultimateUpgrade effect: ")+D.Id);
+                U.Effects.Add(MoveTemp(X));
+            }
+            U.bValid=D.IsUltimate()&&U.Effects.Num()>0;
+            if(!U.bValid)return Fail(TEXT("ultimateUpgrade needs an ultimate with effects: ")+D.Id);
+        }
         Seen.Add(D.Id);Parsed.Add(MoveTemp(D));
     }
     TMap<FString,FCireChampionKit> Kits;

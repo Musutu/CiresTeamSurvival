@@ -1607,7 +1607,22 @@
     "knight",
     "paladin_righteous"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Dawnward",
+    "text": "Allies within 7 m also gain a shield absorbing 150 + 10% of your max health for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "barrier",
+      "radius": 700,
+      "duration": 8,
+      "amount": 150,
+      "healthScaling": 0.1
+     }
+    ]
+   }
   },
   "cataclysm": {
    "id": "cataclysm",
@@ -1662,7 +1677,25 @@
     "summoner",
     "wizard"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Scorched Earth",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
+   }
   },
   "executioners_verdict": {
    "id": "executioners_verdict",
@@ -1717,7 +1750,27 @@
     "ranger",
     "lancer"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Verdict Rendered",
+    "text": "Your other cooldowns shrink by 50% and you gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "cooldownRefund",
+      "magnitude": 0.5
+     },
+     {
+      "type": "partyBuff",
+      "radius": 0,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
+   }
   },
   "renewal": {
    "id": "renewal",
@@ -1778,7 +1831,24 @@
     "scholar",
     "paladin_holy"
    ],
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "Second Dawn",
+    "text": "Allies within 9 m also gain +30 armor and +30 ward for 8 s (a party aura).",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "armor": 30,
+       "ward": 30
+      }
+     }
+    ]
+   }
   },
   "last_stand": {
    "id": "last_stand",
@@ -1836,7 +1906,20 @@
     "aetheri_warden"
    ],
    "signatureOf": [],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Rallying Stand",
+    "text": "Allies within 8 m are also healed for 12% of your max health.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "heal",
+      "radius": 800,
+      "healthScaling": 0.12
+     }
+    ]
+   }
   },
   "challenge_of_iron": {
    "id": "challenge_of_iron",
@@ -1902,7 +1985,20 @@
     "aetheri_warden"
    ],
    "signatureOf": [],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Iron Echo",
+    "text": "Enemies within 8.5 m are also stunned for 1.5 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "stun",
+      "radius": 850,
+      "duration": 1.5
+     }
+    ]
+   }
   },
   "seismic_reprisal": {
    "id": "seismic_reprisal",
@@ -1961,7 +2057,28 @@
     "aetheri_warden"
    ],
    "signatureOf": [],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Aftershock",
+    "text": "The burst also breaks enemy armor for 6 s, and allies within 6 m gain +40 armor for 8 s.",
+    "center": "self",
+    "delay": 0.8,
+    "effects": [
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 6
+     },
+     {
+      "type": "partyBuff",
+      "radius": 600,
+      "duration": 8,
+      "stats": {
+       "armor": 40
+      }
+     }
+    ]
+   }
   },
   "starfall": {
    "id": "starfall",
@@ -2013,7 +2130,25 @@
     "aetheri_artificer"
    ],
    "signatureOf": [],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Falling Sky",
+    "text": "The impact also silences enemies for 2 s, and you restore 20% of your max mana.",
+    "center": "target",
+    "delay": 1.25,
+    "effects": [
+     {
+      "type": "silence",
+      "radius": 500,
+      "duration": 2
+     },
+     {
+      "type": "restore",
+      "radius": 0,
+      "magnitude": 0.2
+     }
+    ]
+   }
   },
   "spectral_hunt": {
    "id": "spectral_hunt",
@@ -2065,7 +2200,24 @@
     "aetheri_artificer"
    ],
    "signatureOf": [],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Pack Leader",
+    "text": "You and allies within 9 m gain +20% attack speed and +10% move speed for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "attackSpeed": 20,
+       "moveSpeed": 10
+      }
+     }
+    ]
+   }
   },
   "mass_aegis": {
    "id": "mass_aegis",
@@ -2131,7 +2283,22 @@
     "aetheri_warden"
    ],
    "signatureOf": [],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Aegis Bloom",
+    "text": "Allies within 9 m also gain a shield absorbing 200 + 2x primary stat for 12 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "barrier",
+      "radius": 900,
+      "duration": 12,
+      "amount": 200,
+      "scaling": 2
+     }
+    ]
+   }
   },
   "wellspring": {
    "id": "wellspring",
@@ -2190,7 +2357,25 @@
     "aetheri_warden"
    ],
    "signatureOf": [],
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "Overflow",
+    "text": "Allies within 6 m of you also heal 150 and restore 15% of their max mana.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "heal",
+      "radius": 600,
+      "amount": 150
+     },
+     {
+      "type": "restore",
+      "radius": 600,
+      "magnitude": 0.15
+     }
+    ]
+   }
   },
   "venom_ground": {
    "id": "venom_ground",
@@ -2995,7 +3180,28 @@
    "signatureOf": [
     "gunblade"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Bounty Hunter",
+    "text": "You gain +30% move speed and +12 primary stat for 6 s; other cooldowns shrink by 30%.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 0,
+      "duration": 6,
+      "stats": {
+       "moveSpeed": 30,
+       "primaryStat": 12
+      }
+     },
+     {
+      "type": "cooldownRefund",
+      "magnitude": 0.3
+     }
+    ]
+   }
   },
   "arcane_blunderbuss": {
    "id": "arcane_blunderbuss",
@@ -3417,7 +3623,30 @@
    "signatureOf": [
     "witch_slayer"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Witchlight",
+    "text": "Enemies in the circle are also armor-broken for 6 s; allies within 9 m of you gain +25 ward for 8 s.",
+    "center": "target",
+    "delay": 1.0,
+    "effects": [
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 6,
+      "atTarget": true
+     },
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "ward": 25
+      },
+      "atSelf": true
+     }
+    ]
+   }
   },
   "bouncing_glaive": {
    "id": "bouncing_glaive",
@@ -3867,7 +4096,30 @@
    "signatureOf": [
     "huntress"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Eye of the Storm",
+    "text": "You gain a shield absorbing 200 + 2x primary stat and +20% move speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "barrier",
+      "radius": 0,
+      "duration": 6,
+      "amount": 200,
+      "scaling": 2
+     },
+     {
+      "type": "partyBuff",
+      "radius": 0,
+      "duration": 6,
+      "stats": {
+       "moveSpeed": 20
+      }
+     }
+    ]
+   }
   },
   "photon_turret": {
    "id": "photon_turret",
@@ -4235,7 +4487,30 @@
     "aetheri_artificer"
    ],
    "category": "construct",
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Siege Protocol",
+    "text": "Enemies within 6 m of the obelisk are stunned for 1 s; you gain +12 primary stat for 15 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "stun",
+      "radius": 600,
+      "duration": 1,
+      "atTarget": true
+     },
+     {
+      "type": "partyBuff",
+      "radius": 0,
+      "duration": 15,
+      "stats": {
+       "primaryStat": 12
+      },
+      "atSelf": true
+     }
+    ]
+   }
   },
   "aegis_pylon": {
    "id": "aegis_pylon",
@@ -4661,7 +4936,26 @@
     "aetheri_warden"
    ],
    "category": "construct",
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Resonant Field",
+    "text": "Allies within 9 m of you restore 20% of their max mana and gain a shield absorbing 150 for 10 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "restore",
+      "radius": 900,
+      "magnitude": 0.2
+     },
+     {
+      "type": "barrier",
+      "radius": 900,
+      "duration": 10,
+      "amount": 150
+     }
+    ]
+   }
   },
   "riposte_roll": {
    "id": "riposte_roll",
@@ -6542,7 +6836,23 @@
    "signatureOf": [
     "bear"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Den Mother",
+    "text": "Allies within 8 m gain +40 armor for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 800,
+      "duration": 8,
+      "stats": {
+       "armor": 40
+      }
+     }
+    ]
+   }
   },
   "paladin_righteous_flail": {
    "id": "paladin_righteous_flail",
@@ -6940,7 +7250,20 @@
    "signatureOf": [
     "dwarf_miner"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Rockfall",
+    "text": "Enemies within 4 m of the ring are stunned for 1 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "stun",
+      "radius": 400,
+      "duration": 1
+     }
+    ]
+   }
   },
   "golem_granite_fist": {
    "id": "golem_granite_fist",
@@ -7118,7 +7441,22 @@
     "ether_golem_support",
     "ether_golem_bruiser"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Worldstone Ward",
+    "text": "Allies within 7 m gain a shield absorbing 200 + 8% of your max health for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "barrier",
+      "radius": 700,
+      "duration": 8,
+      "amount": 200,
+      "healthScaling": 0.08
+     }
+    ]
+   }
   },
   "golem_moss_bloom": {
    "id": "golem_moss_bloom",
@@ -7471,7 +7809,24 @@
    "signatureOf": [
     "orc_chieftain"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Warband",
+    "text": "Allies within 9 m gain +8 primary stat and +15% attack speed for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "primaryStat": 8,
+       "attackSpeed": 15
+      }
+     }
+    ]
+   }
   },
   "behemoth_totem_sweep": {
    "id": "behemoth_totem_sweep",
@@ -7695,7 +8050,25 @@
    "signatureOf": [
     "totemic_behemoth"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Trampled",
+    "text": "Enemies within 6 m are slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 600,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 600,
+      "duration": 5
+     }
+    ]
+   }
   },
   "drakish_dragon_oath": {
    "id": "drakish_dragon_oath",
@@ -7910,7 +8283,24 @@
    "signatureOf": [
     "drakish_footman"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Scaled Oath",
+    "text": "Allies within 8 m gain +40 ward and +20 armor for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 800,
+      "duration": 8,
+      "stats": {
+       "ward": 40,
+       "armor": 20
+      }
+     }
+    ]
+   }
   },
   "troll_axe_frenzy": {
    "id": "troll_axe_frenzy",
@@ -8097,7 +8487,24 @@
     "troll_berserker_melee",
     "troll_berserker_ranged"
    ],
-   "castWhileMoving": true
+   "castWhileMoving": true,
+   "ultimateUpgrade": {
+    "name": "Blood Moon",
+    "text": "You gain +20% lifesteal and +20% attack speed for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 0,
+      "duration": 8,
+      "stats": {
+       "lifesteal": 20,
+       "attackSpeed": 20
+      }
+     }
+    ]
+   }
   },
   "troll_twin_throw": {
    "id": "troll_twin_throw",
@@ -8407,7 +8814,26 @@
    "signatureOf": [
     "dryad"
    ],
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "Heartwood",
+    "text": "Allies within 8 m lose their slows and gain a shield absorbing 150 + 2x primary stat for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "cleanse",
+      "radius": 800
+     },
+     {
+      "type": "barrier",
+      "radius": 800,
+      "duration": 8,
+      "amount": 150,
+      "scaling": 2
+     }
+    ]
+   }
   },
   "whisp_guiding_mote": {
    "id": "whisp_guiding_mote",
@@ -8633,7 +9059,25 @@
    "signatureOf": [
     "whisp"
    ],
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "Starlit Well",
+    "text": "Allies within 9 m heal 150 and restore 15% of their max mana.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "heal",
+      "radius": 900,
+      "amount": 150
+     },
+     {
+      "type": "restore",
+      "radius": 900,
+      "magnitude": 0.15
+     }
+    ]
+   }
   },
   "centaur_grove_javelin": {
    "id": "centaur_grove_javelin",
@@ -8859,7 +9303,27 @@
    "signatureOf": [
     "evergrove_centaur"
    ],
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "Spring Stride",
+    "text": "Allies within 9 m lose their slows and gain +20% move speed for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "cleanse",
+      "radius": 900
+     },
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "moveSpeed": 20
+      }
+     }
+    ]
+   }
   },
   "keeper_dawn_beam": {
    "id": "keeper_dawn_beam",
@@ -9083,7 +9547,24 @@
    "signatureOf": [
     "keeper_of_light"
    ],
-   "castWhileMoving": false
+   "castWhileMoving": false,
+   "ultimateUpgrade": {
+    "name": "High Noon",
+    "text": "Allies within 9 m gain +8 primary stat and +20 ward for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "primaryStat": 8,
+       "ward": 20
+      }
+     }
+    ]
+   }
   }
  },
  "champions": {

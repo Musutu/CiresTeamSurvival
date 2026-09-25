@@ -47,7 +47,13 @@ public:
     UPROPERTY(Replicated) bool bFaceControl=false;
     UPROPERTY(Replicated) float RollStartedAt=-100;
     UPROPERTY(Replicated) float RollDuration=.55f;
-    UPROPERTY(Replicated) float ReadyAt=0;
+    UPROPERTY(Replicated) float ReadyAt=0;   // items-v2: when the next missing dodge charge returns
+    /** items-v2: dodge-roll charges (Galeborn Twinstep adds one); they refill one at a time. */
+    UPROPERTY(Replicated) int32 RollCharges=1;
+    UPROPERTY(Replicated) int32 MaxRollCharges=1;
+    int32 AvailableCharges() const;
+    /** Seconds until the next charge returns (0 when full). */
+    float NextChargeIn() const;
     UPROPERTY(Replicated) float InvulnerableFrom=-100;
     UPROPERTY(Replicated) float InvulnerableUntil=-100;
     UPROPERTY(Replicated) FVector RollDirection=FVector::ForwardVector;

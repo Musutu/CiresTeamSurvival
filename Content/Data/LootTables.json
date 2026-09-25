@@ -129,7 +129,7 @@
             "boiled_jerkin",
             "hexweave_cloak",
             "pilgrims_idol",
-            "gravemoss_pendant"
+            "pilgrims_idol"
           ]
         }
       ]
@@ -171,8 +171,8 @@
             "bloodstone_shard",
             "boiled_jerkin",
             "hexweave_cloak",
-            "vampire_fang",
-            "ravens_eye",
+            "gauntlet_of_the_ox",
+            "rusted_longsword",
             "sandglass_charm",
             "road_worn_boots"
           ]
@@ -234,7 +234,7 @@
           "pool": [
             "nightfall_reaver",
             "sanguine_sabre",
-            "crown_of_cinders",
+            "heart_of_cataclysm",
             "gravewarden_bulwark",
             "censer_of_dawn",
             "stoneheart"
@@ -273,8 +273,8 @@
           "chance": 0.25,
           "pool": [
             "gauntlet_of_the_ox",
-            "band_of_the_fox",
-            "circlet_of_the_owl",
+            "bone_dagger",
+            "ashwood_wand",
             "nightglass_shard",
             "road_worn_boots"
           ]
@@ -300,10 +300,10 @@
           "type": "item",
           "chance": 0.35,
           "pool": [
-            "vampire_fang",
-            "ravens_eye",
+            "gauntlet_of_the_ox",
+            "rusted_longsword",
             "sandglass_charm",
-            "gravemoss_pendant",
+            "pilgrims_idol",
             "pilgrims_idol"
           ]
         },
@@ -363,8 +363,8 @@
             "bloodstone_shard",
             "boiled_jerkin",
             "hexweave_cloak",
-            "vampire_fang",
-            "ravens_eye",
+            "gauntlet_of_the_ox",
+            "rusted_longsword",
             "sandglass_charm",
             "road_worn_boots"
           ]
@@ -409,7 +409,7 @@
           "pool": [
             "nightfall_reaver",
             "sanguine_sabre",
-            "crown_of_cinders",
+            "heart_of_cataclysm",
             "gravewarden_bulwark",
             "censer_of_dawn",
             "stoneheart",

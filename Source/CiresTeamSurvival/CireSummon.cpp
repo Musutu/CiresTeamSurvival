@@ -1,4 +1,5 @@
 #include "CireSummon.h"
+#include "CireItems.h" // items-v2
 #include "CireDeveloperTools.h"
 #include "CireAreaEffects.h"
 #include "CireConstruct.h"
@@ -71,7 +72,7 @@ TArray<ACireSummon*> ACireSummon::SpawnGroup(ACireHero* Source, const FCireSummo
         Unit->OriginPhase = CireSkillRuntime::Phase(World); Unit->ExpiresServerTime = World->GetTimeSeconds() + Spec.DurationSeconds;
         Unit->Draft(Spec.ArchetypeVisual);
         Unit->HeroName = Spec.bCommandable ? TEXT("Oathbound Guardian") : TEXT("Spectral Companion");
-        Unit->MaxHealth = Unit->Health = Spec.Health;
+        Unit->MaxHealth = Unit->Health = Spec.Health * CireItems::SummonMultiplier(Source); // items-v2: Soulbinder's Crook
         Unit->Gold = 0; Unit->Skills.Reset(); Unit->Offers.Reset(); Unit->Cooldowns.Reset();
         Unit->Target = CireCombat::AreHostile(Source, TargetActor) ? TargetActor : nullptr;
         Unit->CurrentCommand = Unit->Target ? ECireSummonCommand::Attack : ECireSummonCommand::Follow;

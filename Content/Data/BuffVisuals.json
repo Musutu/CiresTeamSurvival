@@ -16,7 +16,8 @@
     "vial_of_crimson": "regeneration",
     "aether_phial": "mana_restore",
     "hourglass_of_ages": "borrowed_time",
-    "ravenfeather_mantle": "scatter"
+    "ravenfeather_mantle": "scatter",
+    "banner_of_the_vigil": "vigil_banner"
   },
   "buffs": {
     "npc_rooted": {"name": "Rooted", "kind": "debuff", "school": "nature", "source": "monster races: root rider (cannot move)", "palette": {"primary": [0.45, 0.72, 0.2], "secondary": [0.3, 0.2, 0.1], "core": [0.85, 1.0, 0.6]}, "priority": 58, "layers": [{"shape": "hands", "attach": "ground", "size": 0.9, "speed": 0.6}, {"shape": "ring", "attach": "ground", "style": "runes", "count": 6, "speed": 0.3}], "lifecycle": {"burstSeconds": 0.4, "fadeSeconds": 0.35}, "sound": {"start": "npc.root.start", "end": "cc.root.end"}},
@@ -369,6 +370,40 @@
         { "shape": "ring", "attach": "ground", "style": "runes", "count": 6, "speed": 0.8 }
       ],
       "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.3 },
+      "sound": { "start": "item.oathshield.start", "end": "item.oathshield.end" }
+    },
+    "party_barrier": {
+      "name": "Oathshield Barrier", "kind": "buff", "school": "holy", "source": "items-v2: Aegis of the Last Oath / ultimate upgrades: an absorb shield that soaks damage before health",
+      "palette": { "primary": [0.95, 0.85, 0.5], "secondary": [0.5, 0.75, 1.0], "core": [1.0, 1.0, 0.92] },
+      "priority": 75, "light": 0.3,
+      "layers": [
+        { "shape": "shell", "attach": "body", "size": 1.15, "speed": 0.9 },
+        { "shape": "ring", "attach": "ground", "style": "runes", "count": 6, "speed": 0.7 }
+      ],
+      "lifecycle": { "burstSeconds": 0.4, "fadeSeconds": 0.3 },
+      "sound": { "start": "item.oathshield.start", "end": "item.oathshield.end" }
+    },
+    "vigil_banner": {
+      "name": "Raise the Vigil", "kind": "buff", "school": "steel", "source": "items-v2: Banner of the Vigil active: allies within 9m gain +250 armor for 10s",
+      "palette": { "primary": [0.78, 0.8, 0.86], "secondary": [0.85, 0.62, 0.25], "core": [1.0, 0.96, 0.85] },
+      "priority": 72, "light": 0.2,
+      "layers": [
+        { "shape": "plates", "attach": "body", "count": 4, "speed": 0.8, "size": 1.05 },
+        { "shape": "ring", "attach": "ground", "speed": 0.5 }
+      ],
+      "lifecycle": { "burstSeconds": 0.35, "fadeSeconds": 0.3 },
+      "sound": { "start": "item.oathshield.start", "end": "item.oathshield.end" }
+    },
+    "apotheosis": {
+      "name": "Apotheosis", "kind": "buff", "school": "holy", "source": "items-v2: Sigil of Apotheosis: the extra effect an ultimate grants allies (party aura)",
+      "palette": { "primary": [1.0, 0.8, 0.35], "secondary": [0.95, 0.45, 0.9], "core": [1.0, 0.97, 0.85] },
+      "priority": 78, "light": 0.35,
+      "layers": [
+        { "shape": "halo", "attach": "overhead", "size": 1.2, "speed": 0.9 },
+        { "shape": "motes", "attach": "body", "count": 10, "speed": 1.1 },
+        { "shape": "ring", "attach": "ground", "style": "runes", "count": 8, "speed": 0.6 }
+      ],
+      "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
       "sound": { "start": "item.oathshield.start", "end": "item.oathshield.end" }
     },
     "toll_of_the_grave": {
