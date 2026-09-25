@@ -5,6 +5,10 @@ with bevel lighting, metal/gem materials, an accent glow and a themed backdrop, 
 is original to this project (see Content/UI/Items/LICENSES.md). Writes 128x128 RGBA PNGs to
 Content/UI/Items/src/T_Item_<id>.png; Tools/ImportItemContent.py imports them as UI textures
 (/Game/UI/Items/T_Item_<id>). Run with any Python 3:  python Tools/BuildItemIcons.py
+
+Painted overrides: when Art/Icons/ChatGPT/Items/T_Item_<id>.png exists (256x256 icons generated for
+Eric via ChatGPT and sliced by Tools/SliceIconSheet.py) it is copied instead of the procedural
+render. Pass --procedural to ignore the overrides.
 """
 from pathlib import Path
 import json
@@ -16,6 +20,7 @@ import zlib
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "Content/UI/Items/src"
+PAINTED = ROOT / "Art/Icons/ChatGPT/Items"
 SIZE = 128
 
 
@@ -446,9 +451,19 @@ def main():
     missing = [i for i in ids if i not in defs]
     if missing:
         raise SystemExit(f"No icon recipe for: {missing}")
-    only = set(sys.argv[1:])
+    args = sys.argv[1:]
+    procedural = "--procedural" in args
+    only = {a for a in args if not a.startswith("--")}
+    painted = 0
     for index, item_id in enumerate(ids):
         if only and item_id not in only:
+            continue
+        override = PAINTED / f"T_Item_{item_id}.png"
+        if override.is_file() and not procedural:
+            OUT.mkdir(parents=True, exist_ok=True)
+            (OUT / override.name).write_bytes(override.read_bytes())
+            painted += 1
+            print("icon", item_id, "(painted)", flush=True)
             continue
         theme, glow, layers = defs[item_id]
         tier = next(item["tier"] for item in catalog["items"] if item["id"] == item_id)
@@ -457,7 +472,7 @@ def main():
         glow_scale = {"legendary": 1.0, "epic": .8, "basic": .55, "consumable": .6}[tier]
         render(item_id, theme, tuple(c * glow_scale for c in glow), layers, seed=index + 7, sparkle=sparkle, rays=rays)
         print("icon", item_id, flush=True)
-    print(f"CIRE_ITEM_ICONS_PASS count={len(ids)} out={OUT}")
+    print(f"CIRE_ITEM_ICONS_PASS count={len(ids)} painted={painted} out={OUT}")
 
 
 if __name__ == "__main__":
