@@ -9,6 +9,7 @@
 #include "CireNPCState.h"
 #include "CireRealm.h"
 #include "CireSpellPresentation.h"
+#include "AudioDevice.h"
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Dom/JsonObject.h"
@@ -692,13 +693,35 @@ bool CireSoundEvents::RunSmoke(UWorld* World, int32& OutChecks)
         {
             UCireAudioSubsystem* Audio = UCireAudioSubsystem::Get(World);
             Audio->Events.Tick(*Audio, 0.f); // prime: history is never replayed
-            const int32 Blocks0 = Audio->Events.Blocks, Deflects0 = Audio->Events.Deflects;
-            FCireCombatEvent E; E.Outcome = ECireHitOutcome::Block; E.bLocalTarget = true; E.AbilityName = TEXT("sword strike"); E.Location = At;
-            CireCombat::AppendReceivedEvent(PC->CombatEvents, PC->CombatEventSequence, E, World->GetTimeSeconds());
-            E.AbilityName = TEXT("Bow shot");
-            CireCombat::AppendReceivedEvent(PC->CombatEvents, PC->CombatEventSequence, E, World->GetTimeSeconds());
-            Audio->Events.Tick(*Audio, 0.f);
-            Check(Audio->Events.Blocks == Blocks0 + 1 && Audio->Events.Deflects == Deflects0 + 1, TEXT("block event -> clang, ranged block -> deflect"));
+            // Both paths: the Shield Blocks & Deflects pack when installed (never committed), then the shipped clang.
+            const bool bCanHear = World->GetAudioDevice().IsValid() && !CireAudio::LocalSettings(World).bMuteAudio;
+            const bool bPacksWere = CireAudio::PacksEnabled();
+            for(const bool bUsePacks : {true, false})
+            {
+                CireAudio::SetPacksEnabled(bUsePacks);
+                FPlatformProcess::Sleep(.05f); // clear the 20 ms block/deflect cooldown between passes
+                const TCHAR* Path = bUsePacks ? TEXT("packs-on") : TEXT("packs-off");
+                const int32 ExpectPack = (CireAudio::CueUsesPack(D.Outcomes.FindRef(TEXT("block"))) ? 1 : 0) + (CireAudio::CueUsesPack(D.Outcomes.FindRef(TEXT("deflect"))) ? 1 : 0);
+                const CireAudio::FStats S0 = CireAudio::Stats();
+                const int32 Blocks0 = Audio->Events.Blocks, Deflects0 = Audio->Events.Deflects;
+                FCireCombatEvent E; E.Outcome = ECireHitOutcome::Block; E.bLocalTarget = true; E.AbilityName = TEXT("sword strike"); E.Location = At;
+                CireCombat::AppendReceivedEvent(PC->CombatEvents, PC->CombatEventSequence, E, World->GetTimeSeconds());
+                E.AbilityName = TEXT("Bow shot");
+                CireCombat::AppendReceivedEvent(PC->CombatEvents, PC->CombatEventSequence, E, World->GetTimeSeconds());
+                Audio->Events.Tick(*Audio, 0.f);
+                const CireAudio::FStats& S1 = CireAudio::Stats();
+                const int32 Played = S1.Played - S0.Played, PackPlays = S1.PackPlays - S0.PackPlays, FallbackPlays = S1.FallbackPlays - S0.FallbackPlays;
+                Check(Audio->Events.Blocks == Blocks0 + 1 && Audio->Events.Deflects == Deflects0 + 1, FString::Printf(TEXT("block event -> clang, ranged block -> deflect (%s)"), Path));
+                if(!bUsePacks) Check(ExpectPack == 0, TEXT("packs off -> block and deflect fall back to the shipped clang"));
+                if(bCanHear)
+                {
+                    Check(Played == 2, FString::Printf(TEXT("received block + deflect both sound (%s, played=%d)"), Path, Played));
+                    Check(PackPlays == ExpectPack && FallbackPlays == 2 - ExpectPack, FString::Printf(TEXT("block sounds use %s (%s, pack=%d fallback=%d)"),
+                        ExpectPack ? TEXT("the installed pack") : TEXT("the shipped clang"), Path, PackPlays, FallbackPlays));
+                }
+                UE_LOG(LogCireSoundEvents, Display, TEXT("CIRE_AUDIO_BLOCK path=%s cues_on_pack=%d played=%d pack=%d fallback=%d"), Path, ExpectPack, Played, PackPlays, FallbackPlays);
+            }
+            CireAudio::SetPacksEnabled(bPacksWere);
         }
     }
     return Pass;
