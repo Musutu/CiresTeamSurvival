@@ -173,3 +173,23 @@ Close-ups: `Tools/RunMonsterGallery.py --only hand_,grips_,styles_`.
   thrown lance is raised vertically at release rather than pointed.
 * Champion casts are recognised from cooldowns, so a cast whose cooldown is refunded or zero plays nothing.
 * The corpse is local presentation: it ignores realm changes after death and does not ragdoll.
+
+## Race bodies and rank skin (monster-races)
+
+* **Fallback bodies.** Race units without art (`Docs/Races.md`) resolve their `fallback` archetype's Tripo body through
+  `CireMonsterArt::Find` (own art first). `Content/Data/RaceMeshes.tripo.json` (tripo-races agent; same shape as
+  `NPCMeshes.tripo.json`'s `archetypes`, `units` also accepted) overlays real art by priority: a listed unit replaces any
+  NPCMeshes body and all its alternates become variants. `CireMonsterArt::HasOwnBody` tells the two apart.
+* **Skin.** `/Game/Art/Materials/M_CireMonsterSkin` (built by `Tools/BuildRaceSkinMaterial.py` from the Tripo PBR master, so
+  its four texture parameters match every body) recolours the base colour to the race palette (luminance-preserving hue
+  replacement), tints the metallic parts (armour mask from `MetallicTex`) with the race accent or the rank colour, adds a small
+  whole-body rank tint, a fresnel rim and an armour trim glow in the rank colour. `CireRaces::ApplySkin` creates one MID per
+  slot, copies the body's textures and sets `RaceTint`, `RaceTintStrength`, `RaceAccent`, `RaceAccentStrength`, `RankColor`,
+  `TrimColor`, `RankArmor`, `RankBody`, `RankGlow`, `RimColor`, `RimStrength` (and `ArmorMaskGain`, `GlowBoost` defaults).
+  Units drawn on their own art keep their authored colours on palette 0. The overlay rim (`M_SelectionEdge`) is now only used
+  for enrage, or for the rank colour when the skin material is missing; the mannequin fallback is tinted with the palette
+  pulled toward the rank colour.
+* **Size.** Ranks scale the body (veteran 1.05 ... champion 1.18, mythic 1.12) on top of the archetype and wave-row size.
+* **Renders.** `python Tools/RunMonsterGallery.py --only races_,ranks_,reskins,palettes_` -> `Saved/MonsterGallery/<stamp>/`:
+  each race's 6 units + 2 bosses, one body in all six ranks (close and at gameplay distance), one body under six race
+  palettes, and the Blightwood / Drowned reskin sets.

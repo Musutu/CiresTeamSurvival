@@ -71,6 +71,16 @@ void CireWaveDirector::InitializeSoak(ACireGameMode* Mode)
     Soak.LimitSeconds = FMath::Clamp(Soak.LimitSeconds, 60.f, 6. * 3600.);
     Mode->BotFillTimer = 0;
     CireWaveDirector::Config(Mode->GetWorld());
+    // monster-races: -CireWaveSoakRotation=drowned_deep,blightwood,... soaks chosen races (one per cycle).
+    FString Rotation;
+    if (FParse::Value(FCommandLine::Get(), TEXT("CireWaveSoakRotation="), Rotation, false))
+    {
+        FCireWaveConfig C = CireWaveDirector::Config(Mode->GetWorld());
+        Rotation.ParseIntoArray(C.Campaign.RaceRotation, TEXT(","), true);
+        FString Error;
+        if (!CireWaveDirector::ApplyLive(Mode, C, &Error)) Log(TEXT("CIRE_WAVE_SOAK_ROTATION_ERROR ") + Error);
+        else Log(TEXT("CIRE_WAVE_SOAK_ROTATION ") + FString::Join(C.Campaign.RaceRotation, TEXT(",")));
+    }
     Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_READY cycles=%d limit=%.0f failsafe=%d waves_per_cycle=%d"), Soak.TargetCycles, Soak.LimitSeconds,
         CireWaveDirector::Config().bStallFailsafe ? 1 : 0, CireWaveDirector::Config().WavesPerCycle));
 }
@@ -179,6 +189,9 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
         Soak.bDone = true;
         const bool bPass = bCyclesDone && !bFinished && Soak.WavesCleared >= Soak.TargetCycles * FMath::Max(1, S->WavesPerCycle);
         FString Types; for (const auto& Pair : Soak.TypeCounts) Types += FString::Printf(TEXT("%s:%d "), *Pair.Key, Pair.Value);
+        { const FCireRaceStats R = CireRaces::Stats(); // monster-races: race skill usage over the soak
+          Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_RACES skill_casts=%d rider_hits=%d summoned=%d first_skill_wave=%d earliest_cast_wave=%d races=%s"),
+              R.Casts, R.RiderHits, R.Summoned, CireWaveDirector::Config(Mode->GetWorld()).Skills.FirstSkillWave, R.EarliestCastWave, *R.Races)); }
         Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_%s rounds=%d spawned=%d cleared=%d transitions=%d longest_wave=%.1f stall_dumps=%d rescues=%d lives=%d/%d t=%.0f types=%s"),
             bPass ? TEXT("PASS") : TEXT("FAIL"), S->Round - 1, Soak.WavesSpawned, Soak.WavesCleared, Soak.Transitions, Soak.LongestWave, Soak.StallDumps, Soak.Failsafes,
             S->EmberLives, S->DuskLives, Now, *Types.TrimEnd()));

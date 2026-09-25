@@ -4,6 +4,7 @@
 // failsafe), neutral challenge packs, and bot lane-defence priorities.
 // See Docs/Waves.md.
 #include "CoreMinimal.h"
+#include "CireRaces.h" // monster-races: ranks, skill progression, campaign
 
 class ACireGameMode;
 class ACireMonster;
@@ -33,6 +34,18 @@ struct CIRESTEAMSURVIVAL_API FCireWaveUnit
     bool bBoss = false;
     /** Lives lost when this unit reaches the castle; 0 = archetype/default rule. */
     int32 LeakCost = 0;
+    // monster-races
+    /** Race slot (line, bruiser, tank, caster, ranged, special, warlord, colossus, boss): the row follows the wave's
+     *  race. None = the explicit Archetype. Archetype keeps the hollow unit of the slot so old callers still work. */
+    FName Slot;
+    /** Rank colour and strength (Elite = the legacy elite flag). */
+    ECireNPCRank Rank = ECireNPCRank::Normal;
+    /** Race palette variant (reskin set); -1 = campaign default (rotation lap). */
+    int32 Palette = -1;
+    /** Skill count / tier overrides; -1 / 0 = the wave schedule (Waves.json skillProgression). */
+    int32 SkillCount = -1;
+    int32 SkillTier = 0;
+    ECireNPCRank EffectiveRank() const { return bElite && Rank < ECireNPCRank::Elite ? ECireNPCRank::Elite : Rank; }
     bool operator==(const FCireWaveUnit& O) const;
 };
 
@@ -49,6 +62,8 @@ struct CIRESTEAMSURVIVAL_API FCireWaveDef
     bool bMustClear = true;
     /** Kill reward (XP/gold) multiplier for this wave's units. */
     float RewardMultiplier = 1.f;
+    /** monster-races: race of this wave's slot rows; None = the campaign rotation for the cycle. */
+    FName Race;
     int32 UnitsPerLane() const;
     bool operator==(const FCireWaveDef& O) const;
 };
@@ -72,6 +87,9 @@ struct CIRESTEAMSURVIVAL_API FCireWaveConfig
     /** Stuck detection: a wave unit that makes no progress for this long is nudged along its route. */
     float StuckSeconds = 5.f;
     TArray<FCireWaveDef> Waves;
+    /** monster-races: when monsters get skills, and which race each cycle fields. */
+    FCireSkillProgression Skills;
+    FCireCampaign Campaign;
     bool operator==(const FCireWaveConfig& O) const;
 };
 
@@ -141,6 +159,21 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API void RescueCounts(const ACireGameMode* Mode, int32& Nudges, int32& Marches, int32& Despawns);
     /** Clears the director's per-monster bookkeeping (death/leak/despawn). */
     CIRESTEAMSURVIVAL_API void Forget(const ACireMonster* Monster);
+    // ---- monster-races ----
+    /** Race fielded by a wave row: the wave's own race, else the campaign rotation for the cycle (0-based). */
+    CIRESTEAMSURVIVAL_API FName RaceFor(const FCireWaveConfig& Config, const FCireWaveDef& Wave, int32 Cycle, int32 Row = 0);
+    /** Human label of a wave's race ("The Drowned Deep", or "Hollow + Blightwood"). */
+    CIRESTEAMSURVIVAL_API FString RaceLabel(const FCireWaveConfig& Config, const FCireWaveDef& Wave, int32 Cycle);
+    /** A summoned unit joins its summoner's wave bookkeeping (clear rule, failsafe, size). */
+    CIRESTEAMSURVIVAL_API void AdoptSummon(ACireGameMode* Mode, ACireMonster* Summon, ACireMonster* Parent);
+    /** F8 editor: next race of a wave (campaign rotation, then every race in Races.json order). */
+    CIRESTEAMSURVIVAL_API void CycleWaveRace(FCireWaveDef& Wave);
+    /** F8 editor: next unit of a row: the race slots (line..special, warlord, colossus, boss), then each unit of Race explicitly. */
+    CIRESTEAMSURVIVAL_API void CycleRowUnit(FCireWaveUnit& Row, FName Race);
+    /** F8 editor: next rank (normal, veteran, elite, champion, warlord, mythic). */
+    CIRESTEAMSURVIVAL_API void CycleRowRank(FCireWaveUnit& Row);
+    /** F8 editor: short label of a row's unit ("Caster: Tidecaller" or "Tidecaller"). */
+    CIRESTEAMSURVIVAL_API FString RowUnitLabel(const FCireWaveUnit& Row, FName Race, int32 Cycle = 0);
 
     // ---- neutral challenge packs ----
     /** Challenge-pack units start neutral; a player's attack turns the whole pack hostile. */

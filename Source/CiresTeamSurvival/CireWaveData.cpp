@@ -20,8 +20,15 @@ static_assert(UE_ARRAY_COUNT(TypeIds) == static_cast<int32>(ECireWaveType::Count
 
 FCireWaveUnit Unit(const TCHAR* Id, int32 Count, float Health = 1.f, float Damage = 1.f)
 {
-    FCireWaveUnit U; U.Archetype = Id; U.Count = Count; U.HealthScale = Health; U.DamageScale = Damage; return U;
+    FCireWaveUnit U; U.Archetype = Id; U.Count = Count; U.HealthScale = Health; U.DamageScale = Damage;
+    // monster-races: template rows follow the wave's race through their slot (the hollow unit stays the default).
+    static const TMap<FName, FName> Slots = {{TEXT("hollow_infantry"), TEXT("line")}, {TEXT("ironbound_bruiser"), TEXT("bruiser")},
+        {TEXT("hollow_shieldbearer"), TEXT("tank")}, {TEXT("blight_caster"), TEXT("caster")}, {TEXT("barbed_hunter"), TEXT("ranged")},
+        {TEXT("grave_hound"), TEXT("special")}, {TEXT("hollow_siegebreaker"), TEXT("boss")}, {TEXT("gravemaw_pack_leader"), TEXT("warlord")}};
+    if (const FName* Slot = Slots.Find(U.Archetype)) U.Slot = *Slot;
+    return U;
 }
+bool KnownSlot(FName Slot) { return CireRaces::SlotNames().Contains(Slot); }
 bool Near(float A, float B) { return FMath::IsNearlyEqual(A, B, 1.e-4f); }
 float ClampF(float V, float Lo, float Hi, float Fallback) { return FMath::IsFinite(V) ? FMath::Clamp(V, Lo, Hi) : Fallback; }
 }
@@ -30,20 +37,22 @@ bool FCireWaveUnit::operator==(const FCireWaveUnit& O) const
 {
     return Archetype == O.Archetype && Count == O.Count && Near(HealthScale, O.HealthScale) && Near(DamageScale, O.DamageScale) &&
         Near(SizeScale, O.SizeScale) && bElite == O.bElite && bNonAttacking == O.bNonAttacking && bEscortee == O.bEscortee &&
-        bBoss == O.bBoss && LeakCost == O.LeakCost;
+        bBoss == O.bBoss && LeakCost == O.LeakCost && Slot == O.Slot && Rank == O.Rank && Palette == O.Palette && SkillCount == O.SkillCount && // monster-races
+        SkillTier == O.SkillTier;
 }
 int32 FCireWaveDef::UnitsPerLane() const { int32 N = 0; for (const auto& U : Units) N += U.Count; return N; }
 bool FCireWaveDef::operator==(const FCireWaveDef& O) const
 {
     return Label == O.Label && Type == O.Type && Units == O.Units && Near(SpawnInterval, O.SpawnInterval) && Near(DelayBefore, O.DelayBefore) &&
-        bMustClear == O.bMustClear && Near(RewardMultiplier, O.RewardMultiplier);
+        bMustClear == O.bMustClear && Near(RewardMultiplier, O.RewardMultiplier) && Race == O.Race; // monster-races: race
 }
 bool FCireWaveConfig::operator==(const FCireWaveConfig& O) const
 {
     return Near(BreatherSeconds, O.BreatherSeconds) && WavesPerCycle == O.WavesPerCycle && Cycles == O.Cycles &&
         Near(CycleHealthGrowth, O.CycleHealthGrowth) && Near(CycleDamageGrowth, O.CycleDamageGrowth) && CycleExtraUnits == O.CycleExtraUnits &&
         bStallFailsafe == O.bStallFailsafe && Near(MaxWaveSeconds, O.MaxWaveSeconds) && FailsafeAction == O.FailsafeAction &&
-        Near(FailsafeGraceSeconds, O.FailsafeGraceSeconds) && Near(StuckSeconds, O.StuckSeconds) && Waves == O.Waves;
+        Near(FailsafeGraceSeconds, O.FailsafeGraceSeconds) && Near(StuckSeconds, O.StuckSeconds) && Waves == O.Waves &&
+        Skills == O.Skills && Campaign == O.Campaign; // monster-races
 }
 
 const TCHAR* CireWaveDirector::TypeName(ECireWaveType Type)
@@ -110,7 +119,7 @@ FCireWaveDef CireWaveDirector::Template(ECireWaveType Type)
         break;
     case ECireWaveType::HybridPack:
         W.Units = {Unit(TEXT("hollow_shieldbearer"), 1), Unit(TEXT("hollow_infantry"), 1), Unit(TEXT("ironbound_bruiser"), 1),
-                   Unit(TEXT("blight_caster"), 1), Unit(TEXT("barbed_hunter"), 1)};
+                   Unit(TEXT("blight_caster"), 1), Unit(TEXT("barbed_hunter"), 1), Unit(TEXT("grave_hound"), 2)};
         break;
     default:
         W.Type = ECireWaveType::Custom;
@@ -125,11 +134,17 @@ FCireWaveConfig CireWaveDirector::Defaults()
     FCireWaveConfig C;
     FCireWaveDef One = Template(ECireWaveType::Normal);
     FCireWaveDef Two = Template(ECireWaveType::Normal);
-    Two.Label = TEXT("Hollow Column");
+    Two.Label = TEXT("Breach Column"); // monster-races: race-neutral (the race is appended at runtime)
     Two.Units = {Unit(TEXT("hollow_infantry"), 3, 1.15f, 1.3f), Unit(TEXT("ironbound_bruiser"), 2, 1.15f, 1.3f),
                  Unit(TEXT("barbed_hunter"), 2, 1.15f, 1.3f), Unit(TEXT("blight_caster"), 1, 1.15f, 1.3f)};
+    // monster-races: wave 2 brings the race's special unit (hollow: grave hounds).
+    Two.Units.Add(Unit(TEXT("grave_hound"), 2, 1.15f, 1.3f));
     C.Waves = {One, Two, Template(ECireWaveType::Armored), Template(ECireWaveType::ArmoredEscort), Template(ECireWaveType::Boss)};
     C.WavesPerCycle = C.Waves.Num();
+    // Start on the hollow basics, bring in Eric's favourites (Blightwood, then the Drowned Deep), then the other races,
+    // then mixed hosts. Each cycle ends on one of its race's two bosses (colossus on odd cycles, warlord on even).
+    C.Campaign.RaceRotation = {TEXT("hollow"), TEXT("blightwood"), TEXT("drowned_deep"), TEXT("ironhide"), TEXT("hollow+blightwood"), TEXT("stoneborn"),
+        TEXT("drakkari"), TEXT("drowned_deep+voidborn"), TEXT("feral_kin"), TEXT("fallen_order"), TEXT("voidborn"), TEXT("ironhide+drakkari")};
     return C;
 }
 
@@ -160,8 +175,15 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
         if (W.Units.IsEmpty()) return Fail(FString::Printf(TEXT("Wave %d has no composition rows."), WI + 1));
         if (W.Units.Num() > 8) return Fail(FString::Printf(TEXT("Wave %d has more than 8 composition rows."), WI + 1));
         int32 Total = 0, Bosses = 0, Attackers = 0;
+        // monster-races: wave race, row slots, ranks and skill overrides.
+        if (W.Race == TEXT("rotation")) W.Race = NAME_None;
+        if (!W.Race.IsNone() && !CireRaces::FindRace(W.Race))
+            return Fail(FString::Printf(TEXT("Wave %d: unknown race '%s'."), WI + 1, *W.Race.ToString()));
         for (auto& U : W.Units)
         {
+            if (!U.Slot.IsNone() && !KnownSlot(U.Slot)) return Fail(FString::Printf(TEXT("Wave %d: unknown slot '%s'."), WI + 1, *U.Slot.ToString()));
+            U.Rank = static_cast<ECireNPCRank>(FMath::Clamp(static_cast<int32>(U.Rank), 0, static_cast<int32>(ECireNPCRank::Mythic)));
+            U.Palette = FMath::Clamp(U.Palette, -1, 15); U.SkillCount = FMath::Clamp(U.SkillCount, -1, 8); U.SkillTier = FMath::Clamp(U.SkillTier, 0, 5);
             if (U.Archetype.IsNone() || !CireNPCArchetypes::Find(U.Archetype))
                 return Fail(FString::Printf(TEXT("Wave %d: unknown archetype '%s'."), WI + 1, *U.Archetype.ToString()));
             U.Count = FMath::Clamp(U.Count, 1, 20);
@@ -177,6 +199,25 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
         if (Total > 30) return Fail(FString::Printf(TEXT("Wave %d spawns %d units per lane; the limit is 30."), WI + 1, Total));
         if (Bosses > 3) return Fail(FString::Printf(TEXT("Wave %d has %d lane bosses; the limit is 3."), WI + 1, Bosses));
         (void)Attackers;
+    }
+    // monster-races: skill schedule and campaign.
+    {
+        auto& S = C.Skills;
+        S.FirstSkillWave = FMath::Clamp(S.FirstSkillWave, 1, 200); S.UnlockEveryWaves = FMath::Clamp(S.UnlockEveryWaves, 1, 50);
+        S.MaxSkills = FMath::Clamp(S.MaxSkills, 0, 6); S.TierEveryWaves = FMath::Clamp(S.TierEveryWaves, 1, 50); S.MaxTier = FMath::Clamp(S.MaxTier, 1, 5);
+        S.TierDamage = ClampF(S.TierDamage, 0, 2, .2f); S.TierCooldown = ClampF(S.TierCooldown, 0, .5f, .1f); S.TierDuration = ClampF(S.TierDuration, 0, 2, .15f);
+        auto& K = C.Campaign;
+        K.VeteranFromCycle = FMath::Clamp(K.VeteranFromCycle, 0, 100); K.EliteFromCycle = FMath::Clamp(K.EliteFromCycle, 0, 100);
+        K.ChampionFromCycle = FMath::Clamp(K.ChampionFromCycle, 0, 100); K.MythicBossFromCycle = FMath::Clamp(K.MythicBossFromCycle, 0, 100);
+        K.PromoteEvery = FMath::Clamp(K.PromoteEvery, 1, 30);
+        if (K.RaceRotation.Num() > 40) return Fail(TEXT("The race rotation lists at most 40 cycles."));
+        for (const FString& Entry : K.RaceRotation)
+        {
+            TArray<FString> Parts; Entry.ParseIntoArray(Parts, TEXT("+"), true);
+            if (Parts.IsEmpty() || Parts.Num() > 3) return Fail(FString::Printf(TEXT("Race rotation entry '%s' must name 1-3 races joined by '+'."), *Entry));
+            for (const FString& Part : Parts) if (!CireRaces::FindRace(FName(*Part.TrimStartAndEnd())))
+                return Fail(FString::Printf(TEXT("Race rotation names unknown race '%s'."), *Part));
+        }
     }
     if (!bClamp && !(Before == C)) return Fail(TEXT("Values were outside their limits."));
     if (Error) Error->Reset();
@@ -228,6 +269,34 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
             else { Error = TEXT("failsafe.action must be \"march\" or \"despawn\"."); return false; }
         }
     }
+    // monster-races: skill schedule and race campaign.
+    const TSharedPtr<FJsonObject>* Skills = nullptr;
+    if (Root->TryGetObjectField(TEXT("skillProgression"), Skills) && Skills)
+    {
+        auto& S = C.Skills;
+        S.FirstSkillWave = static_cast<int32>(Num(*Skills, TEXT("firstSkillWave"), S.FirstSkillWave));
+        S.UnlockEveryWaves = static_cast<int32>(Num(*Skills, TEXT("unlockEveryWaves"), S.UnlockEveryWaves));
+        S.MaxSkills = static_cast<int32>(Num(*Skills, TEXT("maxSkills"), S.MaxSkills));
+        S.TierEveryWaves = static_cast<int32>(Num(*Skills, TEXT("tierEveryWaves"), S.TierEveryWaves));
+        S.MaxTier = static_cast<int32>(Num(*Skills, TEXT("maxTier"), S.MaxTier));
+        S.TierDamage = static_cast<float>(Num(*Skills, TEXT("tierDamage"), S.TierDamage));
+        S.TierCooldown = static_cast<float>(Num(*Skills, TEXT("tierCooldown"), S.TierCooldown));
+        S.TierDuration = static_cast<float>(Num(*Skills, TEXT("tierDuration"), S.TierDuration));
+    }
+    const TSharedPtr<FJsonObject>* Campaign = nullptr;
+    if (Root->TryGetObjectField(TEXT("campaign"), Campaign) && Campaign)
+    {
+        auto& K = C.Campaign;
+        const TArray<TSharedPtr<FJsonValue>>* Rotation = nullptr;
+        if ((*Campaign)->TryGetArrayField(TEXT("raceRotation"), Rotation) && Rotation)
+            for (const auto& V : *Rotation) { FString S; if (!V->TryGetString(S) || S.IsEmpty()) { Error = TEXT("campaign.raceRotation must list race ids."); return false; } K.RaceRotation.Add(S); }
+        K.bReskinOnWrap = Flag(*Campaign, TEXT("reskinOnWrap"), K.bReskinOnWrap);
+        K.VeteranFromCycle = static_cast<int32>(Num(*Campaign, TEXT("veteranFromCycle"), K.VeteranFromCycle));
+        K.EliteFromCycle = static_cast<int32>(Num(*Campaign, TEXT("eliteFromCycle"), K.EliteFromCycle));
+        K.ChampionFromCycle = static_cast<int32>(Num(*Campaign, TEXT("championFromCycle"), K.ChampionFromCycle));
+        K.MythicBossFromCycle = static_cast<int32>(Num(*Campaign, TEXT("mythicBossFromCycle"), K.MythicBossFromCycle));
+        K.PromoteEvery = static_cast<int32>(Num(*Campaign, TEXT("promoteEvery"), K.PromoteEvery));
+    }
     const TArray<TSharedPtr<FJsonValue>>* Waves = nullptr;
     if (!Root->TryGetArrayField(TEXT("waves"), Waves) || !Waves) { Error = TEXT("Waves.json needs a \"waves\" array."); return false; }
     for (const auto& Value : *Waves)
@@ -239,6 +308,7 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
         (*WO)->TryGetStringField(TEXT("type"), TypeText);
         if (!ParseType(TypeText, W.Type)) { Error = FString::Printf(TEXT("Unknown wave type '%s'."), *TypeText); return false; }
         (*WO)->TryGetStringField(TEXT("label"), W.Label);
+        { FString Race; if ((*WO)->TryGetStringField(TEXT("race"), Race) && !Race.IsEmpty() && Race != TEXT("rotation")) W.Race = FName(*Race); } // monster-races
         W.SpawnInterval = static_cast<float>(Num(*WO, TEXT("spawnInterval"), W.SpawnInterval));
         W.DelayBefore = static_cast<float>(Num(*WO, TEXT("delayBefore"), W.DelayBefore));
         W.bMustClear = Flag(*WO, TEXT("mustClear"), W.bMustClear);
@@ -261,6 +331,13 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
             U.bEscortee = Flag(*UO, TEXT("escortee"), false);
             U.bBoss = Flag(*UO, TEXT("boss"), false);
             U.LeakCost = static_cast<int32>(Num(*UO, TEXT("leakCost"), 0));
+            // monster-races
+            FString Text;
+            if ((*UO)->TryGetStringField(TEXT("slot"), Text) && !Text.IsEmpty()) U.Slot = FName(*Text);
+            if ((*UO)->TryGetStringField(TEXT("rank"), Text) && !CireRaces::ParseRank(Text, U.Rank)) { Error = FString::Printf(TEXT("Unknown rank '%s'."), *Text); return false; }
+            U.Palette = static_cast<int32>(Num(*UO, TEXT("palette"), -1));
+            U.SkillCount = static_cast<int32>(Num(*UO, TEXT("skills"), -1));
+            U.SkillTier = static_cast<int32>(Num(*UO, TEXT("skillTier"), 0));
             W.Units.Add(U);
         }
         C.Waves.Add(MoveTemp(W));
@@ -291,12 +368,37 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     Failsafe->SetNumberField(TEXT("graceSeconds"), C.FailsafeGraceSeconds);
     Failsafe->SetNumberField(TEXT("stuckSeconds"), C.StuckSeconds);
     Root->SetObjectField(TEXT("failsafe"), Failsafe);
+    // monster-races
+    auto Skills = MakeShared<FJsonObject>();
+    Skills->SetStringField(TEXT("_comment"), TEXT("Monster skills: none before firstSkillWave (global wave number); then 1 skill, +1 every unlockEveryWaves up to maxSkills (+ rank bonus); tier II/III every tierEveryWaves (Docs/Races.md)."));
+    Skills->SetNumberField(TEXT("firstSkillWave"), C.Skills.FirstSkillWave);
+    Skills->SetNumberField(TEXT("unlockEveryWaves"), C.Skills.UnlockEveryWaves);
+    Skills->SetNumberField(TEXT("maxSkills"), C.Skills.MaxSkills);
+    Skills->SetNumberField(TEXT("tierEveryWaves"), C.Skills.TierEveryWaves);
+    Skills->SetNumberField(TEXT("maxTier"), C.Skills.MaxTier);
+    Skills->SetNumberField(TEXT("tierDamage"), C.Skills.TierDamage);
+    Skills->SetNumberField(TEXT("tierCooldown"), C.Skills.TierCooldown);
+    Skills->SetNumberField(TEXT("tierDuration"), C.Skills.TierDuration);
+    Root->SetObjectField(TEXT("skillProgression"), Skills);
+    auto Campaign = MakeShared<FJsonObject>();
+    Campaign->SetStringField(TEXT("_comment"), TEXT("Race per cycle (wraps; 'a+b' mixes races row by row). Rows with a slot follow the wave's race. The second lap reskins with palette variant 1, and so on."));
+    TArray<TSharedPtr<FJsonValue>> Rotation;
+    for (const FString& Race : C.Campaign.RaceRotation) Rotation.Add(MakeShared<FJsonValueString>(Race));
+    Campaign->SetArrayField(TEXT("raceRotation"), Rotation);
+    Campaign->SetBoolField(TEXT("reskinOnWrap"), C.Campaign.bReskinOnWrap);
+    Campaign->SetNumberField(TEXT("veteranFromCycle"), C.Campaign.VeteranFromCycle);
+    Campaign->SetNumberField(TEXT("eliteFromCycle"), C.Campaign.EliteFromCycle);
+    Campaign->SetNumberField(TEXT("championFromCycle"), C.Campaign.ChampionFromCycle);
+    Campaign->SetNumberField(TEXT("mythicBossFromCycle"), C.Campaign.MythicBossFromCycle);
+    Campaign->SetNumberField(TEXT("promoteEvery"), C.Campaign.PromoteEvery);
+    Root->SetObjectField(TEXT("campaign"), Campaign);
     TArray<TSharedPtr<FJsonValue>> Waves;
     for (const auto& W : C.Waves)
     {
         auto WO = MakeShared<FJsonObject>();
         WO->SetStringField(TEXT("label"), W.Label);
         WO->SetStringField(TEXT("type"), TypeName(W.Type));
+        if (!W.Race.IsNone()) WO->SetStringField(TEXT("race"), W.Race.ToString()); // monster-races
         WO->SetNumberField(TEXT("spawnInterval"), W.SpawnInterval);
         WO->SetNumberField(TEXT("delayBefore"), W.DelayBefore);
         WO->SetBoolField(TEXT("mustClear"), W.bMustClear);
@@ -315,6 +417,12 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
             if (U.bEscortee) UO->SetBoolField(TEXT("escortee"), true);
             if (U.bBoss) UO->SetBoolField(TEXT("boss"), true);
             if (U.LeakCost > 0) UO->SetNumberField(TEXT("leakCost"), U.LeakCost);
+            // monster-races
+            if (!U.Slot.IsNone()) UO->SetStringField(TEXT("slot"), U.Slot.ToString());
+            if (U.Rank != ECireNPCRank::Normal) UO->SetStringField(TEXT("rank"), CireRaces::RankId(U.Rank));
+            if (U.Palette >= 0) UO->SetNumberField(TEXT("palette"), U.Palette);
+            if (U.SkillCount >= 0) UO->SetNumberField(TEXT("skills"), U.SkillCount);
+            if (U.SkillTier > 0) UO->SetNumberField(TEXT("skillTier"), U.SkillTier);
             Units.Add(MakeShared<FJsonValueObject>(UO));
         }
         WO->SetArrayField(TEXT("units"), Units);
@@ -325,6 +433,63 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     auto Writer = TJsonWriterFactory<TCHAR, TPrettyJsonPrintPolicy<TCHAR>>::Create(&Out);
     FJsonSerializer::Serialize(Root, Writer);
     return Out + TEXT("\n");
+}
+
+// monster-races: F8 editor operations (also used by the native tests).
+void CireWaveDirector::CycleWaveRace(FCireWaveDef& W)
+{
+    const TArray<FName>& Order = CireRaces::Get().Order;
+    if (Order.IsEmpty()) { W.Race = NAME_None; return; }
+    const int32 Index = W.Race.IsNone() ? -1 : Order.IndexOfByKey(W.Race);
+    W.Race = Index + 1 >= Order.Num() ? NAME_None : Order[Index + 1];
+}
+void CireWaveDirector::CycleRowUnit(FCireWaveUnit& U, FName Race)
+{
+    const FCireRace* R = CireRaces::FindRace(Race.IsNone() ? FName(TEXT("hollow")) : Race);
+    const TArray<FName>& Slots = CireRaces::SlotNames();
+    const FName Hollow(TEXT("hollow"));
+    auto SetSlot = [&](FName Slot)
+    {
+        U.Slot = Slot;
+        const FName Id = CireRaces::UnitFor(R ? R->Id : Hollow, Slot, 0);
+        if (!Id.IsNone()) U.Archetype = Id;
+        U.bBoss = Slot == TEXT("warlord") || Slot == TEXT("colossus") || Slot == TEXT("boss");
+        if (U.bBoss) { U.bNonAttacking = false; U.bEscortee = false; }
+    };
+    if (!U.Slot.IsNone())
+    {
+        const int32 Index = Slots.IndexOfByKey(U.Slot);
+        if (Index + 1 < Slots.Num()) { SetSlot(Slots[Index + 1]); return; }
+        // After the slots: explicit units of the race, starting with its first unit.
+        U.Slot = NAME_None;
+        if (R && !R->Units.IsEmpty()) { U.Archetype = R->Units[0]; U.bBoss = CireNPCArchetypes::Find(U.Archetype) && CireNPCArchetypes::Find(U.Archetype)->Classification == ECireNPCClass::Boss; }
+        return;
+    }
+    const int32 Index = R ? R->Units.IndexOfByKey(U.Archetype) : INDEX_NONE;
+    if (R && Index != INDEX_NONE && Index + 1 < R->Units.Num())
+    {
+        U.Archetype = R->Units[Index + 1];
+        const auto* A = CireNPCArchetypes::Find(U.Archetype);
+        U.bBoss = A && A->Classification == ECireNPCClass::Boss;
+        if (U.bBoss) { U.bNonAttacking = false; U.bEscortee = false; }
+        return;
+    }
+    SetSlot(Slots[0]);
+}
+void CireWaveDirector::CycleRowRank(FCireWaveUnit& U)
+{
+    U.Rank = static_cast<ECireNPCRank>((static_cast<int32>(U.Rank) + 1) % static_cast<int32>(ECireNPCRank::Count));
+    U.bElite = false; // the rank replaces the legacy flag
+}
+FString CireWaveDirector::RowUnitLabel(const FCireWaveUnit& U, FName Race, int32 Cycle)
+{
+    const FName Id = U.Slot.IsNone() ? U.Archetype : CireRaces::UnitFor(Race.IsNone() ? FName(TEXT("hollow")) : Race, U.Slot, Cycle);
+    const auto* A = CireNPCArchetypes::Find(Id.IsNone() ? U.Archetype : Id);
+    FString Name = A ? A->DisplayName : U.Archetype.ToString();
+    Name.ReplaceInline(TEXT(", Pack Leader"), TEXT(""));
+    if (U.Slot.IsNone()) return Name;
+    FString Slot = U.Slot.ToString(); Slot[0] = FChar::ToUpper(Slot[0]);
+    return Slot + TEXT(": ") + Name;
 }
 
 FString CireWaveDirector::DataPath() { return FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir() / TEXT("Data/Waves.json")); }

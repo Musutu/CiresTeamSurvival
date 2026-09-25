@@ -493,7 +493,15 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             // The variant adds information only when it is not generic or a repeat of the class caption.
             const bool bVariant=!Shown->Variant.IsEmpty()&&!Shown->ClassType.Contains(Shown->Variant)&&
                 Shown->Variant!=TEXT("Damage")&&Shown->Variant!=TEXT("Healer")&&Shown->Variant!=TEXT("Support");
-            Label(bVariant?Shown->ClassType+TEXT("  |  ")+Shown->Variant:Shown->ClassType,IX+12,Y,10,Gold);Y+=20;
+            const FString Caption=bVariant?Shown->ClassType+TEXT("  |  ")+Shown->Variant:Shown->ClassType;
+            Label(Caption,IX+12,Y,10,Gold);
+            // monster-races: the champion's race, small and muted after the class caption.
+            if(!Shown->Race.IsEmpty())
+            {
+                FString Race=Shown->Race;Race[0]=FChar::ToUpper(Race[0]);
+                Label(TEXT("  |  ")+Race,IX+12+TextWidth(Caption,10),Y,10,SRGB(170,164,150));
+            }
+            Y+=20;
         }
         if(!Shown->Lore.IsEmpty()){Wrapped(TEXT("\"")+Shown->Lore+TEXT("\""),IX+12,Y,IW-24,9.5f,SRGB(196,188,170),3);Y+=42;}
         // Class baseline trait (always active, by main role).

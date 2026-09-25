@@ -10,6 +10,7 @@
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
+#include "CireRaces.h" // monster-races
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -397,6 +398,102 @@ void GameplayCamera(float Boom, float Pitch)
     Look(Pivot - View.Vector() * Boom, Pivot, 90.f);
 }
 
+// ---- monster-races: race lineups, rank colours side by side, reskins of one body ------------------
+FColor RankLabelColor(ECireNPCRank Rank)
+{
+    const FLinearColor C = CireRaces::Rank(Rank).Color;
+    return Rank == ECireNPCRank::Normal ? FColor(235, 230, 215) : C.ToFColor(true);
+}
+void RaceLineup(FName RaceId)
+{
+    const FCireRace* Race = CireRaces::FindRace(RaceId);
+    if (!Race) { Fail(TEXT("race missing: ") + RaceId.ToString()); return; }
+    const FVector C = G.Studio;
+    // Six units across the front, the two bosses behind them.
+    float Y = -(5 * 300.f) * .5f;
+    for (int32 I = 0; I < Race->Units.Num(); ++I)
+    {
+        const bool bBoss = I >= 6;
+        const FVector At = bBoss ? C + FVector(-620, (I == 6 ? -1 : 1) * 520.f, 0) : C + FVector(0, Y + I * 300.f, 0);
+        ACireMonster* M = Spawn(Race->Units[I], 0, At, 0);
+        if (!M) continue;
+        CireRaces::ApplyRank(M, bBoss ? ECireNPCRank::Warlord : ECireNPCRank::Normal, 0);
+        const FCireNPCArchetype* A = M->NPCState ? M->NPCState->Archetype() : nullptr;
+        const FString Slot = A ? A->Slot.ToString() : FString();
+        const bool bOwn = CireMonsterArt::HasOwnBody(Race->Units[I]);
+        Label(At + FVector(0, 0, M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2 + 40),
+            FString::Printf(TEXT("%s\n%s%s"), *M->GetNPCDisplayName(), *Slot, bOwn ? TEXT("") : *FString::Printf(TEXT(" (body: %s)"), *VariantName(M))),
+            bBoss ? RankLabelColor(ECireNPCRank::Warlord) : FColor::White, bBoss ? 17.f : 13.f, 0);
+    }
+    Label(C + FVector(-620, 0, 620), Race->Name + TEXT("  |  6 units + 2 bosses"), FColor::White, 28, 0);
+    Look(C + FVector(2050, 0, 720), C + FVector(-250, 0, 170), 52);
+}
+void RankLineup(FName Unit, bool bFar)
+{
+    const FVector C = G.Studio;
+    const int32 Count = static_cast<int32>(ECireNPCRank::Count);
+    for (int32 I = 0; I < Count; ++I)
+    {
+        const ECireNPCRank Rank = static_cast<ECireNPCRank>(I);
+        const FVector At = C + FVector(0, (I - (Count - 1) * .5f) * 290.f, 0);
+        ACireMonster* M = Spawn(Unit, 0, At, 0);
+        if (!M) continue;
+        CireRaces::ApplyRank(M, Rank, 0);
+        M->SetActorScale3D(FVector((M->NPCState && M->NPCState->Archetype() ? M->NPCState->Archetype()->Scale : 1.f) * CireRaces::RankSize(M)));
+        M->SetActorLocation(FVector(At.X, At.Y, FloorZ(At) + M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+        if (!bFar) Label(At + FVector(0, 0, M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2 + 40), CireRaces::Rank(Rank).Label, RankLabelColor(Rank), 17, 0);
+    }
+    const FCireNPCArchetype* A = CireNPCArchetypes::Find(Unit);
+    if (bFar)
+    {
+        // Gameplay distance: the default camera boom looks down at ~50 degrees from ~22 m.
+        const FVector Pivot = C + FVector(0, 0, 90);
+        const FRotator View(-50, 180, 0);
+        Look(Pivot - View.Vector() * 2200.f, Pivot, 60.f);
+    }
+    else
+    {
+        Label(C + FVector(0, 0, 470), (A ? A->DisplayName : Unit.ToString()) + TEXT(": normal, veteran, elite, champion, warlord, mythic"), FColor::White, 22, 0);
+        Look(C + FVector(1500, 0, 380), C + FVector(0, 0, 130), 55);
+    }
+}
+void Reskins()
+{
+    // One Tripo body (HollowInfantry) under five race palettes: the cheap way to field a new race.
+    const TCHAR* Units[] = {TEXT("hollow_infantry"), TEXT("abyssal_stalker"), TEXT("vinelasher"), TEXT("ironhide_grunt"), TEXT("rift_stalker"), TEXT("fallen_squire")};
+    const FVector C = G.Studio;
+    for (int32 I = 0; I < UE_ARRAY_COUNT(Units); ++I)
+    {
+        const FVector At = C + FVector(0, (I - 2.5f) * 290.f, 0);
+        ACireMonster* M = Spawn(FName(Units[I]), 0, At, 0);
+        if (!M) continue;
+        CireRaces::ApplyRank(M, ECireNPCRank::Normal, 0);
+        const FCireRace* Race = CireRaces::FindRace(CireRaces::RaceOf(FName(Units[I])));
+        Label(At + FVector(0, 0, M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2 + 40),
+            M->GetNPCDisplayName() + TEXT("\n") + (Race ? Race->Short : FString()), FColor::White, 14, 0);
+    }
+    Label(C + FVector(0, 0, 470), TEXT("One body, six race palettes (HollowInfantry)"), FColor::White, 22, 0);
+    Look(C + FVector(1500, 0, 380), C + FVector(0, 0, 130), 55);
+}
+void PaletteSets(FName Unit)
+{
+    // The same unit in each of its race's reskin sets (per-wave-set palettes).
+    const FCireRace* Race = CireRaces::FindRace(CireRaces::RaceOf(Unit));
+    if (!Race) return;
+    const FVector C = G.Studio;
+    const int32 Count = Race->Variants.Num();
+    for (int32 I = 0; I < Count; ++I)
+    {
+        const FVector At = C + FVector(0, (I - (Count - 1) * .5f) * 300.f, 0);
+        ACireMonster* M = Spawn(Unit, 0, At, 0);
+        if (!M) continue;
+        CireRaces::ApplyRank(M, ECireNPCRank::Normal, I);
+        Label(At + FVector(0, 0, M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2 + 40), Race->Variants[I].Name, FColor::White, 15, 0);
+    }
+    Label(C + FVector(0, 0, 470), Race->Name + TEXT(": reskin sets"), FColor::White, 22, 0);
+    Look(C + FVector(1400, 0, 380), C + FVector(0, 0, 130), 55);
+}
+
 void EnterStage(const FStage& S)
 {
     if (!S.bKeepScene) ClearScene();
@@ -409,6 +506,14 @@ void EnterStage(const FStage& S)
     else if (N == TEXT("locomotion")) Locomotion();
     else if (N == TEXT("deaths")) Deaths();
     else if (N == TEXT("champions")) Champions();
+    else if (N.StartsWith(TEXT("races_"))) RaceLineup(FName(*N.Mid(6))); // monster-races
+    else if (N == TEXT("ranks_close")) RankLineup(TEXT("tidecaller"), false);
+    else if (N == TEXT("ranks_close_hollow")) RankLineup(TEXT("hollow_infantry"), false);
+    else if (N == TEXT("ranks_gameplay")) RankLineup(TEXT("deepspawn_thrall"), true);
+    else if (N == TEXT("ranks_gameplay_hollow")) RankLineup(TEXT("hollow_shieldbearer"), true);
+    else if (N == TEXT("reskins")) Reskins();
+    else if (N == TEXT("palettes_blightwood")) PaletteSets(TEXT("sapling_brute"));
+    else if (N == TEXT("palettes_drowned")) PaletteSets(TEXT("coralshell_guardian"));
     else if (N == TEXT("hand_sword_front")) HandDetail({TEXT("knight"), TEXT(""), TEXT(""), 0, TEXT("")}, TEXT("hand_r"), FVector(120, 90, 15));
     else if (N == TEXT("hand_sword_side")) HandDetail({TEXT("knight"), TEXT(""), TEXT(""), 0, TEXT("")}, TEXT("hand_r"), FVector(10, 140, 25));
     else if (N == TEXT("hand_sword_attack")) HandDetail({TEXT("knight"), TEXT(""), TEXT("slash"), 1.f, TEXT("")}, TEXT("hand_r"), FVector(110, 110, 30));
@@ -502,6 +607,15 @@ bool Build(ACireGameMode& Mode, ACireController& Controller)
         TEXT("grips_melee_a"), TEXT("grips_melee_b"), TEXT("grips_heavy_a"), TEXT("grips_heavy_b"), TEXT("grips_ranged_a"), TEXT("grips_ranged_b"), TEXT("grips_casters_a"), TEXT("grips_casters_b"), TEXT("grips_light_a"), TEXT("grips_light_b"), TEXT("grips_monsters_a"), TEXT("grips_monsters_b")};
     for (const TCHAR* Name : Names)
         if (G.Only.IsEmpty() || G.Only.ContainsByPredicate([Name](const FString& Prefix) { return FString(Name).StartsWith(Prefix); })) G.Stages.Add({Name, 2.5f, false});
+    // monster-races: every race's lineup, ranks side by side (close and at gameplay distance), reskins.
+    {
+        TArray<FString> RaceStages;
+        for (const FName Race : CireRaces::Get().Order) RaceStages.Add(TEXT("races_") + Race.ToString());
+        RaceStages.Append({TEXT("ranks_close"), TEXT("ranks_close_hollow"), TEXT("ranks_gameplay"), TEXT("ranks_gameplay_hollow"), TEXT("reskins"),
+            TEXT("palettes_blightwood"), TEXT("palettes_drowned")});
+        for (const FString& Name : RaceStages)
+            if (G.Only.IsEmpty() || G.Only.ContainsByPredicate([&Name](const FString& Prefix) { return Name.StartsWith(Prefix); })) G.Stages.Add({Name, 3.f, false});
+    }
     if (G.Only.IsEmpty() || G.Only.Contains(TEXT("town")))
     {
         G.Stages.Add({TEXT("town_march"), 4.f, false});

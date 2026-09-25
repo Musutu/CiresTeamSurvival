@@ -1,6 +1,7 @@
 #include "CireNPCState.h"
 #include "CireGame.h"
 #include "CireMonsterArt.h" // creature-anim
+#include "CireRaces.h" // monster-races
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -38,6 +39,8 @@ void UCireNPCState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
     DOREPLIFETIME(UCireNPCState,ArchetypeId);DOREPLIFETIME(UCireNPCState,Role);DOREPLIFETIME(UCireNPCState,Classification);
     DOREPLIFETIME(UCireNPCState,StatusFlags);DOREPLIFETIME(UCireNPCState,CastAbilityId);DOREPLIFETIME(UCireNPCState,bCastInterruptible);
     DOREPLIFETIME(UCireNPCState,ThreatTable);DOREPLIFETIME(UCireNPCState,Aggro);
+    DOREPLIFETIME(UCireNPCState,Rank);DOREPLIFETIME(UCireNPCState,PaletteIndex);DOREPLIFETIME(UCireNPCState,SkillTier); // monster-races
+    DOREPLIFETIME(UCireNPCState,bLoadoutSet);DOREPLIFETIME(UCireNPCState,Loadout);
 }
 
 FCireAggroChanged& UCireNPCState::OnAggroChanged(){static FCireAggroChanged Delegate;return Delegate;}
@@ -49,7 +52,8 @@ TArray<FCireNPCAbilityInfo> UCireNPCState::Abilities() const
     TArray<FCireNPCAbilityInfo> Out;
     if(const auto* A=Archetype())for(const auto& Ab:A->Abilities)
     {
-        FCireNPCAbilityInfo I;I.Id=Ab.Id;I.Name=Ab.Name;I.Description=Ab.Description;I.TypeLabel=CireNPCArchetypes::KindLabel(Ab);
+        if(!IsAbilityActive(Ab.Id))continue; // monster-races: only this monster's drawn skills
+        FCireNPCAbilityInfo I;I.Id=Ab.Id;I.Name=Ab.bBasic||!bLoadoutSet?Ab.Name:Ab.Name+CireRaces::TierSuffix(SkillTier);I.Description=Ab.Description;I.TypeLabel=CireNPCArchetypes::KindLabel(Ab);
         I.Kind=Ab.Kind;I.Cooldown=Ab.Cooldown;I.CastTime=Ab.CastTime;I.bInterruptible=Ab.bInterruptible;I.bBasic=Ab.bBasic;Out.Add(I);
     }
     return Out;
@@ -158,6 +162,14 @@ void UCireNPCState::RefreshStatusFlags(float Now)
 }
 
 void UCireNPCState::OnRep_Archetype(){ApplyVisuals();}
+// monster-races
+bool UCireNPCState::IsAbilityActive(FName AbilityId) const
+{
+    if(!bLoadoutSet)return true;
+    const auto* A=Archetype();const auto* Ability=A?A->FindAbility(AbilityId):nullptr;
+    return (Ability&&Ability->bBasic)||Loadout.Contains(AbilityId);
+}
+void UCireNPCState::OnRep_Look(){CireRaces::ApplySkin(Cast<ACireMonster>(GetOwner()));}
 
 void UCireNPCState::ApplyVisuals()
 {
@@ -215,6 +227,7 @@ void UCireNPCState::ApplyVisuals()
             Part->SetRelativeLocation(Prop.Offset);Part->SetRelativeRotation(Prop.Rotation);Part->SetRelativeScale3D(FVector(Prop.Scale));
             Part->RegisterComponent();VisualParts.Add(Part);
         }
+    CireRaces::ApplySkin(M); // monster-races: race palette and rank tint on the fallback mannequin
 }
 
 // ---- ACireMonster read API ----

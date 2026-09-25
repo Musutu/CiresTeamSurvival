@@ -14,6 +14,9 @@ struct FCireChampionProfile
     FString Description,ArtFamily,ArtStatus,ArtProvenance;
     // Draft-screen presentation (optional in JSON): class caption, 1..3 difficulty, one-line lore.
     FString ClassType,Lore;
+    // monster-races: player race (human, dwarf, orc, troll, drakkari, ether-construct, beast, sylvan, spirit...);
+    // Docs/Races.md links each player race to its monster counterpart.
+    FString Race;
     int32 Difficulty=2;
     int32 RuntimeArchetype=0,Strength=20,Agility=10,Intelligence=10;
     float BasicAttackRange=220,AttackSeconds=1.5f;

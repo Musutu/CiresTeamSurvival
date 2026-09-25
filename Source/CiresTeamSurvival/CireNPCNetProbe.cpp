@@ -7,6 +7,7 @@
 #include "CireNPCState.h"
 #include "CireNPCArchetypes.h"
 #include "CireThreat.h"
+#include "CireRaces.h" // monster-races
 #include "Containers/Ticker.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
@@ -52,7 +53,11 @@ bool ClientTick(float)
         const bool bThreat=S->ThreatTable.ContainsByPredicate([Hero](const FCireThreatEntry& E){return E.Hero==Hero&&E.Threat>0;});
         const bool bReady=M->GetNPCRole()==ECireNPCRole::Bruiser&&M->GetNPCClassification()==ECireNPCClass::Boss&&Abilities.Num()>=4&&
             Cast.bCasting&&!Cast.bInterruptible&&Cast.Name==TEXT("Sundering Cleave")&&bThreat&&S->Aggro.Target==Hero&&M->Victim==Hero&&
-            FMath::IsNearlyEqual(S->ThreatPercent(Hero),100.f)&&(S->StatusFlags&CireNPCStatus::Rallied)!=0;
+            FMath::IsNearlyEqual(S->ThreatPercent(Hero),100.f)&&(S->StatusFlags&CireNPCStatus::Rallied)!=0&&
+            // monster-races: replicated race loadout (4 drawn skills + basic, tier II), warlord rank and the match seed.
+            S->bLoadoutSet&&S->Loadout.Num()==4&&S->SkillTier==2&&S->Rank==static_cast<uint8>(ECireNPCRank::Warlord)&&Abilities.Num()==5&&
+            Abilities.ContainsByPredicate([](const FCireNPCAbilityInfo& I){return I.Name.EndsWith(TEXT(" II"));})&&
+            World->GetGameState<ACireGameState>()&&World->GetGameState<ACireGameState>()->MonsterSkillSeed!=0;
         // creature-anim: the client draws the animated Tripo body (replicated variant seed) and plays the cleave windup.
         const auto* Art=M->MonsterArt.Get();const auto* Anim=Art?Art->GetMonsterAnim():nullptr;
         const bool bArt=Art&&Art->IsTripoApplied()&&Art->BodySeed!=0&&Anim&&Anim->Action.Sequence&&Anim->Action.Weight>0.f;
@@ -69,6 +74,8 @@ bool ClientTick(float)
             }
             return true;
         }
+        UE_LOG(LogCireNPCNet,Display,TEXT("CIRE_RACE_NET_CLIENT_STATE rank=%d tier=%d loadout=%d seed=%d"),S->Rank,S->SkillTier,S->Loadout.Num(),
+            World->GetGameState<ACireGameState>()->MonsterSkillSeed); // monster-races
         UE_LOG(LogCireNPCNet,Display,TEXT("CIRE_NPC_NET_CLIENT_STATE name=%s role=%s class=%s abilities=%d cast=%s progress=%.2f threat_rows=%d aggro_event=%d text=\"%s\""),
             *M->GetNPCDisplayName(),*CireNPCArchetypes::RoleLabel(M->GetNPCRole()),*CireNPCArchetypes::ClassLabel(M->GetNPCClassification()),
             Abilities.Num(),*Cast.Name,Cast.Progress,S->ThreatTable.Num(),Client.bAggroEvent?1:0,*UCireNPCState::DescribeFocus(M));
@@ -131,6 +138,9 @@ bool CireNPCNetProbe::TickServer(ACireGameMode* Mode)
             // One authoritative tick starts a telegraphed ability; then freeze so the cast stays visible.
             M->NPCState->ReadyAt.Reset();M->NPCState->ReadyAt.Add(TEXT("boss_leader_rally"),M->GetWorld()->GetTimeSeconds()+600);
             M->NPCState->RallyUntil=M->GetWorld()->GetTimeSeconds()+600;M->NPCState->RallyBonus=.25f;
+            // monster-races: a drawn, tiered warlord loadout that must replicate (rank, tier, active skills, match seed).
+            M->NPCState->Loadout={TEXT("boss_leader_rally"),TEXT("boss_leader_cleave"),TEXT("boss_leader_charge"),TEXT("boss_leader_frenzy")};
+            M->NPCState->bLoadoutSet=true;M->NPCState->SkillTier=2;M->NPCState->Rank=static_cast<uint8>(ECireNPCRank::Warlord);
             M->AbilityTimer=0;M->AttackTimer=10;CireNPCCombat::Tick(M,.01f);
             M->SetActorTickEnabled(false);M->GetCharacterMovement()->DisableMovement();
             M->CastEndsAt=M->GetWorld()->GetTimeSeconds()+600;M->ForceNetUpdate();

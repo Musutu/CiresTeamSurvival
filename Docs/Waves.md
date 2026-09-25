@@ -102,6 +102,36 @@ Tuning reasoning (feedback: "early waves are easy"):
 Measured with the headless soak (bots only, 30 Hz fixed step). See
 `Saved/WaveSoak/*.txt` for the per-wave clear times and lives.
 
+## Races, ranks and monster skills (monster-races)
+
+Full bible: `Docs/Races.md`. Waves.json gains three things:
+
+```jsonc
+"skillProgression": { "firstSkillWave": 4, "unlockEveryWaves": 3, "maxSkills": 3, "tierEveryWaves": 5, "maxTier": 3,
+                      "tierDamage": 0.2, "tierCooldown": 0.1, "tierDuration": 0.15 },
+"campaign": { "raceRotation": ["hollow", "blightwood", "drowned_deep", "ironhide", "hollow+blightwood", "stoneborn", "drakkari",
+                               "drowned_deep+voidborn", "feral_kin", "fallen_order", "voidborn", "ironhide+drakkari"],
+              "reskinOnWrap": true, "veteranFromCycle": 2, "eliteFromCycle": 3, "championFromCycle": 4,
+              "mythicBossFromCycle": 3, "promoteEvery": 4 },
+"waves": [ { "label": "...", "race": "drowned_deep",            // optional; absent = the rotation's race for the cycle
+             "units": [ { "archetype": "hollow_shieldbearer", "slot": "tank", "rank": "champion",
+                          "palette": 1, "skills": 2, "skillTier": 3, "count": 1 } ] } ]
+```
+
+- **No monster skills in the first waves.** Global waves before `firstSkillWave` (default: waves 1-3 of cycle 1) use basic
+  attacks only, bosses included. Then 1 skill, +1 every `unlockEveryWaves`, up to `maxSkills`; ranks add skills (elite +1,
+  champion +1, warlord +2, mythic +3). Tier II/III every `tierEveryWaves` (+20% damage, -10% cooldown, +15% control per tier).
+  Challenge packs are the exception: optional elite camps always fight with skills at the current count and tier.
+- **Race per wave.** A row with a `slot` (line, bruiser, tank, caster, ranged, special, warlord, colossus, boss) takes that
+  slot's unit from the wave's race; `archetype` keeps the hollow unit as the default. `boss` alternates the race's colossus
+  (odd cycles) and warlord (even cycles). A wave's `race` overrides the rotation; `a+b` rotation entries mix races row by row.
+- **Default campaign.** Cycle 1 hollow basics, cycle 2 Blightwood, cycle 3 the Drowned Deep, then Ironhide, a mixed
+  Hollow + Blightwood host, Stoneborn, Drakkari, Drowned + Voidborn, Feral Kin, Fallen Order, Voidborn, Ironhide + Drakkari.
+  Every cycle ends on one of its race's bosses; bosses are mythic from cycle 3. From cycle 2 every 4th normal attacker is
+  promoted (veteran, elite from cycle 3, champion from cycle 4). The second lap of the rotation reskins with palette 1.
+- **Ranks.** `rank` normal/veteran/elite/champion/warlord/mythic sets colour, stats and extra skills (the legacy `elite`
+  flag is rank elite). `palette` picks a race reskin set (-1 = the rotation lap). `skills` / `skillTier` override the schedule.
+
 ## Stall protection (never hangs a cycle)
 
 Root cause of the playtest stall (wave 2 never cleared): wave monsters hold threat forever
@@ -151,10 +181,14 @@ threat holder is dead the pack walks home, heals, and becomes neutral again.
 
 ## F8 → Developer → Waves (live composer)
 
-A wave list with ADD / DUP / DEL / MOVE UP / MOVE DOWN. For each wave: type (click to
-cycle), APPLY TEMPLATE, must-clear toggle, spawn interval, delay and reward steppers, and
-composition rows (archetype click-cycle, E/M/T/B flags for elite, marcher, escortee and
-boss, count, health, damage, size, remove, + ROW). Globals: breather, waves per cycle,
+A wave list with ADD / DUP / DEL / MOVE UP / MOVE DOWN (each wave shows its race; `*` = from
+the rotation). For each wave: type (click to cycle), TEMPLATE, **RACE** (click: rotation, then
+every race), must-clear toggle, spawn interval, delay and reward steppers, and composition rows:
+**UNIT** (click cycles the race slots Line/Bruiser/Tank/Caster/Ranged/Special/Warlord/Colossus/Boss,
+then the race's units by name), the **R** rank cell in its rank colour (click cycles normal,
+veteran, elite, champion, warlord, mythic), M/T/B flags for marcher, escortee and boss, count,
+health, damage, size, **SK** skill tier (A = schedule, 1-3 forced tier, - = no skills), remove,
++ ROW (a Line slot row). Globals: breather, waves per cycle,
 cycles, cycle health growth, stall limit and failsafe on/off.
 
 - **APPLY LIVE** validates and applies on the server. Changes take effect from the next

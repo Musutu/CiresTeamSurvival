@@ -1,4 +1,5 @@
 #include "CireDeveloperTools.h"
+#include "CireRaces.h" // monster-races
 #include "CireGame.h"
 #include "CireCombatEvents.h"
 #include "CireRealm.h"
@@ -388,6 +389,7 @@ void ACireHero::Cast(int32 Slot)
     if (!HasAuthority() || !Mode || !Mode->IsCombatPhase() || bDead || !bDrafted ||
         (Mobility&&Mobility->IsRolling()) || GlobalCooldown > 0 || !Skills.IsValidIndex(Slot) || !Cooldowns.IsValidIndex(Slot) || Cooldowns[Slot] > 0) return;
     const FString Id = Skills[Slot];
+    if (CireRaces::IsSilenced(this) && !IsPassive(Id)) { Notice = TEXT("Silenced: you cannot cast right now."); return; } // monster-races
     if(CireSkillCasting::Handles(Id)){CireSkillCasting::Cast(this,Slot,Id);return;}
     if (const auto* Authored = CireAbilityLibrary::Find(Id)) { CireAbilityLibrary::Cast(this, Slot, *Authored); return; }
     if (IsPassive(Id)) { Notice = TEXT("This passive is always active."); return; }
@@ -651,6 +653,7 @@ void ACireHero::Tick(float DeltaSeconds)
         const double ServerTime = State ? State->GetServerWorldTimeSeconds() : GetWorld()->GetTimeSeconds();
         GetCharacterMovement()->MaxWalkSpeed = Mobility?Mobility->MovementSpeed(SlowUntil>ServerTime):(SlowUntil>ServerTime?338.f:520.f);
         GetCharacterMovement()->MaxWalkSpeed *= CireItems::MoveSpeedMultiplier(this); // progression-shop
+        if (CireRaces::IsRooted(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // monster-races: rooted by a monster skill
         return;
     }
     auto* Mode = ModeFor(this);
@@ -687,6 +690,7 @@ void ACireHero::Tick(float DeltaSeconds)
     }
     GetCharacterMovement()->MaxWalkSpeed = Mobility?Mobility->MovementSpeed(SlowUntil>GetWorld()->GetTimeSeconds()):(SlowUntil>GetWorld()->GetTimeSeconds()?338.f:520.f);
     GetCharacterMovement()->MaxWalkSpeed *= CireItems::MoveSpeedMultiplier(this); // progression-shop
+    if (CireRaces::IsRooted(this)) GetCharacterMovement()->MaxWalkSpeed = 0.f; // monster-races: rooted by a monster skill
     if (bBot) BotThink(DeltaSeconds);
     if (bAutoAttack) BasicAttack();
 }

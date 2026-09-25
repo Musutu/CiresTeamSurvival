@@ -28,6 +28,15 @@ Rules shared by all roles:
   (cast time + 1.5s). `enrage` ignores the global cooldown.
 - Challenge-pack units are **Elite** (tier scales health; damage is `challengeMonsterDamage x eliteDamageMultiplier`).
 
+### monster-races additions
+
+Two more roles: **Support** (caster movement, projectile basic; heals, wards, rallies, silences; healer icon) and
+**Swarm** (small, fast, fragile melee; bruiser movement). New ability kinds `pull` and `summon`, and riders on every
+telegraph: `root`, `silence`, `slow` (seconds) and `knockback` (cm), plus `buff` (visual) and `cue` (audio) ids and `core`.
+Archetypes gain `healthScale`, `damageScale` and `laneBossHealthMultiplier`. Races, ranks and the per-match skill draw are in
+`Docs/Races.md`; the replicated read API adds `NPCState->Rank`, `PaletteIndex`, `SkillTier`, `bLoadoutSet` and `Loadout`
+(`Abilities()` returns only the monster's active skills, with the tier numeral).
+
 ## Pack Leader boss
 
 Every challenge pack (tiers 1–3, `challengePacks.leaderFromTier`) spawns its members plus **Gravemaw, Pack
