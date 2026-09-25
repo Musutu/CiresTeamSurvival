@@ -1,11 +1,33 @@
 """Bounded offscreen Tripo render validation; does not depend on exit code alone."""
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import re
 import struct
 import subprocess
 import sys
+
+
+def run_editor(command, timeout, env=None, **kwargs) -> subprocess.CompletedProcess:
+    """subprocess.run() for an editor that skips UBT SDK setup and kills the whole process tree on timeout."""
+    # AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+    # and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Editors here target Win64.
+    child = subprocess.Popen(command, env={**(env or os.environ), "UE_SKIP_UBT_SDK_SETUP": "1"}, **kwargs)
+    try:
+        return subprocess.CompletedProcess(command, child.wait(timeout=timeout))
+    except subprocess.TimeoutExpired:
+        kill_tree(child)
+        child.kill()
+        child.wait()
+        raise
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
 
 
 def main():
@@ -23,8 +45,8 @@ def main():
     failure = None
     code = None
     try:
-        result = subprocess.run(command, cwd=root, timeout=120, stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        result = run_editor(command, 120, cwd=root, stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         code = result.returncode
     except (OSError, subprocess.TimeoutExpired) as error:
         failure = str(error)

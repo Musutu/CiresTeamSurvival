@@ -23,9 +23,20 @@ def read(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
 
 
+def editor_env() -> dict[str, str]:
+    # AutoSDK is off on this machine, so every editor boot otherwise runs
+    # "Build.bat -Mode=ValidatePlatforms" and blocks on Build.bat's machine-wide
+    # lock file while any other worktree compiles. The probes only target Win64.
+    return {**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"}
+
+
 def stop(child: subprocess.Popen | None) -> None:
     if child is None or child.poll() is not None:
         return
+    if os.name == "nt":
+        # Kill the whole tree so a Build.bat child spawned by the editor cannot outlive it.
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
     child.terminate()
     try:
         child.wait(timeout=5)
@@ -84,7 +95,7 @@ def main() -> int:
     def launch(address: str, switches: list[str], log: Path) -> subprocess.Popen:
         command = [str(args.editor.resolve()), str(args.project.resolve()), address, *switches, f"-abslog={log}", *common]
         return subprocess.Popen(command, cwd=args.project.resolve().parent, stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL, creationflags=creation)
+                                stderr=subprocess.DEVNULL, creationflags=creation, env=editor_env())
 
     for name, flag, marker in (("native", "CireCombatExpansionProbe", "CIRE_COMBAT_EXPANSION_PASS"),
                                ("replay", "CireReplayProbe", "CIRE_REPLAY_INTEGRATION_PASS")):

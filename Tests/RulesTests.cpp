@@ -659,6 +659,19 @@ void AbilityAndControlRules()
     CHECK(kindOf("decimating_strike")==static_cast<int>(SkillKind::Active)&&SkillRoleTags("decimating_strike")==(RoleTank|RoleDamage));
 }
 
+void RollRules()
+{
+    using namespace Roll;
+    CHECK(Near(ReducedCooldown(10,15),8.5)&&Near(ReducedCooldown(10,0),10)&&Near(ReducedCooldown(10,100),0)&&Near(ReducedCooldown(10,250),0)&&Near(ReducedCooldown(0,15),0)&&Near(ReducedCooldown(-3,15),0));
+    // Per-charge rolls compound: two rolls with 15% leave 72.25%.
+    CHECK(Near(ReducedCooldown(ReducedCooldown(10,15),15),7.225));
+    CHECK(Near(PointSegmentDistance2D(0,100,-100,0,100,0),100)&&Near(PointSegmentDistance2D(200,0,-100,0,100,0),100)&&Near(PointSegmentDistance2D(5,0,5,0,5,0),0));
+    CHECK(Near(MomentumMultiplier(0,4),1)&&Near(MomentumMultiplier(3,4),1.12)&&Near(MomentumMultiplier(9,4),1.2)&&Near(MomentumMultiplier(-2,4),1));
+    CHECK(Near(ShortenedReadyAt(10,13.5,70),11.05)&&Near(ShortenedReadyAt(10,13.5,0),13.5)&&Near(ShortenedReadyAt(10,9,70),9));
+    CHECK(BlurDodges(.2,25)&&!BlurDodges(.25,25)&&!BlurDodges(.9,25)&&!BlurDodges(.1,0)&&BlurDodges(.99,100));
+    int dodged=0;for(int i=0;i<1000;++i)dodged+=BlurDodges(i/1000.0,25);CHECK(dodged==250);
+}
+
 void ClockRules()
 {
     MatchClock clock;
@@ -824,6 +837,7 @@ int main()
     RoleTagRules();
     OpeningAndTraitRules();
     AbilityAndControlRules();
+    RollRules();
     ClockRules();
     RewardRules();
     std::cout << Assertions << " assertions; " << Failures << " failures\n";

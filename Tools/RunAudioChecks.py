@@ -23,6 +23,18 @@ ROOT = Path(__file__).resolve().parents[1]
 SILENCE_DB = -60.0
 
 
+# AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"
+# and blocks on Build.bat's machine-wide lock file while any other worktree compiles. Probes only target Win64.
+EDITOR_ENV = {**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"}
+
+
+def kill_tree(child) -> None:
+    """Kill the child's whole process tree so a Build.bat spawned by the editor cannot outlive it."""
+    if os.name == "nt" and child.poll() is None:
+        subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+
+
 def read_wav(path):
     """Minimal RIFF reader: PCM 16/24/32-bit and IEEE float 32-bit. Returns (rate, channels, mono floats)."""
     data = path.read_bytes()
@@ -85,10 +97,11 @@ def main():
                    "-ExecCmds=t.MaxFPS 60, au.NeverDisableSubmixes 1", "-abslog=%s" % log]
         print("Launching audio probe; output", out, flush=True)
         child = subprocess.Popen(command, cwd=args.project.resolve().parent, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0)
+                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0, env=EDITOR_ENV)
         try:
             child.wait(timeout=args.timeout)
         except subprocess.TimeoutExpired:
+            kill_tree(child)
             child.kill()
             child.wait()
             print("FAIL: probe timed out after %ds" % args.timeout)
