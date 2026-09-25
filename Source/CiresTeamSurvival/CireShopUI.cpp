@@ -791,7 +791,7 @@ void DrawReadyPanel(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller,
     }
     const int32 Humans = GameState->BreatherPlayers, ReadyCount = GameState->BreatherReady;
     const bool bMeReady = Hero->Inventory && Hero->Inventory->bReadyToContinue;
-    FString Banner = Humans <= 0 ? FString::Printf(TEXT("BREATHER  ·  NEXT WAVE IN %.0fs"), FMath::Max(0.f, GameState->NextWaveSeconds)) : GameState->bReadyGateHold ? FString::Printf(TEXT("WAITING FOR %d / %d PLAYERS"), FMath::Max(0, Humans - ReadyCount), Humans)
+    FString Banner = Humans <= 0 ? FString::Printf(TEXT("BREATHER  ·  NEXT WAVE IN %.0fs"), FMath::Max(0.f, GameState->NextWaveSeconds)) : GameState->bReadyGateHold ? CireSkillShop::WaitingLabel(Humans, ReadyCount)
                                                : FString::Printf(TEXT("ALL READY  ·  NEXT WAVE IN %.0fs"), FMath::Max(0.f, GameState->NextWaveSeconds));
     Spaced(P, Banner, BX, Y + 4, 9.f, .2f, GameState->bReadyGateHold ? BrightGold : FLinearColor(.4f, 1.f, .5f, 1), ECireFont::Display, false, false);
     if (GameState->bReadyGateHold && GameState->ReadyGateLeft >= 0 && GameState->ReadyGateLeft <= 30.f)
@@ -1268,6 +1268,9 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
         const bool bPrepBegan = State.LastPhaseSeen >= 0 && State.LastPhaseSeen != 1 && GameState->Phase == 1;
         if ((bCleared || bPrepBegan) && Hero->bDrafted && CireSkillShop::IsSkillShopMode(HUD.GetWorld()))
         {
+            // One notice at a time: a second clear (or prep) while the last one is still up refreshes it
+            // instead of stacking an identical toast.
+            State.Toasts.RemoveAll([](const FToast& T) { return T.Title == TEXT("SKILL SHOP OPEN"); });
             AddToast(TEXT("SKILL SHOP OPEN"), FString::Printf(TEXT("%s: learn or level skills (%s)."), bPrepBegan ? TEXT("Prep") : TEXT("Wave cleared"),
                 *KeyLabel(HUD, TEXT("ToggleSkillShop"))), TEXT("challenge"), BrightGold, 6.f);
             if (CireSkillShop::Get().bAutoOpen && AnySkillAffordable(Hero))
