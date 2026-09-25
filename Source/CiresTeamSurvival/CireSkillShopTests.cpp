@@ -7,6 +7,7 @@
 #if !UE_BUILD_SHIPPING
 #include "CireAbilityDB.h"
 #include "CirePolymorph.h"
+#include "CireScalingKits.h"
 #include "CireWaves.h"
 #include "CireGame.h"
 #include "CireItems.h"
@@ -336,6 +337,14 @@ bool CireSkillShop::RunSmoke(ACireGameMode* Mode)
         static const TSet<FString> Valid = {TEXT("spell"), TEXT("attack"), TEXT("defensive"), TEXT("control"), TEXT("summon"), TEXT("construct"), TEXT("passive"), TEXT("ultimate")};
         for (const FCireAbilityDef& D : CireAbilityDB::All()) bAll &= Valid.Contains(D.Section) && D.EffectTags.Num() <= 4;
         Check(bAll, TEXT("every ability has one primary section and at most four tags"));
+        // scaling-kits "requires": the catalog never lists a skill the champion may not buy (shield skills).
+        bool bGated = true;
+        for (int32 Archetype = 0; Archetype < 3; ++Archetype)
+        {
+            ACireHero* H = Hero(0, Archetype, FVector(-500, Archetype * 100.f, 0));
+            for (const FCireShopSkill& K : CatalogFor(H)) bGated &= H->Skills.Contains(K.Id) || CireKits::MeetsRequirement(H, K.Id, nullptr);
+        }
+        Check(bGated, TEXT("shield / ranged-only skills are listed only for champions who meet the requirement"));
     }
 
     bPass = CirePolymorph::RunSmoke(Mode) && bPass;
