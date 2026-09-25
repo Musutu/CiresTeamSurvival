@@ -510,10 +510,11 @@ bool UCireChampionArt::TintBody(USkeletalMeshComponent* Mesh,UObject* Outer,FLin
         }
         MID->SetVectorParameterValue(TEXT("RaceTint"),Base);MID->SetScalarParameterValue(TEXT("RaceTintStrength"),Strength);
         MID->SetVectorParameterValue(TEXT("RaceAccent"),Accent);MID->SetScalarParameterValue(TEXT("RaceAccentStrength"),Strength*.8f);
-        MID->SetVectorParameterValue(TEXT("RankColor"),Accent);MID->SetVectorParameterValue(TEXT("TrimColor"),Rim);
+        MID->SetVectorParameterValue(TEXT("RankColor"),Accent);MID->SetVectorParameterValue(TEXT("TrimColor"),Rim*.3f);
         MID->SetScalarParameterValue(TEXT("RankArmor"),0.f);MID->SetScalarParameterValue(TEXT("RankBody"),0.f);
-        MID->SetScalarParameterValue(TEXT("RankGlow"),Rim.GetMax()>0?.6f:0.f);
-        MID->SetVectorParameterValue(TEXT("RimColor"),Rim);MID->SetScalarParameterValue(TEXT("RimStrength"),Rim.GetMax()>0?.45f:0.f);
+        // A faint energy rim only: the skin's trim glow and fresnel wash a whole metallic body out at full strength.
+        MID->SetScalarParameterValue(TEXT("RankGlow"),Rim.GetMax()>0?.08f:0.f);
+        MID->SetVectorParameterValue(TEXT("RimColor"),Rim*.3f);MID->SetScalarParameterValue(TEXT("RimStrength"),Rim.GetMax()>0?.18f:0.f);
         ++Tinted;
     }
     return Tinted>0;

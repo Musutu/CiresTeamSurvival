@@ -240,7 +240,7 @@
       "status": "custom_ready",
       "motion": "mounted",
       "mesh": "/Game/Free/Creatures/Wolf/Wolf/SkeletalMeshes/Wolf.Wolf",
-      "heightCm": 150,
+      "heightCm": 175,
       "yaw": -90,
       "lockRoot": true,
       "walkSpeedRaw": 180.4,
@@ -253,9 +253,9 @@
       },
       "tint": {
         "base": [
-          0.09,
-          0.07,
-          0.065
+          0.3,
+          0.24,
+          0.18
         ],
         "accent": [
           0.55,

@@ -1369,6 +1369,27 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             {TEXT("07_search_golem"),-1,TEXT("ether_golem_support"),TEXT(""),0,false,33.f,TEXT("golem")},
             {TEXT("08_timer_low_behemoth"),-1,TEXT(""),TEXT("totemic_behemoth"),0,false,6.f,TEXT("")},
             {TEXT("09_locked_in_knight"),-1,TEXT(""),TEXT("knight"),0,true,0.f,TEXT("")}};
+        // new-champions: -CireDraftGalleryChampions=a,b,... replaces the fixed states with each champion
+        // selected (overview) and on its abilities tab, so new rosters can be reviewed in champion select.
+        static TArray<FShot> ShotList;static TArray<FString> ShotStrings;
+        if(ShotList.IsEmpty())
+        {
+            FString Ids;
+            if(FParse::Value(FCommandLine::Get(),TEXT("CireDraftGalleryChampions="),Ids,false))
+            {
+                TArray<FString> List;Ids.ParseIntoArray(List,TEXT(","),true);
+                ShotStrings.Reserve(List.Num()*4);
+                for(const FString& Id:List)
+                {
+                    const FString& Stored=ShotStrings.Add_GetRef(Id);
+                    const FString& Overview=ShotStrings.Add_GetRef(FString::Printf(TEXT("%02d_selected_%s"),ShotList.Num()+1,*Id));
+                    ShotList.Add({*Overview,-1,TEXT(""),*Stored,0,false,60.f,TEXT("")});
+                    const FString& Kit=ShotStrings.Add_GetRef(FString::Printf(TEXT("%02d_abilities_%s"),ShotList.Num()+1,*Id));
+                    ShotList.Add({*Kit,-1,TEXT(""),*Stored,1,false,50.f,TEXT("")});
+                }
+            }
+            if(ShotList.IsEmpty())for(const FShot& Shot:Shots)ShotList.Add(Shot);
+        }
         // Audit the frame in which the previous shot was requested (the frame is complete now).
         const auto RunAudit=[&](const FString& ShotName)
         {
@@ -1430,11 +1451,11 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             }
         }
         if(G.bShotThisFrame){G.bShotThisFrame=false;RunAudit(G.PendingShot);}
-        int32 ShotCount=static_cast<int32>(UE_ARRAY_COUNT(Shots));
-        FParse::Value(FCommandLine::Get(),TEXT("CireDraftGalleryShots="),ShotCount);ShotCount=FMath::Clamp(ShotCount,1,static_cast<int32>(UE_ARRAY_COUNT(Shots)));
+        int32 ShotCount=ShotList.Num();
+        FParse::Value(FCommandLine::Get(),TEXT("CireDraftGalleryShots="),ShotCount);ShotCount=FMath::Clamp(ShotCount,1,ShotList.Num());
         if(G.Stage<ShotCount)
         {
-            const FShot& Shot=Shots[G.Stage];
+            const FShot& Shot=ShotList[G.Stage];
             DebugSetPointer(FVector2D(VW-1.f,VH-1.f)); // keep the real cursor from raising tooltips
             S.Filter=Shot.Filter;S.InfoTab=Shot.Tab;S.ForcedHover=Shot.Hover;S.bForceOutro=Shot.bOutro;S.ForcedTimer=Shot.Timer;
             S.bChosen=*Shot.Select!=0;S.SelectedId=Shot.Select;if(S.bChosen)S.CursorId=Shot.Select;
