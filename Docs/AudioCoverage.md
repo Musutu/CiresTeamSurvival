@@ -6,7 +6,7 @@ Every Ability DB entry maps to an element and a kind; the kind picks the cue for
 a critical adds `combat.crit`, and a melee/shot hit of another element adds that element's impact.
 `pack` = the cue has installed Fab pack members listed in `Art/Audio/FabAudioMap.json`; otherwise the shipped fallback plays.
 
-**162 / 162 abilities have a sound set** (cast and hit resolve to cues whose fallback sounds exist). 162 use at least one Fab pack cue.
+**163 / 163 abilities have a sound set** (cast and hit resolve to cues whose fallback sounds exist). 163 use at least one Fab pack cue.
 
 Gaps: none.
 
@@ -19,12 +19,12 @@ Gaps: none.
 | heal | 22 |
 | buff | 11 |
 | shot | 10 |
+| shout | 8 |
 | guard | 7 |
-| shout | 7 |
 
 | Element | Abilities |
 |---|---|
-| physical | 44 |
+| physical | 45 |
 | arcane | 35 |
 | holy | 21 |
 | nature | 21 |
@@ -135,7 +135,8 @@ Gaps: none.
 | `owl_scout` | nature | nature | spell | - | `spell.nature.cast` | `spell.nature.impact` | yes |
 | `moonlit_sprint` | arcane | arcane | buff | - | `spell.arcane.cast` | `spell.arcane.heal` | yes |
 | `crescent_volley` | physical | physical | shot | glaive | `weapon.glaive.throw` | `weapon.glaive.impact` | yes |
-| `sabercat_rake` | nature | nature | melee | claws | `weapon.claws.swipe` | `weapon.claws.impact` | yes |
+| `sabercat_maul` | physical | physical | melee | caster | `weapon.sword.swing` | `weapon.sword.impact` | yes |
+| `sabercat_roar` | nature | nature | shout | - | `ability.shout` | `weapon.sword.impact` | yes |
 | `moon_glaive` | physical | physical | shot | glaive | `weapon.glaive.throw` | `weapon.glaive.impact` | yes |
 | `glaive_storm` | physical | physical | melee | glaive | `weapon.glaive.swing` | `weapon.glaive.impact` | yes |
 | `photon_turret` | arcane | arcane | summon | - | `ability.summon` | `spell.arcane.impact` | yes |
