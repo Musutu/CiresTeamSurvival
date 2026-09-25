@@ -2,6 +2,15 @@
   "schemaVersion": 1,
   "artStatus": "original local prototype props; no gameplay/stat changes",
   "presets": {
+    "tripo_huntress": {"motion": "throw", "parts": [
+      {"asset": "hunter/Glaive", "bone": "hand_r", "role": "primary", "hideOnRelease": true},
+      {"asset": "tripo/HuntressGlaiveLauncher", "bone": "hand_l", "scale": 0.73}]},
+    "tripo_witch_slayer": {"motion": "cast", "parts": [
+      {"asset": "tripo/WitchSlayerBlunderbuss", "bone": "hand_l", "role": "primary", "scale": 0.86},
+      {"asset": "tripo/WitchSlayerBlade", "bone": "pelvis", "offsetCm": [0, -18, -4], "rotation": [160, 0, 0], "scale": 0.9}]},
+    "tripo_gunblade": {"motion": "melee", "parts": [
+      {"asset": "tripo/GunbladeSword", "bone": "hand_r", "role": "primary", "scale": 0.94},
+      {"asset": "tripo/GunbladePistol", "bone": "hand_l", "scale": 0.41}]},
     "aetheri_warden": {"motion": "melee", "parts": [
       {"asset": "hunter/AetherHalberd", "bone": "hand_r", "role": "primary"}]},
     "artificer": {"motion": "cast", "parts": [
@@ -67,6 +76,9 @@
     "unarmed": {"motion": "none", "parts": []}
   },
   "previewOptions": {
+    "huntress": ["tripo_huntress", "huntress"],
+    "witch_slayer": ["tripo_witch_slayer", "witch_slayer"],
+    "gunblade": ["tripo_gunblade", "gunblade"],
     "knight": ["warden", "hammer_shield"], "ranger": ["ranger", "ranger_crossbow"],
     "scholar": ["scholar", "wizard"], "summoner": ["summoner", "scholar"],
     "paladin_righteous": ["paladin", "hammer_shield"], "paladin_holy": ["paladin", "hammer_shield"],
@@ -81,9 +93,9 @@
     "orc_chieftain": "chieftain", "totemic_behemoth": "behemoth", "drakish_footman": "footman", "wizard": "wizard",
     "troll_berserker_melee": "troll_melee", "troll_berserker_ranged": "troll_ranged", "dryad": "dryad",
     "whisp": "unarmed", "evergrove_centaur": "centaur", "keeper_of_light": "keeper",
-    "gunblade": "gunblade",
-    "witch_slayer": "witch_slayer",
-    "huntress": "huntress",
+    "gunblade": "tripo_gunblade",
+    "witch_slayer": "tripo_witch_slayer",
+    "huntress": "tripo_huntress",
     "aetheri_artificer": "artificer",
     "aetheri_warden": "aetheri_warden"
   }

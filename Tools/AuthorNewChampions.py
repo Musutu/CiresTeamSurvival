@@ -313,31 +313,110 @@ def upsert_roster(text: str) -> str:
     return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
 
 
+TRIPO = DATA / "ChampionArt.tripo.json"
+BINDING_KEYS = ("profileId", "status", "mesh", "locomotion", "attack", "heightCm")
+
+
+def tripo_rows() -> dict:
+    """The Tripo agent's finished champion bodies (Docs/ArtIntegration.md, "Tripo champions"), when delivered."""
+    if not TRIPO.is_file():
+        return {}
+    return {c["profileId"]: c for c in json.loads(TRIPO.read_text(encoding="utf-8"))["champions"] if c.get("status") == "ready"}
+
+
+def final_bindings() -> list:
+    """Tripo bodies replace the temporary ones (status ready: attack clips + grips, no tint). The Huntress keeps the
+    animated wolf mount (the Tripo sabercat has no clips yet) and seats the Tripo Huntress as its rider."""
+    tripo = tripo_rows()
+    out = []
+    for row in copy.deepcopy(BINDINGS):
+        t = tripo.get(row["profileId"])
+        if not t:
+            out.append(row)
+            continue
+        if row.get("motion") == "mounted":
+            rider = copy.deepcopy(t.get("riderBinding") or {})
+            if rider:
+                row["rider"] = rider
+            row["tripoSlot"]["delivered"] = "rider: " + t["mesh"] + "; mount (no clips yet): " + t.get("mount", {}).get("mesh", "")
+            row["note"] = ("Tripo Huntress seated on the Quaternius wolf (tinted as a sabercat) until the Tripo sabercat mount "
+                           "(" + t.get("mount", {}).get("mesh", "") + ") has animation clips.")
+            out.append(row)
+            continue
+        bound = {k: t[k] for k in BINDING_KEYS}
+        bound["note"] = "Tripo model (tripo-races). Temporary body before it: " + row.get("note", "")
+        bound["tripoSlot"] = dict(row["tripoSlot"], delivered=t["mesh"])
+        out.append(bound)
+    return out
+
+
 def upsert_bindings(text: str) -> str:
     data = json.loads(text)
     rows = [b for b in data["bindings"] if b["profileId"] not in {x["profileId"] for x in BINDINGS}]
-    data["bindings"] = rows + copy.deepcopy(BINDINGS)
+    data["bindings"] = rows + final_bindings()
     return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+
+
+def loadout_plan() -> tuple[dict, dict, dict]:
+    """Presets, profile mapping and preview options: the Tripo presets become the defaults once delivered."""
+    presets = dict(LOADOUT_PRESETS)
+    profiles = dict(LOADOUT_PROFILES)
+    options = {}
+    if TRIPO.is_file():
+        data = json.loads(TRIPO.read_text(encoding="utf-8"))
+        for name, row in data.get("loadoutPresets", {}).items():
+            parts = ",\n      ".join(json.dumps(p) for p in row["parts"])
+            presets[name] = '{"motion": "%s", "parts": [\n      %s]}' % (row["motion"], parts)
+        for champion in data["champions"]:
+            preset = champion.get("loadoutPreset")
+            if champion.get("status") == "ready" and preset in presets and champion["profileId"] in profiles:
+                if preset != profiles[champion["profileId"]]:
+                    options[champion["profileId"]] = [preset, profiles[champion["profileId"]]]
+                profiles[champion["profileId"]] = preset
+    return presets, profiles, options
 
 
 def upsert_loadouts(text: str) -> str:
     # Keep the file's hand-formatted layout: insert missing preset lines and profile mappings textually.
-    for name, row in LOADOUT_PRESETS.items():
+    presets, profiles, options = loadout_plan()
+    for name, row in presets.items():
         if f'"{name}": {{"motion"' in text:
             text = re.sub(rf'    "{name}": \{{"motion".*?\]\}}', lambda m: f'    "{name}": {row}', text, count=1, flags=re.S)
         else:
             text = text.replace('  "presets": {\n', f'  "presets": {{\n    "{name}": {row},\n', 1)
-    for profile_id, preset in LOADOUT_PROFILES.items():
-        if f'"{profile_id}": "' in text.split('"profiles"')[1]:
+    for profile_id, preset in profiles.items():
+        body = text.split('"profiles"')[1]
+        if f'"{profile_id}": "' in body:
+            head, tail = text.split('"profiles"', 1)
+            tail = re.sub(rf'"{profile_id}": "[a-z_]+"', f'"{profile_id}": "{preset}"', tail, count=1)
+            text = head + '"profiles"' + tail
             continue
         head, tail = text.rsplit("\n  }\n}", 1)
         text = head + f',\n    "{profile_id}": "{preset}"' + "\n  }\n}" + tail
+    # Preview options (development HUD cycling): the Tripo preset first, the prototype props second.
+    for profile_id, names in options.items():
+        line = f'    "{profile_id}": {json.dumps(names)}'
+        head, tail = text.split('"previewOptions": {', 1)
+        tail = re.sub(rf'\n    "{profile_id}": \[[^\]]*\],?', '', tail, count=1)
+        text = head + '"previewOptions": {\n' + line + ',' + tail if not tail.startswith('\n') else head + '"previewOptions": {\n' + line + ',' + tail
+    text = text.replace(',,', ',')
     json.loads(text)
     return text
 
 
 def upsert_grips(text: str) -> str:
     data = json.loads(text)
+    if all(data["weapons"].get(k) == v for k, v in GRIPS.items()) and all(n in data["swapHandPresets"] for n in SWAP_HAND):
+        return text  # up to date: keep other agents' hand formatting
+    if text.split('"weapons": {', 1)[1].startswith('\n    "') and '{"handle"' in text:
+        # Compact one-row-per-weapon layout (tripo-races): insert/replace our rows textually.
+        rows = {k: f'    "{k}": {json.dumps(v)},\n' for k, v in GRIPS.items()}
+        text, _ = _insert(text, '"weapons": {', rows)
+        missing = [n for n in SWAP_HAND if n not in json.loads(text)["swapHandPresets"]]
+        if missing:
+            text = re.sub(r'"swapHandPresets": \[([^\]]*)\]', lambda m: '"swapHandPresets": [' + m.group(1).rstrip() + "".join(f', "{n}"' for n in missing) + "]", text, count=1)
+        json.loads(text)
+        return text
     data["weapons"].update(copy.deepcopy(GRIPS))
     for name in SWAP_HAND:
         if name not in data["swapHandPresets"]:

@@ -152,39 +152,12 @@
     },
     {
       "profileId": "gunblade",
-      "status": "custom_ready",
-      "motion": "monster_native",
-      "mesh": "/Game/Tripo/Monsters/BarbedHunterB/CTS_Monster_BarbedHunterB.CTS_Monster_BarbedHunterB",
+      "status": "ready",
+      "mesh": "/Game/Tripo/Champions/Gunblade/CTS_Champ_Gunblade.CTS_Champ_Gunblade",
+      "locomotion": "/Game/Tripo/Champions/Gunblade/Animations/BS_Idle_Walk_Run_Gunblade.BS_Idle_Walk_Run_Gunblade",
+      "attack": "/Game/Tripo/Champions/Gunblade/Animations/CTS_Champ_Gunblade_slash.CTS_Champ_Gunblade_slash",
       "heightCm": 182,
-      "yaw": -90,
-      "animations": {
-        "idle": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_idle.CTS_Monster_BarbedHunterB_idle",
-        "walk": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_walk.CTS_Monster_BarbedHunterB_walk",
-        "run": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_run.CTS_Monster_BarbedHunterB_run",
-        "attack": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_attack_crossbow.CTS_Monster_BarbedHunterB_attack_crossbow",
-        "hit": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_hit_to_body_01.CTS_Monster_BarbedHunterB_hit_to_body_01",
-        "death": "/Game/Tripo/Monsters/BarbedHunterB/Animations/CTS_Monster_BarbedHunterB_fall.CTS_Monster_BarbedHunterB_fall"
-      },
-      "props": [
-        {
-          "asset": "/Game/Art/NewChampions01/Props/SM_Falchion.SM_Falchion",
-          "bone": "hand_l"
-        },
-        {
-          "asset": "/Game/Art/NewChampions01/Props/SM_Flintlock.SM_Flintlock",
-          "bone": "pelvis",
-          "offsetCm": [
-            4,
-            16,
-            -6
-          ],
-          "rotation": [
-            100,
-            0,
-            0
-          ]
-        }
-      ],
+      "note": "Tripo model (tripo-races). Temporary body before it: Temporary body: the scarecrow-hatted BarbedHunterB monster (its crossbow is fused into the right hand and reads as the gun); falchion on the off hand.",
       "tripoSlot": {
         "unit": "gunblade",
         "skeleton": "Tripo humanoid biped (61-bone champion batch rig: pelvis, spine_01..03, thigh/calf/foot, hand_l/hand_r)",
@@ -194,35 +167,18 @@
           "falchion (hand_l)",
           "powder flask, bounty ledger (belt)"
         ],
-        "bindAs": "status ready: mesh + BS_Idle_Walk_Run + A_*_Attack (see the lancer row)"
-      },
-      "note": "Temporary body: the scarecrow-hatted BarbedHunterB monster (its crossbow is fused into the right hand and reads as the gun); falchion on the off hand."
+        "bindAs": "status ready: mesh + BS_Idle_Walk_Run + A_*_Attack (see the lancer row)",
+        "delivered": "/Game/Tripo/Champions/Gunblade/CTS_Champ_Gunblade.CTS_Champ_Gunblade"
+      }
     },
     {
       "profileId": "witch_slayer",
       "status": "ready",
-      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/summoner/SK_summoner.SK_summoner",
-      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/summoner/Animations/BS_Idle_Walk_Run_summoner.BS_Idle_Walk_Run_summoner",
-      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/summoner/A_summoner_Attack.A_summoner_Attack",
+      "mesh": "/Game/Tripo/Champions/WitchSlayer/CTS_Champ_WitchSlayer.CTS_Champ_WitchSlayer",
+      "locomotion": "/Game/Tripo/Champions/WitchSlayer/Animations/BS_Idle_Walk_Run_WitchSlayer.BS_Idle_Walk_Run_WitchSlayer",
+      "attack": "/Game/Tripo/Champions/WitchSlayer/Animations/CTS_Champ_WitchSlayer_attack_crossbow.CTS_Champ_WitchSlayer_attack_crossbow",
       "heightCm": 180,
-      "tint": {
-        "base": [
-          0.06,
-          0.22,
-          0.14
-        ],
-        "accent": [
-          0.25,
-          0.45,
-          1.0
-        ],
-        "strength": 0.7,
-        "rim": [
-          0.3,
-          0.55,
-          1.6
-        ]
-      },
+      "note": "Tripo model (tripo-races). Temporary body before it: Temporary body: the Rift Summoner rig re-tinted dark green with blue arcane accents.",
       "tripoSlot": {
         "unit": "witch_slayer",
         "skeleton": "Tripo humanoid biped (champion batch rig)",
@@ -231,9 +187,9 @@
           "arcane blunderbuss with blue orb drum (hand_l)",
           "spectral arcane blade (hand_r / back)",
           "spirit lantern (belt)"
-        ]
-      },
-      "note": "Temporary body: the Rift Summoner rig re-tinted dark green with blue arcane accents."
+        ],
+        "delivered": "/Game/Tripo/Champions/WitchSlayer/CTS_Champ_WitchSlayer.CTS_Champ_WitchSlayer"
+      }
     },
     {
       "profileId": "huntress",
@@ -265,16 +221,16 @@
         "strength": 0.8
       },
       "rider": {
-        "mesh": "/Game/TripoModels/armored_archer_3d_model/armored_archer_3d_model.armored_archer_3d_model",
-        "locomotion": "/Game/Art/Characters/TripoRetarget/Preview02/Ranger/Animations/BS_Idle_Walk_Run_Ranger.BS_Idle_Walk_Run_Ranger",
-        "attack": "/Game/Art/Characters/CombatPrototype01/Ranger/A_Ranger_Attack.A_Ranger_Attack",
+        "mesh": "/Game/Tripo/Champions/Huntress/CTS_Champ_Huntress.CTS_Champ_Huntress",
+        "locomotion": "/Game/Tripo/Champions/Huntress/Animations/BS_Idle_Walk_Run_Huntress.BS_Idle_Walk_Run_Huntress",
+        "attack": "/Game/Tripo/Champions/Huntress/Animations/CTS_Champ_Huntress_attack_bow.CTS_Champ_Huntress_attack_bow",
         "heightCm": 172,
         "seatHeight": 0.62,
         "seatForward": -0.08,
         "props": [
           {
-            "asset": "/Game/Art/NewChampions01/Props/SM_GlaiveLauncher.SM_GlaiveLauncher",
-            "bone": "hand_r"
+            "asset": "/Game/Tripo/Props/HuntressGlaiveLauncher/CTS_Prop_HuntressGlaiveLauncher.CTS_Prop_HuntressGlaiveLauncher",
+            "bone": "hand_l"
           }
         ]
       },
@@ -286,79 +242,46 @@
           "mounted glaive launcher (rider hand_r)",
           "glaive ammo (back)",
           "mount barding"
-        ]
+        ],
+        "delivered": "rider: /Game/Tripo/Champions/Huntress/CTS_Champ_Huntress.CTS_Champ_Huntress; mount (no clips yet): /Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat"
       },
-      "note": "Temporary body: the Quaternius wolf (tinted as a dark sabercat) carrying the Ash Ranger rig seated on its back (Centaur-style creature presentation)."
+      "note": "Tripo Huntress seated on the Quaternius wolf (tinted as a sabercat) until the Tripo sabercat mount (/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat) has animation clips."
     },
     {
       "profileId": "aetheri_artificer",
       "status": "ready",
-      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/wizard/SK_wizard.SK_wizard",
-      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/wizard/Animations/BS_Idle_Walk_Run_wizard.BS_Idle_Walk_Run_wizard",
-      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/wizard/A_wizard_Attack.A_wizard_Attack",
+      "mesh": "/Game/Tripo/Champions/AetheriArtificer/CTS_Champ_AetheriArtificer.CTS_Champ_AetheriArtificer",
+      "locomotion": "/Game/Tripo/Champions/AetheriArtificer/Animations/BS_Idle_Walk_Run_AetheriArtificer.BS_Idle_Walk_Run_AetheriArtificer",
+      "attack": "/Game/Tripo/Champions/AetheriArtificer/Animations/CTS_Champ_AetheriArtificer_cast_a_spell.CTS_Champ_AetheriArtificer_cast_a_spell",
       "heightCm": 184,
-      "tint": {
-        "base": [
-          0.85,
-          0.72,
-          0.42
-        ],
-        "accent": [
-          0.45,
-          0.35,
-          1.2
-        ],
-        "strength": 0.75,
-        "rim": [
-          0.5,
-          0.4,
-          2.2
-        ]
-      },
+      "note": "Tripo model (tripo-races). Temporary body before it: Temporary body: the Cinder Arcanist rig re-tinted Aetheri gold-white with violet energy.",
       "tripoSlot": {
         "unit": "aetheri_artificer",
         "skeleton": "Tripo humanoid biped (champion batch rig)",
         "sheet": "(none yet: gold/white alloy, blue-violet energy)",
         "props": [
           "floating focus crystal / energy staff (hand_l)"
-        ]
-      },
-      "note": "Temporary body: the Cinder Arcanist rig re-tinted Aetheri gold-white with violet energy."
+        ],
+        "delivered": "/Game/Tripo/Champions/AetheriArtificer/CTS_Champ_AetheriArtificer.CTS_Champ_AetheriArtificer"
+      }
     },
     {
       "profileId": "aetheri_warden",
       "status": "ready",
-      "mesh": "/Game/Art/Characters/TripoBatch/Batch01/Bodies/keeper_of_light/SK_keeper_of_light.SK_keeper_of_light",
-      "locomotion": "/Game/Art/Characters/TripoBatch/Batch01/Locomotion/keeper_of_light/Animations/BS_Idle_Walk_Run_keeper_of_light.BS_Idle_Walk_Run_keeper_of_light",
-      "attack": "/Game/Art/Characters/TripoBatch/Batch01/Attacks/keeper_of_light/A_keeper_of_light_Attack.A_keeper_of_light_Attack",
+      "mesh": "/Game/Tripo/Champions/AetheriWarden/CTS_Champ_AetheriWarden.CTS_Champ_AetheriWarden",
+      "locomotion": "/Game/Tripo/Champions/AetheriWarden/Animations/BS_Idle_Walk_Run_AetheriWarden.BS_Idle_Walk_Run_AetheriWarden",
+      "attack": "/Game/Tripo/Champions/AetheriWarden/Animations/CTS_Champ_AetheriWarden_slash.CTS_Champ_AetheriWarden_slash",
       "heightCm": 192,
-      "tint": {
-        "base": [
-          0.9,
-          0.84,
-          0.62
-        ],
-        "accent": [
-          0.3,
-          0.45,
-          1.3
-        ],
-        "strength": 0.6,
-        "rim": [
-          0.35,
-          0.5,
-          2.2
-        ]
-      },
+      "note": "Tripo model (tripo-races). Temporary body before it: Temporary body: the Keeper of the Light rig re-tinted white-gold with blue-violet psionic accents.",
       "tripoSlot": {
         "unit": "aetheri_warden",
         "skeleton": "Tripo humanoid biped (champion batch rig)",
         "sheet": "(none yet: white-gold alloy warden, psionic glow)",
         "props": [
           "energy halberd (hand_r)"
-        ]
-      },
-      "note": "Temporary body: the Keeper of the Light rig re-tinted white-gold with blue-violet psionic accents."
+        ],
+        "delivered": "/Game/Tripo/Champions/AetheriWarden/CTS_Champ_AetheriWarden.CTS_Champ_AetheriWarden"
+      }
     }
   ]
 }

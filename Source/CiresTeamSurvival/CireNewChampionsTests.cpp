@@ -403,8 +403,9 @@ bool CireSignatureSkills::RunSmoke(ACireGameMode* Mode)
         if (G && G->ChampionArt)
         {
             const bool bApplied = G->ChampionArt->DebugApply(*G);
-            T.Check(bApplied && G->GetMesh()->GetSkeletalMeshAsset() && G->GetMesh()->GetSkeletalMeshAsset()->GetName().Contains(TEXT("BarbedHunterB")),
-                TEXT("gunblade drawn with the scarecrow-hatted BarbedHunterB body"));
+            const FString Body = G->GetMesh()->GetSkeletalMeshAsset() ? G->GetMesh()->GetSkeletalMeshAsset()->GetName() : FString();
+            T.Check(bApplied && (Body.Contains(TEXT("Gunblade")) || Body.Contains(TEXT("BarbedHunterB"))),
+                TEXT("gunblade drawn with its Tripo body (or the scarecrow-hatted BarbedHunterB stand-in): ") + Body);
             UE_LOG(LogCireNewChampionTests, Display, TEXT("CIRE_NEW_CHAMPIONS_ART gunblade_props=%d"), G->ChampionArt->GetCreature() ? G->ChampionArt->GetCreature()->GetPropCount() : -1);
         }
         GCireForceTripoChampionArt = bForce;
