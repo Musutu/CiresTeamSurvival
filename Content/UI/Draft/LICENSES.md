@@ -45,3 +45,10 @@ composites the live 3D champion over the scene).
 ## Portraits/, Sounds/
 
 See the tools that generate them (`Tools/RunDraftPortraits.py`, `Tools/BuildDraftSounds.py`).
+
+Six portraits whose mesh renders read pale and washed-out (`ether_golem_bruiser`, `ether_golem_support`,
+`ether_golem_tank`, `totemic_behemoth`, `whisp`, `keeper_of_light`) are repainted from those renders (same
+design, pose and bust framing, darker key/rim lighting, dark vignette): **generated for Eric via ChatGPT
+(OpenAI), 2026-09-25**. Sheet: `Art/DraftPortraits/portraits_pale_sheet.png` (3x2, 512 px tiles); tiles:
+`Art/DraftPortraits/Painted/<id>.png`, which `Tools/RunDraftPortraits.py` applies over fresh renders
+(`--rendered` keeps the raw renders).
