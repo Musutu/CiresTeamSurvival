@@ -91,13 +91,17 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         const bool bSel = I == WaveSelected, Over = Hit(ListX + 2, RY, ListW - 4, RowH - 2);
         Painter().Rect(ListX + 2, RY, ListW - 4, RowH - 2, bSel ? RowSelected : Over ? FLinearColor(.07f, .09f, .1f, 1) : Row);
         if (bSel) Painter().Rect(ListX + 2, RY, 3, RowH - 2, Gold);
-        const bool bInCycle = I < WaveDraft.WavesPerCycle;
+        // rules-conformance: in campaign order the list is the whole match (row I = cycle I / per-cycle, wave I % per-cycle).
+        const int32 PerCycle = FMath::Max(1, WaveDraft.WavesPerCycle);
+        const bool bInCycle = WaveDraft.bCampaignOrder ? (WaveDraft.Cycles <= 0 || I < PerCycle * WaveDraft.Cycles) : I < PerCycle;
         Label(Painter().Fit(FString::Printf(TEXT("%d. %s"), I + 1, *W.Label), 9.5f, ListW - 16, ECireFont::Bold), ListX + 10, RY + 2, 9.5f, bInCycle ? Parchment : Muted);
         // monster-races: the wave's race (or the rotation's race for the live cycle).
-        const int32 ListCycle = State ? FMath::Max(0, State->Round - 1) : 0;
-        const FString RaceText = W.Race.IsNone() ? CireWaveDirector::RaceLabel(WaveDraft, W, ListCycle) + TEXT("*") : CireWaveDirector::RaceLabel(WaveDraft, W, ListCycle);
+        const int32 ListCycle = WaveDraft.bCampaignOrder ? I / PerCycle : State ? FMath::Max(0, State->Round - 1) : 0;
+        const int32 ListWave = I % PerCycle;
+        const FString RaceText = W.Race.IsNone() ? CireWaveDirector::RaceLabel(WaveDraft, W, ListCycle, ListWave) + TEXT("*") : CireWaveDirector::RaceLabel(WaveDraft, W, ListCycle, ListWave);
         Label(Painter().Fit(FString::Printf(TEXT("%s  |  %d/lane  |  %s"), *CireWaveDirector::TypeLabel(W.Type), W.UnitsPerLane(), *RaceText), 8, ListW - 16, ECireFont::Body), ListX + 10, RY + 15, 8, bInCycle ? Gold : Muted);
-        Tip(W.Label, bInCycle ? TEXT("Select to edit. This wave is inside the cycle.") : TEXT("Beyond waves-per-cycle: kept in the list but not played until the cycle grows."), ListX + 2, RY, ListW - 4, RowH - 2);
+        Tip(W.Label, bInCycle ? (WaveDraft.bCampaignOrder ? TEXT("Select to edit. Campaign order: this wave is played in the match (cycle = row / waves per cycle).") : TEXT("Select to edit. This wave is inside the cycle."))
+            : TEXT("Beyond the waves the match plays: kept in the list but not played until the cycle (or cycle count) grows."), ListX + 2, RY, ListW - 4, RowH - 2);
         if (Over && Clicked) { Clicked = false; PlayUIFeedback(); WaveSelected = I; }
     }
     const float LB = ListY + Visible * RowH + 10;
@@ -129,12 +133,13 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     if (Button(TEXT("TEMPLATE"), EX + 132, R1, 74, 22, TEXT("Replace this wave's rows, pacing and label with the template for its type (Armored Escort = 1 non-attacking tank + 4 defenders). Template rows follow the wave's race.")))
     { const ECireWaveType Type = W.Type; const FName Race = W.Race; W = CireWaveDirector::Template(Type); W.Race = Race; }
     // monster-races: the wave's race. Rotation = Waves.json campaign.raceRotation for the cycle being played.
-    const int32 EditCycle = State ? FMath::Max(0, State->Round - 1) : 0;
+    const int32 EditCycle = WaveDraft.bCampaignOrder ? WaveSelected / FMath::Max(1, WaveDraft.WavesPerCycle) : State ? FMath::Max(0, State->Round - 1) : 0;
+    const int32 EditWave = WaveDraft.bCampaignOrder ? WaveSelected % FMath::Max(1, WaveDraft.WavesPerCycle) : 0; // rules-conformance
     {
         const FCireRace* Race = CireRaces::FindRace(W.Race);
         const FString Title = Race ? FString(TEXT("RACE: ")) + Race->Short.ToUpper() : FString(TEXT("RACE: ROTATION"));
         FString Help = Race ? Race->Name + TEXT(". ") + Race->Lore : FString::Printf(TEXT("Follows the campaign rotation: this cycle fields %s. Click to pick a race for this wave."),
-            *CireWaveDirector::RaceLabel(WaveDraft, W, EditCycle));
+            *CireWaveDirector::RaceLabel(WaveDraft, W, EditCycle, EditWave));
         Help += TEXT(" Rows marked with a slot (Line, Caster, ...) take that race's unit; explicit units stay as chosen.");
         if (Button(Title, EX + 210, R1, 104, 22, Help, true, Race != nullptr, Teal)) CireWaveDirector::CycleWaveRace(W);
     }
@@ -144,7 +149,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     const float R2 = R1 + 42;
     StepF(TEXT("SPAWN INTERVAL"), W.SpawnInterval, .1f, 0, 5, EX, R2, 96, 1, TEXT("s"), TEXT("Seconds between individual spawns inside this wave."));
     StepF(TEXT("DELAY BEFORE"), W.DelayBefore, 1, 0, 120, EX + 104, R2, 96, 0, TEXT("s"), TEXT("Extra wait before this wave, on top of the breather."));
-    StepF(TEXT("REWARD x"), W.RewardMultiplier, .05f, 0, 10, EX + 208, R2, 96, 2, TEXT(""), TEXT("Kill XP/gold multiplier for this wave's units."));
+    StepF(TEXT("REWARD x"), W.RewardMultiplier, .05f, 0, 10, EX + 208, R2, 96, 2, TEXT(""), TEXT("Kill XP multiplier for this wave's units (gold always follows the bounty ruling)."));
     Label(FString::Printf(TEXT("%d units / lane"), W.UnitsPerLane()), EX + 316, R2 + 3, 10, W.UnitsPerLane() > 30 ? Red : Gold);
 
     // Composition rows.
@@ -160,7 +165,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         const float RY = CY + 13 + I * 25;
         Painter().Rect(EX, RY - 1, EW, 23, I % 2 ? FLinearColor(0, 0, 0, .18f) : FLinearColor(0, 0, 0, .3f));
         (void)Ids;
-        const FName RowRace = CireWaveDirector::RaceFor(WaveDraft, W, EditCycle, I);
+        const FName RowRace = CireWaveDirector::RaceFor(WaveDraft, W, EditCycle, I, EditWave);
         if (Button(Painter().Fit(CireWaveDirector::RowUnitLabel(U, RowRace, EditCycle), 8.5f, 92, ECireFont::Bold), EX + 1, RY, 96, 21,
             TEXT("Click to cycle: the race slots (Line, Bruiser, Tank, Caster, Ranged, Special, Warlord, Colossus, Boss = colossus/warlord by cycle), then this race's units by name. Slot rows follow the wave's race.")))
             CireWaveDirector::CycleRowUnit(U, RowRace);

@@ -124,7 +124,10 @@ Kill gold is data (`LootTables.json -> economy`) and live-editable in **F8 > Eco
 
 * Wave kills pay **every teammate** the full bounty; pack kills pay every eligible teammate (helped or
   alive within `distribution.eligibleRadius`). Wave units are valued at the wave they **spawned** in
-  (`CireWaveDirector::UnitFlags`), not the wave running when they die; the wave's `rewardMultiplier` applies.
+  (`CireWaveDirector::UnitFlags`), not the wave running when they die. The wave's `rewardMultiplier` (escort x1.25,
+  boss x1.5) scales **XP only** (rules-conformance): it used to stack on gold, so a boss paid 15x instead of 10x.
+* Eric's message said "wave 6 boss is 3 x 10 = 300 gold"; the formula he gave (mob value 3 at wave 6, boss 10x)
+  gives **30**, which is what the game pays. Open question for Eric (a 100x boss, or a typo).
 * Every bounty floats as "+3g" over the kill (bigger for bosses/leaders, with a toast).
 * Loot-table gold is in mob values too (`lootGoldInMobValues`). Item prices were rescaled x1.2.
 
@@ -149,6 +152,12 @@ The progression mode is a server-authoritative, replicated setting on `ACireGame
 (1 = **Skill Shop**, default; 0 = **Classic Draft**, the old level-up skill offers).
 
 * Command line: `-CireMode=SkillShop` or `-CireMode=Classic`.
+* **Champion select (player-facing):** a GAME MODE picker in the header, right of the title: two icon buttons,
+  SKILL SHOP (golden scroll) and CLASSIC DRAFT (prismatic crest), in the draft's gold-filigree style. The host (or a
+  standalone player) clicks one; `UCireInventory::ServerSetProgressionMode` applies it on the server and the choice
+  replicates on `ACireGameState::ProgressionMode`, so every client's picker shows it, glows and chimes when it changes,
+  and shows a lock for players who cannot change it. It locks once the first wave starts. The Overview tab's
+  "Skill Shop / Classic Draft" paragraph follows the chosen mode.
 * F8 > Economy: SKILL SHOP / CLASSIC DRAFT buttons (host or standalone, before the first wave).
 * API for a champion-select picker (`CireSkillShop.h`):
   `IsSkillShopMode(World)`, `ModeName(bSkillShop)`, `SetMode(GameMode, bSkillShop, &Why)` (server, before
@@ -159,7 +168,7 @@ In Skill Shop mode:
 
 * The free opening role-skill pick stays. Level-ups then only raise stats (+2 primary, +1 other); no skill offers.
 * The shop opens by itself (skills tab) **after every cleared wave** during the wave director's breather
-  (`Waves.json breatherSeconds`, 15 s; READY UP inside the shop ends it early), and **when prep begins**.
+  (`Waves.json breatherSeconds`, 12 s; READY UP inside the shop ends it early), and **when prep begins**.
   It is also open during prep and recovery. `K` toggles it; `B` is the item shop.
 * It lists every skill the champion can buy: `CireAbilityDB::PurchasableSkills(profile)` (implemented
   skills), or the role pool for heroes without a profile. Buy new skills or level owned ones with **no cap**.
@@ -209,7 +218,7 @@ situational), all items under ALL ITEMS as tier-coloured cards, larger text, sam
   on top of the wave director's breather/ready-up; Classic Draft keeps the timed breather with early ready-up.
 * **Polymorph** (`polymorph`, Crowd Control active, arcane, caster DPS and supports, 1.5 s cast, 50 mana,
   20 s cooldown): turns the target into a Chicken, a Piglet or a Frog (random per cast) for 8 s (+ per level,
-  capped at 12 s). The critter cannot attack or cast, loses its threat table and wanders slowly; any damage
+  capped at 12 s). The critter cannot attack or cast and wanders slowly; it keeps its threat table (threat ruling); any damage
   breaks it. Lane bosses and Pack Leaders are immune, elites get half, champions (PvP) at most 3 s with the
   crowd-control diminishing returns. It shows a poof cue and the `polymorphed` buff row ("Polymorphed").
   Code: `CirePolymorph.*`. Critters are CC0 Quaternius models (Art/Creatures/Free/PROVENANCE_Critters.md,
@@ -226,7 +235,7 @@ situational), all items under ALL ITEMS as tier-coloured cards, larger text, sam
 6. Economy: packs dominate income (a Pack Leader is 100 mob values, paid to every eligible teammate).
    Teams that skip packs stay poor; lower `packLeaderMultiplier` if that is too swingy.
 7. Skill prices and slot pacing (above); auto-open only when something is affordable.
-8. The breather is the wave director's 15 s; the previous 20 s change in this branch was reverted.
+8. The breather is the wave director's 12 s (pacing lowered it from 15 s); the previous 20 s change in this branch was reverted.
 
 ## Verification
 

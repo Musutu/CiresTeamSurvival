@@ -54,7 +54,7 @@ bool FCireWaveConfig::operator==(const FCireWaveConfig& O) const
         Near(FailsafeGraceSeconds, O.FailsafeGraceSeconds) && Near(StuckSeconds, O.StuckSeconds) && Waves == O.Waves &&
         Near(SpawnAlongRoute, O.SpawnAlongRoute) && Near(MarchSpeedMultiplier, O.MarchSpeedMultiplier) && Near(FirstWaveDelay, O.FirstWaveDelay) && // pacing
         Near(PrepSeconds, O.PrepSeconds) && Near(ArenaSeconds, O.ArenaSeconds) && Near(RecoverySeconds, O.RecoverySeconds) && bEarlyContinue == O.bEarlyContinue &&
-        Skills == O.Skills && Campaign == O.Campaign; // monster-races
+        Skills == O.Skills && Campaign == O.Campaign && bCampaignOrder == O.bCampaignOrder; // monster-races, rules-conformance
 }
 
 const TCHAR* CireWaveDirector::TypeName(ECireWaveType Type)
@@ -143,12 +143,43 @@ FCireWaveConfig CireWaveDirector::Defaults()
                  Unit(TEXT("barbed_hunter"), 1, .85f, 1.45f), Unit(TEXT("blight_caster"), 1, .85f, 1.45f)};
     // monster-races: wave 2 brings the race's special unit (hollow: grave hounds).
     Two.Units.Add(Unit(TEXT("grave_hound"), 2, .85f, 1.45f));
-    C.Waves = {One, Two, Template(ECireWaveType::Armored), Template(ECireWaveType::ArmoredEscort), Template(ECireWaveType::Boss)};
-    C.WavesPerCycle = C.Waves.Num();
-    // Start on the hollow basics, bring in Eric's favourites (Blightwood, then the Drowned Deep), then the other races,
-    // then mixed hosts. Each cycle ends on one of its race's two bosses (colossus on odd cycles, warlord on even).
-    C.Campaign.RaceRotation = {TEXT("hollow"), TEXT("blightwood"), TEXT("drowned_deep"), TEXT("ironhide"), TEXT("hollow+blightwood"), TEXT("stoneborn"),
-        TEXT("drakkari"), TEXT("drowned_deep+voidborn"), TEXT("feral_kin"), TEXT("fallen_order"), TEXT("voidborn"), TEXT("ironhide+drakkari")};
+    // rules-conformance: the default match is a 15-wave campaign played in order (waveOrder "campaign"): cycle 1 is the
+    // tuned opening (normal, normal, armored, armored escort, boss); cycles 2 and 3 open with the Melee / Caster and
+    // Ranged / Hybrid packs, and every cycle keeps its armored march, its Armored Escort and its boss.
+    auto Pack = [](ECireWaveType Type, const TCHAR* Label, TArray<FCireWaveUnit> Units)
+    { FCireWaveDef W = Template(Type); W.Label = Label; W.Units = MoveTemp(Units); return W; };
+    // pacing (bots-only soak): threat is never dropped any more (no leash, no failsafe on fighting units), and later
+    // cycles carry champion ranks, mythic bosses and more monster skills, so cycles 2 and 3 carry less health per unit
+    // (Eric: tune the pace with wave HP, not spawn points).
+    const FCireWaveDef Melee = Pack(ECireWaveType::MeleePack, TEXT("Shield Wall"), {Unit(TEXT("hollow_shieldbearer"), 1, .8f, 1.35f),
+        Unit(TEXT("hollow_infantry"), 3, .8f, 1.35f), Unit(TEXT("ironbound_bruiser"), 3, .8f, 1.35f)});
+    const FCireWaveDef Caster = Pack(ECireWaveType::CasterPack, TEXT("Hex Circle"), {Unit(TEXT("hollow_shieldbearer"), 1, .75f, 1.35f),
+        Unit(TEXT("blight_caster"), 5, .75f, 1.35f)});
+    const FCireWaveDef Ranged = Pack(ECireWaveType::RangedPack, TEXT("Arrow Storm"), {Unit(TEXT("hollow_shieldbearer"), 1, .7f, 1.35f),
+        Unit(TEXT("barbed_hunter"), 5, .7f, 1.35f)});
+    const FCireWaveDef Hybrid = Pack(ECireWaveType::HybridPack, TEXT("Warband"), {Unit(TEXT("hollow_shieldbearer"), 1, .6f, 1.4f),
+        Unit(TEXT("hollow_infantry"), 2, .6f, 1.4f), Unit(TEXT("ironbound_bruiser"), 2, .6f, 1.4f), Unit(TEXT("blight_caster"), 1, .6f, 1.4f),
+        Unit(TEXT("barbed_hunter"), 1, .6f, 1.4f), Unit(TEXT("grave_hound"), 2, .6f, 1.4f)});
+    const FCireWaveDef Armored = Template(ECireWaveType::Armored), Escort = Template(ECireWaveType::ArmoredEscort), Boss = Template(ECireWaveType::Boss);
+    FCireWaveDef MidEscort = Escort, MidBoss = Boss, LateEscort = Escort, LateBoss = Boss;
+    for (auto& U : MidEscort.Units) if (!U.bEscortee) U.HealthScale = .85f;
+    for (auto& U : MidBoss.Units) if (!U.bBoss) U.HealthScale = .85f;
+    for (auto& U : LateEscort.Units) U.HealthScale = U.bEscortee ? 3.f : .7f;
+    for (auto& U : LateBoss.Units) U.HealthScale = U.bBoss ? .2f : .7f;
+    C.Waves = {One, Two, Armored, Escort, Boss,
+               Melee, Caster, Armored, MidEscort, MidBoss,
+               Ranged, Hybrid, Armored, LateEscort, LateBoss};
+    C.WavesPerCycle = 5;
+    C.bCampaignOrder = true;
+    // rules-conformance: the race changes every wave (campaign.rotateEvery "wave"), so a default 3-cycle match fields all
+    // ten races: the hollow open the breach, Eric's favourites (Blightwood, the Drowned Deep) arrive early and return as
+    // the cycle-2 and cycle-3 bosses, and the Aetheri (the construct race) show up in cycles 2 and 3.
+    C.Campaign.RaceRotation = {TEXT("hollow"), TEXT("blightwood"), TEXT("ironhide"), TEXT("drowned_deep"), TEXT("hollow"),
+        TEXT("stoneborn"), TEXT("aetheri"), TEXT("feral_kin"), TEXT("drakkari"), TEXT("blightwood"),
+        TEXT("voidborn"), TEXT("fallen_order"), TEXT("aetheri+ironhide"), TEXT("stoneborn+feral_kin"), TEXT("drowned_deep")};
+    C.Campaign.bRotatePerWave = true;
+    // rules-conformance: every rank is reachable in 3 cycles (veteran from cycle 2; elite and champion, alternating, in cycle 3).
+    C.Campaign.VeteranFromCycle = 2; C.Campaign.EliteFromCycle = 3; C.Campaign.ChampionFromCycle = 3;
     return C;
 }
 
@@ -258,6 +289,15 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
     C.BreatherSeconds = static_cast<float>(Num(Root, TEXT("breatherSeconds"), C.BreatherSeconds));
     C.WavesPerCycle = static_cast<int32>(Num(Root, TEXT("wavesPerCycle"), C.WavesPerCycle));
     C.Cycles = static_cast<int32>(Num(Root, TEXT("cycles"), C.Cycles));
+    {
+        FString Order; // rules-conformance: "campaign" plays Waves[] straight through the match; "cycle" replays it every cycle
+        if (Root->TryGetStringField(TEXT("waveOrder"), Order))
+        {
+            if (Order == TEXT("campaign")) C.bCampaignOrder = true;
+            else if (Order == TEXT("cycle")) C.bCampaignOrder = false;
+            else { Error = TEXT("waveOrder must be \"campaign\" or \"cycle\"."); return false; }
+        }
+    }
     const TSharedPtr<FJsonObject>* Scaling = nullptr;
     if (Root->TryGetObjectField(TEXT("cycleScaling"), Scaling) && Scaling)
     {
@@ -318,6 +358,13 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
         K.ChampionFromCycle = static_cast<int32>(Num(*Campaign, TEXT("championFromCycle"), K.ChampionFromCycle));
         K.MythicBossFromCycle = static_cast<int32>(Num(*Campaign, TEXT("mythicBossFromCycle"), K.MythicBossFromCycle));
         K.PromoteEvery = static_cast<int32>(Num(*Campaign, TEXT("promoteEvery"), K.PromoteEvery));
+        FString Every; // rules-conformance: the rotation advances per "wave" or per "cycle"
+        if ((*Campaign)->TryGetStringField(TEXT("rotateEvery"), Every))
+        {
+            if (Every == TEXT("wave")) K.bRotatePerWave = true;
+            else if (Every == TEXT("cycle")) K.bRotatePerWave = false;
+            else { Error = TEXT("campaign.rotateEvery must be \"wave\" or \"cycle\"."); return false; }
+        }
     }
     const TArray<TSharedPtr<FJsonValue>>* Waves = nullptr;
     if (!Root->TryGetArrayField(TEXT("waves"), Waves) || !Waves) { Error = TEXT("Waves.json needs a \"waves\" array."); return false; }
@@ -378,6 +425,7 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     Root->SetNumberField(TEXT("breatherSeconds"), C.BreatherSeconds);
     Root->SetNumberField(TEXT("wavesPerCycle"), C.WavesPerCycle);
     Root->SetNumberField(TEXT("cycles"), C.Cycles);
+    Root->SetStringField(TEXT("waveOrder"), C.bCampaignOrder ? TEXT("campaign") : TEXT("cycle")); // rules-conformance
     auto Scaling = MakeShared<FJsonObject>();
     Scaling->SetNumberField(TEXT("healthGrowth"), C.CycleHealthGrowth);
     Scaling->SetNumberField(TEXT("damageGrowth"), C.CycleDamageGrowth);
@@ -413,7 +461,7 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     Skills->SetNumberField(TEXT("tierDuration"), C.Skills.TierDuration);
     Root->SetObjectField(TEXT("skillProgression"), Skills);
     auto Campaign = MakeShared<FJsonObject>();
-    Campaign->SetStringField(TEXT("_comment"), TEXT("Race per cycle (wraps; 'a+b' mixes races row by row). Rows with a slot follow the wave's race. The second lap reskins with palette variant 1, and so on."));
+    Campaign->SetStringField(TEXT("_comment"), TEXT("Race per wave or per cycle (rotateEvery; wraps; 'a+b' mixes races row by row). Rows with a slot follow the wave's race. The second lap reskins with palette variant 1, and so on."));
     TArray<TSharedPtr<FJsonValue>> Rotation;
     for (const FString& Race : C.Campaign.RaceRotation) Rotation.Add(MakeShared<FJsonValueString>(Race));
     Campaign->SetArrayField(TEXT("raceRotation"), Rotation);
@@ -423,6 +471,7 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     Campaign->SetNumberField(TEXT("championFromCycle"), C.Campaign.ChampionFromCycle);
     Campaign->SetNumberField(TEXT("mythicBossFromCycle"), C.Campaign.MythicBossFromCycle);
     Campaign->SetNumberField(TEXT("promoteEvery"), C.Campaign.PromoteEvery);
+    Campaign->SetStringField(TEXT("rotateEvery"), C.Campaign.bRotatePerWave ? TEXT("wave") : TEXT("cycle")); // rules-conformance
     Root->SetObjectField(TEXT("campaign"), Campaign);
     TArray<TSharedPtr<FJsonValue>> Waves;
     for (const auto& W : C.Waves)

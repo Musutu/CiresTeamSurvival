@@ -131,7 +131,8 @@ bool FCireSkillProgression::operator==(const FCireSkillProgression& O) const
 bool FCireCampaign::operator==(const FCireCampaign& O) const
 {
     return RaceRotation == O.RaceRotation && bReskinOnWrap == O.bReskinOnWrap && VeteranFromCycle == O.VeteranFromCycle && EliteFromCycle == O.EliteFromCycle &&
-        ChampionFromCycle == O.ChampionFromCycle && MythicBossFromCycle == O.MythicBossFromCycle && PromoteEvery == O.PromoteEvery;
+        ChampionFromCycle == O.ChampionFromCycle && MythicBossFromCycle == O.MythicBossFromCycle && PromoteEvery == O.PromoteEvery &&
+        bRotatePerWave == O.bRotatePerWave;
 }
 
 bool CireRaces::MergeInto(FCireNPCDatabase& Database, FString& Error)

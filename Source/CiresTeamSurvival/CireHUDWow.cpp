@@ -163,7 +163,7 @@ TArray<FAbility> NpcAbilities(const ACireMonster* M)
         Out.Add({AbilityIcon(A.Kind,Role),A.Name,Facts+TEXT(". ")+A.Description});
     }
     if(M->IsLaneBoss())Out.Add({TEXT("war_cry"),TEXT("Siege Boss"),TEXT("If it reaches your keep it costs 10 lives instead of 1.")});
-    if(M->PackId>=0)Out.Add({TEXT("shadow_step"),TEXT("Pack Leash"),TEXT("Pulled more than 17m from its camp, the pack resets to full health.")});
+    if(M->PackId>=0)Out.Add({TEXT("shadow_step"),TEXT("Pack Reset"),TEXT("The pack chases at any distance. Only when every champion it hates is dead does it walk home and heal.")});
     return Out;
 }
 FString NpcStatus(const ACireMonster* M,float Now)
