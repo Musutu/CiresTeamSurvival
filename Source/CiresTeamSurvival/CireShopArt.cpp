@@ -1,4 +1,5 @@
 #include "CireShopArt.h"
+#include "CireUITheme.h" // ui-themes
 // progression-shop: see CireShopArt.h. Everything here is drawn procedurally except the scroll
 // and crest textures cut from Eric's reference image (Tools/CutSkillScrolls.py).
 #include "Engine/Texture2D.h"
@@ -176,11 +177,16 @@ void CireShopArt::Panel(const FCireUIPainter& P, float X, float Y, float W, floa
     Corner(P, X + I1, Y + H - I1, 1, -1, Outer);
     Corner(P, X + W - I1, Y + H - I1, -1, -1, Outer);
     Diamond(P, X + W * .5f, Y + H - I1, 4.f, Outer);
+    // ui-themes: the active theme's ornate frame surrounds the filigree (the filigree colour itself
+    // follows the theme too); the near-black ground and the scroll art stay as they are.
+    if (CireUIStyle::HasThemeArt()) CireUITheme::Draw(P, ECireThemePiece::Panel, X - 5, Y - 5, W + 10, H + 10, FLinearColor(1.1f, 1.1f, 1.1f, 1));
 }
 
 void CireShopArt::Title(const FCireUIPainter& P, float CX, float Y, const FString& Text, const FString& Subtitle, float Size)
 {
-    const FLinearColor TitleColor(.95f, .83f, .58f, 1.f);
+    // ui-themes: Gilded Citadel keeps the reference's warm gold; other themes use their title colour.
+    const FCireUITheme* Theme = CireUITheme::Active();
+    const FLinearColor TitleColor = !Theme || Theme->Id == CireUITheme::DefaultId() ? FLinearColor(.95f, .83f, .58f, 1.f) : CireUIColors::TitleText;
     const float TW = Spaced(P, Text, CX, Y, Size, .2f, TitleColor, ECireFont::Display, true, true);
     const float RY = Y + Size * .62f;
     // Flanking rules with a double diamond near the title.

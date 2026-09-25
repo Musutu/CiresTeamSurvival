@@ -1,4 +1,5 @@
 #include "CireUIStyle.h"
+#include "CireUITheme.h" // ui-themes
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -219,8 +220,73 @@ int32 FCireUIPainter::Wrapped(const FString& Body,float X,float Y,float Width,fl
 // ---------------------------------------------------------------------------
 // Components
 // ---------------------------------------------------------------------------
+bool CireUIStyle::HasThemeArt()
+{
+    const FCireUITheme* T=CireUITheme::Active();
+    return T&&CireUITheme::LoadArt(*T);
+}
+namespace
+{
+using CireUITheme::Draw;
+// True when Accent is the theme trim (no special state to show on the frame).
+bool IsTrim(const FLinearColor& Accent)
+{
+    return FMath::Abs(Accent.R-Gold.R)+FMath::Abs(Accent.G-Gold.G)+FMath::Abs(Accent.B-Gold.B)<.08f;
+}
+// Corner scale so ornate corners stay proportionate on small frames.
+float CornerScaleFor(float W,float H,float Reference=120.f){return FMath::Clamp(FMath::Min(W,H)/Reference,.5f,1.f);}
+void ThemedFrame(const FCireUIPainter& P,const FCireUITheme& T,float X,float Y,float W,float H,FLinearColor Accent,ECireFrame Kind)
+{
+    const bool bTrim=IsTrim(Accent);
+    switch(Kind)
+    {
+    case ECireFrame::Tooltip:
+        CireUIStyle::TooltipFrame(P,X,Y,W,H,Accent,.94f);return;
+    case ECireFrame::Inset:
+        P.Rect(X,Y,W,H,FLinearColor(0,0,0,.6f));
+        CireUITheme::DrawFill(P,X,Y,W,H,PanelTint*FLinearColor(.5f,.5f,.55f,.85f));
+        P.Line(X,Y,X+W,Y,FLinearColor(0,0,0,.9f),1.2f);P.Line(X,Y,X,Y+H,FLinearColor(0,0,0,.9f),1.2f);
+        P.Line(X,Y+H,X+W,Y+H,Gold*FLinearColor(1,1,1,.18f));P.Line(X+W,Y,X+W,Y+H,Gold*FLinearColor(1,1,1,.18f));
+        return;
+    case ECireFrame::Card:
+        P.Rect(X+1,Y+2,W,H,FLinearColor(0,0,0,.28f));
+        CireUITheme::DrawFill(P,X,Y,W,H,PanelTint*FLinearColor(1.1f,1.1f,1.15f,T.PanelOpacity));
+        Draw(P,ECireThemePiece::Card,X,Y,W,H,bTrim?FLinearColor::White:FLinearColor(1,1,1,.9f),CornerScaleFor(W,H,60.f));
+        if(!bTrim)P.Line(X+6,Y+2.f,X+W-6,Y+2.f,Accent*FLinearColor(1,1,1,.6f),1.f);
+        return;
+    default: break;
+    }
+    // Panel / Unit: drop shadow, themed fill with a soft top sheen and bottom shade, the ornate
+    // nine-slice frame, an accent line for state colours (aggro, role), and the crest ornament.
+    P.Rect(X+3,Y+5,W,H,FLinearColor(0,0,0,.38f));
+    CireUITheme::DrawFill(P,X+2,Y+2,W-4,H-4,PanelTint*FLinearColor(1,1,1,T.PanelOpacity));
+    // Dark gradient: the theme's hover tone lifts the top of the panel (navy / ember-warm / violet).
+    for(int32 I=0;I<6;++I){const float B=(H-4)/6.f;P.Rect(X+2,Y+2+I*B,W-4,B,FLinearColor(Hover.R,Hover.G,Hover.B,.34f-I*.06f));}
+    P.Rect(X+2,Y+H*.62f,W-4,H*.38f-2,FLinearColor(0,0,0,.16f));
+    if(const CireUIStyle::FAssets& A=CireUIStyle::Assets();A.Gloss)P.Tex(A.Gloss,X+3,Y+3,W-6,FMath::Min(H*.4f,50.f),ThemeGlow*FLinearColor(1,1,1,.035f));
+    // Inner shadow: the panel reads recessed behind its dimensional frame (concept look).
+    for(int32 I=0;I<3;++I)
+    {
+        const float D=2.f+I*2.5f,Aa=.16f-I*.045f;
+        P.Rect(X+D,Y+D,W-2*D,2.5f,FLinearColor(0,0,0,Aa));P.Rect(X+D,Y+H-D-2.5f,W-2*D,2.5f,FLinearColor(0,0,0,Aa));
+        P.Rect(X+D,Y+D+2.5f,2.5f,H-2*D-5,FLinearColor(0,0,0,Aa));P.Rect(X+W-D-2.5f,Y+D+2.5f,2.5f,H-2*D-5,FLinearColor(0,0,0,Aa));
+    }
+    const float CS=CornerScaleFor(W,H);
+    const float Out=6.f*CS; // the frame's ornate border sits mostly outside the content rectangle
+    Draw(P,ECireThemePiece::Panel,X-Out,Y-Out,W+2*Out,H+2*Out,FLinearColor(1.12f,1.12f,1.12f,1),CS);
+    if(!bTrim)
+    {
+        const float In=T.Piece(ECireThemePiece::Panel).Corner*CS*.7f;
+        P.Line(X+In,Y+2.f,X+W-In,Y+2.f,Accent*FLinearColor(1,1,1,.85f),1.6f);
+        CireUIStyle::Glow(P,X,Y-1,W,3,Accent*FLinearColor(1,1,1,.35f));
+    }
+    if(T.bGem&&W>120&&Kind==ECireFrame::Panel)CireUIStyle::Ornament(P,X+W*.5f,Y-Out*.5f,FMath::Clamp(H*.16f,9.f,15.f),bTrim?FLinearColor::White:Accent*1.2f+FLinearColor(.2f,.2f,.2f,0));
+}
+}
+
 void CireUIStyle::Frame(const FCireUIPainter& P,float X,float Y,float W,float H,FLinearColor Accent,ECireFrame Kind)
 {
+    if(const FCireUITheme* T=CireUITheme::Active();T&&CireUITheme::LoadArt(*T)){ThemedFrame(P,*T,X,Y,W,H,Accent,Kind);return;}
     const FAssets& A=Assets();
     if(!A.bTextures)
     {
@@ -277,7 +343,8 @@ void CireUIStyle::Chevron(const FCireUIPainter& P,float X,float Y,float S,bool b
 void CireUIStyle::Header(const FCireUIPainter& P,float X,float Y,float W,const FString& Caption,FLinearColor Color,float Size)
 {
     const FAssets& A=Assets();
-    if(A.Header)P.Tex(A.Header,X,Y,W,Size+10,FLinearColor::White);
+    if(HasThemeArt())Divider(P,X,Y+Size+3,W,FLinearColor(1,1,1,.9f));
+    else if(A.Header)P.Tex(A.Header,X,Y,W,Size+10,FLinearColor::White);
     else P.Line(X,Y+Size+8,X+W,Y+Size+8,Color*.7f,1.2f);
     P.Text(Caption,X+10,Y+2,Size,Color,ECireFont::Heading,false,true);
 }
@@ -297,7 +364,19 @@ void CireUIStyle::Button(const FCireUIPainter& P,float X,float Y,float W,float H
     const FAssets& A=Assets();
     const bool bHover=State==ECireButtonState::Hover,bPress=State==ECireButtonState::Pressed,bOff=State==ECireButtonState::Disabled,bSel=State==ECireButtonState::Selected;
     const float Dy=bPress?1.f:0.f;
-    if(A.bTextures)
+    if(HasThemeArt())
+    {
+        // Themed: panel fill brightened by state, the card frame, accent glow on hover/selection.
+        const FCireUITheme& T=*CireUITheme::Active();
+        P.Rect(X+2,Y+3,W,H,FLinearColor(0,0,0,.35f));
+        const FLinearColor Base=bOff?FLinearColor(.55f,.55f,.55f,.9f):bSel?FLinearColor(1.45f,1.35f,1.2f,1):bHover?FLinearColor(1.5f,1.5f,1.55f,1):bPress?FLinearColor(.8f,.8f,.85f,1):FLinearColor(1.1f,1.1f,1.15f,1);
+        CireUITheme::DrawFill(P,X,Y+Dy,W,H,PanelTint*Base);
+        if(A.Gloss)P.Tex(A.Gloss,X+1,Y+1+Dy,W-2,H*.5f,ThemeGlow*FLinearColor(1,1,1,bPress?.02f:.07f));
+        if(bSel)P.Rect(X+2,Y+2+Dy,W-4,H-4,Accent*FLinearColor(1,1,1,.14f));
+        CireUITheme::Draw(P,ECireThemePiece::Card,X,Y+Dy,W,H,bOff?FLinearColor(.5f,.5f,.5f,.8f):bHover||bSel?FLinearColor(1.25f,1.2f,1.1f,1):FLinearColor::White,CornerScaleFor(W,H,60.f));
+        if(bHover||bSel)Glow(P,X+W*.1f,Y+Dy,W*.8f,H,(bSel?Accent:ThemeGlow)*FLinearColor(1,1,1,(bSel?.3f:.22f)*T.GlowStrength));
+    }
+    else if(A.bTextures)
     {
         const float KS=FMath::Max(.1f,P.K());
         P.Rect(X+2,Y+3,W,H,FLinearColor(0,0,0,.35f));
@@ -330,10 +409,14 @@ void CireUIStyle::IconSlot(const FCireUIPainter& P,float X,float Y,float S,const
     const bool bUlt=Slot.Kind==ECireSlotKind::Ultimate,bPassive=Slot.Kind==ECireSlotKind::Passive;
     const float Dy=Slot.bPressed?1.f:0.f;
     P.Rect(X+2,Y+3,S,S,FLinearColor(0,0,0,.45f));
+    const bool bThemed=HasThemeArt();
+    const ECireThemePiece FramePiece=bUlt?ECireThemePiece::SlotUltimate:bPassive?ECireThemePiece::SlotPassive:ECireThemePiece::Slot;
+    const float FramePad=bUlt?S*.1f:S*.05f; // themed frames overhang the icon a little
     if(Slot.bEmpty)
     {
         P.Rect(X,Y,S,S,FLinearColor(.02f,.025f,.03f,.9f));
-        if(A.Button)P.Tex(A.Button,X,Y,S,S,FLinearColor(.45f,.45f,.45f,.9f));
+        if(bThemed){CireUITheme::DrawFill(P,X+2,Y+2,S-4,S-4,PanelTint*FLinearColor(.6f,.6f,.65f,.9f));CireUITheme::Draw(P,FramePiece,X-FramePad,Y-FramePad,S+2*FramePad,S+2*FramePad,Slot.bHover?FLinearColor(1.1f,1.1f,1.1f,1):FLinearColor(.7f,.7f,.7f,.95f));}
+        else if(A.Button)P.Tex(A.Button,X,Y,S,S,FLinearColor(.45f,.45f,.45f,.9f));
         if(!Slot.KeyLabel.IsEmpty())P.Text(Slot.KeyLabel,X+S-4-P.TextWidth(Slot.KeyLabel,S*.2f,ECireFont::Numbers),Y+2,S*.2f,Muted,ECireFont::Numbers,true,false);
         return;
     }
@@ -354,14 +437,17 @@ void CireUIStyle::IconSlot(const FCireUIPainter& P,float X,float Y,float S,const
     if(Slot.CooldownFraction>0)CooldownSweep(P,X+2,Y+2+Dy,S-4,Slot.CooldownFraction);
     // Frame.
     UTexture2D* FrameTex=bUlt?A.ButtonUlt:bPassive?A.ButtonPassive:A.Button;
-    if(FrameTex)P.Tex(FrameTex,X-(bUlt?2.f:0.f),Y-(bUlt?2.f:0.f)+Dy,S+(bUlt?4.f:0.f),S+(bUlt?4.f:0.f),FLinearColor::White);
+    // ui-themes: themed slot frames; hover brightens, pressed darkens (normal/hover/pressed states).
+    if(bThemed)CireUITheme::Draw(P,FramePiece,X-FramePad,Y-FramePad+Dy,S+2*FramePad,S+2*FramePad,Slot.bPressed?FLinearColor(.78f,.78f,.8f,1):Slot.bHover?FLinearColor(1.3f,1.25f,1.15f,1):FLinearColor::White);
+    else if(FrameTex)P.Tex(FrameTex,X-(bUlt?2.f:0.f),Y-(bUlt?2.f:0.f)+Dy,S+(bUlt?4.f:0.f),S+(bUlt?4.f:0.f),FLinearColor::White);
     else{P.Line(X,Y,X+S,Y,Gold);P.Line(X,Y+S,X+S,Y+S,Gold);P.Line(X,Y,X,Y+S,Gold);P.Line(X+S,Y,X+S,Y+S,Gold);}
-    if(Slot.bHover){Glow(P,X,Y,S,S,FLinearColor(.9f,.85f,.6f,.35f));P.Rect(X+3,Y+3,S-6,S-6,FLinearColor(1,1,1,.07f));}
+    const float GlowK=bThemed?CireUITheme::Active()->GlowStrength:1.f;
+    if(Slot.bHover){Glow(P,X,Y,S,S,ThemeGlow*FLinearColor(.9f,.9f,.9f,.35f*GlowK));P.Rect(X+3,Y+3,S-6,S-6,FLinearColor(1,1,1,.07f));}
     // Proc / ready glow: a bright border with marching light (WoW's spell alert).
     if(Slot.bGlow)
     {
         const float Pulse=.6f+.4f*FMath::Sin(static_cast<float>(Time)*6.f);
-        Glow(P,X-3,Y-3,S+6,S+6,FLinearColor(1.f,.8f,.25f,.55f*Pulse));
+        Glow(P,X-3,Y-3,S+6,S+6,ThemeGlow*FLinearColor(1.f,.95f,.6f,.55f*Pulse*GlowK));
         const float Per=4*S;const float T=FMath::Fmod(static_cast<float>(Time)*S*2.2f,Per);
         for(int32 I=0;I<4;++I)
         {
@@ -425,14 +511,17 @@ void CireUIStyle::Bar(const FCireUIPainter& P,float X,float Y,float W,float H,fl
         Trail->Trail=FMath::Max(Trail->Trail,Trail->Shown);
         Shown=Trail->Shown;TrailValue=Trail->Trail;
     }
-    P.Rect(X,Y,W,H,FLinearColor(0,0,0,.85f));
+    const bool bThemed=HasThemeArt();
+    P.Rect(X,Y,W,H,bThemed?BarBack:FLinearColor(0,0,0,.85f));
     const float IW=FMath::Max(0.f,W-2),IH=FMath::Max(0.f,H-2);
     P.Rect(X+1,Y+1,IW,IH,Color*FLinearColor(.12f,.12f,.12f,1));
     if(TrailValue>Shown)P.Rect(X+1+IW*Shown,Y+1,IW*(TrailValue-Shown),IH,FLinearColor(1.f,.92f,.72f,.85f));
-    if(A.Gloss)P.Tex(A.Gloss,X+1,Y+1,IW*Shown,IH,Color*1.25f);
+    if(bThemed&&CireUITheme::DrawBarFill(P,X+1,Y+1,IW*Shown,IH,Color*1.3f)){}
+    else if(A.Gloss)P.Tex(A.Gloss,X+1,Y+1,IW*Shown,IH,Color*1.25f);
     else{P.Rect(X+1,Y+1,IW*Shown,IH,Color);P.Rect(X+1,Y+1,IW*Shown,IH*.22f,FLinearColor(1,1,1,.11f));}
     if(Shown>0&&Shown<1)P.Line(X+1+IW*Shown,Y+1,X+1+IW*Shown,Y+H-1,FLinearColor(1,1,1,.45f),1.f);
     P.Line(X,Y,X+W,Y,FLinearColor(0,0,0,1),1.f);
+    if(bThemed&&H>=8.f)BarFrame(P,X,Y,W,H);
     if(!Text.IsEmpty())
     {
         const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.72f);
@@ -442,6 +531,20 @@ void CireUIStyle::Bar(const FCireUIPainter& P,float X,float Y,float W,float H,fl
 void CireUIStyle::TooltipFrame(const FCireUIPainter& P,float X,float Y,float W,float H,FLinearColor Border,float Opacity)
 {
     const FAssets& A=Assets();
+    if(HasThemeArt())
+    {
+        // Themed tooltip: dark backdrop at the player's opacity, a faint fill grain, the tooltip frame.
+        P.Rect(X+2,Y+3,W,H,FLinearColor(0,0,0,.35f*Opacity));
+        P.Rect(X+1,Y+1,W-2,H-2,FLinearColor(TooltipBg.R,TooltipBg.G,TooltipBg.B,Opacity));
+        CireUITheme::DrawFill(P,X+1,Y+1,W-2,H-2,PanelTint*FLinearColor(1,1,1,.35f*Opacity));
+        if(A.Gloss)P.Tex(A.Gloss,X+2,Y+2,W-4,FMath::Min(24.f,H*.3f),ThemeGlow*FLinearColor(1,1,1,.05f*Opacity));
+        // A state border (rarity, hostile) tints the frame; the neutral default keeps the art colours.
+        const bool bNeutral=FMath::Abs(Border.R-.55f)+FMath::Abs(Border.G-.58f)+FMath::Abs(Border.B-.64f)<.05f||IsTrim(Border);
+        const float CS=FMath::Clamp(FMath::Min(W,H)/90.f,.5f,1.f);
+        CireUITheme::Draw(P,ECireThemePiece::Tooltip,X-2*CS,Y-2*CS,W+4*CS,H+4*CS,bNeutral?FLinearColor(1,1,1,FMath::Max(.6f,Opacity)):FLinearColor(1,1,1,FMath::Max(.6f,Opacity)),CS);
+        if(!bNeutral){const FLinearColor B=Border*FLinearColor(1,1,1,.8f);P.Line(X+4,Y+1.5f,X+W-4,Y+1.5f,B,1.2f);}
+        return;
+    }
     P.Rect(X+2,Y+3,W,H,FLinearColor(0,0,0,.35f*Opacity));
     P.Rect(X,Y,W,H,FLinearColor(.02f,.025f,.06f,Opacity));
     if(A.Gloss)P.Tex(A.Gloss,X+1,Y+1,W-2,FMath::Min(26.f,H*.35f),FLinearColor(.6f,.7f,1.f,.06f*Opacity));
@@ -458,7 +561,7 @@ float CireUIStyle::Tooltip(const FCireUIPainter& P,float X,float Y,float W,const
     const float H=2*Pad+TS+4*S+(Lines.IsEmpty()?0.f:4*S+Lines.Num()*(BS+3*S));
     if(!bDraw)return H;
     TooltipFrame(P,X,Y,W,H,FLinearColor(.55f,.58f,.64f,1),Opacity);
-    P.Text(Title,X+Pad,Y+Pad,TS,FLinearColor(1.f,.86f,.3f,1),ECireFont::Bold);
+    P.Text(Title,X+Pad,Y+Pad,TS,CireUIColors::TitleText,ECireFont::Bold);
     for(int32 I=0;I<Lines.Num();++I)P.Text(Lines[I],X+Pad,Y+Pad+TS+8*S+I*(BS+3*S),BS,FLinearColor(.86f,.87f,.84f,1),ECireFont::Body);
     return H;
 }
@@ -485,6 +588,8 @@ void CireUIStyle::Banner(const FCireUIPainter& P,float ViewW,float Y,const FCire
     const float TS=36.f*Pop;
     const float TW=Q.TextWidth(Spec.Title,TS,ECireFont::Heading);
     const float BandW=FMath::Max(TW+220.f,440.f)*(.6f+.4f*Ease),BandX=(ViewW-BandW)*.5f,BandH=TS+(Spec.Subtitle.IsEmpty()?34.f:54.f);
+    // ui-themes: the theme's banner ribbon behind the title band.
+    if(HasThemeArt()){const float RH=BandH*1.15f;CireUITheme::Draw(Q,ECireThemePiece::Banner,BandX-BandW*.08f,Y-16-(RH-BandH)*.5f,BandW*1.16f,RH,FLinearColor(1,1,1,.92f));}
     // Dark band that fades at both ends, gold rules above and below.
     for(int32 I=0;I<8;++I){const float Inset=I*BandW*.06f;Q.Rect(BandX+Inset,Y-16,BandW-2*Inset,BandH,FLinearColor(0,0,0,.13f));}
     if(const FAssets& A=Assets();A.Gloss)Q.Tex(A.Gloss,BandX+BandW*.2f,Y-16,BandW*.6f,BandH*.5f,Spec.Color*FLinearColor(1,1,1,.06f));
@@ -564,4 +669,82 @@ void CireUIStyle::Sigil(const FCireUIPainter& P,const FString& Id,float X,float 
         L(.23f,.8f,.7f,.26f,3);L(.7f,.26f,.85f,.15f,3);L(.85f,.15f,.77f,.38f,2);L(.77f,.38f,.3f,.84f,2);L(.22f,.6f,.46f,.84f,3);L(.18f,.85f,.26f,.93f,3);
         if(Id==TEXT("cleaving_strike")){L(.15f,.43f,.28f,.24f);L(.28f,.24f,.53f,.13f);}
     }
+}
+
+// ---------------------------------------------------------------------------
+// ui-themes: themed pieces (fallbacks keep the procedural look)
+// ---------------------------------------------------------------------------
+void CireUIStyle::PortraitRing(const FCireUIPainter& P,float CX,float CY,float R,FLinearColor Tint)
+{
+    // The ring art's opening is ~72% of the piece; size it so the opening matches the portrait.
+    const float Outer=R/.72f;
+    if(HasThemeArt()&&CireUITheme::Draw(P,ECireThemePiece::Ring,CX-Outer,CY-Outer,2*Outer,2*Outer,Tint))return;
+    P.Circle(CX,CY,R,Gold*Tint,2.2f);P.Circle(CX,CY,R+2.5f,FLinearColor(0,0,0,.9f),1.f);
+}
+void CireUIStyle::Medallion(const FCireUIPainter& P,float CX,float CY,float R,const FString& Text,FLinearColor TextColor)
+{
+    P.Disc(CX,CY,R+1.5f,FLinearColor(0,0,0,.9f));P.Disc(CX,CY,R,FLinearColor(Ink.R*1.6f,Ink.G*1.6f,Ink.B*1.6f,1),24);
+    if(!(HasThemeArt()&&CireUITheme::Draw(P,ECireThemePiece::Ring,CX-R*1.3f,CY-R*1.3f,R*2.6f,R*2.6f,FLinearColor::White)))P.Circle(CX,CY,R,Gold,1.2f,20);
+    if(!Text.IsEmpty()){const float S=R*.95f;P.Text(Text,CX-P.TextWidth(Text,S,ECireFont::Numbers)*.5f,CY-S*.62f,S,TextColor,ECireFont::Numbers,true,false);}
+}
+void CireUIStyle::MinimapFrame(const FCireUIPainter& P,float X,float Y,float W,float H)
+{
+    if(HasThemeArt()&&CireUITheme::Draw(P,ECireThemePiece::Minimap,X-5,Y-5,W+10,H+10,FLinearColor::White,FMath::Clamp(FMath::Min(W,H)/120.f,.5f,1.f)))return;
+    P.Line(X,Y,X+W,Y,Gold*.6f);P.Line(X,Y+H,X+W,Y+H,Gold*.6f);P.Line(X,Y,X,Y+H,Gold*.6f);P.Line(X+W,Y,X+W,Y+H,Gold*.6f);
+}
+void CireUIStyle::Divider(const FCireUIPainter& P,float X,float Y,float W,FLinearColor Tint)
+{
+    if(HasThemeArt())
+    {
+        const FCireUITheme& T=*CireUITheme::Active();const FCireThemePiece& D=T.Piece(ECireThemePiece::Divider);
+        const float H=FMath::Clamp(W*D.SizePx.Y/FMath::Max(1.f,D.SizePx.X),4.f,10.f);
+        if(CireUITheme::Draw(P,ECireThemePiece::Divider,X,Y-H*.5f,W,H,Tint))return;
+    }
+    P.Line(X,Y,X+W,Y,Gold*Tint*FLinearColor(1,1,1,.7f),1.2f);
+}
+void CireUIStyle::Ornament(const FCireUIPainter& P,float CX,float Y,float Height,FLinearColor Tint)
+{
+    if(HasThemeArt())
+    {
+        const FCireThemePiece& O=CireUITheme::Active()->Piece(ECireThemePiece::Ornament);
+        const float W=Height*O.SizePx.X/FMath::Max(1.f,O.SizePx.Y);
+        if(CireUITheme::Draw(P,ECireThemePiece::Ornament,CX-W*.5f,Y-Height*.5f,W,Height,Tint))return;
+    }
+    const FAssets& A=Assets();
+    if(A.Gem){const float G=Height*.5f;P.Tex(A.Gem,CX-G,Y-G,2*G,2*G,Gold*Tint);}
+}
+void CireUIStyle::BarFrame(const FCireUIPainter& P,float X,float Y,float W,float H)
+{
+    // The frame's straight middle section spans the whole bar (no end caps crowding the text);
+    // short bevelled end posts close it. Thickness follows the bar height.
+    // A crisp bevelled trim in the theme colour (the concept bars): dark gap, trim line, soft top highlight.
+    if(!HasThemeArt())return;
+    const float T=H>=14.f?1.4f:1.1f;const FLinearColor Tr=Gold*FLinearColor(1.1f,1.1f,1.1f,.95f);
+    const FLinearColor Gap(0,0,0,.85f);P.Rect(X-1,Y-1,W+2,1,Gap);P.Rect(X-1,Y+H,W+2,1,Gap);P.Rect(X-1,Y,1,H,Gap);P.Rect(X+W,Y,1,H,Gap);
+    P.Rect(X-1-T,Y-1-T,W+2+2*T,T,Tr);P.Rect(X-1-T,Y+H+1,W+2+2*T,T,Tr*FLinearColor(.7f,.7f,.7f,1));
+    P.Rect(X-1-T,Y-1,T,H+2,Tr*FLinearColor(.85f,.85f,.85f,1));P.Rect(X+W+1,Y-1,T,H+2,Tr*FLinearColor(.85f,.85f,.85f,1));
+    P.Rect(X,Y+1,W,FMath::Max(1.f,H*.18f),FLinearColor(1,1,1,.06f));
+}
+void CireUIStyle::CastBar(const FCireUIPainter& P,float X,float Y,float W,float H,float Progress,FLinearColor Color,const FString& Name,const FString& Time,float TextSize)
+{
+    Progress=FMath::IsFinite(Progress)?FMath::Clamp(Progress,0.f,1.f):0.f;
+    const bool bThemed=HasThemeArt();
+    P.Rect(X,Y,W,H,bThemed?BarBack:FLinearColor(0,0,0,.85f));
+    if(!(bThemed&&CireUITheme::DrawBarFill(P,X+1,Y+1,(W-2)*Progress,H-2,Color*1.2f)))
+    {
+        const FAssets& A=Assets();
+        if(A.Gloss)P.Tex(A.Gloss,X+1,Y+1,(W-2)*Progress,H-2,Color);else P.Rect(X+1,Y+1,(W-2)*Progress,H-2,Color);
+    }
+    if(Progress>0&&Progress<1)P.Line(X+1+(W-2)*Progress,Y+1,X+1+(W-2)*Progress,Y+H-1,FLinearColor(1,1,1,.6f),1.2f);
+    if(bThemed)
+    {
+        // Ornamental end caps sit outside the bar so the spell name and time stay clear.
+        const FCireThemePiece& C=CireUITheme::Active()->Piece(ECireThemePiece::CastFrame);
+        const float Pad=FMath::Clamp(H*.28f,2.f,5.f),FH=H+2*Pad;
+        const float Cap=FH*C.Slice*C.SizePx.X/FMath::Max(1.f,C.SizePx.Y);
+        CireUITheme::Draw(P,ECireThemePiece::CastFrame,X-Cap*.6f,Y-Pad,W+Cap*1.2f,FH,FLinearColor(1.1f,1.1f,1.1f,1));
+    }
+    const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.62f);
+    if(!Name.IsEmpty())P.Text(P.Fit(Name,TS,W-(Time.IsEmpty()?12.f:44.f),ECireFont::Bold),X+6,Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Bold,true,false);
+    if(!Time.IsEmpty())P.Text(Time,X+W-6-P.TextWidth(Time,TS,ECireFont::Numbers),Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Numbers,true,false);
 }

@@ -20,7 +20,9 @@
 
 namespace
 {
-const FLinearColor Gold=CireUIColors::Gold,Parchment=CireUIColors::Parchment,Muted=CireUIColors::Muted,BrightGold=CireUIColors::BrightGold,Orange=CireUIColors::Orange;
+// ui-themes: themed colours are references to CireUIColors so they follow the active UI theme.
+const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment, &Muted=CireUIColors::Muted, &BrightGold=CireUIColors::BrightGold;
+const FLinearColor Orange=CireUIColors::Orange;
 struct FFacts { float Mana = 0, Energy = 0, Cooldown = 0, Range = 0, Windup = 0; bool bKnown = false; };
 FFacts AbilityFacts(const FString& Id)
 {

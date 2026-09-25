@@ -103,6 +103,8 @@ public:
     FCireKeybindings Keybindings;
 
     // ---- Schema 4: WoW-style interface (scale, tooltips, SCT, threat, level-up) ----
+    /** ui-themes (schema 6): selected UI theme id (Content/Data/UIThemes.json); unknown ids fall back to the default. */
+    FString UITheme = TEXT("GildedCitadel");
     /** Global interface scale multiplier on top of the resolution fit (WoW range .64-1.15). */
     float UIScale = 1.f;
     /** Pick the multiplier from the resolution instead of UIScale. */

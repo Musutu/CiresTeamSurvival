@@ -1,0 +1,273 @@
+{
+  "version": 1,
+  "default": "GildedCitadel",
+  "notes": "UI themes (Docs/UIThemes.md). Palette values are linear RGBA. Piece rects/slices are written by Tools/BuildUIThemes.py; corner = drawn corner size in logical units.",
+  "themes": [
+    {
+      "id": "GildedCitadel",
+      "name": "Gilded Citadel",
+      "tagline": "Dark navy and black with fine gold filigree. The default.",
+      "atlas": "/Game/UI/Themes/GildedCitadel/T_GildedCitadel_Atlas",
+      "fill": "/Game/UI/Themes/GildedCitadel/T_GildedCitadel_Fill",
+      "atlasSize": [2048, 512],
+      "palette": {
+        "trim": [0.72, 0.47, 0.17, 1],
+        "brightTrim": [1.0, 0.74, 0.18, 1],
+        "text": [0.91, 0.89, 0.82, 1],
+        "muted": [0.46, 0.53, 0.63, 1],
+        "ink": [0.008, 0.011, 0.024, 0.95],
+        "card": [0.02, 0.028, 0.052, 0.98],
+        "hover": [0.05, 0.07, 0.12, 1],
+        "accent": [1.0, 0.72, 0.25, 1],
+        "glow": [1.0, 0.8, 0.42, 1],
+        "tooltipBg": [0.007, 0.01, 0.026, 1],
+        "tooltipBorder": [0.72, 0.47, 0.17, 1],
+        "barBack": [0.0, 0.0, 0.01, 0.88],
+        "title": [1.0, 0.78, 0.32, 1],
+        "filigree": [0.83, 0.66, 0.36, 1],
+        "panelTint": [1, 1, 1, 1]
+      },
+      "glowStrength": 1.0,
+      "fillScale": 256,
+      "panelOpacity": 0.95,
+      "gem": true,
+      "cornerOrnaments": true,
+      "pieces": {
+        "Panel": {
+          "rect": [940, 6, 197, 197],
+          "slice": 0.4873,
+          "corner": 34
+        },
+        "Tooltip": {
+          "rect": [729, 6, 199, 199],
+          "slice": 0.4824,
+          "corner": 22
+        },
+        "Minimap": {
+          "rect": [1149, 6, 196, 196],
+          "slice": 0.4898,
+          "corner": 32
+        },
+        "Card": {
+          "rect": [510, 6, 207, 207],
+          "slice": 0.4638,
+          "corner": 15
+        },
+        "Slot": {
+          "rect": [1357, 6, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotPassive": {
+          "rect": [1561, 6, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotUltimate": {
+          "rect": [274, 6, 224, 224],
+          "slice": 0,
+          "corner": 0
+        },
+        "Ring": {
+          "rect": [6, 6, 256, 256],
+          "slice": 0,
+          "corner": 0
+        },
+        "BarFrame": {
+          "rect": [531, 274, 268, 64],
+          "slice": 0.4851,
+          "corner": 0
+        },
+        "CastFrame": {
+          "rect": [811, 274, 170, 64],
+          "slice": 0.4765,
+          "corner": 0
+        },
+        "Banner": {
+          "rect": [6, 274, 384, 112],
+          "slice": 0.4896,
+          "corner": 0
+        },
+        "Divider": {
+          "rect": [993, 274, 184, 40],
+          "slice": 0.4783,
+          "corner": 0
+        },
+        "Ornament": {
+          "rect": [402, 274, 117, 96],
+          "slice": 0,
+          "corner": 0
+        },
+        "BarFill": {
+          "rect": [1189, 274, 64, 32],
+          "slice": 0,
+          "corner": 0
+        }
+      }
+    },
+    {
+      "id": "Ironbound",
+      "name": "Ironbound",
+      "tagline": "Forged iron and blackened steel, riveted plates and ember-orange light.",
+      "atlas": "/Game/UI/Themes/Ironbound/T_Ironbound_Atlas",
+      "fill": "/Game/UI/Themes/Ironbound/T_Ironbound_Fill",
+      "atlasSize": [2048, 512],
+      "palette": {
+        "trim": [0.56, 0.55, 0.54, 1],
+        "brightTrim": [1.0, 0.5, 0.1, 1],
+        "text": [0.9, 0.87, 0.82, 1],
+        "muted": [0.52, 0.49, 0.46, 1],
+        "ink": [0.012, 0.011, 0.01, 0.95],
+        "card": [0.028, 0.026, 0.024, 0.98],
+        "hover": [0.075, 0.06, 0.05, 1],
+        "accent": [1.0, 0.4, 0.06, 1],
+        "glow": [1.0, 0.46, 0.12, 1],
+        "tooltipBg": [0.011, 0.01, 0.009, 1],
+        "tooltipBorder": [0.56, 0.52, 0.48, 1],
+        "barBack": [0.0, 0.0, 0.0, 0.88],
+        "title": [1.0, 0.56, 0.16, 1],
+        "filigree": [0.7, 0.6, 0.5, 1],
+        "panelTint": [1, 1, 1, 1]
+      },
+      "glowStrength": 1.1,
+      "fillScale": 256,
+      "panelOpacity": 0.96,
+      "gem": true,
+      "cornerOrnaments": true,
+      "pieces": {
+        "Panel": {
+          "rect": [940, 6, 197, 197],
+          "slice": 0.4873,
+          "corner": 34
+        },
+        "Tooltip": {
+          "rect": [729, 6, 199, 199],
+          "slice": 0.4824,
+          "corner": 22
+        },
+        "Minimap": {
+          "rect": [1149, 6, 196, 196],
+          "slice": 0.4898,
+          "corner": 32
+        },
+        "Card": {
+          "rect": [510, 6, 207, 207],
+          "slice": 0.4638,
+          "corner": 15
+        },
+        "Slot": {
+          "rect": [1357, 6, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotPassive": {
+          "rect": [1561, 6, 192, 192],
+          "slice": 0,
+          "corner": 0
+        },
+        "SlotUltimate": {
+          "rect": [274, 6, 224, 224],
+          "slice": 0,
+          "corner": 0
+        },
+        "Ring": {
+          "rect": [6, 6, 256, 256],
+          "slice": 0,
+          "corner": 0
+        },
+        "BarFrame": {
+          "rect": [544, 274, 282, 64],
+          "slice": 0.4858,
+          "corner": 0
+        },
+        "CastFrame": {
+          "rect": [838, 274, 214, 64],
+          "slice": 0.4813,
+          "corner": 0
+        },
+        "Banner": {
+          "rect": [6, 274, 368, 112],
+          "slice": 0.4891,
+          "corner": 0
+        },
+        "Divider": {
+          "rect": [1064, 274, 162, 40],
+          "slice": 0.4753,
+          "corner": 0
+        },
+        "Ornament": {
+          "rect": [386, 274, 146, 96],
+          "slice": 0,
+          "corner": 0
+        },
+        "BarFill": {
+          "rect": [1238, 274, 64, 32],
+          "slice": 0,
+          "corner": 0
+        }
+      }
+    },
+    {
+      "id": "ArcaneVeil",
+      "name": "Arcane Veil",
+      "tagline": "Violet obsidian and rune-etched silver with a soft arcane glow.",
+      "atlas": "/Game/UI/Themes/ArcaneVeil/T_ArcaneVeil_Atlas",
+      "fill": "/Game/UI/Themes/ArcaneVeil/T_ArcaneVeil_Fill",
+      "atlasSize": [2048, 2048],
+      "palette": {
+        "trim": [0.7, 0.72, 0.82, 1],
+        "brightTrim": [0.86, 0.7, 1.0, 1],
+        "text": [0.92, 0.9, 0.96, 1],
+        "muted": [0.55, 0.51, 0.67, 1],
+        "ink": [0.012, 0.006, 0.022, 0.95],
+        "card": [0.028, 0.016, 0.05, 0.98],
+        "hover": [0.07, 0.04, 0.12, 1],
+        "accent": [0.62, 0.36, 1.0, 1],
+        "glow": [0.62, 0.46, 1.0, 1],
+        "tooltipBg": [0.012, 0.006, 0.024, 1],
+        "tooltipBorder": [0.7, 0.7, 0.82, 1],
+        "barBack": [0.004, 0.0, 0.01, 0.88],
+        "title": [0.86, 0.74, 1.0, 1],
+        "filigree": [0.78, 0.78, 0.9, 1],
+        "panelTint": [1, 1, 1, 1]
+      },
+      "glowStrength": 1.2,
+      "fillScale": 256,
+      "panelOpacity": 0.95,
+      "gem": true,
+      "cornerOrnaments": true,
+      "pieces": {}
+    },
+    {
+      "id": "VerdantBloom",
+      "name": "Verdant Bloom",
+      "tagline": "Living wood, vines and blossoms: soft greens with rose and gold light.",
+      "atlas": "/Game/UI/Themes/VerdantBloom/T_VerdantBloom_Atlas",
+      "fill": "/Game/UI/Themes/VerdantBloom/T_VerdantBloom_Fill",
+      "atlasSize": [2048, 512],
+      "palette": {
+        "trim": [0.74, 0.56, 0.26, 1],
+        "brightTrim": [1.0, 0.8, 0.42, 1],
+        "text": [0.95, 0.93, 0.88, 1],
+        "muted": [0.56, 0.63, 0.52, 1],
+        "ink": [0.008, 0.017, 0.012, 0.95],
+        "card": [0.02, 0.04, 0.028, 0.98],
+        "hover": [0.05, 0.1, 0.06, 1],
+        "accent": [1.0, 0.48, 0.58, 1],
+        "glow": [1.0, 0.72, 0.66, 1],
+        "tooltipBg": [0.008, 0.016, 0.011, 1],
+        "tooltipBorder": [0.74, 0.6, 0.36, 1],
+        "barBack": [0.0, 0.006, 0.002, 0.88],
+        "title": [1.0, 0.76, 0.62, 1],
+        "filigree": [0.8, 0.7, 0.46, 1],
+        "panelTint": [1, 1, 1, 1]
+      },
+      "glowStrength": 1.1,
+      "fillScale": 256,
+      "panelOpacity": 0.95,
+      "gem": true,
+      "cornerOrnaments": true,
+      "pieces": {}
+    }
+  ]
+}

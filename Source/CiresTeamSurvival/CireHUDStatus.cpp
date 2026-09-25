@@ -9,7 +9,9 @@
 
 namespace
 {
-const FLinearColor Gold(.77f,.61f,.34f,1),Muted(.50f,.57f,.59f,1),Red(.75f,.20f,.23f,1),Blue(.23f,.46f,.8f,1),Purple(.66f,.46f,.83f,1),Poison(.61f,.83f,.27f,1);
+// ui-themes: themed colours are references to CireUIColors so they follow the active UI theme.
+const FLinearColor &Gold=CireUIColors::Gold, &Muted=CireUIColors::Muted;
+const FLinearColor Red(.75f,.20f,.23f,1), Blue(.23f,.46f,.8f,1), Purple(.66f,.46f,.83f,1), Poison(.61f,.83f,.27f,1);
 FString Duration(float Seconds)
 {
     if(Seconds<0)return TEXT("PASSIVE");

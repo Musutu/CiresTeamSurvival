@@ -134,9 +134,8 @@ bool ACireHUD::DrawCastBar(const AActor* Unit, float X, float Y, float W, float 
         return true;
     }
     const FLinearColor Fill = V.bHeal ? HealGreen : V.bInterruptible ? CastGold : CastGrey;
-    P.Rect(X, Y, W, H, FLinearColor(0, 0, 0, .85f));
-    if (const auto& Kit = CireUIStyle::Assets(); Kit.Gloss) P.Tex(Kit.Gloss, X + 1, Y + 1, (W - 2) * V.Progress, H - 2, Fill);
-    else P.Rect(X + 1, Y + 1, (W - 2) * V.Progress, H - 2, Fill);
+    // ui-themes: the kit cast bar (themed frame + fill); the name/time are drawn below.
+    CireUIStyle::CastBar(P, X, Y, W, H, V.Progress, Fill, FString(), FString());
     float TextX = X + 4;
     if (!V.bInterruptible)
     {
@@ -163,7 +162,7 @@ void ACireHUD::DrawPlayerCastBar(ACireHero* Hero)
     if (V.bCasting || V.ResultAge < 1.1f)
     {
         FCireUIPainter P = Painter();
-        CireUIStyle::Frame(P, X - 4, Y - 4, W + 8, H + 8, CastGold, ECireFrame::Inset);
+        if (!CireUIStyle::HasThemeArt()) CireUIStyle::Frame(P, X - 4, Y - 4, W + 8, H + 8, CastGold, ECireFrame::Inset); // themed cast frame carries its own border
         DrawCastBar(Hero, X, Y, W, H, 11.f);
     }
 }

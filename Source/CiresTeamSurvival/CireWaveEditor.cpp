@@ -12,8 +12,9 @@
 
 namespace
 {
-const FLinearColor Gold(.77f, .61f, .34f, 1), Parchment(.91f, .9f, .83f, 1), Muted(.5f, .57f, .59f, 1), Teal(.2f, .71f, .59f, 1),
-    Row(.045f, .06f, .07f, .96f), RowSelected(.1f, .13f, .12f, 1), Red(.75f, .2f, .23f, 1);
+// ui-themes: themed colours are references to CireUIColors so they follow the active UI theme.
+const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment, &Muted=CireUIColors::Muted;
+const FLinearColor Teal(.2f, .71f, .59f, 1), Row(.045f, .06f, .07f, .96f), RowSelected(.1f, .13f, .12f, 1), Red(.75f, .2f, .23f, 1);
 
 TArray<FName> ArchetypeIds()
 {

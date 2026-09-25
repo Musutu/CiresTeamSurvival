@@ -1,4 +1,5 @@
 #include "CireUISettings.h"
+#include "CireUITheme.h" // ui-themes
 #include "HAL/FileManager.h"
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/Paths.h"
@@ -10,7 +11,7 @@ constexpr float ReferenceHeight = 720.f;
 // 4: interface scale, per-panel anchors, WoW tooltip/SCT/threat/level-up preferences.
 // 5: WoW default layout (target beside the player, focus left-middle, boss/threat/meter
 //    stacked on the right); unmoved panels of older profiles adopt it.
-constexpr int32 LayoutVersion = 5;
+constexpr int32 LayoutVersion = 6; // ui-themes: 6 adds UITheme
 struct FOldDefault { const TCHAR* Id; float X, Y, W, H; };
 // Reference-unit defaults before schema 5, for "the user never moved this" detection.
 const FOldDefault OldDefaults[] = {
@@ -119,6 +120,7 @@ void FCireUISettings::Reset()
     bEffectCallouts=true; bControlAlerts=true; bPlayerCastBar=true; OverheadStatusMode=0;
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
     OtherEffectsIntensity=1.f; // aura-vfx
+    UITheme=CireUITheme::DefaultId().IsNone()?FString(TEXT("GildedCitadel")):CireUITheme::DefaultId().ToString(); // ui-themes
     bShowStats=false; bShowLootLog=false; // progression-shop; wow-ui: closed by default (C toggles) to keep the screen clean
 }
 
@@ -212,6 +214,8 @@ void FCireUISettings::SetPanelLocked(FName PanelId, bool bLocked)
 
 void FCireUISettings::SanitizePreferences()
 {
+    // ui-themes: an unknown or empty theme id falls back to the default theme.
+    if (!CireUITheme::All().IsEmpty() && !CireUITheme::Find(FName(*UITheme))) UITheme = CireUITheme::DefaultId().ToString();
     ChatFontSize = SafeFloat(ChatFontSize, 11.f, 9.f, 24.f);
     CombatTextFontSize = SafeFloat(CombatTextFontSize, 24.f, 12.f, 42.f);
     WorldNumberFontSize = SafeFloat(WorldNumberFontSize, 26.f, 12.f, 48.f);
@@ -304,6 +308,8 @@ void FCireUISettings::Load(const FString& Filename)
     // covered what the player was doing; upgrade it to the WoW corner anchor. Radial
     // and fixed choices were deliberate and are preserved.
     if (Version < 4 && TooltipMode == 0) TooltipMode = 3;
+    // ui-themes: schema 6 adds the UI theme; older profiles get the default (Gilded Citadel).
+    if (Version >= 6) Config.GetString(PreferencesSection, TEXT("UITheme"), UITheme);
     SanitizePreferences();
     for (TPair<FName, FPanelLayout>& Entry : Panels)
     {
@@ -343,6 +349,7 @@ bool FCireUISettings::Save()
     FConfigFile Config;
     Config.SetString(PreferencesSection, TEXT("Version"), *FString::FromInt(LayoutVersion));
     Keybindings.SaveTo(Config); // feat/camera-movement
+    Config.SetString(PreferencesSection, TEXT("UITheme"), *UITheme); // ui-themes
 #define CIRE_SAVE_BOOL(Field) Config.SetBool(PreferencesSection, TEXT(#Field), Field)
     CIRE_SAVE_BOOL(bLayoutLocked);
     CIRE_SAVE_BOOL(bShowChat);
