@@ -126,6 +126,7 @@ SPEC = {
 # Integrated HQ regenerations that must NOT replace the bound body yet (reason). The earlier body stays bound.
 HOLD_HQ = {
     "fallen_inquisitor_crossbow": "HQ mesh came out without its crossbow and has no attack_crossbow clip; keep the old body",
+    "voidling": "HQ imp's walk barely travels (28 cm/s) and its slash drops to all fours (head 28 cm); fails the native pose checks",
 }
 EXTRA_WINDOWS = {"tentacle_sweep": {"start": 0.3, "contact": 1.7, "end": 3.4, "recoverRate": 1.4},
                  "axe_throw": {"start": 0.2, "contact": 1.2, "end": 2.6, "recoverRate": 1.4},

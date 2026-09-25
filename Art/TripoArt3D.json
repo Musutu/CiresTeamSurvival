@@ -1031,7 +1031,8 @@
       "hq": true,
       "replaces": "/Game/Tripo/Races/voidborn/Voidling",
       "transfer": "DCC Bridge Send To Unreal (FBX, all animations, not in place)",
-      "bound": true
+      "bound": false,
+      "heldReason": "CIRE_MONSTER_ART checks: walk stride 28 cm/s (< 40) and the slash drops to all fours (head 28 cm at 0.75); the old voidling stays bound (HOLD_HQ). Fix: a text-to-motion upright claw swipe + a longer-stride walk, or regenerate taller/upright."
     },
     {
       "race": "stoneborn",
@@ -1146,7 +1147,18 @@
   "notDone": {
     "bastion_golem_hq": "HQ generated (50f90f6d-47f6-44d2-bff4-641611063091) but its 80k retopo timed out; not rigged/exported yet",
     "mechanical_tank": "generated 48b4d4ce-49fc-4585-bc23-3c799e4f76fb, rigged UE5 + presets + AI 'Two-Handed Maul Slam'; not exported yet",
-    "huntress_sabercat_hq": "HQ generated 05281f2f-78d2-4730-ab2f-60c0a773cd08, retopo 80k, Other rig; no clips (quadruped retarget broken)"
+    "huntress_sabercat_hq": "HQ generated 05281f2f-78d2-4730-ab2f-60c0a773cd08, retopo 80k, Other rig; no clips (quadruped retarget broken)",
+    "hqQueue": {
+      "note": "Remaining first-batch race bodies to regenerate at HQ (~90 credits each: 65 gen + 5 retopo to 80k + 20 UE5 rig; preset and library text-to-motion clips retarget free). Blocked 2026-09-25 afternoon: Chrome's Tripo session was logged out after the reboot.",
+      "order": [
+        "drowned_deep: maw_of_the_deep, drowned_prophet, deepspawn_thrall, coralshell_guardian, tidecaller, abyssal_stalker, mind_leech",
+        "blightwood: elder_oakheart, withered_matron, sapling_brute, barkhide_warden, vinelasher, thornspitter, sporeling",
+        "stoneborn: bastion_golem (HQ gen 50f90f6d exists, needs 80k retopo + rig), stoneborn_colossus, stoneborn_forgelord, deepforge_runesmith",
+        "fixes: fallen_inquisitor_crossbow (retarget Standing_marksman crossbow clip; crossbow missing from mesh), voidling (upright swipe clip / longer walk)",
+        "then ironhide, drakkari, feral_kin, fallen_order, voidborn remaining units and bosses",
+        "exports pending: mechanical_tank (48b4d4ce, rigged + clips), huntress_sabercat HQ (05281f2f, Other rig)"
+      ]
+    }
   },
   "creditsTotal": 990
 }

@@ -1798,33 +1798,33 @@
       }
     },
     "voidling": {
-      "variant": "VoidlingHQ",
-      "mesh": "/Game/Tripo/Races/voidborn/VoidlingHQ/CTS_Race_VoidlingHQ.CTS_Race_VoidlingHQ",
-      "skeleton": "/Game/Tripo/Races/voidborn/VoidlingHQ/CTS_Race_VoidlingHQ_Skeleton.CTS_Race_VoidlingHQ_Skeleton",
-      "material": "/Game/Tripo/Races/voidborn/VoidlingHQ/CTS_Race_VoidlingHQ_Mat.CTS_Race_VoidlingHQ_Mat",
+      "variant": "Voidling",
+      "mesh": "/Game/Tripo/Races/voidborn/Voidling/CTS_Race_Voidling.CTS_Race_Voidling",
+      "skeleton": "/Game/Tripo/Races/voidborn/Voidling/CTS_Race_Voidling_Skeleton.CTS_Race_Voidling_Skeleton",
+      "material": "/Game/Tripo/Races/voidborn/Voidling/CTS_Race_Voidling_Mat.CTS_Race_Voidling_Mat",
       "race": "voidborn",
-      "rawHeightCm": 83.23,
+      "rawHeightCm": 74.26,
       "heightCm": 90,
-      "meshScale": 1.0813,
+      "meshScale": 1.212,
       "yaw": -90,
       "bakedWeapon": "claws",
       "dropPropBones": [
         "hand_r"
       ],
       "animations": {
-        "idle": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_idle.CTS_Race_VoidlingHQ_idle",
-        "walk": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_walk.CTS_Race_VoidlingHQ_walk",
-        "run": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_run.CTS_Race_VoidlingHQ_run",
-        "attack": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_slash.CTS_Race_VoidlingHQ_slash",
-        "hit": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_hit_to_body_01.CTS_Race_VoidlingHQ_hit_to_body_01",
-        "death": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_fall.CTS_Race_VoidlingHQ_fall",
+        "idle": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_idle.CTS_Race_Voidling_idle",
+        "walk": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_walk.CTS_Race_Voidling_walk",
+        "run": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_run.CTS_Race_Voidling_run",
+        "attack": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_slash.CTS_Race_Voidling_slash",
+        "hit": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_hit_to_body_01.CTS_Race_Voidling_hit_to_body_01",
+        "death": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_fall.CTS_Race_Voidling_fall",
         "all": {
-          "fall": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_fall.CTS_Race_VoidlingHQ_fall",
-          "hit_to_body_01": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_hit_to_body_01.CTS_Race_VoidlingHQ_hit_to_body_01",
-          "idle": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_idle.CTS_Race_VoidlingHQ_idle",
-          "run": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_run.CTS_Race_VoidlingHQ_run",
-          "slash": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_slash.CTS_Race_VoidlingHQ_slash",
-          "walk": "/Game/Tripo/Races/voidborn/VoidlingHQ/Animations/CTS_Race_VoidlingHQ_walk.CTS_Race_VoidlingHQ_walk"
+          "fall": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_fall.CTS_Race_Voidling_fall",
+          "hit_to_body_01": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_hit_to_body_01.CTS_Race_Voidling_hit_to_body_01",
+          "idle": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_idle.CTS_Race_Voidling_idle",
+          "run": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_run.CTS_Race_Voidling_run",
+          "slash": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_slash.CTS_Race_Voidling_slash",
+          "walk": "/Game/Tripo/Races/voidborn/Voidling/Animations/CTS_Race_Voidling_walk.CTS_Race_Voidling_walk"
         }
       }
     },

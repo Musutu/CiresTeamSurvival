@@ -201,8 +201,8 @@ retopologised to 80k triangles (the auto-rig refuses 120k) and rigged with the U
 exactly like the first batch (`CIRE_TRIPO_PENDING_ONLY=1 python Tools/RunTripoRacesIntegration.py`, then
 `Tools/WriteRaceMeshes.py`) into `/Game/Tripo/Races/<race>/<Unit>HQ/`; the replaced first-batch folders are deleted.
 Records (task ids, prompts, credits, binding status) are the `"hq": true` rows of `Art/TripoArt3D.json`.
-`WriteRaceMeshes.HOLD_HQ` keeps an older body bound when an HQ body regressed (the crossbow inquisitor lost its
-crossbow). `crystal_ballista` and `ether_mote` now have Tripo bodies (a bipedal siege walker and a small legged ether
+`WriteRaceMeshes.HOLD_HQ` keeps an older body bound when an HQ body regressed (the crossbow inquisitor lost its crossbow; the HQ voidling fails the stride/upright checks).
+`crystal_ballista` and `ether_mote` now have Tripo bodies (a bipedal siege walker and a small legged ether
 construct, so both take the Humanoid rig) instead of the CC0 spider / fallback. Close-up review:
 `python Tools/RunMonsterGallery.py --only close_<unit>+<unit>+...` (front row idle, back row at attack contact).
 
