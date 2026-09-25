@@ -831,6 +831,7 @@ GLYPHS = {k: v for k, v in globals().items() if callable(v) and v.__module__ == 
 
 # Pool skills: (glyph, palette). Each pair is unique so every offered skill reads distinctly.
 POOL = {
+    'polymorph': ('spiral', 'arcane'),  # procedural fallback; the imported icon is painted (Art/Icons/ChatGPT/Abilities)
     'iron_guard': ('iron_guard', 'steel'), 'shield_slam': ('shield_slam', 'holy'), 'war_cry': ('war_cry', 'war'),
     'chain_spark': ('chain_spark', 'arcane'), 'ember_lance': ('ember_lance', 'fire'), 'venom_ground': ('venom', 'venom'),
     'cinder_cone': ('cinder_cone', 'fire'), 'grave_line': ('grave_line', 'shadow'), 'ashen_square': ('square_ward', 'ash'),
