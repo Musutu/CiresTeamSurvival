@@ -21,12 +21,13 @@ PHASES = {0: 'survival', 1: 'prep', 2: 'arena', 3: 'finished', 4: 'recovery'}
 
 
 def parse(text):
-    events = []
+    events, wave_deaths = [], []
     for line in text.splitlines():
         if m := re.search(r'CIRE_WAVE_SOAK_SPAWN wave=(\d+) type=(\S+) round=(\d+) t=([\d.]+)', line):
             events.append(('spawn', float(m[4]), int(m[1]), int(m[3]), m[2]))
-        elif m := re.search(r'CIRE_WAVE_SOAK_CLEAR wave=(\d+) took=([\d.]+) lives=(\d+)/(\d+)', line):
+        elif m := re.search(r'CIRE_WAVE_SOAK_CLEAR wave=(\d+) took=([\d.]+) lives=(\d+)/(\d+)(?: deaths=(\d+))?', line):
             events.append(('clear', None, int(m[1]), float(m[2]), (int(m[3]), int(m[4]))))
+            if m[5] is not None: wave_deaths.append((int(m[1]), float(m[2]), int(m[5]), int(m[3]), int(m[4])))
         elif m := re.search(r'CIRE_WAVE_SOAK_PHASE (\d+)->(\d+) round=(\d+) t=([\d.]+) waited=([\d.]+)', line):
             events.append(('phase', float(m[4]), int(m[1]), int(m[2]), float(m[5]), int(m[3])))
     waves, breathers, phase_time, cycles = [], [], {}, []
@@ -55,11 +56,14 @@ def parse(text):
                 cycle = dict(waves=0.0, breathers=0.0, prep=0.0, arena=0.0, recovery=0.0, first_delay=0.0)
     match = re.findall(r'CIRE_WAVE_SOAK_(PASS|FAIL) [^\n]*t=(\d+)', text)
     levels = re.findall(r'CIRE_WAVE_SOAK_LEVEL mean=([\d.]+) t=([\d.]+)', text)
+    deaths = re.findall(r'CIRE_WAVE_SOAK_(?:PASS|FAIL) [^\n]*hero_deaths=(\d+)', text)
     lives = re.findall(r'CIRE_WAVE_SOAK_(?:PASS|FAIL) [^\n]*lives=(\d+)/(\d+)', text)
     return dict(waves=waves, breathers=breathers, phases=phase_time, cycles=cycles,
                 verdict=match[-1][0] if match else None, matchSeconds=float(match[-1][1]) if match else None,
                 lives=[int(v) for v in lives[-1]] if lives else None,
-                levels=[(float(a), float(b)) for a, b in levels])
+                levels=[(float(a), float(b)) for a, b in levels],
+                heroDeaths=int(deaths[-1]) if deaths else None,
+                waveDeaths=[dict(wave=w, seconds=s, deaths=d, lives=[e, k]) for w, s, d, e, k in wave_deaths])
 
 
 def report(result):
@@ -74,6 +78,8 @@ def report(result):
     for i, c in enumerate(result['cycles'], 1):
         lines.append(f"cycle {i}: " + ', '.join(f"{k}={v/60:.2f}m" for k, v in c.items()))
     lines.append(f"match={result['matchSeconds'] and result['matchSeconds']/60:.1f} min verdict={result['verdict']} lives={result['lives']}")
+    if result.get('waveDeaths'):
+        lines.append('champion deaths per wave: ' + ', '.join(f"w{d['wave']}:{d['deaths']}" for d in result['waveDeaths']) + f" (total {result['heroDeaths']})")
     if result['levels']: lines.append('levels: ' + ', '.join(f"L{l:.0f}@{t:.0f}s" for l, t in result['levels'][:12]))
     return '\n'.join(lines)
 
