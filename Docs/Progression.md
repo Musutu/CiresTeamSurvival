@@ -110,6 +110,85 @@ Items, belt charges, elixir timers (server time), teleport cooldowns, tome point
 the hero and survive every phase change, death, arena teleport and reconnect-as-bot. Phase changes end
 shop visits (undo history) and cancel teleport channels; lantern wards are removed when the arena starts.
 
+## Gold economy (Eric's ruling, playtest 2)
+
+Kill gold is data (`LootTables.json -> economy`) and live-editable in **F8 > Economy**:
+
+| Kill | Gold | Wave 1 | Wave 6 |
+| --- | --- | --- | --- |
+| Normal mob | mob value = `mobBase + mobStep x floor(wave / stepEveryWaves)` (1, +1 every 3 waves) | 1 | 3 |
+| Armored unit | 2 x mob value | 2 | 6 |
+| Boss | 10 x mob value | 10 | 30 |
+| Challenge-pack unit | 10 x mob value | 10 | 30 |
+| Pack Leader | 100 x mob value (another 10x) | 100 | 300 |
+
+* Wave kills pay **every teammate** the full bounty; pack kills pay every eligible teammate (helped or
+  alive within `distribution.eligibleRadius`). Wave units are valued at the wave they **spawned** in
+  (`CireWaveDirector::UnitFlags`), not the wave running when they die; the wave's `rewardMultiplier` applies.
+* Every bounty floats as "+3g" over the kill (bigger for bosses/leaders, with a toast).
+* Loot-table gold is in mob values too (`lootGoldInMobValues`). Item prices were rescaled x1.2.
+
+### Economy curve
+
+`Tools/EconomyCurve.py` prints expected gold per player by wave (start gold 120; loot bonuses and arena
+wins left out) against item and skill prices. With the current data:
+
+| After | Waves only | Waves + every open challenge bay |
+| --- | --- | --- |
+| Round 1 (wave 5) | ~210 | ~340 |
+| Round 2 (wave 10) | ~400 | ~1,310 |
+| Round 3 (wave 15) | ~690 | ~3,290 |
+
+Items: basics 120-190, epics ~435, legendaries ~490-1,020 total. A team clearing packs buys a core
+legendary in round 2 and a full build around round 4; a team that ignores packs stays thin. Skill
+prices are in mob values, so they follow the gold available (below).
+
+## Skill Shop (game mode, default)
+
+The progression mode is a server-authoritative, replicated setting on `ACireGameState::ProgressionMode`
+(1 = **Skill Shop**, default; 0 = **Classic Draft**, the old level-up skill offers).
+
+* Command line: `-CireMode=SkillShop` or `-CireMode=Classic`.
+* F8 > Economy: SKILL SHOP / CLASSIC DRAFT buttons (host or standalone, before the first wave).
+* API for a champion-select picker (`CireSkillShop.h`):
+  `IsSkillShopMode(World)`, `ModeName(bSkillShop)`, `SetMode(GameMode, bSkillShop, &Why)` (server, before
+  the first wave) and, from a client, `UCireInventory::ServerSetProgressionMode(0|1)`, which only the
+  host's own player may use (a remote client's request is ignored; covered by the network test).
+
+In Skill Shop mode:
+
+* The free opening role-skill pick stays. Level-ups then only raise stats (+2 primary, +1 other); no skill offers.
+* The shop opens by itself (skills tab) **after every cleared wave** during the wave director's breather
+  (`Waves.json breatherSeconds`, 15 s; READY UP inside the shop ends it early), and **when prep begins**.
+  It is also open during prep and recovery. `K` toggles it; `B` is the item shop.
+* It lists every skill the champion can buy: `CireAbilityDB::PurchasableSkills(profile)` (implemented
+  skills), or the role pool for heroes without a profile. Buy new skills or level owned ones with **no cap**.
+* Per level, casts use `CireAbilityDB::EffectiveStats(Id, Level)` relative to level 1: more effect
+  (damage/healing via the combat pipeline), a slightly higher mana/energy cost and a shorter cooldown. The
+  hook is in all five cast paths (`CanPayCast` + `ApplyCastLevel`). Levels are stored per skill in the
+  replicated `UCireInventory::SkillRanks`. Abilities missing from the database fall back to
+  `SkillShop.json -> scaling`.
+* Prices (`SkillShop.json`, in mob values, F8 > Economy): active 15 (+25% per owned active), passive 30,
+  ultimate 60, level-up 8 x 1.35^(level-1). At wave 7 (mob value 3): an active costs 45-79 g, a level 24 g+.
+* Limits keep kits small until late: 2 active slots at the start, +1 every 3 waves (6 at wave 12); the
+  passive slot opens at wave 5, the ultimate at wave 10.
+* Bots shop every 2 s while the shop is open: an ultimate when its slot opens, then a primary-role
+  active, then a passive, spending at most 60% of their gold on a new skill (reserve for items); with
+  full slots they level their lowest active.
+
+### Screen
+
+The Skill Shop follows Eric's target image (`Saved/Reference/skills-target.png`): near-black panel with
+gold filigree, corner ornaments and diamond-studded dividers, the SKILLS / POWER LIVES WITHIN title in
+Cinzel, and three columns: **Golden scrolls = Active**, **plain parchment = Passive**, **prismatic =
+Ultimate**, each with its crest, name, keywords and tagline. Every skill is a scroll card of its tier:
+icon in a crest ring, name, school and types, level -> next, effect and cost numbers, and the price on
+the lower roll. Hover lifts the scroll and shows `CireAbilityDB::Describe`. Buying or levelling stamps
+a wax seal on the scroll (flash + sound), then a small scroll flies to the skill bar. Unaffordable or
+locked scrolls are dimmed with a red ribbon (NEED 9g, SLOT AT WAVE 10, SLOTS FULL, BETWEEN WAVES).
+The item shop (**Armory**) uses the same framing: recommended build per role first (starter -> core ->
+situational), all items under ALL ITEMS as tier-coloured cards, larger text, same buy/sell feedback.
+
 ## Decisions for Eric to review
 
 1. Unlock pacing (bay 2 in cycle 2, bay 3 mid-cycle 3, promotions every 2 rounds from round 4, cap 8).
@@ -117,9 +196,20 @@ shop visits (undo history) and cancel teleport channels; lantern wards are remov
 3. Chest pickup radius 3.2 m and auto-collect at prep.
 4. Drop rates: especially legendary chances (8% elite packs, 12% late bosses).
 5. Removing the old +stats-for-everyone pack reward (it was very strong).
+6. Economy: packs dominate income (a Pack Leader is 100 mob values, paid to every eligible teammate).
+   Teams that skip packs stay poor; lower `packLeaderMultiplier` if that is too swingy.
+7. Skill prices and slot pacing (above); auto-open only when something is affordable.
+8. The breather is the wave director's 15 s; the previous 20 s change in this branch was reverted.
 
 ## Verification
 
 `Tests/ItemRulesTests.cpp` (loot determinism and rates, fair rotation, schedule) and the in-engine suite
 (`CIRE_PROGRESSION_PASS`: gating per round, deeper bays farther from town, leaders, pause/resume
 timers, prep freeze, chest spawn/auto-collect, team-fair distribution, tier tables).
+`CIRE_SKILLSHOP_PASS` (`CireSkillShopTests.cpp`, 48 checks): bounties per wave/armored/boss/pack/leader,
+mode switch and lock, Classic still offering skills, buy/level (gold, gating, no cap, rejections),
+access windows, level-3 casts costing more with a shorter cooldown and dealing more, bots, role builds.
+The network probe buys and levels a skill through the Server RPCs on a remote client. The gallery
+(`--only gallery`) captures the Skill Shop and Armory at 1920x1080 and 1600x900, the purchase moments,
+and checks the shop auto-opens after a cleared wave; `Tools/ComposeShopCompare.py` puts the captures
+next to the target image.

@@ -19,7 +19,7 @@ drawn by the HUD (wow-ui) on top of the API below.
 | Combat | ToggleAutoAttack | T |
 | Targeting | TargetNextEnemy / TargetPreviousEnemy | Tab / Shift+Tab |
 | | TargetNextAlly / TargetSelf | F / F1 |
-| Interface | OpenChat, ToggleShop, ToggleHelp | Enter, B, H |
+| Interface | OpenChat, ToggleShop, ToggleSkillShop, ToggleHelp, ToggleStats, ToggleLootLog | Enter, B, K, H, C, L |
 | | RecallToTown (moved off R) | G |
 | | ToggleOptions, ToggleLayoutEditor, ToggleDeveloperTools | F9, F10, F8 |
 | | RosterPreviousPage / RosterNextPage (draft screen) | Page Up, Left / Page Down, Right |

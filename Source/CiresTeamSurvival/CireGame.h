@@ -38,6 +38,8 @@ public:
     UPROPERTY(Replicated) int32 DuskWins = 0;
     UPROPERTY(Replicated) int32 ArenaIndex = 0;
     UPROPERTY(Replicated) FString Announcement;
+    // progression-shop: skill progression mode, 0 = Classic Draft (level-up offers), 1 = Skill Shop (default).
+    UPROPERTY(Replicated) uint8 ProgressionMode = 1;
     // wave-director: current / next wave for the match plate (CireWaves.h).
     UPROPERTY(Replicated) FString WaveLabel;
     UPROPERTY(Replicated) FString NextWaveLabel;

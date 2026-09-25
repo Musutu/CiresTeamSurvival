@@ -1,4 +1,5 @@
 #include "CireSkillCasting.h"
+#include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireRoleSkills.h"
 #include "CireDeveloperTools.h"
 #include "CireSkillshot.h"
@@ -99,7 +100,7 @@ bool CireSkillCasting::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     if (!CostFor(Id, Cost)) return Fail(TEXT("This combat recipe is unavailable."));
     if (!FMath::IsFinite(Cost.Mana) || Cost.Mana < 0 || !FMath::IsFinite(Cost.Energy) || Cost.Energy < 0 ||
         !FMath::IsFinite(Cost.Cooldown) || Cost.Cooldown < 0 || !FMath::IsFinite(Cost.Range) || Cost.Range < 0) return Fail(TEXT("Combat recipe has invalid costs or range."));
-    if (Hero->Mana < Cost.Mana || Hero->Energy < Cost.Energy) return Fail(TEXT("Not enough mana or energy."));
+    if (!CireSkillShop::CanPayCast(Hero, Id, Cost.Mana, Cost.Energy)) return Fail(TEXT("Not enough mana or energy.")); // progression-shop: Skill Shop level (Ability DB curve)
     const bool bTargetHostile = CireCombat::AreHostile(Hero, Hero->Target);
     FVector Aim = Hero->bHasCastAim ? Hero->CastAimPoint : bTargetHostile ? Hero->Target->GetActorLocation() :
         Hero->GetActorLocation() + Hero->GetActorForwardVector().GetSafeNormal2D() * FMath::Min(500.f, Cost.Range);
@@ -138,6 +139,7 @@ bool CireSkillCasting::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     if (!bSpawned) return Fail(TEXT("Cannot place or launch this ability here; check space and active summon limits."));
     Hero->Mana -= Cost.Mana; Hero->Energy -= Cost.Energy;
     Hero->Cooldowns[Slot] = static_cast<float>(Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(Hero->GetWorld(),Cost.Cooldown), Hero->CDR));
+    CireSkillShop::ApplyCastLevel(Hero, Slot, Id, Cost.Mana, Cost.Energy); // progression-shop: Skill Shop level (Ability DB curve)
     Hero->GlobalCooldown = .9f;
     Hero->Notice = AbilityName; Hero->ForceNetUpdate();
     CireCombat::PlayCue(Hero, bTargetHostile ? Hero->Target : nullptr, FName(*Id), Hero->GetActorLocation(), Aim, ECireSpellCue::Cast);

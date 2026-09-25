@@ -1,6 +1,7 @@
 #include "CireWaves.h" // wave-director
 #include "CireGame.h"
 #include "CireChampionRoster.h"
+#include "CireShopUI.h" // progression-shop: Skill Shop key
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireShopFixtures.h" // progression-shop
 #include "CireItems.h" // progression-shop
@@ -246,6 +247,7 @@ void ACireController::PlayerTick(float Dt) {
     // progression-shop: stats window, consumable belt and item-use keys (CireItems / CireShopUI).
     if(Keys.WasPressed(this,TEXT("ToggleStats"))&&Interface){Interface->UISettings.bShowStats=!Interface->UISettings.bShowStats;Interface->UISettings.Save();}
     if(Keys.WasPressed(this,TEXT("ToggleLootLog"))&&Interface){Interface->UISettings.bShowLootLog=!Interface->UISettings.bShowLootLog;Interface->UISettings.Save();}
+    if(Keys.WasPressed(this,TEXT("ToggleSkillShop")))CireShopUI::ToggleSkillShop(this);
     if(H->bDrafted&&H->Inventory&&H->Offers.IsEmpty()) {
         for(int32 Index=0;Index<3;++Index)if(Keys.WasPressed(this,CireItems::BeltAction(Index)))H->Inventory->ServerUse(Index,true);
         for(int32 Index=0;Index<6;++Index)if(Keys.WasPressed(this,CireItems::ItemAction(Index)))H->Inventory->ServerUse(Index,false);

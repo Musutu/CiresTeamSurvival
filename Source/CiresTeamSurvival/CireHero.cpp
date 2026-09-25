@@ -1,4 +1,5 @@
 #include "CireDeveloperTools.h"
+#include "CireSkillShop.h" // progression-shop: game mode
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireRaces.h" // monster-races
 #include "CireGame.h"
@@ -261,7 +262,7 @@ void ACireHero::GrantExperience(int32 Amount)
     if (bLeveled)
     {
         Recalculate(false);
-        Notice = FString::Printf(TEXT("Level %d: +2 primary, +1 other stats."), Level);
+        Notice = FString::Printf(TEXT("Level %d: +2 primary, +1 other stats. New skills: Skill Shop between waves."), Level);
         RefreshOffer();
     }
 }
@@ -269,6 +270,9 @@ void ACireHero::GrantExperience(int32 Amount)
 void ACireHero::RefreshOffer()
 {
     if (!HasAuthority() || !bDrafted || !Offers.IsEmpty() || !Cires::HasPendingAugment(Progression)) return;
+    // progression-shop: after the free opening role pick, skills come from the Skill Shop
+    // (Eric's playtest-2 ruling); level-ups only raise stats.
+    if (!Skills.IsEmpty() && CireSkillShop::IsSkillShopMode(GetWorld())) return;
     const std::uint64_t Seed = static_cast<std::uint64_t>(FMath::Rand()) ^
         (static_cast<std::uint64_t>(GetUniqueID()) << 32) ^
         static_cast<std::uint64_t>(Progression.NextAugmentLevel);
@@ -420,7 +424,7 @@ void ACireHero::Cast(int32 Slot)
     else if (Id == TEXT("executioners_verdict")) { EnergyCost = 60; Cooldown = 60; Range = 1500; bNeedsEnemy = true; }
     else if (Id == TEXT("renewal")) { ManaCost = 140; Cooldown = 90; }
     else return;
-    if (Mana < ManaCost || Energy < EnergyCost) { Notice = TEXT("Not enough mana or energy."); return; }
+    if (!CireSkillShop::CanPayCast(this, Id, ManaCost, EnergyCost)) { Notice = TEXT("Not enough mana or energy."); return; } // progression-shop: Skill Shop level (Ability DB curve)
     if (bNeedsEnemy && (!IsHostile(Target) || !InRange(Target, Range) || !ClearSight(this, Target)))
     { Notice = TEXT("Select a hostile target in range and line of sight."); return; }
     ACireHero* Ally = ::Cast<ACireHero>(Target);
@@ -431,6 +435,7 @@ void ACireHero::Cast(int32 Slot)
     Mana -= ManaCost;
     Energy -= EnergyCost;
     Cooldowns[Slot] = static_cast<float>(Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(GetWorld(),Cooldown), CDR));
+    CireSkillShop::ApplyCastLevel(this, Slot, Id, ManaCost, EnergyCost); // progression-shop: Skill Shop level (Ability DB curve)
     GlobalCooldown = 0.9f;
     const float Now = GetWorld()->GetTimeSeconds();
     const float Power = Mode->Power(TeamId);

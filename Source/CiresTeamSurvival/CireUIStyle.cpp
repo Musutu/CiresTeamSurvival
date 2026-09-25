@@ -16,6 +16,7 @@ namespace
 using namespace CireUIColors;
 const TCHAR* FacePaths[]={TEXT("/Game/UI/WowUI/Fonts/UIBody.UIBody"),TEXT("/Game/UI/WowUI/Fonts/UIHeading.UIHeading"),
     TEXT("/Game/UI/WowUI/Fonts/UIBold.UIBold"),TEXT("/Game/UI/WowUI/Fonts/UINumbers.UINumbers")};
+const TCHAR* DisplayFacePath=TEXT("/Game/UI/WowUI/Fonts/UIDisplay.UIDisplay"); // progression-shop: Cinzel (OFL)
 FString TexturePath(const TCHAR* Name){return FString::Printf(TEXT("/Game/UI/WowUI/Textures/%s.%s"),Name,Name);}
 UTexture2D* LoadTexture(const TCHAR* Name)
 {
@@ -36,6 +37,7 @@ const TArray<FString>& CireUIStyle::AssetPaths()
     if(Paths.IsEmpty())
     {
         for(const TCHAR* P:FacePaths)Paths.Add(P);
+        Paths.Add(DisplayFacePath);
         for(const TCHAR* N:{TEXT("T_Panel"),TEXT("T_Border"),TEXT("T_Button"),TEXT("T_ButtonUlt"),TEXT("T_ButtonPassive"),TEXT("T_Glow"),
             TEXT("T_Gloss"),TEXT("T_IconBg"),TEXT("T_Gem"),TEXT("T_Header")})Paths.Add(TexturePath(N));
     }
@@ -77,6 +79,20 @@ const CireUIStyle::FAssets& CireUIStyle::Assets()
                 const float Height=Measure->GetMaxCharacterHeight(FSlateFontInfo(Font,100.f),1.f)/100.f;
                 GAssets.Calibration[I]=Height>0?Reference/Height*Boost[I]:1.f;
             }
+            // progression-shop: optional display face; missing -> ResolveFont falls back to Heading.
+            if(UFontFace* Display=LoadObject<UFontFace>(nullptr,DisplayFacePath,nullptr,LOAD_NoWarn|LOAD_Quiet))
+            {
+                Display->AddToRoot();
+                UFont* Font=NewObject<UFont>(GetTransientPackage(),NAME_None,RF_Transient);
+                Font->AddToRoot();
+                Font->FontCacheType=EFontCacheType::Runtime;
+                FTypefaceEntry Entry(TEXT("Regular"));Entry.Font=FFontData(Display);
+                Font->CompositeFont.DefaultTypeface.Fonts.Add(Entry);
+                Font->LegacyFontSize=16;
+                GAssets.Fonts[4]=Font;
+                const float Height=Measure->GetMaxCharacterHeight(FSlateFontInfo(Font,100.f),1.f)/100.f;
+                GAssets.Calibration[4]=Height>0?Reference/Height*1.05f:1.f;
+            }
             GAssets.bFonts=true;
         }
     }
@@ -92,7 +108,7 @@ UFont* CireUIStyle::ResolveFont(ECireFont Font,const FString& Text,float Size,in
         for(const TCHAR C:Text){bLower|=FChar::IsLower(C)!=0;bLetter|=FChar::IsAlpha(C)!=0;}
         Font=!bLetter?ECireFont::Numbers:!bLower?ECireFont::Heading:Size>=14.f?ECireFont::Bold:ECireFont::Body;
     }
-    const int32 Index=FMath::Clamp(static_cast<int32>(Font)-1,0,3);
+    const int32 Index=Font==ECireFont::Display?(A.Fonts[4]?4:1):FMath::Clamp(static_cast<int32>(Font)-1,0,3);
     if(OutIndex)*OutIndex=Index;
     return A.Fonts[Index];
 }
