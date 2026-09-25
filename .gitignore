@@ -59,3 +59,6 @@ Content/RealisticBlood
 Content/ROG_Creatures
 Content/State_VFX
 Content/UndeadPack
+# World-partition external actors/objects of pack demo maps (e.g. the audio packs): local only, never tracked.
+Content/__ExternalActors__
+Content/__ExternalObjects__
