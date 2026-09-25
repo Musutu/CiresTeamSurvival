@@ -171,7 +171,7 @@ bool CireTechConstructs::RunSmoke(ACireGameMode* Mode)
         T.Check(Mines[0]->IsActorBeingDestroyed() && M->Health < Before, TEXT("armed mine detonates on the monster"));
     }
     // Stasis snare: stuns (non-boss) through the Ability DB effect.
-    auto* Warden = F.Hero(0, FVector(-500, -300, 0), TEXT("aetheri_warden"));
+    auto* Warden = F.Hero(0, FVector(-100, -300, 0), TEXT("aetheri_warden"));
     auto Snares = Warden ? Deploy(Warden, TEXT("stasis_snare"), F.At(FVector(380, 0, 0)), &Why) : TArray<ACireConstruct*>();
     T.Check(Snares.Num() == 1, TEXT("stasis snare placed: ") + Why);
     if (Snares.Num() == 1) { Snares[0]->Tick(.1f); Snares[0]->Tick(.7f); T.Check(Snares[0]->IsActorBeingDestroyed() && CireCrowdControl::IsStunned(M), TEXT("stasis snare locks the monster in stasis")); }
@@ -185,11 +185,11 @@ bool CireTechConstructs::RunSmoke(ACireGameMode* Mode)
         for (TActorIterator<ACireAreaEffect> It(World); It; ++It) if (Gravity.Num() && !It->IsActorBeingDestroyed() && FVector::Dist2D(It->GetActorLocation(), Gravity[0]->GetActorLocation()) < 5) bField = true;
         T.Check(bField, TEXT("pylon field ground rune area spawned"));
         if (Gravity.Num()) { Gravity[0]->Tick(.1f); T.Check(M->SlowUntil > World->GetTimeSeconds(), TEXT("gravity field slows the monster")); }
-        auto Haste = Deploy(Warden, TEXT("haste_pylon"), F.At(FVector(-500, 150, 0)), &Why);
+        auto Haste = Deploy(Warden, TEXT("haste_pylon"), F.At(FVector(-450, 150, 0)), &Why);
         if (Haste.Num()) { Haste[0]->Tick(.1f); }
         T.Check(Haste.Num() == 1 && CireBuffs::IsActive(Ally, TEXT("aether_haste")) && CireSignatureSkills::MoveSpeedMultiplier(Ally) > 1.2f &&
             CireSignatureSkills::AttackSpeedBonus(Ally) > .2f, TEXT("haste field speeds up allies"));
-        auto Aegis = Deploy(Warden, TEXT("aegis_pylon"), F.At(FVector(-500, 450, 0)), &Why);
+        auto Aegis = Deploy(Warden, TEXT("aegis_pylon"), F.At(FVector(-450, 420, 0)), &Why);
         Ally->Health = 1000;
         if (Aegis.Num()) Aegis[0]->Tick(.1f);
         T.Check(Aegis.Num() == 1 && Ally->Health > 1000 && CireBuffs::IsActive(Ally, TEXT("aether_aegis")), TEXT("aegis field regenerates allies"));
@@ -214,13 +214,16 @@ bool CireTechConstructs::RunSmoke(ACireGameMode* Mode)
     }
     // Monster engineers deploy hostile constructs that attack champions.
     {
+        M->Damage = 25.f; // an unconfigured fixture monster deals no damage
         auto Enemy = Deploy(M, TEXT("npc_photon_turret"), F.At(FVector(0, 0, 0)), &Why, 1.f);
         T.Check(Enemy.Num() == 1 && Enemy[0]->bMonsterOwned && Enemy[0]->CanBeDamagedBy(Hero) && !Enemy[0]->CanBeDamagedBy(M), TEXT("monster turret placed, hostile to champions: ") + Why);
         if (Enemy.Num())
         {
-            Hero->Health = Hero->MaxHealth; Ally->Health = Ally->MaxHealth;
+            Hero->Health = Hero->MaxHealth; Ally->Health = Ally->MaxHealth; if (Warden) Warden->Health = Warden->MaxHealth;
             Enemy[0]->Tick(.5f);
-            T.Check(Hero->Health < Hero->MaxHealth || Ally->Health < Ally->MaxHealth, TEXT("monster turret fires at a champion"));
+            UE_LOG(LogCireNewChampionTests, Display, TEXT("CIRE_NEW_CHAMPIONS_DIAG monster_turret shots=%d damage=%.1f range=%.0f hero=%.1f/%.1f ally=%.1f/%.1f monster=%.1f alive=%d"),
+                Enemy[0]->ShotSerial, Enemy[0]->ConstructSpec.AttackDamage, Enemy[0]->ConstructSpec.AttackRange, Hero->Health, Hero->MaxHealth, Ally->Health, Ally->MaxHealth, M->Health, CireCombat::IsAlive(M) ? 1 : 0);
+            T.Check(Hero->Health < Hero->MaxHealth || Ally->Health < Ally->MaxHealth || (Warden && Warden->Health < Warden->MaxHealth), TEXT("monster turret fires at a champion"));
             Enemy[0]->Destroy();
         }
         // Monster AI walks to and smashes a champion's turret when it has no victim.
@@ -392,7 +395,8 @@ bool CireSignatureSkills::RunSmoke(ACireGameMode* Mode)
             if (Rider)
             {
                 const float Feet = static_cast<float>(Hn->GetActorLocation().Z - Hn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-                T.Check(Rider->GetComponentLocation().Z > Feet + 20.f, FString::Printf(TEXT("rider sits above the ground (%.0f cm)"), Rider->GetComponentLocation().Z - Feet));
+                const float Pelvis = static_cast<float>(Rider->GetBoneLocation(TEXT("pelvis")).Z) - Feet;
+                T.Check(Pelvis > 60.f, FString::Printf(TEXT("rider sits on the mount's back (pelvis %.0f cm above the ground)"), Pelvis));
             }
         }
         auto* G = F.Hero(0, FVector(-300, -400, 0), TEXT("gunblade"));

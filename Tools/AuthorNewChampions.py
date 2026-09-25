@@ -208,11 +208,13 @@ def _vis(name, kind, school, primary, secondary, core, layers, cue, source):
 
 
 GLYPH_EYE = {"shape": "glyph", "attach": "overhead", "style": "eye", "size": 0.8}
+# Every aura needs a distinct layer signature (CireAuraVisuals smoke), so each row mixes shapes/styles no other row uses.
 VISUALS = {
     "bounty_mark": _vis("Bounty", "debuff", "shadow", [0.95, 0.25, 0.2], [0.35, 0.05, 0.05], [1.0, 0.8, 0.6],
                         [GLYPH_EYE, {"shape": "ring", "attach": "ground", "style": "runes", "count": 6, "speed": 0.4}], "npc.profane.start", "Gunblade Hex Mark: +damage taken, bounty gold on kill"),
     "witch_mark": _vis("Exposed", "debuff", "arcane", [0.3, 0.55, 1.0], [0.08, 0.15, 0.4], [0.85, 0.95, 1.0],
-                       [GLYPH_EYE, {"shape": "swirl", "attach": "overhead", "speed": 0.9}], "npc.silence.start", "Witch Slayer Witchfinder's Mark: revealed, +damage taken (x3 while casting)"),
+                       [{"shape": "glyph", "attach": "overhead", "style": "muted", "size": 0.9}, {"shape": "ring", "attach": "ground", "style": "dashed", "count": 10, "speed": 1.1},
+                        {"shape": "motes", "attach": "overhead", "style": "glint", "count": 6, "speed": 0.8}], "npc.silence.start", "Witch Slayer Witchfinder's Mark: revealed, +damage taken (x3 while casting)"),
     "tracked": _vis("Tracked", "debuff", "nature", [0.6, 0.8, 0.45], [0.2, 0.3, 0.1], [0.95, 1.0, 0.85],
                     [GLYPH_EYE], "npc.feral.start", "Huntress Owl Scout: revealed, +damage taken from the Huntress"),
     "banished": _vis("Banished", "debuff", "void", [0.55, 0.3, 1.0], [0.1, 0.05, 0.25], [0.95, 0.85, 1.0],
@@ -224,21 +226,44 @@ VISUALS = {
                              [{"shape": "halo", "attach": "overhead", "count": 10, "speed": 0.6}, {"shape": "plates", "attach": "body", "count": 5, "speed": 0.5}],
                              "npc.ward.start", "Gunblade: damage reduction"),
     "moonlit_sprint": _vis("Moonlit Sprint", "buff", "arcane", [0.65, 0.75, 1.0], [0.15, 0.2, 0.45], [0.95, 0.97, 1.0],
-                           [{"shape": "motes", "attach": "body", "style": "glint", "count": 12, "speed": 1.4}], "npc.rune.start", "Huntress: movement speed"),
+                           [{"shape": "motes", "attach": "body", "style": "glint", "count": 12, "speed": 1.4}, {"shape": "ripple", "attach": "ground", "style": "shock", "speed": 1.2}],
+                           "npc.rune.start", "Huntress: movement speed"),
     "overcharge": _vis("Overcharge", "buff", "arcane", [0.5, 0.45, 1.0], [0.15, 0.1, 0.45], [0.95, 0.9, 1.0],
-                       [{"shape": "crystals", "attach": "body", "count": 6, "speed": 1.2}], "npc.rune.start", "Aetheri Artificer: constructs overcharged"),
+                       [{"shape": "crystals", "attach": "body", "count": 6, "speed": 1.2}, {"shape": "tether", "attach": "link", "style": "beam", "burstOnly": True}],
+                       "npc.rune.start", "Aetheri Artificer: constructs overcharged"),
     "aether_aegis": _vis("Aegis Field", "buff", "arcane", [0.3, 0.85, 1.0], [0.05, 0.25, 0.4], [0.85, 1.0, 1.0],
-                         [{"shape": "plates", "attach": "body", "count": 6, "speed": 0.6}], "npc.ward.start", "Aetheri Aegis Pylon field: regeneration, less damage taken"),
+                         [{"shape": "plates", "attach": "body", "count": 6, "speed": 0.6}, {"shape": "ring", "attach": "ground", "style": "dashed", "count": 5, "speed": 0.5}],
+                         "npc.ward.start", "Aetheri Aegis Pylon field: regeneration, less damage taken"),
     "aether_haste": _vis("Haste Field", "buff", "arcane", [1.0, 0.8, 0.35], [0.4, 0.28, 0.05], [1.0, 0.95, 0.75],
-                         [{"shape": "motes", "attach": "body", "style": "glint", "count": 10, "speed": 1.6}], "npc.rune.start", "Aetheri Haste Pylon field: move and attack speed"),
+                         [{"shape": "flames", "attach": "body", "count": 5, "speed": 1.8}, {"shape": "ring", "attach": "ground", "style": "dashed", "count": 4, "speed": 1.6}],
+                         "npc.rune.start", "Aetheri Haste Pylon field: move and attack speed"),
     "aether_weakened": _vis("Disrupted", "debuff", "arcane", [0.95, 0.35, 0.85], [0.35, 0.05, 0.3], [1.0, 0.8, 0.95],
                             [{"shape": "cracks", "attach": "ground", "speed": 0.8}, {"shape": "swirl", "attach": "overhead", "speed": 1.1}],
                             "npc.mind.start", "Aetheri Disruption Pylon field: less damage dealt"),
     "aether_nexus": _vis("Nexus", "buff", "arcane", [0.95, 0.95, 1.0], [0.35, 0.35, 0.6], [1.0, 1.0, 1.0],
-                         [{"shape": "halo", "attach": "overhead", "count": 12, "speed": 0.8}, {"shape": "plates", "attach": "body", "count": 6, "speed": 0.5}],
+                         [{"shape": "halo", "attach": "overhead", "count": 12, "speed": 0.8}, {"shape": "crystals", "attach": "body", "count": 4, "speed": 0.4},
+                          {"shape": "ring", "attach": "ground", "style": "runes", "count": 12, "speed": 0.4}],
                          "npc.ward.start", "Aetheri Nexus: guard and regeneration"),
     "npc_aether_empowered": _vis("Empowered", "buff", "war", [1.0, 0.3, 0.35], [0.45, 0.05, 0.1], [1.0, 0.8, 0.8],
-                                 [{"shape": "flames", "attach": "body", "count": 8, "speed": 1.2}], "npc.warcry.start", "Aetheri monster Empowering Pylon field: more damage, less taken"),
+                                 [{"shape": "flames", "attach": "body", "count": 8, "speed": 1.2}, {"shape": "crystals", "attach": "overhead", "count": 3, "speed": 1.0}],
+                                 "npc.warcry.start", "Aetheri monster Empowering Pylon field: more damage, less taken"),
+}
+# Modifier summary rows (BuffModifiers.json, Docs/BuffModifiers.md) for every id above plus the race's npc_aether.
+MODIFIERS = {
+    "bounty_mark": '{"type": "curse", "mods": [{"stat": "Damage taken", "value": 15, "unit": "%"}], "line": "A bounty is on this head: takes more damage; its killer is paid."}',
+    "witch_mark": '{"type": "magic", "mods": [{"stat": "Damage taken", "value": 12, "unit": "%"}], "line": "Exposed: revealed and takes more damage, three times more while casting."}',
+    "tracked": '{"type": "none", "mods": [{"stat": "Damage taken", "value": 10, "unit": "%"}], "line": "Tracked by the Huntress: revealed; her glaives hit harder."}',
+    "banished": '{"type": "magic", "control": "stun", "mods": [], "line": "Exiled: cannot act, move or be harmed until it returns."}',
+    "hunters_stride": '{"type": "none", "mods": [{"stat": "ATK", "value": 50, "unit": "%"}], "line": "The next basic attack deals more damage."}',
+    "warding_talisman": '{"type": "magic", "mods": [{"stat": "DEF", "value": 30, "unit": "%"}], "line": "Takes less damage."}',
+    "moonlit_sprint": '{"type": "magic", "mods": [{"stat": "Move", "value": 40, "unit": "%"}], "line": "Moves faster."}',
+    "overcharge": '{"type": "none", "mods": [], "line": "Constructs overcharged: turrets fire twice as fast."}',
+    "aether_aegis": '{"type": "magic", "mods": [{"stat": "DEF", "value": 15, "unit": "%"}], "line": "Inside an Aegis Pylon field: regenerates and takes less damage."}',
+    "aether_haste": '{"type": "magic", "mods": [{"stat": "Move", "value": 25, "unit": "%"}, {"stat": "Attack speed", "value": 25, "unit": "%"}], "line": "Inside a Haste Pylon field: moves and attacks faster."}',
+    "aether_weakened": '{"type": "curse", "mods": [{"stat": "ATK", "value": -25, "unit": "%"}], "line": "Inside a Disruption Pylon field: deals less damage."}',
+    "aether_nexus": '{"type": "magic", "mods": [{"stat": "DEF", "value": 40, "unit": "%"}], "line": "Inside the Nexus: guarded and regenerating."}',
+    "npc_aether_empowered": '{"type": "magic", "mods": [{"stat": "ATK", "value": 25, "unit": "%"}, {"stat": "DEF", "value": 15, "unit": "%"}], "line": "Empowered by an Aetheri pylon."}',
+    "npc_aether": '{"type": "curse", "mods": [], "line": "Seared by Aetheri energy."}',
 }
 FOOTSTEPS = {"gunblade": '{ "class": "leather" }', "witch_slayer": '{ "class": "cloth", "pitch": 0.95 }', "huntress": '{ "class": "beast", "pitch": 0.9 }',
              "aetheri_artificer": '{ "class": "golem", "pitch": 1.1, "volume": 0.8 }', "aetheri_warden": '{ "class": "plate", "pitch": 1.05 }'}
@@ -260,6 +285,13 @@ def _insert(text: str, anchor: str, rows: dict[str, str]):
     idx = text.index(anchor) + len(anchor)
     block = "".join(rows.values())
     return text[:idx] + "\n" + block.rstrip("\n").rstrip(",") + ("," if text[idx:].lstrip().startswith('"') else "") + text[idx:], True
+
+
+def upsert_modifiers(text: str) -> str:
+    rows = {k: f'    "{k}": {v},\n' for k, v in MODIFIERS.items()}
+    out, _ = _insert(text, '"effects": {', rows)
+    json.loads(out)
+    return out
 
 
 def upsert_footsteps(text: str) -> str:
@@ -327,7 +359,7 @@ def main() -> int:
     outputs = {}
     for name, fn in (("ChampionRoster.json", upsert_roster), ("ChampionArtBindings.json", upsert_bindings),
                      ("WeaponLoadouts.json", upsert_loadouts), ("WeaponGrips.json", upsert_grips),
-                     ("BuffVisuals.json", upsert_visuals), ("AudioFootsteps.json", upsert_footsteps)):
+                     ("BuffVisuals.json", upsert_visuals), ("AudioFootsteps.json", upsert_footsteps), ("BuffModifiers.json", upsert_modifiers)):
         path = DATA / name
         outputs[path] = fn(path.read_text(encoding="utf-8"))
     outputs[DATA / "DraftBackgrounds.json"] = backgrounds()

@@ -1,4 +1,8 @@
 #include "CireTargeting.h"
+#include "CireSignatureSkills.h" // new-champions
+#include "CireTechConstructs.h" // new-champions
+#include "CireAbilityDB.h" // new-champions
+#include "CireAbilityShapes.h" // new-champions
 #include "CireSelection.h"
 #include "CireGame.h"
 #include "CireArenas.h" // arenas
@@ -170,6 +174,24 @@ FCireTargetDescriptor CireTargeting::Describe(const FString& Id)
 {
     FCireTargetDescriptor D;
     if(ACireHero::IsPassive(Id)){D.Label=TEXT("Self / Passive");return D;}
+    // new-champions: the kits describe their own footprint (constructs, cones, glaive lines, pounces...).
+    if(CireSignatureSkills::Handles(Id))
+    {
+        FCireHitShape Shape;Shape.Id=FName(*Id);
+        if(!CireSignatureSkills::DescribeShape(Id,Shape))return D;
+        const FCireAbilityDef* Def=CireAbilityDB::Find(Id);
+        D.Range=Def&&Def->Range>0?Def->Range:900.f;
+        if(Shape.bGroundAim)
+        {
+            D.Kind=ECireTargetKind::Ground;D.bHasFootprint=true;D.Footprint=Shape.AsArea();D.bProjectile=Shape.bProjectile;
+            D.bDirectional=Shape.bFromCaster&&(Shape.Kind==ECireHitShape::Line||Shape.Kind==ECireHitShape::Cone);
+            D.Label=CireTechConstructs::IsConstructSkill(Id)?TEXT("Ground placement / Construct"):D.bProjectile?TEXT("Ground aim / Enemy skillshot"):TEXT("Ground");
+        }
+        else if(Def&&Def->Targeting==TEXT("ally")){D.Kind=ECireTargetKind::Friendly;D.Label=TEXT("Ally / Self fallback");D.bSelfFallback=true;}
+        else if(Shape.Kind==ECireHitShape::Self||(Def&&Def->Targeting==TEXT("self"))){D.Kind=ECireTargetKind::Self;D.Label=TEXT("Self");}
+        else{D.Kind=ECireTargetKind::Hostile;D.Label=TEXT("Enemy");}
+        return D;
+    }
     if(const auto* A=CireAbilityLibrary::Find(Id))
     {D.Kind=ECireTargetKind::Ground;D.Label=TEXT("Ground");D.Range=A->CastRange;D.Footprint=A->Area;D.bHasFootprint=true;D.bDirectional=A->Area.Shape==ECireAreaShape::Cone||A->Area.Shape==ECireAreaShape::Line;return D;}
     if(Id==TEXT("ember_lance")||Id==TEXT("frost_bind")||Id==TEXT("piercing_shot"))

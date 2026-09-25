@@ -211,7 +211,7 @@ VISUALS = {
                        [{"shape": "halo", "attach": "overhead", "count": 12, "speed": 0.8}, {"shape": "chains", "attach": "body", "count": 10, "speed": 0.5}],
                        "npc.profane.start", "Fallen Order corrupted light and chains"),
     "npc_aether": vis("Aether-Seared", "debuff", "arcane", [0.5, 0.45, 1.0], [0.12, 0.1, 0.4], [0.95, 0.92, 1.0],
-                      [{"shape": "crystals", "attach": "body", "count": 6, "speed": 0.9}, {"shape": "ring", "attach": "ground", "style": "runes", "count": 8, "speed": 0.7}],
+                      [{"shape": "crystals", "attach": "body", "count": 6, "speed": 0.9}, {"shape": "ripple", "attach": "ground", "style": "shock", "speed": 1.1}],
                       "npc.aether.start", "Aetheri energy weapons, beams and warp fields"),
     "npc_void": vis("Void-Touched", "debuff", "void", [0.65, 0.25, 1.0], [0.15, 0.05, 0.3], [0.95, 0.8, 1.0],
                     [{"shape": "swirl", "attach": "body", "speed": 1.4}, {"shape": "tether", "attach": "link", "style": "beam", "burstOnly": True}],
