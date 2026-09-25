@@ -622,6 +622,7 @@ void UCireInventory::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME_CONDITION(UCireInventory, UndoDepth, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(UCireInventory, bShopVisit, COND_OwnerOnly);
     DOREPLIFETIME(UCireInventory, SkillRanks);
+    DOREPLIFETIME(UCireInventory, bReadyToContinue);
 }
 
 ACireHero* UCireInventory::Hero() const { return Cast<ACireHero>(GetOwner()); }

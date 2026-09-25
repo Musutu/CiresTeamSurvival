@@ -57,6 +57,9 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     TArray<FString> Types;               // "DPS", "TANK", "HEAL"
     TArray<FString> EffectTags;          // Skill Shop card tags ("Roll", "Slow", "Heal", ...)
     TArray<FString> Categories;          // Skill Shop groups, primary first ("Passives", "Offensive", "Crowd Control", ...)
+    // progression-shop: the Skill Shop section id (spell, attack, defensive, control, summon, construct,
+    // passive, ultimate), derived by Tools/BuildAbilityDB.py (rows may preset it).
+    FString Section;
     float CastTime = 0, Range = 0, Radius = 0, Duration = 0;
     /** feat/camera-movement: cast-time spell may start/continue while moving (WoW default: false). Instants always true. */
     bool bCastWhileMoving = true;

@@ -15,6 +15,9 @@
 #include "CireLoot.h"
 #include "CireShopUI.h"
 #include "CireSkillShop.h"
+#include "CirePolymorph.h"
+#include "Camera/PlayerCameraManager.h"
+#include "CireCrowdControl.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -48,6 +51,7 @@ struct FGallery
     bool bShopOnly = false;   // -CireShopGalleryShopOnly
     int32 Expected = 0;
     bool bAutoOpenArmed = false, bAutoOpenChecked = false;
+    TArray<TWeakObjectPtr<ACireMonster>> Critters;
     // network
     int32 NetStep = 0;
     double NetStepAt = 0;
@@ -133,6 +137,8 @@ const FStage Stages[] = {
     // progression-shop: the Skill Shop (Eric's target image) and its purchase moments.
     {TEXT("skill_shop_hover"), 2.4f}, {TEXT("skill_shop_seal_stamp"), .9f}, {TEXT("skill_shop_scroll_flight"), .9f},
     {TEXT("skill_shop_unaffordable_error"), .8f}, {TEXT("skill_shop_auto_open_after_wave"), 1.8f},
+    {TEXT("skill_polymorph_critters"), 4.2f},
+
     // items-v2: the path-defining uniques (filtered grid + tooltip) and the one-per-champion rule.
     {TEXT("shop_path_uniques"), 2.2f}, {TEXT("shop_path_unique_refused"), .8f}};
 bool InSubset(int32 Stage) { return !G.bShopOnly || FString(Stages[Stage].Name).StartsWith(TEXT("shop_")) || FString(Stages[Stage].Name).StartsWith(TEXT("skill_")); }
@@ -260,13 +266,13 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
     case 16: // the ultimate slot opens at wave 10: rejected with the reason, the scroll shakes
         I->ServerBuySkill(TEXT("last_stand"));
         break;
-    case 18: // items-v2: ALL ITEMS filtered to the path-defining uniques, a card hovered
+    case 19: // items-v2: ALL ITEMS filtered to the path-defining uniques, a card hovered
         PC->bShop = true; CireShopUI::DebugItemTab(); SetPhase(Mode, 1);
         H->Gold = 1400;
         CireShopUI::DebugFilter(1u);
         CireShopUI::DebugSelect(TEXT("sigil_of_apotheosis"), 1);
         break;
-    case 19: // owning one path unique, buying a second is refused (server reason, shake)
+    case 20: // owning one path unique, buying a second is refused (server reason, shake)
         PC->bShop = true; CireShopUI::DebugItemTab(); SetPhase(Mode, 1);
         H->Gold = 5000;
         I->Buy(TEXT("heart_of_cataclysm"), Message);
@@ -284,6 +290,29 @@ void EnterStage(ACireGameMode* Mode, int32 Stage)
         if (auto* S = Mode->GetGameState<ACireGameState>()) { S->CycleWavesDone = 1; S->NextWaveSeconds = 8.f; S->Wave = 7; }
         H->Gold = 400;
         G.bAutoOpenArmed = true;
+        break;
+    }
+    case 18:
+    {
+        // Polymorph: three monsters in front of the camera, one per critter (Chicken, Piglet, Frog).
+        PC->bShop = false;
+        HUD->UISettings.bTooltips = false;
+        SetPhase(Mode, 0);
+        // Along the camera's view, out on the lit road beyond the town gate.
+        FVector Forward = H->GetActorForwardVector();
+        if (PC->PlayerCameraManager) Forward = PC->PlayerCameraManager->GetCameraRotation().Vector().GetSafeNormal2D();
+        const FVector Right = FVector::CrossProduct(FVector::UpVector, Forward);
+        for (int32 Critter = 0; Critter < 3; ++Critter)
+        {
+            FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+            const FVector At = H->GetActorLocation() + Forward * 720.f + Right * ((Critter - 1) * 120.f);
+            ACireMonster* M = Mode->GetWorld()->SpawnActor<ACireMonster>(At, (-Forward).Rotation(), Params);
+            if (!M) continue;
+            // The other lane: the hero stands in town, where its own lane's units would leak at the goal.
+            M->Lane = 1 - H->TeamId; M->Health = M->MaxHealth = 5000; Mode->Monsters.Add(M);
+            CirePolymorph::Apply(M, 30.f, H, Critter);
+            G.Critters.Add(M);
+        }
         break;
     }
     default: break;
@@ -324,13 +353,13 @@ bool TickGallery(ACireGameMode* Mode)
         const FVector2D Pos = CireShopUI::DebugGridPos(TEXT("sanguine_sabre"));
         if (Pos.X >= 0) CireShopUI::DebugMouse(Pos);
     }
-    if (G.Stage == 18 || G.Stage == 19) CireShopUI::DebugItemTab(); // items-v2: prep's Skill Shop auto-open must not steal the Armory shots
-    if (G.Stage == 18)
+    if (G.Stage == 19 || G.Stage == 20) CireShopUI::DebugItemTab(); // items-v2: prep's Skill Shop auto-open must not steal the Armory shots
+    if (G.Stage == 19)
     {
         const FVector2D Pos = CireShopUI::DebugGridPos(TEXT("artificers_heartforge"));
         if (Pos.X >= 0) CireShopUI::DebugMouse(Pos);
     }
-    if (G.Stage == 19 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f) CireShopUI::DebugFreezeAfterLastEvent(.1f);
+    if (G.Stage == 20 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f) CireShopUI::DebugFreezeAfterLastEvent(.1f);
     // Skill Shop hover: the pointer rests on a scroll so it lifts and shows its tooltip.
     if (G.Stage == 13)
     {
@@ -341,6 +370,8 @@ bool TickGallery(ACireGameMode* Mode)
     if ((G.Stage == 14 || G.Stage == 15) && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f)
         CireShopUI::DebugFreezeAfterStamp(G.Stage == 14 ? .2f : .62f);
     if (G.Stage == 16 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f) CireShopUI::DebugFreezeAfterLastEvent(.1f);
+    // Breather with the Ready to Continue gate: the fixture drives the gate like the match tick does.
+    if (G.Stage == 17) { float Timer = 8.f; CireSkillShop::HoldBreather(Mode, .016f, Timer); }
     // Auto-open: the second cleared wave arrives a moment later (the HUD has seen the first).
     if (G.Stage == 17 && G.bAutoOpenArmed && Now - G.StageStart >= .4f)
     {
@@ -355,6 +386,14 @@ bool TickGallery(ACireGameMode* Mode)
         else { UE_LOG(LogCireShopFixtures, Error, TEXT("CIRE_SHOP_GALLERY_FAIL the Skill Shop did not open after a cleared wave")); }
         G.bPass &= bOpened;
         G.bAutoOpenChecked = true;
+    }
+    if (G.Stage == 18 && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .05f)
+    {
+        int32 Shown = 0;
+        for (const auto& M : G.Critters) Shown += M.IsValid() && CirePolymorph::IsPolymorphed(M.Get()) && CirePolymorph::HasCritterVisual(M.Get());
+        if (Shown == 3) { UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_GALLERY_POLYMORPH_PASS critters=3")); }
+        else { UE_LOG(LogCireShopFixtures, Error, TEXT("CIRE_SHOP_GALLERY_FAIL polymorph critter visuals=%d/3"), Shown); }
+        G.bPass &= Shown == 3;
     }
     // Feedback shots freeze the UI clock mid-animation so the capture shows the moment itself.
     if (((G.Stage >= 2 && G.Stage <= 4) || G.Stage == 11) && !G.bCaptured && Now - G.StageStart >= Stages[G.Stage].Delay - .3f)
@@ -465,7 +504,14 @@ bool TickNetServer(ACireGameMode* Mode)
         const FCireSkillRank* Rank = I->SkillRanks.FindByPredicate([](const FCireSkillRank& R) { return R.Level == 2; });
         const int32 Spent = CireSkillShop::BuyPrice(Hero, Rank->Id) > 0 ? 500 - Hero->Gold : -1;
         if (!S || S->ProgressionMode != 1 || !Hero->Skills.Contains(Rank->Id) || Spent <= 0) { Fail(TEXT("server Skill Shop state")); return true; }
-        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_PASS skill=%s level=2 spent=%d mode=SkillShop (client could not change it)"), *Rank->Id, Spent);
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_SKILL_PASS skill=%s level=2 spent=%d mode=SkillShop (client could not change it)"), *Rank->Id, Spent);
+        // Polymorph replication: a monster next to the client's hero becomes a Piglet.
+        SetPhase(Mode, 0);
+        FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        ACireMonster* Critter = Mode->GetWorld()->SpawnActor<ACireMonster>(Hero->GetActorLocation() + Hero->GetActorForwardVector() * 450.f, FRotator::ZeroRotator, Params);
+        if (Critter) { Critter->Lane = Hero->TeamId; Critter->Health = Critter->MaxHealth = 5000; Mode->Monsters.Add(Critter); }
+        if (!Critter || CirePolymorph::Apply(Critter, 60.f, Hero, 1) <= 0) { Fail(TEXT("polymorph fixture")); return true; }
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_SERVER_PASS polymorph=Piglet"));
         G.NetStep = 7;
     }
     else if (G.NetStep == 5 && Now - G.NetStepAt > 8.0) { Fail(TEXT("owner could not open their chest")); return true; }
@@ -686,10 +732,23 @@ bool CireShopFixtures::TickClient(ACireController* Controller)
         break;
     case 16:
         if (!(CireSkillShop::Level(Hero, C.SkillId) == 2 && Hero->Gold == 500 - C.SkillPrice - C.LevelPrice && Saw(ECireShopAction::SkillLevel, true))) return true;
-        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_PASS skill=%s level=2 gold=%d replicated_ranks=1 mode_unchanged=1"), *C.SkillId, Hero->Gold);
-        C.bDone = true;
-        FPlatformMisc::RequestExitWithStatus(false, 0);
+        UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_SKILL_PASS skill=%s level=2 gold=%d replicated_ranks=1 mode_unchanged=1"), *C.SkillId, Hero->Gold);
+        Next();
         break;
+    case 17:
+    {
+        // The server polymorphed a monster: the buff record (critter = Piglet) replicates and the
+        // client draws the critter body.
+        for (TActorIterator<ACireMonster> It(Controller->GetWorld()); It; ++It)
+            if (CirePolymorph::CritterOf(*It) == 1 && CirePolymorph::HasCritterVisual(*It) && CireCrowdControl::IsStunned(*It))
+            {
+                UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_PASS polymorph_replicated=1 critter=Piglet visual=1"));
+                C.bDone = true;
+                FPlatformMisc::RequestExitWithStatus(false, 0);
+                return true;
+            }
+        return true;
+    }
     default: break;
     }
     if (Now - C.StepAt > 20) Fail(TEXT("step timed out"));

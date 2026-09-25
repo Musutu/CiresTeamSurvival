@@ -1,0 +1,49 @@
+{
+  "source": "poly.pizza (Quaternius, CC0 1.0)",
+  "fetched": "2026-09-25T12:44:40Z",
+  "assets": [
+    {
+      "name": "Chicken",
+      "title": "Chicken",
+      "page": "https://poly.pizza/m/ineV9pU5VL",
+      "url": "https://static.poly.pizza/a0001762-9352-48c3-9abd-be91e42db114.glb",
+      "licence": "CC0 1.0",
+      "creator": "Quaternius",
+      "bytes": 140112,
+      "sha256": "3390f6f6944210ed9f612bd0010165d1c443c6186638f9fc4380574bd9e5fce1",
+      "mesh": "/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/Chicken.Chicken",
+      "clips": {
+        "CharacterArmature_No": "/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_No.ChickenCharacterArmature_No",
+        "CharacterArmature_Yes": "/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_Yes.ChickenCharacterArmature_Yes",
+        "CharacterArmature_Idle": "/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_Idle.ChickenCharacterArmature_Idle",
+        "CharacterArmature_Jump": "/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_Jump.ChickenCharacterArmature_Jump",
+        "CharacterArmature_Walk": "/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_Walk.ChickenCharacterArmature_Walk",
+        "CharacterArmature_Dance": "/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_Dance.ChickenCharacterArmature_Dance",
+        "CharacterArmature_Death": "/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_Death.ChickenCharacterArmature_Death",
+        "CharacterArmature_Bite_Front": "/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_Bite_Front.ChickenCharacterArmature_Bite_Front",
+        "CharacterArmature_HitRecieve": "/Game/Free/Critters/Chicken/Chicken/SkeletalMeshes/ChickenCharacterArmature_HitRecieve.ChickenCharacterArmature_HitRecieve"
+      },
+      "height": 234.7,
+      "length": 234.9
+    },
+    {
+      "name": "Frog",
+      "title": "Frog",
+      "page": "https://poly.pizza/m/9Z2V8fpazF",
+      "url": "https://static.poly.pizza/08416495-b056-4ed7-b23b-5a10e82277a0.glb",
+      "licence": "CC0 1.0",
+      "creator": "Quaternius",
+      "bytes": 587360,
+      "sha256": "92dc96c90e7228676f8c43dc7711ba5ed5505029ebb2f6d4ad198d9e35bdbfe0",
+      "mesh": "/Game/Free/Critters/Frog/Frog/SkeletalMeshes/Frog.Frog",
+      "clips": {
+        "FrogArmature_Frog_Idle": "/Game/Free/Critters/Frog/Frog/SkeletalMeshes/FrogFrogArmature_Frog_Idle.FrogFrogArmature_Frog_Idle",
+        "FrogArmature_Frog_Jump": "/Game/Free/Critters/Frog/Frog/SkeletalMeshes/FrogFrogArmature_Frog_Jump.FrogFrogArmature_Frog_Jump",
+        "FrogArmature_Frog_Death": "/Game/Free/Critters/Frog/Frog/SkeletalMeshes/FrogFrogArmature_Frog_Death.FrogFrogArmature_Frog_Death",
+        "FrogArmature_Frog_Attack": "/Game/Free/Critters/Frog/Frog/SkeletalMeshes/FrogFrogArmature_Frog_Attack.FrogFrogArmature_Frog_Attack"
+      },
+      "height": 150.1,
+      "length": 350.2
+    }
+  ]
+}

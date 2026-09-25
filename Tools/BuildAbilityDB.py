@@ -23,7 +23,7 @@ SCHOOLS = ["physical", "fire", "cold", "earth", "tide", "holy", "shadow", "void"
 TYPES = {"tank": "TANK", "dps": "DPS", "heal": "HEAL"}
 TARGETING = ["self", "ally", "enemy", "aim", "passive"]
 EFFECT_TYPES = ["stun", "slow", "silence", "interrupt", "healCut", "healCutDone", "armorBreak", "taunt", "guard", "lethal", "cleanse",
-                "mark", "purge", "banish", "haste", "weaken", "shield"]  # new-champions: marks, purges, banishment, construct fields
+                "mark", "purge", "banish", "haste", "weaken", "shield", "polymorph", "root"]  # new-champions: marks, purges, banishment, construct fields
 
 # Default curves by kind. Scale() in CiresRules.cpp is the authority; the docs table mirrors it.
 CURVES = {
@@ -89,6 +89,12 @@ POOL = {
                            "Summon a commandable guardian ({effect} health, 22 damage) for 30s.", [], {}),
     "spectral_pack": ("Spectral Pack", ["dps"], "active", "void", "aim", 0, 55, 0, 24, 14, "damage per hit", 600, 230, 18,
                       "Summon three spectral hunters that attack your target for {effect} per hit for 18s.", [], {}),
+    # progression-shop: Polymorph (WoW "Polymorph: Sheep" style). Effect = seconds; elites get half, bosses and
+    # Pack Leaders are immune, champions get 3s with diminishing returns. Any damage breaks it.
+    "polymorph": ("Polymorph", ["dps", "heal"], "active", "arcane", "enemy", 1.5, 50, 0, 20, 8, "seconds", 1100, 0, 8,
+                  "Cast 1.5s: turn an enemy into a harmless critter for {effect}s (half on elites, 3s on champions; bosses and "
+                  "Pack Leaders are immune). Any damage breaks it.", [fx("polymorph", "target", 8, label="Polymorphed")],
+                  {"curve": {"effectCap": 12}}),
     "second_wind": ("Second Wind", ["tank", "dps", "heal"], "active", "nature", "self", 0, 0, 30, 20, 18, "% max health", 0, 0, 0,
                     "Heal only yourself for {effect}% of your maximum health.", [], {"curve": {"effectCap": 35}}),
     "decimating_strike": ("Decimating Strike", ["tank", "dps"], "active", "physical", "enemy", 0, 0, 40, 300, 150, "damage (non-lethal targets)", 300, 500, 10,
@@ -491,6 +497,8 @@ PLANNED_CC = {
 # Modifier registry rows (Docs/BuffModifiers.md format) for the effect ids this DB adds.
 # stunned / silenced / healing_cut / interrupted rows live in BuffModifiers.json (wow-ui).
 BUFF_MODIFIERS = {
+    "polymorphed": {"type": "arcane", "control": "incapacitate", "mods": [{"stat": "Actions", "value": 0, "unit": ""}],
+                    "line": "Turned into a harmless critter: cannot attack or cast. Damage breaks it.", "name": "Polymorphed"},
     "heal_cut_done": {"type": "curse", "control": "none", "mods": [{"stat": "Healing", "value": -50, "unit": "%"}],
                       "line": "Healing you deal is reduced.", "name": "Enfeebled"},
     "armor_broken": {"type": "physical", "control": "none", "mods": [{"stat": "Armor", "value": -50, "unit": "%", "duration": 10}],
@@ -524,6 +532,54 @@ BUFF_MODIFIERS = {
                        "line": "Rolls refund energy; dodged hits restore health.", "name": "Evasive Stance"},
 }
 
+
+# progression-shop: Skill Shop "periodic table" sections and card tags, derived from each ability's data.
+# One primary section per ability; any number of tags. Order = the shop's section order.
+SECTIONS = ["spell", "attack", "defensive", "control", "summon", "construct", "passive", "ultimate"]
+CC_TAGS = {"stun": "Stun", "silence": "Silence", "slow": "Slow", "root": "Root", "polymorph": "Polymorph", "banish": "Banish",
+           "interrupt": "Interrupt", "taunt": "Taunt"}
+CONTROL_TYPES = {"stun", "silence", "slow", "root", "polymorph", "banish", "interrupt"}
+OTHER_TAGS = {"healCut": "Heal Cut", "healCutDone": "Heal Cut", "armorBreak": "Armor Break", "guard": "Guard", "shield": "Shield",
+              "cleanse": "Cleanse", "lethal": "Execute", "mark": "Mark", "purge": "Purge", "haste": "Haste", "weaken": "Weaken"}
+
+
+def classify(rec, summons, constructs):
+    types = {e["type"] for e in rec["effects"]}
+    if "void" in rec:
+        types |= {rec["void"].get("innerEffect", "stun"), rec["void"].get("outerEffect", "slow")}
+    label = (rec.get("effectLabel") or "").lower()
+    text = (rec.get("description") or "").lower()
+    heal = bool(re.search(r"(?<![a-z])heal(ing|s|ed)?(?![a-z])", label + " " + text)) and "damage" not in label
+    deals = ("damage" in label and "reduction" not in label) or bool(re.search(r"(\{effect\}|\d)[^.]{0,24}damage", text)) and "less damage" not in text
+    tags = []
+    for t in sorted(types, key=lambda t: list(CC_TAGS).index(t) if t in CC_TAGS else 99):
+        tag = CC_TAGS.get(t) or OTHER_TAGS.get(t)
+        if tag and tag not in tags:
+            tags.append(tag)
+    if heal: tags.insert(0, "Heal")
+    is_summon = rec["id"] in summons or "summon" in text and rec["kind"] == "active"
+    is_construct = rec.get("category") == "construct" or rec["id"] in constructs
+    is_summon = is_summon or rec.get("category") == "pet"  # pets: companion skills sit with the summons
+    if is_summon: tags.insert(0, "Summon")
+    if is_construct: tags.insert(0, "Construct")
+    if deals: tags.append("Damage")
+    if rec.get("requires") == "shield": tags.insert(0, "Shield")  # scaling-kits: shield users only
+    if rec["kind"] == "passive": section = "passive"
+    elif rec["kind"] == "ultimate": section = "ultimate"
+    elif is_construct: section = "construct"
+    elif is_summon: section = "summon"
+    elif types & CONTROL_TYPES: section = "control"
+    elif heal and not deals or types & {"guard", "shield", "cleanse", "taunt", "haste"} or rec["targeting"] in ("self", "ally") and not deals:
+        section = "defensive"
+    elif rec["school"] == "physical": section = "attack"
+    else: section = "spell"
+    # Rows that set their own effectTags / categories / section (e.g. champion-draft's dodge rolls) keep
+    # them; only missing fields are derived.
+    if not rec.get("section"):
+        cats = [c for c in rec.get("categories", []) if c in SECTIONS]
+        rec["section"] = cats[0] if cats else section
+    if not rec.get("effectTags"):
+        rec["effectTags"] = tags[:4]
 
 # Cast-time abilities that may still be cast (and keep casting) while moving.
 CAST_WHILE_MOVING = set()
@@ -727,7 +783,11 @@ def build():
     for sid, upgrade in ULTIMATE_UPGRADES.items():
         if sid in abilities:
             abilities[sid]["ultimateUpgrade"] = upgrade
-    return dict(schemaVersion=1, generator="Tools/BuildAbilityDB.py", schools=SCHOOLS, types=list(TYPES.values()),
+    summons = {x["id"] for x in tuning["summons"]}
+    constructs = {x["id"] for x in tuning["constructs"]}
+    for rec in abilities.values():
+        classify(rec, summons, constructs)
+    return dict(schemaVersion=1, generator="Tools/BuildAbilityDB.py", schools=SCHOOLS, sections=SECTIONS, types=list(TYPES.values()),
                 scalingFormula="effect*(1+g*ln(1+(L-1)/h)) capped at effectCap; cost*(1+(cap-1)(L-1)/(L-1+ramp)); cooldown*(floor+(1-floor)e^-((L-1)/decay)), min minCooldownSeconds",
                 abilities=abilities, champions=champions, buffModifiers=BUFF_MODIFIERS, shieldChampions=sorted(shields), rangedChampions=sorted(ranged),
                 level15Labels=L15_LABEL, auraLabels=AURA_LABEL)
@@ -744,6 +804,7 @@ def validate(db):
         if any(not isinstance(b[k], (int, float)) or b[k] < 0 for k in ("effect", "manaCost", "energyCost", "cooldown", "castTime")): errors.append(f"{sid}: base")
         for e in a["effects"]:
             if e["type"] not in EFFECT_TYPES: errors.append(f"{sid}: effect {e['type']}")
+        if a.get("section") not in SECTIONS: errors.append(f"{sid}: section {a.get('section')}")
         if "void" in a and not 0 < a["void"]["innerRadius"] < a["void"]["outerRadius"]: errors.append(f"{sid}: void radii")
         prev = scale(b, a["curve"], 1)
         for level in range(2, 201):

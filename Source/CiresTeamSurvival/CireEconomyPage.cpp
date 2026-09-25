@@ -55,6 +55,7 @@ void ACireHUD::DrawEconomyPage(float X, float Y)
     IntRow(TEXT("+1 active slot every N waves"), R.ActiveSlotEveryWaves, 1, 10, L, T + 28 + Step * 9, TEXT("Spell kits fill up slowly."));
     IntRow(TEXT("Passive from wave"), R.PassiveFromWave, 0, 50, L, T + 28 + Step * 10, TEXT("Wave that opens the passive slot."));
     IntRow(TEXT("Ultimate from wave"), R.UltimateFromWave, 0, 50, L, T + 28 + Step * 11, TEXT("Wave that opens the ultimate slot."));
+    { double Cap = S.ReadyMaxSeconds; Row(TEXT("Ready gate cap (s, 0 = none)"), Cap, 0, 600, 10, L, T + 28 + Step * 12, TEXT("Skill Shop mode: the next wave waits for every human's READY TO CONTINUE, at most this long (AFK safety).")); S.ReadyMaxSeconds = static_cast<float>(Cap); }
     Label(TEXT("SKILL PRICES (in mob values)"), Rt, T - 4, 10, GoldC);
     Row(TEXT("Active skill"), R.ActivePrice, 1, 100, 1, Rt, T + 12, TEXT("Price of a new active, times the current mob value."));
     Row(TEXT("Each owned active +"), R.ActiveOwnedGrowth, 0, 2, .05, Rt, T + 12 + Step, TEXT("Every active you own makes the next one this much dearer."));

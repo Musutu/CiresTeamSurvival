@@ -387,6 +387,12 @@
       "accent": "#82e664",
       "pool": false
     },
+    "polymorph": {
+      "school": "arcane",
+      "glyph": "polymorph",
+      "accent": "#e07af0",
+      "pool": true
+    },
     "frost_bind": {
       "school": "frost",
       "glyph": "frost_bind",
