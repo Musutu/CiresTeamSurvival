@@ -1663,6 +1663,88 @@
    ],
    "fit": "uniform",
    "shape": "box"
+  },
+  "dress_crow_flock": {
+   "candidates": [
+    "/Game/Free/Dressing/Meshes/SM_Dress_CrowFlock.SM_Dress_CrowFlock"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    1511.0,
+    1210.0,
+    202.0
+   ],
+   "fit": "none",
+   "shape": "box",
+   "shadow": true,
+   "wpo": true,
+   "wpoDistance": 12000
+  },
+  "dress_crow": {
+   "candidates": [
+    "/Game/Free/Dressing/Meshes/SM_Dress_CrowPerched.SM_Dress_CrowPerched"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    61.0,
+    14.0,
+    24.0
+   ],
+   "fit": "none",
+   "shape": "box",
+   "cull": 5000
+  },
+  "dress_litter": {
+   "candidates": [
+    "/Game/Free/Dressing/Meshes/SM_Dress_LeafLitter.SM_Dress_LeafLitter"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    260.0,
+    260.0,
+    2.0
+   ],
+   "fit": "none",
+   "shape": "box",
+   "shadow": false,
+   "cull": 7000
+  },
+  "dress_branches": {
+   "candidates": [
+    "/Game/Free/Dressing/Props/dry_branches_medium_01/dry_branches_medium_01_1k/StaticMeshes/dry_branches_medium_01_a.dry_branches_medium_01_a"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    32.0,
+    130.0,
+    34.0
+   ],
+   "fit": "uniform",
+   "shape": "box",
+   "shadow": false,
+   "cull": 6000
+  },
+  "dress_haypile": {
+   "candidates": [
+    "/Game/Free/Dressing/Meshes/SM_Dress_HayPile.SM_Dress_HayPile"
+   ],
+   "fallback": "cube",
+   "fallbackMaterial": "/Game/Arenas/Materials/MI_ArenaW_FieldStone.MI_ArenaW_FieldStone",
+   "footprint": [
+    227.0,
+    214.0,
+    55.0
+   ],
+   "fit": "none",
+   "shape": "box",
+   "cull": 9000,
+   "materials": {
+    "0": "/Game/Arenas/Materials/MI_Arena_Straw.MI_Arena_Straw"
+   }
   }
  },
  "arenas": [
@@ -2679,6 +2761,94 @@
      42,
      34,
      1,
+     0
+    ],
+    [
+     "dress_crow_flock",
+     0,
+     0,
+     1900,
+     30,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "dress_crow_flock",
+     5200,
+     2600,
+     2300,
+     200,
+     1.3,
+     1.3,
+     1.3,
+     0
+    ],
+    [
+     "dress_crow",
+     -1180,
+     1020,
+     176,
+     70,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "dress_crow",
+     1180,
+     1020,
+     176,
+     110.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "dress_haypile",
+     -2350,
+     300,
+     0.0,
+     40,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "dress_haypile",
+     2350,
+     300,
+     0.0,
+     140.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "dress_haypile",
+     -2380,
+     -420,
+     0.0,
+     -20,
+     0.8,
+     0.8,
+     0.8,
+     0
+    ],
+    [
+     "dress_haypile",
+     2380,
+     -420,
+     0.0,
+     200.0,
+     0.8,
+     0.8,
+     0.8,
      0
     ]
    ],
@@ -5115,6 +5285,39 @@
      1.0,
      1.0,
      0
+    ],
+    [
+     "dress_crow",
+     -760,
+     1180,
+     62,
+     150,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "dress_crow",
+     760,
+     1180,
+     62,
+     30.0,
+     1.0,
+     1.0,
+     1.0,
+     0
+    ],
+    [
+     "dress_crow_flock",
+     0,
+     0,
+     2400,
+     120,
+     0.8,
+     0.8,
+     0.8,
+     0
     ]
    ],
    "scatter": [
@@ -5296,6 +5499,75 @@
      "outside": true,
      "margin": 200,
      "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "dress_litter",
+     "region": [
+      -2600,
+      -2000,
+      2600,
+      2000
+     ],
+     "count": 26,
+     "seed": 81,
+     "scale": [
+      0.8,
+      1.4
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 40,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "dress_litter",
+     "region": [
+      -7000,
+      -7000,
+      7000,
+      7000
+     ],
+     "count": 120,
+     "seed": 82,
+     "scale": [
+      1.0,
+      2.0
+     ],
+     "outside": true,
+     "margin": 40,
+     "clearance": 0,
+     "exclude": [],
+     "z": 0,
+     "zJitter": 0,
+     "randomYaw": true,
+     "tilt": false
+    },
+    {
+     "slot": "dress_branches",
+     "region": [
+      -2600,
+      -2000,
+      2600,
+      2000
+     ],
+     "count": 40,
+     "seed": 83,
+     "scale": [
+      0.8,
+      1.6
+     ],
+     "outside": false,
+     "margin": 0,
+     "clearance": 60,
      "exclude": [],
      "z": 0,
      "zJitter": 0,
