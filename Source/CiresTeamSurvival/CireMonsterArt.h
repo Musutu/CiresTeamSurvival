@@ -41,6 +41,14 @@ namespace CireMonsterArt
         TMap<FName, float> PropScale;
         TMap<FName, FVector> PropOffset;
         TMap<FName, FRotator> PropRotation;
+        // world-dressing: free (CC0) creature bodies from RaceMeshes.free.json. Their clips are in place, so the
+        // natural ground speeds come from data (cm/s at this mesh scale, actor scale 1); "quadruped" bodies expose
+        // head/pelvis/feet/hands as sockets on animal bones; ReachCm bounds the pose (long bodies, tails, legs).
+        FString Rig;
+        bool bLockRoot = false;
+        float WalkSpeedCm = 0.f, RunSpeedCm = 0.f, ReachCm = 0.f;
+        /** Socket name -> bone, added to the mesh in memory when the body is applied (head, pelvis, hand_r...). */
+        TMap<FName, FName> Sockets;
     };
     struct FArchetypeArt
     {
@@ -161,6 +169,8 @@ private:
     FName AppliedArchetype;
     FString AppliedVariant;
     float AppliedMeshScale = 1.f;
+    // world-dressing: data-driven natural speeds of the applied body in raw mesh units (0 = fit from the clips).
+    float AppliedWalkRaw = 0.f, AppliedRunRaw = 0.f;
     FAction Current;
     uint8 SeenSwingSerial = 0;
     float SeenCastStartedAt = -1.f;

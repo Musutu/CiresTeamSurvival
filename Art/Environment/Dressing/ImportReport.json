@@ -1,0 +1,1650 @@
+{
+  "textures": {
+    "LeafSet017": [
+      "/Game/Free/Dressing/Textures/LeafSet017/T_LeafSet017_D.T_LeafSet017_D",
+      "/Game/Free/Dressing/Textures/LeafSet017/T_LeafSet017_A.T_LeafSet017_A",
+      "/Game/Free/Dressing/Textures/LeafSet017/T_LeafSet017_N.T_LeafSet017_N"
+    ],
+    "Leaking003": [
+      "/Game/Free/Dressing/Textures/Leaking003/T_Leaking003_D.T_Leaking003_D",
+      "/Game/Free/Dressing/Textures/Leaking003/T_Leaking003_A.T_Leaking003_A"
+    ],
+    "ScatteredLeaves007": [
+      "/Game/Free/Dressing/Textures/ScatteredLeaves007/T_ScatteredLeaves007_D.T_ScatteredLeaves007_D",
+      "/Game/Free/Dressing/Textures/ScatteredLeaves007/T_ScatteredLeaves007_A.T_ScatteredLeaves007_A",
+      "/Game/Free/Dressing/Textures/ScatteredLeaves007/T_ScatteredLeaves007_N.T_ScatteredLeaves007_N"
+    ]
+  },
+  "materials": [
+    "/Game/Free/Dressing/Materials/M_DressCard.M_DressCard",
+    "/Game/Free/Dressing/Materials/M_DressPuddle.M_DressPuddle",
+    "/Game/Free/Dressing/Materials/M_DressSmoke.M_DressSmoke",
+    "/Game/Free/Dressing/Materials/M_DressCrow.M_DressCrow",
+    "/Game/Free/Dressing/Materials/MI_Dress_Ivy.MI_Dress_Ivy",
+    "/Game/Free/Dressing/Materials/MI_Dress_Litter.MI_Dress_Litter",
+    "/Game/Free/Dressing/Materials/MI_Dress_Grime.MI_Dress_Grime",
+    "/Game/Free/Dressing/Materials/MI_Dress_Puddle.MI_Dress_Puddle",
+    "/Game/Free/Dressing/Materials/MI_Dress_Smoke.MI_Dress_Smoke",
+    "/Game/Free/Dressing/Materials/MI_Dress_Crow.MI_Dress_Crow",
+    "/Game/Free/Dressing/Materials/MI_Dress_CrowFlight.MI_Dress_CrowFlight"
+  ],
+  "meshes": {
+    "SM_Dress_ShopSignBoot": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_ShopSignBoot.SM_Dress_ShopSignBoot",
+      "triangles": 144,
+      "extent": [
+        60.3,
+        8.0,
+        52.8
+      ],
+      "origin": [
+        59.7,
+        0.0,
+        -32.8
+      ]
+    },
+    "SM_Dress_ShopSignTankard": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_ShopSignTankard.SM_Dress_ShopSignTankard",
+      "triangles": 168,
+      "extent": [
+        60.3,
+        8.0,
+        52.8
+      ],
+      "origin": [
+        59.7,
+        0.0,
+        -32.8
+      ]
+    },
+    "SM_Dress_ShopSignKey": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_ShopSignKey.SM_Dress_ShopSignKey",
+      "triangles": 168,
+      "extent": [
+        60.3,
+        8.0,
+        52.8
+      ],
+      "origin": [
+        59.7,
+        0.0,
+        -32.8
+      ]
+    },
+    "SM_Dress_WallBannerRed": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_WallBannerRed.SM_Dress_WallBannerRed",
+      "triangles": 82,
+      "extent": [
+        19.0,
+        53.0,
+        120.0
+      ],
+      "origin": [
+        19.0,
+        0.0,
+        -110.0
+      ]
+    },
+    "SM_Dress_WallBannerPale": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_WallBannerPale.SM_Dress_WallBannerPale",
+      "triangles": 82,
+      "extent": [
+        19.0,
+        48.0,
+        105.0
+      ],
+      "origin": [
+        19.0,
+        0.0,
+        -95.0
+      ]
+    },
+    "SM_Dress_Laundry": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_Laundry.SM_Dress_Laundry",
+      "triangles": 352,
+      "extent": [
+        15.5,
+        193.0,
+        68.4
+      ],
+      "origin": [
+        15.5,
+        0.0,
+        -62.4
+      ]
+    },
+    "SM_Dress_LaundryShort": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_LaundryShort.SM_Dress_LaundryShort",
+      "triangles": 312,
+      "extent": [
+        15.4,
+        138.0,
+        69.4
+      ],
+      "origin": [
+        15.4,
+        -5.0,
+        -58.8
+      ]
+    },
+    "SM_Dress_IvyTall": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_IvyTall.SM_Dress_IvyTall",
+      "triangles": 1800,
+      "extent": [
+        11.6,
+        130.7,
+        226.9
+      ],
+      "origin": [
+        12.1,
+        -4.6,
+        207.6
+      ]
+    },
+    "SM_Dress_IvyLow": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_IvyLow.SM_Dress_IvyLow",
+      "triangles": 1480,
+      "extent": [
+        11.0,
+        204.7,
+        113.6
+      ],
+      "origin": [
+        11.5,
+        -1.8,
+        93.7
+      ]
+    },
+    "SM_Dress_PuddleA": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_PuddleA.SM_Dress_PuddleA",
+      "triangles": 22,
+      "extent": [
+        117.1,
+        83.5,
+        0.0
+      ],
+      "origin": [
+        13.0,
+        5.4,
+        0.6
+      ]
+    },
+    "SM_Dress_PuddleB": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_PuddleB.SM_Dress_PuddleB",
+      "triangles": 22,
+      "extent": [
+        169.4,
+        128.3,
+        0.0
+      ],
+      "origin": [
+        -25.6,
+        -9.4,
+        0.6
+      ]
+    },
+    "SM_Dress_GrimeStreak": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_GrimeStreak.SM_Dress_GrimeStreak",
+      "triangles": 2,
+      "extent": [
+        0.0,
+        130.0,
+        65.0
+      ],
+      "origin": [
+        1.2,
+        0.0,
+        -65.0
+      ]
+    },
+    "SM_Dress_LeafLitter": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_LeafLitter.SM_Dress_LeafLitter",
+      "triangles": 2,
+      "extent": [
+        130.0,
+        130.0,
+        0.0
+      ],
+      "origin": [
+        0.0,
+        0.0,
+        0.8
+      ]
+    },
+    "SM_Dress_Smoke": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_Smoke.SM_Dress_Smoke",
+      "triangles": 60,
+      "extent": [
+        195.9,
+        200.0,
+        550.0
+      ],
+      "origin": [
+        137.3,
+        0.0,
+        550.0
+      ]
+    },
+    "SM_Dress_CrowPerched": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_CrowPerched.SM_Dress_CrowPerched",
+      "triangles": 44,
+      "extent": [
+        30.5,
+        7.0,
+        12.0
+      ],
+      "origin": [
+        2.5,
+        0.0,
+        12.0
+      ]
+    },
+    "SM_Dress_CrowFlock": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_CrowFlock.SM_Dress_CrowFlock",
+      "triangles": 168,
+      "extent": [
+        755.5,
+        605.1,
+        101.1
+      ],
+      "origin": [
+        143.9,
+        14.8,
+        35.6
+      ]
+    },
+    "SM_Dress_WallTorch": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_WallTorch.SM_Dress_WallTorch",
+      "triangles": 108,
+      "extent": [
+        15.5,
+        7.0,
+        42.3
+      ],
+      "origin": [
+        15.5,
+        0.0,
+        1.7
+      ]
+    },
+    "SM_Dress_WeaponRack": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_WeaponRack.SM_Dress_WeaponRack",
+      "triangles": 180,
+      "extent": [
+        38.9,
+        108.0,
+        85.5
+      ],
+      "origin": [
+        0.0,
+        0.0,
+        84.5
+      ]
+    },
+    "SM_Dress_HayPile": {
+      "asset": "/Game/Free/Dressing/Meshes/SM_Dress_HayPile.SM_Dress_HayPile",
+      "triangles": 312,
+      "extent": [
+        113.4,
+        107.2,
+        27.5
+      ],
+      "origin": [
+        -2.0,
+        -10.0,
+        27.5
+      ]
+    }
+  },
+  "props": {
+    "CheeseBox_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/CheeseBox_01/CheeseBox_01_1k/StaticMeshes/CheeseBox_01.CheeseBox_01",
+          "triangles": 698,
+          "extent": [
+            12.0,
+            5.3,
+            3.2
+          ],
+          "origin": [
+            0.0,
+            0.0,
+            3.2
+          ],
+          "minZ": 0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/CheeseBox_01/CheeseBox_01_1k/StaticMeshes/CheeseBox_01_lid.CheeseBox_01_lid",
+          "triangles": 186,
+          "extent": [
+            11.9,
+            5.3,
+            0.2
+          ],
+          "origin": [
+            -0.0,
+            0.1,
+            6.4
+          ],
+          "minZ": 6.2
+        }
+      ]
+    },
+    "wooden_bowl_02": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_bowl_02/wooden_bowl_02_1k/StaticMeshes/wooden_bowl_02_1k.wooden_bowl_02_1k",
+          "triangles": 4666,
+          "extent": [
+            6.6,
+            6.4,
+            3.8
+          ],
+          "origin": [
+            0.0,
+            -0.1,
+            3.6
+          ],
+          "minZ": -0.2
+        }
+      ]
+    },
+    "carved_wooden_plate": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/carved_wooden_plate/carved_wooden_plate_1k/StaticMeshes/carved_wooden_plate_1k.carved_wooden_plate_1k",
+          "triangles": 2112,
+          "extent": [
+            13.6,
+            13.5,
+            1.9
+          ],
+          "origin": [
+            -0.2,
+            -0.7,
+            1.7
+          ],
+          "minZ": -0.2
+        }
+      ]
+    },
+    "wooden_cutting_board": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_cutting_board/wooden_cutting_board_1k/StaticMeshes/wooden_cutting_board_1k.wooden_cutting_board_1k",
+          "triangles": 3520,
+          "extent": [
+            22.6,
+            12.4,
+            2.1
+          ],
+          "origin": [
+            0.1,
+            -0.0,
+            2.1
+          ],
+          "minZ": -0.0
+        }
+      ]
+    },
+    "brass_goblets": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/brass_goblets/brass_goblets_1k/StaticMeshes/brass_goblet_01.brass_goblet_01",
+          "triangles": 3072,
+          "extent": [
+            7.5,
+            7.7,
+            13.6
+          ],
+          "origin": [
+            0.0,
+            12.1,
+            14.1
+          ],
+          "minZ": 0.5
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/brass_goblets/brass_goblets_1k/StaticMeshes/brass_goblet_02.brass_goblet_02",
+          "triangles": 3264,
+          "extent": [
+            7.2,
+            7.3,
+            13.4
+          ],
+          "origin": [
+            -14.9,
+            -3.0,
+            13.8
+          ],
+          "minZ": 0.5
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/brass_goblets/brass_goblets_1k/StaticMeshes/brass_goblet_03.brass_goblet_03",
+          "triangles": 3264,
+          "extent": [
+            8.1,
+            7.8,
+            14.0
+          ],
+          "origin": [
+            15.9,
+            -2.7,
+            14.4
+          ],
+          "minZ": 0.4
+        }
+      ]
+    },
+    "brass_pot_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/brass_pot_01/brass_pot_01_1k/StaticMeshes/brass_pot_01_1k.brass_pot_01_1k",
+          "triangles": 3760,
+          "extent": [
+            15.1,
+            15.3,
+            14.8
+          ],
+          "origin": [
+            -0.0,
+            0.0,
+            14.7
+          ],
+          "minZ": -0.1
+        }
+      ]
+    },
+    "ceramic_vase_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/ceramic_vase_01/ceramic_vase_01_1k/StaticMeshes/ceramic_vase_01_1k.ceramic_vase_01_1k",
+          "triangles": 10296,
+          "extent": [
+            11.1,
+            10.6,
+            20.4
+          ],
+          "origin": [
+            -0.3,
+            0.4,
+            20.2
+          ],
+          "minZ": -0.2
+        }
+      ]
+    },
+    "ceramic_vase_03": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/ceramic_vase_03/ceramic_vase_03_1k/StaticMeshes/ceramic_vase_03_1k.ceramic_vase_03_1k",
+          "triangles": 11136,
+          "extent": [
+            5.7,
+            5.7,
+            20.8
+          ],
+          "origin": [
+            -0.0,
+            0.0,
+            20.7
+          ],
+          "minZ": -0.1
+        }
+      ]
+    },
+    "antique_ceramic_vase_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/antique_ceramic_vase_01/antique_ceramic_vase_01_1k/StaticMeshes/antique_ceramic_vase_01_1k.antique_ceramic_vase_01_1k",
+          "triangles": 9408,
+          "extent": [
+            13.8,
+            13.5,
+            22.6
+          ],
+          "origin": [
+            -0.1,
+            0.3,
+            22.5
+          ],
+          "minZ": -0.1
+        }
+      ]
+    },
+    "yellow_onion": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/yellow_onion/yellow_onion_1k/StaticMeshes/yellow_onion_1k.yellow_onion_1k",
+          "triangles": 5444,
+          "extent": [
+            3.8,
+            3.5,
+            4.4
+          ],
+          "origin": [
+            -0.1,
+            -0.3,
+            4.3
+          ],
+          "minZ": -0.1
+        }
+      ]
+    },
+    "sweet_potato": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/sweet_potato/sweet_potato_1k/StaticMeshes/sweet_potato_1k.sweet_potato_1k",
+          "triangles": 2042,
+          "extent": [
+            2.9,
+            3.1,
+            5.1
+          ],
+          "origin": [
+            0.1,
+            -0.1,
+            -0.2
+          ],
+          "minZ": -5.2
+        }
+      ]
+    },
+    "food_pears_asian_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/food_pears_asian_01/food_pears_asian_01_1k/StaticMeshes/food_pears_asian_01_a.food_pears_asian_01_a",
+          "triangles": 2604,
+          "extent": [
+            3.2,
+            2.8,
+            2.2
+          ],
+          "origin": [
+            -4.9,
+            -0.9,
+            2.1
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/food_pears_asian_01/food_pears_asian_01_1k/StaticMeshes/food_pears_asian_01_b.food_pears_asian_01_b",
+          "triangles": 2668,
+          "extent": [
+            2.2,
+            4.1,
+            2.2
+          ],
+          "origin": [
+            -0.6,
+            -6.1,
+            2.2
+          ],
+          "minZ": -0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/food_pears_asian_01/food_pears_asian_01_1k/StaticMeshes/food_pears_asian_01_c.food_pears_asian_01_c",
+          "triangles": 2540,
+          "extent": [
+            2.3,
+            2.3,
+            3.6
+          ],
+          "origin": [
+            -2.7,
+            3.0,
+            3.5
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/food_pears_asian_01/food_pears_asian_01_1k/StaticMeshes/food_pears_asian_01_d.food_pears_asian_01_d",
+          "triangles": 2412,
+          "extent": [
+            2.6,
+            2.4,
+            2.3
+          ],
+          "origin": [
+            2.1,
+            0.1,
+            2.1
+          ],
+          "minZ": -0.2
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/food_pears_asian_01/food_pears_asian_01_1k/StaticMeshes/food_pears_asian_01_e.food_pears_asian_01_e",
+          "triangles": 2348,
+          "extent": [
+            2.3,
+            2.2,
+            3.4
+          ],
+          "origin": [
+            1.4,
+            4.4,
+            3.3
+          ],
+          "minZ": -0.1
+        }
+      ]
+    },
+    "food_pomegranate_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/food_pomegranate_01/food_pomegranate_01_1k/StaticMeshes/food_pomegranate_01_1k.food_pomegranate_01_1k",
+          "triangles": 8142,
+          "extent": [
+            5.8,
+            5.9,
+            5.9
+          ],
+          "origin": [
+            -0.3,
+            0.0,
+            5.7
+          ],
+          "minZ": -0.1
+        }
+      ]
+    },
+    "wine_bottles_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/wine_bottles_01/wine_bottles_01_1k/StaticMeshes/wine_bottles_01_alsace.wine_bottles_01_alsace",
+          "triangles": 7720,
+          "extent": [
+            3.6,
+            3.6,
+            16.6
+          ],
+          "origin": [
+            -0.0,
+            0.0,
+            16.6
+          ],
+          "minZ": 0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/wine_bottles_01/wine_bottles_01_1k/StaticMeshes/wine_bottles_01_bordeaux.wine_bottles_01_bordeaux",
+          "triangles": 6520,
+          "extent": [
+            3.7,
+            3.7,
+            14.9
+          ],
+          "origin": [
+            21.0,
+            0.0,
+            14.9
+          ],
+          "minZ": 0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/wine_bottles_01/wine_bottles_01_1k/StaticMeshes/wine_bottles_01_burgundy.wine_bottles_01_burgundy",
+          "triangles": 6408,
+          "extent": [
+            4.0,
+            4.0,
+            15.3
+          ],
+          "origin": [
+            41.0,
+            -0.0,
+            15.3
+          ],
+          "minZ": 0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/wine_bottles_01/wine_bottles_01_1k/StaticMeshes/wine_bottles_01_champagne.wine_bottles_01_champagne",
+          "triangles": 8200,
+          "extent": [
+            4.0,
+            4.0,
+            15.8
+          ],
+          "origin": [
+            60.0,
+            0.0,
+            15.8
+          ],
+          "minZ": 0.0
+        }
+      ]
+    },
+    "wooden_display_shelves_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_display_shelves_01/wooden_display_shelves_01_1k/StaticMeshes/wooden_display_shelves_01.wooden_display_shelves_01",
+          "triangles": 1164,
+          "extent": [
+            18.6,
+            53.9,
+            77.8
+          ],
+          "origin": [
+            0.0,
+            0.0,
+            77.9
+          ],
+          "minZ": 0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_display_shelves_01/wooden_display_shelves_01_1k/StaticMeshes/wooden_display_shelves_01_drawer_01.wooden_display_shelves_01_drawer_01",
+          "triangles": 670,
+          "extent": [
+            16.5,
+            16.3,
+            17.5
+          ],
+          "origin": [
+            0.0,
+            -35.0,
+            21.3
+          ],
+          "minZ": 3.8
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_display_shelves_01/wooden_display_shelves_01_1k/StaticMeshes/wooden_display_shelves_01_drawer_02.wooden_display_shelves_01_drawer_02",
+          "triangles": 670,
+          "extent": [
+            16.5,
+            16.3,
+            17.5
+          ],
+          "origin": [
+            0.0,
+            -0.0,
+            21.3
+          ],
+          "minZ": 3.8
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_display_shelves_01/wooden_display_shelves_01_1k/StaticMeshes/wooden_display_shelves_01_drawer_03.wooden_display_shelves_01_drawer_03",
+          "triangles": 670,
+          "extent": [
+            16.5,
+            16.3,
+            17.5
+          ],
+          "origin": [
+            0.0,
+            35.1,
+            21.3
+          ],
+          "minZ": 3.8
+        }
+      ]
+    },
+    "wooden_bucket_02": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_bucket_02/wooden_bucket_02_1k/StaticMeshes/wooden_bucket_02.wooden_bucket_02",
+          "triangles": 1647,
+          "extent": [
+            30.8,
+            30.8,
+            17.5
+          ],
+          "origin": [
+            -0.0,
+            -0.1,
+            17.5
+          ],
+          "minZ": 0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_bucket_02/wooden_bucket_02_1k/StaticMeshes/wooden_bucket_02_handle_01.wooden_bucket_02_handle_01",
+          "triangles": 340,
+          "extent": [
+            0.4,
+            6.9,
+            3.0
+          ],
+          "origin": [
+            -29.3,
+            -0.1,
+            23.0
+          ],
+          "minZ": 20.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_bucket_02/wooden_bucket_02_1k/StaticMeshes/wooden_bucket_02_handle_02.wooden_bucket_02_handle_02",
+          "triangles": 340,
+          "extent": [
+            0.4,
+            6.9,
+            3.0
+          ],
+          "origin": [
+            29.3,
+            0.1,
+            23.0
+          ],
+          "minZ": 20.0
+        }
+      ]
+    },
+    "spinning_wheel_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/spinning_wheel_01/spinning_wheel_01_1k/StaticMeshes/spinning_wheel_01_1k.spinning_wheel_01_1k",
+          "triangles": 3039,
+          "extent": [
+            24.5,
+            51.2,
+            48.3
+          ],
+          "origin": [
+            2.5,
+            3.8,
+            48.3
+          ],
+          "minZ": 0.0
+        }
+      ]
+    },
+    "wooden_broom": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_broom/wooden_broom_1k/StaticMeshes/wooden_broom.wooden_broom",
+          "triangles": 4338,
+          "extent": [
+            23.1,
+            4.5,
+            8.0
+          ],
+          "origin": [
+            0.0,
+            0.0,
+            -4.1
+          ],
+          "minZ": -12.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_broom/wooden_broom_1k/StaticMeshes/wooden_broom_bristles.wooden_broom_bristles",
+          "triangles": 1472,
+          "extent": [
+            24.5,
+            5.6,
+            3.6
+          ],
+          "origin": [
+            0.0,
+            0.0,
+            -8.7
+          ],
+          "minZ": -12.2
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_broom/wooden_broom_1k/StaticMeshes/wooden_broom_handle.wooden_broom_handle",
+          "triangles": 3402,
+          "extent": [
+            1.6,
+            1.5,
+            68.8
+          ],
+          "origin": [
+            -0.1,
+            -0.0,
+            64.5
+          ],
+          "minZ": -4.3
+        }
+      ]
+    },
+    "sledgehammer_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/sledgehammer_01/sledgehammer_01_1k/StaticMeshes/sledgehammer_01_1k.sledgehammer_01_1k",
+          "triangles": 2596,
+          "extent": [
+            10.5,
+            4.6,
+            50.3
+          ],
+          "origin": [
+            0.0,
+            -0.0,
+            -24.4
+          ],
+          "minZ": -74.7
+        }
+      ]
+    },
+    "hatchet": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/hatchet/hatchet_1k/StaticMeshes/hatchet_1k.hatchet_1k",
+          "triangles": 5250,
+          "extent": [
+            1.3,
+            5.2,
+            14.7
+          ],
+          "origin": [
+            -0.0,
+            2.5,
+            8.1
+          ],
+          "minZ": -6.7
+        }
+      ]
+    },
+    "handsaw_wood": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/handsaw_wood/handsaw_wood_1k/StaticMeshes/handsaw_wood_1k.handsaw_wood_1k",
+          "triangles": 2548,
+          "extent": [
+            2.1,
+            31.7,
+            8.4
+          ],
+          "origin": [
+            -0.0,
+            22.9,
+            -0.1
+          ],
+          "minZ": -8.5
+        }
+      ]
+    },
+    "wooden_axe_02": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_axe_02/wooden_axe_02_1k/StaticMeshes/wooden_axe_02_1k.wooden_axe_02_1k",
+          "triangles": 2218,
+          "extent": [
+            2.6,
+            11.7,
+            35.4
+          ],
+          "origin": [
+            -0.0,
+            7.1,
+            6.9
+          ],
+          "minZ": -28.5
+        }
+      ]
+    },
+    "wooden_hammer_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_hammer_01/wooden_hammer_01_1k/StaticMeshes/wooden_hammer_01_1k.wooden_hammer_01_1k",
+          "triangles": 3617,
+          "extent": [
+            5.8,
+            1.2,
+            14.0
+          ],
+          "origin": [
+            0.2,
+            -0.0,
+            1.6
+          ],
+          "minZ": -12.4
+        }
+      ]
+    },
+    "folding_wooden_stool": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/folding_wooden_stool/folding_wooden_stool_1k/StaticMeshes/folding_wooden_stool_1k.folding_wooden_stool_1k",
+          "triangles": 6324,
+          "extent": [
+            26.7,
+            27.6,
+            22.4
+          ],
+          "origin": [
+            0.2,
+            0.2,
+            22.1
+          ],
+          "minZ": -0.3
+        }
+      ]
+    },
+    "painted_wooden_bench": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/painted_wooden_bench/painted_wooden_bench_1k/StaticMeshes/painted_wooden_bench_1k.painted_wooden_bench_1k",
+          "triangles": 630,
+          "extent": [
+            58.2,
+            24.8,
+            44.5
+          ],
+          "origin": [
+            0.6,
+            -0.5,
+            44.4
+          ],
+          "minZ": -0.0
+        }
+      ]
+    },
+    "wooden_stool_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_stool_01/wooden_stool_01_1k/StaticMeshes/wooden_stool_01_1k.wooden_stool_01_1k",
+          "triangles": 1712,
+          "extent": [
+            21.3,
+            22.1,
+            21.9
+          ],
+          "origin": [
+            0.0,
+            0.0,
+            21.9
+          ],
+          "minZ": 0.0
+        }
+      ]
+    },
+    "round_wooden_table_02": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/round_wooden_table_02/round_wooden_table_02_1k/StaticMeshes/round_wooden_table_02_1k.round_wooden_table_02_1k",
+          "triangles": 4254,
+          "extent": [
+            41.5,
+            40.3,
+            38.0
+          ],
+          "origin": [
+            -1.2,
+            -0.3,
+            36.9
+          ],
+          "minZ": -1.2
+        }
+      ]
+    },
+    "wooden_ladder_02": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/wooden_ladder_02/wooden_ladder_02_1k/StaticMeshes/wooden_ladder_02_1k.wooden_ladder_02_1k",
+          "triangles": 6126,
+          "extent": [
+            49.5,
+            31.0,
+            86.1
+          ],
+          "origin": [
+            -4.2,
+            -0.2,
+            86.0
+          ],
+          "minZ": -0.2
+        }
+      ]
+    },
+    "ornate_war_hammer": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/ornate_war_hammer/ornate_war_hammer_1k/StaticMeshes/ornate_war_hammer_1k.ornate_war_hammer_1k",
+          "triangles": 5192,
+          "extent": [
+            7.6,
+            1.8,
+            36.4
+          ],
+          "origin": [
+            0.7,
+            0.0,
+            21.3
+          ],
+          "minZ": -15.0
+        }
+      ]
+    },
+    "ornate_medieval_mace": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/ornate_medieval_mace/ornate_medieval_mace_1k/StaticMeshes/ornate_medieval_mace_1k.ornate_medieval_mace_1k",
+          "triangles": 2828,
+          "extent": [
+            4.7,
+            5.1,
+            31.5
+          ],
+          "origin": [
+            0.0,
+            0.0,
+            21.1
+          ],
+          "minZ": -10.4
+        }
+      ]
+    },
+    "antique_estoc": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/antique_estoc/antique_estoc_1k/StaticMeshes/antique_estoc_1k.antique_estoc_1k",
+          "triangles": 8246,
+          "extent": [
+            18.9,
+            8.4,
+            76.8
+          ],
+          "origin": [
+            -0.2,
+            -0.1,
+            56.1
+          ],
+          "minZ": -20.8
+        }
+      ]
+    },
+    "lantern_chandelier_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/lantern_chandelier_01/lantern_chandelier_01_1k/StaticMeshes/lantern_chandelier_01_1k.lantern_chandelier_01_1k",
+          "triangles": 5971,
+          "extent": [
+            29.0,
+            28.7,
+            43.9
+          ],
+          "origin": [
+            0.4,
+            0.0,
+            -42.6
+          ],
+          "minZ": -86.5
+        }
+      ]
+    },
+    "planter_box_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/planter_box_01/planter_box_01_1k/StaticMeshes/planter_box_01_1k.planter_box_01_1k",
+          "triangles": 2398,
+          "extent": [
+            45.6,
+            20.7,
+            21.2
+          ],
+          "origin": [
+            -0.0,
+            -0.0,
+            21.3
+          ],
+          "minZ": 0.0
+        }
+      ]
+    },
+    "planter_box_02": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/planter_box_02/planter_box_02_1k/StaticMeshes/planter_box_02_1k.planter_box_02_1k",
+          "triangles": 2078,
+          "extent": [
+            62.6,
+            23.4,
+            22.7
+          ],
+          "origin": [
+            0.1,
+            -0.1,
+            22.6
+          ],
+          "minZ": -0.1
+        }
+      ]
+    },
+    "planter_box_03": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/planter_box_03/planter_box_03_1k/StaticMeshes/planter_box_03_1k.planter_box_03_1k",
+          "triangles": 2110,
+          "extent": [
+            45.7,
+            32.8,
+            42.8
+          ],
+          "origin": [
+            -0.0,
+            -0.1,
+            42.8
+          ],
+          "minZ": 0.0
+        }
+      ]
+    },
+    "planter_pot_clay": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/planter_pot_clay/planter_pot_clay_1k/StaticMeshes/planter_pot_clay_1k.planter_pot_clay_1k",
+          "triangles": 3080,
+          "extent": [
+            13.4,
+            13.3,
+            11.2
+          ],
+          "origin": [
+            -0.0,
+            1.2,
+            11.2
+          ],
+          "minZ": -0.1
+        }
+      ]
+    },
+    "nettle_plant": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_medium_a_LOD0.nettle_plant_medium_a_LOD0",
+          "triangles": 5896,
+          "extent": [
+            3.9,
+            4.5,
+            6.6
+          ],
+          "origin": [
+            41.0,
+            -0.2,
+            6.4
+          ],
+          "minZ": -0.2
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_medium_b_LOD0.nettle_plant_medium_b_LOD0",
+          "triangles": 5664,
+          "extent": [
+            3.3,
+            3.4,
+            5.2
+          ],
+          "origin": [
+            61.3,
+            -0.1,
+            5.1
+          ],
+          "minZ": -0.2
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_small_a_LOD0.nettle_plant_small_a_LOD0",
+          "triangles": 3592,
+          "extent": [
+            3.2,
+            2.2,
+            3.1
+          ],
+          "origin": [
+            80.1,
+            -0.1,
+            3.0
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_small_b_LOD0.nettle_plant_small_b_LOD0",
+          "triangles": 1088,
+          "extent": [
+            3.0,
+            1.9,
+            1.1
+          ],
+          "origin": [
+            100.0,
+            0.1,
+            1.0
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_tall_a_LOD0.nettle_plant_tall_a_LOD0",
+          "triangles": 6984,
+          "extent": [
+            5.2,
+            4.7,
+            10.9
+          ],
+          "origin": [
+            -0.0,
+            -0.1,
+            10.4
+          ],
+          "minZ": -0.4
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/nettle_plant/nettle_plant_1k/StaticMeshes/nettle_plant_tall_b_LOD0.nettle_plant_tall_b_LOD0",
+          "triangles": 8080,
+          "extent": [
+            4.1,
+            4.8,
+            9.7
+          ],
+          "origin": [
+            20.0,
+            -0.1,
+            9.1
+          ],
+          "minZ": -0.6
+        }
+      ]
+    },
+    "weed_plant_02": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/weed_plant_02/weed_plant_02_1k/StaticMeshes/weed_plant_02_a_LOD0.weed_plant_02_a_LOD0",
+          "triangles": 2967,
+          "extent": [
+            11.0,
+            14.6,
+            3.6
+          ],
+          "origin": [
+            2.4,
+            3.4,
+            2.8
+          ],
+          "minZ": -0.9
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/weed_plant_02/weed_plant_02_1k/StaticMeshes/weed_plant_02_b_LOD0.weed_plant_02_b_LOD0",
+          "triangles": 2273,
+          "extent": [
+            9.4,
+            10.0,
+            3.4
+          ],
+          "origin": [
+            51.8,
+            -1.2,
+            3.3
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/weed_plant_02/weed_plant_02_1k/StaticMeshes/weed_plant_02_c_LOD0.weed_plant_02_c_LOD0",
+          "triangles": 1766,
+          "extent": [
+            7.1,
+            7.2,
+            2.8
+          ],
+          "origin": [
+            100.9,
+            0.4,
+            2.6
+          ],
+          "minZ": -0.2
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/weed_plant_02/weed_plant_02_1k/StaticMeshes/weed_plant_02_d_LOD0.weed_plant_02_d_LOD0",
+          "triangles": 1928,
+          "extent": [
+            7.7,
+            5.4,
+            2.0
+          ],
+          "origin": [
+            150.0,
+            -0.8,
+            1.9
+          ],
+          "minZ": -0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/weed_plant_02/weed_plant_02_1k/StaticMeshes/weed_plant_02_e_LOD0.weed_plant_02_e_LOD0",
+          "triangles": 2182,
+          "extent": [
+            6.0,
+            3.1,
+            2.0
+          ],
+          "origin": [
+            198.0,
+            -0.3,
+            1.7
+          ],
+          "minZ": -0.4
+        }
+      ]
+    },
+    "shrub_sorrel_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_a.shrub_sorrel_01_a",
+          "triangles": 353,
+          "extent": [
+            1.9,
+            2.8,
+            2.8
+          ],
+          "origin": [
+            -16.7,
+            -9.6,
+            2.8
+          ],
+          "minZ": -0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_b.shrub_sorrel_01_b",
+          "triangles": 414,
+          "extent": [
+            3.6,
+            3.0,
+            2.5
+          ],
+          "origin": [
+            -8.9,
+            -8.4,
+            2.4
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_c.shrub_sorrel_01_c",
+          "triangles": 284,
+          "extent": [
+            2.1,
+            2.0,
+            1.7
+          ],
+          "origin": [
+            -1.8,
+            -9.0,
+            1.7
+          ],
+          "minZ": -0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_d.shrub_sorrel_01_d",
+          "triangles": 990,
+          "extent": [
+            3.0,
+            2.4,
+            2.7
+          ],
+          "origin": [
+            5.6,
+            -9.4,
+            2.6
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_e.shrub_sorrel_01_e",
+          "triangles": 503,
+          "extent": [
+            3.2,
+            2.6,
+            2.3
+          ],
+          "origin": [
+            13.4,
+            -8.8,
+            2.2
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_f.shrub_sorrel_01_f",
+          "triangles": 355,
+          "extent": [
+            1.6,
+            2.3,
+            1.2
+          ],
+          "origin": [
+            -11.9,
+            -0.4,
+            1.1
+          ],
+          "minZ": -0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_g.shrub_sorrel_01_g",
+          "triangles": 71,
+          "extent": [
+            1.0,
+            0.9,
+            1.9
+          ],
+          "origin": [
+            -7.3,
+            0.5,
+            1.8
+          ],
+          "minZ": -0.0
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_h.shrub_sorrel_01_h",
+          "triangles": 71,
+          "extent": [
+            0.8,
+            1.3,
+            1.8
+          ],
+          "origin": [
+            -3.1,
+            0.9,
+            1.8
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_i.shrub_sorrel_01_i",
+          "triangles": 63,
+          "extent": [
+            1.3,
+            1.2,
+            2.1
+          ],
+          "origin": [
+            2.4,
+            0.2,
+            2.0
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_j.shrub_sorrel_01_j",
+          "triangles": 67,
+          "extent": [
+            1.2,
+            1.1,
+            2.3
+          ],
+          "origin": [
+            6.7,
+            0.7,
+            2.1
+          ],
+          "minZ": -0.1
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/shrub_sorrel_01/shrub_sorrel_01_1k/StaticMeshes/shrub_sorrel_01_k.shrub_sorrel_01_k",
+          "triangles": 148,
+          "extent": [
+            0.8,
+            0.7,
+            2.9
+          ],
+          "origin": [
+            10.3,
+            -0.0,
+            2.8
+          ],
+          "minZ": -0.1
+        }
+      ]
+    },
+    "dry_branches_medium_01": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/dry_branches_medium_01/dry_branches_medium_01_1k/StaticMeshes/dry_branches_medium_01_a.dry_branches_medium_01_a",
+          "triangles": 1540,
+          "extent": [
+            16.2,
+            65.0,
+            17.0
+          ],
+          "origin": [
+            -38.6,
+            -4.0,
+            15.4
+          ],
+          "minZ": -1.7
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/dry_branches_medium_01/dry_branches_medium_01_1k/StaticMeshes/dry_branches_medium_01_b.dry_branches_medium_01_b",
+          "triangles": 2030,
+          "extent": [
+            7.6,
+            51.9,
+            7.1
+          ],
+          "origin": [
+            3.3,
+            0.2,
+            6.9
+          ],
+          "minZ": -0.2
+        },
+        {
+          "asset": "/Game/Free/Dressing/Props/dry_branches_medium_01/dry_branches_medium_01_1k/StaticMeshes/dry_branches_medium_01_c.dry_branches_medium_01_c",
+          "triangles": 2690,
+          "extent": [
+            6.5,
+            38.9,
+            7.2
+          ],
+          "origin": [
+            44.7,
+            -6.7,
+            6.7
+          ],
+          "minZ": -0.5
+        }
+      ]
+    },
+    "street_rat": {
+      "meshes": [
+        {
+          "asset": "/Game/Free/Dressing/Props/street_rat/street_rat_1k/StaticMeshes/street_rat_1k.street_rat_1k",
+          "triangles": 1567,
+          "extent": [
+            1.6,
+            7.4,
+            1.7
+          ],
+          "origin": [
+            0.0,
+            -3.3,
+            1.7
+          ],
+          "minZ": -0.0
+        }
+      ]
+    }
+  }
+}
