@@ -2,6 +2,11 @@
   "schemaVersion": 1,
   "description": "styles: per weapon preset basic-attack clip and torso twist (degrees; sweeping axes turn the most, hammers chop straight overhead, daggers/lances/throws thrust with the cast push). Champion action clips transferred from the Tripo motion library by Tools/RetargetChampionAttacks.py into /Game/Art/Characters/ChampionAttacks02/<folder>/A_<folder>_<clip>. CireChampionActions picks the clip by weapon motion (WeaponLoadouts.json) and skill, and times it to the server's attack release. Presentation only.",
   "bodies": {
+    "/Game/Tripo/Champions/Gunblade/CTS_Champ_Gunblade.CTS_Champ_Gunblade": "TripoGunblade",
+    "/Game/Tripo/Champions/WitchSlayer/CTS_Champ_WitchSlayer.CTS_Champ_WitchSlayer": "TripoWitchSlayer",
+    "/Game/Tripo/Champions/Huntress/CTS_Champ_Huntress.CTS_Champ_Huntress": "TripoHuntress",
+    "/Game/Tripo/Champions/AetheriArtificer/CTS_Champ_AetheriArtificer.CTS_Champ_AetheriArtificer": "TripoAetheriArtificer",
+    "/Game/Tripo/Champions/AetheriWarden/CTS_Champ_AetheriWarden.CTS_Champ_AetheriWarden": "TripoAetheriWarden",
     "/Game/TripoModels/medieval_knight_armor_3d_model/medieval_knight_armor_3d_model.medieval_knight_armor_3d_model": "Warden",
     "/Game/TripoModels/armored_archer_3d_model/armored_archer_3d_model.armored_archer_3d_model": "Ranger",
     "/Game/TripoModels/battlefield_healer_3d_model/battlefield_healer_3d_model.battlefield_healer_3d_model": "Scholar",
