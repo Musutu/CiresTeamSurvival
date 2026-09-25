@@ -16,6 +16,7 @@
 #include "CireSummon.h"
 #include "CireTargeting.h"
 #include "CireAbilityShapes.h"
+#include "CireAbilityDB.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -60,6 +61,7 @@ struct FState
     int32 Index=-1,FrameIndex=0,Refused=0;
     double Start=0,FinishAt=-1;float EntryAt=0,CastAt=-1;
     bool bDone=false,bChecks=true,bAimArmed=false,bCastRefused=false;
+    bool bGameplayCamera=false;float Pitch=-20.f; // player rig: 650 cm boom behind the champion
 };
 FState G;
 const FVector Stage(4000,-2100,5200);
@@ -169,6 +171,13 @@ ACireHero* SpawnHero(const FString& Profile,FVector At,FRotator Facing)
 }
 void PlaceCamera(FVector From,FVector LookAt)
 {
+    if(G.bGameplayCamera&&G.Hero.IsValid())
+    {
+        // Same framing as CireCamera: pivot 0.85 x capsule half-height above the champion, 650 cm boom, FOV 80.
+        const FVector Pivot=G.Hero->GetActorLocation()+FVector(0,0,88*.85f);
+        const FRotator View(G.Pitch,0,0);
+        G.Camera->SetActorLocation(Pivot-View.Vector()*650.f);G.Camera->SetActorRotation(View);return;
+    }
     G.Camera->SetActorLocation(From);G.Camera->SetActorRotation((LookAt-From).Rotation());
 }
 void Schedule(std::initializer_list<FFrame> Frames){G.Frames=Frames;G.FrameIndex=0;}
@@ -196,7 +205,8 @@ void BeginChampion(const FEntry& E)
     const auto D=CireTargeting::Describe(E.Id);
     G.bAimArmed=D.Kind==ECireTargetKind::Ground;
     const auto Shape=CireAbilityShapes::Describe(FName(*E.Id));
-    const float Impact=FMath::Max(.3f,Shape.ImpactSeconds(720.f));
+    const FCireAbilityDef* Def=CireAbilityDB::Find(E.Id);
+    const float Impact=FMath::Max(.3f,Shape.ImpactSeconds(720.f))+(Def?Def->CastTime:0.f); // timed casts release after their cast bar
     const float Linger=FMath::Clamp(Shape.LingerSeconds,.5f,2.2f);
     Schedule({{TEXT("1_aim"),-.05f},{TEXT("2_cast"),.1f},{TEXT("3_travel"),FMath::Max(.22f,Impact*.55f)},{TEXT("4_impact"),Impact+.06f},
         {TEXT("5_linger"),Impact+Linger*.5f},{TEXT("6_end"),Impact+Linger+.25f}});
@@ -212,7 +222,7 @@ void CastChampion(const FEntry& E)
     const float Before=H->Cooldowns.IsValidIndex(0)?H->Cooldowns[0]:0;
     if(ACireHero::IsPassive(E.Id)){H->BasicTimer=0;H->BasicAttack();return;}
     H->CastAt(0,Aim);
-    G.bCastRefused=!(H->Cooldowns.IsValidIndex(0)&&H->Cooldowns[0]>Before);
+    G.bCastRefused=!(H->Cooldowns.IsValidIndex(0)&&H->Cooldowns[0]>Before)&&H->CastSkill.IsNone(); // timed casts start a cast bar first
     if(G.bCastRefused)UE_LOG(LogTemp,Warning,TEXT("CIRE_ABILITY_VFX_REFUSED %s notice=%s"),*E.Id,*H->Notice);
 }
 // Monster: the player's champion stands at the origin (as the victim); the monster faces it from downrange.
@@ -309,6 +319,8 @@ bool CireAbilityVFXGallery::Initialize(ACireGameMode* Mode)
     FString Set=TEXT("all"),Only;FParse::Value(FCommandLine::Get(),TEXT("CireVFXSet="),Set);FParse::Value(FCommandLine::Get(),TEXT("CireVFXOnly="),Only,false);
     G.Tag=TEXT("capture");FParse::Value(FCommandLine::Get(),TEXT("CireVFXTag="),G.Tag);
     TArray<FString> OnlyList;Only.ParseIntoArray(OnlyList,TEXT(","));
+    FString CameraMode;FParse::Value(FCommandLine::Get(),TEXT("CireVFXCamera="),CameraMode);
+    G.bGameplayCamera=CameraMode==TEXT("gameplay");FParse::Value(FCommandLine::Get(),TEXT("CireVFXPitch="),G.Pitch);G.Pitch=FMath::Clamp(G.Pitch,-80.f,0.f);
     G.Directory=FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("AbilityVFX"),
         G.Tag+TEXT("-")+Set+TEXT("-")+FDateTime::UtcNow().ToString(TEXT("%Y%m%d-%H%M%S"))));
     if(!Mode||Mode->GetNetMode()!=NM_Standalone||!IFileManager::Get().MakeDirectory(*G.Directory,true)){Finish(false);return true;}

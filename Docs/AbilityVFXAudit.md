@@ -530,3 +530,11 @@ of the damage type... healing-related things should also be obvious."
 - Evidence: before/after sheets `Saved/AbilityVFX/compare-20260925T064342Z` (32 abilities: previous pass vs runes),
   captures `Saved/AbilityVFX/runes4-all-20260925-064126`, Shadow Step rift `Saved/AbilityVFX/runes5-champion-20260925-064509`.
 - Gallery: `python Tools/RunAbilityVFXGallery.py --only <ids> --tag runes` (`--db file.json` previews DB overrides).
+
+### Readability pass (gameplay camera)
+Captured from the player rig (`--camera gameplay`: 650 cm boom, FOV 80, pitches -20 and -50). Glyphs now scale
+with the telegraph (ring glyph about 23% of the radius; fewer, larger glyphs, at most 10 per ring), the centre
+sigil is about 26% of the radius, cone glyphs fill the wedge, lane glyphs are about 42% of the lane width,
+edge motifs are thicker and scale with the shape, and the aim fill and rim keep the school hue. Evidence:
+`Saved/AbilityVFX/gpb20-all-20260925-065818`, `gpb50-all-20260925-065914`, `gpc50-all-20260925-070043`.
+Shadow Step's rift is violet for the caster's team (the earlier gold capture predated the allegiance fix, 45876e0).
