@@ -13,3 +13,15 @@ else()
     target_compile_options(CiresRulesTests PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_test(NAME gameplay_rules COMMAND CiresRulesTests)
+# scaling-kits: primary-stat scaling, inheritance, shield block, level-15, Headshot, Artillery, Mech Tank.
+add_executable(CireKitRulesTests
+    KitRulesTests.cpp
+    ../Source/CiresTeamSurvival/Rules/CireKitRules.cpp)
+target_include_directories(CireKitRulesTests PRIVATE ../Source/CiresTeamSurvival/Rules)
+target_compile_features(CireKitRulesTests PRIVATE cxx_std_17)
+if(MSVC)
+    target_compile_options(CireKitRulesTests PRIVATE /W4 /WX /permissive-)
+else()
+    target_compile_options(CireKitRulesTests PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_test(NAME kit_rules COMMAND CireKitRulesTests)

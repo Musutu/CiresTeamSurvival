@@ -12,47 +12,57 @@ costs rise toward a capped multiplier and cooldowns decay toward a floor. Maths:
 
 ## Pool skills
 
-| Skill | Type | Kind | School | Target | Cast | Cost | CD | Effect L1 / L10 / L50 | CC / notes |
-|---|---|---|---|---|---|---|---|---|---|
-| Ashen Ward (`ashen_square`) | DPS | active | fire | aim | 0s | 35 MP | 8s | 60 / 85 / 114 impact damage |  |
-| Blight Sigil (`blight_sigil`) | DPS | active | poison | aim | 0s | 35 MP | 8s | 60 / 85 / 114 impact damage | Healing -50% |
-| Chain Spark (`chain_spark`) | DPS/HEAL | active | storm | enemy | 0s | 45 MP | 10s | 60 / 85 / 114 damage per target |  |
-| Cinder Cone (`cinder_cone`) | DPS | active | fire | aim | 0s | 35 MP | 8s | 95 / 134 / 181 impact damage |  |
-| Cleaving Strike (`cleaving_strike`) | TANK/DPS | active | physical | self | 0s | 30 EN | 8s | 55 / 78 / 105 damage |  |
-| Decimating Strike (`decimating_strike`) | TANK/DPS | active | physical | enemy | 0s | 40 EN | 300s | 150 / 212 / 286 damage (non-lethal targets) | lethal, Armor -50% |
-| Ember Lance (`ember_lance`) | DPS/HEAL | active | fire | aim | 0s | 40 MP | 6s | 95 / 134 / 181 damage |  |
-| Frost Bind (`frost_bind`) | TANK/DPS/HEAL | active | cold | aim | 0s | 35 MP | 12s | 65 / 92 / 124 damage | Move -35% |
-| Grave Line (`grave_line`) | DPS | active | shadow | aim | 0s | 35 MP | 8s | 85 / 120 / 162 impact damage | Silenced |
-| Iron Guard (`iron_guard`) | TANK/DPS/HEAL | active | physical | self | 0s | 25 EN | 14s | 40 / 57 / 60 % damage reduction | DEF +40% |
-| Oathbound Guardian (`oathbound_guardian`) | TANK/DPS/HEAL | active | void | aim | 0s | 45 MP | 20s | 400 / 565 / 762 guardian health |  |
-| Piercing Shot (`piercing_shot`) | DPS | active | physical | aim | 0s | 25 EN | 9s | 90 / 127 / 171 damage |  |
-| Aegis Dome (`protection_dome`) | TANK/DPS/HEAL | active | holy | aim | 0s | 55 MP | 18s | 300 / 424 / 571 dome health |  |
-| Purify (`purify`) | HEAL | active | holy | ally | 1s | 25 MP | 8s | 40 / 57 / 76 healing | cleanse |
-| Restoring Light (`restoring_light`) | HEAL | active | holy | ally | 1.5s | 45 MP | 6s | 90 / 127 / 171 healing |  |
-| Sanctuary (`sanctuary`) | HEAL | active | holy | self | 2s | 70 MP | 16s | 60 / 85 / 114 healing per ally | DEF +40% |
-| Second Wind (`second_wind`) | TANK/DPS/HEAL | active | nature | self | 0s | 30 EN | 20s | 18 / 25 / 34 % max health |  |
-| Shadow Step (`shadow_step`) | TANK/DPS | active | void | enemy | 0s | 35 EN | 14s | 50 / 71 / 95 damage | void: stun <= 180cm, slow <= 420cm |
-| Shield Slam (`shield_slam`) | TANK | active | physical | enemy | 0s | 25 EN | 7s | 45 / 64 / 86 damage | Interrupted, Move -35%, taunt |
-| Spectral Pack (`spectral_pack`) | DPS | active | void | aim | 0s | 55 MP | 24s | 14 / 20 / 27 damage per hit |  |
-| Runestone Wall (`summoned_wall`) | TANK/DPS/HEAL | active | earth | aim | 0s | 60 MP | 22s | 450 / 636 / 857 wall health |  |
-| Venom Ground (`venom_ground`) | DPS | active | poison | aim | 0s | 35 MP | 8s | 60 / 85 / 114 impact damage |  |
-| War Cry (`war_cry`) | TANK | active | physical | self | 0s | 30 EN | 18s | 6 / 8 / 11 s taunt | taunt, DEF +40% |
-| Battle Rhythm (`battle_rhythm`) | TANK/DPS/HEAL | passive | physical | passive | 0s | - | 0s | 20 / 25 / 32 % attack speed |  |
-| Deep Reserves (`deep_reserves`) | TANK/DPS/HEAL | passive | arcane | passive | 0s | - | 0s | 50 / 63 / 80 % resource regeneration |  |
-| Executioner (`executioner`) | DPS | passive | physical | passive | 0s | - | 300s | 100 / 126 / 159 damage vs bosses | lethal |
-| Soul Conduit (`soul_conduit`) | TANK/DPS/HEAL | passive | holy | passive | 0s | - | 0s | 25 / 31 / 40 % healing |  |
-| Stone Skin (`stone_skin`) | TANK/DPS/HEAL | passive | earth | passive | 0s | - | 0s | 10 / 13 / 16 % damage reduction |  |
-| Bastion of Dawn (`bastion_of_dawn`) | TANK/HEAL | ultimate | holy | self | 0s | 45 EN | 75s | 30 / 39 / 50 % max health healed | DEF +40% |
-| Cataclysm (`cataclysm`) | DPS | ultimate | fire | enemy | 0s | 150 MP | 80s | 160 / 209 / 274 damage |  |
-| Challenge of Iron (`challenge_of_iron`) | TANK | ultimate | physical | self | 0s | 65 EN | 90s | 12 / 16 / 21 s guard | taunt, DEF +40% |
-| Executioner's Verdict (`executioners_verdict`) | DPS | ultimate | physical | enemy | 0s | 60 EN | 60s | 100 / 131 / 171 damage |  |
-| Last Stand (`last_stand`) | TANK | ultimate | physical | self | 0s | 50 EN | 85s | 40 / 52 / 60 % max health healed | cleanse |
-| Mass Aegis (`mass_aegis`) | HEAL | ultimate | holy | self | 0s | 120 MP | 85s | 12 / 16 / 21 s guard | DEF +40%, cleanse |
-| Renewal (`renewal`) | HEAL | ultimate | holy | self | 2.5s | 140 MP | 90s | 200 / 262 / 343 healing per ally | cleanse |
-| Seismic Reprisal (`seismic_reprisal`) | TANK | ultimate | earth | self | 0s | 60 EN | 65s | 160 / 209 / 274 damage | Stunned |
-| Spectral Hunt (`spectral_hunt`) | DPS | ultimate | void | enemy | 0s | 125 MP | 90s | 58 / 76 / 99 damage per hit |  |
-| Starfall (`starfall`) | DPS | ultimate | arcane | aim | 0s | 130 MP | 80s | 180 / 236 / 308 damage |  |
-| Wellspring (`wellspring`) | HEAL | ultimate | tide | ally | 2s | 130 MP | 75s | 220 / 288 / 377 healing | DEF +40% |
+| Skill | Type | Kind | School | Target | Cast | Cost | CD | Effect L1 / L10 / L50 | Scaling | CC / notes |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Artillery (`artillery`) | DPS | active | physical | self | 0s | 35 EN | 45s | 100 / 100 / 100 % attack speed | - |  |
+| Ashen Ward (`ashen_square`) | DPS | active | fire | aim | 0s | 35 MP | 8s | 60 / 85 / 114 impact damage | 60 + 1.12x Primary damage |  |
+| Blight Sigil (`blight_sigil`) | DPS | active | poison | aim | 0s | 35 MP | 8s | 60 / 85 / 114 impact damage | 60 + 1.12x Primary damage | Healing -50% |
+| Chain Spark (`chain_spark`) | DPS/HEAL | active | storm | enemy | 0s | 45 MP | 10s | 60 / 85 / 114 damage per target | 60 + 1.4x Primary damage |  |
+| Cinder Cone (`cinder_cone`) | DPS | active | fire | aim | 0s | 35 MP | 8s | 95 / 134 / 181 impact damage | 95 + 1.12x Primary damage |  |
+| Cleaving Strike (`cleaving_strike`) | TANK/DPS | active | physical | self | 0s | 30 EN | 8s | 55 / 78 / 105 damage | 55 + 1.12x Primary damage |  |
+| Decimating Strike (`decimating_strike`) | TANK/DPS | active | physical | enemy | 0s | 40 EN | 300s | 150 / 212 / 286 damage (non-lethal targets) | 150 + 2.2x Primary damage | lethal, Armor -50% |
+| Eagle Eye (`eagle_eye`) | DPS | active | nature | self | 0s | 20 EN | 16s | 400 / 565 / 762 range | - |  |
+| Ember Lance (`ember_lance`) | DPS/HEAL | active | fire | aim | 0s | 40 MP | 6s | 95 / 134 / 181 damage | 95 + 1.2x Primary damage |  |
+| Frost Bind (`frost_bind`) | TANK/DPS/HEAL | active | cold | aim | 0s | 35 MP | 12s | 65 / 92 / 124 damage | 65 + 2.2x Primary damage | Move -35% |
+| Grave Line (`grave_line`) | DPS | active | shadow | aim | 0s | 35 MP | 8s | 85 / 120 / 162 impact damage | 85 + 1.12x Primary damage | Silenced |
+| Iron Guard (`iron_guard`) | TANK/DPS/HEAL | active | physical | self | 0s | 25 EN | 14s | 40 / 57 / 60 % damage reduction | - | DEF +40% |
+| Longshot Stance (`longshot`) | DPS | active | physical | self | 0s | 25 EN | 20s | 25 / 35 / 48 % damage beyond 8m | - |  |
+| Construct: Mechanical Tank (`mechanical_tank`) | TANK | active | physical | aim | 0s | 40 EN | 40s | 800 / 1130 / 1524 mech health | 30 + 0.6x Primary damage per hit | taunt |
+| Oathbound Guardian (`oathbound_guardian`) | TANK/DPS/HEAL | active | void | aim | 0s | 45 MP | 20s | 400 / 565 / 762 guardian health | 22 + 0.5x Primary damage per hit |  |
+| Construct: Pavise (`pavise`) | TANK | active | earth | aim | 0s | 30 EN | 18s | 500 / 706 / 952 barrier health | 500 + 5x Primary barrier health |  |
+| Piercing Shot (`piercing_shot`) | DPS | active | physical | aim | 0s | 25 EN | 9s | 90 / 127 / 171 damage | 90 + 1.8x Primary damage |  |
+| Aegis Dome (`protection_dome`) | TANK/DPS/HEAL | active | holy | aim | 0s | 55 MP | 18s | 300 / 424 / 571 dome health | 300 + 6x Primary barrier health |  |
+| Purify (`purify`) | HEAL | active | holy | ally | 1s | 25 MP | 8s | 40 / 57 / 76 healing | 40 + 1.2x Primary healing | cleanse |
+| Restoring Light (`restoring_light`) | HEAL | active | holy | ally | 1.5s | 45 MP | 6s | 90 / 127 / 171 healing | 90 + 1.8x Primary healing |  |
+| Sanctuary (`sanctuary`) | HEAL | active | holy | self | 2s | 70 MP | 16s | 60 / 85 / 114 healing per ally | 60 + 1.8x Primary healing | DEF +40% |
+| Second Wind (`second_wind`) | TANK/DPS/HEAL | active | nature | self | 0s | 30 EN | 20s | 18 / 25 / 34 % max health | 0 + 1x Primary healing |  |
+| Shadow Step (`shadow_step`) | TANK/DPS | active | void | enemy | 0s | 35 EN | 14s | 50 / 71 / 95 damage | 50 + 2.2x Primary damage | void: stun <= 180cm, slow <= 420cm |
+| Shield Bash (`shield_bash`) | TANK | active | physical | enemy | 0s | 20 EN | 9s | 40 / 57 / 76 damage | 40 + 1.35x Primary damage | Interrupted, Stunned |
+| Shield Slam (`shield_slam`) | TANK | active | physical | enemy | 0s | 25 EN | 7s | 45 / 64 / 86 damage | 45 + 1.05x Primary damage | Interrupted, Move -35%, taunt |
+| Shield Toss (`shield_toss`) | TANK | active | physical | enemy | 0s | 25 EN | 10s | 50 / 71 / 95 damage per bounce | 50 + 1.4x Primary damage | taunt |
+| Shield Wall (`shield_wall`) | TANK | active | physical | self | 0s | 30 EN | 20s | 60 / 80 / 80 % frontal damage reduction | - | Frontal DEF +60% |
+| Spectral Pack (`spectral_pack`) | DPS | active | void | aim | 0s | 55 MP | 24s | 14 / 20 / 27 damage per hit | 14 + 0.4x Primary damage per hit |  |
+| Runestone Wall (`summoned_wall`) | TANK/DPS/HEAL | active | earth | aim | 0s | 60 MP | 22s | 450 / 636 / 857 wall health | 450 + 6x Primary barrier health |  |
+| Venom Ground (`venom_ground`) | DPS | active | poison | aim | 0s | 35 MP | 8s | 60 / 85 / 114 impact damage | 60 + 1.12x Primary damage |  |
+| War Cry (`war_cry`) | TANK | active | physical | self | 0s | 30 EN | 18s | 6 / 8 / 11 s taunt | - | taunt, DEF +40% |
+| Artillery Training (`artillery_training`) | DPS | passive | physical | passive | 0s | - | 0s | 150 / 189 / 239 range | - |  |
+| Battle Rhythm (`battle_rhythm`) | TANK/DPS/HEAL | passive | physical | passive | 0s | - | 0s | 20 / 25 / 32 % attack speed | - |  |
+| Deep Reserves (`deep_reserves`) | TANK/DPS/HEAL | passive | arcane | passive | 0s | - | 0s | 50 / 63 / 80 % resource regeneration | - |  |
+| Executioner (`executioner`) | DPS | passive | physical | passive | 0s | - | 300s | 100 / 126 / 159 damage vs bosses | - | lethal |
+| Headshot (`headshot`) | DPS | passive | physical | passive | 0s | - | 0s | 10 / 10 / 10 % proc chance | - |  |
+| Soul Conduit (`soul_conduit`) | TANK/DPS/HEAL | passive | holy | passive | 0s | - | 0s | 25 / 31 / 40 % healing | - |  |
+| Stone Skin (`stone_skin`) | TANK/DPS/HEAL | passive | earth | passive | 0s | - | 0s | 10 / 13 / 16 % damage reduction | - |  |
+| Bastion of Dawn (`bastion_of_dawn`) | TANK/HEAL | ultimate | holy | self | 0s | 45 EN | 75s | 30 / 39 / 50 % max health healed | 0 + 2x Primary healing | DEF +40% |
+| Cataclysm (`cataclysm`) | DPS | ultimate | fire | enemy | 0s | 150 MP | 80s | 160 / 209 / 274 damage | 160 + 2.8x Primary damage |  |
+| Challenge of Iron (`challenge_of_iron`) | TANK | ultimate | physical | self | 0s | 65 EN | 90s | 12 / 16 / 21 s guard | - | taunt, DEF +40% |
+| Executioner's Verdict (`executioners_verdict`) | DPS | ultimate | physical | enemy | 0s | 60 EN | 60s | 100 / 131 / 171 damage | 100 + 3.5x Primary damage |  |
+| Last Stand (`last_stand`) | TANK | ultimate | physical | self | 0s | 50 EN | 85s | 40 / 52 / 60 % max health healed | 0 + 2x Primary healing | cleanse |
+| Mass Aegis (`mass_aegis`) | HEAL | ultimate | holy | self | 0s | 120 MP | 85s | 12 / 16 / 21 s guard | - | DEF +40%, cleanse |
+| Renewal (`renewal`) | HEAL | ultimate | holy | self | 2.5s | 140 MP | 90s | 200 / 262 / 343 healing per ally | 200 + 3x Primary healing | cleanse |
+| Seismic Reprisal (`seismic_reprisal`) | TANK | ultimate | earth | self | 0s | 60 EN | 65s | 160 / 209 / 274 damage | 160 + 2.8x Primary damage | Stunned |
+| Spectral Hunt (`spectral_hunt`) | DPS | ultimate | void | enemy | 0s | 125 MP | 90s | 58 / 76 / 99 damage per hit | 58 + 0.6x Primary damage per hit |  |
+| Starfall (`starfall`) | DPS | ultimate | arcane | aim | 0s | 130 MP | 80s | 180 / 236 / 308 damage | 180 + 2.8x Primary damage |  |
+| Wellspring (`wellspring`) | HEAL | ultimate | tide | ally | 2s | 130 MP | 75s | 220 / 288 / 377 healing | 220 + 4x Primary healing | DEF +40% |
 
 ## Champion signature skills (implemented, signature-only)
 
@@ -191,6 +201,173 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 | Lantern Soul (`whisp_lantern_soul`) | whisp | HEAL | passive | arcane | passive |  |
 | Spirit Tether (`whisp_spirit_tether`) | whisp | HEAL | active | arcane | ally |  |
 
+## Universal primary-stat scaling and the power pass (scaling-kits)
+
+Every ability's damage, heal, shield and DoT is `base + coefficient x PRIMARY`, where PRIMARY is the caster's
+primary stat (STR, AGI or INT) whatever the ability's school or role: a tank's damaging stun scales with STR, a
+ranger's tether with AGI, mages and healers with INT. There is no per-stat or spell-power-specific ability scaling.
+Summons and constructs hit for `base + coefficient x the OWNER's primary`, attack at the owner's attack speed and
+use the owner's cooldown reduction. Maths: `Cires::Kits` (Rules/CireKitRules.h). Tooltips read
+"Deals 40 + 1.2x Primary (STR 30) damage".
+
+Coefficient philosophy: coefficients come from the ability's *shape*, never its school, so roles and schools
+compare fairly; class traits (Support -20% damage, DPS crit, Tank flat reduction) and the level curve sit on top.
+
+| Shape | Primary coefficient |
+|---|---|
+| Single-target active | 0.2 x cooldown, clamped 1.0..2.2 |
+| Multi-target / area active (cleave, chain, bounce, ground impact) | x0.7 of the single-target value |
+| Ultimate | 3.5 single target, 2.8 multi-target |
+| Healing | single active 0.3 x cooldown clamped 1.5..3.0, group x0.6; ultimates 4.0 / 3.0; %-max-health heals add 1.0 (2.0 ult) x primary |
+| DoT (ground areas) | damage per second = 0.25 x the impact coefficient |
+| Shields (walls, domes, Pavise) | health + 6x primary (Pavise 5x) |
+| Hard control (stun / interrupt actives) | x0.75 |
+| Summons (per hit) | packs 0.4, guardian 0.5, ultimate hunters 0.6, Mechanical Tank 0.6 |
+| Constructs (per shot) | the recipe's coefficient (turret 0.35, mine 1.2, obelisk 1.0...) |
+
+Bounded check (`python Tools/BuildAbilityDB.py --sim`): 30 s of rotation at primary 40, level 1, no items.
+
+| Group | Skill | Formula | Per hit @40 | 30 s total |
+|---|---|---|---|---|
+| Tank | Shield Slam | 45 + 1.05x Primary damage | 87 | 435 |
+| Tank | Shield Bash | 40 + 1.35x Primary damage | 94 | 376 |
+| Tank | Cleaving Strike | 55 + 1.12x Primary damage | 100 | 1198 |
+| Tank | Seismic Reprisal | 160 + 2.8x Primary damage | 272 | 816 |
+| DPS | Piercing Shot | 90 + 1.8x Primary damage | 162 | 648 |
+| DPS | Ember Lance | 95 + 1.2x Primary damage | 143 | 858 |
+| DPS | Cinder Cone | 95 + 1.12x Primary damage | 140 | 2350 |
+| DPS | Cataclysm | 160 + 2.8x Primary damage | 272 | 816 |
+| Healer | Restoring Light | 90 + 1.8x Primary healing | 162 | 972 |
+| Healer | Sanctuary | 60 + 1.8x Primary healing | 132 | 792 |
+| Healer | Aether Mend | 85 + 1.8x Primary healing | 157 | 942 |
+| Healer | Renewal | 200 + 3x Primary healing | 320 | 960 |
+| Summons | Spectral Pack | 14 + 0.4x Primary damage per hit | 30 | 1350 |
+| Summons | Oathbound Guardian | 22 + 0.5x Primary damage per hit | 42 | 1050 |
+| Summons | Construct: Mechanical Tank | 30 + 0.6x Primary damage per hit | 54 | 1125 |
+| Summons | Photon Turret | 18 + 0.35x Primary damage per hit | 32 | 1000 |
+
+## Level 15 bonuses (actives) and team auras (passives)
+
+At skill level 15 every active gains one extra mechanic and every passive grants a party-wide aura (Headshot instead
+makes its extra hit 3x). Native: `CireScalingKits` (reuses CireCrowdControl / CireBuffs).
+
+| Skill | Kind | Level 15 |
+|---|---|---|
+| Aegis Pylon (`aegis_pylon`) | active | Lv 15: +healing on the target -40% for 4s |
+| Aether Mend (`aether_mend`) | active | Lv 15: +purge the target's buffs |
+| Arc Mine (`arc_mine`) | active | Lv 15: +0.75s stun |
+| Arcane Blunderbuss (`arcane_blunderbuss`) | active | Lv 15: +35% slow for 2.5s |
+| Artillery (`artillery`) | active | Lv 15: +when Artillery ends, a bomb hits a 7m radius for all the damage Artillery dealt |
+| Ashen Ward (`ashen_square`) | active | Lv 15: +35% slow for 2.5s |
+| Banishment (`banishment`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Blade Flurry (`blade_flurry`) | active | Lv 15: +burn for 40% of the hit over 4s |
+| Blight Sigil (`blight_sigil`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Bouncing Glaive (`bouncing_glaive`) | active | Lv 15: +35% slow for 2.5s |
+| Chain Spark (`chain_spark`) | active | Lv 15: +0.75s stun |
+| Cinder Cone (`cinder_cone`) | active | Lv 15: +burn for 40% of the hit over 4s |
+| Cleaving Strike (`cleaving_strike`) | active | Lv 15: +burn for 40% of the hit over 4s |
+| Crescent Volley (`crescent_volley`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Decimating Strike (`decimating_strike`) | active | Lv 15: +purge the target's buffs |
+| Disruption Pylon (`disruption_pylon`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Eagle Eye (`eagle_eye`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Ember Lance (`ember_lance`) | active | Lv 15: +burn for 40% of the hit over 4s |
+| Evasive Stance (`evasive_stance`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Frost Bind (`frost_bind`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Grave Line (`grave_line`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Gravity Pylon (`gravity_pylon`) | active | Lv 15: +0.75s stun |
+| Haste Pylon (`haste_pylon`) | active | Lv 15: +35% slow for 2.5s |
+| Hex Mark (`hex_mark`) | active | Lv 15: +healing on the target -40% for 4s |
+| Hunter's Stride (`hunters_stride`) | active | Lv 15: +35% slow for 2.5s |
+| Iron Guard (`iron_guard`) | active | Lv 15: +35% slow for 2.5s |
+| Longshot Stance (`longshot`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Construct: Mechanical Tank (`mechanical_tank`) | active | Lv 15: +the mech's slam also cuts enemy attack speed by 10% for 4s |
+| Caltrop Mine (`mine_layer`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Moonlit Sprint (`moonlit_sprint`) | active | Lv 15: +35% slow for 2.5s |
+| Oathbound Guardian (`oathbound_guardian`) | active | Lv 15: +0.75s stun |
+| Overcharge (`overcharge`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Owl Scout (`owl_scout`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Construct: Pavise (`pavise`) | active | Lv 15: +35% slow for 2.5s |
+| Phase Lance (`phase_lance`) | active | Lv 15: +purge the target's buffs |
+| Photon Turret (`photon_turret`) | active | Lv 15: +35% slow for 2.5s |
+| Piercing Shot (`piercing_shot`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Powder Flask (`powder_flask`) | active | Lv 15: +0.75s stun |
+| Aegis Dome (`protection_dome`) | active | Lv 15: +healing on the target -40% for 4s |
+| Purge (`purge`) | active | Lv 15: +0.75s stun |
+| Purify (`purify`) | active | Lv 15: +purge the target's buffs |
+| Repulsor Pulse (`repulsor_pulse`) | active | Lv 15: +0.75s stun |
+| Restoring Light (`restoring_light`) | active | Lv 15: +purge the target's buffs |
+| Ashfang: Maul (`sabercat_maul`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Ashfang: Pounce (`sabercat_pounce`) | active | Lv 15: +0.75s stun |
+| Ashfang: Dread Roar (`sabercat_roar`) | active | Lv 15: +35% slow for 2.5s |
+| Sanctuary (`sanctuary`) | active | Lv 15: +35% slow for 2.5s |
+| Second Wind (`second_wind`) | active | Lv 15: +healing on the target -40% for 4s |
+| Shadow Dance (`shadow_dance`) | active | Lv 15: +healing on the target -40% for 4s |
+| Shadow Step (`shadow_step`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Shield Bash (`shield_bash`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Shield Slam (`shield_slam`) | active | Lv 15: +0.75s stun |
+| Shield Toss (`shield_toss`) | active | Lv 15: +35% slow for 2.5s |
+| Shield Tumble (`shield_tumble`) | active | Lv 15: +purge the target's buffs |
+| Shield Wall (`shield_wall`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Silver Shot (`silver_shot`) | active | Lv 15: +purge the target's buffs |
+| Skitter Swarm (`skitter_swarm`) | active | Lv 15: +burn for 40% of the hit over 4s |
+| Spectral Blade (`spectral_blade`) | active | Lv 15: +healing on the target -40% for 4s |
+| Spectral Pack (`spectral_pack`) | active | Lv 15: +burn for 40% of the hit over 4s |
+| Spirit Lantern (`spirit_lantern`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Stasis Snare (`stasis_snare`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Runestone Wall (`summoned_wall`) | active | Lv 15: +35% slow for 2.5s |
+| Taunting Tumble (`taunting_tumble`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Tumble Strike (`tumble_strike`) | active | Lv 15: +target takes 12% more damage for 5s |
+| Venom Ground (`venom_ground`) | active | Lv 15: +healing on the target -40% for 4s |
+| Venom Tumble (`venom_tumble`) | active | Lv 15: +burn for 40% of the hit over 4s |
+| War Cry (`war_cry`) | active | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Warding Talisman (`warding_talisman`) | active | Lv 15: +purge the target's buffs |
+| Witchfinder's Mark (`witchfinders_mark`) | active | Lv 15: +purge the target's buffs |
+| Aether Engineering (`aether_engineering`) | passive | Lv 15 aura: party 0.5% chance to stun on basic attacks |
+| Artillery Training (`artillery_training`) | passive | Lv 15 aura: party +10% ranged damage |
+| Battle Rhythm (`battle_rhythm`) | passive | Lv 15 aura: party +30% attack speed |
+| Bloodrush (`bloodrush`) | passive | Lv 15 aura: party 15% chance to resist area damage |
+| Blur (`blur_step`) | passive | Lv 15 aura: party 5% chance to ignore stuns |
+| Deep Reserves (`deep_reserves`) | passive | Lv 15 aura: party +15 magic resist |
+| Ember Wake (`ember_wake`) | passive | Lv 15 aura: party +15 magic resist |
+| Executioner (`executioner`) | passive | Lv 15 aura: party +5% critical chance |
+| Fleet Recovery (`fleet_recovery`) | passive | Lv 15 aura: party +15 magic resist |
+| Frost Wake (`frost_wake`) | passive | Lv 15 aura: party 10% chance to attack twice |
+| Hasted Tumble (`hasted_tumble`) | passive | Lv 15 aura: party 10% chance to attack twice |
+| Headshot (`headshot`) | passive | Lv 15: +Headshot's extra hit deals 3x instead of 2x |
+| Killer Instinct (`killer_instinct`) | passive | Lv 15 aura: party +5% critical chance |
+| Momentum (`momentum`) | passive | Lv 15 aura: party +15 magic resist |
+| Moon Glaive (`moon_glaive`) | passive | Lv 15 aura: party 10% chance to attack twice |
+| Price on Every Soul (`price_on_every_soul`) | passive | Lv 15 aura: party 5% physical lifesteal |
+| Quickened Mind (`quickened_mind`) | passive | Lv 15 aura: party +15 magic resist |
+| Resonant Lattice (`resonant_lattice`) | passive | Lv 15 aura: party 15% chance to resist area damage |
+| Riposte (`riposte_roll`) | passive | Lv 15 aura: party +15 armour |
+| Slippery (`slippery_roll`) | passive | Lv 15 aura: party +5% critical chance |
+| Soul Conduit (`soul_conduit`) | passive | Lv 15 aura: party 5% magic lifesteal |
+| Stone Skin (`stone_skin`) | passive | Lv 15 aura: party +15 armour |
+| Tumbler's Edge (`tumblers_edge`) | passive | Lv 15 aura: party 15% chance to resist area damage |
+| Windrunner (`windrunner`) | passive | Lv 15 aura: party +15 armour |
+| Witchbane (`witchbane`) | passive | Lv 15 aura: party 5% chance to ignore stuns |
+| Aether Nexus (`aether_nexus`) | ultimate | Lv 15: +target takes 12% more damage for 5s |
+| Bastion of Dawn (`bastion_of_dawn`) | ultimate | Lv 15: +35% slow for 2.5s |
+| Cataclysm (`cataclysm`) | ultimate | Lv 15: +burn for 40% of the hit over 4s |
+| Challenge of Iron (`challenge_of_iron`) | ultimate | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Collect the Bounty (`collect_the_bounty`) | ultimate | Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s |
+| Executioner's Verdict (`executioners_verdict`) | ultimate | Lv 15: +healing on the target -40% for 4s |
+| Glaive Storm (`glaive_storm`) | ultimate | Lv 15: +35% slow for 2.5s |
+| Hexbane Judgment (`hexbane_judgment`) | ultimate | Lv 15: +purge the target's buffs |
+| Last Stand (`last_stand`) | ultimate | Lv 15: +0.75s stun |
+| Mass Aegis (`mass_aegis`) | ultimate | Lv 15: +purge the target's buffs |
+| Renewal (`renewal`) | ultimate | Lv 15: +purge the target's buffs |
+| Seismic Reprisal (`seismic_reprisal`) | ultimate | Lv 15: +35% slow for 2.5s |
+| Spectral Hunt (`spectral_hunt`) | ultimate | Lv 15: +burn for 40% of the hit over 4s |
+| Starfall (`starfall`) | ultimate | Lv 15: +target takes 12% more damage for 5s |
+| Warp Obelisk (`warp_obelisk`) | ultimate | Lv 15: +0.75s stun |
+| Wellspring (`wellspring`) | ultimate | Lv 15: +healing on the target -40% for 4s |
+
+Planned signature skills receive the bonus that fits their school (fire/poison DoT, cold/nature/tide slow,
+earth/storm stun, holy/arcane purge, shadow heal-cut, void Vulnerability, physical damage amp); planned passives
+cycle through the aura list.
+
 ## Ultimate upgrades (Sigil of Apotheosis)
 
 Carrying the path-defining unique **Sigil of Apotheosis** adds one extra effect to your ultimate (numbers unchanged).
@@ -230,13 +407,13 @@ Source: `Tools/UltimateUpgrades.py`; runtime: `CireUltimateUpgrades.cpp`; items:
 
 | Champion | Roles | Signature | Implemented purchasable |
 |---|---|---|---|
-| Iron Warden (`knight`) | TANK | shield_slam, iron_guard, war_cry, cleaving_strike, second_wind, protection_dome, stone_skin, bastion_of_dawn, riposte_roll, fleet_recovery, frost_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, shield_tumble, evasive_stance | 29 |
-| Ash Ranger (`ranger`) | DPS | piercing_shot, frost_bind, shadow_step, venom_ground, grave_line, spectral_pack, battle_rhythm, executioners_verdict, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, venom_tumble, shadow_dance, evasive_stance | 43 |
+| Iron Warden (`knight`) | TANK | shield_slam, iron_guard, war_cry, cleaving_strike, second_wind, protection_dome, stone_skin, bastion_of_dawn, riposte_roll, fleet_recovery, frost_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, shield_tumble, evasive_stance | 34 |
+| Ash Ranger (`ranger`) | DPS | piercing_shot, frost_bind, shadow_step, venom_ground, grave_line, spectral_pack, battle_rhythm, executioners_verdict, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, venom_tumble, shadow_dance, evasive_stance | 48 |
 | Veil Scholar (`scholar`) | HEAL | restoring_light, sanctuary, purify, chain_spark, ember_lance, protection_dome, soul_conduit, renewal, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 25 |
-| Dusk Lancer (`lancer`) | DPS | cleaving_strike, piercing_shot, shadow_step, iron_guard, second_wind, ashen_square, battle_rhythm, executioners_verdict, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, ember_wake, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, shadow_dance, evasive_stance | 42 |
-| Rift Summoner (`summoner`) | DPS | oathbound_guardian, spectral_pack, summoned_wall, protection_dome, chain_spark, venom_ground, deep_reserves, cataclysm | 27 |
+| Dusk Lancer (`lancer`) | DPS | cleaving_strike, piercing_shot, shadow_step, iron_guard, second_wind, ashen_square, battle_rhythm, executioners_verdict, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, ember_wake, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, shadow_dance, evasive_stance | 47 |
+| Rift Summoner (`summoner`) | DPS | oathbound_guardian, spectral_pack, summoned_wall, protection_dome, chain_spark, venom_ground, deep_reserves, cataclysm | 32 |
 | Gravewood Bear (`bear`) | TANK | bear_maul, bear_roar, bear_charge, bear_hibernate, iron_guard, war_cry, bear_ancient_hide, bear_colossus, taunting_tumble | 20 |
-| Relic Paladin (`paladin_righteous`) | TANK | paladin_righteous_flail, paladin_relic_vow, shield_slam, iron_guard, war_cry, second_wind, stone_skin, bastion_of_dawn, riposte_roll, fleet_recovery, frost_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, shield_tumble, evasive_stance | 29 |
+| Relic Paladin (`paladin_righteous`) | TANK | paladin_righteous_flail, paladin_relic_vow, shield_slam, iron_guard, war_cry, second_wind, stone_skin, bastion_of_dawn, riposte_roll, fleet_recovery, frost_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, shield_tumble, evasive_stance | 34 |
 | Relic Paladin (`paladin_holy`) | HEAL | paladin_holy_flail, paladin_pilgrim_light, paladin_relic_vow, restoring_light, sanctuary, purify, soul_conduit, renewal, shield_tumble | 20 |
 | Deepdelve Miner (`dwarf_miner`) | TANK | miner_pickfall, miner_faultline, miner_lantern, summoned_wall, iron_guard, war_cry, miner_orehide, miner_mountain, mine_layer, taunting_tumble | 21 |
 | Ether Golem (`ether_golem_tank`) | TANK | golem_granite_fist, golem_ether_anchor, iron_guard, war_cry, summoned_wall, shield_slam, golem_construct_core, golem_worldstone, taunting_tumble | 20 |
@@ -244,18 +421,18 @@ Source: `Tools/UltimateUpgrades.py`; runtime: `CireUltimateUpgrades.cpp`; items:
 | Ether Golem (`ether_golem_bruiser`) | TANK/DPS | golem_fel_fist, golem_ether_furnace, cleaving_strike, cinder_cone, shadow_step, iron_guard, golem_construct_core, golem_worldstone, decimating_strike, riposte_roll, fleet_recovery, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, evasive_stance | 41 |
 | Blood-Oath Chieftain (`orc_chieftain`) | TANK/HEAL | chieftain_axe_hook, chieftain_banner, war_cry, iron_guard, cleaving_strike, shield_slam, chieftain_courage, chieftain_earthshout, decimating_strike, riposte_roll, fleet_recovery, frost_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, evasive_stance | 36 |
 | Totemic Behemoth (`totemic_behemoth`) | TANK | behemoth_totem_sweep, behemoth_tusk_line, behemoth_totem_bulwark, war_cry, iron_guard, cleaving_strike, behemoth_ancestral_weight, behemoth_stampede, taunting_tumble | 20 |
-| Drakish Footman (`drakish_footman`) | TANK | drakish_dragon_oath, drakish_scale_guard, drakish_wing_rebuke, shield_slam, war_cry, iron_guard, drakish_ember_memory, drakish_ancient_pact, decimating_strike, riposte_roll, fleet_recovery, ember_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, evasive_stance | 28 |
-| Cinder Arcanist (`wizard`) | DPS/HEAL | ember_lance, frost_bind, chain_spark, cinder_cone, grave_line, ashen_square, deep_reserves, cataclysm, quickened_mind, hasted_tumble, ember_wake, frost_wake | 38 |
+| Drakish Footman (`drakish_footman`) | TANK | drakish_dragon_oath, drakish_scale_guard, drakish_wing_rebuke, shield_slam, war_cry, iron_guard, drakish_ember_memory, drakish_ancient_pact, decimating_strike, riposte_roll, fleet_recovery, ember_wake, momentum, slippery_roll, bloodrush, tumble_strike, taunting_tumble, evasive_stance | 33 |
+| Cinder Arcanist (`wizard`) | DPS/HEAL | ember_lance, frost_bind, chain_spark, cinder_cone, grave_line, ashen_square, deep_reserves, cataclysm, quickened_mind, hasted_tumble, ember_wake, frost_wake | 43 |
 | Red-Moon Berserker (`troll_berserker_melee`) | DPS | troll_axe_frenzy, troll_blood_leap, cleaving_strike, shadow_step, iron_guard, second_wind, troll_hunger, troll_red_moon, decimating_strike, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, ember_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, shadow_dance, evasive_stance | 41 |
-| Red-Moon Berserker (`troll_berserker_ranged`) | DPS | troll_twin_throw, troll_returning_axes, piercing_shot, frost_bind, shadow_step, venom_ground, troll_hunger, troll_red_moon, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, venom_tumble, shadow_dance, evasive_stance | 41 |
+| Red-Moon Berserker (`troll_berserker_ranged`) | DPS | troll_twin_throw, troll_returning_axes, piercing_shot, frost_bind, shadow_step, venom_ground, troll_hunger, troll_red_moon, executioner, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, venom_tumble, shadow_dance, evasive_stance | 46 |
 | Thornweave Dryad (`dryad`) | HEAL | dryad_root_snare, dryad_seed_mend, dryad_thorn_line, restoring_light, sanctuary, purify, dryad_green_covenant, dryad_grove_renewal, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble, venom_tumble | 26 |
 | Lantern Whisp (`whisp`) | HEAL | whisp_guiding_mote, whisp_spirit_tether, whisp_fey_trail, restoring_light, purify, protection_dome, whisp_lantern_soul, whisp_constellation, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 25 |
-| Evergrove Centaur (`evergrove_centaur`) | DPS/HEAL | centaur_grove_javelin, centaur_trailblaze, centaur_herd_call, restoring_light, sanctuary, purify, centaur_steady_gait, centaur_spring_march, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 40 |
+| Evergrove Centaur (`evergrove_centaur`) | DPS/HEAL | centaur_grove_javelin, centaur_trailblaze, centaur_herd_call, restoring_light, sanctuary, purify, centaur_steady_gait, centaur_spring_march, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 45 |
 | Keeper of the Light (`keeper_of_light`) | HEAL | keeper_dawn_beam, keeper_lantern_ward, keeper_beacon, restoring_light, sanctuary, purify, keeper_last_light, keeper_sunrise | 19 |
-| Gunblade (`gunblade`) | DPS | silver_shot, hex_mark, powder_flask, blade_flurry, hunters_stride, warding_talisman, price_on_every_soul, collect_the_bounty, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, ember_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, shadow_dance, evasive_stance | 50 |
-| Witch Slayer (`witch_slayer`) | DPS | arcane_blunderbuss, spirit_lantern, purge, banishment, witchfinders_mark, spectral_blade, witchbane, hexbane_judgment, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, quickened_mind, hasted_tumble, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, venom_tumble, shadow_dance, evasive_stance | 50 |
-| Huntress (`huntress`) | DPS | bouncing_glaive, sabercat_pounce, owl_scout, moonlit_sprint, crescent_volley, sabercat_maul, moon_glaive, glaive_storm, sabercat_roar, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, venom_tumble, shadow_dance, evasive_stance | 52 |
-| Aetheri Artificer (`aetheri_artificer`) | DPS | photon_turret, skitter_swarm, arc_mine, disruption_pylon, phase_lance, overcharge, aether_engineering, warp_obelisk, quickened_mind, hasted_tumble, mine_layer | 38 |
+| Gunblade (`gunblade`) | DPS | silver_shot, hex_mark, powder_flask, blade_flurry, hunters_stride, warding_talisman, price_on_every_soul, collect_the_bounty, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, ember_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, shadow_dance, evasive_stance | 55 |
+| Witch Slayer (`witch_slayer`) | DPS | arcane_blunderbuss, spirit_lantern, purge, banishment, witchfinders_mark, spectral_blade, witchbane, hexbane_judgment, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, quickened_mind, hasted_tumble, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, venom_tumble, shadow_dance, evasive_stance | 55 |
+| Huntress (`huntress`) | DPS | bouncing_glaive, sabercat_pounce, owl_scout, moonlit_sprint, crescent_volley, sabercat_maul, moon_glaive, glaive_storm, sabercat_roar, riposte_roll, tumblers_edge, killer_instinct, fleet_recovery, windrunner, hasted_tumble, frost_wake, momentum, blur_step, slippery_roll, bloodrush, tumble_strike, mine_layer, venom_tumble, shadow_dance, evasive_stance | 57 |
+| Aetheri Artificer (`aetheri_artificer`) | DPS | photon_turret, skitter_swarm, arc_mine, disruption_pylon, phase_lance, overcharge, aether_engineering, warp_obelisk, quickened_mind, hasted_tumble, mine_layer | 43 |
 | Aetheri Warden (`aetheri_warden`) | TANK/HEAL | aegis_pylon, haste_pylon, gravity_pylon, stasis_snare, aether_mend, repulsor_pulse, resonant_lattice, aether_nexus, fleet_recovery, windrunner, quickened_mind, hasted_tumble, slippery_roll, shield_tumble | 41 |
 
 ## Runtime API (`CireAbilityDB.h`) — for the Skill Shop

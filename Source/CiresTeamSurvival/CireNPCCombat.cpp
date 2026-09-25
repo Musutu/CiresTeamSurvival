@@ -1,4 +1,5 @@
 #include "CireNPCCombat.h"
+#include "CireScalingKits.h" // scaling-kits
 #include "CireTechConstructs.h" // new-champions
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireLoot.h" // progression-shop: NPC pause
@@ -473,7 +474,7 @@ float CireNPCCombat::ModifyIncomingDamage(ACireMonster* M,ACireHero* Attacker,fl
     static int32 Depth=0;
     if(!IsValid(M)||!M->HasAuthority()||!FMath::IsFinite(Amount)||Amount<=0)return Amount;
     auto* S=St(M);const auto* A=Arch(M);const float Now=NowOf(M);
-    if(A)Amount*=1.f-A->Armor*CireCrowdControl::ArmorMultiplier(M); // champion-draft: armor break
+    if(A)Amount*=1.f-A->Armor*CireCrowdControl::ArmorMultiplier(M)*CireKits::DefenseMultiplier(M); // champion-draft: armor break; scaling-kits: Vulnerability
     if(S&&S->ShieldWallUntil>Now)Amount*=1.f-S->ShieldWallReduction;
     if(Attacker)if(auto* Mode=M->GetWorld()->GetAuthGameMode<ACireGameMode>())
         for(auto* Other:Mode->Monsters)
@@ -517,7 +518,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     if(M->BaseMoveSpeed<=0)M->BaseMoveSpeed=Movement->MaxWalkSpeed;
     Movement->MaxWalkSpeed=M->BaseMoveSpeed*(M->SlowUntil>Now?.65f:1.f)*(S&&S->RallyUntil>Now?1.1f:1.f)
         *CireWaveDirector::MarchSpeed(M); // wave-director: pacing, faster while a wave unit walks the road
-    M->AttackTimer=FMath::Max(0.f,M->AttackTimer-Delta);M->AbilityTimer=FMath::Max(0.f,M->AbilityTimer-Delta);
+    M->AttackTimer=FMath::Max(0.f,M->AttackTimer-Delta*CireKits::MonsterAttackRate(M)); // scaling-kits: Mech slam -10% attack speedM->AbilityTimer=FMath::Max(0.f,M->AbilityTimer-Delta);
     if(M->MonsterArt)M->MonsterArt->ReleaseSwing(Now); // creature-anim: a committed swing lands on its contact frame
     if(S)S->RefreshStatusFlags(Now);
     // wave-director: neutral challenge packs stand at their camp and never pick a fight;
@@ -589,6 +590,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         if(Now>=M->CastEndsAt)ReleaseCast(M,Mode);
         return;
     }
+    if(CireKits::MonsterPursueConstruct(M))return; // scaling-kits: a construct that out-threatens the victim is attacked
     if(!M->Victim&&CireTechConstructs::MonsterHandleConstructs(M,false))return; // new-champions: smash a champion's turret/pylon close by
     if(auto* Victim=M->Victim)
     {
