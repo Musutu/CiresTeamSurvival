@@ -1,0 +1,25 @@
+{
+ "schemaVersion": 1,
+ "description": "monster-expansion: grip data for the bestiary creatures' Fab weapon props (Tools/BuildFabExpansionCreatures.py). Same fields as WeaponGrips.json.",
+ "weapons": {
+  "/Game/Monster/Mesh/SM_Monster_Sword.SM_Monster_Sword": {
+   "handle": [
+    0.0,
+    122.5,
+    1.1
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "edge": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "radiusCm": 2.21,
+   "tilt": 25
+  }
+ }
+}

@@ -6,6 +6,7 @@
 #include "CireWaves.h"
 #include "CireNPCArchetypes.h"
 #include "CireRaces.h" // monster-races
+#include "CireMonsterExpansion.h" // monster-expansion
 #include "CireBalanceLab.h"
 #include "CireDeveloperTools.h"
 #include "Engine/World.h"
@@ -74,6 +75,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     };
 
     const float L = X, T = Y + 44;
+    const bool bLab = CireBalanceLab::IsActive(Mode);
     // ---- header: live status ------------------------------------------------------
     const FString Live = State ? FString::Printf(TEXT("LIVE  |  %s  |  NEXT: %s"), State->WaveLabel.IsEmpty() ? TEXT("no wave yet") : *State->WaveLabel,
         State->NextWaveLabel.IsEmpty() ? TEXT("-") : *State->NextWaveLabel) : FString(TEXT("LIVE  |  match state unavailable"));
@@ -102,7 +104,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         Label(Painter().Fit(FString::Printf(TEXT("%s  |  %d/lane  |  %s"), *CireWaveDirector::TypeLabel(W.Type), W.UnitsPerLane(), *RaceText), 8, ListW - 16, ECireFont::Body), ListX + 10, RY + 15, 8, bInCycle ? Gold : Muted);
         Tip(W.Label, bInCycle ? (WaveDraft.bCampaignOrder ? TEXT("Select to edit. Campaign order: this wave is played in the match (cycle = row / waves per cycle).") : TEXT("Select to edit. This wave is inside the cycle."))
             : TEXT("Beyond the waves the match plays: kept in the list but not played until the cycle (or cycle count) grows."), ListX + 2, RY, ListW - 4, RowH - 2);
-        if (Over && Clicked) { Clicked = false; PlayUIFeedback(); WaveSelected = I; }
+        if (Over && Clicked) { Clicked = false; PlayUIFeedback(); WaveSelected = I; bWaveEditBonus = false; } // monster-expansion: back to the cycle
     }
     const float LB = ListY + Visible * RowH + 10;
     if (Button(TEXT("ADD"), ListX, LB, 54, 22, TEXT("Add a Normal wave after the selected one (max 20).")) && WaveDraft.Waves.Num() < 20)
@@ -123,18 +125,23 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     WaveSelected = FMath::Clamp(WaveSelected, 0, WaveDraft.Waves.Num() - 1);
 
     // ---- selected wave (right) -----------------------------------------------------
-    FCireWaveDef& W = WaveDraft.Waves[WaveSelected];
+    // monster-expansion: EDIT BONUS WAVE switches the composer to Waves.json bonusWave.wave (its own type, never in the cycle).
+    const bool bBonusEdit = bWaveEditBonus;
+    FCireWaveDef& W = bBonusEdit ? WaveDraft.Bonus.Wave : WaveDraft.Waves[WaveSelected];
     const float EX = L + 190, EW = 410;
-    CireUIStyle::Header(Painter(), EX, T + 16, EW, FString::Printf(TEXT("WAVE %d  |  %s"), WaveSelected + 1, *W.Label.ToUpper()), Gold, 10.f);
+    CireUIStyle::Header(Painter(), EX, T + 16, EW, bBonusEdit ? FString::Printf(TEXT("BONUS LOOT WAVE  |  %s"), *W.Label.ToUpper()) :
+        FString::Printf(TEXT("WAVE %d  |  %s"), WaveSelected + 1, *W.Label.ToUpper()), bBonusEdit ? CireMonsterExpansion::SpecialColor(2) : Gold, 10.f);
     const float R1 = T + 42;
     if (Button(FString(TEXT("TYPE: ")) + CireWaveDirector::TypeLabel(W.Type), EX, R1, 128, 22,
-        TEXT("Cycle the wave type label. Use APPLY TEMPLATE to replace the composition with that type's template.")))
+        bBonusEdit ? TEXT("The bonus loot wave always has the Bonus Loot type: fleeing treasure creatures that never attack and never cost lives.") :
+        TEXT("Cycle the wave type label. Use APPLY TEMPLATE to replace the composition with that type's template. Bonus Loot = fleeing treasure creatures (no lives lost)."), !bBonusEdit))
         W.Type = static_cast<ECireWaveType>((static_cast<int32>(W.Type) + 1) % static_cast<int32>(ECireWaveType::Count));
     if (Button(TEXT("TEMPLATE"), EX + 132, R1, 74, 22, TEXT("Replace this wave's rows, pacing and label with the template for its type (Armored Escort = 1 non-attacking tank + 4 defenders). Template rows follow the wave's race.")))
     { const ECireWaveType Type = W.Type; const FName Race = W.Race; W = CireWaveDirector::Template(Type); W.Race = Race; }
     // monster-races: the wave's race. Rotation = Waves.json campaign.raceRotation for the cycle being played.
     const int32 EditCycle = WaveDraft.bCampaignOrder ? WaveSelected / FMath::Max(1, WaveDraft.WavesPerCycle) : State ? FMath::Max(0, State->Round - 1) : 0;
     const int32 EditWave = WaveDraft.bCampaignOrder ? WaveSelected % FMath::Max(1, WaveDraft.WavesPerCycle) : 0; // rules-conformance
+    if (!bBonusEdit)
     {
         const FCireRace* Race = CireRaces::FindRace(W.Race);
         const FString Title = Race ? FString(TEXT("RACE: ")) + Race->Short.ToUpper() : FString(TEXT("RACE: ROTATION"));
@@ -143,7 +150,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         Help += TEXT(" Rows marked with a slot (Line, Caster, ...) take that race's unit; explicit units stay as chosen.");
         if (Button(Title, EX + 210, R1, 104, 22, Help, true, Race != nullptr, Teal)) CireWaveDirector::CycleWaveRace(W);
     }
-    if (Button(W.bMustClear ? TEXT("MUST CLEAR") : TEXT("OVERLAPS NEXT"), EX + 318, R1, 92, 22,
+    if (!bBonusEdit && Button(W.bMustClear ? TEXT("MUST CLEAR") : TEXT("OVERLAPS NEXT"), EX + 318, R1, 92, 22,
         TEXT("Must clear: the next wave waits for this one to die or leak. Overlaps: the next wave's timer starts once this one has fully spawned."), true, W.bMustClear, W.bMustClear ? Teal : Gold))
         W.bMustClear = !W.bMustClear;
     const float R2 = R1 + 42;
@@ -155,7 +162,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     // Composition rows.
     const float CY = R2 + 30;
     // monster-races: UNIT follows the race by slot; R = rank colour (click cycles), SK = skill tier override.
-    Label(TEXT("UNIT (SLOT: RACE UNIT)"), EX, CY, 8, Muted); Label(TEXT("R M T B"), EX + 100, CY, 8, Muted); Label(TEXT("COUNT"), EX + 146, CY, 8, Muted); Label(TEXT("HEALTH x"), EX + 200, CY, 8, Muted);
+    Label(TEXT("UNIT (SLOT: RACE UNIT)"), EX, CY, 8, Muted); Label(TEXT("R M T B $"), EX + 100, CY, 8, Muted); Label(TEXT("COUNT"), EX + 156, CY, 8, Muted); Label(TEXT("HEALTH x"), EX + 200, CY, 8, Muted);
     Label(TEXT("DAMAGE x"), EX + 260, CY, 8, Muted); Label(TEXT("SIZE"), EX + 320, CY, 8, Muted); Label(TEXT("SK"), EX + 369, CY, 8, Muted);
     const TArray<FName> Ids = ArchetypeIds();
     int32 RemoveRow = INDEX_NONE;
@@ -166,10 +173,21 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         Painter().Rect(EX, RY - 1, EW, 23, I % 2 ? FLinearColor(0, 0, 0, .18f) : FLinearColor(0, 0, 0, .3f));
         (void)Ids;
         const FName RowRace = CireWaveDirector::RaceFor(WaveDraft, W, EditCycle, I, EditWave);
-        if (Button(Painter().Fit(CireWaveDirector::RowUnitLabel(U, RowRace, EditCycle), 8.5f, 92, ECireFont::Bold), EX + 1, RY, 96, 21,
+        if (bBonusEdit)
+        {
+            // monster-expansion: bonus rows cycle through the bestiary creatures.
+            if (Button(Painter().Fit(CireWaveDirector::RowUnitLabel(U, NAME_None, EditCycle), 8.5f, 92, ECireFont::Bold), EX + 1, RY, 96, 21,
+                TEXT("Click to cycle the bestiary creatures (treasure goblin, gilded stag, ...). Bonus creatures flee, never attack and escape after the escape timer.")))
+            {
+                const auto& List = CireMonsterExpansion::Creatures();
+                const int32 At = List.IndexOfByPredicate([&](const CireMonsterExpansion::FCreature& C) { return C.Id == U.Archetype; });
+                if (!List.IsEmpty()) U.Archetype = List[(At + 1) % List.Num()].Id;
+            }
+        }
+        else if (Button(Painter().Fit(CireWaveDirector::RowUnitLabel(U, RowRace, EditCycle), 8.5f, 92, ECireFont::Bold), EX + 1, RY, 96, 21,
             TEXT("Click to cycle: the race slots (Line, Bruiser, Tank, Caster, Ranged, Special, Warlord, Colossus, Boss = colossus/warlord by cycle), then this race's units by name. Slot rows follow the wave's race.")))
             CireWaveDirector::CycleRowUnit(U, RowRace);
-        StepI(FString(), U.Count, 1, 20, EX + 146, RY, 52, TEXT("Units of this row per lane (1-20)."));
+        StepI(FString(), U.Count, 1, 20, EX + 156, RY, 42, TEXT("Units of this row per lane (1-20)."));
         StepF(FString(), U.HealthScale, .05f, .1f, 20, EX + 200, RY, 58, 2, TEXT(""), TEXT("Health multiplier on top of wave/round scaling."));
         StepF(FString(), U.DamageScale, .05f, .05f, 10, EX + 260, RY, 58, 2, TEXT(""), TEXT("Damage multiplier."));
         StepF(FString(), U.SizeScale, .1f, .5f, 3, EX + 320, RY, 46, 1, TEXT(""), TEXT("Body size multiplier."));
@@ -197,26 +215,32 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
                 Style.Health, Style.Damage, Style.Size, Style.SkillBonus), BX, RY, 10, 21);
             if (Over && Clicked) { Clicked = false; PlayUIFeedback(); if (U.bElite && U.Rank < ECireNPCRank::Elite) U.Rank = ECireNPCRank::Elite; CireWaveDirector::CycleRowRank(U); }
         }
-        const TCHAR* Flags[] = {TEXT("M"), TEXT("T"), TEXT("B")};
-        bool* Values[] = {&U.bNonAttacking, &U.bEscortee, &U.bBoss};
+        const TCHAR* Flags[] = {TEXT("M"), TEXT("T"), TEXT("B"), TEXT("$")};
+        bool* Values[] = {&U.bNonAttacking, &U.bEscortee, &U.bBoss, &U.bRare};
         const TCHAR* Help[] = {TEXT("Marcher: never attacks, walks through heroes, must be stopped."),
-            TEXT("Escortee: the protected tank of an escort wave (implies marcher); attackers in the wave defend it."), TEXT("Lane boss: leaks for 10 lives (archetype leak cost).")};
-        // Flag toggles: Marcher (non-attacking), escorTee, Boss.
-        for (int32 F = 0; F < 3; ++F)
+            TEXT("Escortee: the protected tank of an escort wave (implies marcher); attackers in the wave defend it."), TEXT("Lane boss: leaks for 10 lives (archetype leak cost)."),
+            TEXT("Rare: this row always spawns as a Rare Spawn (glow, Rare plate, tougher, rich personal chest; Waves.json rareSpawn stats). Random rares come from the RARES row below.")}; // monster-expansion
+        // Flag toggles: Marcher (non-attacking), escorTee, Boss, Rare ($).
+        for (int32 F = 0; F < (bBonusEdit ? 0 : 4); ++F)
         {
             const float BX = EX + 110 + F * 11;
             const bool bOn = *Values[F];
             const bool Over = Hit(BX, RY, 10, 21);
-            Painter().Rect(BX, RY, 10, 21, bOn ? (F == 2 ? Red : Teal) : FLinearColor(.12f, .12f, .12f, .9f));
+            Painter().Rect(BX, RY, 10, 21, bOn ? (F == 3 ? CireMonsterExpansion::SpecialColor(1) : F == 2 ? Red : Teal) : FLinearColor(.12f, .12f, .12f, .9f));
             Label(Flags[F], BX + 1.5f, RY + 5, 8, bOn ? FLinearColor::Black : Muted);
             Tip(FString(Flags[F]), Help[F], BX, RY, 10, 21);
-            if (Over && Clicked) { Clicked = false; PlayUIFeedback(); *Values[F] = !bOn; if (F == 1 && *Values[F]) U.bNonAttacking = true; if (F == 2 && *Values[F]) { U.bNonAttacking = false; U.bEscortee = false; } }
+            if (Over && Clicked) { Clicked = false; PlayUIFeedback(); *Values[F] = !bOn; if (F == 1 && *Values[F]) U.bNonAttacking = true; if (F == 2 && *Values[F]) { U.bNonAttacking = false; U.bEscortee = false; }
+                if (F == 3 && *Values[F]) { U.bBoss = false; U.bEscortee = false; U.bNonAttacking = false; } }
         }
     }
     if (RemoveRow != INDEX_NONE && W.Units.Num() > 1) W.Units.RemoveAt(RemoveRow);
     const float AddY = CY + 13 + FMath::Min(W.Units.Num(), 8) * 25 + 2;
     if (W.Units.Num() < 8 && Button(TEXT("+ ROW"), EX, AddY, 70, 20, TEXT("Add a composition row (max 8).")))
-    { FCireWaveUnit U; U.Archetype = TEXT("hollow_infantry"); U.Slot = TEXT("line"); U.Count = 1; W.Units.Add(U); } // monster-races: follows the race
+    {
+        FCireWaveUnit U; U.Archetype = TEXT("hollow_infantry"); U.Slot = TEXT("line"); U.Count = 1; // monster-races: follows the race
+        if (bBonusEdit) { U.Archetype = TEXT("treasure_goblin"); U.Slot = NAME_None; } // monster-expansion
+        W.Units.Add(U);
+    }
 
     // ---- globals ---------------------------------------------------------------------
     const float GY = Y + 318;
@@ -240,8 +264,33 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     StepF(TEXT("RECOVERY"), WaveDraft.RecoverySeconds, 1, 1, 180, L + 430, PY, 80, 0, TEXT("s"), TEXT("Regroup time after the arena before the next cycle."));
     if (Button(WaveDraft.bEarlyContinue ? TEXT("READY-UP ON") : TEXT("READY-UP OFF"), L + 516, PY, 84, 20, TEXT("When on, the breather (Skill Shop window) ends 1 s after every human player presses Ready."), true, WaveDraft.bEarlyContinue, WaveDraft.bEarlyContinue ? Teal : Gold))
         WaveDraft.bEarlyContinue = !WaveDraft.bEarlyContinue;
-    const float AY = Y + 384;
-    const bool bLab = CireBalanceLab::IsActive(Mode);
+    // ---- monster-expansion: Rare Spawns and the Bonus Loot Wave (Waves.json rareSpawn / bonusWave) ------------------
+    {
+        const float SY = PY + 34;
+        const FLinearColor RareC = CireMonsterExpansion::SpecialColor(1), BonusC = CireMonsterExpansion::SpecialColor(2);
+        auto& Rr = WaveDraft.Rare; auto& Bn = WaveDraft.Bonus;
+        if (Button(Rr.bEnabled ? TEXT("RARES") : TEXT("NO RARE"), L, SY, 44, 20, TEXT("Rare Spawns: occasionally a rare creature (lich, griffon, drake, frostfang, horned brute) joins a normal or pack wave in both lanes. It glows, wears a Rare plate, is tougher and drops a rich personal chest."), true, Rr.bEnabled, RareC))
+            Rr.bEnabled = !Rr.bEnabled;
+        float RarePct = Rr.Chance * 100.f;
+        if (StepF(TEXT("RARE %"), RarePct, 5, 0, 100, L + 46, SY, 60, 0, TEXT(""), TEXT("Chance that an eligible wave (normal, packs, custom) brings a rare."))) Rr.Chance = RarePct / 100.f;
+        StepI(TEXT("RARE FROM"), Rr.FromWave, 1, 200, L + 108, SY, 60, TEXT("First global wave that can roll a rare. Early waves stay readable."));
+        StepF(TEXT("RARE $ (MOB)"), Rr.Bounty, 1, 0, 100, L + 170, SY, 60, 0, TEXT(""), TEXT("Kill bounty of a rare in mob values (a normal mob is 1). Its personal chest comes on top (LootTables.json rareSpawn)."));
+        if (Button(Bn.bEnabled ? TEXT("BONUS") : TEXT("NO BONUS"), L + 232, SY, 44, 20, TEXT("Bonus Loot Wave: after a cleared wave (never the cycle's last) a short wave of treasure creatures may flee down the lane during the breather. They never attack, never cost lives and escape after the escape timer."), true, Bn.bEnabled, BonusC))
+            Bn.bEnabled = !Bn.bEnabled;
+        float BonusPct = Bn.Chance * 100.f;
+        if (StepF(TEXT("BONUS %"), BonusPct, 5, 0, 100, L + 278, SY, 60, 0, TEXT(""), TEXT("Chance per cleared wave (at most MaxPerCycle per cycle, from bonusWave.fromWave)."))) Bn.Chance = BonusPct / 100.f;
+        StepF(TEXT("ESCAPE"), Bn.EscapeSeconds, 1, 5, 120, L + 340, SY, 60, 0, TEXT("s"), TEXT("Seconds before an uncaught bonus creature escapes with its loot. The breather only grows by bonusWave.extraBreatherSeconds."));
+        StepF(TEXT("BONUS $ (MOB)"), Bn.Bounty, 1, 0, 100, L + 402, SY, 60, 0, TEXT(""), TEXT("Kill bounty of each bonus creature in mob values. Its personal purse comes on top (LootTables.json bonusWave)."));
+        if (Button(bWaveEditBonus ? TEXT("EDIT WAVES") : TEXT("EDIT BONUS"), L + 464, SY, 66, 20, TEXT("Switch the composer between the cycle's waves and the bonus loot wave's composition."), true, bWaveEditBonus, BonusC))
+            bWaveEditBonus = !bWaveEditBonus;
+        if (Button(TEXT("SPAWN BONUS"), L + 532, SY, 68, 20, TEXT("Start the applied bonus loot wave now (survival phase only)."), !bLab, false, BonusC))
+        {
+            FString BonusError;
+            DeveloperMessage = CireWaveDirector::StartBonusWave(Mode, &BonusError) ? TEXT("Bonus loot wave started.") : BonusError;
+        }
+    }
+    const float AY = Y + 414; // monster-expansion: one row lower (rares / bonus row above)
+
     if (Button(TEXT("APPLY LIVE"), L, AY, 96, 24, TEXT("Validate and apply on the server. Takes effect from the next wave."), !bLab, false, Teal))
     {
         if (CireWaveDirector::ApplyLive(Mode, WaveDraft, &Error)) { WaveDraft = CireWaveDirector::Config(GetWorld()); DeveloperMessage = TEXT("Waves applied live: changes take effect from the next wave."); }

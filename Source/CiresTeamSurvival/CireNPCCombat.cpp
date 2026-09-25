@@ -22,6 +22,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CireBuffs.h" // aura-vfx
+#include "CireMonsterExpansion.h" // monster-expansion
 #include "CireMonsterArt.h" // creature-anim
 #include "CireWaves.h" // wave-director
 #include "CireNav.h" // nav-paths: navmesh steering
@@ -521,6 +522,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     M->AttackTimer=FMath::Max(0.f,M->AttackTimer-Delta*CireKits::MonsterAttackRate(M)); // scaling-kits: Mech slam -10% attack speedM->AbilityTimer=FMath::Max(0.f,M->AbilityTimer-Delta);
     if(M->MonsterArt)M->MonsterArt->ReleaseSwing(Now); // creature-anim: a committed swing lands on its contact frame
     if(S)S->RefreshStatusFlags(Now);
+    if(CireMonsterExpansion::TickSpecial(M,Mode,Delta))return; // monster-expansion: bonus loot creatures flee and escape
     // wave-director: neutral challenge packs stand at their camp and never pick a fight;
     // a player's attack (CireWaveDirector::AllowDamage) turns the whole pack hostile.
     if(M->bNeutral)
@@ -759,6 +761,7 @@ bool CireNPCCombat::RunSmoke(ACireGameMode* Mode)
     bPassed=RunRolesSmoke(Mode)&&bPassed;
     bPassed=CireMonsterArt::RunSmoke(Mode)&&bPassed; // creature-anim
     bPassed=CireRaces::RunSmoke(Mode)&&bPassed; // monster-races
+    bPassed=CireMonsterExpansion::RunSmoke(Mode)&&bPassed; // monster-expansion
     return bPassed;
 }
 #endif

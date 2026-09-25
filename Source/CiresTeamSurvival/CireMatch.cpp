@@ -319,7 +319,7 @@ void ACireGameMode::SpawnBots() {
 }
 void ACireGameMode::SpawnWave() {
     // wave-director: composition, types, spawn pacing and scaling come from Waves.json (CireWaves.h).
-    if(!CireWaveDirector::StartWave(this)) return;
+    if(!CireWaveDirector::StartWave(this,true)) return; // monster-expansion: the live flow rolls rares and race variants
     auto* S=GetGameState<ACireGameState>();
     UE_LOG(LogCire,Display,TEXT("CIRE WAVE SPAWN round=%d wave=%d cycle=%d/%d type=%s"),S->Round,S->Wave,CycleWavesSpawned,S->WavesPerCycle,*CireWaveDirector::CurrentWaveType(this));
     CireProgression::OnWaveSpawned(this,CycleWavesSpawned); // progression-shop: mid-cycle challenge unlocks
@@ -356,6 +356,8 @@ void ACireGameMode::Leak(ACireMonster* M) {
         ||M->Lane<0||M->Lane>1||Clock.Phase()!=Cires::MatchPhase::Survival) return;
     auto* S=GetGameState<ACireGameState>();
     if(!S) return;
+    // monster-expansion: a bonus loot creature reaching the town escapes with its loot; it never costs lives.
+    if(M->SpecialSpawn==2){Monsters.Remove(M);CireWaveDirector::Forget(M);UE_LOG(LogCire,Display,TEXT("CIRE_BONUS_ESCAPE %s lane=%d at the gate"),*M->GetNPCDisplayName(),M->Lane);M->Destroy();return;}
     // Remove first: overlapping collision components must not debit the same creep twice.
     Monsters.Remove(M);
     CireWaveDirector::Forget(M); // wave-director
@@ -540,6 +542,7 @@ void ACireGameMode::Tick(float Dt) {
                 // wave-director: breather plus the next wave's authored delay.
                 const auto& Waves=CireWaveDirector::Config(GetWorld());
                 WaveTimer=WaveBreatherSeconds+(bSmoke||Waves.Waves.IsEmpty()?0.f:CireWaveDirector::ResolveWave(Waves,CycleWavesSpawned,Clock.Round()-1).DelayBefore);
+                WaveTimer+=CireWaveDirector::OnWaveCleared(this,S->CycleWavesDone); // monster-expansion: an occasional bonus loot wave
 #if !UE_BUILD_SHIPPING
                 if(bSmoke)++SmokeClearedWaves;
 #endif

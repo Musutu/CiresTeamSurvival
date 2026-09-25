@@ -382,3 +382,18 @@ to 55-80. Lives lost and wave length are within run-to-run noise. What still tri
 the cycle 3-4 boss wave: the stall reports show every unit engaged in melee with a tank that the
 healer keeps up and a Siegebreaker losing health too slowly (for example 13.7k of 23.4k left at
 210 s), which is bot damage output against cycle scaling, not pathing.
+
+## Rare Spawns and the Bonus Loot Wave (monster-expansion)
+
+Two optional blocks, both edited live in F8 -> Waves (bottom row, the `$` row flag, TYPE *Bonus Loot* and EDIT BONUS):
+
+- `rareSpawn`: from `fromWave`, each Normal / pack / Custom wave has `chance` to bring one rare creature from `pool` (same in
+  both lanes, seeded per match and wave, at most `maxPerCycle` per cycle). Rares are at least Elite, get `health` / `damage` /
+  `size` on top, wear the Rare colour, aura and "Rare" plate, pay `bounty` mob values and drop a personal chest.
+- `bonusWave`: after a cleared wave (never the cycle's last), from `fromWave`, `chance` to run `wave` (type `bonus_loot`,
+  default the Goblin Hoard) during the breather, at most `maxPerCycle` per cycle. Its creatures flee champions closer than
+  `fleeRadius`, never attack, never cost lives, never block the next wave and escape after `escapeSeconds`. The breather grows
+  by `extraBreatherSeconds` only when it runs. Each creature pays `bounty` mob values plus a personal purse.
+
+Only the live match flow (`ACireGameMode::SpawnWave` -> `StartWave(Mode, true)`) rolls rares and race variants; smoke runs
+never do. `FCireWaveUnitInfo` gains `bRare` / `bBonus`. Details, numbers and the creatures: `Docs/MonsterExpansion.md`.

@@ -65,6 +65,59 @@
     "promoteEvery": 4,
     "rotateEvery": "wave"
   },
+  "rareSpawn": {
+    "_comment": "Rare Spawn: from fromWave, each normal/pack wave has `chance` to add one rare creature from `pool` (both lanes, at most maxPerCycle per cycle). It glows, wears a 'Rare' plate, is tougher (health/damage/size x) and pays `bounty` mob values plus a personal rare chest (LootTables.json sources.rareSpawn). Docs/MonsterExpansion.md.",
+    "enabled": true,
+    "chance": 0.3,
+    "fromWave": 2,
+    "maxPerCycle": 2,
+    "health": 1.8,
+    "damage": 1.2,
+    "size": 1.15,
+    "bounty": 5,
+    "pool": [
+      "lich_revenant",
+      "storm_griffon",
+      "cinder_drake",
+      "frostfang_alpha",
+      "horned_brute"
+    ]
+  },
+  "bonusWave": {
+    "_comment": "Bonus Loot Wave: after a cleared wave (never the cycle's last), from fromWave, `chance` to run `wave` during the breather (at most maxPerCycle). Its creatures flee champions closer than fleeRadius, never attack, never cost lives and escape after escapeSeconds. Each pays `bounty` mob values plus a personal chest (LootTables.json sources.bonusWave). The breather grows by extraBreatherSeconds only when it runs. Docs/MonsterExpansion.md.",
+    "enabled": true,
+    "chance": 0.4,
+    "fromWave": 2,
+    "maxPerCycle": 1,
+    "extraBreatherSeconds": 6,
+    "escapeSeconds": 26,
+    "fleeRadius": 950,
+    "bounty": 4,
+    "wave": {
+      "label": "Goblin Hoard",
+      "type": "bonus_loot",
+      "spawnInterval": 0.35,
+      "delayBefore": 0,
+      "mustClear": false,
+      "rewardMultiplier": 1,
+      "units": [
+        {
+          "archetype": "treasure_goblin",
+          "count": 3,
+          "health": 0.8,
+          "damage": 1,
+          "size": 1
+        },
+        {
+          "archetype": "gilded_stag",
+          "count": 1,
+          "health": 1.1,
+          "damage": 1,
+          "size": 1
+        }
+      ]
+    }
+  },
   "waves": [
     {
       "label": "Breach Vanguard",

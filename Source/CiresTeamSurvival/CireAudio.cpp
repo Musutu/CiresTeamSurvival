@@ -109,6 +109,13 @@ FCueData& MutableCues()
     GCueLoaded = true; GCueData = FCueData(); ++GPackEpoch;
     const TSharedPtr<FJsonObject> Root = ReadJson(TEXT("AudioCues.json"));
     if(!Root) { UE_LOG(LogCireAudio, Warning, TEXT("AudioCues.json missing or invalid")); return GCueData; }
+    // monster-expansion: cue overlay files (AudioCues.expansion.json) add their cues to the table; AudioCues.json wins on a clash.
+    if(const TSharedPtr<FJsonObject> Extra = ReadJson(TEXT("AudioCues.expansion.json")))
+    {
+        const TSharedPtr<FJsonObject>* ExtraCues = nullptr; const TSharedPtr<FJsonObject>* BaseCues = nullptr;
+        if(Extra->TryGetObjectField(TEXT("cues"), ExtraCues) && Root->TryGetObjectField(TEXT("cues"), BaseCues))
+            for(const auto& Pair : (*ExtraCues)->Values) { const FString Key(*Pair.Key); if(!(*BaseCues)->HasField(Key)) (*BaseCues)->SetField(Key, Pair.Value); }
+    }
     double Budget = 0;
     if(Root->TryGetNumberField(TEXT("maxCombatVoices"), Budget)) GCueData.MaxCombatVoices = FMath::Clamp(static_cast<int32>(Budget), 4, 128);
     const TSharedPtr<FJsonObject>* Presets = nullptr;
