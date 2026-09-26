@@ -34,10 +34,10 @@ void ACireHUD::DrawCompanion(ACireHero* Hero, ACireController* Controller, const
     const ECirePetStance Stance = Pet ? Pet->Stance : static_cast<ECirePetStance>(FMath::Min<uint8>(Hero->PetStance, 2));
     // readability: larger outlined name / order line / health value; statuses move up beside the name so the
     // command keys get their own row above the order buttons.
-    P.Text(P.Fit(Def.DisplayName.ToUpper(), 13, 92, ECireFont::Heading), 54, 2, 13, bAlive ? CireUIColors::Parchment : Muted, ECireFont::Heading, true, true);
+    P.Text(P.Fit(Def.DisplayName.ToUpper(), 13, 92, ECireFont::Heading), 54, 4, 13, bAlive ? CireUIColors::Parchment : Muted, ECireFont::Heading, true, true);
     const FString Order = !Pet ? TEXT("AWAY") : Pet->bDead ? TEXT("FALLEN") : Pet->Order == ECirePetOrder::Attack ? TEXT("ATTACKING") :
         Pet->Order == ECirePetOrder::Stay ? TEXT("STAYING") : TEXT("FOLLOWING");
-    P.Text(P.Fit(FString::Printf(TEXT("%s  /  %s  /  %s"), *Def.Family.ToUpper(), *CirePets::StanceName(Stance).ToUpper(), *Order), 8.5f, 188, ECireFont::Heading), 54, 18, 8.5f,
+    P.Text(P.Fit(FString::Printf(TEXT("%s  /  %s  /  %s"), *Def.Family.ToUpper(), *CirePets::StanceName(Stance).ToUpper(), *Order), 8.5f, 188, ECireFont::Heading), 54, 20, 8.5f,
         bAlive ? CireUIColors::Parchment * FLinearColor(.82f, .82f, .82f, 1) : Muted, ECireFont::Heading, true, true);
     const auto& Keys = UISettings.Keybindings;
     auto Key = [&Keys](ECirePetCommand C) { return Keys.Label(CirePets::CommandAction(C)); };

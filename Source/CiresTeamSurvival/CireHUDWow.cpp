@@ -962,7 +962,7 @@ bool ACireHUD::DrawUnitTooltip(AActor* Unit,FVector2D Cursor)
         T.Divider();T.Text(TEXT("Abilities: ")+List,FLinearColor(.74f,.78f,.8f,1),9.5f);
     }
     const float S=FMath::Clamp(UISettings.TooltipScale,.6f,1.4f)*1.25f;
-    ResetTransform();DrawRichTooltip(T,Cursor,300*S,false);
+    ResetTransform();DrawRichTooltip(T,Cursor,276*S,false); // narrow enough that the anchored card stays clear of the reticle zone
     return true;
 }
 
