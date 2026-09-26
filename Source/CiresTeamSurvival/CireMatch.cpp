@@ -203,6 +203,9 @@ void ACireGameMode::BeginPlay() {
     auto* S=GetGameState<ACireGameState>();
     S->SecondsLeft=-1; S->CycleWavesDone=0; S->WavesPerCycle=FMath::Clamp(S->WavesPerCycle,1,10);
     CireWaveDirector::Initialize(this); // wave-director: Waves.json drives composition, waves per cycle, breather and phase pacing
+    // arenas: validate the rotation now (a path-grid walk per arena, ~0.8 s on the 2x arenas) instead of inside the
+    // first prep transition, where it froze the server for a frame just as every client was told the phase changed.
+    CireArenas::Rotation();
 #if !UE_BUILD_SHIPPING
     const bool bProbeTimer=ServerProbe.Enabled;
 #else

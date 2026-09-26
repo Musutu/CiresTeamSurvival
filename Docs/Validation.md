@@ -63,7 +63,9 @@ Verified on the September 23 editor build used at **19:06 UTC**, before the fina
 - **Combat telemetry smoke passed 25 assertions**, including effective damage after mitigation, overkill exclusion, effective healing with the healing passive, overheal exclusion, phase restrictions, and private PvE event routing. `Saved/Logs/TelemetryTest.log` records `CIRE_TELEMETRY_PASS assertions=25 damage=149 healing=65`.
 - No error, fatal, assertion, or ensure messages were found in the three interface-probe logs. This remains two human-equivalent client processes with bots, not a full ten-client load test; the test does not simulate packet loss.
 
-Reproduce the interface test with `Tools/RunInterfaceSmoke.py` after building. The telemetry fixture runs with the development flag `-CireTelemetryProbe`. Both fixtures are disabled in shipping builds.
+Reproduce the interface test with `Tools/RunInterfaceSmoke.py` after building; `--arena <id>` pins the server's arena pick through the development flag `-CireArena=<id>`. The runner's probe budget starts once both clients have joined (joining is bounded by `--startup-timeout`), so slow client boots on a busy machine no longer eat into it.
+
+The 2026-09-26 prep→arena stall (clients stuck waiting for the arena after `CHAT_PASS`) was a dropped `CIRE_PROBE_ACK_PREP`: the first prep validated the arena rotation inline (~0.8 s path-grid walk on the 2x arenas), world time advances at most 0.4 s per frame, and the chat spam guard measured 0.75 s in world time, so an ack sent 1.16 s later read as 0.74 s and was silently discarded. The rotation is now validated at match start, and the chat guard uses real time with a three-line burst allowance. The telemetry fixture runs with the development flag `-CireTelemetryProbe`. Both fixtures are disabled in shipping builds.
 
 ## Historical evidence files
 
