@@ -82,6 +82,7 @@ private:
     void ClearBodyParts();
     bool ApplyHumanoid(ACireHero& Hero, int32 Archetype, const FCireChampionArtDefinition& Definition);
     bool ApplyFabBody(ACireHero& Hero, const TSharedPtr<FJsonObject>& Raw); // paladin-hq
+    void ApplyStaticParts(ACireHero& Hero, const TSharedPtr<FJsonObject>& Raw); // champion-hq: segmented props (quiver)
 
     UPROPERTY(Transient) TObjectPtr<USkeletalMesh> FallbackMesh;
     UPROPERTY(Transient) TSubclassOf<UAnimInstance> FallbackAnimClass;
@@ -92,6 +93,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<UCireWeaponPresentation> Weapons;
     UPROPERTY(Transient) TObjectPtr<UCireCreatureArt> Creature;
     UPROPERTY(Transient) TArray<TObjectPtr<class USkeletalMeshComponent>> BodyParts; // paladin-hq
+    UPROPERTY(Transient) TArray<TObjectPtr<class UStaticMeshComponent>> StaticParts; // champion-hq
     FTransform FallbackTransform;
     uint8 FallbackAnimationMode = 0;
     bool bFallbackCaptured = false;

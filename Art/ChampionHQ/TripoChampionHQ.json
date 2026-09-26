@@ -30,6 +30,10 @@
     {
       "when": "after 9 summon/construct/hound generations + 3 rigs",
       "balance": 15216
+    },
+    {
+      "when": "after Ranger quiver segmentation attempts (triangulate 5, balanced seg 40, detailed seg 40)",
+      "balance": 15131
     }
   ],
   "items": [
@@ -1276,5 +1280,31 @@
       "AS_SwordAndShieldAnimV1_Idle1_IP / V2_Idle1 (head 0.895, pelvis 0.853: crouched guard)"
     ],
     "status": "noted for reuse; not applied (paladins are owned by main)"
-  }
+  },
+  "fusedPartsAudit": {
+    "date": "2026-09-26",
+    "result": "Champion sheets were weapon-free by brief, so every HQ weapon, shield and staff is already a separate prop (WeaponLoadouts.json, closed-hand CireGrip). Capes, coats and hoods are skinned cloth on the UE5 rig and move with it. The only fused prop is the Ranger's quiver.",
+    "skeleton": "All 20 HQ humanoid champions plus the Oathbound Guardian and Spectral Companion use Tripo's Humanoid UE5 Mannequin preset (UE5 bone names: hand_r, index_01_r, spine_03...). The GDH / Gun & Sword / Crossbow sets retarget through the IK rigs (RetargetChampionAttacks). The golems and behemoth also use the humanoid preset. The grave hound uses Tripo's 'Other' quadruped rig.",
+    "rangerQuiver": {
+      "status": "blocked: needs Eric",
+      "done": [
+        "Quad models cannot be segmented, so a triangulated copy was made (5 credits)",
+        "Detailed segmentation isolated the quiver as tripo_part_7 (arrows) + tripo_part_16 (tube) on 2b9fbccc-3f9e-4ffd-90d5-9598f0d209fa (40 + 40 credits)",
+        "Deleting the quiver left an open strip on the back; Fill Parts > Quick Cap (free) closed it (version 09-26 00:02, 140,255 faces; the patch has a smeared texture that the re-attached quiver hides)"
+      ],
+      "blocker": "Auto Rig refuses 140k faces ('Polygon Limit Exceeded'). Retopo (Triangle, Smart Mesh off, ~90,000, 5 credits) is needed first; the agent's auto-mode permission check blocked typing the count, so Eric must run that step or allow it.",
+      "then": [
+        "Rig on Humanoid UE5 Mannequin (20) with idle/walk/run/slash/hit_to_body_01/fall/cast_a_spell + the Archery bow clip, and send it via DCC Bridge as CTS_ChampHQ_RangerB",
+        "Quiver: save the 23:53 history version as a new model, keep only parts 7 + 16, and send it unrigged as SM_RangerQuiver (keep its position)",
+        "Add exports rows (ranger -> export CTS_ChampHQ_RangerB, folder RangerB; SM_RangerQuiver -> folder Props/RangerQuiver, kind prop), run the pipeline --only, point WriteChampionHQArtRows 'ranger' at folder RangerB, and add to the ranger row: \"staticParts\": [{\"mesh\": \"/Game/Tripo/ChampionsHQ/Props/RangerQuiver/SM_RangerQuiver.SM_RangerQuiver\", \"bone\": \"spine_03\"}] (UCireChampionArt::ApplyStaticParts places a mesh-space part on its bone's bind pose; use offsetCm/rotation if Tripo recentred the part)"
+      ]
+    }
+  },
+  "nextSteps": [
+    "Ranger quiver split: see fusedPartsAudit.rangerQuiver (needs Eric's retopo step).",
+    "Grave hound (cc40227d) is integrated at /Game/Tripo/ChampionsHQ/GraveHound but unbound: it only has a Walk clip. The grave_hound race keeps the Fab Barghest (full clip set). This belongs to the monster/NPC job.",
+    "Pavise HQ body is wired in CireConstruct (Construct: Pavise) but was not captured; KitsGallery has no pavise shot.",
+    "Upright hero idle for the paladins: see uprightIdle (not applied; paladins are owned by main).",
+    "Monster/NPC package (segmentation, UE5 re-rig, non-humanoid rigs with drowned_deep squid-folk first, HD re-texture) is a separate job and was not started."
+  ]
 }

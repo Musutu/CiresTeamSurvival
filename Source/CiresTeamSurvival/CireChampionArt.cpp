@@ -2,7 +2,9 @@
 #include "CireFabAnimation.h" // fab-integration
 #include "CireGame.h"
 #include "CirePets.h" // pets
-#include "CireSummon.h" // champion-hq: summon bodies
+#include "CireSummon.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h" // champion-hq: summon bodies
 #include "CireWeaponPresentation.h"
 #include "CireCreatureArt.h"
 #include "CireChampionActions.h" // creature-anim
@@ -613,6 +615,7 @@ bool UCireChampionArt::ApplyHumanoid(ACireHero& Hero, int32 Archetype, const FCh
         Combat->RelaxArms = bRelax ? 1.f : 0.f;
     }
     Mesh->SetOverlayMaterial(Overlay);
+    ApplyStaticParts(Hero, Definition.Raw); // champion-hq: segmented props (quiver)
     // paladin-hq: leader-posed parts (head, helmet, armour pieces) and the per-champion material identity.
     if (bFabHumanoid && !ApplyFabBody(Hero, Definition.Raw))
     {
@@ -830,6 +833,45 @@ void UCireChampionArt::ClearBodyParts()
 {
     for (USkeletalMeshComponent* Part : BodyParts) if (Part) Part->DestroyComponent();
     BodyParts.Reset();
+    for (UStaticMeshComponent* Part : StaticParts) if (Part) Part->DestroyComponent(); // champion-hq
+    StaticParts.Reset();
+}
+
+// champion-hq: "staticParts" of an HQ row are props Tripo segmented off the body (the Ranger's quiver). Each row gives
+// "mesh" (a static mesh authored in the body's own mesh space), "bone"; the part follows that bone from its bind pose.
+// Optional "offsetCm" / "rotation" nudge it in bone space. A missing asset only drops that part.
+void UCireChampionArt::ApplyStaticParts(ACireHero& Hero, const TSharedPtr<FJsonObject>& Raw)
+{
+    USkeletalMeshComponent* Leader = Hero.GetMesh();
+    const TArray<TSharedPtr<FJsonValue>>* Parts = nullptr;
+    if (!Leader || !Leader->GetSkeletalMeshAsset() || !Raw.IsValid() || !Raw->TryGetArrayField(TEXT("staticParts"), Parts)) return;
+    const FReferenceSkeleton& Ref = Leader->GetSkeletalMeshAsset()->GetRefSkeleton();
+    for (const auto& Value : *Parts)
+    {
+        const TSharedPtr<FJsonObject>* Row = nullptr; FString Path, Bone;
+        if (!Value->TryGetObject(Row) || !(*Row)->TryGetStringField(TEXT("mesh"), Path) || !(*Row)->TryGetStringField(TEXT("bone"), Bone)) continue;
+        UStaticMesh* Asset = LoadObject<UStaticMesh>(nullptr, *Path, nullptr, LOAD_Quiet | LOAD_NoWarn);
+        int32 Index = Ref.FindBoneIndex(FName(*Bone));
+        if (!Asset || Index == INDEX_NONE) { UE_LOG(LogCireChampionArt, Warning, TEXT("HQ static part skipped: %s on %s"), *Path, *Bone); continue; }
+        FTransform BoneInMesh = FTransform::Identity; // bind pose of the bone in mesh space
+        for (int32 I = Index; I != INDEX_NONE; I = Ref.GetParentIndex(I)) BoneInMesh = BoneInMesh * Ref.GetRefBonePose()[I];
+        FTransform Relative = BoneInMesh.Inverse();
+        const TArray<TSharedPtr<FJsonValue>>* V = nullptr;
+        if ((*Row)->TryGetArrayField(TEXT("offsetCm"), V) && V->Num() == 3) Relative.AddToTranslation(FVector((*V)[0]->AsNumber(), (*V)[1]->AsNumber(), (*V)[2]->AsNumber()));
+        if ((*Row)->TryGetArrayField(TEXT("rotation"), V) && V->Num() == 3) Relative.ConcatenateRotation(FRotator((*V)[0]->AsNumber(), (*V)[1]->AsNumber(), (*V)[2]->AsNumber()).Quaternion());
+        auto* Part = NewObject<UStaticMeshComponent>(&Hero, NAME_None, RF_Transient);
+        Hero.AddInstanceComponent(Part);
+        Part->SetupAttachment(Leader, FName(*Bone));
+        Part->SetStaticMesh(Asset);
+        Part->SetCollisionEnabled(ECollisionEnabled::NoCollision); Part->SetGenerateOverlapEvents(false);
+        Part->SetCanEverAffectNavigation(false); Part->SetCastShadow(true);
+        Part->ComponentTags.AddUnique(TEXT("CireBodyPart"));
+        Part->RegisterComponent();
+        Part->SetRelativeTransform(Relative);
+        Part->SetOverlayMaterial(Leader->GetOverlayMaterial());
+        Part->SetVisibility(Leader->IsVisible());
+        StaticParts.Add(Part);
+    }
 }
 
 bool UCireChampionArt::ApplyFabBody(ACireHero& Hero, const TSharedPtr<FJsonObject>& Raw)
