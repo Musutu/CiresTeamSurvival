@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "branch": "feat/monster-rig",
  "operator": "Claude (monster-rig worktree)",
- "status": "76 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
+ "status": "76 of 76 assigned bodies have their weapon-matched set; all gates green (see gates.final)",
  "credits": {
   "observedBalanceAtStart": 14961,
   "observedBalanceAtPause": 14941,
@@ -35,12 +35,19 @@
   "Merged main ab81c6c (interface-stall, summons, champion-hq, video-crash, telegraphs, weapon-grips, movement-feel, vendors, dev-route-tools). No conflicts. Reconciled with movement-feel: its travel warp / reversed backpedal gait / stepped turns now own directional locomotion, so the set's strafe/back-pedal/side-step layer (UpdateDirectionalGait) only runs as the fallback when cire.Locomotion is off (both at once double-turned the legs). The pelvis-lift grounding runs before movement-feel's pose feel/leg IK. Grounding checks re-run: CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418."
  ],
  "nextSteps": [
-  "1. Remaining races: run -CireFabAnimMonsterSets per race (-CireFabAnimOnly=<variants>), review races_<race> + close_<units> galleries, add sway where the body has hanging parts (e.g. void RiftGazer eye stalks, VoidbornHerald tentacles).",
-  "2. Segmentation candidates from the audit (above) when their race comes up.",
-  "3. Gates after each race; commit per race."
+  "Unassigned bodies keep their Tripo clips: CrystalBallista (monsterSets.assign ''), plus bodies with no assign entry (e.g. FeralUrsoth, FeralMammoth, WildOutrider, HollowInfantry/B, Fab-pack creatures). Assign a set if Eric wants them upgraded.",
+  "AetheriLancer has 14 roles: the retarget validator rejects gun_attack3 ('body order broken at 0.33s'); swings rotate attack/attackAlt.",
+  "GravemawPackLeader's wolf-pelt cape stretches into a long band on two-hand swings (audit far 12.4% on spine_02). It reads as a flowing pelt; a Tripo re-segment of the cape would be the fix if Eric wants it (not done: no visible tear).",
+  "Enraged overlay rim does not follow the skin sway (a few cm, enrage only)."
  ],
  "gates": {
-  "merge-checkpoint": "expansion native/replay/network PASS (CIRE_COMBAT_EXPANSION_PASS, CIRE_REPLAY_INTEGRATION_PASS); network CIRE_NET_SERVER_PASS heroes=10 teams=5/5 + CIRE_NETWORK_SMOKE_PASS; interface CIRE_INTERFACE_SMOKE_PASS without any patch (logs Saved/AgentLogs/*-merge-*)"
+  "merge-checkpoint": "expansion native/replay/network PASS (CIRE_COMBAT_EXPANSION_PASS, CIRE_REPLAY_INTEGRATION_PASS); network CIRE_NET_SERVER_PASS heroes=10 teams=5/5 + CIRE_NETWORK_SMOKE_PASS; interface CIRE_INTERFACE_SMOKE_PASS without any patch (logs Saved/AgentLogs/*-merge-*)",
+  "final": {
+   "expansion": "native PASS (CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418, CIRE_COMBAT_EXPANSION_PASS), replay PASS (CIRE_REPLAY_INTEGRATION_PASS checks=15), network PASS",
+   "network": "CIRE_NET_SERVER_PASS heroes=10 teams=5/5 preserved_pawn=CireHero_0 level=1 bot=1; CIRE_NETWORK_SMOKE_PASS",
+   "interface": "CIRE_INTERFACE_SMOKE_PASS",
+   "logs": "Saved/AgentLogs/feat-monster-rig-*-final-*.log"
+  }
  },
  "races": {
   "ironhide": {
