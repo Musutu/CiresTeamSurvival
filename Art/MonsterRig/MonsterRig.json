@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "branch": "feat/monster-rig",
  "operator": "Claude (monster-rig worktree)",
- "status": "drowned_deep + blightwood DONE and committed (603d557); other races assigned, not retargeted",
+ "status": "24 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
  "credits": {
   "observedBalanceAtStart": 14961,
   "observedBalanceAtPause": 14941,
@@ -41,5 +41,54 @@
  ],
  "gates": {
   "merge-checkpoint": "expansion native/replay/network PASS (CIRE_COMBAT_EXPANSION_PASS, CIRE_REPLAY_INTEGRATION_PASS); network CIRE_NET_SERVER_PASS heroes=10 teams=5/5 + CIRE_NETWORK_SMOKE_PASS; interface CIRE_INTERFACE_SMOKE_PASS without any patch (logs Saved/AgentLogs/*-merge-*)"
+ },
+ "races": {
+  "ironhide": {
+   "bodies": {
+    "IronhideGrunt": {
+     "set": "one_hand",
+     "walkSpeedCm": 208.4,
+     "runSpeedCm": 317.8
+    },
+    "RedmoonRavager": {
+     "set": "two_hand",
+     "walkSpeedCm": 178.8,
+     "runSpeedCm": 337.9
+    },
+    "IronhideBulwark": {
+     "set": "sword_shield",
+     "walkSpeedCm": 174.4,
+     "runSpeedCm": 356.4
+    },
+    "BloodHexer": {
+     "set": "spell",
+     "walkSpeedCm": 172.8,
+     "runSpeedCm": 292.4
+    },
+    "RedmoonAxethrower": {
+     "set": "one_hand",
+     "walkSpeedCm": 221.4,
+     "runSpeedCm": 332.3
+    },
+    "IronhideDrummerHQ": {
+     "set": "dual",
+     "walkSpeedCm": 207.2,
+     "runSpeedCm": 304.1
+    },
+    "IronhideWarchief": {
+     "set": "two_hand",
+     "walkSpeedCm": 156.6,
+     "runSpeedCm": 293.5
+    },
+    "IronhideJuggernaut": {
+     "set": "two_hand",
+     "walkSpeedCm": 164.2,
+     "runSpeedCm": 294.8
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-091314",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "8/8 retargeted, 15 roles each. Gallery: weapon poses read (axes, sword+shield, dual, two-hand club, spell), grounded. No hanging parts to sway; no audit flags."
+  }
  }
 }

@@ -99,6 +99,28 @@
    "war_cry": "/Game/FabDerived/Anim/BastionGolem/A_BastionGolem_monster_war_cry.A_BastionGolem_monster_war_cry",
    "ground_slam": "/Game/FabDerived/Anim/BastionGolem/A_BastionGolem_monster_ground_slam.A_BastionGolem_monster_ground_slam"
   },
+  "BloodHexer": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_idle.A_BloodHexerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_walk_f.A_BloodHexerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_walk_b.A_BloodHexerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_walk_l.A_BloodHexerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_walk_r.A_BloodHexerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_run_f.A_BloodHexerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_attack1.A_BloodHexerSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_attack2.A_BloodHexerSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_attack4.A_BloodHexerSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_hit.A_BloodHexerSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_death.A_BloodHexerSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_skill1.A_BloodHexerSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_skill2.A_BloodHexerSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_heal.A_BloodHexerSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_shout.A_BloodHexerSet_spell_shout"
+   },
+   "walkSpeedCm": 172.8,
+   "runSpeedCm": 292.4
+  },
   "CoralshellGuardian": {
    "war_cry": "/Game/FabDerived/Anim/CoralshellGuardian/A_CoralshellGuardian_monster_war_cry.A_CoralshellGuardian_monster_war_cry",
    "ground_slam": "/Game/FabDerived/Anim/CoralshellGuardian/A_CoralshellGuardian_monster_ground_slam.A_CoralshellGuardian_monster_ground_slam",
@@ -255,15 +277,119 @@
   },
   "IronhideBulwark": {
    "war_cry": "/Game/FabDerived/Anim/IronhideBulwark/A_IronhideBulwark_monster_war_cry.A_IronhideBulwark_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/IronhideBulwark/A_IronhideBulwark_monster_ground_slam.A_IronhideBulwark_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/IronhideBulwark/A_IronhideBulwark_monster_ground_slam.A_IronhideBulwark_monster_ground_slam",
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_idle.A_IronhideBulwarkSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_walk_f.A_IronhideBulwarkSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_walk_b.A_IronhideBulwarkSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_walk_l.A_IronhideBulwarkSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_walk_r.A_IronhideBulwarkSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_run_f.A_IronhideBulwarkSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_attack3.A_IronhideBulwarkSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_attack4.A_IronhideBulwarkSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_attack6.A_IronhideBulwarkSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_hit.A_IronhideBulwarkSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_death.A_IronhideBulwarkSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_skill1.A_IronhideBulwarkSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_skill2.A_IronhideBulwarkSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_cast.A_IronhideBulwarkSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_shout.A_IronhideBulwarkSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 174.4,
+   "runSpeedCm": 356.4
   },
   "IronhideDrummerHQ": {
    "war_cry": "/Game/FabDerived/Anim/IronhideDrummerHQ/A_IronhideDrummerHQ_monster_war_cry.A_IronhideDrummerHQ_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/IronhideDrummerHQ/A_IronhideDrummerHQ_monster_ground_slam.A_IronhideDrummerHQ_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/IronhideDrummerHQ/A_IronhideDrummerHQ_monster_ground_slam.A_IronhideDrummerHQ_monster_ground_slam",
+   "set": "dual",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_idle.A_IronhideDrummerHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_walk_f.A_IronhideDrummerHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_walk_b.A_IronhideDrummerHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_walk_l.A_IronhideDrummerHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_walk_r.A_IronhideDrummerHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_run_f.A_IronhideDrummerHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_attack1.A_IronhideDrummerHQSet_dual_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_attack2.A_IronhideDrummerHQSet_dual_attack2",
+    "attack3": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_attack3.A_IronhideDrummerHQSet_dual_attack3",
+    "hit": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_hit.A_IronhideDrummerHQSet_dual_hit",
+    "death": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_death.A_IronhideDrummerHQSet_dual_death",
+    "heavy": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_skill1.A_IronhideDrummerHQSet_dual_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_skill2.A_IronhideDrummerHQSet_dual_skill2",
+    "cast": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_cast.A_IronhideDrummerHQSet_dual_cast",
+    "shout": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_shout.A_IronhideDrummerHQSet_dual_shout"
+   },
+   "walkSpeedCm": 207.2,
+   "runSpeedCm": 304.1
   },
   "IronhideGrunt": {
    "war_cry": "/Game/FabDerived/Anim/IronhideGrunt/A_IronhideGrunt_monster_war_cry.A_IronhideGrunt_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/IronhideGrunt/A_IronhideGrunt_monster_ground_slam.A_IronhideGrunt_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/IronhideGrunt/A_IronhideGrunt_monster_ground_slam.A_IronhideGrunt_monster_ground_slam",
+   "set": "one_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_idle.A_IronhideGruntSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_walk_f.A_IronhideGruntSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_walk_b.A_IronhideGruntSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_walk_l.A_IronhideGruntSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_walk_r.A_IronhideGruntSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_run_f.A_IronhideGruntSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_attack1.A_IronhideGruntSet_one_hand_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_attack3.A_IronhideGruntSet_one_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_attack6.A_IronhideGruntSet_one_hand_attack6",
+    "hit": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_hit.A_IronhideGruntSet_one_hand_hit",
+    "death": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_death.A_IronhideGruntSet_one_hand_death",
+    "heavy": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_skill1.A_IronhideGruntSet_one_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_skill2.A_IronhideGruntSet_one_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_cast.A_IronhideGruntSet_one_hand_cast",
+    "shout": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_shout.A_IronhideGruntSet_one_hand_shout"
+   },
+   "walkSpeedCm": 208.4,
+   "runSpeedCm": 317.8
+  },
+  "IronhideJuggernaut": {
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_idle.A_IronhideJuggernautSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_walk_f.A_IronhideJuggernautSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_walk_b.A_IronhideJuggernautSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_walk_l.A_IronhideJuggernautSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_walk_r.A_IronhideJuggernautSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_run_f.A_IronhideJuggernautSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_attack2.A_IronhideJuggernautSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_attack3.A_IronhideJuggernautSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_attack4.A_IronhideJuggernautSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_hit.A_IronhideJuggernautSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_death.A_IronhideJuggernautSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_skill1.A_IronhideJuggernautSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_skill2.A_IronhideJuggernautSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_cast.A_IronhideJuggernautSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_shout.A_IronhideJuggernautSet_two_hand_shout"
+   },
+   "walkSpeedCm": 164.2,
+   "runSpeedCm": 294.8
+  },
+  "IronhideWarchief": {
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_idle.A_IronhideWarchiefSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_walk_f.A_IronhideWarchiefSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_walk_b.A_IronhideWarchiefSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_walk_l.A_IronhideWarchiefSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_walk_r.A_IronhideWarchiefSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_run_f.A_IronhideWarchiefSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_attack2.A_IronhideWarchiefSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_attack3.A_IronhideWarchiefSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_attack4.A_IronhideWarchiefSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_hit.A_IronhideWarchiefSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_death.A_IronhideWarchiefSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_skill1.A_IronhideWarchiefSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_skill2.A_IronhideWarchiefSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_cast.A_IronhideWarchiefSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_shout.A_IronhideWarchiefSet_two_hand_shout"
+   },
+   "walkSpeedCm": 156.6,
+   "runSpeedCm": 293.5
   },
   "MawOfTheDeep": {
    "war_cry": "/Game/FabDerived/Anim/MawOfTheDeep/A_MawOfTheDeep_monster_war_cry.A_MawOfTheDeep_monster_war_cry",
@@ -323,11 +449,51 @@
   },
   "RedmoonAxethrower": {
    "war_cry": "/Game/FabDerived/Anim/RedmoonAxethrower/A_RedmoonAxethrower_monster_war_cry.A_RedmoonAxethrower_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/RedmoonAxethrower/A_RedmoonAxethrower_monster_ground_slam.A_RedmoonAxethrower_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/RedmoonAxethrower/A_RedmoonAxethrower_monster_ground_slam.A_RedmoonAxethrower_monster_ground_slam",
+   "set": "one_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_idle.A_RedmoonAxethrowerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_walk_f.A_RedmoonAxethrowerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_walk_b.A_RedmoonAxethrowerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_walk_l.A_RedmoonAxethrowerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_walk_r.A_RedmoonAxethrowerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_run_f.A_RedmoonAxethrowerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_attack1.A_RedmoonAxethrowerSet_one_hand_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_attack3.A_RedmoonAxethrowerSet_one_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_attack6.A_RedmoonAxethrowerSet_one_hand_attack6",
+    "hit": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_hit.A_RedmoonAxethrowerSet_one_hand_hit",
+    "death": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_death.A_RedmoonAxethrowerSet_one_hand_death",
+    "heavy": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_skill1.A_RedmoonAxethrowerSet_one_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_skill2.A_RedmoonAxethrowerSet_one_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_cast.A_RedmoonAxethrowerSet_one_hand_cast",
+    "shout": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_shout.A_RedmoonAxethrowerSet_one_hand_shout"
+   },
+   "walkSpeedCm": 221.4,
+   "runSpeedCm": 332.3
   },
   "RedmoonRavager": {
    "war_cry": "/Game/FabDerived/Anim/RedmoonRavager/A_RedmoonRavager_monster_war_cry.A_RedmoonRavager_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/RedmoonRavager/A_RedmoonRavager_monster_ground_slam.A_RedmoonRavager_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/RedmoonRavager/A_RedmoonRavager_monster_ground_slam.A_RedmoonRavager_monster_ground_slam",
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_idle.A_RedmoonRavagerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_walk_f.A_RedmoonRavagerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_walk_b.A_RedmoonRavagerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_walk_l.A_RedmoonRavagerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_walk_r.A_RedmoonRavagerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_run_f.A_RedmoonRavagerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_attack2.A_RedmoonRavagerSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_attack3.A_RedmoonRavagerSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_attack4.A_RedmoonRavagerSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_hit.A_RedmoonRavagerSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_death.A_RedmoonRavagerSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_skill1.A_RedmoonRavagerSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_skill2.A_RedmoonRavagerSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_cast.A_RedmoonRavagerSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_shout.A_RedmoonRavagerSet_two_hand_shout"
+   },
+   "walkSpeedCm": 178.8,
+   "runSpeedCm": 337.9
   },
   "RotbloomShamanHQ": {
    "set": "spell",

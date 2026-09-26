@@ -38,6 +38,7 @@ and moves the parts Tripo gave no bones to (tentacles, vines) **in the skin mate
 |---|---|---|
 | drowned_deep | all 8 bodies (dual, two_hand x2, sword_shield, spell x4) | tentacle beards on Abyssal Stalker, Deepspawn Thrall, Coralshell Guardian, Tidecaller, Barbspitter, Drowned Prophet; Mind Leech skirt; Prophet skirt; Maw's upright maw tentacles |
 | blightwood | all 8 bodies (one_hand, two_hand, sword_shield, spell x3, unarmed x2) | Vinelasher whips (both arms), Elder Oakheart moss beard |
+| ironhide | IronhideGrunt one_hand, RedmoonRavager two_hand, IronhideBulwark sword_shield, BloodHexer spell, RedmoonAxethrower one_hand, IronhideDrummerHQ dual, IronhideWarchief two_hand, IronhideJuggernaut two_hand | 8/8 retargeted, 15 roles each. Gallery: weapon poses read (axes, sword+shield, dual, two-hand club, spell), grounded. No hanging parts to sway; no audit flags. |
 | other races | assigned in `monsterSets.assign`, not yet retargeted | - |
 
 Segmentation: none needed for drowned/blightwood - every fused weapon is weighted to the hand that holds it
