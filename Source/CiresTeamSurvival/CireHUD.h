@@ -8,6 +8,7 @@
 #include "CireUIStyle.h"
 #include "CireEffects.h"
 #include "CireWaves.h" // wave-director
+#include "CireSummonsBar.h" // fix/summons
 #include "CireHUD.generated.h"
 
 class ACireHero;
@@ -98,6 +99,11 @@ public:
     void DebugSetPointer(FVector2D Logical) { DebugPointer=Logical; }
     bool DebugCalloutActive(FName& OutId) const { if(!EffectCallouts.Active.IsSet())return false; OutId=EffectCallouts.Active->Id; return true; }
     const FString& DebugLastTooltipTitle() const { return LastTooltipTitle; }
+    /** fix/summons: gallery hook, draw these summons-bar entries instead of the live ones (bOn=false restores). */
+    void DebugSummons(const TArray<FCireSummonBarEntry>& Units,bool bOn) { DebugSummonEntries=Units;bDebugSummons=bOn; }
+    int32 DebugSummonsDrawn() const { return LastSummonsDrawn; }
+    TArray<FCireSummonBarEntry> DebugSummonEntries;
+    bool bDebugSummons = false;
     FVector2D DebugPointer = FVector2D(-1,-1);
     FString LastTooltipTitle;
     FCireUIRect PanelRectForTest(FName Id) const { return PanelRect(Id); }
@@ -209,6 +215,8 @@ private:
     TMap<FString, FVector2D> OverheadSeen;
     void DrawPet(ACireHero* Hero,ACireController* Controller);
     void DrawCompanion(ACireHero* Hero,ACireController* Controller,const struct FCirePetDef& Def); // pets: CireHUDPets.cpp
+    void DrawSummonsBar(ACireHero* Hero,ACireController* Controller,const TArray<FCireSummonBarEntry>& Units,float Y0); // fix/summons: CireHUDSummons.cpp
+    int32 LastSummonsDrawn = 0; // fix/summons: entries drawn last frame (gallery checks)
     void Tip(const FString& Title,const FString& Body,float X,float Y,float W,float H);
     /** readability: Tip with a rich spec (buff icons, items). */
     void RichTip(const FCireTooltipSpec& Spec,float X,float Y,float W,float H);

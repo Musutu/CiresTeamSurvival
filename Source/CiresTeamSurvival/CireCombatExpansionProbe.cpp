@@ -98,6 +98,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireSkillshots::RunSkillshotSmoke(Mode)&&Good;
     Good=CireConstructs::RunConstructSmoke(Mode)&&Good;
     Good=CireSummons::RunSummonSmoke(Mode)&&Good;
+    Good=CireSummons::RunEngagementSmoke(Mode)&&Good; // fix/summons: engagement, targetability, threat, summons bar
     Good=CireSkillCasting::RunCastSmoke(Mode)&&Good;
     Good=CireNPCCombat::RunSmoke(Mode)&&Good;
     Good=CireOptions::RunSettingsSmoke()&&Good;

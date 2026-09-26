@@ -104,7 +104,8 @@ const FStage Stages[]={
     {TEXT("16_action_bars_states")},{TEXT("17_quick_keybind")},{TEXT("18_keybindings_page")},{TEXT("19_banner_wave")},{TEXT("20_ability_tooltip")},
     {TEXT("21_gameplay_hover_combat_text")},{TEXT("22_gameplay_hover_centre")},{TEXT("23_layout_panel_help")},
     {TEXT("24_callout_buff")},{TEXT("25_callout_stunned")},{TEXT("26_buff_rows_tooltip")},{TEXT("27_cast_bars")},{TEXT("28_overhead_status")},
-    {TEXT("29_options_ui_theme")},{TEXT("30_scale_080")}}; // ui-themes: theme picker, legibility at 0.8
+    {TEXT("29_options_ui_theme")},{TEXT("30_scale_080")}, // ui-themes: theme picker, legibility at 0.8
+    {TEXT("31_summons_bar_rows")},{TEXT("32_summons_bar_tiles")}}; // fix/summons: summons bar under the focus frame
 constexpr int32 StageCount=UE_ARRAY_COUNT(Stages);
 struct FState
 {
@@ -190,6 +191,7 @@ void Configure(int32 Stage)
     HUD->DebugTooltipClear();HUD->DebugUnitTooltip(nullptr,FVector2D::ZeroVector);HUD->DebugAbilityTooltip(FString(),FVector2D::ZeroVector);HUD->DebugOptionsPage(0,0,false);
     if(W.bEditing){HUD->ToggleLayoutEditor();W.bEditing=false;}
     HUD->DebugSetPointer(FVector2D(-1,-1));
+    HUD->DebugSummons({},false); // fix/summons
     // Effect stages start clean: no records, no synthetic casts.
     for(AActor* U:TArray<AActor*>{W.Hero.Get(),W.Elite.Get(),W.Boss.Get(),W.Bruiser.Get(),W.Hunter.Get(),W.Allies[0].Get(),W.Allies[1].Get()})if(U)CireBuffs::ClearAll(U);
     CireCasts::DebugClear();W.bEffectFired=false;W.Hunter->SlowUntil=0;W.Leader->SlowUntil=0;W.Allies[0]->PoisonAreaCount=0;
@@ -287,6 +289,20 @@ void Configure(int32 Stage)
         break;
     }
     case 22: HUD->ToggleLayoutEditor();W.bEditing=true;HUD->DebugSetPointer(FVector2D(640+160,350));break;
+    case 30: case 31: // fix/summons: the summons bar (rows for up to three units, compact tiles beyond)
+    {
+        auto Entry=[](const TCHAR* Name,const TCHAR* Icon,ECireSummonBarKind Kind,float HP,float Max,float Left,float Life,bool bCmd,bool bFights,const TCHAR* State)
+        {FCireSummonBarEntry E;E.Name=Name;E.IconId=Icon;E.Kind=Kind;E.Health=HP;E.MaxHealth=Max;E.Remaining=Left;E.Duration=Life;E.bCommandable=bCmd;E.bFights=bFights;E.State=State;return E;};
+        TArray<FCireSummonBarEntry> Units={Entry(TEXT("Oathbound Guardian"),TEXT("oathbound_guardian"),ECireSummonBarKind::Summon,412,560,21.4f,30,true,true,TEXT("ATTACKING")),
+            Entry(TEXT("Photon Turret"),TEXT("photon_turret"),ECireSummonBarKind::Construct,190,240,17.2f,25,false,true,TEXT("FIRING")),
+            Entry(TEXT("Aegis Pylon"),TEXT("aegis_pylon"),ECireSummonBarKind::Construct,150,150,3.6f,15,false,false,TEXT("FIELD"))};
+        if(Stage==31)
+        {
+            for(int32 I=0;I<3;++I)Units.Insert(Entry(TEXT("Spectral Companion"),TEXT("spectral_pack"),ECireSummonBarKind::Summon,180.f-I*50,180,14.f-I,18,false,true,TEXT("ATTACKING")),1);
+            Units.Add(Entry(TEXT("Arc Mine"),TEXT("arc_mine"),ECireSummonBarKind::Construct,60,60,26,30,false,true,TEXT("ARMED")));
+        }
+        HUD->DebugSummons(Units,true);break;
+    }
     case 18: CireBanners::Show(ECireBanner::WaveIncoming,TEXT("Wave 5"),TEXT("Incoming in 5 seconds."));break;
     default: break;
     }
@@ -346,6 +362,12 @@ void Capture(int32 Stage)
         // ui-themes: three themes parsed with all art resolved, and the active one is known.
         TArray<FString> Errors;Check(CireUITheme::Validate(Errors,true),TEXT("UI themes valid: ")+FString::Join(Errors,TEXT("; ")));
         Check(CireUITheme::Active()!=nullptr,TEXT("an active UI theme"));
+    }
+    if(Stage==30||Stage==31) // fix/summons
+    {
+        Check(HUD->DebugSummonsDrawn()==(Stage==30?3:7),FString::Printf(TEXT("%s: summons drawn %d"),Stages[Stage].Name,HUD->DebugSummonsDrawn()));
+        const FCireUIRect R=HUD->PanelRectForTest(TEXT("Pet"));const FVector2D Screen=HUD->DebugTooltipViewport();
+        Check(R.X+R.W<Screen.X*.5f-40.f,FString(Stages[Stage].Name)+TEXT(": summons bar keeps clear of the screen centre"));
     }
     if(Stage==22)Check(HUD->DebugLastTooltipTitle()==TEXT("CombatText"),FString(TEXT("layout editing shows the panel description (got '"))+HUD->DebugLastTooltipTitle()+TEXT("')"));
     if(Stage>=1&&Stage<=3)
