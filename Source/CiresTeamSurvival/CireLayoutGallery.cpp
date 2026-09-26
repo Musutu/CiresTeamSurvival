@@ -172,7 +172,7 @@ bool Tick(ACireGameMode* Mode)
     }
     case 6: // preview: a monster walks every path in both realms
     {
-        if (!E->bPreview) { CireLayoutEditor::StartPreview(World, *E); MapView(0, FVector2D(40500, 0), 4200.f, -55.f, 180.f); }
+        if (!E->bPreview) { CireLayoutEditor::StartPreview(World, *E); MapView(0, FVector2D(41600, 0), 3600.f, -60.f, 180.f); }
         if (E->Walkers.Num() == 0) return Fail(TEXT("the preview spawned no walkers"));
         if (Now - Gallery.StageAt < 9) return true;
         int32 Moving = 0;

@@ -359,6 +359,7 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
                 bSame &= A.Id == B.Id && A.Type == B.Type && A.Owner == B.Owner && A.Target == B.Target && A.Position.Equals(B.Position, .1) && FMath::IsNearlyEqual(A.Yaw, B.Yaw, .1f) &&
                     A.Points.Num() == B.Points.Num() && A.From == B.From && A.MergeInto == B.MergeInto && A.Pair == B.Pair && A.bMirror == B.bMirror && A.Tier == B.Tier &&
                     A.SignPos.Equals(B.SignPos, .1) && A.StallPos.Equals(B.StallPos, .1) && FMath::IsNearlyEqual(A.StallYaw, B.StallYaw, .1f);
+                if (!bSame) { UE_LOG(LogCireRouteTools, Warning, TEXT("CIRE_ROUTE_TOOLS_ROUNDTRIP_DIFF %s"), *A.Id); break; }
             }
             Check(bSame, TEXT("every marker field survives the round trip"));
             const int32 Before = Round.Markers.Num();

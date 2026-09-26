@@ -415,7 +415,7 @@ bool CireMapLayout::Move(FCireMapLayout& L, const FString& Id, const FVector2D& 
     const FVector2D Delta = Local - M->Position;
     for (FVector2D& P : M->Points) P += Delta;
     M->Position = Local;
-    M->SignPos += Delta; M->StallPos += Delta; // a vendor moves as a group
+    if (M->Type == Vendor) { M->SignPos += Delta; M->StallPos += Delta; } // a vendor moves as a group
     SyncTwin(L, Id);
     return true;
 }
@@ -750,7 +750,7 @@ FString CireMapLayout::ToJson(const FCireMapLayout& L)
         F.Add(FString::Printf(TEXT("\"type\": %s"), *Q(M.Type.ToString())));
         if (!M.Name.IsEmpty()) F.Add(FString::Printf(TEXT("\"name\": %s"), *Q(M.Name)));
         F.Add(FString::Printf(TEXT("\"team\": %d"), OwnerValue(M.Owner)));
-        if (T.bTarget || M.Type == MonsterSpawn || M.Type == MonsterPath) F.Add(FString::Printf(TEXT("\"target\": %d"), OwnerValue(M.Target)));
+        if (T.bTarget || M.Target != M.Owner) F.Add(FString::Printf(TEXT("\"target\": %d"), OwnerValue(M.Target)));
         if (M.Points.Num() > 0)
         {
             TArray<FString> P; for (const FVector2D& V : M.Points) P.Add(FString::Printf(TEXT("[%s,%s]"), *N(V.X), *N(V.Y)));
