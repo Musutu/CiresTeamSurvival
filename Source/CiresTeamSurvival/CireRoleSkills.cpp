@@ -109,6 +109,7 @@ bool CireRoleSkills::Cast(ACireHero* Hero,int32 Slot,const FString& Id)
         Aim=Hero->GetActorLocation()+Hero->GetActorForwardVector().GetSafeNormal2D()*180;
         const auto Units=ACireSummon::SpawnGroup(Hero,Spec,Hero->Target,Aim);
         if(Units.Num()!=Spec.Count){for(auto* Unit:Units)if(IsValid(Unit))Unit->Destroy();return Fail(TEXT("No room for hunters or summon limit reached."));}
+        for(auto* Unit:Units)Unit->SourceSkill=TEXT("spectral_hunt"); // fix/summons: summons-bar icon
     }
     else if(Id==TEXT("starfall")||Id==TEXT("seismic_reprisal"))
     {

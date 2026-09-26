@@ -4,6 +4,84 @@
   "root": "/Game/FabDerived/Anim",
   "locomotion": true,
   "clips": {
+    "axe_attack1": {
+      "start": 0.0,
+      "contact": 0.9,
+      "end": 1.067,
+      "recoverRate": 1.2
+    },
+    "axe_attack2": {
+      "start": 0.0,
+      "contact": 0.646,
+      "end": 0.833,
+      "recoverRate": 1.2
+    },
+    "axe_attack3": {
+      "start": 0.0,
+      "contact": 1.217,
+      "end": 1.467,
+      "recoverRate": 1.2
+    },
+    "axe_attack4": {
+      "start": 0.0,
+      "contact": 0.287,
+      "end": 0.996,
+      "recoverRate": 1.2
+    },
+    "axe_cast": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
+      "recoverRate": 1.2
+    },
+    "axe_death": {
+      "start": 0.0,
+      "contact": 0.093,
+      "end": 0.467,
+      "recoverRate": 1.0
+    },
+    "axe_hit": {
+      "start": 0.0,
+      "contact": 0.12,
+      "end": 0.833,
+      "recoverRate": 1.0
+    },
+    "axe_jump": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 2.0,
+      "recoverRate": 1.0
+    },
+    "axe_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.867,
+      "recoverRate": 1.0
+    },
+    "axe_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
+    "axe_skill1": {
+      "start": 0.0,
+      "contact": 0.333,
+      "end": 1.127,
+      "recoverRate": 1.2
+    },
+    "axe_skill2": {
+      "start": 0.0,
+      "contact": 1.058,
+      "end": 1.788,
+      "recoverRate": 1.2
+    },
+    "axe_skill3": {
+      "start": 0.0,
+      "contact": 1.3,
+      "end": 1.79,
+      "recoverRate": 1.2
+    },
     "bow_attack1": {
       "start": 0.0,
       "contact": 0.658,
@@ -900,94 +978,95 @@
     },
     "style:miner": {
       "attack": [
-        "one_hand_attack1",
-        "one_hand_attack3",
-        "one_hand_attack6",
-        "one_hand_attack7"
+        "axe_attack1",
+        "axe_attack2",
+        "axe_attack3",
+        "axe_attack4"
       ],
       "ability": [
-        "one_hand_skill1",
-        "one_hand_skill2",
-        "one_hand_skill3"
+        "axe_skill1",
+        "axe_skill2",
+        "axe_skill3"
       ],
       "spell": [
-        "one_hand_cast"
+        "axe_cast"
       ],
       "shout": [
-        "one_hand_shout"
+        "axe_shout"
       ],
       "hit": [
-        "one_hand_hit"
+        "axe_hit"
       ],
       "death": [
-        "one_hand_death"
+        "axe_death"
       ],
       "roll": [
-        "one_hand_roll"
+        "axe_roll"
       ],
       "jump": [
-        "one_hand_jump"
+        "axe_jump"
       ]
     },
     "style:chieftain": {
       "attack": [
-        "one_hand_attack1",
-        "one_hand_attack3",
-        "one_hand_attack6",
-        "one_hand_attack7"
+        "axe_attack1",
+        "axe_attack2",
+        "axe_attack3",
+        "axe_attack4"
       ],
       "ability": [
-        "one_hand_skill1",
-        "one_hand_skill2",
-        "one_hand_skill3"
+        "axe_skill1",
+        "axe_skill2",
+        "axe_skill3"
       ],
       "spell": [
-        "one_hand_cast"
+        "axe_cast"
       ],
       "shout": [
-        "one_hand_shout"
+        "axe_shout"
       ],
       "hit": [
-        "one_hand_hit"
+        "axe_hit"
       ],
       "death": [
-        "one_hand_death"
+        "axe_death"
       ],
       "roll": [
-        "one_hand_roll"
+        "axe_roll"
       ],
       "jump": [
-        "one_hand_jump"
+        "axe_jump"
       ]
     },
     "style:aetheri_warden": {
       "attack": [
-        "two_hand_attack2",
-        "two_hand_attack3",
-        "two_hand_attack4"
+        "spear_attack1",
+        "spear_attack2",
+        "spear_attack3",
+        "spear_attack4"
       ],
       "ability": [
-        "two_hand_skill1",
-        "two_hand_skill2",
-        "two_hand_skill3"
+        "spear_skill1",
+        "spear_skill2",
+        "spear_skill3"
       ],
       "spell": [
-        "two_hand_cast"
+        "spear_cast"
       ],
       "shout": [
-        "two_hand_shout"
+        "spear_shout"
       ],
       "hit": [
-        "two_hand_hit"
+        "spear_hit"
       ],
       "death": [
-        "two_hand_death"
+        "spear_death"
       ],
       "roll": [
-        "two_hand_roll"
+        "spear_roll"
       ],
       "jump": [
-        "two_hand_jump"
+        "spear_jump"
       ]
     },
     "style:behemoth": {

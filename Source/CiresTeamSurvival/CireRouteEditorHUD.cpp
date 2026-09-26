@@ -43,8 +43,8 @@ namespace
 const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment, &Muted=CireUIColors::Muted;
 const FLinearColor Teal(.2f, .71f, .59f, 1), Red(.75f, .2f, .23f, 1), Purple(.66f, .46f, .83f, 1), Orange(1.f, .55f, .1f, 1);
 constexpr float ToolbarW = 344.f, ToolbarH = 336.f;
-FVector2D LocalOf(int32 Team, const FVector& World) { return FVector2D(World.X, World.Y - CireLanePath::CenterY(Team)); }
-FVector WorldOf(int32 Team, const FVector2D& Local, float Z = 5.f) { return FVector(Local.X, Local.Y + CireLanePath::CenterY(Team), Z); }
+FVector2D LocalOf(int32 Team, const FVector& World) { return CireLanePath::ToLocal(Team, World); } // dev-route-tools: realm frames
+FVector WorldOf(int32 Team, const FVector2D& Local, float Z = 5.f) { return CireLanePath::ToWorld(Team, Local, Z); }
 void SetNavigationShowFlag(UWorld* World, bool bShow)
 {
     if (UGameViewportClient* Viewport = World ? World->GetGameViewport() : nullptr) Viewport->EngineShowFlags.SetNavigation(bShow);
@@ -71,7 +71,7 @@ void ACireHUD::OpenRouteEditor(bool bOpen)
         if (!E.bLoaded) { E.Draft = CireLanePath::Get(World); E.bLoaded = true; E.bDirty = true; }
         const ACireHero* Hero = PlayerOwner ? Cast<ACireHero>(PlayerOwner->GetPawn()) : nullptr;
         E.Team = Hero ? FMath::Clamp(Hero->TeamId, 0, 1) : 0;
-        E.Focus = FVector(5200, CireLanePath::CenterY(E.Team), 0);
+        E.Focus = FVector(5200, CireLanePath::RealmOrigin(E.Team).Y, 0);
         FActorSpawnParameters Params; Params.ObjectFlags |= RF_Transient;
         if (ACameraActor* Camera = World->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), FTransform::Identity, Params))
         {
@@ -151,7 +151,7 @@ void ACireHUD::TickRouteEditor()
             E.Camera->SetActorLocationAndRotation(E.Focus - View.Vector() * E.Distance, View);
             if (PlayerOwner->GetViewTarget() != E.Camera.Get()) PlayerOwner->SetViewTarget(E.Camera.Get());
         }
-        if (!bSettings && PlayerOwner->WasInputKeyJustPressed(EKeys::Tab)) { E.Team = 1 - E.Team; E.Focus.Y = CireLanePath::CenterY(E.Team) + (E.Focus.Y - CireLanePath::CenterY(1 - E.Team)); }
+        if (!bSettings && PlayerOwner->WasInputKeyJustPressed(EKeys::Tab)) { E.Team = 1 - E.Team; E.Focus.Y = CireLanePath::RealmOrigin(E.Team).Y + (E.Focus.Y - CireLanePath::RealmOrigin(1 - E.Team).Y); }
     }
 
     // ---- projection helpers ----------------------------------------------------------------------
@@ -243,7 +243,7 @@ void ACireHUD::TickRouteEditor()
             }
         }
         // Challenge bays (purple diamonds) with reachability rings, and the castle goal zone.
-        for (int32 Tier = 1; Tier <= 3; ++Tier)
+        for (int32 Tier = 1, Bays = CireLanePath::BayCount(Draft, Team); Tier <= Bays; ++Tier) // dev-route-tools: 1..16 packs
         {
             FVector2D P;
             if (!Project(WorldOf(Team, CireLanePath::BayPoint(Draft, Team, Tier)), P)) continue;
@@ -255,8 +255,8 @@ void ACireHUD::TickRouteEditor()
             Tri(FVector2D(P.X, P.Y - R), FVector2D(P.X - R, P.Y), FVector2D(P.X, P.Y + R), C);
             if (bActive)
             {
-                Circle(P.X, P.Y, R + 4, CireRouteEditor::ReachColor(V.BayReach[Team][Tier - 1]), 2.f);
-                const int32 Conflicts = V.BayConflicts[Team][Tier - 1];
+                Circle(P.X, P.Y, R + 4, CireRouteEditor::ReachColor(V.BayReach[Team].IsValidIndex(Tier - 1) ? V.BayReach[Team][Tier - 1] : ECireRouteReach::Unknown), 2.f);
+                const int32 Conflicts = V.BayConflicts[Team].IsValidIndex(Tier - 1) ? V.BayConflicts[Team][Tier - 1] : 0;
                 TextFx(Conflicts > 0 ? FString::Printf(TEXT("BAY %d | %d pieces"), Tier, Conflicts) : FString::Printf(TEXT("BAY %d"), Tier), P.X + R + 4, P.Y - 7, 9.f,
                     Conflicts > 0 ? Orange : Parchment, ECireFont::Bold, true);
             }
@@ -333,7 +333,7 @@ void ACireHUD::TickRouteEditor()
         const FString Out = Segs.IsValidIndex(E.SelIndex) ? FString::Printf(TEXT("out %.0f m %s"), Segs[E.SelIndex].Direct / 100.f, CireRouteEditor::ReachLabel(Segs[E.SelIndex].Reach)) : FString(TEXT("goal"));
         Selected = FString::Printf(TEXT("WAYPOINT %d  (%.0f, %.0f)  |  %s  |  %s"), E.SelIndex, Points[E.SelIndex].X, Points[E.SelIndex].Y, *In, *Out);
     }
-    else if (E.SelKind == 2) { const FVector2D B = CireLanePath::BayPoint(Draft, E.Team, E.SelIndex + 1); Selected = FString::Printf(TEXT("CHALLENGE BAY %d  (%.0f, %.0f)  |  %s"), E.SelIndex + 1, B.X, B.Y, CireRouteEditor::ReachLabel(V.BayReach[E.Team][E.SelIndex])); }
+    else if (E.SelKind == 2) { const FVector2D B = CireLanePath::BayPoint(Draft, E.Team, E.SelIndex + 1); Selected = FString::Printf(TEXT("CHALLENGE BAY %d  (%.0f, %.0f)  |  %s"), E.SelIndex + 1, B.X, B.Y, CireRouteEditor::ReachLabel(V.BayReach[E.Team].IsValidIndex(E.SelIndex) ? V.BayReach[E.Team][E.SelIndex] : ECireRouteReach::Unknown)); }
     else if (E.SelKind == 3) Selected = FString::Printf(TEXT("CASTLE GOAL ZONE  (%.0f, %.0f)  %.0f x %.0f cm"), Draft.GoalCenter.X, Draft.GoalCenter.Y, Draft.GoalSize.X, Draft.GoalSize.Y);
     Painter().Rect(L, Y - 2, W, 30, FLinearColor(0, 0, 0, .35f));
     Wrapped(Selected, L + 4, Y, W - 8, 8.5f, Parchment, 2); Y += 34;
@@ -351,8 +351,8 @@ void ACireHUD::TickRouteEditor()
         if (E.bLinked) { Draft.LocalPoints[1 - E.Team] = Draft.LocalPoints[E.Team]; Draft.Bays[1 - E.Team] = Draft.Bays[E.Team]; E.bDirty = true; }
     }
     Y += 28;
-    if (Button(TEXT("EMBER"), L, Y, 76, TEXT("Edit the Ember realm (Tab)."), true, E.Team == 0)) { E.Team = 0; E.Focus.Y = CireLanePath::CenterY(0); }
-    if (Button(TEXT("DUSK"), L + 80, Y, 76, TEXT("Edit the Dusk realm (Tab)."), true, E.Team == 1)) { E.Team = 1; E.Focus.Y = CireLanePath::CenterY(1); }
+    if (Button(TEXT("EMBER"), L, Y, 76, TEXT("Edit the Ember realm (Tab)."), true, E.Team == 0)) { E.Team = 0; E.Focus.Y = CireLanePath::RealmOrigin(0).Y; }
+    if (Button(TEXT("DUSK"), L + 80, Y, 76, TEXT("Edit the Dusk realm (Tab)."), true, E.Team == 1)) { E.Team = 1; E.Focus.Y = CireLanePath::RealmOrigin(1).Y; }
     if (Button(E.bShowNav ? TEXT("NAVMESH ON") : TEXT("NAVMESH OFF"), L + 160, Y, 100, TEXT("Engine navmesh debug draw in the world (green = walkable). The minimap overlay follows it."), true, E.bShowNav, Teal))
     { E.bShowNav = !E.bShowNav; SetNavigationShowFlag(World, E.bShowNav); }
     if (Button(TEXT("FOCUS"), L + 264, Y, 52, TEXT("Centre the camera on the selection."), E.SelKind != 0))
@@ -502,6 +502,8 @@ void ACireHUD::DrawRoutePage(float X, float Y)
     const bool bNav = NavigationShowFlag(World);
     if (Button(bNav ? TEXT("WORLD NAVMESH: ON") : TEXT("WORLD NAVMESH: OFF"), L + 186, B, 170, TEXT("Engine navmesh debug draw in the game view."), bNav)) SetNavigationShowFlag(World, !bNav);
     if (Button(bMinimapNav ? TEXT("MINIMAP NAV: ON") : TEXT("MINIMAP NAV: OFF"), L + 362, B, 150, TEXT("Draw navmesh coverage on the minimap."), bMinimapNav)) bMinimapNav = !bMinimapNav;
+    // dev-route-tools: the map layout editor (setters, team-owned mirrored markers). RouteEditor.cmd opens it as a clean edit mode.
+    if (Button(TEXT("MAP LAYOUT EDITOR"), L + 518, B, 170, TEXT("Author spawns, monster paths, challenge packs, vendors, the objective and more; RouteEditor.cmd opens it with every game system paused."), false, Teal)) { OpenLayoutEditor(true); return; }
     FString Error;
     if (Button(TEXT("APPLY DRAFT"), L, B + 30, 120, TEXT("Apply the draft live (server-authoritative)."), false, Teal))
         DeveloperMessage = CireLanePath::ApplyLive(World, E.Draft, &Error) ? TEXT("Route applied live.") : Error;

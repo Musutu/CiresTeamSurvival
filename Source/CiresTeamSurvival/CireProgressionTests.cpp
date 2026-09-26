@@ -264,7 +264,7 @@ bool CireProgression::RunSmoke(ACireGameMode* Mode)
     Check(Loot.bValid && Loot.Tables.Num() >= 6 && Loot.Schedule.Bays.size() == 3, TEXT("LootTables.json loads tables and the pack schedule"));
 
     // ---- challenge gating: tiers unlock in later cycles and sit deeper along the route
-    auto PackTiers = [&]() { TMap<int32, int32> Bays; for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->PackId >= 0 && M->Lane == 0) Bays.Add(M->PackId % 10, M->Tier); return Bays; };
+    auto PackTiers = [&]() { TMap<int32, int32> Bays; for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->PackId >= 0 && M->Lane == 0) Bays.Add(M->PackId % 50, M->Tier); return Bays; };
     auto ClearPacks = [&]() { for (ACireMonster* M : Mode->Monsters) if (IsValid(M)) { F.Spawned.AddUnique(M); M->Destroy(); } Mode->Monsters.Reset(); };
     F.Round(1); CireProgression::SpawnPacks(Mode, 1);
     TMap<int32, int32> Bays = PackTiers();
@@ -282,13 +282,13 @@ bool CireProgression::RunSmoke(ACireGameMode* Mode)
     Check(Bays.FindRef(1) == 3 && Bays.FindRef(2) == 4 && Bays.FindRef(3) == 5, TEXT("later cycles promote every bay"));
     const FVector Town = Mode->BasePosition(0);
     float Distances[4] = {0, 0, 0, 0};
-    for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && M->PackId >= 0) Distances[M->PackId % 10] = FVector::Dist2D(M->SpawnPosition, Town);
+    for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && M->PackId >= 0) Distances[M->PackId % 50] = FVector::Dist2D(M->SpawnPosition, Town);
     Check(Distances[1] < Distances[2] && Distances[2] < Distances[3], TEXT("deeper bays sit farther from town"));
     bool bLeaders = true;
     for (int32 Bay = 1; Bay <= 3; ++Bay)
     {
         int32 Leaders = 0;
-        for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && M->PackId % 10 == Bay && M->GetNPCClassification() == ECireNPCClass::Boss) ++Leaders;
+        for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && M->PackId % 50 == Bay && M->GetNPCClassification() == ECireNPCClass::Boss) ++Leaders;
         bLeaders &= Leaders == 1;
     }
     Check(bLeaders, TEXT("every pack has one Pack Leader"));

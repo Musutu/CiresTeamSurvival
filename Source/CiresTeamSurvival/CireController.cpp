@@ -1,7 +1,10 @@
+#include "CireVideoSettings.h"
+#include "CireLocomotionLab.h" // movement-feel
 #include "CireWaves.h" // wave-director
 #include "CireGame.h"
 #include "CireChampionRoster.h"
 #include "CireShopUI.h" // progression-shop: Skill Shop key
+#include "CireVendors.h" // vendors: Interact key and merchant clicks
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireShopFixtures.h" // progression-shop
 #include "CireItems.h" // progression-shop
@@ -26,7 +29,9 @@
 #include "CireCamera.h"
 #include "CireKeybindings.h"
 #include "CirePets.h" // pets
+#include "CireSummonsBar.h" // fix/summons
 #include "CirePlaySession.h"
+#include "CireRouteEditMode.h" // dev-route-tools
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireNetClient, Log, All);
@@ -40,6 +45,7 @@ struct FCireClientProbe {
     FVector MovementOrigin=FVector::ZeroVector;
     bool bStrafeStarted=false;
     float StrafeYaw=0;
+    uint64 StrafeStartFrame=0;
     TWeakObjectPtr<ACireMonster> Selected;
 };
 FCireClientProbe ClientProbe;
@@ -83,9 +89,10 @@ bool TickClientProbe(ACireController* Controller) {
             Probe.bStrafeStarted=true;Probe.StrafeYaw=static_cast<float>(Hero->GetActorRotation().Yaw);
             Controller->SetControlRotation(FRotator(-20,Probe.StrafeYaw,0));
             if(Hero->Mobility){Hero->Mobility->bFaceControl=true;Hero->Mobility->ServerSetFaceControl(true);}
-            Probe.MovementOrigin=Hero->GetActorLocation();
+            Probe.MovementOrigin=Hero->GetActorLocation();Probe.StrafeStartFrame=GFrameCounter;
         }
-        if(Now-Probe.StepStarted<0.75) Hero->AddMovementInput(FRotationMatrix(FRotator(0,Probe.StrafeYaw,0)).GetUnitAxis(EAxis::Y));
+        // 0.75 s AND at least 20 frames: a client starved by build load can tick only 2 frames in 0.75 s.
+        if(Now-Probe.StepStarted<0.75||GFrameCounter-Probe.StrafeStartFrame<20) Hero->AddMovementInput(FRotationMatrix(FRotator(0,Probe.StrafeYaw,0)).GetUnitAxis(EAxis::Y));
         else {
             const FVector Delta=Hero->GetActorLocation()-Probe.MovementOrigin;
             const double Lateral=FVector::DotProduct(Delta,FRotationMatrix(Heading).GetUnitAxis(EAxis::Y));
@@ -99,6 +106,14 @@ bool TickClientProbe(ACireController* Controller) {
             Probe.Step=6;Probe.StepStarted=Now;
         }
     } else if(Probe.Step==6) {
+        static double LastDiag=0;
+        if(Now-Probe.StepStarted>3&&Now-LastDiag>3) { // diagnose a missing probe target instead of a bare timeout
+            LastDiag=Now;
+            UE_LOG(LogCireNetClient,Warning,TEXT("CIRE_NET_CLIENT_TARGET_WAIT phase=%d team=%d drafted=%d dead=%d"),State->Phase,Hero->TeamId,Hero->bDrafted?1:0,Hero->bDead?1:0);
+            for(TActorIterator<ACireMonster> It(Controller->GetWorld());It;++It)
+                UE_LOG(LogCireNetClient,Warning,TEXT("  monster=%s lane=%d health=%.0f dist=%.0f hostile=%d"),*It->MonsterName,It->Lane,It->Health,
+                    FVector::Dist2D(Hero->GetActorLocation(),It->GetActorLocation()),Hero->IsHostile(*It)?1:0);
+        }
         for(TActorIterator<ACireMonster> It(Controller->GetWorld());It;++It) {
             if(It->MonsterName==TEXT("CIRE_NETWORK_PROBE_TARGET")&&Hero->IsHostile(*It)&&Hero->InRange(*It,2500)) {
                 Probe.Selected=*It;
@@ -160,10 +175,12 @@ void ACireController::CycleTarget(bool bFriendly) {CycleTargetDirected(this,bFri
 void ACireController::PlayerTick(float Dt) {
     Super::PlayerTick(Dt); if(!IsLocalController())return;
     CirePlaySession::Tick(this,Dt); // feat/camera-movement: -CirePlaySession simulated inputs (development only)
+    CireVideoCycle::Tick(this); // video-crash: -CireVideoCycle preset/resolution regression (development only)
 #if !UE_BUILD_SHIPPING
     if(CireExpansionNetProbe::TickClient(this))return;
     if(CireInterfaceProbe::TickClient(this))return;
     if(TickClientProbe(this))return;
+    if(CireLocomotionLab::TickClient(this))return; // movement-feel: network locomotion check
     if(CireShopFixtures::TickClient(this))return; // progression-shop
 #endif
     auto* H=Cast<ACireHero>(GetPawn()); if(!H){CireTargeting::Cleanup(this);return;}
@@ -251,8 +268,23 @@ void ACireController::PlayerTick(float Dt) {
         if(bOverUI&&WasInputKeyJustPressed(EKeys::MouseScrollDown))Interface->HandleMouseWheel(-1);
         if(Interface->IsBlockingGameplayInput()){CireTargeting::Cancel(this);return;}
     }
+    // dev-route-tools: map layout editor (edit mode, or its walk view): walk, run and jump only; the editor reads its
+    // own keys (setter skills on action bar 1, commands) in the HUD. No targeting, casting, shop or items.
+    if(CireRouteEditMode::IsActive()||(Interface&&Interface->IsLayoutEditorOpen())) {
+        CireTargeting::Cancel(this);
+        if(!H->bDead&&H->bDrafted) {
+            if(Keys.WasPressed(this,TEXT("Jump")))H->Jump();
+            if(H->Mobility&&Keys.WasPressed(this,TEXT("ToggleWalk"))){H->Mobility->bWalking=!H->Mobility->bWalking;H->Mobility->ServerSetWalk(H->Mobility->bWalking);}
+        }
+        return;
+    }
     if(Keys.WasPressed(this,TEXT("ToggleHelp")))bHelp=!bHelp;
     if(Keys.WasPressed(this,TEXT("ToggleShop")))bShop=!bShop;
+    if(Keys.WasPressed(this,TEXT("Interact"))&&H->bDrafted) { // vendors: open the merchant you stand at (again: close)
+        ACireVendor* Near=CireVendors::NearestInRange(H);
+        if(bShop&&Near&&CireShopUI::CurrentVendor()==Near->VendorId)bShop=false;
+        else if(!CireVendors::Interact(this,Near))H->Notice=FString::Printf(TEXT("No merchant in reach. %s opens every merchant's wares."),*Keys.Label(TEXT("ToggleShop")));
+    }
     if(Keys.WasPressed(this,TEXT("TargetNextEnemy")))CycleTargetDirected(this,false,false);
     if(Keys.WasPressed(this,TEXT("TargetPreviousEnemy")))CycleTargetDirected(this,false,true);
     if(Keys.WasPressed(this,TEXT("TargetNextAlly")))CycleTarget(true);
@@ -289,6 +321,13 @@ void ACireController::PlayerTick(float Dt) {
     if(H->bDrafted&&!bShop&&CirePets::ForOwner(H))
         for(uint8 Command=0;Command<static_cast<uint8>(ECirePetCommand::Count);++Command)
             if(Keys.WasPressed(this,CirePets::CommandAction(static_cast<ECirePetCommand>(Command))))ServerPetCommand(Command);
+    // fix/summons: the pet attack / follow / stay keys also order commandable summons (the Oathbound Guardian).
+    if(H->bDrafted&&!bShop&&CireSummonsBar::HasCommandable(H))
+    {
+        if(Keys.WasPressed(this,CirePets::CommandAction(ECirePetCommand::Attack)))ServerSummonCommand(2,H->Target,H->GetActorLocation());
+        if(Keys.WasPressed(this,CirePets::CommandAction(ECirePetCommand::Follow)))ServerSummonCommand(0,nullptr,H->GetActorLocation());
+        if(Keys.WasPressed(this,CirePets::CommandAction(ECirePetCommand::Stay)))ServerSummonCommand(3,nullptr,H->GetActorLocation());
+    }
     const bool bOfferModal=H->Offers.Num()>0&&(!Interface||Interface->IsSkillOfferOpen()); // champion-draft
     if(H->bDrafted&&!bShop&&!bOfferModal&&WasInputKeyJustPressed(EKeys::LeftMouseButton)
         &&!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive&&(!Interface||!Interface->IsPointerOverInterface())
@@ -304,6 +343,10 @@ void ACireController::PlayerTick(float Dt) {
             // feat/camera-movement: clicking empty ground keeps the target (a quick camera tap while
             // strafing must never drop it); Escape clears it.
             if((Cast<ACireHero>(Selected)||Cast<ACireMonster>(Selected)||Cast<ACireConstruct>(Selected))&&CireRealm::CanObserve(H,Selected))ServerAction(0,0,Selected);
+            else if(auto* Vendor=Cast<ACireVendor>(Selected);Vendor&&Vendor->Team==H->TeamId) { // vendors: click a merchant to trade
+                if(CireVendors::NearestInRange(H,250.f)==Vendor)CireVendors::Interact(this,Vendor);
+                else if(const FCireVendorDef* Def=CireVendors::Find(Vendor->VendorId))H->Notice=FString::Printf(TEXT("Walk up to %s's stall to trade."),*Def->Keeper);
+            }
         }
     }
     if(H->bDead||!H->bDrafted||bShop||CireCrowdControl::IsStunned(H))return; // champion-draft: stunned: no movement, jump or dodge

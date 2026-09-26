@@ -1,6 +1,7 @@
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireEnvironmentProps.h"
+#include "CireVendors.h"
 #include "CireNav.h" // nav-paths
 #include "CireTownGoal.h" // nav-paths
 #include "Components/BoxComponent.h" // nav-paths
@@ -96,6 +97,8 @@ void ACireWorld::BeginPlay() {
     RouteRoad=Make(TEXT("CireRouteRoad"),Cube,Mat(TEXT("cobblestone_material"),RoadMaterial),false,false);
     RouteEdge=Make(TEXT("CireRouteEdge"),Cube,Mat(TEXT("castle_material"),CastleMaterial),false,false);
     RouteArrows=Make(TEXT("CireRouteArrows"),Cube,Mat(TEXT("stone_material"),StoneMaterial),false,false);
+    BayDais=Disc;BreachRift=Rift; // dev-route-tools
+    BayStone=Make(TEXT("ChallengeStone"),Cube,Mat(TEXT("stone_material"),StoneMaterial),true);
     RefreshRouteVisuals();
     auto Text=[&](const FString& Str,FVector P,float Size,FColor Color,FRotator Rotation=FRotator(0,180,0)) {
         auto* T=NewObject<UTextRenderComponent>(this); T->SetupAttachment(RootComponent);
@@ -143,30 +146,8 @@ void ACireWorld::BeginPlay() {
         Text(Team==0?TEXT("EMBER KEEP"):TEXT("DUSK KEEP"),FVector(-150,Y,1260),72,Color,FRotator::ZeroRotator);
         Text(TEXT("HOLD THE CASTLE GATE"),FVector(-150,Y,1185),28,FColor(229,190,123),FRotator::ZeroRotator);
         Light(FVector(-2000,Y,520),FLinearColor(1.f,.6f,.32f),14000,1500);
-        for(int32 Tier=1;Tier<=3;++Tier) {
-            FVector P=CireLanePath::ChallengePosition(GetWorld(),Team,Tier,0);
-            Add(Disc,P+FVector(0,0,1),FVector(470,470,6));
-            Add(Stone,P+FVector(0,0,3),FVector(40,40,6));
-            Text(FString::Printf(TEXT("CHALLENGE  %d"),Tier),P+FVector(0,0,380),40,FColor(220,171,75));
-            Light(P+FVector(0,0,300),FLinearColor(1.f,.55f,.25f),5000,700);
-        }
-        const FVector Spawn=CireLanePath::SpawnPosition(GetWorld(),Team,0);
-        // The breach: a glowing rift in the dead fields beyond the town gate.
-        // A jagged, burning crack hanging in the air: narrow zig-zag shards rather than a slab.
-        {
-            FVector Prev=Spawn+FVector(430,0,20);
-            const float Offsets[]={-38,46,-22,58,-50,30,-12,40,-26,8};
-            for(int32 K=0;K<10;++K)
-            {
-                const FVector Next=Spawn+FVector(430,Offsets[K],80+K*62);
-                const FVector Mid=(Prev+Next)*.5f,Dir=(Next-Prev);
-                const float Width=K<2||K>7?10.f:22.f-FMath::Abs(K-4.5f)*2.f;
-                Add(Rift,Mid,FVector(8,Width,Dir.Size()+6),FRotator(0,0,FMath::RadiansToDegrees(FMath::Atan2(Dir.Y,Dir.Z))));
-                Prev=Next;
-            }
-        }
-        Light(Spawn+FVector(300,0,220),FLinearColor(1.f,.25f,.08f),16000,1400);
-        Text(TEXT("THE BREACH"),Spawn+FVector(380,0,560),60,FColor(228,155,137));
+        // dev-route-tools: the challenge packs (1..16) and the breach rift are built by RefreshRouteVisuals so live route
+        // edits (the route editor's Apply) move them with the road.
     }
     // arenas: the PvP arenas are no longer pre-built here. CireArenas (Content/Data/Arenas.json) builds the
     // randomly picked arena on every peer during prep, shows it for the fight and destroys it in recovery.
@@ -219,9 +200,13 @@ void ACireWorld::BeginPlay() {
         S.bOverride_BloomIntensity=true;S.BloomIntensity=.45f;
         S.bOverride_VignetteIntensity=true;S.VignetteIntensity=.22f;
         S.bOverride_AutoExposureBias=true;S.AutoExposureBias=.25f;
+        // video-crash: the "vibrant and crisp" tonemapper sharpen, here instead of the global r.Tonemapper.Sharpen so
+        // the champion-select capture can turn it off.
+        S.bOverride_Sharpen=true;S.Sharpen=.6f;
         Grade->RegisterComponent();AddInstanceComponent(Grade);
     }
     CireEnvironmentProps::Build(this);
+    CireVendors::SpawnAll(this); // vendors: the three town merchants, stalls and signs (every peer, like the props)
     // nav-paths: the navmesh is generated once the town, its props and the collision floor exist
     // (server/standalone only; clients have no navigation system).
     if(HasAuthority())CireNav::Initialize(GetWorld());
@@ -261,6 +246,53 @@ void ACireWorld::RefreshRouteVisuals() {
             for(int Side:{-1,1})Add(RouteEdge,(A+B)*.5f+N*Side*(RoadWidth*.5f+10)+FVector(0,0,3),FVector(FMath::Max(10.f,L-RoadWidth*.5f),20,6),Rot);
             // Worn setts every few metres hint the marching direction without gamey arrows.
             Add(RouteRoad,B+FVector(0,0,1.6f),FVector(RoadWidth,RoadWidth,3),Rot);
+        }
+    }
+    // dev-route-tools: challenge packs (each with its radius) and the breach rift at the wave start, rebuilt on every edit.
+    if(BayDais&&BayStone&&BreachRift)
+    {
+        BayDais->ClearInstances();BayStone->ClearInstances();BreachRift->ClearInstances();
+        for(UTextRenderComponent* Label:RouteLabels)if(IsValid(Label))Label->DestroyComponent();
+        for(AActor* Lamp:RouteLights)if(IsValid(Lamp))Lamp->Destroy();
+        RouteLabels.Reset();RouteLights.Reset();
+        auto Text=[&](const FString& Str,FVector P,float Size,FColor Color) {
+            auto* T=NewObject<UTextRenderComponent>(this);T->SetupAttachment(RootComponent);
+            T->SetWorldLocation(P);T->SetWorldRotation(FRotator(0,180,0));T->SetText(FText::FromString(Str));
+            T->SetHorizontalAlignment(EHTA_Center);T->SetWorldSize(Size);T->SetTextRenderColor(Color);
+            T->RegisterComponent();AddInstanceComponent(T);RouteLabels.Add(T);
+        };
+        auto Light=[&](FVector P,FLinearColor Color,float Intensity,float Radius) {
+            FActorSpawnParameters Params;Params.ObjectFlags|=RF_Transient;
+            auto* L=GetWorld()->SpawnActor<APointLight>(P,FRotator::ZeroRotator,Params);if(!L)return;
+            L->PointLightComponent->SetIntensity(Intensity);L->PointLightComponent->SetLightColor(Color);
+            L->PointLightComponent->SetAttenuationRadius(Radius);L->PointLightComponent->SetCastShadows(false);
+            RouteLights.Add(L);
+        };
+        for(int Team=0;Team<2;++Team) {
+            for(int32 Bay=1,Bays=CireLanePath::BayCount(GetWorld(),Team);Bay<=Bays;++Bay) {
+                const FCireChallengeBay Pack=CireLanePath::BayAt(R,Team,Bay);
+                const FVector P=CireLanePath::ChallengePosition(GetWorld(),Team,Bay,0);
+                const float Dais=Pack.Radius*470.f/FCireChallengeBay::DefaultRadius; // 470 cm across at the default radius
+                Add(BayDais,P+FVector(0,0,1),FVector(Dais,Dais,6));
+                Add(BayStone,P+FVector(0,0,3),FVector(40,40,6));
+                Text(FString::Printf(TEXT("CHALLENGE  %d"),Pack.Tier),P+FVector(0,0,380),40,FColor(220,171,75));
+                Light(P+FVector(0,0,300),FLinearColor(1.f,.55f,.25f),5000,FMath::Max(700.f,Pack.Radius*1.5f));
+            }
+            const FVector Spawn=CireLanePath::SpawnPosition(GetWorld(),Team,0);
+            // The breach: a glowing rift in the dead fields beyond the town gate.
+            // A jagged, burning crack hanging in the air: narrow zig-zag shards rather than a slab.
+            FVector Prev=Spawn+FVector(430,0,20);
+            const float Offsets[]={-38,46,-22,58,-50,30,-12,40,-26,8};
+            for(int32 K=0;K<10;++K)
+            {
+                const FVector Next=Spawn+FVector(430,Offsets[K],80+K*62);
+                const FVector Mid=(Prev+Next)*.5f,Dir=(Next-Prev);
+                const float Width=K<2||K>7?10.f:22.f-FMath::Abs(K-4.5f)*2.f;
+                Add(BreachRift,Mid,FVector(8,Width,Dir.Size()+6),FRotator(0,0,FMath::RadiansToDegrees(FMath::Atan2(Dir.Y,Dir.Z))));
+                Prev=Next;
+            }
+            Light(Spawn+FVector(300,0,220),FLinearColor(1.f,.25f,.08f),16000,1400);
+            Text(TEXT("THE BREACH"),Spawn+FVector(380,0,560),60,FColor(228,155,137));
         }
     }
     RenderedRouteRevision=CireLanePath::Revision(GetWorld());

@@ -30,9 +30,12 @@ def kill_tree(child) -> None:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--options", action="store_true", help="Render sixteen Options, combat-HUD, developer and roster views")
+    parser.add_argument("--fab-ground", action="store_true",
+                        help="telegraphs: Fab ground-effect overlays on circle zones: stock vendor look, fitted + dimmed, other candidates (measured)")
+    parser.add_argument("--timeout", type=int, default=85, help="process bound in seconds (a cold asset registry after a rebuild can need more)")
     args = parser.parse_args()
     kind = "Options" if args.options else "Spell"
-    expected = 16 if args.options else 7
+    expected = 16 if args.options else (3 if args.fab_ground else 7)
     root = Path(__file__).resolve().parent.parent
     folder = root / f"Saved/{kind}GalleryChecks" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     folder.mkdir(parents=True)
@@ -40,14 +43,14 @@ def main():
     command = ["F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe", str(root / "CiresTeamSurvival.uproject"),
                "/Game/Maps/Citadel", "-game", f"-Cire{kind}Gallery", "-RenderOffscreen", "-ForceRes",
                "-ResX=1920", "-ResY=1080", "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding",
-               "-ExecCmds=t.MaxFPS 60", f"-abslog={log}"]
+               "-ExecCmds=t.MaxFPS 60", f"-abslog={log}"] + (["-CireFabGroundGallery"] if args.fab_ground else [])
     started = time.monotonic()
     failure = ""
     with console.open("wb") as output:
         child = subprocess.Popen(command, stdout=output, stderr=subprocess.STDOUT,
                                  creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0), env=EDITOR_ENV)
         try:
-            code = child.wait(timeout=85)
+            code = child.wait(timeout=args.timeout)
         except subprocess.TimeoutExpired:
             kill_tree(child)
             child.terminate()
@@ -56,7 +59,7 @@ def main():
             except subprocess.TimeoutExpired:
                 child.kill()
                 code = child.wait(timeout=5)
-            failure = "Gallery exceeded 85-second bound"
+            failure = f"Gallery exceeded {args.timeout}-second bound"
     contents = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""
     match = re.search(rf"CIRE_{kind.upper()}_GALLERY_PASS captures={expected} directory=(.+)", contents)
     smoke_marker = "CIRE_OPTIONS_SETTINGS_PASS" if args.options else "CIRE_SPELL_PRESENTATION_PASS"

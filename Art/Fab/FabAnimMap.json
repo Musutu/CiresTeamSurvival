@@ -611,6 +611,71 @@
    "set": "crossbow",
    "kind": "jump"
   },
+  "axe_attack1": {
+   "path": "/Game/GDHBundle/AxeV1/Animation/IP/AS_AxeCombatAnimV1_Attack3_Stage1_IP.AS_AxeCombatAnimV1_Attack3_Stage1_IP",
+   "set": "axe",
+   "kind": "attack"
+  },
+  "axe_attack2": {
+   "path": "/Game/GDHBundle/AxeV1/Animation/IP/AS_AxeCombatAnimV1_Attack7_Stage1_IP.AS_AxeCombatAnimV1_Attack7_Stage1_IP",
+   "set": "axe",
+   "kind": "attack"
+  },
+  "axe_attack3": {
+   "path": "/Game/GDHBundle/AxeV1/Animation/IP/AS_AxeCombatAnimV1_Attack8_Stage1_IP.AS_AxeCombatAnimV1_Attack8_Stage1_IP",
+   "set": "axe",
+   "kind": "attack"
+  },
+  "axe_attack4": {
+   "path": "/Game/GDHBundle/AxeV1/Animation/IP/AS_AxeCombatAnimV1_Attack9_Stage1_IP.AS_AxeCombatAnimV1_Attack9_Stage1_IP",
+   "set": "axe",
+   "kind": "attack"
+  },
+  "axe_hit": {
+   "path": "/Game/GDHBundle/AxeV1/Animation/RM/AS_AxeCombatAnimV1_Hit_Fw_RM.AS_AxeCombatAnimV1_Hit_Fw_RM",
+   "set": "axe",
+   "kind": "hit"
+  },
+  "axe_death": {
+   "path": "/Game/GDHBundle/AxeV1/Animation/RM/AS_AxeCombatAnimV1_Death_Fw_RM.AS_AxeCombatAnimV1_Death_Fw_RM",
+   "set": "axe",
+   "kind": "death"
+  },
+  "axe_roll": {
+   "path": "/Game/GDHBundle/AxeV1/Animation/RM/AS_AxeCombatAnimV1_Flip_Fw_RM.AS_AxeCombatAnimV1_Flip_Fw_RM",
+   "set": "axe",
+   "kind": "roll"
+  },
+  "axe_jump": {
+   "path": "/Game/MaleLocomotionSet/Animations/Mannequin/InPlace/Jump/A_INP_JumpIdle_inAir.A_INP_JumpIdle_inAir",
+   "set": "axe",
+   "kind": "jump"
+  },
+  "axe_shout": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+   "set": "axe",
+   "kind": "shout"
+  },
+  "axe_cast": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Heal_IP.AS_SpellCombatAnimationV1_Heal_IP",
+   "set": "axe",
+   "kind": "cast"
+  },
+  "axe_skill1": {
+   "path": "/Game/GDHBundle/AxeV1/Animation/IP/AS_AxeCombatAnimV1_Attack1_IP.AS_AxeCombatAnimV1_Attack1_IP",
+   "set": "axe",
+   "kind": "skill1"
+  },
+  "axe_skill2": {
+   "path": "/Game/GDHBundle/AxeV1/Animation/IP/AS_AxeCombatAnimV1_Attack5_IP.AS_AxeCombatAnimV1_Attack5_IP",
+   "set": "axe",
+   "kind": "skill2"
+  },
+  "axe_skill3": {
+   "path": "/Game/GDHBundle/AxeV1/Animation/IP/AS_AxeCombatAnimV1_Attack12_IP.AS_AxeCombatAnimV1_Attack12_IP",
+   "set": "axe",
+   "kind": "skill3"
+  },
   "throw_attack1": {
    "path": "/Game/GDHBundle/DaggerCombatAnimationV1/Animation/IP/AS_DaggerCombatAnimationV1_Throw1_IP.AS_DaggerCombatAnimationV1_Throw1_IP",
    "set": "throw",
@@ -624,7 +689,7 @@
  },
  "locomotion": {
   "sword_shield": {
-   "idle": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Idle1_IP.AS_SwordAndShieldAnimV1_Idle1_IP",
+   "idle": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Idle2_IP.AS_SwordAndShieldAnimV1_Idle2_IP",
    "walk_f": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Walk_Fw_Loopable_IP.AS_SwordAndShieldAnimV1_Walk_Fw_Loopable_IP",
    "walk_fl": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Walk_FL_Loopable_IP.AS_SwordAndShieldAnimV1_Walk_FL_Loopable_IP",
    "walk_fr": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Walk_FR_Loopable_IP.AS_SwordAndShieldAnimV1_Walk_FR_Loopable_IP",
@@ -829,6 +894,15 @@
   ],
   "troll_berserker_melee": [
    "throw"
+  ],
+  "dwarf_miner": [
+   "axe"
+  ],
+  "orc_chieftain": [
+   "axe"
+  ],
+  "TripoAetheriWarden": [
+   "spear"
   ]
  },
  "monsters": {
@@ -1019,94 +1093,95 @@
   },
   "style:miner": {
    "attack": [
-    "one_hand_attack1",
-    "one_hand_attack3",
-    "one_hand_attack6",
-    "one_hand_attack7"
+    "axe_attack1",
+    "axe_attack2",
+    "axe_attack3",
+    "axe_attack4"
    ],
    "ability": [
-    "one_hand_skill1",
-    "one_hand_skill2",
-    "one_hand_skill3"
+    "axe_skill1",
+    "axe_skill2",
+    "axe_skill3"
    ],
    "spell": [
-    "one_hand_cast"
+    "axe_cast"
    ],
    "shout": [
-    "one_hand_shout"
+    "axe_shout"
    ],
    "hit": [
-    "one_hand_hit"
+    "axe_hit"
    ],
    "death": [
-    "one_hand_death"
+    "axe_death"
    ],
    "roll": [
-    "one_hand_roll"
+    "axe_roll"
    ],
    "jump": [
-    "one_hand_jump"
+    "axe_jump"
    ]
   },
   "style:chieftain": {
    "attack": [
-    "one_hand_attack1",
-    "one_hand_attack3",
-    "one_hand_attack6",
-    "one_hand_attack7"
+    "axe_attack1",
+    "axe_attack2",
+    "axe_attack3",
+    "axe_attack4"
    ],
    "ability": [
-    "one_hand_skill1",
-    "one_hand_skill2",
-    "one_hand_skill3"
+    "axe_skill1",
+    "axe_skill2",
+    "axe_skill3"
    ],
    "spell": [
-    "one_hand_cast"
+    "axe_cast"
    ],
    "shout": [
-    "one_hand_shout"
+    "axe_shout"
    ],
    "hit": [
-    "one_hand_hit"
+    "axe_hit"
    ],
    "death": [
-    "one_hand_death"
+    "axe_death"
    ],
    "roll": [
-    "one_hand_roll"
+    "axe_roll"
    ],
    "jump": [
-    "one_hand_jump"
+    "axe_jump"
    ]
   },
   "style:aetheri_warden": {
    "attack": [
-    "two_hand_attack2",
-    "two_hand_attack3",
-    "two_hand_attack4"
+    "spear_attack1",
+    "spear_attack2",
+    "spear_attack3",
+    "spear_attack4"
    ],
    "ability": [
-    "two_hand_skill1",
-    "two_hand_skill2",
-    "two_hand_skill3"
+    "spear_skill1",
+    "spear_skill2",
+    "spear_skill3"
    ],
    "spell": [
-    "two_hand_cast"
+    "spear_cast"
    ],
    "shout": [
-    "two_hand_shout"
+    "spear_shout"
    ],
    "hit": [
-    "two_hand_hit"
+    "spear_hit"
    ],
    "death": [
-    "two_hand_death"
+    "spear_death"
    ],
    "roll": [
-    "two_hand_roll"
+    "spear_roll"
    ],
    "jump": [
-    "two_hand_jump"
+    "spear_jump"
    ]
   },
   "style:behemoth": {

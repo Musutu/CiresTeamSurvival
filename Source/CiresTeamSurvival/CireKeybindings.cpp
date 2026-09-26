@@ -55,7 +55,8 @@ TArray<FCireActionInfo> BuildActions()
     Add(TEXT("TargetNextAlly"),LOCTEXT("TargetNextAlly","Target next ally"),C::Targeting,EKeys::F);
     Add(TEXT("TargetSelf"),LOCTEXT("TargetSelf","Target self"),C::Targeting,EKeys::F1);
     Add(TEXT("OpenChat"),LOCTEXT("OpenChat","Open chat"),C::Interface,EKeys::Enter);
-    Add(TEXT("ToggleShop"),LOCTEXT("ToggleShop","Town shop"),C::Interface,EKeys::B);
+    Add(TEXT("ToggleShop"),LOCTEXT("ToggleShop","Town shop (every merchant)"),C::Interface,EKeys::B);
+    Add(TEXT("Interact"),LOCTEXT("Interact","Interact: trade with the merchant you stand at"),C::Interface,EKeys::J); // vendors
     Add(TEXT("ToggleHelp"),LOCTEXT("ToggleHelp","Controls help"),C::Interface,EKeys::H);
     Add(TEXT("RecallToTown"),LOCTEXT("RecallToTown","Recall to town"),C::Interface,EKeys::G);
     Add(TEXT("ToggleOptions"),LOCTEXT("ToggleOptions","Options"),C::Interface,EKeys::F9);
@@ -409,7 +410,7 @@ bool CireKeybindings::RunSmoke()
     Check(B.Get(TEXT("TurnLeft"),0)==FCireKeyChord(EKeys::A)&&B.Get(TEXT("TargetPreviousEnemy"),0)==FCireKeyChord(EKeys::Tab,true),TEXT("A turn, Shift+Tab previous enemy"));
     Check(B.Get(SlotAction(1,1),0)==FCireKeyChord(EKeys::One)&&B.Get(SlotAction(2,3),0)==FCireKeyChord(EKeys::Three,true)&&
         B.Get(SlotAction(3,6),0)==FCireKeyChord(EKeys::Six,false,false,true)&&!B.Get(SlotAction(1,7),0).IsBound()&&!B.Get(SlotAction(3,12),0).IsBound(),TEXT("action bar defaults"));
-    Check(Actions().Num()==25+12/*progression-shop: stats, loot log, skill shop, 3 belt, 6 item; champion-draft: +1 skill offer toggle*/+8/*pets: 5 commands, 3 stances*/+FCireKeybindings::NumBars*FCireKeybindings::SlotsPerBar,TEXT("action list size"));
+    Check(Actions().Num()==25+12/*progression-shop: stats, loot log, skill shop, 3 belt, 6 item; champion-draft: +1 skill offer toggle*/+8/*pets: 5 commands, 3 stances*/+1/*vendors: Interact*/+FCireKeybindings::NumBars*FCireKeybindings::SlotsPerBar,TEXT("action list size"));
     {
         TSet<FString> Seen;bool Unique=true;
         for(const auto& I:Actions())for(int32 K=0;K<2;++K)if(I.Default[K].IsBound()){const FString Id=I.Default[K].ToString();Unique&=!Seen.Contains(Id);Seen.Add(Id);}

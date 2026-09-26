@@ -3342,5 +3342,23 @@
         "scale": 1.25
       }
     }
+  },
+  "groundNotes": "telegraphs (2026-09-26): Fab ground overlays are curated. groundRadius = XY footprint (cm) of the system spawned at scale 1, measured by Tools/RunSpellGallery.py --fab-ground (CIRE_FAB_GROUND_MEASURE); only listed systems decorate a circle zone, scaled to 92% of its true radius and dimmed with the ground-telegraph slider. groundExcluded = never used on the ground, with the reason.",
+  "groundRadius": {
+    "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Air_Magic/VFX_Niagara/NS_Air_Magic_AOE.NS_Air_Magic_AOE": 1235,
+    "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Fire_Magic/VFX_Niagara/NS_Fire_Magic_AOE.NS_Fire_Magic_AOE": 668,
+    "/Game/Big_Pack_Magic_VFX/Pack_Effects_1/Ice_Magic/VFX_Niagara/NS_Ice_Magic_Circle1.NS_Ice_Magic_Circle1": 845,
+    "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Blood_Magic/VFX_Niagara/NS_Blood_Magic_Area1.NS_Blood_Magic_Area1": 649,
+    "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Poison_Magic/VFX_Niagara/NS_Posion_Magic_Area1.NS_Posion_Magic_Area1": 593,
+    "/Game/Big_Pack_Magic_VFX/Pack_Effects_2/Water_Magic/VFX_Niagara/NS_Water_Magic_Area1.NS_Water_Magic_Area1": 436,
+    "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Dark_Magic/VFX_Niagara/NS_Dark_Magic_AOE.NS_Dark_Magic_AOE": 700,
+    "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Lightning_Magic/VFX_Niagara/NS_Lightning_Magic_Area.NS_Lightning_Magic_Area": 584,
+    "/Game/Earth_Spells/VFX_Niagara/NS_Earth_Spells_Circle.NS_Earth_Spells_Circle": 622,
+    "/Game/Shadow_Magic/VFX_Niagara/NS_Shadow_Magic_Area1.NS_Shadow_Magic_Area1": 1350
+  },
+  "groundExcluded": {
+    "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_AOE1.NS_Light_Magic_AOE1": "square/diamond ground frame (the holy AOE draws a rotated square and square core, not a circle)",
+    "/Game/Big_Pack_Magic_VFX/Pack_Effects_3/Light_Magic/VFX_Niagara/NS_Light_Magic_Circle.NS_Light_Magic_Circle": "square frame with diamond corners inside its ring (not a circle)",
+    "/Game/Forest_VFX/Niagara/AreaBuff/NS_AreaBuff.NS_AreaBuff": "tendril ribbons ignore the component scale: 3-4x past the rim even when fitted"
   }
 }

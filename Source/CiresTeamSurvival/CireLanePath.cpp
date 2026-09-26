@@ -62,7 +62,7 @@ bool Keys(const TSharedPtr<FJsonObject>& O, const TSet<FString>& Allowed)
 }
 FVector WorldPoint(int32 Team, FVector2D P, float Z)
 {
-    return FVector(P.X, P.Y + CireLanePath::CenterY(Team), Z);
+    return CireLanePath::ToWorld(Team, P, Z); // dev-route-tools: through the realm frame
 }
 int32 ProjectNext(const TArray<FVector2D>& Points, FVector2D Position)
 {
@@ -90,8 +90,15 @@ double DistanceToPathSquared(const TArray<FVector2D>& Points,FVector2D Position)
 }
 
 float CireLanePath::CenterY(int32 Team) { return Team == 0 ? -2100.f : 2100.f; }
+// dev-route-tools: realm frames. Both realms share one layout, authored once in realm-local coordinates; each realm maps
+// it into the world through its own origin. STUB provider: the procedural town's side-by-side offsets (0, -/+2100).
+// feat/medieval-kingdom replaces these three bodies with the data-driven frames of the pack town (same signatures).
+FVector2D CireLanePath::RealmOrigin(int32 Team) { return FVector2D(0.f, CenterY(FMath::Clamp(Team, 0, 1))); }
+FVector2D CireLanePath::ToLocal(int32 Team, const FVector& World) { return FVector2D(World.X, World.Y) - RealmOrigin(Team); }
+FVector CireLanePath::ToWorld(int32 Team, const FVector2D& Local, float Z) { const FVector2D P = Local + RealmOrigin(Team); return FVector(P.X, P.Y, Z); }
 const FCireBattlefieldRoutes& CireLanePath::Get(const UWorld* World) { if (!bLoaded) Reload(); return World?ForWorld(World).Data:Routes; }
 uint32 CireLanePath::Revision(const UWorld* World) { Get(); return World?ForWorld(World).Revision:RouteRevision; }
+
 bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, FString& Error)
 {
     auto Fail = [&](const TCHAR* Reason) { Error = Reason; return false; };
@@ -100,7 +107,7 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
     if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Root) || !Root) return Fail(TEXT("Invalid battlefield route JSON"));
     int32 Schema = 0; FString Units;
     // nav-paths: optional "laneWidth" and "goal" (path editor); per-lane optional "bays".
-    if (!Keys(Root,{TEXT("schemaVersion"),TEXT("units"),TEXT("bounds"),TEXT("lanes"),TEXT("armoredEscort"),TEXT("laneWidth"),TEXT("goal")}) ||
+    if (!Keys(Root,{TEXT("schemaVersion"),TEXT("units"),TEXT("bounds"),TEXT("lanes"),TEXT("route"),TEXT("armoredEscort"),TEXT("laneWidth"),TEXT("goal")}) ||
         !Integer(Root,TEXT("schemaVersion"),Schema,1,1) || !Root->TryGetStringField(TEXT("units"),Units) || Units != TEXT("centimeters"))
         return Fail(TEXT("Expected battlefield route schema 1 in centimeters"));
     const TSharedPtr<FJsonObject>* Bounds = nullptr; const TSharedPtr<FJsonObject>* Escort = nullptr;
@@ -120,15 +127,14 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
             return Fail(TEXT("goal needs x, y, depth and width in centimeters"));
         Candidate.GoalCenter = FVector2D(GX,GY); Candidate.GoalSize = FVector2D(GD,GW);
     }
-    if (!Root->TryGetArrayField(TEXT("lanes"),Lanes) || !Lanes || Lanes->Num() != 2) return Fail(TEXT("Provide exactly two lane routes"));
-    bool Seen[2] = {false,false};
-    for (const auto& Value : *Lanes)
+    // dev-route-tools: both realms share one layout, so a route is authored once: "route": { "points", "bays" } in
+    // realm-local cm applies to both realms through their origin transforms (CireLanePath::ToWorld). The legacy form,
+    // "lanes": [ { "team": 0, ... }, { "team": 1, ... } ], is still read (and written when the realms differ).
+    auto ParseLane = [&](const TSharedPtr<FJsonObject>& Lane, int32 Team) -> bool
     {
-        const TSharedPtr<FJsonObject>* Lane = nullptr; const TArray<TSharedPtr<FJsonValue>>* Points = nullptr; int32 Team = -1;
-        if (!Value || !Value->TryGetObject(Lane) || !Lane || !Keys(*Lane,{TEXT("team"),TEXT("points"),TEXT("bays")}) ||
-            !Integer(*Lane,TEXT("team"),Team,0,1) || Seen[Team] || !(*Lane)->TryGetArrayField(TEXT("points"),Points) ||
-            !Points || Points->Num() < 3 || Points->Num() > 64) return Fail(TEXT("Each unique team needs 3..64 local XY points"));
-        Seen[Team] = true;
+        const TArray<TSharedPtr<FJsonValue>>* Points = nullptr;
+        if (!Lane->TryGetArrayField(TEXT("points"),Points) || !Points || Points->Num() < 3 || Points->Num() > 64)
+            return Fail(TEXT("Each unique team needs 3..64 local XY points"));
         for (const auto& Point : *Points)
         {
             const TArray<TSharedPtr<FJsonValue>>* XY = nullptr; double X = 0, Y = 0;
@@ -137,18 +143,53 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
                 return Fail(TEXT("Route points must be finite and inside their realm with unit clearance"));
             Candidate.LocalPoints[Team].Add(FVector2D(X,Y));
         }
-        // nav-paths: optional challenge bay overrides, exactly three [x, y] points (tiers 1..3).
+        // nav-paths: optional challenge bay overrides. dev-route-tools: 1..16 packs, each an object
+        // { "x", "y", "radius", "tier" } (radius and tier optional) or a legacy [x, y] pair (tier = its position).
         const TArray<TSharedPtr<FJsonValue>>* Bays = nullptr;
-        if ((*Lane)->HasField(TEXT("bays")))
+        if (Lane->HasField(TEXT("bays")))
         {
-            if (!(*Lane)->TryGetArrayField(TEXT("bays"),Bays) || !Bays || Bays->Num() != 3) return Fail(TEXT("Challenge bays need exactly three [x, y] points"));
-            for (const auto& Bay : *Bays)
+            if (!Lane->TryGetArrayField(TEXT("bays"),Bays) || !Bays || Bays->Num() > FCireBattlefieldRoutes::MaxBays || Bays->Num() == 0)
+                return Fail(TEXT("Challenge packs need 1..16 bays"));
+            for (int32 Index = 0; Index < Bays->Num(); ++Index)
             {
-                const TArray<TSharedPtr<FJsonValue>>* XY = nullptr; double X = 0, Y = 0;
-                if (!Bay || !Bay->TryGetArray(XY) || !XY || XY->Num() != 2 || !(*XY)[0]->TryGetNumber(X) || !(*XY)[1]->TryGetNumber(Y) || !FMath::IsFinite(X) || !FMath::IsFinite(Y))
-                    return Fail(TEXT("Challenge bays need exactly three [x, y] points"));
-                Candidate.Bays[Team].Add(FVector2D(X,Y));
+                const TSharedPtr<FJsonValue>& Bay = (*Bays)[Index];
+                FCireChallengeBay Entry; Entry.Tier = FMath::Min(Index + 1, FCireChallengeBay::MaxTier);
+                const TArray<TSharedPtr<FJsonValue>>* XY = nullptr; const TSharedPtr<FJsonObject>* Object = nullptr; double X = 0, Y = 0;
+                if (Bay && Bay->Type == EJson::Array && Bay->TryGetArray(XY) && XY && XY->Num() == 2 && (*XY)[0]->TryGetNumber(X) && (*XY)[1]->TryGetNumber(Y)) {}
+                else if (Bay && Bay->Type == EJson::Object && Bay->TryGetObject(Object) && Object && Keys(*Object,{TEXT("x"),TEXT("y"),TEXT("radius"),TEXT("tier")}) &&
+                    (*Object)->TryGetNumberField(TEXT("x"),X) && (*Object)->TryGetNumberField(TEXT("y"),Y))
+                {
+                    if ((*Object)->HasField(TEXT("radius")) && !Number(*Object,TEXT("radius"),Entry.Radius,FCireChallengeBay::MinRadius,FCireChallengeBay::MaxRadius))
+                        return Fail(TEXT("Challenge pack radius must be 200..1500 cm"));
+                    if ((*Object)->HasField(TEXT("tier")) && !Integer(*Object,TEXT("tier"),Entry.Tier,1,FCireChallengeBay::MaxTier))
+                        return Fail(TEXT("Challenge pack tier must be 1..10"));
+                }
+                else return Fail(TEXT("Challenge packs are { x, y, radius, tier } objects or [x, y] points"));
+                if (!FMath::IsFinite(X) || !FMath::IsFinite(Y)) return Fail(TEXT("Challenge packs are { x, y, radius, tier } objects or [x, y] points"));
+                Entry.Position = FVector2D(X,Y);
+                Candidate.Bays[Team].Add(Entry);
             }
+        }
+        return true;
+    };
+    const TSharedPtr<FJsonObject>* Shared = nullptr;
+    if (Root->HasField(TEXT("route")))
+    {
+        if (Root->HasField(TEXT("lanes"))) return Fail(TEXT("Provide either one shared route or two lane routes, not both"));
+        if (!Root->TryGetObjectField(TEXT("route"),Shared) || !Shared || !Keys(*Shared,{TEXT("points"),TEXT("bays")}) || !ParseLane(*Shared,0)) return Error.IsEmpty() ? Fail(TEXT("Invalid shared route")) : false;
+        Candidate.LocalPoints[1] = Candidate.LocalPoints[0]; Candidate.Bays[1] = Candidate.Bays[0];
+    }
+    else
+    {
+        if (!Root->TryGetArrayField(TEXT("lanes"),Lanes) || !Lanes || Lanes->Num() != 2) return Fail(TEXT("Provide exactly two lane routes"));
+        bool Seen[2] = {false,false};
+        for (const auto& Value : *Lanes)
+        {
+            const TSharedPtr<FJsonObject>* Lane = nullptr; int32 Team = -1;
+            if (!Value || !Value->TryGetObject(Lane) || !Lane || !Keys(*Lane,{TEXT("team"),TEXT("points"),TEXT("bays")}) ||
+                !Integer(*Lane,TEXT("team"),Team,0,1) || Seen[Team]) return Fail(TEXT("Each unique team needs 3..64 local XY points"));
+            Seen[Team] = true;
+            if (!ParseLane(*Lane,Team)) return false;
         }
     }
     if (!Root->TryGetObjectField(TEXT("armoredEscort"),Escort) || !Escort ||
@@ -160,6 +201,8 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
     if (!Validate(Candidate,Error)) return false;
     Out = MoveTemp(Candidate); Error.Reset(); return true;
 }
+
+
 // nav-paths: semantic rules shared by the JSON loader and the live path editor.
 bool CireLanePath::Validate(const FCireBattlefieldRoutes& R, FString& Error)
 {
@@ -190,12 +233,20 @@ bool CireLanePath::Validate(const FCireBattlefieldRoutes& R, FString& Error)
             return Fail(TEXT("Routes must start outside the town and end inside the castle goal zone"));
         for (int32 I = 0; I + 1 < Points.Num(); ++I)
             if (InGoal(Points[I], 100)) return Fail(TEXT("Only the final point may enter the town defense zone"));
+        // dev-route-tools: 0 (three automatic bays) or 1..16 authored packs, each with a radius and a tier.
         const auto& Bays = R.Bays[Team];
-        if (Bays.Num() != 0 && Bays.Num() != 3) return Fail(TEXT("Challenge bays need exactly three [x, y] points"));
-        for (const FVector2D& B : Bays)
+        if (Bays.Num() > FCireBattlefieldRoutes::MaxBays) return Fail(TEXT("Challenge packs need 1..16 bays"));
+        for (int32 I = 0; I < Bays.Num(); ++I)
+        {
+            const FCireChallengeBay& Bay = Bays[I]; const FVector2D& B = Bay.Position;
+            if (!(Bay.Radius >= FCireChallengeBay::MinRadius && Bay.Radius <= FCireChallengeBay::MaxRadius)) return Fail(TEXT("Challenge pack radius must be 200..1500 cm"));
+            if (Bay.Tier < 1 || Bay.Tier > FCireChallengeBay::MaxTier) return Fail(TEXT("Challenge pack tier must be 1..10"));
             if (!Finite2(B) || B.X < R.MinX + 220 || B.X > R.MaxX - 220 || FMath::Abs(B.Y) > R.HalfWidth - 220 || InGoal(B, 200) ||
                 FVector2D::DistSquared(B, Points[0]) < FMath::Square(450.))
                 return Fail(TEXT("Challenge bays must stay inside the realm, clear of the breach and the castle zone"));
+            for (int32 J = 0; J < I; ++J)
+                if (FVector2D::DistSquared(B, Bays[J].Position) < FMath::Square(200.)) return Fail(TEXT("Challenge packs must be at least 2 m apart"));
+        }
     }
     if (R.EscortEveryWaves < 0 || R.EscortEveryWaves > 100 || R.EscortCount < 1 || R.EscortCount > 4 || R.EscortLeakCost < 1 || R.EscortLeakCost > 100 ||
         !(R.EscortHealthMultiplier >= 1 && R.EscortHealthMultiplier <= 50) || !(R.EscortMoveSpeed >= 50 && R.EscortMoveSpeed <= 500))
@@ -236,14 +287,32 @@ FString CireLanePath::ToJson(const FCireBattlefieldRoutes& R)
     Out += FString::Printf(TEXT("  \"bounds\": { \"minX\": %s, \"maxX\": %s, \"halfWidth\": %s },\n"), *N(R.MinX), *N(R.MaxX), *N(R.HalfWidth));
     Out += FString::Printf(TEXT("  \"laneWidth\": %s,\n"), *N(R.LaneWidth));
     Out += FString::Printf(TEXT("  \"goal\": { \"x\": %s, \"y\": %s, \"depth\": %s, \"width\": %s },\n"), *N(R.GoalCenter.X), *N(R.GoalCenter.Y), *N(R.GoalSize.X), *N(R.GoalSize.Y));
-    Out += TEXT("  \"lanes\": [\n");
-    for (int32 Team = 0; Team < 2; ++Team)
+    // dev-route-tools: authored packs with their radius and tier, one per line.
+    auto BayList = [&](const TArray<FCireChallengeBay>& Bays)
     {
-        Out += FString::Printf(TEXT("    { \"team\": %d, \"points\": %s"), Team, *List(R.LocalPoints[Team]));
-        if (R.Bays[Team].Num() == 3) Out += FString::Printf(TEXT(", \"bays\": %s"), *List(R.Bays[Team]));
-        Out += Team == 0 ? TEXT(" },\n") : TEXT(" }\n");
+        TArray<FString> Items;
+        for (const FCireChallengeBay& B : Bays)
+            Items.Add(FString::Printf(TEXT("      { \"x\": %s, \"y\": %s, \"radius\": %s, \"tier\": %d }"), *N(B.Position.X), *N(B.Position.Y), *N(B.Radius), B.Tier));
+        return FString(TEXT("[\n")) + FString::Join(Items, TEXT(",\n")) + TEXT("\n    ]");
+    };
+    if (R.LocalPoints[0] == R.LocalPoints[1] && R.Bays[0] == R.Bays[1])
+    {
+        // Both realms share the layout: author once, in realm-local coordinates.
+        Out += FString::Printf(TEXT("  \"route\": {\n    \"points\": %s"), *List(R.LocalPoints[0]));
+        if (R.Bays[0].Num() > 0) Out += FString::Printf(TEXT(",\n    \"bays\": %s"), *BayList(R.Bays[0]));
+        Out += TEXT("\n  },\n");
     }
-    Out += TEXT("  ],\n");
+    else
+    {
+        Out += TEXT("  \"lanes\": [\n");
+        for (int32 Team = 0; Team < 2; ++Team)
+        {
+            Out += FString::Printf(TEXT("    { \"team\": %d, \"points\": %s"), Team, *List(R.LocalPoints[Team]));
+            if (R.Bays[Team].Num() > 0) Out += FString::Printf(TEXT(",\n    \"bays\": %s"), *BayList(R.Bays[Team]));
+            Out += Team == 0 ? TEXT(" },\n") : TEXT(" }\n");
+        }
+        Out += TEXT("  ],\n");
+    }
     Out += FString::Printf(TEXT("  \"armoredEscort\": { \"everyWaves\": %d, \"count\": %d, \"leakCost\": %d, \"healthMultiplier\": %s, \"moveSpeed\": %s }\n}\n"),
         R.EscortEveryWaves, R.EscortCount, R.EscortLeakCost, *N(R.EscortHealthMultiplier), *N(R.EscortMoveSpeed));
     return Out;
@@ -337,7 +406,8 @@ void CireLanePath::PublishState(ACireGameState* State)
     // nav-paths: lane width, goal zone and bay overrides ride along with the points.
     TArray<float>& L=State->LaneLayout;L.Reset();
     L.Add(R.LaneWidth);L.Add(R.GoalCenter.X);L.Add(R.GoalCenter.Y);L.Add(R.GoalSize.X);L.Add(R.GoalSize.Y);
-    for(int32 Team=0;Team<2;++Team){L.Add(R.Bays[Team].Num());for(const FVector2D& B:R.Bays[Team]){L.Add(B.X);L.Add(B.Y);}}
+    // dev-route-tools: per realm the pack count, then x, y, radius and tier of each authored pack.
+    for(int32 Team=0;Team<2;++Team){L.Add(R.Bays[Team].Num());for(const FCireChallengeBay& B:R.Bays[Team]){L.Add(B.Position.X);L.Add(B.Position.Y);L.Add(B.Radius);L.Add(B.Tier);}}
     State->ForceNetUpdate();
 }
 void CireLanePath::ReceiveState(ACireGameState* State)
@@ -351,12 +421,18 @@ void CireLanePath::ReceiveState(ACireGameState* State)
     const TArray<float>& L=State->LaneLayout;
     if(L.Num()>=7)
     {
-        int32 At=5;TArray<FVector2D> Bays[2];bool bOk=true;
+        int32 At=5;TArray<FCireChallengeBay> Bays[2];bool bOk=true;
         for(int32 Team=0;Team<2&&bOk;++Team)
         {
             const int32 Count=At<L.Num()?FMath::RoundToInt(L[At]):-1;++At;
-            if((Count!=0&&Count!=3)||At+Count*2>L.Num()){bOk=false;break;}
-            for(int32 I=0;I<Count;++I){Bays[Team].Add(FVector2D(L[At],L[At+1]));At+=2;}
+            if(Count<0||Count>FCireBattlefieldRoutes::MaxBays||At+Count*4>L.Num()){bOk=false;break;}
+            for(int32 I=0;I<Count;++I)
+            {
+                FCireChallengeBay B;B.Position=FVector2D(L[At],L[At+1]);
+                B.Radius=FMath::Clamp(L[At+2],FCireChallengeBay::MinRadius,FCireChallengeBay::MaxRadius);
+                B.Tier=FMath::Clamp(FMath::RoundToInt(L[At+3]),1,FCireChallengeBay::MaxTier);
+                Bays[Team].Add(B);At+=4;
+            }
         }
         if(bOk)
         {
@@ -396,12 +472,15 @@ FVector CireLanePath::ChallengePosition(const UWorld* World,int32 Team,int32 Tie
     Team=FMath::Clamp(Team,0,1);
     return WorldPoint(Team,BayPoint(Get(World),Team,Tier),FMath::IsFinite(Z)?Z:110.f);
 }
-FVector2D CireLanePath::BayPoint(const FCireBattlefieldRoutes& R,int32 Team,int32 Tier)
+FVector2D CireLanePath::BayPoint(const FCireBattlefieldRoutes& R,int32 Team,int32 Bay)
 {
-    Team=FMath::Clamp(Team,0,1);Tier=FMath::Clamp(Tier,1,3);
-    // nav-paths: path-editor bay override.
-    if(R.Bays[Team].Num()==3)return R.Bays[Team][Tier-1];
-    const auto& Points=R.LocalPoints[Team];double Length=0;
+    Team=FMath::Clamp(Team,0,1);
+    // nav-paths: path-editor bay override. dev-route-tools: 1..16 authored packs.
+    if(R.Bays[Team].Num()>0)return R.Bays[Team][FMath::Clamp(Bay,1,R.Bays[Team].Num())-1].Position;
+    const int32 Tier=FMath::Clamp(Bay,1,FCireBattlefieldRoutes::AutoBays);
+    const auto& Points=R.LocalPoints[Team];
+    if(Points.Num()<2)return Points.Num()?Points[0]:FVector2D::ZeroVector; // an unfinished editor draft
+    double Length=0;
     for(int32 I=0;I+1<Points.Num();++I)Length+=FVector2D::Distance(Points[I],Points[I+1]);
     double Remaining=Length*(1.-Tier*.25);FVector2D Anchor=Points.Last();
     for(int32 I=0;I+1<Points.Num();++I)
@@ -421,6 +500,32 @@ FVector2D CireLanePath::BayPoint(const FCireBattlefieldRoutes& R,int32 Team,int3
         if(Score>BestScore){BestScore=Score;Best=Candidate;}
     }
     return Best;
+}
+int32 CireLanePath::BayCount(const FCireBattlefieldRoutes& R,int32 Team)
+{
+    const int32 Authored=R.Bays[FMath::Clamp(Team,0,1)].Num();
+    return Authored>0?FMath::Min(Authored,FCireBattlefieldRoutes::MaxBays):FCireBattlefieldRoutes::AutoBays;
+}
+int32 CireLanePath::BayCount(const UWorld* World,int32 Team){return BayCount(Get(World),Team);}
+FCireChallengeBay CireLanePath::BayAt(const FCireBattlefieldRoutes& R,int32 Team,int32 Bay)
+{
+    Team=FMath::Clamp(Team,0,1);
+    if(R.Bays[Team].Num()>0)return R.Bays[Team][FMath::Clamp(Bay,1,R.Bays[Team].Num())-1];
+    FCireChallengeBay Auto;Auto.Tier=FMath::Clamp(Bay,1,FCireBattlefieldRoutes::AutoBays);Auto.Position=BayPoint(R,Team,Auto.Tier);
+    return Auto;
+}
+TArray<FCireChallengeBay> CireLanePath::AutoBays(const FCireBattlefieldRoutes& R,int32 Team)
+{
+    FCireBattlefieldRoutes Computed=R;Computed.Bays[0].Reset();Computed.Bays[1].Reset();
+    TArray<FCireChallengeBay> Out;
+    for(int32 Bay=1;Bay<=FCireBattlefieldRoutes::AutoBays;++Bay)Out.Add(BayAt(Computed,Team,Bay));
+    return Out;
+}
+float CireLanePath::ChallengeRadius(const UWorld* World,int32 Team,int32 Bay){return BayAt(Get(World),Team,Bay).Radius;}
+int32 CireLanePath::ChallengeTier(const UWorld* World,int32 Team,int32 Bay){return BayAt(Get(World),Team,Bay).Tier;}
+double CireLanePath::PathLength(const TArray<FVector2D>& Points)
+{
+    double Length=0;for(int32 I=0;I+1<Points.Num();++I)Length+=FVector2D::Distance(Points[I],Points[I+1]);return Length;
 }
 TArray<FVector> CireLanePath::RoutePoints(const UWorld* World,int32 Team,float Z)
 {

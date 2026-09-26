@@ -1,6 +1,7 @@
 #include "CireShopUI.h"
 #include "CireScalingKits.h" // scaling-kits
 #include "CireShopArt.h" // progression-shop: scroll cards and ornate framing
+#include "CireVendors.h" // vendors: merchant tabs
 #include "CireSkillShop.h" // progression-shop: Skill Shop tab
 #include "CireAbilityDB.h" // progression-shop: scroll card numbers
 // progression-shop: League-style shop, bag/belt/teleport bar and purchase/loot feedback.
@@ -68,6 +69,8 @@ struct FShopState
     int32 Tab = 0;              // 0 items, 1 skills
     int32 PendingTab = -1;      // tab to show when the shop next opens
     int32 SkillFilter = 0;      // new-champions: 0 all skills, 1 Constructs only (Aetheri champions)
+    int32 Vendor = -1;          // vendors: merchant tab (-1 = every merchant, the B key)
+    int32 PendingVendor = -1;   // vendors: merchant tab to show when the shop next opens
     uint32 HiddenSections = 0;  // Skill Shop filter chips (bit per section)
     int32 SkillPage = 0;        // first visible shelf row
     FString SelectedSkill;
@@ -247,6 +250,7 @@ void ProcessFeedback(ACireHUD& HUD, ACireHero* Hero)
             AddToast(TEXT("Purchased"), FString::Printf(TEXT("%s   %dg"), *CireItems::DisplayName(F.ItemId), F.GoldDelta), F.ItemId, Accent, 3.f);
             State.LastEvent = FString::Printf(TEXT("BOUGHT  %s   %dg"), *CireItems::DisplayName(F.ItemId), F.GoldDelta); State.LastEventColor = FLinearColor(.5f, 1.f, .55f, 1); State.LastEventAt = Now(); State.bLastEventError = false;
             Play(HUD, TEXT("S_ShopBuy"));
+            CireVendors::OnPurchased(HUD.GetWorld(), F.ItemId); // vendors: the merchant who sold it nods
             State.PendingId = NAME_None;
             break;
         case ECireShopAction::Sell:
@@ -1344,8 +1348,14 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
     if (bShopOpen != State.bWasShopOpen)
     {
         Hero->Inventory->ServerShopOpen(bShopOpen); State.bWasShopOpen = bShopOpen;
-        if (bShopOpen) { Play(HUD, TEXT("S_ShopOpen"), .6f); State.Tab = State.PendingTab >= 0 ? State.PendingTab : 0; }
-        State.PendingTab = -1;
+        if (bShopOpen)
+        {
+            Play(HUD, TEXT("S_ShopOpen"), .6f); State.Tab = State.PendingTab >= 0 ? State.PendingTab : 0;
+            // vendors: the B key shows every merchant; Interact / a click on a merchant opens his tab.
+            State.Vendor = State.PendingVendor;
+            if (State.Vendor >= 0) State.Category = 1;
+        }
+        State.PendingTab = -1; State.PendingVendor = -1;
     }
 
     constexpr float DW = 306, DH = 102;
@@ -1505,7 +1515,14 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     const float W = FMath::Min(View.X - 20.f, 1256.f), H = FMath::Min(View.Y - 16.f, 704.f);
     const float X = FMath::RoundToFloat((View.X - W) * .5f), Y = FMath::RoundToFloat((View.Y - H) * .5f);
     CireShopArt::Panel(P, X, Y, W, H, 330);
-    CireShopArt::Title(P, X + W * .5f, Y + 13, TEXT("ARMORY"), TEXT("STEEL FOR THE WAVES AHEAD"), 31);
+    // vendors: the three town merchants split the catalogue; B shows them all, a merchant's own tab shows his wares.
+    const auto& VendorData = CireVendors::Get();
+    if (!VendorData.Vendors.IsValidIndex(State.Vendor)) State.Vendor = -1;
+    if (State.Vendor >= 0 && State.Category == 0) State.Category = 1;
+    const FCireVendorDef* ShownVendor = State.Vendor >= 0 ? &VendorData.Vendors[State.Vendor] : nullptr;
+    const FName ShownVendorId = ShownVendor ? ShownVendor->Id : NAME_None;
+    if (ShownVendor) CireShopArt::Title(P, X + W * .5f, Y + 13, ShownVendor->Name.ToUpper(), FString::Printf(TEXT("%s  ·  %s"), *ShownVendor->StatLabel, *ShownVendor->Keeper.ToUpper()), 31);
+    else CireShopArt::Title(P, X + W * .5f, Y + 13, TEXT("MERCHANTS' ROW"), TEXT("THREE MERCHANTS  ·  EVERY WARE"), 31);
     const CI::ShopAccess Access = ClientAccess(Hero, GameState);
     FString Status; bool bOpen = true;
     if (Access == CI::ShopAccess::Allowed && GameState && GameState->Phase == 1)
@@ -1542,7 +1559,40 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         if (Click(CX - 11, CY - 11, 22, 22) && Controller) Controller->bShop = false;
     }
 
-    const float Top = Y + 84, StripH = 88, Bottom = Y + H - StripH - 10;
+    // vendors: merchant tabs across the top (every merchant + one per merchant), emblem, name and stat.
+    {
+        const int32 Tabs = VendorData.Vendors.Num() + 1;
+        const float SX = X + 22, SW = W - 44, TY = Y + 80, TH = 40, Gap = 10;
+        const float TW = (SW - Gap * (Tabs - 1)) / Tabs;
+        for (int32 Index = 0; Index < Tabs; ++Index)
+        {
+            const int32 VendorIndex = Index - 1;
+            const FCireVendorDef* V = VendorIndex >= 0 ? &VendorData.Vendors[VendorIndex] : nullptr;
+            const float TX = SX + Index * (TW + Gap);
+            const bool bSel = State.Vendor == VendorIndex;
+            const bool bOver = bInteractive && In(M, TX, TY, TW, TH);
+            const FLinearColor Accent = V ? V->Accent : BrightGold;
+            if (bSel || bOver) CireUIStyle::Glow(P, TX, TY, TW, TH, Accent * FLinearColor(1, 1, 1, bSel ? .32f : .16f));
+            CireUIStyle::Bevel(P, TX, TY, TW, TH, 9, bSel ? Accent * FLinearColor(.9f, .9f, .9f, 1) : Filigree * FLinearColor(.55f, .55f, .55f, 1));
+            CireUIStyle::Bevel(P, TX + 1.5f, TY + 1.5f, TW - 3, TH - 3, 8.4f, bSel ? FLinearColor(Accent.R * .16f, Accent.G * .16f, Accent.B * .16f, .98f) : bOver ? Hover * 1.4f : FLinearColor(.035f, .035f, .04f, .96f));
+            if (bSel) P.Rect(TX + 10, TY + TH - 4, TW - 20, 2, Accent);
+            const float R = TH * .5f - 5, ICX = TX + 8 + R, ICY = TY + TH * .5f;
+            P.Disc(ICX, ICY, R + 1.5f, bSel ? Accent : Filigree * .7f, 32);
+            if (UTexture2D* Emblem = V ? CireVendors::Emblem(V->Id) : nullptr) P.TexDisc(Emblem, ICX, ICY, R, FLinearColor::White);
+            else if (UTexture2D* Coin = FindItemIcon(TEXT("gold"))) P.TexDisc(Coin, ICX, ICY, R, FLinearColor::White);
+            else P.Disc(ICX, ICY, R, FLinearColor(.2f, .15f, .05f, 1), 32);
+            const float TX0 = ICX + R + 10, Room = TX + TW - TX0 - 8;
+            const FString Name = V ? V->Name.ToUpper() : FString(TEXT("ALL MERCHANTS"));
+            P.Text(P.Fit(Name, 11.f, Room, ECireFont::Heading), TX0, TY + 5, 11.f, bSel ? FLinearColor(1.f, .92f, .7f, 1) : bOver ? FLinearColor(1, .97f, .9f, 1) : Parchment * .92f, ECireFont::Heading, true, true);
+            const FString Sub = V ? FString::Printf(TEXT("%s  ·  %s"), *V->StatLabel, *V->Stat) : FString::Printf(TEXT("%s  ·  EVERY WARE"), *KeyLabel(HUD, TEXT("ToggleShop")));
+            CireShopArt::Spaced(P, P.Fit(Sub, 7.f, Room, ECireFont::Display), TX0, TY + 23, 7.f, .22f, Accent * FLinearColor(1, 1, 1, bSel ? 1.f : .75f), ECireFont::Display, false, false);
+            if (bOver)
+                CireShopUI::Tip(HUD, V ? V->Name : FString(TEXT("All merchants")), V ? FString::Printf(TEXT("%s.\n%s keeps this stall in town: walk up and press %s, or click him, to open this tab."), *V->Tagline, *V->Keeper, *KeyLabel(HUD, TEXT("Interact")))
+                    : FString::Printf(TEXT("Every merchant's wares in one list. %s opens it from anywhere; during prep you can buy anywhere."), *KeyLabel(HUD, TEXT("ToggleShop"))));
+            if (Click(TX, TY, TW, TH) && State.Vendor != VendorIndex) { State.Vendor = VendorIndex; if (VendorIndex >= 0) State.Category = 1; Play(HUD, TEXT("S_ShopTab"), .4f); }
+        }
+    }
+    const float Top = Y + 84 + 50, StripH = 88, Bottom = Y + H - StripH - 10;
     // readability: left column = category tabs with painted icons, then stat filters, each with the painted
     // icon of an item that carries the stat (the ChatGPT item art), in bevelled rows.
     const float LX = X + 22, LW = 176;
@@ -1572,7 +1622,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         const float BY = Top + 12 + Index * 40;
         if (IconTab(LX, BY, LW, 34, Categories[Index], FindItemIcon(CategoryIcons[Index]), State.Category == Index, BrightGold, 10.5f))
             CireShopUI::Tip(HUD, Categories[Index], CategoryHelp[Index]);
-        if (Click(LX, BY, LW, 34)) { State.Category = Index; Play(HUD, TEXT("S_ShopTab"), .4f); }
+        if (Click(LX, BY, LW, 34)) { State.Category = Index; if (Index == 0) State.Vendor = -1; Play(HUD, TEXT("S_ShopTab"), .4f); }
     }
     CireShopArt::Rule(P, LX + 6, LX + LW - 6, Top + 98, Filigree * FLinearColor(1, 1, 1, .5f));
     CireShopArt::Spaced(P, TEXT("FILTER BY STAT"), LX + LW * .5f, Top + 104, 7.5f, .34f, Filigree, ECireFont::Display, true, false);
@@ -1610,6 +1660,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     const CI::Inventory Rules = Hero->Inventory->ToRules();
     auto Matches = [&](const CI::ItemDef& Item)
     {
+        if (!ShownVendorId.IsNone() && !CireVendors::Sells(ShownVendorId, ToName(Item.Id))) return false; // vendors
         if (State.Filters == 0) return true;
         for (int32 Index = 0; Index < FilterCount; ++Index)
             if ((State.Filters & (1u << Index)) && Item.HasTag(Utf8(FName(FilterTags[Index])))) return true;
@@ -1638,6 +1689,17 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
             const float OX = CX0 + CW - 9, OY = CY0 + 9;
             P.Disc(OX, OY, 7.f, FLinearColor(0, 0, 0, .8f), 14); P.Disc(OX, OY, 6.f, FLinearColor(.1f, .5f, .2f, 1), 14);
             P.Line(OX - 3, OY, OX, OY + 3, FLinearColor::White, 1.6f); P.Line(OX, OY + 3, OX + 4, OY - 4, FLinearColor::White, 1.6f);
+        }
+        if (!bPath && ShownVendorId.IsNone()) // vendors: which merchant sells it (every merchant = no badge)
+        {
+            const FName Seller = CireVendors::VendorOf(Id);
+            if (UTexture2D* Emblem = Seller.IsNone() ? nullptr : CireVendors::Emblem(Seller))
+            {
+                const float BR = FMath::Clamp(CW * .13f, 6.f, 9.f), BX = CX0 + BR + 3, BY = CY0 + BR + 3;
+                const FCireVendorDef* SV = CireVendors::Find(Seller);
+                P.Disc(BX, BY, BR + 1.2f, SV ? SV->Accent : Filigree, 20);
+                P.TexDisc(Emblem, BX, BY, BR, FLinearColor::White, 0, 0, 1, 1, 20);
+            }
         }
         if (bPath) // items-v2: path-defining unique ribbon
         {
@@ -1716,7 +1778,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         if (State.Filters == 0)
             if (const auto* Lists = D.Recommended.Find(RoleKey))
                 for (int32 List = 0; List < Lists->Num() && List < 2; ++List)
-                    for (const FName Id : (*Lists)[List]) RoleItems.AddUnique(Id);
+                    for (const FName Id : (*Lists)[List]) if (ShownVendorId.IsNone() || CireVendors::Sells(ShownVendorId, Id)) RoleItems.AddUnique(Id);
         float CW = 46, CH = 50; int32 PerRow = 1, Rows = 0, Sections = 0; bool bRecRow = false;
         for (int32 Pass = 0; Pass < 2; ++Pass) // pass 0 with the recommended row, pass 1 without
         {
@@ -1789,6 +1851,17 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         }
         const float RootS = 48, TreeY = DY + 22;
         const float RootX = DX + DWd * .5f - RootS * .5f;
+        if (Item->Purchasable) // vendors: who sells it
+        {
+            const FName Seller = CireVendors::VendorOf(Shown);
+            const FCireVendorDef* SV = CireVendors::Find(Seller);
+            const float ER = 13, ECX = DX + 10 + ER, ECY = TreeY + 20;
+            P.Disc(ECX, ECY, ER + 1.5f, SV ? SV->Accent : Filigree, 28);
+            if (UTexture2D* Emblem = SV ? CireVendors::Emblem(Seller) : FindItemIcon(TEXT("gold"))) P.TexDisc(Emblem, ECX, ECY, ER, FLinearColor::White);
+            const float TX0 = ECX + ER + 6, Room = RootX - 12 - TX0;
+            CireShopArt::Spaced(P, TEXT("SOLD BY"), TX0, ECY - 13, 6.5f, .3f, Muted * 1.5f, ECireFont::Display, false, false);
+            P.Text(P.Fit(SV ? SV->Name : FString(TEXT("Every merchant")), 9.5f, Room, ECireFont::Bold), TX0, ECY - 3, 9.5f, SV ? FMath::Lerp(SV->Accent, FLinearColor::White, .35f) : Parchment, ECireFont::Bold, true, false);
+        }
         State.DetailIconPos = FVector2D(RootX, TreeY);
         CireUIStyle::BevelCard(P, RootX - 7, TreeY - 5, RootS + 14, RootS + 10, Tier, false, true, false);
         DrawItemIcon(P, Shown, RootX + ShakeOffset(Shown), TreeY, RootS, false);
@@ -2106,6 +2179,20 @@ void CireShopUI::ToggleSkillShop(ACireController* Controller)
     else { Controller->bShop = true; State.PendingTab = 1; }
 }
 
+void CireShopUI::OpenVendor(ACireController* Controller, FName VendorId)
+{
+    if (!Controller) return;
+    const int32 Index = CireVendors::IndexOf(VendorId);
+    if (Controller->bShop) { State.Tab = 0; State.Vendor = Index; if (Index >= 0) State.Category = 1; return; }
+    Controller->bShop = true; State.PendingTab = 0; State.PendingVendor = Index;
+}
+
+FName CireShopUI::CurrentVendor()
+{
+    const auto& Vendors = CireVendors::Get().Vendors;
+    return Vendors.IsValidIndex(State.Vendor) ? Vendors[State.Vendor].Id : NAME_None;
+}
+
 void CireShopUI::DrawLootLog(ACireHUD& HUD, ACireHero* Hero)
 {
     if (!Hero) return;
@@ -2179,6 +2266,7 @@ void CireShopUI::DebugSkillTab(const FString& SkillId) { State.Tab = 1; State.Pe
 void CireShopUI::DebugSkillFilter(int32 Filter) { State.SkillFilter = FMath::Clamp(Filter, 0, 1); } // new-champions
 FVector2D CireShopUI::DebugSkillGridPos(const FString& SkillId) { const FVector2D* P = State.SkillGridPos.Find(SkillId); return P ? *P + FVector2D(23, 23) : FVector2D(-1, -1); }
 void CireShopUI::DebugItemTab() { State.Tab = 0; State.PendingTab = 0; }
+void CireShopUI::DebugVendor(FName VendorId) { State.Vendor = State.PendingVendor = CireVendors::IndexOf(VendorId); if (State.Vendor >= 0) State.Category = 1; }
 void CireShopUI::DebugFreezeAfterStamp(float Age) { if (State.StampStart > 0) State.DebugNow = State.StampStart + Age; }
 int32 CireShopUI::DebugTab() { return State.Tab; }
 void CireShopUI::DebugMouse(FVector2D Logical) { VirtualPointer = Logical; }

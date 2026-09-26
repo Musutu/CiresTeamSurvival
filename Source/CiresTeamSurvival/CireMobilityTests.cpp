@@ -1,3 +1,4 @@
+#include "CireLocomotion.h" // movement-feel
 #include "CireMobility.h"
 #include "CireClassTraits.h" // champion-draft: class-trait-aware expectations
 #include "CireItems.h" // str-scaling: STR armor/ward in expected damage
@@ -63,6 +64,7 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
     Check(CireKeybindings::RunSmoke(),TEXT("keybinding defaults, rebinding, conflicts, capture and profile migration"));
     Check(CireCamera::RunRuntimeSmoke(Mode),TEXT("WoW camera rig zoom, collision easing and tank pivot"));
     Check(UCireCreatureArt::RunGaitSmoke(Mode->GetWorld()),TEXT("bear gait keeps planted paws and bends the right rear leg"));
+    Check(CireLocomotion::RunTests(),TEXT("movement-feel: visual heading, stepped turns and gait warp"));
 
     UWorld* World=Mode->GetWorld();const FVector Ground(2000,-2100,3000);
     auto* Floor=World->SpawnActor<AActor>();

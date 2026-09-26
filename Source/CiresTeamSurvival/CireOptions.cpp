@@ -11,6 +11,7 @@
 #include "Sound/SoundWave.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "CireVideoSettings.h" // video-crash: deferred, crash-safe video apply
 #include "CireAudio.h" // audio: UI cues, Options > Audio buses and music credits
 
 namespace
@@ -114,18 +115,12 @@ void ACireHUD::DrawTooltip()
 }
 void ACireHUD::RevertVideoPreview()
 {
-    if(!bVideoPending) return;
-    if(auto* Settings=GEngine?GEngine->GetGameUserSettings():nullptr)
-    {
-        Settings->SetScreenResolution(PreviousResolution);Settings->SetFullscreenMode(static_cast<EWindowMode::Type>(PreviousMode));
-        Settings->ScalabilityQuality=PreviousQuality;Settings->SetVSyncEnabled(bPreviousVSync);Settings->SetFrameRateLimit(PreviousFPS);
-        Settings->ApplyResolutionSettings(false);Settings->ApplyNonResolutionSettings();
-    }
-    bVideoPending=false;bVideoLoaded=false;
+    // video-crash: queued; the restore runs on the next engine tick, outside any viewport draw.
+    if(CireVideo::IsPreviewPending())CireVideo::RequestRevert();
+    bVideoLoaded=false;
 }
 void ACireHUD::DrawDiagnostics()
 {
-    if(bVideoPending && FPlatformTime::Seconds()>=VideoDeadline) RevertVideoPreview();
     ResetTransform();float Y=ViewH-17;
     if(UISettings.bShowFPS)
     {
@@ -143,7 +138,7 @@ void ACireHUD::DrawSettings()
     const float X=(ViewW-840)/2,Y=(ViewH-590)/2,L=X+188,R=X+506,Top=Y+90;
     Frame(X,Y,840,590,Gold);Label(TEXT("OPTIONS"),X+23,Y+17,24,Parchment);
     Label(TEXT("CIRE'S TEAM SURVIVAL"),X+188,Y+23,12,Gold);
-    if(OptionsTab!=0)Label(TEXT("Local preferences save automatically. Video changes need confirmation."),L,Y+53,11,Muted);
+    if(OptionsTab!=0)Label(TEXT("Local preferences save automatically. Video changes apply instantly and need confirmation."),L,Y+53,11,Muted);
     // readability: 30-unit buttons with a readable face; the current tab / page uses the Selected state.
     auto Button=[&](const FString& Caption,float BX,float BY,float BW,const FString& Help=FString(),bool bSelected=false,float BH=30.f) {
         const bool Over=Hit(BX,BY,BW,BH);
@@ -303,38 +298,38 @@ void ACireHUD::DrawSettings()
     }
     else if(OptionsTab==2)
     {
-        auto* Settings=GEngine?GEngine->GetGameUserSettings():nullptr;
-        if(Settings&&!bVideoLoaded)
-        {VideoResolution=Settings->GetScreenResolution();VideoMode=Settings->GetFullscreenMode();VideoQuality=FMath::Max(0,Settings->GetOverallScalabilityLevel());bVideoVSync=Settings->IsVSyncEnabled();VideoFPS=Settings->GetFrameRateLimit();bVideoLoaded=true;}
+        // video-crash: buttons only edit the draft below; Apply/Keep/Revert are queued in CireVideo and run
+        // on the next engine tick, because resizing the viewport inside this draw freed the canvas the
+        // engine was still drawing with (access violation in FCanvas::PushAbsoluteTransform).
+        const bool bPending=CireVideo::IsPreviewPending(),bBusy=CireVideo::IsBusy();
+        if(!bVideoLoaded&&!bBusy)
+        {const FCireVideoState Now=CireVideo::Current();VideoResolution=Now.Resolution;VideoMode=Now.WindowMode;VideoQuality=Now.Quality;bVideoVSync=Now.bVSync;VideoFPS=Now.FrameRateLimit;VideoScale=Now.RenderScale;bVideoLoaded=true;}
         Label(TEXT("DISPLAY / GRAPHICS"),L,Top,12,Gold);
-        if(Button(FString::Printf(TEXT("Resolution: %d x %d"),VideoResolution.X,VideoResolution.Y),L,Top+36,286,TEXT("Cycles standard display resolutions. Apply starts a 15-second confirmation window; unconfirmed changes are restored.")))
+        if(Button(FString::Printf(TEXT("Resolution: %d x %d"),VideoResolution.X,VideoResolution.Y),L,Top+36,286,TEXT("Cycles standard display resolutions. Apply previews it at once (no restart); Keep saves it for the next launch.")))
         {const FIntPoint Sizes[]={FIntPoint(1280,720),FIntPoint(1600,900),FIntPoint(1920,1080),FIntPoint(2560,1440)};int32 I=0;for(int32 J=0;J<4;++J)if(Sizes[J]==VideoResolution)I=(J+1)%4;VideoResolution=Sizes[I];}
         const TCHAR* Modes[]={TEXT("Fullscreen"),TEXT("Borderless"),TEXT("Windowed")};
         if(Button(FString(TEXT("Window mode: "))+Modes[FMath::Clamp(VideoMode,0,2)],R,Top+36,286))VideoMode=(VideoMode+1)%3;
         const TCHAR* Qualities[]={TEXT("Low"),TEXT("Medium"),TEXT("High"),TEXT("Epic"),TEXT("Cinematic")};
         if(Button(FString(TEXT("Quality: "))+Qualities[FMath::Clamp(VideoQuality,0,4)],L,Top+83,286,TEXT("Applies Unreal's full scalability preset, including shadows, effects, textures and post-processing.")))VideoQuality=(VideoQuality+1)%5;
         if(Button(FString(TEXT("VSync: "))+(bVideoVSync?TEXT("On"):TEXT("Off")),R,Top+83,286))bVideoVSync=!bVideoVSync;
-        Slider(TEXT("Frame rate cap (0 = uncapped)"),VideoFPS,0,240,15,L,Top+136,TEXT("Limits rendered frames per second. VSync may impose a lower display refresh limit."));
+        Slider(TEXT("Frame rate cap (0 = uncapped)"),VideoFPS,0,240,15,L,Top+126,TEXT("Limits rendered frames per second. VSync may impose a lower display refresh limit."),true,false);
+        Slider(TEXT("Render scale (%)"),VideoScale,50,100,5,L,Top+176,TEXT("3D resolution as a share of the window (screen percentage). The interface always stays sharp."),true,false);
         Toggle(TEXT("Spell / scene bloom"),UISettings.bBloom,R,Top+143,TEXT("Controls the local camera bloom intensity. It does not remove enemy telegraphs."));
-        Toggle(TEXT("Impact camera shake"),UISettings.bImpactCameraShake,L,Top+190,TEXT("A small camera kick when a heavy spell or critical hit lands on or next to your champion. Never moves the camera for distant fights.")); // ability-vfx
-        Toggle(TEXT("Motion blur"),UISettings.bMotionBlur,R,Top+184,TEXT("Controls local camera motion blur. Off preserves clarity during fast turns."));
-        Slider(TEXT("Ground telegraph intensity"),UISettings.GroundTelegraphIntensity,.3f,1,.05f,R,Top+268,TEXT("Brightness of ground telegraphs, aim previews and lingering zones (fill, rim and runes). Enemy warnings stay readable at the lowest setting.")); // ability-vfx
-        Slider(TEXT("Ally / other units' effects"),UISettings.OtherEffectsIntensity,0,1,.05f,R,Top+222,TEXT("Strength of buff auras, rage swirls and empowered-attack trails on units other than you. 0 keeps only overhead marks. Your own effects stay full.")); // aura-vfx
-        if(Settings && !bVideoPending && Button(TEXT("APPLY VIDEO PREVIEW"),L,Top+239,286))
+        Toggle(TEXT("Impact camera shake"),UISettings.bImpactCameraShake,R,Top+120,TEXT("A small camera kick when a heavy spell or critical hit lands on or next to your champion. Never moves the camera for distant fights.")); // ability-vfx
+        Toggle(TEXT("Motion blur"),UISettings.bMotionBlur,R,Top+166,TEXT("Controls local camera motion blur. Off preserves clarity during fast turns."));
+        Slider(TEXT("Ground telegraph intensity"),UISettings.GroundTelegraphIntensity,.1f,1,.05f,R,Top+242,TEXT("Brightness of ground telegraphs, aim previews, lingering zones and Fab ground effects (fill, rim and runes). Default 0.3 keeps the ground visible through them; enemy warnings keep a readable rim at the lowest setting.")); // ability-vfx; telegraphs: 0.1..1, default 0.3
+        Slider(TEXT("Ally / other units' effects"),UISettings.OtherEffectsIntensity,0,1,.05f,R,Top+196,TEXT("Strength of buff auras, rage swirls and empowered-attack trails on units other than you. 0 keeps only overhead marks. Your own effects stay full.")); // aura-vfx
+        FCireVideoState Draft;Draft.Resolution=VideoResolution;Draft.WindowMode=VideoMode;Draft.Quality=VideoQuality;Draft.bVSync=bVideoVSync;Draft.FrameRateLimit=VideoFPS;Draft.RenderScale=VideoScale;
+        if(bBusy)Label(TEXT("Applying..."),L,Top+239,14,Gold);
+        else if(!bPending&&Button(TEXT("APPLY (PREVIEW)"),L,Top+235,286,TEXT("Applies the settings now, no restart needed. Keep them within 15 seconds or they are restored.")))
+            CireVideo::RequestPreview(Draft,15.0);
+        if(bPending&&!bBusy)
         {
-            PreviousResolution=Settings->GetScreenResolution();PreviousMode=Settings->GetFullscreenMode();PreviousQuality=Settings->ScalabilityQuality;
-            bPreviousVSync=Settings->IsVSyncEnabled();PreviousFPS=Settings->GetFrameRateLimit();
-            Settings->SetScreenResolution(VideoResolution);Settings->SetFullscreenMode(static_cast<EWindowMode::Type>(VideoMode));
-            Settings->SetOverallScalabilityLevel(VideoQuality);Settings->SetVSyncEnabled(bVideoVSync);Settings->SetFrameRateLimit(VideoFPS);
-            Settings->ApplyResolutionSettings(false);Settings->ApplyNonResolutionSettings();bVideoPending=true;VideoDeadline=FPlatformTime::Seconds()+15;
-        }
-        if(bVideoPending)
-        {
-            Label(FString::Printf(TEXT("Keep these settings? Reverting in %ds"),FMath::Max(0,FMath::CeilToInt(VideoDeadline-FPlatformTime::Seconds()))),L,Top+299,14,Gold);
-            if(Button(TEXT("KEEP CHANGES"),L,Top+337,286)){Settings->ConfirmVideoMode();Settings->SaveSettings();bVideoPending=false;}
+            Label(FString::Printf(TEXT("Keep these settings? Reverting in %ds"),FMath::Max(0,FMath::CeilToInt(CireVideo::SecondsToRevert()))),L,Top+299,14,Gold);
+            if(Button(TEXT("KEEP CHANGES"),L,Top+337,286,TEXT("Saves these video settings; the next launch starts with them.")))CireVideo::RequestKeep();
             if(Button(TEXT("REVERT NOW"),R,Top+337,286))RevertVideoPreview();
         }
-        else Wrapped(TEXT("Display changes are saved only after confirmation. Closing Options or waiting 15 seconds restores the prior resolution, window mode, quality, VSync and frame cap."),L,Top+318,593,12,Muted,4);
+        else if(!bPending)Wrapped(TEXT("Everything here applies instantly, without a restart. A preview is saved once you press Keep (or Save & Close); Escape or waiting 15 seconds restores the previous resolution, window mode, quality, render scale, VSync and frame cap."),L,Top+318,593,12,Muted,4);
     }
     else if(OptionsTab==3)
     {
@@ -370,7 +365,8 @@ void ACireHUD::DrawSettings()
     else if(OptionsTab==5&&DeveloperAvailable)DrawDeveloperPanel(L,Top);
     Line(X+20,Y+535,X+820,Y+535,Gold*.3f);
     Label(TEXT("F9 / Escape closes Options"),X+23,Y+553,11,Muted);
-    if(Button(TEXT("SAVE & CLOSE"),X+628,Y+547,189)){RevertVideoPreview();UISettings.Save();bSettings=false;}
+    // video-crash: Save & Close keeps a previewed video change (it used to silently revert it).
+    if(Button(TEXT("SAVE & CLOSE"),X+628,Y+547,189)){if(CireVideo::IsPreviewPending())CireVideo::RequestKeep();UISettings.Save();bSettings=false;bVideoLoaded=false;}
 }
 
 // ---------------------------------------------------------------------------

@@ -36,6 +36,7 @@ namespace CireGrip
         bool bTwoHand = false;
         bool bCarry = false;             // idle/locomotion: main arm carries it upright in front (staffs, totem, lance)
         FVector CarryAt = FVector(.34f, .2f, .62f); // carry grip: forward, inward, drop below the shoulder (fractions of arm length)
+        FVector CarryUp = FVector(.12f, 0.f, 1.f); // weapon-grips: carried prop direction as (forward, outward, up) weights
         FVector OffHand = FVector::ZeroVector;   // second grip point (mesh cm)
         FVector OffAxis = FVector::UpVector;     // handle direction at the second grip
     };
@@ -52,6 +53,7 @@ namespace CireGrip
         FTransform GripComponent;         // same frame in bind component space (mesh units)
         float RadiusMesh = 0.f;           // handle radius the curl wraps (mesh units)
         FVector PinchInHand = FVector::ZeroVector; // pinch point (thumb tip / index tip) in hand-bone space
+        bool bAnimMapped = false;         // weapon-grips: the handle follows the animation's authored grip (CireWeaponSockets)
     };
 
     /** Result of placing a prop on a body. */
@@ -68,6 +70,7 @@ namespace CireGrip
         FHandPose OffPose;
         bool bCarry = false;
         FTransform CarryInChest;          // main hand bone target relative to spine_03 while carrying
+        FQuat CarryRot = FQuat::Identity; // weapon-grips: that hand target's rotation in component space (stays upright when the chest bends)
     };
 
     /** Runtime hand input shared by the monster and champion anim instances. */
@@ -82,6 +85,8 @@ namespace CireGrip
         bool bCarry = false;
         FTransform CarryInChest;
         int32 Chest = INDEX_NONE;
+        float CarryWeight = -1.f;         // weapon-grips: carry IK weight on its own (< 0: TwoHandWeight)
+        FQuat CarryRot = FQuat::Identity; bool bCarryRot = false; // weapon-grips: upright carry in component space
         /** Arm chain mesh indices per side: upperarm, lowerarm, hand. */
         int32 Arm[2][3] = {{INDEX_NONE, INDEX_NONE, INDEX_NONE}, {INDEX_NONE, INDEX_NONE, INDEX_NONE}};
         bool Any() const { return Weight[0] > 0.f || Weight[1] > 0.f; }
@@ -93,6 +98,9 @@ namespace CireGrip
     CIRESTEAMSURVIVAL_API bool SwapsHands(const FString& Preset);
     /** Curled hand pose wrapping a handle of RadiusMesh (cached per mesh/side/type/radius). */
     CIRESTEAMSURVIVAL_API FHandPose BuildHandPose(const USkeletalMesh& Body, bool bRight, EHand Type, float RadiusMesh);
+    /** weapon-grips: the same curl around a handle whose direction is given (bind component space), e.g. the
+     *  animation-authored grip of CireWeaponSockets; the handle still passes through the palm. */
+    CIRESTEAMSURVIVAL_API FHandPose BuildHandPoseAlong(const USkeletalMesh& Body, bool bRight, EHand Type, float RadiusMesh, const FVector& AxisComponent);
     /**
      * Places Weapon held in Bone (hand_l/hand_r) of Body. MeshScale is the skeletal mesh component's relative
      * scale and PropScale the prop's world size factor, so a prop keeps its real centimetres on any body.
@@ -104,6 +112,8 @@ namespace CireGrip
     CIRESTEAMSURVIVAL_API void Apply(FCompactPose& Pose, const FHands& Hands);
     /** Turns the torso about the vertical: spine_01..03 share Degrees (sweeping swings). */
     CIRESTEAMSURVIVAL_API void TwistSpine(FCompactPose& Pose, float Degrees);
+    /** movement-feel: two-bone IK of a mesh-bone chain (upper, middle, end) toward a component-space target. */
+    CIRESTEAMSURVIVAL_API void SolveTwoBone(FCompactPose& Pose, const int32 Chain[3], const FTransform& Target, float Weight);
     /** Component-space transform of a bone in an evaluated pose (mesh bone index). */
     CIRESTEAMSURVIVAL_API FTransform ComponentBone(const FCompactPose& Pose, int32 MeshBone);
 #if !UE_BUILD_SHIPPING

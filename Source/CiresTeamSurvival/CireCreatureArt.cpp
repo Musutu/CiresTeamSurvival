@@ -119,6 +119,7 @@ void UCireCreatureArt::Clear()
     // new-champions: the rider and props are ours; the native body is the hero's own mesh (restored by the champion art).
     if(Rider)Rider->DestroyComponent();Rider=nullptr;for(auto& Part:Props)if(Part)Part->DestroyComponent();Props.Reset();Native=nullptr;
     Quad=nullptr;DeathClip=nullptr;DeadAge=DeadWeight=0; // pets
+    NativeTurn=CireLocomotion::FVisualTurn();NativeLegs=CireLocomotion::FLegIK();bNativeTicksOrdered=false; // movement-feel
     // fab-integration: leader-pose parts and the champion reaction state.
     for(auto& Part:Parts)if(Part)Part->DestroyComponent();Parts.Reset();
     AttackAltClip=nullptr;HitClip=nullptr;CastClips.Reset();ActionClip=nullptr;Contacts.Reset();ActionStartedAt=-100;ActionContact=ActionRelease=0;ActionWeight=1;
@@ -557,11 +558,26 @@ void UCireCreatureArt::UpdateNative(ACireHero& Hero,float Dt)
     const auto& WalkInfo=CireAnimClips::Analyze(WalkClip);const auto& RunInfo=CireAnimClips::Analyze(RunClip);
     float WalkSpeed=FMath::Max(20.f,WalkInfo.GroundSpeed()*Scale),RunSpeed=FMath::Max(WalkSpeed+50.f,RunInfo.GroundSpeed()*Scale);
     if(NativeWalkRaw>0){WalkSpeed=NativeWalkRaw*Scale;RunSpeed=FMath::Max(WalkSpeed+50.f,NativeRunRaw*Scale);}
+    WalkSpeed=CireLocomotion::GaitSpeed(WalkClip,Scale,WalkSpeed); // movement-feel: measured strides (see CireMonsterArt)
+    if(RunClip&&RunClip!=WalkClip)RunSpeed=FMath::Max(WalkSpeed+50.f,CireLocomotion::GaitSpeed(RunClip,Scale,RunSpeed));
     const float RunAlpha=RunClip?FMath::Clamp((SmoothedSpeed-WalkSpeed)/(RunSpeed-WalkSpeed),0.f,1.f):0.f;
     Anim->MoveAlpha=FMath::FInterpTo(Anim->MoveAlpha,FMath::Clamp(SmoothedSpeed/(WalkSpeed*.35f),0.f,1.f),Dt,8.f);Anim->RunAlpha=RunAlpha;
     const float WalkLength=WalkClip?WalkClip->GetPlayLength():1.f,RunLength=RunClip?RunClip->GetPlayLength():WalkLength;
     const float Cycle=FMath::Lerp(WalkLength,RunLength,RunAlpha),Natural=FMath::Lerp(WalkSpeed,RunSpeed,RunAlpha);
-    if(Anim->MoveAlpha>.01f)NativePhase=FMath::Frac(NativePhase+Dt*FMath::Clamp(SmoothedSpeed/FMath::Max(1.f,Natural),.35f,2.2f)/FMath::Max(.1f,Cycle));
+    float Direction=1.f,StepCycles=0.f;
+    if(CireLocomotion::Enabled()&&Kind!=TEXT("mounted"))
+    {
+        // movement-feel: legs along travel (strafe/backpedal), smooth heading, stepped turns in place (see CireLocomotion).
+        const float ActorYaw=static_cast<float>(Hero.GetActorRotation().Yaw);
+        NativeTurn.Update(ActorYaw,CireLocomotion::TravelWarp(ActorYaw,Hero.GetVelocity(),70.f,NativeTurn,Dt),Hero.GetActorLocation(),Speed,Dt,45.f);
+        if(!bNativeTicksOrdered){Native->PrimaryComponentTick.AddPrerequisite(&Hero,Hero.PrimaryActorTick);bNativeTicksOrdered=true;}
+        Direction=NativeTurn.bReverse?-1.f:1.f;StepCycles=NativeTurn.StepDelta/180.f;
+        Anim->MoveAlpha=FMath::Max(Anim->MoveAlpha,NativeTurn.StepWeight*.8f);
+        NativeLegs.Update(Hero,*Native,Dt,!Hero.bDead&&Hero.GetCharacterMovement()->IsMovingOnGround());
+        Anim->Feel.Set(NativeTurn,NativeLegs,Scale,.85f);
+    }
+    else Anim->Feel=CireLocomotion::FPoseFeel();
+    if(Anim->MoveAlpha>.01f)NativePhase=FMath::Frac(NativePhase+Direction*Dt*FMath::Clamp(SmoothedSpeed/FMath::Max(1.f,Natural),CireLocomotion::Enabled()?.3f:.35f,CireLocomotion::Enabled()?2.5f:2.2f)/FMath::Max(.1f,Cycle)+StepCycles);
     if(WalkClip)Anim->Walk.Time=FMath::Frac(NativePhase+WalkInfo.LeftFootApexPhase)*WalkLength;
     if(RunClip)Anim->Run.Time=FMath::Frac(NativePhase+RunInfo.LeftFootApexPhase)*RunLength;
     if(UAnimSequence* Idle=Anim->Idle.Sequence){NativeIdleTime=FMath::Fmod(NativeIdleTime+Dt,FMath::Max(.01f,Idle->GetPlayLength()));Anim->Idle.Time=NativeIdleTime;}

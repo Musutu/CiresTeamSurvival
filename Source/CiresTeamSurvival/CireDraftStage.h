@@ -38,6 +38,9 @@ public:
     bool IsMetered() const { return bMetered; }
     float MeteredMedian() const { return MeterMedian; }
     float MeteredHighlight() const { return MeterHigh; }
+    float MeteredClipShare() const { return MeterClip; }
+    // Meshes built, shaders compiled, PSOs ready and textures streamed: what the player will actually see.
+    bool IsContentSettled() const;
     // Normalised render V of the floor under the champion (contact shadow placement).
     float GetFeetV() const { return FeetV; }
     float SecondsShown() const;
@@ -117,7 +120,11 @@ private:
     int32 MeterPasses = 0;
     uint64 MeterRequestFrame = 0;
     uint64 MeterSettleFrame = 0;
-    float MeterMedian = 0.f, MeterHigh = 0.f;
+    float MeterMedian = 0.f, MeterHigh = 0.f, MeterClip = 0.f;
+    // video-crash: metering waits for the finished look and re-runs when the scalability preset changes.
+    bool bShownMetered = false;
+    double SettledAt = 0;
+    FString MeterQualityKey;
     double LastPrestream = 0;
     float FeetV = .92f;
 };

@@ -185,6 +185,7 @@ ACireConstruct* ACireConstruct::SpawnFor(AActor* Source, const FCireConstructSpe
     Result->ConstructSpec = Spec; Result->Health = Result->MaxHealth = Spec.MaxHealth * CireItems::ConstructHealthMultiplier(Source); // items-v2
     Result->ItemShield = Result->MaxHealth * CireItems::ConstructShieldFraction(Source);
     Result->AbilityName = Name.IsEmpty() ? (Spec.Kind == ECireConstructKind::Wall ? TEXT("Summoned Wall") : Spec.IsTech() ? Spec.Recipe.ToString() : TEXT("Protection")) : Name;
+    Result->ExpiresServerTime = Source->GetWorld()->GetTimeSeconds() + Spec.LifetimeSeconds; // fix/summons: summons-bar timer
     if (Spec.Kind == ECireConstructKind::Skitter) Result->SetNetUpdateFrequency(30);
     Result->FinishSpawning(Transform);
     if (Spec.IsTech()) CireTechConstructs::OnSpawned(Result); // new-champions: pylon fields, placement cue
@@ -358,6 +359,7 @@ void ACireConstruct::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireConstruct, ConstructSpec); DOREPLIFETIME(ACireConstruct, Health); DOREPLIFETIME(ACireConstruct, MaxHealth);
     DOREPLIFETIME(ACireConstruct, OriginTeam); DOREPLIFETIME(ACireConstruct, OriginPhase); DOREPLIFETIME(ACireConstruct, AbilityName);
     DOREPLIFETIME(ACireConstruct, bMonsterOwned); DOREPLIFETIME(ACireConstruct, OverchargedUntil); DOREPLIFETIME(ACireConstruct, ShotSerial); // new-champions
+    DOREPLIFETIME(ACireConstruct, ExpiresServerTime); // fix/summons
 }
 
 void ACireConstruct::UpdateTechVisual(float DeltaSeconds)

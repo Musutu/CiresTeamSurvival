@@ -163,29 +163,18 @@ void ACireHUD::DrawEffectIcon(const FCireActiveEffect& E,const FCireEffectInfo& 
 }
 void ACireHUD::DrawPet(ACireHero* Hero,ACireController* Controller)
 {
+    LastSummonsDrawn=0;
     if(!Hero||!Controller)return;
-    if(const FCirePetDef* Def=CirePets::ForOwner(Hero)){DrawCompanion(Hero,Controller,*Def);return;} // pets
-    TArray<ACireSummon*> Pets;
-    for(TActorIterator<ACireSummon> It(GetWorld());It;++It)if(It->GetOwnerHero()==Hero&&!It->bDead&&!It->IsA<ACirePet>())Pets.Add(*It);
-    if(Pets.IsEmpty()&&!bEditLayout)return;
-    UsePanel(TEXT("Pet"),250,90);Frame(0,0,250,90,Purple);
-    Label(FString::Printf(TEXT("SUMMONS / %d ACTIVE"),Pets.Num()),9,7,10,Gold);
-    int32 Commandable=0;float HP=0,MaxHP=0;
-    for(auto* P:Pets){if(P->bCommandable)++Commandable;HP+=P->Health;MaxHP+=P->MaxHealth;}
-    Bar(9,27,230,10,MaxHP>0?HP/MaxHP:0,Purple);
-    Label(Commandable>0?TEXT("GUARDIAN COMMANDS"):TEXT("AUTONOMOUS ALLIES"),9,42,8,Muted);
-    if(bEditLayout)Tip(TEXT("Summoned units"),TEXT("Temporary allied units can be targeted like other characters. Guardians accept commands; spectral packs choose their own targets. Summons do not count as player lives or team elimination."),0,0,250,42);
-    const TCHAR* Names[]={TEXT("FOLLOW"),TEXT("MOVE"),TEXT("ATTACK"),TEXT("HOLD")};
-    const TCHAR* Details[]={TEXT("Your commandable guardian returns to follow you."),TEXT("Click this command, then click the ground to move controlled summons. Escape cancels. Shift + left click on ground also issues a move command."),TEXT("Order your guardian to attack your selected hostile target."),TEXT("Hold the guardian at its current position.")};
-    for(int32 I=0;I<4;++I)
-    {
-        const float X=8+I*60;Frame(X,59,56,23,Commandable>0?Purple:Muted*.5f);Label(Names[I],X+5,65,8,Commandable>0?Gold:Muted);
-        Tip(Names[I],Details[I],X,59,56,23);
-        if(Commandable>0&&Clicked&&Hit(X,59,56,23)&&!bModal&&!bSettings&&!bEditLayout)
-        {
-            if(I==1){Controller->bSummonMoveTargeting=true;Hero->Notice=TEXT("Click ground to move controlled summons. Escape cancels.");}
-            else Controller->ServerSummonCommand(I,Hero->Target,Hero->GetActorLocation());
-            Clicked=false;PlayUIFeedback();
-        }
-    }
+    // fix/summons: one stack under the focus frame: the companion frame (pets), then the summons bar with every
+    // active summon and construct (portrait icon, health, time left, orders for commandable summons).
+    const auto* State=GetWorld()->GetGameState<ACireGameState>();
+    const float Server=State?static_cast<float>(State->GetServerWorldTimeSeconds()):GetWorld()->GetTimeSeconds();
+    TArray<FCireSummonBarEntry> Units=CireSummonsBar::Collect(Hero,Server);
+#if !UE_BUILD_SHIPPING
+    if(bDebugSummons)Units=DebugSummonEntries;
+#endif
+    if(const FCirePetDef* Def=CirePets::ForOwner(Hero)){DrawCompanion(Hero,Controller,*Def);if(!Units.IsEmpty())DrawSummonsBar(Hero,Controller,Units,116.f);return;} // pets
+    if(Units.IsEmpty()&&!bEditLayout)return;
+    UsePanel(TEXT("Pet"),250,112);
+    DrawSummonsBar(Hero,Controller,Units,0.f);
 }

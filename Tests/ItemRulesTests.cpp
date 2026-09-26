@@ -493,6 +493,53 @@ void PackScheduleRules()
     CHECK(!ValidateSchedule(PackSchedule{}).empty());
 }
 
+// dev-route-tools: route-authored packs (1..16 bays, each with its own tier).
+void RoutePackScheduleRules()
+{
+    PackSchedule base;
+    base.Bays = {{1, 1, 1}, {2, 2, 1}, {3, 3, 2}};
+    base.PromotionStartRound = 4;
+    base.PromotionEveryRounds = 2;
+    base.MaxTier = 8;
+    // The default three bays (tier = bay number) resolve to exactly the base schedule.
+    const PackSchedule legacy = RouteSchedule(base, {1, 2, 3});
+    CHECK(ValidateSchedule(legacy).empty());
+    for (int round = 1; round <= 20; ++round)
+        for (int wave = 1; wave <= 3; ++wave)
+            for (int bay = 1; bay <= 3; ++bay)
+            {
+                CHECK(BayTier(legacy, bay, round, wave) == BayTier(base, bay, round, wave));
+                CHECK(BayUnlocksAt(legacy, bay, round, wave) == BayUnlocksAt(base, bay, round, wave));
+            }
+    // One pack only.
+    const PackSchedule one = RouteSchedule(base, {2});
+    CHECK(ValidateSchedule(one).empty() && one.Bays.size() == 1);
+    CHECK(BayTier(one, 1, 1, 1) == 0 && BayTier(one, 1, 2, 1) == 2 && BayTier(one, 2, 5, 1) == 0);
+    // Sixteen packs with authored tiers; unlisted tiers unlock at round = tier.
+    std::vector<int> tiers;
+    for (int index = 0; index < 16; ++index) tiers.push_back(1 + index % 6);
+    const PackSchedule sixteen = RouteSchedule(base, tiers);
+    CHECK(ValidateSchedule(sixteen).empty() && sixteen.Bays.size() == 16);
+    CHECK(BayTier(sixteen, 16, 1, 1) == 0);           // bay 16 hosts tier 4
+    CHECK(BayTier(sixteen, 16, 3, 3) == 0);
+    CHECK(BayTier(sixteen, 16, 4, 1) == 5);           // unlocks round 4, promoted once
+    CHECK(BayUnlocksAt(sixteen, 16, 4, 1));
+    CHECK(BayTier(sixteen, 3, 3, 1) == 0 && BayTier(sixteen, 3, 3, 2) == 3); // tier 3 keeps its wave-2 unlock
+    CHECK(BayTier(sixteen, 6, 6, 1) == 8 && BayTier(sixteen, 6, 40, 1) == 8); // tier 6 + 2 promotions, capped at 8
+    for (int bay = 1; bay <= 16; ++bay) CHECK(BayTier(sixteen, bay, 30, 1) >= 1);
+    // More than sixteen tiers are cut to sixteen; tiers are clamped to 1..10.
+    std::vector<int> many(20, 12);
+    const PackSchedule clipped = RouteSchedule(base, many);
+    CHECK(clipped.Bays.size() == 16 && clipped.Bays[0].BaseTier == 10 && ValidateSchedule(clipped).empty());
+    PackSchedule bad = sixteen;
+    bad.Bays.push_back({17, 1, 1});
+    CHECK(!ValidateSchedule(bad).empty());           // 17 bays
+    bad = sixteen;
+    bad.Bays[4].BaseTier = 11;
+    CHECK(!ValidateSchedule(bad).empty());
+    CHECK(RouteSchedule(base, {}).Bays.empty());
+}
+
 void TeleportRulesTests()
 {
     TeleportRules rules;
@@ -760,6 +807,7 @@ int main()
     ShopAccessRules();
     LootRules();
     PackScheduleRules();
+    RoutePackScheduleRules();
     TeleportRulesTests();
     PauseRules();
     std::cout << "Item rules: " << Assertions << " assertions, " << Failures << " failures\n";

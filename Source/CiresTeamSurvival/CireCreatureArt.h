@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "Dom/JsonObject.h"
+#include "CireLocomotion.h" // movement-feel
 #include "CireCreatureArt.generated.h"
 
 class ACireHero;
@@ -151,6 +152,9 @@ private:
     UPROPERTY(Transient) TObjectPtr<UBlendSpace> RiderLocomotion;
     FName SeatBone;
     float NativeWalkRaw=0,NativeRunRaw=0,NativePhase=0,NativeIdleTime=0;
+    CireLocomotion::FVisualTurn NativeTurn; // movement-feel
+    CireLocomotion::FLegIK NativeLegs;
+    bool bNativeTicksOrdered=false;
     uint32 SeenAttackSerial=0;
     bool bRiderRelax=false;
     double AttackSeenAt=-100;

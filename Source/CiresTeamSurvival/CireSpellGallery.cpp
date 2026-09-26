@@ -20,6 +20,12 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
+#include "CireFabVFX.h" // telegraphs: Fab ground-effect page
+#include "CireAbilityVFX.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
+#include "HAL/IConsoleManager.h"
 
 namespace
 {
@@ -37,6 +43,10 @@ struct FGallery
     double Start=0,Ready=-1,PageAt=-1;
     int32 Page=-1;
     bool bDone=false,bCaptured=false,bChecks=true;
+    bool bFabGround=false; // telegraphs: -CireFabGroundGallery (two pages: stock vendor ground systems / fitted + dimmed)
+    int32 FabFitted=0,FabSkippedNotRound=0,FabDimmed=0,PageFrames=0,CaptureFrames=0;double CapturedAt=0;
+    TArray<TWeakObjectPtr<UFXSystemComponent>> FabComponents;
+    TArray<float> FabSpawnScale,FabMaxReach; // page 0: stock spawn scale and the largest XY reach seen (footprint measurement)
 };
 FGallery G;
 const FVector Stage(0,0,8000);
@@ -77,15 +87,15 @@ bool Setup(ACireGameMode* Mode,ACireController* PC)
     Floor->GetStaticMeshComponent()->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")));
     if(!Floor->GetStaticMeshComponent()->GetStaticMesh())return false;
     G.Floor=Floor;
-    Floor->SetActorScale3D(FVector(22,20,.25));
+    Floor->SetActorScale3D(G.bFabGround?FVector(70,50,.25):FVector(22,20,.25));
     Floor->GetStaticMeshComponent()->SetMaterial(0,LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Effects/CireSpell/M_Runestone.M_Runestone")));
     auto* Light=World->SpawnActor<ADirectionalLight>(Stage+FVector(400,0,2000),FRotator(-48,-120,0));
     if(!Light) return false;
     Light->GetLightComponent()->SetIntensity(4); Light->GetLightComponent()->SetLightColor(FLinearColor(.8f,.86f,1.f));
-    G.Camera=World->SpawnActor<ACameraActor>(Stage+FVector(1750,0,1600),FRotator::ZeroRotator);
+    G.Camera=World->SpawnActor<ACameraActor>(G.bFabGround?Stage+FVector(1150,0,3300):Stage+FVector(1750,0,1600),FRotator::ZeroRotator);
     if(!G.Camera.IsValid()) return false;
-    G.Camera->SetActorRotation((Stage+FVector(0,0,40)-G.Camera->GetActorLocation()).Rotation());
-    auto* Camera=G.Camera->GetCameraComponent(); Camera->SetFieldOfView(44); Camera->SetAspectRatio(16.f/9.f); Camera->bConstrainAspectRatio=true;
+    G.Camera->SetActorRotation((Stage+FVector(G.bFabGround?-330:0,0,40)-G.Camera->GetActorLocation()).Rotation());
+    auto* Camera=G.Camera->GetCameraComponent(); Camera->SetFieldOfView(G.bFabGround?62:44); Camera->SetAspectRatio(16.f/9.f); Camera->bConstrainAspectRatio=true;
     auto& Post=Camera->PostProcessSettings;
     Post.bOverride_AutoExposureMethod=true; Post.AutoExposureMethod=EAutoExposureMethod::AEM_Manual;
     Post.bOverride_AutoExposureApplyPhysicalCameraExposure=true; Post.AutoExposureApplyPhysicalCameraExposure=false;
@@ -100,11 +110,86 @@ void ClearPage()
 {
     for(auto V:G.PageActors) if(V.IsValid()) V->Destroy();
     for(auto V:G.Visuals) if(V.IsValid()) V->Destroy();
-    G.PageActors.Reset(); G.Visuals.Reset();
+    for(int32 J=0;J<G.FabComponents.Num();++J)
+        if(G.FabComponents[J].IsValid()||G.FabMaxReach[J]>0)
+        {
+            // Footprint at scale 1 for FabVFX.json "groundRadius" (largest reach over the page / the stock spawn scale).
+            const UFXSystemComponent* Cmp=G.FabComponents[J].Get();
+            UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_GROUND_MEASURE system=%s radius=%.0f"),Cmp&&Cmp->GetFXSystemAsset()?*Cmp->GetFXSystemAsset()->GetPathName():TEXT("?"),
+                G.FabMaxReach[J]/FMath::Max(.01f,G.FabSpawnScale[J]));
+        }
+    for(auto C:G.FabComponents) if(C.IsValid()) C->DestroyComponent();
+    G.PageActors.Reset(); G.Visuals.Reset(); G.FabComponents.Reset(); G.FabSpawnScale.Reset(); G.FabMaxReach.Reset();
+}
+const TCHAR* FabSchools[]={TEXT("arcane"),TEXT("blood"),TEXT("stone"),TEXT("fire"),TEXT("frost"),TEXT("holy"),TEXT("renewal"),TEXT("grove"),
+    TEXT("poison"),TEXT("shadow"),TEXT("storm"),TEXT("tide"),TEXT("void")};
+FVector FabCell(int32 I){return Stage+FVector(700-(I/5)*1000,-1800+(I%5)*900,0);}
+constexpr float FabRadius=250.f;
+// telegraphs: page 0 = the stock vendor ground system as the game spawned it before (Radius/200 scale, undimmed) beside the
+// procedural zone; page 1 = the same zones through the real presentation (circle-only, fitted inside the rim, dimmed).
+// Page 2: every other school area candidate (second, third choices), stock, for the footprint measurement.
+TArray<FString> FabExtraCandidates()
+{
+    TArray<FString> Out;TSet<FString> First;
+    for(int32 I=0;I<static_cast<int32>(ECireSchool::Count);++I)
+        if(const CireFabVFX::FEntry* E=CireFabVFX::Find(static_cast<ECireSchool>(I),CireFabVFX::ERole::Area))
+            if(E->Candidates.Num())First.Add(E->Candidates[0]);
+    for(int32 I=0;I<static_cast<int32>(ECireSchool::Count);++I)
+        if(const CireFabVFX::FEntry* E=CireFabVFX::Find(static_cast<ECireSchool>(I),CireFabVFX::ERole::Area))
+            for(int32 J=1;J<E->Candidates.Num();++J)if(!First.Contains(E->Candidates[J]))Out.AddUnique(E->Candidates[J]);
+    return Out;
+}
+void MakeFabCandidatePage()
+{
+    UWorld* World=G.Mode->GetWorld();const TArray<FString> Paths=FabExtraCandidates();
+    for(int32 I=0;I<Paths.Num()&&I<15;++I)
+    {
+        CireFabVFX::FEntry One;One.Candidates.Add(Paths[I]);
+        UNiagaraSystem* N=Cast<UNiagaraSystem>(CireFabVFX::Resolve(&One));const FVector P=FabCell(I);
+        if(N)if(auto* C=UNiagaraFunctionLibrary::SpawnSystemAtLocation(World,N,P+FVector(0,0,1),FRotator::ZeroRotator,FVector(1.f),true,true,ENCPoolMethod::None,true))
+            {G.FabComponents.Add(C);G.FabSpawnScale.Add(1.f);G.FabMaxReach.Add(0.f);}
+        Label(World,N?N->GetName():Paths[I],P+FVector(-FabRadius-90,0,20),26);
+    }
+    Label(World,TEXT("FAB GROUND OVERLAYS / OTHER AREA CANDIDATES AT SCALE 1 (FOOTPRINT MEASUREMENT)"),Stage+FVector(1100,0,60),40);
+}
+void MakeFabPage(int32 Page)
+{
+    UWorld* World=G.Mode->GetWorld();
+    if(Page==2){MakeFabCandidatePage();return;}
+    IConsoleVariable* FabCVar=IConsoleManager::Get().FindConsoleVariable(TEXT("cire.FabVFX"));
+    if(FabCVar)FabCVar->Set(Page==0?0:1,ECVF_SetByCode); // page 0: the follower draws only the procedural zone
+    for(int32 I=0;I<UE_ARRAY_COUNT(FabSchools);++I)
+    {
+        FCireAreaSpec S;S.Shape=ECireAreaShape::Circle;S.Radius=FabRadius;S.AbilityName=FabSchools[I];S.WarningSeconds=0;S.DurationSeconds=30;
+        S.bPersistent=true;S.bPoison=false;S.TickInterval=.5f;S.DamagePerSecond=1;S.BurstDamage=0;S.Color=CireAbilityShapes::SchoolColor(CireAbilityShapes::SchoolFor(FName(FabSchools[I])));S.Color.A=.22f;
+        const FVector P=FabCell(I);
+        auto* A=ACireAreaEffect::Spawn(G.Source.Get(),S,P,FRotator::ZeroRotator);
+        if(!A){G.bChecks=false;continue;}
+        G.PageActors.Add(A);if(auto* V=CireSpellPresentation::FollowArea(A))G.Visuals.Add(V);else G.bChecks=false;
+        const ECireSchool School=CireAbilityShapes::SchoolFor(FName(FabSchools[I]));
+        FString SystemName=TEXT("(no pack)");
+        if(const CireFabVFX::FEntry* E=CireFabVFX::Find(School,CireFabVFX::ERole::Area))
+            if(UFXSystemAsset* Sys=CireFabVFX::Resolve(E))
+            {
+                SystemName=Sys->GetName();
+                if(Page==0)if(UNiagaraSystem* N=Cast<UNiagaraSystem>(Sys))
+                {
+                    // The pre-fix path: uniform Radius/200 scale, stock colours.
+                    if(auto* C=UNiagaraFunctionLibrary::SpawnSystemAtLocation(World,N,P+FVector(0,0,1),FRotator::ZeroRotator,FVector(E->Scale*FMath::Clamp(FabRadius/200.f,.4f,3.f)),true,true,ENCPoolMethod::None,true))
+                        {G.FabComponents.Add(C);G.FabSpawnScale.Add(E->Scale*FMath::Clamp(FabRadius/200.f,.4f,3.f));G.FabMaxReach.Add(0.f);}
+                }
+                if(Page==1&&!CireFabVFX::IsGroundOverlay(Sys))++G.FabSkippedNotRound;
+            }
+        Label(World,FString::Printf(TEXT("%s / %s"),*CireAbilityShapes::SchoolName(School).ToUpper(),*SystemName),P+FVector(-FabRadius-90,0,20),26);
+    }
+    Label(World,Page==0?TEXT("FAB GROUND OVERLAYS / BEFORE: STOCK VENDOR SYSTEM (RADIUS/200 SCALE, UNDIMMED)"):
+        TEXT("FAB GROUND OVERLAYS / AFTER: CIRCLE ZONES ONLY, FITTED INSIDE THE RIM, DIMMED WITH THE SLIDER"),Stage+FVector(1100,0,60),40);
+    UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_GROUND_GALLERY_PAGE index=%d zones=%d"),Page,G.Visuals.Num());
 }
 void MakePage(int32 Page)
 {
-    ClearPage(); UWorld* World=G.Mode->GetWorld(); G.Page=Page; G.PageAt=FPlatformTime::Seconds(); G.bCaptured=false;
+    ClearPage(); UWorld* World=G.Mode->GetWorld(); G.Page=Page; G.PageAt=FPlatformTime::Seconds(); G.bCaptured=false; G.PageFrames=0;
+    if(G.bFabGround){MakeFabPage(Page);G.PageAt=FPlatformTime::Seconds();return;}
     const TCHAR* Pages[][9]={
         {TEXT("iron_guard"),TEXT("shield_slam"),TEXT("war_cry"),TEXT("chain_spark"),TEXT("ember_lance"),TEXT("frost_bind"),TEXT("cleaving_strike"),TEXT("piercing_shot"),TEXT("shadow_step")},
         {TEXT("restoring_light"),TEXT("sanctuary"),TEXT("purify"),TEXT("bastion_of_dawn"),TEXT("cataclysm"),TEXT("executioners_verdict"),TEXT("renewal"),TEXT("oathbound_guardian"),TEXT("spectral_pack")},
@@ -126,7 +211,7 @@ void MakePage(int32 Page)
         const FLinearColor Colors[]={FLinearColor(.28f,.8f,.12f,.22f),FLinearColor(1.f,.21f,.04f,.20f),FLinearColor(.46f,.14f,.8f,.20f),FLinearColor(.94f,.62f,.18f,.20f),FLinearColor(.44f,.68f,.13f,.20f)};
         for(int32 I=0;I<5;++I)
         {
-            FCireAreaSpec S; S.Shape=static_cast<ECireAreaShape>(I); S.AbilityName=Names[I];
+            FCireAreaSpec S; S.Shape=I==3?ECireAreaShape::Circle:static_cast<ECireAreaShape>(I); S.AbilityName=Names[I]; // telegraphs: Ashen Ward is a circle now
             S.Color=Colors[I];
             S.Radius=110; S.Width=150; S.Length=220; S.WarningSeconds=Page==3?10:0; S.DurationSeconds=8;
             S.DamagePerSecond=0; S.BurstDamage=0; S.bPoison=I==0||I==4;
@@ -193,13 +278,21 @@ void Capture()
         if(V.IsValid()) Valid &= G.PC->ProjectWorldLocationToScreen(V->GetActorLocation(),Pixel) && Pixel.X>10 && Pixel.X<W-10 && Pixel.Y>10 && Pixel.Y<H-10;
         G.bChecks &= Valid;
     }
-    const FString File=FPaths::Combine(G.Directory,FString::Printf(TEXT("%02d_%s.png"),G.Page+1,G.Page==3?TEXT("telegraphs"):G.Page==4?TEXT("ground_active"):TEXT("modeled_skills")));
+    if(G.bFabGround&&G.Page==1)
+        for(auto V:G.Visuals)if(V.IsValid()&&V->HasFabGroundOverlay())
+        {
+            // Fitted overlays sit inside the true radius (the procedural rim stays the outermost line).
+            ++G.FabFitted;
+        }
+    const FString File=FPaths::Combine(G.Directory,G.bFabGround?FString::Printf(TEXT("%02d_fab_ground_%s.png"),G.Page+1,G.Page==0?TEXT("before_stock"):G.Page==1?TEXT("after_fitted"):TEXT("candidates")):
+        FString::Printf(TEXT("%02d_%s.png"),G.Page+1,G.Page==3?TEXT("telegraphs"):G.Page==4?TEXT("ground_active"):TEXT("modeled_skills")));
     FScreenshotRequest::RequestScreenshot(File,false,false,false,FIntRect(),true); G.Files.Add(File); G.bCaptured=true;
 }
 }
 bool CireSpellGallery::Initialize(ACireGameMode* Mode)
 {
     G={}; if(!FParse::Param(FCommandLine::Get(),TEXT("CireSpellGallery"))) return false;
+    G.bFabGround=FParse::Param(FCommandLine::Get(),TEXT("CireFabGroundGallery")); // telegraphs
     G.Mode=Mode; G.Start=FPlatformTime::Seconds();
     G.Directory=FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("SpellGallery"),FDateTime::UtcNow().ToString(TEXT("%Y%m%d-%H%M%S"))));
     if(!Mode || Mode->GetNetMode()!=NM_Standalone || !IFileManager::Get().MakeDirectory(*G.Directory,true)) { Finish(false); return true; }
@@ -209,7 +302,9 @@ bool CireSpellGallery::Tick(ACireGameMode* Mode)
 {
     if(G.Mode.Get()!=Mode) return false;
     if(G.bDone) return true;
-    if(FPlatformTime::Seconds()-G.Start>60) { Finish(false); return true; }
+    // telegraphs: a cold start (asset registry / shaders after a rebuild) can exceed a minute before the first page; the
+    // 60 s bound applies from the moment the stage is ready.
+    if(FPlatformTime::Seconds()-(G.Ready>0?G.Ready:G.Start)>(G.Ready>0?60:180)) { Finish(false); return true; }
     if(G.Ready<0)
     {
         auto* PC=Cast<ACireController>(Mode->GetWorld()->GetFirstPlayerController());
@@ -218,14 +313,26 @@ bool CireSpellGallery::Tick(ACireGameMode* Mode)
     }
     if(G.Page<0) { if(FPlatformTime::Seconds()-G.Ready>3) MakePage(0); return true; }
     const double Age=FPlatformTime::Seconds()-G.PageAt;
-    if(Age>2 && !G.bCaptured) Capture();
-    if(Age>3)
+    // telegraphs: a hitch (first Niagara load) can make one frame longer than the whole page; count frames too so the
+    // screenshot is taken after the page has rendered and the page is not replaced before the screenshot resolves.
+    ++G.PageFrames;
+    for(int32 J=0;J<G.FabComponents.Num();++J)if(G.FabComponents[J].IsValid())G.FabMaxReach[J]=FMath::Max(G.FabMaxReach[J],CireFabVFX::MeasureReach(G.FabComponents[J].Get()));
+    if(Age>2 && G.PageFrames>20 && !G.bCaptured) { Capture(); G.CapturedAt=FPlatformTime::Seconds(); G.CaptureFrames=0; }
+    if(G.bCaptured) ++G.CaptureFrames;
+    if(Age>3 && G.bCaptured && G.CaptureFrames>5 && FPlatformTime::Seconds()-G.CapturedAt>.5)
     {
-        if(G.Page<6) MakePage(G.Page+1);
+        const int32 Pages=G.bFabGround?3:7;
+        if(G.Page<Pages-1) MakePage(G.Page+1);
         else
         {
             for(const auto& File:G.Files) G.bChecks &= IFileManager::Get().FileSize(*File)>10000;
-            Finish(G.bChecks && G.Files.Num()==7);
+            if(G.bFabGround)
+            {
+                ClearPage(); // logs the last page's footprint measurements
+                if(IConsoleVariable* FabCVar=IConsoleManager::Get().FindConsoleVariable(TEXT("cire.FabVFX")))FabCVar->Set(1,ECVF_SetByCode);
+                UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_GROUND_GALLERY fitted=%d skipped_not_round=%d"),G.FabFitted,G.FabSkippedNotRound);
+            }
+            Finish(G.bChecks && G.Files.Num()==Pages);
         }
     }
     return true;

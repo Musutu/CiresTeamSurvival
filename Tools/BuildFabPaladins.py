@@ -174,15 +174,21 @@ def derive_shield(report):
     mesh = lib.duplicate_asset(SHIELD_SRC, SHIELD)
     if not isinstance(mesh, u.StaticMesh):
         raise RuntimeError("could not duplicate " + SHIELD_SRC)
-    # One source model (LOD 0) and high-precision tangents: a new derived-data key, so the render data is rebuilt
-    # instead of reusing the source's corrupt cached buffers.
+    # One source model (LOD 0), rebuilt from a freshly committed mesh description.
+    # video-crash: the copy must NOT reuse the source's derived-data key. The pack's cached render data for that key
+    # is corrupt (it fails to deserialize, "SerializedElementSize == ElementSize", and comes back with NaN render
+    # bounds), which fed a NaN world position into the distance-field scene every frame the shield moved: the engine
+    # ensures "precision loss converting matrix to GPU format" / "InverseFast non-invertible matrix" in Eric's crash
+    # reports (2026-09-26). The earlier fix changed LOD build settings through EditorStaticMeshLibrary, whose setter is
+    # a silent no-op in commandlets (StaticMeshEditorSubsystem is None there), so the key never changed. Committing
+    # the mesh description gives the LOD a new source hash, hence a new key and a real rebuild.
     before = mesh.get_num_lods()
     mesh.set_num_source_models(1)
-    sml = u.get_editor_subsystem(u.StaticMeshEditorSubsystem) or u.EditorStaticMeshLibrary  # commandlets: the library
-    settings = sml.get_lod_build_settings(mesh, 0)
-    settings.set_editor_property("use_high_precision_tangent_basis", True)
-    settings.set_editor_property("use_full_precision_u_vs", True)
-    sml.set_lod_build_settings(mesh, 0, settings)
+    description = mesh.get_static_mesh_description(0)
+    if description is None or description.get_vertex_count() < 3:
+        raise RuntimeError("shield has no LOD 0 mesh description to rebuild from")
+    if mesh.build_from_static_mesh_descriptions([description], False) is False:
+        raise RuntimeError("shield rebuild from its mesh description failed")
     try:
         nanite = mesh.get_editor_property("nanite_settings")
         nanite.set_editor_property("enabled", False)

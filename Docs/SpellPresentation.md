@@ -77,6 +77,9 @@ telegraph cannot drift from what actually hits. See [AbilityVFXAudit.md](Ability
   warnings are amber; your team's are school-coloured; a monster's zero-damage buff radius (rally) is
   a calm ring. Actives: soft pool with ripples, detonation shock front and school spikes, 0.3 s dissolve.
   The area's own flat mesh stays as the fallback when the presentation cap is reached.
+  Ground AoEs are always circles; only true line/box hit shapes are rectangular. Brightness follows
+  Options > Graphics > Ground telegraph intensity (0.1-1.0, default 0.3), and curated Fab ground overlays
+  decorate circle zones only (see the 2026-09-26 telegraphs pass in AbilityVFXAudit.md).
 - **Line skillshots**: during the authored warning the projectile's true corridor (width = collision
   diameter, length = min(range, speed x lifetime)) is drawn from the caster with an arrowhead for
   every observer. Monster projectile casts draw the amber lane for the whole cast bar and drop it on
