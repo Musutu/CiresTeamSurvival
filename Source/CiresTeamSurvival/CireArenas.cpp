@@ -869,6 +869,7 @@ void ACireArenaStage::BuildLighting()
     S.bOverride_WhiteTemp = true; S.WhiteTemp = L.Temperature;
     S.bOverride_BloomIntensity = true; S.BloomIntensity = L.Bloom;
     S.bOverride_VignetteIntensity = true; S.VignetteIntensity = L.Vignette;
+    S.bOverride_Sharpen = true; S.Sharpen = .6f; // video-crash: was the global r.Tonemapper.Sharpen=0.6
     Keep(Post);
 }
 

@@ -18,6 +18,7 @@
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "CireVideoSettings.h"
 #include "InputCoreTypes.h"
 
 namespace
@@ -660,6 +661,7 @@ void ACireHUD::DrawMeters(ACireHero* Hero,ACireController* Controller)
 }
 void ACireHUD::DrawHUD()
 {
+    const CireVideo::FDrawScope VideoDrawScope; // video-crash: no viewport resize while the HUD draws
     Super::DrawHUD();if(!Canvas||!PlayerOwner||Canvas->ClipX<=0||Canvas->ClipY<=0)return;
     // Interface scale (WoW-style): the resolution fit times the player's UI scale. A
     // slider drag is applied on release so the Options window does not move under it.

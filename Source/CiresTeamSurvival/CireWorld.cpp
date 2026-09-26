@@ -219,6 +219,9 @@ void ACireWorld::BeginPlay() {
         S.bOverride_BloomIntensity=true;S.BloomIntensity=.45f;
         S.bOverride_VignetteIntensity=true;S.VignetteIntensity=.22f;
         S.bOverride_AutoExposureBias=true;S.AutoExposureBias=.25f;
+        // video-crash: the "vibrant and crisp" tonemapper sharpen, here instead of the global r.Tonemapper.Sharpen so
+        // the champion-select capture can turn it off.
+        S.bOverride_Sharpen=true;S.Sharpen=.6f;
         Grade->RegisterComponent();AddInstanceComponent(Grade);
     }
     CireEnvironmentProps::Build(this);
