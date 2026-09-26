@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
 #include "CireGrip.h"
+#include "CireLocomotion.h" // movement-feel
 #include "CireMonsterArt.generated.h"
 
 class ACireGameMode;
@@ -202,6 +203,10 @@ private:
     double LastHitAt = -10.0;
     float SmoothedSpeed = 0.f;
     float Phase = 0.f;
+    // movement-feel: visual heading (turn smoothing, travel warp, stepped turns) and leg IK.
+    CireLocomotion::FVisualTurn VisualTurn;
+    CireLocomotion::FLegIK LegIK;
+    bool bFeelTicksOrdered = false;
     float IdleTime = 0.f;
     FLinearColor AppliedRimColor = FLinearColor::Transparent;
     // server swing

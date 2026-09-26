@@ -22,6 +22,8 @@
 #include "Animation/AnimSingleNodeInstance.h"
 #include "Animation/AnimSingleNodeInstanceProxy.h"
 #include "Animation/AnimationPoseData.h"
+#include "Animation/AnimNotifies/AnimNotify.h"
+#include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "AnimationRuntime.h"
 #include "Animation/BlendSpace.h"
 #include "Components/CapsuleComponent.h"
@@ -152,6 +154,8 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
     FVector MotionPitchAxis=FVector(1,0,0);
     float SeatWeight = 0.f; // new-champions
     float RelaxArms = 0.f; // new-champions
+    CireLocomotion::FPoseFeel Feel; // movement-feel
+    UAnimSequence* StepSequence = nullptr; float StepTime = 0.f, StepWeight = 0.f;
     virtual void PreUpdate(UAnimInstance* Instance, float DeltaSeconds) override
     {
         FAnimSingleNodeInstanceProxy::PreUpdate(Instance, DeltaSeconds);
@@ -164,10 +168,25 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
         SpineTwist = Combat->SpineTwist; // creature-anim
         AirWeight=Combat->AirWeight;RollProgress=Combat->RollProgress;MotionPitchAxis=Combat->MotionPitchAxis;
         SeatWeight=Combat->SeatWeight; RelaxArms=Combat->RelaxArms; // new-champions
+        Feel=Combat->Feel; Feel.Resolve(Combat->GetSkelMeshComponent()); StepSequence=Combat->StepSequence; StepTime=Combat->StepTime; StepWeight=Combat->StepWeight; // movement-feel
     }
     virtual bool Evaluate(FPoseContext& Output) override
     {
         const bool bEvaluated = FAnimSingleNodeInstanceProxy::Evaluate(Output);
+        // movement-feel: a turn in place steps the legs (lower body of a side-step clip) while the root turns.
+        if (bEvaluated && StepSequence && StepWeight > KINDA_SMALL_NUMBER)
+        {
+            FPoseContext StepPose(Output);
+            FAnimationPoseData StepData(StepPose);
+            StepSequence->GetAnimationPose(StepData, FAnimExtractContext(static_cast<double>(FMath::Clamp(StepTime, 0.f, StepSequence->GetPlayLength())), false));
+            TArray<float> Weights;
+            CireAnimClips::UpperBodyMask(Output.Pose, Weights);
+            for (float& W : Weights) W = (1.f - W) * FMath::Clamp(StepWeight, 0.f, 1.f);
+            FPoseContext Blended(Output);
+            FAnimationPoseData OutputData(Output), BlendedData(Blended);
+            FAnimationRuntime::BlendTwoPosesTogetherPerBone(OutputData, StepData, Weights, BlendedData);
+            Output.Pose.CopyBonesFrom(Blended.Pose);
+        }
         if (bEvaluated && AttackSequence && AttackWeight > KINDA_SMALL_NUMBER)
         {
             FPoseContext AttackPose(Output);
@@ -188,6 +207,7 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
         if(bEvaluated&&RelaxArms>0)ApplyRelaxedArms(Output.Pose,RelaxArms*(1.f-FMath::Clamp(AttackWeight,0.f,1.f))); // new-champions: T-pose idles
         if(bEvaluated)CireGrip::TwistSpine(Output.Pose,SpineTwist); // creature-anim: sweeping swings
         if(bEvaluated&&Hands.Any())CireGrip::Apply(Output.Pose,Hands); // creature-anim: grips
+        if(bEvaluated)CireLocomotion::ApplyPoseFeel(Output.Pose,Feel); // movement-feel: visual heading, leg IK
         return bEvaluated;
     }
 };
@@ -195,6 +215,24 @@ struct FCireCombatAnimProxy : public FAnimSingleNodeInstanceProxy
 FAnimInstanceProxy* UCireCombatAnimInstance::CreateAnimInstanceProxy()
 {
     return new FCireCombatAnimProxy(this);
+}
+
+// movement-feel: the Fab packs' demo notifies are gameplay Blueprints written for the vendor's sample character.
+bool UCireCombatAnimInstance::HandleNotify(const FAnimNotifyEvent& Event)
+{
+    static const bool bVendor = FParse::Param(FCommandLine::Get(), TEXT("CireVendorNotifies")); // evidence runs only
+    const UClass* Class = Event.Notify ? Event.Notify->GetClass() : nullptr;
+    if (bVendor || (Class && Class->HasAnyClassFlags(CLASS_Native))) return false;
+    static TSet<FName> Logged;
+    const FName Name = Class ? Class->GetFName() : Event.NotifyName;
+    if (!Logged.Contains(Name)) { Logged.Add(Name); UE_LOG(LogCireChampionArt, Log, TEXT("CIRE_VENDOR_NOTIFY_SKIPPED %s"), *Name.ToString()); }
+    return true;
+}
+
+bool UCireCombatAnimInstance::ShouldTriggerAnimNotifyState(const UAnimNotifyState* State) const
+{
+    static const bool bVendor = FParse::Param(FCommandLine::Get(), TEXT("CireVendorNotifies"));
+    return State && (bVendor || State->GetClass()->HasAnyClassFlags(CLASS_Native)) && Super::ShouldTriggerAnimNotifyState(State);
 }
 
 struct FCireChampionArtDefinition
@@ -473,6 +511,13 @@ void UCireChampionArt::RestoreFallback(ACireHero& Hero)
     if (Weapons) Weapons->Clear();
     AppliedArchetype = INDEX_NONE;
     SmoothedSpeed = 0.f;
+    ResetFeel(); // movement-feel
+}
+
+void UCireChampionArt::ResetFeel()
+{
+    Turn = CireLocomotion::FVisualTurn(); Legs = CireLocomotion::FLegIK(); WarpSpeed = 0.f; SmoothedDirection = 0.f; bFeelTicksOrdered = false;
+    StepClips[0] = StepClips[1] = nullptr; StepClipSpeed[0] = StepClipSpeed[1] = 0.f;
 }
 
 bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
@@ -624,6 +669,12 @@ bool UCireChampionArt::ApplyHumanoid(ACireHero& Hero, int32 Archetype, const FCh
         return false;
     }
     Locomotion = Blend;
+    ResetFeel(); // movement-feel
+    for (const FBlendSample& Sample : Blend->GetBlendSamples()) // movement-feel: side-steps for turning in place
+    {
+        const int32 Side = FMath::IsNearlyEqual(Sample.SampleValue.X, 90.f, 1.f) ? 1 : FMath::IsNearlyEqual(Sample.SampleValue.X, -90.f, 1.f) ? 0 : -1;
+        if (Side >= 0 && Sample.SampleValue.Y > 1.f && (!StepClips[Side] || Sample.SampleValue.Y < StepClipSpeed[Side])) { StepClips[Side] = Sample.Animation; StepClipSpeed[Side] = Sample.SampleValue.Y; }
+    }
     AttackAnimation = Definition.AttackPath.IsEmpty() ? nullptr : LoadObject<UAnimSequence>(nullptr, *Definition.AttackPath);
     if (AttackAnimation && AttackAnimation->GetSkeleton() != Body->GetSkeleton()) AttackAnimation = nullptr;
     LastAttackSerial = Hero.AttackSerial;
@@ -689,12 +740,44 @@ void UCireChampionArt::UpdateVisuals(ACireHero& Hero, float DeltaSeconds)
     const auto& SpeedAxis = Locomotion->GetBlendParameter(1);
     const float Speed = Hero.bDead ? 0.f : static_cast<float>(Hero.GetVelocity().Size2D());
     SmoothedSpeed = Hero.bDead ? 0.f : FMath::FInterpTo(SmoothedSpeed, Speed, DeltaSeconds, 12.f);
-    const FVector LocalVelocity = Hero.GetActorRotation().UnrotateVector(Hero.GetVelocity());
-    const float Direction = Speed > 2.f ? FMath::RadiansToDegrees(FMath::Atan2(LocalVelocity.Y, LocalVelocity.X)) : 0.f;
-    SingleNode->SetBlendSpacePosition(FVector(FMath::Clamp(Direction, DirectionAxis.Min, DirectionAxis.Max),
-        FMath::Clamp(SmoothedSpeed, SpeedAxis.Min, SpeedAxis.Max), 0));
+    auto* Combat = Cast<UCireCombatAnimInstance>(SingleNode);
+    if (CireLocomotion::Enabled())
+    {
+        // movement-feel: legs and heading follow the capsule's real motion (stride-matched, smoothly turned, on the ground).
+        USkeletalMeshComponent* Body = Hero.GetMesh();
+        const float Scale = static_cast<float>(Body->GetComponentScale().X);
+        const float ActorYaw = static_cast<float>(Hero.GetActorRotation().Yaw);
+        const bool bRolling = Hero.Mobility && Hero.Mobility->IsRolling();
+        Turn.Update(ActorYaw, ActorYaw, Hero.GetActorLocation(), Speed, DeltaSeconds, 70.f);
+        const FVector LocalVelocity = FRotator(0, Turn.Yaw, 0).UnrotateVector(Hero.GetVelocity());
+        const float Raw = FMath::RadiansToDegrees(FMath::Atan2(LocalVelocity.Y, LocalVelocity.X));
+        if (Speed > 20.f) SmoothedDirection = FRotator::NormalizeAxis(SmoothedDirection + FMath::FindDeltaAngleDegrees(SmoothedDirection, Raw) * (1.f - FMath::Exp(-12.f * DeltaSeconds)));
+        WarpSpeed = Hero.bDead ? 0.f : FMath::FInterpTo(WarpSpeed, Speed, DeltaSeconds, 25.f);
+        const float Direction = FMath::Clamp(SmoothedDirection, DirectionAxis.Min, DirectionAxis.Max);
+        const CireLocomotion::FBlendWarp Warp = CireLocomotion::WarpBlendSpace(Locomotion, Direction, WarpSpeed, Scale);
+        SingleNode->SetBlendSpacePosition(FVector(Direction, FMath::Clamp(Warp.bValid ? Warp.AxisSpeed : SmoothedSpeed, SpeedAxis.Min, SpeedAxis.Max), 0));
+        SingleNode->SetPlayRate(Warp.bValid ? Warp.PlayRate : 1.f);
+        Legs.Update(Hero, *Body, DeltaSeconds, !Hero.bDead && !bRolling && Hero.GetCharacterMovement()->IsMovingOnGround());
+        if (!bFeelTicksOrdered) { Body->PrimaryComponentTick.AddPrerequisite(&Hero, Hero.PrimaryActorTick); bFeelTicksOrdered = true; } // parameters of this frame
+        if (Combat)
+        {
+            Combat->Feel.Set(Turn, Legs, Scale, .75f);
+            Combat->StepSequence = StepClips[Turn.StepSign > 0.f ? 1 : 0];
+            Combat->StepTime = Combat->StepSequence ? Turn.StepPhase * Combat->StepSequence->GetPlayLength() : 0.f;
+            Combat->StepWeight = Hero.bDead ? 0.f : Turn.StepWeight;
+        }
+    }
+    else
+    {
+        const FVector LocalVelocity = Hero.GetActorRotation().UnrotateVector(Hero.GetVelocity());
+        const float Direction = Speed > 2.f ? FMath::RadiansToDegrees(FMath::Atan2(LocalVelocity.Y, LocalVelocity.X)) : 0.f;
+        SingleNode->SetBlendSpacePosition(FVector(FMath::Clamp(Direction, DirectionAxis.Min, DirectionAxis.Max),
+            FMath::Clamp(SmoothedSpeed, SpeedAxis.Min, SpeedAxis.Max), 0));
+        SingleNode->SetPlayRate(1.f);
+        if (Combat) { Combat->Feel = CireLocomotion::FPoseFeel(); Combat->StepWeight = 0.f; }
+    }
     SingleNode->SetPlaying(!Hero.bDead);
-    if (auto* Combat = Cast<UCireCombatAnimInstance>(SingleNode))
+    if (Combat)
     {
         const AGameStateBase* State = Hero.GetWorld()->GetGameState();
         const double ServerNow = State ? State->GetServerWorldTimeSeconds() : Hero.GetWorld()->GetTimeSeconds();

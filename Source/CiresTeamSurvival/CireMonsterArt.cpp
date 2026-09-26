@@ -621,6 +621,7 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
     Mesh->EmptyOverrideMaterials();
     Mesh->SetRelativeScale3D(FVector(Body.MeshScale));
     Mesh->SetRelativeRotation(FRotator(0, Body.Yaw, 0));
+    VisualTurn = CireLocomotion::FVisualTurn(); LegIK = CireLocomotion::FLegIK(); bFeelTicksOrdered = false; // movement-feel: new rig, rest heading
     // Tripo pivots sit at the soles: the pivot goes on the capsule bottom. The actor scale (archetype
     // scale, elite tier, enrage) scales capsule and body together, so feet stay grounded at every size.
     // Some idle clips press the toes below the pivot: lift so the toe joints sit ~1.8% of the body above the floor.
@@ -897,6 +898,11 @@ void UCireMonsterArt::UpdatePresentation(float DeltaTime)
     float RunSpeed = FMath::Max(WalkSpeed + 50.f, RunInfo.GroundSpeed() * Scale);
     // world-dressing: in-place clips of free creatures carry their natural speeds in data.
     if (AppliedWalkRaw > 0.f) { WalkSpeed = AppliedWalkRaw * Scale; RunSpeed = FMath::Max(WalkSpeed + 50.f, AppliedRunRaw * Scale); }
+    // movement-feel: the stride each clip was authored for, measured from its planted contacts (the data speeds of
+    // several Fab creatures are placeholders, e.g. 60 cm/s, which made gaits play far too fast or slow).
+    WalkSpeed = CireLocomotion::GaitSpeed(WalkClip, Scale, WalkSpeed);
+    if (RunClip && RunClip != WalkClip) RunSpeed = FMath::Max(WalkSpeed + 50.f, CireLocomotion::GaitSpeed(RunClip, Scale, RunSpeed));
+    else if (CireLocomotion::Enabled()) RunSpeed = WalkSpeed + 1.f; // one gait clip: its own stride sets the cadence
     const float RunAlpha = RunClip ? FMath::Clamp((SmoothedSpeed - WalkSpeed) / (RunSpeed - WalkSpeed), 0.f, 1.f) : 0.f;
     const float MoveTarget = FMath::Clamp(SmoothedSpeed / (WalkSpeed * .35f), 0.f, 1.f);
     Anim->MoveAlpha = FMath::FInterpTo(Anim->MoveAlpha, MoveTarget, DeltaTime, 8.f);
@@ -905,8 +911,32 @@ void UCireMonsterArt::UpdatePresentation(float DeltaTime)
     const float Cycle = FMath::Lerp(WalkLength, RunLength, RunAlpha);
     const float NaturalSpeed = FMath::Lerp(WalkSpeed, RunSpeed, RunAlpha);
     // One cycle per the clip's own stride: planted feet move with the ground, not across it.
-    const float Rate = FMath::Clamp(SmoothedSpeed / NaturalSpeed, .35f, 2.2f);
-    if (Anim->MoveAlpha > .01f) Phase = FMath::Frac(Phase + DeltaTime * Rate / FMath::Max(.1f, Cycle));
+    // A body with a single gait clip (the Undead zombie's shuffling walk carries a 175 cm/s shambler) has no faster
+    // stride to blend to, so its cadence may rise further before the feet are allowed to slide.
+    const bool bSingleGait = !RunClip || RunClip == WalkClip;
+    const float Rate = CireLocomotion::Enabled() ? FMath::Clamp(SmoothedSpeed / NaturalSpeed, .3f, bSingleGait ? 4.f : 2.5f) : FMath::Clamp(SmoothedSpeed / NaturalSpeed, .35f, 2.2f);
+    float Direction = 1.f, StepCycles = 0.f;
+    if (CireLocomotion::Enabled())
+    {
+        // movement-feel: the legs point along travel (kiting sidesteps, backpedals run the gait backwards), the body turns
+        // smoothly (attack facing, steering corners), standing turns step, and humanoid feet follow the ground.
+        const float ActorYaw = static_cast<float>(Monster->GetActorRotation().Yaw);
+        const float Target = CireLocomotion::TravelWarp(ActorYaw, Monster->GetVelocity(), 70.f, VisualTurn, DeltaTime);
+        if (!bFeelTicksOrdered)
+        {   // evaluate after the AI (facing) and this presentation tick in the same frame: no one-frame stale parameters
+            Monster->GetMesh()->PrimaryComponentTick.AddPrerequisite(Monster, Monster->PrimaryActorTick);
+            Monster->GetMesh()->PrimaryComponentTick.AddPrerequisite(this, PrimaryComponentTick);
+            bFeelTicksOrdered = true;
+        }
+        VisualTurn.Update(ActorYaw, Target, Monster->GetActorLocation(), Speed, DeltaTime, 45.f);
+        Direction = VisualTurn.bReverse ? -1.f : 1.f;
+        StepCycles = VisualTurn.StepDelta / 180.f;
+        Anim->MoveAlpha = FMath::Max(Anim->MoveAlpha, VisualTurn.StepWeight * .8f);
+        LegIK.Update(*Monster, *Monster->GetMesh(), DeltaTime, Monster->Health > 0 && Monster->GetCharacterMovement()->IsMovingOnGround());
+        Anim->Feel.Set(VisualTurn, LegIK, Scale, .85f);
+    }
+    else Anim->Feel = CireLocomotion::FPoseFeel();
+    if (Anim->MoveAlpha > .01f) Phase = FMath::Frac(Phase + Direction * DeltaTime * Rate / FMath::Max(.1f, Cycle) + StepCycles);
     if (WalkClip) Anim->Walk.Time = FMath::Frac(Phase + WalkInfo.LeftFootApexPhase) * WalkLength;
     if (RunClip) Anim->Run.Time = FMath::Frac(Phase + RunInfo.LeftFootApexPhase) * RunLength;
     if (UAnimSequence* Idle = Anim->Idle.Sequence) { IdleTime = FMath::Fmod(IdleTime + DeltaTime, Idle->GetPlayLength()); Anim->Idle.Time = IdleTime; }

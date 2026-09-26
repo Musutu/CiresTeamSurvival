@@ -43,6 +43,7 @@
 #include "CireNPCArchetypes.h"
 #include "CireNPCPackPreview.h"
 #include "CireMonsterGallery.h" // creature-anim
+#include "CireLocomotionLab.h" // movement-feel
 #include "CireNewChampionsGallery.h" // new-champions
 #include "CireChampionHQGallery.h" // champion-hq
 #include "CireNPCNetProbe.h"
@@ -244,6 +245,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireFeedbackPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireNPCPackPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireMonsterGallery::Initialize(this); // creature-anim
+    if(!bFeedbackPreview)bFeedbackPreview = CireLocomotionLab::Initialize(this); // movement-feel
     if(!bFeedbackPreview)bFeedbackPreview = CireNewChampionsGallery::Initialize(this); // new-champions
     if(!bFeedbackPreview)bFeedbackPreview = CireChampionHQGallery::Initialize(this); // champion-hq
     if(!bFeedbackPreview)bFeedbackPreview = CireKitsGallery::Initialize(this); // scaling-kits
@@ -500,6 +502,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireFeedbackPreview::Tick(this)) return;
     if(CireNPCPackPreview::Tick(this)) return;
     if(CireMonsterGallery::Tick(this)) return; // creature-anim
+    if(CireLocomotionLab::Tick(this)) return; // movement-feel
     if(CireNewChampionsGallery::Tick(this)) return; // new-champions
     if(CireChampionHQGallery::Tick(this)) return; // champion-hq
     if(CireKitsGallery::Tick(this)) return; // scaling-kits

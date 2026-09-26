@@ -112,6 +112,8 @@ namespace CireGrip
     CIRESTEAMSURVIVAL_API void Apply(FCompactPose& Pose, const FHands& Hands);
     /** Turns the torso about the vertical: spine_01..03 share Degrees (sweeping swings). */
     CIRESTEAMSURVIVAL_API void TwistSpine(FCompactPose& Pose, float Degrees);
+    /** movement-feel: two-bone IK of a mesh-bone chain (upper, middle, end) toward a component-space target. */
+    CIRESTEAMSURVIVAL_API void SolveTwoBone(FCompactPose& Pose, const int32 Chain[3], const FTransform& Target, float Weight);
     /** Component-space transform of a bone in an evaluated pose (mesh bone index). */
     CIRESTEAMSURVIVAL_API FTransform ComponentBone(const FCompactPose& Pose, int32 MeshBone);
 #if !UE_BUILD_SHIPPING

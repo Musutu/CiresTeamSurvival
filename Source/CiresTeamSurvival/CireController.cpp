@@ -1,4 +1,5 @@
 #include "CireVideoSettings.h"
+#include "CireLocomotionLab.h" // movement-feel
 #include "CireWaves.h" // wave-director
 #include "CireGame.h"
 #include "CireChampionRoster.h"
@@ -177,6 +178,7 @@ void ACireController::PlayerTick(float Dt) {
     if(CireExpansionNetProbe::TickClient(this))return;
     if(CireInterfaceProbe::TickClient(this))return;
     if(TickClientProbe(this))return;
+    if(CireLocomotionLab::TickClient(this))return; // movement-feel: network locomotion check
     if(CireShopFixtures::TickClient(this))return; // progression-shop
 #endif
     auto* H=Cast<ACireHero>(GetPawn()); if(!H){CireTargeting::Cleanup(this);return;}
