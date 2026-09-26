@@ -144,6 +144,19 @@ Tripo body. Pipeline, per champion:
    (new-champions rows through `Tools/AuthorNewChampions.py`), each keeping the previous body as `"fallback"`, and adds
    the bodies to `ChampionAttacks02.json`.
 
+**Summons, constructs, pets.** Same pipeline; export names decide the destination. Summons: `CTS_ChampHQ_Summon<Name>`
+(UE5 preset rig) -> `SummonArt.json` rows `summon:<id>` (WriteChampionHQArtRows `SUMMONS`). Constructs: static
+`SM_<Kind>` in folder `Constructs/<Kind>` (AetherTurret, AetherObelisk, AetherPylon, AetherTrap, SkitterBomb,
+SpiritLantern), picked up by `CireTechConstructs` AuthoredHQ; the Pavise shield is placed by `CireConstruct`. The
+Ashfang sabercat body is the `Pets.json` art mesh. Review: `python Tools/RunChampionHQGallery.py --profiles
+summon:oathbound_guardian,...`; `--before` renders every row's fallback body (`-CireChampionHQOff`) for before/after
+sheets (`Tools/ChampionHQContactSheet.py --before A --after B`).
+
+**Fused props.** Sheets are weapon-free, so weapons are WeaponLoadouts props. A prop Tripo segments off a body
+(Detailed segmentation needs a triangulated copy; Quick Cap closes the hole; re-rig needs < ~100k faces) is sent
+unrigged and listed in the HQ row as `"staticParts": [{"mesh", "bone"}]`; `UCireChampionArt::ApplyStaticParts`
+places it on that bone's bind pose (optional `offsetCm` / `rotation`).
+
 **M_CireHero_PBR.** Default Lit. Colour = lerp(luminance, BaseColor, 1 + Vibrance) x Brightness x ColorTint; roughness
 remapped RoughnessMin..Max and pulled toward MetalRoughness on metal; NormalStrength; emissive = BaseColor x
 MaskTex.G x EmissiveColor x EmissiveIntensity plus a thin fresnel RimColor (RimStrength). Per-champion values are the
