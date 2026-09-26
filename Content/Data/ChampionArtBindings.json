@@ -250,7 +250,7 @@
     },
     {
       "profileId": "whisp",
-      "mesh": "/Game/Art/Characters/CreatureSurfaces02/SM_Whisp.SM_Whisp",
+      "mesh": "/Game/Tripo/ChampionsHQ/Whisp/CTS_ChampHQ_Whisp.CTS_ChampHQ_Whisp",
       "heightCm": 85,
       "motion": "hover_procedural",
       "status": "custom_ready"
