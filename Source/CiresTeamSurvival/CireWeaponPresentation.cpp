@@ -338,7 +338,7 @@ bool UCireWeaponPresentation::PlaceAuthored(ACireHero& Hero,UStaticMeshComponent
     FTransform Intended;CireWeaponSockets::FHandFrame Frame;
     if(!CireWeaponSockets::Intended(Mesh,GripSet,BoneName,Intended,Frame)||Frame.bShield!=Grip.bShield)return false;
     const FReferenceSkeleton& Ref=Mesh.GetRefSkeleton();
-    const FTransform PropGrip=CireWeaponSockets::PropFrame(*Part.GetStaticMesh(),Grip.Handle,Grip.Axis,Grip.Edge,Grip.bShield);
+    const FTransform PropGrip=CireWeaponSockets::PropGrip(*Part.GetStaticMesh(),Grip,Frame); // stock holds grip the crossbow fore-end
     Info.Set=GripSet;
     {   // How far the bind-pose placement is from the authored one (rigid on the hand, so the same in every frame).
         const FTransform Current=Part.GetRelativeTransform()*CireGrip::ReferenceComponent(Ref,Part.GetAttachSocketName());
@@ -413,7 +413,10 @@ void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
     {
         // creature-anim: presets whose Tripo clips hold the weapon in the other hand swap their hand props.
         FName Bone=Spec.Bone;
-        if(CireGrip::SwapsHands(EquippedLoadout))Bone=Bone==TEXT("hand_l")?FName(TEXT("hand_r")):Bone==TEXT("hand_r")?FName(TEXT("hand_l")):Bone;
+        // weapon-grips: not when the body plays a Fab set that authors this hand (the Crossbow pack holds the stock in the
+        // left hand, as the preset lists it); legacy grips keep the old swap.
+        const bool bAuthoredHand=!CireWeaponSockets::Legacy()&&!GripSet.IsEmpty()&&CireWeaponSockets::Frame(GripSet,Spec.Bone).bValid;
+        if(CireGrip::SwapsHands(EquippedLoadout)&&!bAuthoredHand)Bone=Bone==TEXT("hand_l")?FName(TEXT("hand_r")):Bone==TEXT("hand_r")?FName(TEXT("hand_l")):Bone;
         float FabSize=Spec.Size;TSharedPtr<FJsonObject> PropMaterials;bool bProfileProp=false;
         const FString Mesh=CireWeaponFab::ResolveMesh(Profile,Spec.Token,Spec.Asset,FabSize,PropMaterials,bProfileProp); // fab-integration, paladin-hq
         auto* Part=Attach(Hero,Mesh,Bone,Spec.Offset,Spec.Rotation,FabSize,Spec.Role==TEXT("primary"));if(!Part)continue;
@@ -473,9 +476,13 @@ namespace
 /** Standing height from the skeleton (head bone above the lower foot, plus the skull), else the mesh bounds. */
 float SkeletonHeight(const USkeletalMeshComponent& Body)
 {
+    const float Bounds=static_cast<float>(Body.CalcBounds(Body.GetComponentTransform()).BoxExtent.Z*2);
     if(Body.GetBoneIndex(TEXT("head"))!=INDEX_NONE&&Body.GetBoneIndex(TEXT("foot_l"))!=INDEX_NONE&&Body.GetBoneIndex(TEXT("foot_r"))!=INDEX_NONE)
-        return static_cast<float>((Body.GetSocketLocation(TEXT("head")).Z-FMath::Min(Body.GetSocketLocation(TEXT("foot_l")).Z,Body.GetSocketLocation(TEXT("foot_r")).Z))*1.1);
-    return static_cast<float>(Body.CalcBounds(Body.GetComponentTransform()).BoxExtent.Z*2);
+    {
+        const float Standing=static_cast<float>((Body.GetSocketLocation(TEXT("head")).Z-FMath::Min(Body.GetSocketLocation(TEXT("foot_l")).Z,Body.GetSocketLocation(TEXT("foot_r")).Z))*1.1);
+        if(Standing>.5f*Bounds)return Standing; // weapon-grips: a roll folds the head below the feet line; keep the bounds then
+    }
+    return Bounds;
 }
 /** Closest approach (cm) of a long prop's centre line to the torso and to the legs in the current pose. */
 void Clearance(const USkeletalMeshComponent& Body,const UStaticMeshComponent& Part,float& OutTorso,float& OutLegs)

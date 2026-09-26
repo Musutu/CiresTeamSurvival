@@ -131,6 +131,21 @@ bool SpawnChampion(ACireGameMode* Mode)
     H->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
     H->GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
     H->ChampionArt->UpdateVisuals(*H, .1f);
+    // -CireGripGalleryPreset=ranger:ranger_crossbow,... renders a preview loadout instead of the default one.
+    FString Presets;
+    if (FParse::Value(FCommandLine::Get(), TEXT("CireGripGalleryPreset="), Presets, false))
+    {
+        TArray<FString> Pairs; Presets.ParseIntoArray(Pairs, TEXT(","), true);
+        for (const FString& Pair : Pairs)
+        {
+            FString Profile, Preset;
+            if (!Pair.Split(TEXT(":"), &Profile, &Preset) || Profile != Id) continue;
+            auto* Weapons = H->FindComponentByClass<UCireWeaponPresentation>();
+            for (int32 Try = 0; Weapons && Try < 4 && Weapons->GetEquippedLoadout() != Preset; ++Try) { FString Message; Weapons->CyclePreview(*H, Message); }
+            if (!Weapons || Weapons->GetEquippedLoadout() != Preset) Fail(FString::Printf(TEXT("preset %s for %s"), *Preset, *Id));
+            H->ChampionArt->UpdateVisuals(*H, .1f);
+        }
+    }
     H->SetActorLocation(Stage + FVector(0, 0, H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
     H->PrestreamTextures(30.f, true);
     // Standing height from the skeleton: skeletal bounds of the Tripo bodies are loose (about twice the body).

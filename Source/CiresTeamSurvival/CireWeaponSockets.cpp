@@ -84,6 +84,7 @@ const FSocketData& Data()
                 F.Tip = Vec(*O, TEXT("tip"), FVector::UpVector).GetSafeNormal(); F.Edge = Vec(*O, TEXT("edge"), FVector::ForwardVector);
                 F.Edge = (F.Edge - F.Tip * FVector::DotProduct(F.Edge, F.Tip)).GetSafeNormal();
                 (*O)->TryGetBoolField(TEXT("shield"), F.bShield); (*O)->TryGetStringField(TEXT("source"), F.Source);
+                FString Grip; F.bStock = (*O)->TryGetStringField(TEXT("grip"), Grip) && Grip == TEXT("stock");
                 F.bValid = !F.Tip.IsNearlyZero() && !F.Edge.IsNearlyZero();
                 if (F.bValid) GData.Sets.FindOrAdd(Set).Add(FName(*Key), F);
             }
@@ -270,6 +271,19 @@ FTransform CireWeaponSockets::PropFrame(const UStaticMesh& Mesh, const FVector& 
     Side = (Side - Tip * FVector::DotProduct(Side, Tip)).GetSafeNormal();
     if (Side.IsNearlyZero()) Side = FVector::CrossProduct(Tip, FVector::UpVector).GetSafeNormal();
     return FTransform(FRotationMatrix::MakeFromZX(Tip, Side).ToQuat(), Handle, FVector::OneVector);
+}
+
+FTransform CireWeaponSockets::PropGrip(const UStaticMesh& Mesh, const CireGrip::FWeapon& Weapon, const FHandFrame& Frame)
+{
+    if (Frame.bStock && !Weapon.bShield && !Weapon.OffHand.IsNearlyZero())
+    {
+        // The given muzzle direction is kept as is (the bounds test of PropFrame would point it at the longer stock end).
+        const FVector Muzzle = Weapon.OffAxis.GetSafeNormal();
+        FVector Up = Weapon.Axis - Muzzle * FVector::DotProduct(Weapon.Axis, Muzzle);
+        if (Up.Normalize() && !Muzzle.IsNearlyZero())
+            return FTransform(FRotationMatrix::MakeFromZX(Muzzle, Up).ToQuat(), Weapon.OffHand, FVector::OneVector);
+    }
+    return PropFrame(Mesh, Weapon.Handle, Weapon.Axis, Weapon.Edge, Weapon.bShield);
 }
 
 #if !UE_BUILD_SHIPPING

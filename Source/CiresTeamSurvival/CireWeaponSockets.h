@@ -17,6 +17,8 @@
 
 class USkeletalMesh;
 class UAnimSequence;
+class UStaticMesh;
+namespace CireGrip { struct FWeapon; }
 
 namespace CireWeaponSockets
 {
@@ -29,6 +31,7 @@ namespace CireWeaponSockets
         FVector Tip = FVector::UpVector;     // handle -> business end (shield: up, the wide end)
         FVector Edge = FVector::ForwardVector; // blade edge / axe bit (shield: face out)
         bool bShield = false;
+        bool bStock = false;                // crossbow fore-end: the hand wraps the stock (Tip = muzzle, Edge = up)
         FString Source;                     // "<skeleton>:<socket> + <demo mesh>" for the docs
     };
 
@@ -61,6 +64,12 @@ namespace CireWeaponSockets
     CIRESTEAMSURVIVAL_API bool IntendedOffHand(const USkeletalMesh& Body, const FString& Set, FName MainHand, FTransform& OutOffHandInMain);
     /** Grip frame of a prop mesh (X = edge, Z = tip) from its WeaponGrips handle/axis/edge and its bounds. */
     CIRESTEAMSURVIVAL_API FTransform PropFrame(const class UStaticMesh& Mesh, const FVector& Handle, const FVector& Axis, const FVector& Edge, bool bShield);
+    /**
+     * The prop's grip frame (X = edge, Z = tip; origin = the gripped point, prop cm) matching an authored hand Frame:
+     * PropFrame of the WeaponGrips handle, or for a stock hold (Frame.bStock: the crossbow's supporting hand) the prop's
+     * fore-grip (offHand along offAxis = muzzle) with its handle axis as up.
+     */
+    CIRESTEAMSURVIVAL_API FTransform PropGrip(const UStaticMesh& Mesh, const CireGrip::FWeapon& Weapon, const FHandFrame& Frame);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSmoke();
 #endif

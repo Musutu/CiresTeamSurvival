@@ -6,7 +6,7 @@ with --legacy, which renders the old bind-pose grips). With Pillow available (--
 contact sheet per champion is written next to them: <nn>_<profile>_sheet.png, full-body row over the hand row.
 The metric lines (CIRE_GRIP_GALLERY_METRIC) are copied to metrics.txt for the Docs/WeaponLoadouts.md table.
 
-Usage: python Tools/RunGripGallery.py [--only knight,paladin_holy] [--legacy] [--pylib DIR]
+Usage: python Tools/RunGripGallery.py [--only knight,paladin_holy] [--preset ranger:ranger_crossbow] [--legacy] [--pylib DIR]
 Only the editor process started here is stopped. Captures still need visual review.
 """
 from __future__ import annotations
@@ -68,6 +68,7 @@ def contact_sheets(directory: Path, pylib: str | None) -> list[Path]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--only", default="")
+    parser.add_argument("--preset", default="", help="preview loadouts to render, e.g. ranger:ranger_crossbow")
     parser.add_argument("--legacy", action="store_true", help="render the old bind-pose grips (before captures)")
     parser.add_argument("--no-fab", action="store_true", help="hide the local Fab packs")
     parser.add_argument("--pylib", default=None, help="directory with Pillow for the contact sheets")
@@ -85,6 +86,8 @@ def main() -> int:
         command.append("-CireNoFab")
     if args.only:
         command.append(f"-CireGripGalleryOnly={args.only}")
+    if args.preset:
+        command.append(f"-CireGripGalleryPreset={args.preset}")
     creation = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
     child = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation, env=EDITOR_ENV)
     try:
