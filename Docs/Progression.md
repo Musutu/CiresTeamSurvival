@@ -285,14 +285,46 @@ deaths, level and max health per cleared wave):
 | before + level fix (experiment) | 24.1 min | 142 | 2.0 (0.3) | 75 s | 12.6 / 785 |
 | after + level fix (experiment) | 22.7 min | 135 | 2.3 (0.7) | 73 s | 12.0 / 539 |
 
-**Champions never level in the Skill Shop mode.** In the normal soak every champion is still level 1 at
-wave 15. Buying a skill in the Skill Shop adds it to `Progression.LearnedSkills` without moving
-`NextAugmentLevel`, so the draft-mode check in `ValidProgression` fails and `Cires::GainLevels` refuses
-every later level. This bug is older than this change and is **not fixed here**. For the two
-"level fix" rows, `GrantExperience` levelled a copy of the progression with the learned skills
-cleared (Skill Shop mode only). That patch was not committed. With levels working, waves 10-15 are not
-lethal after the rescale (0.7 champion deaths per match against 0.3, within run-to-run noise;
-the unfixed runs vary from 1 to 15 deaths). Wave damage in Waves.json was therefore not changed.
+**Skill Shop levelling bug (fixed on this branch).** Before the fix, champions never levelled in
+Skill Shop mode. Buying a skill added it to `Progression.LearnedSkills` without moving
+`NextAugmentLevel`, so the Classic Draft check in `ValidProgression` failed and `Cires::GainLevels`
+refused every later level. The "level fix" rows above used a temporary patch (level a copy with the
+learned skills cleared) to measure the STR change. The real fix is described under "Skill Shop
+schedule" below. With levels working, waves 10-15 stay survivable after the rescale (0.7 champion
+deaths per match against 0.3, within run-to-run noise), so Waves.json was not changed.
+
+### Skill Shop schedule (Eric's ruling: Skill Shop mode still levels up)
+
+`Cires::Progression::Schedule` is `SkillSchedule::Draft` (Classic Draft) or `SkillSchedule::Shop`.
+
+- **Draft** is unchanged: the learned count is tied to the breakpoints (1, 3, 6 ... 21).
+  `ValidProgression` rejects a skill outside the schedule, and such a progression cannot level.
+- **Shop** keeps the capacity, uniqueness, stat and role checks but drops the breakpoint link.
+  `HasPendingAugment` is true only for the free opening pick. `Cires::AddPurchasedSkill` validates
+  and appends a bought skill; it refuses Draft progressions. Levels always grant +2 primary / +1
+  other stats.
+- `CireSkillShop::SyncSchedule(hero)` matches the schedule to the game mode. It runs at draft, on a
+  mode change (before wave 1), on every purchase and before levelling. Switching back to Classic
+  re-derives `NextAugmentLevel`.
+- The level-up banner and the XP bar are driven by the replicated `Level`/`Experience` in both modes.
+  The XP-bar tooltip and the level-up notice now say where skills come from in each mode.
+
+Tests: `Tests/RulesTests.cpp` `SkillScheduleRules` (Shop: all 8 skills bought at level 1, then levels
+1 to 25 with exact stats and HP; Classic: out-of-schedule and skipped-breakpoint progressions still
+refuse to level) and `CIRE_SKILLSHOP_PASS` (a champion with bought skills levels, with +2/+1 stats and
+10 HP per STR).
+
+Bots-only soak after merging main (3x world scale), three runs each, STR rescale in both:
+
+| Build | Match | Lives left (both teams) | Champion deaths (waves 10-15) | Mean wave 10-15 | Level / max HP at wave 15 |
+| --- | --- | --- | --- | --- | --- |
+| merged main, levelling bug | 29.5 min | 155 | 4.0 (2.3) | 105 s | 1 / 370 |
+| **with the Skill Shop fix** | **25.9 min** | **157** | **0 (0)** | **81 s** | **12.4 / 536** |
+
+With levels, bots clear waves 10-15 about 24 s faster and no champion dies in any of the three runs.
+The waves still take about 80 s and still cost lives (about 43 of 200 per match), so they are not
+trivially easy, and Waves.json was not retuned. If playtests find the late waves too soft, raise
+the late wave rows' `health` and `damage` before anything else.
 
 ## Decisions for Eric to review
 
