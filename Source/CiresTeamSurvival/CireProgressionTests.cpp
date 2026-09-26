@@ -5,6 +5,7 @@
 #include "CireItems.h"
 #include "CireScalingKits.h" // scaling-kits
 #include "CireLoot.h"
+#include "CireLanePath.h" // jungle-packs: recall points
 #include "CireSkillShop.h"
 #include "CireGame.h"
 #include "CireNPCArchetypes.h"
@@ -263,32 +264,30 @@ bool CireProgression::RunSmoke(ACireGameMode* Mode)
     const auto& Loot = CireLoot::Get();
     Check(Loot.bValid && Loot.Tables.Num() >= 6 && Loot.Schedule.Bays.size() == 3, TEXT("LootTables.json loads tables and the pack schedule"));
 
-    // ---- challenge gating: tiers unlock in later cycles and sit deeper along the route
-    auto PackTiers = [&]() { TMap<int32, int32> Bays; for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->PackId >= 0 && M->Lane == 0) Bays.Add(M->PackId % 50, M->Tier); return Bays; };
+    // ---- challenge gating (jungle-packs: JunglePacks.json unlocks T1 at cycle 1 wave 1, T2 at cycle 1 wave 3, T3 at cycle 2,
+    // T4 at cycle 3; LootTables.json promotions cap at tier 4): tiers unlock as the match advances and sit deeper along the route
+    auto PackTiers = [&]() { TMap<int32, int32> Bays; for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->PackId >= 0 && M->Lane == 0) Bays.Add(CireProgression::PackBayOf(M->PackId), M->Tier); return Bays; };
     auto ClearPacks = [&]() { for (ACireMonster* M : Mode->Monsters) if (IsValid(M)) { F.Spawned.AddUnique(M); M->Destroy(); } Mode->Monsters.Reset(); };
     F.Round(1); CireProgression::SpawnPacks(Mode, 1);
     TMap<int32, int32> Bays = PackTiers();
-    Check(Bays.Num() == 1 && Bays.FindRef(1) == 1, TEXT("cycle 1 offers only the tier-1 outpost nearest town"));
+    Check(Bays.Num() == 1 && Bays.FindRef(1) == 1, TEXT("cycle 1 opens with only the tier-1 outpost nearest town"));
+    CireProgression::OnWaveSpawned(Mode, 3); Bays = PackTiers();
+    Check(Bays.Num() == 2 && Bays.FindRef(2) == 2, TEXT("the tier-2 bay appears when wave 3 of cycle 1 spawns"));
     ClearPacks();
     F.Round(2); CireProgression::SpawnPacks(Mode, 1); Bays = PackTiers();
-    Check(Bays.Num() == 2 && Bays.FindRef(2) == 2, TEXT("cycle 2 unlocks the tier-2 bay"));
-    ClearPacks();
-    F.Round(3); CireProgression::SpawnPacks(Mode, 1); Bays = PackTiers();
-    Check(Bays.Num() == 2, TEXT("cycle 3 tier-3 bay waits for wave 2"));
-    CireProgression::OnWaveSpawned(Mode, 2); Bays = PackTiers();
-    Check(Bays.Num() == 3 && Bays.FindRef(3) == 3, TEXT("tier-3 bay appears when wave 2 spawns"));
+    Check(Bays.Num() == 3 && Bays.FindRef(3) == 3, TEXT("cycle 2 opens the tier-3 bay"));
     ClearPacks();
     F.Round(6); CireProgression::SpawnPacks(Mode, 1); Bays = PackTiers();
-    Check(Bays.FindRef(1) == 3 && Bays.FindRef(2) == 4 && Bays.FindRef(3) == 5, TEXT("later cycles promote every bay"));
+    Check(Bays.FindRef(1) == 3 && Bays.FindRef(2) == 4 && Bays.FindRef(3) == 4, TEXT("later cycles promote every bay, capped at tier 4"));
     const FVector Town = Mode->BasePosition(0);
     float Distances[4] = {0, 0, 0, 0};
-    for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && M->PackId >= 0) Distances[M->PackId % 50] = FVector::Dist2D(M->SpawnPosition, Town);
+    for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && M->PackId >= 0) Distances[FMath::Clamp(CireProgression::PackBayOf(M->PackId), 0, 3)] = FVector::Dist2D(M->SpawnPosition, Town);
     Check(Distances[1] < Distances[2] && Distances[2] < Distances[3], TEXT("deeper bays sit farther from town"));
     bool bLeaders = true;
     for (int32 Bay = 1; Bay <= 3; ++Bay)
     {
         int32 Leaders = 0;
-        for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && M->PackId % 50 == Bay && M->GetNPCClassification() == ECireNPCClass::Boss) ++Leaders;
+        for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && CireProgression::PackBayOf(M->PackId) == Bay && M->PackId >= 0 && M->GetNPCClassification() == ECireNPCClass::Boss) ++Leaders;
         bLeaders &= Leaders == 1;
     }
     Check(bLeaders, TEXT("every pack has one Pack Leader"));

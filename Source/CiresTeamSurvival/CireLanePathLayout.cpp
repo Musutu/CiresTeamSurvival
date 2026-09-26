@@ -393,3 +393,82 @@ bool CireLanePath::LoadActive(FCireBattlefieldRoutes& Out, FString* Error, FStri
     return true;
 }
 FString CireLanePath::ActiveSource() { return GActiveSource; }
+
+// ------------------------------------------------------------------------------------------------ jungle-packs: packs on the wire
+// GameState::LanePacks: a header (magic, route revision, pack count of realm 0, of realm 1 or -1 when identical), then
+// three ints per pack: [x/10 | y/10] (int16 each), [radius/10 | tier | type | tanks | healers | dps], seed. Split into
+// chunks of ChunkInts values, so every replicated array stays far inside the engine's 2048-element budget however
+// many packs a layout places.
+namespace
+{
+constexpr int32 PackMagic = 0x4A50, ChunkInts = 1020;
+int32 Clamp16(double V) { return FMath::Clamp(FMath::RoundToInt32(V / 10.), -32767, 32767); }
+}
+void CireLanePath::PackBays(const FCireBattlefieldRoutes& R, uint32 Revision, TArray<TArray<int32>>& OutChunks)
+{
+    TArray<int32> All;
+    const bool bSame = R.Bays[1] == R.Bays[0];
+    All.Add(PackMagic); All.Add(static_cast<int32>(Revision)); All.Add(R.Bays[0].Num()); All.Add(bSame ? -1 : R.Bays[1].Num());
+    const TArray<FName> Types = CireJunglePacks::PackTypes();
+    for (int32 Team = 0; Team < (bSame ? 1 : 2); ++Team)
+        for (const FCireChallengeBay& B : R.Bays[Team])
+        {
+            All.Add(static_cast<int32>((static_cast<uint32>(Clamp16(B.Position.X)) & 0xFFFFu) << 16 | (static_cast<uint32>(Clamp16(B.Position.Y)) & 0xFFFFu)));
+            const uint32 Radius = static_cast<uint32>(FMath::Clamp(FMath::RoundToInt(B.Radius / 10.f), 0, 255));
+            const uint32 Tier = static_cast<uint32>(FMath::Clamp(B.Tier, 1, 7));
+            const uint32 Type = static_cast<uint32>(FMath::Clamp(Types.IndexOfByKey(B.PackType), 0, 63)); // unknown -> 0 is never written: types are normalised
+            const FCirePackComposition C = B.HasCompOverride() ? B.Comp : FCirePackComposition{0, 0, 0};
+            All.Add(static_cast<int32>(Radius | Tier << 8 | Type << 11 | static_cast<uint32>(C.Tanks & 3) << 17 | static_cast<uint32>(C.Healers & 3) << 19 | static_cast<uint32>(C.Dps & 3) << 21));
+            All.Add(static_cast<int32>(B.EffectiveSeed()));
+        }
+    OutChunks.Reset();
+    for (int32 At = 0; At < All.Num(); At += ChunkInts)
+    {
+        TArray<int32>& Chunk = OutChunks.AddDefaulted_GetRef();
+        Chunk.Append(All.GetData() + At, FMath::Min(ChunkInts, All.Num() - At));
+    }
+}
+bool CireLanePath::UnpackBays(const TArray<TArray<int32>>& Chunks, uint32& OutRevision, TArray<FCireChallengeBay> OutBays[2])
+{
+    TArray<int32> All;
+    for (const TArray<int32>& C : Chunks) All.Append(C);
+    if (All.Num() < 4 || All[0] != PackMagic || All[2] < 0 || All[3] < -1) return false;
+    const bool bSame = All[3] == -1;
+    const int32 Counts[2] = {All[2], bSame ? 0 : All[3]};
+    if (All.Num() != 4 + 3 * (Counts[0] + Counts[1])) return false;
+    OutRevision = static_cast<uint32>(All[1]);
+    const TArray<FName> Types = CireJunglePacks::PackTypes();
+    int32 At = 4;
+    for (int32 Team = 0; Team < (bSame ? 1 : 2); ++Team)
+    {
+        OutBays[Team].Reset(Counts[Team]);
+        for (int32 I = 0; I < Counts[Team]; ++I, At += 3)
+        {
+            const uint32 W0 = static_cast<uint32>(All[At]), W1 = static_cast<uint32>(All[At + 1]);
+            FCireChallengeBay B;
+            B.Position = FVector2D(static_cast<int16>(W0 >> 16) * 10., static_cast<int16>(W0 & 0xFFFFu) * 10.);
+            B.Radius = FMath::Clamp((W1 & 0xFFu) * 10.f, FCireChallengeBay::MinRadius, FCireChallengeBay::MaxRadius);
+            B.Tier = FMath::Clamp(static_cast<int32>((W1 >> 8) & 7u), 1, FCireChallengeBay::MaxTier);
+            const int32 Type = static_cast<int32>((W1 >> 11) & 63u);
+            B.PackType = Types.IsValidIndex(Type) ? Types[Type] : CireJunglePacks::Mixed;
+            B.Comp = {static_cast<int32>((W1 >> 17) & 3u), static_cast<int32>((W1 >> 19) & 3u), static_cast<int32>((W1 >> 21) & 3u)};
+            B.Seed = static_cast<uint32>(All[At + 2]);
+            OutBays[Team].Add(B);
+        }
+    }
+    if (bSame) OutBays[1] = OutBays[0];
+    return true;
+}
+
+// ------------------------------------------------------------------------------------------------ jungle-packs: recall points
+bool CireLanePath::HasRecallPoint(const UWorld* World, int32 Team) { return Get(World).Recalls[Realm(Team)].Num() > 0; }
+FVector CireLanePath::RecallNear(const UWorld* World, int32 Team, const FVector& Near, float Z)
+{
+    Team = Realm(Team);
+    const auto& R = Get(World);
+    if (R.Recalls[Team].Num() == 0) return BasePosition(World, Team, Z);
+    const FVector2D L = ToLocal(Team, Near);
+    const FCireRouteSpot* Best = &R.Recalls[Team][0];
+    for (const FCireRouteSpot& S : R.Recalls[Team]) if (FVector2D::DistSquared(S.Position, L) < FVector2D::DistSquared(Best->Position, L)) Best = &S;
+    return Grounded(World, Team, Best->Position, FMath::IsFinite(Z) ? Z : 110.f);
+}

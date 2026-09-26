@@ -23,6 +23,7 @@ const FName CireMapLayout::Rift(TEXT("rift"));
 const FName CireMapLayout::Respawn(TEXT("respawn"));
 const FName CireMapLayout::PlayBounds(TEXT("playBounds"));
 const FName CireMapLayout::Blocker(TEXT("blocker"));
+const FName CireMapLayout::RecallPoint(TEXT("recallPoint")); // jungle-packs
 
 namespace
 {
@@ -115,7 +116,7 @@ TArray<FCireMarkerType> CireMapLayout::BuiltInTypes()
     { auto& M = Add(PlayerSpawn, TEXT("Player Spawn"), TEXT("Spawn"), TEXT("chieftain_banner"), FLinearColor(.35f, .75f, 1.f), ECireGizmo::Pillar); M.bFacing = true; M.bRadius = true; M.DefaultRadius = 120.f; M.MaxPerOwner = 10; }
     { auto& M = Add(MonsterSpawn, TEXT("Monster Spawn"), TEXT("Monsters"), TEXT("spectral_hunt"), FLinearColor(.86f, .32f, .92f), ECireGizmo::Pillar); M.bFacing = true; M.bNamed = true; M.bTarget = true; M.DefaultRadius = 200.f; }
     { auto& M = Add(MonsterPath, TEXT("Monster Path"), TEXT("Path"), TEXT("centaur_trailblaze"), FLinearColor(1.f, .62f, .18f), ECireGizmo::Path); M.bNamed = true; M.bTarget = true; M.bPoints = true; M.DefaultRadius = 0.f; }
-    { auto& M = Add(ChallengePack, TEXT("Challenge Pack"), TEXT("Pack"), TEXT("challenge_of_iron"), FLinearColor(.66f, .46f, .83f), ECireGizmo::Ring); M.bRadius = true; M.bTier = true; M.DefaultRadius = 450.f; M.MaxPerOwner = 16; }
+    { auto& M = Add(ChallengePack, TEXT("Challenge Pack"), TEXT("Pack"), TEXT("challenge_of_iron"), FLinearColor(.66f, .46f, .83f), ECireGizmo::Ring); M.bRadius = true; M.bTier = true; M.DefaultRadius = 450.f; } // jungle-packs: unlimited
     { auto& M = Add(Vendor, TEXT("Shop / Vendor"), TEXT("Vendor"), TEXT("price_on_every_soul"), FLinearColor(1.f, .82f, .3f), ECireGizmo::Pillar); M.bFacing = true; M.bNamed = true; M.bKind = true; M.DefaultRadius = 120.f; M.Kinds = {TEXT("weaponsmith"), TEXT("armory"), TEXT("arcane")}; }
     { auto& M = Add(Objective, TEXT("Objective / Castle Defend Point"), TEXT("Objective"), TEXT("keeper_beacon"), FLinearColor(.2f, .86f, .7f), ECireGizmo::Ring); M.bRadius = true; M.DefaultRadius = 450.f; M.MaxPerOwner = 1; }
     { auto& M = Add(BossSpawn, TEXT("Boss / Pack Leader Spawn"), TEXT("Boss"), TEXT("chieftain_courage"), FLinearColor(.95f, .26f, .2f), ECireGizmo::Pillar); M.bFacing = true; M.bNamed = true; M.DefaultRadius = 200.f; }
@@ -123,6 +124,8 @@ TArray<FCireMarkerType> CireMapLayout::BuiltInTypes()
     { auto& M = Add(Respawn, TEXT("Respawn Point / Graveyard"), TEXT("Respawn"), TEXT("keeper_last_light"), FLinearColor(.92f, .95f, .6f), ECireGizmo::Pillar); M.bFacing = true; M.DefaultRadius = 150.f; }
     { auto& M = Add(PlayBounds, TEXT("Play Bounds"), TEXT("Bounds"), TEXT("ashen_square"), FLinearColor(.9f, .9f, .92f), ECireGizmo::Polygon); M.bPoints = true; M.DefaultOwner = ECireMarkerOwner::Shared; M.MaxPerOwner = 1; M.DefaultRadius = 0.f; }
     { auto& M = Add(Blocker, TEXT("No-Spawn / Blocker Zone"), TEXT("Blocker"), TEXT("summoned_wall"), FLinearColor(.85f, .22f, .22f), ECireGizmo::Zone); M.bRadius = true; M.DefaultRadius = 400.f; }
+    // jungle-packs: where Recall (Teleport to Base) takes a hero: the nearest Recall Point of his team.
+    { auto& M = Add(RecallPoint, TEXT("Recall Point"), TEXT("Recall"), TEXT("warp_obelisk"), FLinearColor(.45f, .95f, 1.f), ECireGizmo::Pillar); M.bFacing = true; M.bNamed = true; M.bRadius = true; M.DefaultRadius = 200.f; }
     return T;
 }
 
@@ -283,7 +286,7 @@ FString CireMapLayout::DisplayLabel(const FCireMapLayout& L, const FCireMapMarke
     const FString Team = TeamTag(M.Owner), Named = M.Name.IsEmpty() ? FString() : FString::Printf(TEXT("  %s"), *M.Name);
     if (M.Type == MonsterSpawn) return FString::Printf(TEXT("Monsters -> %s%s"), *TeamTag(M.Target), *Named);
     if (M.Type == MonsterPath) return FString::Printf(TEXT("Path -> %s%s"), *TeamTag(M.Target), *Named);
-    if (M.Type == ChallengePack) return FString::Printf(TEXT("%s Pack %d  Tier %d"), *Team, Number(L, M.Id), M.Tier);
+    if (M.Type == ChallengePack) return FString::Printf(TEXT("%s Pack %d  T%d %s"), *Team, Number(L, M.Id), M.Tier, *CireJunglePacks::TypeLabel(M.PackType));
     if (M.Type == Vendor) return FString::Printf(TEXT("%s %s"), *Team, *(M.Name.IsEmpty() ? M.Kind.Left(1).ToUpper() + M.Kind.Mid(1) : M.Name));
     if (M.Type == Objective) return FString::Printf(TEXT("%s Objective"), *Team);
     if (M.Type == PlayBounds) return TEXT("Play Bounds");
@@ -387,6 +390,7 @@ void CireMapLayout::SyncTwin(FCireMapLayout& L, const FString& Id)
     T->SignPos = Source.SignPos; T->SignYaw = Source.SignYaw; T->SignHeight = Source.SignHeight;
     T->StallPos = Source.StallPos; T->StallYaw = Source.StallYaw; T->StallSize = Source.StallSize;
     T->Weight = Source.Weight; T->bSplitWeighted = Source.bSplitWeighted; // layout-wiring
+    T->PackType = Source.PackType; T->Comp = Source.Comp; // jungle-packs
     T->Owner = OtherTeam(Source.Owner);
     T->Target = IsTeam(Source.Target) ? OtherTeam(Source.Target) : Source.Target;
     T->From = MapLink(L, Source.From); T->MergeInto = MapLink(L, Source.MergeInto);
@@ -396,7 +400,7 @@ FString CireMapLayout::Place(FCireMapLayout& L, FName Type, const FVector2D& Loc
     const FCireMarkerType* T = FindType(Type);
     if (!T || !FMath::IsFinite(Local.X) || !FMath::IsFinite(Local.Y)) return FString();
     if (T->DefaultOwner == ECireMarkerOwner::Shared) Owner = ECireMarkerOwner::Shared;
-    if (T->MaxPerOwner > 0 && OfType(L, Type, Owner).Num() >= T->MaxPerOwner) return FString();
+    // jungle-packs: placement is never capped ("unlimited of any type"); Validate explains what the game ignores.
     FCireMapMarker M;
     M.Id = NewId(L, Type); M.Type = Type; M.Owner = Owner; M.Target = Owner; M.Position = Local;
     M.Yaw = T->bFacing && FMath::IsFinite(Yaw) ? FRotator::NormalizeAxis(Yaw) : 0.f;
@@ -461,6 +465,26 @@ bool CireMapLayout::SetTier(FCireMapLayout& L, const FString& Id, int32 Tier)
 {
     FCireMapMarker* M = Find(L, Id); if (!M) return false;
     M->Tier = FMath::Clamp(Tier, 1, FCireChallengeBay::MaxTier); SyncTwin(L, Id); return true;
+}
+bool CireMapLayout::SetPackType(FCireMapLayout& L, const FString& Id, FName Type)
+{
+    FCireMapMarker* M = Find(L, Id); if (!M || M->Type != ChallengePack) return false;
+    M->PackType = CireJunglePacks::NormalizeType(Type.ToString()); SyncTwin(L, Id); return true;
+}
+bool CireMapLayout::SetComposition(FCireMapLayout& L, const FString& Id, const FCirePackComposition& Comp)
+{
+    FCireMapMarker* M = Find(L, Id); if (!M || M->Type != ChallengePack) return false;
+    const bool bAuto = Comp.Tanks <= 0 && Comp.Healers <= 0 && Comp.Dps <= 0;
+    M->Comp = bAuto ? FCirePackComposition{0, 0, 0} : CireJunglePacks::Clamp(Comp);
+    SyncTwin(L, Id); return true;
+}
+FCirePackComposition CireMapLayout::PackComposition(const FCireMapMarker& P)
+{
+    return CireJunglePacks::Resolve(P.HasCompOverride() ? &P.Comp : nullptr, CireJunglePacks::SeedFor(P.Position), P.PackType, P.Tier);
+}
+FString CireMapLayout::PackSummary(const FCireMapMarker& P)
+{
+    return CireJunglePacks::Summary(P.Tier, P.PackType, PackComposition(P)) + (P.HasCompOverride() ? TEXT("") : TEXT("  (auto)"));
 }
 bool CireMapLayout::SetName(FCireMapLayout& L, const FString& Id, const FString& Name)
 {
@@ -682,8 +706,18 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
                 if (!bReaches) Issue(true, T, M.Id, FString::Printf(TEXT("%s does not reach %s's objective"), *DisplayLabel(L, M), *Tag));
             }
         }
-        const int32 Packs = OfType(L, ChallengePack, Team).Num() + OfType(L, ChallengePack, ECireMarkerOwner::Shared).Num();
-        if (Packs > FCireBattlefieldRoutes::MaxBays) Issue(true, T, FString(), FString::Printf(TEXT("%s has %d challenge packs (16 at most)"), *Tag, Packs));
+        // jungle-packs: placement is unlimited; a type the game only reads N of per team says so here.
+        for (const FCireMarkerType& Type : Types())
+        {
+            if (Type.MaxPerOwner <= 0 || Type.DefaultOwner == ECireMarkerOwner::Shared) continue;
+            const TArray<const FCireMapMarker*> Own = OfType(L, Type.Id, Team);
+            const int32 Count = Own.Num() + OfType(L, Type.Id, ECireMarkerOwner::Shared).Num();
+            if (Count <= Type.MaxPerOwner) continue;
+            if (Type.Id == Objective)
+                Issue(true, T, Own.Num() > 0 ? Own.Last()->Id : FString(), FString::Printf(TEXT("%s has %d objectives: the game runs one castle goal zone per team (the first); remove the extras"), *Tag, Count));
+            else
+                Issue(false, T, FString(), FString::Printf(TEXT("%s has %d %s markers; the game uses the first %d"), *Tag, Count, *Type.Name, Type.MaxPerOwner));
+        }
         // Every vendor type must be available to each team (once the layout places vendors at all).
         if (OfType(L, Vendor).Num() > 0)
             for (const FCireVendorType& VT : VendorTypes())
@@ -693,6 +727,9 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
                 if (!bHas) Issue(true, T, FString(), FString::Printf(TEXT("%s has no %s vendor"), *Tag, *VT.Id));
             }
     }
+    // jungle-packs: one Play Bounds polygon; more can be placed but the game reads the first.
+    if (const TArray<const FCireMapMarker*> Bounds = OfType(L, PlayBounds); Bounds.Num() > 1)
+        Issue(true, 0, Bounds.Last()->Id, FString::Printf(TEXT("%d Play Bounds polygons: the game uses one (the first); merge them or remove the extras"), Bounds.Num()));
     for (const FCireMapMarker& M : L.Markers)
     {
         const FString Label = DisplayLabel(L, M);
@@ -722,7 +759,10 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
                     { Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s: the sign clips into the town (%s)"), *Label, *RealmName(Realm))); break; }
         }
         if (M.Type == ChallengePack && (M.Tier < 1 || M.Tier > FCireChallengeBay::MaxTier || M.Radius < FCireChallengeBay::MinRadius || M.Radius > FCireChallengeBay::MaxRadius))
-            Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s needs a tier 1..10 and a radius of 2..15 m"), *Label));
+            Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s needs a tier 1..4 and a radius of 2..15 m"), *Label));
+        if (M.Type == ChallengePack && M.HasCompOverride() && !CireJunglePacks::IsValid(M.Comp))
+            Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s: composition %d tank / %d healer / %d DPS breaks the rules (1-2 tanks, 1-2 healers, 1-3 DPS, 3-6 monsters)"),
+                *Label, M.Comp.Tanks, M.Comp.Healers, M.Comp.Dps));
         if (M.bMirror && IsTeam(M.Owner))
         {
             const FCireMapMarker* T = M.Pair.IsEmpty() ? nullptr : Find(L, M.Pair);
@@ -734,7 +774,8 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
                     T->Name == M.Name && T->Points == M.Points && T->Target == (IsTeam(M.Target) ? OtherTeam(M.Target) : M.Target) &&
                     T->From == MapLink(L, M.From) && T->MergeInto == MapLink(L, M.MergeInto) &&
                     SameXY(T->SignPos, M.SignPos) && SameXY(T->StallPos, M.StallPos) && T->SignYaw == M.SignYaw && T->StallYaw == M.StallYaw &&
-                    T->SignHeight == M.SignHeight && T->StallSize == M.StallSize && T->Weight == M.Weight && T->bSplitWeighted == M.bSplitWeighted;
+                    T->SignHeight == M.SignHeight && T->StallSize == M.StallSize && T->Weight == M.Weight && T->bSplitWeighted == M.bSplitWeighted &&
+                    T->PackType == M.PackType && T->Comp == M.Comp;
                 if (!bSync) Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s is out of sync with its mirrored twin"), *Label));
             }
         }
@@ -821,6 +862,11 @@ FString CireMapLayout::ToJson(const FCireMapLayout& L)
         if (T.bRadius || M.Radius > 0.f) F.Add(FString::Printf(TEXT("\"radius\": %s"), *N(M.Radius)));
         if (T.bTier || M.Tier > 0) F.Add(FString::Printf(TEXT("\"tier\": %d"), M.Tier));
         if (!M.Kind.IsEmpty()) F.Add(FString::Printf(TEXT("\"kind\": %s"), *Q(M.Kind)));
+        if (M.Type == ChallengePack) // jungle-packs
+        {
+            F.Add(FString::Printf(TEXT("\"pack\": %s"), *Q(M.PackType.ToString())));
+            if (M.HasCompOverride()) F.Add(FString::Printf(TEXT("\"comp\": [%d,%d,%d]"), M.Comp.Tanks, M.Comp.Healers, M.Comp.Dps));
+        }
         if (M.Type == Vendor)
         {
             F.Add(FString::Printf(TEXT("\"sign\": { \"x\": %s, \"y\": %s, \"yaw\": %s, \"height\": %s }"), *N(M.SignPos.X), *N(M.SignPos.Y), *N(M.SignYaw), *N(M.SignHeight)));
@@ -887,6 +933,15 @@ bool CireMapLayout::ParseJson(const FString& Json, FCireMapLayout& Out, FString&
         // layout-wiring: path weight and spawn split.
         if (double Weight = 1; O->TryGetNumberField(TEXT("weight"), Weight)) M.Weight = FMath::IsFinite(Weight) ? FMath::Clamp(static_cast<float>(Weight), 0.f, 100.f) : 1.f;
         if (FString Split; O->TryGetStringField(TEXT("split"), Split)) M.bSplitWeighted = Split == TEXT("weighted");
+        if (M.Type == ChallengePack)
+        {
+            // jungle-packs: pack type (missing or unknown = mixed), composition override, tiers 1..4 (older 5..10 read as 4).
+            FString Pack; O->TryGetStringField(TEXT("pack"), Pack); M.PackType = CireJunglePacks::NormalizeType(Pack);
+            const TArray<TSharedPtr<FJsonValue>>* Comp = nullptr;
+            if (O->TryGetArrayField(TEXT("comp"), Comp) && Comp && Comp->Num() == 3)
+                M.Comp = {FMath::RoundToInt32((*Comp)[0]->AsNumber()), FMath::RoundToInt32((*Comp)[1]->AsNumber()), FMath::RoundToInt32((*Comp)[2]->AsNumber())};
+            if (M.Tier > FCireChallengeBay::MaxTier) M.Tier = FCireChallengeBay::MaxTier;
+        }
         if (M.Type == Vendor)
         {
             ApplyVendorDefaults(M);
@@ -1003,6 +1058,7 @@ FCireMapLayout CireMapLayout::FromRoutes(const FCireBattlefieldRoutes& R)
         {
             const FString Pack = Place(L, ChallengePack, Bay.Position, Team, 0.f, bSame);
             SetRadius(L, Pack, Bay.Radius); SetTier(L, Pack, Bay.Tier);
+            SetPackType(L, Pack, Bay.PackType); if (Bay.HasCompOverride()) SetComposition(L, Pack, Bay.Comp); // jungle-packs
         }
         (void)Hero;
     }
@@ -1102,9 +1158,11 @@ bool CireMapLayout::CompileRoutes(const FCireMapLayout& L, const FCireBattlefiel
         for (const FCireMapMarker& M : L.Markers)
             if (M.Type == ChallengePack && ShownInRealm(M, Realm))
             {
-                if (Bays.Num() >= FCireBattlefieldRoutes::MaxBays) { Notes.Add(FString::Printf(TEXT("%s: challenge packs past 16 were left out"), *Tag)); break; }
+                // jungle-packs: every pack (no cap), with its type, composition override and seed (twins share it).
                 FCireChallengeBay Bay; Bay.Position = M.Position; Bay.Radius = FMath::Clamp(M.Radius, FCireChallengeBay::MinRadius, FCireChallengeBay::MaxRadius);
-                Bay.Tier = FMath::Clamp(M.Tier, 1, FCireChallengeBay::MaxTier); Bays.Add(Bay);
+                Bay.Tier = FMath::Clamp(M.Tier, 1, FCireChallengeBay::MaxTier); Bay.PackType = M.PackType;
+                Bay.Comp = M.HasCompOverride() ? CireJunglePacks::Clamp(M.Comp) : FCirePackComposition{0, 0, 0};
+                Bays.Add(Bay); // Seed 0: derived from the position, so twins and the route file agree
             }
         Out.Bays[Realm] = Bays;
         // Hero spawns (with facing), respawns, boss spawns and rifts of this realm.
@@ -1114,6 +1172,7 @@ bool CireMapLayout::CompileRoutes(const FCireMapLayout& L, const FCireBattlefiel
             for (const FCireMapMarker& M : L.Markers) if (M.Type == Type && ShownInRealm(M, Realm) && List.Num() < FCireBattlefieldRoutes::MaxSpots) List.Add(Spot(M));
         };
         Collect(PlayerSpawn, Out.PlayerSpawns[Realm]); Collect(Respawn, Out.Respawns[Realm]);
+        Collect(RecallPoint, Out.Recalls[Realm]); // jungle-packs: Recall / Teleport to Base destinations (server only)
         Collect(BossSpawn, Out.Bosses[Realm]); Collect(Rift, Out.Rifts[Realm]);
     }
     // medieval-kingdom: the hero base (shop radius, recall, bots' home) is T1's first player spawn (else a shared one); the

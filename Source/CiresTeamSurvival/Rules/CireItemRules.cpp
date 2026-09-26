@@ -610,15 +610,20 @@ bool BayUnlocksAt(const PackSchedule& schedule, int bay, int round, int waveInCy
 
 std::string ValidateSchedule(const PackSchedule& schedule)
 {
-    if (schedule.Bays.empty() || schedule.Bays.size() > static_cast<std::size_t>(MaxPackBays)) return "packSchedule needs 1-16 bays";
+    // jungle-packs: a route may author any number of packs (the base LootTables schedule lists a few tiers).
+    if (schedule.Bays.empty()) return "packSchedule needs at least one bay";
     for (std::size_t index = 0; index < schedule.Bays.size(); ++index)
     {
         const auto& bay = schedule.Bays[index];
-        if (bay.Bay < 1 || bay.Bay > MaxPackBays) return "pack bay must be 1-16";
+        if (bay.Bay < 1) return "pack bays are numbered from 1";
         if (bay.BaseTier < 0 || bay.BaseTier > 10) return "pack bay tier must be 1-10";
         if (bay.UnlockRound < 1 || bay.UnlockRound > 100 || bay.UnlockWave < 1 || bay.UnlockWave > 10) return "pack bay unlock out of range";
-        for (std::size_t other = index + 1; other < schedule.Bays.size(); ++other)
-            if (schedule.Bays[other].Bay == bay.Bay) return "duplicate pack bay";
+        if (index > 0 && schedule.Bays[index - 1].Bay >= bay.Bay)
+        {
+            // Bays are normally ascending; fall back to the exhaustive check only when they are not.
+            for (std::size_t other = 0; other < index; ++other)
+                if (schedule.Bays[other].Bay == bay.Bay) return "duplicate pack bay";
+        }
     }
     if (schedule.MaxTier < 1 || schedule.MaxTier > 10 || schedule.PromotionEveryRounds < 0 || schedule.PromotionStartRound < 1)
         return "pack promotion settings out of range";
@@ -629,7 +634,7 @@ PackSchedule RouteSchedule(const PackSchedule& base, const std::vector<int>& bay
 {
     PackSchedule out = base;
     out.Bays.clear();
-    const std::size_t count = std::min(bayTiers.size(), static_cast<std::size_t>(MaxPackBays));
+    const std::size_t count = bayTiers.size(); // jungle-packs: no cap
     for (std::size_t index = 0; index < count; ++index)
     {
         PackBay bay;

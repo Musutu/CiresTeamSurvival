@@ -165,8 +165,8 @@ void UCireNPCState::OnRep_Archetype(){ApplyVisuals();}
 // monster-races
 bool UCireNPCState::IsAbilityActive(FName AbilityId) const
 {
-    if(!bLoadoutSet)return true;
     const auto* A=Archetype();const auto* Ability=A?A->FindAbility(AbilityId):nullptr;
+    if(!bLoadoutSet)return !(Ability&&Ability->bBorrowed); // jungle-packs: borrowed skills only through a pack loadout
     return (Ability&&Ability->bBasic)||Loadout.Contains(AbilityId);
 }
 void UCireNPCState::OnRep_Look(){CireRaces::ApplySkin(Cast<ACireMonster>(GetOwner()));}

@@ -1,4 +1,5 @@
 #include "CireLayoutWiring.h" // layout-wiring
+#include "CireJunglePacks.h" // jungle-packs
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLayoutRuntime.h" // layout-wiring
 #include "CireBalanceLab.h"
@@ -164,7 +165,8 @@ void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireGameState,WaveLabel); DOREPLIFETIME(ACireGameState,NextWaveLabel); // wave-director
     DOREPLIFETIME(ACireGameState,BreatherReady); DOREPLIFETIME(ACireGameState,BreatherPlayers); // wave-director
     DOREPLIFETIME(ACireGameState,LaneBounds); DOREPLIFETIME(ACireGameState,LanePoints0);
-    DOREPLIFETIME(ACireGameState,LanePoints1); DOREPLIFETIME(ACireGameState,LaneRouteVersion);
+    DOREPLIFETIME(ACireGameState,LanePoints1); DOREPLIFETIME(ACireGameState,LaneRouteVersion); DOREPLIFETIME(ACireGameState,LanePacks); // jungle-packs
+    DOREPLIFETIME(ACireGameState,LaneLayout); // jungle-packs: was never registered, so clients never received the goal zone, packs or extras
 }
 ACireGameMode::ACireGameMode() {
     PrimaryActorTick.bCanEverTick=true;
@@ -271,6 +273,9 @@ void ACireGameMode::BeginPlay() {
 #if !UE_BUILD_SHIPPING
     if(!bFeedbackPreview)CireNav::InitializeProbe(this); // nav-paths: -CireNavProbe march + performance probe
     if(!bFeedbackPreview)CireLayoutWiring::InitializeProbe(this); // layout-wiring: -CireLayoutProbe town march + kite
+#if !UE_BUILD_SHIPPING
+    if(!bFeedbackPreview)CireJunglePacks::InitializeProbe(this); // jungle-packs: -CireJungleProbe
+#endif
 #endif
     UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / %.0fs prep / %.0fs arena / %.0fs recovery | server authority"),S->WavesPerCycle,Clock.GetDurations().Intermission,Clock.GetDurations().Arena,RecoverySeconds);
 #if !UE_BUILD_SHIPPING
@@ -538,6 +543,9 @@ void ACireGameMode::Tick(float Dt) {
     if(CireNav::TickGallery(this)) return; // nav-paths: -CireNavGallery captures
     CireNav::TickProbe(this,Dt); // nav-paths: -CireNavProbe
     CireLayoutWiring::TickProbe(this,Dt); // layout-wiring: -CireLayoutProbe
+#if !UE_BUILD_SHIPPING
+    CireJunglePacks::TickProbe(this,Dt); // jungle-packs: -CireJungleProbe
+#endif
 #endif
     auto* S=GetGameState<ACireGameState>(); if(!S) return;
     TickDraftTimer(); // champion-select

@@ -121,7 +121,9 @@ namespace CireProgression
     // Called after each wave spawn: bays that unlock mid-cycle appear and are announced.
     CIRESTEAMSURVIVAL_API void OnWaveSpawned(ACireGameMode* Mode, int32 WaveInCycle);
     CIRESTEAMSURVIVAL_API void SpawnBay(ACireGameMode* Mode, int32 Team, int32 Bay, int32 Tier);
-    // dev-route-tools: pack ids for 1..16 bays per realm (round * 100 + realm * 50 + bay) and the bay of an id.
+    // jungle-packs: the realm's pack schedule (every pack with its tier; tiers unlock per JunglePacks.json).
+    CIRESTEAMSURVIVAL_API Cires::Items::PackSchedule JungleSchedule(const UWorld* World, int32 Team);
+    // jungle-packs: pack ids for any number of bays (round * 100000 + realm * 50000 + bay) and the bay of an id.
     CIRESTEAMSURVIVAL_API int32 PackIdFor(int32 Round, int32 Team, int32 Bay);
     CIRESTEAMSURVIVAL_API int32 PackBayOf(int32 PackId);
     // Prep / arena / recovery pause: freezes NPC timers so they resume exactly.

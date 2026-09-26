@@ -20,6 +20,15 @@ class UCireChampionArt;
 class UCireMobility;
 struct FCireChampionProfile;
 
+/** jungle-packs: one replicated chunk of ints (CireLanePath::PackBays). Chunks keep each array far inside the engine's
+ *  replicated-array budget, so any number of challenge packs reaches the clients. */
+USTRUCT()
+struct FCireNetInts
+{
+    GENERATED_BODY()
+    UPROPERTY() TArray<int32> Values;
+};
+
 UCLASS()
 class CIRESTEAMSURVIVAL_API ACireGameState : public AGameStateBase {
     GENERATED_BODY()
@@ -59,6 +68,8 @@ public:
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) uint32 LaneRouteVersion = 0;
     // nav-paths: lane width, goal zone and challenge bay overrides (packed by CireLanePath::PublishState).
     UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) TArray<float> LaneLayout;
+    // jungle-packs: every challenge pack of both realms (3 ints each), chunked, stamped with LaneRouteVersion.
+    UPROPERTY(ReplicatedUsing=OnRepLaneRoutes) TArray<FCireNetInts> LanePacks;
     UFUNCTION() void OnRepLaneRoutes();
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out) const override;
 };
