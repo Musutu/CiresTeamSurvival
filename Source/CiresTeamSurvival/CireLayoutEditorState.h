@@ -51,6 +51,8 @@ struct FCireLayoutEditorState
     /** Radius / tier / vendor type the next placed marker gets (per setter radius). */
     TMap<FName, float> NextRadius;
     int32 NextTier = 1;
+    /** jungle-packs: pack type the next placed Challenge Pack gets. */
+    FName NextPackType = CireJunglePacks::Mixed;
     // List panel filters: team -1 all, 0 shared, 1 T1, 2 T2; type -1 all, else the setter index.
     int32 TeamFilter = -1, TypeFilter = -1, ListScroll = 0;
     double LastRowClick = -10; FString LastRowId;
@@ -107,4 +109,19 @@ namespace CireLayoutEditor
     CIRESTEAMSURVIVAL_API bool CompileForRuntime(UWorld* World, const FCireMapLayout& Layout, struct FCireBattlefieldRoutes* OutRoutes, TArray<FString>& Notes, FString& Error);
     CIRESTEAMSURVIVAL_API void Load(UWorld* World, FCireLayoutEditorState& E);
     CIRESTEAMSURVIVAL_API void Autosave(FCireLayoutEditorState& E, double Now, bool bForce = false);
+    // ---- jungle-packs: pack tier / type editing (Eric's playtest: "it just kept making tier 1's") ----------------
+    // Placing a pack selects it, so the tier keys used to change only that pack and every NEXT pack stayed tier 1. Now
+    // a tier or type change on a selected pack also becomes the next pack's tier / type, and with nothing selected it
+    // sets the next pack's.
+    /** Tier +Delta on the selected pack (and its twin), and the next placed pack's tier. Returns the resulting tier. */
+    CIRESTEAMSURVIVAL_API int32 StepPackTier(FCireLayoutEditorState& E, int32 Delta, double Now);
+    /** Set the tier outright (the panel's 1..4 buttons). */
+    CIRESTEAMSURVIVAL_API int32 SetPackTier(FCireLayoutEditorState& E, int32 Tier, double Now);
+    /** Pack type +Delta (race cycle), same rules. Returns the resulting type. */
+    CIRESTEAMSURVIVAL_API FName StepPackType(FCireLayoutEditorState& E, int32 Delta, double Now);
+    /** Place a non-chained marker as the setter does (radius, next tier and next pack type). Returns its id. */
+    CIRESTEAMSURVIVAL_API FString PlaceMarker(FCireLayoutEditorState& E, FName Type, int32 Realm, const FVector2D& Local, float Yaw, double Now);
+    /** Bulk: copy the selected pack's tier, type and composition to every other pack of its team (and their twins),
+     *  or only those within RadiusCm of it (0 = all). One undo step. Returns how many packs changed. */
+    CIRESTEAMSURVIVAL_API int32 CopyPackToOthers(FCireLayoutEditorState& E, float RadiusCm, double Now);
 }

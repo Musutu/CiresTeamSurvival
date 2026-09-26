@@ -191,16 +191,17 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
     HoverSlot = NAME_None;
     const double Now = GetWorld()->GetRealTimeSeconds();
     // ---- main bar (panel "Skills") ----
-    UsePanel(TEXT("Skills"), 584, 155);
+    // jungle-packs: the bar is 48 px wider for the Recall button (not a skill slot).
+    UsePanel(TEXT("Skills"), 632, 155);
     FCireUIPainter P = Painter();
-    CireUIStyle::Frame(P, 0, 0, 584, 155, Gold);
+    CireUIStyle::Frame(P, 0, 0, 632, 155, Gold);
     // Experience bar (WoW purple), level on hover.
     const float Need = 120.f + FMath::Max(0, Hero->Level) * 60.f;
-    CireUIStyle::Bar(P, 12, 7, 560, 8, Hero->Experience / Need, FLinearColor(.55f, .3f, .85f, 1), &BarTrails.FindOrAdd(0xE0E0), Now);
+    CireUIStyle::Bar(P, 12, 7, 608, 8, Hero->Experience / Need, FLinearColor(.55f, .3f, .85f, 1), &BarTrails.FindOrAdd(0xE0E0), Now);
     // Skill Shop mode: levels only raise attributes; skills come from the shop between waves.
     const bool bShopMode = CireSkillShop::IsSkillShopMode(Hero->GetWorld());
     Tip(FString::Printf(TEXT("Level %d"), Hero->Level), FString::Printf(TEXT("Experience %d / %.0f to level %d. Levels grant +2 primary and +1 other attributes%s"), Hero->Experience, Need, Hero->Level + 1,
-        bShopMode ? TEXT(". New skills come from the Skill Shop between waves.") : TEXT(", and new ability choices.")), 12, 5, 560, 12);
+        bShopMode ? TEXT(". New skills come from the Skill Shop between waves.") : TEXT(", and new ability choices.")), 12, 5, 608, 12);
     // Auto-attack button.
     {
         FCireIconSlot Attack; Attack.IconId = TEXT("basic"); Attack.Kind = ECireSlotKind::Attack; Attack.Tint = FLinearColor(.95f, .8f, .5f, 1);
@@ -217,7 +218,40 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
         }
     }
     for (int32 I = 0; I < FCireKeybindings::SlotsPerBar; ++I) DrawActionButton(Hero, Controller, 1, I, 60.f + I * 42.6f, 24.f, 40.f);
-    P.Line(12, 72, 572, 72, Gold * FLinearColor(1, 1, 1, .35f), 1.f);
+    // jungle-packs: Recall (Teleport to Base) on the action bar: every champion has it, outside the skill slots. It shows
+    // the cooldown sweep and countdown, the channel progress, and is free (teal) during prep / recovery.
+    if (const UCireInventory* Inv = Hero->Inventory)
+    {
+        const float RX = 582.f, RY = 24.f, RS = 40.f;
+        const ACireGameState* GS = GetWorld()->GetGameState<ACireGameState>();
+        const float ServerNow = GS ? GS->GetServerWorldTimeSeconds() : GetWorld()->GetTimeSeconds();
+        const float Remaining = FMath::Max(0.f, Inv->TeleportReadyAt - ServerNow);
+        const float Cooldown = static_cast<float>(CireItems::Get().Teleport.CooldownSeconds);
+        const bool bFree = GS && (GS->Phase == 1 || GS->Phase == 4);
+        FCireIconSlot Recall; Recall.IconId = TEXT("warp_obelisk"); Recall.IconTexture = CireUIStyle::FindAbilityIcon(TEXT("warp_obelisk"));
+        Recall.Tint = FLinearColor(.45f, .95f, 1.f, 1); Recall.KeyLabel = UISettings.Keybindings.Label(TEXT("RecallToTown"));
+        if (Remaining > 0 && !bFree && Cooldown > 0) { Recall.CooldownRemaining = Remaining; Recall.CooldownFraction = FMath::Clamp(Remaining / Cooldown, 0.f, 1.f); }
+        Recall.bGlow = Inv->IsChanneling();
+        const bool bOver = Hit(RX, RY, RS, RS) && !bModal && !bSettings && !bEditLayout;
+        Recall.bHover = bOver; Recall.bPressed = bOver && PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton);
+        CireUIStyle::IconSlot(P, RX, RY, RS, Recall, Now);
+        if (Inv->IsChanneling())
+        {
+            const float T = FMath::Clamp((ServerNow - Inv->TeleportChannelStart) / FMath::Max(.1f, Inv->TeleportChannelEnd - Inv->TeleportChannelStart), 0.f, 1.f);
+            P.Rect(RX + 3, RY + RS - 6, (RS - 6) * T, 3, FLinearColor(.5f, .95f, 1.f, 1));
+        }
+        P.Text(TEXT("RECALL"), RX + RS * .5f - P.TextWidth(TEXT("RECALL"), 6.5f, ECireFont::Heading) * .5f, 64.5f, 6.5f, Remaining > 0 && !bFree ? Muted : FLinearColor(.55f, .95f, 1.f, 1), ECireFont::Heading, true, false);
+        if (bOver)
+        {
+            HoverSlot = TEXT("RecallToTown");
+            TooltipTitle = TEXT("Recall  (") + UISettings.Keybindings.FullLabel(TEXT("RecallToTown")) + TEXT(")");
+            TooltipBody = bFree ? FString(TEXT("Prep / recovery: instant and free recall to your team's recall point (or your base)."))
+                : FString::Printf(TEXT("Channel %.0f s, then return to your team's nearest recall point (or your base). Taking damage or moving cancels it (no cooldown spent). %.0f s cooldown.%s"),
+                    CireItems::Get().Teleport.ChannelSeconds, Cooldown, Remaining > 0 ? *FString::Printf(TEXT("\nReady in %.0f s."), Remaining) : TEXT(""));
+            if (Clicked && !bQuickKeybind && Controller) { Controller->ServerAction(8, 0, nullptr); Clicked = false; }
+        }
+    }
+    P.Line(12, 72, 620, 72, Gold * FLinearColor(1, 1, 1, .35f), 1.f);
     // Slot captions under the passive and ultimate buttons (the old Arsenal panel's state).
     {
         const FString Ult = CireKeybindings::SlotAbilityId(UISettings.Keybindings, *Hero, MainSlot(7));

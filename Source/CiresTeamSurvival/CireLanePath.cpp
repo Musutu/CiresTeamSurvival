@@ -186,21 +186,30 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
         const TArray<TSharedPtr<FJsonValue>>* Bays = nullptr;
         if (Lane->HasField(TEXT("bays")))
         {
-            if (!Lane->TryGetArrayField(TEXT("bays"),Bays) || !Bays || Bays->Num() > FCireBattlefieldRoutes::MaxBays || Bays->Num() == 0)
-                return Fail(TEXT("Challenge packs need 1..16 bays"));
+            // jungle-packs: any number of packs (no 16 cap).
+            if (!Lane->TryGetArrayField(TEXT("bays"),Bays) || !Bays || Bays->Num() == 0)
+                return Fail(TEXT("Challenge packs need at least one bay"));
             for (int32 Index = 0; Index < Bays->Num(); ++Index)
             {
                 const TSharedPtr<FJsonValue>& Bay = (*Bays)[Index];
                 FCireChallengeBay Entry; Entry.Tier = FMath::Min(Index + 1, FCireChallengeBay::MaxTier);
                 const TArray<TSharedPtr<FJsonValue>>* XY = nullptr; const TSharedPtr<FJsonObject>* Object = nullptr; double X = 0, Y = 0;
                 if (Bay && Bay->Type == EJson::Array && Bay->TryGetArray(XY) && XY && XY->Num() == 2 && (*XY)[0]->TryGetNumber(X) && (*XY)[1]->TryGetNumber(Y)) {}
-                else if (Bay && Bay->Type == EJson::Object && Bay->TryGetObject(Object) && Object && Keys(*Object,{TEXT("x"),TEXT("y"),TEXT("radius"),TEXT("tier")}) &&
+                else if (Bay && Bay->Type == EJson::Object && Bay->TryGetObject(Object) && Object && Keys(*Object,{TEXT("x"),TEXT("y"),TEXT("radius"),TEXT("tier"),TEXT("pack"),TEXT("comp"),TEXT("seed")}) &&
                     (*Object)->TryGetNumberField(TEXT("x"),X) && (*Object)->TryGetNumberField(TEXT("y"),Y))
                 {
                     if ((*Object)->HasField(TEXT("radius")) && !Number(*Object,TEXT("radius"),Entry.Radius,FCireChallengeBay::MinRadius,FCireChallengeBay::MaxRadius))
                         return Fail(TEXT("Challenge pack radius must be 200..1500 cm"));
-                    if ((*Object)->HasField(TEXT("tier")) && !Integer(*Object,TEXT("tier"),Entry.Tier,1,FCireChallengeBay::MaxTier))
-                        return Fail(TEXT("Challenge pack tier must be 1..10"));
+                    // jungle-packs: tiers are 1..4; older files' tiers 5..10 read as 4.
+                    double TierValue = 1;
+                    if ((*Object)->HasField(TEXT("tier")) && (!(*Object)->TryGetNumberField(TEXT("tier"),TierValue) || !FMath::IsFinite(TierValue) || TierValue < 1 || TierValue > 10))
+                        return Fail(TEXT("Challenge pack tier must be 1..4"));
+                    if ((*Object)->HasField(TEXT("tier"))) Entry.Tier = FMath::Clamp(FMath::RoundToInt(TierValue), 1, FCireChallengeBay::MaxTier);
+                    FString Pack; if ((*Object)->TryGetStringField(TEXT("pack"),Pack)) Entry.PackType = CireJunglePacks::NormalizeType(Pack);
+                    const TArray<TSharedPtr<FJsonValue>>* Comp = nullptr;
+                    if ((*Object)->TryGetArrayField(TEXT("comp"),Comp) && Comp && Comp->Num() == 3)
+                        Entry.Comp = CireJunglePacks::Clamp({FMath::RoundToInt32((*Comp)[0]->AsNumber()), FMath::RoundToInt32((*Comp)[1]->AsNumber()), FMath::RoundToInt32((*Comp)[2]->AsNumber())});
+                    double SeedValue = 0; if ((*Object)->TryGetNumberField(TEXT("seed"),SeedValue) && FMath::IsFinite(SeedValue)) Entry.Seed = static_cast<uint32>(FMath::Clamp(SeedValue, 0., 2147483647.));
                 }
                 else return Fail(TEXT("Challenge packs are { x, y, radius, tier } objects or [x, y] points"));
                 if (!FMath::IsFinite(X) || !FMath::IsFinite(Y)) return Fail(TEXT("Challenge packs are { x, y, radius, tier } objects or [x, y] points"));
@@ -315,8 +324,7 @@ static bool ValidateTown(const FCireBattlefieldRoutes& R, FString& Error)
             return Fail(TEXT("Routes must start outside the town and end inside the castle goal zone"));
         for (int32 I = 0; I + 1 < Points.Num(); ++I)
             if (InGoal(Points[I], 100)) return Fail(TEXT("Only the final point may enter the town defense zone"));
-        const auto& Bays = R.Bays[Team];
-        if (Bays.Num() > FCireBattlefieldRoutes::MaxBays) return Fail(TEXT("Challenge packs need 1..16 bays"));
+        const auto& Bays = R.Bays[Team]; // jungle-packs: any number
         for (const FCireChallengeBay& B : Bays)
             if (!Finite2(B.Position) || !Inside(B.Position, 220) || InGoal(B.Position, 200) || FVector2D::DistSquared(B.Position, Points[0]) < FMath::Square(450.) ||
                 B.Radius < FCireChallengeBay::MinRadius || B.Radius > FCireChallengeBay::MaxRadius || B.Tier < 1 || B.Tier > FCireChallengeBay::MaxTier)
@@ -359,14 +367,14 @@ bool CireLanePath::Validate(const FCireBattlefieldRoutes& R, FString& Error)
             return Fail(TEXT("Routes must start outside the town and end inside the castle goal zone"));
         for (int32 I = 0; I + 1 < Points.Num(); ++I)
             if (InGoal(Points[I], 100)) return Fail(TEXT("Only the final point may enter the town defense zone"));
-        // dev-route-tools: 0 (three automatic bays) or 1..16 authored packs, each with a radius and a tier.
+        // dev-route-tools: 0 (three automatic bays) or the authored packs (jungle-packs: any number), each with a radius and a tier.
         const auto& Bays = R.Bays[Team];
-        if (Bays.Num() > FCireBattlefieldRoutes::MaxBays) return Fail(TEXT("Challenge packs need 1..16 bays"));
         for (int32 I = 0; I < Bays.Num(); ++I)
         {
             const FCireChallengeBay& Bay = Bays[I]; const FVector2D& B = Bay.Position;
             if (!(Bay.Radius >= FCireChallengeBay::MinRadius && Bay.Radius <= FCireChallengeBay::MaxRadius)) return Fail(TEXT("Challenge pack radius must be 200..1500 cm"));
-            if (Bay.Tier < 1 || Bay.Tier > FCireChallengeBay::MaxTier) return Fail(TEXT("Challenge pack tier must be 1..10"));
+            if (Bay.Tier < 1 || Bay.Tier > FCireChallengeBay::MaxTier) return Fail(TEXT("Challenge pack tier must be 1..4"));
+            if (Bay.HasCompOverride() && !CireJunglePacks::IsValid(Bay.Comp)) return Fail(TEXT("Challenge pack compositions need 1-2 tanks, 1-2 healers, 1-3 DPS and 3-6 monsters"));
             if (!Finite2(B) || B.X < R.MinX + 220 || B.X > R.MaxX - 220 || FMath::Abs(B.Y) > R.HalfWidth - 220 || InGoal(B, 200) ||
                 FVector2D::DistSquared(B, Points[0]) < FMath::Square(450.))
                 return Fail(TEXT("Challenge bays must stay inside the realm, clear of the breach and the castle zone"));
@@ -436,7 +444,14 @@ FString CireLanePath::ToJson(const FCireBattlefieldRoutes& R)
     {
         TArray<FString> Items;
         for (const FCireChallengeBay& B : Bays)
-            Items.Add(FString::Printf(TEXT("      { \"x\": %s, \"y\": %s, \"radius\": %s, \"tier\": %d }"), *N(B.Position.X), *N(B.Position.Y), *N(B.Radius), B.Tier));
+        {
+            // jungle-packs: type and composition override ride along (mixed / automatic stay implicit).
+            FString Extra;
+            if (B.PackType != CireJunglePacks::Mixed) Extra += FString::Printf(TEXT(", \"pack\": \"%s\""), *B.PackType.ToString());
+            if (B.HasCompOverride()) Extra += FString::Printf(TEXT(", \"comp\": [%d,%d,%d]"), B.Comp.Tanks, B.Comp.Healers, B.Comp.Dps);
+            if (B.Seed != 0) Extra += FString::Printf(TEXT(", \"seed\": %u"), B.Seed);
+            Items.Add(FString::Printf(TEXT("      { \"x\": %s, \"y\": %s, \"radius\": %s, \"tier\": %d%s }"), *N(B.Position.X), *N(B.Position.Y), *N(B.Radius), B.Tier, *Extra));
+        }
         return FString(TEXT("[\n")) + FString::Join(Items, TEXT(",\n")) + TEXT("\n    ]");
     };
     if (R.LocalPoints[0] == R.LocalPoints[1] && R.Bays[0] == R.Bays[1])
@@ -552,10 +567,16 @@ void CireLanePath::PublishState(ACireGameState* State)
     // nav-paths: lane width, goal zone and bay overrides ride along with the points.
     TArray<float>& L=State->LaneLayout;L.Reset();
     L.Add(R.LaneWidth);L.Add(R.GoalCenter.X);L.Add(R.GoalCenter.Y);L.Add(R.GoalSize.X);L.Add(R.GoalSize.Y);
-    // dev-route-tools: per realm the pack count, then x, y, radius and tier of each authored pack.
-    for(int32 Team=0;Team<2;++Team){L.Add(R.Bays[Team].Num());for(const FCireChallengeBay& B:R.Bays[Team]){L.Add(B.Position.X);L.Add(B.Position.Y);L.Add(B.Radius);L.Add(B.Tier);}}
+    // jungle-packs: the packs moved to the compact chunked LanePacks (any number); the float layout keeps a zero count per realm.
+    L.Add(0.f);L.Add(0.f);
+    {
+        TArray<TArray<int32>> Chunks;PackBays(R,Revision(State->GetWorld()),Chunks);
+        State->LanePacks.SetNum(Chunks.Num());
+        for(int32 I=0;I<Chunks.Num();++I)State->LanePacks[I].Values=MoveTemp(Chunks[I]);
+    }
     L.Add(R.bTownFrame?1.f:0.f);L.Add(R.BaseLocal.X);L.Add(R.BaseLocal.Y); // medieval-kingdom
     PackExtras(R,L); // layout-wiring: every monster path, spawn, hero/boss/respawn/rift spot and the play bounds
+    CireJunglePacks::PrewarmBodies(State->GetWorld()); // jungle-packs: the server loads the packs' race bodies in the background
     if(L.Num()>2000)UE_LOG(LogCireLanePath,Warning,TEXT("CIRE_LANE_LAYOUT_LARGE floats=%d (replication arrays cap near 2048; simplify the layout's paths)"),L.Num());
     State->ForceNetUpdate();
 }
@@ -564,6 +585,12 @@ void CireLanePath::ReceiveState(ACireGameState* State)
     if(!IsValid(State)||State->HasAuthority()||State->LaneRouteVersion==0||State->LanePoints0.Num()<3||State->LanePoints1.Num()<3||
        State->LanePoints0.Num()>64||State->LanePoints1.Num()>64||State->LaneBounds.ContainsNaN())return;
     auto& Entry=ForWorld(State->GetWorld());if(Entry.ReceivedVersion==State->LaneRouteVersion)return;
+    // jungle-packs: the packs arrive in LanePacks, stamped with the same revision; wait for both halves.
+    TArray<FCireChallengeBay> PackBaysIn[2];uint32 PackRevision=0;
+    {
+        TArray<TArray<int32>> Chunks;for(const FCireNetInts& C:State->LanePacks)Chunks.Add(C.Values);
+        if(!UnpackBays(Chunks,PackRevision,PackBaysIn)||PackRevision!=State->LaneRouteVersion)return;
+    }
     Entry.Data.MinX=State->LaneBounds.X;Entry.Data.MaxX=State->LaneBounds.Y;Entry.Data.HalfWidth=State->LaneBounds.Z;
     Entry.Data.LocalPoints[0]=State->LanePoints0;Entry.Data.LocalPoints[1]=State->LanePoints1;
     // nav-paths: unpack the layout extras (ignored when malformed; the points still apply).
@@ -574,7 +601,7 @@ void CireLanePath::ReceiveState(ACireGameState* State)
         for(int32 Team=0;Team<2&&bOk;++Team)
         {
             const int32 Count=At<L.Num()?FMath::RoundToInt(L[At]):-1;++At;
-            if(Count<0||Count>FCireBattlefieldRoutes::MaxBays||At+Count*4>L.Num()){bOk=false;break;}
+            if(Count<0||At+Count*4>L.Num()){bOk=false;break;}
             for(int32 I=0;I<Count;++I)
             {
                 FCireChallengeBay B;B.Position=FVector2D(L[At],L[At+1]);
@@ -586,7 +613,7 @@ void CireLanePath::ReceiveState(ACireGameState* State)
         if(bOk)
         {
             Entry.Data.LaneWidth=L[0];Entry.Data.GoalCenter=FVector2D(L[1],L[2]);Entry.Data.GoalSize=FVector2D(L[3],L[4]);
-            Entry.Data.Bays[0]=Bays[0];Entry.Data.Bays[1]=Bays[1];
+            Entry.Data.Bays[0]=PackBaysIn[0];Entry.Data.Bays[1]=PackBaysIn[1]; // jungle-packs (older float bays are ignored)
             if(At+3<=L.Num()){Entry.Data.bTownFrame=L[At]>.5f;Entry.Data.BaseLocal=FVector2D(L[At+1],L[At+2]);At+=3;} // medieval-kingdom
             // layout-wiring: the extras block (paths, spawns, spots, bounds); a malformed block keeps the single route.
             FCireBattlefieldRoutes Extras=Entry.Data;
@@ -596,6 +623,7 @@ void CireLanePath::ReceiveState(ACireGameState* State)
         }
     }
     Entry.ReceivedVersion=State->LaneRouteVersion;++Entry.Revision;
+    CireJunglePacks::PrewarmBodies(State->GetWorld()); // jungle-packs: clients load the packs' race bodies in the background
 }
 bool CireLanePath::Contains(int32 Team,const FVector& P,float Margin) { return Contains(nullptr,Team,P,Margin); }
 bool CireLanePath::Contains(const UWorld* World,int32 Team,const FVector& P,float Margin)
@@ -660,7 +688,7 @@ FVector2D CireLanePath::BayPoint(const FCireBattlefieldRoutes& R,int32 Team,int3
 int32 CireLanePath::BayCount(const FCireBattlefieldRoutes& R,int32 Team)
 {
     const int32 Authored=R.Bays[FMath::Clamp(Team,0,1)].Num();
-    return Authored>0?FMath::Min(Authored,FCireBattlefieldRoutes::MaxBays):FCireBattlefieldRoutes::AutoBays;
+    return Authored>0?Authored:FCireBattlefieldRoutes::AutoBays; // jungle-packs: no cap
 }
 int32 CireLanePath::BayCount(const UWorld* World,int32 Team){return BayCount(Get(World),Team);}
 FCireChallengeBay CireLanePath::BayAt(const FCireBattlefieldRoutes& R,int32 Team,int32 Bay)
@@ -668,6 +696,8 @@ FCireChallengeBay CireLanePath::BayAt(const FCireBattlefieldRoutes& R,int32 Team
     Team=FMath::Clamp(Team,0,1);
     if(R.Bays[Team].Num()>0)return R.Bays[Team][FMath::Clamp(Bay,1,R.Bays[Team].Num())-1];
     FCireChallengeBay Auto;Auto.Tier=FMath::Clamp(Bay,1,FCireBattlefieldRoutes::AutoBays);Auto.Position=BayPoint(R,Team,Auto.Tier);
+    // jungle-packs: the automatic bays (a route without authored packs) field the Hollow Legion, the waves' first race.
+    static const FName Hollow(TEXT("hollow"));Auto.PackType=CireJunglePacks::NormalizeType(Hollow.ToString());
     return Auto;
 }
 TArray<FCireChallengeBay> CireLanePath::AutoBays(const FCireBattlefieldRoutes& R,int32 Team)

@@ -1,6 +1,7 @@
 #include "CireGame.h"
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLanePath.h"
+#include "CireJunglePacks.h" // jungle-packs
 #include "CireTownMap.h"
 #include "CireTownPerf.h" // town-perf
 #include "CireArenas.h" // medieval-kingdom
@@ -305,8 +306,9 @@ void ACireWorld::RefreshRouteVisuals() {
                 const float Dais=Pack.Radius*470.f/FCireChallengeBay::DefaultRadius; // 470 cm across at the default radius
                 Add(BayDais,P+FVector(0,0,1),FVector(Dais,Dais,6));
                 Add(BayStone,P+FVector(0,0,3),FVector(40,40,6));
-                Text(FString::Printf(TEXT("CHALLENGE  %d"),Pack.Tier),P+FVector(0,0,380),40,FColor(220,171,75));
-                Light(P+FVector(0,0,300),FLinearColor(1.f,.55f,.25f),5000,FMath::Max(700.f,Pack.Radius*1.5f));
+                // jungle-packs: "T3 DROWNED DEEP"; with many packs only the first 12 per realm get a light (town-perf).
+                Text(FString::Printf(TEXT("T%d  %s"),Pack.Tier,*CireJunglePacks::TypeLabel(Pack.PackType).ToUpper()),P+FVector(0,0,380),40,FColor(220,171,75));
+                if(Bay<=12)Light(P+FVector(0,0,300),FLinearColor(1.f,.55f,.25f),5000,FMath::Max(700.f,Pack.Radius*1.5f));
             }
             // layout-wiring: a breach at every Monster Spawn of the realm, and the arena portal at its Rift marker.
             FTransform Portal;

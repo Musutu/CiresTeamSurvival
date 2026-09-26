@@ -5,6 +5,10 @@
 #include "CireLanePath.h"
 #include "CireLoot.h"
 #include "CireMapLayout.h"
+#include "CireJunglePacks.h"
+#include "CireLayoutEditorState.h"
+#include "CireNPCArchetypes.h"
+#include "CireNPCState.h"
 #include "Rules/CireItemRules.h"
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
@@ -39,7 +43,8 @@ FString PackJson(int32 Count, bool bObjects)
     TArray<FString> Items;
     for (int32 I = 0; I < Count; ++I)
     {
-        const double X = 30000 - I * 1700, Y = (I % 2 ? 900 : -900);
+        // jungle-packs: up to 16 along the road as before; more on a 3-row grid (3 m apart) down the realm.
+        const double X = Count <= 16 ? 30000 - I * 1700 : 4000 + (I / 3) * 300, Y = Count <= 16 ? (I % 2 ? 900 : -900) : (I % 3 - 1) * 900;
         Items.Add(bObjects ? FString::Printf(TEXT("{ \"x\": %.0f, \"y\": %.0f, \"radius\": %d, \"tier\": %d }"), X, Y, 300 + I * 50, 1 + I % 10)
                            : FString::Printf(TEXT("[%.0f, %.0f]"), X, Y));
     }
@@ -84,12 +89,51 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
         if (bOk)
         {
             const FCireChallengeBay Last = CireLanePath::BayAt(R, 0, Count);
-            Check(Last.Tier == 1 + (Count - 1) % 10 && FMath::IsNearlyEqual(Last.Radius, 300.f + (Count - 1) * 50.f), FString::Printf(TEXT("pack %d keeps its own radius and tier"), Count));
+            Check(Last.Tier == FMath::Min(1 + (Count - 1) % 10, 4) && FMath::IsNearlyEqual(Last.Radius, 300.f + (Count - 1) * 50.f), FString::Printf(TEXT("pack %d keeps its own radius and tier (tiers above 4 read as 4)"), Count));
             FCireBattlefieldRoutes Round;
             Check(CireLanePath::ParseJson(CireLanePath::ToJson(R), Round, Error) && CireLanePath::SameLayout(Round, R), FString::Printf(TEXT("%d packs round-trip through the writer"), Count));
         }
     }
-    Check(!CireLanePath::ParseJson(WithBays(Shipped, PackJson(17, true)), Doc, Error), TEXT("17 packs are rejected"));
+    {
+        // jungle-packs: no pack cap: 120 packs parse and round-trip.
+        FCireBattlefieldRoutes Many;
+        TArray<FString> Items;
+        for (int32 I = 0; I < 120; ++I)
+            Items.Add(FString::Printf(TEXT("{ \"x\": %d, \"y\": %d, \"radius\": 250, \"tier\": %d, \"pack\": \"%s\"%s }"), 4000 + (I / 3) * 300, (I % 3 - 1) * 900, 1 + I % 4,
+                I % 2 ? TEXT("drowned_deep") : TEXT("mixed"), I % 5 == 0 ? TEXT(", \"comp\": [2,1,3]") : TEXT("")));
+        const bool bMany = CireLanePath::ParseJson(WithBays(Shipped, TEXT("[") + FString::Join(Items, TEXT(",")) + TEXT("]")), Many, Error);
+        Check(bMany && CireLanePath::BayCount(Many, 0) == 120, TEXT("120 packs parse (no 16 cap): ") + Error);
+        if (bMany)
+        {
+            Check(Many.Bays[0][1].PackType == FName(TEXT("drowned_deep")) && Many.Bays[0][0].PackType == CireJunglePacks::Mixed && Many.Bays[0][5].Comp == FCirePackComposition{2, 1, 3} && Many.Bays[0][3].Tier == 4,
+                TEXT("packs keep their type, composition override and tier"));
+            FCireBattlefieldRoutes Round;
+            Check(CireLanePath::ParseJson(CireLanePath::ToJson(Many), Round, Error) && Round.Bays[0] == Many.Bays[0], TEXT("120 packs round-trip through the writer"));
+        }
+        // Replication at scale: 1500 packs per realm (differing realms) survive the chunked wire format.
+        FCireBattlefieldRoutes Huge;
+        for (int32 I = 0; I < 1500; ++I)
+            for (int32 Team = 0; Team < 2; ++Team)
+            {
+                FCireChallengeBay B; B.Position = FVector2D(-20000 + I * 37.3, (Team ? 1 : -1) * (I % 700) * 10.1); B.Radius = 200.f + (I % 27) * 50.f;
+                B.Tier = 1 + I % 4; B.PackType = CireJunglePacks::TypeAt(I + Team); if (I % 3 == 0) B.Comp = {1 + I % 2, 1, 1 + I % 3};
+                Huge.Bays[Team].Add(B);
+            }
+        TArray<TArray<int32>> Chunks; CireLanePath::PackBays(Huge, 77u, Chunks);
+        bool bBudget = Chunks.Num() >= 8; for (const TArray<int32>& C : Chunks) bBudget &= C.Num() <= 1024;
+        TArray<FCireChallengeBay> Got[2]; uint32 Revision = 0;
+        bool bSame = CireLanePath::UnpackBays(Chunks, Revision, Got) && Revision == 77u && Got[0].Num() == 1500 && Got[1].Num() == 1500;
+        for (int32 Team = 0; Team < 2 && bSame; ++Team)
+            for (int32 I = 0; I < 1500 && bSame; ++I)
+            {
+                const FCireChallengeBay& A = Huge.Bays[Team][I]; const FCireChallengeBay& B = Got[Team][I];
+                bSame &= A.Position.Equals(B.Position, 5.1) && A.Radius == B.Radius && A.Tier == B.Tier && A.PackType == B.PackType && A.Comp == B.Comp && A.EffectiveSeed() == B.Seed;
+            }
+        Check(bBudget && bSame, FString::Printf(TEXT("3000 packs replicate in %d chunks inside the array budget and unpack exactly"), Chunks.Num()));
+        Huge.Bays[1] = Huge.Bays[0]; CireLanePath::PackBays(Huge, 78u, Chunks);
+        int32 Ints = 0; for (const TArray<int32>& C : Chunks) Ints += C.Num();
+        Check(Ints == 4 + 3 * 1500 && CireLanePath::UnpackBays(Chunks, Revision, Got) && Got[1] == Got[0], TEXT("identical realms send their packs once"));
+    }
     Check(!CireLanePath::ParseJson(WithBays(Shipped, TEXT("[]")), Doc, Error), TEXT("an empty bays list is rejected (omit it for automatic bays)"));
     Check(!CireLanePath::ParseJson(WithBays(Shipped, TEXT("[{ \"x\": 20000, \"y\": 0, \"radius\": 150 }]")), Doc, Error), TEXT("a radius under 2 m is rejected"));
     Check(!CireLanePath::ParseJson(WithBays(Shipped, TEXT("[{ \"x\": 20000, \"y\": 0, \"tier\": 11 }]")), Doc, Error), TEXT("tier 11 is rejected"));
@@ -150,10 +194,14 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
             Check(CireLanePath::ChallengePosition(World, 1, 3, 0).Equals(CireLanePath::ToWorld(1, Five.Bays[1][2].Position, 0.f), .1), TEXT("pack positions go through the realm frame"));
             if (auto* State = World->GetGameState<ACireGameState>())
             {
+                // jungle-packs: the packs ride in the compact LanePacks chunks (the float layout keeps a zero count per realm).
                 const TArray<float>& L = State->LaneLayout;
                 TArray<float> Extras; CireLanePath::PackExtras(Five, Extras); // layout-wiring: the map layout extras ride at the end
-                Check(L.Num() == 5 + 2 * (1 + 5 * 4) + 3 /* medieval-kingdom: town frame + base tail */ + Extras.Num() && FMath::RoundToInt(L[5]) == 5 && FMath::IsNearlyEqual(L[6 + 4 * 3 + 2], 600.f) && FMath::RoundToInt(L[6 + 4 * 3 + 3]) == 3,
-                    TEXT("packs replicate with x, y, radius and tier"));
+                Check(L.Num() == 5 + 2 + 3 /* medieval-kingdom: town frame + base tail */ + Extras.Num() && FMath::RoundToInt(L[5]) == 0 && FMath::RoundToInt(L[6]) == 0, TEXT("the float layout no longer carries packs"));
+                TArray<TArray<int32>> Chunks; for (const FCireNetInts& C : State->LanePacks) Chunks.Add(C.Values);
+                TArray<FCireChallengeBay> Got[2]; uint32 Revision = 0;
+                Check(CireLanePath::UnpackBays(Chunks, Revision, Got) && Revision == State->LaneRouteVersion && Got[0].Num() == 5 && Got[1].Num() == 5 &&
+                    FMath::IsNearlyEqual(Got[1][4].Radius, 700.f) && Got[0][3].Tier == 3 && Got[0][2].Position.Equals(Five.Bays[0][2].Position, 5.1), TEXT("packs replicate with position, radius, tier and the route revision"));
             }
             if (Town)
             {
@@ -164,21 +212,39 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
             const TArray<ACireMonster*> Stash = Mode->Monsters;
             Mode->Monsters.Reset();
             CireProgression::SpawnPacks(Mode, 1);
-            std::vector<int> TierList(std::begin(Tiers), std::end(Tiers));
-            const CI::PackSchedule Schedule = CI::RouteSchedule(CireLoot::Get().Schedule, TierList);
+            const CI::PackSchedule Schedule = CireProgression::JungleSchedule(World, 0); // jungle-packs: tiers unlock per JunglePacks.json
             TSet<int32> Expected, Seen[2];
             for (int32 Bay = 1; Bay <= 5; ++Bay) if (CI::BayTier(Schedule, Bay, Mode->Clock.Round(), 1) > 0) Expected.Add(Bay);
-            bool bPlaced = true;
+            bool bPlaced = true, bComposed = true;
+            TMap<int32, TArray<ACireMonster*>> ByPack;
             for (ACireMonster* M : Mode->Monsters)
             {
                 if (!IsValid(M) || M->PackId < 0) continue;
                 const int32 Bay = CireProgression::PackBayOf(M->PackId);
                 Seen[FMath::Clamp(M->Lane, 0, 1)].Add(Bay);
+                ByPack.FindOrAdd(M->PackId).Add(M);
                 bPlaced &= FVector::Dist2D(M->SpawnPosition, CireLanePath::ChallengePosition(World, M->Lane, Bay, 0)) <= CireLanePath::ChallengeRadius(World, M->Lane, Bay) + 300.f;
             }
+            // jungle-packs: every pack spawns its composition (3-6: tanks, healers, DPS) with its tier's ability count.
+            for (const auto& Pair : ByPack)
+            {
+                FCirePackComposition Got{0, 0, 0}; int32 Leaders = 0;
+                for (ACireMonster* M : Pair.Value)
+                {
+                    const FCireNPCArchetype* A = M->NPCState ? M->NPCState->Archetype() : nullptr;
+                    if (!A) { bComposed = false; continue; }
+                    const ECirePackRole Role = CireJunglePacks::RoleOf(*A);
+                    (Role == ECirePackRole::Tank ? Got.Tanks : Role == ECirePackRole::Healer ? Got.Healers : Got.Dps) += 1;
+                    Leaders += M->GetNPCClassification() == ECireNPCClass::Boss ? 1 : 0;
+                    bComposed &= M->NPCState->Loadout.Num() == CireJunglePacks::AbilityCount(M->Tier, CireJunglePacks::KitSize(*A));
+                }
+                bComposed &= CireJunglePacks::IsValid(Got) && Leaders == 1;
+            }
+            Check(bComposed, TEXT("every spawned pack follows the composition rules, has one leader and its tier's ability count"));
             Check(Expected.Num() > 0 && Seen[0].Num() == Expected.Num() && Seen[1].Num() == Expected.Num() && Seen[0].Includes(Expected), FString::Printf(TEXT("unlocked packs spawn in both realms (%d expected, %d / %d)"), Expected.Num(), Seen[0].Num(), Seen[1].Num()));
             Check(bPlaced, TEXT("every pack member stands inside its pack's arena"));
-            Check(CireProgression::PackIdFor(3, 1, 16) != CireProgression::PackIdFor(3, 0, 16) && CireProgression::PackBayOf(CireProgression::PackIdFor(3, 1, 16)) == 16, TEXT("pack ids stay unique for 16 bays per realm"));
+            Check(CireProgression::PackIdFor(3, 1, 4000) != CireProgression::PackIdFor(3, 0, 4000) && CireProgression::PackBayOf(CireProgression::PackIdFor(3, 1, 4000)) == 4000 &&
+                CireProgression::PackIdFor(4, 0, 1) != CireProgression::PackIdFor(3, 0, 4000), TEXT("pack ids stay unique for thousands of bays per realm"));
             for (ACireMonster* M : Mode->Monsters) if (IsValid(M)) M->Destroy();
             Mode->Monsters = Stash;
         }
@@ -216,7 +282,12 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
         // Objectives, monster spawns and paths (per team, mirrored).
         const FString Goal = ML::Place(L, ML::Objective, FVector2D(-1850, 0), T1);
         Check(ML::Find(L, Goal)->Radius == 450.f && ML::ObjectiveOf(L, T2) && ML::ObjectiveOf(L, T2)->Owner == T2, TEXT("objectives are placed per team"));
-        Check(ML::Place(L, ML::Objective, FVector2D(-1000, 0), T1).IsEmpty(), TEXT("one objective per team"));
+        {
+            // jungle-packs: a second objective can be placed; Validate explains that the game uses one per team.
+            const FString Extra = ML::Place(L, ML::Objective, FVector2D(-1000, 0), T1);
+            Check(!Extra.IsEmpty() && HasIssue(ML::Validate(L), TEXT("the game runs one castle goal zone per team"), 1), TEXT("extra objectives can be placed and Validate explains them"));
+            ML::Remove(L, Extra);
+        }
         const FString Gate = ML::Place(L, ML::MonsterSpawn, FVector2D(9000, 0), T1, 180.f);
         Check(ML::DisplayLabel(L, *ML::Find(L, Gate)).StartsWith(TEXT("Monsters -> T1")) && ML::Find(L, ML::Find(L, Gate)->Pair)->Target == T2, TEXT("monster spawns target their team; the twin targets the other team"));
         FString Road;
@@ -260,7 +331,7 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
         const FString ThirdTwin = ML::Find(L, Packs[2])->Pair;
         ML::Remove(L, Packs[1]);
         Check(!ML::Find(L, Packs[1]) && ML::Number(L, Packs[2]) == 2 && ML::Number(L, ThirdTwin) == 2 && ML::OfType(L, ML::ChallengePack).Num() == 4 &&
-            ML::DisplayLabel(L, *ML::Find(L, Packs[2])) == TEXT("T1 Pack 2  Tier 4"), TEXT("removing a pack removes its twin and renumbers the rest"));
+            ML::DisplayLabel(L, *ML::Find(L, Packs[2])) == TEXT("T1 Pack 2  T4 Mixed"), TEXT("removing a pack removes its twin and renumbers the rest"));
         ML::Move(L, Packs[2], FVector2D(1000, -900));
         Check(ML::Find(L, Packs[2])->Tier == 4 && ML::Find(L, Packs[2])->Radius == 700.f && ML::Find(L, ThirdTwin)->Position == FVector2D(1000, -900), TEXT("replacing a pack keeps its tier and radius"));
         ML::SetRadius(L, Packs[2], 50000.f); ML::SetTier(L, Packs[2], 0);
@@ -360,7 +431,7 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
             {
                 const FCireMapMarker& A = L.Markers[I]; const FCireMapMarker& B = Round.Markers[I];
                 bSame &= A.Id == B.Id && A.Type == B.Type && A.Owner == B.Owner && A.Target == B.Target && A.Position.Equals(B.Position, .1) && FMath::IsNearlyEqual(A.Yaw, B.Yaw, .1f) &&
-                    A.Points.Num() == B.Points.Num() && A.From == B.From && A.MergeInto == B.MergeInto && A.Pair == B.Pair && A.bMirror == B.bMirror && A.Tier == B.Tier &&
+                    A.Points.Num() == B.Points.Num() && A.From == B.From && A.MergeInto == B.MergeInto && A.Pair == B.Pair && A.bMirror == B.bMirror && A.Tier == B.Tier && A.PackType == B.PackType && A.Comp == B.Comp &&
                     A.SignPos.Equals(B.SignPos, .1) && A.StallPos.Equals(B.StallPos, .1) && FMath::IsNearlyEqual(A.StallYaw, B.StallYaw, .1f);
                 if (!bSame) { UE_LOG(LogCireRouteTools, Warning, TEXT("CIRE_ROUTE_TOOLS_ROUNDTRIP_DIFF %s"), *A.Id); break; }
             }
@@ -395,6 +466,132 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
             TEXT("route -> layout -> route keeps the march points and packs"));
         const TArray<FCireLayoutIssue> Found = ML::Validate(Seeded);
         Check(Found.Num() == 0, TEXT("the seeded layout validates: ") + Issues(Found));
+    }
+
+    // ================================================================ jungle-packs: unlimited markers, 100+ packs, types, compositions
+    {
+        TArray<FString> Failures;
+        Check(CireJunglePacks::RunTests(Failures), TEXT("jungle pack rules: ") + FString::Join(Failures, TEXT(" / ")));
+        FCireMapLayout L;
+        // A minimal valid layout per team, then 120 mirrored packs per team (240 markers), no cap anywhere.
+        // Built on the route file the runtime compiles over (procedural or town frame), so it is valid on either map.
+        FCireBattlefieldRoutes Base; if (!CireLanePath::LoadFile(Base)) Base = CireLanePath::Get(World);
+        ML::Place(L, ML::PlayerSpawn, Base.BaseLocal, T1);
+        const FString Goal = ML::Place(L, ML::Objective, Base.GoalCenter, T1);
+        ML::SetRadius(L, Goal, static_cast<float>(FMath::Min(Base.GoalSize.X, Base.GoalSize.Y) * .5));
+        const FString Gate = ML::Place(L, ML::MonsterSpawn, Base.LocalPoints[0][0], T1, 180.f);
+        FString Road; for (int32 I = 1; I < Base.LocalPoints[0].Num(); ++I) Road = ML::ChainPoint(L, ML::MonsterPath, Road, Base.LocalPoints[0][I], T1, Gate);
+        TArray<FVector2D> Spots;
+        const FVector2D GoalHalf = Base.GoalSize * .5;
+        for (double X = Base.MinX + 500; X <= Base.MaxX - 500 && Spots.Num() < 120; X += 300)
+            for (double Y = -FMath::Min(Base.HalfWidth - 400., 1200.); Y <= FMath::Min(Base.HalfWidth - 400., 1200.) && Spots.Num() < 120; Y += 600)
+            {
+                const FVector2D S(X, Y);
+                if (FMath::Abs(S.X - Base.GoalCenter.X) <= GoalHalf.X + 500 && FMath::Abs(S.Y - Base.GoalCenter.Y) <= GoalHalf.Y + 500) continue;
+                if (FVector2D::Distance(S, Base.LocalPoints[0][0]) < 900 || FVector2D::Distance(S, Base.LocalPoints[1][0]) < 900) continue;
+                Spots.Add(S);
+            }
+        Check(Spots.Num() == 120, TEXT("the realm has room for 120 test packs"));
+        TArray<FString> Packs;
+        for (int32 I = 0; I < Spots.Num(); ++I)
+        {
+            const FString Id = ML::Place(L, ML::ChallengePack, Spots[I], T1);
+            Packs.Add(Id);
+            if (!Id.IsEmpty()) { ML::SetRadius(L, Id, 250.f); ML::SetTier(L, Id, 1 + I % 4); ML::SetPackType(L, Id, CireJunglePacks::TypeAt(I)); }
+        }
+        Check(Packs.Num() == 120 && !Packs.Contains(FString()) && ML::OfType(L, ML::ChallengePack, T1).Num() == 120 && ML::OfType(L, ML::ChallengePack, T2).Num() == 120, TEXT("120 packs per team place (no cap), each with its mirrored twin"));
+        if (Packs.Num() == 120) {
+        Check(ML::Number(L, Packs[119]) == 120 && ML::DisplayLabel(L, *ML::Find(L, Packs[119])).StartsWith(TEXT("T1 Pack 120")), TEXT("packs number past 16"));
+        const FString Next = Packs[50], NextTwin = ML::Find(L, Packs[50])->Pair;
+        ML::Remove(L, Packs[49]);
+        Check(ML::Number(L, Next) == 50 && ML::Number(L, NextTwin) == 50 && ML::Number(L, Packs[119]) == 119 && ML::OfType(L, ML::ChallengePack).Num() == 238, TEXT("removing pack 50 of 120 renumbers the rest (twins too)"));
+        // Pack type and composition: set on one twin, kept on the other; overrides clamp; Validate stays clean.
+        ML::SetPackType(L, Packs[10], TEXT("voidborn"));
+        ML::SetComposition(L, Packs[10], {2, 2, 3});
+        const FCireMapMarker* P = ML::Find(L, Packs[10]); const FCireMapMarker* PT = P ? ML::Find(L, P->Pair) : nullptr;
+        Check(P && PT && PT->PackType == FName(TEXT("voidborn")) && P->Comp == FCirePackComposition{2, 2, 2} && PT->Comp == P->Comp, TEXT("pack type and a clamped composition sync to the twin"));
+        Check(P && ML::PackSummary(*P).StartsWith(FString::Printf(TEXT("T%d Voidborn: 2 tank"), P->Tier)), TEXT("the summary line reads tier, race and composition: ") + (P ? ML::PackSummary(*P) : FString()));
+        ML::SetComposition(L, Packs[10], {0, 0, 0});
+        Check(!ML::Find(L, Packs[10])->HasCompOverride() && CireJunglePacks::IsValid(ML::PackComposition(*ML::Find(L, Packs[10]))), TEXT("AUTO restores a valid automatic composition"));
+        const TArray<FCireLayoutIssue> Found = ML::Validate(L);
+        Check(!HasIssue(Found, TEXT("challenge packs")) && !HasIssue(Found, TEXT("tier 1..4")) && !HasIssue(Found, TEXT("composition")), TEXT("119 packs per team validate without a cap error: ") + Issues(Found));
+        // JSON: packs keep type and composition; a legacy pack (tier 7, no type) loads as T4 Mixed.
+        FCireMapLayout Back; FString Why;
+        Check(ML::ParseJson(ML::ToJson(L), Back, Why) && Back.Markers.Num() == L.Markers.Num() && ML::Find(Back, Packs[10])->PackType == FName(TEXT("voidborn")), TEXT("119 packs per team round-trip: ") + Why);
+        FCireMapLayout Legacy;
+        Check(ML::ParseJson(TEXT("{ \"schemaVersion\": 1, \"units\": \"centimeters\", \"markers\": [ { \"id\": \"challengePack_3\", \"type\": \"challengePack\", \"team\": 1, \"x\": 100, \"y\": 50, \"radius\": 450, \"tier\": 1, \"mirror\": false }, { \"id\": \"challengePack_4\", \"type\": \"challengePack\", \"team\": 1, \"x\": 900, \"y\": 50, \"radius\": 450, \"tier\": 7, \"mirror\": false } ] }"), Legacy, Why) &&
+            Legacy.Markers[0].Tier == 1 && Legacy.Markers[0].PackType == CireJunglePacks::Mixed && !Legacy.Markers[0].HasCompOverride() && Legacy.Markers[1].Tier == 4,
+            TEXT("existing packs (tier 1, no pack type) load as Mixed; old tiers above 4 read as 4: ") + Why);
+        // Runtime: the 119-per-team layout compiles, passes the runtime rules and the network budget, and runs live.
+        FCireBattlefieldRoutes Compiled; TArray<FString> Notes;
+        const bool bRuntime = CireLayoutEditor::CompileForRuntime(World, L, &Compiled, Notes, Why);
+        Check(bRuntime && Compiled.Bays[0].Num() == 119 && Compiled.Bays[1].Num() == 119, TEXT("119 packs per realm compile for the runtime (no replication budget error): ") + Why);
+        if (bRuntime)
+        {
+            const FCireBattlefieldRoutes Original = CireLanePath::Get(World);
+            ON_SCOPE_EXIT { FString Ignore; CireLanePath::ApplyLive(World, Original, &Ignore); };
+            Check(CireLanePath::ApplyLive(World, Compiled, &Why) && CireLanePath::BayCount(World, 1) == 119, TEXT("119 packs per realm apply live: ") + Why);
+            if (auto* State = World->GetGameState<ACireGameState>())
+            {
+                TArray<TArray<int32>> Chunks; for (const FCireNetInts& C : State->LanePacks) Chunks.Add(C.Values);
+                TArray<FCireChallengeBay> Got[2]; uint32 Revision = 0;
+                Check(CireLanePath::UnpackBays(Chunks, Revision, Got) && Got[1].Num() == 119 && Got[0][10].PackType == FName(TEXT("voidborn")) && State->LaneLayout.Num() < 2000,
+                    TEXT("the live state publishes 119 packs per realm compactly"));
+            }
+        }
+        // Eric's playtest ("it just kept making tier 1's"): the tier chosen in the panel reaches every placed pack and its twin,
+        // through save/load and compile. Placing selects the new pack; the tier keys then change it AND the next pack.
+        {
+            FCireLayoutEditorState Ed; Ed.bNoFiles = true; Ed.Layout = L;
+            TArray<FString> Placed;
+            for (int32 Tier = 1; Tier <= 4; ++Tier)
+            {
+                Ed.Sel.Reset();
+                CireLayoutEditor::SetPackTier(Ed, Tier, 0);
+                const FString Id = CireLayoutEditor::PlaceMarker(Ed, ML::ChallengePack, 0, Spots.Num() > 0 ? Spots[0] + FVector2D(0, 140. * Tier) : FVector2D(0, 0), 0.f, 0);
+                Ed.Sel.Id = Id; Placed.Add(Id);
+            }
+            // Place, press "=", place again: both packs are tier 2 (the first one used to change alone, the second stayed 1).
+            Ed.Sel.Reset(); CireLayoutEditor::SetPackTier(Ed, 1, 0);
+            const FString A = CireLayoutEditor::PlaceMarker(Ed, ML::ChallengePack, 0, Spots.Num() > 0 ? Spots[0] + FVector2D(150, 310) : FVector2D(0, 0), 0.f, 0);
+            Ed.Sel.Id = A; CireLayoutEditor::StepPackTier(Ed, 1, 0);
+            const FString B = CireLayoutEditor::PlaceMarker(Ed, ML::ChallengePack, 0, Spots.Num() > 0 ? Spots[0] + FVector2D(150, -310) : FVector2D(0, 0), 0.f, 0);
+            Placed.Add(A); Placed.Add(B);
+            FCireMapLayout Loaded; FString LoadWhy;
+            const bool bLoaded = ML::ParseJson(ML::ToJson(Ed.Layout), Loaded, LoadWhy);
+            FCireBattlefieldRoutes Built; TArray<FString> BuildNotes;
+            const bool bBuilt = ML::CompileRoutes(Loaded, CireLanePath::Get(World), Built, BuildNotes);
+            const int32 Want[] = {1, 2, 3, 4, 2, 2};
+            bool bTiers = bLoaded && bBuilt;
+            for (int32 I = 0; I < Placed.Num() && bTiers; ++I)
+            {
+                const FCireMapMarker* M = ML::Find(Loaded, Placed[I]);
+                const FCireMapMarker* Twin = M ? ML::Find(Loaded, M->Pair) : nullptr;
+                bTiers &= M && Twin && M->Tier == Want[I] && Twin->Tier == Want[I];
+                if (M) for (int32 Realm = 0; Realm < 2; ++Realm)
+                    bTiers &= Built.Bays[Realm].ContainsByPredicate([&](const FCireChallengeBay& Bay) { return Bay.Position.Equals(M->Position, .5) && Bay.Tier == Want[I]; });
+            }
+            Check(bTiers, TEXT("the panel tier (1..4) reaches each placed pack and its twin through save/load and compile; place, =, place gives two tier-2 packs: ") + LoadWhy);
+            // Bulk: select a pack, set T3 and a race, copy to all: every pack of the team and every twin follows.
+            Ed.Sel.Id = A; CireLayoutEditor::SetPackTier(Ed, 3, 0);
+            ML::SetPackType(Ed.Layout, A, TEXT("blightwood"));
+            const int32 Changed = CireLayoutEditor::CopyPackToOthers(Ed, 0.f, 0);
+            bool bAll = Changed > 100;
+            for (const FCireMapMarker& M : Ed.Layout.Markers) if (M.Type == ML::ChallengePack) bAll &= M.Tier == 3 && M.PackType == FName(TEXT("blightwood"));
+            Check(bAll, FString::Printf(TEXT("COPY TO ALL PACKS sets tier and type on every pack and twin (%d changed)"), Changed));
+            Check(CireLayoutEditor::Undo(Ed, 0) && ML::Find(Ed.Layout, B)->Tier == 2, TEXT("the bulk copy is one undo step"));
+        }
+        // Recall points: a marker type of their own, compiled per realm.
+        }
+        ML::Place(L, ML::RecallPoint, FVector2D(-900, 300), T1);
+        FCireBattlefieldRoutes WithRecall; TArray<FString> Ignore;
+        Check(ML::CompileRoutes(L, CireLanePath::Get(World), WithRecall, Ignore) && WithRecall.Recalls[0].Num() == 1 && WithRecall.Recalls[1].Num() == 1 && WithRecall.Recalls[1][0].Position == FVector2D(-900, 300),
+            TEXT("recall points compile into both realms (mirrored)"));
+        // Play Bounds: more than one can exist; Validate says the game uses one.
+        FCireMapLayout Bounds;
+        ML::ChainPoint(Bounds, ML::PlayBounds, FString(), FVector2D(0, 0), Shared);
+        { const FCireMapMarker Copy = Bounds.Markers[0]; Bounds.Markers.Add(Copy); Bounds.Markers.Last().Id = TEXT("playBounds_99"); }
+        Check(HasIssue(ML::Validate(Bounds), TEXT("Play Bounds polygons: the game uses one")), TEXT("a second play bounds polygon is explained by Validate"));
     }
 
     UE_LOG(LogCireRouteTools, Display, TEXT("CIRE_ROUTE_TOOLS_%s checks=%d"), Check.bPass ? TEXT("PASS") : TEXT("FAIL"), Check.Count);

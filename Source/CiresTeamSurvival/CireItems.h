@@ -73,6 +73,9 @@ namespace CireItems
     // ---- shop access / teleport (ServerAction 4 and 8) ----
     CIRESTEAMSURVIVAL_API Cires::Items::ShopAccess ShopAccessFor(const ACireHero* Hero);
     CIRESTEAMSURVIVAL_API void RequestTeleport(ACireHero* Hero);
+    /** jungle-packs: where Recall (Teleport to Base) takes a hero: the nearest Recall Point of his team (map layout
+     *  "recallPoint" markers), else the base. bOutRecallPoint: a Recall Point was used. */
+    CIRESTEAMSURVIVAL_API FVector RecallDestination(const ACireHero* Hero, bool* bOutRecallPoint = nullptr);
     CIRESTEAMSURVIVAL_API void BotShop(ACireHero* Hero);
     // ---- key map (CireKeybindings) ----
     CIRESTEAMSURVIVAL_API FName BeltAction(int32 Index);   // "UseBelt1".."UseBelt3"

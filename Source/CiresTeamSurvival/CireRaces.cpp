@@ -336,7 +336,7 @@ FCireSkillPlan CireRaces::Plan(const FCireSkillProgression& R, int32 Wave, ECire
 TArray<FName> CireRaces::MatchOrder(int32 Seed, const FCireNPCArchetype& A)
 {
     TArray<FName> Pool;
-    for (const FCireNPCAbility& Ab : A.Abilities) if (!Ab.bBasic && !Ab.bCore) Pool.Add(Ab.Id);
+    for (const FCireNPCAbility& Ab : A.Abilities) if (!Ab.bBasic && !Ab.bCore && !Ab.bBorrowed) Pool.Add(Ab.Id); // jungle-packs: borrowed skills are pack-only
     // String CRC, not FName hashes: the order must match on every machine and every run for a seed.
     FRandomStream Stream(static_cast<int32>(HashCombine(static_cast<uint32>(Seed), FCrc::StrCrc32(*A.Id.ToString()))));
     for (int32 I = Pool.Num() - 1; I > 0; --I) Pool.Swap(I, Stream.RandRange(0, I));
@@ -346,7 +346,7 @@ TArray<FName> CireRaces::Loadout(int32 Seed, const FCireNPCArchetype& A, ECireNP
 {
     TArray<FName> Out;
     if (Count <= 0) return Out;
-    for (const FCireNPCAbility& Ab : A.Abilities) if (Ab.bCore) Out.Add(Ab.Id);
+    for (const FCireNPCAbility& Ab : A.Abilities) if (Ab.bCore && !Ab.bBorrowed) Out.Add(Ab.Id);
     const TArray<FName> Order = MatchOrder(Seed, A);
     // Normal and veteran units only ever use the match's drawn hand; higher ranks reach into the rest of the pool.
     const int32 Cap = RankValue <= ECireNPCRank::Veteran ? FMath::Min(A.PoolDraw, Order.Num()) : Order.Num();

@@ -17,6 +17,7 @@
 // packs, the objective (goal zone), player spawns, respawns, boss spawns, rifts and the play bounds (Docs/MapLayout.md
 // "What the game reads").
 #include "CoreMinimal.h"
+#include "CireJunglePacks.h"
 
 struct FCireBattlefieldRoutes;
 
@@ -37,7 +38,8 @@ struct CIRESTEAMSURVIVAL_API FCireMarkerType
     bool bFacing = false, bNamed = false, bRadius = false, bTier = false, bKind = false, bTarget = false, bPoints = false;
     float DefaultRadius = 150.f;
     ECireMarkerOwner DefaultOwner = ECireMarkerOwner::Team1;
-    /** Most markers of this type per owner (0 = unlimited). */
+    /** jungle-packs: how many markers of this type per owner the GAME uses (0 = all). Placement is never limited; Validate
+     *  explains extras ("unlimited of any type", Eric 2026-09-26). */
     int32 MaxPerOwner = 0;
     /** Vendor kinds and the like (Kind cycles through these). */
     TArray<FString> Kinds;
@@ -72,6 +74,11 @@ struct CIRESTEAMSURVIVAL_API FCireMapMarker
     float Weight = 1.f;
     /** layout-wiring: Monster Spawn: split its units across its paths by path weight (JSON "split": "weighted") or evenly. */
     bool bSplitWeighted = false;
+    /** jungle-packs: Challenge Pack type (a race id or "mixed"; JSON "pack", missing = mixed) and the composition override
+     *  (JSON "comp": [tanks, healers, dps]; all zero = the automatic composition from the pack's seed, type and tier). */
+    FName PackType = CireJunglePacks::Mixed;
+    FCirePackComposition Comp = {0, 0, 0};
+    bool HasCompOverride() const { return Comp.Tanks > 0 || Comp.Healers > 0 || Comp.Dps > 0; }
 };
 
 /** Vendor sub-handles. */
@@ -129,7 +136,7 @@ namespace CireMapLayout
     CIRESTEAMSURVIVAL_API bool ParseTypes(const FString& Json, TArray<FCireMarkerType>& Out, FString& Error);
     // Setter ids.
     extern CIRESTEAMSURVIVAL_API const FName PlayerSpawn, MonsterSpawn, MonsterPath, ChallengePack, Vendor, Objective,
-        BossSpawn, Rift, Respawn, PlayBounds, Blocker;
+        BossSpawn, Rift, Respawn, PlayBounds, Blocker, RecallPoint;
 
     /** Vendor types: Content/Data/Vendors.json ("vendors": [{ "id", "name", "sign": {...}, "stall": {...} }]) or the
      *  built-in three shops (weaponsmith, armory, arcane). */
@@ -178,6 +185,12 @@ namespace CireMapLayout
     CIRESTEAMSURVIVAL_API bool SetYaw(FCireMapLayout& Layout, const FString& Id, float Yaw);
     CIRESTEAMSURVIVAL_API bool SetRadius(FCireMapLayout& Layout, const FString& Id, float Radius);
     CIRESTEAMSURVIVAL_API bool SetTier(FCireMapLayout& Layout, const FString& Id, int32 Tier);
+    /** jungle-packs: Challenge Pack type (race id or mixed) and composition override (all zero = automatic; else clamped). */
+    CIRESTEAMSURVIVAL_API bool SetPackType(FCireMapLayout& Layout, const FString& Id, FName Type);
+    CIRESTEAMSURVIVAL_API bool SetComposition(FCireMapLayout& Layout, const FString& Id, const FCirePackComposition& Comp);
+    /** The composition a pack marker spawns (its override, else the automatic one) and its summary line. */
+    CIRESTEAMSURVIVAL_API FCirePackComposition PackComposition(const FCireMapMarker& Pack);
+    CIRESTEAMSURVIVAL_API FString PackSummary(const FCireMapMarker& Pack);
     CIRESTEAMSURVIVAL_API bool SetName(FCireMapLayout& Layout, const FString& Id, const FString& Name);
     /** Vendor type change: the sign and stall move to that type's default spots. */
     CIRESTEAMSURVIVAL_API bool SetKind(FCireMapLayout& Layout, const FString& Id, const FString& Kind);

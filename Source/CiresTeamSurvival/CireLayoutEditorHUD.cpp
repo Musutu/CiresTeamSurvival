@@ -55,6 +55,69 @@ bool CireLayoutEditor::Edit(FCireLayoutEditorState& E, TFunctionRef<bool(FCireMa
     E.bIssuesDirty = true; E.bNavChecked = false; E.bUnsaved = true; E.EditedAt = Now;
     return true;
 }
+int32 CireLayoutEditor::SetPackTier(FCireLayoutEditorState& E, int32 Tier, double Now)
+{
+    Tier = FMath::Clamp(Tier, 1, FCireChallengeBay::MaxTier);
+    const FCireMapMarker* M = E.Sel.IsSet() ? ML::Find(E.Layout, E.Sel.Id) : nullptr;
+    if (M && M->Type == ML::ChallengePack)
+    {
+        const FString Id = M->Id;
+        if (M->Tier != Tier) Edit(E, [&](FCireMapLayout& X) { return ML::SetTier(X, Id, Tier); }, Now);
+    }
+    E.NextTier = Tier;
+    return Tier;
+}
+int32 CireLayoutEditor::StepPackTier(FCireLayoutEditorState& E, int32 Delta, double Now)
+{
+    const FCireMapMarker* M = E.Sel.IsSet() ? ML::Find(E.Layout, E.Sel.Id) : nullptr;
+    const int32 From = M && M->Type == ML::ChallengePack ? M->Tier : E.NextTier;
+    return SetPackTier(E, From + Delta, Now);
+}
+FName CireLayoutEditor::StepPackType(FCireLayoutEditorState& E, int32 Delta, double Now)
+{
+    const FCireMapMarker* M = E.Sel.IsSet() ? ML::Find(E.Layout, E.Sel.Id) : nullptr;
+    const bool bPack = M && M->Type == ML::ChallengePack;
+    const FName Next = CireJunglePacks::TypeAt(CireJunglePacks::TypeIndex(bPack ? M->PackType : E.NextPackType) + Delta);
+    if (bPack) { const FString Id = M->Id; Edit(E, [&](FCireMapLayout& X) { return ML::SetPackType(X, Id, Next); }, Now); }
+    E.NextPackType = Next;
+    return Next;
+}
+FString CireLayoutEditor::PlaceMarker(FCireLayoutEditorState& E, FName Type, int32 Realm, const FVector2D& Local, float Yaw, double Now)
+{
+    const FCireMarkerType* T = ML::FindType(Type);
+    if (!T) return FString();
+    const ECireMarkerOwner Owner = T->DefaultOwner == ECireMarkerOwner::Shared ? ECireMarkerOwner::Shared : ML::TeamOfRealm(Realm);
+    const float* Radius = E.NextRadius.Find(Type);
+    FString Id;
+    Edit(E, [&](FCireMapLayout& X)
+    {
+        Id = ML::Place(X, Type, Local, Owner, Yaw, true);
+        if (Id.IsEmpty()) return false;
+        if (T->bRadius) ML::SetRadius(X, Id, Radius ? *Radius : T->DefaultRadius);
+        if (T->bTier) { ML::SetTier(X, Id, E.NextTier); ML::SetPackType(X, Id, E.NextPackType); }
+        return true;
+    }, Now);
+    return Id;
+}
+int32 CireLayoutEditor::CopyPackToOthers(FCireLayoutEditorState& E, float RadiusCm, double Now)
+{
+    const FCireMapMarker* Src = E.Sel.IsSet() ? ML::Find(E.Layout, E.Sel.Id) : nullptr;
+    if (!Src || Src->Type != ML::ChallengePack) return 0;
+    const FCireMapMarker Source = *Src;
+    int32 Changed = 0;
+    Edit(E, [&](FCireMapLayout& X)
+    {
+        TArray<FString> Ids;
+        for (const FCireMapMarker& M : X.Markers)
+            if (M.Type == ML::ChallengePack && M.Id != Source.Id && M.Id != Source.Pair && M.Owner == Source.Owner &&
+                (RadiusCm <= 0 || FVector2D::Distance(M.Position, Source.Position) <= RadiusCm) &&
+                (M.Tier != Source.Tier || M.PackType != Source.PackType || M.Comp != Source.Comp)) Ids.Add(M.Id);
+        for (const FString& Id : Ids) { ML::SetTier(X, Id, Source.Tier); ML::SetPackType(X, Id, Source.PackType); ML::SetComposition(X, Id, Source.Comp); }
+        Changed = Ids.Num();
+        return Changed > 0;
+    }, Now);
+    return Changed;
+}
 bool CireLayoutEditor::Undo(FCireLayoutEditorState& E, double Now)
 {
     if (E.History.Num() == 0) return false;
@@ -581,7 +644,7 @@ void ACireHUD::TickLayoutEditor()
             const ECireMarkerOwner PlaceOwner = T && T->DefaultOwner == ECireMarkerOwner::Shared ? ECireMarkerOwner::Shared : ML::TeamOfRealm(CursorRealm);
             FString What = Moving ? FString::Printf(TEXT("REPLACE %s"), *ML::DisplayLabel(L, *Moving)) :
                 FString::Printf(TEXT("%s %s"), *ML::TeamTag(PlaceOwner), T ? *T->Name.ToUpper() : TEXT(""));
-            if (!Moving && T && T->Id == ML::ChallengePack) What += FString::Printf(TEXT("  %d  Tier %d  r %.1f m"), ML::OfType(L, ML::ChallengePack, PlaceOwner).Num() + 1, E.NextTier, R / 100.f);
+            if (!Moving && T && T->Id == ML::ChallengePack) What += FString::Printf(TEXT("  %d  T%d %s  r %.1f m"), ML::OfType(L, ML::ChallengePack, PlaceOwner).Num() + 1, E.NextTier, *CireJunglePacks::TypeLabel(E.NextPackType), R / 100.f);
             TextFx(What + TEXT("   click: place   Esc: cancel"), S.X + 18, S.Y + 10, 9.f, CireUIColors::Parchment, ECireFont::Bold, true);
         }
     }
@@ -610,22 +673,15 @@ void ACireHUD::TickLayoutEditor()
             else Say(TEXT("That path is full (64 points)."));
             return;
         }
-        FString Id;
-        const float Radius = RadiusFor(T);
-        if (Edit([&](FCireMapLayout& X)
-            {
-                Id = ML::Place(X, T->Id, Local, PlaceOwner, Yaw, true);
-                if (Id.IsEmpty()) return false;
-                if (T->bRadius) ML::SetRadius(X, Id, Radius);
-                if (T->bTier) ML::SetTier(X, Id, E.NextTier);
-                return true;
-            }))
+        // jungle-packs: one placement path for the editor and the tests (radius, next tier, next pack type).
+        const FString Id = CireLayoutEditor::PlaceMarker(E, T->Id, Realm, Local, Yaw, Now);
+        if (!Id.IsEmpty())
         {
             Select({Id, INDEX_NONE, ECireVendorPart::Npc});
             const FCireMapMarker* M = ML::Find(L, Id);
             Say(FString::Printf(TEXT("Placed %s%s."), M ? *ML::DisplayLabel(L, *M) : TEXT(""), M && M->bMirror ? TEXT(" and its mirrored twin") : TEXT("")));
         }
-        else Say(FString::Printf(TEXT("No more %s markers for this team."), *T->Name));
+        else Say(FString::Printf(TEXT("Could not place %s here."), *T->Name));
     };
     auto ReplaceAt = [&](int32 Realm, const FVector2D& Local)
     {
@@ -694,12 +750,8 @@ void ACireHUD::TickLayoutEditor()
         if (M) { const FString Id = M->Id; const float R = M->Radius + Delta; Edit([&](FCireMapLayout& X) { return ML::SetRadius(X, Id, R); }); }
         else E.NextRadius.Add(T->Id, FMath::Clamp(RadiusFor(T) + Delta, 50.f, 5000.f));
     };
-    auto StepTier = [&](int32 Delta)
-    {
-        const FCireMapMarker* M = SelectedMarker();
-        if (M && M->Type == ML::ChallengePack) { const FString Id = M->Id; const int32 Tier = M->Tier + Delta; Edit([&](FCireMapLayout& X) { return ML::SetTier(X, Id, Tier); }); }
-        else E.NextTier = FMath::Clamp(E.NextTier + Delta, 1, FCireChallengeBay::MaxTier);
-    };
+    // jungle-packs: the selected pack's tier AND the next placed pack's (placing selects the new pack).
+    auto StepTier = [&](int32 Delta) { CireLayoutEditor::StepPackTier(E, Delta, Now); };
     auto CycleOwner = [&]()
     {
         const FCireMapMarker* M = SelectedMarker(); if (!M) return;
@@ -720,9 +772,28 @@ void ACireHUD::TickLayoutEditor()
         if (Edit([&](FCireMapLayout& X) { return ML::SetMirror(X, Id, bNext); }))
             Say(bNext ? TEXT("Mirror on: the other team gets a matching twin.") : TEXT("Mirror off: this marker and its twin are now independent."));
     };
+    // jungle-packs: Challenge Pack type (race or Mixed): the selection's, else the next placed pack's.
+    auto StepPackType = [&](int32 Delta) { CireLayoutEditor::StepPackType(E, Delta, Now); };
+    // jungle-packs: composition counts (live validation: a step that breaks the rules is refused with the reason).
+    auto StepComp = [&](ECirePackRole PackRole, int32 Delta)
+    {
+        const FCireMapMarker* M = SelectedMarker(); if (!M || M->Type != ML::ChallengePack) return;
+        FCirePackComposition C = ML::PackComposition(*M);
+        (PackRole == ECirePackRole::Tank ? C.Tanks : PackRole == ECirePackRole::Healer ? C.Healers : C.Dps) += Delta;
+        if (!CireJunglePacks::IsValid(C))
+        {
+            Say(C.Total() > CireJunglePacks::MaxSize ? FString(TEXT("A pack holds at most 6 monsters: lower another role first.")) :
+                FString::Printf(TEXT("A pack needs %s."), PackRole == ECirePackRole::Tank ? TEXT("1-2 tanks") : PackRole == ECirePackRole::Healer ? TEXT("1-2 healers") : TEXT("1-3 DPS")));
+            return;
+        }
+        const FString Id = M->Id;
+        Edit([&](FCireMapLayout& X) { return ML::SetComposition(X, Id, C); });
+    };
     auto CycleKind = [&]()
     {
-        const FCireMapMarker* M = SelectedMarker(); if (!M || M->Type != ML::Vendor) return;
+        const FCireMapMarker* M = SelectedMarker();
+        if ((M && M->Type == ML::ChallengePack) || (!M && E.Armed == ML::ChallengePack)) { StepPackType(1); return; } // jungle-packs: K cycles the pack type
+        if (!M || M->Type != ML::Vendor) return;
         const TArray<FCireVendorType>& VT = ML::VendorTypes();
         int32 Index = VT.IndexOfByPredicate([&](const FCireVendorType& T) { return T.Id == M->Kind; });
         const FString Id = M->Id, Next = VT.Num() ? VT[(Index + 1) % VT.Num()].Id : FString();
@@ -1068,8 +1139,43 @@ void ACireHUD::TickLayoutEditor()
         }
         if (T && T->bTier)
         {
-            Stepper(TEXT("TIER"), FString::Printf(TEXT("Tier %d"), M->Tier), Y, [&]() { StepTier(-1); }, [&]() { StepTier(1); }, TEXT("Base tier 1..10 (- and = keys); rounds promote it."));
+            // jungle-packs: tier 1..4, pack type (race), composition and the summary line (Docs/JunglePacks.md).
+            Label(TEXT("TIER"), IX, Y + 5, 8.f, CireUIColors::Muted);
+            for (int32 K = 1; K <= FCireChallengeBay::MaxTier; ++K)
+                if (Button(FString::Printf(TEXT("T%d"), K), IX + 96 + (K - 1) * 36, Y, 32, FString::Printf(TEXT("Tier %d (- and = keys step it): %s per monster. New packs you place also get this tier."), K, *CireJunglePacks::AbilityLabel(K)), true, M->Tier == K, CireUIColors::Gold))
+                    CireLayoutEditor::SetPackTier(E, K, Now);
             Y += 26;
+            Stepper(TEXT("PACK TYPE"), CireJunglePacks::TypeLabel(M->PackType), Y, [&]() { StepPackType(-1); }, [&]() { StepPackType(1); },
+                TEXT("Monster race of the pack (K cycles), or Mixed: every race's units (and the rare creatures)."));
+            Y += 26;
+            const FCirePackComposition C = ML::PackComposition(*M);
+            const bool bAuto = !M->HasCompOverride();
+            TextFx(bAuto ? TEXT("COMPOSITION  (auto from seed, type, tier)") : TEXT("COMPOSITION  (custom)"), IX, Y + 2, 8.f, CireUIColors::Gold, ECireFont::Bold, true);
+            if (Button(TEXT("AUTO"), IX + IW - 56, Y - 2, 56, TEXT("Back to the automatic composition (generated from the pack's seed, type and tier)."), !bAuto, bAuto, CireUIColors::Teal))
+            { const FString PackId = M->Id; Edit([&](FCireMapLayout& X) { return ML::SetComposition(X, PackId, {0, 0, 0}); }); }
+            Y += 22;
+            struct FRoleRow { ECirePackRole Role; const TCHAR* Caption; int32 Min, Max; };
+            const FRoleRow Rows[] = {{ECirePackRole::Tank, TEXT("TANKS"), CireJunglePacks::MinTanks, CireJunglePacks::MaxTanks},
+                {ECirePackRole::Healer, TEXT("HEALERS"), CireJunglePacks::MinHealers, CireJunglePacks::MaxHealers}, {ECirePackRole::Dps, TEXT("DPS"), CireJunglePacks::MinDps, CireJunglePacks::MaxDps}};
+            for (const FRoleRow& Row : Rows)
+            {
+                const int32 Count = C.Count(Row.Role);
+                const ECirePackRole PackRole = Row.Role;
+                Stepper(Row.Caption, FString::Printf(TEXT("%d  (%d-%d)"), Count, Row.Min, Row.Max), Y, [&]() { StepComp(PackRole, -1); }, [&]() { StepComp(PackRole, 1); },
+                    TEXT("Monsters of this role in the pack. Rules: 1-2 tanks, 1-2 healers, 1-3 DPS, 3-6 monsters in all. Mirrored twins follow."));
+                Y += 24;
+            }
+            const bool bValid = CireJunglePacks::IsValid(C);
+            Label(FString::Printf(TEXT("%d monsters (3-6)%s"), C.Total(), bValid ? TEXT("") : TEXT("  BREAKS THE RULES")), IX, Y + 2, 8.f, bValid ? CireUIColors::Muted : CireUIColors::Red);
+            Y += 16;
+            Wrapped(ML::PackSummary(*M), IX, Y, IW, 9.f, CireUIColors::BrightGold, 2);
+            Y += 30;
+            // Bulk: this pack's tier, type and composition onto the team's other packs (twins follow).
+            if (Button(TEXT("COPY TO ALL PACKS"), IX, Y, IW * .5f - 2, TEXT("Give every other pack of this team this pack's tier, type and composition (mirrored twins follow). One undo step."), true, false, CireUIColors::Teal))
+            { const int32 N = CireLayoutEditor::CopyPackToOthers(E, 0.f, Now); Say(FString::Printf(TEXT("%d packs now match this one."), N)); }
+            if (Button(TEXT("COPY WITHIN 30 m"), IX + IW * .5f + 2, Y, IW * .5f - 2, TEXT("Same, only for this team's packs within 30 m of this one."), true, false, CireUIColors::Teal))
+            { const int32 N = CireLayoutEditor::CopyPackToOthers(E, 3000.f, Now); Say(FString::Printf(TEXT("%d nearby packs now match this one."), N)); }
+            Y += 28;
         }
         if (M->Type == ML::Vendor)
         {
@@ -1137,7 +1243,20 @@ void ACireHUD::TickLayoutEditor()
         {
             const FCireMarkerType* T = ML::FindType(E.Armed);
             if (T && T->bRadius) { Label(FString::Printf(TEXT("Next radius %.1f m ([ ])"), RadiusFor(T) / 100.f), IX, Y, 8.5f, CireUIColors::Muted); Y += 14; }
-            if (T && T->bTier) { Label(FString::Printf(TEXT("Next tier %d (- =)"), E.NextTier), IX, Y, 8.5f, CireUIColors::Muted); Y += 14; }
+            if (T && T->bTier)
+            {
+                // jungle-packs: the next pack's tier and type, right in the panel.
+                Label(TEXT("NEXT TIER"), IX, Y + 5, 8.f, CireUIColors::Muted);
+                for (int32 K = 1; K <= FCireChallengeBay::MaxTier; ++K)
+                    if (Button(FString::Printf(TEXT("T%d"), K), IX + 96 + (K - 1) * 36, Y, 32, FString::Printf(TEXT("Packs you place next are tier %d (- and = keys)."), K), true, E.NextTier == K, CireUIColors::Gold))
+                        CireLayoutEditor::SetPackTier(E, K, Now);
+                Y += 26;
+                Label(TEXT("NEXT TYPE"), IX, Y + 5, 8.f, CireUIColors::Muted);
+                if (Button(TEXT("<"), IX + 96, Y, 22, TEXT("Previous race (K cycles)."))) StepPackType(-1);
+                Label(CireJunglePacks::TypeLabel(E.NextPackType), IX + 166 - TextWidth(CireJunglePacks::TypeLabel(E.NextPackType), 9.f) * .5f, Y + 5, 9.f, CireUIColors::Parchment);
+                if (Button(TEXT(">"), IX + 214, Y, 22, TEXT("Next race (K cycles)."))) StepPackType(1);
+                Y += 26;
+            }
         }
     }
     // Paths: length and walk time per realm.
