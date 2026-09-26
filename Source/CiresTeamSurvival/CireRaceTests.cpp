@@ -209,15 +209,22 @@ bool CireRaces::RunSmoke(ACireGameMode* Mode)
                     MID->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("RaceTintStrength")), RaceStrength) &&
                     MID->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("RimStrength")), RimStrength);
                 Check(HasSkin(M) && bParams, TEXT("race skin MID on the Tripo body"));
-                Check(RankColorValue.Equals(Rank(ECireNPCRank::Champion).Color, .01f) && RimStrength > 0, TEXT("rank colour and rim parameters applied"));
+                // tier-readability: ranks no longer tint or glow the body (cire.RankBodyColours 0); the race palette stays.
+                float Glow = -1, Armor = -1, Body = -1;
+                MID->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("RankGlow")), Glow);
+                MID->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("RankArmor")), Armor);
+                MID->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("RankBody")), Body);
+                Check(!RankBodyColours() && RankColorValue.Equals(Rank(ECireNPCRank::Normal).Color, .01f) && RimStrength == 0.f && Glow == 0.f && Armor == 0.f && Body == 0.f,
+                    TEXT("a champion's body carries no rank tint, glow or rim"));
                 Check(RaceTint.Equals(FindRace(TEXT("drowned_deep"))->Palette(1).Base, .01f) && RaceStrength > .5f, TEXT("race palette variant parameters applied to a borrowed body"));
                 UTexture* Base = nullptr;
                 Check(MID && MID->GetTextureParameterValue(FHashedMaterialParameterInfo(TEXT("BaseColorTex")), Base) && Base && (Base->GetName().Contains(TEXT("BlightCaster")) || Base->GetName().Contains(TEXT("Tidecaller"))),
                     TEXT("skin keeps the body's own base colour texture")); // tripo-races: the Tidecaller now has its own body
                 ApplyRank(M, ECireNPCRank::Veteran, 0);
                 FLinearColor Again; MID = Cast<UMaterialInstanceDynamic>(M->GetMesh()->GetMaterial(0));
-                Check(MID && MID->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("RankColor")), Again) && Again.Equals(Rank(ECireNPCRank::Veteran).Color, .01f),
-                    TEXT("rank changes update the same skin"));
+                Check(MID && MID->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("RankColor")), Again) && Again.Equals(Rank(ECireNPCRank::Normal).Color, .01f) &&
+                    MID->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("RaceTint")), RaceTint) && RaceTint.Equals(FindRace(TEXT("drowned_deep"))->Palette(0).Base, .01f),
+                    TEXT("rank changes update the same skin (race palette, no rank tint)"));
             }
             else UE_LOG(LogCireRaceTests, Display, TEXT("CIRE_RACE_SKIN_SKIPPED (no rendered Tripo body in this process)"));
         }

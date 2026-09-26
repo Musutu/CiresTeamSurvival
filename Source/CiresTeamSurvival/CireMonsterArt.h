@@ -164,6 +164,9 @@ public:
     /** Hand poses / two-hand setup of the props this body holds (CireGrip). */
     CireGrip::FHands GripHands;
     UFUNCTION() void OnRep_BodySeed();
+    /** The overlay rim a monster should wear now (transparent = none). tier-readability: pack tiers and ranks no longer
+     *  glow (cire.RankBodyColours 0): only enraged units, rare / bonus spawns and lane bosses keep a rim. */
+    static FLinearColor RimFor(const ACireMonster* Monster);
 
 private:
     struct FAction

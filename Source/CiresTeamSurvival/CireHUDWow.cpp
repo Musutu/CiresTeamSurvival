@@ -12,6 +12,7 @@
 #include "CireTargeting.h"
 #include "CireNPCState.h"
 #include "CireRaces.h" // monster-races: rank colours, race names
+#include "CireZones.h" // tier-readability: pack tier tags and colours, zone text
 #include "CireUIStyle.h"
 #include "CireBanners.h"
 #include "CireEffects.h"
@@ -66,6 +67,9 @@ struct FInsight
     int32 Rank = 0;
     FLinearColor RankColor = FLinearColor::White;
     FString RankLabel, RaceName;
+    // tier-readability: jungle-pack tier (1..4, 0 = not a pack monster) and the pack's leader.
+    int32 PackTier = 0;
+    bool bPackLeader = false;
 };
 FString Short(const FString& Name,int32 Max=22) { return Name.Len()>Max ? Name.Left(Max-2)+TEXT("..") : Name; }
 float Frac(float A,float B) { return B>0.f?FMath::Clamp(A/B,0.f,1.f):0.f; }
@@ -225,6 +229,9 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
                 U.Subtitle=FString::Printf(TEXT("<%s | %s>"),*Race->Short,*U.Subtitle.Mid(1,U.Subtitle.Len()-2));
             }
             if(Rank!=ECireNPCRank::Normal&&Rank!=ECireNPCRank::Warlord&&U.Class!=1)U.ClassName=Style.Label+TEXT(" ")+U.RoleName+(M->Tier>0?FString::Printf(TEXT(" (Tier %d)"),M->Tier):FString());
+            // tier-readability: pack monsters read "T3 Pack Tank" (the tier replaces the rank colour everywhere).
+            U.PackTier=CireZones::TierOf(M);U.bPackLeader=U.PackTier>0&&U.Class==3;
+            if(U.PackTier>0)U.ClassName=CireZones::TierTag(U.PackTier)+(U.bPackLeader?TEXT(" Pack Leader "):TEXT(" Pack "))+U.RoleName;
             if(M->NPCState&&M->NPCState->SkillTier>0)U.ClassName+=FString::Printf(TEXT("  |  Skills%s"),M->NPCState->SkillTier>1?*CireRaces::TierSuffix(M->NPCState->SkillTier):TEXT(" I"));
             else if(M->NPCState&&M->NPCState->bLoadoutSet)U.ClassName+=TEXT("  |  No skills yet");
         }
@@ -346,12 +353,12 @@ void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
 {
     const auto* Self=Cast<ACireHero>(PlayerOwner?PlayerOwner->GetPawn():nullptr);
     const FInsight U=Describe(GetWorld(),Actor,Self);
-    const FLinearColor Trim=U.bMonster&&U.Rank>0&&U.Reaction!=1?U.RankColor:U.Class==1?Silver:U.Class>=2?WowGold:Gold*.9f; // monster-races: rank colour
+    const FLinearColor Trim=U.PackTier>0?CireZones::TierColor(U.PackTier):U.bMonster&&U.Rank>0&&U.Reaction!=1?U.RankColor:U.Class==1?Silver:U.Class>=2?WowGold:Gold*.9f; // monster-races: rank colour; tier-readability: pack tier colour
     // Elite/rare "dragon": a swept wing of feathered blades on the portrait's right
     // side, longest at the top (WoW's elite dragon silhouette), plus a dark outline.
-    if(U.Class>=1)
+    if(U.Class>=1||U.PackTier>=3) // tier-readability: T3 / T4 packs wear the elite dragon in their tier colour
     {
-        const FLinearColor Wing=U.Class==1?Silver:WowGold;
+        const FLinearColor Wing=U.PackTier>0?CireZones::TierColor(U.PackTier):U.Class==1?Silver:WowGold;
         for(int32 Pass=0;Pass<2;++Pass)for(int32 I=0;I<6;++I)
         {
             const float A=FMath::DegreesToRadians(-78.f+I*23.f),Spread=FMath::DegreesToRadians(9.f+I*1.2f);
@@ -377,7 +384,7 @@ void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
     Icon(IconId,CX-R*.62f,CY-R*.62f,R*1.24f,U.bDead?Muted:U.bMonster?RoleTint(U.Role):ReactionColor(U)*.9f+FLinearColor(.1f,.1f,.1f,0));
     if(U.bDead){Disc(CX,CY,R,FLinearColor(0,0,0,.55f));}
     const bool bThemed=CireUIStyle::HasThemeArt();
-    if(bThemed)CireUIStyle::PortraitRing(Painter(),CX,CY,R,U.Class>=1||(U.bMonster&&U.Rank>0)?Trim*1.25f+FLinearColor(.1f,.1f,.1f,0):FLinearColor::White); // ui-themes
+    if(bThemed)CireUIStyle::PortraitRing(Painter(),CX,CY,R,U.Class>=1||U.PackTier>0||(U.bMonster&&U.Rank>0)?Trim*1.25f+FLinearColor(.1f,.1f,.1f,0):FLinearColor::White); // ui-themes
     else{Circle(CX,CY,R,Trim,bSmall?1.6f:2.2f);Circle(CX,CY,R+2.5f,FLinearColor(0,0,0,.9f),1.f);}
     // Level badge (bottom-left): hero level, elite tier, or a skull for bosses.
     const float BR=bSmall?8.f:10.5f,BX=CX-R*.78f,BY=CY+R*.74f;
@@ -392,7 +399,7 @@ void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
     {
         const FString Level=U.bHero?FString::FromInt(U.Level):U.Tier>0?FString::Printf(TEXT("T%d"),U.Tier):FString();
         const float LS=bSmall?9.5f:11.f;
-        TextFx(Level,BX-TextWidthFont(Level,LS,ECireFont::Numbers)*.5f,BY-CireUIStyle::ReadableSize(LS)*.64f,LS,U.Tier>0?WowGold:Neutral,ECireFont::Numbers,true,false);
+        TextFx(Level,BX-TextWidthFont(Level,LS,ECireFont::Numbers)*.5f,BY-CireUIStyle::ReadableSize(LS)*.64f,LS,U.PackTier>0?CireZones::TierColor(U.PackTier):U.Tier>0?WowGold:Neutral,ECireFont::Numbers,true,false);
     }
     // Role badge (bottom-right): Caster / Ranged / Tank / Bruiser / Healer.
     if(U.Role!=ERole::None)
@@ -426,15 +433,19 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     const FInsight U=Describe(GetWorld(),Actor,Self);
     const auto* Mob=Cast<ACireMonster>(Actor);
     const FLinearColor React=ReactionColor(U);
-    const bool bRankFrame=U.bMonster&&U.Rank>0&&U.Reaction!=1; // monster-races: the border shows the rank colour (neutral packs stay yellow)
-    Backdrop(bRankFrame?U.RankColor:U.Class==3?Hostile:U.Class==2?WowGold:U.Class==1?Silver:bFocus?Gold:React*.8f);
+    // monster-races: the border shows the rank colour (neutral packs stay yellow). tier-readability: pack monsters show
+    // their tier colour instead (T1 silver, T2 green, T3 blue, T4 gold), neutral or not.
+    const bool bTierFrame=U.PackTier>0,bRankFrame=!bTierFrame&&U.bMonster&&U.Rank>0&&U.Reaction!=1;
+    const FLinearColor TierC=CireZones::TierColor(U.PackTier);
+    Backdrop(bTierFrame?TierC:bRankFrame?U.RankColor:U.Class==3?Hostile:U.Class==2?WowGold:U.Class==1?Silver:bFocus?Gold:React*.8f);
     UnitTip(Actor,0,0,W,H);
     const float PR=bFocus?26.f:33.f,PCX=W-10-PR,PCY=bFocus?44.f:50.f,BW=PCX-PR-18;
     // Header: classification and role; threat % badge on hostile NPCs.
-    const FString Header=CireUnitFrameHeader(U.bMonster,U.bHero,U.bSelf,U.Reaction,U.Class,U.Rank,Mob&&Mob->IsLaneBoss(),U.RoleName,U.RankLabel,bFocus);
+    const FString Header=bTierFrame?(bFocus?TEXT("FOCUS  "):TEXT(""))+CireZones::FrameHeader(U.PackTier,U.bPackLeader,U.RoleName):
+        CireUnitFrameHeader(U.bMonster,U.bHero,U.bSelf,U.Reaction,U.Class,U.Rank,Mob&&Mob->IsLaneBoss(),U.RoleName,U.RankLabel,bFocus);
     // hud-art: the caption starts past the theme's corner ornament (it covered "ELITE / CASTER").
     const float HX=FMath::Max(10.f,CireUIStyle::FrameCornerClear(W,H)+2.f);
-    TextFx(Painter().Fit(Header,bFocus?8.5f:9.5f,BW-(HX-10.f)-(Mob&&!bFocus?40.f:0.f),ECireFont::Heading),HX,3.5f,bFocus?8.5f:9.5f,bRankFrame?U.RankColor:U.Class==3?Hostile:U.Class>=1?WowGold:Parchment*.8f,ECireFont::Heading,true,true);
+    TextFx(Painter().Fit(Header,bFocus?8.5f:9.5f,BW-(HX-10.f)-(Mob&&!bFocus?40.f:0.f),ECireFont::Heading),HX,3.5f,bFocus?8.5f:9.5f,bTierFrame?TierC:bRankFrame?U.RankColor:U.Class==3?Hostile:U.Class>=1?WowGold:Parchment*.8f,ECireFont::Heading,true,true);
     bool bKnown=false;const float Threat=Mob&&Self?ThreatPercent(Mob,Self,bKnown):0.f;
     if(Mob&&bKnown&&!bFocus)
     {
@@ -448,7 +459,13 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     // Name band in reaction colour, then the green health bar with value and percent.
     const float NY=bFocus?17.f:19.f,NH=bFocus?15.f:18.f;
     Panel(10,NY,BW,NH,React*FLinearColor(.42f,.42f,.42f,.92f));Panel(10,NY,BW,NH*.45f,FLinearColor(1,1,1,.07f));
-    TextFx(Painter().Fit(U.Name,bFocus?11.f:13.f,BW-8,ECireFont::Bold),14,NY+(bFocus?1.f:1.5f),bFocus?11.f:13.f,FLinearColor::White,ECireFont::Bold,true,false);
+    {
+        // tier-readability: "T3" next to the name, in the tier colour.
+        const float NS=bFocus?11.f:13.f;const FString Tag=CireZones::TierTag(U.PackTier);const float TagW=Tag.IsEmpty()?0.f:TextWidthFont(Tag,NS,ECireFont::Numbers)+6.f;
+        const FString Shown=Painter().Fit(U.Name,NS,BW-8-TagW,ECireFont::Bold);
+        TextFx(Shown,14,NY+(bFocus?1.f:1.5f),NS,FLinearColor::White,ECireFont::Bold,true,false);
+        if(!Tag.IsEmpty())TextFx(Tag,14+TextWidthFont(Shown,NS,ECireFont::Bold)+6.f,NY+(bFocus?1.f:1.5f),NS,TierC,ECireFont::Numbers,true,false);
+    }
     const float HY=NY+NH+2,HH=bFocus?14.f:18.f;
     const float HF=Frac(U.HP,U.MaxHP);
     if(CireUIStyle::HasThemeArt())Bar(10,HY,BW,HH,HF,U.bDead?Muted*.5f:HealthGreen); // ui-themes: kit bar (themed frame, trailing chunk)
@@ -557,10 +574,16 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
         if(CireUIStyle::HasThemeArt())CireUIStyle::Medallion(Painter(),15,Y+15,9.5f,FString(),FLinearColor::White);
         else{Disc(15,Y+15,9.5f,FLinearColor(.07f,.06f,.04f,1));Circle(15,Y+15,9.5f,bSkull?Hostile:WowGold,1.2f,20);}
         if(bSkull){Disc(15,Y+13.5f,5.2f,Parchment);Panel(12,Y+16.5f,6,3,Parchment);Disc(13,Y+13.5f,1.4f,FLinearColor(0,0,0,1),8);Disc(17,Y+13.5f,1.4f,FLinearColor(0,0,0,1),8);}
-        else TextFx(FString::Printf(TEXT("T%d"),M->Tier),9.5f,Y+9.5f,8.5f,WowGold,ECireFont::Numbers,true,false);
+        else TextFx(FString::Printf(TEXT("T%d"),M->Tier),9.5f,Y+9.5f,8.5f,CireZones::TierOf(M)>0?CireZones::TierColor(M->Tier):WowGold,ECireFont::Numbers,true,false);
         const bool bEnraged=M->NPCState&&M->NPCState->HasStatus(CireNPCStatus::Enraged);
         const bool bIsFocus=Controller&&Controller->FocusTarget==M;
-        TextFx(Painter().Fit(M->GetNPCDisplayName(),10.5f,bEnraged||bIsFocus?118.f:150.f,ECireFont::Bold),30,Y+3,10.5f,bSkull?FLinearColor(1.f,.45f,.35f,1):WowGold,ECireFont::Bold,true,false);
+        {
+            // tier-readability: pack leaders carry their pack's "T#" after the name, in the tier colour.
+            const FString Tag=CireZones::TierTag(CireZones::TierOf(M));const float TagW=Tag.IsEmpty()?0.f:TextWidthFont(Tag,10.5f,ECireFont::Numbers)+5.f;
+            const FString Shown=Painter().Fit(M->GetNPCDisplayName(),10.5f,(bEnraged||bIsFocus?118.f:150.f)-TagW,ECireFont::Bold);
+            TextFx(Shown,30,Y+3,10.5f,bSkull?FLinearColor(1.f,.45f,.35f,1):WowGold,ECireFont::Bold,true,false);
+            if(!Tag.IsEmpty())TextFx(Tag,30+TextWidthFont(Shown,10.5f,ECireFont::Bold)+5.f,Y+3,10.5f,CireZones::TierColor(M->Tier),ECireFont::Numbers,true,false);
+        }
         if(bEnraged)TextFx(TEXT("ENRAGED"),152,Y+4.5f,7.5f,Hostile,ECireFont::Heading,true,false);
         else if(bIsFocus)TextFx(TEXT("FOCUS"),156,Y+4.5f,7.5f,FLinearColor(.4f,.8f,1.f,1),ECireFont::Heading,true,false);
         bool bKnown=false;const float Threat=ThreatPercent(M,Hero,bKnown);
@@ -937,9 +960,10 @@ bool ACireHUD::DrawUnitTooltip(AActor* Unit,FVector2D Cursor)
     // tag, health bar, target, cast, threat, then the role and the unit's abilities under dividers.
     FCireTooltipSpec T;
     T.Title=U.Name;T.TitleColor=ReactionColor(U);
-    T.Tag=U.ClassName.ToUpper();T.TagColor=U.Class==3?Hostile:U.Class==2?WowGold:U.Class==1?Silver:FLinearColor(.8f,.82f,.85f,1);
+    T.Tag=U.ClassName.ToUpper();T.TagColor=U.PackTier>0?CireZones::TierColor(U.PackTier):U.Class==3?Hostile:U.Class==2?WowGold:U.Class==1?Silver:FLinearColor(.8f,.82f,.85f,1);
+    if(U.PackTier>0)T.Title=CireZones::NameplateLabel(U.Name,U.PackTier); // tier-readability: "Grave Hound  T3"
     T.Subtitle=U.Subtitle;
-    T.Accent=U.Class==3?Hostile*.9f:U.Class==2?WowGold*.85f:ReactionColor(U)*FLinearColor(.75f,.75f,.75f,1);
+    T.Accent=U.PackTier>0?CireZones::TierColor(U.PackTier)*.9f:U.Class==3?Hostile*.9f:U.Class==2?WowGold*.85f:ReactionColor(U)*FLinearColor(.75f,.75f,.75f,1);
     if(const ACireHero* HeroUnit=U.bHero?Cast<ACireHero>(Unit):nullptr)T.PortraitId=HeroUnit->ChampionProfileId;
     T.Sigil=U.bConstruct?FString(TEXT("runic_wall")):RoleIcon(U.Role);T.IconTint=U.bMonster?RoleTint(U.Role):ReactionColor(U);
     const float HF=Frac(U.HP,U.MaxHP);
@@ -1196,18 +1220,26 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         // Overhead status chips (CC, ATK/DEF/SPD arrows, marks) above the name; LOD by distance.
         if(UISettings.OverheadStatusMode==0||(UISettings.OverheadStatusMode==1&&(Mob||(Cast<ACireHero>(Actor)&&Cast<ACireHero>(Actor)->TeamId!=Hero->TeamId))))
             DrawOverheadStatus(Actor,X,Y-NS-(Selected?26.f:9.f),Fade,Selected||Dist<1700.f);
+        const int32 PackTier=CireZones::TierOf(Mob); // tier-readability: jungle packs show "T#" and a tier-coloured border
+        const FLinearColor TierC=CireZones::TierColor(PackTier);
         if(Selected||Dist<1700.f||Glow.A>0)
         {
             const FString Label=Short(Name,Selected?26:20);
             // monster-races: ranked monsters show their name in the rank colour (neutral packs stay yellow).
-            const FLinearColor NameColor=Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob)*.8f+FLinearColor(.2f,.2f,.2f,.2f):Color;
-            TextFx(Label,X-TextWidthFont(Label,NS,ECireFont::Bold)*.5f,Y-NS-5.f,NS,(Selected?FLinearColor::White:NameColor)*FLinearColor(1,1,1,Fade),ECireFont::Bold,true,false);
+            // tier-readability: pack monsters keep the reaction colour; their tier is the "T#" after the name.
+            const FLinearColor NameColor=PackTier==0&&Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob)*.8f+FLinearColor(.2f,.2f,.2f,.2f):Color;
+            const FString Tag=CireZones::TierTag(PackTier);
+            const float NameW=TextWidthFont(Label,NS,ECireFont::Bold),TagW=Tag.IsEmpty()?0.f:TextWidthFont(Tag,NS,ECireFont::Numbers)+4.f;
+            const float LX=X-(NameW+TagW)*.5f;
+            TextFx(Label,LX,Y-NS-5.f,NS,(Selected?FLinearColor::White:NameColor)*FLinearColor(1,1,1,Fade),ECireFont::Bold,true,false);
+            if(!Tag.IsEmpty())TextFx(Tag,LX+NameW+4.f,Y-NS-5.f,NS,TierC*FLinearColor(1,1,1,Fade),ECireFont::Numbers,true,false);
         }
         const float HF=Frac(HP,MaxHP);
         FCireUIPainter NP=Painter();NP.Alpha=Fade;
         // ui-themes: WoW-style rounded plate. Aggro glow and rank colour become the capsule's rim.
-        const FLinearColor Rim=Glow.A>0?Glow*FLinearColor(1,1,1,.55f+.35f*Pulse):Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob):FLinearColor(0,0,0,0);
-        if(Rim.A>0){const float G=Selected?2.5f:2.f;CireUIStyle::Capsule(NP,PX-G,Y-G,PW+2*G,PH+2*G,1.f,Rim);}
+        const FLinearColor Rim=Glow.A>0?Glow*FLinearColor(1,1,1,.55f+.35f*Pulse):PackTier>0?TierC:Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob):FLinearColor(0,0,0,0);
+        if(Rim.A>0){const float G=(Selected?2.5f:2.f)+(PackTier>0&&Glow.A>0?1.5f:0.f);CireUIStyle::Capsule(NP,PX-G,Y-G,PW+2*G,PH+2*G,1.f,Rim);}
+        if(PackTier>0&&Glow.A>0){const float G=Selected?2.f:1.5f;CireUIStyle::Capsule(NP,PX-G,Y-G,PW+2*G,PH+2*G,1.f,TierC);} // the tier border stays inside the aggro glow
         CireUIStyle::RoundBar(NP,PX,Y,PW,PH,HF,Color);
         if(Selected)
         {
@@ -1224,9 +1256,9 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         if(Mob)
         {
             // Elite / boss marker on the right end of the plate.
-            if(IsEliteOrBoss(Mob))
+            if(IsEliteOrBoss(Mob)||PackTier>=3)
             {
-                const FLinearColor D=!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob):IsBossClass(Mob)?Hostile:WowGold;const float EX=PX+PW+3.f; // monster-races
+                const FLinearColor D=PackTier>0?TierC:!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob):IsBossClass(Mob)?Hostile:WowGold;const float EX=PX+PW+3.f; // monster-races
                 Tri(FVector2D(EX,Y-3),FVector2D(EX+7,Y+PH*.5f),FVector2D(EX,Y+PH+3),D);
             }
             if(Mob->Victim==Hero&&!bTank)
@@ -1373,13 +1405,21 @@ void ACireHUD::UpdateBanners(ACireHero* Hero,ACireGameState* State)
             CireBanners::Show(ECireBanner::WaveCleared,TEXT("Wave Cleared"),FString::Printf(TEXT("%d of %d waves this cycle."),State->CycleWavesDone,State->WavesPerCycle));
     }
     BannerSeenPhase=State->Phase;BannerSeenWave=State->Wave;BannerSeenCleared=State->CycleWavesDone;
-    // Zone text: entering a town district ("Market District"), once it has been held for a moment.
-    const FName District=CireEnvironmentProps::DistrictAt(GetWorld(),Hero->TeamId,Hero->GetActorLocation());
+    // Zone text (WoW): entering a named zone ("Market Plaza") once it has been held for a moment, with the monster tier
+    // the zone mostly holds. tier-readability: zones come from the layout's Zone markers, else TownZones.json (CireZones.h).
+    // Local to this player, both realms; no zone text in the arena; one banner per real change, at most every few seconds.
+    const FCireZone* Zone=State->Phase!=2?CireZones::At(GetWorld(),Hero->TeamId,Hero->GetActorLocation()):nullptr;
+    const FName District=Zone?FName(*Zone->Id):NAME_None;
     const double Now=GetWorld()->GetRealTimeSeconds();
+    constexpr double ZoneHoldSeconds=.8,ZoneCooldownSeconds=4.0;
     if(District!=BannerPendingDistrict){BannerPendingDistrict=District;BannerDistrictSince=Now;}
-    if(!District.IsNone()&&District!=BannerShownDistrict&&Now-BannerDistrictSince>.8)
+    if(Zone&&District!=BannerShownDistrict&&Now-BannerDistrictSince>ZoneHoldSeconds&&Now-BannerZoneShownAt>ZoneCooldownSeconds)
     {
-        if(!BannerShownDistrict.IsNone()||!bFirst)CireBanners::Show(ECireBanner::Custom,CireEnvironmentProps::DistrictName(District),FString(),TEXT("ENTERING"));
+        if(!BannerShownDistrict.IsNone()||!bFirst)
+        {
+            CireBanners::Show(ECireBanner::Custom,Zone->Name,CireZones::TierLine(CireZones::LiveTier(GetWorld(),Hero->TeamId,*Zone)),TEXT("ENTERING"));
+            BannerZoneShownAt=Now;
+        }
         BannerShownDistrict=District;
     }
     // Bosses and challenge tiers appearing in your lane.

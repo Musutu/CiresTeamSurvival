@@ -136,7 +136,7 @@ namespace CireMapLayout
     CIRESTEAMSURVIVAL_API bool ParseTypes(const FString& Json, TArray<FCireMarkerType>& Out, FString& Error);
     // Setter ids.
     extern CIRESTEAMSURVIVAL_API const FName PlayerSpawn, MonsterSpawn, MonsterPath, ChallengePack, Vendor, Objective,
-        BossSpawn, Rift, Respawn, PlayBounds, Blocker, RecallPoint;
+        BossSpawn, Rift, Respawn, PlayBounds, Blocker, RecallPoint, Zone;
 
     /** Vendor types: Content/Data/Vendors.json ("vendors": [{ "id", "name", "sign": {...}, "stall": {...} }]) or the
      *  built-in three shops (weaponsmith, armory, arcane). */
