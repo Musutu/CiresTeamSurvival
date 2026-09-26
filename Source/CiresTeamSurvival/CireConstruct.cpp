@@ -1,4 +1,5 @@
 #include "CireConstruct.h"
+#include "CireLanePath.h" // medieval-kingdom: goal zone from data
 #include "CireItems.h" // items-v2
 #include "CireDeveloperTools.h"
 #include "CireCombatEvents.h"
@@ -21,7 +22,9 @@ FVector Extents(const FCireConstructSpec& Spec) { return FVector(Spec.Depth, Spe
 bool Bounded(float Value, float Min, float Max) { return FMath::IsFinite(Value) && Value >= Min && Value <= Max; }
 bool IsTown(const FVector& P, int32 Team)
 {
-    return P.X >= -2300 && P.X <= -1400 && FMath::Abs(P.Y - (Team == 0 ? -2100.f : 2100.f)) <= 900;
+    // medieval-kingdom: the castle leak zone of the active route document (was a fixed box at x -1850).
+    const FVector C = CireLanePath::GoalZoneCenter(nullptr, Team, 0); const FVector2D E = CireLanePath::GoalZoneExtent(nullptr);
+    return FMath::Abs(P.X - C.X) <= E.X && FMath::Abs(P.Y - C.Y) <= E.Y;
 }
 }
 
@@ -101,13 +104,14 @@ bool ACireConstruct::ValidatePlacementFor(AActor* Source, const FCireConstructSp
     if (Mode->Clock.Phase() != Cires::MatchPhase::Arena)
     {
         // Separating-axis rectangle test prevents thin rotated walls clipping town.
-        const FVector TownCenter(-1850, SourceTeam == 0 ? -2100.f : 2100.f, Ground.Z);
+        FVector TownCenter = CireLanePath::GoalZoneCenter(Mode->GetWorld(), SourceTeam, 0); TownCenter.Z = Ground.Z; // medieval-kingdom
+        const FVector2D TE = CireLanePath::GoalZoneExtent(Mode->GetWorld());
         const FVector Offset = TownCenter - Ground;
         const FVector XAxis = Rotation.GetAxisX(), YAxis = Rotation.GetAxisY();
-        const bool bSeparated = FMath::Abs(Offset.X) > 450 + FMath::Abs(XAxis.X) * Half.X + FMath::Abs(YAxis.X) * Half.Y ||
-            FMath::Abs(Offset.Y) > 900 + FMath::Abs(XAxis.Y) * Half.X + FMath::Abs(YAxis.Y) * Half.Y ||
-            FMath::Abs(FVector::DotProduct(Offset, XAxis)) > Half.X + 450 * FMath::Abs(XAxis.X) + 900 * FMath::Abs(XAxis.Y) ||
-            FMath::Abs(FVector::DotProduct(Offset, YAxis)) > Half.Y + 450 * FMath::Abs(YAxis.X) + 900 * FMath::Abs(YAxis.Y);
+        const bool bSeparated = FMath::Abs(Offset.X) > TE.X + FMath::Abs(XAxis.X) * Half.X + FMath::Abs(YAxis.X) * Half.Y ||
+            FMath::Abs(Offset.Y) > TE.Y + FMath::Abs(XAxis.Y) * Half.X + FMath::Abs(YAxis.Y) * Half.Y ||
+            FMath::Abs(FVector::DotProduct(Offset, XAxis)) > Half.X + TE.X * FMath::Abs(XAxis.X) + TE.Y * FMath::Abs(XAxis.Y) ||
+            FMath::Abs(FVector::DotProduct(Offset, YAxis)) > Half.Y + TE.X * FMath::Abs(YAxis.X) + TE.Y * FMath::Abs(YAxis.Y);
         if (!bSeparated || IsTown(Ground, SourceTeam)) return Fail(TEXT("Construct overlaps town"));
     }
     FCollisionQueryParams Params(SCENE_QUERY_STAT(CireConstructPlacement), false);

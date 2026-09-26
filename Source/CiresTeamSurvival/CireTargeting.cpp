@@ -270,12 +270,14 @@ bool CireTargeting::ValidateGround(ACireHero* H,const FString& Id,FVector Point,
         const auto Rotation=Heading.Quaternion();const FVector Half(S->Depth*.5f,S->Width*.5f,S->Height*.5f);
         if(CireSkillRuntime::Phase(H->GetWorld())!=2)
         {
-            const FVector Offset=FVector(-1850,CireLanePath::CenterY(H->TeamId),Center.Z)-Center;
+            FVector Goal=CireLanePath::GoalZoneCenter(H->GetWorld(),H->TeamId,0);Goal.Z=Center.Z; // medieval-kingdom: the data goal zone
+            const FVector2D TE=CireLanePath::GoalZoneExtent(H->GetWorld());
+            const FVector Offset=Goal-Center;
             const FVector XAxis=Rotation.GetAxisX(),YAxis=Rotation.GetAxisY();
-            const bool bSeparated=FMath::Abs(Offset.X)>450+FMath::Abs(XAxis.X)*Half.X+FMath::Abs(YAxis.X)*Half.Y||
-                FMath::Abs(Offset.Y)>900+FMath::Abs(XAxis.Y)*Half.X+FMath::Abs(YAxis.Y)*Half.Y||
-                FMath::Abs(FVector::DotProduct(Offset,XAxis))>Half.X+450*FMath::Abs(XAxis.X)+900*FMath::Abs(XAxis.Y)||
-                FMath::Abs(FVector::DotProduct(Offset,YAxis))>Half.Y+450*FMath::Abs(YAxis.X)+900*FMath::Abs(YAxis.Y);
+            const bool bSeparated=FMath::Abs(Offset.X)>TE.X+FMath::Abs(XAxis.X)*Half.X+FMath::Abs(YAxis.X)*Half.Y||
+                FMath::Abs(Offset.Y)>TE.Y+FMath::Abs(XAxis.Y)*Half.X+FMath::Abs(YAxis.Y)*Half.Y||
+                FMath::Abs(FVector::DotProduct(Offset,XAxis))>Half.X+TE.X*FMath::Abs(XAxis.X)+TE.Y*FMath::Abs(XAxis.Y)||
+                FMath::Abs(FVector::DotProduct(Offset,YAxis))>Half.Y+TE.X*FMath::Abs(YAxis.X)+TE.Y*FMath::Abs(YAxis.Y);
             if(!bSeparated)return Fail(TEXT("Construct cannot overlap town."));
         }
         for(float X:{-1.f,0.f,1.f})for(float Y:{-1.f,0.f,1.f})

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "units": "centimeters",
+  "frame": "castletown",
+  "notes": "PROVISIONAL defaults for the Medieval Kingdom town (Docs/CastleTown.md). Realm-local centimetres (pack coordinates - CastleTown.json frameCenter), stored once and applied to both realms; team 1 mirrors team 0. Eric authors the real spots with the map layout editor (feat/dev-route-tools).",
+  "base": [13400, -8200],
+  "bounds": { "minX": -23500, "maxX": 23500, "halfWidth": 19500 },
+  "laneWidth": 520,
+  "goal": { "x": 14800, "y": -4400, "depth": 1400, "width": 1400 },
+  "lanes": [
+    { "team": 0, "points": [[-17000,-900],[-10500,3600],[-5200,5400],[-2100,8000],[200,10100],[3600,7100],[4600,3600],[6100,3200],[7600,2150],[8900,800],[11700,-1570],[14800,-4400]], "bays": [[-11000,-3500],[-4000,9500],[1500,1500]] },
+    { "team": 1, "points": [[-17000,-900],[-10500,3600],[-5200,5400],[-2100,8000],[200,10100],[3600,7100],[4600,3600],[6100,3200],[7600,2150],[8900,800],[11700,-1570],[14800,-4400]], "bays": [[-11000,-3500],[-4000,9500],[1500,1500]] }
+  ],
+  "armoredEscort": { "everyWaves": 4, "count": 1, "leakCost": 1, "healthMultiplier": 6, "moveSpeed": 170 }
+}

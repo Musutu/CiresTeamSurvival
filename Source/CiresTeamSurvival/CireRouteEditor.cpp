@@ -6,7 +6,7 @@
 
 namespace
 {
-FVector WorldOf(int32 Team, const FVector2D& Local, float Z = 60.f) { return FVector(Local.X, Local.Y + CireLanePath::CenterY(Team), Z); }
+FVector WorldOf(int32 Team, const FVector2D& Local, float Z = 60.f) { return CireLanePath::ToWorld(Team, Local, Z); } // medieval-kingdom: ground-relative
 ECireRouteReach Worst(ECireRouteReach A, ECireRouteReach B) { return static_cast<uint8>(A) >= static_cast<uint8>(B) ? A : B; }
 }
 

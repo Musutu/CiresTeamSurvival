@@ -2,6 +2,7 @@
 #include "CireNav.h"
 #include "CireGame.h"
 #include "CireLanePath.h"
+#include "CireTownMap.h" // medieval-kingdom
 #include "CireArenas.h"
 #include "Components/BrushComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -169,10 +170,12 @@ void CireNav::Initialize(UWorld* World)
     const auto& R = CireLanePath::Get(World);
     for (int32 Team = 0; Team < 2; ++Team)
     {
-        const float CY = CireLanePath::CenterY(Team);
+        // medieval-kingdom: realm frame and height range from data (the pack town sits on a landscape).
+        const FVector2D O = CireLanePath::RealmOrigin(Team), ZR = CireTownMap::WorldZRange(Team);
+        const bool bTown = CireTownMap::IsActive();
         // The whole realm floor from the castle ward's edge wall to past the breach, stopping short of the Sundering Cliff.
-        FBox Box(FVector(R.MinX - 3200.f, CY - R.HalfWidth - 300.f, -400.f), FVector(R.MaxX + 400.f, CY + R.HalfWidth + 300.f, 900.f));
-        if (Team == 0) Box.Max.Y = FMath::Min(Box.Max.Y, -150.); else Box.Min.Y = FMath::Max(Box.Min.Y, 150.);
+        FBox Box(FVector(O.X + R.MinX - (bTown ? 300.f : 3200.f), O.Y - R.HalfWidth - 300.f, ZR.X), FVector(O.X + R.MaxX + 400.f, O.Y + R.HalfWidth + 300.f, ZR.Y));
+        if (!bTown) { if (Team == 0) Box.Max.Y = FMath::Min(Box.Max.Y, -150.); else Box.Min.Y = FMath::Max(Box.Min.Y, 150.); }
         if (AActor* V = SpawnBounds(World, Box, Team == 0 ? TEXT("CireNavBounds_Ember") : TEXT("CireNavBounds_Dusk"))) N.Volumes.Add(V);
     }
     {
@@ -444,10 +447,10 @@ const CireNav::FCoverage& CireNav::RealmCoverage(const UWorld* World, int32 Team
     FWorldNav& N = WorldNav(World);
     FCoverage& C = N.Coverage[FMath::Clamp(Team, 0, 1)];
     const auto& R = CireLanePath::Get(World);
-    const float CY = CireLanePath::CenterY(Team);
-    const FBox2D Bounds(FVector2D(R.MinX, CY - R.HalfWidth), FVector2D(R.MaxX, CY + R.HalfWidth));
+    const FVector2D O = CireLanePath::RealmOrigin(Team); // medieval-kingdom: realm frame from data
+    const FBox2D Bounds(FVector2D(O.X + R.MinX, O.Y - R.HalfWidth), FVector2D(O.X + R.MaxX, O.Y + R.HalfWidth));
     if (C.NavRevision == N.Stats.NavRevision && C.W > 0 && C.Bounds.Min == Bounds.Min && C.Bounds.Max == Bounds.Max) return C;
-    C.Bounds = Bounds; C.Cell = 100.f;
+    C.Bounds = Bounds; C.Cell = CireTownMap::IsActive() ? 400.f : 100.f; // medieval-kingdom: the pack town is ~10x larger
     C.W = FMath::CeilToInt((Bounds.Max.X - Bounds.Min.X) / C.Cell); C.H = FMath::CeilToInt((Bounds.Max.Y - Bounds.Min.Y) / C.Cell);
     C.Cells.Init(0, C.W * C.H);
     if (HasNavigation(World))
@@ -455,7 +458,8 @@ const CireNav::FCoverage& CireNav::RealmCoverage(const UWorld* World, int32 Team
             for (int32 X = 0; X < C.W; ++X)
             {
                 FVector Out;
-                const FVector P(Bounds.Min.X + (X + .5f) * C.Cell, Bounds.Min.Y + (Y + .5f) * C.Cell, 60);
+                FVector P(Bounds.Min.X + (X + .5f) * C.Cell, Bounds.Min.Y + (Y + .5f) * C.Cell, 60);
+                P.Z += CireTownMap::Ground(World, FVector2D(P)); // medieval-kingdom: 0 on the procedural town
                 C.Cells[Y * C.W + X] = Project(World, P, Out, FVector(45, 45, 160), 40.f) ? 1 : 0;
             }
     C.NavRevision = N.Stats.NavRevision;

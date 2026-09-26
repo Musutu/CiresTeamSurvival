@@ -1,5 +1,8 @@
 #include "CireGame.h"
 #include "CireLanePath.h"
+#include "CireTownMap.h"
+#include "CireArenas.h" // medieval-kingdom
+#include "Net/UnrealNetwork.h"
 #include "CireEnvironmentProps.h"
 #include "CireNav.h" // nav-paths
 #include "CireTownGoal.h" // nav-paths
@@ -42,8 +45,17 @@ ACireWorld::ACireWorld() {
     PrimaryActorTick.bCanEverTick=true; PrimaryActorTick.TickInterval=.25f;
     RootComponent=CreateDefaultSubobject<USceneComponent>(TEXT("WorldRoot"));
 }
+void ACireWorld::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ACireWorld,bCastleTown);
+}
 void ACireWorld::BeginPlay() {
     Super::BeginPlay();
+    // medieval-kingdom: the server chose the map (CireTownMap::InitializeServer); a client follows the replicated
+    // choice, switches its realm frame and streams the same two town copies before anything is placed.
+    if(HasAuthority())bCastleTown=CireTownMap::IsActive();
+    else {CireTownMap::SetActive(bCastleTown);if(bCastleTown)CireTownMap::LoadRealms(GetWorld());}
+    const bool bTown=bCastleTown;
     // Built identically on each peer; gameplay actors are replicated independently.
     CireEnvironmentProps::Reload();
     auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
@@ -77,6 +89,7 @@ void ACireWorld::BeginPlay() {
     // The Sundering Cliff: an opaque, very tall rock face keeps the two PvE realms visually separate even
     // from elevated cameras. The town is built against it; town pieces stop 60 cm short on both sides.
     const float WallMinX=Routes.MinX-3200,WallMaxX=Routes.MaxX+3000,CentreX=(WallMinX+WallMaxX)*.5f,Length=WallMaxX-WallMinX;
+    if(!bTown) { // medieval-kingdom: the pack town realms are separated by distance, on the pack's own landscape
     Add(Cliff,FVector(CentreX,0,1600),FVector(Length,200,3400));
     // Broken strata so the silhouette above the roofs is not a ruler-straight slab (kept inside +/-100 cm).
     for(float X=WallMinX+400;X<WallMaxX;X+=1150)
@@ -93,6 +106,7 @@ void ACireWorld::BeginPlay() {
         Plain->MarkRenderStateDirty();
         Add(Plain,FVector(CentreX,0,-3),FVector(Length+200000,200000,2));
     }
+    } // !bTown
     RouteRoad=Make(TEXT("CireRouteRoad"),Cube,Mat(TEXT("cobblestone_material"),RoadMaterial),false,false);
     RouteEdge=Make(TEXT("CireRouteEdge"),Cube,Mat(TEXT("castle_material"),CastleMaterial),false,false);
     RouteArrows=Make(TEXT("CireRouteArrows"),Cube,Mat(TEXT("stone_material"),StoneMaterial),false,false);
@@ -114,6 +128,7 @@ void ACireWorld::BeginPlay() {
         const float Y=CireLanePath::CenterY(Team);
         const float Outer=Team==0?-1.f:1.f;  // realm side away from the Sundering Wall
         const FColor Color=Team==0?FColor(71,208,189):FColor(233,111,83);
+        if(!bTown) { // medieval-kingdom: procedural floor, districts, ward edge, gate text and keep light
         // Collision floor: from beyond the castle keep to past the breach, clipped at the divider.
         const float InnerY=Outer*100.f,OuterY=Y+Outer*(HW+2600);
         const float FloorMinX=Routes.MinX-3100,FloorMaxX=Routes.MaxX+2800;
@@ -143,6 +158,7 @@ void ACireWorld::BeginPlay() {
         Text(Team==0?TEXT("EMBER KEEP"):TEXT("DUSK KEEP"),FVector(-150,Y,1260),72,Color,FRotator::ZeroRotator);
         Text(TEXT("HOLD THE CASTLE GATE"),FVector(-150,Y,1185),28,FColor(229,190,123),FRotator::ZeroRotator);
         Light(FVector(-2000,Y,520),FLinearColor(1.f,.6f,.32f),14000,1500);
+        } // !bTown
         for(int32 Tier=1;Tier<=3;++Tier) {
             FVector P=CireLanePath::ChallengePosition(GetWorld(),Team,Tier,0);
             Add(Disc,P+FVector(0,0,1),FVector(470,470,6));
@@ -172,11 +188,12 @@ void ACireWorld::BeginPlay() {
     // randomly picked arena on every peer during prep, shows it for the fight and destroys it in recovery.
     // The old three-court build lives on as its built-in fallback ("The Sundered Court").
     // Dusk: low warm sun under a sunset sky dome, cool sky fill, thick valley fog.
-    if(auto* SkyMat=LoadObject<UMaterialInterface>(nullptr,SkyMaterial)) {
+    if(auto* SkyMat=LoadObject<UMaterialInterface>(nullptr,SkyMaterial)) { // medieval-kingdom: in the town this dome only surrounds the PvP arena
         auto* Dome=NewObject<UStaticMeshComponent>(this,TEXT("SkyDome"));
         Dome->SetupAttachment(RootComponent);Dome->SetStaticMesh(Sphere);Dome->SetMaterial(0,SkyMat);
         // world-scale: centred on the three-times-longer realm, large enough to hold the backdrop mountains.
         Dome->SetWorldLocation(FVector(CentreX,0,-2000));Dome->SetWorldScale3D(FVector(FMath::Max(1600.f,(Length+260000.f)/100.f)));
+        if(bTown){Dome->SetWorldLocation(CireArenas::Origin()-FVector(0,0,2000));Dome->SetWorldScale3D(FVector(3000.f));} // 1.5 km: the realms sit in their own skies far away
         Dome->SetCollisionEnabled(ECollisionEnabled::NoCollision);Dome->SetCastShadow(false);
         Dome->bAffectDistanceFieldLighting=false;Dome->SetVisibleInRayTracing(false);Dome->bAffectDynamicIndirectLighting=false;
         Dome->RegisterComponent();AddInstanceComponent(Dome);
@@ -184,8 +201,11 @@ void ACireWorld::BeginPlay() {
     // The sun sets behind the breach (+X), straight down both lanes, so the Sundering Cliff never
     // shades one team's realm more than the other's and the gate is silhouetted against the dusk.
     // world-scale (art direction "vibrant, fun and crisp"): a higher, whiter golden-hour sun instead of the murky dusk.
+    if(bTown)CireTownMap::BuildRealmLighting(this); // medieval-kingdom: Daylight / Darknight suns on lighting channels 0 / 1, pack sky spheres
+    else {
     auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,3000),FRotator(-30,180,0));
     Sun->GetLightComponent()->SetIntensity(7.0f); Sun->GetLightComponent()->SetLightColor(FLinearColor(1.f,.92f,.80f));
+    }
     auto* Sky=GetWorld()->SpawnActor<ASkyLight>();
     Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable);
     Sky->GetLightComponent()->bRealTimeCapture=true;
@@ -239,11 +259,13 @@ void ACireWorld::SyncGoalZones() {
 
 void ACireWorld::Tick(float DeltaSeconds) {
     Super::Tick(DeltaSeconds);
+    if(bCastleTown&&GetWorld()->GetTimeSeconds()<30.f)CireTownMap::PrepareRealmLevels(GetWorld()); // medieval-kingdom: late Level Instances
     if(RenderedRouteRevision!=CireLanePath::Revision(GetWorld())){RefreshRouteVisuals();CireEnvironmentProps::Refresh(this);CireNav::InvalidatePaths(GetWorld());}
     SyncGoalZones(); // nav-paths: cheap (two actors); also covers a goal authored in the JSON at startup
 }
 void ACireWorld::RefreshRouteVisuals() {
     if(!RouteRoad||!RouteEdge||!RouteArrows)return;
+    if(bCastleTown){RenderedRouteRevision=CireLanePath::Revision(GetWorld());return;} // medieval-kingdom: the pack's own streets
     RouteRoad->ClearInstances();RouteEdge->ClearInstances();RouteArrows->ClearInstances();
     const auto& R=CireLanePath::Get(GetWorld());
     auto Add=[](UInstancedStaticMeshComponent* C,FVector P,FVector Size,FRotator Rot=FRotator::ZeroRotator){C->AddInstance(FTransform(Rot,P,Size/100.f));};

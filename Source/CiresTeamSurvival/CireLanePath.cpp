@@ -2,6 +2,7 @@
 #include "CireGame.h"
 #include "CireThreat.h"
 #include "CireNPCCombat.h"
+#include "CireTownMap.h" // medieval-kingdom
 #include "Components/CapsuleComponent.h"
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
@@ -60,9 +61,17 @@ bool Keys(const TSharedPtr<FJsonObject>& O, const TSet<FString>& Allowed)
     for (const auto& Pair : O->Values) if (!Allowed.Contains(FString(Pair.Key.ToView()))) return false;
     return true;
 }
+// Raw realm-local -> world (Z unchanged). GroundPoint treats Z as a height above the ground.
 FVector WorldPoint(int32 Team, FVector2D P, float Z)
 {
-    return FVector(P.X, P.Y + CireLanePath::CenterY(Team), Z);
+    const FVector2D O = CireLanePath::RealmOrigin(Team);
+    return FVector(P.X + O.X, P.Y + O.Y, Z);
+}
+FVector GroundPoint(const UWorld* World, int32 Team, FVector2D P, float Z)
+{
+    FVector W = WorldPoint(Team, P, Z);
+    if (CireTownMap::IsActive()) W.Z = CireTownMap::Ground(World, FVector2D(W)) + Z;
+    return W;
 }
 int32 ProjectNext(const TArray<FVector2D>& Points, FVector2D Position)
 {
@@ -89,7 +98,16 @@ double DistanceToPathSquared(const TArray<FVector2D>& Points,FVector2D Position)
 }
 }
 
-float CireLanePath::CenterY(int32 Team) { return Team == 0 ? -2100.f : 2100.f; }
+float CireLanePath::CenterY(int32 Team) { return static_cast<float>(RealmOrigin(Team).Y); }
+FVector2D CireLanePath::RealmOrigin(int32 Team) { return FVector2D(CireTownMap::RealmOrigin(Team)); }
+FVector2D CireLanePath::ToLocal(int32 Team, const FVector& World) { return FVector2D(World) - RealmOrigin(FMath::Clamp(Team,0,1)); }
+FVector CireLanePath::ToWorld(int32 Team, const FVector2D& Local, float Z) { return GroundPoint(nullptr, FMath::Clamp(Team,0,1), Local, Z); }
+FVector CireLanePath::BasePosition(const UWorld* World, int32 Team, float Z)
+{ Team = FMath::Clamp(Team,0,1); return GroundPoint(World, Team, Get(World).BaseLocal, FMath::IsFinite(Z)?Z:110.f); }
+FVector CireLanePath::RespawnPosition(const UWorld* World, int32 Team, float Z)
+{ Team = FMath::Clamp(Team,0,1); const auto& R = Get(World); return GroundPoint(World, Team, R.bRespawn ? R.RespawnLocal : R.BaseLocal, FMath::IsFinite(Z)?Z:110.f); }
+FVector CireLanePath::BossSpawnPosition(const UWorld* World, int32 Team, float Z)
+{ Team = FMath::Clamp(Team,0,1); const auto& R = Get(World); return GroundPoint(World, Team, R.bBossSpawn ? R.BossLocal : R.LocalPoints[Team][0], FMath::IsFinite(Z)?Z:110.f); }
 const FCireBattlefieldRoutes& CireLanePath::Get(const UWorld* World) { if (!bLoaded) Reload(); return World?ForWorld(World).Data:Routes; }
 uint32 CireLanePath::Revision(const UWorld* World) { Get(); return World?ForWorld(World).Revision:RouteRevision; }
 bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, FString& Error)
@@ -100,23 +118,48 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
     if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Root) || !Root) return Fail(TEXT("Invalid battlefield route JSON"));
     int32 Schema = 0; FString Units;
     // nav-paths: optional "laneWidth" and "goal" (path editor); per-lane optional "bays".
-    if (!Keys(Root,{TEXT("schemaVersion"),TEXT("units"),TEXT("bounds"),TEXT("lanes"),TEXT("armoredEscort"),TEXT("laneWidth"),TEXT("goal")}) ||
+    if (!Keys(Root,{TEXT("schemaVersion"),TEXT("units"),TEXT("bounds"),TEXT("lanes"),TEXT("armoredEscort"),TEXT("laneWidth"),TEXT("goal"),TEXT("frame"),TEXT("base"),TEXT("notes"),TEXT("respawn"),TEXT("boss")}) ||
         !Integer(Root,TEXT("schemaVersion"),Schema,1,1) || !Root->TryGetStringField(TEXT("units"),Units) || Units != TEXT("centimeters"))
         return Fail(TEXT("Expected battlefield route schema 1 in centimeters"));
     const TSharedPtr<FJsonObject>* Bounds = nullptr; const TSharedPtr<FJsonObject>* Escort = nullptr;
     const TArray<TSharedPtr<FJsonValue>>* Lanes = nullptr;
     FCireBattlefieldRoutes Candidate;
+    // medieval-kingdom: "frame": "castletown" documents are realm-local to the pack town (CireTownMap) and have their own ranges.
+    if (Root->HasField(TEXT("frame")))
+    {
+        FString Frame;
+        if (!Root->TryGetStringField(TEXT("frame"),Frame) || Frame != TEXT("castletown")) return Fail(TEXT("frame must be castletown when present"));
+        Candidate.bTownFrame = true;
+    }
+    const bool bTown = Candidate.bTownFrame;
     if (!Root->TryGetObjectField(TEXT("bounds"),Bounds) || !Bounds ||
         !Keys(*Bounds,{TEXT("minX"),TEXT("maxX"),TEXT("halfWidth")}) ||
-        !Number(*Bounds,TEXT("minX"),Candidate.MinX,-10000,-2350) || !Number(*Bounds,TEXT("maxX"),Candidate.MaxX,4000,80000) ||
-        !Number(*Bounds,TEXT("halfWidth"),Candidate.HalfWidth,900,1400)) return Fail(TEXT("Invalid lane bounds; realms must remain separate and contain the towns"));
+        !Number(*Bounds,TEXT("minX"),Candidate.MinX,bTown?-60000:-10000,bTown?-500:-2350) || !Number(*Bounds,TEXT("maxX"),Candidate.MaxX,bTown?500:4000,bTown?60000:80000) ||
+        !Number(*Bounds,TEXT("halfWidth"),Candidate.HalfWidth,900,bTown?60000:1400)) return Fail(TEXT("Invalid lane bounds; realms must remain separate and contain the towns"));
+    if (Root->HasField(TEXT("base")))
+    {
+        const TArray<TSharedPtr<FJsonValue>>* XY = nullptr; double X = 0, Y = 0;
+        if (!Root->TryGetArrayField(TEXT("base"),XY) || !XY || XY->Num() != 2 || !(*XY)[0]->TryGetNumber(X) || !(*XY)[1]->TryGetNumber(Y) || !FMath::IsFinite(X) || !FMath::IsFinite(Y))
+            return Fail(TEXT("base needs [x, y] in centimeters"));
+        Candidate.BaseLocal = FVector2D(X,Y);
+    }
+    for (const TCHAR* Key : {TEXT("respawn"), TEXT("boss")})
+    {
+        if (!Root->HasField(Key)) continue;
+        const TArray<TSharedPtr<FJsonValue>>* XY = nullptr; double X = 0, Y = 0;
+        if (!Root->TryGetArrayField(Key,XY) || !XY || XY->Num() != 2 || !(*XY)[0]->TryGetNumber(X) || !(*XY)[1]->TryGetNumber(Y) || !FMath::IsFinite(X) || !FMath::IsFinite(Y))
+            return Fail(TEXT("respawn and boss need [x, y] in centimeters"));
+        if (FCString::Strcmp(Key, TEXT("respawn")) == 0) { Candidate.bRespawn = true; Candidate.RespawnLocal = FVector2D(X,Y); }
+        else { Candidate.bBossSpawn = true; Candidate.BossLocal = FVector2D(X,Y); }
+    }
     // nav-paths: lane width and goal zone (defaults keep older documents valid).
     if (Root->HasField(TEXT("laneWidth")) && !Number(Root,TEXT("laneWidth"),Candidate.LaneWidth,360,1000)) return Fail(TEXT("laneWidth must be 360..1000 cm"));
     if (Root->HasField(TEXT("goal")))
     {
         const TSharedPtr<FJsonObject>* Goal = nullptr; float GX = 0, GY = 0, GD = 0, GW = 0;
         if (!Root->TryGetObjectField(TEXT("goal"),Goal) || !Goal || !Keys(*Goal,{TEXT("x"),TEXT("y"),TEXT("depth"),TEXT("width")}) ||
-            !Number(*Goal,TEXT("x"),GX,-10000,0) || !Number(*Goal,TEXT("y"),GY,-1400,1400) || !Number(*Goal,TEXT("depth"),GD,300,1600) || !Number(*Goal,TEXT("width"),GW,400,2800))
+            !Number(*Goal,TEXT("x"),GX,bTown?-60000:-10000,bTown?60000:0) || !Number(*Goal,TEXT("y"),GY,bTown?-60000:-1400,bTown?60000:1400) ||
+            !Number(*Goal,TEXT("depth"),GD,300,bTown?4000:1600) || !Number(*Goal,TEXT("width"),GW,400,bTown?4000:2800))
             return Fail(TEXT("goal needs x, y, depth and width in centimeters"));
         Candidate.GoalCenter = FVector2D(GX,GY); Candidate.GoalSize = FVector2D(GD,GW);
     }
@@ -160,11 +203,61 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
     if (!Validate(Candidate,Error)) return false;
     Out = MoveTemp(Candidate); Error.Reset(); return true;
 }
+// medieval-kingdom: the pack town's rules. Its frame is centred on the town, so the route may run in any
+// direction; the realms are separated by distance (CastleTown.json offsets), not by a cliff at Y = 0.
+static bool ValidateTown(const FCireBattlefieldRoutes& R, FString& Error)
+{
+    auto Fail = [&](const TCHAR* Reason) { Error = Reason; return false; };
+    auto Finite2 = [](const FVector2D& P) { return FMath::IsFinite(P.X) && FMath::IsFinite(P.Y); };
+    if (!FMath::IsFinite(R.MinX) || !FMath::IsFinite(R.MaxX) || !FMath::IsFinite(R.HalfWidth) || R.MinX < -60000 || R.MinX > -500 ||
+        R.MaxX < 500 || R.MaxX > 60000 || R.HalfWidth < 900 || R.HalfWidth > 60000)
+        return Fail(TEXT("Invalid lane bounds; realms must remain separate and contain the towns"));
+    if (CireTownMap::Def().bValid)
+    {
+        const FVector2D Gap = (FVector2D(CireTownMap::Def().Offsets[1]) - FVector2D(CireTownMap::Def().Offsets[0])).GetAbs();
+        if (Gap.X < R.MaxX - R.MinX && Gap.Y < 2 * R.HalfWidth) return Fail(TEXT("Invalid lane bounds; realms must remain separate and contain the towns"));
+    }
+    if (!FMath::IsFinite(R.LaneWidth) || R.LaneWidth < 360 || R.LaneWidth > 1000) return Fail(TEXT("laneWidth must be 360..1000 cm"));
+    const FVector2D GoalHalf = R.GoalSize * .5;
+    auto Inside = [&](const FVector2D& P, double Margin) { return P.X >= R.MinX + Margin && P.X <= R.MaxX - Margin && FMath::Abs(P.Y) <= R.HalfWidth - Margin; };
+    if (!Finite2(R.GoalCenter) || !Finite2(R.GoalSize) || R.GoalSize.X < 300 || R.GoalSize.X > 4000 || R.GoalSize.Y < 400 || R.GoalSize.Y > 4000 ||
+        !Inside(R.GoalCenter + GoalHalf, 0) || !Inside(R.GoalCenter - GoalHalf, 0))
+        return Fail(TEXT("The castle goal zone must stay inside the castle ward (x <= -900) and the realm"));
+    if (!Finite2(R.BaseLocal) || !Inside(R.BaseLocal, 300)) return Fail(TEXT("The hero base must be inside the realm"));
+    if ((R.bRespawn && (!Finite2(R.RespawnLocal) || !Inside(R.RespawnLocal, 300))) || (R.bBossSpawn && (!Finite2(R.BossLocal) || !Inside(R.BossLocal, 300))))
+        return Fail(TEXT("Respawn and boss spots must be inside the realm"));
+    auto InGoal = [&](const FVector2D& P, double Margin)
+    { return FMath::Abs(P.X - R.GoalCenter.X) <= GoalHalf.X + Margin && FMath::Abs(P.Y - R.GoalCenter.Y) <= GoalHalf.Y + Margin; };
+    for (int32 Team = 0; Team < 2; ++Team)
+    {
+        const auto& Points = R.LocalPoints[Team];
+        if (Points.Num() < 3 || Points.Num() > 64) return Fail(TEXT("Each unique team needs 3..64 local XY points"));
+        for (int32 I = 0; I < Points.Num(); ++I)
+        {
+            if (!Finite2(Points[I]) || !Inside(Points[I], 150)) return Fail(TEXT("Route points must be finite and inside their realm with unit clearance"));
+            if (I > 0 && FVector2D::DistSquared(Points[I - 1], Points[I]) < 2500) return Fail(TEXT("Adjacent route points must be at least 50 cm apart"));
+        }
+        if (FVector2D::Distance(Points[0], R.GoalCenter) < 3000 || !InGoal(Points.Last(), 0))
+            return Fail(TEXT("Routes must start outside the town and end inside the castle goal zone"));
+        for (int32 I = 0; I + 1 < Points.Num(); ++I)
+            if (InGoal(Points[I], 100)) return Fail(TEXT("Only the final point may enter the town defense zone"));
+        const auto& Bays = R.Bays[Team];
+        if (Bays.Num() != 0 && Bays.Num() != 3) return Fail(TEXT("Challenge bays need exactly three [x, y] points"));
+        for (const FVector2D& B : Bays)
+            if (!Finite2(B) || !Inside(B, 220) || InGoal(B, 200) || FVector2D::DistSquared(B, Points[0]) < FMath::Square(450.))
+                return Fail(TEXT("Challenge bays must stay inside the realm, clear of the breach and the castle zone"));
+    }
+    if (R.EscortEveryWaves < 0 || R.EscortEveryWaves > 100 || R.EscortCount < 1 || R.EscortCount > 4 || R.EscortLeakCost < 1 || R.EscortLeakCost > 100 ||
+        !(R.EscortHealthMultiplier >= 1 && R.EscortHealthMultiplier <= 50) || !(R.EscortMoveSpeed >= 50 && R.EscortMoveSpeed <= 500))
+        return Fail(TEXT("Invalid armored escort schedule or stats"));
+    Error.Reset(); return true;
+}
 // nav-paths: semantic rules shared by the JSON loader and the live path editor.
 bool CireLanePath::Validate(const FCireBattlefieldRoutes& R, FString& Error)
 {
     auto Fail = [&](const TCHAR* Reason) { Error = Reason; return false; };
     auto Finite2 = [](const FVector2D& P) { return FMath::IsFinite(P.X) && FMath::IsFinite(P.Y); };
+    if (R.bTownFrame) return ValidateTown(R, Error);
     if (!FMath::IsFinite(R.MinX) || !FMath::IsFinite(R.MaxX) || !FMath::IsFinite(R.HalfWidth) || R.MinX < -10000 || R.MinX > -2350 ||
         R.MaxX < 4000 || R.MaxX > 80000 /* world-scale: the realm is 3x longer */ || R.HalfWidth < 900 || R.HalfWidth > 1400)
         return Fail(TEXT("Invalid lane bounds; realms must remain separate and contain the towns"));
@@ -204,6 +297,8 @@ bool CireLanePath::Validate(const FCireBattlefieldRoutes& R, FString& Error)
 }
 FCireBattlefieldRoutes CireLanePath::TownDefaults()
 {
+    // medieval-kingdom: in the pack town, "reset to defaults" is the shipped CastleTownRoutes.json.
+    if (CireTownMap::IsActive()) { FCireBattlefieldRoutes Town; if (LoadFile(Town)) return Town; }
     // world-scale: the three-times-longer town (Tools/AuthorTownLayout.py writes the same route to BattlefieldRoutes.json).
     FCireBattlefieldRoutes R; R.MinX = -2350; R.MaxX = 43700; R.HalfWidth = 1400;
     const TArray<FVector2D> Points = {{43200,0},{41500,0},{40800,-550},{39300,-550},{38000,450},{36500,700},{35200,-250},{33600,-700},{32000,-700},
@@ -217,9 +312,16 @@ bool CireLanePath::SameLayout(const FCireBattlefieldRoutes& A, const FCireBattle
     return A.MinX == B.MinX && A.MaxX == B.MaxX && A.HalfWidth == B.HalfWidth && A.LocalPoints[0] == B.LocalPoints[0] && A.LocalPoints[1] == B.LocalPoints[1] &&
         A.LaneWidth == B.LaneWidth && A.GoalCenter == B.GoalCenter && A.GoalSize == B.GoalSize && A.Bays[0] == B.Bays[0] && A.Bays[1] == B.Bays[1] &&
         A.EscortEveryWaves == B.EscortEveryWaves && A.EscortCount == B.EscortCount && A.EscortLeakCost == B.EscortLeakCost &&
-        A.EscortHealthMultiplier == B.EscortHealthMultiplier && A.EscortMoveSpeed == B.EscortMoveSpeed;
+        A.EscortHealthMultiplier == B.EscortHealthMultiplier && A.EscortMoveSpeed == B.EscortMoveSpeed &&
+        A.bTownFrame == B.bTownFrame && A.BaseLocal == B.BaseLocal && A.bRespawn == B.bRespawn && A.RespawnLocal == B.RespawnLocal &&
+        A.bBossSpawn == B.bBossSpawn && A.BossLocal == B.BossLocal;
 }
-FString CireLanePath::DataPath() { return FPaths::ProjectContentDir() / TEXT("Data/BattlefieldRoutes.json"); }
+FString CireLanePath::DataPath()
+{
+    // medieval-kingdom: the pack town has its own (provisional) route document.
+    if (CireTownMap::IsActive()) return FPaths::ProjectContentDir() / CireTownMap::Def().RoutesFile;
+    return FPaths::ProjectContentDir() / TEXT("Data/BattlefieldRoutes.json");
+}
 FString CireLanePath::ToJson(const FCireBattlefieldRoutes& R)
 {
     auto N = [](double V)
@@ -233,6 +335,9 @@ FString CireLanePath::ToJson(const FCireBattlefieldRoutes& R)
         return FString(TEXT("[")) + FString::Join(Items, TEXT(",")) + TEXT("]");
     };
     FString Out = TEXT("{\n  \"schemaVersion\": 1,\n  \"units\": \"centimeters\",\n");
+    if (R.bTownFrame) Out += FString::Printf(TEXT("  \"frame\": \"castletown\",\n  \"base\": [%s,%s],\n"), *N(R.BaseLocal.X), *N(R.BaseLocal.Y));
+    if (R.bRespawn) Out += FString::Printf(TEXT("  \"respawn\": [%s,%s],\n"), *N(R.RespawnLocal.X), *N(R.RespawnLocal.Y));
+    if (R.bBossSpawn) Out += FString::Printf(TEXT("  \"boss\": [%s,%s],\n"), *N(R.BossLocal.X), *N(R.BossLocal.Y));
     Out += FString::Printf(TEXT("  \"bounds\": { \"minX\": %s, \"maxX\": %s, \"halfWidth\": %s },\n"), *N(R.MinX), *N(R.MaxX), *N(R.HalfWidth));
     Out += FString::Printf(TEXT("  \"laneWidth\": %s,\n"), *N(R.LaneWidth));
     Out += FString::Printf(TEXT("  \"goal\": { \"x\": %s, \"y\": %s, \"depth\": %s, \"width\": %s },\n"), *N(R.GoalCenter.X), *N(R.GoalCenter.Y), *N(R.GoalSize.X), *N(R.GoalSize.Y));
@@ -294,20 +399,22 @@ bool CireLanePath::ApplyLive(UWorld* World, const FCireBattlefieldRoutes& Docume
 }
 FVector CireLanePath::GoalZoneCenter(const UWorld* World, int32 Team, float Z)
 {
-    Team = FMath::Clamp(Team, 0, 1); return WorldPoint(Team, Get(World).GoalCenter, Z);
+    Team = FMath::Clamp(Team, 0, 1); return GroundPoint(World, Team, Get(World).GoalCenter, Z);
 }
 FVector2D CireLanePath::GoalZoneExtent(const UWorld* World) { return Get(World).GoalSize * .5; }
 float CireLanePath::LaneWidth(const UWorld* World) { return Get(World).LaneWidth; }
 bool CireLanePath::Reload(FString* Error)
 {
     FString Json, Why; FCireBattlefieldRoutes Candidate; bLoaded = true;
-    if (!FFileHelper::LoadFileToString(Json,*(FPaths::ProjectContentDir()/TEXT("Data/BattlefieldRoutes.json"))) || !ParseJson(Json,Candidate,Why))
+    if (!FFileHelper::LoadFileToString(Json,*DataPath()) || !ParseJson(Json,Candidate,Why))
     {
         if (Why.IsEmpty()) Why = TEXT("BattlefieldRoutes.json could not be read");
         if (Error) *Error = Why;
         UE_LOG(LogCireLanePath,Warning,TEXT("Route reload rejected; existing routes retained: %s"),*Why); return false;
     }
     Routes = MoveTemp(Candidate); ++RouteRevision; if (Error) Error->Reset();
+    // medieval-kingdom: a new startup document (the map frame switched) replaces every world's cached copy.
+    for (auto& Pair : WorldRoutes) { Pair.Value.Data = Routes; Pair.Value.Revision = RouteRevision; Pair.Value.ReceivedVersion = 0; }
     UE_LOG(LogCireLanePath,Display,TEXT("CIRE_LANE_ROUTES_LOADED revision=%u points=%d/%d escortEvery=%d"),RouteRevision,Routes.LocalPoints[0].Num(),Routes.LocalPoints[1].Num(),Routes.EscortEveryWaves);
     return true;
 }
@@ -315,7 +422,7 @@ bool CireLanePath::Reload(UWorld* World,FString* Error)
 {
     FString Why,Json;FCireBattlefieldRoutes Candidate;
     if (!World || !World->GetAuthGameMode<ACireGameMode>()) Why=TEXT("Only the authoritative match may reload routes");
-    else if (!FFileHelper::LoadFileToString(Json,*(FPaths::ProjectContentDir()/TEXT("Data/BattlefieldRoutes.json")))) Why=TEXT("BattlefieldRoutes.json could not be read");
+    else if (!FFileHelper::LoadFileToString(Json,*DataPath())) Why=TEXT("BattlefieldRoutes.json could not be read");
     else if (ParseJson(Json,Candidate,Why))
     {
         const auto& Old=Get(World);
@@ -338,6 +445,7 @@ void CireLanePath::PublishState(ACireGameState* State)
     TArray<float>& L=State->LaneLayout;L.Reset();
     L.Add(R.LaneWidth);L.Add(R.GoalCenter.X);L.Add(R.GoalCenter.Y);L.Add(R.GoalSize.X);L.Add(R.GoalSize.Y);
     for(int32 Team=0;Team<2;++Team){L.Add(R.Bays[Team].Num());for(const FVector2D& B:R.Bays[Team]){L.Add(B.X);L.Add(B.Y);}}
+    L.Add(R.bTownFrame?1.f:0.f);L.Add(R.BaseLocal.X);L.Add(R.BaseLocal.Y); // medieval-kingdom
     State->ForceNetUpdate();
 }
 void CireLanePath::ReceiveState(ACireGameState* State)
@@ -362,6 +470,7 @@ void CireLanePath::ReceiveState(ACireGameState* State)
         {
             Entry.Data.LaneWidth=L[0];Entry.Data.GoalCenter=FVector2D(L[1],L[2]);Entry.Data.GoalSize=FVector2D(L[3],L[4]);
             Entry.Data.Bays[0]=Bays[0];Entry.Data.Bays[1]=Bays[1];
+            if(At+3<=L.Num()){Entry.Data.bTownFrame=L[At]>.5f;Entry.Data.BaseLocal=FVector2D(L[At+1],L[At+2]);} // medieval-kingdom
         }
     }
     Entry.ReceivedVersion=State->LaneRouteVersion;++Entry.Revision;
@@ -371,7 +480,7 @@ bool CireLanePath::Contains(const UWorld* World,int32 Team,const FVector& P,floa
 {
     const auto& R = Get(World);
     return Team >= 0 && Team < 2 && !P.ContainsNaN() && FMath::IsFinite(Margin) && Margin >= 0 &&
-        P.X >= R.MinX + Margin && P.X <= R.MaxX - Margin && FMath::Abs(P.Y-CenterY(Team)) <= R.HalfWidth-Margin;
+        [&]{ const FVector2D L=ToLocal(Team,P); return L.X >= R.MinX + Margin && L.X <= R.MaxX - Margin && FMath::Abs(L.Y) <= R.HalfWidth-Margin; }();
 }
 FVector CireLanePath::ClampToLane(int32 Team,FVector P,float Margin)
 { return ClampToLane(nullptr,Team,P,Margin); }
@@ -379,9 +488,10 @@ FVector CireLanePath::ClampToLane(const UWorld* World,int32 Team,FVector P,float
 {
     const auto& R = Get(World); Team = FMath::Clamp(Team,0,1);
     Margin = FMath::Clamp(FMath::IsFinite(Margin)?Margin:0.f,0.f,FMath::Min(R.HalfWidth-1,(R.MaxX-R.MinX)*.5f-1));
-    if (P.ContainsNaN()) P = FVector(-1700,CenterY(Team),110);
-    P.X = FMath::Clamp(P.X,static_cast<double>(R.MinX+Margin),static_cast<double>(R.MaxX-Margin));
-    P.Y = FMath::Clamp(P.Y,static_cast<double>(CenterY(Team)-R.HalfWidth+Margin),static_cast<double>(CenterY(Team)+R.HalfWidth-Margin));
+    if (P.ContainsNaN()) P = BasePosition(World,Team);
+    const FVector2D O = RealmOrigin(Team);
+    P.X = FMath::Clamp(P.X,O.X+R.MinX+Margin,O.X+R.MaxX-Margin);
+    P.Y = FMath::Clamp(P.Y,O.Y-R.HalfWidth+Margin,O.Y+R.HalfWidth-Margin);
     return P;
 }
 FVector CireLanePath::SpawnPosition(int32 Team,float Z)
@@ -389,12 +499,12 @@ FVector CireLanePath::SpawnPosition(int32 Team,float Z)
 FVector CireLanePath::SpawnPosition(const UWorld* World,int32 Team,float Z)
 {
     const auto& R = Get(World); Team = FMath::Clamp(Team,0,1);
-    return WorldPoint(Team,R.LocalPoints[Team][0],FMath::IsFinite(Z)?Z:110.f);
+    return GroundPoint(World,Team,R.LocalPoints[Team][0],FMath::IsFinite(Z)?Z:110.f);
 }
 FVector CireLanePath::ChallengePosition(const UWorld* World,int32 Team,int32 Tier,float Z)
 {
     Team=FMath::Clamp(Team,0,1);
-    return WorldPoint(Team,BayPoint(Get(World),Team,Tier),FMath::IsFinite(Z)?Z:110.f);
+    return GroundPoint(World,Team,BayPoint(Get(World),Team,Tier),FMath::IsFinite(Z)?Z:110.f);
 }
 FVector2D CireLanePath::BayPoint(const FCireBattlefieldRoutes& R,int32 Team,int32 Tier)
 {
@@ -425,7 +535,7 @@ FVector2D CireLanePath::BayPoint(const FCireBattlefieldRoutes& R,int32 Team,int3
 TArray<FVector> CireLanePath::RoutePoints(const UWorld* World,int32 Team,float Z)
 {
     TArray<FVector> Out;Team=FMath::Clamp(Team,0,1);
-    for(const FVector2D& P:Get(World).LocalPoints[Team])Out.Add(WorldPoint(Team,P,FMath::IsFinite(Z)?Z:0.f));
+    for(const FVector2D& P:Get(World).LocalPoints[Team])Out.Add(GroundPoint(World,Team,P,FMath::IsFinite(Z)?Z:0.f));
     return Out;
 }
 float CireLanePath::RouteLength(const UWorld* World,int32 Team)
@@ -449,7 +559,7 @@ FVector CireLanePath::PointAlongRoute(const UWorld* World,int32 Team,float Fract
 float CireLanePath::RouteProgress(const UWorld* World,int32 Team,const FVector& Location)
 {
     Team=FMath::Clamp(Team,0,1);const auto& Points=Get(World).LocalPoints[Team];
-    const FVector2D P(Location.X,Location.Y-CenterY(Team));double Best=TNumericLimits<double>::Max(),BestAlong=0,Walked=0;
+    const FVector2D P=ToLocal(Team,Location);double Best=TNumericLimits<double>::Max(),BestAlong=0,Walked=0;
     for(int32 I=0;I+1<Points.Num();++I)
     {
         const FVector2D Segment=Points[I+1]-Points[I];const double Length=Segment.Size();
@@ -462,13 +572,13 @@ float CireLanePath::RouteProgress(const UWorld* World,int32 Team,const FVector& 
 }
 FVector CireLanePath::GoalPosition(const UWorld* World,int32 Team,float Z)
 {
-    Team=FMath::Clamp(Team,0,1);return WorldPoint(Team,Get(World).LocalPoints[Team].Last(),Z);
+    Team=FMath::Clamp(Team,0,1);return GroundPoint(World,Team,Get(World).LocalPoints[Team].Last(),Z);
 }
 void CireLanePath::InitializeProgress(ACireMonster* M)
 {
     if (!IsValid(M) || !M->HasAuthority() || M->Lane < 0 || M->Lane > 1) return;
     const auto& R = Get(M->GetWorld()); const FVector P = M->GetActorLocation();
-    M->LaneWaypointIndex = ProjectNext(R.LocalPoints[M->Lane],FVector2D(P.X,P.Y-CenterY(M->Lane)));
+    M->LaneWaypointIndex = ProjectNext(R.LocalPoints[M->Lane],ToLocal(M->Lane,P));
     M->LaneRouteRevision = Revision(M->GetWorld());
 }
 FVector CireLanePath::NextWaypoint(ACireMonster* M)
@@ -477,7 +587,7 @@ FVector CireLanePath::NextWaypoint(ACireMonster* M)
     const auto& R = Get(M->GetWorld());
     if (M->LaneRouteRevision != Revision(M->GetWorld()) || M->LaneWaypointIndex < 1 || M->LaneWaypointIndex >= R.LocalPoints[M->Lane].Num()) InitializeProgress(M);
     const auto& Points = R.LocalPoints[M->Lane]; const FVector P = M->GetActorLocation();
-    const FVector2D Local(P.X,P.Y-CenterY(M->Lane));
+    const FVector2D Local=ToLocal(M->Lane,P);
     // world-scale: a unit carried forward off its march (escort guards walking beside their escortee, a chase) resumes
     // from where it now is instead of walking back to a stale waypoint; on the 495 m road that walk-back reached the
     // stall failsafe. Progress still never moves backward.

@@ -432,9 +432,9 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
             return FVector2D(110+LX*ArenaScale,91-LY*ArenaScale);
         }
         const auto& R=CireLanePath::Get(GetWorld());
-        const float CenterY=CireLanePath::CenterY(Team);
-        return FVector2D(Team*101+13+FMath::Clamp((P.Y-CenterY+R.HalfWidth)/(2*R.HalfWidth),0.f,1.f)*93,
-            145-FMath::Clamp((P.X-R.MinX)/(R.MaxX-R.MinX),0.f,1.f)*111);
+        const FVector2D L=CireLanePath::ToLocal(Team,P); // medieval-kingdom: realm frame from data
+        return FVector2D(Team*101+13+FMath::Clamp((L.Y+R.HalfWidth)/(2*R.HalfWidth),0.f,1.f)*93,
+            145-FMath::Clamp((L.X-R.MinX)/(R.MaxX-R.MinX),0.f,1.f)*111);
     };
     if(Arena) {
         // arenas: themed ground, blocker footprints, spawn edges.
@@ -464,8 +464,8 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
             if(!Visible) {Panel(X+2,33,90,115,FLinearColor(.01f,.017f,.023f,.93f));Label(TEXT("ENEMY"),X+26,73,10,Muted);Label(TEXT("REALM"),X+26,87,10,Muted);Label(TEXT("OBSCURED"),X+16,111,8,Muted);continue;}
             const auto& Points=CireLanePath::Get(GetWorld()).LocalPoints[Team];
             for(int32 I=1;I<Points.Num();++I) {
-                const auto A=Map(FVector(Points[I-1].X,Points[I-1].Y+CireLanePath::CenterY(Team),0),Team);
-                const auto B=Map(FVector(Points[I].X,Points[I].Y+CireLanePath::CenterY(Team),0),Team);
+                const auto A=Map(FVector(Points[I-1]+CireLanePath::RealmOrigin(Team),0),Team);
+                const auto B=Map(FVector(Points[I]+CireLanePath::RealmOrigin(Team),0),Team);
                 Line(A.X,A.Y,B.X,B.Y,FLinearColor(.24f,.27f,.23f,1),5);
                 Line(A.X,A.Y,B.X,B.Y,Gold*.7f,1);
             }
@@ -686,6 +686,7 @@ void ACireHUD::DrawHUD()
     if(DrawReplayScreen()){DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();return;}
     if(!Hero){Label(TEXT("Joining the battlefield..."),ViewW*.5f-130,ViewH*.5f,20,Parchment);return;}
     // nav-paths: the in-world path editor replaces the gameplay HUD (minimap, editor overlay, toolbar, F8).
+    DrawExploreOverlay(); // medieval-kingdom: -CireExplore coordinates, keys and the provisional route
     if(bRouteEditor){DrawMinimap(Hero,State);ResetTransform();TickRouteEditor();ResetTransform();DrawSettings();DrawTooltip();ResetTransform();return;}
     UpdateLevelUps(Hero);UpdateThreatAlerts(Hero);UpdateBanners(Hero,State);UpdateEffectCallouts(Hero);
     if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;TargetChangedAt=GetWorld()->GetRealTimeSeconds();}

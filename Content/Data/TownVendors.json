@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "frame": "castletown",
+  "notes": "PROVISIONAL vendor spots in the Medieval Kingdom town (Docs/CastleTown.md), consumed by feat/vendors. Realm-local centimetres: world = local + CastleTown.json realms[team].offset.xy + frameCenter, and z = the ground under the spot (CireLanePath::ToWorld). Stored once, used by both realms (every team gets all three vendors). Each spot is at one of the pack's own market stalls near the castle, so the stall reads as that vendor's shop. Eric re-places them with the map layout editor (feat/dev-route-tools).",
+  "vendors": [
+    {
+      "id": "arcane",
+      "name": "Arcane Shop",
+      "stats": ["INT"],
+      "local": [12021, -8368],
+      "yaw": -135,
+      "stall": "BP_MarketStand_03 in SL_Courtyard (pack 6021, -5768)"
+    },
+    {
+      "id": "armory",
+      "name": "Armory",
+      "stats": ["STR"],
+      "roles": ["tank"],
+      "local": [12890, -3474],
+      "yaw": -94,
+      "stall": "BP_MarketStand_01 in PL_CastleTown (pack 6890, -874)"
+    },
+    {
+      "id": "weaponsmith",
+      "name": "Weaponsmith",
+      "stats": ["AGI"],
+      "roles": ["dps", "melee"],
+      "local": [11692, -2502],
+      "yaw": -48,
+      "stall": "BP_Anvil_01 and weapon stands in PL_CastleTown (pack 5692, 98)"
+    }
+  ]
+}

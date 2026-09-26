@@ -43,8 +43,8 @@ namespace
 const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment, &Muted=CireUIColors::Muted;
 const FLinearColor Teal(.2f, .71f, .59f, 1), Red(.75f, .2f, .23f, 1), Purple(.66f, .46f, .83f, 1), Orange(1.f, .55f, .1f, 1);
 constexpr float ToolbarW = 344.f, ToolbarH = 336.f;
-FVector2D LocalOf(int32 Team, const FVector& World) { return FVector2D(World.X, World.Y - CireLanePath::CenterY(Team)); }
-FVector WorldOf(int32 Team, const FVector2D& Local, float Z = 5.f) { return FVector(Local.X, Local.Y + CireLanePath::CenterY(Team), Z); }
+FVector2D LocalOf(int32 Team, const FVector& World) { return CireLanePath::ToLocal(Team, World); } // medieval-kingdom
+FVector WorldOf(int32 Team, const FVector2D& Local, float Z = 5.f) { return CireLanePath::ToWorld(Team, Local, Z); }
 void SetNavigationShowFlag(UWorld* World, bool bShow)
 {
     if (UGameViewportClient* Viewport = World ? World->GetGameViewport() : nullptr) Viewport->EngineShowFlags.SetNavigation(bShow);
@@ -71,7 +71,10 @@ void ACireHUD::OpenRouteEditor(bool bOpen)
         if (!E.bLoaded) { E.Draft = CireLanePath::Get(World); E.bLoaded = true; E.bDirty = true; }
         const ACireHero* Hero = PlayerOwner ? Cast<ACireHero>(PlayerOwner->GetPawn()) : nullptr;
         E.Team = Hero ? FMath::Clamp(Hero->TeamId, 0, 1) : 0;
-        E.Focus = FVector(5200, CireLanePath::CenterY(E.Team), 0);
+        {   // medieval-kingdom: the pack town frame opens on its (provisional) castle goal
+            const auto& R = CireLanePath::Get(World);
+            E.Focus = FVector(CireLanePath::RealmOrigin(E.Team) + (R.bTownFrame ? R.GoalCenter : FVector2D(5200, 0)), 0);
+        }
         FActorSpawnParameters Params; Params.ObjectFlags |= RF_Transient;
         if (ACameraActor* Camera = World->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), FTransform::Identity, Params))
         {
@@ -151,7 +154,7 @@ void ACireHUD::TickRouteEditor()
             E.Camera->SetActorLocationAndRotation(E.Focus - View.Vector() * E.Distance, View);
             if (PlayerOwner->GetViewTarget() != E.Camera.Get()) PlayerOwner->SetViewTarget(E.Camera.Get());
         }
-        if (!bSettings && PlayerOwner->WasInputKeyJustPressed(EKeys::Tab)) { E.Team = 1 - E.Team; E.Focus.Y = CireLanePath::CenterY(E.Team) + (E.Focus.Y - CireLanePath::CenterY(1 - E.Team)); }
+        if (!bSettings && PlayerOwner->WasInputKeyJustPressed(EKeys::Tab)) { E.Team = 1 - E.Team; E.Focus += FVector(CireLanePath::RealmOrigin(E.Team) - CireLanePath::RealmOrigin(1 - E.Team), 0); }
     }
 
     // ---- projection helpers ----------------------------------------------------------------------
@@ -351,8 +354,8 @@ void ACireHUD::TickRouteEditor()
         if (E.bLinked) { Draft.LocalPoints[1 - E.Team] = Draft.LocalPoints[E.Team]; Draft.Bays[1 - E.Team] = Draft.Bays[E.Team]; E.bDirty = true; }
     }
     Y += 28;
-    if (Button(TEXT("EMBER"), L, Y, 76, TEXT("Edit the Ember realm (Tab)."), true, E.Team == 0)) { E.Team = 0; E.Focus.Y = CireLanePath::CenterY(0); }
-    if (Button(TEXT("DUSK"), L + 80, Y, 76, TEXT("Edit the Dusk realm (Tab)."), true, E.Team == 1)) { E.Team = 1; E.Focus.Y = CireLanePath::CenterY(1); }
+    if (Button(TEXT("EMBER"), L, Y, 76, TEXT("Edit the Ember realm (Tab)."), true, E.Team == 0)) { if (E.Team != 0) E.Focus += FVector(CireLanePath::RealmOrigin(0) - CireLanePath::RealmOrigin(1), 0); E.Team = 0; }
+    if (Button(TEXT("DUSK"), L + 80, Y, 76, TEXT("Edit the Dusk realm (Tab)."), true, E.Team == 1)) { if (E.Team != 1) E.Focus += FVector(CireLanePath::RealmOrigin(1) - CireLanePath::RealmOrigin(0), 0); E.Team = 1; }
     if (Button(E.bShowNav ? TEXT("NAVMESH ON") : TEXT("NAVMESH OFF"), L + 160, Y, 100, TEXT("Engine navmesh debug draw in the world (green = walkable). The minimap overlay follows it."), true, E.bShowNav, Teal))
     { E.bShowNav = !E.bShowNav; SetNavigationShowFlag(World, E.bShowNav); }
     if (Button(TEXT("FOCUS"), L + 264, Y, 52, TEXT("Centre the camera on the selection."), E.SelKind != 0))

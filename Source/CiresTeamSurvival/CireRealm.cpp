@@ -1,6 +1,7 @@
 #include "CireRealm.h"
 #include "CireGame.h"
 #include "CireLanePath.h"
+#include "CireTownMap.h"
 #include "CireConstruct.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
@@ -25,6 +26,7 @@ bool CanObserve(const AActor* Observer, const AActor* Subject) {
 }
 void UpdateVisibility(AActor* Subject) {
     if (!Subject || !Subject->GetWorld()) return;
+    CireTownMap::ApplyActorRealm(Subject); // medieval-kingdom: lit by its own realm's sun
     // The server maintains physical realm boundaries as well as damage restrictions.
     if (auto* Hero = Cast<ACireHero>(Subject); Hero && Hero->HasAuthority() && Hero->TeamId >= 0) {
         auto* Mode = Hero->GetWorld()->GetAuthGameMode<ACireGameMode>();
@@ -32,7 +34,7 @@ void UpdateVisibility(AActor* Subject) {
             const FVector Location = Hero->GetActorLocation();
             if (!CireLanePath::Contains(Hero->GetWorld(),Hero->TeamId,Location)) {
                 FVector Safe=CireLanePath::ClampToLane(Hero->GetWorld(),Hero->TeamId,Location,80);
-                Safe.Z=FMath::Max(100.,Location.Z);
+                Safe.Z=FMath::Max(CireTownMap::Ground(Hero->GetWorld(),FVector2D(Safe))+100.,Location.Z); // medieval-kingdom: pack town ground
                 Hero->GetCharacterMovement()->StopMovementImmediately();
                 Hero->SetActorLocation(Safe, false, nullptr, ETeleportType::TeleportPhysics);
             }

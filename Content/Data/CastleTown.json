@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "notes": "The Medieval Kingdom pack town as the survival map (CireTownMap, Docs/CastleTown.md). Two identical copies of the pack's PL_CastleTown and its sublevels (never SL_Lighting) are streamed at the realm offsets; they differ only in lighting. Realm-local = pack coordinates - frameCenter; world = realm-local + realms[team].offset.xy + frameCenter. Gameplay spots live in CastleTownRoutes.json (realm-local, PROVISIONAL). The pack is Fab-licensed and never committed; without it the procedural town is used.",
+  "pack": "/Game/CastleTown",
+  "persistent": "/Game/CastleTown/Levels/Persistant/PL_CastleTown",
+  "levels": [
+    "/Game/CastleTown/Levels/Persistant/PL_CastleTown",
+    "/Game/CastleTown/Levels/SubLevels/SL_Landscape",
+    "/Game/CastleTown/Levels/SubLevels/SL_Mountain",
+    "/Game/CastleTown/Levels/SubLevels/SL_Roads",
+    "/Game/CastleTown/Levels/SubLevels/SL_BridgesAndWalls",
+    "/Game/CastleTown/Levels/SubLevels/SL_Houses",
+    "/Game/CastleTown/Levels/SubLevels/SL_Town_Props",
+    "/Game/CastleTown/Levels/SubLevels/SL_Courtyard",
+    "/Game/CastleTown/Levels/SubLevels/SL_Castle_Walls",
+    "/Game/CastleTown/Levels/SubLevels/SL_Castle"
+  ],
+  "frameCenter": [-6000, 2600],
+  "zRange": [-1500, 9000],
+  "skyRadius": 480000,
+  "realms": [
+    {
+      "team": 0,
+      "name": "Daylight",
+      "offset": [6000, -602600, 0],
+      "lighting": {
+        "sky": "/Game/CastleTown/SkySphere/Materials/MI_sky_Day.MI_sky_Day",
+        "sunPitch": -58, "sunYaw": 135, "sunIntensity": 9, "sunColor": [1.0, 0.96, 0.9],
+        "exposureBias": 0.0, "saturation": 1.05, "tint": [1.0, 1.0, 1.0],
+        "torchIntensity": 0
+      }
+    },
+    {
+      "team": 1,
+      "name": "Darknight",
+      "offset": [6000, 597400, 0],
+      "lighting": {
+        "sky": "/Game/CastleTown/SkySphere/Materials/MI_sky_Night.MI_sky_Night",
+        "sunPitch": -30, "sunYaw": 215, "sunIntensity": 4.5, "sunColor": [0.66, 0.74, 1.0],
+        "exposureBias": 0.0, "saturation": 0.9, "tint": [0.9, 0.93, 1.05],
+        "torchIntensity": 16000, "torchRadius": 1800, "torchColor": [1.0, 0.6, 0.28]
+      }
+    }
+  ],
+  "defaultMap": true,
+  "routes": "Data/CastleTownRoutes.json",
+  "explore": {
+    "start": [4134, 5545],
+    "landmarks": [
+      {"name": "Market plaza", "at": [4134, 5545]},
+      {"name": "West market", "at": [-17100, -1000]},
+      {"name": "Smithy row", "at": [3100, -3100]},
+      {"name": "North market", "at": [-3300, 5700]},
+      {"name": "Castle courtyard", "at": [12300, -7300]},
+      {"name": "Castle keep", "at": [15500, -3300]}
+    ]
+  }
+}

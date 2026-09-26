@@ -1,6 +1,7 @@
 #include "CireEnvironmentProps.h"
 #include "Misc/CommandLine.h"
 #include "CireGame.h"
+#include "CireTownMap.h" // medieval-kingdom
 #include "CireLanePath.h"
 #include "CireNav.h" // nav-paths
 #include "CireWorldDressing.h" // world-dressing
@@ -350,6 +351,7 @@ void CireEnvironmentProps::Reload(){Town=FTownData();LoadTown();}
 void CireEnvironmentProps::Build(ACireWorld* WorldActor)
 {
     if(!IsValid(WorldActor))return;
+    if(CireTownMap::IsActive())return; // medieval-kingdom: the pack town is its own dressing
     for(auto I=Worlds.CreateIterator();I;++I)if(!I.Key().IsValid())I.RemoveCurrent();
     if(!LoadTown())return;
     FWorldTown& Data=Worlds.FindOrAdd(WorldActor);
