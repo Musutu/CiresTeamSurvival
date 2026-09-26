@@ -13,6 +13,8 @@
 #include "CireAbilityIcons.h"
 #include "CireClassTraits.h"
 #include "CireUIStyle.h"
+#include "CireWeaponPresentation.h"
+#include "Dom/JsonObject.h"
 #include "CireUITheme.h"
 #include "CireGame.h"
 #include "CireSummon.h"
@@ -109,6 +111,16 @@ FString StyleLabel(const FString& Style)
     if(Style==TEXT("axes"))return TEXT("Axes");
     if(Style==TEXT("arcane"))return TEXT("Arcane focus");
     FString Result=Style;if(!Result.IsEmpty())Result[0]=FChar::ToUpper(Result[0]);return Result;
+}
+// The weapon the champion actually carries: a per-champion Fab prop (e.g. the paladins' flanged maces on the
+// "Flail" token) names it; without the pack the roster attack style is shown.
+FString WeaponLabel(const FCireChampionProfile& P)
+{
+    float Size=1.f;TSharedPtr<FJsonObject> Materials;bool bProfileProp=false;
+    const FString Mesh=CireWeaponFab::ResolveMesh(P.Id,StyleLabel(P.AttackStyle),FString(),Size,Materials,bProfileProp);
+    if(bProfileProp)for(const TCHAR* Kind:{TEXT("Mace"),TEXT("Sword"),TEXT("Axe"),TEXT("Hammer"),TEXT("Spear"),TEXT("Dagger")})
+        if(FPackageName::GetShortName(Mesh).Contains(Kind))return Kind;
+    return StyleLabel(P.AttackStyle);
 }
 const TCHAR* DifficultyWord(int32 D){return D<=1?TEXT("EASY"):D==2?TEXT("MODERATE"):TEXT("HARD");}
 TArray<Cires::SkillDraftRole> HybridRoles(const FCireChampionProfile& P)
@@ -1222,7 +1234,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 {TEXT("DIFFICULTY"),Capitalized(FString(DifficultyWord(Shown->Difficulty)).ToLower()),Gold,Shown->Difficulty},
                 {TEXT("PRIMARY STAT"),Capitalized(PrimaryName(Shown->PrimaryStat).ToLower()),PrimeCol,0},
                 {TEXT("ATTACK RANGE"),FString::Printf(TEXT("%s  %.1f m"),bRanged?TEXT("Ranged"):TEXT("Melee"),Shown->BasicAttackRange/100.f),Text,0},
-                {TEXT("WEAPON"),FString::Printf(TEXT("%s  %.1f s"),*StyleLabel(Shown->AttackStyle),Shown->AttackSeconds),Text,0}};
+                {TEXT("WEAPON"),FString::Printf(TEXT("%s  %.1f s"),*WeaponLabel(*Shown),Shown->AttackSeconds),Text,0}};
             for(int32 I=0;I<4;++I)
             {
                 const FRect C{R.X+(I%2)*(CellW+8),Y+(I/2)*(CellH+6),CellW,CellH};
@@ -1313,7 +1325,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             Line(TEXT("COMBAT STYLE"),L.X,Y+2,L.W,HS,Gold,L,ECireFont::Display);
             // str-scaling: level-1 health (starting-STR base + 10 per STR point); growth is +10 health per STR point.
             const double StartHealth=Cires::StartingBaseHealth(Shown->Strength)+Shown->Strength*Cires::HealthPerStrength;
-            Line(FString::Printf(TEXT("%s  |  %s  |  %.1f m  |  %.1f s  |  %.0f HP"),bRanged?TEXT("RANGED"):TEXT("MELEE"),*StyleLabel(Shown->AttackStyle),Shown->BasicAttackRange/100.f,Shown->AttackSeconds,StartHealth),L.X,Y+2+HL+2,L.W,BS,Text,L,ECireFont::Body);
+            Line(FString::Printf(TEXT("%s  |  %s  |  %.1f m  |  %.1f s  |  %.0f HP"),bRanged?TEXT("RANGED"):TEXT("MELEE"),*WeaponLabel(*Shown),Shown->BasicAttackRange/100.f,Shown->AttackSeconds,StartHealth),L.X,Y+2+HL+2,L.W,BS,Text,L,ECireFont::Body);
             Panel(Rr.X-10,Rr.Y,1,Rr.H,WithAlpha(Gold,.25f));
             float RY=Rr.Y;
             Line(TEXT("OPENING ABILITY"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;
@@ -1358,7 +1370,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         {
             float Y=Body.Y;
             if(!Shown->Lore.IsEmpty())Y+=Para(TEXT("\"")+Shown->Lore+TEXT("\""),Body.X,Y,Body.W,14.f*TK,ThemeUI(226,190,120),3,Body,ECireFont::Body)+12;
-            const FString Facts=FString::Printf(TEXT("%s  |  %s  |  %s"),*Shown->ClassType,*Capitalized(Shown->Race),*StyleLabel(Shown->AttackStyle));
+            const FString Facts=FString::Printf(TEXT("%s  |  %s  |  %s"),*Shown->ClassType,*Capitalized(Shown->Race),*WeaponLabel(*Shown));
             Line(Facts,Body.X,Y,Body.W,12.5f*TK,Text,Body,ECireFont::Body);Y+=LH(12.5f*TK,ECireFont::Body)+10;
             Para(Playstyle(*Shown),Body.X,Y,Body.W,BS,ThemeUI(206,200,186),FMath::FloorToInt((Body.B()-Y)/BL),Body,ECireFont::Body);
         }

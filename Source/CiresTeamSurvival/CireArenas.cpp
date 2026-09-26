@@ -99,8 +99,18 @@ bool AssetExists(const FString& ObjectPath)
     if (ObjectPath.StartsWith(TEXT("/Engine/"))) return true;
     return FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(ObjectPath));
 }
+// world-scale: purchased Fab packs are local-only; -CireNoFab (before/after captures) skips candidates inside them so a
+// machine with the packs renders exactly what a clean clone renders.
+bool IsFabPackPath(const FString& Path)
+{
+    static const TCHAR* const Roots[] = {TEXT("/Game/CastleTown/"), TEXT("/Game/Fab/"), TEXT("/Game/Forest_VFX/"), TEXT("/Game/Polyphoria/"), TEXT("/Game/FabDerived/")};
+    for (const TCHAR* Root : Roots) if (Path.StartsWith(Root)) return true;
+    return false;
+}
 bool CandidateExists(const FString& Candidate)
 {
+    static const bool bNoFab = FParse::Param(FCommandLine::Get(), TEXT("CireNoFab"));
+    if (bNoFab && IsFabPackPath(Candidate)) return false;
     TArray<FString> Parts; Candidate.ParseIntoArray(Parts, TEXT("|"));
     for (const FString& Part : Parts) if (!AssetExists(Part)) return false;
     return Parts.Num() > 0;
@@ -924,6 +934,9 @@ void UCireArenaSubsystem::HideTown(bool bHide)
     {
         for (auto& C : HiddenTown) if (C.IsValid()) C->SetVisibility(true);
         for (auto& A : HiddenTownActors) if (A.IsValid()) A->SetActorHiddenInGame(false);
+        // world-scale: the town colour grade comes back with the town.
+        if (UWorld* W = GetWorld()) for (TActorIterator<ACireWorld> It(W); It; ++It)
+            for (UActorComponent* C : It->GetComponents()) if (auto* PP = Cast<UPostProcessComponent>(C)) PP->bEnabled = true;
         HiddenTown.Reset(); HiddenTownActors.Reset(); return;
     }
     UWorld* World = GetWorld(); if (!World) return;
@@ -934,6 +947,7 @@ void UCireArenaSubsystem::HideTown(bool bHide)
     for (TActorIterator<ACireWorld> It(World); It; ++It)
     {
         for (UActorComponent* C : It->GetComponents()) if (C && C->GetFName() == TEXT("SkyDome")) Hide(Cast<USceneComponent>(C));
+        for (UActorComponent* C : It->GetComponents()) if (auto* PP = Cast<UPostProcessComponent>(C)) PP->bEnabled = false; // world-scale: town grade off
         // Everyone is in the arena: stop drawing the town (550 m away) that would show through the sky dome.
         if (!It->IsHidden()) { It->SetActorHiddenInGame(true); HiddenTownActors.Add(*It); }
     }

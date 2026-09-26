@@ -2,7 +2,35 @@
 
 `Content/Data/BattlefieldRoutes.json` is the authoritative route authoring file. Distances are Unreal centimeters. Each team has its own ordered list of local XY points; local Y is relative to that team's realm center (Ember -2100, Dusk +2100). The first point is the wave spawn and the last point must reach the defended castle gate at local (-1850, 0).
 
-## The town route (September 24 redesign)
+## World scale (September 25): a three-times-longer realm
+
+Eric asked for a world three times the size. The realm now spans **X -2350..43700** (460 m, three times the old
+153 m span); the half-width stays 1400 because the two realm centres (±2100) and the Sundering Cliff between them are fixed.
+The castle end did not move: the goal zone, hero base, bailey, castle approach, town square, Cooper's Lanes and the market keep
+their coordinates. The old gate road, the town wall with its gatehouse and the Breach Fields moved out by **30700 cm**
+(`GATE_SHIFT` in `Tools/AuthorTownLayout.py`), and seven new districts fill the gap. The rift and wave spawn are still the
+first route point, at the far end of the Breach Fields (local 43200, 0).
+
+`Tools/AuthorTownLayout.py` now owns the route and writes `BattlefieldRoutes.json` (and `CireLanePath::TownDefaults` holds the
+same 34 points; the native checks compare them). The road is **495 m** long (it was 159 m), 3.1 times as long:
+
+| Points (local X, Y) | District |
+| --- | --- |
+| (43200, 0) → (41500, 0) → (40800, -550) | the Breach, through the town gatehouse (X 42100) onto the gate road |
+| (39300, -550) … (35200, -250) | Brookfield Hamlet: cottages round a green, orchard trees, a well |
+| (33600, -700) … (30600, 300) | The Outer Farmsteads: wheat fields, dry-stone walls, bales, stooks, a barn and a windmill |
+| (29200, 650) … (25000, -450) | Tanners' Yard: sheds, fences, hay and hides |
+| (24300, 0) → (22700, 0) | The Old Wall: the original town wall, its gate long gone, two towers flank the road |
+| (21300, -600) … (18300, 550) | Weavers' Lanes: an S-bend between houses pushed into the lane |
+| (16900, 550) … (14000, -250) | The Temple Green: a park with the fountain, statues, leafy trees and flower beds |
+| (12900, 500) … (10000, -450) | Guildhall Row: guildhall, smithy yard and a flagstone guild plaza |
+| (8700, -550) … (-1850, 0) | unchanged: market, Cooper's Lanes, town square, castle approach, castle gate |
+
+Validation limits that assumed the old size were raised: `bounds.maxX` may be up to 80000 (was 30000), town placements and
+districts accept X ±80000 and Y ±40000 (backdrop mountains sit far out on each outer side). Challenge bays are still computed at
+75 / 50 / 25 % of the path: they now land in Guildhall Row, Weavers' Lanes and the Outer Farmsteads.
+
+## The town route (September 24 redesign, superseded in length by World scale above)
 
 Each realm is now a walled medieval town (see `Docs/EnvironmentProps.md`). The realm spans X -2350..13000 with a half-width of **1400** (widened from 1120 so streets can be lined with houses; the two realms still cannot touch: the Sundering Cliff between them is 200 cm thick and town pieces stop 60 cm short of it). Twelve points, identical for both teams:
 

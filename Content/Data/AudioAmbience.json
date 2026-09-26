@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "notes": "District ambience (CireAmbience). The listener's district comes from CireEnvironmentProps::DistrictAt (TownLayout.json). Beds are 2D stereo loops keyed by sound, so a layer shared by two districts (wind) carries over without a restart; volumes glide over fadeSeconds. The night layer plays everywhere for the dusk/night mood. oneShots fire from random directions around the listener at distance [min,max] cm and height [min,max] cm with a random interval [min,max] s. During Combat/Boss/Arena music the beds and one-shots duck to duckLevel. emitters map TownAssetSlots slot ids to looping (or periodic) positional cues; the nearest maxEmitters within emitterRadius play.",
+  "notes": "District ambience (CireAmbience). The listener's district comes from CireEnvironmentProps::DistrictAt (TownLayout.json). Beds are 2D stereo loops keyed by sound, so a layer shared by two districts (wind) carries over without a restart; volumes glide over fadeSeconds. The night layer plays everywhere for the dusk/night mood. oneShots fire from random directions around the listener at distance [min,max] cm and height [min,max] cm with a random interval [min,max] s. During Combat/Boss/Arena music the beds and one-shots duck to duckLevel. emitters map TownAssetSlots slot ids to looping (or periodic) positional cues; the nearest maxEmitters within emitterRadius play. world-scale: the seven new districts reuse soundscapes (guild = market, green = square, weavers / tanners / hamlet = residential, oldwall = approach, farms = the Sunlit Fields wheat wind and skylarks).",
   "fadeSeconds": 3.0,
   "duckLevel": 0.45,
   "duckSeconds": 1.5,
@@ -22,6 +22,55 @@
         { "cue": "amb_crow", "interval": [5, 12], "distance": [1000, 3000], "height": [300, 900] },
         { "cue": "amb_chains", "interval": [8, 16], "distance": [500, 1500], "height": [100, 500] },
         { "cue": "amb_gate_creak", "interval": [12, 24], "distance": [500, 1600], "height": [100, 400] }
+      ]
+    },
+    "hamlet": {
+      "beds": [ { "sound": "Ambience/AMB_Hearth", "volume": 0.3 }, { "sound": "Ambience/AMB_WindChimes", "volume": 0.45 }, { "sound": "Ambience/AMB_WindRolling", "volume": 0.2 } ],
+      "oneShots": [
+        { "cue": "amb_dog", "interval": [9, 20], "distance": [1500, 3500], "height": [0, 150] },
+        { "cue": "amb_door", "interval": [8, 18], "distance": [600, 1800], "height": [50, 200] },
+        { "cue": "amb_chop", "interval": [14, 26], "distance": [1200, 2600], "height": [0, 150] }
+      ]
+    },
+    "farms": {
+      "beds": [ { "sound": "Arenas/AMB_ArenaWheatWind", "volume": 0.6 }, { "sound": "Arenas/AMB_ArenaField", "volume": 0.4 } ],
+      "oneShots": [ { "cue": "amb_skylark", "interval": [5, 12], "distance": [1500, 3500], "height": [900, 2000] } ]
+    },
+    "tanners": {
+      "beds": [ { "sound": "Ambience/AMB_Hearth", "volume": 0.3 }, { "sound": "Ambience/AMB_WindChimes", "volume": 0.45 }, { "sound": "Ambience/AMB_WindRolling", "volume": 0.2 } ],
+      "oneShots": [
+        { "cue": "amb_dog", "interval": [9, 20], "distance": [1500, 3500], "height": [0, 150] },
+        { "cue": "amb_door", "interval": [8, 18], "distance": [600, 1800], "height": [50, 200] },
+        { "cue": "amb_chop", "interval": [14, 26], "distance": [1200, 2600], "height": [0, 150] }
+      ]
+    },
+    "oldwall": {
+      "beds": [ { "sound": "Ambience/AMB_Flag", "volume": 0.4 }, { "sound": "Ambience/AMB_WindRolling", "volume": 0.3 } ],
+      "oneShots": [
+        { "cue": "amb_anvil", "interval": [6, 14], "distance": [1500, 3000], "height": [0, 200] },
+        { "cue": "amb_guards", "interval": [30, 60], "distance": [1200, 2500], "height": [0, 100] }
+      ]
+    },
+    "weavers": {
+      "beds": [ { "sound": "Ambience/AMB_Hearth", "volume": 0.3 }, { "sound": "Ambience/AMB_WindChimes", "volume": 0.45 }, { "sound": "Ambience/AMB_WindRolling", "volume": 0.2 } ],
+      "oneShots": [
+        { "cue": "amb_dog", "interval": [9, 20], "distance": [1500, 3500], "height": [0, 150] },
+        { "cue": "amb_door", "interval": [8, 18], "distance": [600, 1800], "height": [50, 200] },
+        { "cue": "amb_chop", "interval": [14, 26], "distance": [1200, 2600], "height": [0, 150] }
+      ]
+    },
+    "green": {
+      "beds": [ { "sound": "Ambience/AMB_FountainBed", "volume": 0.5 }, { "sound": "Ambience/AMB_Pigeons", "volume": 0.4 }, { "sound": "Ambience/AMB_MarketSquare", "volume": 0.25 } ],
+      "oneShots": [
+        { "cue": "amb_bell", "interval": [24, 45], "distance": [2000, 3500], "height": [1200, 2200] },
+        { "cue": "amb_bell_distant", "interval": [60, 110], "distance": [3000, 4500], "height": [1500, 2500] }
+      ]
+    },
+    "guild": {
+      "beds": [ { "sound": "Ambience/AMB_MarketFestival", "volume": 0.75 }, { "sound": "Ambience/AMB_MarketSquare", "volume": 0.4 } ],
+      "oneShots": [
+        { "cue": "amb_merchant", "interval": [7, 15], "distance": [900, 2400], "height": [100, 250] },
+        { "cue": "amb_cart", "interval": [16, 30], "distance": [1000, 2600], "height": [0, 100] }
       ]
     },
     "market": {

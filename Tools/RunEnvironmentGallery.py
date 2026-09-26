@@ -1,4 +1,4 @@
-"""Render the seven bounded native town views (gate, market, residential, square, castle, overview, escort) and verify their fixture checks."""
+"""Render one native view per town district (world-scale: 14 districts), the full-realm overview and the escort, and verify the fixture checks."""
 from datetime import datetime, timezone
 import json
 import os
@@ -39,7 +39,7 @@ def main() -> int:
         child = subprocess.Popen(command, cwd=root, stdout=output, stderr=subprocess.STDOUT,
                                  creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0), env=EDITOR_ENV)
         try:
-            code = child.wait(timeout=480)
+            code = child.wait(timeout=720)
         except subprocess.TimeoutExpired:
             kill_tree(child)
             child.terminate()
@@ -48,23 +48,23 @@ def main() -> int:
             except subprocess.TimeoutExpired:
                 child.kill()
                 code = child.wait(timeout=5)
-            failure = "Environment gallery exceeded its 480-second process bound"
+            failure = "Environment gallery exceeded its 720-second process bound"
     contents = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""
-    match = re.search(r"CIRE_ENVIRONMENT_GALLERY_PASS captures=7 checks=(\d+) directory=(.+)", contents)
+    match = re.search(r"CIRE_ENVIRONMENT_GALLERY_PASS captures=(\d+) checks=(\d+) directory=(.+)", contents)
     errors = [line for line in contents.splitlines() if re.search(r"CIRE_\S*(?:FAIL|ERROR|BLOCKER)|Fatal error:|Assertion failed:|Ensure condition failed:", line)]
     passed = code == 0 and match is not None and not failure and not errors
     captures = []
     if match:
-        for path in sorted(Path(match.group(2).strip()).glob("*.png")):
+        for path in sorted(Path(match.group(3).strip()).glob("*.png")):
             with path.open("rb") as stream:
                 header = stream.read(24)
             valid = len(header) == 24 and header[:8] == b"\x89PNG\r\n\x1a\n"
             size = struct.unpack(">II", header[16:24]) if valid else (0, 0)
             passed = passed and size == (1920, 1080) and path.stat().st_size > 10000
             captures.append(dict(path=str(path), width=size[0], height=size[1], bytes=path.stat().st_size))
-    passed = bool(passed and len(captures) == 7)
+    passed = bool(passed and match and len(captures) == int(match.group(1)) >= 7)
     report = dict(passed=passed, exitCode=code, seconds=round(time.monotonic()-started, 2),
-                  checks=int(match.group(1)) if match else None, failure=failure, errors=errors, log=str(log), captures=captures)
+                  checks=int(match.group(2)) if match else None, failure=failure, errors=errors, log=str(log), captures=captures)
     (folder / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
     return 0 if passed else 1

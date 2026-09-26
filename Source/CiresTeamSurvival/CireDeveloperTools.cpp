@@ -60,7 +60,7 @@ bool CireDeveloperTools::Validate(const FCireDeveloperSettings& S,FString* Error
     if(!In(S.EffectDurationScale,.1f,5)||!In(S.TelegraphScale,.1f,5)||!In(S.ConstructHealthScale,.1f,10)||!In(S.SummonHealthScale,.1f,10))return Fail(Error,TEXT("Effect or object multiplier outside bounds."));
     if(!In(S.CooldownScale,.1f,5))return Fail(Error,TEXT("Cooldown multiplier outside bounds."));
     for(int32 P:{S.WorldPolicy,S.PlayerPolicy,S.MonsterPolicy,S.ProtectionPolicy,S.WallPolicy})if(P<0||P>3)return Fail(Error,TEXT("Unknown projectile collision policy."));
-    if(!In(S.SpawnX,-1000,30000)||!In(S.SpawnSpread,0,600)||!In(S.SpawnSpacing,30,240)||!In(S.SpawnOffsetY,-500,500)||!In(S.SimulationSpeed,.1f,3))return Fail(Error,TEXT("Spawn geometry or simulation speed outside bounds."));
+    if(!In(S.SpawnX,-1000,80000)||!In(S.SpawnSpread,0,600)||!In(S.SpawnSpacing,30,240)||!In(S.SpawnOffsetY,-500,500)||!In(S.SimulationSpeed,.1f,3))return Fail(Error,TEXT("Spawn geometry or simulation speed outside bounds."));
     return true;
 }
 bool CireDeveloperTools::Apply(ACireGameMode* Mode,const FCireDeveloperSettings& S,FString* Error)

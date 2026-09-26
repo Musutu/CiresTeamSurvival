@@ -1,0 +1,101 @@
+{
+ "schemaVersion": 1,
+ "priority": 30,
+ "source": "fab",
+ "description": "world-scale: purchased Medieval Kingdom (Hivemind) scanned foliage and backdrop mountains over the town's CC0 slots (Docs/EnvironmentProps.md). Local-only pack: a slot resolves only when its package exists; otherwise the committed art stays. Written by Tools/BuildFabWorldSlots.py.",
+ "slots": {
+  "tree_leafy": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EuropeanBeech/Meshes/SM_EuropeanBeech_L_02.SM_EuropeanBeech_L_02",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "tree_young": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EuropeanBeech/Meshes/SM_EuropeanBeech_M_01.SM_EuropeanBeech_M_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "tree_fir": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/SilverFir/Meshes/SM_SilverFir_L_02.SM_SilverFir_L_02",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "tree": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EuropeanBeech/Meshes/SM_EuropeanBeech_L_01.SM_EuropeanBeech_L_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "grass_clump": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/WildGrass/Meshes/SM_WildGrass_M_02.SM_WildGrass_M_02",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "wildflowers": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/WildCarot/Meshes/SM_WildCarrot_M_01.SM_WildCarrot_M_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "fern_1": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EagleFern/Meshes/SM_EagleFern_M_01.SM_EagleFern_M_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "fern_2": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EagleFern/Meshes/SM_EagleFern_S_01.SM_EagleFern_S_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "shrub_1": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EuropeanBeech/Meshes/SM_EuropeanBeech_S_01.SM_EuropeanBeech_S_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "shrub_2": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EuropeanBeech/Meshes/SM_EuropeanBeech_XS_01.SM_EuropeanBeech_XS_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "shrub_3": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EuropeanBeech/Meshes/SM_EuropeanBeech_S_02.SM_EuropeanBeech_S_02",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "shrub_4": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EuropeanBeech/Meshes/SM_EuropeanBeech_XS_01.SM_EuropeanBeech_XS_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)"
+  },
+  "stump": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EuropeanBeech/Meshes/SM_EuropeanBeech_Stump_01.SM_EuropeanBeech_Stump_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "fallen_log": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Scanned_Foliage/Foliage/EuropeanBeech/Meshes/SM_EuropeanBeech_Log_01.SM_EuropeanBeech_Log_01",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "fit": "none"
+  },
+  "mountain": {
+   "kind": "mesh",
+   "mesh": "/Game/CastleTown/Static_Mesh/Hills/SM_Mountain_02.SM_Mountain_02",
+   "status": "imported",
+   "source": "Medieval Kingdom (Hivemind, Fab)",
+   "materialOverride": "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
+  }
+ }
+}
