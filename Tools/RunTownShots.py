@@ -30,7 +30,7 @@ def main() -> int:
     p.add_argument("--no-trim", action="store_true")
     p.add_argument("--scan", action="store_true", help="-CireCastleLightScan: write Saved/TownShots/castle_anchors.json")
     p.add_argument("--timeout", type=int, default=1200)
-    p.add_argument("--extra", nargs="*", default=[])
+    p.add_argument("--extra", action="append", default=[], help="extra engine argument (repeatable, use --extra=-Flag)")
     args = p.parse_args()
     folder = ROOT / "Saved/TownShotRuns" / datetime.now().strftime("%Y%m%d-%H%M%S")
     folder.mkdir(parents=True, exist_ok=True)

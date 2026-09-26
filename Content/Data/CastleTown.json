@@ -29,7 +29,8 @@
         "exposureBias": 0.0, "saturation": 1.05, "tint": [1.0, 1.0, 1.0],
         "skyLightIntensity": 1.0, "skyLightColor": [1.0, 1.0, 1.0],
         "interiorIntensity": 0, "interiorRadius": 520, "interiorColor": [1.0, 0.86, 0.7],
-        "torchIntensity": 0
+        "torchIntensity": 0,
+        "castleScale": 0.7
       }
     },
     {
@@ -42,7 +43,8 @@
         "exposureBias": 0.5, "saturation": 0.9, "tint": [0.9, 0.93, 1.05],
         "skyLightIntensity": 1.6, "skyLightColor": [0.75, 0.85, 1.0],
         "interiorIntensity": 0, "interiorRadius": 520, "interiorColor": [1.0, 0.66, 0.36],
-        "torchIntensity": 16000, "torchRadius": 1800, "torchColor": [1.0, 0.6, 0.28]
+        "torchIntensity": 16000, "torchRadius": 1800, "torchColor": [1.0, 0.6, 0.28],
+        "castleScale": 1.2
       }
     }
   ],
@@ -59,6 +61,62 @@
     "backdropLevels": ["SL_Landscape", "SL_Mountain"],
     "backdropLevelInstances": ["Castle", "Tower", "Gate"],
     "keepLandscape": true
+  },
+  "castleInterior": {
+    "notes": "town-trim (Eric's playtest: the castle was too dark to find the way). Warm, non-shadowing fill lights at realm-local anchors [x, y, z, radius] (z relative to the realm offset, from Tools/RunTownShots.py --scan: walkable spots under a roof near the castle goal) and yards [x, y, heightAboveGround, radius] (open courtyards). Mirrored to both realms, each on its realm's lighting channel; realms[].lighting.castleScale scales per realm. Castle only: house interiors stay dark (Eric's ruling).",
+    "intensity": 20000,
+    "radius": 1800,
+    "sourceRadius": 30,
+    "color": [1.0, 0.72, 0.45],
+    "anchors": [
+      [19800, -8906, 2805, 1300],
+      [9600, -10100, 2915, 1300],
+      [17440, 94, 2299, 1300],
+      [18900, -3506, 1952, 1300],
+      [10520, -1706, 2554, 1300],
+      [19200, -4706, 1952, 1300],
+      [11720, -506, 2338, 1300],
+      [21578, -1125, 1994, 1300],
+      [17687, -12493, 2348, 1300],
+      [12611, -12493, 1885, 1300],
+      [20060, 120, 2349, 1300],
+      [17413, -4993, 2435, 1300],
+      [17120, 1294, 3669, 1300],
+      [14700, -1106, 2908, 1300],
+      [17963, -4143, 1882, 1300],
+      [19200, -5906, 1882, 1300],
+      [18300, -5000, 1952, 1300],
+      [15900, -4106, 2060, 1300],
+      [14100, -5606, 2060, 1300],
+      [15900, -5906, 2508, 1300],
+      [16200, -8606, 1890, 1300],
+      [15000, -7406, 1897, 1300],
+      [13200, -13106, 3211, 1300],
+      [16200, -7406, 2875, 1300],
+      [18600, -6806, 2875, 1300],
+      [14700, -10406, 1843, 1300],
+      [17700, -6206, 2875, 1300],
+      [11400, -4706, 2868, 1300]
+    ],
+    "yards": [
+      [12300, -7300, 450, 2600],
+      [15500, -3300, 450, 2400],
+      [14800, -4400, 450, 2400]
+    ],
+    "views": [
+      {"name": "keep_hall", "from": [14100, -5606, 2000], "at": [15900, -4106, 1900]},
+      {"name": "keep_east", "from": [18300, -5000, 1900], "at": [19200, -5906, 1850]},
+      {"name": "south_passage", "from": [16200, -8606, 1850], "at": [15000, -7406, 1800]},
+      {"name": "gate_passage", "from": [11720, -506, 2300], "at": [10520, -1706, 2450]},
+      {"name": "courtyard", "from": [10300, -9800, 4200], "at": [12300, -7300, 1800]}
+    ]
+  },
+  "water": {
+    "notes": "town-trim: the pack's WaterZone + WaterBodyOcean (surface Z -236) in both realms (CireTownWater). deepDepth: water deeper than this (cm) is cut out of the navmesh (units never path into it); shallower water stays walkable (wading, visual only). navCell: the depth sampling grid (cm). cvars: water quality applied on every rendering peer. views: extra before/after capture views (realm-local, z relative to the realm offset).",
+    "deepDepth": 120,
+    "navCell": 400,
+    "cvars": {},
+    "views": []
   },
   "defaultMap": true,
   "routes": "Data/CastleTownRoutes.json",

@@ -246,3 +246,118 @@ Interiors and doors: Eric (2026-09-26) deferred these, so they are off in data:
 did not change that.
 
 Awnings, cloths, banners and flags ignore the camera channel, so the boom no longer snaps in under them.
+
+## Trim to Play Bounds (town-trim, 2026-09-26)
+
+Eric's ruling: "mark a perimeter and remove the excess rendering beyond the border, mirrored for the other team as well".
+The **Play Bounds** marker of the map layout editor is the perimeter. It is one shared, realm-local polygon, so the same
+cut applies to both realms through the realm frames. Code: `CireTownTrim.*` (hooks in `CireTownMap::LoadRealms` /
+`PrepareRealmLevels`, `CireNav::Initialize`, `CireNavCache` and the layout editor HUD).
+
+Everything that lies **entirely** outside the polygon grown by `trim.margin` (15 m, so nothing pops at the edge):
+
+| Stage | What happens |
+|---|---|
+| Load | A realm sublevel entirely outside (its package bounds) is not streamed. The pack's nested Level Instances (houses, castle pieces) entirely outside are dropped from the Level Instance queue before they stream (their asset bounds, read without loading them). A sublevel that straddles the border loads and then loses its outside actors. |
+| Render / tick | An outside actor that did load is destroyed, or kept as a **backdrop**: it draws, nothing else (no collision, no shadows, lowest LOD, no tick, lights/particles/sounds off). A dedicated server keeps no backdrop. Replicated startup actors a client cannot destroy are hidden and inert. |
+| Navmesh | The realm's nav bounds become the polygon plus margin, rasterized into a few boxes (`trim.navCell`) and clipped to the realm's old nav box: the trim only removes navmesh. The nav cache key carries the polygon, margin and backdrop mode, so editing the bounds rebuilds the navmesh once. |
+
+No Play Bounds (or fewer than 3 corners) trims nothing. The layout editor (`-CireRouteEdit`) and explore mode always
+load the whole town, so editing the bounds never loses content: the trim only happens in matches.
+
+`CastleTown.json` `"trim"`:
+
+| Key | Default | Meaning |
+|---|---|---|
+| `enabled` | `true` | Off: the whole town loads (also `-CireNoTownTrim`). |
+| `margin` | `1500` | cm past the border that still loads. |
+| `backdrop` | `"low"` | `off`: cut everything outside. `low`: keep the landscape, plus outside actors at least `landmarkHeight` tall or `landmarkSize` long (towers, walls, the mountain), plus the `backdropLevels` sublevels and the `backdropLevelInstances` (asset names containing Castle, Tower, Gate), as silhouettes. `full`: keep every outside actor as a silhouette. |
+| `landmarkHeight`, `landmarkSize` | `1800`, `4000` | The `low` backdrop's landmark size (cm). |
+| `backdropRange` | `0` | Backdrop only within this many cm of the polygon (0: any distance). |
+| `navCell` | `4000` | Nav bounds raster cell (cm). |
+| `keepLandscape` | `true` | `off` still keeps the landscape under the edge (no void). |
+
+A/B overrides: `-CireTownTrimBounds=<file>` (a MapLayout.json or `{"points": [[x, y], ...]}`), `-CireTownTrimBackdrop=off|low|full`,
+`-CireTownTrimMargin=<cm>`. `cire.TownTrim` prints the status; `cire.TownTrim preview` toggles the preview in any world.
+LAN clients trim by their own `MapLayout.json` (the same checkout as the host). A match whose Play Bounds differ from the
+ones the town was trimmed to logs `CIRE_TOWN_TRIM_STALE` (restart the game to re-trim).
+
+### In the map layout editor
+
+- Everything outside the Play Bounds is shaded **red**, the 15 m margin band **amber**, and the border is a red line, in
+  walk and map view.
+- **PREVIEW TRIM** (command row) hides everything a match would cut, in both realms, live. It follows the draft while you
+  move corners. Click again (STOP TRIM) and it all comes back: nothing is destroyed in the editor.
+- **VALIDATE** notes markers that stand inside the bounds but within the margin of the edge (their surroundings may look
+  cut off), next to the existing "outside the play bounds" errors.
+- Workflow: draw Play Bounds (setter 0, each press a corner), PREVIEW TRIM to check the edge, APPLY. The next match (or
+  TEST) loads the trimmed town.
+
+### Measured (2026-09-26)
+
+`Tools/RunTownPerf.py --bounds FILE|auto [--no-trim]`, the town-perf fight (10 bots, ~54 monsters, 30 s per realm),
+1600x900 windowed, cached navmesh, water on, two runs per configuration, interleaved. **The machine was shared** (Eric
+was playing another game), so single runs swing by ~10 fps: compare the averages.
+
+| Configuration | Actors loaded (realm 0) | Level Instances skipped / realm | Nav tiles / agent | Load to playable, s | DAYLIGHT fps (avg) | DARKNIGHT fps (avg) |
+|---|---|---|---|---|---|---|
+| Whole town (`--no-trim`) | 56,795 | 0 of 150 | 4,626 | 139.0 / 139.5 | 45.9 / 54.4 (50.2) | 49.1 / 50.3 (49.7) |
+| Eric's Play Bounds | 56,364 | 1 | 4,656 | 155.1 / 139.3 | 44.0 / 48.1 (46.1) | 55.5 / 50.2 (52.9) |
+| Hull of his markers + 30 m | 50,642 | 8 | 3,960 | 138.0 / 148.1 | 56.4 / 57.3 (56.9) | 59.5 / 58.1 (58.8) |
+
+- **Eric's Play Bounds (13 corners, ~19.3 ha) enclose the whole assembled town.** Per realm they skip 1 of 150 Level
+  Instances and remove 7 actors. Load and fps are unchanged within noise. The trim only pays when the polygon cuts into
+  the town.
+- The **hull of Eric's markers plus 30 m** (~10.8 ha) cuts deeper: per realm, 8 Level Instances skipped and ~3,100
+  actors destroyed. That is ~11 % fewer actors, 26 % fewer pack lights, 20 % fewer Niagara systems, 14 % fewer nav
+  tiles, and about +13-18 % fps.
+- Load to playable does not move. About 88 s of it is uncooked package loading of the 9 base sublevels. They straddle
+  any sensible border, so they always load, and the trim then destroys their outside actors. Only a cooked build, or
+  splitting the pack's sublevels into World Partition cells, would let the loader skip them.
+
+Captures: `Tools/RunTownShots.py --kinds edge --bounds auto` (trimmed) and `... --no-trim` (whole town) shoot the same
+views: an overview and a top-down view per realm, and the four longest edges looking out across the border.
+
+## Castle interior light (town-trim, 2026-09-26)
+
+Eric (playtest): "It's so dark in there it's hard to find your way around". The castle (keep, courtyards, gate
+passages) gets warm, **non-shadowing** point lights from data, mirrored to both realms. Each realm's copy sits on its own
+lighting channel and is hidden with the far realm, like the torch fills. House interiors stay dark (Eric's ruling).
+
+`CastleTown.json` `"castleInterior"` keys:
+- `intensity`, `radius`, `sourceRadius`, `color`.
+- `anchors` `[x, y, z, radius]`: realm-local, z relative to the realm offset. They are the covered, walkable spots near the
+  castle goal found by `Tools/RunTownShots.py --scan` (Saved/TownShots/castle_anchors.json).
+- `yards` `[x, y, heightAboveGround, radius]`: the open courtyards (1.5x brightness).
+- `realms[].lighting.castleScale` scales per realm (Daylight 0.7, Darknight 1.2).
+
+That makes 31 lights per realm, none casting shadows. Before/after: `Tools/RunTownShots.py --kinds castle` shoots every
+`castleInterior.views` view with the fills hidden, then shown.
+
+## Water (town-trim, 2026-09-26)
+
+Eric: "there are clear places for water, why wasn't it added?" The pack's water uses the engine's **Water** plugin: a
+WaterZone and a WaterBodyOcean in SL_Landscape, with the surface at Z -236 over the riverbeds and the harbour. The plugin
+was not enabled, so those actors failed to load. `CiresTeamSurvival.uproject` now enables `Water`. It is an engine
+plugin, so checkouts without the pack still build.
+
+Enabling it was not enough. The ocean centres its mesh and bounds on the zone location saved when the pack was authored
+(the pack origin). Each realm copy streams 6-12 km away from there, so the water mesh built no tiles and nothing
+rendered. `CireTownWater` re-centres every realm copy's ocean on its own realm's zone (`CIRE_TOWN_WATER_RECENTRED`), and
+both realms now render their water. Each realm's zone is separate and far from the other, and the far realm's water is
+hidden by per-view culling.
+
+- **Trim:** the ocean covers the whole zone, so it always straddles the border and stays. Its surface outside the bounds
+  is a free backdrop (one mesh).
+- **Gameplay:** the water collision is query-only and overlaps pawns (`WaterBodyCollision`), so heroes and monsters walk
+  on the riverbed. Nobody swims or drowns.
+  - Water deeper than `water.deepDepth` (120 cm) is cut out of the navmesh (NavArea_Null volumes,
+    `CIRE_TOWN_WATER_DEPTH`), so units never path into it.
+  - The shallow rims stay walkable: wading, visual only.
+  - Measured inside the realm: ~5,000 of ~11,900 4 m cells are wet, ~4,700 of them deeper than 1.2 m, most 2.4-3 m.
+- **Cost:** about 0.5-1 ms of GPU (7.9 -> 8.4-9.0 ms) and 2-6 fps in the fight: whole town without water
+  (`-dpcvars=r.Water.Enabled=0`) 54.3 / 52.9 fps, with water 48.3 / 50.5 fps (DAYLIGHT / DARKNIGHT, averages of 2-3 runs
+  on the shared machine). Above the ~45 fps floor at the default preset, so the quality is left as the pack set it.
+- `water.cvars` applies quality cvars on every rendering peer. It is empty by default: not needed at the default preset.
+- Captures: `Tools/RunTownShots.py --kinds water` shoots the three lowest spots inside the bounds in both realms, with the
+  water hidden (before: the empty riverbeds) and then shown (after).

@@ -60,6 +60,7 @@ struct CIRESTEAMSURVIVAL_API FCireCastleLights
     float Intensity = 0.f, Radius = 1400.f, SourceRadius = 30.f;
     FLinearColor Color = FLinearColor(1.f, .72f, .45f);
     TArray<FVector4> Anchors;          // x, y (realm-local), z (relative to the realm offset), radius (0 = Radius)
+    TArray<FVector4> Yards;            // open courtyards: x, y (realm-local), height above the ground, radius
     TArray<FCireTownView> Views;       // before/after captures
 };
 

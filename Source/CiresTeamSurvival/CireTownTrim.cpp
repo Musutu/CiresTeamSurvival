@@ -590,11 +590,12 @@ void DrawOverlay(UWorld* World, UCanvas* Canvas, const TArray<FVector2D>& Poly, 
     if (Area.Min.X >= Area.Max.X || Area.Min.Y >= Area.Max.Y) return;
     const int32 NX = FMath::Min(90, FMath::CeilToInt((Area.Max.X - Area.Min.X) / Cell)), NY = FMath::Min(90, FMath::CeilToInt((Area.Max.Y - Area.Min.Y) / Cell));
     TArray<FCanvasUVTri> Red, Amber;
-    auto Corner = [&](double X, double Y, FVector2D& Screen)
+    auto GroundAt = [&](double X, double Y) { return CireTownMap::Ground(World, FVector2D(CireLanePath::ToWorld(Realm, FVector2D(X, Y), 0.f))); };
+    auto Corner = [&](double X, double Y, FVector2D& Screen, double FlatZ = TNumericLimits<double>::Lowest())
     {
         const FVector2D Local(X, Y);
         FVector W = CireLanePath::ToWorld(Realm, Local, 0.f);
-        W.Z = CireTownMap::Ground(World, FVector2D(W)) + 40.f;
+        W.Z = (FlatZ > TNumericLimits<double>::Lowest() ? FlatZ : CireTownMap::Ground(World, FVector2D(W))) + 40.f;
         const FVector S = Canvas->Project(W);
         Screen = FVector2D(S.X, S.Y);
         return S.Z > 0;
@@ -607,7 +608,13 @@ void DrawOverlay(UWorld* World, UCanvas* Canvas, const TArray<FVector2D>& Poly, 
             if (CireTownTrim::InsidePolygon(Poly, Mid)) continue;
             const bool bBand = CireTownTrim::EdgeDistance(Poly, Mid) <= Margin;
             FVector2D A, B, C, D;
-            if (!Corner(X0, Y0, A) || !Corner(X0 + Cell, Y0, B) || !Corner(X0 + Cell, Y0 + Cell, C) || !Corner(X0, Y0 + Cell, D)) continue;
+            // Flat at the cell's lowest corner: a veil over the ground, never spiking up to a roof or a tower top.
+            const double Z = FMath::Min(FMath::Min(GroundAt(X0, Y0), GroundAt(X0 + Cell, Y0)), FMath::Min(GroundAt(X0 + Cell, Y0 + Cell), GroundAt(X0, Y0 + Cell)));
+            if (!Corner(X0, Y0, A, Z) || !Corner(X0 + Cell, Y0, B, Z) || !Corner(X0 + Cell, Y0 + Cell, C, Z) || !Corner(X0, Y0 + Cell, D, Z)) continue;
+            // A cell grazing the near plane projects into a huge sliver: skip it (its neighbours cover the ground).
+            const double Limit = Canvas->ClipX * .2;
+            if (FMath::Max(FMath::Max(FVector2D::Distance(A, B), FVector2D::Distance(B, C)), FMath::Max(FVector2D::Distance(C, D), FVector2D::Distance(D, A))) > Limit
+                || FMath::Max(FVector2D::Distance(A, C), FVector2D::Distance(B, D)) > Limit) continue;
             const FLinearColor Color = bBand ? FLinearColor(1.f, .62f, .1f, .16f) : FLinearColor(.9f, .08f, .06f, .30f);
             TArray<FCanvasUVTri>& List = bBand ? Amber : Red;
             FCanvasUVTri T1; T1.V0_Pos = A; T1.V1_Pos = B; T1.V2_Pos = C; T1.V0_Color = T1.V1_Color = T1.V2_Color = Color;
@@ -630,7 +637,7 @@ void DrawOverlay(UWorld* World, UCanvas* Canvas, const TArray<FVector2D>& Poly, 
         {
             const FVector2D P = FMath::Lerp(Poly[J], Poly[I], double(K) / Steps);
             FVector2D S; const bool bOk = Corner(P.X, P.Y, S);
-            if (bOk && bPrev) { FCanvasLineItem L(Prev, S); L.SetColor(FLinearColor(1.f, .15f, .1f, .95f)); L.LineThickness = 3.f; Canvas->DrawItem(L); }
+            if (bOk && bPrev && FVector2D::Distance(Prev, S) < Canvas->ClipX * .5) { FCanvasLineItem L(Prev, S); L.SetColor(FLinearColor(1.f, .15f, .1f, .95f)); L.LineThickness = 3.f; Canvas->DrawItem(L); }
             Prev = S; bPrev = bOk;
         }
     }

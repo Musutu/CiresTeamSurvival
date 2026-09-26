@@ -5,6 +5,8 @@
 #include "CireNav.h"
 #include "CireTownMap.h"
 #include "CireTownTrim.h"
+#include "CireHUD.h"
+#include "CireLayoutEditorState.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Containers/Ticker.h"
@@ -259,11 +261,7 @@ void Scan(UWorld* World)
                 if (Hit.ImpactNormal.Z < .7f) continue;
                 FVector Nav;
                 if (!CireNav::Project(World, Hit.ImpactPoint + FVector(0, 0, 40), Nav, FVector(40, 40, 120), 40.f)) continue;
-                if (bGoal)
-                {
-                    const FCireNavPath Path = CireNav::FindPath(World, Goal, Nav, 40.f, false);
-                    if (!Path.bValid || Path.bPartial || Path.Length > 25000.f) continue;
-                }
+                if (bGoal && FMath::Abs(Nav.Z - Goal.Z) > 900.f) continue; // wall walks and tower tops
                 FHitResult Up;
                 const bool bRoof = World->LineTraceSingleByChannel(Up, Nav + FVector(0, 0, 150), Nav + FVector(0, 0, 2500), ECC_Visibility, Params);
                 int32 Walls = 0;
@@ -313,6 +311,12 @@ bool Tick(float)
         if (G.ReadyAt <= 0) { G.ReadyAt = Now; return true; }
         if (Now - G.ReadyAt < 4.0) return true;
         G.bBuilt = true;
+        FString Exec; // console commands once playable, separated by '+' (no spaces to quote), e.g. cire.TownTrim=preview
+        if (FParse::Value(FCommandLine::Get(), TEXT("CireShotsExec="), Exec, false) && GEngine)
+        {
+            TArray<FString> Cmds; Exec.ParseIntoArray(Cmds, TEXT("+"));
+            for (FString C : Cmds) { C.ReplaceInline(TEXT("="), TEXT(" ")); GEngine->Exec(World, *C); UE_LOG(LogCireTownShots, Display, TEXT("CIRE_TOWN_SHOTS_EXEC %s"), *C); }
+        }
         if (FParse::Param(FCommandLine::Get(), TEXT("CireCastleLightScan"))) Scan(World);
         for (const FString& K : G.Kinds)
         {
@@ -324,9 +328,9 @@ bool Tick(float)
         G.Directory = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / TEXT("TownShots") / (FDateTime::Now().ToString(TEXT("%Y%m%d-%H%M%S")) + (bTrim ? TEXT("-trim") : TEXT("-full"))));
         IFileManager::Get().MakeDirectory(*G.Directory, true);
         APlayerController* PC = World->GetFirstPlayerController();
-        if (PC && PC->MyHUD) PC->MyHUD->bShowHUD = false;
+        if (PC && PC->MyHUD && !FParse::Param(FCommandLine::Get(), TEXT("CireTownShotsHUD"))) PC->MyHUD->bShowHUD = false; // the editor overlay is HUD
         FActorSpawnParameters Params; Params.ObjectFlags |= RF_Transient;
-        G.Camera = World->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), FTransform::Identity, Params);
+        if (!FParse::Param(FCommandLine::Get(), TEXT("CireTownShotsHUD"))) G.Camera = World->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), FTransform::Identity, Params);
         if (G.Camera.IsValid() && PC)
         {
             auto* Cam = G.Camera->GetCameraComponent(); Cam->SetFieldOfView(75.f); Cam->SetAspectRatio(16.f / 9.f); Cam->bConstrainAspectRatio = true;
@@ -349,6 +353,14 @@ bool Tick(float)
     {
         // Aim, then let streaming, the sky light, virtual shadow maps and the per-view realm culling settle.
         if (G.Camera.IsValid()) G.Camera->SetActorLocationAndRotation(S.From, (S.At - S.From).Rotation());
+        else if (APlayerController* PC = World->GetFirstPlayerController())
+            if (auto* HUD = Cast<ACireHUD>(PC->MyHUD); HUD && HUD->LayoutEditorState())
+            {
+                // -CireTownShotsHUD in the layout editor: its own map view, looking down at the view's target.
+                FCireLayoutEditorState& E = *HUD->LayoutEditorState();
+                E.bWalk = false; E.Focus = S.At; E.Distance = FMath::Clamp(float(FVector::Dist(S.From, S.At)), 2000.f, 30000.f);
+                E.Yaw = (S.At - S.From).Rotation().Yaw; E.Realm = CireTownMap::RealmAt(S.At);
+            }
         if (S.Toggle) SetToggle(World, S.Toggle, S.bOn);
         G.Phase = 1; G.PhaseAt = Now; G.PhaseFrame = GFrameCounter;
         return true;
@@ -356,7 +368,7 @@ bool Tick(float)
     if (G.Phase == 1 && Now - G.PhaseAt > 3.0 && GFrameCounter - G.PhaseFrame > 45)
     {
         const FString File = G.Directory / FString::Printf(TEXT("%02d_%s.png"), G.Index, *S.Name);
-        FScreenshotRequest::RequestScreenshot(File, false, false);
+        FScreenshotRequest::RequestScreenshot(File, FParse::Param(FCommandLine::Get(), TEXT("CireTownShotsHUD")), false);
         UE_LOG(LogCireTownShots, Display, TEXT("CIRE_TOWN_SHOT %s from=%s at=%s"), *File, *S.From.ToCompactString(), *S.At.ToCompactString());
         G.Phase = 2; G.PhaseFrame = GFrameCounter;
         return true;
@@ -374,12 +386,7 @@ void CireTownShots::Initialize(UWorld* World)
     if (!FParse::Value(FCommandLine::Get(), TEXT("CireTownShots="), Kinds, false) && !bScan) return; // false: keep the commas
     G = FShots(); G.bEnabled = true; G.World = World;
     if (FParse::Param(FCommandLine::Get(), TEXT("CireTownWaterDump")) && GEngine) GEngine->Exec(World, TEXT("log LogWater Verbose"));
-    FString Exec; // diagnostics: console commands separated by '+' (no spaces to quote on the command line), e.g. cire.TownRenderBothRealms=1
-    if (FParse::Value(FCommandLine::Get(), TEXT("CireShotsExec="), Exec, false) && GEngine)
-    {
-        TArray<FString> Cmds; Exec.ParseIntoArray(Cmds, TEXT("+"));
-        for (FString C : Cmds) { C.ReplaceInline(TEXT("="), TEXT(" ")); GEngine->Exec(World, *C); UE_LOG(LogCireTownShots, Display, TEXT("CIRE_TOWN_SHOTS_EXEC %s"), *C); }
-    }
+
     Kinds.ParseIntoArray(G.Kinds, TEXT(","));
     G.Ticker = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateStatic(&Tick));
     UE_LOG(LogCireTownShots, Display, TEXT("CIRE_TOWN_SHOTS_READY kinds=%s scan=%d"), *Kinds, bScan ? 1 : 0);

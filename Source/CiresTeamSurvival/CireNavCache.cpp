@@ -179,7 +179,7 @@ void CireNavCache::Save(UWorld* World, UNavigationSystemV1* NS)
     // Bounds edits), so the folder never grows.
     TArray<FString> Old; IFileManager::Get().FindFiles(Old, *(FPaths::GetPath(Path) / TEXT("CastleTown-*.navcache")), true, false);
     Old.Sort([&](const FString& A, const FString& B) { return IFileManager::Get().GetTimeStamp(*(FPaths::GetPath(Path) / A)) > IFileManager::Get().GetTimeStamp(*(FPaths::GetPath(Path) / B)); });
-    for (int32 I = 2; I < Old.Num(); ++I) IFileManager::Get().Delete(*(FPaths::GetPath(Path) / Old[I]));
+    for (int32 I = 3; I < Old.Num(); ++I) IFileManager::Get().Delete(*(FPaths::GetPath(Path) / Old[I]));
     IFileManager::Get().MakeDirectory(*FPaths::GetPath(Path), true);
     const bool bOk = FFileHelper::SaveArrayToFile(File, *Path);
     UE_LOG(LogCireNavCache, Display, TEXT("CIRE_NAV_CACHE_SAVED ok=%d tiles=%d raw_mb=%.1f file_mb=%.1f ms=%.0f file=%s"), bOk ? 1 : 0, Tiles, Raw.Num() / 1048576.0, File.Num() / 1048576.0,

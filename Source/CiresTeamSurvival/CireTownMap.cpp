@@ -217,13 +217,14 @@ void Parse(FCireTownDef& D)
         if ((*Castle)->TryGetNumberField(TEXT("sourceRadius"), X) && FMath::IsFinite(X)) C.SourceRadius = float(FMath::Max(0.0, X));
         const TArray<TSharedPtr<FJsonValue>>* A = nullptr;
         if ((*Castle)->TryGetArrayField(TEXT("color"), A) && A && A->Num() == 3) C.Color = FLinearColor(float((*A)[0]->AsNumber()), float((*A)[1]->AsNumber()), float((*A)[2]->AsNumber()));
-        if ((*Castle)->TryGetArrayField(TEXT("anchors"), A) && A)
-            for (const auto& V : *A)
-            {
-                const TArray<TSharedPtr<FJsonValue>>* P = nullptr;
-                if (V && V->TryGetArray(P) && P && P->Num() >= 3)
-                    C.Anchors.Add(FVector4((*P)[0]->AsNumber(), (*P)[1]->AsNumber(), (*P)[2]->AsNumber(), P->Num() >= 4 ? (*P)[3]->AsNumber() : 0.0));
-            }
+        for (const TCHAR* Key : {TEXT("anchors"), TEXT("yards")})
+            if ((*Castle)->TryGetArrayField(Key, A) && A)
+                for (const auto& V : *A)
+                {
+                    const TArray<TSharedPtr<FJsonValue>>* P = nullptr;
+                    if (V && V->TryGetArray(P) && P && P->Num() >= 3)
+                        (FCString::Strcmp(Key, TEXT("yards")) == 0 ? C.Yards : C.Anchors).Add(FVector4((*P)[0]->AsNumber(), (*P)[1]->AsNumber(), (*P)[2]->AsNumber(), P->Num() >= 4 ? (*P)[3]->AsNumber() : 0.0));
+                }
         Views(*Castle, C.Views);
     }
     if (const TSharedPtr<FJsonObject>* Water = nullptr; Root->TryGetObjectField(TEXT("water"), Water) && Water) Views(*Water, D.WaterViews);
@@ -681,14 +682,17 @@ void CireTownMap::BuildRealmLighting(AActor* Owner)
     // its own lighting channel and in its RealmVisuals (hidden with the far realm). Tagged for the before/after captures.
     int32 CastleFills = 0;
     for (int32 Team = 0; Team < 2 && D.Castle.Intensity > 0; ++Team)
-        for (const FVector4& Anchor : D.Castle.Anchors)
+        for (int32 K = 0; K < D.Castle.Anchors.Num() + D.Castle.Yards.Num(); ++K)
         {
-            const FVector At = FVector(CireLanePath::RealmOrigin(Team), D.Offsets[Team].Z) + FVector(Anchor.X, Anchor.Y, Anchor.Z);
+            const bool bYard = K >= D.Castle.Anchors.Num();
+            const FVector4& Anchor = bYard ? D.Castle.Yards[K - D.Castle.Anchors.Num()] : D.Castle.Anchors[K];
+            FVector At = FVector(CireLanePath::RealmOrigin(Team), D.Offsets[Team].Z) + FVector(Anchor.X, Anchor.Y, Anchor.Z);
+            if (bYard) At.Z = Ground(World, FVector2D(At)) + Anchor.Z; // open yards: above the ground under them
             if (APointLight* Fill = World->SpawnActor<APointLight>(At, FRotator::ZeroRotator))
             {
                 UPointLightComponent* C = Fill->PointLightComponent;
                 C->SetMobility(EComponentMobility::Movable);
-                C->SetIntensity(D.Castle.Intensity * D.Lighting[Team].CastleScale); C->SetLightColor(D.Castle.Color);
+                C->SetIntensity(D.Castle.Intensity * D.Lighting[Team].CastleScale * (bYard ? 1.5f : 1.f)); C->SetLightColor(D.Castle.Color);
                 C->SetAttenuationRadius(Anchor.W > 0 ? float(Anchor.W) : D.Castle.Radius); C->SetSourceRadius(D.Castle.SourceRadius);
                 C->SetCastShadows(false); C->bAffectTranslucentLighting = false;
                 C->LightingChannels.bChannel0 = Team == 0; C->LightingChannels.bChannel1 = Team == 1; C->MarkRenderStateDirty();
