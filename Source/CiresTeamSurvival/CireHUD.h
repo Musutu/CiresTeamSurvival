@@ -292,13 +292,12 @@ private:
     float LastTooltipBodyFontSize=0;
 #endif
     int32 OptionsTab=0,InterfacePage=0;
-    bool bVideoLoaded=false,bVideoPending=false;
-    FIntPoint VideoResolution=FIntPoint(1920,1080),PreviousResolution;
-    int32 VideoMode=1,VideoQuality=2,PreviousMode=1;
-    float VideoFPS=120,PreviousFPS=120;
-    bool bVideoVSync=true,bPreviousVSync=true;
-    Scalability::FQualityLevels PreviousQuality;
-    double VideoDeadline=0;
+    // video-crash: the Video tab's draft values; applying goes through CireVideo (next tick, never mid-draw).
+    bool bVideoLoaded=false;
+    FIntPoint VideoResolution=FIntPoint(1920,1080);
+    int32 VideoMode=1,VideoQuality=2;
+    float VideoFPS=120,VideoScale=100;
+    bool bVideoVSync=true;
     float MX=0, MY=0, Scale=1, ViewW=1280, ViewH=720;
     FVector2D Origin=FVector2D::ZeroVector;
     FVector2D Stretch=FVector2D(1,1);

@@ -1,3 +1,4 @@
+#include "CireVideoSettings.h"
 #include "CireWaves.h" // wave-director
 #include "CireGame.h"
 #include "CireChampionRoster.h"
@@ -160,6 +161,7 @@ void ACireController::CycleTarget(bool bFriendly) {CycleTargetDirected(this,bFri
 void ACireController::PlayerTick(float Dt) {
     Super::PlayerTick(Dt); if(!IsLocalController())return;
     CirePlaySession::Tick(this,Dt); // feat/camera-movement: -CirePlaySession simulated inputs (development only)
+    CireVideoCycle::Tick(this); // video-crash: -CireVideoCycle preset/resolution regression (development only)
 #if !UE_BUILD_SHIPPING
     if(CireExpansionNetProbe::TickClient(this))return;
     if(CireInterfaceProbe::TickClient(this))return;

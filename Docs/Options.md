@@ -19,16 +19,31 @@ organization and usability.
 | Interface / Combat | Floating numbers, personal SCT, damage/healing/incoming/outgoing filters, critical markers, text sizes, combat log and meters |
 | Interface / Tooltips | Enable tooltips, cursor/fixed/radial position, offset angle and distance with a lock, status filters and remaining duration |
 | Interface / Chat | Player-chat visibility, font size/color, entry to panel layout editing |
-| Video | Resolution, fullscreen/borderless/windowed, Unreal scalability preset, VSync, frame cap, bloom and motion blur |
+| Video | Resolution, fullscreen/borderless/windowed, Unreal scalability preset (Low to Cinematic), render scale (screen percentage), VSync, frame cap, bloom and motion blur |
 | Audio | Master, combat SFX, interface feedback, mute, real UI sound test |
 | System | FPS/frame time, PlayerState latency, local profile path, local-default reset |
 | Developer (development standalone) | Validated live match/combat overrides, balance lab, local replay recording/browser; see `DeveloperTools.md` |
 
-Display changes apply as a preview. Resolution, window mode, all scalability
-levels, VSync and frame cap are restored after 15 seconds without confirmation,
-or immediately when closing Options. The preview uses Unreal's resolution and
-non-resolution application methods without saving; **Keep changes** confirms
-and saves. It never asks a user to approve a permanent unreviewed mode change.
+Display changes apply live, without a restart. **Apply (preview)** switches
+resolution, window mode, the scalability preset, render scale, VSync and frame
+cap at once; **Keep changes** (or **Save & Close**) confirms and saves them to
+`Saved/Config/<platform>/GameUserSettings.ini`, and the next launch starts with
+them (`Play.cmd` / `PlayTripoPreview.cmd` no longer force `-windowed -ResX -ResY`;
+first-launch defaults are 1600x900 windowed from `Config/DefaultGameUserSettings.ini`).
+**Revert now**, Escape, or 15 seconds without confirmation restore the previous
+settings. It never asks a user to approve a permanent unreviewed mode change.
+
+The buttons only *request* a change (`CireVideo`, `Source/CiresTeamSurvival/CireVideoSettings.h`);
+it runs on the core ticker at the start of the next engine frame. Applying a
+resolution or window mode resizes the viewport, which replaces the viewport's
+debug canvas; doing that from inside the HUD draw (as Options used to) freed the
+canvas the engine was still drawing with and crashed in
+`FCanvas::PushAbsoluteTransform` (2026-09-26). `ACireHUD::DrawHUD` holds a
+`CireVideo::FDrawScope`, so any apply attempted during a draw is refused and
+deferred. `Tools/RunVideoCycle.py` is the regression check: in the real windowed
+game it applies every preset at 1600x900 and 1920x1080, render scale 50/75 %,
+2560x1440 + Cinematic and borderless, on champion select and in the match, and
+fails on any crash, engine ensure or NaN / zero-scale primitive.
 
 Combat audio components use Master × SFX; interface cues use Master × UI. Live
 sliders affect active presentation voices. Their shared concurrency and distance
