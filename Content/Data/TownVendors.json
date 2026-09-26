@@ -1,87 +1,32 @@
 {
- "schemaVersion": 1,
- "units": "centimeters",
- "frame": "castletown",
- "provisional": true,
- "_comment": "PROVISIONAL merchant spots for the Medieval Kingdom town (Docs/CastleTown.md), same schema the map layout editor writes (feat/dev-route-tools). Realm-local centimetres in the town frame (pack coordinates - CastleTown.json frameCenter), z = height above the ground; the same spots in both realms. They stand in the castle courtyard around the hero base (12500, -8000), inside the 900 cm town shopping radius; arcane uses the pack's courtyard market stall. Only read when the pack town is the map (frame castletown); the procedural town keeps TownVendors.provisional.json. Eric re-places them with the layout editor.",
- "vendors": [
-  {
-   "id": "arcane_0",
-   "vendorId": "arcane",
-   "name": "Arcane Shop",
-   "team": 0,
-   "npc": {
-    "pos": [
-     12021,
-     -8368
-    ],
-    "yaw": -135
-   }
-  },
-  {
-   "id": "armory_0",
-   "vendorId": "armory",
-   "name": "Armory",
-   "team": 0,
-   "npc": {
-    "pos": [
-     12250,
-     -7500
-    ],
-    "yaw": -90
-   }
-  },
-  {
-   "id": "weaponsmith_0",
-   "vendorId": "weaponsmith",
-   "name": "Weaponsmith",
-   "team": 0,
-   "npc": {
-    "pos": [
-     12900,
-     -7550
-    ],
-    "yaw": -60
-   }
-  },
-  {
-   "id": "arcane_1",
-   "vendorId": "arcane",
-   "name": "Arcane Shop",
-   "team": 1,
-   "npc": {
-    "pos": [
-     12021,
-     -8368
-    ],
-    "yaw": -135
-   }
-  },
-  {
-   "id": "armory_1",
-   "vendorId": "armory",
-   "name": "Armory",
-   "team": 1,
-   "npc": {
-    "pos": [
-     12250,
-     -7500
-    ],
-    "yaw": -90
-   }
-  },
-  {
-   "id": "weaponsmith_1",
-   "vendorId": "weaponsmith",
-   "name": "Weaponsmith",
-   "team": 1,
-   "npc": {
-    "pos": [
-     12900,
-     -7550
-    ],
-    "yaw": -60
-   }
-  }
- ]
+  "schemaVersion": 1,
+  "units": "centimeters",
+  "frame": "castletown",
+  "source": "MapLayout.json (map layout editor)",
+  "vendors": [
+    { "id": "vendor_104", "vendorId": "arcane", "name": "", "team": 0, "pair": "vendor_105",
+      "npc": { "pos": [13418, -2478], "yaw": -103 },
+      "sign": { "pos": [13564, -2512, 250], "yaw": -103 },
+      "stall": { "pos": [13386, -2615], "yaw": -103, "size": [220, 120] } },
+    { "id": "vendor_105", "vendorId": "arcane", "name": "", "team": 1, "pair": "vendor_104",
+      "npc": { "pos": [13418, -2478], "yaw": -103 },
+      "sign": { "pos": [13564, -2512, 250], "yaw": -103 },
+      "stall": { "pos": [13386, -2615], "yaw": -103, "size": [220, 120] } },
+    { "id": "vendor_106", "vendorId": "armory", "name": "", "team": 0, "pair": "vendor_107",
+      "npc": { "pos": [13424, -4134], "yaw": 99 },
+      "sign": { "pos": [13276, -4157, 250], "yaw": 99 },
+      "stall": { "pos": [13402, -3996], "yaw": 99, "size": [220, 120] } },
+    { "id": "vendor_107", "vendorId": "armory", "name": "", "team": 1, "pair": "vendor_106",
+      "npc": { "pos": [13424, -4134], "yaw": 99 },
+      "sign": { "pos": [13276, -4157, 250], "yaw": 99 },
+      "stall": { "pos": [13402, -3996], "yaw": 99, "size": [220, 120] } },
+    { "id": "vendor_110", "vendorId": "weaponsmith", "name": "", "team": 0, "pair": "vendor_111",
+      "npc": { "pos": [12188, -2677], "yaw": 7 },
+      "sign": { "pos": [12169, -2528, 250], "yaw": 7 },
+      "stall": { "pos": [12327, -2659], "yaw": 7, "size": [220, 120] } },
+    { "id": "vendor_111", "vendorId": "weaponsmith", "name": "", "team": 1, "pair": "vendor_110",
+      "npc": { "pos": [12188, -2677], "yaw": 7 },
+      "sign": { "pos": [12169, -2528, 250], "yaw": 7 },
+      "stall": { "pos": [12327, -2659], "yaw": 7, "size": [220, 120] } }
+  ]
 }
