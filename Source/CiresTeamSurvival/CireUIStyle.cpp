@@ -183,6 +183,7 @@ void FCireUIPainter::Text(const FString& Text,float X,float Y,float Size,FLinear
 {
     Color=Fade(Color);
     if(Text.IsEmpty()||!Canvas||Color.A<=.004f)return;
+    Size=CireUIStyle::ReadableSize(Size); // readability: global boost + floor
     const FVector2D At=ToScreen(X,Y);const FVector2D Pixel(FMath::RoundToFloat(At.X),FMath::RoundToFloat(At.Y));
     int32 Index=INDEX_NONE;UFont* Resolved=CireUIStyle::ResolveFont(Font,Text,Size,&Index);
     if(!Resolved)return;
@@ -204,6 +205,7 @@ float FCireUIPainter::TextWidth(const FString& Text,float Size,ECireFont Font) c
 {
     int32 Index=INDEX_NONE;UFont* Resolved=CireUIStyle::ResolveFont(Font,Text,Size,&Index);
     if(!Resolved||Text.IsEmpty())return 0.f;
+    Size=CireUIStyle::ReadableSize(Size); // readability: measured exactly as drawn
     const float KS=FMath::Max(.05f,Scale);
     if(Index==INDEX_NONE)
     {
@@ -224,16 +226,17 @@ FString FCireUIPainter::Fit(const FString& In,float Size,float MaxWidth,ECireFon
 int32 FCireUIPainter::Wrapped(const FString& Body,float X,float Y,float Width,float Size,FLinearColor Color,int32 MaxLines,ECireFont Font,float LineGap) const
 {
     TArray<FString> Words;Body.ParseIntoArrayWS(Words);FString Row;int32 Count=0;
+    const float Step=CireUIStyle::ReadableSize(Size)+LineGap; // readability: lines step by the drawn size
     for(const FString& Word:Words)
     {
         const FString Next=Row.IsEmpty()?Word:Row+TEXT(" ")+Word;
         if(!Row.IsEmpty()&&TextWidth(Next,Size,Font)>Width)
         {
-            Text(Row,X,Y+Count*(Size+LineGap),Size,Color,Font);if(++Count>=MaxLines)return Count;Row=Word;
+            Text(Row,X,Y+Count*Step,Size,Color,Font);if(++Count>=MaxLines)return Count;Row=Word;
         }
         else Row=Next;
     }
-    if(!Row.IsEmpty()&&Count<MaxLines){Text(Row,X,Y+Count*(Size+LineGap),Size,Color,Font);++Count;}
+    if(!Row.IsEmpty()&&Count<MaxLines){Text(Fit(Row,Size,Width,Font),X,Y+Count*Step,Size,Color,Font);++Count;}
     return Count;
 }
 
@@ -385,45 +388,52 @@ void CireUIStyle::Button(const FCireUIPainter& P,float X,float Y,float W,float H
     const bool bHover=State==ECireButtonState::Hover,bPress=State==ECireButtonState::Pressed,bOff=State==ECireButtonState::Disabled,bSel=State==ECireButtonState::Selected;
     if(bHover)CireAudio::NoteUIHover(X,Y); // audio: consistent hover tick across menus
     const float Dy=bPress?1.f:0.f;
+    // readability: a dark, readable face fills the whole button; the theme's painted frame is only a thin
+    // rim around it (it used to be 9-sliced at a corner size of half the button height, which squeezed the
+    // art into a bright gold rail running straight through the label). The label sits centred in the face.
+    const float Rim=FMath::Clamp(H*.2f,3.5f,7.f);
+    const float GlowK=HasThemeArt()?CireUITheme::Active()->GlowStrength:1.f;
+    P.Rect(X+1.5f,Y+2.5f,W,H,FLinearColor(0,0,0,.45f));
+    {
+        const float FX=X+1,FY=Y+1+Dy,FW=W-2,FH=H-2;
+        const FLinearColor Top=bOff?FLinearColor(.035f,.035f,.04f,1):Hover*(bHover?1.7f:bSel?1.4f:bPress?.7f:1.1f);
+        const FLinearColor Bottom=bOff?FLinearColor(.012f,.012f,.014f,1):Ink*(bPress?.7f:1.f);
+        constexpr int32 Bands=6;
+        for(int32 I=0;I<Bands;++I){FLinearColor C=FMath::Lerp(Top,Bottom,I/float(Bands-1));C.A=.97f;P.Rect(FX,FY+FH*I/Bands,FW,FH/Bands+.5f,C);}
+        if(bSel)P.Rect(FX,FY,FW,FH,Accent*FLinearColor(1,1,1,.17f));
+        if(bHover)P.Rect(FX,FY,FW,FH,ThemeGlow*FLinearColor(1,1,1,.08f));
+        if(A.Gloss&&!bOff)P.Tex(A.Gloss,FX+Rim,FY+Rim*.6f,FW-2*Rim,FH*.42f,FLinearColor(1,1,1,bPress?.02f:.07f));
+    }
+    bool bFramed=false;
     if(HasThemeArt())
     {
-        // Themed: panel fill brightened by state, the card frame, accent glow on hover/selection.
+        // hud-art: the painted state piece (hover / pressed / disabled), drawn with a corner cell of ~1.2 rims.
         const FCireUITheme& T=*CireUITheme::Active();
-        P.Rect(X+2,Y+3,W,H,FLinearColor(0,0,0,.35f));
-        // hud-art: themes with painted button states draw the state piece (opaque face + frame).
-        const ECireThemePiece BtnPiece=bOff?ECireThemePiece::ButtonDisabled:bPress?ECireThemePiece::ButtonPressed:bHover||bSel?ECireThemePiece::ButtonHover:ECireThemePiece::Button;
-        if(T.Piece(BtnPiece).bValid&&CireUITheme::Draw(P,BtnPiece,X,Y+Dy,W,H,FLinearColor::White,CornerScaleFor(W,H,60.f)))
-        {
-            if(bSel)P.Rect(X+W*.06f,Y+H*.2f+Dy,W*.88f,H*.6f,Accent*FLinearColor(1,1,1,.12f));
-            if(bHover||bSel)Glow(P,X+W*.1f,Y+Dy,W*.8f,H,(bSel?Accent:ThemeGlow)*FLinearColor(1,1,1,(bSel?.22f:.14f)*T.GlowStrength));
-        }
-        else
-        {
-        const FLinearColor Base=bOff?FLinearColor(.55f,.55f,.55f,.9f):bSel?FLinearColor(1.45f,1.35f,1.2f,1):bHover?FLinearColor(1.5f,1.5f,1.55f,1):bPress?FLinearColor(.8f,.8f,.85f,1):FLinearColor(1.1f,1.1f,1.15f,1);
-        CireUITheme::DrawFill(P,X,Y+Dy,W,H,PanelTint*Base);
-        if(A.Gloss)P.Tex(A.Gloss,X+1,Y+1+Dy,W-2,H*.5f,ThemeGlow*FLinearColor(1,1,1,bPress?.02f:.07f));
-        if(bSel)P.Rect(X+2,Y+2+Dy,W-4,H-4,Accent*FLinearColor(1,1,1,.14f));
-        CireUITheme::Draw(P,ECireThemePiece::Card,X,Y+Dy,W,H,bOff?FLinearColor(.5f,.5f,.5f,.8f):bHover||bSel?FLinearColor(1.25f,1.2f,1.1f,1):FLinearColor::White,CornerScaleFor(W,H,60.f));
-        if(bHover||bSel)Glow(P,X+W*.1f,Y+Dy,W*.8f,H,(bSel?Accent:ThemeGlow)*FLinearColor(1,1,1,(bSel?.3f:.22f)*T.GlowStrength));
-        }
+        ECireThemePiece Piece=bOff?ECireThemePiece::ButtonDisabled:bPress?ECireThemePiece::ButtonPressed:bHover||bSel?ECireThemePiece::ButtonHover:ECireThemePiece::Button;
+        if(!T.Piece(Piece).bValid)Piece=T.Piece(ECireThemePiece::Button).bValid?ECireThemePiece::Button:ECireThemePiece::Card;
+        const float Corner=FMath::Max(1.f,T.Piece(Piece).Corner);
+        bFramed=CireUITheme::Draw(P,Piece,X,Y+Dy,W,H,bOff?FLinearColor(.55f,.55f,.55f,.9f):FLinearColor::White,Rim*1.2f/Corner);
     }
-    else if(A.bTextures)
-    {
-        const float KS=FMath::Max(.1f,P.K());
-        P.Rect(X+2,Y+3,W,H,FLinearColor(0,0,0,.35f));
-        const FLinearColor Base=bOff?FLinearColor(.6f,.6f,.6f,.9f):bSel?FLinearColor(1.5f,1.35f,1.1f,1):bHover?FLinearColor(1.55f,1.55f,1.6f,1):FLinearColor(1.15f,1.15f,1.2f,1);
-        P.Tex(A.Panel,X,Y+Dy,W,H,Base,.3f,.1f,.3f+W*KS/256.f,.1f+H*KS/256.f);
-        P.Tex(A.Gloss,X,Y+Dy,W,H*.55f,FLinearColor(1,.95f,.85f,bPress?.03f:.10f));
-        P.NineSlice(A.Border,X,Y+Dy,W,H,FMath::Min(9.f,H*.4f),bOff?FLinearColor(.5f,.5f,.5f,.8f):FLinearColor::White);
-        if(bHover||bSel)Glow(P,X+W*.1f,Y+Dy,W*.8f,H,Accent*FLinearColor(1,1,1,bSel?.35f:.25f));
-    }
-    else{P.Rect(X,Y,W,H,bHover?Hover:Card);}
-    // ui-themes: themed buttons use bright engraved caps a size larger (concept typography).
-    const bool bThemedBtn=HasThemeArt();
-    if(bThemedBtn)TextSize=FMath::Max(TextSize,FMath::Min(H*.42f,TextSize*1.25f));
-    const FLinearColor TextColor=bOff?Muted*.8f:bHover||bSel?FLinearColor(1.f,.93f,.72f,1):bThemedBtn?Parchment*FLinearColor(.95f,.93f,.88f,1):Accent;
-    const float TW=P.TextWidth(Label,TextSize,ECireFont::Heading);
-    P.Text(Label,X+FMath::Max(8.f,(W-TW)*.5f),Y+Dy+(H-TextSize)*.5f-2.f,TextSize,TextColor,ECireFont::Heading,false,true);
+    if(!bFramed&&A.bTextures)bFramed=(P.NineSlice(A.Border,X,Y+Dy,W,H,FMath::Min(7.f,H*.3f),bOff?FLinearColor(.5f,.5f,.5f,.8f):FLinearColor::White),true);
+    if(!bFramed){const FLinearColor B=bOff?Muted*.6f:Gold;P.Line(X,Y+Dy,X+W,Y+Dy,B);P.Line(X,Y+H+Dy,X+W,Y+H+Dy,B);P.Line(X,Y+Dy,X,Y+H+Dy,B);P.Line(X+W,Y+Dy,X+W,Y+H+Dy,B);}
+    // State: selection gets an accent bar along the bottom of the face and a glow; hover a soft glow.
+    if(bSel){P.Rect(X+Rim+3,Y+H-Rim-2.2f+Dy,W-2*Rim-6,1.8f,Accent*1.25f+FLinearColor(.1f,.1f,.1f,0));Glow(P,X+W*.08f,Y+Dy,W*.84f,H,Accent*FLinearColor(1,1,1,.22f*GlowK));}
+    else if(bHover)Glow(P,X+W*.08f,Y+Dy,W*.84f,H,ThemeGlow*FLinearColor(1,1,1,.14f*GlowK));
+    if(Label.IsEmpty())return;
+    // Label: mixed case in the bold face, caps in the engraved heading face; as large as the face allows
+    // (at least 10 design units = ~17 px at 1080p), outlined + shadowed, centred in the face.
+    bool bLower=false,bLetter=false;for(const TCHAR C:Label){bLower|=FChar::IsLower(C)!=0;bLetter|=FChar::IsAlpha(C)!=0;}
+    const ECireFont Font=!bLetter?ECireFont::Numbers:bLower?ECireFont::Bold:ECireFont::Heading;
+    float TS=FMath::Max(TextSize,10.f);
+    const float MaxEff=H*.64f;
+    while(TS>6.f&&ReadableSize(TS)>MaxEff&&TS*TextBoost>MinTextSize)TS-=.25f;
+    while(TS>6.f&&TS*TextBoost>MinTextSize&&P.TextWidth(Label,TS,Font)>W-2*Rim-6)TS-=.25f; // narrow buttons shrink to the floor, then truncate
+    const FString Text=P.Fit(Label,TS,W-2*Rim-6,Font);
+    const float Eff=ReadableSize(TS),TW=P.TextWidth(Text,TS,Font);
+    const bool bSpecial=!IsTrim(Accent)&&!bSel&&!bOff;
+    FLinearColor TextColor=bOff?Muted*.9f:bSel?FLinearColor(1.f,.9f,.55f,1):bHover?FLinearColor(1.f,.98f,.9f,1):FLinearColor(.97f,.94f,.86f,1);
+    if(bSpecial)TextColor=FMath::Lerp(TextColor,Accent,.45f);
+    P.Text(Text,X+(W-TW)*.5f,Y+Dy+(H-Eff*1.28f)*.5f,TS,TextColor,Font,true,true);
 }
 void CireUIStyle::CooldownSweep(const FCireUIPainter& P,float X,float Y,float Size,float Remaining)
 {
@@ -561,8 +571,8 @@ void CireUIStyle::Bar(const FCireUIPainter& P,float X,float Y,float W,float H,fl
         RoundBar(P,X,Y,W,H,Shown,Color,TrailValue>Shown?TrailValue:-1.f);
         if(!Text.IsEmpty())
         {
-            const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.72f);
-            P.Text(Text,X+(W-P.TextWidth(Text,TS,ECireFont::Numbers))*.5f,Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Numbers,true,false);
+            const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.64f/TextBoost);
+            P.Text(Text,X+(W-P.TextWidth(Text,TS,ECireFont::Numbers))*.5f,Y+(H-ReadableSize(TS)*1.28f)*.5f,TS,FLinearColor::White,ECireFont::Numbers,true,false);
         }
         return;
     }
@@ -578,8 +588,8 @@ void CireUIStyle::Bar(const FCireUIPainter& P,float X,float Y,float W,float H,fl
     if(bThemed&&H>=8.f)BarFrame(P,X,Y,W,H);
     if(!Text.IsEmpty())
     {
-        const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.72f);
-        P.Text(Text,X+(W-P.TextWidth(Text,TS,ECireFont::Numbers))*.5f,Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Numbers,true,false);
+        const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.64f/TextBoost);
+        P.Text(Text,X+(W-P.TextWidth(Text,TS,ECireFont::Numbers))*.5f,Y+(H-ReadableSize(TS)*1.28f)*.5f,TS,FLinearColor::White,ECireFont::Numbers,true,false);
     }
 }
 void CireUIStyle::TooltipFrame(const FCireUIPainter& P,float X,float Y,float W,float H,FLinearColor Border,float Opacity)
@@ -612,11 +622,11 @@ float CireUIStyle::Tooltip(const FCireUIPainter& P,float X,float Y,float W,const
     TArray<FString> Lines;{TArray<FString> Words;Body.ParseIntoArrayWS(Words);FString Row;
         for(const FString& Word:Words){const FString Next=Row.IsEmpty()?Word:Row+TEXT(" ")+Word;if(!Row.IsEmpty()&&P.TextWidth(Next,BS,ECireFont::Body)>W-2*Pad){Lines.Add(Row);Row=Word;}else Row=Next;}
         if(!Row.IsEmpty())Lines.Add(Row);}
-    const float H=2*Pad+TS+4*S+(Lines.IsEmpty()?0.f:4*S+Lines.Num()*(BS+3*S));
+    const float H=2*Pad+ReadableSize(TS)*1.2f+4*S+(Lines.IsEmpty()?0.f:4*S+Lines.Num()*(ReadableSize(BS)*1.12f+3*S));
     if(!bDraw)return H;
     TooltipFrame(P,X,Y,W,H,FLinearColor(.55f,.58f,.64f,1),Opacity);
     P.Text(Title,X+Pad,Y+Pad,TS,CireUIColors::TitleText,ECireFont::Bold);
-    for(int32 I=0;I<Lines.Num();++I)P.Text(Lines[I],X+Pad,Y+Pad+TS+8*S+I*(BS+3*S),BS,FLinearColor(.86f,.87f,.84f,1),ECireFont::Body);
+    for(int32 I=0;I<Lines.Num();++I)P.Text(Lines[I],X+Pad,Y+Pad+ReadableSize(TS)*1.2f+8*S+I*(ReadableSize(BS)*1.12f+3*S),BS,FLinearColor(.86f,.87f,.84f,1),ECireFont::Body);
     return H;
 }
 void CireUIStyle::Toast(const FCireUIPainter& P,float X,float Y,float W,const FString& IconId,const FString& Title,const FString& Body,float Age,float Life,FLinearColor Accent)
@@ -780,7 +790,7 @@ void CireUIStyle::Medallion(const FCireUIPainter& P,float CX,float CY,float R,co
 {
     P.Disc(CX,CY,R+1.5f,FLinearColor(0,0,0,.9f));P.Disc(CX,CY,R,FLinearColor(Ink.R*1.6f,Ink.G*1.6f,Ink.B*1.6f,1),24);
     if(!(HasThemeArt()&&CireUITheme::Draw(P,ECireThemePiece::Ring,CX-R*1.3f,CY-R*1.3f,R*2.6f,R*2.6f,FLinearColor::White)))P.Circle(CX,CY,R,Gold,1.2f,20);
-    if(!Text.IsEmpty()){const float S=R*.95f;P.Text(Text,CX-P.TextWidth(Text,S,ECireFont::Numbers)*.5f,CY-S*.62f,S,TextColor,ECireFont::Numbers,true,false);}
+    if(!Text.IsEmpty()){const float S=FMath::Max(R*.95f,R*1.15f/TextBoost);P.Text(Text,CX-P.TextWidth(Text,S,ECireFont::Numbers)*.5f,CY-ReadableSize(S)*.64f,S,TextColor,ECireFont::Numbers,true,true);}
 }
 void CireUIStyle::MinimapFrame(const FCireUIPainter& P,float X,float Y,float W,float H)
 {
@@ -829,9 +839,9 @@ void CireUIStyle::CastBar(const FCireUIPainter& P,float X,float Y,float W,float 
         // ui-themes: rounded cast bar with a small theme crest at each end (outside the bar).
         RoundBar(P,X,Y,W,H,Progress,Color);
         if(H>=10.f){Ornament(P,X-1.f,Y+H*.5f,H*1.1f);Ornament(P,X+W+1.f,Y+H*.5f,H*1.1f);}
-        const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.62f);
-        if(!Name.IsEmpty())P.Text(P.Fit(Name,TS,W-(Time.IsEmpty()?16.f:48.f),ECireFont::Bold),X+H*.5f+3,Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Bold,true,false);
-        if(!Time.IsEmpty())P.Text(Time,X+W-H*.5f-3-P.TextWidth(Time,TS,ECireFont::Numbers),Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Numbers,true,false);
+        const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.6f/TextBoost);const float TY=Y+(H-ReadableSize(TS)*1.28f)*.5f;
+        if(!Name.IsEmpty())P.Text(P.Fit(Name,TS,W-(Time.IsEmpty()?16.f:48.f),ECireFont::Bold),X+H*.5f+3,TY,TS,FLinearColor::White,ECireFont::Bold,true,false);
+        if(!Time.IsEmpty())P.Text(Time,X+W-H*.5f-3-P.TextWidth(Time,TS,ECireFont::Numbers),TY,TS,FLinearColor::White,ECireFont::Numbers,true,false);
         return;
     }
     P.Rect(X,Y,W,H,bThemed?BarBack:FLinearColor(0,0,0,.85f));
@@ -849,9 +859,9 @@ void CireUIStyle::CastBar(const FCireUIPainter& P,float X,float Y,float W,float 
         const float Cap=FH*C.Slice*C.SizePx.X/FMath::Max(1.f,C.SizePx.Y);
         CireUITheme::Draw(P,ECireThemePiece::CastFrame,X-Cap*.6f,Y-Pad,W+Cap*1.2f,FH,FLinearColor(1.1f,1.1f,1.1f,1));
     }
-    const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.62f);
-    if(!Name.IsEmpty())P.Text(P.Fit(Name,TS,W-(Time.IsEmpty()?12.f:44.f),ECireFont::Bold),X+6,Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Bold,true,false);
-    if(!Time.IsEmpty())P.Text(Time,X+W-6-P.TextWidth(Time,TS,ECireFont::Numbers),Y+(H-TS)*.5f-1.5f,TS,FLinearColor::White,ECireFont::Numbers,true,false);
+    const float TS=TextSize>0?TextSize:FMath::Max(7.f,H*.6f/TextBoost);const float TY=Y+(H-ReadableSize(TS)*1.28f)*.5f;
+    if(!Name.IsEmpty())P.Text(P.Fit(Name,TS,W-(Time.IsEmpty()?12.f:44.f),ECireFont::Bold),X+6,TY,TS,FLinearColor::White,ECireFont::Bold,true,false);
+    if(!Time.IsEmpty())P.Text(Time,X+W-6-P.TextWidth(Time,TS,ECireFont::Numbers),TY,TS,FLinearColor::White,ECireFont::Numbers,true,false);
 }
 
 // ---------------------------------------------------------------------------
@@ -903,4 +913,234 @@ void CireUIStyle::RoundBar(const FCireUIPainter& P,float X,float Y,float W,float
     Capsule(P,CX,CY,CW,CH,Fraction,Color*1.2f);
     Capsule(P,CX,CY,CW,CH,Fraction,FLinearColor(1,1,1,.9f),1);
     Capsule(P,CX,CY,CW,CH,1,FLinearColor(1,1,1,.1f),1); // faint glass over the empty part
+}
+
+// ---------------------------------------------------------------------------
+// readability: rich (WoW-style) tooltips and bevelled cards
+// ---------------------------------------------------------------------------
+namespace
+{
+const FLinearColor TipBody(.90f,.90f,.87f,1.f);
+}
+FCireTooltipSpec& FCireTooltipSpec::Text(const FString& T,FLinearColor C,float Size,ECireFont F)
+{
+    if(T.IsEmpty())return *this;
+    FCireTooltipRow R;R.Kind=FCireTooltipRow::EKind::Text;R.Left=T;R.LeftColor=C;R.Size=Size;R.Font=F;Rows.Add(R);return *this;
+}
+FCireTooltipSpec& FCireTooltipSpec::Pair(const FString& L,const FString& Rt,FLinearColor LC,FLinearColor RC)
+{
+    if(L.IsEmpty()&&Rt.IsEmpty())return *this;
+    FCireTooltipRow R;R.Kind=FCireTooltipRow::EKind::Pair;R.Left=L;R.Right=Rt;R.LeftColor=LC;R.RightColor=RC;Rows.Add(R);return *this;
+}
+FCireTooltipSpec& FCireTooltipSpec::Header(const FString& T,FLinearColor C)
+{
+    FCireTooltipRow R;R.Kind=FCireTooltipRow::EKind::Header;R.Left=T;R.LeftColor=C;R.Font=ECireFont::Heading;Rows.Add(R);return *this;
+}
+FCireTooltipSpec& FCireTooltipSpec::Stat(const FString& T,FLinearColor C)
+{
+    if(T.IsEmpty())return *this;
+    FCireTooltipRow R;R.Kind=FCireTooltipRow::EKind::Stat;R.Left=T;R.LeftColor=C;R.Font=ECireFont::Bold;Rows.Add(R);return *this;
+}
+FCireTooltipSpec& FCireTooltipSpec::Divider()
+{
+    if(Rows.Num()&&Rows.Last().Kind==FCireTooltipRow::EKind::Divider)return *this;
+    FCireTooltipRow R;R.Kind=FCireTooltipRow::EKind::Divider;Rows.Add(R);return *this;
+}
+FCireTooltipSpec& FCireTooltipSpec::Bar(float Fraction,const FString& Label,FLinearColor C)
+{
+    FCireTooltipRow R;R.Kind=FCireTooltipRow::EKind::Bar;R.Fraction=FMath::Clamp(Fraction,0.f,1.f);R.Left=Label;R.LeftColor=C;Rows.Add(R);return *this;
+}
+FLinearColor CireUIStyle::StatColor(const FString& Line)
+{
+    // "+20 Attack" / "DEF +20%" read green, "DEF -20%" / "Healing -50%" red, anything else gold.
+    for(int32 I=0;I+1<Line.Len();++I)
+        if((Line[I]==TEXT('+')||Line[I]==TEXT('-')||Line[I]==0x2212)&&FChar::IsDigit(Line[I+1]))
+            return Line[I]==TEXT('+')?FLinearColor(.42f,1.f,.48f,1):FLinearColor(1.f,.42f,.36f,1); // '-' or U+2212
+    return FLinearColor(1.f,.84f,.4f,1);
+}
+bool CireUIStyle::IsStatLine(const FString& Line)
+{
+    // Short symbol lines: "+20 Attack", "DEF +20%  ·  8s left", "Healing -50%".
+    if(Line.Len()>64)return false;
+    for(int32 I=0;I+1<Line.Len();++I)
+        if((Line[I]==TEXT('+')||Line[I]==TEXT('-')||Line[I]==0x2212)&&FChar::IsDigit(Line[I+1])&&(I==0||Line[I-1]==TEXT(' ')))return true;
+    return false;
+}
+FCireTooltipSpec CireUIStyle::TooltipFromText(const FString& Title,const FString& Body)
+{
+    FCireTooltipSpec Spec;Spec.Title=Title;
+    TArray<FString> Paragraphs;Body.ParseIntoArrayLines(Paragraphs,false);
+    bool bFirst=true;
+    for(FString Paragraph:Paragraphs)
+    {
+        Paragraph.TrimStartAndEndInline();
+        if(Paragraph.IsEmpty()){Spec.Divider();continue;}
+        // "UNIQUE PASSIVE  text" / "ACTIVE  text" / "USE  text" sections get a header.
+        static const TCHAR* Sections[]={TEXT("UNIQUE PASSIVE"),TEXT("ACTIVE"),TEXT("USE"),TEXT("APOTHEOSIS")};
+        bool bSection=false;
+        for(const TCHAR* S:Sections)
+            if(Paragraph.StartsWith(FString(S)+TEXT("  ")))
+            {
+                Spec.Divider();Spec.Header(S,FString(S)==TEXT("ACTIVE")||FString(S)==TEXT("USE")?FLinearColor(.4f,.9f,.8f,1):FLinearColor(1.f,.8f,.3f,1));
+                Spec.Text(Paragraph.Mid(FCString::Strlen(S)).TrimStart(),TipBody);bSection=true;break;
+            }
+        if(bSection){bFirst=false;continue;}
+        if(IsStatLine(Paragraph)&&Paragraph.Len()<=48)Spec.Stat(Paragraph,StatColor(Paragraph));
+        else Spec.Text(Paragraph,bFirst?FLinearColor(1.f,.86f,.5f,1):TipBody);
+        bFirst=false;
+    }
+    return Spec;
+}
+float CireUIStyle::RichTooltip(const FCireUIPainter& P,float X,float Y,float W,const FCireTooltipSpec& Spec,float S,float Opacity,bool bDraw,float MaxHeight,int32* OutLines)
+{
+    using EKind=FCireTooltipRow::EKind;
+    const float Pad=12.f*S,BodyS=11.f*S,TitleS=15.5f*S,TagS=9.f*S,SubS=10.f*S,HeadS=9.f*S,StatS=11.5f*S,FootS=9.5f*S;
+    auto Step=[&](float Size){return ReadableSize(Size)*1.18f+2.5f*S;};
+    const bool bPortrait=!Spec.PortraitId.IsEmpty()&&ChampionPortrait(Spec.PortraitId)!=nullptr;
+    const bool bIcon=bPortrait||Spec.Icon||!Spec.Sigil.IsEmpty();
+    const float IconS=bIcon?46.f*S:0.f,IconGap=bIcon?11.f*S:0.f;
+    const float TextX=X+Pad+IconS+IconGap,TextW=W-2*Pad-IconS-IconGap,RowW=W-2*Pad;
+    // Header block: title (with the tag on its right), subtitle.
+    const float TagW=Spec.Tag.IsEmpty()?0.f:P.TextWidth(Spec.Tag,TagS,ECireFont::Heading)+10.f*S;
+    const FString Title=P.Fit(Spec.Title,TitleS,FMath::Max(40.f,TextW-TagW),ECireFont::Bold);
+    TArray<FString> SubLines;
+    if(!Spec.Subtitle.IsEmpty())
+    {
+        TArray<FString> Words;Spec.Subtitle.ParseIntoArrayWS(Words);FString Row;
+        for(const FString& Word:Words){const FString Next=Row.IsEmpty()?Word:Row+TEXT(" ")+Word;if(!Row.IsEmpty()&&P.TextWidth(Next,SubS,ECireFont::Body)>TextW){SubLines.Add(Row);Row=Word;}else Row=Next;}
+        if(!Row.IsEmpty())SubLines.Add(Row);
+        if(SubLines.Num()>2){SubLines.SetNum(2);SubLines[1]=P.Fit(SubLines[1]+TEXT(" ..."),SubS,TextW,ECireFont::Body);}
+    }
+    const float TitleBlock=Step(TitleS)+SubLines.Num()*Step(SubS);
+    const float HeadH=FMath::Max(IconS,TitleBlock);
+    // Rows -> laid-out lines.
+    struct FLine { EKind Kind; FString L,R; float Size; FLinearColor LC,RC; ECireFont Font; float Fraction; float H; };
+    TArray<FLine> Lines;
+    auto Wrap=[&](const FString& Text,float Size,ECireFont Font,FLinearColor Color,EKind Kind)
+    {
+        TArray<FString> Words;Text.ParseIntoArrayWS(Words);FString Row;
+        auto Emit=[&](const FString& L){Lines.Add({Kind,L,FString(),Size,Color,Color,Font,0.f,Step(Size)});};
+        for(const FString& Word:Words)
+        {
+            const FString Next=Row.IsEmpty()?Word:Row+TEXT(" ")+Word;
+            if(!Row.IsEmpty()&&P.TextWidth(Next,Size,Font)>RowW){Emit(Row);Row=Word;}else Row=Next;
+        }
+        if(!Row.IsEmpty())Emit(P.Fit(Row,Size,RowW,Font));
+    };
+    for(const FCireTooltipRow& R:Spec.Rows)
+    {
+        switch(R.Kind)
+        {
+        case EKind::Text: Wrap(R.Left,R.Size>0?R.Size*S:BodyS,R.Font,R.LeftColor,EKind::Text);break;
+        case EKind::Stat: Wrap(R.Left,StatS,ECireFont::Bold,R.LeftColor,EKind::Stat);break;
+        case EKind::Header: Lines.Add({EKind::Header,R.Left,FString(),HeadS,R.LeftColor,R.LeftColor,ECireFont::Heading,0.f,Step(HeadS)+4.f*S});break;
+        case EKind::Divider: if(Lines.Num())Lines.Add({EKind::Divider,FString(),FString(),0.f,FLinearColor::White,FLinearColor::White,ECireFont::Body,0.f,11.f*S});break;
+        case EKind::Bar: Lines.Add({EKind::Bar,R.Left,FString(),10.f*S,R.LeftColor,FLinearColor::White,ECireFont::Numbers,R.Fraction,17.f*S+5.f*S});break;
+        case EKind::Gap: Lines.Add({EKind::Gap,FString(),FString(),0.f,FLinearColor::White,FLinearColor::White,ECireFont::Body,0.f,6.f*S});break;
+        case EKind::Pair:
+        {
+            const float RW=R.Right.IsEmpty()?0.f:P.TextWidth(R.Right,BodyS,ECireFont::Body)+12.f*S;
+            Lines.Add({EKind::Pair,P.Fit(R.Left,BodyS,RowW-RW,ECireFont::Body),R.Right,BodyS,R.LeftColor,R.RightColor,ECireFont::Body,0.f,Step(BodyS)});break;
+        }
+        }
+    }
+    while(Lines.Num()&&Lines.Last().Kind==EKind::Divider)Lines.Pop();
+    const float FootH=Spec.Footer.IsEmpty()?0.f:6.f*S+Step(FootS);
+    const float DividerH=Lines.Num()?12.f*S:4.f*S;
+    float H=Pad+HeadH+DividerH+FootH+Pad*.85f;
+    for(const FLine& L:Lines)H+=L.H;
+    // Too tall for the screen: drop trailing lines and mark the cut.
+    if(MaxHeight>0&&H>MaxHeight)
+    {
+        while(Lines.Num()>1&&H>MaxHeight){H-=Lines.Last().H;Lines.Pop();}
+        if(Lines.Num()&&(Lines.Last().Kind==EKind::Text||Lines.Last().Kind==EKind::Stat))Lines.Last().L=P.Fit(Lines.Last().L+TEXT(" ..."),Lines.Last().Size,RowW,Lines.Last().Font);
+    }
+    if(OutLines){int32 N=0;for(const FLine& L:Lines)N+=L.Kind==EKind::Text||L.Kind==EKind::Stat?1:0;*OutLines=N;}
+    if(!bDraw)return H;
+    // Frame: the themed tooltip frame, a title band washed in the accent, the crest on top.
+    TooltipFrame(P,X,Y,W,H,Spec.Accent,Opacity);
+    const float BandH=Pad+HeadH+4.f*S;
+    for(int32 I=0;I<6;++I)P.Rect(X+3,Y+3+I*BandH/6.f,W-6,BandH/6.f+.5f,Spec.Accent*FLinearColor(1,1,1,(.2f-I*.032f)*FMath::Max(.5f,Opacity)));
+    if(HasThemeArt())Ornament(P,X+W*.5f,Y+1.f,FMath::Clamp(13.f*S,9.f,16.f));
+    // Icon (painted art, sigil or a champion portrait) in the kit's frame.
+    if(bIcon)
+    {
+        const float IX=X+Pad,IY=Y+Pad;
+        if(bPortrait)
+        {
+            const float R=IconS*.5f-2.f;
+            PortraitFace(P,Spec.PortraitId,IX+IconS*.5f,IY+IconS*.5f,R);PortraitRing(P,IX+IconS*.5f,IY+IconS*.5f,R);
+        }
+        else
+        {
+            FCireIconSlot Slot;Slot.IconTexture=Spec.Icon;Slot.IconId=Spec.Sigil;Slot.Tint=Spec.IconTint;Slot.Kind=Spec.IconKind;
+            IconSlot(P,IX,IY,IconS,Slot,0.0);
+        }
+    }
+    float TY=Y+Pad+FMath::Max(0.f,(HeadH-TitleBlock)*.5f);
+    P.Text(Title,TextX,TY,TitleS,Spec.TitleColor,ECireFont::Bold,true,true);
+    if(!Spec.Tag.IsEmpty())P.Text(Spec.Tag,X+W-Pad-P.TextWidth(Spec.Tag,TagS,ECireFont::Heading),TY+(ReadableSize(TitleS)-ReadableSize(TagS))*.55f,TagS,Spec.TagColor,ECireFont::Heading,true,true);
+    TY+=Step(TitleS);
+    for(const FString& Sub:SubLines){P.Text(Sub,TextX,TY,SubS,Spec.SubtitleColor,ECireFont::Body,false,true);TY+=Step(SubS);}
+    float LY=Y+Pad+HeadH+4.f*S;
+    if(Lines.Num()){Divider(P,X+Pad*.6f,LY+3.f*S,W-Pad*1.2f,FLinearColor(1,1,1,.9f));LY+=DividerH-4.f*S;}
+    for(const FLine& L:Lines)
+    {
+        switch(L.Kind)
+        {
+        case EKind::Divider: Divider(P,X+Pad*1.5f,LY+L.H*.5f,W-Pad*3.f,FLinearColor(1,1,1,.55f));break;
+        case EKind::Header: P.Text(L.L,X+Pad,LY+4.f*S,L.Size,L.LC,ECireFont::Heading,true,true);break;
+        case EKind::Bar:
+        {
+            const float BH=17.f*S;
+            P.Rect(X+Pad,LY+2.f*S,RowW,BH,FLinearColor(0,0,0,.9f));
+            P.Rect(X+Pad+1,LY+2.f*S+1,(RowW-2)*L.Fraction,BH-2,L.LC);
+            P.Rect(X+Pad+1,LY+2.f*S+1,(RowW-2)*L.Fraction,(BH-2)*.4f,FLinearColor(1,1,1,.16f));
+            if(!L.L.IsEmpty())P.Text(L.L,X+Pad+(RowW-P.TextWidth(L.L,L.Size,ECireFont::Numbers))*.5f,LY+2.f*S+(BH-ReadableSize(L.Size)*1.18f)*.5f,L.Size,FLinearColor::White,ECireFont::Numbers,true,false);
+            break;
+        }
+        case EKind::Pair:
+            P.Text(L.L,X+Pad,LY,L.Size,L.LC,ECireFont::Body,false,true);
+            if(!L.R.IsEmpty())P.Text(L.R,X+W-Pad-P.TextWidth(L.R,L.Size,ECireFont::Body),LY,L.Size,L.RC,ECireFont::Body,false,true);
+            break;
+        case EKind::Gap: break;
+        default: P.Text(L.L,X+Pad,LY,L.Size,L.LC,L.Font,L.Kind==EKind::Stat,true);break;
+        }
+        LY+=L.H;
+    }
+    if(!Spec.Footer.IsEmpty())P.Text(P.Fit(Spec.Footer,FootS,RowW,ECireFont::Body),X+Pad,LY+6.f*S,FootS,Muted*1.15f,ECireFont::Body,false,true);
+    return H;
+}
+void CireUIStyle::Bevel(const FCireUIPainter& P,float X,float Y,float W,float H,float C,FLinearColor Color)
+{
+    C=FMath::Clamp(C,0.f,FMath::Min(W,H)*.5f);
+    if(C<=.5f){P.Rect(X,Y,W,H,Color);return;}
+    P.Rect(X+C,Y,W-2*C,H,Color);P.Rect(X,Y+C,C,H-2*C,Color);P.Rect(X+W-C,Y+C,C,H-2*C,Color);
+    P.Tri(FVector2D(X,Y+C),FVector2D(X+C,Y),FVector2D(X+C,Y+C),Color);
+    P.Tri(FVector2D(X+W-C,Y),FVector2D(X+W,Y+C),FVector2D(X+W-C,Y+C),Color);
+    P.Tri(FVector2D(X,Y+H-C),FVector2D(X+C,Y+H-C),FVector2D(X+C,Y+H),Color);
+    P.Tri(FVector2D(X+W-C,Y+H-C),FVector2D(X+W,Y+H-C),FVector2D(X+W-C,Y+H),Color);
+}
+void CireUIStyle::BevelOutline(const FCireUIPainter& P,float X,float Y,float W,float H,float C,FLinearColor Color,float Width)
+{
+    C=FMath::Clamp(C,0.f,FMath::Min(W,H)*.5f);
+    const FVector2D Pts[]={{X+C,Y},{X+W-C,Y},{X+W,Y+C},{X+W,Y+H-C},{X+W-C,Y+H},{X+C,Y+H},{X,Y+H-C},{X,Y+C}};
+    for(int32 I=0;I<8;++I){const FVector2D& A=Pts[I];const FVector2D& B=Pts[(I+1)%8];P.Line(A.X,A.Y,B.X,B.Y,Color,Width);}
+}
+void CireUIStyle::BevelCard(const FCireUIPainter& P,float X,float Y,float W,float H,FLinearColor Rarity,bool bHover,bool bSelected,bool bDim)
+{
+    const float C=FMath::Clamp(FMath::Min(W,H)*.14f,4.f,11.f);
+    const float GlowK=HasThemeArt()?CireUITheme::Active()->GlowStrength:1.f;
+    // Rarity glow behind the card (stronger on hover / selection), then a soft drop shadow.
+    Glow(P,X+2,Y+2,W-4,H-4,Rarity*FLinearColor(1,1,1,(bSelected?.5f:bHover?.42f:bDim?.08f:.2f)*GlowK));
+    Bevel(P,X+2,Y+4,W,H,C,FLinearColor(0,0,0,.5f));
+    // Rim: rarity metal, a dark gap, then the body with a rarity wash fading down.
+    const FLinearColor Rim=Rarity*FLinearColor(bDim?.45f:1.f,bDim?.45f:1.f,bDim?.45f:1.f,1);
+    Bevel(P,X,Y,W,H,C,Rim);
+    Bevel(P,X+1.6f,Y+1.6f,W-3.2f,H-3.2f,C-.6f,FLinearColor(0,0,0,.95f));
+    Bevel(P,X+2.6f,Y+2.6f,W-5.2f,H-5.2f,C-1.f,FLinearColor(Ink.R*1.3f+.01f,Ink.G*1.3f+.01f,Ink.B*1.3f+.015f,1));
+    const float BX=X+2.6f+C,BW=W-5.2f-2*C;
+    for(int32 I=0;I<5;++I)P.Rect(BX-C*.5f,Y+3+I*H*.1f,BW+C,H*.1f,Rarity*FLinearColor(1,1,1,(bDim?.05f:.16f)-I*.028f));
+    P.Line(X+C,Y+2.8f,X+W-C,Y+2.8f,FLinearColor(1,1,1,bDim?.05f:.14f),1.f);
+    if(bHover||bSelected)BevelOutline(P,X-1.5f,Y-1.5f,W+3,H+3,C+.6f,(bSelected?FLinearColor(1.f,.85f,.45f,1):Rarity*1.3f)*FLinearColor(1,1,1,.9f),1.4f);
 }

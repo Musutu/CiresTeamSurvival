@@ -388,8 +388,8 @@ void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
     else
     {
         const FString Level=U.bHero?FString::FromInt(U.Level):U.Tier>0?FString::Printf(TEXT("T%d"),U.Tier):FString();
-        const float LS=bSmall?8.5f:10.f;
-        TextFx(Level,BX-TextWidthFont(Level,LS,ECireFont::Numbers)*.5f,BY-LS*.62f,LS,U.Tier>0?WowGold:Neutral,ECireFont::Numbers,true,false);
+        const float LS=bSmall?9.5f:11.f;
+        TextFx(Level,BX-TextWidthFont(Level,LS,ECireFont::Numbers)*.5f,BY-CireUIStyle::ReadableSize(LS)*.64f,LS,U.Tier>0?WowGold:Neutral,ECireFont::Numbers,true,false);
     }
     // Role badge (bottom-right): Caster / Ranged / Tank / Bruiser / Healer.
     if(U.Role!=ERole::None)
@@ -431,7 +431,7 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     const FString Header=CireUnitFrameHeader(U.bMonster,U.bHero,U.bSelf,U.Reaction,U.Class,U.Rank,Mob&&Mob->IsLaneBoss(),U.RoleName,U.RankLabel,bFocus);
     // hud-art: the caption starts past the theme's corner ornament (it covered "ELITE / CASTER").
     const float HX=FMath::Max(10.f,CireUIStyle::FrameCornerClear(W,H)+2.f);
-    Label(Painter().Fit(Header,bFocus?8.f:9.f,BW-(HX-10.f)-(Mob&&!bFocus?40.f:0.f),ECireFont::Heading),HX,5.5f,bFocus?8.f:9.f,bRankFrame?U.RankColor:U.Class==3?Hostile:U.Class>=1?WowGold:Muted);
+    TextFx(Painter().Fit(Header,bFocus?8.5f:9.5f,BW-(HX-10.f)-(Mob&&!bFocus?40.f:0.f),ECireFont::Heading),HX,3.5f,bFocus?8.5f:9.5f,bRankFrame?U.RankColor:U.Class==3?Hostile:U.Class>=1?WowGold:Parchment*.8f,ECireFont::Heading,true,true);
     bool bKnown=false;const float Threat=Mob&&Self?ThreatPercent(Mob,Self,bKnown):0.f;
     if(Mob&&bKnown&&!bFocus)
     {
@@ -446,23 +446,23 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     const float NY=bFocus?17.f:19.f,NH=bFocus?15.f:18.f;
     Panel(10,NY,BW,NH,React*FLinearColor(.42f,.42f,.42f,.92f));Panel(10,NY,BW,NH*.45f,FLinearColor(1,1,1,.07f));
     TextFx(Painter().Fit(U.Name,bFocus?11.f:13.f,BW-8,ECireFont::Bold),14,NY+(bFocus?1.f:1.5f),bFocus?11.f:13.f,FLinearColor::White,ECireFont::Bold,true,false);
-    const float HY=NY+NH+2,HH=bFocus?13.f:18.f;
+    const float HY=NY+NH+2,HH=bFocus?14.f:18.f;
     const float HF=Frac(U.HP,U.MaxHP);
     if(CireUIStyle::HasThemeArt())Bar(10,HY,BW,HH,HF,U.bDead?Muted*.5f:HealthGreen); // ui-themes: kit bar (themed frame, trailing chunk)
     else{Panel(10,HY,BW,HH,FLinearColor(0,0,0,.85f));
     Panel(11,HY+1,(BW-2)*HF,HH-2,U.bDead?Muted*.5f:HealthGreen);Panel(11,HY+1,(BW-2)*HF,(HH-2)*.4f,FLinearColor(1,1,1,.16f));}
-    const float HS=bFocus?9.f:10.5f;
+    const float HS=bFocus?10.f:11.5f;
     const FString HPText=U.bDead?TEXT("DEAD"):FString::Printf(TEXT("%.0f / %.0f"),U.HP,U.MaxHP),Pct=FString::Printf(TEXT("%.0f%%"),HF*100);
-    TextFx(HPText,10+(BW-TextWidthFont(HPText,HS,ECireFont::Numbers))*.5f,HY+(HH-HS)*.5f-1.5f,HS,FLinearColor::White,ECireFont::Numbers,true,false);
-    if(!bFocus&&!U.bDead)TextFx(Pct,10+BW-4-TextWidthFont(Pct,9,ECireFont::Numbers),HY+(HH-9)*.5f-1.5f,9,Parchment,ECireFont::Numbers,true,false);
+    TextFx(HPText,10+(BW-TextWidthFont(HPText,HS,ECireFont::Numbers))*.5f,HY+(HH-CireUIStyle::ReadableSize(HS)*1.28f)*.5f,HS,FLinearColor::White,ECireFont::Numbers,true,false);
+    if(!bFocus&&!U.bDead)TextFx(Pct,10+BW-5-TextWidthFont(Pct,10,ECireFont::Numbers),HY+(HH-CireUIStyle::ReadableSize(10)*1.28f)*.5f,10,Parchment,ECireFont::Numbers,true,false);
     float Y=HY+HH+1;
     if(U.MaxMP>0){if(CireUIStyle::HasThemeArt())Bar(10,Y+1,BW,bFocus?5.f:7.f,Frac(U.MP,U.MaxMP),ManaBlue);else{Panel(10,Y,BW,bFocus?5.f:7.f,FLinearColor(0,0,0,.85f));Panel(11,Y+1,(BW-2)*Frac(U.MP,U.MaxMP),bFocus?3.f:5.f,ManaBlue);}Y+=bFocus?6.f:8.f;}
     // Target of target.
     Y+=3;
     const bool bOnMe=U.Victim&&U.Victim==Self;
-    TextFx(TEXT(">"),10,Y,9,bOnMe?Hostile:Muted,ECireFont::Bold,false);
+    TextFx(TEXT(">"),10,Y,10,bOnMe?Hostile:Parchment*.8f,ECireFont::Bold,true);
     const FString Tot=(U.bMonster&&!IsValid(U.Victim)?FString():FString(TEXT("Target: ")))+(U.VictimLine.IsEmpty()?TEXT("none"):U.VictimLine);
-    TextFx(Painter().Fit(Tot,9,BW-(bFocus?12.f:68.f),ECireFont::Body),19,Y,9,bOnMe?Hostile:Parchment,ECireFont::Body,false);
+    TextFx(Painter().Fit(Tot,10,BW-(bFocus?12.f:68.f),ECireFont::Body),20,Y,10,bOnMe?Hostile:Parchment,ECireFont::Body,true);
     if(const auto* Victim=Cast<ACireHero>(U.Victim);Victim&&!bFocus)
     {
         Panel(10+BW-52,Y+3,52,6,FLinearColor(0,0,0,.85f));Panel(11+BW-52,Y+4,50*Frac(Victim->Health,Victim->MaxHealth),4,HealthGreen);
@@ -930,72 +930,39 @@ bool ACireHUD::DrawUnitTooltip(AActor* Unit,FVector2D Cursor)
     if(!IsValid(Unit))return false;
     auto* Self=Cast<ACireHero>(PlayerOwner?PlayerOwner->GetPawn():nullptr);
     const FInsight U=Describe(GetWorld(),Unit,Self);
-    const float S=FMath::Clamp(UISettings.TooltipScale,.6f,1.4f)*1.1f;
-    const float W=300*S,Pad=9*S;
-    struct FRow{FString Text;float Size;FLinearColor Color;ECireFont Font;int32 Kind=0;}; // Kind 1: health bar, 2: spacer
-    TArray<FRow> Rows;
-    auto Wrap=[&](const FString& Text,float Size,FLinearColor Color,ECireFont Font,float Indent=0)
-    {
-        TArray<FString> Words;Text.ParseIntoArrayWS(Words);FString Row;
-        for(const FString& Word:Words)
-        {
-            const FString Next=Row.IsEmpty()?Word:Row+TEXT(" ")+Word;
-            if(!Row.IsEmpty()&&TextWidthFont(Next,Size,Font)>W-2*Pad-Indent){Rows.Add({Row,Size,Color,Font});Row=Word;}else Row=Next;
-        }
-        if(!Row.IsEmpty())Rows.Add({Row,Size,Color,Font});
-    };
-    Rows.Add({U.Name,15*S,ReactionColor(U),ECireFont::Bold});
-    if(!U.Subtitle.IsEmpty())Rows.Add({U.Subtitle,10.5f*S,FLinearColor(.86f,.86f,.86f,1),ECireFont::Body});
-    Rows.Add({U.ClassName,10.5f*S,U.Class==3?Hostile:U.Class==2?WowGold:U.Class==1?Silver:FLinearColor::White,ECireFont::Body});
-    Rows.Add({FString(),12*S,HealthGreen,ECireFont::Numbers,1});
-    if(!U.VictimLine.IsEmpty())Rows.Add({(U.bMonster&&!IsValid(U.Victim)?FString():FString(TEXT("Target: ")))+U.VictimLine,10.5f*S,U.Victim&&U.Victim==Self?Hostile:FLinearColor::White,ECireFont::Body});
-    if(!U.Casting.IsEmpty())Rows.Add({FString::Printf(TEXT("Casting %s (%.1fs)"),*U.Casting,U.CastRemaining),10.5f*S,CastGold,ECireFont::Bold});
-    if(!U.Status.IsEmpty())Wrap(U.Status,10*S,Neutral,ECireFont::Body);
-    if(U.Role!=ERole::None)Wrap(RoleExplain(U.Role,U.bMonster),10*S,RoleTint(U.Role),ECireFont::Body);
+    // readability: a rich WoW unit card: portrait / role emblem, name in the reaction colour, classification
+    // tag, health bar, target, cast, threat, then the role and the unit's abilities under dividers.
+    FCireTooltipSpec T;
+    T.Title=U.Name;T.TitleColor=ReactionColor(U);
+    T.Tag=U.ClassName.ToUpper();T.TagColor=U.Class==3?Hostile:U.Class==2?WowGold:U.Class==1?Silver:FLinearColor(.8f,.82f,.85f,1);
+    T.Subtitle=U.Subtitle;
+    T.Accent=U.Class==3?Hostile*.9f:U.Class==2?WowGold*.85f:ReactionColor(U)*FLinearColor(.75f,.75f,.75f,1);
+    if(const ACireHero* HeroUnit=U.bHero?Cast<ACireHero>(Unit):nullptr)T.PortraitId=HeroUnit->ChampionProfileId;
+    T.Sigil=U.bConstruct?FString(TEXT("runic_wall")):RoleIcon(U.Role);T.IconTint=U.bMonster?RoleTint(U.Role):ReactionColor(U);
+    const float HF=Frac(U.HP,U.MaxHP);
+    T.Bar(HF,U.bDead?FString(TEXT("DEAD")):FString::Printf(TEXT("%.0f / %.0f  (%.0f%%)"),U.HP,U.MaxHP,HF*100),U.bDead?Muted:HealthGreen);
+    if(!U.VictimLine.IsEmpty())T.Text((U.bMonster&&!IsValid(U.Victim)?FString():FString(TEXT("Target: ")))+U.VictimLine,U.Victim&&U.Victim==Self?Hostile:FLinearColor::White);
+    if(!U.Casting.IsEmpty())T.Stat(FString::Printf(TEXT("Casting %s  (%.1fs)"),*U.Casting,U.CastRemaining),CastGold);
+    if(!U.Status.IsEmpty())T.Text(U.Status,Neutral);
     if(const auto* M=Cast<ACireMonster>(Unit);M&&Self)
     {
         bool bKnown=false;const float Pct=ThreatPercent(M,Self,bKnown);
-        if(bKnown&&(IsValid(M->Victim)||Pct>0))Rows.Add({M->Victim==Self?FString(TEXT("You have aggro (100%)")):
-            FString::Printf(TEXT("Your threat: %.0f%%  (pull: %.0f%%)"),Pct,PullPercent(M,Self)),10.5f*S,ThreatColor(PullPercent(M,Self)),ECireFont::Bold});
+        if(bKnown&&(IsValid(M->Victim)||Pct>0))T.Stat(M->Victim==Self?FString(TEXT("You have aggro (100%)")):
+            FString::Printf(TEXT("Your threat %.0f%%  ·  pull %.0f%%"),Pct,PullPercent(M,Self)),ThreatColor(PullPercent(M,Self)));
     }
+    if(U.Role!=ERole::None){T.Divider();T.Header(FString(RoleLabel(U.Role)).ToUpper()+TEXT(" ROLE"),RoleTint(U.Role));T.Text(RoleExplain(U.Role,U.bMonster),FLinearColor(.84f,.86f,.86f,1),10.f);}
     if(U.Abilities.Num()>0&&(U.bMonster||U.Reaction==0))
     {
-        Rows.Add({FString(),4*S,FLinearColor::White,ECireFont::Body,2});
-        Rows.Add({TEXT("ABILITIES"),9*S,WowGold,ECireFont::Heading});
-        for(const auto& A:U.Abilities)
-        {
-            Rows.Add({A.Name,10.5f*S,FLinearColor::White,ECireFont::Bold});
-            Wrap(A.Text,9.5f*S,FLinearColor(.72f,.76f,.78f,1),ECireFont::Body);
-        }
+        T.Divider();T.Header(TEXT("ABILITIES"),WowGold);
+        for(const auto& A:U.Abilities){T.Text(A.Name,FLinearColor::White,10.f,ECireFont::Bold);T.Text(A.Text,FLinearColor(.74f,.78f,.8f,1),9.f);}
     }
     else if(U.bHero&&U.Abilities.Num()>0)
     {
         FString List;for(const auto& A:U.Abilities)List+=(List.IsEmpty()?TEXT(""):TEXT(", "))+A.Name;
-        Rows.Add({FString(),4*S,FLinearColor::White,ECireFont::Body,2});
-        Wrap(TEXT("Abilities: ")+List,9.5f*S,FLinearColor(.72f,.76f,.78f,1),ECireFont::Body);
+        T.Divider();T.Text(TEXT("Abilities: ")+List,FLinearColor(.74f,.78f,.8f,1),9.5f);
     }
-    float H=2*Pad;for(const FRow& R:Rows)H+=R.Kind==1?R.Size+5*S:R.Size+4*S;
-    H=FMath::Min(H,ViewH-8);
-    const FCireUIRect Box=PlaceTooltip(W,H,Cursor);
-    ResetTransform();TooltipBox(Box.X,Box.Y,W,H,U.Class==3?Hostile*.9f:U.Class==2?WowGold*.85f:FLinearColor(.55f,.58f,.64f,1));
-    float Y=Box.Y+Pad;
-    for(const FRow& R:Rows)
-    {
-        if(Y+R.Size>Box.Y+H-Pad*.5f)break;
-        if(R.Kind==1)
-        {
-            const float HF=Frac(U.HP,U.MaxHP);
-            Panel(Box.X+Pad,Y,W-2*Pad,R.Size,FLinearColor(0,0,0,.9f));Panel(Box.X+Pad+1,Y+1,(W-2*Pad-2)*HF,R.Size-2,U.bDead?Muted:HealthGreen);
-            const FString T=FString::Printf(TEXT("%.0f / %.0f  (%.0f%%)"),U.HP,U.MaxHP,HF*100);
-            TextFx(T,Box.X+(W-TextWidthFont(T,9.5f*S,ECireFont::Numbers))*.5f,Y-S*.5f,9.5f*S,FLinearColor::White,ECireFont::Numbers,true,false);
-            Y+=R.Size+5*S;continue;
-        }
-        if(R.Kind!=2)TextFx(R.Text,Box.X+Pad,Y,R.Size,R.Color,R.Font,false,true);
-        Y+=R.Size+4*S;
-    }
-#if !UE_BUILD_SHIPPING
-    LastTooltipRect=Box;LastTooltipBodyLines=Rows.Num();LastTooltipBodyFontSize=10.5f*S;
-#endif
+    const float S=FMath::Clamp(UISettings.TooltipScale,.6f,1.4f)*1.25f;
+    ResetTransform();DrawRichTooltip(T,Cursor,300*S,false);
     return true;
 }
 

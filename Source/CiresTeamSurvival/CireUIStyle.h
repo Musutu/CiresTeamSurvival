@@ -57,6 +57,19 @@ namespace CireUIColors
 }
 
 /**
+ * readability: every canvas text size goes through ReadableSize: a global boost on the design size
+ * plus a floor, so small labels stay at or above ~12.75 px and body text (9+) at or above ~15.5 px
+ * at 1080p (100% interface scale). Both scale with the resolution and the Options UI-scale slider.
+ * Painter::Text / TextWidth / Fit / Wrapped apply it; layouts that step lines use ReadableSize too.
+ */
+namespace CireUIStyle
+{
+    inline constexpr float TextBoost = 1.15f;
+    inline constexpr float MinTextSize = 8.5f;
+    inline float ReadableSize(float Size) { return FMath::Max(Size * TextBoost, MinTextSize); }
+}
+
+/**
  * Canvas painter in logical units. Origin/Stretch map a panel's design space
  * onto its current layout rectangle; Alpha fades everything drawn.
  */
@@ -122,6 +135,49 @@ struct FCireBarTrail
 {
     float Shown = -1.f, Trail = -1.f;
     double DropTime = 0.0;
+};
+
+/** readability: one row of a rich (WoW-style) tooltip. */
+struct FCireTooltipRow
+{
+    enum class EKind : uint8 { Text, Pair, Header, Stat, Divider, Bar, Gap };
+    EKind Kind = EKind::Text;
+    FString Left, Right;
+    FLinearColor LeftColor = FLinearColor(.90f, .90f, .87f, 1.f), RightColor = FLinearColor(.90f, .90f, .87f, 1.f);
+    float Size = 0.f;      // design size before the tooltip scale (0 = body size)
+    float Fraction = 0.f;  // Bar fill
+    ECireFont Font = ECireFont::Body;
+};
+
+/**
+ * readability: a WoW-style tooltip: icon (painted art, sigil or champion portrait), name in its
+ * rarity / role / reaction colour, a tag ("Ultimate", "Legendary") and a type line, then rows split
+ * by ornamental dividers: text, left/right pairs (cost | range), section headers, symbol stat lines
+ * ("DEF +20%"), a health bar. Drawn by CireUIStyle::RichTooltip in the theme's tooltip frame.
+ */
+struct CIRESTEAMSURVIVAL_API FCireTooltipSpec
+{
+    UTexture2D* Icon = nullptr;
+    FString Sigil;                                  // procedural sigil when there is no painted icon
+    FLinearColor IconTint = CireUIColors::Gold;
+    ECireSlotKind IconKind = ECireSlotKind::Normal; // icon frame (ultimate / passive shapes)
+    FString PortraitId;                             // champion portrait (round) instead of an icon
+    FString Title;
+    FLinearColor TitleColor = FLinearColor(1.f, .86f, .3f, 1.f);
+    FString Tag;
+    FLinearColor TagColor = FLinearColor(.72f, .74f, .78f, 1.f);
+    FString Subtitle;
+    FLinearColor SubtitleColor = FLinearColor(.78f, .80f, .82f, 1.f);
+    FLinearColor Accent = FLinearColor(.55f, .58f, .64f, 1.f); // frame + title band tint
+    TArray<FCireTooltipRow> Rows;
+    FString Footer;
+
+    FCireTooltipSpec& Text(const FString& Text, FLinearColor Color = FLinearColor(.90f, .90f, .87f, 1.f), float Size = 0.f, ECireFont Font = ECireFont::Body);
+    FCireTooltipSpec& Pair(const FString& Left, const FString& Right, FLinearColor LeftColor = FLinearColor::White, FLinearColor RightColor = FLinearColor::White);
+    FCireTooltipSpec& Header(const FString& Text, FLinearColor Color);
+    FCireTooltipSpec& Stat(const FString& Text, FLinearColor Color = FLinearColor(.42f, 1.f, .48f, 1.f));
+    FCireTooltipSpec& Divider();
+    FCireTooltipSpec& Bar(float Fraction, const FString& Label, FLinearColor Color);
 };
 
 /** A transition banner (see CireBanners for the queue). */
@@ -218,4 +274,22 @@ namespace CireUIStyle
     CIRESTEAMSURVIVAL_API void RoundBar(const FCireUIPainter& P, float X, float Y, float W, float H, float Fraction, FLinearColor Color, float Trail = -1.f);
     /** True when the active theme has art loaded (painters use it). */
     CIRESTEAMSURVIVAL_API bool HasThemeArt();
+
+    // readability: rich tooltips, symbol stat lines and bevelled cards.
+    /** Draws (or measures, bDraw=false) a rich tooltip at X,Y of width W; returns its height. Scale multiplies
+     *  every size; MaxHeight (0 = none) drops trailing lines to fit; OutLines = text lines drawn. */
+    CIRESTEAMSURVIVAL_API float RichTooltip(const FCireUIPainter& P, float X, float Y, float W, const FCireTooltipSpec& Spec,
+        float Scale = 1.f, float Opacity = .94f, bool bDraw = true, float MaxHeight = 0.f, int32* OutLines = nullptr);
+    /** A plain title + body tooltip as a rich spec: stat lines ("+20 Attack", "DEF +20%") become coloured symbol
+     *  rows, "UNIQUE PASSIVE" / "ACTIVE" / "USE" paragraphs get section headers, blank lines dividers. */
+    CIRESTEAMSURVIVAL_API FCireTooltipSpec TooltipFromText(const FString& Title, const FString& Body);
+    CIRESTEAMSURVIVAL_API bool IsStatLine(const FString& Line);
+    /** Green for gains ("+"), red for losses ("-N"), gold otherwise. */
+    CIRESTEAMSURVIVAL_API FLinearColor StatColor(const FString& Line);
+    /** Filled rectangle with chamfered (bevelled) corners of size C, and its outline. */
+    CIRESTEAMSURVIVAL_API void Bevel(const FCireUIPainter& P, float X, float Y, float W, float H, float C, FLinearColor Color);
+    CIRESTEAMSURVIVAL_API void BevelOutline(const FCireUIPainter& P, float X, float Y, float W, float H, float C, FLinearColor Color, float Width = 1.f);
+    /** Bevelled item card: rarity glow, rarity metal rim, dark body washed in the rarity colour. */
+    CIRESTEAMSURVIVAL_API void BevelCard(const FCireUIPainter& P, float X, float Y, float W, float H, FLinearColor Rarity,
+        bool bHover = false, bool bSelected = false, bool bDim = false);
 }

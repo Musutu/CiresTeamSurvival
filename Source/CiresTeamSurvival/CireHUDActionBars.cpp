@@ -16,6 +16,7 @@
 #include "CireAbilityDB.h" // items-v2
 #include "CireSkillShop.h" // items-v2
 #include "CireShopUI.h"
+#include "CireScalingKits.h" // readability: tooltip scaling math
 #include "Engine/Canvas.h"
 #include "Engine/World.h"
 #include "InputCoreTypes.h"
@@ -109,8 +110,7 @@ bool ACireHUD::DrawActionButton(ACireHero* Hero, ACireController* Controller, in
         if (bOverItem)
         {
             HoverSlot = Action;
-            TooltipTitle = CireItems::DisplayName(ItemId) + TEXT("  (") + UISettings.Keybindings.FullLabel(Action) + TEXT(")");
-            TooltipBody = CireShopUI::ItemTooltip(ItemId) + (Cell == INDEX_NONE ? TEXT("\nNot in your bag.") : TEXT(""));
+            { FCireTooltipSpec Spec = CireShopUI::ItemTooltipSpec(ItemId, -1, Cell == INDEX_NONE ? TEXT("Not in your bag.") : TEXT("Click or press its key to use.")); Spec.Tag = UISettings.Keybindings.FullLabel(Action); SetRichTooltip(Spec); } // readability: rich item card
             if (!bQuickKeybind && Clicked && !bModal && !bSettings && !bEditLayout)
             {
                 DragSlot = Action; DragAbility = Id; DragStart = FVector2D(MX, MY); bBarDragging = false; bBarPressCandidate = true; Clicked = false;
@@ -255,9 +255,9 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
         const float BX = 12.f + I * 113.f, BY = 108.f, BW = 106.f, BH = 34.f;
         const bool bOver = Hit(BX, BY, BW, BH) && !bModal && !bSettings && !bEditLayout && !bQuickKeybind;
         const bool bOn = (I == 3 && bQuickKeybind) || (I == 0 && Controller && Controller->bShop);
-        CireUIStyle::Button(P, BX, BY, BW, BH, Micro[I].Caption, bOn ? ECireButtonState::Selected : bOver ? (PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton) ? ECireButtonState::Pressed : ECireButtonState::Hover) : ECireButtonState::Normal, Gold, 10.f);
+        CireUIStyle::Button(P, BX, BY, BW, BH, Micro[I].Caption, bOn ? ECireButtonState::Selected : bOver ? (PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton) ? ECireButtonState::Pressed : ECireButtonState::Hover) : ECireButtonState::Normal, Gold, 11.5f);
         const FString Key = Micro[I].Action.IsNone() ? FString() : UISettings.Keybindings.Label(Micro[I].Action);
-        if (!Key.IsEmpty()) P.Text(Key, BX + BW - 6 - P.TextWidth(Key, 8, ECireFont::Numbers), BY + 2, 8, Muted, ECireFont::Numbers);
+        if (!Key.IsEmpty()) { const float KW = P.TextWidth(Key, 8, ECireFont::Numbers) + 8; P.Rect(BX + BW - KW - 4, BY - 7, KW, 13, FLinearColor(0, 0, 0, .85f)); P.Line(BX + BW - KW - 4, BY - 7, BX + BW - 4, BY - 7, Gold * .8f, 1.f); P.Text(Key, BX + BW - KW, BY - 7.5f, 8, Parchment, ECireFont::Numbers, true, false); } // readability: key badge on the frame, clear of the label
         Tip(FString(Micro[I].Caption) + (Key.IsEmpty() ? FString() : TEXT("  (") + UISettings.Keybindings.FullLabel(Micro[I].Action) + TEXT(")")), Micro[I].Help, BX, BY, BW, BH);
         if (bOver && Clicked)
         {
@@ -340,11 +340,9 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
 void ACireHUD::DrawAbilityTooltip(const FString& Id, FVector2D Cursor)
 {
     auto* Hero = Cast<ACireHero>(PlayerOwner ? PlayerOwner->GetPawn() : nullptr);
-    const float S = FMath::Clamp(UISettings.TooltipScale, .6f, 1.4f) * 1.1f;
-    const float W = 300 * S, Pad = 10 * S;
-    FCireUIPainter P = Painter();
     const FString Name = ACireHero::SkillName(Id);
-    const FString Kind = ACireHero::IsUltimate(Id) ? TEXT("Ultimate") : ACireHero::IsPassive(Id) ? TEXT("Passive") : TEXT("Ability");
+    const bool bUlt = ACireHero::IsUltimate(Id), bPassive = ACireHero::IsPassive(Id);
+    const FString Kind = bUlt ? TEXT("Ultimate") : bPassive ? TEXT("Passive") : TEXT("Active");
     const FFacts F = AbilityFacts(Id);
     const auto D = CireTargeting::Describe(Id);
     const FLinearColor Tint = SchoolTint(Id, Name);
@@ -354,47 +352,51 @@ void ACireHUD::DrawAbilityTooltip(const FString& Id, FVector2D Cursor)
     const FString CastText = ACireHero::IsPassive(Id) ? FString(TEXT("Always active")) : F.Windup > .05f ? FString::Printf(TEXT("%.1f sec telegraph"), F.Windup) : FString(TEXT("Instant"));
     const float CDR = Hero ? Hero->CDR : 0.f;
     const FString CooldownText = F.Cooldown > 0 ? FString::Printf(TEXT("%.0f sec cooldown"), F.Cooldown * (1.f - CDR)) : FString();
+    // readability: rich WoW ability card: icon, name in its school colour (gold ultimate, silver passive),
+    // the type line (school, target, area / projectile), cost | range, cast | cooldown, the description,
+    // the scaling math with this hero's numbers, the effects as symbol lines, the Apotheosis upgrade.
     TArray<FString> TagList;
-    TagList.Add(D.Label.ToUpper());
-    TagList.Add(SchoolName(Tint).ToUpper());
-    if (D.bHasFootprint) TagList.Add(TEXT("AREA"));
-    if (D.bProjectile) TagList.Add(TEXT("PROJECTILE"));
-    const FString TagLine = FString::Join(TagList, TEXT("  /  "));
-    // Body wrap.
-    const float BS = 10.5f * S;
-    TArray<FString> Lines; {
-        FString Desc = ACireHero::SkillDescription(Id);
-        if (const FCireAbilityDef* Def = CireAbilityDB::Find(Id); Def && Def->Upgrade.bValid) // items-v2: what the Sigil of Apotheosis adds
-            Desc += FString::Printf(TEXT(" -- APOTHEOSIS (%s%s): %s"), *Def->Upgrade.Name, Hero && CireItems::TotalsOf(Hero).UltimateUpgrade ? TEXT(", active") : TEXT(", with Sigil of Apotheosis"), *Def->Upgrade.Text);
-        TArray<FString> Words; Desc.ParseIntoArrayWS(Words); FString Row;
-        for (const FString& Word : Words) { const FString Next = Row.IsEmpty() ? Word : Row + TEXT(" ") + Word; if (!Row.IsEmpty() && P.TextWidth(Next, BS, ECireFont::Body) > W - 2 * Pad) { Lines.Add(Row); Row = Word; } else Row = Next; }
-        if (!Row.IsEmpty()) Lines.Add(Row); }
-    const float TS = 15 * S, RS = 10.5f * S;
-    const float H = 2 * Pad + TS + 6 * S + 2 * (RS + 4 * S) + (RS + 6 * S) + Lines.Num() * (BS + 3 * S) + 8 * S + 9 * S;
-    const FCireUIRect Box = PlaceTooltip(W, H, Cursor);
-    ResetTransform(); P = Painter();
-    CireUIStyle::TooltipFrame(P, Box.X, Box.Y, W, H, ACireHero::IsUltimate(Id) ? BrightGold * .9f : FLinearColor(.55f, .58f, .64f, 1), UISettings.TooltipOpacity);
-    float Y = Box.Y + Pad;
-    auto TwoCol = [&](const FString& Left, const FString& Right, FLinearColor LC, FLinearColor RC, float Size)
-    {
-        P.Text(Left, Box.X + Pad, Y, Size, LC, ECireFont::Body);
-        if (!Right.IsEmpty()) P.Text(Right, Box.X + W - Pad - P.TextWidth(Right, Size, ECireFont::Body), Y, Size, RC, ECireFont::Body);
-        Y += Size + 4 * S;
-    };
-    P.Text(Name, Box.X + Pad, Y, TS, FLinearColor::White, ECireFont::Bold);
-    P.Text(Kind, Box.X + W - Pad - P.TextWidth(Kind, 10 * S, ECireFont::Heading), Y + 3 * S, 10 * S, ACireHero::IsUltimate(Id) ? BrightGold : Muted, ECireFont::Heading);
-    Y += TS + 6 * S;
+    TagList.Add(SchoolName(Tint));
+    TagList.Add(D.Label);
+    if (D.bHasFootprint) TagList.Add(TEXT("Area"));
+    if (D.bProjectile) TagList.Add(TEXT("Projectile"));
+    FCireTooltipSpec T;
+    T.Icon = CireUIStyle::FindAbilityIcon(Id); T.Sigil = Id; T.IconTint = Tint;
+    T.IconKind = bUlt ? ECireSlotKind::Ultimate : bPassive ? ECireSlotKind::Passive : ECireSlotKind::Normal;
+    T.Title = Name;
+    T.TitleColor = bUlt ? BrightGold : bPassive ? FLinearColor(.86f, .88f, .96f, 1) : FMath::Lerp(Tint, FLinearColor::White, .3f);
+    T.Tag = Kind.ToUpper(); T.TagColor = bUlt ? BrightGold : bPassive ? FLinearColor(.75f, .8f, .95f, 1) : FLinearColor(.8f, .82f, .86f, 1);
+    T.Subtitle = FString::Join(TagList, TEXT("  ·  "));
+    T.SubtitleColor = FMath::Lerp(Tint, FLinearColor(.85f, .85f, .85f, 1), .35f);
+    T.Accent = bUlt ? BrightGold * .9f : Tint * .8f;
     const bool bShort = Hero && ((NeedMana > 0 && Hero->Mana < NeedMana) || (NeedEnergy > 0 && Hero->Energy < NeedEnergy));
-    TwoCol(CostText, RangeText, bShort ? FLinearColor(1.f, .35f, .3f, 1) : FLinearColor::White, FLinearColor::White, RS);
-    TwoCol(CastText, CooldownText, FLinearColor::White, FLinearColor::White, RS);
-    P.Text(TagLine, Box.X + Pad, Y, 9 * S, Tint, ECireFont::Heading); Y += RS + 6 * S;
-    for (const FString& L : Lines) { P.Text(L, Box.X + Pad, Y, BS, FLinearColor(1.f, .82f, .35f, 1), ECireFont::Body); Y += BS + 3 * S; }
-    Y += 6 * S;
-    const FString Hint = UISettings.bLockActionBars ? TEXT("Shift-drag to move (bars locked)") : TEXT("Drag to move  /  drop on the world to remove");
-    P.Text(Hint, Box.X + Pad, Y, 8.5f * S, Muted, ECireFont::Body);
-#if !UE_BUILD_SHIPPING
-    LastTooltipRect = Box; LastTooltipBodyLines = Lines.Num(); LastTooltipBodyFontSize = BS;
-#endif
+    T.Pair(CostText, RangeText, bShort ? FLinearColor(1.f, .35f, .3f, 1) : FLinearColor(.72f, .84f, 1.f, 1), FLinearColor::White);
+    T.Pair(CastText, CooldownText, FLinearColor::White, FLinearColor::White);
+    T.Divider();
+    T.Text(ACireHero::SkillDescription(Id), FLinearColor(1.f, .84f, .4f, 1));
+    const FCireAbilityDef* Def = CireAbilityDB::Find(Id);
+    const FString Scaling = CireKits::ScalingLine(Hero, Id);
+    if (!Scaling.IsEmpty()) { T.Divider(); T.Header(TEXT("SCALING"), FLinearColor(.55f, .8f, 1.f, 1)); T.Stat(Scaling, FLinearColor(.6f, .86f, 1.f, 1)); }
+    if (Def)
+    {
+        bool bHeader = false;
+        for (const FCireAbilityEffect& E : Def->Effects)
+        {
+            if (E.Label.IsEmpty()) continue;
+            if (!bHeader) { T.Divider(); T.Header(TEXT("EFFECTS"), FLinearColor(1.f, .7f, .35f, 1)); bHeader = true; }
+            T.Stat(E.Duration > 0 ? FString::Printf(TEXT("%s  ·  %.1fs"), *E.Label, E.Duration) : E.Label, CireUIStyle::StatColor(E.Label));
+        }
+        if (Def->Upgrade.bValid) // items-v2: what the Sigil of Apotheosis adds
+        {
+            T.Divider();
+            T.Header(FString::Printf(TEXT("APOTHEOSIS  ·  %s"), *Def->Upgrade.Name.ToUpper()), BrightGold);
+            T.Text(Def->Upgrade.Text + (Hero && CireItems::TotalsOf(Hero).UltimateUpgrade ? TEXT("  (active)") : TEXT("  (with Sigil of Apotheosis)")), FLinearColor(1.f, .9f, .6f, 1), 10.f);
+        }
+    }
+    T.Footer = UISettings.bLockActionBars ? TEXT("Shift-drag to move (bars locked)") : TEXT("Drag to move  ·  drop on the world to remove");
+    const float S = FMath::Clamp(UISettings.TooltipScale, .6f, 1.4f) * 1.25f;
+    ResetTransform();
+    DrawRichTooltip(T, Cursor, 310 * S, false);
 }
 
 // ---------------------------------------------------------------------------
@@ -483,18 +485,18 @@ void ACireHUD::DrawKeybindingsPage(float L, float Top)
     for (int32 I = 0; I < 7; ++I)
     {
         const float BX = L + I * 90.f, BW = 86.f;
-        const bool bSel = KeybindCategory == I, bOver = Hit(BX, Top + 34, BW, 26);
-        CireUIStyle::Button(P, BX, Top + 34, BW, 26, CireKeybindings::CategoryName(Cats[I]).ToString().ToUpper(), bSel ? ECireButtonState::Selected : bOver ? ECireButtonState::Hover : ECireButtonState::Normal, Gold, 8.5f);
+        const bool bSel = KeybindCategory == I, bOver = Hit(BX, Top + 32, BW, 28);
+        CireUIStyle::Button(P, BX, Top + 32, BW, 28, CireKeybindings::CategoryName(Cats[I]).ToString().ToUpper(), bSel ? ECireButtonState::Selected : bOver ? ECireButtonState::Hover : ECireButtonState::Normal, Gold, 8.5f);
         if (bOver && Clicked) { KeybindCategory = I; Clicked = false; Keys.CancelCapture(); PlayUIFeedback(); }
     }
     // Column headers.
-    const float ListY = Top + 72, NameX = L + 10, PrimX = L + 300, SecX = L + 470, CellW = 158, RowH = 25;
-    P.Text(TEXT("ACTION"), NameX, ListY, 9, Muted, ECireFont::Heading);
-    P.Text(TEXT("PRIMARY"), PrimX + 8, ListY, 9, Muted, ECireFont::Heading);
-    P.Text(TEXT("SECONDARY"), SecX + 8, ListY, 9, Muted, ECireFont::Heading);
+    const float ListY = Top + 70, NameX = L + 10, PrimX = L + 300, SecX = L + 470, CellW = 158, RowH = 29; // readability: taller rows, big key labels
+    P.Text(TEXT("ACTION"), NameX, ListY - 2, 9.5f, Parchment * .8f, ECireFont::Heading, true, true);
+    P.Text(TEXT("PRIMARY"), PrimX + 8, ListY - 2, 9.5f, Parchment * .8f, ECireFont::Heading, true, true);
+    P.Text(TEXT("SECONDARY"), SecX + 8, ListY - 2, 9.5f, Parchment * .8f, ECireFont::Heading, true, true);
     TArray<const FCireActionInfo*> Rows;
     for (const FCireActionInfo& A : CireKeybindings::Actions()) if (A.Category == Cats[FMath::Clamp(KeybindCategory, 0, 6)]) Rows.Add(&A);
-    const int32 Visible = 12;
+    const int32 Visible = 11;
     KeybindScroll = FMath::Clamp(KeybindScroll, 0, FMath::Max(0, Rows.Num() - Visible));
     CireUIStyle::Frame(P, L, ListY + 16, 632, Visible * RowH + 8, Gold, ECireFrame::Inset);
     for (int32 R = 0; R < FMath::Min(Visible, Rows.Num() - KeybindScroll); ++R)
@@ -510,7 +512,7 @@ void ACireHUD::DrawKeybindingsPage(float L, float Top)
                 const FString Id = CireKeybindings::SlotAbilityId(Keys, *Hero, A.Id);
                 if (!Id.IsEmpty()) Name += TEXT("  -  ") + ACireHero::SkillName(Id);
             }
-        P.Text(Name, NameX, Y + 5, 10.5f, Parchment, ECireFont::Body);
+        P.Text(P.Fit(Name, 11.f, PrimX - NameX - 12, ECireFont::Body), NameX, Y + (RowH - CireUIStyle::ReadableSize(11.f) * 1.28f) * .5f, 11.f, Parchment, ECireFont::Body, false, true);
         for (int32 Index = 0; Index < 2; ++Index)
         {
             const float CX = Index ? SecX : PrimX;
@@ -521,7 +523,7 @@ void ACireHUD::DrawKeybindingsPage(float L, float Top)
             const FName Conflict = Chord.IsBound() ? Keys.FindConflict(Chord, A.Id, Index, &ConflictIndex) : NAME_None;
             const FString Text = bCapturing ? FString(TEXT("Press a key...")) : Chord.IsBound() ? Chord.LongLabel() : FString(TEXT("\u2014"));
             CireUIStyle::Button(P, CX, Y + 2, CellW, RowH - 4, Text, bCapturing ? ECireButtonState::Selected : bOver ? ECireButtonState::Hover : ECireButtonState::Normal,
-                !Conflict.IsNone() ? FLinearColor(1.f, .35f, .3f, 1) : Chord.IsBound() ? Gold : Muted, 9.5f);
+                !Conflict.IsNone() ? FLinearColor(1.f, .35f, .3f, 1) : Chord.IsBound() ? Gold : Muted, 13.f);
             if (!Conflict.IsNone()) Tip(TEXT("Key conflict"), Chord.LongLabel() + TEXT(" is also bound to ") + QuickActionName(Conflict) + TEXT("."), CX, Y + 2, CellW, RowH - 4);
             else Tip(A.DisplayName.ToString(), TEXT("Click, then press a key or chord. Esc cancels; Backspace, Delete or right-click clears it (an action may have no key). A key already used elsewhere is taken from that action, leaving it unbound."), CX, Y + 2, CellW, RowH - 4);
             if (bOver && Clicked) { Keys.BeginCapture(A.Id, Index); Clicked = false; PlayUIFeedback(); }

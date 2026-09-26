@@ -34,6 +34,9 @@ namespace CireShopUI
         const FString& Key = FString(), bool bDim = false);
     CIRESTEAMSURVIVAL_API FString ItemTooltip(FName ItemId, int32 PriceForYou = -1);
     CIRESTEAMSURVIVAL_API FString StatLines(FName ItemId);
+    /** readability: the rich item tooltip card, and Tip() with it (Extra = footer hint). */
+    CIRESTEAMSURVIVAL_API FCireTooltipSpec ItemTooltipSpec(FName ItemId, int32 PriceForYou = -1, const FString& Extra = FString());
+    CIRESTEAMSURVIVAL_API void TipItem(ACireHUD& HUD, FName ItemId, int32 PriceForYou = -1, const FString& Extra = FString());
 
 #if !UE_BUILD_SHIPPING
     // Gallery/test hooks: select an item, choose a category, and inject feedback moments.
