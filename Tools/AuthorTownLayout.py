@@ -22,7 +22,23 @@ DATA = ROOT / "Content/Data"
 MESHES = json.loads((ROOT / "Art/Environment/Town/Meshes/TownMeshes.json").read_text())["meshes"]
 IMPORT = json.loads((ROOT / "Art/Environment/Town/ImportReport.json").read_text())
 ROUTES = json.loads((DATA / "BattlefieldRoutes.json").read_text())
-ROUTE = [tuple(p) for p in ROUTES["lanes"][0]["points"]]
+# world-scale (September 25): the realm is three times as long. The castle end (goal, hero base, bailey) and the
+# original market / lanes / square keep their coordinates; the old gate road, town wall and breach move out by
+# GATE_SHIFT and seven new districts fill the gap. This script now owns the route and writes BattlefieldRoutes.json
+# (CireLanePath::TownDefaults must match it: the native checks compare the two).
+GATE_SHIFT = 30700
+ROUTE = [(12500 + GATE_SHIFT, 0), (10800 + GATE_SHIFT, 0), (10100 + GATE_SHIFT, -550),   # breach -> outer gate -> gate road
+         (39300, -550), (38000, 450), (36500, 700), (35200, -250),                       # Brookfield hamlet
+         (33600, -700), (32000, -700), (30600, 300),                                      # the outer farmsteads
+         (29200, 650), (27700, 650), (26300, -450), (25000, -450),                         # tanners' yard
+         (24300, 0), (22700, 0),                                                           # through the old wall
+         (21300, -600), (19700, -600), (18300, 550),                                       # weavers' lanes
+         (16900, 550), (15500, -250), (14000, -250),                                       # the temple green
+         (12900, 500), (11400, 500), (10000, -450),                                        # guildhall row
+         (8700, -550), (7400, 500), (5800, 500), (4700, -550), (3300, -550), (2400, 500), (1000, 500), (0, 0), (-1850, 0)]
+ROUTES["bounds"]["maxX"] = 13000 + GATE_SHIFT
+for _lane in ROUTES["lanes"]:
+    _lane["points"] = [list(p) for p in ROUTE]
 HW = ROUTES["bounds"]["halfWidth"]
 MAXX = ROUTES["bounds"]["maxX"]
 # nav-paths: the route margin follows the editable lane width (half the road + 70 cm; 330 at the default 520).
@@ -61,9 +77,11 @@ SLOTS = {}
 
 
 def mesh_slot(sid, mesh, fallback=None, footprint=None, collision=True, clearance="route", light=None, shadow=True, parts=None,
-              fit=None, note=None, fallback_parts=None):
+              fit=None, note=None, fallback_parts=None, cull=None):
     # "fallback" keeps the legacy/engine mesh as the last resort; overlays add higher-priority candidates.
     s = {"mesh": mesh}
+    if cull:
+        s["cullDistance"] = cull  # world-scale: HISM cull distance [start, end] cm
     if parts:
         s["parts"] = parts
     if fit:
@@ -171,6 +189,11 @@ mesh_slot("boulder", ph("boulder_01", "boulder_01_1k"), fit="footprint", footpri
 for i in range(1, 7):
     e = ph_extent("rock_moss_set_01", f"rock_moss_set_01_rock0{i}")
     mesh_slot(f"rock_{i}", ph("rock_moss_set_01", f"rock_moss_set_01_rock0{i}"), fit="footprint", footprint=[e[0] * 2, e[1] * 2, e[2] * 2])
+# world-scale (vibrant): the scaled backdrop hills and field rocks wear the world-aligned mossy-rock blend (grey rock, green
+# moss on up-facing slopes) instead of the small moss-rock scan texture that read as orange sandstone when scaled up 7-16x.
+MOSSY = "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
+for _sid in ["boulder"] + [f"rock_{i}" for i in range(1, 7)]:
+    SLOTS[_sid]["materialOverride"] = MOSSY
 for i, sub in enumerate(("a", "b", "c", "d"), 1):
     e = ph_extent("shrub_02", f"shrub_02_{sub}")
     mesh_slot(f"shrub_{i}", ph("shrub_02", f"shrub_02_{sub}"), fit="footprint", footprint=[e[0] * 2, e[1] * 2, e[2] * 2], collision=False, clearance="bays")
@@ -179,12 +202,48 @@ for i, sub in enumerate(("b", "c"), 1):
     mesh_slot(f"fern_{i}", ph("fern_02", f"fern_02_{sub}"), fit="footprint", footprint=[e[0] * 2, e[1] * 2, e[2] * 2], collision=False, clearance="bays")
 mesh_slot("tree", ph("island_tree_02", "island_tree_02_1k"), fit="footprint", footprint=[420, 410, 340], collision=False, clearance="bays")
 SLOTS["tree"]["materialOverride"] = "/Game/Environment/Town/Materials/MI_Town_Bark.MI_Town_Bark"  # leafless, bark-textured: a dead town tree
+# world-scale: countryside, farm and park slots for the new districts. Every slot has committed CC0 / original art;
+# Tools/BuildFabWorldSlots.py adds the purchased Medieval Kingdom meshes over them (local-only overlay).
+AK = "/Game/Arenas/Meshes/"
+AP = "/Game/Arenas/Props/"
+ATREE = lambda n: f"/Game/Arenas/Trees/{n}/SM_{n}.SM_{n}"
+
+
+def arena_kit(sid, name, size, collision=True, clearance="route", shadow=True, cull=None, note=None):
+    mesh_slot(sid, f"{AK}{name}.{name}", footprint=[round(v) for v in size], fit="footprint", collision=collision, clearance=clearance,
+              shadow=shadow, cull=cull, note=note)
+
+
+mesh_slot("tree_leafy", ATREE("island_tree_01"), fit="footprint", footprint=[760, 760, 1150], collision=False, clearance="bays",
+          cull=[30000, 36000], note="Leafy broadleaf tree (CC0 Poly Haven island_tree_01); the Fab overlay swaps in a European beech.")
+mesh_slot("tree_young", ATREE("tree_small_02"), fit="footprint", footprint=[480, 560, 820], collision=False, clearance="bays", cull=[26000, 32000])
+mesh_slot("tree_fir", ATREE("tree_small_02"), fit="footprint", footprint=[520, 560, 1300], collision=False, clearance="bays", cull=[30000, 36000],
+          note="Conifer slot; the CC0 fallback is the small broadleaf, the Fab overlay swaps in a silver fir.")
+mesh_slot("grass_clump", f"{AP}grass_medium_02/grass_medium_02_1k/StaticMeshes/grass_medium_02_e.grass_medium_02_e", collision=False,
+          shadow=False, cull=[5000, 6500], fit="footprint", footprint=[40, 44, 40])
+mesh_slot("wildflowers", f"{AP}wild_rooibos_bush/wild_rooibos_bush_1k/StaticMeshes/wild_rooibos_bush_a.wild_rooibos_bush_a", collision=False,
+          shadow=False, cull=[5000, 6500], fit="footprint", footprint=[70, 84, 54])
+arena_kit("wheat", "SM_Arena_WheatClump", (104, 110, 139), collision=False, shadow=False, cull=[7000, 9000])
+arena_kit("hay_round", "SM_Arena_HayBaleRound", (161, 156, 161))
+arena_kit("hay_bale_stack", "SM_Arena_HayStack", (122, 340, 228))
+arena_kit("stook", "SM_Arena_Stook", (81, 121, 153), collision=False, cull=[9000, 12000])
+arena_kit("scarecrow", "SM_Arena_Scarecrow", (68, 190, 236), collision=False, cull=[9000, 12000])
+arena_kit("hay_wagon", "SM_Arena_HayWagon", (557, 240, 276))
+arena_kit("barn", "SM_Arena_Barn", (1500, 1040, 998))
+arena_kit("windmill", "SM_Arena_Windmill", (870, 860, 1700))
+arena_kit("windmill_sails", "SM_Arena_WindmillSails", (60, 2226, 2226), collision=False, clearance="none")
+arena_kit("field_wall", "SM_Arena_StoneWall", (76, 401, 148))
+_rock = ph("rock_moss_set_01", "rock_moss_set_01_rock02")
+mesh_slot("mountain", _rock, fit="footprint", footprint=[30000, 30000, 9000], collision=False, clearance="none",
+          note="Backdrop mountain; CC0 fallback is a scaled moss rock, the Fab overlay swaps in the Medieval Kingdom mountains.")
+SLOTS["mountain"]["component"] = "static"  # plain mesh components: the Fab mountain materials cannot draw on instanced meshes
+SLOTS["mountain"]["materialOverride"] = "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
 # Material slots. World-space surfaces (road, plazas, ground) are drawn on scaled engine cubes: replacements
 # must be world-aligned or they will stretch. Mesh-slot materials swap that material slot on every town mesh.
 MAT = "/Game/Environment/Town/Materials/"
 for sid, mi, mesh_slot_name in (
         ("cobblestone_material", "MI_TownW_Cobble", None), ("plaza_material", "MI_TownW_Plaza", None),
-        ("ground_material", "MI_TownW_Ground", None), ("field_material", "MI_TownW_Field", None),
+        ("ground_material", "MI_TownW_Ground", None), ("field_material", "MI_TownW_Field", None), ("meadow_material", "MI_TownW_Meadow", None),
         ("flagstone_material", "MI_TownW_Flagstone", None), ("castle_material", "MI_TownW_CastleW", None),
         ("stone_material", "MI_TownW_StoneW", None),
         ("cliff_material", "MI_TownW_CliffW", None),
@@ -291,6 +350,10 @@ def valid(sid, x, y, yaw, scale, mode):
             if inside(sid, x, yy, yaw if (mode is None or yy > 0) else -yaw, scale, b[0], b[1], BAY_MARGIN):
                 return "bay"
         if cl == "route":
+            x0, y0, x1, y1 = slot_box(sid)
+            reach = max(math.hypot(px, py) for px in (x0, x1) for py in (y0, y1)) * scale
+            if route_dist(x, yy) > reach + ROUTE_MARGIN + 5:  # world-scale: cheap reject before sampling the long route
+                continue
             for (ax, ay), (bx, by) in zip(ROUTE, ROUTE[1:]):
                 n = max(1, int(math.dist((ax, ay), (bx, by)) // 40))
                 for k in range(n + 1):
@@ -388,12 +451,21 @@ def along(a, b, t):
 
 
 # ================================================================== LAYOUT
+# "style" drives the dressing fill pass (Tools/AuthorWorldDressing.py); the runtime reads id/name/minX/maxX only.
+S = GATE_SHIFT
 DISTRICTS = [
-    {"id": "breach", "name": "The Breach Fields", "minX": 11550, "maxX": 30000},
-    {"id": "gate", "name": "Gate Road", "minX": 8900, "maxX": 11550},
-    {"id": "market", "name": "Market District", "minX": 5600, "maxX": 8900},
-    {"id": "residential", "name": "Cooper's Lanes", "minX": 3000, "maxX": 5600},
-    {"id": "square", "name": "Town Square", "minX": 300, "maxX": 3000},
+    {"id": "breach", "name": "The Breach Fields", "minX": 11550 + S, "maxX": 80000, "style": "breach"},
+    {"id": "gate", "name": "Gate Road", "minX": 8900 + S, "maxX": 11550 + S, "style": "market"},
+    {"id": "hamlet", "name": "Brookfield Hamlet", "minX": 35500, "maxX": 8900 + S, "style": "yard"},
+    {"id": "farms", "name": "The Outer Farmsteads", "minX": 29500, "maxX": 35500, "style": "farm"},
+    {"id": "tanners", "name": "Tanners' Yard", "minX": 24500, "maxX": 29500, "style": "yard"},
+    {"id": "oldwall", "name": "The Old Wall", "minX": 22500, "maxX": 24500, "style": "wall"},
+    {"id": "weavers", "name": "Weavers' Lanes", "minX": 17500, "maxX": 22500, "style": "yard"},
+    {"id": "green", "name": "The Temple Green", "minX": 13500, "maxX": 17500, "style": "square"},
+    {"id": "guild", "name": "Guildhall Row", "minX": 8900, "maxX": 13500, "style": "market"},
+    {"id": "market", "name": "Market District", "minX": 5600, "maxX": 8900, "style": "market"},
+    {"id": "residential", "name": "Cooper's Lanes", "minX": 3000, "maxX": 5600, "style": "yard"},
+    {"id": "square", "name": "Town Square", "minX": 300, "maxX": 3000, "style": "square"},
     {"id": "approach", "name": "Castle Approach", "minX": -1450, "maxX": 300},
     {"id": "castle", "name": "Castle Bailey", "minX": -30000, "maxX": -1450},
 ]
@@ -486,56 +558,183 @@ for k in range(10):
 for x in (5750, 8550):
     for s in (-1, 1):
         put("banner", x, 500 + s * 520 if x < 7000 else -550 + s * 520, 90 * -s, quiet=True)
-# ---- gate road: watchtower, guard warehouse, barricades
-put("watchtower", 10450, 1050, -90, reserve=True)
-put("barricade", 10500, -1150, 90)
-put("barricade", 9300, -1150, 80)
-put("fire_pit", 10850, 1000, 0)
-put("crate", 10000, -1100, 0)
-put("crate_long", 10100, -1150, 90)
-put("barrel_stack", 9500, 1150, 180, quiet=True)
+# ---- gate road (world-scale: moved out by GATE_SHIFT with the town wall and the breach): watchtower, barricades
+put("watchtower", 10450 + S, 1050, -90, reserve=True)
+put("barricade", 10500 + S, -1150, 90)
+put("barricade", 9300 + S, -1150, 80)
+put("fire_pit", 10850 + S, 1000, 0)
+put("crate", 10000 + S, -1100, 0)
+put("crate_long", 10100 + S, -1150, 90)
+put("barrel_stack", 9500 + S, 1150, 180, quiet=True)
 # ---- town wall + gatehouse; breach fields beyond
-put("gatehouse", 11400, 0, 0, reserve=True)
+put("gatehouse", 11400 + S, 0, 0, reserve=True)
 for s in (-1, 1):
-    put("wall_section", 11400, s * 1500, 0, reserve=True)
+    put("wall_section", 11400 + S, s * 1500, 0, reserve=True)
 for y in (2500, 3500):
-    put("wall_section", 11400, y, 0, mode="outer")
-put("wall_tower", 11400, 3000, 0, mode="outer")
+    put("wall_section", 11400 + S, y, 0, mode="outer")
+put("wall_tower", 11400 + S, 3000, 0, mode="outer")
 fr = random.Random(99)
 for k in range(46):
     x = fr.uniform(11800, 15600)
-    y = fr.uniform(-HW + 100, HW - 100) if x < MAXX else fr.uniform(-1900, 1900)
+    y = fr.uniform(-HW + 100, HW - 100) if x + S < MAXX else fr.uniform(-1900, 1900)
     kind = fr.choice(["rock_1", "rock_2", "rock_3", "rock_4", "rock_5", "rock_6", "boulder", "fallen_log", "stump", "shrub_4", "rock_2", "boulder"])
-    scale = fr.uniform(1.0, 2.2) if x < MAXX else fr.uniform(2.2, 4.5)
-    put(kind, x, y, fr.uniform(0, 360), scale, quiet=True)
+    scale = fr.uniform(1.0, 2.2) if x + S < MAXX else fr.uniform(2.2, 4.5)
+    put(kind, x + S, y, fr.uniform(0, 360), scale, quiet=True)
 for x, y, yaw in ((12000, -900, 30), (12200, 1050, -20)):
-    put("barricade", x, y, yaw)
-put("gibbet", 11900, 1150, 200)
-put("cart", 12300, -1150, 150)
-put("fire_pit", 11800, -1100, 0)
-put("fire_pit", 11850, 1000, 0)
-# ---- rocky hills beyond the town walls and behind the castle (backdrop only, outer side)
+    put("barricade", x + S, y, yaw)
+put("gibbet", 11900 + S, 1150, 200)
+put("cart", 12300 + S, -1150, 150)
+put("fire_pit", 11800 + S, -1100, 0)
+put("fire_pit", 11850 + S, 1000, 0)
+
+# ================================================================== world-scale: the seven new districts
+wr = random.Random(2509)
+
+
+def around(x0, x1, y0, y1, n, pool, scale=(1, 1), seed=0, mode=None, yaw=None):
+    """Scatter n pieces from pool in a rectangle (every row still passes the clearance rules)."""
+    r = random.Random(seed)
+    for _ in range(n):
+        x, y = r.uniform(x0, x1), r.uniform(y0, y1)
+        if mode is None and route_dist(x, y) < ROUTE_MARGIN + 80:
+            continue  # never on the march road, even for pieces whose slot only keeps bay clearance (shrubs, ferns)
+        put(r.choice(pool), x, y, r.uniform(0, 360) if yaw is None else yaw, r.uniform(*scale), mode=mode, quiet=True)
+
+
+def lane_house(sid, x, side, inset=150):
+    """A house pushed into the lane on one side (its facade toward the road, like Cooper's Lanes)."""
+    w, front, depth = width_of(sid)
+    return put(sid, x, side * (inset + front), facing_street(side), reserve=True, check_overlap=True, quiet=True)
+
+
+# ---- Guildhall Row (8900..13500): guild houses, a smithy yard and a flagstone guild plaza
+put("tavern", 12050, -1420, 90, reserve=True, check_overlap=True)      # the guildhall on the plaza
+put("market_hall", 10600, -1050, 0, reserve=True, check_overlap=True, quiet=True)
+for x, y in ((9600, 700), (9900, 900)):
+    put("fire_pit", x, y, 0, quiet=True)                                   # the smithy forges
+put("woodpile", 9300, 1100, 0, quiet=True)
+put("barrel_stack", 9500, -1100, 90, quiet=True)
+for x, y in ((10300, 1150), (12600, -900), (13200, -1100)):
+    put(wr.choice(["crate", "crate_long", "barrel_wine", "hay_sacks"]), x, y, wr.uniform(0, 360), quiet=True)
+put("cart", 12400, 1150, 190, quiet=True)
+put("statue", 11200, -1000, 20, scale=1.15)
+for x in (10700, 12700):
+    for s in (-1, 1):
+        put("banner", x, s * 1100, 90 * -s, quiet=True)
+put("well", 12950, 1150, 30, quiet=True)
+# ---- The Temple Green (13500..17500): a park with the fountain, leafy trees, flower beds and statues
+put("fountain", 15300, 850, 0, reserve=True)
+put("chapel", 16800, -1350, 0, reserve=True, check_overlap=True, quiet=True)
+for x, y, sc in ((13900, 1000, 1.2), (14600, 1250, 1.0), (16200, 1200, 1.1), (14200, -1150, 1.15), (15200, -1200, .95), (17200, -700, 1.0)):
+    put("tree_leafy", x, y, wr.uniform(0, 360), sc, quiet=True)
+for x, y in ((14700, 700), (16000, 700), (15300, 1350)):
+    put("statue", x, y, wr.uniform(0, 360), scale=1.1, quiet=True)
+around(13600, 17400, -1300, 1300, 90, ["shrub_1", "shrub_2", "shrub_3", "shrub_4", "fern_1", "fern_2", "wildflowers", "wildflowers"], (1.0, 1.8), 31)
+for x in (13700, 17300):
+    for s in (-1, 1):
+        put("banner", x, s * 1150, 90 * -s, quiet=True)
+for x, y in ((14300, 300), (16400, -700)):
+    put("table", x, y, wr.uniform(0, 360), quiet=True)
+    put("stool", x + 60, y + 60, 0, quiet=True)
+# ---- Weavers' Lanes (17500..22500): a tight S-bend between houses pushed into the lane
+for x in (19200, 20000, 20800, 21600):
+    lane_house(wr.choice(["cottage_thatch", "cottage_slate", "house_planks"]), x, 1, inset=60)
+for x in (17800, 18500):
+    lane_house(wr.choice(["cottage_slate", "house_planks"]), x, -1, inset=100)
+for x in (19000, 20400, 21700):
+    put("fence", x, -1150, 0, quiet=True)
+around(17600, 22400, -1300, 1300, 40, ["woodpile", "hay_sacks", "barrel", "crate", "bucket", "basket", "stump", "shrub_2", "fern_1"], (.8, 1.1), 32)
+put("well", 19600, 900, 15, quiet=True)
+put("tree_leafy", 18100, -1100, 20, 1.0, quiet=True)
+put("tree_young", 22100, 1150, 50, 1.0, quiet=True)
+# ---- The Old Wall (22500..24500): the original town wall, its gate long gone: towers flank the road
+for s in (-1, 1):
+    put("wall_tower", 23500, s * 1050, 0, reserve=True)
+    put("wall_section", 23500, s * 1560, 0, reserve=True, quiet=True)
+    put("banner", 23150, s * 700, 90 * -s, quiet=True)
+    put("banner", 23850, s * 700, 90 * -s, quiet=True)
+    put("barricade", 22900, s * 1250, 90 + s * 20, quiet=True)
+    put("fire_pit", 24050, s * 1000, 0, quiet=True)
+for y in (2500, 3500):
+    put("wall_section", 23500, y, 0, mode="outer")
+put("wall_tower", 23500, 3000, 0, mode="outer")
+around(22600, 24400, -1300, 1300, 16, ["rock_2", "rock_5", "crate", "fallen_log", "shrub_4"], (.8, 1.3), 33)
+# ---- Tanners' Yard (24500..29500): sheds, drying racks (fences), hides and hay, workshops
+for x, s in ((25300, 1), (26500, 1), (28200, -1), (29000, -1)):
+    lane_house(wr.choice(["warehouse", "house_planks"]), x, s, inset=250)
+for x in (25600, 26600, 27600, 28500):
+    put("fence", x, -1150, 0, quiet=True)
+    put("fence", x + 150, 1200, 0, quiet=True)
+around(24600, 29400, -1300, 1300, 55, ["hay_sacks", "woodpile", "barrel", "barrel_wine", "crate", "crate_long", "bucket", "ladder", "cart"], (.9, 1.1), 34)
+for x, y in ((25900, -1000), (28800, 1050)):
+    put("fire_pit", x, y, 0, quiet=True)
+put("tree_leafy", 27200, -1150, 70, 1.1, quiet=True)
+# ---- The Outer Farmsteads (29500..35500): farmhouses, a barn, wheat fields, bales and stooks, dry-stone walls
+put("barn", 31200, 1250, 0, reserve=True, check_overlap=True, quiet=True)
+put("windmill", 34300, 1150, 200, reserve=True, quiet=True)
+put("windmill_sails", 34300 + math.cos(math.radians(200)) * 440, 1150 + math.sin(math.radians(200)) * 440, 200, z=1460, quiet=True)
+for x, s in ((30000, -1), (33000, 1), (35000, -1)):
+    lane_house(wr.choice(["cottage_thatch", "cottage_slate"]), x, s, inset=300)
+for x in range(29700, 35400, 420):
+    put("field_wall", x, -1350, 0, quiet=True)
+    put("field_wall", x + 200, 1380, 0, quiet=True)
+around(29600, 35400, -1300, 1300, 36, ["hay_round", "hay_round", "stook", "stook", "hay_bale_stack", "scarecrow"], (.9, 1.2), 35)
+put("hay_wagon", 32600, -1100, 20, quiet=True)
+for x, y in ((29900, 1150), (32300, -1250), (34800, -1200)):
+    put("tree_leafy", x, y, wr.uniform(0, 360), 1.2, quiet=True)
+# ---- Brookfield Hamlet (35500..39600): cottages round a green with a well, gardens and an orchard
+for x, s in ((36000, 1), (36900, -1), (37600, 1), (38400, -1), (39100, 1)):
+    lane_house(wr.choice(["cottage_thatch", "cottage_slate", "house_c", "house_a"]), x, s, inset=250)
+put("well", 37200, -900, 0, quiet=True)
+for x in range(35700, 39500, 520):
+    put("tree_young", x, 1250 if (x // 520) % 2 else -1250, wr.uniform(0, 360), wr.uniform(.8, 1.1), quiet=True)
+around(35600, 39500, -1300, 1300, 40, ["shrub_1", "shrub_3", "fern_1", "wildflowers", "wildflowers", "woodpile", "hay_sacks", "bucket", "stump"], (.9, 1.6), 36)
+for x in (36300, 38000):
+    put("fence", x, 1000, 90, quiet=True)
+    put("fence", x + 420, 1000, 90, quiet=True)
+
+# ---- rocky hills and forests beyond the walls, mountains on the horizon (backdrop only, outer side)
 hr = random.Random(1234)
-for k in range(34):
-    x = hr.uniform(-6500, 16500)
+for k in range(90):
+    x = hr.uniform(-6500, 47500)
     y = hr.uniform(5200, 9000)
     put(hr.choice(["rock_1", "rock_2", "rock_4", "rock_6", "boulder"]), x, y, hr.uniform(0, 360), hr.uniform(7, 16), mode="outer", quiet=True)
 for k in range(10):
     put(hr.choice(["rock_1", "rock_4", "boulder"]), hr.uniform(-7500, -5200), hr.uniform(-1800, 1800), hr.uniform(0, 360), hr.uniform(6, 12), quiet=True)
-    put(hr.choice(["rock_2", "rock_6", "boulder"]), hr.uniform(16200, 19000), hr.uniform(-1800, 1800), hr.uniform(0, 360), hr.uniform(6, 12), quiet=True)
+    put(hr.choice(["rock_2", "rock_6", "boulder"]), hr.uniform(16200, 19000) + S, hr.uniform(-1800, 1800), hr.uniform(0, 360), hr.uniform(6, 12), quiet=True)
 for k in range(14):
     put("tree", hr.uniform(-2500, 15000), hr.uniform(4400, 5200), hr.uniform(0, 360), hr.uniform(2.0, 3.2), mode="outer", quiet=True)
+# the outer ward and the countryside beyond the town wall: leafy woods and firs (outer side)
+for k in range(150):
+    x = hr.uniform(15000, 46000)
+    put(hr.choice(["tree_leafy", "tree_leafy", "tree_fir", "tree_young"]), x, hr.uniform(4400, 8200), hr.uniform(0, 360), hr.uniform(.9, 1.6), mode="outer", quiet=True)
+for k in range(16):  # a mountain range well beyond the woods, on the horizon of each realm's outer side
+    put("mountain", -14000 + k * 4600 + hr.uniform(-800, 800), hr.uniform(22000, 30000), hr.uniform(0, 360), hr.uniform(1.0, 1.5), mode="outer", quiet=True)
+for x in (-16000, 60000):  # and behind the castle and past the breach
+    for y in (3000, 16000):
+        put("mountain", x + hr.uniform(-2000, 2000), y, hr.uniform(0, 360), hr.uniform(1.0, 1.3), mode="outer", quiet=True)
 # ---- street rows along both realm edges (shallow enough for the divider side)
 SHALLOW = ["house_a", "house_c", "house_planks", "cottage_thatch", "cottage_slate"]
 for side, seed in ((1, 11), (-1, 23)):
     for (a, b) in ((300, 3000), (3000, 5600), (5600, 8900), (8900, 11000)):
         street_row(a, b, side, SHALLOW, seed + a, facade=1250)
-# Deeper, taller second rows on each team's outer side form the skyline.
+    # world-scale: the new town districts inside the old wall get their street fronts too
+    for (a, b) in ((11000, 13500), (17500, 22400)):
+        street_row(a, b, side, SHALLOW, seed + a, facade=1250)
+    street_row(8900 + S, 11000 + S, side, SHALLOW, seed + 8900, facade=1250)   # the shifted gate road keeps its houses
+    street_row(35600, 39500, side, ["cottage_thatch", "cottage_slate", "house_c", "house_a"], seed + 35600, facade=1250, gap=(260, 700))  # hamlet
+    street_row(24600, 29400, side, ["warehouse", "house_planks", "cottage_slate"], seed + 24600, facade=1250, gap=(300, 900))  # tanners
+# Deeper, taller second rows on each team's outer side form the skyline (now all the way to the old wall).
 DEEP = ["tavern", "house_b", "house_shop", "townhouse_row", "townhouse_row_b", "warehouse"]
-street_row(300, 11000, 1, DEEP, 5, facade=2150, mode="outer", gap=(20, 90), lanterns=False, clutter=False)
-street_row(-2000, 11000, 1, ["townhouse_row", "townhouse_row_b", "house_b", "tavern"], 6, facade=3150, mode="outer", gap=(0, 60), lanterns=False, clutter=False)
-for x in range(-2000, 11400, 1000):
+street_row(300, 22400, 1, DEEP, 5, facade=2150, mode="outer", gap=(20, 90), lanterns=False, clutter=False)
+street_row(-2000, 22400, 1, ["townhouse_row", "townhouse_row_b", "house_b", "tavern"], 6, facade=3150, mode="outer", gap=(0, 60), lanterns=False, clutter=False)
+# beyond the old wall the outer side opens into farmsteads: scattered cottages and barns
+for x in range(25000, 41000, 1900):
+    put(wr.choice(["cottage_thatch", "cottage_slate", "house_planks"]), x + wr.uniform(-300, 300), 2900 + wr.uniform(-200, 400), -90, mode="outer", quiet=True)
+for x in range(-2000, 11400 + S, 1000):
     put("wall_section", x, 4150, 90, mode="outer", quiet=True)
+for x in range(3000, 11400 + S, 5000):
+    put("wall_tower", x, 4150, 0, mode="outer", quiet=True)
 # ---- lamps along the march road (alternating sides, skipping gate passages)
 dist = 0.0
 side = 1
@@ -546,12 +745,54 @@ for a, b in zip(ROUTE, ROUTE[1:]):
         px, py = along(a, b, t / seg)
         nx, ny = -(b[1] - a[1]) / seg, (b[0] - a[0]) / seg
         lx, ly = px + nx * side * 430, py + ny * side * 430
-        if not (10900 < lx < 12150 or -1700 < lx < -150):
+        if not (10900 + S < lx < 12150 + S or 23000 < lx < 24000 or -1700 < lx < -150):
             put("lamp", lx, ly, math.degrees(math.atan2(-ny * side, -nx * side)), quiet=True)
         side = -side
         t += 900
     dist = 0
 PLACEMENTS.sort(key=lambda r: (r["x"], r["y"]))
+
+# ---- world-scale: ground foliage (grass, wildflowers, wheat fields) as an additive layout overlay, so the base layout
+# stays readable. Same validation as every other row; nothing here collides.
+BASE_ROWS = PLACEMENTS
+PLACEMENTS = []
+gr = random.Random(77)
+for x0, x1, n in ((13500, 17500, 420), (17500, 22500, 160), (24500, 29500, 260), (29500, 35500, 420), (35500, 39600, 380),
+                  (39600, 42250, 90), (-1450, 300, 40), (300, 3000, 60)):
+    for _ in range(n):
+        put(gr.choice(["grass_clump", "grass_clump", "grass_clump", "wildflowers"]), gr.uniform(x0, x1), gr.uniform(-1330, 1330),
+            gr.uniform(0, 360), gr.uniform(1.4, 2.6), quiet=True)
+# the farmsteads' wheat fields between the road and the dry-stone walls (both sides)
+for fx0, fx1, fy0, fy1 in ((29700, 31900, 500, 1300), (32500, 35300, -1300, -700), (32800, 35300, 250, 1300), (29700, 31700, -1300, -600)):
+    x = fx0
+    while x < fx1:
+        y = fy0
+        while y < fy1:
+            put("wheat", x + gr.uniform(-25, 25), y + gr.uniform(-25, 25), gr.uniform(0, 360), gr.uniform(.85, 1.2), quiet=True)
+            y += 95
+        x += 95
+# the countryside beyond the town wall (outer side): meadow grass and wildflowers
+for _ in range(700):
+    put(gr.choice(["grass_clump", "grass_clump", "wildflowers"]), gr.uniform(13000, 46000), gr.uniform(1500, 4000), gr.uniform(0, 360),
+        gr.uniform(1.6, 2.8), mode="outer", quiet=True)
+FOLIAGE_ROWS = sorted(PLACEMENTS, key=lambda r: (r["x"], r["y"]))
+PLACEMENTS = BASE_ROWS
+
+# ---- world-scale: world-aligned ground surfaces per district (read by ACireWorld; realm-local centre X / length / width,
+# width 0 = the full realm floor)
+FULL = 2 * HW - 60
+SURFACES = [
+    {"slot": "plaza_material", "x": 7250, "length": 3300, "width": FULL},        # market square
+    {"slot": "plaza_material", "x": 1650, "length": 2700, "width": FULL},        # town square
+    {"slot": "flagstone_material", "x": -500, "length": 1600, "width": 1900},    # castle approach
+    {"slot": "flagstone_material", "x": -2600, "length": 3000, "width": 2 * HW + 500},  # inner bailey
+    {"slot": "flagstone_material", "x": 11700, "length": 2600, "width": FULL},   # guild plaza
+    {"slot": "plaza_material", "x": 23500, "length": 1500, "width": 1600},       # paving through the old wall
+    {"slot": "meadow_material", "x": 15500, "length": 4000, "width": FULL},      # the temple green
+    {"slot": "meadow_material", "x": 34550, "length": 10100, "width": 0},        # farmsteads + hamlet (full realm floor)
+    {"slot": "meadow_material", "x": 27000, "length": 5000, "width": 0, "y": 0},  # tanners' yard outskirts
+    {"slot": "field_material", "x": (11550 + S + MAXX + 2800) / 2, "length": MAXX + 2800 - 11550 - S, "width": 0},  # breach fields
+]
 
 slots_doc = {
     "schemaVersion": 1,
@@ -572,10 +813,26 @@ layout_doc = {
                     "Placements that touch the live route, challenge bays, breach spawn or the realm divider are omitted at runtime. "
                     "Written by Tools/AuthorTownLayout.py."),
     "districts": DISTRICTS,
+    "gateShift": GATE_SHIFT,
+    "surfaces": SURFACES,
     "placements": PLACEMENTS,
+}
+foliage_doc = {
+    "schemaVersion": 1,
+    "units": "centimeters",
+    "description": ("world-scale ground foliage (grass, wildflowers, wheat fields), appended to TownLayout.json at runtime with the "
+                    "same clearance checks. Written by Tools/AuthorTownLayout.py."),
+    "placements": FOLIAGE_ROWS,
 }
 (DATA / "TownAssetSlots.json").write_text(json.dumps(slots_doc, indent=1) + "\n", encoding="utf-8")
 (DATA / "TownLayout.json").write_text(json.dumps(layout_doc, indent=1) + "\n", encoding="utf-8")
+(DATA / "TownLayout.foliage.json").write_text(json.dumps(foliage_doc, separators=(",", ":")).replace("},{", "},\n{") + "\n", encoding="utf-8")
+# same compact layout as the hand-authored file: one line per lane
+_lanes = ",\n".join('    { "team": %d, "points": %s }' % (l["team"], json.dumps(l["points"], separators=(",", ":"))) for l in ROUTES["lanes"])
+_head = ",\n".join(f'  {json.dumps(k)}: {json.dumps(v)}' for k, v in ROUTES.items() if k not in ("lanes", "armoredEscort"))
+(DATA / "BattlefieldRoutes.json").write_text("{\n" + _head + ',\n  "lanes": [\n' + _lanes + '\n  ],\n  "armoredEscort": ' +
+                                            json.dumps(ROUTES["armoredEscort"]) + "\n}\n", encoding="utf-8")
+print(f"route points={len(ROUTE)} length={sum(math.dist(a, b) for a, b in zip(ROUTE, ROUTE[1:])):.0f} cm foliage={len(FOLIAGE_ROWS)}")
 counts = {}
 for r in PLACEMENTS:
     counts[r["slot"]] = counts.get(r["slot"], 0) + 1

@@ -11,6 +11,7 @@
 #include "Components/SkyLightComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
+#include "Components/PostProcessComponent.h" // world-scale: town colour grade
 #include "Components/TextRenderComponent.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/SkyLight.h"
@@ -27,6 +28,7 @@ const TCHAR* const RoadMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_
 const TCHAR* const PlazaMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Plaza.MI_TownW_Plaza");
 const TCHAR* const GroundMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Ground.MI_TownW_Ground");
 const TCHAR* const FieldMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Field.MI_TownW_Field");
+const TCHAR* const MeadowMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Meadow.MI_TownW_Meadow"); // world-scale
 const TCHAR* const FlagstoneMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_Flagstone.MI_TownW_Flagstone");
 const TCHAR* const CastleMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_CastleW.MI_TownW_CastleW");
 const TCHAR* const StoneMaterial=TEXT("/Game/Environment/Town/Materials/MI_TownW_StoneW.MI_TownW_StoneW");
@@ -64,6 +66,7 @@ void ACireWorld::BeginPlay() {
     auto* Stone=Make(TEXT("Stone"),Cube,Mat(TEXT("stone_material"),StoneMaterial),true);
     auto* Earth=Make(TEXT("CourtyardGround"),Cube,Mat(TEXT("ground_material"),GroundMaterial),true,false);
     auto* Field=Make(TEXT("FieldGround"),Cube,Mat(TEXT("field_material"),FieldMaterial),false,false);
+    auto* Meadow=Make(TEXT("MeadowGround"),Cube,Mat(TEXT("meadow_material"),MeadowMaterial),false,false); // world-scale: green countryside
     auto* Plaza=Make(TEXT("PlazaPaving"),Cube,Mat(TEXT("plaza_material"),PlazaMaterial),false,false);
     auto* Flagstone=Make(TEXT("Flagstones"),Cube,Mat(TEXT("flagstone_material"),FlagstoneMaterial),false,false);
     auto* Disc=Make(TEXT("ChallengeDais"),Cylinder,Mat(TEXT("flagstone_material"),FlagstoneMaterial),false,false);
@@ -82,7 +85,14 @@ void ACireWorld::BeginPlay() {
         Add(Cliff,FVector(X,0,H*.5f),FVector(900+FMath::Fmod(X*.13f,500.f),190,H),FRotator(0,0,0));
     }
     // A distant plain under the dusk sky so high cameras never see the edge of the world.
-    Add(Earth,FVector(CentreX,0,-3),FVector(Length+60000,60000,2));
+    // world-scale: 2 km of plain under the backdrop mountains (the dome below is larger still). Its own component, kept out of
+    // distance-field lighting: a 2 km scaled cube has a useless mesh distance field and rendered almost black under DFAO/Lumen.
+    {
+        auto* Plain=Make(TEXT("FarPlain"),Cube,Mat(TEXT("ground_material"),GroundMaterial),false,false);
+        Plain->bAffectDistanceFieldLighting=false;Plain->bAffectDynamicIndirectLighting=false;Plain->SetVisibleInRayTracing(false);
+        Plain->MarkRenderStateDirty();
+        Add(Plain,FVector(CentreX,0,-3),FVector(Length+200000,200000,2));
+    }
     RouteRoad=Make(TEXT("CireRouteRoad"),Cube,Mat(TEXT("cobblestone_material"),RoadMaterial),false,false);
     RouteEdge=Make(TEXT("CireRouteEdge"),Cube,Mat(TEXT("castle_material"),CastleMaterial),false,false);
     RouteArrows=Make(TEXT("CireRouteArrows"),Cube,Mat(TEXT("stone_material"),StoneMaterial),false,false);
@@ -109,11 +119,24 @@ void ACireWorld::BeginPlay() {
         const float FloorMinX=Routes.MinX-3100,FloorMaxX=Routes.MaxX+2800;
         Add(Earth,FVector((FloorMinX+FloorMaxX)*.5f,(InnerY+OuterY)*.5f,-70),FVector(FloorMaxX-FloorMinX,FMath::Abs(OuterY-InnerY),140));
         // Surface districts (visual only, stacked a few millimetres apart to avoid z-fighting).
-        Add(Field,FVector((11550+FloorMaxX)*.5f,(InnerY+OuterY)*.5f,.6f),FVector(FloorMaxX-11550,FMath::Abs(OuterY-InnerY)-4,1));
-        Add(Plaza,FVector(7250,Y,.9f),FVector(3300,2*HW-60,1));   // market square
-        Add(Plaza,FVector(1650,Y,.9f),FVector(2700,2*HW-60,1));   // town square
-        Add(Flagstone,FVector(-500,Y,1.2f),FVector(1600,1900,1));  // castle approach
-        Add(Flagstone,FVector(-2600,Y,1.2f),FVector(3000,2*HW+500,1)); // inner bailey
+        // world-scale: authored per district in TownLayout.json "surfaces"; the original town is the fallback.
+        const auto& Surfaces=CireEnvironmentProps::Surfaces();
+        if(Surfaces.IsEmpty())
+        {
+            Add(Field,FVector((11550+FloorMaxX)*.5f,(InnerY+OuterY)*.5f,.6f),FVector(FloorMaxX-11550,FMath::Abs(OuterY-InnerY)-4,1));
+            Add(Plaza,FVector(7250,Y,.9f),FVector(3300,2*HW-60,1));   // market square
+            Add(Plaza,FVector(1650,Y,.9f),FVector(2700,2*HW-60,1));   // town square
+            Add(Flagstone,FVector(-500,Y,1.2f),FVector(1600,1900,1));  // castle approach
+            Add(Flagstone,FVector(-2600,Y,1.2f),FVector(3000,2*HW+500,1)); // inner bailey
+        }
+        for(const auto& S:Surfaces)
+        {
+            UInstancedStaticMeshComponent* Target=S.Slot==TEXT("field_material")?Field:S.Slot==TEXT("flagstone_material")?Flagstone:
+                S.Slot==TEXT("meadow_material")?Meadow:Plaza;
+            const float Z=Target==Field?.6f:Target==Meadow?.75f:Target==Flagstone?1.2f:.9f;
+            if(S.Width<=0)Add(Target,FVector(S.X,(InnerY+OuterY)*.5f,Z),FVector(S.Length,FMath::Abs(OuterY-InnerY)-4,1)); // full realm floor
+            else Add(Target,FVector(S.X,Y+S.Y,Z),FVector(S.Length,S.Width,1));
+        }
         // Private-realm edge for the castle ward: players may not leave the realm.
         Add(Castle,FVector(FloorMinX-60,(InnerY+OuterY)*.5f,700),FVector(120,FMath::Abs(OuterY-InnerY),1400));
         // Team identity above the castle gate and the breach rift.
@@ -152,29 +175,52 @@ void ACireWorld::BeginPlay() {
     if(auto* SkyMat=LoadObject<UMaterialInterface>(nullptr,SkyMaterial)) {
         auto* Dome=NewObject<UStaticMeshComponent>(this,TEXT("SkyDome"));
         Dome->SetupAttachment(RootComponent);Dome->SetStaticMesh(Sphere);Dome->SetMaterial(0,SkyMat);
-        Dome->SetWorldLocation(FVector(5000,0,-2000));Dome->SetWorldScale3D(FVector(1600));
+        // world-scale: centred on the three-times-longer realm, large enough to hold the backdrop mountains.
+        Dome->SetWorldLocation(FVector(CentreX,0,-2000));Dome->SetWorldScale3D(FVector(FMath::Max(1600.f,(Length+260000.f)/100.f)));
         Dome->SetCollisionEnabled(ECollisionEnabled::NoCollision);Dome->SetCastShadow(false);
         Dome->bAffectDistanceFieldLighting=false;Dome->SetVisibleInRayTracing(false);Dome->bAffectDynamicIndirectLighting=false;
         Dome->RegisterComponent();AddInstanceComponent(Dome);
     }
     // The sun sets behind the breach (+X), straight down both lanes, so the Sundering Cliff never
     // shades one team's realm more than the other's and the gate is silhouetted against the dusk.
-    auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,3000),FRotator(-17,180,0));
-    Sun->GetLightComponent()->SetIntensity(4.6f); Sun->GetLightComponent()->SetLightColor(FLinearColor(1.f,.68f,.46f));
+    // world-scale (art direction "vibrant, fun and crisp"): a higher, whiter golden-hour sun instead of the murky dusk.
+    auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,3000),FRotator(-30,180,0));
+    Sun->GetLightComponent()->SetIntensity(7.0f); Sun->GetLightComponent()->SetLightColor(FLinearColor(1.f,.92f,.80f));
     auto* Sky=GetWorld()->SpawnActor<ASkyLight>();
     Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable);
     Sky->GetLightComponent()->bRealTimeCapture=true;
-    Sky->GetLightComponent()->SetIntensity(1.1f);
-    Sky->GetLightComponent()->SetLightColor(FLinearColor(.72f,.78f,1.f));
+    Sky->GetLightComponent()->SetIntensity(1.45f);
+    Sky->GetLightComponent()->SetLightColor(FLinearColor(.78f,.86f,1.f));
     Sky->GetLightComponent()->RecaptureSky();
     auto* Fog=GetWorld()->SpawnActor<AExponentialHeightFog>();
-    Fog->GetComponent()->SetFogDensity(.018f);
-    Fog->GetComponent()->SetFogHeightFalloff(.35f);
-    Fog->GetComponent()->SetFogInscatteringColor(FLinearColor(.16f,.11f,.09f));
-    Fog->GetComponent()->SetStartDistance(1200.f);
+    // world-scale: thin, sky-blue aerial haze that only softens the far districts and the mountains (the old thick brown
+    // valley fog flattened everything past the next street).
+    Fog->GetComponent()->SetFogDensity(.0055f);
+    Fog->GetComponent()->SetFogHeightFalloff(.22f);
+    Fog->GetComponent()->SetFogInscatteringColor(FLinearColor(.62f,.72f,.90f));
+    Fog->GetComponent()->SetStartDistance(4000.f);
+    Fog->GetComponent()->SetFogMaxOpacity(.85f);
     Fog->GetComponent()->SetVolumetricFog(true);
-    Fog->GetComponent()->SetVolumetricFogScatteringDistribution(.45f);
-    Fog->GetComponent()->SetVolumetricFogExtinctionScale(.8f);
+    Fog->GetComponent()->SetVolumetricFogScatteringDistribution(.35f);
+    Fog->GetComponent()->SetVolumetricFogExtinctionScale(.35f);
+    // world-scale: a second, low fog layer thickens with distance near the ground only, so the far plain and the backdrop
+    // mountains fade into a light horizon haze while the streets within ~60 m stay clear and crisp.
+    Fog->GetComponent()->SecondFogData.FogDensity=.03f;Fog->GetComponent()->SecondFogData.FogHeightFalloff=.45f;
+    Fog->GetComponent()->SecondFogData.FogHeightOffset=0.f;Fog->GetComponent()->MarkRenderStateDirty();
+    // world-scale: town colour grade (unbound, below the arenas' priority-5 grade; CireArenas disables it in the arena).
+    {
+        auto* Grade=NewObject<UPostProcessComponent>(this,TEXT("TownGrade"));
+        Grade->SetupAttachment(RootComponent);Grade->bUnbound=true;Grade->Priority=0.f;Grade->BlendWeight=1.f;
+        auto& S=Grade->Settings;
+        S.bOverride_ColorSaturation=true;S.ColorSaturation=FVector4(1.1f,1.1f,1.1f,1.f);
+        S.bOverride_ColorContrast=true;S.ColorContrast=FVector4(1.1f,1.1f,1.1f,1.f);
+        S.bOverride_ColorSaturationShadows=true;S.ColorSaturationShadows=FVector4(1.08f,1.08f,1.08f,1.f);
+        S.bOverride_WhiteTemp=true;S.WhiteTemp=6900.f; // slightly cool white balance: neutral greys, clean greens
+        S.bOverride_BloomIntensity=true;S.BloomIntensity=.45f;
+        S.bOverride_VignetteIntensity=true;S.VignetteIntensity=.22f;
+        S.bOverride_AutoExposureBias=true;S.AutoExposureBias=.25f;
+        Grade->RegisterComponent();AddInstanceComponent(Grade);
+    }
     CireEnvironmentProps::Build(this);
     // nav-paths: the navmesh is generated once the town, its props and the collision floor exist
     // (server/standalone only; clients have no navigation system).
