@@ -480,7 +480,9 @@ def main_monster_sets(cmd, started):
                 mesh_path, mesh_scale = bodies[variant]
                 mesh = unreal.load_asset(mesh_path.split(".")[0])
                 require(isinstance(mesh, unreal.SkeletalMesh), "body missing " + mesh_path)
-                role_map = ms["roles"][set_name]
+                # keepTripo: roles a body keeps from its own Tripo library (a boss keeps its upright idle).
+                keep = set(ms.get("keepTripo", {}).get(variant, []))
+                role_map = {r: ref for r, ref in ms["roles"][set_name].items() if r not in keep}
                 sources, loco = {}, {}
                 for role, ref in role_map.items():
                     if ref.startswith("loco:"):
@@ -504,7 +506,7 @@ def main_monster_sets(cmd, started):
                     if clip in done:
                         roles[role] = "%s.%s" % (done[clip], done[clip].rsplit("/", 1)[1])
                 row = {k: v for k, v in variants.get(variant, {}).items() if k not in ("set", "roles", "walkSpeedCm", "runSpeedCm")}
-                if "idle" in roles and "walk" in roles and "attack" in roles:
+                if ("idle" in roles or "idle" in keep) and "walk" in roles and "attack" in roles:
                     row.update({"set": set_name, "roles": roles})
                     walk = unreal.load_asset(done["loco_walk_f"])
                     row["walkSpeedCm"] = round(foot_speed(walk, mesh) * mesh_scale, 1)

@@ -27,27 +27,208 @@
   },
   "AetheriBulwark": {
    "war_cry": "/Game/FabDerived/Anim/AetheriBulwark/A_AetheriBulwark_monster_war_cry.A_AetheriBulwark_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/AetheriBulwark/A_AetheriBulwark_monster_ground_slam.A_AetheriBulwark_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/AetheriBulwark/A_AetheriBulwark_monster_ground_slam.A_AetheriBulwark_monster_ground_slam",
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_idle.A_AetheriBulwarkSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_walk_f.A_AetheriBulwarkSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_walk_b.A_AetheriBulwarkSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_walk_l.A_AetheriBulwarkSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_walk_r.A_AetheriBulwarkSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_run_f.A_AetheriBulwarkSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_attack3.A_AetheriBulwarkSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_attack4.A_AetheriBulwarkSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_attack6.A_AetheriBulwarkSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_hit.A_AetheriBulwarkSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_death.A_AetheriBulwarkSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_skill1.A_AetheriBulwarkSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_skill2.A_AetheriBulwarkSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_cast.A_AetheriBulwarkSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_shout.A_AetheriBulwarkSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 178.7,
+   "runSpeedCm": 385.2
   },
   "AetheriColossusB": {
    "war_cry": "/Game/FabDerived/Anim/AetheriColossusB/A_AetheriColossusB_monster_war_cry.A_AetheriColossusB_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/AetheriColossusB/A_AetheriColossusB_monster_ground_slam.A_AetheriColossusB_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/AetheriColossusB/A_AetheriColossusB_monster_ground_slam.A_AetheriColossusB_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_idle.A_AetheriColossusBSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_walk_f.A_AetheriColossusBSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_walk_b.A_AetheriColossusBSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_walk_l.A_AetheriColossusBSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_walk_r.A_AetheriColossusBSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_run_f.A_AetheriColossusBSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_attack1.A_AetheriColossusBSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_attack2.A_AetheriColossusBSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_attack3.A_AetheriColossusBSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_hit.A_AetheriColossusBSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_death.A_AetheriColossusBSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_skill1.A_AetheriColossusBSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_skill2.A_AetheriColossusBSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_cast.A_AetheriColossusBSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_shout.A_AetheriColossusBSet_unarmed_shout"
+   },
+   "walkSpeedCm": 242.0,
+   "runSpeedCm": 393.0
+  },
+  "AetheriEngineer": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_idle.A_AetheriEngineerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_walk_f.A_AetheriEngineerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_walk_b.A_AetheriEngineerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_walk_l.A_AetheriEngineerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_walk_r.A_AetheriEngineerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_run_f.A_AetheriEngineerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_attack1.A_AetheriEngineerSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_attack2.A_AetheriEngineerSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_attack4.A_AetheriEngineerSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_hit.A_AetheriEngineerSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_death.A_AetheriEngineerSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_skill1.A_AetheriEngineerSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_skill2.A_AetheriEngineerSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_heal.A_AetheriEngineerSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_shout.A_AetheriEngineerSet_spell_shout"
+   },
+   "walkSpeedCm": 183.4,
+   "runSpeedCm": 318.6
   },
   "AetheriHierarch": {
    "war_cry": "/Game/FabDerived/Anim/AetheriHierarch/A_AetheriHierarch_monster_war_cry.A_AetheriHierarch_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/AetheriHierarch/A_AetheriHierarch_monster_ground_slam.A_AetheriHierarch_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/AetheriHierarch/A_AetheriHierarch_monster_ground_slam.A_AetheriHierarch_monster_ground_slam",
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_idle.A_AetheriHierarchSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_walk_f.A_AetheriHierarchSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_walk_b.A_AetheriHierarchSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_walk_l.A_AetheriHierarchSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_walk_r.A_AetheriHierarchSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_run_f.A_AetheriHierarchSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_attack1.A_AetheriHierarchSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_attack2.A_AetheriHierarchSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_attack4.A_AetheriHierarchSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_hit.A_AetheriHierarchSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_death.A_AetheriHierarchSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_skill1.A_AetheriHierarchSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_skill2.A_AetheriHierarchSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_heal.A_AetheriHierarchSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_shout.A_AetheriHierarchSet_spell_shout"
+   },
+   "walkSpeedCm": 216.2,
+   "runSpeedCm": 363.0
+  },
+  "AetheriLancer": {
+   "set": "gun",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_idle.A_AetheriLancerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_walk_f.A_AetheriLancerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_walk_b.A_AetheriLancerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_walk_l.A_AetheriLancerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_walk_r.A_AetheriLancerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_run_f.A_AetheriLancerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_attack1.A_AetheriLancerSet_gun_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_attack2.A_AetheriLancerSet_gun_attack2",
+    "hit": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_hit.A_AetheriLancerSet_gun_hit",
+    "death": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_death.A_AetheriLancerSet_gun_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_skill1.A_AetheriLancerSet_gun_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_skill2.A_AetheriLancerSet_gun_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_cast.A_AetheriLancerSet_gun_cast",
+    "shout": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_shout.A_AetheriLancerSet_gun_shout"
+   },
+   "walkSpeedCm": 171.8,
+   "runSpeedCm": 277.7
+  },
+  "AetheriPhaseblade": {
+   "set": "dual",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_idle.A_AetheriPhasebladeSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_walk_f.A_AetheriPhasebladeSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_walk_b.A_AetheriPhasebladeSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_walk_l.A_AetheriPhasebladeSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_walk_r.A_AetheriPhasebladeSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_run_f.A_AetheriPhasebladeSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_attack1.A_AetheriPhasebladeSet_dual_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_attack2.A_AetheriPhasebladeSet_dual_attack2",
+    "attack3": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_attack3.A_AetheriPhasebladeSet_dual_attack3",
+    "hit": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_hit.A_AetheriPhasebladeSet_dual_hit",
+    "death": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_death.A_AetheriPhasebladeSet_dual_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_skill1.A_AetheriPhasebladeSet_dual_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_skill2.A_AetheriPhasebladeSet_dual_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_cast.A_AetheriPhasebladeSet_dual_cast",
+    "shout": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_shout.A_AetheriPhasebladeSet_dual_shout"
+   },
+   "walkSpeedCm": 214.1,
+   "runSpeedCm": 316.9
   },
   "AetheriWarframe": {
    "war_cry": "/Game/FabDerived/Anim/AetheriWarframe/A_AetheriWarframe_monster_war_cry.A_AetheriWarframe_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/AetheriWarframe/A_AetheriWarframe_monster_ground_slam.A_AetheriWarframe_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/AetheriWarframe/A_AetheriWarframe_monster_ground_slam.A_AetheriWarframe_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_idle.A_AetheriWarframeSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_walk_f.A_AetheriWarframeSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_walk_b.A_AetheriWarframeSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_walk_l.A_AetheriWarframeSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_walk_r.A_AetheriWarframeSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_run_f.A_AetheriWarframeSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_attack1.A_AetheriWarframeSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_attack2.A_AetheriWarframeSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_attack3.A_AetheriWarframeSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_hit.A_AetheriWarframeSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_death.A_AetheriWarframeSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_skill1.A_AetheriWarframeSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_skill2.A_AetheriWarframeSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_cast.A_AetheriWarframeSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_shout.A_AetheriWarframeSet_unarmed_shout"
+   },
+   "walkSpeedCm": 226.6,
+   "runSpeedCm": 364.1
   },
   "BarbedHunter": {
    "war_cry": "/Game/FabDerived/Anim/BarbedHunter/A_BarbedHunter_monster_war_cry.A_BarbedHunter_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/BarbedHunter/A_BarbedHunter_monster_ground_slam.A_BarbedHunter_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/BarbedHunter/A_BarbedHunter_monster_ground_slam.A_BarbedHunter_monster_ground_slam",
+   "set": "bow",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_loco_idle.A_BarbedHunterSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_loco_walk_f.A_BarbedHunterSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_loco_walk_b.A_BarbedHunterSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_loco_walk_l.A_BarbedHunterSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_loco_walk_r.A_BarbedHunterSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_loco_run_f.A_BarbedHunterSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_bow_attack1.A_BarbedHunterSet_bow_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_bow_attack2.A_BarbedHunterSet_bow_attack2",
+    "attack3": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_bow_attack3.A_BarbedHunterSet_bow_attack3",
+    "hit": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_bow_hit.A_BarbedHunterSet_bow_hit",
+    "death": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_bow_death.A_BarbedHunterSet_bow_death",
+    "heavy": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_bow_skill1.A_BarbedHunterSet_bow_skill1",
+    "heavy2": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_bow_skill2.A_BarbedHunterSet_bow_skill2",
+    "cast": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_bow_cast.A_BarbedHunterSet_bow_cast",
+    "shout": "/Game/FabDerived/Anim/BarbedHunterSet/A_BarbedHunterSet_bow_shout.A_BarbedHunterSet_bow_shout"
+   },
+   "walkSpeedCm": 186.8,
+   "runSpeedCm": 251.3
   },
   "BarbedHunterB": {
    "war_cry": "/Game/FabDerived/Anim/BarbedHunterB/A_BarbedHunterB_monster_war_cry.A_BarbedHunterB_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/BarbedHunterB/A_BarbedHunterB_monster_ground_slam.A_BarbedHunterB_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/BarbedHunterB/A_BarbedHunterB_monster_ground_slam.A_BarbedHunterB_monster_ground_slam",
+   "set": "crossbow",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_loco_idle.A_BarbedHunterBSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_loco_walk_f.A_BarbedHunterBSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_loco_walk_b.A_BarbedHunterBSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_loco_walk_l.A_BarbedHunterBSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_loco_walk_r.A_BarbedHunterBSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_loco_run_f.A_BarbedHunterBSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_crossbow_attack1.A_BarbedHunterBSet_crossbow_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_crossbow_attack2.A_BarbedHunterBSet_crossbow_attack2",
+    "attack3": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_crossbow_attack3.A_BarbedHunterBSet_crossbow_attack3",
+    "hit": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_crossbow_hit.A_BarbedHunterBSet_crossbow_hit",
+    "death": "/Game/FabDerived/Anim/BarbedHunterBSet/A_BarbedHunterBSet_crossbow_death.A_BarbedHunterBSet_crossbow_death"
+   },
+   "walkSpeedCm": 193.5,
+   "runSpeedCm": 262.2
   },
   "BarbspitterHQ": {
    "set": "spell",
@@ -97,7 +278,115 @@
   },
   "BastionGolem": {
    "war_cry": "/Game/FabDerived/Anim/BastionGolem/A_BastionGolem_monster_war_cry.A_BastionGolem_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/BastionGolem/A_BastionGolem_monster_ground_slam.A_BastionGolem_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/BastionGolem/A_BastionGolem_monster_ground_slam.A_BastionGolem_monster_ground_slam",
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_loco_idle.A_BastionGolemSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_loco_walk_f.A_BastionGolemSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_loco_walk_b.A_BastionGolemSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_loco_walk_l.A_BastionGolemSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_loco_walk_r.A_BastionGolemSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_loco_run_f.A_BastionGolemSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_sword_shield_attack3.A_BastionGolemSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_sword_shield_attack4.A_BastionGolemSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_sword_shield_attack6.A_BastionGolemSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_sword_shield_hit.A_BastionGolemSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_sword_shield_death.A_BastionGolemSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_sword_shield_skill1.A_BastionGolemSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_sword_shield_skill2.A_BastionGolemSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_sword_shield_cast.A_BastionGolemSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/BastionGolemSet/A_BastionGolemSet_sword_shield_shout.A_BastionGolemSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 201.9,
+   "runSpeedCm": 419.6
+  },
+  "BlightCaster": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_loco_idle.A_BlightCasterSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_loco_walk_f.A_BlightCasterSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_loco_walk_b.A_BlightCasterSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_loco_walk_l.A_BlightCasterSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_loco_walk_r.A_BlightCasterSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_loco_run_f.A_BlightCasterSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_spell_attack1.A_BlightCasterSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_spell_attack2.A_BlightCasterSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_spell_attack4.A_BlightCasterSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_spell_hit.A_BlightCasterSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_spell_death.A_BlightCasterSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_spell_skill1.A_BlightCasterSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_spell_skill2.A_BlightCasterSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_spell_heal.A_BlightCasterSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/BlightCasterSet/A_BlightCasterSet_spell_shout.A_BlightCasterSet_spell_shout"
+   },
+   "walkSpeedCm": 169.4,
+   "runSpeedCm": 302.8
+  },
+  "BlightCasterB": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_loco_idle.A_BlightCasterBSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_loco_walk_f.A_BlightCasterBSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_loco_walk_b.A_BlightCasterBSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_loco_walk_l.A_BlightCasterBSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_loco_walk_r.A_BlightCasterBSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_loco_run_f.A_BlightCasterBSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_spell_attack1.A_BlightCasterBSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_spell_attack2.A_BlightCasterBSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_spell_attack4.A_BlightCasterBSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_spell_hit.A_BlightCasterBSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_spell_death.A_BlightCasterBSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_spell_skill1.A_BlightCasterBSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_spell_skill2.A_BlightCasterBSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_spell_heal.A_BlightCasterBSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/BlightCasterBSet/A_BlightCasterBSet_spell_shout.A_BlightCasterBSet_spell_shout"
+   },
+   "walkSpeedCm": 206.4,
+   "runSpeedCm": 359.8
+  },
+  "BlightedChaplain": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_loco_idle.A_BlightedChaplainSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_loco_walk_f.A_BlightedChaplainSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_loco_walk_b.A_BlightedChaplainSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_loco_walk_l.A_BlightedChaplainSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_loco_walk_r.A_BlightedChaplainSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_loco_run_f.A_BlightedChaplainSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_spell_attack1.A_BlightedChaplainSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_spell_attack2.A_BlightedChaplainSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_spell_attack4.A_BlightedChaplainSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_spell_hit.A_BlightedChaplainSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_spell_death.A_BlightedChaplainSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_spell_skill1.A_BlightedChaplainSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_spell_skill2.A_BlightedChaplainSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_spell_heal.A_BlightedChaplainSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/BlightedChaplainSet/A_BlightedChaplainSet_spell_shout.A_BlightedChaplainSet_spell_shout"
+   },
+   "walkSpeedCm": 192.0,
+   "runSpeedCm": 334.0
+  },
+  "BloodHexer": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_idle.A_BloodHexerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_walk_f.A_BloodHexerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_walk_b.A_BloodHexerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_walk_l.A_BloodHexerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_walk_r.A_BloodHexerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_loco_run_f.A_BloodHexerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_attack1.A_BloodHexerSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_attack2.A_BloodHexerSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_attack4.A_BloodHexerSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_hit.A_BloodHexerSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_death.A_BloodHexerSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_skill1.A_BloodHexerSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_skill2.A_BloodHexerSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_heal.A_BloodHexerSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/BloodHexerSet/A_BloodHexerSet_spell_shout.A_BloodHexerSet_spell_shout"
+   },
+   "walkSpeedCm": 172.8,
+   "runSpeedCm": 292.4
   },
   "CoralshellGuardian": {
    "war_cry": "/Game/FabDerived/Anim/CoralshellGuardian/A_CoralshellGuardian_monster_war_cry.A_CoralshellGuardian_monster_war_cry",
@@ -123,6 +412,28 @@
    "walkSpeedCm": 150.4,
    "runSpeedCm": 367.2
   },
+  "DeepforgeRunesmith": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_loco_idle.A_DeepforgeRunesmithSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_loco_walk_f.A_DeepforgeRunesmithSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_loco_walk_b.A_DeepforgeRunesmithSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_loco_walk_l.A_DeepforgeRunesmithSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_loco_walk_r.A_DeepforgeRunesmithSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_loco_run_f.A_DeepforgeRunesmithSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_spell_attack1.A_DeepforgeRunesmithSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_spell_attack2.A_DeepforgeRunesmithSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_spell_attack4.A_DeepforgeRunesmithSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_spell_hit.A_DeepforgeRunesmithSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_spell_death.A_DeepforgeRunesmithSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_spell_skill1.A_DeepforgeRunesmithSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_spell_skill2.A_DeepforgeRunesmithSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_spell_heal.A_DeepforgeRunesmithSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/DeepforgeRunesmithSet/A_DeepforgeRunesmithSet_spell_shout.A_DeepforgeRunesmithSet_spell_shout"
+   },
+   "walkSpeedCm": 144.6,
+   "runSpeedCm": 249.2
+  },
   "DeepspawnThrall": {
    "war_cry": "/Game/FabDerived/Anim/DeepspawnThrall/A_DeepspawnThrall_monster_war_cry.A_DeepspawnThrall_monster_war_cry",
    "ground_slam": "/Game/FabDerived/Anim/DeepspawnThrall/A_DeepspawnThrall_monster_ground_slam.A_DeepspawnThrall_monster_ground_slam",
@@ -147,25 +458,191 @@
    "walkSpeedCm": 175.6,
    "runSpeedCm": 306.7
   },
+  "DrakkariAshwing": {
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_idle.A_DrakkariAshwingSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_walk_f.A_DrakkariAshwingSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_walk_b.A_DrakkariAshwingSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_walk_l.A_DrakkariAshwingSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_walk_r.A_DrakkariAshwingSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_run_f.A_DrakkariAshwingSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_attack2.A_DrakkariAshwingSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_attack3.A_DrakkariAshwingSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_attack4.A_DrakkariAshwingSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_hit.A_DrakkariAshwingSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_death.A_DrakkariAshwingSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_skill1.A_DrakkariAshwingSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_skill2.A_DrakkariAshwingSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_cast.A_DrakkariAshwingSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_shout.A_DrakkariAshwingSet_two_hand_shout"
+   },
+   "walkSpeedCm": 199.8,
+   "runSpeedCm": 351.2
+  },
   "DrakkariBroodmother": {
    "war_cry": "/Game/FabDerived/Anim/DrakkariBroodmother/A_DrakkariBroodmother_monster_war_cry.A_DrakkariBroodmother_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/DrakkariBroodmother/A_DrakkariBroodmother_monster_ground_slam.A_DrakkariBroodmother_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/DrakkariBroodmother/A_DrakkariBroodmother_monster_ground_slam.A_DrakkariBroodmother_monster_ground_slam",
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_idle.A_DrakkariBroodmotherSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_walk_f.A_DrakkariBroodmotherSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_walk_b.A_DrakkariBroodmotherSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_walk_l.A_DrakkariBroodmotherSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_walk_r.A_DrakkariBroodmotherSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_run_f.A_DrakkariBroodmotherSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_attack1.A_DrakkariBroodmotherSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_attack2.A_DrakkariBroodmotherSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_attack4.A_DrakkariBroodmotherSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_hit.A_DrakkariBroodmotherSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_death.A_DrakkariBroodmotherSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_skill1.A_DrakkariBroodmotherSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_skill2.A_DrakkariBroodmotherSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_heal.A_DrakkariBroodmotherSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_shout.A_DrakkariBroodmotherSet_spell_shout"
+   },
+   "walkSpeedCm": 200.1,
+   "runSpeedCm": 363.9
+  },
+  "DrakkariFlamecallerHQ": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_idle.A_DrakkariFlamecallerHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_walk_f.A_DrakkariFlamecallerHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_walk_b.A_DrakkariFlamecallerHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_walk_l.A_DrakkariFlamecallerHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_walk_r.A_DrakkariFlamecallerHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_run_f.A_DrakkariFlamecallerHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_attack1.A_DrakkariFlamecallerHQSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_attack2.A_DrakkariFlamecallerHQSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_attack4.A_DrakkariFlamecallerHQSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_hit.A_DrakkariFlamecallerHQSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_death.A_DrakkariFlamecallerHQSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_skill1.A_DrakkariFlamecallerHQSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_skill2.A_DrakkariFlamecallerHQSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_heal.A_DrakkariFlamecallerHQSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_shout.A_DrakkariFlamecallerHQSet_spell_shout"
+   },
+   "walkSpeedCm": 149.0,
+   "runSpeedCm": 262.2
   },
   "DrakkariScalebreaker": {
    "war_cry": "/Game/FabDerived/Anim/DrakkariScalebreaker/A_DrakkariScalebreaker_monster_war_cry.A_DrakkariScalebreaker_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/DrakkariScalebreaker/A_DrakkariScalebreaker_monster_ground_slam.A_DrakkariScalebreaker_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/DrakkariScalebreaker/A_DrakkariScalebreaker_monster_ground_slam.A_DrakkariScalebreaker_monster_ground_slam",
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_idle.A_DrakkariScalebreakerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_walk_f.A_DrakkariScalebreakerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_walk_b.A_DrakkariScalebreakerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_walk_l.A_DrakkariScalebreakerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_walk_r.A_DrakkariScalebreakerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_run_f.A_DrakkariScalebreakerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_attack2.A_DrakkariScalebreakerSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_attack3.A_DrakkariScalebreakerSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_attack4.A_DrakkariScalebreakerSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_hit.A_DrakkariScalebreakerSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_death.A_DrakkariScalebreakerSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_skill1.A_DrakkariScalebreakerSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_skill2.A_DrakkariScalebreakerSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_cast.A_DrakkariScalebreakerSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_shout.A_DrakkariScalebreakerSet_two_hand_shout"
+   },
+   "walkSpeedCm": 183.5,
+   "runSpeedCm": 328.4
   },
   "DrakkariScaleguard": {
    "war_cry": "/Game/FabDerived/Anim/DrakkariScaleguard/A_DrakkariScaleguard_monster_war_cry.A_DrakkariScaleguard_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/DrakkariScaleguard/A_DrakkariScaleguard_monster_ground_slam.A_DrakkariScaleguard_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/DrakkariScaleguard/A_DrakkariScaleguard_monster_ground_slam.A_DrakkariScaleguard_monster_ground_slam",
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_idle.A_DrakkariScaleguardSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_walk_f.A_DrakkariScaleguardSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_walk_b.A_DrakkariScaleguardSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_walk_l.A_DrakkariScaleguardSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_walk_r.A_DrakkariScaleguardSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_run_f.A_DrakkariScaleguardSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_attack3.A_DrakkariScaleguardSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_attack4.A_DrakkariScaleguardSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_attack6.A_DrakkariScaleguardSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_hit.A_DrakkariScaleguardSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_death.A_DrakkariScaleguardSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_skill1.A_DrakkariScaleguardSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_skill2.A_DrakkariScaleguardSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_cast.A_DrakkariScaleguardSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_shout.A_DrakkariScaleguardSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 160.8,
+   "runSpeedCm": 355.3
+  },
+  "DrakkariWhelpguard": {
+   "set": "one_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_idle.A_DrakkariWhelpguardSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_walk_f.A_DrakkariWhelpguardSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_walk_b.A_DrakkariWhelpguardSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_walk_l.A_DrakkariWhelpguardSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_walk_r.A_DrakkariWhelpguardSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_run_f.A_DrakkariWhelpguardSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_attack1.A_DrakkariWhelpguardSet_one_hand_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_attack3.A_DrakkariWhelpguardSet_one_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_attack6.A_DrakkariWhelpguardSet_one_hand_attack6",
+    "hit": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_hit.A_DrakkariWhelpguardSet_one_hand_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_death.A_DrakkariWhelpguardSet_one_hand_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_skill1.A_DrakkariWhelpguardSet_one_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_skill2.A_DrakkariWhelpguardSet_one_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_cast.A_DrakkariWhelpguardSet_one_hand_cast",
+    "shout": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_shout.A_DrakkariWhelpguardSet_one_hand_shout"
+   },
+   "walkSpeedCm": 193.3,
+   "runSpeedCm": 308.6
   },
   "DrakkariWingshot": {
    "war_cry": "/Game/FabDerived/Anim/DrakkariWingshot/A_DrakkariWingshot_monster_war_cry.A_DrakkariWingshot_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/DrakkariWingshot/A_DrakkariWingshot_monster_ground_slam.A_DrakkariWingshot_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/DrakkariWingshot/A_DrakkariWingshot_monster_ground_slam.A_DrakkariWingshot_monster_ground_slam",
+   "set": "bow",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_idle.A_DrakkariWingshotSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_walk_f.A_DrakkariWingshotSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_walk_b.A_DrakkariWingshotSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_walk_l.A_DrakkariWingshotSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_walk_r.A_DrakkariWingshotSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_run_f.A_DrakkariWingshotSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_attack1.A_DrakkariWingshotSet_bow_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_attack2.A_DrakkariWingshotSet_bow_attack2",
+    "attack3": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_attack3.A_DrakkariWingshotSet_bow_attack3",
+    "hit": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_hit.A_DrakkariWingshotSet_bow_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_death.A_DrakkariWingshotSet_bow_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_skill1.A_DrakkariWingshotSet_bow_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_skill2.A_DrakkariWingshotSet_bow_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_cast.A_DrakkariWingshotSet_bow_cast",
+    "shout": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_shout.A_DrakkariWingshotSet_bow_shout"
+   },
+   "walkSpeedCm": 207.8,
+   "runSpeedCm": 290.1
   },
   "DreadKnight": {
    "war_cry": "/Game/FabDerived/Anim/DreadKnight/A_DreadKnight_monster_war_cry.A_DreadKnight_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/DreadKnight/A_DreadKnight_monster_ground_slam.A_DreadKnight_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/DreadKnight/A_DreadKnight_monster_ground_slam.A_DreadKnight_monster_ground_slam",
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_loco_idle.A_DreadKnightSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_loco_walk_f.A_DreadKnightSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_loco_walk_b.A_DreadKnightSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_loco_walk_l.A_DreadKnightSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_loco_walk_r.A_DreadKnightSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_loco_run_f.A_DreadKnightSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_two_hand_attack2.A_DreadKnightSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_two_hand_attack3.A_DreadKnightSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_two_hand_attack4.A_DreadKnightSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_two_hand_hit.A_DreadKnightSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_two_hand_death.A_DreadKnightSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_two_hand_skill1.A_DreadKnightSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_two_hand_skill2.A_DreadKnightSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_two_hand_cast.A_DreadKnightSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/DreadKnightSet/A_DreadKnightSet_two_hand_shout.A_DreadKnightSet_two_hand_shout"
+   },
+   "walkSpeedCm": 182.8,
+   "runSpeedCm": 334.2
   },
   "DrownedProphet": {
    "war_cry": "/Game/FabDerived/Anim/DrownedProphet/A_DrownedProphet_monster_war_cry.A_DrownedProphet_monster_war_cry",
@@ -215,55 +692,464 @@
   },
   "EmberWhelp": {
    "war_cry": "/Game/FabDerived/Anim/EmberWhelp/A_EmberWhelp_monster_war_cry.A_EmberWhelp_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/EmberWhelp/A_EmberWhelp_monster_ground_slam.A_EmberWhelp_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/EmberWhelp/A_EmberWhelp_monster_ground_slam.A_EmberWhelp_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_idle.A_EmberWhelpSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_walk_f.A_EmberWhelpSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_walk_b.A_EmberWhelpSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_walk_l.A_EmberWhelpSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_walk_r.A_EmberWhelpSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_run_f.A_EmberWhelpSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_attack1.A_EmberWhelpSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_attack2.A_EmberWhelpSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_attack3.A_EmberWhelpSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_hit.A_EmberWhelpSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_death.A_EmberWhelpSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_skill1.A_EmberWhelpSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_skill2.A_EmberWhelpSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_cast.A_EmberWhelpSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_shout.A_EmberWhelpSet_unarmed_shout"
+   },
+   "walkSpeedCm": 69.3,
+   "runSpeedCm": 109.7
   },
   "EtherMote": {
    "war_cry": "/Game/FabDerived/Anim/EtherMote/A_EtherMote_monster_war_cry.A_EtherMote_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/EtherMote/A_EtherMote_monster_ground_slam.A_EtherMote_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/EtherMote/A_EtherMote_monster_ground_slam.A_EtherMote_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_loco_idle.A_EtherMoteSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_loco_walk_f.A_EtherMoteSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_loco_walk_b.A_EtherMoteSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_loco_walk_l.A_EtherMoteSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_loco_walk_r.A_EtherMoteSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_loco_run_f.A_EtherMoteSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_unarmed_attack1.A_EtherMoteSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_unarmed_attack2.A_EtherMoteSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_unarmed_attack3.A_EtherMoteSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_unarmed_hit.A_EtherMoteSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_unarmed_death.A_EtherMoteSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_unarmed_skill1.A_EtherMoteSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_unarmed_skill2.A_EtherMoteSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_unarmed_cast.A_EtherMoteSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/EtherMoteSet/A_EtherMoteSet_unarmed_shout.A_EtherMoteSet_unarmed_shout"
+   },
+   "walkSpeedCm": 110.4,
+   "runSpeedCm": 179.5
+  },
+  "FallenCrusader": {
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_loco_idle.A_FallenCrusaderSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_loco_walk_f.A_FallenCrusaderSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_loco_walk_b.A_FallenCrusaderSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_loco_walk_l.A_FallenCrusaderSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_loco_walk_r.A_FallenCrusaderSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_loco_run_f.A_FallenCrusaderSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_two_hand_attack2.A_FallenCrusaderSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_two_hand_attack3.A_FallenCrusaderSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_two_hand_attack4.A_FallenCrusaderSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_two_hand_hit.A_FallenCrusaderSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_two_hand_death.A_FallenCrusaderSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_two_hand_skill1.A_FallenCrusaderSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_two_hand_skill2.A_FallenCrusaderSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_two_hand_cast.A_FallenCrusaderSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/FallenCrusaderSet/A_FallenCrusaderSet_two_hand_shout.A_FallenCrusaderSet_two_hand_shout"
+   },
+   "walkSpeedCm": 225.8,
+   "runSpeedCm": 436.4
   },
   "FallenHighInquisitor": {
    "war_cry": "/Game/FabDerived/Anim/FallenHighInquisitor/A_FallenHighInquisitor_monster_war_cry.A_FallenHighInquisitor_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/FallenHighInquisitor/A_FallenHighInquisitor_monster_ground_slam.A_FallenHighInquisitor_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/FallenHighInquisitor/A_FallenHighInquisitor_monster_ground_slam.A_FallenHighInquisitor_monster_ground_slam",
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_loco_idle.A_FallenHighInquisitorSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_loco_walk_f.A_FallenHighInquisitorSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_loco_walk_b.A_FallenHighInquisitorSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_loco_walk_l.A_FallenHighInquisitorSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_loco_walk_r.A_FallenHighInquisitorSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_loco_run_f.A_FallenHighInquisitorSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_spell_attack1.A_FallenHighInquisitorSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_spell_attack2.A_FallenHighInquisitorSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_spell_attack4.A_FallenHighInquisitorSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_spell_hit.A_FallenHighInquisitorSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_spell_death.A_FallenHighInquisitorSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_spell_skill1.A_FallenHighInquisitorSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_spell_skill2.A_FallenHighInquisitorSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_spell_heal.A_FallenHighInquisitorSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_spell_shout.A_FallenHighInquisitorSet_spell_shout"
+   },
+   "walkSpeedCm": 186.9,
+   "runSpeedCm": 337.7
   },
   "FallenInquisitorCrossbow": {
    "war_cry": "/Game/FabDerived/Anim/FallenInquisitorCrossbow/A_FallenInquisitorCrossbow_monster_war_cry.A_FallenInquisitorCrossbow_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/FallenInquisitorCrossbow/A_FallenInquisitorCrossbow_monster_ground_slam.A_FallenInquisitorCrossbow_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/FallenInquisitorCrossbow/A_FallenInquisitorCrossbow_monster_ground_slam.A_FallenInquisitorCrossbow_monster_ground_slam",
+   "set": "crossbow",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_loco_idle.A_FallenInquisitorCrossbowSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_loco_walk_f.A_FallenInquisitorCrossbowSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_loco_walk_b.A_FallenInquisitorCrossbowSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_loco_walk_l.A_FallenInquisitorCrossbowSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_loco_walk_r.A_FallenInquisitorCrossbowSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_loco_run_f.A_FallenInquisitorCrossbowSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_crossbow_attack1.A_FallenInquisitorCrossbowSet_crossbow_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_crossbow_attack2.A_FallenInquisitorCrossbowSet_crossbow_attack2",
+    "attack3": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_crossbow_attack3.A_FallenInquisitorCrossbowSet_crossbow_attack3",
+    "hit": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_crossbow_hit.A_FallenInquisitorCrossbowSet_crossbow_hit",
+    "death": "/Game/FabDerived/Anim/FallenInquisitorCrossbowSet/A_FallenInquisitorCrossbowSet_crossbow_death.A_FallenInquisitorCrossbowSet_crossbow_death"
+   },
+   "walkSpeedCm": 197.2,
+   "runSpeedCm": 272.3
   },
   "FallenSquire": {
    "war_cry": "/Game/FabDerived/Anim/FallenSquire/A_FallenSquire_monster_war_cry.A_FallenSquire_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/FallenSquire/A_FallenSquire_monster_ground_slam.A_FallenSquire_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/FallenSquire/A_FallenSquire_monster_ground_slam.A_FallenSquire_monster_ground_slam",
+   "set": "one_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_loco_idle.A_FallenSquireSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_loco_walk_f.A_FallenSquireSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_loco_walk_b.A_FallenSquireSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_loco_walk_l.A_FallenSquireSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_loco_walk_r.A_FallenSquireSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_loco_run_f.A_FallenSquireSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_one_hand_attack1.A_FallenSquireSet_one_hand_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_one_hand_attack3.A_FallenSquireSet_one_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_one_hand_attack6.A_FallenSquireSet_one_hand_attack6",
+    "hit": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_one_hand_hit.A_FallenSquireSet_one_hand_hit",
+    "death": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_one_hand_death.A_FallenSquireSet_one_hand_death",
+    "heavy": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_one_hand_skill1.A_FallenSquireSet_one_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_one_hand_skill2.A_FallenSquireSet_one_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_one_hand_cast.A_FallenSquireSet_one_hand_cast",
+    "shout": "/Game/FabDerived/Anim/FallenSquireSet/A_FallenSquireSet_one_hand_shout.A_FallenSquireSet_one_hand_shout"
+   },
+   "walkSpeedCm": 216.3,
+   "runSpeedCm": 328.0
+  },
+  "FeralShaman": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_idle.A_FeralShamanSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_walk_f.A_FeralShamanSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_walk_b.A_FeralShamanSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_walk_l.A_FeralShamanSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_walk_r.A_FeralShamanSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_run_f.A_FeralShamanSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_attack1.A_FeralShamanSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_attack2.A_FeralShamanSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_attack4.A_FeralShamanSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_hit.A_FeralShamanSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_death.A_FeralShamanSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_skill1.A_FeralShamanSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_skill2.A_FeralShamanSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_heal.A_FeralShamanSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_shout.A_FeralShamanSet_spell_shout"
+   },
+   "walkSpeedCm": 155.3,
+   "runSpeedCm": 269.1
   },
   "Flagellant": {
    "war_cry": "/Game/FabDerived/Anim/Flagellant/A_Flagellant_monster_war_cry.A_Flagellant_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/Flagellant/A_Flagellant_monster_ground_slam.A_Flagellant_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/Flagellant/A_Flagellant_monster_ground_slam.A_Flagellant_monster_ground_slam",
+   "set": "dual",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_loco_idle.A_FlagellantSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_loco_walk_f.A_FlagellantSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_loco_walk_b.A_FlagellantSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_loco_walk_l.A_FlagellantSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_loco_walk_r.A_FlagellantSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_loco_run_f.A_FlagellantSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_dual_attack1.A_FlagellantSet_dual_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_dual_attack2.A_FlagellantSet_dual_attack2",
+    "attack3": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_dual_attack3.A_FlagellantSet_dual_attack3",
+    "hit": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_dual_hit.A_FlagellantSet_dual_hit",
+    "death": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_dual_death.A_FlagellantSet_dual_death",
+    "heavy": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_dual_skill1.A_FlagellantSet_dual_skill1",
+    "heavy2": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_dual_skill2.A_FlagellantSet_dual_skill2",
+    "cast": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_dual_cast.A_FlagellantSet_dual_cast",
+    "shout": "/Game/FabDerived/Anim/FlagellantSet/A_FlagellantSet_dual_shout.A_FlagellantSet_dual_shout"
+   },
+   "walkSpeedCm": 212.3,
+   "runSpeedCm": 323.0
   },
   "GraniteCrusherHQ": {
    "war_cry": "/Game/FabDerived/Anim/GraniteCrusherHQ/A_GraniteCrusherHQ_monster_war_cry.A_GraniteCrusherHQ_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/GraniteCrusherHQ/A_GraniteCrusherHQ_monster_ground_slam.A_GraniteCrusherHQ_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/GraniteCrusherHQ/A_GraniteCrusherHQ_monster_ground_slam.A_GraniteCrusherHQ_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_loco_idle.A_GraniteCrusherHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_loco_walk_f.A_GraniteCrusherHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_loco_walk_b.A_GraniteCrusherHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_loco_walk_l.A_GraniteCrusherHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_loco_walk_r.A_GraniteCrusherHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_loco_run_f.A_GraniteCrusherHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_unarmed_attack1.A_GraniteCrusherHQSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_unarmed_attack2.A_GraniteCrusherHQSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_unarmed_attack3.A_GraniteCrusherHQSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_unarmed_hit.A_GraniteCrusherHQSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_unarmed_death.A_GraniteCrusherHQSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_unarmed_skill1.A_GraniteCrusherHQSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_unarmed_skill2.A_GraniteCrusherHQSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_unarmed_cast.A_GraniteCrusherHQSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/GraniteCrusherHQSet/A_GraniteCrusherHQSet_unarmed_shout.A_GraniteCrusherHQSet_unarmed_shout"
+   },
+   "walkSpeedCm": 192.9,
+   "runSpeedCm": 299.0
+  },
+  "GravemawPackLeader": {
+   "set": "two_hand",
+   "roles": {
+    "walk": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_loco_walk_f.A_GravemawPackLeaderSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_loco_walk_b.A_GravemawPackLeaderSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_loco_walk_l.A_GravemawPackLeaderSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_loco_walk_r.A_GravemawPackLeaderSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_loco_run_f.A_GravemawPackLeaderSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_two_hand_attack2.A_GravemawPackLeaderSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_two_hand_attack3.A_GravemawPackLeaderSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_two_hand_attack4.A_GravemawPackLeaderSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_two_hand_hit.A_GravemawPackLeaderSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_two_hand_death.A_GravemawPackLeaderSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_two_hand_skill1.A_GravemawPackLeaderSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_two_hand_skill2.A_GravemawPackLeaderSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_two_hand_cast.A_GravemawPackLeaderSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/GravemawPackLeaderSet/A_GravemawPackLeaderSet_two_hand_shout.A_GravemawPackLeaderSet_two_hand_shout"
+   },
+   "walkSpeedCm": 166.0,
+   "runSpeedCm": 314.7
+  },
+  "HollowShieldbearer": {
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_loco_idle.A_HollowShieldbearerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_loco_walk_f.A_HollowShieldbearerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_loco_walk_b.A_HollowShieldbearerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_loco_walk_l.A_HollowShieldbearerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_loco_walk_r.A_HollowShieldbearerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_loco_run_f.A_HollowShieldbearerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_sword_shield_attack3.A_HollowShieldbearerSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_sword_shield_attack4.A_HollowShieldbearerSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_sword_shield_attack6.A_HollowShieldbearerSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_sword_shield_hit.A_HollowShieldbearerSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_sword_shield_death.A_HollowShieldbearerSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_sword_shield_skill1.A_HollowShieldbearerSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_sword_shield_skill2.A_HollowShieldbearerSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_sword_shield_cast.A_HollowShieldbearerSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/HollowShieldbearerSet/A_HollowShieldbearerSet_sword_shield_shout.A_HollowShieldbearerSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 153.3,
+   "runSpeedCm": 320.5
+  },
+  "HollowShieldbearerV2": {
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_loco_idle.A_HollowShieldbearerV2Set_loco_idle",
+    "walk": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_loco_walk_f.A_HollowShieldbearerV2Set_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_loco_walk_b.A_HollowShieldbearerV2Set_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_loco_walk_l.A_HollowShieldbearerV2Set_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_loco_walk_r.A_HollowShieldbearerV2Set_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_loco_run_f.A_HollowShieldbearerV2Set_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_sword_shield_attack3.A_HollowShieldbearerV2Set_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_sword_shield_attack4.A_HollowShieldbearerV2Set_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_sword_shield_attack6.A_HollowShieldbearerV2Set_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_sword_shield_hit.A_HollowShieldbearerV2Set_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_sword_shield_death.A_HollowShieldbearerV2Set_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_sword_shield_skill1.A_HollowShieldbearerV2Set_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_sword_shield_skill2.A_HollowShieldbearerV2Set_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_sword_shield_cast.A_HollowShieldbearerV2Set_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/HollowShieldbearerV2Set/A_HollowShieldbearerV2Set_sword_shield_shout.A_HollowShieldbearerV2Set_sword_shield_shout"
+   },
+   "walkSpeedCm": 166.3,
+   "runSpeedCm": 365.5
   },
   "HollowSiegebreaker": {
    "war_cry": "/Game/FabDerived/Anim/HollowSiegebreaker/A_HollowSiegebreaker_monster_war_cry.A_HollowSiegebreaker_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/HollowSiegebreaker/A_HollowSiegebreaker_monster_ground_slam.A_HollowSiegebreaker_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/HollowSiegebreaker/A_HollowSiegebreaker_monster_ground_slam.A_HollowSiegebreaker_monster_ground_slam",
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_loco_idle.A_HollowSiegebreakerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_loco_walk_f.A_HollowSiegebreakerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_loco_walk_b.A_HollowSiegebreakerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_loco_walk_l.A_HollowSiegebreakerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_loco_walk_r.A_HollowSiegebreakerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_loco_run_f.A_HollowSiegebreakerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_two_hand_attack2.A_HollowSiegebreakerSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_two_hand_attack3.A_HollowSiegebreakerSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_two_hand_attack4.A_HollowSiegebreakerSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_two_hand_hit.A_HollowSiegebreakerSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_two_hand_death.A_HollowSiegebreakerSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_two_hand_skill1.A_HollowSiegebreakerSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_two_hand_skill2.A_HollowSiegebreakerSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_two_hand_cast.A_HollowSiegebreakerSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/HollowSiegebreakerSet/A_HollowSiegebreakerSet_two_hand_shout.A_HollowSiegebreakerSet_two_hand_shout"
+   },
+   "walkSpeedCm": 185.9,
+   "runSpeedCm": 338.6
   },
   "IronboundBruiser": {
    "war_cry": "/Game/FabDerived/Anim/IronboundBruiser/A_IronboundBruiser_monster_war_cry.A_IronboundBruiser_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/IronboundBruiser/A_IronboundBruiser_monster_ground_slam.A_IronboundBruiser_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/IronboundBruiser/A_IronboundBruiser_monster_ground_slam.A_IronboundBruiser_monster_ground_slam",
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_loco_idle.A_IronboundBruiserSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_loco_walk_f.A_IronboundBruiserSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_loco_walk_b.A_IronboundBruiserSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_loco_walk_l.A_IronboundBruiserSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_loco_walk_r.A_IronboundBruiserSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_loco_run_f.A_IronboundBruiserSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_two_hand_attack2.A_IronboundBruiserSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_two_hand_attack3.A_IronboundBruiserSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_two_hand_attack4.A_IronboundBruiserSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_two_hand_hit.A_IronboundBruiserSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_two_hand_death.A_IronboundBruiserSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_two_hand_skill1.A_IronboundBruiserSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_two_hand_skill2.A_IronboundBruiserSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_two_hand_cast.A_IronboundBruiserSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/IronboundBruiserSet/A_IronboundBruiserSet_two_hand_shout.A_IronboundBruiserSet_two_hand_shout"
+   },
+   "walkSpeedCm": 159.9,
+   "runSpeedCm": 297.0
   },
   "IronboundBruiserV2": {
    "war_cry": "/Game/FabDerived/Anim/IronboundBruiserV2/A_IronboundBruiserV2_monster_war_cry.A_IronboundBruiserV2_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/IronboundBruiserV2/A_IronboundBruiserV2_monster_ground_slam.A_IronboundBruiserV2_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/IronboundBruiserV2/A_IronboundBruiserV2_monster_ground_slam.A_IronboundBruiserV2_monster_ground_slam",
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_loco_idle.A_IronboundBruiserV2Set_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_loco_walk_f.A_IronboundBruiserV2Set_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_loco_walk_b.A_IronboundBruiserV2Set_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_loco_walk_l.A_IronboundBruiserV2Set_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_loco_walk_r.A_IronboundBruiserV2Set_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_loco_run_f.A_IronboundBruiserV2Set_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_two_hand_attack2.A_IronboundBruiserV2Set_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_two_hand_attack3.A_IronboundBruiserV2Set_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_two_hand_attack4.A_IronboundBruiserV2Set_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_two_hand_hit.A_IronboundBruiserV2Set_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_two_hand_death.A_IronboundBruiserV2Set_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_two_hand_skill1.A_IronboundBruiserV2Set_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_two_hand_skill2.A_IronboundBruiserV2Set_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_two_hand_cast.A_IronboundBruiserV2Set_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/IronboundBruiserV2Set/A_IronboundBruiserV2Set_two_hand_shout.A_IronboundBruiserV2Set_two_hand_shout"
+   },
+   "walkSpeedCm": 169.0,
+   "runSpeedCm": 296.9
   },
   "IronhideBulwark": {
    "war_cry": "/Game/FabDerived/Anim/IronhideBulwark/A_IronhideBulwark_monster_war_cry.A_IronhideBulwark_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/IronhideBulwark/A_IronhideBulwark_monster_ground_slam.A_IronhideBulwark_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/IronhideBulwark/A_IronhideBulwark_monster_ground_slam.A_IronhideBulwark_monster_ground_slam",
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_idle.A_IronhideBulwarkSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_walk_f.A_IronhideBulwarkSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_walk_b.A_IronhideBulwarkSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_walk_l.A_IronhideBulwarkSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_walk_r.A_IronhideBulwarkSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_loco_run_f.A_IronhideBulwarkSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_attack3.A_IronhideBulwarkSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_attack4.A_IronhideBulwarkSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_attack6.A_IronhideBulwarkSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_hit.A_IronhideBulwarkSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_death.A_IronhideBulwarkSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_skill1.A_IronhideBulwarkSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_skill2.A_IronhideBulwarkSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_cast.A_IronhideBulwarkSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/IronhideBulwarkSet/A_IronhideBulwarkSet_sword_shield_shout.A_IronhideBulwarkSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 174.4,
+   "runSpeedCm": 356.4
   },
   "IronhideDrummerHQ": {
    "war_cry": "/Game/FabDerived/Anim/IronhideDrummerHQ/A_IronhideDrummerHQ_monster_war_cry.A_IronhideDrummerHQ_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/IronhideDrummerHQ/A_IronhideDrummerHQ_monster_ground_slam.A_IronhideDrummerHQ_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/IronhideDrummerHQ/A_IronhideDrummerHQ_monster_ground_slam.A_IronhideDrummerHQ_monster_ground_slam",
+   "set": "dual",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_idle.A_IronhideDrummerHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_walk_f.A_IronhideDrummerHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_walk_b.A_IronhideDrummerHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_walk_l.A_IronhideDrummerHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_walk_r.A_IronhideDrummerHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_loco_run_f.A_IronhideDrummerHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_attack1.A_IronhideDrummerHQSet_dual_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_attack2.A_IronhideDrummerHQSet_dual_attack2",
+    "attack3": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_attack3.A_IronhideDrummerHQSet_dual_attack3",
+    "hit": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_hit.A_IronhideDrummerHQSet_dual_hit",
+    "death": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_death.A_IronhideDrummerHQSet_dual_death",
+    "heavy": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_skill1.A_IronhideDrummerHQSet_dual_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_skill2.A_IronhideDrummerHQSet_dual_skill2",
+    "cast": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_cast.A_IronhideDrummerHQSet_dual_cast",
+    "shout": "/Game/FabDerived/Anim/IronhideDrummerHQSet/A_IronhideDrummerHQSet_dual_shout.A_IronhideDrummerHQSet_dual_shout"
+   },
+   "walkSpeedCm": 207.2,
+   "runSpeedCm": 304.1
   },
   "IronhideGrunt": {
    "war_cry": "/Game/FabDerived/Anim/IronhideGrunt/A_IronhideGrunt_monster_war_cry.A_IronhideGrunt_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/IronhideGrunt/A_IronhideGrunt_monster_ground_slam.A_IronhideGrunt_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/IronhideGrunt/A_IronhideGrunt_monster_ground_slam.A_IronhideGrunt_monster_ground_slam",
+   "set": "one_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_idle.A_IronhideGruntSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_walk_f.A_IronhideGruntSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_walk_b.A_IronhideGruntSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_walk_l.A_IronhideGruntSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_walk_r.A_IronhideGruntSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_loco_run_f.A_IronhideGruntSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_attack1.A_IronhideGruntSet_one_hand_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_attack3.A_IronhideGruntSet_one_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_attack6.A_IronhideGruntSet_one_hand_attack6",
+    "hit": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_hit.A_IronhideGruntSet_one_hand_hit",
+    "death": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_death.A_IronhideGruntSet_one_hand_death",
+    "heavy": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_skill1.A_IronhideGruntSet_one_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_skill2.A_IronhideGruntSet_one_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_cast.A_IronhideGruntSet_one_hand_cast",
+    "shout": "/Game/FabDerived/Anim/IronhideGruntSet/A_IronhideGruntSet_one_hand_shout.A_IronhideGruntSet_one_hand_shout"
+   },
+   "walkSpeedCm": 208.4,
+   "runSpeedCm": 317.8
+  },
+  "IronhideJuggernaut": {
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_idle.A_IronhideJuggernautSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_walk_f.A_IronhideJuggernautSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_walk_b.A_IronhideJuggernautSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_walk_l.A_IronhideJuggernautSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_walk_r.A_IronhideJuggernautSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_loco_run_f.A_IronhideJuggernautSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_attack2.A_IronhideJuggernautSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_attack3.A_IronhideJuggernautSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_attack4.A_IronhideJuggernautSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_hit.A_IronhideJuggernautSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_death.A_IronhideJuggernautSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_skill1.A_IronhideJuggernautSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_skill2.A_IronhideJuggernautSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_cast.A_IronhideJuggernautSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/IronhideJuggernautSet/A_IronhideJuggernautSet_two_hand_shout.A_IronhideJuggernautSet_two_hand_shout"
+   },
+   "walkSpeedCm": 164.2,
+   "runSpeedCm": 294.8
+  },
+  "IronhideWarchief": {
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_idle.A_IronhideWarchiefSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_walk_f.A_IronhideWarchiefSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_walk_b.A_IronhideWarchiefSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_walk_l.A_IronhideWarchiefSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_walk_r.A_IronhideWarchiefSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_loco_run_f.A_IronhideWarchiefSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_attack2.A_IronhideWarchiefSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_attack3.A_IronhideWarchiefSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_attack4.A_IronhideWarchiefSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_hit.A_IronhideWarchiefSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_death.A_IronhideWarchiefSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_skill1.A_IronhideWarchiefSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_skill2.A_IronhideWarchiefSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_cast.A_IronhideWarchiefSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/IronhideWarchiefSet/A_IronhideWarchiefSet_two_hand_shout.A_IronhideWarchiefSet_two_hand_shout"
+   },
+   "walkSpeedCm": 156.6,
+   "runSpeedCm": 293.5
   },
   "MawOfTheDeep": {
    "war_cry": "/Game/FabDerived/Anim/MawOfTheDeep/A_MawOfTheDeep_monster_war_cry.A_MawOfTheDeep_monster_war_cry",
@@ -315,19 +1201,165 @@
   },
   "NullWardenHQ": {
    "war_cry": "/Game/FabDerived/Anim/NullWardenHQ/A_NullWardenHQ_monster_war_cry.A_NullWardenHQ_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/NullWardenHQ/A_NullWardenHQ_monster_ground_slam.A_NullWardenHQ_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/NullWardenHQ/A_NullWardenHQ_monster_ground_slam.A_NullWardenHQ_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_loco_idle.A_NullWardenHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_loco_walk_f.A_NullWardenHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_loco_walk_b.A_NullWardenHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_loco_walk_l.A_NullWardenHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_loco_walk_r.A_NullWardenHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_loco_run_f.A_NullWardenHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_unarmed_attack1.A_NullWardenHQSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_unarmed_attack2.A_NullWardenHQSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_unarmed_attack3.A_NullWardenHQSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_unarmed_hit.A_NullWardenHQSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_unarmed_death.A_NullWardenHQSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_unarmed_skill1.A_NullWardenHQSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_unarmed_skill2.A_NullWardenHQSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_unarmed_cast.A_NullWardenHQSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/NullWardenHQSet/A_NullWardenHQSet_unarmed_shout.A_NullWardenHQSet_unarmed_shout"
+   },
+   "walkSpeedCm": 179.4,
+   "runSpeedCm": 291.3
   },
   "OathbreakerTemplar": {
    "war_cry": "/Game/FabDerived/Anim/OathbreakerTemplar/A_OathbreakerTemplar_monster_war_cry.A_OathbreakerTemplar_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/OathbreakerTemplar/A_OathbreakerTemplar_monster_ground_slam.A_OathbreakerTemplar_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/OathbreakerTemplar/A_OathbreakerTemplar_monster_ground_slam.A_OathbreakerTemplar_monster_ground_slam",
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_loco_idle.A_OathbreakerTemplarSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_loco_walk_f.A_OathbreakerTemplarSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_loco_walk_b.A_OathbreakerTemplarSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_loco_walk_l.A_OathbreakerTemplarSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_loco_walk_r.A_OathbreakerTemplarSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_loco_run_f.A_OathbreakerTemplarSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_sword_shield_attack3.A_OathbreakerTemplarSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_sword_shield_attack4.A_OathbreakerTemplarSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_sword_shield_attack6.A_OathbreakerTemplarSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_sword_shield_hit.A_OathbreakerTemplarSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_sword_shield_death.A_OathbreakerTemplarSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_sword_shield_skill1.A_OathbreakerTemplarSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_sword_shield_skill2.A_OathbreakerTemplarSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_sword_shield_cast.A_OathbreakerTemplarSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/OathbreakerTemplarSet/A_OathbreakerTemplarSet_sword_shield_shout.A_OathbreakerTemplarSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 156.3,
+   "runSpeedCm": 361.0
   },
   "RedmoonAxethrower": {
    "war_cry": "/Game/FabDerived/Anim/RedmoonAxethrower/A_RedmoonAxethrower_monster_war_cry.A_RedmoonAxethrower_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/RedmoonAxethrower/A_RedmoonAxethrower_monster_ground_slam.A_RedmoonAxethrower_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/RedmoonAxethrower/A_RedmoonAxethrower_monster_ground_slam.A_RedmoonAxethrower_monster_ground_slam",
+   "set": "one_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_idle.A_RedmoonAxethrowerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_walk_f.A_RedmoonAxethrowerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_walk_b.A_RedmoonAxethrowerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_walk_l.A_RedmoonAxethrowerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_walk_r.A_RedmoonAxethrowerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_loco_run_f.A_RedmoonAxethrowerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_attack1.A_RedmoonAxethrowerSet_one_hand_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_attack3.A_RedmoonAxethrowerSet_one_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_attack6.A_RedmoonAxethrowerSet_one_hand_attack6",
+    "hit": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_hit.A_RedmoonAxethrowerSet_one_hand_hit",
+    "death": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_death.A_RedmoonAxethrowerSet_one_hand_death",
+    "heavy": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_skill1.A_RedmoonAxethrowerSet_one_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_skill2.A_RedmoonAxethrowerSet_one_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_cast.A_RedmoonAxethrowerSet_one_hand_cast",
+    "shout": "/Game/FabDerived/Anim/RedmoonAxethrowerSet/A_RedmoonAxethrowerSet_one_hand_shout.A_RedmoonAxethrowerSet_one_hand_shout"
+   },
+   "walkSpeedCm": 221.4,
+   "runSpeedCm": 332.3
   },
   "RedmoonRavager": {
    "war_cry": "/Game/FabDerived/Anim/RedmoonRavager/A_RedmoonRavager_monster_war_cry.A_RedmoonRavager_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/RedmoonRavager/A_RedmoonRavager_monster_ground_slam.A_RedmoonRavager_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/RedmoonRavager/A_RedmoonRavager_monster_ground_slam.A_RedmoonRavager_monster_ground_slam",
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_idle.A_RedmoonRavagerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_walk_f.A_RedmoonRavagerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_walk_b.A_RedmoonRavagerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_walk_l.A_RedmoonRavagerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_walk_r.A_RedmoonRavagerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_loco_run_f.A_RedmoonRavagerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_attack2.A_RedmoonRavagerSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_attack3.A_RedmoonRavagerSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_attack4.A_RedmoonRavagerSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_hit.A_RedmoonRavagerSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_death.A_RedmoonRavagerSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_skill1.A_RedmoonRavagerSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_skill2.A_RedmoonRavagerSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_cast.A_RedmoonRavagerSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/RedmoonRavagerSet/A_RedmoonRavagerSet_two_hand_shout.A_RedmoonRavagerSet_two_hand_shout"
+   },
+   "walkSpeedCm": 178.8,
+   "runSpeedCm": 337.9
+  },
+  "RiftGazer": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_loco_idle.A_RiftGazerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_loco_walk_f.A_RiftGazerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_loco_walk_b.A_RiftGazerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_loco_walk_l.A_RiftGazerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_loco_walk_r.A_RiftGazerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_loco_run_f.A_RiftGazerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_spell_attack1.A_RiftGazerSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_spell_attack2.A_RiftGazerSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_spell_attack4.A_RiftGazerSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_spell_hit.A_RiftGazerSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_spell_death.A_RiftGazerSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_spell_skill1.A_RiftGazerSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_spell_skill2.A_RiftGazerSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_spell_heal.A_RiftGazerSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/RiftGazerSet/A_RiftGazerSet_spell_shout.A_RiftGazerSet_spell_shout"
+   },
+   "walkSpeedCm": 170.5,
+   "runSpeedCm": 309.6
+  },
+  "RiftStalkerHQ": {
+   "set": "dual",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_loco_idle.A_RiftStalkerHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_loco_walk_f.A_RiftStalkerHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_loco_walk_b.A_RiftStalkerHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_loco_walk_l.A_RiftStalkerHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_loco_walk_r.A_RiftStalkerHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_loco_run_f.A_RiftStalkerHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_dual_attack1.A_RiftStalkerHQSet_dual_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_dual_attack2.A_RiftStalkerHQSet_dual_attack2",
+    "attack3": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_dual_attack3.A_RiftStalkerHQSet_dual_attack3",
+    "hit": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_dual_hit.A_RiftStalkerHQSet_dual_hit",
+    "death": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_dual_death.A_RiftStalkerHQSet_dual_death",
+    "heavy": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_dual_skill1.A_RiftStalkerHQSet_dual_skill1",
+    "heavy2": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_dual_skill2.A_RiftStalkerHQSet_dual_skill2",
+    "cast": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_dual_cast.A_RiftStalkerHQSet_dual_cast",
+    "shout": "/Game/FabDerived/Anim/RiftStalkerHQSet/A_RiftStalkerHQSet_dual_shout.A_RiftStalkerHQSet_dual_shout"
+   },
+   "walkSpeedCm": 241.5,
+   "runSpeedCm": 365.2
+  },
+  "RiftWeaverHQ": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_loco_idle.A_RiftWeaverHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_loco_walk_f.A_RiftWeaverHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_loco_walk_b.A_RiftWeaverHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_loco_walk_l.A_RiftWeaverHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_loco_walk_r.A_RiftWeaverHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_loco_run_f.A_RiftWeaverHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_spell_attack1.A_RiftWeaverHQSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_spell_attack2.A_RiftWeaverHQSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_spell_attack4.A_RiftWeaverHQSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_spell_hit.A_RiftWeaverHQSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_spell_death.A_RiftWeaverHQSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_spell_skill1.A_RiftWeaverHQSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_spell_skill2.A_RiftWeaverHQSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_spell_heal.A_RiftWeaverHQSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/RiftWeaverHQSet/A_RiftWeaverHQSet_spell_shout.A_RiftWeaverHQSet_spell_shout"
+   },
+   "walkSpeedCm": 216.6,
+   "runSpeedCm": 353.2
   },
   "RotbloomShamanHQ": {
    "set": "spell",
@@ -353,7 +1385,27 @@
   },
   "RuneSentinelHQ": {
    "war_cry": "/Game/FabDerived/Anim/RuneSentinelHQ/A_RuneSentinelHQ_monster_war_cry.A_RuneSentinelHQ_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/RuneSentinelHQ/A_RuneSentinelHQ_monster_ground_slam.A_RuneSentinelHQ_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/RuneSentinelHQ/A_RuneSentinelHQ_monster_ground_slam.A_RuneSentinelHQ_monster_ground_slam",
+   "set": "one_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_loco_idle.A_RuneSentinelHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_loco_walk_f.A_RuneSentinelHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_loco_walk_b.A_RuneSentinelHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_loco_walk_l.A_RuneSentinelHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_loco_walk_r.A_RuneSentinelHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_loco_run_f.A_RuneSentinelHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_one_hand_attack1.A_RuneSentinelHQSet_one_hand_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_one_hand_attack3.A_RuneSentinelHQSet_one_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_one_hand_attack6.A_RuneSentinelHQSet_one_hand_attack6",
+    "hit": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_one_hand_hit.A_RuneSentinelHQSet_one_hand_hit",
+    "death": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_one_hand_death.A_RuneSentinelHQSet_one_hand_death",
+    "heavy": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_one_hand_skill1.A_RuneSentinelHQSet_one_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_one_hand_skill2.A_RuneSentinelHQSet_one_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_one_hand_cast.A_RuneSentinelHQSet_one_hand_cast",
+    "shout": "/Game/FabDerived/Anim/RuneSentinelHQSet/A_RuneSentinelHQSet_one_hand_shout.A_RuneSentinelHQSet_one_hand_shout"
+   },
+   "walkSpeedCm": 217.7,
+   "runSpeedCm": 344.0
   },
   "SaplingBrute": {
    "war_cry": "/Game/FabDerived/Anim/SaplingBrute/A_SaplingBrute_monster_war_cry.A_SaplingBrute_monster_war_cry",
@@ -381,7 +1433,27 @@
   },
   "SkitterDrone": {
    "war_cry": "/Game/FabDerived/Anim/SkitterDrone/A_SkitterDrone_monster_war_cry.A_SkitterDrone_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/SkitterDrone/A_SkitterDrone_monster_ground_slam.A_SkitterDrone_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/SkitterDrone/A_SkitterDrone_monster_ground_slam.A_SkitterDrone_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_idle.A_SkitterDroneSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_walk_f.A_SkitterDroneSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_walk_b.A_SkitterDroneSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_walk_l.A_SkitterDroneSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_walk_r.A_SkitterDroneSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_run_f.A_SkitterDroneSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_attack1.A_SkitterDroneSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_attack2.A_SkitterDroneSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_attack3.A_SkitterDroneSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_hit.A_SkitterDroneSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_death.A_SkitterDroneSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_skill1.A_SkitterDroneSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_skill2.A_SkitterDroneSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_cast.A_SkitterDroneSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_shout.A_SkitterDroneSet_unarmed_shout"
+   },
+   "walkSpeedCm": 97.9,
+   "runSpeedCm": 152.7
   },
   "Sporeling": {
    "war_cry": "/Game/FabDerived/Anim/Sporeling/A_Sporeling_monster_war_cry.A_Sporeling_monster_war_cry",
@@ -406,6 +1478,50 @@
    },
    "walkSpeedCm": 66.9,
    "runSpeedCm": 107.1
+  },
+  "StonebornColossus": {
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_loco_idle.A_StonebornColossusSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_loco_walk_f.A_StonebornColossusSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_loco_walk_b.A_StonebornColossusSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_loco_walk_l.A_StonebornColossusSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_loco_walk_r.A_StonebornColossusSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_loco_run_f.A_StonebornColossusSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_unarmed_attack1.A_StonebornColossusSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_unarmed_attack2.A_StonebornColossusSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_unarmed_attack3.A_StonebornColossusSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_unarmed_hit.A_StonebornColossusSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_unarmed_death.A_StonebornColossusSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_unarmed_skill1.A_StonebornColossusSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_unarmed_skill2.A_StonebornColossusSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_unarmed_cast.A_StonebornColossusSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/StonebornColossusSet/A_StonebornColossusSet_unarmed_shout.A_StonebornColossusSet_unarmed_shout"
+   },
+   "walkSpeedCm": 209.5,
+   "runSpeedCm": 328.5
+  },
+  "StonebornForgelord": {
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_loco_idle.A_StonebornForgelordSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_loco_walk_f.A_StonebornForgelordSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_loco_walk_b.A_StonebornForgelordSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_loco_walk_l.A_StonebornForgelordSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_loco_walk_r.A_StonebornForgelordSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_loco_run_f.A_StonebornForgelordSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_two_hand_attack2.A_StonebornForgelordSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_two_hand_attack3.A_StonebornForgelordSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_two_hand_attack4.A_StonebornForgelordSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_two_hand_hit.A_StonebornForgelordSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_two_hand_death.A_StonebornForgelordSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_two_hand_skill1.A_StonebornForgelordSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_two_hand_skill2.A_StonebornForgelordSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_two_hand_cast.A_StonebornForgelordSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/StonebornForgelordSet/A_StonebornForgelordSet_two_hand_shout.A_StonebornForgelordSet_two_hand_shout"
+   },
+   "walkSpeedCm": 155.6,
+   "runSpeedCm": 291.6
   },
   "Thornspitter": {
    "set": "spell",
@@ -453,7 +1569,27 @@
   },
   "TuskedBehemothHQ": {
    "war_cry": "/Game/FabDerived/Anim/TuskedBehemothHQ/A_TuskedBehemothHQ_monster_war_cry.A_TuskedBehemothHQ_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/TuskedBehemothHQ/A_TuskedBehemothHQ_monster_ground_slam.A_TuskedBehemothHQ_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/TuskedBehemothHQ/A_TuskedBehemothHQ_monster_ground_slam.A_TuskedBehemothHQ_monster_ground_slam",
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_idle.A_TuskedBehemothHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_walk_f.A_TuskedBehemothHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_walk_b.A_TuskedBehemothHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_walk_l.A_TuskedBehemothHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_walk_r.A_TuskedBehemothHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_run_f.A_TuskedBehemothHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_attack3.A_TuskedBehemothHQSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_attack4.A_TuskedBehemothHQSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_attack6.A_TuskedBehemothHQSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_hit.A_TuskedBehemothHQSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_death.A_TuskedBehemothHQSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_skill1.A_TuskedBehemothHQSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_skill2.A_TuskedBehemothHQSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_cast.A_TuskedBehemothHQSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_shout.A_TuskedBehemothHQSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 143.8,
+   "runSpeedCm": 333.3
   },
   "Vinelasher": {
    "war_cry": "/Game/FabDerived/Anim/Vinelasher/A_Vinelasher_monster_war_cry.A_Vinelasher_monster_war_cry",
@@ -481,19 +1617,121 @@
   },
   "VoidRavager": {
    "war_cry": "/Game/FabDerived/Anim/VoidRavager/A_VoidRavager_monster_war_cry.A_VoidRavager_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/VoidRavager/A_VoidRavager_monster_ground_slam.A_VoidRavager_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/VoidRavager/A_VoidRavager_monster_ground_slam.A_VoidRavager_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_loco_idle.A_VoidRavagerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_loco_walk_f.A_VoidRavagerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_loco_walk_b.A_VoidRavagerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_loco_walk_l.A_VoidRavagerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_loco_walk_r.A_VoidRavagerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_loco_run_f.A_VoidRavagerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_unarmed_attack1.A_VoidRavagerSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_unarmed_attack2.A_VoidRavagerSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_unarmed_attack3.A_VoidRavagerSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_unarmed_hit.A_VoidRavagerSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_unarmed_death.A_VoidRavagerSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_unarmed_skill1.A_VoidRavagerSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_unarmed_skill2.A_VoidRavagerSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_unarmed_cast.A_VoidRavagerSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/VoidRavagerSet/A_VoidRavagerSet_unarmed_shout.A_VoidRavagerSet_unarmed_shout"
+   },
+   "walkSpeedCm": 196.0,
+   "runSpeedCm": 316.3
+  },
+  "VoidbornDevourer": {
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_loco_idle.A_VoidbornDevourerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_loco_walk_f.A_VoidbornDevourerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_loco_walk_b.A_VoidbornDevourerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_loco_walk_l.A_VoidbornDevourerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_loco_walk_r.A_VoidbornDevourerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_loco_run_f.A_VoidbornDevourerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_unarmed_attack1.A_VoidbornDevourerSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_unarmed_attack2.A_VoidbornDevourerSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_unarmed_attack3.A_VoidbornDevourerSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_unarmed_hit.A_VoidbornDevourerSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_unarmed_death.A_VoidbornDevourerSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_unarmed_skill1.A_VoidbornDevourerSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_unarmed_skill2.A_VoidbornDevourerSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_unarmed_cast.A_VoidbornDevourerSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/VoidbornDevourerSet/A_VoidbornDevourerSet_unarmed_shout.A_VoidbornDevourerSet_unarmed_shout"
+   },
+   "walkSpeedCm": 206.6,
+   "runSpeedCm": 326.4
   },
   "VoidbornHerald": {
    "war_cry": "/Game/FabDerived/Anim/VoidbornHerald/A_VoidbornHerald_monster_war_cry.A_VoidbornHerald_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/VoidbornHerald/A_VoidbornHerald_monster_ground_slam.A_VoidbornHerald_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/VoidbornHerald/A_VoidbornHerald_monster_ground_slam.A_VoidbornHerald_monster_ground_slam",
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_loco_idle.A_VoidbornHeraldSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_loco_walk_f.A_VoidbornHeraldSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_loco_walk_b.A_VoidbornHeraldSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_loco_walk_l.A_VoidbornHeraldSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_loco_walk_r.A_VoidbornHeraldSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_loco_run_f.A_VoidbornHeraldSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_spell_attack1.A_VoidbornHeraldSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_spell_attack2.A_VoidbornHeraldSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_spell_attack4.A_VoidbornHeraldSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_spell_hit.A_VoidbornHeraldSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_spell_death.A_VoidbornHeraldSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_spell_skill1.A_VoidbornHeraldSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_spell_skill2.A_VoidbornHeraldSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_spell_heal.A_VoidbornHeraldSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/VoidbornHeraldSet/A_VoidbornHeraldSet_spell_shout.A_VoidbornHeraldSet_spell_shout"
+   },
+   "walkSpeedCm": 155.9,
+   "runSpeedCm": 268.5
   },
   "Voidling": {
    "war_cry": "/Game/FabDerived/Anim/Voidling/A_Voidling_monster_war_cry.A_Voidling_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/Voidling/A_Voidling_monster_ground_slam.A_Voidling_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/Voidling/A_Voidling_monster_ground_slam.A_Voidling_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_loco_idle.A_VoidlingSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_loco_walk_f.A_VoidlingSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_loco_walk_b.A_VoidlingSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_loco_walk_l.A_VoidlingSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_loco_walk_r.A_VoidlingSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_loco_run_f.A_VoidlingSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_unarmed_attack1.A_VoidlingSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_unarmed_attack2.A_VoidlingSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_unarmed_attack3.A_VoidlingSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_unarmed_hit.A_VoidlingSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_unarmed_death.A_VoidlingSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_unarmed_skill1.A_VoidlingSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_unarmed_skill2.A_VoidlingSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_unarmed_cast.A_VoidlingSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/VoidlingSet/A_VoidlingSet_unarmed_shout.A_VoidlingSet_unarmed_shout"
+   },
+   "walkSpeedCm": 70.7,
+   "runSpeedCm": 112.9
   },
   "WerebearMaulerHQ": {
    "war_cry": "/Game/FabDerived/Anim/WerebearMaulerHQ/A_WerebearMaulerHQ_monster_war_cry.A_WerebearMaulerHQ_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/WerebearMaulerHQ/A_WerebearMaulerHQ_monster_ground_slam.A_WerebearMaulerHQ_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/WerebearMaulerHQ/A_WerebearMaulerHQ_monster_ground_slam.A_WerebearMaulerHQ_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_idle.A_WerebearMaulerHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_walk_f.A_WerebearMaulerHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_walk_b.A_WerebearMaulerHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_walk_l.A_WerebearMaulerHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_walk_r.A_WerebearMaulerHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_run_f.A_WerebearMaulerHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_attack1.A_WerebearMaulerHQSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_attack2.A_WerebearMaulerHQSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_attack3.A_WerebearMaulerHQSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_hit.A_WerebearMaulerHQSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_death.A_WerebearMaulerHQSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_skill1.A_WerebearMaulerHQSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_skill2.A_WerebearMaulerHQSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_cast.A_WerebearMaulerHQSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_shout.A_WerebearMaulerHQSet_unarmed_shout"
+   },
+   "walkSpeedCm": 181.8,
+   "runSpeedCm": 286.1
   },
   "WitheredMatron": {
    "war_cry": "/Game/FabDerived/Anim/WitheredMatron/A_WitheredMatron_monster_war_cry.A_WitheredMatron_monster_war_cry",
@@ -852,6 +2090,144 @@
    "recoverRate": 1.2
   },
   "one_hand_shout": {
+   "start": 0.0,
+   "contact": 1.108,
+   "end": 1.966,
+   "recoverRate": 1.2
+  },
+  "bow_attack1": {
+   "start": 0.0,
+   "contact": 0.658,
+   "end": 1.201,
+   "recoverRate": 1.2
+  },
+  "bow_attack2": {
+   "start": 0.0,
+   "contact": 0.267,
+   "end": 1.457,
+   "recoverRate": 1.2
+  },
+  "bow_attack3": {
+   "start": 0.0,
+   "contact": 0.456,
+   "end": 1.023,
+   "recoverRate": 1.2
+  },
+  "bow_hit": {
+   "start": 0.0,
+   "contact": 0.12,
+   "end": 0.667,
+   "recoverRate": 1.0
+  },
+  "bow_death": {
+   "start": 0.0,
+   "contact": 0.1,
+   "end": 0.767,
+   "recoverRate": 1.0
+  },
+  "bow_skill1": {
+   "start": 0.0,
+   "contact": 0.622,
+   "end": 1.447,
+   "recoverRate": 1.2
+  },
+  "bow_skill2": {
+   "start": 0.0,
+   "contact": 0.817,
+   "end": 1.272,
+   "recoverRate": 1.2
+  },
+  "bow_cast": {
+   "start": 0.0,
+   "contact": 1.533,
+   "end": 2.91,
+   "recoverRate": 1.2
+  },
+  "bow_shout": {
+   "start": 0.0,
+   "contact": 1.108,
+   "end": 1.966,
+   "recoverRate": 1.2
+  },
+  "crossbow_attack1": {
+   "start": 0.0,
+   "contact": 0.067,
+   "end": 0.333,
+   "recoverRate": 1.2
+  },
+  "crossbow_attack2": {
+   "start": 0.0,
+   "contact": 0.204,
+   "end": 0.598,
+   "recoverRate": 1.2
+  },
+  "crossbow_attack3": {
+   "start": 0.0,
+   "contact": 0.647,
+   "end": 0.767,
+   "recoverRate": 1.2
+  },
+  "crossbow_hit": {
+   "start": 0.0,
+   "contact": 0.12,
+   "end": 0.583,
+   "recoverRate": 1.0
+  },
+  "crossbow_death": {
+   "start": 0.0,
+   "contact": 0.1,
+   "end": 1.167,
+   "recoverRate": 1.0
+  },
+  "gun_attack1": {
+   "start": 0.0,
+   "contact": 0.219,
+   "end": 1.232,
+   "recoverRate": 1.2
+  },
+  "gun_attack2": {
+   "start": 0.0,
+   "contact": 0.354,
+   "end": 1.273,
+   "recoverRate": 1.2
+  },
+  "gun_attack3": {
+   "start": 0.0,
+   "contact": 0.8,
+   "end": 1.64,
+   "recoverRate": 1.2
+  },
+  "gun_hit": {
+   "start": 0.0,
+   "contact": 0.12,
+   "end": 0.833,
+   "recoverRate": 1.0
+  },
+  "gun_death": {
+   "start": 0.0,
+   "contact": 0.1,
+   "end": 2.667,
+   "recoverRate": 1.0
+  },
+  "gun_skill1": {
+   "start": 0.0,
+   "contact": 0.35,
+   "end": 1.33,
+   "recoverRate": 1.2
+  },
+  "gun_skill2": {
+   "start": 0.0,
+   "contact": 1.306,
+   "end": 2.9,
+   "recoverRate": 1.2
+  },
+  "gun_cast": {
+   "start": 0.0,
+   "contact": 1.533,
+   "end": 2.91,
+   "recoverRate": 1.2
+  },
+  "gun_shout": {
    "start": 0.0,
    "contact": 1.108,
    "end": 1.966,

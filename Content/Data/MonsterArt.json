@@ -55,6 +55,8 @@
     "MawOfTheDeep": { "sway": {"speed": 1.1, "wave": 0.6, "note": "long thick tentacles ringing the maw (upright: tip above root)", "regions": [{"center": [0.2, 2, 90], "radii": [34, 28, 16], "rootZ": 80, "tipZ": 104, "amount": 6}]} },
     "Vinelasher": { "sway": {"speed": 1.7, "wave": 0.9, "note": "thorn-vine whips hanging from both forearms (T-pose: arms out, whips down to the knees)", "regions": [{"center": [42, 4, 45], "radii": [13, 13, 37], "rootZ": 80, "tipZ": 12, "amount": 5}, {"center": [-42, 4, 45], "radii": [13, 13, 37], "rootZ": 80, "tipZ": 12, "amount": 5}]} },
     "ElderOakheart": { "sway": {"speed": 0.9, "wave": 0.5, "note": "long hanging grey moss beard", "regions": [{"center": [0.6, 8, 75], "radii": [11, 11, 13], "rootZ": 86, "tipZ": 62, "amount": 3}]} },
+    "RiftGazer": { "sway": {"speed": 1.4, "wave": 0.9, "note": "eye stalks on the head (upright)", "regions": [{"center": [0.3, 2, 89], "radii": [20, 14, 10], "rootZ": 84, "tipZ": 98, "amount": 3}]} },
+    "TuskedBehemothHQ": { "sway": {"speed": 1.0, "wave": 0.5, "note": "hanging elephant trunk", "regions": [{"center": [1, 17, 57], "radii": [8, 7, 20], "rootZ": 74, "tipZ": 40, "amount": 4}]} },
     "BlightCaster":       { "dropPropBones": ["hand_r"], "note": "bone staff is part of the mesh" },
     "BlightCasterB":      { "dropPropBones": ["hand_r"], "note": "iron sceptre is part of the mesh" },
     "BarbedHunterB":      { "dropPropBones": ["hand_l", "hand_r"], "note": "crossbow is part of the mesh" },

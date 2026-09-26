@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "branch": "feat/monster-rig",
  "operator": "Claude (monster-rig worktree)",
- "status": "drowned_deep + blightwood DONE and committed (603d557); other races assigned, not retargeted",
+ "status": "76 of 76 assigned bodies have their weapon-matched set; all gates green (see gates.final)",
  "credits": {
   "observedBalanceAtStart": 14961,
   "observedBalanceAtPause": 14941,
@@ -35,11 +35,376 @@
   "Merged main ab81c6c (interface-stall, summons, champion-hq, video-crash, telegraphs, weapon-grips, movement-feel, vendors, dev-route-tools). No conflicts. Reconciled with movement-feel: its travel warp / reversed backpedal gait / stepped turns now own directional locomotion, so the set's strafe/back-pedal/side-step layer (UpdateDirectionalGait) only runs as the fallback when cire.Locomotion is off (both at once double-turned the legs). The pelvis-lift grounding runs before movement-feel's pose feel/leg IK. Grounding checks re-run: CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418."
  ],
  "nextSteps": [
-  "1. Remaining races: run -CireFabAnimMonsterSets per race (-CireFabAnimOnly=<variants>), review races_<race> + close_<units> galleries, add sway where the body has hanging parts (e.g. void RiftGazer eye stalks, VoidbornHerald tentacles).",
-  "2. Segmentation candidates from the audit (above) when their race comes up.",
-  "3. Gates after each race; commit per race."
+  "Unassigned bodies keep their Tripo clips: CrystalBallista (monsterSets.assign ''), plus bodies with no assign entry (e.g. FeralUrsoth, FeralMammoth, WildOutrider, HollowInfantry/B, Fab-pack creatures). Assign a set if Eric wants them upgraded.",
+  "AetheriLancer has 14 roles: the retarget validator rejects gun_attack3 ('body order broken at 0.33s'); swings rotate attack/attackAlt.",
+  "GravemawPackLeader's wolf-pelt cape stretches into a long band on two-hand swings (audit far 12.4% on spine_02). It reads as a flowing pelt; a Tripo re-segment of the cape would be the fix if Eric wants it (not done: no visible tear).",
+  "Enraged overlay rim does not follow the skin sway (a few cm, enrage only)."
  ],
  "gates": {
-  "merge-checkpoint": "expansion native/replay/network PASS (CIRE_COMBAT_EXPANSION_PASS, CIRE_REPLAY_INTEGRATION_PASS); network CIRE_NET_SERVER_PASS heroes=10 teams=5/5 + CIRE_NETWORK_SMOKE_PASS; interface CIRE_INTERFACE_SMOKE_PASS without any patch (logs Saved/AgentLogs/*-merge-*)"
+  "merge-checkpoint": "expansion native/replay/network PASS (CIRE_COMBAT_EXPANSION_PASS, CIRE_REPLAY_INTEGRATION_PASS); network CIRE_NET_SERVER_PASS heroes=10 teams=5/5 + CIRE_NETWORK_SMOKE_PASS; interface CIRE_INTERFACE_SMOKE_PASS without any patch (logs Saved/AgentLogs/*-merge-*)",
+  "final": {
+   "expansion": "native PASS (CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418, CIRE_COMBAT_EXPANSION_PASS), replay PASS (CIRE_REPLAY_INTEGRATION_PASS checks=15), network PASS",
+   "network": "CIRE_NET_SERVER_PASS heroes=10 teams=5/5 preserved_pawn=CireHero_0 level=1 bot=1; CIRE_NETWORK_SMOKE_PASS",
+   "interface": "CIRE_INTERFACE_SMOKE_PASS",
+   "logs": "Saved/AgentLogs/feat-monster-rig-*-final-*.log"
+  }
+ },
+ "races": {
+  "ironhide": {
+   "bodies": {
+    "IronhideGrunt": {
+     "set": "one_hand",
+     "walkSpeedCm": 208.4,
+     "runSpeedCm": 317.8
+    },
+    "RedmoonRavager": {
+     "set": "two_hand",
+     "walkSpeedCm": 178.8,
+     "runSpeedCm": 337.9
+    },
+    "IronhideBulwark": {
+     "set": "sword_shield",
+     "walkSpeedCm": 174.4,
+     "runSpeedCm": 356.4
+    },
+    "BloodHexer": {
+     "set": "spell",
+     "walkSpeedCm": 172.8,
+     "runSpeedCm": 292.4
+    },
+    "RedmoonAxethrower": {
+     "set": "one_hand",
+     "walkSpeedCm": 221.4,
+     "runSpeedCm": 332.3
+    },
+    "IronhideDrummerHQ": {
+     "set": "dual",
+     "walkSpeedCm": 207.2,
+     "runSpeedCm": 304.1
+    },
+    "IronhideWarchief": {
+     "set": "two_hand",
+     "walkSpeedCm": 156.6,
+     "runSpeedCm": 293.5
+    },
+    "IronhideJuggernaut": {
+     "set": "two_hand",
+     "walkSpeedCm": 164.2,
+     "runSpeedCm": 294.8
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-091314",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "8/8 retargeted, 15 roles each. Gallery: weapon poses read (axes, sword+shield, dual, two-hand club, spell), grounded. No hanging parts to sway; no audit flags."
+  },
+  "voidborn": {
+   "bodies": {
+    "RiftStalkerHQ": {
+     "set": "dual",
+     "walkSpeedCm": 241.5,
+     "runSpeedCm": 365.2
+    },
+    "VoidRavager": {
+     "set": "unarmed",
+     "walkSpeedCm": 196.0,
+     "runSpeedCm": 316.3
+    },
+    "NullWardenHQ": {
+     "set": "unarmed",
+     "walkSpeedCm": 179.4,
+     "runSpeedCm": 291.3
+    },
+    "RiftWeaverHQ": {
+     "set": "spell",
+     "walkSpeedCm": 216.6,
+     "runSpeedCm": 353.2
+    },
+    "RiftGazer": {
+     "set": "spell",
+     "walkSpeedCm": 170.5,
+     "runSpeedCm": 309.6
+    },
+    "Voidling": {
+     "set": "unarmed",
+     "walkSpeedCm": 70.7,
+     "runSpeedCm": 112.9
+    },
+    "VoidbornHerald": {
+     "set": "spell",
+     "walkSpeedCm": 155.9,
+     "runSpeedCm": 268.5
+    },
+    "VoidbornDevourer": {
+     "set": "unarmed",
+     "walkSpeedCm": 206.6,
+     "runSpeedCm": 326.4
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-091819",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "8/8 retargeted, 15 roles each. Sway: Rift Gazer upright eye stalks (face mask Saved/MonsterGallery/20260926-091949). Herald is robe-only (no sway). Gallery grounded; audit flags minor (VoidbornHerald far 2% on the staff hand)."
+  },
+  "drakkari": {
+   "bodies": {
+    "DrakkariWhelpguard": {
+     "set": "one_hand",
+     "walkSpeedCm": 193.3,
+     "runSpeedCm": 308.6
+    },
+    "DrakkariScalebreaker": {
+     "set": "two_hand",
+     "walkSpeedCm": 183.5,
+     "runSpeedCm": 328.4
+    },
+    "DrakkariScaleguard": {
+     "set": "sword_shield",
+     "walkSpeedCm": 160.8,
+     "runSpeedCm": 355.3
+    },
+    "DrakkariFlamecallerHQ": {
+     "set": "spell",
+     "walkSpeedCm": 149.0,
+     "runSpeedCm": 262.2
+    },
+    "DrakkariWingshot": {
+     "set": "bow",
+     "walkSpeedCm": 207.8,
+     "runSpeedCm": 290.1
+    },
+    "EmberWhelp": {
+     "set": "unarmed",
+     "walkSpeedCm": 69.3,
+     "runSpeedCm": 109.7
+    },
+    "DrakkariBroodmother": {
+     "set": "spell",
+     "walkSpeedCm": 200.1,
+     "runSpeedCm": 363.9
+    },
+    "DrakkariAshwing": {
+     "set": "two_hand",
+     "walkSpeedCm": 199.8,
+     "runSpeedCm": 351.2
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-092517",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "8/8 retargeted, 15 roles each. Segmentation candidates DrakkariAshwing (far 13.6%) and EmberWhelp (far 11.9%) checked close up (Saved/MonsterGallery/20260926-092643): the flags are folded wings weighted to upperarm/clavicle and the whelp's tail on thigh_l; no visible stretch, so not segmented. Broodmother wings likewise. No hanging parts to sway."
+  },
+  "fallen_order": {
+   "bodies": {
+    "FallenSquire": {
+     "set": "one_hand",
+     "walkSpeedCm": 216.3,
+     "runSpeedCm": 328.0
+    },
+    "DreadKnight": {
+     "set": "two_hand",
+     "walkSpeedCm": 182.8,
+     "runSpeedCm": 334.2
+    },
+    "OathbreakerTemplar": {
+     "set": "sword_shield",
+     "walkSpeedCm": 156.3,
+     "runSpeedCm": 361.0
+    },
+    "BlightedChaplain": {
+     "set": "spell",
+     "walkSpeedCm": 192.0,
+     "runSpeedCm": 334.0
+    },
+    "FallenInquisitorCrossbow": {
+     "set": "crossbow",
+     "walkSpeedCm": 197.2,
+     "runSpeedCm": 272.3
+    },
+    "Flagellant": {
+     "set": "dual",
+     "walkSpeedCm": 212.3,
+     "runSpeedCm": 323.0
+    },
+    "FallenHighInquisitor": {
+     "set": "spell",
+     "walkSpeedCm": 186.9,
+     "runSpeedCm": 337.7
+    },
+    "FallenCrusader": {
+     "set": "two_hand",
+     "walkSpeedCm": 225.8,
+     "runSpeedCm": 436.4
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-093221",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "8/8 retargeted (crossbow set maps 11 roles by design, the rest 15). Gallery: sword+shield, two-hand, dual, crossbow and spell poses read, grounded. No hanging parts to sway; no visible audit artifacts (FallenCrusader clavicle 'far' flags are its pauldrons)."
+  },
+  "aetheri": {
+   "bodies": {
+    "AetheriPhaseblade": {
+     "set": "dual",
+     "walkSpeedCm": 214.1,
+     "runSpeedCm": 316.9
+    },
+    "AetheriWarframe": {
+     "set": "unarmed",
+     "walkSpeedCm": 226.6,
+     "runSpeedCm": 364.1
+    },
+    "AetheriBulwark": {
+     "set": "sword_shield",
+     "walkSpeedCm": 178.7,
+     "runSpeedCm": 385.2
+    },
+    "AetheriEngineer": {
+     "set": "spell",
+     "walkSpeedCm": 183.4,
+     "runSpeedCm": 318.6
+    },
+    "AetheriLancer": {
+     "set": "gun",
+     "walkSpeedCm": 171.8,
+     "runSpeedCm": 277.7
+    },
+    "SkitterDrone": {
+     "set": "unarmed",
+     "walkSpeedCm": 97.9,
+     "runSpeedCm": 152.7
+    },
+    "AetheriHierarch": {
+     "set": "spell",
+     "walkSpeedCm": 216.2,
+     "runSpeedCm": 363.0
+    },
+    "AetheriColossusB": {
+     "set": "unarmed",
+     "walkSpeedCm": 242.0,
+     "runSpeedCm": 393.0
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-094008",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "8/8 retargeted (15 roles; AetheriLancer 14: the retarget validator rejected gun_attack3, 'body order broken at 0.33s', so its swing rotation uses attack/attackAlt). Lancer's gun death sank the feet 10-20 cm: the feet-floor clamp now also holds through deaths (every 'lies down' check still passes). No hanging parts to sway; AetheriHierarch/Lancer audit flags are staff/lance hands, no visible stretch."
+  },
+  "stoneborn": {
+   "bodies": {
+    "RuneSentinelHQ": {
+     "set": "one_hand",
+     "walkSpeedCm": 217.7,
+     "runSpeedCm": 344.0
+    },
+    "GraniteCrusherHQ": {
+     "set": "unarmed",
+     "walkSpeedCm": 192.9,
+     "runSpeedCm": 299.0
+    },
+    "BastionGolem": {
+     "set": "sword_shield",
+     "walkSpeedCm": 201.9,
+     "runSpeedCm": 419.6
+    },
+    "DeepforgeRunesmith": {
+     "set": "spell",
+     "walkSpeedCm": 144.6,
+     "runSpeedCm": 249.2
+    },
+    "StonebornForgelord": {
+     "set": "two_hand",
+     "walkSpeedCm": 155.6,
+     "runSpeedCm": 291.6
+    },
+    "StonebornColossus": {
+     "set": "unarmed",
+     "walkSpeedCm": 209.5,
+     "runSpeedCm": 328.5
+    },
+    "EtherMote": {
+     "set": "unarmed",
+     "walkSpeedCm": 110.4,
+     "runSpeedCm": 179.5
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-095011",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "7/7 assigned retargeted, 15 roles each. Segmentation candidate DeepforgeRunesmith (arm-bound low 10%: the fused hammer head on ring_03_r) checked close up (face_deepforge_runesmith): hammer sits in both hands, no visible stretch, not segmented. Stone/chain beards are rigid by design (no sway)."
+  },
+  "feral_kin": {
+   "bodies": {
+    "WerebearMaulerHQ": {
+     "set": "unarmed",
+     "walkSpeedCm": 181.8,
+     "runSpeedCm": 286.1
+    },
+    "TuskedBehemothHQ": {
+     "set": "sword_shield",
+     "walkSpeedCm": 143.8,
+     "runSpeedCm": 333.3
+    },
+    "FeralShaman": {
+     "set": "spell",
+     "walkSpeedCm": 155.3,
+     "runSpeedCm": 269.1
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-095608",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "3/3 assigned retargeted, 15 roles each (FeralUrsoth, FeralMammoth have no set assigned and keep their clips). Sway: Tusked Behemoth's hanging trunk (mask Saved/MonsterGallery/20260926-095751, tusks stay rigid). Segmentation candidate TuskedBehemothHQ (leg-bound high 4%) checked close up: shield, belts and trunk read cleanly, no visible stretch, not segmented. FeralMammoth (far 7%) has no set and no visible artifact in the race lineup."
+  },
+  "npc_bodies": {
+   "bodies": {
+    "IronboundBruiserV2": {
+     "set": "two_hand",
+     "walkSpeedCm": 169.0,
+     "runSpeedCm": 296.9
+    },
+    "IronboundBruiser": {
+     "set": "two_hand",
+     "walkSpeedCm": 159.9,
+     "runSpeedCm": 297.0
+    },
+    "HollowShieldbearerV2": {
+     "set": "sword_shield",
+     "walkSpeedCm": 166.3,
+     "runSpeedCm": 365.5
+    },
+    "HollowShieldbearer": {
+     "set": "sword_shield",
+     "walkSpeedCm": 153.3,
+     "runSpeedCm": 320.5
+    },
+    "BlightCaster": {
+     "set": "spell",
+     "walkSpeedCm": 169.4,
+     "runSpeedCm": 302.8
+    },
+    "BlightCasterB": {
+     "set": "spell",
+     "walkSpeedCm": 206.4,
+     "runSpeedCm": 359.8
+    },
+    "BarbedHunter": {
+     "set": "bow",
+     "walkSpeedCm": 186.8,
+     "runSpeedCm": 251.3
+    },
+    "BarbedHunterB": {
+     "set": "crossbow",
+     "walkSpeedCm": 193.5,
+     "runSpeedCm": 262.2
+    },
+    "HollowSiegebreaker": {
+     "set": "two_hand",
+     "walkSpeedCm": 185.9,
+     "runSpeedCm": 338.6
+    },
+    "GravemawPackLeader": {
+     "set": "two_hand",
+     "walkSpeedCm": 166.0,
+     "runSpeedCm": 314.7
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-100236",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS (after the keepTripo fix)",
+   "note": "10/10 NPCMeshes bodies retargeted (BarbedHunterB crossbow 11 roles by design, the rest 15). Segmentation candidate GravemawPackLeader (far 12.4% on spine_02) checked close up (face_gravemaw_pack_leader): it is the wolf-pelt cape, which stretches into a long band on the two-hand swing but reads as a flowing pelt, not torn geometry; logged, not segmented (Tripo re-segment would be the fix if Eric wants it). HollowShieldbearer thumb 'far' flag = the shield in the hand, fine. First native run FAILED 'pack leader height ratio 1.43 (archetype scale 1.70)': the two-hand set idle is a deep crouch, so the boss no longer stood 1.7x the infantry. Fix: FabAnimMap monsterSets.keepTripo (per-body roles kept from the Tripo library); GravemawPackLeader keeps its upright Tripo idle, uses the set's attacks/gait."
+  }
  }
 }
