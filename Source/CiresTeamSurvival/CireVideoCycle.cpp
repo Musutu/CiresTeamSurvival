@@ -26,6 +26,7 @@
 #include "Misc/Paths.h"
 #include "TextureResource.h"
 #include "UnrealClient.h"
+#include "Scalability.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireVideoCycle, Log, All);
 
@@ -104,13 +105,45 @@ namespace CireVideoCycle
 {
 bool IsActive()
 {
-    static const bool bActive = FParse::Param(FCommandLine::Get(), TEXT("CireVideoCycle"));
+    static const bool bActive = FParse::Param(FCommandLine::Get(), TEXT("CireVideoCycle")) || FCommandLine::Get() && FString(FCommandLine::Get()).Contains(TEXT("-CireVideoPersist="));
     return bActive;
+}
+
+// -CireVideoPersist=set|check (Tools/RunVideoCycle.py --persist): the "save and relaunch" flow. "set" keeps
+// 1280x720 windowed, High, 80 % render scale through the Options queue and quits; the runner relaunches the
+// game exactly like Play.cmd (no -ResX/-windowed) and "check" verifies the new process started with them.
+static bool TickPersist(ACireController* C, const FString& Mode)
+{
+    static double Started = 0; static int32 Stage = 0;
+    const double Now = FPlatformTime::Seconds(); if (Started == 0) Started = Now;
+    if (Now - Started < 4.0) return true;
+    FCireVideoState Want; Want.Resolution = FIntPoint(1280, 720); Want.WindowMode = 2; Want.Quality = 2; Want.RenderScale = 80; Want.bVSync = false; Want.FrameRateLimit = 90;
+    if (Mode == TEXT("set"))
+    {
+        if (Stage == 0) { CireVideo::RequestPreview(Want, 60.0); CireVideo::RequestKeep(); Stage = 1; return true; }
+        if (CireVideo::IsBusy() || Now - Started < 6.0) return true;
+        UE_LOG(LogCireVideoCycle, Display, TEXT("CIRE_VIDEO_PERSIST_SET %s"), *CireVideo::Current().ToString());
+        FPlatformMisc::RequestExitWithStatus(false, 0);
+        Stage = 2; return true;
+    }
+    if (Stage != 0) return true;
+    Stage = 1;
+    const FCireVideoState Got = CireVideo::Current();
+    FIntPoint ViewportSize(0, 0);
+    if (GEngine && GEngine->GameViewport && GEngine->GameViewport->Viewport) ViewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
+    const bool bOk = Got == Want && ViewportSize == Want.Resolution && Scalability::GetQualityLevels().ShadowQuality == 2;
+    UE_LOG(LogCireVideoCycle, Display, TEXT("CIRE_VIDEO_PERSIST_%s settings=%s viewport=%dx%d shadows=%d"), bOk ? TEXT("PASS") : TEXT("FAIL"), *Got.ToString(), ViewportSize.X, ViewportSize.Y, Scalability::GetQualityLevels().ShadowQuality);
+    // Restore the first-launch defaults for the next person who runs Play.cmd from this worktree.
+    FCireVideoState Defaults; Defaults.Resolution = FIntPoint(1600, 900); Defaults.WindowMode = 2; Defaults.Quality = 3; Defaults.RenderScale = 100; Defaults.bVSync = false; Defaults.FrameRateLimit = 0;
+    CireVideo::ApplyNow(Defaults, true);
+    FPlatformMisc::RequestExitWithStatus(false, bOk ? 0 : 1);
+    return true;
 }
 
 void Tick(ACireController* C)
 {
     if (!IsActive() || G.bDone || !C || !C->IsLocalController()) return;
+    if (FString Persist; FParse::Value(FCommandLine::Get(), TEXT("CireVideoPersist="), Persist)) { TickPersist(C, Persist); return; }
     UWorld* W = C->GetWorld(); auto* HUD = Cast<ACireHUD>(C->GetHUD());
     if (!W || !HUD) return;
     const double Now = FPlatformTime::Seconds();

@@ -35,6 +35,33 @@ ENGINE_FAILURES = [
 ]
 
 
+def run_persist(a) -> int:
+    """The "save and reload" flow: launch 1 keeps new video settings and quits; launch 2 starts exactly like
+    Play.cmd (no -windowed/-ResX/-ResY) and must come up with them. Launch 2 then restores the defaults."""
+    folder = ROOT / "Saved/VideoCycle" / (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ") + "_persist")
+    folder.mkdir(parents=True)
+    results = {}
+    for mode in ("set", "check"):
+        log = folder / f"{mode}.log"
+        cmd = [str(a.editor), str(a.project.resolve()), "/Game/Maps/Citadel", "-game", "-CireTripoChampions", f"-CireVideoPersist={mode}",
+               "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding", f"-abslog={log}", *a.extra]
+        with (folder / f"{mode}.console.log").open("wb") as out:
+            child = subprocess.Popen(cmd, stdout=out, stderr=subprocess.STDOUT, env={**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"})
+            try:
+                code = child.wait(timeout=a.timeout)
+            except subprocess.TimeoutExpired:
+                subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+                code = -1
+        text = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
+        line = re.search(r"CIRE_VIDEO_PERSIST_(?:PASS|FAIL|SET) [^\r\n]*", text)
+        results[mode] = {"exitCode": code, "line": line.group(0) if line else None}
+        print(mode, code, results[mode]["line"])
+    passed = results["check"]["exitCode"] == 0 and bool(results["check"]["line"]) and "CIRE_VIDEO_PERSIST_PASS" in results["check"]["line"]
+    (folder / "report.json").write_text(json.dumps({"passed": passed, **results}, indent=1), encoding="utf-8")
+    print("video_persist: PASS" if passed else "video_persist: FAIL", folder)
+    return 0 if passed else 1
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--editor", type=Path, default=Path("F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"))
@@ -43,7 +70,10 @@ def main() -> int:
     p.add_argument("--fullscreen", action="store_true", help="Also switch to exclusive fullscreen once (takes over the display)")
     p.add_argument("--tag", default="")
     p.add_argument("--extra", action="append", default=[], help="Extra engine argument")
+    p.add_argument("--persist", action="store_true", help="Instead: keep settings, quit, relaunch like Play.cmd and verify they stuck")
     a = p.parse_args()
+    if a.persist:
+        return run_persist(a)
     folder = ROOT / "Saved/VideoCycle" / (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ") + (f"_{a.tag}" if a.tag else ""))
     folder.mkdir(parents=True)
     log = folder / "game.log"

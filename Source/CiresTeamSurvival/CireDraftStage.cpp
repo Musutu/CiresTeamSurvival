@@ -223,6 +223,14 @@ void ACireDraftStage::ApplyLook()
     PP.bOverride_ColorContrast=true;PP.ColorContrast=FVector4(1.f,1.f,1.f,1.10f);
     PP.bOverride_ColorGammaShadows=true;PP.ColorGammaShadows=FVector4(1.f,1.f,1.f,.94f);
     PP.bOverride_AmbientOcclusionIntensity=true;PP.AmbientOcclusionIntensity=.6f;
+    // video-crash: unbound world grades (town, arena) also blend into scene captures. Pin everything they set that
+    // the look above does not: no tonemapper sharpen (this capture has no TAA and is supersampled; sharpening made
+    // armour and skin sparkle), neutral white balance and gains (the town grade's cool 6900 K would tint the figure).
+    PP.bOverride_Sharpen=true;PP.Sharpen=0.f;
+    PP.bOverride_WhiteTemp=true;PP.WhiteTemp=6500.f;PP.bOverride_WhiteTint=true;PP.WhiteTint=0.f;
+    PP.bOverride_ColorSaturationShadows=true;PP.ColorSaturationShadows=FVector4(1.f,1.f,1.f,1.f);
+    PP.bOverride_ColorGain=true;PP.ColorGain=FVector4(1.f,1.f,1.f,1.f);
+    PP.bOverride_ColorGainShadows=true;PP.ColorGainShadows=FVector4(1.f,1.f,1.f,1.f);
 }
 
 void ACireDraftStage::FitStage(float Height)
