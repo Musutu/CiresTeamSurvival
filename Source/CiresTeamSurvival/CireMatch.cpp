@@ -90,7 +90,19 @@ void TickServerProbe(ACireGameMode* Mode) {
             }
             FActorSpawnParameters Params;
             Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-            auto* Target=Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),Hero->GetActorLocation()+FVector(450,0,0),FRotator::ZeroRotator,Params);
+            // The hero joins at its gate. A fixture spawned inside (or with its capsule touching) the team's
+            // town-goal volume "leaks" on its first overlap and is destroyed, so the client never sees it.
+            // The join spot shifts with bot collision pushes, which made +450 cm intermittently too close.
+            const auto NearGoal=[&](const FVector& Spot) {
+                for(TActorIterator<ACireTownGoal> It(Mode->GetWorld());It;++It) if(It->TeamId==Hero->TeamId)
+                    for(const FVector& Margin:{FVector::ZeroVector,FVector(250,0,0),FVector(-250,0,0),FVector(0,250,0),FVector(0,-250,0)})
+                        if(It->ContainsLocation(Spot+Margin))return true;
+                return false;
+            };
+            FVector Spot=Hero->GetActorLocation()+FVector(450,0,0);
+            for(int32 Try=0;Try<10&&NearGoal(Spot);++Try)Spot.X+=150;
+            if(NearGoal(Spot)) {Fail(TEXT("probe fixture could not be placed clear of the town goal"));return;}
+            auto* Target=Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),Spot,FRotator::ZeroRotator,Params);
             if(!Target) {Fail(TEXT("probe fixture spawn failed"));return;}
             Target->Lane=Hero->TeamId;
             Target->Health=Target->MaxHealth=1000000;
@@ -99,12 +111,13 @@ void TickServerProbe(ACireGameMode* Mode) {
             Target->GetCharacterMovement()->DisableMovement();
             Mode->Monsters.Add(Target);
             Probe.Target=Target;
-            UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_JOIN pawn=%s team=%d heroes=%d"),*Hero->GetName(),Hero->TeamId,Mode->Heroes.Num());
+            UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_JOIN pawn=%s team=%d heroes=%d target_offset_cm=%.0f"),*Hero->GetName(),Hero->TeamId,Mode->Heroes.Num(),Spot.X-Hero->GetActorLocation().X);
             break;
         }
         return;
     }
     auto* Hero=Probe.PlayerPawn.Get();
+    if(!Probe.ActionsVerified&&!Probe.Target.IsValid()) {Fail(TEXT("probe target fixture was destroyed before the client selected it"));return;}
     if(!Probe.ActionsVerified&&Hero->bDrafted&&Hero->Target==Probe.Target.Get()&&Hero->Notice.Contains(TEXT("intermission"))) {
         const bool Valid=Hero->Archetype==2&&Hero->Gold==120&&Hero->Skills.Num()==0&&Hero->Cooldowns.Num()==0&&
             Hero->GearRank==0&&FMath::IsNearlyZero(Hero->CDR)&&Hero->Level==1&&

@@ -40,6 +40,7 @@ struct FCireClientProbe {
     FVector MovementOrigin=FVector::ZeroVector;
     bool bStrafeStarted=false;
     float StrafeYaw=0;
+    uint64 StrafeStartFrame=0;
     TWeakObjectPtr<ACireMonster> Selected;
 };
 FCireClientProbe ClientProbe;
@@ -83,9 +84,10 @@ bool TickClientProbe(ACireController* Controller) {
             Probe.bStrafeStarted=true;Probe.StrafeYaw=static_cast<float>(Hero->GetActorRotation().Yaw);
             Controller->SetControlRotation(FRotator(-20,Probe.StrafeYaw,0));
             if(Hero->Mobility){Hero->Mobility->bFaceControl=true;Hero->Mobility->ServerSetFaceControl(true);}
-            Probe.MovementOrigin=Hero->GetActorLocation();
+            Probe.MovementOrigin=Hero->GetActorLocation();Probe.StrafeStartFrame=GFrameCounter;
         }
-        if(Now-Probe.StepStarted<0.75) Hero->AddMovementInput(FRotationMatrix(FRotator(0,Probe.StrafeYaw,0)).GetUnitAxis(EAxis::Y));
+        // 0.75 s AND at least 20 frames: a client starved by build load can tick only 2 frames in 0.75 s.
+        if(Now-Probe.StepStarted<0.75||GFrameCounter-Probe.StrafeStartFrame<20) Hero->AddMovementInput(FRotationMatrix(FRotator(0,Probe.StrafeYaw,0)).GetUnitAxis(EAxis::Y));
         else {
             const FVector Delta=Hero->GetActorLocation()-Probe.MovementOrigin;
             const double Lateral=FVector::DotProduct(Delta,FRotationMatrix(Heading).GetUnitAxis(EAxis::Y));
@@ -99,6 +101,14 @@ bool TickClientProbe(ACireController* Controller) {
             Probe.Step=6;Probe.StepStarted=Now;
         }
     } else if(Probe.Step==6) {
+        static double LastDiag=0;
+        if(Now-Probe.StepStarted>3&&Now-LastDiag>3) { // diagnose a missing probe target instead of a bare timeout
+            LastDiag=Now;
+            UE_LOG(LogCireNetClient,Warning,TEXT("CIRE_NET_CLIENT_TARGET_WAIT phase=%d team=%d drafted=%d dead=%d"),State->Phase,Hero->TeamId,Hero->bDrafted?1:0,Hero->bDead?1:0);
+            for(TActorIterator<ACireMonster> It(Controller->GetWorld());It;++It)
+                UE_LOG(LogCireNetClient,Warning,TEXT("  monster=%s lane=%d health=%.0f dist=%.0f hostile=%d"),*It->MonsterName,It->Lane,It->Health,
+                    FVector::Dist2D(Hero->GetActorLocation(),It->GetActorLocation()),Hero->IsHostile(*It)?1:0);
+        }
         for(TActorIterator<ACireMonster> It(Controller->GetWorld());It;++It) {
             if(It->MonsterName==TEXT("CIRE_NETWORK_PROBE_TARGET")&&Hero->IsHostile(*It)&&Hero->InRange(*It,2500)) {
                 Probe.Selected=*It;
