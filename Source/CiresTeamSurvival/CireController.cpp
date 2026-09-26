@@ -1,4 +1,5 @@
 #include "CireVideoSettings.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLocomotionLab.h" // movement-feel
 #include "CireWaves.h" // wave-director
 #include "CireGame.h"
@@ -110,11 +111,11 @@ bool TickClientProbe(ACireController* Controller) {
         if(Now-Probe.StepStarted>3&&Now-LastDiag>3) { // diagnose a missing probe target instead of a bare timeout
             LastDiag=Now;
             UE_LOG(LogCireNetClient,Warning,TEXT("CIRE_NET_CLIENT_TARGET_WAIT phase=%d team=%d drafted=%d dead=%d"),State->Phase,Hero->TeamId,Hero->bDrafted?1:0,Hero->bDead?1:0);
-            for(TActorIterator<ACireMonster> It(Controller->GetWorld());It;++It)
+            for(TCireActorIterator<ACireMonster> It(Controller->GetWorld());It;++It)
                 UE_LOG(LogCireNetClient,Warning,TEXT("  monster=%s lane=%d health=%.0f dist=%.0f hostile=%d"),*It->MonsterName,It->Lane,It->Health,
                     FVector::Dist2D(Hero->GetActorLocation(),It->GetActorLocation()),Hero->IsHostile(*It)?1:0);
         }
-        for(TActorIterator<ACireMonster> It(Controller->GetWorld());It;++It) {
+        for(TCireActorIterator<ACireMonster> It(Controller->GetWorld());It;++It) {
             if(It->MonsterName==TEXT("CIRE_NETWORK_PROBE_TARGET")&&Hero->IsHostile(*It)&&Hero->InRange(*It,2500)) {
                 Probe.Selected=*It;
                 Controller->ServerAction(0,0,*It);
@@ -440,12 +441,12 @@ void ACireController::ServerSummonCommand_Implementation(int32 Command,AActor* S
         // feat/camera-movement: pet/summon "attack" with no hostile selected takes the nearest hostile
         // the hero can see within tab range (server-side; the client camera is not known here).
         AActor* Best=nullptr;double BestD=FMath::Square(CireSelection::TabRange);
-        for(TActorIterator<ACireMonster> It(GetWorld());It;++It)if(H->IsHostile(*It)&&CireRealm::CanObserve(H,*It)){const double D=FVector::DistSquared(H->GetActorLocation(),It->GetActorLocation());if(D<BestD){BestD=D;Best=*It;}}
-        for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(H->IsHostile(*It)&&CireRealm::CanObserve(H,*It)){const double D=FVector::DistSquared(H->GetActorLocation(),It->GetActorLocation());if(D<BestD){BestD=D;Best=*It;}}
+        for(TCireActorIterator<ACireMonster> It(GetWorld());It;++It)if(H->IsHostile(*It)&&CireRealm::CanObserve(H,*It)){const double D=FVector::DistSquared(H->GetActorLocation(),It->GetActorLocation());if(D<BestD){BestD=D;Best=*It;}}
+        for(TCireActorIterator<ACireHero> It(GetWorld());It;++It)if(H->IsHostile(*It)&&CireRealm::CanObserve(H,*It)){const double D=FVector::DistSquared(H->GetActorLocation(),It->GetActorLocation());if(D<BestD){BestD=D;Best=*It;}}
         if(!Best){H->Notice=TEXT("No enemy nearby to attack.");return;}
         Selected=Best;
     }
-    for(TActorIterator<ACireSummon> It(GetWorld());It;++It)
+    for(TCireActorIterator<ACireSummon> It(GetWorld());It;++It)
         if(It->GetOwnerHero()==H&&It->bCommandable)It->Command(static_cast<ECireSummonCommand>(Command),Point,Selected);
 }
 void ACireController::ServerPetCommand_Implementation(uint8 Command){

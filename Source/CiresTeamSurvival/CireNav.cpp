@@ -1,8 +1,10 @@
 // nav-paths: runtime navmesh for the town realms and arenas, path queries and steering (Docs/Navigation.md).
 #include "CireNav.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireTownMap.h" // medieval-kingdom
+#include "CireNavCache.h" // town-perf
 #include "CireArenas.h"
 #include "Components/BrushComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -168,6 +170,7 @@ void CireNav::Initialize(UWorld* World)
     if (FBoolProperty* Auto = FindFProperty<FBoolProperty>(UNavigationSystemV1::StaticClass(), TEXT("bAutoCreateNavigationData")))
         Auto->SetPropertyValue_InContainer(NS, true);
     const auto& R = CireLanePath::Get(World);
+    CireNavCache::BeginLoad(NS); // town-perf: a cached town navmesh skips the ~1 minute runtime build
     for (int32 Team = 0; Team < 2; ++Team)
     {
         // medieval-kingdom: realm frame and height range from data (the pack town sits on a landscape).
@@ -189,9 +192,12 @@ void CireNav::Initialize(UWorld* World)
     const double Started = FPlatformTime::Seconds();
     // Register the new bounds first (nav data sized from them is created here), then build
     // everything, blocking: both agents over both realms (the arena footprint is empty until an arena exists).
-    NS->Tick(0.f);
-    NS->Build();
+    { TRACE_CPUPROFILER_EVENT_SCOPE(CireNav_RegisterBounds); NS->Tick(0.f); } // town-perf: bounds, nav data, octree
+    double CacheMs = 0; int32 CacheTiles = 0;
+    const bool bCached = CireNavCache::FinishLoad(World, NS, CacheMs, CacheTiles); // town-perf
+    if (!bCached) { TRACE_CPUPROFILER_EVENT_SCOPE(CireNav_Build); NS->Build(); }
     N.Stats.InitialBuildMs = (FPlatformTime::Seconds() - Started) * 1000.0;
+    if (!bCached) CireNavCache::Save(World, NS); // town-perf: the next start attaches these tiles instead
     ++N.Stats.NavRevision;
     CountTiles(World, N.Stats);
     UE_LOG(LogCireNav, Display, TEXT("CIRE_NAV_READY netmode=%d navdata=%d build_ms=%.1f tiles_hero=%d tiles_large=%d"), static_cast<int32>(World->GetNetMode()),
@@ -500,7 +506,7 @@ void UCireNavSubsystem::Tick(float DeltaTime)
     for (auto It = N->Agents.CreateIterator(); It; ++It)
         if (!It.Key().ResolveObjectPtr() || Now - It.Value().LastSteerAt > 30.0) It.RemoveCurrent();
     // A bot taken over by a player keeps full manual control: no crowd avoidance on player pawns.
-    for (TActorIterator<ACireHero> It(World); It; ++It)
+    for (TCireActorIterator<ACireHero> It(World); It; ++It)
         if (!It->bBot && It->GetCharacterMovement() && It->GetCharacterMovement()->bUseRVOAvoidance) It->GetCharacterMovement()->SetAvoidanceEnabled(false);
 }
 

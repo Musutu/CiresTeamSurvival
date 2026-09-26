@@ -1,4 +1,5 @@
 #include "CireClassTraits.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireChampionProfiles.h"
 #include "CireCombatEvents.h"
 #include "CireGame.h"
@@ -62,7 +63,7 @@ ACireHero* CireClassTraits::MendingTarget(const ACireHero* Source)
 {
     if(!Source||!Source->GetWorld())return nullptr;
     TArray<ACireHero*> Party;std::vector<Cires::Traits::PartyMember> Members;
-    for(TActorIterator<ACireHero> It(Source->GetWorld());It;++It)
+    for(TCireActorIterator<ACireHero> It(Source->GetWorld());It;++It)
     {
         ACireHero* H=*It;
         if(H->IsA<ACireSummon>()||!H->bDrafted||H->TeamId!=Source->TeamId||H->TeamId<0)continue;

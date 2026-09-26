@@ -1,5 +1,6 @@
 // pets: persistent companions (Docs/Pets.md).
 #include "CirePets.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireAbilityDB.h"
 #include "CireAreaEffects.h"
@@ -188,7 +189,7 @@ TArray<AActor*> HostilesNear(ACireHero* Source, FVector Center, float Radius)
         if (FVector::DistSquared2D(Center, U->GetActorLocation()) <= FMath::Square(Radius + Body) && FMath::Abs(U->GetActorLocation().Z - Center.Z) < 400.f) Out.Add(U);
     };
     if (auto* Mode = Source->GetWorld()->GetAuthGameMode<ACireGameMode>()) for (auto* M : Mode->Monsters) if (IsValid(M)) Consider(M);
-    for (TActorIterator<ACireHero> It(Source->GetWorld()); It; ++It) Consider(*It);
+    for (TCireActorIterator<ACireHero> It(Source->GetWorld()); It; ++It) Consider(*It);
     return Out;
 }
 FVector FollowSpot(const ACireHero* Owner, float Distance)
@@ -448,14 +449,14 @@ AActor* ACirePet::ChooseTarget()
     };
     auto* Mode = GetWorld()->GetAuthGameMode<ACireGameMode>();
     if (Mode) for (auto* M : Mode->Monsters) if (IsValid(M) && (M->Victim == OwnerHero || M->Victim == this)) Consider(M, R.DefendRadius, OwnerHero);
-    for (TActorIterator<ACireHero> It(GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireHero> It(GetWorld()); It; ++It)
         if (It->Target == OwnerHero || It->Target == this) Consider(*It, R.DefendRadius, OwnerHero);
     if (Best) return Best;
     // Aggressive: anything hostile near the pet (never opens on a neutral challenge pack).
     if (Stance == ECirePetStance::Aggressive)
     {
         if (Mode) for (auto* M : Mode->Monsters) if (IsValid(M) && !M->bNeutral) Consider(M, R.AggressiveRadius, this);
-        for (TActorIterator<ACireHero> It(GetWorld()); It; ++It) Consider(*It, R.AggressiveRadius, this);
+        for (TCireActorIterator<ACireHero> It(GetWorld()); It; ++It) Consider(*It, R.AggressiveRadius, this);
     }
     return Best;
 }
@@ -619,7 +620,7 @@ void ACirePet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 ACirePet* CirePets::PetOf(const ACireHero* Owner)
 {
     if (!IsValid(Owner) || !Owner->GetWorld()) return nullptr;
-    for (TActorIterator<ACirePet> It(Owner->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACirePet> It(Owner->GetWorld()); It; ++It)
         if (It->OwnerHero == Owner && !It->IsActorBeingDestroyed()) return *It;
     return nullptr;
 }

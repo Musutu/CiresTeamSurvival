@@ -1,5 +1,6 @@
 // kits-complete: the 63 signature skills of the thirteen roster champions whose kits were "planned".
 #include "CireKitSkills.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAbilityDB.h"
 #include "CireAbilityShapes.h"
 #include "CireAreaEffects.h"
@@ -161,14 +162,14 @@ TArray<AActor*> Enemies(ACireHero* Hero, FVector Center, float Radius)
         if (FVector::DistSquared2D(Center, U->GetActorLocation()) <= FMath::Square(Radius + Body(U)) && FMath::Abs(U->GetActorLocation().Z - Center.Z) < 400.f) Out.Add(U);
     };
     if (auto* Mode = ModeOf(Hero)) for (auto* M : Mode->Monsters) if (IsValid(M)) Consider(M);
-    for (TActorIterator<ACireHero> It(Hero->GetWorld()); It; ++It) Consider(*It);
+    for (TCireActorIterator<ACireHero> It(Hero->GetWorld()); It; ++It) Consider(*It);
     return Out;
 }
 TArray<ACireHero*> Allies(const ACireHero* Hero, FVector Center, float Radius, bool bSelf = true)
 {
     TArray<ACireHero*> Out;
     if (!Hero) return Out;
-    for (TActorIterator<ACireHero> It(Hero->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireHero> It(Hero->GetWorld()); It; ++It)
     {
         ACireHero* A = *It;
         if (A->IsA<ACireSummon>() || !A->bDrafted || A->bDead || A->TeamId != Hero->TeamId || (!bSelf && A == Hero)) continue;
@@ -612,7 +613,7 @@ bool CireKitSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     case EKit::Wall:
     {
         if (!NeedGround(true)) return false;
-        for (TActorIterator<ACireConstruct> It(World); It; ++It) if (It->GetSourceActor() == Hero && It->GetDisplayName() == Name) It->Destroy(); // one per owner
+        for (TCireActorIterator<ACireConstruct> It(World); It; ++It) if (It->GetSourceActor() == Hero && It->GetDisplayName() == Name) It->Destroy(); // one per owner
         FCireConstructSpec W; W.Kind = ECireConstructKind::Wall; W.MaxHealth = FMath::Min(20000.f, Amount); W.LifetimeSeconds = Seconds(World, Def->Duration > 0 ? Def->Duration : 8.f);
         W.Width = FMath::Max(120.f, Def->Radius * 2.f); W.Depth = 60.f; W.Height = 230.f; W.ManaCost = 0; W.EnergyCost = Energy; W.CooldownSeconds = Def->Base.Cooldown; W.CastRange = Range + 60.f;
         W.bBlockMovement = true; W.bBlockProjectiles = true; W.bDestructible = true; W.bBlockFriendly = false; W.Color = FLinearColor(.55f, .42f, .26f, .95f);
@@ -910,7 +911,7 @@ float CireKitSkills::ModifyOutgoingDamage(AActor* Source, AActor* Target, float 
     }
     // Totem Bulwark cover: an allied barricade within 3m that stands between the champion and the attacker.
     if (IsValid(Source))
-        for (TActorIterator<ACireConstruct> It(World); It; ++It)
+        for (TCireActorIterator<ACireConstruct> It(World); It; ++It)
         {
             if (It->IsActorBeingDestroyed() || It->OriginTeam != Victim->TeamId || !It->IsWall() || It->GetDisplayName() != TEXT("Totem Bulwark")) continue;
             const FVector P = It->GetActorLocation();

@@ -1,4 +1,5 @@
 #include "CireLanePath.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "CireThreat.h"
 #include "CireNPCCombat.h"
@@ -715,7 +716,7 @@ void CireLanePath::RefreshEscortCollision(ACireMonster* M)
     if (!IsValid(M) || !M->HasAuthority() || !M->bArmoredEscort) return;
     const float Now = M->GetWorld()->GetTimeSeconds(); if (M->EscortCollisionRefreshAt > Now) return;
     M->EscortCollisionRefreshAt = Now + .5f;
-    for (TActorIterator<ACharacter> It(M->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACharacter> It(M->GetWorld()); It; ++It)
         if (*It != M && (Cast<ACireHero>(*It) || (Cast<ACireMonster>(*It) && Cast<ACireMonster>(*It)->Lane == M->Lane)))
             M->GetCapsuleComponent()->IgnoreActorWhenMoving(*It,true);
 }

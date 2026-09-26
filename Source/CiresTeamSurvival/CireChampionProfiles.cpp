@@ -1,4 +1,5 @@
 #include "CireChampionProfiles.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireChampionRoster.h"
 #include "CireSkillShop.h" // Skill Shop schedule sync
@@ -65,7 +66,7 @@ Cires::RoleMask CireChampionProfiles::SecondaryRoles(const ACireHero* Hero)
 const ACireHero* CireChampionProfiles::PickedByTeammate(const ACireHero* Hero,const FString& ProfileId,bool bHumansOnly)
 {
     if(!Hero||!Hero->GetWorld()||ProfileId.IsEmpty()||Hero->TeamId<0)return nullptr;
-    for(TActorIterator<ACireHero> It(Hero->GetWorld());It;++It)
+    for(TCireActorIterator<ACireHero> It(Hero->GetWorld());It;++It)
     {
         const ACireHero* Other=*It;
         if(Other==Hero||Other->IsA<ACireSummon>()||Other->TeamId!=Hero->TeamId||!Other->bDrafted||Other->ChampionProfileId!=ProfileId)continue;

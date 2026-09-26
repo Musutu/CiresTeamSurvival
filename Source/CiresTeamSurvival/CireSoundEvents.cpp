@@ -1,4 +1,5 @@
 #include "CireSoundEvents.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAudio.h"
 #include "CireAbilityShapes.h"
 #include "CireAbilityDB.h"
@@ -283,7 +284,7 @@ ACharacter* CireSoundEvents::CharacterNear(UWorld* World, const FVector& At, flo
 {
     if(!World) return nullptr;
     ACharacter* Best = nullptr; float BestD = Radius * Radius;
-    for(TActorIterator<ACharacter> It(World); It; ++It)
+    for(TCireActorIterator<ACharacter> It(World); It; ++It)
     {
         ACharacter* C = *It;
         if(!IsValid(C) || C->IsHidden()) continue;
@@ -431,7 +432,7 @@ void FCireSoundEventTracker::TickUnits(UCireAudioSubsystem& Audio, float DeltaSe
     auto Observable = [&](const AActor* A) { return !PC || CireRealm::CanObserve(PC, A); };
 
     // ---- heroes: deaths and timed-cast channel loops ----
-    for(TActorIterator<ACireHero> It(World); It; ++It)
+    for(TCireActorIterator<ACireHero> It(World); It; ++It)
     {
         ACireHero* H = *It;
         if(!IsValid(H) || !H->bDrafted) continue;
@@ -475,7 +476,7 @@ void FCireSoundEventTracker::TickUnits(UCireAudioSubsystem& Audio, float DeltaSe
     }
 
     // ---- monsters: deaths by body type (and bosses duck the score) ----
-    for(TActorIterator<ACireMonster> It(World); It; ++It)
+    for(TCireActorIterator<ACireMonster> It(World); It; ++It)
     {
         ACireMonster* M = *It;
         if(!IsValid(M)) continue;

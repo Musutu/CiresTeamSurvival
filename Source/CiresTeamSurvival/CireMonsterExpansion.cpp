@@ -1,5 +1,6 @@
 // monster-expansion: Bestiary.json creatures, race variants, Rare Spawns and Bonus Loot Wave creatures. Docs/MonsterExpansion.md.
 #include "CireMonsterExpansion.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAudio.h"
 #include "CireBanners.h"
 #include "CireFabVFX.h"
@@ -237,7 +238,7 @@ void UCireExpansionPresenter::Tick(float DeltaTime)
         const FName* Cue = C ? C->Sounds.Find(Role) : nullptr;
         if (Cue && CireAudio::PlayCue(World, *Cue, At)) ++SoundsPlayed;
     };
-    for (TActorIterator<ACireMonster> It(World); It; ++It)
+    for (TCireActorIterator<ACireMonster> It(World); It; ++It)
     {
         ACireMonster* M = *It;
         if (!IsValid(M)) continue;

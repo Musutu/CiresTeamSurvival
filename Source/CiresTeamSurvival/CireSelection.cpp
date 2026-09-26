@@ -1,4 +1,5 @@
 #include "CireSelection.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "CireConstruct.h"
 #include "CireRealm.h"
@@ -172,12 +173,12 @@ AActor* CireSelection::NextTarget(ACireController* Controller,bool bFriendly,boo
     };
     if(bFriendly)
     {
-        for(TActorIterator<ACireHero> It(Controller->GetWorld());It;++It)if(It->TeamId==Self->TeamId)Consider(*It);
+        for(TCireActorIterator<ACireHero> It(Controller->GetWorld());It;++It)if(It->TeamId==Self->TeamId)Consider(*It);
     }
     else
     {
-        for(TActorIterator<ACireMonster> It(Controller->GetWorld());It;++It)if(Self->IsHostile(*It))Consider(*It);
-        for(TActorIterator<ACireHero> It(Controller->GetWorld());It;++It)if(Self->IsHostile(*It))Consider(*It);
+        for(TCireActorIterator<ACireMonster> It(Controller->GetWorld());It;++It)if(Self->IsHostile(*It))Consider(*It);
+        for(TCireActorIterator<ACireHero> It(Controller->GetWorld());It;++It)if(Self->IsHostile(*It))Consider(*It);
     }
     All.Sort([&Origin](const AActor& A,const AActor& B){return FVector::DistSquared(Origin,A.GetActorLocation())<FVector::DistSquared(Origin,B.GetActorLocation());});
     if(All.IsEmpty())return nullptr;
@@ -272,8 +273,8 @@ AActor* CireSelection::BestHostile(ACireController* Controller,float Range,AActo
     if(IsLivingUnit(UnderCursor)&&Self->IsHostile(UnderCursor)&&Self->InRange(UnderCursor,Range))return UnderCursor;
     TArray<AActor*> All;
     const auto Consider=[&](AActor* A){if(IsLivingUnit(A)&&!A->IsHidden()&&Self->IsHostile(A)&&CireRealm::CanObserve(Self,A)&&Self->InRange(A,Range))All.Add(A);};
-    for(TActorIterator<ACireMonster> It(Controller->GetWorld());It;++It)Consider(*It);
-    for(TActorIterator<ACireHero> It(Controller->GetWorld());It;++It)Consider(*It);
+    for(TCireActorIterator<ACireMonster> It(Controller->GetWorld());It;++It)Consider(*It);
+    for(TCireActorIterator<ACireHero> It(Controller->GetWorld());It;++It)Consider(*It);
     if(All.IsEmpty())return nullptr;
     const FVector Origin=Self->GetActorLocation();
     All.Sort([&Origin](const AActor& A,const AActor& B){return FVector::DistSquared(Origin,A.GetActorLocation())<FVector::DistSquared(Origin,B.GetActorLocation());});

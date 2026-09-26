@@ -1,4 +1,5 @@
 #include "CireShopUI.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireShopArt.h" // progression-shop: scroll cards and ornate framing
 #include "CireVendors.h" // vendors: merchant tabs
@@ -758,7 +759,7 @@ void DrawReadyPanel(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller,
     if (!GameState || !Hero) return;
     const bool bBreather = CireSkillShop::IsBreather(HUD.GetWorld());
     TArray<ACireHero*> Team;
-    for (TActorIterator<ACireHero> It(HUD.GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireHero> It(HUD.GetWorld()); It; ++It)
         if (It->TeamId == Hero->TeamId && It->bDrafted && !It->IsA<ACireSummon>()) Team.Add(*It);
     Team.Sort([](const ACireHero& A, const ACireHero& B) { return A.bBot != B.bBot ? !A.bBot : A.HeroName < B.HeroName; });
     // Portraits.
@@ -1467,7 +1468,7 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
     {
         FCireUIPainter W = HUD.ScreenPainter();
         const float Scale = FMath::Max(.01f, W.Scale);
-        for (TActorIterator<ACireLootDrop> It(HUD.GetWorld()); It; ++It)
+        for (TCireActorIterator<ACireLootDrop> It(HUD.GetWorld()); It; ++It)
         {
             if (It->bOpened || (It->OwnerHero ? It->OwnerHero != Hero : It->TeamId != Hero->TeamId)) continue;
             FVector2D Screen;

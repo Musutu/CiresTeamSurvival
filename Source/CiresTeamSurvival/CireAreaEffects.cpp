@@ -1,4 +1,5 @@
 #include "CireAreaEffects.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireItems.h" // items-v2
 #include "CireDeveloperTools.h"
@@ -98,7 +99,7 @@ FVector Feet(const AActor* Actor)
 void ChangePoison(AActor* Actor, int32 Delta)
 {
     float End=0;
-    if(Actor)for(TActorIterator<ACireAreaEffect> It(Actor->GetWorld());It;++It)
+    if(Actor)for(TCireActorIterator<ACireAreaEffect> It(Actor->GetWorld());It;++It)
         if(!It->IsActorBeingDestroyed()&&It->AreaSpec.bPoison&&It->AreaSpec.bPersistent&&It->HasOccupant(Actor))
             End=FMath::Max(End,It->StartServerTime+It->AreaSpec.WarningSeconds+It->AreaSpec.DurationSeconds);
     if (auto* Hero = Cast<ACireHero>(Actor))
@@ -218,7 +219,7 @@ ACireAreaEffect* ACireAreaEffect::Spawn(AActor* Source, const FCireAreaSpec& Inp
     const auto* Mode = World ? World->GetAuthGameMode<ACireGameMode>() : nullptr;
     if (!Mode || !Mode->IsCombatPhase() || CireCombat::TeamOf(Source) < 0 || CireCombat::TeamOf(Source) > 1) return nullptr;
     int32 SourceAreas = 0, TotalAreas = 0;
-    for (TActorIterator<ACireAreaEffect> It(World); It; ++It)
+    for (TCireActorIterator<ACireAreaEffect> It(World); It; ++It)
     {
         if (It->IsActorBeingDestroyed()) continue;
         ++TotalAreas;
@@ -321,7 +322,7 @@ void ACireAreaEffect::RefreshOccupants(float ActiveDelta)
 {
     if (!AreaSpec.bPersistent && bBurstApplied) return;
     TSet<TWeakObjectPtr<AActor>> Inside;
-    for (TActorIterator<ACharacter> It(GetWorld()); It; ++It)
+    for (TCireActorIterator<ACharacter> It(GetWorld()); It; ++It)
     {
         AActor* Actor = *It;
         if (IsValid(Actor) && CireCombat::AreHostile(SourceActor,Actor) &&
@@ -382,13 +383,13 @@ void ACireAreaEffect::DealAccumulatedDamage()
 void ACireAreaEffect::ClearAll(UWorld* World)
 {
     if (!World || World->GetNetMode() == NM_Client) return;
-    for (TActorIterator<ACireAreaEffect> It(World); It; ++It) { It->ClearOccupants(); It->Destroy(); }
+    for (TCireActorIterator<ACireAreaEffect> It(World); It; ++It) { It->ClearOccupants(); It->Destroy(); }
 }
 
 void ACireAreaEffect::ClearForActor(AActor* Actor)
 {
     if (!Actor || !Actor->HasAuthority() || !Actor->GetWorld()) return;
-    for (TActorIterator<ACireAreaEffect> It(Actor->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireAreaEffect> It(Actor->GetWorld()); It; ++It)
     {
         if (It->SourceActor == Actor) { It->ClearOccupants(); It->Destroy(); }
         else It->RemoveOccupant(Actor);

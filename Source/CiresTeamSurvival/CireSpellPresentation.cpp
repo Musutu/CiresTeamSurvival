@@ -1,4 +1,5 @@
 #include "CireSpellPresentation.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAreaEffects.h"
 #include "CireGame.h"
 #include "CireHUD.h"
@@ -75,7 +76,7 @@ using FSoftMesh=FCireSoftMesh;
 bool Capacity(UWorld* World)
 {
     int32 Count=0;
-    for(TActorIterator<ACireSpellVisual> It(World);It;++It)
+    for(TCireActorIterator<ACireSpellVisual> It(World);It;++It)
         if(!It->IsActorBeingDestroyed() && ++Count>=MaxEffects) return false;
     return true;
 }
@@ -144,7 +145,7 @@ void ACireSpellVisual::Configure(FName Id,FVector From,FVector To,ECireSpellCue 
     bLightGranted=false;Light->SetVisibility(false);
     if(Family!=Steel&&!bFollowArea&&Cue!=ECireSpellCue::Wall&&Cue!=ECireSpellCue::Protection)
     {
-        int32 Count=0;for(TActorIterator<ACireSpellVisual> It(GetWorld());It;++It)
+        int32 Count=0;for(TCireActorIterator<ACireSpellVisual> It(GetWorld());It;++It)
             if(*It!=this&&!It->IsActorBeingDestroyed()&&It->bLightGranted)++Count;
         bLightGranted=Count<MaxLights;
     }
@@ -649,7 +650,7 @@ ACireSpellVisual* CireSpellPresentation::Play(UWorld* World,FName SkillId,FVecto
 ACireSpellVisual* CireSpellPresentation::FollowArea(ACireAreaEffect* Area)
 {
     if(!IsValid(Area) || Area->GetNetMode()==NM_DedicatedServer || !Capacity(Area->GetWorld())) return nullptr;
-    for(TActorIterator<ACireSpellVisual> It(Area->GetWorld());It;++It)
+    for(TCireActorIterator<ACireSpellVisual> It(Area->GetWorld());It;++It)
         if(It->GetOwner()==Area && !It->IsActorBeingDestroyed()) return *It;
     FActorSpawnParameters P; P.Owner=Area;
     P.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

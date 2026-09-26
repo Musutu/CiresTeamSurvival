@@ -1,5 +1,6 @@
 // new-champions: Aetheri Constructs (see CireTechConstructs.h, Docs/NewChampions.md).
 #include "CireTechConstructs.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireKitSkills.h" // kits-complete
 #include "CireScalingKits.h" // scaling-kits
 #include "CireConstruct.h"
@@ -106,8 +107,8 @@ void Units(UWorld* World, TArray<AActor*>& Out, bool bConstructs)
 {
     Out.Reset();
     if (auto* Mode = World->GetAuthGameMode<ACireGameMode>()) for (auto* M : Mode->Monsters) if (CireCombat::IsAlive(M)) Out.Add(M);
-    for (TActorIterator<ACireHero> It(World); It; ++It) if (CireCombat::IsAlive(*It)) Out.Add(*It);
-    if (bConstructs) for (TActorIterator<ACireConstruct> It(World); It; ++It) if (CireCombat::IsAlive(*It) && !It->IsActorBeingDestroyed()) Out.Add(*It);
+    for (TCireActorIterator<ACireHero> It(World); It; ++It) if (CireCombat::IsAlive(*It)) Out.Add(*It);
+    if (bConstructs) for (TCireActorIterator<ACireConstruct> It(World); It; ++It) if (CireCombat::IsAlive(*It) && !It->IsActorBeingDestroyed()) Out.Add(*It);
 }
 bool IsAlly(const ACireConstruct* C, const AActor* Unit)
 {
@@ -277,7 +278,7 @@ TArray<ACireConstruct*> CireTechConstructs::Deploy(AActor* Owner, FName RecipeId
 int32 CireTechConstructs::CountOwned(const AActor* Owner, FName Recipe)
 {
     int32 N = 0;
-    if (Owner) for (TActorIterator<ACireConstruct> It(Owner->GetWorld()); It; ++It)
+    if (Owner) for (TCireActorIterator<ACireConstruct> It(Owner->GetWorld()); It; ++It)
         if (!It->IsActorBeingDestroyed() && It->GetSourceActor() == Owner && It->ConstructSpec.Recipe == Recipe) ++N;
     return N;
 }
@@ -287,7 +288,7 @@ int32 CireTechConstructs::Overcharge(AActor* Owner, FVector Center, float Radius
     int32 N = 0;
     if (!Owner || !Owner->HasAuthority()) return 0;
     const float Now = Owner->GetWorld()->GetTimeSeconds();
-    for (TActorIterator<ACireConstruct> It(Owner->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireConstruct> It(Owner->GetWorld()); It; ++It)
     {
         if (It->IsActorBeingDestroyed() || It->GetSourceActor() != Owner || !It->IsTech() || FVector::DistSquared2D(Center, It->GetActorLocation()) > FMath::Square(Radius)) continue;
         It->OverchargedUntil = FMath::Max(It->OverchargedUntil, Now + Seconds);
@@ -477,7 +478,7 @@ bool CireTechConstructs::MonsterHandleConstructs(ACireMonster* M, bool bHasVicti
 {
     if (!M || !M->HasAuthority() || bHasVictimInReach) return false;
     ACireConstruct* Best = nullptr; double BestD = FMath::Square(650.f);
-    for (TActorIterator<ACireConstruct> It(M->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireConstruct> It(M->GetWorld()); It; ++It)
     {
         if (It->IsActorBeingDestroyed() || !It->IsTech() || It->ConstructSpec.Kind == K::Trap || It->ConstructSpec.Kind == K::Skitter || !It->CanBeDamagedBy(M)) continue;
         const double D = FVector::DistSquared2D(M->GetActorLocation(), It->GetActorLocation());

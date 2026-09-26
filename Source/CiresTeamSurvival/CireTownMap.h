@@ -39,6 +39,8 @@ struct CIRESTEAMSURVIVAL_API FCireRealmLighting
     FLinearColor Tint = FLinearColor::White;
     float TorchIntensity = 0.f, TorchRadius = 1400.f;   // extra warm fill at the pack's torches and lanterns (0 = none)
     FLinearColor TorchColor = FLinearColor(1.f, .62f, .3f);
+    float SkyLightIntensity = 1.f;                      // town-perf: the realm's sky light, captured from its own sky sphere
+    FLinearColor SkyLightColor = FLinearColor::White;
 };
 
 struct CIRESTEAMSURVIVAL_API FCireTownDef
@@ -55,6 +57,12 @@ struct CIRESTEAMSURVIVAL_API FCireTownDef
     float SkyRadius = 0.f;             // each realm's sky sphere radius (0 = from the route bounds) // ground trace and nav bounds, relative to the realm offset Z
     bool bDefaultMap = true;
     FString RoutesFile = TEXT("Data/CastleTownRoutes.json");
+    // town-perf ("performance"): pack local lights keep or drop their shadows; pack particles and cloth simulate only within
+    // this many cm of the camera (0 = everywhere).
+    bool bPackLightShadows = true;
+    float PackFxRadius = 0.f;
+    bool bParallelStreaming = false;
+    bool bRestoreRendererCvars = true; // undo the pack optimizer's r.Shadow.Virtual.* overrides after streaming   // request every level before one flush (else one blocking flush per level)
     FVector2D ExploreStart = FVector2D::ZeroVector;
     TArray<FCireTownLandmark> Landmarks;
 };
@@ -76,6 +84,10 @@ namespace CireTownMap
     /** Stream both copies of the town into this world and block until they are visible (idempotent). */
     CIRESTEAMSURVIVAL_API bool LoadRealms(UWorld* World);
     CIRESTEAMSURVIVAL_API int32 LoadedLevels(const UWorld* World);
+    /** town-perf: wall-clock milliseconds the last LoadRealms call blocked (0 before the town streamed). */
+    CIRESTEAMSURVIVAL_API double LastLoadMs();
+    /** town-perf: log per-realm primitive, light, particle and ticking counts (CIRE_TOWN_SCENE_STATS). */
+    CIRESTEAMSURVIVAL_API void LogSceneStats(UWorld* World, const TCHAR* When);
     /** Strip the pack's own sky/sun/grading/cinematics and put the realm-1 copy on lighting channel 1. Idempotent per
         level; ACireWorld calls it again while late Level Instances stream in. Returns the newly prepared level count. */
     CIRESTEAMSURVIVAL_API int32 PrepareRealmLevels(UWorld* World);
@@ -88,6 +100,12 @@ namespace CireTownMap
     /** Every peer: per-realm sun (lighting channel 0 = realm 0, 1 = realm 1), the pack's sky sphere around each realm,
         a bounded colour grade per realm and warm torch fill. Owner = ACireWorld. */
     CIRESTEAMSURVIVAL_API void BuildRealmLighting(AActor* Owner);
+    /** town-perf, every peer (ACireWorld tick): render and animate only the realm the local camera is in. The far realm's
+        pack primitives, lights, cloth and particles are hidden/paused, as are its sun, sky sphere and torch fills, and the
+        sky light is re-captured for the viewed realm. A dedicated server only stops the cosmetic ticking of both copies.
+        cire.TownRenderBothRealms 1 turns it off for profiling. */
+    CIRESTEAMSURVIVAL_API void UpdateLocalView(UWorld* World);
+    CIRESTEAMSURVIVAL_API int32 ViewRealm(const UWorld* World);
     /** Keep a moving actor's lighting channel on the realm it stands in (heroes, monsters). */
     CIRESTEAMSURVIVAL_API void ApplyActorRealm(AActor* Actor);
     /** Which realm copy a world location belongs to (nearest realm origin). */

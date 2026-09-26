@@ -1,4 +1,5 @@
 #include "CireDeveloperTools.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireKitSkills.h" // kits-complete
 #include <algorithm>
 #include "CireSkillShop.h" // progression-shop: game mode
@@ -814,9 +815,9 @@ void ACireHero::BotThink(float DeltaSeconds)
             for (auto* Enemy : Mode->Heroes)
                 if (IsValid(Enemy)) Consider(Enemy, Enemy->TauntUntil > GetWorld()->GetTimeSeconds() ? -100000000.0 : 0.0);
             // scaling-kits: enemy summons (a taunting Mechanical Tank first) and constructs are valid targets.
-            for (TActorIterator<ACireSummon> It(GetWorld()); It; ++It)
+            for (TCireActorIterator<ACireSummon> It(GetWorld()); It; ++It)
                 Consider(*It, It->TauntUntil > GetWorld()->GetTimeSeconds() ? -100000000.0 : 250000.0);
-            for (TActorIterator<ACireConstruct> It(GetWorld()); It; ++It)
+            for (TCireActorIterator<ACireConstruct> It(GetWorld()); It; ++It)
                 if (It->IsTech() || It->IsWall()) Consider(*It, 400000.0);
         }
         else Best = CireWaveDirector::ChooseBotTarget(this); // wave-director: lane-defence priorities

@@ -1,4 +1,5 @@
 #include "CireRoleSkills.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireGame.h"
@@ -137,12 +138,12 @@ bool CireRoleSkills::Cast(ACireHero* Hero,int32 Slot,const FString& Id)
     else if(Id==TEXT("challenge_of_iron"))
     {
         Hero->ShieldUntil=FMath::Max(Hero->ShieldUntil,Now+Duration);Hero->TauntUntil=FMath::Max(Hero->TauntUntil,Now+Duration); CireBuffs::Apply(Hero,TEXT("challenge_of_iron"),Duration,Hero); // aura-vfx
-        for(TActorIterator<ACireMonster> It(Hero->GetWorld());It;++It)
+        for(TCireActorIterator<ACireMonster> It(Hero->GetWorld());It;++It)
             if(Hero->IsHostile(*It)&&Hero->InRange(*It,S.Radius)&&ClearSight(Hero,*It))CireThreat::Taunt(*It,Hero,Duration);
     }
     else if(Id==TEXT("mass_aegis"))
     {
-        for(TActorIterator<ACireHero> It(Hero->GetWorld());It;++It)if(Friendly(Hero,*It,S.Radius))
+        for(TCireActorIterator<ACireHero> It(Hero->GetWorld());It;++It)if(Friendly(Hero,*It,S.Radius))
         {It->SlowUntil=0;It->ShieldUntil=FMath::Max(It->ShieldUntil,Now+Duration);It->ForceNetUpdate();CireBuffs::Apply(*It,TEXT("mass_aegis"),Duration,Hero);} // aura-vfx
     }
     else if(Id==TEXT("wellspring"))
@@ -207,7 +208,7 @@ bool CireRoleSkills::RunSmoke(ACireGameMode* Mode)
     Ready(Tank,TEXT("seismic_reprisal"));const float MonsterBefore=M->Health;
     Check(Cast(Tank,0,TEXT("seismic_reprisal"))&&M->Health==MonsterBefore,TEXT("seismic warning is harmless at cast time"));
     ACireAreaEffect* Area=nullptr;
-    for(TActorIterator<ACireAreaEffect> It(Mode->GetWorld());It;++It)if(It->AreaSpec.AbilityName==Name(TEXT("seismic_reprisal"))&&FVector::DistSquared2D(It->GetActorLocation(),Origin)<1)Area=*It;
+    for(TCireActorIterator<ACireAreaEffect> It(Mode->GetWorld());It;++It)if(It->AreaSpec.AbilityName==Name(TEXT("seismic_reprisal"))&&FVector::DistSquared2D(It->GetActorLocation(),Origin)<1)Area=*It;
     Check(Area!=nullptr,TEXT("seismic uses native replicated area actor"));
     if(Area)
     {
@@ -237,7 +238,7 @@ bool CireRoleSkills::RunSmoke(ACireGameMode* Mode)
         Ready(Tank,TEXT("spectral_hunt"));Tank->Target=M;
         Check(Cast(Tank,0,TEXT("spectral_hunt")),TEXT("spectral hunt casts with duration override"));
         int32 Count=0;const auto* Recipe=CireSkillTuning::FindRoleSkill(TEXT("spectral_hunt"));
-        for(TActorIterator<ACireSummon> It(Mode->GetWorld());It;++It)if(It->GetOwnerHero()==Tank&&!It->IsActorBeingDestroyed())
+        for(TCireActorIterator<ACireSummon> It(Mode->GetWorld());It;++It)if(It->GetOwnerHero()==Tank&&!It->IsActorBeingDestroyed())
         {
             ++Count;Actors.Add(*It);
             Check(Recipe&&FMath::IsNearlyEqual(It->SummonSpec.DurationSeconds,FMath::Clamp(Recipe->DurationSeconds*2.f,1.f,120.f))&&

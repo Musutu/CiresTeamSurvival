@@ -1,4 +1,5 @@
 #include "CireAmbience.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAudio.h"
 #include "CireEnvironmentProps.h"
 #include "CireGame.h"
@@ -204,7 +205,7 @@ void FCireAmbiencePlayer::ScanProps(UWorld* World)
 {
     const CireAmbience::FData& Data = CireAmbience::Data();
     Props.Reset();
-    for(TActorIterator<ACireWorld> It(World); It; ++It)
+    for(TCireActorIterator<ACireWorld> It(World); It; ++It)
     {
         TArray<UInstancedStaticMeshComponent*> Components;
         It->GetComponents(Components);

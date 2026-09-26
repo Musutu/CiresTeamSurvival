@@ -1,4 +1,5 @@
 #include "CireSkillshot.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireDeveloperTools.h"
 #include "CireConstruct.h"
 #include "CireCombatEvents.h"
@@ -54,7 +55,7 @@ ACireSkillshot* ACireSkillshot::Spawn(AActor* Source, const FCireSkillshotSpec& 
     FVector Direction = AimPoint - Origin; Direction.Z = 0;
     if (!Direction.Normalize()) return nullptr;
     int32 Total = 0, Owned = 0;
-    for (TActorIterator<ACireSkillshot> It(World); It; ++It)
+    for (TCireActorIterator<ACireSkillshot> It(World); It; ++It)
         if (!It->IsActorBeingDestroyed()) { ++Total; if (It->SourceActor == Source) ++Owned; }
     if (Total >= 256 || Owned >= 16) return nullptr;
     const FTransform Transform(Direction.Rotation(), Origin);
@@ -222,8 +223,8 @@ void ACireSkillshot::Travel(float Distance)
     // unbounded server loop; excess travel is terminated conservatively.
     if (Distance > .01f && !IsActorBeingDestroyed()) Destroy();
 }
-void ACireSkillshot::ClearAll(UWorld* World) { if (World) for (TActorIterator<ACireSkillshot> It(World); It; ++It) if (It->HasAuthority()) It->Destroy(); }
-void ACireSkillshot::ClearForActor(AActor* Actor) { if (IsValid(Actor)) for (TActorIterator<ACireSkillshot> It(Actor->GetWorld()); It; ++It) if (It->HasAuthority() && It->SourceActor == Actor) It->Destroy(); }
+void ACireSkillshot::ClearAll(UWorld* World) { if (World) for (TCireActorIterator<ACireSkillshot> It(World); It; ++It) if (It->HasAuthority()) It->Destroy(); }
+void ACireSkillshot::ClearForActor(AActor* Actor) { if (IsValid(Actor)) for (TCireActorIterator<ACireSkillshot> It(Actor->GetWorld()); It; ++It) if (It->HasAuthority() && It->SourceActor == Actor) It->Destroy(); }
 void ACireSkillshot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

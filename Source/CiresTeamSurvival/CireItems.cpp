@@ -1,4 +1,5 @@
 #include "CireItems.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireSkillShop.h" // progression-shop: Skill Shop
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
@@ -613,7 +614,7 @@ void CireItems::OnPhaseChanged(ACireGameMode* Mode, int32 NewPhase)
             Inventory->EndShopVisit();
         }
     if (NewPhase == 2 || NewPhase == 3)
-        for (TActorIterator<ACireLanternWard> It(Mode->GetWorld()); It; ++It) It->Destroy();
+        for (TCireActorIterator<ACireLanternWard> It(Mode->GetWorld()); It; ++It) It->Destroy();
 }
 
 // ------------------------------------------------------------------ inventory component
@@ -1337,7 +1338,7 @@ void ACireLanternWard::Tick(float DeltaSeconds)
     if (Flame) Flame->SetRelativeScale3D(FVector(2.2f + .25f * FMath::Sin(NowTime * 5.f), 2.2f, .28f));
     if (!HasAuthority()) return;
     if (ExpiresAt > 0 && NowTime >= ExpiresAt) { Destroy(); return; }
-    for (TActorIterator<ACireMonster> It(GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireMonster> It(GetWorld()); It; ++It)
         if (It->Lane == TeamId && It->Health > 0 && !It->bArmoredEscort &&
             FVector::DistSquared2D(It->GetActorLocation(), GetActorLocation()) <= FMath::Square(Radius))
             It->SlowUntil = FMath::Max(It->SlowUntil, NowTime + .5f);
@@ -1348,7 +1349,7 @@ float ACireLanternWard::MarkBonus(const AActor* Target, int32 AttackerTeam)
     const auto* Monster = Cast<ACireMonster>(Target);
     if (!Monster || !Monster->GetWorld()) return 0.f;
     float Best = 0.f;
-    for (TActorIterator<ACireLanternWard> It(Monster->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireLanternWard> It(Monster->GetWorld()); It; ++It)
         if (It->TeamId == AttackerTeam && FVector::DistSquared2D(It->GetActorLocation(), Monster->GetActorLocation()) <= FMath::Square(It->Radius))
             Best = FMath::Max(Best, It->MarkPercent / 100.f);
     return Best;

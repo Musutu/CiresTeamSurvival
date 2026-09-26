@@ -1,4 +1,5 @@
 #include "CireAuraVisuals.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireFabVFX.h" // fab-integration
 #include "NiagaraComponent.h"
 #include "CireAuraShapes.h"
@@ -757,7 +758,7 @@ void UCireAuraSubsystem::HandleProjectiles()
 {
     UWorld* World=GetWorld();const float ServerNow=CireBuffs::ServerNow(World);
     for(auto It=Trails.CreateIterator();It;++It)if(!It.Key().IsValid()||!It.Value().IsValid())It.RemoveCurrent();
-    for(TActorIterator<ACireTargetProjectile> It(World);It;++It)
+    for(TCireActorIterator<ACireTargetProjectile> It(World);It;++It)
     {
         ACireTargetProjectile* Shot=*It;if(Trails.Contains(Shot)||Shot->IsHidden()||!IsValid(Shot->Attacker))continue;
         auto* Aura=Shot->Attacker->FindComponentByClass<UCireAuraComponent>();const FCireAuraDef* Mod=Aura?Aura->AttackModifier(ServerNow):nullptr;

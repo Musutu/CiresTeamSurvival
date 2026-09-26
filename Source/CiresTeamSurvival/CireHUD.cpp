@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // kits-complete
 #include "CireKitSkills.h" // kits-complete
 #include "CireSkillShop.h" // progression-shop: ready gate caption
@@ -46,7 +47,7 @@ const FLinearColor LifeGreen(.10f,.70f,.14f,1.f);
 int32 AggroCount(const UWorld* World,const ACireHero* Hero)
 {
     int32 Count=0;
-    if(World&&Hero)for(TActorIterator<ACireMonster> It(const_cast<UWorld*>(World));It;++It)if(It->Health>0&&It->Victim==Hero)++Count;
+    if(World&&Hero)for(TCireActorIterator<ACireMonster> It(const_cast<UWorld*>(World));It;++It)if(It->Health>0&&It->Victim==Hero)++Count;
     return Count;
 }
 }
@@ -327,7 +328,7 @@ void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
     TextFx(Hero->TeamId==0?TEXT("EMBER COMPANY"):TEXT("DUSK COMPANY"),bThemedParty?8:1,2,10.5f,bThemedParty?Parchment:Gold,ECireFont::Heading,true,true);
     {const FString Count=TEXT("PARTY / 5");TextFx(Count,202-TextWidthFont(Count,9,ECireFont::Heading),3,9,Parchment*.75f,ECireFont::Heading,true,true);}
     TArray<ACireHero*> Allies;
-    for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(*It!=Hero&&It->TeamId==Hero->TeamId&&!Cast<ACireSummon>(*It))Allies.Add(*It);
+    for(TCireActorIterator<ACireHero> It(GetWorld());It;++It)if(*It!=Hero&&It->TeamId==Hero->TeamId&&!Cast<ACireSummon>(*It))Allies.Add(*It);
     Allies.Sort([](const ACireHero& A,const ACireHero& B){return A.GetName()<B.GetName();});
     for(int32 I=0;I<FMath::Min(Allies.Num(),4);++I) {
         ACireHero* Ally=Allies[I]; const float Y=20+I*56;
@@ -486,7 +487,7 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
         }
         Line(110,28,110,153,Gold*.45f);
     }
-    for(TActorIterator<ACireMonster> It(GetWorld());It;++It) {
+    for(TCireActorIterator<ACireMonster> It(GetWorld());It;++It) {
         if(Arena||It->Health<=0||It->Lane!=Hero->TeamId)continue;
         const auto P=Map(It->GetActorLocation(),It->Lane);
         if(It->bBoss){Panel(P.X-3,P.Y-3,7,7,Gold);Panel(P.X-2,P.Y-2,5,5,Red);}
@@ -494,13 +495,13 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
         else Panel(P.X-1,P.Y-1,3,3,It->PackId>=0?Purple:Red);
     }
     // progression-shop: your unopened personal loot chests (only the owner receives them).
-    if(!Arena)for(TActorIterator<ACireLootDrop> It(GetWorld());It;++It) {
+    if(!Arena)for(TCireActorIterator<ACireLootDrop> It(GetWorld());It;++It) {
         if(It->bOpened||It->OwnerHero!=Hero)continue;
         const auto P=Map(It->GetActorLocation(),Hero->TeamId);const FLinearColor C=ACireLootDrop::RarityColor(It->Rarity);
         Panel(P.X-4,P.Y-3,9,7,Ink);Panel(P.X-3,P.Y-2,7,5,C);Line(P.X-3,P.Y,P.X+4,P.Y,Ink,1);
     }
     // vendors: the three merchants' emblems in your realm's town.
-    if(!Arena)for(TActorIterator<ACireVendor> It(GetWorld());It;++It) {
+    if(!Arena)for(TCireActorIterator<ACireVendor> It(GetWorld());It;++It) {
         if(It->Team!=Hero->TeamId)continue;
         const FCireVendorDef* Def=CireVendors::Find(It->VendorId);if(!Def)continue;
         const auto P=Map(It->GetActorLocation(),Hero->TeamId);
@@ -508,7 +509,7 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
         MP.Disc(P.X,P.Y,5.2f,Ink,16);MP.Disc(P.X,P.Y,4.6f,Def->Accent,16);
         if(UTexture2D* Emblem=CireVendors::Emblem(Def->Id))MP.TexDisc(Emblem,P.X,P.Y,3.8f,FLinearColor::White,0,0,1,1,16);
     }
-    for(TActorIterator<ACireHero> It(GetWorld());It;++It) {
+    for(TCireActorIterator<ACireHero> It(GetWorld());It;++It) {
         if(It->bDead||(!Arena&&It->TeamId!=Hero->TeamId))continue;
         const auto P=Map(It->GetActorLocation(),It->TeamId);const bool Self=*It==Hero;
         const FLinearColor C=Self?Parchment:It->TeamId==Hero->TeamId?Teal:Red;
@@ -642,7 +643,7 @@ void ACireHUD::DrawMeters(ACireHero* Hero,ACireController* Controller)
         else if(Clicked&&Interactive&&Hit(0,0,116,20)){UISettings.bMeterCollapsed=!UISettings.bMeterCollapsed;UISettings.Save();Clicked=false;}
         if(!Collapsed)
         {
-            TArray<ACireHero*> Party;for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(It->TeamId==Hero->TeamId&&!Cast<ACireSummon>(*It))Party.Add(*It);
+            TArray<ACireHero*> Party;for(TCireActorIterator<ACireHero> It(GetWorld());It;++It)if(It->TeamId==Hero->TeamId&&!Cast<ACireSummon>(*It))Party.Add(*It);
             Party.Sort([Heal](const ACireHero& A,const ACireHero& B){return Heal?A.HealingDone>B.HealingDone:A.DamageDone>B.DamageDone;});
             float Total=0,Max=1;for(auto* H:Party){float V=Heal?H->HealingDone:H->DamageDone;Total+=V;Max=FMath::Max(Max,V);}
             for(int32 I=0;I<FMath::Min(Party.Num(),5);++I) {

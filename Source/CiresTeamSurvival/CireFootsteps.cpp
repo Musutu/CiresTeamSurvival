@@ -1,4 +1,5 @@
 #include "CireFootsteps.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAudio.h"
 #include "CireCreatureArt.h"
 #include "CireEnvironmentProps.h"
@@ -268,7 +269,7 @@ void FCireFootstepPlayer::Tick(UCireAudioSubsystem& Audio, const FVector& Listen
         Nearby.Reset();
         const float Max2 = FMath::Square(D.MaxDistance + 400.f);
         TArray<TPair<float, ACharacter*>> Found;
-        for(TActorIterator<ACharacter> It(World); It; ++It)
+        for(TCireActorIterator<ACharacter> It(World); It; ++It)
             if(IsValid(*It)) { const float Dist2 = FVector::DistSquared(It->GetActorLocation(), Listener); if(Dist2 < Max2) Found.Add({Dist2, *It}); }
         Found.Sort([](const TPair<float, ACharacter*>& A, const TPair<float, ACharacter*>& B) { return A.Key < B.Key; });
         for(int32 I = 0; I < Found.Num() && I < 24; ++I) Nearby.Add(Found[I].Value);

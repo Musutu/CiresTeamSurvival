@@ -1,5 +1,6 @@
 // new-champions: signature kits of the Gunblade, Witch Slayer, Huntress, Aetheri Artificer and Aetheri Warden.
 #include "CireSignatureSkills.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireAbilityDB.h"
 #include "CireAbilityShapes.h"
@@ -141,8 +142,8 @@ TArray<AActor*> Enemies(ACireHero* Hero, FVector Center, float Radius, bool bCon
         if (FVector::DistSquared2D(Center, U->GetActorLocation()) <= FMath::Square(Radius + Body) && FMath::Abs(U->GetActorLocation().Z - Center.Z) < 400.f) Out.Add(U);
     };
     if (auto* Mode = World->GetAuthGameMode<ACireGameMode>()) for (auto* M : Mode->Monsters) if (IsValid(M)) Consider(M);
-    for (TActorIterator<ACireHero> It(World); It; ++It) Consider(*It);
-    if (bConstructs) for (TActorIterator<ACireConstruct> It(World); It; ++It) if (!It->IsActorBeingDestroyed()) Consider(*It);
+    for (TCireActorIterator<ACireHero> It(World); It; ++It) Consider(*It);
+    if (bConstructs) for (TCireActorIterator<ACireConstruct> It(World); It; ++It) if (!It->IsActorBeingDestroyed()) Consider(*It);
     return Out;
 }
 bool GroundAim(ACireHero* Hero, FVector& Aim)
