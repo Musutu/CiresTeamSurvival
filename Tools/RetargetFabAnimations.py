@@ -519,8 +519,7 @@ def main_monster_sets(cmd, started):
         data["variants"] = dict(sorted(variants.items()))
         data["windows"] = windows
         data.setdefault("_comment", "")
-        data_path.write_text(json.dumps(data, indent=1) + "
-", encoding="utf-8")
+        data_path.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
         errors = sum(len(b.get("errors", {})) + ("error" in b) for b in report["bodies"].values())
         report["status"] = "pass" if not errors else "partial"
         unreal.log("CIRE_FAB_ANIM_MONSTER_SETS_%s bodies=%d errors=%d" % ("PASS" if not errors else "PARTIAL", len(report["bodies"]), errors))

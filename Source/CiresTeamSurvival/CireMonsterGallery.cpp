@@ -519,6 +519,26 @@ void Closeup(const FString& Spec)
     Look(C + FVector(330.f * Units.Num() + 250.f, 0, 260), C + FVector(-200, 0, 110), 50);
 }
 
+// monster-rig: face_<unit>+<unit>+...: upper-body review (tentacle beards, skin sway masks with
+// -dpcvars=cire.Monsters.SwayDebug=1). Each unit twice: facing the lens and turned 75 degrees.
+void FaceCloseup(const FString& Spec)
+{
+    TArray<FString> Units; Spec.ParseIntoArray(Units, TEXT("+"), true);
+    const FVector C = G.Studio;
+    const int32 Count = Units.Num() * 2;
+    float Top = 150.f;
+    for (int32 I = 0; I < Count; ++I)
+    {
+        const FVector At = C + FVector(0, (I - (Count - 1) * .5f) * 150.f, 0);
+        ACireMonster* M = Spawn(FName(*Units[I / 2]), 0, At, I % 2 ? 75.f : 0.f);
+        if (!M) continue;
+        CireRaces::ApplyRank(M, ECireNPCRank::Normal, 0);
+        Top = FMath::Max(Top, M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.f);
+        if (I % 2 == 0) Label(At + FVector(0, 75, 40), VariantName(M), FColor::White, 9, 0);
+    }
+    Look(C + FVector(150.f * Count + 120.f, 0, Top * .75f), C + FVector(0, 0, Top * .62f), 40);
+}
+
 // paladin-hq: the Iron Warden and both Relic Paladins (Polyphoria plate bodies) in the town, through the real
 // champion path: pala_idle, pala_run, pala_attack, pala_cast, pala_roll, pala_death, pala_game (gameplay camera),
 // pala_detail (head-and-hands close-up).
@@ -689,6 +709,7 @@ void EnterStage(const FStage& S)
     else if (N == TEXT("champions")) Champions();
     else if (N.StartsWith(TEXT("races_"))) RaceLineup(FName(*N.Mid(6))); // monster-races
     else if (N.StartsWith(TEXT("close_"))) Closeup(N.Mid(6));
+    else if (N.StartsWith(TEXT("face_"))) FaceCloseup(N.Mid(5)); // monster-rig
     else if (N.StartsWith(TEXT("pala_"))) Paladins(N.Mid(5)); // paladin-hq
     else if (N.StartsWith(TEXT("creature_"))) CreaturePhases(FName(*N.Mid(9))); // monster-expansion
     else if (N == TEXT("bestiary")) BestiaryLineup();
@@ -803,7 +824,7 @@ bool Build(ACireGameMode& Mode, ACireController& Controller)
         for (const FString& Name : RaceStages)
             if (G.Only.IsEmpty() || G.Only.ContainsByPredicate([&Name](const FString& Prefix) { return Name.StartsWith(Prefix); })) G.Stages.Add({Name, 3.f, false});
     }
-    for (const FString& Only : G.Only) if (Only.StartsWith(TEXT("close_"))) G.Stages.Add({Only, 3.f, false});
+    for (const FString& Only : G.Only) if (Only.StartsWith(TEXT("close_")) || Only.StartsWith(TEXT("face_"))) G.Stages.Add({Only, 3.f, false});
     for (const TCHAR* Name : {TEXT("pala_front"), TEXT("pala_back"), TEXT("pala_idle"), TEXT("pala_run"), TEXT("pala_attack"), TEXT("pala_cast"), TEXT("pala_roll"), TEXT("pala_death"), TEXT("pala_game"), TEXT("pala_detail")})
         if (G.Only.ContainsByPredicate([Name](const FString& Prefix) { return FString(Name).StartsWith(Prefix); })) G.Stages.Add({Name, 4.f, false}); // paladin-hq
     // monster-expansion: bestiary lineup, every creature in four states, rare and bonus looks.

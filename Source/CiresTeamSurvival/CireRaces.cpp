@@ -19,6 +19,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "HAL/IConsoleManager.h"
 #include "HAL/PlatformTime.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
@@ -577,6 +578,32 @@ bool CireRaces::HasSkin(const ACireMonster* M)
     return Skin && MID && MID->Parent == Skin;
 }
 
+namespace
+{
+TAutoConsoleVariable<int32> CVarSwayDebug(TEXT("cire.Monsters.SwayDebug"), 0,
+    TEXT("monster-rig: 1 paints the skin sway mask (tentacles/vines moved by the material) in green on Tripo bodies."));
+
+// monster-rig: tentacles and vines Tripo's humanoid rig gave no bones sway in M_CireMonsterSkin (world position
+// offset on the pre-skinned position). Up to two ellipsoid regions per body; SwayAmount 0 = rigid.
+void ApplySway(const ACireMonster* M, UMaterialInstanceDynamic* MID)
+{
+    static const TCHAR* const Centers[] = {TEXT("SwayCenterA"), TEXT("SwayCenterB")};
+    static const TCHAR* const Radii[] = {TEXT("SwayRadiiA"), TEXT("SwayRadiiB")};
+    static const TCHAR* const Bands[] = {TEXT("SwayBandA"), TEXT("SwayBandB")};
+    const TArray<CireMonsterArt::FSwayRegion>* Regions = M->MonsterArt ? &M->MonsterArt->AppliedSway() : nullptr;
+    for (int32 I = 0; I < 2; ++I)
+    {
+        const CireMonsterArt::FSwayRegion* R = Regions && Regions->IsValidIndex(I) ? &(*Regions)[I] : nullptr;
+        MID->SetVectorParameterValue(Centers[I], R ? FLinearColor(R->Center.X, R->Center.Y, R->Center.Z, 0.f) : FLinearColor::Black);
+        MID->SetVectorParameterValue(Radii[I], R ? FLinearColor(R->Radii.X, R->Radii.Y, R->Radii.Z, 0.f) : FLinearColor(1.f, 1.f, 1.f, 0.f));
+        MID->SetVectorParameterValue(Bands[I], R ? FLinearColor(R->Root, R->Tip, R->Amount, 0.f) : FLinearColor(1.f, 0.f, 0.f, 0.f));
+    }
+    MID->SetScalarParameterValue(TEXT("SwaySpeed"), M->MonsterArt ? M->MonsterArt->AppliedSwaySpeed : 1.6f);
+    MID->SetScalarParameterValue(TEXT("SwayWave"), M->MonsterArt ? M->MonsterArt->AppliedSwayWave : 1.f);
+    MID->SetScalarParameterValue(TEXT("SwayDebug"), CVarSwayDebug.GetValueOnGameThread() != 0 ? 1.f : 0.f);
+}
+}
+
 bool CireRaces::ApplySkin(ACireMonster* M)
 {
     if (!IsValid(M) || M->GetNetMode() == NM_DedicatedServer || !M->GetMesh()) return false;
@@ -662,6 +689,7 @@ bool CireRaces::ApplySkin(ACireMonster* M)
             MID->SetScalarParameterValue(TEXT("RankGlow"), Style.Glow);
             MID->SetVectorParameterValue(TEXT("RimColor"), Style.Rim > 0 ? Style.Color : (Race ? Race->Glow : FLinearColor::Black));
             MID->SetScalarParameterValue(TEXT("RimStrength"), Style.Rim);
+            ApplySway(M, MID);
         }
         return true;
     }

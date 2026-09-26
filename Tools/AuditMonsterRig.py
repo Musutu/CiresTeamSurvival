@@ -11,7 +11,7 @@ once. Per body:
     A fused weapon weighted to the wrong limb shows up as leg-bound (Gravemaw's axe on ball_r) or far.
 Output: Saved/MonsterRigAudit.json. Log marker CIRE_MONSTER_RIG_AUDIT_DONE.
 Run: UnrealEditor-Cmd <uproject> -run=pythonscript -script=<abs>/Tools/AuditMonsterRig.py -EnablePlugins=GeometryScripting
-     -unattended -nullrhi [-CireRigAuditOnly=AbyssalStalker+MawOfTheDeep]
+     -unattended -nullrhi [-CireRigAuditOnly=AbyssalStalker+MawOfTheDeep] [-CireRigAuditPoints: Saved/MonsterRigPoints/<mesh>.json]
 """
 import json
 import math
@@ -23,6 +23,7 @@ ROOT = Path(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_dir(
 GS = unreal.GeometryScript_BoneWeights
 LEG = ("thigh_", "calf_", "foot_", "ball_")
 ARM = ("upperarm_", "lowerarm_", "hand_", "thumb_", "index_", "middle_", "ring_", "pinky_")
+POINTS_DIR = ROOT / "Saved/MonsterRigPoints" if "-cirerigauditpoints" in unreal.SystemLibrary.get_command_line().lower() else None
 UE5_NAMES = ("hand_r", "lowerarm_r", "calf_r", "ball_r", "spine_03", "neck_01", "head", "pelvis", "root")
 
 
@@ -42,14 +43,16 @@ def bone_names(dm):
     return [str(b.name) for b in info]
 
 
-def bind_positions(mesh):
-    comp = unreal.SkeletalMeshComponent()
-    comp.set_skeletal_mesh_asset(mesh)
+def bind_positions(dm):
+    """Reference-pose bone positions in mesh space (the GeometryScript bone info's WorldTransform; an unregistered
+    SkeletalMeshComponent reports identity bone transforms, which made every vertex look 'far')."""
+    info = GS.get_all_bones_info(dm)
+    if isinstance(info, tuple):
+        info = [x for x in info if isinstance(x, (list, unreal.Array))][0]
     out = {}
-    for i in range(comp.get_num_bones()):
-        name = str(comp.get_bone_name(i))
-        t = comp.get_socket_transform(name, unreal.RelativeTransformSpace.RTS_COMPONENT).translation
-        out[name] = (t.x, t.y, t.z)
+    for b in info:
+        t = b.get_editor_property("world_transform").translation
+        out[str(b.name)] = (t.x, t.y, t.z)
     return out
 
 
@@ -79,7 +82,7 @@ def audit(path):
     dm, _ = unreal.GeometryScript_AssetUtils.copy_mesh_from_skeletal_mesh(
         mesh, dm, unreal.GeometryScriptCopyMeshFromAssetOptions(), unreal.GeometryScriptMeshReadLOD())
     names = bone_names(dm)
-    bind = bind_positions(mesh)
+    bind = bind_positions(dm)
     count = unreal.GeometryScript_MeshQueries.get_vertex_count(dm)
     pos, dom = {}, {}
     step = max(1, count // 40000)  # sample big meshes
@@ -108,6 +111,14 @@ def audit(path):
         b = bind.get(bone)
         if b and math.dist(p, b) > .35 * height:
             far[bone] = far.get(bone, 0) + 1
+    if POINTS_DIR:
+        # monster-rig: sampled bind-pose points + dominant bone for offline region picking (sway masks, segmentation).
+        every = max(1, len(pos) // 12000)
+        keys = sorted(pos)[::every]
+        POINTS_DIR.mkdir(parents=True, exist_ok=True)
+        (POINTS_DIR / (path.rsplit(".", 1)[1] + ".json")).write_text(json.dumps({
+            "bones": names, "bind": {k: [round(c, 2) for c in v] for k, v in bind.items()},
+            "points": [[round(pos[v][0], 2), round(pos[v][1], 2), round(pos[v][2], 2), names.index(dom[v][0]), round(dom[v][1], 2)] for v in keys]}), encoding="utf-8")
     isl = islands(dm, count)
     sizes = {}
     for v in range(count):

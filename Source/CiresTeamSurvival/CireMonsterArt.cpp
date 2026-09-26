@@ -398,6 +398,32 @@ void Load()
                     for (const auto& Value : *Drops) { FString Bone; if (Value->TryGetString(Bone)) Body.DropPropBones.Add(FName(*Bone)); }
                 FString Override;
                 if ((*BodyRule)->TryGetStringField(TEXT("mesh"), Override) && Override.StartsWith(TEXT("/Game/"))) Body.MeshOverride = Override;
+                // monster-rig: skin sway regions (tentacles/vines Tripo's humanoid rig gave no bones).
+                const TSharedPtr<FJsonObject>* Sway = nullptr;
+                if ((*BodyRule)->TryGetObjectField(TEXT("sway"), Sway))
+                {
+                    double N = 0;
+                    if ((*Sway)->TryGetNumberField(TEXT("speed"), N) && FMath::IsFinite(N)) Body.SwaySpeed = FMath::Clamp(static_cast<float>(N), 0.f, 10.f);
+                    if ((*Sway)->TryGetNumberField(TEXT("wave"), N) && FMath::IsFinite(N)) Body.SwayWave = FMath::Clamp(static_cast<float>(N), 0.f, 10.f);
+                    auto Vec = [](const TSharedPtr<FJsonObject>& R, const TCHAR* Key, FVector& Out)
+                    {
+                        const TArray<TSharedPtr<FJsonValue>>* V = nullptr;
+                        if (R->TryGetArrayField(Key, V) && V->Num() == 3) Out = FVector((*V)[0]->AsNumber(), (*V)[1]->AsNumber(), (*V)[2]->AsNumber());
+                    };
+                    const TArray<TSharedPtr<FJsonValue>>* Regions = nullptr;
+                    if ((*Sway)->TryGetArrayField(TEXT("regions"), Regions))
+                        for (const auto& Value : *Regions)
+                        {
+                            const TSharedPtr<FJsonObject>* R = nullptr; CireMonsterArt::FSwayRegion Region; double V = 0;
+                            if (!Value->TryGetObject(R) || Body.Sway.Num() >= 2) continue;
+                            Vec(*R, TEXT("center"), Region.Center); Vec(*R, TEXT("radii"), Region.Radii);
+                            if ((*R)->TryGetNumberField(TEXT("rootZ"), V)) Region.Root = static_cast<float>(V);
+                            if ((*R)->TryGetNumberField(TEXT("tipZ"), V)) Region.Tip = static_cast<float>(V);
+                            if ((*R)->TryGetNumberField(TEXT("amount"), V)) Region.Amount = FMath::Clamp(static_cast<float>(V), 0.f, 40.f);
+                            Region.Radii = Region.Radii.ComponentMax(FVector(.1));
+                            if (Region.Amount > 0.f && FMath::Abs(Region.Root - Region.Tip) > .5f) Body.Sway.Add(Region);
+                        }
+                }
                 const TSharedPtr<FJsonObject>* Adjust = nullptr;
                 if ((*BodyRule)->TryGetObjectField(TEXT("props"), Adjust))
                     for (const auto& Prop : (*Adjust)->Values)
@@ -798,6 +824,7 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
     }
     AppliedReskinBody = Body.ReskinTextures.IsEmpty() ? CireMonsterArt::FBody() : Body; // monster-expansion
     bAppliedSpectral = Body.bSpectral;
+    AppliedSwayRegions = Body.Sway; AppliedSwaySpeed = Body.SwaySpeed; AppliedSwayWave = Body.SwayWave; // monster-rig
     bTripoApplied = true; AppliedArchetype = Archetype.Id; AppliedVariant = Body.Variant; AppliedMeshScale = Body.MeshScale;
     AppliedWalkRaw = Body.WalkSpeedCm / FMath::Max(.01f, Body.MeshScale); AppliedRunRaw = Body.RunSpeedCm / FMath::Max(.01f, Body.MeshScale); // world-dressing
     Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = -1.f; // a cast already under way is picked up mid-bar
