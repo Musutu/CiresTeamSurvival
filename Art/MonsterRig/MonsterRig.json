@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "branch": "feat/monster-rig",
  "operator": "Claude (monster-rig worktree)",
- "status": "40 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
+ "status": "48 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
  "credits": {
   "observedBalanceAtStart": 14961,
   "observedBalanceAtPause": 14941,
@@ -183,6 +183,53 @@
    "gallery": "Saved/MonsterGallery/20260926-092517",
    "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
    "note": "8/8 retargeted, 15 roles each. Segmentation candidates DrakkariAshwing (far 13.6%) and EmberWhelp (far 11.9%) checked close up (Saved/MonsterGallery/20260926-092643): the flags are folded wings weighted to upperarm/clavicle and the whelp's tail on thigh_l; no visible stretch, so not segmented. Broodmother wings likewise. No hanging parts to sway."
+  },
+  "fallen_order": {
+   "bodies": {
+    "FallenSquire": {
+     "set": "one_hand",
+     "walkSpeedCm": 216.3,
+     "runSpeedCm": 328.0
+    },
+    "DreadKnight": {
+     "set": "two_hand",
+     "walkSpeedCm": 182.8,
+     "runSpeedCm": 334.2
+    },
+    "OathbreakerTemplar": {
+     "set": "sword_shield",
+     "walkSpeedCm": 156.3,
+     "runSpeedCm": 361.0
+    },
+    "BlightedChaplain": {
+     "set": "spell",
+     "walkSpeedCm": 192.0,
+     "runSpeedCm": 334.0
+    },
+    "FallenInquisitorCrossbow": {
+     "set": "crossbow",
+     "walkSpeedCm": 197.2,
+     "runSpeedCm": 272.3
+    },
+    "Flagellant": {
+     "set": "dual",
+     "walkSpeedCm": 212.3,
+     "runSpeedCm": 323.0
+    },
+    "FallenHighInquisitor": {
+     "set": "spell",
+     "walkSpeedCm": 186.9,
+     "runSpeedCm": 337.7
+    },
+    "FallenCrusader": {
+     "set": "two_hand",
+     "walkSpeedCm": 225.8,
+     "runSpeedCm": 436.4
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-093221",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "8/8 retargeted (crossbow set maps 11 roles by design, the rest 15). Gallery: sword+shield, two-hand, dual, crossbow and spell poses read, grounded. No hanging parts to sway; no visible audit artifacts (FallenCrusader clavicle 'far' flags are its pauldrons)."
   }
  }
 }
