@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "branch": "feat/monster-rig",
  "operator": "Claude (monster-rig worktree)",
- "status": "56 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
+ "status": "63 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
  "credits": {
   "observedBalanceAtStart": 14961,
   "observedBalanceAtPause": 14941,
@@ -277,6 +277,48 @@
    "gallery": "Saved/MonsterGallery/20260926-094008",
    "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
    "note": "8/8 retargeted (15 roles; AetheriLancer 14: the retarget validator rejected gun_attack3, 'body order broken at 0.33s', so its swing rotation uses attack/attackAlt). Lancer's gun death sank the feet 10-20 cm: the feet-floor clamp now also holds through deaths (every 'lies down' check still passes). No hanging parts to sway; AetheriHierarch/Lancer audit flags are staff/lance hands, no visible stretch."
+  },
+  "stoneborn": {
+   "bodies": {
+    "RuneSentinelHQ": {
+     "set": "one_hand",
+     "walkSpeedCm": 217.7,
+     "runSpeedCm": 344.0
+    },
+    "GraniteCrusherHQ": {
+     "set": "unarmed",
+     "walkSpeedCm": 192.9,
+     "runSpeedCm": 299.0
+    },
+    "BastionGolem": {
+     "set": "sword_shield",
+     "walkSpeedCm": 201.9,
+     "runSpeedCm": 419.6
+    },
+    "DeepforgeRunesmith": {
+     "set": "spell",
+     "walkSpeedCm": 144.6,
+     "runSpeedCm": 249.2
+    },
+    "StonebornForgelord": {
+     "set": "two_hand",
+     "walkSpeedCm": 155.6,
+     "runSpeedCm": 291.6
+    },
+    "StonebornColossus": {
+     "set": "unarmed",
+     "walkSpeedCm": 209.5,
+     "runSpeedCm": 328.5
+    },
+    "EtherMote": {
+     "set": "unarmed",
+     "walkSpeedCm": 110.4,
+     "runSpeedCm": 179.5
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-095011",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "7/7 assigned retargeted, 15 roles each. Segmentation candidate DeepforgeRunesmith (arm-bound low 10%: the fused hammer head on ring_03_r) checked close up (face_deepforge_runesmith): hammer sits in both hands, no visible stretch, not segmented. Stone/chain beards are rigid by design (no sway)."
   }
  }
 }
