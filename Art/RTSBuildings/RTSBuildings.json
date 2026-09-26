@@ -140,7 +140,7 @@
             "qa": "pass",
             "qaNotes": "4 sides + top in the Tripo viewer: clean closed plinth, no ground plane or floating junk, front squid-face gate matches concept, back and sides coherent (side door, anchors), square-ish footprint.",
             "turnaround": "Art/RTSBuildings/drowned_deep/qa/main_hall_turnaround.png",
-            "glb": "pending export (see tripo.exportBlocker)"
+            "glb": "Art/RTSBuildings/drowned_deep/models/main_hall.glb"
           }
         },
         "income": {
@@ -159,7 +159,7 @@
             "qa": "pass",
             "qaNotes": "front/sides/back/top clean; closed plinth, no ground plane or floaters; pearl pool, crane and pearl baskets read well; back wall is plainer than the front (expected).",
             "turnaround": "Art/RTSBuildings/drowned_deep/qa/income_turnaround.png",
-            "glb": "pending export"
+            "glb": "Art/RTSBuildings/drowned_deep/models/income.glb"
           }
         },
         "builder_shop": {
@@ -178,7 +178,7 @@
             "qa": "pass",
             "qaNotes": "clean on all sides and top; diving-helmet lantern crane, clam gate, anvil/workbench at back; no floaters or ground plane.",
             "turnaround": "Art/RTSBuildings/drowned_deep/qa/builder_shop_turnaround.png",
-            "glb": "pending export"
+            "glb": "Art/RTSBuildings/drowned_deep/models/builder_shop.glb"
           }
         },
         "barracks": {
@@ -197,7 +197,7 @@
             "qa": "pass",
             "qaNotes": "clean closed plinth, crossed-anchor clam gate reads well; back wall is flat and plain (minor, hidden from the RTS front camera); roof is an open glowing tide pool.",
             "turnaround": "Art/RTSBuildings/drowned_deep/qa/barracks_turnaround.png",
-            "glb": "pending export"
+            "glb": "Art/RTSBuildings/drowned_deep/models/barracks.glb"
           }
         },
         "archer_range": {
@@ -216,7 +216,7 @@
             "qa": "pass",
             "qaNotes": "clean on all sides; target disc, harpoon racks, lookout turret; closed plinth, no floaters; back wall plainer.",
             "turnaround": "Art/RTSBuildings/drowned_deep/qa/archer_range_turnaround.png",
-            "glb": "pending export"
+            "glb": "Art/RTSBuildings/drowned_deep/models/archer_range.glb"
           }
         },
         "knight_school": {
@@ -235,7 +235,26 @@
             "qa": "pass",
             "qaNotes": "crown of pearl claw-spikes and clam gate match the concept; sides/back coherent, no floaters or ground plane; spike tips slightly softened (normal for 4K H3.1).",
             "turnaround": "Art/RTSBuildings/drowned_deep/qa/knight_school_turnaround.png",
-            "glb": "pending export"
+            "glb": "Art/RTSBuildings/drowned_deep/models/knight_school.glb"
+          }
+        },
+        "arcane_well": {
+          "model": {
+            "taskId": "908a424c-065c-4ff2-8e49-ceb3d6c11616",
+            "attempts": [
+              {
+                "taskId": "908a424c-065c-4ff2-8e49-ceb3d6c11616",
+                "credits": 55,
+                "balanceAfter": 14101
+              }
+            ],
+            "creditsSpent": 55,
+            "faces": 46049,
+            "vertices": 33357,
+            "qa": "pass",
+            "qaNotes": "tentacle-wrapped spire with pearl orbs and water ribbons matches the concept; ribbons are thin but attached (watch for see-through at distance); closed plinth, no ground plane. Tall model: the plinth edge is slightly cropped in the turnaround frames, not in the mesh.",
+            "turnaround": "Art/RTSBuildings/drowned_deep/qa/arcane_well_turnaround.png",
+            "glb": "Art/RTSBuildings/drowned_deep/models/arcane_well.glb"
           }
         }
       }
@@ -436,7 +455,9 @@
         "plinth": "rough stone slabs with roots and grass tufts.",
         "spawnGate": "arch of two giant crossed tusks or bones.",
         "builderLook": "goat-legged beastman totemcarver with a stone mallet, bone saw, hide satchel and logs on its back."
-      }
+      },
+      "conceptBy": null,
+      "conceptNotes": "Tripo agent claim withdrawn 2026-09-26: typing the concept prompt into Tripo's image generator was blocked by the permission system, so no feral_kin concepts were made. Race is free for the concept agent."
     }
   },
   "tripo": {
@@ -486,6 +507,10 @@
       {
         "when": "drowned_deep knight_school submitted",
         "balance": 14156
+      },
+      {
+        "when": "drowned_deep arcane_well submitted",
+        "balance": 14101
       }
     ],
     "plan": {
@@ -510,6 +535,8 @@
       "retries": "Tripo Free Retry (x3 per task) first; a paid regeneration only if the free retries fail QA.",
       "why4K": "8K on all 198 buildings (65 each) would total about 14000 with builders and obelisks, over the cap. 4K PBR is still HD and plenty for an RTS-camera prop; 8K is kept for the 2 obelisks and the 9 builders."
     },
-    "exportBlocker": "GLB files cannot reach F: yet. Tripo Export is a browser download into C:/Users/Eric/Downloads (Chrome default), which breaks the no-C: rule and needs Eric's explicit OK; a localhost receiver was refused by the permission system; the DCC Bridge goes into Unreal (not allowed yet). All models stay in the Tripo account (task ids here) and can be exported in one pass once Eric picks a route."
+    "exportBlocker": null,
+    "export": "Eric approved: Tripo Export (GLB, 4K) as a normal Chrome download into C:/Users/Eric/Downloads, then moved at once to <race>/models/<slot>.glb and the C: copy deleted (Tools: rts-modeler/take.sh; only files named rtsm_<race>_<slot>*.glb exported by this agent, younger than 30 min). Export costs no credits.",
+    "conceptPricing": "Tripo Image tool (GPT Image 2.5 / Nano Banana): 0 credits while the account's free image quota lasts (32/1000 used on 2026-09-26; list price would be about 10-15 per image). Concepts therefore do not touch the 11,975 mesh plan."
   }
 }
