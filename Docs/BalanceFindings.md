@@ -89,3 +89,37 @@ Still outside the band, not tuned in this pass:
 - **Summoner** 1.58 / 1.53 / 1.23: summons front-load damage in short fights.
 - **Lancer** 0.66 / 0.75 / 0.75 (six runs each, every wave).
 - **Gunblade at wave 3** 0.54 (0.79 before): not yet explained, possibly its cooldowns in a 12 s fight; in band at 10 and 20.
+
+# Champion lab, kits-complete — 25-26 September 2026 (feat/kits-complete)
+
+The 13 roster champions whose kits were planned now fight with their real kits. `Tools/RunChampionLab.py` adds them
+(DPS: both Trolls and the Ether Golem Bruiser; healers: Holy Paladin, Golem Support, Dryad, Whisp, Centaur, Keeper;
+tanks in the knight's slot, compared on personal DPS against the tank median, with a survivability column).
+Five tuning rounds (`--waves 3,10,20 --repeats 2-3`, 162-243 cases each, 0 failures); the measured coefficients live
+in `LAB_SCALING` (Tools/ChampionKits.py). Verification run: `Saved/BalanceLab/champions-kits-verify-20260925-232938-02fb26/`.
+
+| Champion | w3 / w10 / w20 vs role median |
+| --- | --- |
+| Bear (tank) | 1.25 / 1.20 / 1.19 |
+| Righteous Paladin (tank) | 0.96 / 1.01 / 0.96 |
+| Dwarf Miner (tank) | 0.94 / 0.86 / 0.73 |
+| Ether Golem Tank | 1.22 / 1.06 / 1.04 |
+| Orc Chieftain (tank) | 0.86 / 0.86 / 0.62 |
+| Totemic Behemoth (tank) | 1.28 / 1.21 / 1.05 |
+| Drakish Footman (tank) | 1.04 / 0.99 / 1.16 |
+| Ether Golem Bruiser (DPS) | 0.90 / 1.07 / 0.95 |
+| Troll Berserker melee (DPS) | 0.99 / 0.97 / 0.93 |
+| Troll Berserker ranged (DPS) | 0.86 / 0.90 / 0.82 |
+| Holy Paladin (HPS) | 1.25 / 1.44 / 1.23 |
+| Ether Golem Support (HPS) | 0.81 / 0.89 / 1.02 |
+| Dryad (HPS) | 1.15 / 1.01 / 1.42 |
+| Whisp (HPS) | 0.80 / 1.22 / 0.83 |
+| Evergrove Centaur (HPS) | 0.44 / 0.99 / 0.98 |
+| Keeper of Light (HPS) | 0.85 / 0.55 / 0.49 |
+
+Caveats: fights last 10-17 s and the whole team loses only ~5 HP/s, so healer HPS is bounded by missing health and
+swings 0.4-1.9 between identical runs (the Scholar fixture itself ranged 0.79-1.93 across rounds); two samples per
+cell. Still outside the band: Keeper of Light at waves 10/20 (consistently low: its heals mostly land on full-health
+allies), Orc Chieftain and Dwarf Miner at wave 20 (tank DPS, low by design for a support tank), Holy Paladin at wave
+10, Dryad at wave 20, Centaur at wave 3, Behemoth at wave 3 (1.28). The knight fixture sits at 0.6-0.7 of the tank
+median: the roster tanks out-damage it, and it was not tuned here.
