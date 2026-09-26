@@ -225,9 +225,9 @@ int SelectMech(const std::vector<MechCandidate>& c, double range, bool taunt)
     int best = -1;
     auto rank = [&](const MechCandidate& m)
     {
-        // lower is better: attacking-an-ally first, then idle, taunt-only: already taunted last.
-        int r = m.AttackingAlly ? 0 : 1;
-        if (taunt && m.AlreadyTaunted) r += 2;
+        // lower is better: attacking a DPS/Support ally first, then any ally, then idle; taunt-only: already taunted last.
+        int r = m.AttackingPriority ? 0 : m.AttackingAlly ? 1 : 2;
+        if (taunt && m.AlreadyTaunted) r += 3;
         return r;
     };
     for (int i = 0; i < static_cast<int>(c.size()); ++i)

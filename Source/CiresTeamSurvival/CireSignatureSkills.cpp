@@ -18,6 +18,7 @@
 #include "CireTechConstructs.h"
 #include "CireThreat.h"
 #include "CirePets.h" // pets
+#include "CireKitSkills.h" // kits-complete: the 63 roster signature skills
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -182,7 +183,10 @@ int32 Purge(AActor* Target)
         TEXT("mass_aegis"), TEXT("wellspring"), TEXT("blood_rage"), TEXT("frost_weapon"), TEXT("blessing"), TEXT("regeneration"), TEXT("oathshield"),
         TEXT("borrowed_time"), TEXT("npc_bloodlust"), TEXT("npc_scaleward"), TEXT("aether_aegis"), TEXT("aether_haste"), TEXT("aether_nexus"),
         TEXT("npc_aether_empowered"), TEXT("moonlit_sprint"), TEXT("warding_talisman"), TEXT("hunters_stride"), TEXT("overcharge"),
-        TEXT("shield_wall"), TEXT("eagle_eye"), TEXT("longshot")}; // scaling-kits
+        TEXT("shield_wall"), TEXT("eagle_eye"), TEXT("longshot"), // scaling-kits
+        TEXT("bear_colossus"), TEXT("ancient_hide"), TEXT("bear_hibernate"), TEXT("scale_guard"), TEXT("red_moon"), TEXT("dragon_form"), TEXT("ancient_pact"), // kits-complete
+        TEXT("worldstone_tank"), TEXT("worldstone_bruiser"), TEXT("ether_furnace"), TEXT("blood_oath_banner"), TEXT("deep_lantern"), TEXT("mountain_heart"),
+        TEXT("living_granite"), TEXT("grove_renewal"), TEXT("spring_march"), TEXT("beacon_of_return"), TEXT("evergrove_trail"), TEXT("ancestral_weight")};
     int32 Removed = 0;
     if (const auto* State = CireBuffs::Get(Target))
     {
@@ -219,9 +223,9 @@ bool DashTo(ACireHero* Hero, FVector Ground, float MaxRange)
 
 // ============================================================================================ identity
 const TArray<FString>& CireSignatureSkills::AllIds() { static TArray<FString> Ids = [] { TArray<FString> Out; for (const FSig& S : Sigs) Out.Add(S.Id); return Out; }(); return Ids; }
-bool CireSignatureSkills::Knows(const FString& Id) { return FindSig(Id) != nullptr; }
-bool CireSignatureSkills::Handles(const FString& Id) { const FSig* S = FindSig(Id); return S && S->D != EDelivery::Passive; }
-bool CireSignatureSkills::IsPassive(const FString& Id) { const FSig* S = FindSig(Id); return S && S->D == EDelivery::Passive; }
+bool CireSignatureSkills::Knows(const FString& Id) { return FindSig(Id) != nullptr || CireKitSkills::Knows(Id); }
+bool CireSignatureSkills::Handles(const FString& Id) { const FSig* S = FindSig(Id); return (S && S->D != EDelivery::Passive) || CireKitSkills::Handles(Id); }
+bool CireSignatureSkills::IsPassive(const FString& Id) { const FSig* S = FindSig(Id); return (S && S->D == EDelivery::Passive) || CireKitSkills::IsPassive(Id); }
 bool CireSignatureSkills::IsUltimate(const FString& Id) { const auto* D = Knows(Id) ? CireAbilityDB::Find(Id) : nullptr; return D && D->IsUltimate(); }
 FString CireSignatureSkills::Name(const FString& Id) { const auto* D = CireAbilityDB::Find(Id); return D ? D->Name : Id; }
 FString CireSignatureSkills::Description(const FString& Id)
@@ -239,6 +243,7 @@ const TArray<FName>& CireSignatureSkills::BuffIds()
 // ============================================================================================ casting
 bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
 {
+    if (CireKitSkills::Knows(Id)) return CireKitSkills::Cast(Hero, Slot, Id); // kits-complete
     const FSig* Sig = FindSig(Id);
     const FCireAbilityDef* Def = CireAbilityDB::Find(Id);
     if (!IsValid(Hero) || !Hero->HasAuthority() || !Sig || !Def || Sig->D == EDelivery::Passive || !CireSkillRuntime::Alive(Hero) ||
@@ -367,30 +372,30 @@ bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
         if (!DashTo(Hero, Aim, Range)) return Fail(TEXT("The path is blocked."));
         if (Sig->D == EDelivery::Pounce)
             for (AActor* U : Enemies(Hero, Hero->GetActorLocation(), Def->Radius)) CireCombat::ApplyDamage(Hero, U, Amount, Def->Name);
-        if (Sig->Record) CireBuffs::Apply(Hero, Sig->Record, FMath::Max(.5f, Def->Duration), Hero, static_cast<int32>(FMath::Clamp(Def->Base.Effect, 1.f, 250.f)));
+        if (Sig->Record) CireBuffs::Apply(Hero, Sig->Record, FMath::Max(.5f, Def->Duration), Hero, static_cast<int32>(FMath::Clamp(CireKits::ScaledEffect(Hero, Id, Def->Base.Effect), 1.f, 250.f))); // kits-complete: level x potency
         Aim = Hero->GetActorLocation(); break;
     }
     case EDelivery::Mark:
     {
         if (!NeedEnemy(Range)) return Fail(TEXT("Select a hostile target in range and line of sight."));
-        CireBuffs::Apply(Target, Sig->Record, FMath::Max(1.f, Def->Duration), Hero, static_cast<int32>(FMath::Clamp(Def->Base.Effect, 1.f, 250.f)));
+        CireBuffs::Apply(Target, Sig->Record, FMath::Max(1.f, Def->Duration), Hero, static_cast<int32>(FMath::Clamp(CireKits::ScaledEffect(Hero, Id, Def->Base.Effect), 1.f, 250.f))); // kits-complete
         Aim = Target->GetActorLocation(); break;
     }
     case EDelivery::AreaMark:
     {
         if (!NeedGround(false)) return false;
         for (AActor* U : Enemies(Hero, Aim, Def->Radius, false))
-            CireBuffs::Apply(U, Sig->Record, FMath::Max(1.f, Def->Duration), Hero, static_cast<int32>(FMath::Clamp(Def->Base.Effect, 1.f, 250.f)));
+            CireBuffs::Apply(U, Sig->Record, FMath::Max(1.f, Def->Duration), Hero, static_cast<int32>(FMath::Clamp(CireKits::ScaledEffect(Hero, Id, Def->Base.Effect), 1.f, 250.f))); // kits-complete
         break;
     }
     case EDelivery::SelfBuff:
     {
-        CireBuffs::Apply(Hero, Sig->Record, FMath::Max(1.f, Def->Duration), Hero, static_cast<int32>(FMath::Clamp(Def->Base.Effect, 1.f, 250.f)));
+        CireBuffs::Apply(Hero, Sig->Record, FMath::Max(1.f, Def->Duration), Hero, static_cast<int32>(FMath::Clamp(CireKits::ScaledEffect(Hero, Id, Def->Base.Effect), 1.f, 250.f))); // kits-complete
         Hero->SlowUntil = 0; Aim = Feet; break;
     }
     case EDelivery::Overcharge:
     {
-        if (CireTechConstructs::Overcharge(Hero, Origin, Def->Radius > 0 ? Def->Radius : 1200.f, FMath::Max(1.f, Def->Duration), .25f) == 0)
+        if (CireTechConstructs::Overcharge(Hero, Origin, Def->Radius > 0 ? Def->Radius : 1200.f, FMath::Max(1.f, Def->Duration) * CireKits::Potency(Hero, Id), .25f) == 0) // kits-complete: potency
             return Fail(TEXT("No constructs of yours within range to overcharge."));
         CireBuffs::Apply(Hero, OverchargeId, FMath::Max(1.f, Def->Duration), Hero); Aim = Feet; break;
     }
@@ -471,6 +476,7 @@ bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
 // ============================================================================================ shapes
 bool CireSignatureSkills::DescribeShape(const FString& Id, FCireHitShape& R)
 {
+    if (CireKitSkills::Knows(Id)) return CireKitSkills::DescribeShape(Id, R); // kits-complete
     const FSig* Sig = FindSig(Id);
     const FCireAbilityDef* Def = CireAbilityDB::Find(Id);
     if (!Sig || !Def) return false;
@@ -516,6 +522,7 @@ float CireSignatureSkills::ModifyOutgoingDamage(AActor* Source, AActor* Target, 
 {
     if (!IsValid(Target) || Amount <= 0) return Amount;
     if (Active(Target, BanishedId) && AbilityName != TEXT("Banishment")) return 0.f; // exiled: out of reach until it returns
+    Amount = CireKitSkills::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // kits-complete: kit guards, marks, redirects, passives
     float M = 1.f;
     if (const auto* E = Active(Target, BountyId)) M *= 1.f + E->Stacks / 100.f;
     if (const auto* E = Active(Target, WitchMarkId)) M *= 1.f + E->Stacks / 100.f * (IsCasting(Target) ? 3.f : 1.f);
@@ -524,12 +531,12 @@ float CireSignatureSkills::ModifyOutgoingDamage(AActor* Source, AActor* Target, 
     if (const auto* E = Active(Target, AegisId))
     {
         M *= 1.f - FMath::Clamp(E->Stacks / 100.f, 0.f, .8f);
-        if (const auto* Warden = Cast<ACireHero>(E->Source.Get()); Warden && Warden->HasSkill(TEXT("resonant_lattice"))) M *= .9f;
+        if (const auto* Warden = Cast<ACireHero>(E->Source.Get()); Warden && Warden->HasSkill(TEXT("resonant_lattice"))) M *= 1.f - FMath::Clamp(CireKits::ScaledEffect(Warden, TEXT("resonant_lattice"), 10.f) / 100.f, 0.f, .4f); // kits-complete
     }
     if (const auto* E = Active(Target, NexusId))
     {
         M *= 1.f - FMath::Clamp(E->Stacks / 100.f, 0.f, .8f);
-        if (const auto* Warden = Cast<ACireHero>(E->Source.Get()); Warden && Warden->HasSkill(TEXT("resonant_lattice"))) M *= .9f;
+        if (const auto* Warden = Cast<ACireHero>(E->Source.Get()); Warden && Warden->HasSkill(TEXT("resonant_lattice"))) M *= 1.f - FMath::Clamp(CireKits::ScaledEffect(Warden, TEXT("resonant_lattice"), 10.f) / 100.f, 0.f, .4f); // kits-complete
     }
     if (Cast<ACireMonster>(Target) && Active(Target, EmpoweredId)) M *= .85f;
     if (Source)
@@ -540,7 +547,7 @@ float CireSignatureSkills::ModifyOutgoingDamage(AActor* Source, AActor* Target, 
     if (AbilityName == TEXT("Silver Shot") && IsUndeadOrVoid(Target)) M *= 1.6f;
     if (AbilityName == TEXT("Arcane Blunderbuss") && IsCasting(Target)) M *= 1.4f;
     if (const auto* Slayer = Cast<ACireHero>(Source); Slayer && Slayer->HasSkill(TEXT("witchbane")) &&
-        (IsCasting(Target) || CireCrowdControl::IsSilenced(Target) || Active(Target, WitchMarkId))) M *= 1.2f;
+        (IsCasting(Target) || CireCrowdControl::IsSilenced(Target) || Active(Target, WitchMarkId))) M *= 1.f + CireKits::ScaledEffect(Slayer, TEXT("witchbane"), 20.f) / 100.f; // kits-complete: level x potency
     return Amount * M;
 }
 
@@ -549,10 +556,11 @@ void CireSignatureSkills::OnAbilityHit(AActor* Source, AActor* Target, const FSt
     if (!IsValid(Source) || !Source->HasAuthority() || !IsValid(Target) || Applied <= 0) return;
     const FCireAbilityDef* D = CireAbilityDB::FindByName(AbilityName);
     if (!D || !Knows(D->Id)) return;
+    CireKitSkills::OnAbilityHit(Source, Target, AbilityName, Applied); // kits-complete: taunt, root, weaken, knockback, burns, blooms
     for (const FCireAbilityEffect& E : D->Effects)
     {
         if (E.Zone == TEXT("self")) continue;
-        if (E.Type == TEXT("slow")) CireCrowdControl::Slow(Target, E.Duration, Source);
+        if (E.Type == TEXT("slow")) CireCrowdControl::Slow(Target, E.Duration * CireKits::ControlScale(Source), Source); // kits-complete: CC scales with primary
         else if (E.Type == TEXT("purge")) Purge(Target);
     }
 }
@@ -571,7 +579,7 @@ void CireSignatureSkills::OnMonsterKilled(ACireMonster* M, ACireHero* Killer)
     {
         const auto* D = CireAbilityDB::Find(TEXT("price_on_every_soul"));
         const int32 Base = D ? FMath::RoundToInt(D->Base.Effect) : 5;
-        Killer->Gold += Base * (IsBoss(M) ? 8 : CireRaces::RankOf(M) >= ECireNPCRank::Elite ? 3 : 1);
+        Killer->Gold += FMath::RoundToInt(Base * CireKits::Potency(Killer, TEXT("price_on_every_soul"))) * (IsBoss(M) ? 8 : CireRaces::RankOf(M) >= ECireNPCRank::Elite ? 3 : 1); // kits-complete: potency
         Killer->Energy = FMath::Min(100.f, Killer->Energy + 15.f); Killer->ForceNetUpdate();
     }
 }
@@ -579,9 +587,9 @@ void CireSignatureSkills::OnMonsterKilled(ACireMonster* M, ACireHero* Killer)
 float CireSignatureSkills::MoveSpeedMultiplier(const ACireHero* Hero)
 {
     if (!Hero) return 1.f;
-    return (1.f + Fraction(Hero, SprintId)) * (1.f + Fraction(Hero, HasteId));
+    return (1.f + Fraction(Hero, SprintId)) * (1.f + Fraction(Hero, HasteId)) * CireKitSkills::MoveSpeedMultiplier(Hero); // kits-complete
 }
-float CireSignatureSkills::AttackSpeedBonus(const ACireHero* Hero) { return Hero ? Fraction(Hero, HasteId) : 0.f; }
+float CireSignatureSkills::AttackSpeedBonus(const ACireHero* Hero) { return Hero ? Fraction(Hero, HasteId) + CireKitSkills::AttackSpeedBonus(Hero) : 0.f; }
 
 bool CireSignatureSkills::IsCloseQuarters(const ACireHero* Hero, const AActor* Target)
 {
@@ -598,6 +606,7 @@ float CireSignatureSkills::ModifyBasicAttack(ACireHero* Hero, AActor* Target, fl
         else Name = TEXT("Pistol shot");
     }
     if (const auto* E = Active(Hero, StrideId)) { Damage *= 1.f + E->Stacks / 100.f; CireBuffs::Remove(Hero, StrideId); }
+    Damage = CireKitSkills::ModifyBasicAttack(Hero, Target, Damage, Name); // kits-complete: furnace, dragon slashes, red moon, embers
     return Damage;
 }
 
@@ -605,7 +614,7 @@ void CireSignatureSkills::OnBasicProjectileHit(ACireHero* Hero, AActor* Victim, 
 {
     if (!bHit || !IsValid(Hero) || !Hero->HasAuthority() || !IsValid(Victim) || !Hero->HasSkill(TEXT("moon_glaive"))) return;
     const auto* D = CireAbilityDB::Find(TEXT("moon_glaive"));
-    float Next = Damage * FMath::Clamp((D ? D->Base.Effect : 60.f) / 100.f, .1f, 1.f);
+    float Next = Damage * FMath::Clamp(CireKits::ScaledEffect(Hero, TEXT("moon_glaive"), D ? D->Base.Effect : 60.f) / 100.f, .1f, 1.f); // kits-complete: level x potency
     TArray<AActor*> Hit = {Victim}; AActor* From = Victim;
     for (int32 Bounce = 0; Bounce < 2; ++Bounce)
     {

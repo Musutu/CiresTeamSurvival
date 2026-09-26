@@ -1,4 +1,5 @@
 #include "CirePolymorph.h"
+#include "CireScalingKits.h" // kits-complete
 // progression-shop: see CirePolymorph.h.
 #include "CireAbilityDB.h"
 #include "CireBuffs.h"
@@ -243,7 +244,7 @@ bool CirePolymorph::CastSkill(ACireHero* H, int32 Slot, const FString& Id)
     H->Cooldowns[Slot] = static_cast<float>(Cires::CooldownSeconds(CireDeveloperTools::CooldownSeconds(H->GetWorld(), D->Base.Cooldown), H->CDR));
     CireSkillShop::ApplyCastLevel(H, Slot, Id, D->Base.ManaCost, D->Base.EnergyCost);
     H->GlobalCooldown = .9f;
-    const float Seconds = CireAbilityDB::EffectiveStats(Id, FMath::Max(1, CireSkillShop::Level(H, Id))).Effect;
+    const float Seconds = CireAbilityDB::EffectiveStats(Id, FMath::Max(1, CireSkillShop::Level(H, Id))).Effect * CireKits::Potency(H, Id); // kits-complete: potency
     const float Applied = Apply(Target, CireDeveloperTools::EffectSeconds(H->GetWorld(), Seconds), H);
     H->Notice = Applied > 0 ? FString::Printf(TEXT("Polymorph: %s for %.0fs"), *CritterName(CritterOf(Target)), Applied) : TEXT("The target resisted Polymorph.");
     return true;

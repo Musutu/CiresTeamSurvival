@@ -20,7 +20,7 @@ TABLE = {i: sum(BITS[b.strip()] for b in expr.split('|'))
 import sys
 sys.path.insert(0, str(ROOT / 'Tools'))
 import BuildAbilityDB  # noqa: E402
-SIGNATURE = set(BuildAbilityDB.NEW_CHAMPION_SKILLS)
+SIGNATURE = set(BuildAbilityDB.NEW_CHAMPION_SKILLS) | set(BuildAbilityDB.KIT_SIGNATURES)  # kits-complete: roster kits are signature-only too
 CATALOG = {i: k for i, k in re.findall(r'\{"([a-z_]+)",\s*"[^"]+",\s*SkillKind::(Active|Passive|Ultimate)\}', RULES)}
 PRIMARY = {'tank': 1, 'damage': 2, 'healer': 4}
 

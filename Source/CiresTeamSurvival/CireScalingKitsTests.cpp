@@ -239,12 +239,13 @@ bool CireKits::RunSmoke(ACireGameMode* Mode)
         float Before = M1->Health;
         for (int32 I = 0; I < 400; ++I) CireCombat::ApplyDamage(Ranger, M1, 10.f, TEXT("bow strike"));
         float Extra = (Before - M1->Health) - 4000.f;
-        int32 Procs = FMath::RoundToInt(Extra / 20.f);
-        Check(Procs >= 15 && Procs <= 70 && FMath::IsNearlyEqual(Extra, Procs * 20.f, .5f), TEXT("Headshot: ~10% extra hits for 2x"));
+        const float HeadshotPotency = Potency(Ranger, TEXT("headshot")); // kits-complete: the extra hit carries potency
+        int32 Procs = FMath::RoundToInt(Extra / (20.f * HeadshotPotency));
+        Check(Procs >= 15 && Procs <= 70 && FMath::IsNearlyEqual(Extra, Procs * 20.f * HeadshotPotency, .5f), TEXT("Headshot: ~10% extra hits for 2x (x potency)"));
         Learn(Ranger, TEXT("headshot"), 15); M1->Health = M1->MaxHealth; Before = M1->Health;
         for (int32 I = 0; I < 400; ++I) CireCombat::ApplyDamage(Ranger, M1, 10.f, TEXT("bow strike"));
-        Extra = (Before - M1->Health) - 4000.f; Procs = FMath::RoundToInt(Extra / 30.f);
-        Check(Procs >= 15 && Procs <= 70 && FMath::IsNearlyEqual(Extra, Procs * 30.f, .5f), TEXT("Headshot level 15: extra hit is 3x"));
+        Extra = (Before - M1->Health) - 4000.f; Procs = FMath::RoundToInt(Extra / (30.f * HeadshotPotency));
+        Check(Procs >= 15 && Procs <= 70 && FMath::IsNearlyEqual(Extra, Procs * 30.f * HeadshotPotency, .5f), TEXT("Headshot level 15: extra hit is 3x (x potency)"));
         Ranger->Skills.Remove(TEXT("headshot"));
     }
     // ---- 8. Artillery ----
@@ -254,7 +255,7 @@ bool CireKits::RunSmoke(ACireGameMode* Mode)
         Ranger->Cooldowns[Slot] = 0; Ranger->GlobalCooldown = 0; Ranger->Energy = 100; Ranger->Target = M1;
         Check(Cast(Ranger, Slot, TEXT("artillery")) && IsArtilleryActive(Ranger), TEXT("Artillery starts"));
         Check(Ranger->BasicAttackRange() > 1.e6f && RangeBefore < 5000.f, TEXT("Artillery: unlimited basic range"));
-        Check(FMath::IsNearlyEqual(AttackSpeedMultiplier(Ranger) - SpeedBefore, 1.f, .01f), TEXT("Artillery: +100% attack speed"));
+        Check(FMath::IsNearlyEqual(AttackSpeedMultiplier(Ranger) - SpeedBefore, Potency(Ranger, TEXT("artillery")), .01f), TEXT("Artillery: +100% attack speed (x potency)"));
         Check(BlocksCasting(Ranger, TEXT("piercing_shot")), TEXT("Artillery: basic attacks only"));
         M1->Health = M1->MaxHealth; M2->SetActorLocation(M1->GetActorLocation() + FVector(200, 0, 0)); M2->Health = M2->MaxHealth;
         for (int32 I = 0; I < 3; ++I) CireCombat::ApplyDamage(Ranger, M1, 100.f, TEXT("bow strike"));

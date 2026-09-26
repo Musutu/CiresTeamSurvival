@@ -1,6 +1,7 @@
 #include "CireMechTank.h"
 #include "CireAbilityDB.h"
 #include "CireBuffs.h"
+#include "CireClassTraits.h" // kits-complete
 #include "CireChampionArt.h"
 #include "CireCombatEvents.h"
 #include "CireDeveloperTools.h"
@@ -17,6 +18,14 @@
 namespace K = Cires::Kits;
 
 ACireMechTank::ACireMechTank() {}
+
+// kits-complete: the Mech Tank guards the team's damage dealers and healers first (not other tanks or summons).
+bool ACireMechTank::IsProtectedRole(const ACireHero* Ally)
+{
+    if (!Ally || Ally->IsA<ACireSummon>()) return false;
+    const auto Role = CireClassTraits::Role(Ally);
+    return Role == Cires::SkillDraftRole::Damage || Role == Cires::SkillDraftRole::Support;
+}
 
 ACireMechTank* ACireMechTank::SpawnFor(ACireHero* Owner, FVector Point, FString* Why)
 {
@@ -69,6 +78,7 @@ AActor* ACireMechTank::ChooseAttackTarget() const
         C.AttackingSummoner = Victim == OwnerHero;
         const auto* Ally = ::Cast<ACireHero>(Victim);
         C.AttackingAlly = Ally && Ally != OwnerHero && Ally != this && Ally->TeamId == TeamId;
+        C.AttackingPriority = C.AttackingAlly && IsProtectedRole(Ally); // kits-complete: DPS / Support first
         Candidates.push_back(C); Units.Add(U);
     };
     for (auto* M : Mode->Monsters) if (IsValid(M)) Add(M, M->Victim);
@@ -89,6 +99,7 @@ AActor* ACireMechTank::TryTaunt()
         K::MechCandidate C; C.Id = Units.Num(); C.Distance = FVector::Dist2D(GetActorLocation(), M->GetActorLocation());
         C.AttackingSummoner = M->Victim == OwnerHero;
         C.AttackingAlly = M->Victim && M->Victim != OwnerHero && M->Victim != this && M->Victim->TeamId == TeamId;
+        C.AttackingPriority = C.AttackingAlly && IsProtectedRole(M->Victim); // kits-complete: DPS / Support first
         C.AlreadyTaunted = M->ForcedVictim.Get() == this && M->ForcedVictimUntil > Now;
         Candidates.push_back(C); Units.Add(M);
     }
@@ -100,6 +111,7 @@ AActor* ACireMechTank::TryTaunt()
         C.AttackingSummoner = E->Target == OwnerHero;
         const auto* Ally = ::Cast<ACireHero>(E->Target);
         C.AttackingAlly = Ally && Ally != OwnerHero && Ally != this && Ally->TeamId == TeamId;
+        C.AttackingPriority = C.AttackingAlly && IsProtectedRole(Ally); // kits-complete: DPS / Support first
         C.AlreadyTaunted = E->Target == this;
         Candidates.push_back(C); Units.Add(E);
     }

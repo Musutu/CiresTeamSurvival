@@ -285,12 +285,12 @@ bool CireItems::RunV2Smoke(ACireGameMode* Mode)
     // Real cast path: Bastion of Dawn with the Sigil also shields nearby allies (Dawnward).
     Tank->Inventory->Buffs.Reset(); Tank->Inventory->BarrierHP = 0; Ally->Inventory->BarrierHP = 0;
     Tank->Skills = {TEXT("bastion_of_dawn")}; Tank->Cooldowns = {0.f}; Tank->GlobalCooldown = 0; Tank->Energy = 100; Tank->Mana = Tank->MaxMana;
-    Tank->Cast(0);
+    Tank->Cast(0); CireCrowdControl::CompleteCastNow(Tank); // kits-complete: Bastion of Dawn has a 1 s cast
     Check(Tank->Cooldowns[0] > 0 && Ally->Inventory->BarrierHP > 0 && CireBuffs::IsActive(Tank, TEXT("apotheosis")), TEXT("casting an ultimate triggers its upgrade (Dawnward)"));
     Give(Tank, {});
     Ally->Inventory->BarrierHP = 0;
     Tank->Cooldowns = {0.f}; Tank->GlobalCooldown = 0; Tank->Energy = 100;
-    Tank->Cast(0);
+    Tank->Cast(0); CireCrowdControl::CompleteCastNow(Tank); // kits-complete: Bastion of Dawn has a 1 s cast
     Check(Ally->Inventory->BarrierHP <= 0, TEXT("no upgrade without the Sigil"));
 
     // ---------------- mana economy: spam runs dry, regen matters, energy stays flat

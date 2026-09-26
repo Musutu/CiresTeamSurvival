@@ -15,6 +15,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "CireAbilityDB.h" // kits-complete: display-name lookups
 
 namespace
 {
@@ -26,7 +27,7 @@ struct FTable
     bool bLoaded = false;
     TMap<FString, CireFabVFX::FEntry> Schools; // "<school>.<role>"
     TMap<FString, CireFabVFX::FEntry> Buffs;
-    TMap<FString, CireFabVFX::FEntry> Abilities; // fab-coverage: "<skill id>.<role>"
+    TMap<FString, CireFabVFX::FEntry> Abilities; // fab-coverage + kits-complete: "<skill id>.<role>"
     TMap<FString, TWeakObjectPtr<UFXSystemAsset>> Resolved;
     TSet<FString> Unresolvable;
     TMap<FString, FString> GroundExcluded; // telegraphs: object path -> why it never sits on a zone (square/diamond, does not scale)
@@ -124,16 +125,21 @@ const CireFabVFX::FEntry* CireFabVFX::Find(ECireSchool School, ERole Role)
     return T.Schools.Find(FString(TEXT("default."))+RoleName(Role));
 }
 
+const CireFabVFX::FEntry* CireFabVFX::FindAbility(FName Skill, ERole Role)
+{
+    FTable& T=Loaded();
+    if(T.Abilities.IsEmpty()||Skill.IsNone())return nullptr;
+    if(const FEntry* E=T.Abilities.Find(Skill.ToString().ToLower()+TEXT(".")+RoleName(Role)))return E;
+    // kits-complete: combat events carry display names ("Gravewood Maul"); map them to the ability id.
+    if(const FCireAbilityDef* D=CireAbilityDB::FindByName(Skill.ToString()))return T.Abilities.Find(D->Id.ToLower()+TEXT(".")+RoleName(Role));
+    return nullptr;
+}
+
 const CireFabVFX::FEntry* CireFabVFX::FindBuff(const FString& Key)
 {
     return Loaded().Buffs.Find(Key.ToLower());
 }
 
-const CireFabVFX::FEntry* CireFabVFX::FindAbility(FName Skill, ERole Role)
-{
-    if(Skill.IsNone())return nullptr;
-    return Loaded().Abilities.Find(Skill.ToString().ToLower()+TEXT(".")+RoleName(Role));
-}
 
 const CireFabVFX::FEntry* CireFabVFX::FindFor(FName Skill, ECireSchool School, ERole Role)
 {

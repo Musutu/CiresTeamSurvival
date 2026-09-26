@@ -93,6 +93,8 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
         {
             D.ScaleComponent=Str(*Scaling,TEXT("component"));D.ScaleBase=Num(*Scaling,TEXT("base"));D.ScalePrimary=Num(*Scaling,TEXT("primary"));
             D.DotPerSecondPrimary=Num(*Scaling,TEXT("dotPerSecond"));
+            D.PotencyPerPoint=Num(*Scaling,TEXT("potency"));D.PotencyCap=Num(*Scaling,TEXT("potencyCap")); // kits-complete
+            if(D.PotencyPerPoint<0||D.PotencyPerPoint>5||D.PotencyCap<0||D.PotencyCap>200)return Fail(TEXT("Invalid potency: ")+D.Id);
             if(D.ScaleBase<0||D.ScalePrimary<0||D.ScalePrimary>10||D.DotPerSecondPrimary<0)return Fail(TEXT("Invalid scaling: ")+D.Id);
         }
         const TSharedPtr<FJsonObject>* L15=nullptr;
@@ -194,6 +196,7 @@ FString CireAbilityDB::Describe(const FString& Id,int32 Level)
     if(Now.CastTime>0)Parts.Add(FString::Printf(TEXT("%.1fs cast"),Now.CastTime));
     FString Extra; // scaling-kits: universal primary scaling + level-15 line
     if(D->ScalePrimary>0)Extra+=FString::Printf(TEXT("\n%s + %sx Primary %s"),*Trim(D->ScaleBase),*FString::SanitizeFloat(D->ScalePrimary,0),*ScalingWord(*D));
+    else if(D->PotencyPerPoint>0)Extra+=FString::Printf(TEXT("\nPotency: +%s%% effect per Primary (max +%.0f%%)"),*FString::SanitizeFloat(D->PotencyPerPoint,0),D->PotencyCap); // kits-complete
     const FString L15=!D->Aura15Label.IsEmpty()?D->Aura15Label:D->Level15Label;
     if(!L15.IsEmpty())Extra+=TEXT("\n")+L15;
     return Text+TEXT("\n")+FString::Join(Parts,TEXT("  |  "))+Extra;
@@ -216,7 +219,12 @@ bool CireAbilityDB::CanLearn(const FString& ProfileId,const FString& AbilityId)
 TArray<FString> CireAbilityDB::OpeningSkills(const FString& ProfileId)
 {
     TArray<FString> Out;const FCireChampionProfile* P=CireChampionRoster::Find(ProfileId);if(!P)return Out;
-    for(const auto& S:Cires::OpeningSkillPool(CireChampionProfiles::PrimaryRole(*P)))Out.Add(UTF8_TO_TCHAR(S.Id.c_str()));
+    // kits-complete: shield skills (Shield Slam) never open for a shieldless champion (not in its purchasable kit).
+    for(const auto& S:Cires::OpeningSkillPool(CireChampionProfiles::PrimaryRole(*P)))
+    {
+        const FString Id=UTF8_TO_TCHAR(S.Id.c_str());const FCireAbilityDef* D=Find(Id);
+        if(!D||D->Requires.IsEmpty()||CanLearn(ProfileId,Id))Out.Add(Id);
+    }
     return Out;
 }
 const TArray<FCireModifier>* CireAbilityDB::BuffModifiers(FName BuffId){LoadOnce();return GModifiers.Find(BuffId);}

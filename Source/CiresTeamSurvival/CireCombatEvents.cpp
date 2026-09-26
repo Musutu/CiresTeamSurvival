@@ -1,4 +1,5 @@
 #include "CireCombatEvents.h"
+#include "CireKitSkills.h" // kits-complete
 #include "CireSignatureSkills.h" // new-champions
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
@@ -186,13 +187,16 @@ float CireCombat::ApplyHealing(ACireHero* Source, ACireHero* Target, float Amoun
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
     auto* Mode = Source->GetWorld()->GetAuthGameMode<ACireGameMode>();
     if (!Mode || !Mode->IsCombatPhase()) return 0;
-    const float Multiplier = (Source->HasSkill(TEXT("soul_conduit")) ? 1.25f : 1.f) * CireItems::HealingMultiplier(Source, AbilityName) // progression-shop: + Skill Shop level
+    Amount = CireKitSkills::ModifyHealing(Source, Target, Amount, AbilityName); // kits-complete: Steady Gait
+    const float Multiplier = (Source->HasSkill(TEXT("soul_conduit")) ? 1.f + CireKits::ScaledEffect(Source, TEXT("soul_conduit"), 25.f) / 100.f : 1.f) // kits-complete: potency
+        * CireItems::HealingMultiplier(Source, AbilityName) // progression-shop: + Skill Shop level
         * CireCrowdControl::HealingMultiplier(Source, Target); // champion-draft: healing cuts
     const float Before = Target->Health;
     Target->Health = FMath::Min(Target->MaxHealth, Before + Amount * Multiplier);
     const float Applied = FMath::Max(0.f, Target->Health - Before);
     BroadcastHealing(Source, Target, Applied, AbilityName);
     CireThreat::Healing(Source,Target,Applied);
+    if(Applied>0)CireKitSkills::OnHealingDone(Source,Target,Applied,AbilityName); // kits-complete: Green Covenant
     if(Applied>0)PlayCue(Source,Target,FName(*AbilityName),Source->GetActorLocation(),Target->GetActorLocation(),ECireSpellCue::Impact);
     return Applied;
 }

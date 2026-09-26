@@ -1,4 +1,5 @@
 #include "CireMobility.h"
+#include "CireKitSkills.h" // kits-complete
 #include "CireItems.h" // items-v2: dodge charges, Tailwind
 #include "CireGame.h"
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
@@ -26,7 +27,7 @@ bool Valid(const FCireMovementTuning& V)
         In(V.InvulnerableEnd,V.InvulnerableStart,V.RollDuration)&&V.InvulnerableEnd-V.InvulnerableStart<=.4f&&
         In(V.Acceleration,500,10000)&&In(V.BrakingDeceleration,200,10000)&&In(V.GroundFriction,0,30)&&
         In(V.RotationRate,90,2000)&&In(V.AirControl,0,1)&&In(V.KeyboardTurnRate,45,720)&&
-        In(V.BackpedalScale,.3f,1)&&In(V.TankBodyScale,1,1.5f);
+        In(V.BackpedalScale,.3f,1)&&In(V.TankBodyScale,1,1.5f)&&In(V.BearBodyScale,1,2.f);
 }
 }
 const FCireMovementTuning& CireMovement::Tuning(){if(!Loaded){Loaded=true;FString Error;Reload(Error);}return MovementValues;}
@@ -49,7 +50,7 @@ bool CireMovement::Reload(FString& Error)
 #define CIRE_READ_OPTIONAL(Name) {double N=0;if(O->TryGetNumberField(TEXT(#Name),N))V.Name=N;}
     CIRE_READ_OPTIONAL(Acceleration);CIRE_READ_OPTIONAL(BrakingDeceleration);CIRE_READ_OPTIONAL(GroundFriction);
     CIRE_READ_OPTIONAL(RotationRate);CIRE_READ_OPTIONAL(AirControl);CIRE_READ_OPTIONAL(KeyboardTurnRate);
-    CIRE_READ_OPTIONAL(BackpedalScale);CIRE_READ_OPTIONAL(TankBodyScale);
+    CIRE_READ_OPTIONAL(BackpedalScale);CIRE_READ_OPTIONAL(TankBodyScale);CIRE_READ_OPTIONAL(BearBodyScale);
 #undef CIRE_READ_OPTIONAL
     return Apply(V,Error);
 }
@@ -60,7 +61,7 @@ bool CireMovement::Save(FString& Error)
     CIRE_WRITE_MOVE(RunSpeed);CIRE_WRITE_MOVE(WalkSpeed);CIRE_WRITE_MOVE(JumpVelocity);CIRE_WRITE_MOVE(RollSpeed);
     CIRE_WRITE_MOVE(RollDuration);CIRE_WRITE_MOVE(RollCooldown);CIRE_WRITE_MOVE(RollEnergy);CIRE_WRITE_MOVE(InvulnerableStart);CIRE_WRITE_MOVE(InvulnerableEnd);
     CIRE_WRITE_MOVE(Acceleration);CIRE_WRITE_MOVE(BrakingDeceleration);CIRE_WRITE_MOVE(GroundFriction);CIRE_WRITE_MOVE(RotationRate);
-    CIRE_WRITE_MOVE(AirControl);CIRE_WRITE_MOVE(KeyboardTurnRate);CIRE_WRITE_MOVE(BackpedalScale);CIRE_WRITE_MOVE(TankBodyScale);
+    CIRE_WRITE_MOVE(AirControl);CIRE_WRITE_MOVE(KeyboardTurnRate);CIRE_WRITE_MOVE(BackpedalScale);CIRE_WRITE_MOVE(TankBodyScale);CIRE_WRITE_MOVE(BearBodyScale);
 #undef CIRE_WRITE_MOVE
     FString Text;if(!FJsonSerializer::Serialize(O,TJsonWriterFactory<>::Create(&Text))||!FFileHelper::SaveStringToFile(Text,*Filename())){Error=TEXT("Cannot save movement tuning");return false;}return true;
 }
@@ -99,7 +100,9 @@ bool CireMovement::BlocksCast(const ACireHero& Hero,const FString& AbilityId)
 }
 float CireMovement::BodyScaleFor(const ACireHero& Hero)
 {
-    return Hero.bDrafted&&Hero.HasChampionRole(TEXT("tank"))?Tuning().TankBodyScale:1.f;
+    // kits-complete: Eric wants a big Bear (BearBodyScale); Elder of the Deepwood grows it further while it lasts.
+    const float Base=!Hero.bDrafted?1.f:Hero.ChampionProfileId==TEXT("bear")?Tuning().BearBodyScale:Hero.HasChampionRole(TEXT("tank"))?Tuning().TankBodyScale:1.f;
+    return Base*CireKitSkills::BodyScaleMultiplier(&Hero);
 }
 void CireMovement::ApplyToHero(ACireHero& Hero)
 {

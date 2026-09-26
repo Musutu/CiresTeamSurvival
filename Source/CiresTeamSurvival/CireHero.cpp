@@ -1,4 +1,6 @@
 #include "CireDeveloperTools.h"
+#include "CireKitSkills.h" // kits-complete
+#include <algorithm>
 #include "CireSkillShop.h" // progression-shop: game mode
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireRaces.h" // monster-races
@@ -293,7 +295,10 @@ void ACireHero::RefreshOffer()
     Progression.DraftRole = CireChampionProfiles::DraftRole(this);
     // champion-draft: hybrids draw from primary + secondary role tags; the rules filter the full catalog.
     Progression.SecondaryRoles = CireChampionProfiles::SecondaryRoles(this);
-    CurrentOffer = Cires::GenerateAugmentOffer(Progression, Cires::StarterSkillPool(), Seed);
+    // kits-complete: shield skills (Shield Slam...) are never offered to champions without a shield.
+    auto Pool = Cires::StarterSkillPool();
+    Pool.erase(std::remove_if(Pool.begin(), Pool.end(), [this](const Cires::SkillDefinition& S) { return !CireKits::MeetsRequirement(this, UTF8_TO_TCHAR(S.Id.c_str())); }), Pool.end());
+    CurrentOffer = Cires::GenerateAugmentOffer(Progression, Pool, Seed);
     if (!CurrentOffer.IsValid())
     {
         Notice = UTF8_TO_TCHAR(CurrentOffer.Error.c_str());
@@ -465,7 +470,8 @@ void ACireHero::Cast(int32 Slot)
     };
     if (Id == TEXT("iron_guard"))
     {
-        ShieldUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f); CireBuffs::Apply(this,TEXT("iron_guard"),CireDeveloperTools::EffectSeconds(GetWorld(),8.f),this); // aura-vfx
+        ShieldUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f); CireBuffs::Apply(this,TEXT("iron_guard"),CireDeveloperTools::EffectSeconds(GetWorld(),8.f),this,
+            FMath::Clamp(FMath::RoundToInt(CireKits::ScaledEffect(this,TEXT("iron_guard"),40.f)),1,75)); // aura-vfx; kits-complete: DR = level x potency
     }
     else if (Id == TEXT("shield_slam"))
     {
@@ -475,10 +481,11 @@ void ACireHero::Cast(int32 Slot)
     }
     else if (Id == TEXT("war_cry"))
     {
-        TauntUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),6.f); CireBuffs::Apply(this,TEXT("war_cry"),CireDeveloperTools::EffectSeconds(GetWorld(),6.f),this); // aura-vfx
+        const float TauntSeconds = 6.f * CireKits::Potency(this, Id); // kits-complete: taunt seconds scale with PRIMARY (potency)
+        TauntUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),TauntSeconds); CireBuffs::Apply(this,TEXT("war_cry"),CireDeveloperTools::EffectSeconds(GetWorld(),TauntSeconds),this); // aura-vfx
         ShieldUntil = FMath::Max(ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),3.f));
         for (auto* Monster : Mode->Monsters)
-            if (IsHostile(Monster) && InRange(Monster, 850)) CireThreat::Taunt(Monster,this,6);
+            if (IsHostile(Monster) && InRange(Monster, 850)) CireThreat::Taunt(Monster,this,TauntSeconds);
         for (auto* Enemy : Mode->Heroes)
             if (IsHostile(Enemy) && InRange(Enemy, 850) && Enemy->bBot) Enemy->Target = this;
     }
@@ -603,8 +610,15 @@ float ACireHero::TakeDamage(float Amount, FDamageEvent const& Event, AController
         CireRollSkills::OnDodgedHit(this,Causer);return 0; // champion-draft: Riposte, Evasive Stance
     }
     if(CireRollSkills::TryBlur(this,Causer,Event.IsOfType(FCireDamageEvent::CireClassID)?static_cast<const FCireDamageEvent&>(Event).AbilityName:TEXT("Attack")))return 0; // champion-draft: Blur
-    if (HasSkill(TEXT("stone_skin"))) Amount *= 0.90f;
-    if (ShieldUntil > GetWorld()->GetTimeSeconds()) Amount *= 0.60f;
+    // kits-complete: Stone Skin and Iron Guard scale with level x potency (PRIMARY); other guards stay 40%.
+    if (HasSkill(TEXT("stone_skin"))) Amount *= 1.f - FMath::Clamp(CireKits::ScaledEffect(this, TEXT("stone_skin"), 10.f) / 100.f, 0.f, .5f);
+    if (ShieldUntil > GetWorld()->GetTimeSeconds())
+    {
+        float Guard = .4f;
+        if (const auto* State = CireBuffs::Get(this); State && CireBuffs::IsActive(this, TEXT("iron_guard")))
+            if (const auto* E = State->Find(TEXT("iron_guard"))) Guard = FMath::Max(Guard, FMath::Clamp(E->Stacks / 100.f, 0.f, .75f));
+        Amount *= 1.f - Guard;
+    }
     // progression-shop: armor (basic attacks) / spell ward (abilities) and item barriers.
     const FString IncomingName = Event.IsOfType(FCireDamageEvent::CireClassID) ? static_cast<const FCireDamageEvent&>(Event).AbilityName : TEXT("Basic attack");
     Amount = CireItems::ModifyIncomingDamage(this, Causer, IncomingName, Amount);
@@ -718,7 +732,8 @@ void ACireHero::Tick(float DeltaSeconds)
     BasicTimer = FMath::Max(0.f, BasicTimer - DeltaSeconds);
     GlobalCooldown = FMath::Max(0.f, GlobalCooldown - DeltaSeconds);
     for (float& Cooldown : Cooldowns) Cooldown = FMath::Max(0.f, Cooldown - DeltaSeconds);
-    const float Regen = HasSkill(TEXT("deep_reserves")) ? 1.5f : 1.f;
+    const float Regen = (HasSkill(TEXT("deep_reserves")) ? 1.f + CireKits::ScaledEffect(this, TEXT("deep_reserves"), 50.f) / 100.f : 1.f) *
+        CireKitSkills::ResourceRegenMultiplier(this); // kits-complete: potency; Whisp's Lantern Soul
     Mana = FMath::Min(MaxMana, Mana + DeltaSeconds * CireItems::BaseManaRegen(this, Regen)); // items-v2: flat + % regen (Items.json manaEconomy)
     Energy = FMath::Min(100.f, Energy + DeltaSeconds * 9.f * Regen);
     CireItems::ApplyRegen(this, DeltaSeconds); // progression-shop: item health/mana/energy regeneration
@@ -810,6 +825,7 @@ void ACireHero::BotThink(float DeltaSeconds)
             for (int32 Slot = 0; Slot < Skills.Num(); ++Slot)
             {
                 if (IsPassive(Skills[Slot]) || Cooldowns[Slot] > 0 || GlobalCooldown > 0) continue;
+                if (CireKitSkills::Knows(Skills[Slot]) && !CireKitSkills::BotWantsCast(this, Skills[Slot])) continue; // kits-complete: no wasted heals/buffs
                 if((Skills[Slot]==TEXT("second_wind")||Skills[Slot]==TEXT("last_stand"))&&Health>=MaxHealth*.8f)continue;
                 if(Skills[Slot]==TEXT("challenge_of_iron")||Skills[Slot]==TEXT("seismic_reprisal"))
                 {

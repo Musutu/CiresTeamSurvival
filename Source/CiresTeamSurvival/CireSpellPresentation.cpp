@@ -610,13 +610,16 @@ void ACireSpellVisual::UpdateFabVFX()
     bFabTried=true;
     const ECireSchool School=Shape.bHeal?ECireSchool::Life:static_cast<ECireSchool>(FMath::Clamp(Family,0,static_cast<int32>(ECireSchool::Count)-1));
     // fab-coverage: the ability's own signature system first, then the school set.
-    const CireFabVFX::FEntry* Entry=CireFabVFX::FindFor(Skill,School,FabRole);
+    // kits-complete: area visuals follow their zone's ability.
+    FName AbilityKey=Skill;
+    if(Mode==EMode::AreaFollow)if(const ACireAreaEffect* Area=FollowedArea.Get())AbilityKey=FName(*Area->AreaSpec.AbilityName);
+    const CireFabVFX::FEntry* Entry=CireFabVFX::FindFor(AbilityKey,School,FabRole);
     // telegraphs: a ground overlay takes the first candidate on the curated allow-list (square / diamond footprints and
     // systems that do not scale are never used on a zone).
     UFXSystemAsset* System=bFabGround?CireFabVFX::ResolveGround(Entry,&FabSkipReason):CireFabVFX::Resolve(Entry);
     if(!System)
     {
-        UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_NONE skill=%s role=%s why=%s"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole),*FabSkipReason);
+        UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_NONE skill=%s role=%s why=%s"),*AbilityKey.ToString(),*CireFabVFX::RoleName(FabRole),*FabSkipReason);
         bFabGround=false;return; // pack not installed / nothing curated: the procedural presentation carries the cue alone
     }
     float Scale=Entry->Scale*Extra*(bFollowArea?1.f:Size);

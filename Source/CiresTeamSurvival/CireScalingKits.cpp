@@ -11,6 +11,7 @@
 #include "CireMechTank.h"
 #include "CireNPCCombat.h"
 #include "CireSignatureSkills.h"
+#include "CireKitSkills.h" // kits-complete
 #include "CireSkillShop.h"
 #include "CireSummon.h"
 #include "CireThreat.h"
@@ -65,8 +66,7 @@ const TSet<FString>& ShieldProfiles()
 
 float EffectAtLevel(const ACireHero* H,const FString& Id,float Fallback)
 {
-    const int32 L=FMath::Max(1,CireKits::SkillLevel(H,Id));
-    const auto S=CireAbilityDB::EffectiveStats(Id,L);return S.Effect>0?S.Effect:Fallback;
+    return CireKits::ScaledEffect(H,Id,Fallback); // kits-complete: level x potency (Eric's universal primary rule)
 }
 
 template<typename F> void ForHostilesNear(ACireHero* H,FVector Center,float Radius,F&& Fn)
@@ -105,13 +105,38 @@ float CireKits::Amount(const ACireHero* H,const FString& Id,float FallbackBase,f
     const bool bDb=D&&D->ScalePrimary>0;
     return static_cast<float>(FMath::Min(10000.0,K::ScaledAmount(bDb?D->ScaleBase:FallbackBase,bDb?D->ScalePrimary:FallbackCoef,PrimaryOf(H))));
 }
+float CireKits::Potency(const ACireHero* H,const FString& Id)
+{
+    const FCireAbilityDef* D=CireAbilityDB::Find(Id);
+    if(!H||!D||D->PotencyPerPoint<=0)return 1.f;
+    return 1.f+FMath::Min(D->PotencyCap,D->PotencyPerPoint*static_cast<float>(PrimaryOf(H)))/100.f;
+}
+float CireKits::ScaledEffect(const ACireHero* H,const FString& Id,float Fallback)
+{
+    const int32 L=FMath::Max(1,SkillLevel(H,Id));
+    const auto S=CireAbilityDB::EffectiveStats(Id,L);
+    return (S.Effect>0?S.Effect:Fallback)*Potency(H,Id);
+}
+float CireKits::ControlScale(const AActor* Source)
+{
+    const ACireHero* H=OwnerOf(Source);
+    if(!H)return 1.f;
+    return 1.f+FMath::Min(25.f,.25f*static_cast<float>(PrimaryOf(H)))/100.f;
+}
 float CireKits::DotPerSecondBonus(const ACireHero* H,const FString& Id)
 {
     const FCireAbilityDef* D=CireAbilityDB::Find(Id);return D?D->DotPerSecondPrimary*PrimaryOf(H):0.f;
 }
 FString CireKits::ScalingLine(const ACireHero* H,const FString& Id)
 {
-    const FCireAbilityDef* D=CireAbilityDB::Find(Id);if(!D||D->ScalePrimary<=0)return FString();
+    const FCireAbilityDef* D=CireAbilityDB::Find(Id);
+    if(D&&D->PotencyPerPoint>0) // kits-complete: utility potency line
+    {
+        if(!H)return FString::Printf(TEXT("Potency: +%s%% effect per Primary (max +%.0f%%)"),*FString::SanitizeFloat(D->PotencyPerPoint,0),D->PotencyCap);
+        return FString::Printf(TEXT("Potency: x%.2f from Primary (%s %d): +%s%% per point, max +%.0f%%"),Potency(H,Id),*PrimaryName(H),PrimaryOf(H),
+            *FString::SanitizeFloat(D->PotencyPerPoint,0),D->PotencyCap);
+    }
+    if(!D||D->ScalePrimary<=0)return FString();
     const FString Verb=D->ScaleComponent==TEXT("heal")?TEXT("Heals"):D->ScaleComponent==TEXT("shield")?TEXT("Barrier of"):TEXT("Deals");
     const FString Coef=FString::SanitizeFloat(D->ScalePrimary,0);
     if(!H)return FString::Printf(TEXT("%s %.0f + %s× Primary %s"),*Verb,D->ScaleBase,*Coef,*CireAbilityDB::ScalingWord(*D));
@@ -129,7 +154,7 @@ FString CireKits::DescribeFor(const ACireHero* H,const FString& Id,int32 Level)
     if(!Line.IsEmpty())
     {
         TArray<FString> Lines;Text.ParseIntoArray(Lines,TEXT("\n"),false);
-        for(FString& L:Lines)if(L.Contains(TEXT("x Primary")))L=Line;
+        for(FString& L:Lines)if(L.Contains(TEXT("x Primary"))||L.StartsWith(TEXT("Potency:")))L=Line;
         Text=FString::Join(Lines,TEXT("\n"));
     }
     if(const FCireAbilityDef* D=CireAbilityDB::Find(Id))
@@ -141,7 +166,7 @@ FString CireKits::DescribeFor(const ACireHero* H,const FString& Id,int32 Level)
 float CireKits::AttackSpeedMultiplier(const ACireHero* H)
 {
     if(!H)return 1.f;
-    const float Passive=H->HasSkill(TEXT("battle_rhythm"))?1.20f:1.f;
+    const float Passive=H->HasSkill(TEXT("battle_rhythm"))?1.f+ScaledEffect(H,TEXT("battle_rhythm"),20.f)/100.f:1.f; // kits-complete: level x potency
     const float Speed=(1.f+H->Agility*0.01f+CireItems::AttackSpeedBonus(H)+CireClassTraits::AttackSpeedBonus(H)+CireSignatureSkills::AttackSpeedBonus(H)+AttackSpeedBonus(H))*Passive;
     return FMath::Clamp(FMath::IsFinite(Speed)?Speed:1.f,.25f,5.f);
 }
@@ -180,6 +205,7 @@ float CireKits::BasicRange(const ACireHero* H,float Base)
     if(H->HasSkill(TEXT("artillery_training")))Bonus+=EffectAtLevel(H,TEXT("artillery_training"),150.f);
     if(CireBuffs::IsActive(H,EagleEyeBuff))Bonus+=EffectAtLevel(H,TEXT("eagle_eye"),400.f);
     if(CireBuffs::IsActive(H,LongshotBuff))Bonus+=250.f;
+    Bonus+=CireKitSkills::BasicRangeBonus(H); // kits-complete: Elder of the Deepwood reach
     return static_cast<float>(K::EffectiveBasicRange(Base,Bonus,IsArtilleryActive(H)));
 }
 float CireKits::CritBonus(const AActor* Source)
@@ -323,7 +349,7 @@ void CireKits::OnDamageDealt(AActor* Source,AActor* Target,float Original,float 
     // Headshot: an extra hit for 2x (3x at level 15) of the original hit, on top of it.
     if(H->HasSkill(TEXT("headshot"))&&CireCombat::IsAlive(Target))
     {
-        const double Extra=K::HeadshotExtra(Original,SkillLevel(H,TEXT("headshot")),Roll());
+        const double Extra=K::HeadshotExtra(Original,SkillLevel(H,TEXT("headshot")),Roll())*Potency(H,TEXT("headshot")); // kits-complete: potency
         if(Extra>0)CireCombat::ApplyDamage(H,Target,static_cast<float>(Extra),TEXT("Headshot"));
     }
     if(bBasic&&CireCombat::IsAlive(Target))

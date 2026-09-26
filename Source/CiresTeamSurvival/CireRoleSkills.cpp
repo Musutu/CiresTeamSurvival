@@ -90,7 +90,7 @@ bool CireRoleSkills::Cast(ACireHero* Hero,int32 Slot,const FString& Id)
     const auto S=*Recipe;
     auto Fail=[&](const TCHAR* Why){Hero->Notice=Why;return false;};
     if(!CireSkillShop::CanPayCast(Hero,Id,S.ManaCost,S.EnergyCost))return Fail(*CireSkillShop::CostFailText()); // progression-shop: Skill Shop level (Ability DB curve)
-    const float Now=Hero->GetWorld()->GetTimeSeconds(),Duration=CireDeveloperTools::EffectSeconds(Hero->GetWorld(),S.DurationSeconds);
+    const float Now=Hero->GetWorld()->GetTimeSeconds(),Duration=CireDeveloperTools::EffectSeconds(Hero->GetWorld(),S.DurationSeconds)*CireKits::Potency(Hero,Id); // kits-complete: guard/taunt seconds x potency (1 for damage/heal skills)
     const float Power=Mode->Power(Hero->TeamId),Amount=FMath::Min(10000.f,CireKits::Amount(Hero,Id,S.FlatPower,S.PrimaryScaling)*Power); // scaling-kits: DB base + coef x PRIMARY
     FVector Aim=Hero->GetActorLocation();ACireHero* Ally=Hero;
     if(Id==TEXT("wellspring"))
