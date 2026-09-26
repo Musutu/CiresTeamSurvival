@@ -223,7 +223,10 @@ all stand outside the zone may take a new target on its path (a hero within 7 m)
 **Kited is not stuck.** The leash measures the distance from the unit's *path*, and only a chasing unit can be leashed.
 Units jammed at the market stalls, the breach crowd or the castle queue stand on their path and have no target, so they
 never leash; the wave director's stuck rescue keeps handling them (nudge along the unit's own path; a stuck chaser
-repaths and keeps its target). A unit stuck on its way back is set down at its return point.
+repaths and keeps its target). The rescue also catches a marcher that keeps moving without getting anywhere (circling a
+stall, looping on a navmesh detour): 15 s (3 stuck periods) without progress along its own path earns the same nudge
+(`CIRE_WAVES_STALL_NUDGE`). Spawn formations are placed on the navmesh, so a spawn in a narrow alley never forms its
+column inside a wall. A unit stuck on its way back is set down at its return point.
 
 Units the director did not put on a path (challenge packs, armored escorts, forced marchers, bonus creatures, test
 fixtures) keep their old behaviour: packs return to camp, the rest chase without a leash.

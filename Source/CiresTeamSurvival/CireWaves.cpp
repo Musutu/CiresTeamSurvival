@@ -36,6 +36,7 @@ struct FTrack
     int32 Nudges = 0;
     bool bForcedMarch = false;
     float BestProgress = -1.f, BestProgressAt = 0.f; // layout-wiring: cm along its own path, and when it last improved
+    int32 StallNudges = 0; float LastStallNudgeAt = -1000.f; // layout-wiring: recent stall nudges (each one reaches further)
     FCireWaveUnitInfo Info; // economy hook
 };
 struct FWaveRecord
@@ -165,6 +166,17 @@ void NudgeAlong(ACireMonster* M, float Step)
     FVector Target = CireLanePath::PointAlongPath(World, Team, M->LanePath, FMath::Min(.995f, Progress + Step / Length), M->GetActorLocation().Z);
     if (CireTownMap::IsActive()) Target.Z = CireTownMap::Ground(World, FVector2D(Target)) + M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 10.f; // medieval-kingdom: landscape
     else Target.Z = FMath::Max(Target.Z, 100.);
+    // layout-wiring: land on the navmesh (never on a roof, a stall or inside a wall the path clips): the first spot along
+    // the path from the nudge point onward that projects onto it.
+    if (CireNav::HasNavigation(World))
+        for (float Extra = 0.f; Extra <= 1500.f; Extra += 150.f)
+        {
+            FVector Probe = CireLanePath::PointAlongPath(World, Team, M->LanePath, FMath::Min(.995f, Progress + (Step + Extra) / Length), Target.Z);
+            if (CireTownMap::IsActive()) Probe.Z = CireTownMap::Ground(World, FVector2D(Probe)) + 60.f;
+            FVector OnNav;
+            if (CireNav::Project(World, Probe, OnNav, FVector(150, 150, 500), 45.f))
+            { Target = FVector(OnNav.X, OnNav.Y, OnNav.Z + M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 10.f); break; }
+        }
     M->GetCharacterMovement()->StopMovementImmediately();
     M->SetActorLocation(Target, false, nullptr, ETeleportType::TeleportPhysics);
     CireLanePath::InitializeProgress(M);
@@ -567,12 +579,16 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
         if (!bPaused && !IsValid(M->Victim) && !bGuardWaiting && !CireLeash::IsReturning(M) && M->SpecialSpawn != 2)
         {
             const float Along = CireLanePath::PathProgress(World, M->Lane, M->LanePath, M->GetActorLocation()) * CireLanePath::PathLengthOf(World, M->Lane, M->LanePath);
+            // A unit that goes 45 s without needing another stall nudge has found its way: the escalation starts over.
+            if (Time - T.LastStallNudgeAt > 45.f) T.StallNudges = 0;
             if (T.BestProgress < 0.f || Along > T.BestProgress + 100.f) { T.BestProgress = FMath::Max(T.BestProgress, Along); T.BestProgressAt = Time; }
             else if (Time - T.BestProgressAt > C.StuckSeconds * 3.f && !NoRescue())
             {
                 const FVector From = M->GetActorLocation();
-                NudgeAlong(M, 450.f);
-                ++T.Nudges; ++R.Nudges; T.StuckFor = 0; T.Anchor = M->GetActorLocation(); T.BestProgressAt = Time;
+                // From its best point so far, a little further each time it stalls again (a wanderer is put back ahead).
+                const float Along2 = FMath::Max(Along, T.BestProgress);
+                NudgeAlong(M, Along2 - Along + FMath::Min(450.f * (1 + T.StallNudges), 3000.f));
+                ++T.StallNudges; T.LastStallNudgeAt = Time; ++T.Nudges; ++R.Nudges; T.StuckFor = 0; T.Anchor = M->GetActorLocation(); T.BestProgressAt = Time;
                 UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_STALL_NUDGE %s lane=%d path=%d from=(%.0f,%.0f) to=(%.0f,%.0f) off_path=%.0f (moving without progress)"), *M->GetNPCDisplayName(), M->Lane,
                     M->LanePath, From.X, From.Y, M->GetActorLocation().X, M->GetActorLocation().Y, CireLanePath::DistanceToUnitPath(M, From));
                 continue;

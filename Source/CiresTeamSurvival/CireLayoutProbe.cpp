@@ -372,8 +372,21 @@ bool CireLayoutWiring::TickProbe(ACireGameMode* Mode, float Delta)
                 {
                     K.bSawReturn = true; K.bImmune = !CireLeash::AllowDamage(M); K.bThreatKept = M->Threat.Contains(H);
                     // The kiter leaves: he keeps his threat but stands far outside the zone, so the unit must march on.
-                    if (!K.Route.IsEmpty()) H->SetActorLocation(Grounded(World, K.Route.Last(), H), false, nullptr, ETeleportType::TeleportPhysics);
-                    else H->SetActorLocation(Grounded(World, CireLanePath::BasePosition(World, K.Realm), H), false, nullptr, ETeleportType::TeleportPhysics);
+                    {
+                        const FVector2D Here = CireLanePath::ToLocal(K.Realm, M->GetActorLocation());
+                        FVector2D Far = Here + FVector2D(0, Radius + 2000.f); double BestD = -1;
+                        for (int32 Ring = 0; Ring < 4; ++Ring)
+                            for (int32 A = 0; A < 16; ++A)
+                            {
+                                FVector2D C;
+                                const double Angle = A * PI / 8., Dist = 3000. + Ring * 1500.;
+                                if (!OnNav(World, K.Realm, Here + FVector2D(FMath::Cos(Angle), FMath::Sin(Angle)) * Dist, C)) continue;
+                                double D = 0; CireLanePath::NearestOnPolyline(CireLanePath::UnitPath(M), C, &D);
+                                if (D > BestD) { BestD = D; Far = C; }
+                            }
+                        H->GetCharacterMovement()->StopMovementImmediately();
+                        H->SetActorLocation(Grounded(World, CireLanePath::ToWorld(K.Realm, Far, 0), H), false, nullptr, ETeleportType::TeleportPhysics);
+                    }
                     Note(FString::Printf(TEXT("CIRE_LAYOUT_PROBE_KITE_LEASHED realm=%d mode=%s off_path=%.0f max_off_path=%.0f after=%.1fs immune=%d threat_kept=%d"), K.Realm, *K.Why,
                         OffPath, K.MaxOffPath, Age, K.bImmune ? 1 : 0, K.bThreatKept ? 1 : 0));
                     K.Stage = 2; K.StageAt = P.Clock;
@@ -448,6 +461,8 @@ bool CireLayoutWiring::TickProbe(ACireGameMode* Mode, float Delta)
             case 3: // it marches on toward the castle (the kiter stays out of its zone)
             {
                 const float Progress = CireLanePath::PathProgress(World, K.Realm, M->LanePath, M->GetActorLocation());
+                if (CireLanePath::DistanceToUnitPath(M, H->GetActorLocation()) < CireLeash::RadiusFor(CireLeash::Rules(), M) - CireLeash::Rules().PursuitMargin)
+                    Fail(FString::Printf(TEXT("realm %d: the kiter is back inside the leash zone; the probe cannot tell a march"), K.Realm));
                 if (Progress > K.ProgressAtResume + .02f)
                 {
                     K.bMarchedOn = true;
