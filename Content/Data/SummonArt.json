@@ -11,6 +11,26 @@
       "heightCm": 190,
       "yaw": -90,
       "note": "champion-hq HQ summon body; no row = the summon's archetype body"
+    },
+    {
+      "id": "oathbound_guardian",
+      "status": "ready",
+      "mesh": "/Game/Tripo/ChampionsHQ/SummonGuardian/CTS_ChampHQ_SummonGuardian.CTS_ChampHQ_SummonGuardian",
+      "locomotion": "/Game/Tripo/ChampionsHQ/SummonGuardian/Animations/BS_Idle_Walk_Run_SummonGuardian.BS_Idle_Walk_Run_SummonGuardian",
+      "attack": "/Game/Tripo/ChampionsHQ/SummonGuardian/Animations/CTS_ChampHQ_SummonGuardian_slash.CTS_ChampHQ_SummonGuardian_slash",
+      "heightCm": 200,
+      "yaw": -90,
+      "note": "champion-hq HQ summon body; no row = the summon's archetype body"
+    },
+    {
+      "id": "spectral_companion",
+      "status": "ready",
+      "mesh": "/Game/Tripo/ChampionsHQ/SummonSpectral/CTS_ChampHQ_SummonSpectral.CTS_ChampHQ_SummonSpectral",
+      "locomotion": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/BS_Idle_Walk_Run_SummonSpectral.BS_Idle_Walk_Run_SummonSpectral",
+      "attack": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/CTS_ChampHQ_SummonSpectral_slash.CTS_ChampHQ_SummonSpectral_slash",
+      "heightCm": 176,
+      "yaw": -90,
+      "note": "champion-hq HQ summon body; no row = the summon's archetype body"
     }
   ]
 }

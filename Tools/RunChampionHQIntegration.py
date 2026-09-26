@@ -74,7 +74,7 @@ def main():
         print(error)
     # With core redirects active the rename leaves the original Bridge packages behind; drop the moved ones.
     moved = {m["from"].rsplit("/", 1)[1] for m in report.get("moved", [])}
-    for folder in (ROOT / "Content" / "TripoModels").glob("CTS_ChampHQ_*"):
+    for folder in [*(ROOT / "Content" / "TripoModels").glob("CTS_ChampHQ_*"), *(ROOT / "Content" / "TripoModels").glob("SM_*")]:
         if folder.name in moved:
             shutil.rmtree(folder)
 

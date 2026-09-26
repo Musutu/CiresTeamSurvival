@@ -279,6 +279,22 @@
       }
     },
     {
+      "profileId": "scholar",
+      "status": "ready",
+      "mesh": "/Game/Tripo/ChampionsHQ/Scholar/CTS_ChampHQ_Scholar.CTS_ChampHQ_Scholar",
+      "locomotion": "/Game/Tripo/ChampionsHQ/Scholar/Animations/BS_Idle_Walk_Run_Scholar.BS_Idle_Walk_Run_Scholar",
+      "attack": "/Game/Tripo/ChampionsHQ/Scholar/Animations/CTS_ChampHQ_Scholar_cast_a_spell.CTS_ChampHQ_Scholar_cast_a_spell",
+      "heightCm": 176,
+      "yaw": -90,
+      "note": "champion-hq: Tripo H3.1 multi-view HQ body (Art/ChampionHQ/TripoChampionHQ.json); fallback = previous body.",
+      "fallback": {
+        "mesh": "/Game/TripoModels/battlefield_healer_3d_model/battlefield_healer_3d_model.battlefield_healer_3d_model",
+        "locomotion": "/Game/Art/Characters/TripoRetarget/Preview02/Scholar/Animations/BS_Idle_Walk_Run_Scholar.BS_Idle_Walk_Run_Scholar",
+        "attack": "/Game/Art/Characters/CombatPrototype01/Scholar/A_Scholar_Attack.A_Scholar_Attack",
+        "heightCm": 176
+      }
+    },
+    {
       "profileId": "gunblade",
       "status": "ready",
       "mesh": "/Game/Tripo/ChampionsHQ/Gunblade/CTS_ChampHQ_Gunblade.CTS_ChampHQ_Gunblade",
@@ -410,22 +426,6 @@
           "energy halberd (hand_r)"
         ],
         "delivered": "/Game/Tripo/ChampionsHQ/AetheriWarden/CTS_ChampHQ_AetheriWarden.CTS_ChampHQ_AetheriWarden"
-      }
-    },
-    {
-      "profileId": "scholar",
-      "status": "ready",
-      "mesh": "/Game/Tripo/ChampionsHQ/Scholar/CTS_ChampHQ_Scholar.CTS_ChampHQ_Scholar",
-      "locomotion": "/Game/Tripo/ChampionsHQ/Scholar/Animations/BS_Idle_Walk_Run_Scholar.BS_Idle_Walk_Run_Scholar",
-      "attack": "/Game/Tripo/ChampionsHQ/Scholar/Animations/CTS_ChampHQ_Scholar_cast_a_spell.CTS_ChampHQ_Scholar_cast_a_spell",
-      "heightCm": 176,
-      "yaw": -90,
-      "note": "champion-hq: Tripo H3.1 multi-view HQ body (Art/ChampionHQ/TripoChampionHQ.json); fallback = previous body.",
-      "fallback": {
-        "mesh": "/Game/TripoModels/battlefield_healer_3d_model/battlefield_healer_3d_model.battlefield_healer_3d_model",
-        "locomotion": "/Game/Art/Characters/TripoRetarget/Preview02/Scholar/Animations/BS_Idle_Walk_Run_Scholar.BS_Idle_Walk_Run_Scholar",
-        "attack": "/Game/Art/Characters/CombatPrototype01/Scholar/A_Scholar_Attack.A_Scholar_Attack",
-        "heightCm": 176
       }
     }
   ]

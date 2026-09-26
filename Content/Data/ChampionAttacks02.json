@@ -44,7 +44,9 @@
     "/Game/Tripo/ChampionsHQ/GolemVerdant/CTS_ChampHQ_GolemVerdant.CTS_ChampHQ_GolemVerdant": "HQGolemVerdant",
     "/Game/Tripo/ChampionsHQ/GolemFelfire/CTS_ChampHQ_GolemFelfire.CTS_ChampHQ_GolemFelfire": "HQGolemFelfire",
     "/Game/Tripo/ChampionsHQ/TotemicBehemoth/CTS_ChampHQ_TotemicBehemoth.CTS_ChampHQ_TotemicBehemoth": "HQTotemicBehemoth",
-    "/Game/Tripo/ChampionsHQ/SummonMechTank/CTS_ChampHQ_SummonMechTank.CTS_ChampHQ_SummonMechTank": "HQSummonMechTank"
+    "/Game/Tripo/ChampionsHQ/SummonMechTank/CTS_ChampHQ_SummonMechTank.CTS_ChampHQ_SummonMechTank": "HQSummonMechTank",
+    "/Game/Tripo/ChampionsHQ/SummonGuardian/CTS_ChampHQ_SummonGuardian.CTS_ChampHQ_SummonGuardian": "HQSummonGuardian",
+    "/Game/Tripo/ChampionsHQ/SummonSpectral/CTS_ChampHQ_SummonSpectral.CTS_ChampHQ_SummonSpectral": "HQSummonSpectral"
   },
   "windows": {
     "slash":           { "start": 0.00, "contact": 1.30, "end": 2.45, "recoverRate": 1.5 },

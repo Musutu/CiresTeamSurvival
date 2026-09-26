@@ -220,6 +220,22 @@ void ACireConstruct::OnRep_Appearance()
         Presentation = CireSpellPresentation::AttachConstruct(this, IsProtection(), Extents(ConstructSpec));
     if (auto* Visual = Cast<ACireSpellVisual>(Presentation)) Visual->SetTint(ConstructSpec.Color);
     BodyMesh->SetVisibility(!IsProtection() || !IsValid(Presentation));
+    // champion-hq: the Pavise plants its HQ Tripo tower shield (uniform scale to the construct height, facing the aim);
+    // without the asset it keeps the runestone wall.
+    static const FString PaviseHQ(TEXT("/Game/Tripo/ChampionsHQ/Constructs/Pavise/CTS_ChampHQ_Pavise.CTS_ChampHQ_Pavise"));
+    if (AbilityName == TEXT("Construct: Pavise"))
+        if (UStaticMesh* HQ = LoadObject<UStaticMesh>(nullptr, *PaviseHQ, nullptr, LOAD_Quiet | LOAD_NoWarn))
+        {
+            const FBoxSphereBounds B = HQ->GetBounds();
+            const float Scale = ConstructSpec.Height / FMath::Max(1.f, static_cast<float>(B.BoxExtent.Z * 2));
+            BodyMesh->SetStaticMesh(HQ);
+            BodyMesh->EmptyOverrideMaterials();
+            BodyMesh->SetRelativeScale3D(FVector(Scale));
+            BodyMesh->SetRelativeRotation(FRotator(0, -90, 0)); // Tripo bodies face +Y
+            BodyMesh->SetRelativeLocation(FVector(0, 0, -ConstructSpec.Height * .5f - (B.Origin.Z - B.BoxExtent.Z) * Scale));
+            BodyMesh->SetVisibility(true);
+            if (IsValid(Presentation)) Presentation->SetActorHiddenInGame(true);
+        }
 }
 AActor* ACireConstruct::GetSourceActor() const { return SourceUnit; }
 bool ACireConstruct::CanObserve(const AActor* Observer) const { return CireSkillRuntime::CanObserve(Observer, GetWorld(), OriginTeam, OriginPhase); }

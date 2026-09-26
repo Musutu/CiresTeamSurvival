@@ -46,7 +46,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "scholar",
@@ -61,7 +63,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "lancer",
@@ -76,7 +80,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "summoner",
@@ -91,7 +97,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "wizard",
@@ -106,7 +114,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "gunblade",
@@ -121,7 +131,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "witch_slayer",
@@ -136,7 +148,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "huntress",
@@ -151,7 +165,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "aetheri_artificer",
@@ -166,7 +182,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "aetheri_warden",
@@ -181,7 +199,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "dryad",
@@ -196,7 +216,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "dwarf_miner",
@@ -211,7 +233,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "orc_chieftain",
@@ -226,7 +250,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "drakish_footman",
@@ -241,7 +267,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "keeper_of_light",
@@ -256,7 +284,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "troll_berserker",
@@ -271,7 +301,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "ether_golem_tank",
@@ -286,7 +318,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "ether_golem_support",
@@ -301,7 +335,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "ether_golem_bruiser",
@@ -316,7 +352,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "whisp",
@@ -325,7 +363,9 @@
       "url": "https://studio.tripo3d.ai/workspace/generate/495b00b8-f389-4f54-8d07-cbc04b2b81e0",
       "generateCredits": 70,
       "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
-      "creditsTotal": 70
+      "creditsTotal": 70,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "totemic_behemoth",
@@ -340,7 +380,9 @@
         "credits": 20
       },
       "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
-      "creditsTotal": 90
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
     },
     {
       "id": "mechanical_tank",
@@ -349,7 +391,9 @@
       "url": "https://studio.tripo3d.ai/workspace/generate/48b4d4ce-49fc-4585-bc23-3c799e4f76fb",
       "generateCredits": 0,
       "creditsTotal": 0,
-      "note": "art-3d agent's model (generated + rigged there, credits logged in Art/TripoArt3D.json); exported here, no new spend"
+      "note": "art-3d agent's model (generated + rigged there, credits logged in Art/TripoArt3D.json); exported here, no new spend",
+      "status": "bound",
+      "review": "SummonArt.json summon:mechanical_tank"
     },
     {
       "id": "pet_sabercat",
@@ -358,7 +402,9 @@
       "url": "https://studio.tripo3d.ai/workspace/generate/05281f2f-78d2-4730-ab2f-60c0a773cd08",
       "generateCredits": 0,
       "creditsTotal": 0,
-      "note": "art-3d agent's HQ sabercat (Other rig, no clips); exported here, no new spend"
+      "note": "art-3d agent's HQ sabercat (Other rig, no clips); exported here, no new spend",
+      "status": "bound-reviewed",
+      "review": "Pets.json art mesh -> HQ body (quadruped_procedural, wolf fallback)"
     },
     {
       "id": "pavise",
@@ -367,7 +413,9 @@
       "url": "https://studio.tripo3d.ai/workspace/generate/f992e832-9db7-4ada-b39d-4bbe38018311",
       "generateCredits": 0,
       "creditsTotal": 0,
-      "note": "art-3d agent's pavise prop; exported here, no new spend"
+      "note": "art-3d agent's pavise prop; exported here, no new spend",
+      "status": "bound",
+      "review": "CireConstruct: Construct: Pavise plants the HQ shield (uniform scale to 200 cm)"
     },
     {
       "id": "oathbound_guardian",
@@ -382,7 +430,9 @@
         "status": "complete (preset clips available in Animate)"
       },
       "creditsTotal": 90,
-      "note": "clean: helm, chains, tabard, hands all intact; quad 53k faces"
+      "note": "clean: helm, chains, tabard, hands all intact; quad 53k faces",
+      "status": "bound",
+      "review": "SummonArt.json summon:oathbound_guardian"
     },
     {
       "id": "spectral_companion",
@@ -397,7 +447,9 @@
         "status": "complete (preset clips available in Animate)"
       },
       "creditsTotal": 90,
-      "note": "clean: mask, hood, tattered robes, clawed hands intact; quad 52.5k faces"
+      "note": "clean: mask, hood, tattered robes, clawed hands intact; quad 52.5k faces",
+      "status": "bound",
+      "review": "SummonArt.json summon:spectral_companion"
     },
     {
       "id": "AetherTurret",
@@ -407,7 +459,9 @@
       "generateCredits": 70,
       "rig": null,
       "creditsTotal": 70,
-      "note": "single-image from sheet side view (front/back sheet views drew barrel pointing up); result clean: tripod, eye head, long crystal barrel; quad 44.8k faces"
+      "note": "single-image from sheet side view (front/back sheet views drew barrel pointing up); result clean: tripod, eye head, long crystal barrel; quad 44.8k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
     },
     {
       "id": "AetherObelisk",
@@ -417,7 +471,9 @@
       "generateCredits": 70,
       "rig": null,
       "creditsTotal": 70,
-      "note": "clean, consistent with sheet; quad 45.9k faces"
+      "note": "clean, consistent with sheet; quad 45.9k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
     },
     {
       "id": "SkitterBomb",
@@ -427,7 +483,9 @@
       "generateCredits": 70,
       "rig": null,
       "creditsTotal": 70,
-      "note": "clean: shell, crystal eye, legs; quad 43.3k faces"
+      "note": "clean: shell, crystal eye, legs; quad 43.3k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
     },
     {
       "id": "AetherTrap",
@@ -437,7 +495,9 @@
       "generateCredits": 70,
       "rig": null,
       "creditsTotal": 70,
-      "note": "single-image from sheet 3/4 view; clean disc + crystal but crystal is a bipyramid poking ~as far BELOW the disc as above (sink into ground or trim); quad 42.3k faces"
+      "note": "single-image from sheet 3/4 view; clean disc + crystal but crystal is a bipyramid poking ~as far BELOW the disc as above (sink into ground or trim); quad 42.3k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
     },
     {
       "id": "AetherPylon",
@@ -447,7 +507,9 @@
       "generateCredits": 70,
       "rig": null,
       "creditsTotal": 70,
-      "note": "clean: base, crystal, halo ring; quad 48k faces"
+      "note": "clean: base, crystal, halo ring; quad 48k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
     },
     {
       "id": "SpiritLantern",
@@ -457,7 +519,9 @@
       "generateCredits": 70,
       "rig": null,
       "creditsTotal": 70,
-      "note": "clean: post, arm, lantern with teal flame glass, charms; quad 51.8k faces"
+      "note": "clean: post, arm, lantern with teal flame glass, charms; quad 51.8k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
     },
     {
       "id": "grave_hound",
@@ -472,11 +536,15 @@
         "status": "complete"
       },
       "creditsTotal": 90,
-      "note": "clean: skull, glowing teal eyes, ribcage, tattered hide, 4 legs intact; quad 49k faces"
+      "note": "clean: skull, glowing teal eyes, ribcage, tattered hide, 4 legs intact; quad 49k faces",
+      "status": "integrated-unbound",
+      "review": "Tripo 'Other' rig with only a Walk clip; the grave_hound race keeps the Fab Barghest (full clip set). Bind once idle/attack clips exist."
     }
   ],
   "notes": [
-    "dryad: the first attempt never started (front slot upload raced the delete click, no charge); resubmitted as 07701621."
+    "dryad: the first attempt never started (front slot upload raced the delete click, no charge); resubmitted as 07701621.",
+    "golem slash retargets (GolemVerdant, GolemFelfire) and SummonGuardian slash fail the ChampionAttacks02 body-order check; those bodies use their native Tripo slash.",
+    "Staff carry: the six two-handed staffs carry at [0.38, 0.0, 0.64] (WeaponGrips.json) so the HQ faces are not hidden behind the staff."
   ],
   "exports": {
     "ranger": {
@@ -1044,7 +1112,7 @@
     },
     "AetherTurret": {
       "export": "SM_AetherTurret",
-      "folder": "Constructs",
+      "folder": "Constructs/AetherTurret",
       "kind": "construct",
       "look": {
         "Vibrance": 0.3,
@@ -1067,7 +1135,7 @@
     },
     "AetherObelisk": {
       "export": "SM_AetherObelisk",
-      "folder": "Constructs",
+      "folder": "Constructs/AetherObelisk",
       "kind": "construct",
       "look": {
         "Vibrance": 0.3,
@@ -1090,7 +1158,7 @@
     },
     "SkitterBomb": {
       "export": "SM_SkitterBomb",
-      "folder": "Constructs",
+      "folder": "Constructs/SkitterBomb",
       "kind": "construct",
       "look": {
         "Vibrance": 0.3,
@@ -1113,7 +1181,7 @@
     },
     "AetherTrap": {
       "export": "SM_AetherTrap",
-      "folder": "Constructs",
+      "folder": "Constructs/AetherTrap",
       "kind": "construct",
       "look": {
         "Vibrance": 0.3,
@@ -1136,7 +1204,7 @@
     },
     "AetherPylon": {
       "export": "SM_AetherPylon",
-      "folder": "Constructs",
+      "folder": "Constructs/AetherPylon",
       "kind": "construct",
       "look": {
         "Vibrance": 0.3,
@@ -1159,7 +1227,7 @@
     },
     "SpiritLantern": {
       "export": "SM_SpiritLantern",
-      "folder": "Constructs",
+      "folder": "Constructs/SpiritLantern",
       "kind": "construct",
       "look": {
         "Vibrance": 0.3,
@@ -1180,5 +1248,33 @@
         "EmissiveIntensity": 6.0
       }
     }
+  },
+  "uprightIdle": {
+    "problem": "Polyphoria paladin sword-and-shield idle is a deep hunched crouch.",
+    "measured": "frame-0 head height / reference-pose head height and head-over-pelvis lean (Tools probe on the owned packs)",
+    "best": [
+      {
+        "clip": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Idle2_IP",
+        "headRatio": 0.989,
+        "leanCm": 7.9,
+        "note": "upright sword-and-shield hero idle (V2_Idle2 / V3_Idle2 are the same motion)"
+      },
+      {
+        "clip": "/Game/Gun_and_Sword/Animations/Sequence/01_Idle/01_Idle/AS_Idle_Seq",
+        "headRatio": 0.987,
+        "leanCm": 0.6,
+        "note": "most upright; relaxed one-hand sword idle"
+      },
+      {
+        "clip": "/Game/MaleLocomotionSet/Animations/Mannequin/RootMotion/Idle/A_Idle",
+        "headRatio": 0.982,
+        "leanCm": 10.0,
+        "note": "neutral unarmed idle"
+      }
+    ],
+    "avoid": [
+      "AS_SwordAndShieldAnimV1_Idle1_IP / V2_Idle1 (head 0.895, pelvis 0.853: crouched guard)"
+    ],
+    "status": "noted for reuse; not applied (paladins are owned by main)"
   }
 }

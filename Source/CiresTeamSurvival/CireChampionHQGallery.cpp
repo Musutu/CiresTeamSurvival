@@ -6,6 +6,8 @@
 #include "CireChampionArt.h"
 #include "CireChampionActions.h"
 #include "CireChampionRoster.h"
+#include "CireSummon.h" // champion-hq: summon bodies
+#include "CireSkillRuntime.h"
 #include "CireLanePath.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
@@ -96,10 +98,21 @@ ACireHero* Hero(const FString& Profile, float Along, float Side, float Yaw)
 {
     FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     const FVector At = Ground(Along, Side);
-    auto* H = World()->SpawnActor<ACireHero>(At + FVector(0, 0, 200), FRotator(0, Yaw, 0), Params);
+    // champion-hq: "summon:<id>" reviews a summon body (SummonArt.json): a summon named after the id on the knight kit.
+    const bool bSummon = Profile.StartsWith(TEXT("summon:"));
+    auto* H = bSummon ? World()->SpawnActor<ACireSummon>(At + FVector(0, 0, 200), FRotator(0, Yaw, 0), Params)
+                      : World()->SpawnActor<ACireHero>(At + FVector(0, 0, 200), FRotator(0, Yaw, 0), Params);
     if (!H) { Fail(TEXT("spawn ") + Profile); return nullptr; }
     G.Scene.Add(H); H->TeamId = 0;
-    if (!H->DraftProfile(Profile)) Fail(TEXT("draft ") + Profile);
+    if (!H->DraftProfile(bSummon ? FString(TEXT("knight")) : Profile)) Fail(TEXT("draft ") + Profile);
+    if (auto* Summon = Cast<ACireSummon>(H))
+    {   // keep it alive and in place: owned by the gallery pawn, holding, no expiry
+        Summon->HeroName = Profile.RightChop(7).Replace(TEXT("_"), TEXT(" "));
+        auto* Owner = World()->GetFirstPlayerController() ? Cast<ACireHero>(World()->GetFirstPlayerController()->GetPawn()) : nullptr;
+        Summon->OwnerHero = Owner; if (Owner) Summon->TeamId = Owner->TeamId;
+        Summon->SummonSpec.DurationSeconds = 1.e6f; Summon->OriginPhase = CireSkillRuntime::Phase(World());
+        Summon->CurrentCommand = ECireSummonCommand::Hold;
+    }
     H->Health = H->MaxHealth = 1.e6f; H->Mana = H->MaxMana = 1.e5f; H->Energy = 100; H->Offers.Reset();
     H->SetActorLocation(FVector(At.X, At.Y, At.Z + H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2));
     H->SetActorRotation(FRotator(0, Yaw, 0));
@@ -219,7 +232,7 @@ void TickStage(const FStage& S, float DeltaSeconds)
 void Capture(const FStage& S)
 {
     Report(G.Focus.Get(), TEXT("capture"));
-    const FString File = FPaths::Combine(G.Directory, FString::Printf(TEXT("%02d_%s_%s.png"), G.Stage + 1, S.Shot == EShot::Lineup ? TEXT("all") : *S.Profile, ShotName(S.Shot)));
+    const FString File = FPaths::Combine(G.Directory, FString::Printf(TEXT("%02d_%s_%s.png"), G.Stage + 1, S.Shot == EShot::Lineup ? TEXT("all") : *S.Profile.Replace(TEXT(":"), TEXT("_")), ShotName(S.Shot)));
     FScreenshotRequest::RequestScreenshot(File, false, false, false, FIntRect(), true);
     G.Captures.Add(File);
     UE_LOG(LogCireChampionHQGallery, Display, TEXT("CIRE_CHAMPION_HQ_GALLERY_CAPTURE %s"), *File);

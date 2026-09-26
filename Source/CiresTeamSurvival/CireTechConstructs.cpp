@@ -165,12 +165,12 @@ UStaticMesh* Shape(const TCHAR* Name)
 {
     return LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("/Engine/BasicShapes/%s.%s"), Name, Name));
 }
-// champion-hq: HQ Tripo construct bodies for the players' recipes (/Game/Tripo/ChampionsHQ/Constructs/SM_<Kind>). They carry
+// champion-hq: HQ Tripo construct bodies for the players' recipes (/Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>). They carry
 // their own crystal and material, so the procedural core / crown parts are hidden (trap trigger rings stay). Monster
 // recipes (npc_*) keep the tinted hostile look.
 UStaticMesh* AuthoredHQ(FName Kind)
 {
-    const FString Path = FString::Printf(TEXT("/Game/Tripo/ChampionsHQ/Constructs/SM_%s.SM_%s"), *Kind.ToString(), *Kind.ToString());
+    const FString Path = FString::Printf(TEXT("/Game/Tripo/ChampionsHQ/Constructs/%s/SM_%s.SM_%s"), *Kind.ToString(), *Kind.ToString(), *Kind.ToString());
     return LoadObject<UStaticMesh>(nullptr, *Path, nullptr, LOAD_Quiet | LOAD_NoWarn);
 }
 UStaticMesh* Authored(FName Kind)
