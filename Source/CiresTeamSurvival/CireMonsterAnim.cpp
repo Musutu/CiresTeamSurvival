@@ -80,12 +80,15 @@ const CireAnimClips::FClipInfo& CireAnimClips::Analyze(const UAnimSequence* Sequ
         FVector2D SumP = FVector2D::ZeroVector, SumTP = FVector2D::ZeroVector;
         double ApexZ = -TNumericLimits<double>::Max();
         bool bFinite = true;
+        FVector2D First = FVector2D::ZeroVector, Last = FVector2D::ZeroVector;
         for (int32 Index = 0; Index <= Samples; ++Index)
         {
             const double Time = Info.Length * Index / Samples;
             const FVector P = ComponentBone(*Sequence, Reference, Pelvis, Time).GetLocation();
             bFinite &= !P.ContainsNaN();
             const FVector2D XY(P);
+            if (Index == 0) First = XY;
+            Last = XY;
             SumT += Time; SumTT += Time * Time; SumP += XY; SumTP += XY * Time;
             if (Foot != INDEX_NONE && Index < Samples)
             {
@@ -97,6 +100,11 @@ const CireAnimClips::FClipInfo& CireAnimClips::Analyze(const UAnimSequence* Sequ
         if (bFinite && FMath::Abs(Denominator) > UE_SMALL_NUMBER)
         {
             Info.DriftVelocity = (SumTP * N - SumP * SumT) / Denominator;
+            // movement-feel: a loop whose pelvis ends where it started is in place (Fab / UE-mannequin clips). A line fit
+            // through an asymmetric closed cycle has a spurious slope; removing it ramped the pose and popped it back at
+            // every loop seam (the rotting shambler) and skewed the measured stride.
+            const double Travel = Info.DriftVelocity.Size() * Info.Length;
+            if (CireLocomotion::Enabled() && FVector2D::Distance(First, Last) <= FMath::Max(.5, .2 * Travel)) Info.DriftVelocity = FVector2D::ZeroVector;
             Info.DriftOffset = (SumP - Info.DriftVelocity * SumT) / N;
             Info.bValid = !Info.DriftVelocity.ContainsNaN() && !Info.DriftOffset.ContainsNaN();
         }

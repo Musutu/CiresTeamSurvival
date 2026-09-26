@@ -911,7 +911,10 @@ void UCireMonsterArt::UpdatePresentation(float DeltaTime)
     const float Cycle = FMath::Lerp(WalkLength, RunLength, RunAlpha);
     const float NaturalSpeed = FMath::Lerp(WalkSpeed, RunSpeed, RunAlpha);
     // One cycle per the clip's own stride: planted feet move with the ground, not across it.
-    const float Rate = CireLocomotion::Enabled() ? FMath::Clamp(SmoothedSpeed / NaturalSpeed, .3f, 2.5f) : FMath::Clamp(SmoothedSpeed / NaturalSpeed, .35f, 2.2f);
+    // A body with a single gait clip (the Undead zombie's shuffling walk carries a 175 cm/s shambler) has no faster
+    // stride to blend to, so its cadence may rise further before the feet are allowed to slide.
+    const bool bSingleGait = !RunClip || RunClip == WalkClip;
+    const float Rate = CireLocomotion::Enabled() ? FMath::Clamp(SmoothedSpeed / NaturalSpeed, .3f, bSingleGait ? 4.f : 2.5f) : FMath::Clamp(SmoothedSpeed / NaturalSpeed, .35f, 2.2f);
     float Direction = 1.f, StepCycles = 0.f;
     if (CireLocomotion::Enabled())
     {

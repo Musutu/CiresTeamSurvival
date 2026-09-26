@@ -70,15 +70,19 @@ def sheets(directory: Path) -> list[Path]:
     return out
 
 
-def stance_drift(rows: list, contacts: list, height: float) -> tuple:
+def stance_drift(rows: list, contacts: list, height: float, moving: bool = False) -> tuple:
     """World drift of every contact across each stance (h within 2% of the body height of its segment minimum, at
-    least 4 frames): distance between the first and last stance frame over the stance time. Returns (cm/s, stances)."""
-    tol = max(2.0, .02 * height)
+    least 4 frames): distance between the first and last stance frame over the stance time. Returns (cm/s, stances).
+    Moving, a dragging gait (the zombie shuffle lifts its feet ~3 cm) caps the band at a third of the contact's lift
+    range so the swing is not counted as stance (turns in place keep the plain band: their steps barely lift)."""
     num = den = 0.0
     count = 0
     for c in contacts:
         hs = [float(r[f"c{c}h"]) for r in rows]
         hmin = min(hs)
+        tol = max(2.0, .02 * height)
+        if moving:
+            tol = max(.5, min(tol, (max(hs) - hmin) / 3))
         run: list = []
         for i, h in enumerate(hs + [1e9]):
             if h < hmin + tol:
@@ -116,7 +120,7 @@ def skate(directory: Path, data: dict) -> None:
             if len(steady) < 10:
                 continue
             speed = sum((float(r["vx"]) ** 2 + float(r["vy"]) ** 2) ** .5 for r in steady) / len(steady)
-            value, count = stance_drift(steady, contacts, subject["height"])
+            value, count = stance_drift(steady, contacts, subject["height"], speed > 40)
             if value is None:
                 continue
             if speed > 40:
@@ -147,7 +151,8 @@ def summary(directory: Path) -> str:
 
 
 def smoothness(directory: Path) -> dict:
-    """Whole-run smoothness per subject (any lab or client sample set): visual yaw snaps (>15 deg in a frame), p99 yaw
+    """Whole-run smoothness per subject (any lab or client sample set): visual yaw snaps (>= 900 deg/s, i.e. 15 deg in a
+    60 Hz frame; a rate so a client drawing at 30 fps is not charged for the same turn in bigger frames), p99 yaw
     acceleration, p99/max mesh acceleration (cm/s^2, from the rendered mesh position), and foot slide while moving."""
     import csv
     out = {}
@@ -164,7 +169,7 @@ def smoothness(directory: Path) -> dict:
                 continue
             d1 = ((float(c["visYaw"]) - float(b["visYaw"]) + 180) % 360) - 180
             d0 = ((float(b["visYaw"]) - float(a["visYaw"]) + 180) % 360) - 180
-            snaps += abs(d1) >= 15
+            snaps += abs(d1) / (t2 - t1) >= 900
             dt = (t2 - t0) / 2
             yaw_acc.append(abs(d1 / (t2 - t1) - d0 / (t1 - t0)) / dt)
             acc = [((float(c[k]) - float(b[k])) / (t2 - t1) - (float(b[k]) - float(a[k])) / (t1 - t0)) / dt for k in ("mx", "my", "mz")]
@@ -173,7 +178,7 @@ def smoothness(directory: Path) -> dict:
         contacts = sorted({int(k[1:-1]) for k in rows[0] if k.startswith("c") and k.endswith("h")})
         moving = [r for r in rows if r["skip"] == "0" and (float(r["vx"]) ** 2 + float(r["vy"]) ** 2) ** .5 > 60]
         speed = sum((float(r["vx"]) ** 2 + float(r["vy"]) ** 2) ** .5 for r in moving) / max(1, len(moving))
-        slide, _ = stance_drift(moving, contacts, 180.0) if moving else (None, 0)
+        slide, _ = stance_drift(moving, contacts, 180.0, True) if moving else (None, 0)
         out[path.stem] = {"frames": len(rows), "yawSnaps": snaps, "yawAccP99": round(pct(yaw_acc, .99)), "meshAccP99": round(pct(mesh_acc, .99)),
                           "meshAccMax": round(max(mesh_acc, default=0)), "footSlideRatio": round(slide / speed, 3) if slide and speed > 40 else None}
     return out

@@ -394,10 +394,18 @@ bool CireLocomotion::RunTests()
         float MaxStep = 0.f, Previous = T.Yaw;
         T.Update(-90.f, -90.f, Here, 0.f, Dt, 70.f);
         Check(FMath::Abs(FMath::FindDeltaAngleDegrees(T.Yaw, 90.f)) < 16.f, TEXT("snapped facing does not show in one frame"));
-        for (int32 I = 0; I < 60; ++I) { Previous = T.Yaw; T.Update(-90.f, -90.f, Here, 0.f, Dt, 70.f); MaxStep = FMath::Max(MaxStep, FMath::Abs(FMath::FindDeltaAngleDegrees(Previous, T.Yaw))); }
+        // The step cycle is one full leg cycle per 180 degrees, so a complete half turn wraps the phase back to ~0:
+        // check the legs stepped during the turn, not where the phase ended.
+        float MaxPhase = T.StepPhase, MaxWeight = T.StepWeight;
+        for (int32 I = 0; I < 60; ++I)
+        {
+            Previous = T.Yaw; T.Update(-90.f, -90.f, Here, 0.f, Dt, 70.f);
+            MaxStep = FMath::Max(MaxStep, FMath::Abs(FMath::FindDeltaAngleDegrees(Previous, T.Yaw)));
+            MaxPhase = FMath::Max(MaxPhase, T.StepPhase); MaxWeight = FMath::Max(MaxWeight, T.StepWeight);
+        }
         Check(FMath::Abs(T.Offset) < 1.5f, TEXT("standing turn settles on the facing within a second"));
         Check(MaxStep < 16.f, TEXT("standing turn has no single-frame snap"));
-        Check(T.StepPhase > 0.f, TEXT("standing turn steps the legs"));
+        Check(MaxPhase > .25f && MaxWeight > .5f, TEXT("standing turn steps the legs"));
     }
     // Travelling: a 90 degree heading change is followed smoothly and fully.
     {
