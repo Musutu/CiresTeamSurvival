@@ -32,7 +32,39 @@ void ACireHUD::PlayUIFeedback()
 void ACireHUD::Tip(const FString& Title,const FString& Body,float X,float Y,float W,float H)
 {
     if(bSettings && Hit(X,Y,W,H)) CireAudio::NoteHover(this,X,Y); // audio: hover tick on Options controls
-    if(UISettings.bTooltips && Hit(X,Y,W,H)) { TooltipTitle=Title; TooltipBody=Body; TooltipRegion={float(Origin.X+X*Stretch.X),float(Origin.Y+Y*Stretch.Y),float(W*Stretch.X),float(H*Stretch.Y)}; }
+    if(UISettings.bTooltips && Hit(X,Y,W,H)) { TooltipTitle=Title; TooltipBody=Body; bRichTip=false; TooltipRegion={float(Origin.X+X*Stretch.X),float(Origin.Y+Y*Stretch.Y),float(W*Stretch.X),float(H*Stretch.Y)}; }
+}
+void ACireHUD::RichTip(const FCireTooltipSpec& Spec,float X,float Y,float W,float H)
+{
+    if(bSettings && Hit(X,Y,W,H)) CireAudio::NoteHover(this,X,Y);
+    if(UISettings.bTooltips && Hit(X,Y,W,H)) { SetRichTooltip(Spec); TooltipRegion={float(Origin.X+X*Stretch.X),float(Origin.Y+Y*Stretch.Y),float(W*Stretch.X),float(H*Stretch.Y)}; }
+}
+// readability: every tooltip (controls, items, buffs, abilities, units) is a rich WoW-style card, sized by
+// the player's tooltip scale on a larger base (the default 80% now reads like the old 125%).
+void ACireHUD::DrawRichTooltip(const FCireTooltipSpec& Spec,FVector2D Cursor,float Width,bool bUseRegion)
+{
+    const float S=FMath::Clamp(UISettings.TooltipScale,.6f,1.4f)*1.25f;
+    const float W=FMath::Clamp(Width,160.f,FMath::Max(160.f,ViewW-8));
+    int32 Lines=0;
+    // WoW anchor: the card grows up from the anchor corner, so it may use the height above that corner.
+    const FCireUIRect Anchor=UISettings.GetRect(TEXT("Tooltip"),FVector2D(ViewW,ViewH));
+    const float MaxH=UISettings.TooltipMode==3?FMath::Max(200.f,Anchor.Y+Anchor.H-4):ViewH-8;
+    const float H=CireUIStyle::RichTooltip(Painter(),0,0,W,Spec,S,UISettings.TooltipOpacity,false,MaxH,&Lines);
+    FCireUIRect Box=PlaceTooltip(W,H,Cursor);
+    // Large hover targets (cards, big buttons): below (else above) the hovered region so the tooltip never
+    // covers the card itself or its neighbours.
+    if(bUseRegion&&TooltipRegion.W*TooltipRegion.H>=150.f*150.f)
+    {
+        const float TX=FMath::Clamp(TooltipRegion.X,4.f,FMath::Max(4.f,ViewW-W-4));
+        if(TooltipRegion.Y+TooltipRegion.H+6+H<=ViewH-4)Box={TX,TooltipRegion.Y+TooltipRegion.H+6,W,H};
+        else if(TooltipRegion.Y-6-H>=4)Box={TX,TooltipRegion.Y-6-H,W,H};
+        else {TooltipHoverKey.Reset();return;} // the card already shows its full text
+    }
+    ResetTransform();
+    CireUIStyle::RichTooltip(Painter(),Box.X,Box.Y,W,Spec,S,UISettings.TooltipOpacity,true,MaxH);
+#if !UE_BUILD_SHIPPING
+    LastTooltipRect=Box;LastTooltipBodyLines=Lines;LastTooltipBodyFontSize=11.f*S;LastTooltipTitle=Spec.Title;
+#endif
 }
 #if !UE_BUILD_SHIPPING
 void ACireHUD::DebugTooltip(const FString& Title,const FString& Body,FVector2D Cursor)
@@ -71,64 +103,15 @@ void ACireHUD::DrawTooltip()
     ResetTransform();
     if(bAbility){DrawAbilityTooltip(TooltipAbility,Cursor);return;}
     if(Unit){DrawUnitTooltip(Unit,Cursor);return;}
-    const float Size=FMath::Clamp(UISettings.TooltipScale,.6f,1.4f);
-    const float Padding=12*Size,TitleFont=15*Size,BodyFont=11*Size,Gap=6*Size;
-    float W=340*Size;
+    // readability: plain title/body tooltips become rich cards too (stat lines, section headers, dividers).
+    const float Size=FMath::Clamp(UISettings.TooltipScale,.6f,1.4f)*1.25f;
+    float W=300*Size;
     if(UISettings.TooltipMode==1||UISettings.TooltipMode==3)
     {
-        const auto R=UISettings.GetRect(TEXT("Tooltip"),FVector2D(ViewW,ViewH));W=R.W*Size;
+        const auto R=UISettings.GetRect(TEXT("Tooltip"),FVector2D(ViewW,ViewH));W=FMath::Max(R.W,280.f)*Size;
     }
-    W=FMath::Clamp(W,100.f,FMath::Max(100.f,ViewW-8));
-    const auto WrapLines=[&](const FString& Text,float Font,ECireFont Face)
-    {
-        TArray<FString> Lines,Paragraphs;Text.ParseIntoArrayLines(Paragraphs,false);
-        for(const FString& Paragraph:Paragraphs)
-        {
-            TArray<FString> Words;Paragraph.ParseIntoArrayWS(Words);FString Row;
-            for(const FString& Word:Words)
-            {
-                if(TextWidthFont(Word,Font,Face)>W-2*Padding)
-                {
-                    if(!Row.IsEmpty()){Lines.Add(Row);Row.Reset();}
-                    for(int32 I=0;I<Word.Len();++I)
-                    {
-                        const FString Next=Row+Word.Mid(I,1);
-                        if(!Row.IsEmpty()&&TextWidthFont(Next,Font,Face)>W-2*Padding){Lines.Add(Row);Row=Word.Mid(I,1);}else Row=Next;
-                    }
-                    continue;
-                }
-                const FString Next=Row.IsEmpty()?Word:Row+TEXT(" ")+Word;
-                if(!Row.IsEmpty()&&TextWidthFont(Next,Font,Face)>W-2*Padding){Lines.Add(Row);Row=Word;}else Row=Next;
-            }
-            if(!Row.IsEmpty())Lines.Add(Row);
-        }
-        return Lines;
-    };
-    NextFont=ECireFont::Bold;
-    const TArray<FString> TitleLines=WrapLines(TooltipTitle,TitleFont,ECireFont::Bold);
-    TArray<FString> BodyLines=WrapLines(TooltipBody,BodyFont,ECireFont::Body);
-    const float TitleHeight=TitleLines.Num()*(TitleFont+4*Size),BodyStep=BodyFont+4*Size;
-    const int32 MaxBodyLines=FMath::Max(1,FMath::FloorToInt((ViewH-8-2*Padding-TitleHeight-Gap)/BodyStep));
-    if(BodyLines.Num()>MaxBodyLines){BodyLines.SetNum(MaxBodyLines);BodyLines.Last()=BodyLines.Last().LeftChop(3)+TEXT("...");}
-    const float H=2*Padding+TitleHeight+(BodyLines.IsEmpty()?0:Gap+BodyLines.Num()*BodyStep);
-    FCireUIRect Box=PlaceTooltip(W,H,Cursor);
-    // Large hover targets (cards, big buttons): put the tooltip below (else above) the hovered
-    // region so it never covers the card itself or its neighbours in the row.
-    if(TooltipRegion.W*TooltipRegion.H>=150.f*150.f&&!bDebug)
-    {
-        const float TX=FMath::Clamp(TooltipRegion.X,4.f,FMath::Max(4.f,ViewW-W-4));
-        if(TooltipRegion.Y+TooltipRegion.H+6+H<=ViewH-4)Box={TX,TooltipRegion.Y+TooltipRegion.H+6,W,H};
-        else if(TooltipRegion.Y-6-H>=4)Box={TX,TooltipRegion.Y-6-H,W,H};
-        else {TooltipHoverKey.Reset();return;} // the card already shows its full text
-    }
-    const float X=Box.X,Y=Box.Y;
-    TooltipBox(X,Y,W,H,FLinearColor(.55f,.58f,.64f,1));
-    for(int32 I=0;I<TitleLines.Num();++I){NextFont=ECireFont::Bold;Label(TitleLines[I],X+Padding,Y+Padding+I*(TitleFont+4*Size),TitleFont,FLinearColor(1.f,.86f,.3f,1));}
-    for(int32 I=0;I<BodyLines.Num();++I){NextFont=ECireFont::Body;Label(BodyLines[I],X+Padding,Y+Padding+TitleHeight+Gap+I*BodyStep,BodyFont,FLinearColor(.86f,.87f,.84f,1));}
-    NextFont=ECireFont::Auto;
-#if !UE_BUILD_SHIPPING
-    LastTooltipRect={X,Y,W,H};LastTooltipBodyLines=BodyLines.Num();LastTooltipBodyFontSize=BodyFont;LastTooltipTitle=TooltipTitle;
-#endif
+    const bool bRich=bRichTip&&RichTipSpec.Title==TooltipTitle;
+    DrawRichTooltip(bRich?RichTipSpec:CireUIStyle::TooltipFromText(TooltipTitle,TooltipBody),Cursor,W,!bDebug);
 }
 void ACireHUD::RevertVideoPreview()
 {
@@ -156,10 +139,11 @@ void ACireHUD::DrawSettings()
     Frame(X,Y,840,590,Gold);Label(TEXT("OPTIONS"),X+23,Y+17,24,Parchment);
     Label(TEXT("CIRE'S TEAM SURVIVAL"),X+188,Y+23,12,Gold);
     if(OptionsTab!=0)Label(TEXT("Local preferences save automatically. Video changes apply instantly and need confirmation."),L,Y+53,11,Muted);
-    auto Button=[&](const FString& Caption,float BX,float BY,float BW,const FString& Help=FString()) {
-        const bool Over=Hit(BX,BY,BW,27);
-        CireUIStyle::Button(Painter(),BX,BY,BW,27,Caption,Over?(PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton)?ECireButtonState::Pressed:ECireButtonState::Hover):ECireButtonState::Normal,Gold,10.5f);
-        Tip(Caption,Help.IsEmpty()?Caption:Help,BX,BY,BW,27);
+    // readability: 30-unit buttons with a readable face; the current tab / page uses the Selected state.
+    auto Button=[&](const FString& Caption,float BX,float BY,float BW,const FString& Help=FString(),bool bSelected=false,float BH=30.f) {
+        const bool Over=Hit(BX,BY,BW,BH);
+        CireUIStyle::Button(Painter(),BX,BY,BW,BH,Caption,Over?(PlayerOwner->IsInputKeyDown(EKeys::LeftMouseButton)?ECireButtonState::Pressed:ECireButtonState::Hover):bSelected?ECireButtonState::Selected:ECireButtonState::Normal,Gold,11.f);
+        Tip(Caption,Help.IsEmpty()?Caption:Help,BX,BY,BW,BH);
         if(Over&&Clicked){Clicked=false;PlayUIFeedback();return true;}return false;
     };
     auto Toggle=[&](const FString& Caption,bool& Value,float BX,float BY,const FString& Help) {
@@ -173,7 +157,7 @@ void ACireHUD::DrawSettings()
     };
     auto Slider=[&](const FString& Caption,float& Value,float Min,float Max,float Step,float BX,float BY,const FString& Help,bool Enabled=true,bool SaveChange=true) {
         Label(Caption,BX,BY,11,Enabled?Parchment:Muted);
-        Label(FString::Printf(TEXT("%.2f"),Value),BX+235,BY,10,Gold);
+        {const FString V=FString::Printf(TEXT("%.2f"),Value);TextFx(V,BX+286-TextWidthFont(V,11,ECireFont::Numbers),BY,11,Gold,ECireFont::Numbers,true,true);}
         const float Knob=FMath::Clamp((Value-Min)/(Max-Min),0.f,1.f);
         CireUIStyle::Slider(Painter(),BX,BY+22,286,Knob,Enabled,Hit(BX,BY+12,290,27));
         Tip(Caption,Help,BX,BY,290,37);
@@ -188,14 +172,13 @@ void ACireHUD::DrawSettings()
     if(!DeveloperAvailable&&OptionsTab==5)OptionsTab=4;
     for(int32 I=0;I<(DeveloperAvailable?6:5);++I)
     {
-        if(OptionsTab==I)Panel(X+10,Y+84+I*45,154,34,Hover);
-        if(Button(Tabs[I],X+18,Y+88+I*45,138))OptionsTab=I;
+        if(Button(Tabs[I],X+14,Y+84+I*46,146,FString(),OptionsTab==I,36.f))OptionsTab=I;
     }
     Line(X+168,Y+77,X+168,Y+531,Gold*.35f);
     if(OptionsTab==0)
     {
         const TCHAR* ControlPages[]={TEXT("Camera"),TEXT("Keybindings")};
-        for(int32 I=0;I<2;++I){if(ControlsPage==I)Panel(L+I*155,Top-40,146,27,Hover);if(Button(ControlPages[I],L+I*155,Top-40,146))ControlsPage=I;}
+        for(int32 I=0;I<2;++I){if(Button(ControlPages[I],L+I*155,Top-42,146,FString(),ControlsPage==I))ControlsPage=I;}
         if(ControlsPage==0)
         {
             Label(TEXT("CAMERA / LEFT DRAG ORBIT, RIGHT DRAG STEER"),L,Top+4,12,Gold);
@@ -222,7 +205,7 @@ void ACireHUD::DrawSettings()
     {
         // ui-themes: a fifth page for the UI theme (5 page buttons now share the row).
         const TCHAR* Pages[]={TEXT("Combat text"),TEXT("Tooltips"),TEXT("Status / chat"),TEXT("Scale / threat"),TEXT("UI theme")};
-        for(int32 I=0;I<5;++I){if(InterfacePage==I)Panel(L+I*126,Top,120,27,Hover);if(Button(Pages[I],L+I*126,Top,120))InterfacePage=I;}
+        for(int32 I=0;I<5;++I){if(Button(Pages[I],L+I*126,Top-2,122,FString(),InterfacePage==I))InterfacePage=I;}
         const float B=Top+48;
         if(InterfacePage==0)
         {
@@ -430,10 +413,10 @@ void ACireHUD::DrawThemePicker(float L,float B)
             CireUIStyle::IconSlot(P,CX+14+K*(S+8),SY,S,Slot,Now);
         }
         // Cast bar and a tooltip sample.
-        CireUIStyle::CastBar(P,CX+20,SY+S+14,CW-40,12,.6f,CireUIColors::Cast,TEXT("Restoring Light"),TEXT("0.7"),8.f);
-        CireUIStyle::Tooltip(P,CX+14,SY+S+38,CW-28,TEXT("Shield Slam"),TEXT("Melee strike that slows and draws attention."),.78f,.94f);
+        CireUIStyle::CastBar(P,CX+20,SY+S+10,CW-40,13,.6f,CireUIColors::Cast,TEXT("Restoring Light"),TEXT("0.7"),8.f);
+        CireUIStyle::Tooltip(P,CX+14,SY+S+32,CW-28,TEXT("Shield Slam"),TEXT("Melee strike that slows and draws attention."),.78f,.94f);
         const FString State=bSelected?TEXT("ACTIVE"):TEXT("SELECT");
-        CireUIStyle::Button(P,CX+24,CY+CH-34,CW-48,24,State,bSelected?ECireButtonState::Selected:bOver?ECireButtonState::Hover:ECireButtonState::Normal,CireUIColors::ThemeAccent,10.f);
+        CireUIStyle::Button(P,CX+20,CY+CH-32,CW-40,26,State,bSelected?ECireButtonState::Selected:bOver?ECireButtonState::Hover:ECireButtonState::Normal,CireUIColors::ThemeAccent,10.f);
         if(bOver&&Clicked){Clicked=false;Picked=T.Id;}
         Tip(T.Name,T.Tagline+TEXT(" Click to use this theme; it is saved in your profile."),CX,CY,CW,CH);
     }

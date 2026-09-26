@@ -129,9 +129,9 @@ stat from items gives the same health, mana, attack speed and primary damage as 
 
 | Stat key | Effect | Where applied |
 |---|---|---|
-| primaryStat | adaptive: added to STR, AGI or INT, whichever is the owner's primary (25 HP / 1% AS / 30 mana per point; +1 primary damage) | `CireItems::AddAttributes` |
+| primaryStat | adaptive: added to STR, AGI or INT, whichever is the owner's primary (STR: 10 HP + 0.1 armor + 0.1 ward / AGI: 1% AS / INT: 30 mana per point; +1 primary damage) | `CireItems::AddAttributes` |
 | health, mana | flat maximum | `CireItems::ApplyDerived` |
-| armor / ward | flat; mitigation `x / (x + 100)`, max 75%; armor vs basic attacks, ward vs abilities | `CireItems::ModifyIncomingDamage` |
+| armor / ward | flat, plus 0.1 of each per STR point; mitigation `x / (x + 100)`, max 75%; armor vs basic attacks, ward vs abilities | `CireItems::ModifyIncomingDamage` |
 | moveSpeed *(boots only)* | % move speed (client-predicted from the replicated bag and buffs) | `ACireHero::Tick` |
 | damageReduction *(legendary only)* | % of every hit after armor/ward, capped at 40% | `Cires::Items::ApplyItemMitigation` |
 | damageBlock *(legendary only)* | flat reduction of every hit after the %, never below 25% of the hit | same |

@@ -27,6 +27,17 @@ struct StatBlock
     int Intelligence = 10;
 };
 
+// Strength scaling (Eric's ruling, 25 September 2026): each STR point gives 10 maximum
+// health (it was 25) plus 0.1 armor and 0.1 spell ward. Level-1 health is kept: every
+// champion gets a flat base of (25 - 10) x its authored starting STR, so only the
+// per-point growth changed. See Docs/Progression.md "Strength scaling".
+constexpr double HealthPerStrength = 10.0;
+constexpr double ArmorPerStrength = 0.1;
+constexpr double WardPerStrength = 0.1;
+constexpr double LegacyHealthPerStrength = 25.0;
+// Flat base health that preserves the old level-1 health for a champion drafted with this STR.
+double StartingBaseHealth(int startingStrength);
+
 struct CombatTuning
 {
     double WeaponDamage = 10.0;
@@ -41,6 +52,8 @@ struct DerivedStats
     double MaxHealth = 0.0;
     double MaxMana = 0.0;
     double MaxEnergy = 0.0;
+    double Armor = 0.0;   // from STR only; items and auras add on top in the damage path
+    double Ward = 0.0;
     double AttackSpeedMultiplier = 1.0;
     double BasicAttackDamage = 0.0;
     double CooldownMultiplier = 1.0;
@@ -57,6 +70,13 @@ struct SkillDefinition
     SkillKind Kind = SkillKind::Active;
 };
 
+// How a champion gains learned skills. Draft (Classic Draft mode): one offer per level
+// breakpoint (1, 3, 6 ... 21), so the learned count is tied to the level. Shop (Skill Shop
+// mode, the default): the opening skill is a free offer, later skills are bought between
+// waves in any order, so the learned count is independent of level and NextAugmentLevel.
+// Levels always grow stats in both modes.
+enum class SkillSchedule : std::uint8_t { Draft, Shop };
+
 struct Progression
 {
     int Level = 1;
@@ -66,7 +86,12 @@ struct Progression
     // from every skill tagged with the primary role or any secondary role.
     RoleMask SecondaryRoles = RoleNone;
     StatBlock Stats;
+    // Flat health on top of STR x HealthPerStrength, set once at draft from the
+    // starting STR (StartingBaseHealth); level growth never changes it.
+    double BaseHealth = 0.0;
+    SkillSchedule Schedule = SkillSchedule::Draft;
     // Every champion starts with one skill point: the opening choice is due at level 1.
+    // Draft schedule only: Shop champions keep it at the opening value it had when they bought.
     int NextAugmentLevel = 1;
     std::vector<SkillDefinition> LearnedSkills;
 };
@@ -87,7 +112,11 @@ bool GainLevels(Progression& progression, int count = 1);
 bool HasPassive(const Progression& progression);
 bool HasUltimate(const Progression& progression);
 int CountSkills(const Progression& progression, SkillKind kind);
+// Draft: a level breakpoint is unclaimed. Shop: only the free opening pick (no skills yet).
 bool HasPendingAugment(const Progression& progression);
+// Skill Shop purchase: validates the progression, the category capacity and uniqueness, then
+// appends the skill without touching the level schedule. Draft progressions are refused.
+bool AddPurchasedSkill(Progression& progression, const SkillDefinition& skill);
 
 struct AugmentOffer
 {

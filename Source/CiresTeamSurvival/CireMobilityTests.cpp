@@ -1,5 +1,6 @@
 #include "CireMobility.h"
 #include "CireClassTraits.h" // champion-draft: class-trait-aware expectations
+#include "CireItems.h" // str-scaling: STR armor/ward in expected damage
 #include "CireGame.h"
 #include "CireCrowdControl.h"
 #include "CireAbilityDB.h"
@@ -101,7 +102,7 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
     Check(Mobility->IsRolling()&&!Mobility->IsInvulnerable()&&!Hero->CanJump(),TEXT("windup is vulnerable and roll blocks jumping"));
     const float EnergyAfter=Hero->Energy;
     Check(!Mobility->StartRoll(FVector::RightVector)&&Hero->Energy==EnergyAfter,TEXT("repeat roll cannot bypass active roll or double-charge"));
-    Check(CireCombat::ApplyDamage(Enemy,Hero,50,TEXT("Windup hit"))==CireClassTraits::ModifyIncomingDamage(Hero,50),TEXT("real combat damage applies during vulnerable windup"));
+    Check(CireCombat::ApplyDamage(Enemy,Hero,50,TEXT("Windup hit"))==CireClassTraits::ModifyIncomingDamage(Hero,CireItems::AfterStrengthDefense(Hero,50,false)),TEXT("real combat damage applies during vulnerable windup"));
     auto SetAge=[&](float Age)
     {
         Mobility->RollStartedAt=Mobility->Now()-Age;
@@ -112,7 +113,7 @@ bool CireMovement::RunSmoke(ACireGameMode* Mode)
     Check(Mobility->IsInvulnerable()&&CireCombat::ApplyDamage(Enemy,Hero,50,TEXT("Dodge window"))==0&&Hero->Health==Before,
         TEXT("actual damage pipeline rejects hit only inside dodge window"));
     SetAge(V.InvulnerableEnd+.03f);
-    Check(!Mobility->IsInvulnerable()&&CireCombat::ApplyDamage(Enemy,Hero,50,TEXT("Recovery hit"))==CireClassTraits::ModifyIncomingDamage(Hero,50),
+    Check(!Mobility->IsInvulnerable()&&CireCombat::ApplyDamage(Enemy,Hero,50,TEXT("Recovery hit"))==CireClassTraits::ModifyIncomingDamage(Hero,CireItems::AfterStrengthDefense(Hero,50,false)),
         TEXT("recovery remains vulnerable while roll continues"));
     Mobility->CancelRoll();
     Check(!Mobility->IsRolling()&&!Mobility->IsInvulnerable()&&Mobility->CooldownRemaining()>0&&

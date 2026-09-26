@@ -180,7 +180,9 @@ bool CireItems::RunV2Smoke(ACireGameMode* Mode)
     Check(FMath::IsNearlyEqual(Primary(Tank), TankBefore + 5) && Tank->PrimaryStat() == Cires::PrimaryStat::Strength, TEXT("+5 primary stat becomes STR for a strength champion"));
     Check(FMath::IsNearlyEqual(Primary(Mage), MageBefore + 5) && Mage->Intelligence == TankInt + 5 && Mage->PrimaryStat() == Cires::PrimaryStat::Intelligence, TEXT("+5 primary stat becomes INT for an intelligence champion"));
     Give(Tank, {TEXT("gravewarden_bulwark"), TEXT("stoneheart")});
-    const float Armor = static_cast<float>(Tank->Inventory->Totals().Stats.Get(CI::ItemStat::Armor)) * CireKits::DefenseMultiplier(Tank); // scaling-kits: shield tanks -10% armour
+    // scaling-kits: shield tanks -10% armour; str-scaling: STR adds 0.1 armor per point.
+    Check(FMath::IsNearlyEqual(CireItems::StrengthDefense(Tank, true), Tank->Strength * .1f) && FMath::IsNearlyEqual(CireItems::StrengthDefense(Tank, false), Tank->Strength * .1f), TEXT("STR grants 0.1 armor and 0.1 ward per point"));
+    const float Armor = (static_cast<float>(Tank->Inventory->Totals().Stats.Get(CI::ItemStat::Armor)) + CireItems::StrengthDefense(Tank, true)) * CireKits::DefenseMultiplier(Tank);
     const float Expected = static_cast<float>(CI::ApplyItemMitigation(100. * (1. - CI::Mitigation(Armor)), 6, 12));
     Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Tank, Mob, TEXT("Monster attack"), 100.f), Expected, .05f), TEXT("completed-item mitigation: 6% reduction and a 12 block per hit"));
 

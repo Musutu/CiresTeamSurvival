@@ -66,6 +66,9 @@ namespace CireSkillShop
     // Server: switch before the first wave (host / standalone). Returns false when not allowed.
     CIRESTEAMSURVIVAL_API bool SetMode(ACireGameMode* Mode, bool bSkillShop, FString* Why = nullptr);
     CIRESTEAMSURVIVAL_API FString ModeName(bool bSkillShop);
+    // Server: match the hero's native skill schedule to the mode (Cires::SkillSchedule). Shop skills
+    // never block level-ups; switching back to Classic re-derives the next breakpoint.
+    CIRESTEAMSURVIVAL_API void SyncSchedule(ACireHero* Hero);
     // Ready gate banner: "WAITING FOR 1 PLAYER" / "WAITING FOR 2 PLAYERS  ·  3 / 5 READY".
     CIRESTEAMSURVIVAL_API FString WaitingLabel(int32 Humans, int32 Ready);
 

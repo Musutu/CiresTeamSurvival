@@ -120,3 +120,21 @@ The kit is skinnable: `Docs/UIThemes.md`. The palette's themed block (`Gold`, `P
 `Ink`, `Card`, `Hover`, ...) is written by `CireUITheme::SetActive`; the painters draw the active
 theme's atlas pieces (nine-slice frames, slots, rings, bars, banners). New themed calls: `CastBar`,
 `PortraitRing`, `Medallion`, `MinimapFrame`, `Divider`, `Ornament`, `BarFrame`, `HasThemeArt`.
+
+## Readability (feat/ui-readability, Eric's 2026-09-25 playtest)
+
+- **Text size**: every canvas text size goes through `CireUIStyle::ReadableSize` (design size x1.15,
+  floor 8.5 units, about 12.75 px at 1080p / 100%). `Painter::Text`, `TextWidth`, `Fit` and `Wrapped`
+  apply it, so measurement always matches drawing. Layouts that step lines use `ReadableSize(Size)`.
+  The Options UI-scale slider still multiplies everything.
+- **Buttons**: `CireUIStyle::Button` draws a dark readable face over the whole button and the theme's
+  painted button piece only as a thin rim (corner cell about 1.2 x `clamp(H*.2, 3.5, 7)`). The label is
+  centred in the face, outlined and shadowed, at least 10 design units, shrinks to fit narrow buttons,
+  and uses the numbers face for keys, bold for mixed case and the heading face for caps.
+- **Tooltips**: `FCireTooltipSpec` + `CireUIStyle::RichTooltip`: icon or portrait, name in its
+  rarity / school / reaction colour, a tag, a type line, ornamental dividers, section headers, symbol
+  stat lines (green gains, red losses) and a footer. Abilities (scaling math and effects), items
+  (`CireShopUI::ItemTooltipSpec`), buffs, units and plain tips (`TooltipFromText`) all use it.
+- **Armory**: bevelled rarity cards (`CireUIStyle::BevelCard`), icon tabs for categories and stat
+  filters, a recommended-by-role row, the recipe tree panel and a buy / sell / error feedback strip. The
+  ALL ITEMS card size is solved so every tier fits above the bag strip.
