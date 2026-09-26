@@ -25,9 +25,9 @@ def parse(text):
     for line in text.splitlines():
         if m := re.search(r'CIRE_WAVE_SOAK_SPAWN wave=(\d+) type=(\S+) round=(\d+) t=([\d.]+)', line):
             events.append(('spawn', float(m[4]), int(m[1]), int(m[3]), m[2]))
-        elif m := re.search(r'CIRE_WAVE_SOAK_CLEAR wave=(\d+) took=([\d.]+) lives=(\d+)/(\d+)(?: deaths=(\d+))?', line):
+        elif m := re.search(r'CIRE_WAVE_SOAK_CLEAR wave=(\d+) took=([\d.]+) lives=(\d+)/(\d+)(?: deaths=(\d+))?(?: level=([\d.]+) max_health=(\d+))?', line):
             events.append(('clear', None, int(m[1]), float(m[2]), (int(m[3]), int(m[4]))))
-            if m[5] is not None: wave_deaths.append((int(m[1]), float(m[2]), int(m[5]), int(m[3]), int(m[4])))
+            if m[5] is not None: wave_deaths.append((int(m[1]), float(m[2]), int(m[5]), int(m[3]), int(m[4]), float(m[6] or 0), float(m[7] or 0)))
         elif m := re.search(r'CIRE_WAVE_SOAK_PHASE (\d+)->(\d+) round=(\d+) t=([\d.]+) waited=([\d.]+)', line):
             events.append(('phase', float(m[4]), int(m[1]), int(m[2]), float(m[5]), int(m[3])))
     waves, breathers, phase_time, cycles = [], [], {}, []
@@ -63,7 +63,7 @@ def parse(text):
                 lives=[int(v) for v in lives[-1]] if lives else None,
                 levels=[(float(a), float(b)) for a, b in levels],
                 heroDeaths=int(deaths[-1]) if deaths else None,
-                waveDeaths=[dict(wave=w, seconds=s, deaths=d, lives=[e, k]) for w, s, d, e, k in wave_deaths])
+                waveDeaths=[dict(wave=w, seconds=s, deaths=d, lives=[e, k], level=lv, maxHealth=hp) for w, s, d, e, k, lv, hp in wave_deaths])
 
 
 def report(result):
@@ -79,6 +79,7 @@ def report(result):
         lines.append(f"cycle {i}: " + ', '.join(f"{k}={v/60:.2f}m" for k, v in c.items()))
     lines.append(f"match={result['matchSeconds'] and result['matchSeconds']/60:.1f} min verdict={result['verdict']} lives={result['lives']}")
     if result.get('waveDeaths'):
+        lines.append('champion level / max health at each clear: ' + ', '.join(f"w{d['wave']}:L{d['level']:.1f}/{d['maxHealth']:.0f}" for d in result['waveDeaths']))
         lines.append('champion deaths per wave: ' + ', '.join(f"w{d['wave']}:{d['deaths']}" for d in result['waveDeaths']) + f" (total {result['heroDeaths']})")
     if result['levels']: lines.append('levels: ' + ', '.join(f"L{l:.0f}@{t:.0f}s" for l, t in result['levels'][:12]))
     return '\n'.join(lines)

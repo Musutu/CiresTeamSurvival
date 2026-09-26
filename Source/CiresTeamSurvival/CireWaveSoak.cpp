@@ -6,6 +6,7 @@
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireLoot.h"
+#include "CireSummon.h"
 #include "CireMonsterArt.h"
 #include "CireNPCState.h"
 #include "Engine/World.h"
@@ -157,7 +158,7 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
         Soak.LastPhase = S->Phase; Soak.PhaseEnteredAt = Now;
     }
     for (auto* H : Mode->Heroes)
-        if (IsValid(H) && H->bDrafted)
+        if (IsValid(H) && H->bDrafted && !H->IsA<ACireSummon>()) // champions only: summons and pets die by design
         {
             bool& bWas = Soak.WasDead.FindOrAdd(H, H->bDead);
             if (H->bDead && !bWas && S->Phase == 0) ++Soak.HeroDeaths; // wave (survival) deaths only, not arena PvP
@@ -177,14 +178,17 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
         {
             ++Soak.WavesCleared;
             Soak.LongestWave = FMath::Max(Soak.LongestWave, Now - Soak.WaveSpawnedAt);
-            Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_CLEAR wave=%d took=%.1f lives=%d/%d deaths=%d"), S->Wave, Now - Soak.WaveSpawnedAt, S->EmberLives, S->DuskLives, Soak.HeroDeaths - Soak.DeathsAtWaveSpawn));
+            float LevelSum = 0, HealthSum = 0; int32 Champions = 0;
+            for (auto* H : Mode->Heroes) if (IsValid(H) && H->bDrafted && !H->IsA<ACireSummon>()) { LevelSum += H->Level; HealthSum += H->MaxHealth; ++Champions; }
+            Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_CLEAR wave=%d took=%.1f lives=%d/%d deaths=%d level=%.1f max_health=%.0f"), S->Wave, Now - Soak.WaveSpawnedAt, S->EmberLives, S->DuskLives,
+                Soak.HeroDeaths - Soak.DeathsAtWaveSpawn, Champions ? LevelSum / Champions : 0.f, Champions ? HealthSum / Champions : 0.f));
         }
         Soak.LastCleared = S->CycleWavesDone;
     }
     // Pacing evidence: every time the mean hero level rises a whole level, and each full cycle's length.
     {
         float Sum = 0; int32 N = 0;
-        for (auto* H : Mode->Heroes) if (IsValid(H) && H->bDrafted) { Sum += H->Level; ++N; }
+        for (auto* H : Mode->Heroes) if (IsValid(H) && H->bDrafted && !H->IsA<ACireSummon>()) { Sum += H->Level; ++N; }
         const float Mean = N ? Sum / N : 1.f;
         if (FMath::FloorToFloat(Mean) > FMath::FloorToFloat(Soak.MeanLevelSeen))
             Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_LEVEL mean=%.2f t=%.1f wave=%d"), Mean, Now, S->Wave));
