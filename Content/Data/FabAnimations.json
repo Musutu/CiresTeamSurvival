@@ -1718,6 +1718,10 @@
     "/Game/Polyphoria/Polyphoria/CharacterParts_HeavyArmour/Meshes/UE5/Male/UpperBody/SK_ma_pala_combine_a.SK_ma_pala_combine_a": "PolyPaladin"
   },
   "locomotionOverride": {
-    "TripoAetheriWarden": "/Game/FabDerived/Warden/Warden_Spear/BS_Fab_Locomotion_Warden_Spear"
+    "TripoAetheriArtificer": "/Game/FabDerived/BodyLoco/Artificer_Loco/BS_Fab_Locomotion_Artificer_Loco",
+    "TripoAetheriWarden": "/Game/FabDerived/Warden/Warden_Spear/BS_Fab_Locomotion_Warden_Spear",
+    "TripoGunblade": "/Game/FabDerived/BodyLoco/Gunblade_Loco/BS_Fab_Locomotion_Gunblade_Loco",
+    "TripoHuntress": "/Game/FabDerived/BodyLoco/Huntress_Loco/BS_Fab_Locomotion_Huntress_Loco",
+    "TripoWitchSlayer": "/Game/FabDerived/BodyLoco/WitchSlayer_Loco/BS_Fab_Locomotion_WitchSlayer_Loco"
   }
 }

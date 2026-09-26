@@ -120,7 +120,10 @@ files have the same SHA-1 and mtime before and after.
 * It clones the Spear set's idle and 8-way walk/run onto `TripoAetheriWarden`
   (`/Game/FabDerived/Warden/Warden_Spear/A_Warden_Spear_loco_*`).
 * It builds `BS_Fab_Locomotion_Warden_Spear` on the lancer's proven BlendSpace, retargeted onto the Warden
-  (`_template`, the paladin-hq `make_template` route).
+  (the paladin-hq `make_template` route). That retarget carries the lancer's sample grid but none of its clips, so
+  the `_template` scaffold has 27 empty samples. The tool deletes it once the real BlendSpace is built, and deletes a
+  scaffold left by an older run as files before anything loads it. An empty-sample BlendSpace on disk fails to load
+  ("sample with no/invalid animation"), which made a second run of the tool exit 1.
 * `FabAnimations.json` `locomotionOverride` points only that body folder at the clone (`CireFabAnimation::Locomotion`).
 * Like all of FabDerived it is derived from the Fab packs, so it stays local (gitignored). The main checkout needs one
   run of the tool.
@@ -134,6 +137,25 @@ Second hand from its grip target (`RunGripGallery.py --only aetheri_warden --hq-
 | Attacks (hand released by design) | 17.7 / 26.6 cm | 17.7 / 26.7 cm |
 
 Captures: `Saved/GripGallery/20260926-092053-after`.
+
+**The other frozen Tripo fallback bodies.** Every new-champions body (`/Game/Tripo/Champions/<Name>`) had the same
+frozen BlendSpace. I diffed idle against run in the `--hq-off` gallery (pixels changed by more than 24 of 255, at
+1920x1080):
+
+| Body | Before | After |
+| --- | --- | --- |
+| Gunblade | 396 | 115,287 |
+| Witch Slayer | 250 | 96,472 |
+| Huntress | 5,816 | 105,238 |
+| Aetheri Artificer | 5,133 | 89,848 |
+| Aetheri Warden | 333 | 163,813 |
+| lancer (control, never frozen) | 110,748 | 110,331 |
+
+All Batch01 and Polyphoria bodies moved normally (75,000-220,000). The same tool now builds each of the four other
+bodies its own BlendSpace on the lancer grid. Their shared Fab clips were sound (the clips move) and are only
+referenced (`/Game/FabDerived/BodyLoco/<Name>_Loco/BS_Fab_Locomotion_<Name>_Loco`). `locomotionOverride` names all
+five folders. All 3054 shared FabDerived files have the same SHA-1 and mtime before and after. Captures:
+`Saved/GripGallery/20260926-101427-after`.
 
 Calibration is now per body and set (`CireWeaponSockets::Calibration(Body, Set)`, the set's own clip first), because
 every Fab set is retargeted with its own retargeter. The miner and chieftain now calibrate on `axe_attack1` and the
