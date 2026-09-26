@@ -594,7 +594,13 @@ void ACireSpellVisual::UpdateFabVFX()
     case EMode::CasterFlare: case EMode::SelfShock: case EMode::Channel: FabRole=CireFabVFX::ERole::Cast;break;
     case EMode::AreaFollow:
         if(const ACireAreaEffect* Area=FollowedArea.Get();Area&&Area->IsActive()&&!bHarmlessArea)
-        {FabRole=CireFabVFX::ERole::Area;bLoop=Area->AreaSpec.bPersistent;Extra=FMath::Clamp(Area->AreaSpec.Radius/200.f,.4f,3.f);}
+        {
+            // telegraphs: vendor ground systems are round blobs of their own size. They only decorate circle zones (never a
+            // line, cone or polygon, whose true shape the procedural telegraph alone draws) and never the calm pylon fields.
+            if(Area->AreaSpec.Shape!=ECireAreaShape::Circle||bPylonField){bFabTried=true;return;}
+            FabRole=CireFabVFX::ERole::Area;bLoop=Area->AreaSpec.bPersistent;Extra=FMath::Clamp(Area->AreaSpec.Radius/200.f,.4f,3.f);
+            bFabGround=true;FabTargetRadius=Area->AreaSpec.Radius;
+        }
         else return; // still winding up: keep trying until the zone goes live
         break;
     default:
@@ -605,13 +611,21 @@ void ACireSpellVisual::UpdateFabVFX()
     const ECireSchool School=Shape.bHeal?ECireSchool::Life:static_cast<ECireSchool>(FMath::Clamp(Family,0,static_cast<int32>(ECireSchool::Count)-1));
     // fab-coverage: the ability's own signature system first, then the school set.
     const CireFabVFX::FEntry* Entry=CireFabVFX::FindFor(Skill,School,FabRole);
-    UFXSystemAsset* System=CireFabVFX::Resolve(Entry);
-    if(!System){UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_NONE skill=%s role=%s"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole));return;} // pack not installed: the procedural presentation carries the cue alone
-    const float Scale=Entry->Scale*Extra*(bFollowArea?1.f:Size);
+    // telegraphs: a ground overlay takes the first candidate on the curated allow-list (square / diamond footprints and
+    // systems that do not scale are never used on a zone).
+    UFXSystemAsset* System=bFabGround?CireFabVFX::ResolveGround(Entry,&FabSkipReason):CireFabVFX::Resolve(Entry);
+    if(!System)
+    {
+        UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_NONE skill=%s role=%s why=%s"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole),*FabSkipReason);
+        bFabGround=false;return; // pack not installed / nothing curated: the procedural presentation carries the cue alone
+    }
+    float Scale=Entry->Scale*Extra*(bFollowArea?1.f:Size);
+    if(bFabGround)Scale=FMath::Clamp(FabTargetRadius*CireFabVFX::GroundFitFraction/FMath::Max(1.f,CireFabVFX::NativeGroundRadius(System)),.02f,5.f);
     UFXSystemComponent* C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)
         :CireFabVFX::SpawnAt(GetWorld(),System,GetActorLocation(),GetActorRotation(),Scale);
     CireFabVFX::ApplyTint(C,Entry->Tint);
-    FabFX=C;
+    FabFX=C;FabScale=Scale;
+    if(bFabGround&&C)CireFabVFX::DimColors(C,CireAbilityVFX::FabGroundBrightness(CireAbilityVFX::GroundIntensity(GetWorld()))); // ground overlays follow the slider
     UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_SPAWN skill=%s role=%s school=%s system=%s ok=%d"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole),
         *CireAbilityShapes::SchoolName(School),*System->GetName(),C!=nullptr);
 }

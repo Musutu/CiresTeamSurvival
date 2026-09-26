@@ -228,7 +228,7 @@
       "castRange": 900,
       "targeting": "ground",
       "area": {
-        "shape": "square",
+        "shape": "circle",
         "radius": 280,
         "length": 650,
         "width": 500,

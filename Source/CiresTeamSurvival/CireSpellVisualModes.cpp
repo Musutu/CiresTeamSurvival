@@ -377,13 +377,15 @@ void ACireSpellVisual::DrawAreaParticles(FCireSpellMesh& M,FCireSoftMesh& Soft,f
     const ECireSchool School=Shape.School!=ECireSchool::Steel?Shape.School:static_cast<ECireSchool>(FMath::Clamp(Family,0,static_cast<int32>(ECireSchool::Count)-1));
     const float AreaScale=FMath::Clamp(FMath::Sqrt(FMath::Max(1.f,float((Hi.X-Lo.X)*(Hi.Y-Lo.Y))))/300.f,.6f,2.2f);
     const int32 Want=bPylonField?CirePylonField::ParticleBudget(PylonOverlaps):FMath::Clamp(FMath::RoundToInt(16*AreaScale),10,30); // balance: pylon overlap budget
+    // telegraphs: the zone's rising particles, halos and detonation bloom follow the ground-telegraph slider too (0.5 at the default).
+    const float Dim=CireAbilityVFX::FabGroundBrightness(CireAbilityVFX::GroundIntensity(GetWorld()));
     int32 Spawned=0;
     for(int32 I=0;I<120&&Spawned<Want;++I)
     {
         const FVector P(FMath::Lerp(Lo.X,Hi.X,Fract(I*.618034f+.12f)),FMath::Lerp(Lo.Y,Hi.Y,Fract(I*.414214f+.29f)),0);
         if(!ACireAreaEffect::ContainsPoint(Spec,FVector::ZeroVector,FRotator::ZeroRotator,P))continue;
         ++Spawned;const float Cycle=Fract(Age*(School==ECireSchool::Fire?1.1f:.5f)+I*.17f);
-        FLinearColor C=Tint;C.A=FMath::Sin(Cycle*PI)*.5f*Fade;
+        FLinearColor C=Tint;C.A=FMath::Sin(Cycle*PI)*.5f*Fade*Dim;
         FLinearColor Halo=C;Halo.A*=.35f;
         switch(School)
         {
@@ -394,7 +396,7 @@ void ACireSpellVisual::DrawAreaParticles(FCireSpellMesh& M,FCireSoftMesh& Soft,f
             // Bubbling vapour: rising puffs with a low haze.
             const FVector Rise=P+FVector(FMath::Sin(Cycle*PI*2+I)*10,FMath::Cos(Cycle*PI*2+I)*10,4+Cycle*55);
             Soft.Glow(Rise,10+Cycle*18,WithAlpha(Tint*.7f,C.A*.5f));M.Star(Rise,2.5f+Cycle*2,C,I);
-            if(Spawned%3==0)Soft.Glow(P+FVector(0,0,8),34,WithAlpha(Tint*.5f,.1f*Fade));
+            if(Spawned%3==0)Soft.Glow(P+FVector(0,0,8),34,WithAlpha(Tint*.5f,.1f*Fade*Dim));
             break;
         }
         case ECireSchool::Shadow:case ECireSchool::Void:
@@ -426,10 +428,10 @@ void ACireSpellVisual::DrawAreaParticles(FCireSpellMesh& M,FCireSoftMesh& Soft,f
         {
             const FVector P(FMath::Lerp(Lo.X,Hi.X,Fract(I*.754877f+.31f)),FMath::Lerp(Lo.Y,Hi.Y,Fract(I*.569840f+.07f)),0);
             if(!ACireAreaEffect::ContainsPoint(Spec,FVector::ZeroVector,FRotator::ZeroRotator,P))continue;++Count;
-            FLinearColor C=FMath::Lerp(Tint,FLinearColor(2.4f,2.3f,2.1f,1),.3f);C.A=Burst*.95f;
+            FLinearColor C=FMath::Lerp(Tint,FLinearColor(2.4f,2.3f,2.1f,1),.3f);C.A=Burst*.95f*FMath::Sqrt(Dim);
             M.Spike(P,P+FVector(FMath::Sin(I*1.7f)*12,FMath::Cos(I*2.3f)*12,(40+Fract(I*.37f)*70)*(1.2f-Burst*.5f)),6*Burst+1.5f,C,I);
         }
-        Soft.Glow(FVector(Pivot.X,Pivot.Y,30),FMath::Min(260.f,60+AreaScale*80),WithAlpha(Tint*.8f,.45f*Burst));
+        Soft.Glow(FVector(Pivot.X,Pivot.Y,30),FMath::Min(260.f,60+AreaScale*80),WithAlpha(Tint*.8f,.45f*Burst*Dim));
     }
 }
 
@@ -652,6 +654,7 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
             R=CireAbilityVFX::PaintActive(G,Spec,C,Age,Alpha*(bAreaPersistent?1.f:FMath::Clamp(1-(Age-AreaActiveAge)/.5f,0.f,1.f)*1.2f),Burst,bAreaPersistent,&Theme);
         }
         LastFill=R.FillBounds;LastArrowTip=R.ArrowTip;LastChevrons=R.Chevrons;
+        ConformToTerrain(G.V); // telegraphs: no terrain clipping on slopes
         break;
     }
     case EMode::Lane:
@@ -808,6 +811,44 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
     if(Section&&Section->ProcVertexBuffer.Num()==G.V.Num()&&Section->ProcIndexBuffer.Num()==G.I.Num())
         GroundMesh->UpdateMeshSection_LinearColor(0,G.V,TArray<FVector>(),TArray<FVector2D>(),G.C,TArray<FProcMeshTangent>(),false);
     else GroundMesh->CreateMeshSection_LinearColor(0,G.V,G.I,TArray<FVector>(),TArray<FVector2D>(),G.C,TArray<FProcMeshTangent>(),false);
+}
+
+void ACireSpellVisual::ConformToTerrain(TArray<FVector>& Vertices)
+{
+    constexpr int32 N=9;
+    if(!bTerrainProbed)
+    {
+        bTerrainProbed=true;bTerrainFlat=true;TerrainHeights.Init(0.f,N*N);
+        const FCireAreaSpec& Spec=FollowedArea.IsValid()?FollowedArea->AreaSpec:CachedArea;
+        const FBox2D Box(ACireAreaEffect::BoundaryPoints(Spec));if(!Box.bIsValid)return;
+        TerrainHalf=static_cast<float>(FMath::Max(Box.GetExtent().X,Box.GetExtent().Y))+40.f;
+        TerrainMid=Box.GetCenter();const FVector2D Mid=TerrainMid;
+        if(!GetWorld()||TerrainHalf>3000.f)return;
+        FCollisionQueryParams Q(SCENE_QUERY_STAT(CireZoneTerrain),false,this);
+        if(AActor* Area=FollowedArea.Get()){Q.AddIgnoredActor(Area);if(Area->GetOwner())Q.AddIgnoredActor(Area->GetOwner());}
+        const FTransform Frame=GetActorTransform();int32 Valid=0;float Sum=0,MaxAbs=0;
+        TArray<bool> Hit;Hit.Init(false,N*N);
+        for(int32 Y=0;Y<N;++Y)for(int32 X=0;X<N;++X)
+        {
+            const FVector Local(Mid.X-TerrainHalf+2*TerrainHalf*X/(N-1),Mid.Y-TerrainHalf+2*TerrainHalf*Y/(N-1),0);
+            const FVector At=Frame.TransformPosition(Local);FHitResult H;
+            // Only the walkable surface: a prop top (more than 60 cm above the zone's floor) is ignored.
+            if(GetWorld()->LineTraceSingleByObjectType(H,At+FVector(0,0,60),At-FVector(0,0,240),FCollisionObjectQueryParams(ECC_WorldStatic),Q)&&H.ImpactNormal.Z>.5f)
+            {const float D=static_cast<float>(H.ImpactPoint.Z-At.Z);TerrainHeights[Y*N+X]=D;Hit[Y*N+X]=true;Sum+=D;++Valid;MaxAbs=FMath::Max(MaxAbs,FMath::Abs(D));}
+        }
+        const float Mean=Valid>0?Sum/Valid:0.f;for(int32 J=0;J<N*N;++J)if(!Hit[J])TerrainHeights[J]=Mean;
+        bTerrainFlat=Valid<N*N/2||MaxAbs<3.f; // flat floors (the common case) keep the painted plane untouched
+    }
+    if(bTerrainFlat||TerrainHeights.Num()<N*N)return;
+    const FVector2D Mid=TerrainMid;
+    for(FVector& P:Vertices)
+    {
+        const float U=FMath::Clamp((static_cast<float>(P.X-Mid.X)+TerrainHalf)/(2*TerrainHalf)*(N-1),0.f,N-1.001f);
+        const float W=FMath::Clamp((static_cast<float>(P.Y-Mid.Y)+TerrainHalf)/(2*TerrainHalf)*(N-1),0.f,N-1.001f);
+        const int32 X0=FMath::FloorToInt(U),Y0=FMath::FloorToInt(W);const float FX=U-X0,FY=W-Y0;
+        const float H=FMath::Lerp(FMath::Lerp(TerrainHeights[Y0*N+X0],TerrainHeights[Y0*N+X0+1],FX),FMath::Lerp(TerrainHeights[(Y0+1)*N+X0],TerrainHeights[(Y0+1)*N+X0+1],FX),FY);
+        P.Z+=H;
+    }
 }
 
 float CireSpellPresentation::ReleaseDelay(UWorld* World,FName SkillId,ECireSpellCue Cue,FVector From)

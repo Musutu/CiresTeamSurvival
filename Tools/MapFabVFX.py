@@ -301,6 +301,10 @@ def main() -> int:
         "buffs": buffs,
         "abilities": abilities,
     }
+    # telegraphs: the curated ground-overlay allow-list / exclusions are hand data (RunSpellGallery.py --fab-ground).
+    for key in ("groundNotes", "groundRadius", "groundExcluded"):
+        if key in existing:
+            data[key] = existing[key]
     OUT.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     print("wrote " + str(OUT))
     return 0

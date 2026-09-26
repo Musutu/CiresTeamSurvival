@@ -24,6 +24,16 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Misc/ScopeExit.h"
+#include "Misc/FileHelper.h" // telegraphs: settings migration check, shape audit
+#include "CireFabVFX.h"
+#include "CireTechConstructs.h"
+#include "CireConstruct.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
+#include "NiagaraSystem.h"
+#include "Misc/Paths.h"
+#include "HAL/FileManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireAbilityVFX,Log,All);
 
@@ -557,17 +567,146 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             for(const FLinearColor& X:G.C){Peak=FMath::Max(Peak,FMath::Max3(X.R,X.G,X.B));if(X.A<.45f)FillA=FMath::Max(FillA,X.A);RimA=FMath::Max(RimA,X.A);}
         };
         float Fill=0,Rim=0,Peak=0;
-        MaxStats(.6f,1.f,Fill,Rim,Peak);
-        Check(Peak<=RimEmissiveCap+.001f,FString::Printf(TEXT("ground emissive capped below bloom (peak %.2f)"),Peak));
+        MaxStats(DefaultGroundIntensity,1.f,Fill,Rim,Peak);
+        Check(Peak<=RimEmissiveCap+.001f&&RimEmissiveCap<1.f,FString::Printf(TEXT("ground emissive capped below bloom (peak %.2f)"),Peak));
         // Temper on the painter's own fill (0.3) and rim (0.95) alphas.
         auto Tempered=[&](float A,float Intensity,float Overlap){TArray<FLinearColor> X={FLinearColor(3,2,1,A)};Temper(X,0,Intensity,Overlap);return X[0];};
-        Check(Tempered(.3f,.6f,1.f).A<=.25f&&Tempered(.3f,.6f,1.f).A>=.15f&&Tempered(.95f,.6f,1.f).A>=.6f,
-            FString::Printf(TEXT("default intensity: fill %.2f (15-25%%), rim %.2f stays crisp"),Tempered(.3f,.6f,1.f).A,Tempered(.95f,.6f,1.f).A));
-        Check(Tempered(.3f,.6f,.5f).A<Tempered(.3f,.6f,1.f).A&&Tempered(.95f,.6f,.5f).A<Tempered(.95f,.6f,1.f).A,TEXT("four overlapping zones share one brightness budget"));
-        Check(Tempered(.95f,.3f,1.f).A>=.45f&&Tempered(.3f,.3f,1.f).A<.12f,TEXT("lowest intensity: faint fill, readable rim"));
-        Check(FMath::Max3(Tempered(.3f,1.f,1.f).R,Tempered(.3f,1.f,1.f).G,Tempered(.3f,1.f,1.f).B)<=FillEmissiveCap+.001f,TEXT("fill colour hue-capped under the bloom threshold"));
-        Check(FMath::IsNearlyEqual(FCireUISettings().GroundTelegraphIntensity,.6f),TEXT("ground telegraph intensity defaults to 0.6"));
-        Check(FMath::IsNearlyEqual(GroundIntensity(nullptr),.6f),TEXT("no HUD: default ground intensity"));
+        // telegraphs (2026-09-26): the default look is half of the previous default (fill 0.18 -> 0.09), the rim stays crisp.
+        const float OldFill=.3f*LegacyDefaultGroundIntensity,OldRim=.95f*FMath::Sqrt(LegacyDefaultGroundIntensity)*.95f;
+        const float NewFill=Tempered(.3f,DefaultGroundIntensity,1.f).A,NewRim=Tempered(.95f,DefaultGroundIntensity,1.f).A;
+        Check(FMath::IsNearlyEqual(NewFill/OldFill,.5f,.02f)&&NewRim>=.45f&&NewRim<OldRim,
+            FString::Printf(TEXT("default intensity: fill %.3f = %.0f%% of the old default %.3f; rim %.2f (was %.2f) stays crisp"),NewFill,100.f*NewFill/OldFill,OldFill,NewRim,OldRim));
+        Check(Tempered(.3f,DefaultGroundIntensity,.5f).A<NewFill&&Tempered(.95f,DefaultGroundIntensity,.5f).A<NewRim,TEXT("four overlapping zones share one brightness budget"));
+        Check(Tempered(.95f,MinGroundIntensity,1.f).A>=.38f&&Tempered(.3f,MinGroundIntensity,1.f).A<.04f,TEXT("lowest intensity (0.1): nearly clear fill, readable rim"));
+        Check(FMath::IsNearlyEqual(Tempered(.3f,1.f,1.f).A,.3f)&&Tempered(.95f,1.f,1.f).A>=.9f,TEXT("slider maximum restores the full-strength fill and rim"));
+        Check(FMath::Max3(Tempered(.3f,1.f,1.f).R,Tempered(.3f,1.f,1.f).G,Tempered(.3f,1.f,1.f).B)<=FillEmissiveCap+.001f&&FillEmissiveCap<=.6f,TEXT("fill colour hue-capped under the bloom threshold"));
+        {
+            // Enemy warnings keep an amber rim; heals keep their green runes (hue survives the caps).
+            TArray<FLinearColor> Edge={StyleFor(ETone::Hostile,FLinearColor::White).Edge};Temper(Edge,0,DefaultGroundIntensity,1.f);const FLinearColor Amber=Edge[0];
+            Check(Amber.R>Amber.G*2.f&&Amber.G>Amber.B&&Amber.A>=.45f,FString::Printf(TEXT("enemy warning rim stays amber and readable (%.2f %.2f %.2f a%.2f)"),Amber.R,Amber.G,Amber.B,Amber.A));
+            TArray<FLinearColor> H={RuneColor(ERuneSet::Heal)};Temper(H,0,DefaultGroundIntensity,1.f);
+            Check(H[0].G>H[0].R*2.f&&H[0].G>H[0].B*2.f&&H[0].A>=.45f,TEXT("heal runes stay green and readable"));
+        }
+        Check(FMath::IsNearlyEqual(FCireUISettings().GroundTelegraphIntensity,DefaultGroundIntensity)&&FMath::IsNearlyEqual(DefaultGroundIntensity,.3f),TEXT("ground telegraph intensity defaults to 0.3"));
+        Check(FMath::IsNearlyEqual(GroundIntensity(nullptr),DefaultGroundIntensity),TEXT("no HUD: default ground intensity"));
+        Check(FMath::IsNearlyEqual(FabGroundBrightness(DefaultGroundIntensity),.5f)&&FMath::IsNearlyEqual(FabGroundBrightness(LegacyDefaultGroundIntensity),1.f)&&
+            FabGroundBrightness(MinGroundIntensity)<.2f,TEXT("Fab ground overlays: half their stock brightness at the default"));
+        {
+            // Saved profiles: the old key (0.3..1 scale) is halved; the new key is kept.
+            const FString Dir=FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("Temp"));IFileManager::Get().MakeDirectory(*Dir,true);
+            const FString Ini=FPaths::Combine(Dir,TEXT("CireTelegraphSettingsTest.ini"));
+            FFileHelper::SaveStringToFile(TEXT("[CireUI.Preferences]\nVersion=6\nGroundTelegraphIntensity=0.800000\n"),*Ini);
+            FCireUISettings Old;Old.Load(Ini);
+            Check(FMath::IsNearlyEqual(Old.GroundTelegraphIntensity,.4f,.001f),FString::Printf(TEXT("legacy profile 0.8 loads as 0.4 on the new scale (%.2f)"),Old.GroundTelegraphIntensity));
+            Old.GroundTelegraphIntensity=.15f;Old.Save();FCireUISettings Again;Again.Load(Ini);
+            Check(FMath::IsNearlyEqual(Again.GroundTelegraphIntensity,.15f,.001f),TEXT("new-scale value round-trips (0.15)"));
+            IFileManager::Get().Delete(*Ini);
+        }
+    }
+    // ---------------------------------------------------------------- 11. telegraphs: shape audit (Eric 2026-09-26)
+    // "The ground effect can come in square form, which should be changed to circular." Every ability's hit shape is painted
+    // and the painted geometry is measured: circular hit shapes must render round (angular max-radius spread < 8%), true
+    // rectangles only for lines (skillshots, charges, pulls) and constructs with box collision. Writes the audit table
+    // (ability -> hit shape -> rendered shape) to Saved/ShapeAudit/shape_audit.json for Tools/BuildShapeAudit.py.
+    {
+        TArray<FVector> V;TArray<int32> I;TArray<FLinearColor> C;
+        auto Roundness=[&](const FCireAreaSpec& Spec,FVector2D Center)
+        {
+            FCireGroundMesh G(V,I,C);
+            PaintTelegraph(G,Spec,ThemedStyle(ETone::Hostile,FCireHitShape()),1.f,0.f,1.f,PaintPulse|PaintProgress|PaintCenter);
+            PaintActive(G,Spec,FLinearColor(1,.5f,.2f,1),0.f,1.f,0.f,true);
+            constexpr int32 Bins=72;float Max[Bins]={};
+            for(const FVector& P:G.V)
+            {
+                const FVector2D D=FVector2D(P.X,P.Y)-Center;if(D.IsNearlyZero())continue;
+                const int32 B=FMath::Clamp(FMath::FloorToInt((FMath::Atan2(D.Y,D.X)+PI)/(2*PI)*Bins),0,Bins-1);Max[B]=FMath::Max(Max[B],static_cast<float>(D.Size()));
+            }
+            float Lo=MAX_flt,Hi=0;for(float M:Max)if(M>0){Lo=FMath::Min(Lo,M);Hi=FMath::Max(Hi,M);}
+            return Hi>0?Hi/Lo:0.f;
+        };
+        TArray<TSharedPtr<FJsonValue>> Rows;int32 Squares=0,NotRound=0,Audited=0;TSet<FString> Seen;
+        auto FabFor=[&](const FCireHitShape& Shape)->FString
+        {
+            if(Shape.Kind!=ECireHitShape::Circle)return TEXT("none (Fab ground overlays only decorate circle zones)");
+            const auto* E=CireFabVFX::Find(Shape.bHeal?ECireSchool::Life:Shape.School,CireFabVFX::ERole::Area);
+            if(!CireFabVFX::Resolve(E))return TEXT("none (pack not installed)");
+            FString Why;UFXSystemAsset* Sys=CireFabVFX::ResolveGround(E,&Why);
+            return Sys?FString::Printf(TEXT("%s: round, fitted inside the rim (native r %.0f), dimmed"),*Sys->GetName(),CireFabVFX::NativeGroundRadius(Sys))
+                :FString::Printf(TEXT("none (%s)"),*Why);
+        };
+        auto Audit=[&](const FString& Id,const FString& Name,const FString& Group,const FString& Status,const FCireHitShape& Shape)
+        {
+            if(Seen.Contains(Group+Id))return;
+            Seen.Add(Group+Id);++Audited;
+            FString Hit=CireAbilityShapes::ShapeName(Shape.Kind),Rendered,Dims;float Round=0;
+            switch(Shape.Kind)
+            {
+            case ECireHitShape::Circle:
+                Dims=FString::Printf(TEXT("r %.0f"),Shape.Radius);Round=Roundness(Shape.AsArea(),FVector2D::ZeroVector);
+                Rendered=Round<1.08f?TEXT("circle (soft edge)"):TEXT("NOT ROUND");NotRound+=Round>=1.08f;break;
+            case ECireHitShape::Square:
+                Dims=FString::Printf(TEXT("%.0f x %.0f"),Shape.Width,Shape.Width);Round=Roundness(Shape.AsArea(),FVector2D::ZeroVector);Rendered=TEXT("SQUARE");++Squares;break;
+            case ECireHitShape::Line:
+                Dims=FString::Printf(TEXT("%.0f x %.0f"),Shape.Length,Shape.Width);
+                Rendered=Shape.bProjectile?TEXT("rectangle lane + arrow (projectile corridor)"):TEXT("rectangle lane + arrow");break;
+            case ECireHitShape::Cone:Dims=FString::Printf(TEXT("r %.0f, %.0f deg"),Shape.Radius,Shape.Angle);Rendered=TEXT("cone + chevrons");break;
+            case ECireHitShape::Custom:
+            {
+                const FBox2D Box(Shape.Polygon);Dims=FString::Printf(TEXT("%.0f x %.0f"),Box.GetSize().X,Box.GetSize().Y);
+                Rendered=Shape.Polygon.Num()==4?TEXT("rectangle (true box collision)"):TEXT("authored polygon");break;
+            }
+            case ECireHitShape::Unit:Rendered=Shape.bHeal?TEXT("unit ring (circle) + heal crosses"):TEXT("ground streak + unit ring (circle)");break;
+            case ECireHitShape::Self:Rendered=Shape.bHeal?TEXT("caster pulse (circle) + heal crosses"):TEXT("caster pulse (circle)");break;
+            case ECireHitShape::Chain:Dims=FString::Printf(TEXT("hop r %.0f"),Shape.Radius);Rendered=TEXT("arcs + hop ring (circle)");break;
+            default:Rendered=TEXT("none (passive)");break;
+            }
+            if(Shape.HasVoidZone())Rendered+=FString::Printf(TEXT(" + void rings (circles r %.0f / %.0f)"),Shape.VoidOuter,Shape.VoidInner);
+            TSharedRef<FJsonObject> O=MakeShared<FJsonObject>();
+            O->SetStringField(TEXT("id"),Id);O->SetStringField(TEXT("name"),Name);O->SetStringField(TEXT("group"),Group);O->SetStringField(TEXT("status"),Status);
+            O->SetStringField(TEXT("hit"),Hit);O->SetStringField(TEXT("dims"),Dims);O->SetStringField(TEXT("rendered"),Rendered);
+            O->SetNumberField(TEXT("roundness"),Round);O->SetStringField(TEXT("school"),CireAbilityShapes::SchoolName(Shape.School));
+            O->SetStringField(TEXT("fab"),FabFor(Shape));O->SetBoolField(TEXT("heal"),Shape.bHeal);
+            Rows.Add(MakeShared<FJsonValueObject>(O));
+        };
+        // 1. The 174 Ability Database entries (implemented and planned).
+        for(const FCireAbilityDef& D:CireAbilityDB::All())Audit(D.Id,D.Name,TEXT("ability ")+D.Kind,D.Status,CireAbilityShapes::Describe(FName(*D.Id)));
+        // 2. Champion ids outside the database (role skills, basics).
+        for(const FName Id:CireAbilityShapes::ChampionAbilityIds())
+            if(!CireAbilityDB::Find(Id.ToString()))Audit(Id.ToString(),ACireHero::SkillName(Id.ToString()),TEXT("champion extra"),TEXT("implemented"),CireAbilityShapes::Describe(Id));
+        // 3. Monster skills (every archetype ability).
+        TArray<FName> Keys;CireNPCArchetypes::Get().Archetypes.GetKeys(Keys);Keys.Sort([](FName A,FName B){return A.LexicalLess(B);});
+        for(const FName K:Keys)
+        {
+            const auto& Arch=CireNPCArchetypes::Get().Archetypes[K];
+            for(const auto& A:Arch.Abilities)Audit(A.Id.ToString(),A.Name,TEXT("monster"),Arch.RaceId.IsNone()?K.ToString():Arch.RaceId.ToString(),CireAbilityShapes::DescribeMonster(A,&Arch));
+        }
+        // 4. Summons / constructs: tech construct fields and reach, the summoned wall / protection box and the summon circles.
+        for(const FCireTechRecipe& R:CireTechConstructs::Recipes())
+        {
+            FCireHitShape F;F.Id=R.Id;F.School=ECireSchool::Arcane;F.bHostileOnly=false;
+            if(R.Kind==ECireConstructKind::Pylon&&R.Radius>0){F.Kind=ECireHitShape::Circle;F.Radius=R.Radius;}
+            else if(R.Kind==ECireConstructKind::Turret&&R.Range>0){F.Kind=ECireHitShape::Circle;F.Radius=R.Range;}
+            else if(R.Trigger>0||R.Radius>0){F.Kind=ECireHitShape::Circle;F.Radius=FMath::Max(R.Trigger,R.Radius);}
+            else F.Kind=ECireHitShape::Self;
+            Audit(R.Id.ToString()+TEXT(" (field)"),R.Name,R.bMonster?TEXT("monster construct"):TEXT("construct"),TEXT("implemented"),F);
+        }
+        for(const TCHAR* Id:{TEXT("summoned_wall"),TEXT("protection_dome"),TEXT("spectral_pack"),TEXT("oathbound_guardian")})
+            Audit(Id,ACireHero::SkillName(Id),TEXT("summon / construct"),TEXT("implemented"),CireAbilityShapes::Describe(FName(Id)));
+        Check(Audited>=274&&Squares==0&&NotRound==0,FString::Printf(TEXT("shape audit: %d entries, %d square ground shapes, %d circles not painted round"),Audited,Squares,NotRound));
+        // Ashen Ward (the one authored square AoE) is now a circle of its database radius.
+        const FCireHitShape Ashen=CireAbilityShapes::Describe(TEXT("ashen_square"));
+        Check(Ashen.Kind==ECireHitShape::Circle&&FMath::IsNearlyEqual(Ashen.Radius,280.f,1.f),
+            FString::Printf(TEXT("Ashen Ward is a %.0f cm circle (%s)"),Ashen.Radius,*CireAbilityShapes::ShapeName(Ashen.Kind)));
+        {
+            FCireAreaSpec Sq;Sq.Shape=ECireAreaShape::Square;Sq.Width=400;
+            Check(Roundness(Sq,FVector2D::ZeroVector)>1.3f,TEXT("the roundness probe does detect a square footprint"));
+        }
+        TSharedRef<FJsonObject> Root=MakeShared<FJsonObject>();Root->SetArrayField(TEXT("rows"),Rows);
+        Root->SetNumberField(TEXT("squares"),Squares);Root->SetNumberField(TEXT("notRound"),NotRound);
+        FString Json;const auto Writer=TJsonWriterFactory<>::Create(&Json);FJsonSerializer::Serialize(Root,Writer);
+        const FString Path=FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("ShapeAudit"),TEXT("shape_audit.json"));
+        Check(FFileHelper::SaveStringToFile(Json,*Path),TEXT("shape audit written"));
+        UE_LOG(LogCireAbilityVFX,Display,TEXT("CIRE_SHAPE_AUDIT entries=%d squares=%d not_round=%d path=%s"),Audited,Squares,NotRound,*FPaths::ConvertRelativePathToFull(Path));
     }
     UE_LOG(LogCireAbilityVFX,Display,TEXT("CIRE_ABILITY_VFX_TESTS_%s checks=%d failed=%d"),S.Failed==0?TEXT("PASS"):TEXT("FAIL"),S.Checks,S.Failed);
     return S.Failed==0;

@@ -144,8 +144,8 @@ public:
     bool bShowBossFrames = true;
     /** aura-vfx: buff/aura/attack-modifier visuals on other units (0 = minimal marks, 1 = full). Your own are always full. */
     float OtherEffectsIntensity = 1.f;
-    /** ability-vfx: ground telegraph / zone brightness (fill, rim and runes), 0.3..1. */
-    float GroundTelegraphIntensity = .6f;
+    /** ability-vfx: ground telegraph / zone brightness (fill, rim and runes), 0.1..1. */
+    float GroundTelegraphIntensity = .3f; // telegraphs: 0.1..1, default 0.3 (half of the old 0.6 look); saved as GroundTelegraphLevel
     /** Extra WoW action bars (bar 1 is always shown) and the drag lock (Shift-drag when locked). */
     bool bShowActionBar2 = true;
     bool bShowActionBar3 = false;

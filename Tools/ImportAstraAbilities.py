@@ -72,6 +72,9 @@ def validate(bundle):
         polygon = area.get("customPolygon")
         if not isinstance(polygon, list) or len(polygon) > 32 or any(not isinstance(p, list) or len(p) != 2 or any(not number(v, -2000, 2000) for v in p) or math.hypot(*p) > 2000 for p in polygon):
             raise ValueError("Invalid custom polygon")
+        if area["shape"] == "square":
+            # telegraphs (Eric 2026-09-26): ground AoE are circles; a square area is imported as a circle of its radius.
+            area["shape"] = "circle"
         if area["shape"] == "custom":
             if len(polygon) < 3:
                 raise ValueError("Custom polygon needs three vertices")

@@ -335,7 +335,7 @@ void ACireHUD::DrawSettings()
         Toggle(TEXT("Spell / scene bloom"),UISettings.bBloom,R,Top+143,TEXT("Controls the local camera bloom intensity. It does not remove enemy telegraphs."));
         Toggle(TEXT("Impact camera shake"),UISettings.bImpactCameraShake,L,Top+190,TEXT("A small camera kick when a heavy spell or critical hit lands on or next to your champion. Never moves the camera for distant fights.")); // ability-vfx
         Toggle(TEXT("Motion blur"),UISettings.bMotionBlur,R,Top+184,TEXT("Controls local camera motion blur. Off preserves clarity during fast turns."));
-        Slider(TEXT("Ground telegraph intensity"),UISettings.GroundTelegraphIntensity,.3f,1,.05f,R,Top+268,TEXT("Brightness of ground telegraphs, aim previews and lingering zones (fill, rim and runes). Enemy warnings stay readable at the lowest setting.")); // ability-vfx
+        Slider(TEXT("Ground telegraph intensity"),UISettings.GroundTelegraphIntensity,.1f,1,.05f,R,Top+268,TEXT("Brightness of ground telegraphs, aim previews, lingering zones and Fab ground effects (fill, rim and runes). Default 0.3 keeps the ground visible through them; enemy warnings keep a readable rim at the lowest setting.")); // ability-vfx; telegraphs: 0.1..1, default 0.3
         Slider(TEXT("Ally / other units' effects"),UISettings.OtherEffectsIntensity,0,1,.05f,R,Top+222,TEXT("Strength of buff auras, rage swirls and empowered-attack trails on units other than you. 0 keeps only overhead marks. Your own effects stay full.")); // aura-vfx
         if(Settings && !bVideoPending && Button(TEXT("APPLY VIDEO PREVIEW"),L,Top+239,286))
         {
