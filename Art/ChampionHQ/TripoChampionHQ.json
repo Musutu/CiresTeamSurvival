@@ -26,6 +26,10 @@
     {
       "when": "after 20 UE5-preset auto-rigs (free preset clips)",
       "balance": 15906
+    },
+    {
+      "when": "after 9 summon/construct/hound generations + 3 rigs",
+      "balance": 15216
     }
   ],
   "items": [
@@ -364,6 +368,111 @@
       "generateCredits": 0,
       "creditsTotal": 0,
       "note": "art-3d agent's pavise prop; exported here, no new spend"
+    },
+    {
+      "id": "oathbound_guardian",
+      "candidate": "A",
+      "taskId": "f0322f98-c662-49b2-b023-d23476edf9c9",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f0322f98-c662-49b2-b023-d23476edf9c9",
+      "generateCredits": 70,
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20,
+        "status": "complete (preset clips available in Animate)"
+      },
+      "creditsTotal": 90,
+      "note": "clean: helm, chains, tabard, hands all intact; quad 53k faces"
+    },
+    {
+      "id": "spectral_companion",
+      "candidate": "A",
+      "taskId": "e670ba9c-9d0a-48cb-8df1-404c0ac76769",
+      "url": "https://studio.tripo3d.ai/workspace/generate/e670ba9c-9d0a-48cb-8df1-404c0ac76769",
+      "generateCredits": 70,
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20,
+        "status": "complete (preset clips available in Animate)"
+      },
+      "creditsTotal": 90,
+      "note": "clean: mask, hood, tattered robes, clawed hands intact; quad 52.5k faces"
+    },
+    {
+      "id": "AetherTurret",
+      "candidate": "A",
+      "taskId": "ae144b5f-328f-4d16-bcca-c5d797eba87d",
+      "url": "https://studio.tripo3d.ai/workspace/generate/ae144b5f-328f-4d16-bcca-c5d797eba87d",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "single-image from sheet side view (front/back sheet views drew barrel pointing up); result clean: tripod, eye head, long crystal barrel; quad 44.8k faces"
+    },
+    {
+      "id": "AetherObelisk",
+      "candidate": "A",
+      "taskId": "5fdf9f79-74d5-4766-b1ac-6bf539bdfc52",
+      "url": "https://studio.tripo3d.ai/workspace/generate/5fdf9f79-74d5-4766-b1ac-6bf539bdfc52",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "clean, consistent with sheet; quad 45.9k faces"
+    },
+    {
+      "id": "SkitterBomb",
+      "candidate": "A",
+      "taskId": "f3fefe84-58f2-4b55-87b0-3d9265a274f7",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f3fefe84-58f2-4b55-87b0-3d9265a274f7",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "clean: shell, crystal eye, legs; quad 43.3k faces"
+    },
+    {
+      "id": "AetherTrap",
+      "candidate": "A",
+      "taskId": "f70b640d-b8f1-41b4-b210-57601e63dc83",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f70b640d-b8f1-41b4-b210-57601e63dc83",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "single-image from sheet 3/4 view; clean disc + crystal but crystal is a bipyramid poking ~as far BELOW the disc as above (sink into ground or trim); quad 42.3k faces"
+    },
+    {
+      "id": "AetherPylon",
+      "candidate": "A",
+      "taskId": "795482b1-5e08-40b2-9c43-99af28e87539",
+      "url": "https://studio.tripo3d.ai/workspace/generate/795482b1-5e08-40b2-9c43-99af28e87539",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "clean: base, crystal, halo ring; quad 48k faces"
+    },
+    {
+      "id": "SpiritLantern",
+      "candidate": "A",
+      "taskId": "57bfe937-0b0c-430b-80c3-4d46f0414708",
+      "url": "https://studio.tripo3d.ai/workspace/generate/57bfe937-0b0c-430b-80c3-4d46f0414708",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "clean: post, arm, lantern with teal flame glass, charms; quad 51.8k faces"
+    },
+    {
+      "id": "grave_hound",
+      "candidate": "A",
+      "taskId": "cc40227d-7391-4186-bdff-cf4048b8a515",
+      "url": "https://studio.tripo3d.ai/workspace/generate/cc40227d-7391-4186-bdff-cf4048b8a515",
+      "generateCredits": 70,
+      "rig": {
+        "type": "Other (auto quadruped skeleton: spine, neck, 4 legs, tail)",
+        "preset": null,
+        "credits": 20,
+        "status": "complete"
+      },
+      "creditsTotal": 90,
+      "note": "clean: skull, glowing teal eyes, ribcage, tattered hide, 4 legs intact; quad 49k faces"
     }
   ],
   "notes": [
@@ -861,6 +970,214 @@
         "Brightness": 1.05,
         "RimStrength": 0.0,
         "NormalStrength": 1.15
+      }
+    },
+    "oathbound_guardian": {
+      "export": "CTS_ChampHQ_SummonGuardian",
+      "folder": "SummonGuardian",
+      "kind": "summon",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.7,
+          0.4,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.65,
+          0.3,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "spectral_companion": {
+      "export": "CTS_ChampHQ_SummonSpectral",
+      "folder": "SummonSpectral",
+      "kind": "summon",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.4,
+          0.9,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.45,
+          0.85,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "grave_hound": {
+      "export": "CTS_ChampHQ_GraveHound",
+      "folder": "GraveHound",
+      "kind": "creature",
+      "lods": true,
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.4,
+          1.0,
+          0.8
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.35,
+          1.0,
+          0.8
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "AetherTurret": {
+      "export": "SM_AetherTurret",
+      "folder": "Constructs",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "AetherObelisk": {
+      "export": "SM_AetherObelisk",
+      "folder": "Constructs",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "SkitterBomb": {
+      "export": "SM_SkitterBomb",
+      "folder": "Constructs",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "AetherTrap": {
+      "export": "SM_AetherTrap",
+      "folder": "Constructs",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "AetherPylon": {
+      "export": "SM_AetherPylon",
+      "folder": "Constructs",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "SpiritLantern": {
+      "export": "SM_SpiritLantern",
+      "folder": "Constructs",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.4,
+          1.0,
+          0.9
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.3,
+          1.0,
+          0.85
+        ],
+        "EmissiveIntensity": 6.0
       }
     }
   }
