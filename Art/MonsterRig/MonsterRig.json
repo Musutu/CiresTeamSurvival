@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "branch": "feat/monster-rig",
  "operator": "Claude (monster-rig worktree)",
- "status": "63 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
+ "status": "66 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
  "credits": {
   "observedBalanceAtStart": 14961,
   "observedBalanceAtPause": 14941,
@@ -319,6 +319,28 @@
    "gallery": "Saved/MonsterGallery/20260926-095011",
    "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
    "note": "7/7 assigned retargeted, 15 roles each. Segmentation candidate DeepforgeRunesmith (arm-bound low 10%: the fused hammer head on ring_03_r) checked close up (face_deepforge_runesmith): hammer sits in both hands, no visible stretch, not segmented. Stone/chain beards are rigid by design (no sway)."
+  },
+  "feral_kin": {
+   "bodies": {
+    "WerebearMaulerHQ": {
+     "set": "unarmed",
+     "walkSpeedCm": 181.8,
+     "runSpeedCm": 286.1
+    },
+    "TuskedBehemothHQ": {
+     "set": "sword_shield",
+     "walkSpeedCm": 143.8,
+     "runSpeedCm": 333.3
+    },
+    "FeralShaman": {
+     "set": "spell",
+     "walkSpeedCm": 155.3,
+     "runSpeedCm": 269.1
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-095608",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "3/3 assigned retargeted, 15 roles each (FeralUrsoth, FeralMammoth have no set assigned and keep their clips). Sway: Tusked Behemoth's hanging trunk (mask Saved/MonsterGallery/20260926-095751, tusks stay rigid). Segmentation candidate TuskedBehemothHQ (leg-bound high 4%) checked close up: shield, belts and trunk read cleanly, no visible stretch, not segmented. FeralMammoth (far 7%) has no set and no visible artifact in the race lineup."
   }
  }
 }

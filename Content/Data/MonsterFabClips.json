@@ -748,6 +748,28 @@
    "walkSpeedCm": 216.3,
    "runSpeedCm": 328.0
   },
+  "FeralShaman": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_idle.A_FeralShamanSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_walk_f.A_FeralShamanSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_walk_b.A_FeralShamanSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_walk_l.A_FeralShamanSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_walk_r.A_FeralShamanSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_loco_run_f.A_FeralShamanSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_attack1.A_FeralShamanSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_attack2.A_FeralShamanSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_attack4.A_FeralShamanSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_hit.A_FeralShamanSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_death.A_FeralShamanSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_skill1.A_FeralShamanSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_skill2.A_FeralShamanSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_heal.A_FeralShamanSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/FeralShamanSet/A_FeralShamanSet_spell_shout.A_FeralShamanSet_spell_shout"
+   },
+   "walkSpeedCm": 155.3,
+   "runSpeedCm": 269.1
+  },
   "Flagellant": {
    "war_cry": "/Game/FabDerived/Anim/Flagellant/A_Flagellant_monster_war_cry.A_Flagellant_monster_war_cry",
    "ground_slam": "/Game/FabDerived/Anim/Flagellant/A_Flagellant_monster_ground_slam.A_Flagellant_monster_ground_slam",
@@ -1342,7 +1364,27 @@
   },
   "TuskedBehemothHQ": {
    "war_cry": "/Game/FabDerived/Anim/TuskedBehemothHQ/A_TuskedBehemothHQ_monster_war_cry.A_TuskedBehemothHQ_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/TuskedBehemothHQ/A_TuskedBehemothHQ_monster_ground_slam.A_TuskedBehemothHQ_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/TuskedBehemothHQ/A_TuskedBehemothHQ_monster_ground_slam.A_TuskedBehemothHQ_monster_ground_slam",
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_idle.A_TuskedBehemothHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_walk_f.A_TuskedBehemothHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_walk_b.A_TuskedBehemothHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_walk_l.A_TuskedBehemothHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_walk_r.A_TuskedBehemothHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_loco_run_f.A_TuskedBehemothHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_attack3.A_TuskedBehemothHQSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_attack4.A_TuskedBehemothHQSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_attack6.A_TuskedBehemothHQSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_hit.A_TuskedBehemothHQSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_death.A_TuskedBehemothHQSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_skill1.A_TuskedBehemothHQSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_skill2.A_TuskedBehemothHQSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_cast.A_TuskedBehemothHQSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/TuskedBehemothHQSet/A_TuskedBehemothHQSet_sword_shield_shout.A_TuskedBehemothHQSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 143.8,
+   "runSpeedCm": 333.3
   },
   "Vinelasher": {
    "war_cry": "/Game/FabDerived/Anim/Vinelasher/A_Vinelasher_monster_war_cry.A_Vinelasher_monster_war_cry",
@@ -1464,7 +1506,27 @@
   },
   "WerebearMaulerHQ": {
    "war_cry": "/Game/FabDerived/Anim/WerebearMaulerHQ/A_WerebearMaulerHQ_monster_war_cry.A_WerebearMaulerHQ_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/WerebearMaulerHQ/A_WerebearMaulerHQ_monster_ground_slam.A_WerebearMaulerHQ_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/WerebearMaulerHQ/A_WerebearMaulerHQ_monster_ground_slam.A_WerebearMaulerHQ_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_idle.A_WerebearMaulerHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_walk_f.A_WerebearMaulerHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_walk_b.A_WerebearMaulerHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_walk_l.A_WerebearMaulerHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_walk_r.A_WerebearMaulerHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_loco_run_f.A_WerebearMaulerHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_attack1.A_WerebearMaulerHQSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_attack2.A_WerebearMaulerHQSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_attack3.A_WerebearMaulerHQSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_hit.A_WerebearMaulerHQSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_death.A_WerebearMaulerHQSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_skill1.A_WerebearMaulerHQSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_skill2.A_WerebearMaulerHQSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_cast.A_WerebearMaulerHQSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/WerebearMaulerHQSet/A_WerebearMaulerHQSet_unarmed_shout.A_WerebearMaulerHQSet_unarmed_shout"
+   },
+   "walkSpeedCm": 181.8,
+   "runSpeedCm": 286.1
   },
   "WitheredMatron": {
    "war_cry": "/Game/FabDerived/Anim/WitheredMatron/A_WitheredMatron_monster_war_cry.A_WitheredMatron_monster_war_cry",
