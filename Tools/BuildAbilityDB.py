@@ -141,7 +141,7 @@ POOL = {
     "grave_line": ("Grave Line", ["dps"], "active", "shadow", "aim", 0, 35, 0, 8, 85, "impact damage", 900, 280, 5,
                    "Shadow line: {effect} impact damage and silences enemies it hits for 2s.", [fx("silence", "area", 2.0, label="Silenced")], {}),
     "ashen_square": ("Ashen Ward", ["dps"], "active", "fire", "aim", 0, 35, 0, 8, 60, "impact damage", 900, 280, 4,
-                     "Ash square: {effect} impact damage, then smouldering ground for 4s.", [], {}),
+                     "Ash circle: {effect} impact damage, then smouldering ground for 4s.", [], {}),
     "blight_sigil": ("Blight Sigil", ["dps"], "active", "poison", "aim", 0, 35, 0, 8, 60, "impact damage", 900, 280, 5,
                      "Blight sigil: {effect} impact damage; victims receive 50% less healing for 6s.", [fx("healCut", "area", 6.0, 0.5, label="Healing -50%")], {}),
     "piercing_shot": ("Piercing Shot", ["dps"], "active", "physical", "aim", 0, 0, 25, 9, 90, "damage", 1500, 30, 0,

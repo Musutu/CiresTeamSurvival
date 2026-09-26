@@ -107,10 +107,24 @@ private:
     TArray<FLinearColor> GroundColors;
     void ClassifyCue();
     void ProbeGround();
+    // telegraphs: a flat zone on a slope was clipped by the terrain (a straight chord cut through the circle). The area's
+    // ground heights are sampled once on a 9x9 grid and its painted vertices follow them (zones never move).
+    TArray<float> TerrainHeights; FVector2D TerrainMid = FVector2D::ZeroVector; float TerrainHalf = 0.f; bool bTerrainProbed = false, bTerrainFlat = true;
+    void ConformToTerrain(TArray<FVector>& Vertices);
+public:
+    bool ZoneFollowsTerrain() const { return bTerrainProbed && !bTerrainFlat; }
+private:
     // fab-integration: optional Niagara overlay from the Fab VFX packs (CireFabVFX); procedural art always stays.
     TWeakObjectPtr<UFXSystemComponent> FabFX;
     bool bFabTried = false;
     void UpdateFabVFX();
+    // telegraphs: a curated Fab ground overlay is fitted inside the true zone radius and dimmed with the slider.
+    bool bFabGround = false; float FabTargetRadius = 0.f, FabScale = 1.f; FString FabSkipReason;
+public:
+    bool HasFabGroundOverlay() const { return bFabGround && FabFX.IsValid(); }
+    float FabGroundScale() const { return FabScale; }
+    const FString& FabGroundSkipReason() const { return FabSkipReason; }
+private:
 public:
     bool HasFabVFX() const;
 private:

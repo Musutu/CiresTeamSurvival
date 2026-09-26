@@ -41,7 +41,9 @@ void Load(){
         const TSharedPtr<FJsonObject>* Area=nullptr;if(!J->TryGetObjectField(TEXT("area"),Area))continue;
         FString Shape;auto& S=A.Area;if(!(*Area)->TryGetStringField(TEXT("shape"),Shape))continue;
         if(Shape==TEXT("circle"))S.Shape=ECireAreaShape::Circle;else if(Shape==TEXT("cone"))S.Shape=ECireAreaShape::Cone;
-        else if(Shape==TEXT("line"))S.Shape=ECireAreaShape::Line;else if(Shape==TEXT("square"))S.Shape=ECireAreaShape::Square;
+        // telegraphs (Eric 2026-09-26): ground AoE are circles. An authored "square" ground area loads as a circle of its
+        // radius (Ashen Ward: 280 cm, the Ability Database radius), so no zone can telegraph, or hit, as a square.
+        else if(Shape==TEXT("line"))S.Shape=ECireAreaShape::Line;else if(Shape==TEXT("square"))S.Shape=ECireAreaShape::Circle;
         else if(Shape==TEXT("custom"))S.Shape=ECireAreaShape::Custom;else continue;
         if(!Number(*Area,TEXT("radius"),S.Radius)||!Number(*Area,TEXT("length"),S.Length)||!Number(*Area,TEXT("width"),S.Width)||
            !Number(*Area,TEXT("coneAngleDegrees"),S.ConeAngleDegrees)||!Number(*Area,TEXT("warningSeconds"),S.WarningSeconds)||

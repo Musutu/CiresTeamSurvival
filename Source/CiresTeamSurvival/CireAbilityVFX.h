@@ -89,13 +89,20 @@ namespace CireAbilityVFX
     // cire.AbilityVFX 0 (or -CireLegacyVFX) restores the previous presentation for A/B comparison.
     CIRESTEAMSURVIVAL_API bool Enabled();
 
-    // Brightness control (playtest 3): the player's "Ground telegraph intensity" (Options, 0.3..1, default 0.6).
+    // Brightness control: the player's "Ground telegraph intensity" (Options). telegraphs (2026-09-26, Eric: "about 50% too
+    // bright and covering"): range 0.1..1, default 0.3 (was 0.3..1, default 0.6). The Temper curve is unchanged, so the new
+    // default paints fills at exactly half the old default's opacity; profiles saved on the old scale are halved on load.
+    constexpr float MinGroundIntensity = .1f, DefaultGroundIntensity = .3f, LegacyDefaultGroundIntensity = .6f;
     CIRESTEAMSURVIVAL_API float GroundIntensity(const UWorld* World);
     // Tempers painted ground vertices: translucent fills scale with Intensity x Overlap (overlapping zones share the
-    // budget, 1/sqrt(count)); crisp rims and runes keep more alpha; every colour is hue-preserving capped below the
-    // bloom threshold so stacked or bright zones never white out.
+    // budget, 1/sqrt(count)); crisp rims and runes keep more alpha (never below RimAlphaFloor, so enemy warnings stay
+    // readable at the lowest setting); every colour is hue-preserving capped below the bloom threshold so stacked or
+    // bright zones never white out.
     CIRESTEAMSURVIVAL_API void Temper(TArray<FLinearColor>& Colors, int32 From, float Intensity, float Overlap);
-    constexpr float FillEmissiveCap = .9f, RimEmissiveCap = 1.2f;
+    // telegraphs: emissive caps lowered (fill 0.9 -> 0.6, rim/runes 1.2 -> 0.95) so the ground no longer blooms.
+    constexpr float FillEmissiveCap = .6f, RimEmissiveCap = .95f, RimAlphaFloor = .42f;
+    // Fab ground-effect overlays (Niagara "area" role) follow the same slider: 1 = their stock look at the old default.
+    CIRESTEAMSURVIVAL_API float FabGroundBrightness(float Intensity);
 
     // Local impact camera kick (UISettings.bImpactCameraShake); only near the local champion.
     CIRESTEAMSURVIVAL_API void ImpactShake(UWorld* World, FVector At, float Strength);

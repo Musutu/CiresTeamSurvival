@@ -10,6 +10,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
+#include "NiagaraTypes.h" // telegraphs: user parameter types
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -28,6 +29,8 @@ struct FTable
     TMap<FString, CireFabVFX::FEntry> Abilities; // fab-coverage: "<skill id>.<role>"
     TMap<FString, TWeakObjectPtr<UFXSystemAsset>> Resolved;
     TSet<FString> Unresolvable;
+    TMap<FString, FString> GroundExcluded; // telegraphs: object path -> why it never sits on a zone (square/diamond, does not scale)
+    TMap<FString, float> GroundRadius; // telegraphs: measured XY footprint radius at scale 1 (FabVFX.json "groundRadius")
 };
 FTable& Table() { static FTable T; return T; }
 
@@ -74,6 +77,14 @@ void Load()
                     CireFabVFX::FEntry E=ParseEntry(R.Value);
                     if(E.Candidates.Num())T.Abilities.Add(FString(A.Key.ToView()).ToLower()+TEXT(".")+FString(R.Key.ToView()).ToLower(),MoveTemp(E));
                 }
+    // telegraphs: curated ground overlays. "groundRadius" (path -> cm at scale 1, measured by RunSpellGallery.py --fab-ground)
+    // is the allow-list; "groundExcluded" (path -> reason) documents the systems that must never sit on a zone.
+    const TSharedPtr<FJsonObject>* Radii=nullptr;
+    if(Root->TryGetObjectField(TEXT("groundRadius"),Radii))
+        for(const auto& R:(*Radii)->Values){double V=0;if(R.Value->TryGetNumber(V)&&V>1)T.GroundRadius.Add(FString(R.Key.ToView()),static_cast<float>(V));}
+    const TSharedPtr<FJsonObject>* Excluded=nullptr;
+    if(Root->TryGetObjectField(TEXT("groundExcluded"),Excluded))
+        for(const auto& R:(*Excluded)->Values)T.GroundExcluded.Add(FString(R.Key.ToView()),R.Value->Type==EJson::String?R.Value->AsString():FString(TEXT("excluded")));
     const TSharedPtr<FJsonObject>* Buffs=nullptr;
     if(Root->TryGetObjectField(TEXT("buffs"),Buffs))
         for(const auto& B:(*Buffs)->Values)
@@ -194,6 +205,72 @@ void CireFabVFX::Release(UFXSystemComponent* Component)
     if(UNiagaraComponent* Niagara=Cast<UNiagaraComponent>(Component)){if(Niagara->PoolingMethod==ENCPoolMethod::None)Niagara->SetAutoDestroy(true);}
     else if(UParticleSystemComponent* Cascade=Cast<UParticleSystemComponent>(Component)){if(Cascade->PoolingMethod==EPSCPoolMethod::None)Cascade->bAutoDestroy=true;}
     Component->Deactivate();
+}
+
+bool CireFabVFX::IsGroundOverlay(const UFXSystemAsset* System, FString* Why)
+{
+    auto No=[Why](const TCHAR* Reason){if(Why)*Why=Reason;return false;};
+    // Cascade systems expose no colour parameters (cannot follow the brightness slider): never a ground overlay.
+    if(!System||!System->IsA<UNiagaraSystem>())return No(TEXT("not a Niagara system"));
+    const FString Path=System->GetPathName();
+    if(const FString* Reason=Loaded().GroundExcluded.Find(Path)){if(Why)*Why=*Reason;return false;}
+    if(!Loaded().GroundRadius.Contains(Path))return No(TEXT("unmeasured (no groundRadius entry)"));
+    return true;
+}
+
+UFXSystemAsset* CireFabVFX::ResolveGround(const FEntry* Entry, FString* Why)
+{
+    if(Why)*Why=Entry?TEXT("no candidate installed"):TEXT("no area entry");
+    if(!Entry||!Enabled())return nullptr;
+    FString Last;
+    for(const FString& Path:Entry->Candidates)
+    {
+        FEntry One;One.Candidates.Add(Path);
+        UFXSystemAsset* System=Resolve(&One);
+        if(!System)continue;
+        if(IsGroundOverlay(System,&Last))return System;
+        if(Why)*Why=FString::Printf(TEXT("%s: %s"),*System->GetName(),*Last);
+    }
+    return nullptr;
+}
+
+float CireFabVFX::NativeGroundRadius(const UFXSystemAsset* System)
+{
+    const float* R=System?Loaded().GroundRadius.Find(System->GetPathName()):nullptr;return R?*R:0.f;
+}
+
+float CireFabVFX::MeasureReach(const UFXSystemComponent* Component)
+{
+    if(!Component)return 0.f;
+    const FBoxSphereBounds B=Component->Bounds;const FVector Here=Component->GetComponentLocation();
+    return static_cast<float>(FVector2D(B.Origin.X-Here.X,B.Origin.Y-Here.Y).Size()+FMath::Max(B.BoxExtent.X,B.BoxExtent.Y));
+}
+
+int32 CireFabVFX::DimColors(UFXSystemComponent* Component, float Brightness)
+{
+    UNiagaraComponent* Niagara=Cast<UNiagaraComponent>(Component);
+    UNiagaraSystem* System=Niagara?Niagara->GetAsset():nullptr;
+    if(!System||!FMath::IsFinite(Brightness))return 0;
+    Brightness=FMath::Clamp(Brightness,0.f,1.f);
+    const FNiagaraUserRedirectionParameterStore& Store=System->GetExposedParameters();
+    TArray<FNiagaraVariable> Params;Store.GetUserParameters(Params);
+    int32 Scaled=0;
+    for(const FNiagaraVariable& P:Params)
+    {
+        if(P.GetType()==FNiagaraTypeDefinition::GetColorDef())
+        {
+            FLinearColor C=Store.GetParameterValue<FLinearColor>(P);
+            C.R*=Brightness;C.G*=Brightness;C.B*=Brightness; // alpha untouched: vendors use it for erosion/opacity masks
+            Niagara->SetVariableLinearColor(P.GetName(),C);++Scaled;
+        }
+        else if(P.GetType()==FNiagaraTypeDefinition::GetFloatDef())
+        {
+            const FString Name=P.GetName().ToString();
+            if(Name.Contains(TEXT("Emissive"))||Name.Contains(TEXT("Intensity"))||Name.Contains(TEXT("Brightness"))||Name.Contains(TEXT("Glow")))
+            {Niagara->SetVariableFloat(P.GetName(),Store.GetParameterValue<float>(P)*Brightness);++Scaled;}
+        }
+    }
+    return Scaled;
 }
 
 CireFabVFX::FCoverage CireFabVFX::Coverage()

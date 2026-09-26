@@ -54,6 +54,27 @@ namespace CireFabVFX
     // Stops emitting and lets the live particles finish, then destroys the component (Niagara or Cascade).
     CIRESTEAMSURVIVAL_API void Release(UFXSystemComponent* Component);
 
+    // telegraphs (2026-09-26): Fab ground-effect overlays (the "area" role under a live ACireAreaEffect).
+    // Vendor area systems are authored at their own size and footprint (the holy set carries a diamond / square frame,
+    // some throw world-space shards or smoke that ignore the component scale), so a ground overlay is CURATED:
+    //   - it only decorates CIRCLE zones (lines, cones and polygons keep the procedural telegraph alone), never pylon fields;
+    //   - the system must have a measured footprint in FabVFX.json "groundRadius" (cm at scale 1, from
+    //     Tools/RunSpellGallery.py --fab-ground) and must not be listed in "groundExcluded" (path -> reason);
+    //   - it is scaled so that footprint sits inside the true radius (GroundFitFraction) and dimmed with the slider.
+    CIRESTEAMSURVIVAL_API bool IsGroundOverlay(const UFXSystemAsset* System, FString* Why = nullptr);
+    // First candidate of the entry that resolves AND is a curated ground overlay (nullptr, with the reason, otherwise).
+    CIRESTEAMSURVIVAL_API UFXSystemAsset* ResolveGround(const FEntry* Entry, FString* Why = nullptr);
+    // Measured XY footprint radius of a system spawned at scale 1 (cm); 0 when not measured.
+    CIRESTEAMSURVIVAL_API float NativeGroundRadius(const UFXSystemAsset* System);
+    // Current XY reach of a live component's bounds from its origin (cm), for the gallery measurement pass.
+    CIRESTEAMSURVIVAL_API float MeasureReach(const UFXSystemComponent* Component);
+    // Fraction of the true radius a ground overlay may reach (the procedural rim stays the outermost line).
+    constexpr float GroundFitFraction = .92f;
+    // Multiplies the RGB of every exposed LinearColor user parameter (and float "Emissive"/"Intensity"/"Brightness"
+    // parameters) by Brightness (Niagara only; Cascade systems expose none and are not used as ground overlays).
+    // Returns how many parameters were scaled.
+    CIRESTEAMSURVIVAL_API int32 DimColors(UFXSystemComponent* Component, float Brightness);
+
     // Diagnostics: how many school/role/buff/ability slots resolve right now (0 on a clean clone).
     struct FCoverage { int32 Configured = 0, Resolved = 0, Abilities = 0, AbilitySlots = 0, AbilitySlotsResolved = 0, Cascade = 0; TArray<FString> Missing; };
     CIRESTEAMSURVIVAL_API FCoverage Coverage();

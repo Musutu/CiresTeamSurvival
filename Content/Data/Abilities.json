@@ -3186,7 +3186,7 @@
     "minCooldownSeconds": 1.0
    },
    "status": "implemented",
-   "description": "Ash square: {effect} impact damage, then smouldering ground for 4s.",
+   "description": "Ash circle: {effect} impact damage, then smouldering ground for 4s.",
    "effects": [],
    "champions": [
     "ranger",

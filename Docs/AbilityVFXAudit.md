@@ -147,7 +147,7 @@ python Tools/BuildAbilityVFXAudit.py BEFORE AFTER COMPARE               # regene
 | 21 | Ember Lance `ember_lance` | champion / line / fire (scholar) | Aim: flat green strip. Cast: fire ring + embers at the AIM POINT. Projectile sat unannounced for 0.35 s. | Point marker at the designated spot instead of a line; no enemy-visible telegraph; no direction cue. | Aim lane with arrowhead + travelling chevrons; 0.35 s warning lane of the true 60 cm x 1200 cm corridor that fills; caster flare; fire head/wake; ground glow under the head; burst on end. | 020_ember_lance.jpg |
 | 22 | Renewal `renewal` | champion / circle / life (scholar) | Life sigil at caster. | 1000 cm reach not shown. | Shockwave to 1000 cm. | 021_renewal.jpg |
 | 23 | Soul Conduit `soul_conduit` | passive / none / steel (scholar) | Passive. | None. | No telegraph by design. | 022_soul_conduit.jpg |
-| 24 | Ashen Ward `ashen_square` | champion / square / holy (lancer) | Flat square fill, amber warning. | No timing cue. | Soft square, pulsing border, growing fill, centre marker, detonation. | 023_ashen_square.jpg |
+| 24 | Ashen Ward `ashen_square` | champion / square / holy (lancer) | Flat square fill, amber warning. | No timing cue. | Soft square, pulsing border, growing fill, centre marker, detonation. (2026-09-26: now a 280 cm circle, see the shape audit.) | 023_ashen_square.jpg |
 | 25 | Oathbound Guardian `oathbound_guardian` | champion / circle / spirit (summoner) | Small placement circle. | - | Spot marker preview; spirit arrival pulse. | 024_oathbound_guardian.jpg |
 | 26 | Summoned Wall `summoned_wall` | champion / custom / earth (summoner) | Rectangle preview. | - | Preview with animated border; runic trims unchanged. | 025_summoned_wall.jpg |
 | 27 | Cataclysm `cataclysm` | champion / circle / fire (summoner) | Fire ring (~140 cm) at the target. | True radius 550 cm around the target not shown. | Shockwave to 550 cm + fire flourish, camera kick. | 026_cataclysm.jpg |
@@ -546,8 +546,605 @@ Shadow Step's rift is violet for the caster's team (the earlier gold capture pre
   bloom threshold. Release flashes of active zones no longer go near-solid.
 - Overlap: each area visual counts the zones overlapping it; they share one brightness budget
   (1/sqrt(count) for fills, count^-0.75 for rims/runes). Buff fields such as pylons show runes at 35%.
-- Options > Graphics: **Ground telegraph intensity** (0.3-1.0, default 0.6, saved in the profile); the aura
+- Options > Graphics: **Ground telegraph intensity** (0.3-1.0, default 0.6, saved in the profile; superseded 2026-09-26: 0.1-1.0, default 0.3, see below); the aura
   slider is now labelled **Ally / other units' effects**.
 - Evidence (gameplay camera): `Saved/AbilityVFX/dim3-all-20260925-133126` including `overlap_town`
   (4 pylon fields + poison pool + fire cone + an enemy cleave on the town road under dusk lighting).
 - The Niagara packs Eric is buying will replace much of this procedural art in a later pass.
+
+## Telegraphs pass (2026-09-26): circles only, see-through overlay
+
+Eric: "the ground effect can come in square form, which should be changed to circular" and the overlay is
+"great, but about 50% too bright and covering".
+
+- **Circles only.** Ashen Ward (`ashen_square`) was the one authored square ground AoE (a 500 cm square turned
+  with the aim). It is now a 280 cm circle (its Ability Database radius), and any "square" ground area in data
+  loads or imports as a circle. Rectangles remain only for true line hit shapes (skillshots, charges, pulls) and
+  constructs with box collision (Summoned Wall, the protection box).
+- **Fab ground overlays** (the area role in `FabVFX.json`) decorate circle zones only, never lines, cones,
+  polygons or pylon fields. They are fitted to 92% of the true radius and dimmed with the slider. The list is
+  curated: `groundRadius` holds each system's native radius, measured by `Tools/RunSpellGallery.py --fab-ground`.
+  `groundExcluded` holds the systems that draw non-circular frames: holy `NS_Light_Magic_AOE1` and
+  `NS_Light_Magic_Circle` draw a square frame with diamond corners, and the `NS_AreaBuff` tendrils ignore scale.
+  Holy and heal circles therefore keep the procedural rune circle.
+- **Terrain.** Zones follow sloped ground on a 9x9 height grid instead of being clipped into a chord.
+- **Brightness.** Options > Graphics > **Ground telegraph intensity** is now 0.1-1.0 with a default of **0.3**
+  (previously 0.3-1.0, default 0.6). Old profiles are halved on load, so 0.8 becomes 0.4. Fill and rim emissive
+  caps drop from 0.9/1.2 to 0.6/0.95, and the rim alpha floor is 0.42. Enemy warnings keep a readable rim even
+  at the lowest setting. Dense edge bands are narrower, the pylon minimum fill drops from 0.15 to 0.05, and area
+  particles, bloom and the fallback flat mesh all follow the slider.
+- **Shape audit** (`CireAbilityVFX::RunTests` section 11, part of `Tools/RunExpansionChecks.py`). The audit
+  paints every ability's hit shape with the real painter: Ability Database entries, champion extras, every
+  monster archetype skill, the tech constructs, and the summons.
+  - It casts 72 rays from the centre and keeps the farthest crossing of any painted triangle edge, so a circle
+    reads about 1.00 and a square 1.41.
+  - The first probe sampled the farthest *vertex* per angular bin instead. That misread true circles as 1.31
+    whenever the rim had fewer vertices than bins.
+  - The gate fails on any square ground shape or any circle whose roundness is 1.08 or more.
+  - It writes `Saved/ShapeAudit/shape_audit.json`, and `Tools/BuildShapeAudit.py` renders that file into the
+    table below.
+- Evidence (after, 2026-09-26): champion abilities `Saved/AbilityVFX/after-champion-20260926-071919` (492 captures;
+  Ashen Ward is `023_ashen_square_*`), monster set `Saved/AbilityVFX/after-monster-all-20260926-072630` (before:
+  `before-monster-all-20260926-031253`), spell gallery `Saved/SpellGallery/20260926-071634` (before: `20260926-031117`),
+  Fab ground sheets `Saved/SpellGallery/20260926-071747` (stock vs fitted vs candidates), in-game wave fight
+  `Saved/UIWaveCapture/20260926-072939` (before: `20260926-031452`).
+
+## Shape audit (telegraphs, 2026-09-26)
+
+<!-- shape-audit:start -->
+
+547 entries (111 ability active, 36 ability passive, 27 ability ultimate, 4 champion extra, 11 construct, 349 monster, 5 monster construct, 4 summon / construct). Hit shapes: 2 chain, 181 circle, 55 cone, 5 custom, 63 line, 105 none, 88 self, 48 unit. Square ground shapes: **0**; circles not painted round: **0**.
+
+Roundness = largest / smallest painted radius over 72 angular bins (1.00 = perfect circle; a square paints 1.41).
+
+| # | Ability | Group | Status | Hit shape | Size (cm) | Rendered shape | Roundness | School | Fab ground overlay |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | Aegis Pylon `aegis_pylon` | ability active | implemented | circle | r 450 | circle (soft edge) | 1.001 | arcane (heal) | none (NS_Light_Magic_Circle: square frame with diamond corners inside its ring (not a circle)) |
+| 2 | Aether Mend `aether_mend` | ability active | implemented | unit | - | unit ring (circle) + heal crosses | - | arcane (heal) | none (Fab ground overlays only decorate circle zones) |
+| 3 | Arc Mine `arc_mine` | ability active | implemented | circle | r 240 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 4 | Arcane Blunderbuss `arcane_blunderbuss` | ability active | implemented | cone | r 550, 60 deg | cone + chevrons | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 5 | Artillery `artillery` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 6 | Ashen Ward `ashen_square` | ability active | implemented | circle | r 280 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 7 | Banishment `banishment` | ability active | implemented | unit | - | ground streak + unit ring (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 8 | Rootbreaker Charge `bear_charge` | ability active | planned | none | - | none (passive) + void rings (circles r 380 / 160) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 9 | Ironroot Slumber `bear_hibernate` | ability active | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 10 | Gravewood Maul `bear_maul` | ability active | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 11 | Deepwood Roar `bear_roar` | ability active | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 12 | Totem Bulwark `behemoth_totem_bulwark` | ability active | planned | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 13 | Totem Sweep `behemoth_totem_sweep` | ability active | planned | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 14 | Tuskbreaker `behemoth_tusk_line` | ability active | planned | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 15 | Blade Flurry `blade_flurry` | ability active | implemented | circle | r 420 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 16 | Blight Sigil `blight_sigil` | ability active | implemented | custom | 520 x 430 | authored polygon | - | poison | none (Fab ground overlays only decorate circle zones) |
+| 17 | Bouncing Glaive `bouncing_glaive` | ability active | implemented | chain | hop r 500 | arcs + hop ring (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 18 | Grove Javelin `centaur_grove_javelin` | ability active | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 19 | Herd Call `centaur_herd_call` | ability active | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 20 | Evergrove Trail `centaur_trailblaze` | ability active | planned | none | - | none (passive) + void rings (circles r 380 / 160) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 21 | Chain Spark `chain_spark` | ability active | implemented | chain | hop r 500 | arcs + hop ring (circle) | - | storm | none (Fab ground overlays only decorate circle zones) |
+| 22 | Chieftain Hook `chieftain_axe_hook` | ability active | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 23 | Blood-Oath Banner `chieftain_banner` | ability active | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 24 | Cinder Cone `cinder_cone` | ability active | implemented | cone | r 600, 70 deg | cone + chevrons | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 25 | Cleaving Strike `cleaving_strike` | ability active | implemented | circle | r 320 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 26 | Crescent Volley `crescent_volley` | ability active | implemented | line | 1400 x 80 | rectangle lane + arrow (projectile corridor) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 27 | Decimating Strike `decimating_strike` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 28 | Disruption Pylon `disruption_pylon` | ability active | implemented | circle | r 450 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 29 | Dragon Oath `drakish_dragon_oath` | ability active | planned | none | - | none (passive) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 30 | Scale Guard `drakish_scale_guard` | ability active | planned | none | - | none (passive) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 31 | Wing Rebuke `drakish_wing_rebuke` | ability active | planned | none | - | none (passive) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 32 | Root Snare `dryad_root_snare` | ability active | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 33 | Seed Mend `dryad_seed_mend` | ability active | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 34 | Thornweave `dryad_thorn_line` | ability active | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 35 | Eagle Eye `eagle_eye` | ability active | implemented | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 36 | Ember Lance `ember_lance` | ability active | implemented | line | 1200 x 60 | rectangle lane + arrow (projectile corridor) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 37 | Evasive Stance `evasive_stance` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 38 | Frost Bind `frost_bind` | ability active | implemented | line | 1200 x 68 | rectangle lane + arrow (projectile corridor) | - | frost | none (Fab ground overlays only decorate circle zones) |
+| 39 | Ether Anchor `golem_ether_anchor` | ability active | planned | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 40 | Ether Furnace `golem_ether_furnace` | ability active | planned | none | - | none (passive) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 41 | Felfire Fist `golem_fel_fist` | ability active | planned | none | - | none (passive) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 42 | Granite Fist `golem_granite_fist` | ability active | planned | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 43 | Living Granite `golem_living_granite` | ability active | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 44 | Verdant Bloom `golem_moss_bloom` | ability active | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 45 | Grave Line `grave_line` | ability active | implemented | line | 900 x 160 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 46 | Gravity Pylon `gravity_pylon` | ability active | implemented | circle | r 450 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 47 | Haste Pylon `haste_pylon` | ability active | implemented | circle | r 450 | circle (soft edge) | 1.001 | arcane (heal) | none (NS_Light_Magic_Circle: square frame with diamond corners inside its ring (not a circle)) |
+| 48 | Hex Mark `hex_mark` | ability active | implemented | unit | - | ground streak + unit ring (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 49 | Hunter's Stride `hunters_stride` | ability active | implemented | circle | r 70 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 50 | Iron Guard `iron_guard` | ability active | implemented | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 51 | Beacon of Return `keeper_beacon` | ability active | planned | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 52 | Dawn Beam `keeper_dawn_beam` | ability active | planned | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 53 | Lantern Ward `keeper_lantern_ward` | ability active | planned | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 54 | Longshot Stance `longshot` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 55 | Construct: Mechanical Tank `mechanical_tank` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 56 | Caltrop Mine `mine_layer` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 57 | Faultline `miner_faultline` | ability active | planned | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 58 | Deep Lantern `miner_lantern` | ability active | planned | none | - | none (passive) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 59 | Pickfall `miner_pickfall` | ability active | planned | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 60 | Moonlit Sprint `moonlit_sprint` | ability active | implemented | self | - | caster pulse (circle) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 61 | Oathbound Guardian `oathbound_guardian` | ability active | implemented | circle | r 45 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 62 | Overcharge `overcharge` | ability active | implemented | self | - | caster pulse (circle) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 63 | Owl Scout `owl_scout` | ability active | implemented | circle | r 450 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 64 | Merciful Censer `paladin_holy_flail` | ability active | planned | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 65 | Pilgrim Light `paladin_pilgrim_light` | ability active | planned | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 66 | Relic Vow `paladin_relic_vow` | ability active | planned | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 67 | Righteous Flail `paladin_righteous_flail` | ability active | planned | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 68 | Construct: Pavise `pavise` | ability active | implemented | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 69 | Phase Lance `phase_lance` | ability active | implemented | line | 1300 x 60 | rectangle lane + arrow (projectile corridor) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 70 | Photon Turret `photon_turret` | ability active | implemented | circle | r 950 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 71 | Piercing Shot `piercing_shot` | ability active | implemented | line | 1500 x 36 | rectangle lane + arrow (projectile corridor) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 72 | Polymorph `polymorph` | ability active | implemented | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 73 | Powder Flask `powder_flask` | ability active | implemented | circle | r 260 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 74 | Aegis Dome `protection_dome` | ability active | implemented | custom | 480 x 480 | rectangle (true box collision) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 75 | Purge `purge` | ability active | implemented | unit | - | ground streak + unit ring (circle) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 76 | Purify `purify` | ability active | implemented | unit | - | unit ring (circle) + heal crosses | - | holy (heal) | none (Fab ground overlays only decorate circle zones) |
+| 77 | Repulsor Pulse `repulsor_pulse` | ability active | implemented | circle | r 350 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 78 | Restoring Light `restoring_light` | ability active | implemented | unit | - | unit ring (circle) + heal crosses | - | holy (heal) | none (Fab ground overlays only decorate circle zones) |
+| 79 | Ashfang: Maul `sabercat_maul` | ability active | implemented | unit | - | ground streak + unit ring (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 80 | Ashfang: Pounce `sabercat_pounce` | ability active | implemented | unit | - | ground streak + unit ring (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 81 | Ashfang: Dread Roar `sabercat_roar` | ability active | implemented | self | - | caster pulse (circle) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 82 | Sanctuary `sanctuary` | ability active | implemented | circle | r 600 | circle (soft edge) | 1.001 | holy (heal) | none (NS_Light_Magic_Circle: square frame with diamond corners inside its ring (not a circle)) |
+| 83 | Second Wind `second_wind` | ability active | implemented | self | - | caster pulse (circle) + heal crosses | - | nature (heal) | none (Fab ground overlays only decorate circle zones) |
+| 84 | Shadow Dance `shadow_dance` | ability active | implemented | none | - | none (passive) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 85 | Shadow Step `shadow_step` | ability active | implemented | unit | - | ground streak + unit ring (circle) + void rings (circles r 420 / 180) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 86 | Shield Bash `shield_bash` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 87 | Shield Slam `shield_slam` | ability active | implemented | unit | - | ground streak + unit ring (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 88 | Shield Toss `shield_toss` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 89 | Shield Tumble `shield_tumble` | ability active | implemented | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 90 | Shield Wall `shield_wall` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 91 | Silver Shot `silver_shot` | ability active | implemented | line | 1300 x 56 | rectangle lane + arrow (projectile corridor) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 92 | Skitter Swarm `skitter_swarm` | ability active | implemented | circle | r 180 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 93 | Spectral Blade `spectral_blade` | ability active | implemented | unit | - | ground streak + unit ring (circle) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 94 | Spectral Pack `spectral_pack` | ability active | implemented | circle | r 230 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 95 | Spirit Lantern `spirit_lantern` | ability active | implemented | circle | r 260 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 96 | Stasis Snare `stasis_snare` | ability active | implemented | circle | r 150 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 97 | Runestone Wall `summoned_wall` | ability active | implemented | custom | 70 x 440 | rectangle (true box collision) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 98 | Taunting Tumble `taunting_tumble` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 99 | Axe Frenzy `troll_axe_frenzy` | ability active | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 100 | Bloodbound Leap `troll_blood_leap` | ability active | planned | none | - | none (passive) + void rings (circles r 380 / 160) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 101 | Returning Axes `troll_returning_axes` | ability active | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 102 | Twin Throw `troll_twin_throw` | ability active | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 103 | Tumble Strike `tumble_strike` | ability active | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 104 | Venom Ground `venom_ground` | ability active | implemented | circle | r 280 | circle (soft edge) | 1.001 | poison | NS_Posion_Magic_Area1: round, fitted inside the rim (native r 593), dimmed |
+| 105 | Venom Tumble `venom_tumble` | ability active | implemented | none | - | none (passive) | - | poison | none (Fab ground overlays only decorate circle zones) |
+| 106 | War Cry `war_cry` | ability active | implemented | circle | r 850 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 107 | Warding Talisman `warding_talisman` | ability active | implemented | self | - | caster pulse (circle) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 108 | Fey Trail `whisp_fey_trail` | ability active | planned | none | - | none (passive) + void rings (circles r 380 / 160) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 109 | Guiding Mote `whisp_guiding_mote` | ability active | planned | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 110 | Spirit Tether `whisp_spirit_tether` | ability active | planned | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 111 | Witchfinder's Mark `witchfinders_mark` | ability active | implemented | unit | - | ground streak + unit ring (circle) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 112 | Aether Nexus `aether_nexus` | ability ultimate | implemented | circle | r 650 | circle (soft edge) | 1.001 | arcane (heal) | none (NS_Light_Magic_Circle: square frame with diamond corners inside its ring (not a circle)) |
+| 113 | Bastion of Dawn `bastion_of_dawn` | ability ultimate | implemented | circle | r 650 | circle (soft edge) | 1.001 | holy (heal) | none (NS_Light_Magic_Circle: square frame with diamond corners inside its ring (not a circle)) |
+| 114 | Elder of the Deepwood `bear_colossus` | ability ultimate | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 115 | Ancestral Stampede `behemoth_stampede` | ability ultimate | planned | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 116 | Cataclysm `cataclysm` | ability ultimate | implemented | circle | r 550 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 117 | Spring March `centaur_spring_march` | ability ultimate | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 118 | Challenge of Iron `challenge_of_iron` | ability ultimate | implemented | circle | r 850 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 119 | Earthshout `chieftain_earthshout` | ability ultimate | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 120 | Collect the Bounty `collect_the_bounty` | ability ultimate | implemented | unit | - | ground streak + unit ring (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 121 | Ancient Pact `drakish_ancient_pact` | ability ultimate | planned | none | - | none (passive) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 122 | Grove Renewal `dryad_grove_renewal` | ability ultimate | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 123 | Executioner's Verdict `executioners_verdict` | ability ultimate | implemented | unit | - | ground streak + unit ring (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 124 | Glaive Storm `glaive_storm` | ability ultimate | implemented | circle | r 480 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 125 | Worldstone Awakened `golem_worldstone` | ability ultimate | planned | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 126 | Hexbane Judgment `hexbane_judgment` | ability ultimate | implemented | circle | r 450 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 127 | Sunrise Vigil `keeper_sunrise` | ability ultimate | planned | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 128 | Last Stand `last_stand` | ability ultimate | implemented | self | - | caster pulse (circle) + heal crosses | - | steel (heal) | none (Fab ground overlays only decorate circle zones) |
+| 129 | Mass Aegis `mass_aegis` | ability ultimate | implemented | circle | r 900 | circle (soft edge) | 1.001 | holy (heal) | none (NS_Light_Magic_Circle: square frame with diamond corners inside its ring (not a circle)) |
+| 130 | Heart of the Mountain `miner_mountain` | ability ultimate | planned | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 131 | Renewal `renewal` | ability ultimate | implemented | circle | r 1000 | circle (soft edge) | 1.001 | holy (heal) | none (NS_Light_Magic_Circle: square frame with diamond corners inside its ring (not a circle)) |
+| 132 | Seismic Reprisal `seismic_reprisal` | ability ultimate | implemented | circle | r 450 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 133 | Spectral Hunt `spectral_hunt` | ability ultimate | implemented | unit | - | ground streak + unit ring (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 134 | Starfall `starfall` | ability ultimate | implemented | circle | r 500 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 135 | Red Moon Frenzy `troll_red_moon` | ability ultimate | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 136 | Warp Obelisk `warp_obelisk` | ability ultimate | implemented | circle | r 1300 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 137 | Wellspring `wellspring` | ability ultimate | implemented | unit | - | unit ring (circle) + heal crosses | - | tide (heal) | none (Fab ground overlays only decorate circle zones) |
+| 138 | Kindred Constellation `whisp_constellation` | ability ultimate | planned | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 139 | Aether Engineering `aether_engineering` | ability passive | implemented | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 140 | Artillery Training `artillery_training` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 141 | Battle Rhythm `battle_rhythm` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 142 | Ancient Hide `bear_ancient_hide` | ability passive | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 143 | Ancestral Weight `behemoth_ancestral_weight` | ability passive | planned | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 144 | Bloodrush `bloodrush` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 145 | Blur `blur_step` | ability passive | implemented | none | - | none (passive) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 146 | Steady Gait `centaur_steady_gait` | ability passive | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 147 | Unbroken Clan `chieftain_courage` | ability passive | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 148 | Deep Reserves `deep_reserves` | ability passive | implemented | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 149 | Ember Memory `drakish_ember_memory` | ability passive | planned | none | - | none (passive) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 150 | Green Covenant `dryad_green_covenant` | ability passive | planned | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 151 | Ember Wake `ember_wake` | ability passive | implemented | none | - | none (passive) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 152 | Executioner `executioner` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 153 | Fleet Recovery `fleet_recovery` | ability passive | implemented | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 154 | Frost Wake `frost_wake` | ability passive | implemented | none | - | none (passive) | - | frost | none (Fab ground overlays only decorate circle zones) |
+| 155 | Construct Core `golem_construct_core` | ability passive | planned | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 156 | Hasted Tumble `hasted_tumble` | ability passive | implemented | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 157 | Headshot `headshot` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 158 | Last Light `keeper_last_light` | ability passive | planned | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 159 | Killer Instinct `killer_instinct` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 160 | Orehide `miner_orehide` | ability passive | planned | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 161 | Momentum `momentum` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 162 | Moon Glaive `moon_glaive` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 163 | Price on Every Soul `price_on_every_soul` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 164 | Quickened Mind `quickened_mind` | ability passive | implemented | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 165 | Resonant Lattice `resonant_lattice` | ability passive | implemented | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 166 | Riposte `riposte_roll` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 167 | Slippery `slippery_roll` | ability passive | implemented | none | - | none (passive) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 168 | Soul Conduit `soul_conduit` | ability passive | implemented | none | - | none (passive) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 169 | Stone Skin `stone_skin` | ability passive | implemented | none | - | none (passive) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 170 | Berserker Hunger `troll_hunger` | ability passive | planned | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 171 | Tumbler's Edge `tumblers_edge` | ability passive | implemented | none | - | none (passive) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 172 | Lantern Soul `whisp_lantern_soul` | ability passive | planned | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 173 | Windrunner `windrunner` | ability passive | implemented | none | - | none (passive) | - | storm | none (Fab ground overlays only decorate circle zones) |
+| 174 | Witchbane `witchbane` | ability passive | implemented | none | - | none (passive) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 175 | basic_arcane `basic_arcane` | champion extra | implemented | unit | - | ground streak + unit ring (circle) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 176 | basic_bow `basic_bow` | champion extra | implemented | unit | - | ground streak + unit ring (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 177 | basic_lance `basic_lance` | champion extra | implemented | unit | - | ground streak + unit ring (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 178 | basic_sword `basic_sword` | champion extra | implemented | unit | - | ground streak + unit ring (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 179 | Oathbound Guardian `oathbound_guardian` | summon / construct | implemented | circle | r 45 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 180 | Protection Dome `protection_dome` | summon / construct | implemented | custom | 480 x 480 | rectangle (true box collision) | - | holy | none (Fab ground overlays only decorate circle zones) |
+| 181 | Spectral Pack `spectral_pack` | summon / construct | implemented | circle | r 230 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 182 | Summoned Wall `summoned_wall` | summon / construct | implemented | custom | 70 x 440 | rectangle (true box collision) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 183 | Aegis Pylon `aegis_pylon (field)` | construct | implemented | circle | r 450 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 184 | Aether Nexus `aether_nexus (field)` | construct | implemented | circle | r 650 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 185 | Arc Mine `arc_mine (field)` | construct | implemented | circle | r 240 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 186 | Disruption Pylon `disruption_pylon (field)` | construct | implemented | circle | r 450 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 187 | Gravity Pylon `gravity_pylon (field)` | construct | implemented | circle | r 450 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 188 | Haste Pylon `haste_pylon (field)` | construct | implemented | circle | r 450 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 189 | Photon Turret `photon_turret (field)` | construct | implemented | circle | r 950 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 190 | Skitter Swarm `skitter_swarm (field)` | construct | implemented | circle | r 200 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 191 | Spirit Lantern `spirit_lantern (field)` | construct | implemented | circle | r 260 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 192 | Stasis Snare `stasis_snare (field)` | construct | implemented | circle | r 150 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 193 | Warp Obelisk `warp_obelisk (field)` | construct | implemented | circle | r 1300 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 194 | Empowering Pylon `npc_empower_pylon (field)` | monster construct | implemented | circle | r 500 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 195 | Gravity Pylon `npc_gravity_pylon (field)` | monster construct | implemented | circle | r 450 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 196 | Warp Turret `npc_photon_turret (field)` | monster construct | implemented | circle | r 900 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 197 | Skitter Bomb `npc_skitter (field)` | monster construct | implemented | circle | r 200 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 198 | Stasis Mine `npc_stasis_mine (field)` | monster construct | implemented | circle | r 170 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 199 | Empowering Pylon `aether_bulwark_pylon` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 200 | Thermal Lance `aether_colossus_beam` | monster | aetheri | cone | r 580, 50 deg | cone + chevrons | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 201 | Meltdown `aether_colossus_meltdown` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 202 | Seismic Stomp `aether_colossus_stomp` | monster | aetheri | circle | r 420 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 203 | Shoulder Turrets `aether_colossus_turrets` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 204 | Core Burst `aether_core_burst` | monster | aetheri | circle | r 260 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 205 | Skitter Swarm `aether_deploy_skitters` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 206 | Deploy Turret `aether_deploy_turret` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 207 | Field Repair `aether_field_repair` | monster | aetheri | unit | - | unit ring (circle) + heal crosses | - | steel (heal) | none (Fab ground overlays only decorate circle zones) |
+| 208 | Gravity Field `aether_gravity_field` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 209 | Hardlight Shell `aether_hardlight_shell` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 210 | Final Protocol `aether_hierarch_ascension` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 211 | Link Shield `aether_link_shield` | monster | aetheri | unit | - | ground streak + unit ring (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 212 | Orbital Strike `aether_orbital_strike` | monster | aetheri | circle | r 220 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 213 | Overdrive `aether_overdrive` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 214 | Phase Strike `aether_phase_strike` | monster | aetheri | line | 750 x 170 | rectangle lane + arrow | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 215 | Photon Beam `aether_photon_beam` | monster | aetheri | cone | r 760, 12 deg | cone + chevrons | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 216 | Prism Glare `aether_prism_glare` | monster | aetheri | circle | r 550 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 217 | Psi Sweep `aether_psi_sweep` | monster | aetheri | cone | r 300, 110 deg | cone + chevrons | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 218 | Psionic Storm `aether_psionic_storm` | monster | aetheri | circle | r 520 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 219 | Recall `aether_recall` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 220 | Stasis Mine `aether_stasis_mine` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 221 | Tractor Beam `aether_tractor_beam` | monster | aetheri | line | 1200 x 160 | rectangle lane + arrow | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 222 | Unstable Core `aether_unstable_core` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 223 | Reactor Charge `aether_warframe_charge` | monster | aetheri | line | 900 x 170 | rectangle lane + arrow | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 224 | Warp In `aether_warp_in` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 225 | Warp Pylons `aether_warp_pylons` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 226 | Warp Slam `aether_warp_slam` | monster | aetheri | circle | r 360 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 227 | Warp Step `aether_warp_step` | monster | aetheri | self | - | caster pulse (circle) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 228 | Awaken Saplings `blight_awaken_saplings` | monster | blightwood | self | - | caster pulse (circle) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 229 | Barkskin Oath `blight_barkskin_oath` | monster | blightwood | unit | - | ground streak + unit ring (circle) | - | poison | none (Fab ground overlays only decorate circle zones) |
+| 230 | Blight Bloom `blight_blight_bloom` | monster | blightwood | circle | r 300 | circle (soft edge) | 1.001 | poison | NS_Posion_Magic_Area1: round, fitted inside the rim (native r 593), dimmed |
+| 231 | Briar Patch `blight_briar_patch` | monster | blightwood | circle | r 220 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 232 | Briar Rush `blight_briar_rush` | monster | blightwood | line | 750 x 170 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 233 | Choking Puffball `blight_choking_puff` | monster | blightwood | circle | r 240 | circle (soft edge) | 1.001 | poison | NS_Posion_Magic_Area1: round, fitted inside the rim (native r 593), dimmed |
+| 234 | Crushing Bough `blight_crushing_bough` | monster | blightwood | cone | r 440, 115 deg | cone + chevrons | - | poison | none (Fab ground overlays only decorate circle zones) |
+| 235 | Entangle `blight_entangle` | monster | blightwood | circle | r 230 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 236 | Grove Challenge `blight_grove_challenge` | monster | blightwood | circle | r 550 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 237 | Heartwood Fury `blight_heartwood_fury` | monster | blightwood | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 238 | Matron's Call `blight_matron_call` | monster | blightwood | self | - | caster pulse (circle) | - | poison | none (Fab ground overlays only decorate circle zones) |
+| 239 | Mycelial Link `blight_mycelial_link` | monster | blightwood | unit | - | unit ring (circle) + heal crosses | - | poison (heal) | none (Fab ground overlays only decorate circle zones) |
+| 240 | Oakheart Stomp `blight_oakheart_stomp` | monster | blightwood | circle | r 420 | circle (soft edge) | 1.001 | poison | NS_Posion_Magic_Area1: round, fitted inside the rim (native r 593), dimmed |
+| 241 | Root Eruption `blight_root_eruption` | monster | blightwood | circle | r 300 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 242 | Root Hop `blight_root_hop` | monster | blightwood | self | - | caster pulse (circle) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 243 | Root Quake `blight_root_quake` | monster | blightwood | circle | r 360 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 244 | Rooted Stance `blight_rooted_stance` | monster | blightwood | self | - | caster pulse (circle) | - | poison | none (Fab ground overlays only decorate circle zones) |
+| 245 | Rot Pool `blight_rot_pool` | monster | blightwood | circle | r 220 | circle (soft edge) | 1.001 | poison | NS_Posion_Magic_Area1: round, fitted inside the rim (native r 593), dimmed |
+| 246 | Rotting Embrace `blight_rotting_embrace` | monster | blightwood | line | 1200 x 160 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 247 | Sap Frenzy `blight_sap_frenzy` | monster | blightwood | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 248 | Sap Mending `blight_sap_mending` | monster | blightwood | unit | - | unit ring (circle) + heal crosses | - | nature (heal) | none (Fab ground overlays only decorate circle zones) |
+| 249 | Seedpod Mortar `blight_seedpod_mortar` | monster | blightwood | circle | r 230 | circle (soft edge) | 1.001 | poison | NS_Posion_Magic_Area1: round, fitted inside the rim (native r 593), dimmed |
+| 250 | Splinter Burst `blight_splinter_burst` | monster | blightwood | circle | r 340 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 251 | Spore Cloud `blight_spore_cloud` | monster | blightwood | circle | r 260 | circle (soft edge) | 1.001 | poison | NS_Posion_Magic_Area1: round, fitted inside the rim (native r 593), dimmed |
+| 252 | Spore Scatter `blight_spore_scatter` | monster | blightwood | self | - | caster pulse (circle) | - | poison | none (Fab ground overlays only decorate circle zones) |
+| 253 | Strangling Grove `blight_strangling_grove` | monster | blightwood | circle | r 480 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 254 | Strangling Vines `blight_strangling_vines` | monster | blightwood | circle | r 220 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 255 | Stump Slam `blight_stump_slam` | monster | blightwood | cone | r 360, 80 deg | cone + chevrons | - | poison | none (Fab ground overlays only decorate circle zones) |
+| 256 | Thorn Burst `blight_thorn_burst` | monster | blightwood | cone | r 460, 60 deg | cone + chevrons | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 257 | Thorn Volley `blight_thorn_volley` | monster | blightwood | circle | r 200 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 258 | Thornstorm `blight_thornstorm` | monster | blightwood | circle | r 320 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 259 | Uproot Charge `blight_uproot_charge` | monster | blightwood | line | 900 x 170 | rectangle lane + arrow | - | poison | none (Fab ground overlays only decorate circle zones) |
+| 260 | Thorn Whip `blight_vine_lash` | monster | blightwood | cone | r 340, 85 deg | cone + chevrons | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 261 | Vine Snare `blight_vine_snare` | monster | blightwood | line | 850 x 160 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 262 | Wither Curse `blight_wither_curse` | monster | blightwood | circle | r 240 | circle (soft edge) | 1.001 | poison | NS_Posion_Magic_Area1: round, fitted inside the rim (native r 593), dimmed |
+| 263 | Withering Wrath `blight_withering_wrath` | monster | blightwood | self | - | caster pulse (circle) | - | poison | none (Fab ground overlays only decorate circle zones) |
+| 264 | Bone Volley `bone_volley` | monster | hollow | circle | r 200 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 265 | Brutal Charge `boss_leader_charge` | monster | hollow | line | 1250 x 200 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 266 | Sundering Cleave `boss_leader_cleave` | monster | hollow | cone | r 440, 120 deg | cone + chevrons | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 267 | Blood Frenzy `boss_leader_frenzy` | monster | hollow | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 268 | Rallying Roar `boss_leader_rally` | monster | hollow | circle | r 1200 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 269 | Sundering Cleave `boss_siege_cleave` | monster | hollow | cone | r 420, 110 deg | cone + chevrons | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 270 | Siege Fury `boss_siege_fury` | monster | hollow | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 271 | Rallying Bellow `boss_siege_rally` | monster | hollow | circle | r 1000 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 272 | Siege Stomp `boss_siege_stomp` | monster | hollow | circle | r 380 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 273 | Horned Cleave `brute_cleave` | monster | ironhide | cone | r 340, 85 deg | cone + chevrons | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 274 | Frenzy `brute_frenzy` | monster | ironhide | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 275 | Leap Slam `brute_leap` | monster | ironhide | line | 850 x 180 | rectangle lane + arrow | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 276 | Blade Sweep `centaur_sweep` | monster | feral_kin | cone | r 330, 100 deg | cone + chevrons | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 277 | Trample `centaur_trample` | monster | feral_kin | line | 900 x 190 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 278 | Cinder Breath `drake_breath` | monster | cinder_drake | cone | r 480, 55 deg | cone + chevrons | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 279 | Ember Spit `drake_embers` | monster | cinder_drake | circle | r 220 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 280 | Ash Fall `drakkari_ash_fall` | monster | drakkari | circle | r 300 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 281 | Molten Fury `drakkari_ashwing_fury` | monster | drakkari | self | - | caster pulse (circle) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 282 | Scorching Stomp `drakkari_ashwing_stomp` | monster | drakkari | circle | r 400 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 283 | Tail Lash `drakkari_ashwing_tail` | monster | drakkari | cone | r 400, 140 deg | cone + chevrons | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 284 | Brood Oath `drakkari_brood_oath` | monster | drakkari | unit | - | ground streak + unit ring (circle) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 285 | Broodmother's Wrath `drakkari_broodmother_wrath` | monster | drakkari | self | - | caster pulse (circle) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 286 | Cauterize `drakkari_cauterize` | monster | drakkari | unit | - | unit ring (circle) + heal crosses | - | fire (heal) | none (Fab ground overlays only decorate circle zones) |
+| 287 | Cinder Spit `drakkari_cinder_spit` | monster | drakkari | cone | r 260, 60 deg | cone + chevrons | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 288 | Dive Charge `drakkari_dive_charge` | monster | drakkari | line | 900 x 170 | rectangle lane + arrow | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 289 | Draconic Fury `drakkari_draconic_fury` | monster | drakkari | self | - | caster pulse (circle) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 290 | Dragon Roar `drakkari_dragon_roar` | monster | drakkari | circle | r 550 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 291 | Ember Breath `drakkari_ember_breath` | monster | drakkari | cone | r 320, 60 deg | cone + chevrons | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 292 | Ember Pool `drakkari_ember_pool` | monster | drakkari | circle | r 220 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 293 | Fire Rain `drakkari_fire_rain` | monster | drakkari | circle | r 210 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 294 | Flame Nova `drakkari_flame_nova` | monster | drakkari | circle | r 480 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 295 | Flame Pillar `drakkari_flame_pillar` | monster | drakkari | circle | r 210 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 296 | Hatch the Brood `drakkari_hatch_the_brood` | monster | drakkari | self | - | caster pulse (circle) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 297 | Incendiary Bolt `drakkari_incendiary_bolt` | monster | drakkari | circle | r 190 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 298 | Inferno Breath `drakkari_inferno_breath` | monster | drakkari | cone | r 560, 60 deg | cone + chevrons | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 299 | Magma Rain `drakkari_magma_rain` | monster | drakkari | circle | r 320 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 300 | Molten Slam `drakkari_molten_slam` | monster | drakkari | cone | r 360, 80 deg | cone + chevrons | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 301 | Pinning Bolt `drakkari_pinning_bolt` | monster | drakkari | circle | r 170 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 302 | Scale Ward `drakkari_scale_ward` | monster | drakkari | self | - | caster pulse (circle) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 303 | Searing Breath `drakkari_searing_breath` | monster | drakkari | cone | r 480, 55 deg | cone + chevrons | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 304 | Shield Charge `drakkari_shield_charge` | monster | drakkari | line | 650 x 170 | rectangle lane + arrow | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 305 | Spear Lunge `drakkari_spear_lunge` | monster | drakkari | line | 750 x 170 | rectangle lane + arrow | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 306 | Tail Sweep `drakkari_tail_sweep` | monster | drakkari | cone | r 260, 130 deg | cone + chevrons | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 307 | Whelp Dive `drakkari_whelp_dive` | monster | drakkari | line | 650 x 170 | rectangle lane + arrow | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 308 | Whelp Frenzy `drakkari_whelp_frenzy` | monster | drakkari | self | - | caster pulse (circle) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 309 | Wing Buffet `drakkari_wing_buffet` | monster | drakkari | circle | r 340 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 310 | Wing Gust `drakkari_wing_gust` | monster | drakkari | circle | r 420 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 311 | Wing Leap `drakkari_wing_leap` | monster | drakkari | self | - | caster pulse (circle) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 312 | Abyssal Roar `drowned_abyssal_roar` | monster | drowned_deep | circle | r 550 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 313 | Abyssal Ward `drowned_abyssal_ward` | monster | drowned_deep | unit | - | ground streak + unit ring (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 314 | Barnacle Charge `drowned_barnacle_charge` | monster | drowned_deep | line | 900 x 170 | rectangle lane + arrow | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 315 | Brine Frenzy `drowned_brine_frenzy` | monster | drowned_deep | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 316 | Brine Mending `drowned_brine_mending` | monster | drowned_deep | unit | - | unit ring (circle) + heal crosses | - | tide (heal) | none (Fab ground overlays only decorate circle zones) |
+| 317 | Call of the Deep `drowned_call_of_the_deep` | monster | drowned_deep | self | - | caster pulse (circle) | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 318 | Coral Bulwark `drowned_coral_bulwark` | monster | drowned_deep | self | - | caster pulse (circle) | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 319 | Crashing Wave `drowned_crashing_wave` | monster | drowned_deep | cone | r 520, 70 deg | cone + chevrons | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 320 | Devour `drowned_devour` | monster | drowned_deep | line | 1200 x 200 | rectangle lane + arrow | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 321 | Dread Whisper `drowned_dread_whisper` | monster | drowned_deep | circle | r 220 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 322 | Drowning Grasp `drowned_drowning_grasp` | monster | drowned_deep | line | 1200 x 160 | rectangle lane + arrow | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 323 | Drowning Pool `drowned_drowning_pool` | monster | drowned_deep | circle | r 220 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 324 | Harpoon Spine `drowned_harpoon_spine` | monster | drowned_deep | line | 950 x 140 | rectangle lane + arrow | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 325 | Ink Spit `drowned_ink_spit` | monster | drowned_deep | circle | r 200 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 326 | Ink Tide `drowned_ink_tide` | monster | drowned_deep | circle | r 300 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 327 | Ink Veil `drowned_ink_veil` | monster | drowned_deep | self | - | caster pulse (circle) | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 328 | Jet Retreat `drowned_jet_retreat` | monster | drowned_deep | self | - | caster pulse (circle) | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 329 | Leech Mending `drowned_leech_mending` | monster | drowned_deep | unit | - | unit ring (circle) + heal crosses | - | void (heal) | none (Fab ground overlays only decorate circle zones) |
+| 330 | Leviathan Rage `drowned_leviathan_rage` | monster | drowned_deep | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 331 | Maddening Gaze `drowned_maddening_gaze` | monster | drowned_deep | circle | r 200 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 332 | Mind Scream `drowned_mind_scream` | monster | drowned_deep | circle | r 380 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 333 | Mind Shatter `drowned_mind_shatter` | monster | drowned_deep | circle | r 520 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 334 | Prophet's Madness `drowned_prophet_madness` | monster | drowned_deep | self | - | caster pulse (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 335 | Riptide Rend `drowned_rend` | monster | drowned_deep | cone | r 320, 90 deg | cone + chevrons | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 336 | Riptide `drowned_riptide` | monster | drowned_deep | circle | r 260 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 337 | Shell Crash `drowned_shell_bash` | monster | drowned_deep | cone | r 280, 70 deg | cone + chevrons | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 338 | Spine Volley `drowned_spine_volley` | monster | drowned_deep | circle | r 200 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 339 | Riptide Lunge `drowned_stalker_lunge` | monster | drowned_deep | line | 750 x 170 | rectangle lane + arrow | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 340 | Tentacle Sweep `drowned_tentacle_sweep` | monster | drowned_deep | cone | r 440, 120 deg | cone + chevrons | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 341 | Tidal Prophecy `drowned_tidal_prophecy` | monster | drowned_deep | circle | r 320 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 342 | Tidal Slam `drowned_tidal_slam` | monster | drowned_deep | cone | r 360, 85 deg | cone + chevrons | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 343 | Tidewall Oath `drowned_tidewall_oath` | monster | drowned_deep | unit | - | ground streak + unit ring (circle) | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 344 | Tsunami Slam `drowned_tsunami_slam` | monster | drowned_deep | circle | r 420 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 345 | Undertow Grab `drowned_undertow` | monster | drowned_deep | line | 850 x 160 | rectangle lane + arrow | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 346 | Crushing Undertow `drowned_undertow_stomp` | monster | drowned_deep | circle | r 360 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 347 | Whirlpool `drowned_whirlpool` | monster | drowned_deep | circle | r 240 | circle (soft edge) | 1.001 | tide | NS_Water_Magic_Area1: round, fitted inside the rim (native r 436), dimmed |
+| 348 | Censer Smoke `fallen_censer_smoke` | monster | fallen_order | circle | r 230 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 349 | Chains of Penance `fallen_chain_grasp` | monster | fallen_order | line | 850 x 160 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 350 | Chains of Judgment `fallen_chains_of_judgment` | monster | fallen_order | line | 1200 x 160 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 351 | Condemn `fallen_condemn` | monster | fallen_order | circle | r 200 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 352 | Profane Consecration `fallen_consecrate` | monster | fallen_order | circle | r 340 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 353 | Profane Aegis `fallen_consecrated_wall` | monster | fallen_order | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 354 | Crusade `fallen_crusade` | monster | fallen_order | line | 1250 x 220 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 355 | Aegis of Ruin `fallen_crusader_aegis` | monster | fallen_order | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 356 | Sundering Verdict `fallen_crusader_cleave` | monster | fallen_order | cone | r 440, 115 deg | cone + chevrons | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 357 | Fallen Wrath `fallen_crusader_wrath` | monster | fallen_order | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 358 | Dark Absolution `fallen_dark_absolution` | monster | fallen_order | unit | - | unit ring (circle) + heal crosses | - | shadow (heal) | none (Fab ground overlays only decorate circle zones) |
+| 359 | Dark Cleave `fallen_dark_cleave` | monster | fallen_order | cone | r 360, 85 deg | cone + chevrons | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 360 | Deathcharge `fallen_deathcharge` | monster | fallen_order | line | 900 x 170 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 361 | Hymn of Wrath `fallen_hymn_of_wrath` | monster | fallen_order | circle | r 1000 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 362 | Righteous Fury `fallen_inquisitor_zeal` | monster | fallen_order | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 363 | Judgment Slam `fallen_judgment_slam` | monster | fallen_order | circle | r 420 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 364 | Judgment `fallen_judgment_taunt` | monster | fallen_order | circle | r 550 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 365 | Last Stand `fallen_last_stand` | monster | fallen_order | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 366 | Martyr's Oath `fallen_martyrs_oath` | monster | fallen_order | unit | - | ground streak + unit ring (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 367 | Anathema `fallen_mass_silence` | monster | fallen_order | circle | r 520 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 368 | Broken Oath `fallen_oath_strike` | monster | fallen_order | cone | r 300, 90 deg | cone + chevrons | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 369 | Profane Light `fallen_profane_light` | monster | fallen_order | circle | r 210 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 370 | Purging Bolts `fallen_purging_bolts` | monster | fallen_order | circle | r 200 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 371 | Heretic's Pyre `fallen_pyre` | monster | fallen_order | circle | r 320 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 372 | Mortification `fallen_self_mortify` | monster | fallen_order | circle | r 260 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 373 | Shackle Bolt `fallen_shackle_bolt` | monster | fallen_order | circle | r 170 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 374 | Buckler Rush `fallen_shield_rush` | monster | fallen_order | line | 900 x 170 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 375 | Call the Penitent `fallen_summon_flagellants` | monster | fallen_order | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 376 | Tactical Retreat `fallen_tactical_retreat` | monster | fallen_order | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 377 | Unholy Frenzy `fallen_unholy_frenzy` | monster | fallen_order | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 378 | Zealous Frenzy `fallen_zealous_frenzy` | monster | fallen_order | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 379 | Zealous Leap `fallen_zealous_leap` | monster | fallen_order | line | 650 x 170 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 380 | Bear Charge `feral_bear_charge` | monster | feral_kin | line | 900 x 170 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 381 | Boar Frenzy `feral_boar_frenzy` | monster | feral_kin | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 382 | Gore Rush `feral_boar_gore` | monster | feral_kin | line | 650 x 170 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 383 | Bristle Burst `feral_bristle_burst` | monster | feral_kin | circle | r 260 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 384 | Call of the Wild `feral_call_of_the_wild` | monster | feral_kin | self | - | caster pulse (circle) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 385 | Crippling Arrow `feral_crippling_arrow` | monster | feral_kin | circle | r 200 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 386 | Earthquake `feral_earthquake` | monster | feral_kin | circle | r 560 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 387 | Earthshaker `feral_earthshaker` | monster | feral_kin | circle | r 360 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 388 | Elder Fury `feral_elder_fury` | monster | feral_kin | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 389 | Elder Roar `feral_elder_roar` | monster | feral_kin | circle | r 1200 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 390 | Gallop Away `feral_gallop_away` | monster | feral_kin | self | - | caster pulse (circle) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 391 | Hamstring `feral_hamstring` | monster | feral_kin | cone | r 260, 70 deg | cone + chevrons | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 392 | Herd Guard `feral_herd_guard` | monster | feral_kin | unit | - | ground streak + unit ring (circle) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 393 | Primal Rage `feral_mammoth_rage` | monster | feral_kin | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 394 | Titan Stomp `feral_mammoth_stomp` | monster | feral_kin | circle | r 440 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 395 | Stampede `feral_mammoth_trample` | monster | feral_kin | line | 1250 x 240 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 396 | Savage Maul `feral_maul` | monster | feral_kin | cone | r 360, 85 deg | cone + chevrons | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 397 | Pack Howl `feral_pack_howl` | monster | feral_kin | circle | r 1000 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 398 | Pounce `feral_pounce` | monster | feral_kin | line | 700 x 170 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 399 | Feral Rage `feral_rage` | monster | feral_kin | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 400 | Rending Maul `feral_rending_maul` | monster | feral_kin | cone | r 440, 120 deg | cone + chevrons | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 401 | Savage Chant `feral_savage_totem` | monster | feral_kin | circle | r 1000 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 402 | Spirit Mending `feral_spirit_mending` | monster | feral_kin | unit | - | unit ring (circle) + heal crosses | - | nature (heal) | none (Fab ground overlays only decorate circle zones) |
+| 403 | Feral Spirits `feral_spirits` | monster | feral_kin | self | - | caster pulse (circle) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 404 | Thick Hide `feral_thick_hide` | monster | feral_kin | self | - | caster pulse (circle) | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 405 | Bramble Hex `feral_thorn_hex` | monster | feral_kin | circle | r 220 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 406 | Trample `feral_trample` | monster | feral_kin | line | 900 x 170 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 407 | Trampling Charge `feral_trample_charge` | monster | feral_kin | line | 900 x 170 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 408 | Trumpeting Challenge `feral_trumpet` | monster | feral_kin | circle | r 550 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 409 | Great Tusk Sweep `feral_tusk_sweep` | monster | feral_kin | cone | r 440, 115 deg | cone + chevrons | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 410 | Crushing Charge `feral_ursoth_charge` | monster | feral_kin | line | 1250 x 200 | rectangle lane + arrow | - | nature | none (Fab ground overlays only decorate circle zones) |
+| 411 | Volley `feral_volley` | monster | feral_kin | circle | r 200 | circle (soft edge) | 1.001 | nature | none (NS_AreaBuff: tendril ribbons ignore the component scale: 3-4x past the rim even when fitted) |
+| 412 | Frozen Hamstring `frostfang_hamstring` | monster | frostfang_alpha | cone | r 260, 70 deg | cone + chevrons | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 413 | Winter Howl `frostfang_howl` | monster | frostfang_alpha | circle | r 1000 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 414 | Pounce `frostfang_pounce` | monster | frostfang_alpha | line | 700 x 170 | rectangle lane + arrow | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 415 | Diving Pounce `griffon_dive` | monster | storm_griffon | line | 900 x 200 | rectangle lane + arrow | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 416 | Talon Frenzy `griffon_frenzy` | monster | storm_griffon | cone | r 340, 90 deg | cone + chevrons | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 417 | Bone Hook `hollow_bone_hook` | monster | hollow | line | 1200 x 160 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 418 | Deathless Resolve `hollow_deathless` | monster | hollow | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 419 | Grave Silence `hollow_grave_silence` | monster | hollow | circle | r 220 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 420 | Hook Chain `hollow_hook_chain` | monster | hollow | line | 850 x 160 | rectangle lane + arrow | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 421 | Iron Stomp `hollow_iron_stomp` | monster | hollow | circle | r 340 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 422 | Pack Howl `hollow_pack_howl` | monster | hollow | circle | r 1000 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 423 | Pinning Net `hollow_pinning_net` | monster | hollow | circle | r 180 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 424 | Pounce `hollow_pounce` | monster | hollow | line | 650 x 170 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 425 | Rending Bite `hollow_rending_bite` | monster | hollow | cone | r 260, 70 deg | cone + chevrons | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 426 | Rubble Toss `hollow_rubble_toss` | monster | hollow | circle | r 260 | circle (soft edge) | 1.001 | steel | none (pack not installed) |
+| 427 | Rusted Cleave `hollow_rusted_cleave` | monster | hollow | cone | r 300, 90 deg | cone + chevrons | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 428 | Shield Rush `hollow_shield_rush` | monster | hollow | line | 650 x 170 | rectangle lane + arrow | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 429 | Withering Hex `hollow_withering_hex` | monster | hollow | circle | r 240 | circle (soft edge) | 1.001 | poison | NS_Posion_Magic_Area1: round, fitted inside the rim (native r 593), dimmed |
+| 430 | Axe Barrage `ironhide_axe_barrage` | monster | ironhide | circle | r 200 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 431 | Battle Hymn `ironhide_battle_hymn` | monster | ironhide | unit | - | unit ring (circle) + heal crosses | - | blood (heal) | none (Fab ground overlays only decorate circle zones) |
+| 432 | Berserk `ironhide_berserk` | monster | ironhide | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 433 | Blood Fury `ironhide_blood_fury` | monster | ironhide | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 434 | Blood Hex `ironhide_blood_hex` | monster | ironhide | circle | r 220 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 435 | Bloodlust `ironhide_bloodlust` | monster | ironhide | circle | r 1000 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 436 | Bodyguard `ironhide_bodyguard` | monster | ironhide | unit | - | ground streak + unit ring (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 437 | Bog Curse `ironhide_bog_curse` | monster | ironhide | circle | r 220 | circle (soft edge) | 1.001 | poison | NS_Posion_Magic_Area1: round, fitted inside the rim (native r 593), dimmed |
+| 438 | Boulder Hurl `ironhide_boulder_hurl` | monster | ironhide | circle | r 260 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 439 | Bounding Retreat `ironhide_bounding_retreat` | monster | ironhide | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 440 | Call the Clans `ironhide_call_the_clans` | monster | ironhide | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 441 | Meat Hook `ironhide_chain_hook` | monster | ironhide | line | 850 x 160 | rectangle lane + arrow | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 442 | Cleave `ironhide_cleave` | monster | ironhide | cone | r 320, 100 deg | cone + chevrons | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 443 | Deafening Boom `ironhide_deafening_boom` | monster | ironhide | circle | r 360 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 444 | Earthsplitter `ironhide_earthsplitter` | monster | ironhide | circle | r 420 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 445 | Frenzy Ritual `ironhide_frenzy_ritual` | monster | ironhide | circle | r 1000 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 446 | Gut Punch `ironhide_gut_punch` | monster | ironhide | cone | r 240, 70 deg | cone + chevrons | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 447 | Hamstring Axe `ironhide_hamstring_axe` | monster | ironhide | circle | r 170 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 448 | Juggernaut Rage `ironhide_juggernaut_rage` | monster | ironhide | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 449 | Leaping Axes `ironhide_leaping_axe` | monster | ironhide | line | 900 x 170 | rectangle lane + arrow | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 450 | Rend `ironhide_rend` | monster | ironhide | cone | r 300, 80 deg | cone + chevrons | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 451 | Iron Door `ironhide_shield_wall` | monster | ironhide | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 452 | Skull Cleave `ironhide_skull_cleave` | monster | ironhide | cone | r 440, 120 deg | cone + chevrons | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 453 | Spinning Axe `ironhide_spinning_axe` | monster | ironhide | cone | r 600, 25 deg | cone + chevrons | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 454 | Spirit Mend `ironhide_spirit_mend` | monster | ironhide | unit | - | unit ring (circle) + heal crosses | - | blood (heal) | none (Fab ground overlays only decorate circle zones) |
+| 455 | Troll Hide `ironhide_thick_hide` | monster | ironhide | self | - | caster pulse (circle) | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 456 | Trunk Sweep `ironhide_trunk_sweep` | monster | ironhide | cone | r 440, 115 deg | cone + chevrons | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 457 | War Charge `ironhide_war_charge` | monster | ironhide | line | 900 x 170 | rectangle lane + arrow | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 458 | Challenging Shout `ironhide_war_cry` | monster | ironhide | circle | r 550 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 459 | War Drums `ironhide_war_drums` | monster | ironhide | circle | r 1000 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 460 | Warchief's Roar `ironhide_warchief_roar` | monster | ironhide | circle | r 1200 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 461 | Warpath `ironhide_warpath` | monster | ironhide | line | 1250 x 200 | rectangle lane + arrow | - | blood | none (Fab ground overlays only decorate circle zones) |
+| 462 | Whirlwind `ironhide_whirlwind` | monster | ironhide | circle | r 320 | circle (soft edge) | 1.001 | blood | NS_Blood_Magic_Area1: round, fitted inside the rim (native r 649), dimmed |
+| 463 | Grave Nova `lich_frost_nova` | monster | fallen_order | circle | r 320 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 464 | Unholy Mending `lich_mend` | monster | fallen_order | unit | - | unit ring (circle) + heal crosses | - | shadow (heal) | none (Fab ground overlays only decorate circle zones) |
+| 465 | Soul Rend `lich_soul_rend` | monster | fallen_order | circle | r 210 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 466 | Barbed Shot `npc_barbed_shot` | monster | hollow | line | 1200 x 40 | rectangle lane + arrow (projectile corridor) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 467 | Blight Pool `npc_blight_pool` | monster | hollow | circle | r 220 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 468 | Photon Bolt `npc_bolt` | monster | aetheri | line | 1200 x 64 | rectangle lane + arrow (projectile corridor) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 469 | Brutal Charge `npc_bruiser_charge` | monster | hollow | line | 950 x 170 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 470 | Crushing Slam `npc_bruiser_slam` | monster | hollow | cone | r 360, 80 deg | cone + chevrons | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 471 | Dark Mending `npc_caster_mend` | monster | hollow | unit | - | unit ring (circle) + heal crosses | - | shadow (heal) | none (Fab ground overlays only decorate circle zones) |
+| 472 | Disengage `npc_hunter_disengage` | monster | hollow | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 473 | Rain of Barbs `npc_hunter_volley` | monster | hollow | circle | r 200 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 474 | Lunge `npc_infantry_lunge` | monster | hollow | line | 700 x 140 | rectangle lane + arrow | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 475 | Hooked Claws `npc_melee` | monster | drowned_deep | unit | - | ground streak + unit ring (circle) | - | tide | none (Fab ground overlays only decorate circle zones) |
+| 476 | Shadow Bolt `npc_shadow_bolt` | monster | hollow | line | 1200 x 64 | rectangle lane + arrow (projectile corridor) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 477 | Photon Round `npc_shot` | monster | aetheri | line | 1200 x 40 | rectangle lane + arrow (projectile corridor) | - | steel | none (Fab ground overlays only decorate circle zones) |
+| 478 | Guardian's Oath `npc_tank_guard` | monster | hollow | unit | - | ground streak + unit ring (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 479 | Challenging Roar `npc_tank_provoke` | monster | hollow | circle | r 550 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 480 | Shield Wall `npc_tank_wall` | monster | hollow | self | - | caster pulse (circle) | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 481 | Grave Grasp `shambler_grasp` | monster | hollow | cone | r 260, 70 deg | cone + chevrons | - | shadow | none (Fab ground overlays only decorate circle zones) |
+| 482 | Festering Rot `shambler_rot` | monster | hollow | circle | r 200 | circle (soft edge) | 1.001 | shadow | NS_Shadow_Magic_Area1: round, fitted inside the rim (native r 1350), dimmed |
+| 483 | Anvil Cleave `stoneborn_anvil_cleave` | monster | stoneborn | cone | r 440, 110 deg | cone + chevrons | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 484 | Arc Lattice `stoneborn_arc_lattice` | monster | stoneborn | circle | r 230 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 485 | Boulder Charge `stoneborn_boulder_charge` | monster | stoneborn | line | 900 x 170 | rectangle lane + arrow | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 486 | Boulder Toss `stoneborn_boulder_toss` | monster | stoneborn | circle | r 260 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 487 | Awakened Wrath `stoneborn_colossus_rage` | monster | stoneborn | self | - | caster pulse (circle) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 488 | Colossal Crush `stoneborn_crush` | monster | stoneborn | cone | r 440, 110 deg | cone + chevrons | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 489 | Ether Burst `stoneborn_ether_burst` | monster | stoneborn | circle | r 320 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 490 | Ether Repair `stoneborn_ether_repair` | monster | stoneborn | unit | - | unit ring (circle) + heal crosses | - | arcane (heal) | none (Fab ground overlays only decorate circle zones) |
+| 491 | Forge Fury `stoneborn_forge_fury` | monster | stoneborn | self | - | caster pulse (circle) | - | fire | none (Fab ground overlays only decorate circle zones) |
+| 492 | Forge Mending `stoneborn_forge_mending` | monster | stoneborn | unit | - | unit ring (circle) + heal crosses | - | arcane (heal) | none (Fab ground overlays only decorate circle zones) |
+| 493 | Forge Sentinels `stoneborn_forge_sentinels` | monster | stoneborn | self | - | caster pulse (circle) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 494 | Granite Smash `stoneborn_granite_smash` | monster | stoneborn | cone | r 360, 80 deg | cone + chevrons | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 495 | Ground Pound `stoneborn_ground_pound` | monster | stoneborn | circle | r 360 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 496 | Molten Slag `stoneborn_molten_slag` | monster | stoneborn | circle | r 220 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 497 | Overcharge `stoneborn_overcharge` | monster | stoneborn | circle | r 1000 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 498 | Ether Overload `stoneborn_overload` | monster | stoneborn | self | - | caster pulse (circle) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 499 | Petrifying Gaze `stoneborn_petrify` | monster | stoneborn | circle | r 280 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 500 | Piercing Beam `stoneborn_piercing_beam` | monster | stoneborn | cone | r 750, 12 deg | cone + chevrons | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 501 | Pinning Shard `stoneborn_pinning_shard` | monster | stoneborn | circle | r 170 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 502 | Quake `stoneborn_quake` | monster | stoneborn | circle | r 440 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 503 | Recoil Jump `stoneborn_recoil_jump` | monster | stoneborn | self | - | caster pulse (circle) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 504 | Rune Mine `stoneborn_rune_mine` | monster | stoneborn | circle | r 220 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 505 | Rune Rush `stoneborn_rune_rush` | monster | stoneborn | line | 900 x 170 | rectangle lane + arrow | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 506 | Rune Strike `stoneborn_rune_strike` | monster | stoneborn | cone | r 320, 90 deg | cone + chevrons | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 507 | Runic Shockwave `stoneborn_runic_shockwave` | monster | stoneborn | circle | r 440 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 508 | Runic Challenge `stoneborn_runic_taunt` | monster | stoneborn | circle | r 550 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 509 | Shard Volley `stoneborn_shard_volley` | monster | stoneborn | circle | r 200 | circle (soft edge) | 1.001 | arcane | NS_Air_Magic_AOE: round, fitted inside the rim (native r 1235), dimmed |
+| 510 | Shield Matrix `stoneborn_shield_matrix` | monster | stoneborn | unit | - | ground streak + unit ring (circle) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 511 | Slag Eruption `stoneborn_slag_eruption` | monster | stoneborn | circle | r 320 | circle (soft edge) | 1.001 | fire | NS_Fire_Magic_AOE: round, fitted inside the rim (native r 668), dimmed |
+| 512 | Static Pulse `stoneborn_static_pulse` | monster | stoneborn | circle | r 320 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 513 | Stoneskin `stoneborn_stoneskin` | monster | stoneborn | self | - | caster pulse (circle) | - | earth | none (Fab ground overlays only decorate circle zones) |
+| 514 | Tremor `stoneborn_tremor` | monster | stoneborn | circle | r 360 | circle (soft edge) | 1.001 | earth | NS_Earth_Spells_Circle: round, fitted inside the rim (native r 622), dimmed |
+| 515 | Warding Link `stoneborn_warding_link` | monster | stoneborn | unit | - | ground streak + unit ring (circle) | - | arcane | none (Fab ground overlays only decorate circle zones) |
+| 516 | Blink `void_blink` | monster | voidborn | self | - | caster pulse (circle) + void rings (circles r 240 / 100) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 517 | Void Breath `void_breath` | monster | voidborn | cone | r 560, 60 deg | cone + chevrons | - | void | none (Fab ground overlays only decorate circle zones) |
+| 518 | Collapsing Star `void_collapsing_star` | monster | voidborn | circle | r 320 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 519 | Devour `void_devour` | monster | voidborn | line | 1200 x 220 | rectangle lane + arrow | - | void | none (Fab ground overlays only decorate circle zones) |
+| 520 | Endless Hunger `void_devourer_hunger` | monster | voidborn | self | - | caster pulse (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 521 | Disintegrate `void_disintegrate` | monster | voidborn | cone | r 750, 12 deg | cone + chevrons | - | void | none (Fab ground overlays only decorate circle zones) |
+| 522 | Event Horizon `void_event_horizon` | monster | voidborn | self | - | caster pulse (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 523 | Void Gaze `void_gaze` | monster | voidborn | circle | r 550 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 524 | Gravity Slam `void_gravity_slam` | monster | voidborn | circle | r 360 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 525 | Gravity Well `void_gravity_well` | monster | voidborn | circle | r 360 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 526 | Ascension `void_herald_ascension` | monster | voidborn | self | - | caster pulse (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 527 | Grasp of the Void `void_herald_grasp` | monster | voidborn | line | 1200 x 160 | rectangle lane + arrow | - | void | none (Fab ground overlays only decorate circle zones) |
+| 528 | Latch `void_latch` | monster | voidborn | line | 750 x 160 | rectangle lane + arrow | - | void | none (Fab ground overlays only decorate circle zones) |
+| 529 | Mind Spike `void_mind_spike` | monster | voidborn | circle | r 220 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 530 | Null Cleave `void_null_cleave` | monster | voidborn | cone | r 340, 80 deg | cone + chevrons | - | void | none (Fab ground overlays only decorate circle zones) |
+| 531 | Open the Rift `void_open_the_rift` | monster | voidborn | self | - | caster pulse (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 532 | Void Orb `void_orb` | monster | voidborn | circle | r 210 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 533 | Paralyzing Gaze `void_paralyze_gaze` | monster | voidborn | circle | r 200 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 534 | Phase Strike `void_phase_strike` | monster | voidborn | line | 750 x 170 | rectangle lane + arrow | - | void | none (Fab ground overlays only decorate circle zones) |
+| 535 | Void Rend `void_rend` | monster | voidborn | cone | r 300, 85 deg | cone + chevrons | - | void | none (Fab ground overlays only decorate circle zones) |
+| 536 | Void Rift `void_rift` | monster | voidborn | circle | r 220 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 537 | Rift Charge `void_rift_charge` | monster | voidborn | line | 900 x 170 | rectangle lane + arrow | - | void | none (Fab ground overlays only decorate circle zones) |
+| 538 | Rift Mending `void_rift_mending` | monster | voidborn | unit | - | unit ring (circle) + heal crosses | - | void (heal) | none (Fab ground overlays only decorate circle zones) |
+| 539 | Silence of the Stars `void_silence_of_stars` | monster | voidborn | circle | r 520 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 540 | Singularity `void_singularity` | monster | voidborn | circle | r 480 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 541 | Void Tether `void_tether` | monster | voidborn | unit | - | ground streak + unit ring (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 542 | Titan Slam `void_titan_slam` | monster | voidborn | circle | r 420 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 543 | Unmaking `void_unmaking` | monster | voidborn | cone | r 480, 55 deg | cone + chevrons | - | void | none (Fab ground overlays only decorate circle zones) |
+| 544 | Unravel `void_unravel` | monster | voidborn | self | - | caster pulse (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 545 | Void Burst `void_voidling_burst` | monster | voidborn | circle | r 260 | circle (soft edge) | 1.001 | void | NS_Dark_Magic_AOE: round, fitted inside the rim (native r 700), dimmed |
+| 546 | Hunger `void_voidling_frenzy` | monster | voidborn | self | - | caster pulse (circle) | - | void | none (Fab ground overlays only decorate circle zones) |
+| 547 | Warp `void_warp` | monster | voidborn | self | - | caster pulse (circle) + void rings (circles r 240 / 100) | - | void | none (Fab ground overlays only decorate circle zones) |
+
+<!-- shape-audit:end -->
