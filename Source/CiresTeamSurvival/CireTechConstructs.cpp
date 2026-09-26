@@ -165,6 +165,14 @@ UStaticMesh* Shape(const TCHAR* Name)
 {
     return LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("/Engine/BasicShapes/%s.%s"), Name, Name));
 }
+// champion-hq: HQ Tripo construct bodies for the players' recipes (/Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>). They carry
+// their own crystal and material, so the procedural core / crown parts are hidden (trap trigger rings stay). Monster
+// recipes (npc_*) keep the tinted hostile look.
+UStaticMesh* AuthoredHQ(FName Kind)
+{
+    const FString Path = FString::Printf(TEXT("/Game/Tripo/ChampionsHQ/Constructs/%s/SM_%s.SM_%s"), *Kind.ToString(), *Kind.ToString(), *Kind.ToString());
+    return LoadObject<UStaticMesh>(nullptr, *Path, nullptr, LOAD_Quiet | LOAD_NoWarn);
+}
 UStaticMesh* Authored(FName Kind)
 {
     // Optional authored silhouettes (Tools/BuildNewChampionContent.py); basic shapes stand in until they exist.
@@ -492,7 +500,16 @@ void CireTechConstructs::ApplyAppearance(ACireConstruct* C)
     Body->SetRelativeRotation(FRotator::ZeroRotator); Core->SetRelativeRotation(FRotator::ZeroRotator); Crown->SetRelativeRotation(FRotator::ZeroRotator);
     const FName Kind = S.Kind == K::Turret ? FName(S.Recipe == TEXT("warp_obelisk") ? TEXT("AetherObelisk") : TEXT("AetherTurret")) : S.Kind == K::Pylon ? FName(TEXT("AetherPylon")) :
         S.Kind == K::Skitter ? FName(TEXT("SkitterBomb")) : S.Effect == TEXT("silence") ? FName(TEXT("SpiritLantern")) : FName(TEXT("AetherTrap"));
-    if (UStaticMesh* Mesh = Authored(Kind))
+    UStaticMesh* HQ = S.Recipe.ToString().StartsWith(TEXT("npc_")) ? nullptr : AuthoredHQ(Kind);
+    if (HQ)
+    {
+        Body->SetStaticMesh(HQ);
+        Body->EmptyOverrideMaterials();
+        const FBoxSphereBounds B = HQ->GetBounds();
+        const float Scale = S.Height / FMath::Max(1.f, static_cast<float>(B.BoxExtent.Z * 2));
+        Body->SetRelativeScale3D(FVector(Scale)); Body->SetRelativeLocation(FVector(0, 0, -HalfH - (B.Origin.Z - B.BoxExtent.Z) * Scale));
+    }
+    else if (UStaticMesh* Mesh = Authored(Kind))
     {
         // Authored body: pivot at the ground, sized to the footprint height; the crystal/core stays a tinted part.
         Body->SetStaticMesh(Mesh);
@@ -552,6 +569,11 @@ void CireTechConstructs::ApplyAppearance(ACireConstruct* C)
     }
     Energize(Core, S.Color, 1.f);
     for (UStaticMeshComponent* Part : {Body, Core, Crown}) { Part->SetCastShadow(Part != Crown); }
+    if (HQ)
+    {   // champion-hq: the HQ body shows its own crystal; only a trap keeps its trigger ring.
+        Core->SetVisibility(false);
+        Crown->SetVisibility(S.Kind != K::Turret && S.Kind != K::Pylon && S.Kind != K::Skitter);
+    }
 }
 
 void CireTechConstructs::AnimateAppearance(ACireConstruct* C, float Time)

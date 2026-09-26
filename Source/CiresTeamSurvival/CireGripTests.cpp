@@ -11,6 +11,7 @@
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
 #include "CireWeaponPresentation.h"
+#include "CireWeaponSockets.h" // weapon-grips
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -34,10 +35,11 @@ double LineDistance(const FVector& Point, const FVector& Origin, const FVector& 
 struct FChecker
 {
     bool bPass = true; int32 Checks = 0; int32 Grips = 0;
-    void Check(bool bValue, const FString& Why)
+    bool Check(bool bValue, const FString& Why)
     {
         ++Checks;
         if (!bValue) { bPass = false; UE_LOG(LogCireGripTests, Error, TEXT("CIRE_GRIP_CHECK_FAIL %s"), *Why); }
+        return bValue;
     }
 };
 
@@ -49,9 +51,17 @@ void Refresh(USkeletalMeshComponent* Mesh)
     Mesh->UpdateChildTransforms();
 }
 
+double AngleDeg(const FVector& A, const FVector& B)
+{
+    return FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(A.GetSafeNormal(), B.GetSafeNormal()), -1.0, 1.0)));
+}
+
+/** weapon-grips: props placed on the animation-authored grip (CireWeaponSockets), with their Fab set. */
+using FAuthored = TMap<const UStaticMeshComponent*, FString>;
+
 /** Measures every held prop of Body against its hand pose. */
 void MeasureBody(FChecker& C, const FString& Tag, USkeletalMeshComponent* Body, const TArray<UStaticMeshComponent*>& Parts,
-    const CireGrip::FHands& Hands, bool bTwoHandExpected)
+    const CireGrip::FHands& Hands, bool bTwoHandExpected, const FAuthored& Authored = FAuthored())
 {
     bool bAllFinite = true;
     for (int32 I = 0; I < Body->GetNumBones(); ++I) bAllFinite &= !Body->GetBoneTransform(I).ContainsNaN();
@@ -66,9 +76,18 @@ void MeasureBody(FChecker& C, const FString& Tag, USkeletalMeshComponent* Body, 
         C.Check(!T.ContainsNaN(), Where + TEXT(" transform finite"));
         const float Scale = static_cast<float>(T.GetScale3D().X);
         const float R = W->RadiusCm * Scale;
-        const FVector P = T.TransformPosition(W->Handle);
-        const FVector D = T.TransformVectorNoScale(W->Axis).GetSafeNormal();
+        FVector P = T.TransformPosition(W->Handle);
+        FVector D = T.TransformVectorNoScale(W->Axis).GetSafeNormal();
         const FName Socket = Part->GetAttachSocketName();
+        // weapon-grips: an authored prop is gripped where its Fab set holds it (a crossbow by the fore-end).
+        const FString* Set = Authored.Find(Part);
+        CireWeaponSockets::FHandFrame Frame;
+        if (Set && !W->bShield)
+        {
+            Frame = CireWeaponSockets::Frame(*Set, Socket);
+            const FTransform G = CireWeaponSockets::PropGrip(*Part->GetStaticMesh(), *W, Frame);
+            P = T.TransformPosition(G.GetLocation()); D = T.TransformVectorNoScale(G.GetRotation().GetAxisZ()).GetSafeNormal();
+        }
         // Only hand-held and forearm-strapped props (a belt dagger on the pelvis is not gripped).
         if (!Socket.ToString().StartsWith(TEXT("hand_")) && !Socket.ToString().StartsWith(TEXT("lowerarm_"))) continue;
         if (W->bShield)
@@ -80,7 +99,10 @@ void MeasureBody(FChecker& C, const FString& Tag, USkeletalMeshComponent* Body, 
             const FVector Centre = T.TransformPosition(W->Handle);
             const double Along = FVector::DotProduct(Centre - Elbow, (Wrist - Elbow).GetSafeNormal()) / FMath::Max(1., (Wrist - Elbow).Size());
             const double Off = LineDistance(Centre, Elbow, (Wrist - Elbow).GetSafeNormal());
-            C.Check(Along > .2 && Along < .9 && Off > 2.0 * BodyScale && Off < 16.0 * BodyScale,
+            // weapon-grips: the Fab sword-and-shield clips strap the shield at the wrist end of the forearm (Eric: "holding
+            // the shield right"), so an authored shield may reach the wrist.
+            const double AlongMax = Authored.Contains(Part) ? 1.0 : .9;
+            C.Check(Along > .2 && Along < AlongMax && Off > 2.0 * BodyScale && Off < 16.0 * BodyScale,
                 FString::Printf(TEXT("%s strapped on the forearm (along %.2f, off %.1fcm)"), *Where, Along, Off));
             ++C.Grips;
             continue;
@@ -97,7 +119,24 @@ void MeasureBody(FChecker& C, const FString& Tag, USkeletalMeshComponent* Body, 
         const double Angle = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(D, Grip.GetRotation().GetAxisZ()), -1.0, 1.0)));
         C.Check(Centre <= .35 * R + 1.2 * BodyScale, FString::Printf(TEXT("%s handle axis through the palm centre (%.2fcm, r %.2f)"), *Where, Centre, R));
         C.Check(Along <= 2.5 * BodyScale, FString::Printf(TEXT("%s handle point in the fist (%.2fcm along)"), *Where, Along));
-        C.Check(FMath::Abs(Angle - FMath::Abs(W->TiltDeg)) <= 6.0, FString::Printf(TEXT("%s handle orientation %.1f deg (tilt %.0f)"), *Where, Angle, W->TiltDeg));
+        if (Set)
+        {
+            // weapon-grips: an authored prop runs along the handle line the clip was authored for (the hand closes
+            // around that line, tip either way along it); the bind-pose tilt does not apply.
+            const double Line = FMath::Min(Angle, 180.0 - Angle);
+            C.Check(Line <= 6.0, FString::Printf(TEXT("%s handle along the authored grip line (%.1f deg, set %s)"), *Where, Line, **Set));
+            // And the prop frame (tip, edge) matches the Fab socket frame mapped onto this body, in the hand bone.
+            FTransform Intended;
+            const USkeletalMesh* Asset = Body->GetSkeletalMeshAsset();
+            if (C.Check(Asset && CireWeaponSockets::Intended(*Asset, *Set, Socket, Intended, Frame), Where + TEXT(" authored frame for ") + *Set))
+            {
+                const FTransform Bind = Part->GetRelativeTransform() * CireGrip::ReferenceComponent(Asset->GetRefSkeleton(), Socket);
+                const FQuat Now = Bind.GetRotation() * CireWeaponSockets::PropGrip(*Part->GetStaticMesh(), *W, Frame).GetRotation();
+                const double Tip = AngleDeg(Now.GetAxisZ(), Intended.GetRotation().GetAxisZ()), Edge = AngleDeg(Now.GetAxisX(), Intended.GetRotation().GetAxisX());
+                C.Check(Tip <= 3.0 && Edge <= 3.0, FString::Printf(TEXT("%s tip/edge follow the %s clip grip (tip %.1f, edge %.1f deg)"), *Where, **Set, Tip, Edge));
+            }
+        }
+        else C.Check(FMath::Abs(Angle - FMath::Abs(W->TiltDeg)) <= 6.0, FString::Printf(TEXT("%s handle orientation %.1f deg (tilt %.0f)"), *Where, Angle, W->TiltDeg));
         for (const TCHAR* Finger : {TEXT("index"), TEXT("middle"), TEXT("ring"), TEXT("pinky")})
         {
             const FName Joint(FString::Printf(TEXT("%s_02%s"), Finger, Side));
@@ -105,7 +144,10 @@ void MeasureBody(FChecker& C, const FString& Tag, USkeletalMeshComponent* Body, 
             const double F = LineDistance(Body->GetSocketLocation(Joint), P, D);
             // Handles thicker than a fist can close around (the Behemoth's 10 cm totem pole) are held loosely.
             const double Loose = R > 4.0 ? .5 * R : 0.0;
-            C.Check(F >= .6 * R && F <= R + 5.5 * BodyScale + Loose, FString::Printf(TEXT("%s %s wraps the handle without piercing (%.2fcm, r %.2f)"), *Where, Finger, F, R));
+            // weapon-grips: an authored handle line is the clip's, not this palm's natural axis, so the curl fit leaves the
+            // index finger up to ~1 cm looser at the far side of the fist (chieftain axe, behemoth totem; checked in the gallery).
+            const double Authoring = Set ? 1.5 * BodyScale : 0.0;
+            C.Check(F >= .6 * R && F <= R + 5.5 * BodyScale + Loose + Authoring, FString::Printf(TEXT("%s %s wraps the handle without piercing (%.2fcm, r %.2f)"), *Where, Finger, F, R));
         }
         for (const TCHAR* Knuckle : {TEXT("hand"), TEXT("index_01"), TEXT("middle_01"), TEXT("pinky_01")})
         {
@@ -127,7 +169,7 @@ void MeasureBody(FChecker& C, const FString& Tag, USkeletalMeshComponent* Body, 
                 *Where, OffDistance, (Target.GetLocation() - Shoulder).Size(), ArmLength,
                 (Body->GetSocketLocation(FName(FString(TEXT("hand")) + Off)) - Target.GetLocation()).Size()));
         }
-        if (bTwoHandExpected && W->bCarry) C.Check(D.Z > .75, FString::Printf(TEXT("%s carried upright (axis z %.2f)"), *Where, D.Z));
+        if (bTwoHandExpected && W->bCarry && !Set) C.Check(D.Z > .75, FString::Printf(TEXT("%s carried upright (axis z %.2f)"), *Where, D.Z));
         ++C.Grips;
     }
 }
@@ -137,6 +179,7 @@ bool CireGrip::RunSmoke(ACireGameMode* Mode)
 {
     if (!Mode || Mode->GetNetMode() == NM_DedicatedServer) return true;
     FChecker C;
+    C.Check(CireWeaponSockets::RunSmoke(), TEXT("WeaponSockets.json authored frames")); // weapon-grips
     UWorld* World = Mode->GetWorld();
     TArray<AActor*> Actors;
     const bool bForced = GCireForceTripoChampionArt;
@@ -166,7 +209,8 @@ bool CireGrip::RunSmoke(ACireGameMode* Mode)
         {TEXT("keeper_of_light"), TEXT("keeper"), TEXT("lantern staff")}, {TEXT("orc_chieftain"), TEXT("chieftain"), TEXT("axe")},
         {TEXT("troll_berserker_melee"), TEXT("troll_melee"), TEXT("throwing axes")}, {TEXT("troll_berserker_melee"), TEXT("dual_daggers"), TEXT("daggers")},
         {TEXT("paladin_holy"), TEXT("paladin"), TEXT("flail+shield")}, {TEXT("dwarf_miner"), TEXT("miner"), TEXT("pick")},
-        {TEXT("totemic_behemoth"), TEXT("behemoth"), TEXT("totem")}, {TEXT("lancer"), TEXT("lancer"), TEXT("lance")}};
+        {TEXT("totemic_behemoth"), TEXT("behemoth"), TEXT("totem")}, {TEXT("lancer"), TEXT("lancer"), TEXT("lance")},
+        {TEXT("gunblade"), TEXT("tripo_gunblade"), TEXT("gunblade")}}; // weapon-grips: Gun & Sword set
     float Y = -1000.f;
     for (const FCase& Case : Cases)
     {
@@ -183,18 +227,29 @@ bool CireGrip::RunSmoke(ACireGameMode* Mode)
         if (!Weapons || Weapons->GetEquippedLoadout() != Case.Preset || !H->ChampionArt->IsApplied()) { C.Check(false, Tag + TEXT(" Tripo body and preset")); continue; }
         TArray<UStaticMeshComponent*> Parts;
         for (const auto& Part : Weapons->GetParts()) if (Part) Parts.Add(Part.Get());
+        FAuthored Authored; // weapon-grips
+        for (const auto& Info : Weapons->GetGripInfo())
+        {
+            if (!Info.Part.IsValid()) continue;
+            if (Info.Mode == TEXT("authored")) { Authored.Add(Info.Part.Get(), Info.Set); continue; }
+            // A held prop whose Fab set authors its hand must take that grip (the crossbow once stayed on a swapped hand).
+            const CireGrip::FWeapon* W = CireGrip::FindWeapon(Info.Part->GetStaticMesh());
+            const CireWeaponSockets::FHandFrame F = CireWeaponSockets::Frame(Weapons->GetGripSet(), Info.Part->GetAttachSocketName());
+            C.Check(!W || W->bAmmo || !F.bValid || F.bShield != W->bShield || CireWeaponSockets::Legacy(),
+                FString::Printf(TEXT("%s %s takes the %s clip grip (mode %s)"), *Tag, *Info.Part->GetStaticMesh()->GetName(), *Weapons->GetGripSet(), *Info.Mode));
+        }
         USkeletalMeshComponent* Mesh = H->GetMesh();
         // Idle.
         H->ChampionArt->UpdateVisuals(*H, 0.f); Refresh(Mesh);
         auto* Anim = Cast<UCireCombatAnimInstance>(Mesh->GetAnimInstance());
         C.Check(Anim != nullptr, Tag + TEXT(" champion anim instance"));
         if (!Anim) continue;
-        MeasureBody(C, Tag + TEXT(" idle"), Mesh, Parts, Anim->Hands, true);
+        MeasureBody(C, Tag + TEXT(" idle"), Mesh, Parts, Anim->Hands, true, Authored);
         // Mid-attack: the style's clip held at contact.
         const FString Clip = CireChampionActions::ClipName(*H, TEXT("attack"));
         C.Check(CireChampionActions::Hold(*H, Clip, 1.f), Tag + TEXT(" holds ") + Clip);
         H->ChampionArt->UpdateVisuals(*H, 0.f); Refresh(Mesh);
-        MeasureBody(C, Tag + TEXT(" attack"), Mesh, Parts, Anim->Hands, false);
+        MeasureBody(C, Tag + TEXT(" attack"), Mesh, Parts, Anim->Hands, false, Authored);
         C.Check(Anim->AttackWeight > .9f, Tag + TEXT(" attack pose applied"));
     }
     // Monsters: the props they keep.

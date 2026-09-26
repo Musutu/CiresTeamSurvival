@@ -6,6 +6,7 @@
 #include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
 #include "CireTownMap.h" // medieval-kingdom
+#include "CireRouteEditMode.h" // dev-route-tools
 #include "CireEnvironmentGallery.h"
 #include "CireBatchArtGallery.h"
 #include "CireTooltipGallery.h"
@@ -35,6 +36,7 @@
 #include "CireConstruct.h"
 #include "CireSummon.h"
 #include "CireKitsGallery.h" // scaling-kits
+#include "CireGripGallery.h" // weapon-grips
 #include "CireSpellGallery.h"
 #include "CireAuraGallery.h" // aura-vfx
 #include "CireAbilityVFXGallery.h" // ability-vfx
@@ -43,12 +45,15 @@
 #include "CireNPCArchetypes.h"
 #include "CireNPCPackPreview.h"
 #include "CireMonsterGallery.h" // creature-anim
+#include "CireLocomotionLab.h" // movement-feel
 #include "CireNewChampionsGallery.h" // new-champions
+#include "CireChampionHQGallery.h" // champion-hq
 #include "CireNPCNetProbe.h"
 #include "CireNav.h" // nav-paths
 #include "CireArenas.h" // arenas
 #include "CireArenaGallery.h" // arenas
 #include "CireWaves.h" // wave-director
+#include "CireVendorGallery.h" // vendors
 
 DEFINE_LOG_CATEGORY_STATIC(LogCire, Log, All);
 
@@ -91,7 +96,19 @@ void TickServerProbe(ACireGameMode* Mode) {
             }
             FActorSpawnParameters Params;
             Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-            auto* Target=Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),Hero->GetActorLocation()+FVector(450,0,0),FRotator::ZeroRotator,Params);
+            // The hero joins at its gate. A fixture spawned inside (or with its capsule touching) the team's
+            // town-goal volume "leaks" on its first overlap and is destroyed, so the client never sees it.
+            // The join spot shifts with bot collision pushes, which made +450 cm intermittently too close.
+            const auto NearGoal=[&](const FVector& Spot) {
+                for(TActorIterator<ACireTownGoal> It(Mode->GetWorld());It;++It) if(It->TeamId==Hero->TeamId)
+                    for(const FVector& Margin:{FVector::ZeroVector,FVector(250,0,0),FVector(-250,0,0),FVector(0,250,0),FVector(0,-250,0)})
+                        if(It->ContainsLocation(Spot+Margin))return true;
+                return false;
+            };
+            FVector Spot=Hero->GetActorLocation()+FVector(450,0,0);
+            for(int32 Try=0;Try<10&&NearGoal(Spot);++Try)Spot.X+=150;
+            if(NearGoal(Spot)) {Fail(TEXT("probe fixture could not be placed clear of the town goal"));return;}
+            auto* Target=Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(),Spot,FRotator::ZeroRotator,Params);
             if(!Target) {Fail(TEXT("probe fixture spawn failed"));return;}
             Target->Lane=Hero->TeamId;
             Target->Health=Target->MaxHealth=1000000;
@@ -100,12 +117,13 @@ void TickServerProbe(ACireGameMode* Mode) {
             Target->GetCharacterMovement()->DisableMovement();
             Mode->Monsters.Add(Target);
             Probe.Target=Target;
-            UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_JOIN pawn=%s team=%d heroes=%d"),*Hero->GetName(),Hero->TeamId,Mode->Heroes.Num());
+            UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_JOIN pawn=%s team=%d heroes=%d target_offset_cm=%.0f"),*Hero->GetName(),Hero->TeamId,Mode->Heroes.Num(),Spot.X-Hero->GetActorLocation().X);
             break;
         }
         return;
     }
     auto* Hero=Probe.PlayerPawn.Get();
+    if(!Probe.ActionsVerified&&!Probe.Target.IsValid()) {Fail(TEXT("probe target fixture was destroyed before the client selected it"));return;}
     if(!Probe.ActionsVerified&&Hero->bDrafted&&Hero->Target==Probe.Target.Get()&&Hero->Notice.Contains(TEXT("intermission"))) {
         const bool Valid=Hero->Archetype==2&&Hero->Gold==120&&Hero->Skills.Num()==0&&Hero->Cooldowns.Num()==0&&
             Hero->GearRank==0&&FMath::IsNearlyZero(Hero->CDR)&&Hero->Level==1&&
@@ -207,6 +225,9 @@ void ACireGameMode::BeginPlay() {
     auto* S=GetGameState<ACireGameState>();
     S->SecondsLeft=-1; S->CycleWavesDone=0; S->WavesPerCycle=FMath::Clamp(S->WavesPerCycle,1,10);
     CireWaveDirector::Initialize(this); // wave-director: Waves.json drives composition, waves per cycle, breather and phase pacing
+    // arenas: validate the rotation now (a path-grid walk per arena, ~0.8 s on the 2x arenas) instead of inside the
+    // first prep transition, where it froze the server for a frame just as every client was told the phase changed.
+    CireArenas::Rotation();
 #if !UE_BUILD_SHIPPING
     const bool bProbeTimer=ServerProbe.Enabled;
 #else
@@ -230,9 +251,14 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireFeedbackPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireNPCPackPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireMonsterGallery::Initialize(this); // creature-anim
+    if(!bFeedbackPreview)bFeedbackPreview = CireLocomotionLab::Initialize(this); // movement-feel
     if(!bFeedbackPreview)bFeedbackPreview = CireNewChampionsGallery::Initialize(this); // new-champions
+    if(!bFeedbackPreview)bFeedbackPreview = CireChampionHQGallery::Initialize(this); // champion-hq
     if(!bFeedbackPreview)bFeedbackPreview = CireKitsGallery::Initialize(this); // scaling-kits
+    if(!bFeedbackPreview)bFeedbackPreview = CireGripGallery::Initialize(this); // weapon-grips
     if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
+    if(!bFeedbackPreview)bFeedbackPreview = CireVendorGallery::Initialize(this); // vendors
+    if(!bFeedbackPreview)bFeedbackPreview = CireRouteEditMode::InitializeServer(this); // dev-route-tools: -CireRouteEdit, nothing of the match starts
     CireNPCNetProbe::InitializeServer(this);
 #endif
     if(!bFeedbackPreview&&!CireTownMap::IsExplore())SpawnPacks(); // medieval-kingdom: explore has no packs
@@ -471,6 +497,7 @@ void ACireGameMode::Tick(float Dt) {
     Super::Tick(Dt);
     if(CireTownMap::TickExplore(this,Dt)) return; // medieval-kingdom: -CireExplore walks the town, no match
 #if !UE_BUILD_SHIPPING
+    if(CireRouteEditMode::TickServer(this,Dt)) return; // dev-route-tools: map layout edit mode: every game system stays dormant
     if(CireTooltipGallery::Tick(this)) return;
     if(CireBatchArtGallery::Tick(this)) return;
     if(CireEnvironmentGallery::Tick(this)) return;
@@ -485,9 +512,13 @@ void ACireGameMode::Tick(float Dt) {
     if(CireFeedbackPreview::Tick(this)) return;
     if(CireNPCPackPreview::Tick(this)) return;
     if(CireMonsterGallery::Tick(this)) return; // creature-anim
+    if(CireLocomotionLab::Tick(this)) return; // movement-feel
     if(CireNewChampionsGallery::Tick(this)) return; // new-champions
+    if(CireChampionHQGallery::Tick(this)) return; // champion-hq
     if(CireKitsGallery::Tick(this)) return; // scaling-kits
+    if(CireGripGallery::Tick(this)) return; // weapon-grips
     if(CireShopFixtures::Tick(this)) return; // progression-shop
+    if(CireVendorGallery::Tick(this)) return; // vendors
     if(CireNPCNetProbe::TickServer(this)) return;
     if(CireExpansionNetProbe::TickServer(this)) return;
     if(CireInterfaceProbe::TickServer(this)) return;

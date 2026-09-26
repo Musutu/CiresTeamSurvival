@@ -46,12 +46,15 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=7783)
     parser.add_argument("--startup-timeout", type=float, default=60)
     parser.add_argument("--probe-timeout", type=float, default=85)
+    parser.add_argument("--arena", default="", help="Pin the server's arena pick to this arena id (development flag -CireArena=<id>); random when omitted")
     parser.add_argument("--tripo-champions", action="store_true", help="Verify imported Tripo meshes, locomotion and materials on both remote clients")
     args = parser.parse_args()
     if not args.editor.is_file() or not args.project.is_file():
         parser.error("UnrealEditor-Cmd or project does not exist")
     if not 1024 <= args.port <= 65535:
         parser.error("port must be 1024..65535")
+    if args.arena and not args.arena.replace("_", "").isalnum():
+        parser.error("arena must be an arena id such as black_shore")
     if not 1 <= args.startup_timeout <= 1800 or not 1 <= args.probe_timeout <= 1800:
         parser.error("timeouts must be 1..1800 seconds")
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as check:
@@ -64,9 +67,10 @@ def main() -> int:
     output.mkdir(parents=True, exist_ok=False)
     logs = {name: output / f"{name}.log" for name in ("server", "client0", "client1")}
     common = ["-nullrhi", "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-ExecCmds=t.MaxFPS 60"]
+    server_arena_flags = [f"-CireArena={args.arena}"] if args.arena else []
     client_art_flags = ["-CireTripoChampions"] if args.tripo_champions else []
     commands = {
-        "server": [str(args.editor), str(args.project.resolve()), "/Game/Maps/Citadel", "-server", "-MULTIHOME=127.0.0.1", f"-port={args.port}", "-CireInterfaceServer", f"-abslog={logs['server']}", *common],
+        "server": [str(args.editor), str(args.project.resolve()), "/Game/Maps/Citadel", "-server", "-MULTIHOME=127.0.0.1", f"-port={args.port}", "-CireInterfaceServer", f"-abslog={logs['server']}", *common, *server_arena_flags],
         **{name: [str(args.editor), str(args.project.resolve()), f"127.0.0.1:{args.port}", "-game", "-CireInterfaceClient", f"-abslog={logs[name]}", *common, *client_art_flags] for name in ("client0", "client1")},
     }
     children: dict[str, subprocess.Popen[bytes]] = {}
@@ -90,13 +94,22 @@ def main() -> int:
         print("Dedicated server ready; starting two remote clients.", flush=True)
         for name in ("client0", "client1"):
             children[name] = subprocess.Popen(commands[name], cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags, env=env)
-        deadline = time.monotonic() + args.probe_timeout
+        # Two cold client editors can take over a minute to boot on a busy machine. The probe budget covers the
+        # probe itself, so it starts once both clients have joined; joining is bounded by the startup timeout.
+        join_deadline = time.monotonic() + args.startup_timeout
+        deadline = None
         while any(child.poll() is None for child in children.values()):
-            for name, path in logs.items():
-                contents = read_log(path)
-                if "CIRE_INTERFACE_CLIENT_FAIL" in contents or "CIRE_INTERFACE_SERVER_FAIL" in contents:
+            contents = {name: read_log(path) for name, path in logs.items()}
+            for name, text in contents.items():
+                if "CIRE_INTERFACE_CLIENT_FAIL" in text or "CIRE_INTERFACE_SERVER_FAIL" in text:
                     raise RuntimeError(f"{name} reported an assertion failure")
-            if time.monotonic() > deadline:
+            if deadline is None:
+                if all("Welcomed by server" in contents[name] for name in ("client0", "client1")):
+                    deadline = time.monotonic() + args.probe_timeout
+                    print(f"Both clients joined after {time.monotonic() - start:.0f} s; probe budget {args.probe_timeout:.0f} s.", flush=True)
+                elif time.monotonic() > join_deadline:
+                    raise TimeoutError("clients did not join the server")
+            elif time.monotonic() > deadline:
                 raise TimeoutError("interface probe timeout")
             time.sleep(0.25)
         for name, child in children.items():
@@ -115,6 +128,7 @@ def main() -> int:
         "failure": failure or None,
         "duration_seconds": round(time.monotonic() - start, 2),
         "tripo_champions": args.tripo_champions,
+        "arena": next((line.split("id=")[1].split()[0] for line in read_log(logs["server"]).splitlines() if "CIRE_ARENA_PICK" in line), None),
         "exit_codes": {name: child.returncode for name, child in children.items()},
         "logs": {name: str(path) for name, path in logs.items()},
         "coverage": ["two actual remote clients on opposing teams", "opposing PvE actors excluded from replication", "party/all chat routing",

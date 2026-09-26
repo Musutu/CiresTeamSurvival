@@ -44,7 +44,7 @@
       ],
       "art": {
         "motion": "quadruped_procedural",
-        "mesh": "/Game/Tripo/Champions/HuntressSabercat/CTS_Mount_HuntressSabercat.CTS_Mount_HuntressSabercat",
+        "mesh": "/Game/Tripo/ChampionsHQ/PetSabercat/CTS_ChampHQ_PetSabercat.CTS_ChampHQ_PetSabercat",
         "heightCm": 118,
         "yaw": -90,
         "capsuleRadius": 44,

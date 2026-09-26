@@ -671,16 +671,19 @@ void CireProgression::SpawnBay(ACireGameMode* Mode, int32 Team, int32 Bay, int32
     const auto& NPCs = CireNPCArchetypes::Get();
     const int32 Wave = Mode->GetGameState<ACireGameState>() ? Mode->GetGameState<ACireGameState>()->Wave : 0;
     const FVector Center = CireLanePath::ChallengePosition(Mode->GetWorld(), Team, Bay);
+    // dev-route-tools: the pack spreads with its arena radius (450 cm keeps the original 110 cm spacing).
+    const float Spread = CireLanePath::ChallengeRadius(Mode->GetWorld(), Team, Bay) / FCireChallengeBay::DefaultRadius;
+    const float Spacing = FMath::Clamp(110.f * Spread, 80.f, 220.f), LeaderOffset = FMath::Clamp(260.f * Spread, 180.f, 520.f);
     const int32 Members = NPCs.PackMembers.Num();
     const bool bLeader = Tier >= NPCs.PackLeaderFromTier;
-    const int32 PackId = Round * 100 + Team * 10 + Bay;
+    const int32 PackId = CireProgression::PackIdFor(Round, Team, Bay);
     for (ACireMonster* Existing : Mode->Monsters) if (IsValid(Existing) && Existing->PackId == PackId) return; // already spawned
     for (int32 I = 0; I < Members + (bLeader ? 1 : 0); ++I)
     {
         const bool bIsLeader = I == Members;
         FActorSpawnParameters Params;
         Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        const FVector P = Center + (bIsLeader ? FVector(260, 0, 40) : FVector((I - (Members - 1) * .5f) * 110, 0, 0));
+        const FVector P = Center + (bIsLeader ? FVector(LeaderOffset, 0, 40) : FVector((I - (Members - 1) * .5f) * Spacing, 0, 0));
         auto* M = Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(), P, FRotator::ZeroRotator, Params);
         if (!M) { UE_LOG(LogCireLoot, Error, TEXT("Challenge pack spawn failed")); continue; }
         M->Lane = Team; M->Tier = Tier; M->PackId = PackId; M->SpawnPosition = P;
@@ -701,24 +704,45 @@ void Announce(ACireGameMode* Mode, const FString& Text)
         if (IsValid(Hero) && Hero->Inventory) Hero->Inventory->SendFeedback(ECireShopAction::Announce, true, NAME_None, -1, false, 0, Text);
     UE_LOG(LogCireLoot, Display, TEXT("CIRE_PACK_ANNOUNCE %s"), *Text);
 }
-FString BayWhere(int32 Bay) { return Bay <= 1 ? TEXT("near the town road") : Bay == 2 ? TEXT("midway along the route") : TEXT("deep along the route, near the monster gate"); }
+// dev-route-tools: where a pack sits along the march (1 = at the castle gate), for any of the 1..16 packs.
+FString BayWhere(const UWorld* World, int32 Team, int32 Bay)
+{
+    const float Progress = CireLanePath::RouteProgress(World, Team, CireLanePath::ChallengePosition(World, Team, Bay));
+    return Progress >= .66f ? TEXT("near the town road") : Progress >= .33f ? TEXT("midway along the route") : TEXT("deep along the route, near the monster gate");
 }
+// dev-route-tools: a realm's pack schedule: its packs (authored 1..16, or the three automatic bays) with their tiers.
+CI::PackSchedule ScheduleFor(const UWorld* World, int32 Team)
+{
+    std::vector<int> Tiers;
+    for (int32 Bay = 1, Count = CireLanePath::BayCount(World, Team); Bay <= Count; ++Bay) Tiers.push_back(CireLanePath::ChallengeTier(World, Team, Bay));
+    return CI::RouteSchedule(CireLoot::Get().Schedule, Tiers);
+}
+}
+
+int32 CireProgression::PackIdFor(int32 Round, int32 Team, int32 Bay) { return Round * 100 + FMath::Clamp(Team, 0, 1) * 50 + FMath::Clamp(Bay, 0, 49); }
+int32 CireProgression::PackBayOf(int32 PackId) { return PackId >= 0 ? PackId % 50 : 0; }
 
 void CireProgression::SpawnPacks(ACireGameMode* Mode, int32 WaveInCycle)
 {
     if (!Mode) return;
-    const auto& Schedule = CireLoot::Get().Schedule;
     const int32 Round = Mode->Clock.Round();
+    UWorld* World = Mode->GetWorld();
     TArray<FString> News;
-    for (const auto& Bay : Schedule.Bays)
+    // dev-route-tools: each realm's packs (1..16) with their authored tiers; identical realms announce once.
+    for (int32 Team = 0; Team < 2; ++Team)
     {
-        const int32 Tier = CI::BayTier(Schedule, Bay.Bay, Round, WaveInCycle);
-        if (Tier <= 0) continue;
-        for (int32 Team = 0; Team < 2; ++Team) SpawnBay(Mode, Team, Bay.Bay, Tier);
-        if (Round > 1 && CI::BayUnlocksAt(Schedule, Bay.Bay, Round, WaveInCycle))
-            News.Add(FString::Printf(TEXT("NEW CHALLENGE | Tier %d outpost has appeared %s"), Tier, *BayWhere(Bay.Bay)));
-        else if (Round > 1 && Tier > CI::BayTier(Schedule, Bay.Bay, Round - 1, 99) && CI::BayTier(Schedule, Bay.Bay, Round - 1, 99) > 0)
-            News.Add(FString::Printf(TEXT("OUTPOSTS STIR | Bay %d now holds a Tier %d pack: stronger foes, richer loot"), Bay.Bay, Tier));
+        const CI::PackSchedule Schedule = ScheduleFor(World, Team);
+        for (const auto& Bay : Schedule.Bays)
+        {
+            const int32 Tier = CI::BayTier(Schedule, Bay.Bay, Round, WaveInCycle);
+            if (Tier <= 0) continue;
+            SpawnBay(Mode, Team, Bay.Bay, Tier);
+            const int32 Before = CI::BayTier(Schedule, Bay.Bay, Round - 1, 99);
+            if (Round > 1 && CI::BayUnlocksAt(Schedule, Bay.Bay, Round, WaveInCycle))
+                News.AddUnique(FString::Printf(TEXT("NEW CHALLENGE | Tier %d outpost has appeared %s"), Tier, *BayWhere(World, Team, Bay.Bay)));
+            else if (Round > 1 && Tier > Before && Before > 0)
+                News.AddUnique(FString::Printf(TEXT("OUTPOSTS STIR | Bay %d now holds a Tier %d pack: stronger foes, richer loot"), Bay.Bay, Tier));
+        }
     }
     for (const FString& Line : News) Announce(Mode, Line);
 }
@@ -726,15 +750,21 @@ void CireProgression::SpawnPacks(ACireGameMode* Mode, int32 WaveInCycle)
 void CireProgression::OnWaveSpawned(ACireGameMode* Mode, int32 WaveInCycle)
 {
     if (!Mode || WaveInCycle <= 1) return;
-    const auto& Schedule = CireLoot::Get().Schedule;
     const int32 Round = Mode->Clock.Round();
-    for (const auto& Bay : Schedule.Bays)
-        if (CI::BayUnlocksAt(Schedule, Bay.Bay, Round, WaveInCycle))
-        {
-            const int32 Tier = CI::BayTier(Schedule, Bay.Bay, Round, WaveInCycle);
-            for (int32 Team = 0; Team < 2; ++Team) SpawnBay(Mode, Team, Bay.Bay, Tier);
-            Announce(Mode, FString::Printf(TEXT("NEW CHALLENGE | Tier %d outpost has appeared %s"), Tier, *BayWhere(Bay.Bay)));
-        }
+    UWorld* World = Mode->GetWorld();
+    TArray<FString> News;
+    for (int32 Team = 0; Team < 2; ++Team)
+    {
+        const CI::PackSchedule Schedule = ScheduleFor(World, Team);
+        for (const auto& Bay : Schedule.Bays)
+            if (CI::BayUnlocksAt(Schedule, Bay.Bay, Round, WaveInCycle))
+            {
+                const int32 Tier = CI::BayTier(Schedule, Bay.Bay, Round, WaveInCycle);
+                SpawnBay(Mode, Team, Bay.Bay, Tier);
+                News.AddUnique(FString::Printf(TEXT("NEW CHALLENGE | Tier %d outpost has appeared %s"), Tier, *BayWhere(World, Team, Bay.Bay)));
+            }
+    }
+    for (const FString& Line : News) Announce(Mode, Line);
 }
 
 bool CireProgression::IsPaused(const ACireMonster* Monster)

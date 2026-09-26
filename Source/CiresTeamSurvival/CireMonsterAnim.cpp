@@ -80,12 +80,15 @@ const CireAnimClips::FClipInfo& CireAnimClips::Analyze(const UAnimSequence* Sequ
         FVector2D SumP = FVector2D::ZeroVector, SumTP = FVector2D::ZeroVector;
         double ApexZ = -TNumericLimits<double>::Max();
         bool bFinite = true;
+        FVector2D First = FVector2D::ZeroVector, Last = FVector2D::ZeroVector;
         for (int32 Index = 0; Index <= Samples; ++Index)
         {
             const double Time = Info.Length * Index / Samples;
             const FVector P = ComponentBone(*Sequence, Reference, Pelvis, Time).GetLocation();
             bFinite &= !P.ContainsNaN();
             const FVector2D XY(P);
+            if (Index == 0) First = XY;
+            Last = XY;
             SumT += Time; SumTT += Time * Time; SumP += XY; SumTP += XY * Time;
             if (Foot != INDEX_NONE && Index < Samples)
             {
@@ -97,6 +100,11 @@ const CireAnimClips::FClipInfo& CireAnimClips::Analyze(const UAnimSequence* Sequ
         if (bFinite && FMath::Abs(Denominator) > UE_SMALL_NUMBER)
         {
             Info.DriftVelocity = (SumTP * N - SumP * SumT) / Denominator;
+            // movement-feel: a loop whose pelvis ends where it started is in place (Fab / UE-mannequin clips). A line fit
+            // through an asymmetric closed cycle has a spurious slope; removing it ramped the pose and popped it back at
+            // every loop seam (the rotting shambler) and skewed the measured stride.
+            const double Travel = Info.DriftVelocity.Size() * Info.Length;
+            if (CireLocomotion::Enabled() && FVector2D::Distance(First, Last) <= FMath::Max(.5, .2 * Travel)) Info.DriftVelocity = FVector2D::ZeroVector;
             Info.DriftOffset = (SumP - Info.DriftVelocity * SumT) / N;
             Info.bValid = !Info.DriftVelocity.ContainsNaN() && !Info.DriftOffset.ContainsNaN();
         }
@@ -165,6 +173,7 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
     CireGrip::FHands Hands;
     UCireMonsterAnimInstance* Owner = nullptr;
     bool bLockRoot = false; // world-dressing
+    CireLocomotion::FPoseFeel Feel; // movement-feel
 
     virtual void PreUpdate(UAnimInstance* Instance, float DeltaSeconds) override
     {
@@ -177,6 +186,7 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
         RunAlpha = FMath::Clamp(Monster->RunAlpha, 0.f, 1.f);
         Hands = Monster->Hands;
         bLockRoot = Monster->bLockRootToReference; // world-dressing
+        Feel = Monster->Feel; Feel.Resolve(Monster->GetSkelMeshComponent()); // movement-feel
     }
 
     static bool Sample(const FLayerCopy& Layer, FPoseContext& Into)
@@ -234,6 +244,7 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
             const FCompactPoseBoneIndex Root(0);
             Output.Pose[Root] = Output.Pose.GetRefPose(Root);
         }
+        CireLocomotion::ApplyPoseFeel(Output.Pose, Feel); // movement-feel: visual heading, leg IK
         const bool bSane = PoseIsSane(Output.Pose);
         if (!bSane) Output.ResetToRefPose();
         if (Owner) Owner->bLastPoseRejected = !bSane;

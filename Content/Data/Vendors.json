@@ -1,0 +1,408 @@
+{
+  "schemaVersion": 1,
+  "_comment": "vendors: the three town merchants (Eric 2026-09-26: shop NPCs split the item catalogue by stat). Every purchasable item belongs to exactly one merchant: 'overrides' first, then the first 'rules' entry whose tag the item carries, else 'fallback'. Items tagged with a 'shared' tag (potions, tomes) are sold by every merchant. The B key still opens every merchant at once (buy anywhere in prep); the Interact key or a click on a merchant opens the shop on that merchant's tab. Positions come from TownVendors.json (TownVendors.provisional.json until the town layout lands). Art: Art/Vendors (ChatGPT sheets + signs), Tripo bodies in /Game/Tripo/Vendors (Art/Vendors/TripoVendors.json).",
+  "interactRange": 450,
+  "nameplateRange": 2600,
+  "shared": [
+    "consumable"
+  ],
+  "rules": [
+    {
+      "tags": [
+        "attack",
+        "crit",
+        "execute"
+      ],
+      "vendor": "weaponsmith"
+    },
+    {
+      "tags": [
+        "armor"
+      ],
+      "vendor": "armory"
+    },
+    {
+      "tags": [
+        "spell",
+        "mana",
+        "heal",
+        "support",
+        "summon",
+        "construct",
+        "aoe",
+        "control",
+        "tome"
+      ],
+      "vendor": "arcane"
+    },
+    {
+      "tags": [
+        "ward",
+        "defense",
+        "block",
+        "health"
+      ],
+      "vendor": "armory"
+    },
+    {
+      "tags": [
+        "speed",
+        "boots",
+        "mobility"
+      ],
+      "vendor": "weaponsmith"
+    }
+  ],
+  "fallback": "armory",
+  "overrides": {},
+  "vendors": [
+    {
+      "id": "arcane",
+      "name": "Arcane Emporium",
+      "keeper": "Magister Orvane",
+      "stat": "INT",
+      "statLabel": "INTELLECT",
+      "tagline": "Tomes, foci and wards for those who wield Intellect",
+      "greeting": "Knowledge has a price, friend. Fortunately, so does everything else.",
+      "accent": [
+        0.62,
+        0.42,
+        1.0
+      ],
+      "sign": "/Game/UI/Vendors/T_VendorSign_Arcane.T_VendorSign_Arcane",
+      "emblem": "/Game/UI/Vendors/T_VendorEmblem_Arcane.T_VendorEmblem_Arcane",
+      "mesh": "/Game/Tripo/Vendors/Arcane/CTS_Vendor_Arcane.CTS_Vendor_Arcane",
+      "anims": {
+        "idle": "/Game/Tripo/Vendors/Arcane/Animations/CTS_Vendor_Arcane_idle.CTS_Vendor_Arcane_idle",
+        "look": "/Game/Tripo/Vendors/Arcane/Animations/CTS_Vendor_Arcane_look_around.CTS_Vendor_Arcane_look_around",
+        "greet": "/Game/Tripo/Vendors/Arcane/Animations/CTS_Vendor_Arcane_greet_01.CTS_Vendor_Arcane_greet_01",
+        "agree": "/Game/Tripo/Vendors/Arcane/Animations/CTS_Vendor_Arcane_agree.CTS_Vendor_Arcane_agree"
+      },
+      "height": 188,
+      "meshYaw": -90,
+      "stall": [
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/Market/SM_Market_Stand_01.SM_Market_Stand_01",
+          "x": -10,
+          "y": 0,
+          "yaw": 90,
+          "fit": 330
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/Furniture/SM_Table_Rectangle.SM_Table_Rectangle",
+          "x": 62,
+          "y": 0,
+          "yaw": 90,
+          "fit": 210,
+          "counter": true,
+          "fallback": "counter"
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/Furniture/SM_Bookshelf_A_01.SM_Bookshelf_A_01",
+          "x": -135,
+          "y": -115,
+          "yaw": 90,
+          "fit": 150
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/Castle/SM_Book_Stack.SM_Book_Stack",
+          "x": 62.0,
+          "y": -70,
+          "yaw": 20,
+          "onCounter": true,
+          "fit": 34
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/Castle/SM_Books_A.SM_Books_A",
+          "x": 59.5,
+          "y": 55,
+          "yaw": -15,
+          "onCounter": true,
+          "fit": 40
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/Candles/SM_Candle_B.SM_Candle_B",
+          "x": 64.5,
+          "y": 0,
+          "onCounter": true,
+          "fit": 18
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Bottle_01.SM_Bottle_01",
+          "x": 65.5,
+          "y": 100,
+          "onCounter": true,
+          "fit": 24
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Jar_01.SM_Jar_01",
+          "x": 58.5,
+          "y": 120,
+          "onCounter": true,
+          "fit": 20
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_ConicalCauldron_01.SM_ConicalCauldron_01",
+          "x": -20,
+          "y": 190,
+          "yaw": 30,
+          "fit": 80
+        }
+      ],
+      "layout": {
+        "sign": {
+          "offset": [
+            -35,
+            0,
+            318
+          ],
+          "yaw": 0,
+          "width": 165
+        },
+        "stall": {
+          "offset": [
+            40,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "size": [
+            340,
+            460,
+            320
+          ],
+          "counterTop": 95
+        }
+      }
+    },
+    {
+      "id": "armory",
+      "name": "Armory",
+      "keeper": "Brannoc Ironvow",
+      "stat": "STR",
+      "statLabel": "STRENGTH",
+      "tagline": "Plate, shields and bulwarks for Strength and the tanks who hold the line",
+      "greeting": "Steel doesn't lie. Neither do I. Mostly.",
+      "accent": [
+        0.95,
+        0.24,
+        0.2
+      ],
+      "sign": "/Game/UI/Vendors/T_VendorSign_Armory.T_VendorSign_Armory",
+      "emblem": "/Game/UI/Vendors/T_VendorEmblem_Armory.T_VendorEmblem_Armory",
+      "mesh": "/Game/Tripo/Vendors/Armory/CTS_Vendor_Armory.CTS_Vendor_Armory",
+      "anims": {
+        "idle": "/Game/Tripo/Vendors/Armory/Animations/CTS_Vendor_Armory_idle.CTS_Vendor_Armory_idle",
+        "look": "/Game/Tripo/Vendors/Armory/Animations/CTS_Vendor_Armory_look_around.CTS_Vendor_Armory_look_around",
+        "greet": "/Game/Tripo/Vendors/Armory/Animations/CTS_Vendor_Armory_greet_01.CTS_Vendor_Armory_greet_01",
+        "agree": "/Game/Tripo/Vendors/Armory/Animations/CTS_Vendor_Armory_agree.CTS_Vendor_Armory_agree"
+      },
+      "height": 192,
+      "meshYaw": -90,
+      "stall": [
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/Market/SM_Market_Stand_01.SM_Market_Stand_01",
+          "x": -10,
+          "y": 0,
+          "yaw": 90,
+          "fit": 330
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/Furniture/SM_Table_Rectangle.SM_Table_Rectangle",
+          "x": 62,
+          "y": 0,
+          "yaw": 90,
+          "fit": 210,
+          "counter": true,
+          "fallback": "counter"
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Anvil.SM_Anvil",
+          "x": -30,
+          "y": 185,
+          "yaw": 90,
+          "fit": 75
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_WeaponStand.SM_WeaponStand",
+          "x": -130,
+          "y": -120,
+          "yaw": 90,
+          "fit": 150
+        },
+        {
+          "mesh": "/Game/Medieval_Weapons/Meshes/SM_Round_Metal_Shield.SM_Round_Metal_Shield",
+          "x": 69.5,
+          "y": -80,
+          "roll": 75,
+          "onCounter": true,
+          "fit": 60
+        },
+        {
+          "mesh": "/Game/Medieval_Weapons/Meshes/SM_Kite_Wood_Shield.SM_Kite_Wood_Shield",
+          "x": 69.5,
+          "y": 60,
+          "roll": 75,
+          "onCounter": true,
+          "fit": 70
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Hammer.SM_Hammer",
+          "x": 64.5,
+          "y": 0,
+          "yaw": 30,
+          "onCounter": true,
+          "fit": 38
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Chest_Open_01.SM_Chest_Open_01",
+          "x": -10,
+          "y": -190,
+          "yaw": 70,
+          "fit": 80
+        }
+      ],
+      "layout": {
+        "sign": {
+          "offset": [
+            -35,
+            0,
+            318
+          ],
+          "yaw": 0,
+          "width": 165
+        },
+        "stall": {
+          "offset": [
+            40,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "size": [
+            340,
+            460,
+            320
+          ],
+          "counterTop": 95
+        }
+      }
+    },
+    {
+      "id": "weaponsmith",
+      "name": "Weaponsmith",
+      "keeper": "Kaelen Swiftbrand",
+      "stat": "AGI",
+      "statLabel": "AGILITY",
+      "tagline": "Blades, bows and boots for Agility and the bruisers who close the gap",
+      "greeting": "Sharp, balanced, and yours for the right coin.",
+      "accent": [
+        0.36,
+        0.86,
+        0.36
+      ],
+      "sign": "/Game/UI/Vendors/T_VendorSign_Weaponsmith.T_VendorSign_Weaponsmith",
+      "emblem": "/Game/UI/Vendors/T_VendorEmblem_Weaponsmith.T_VendorEmblem_Weaponsmith",
+      "mesh": "/Game/Tripo/Vendors/Weaponsmith/CTS_Vendor_Weaponsmith.CTS_Vendor_Weaponsmith",
+      "anims": {
+        "idle": "/Game/Tripo/Vendors/Weaponsmith/Animations/CTS_Vendor_Weaponsmith_idle.CTS_Vendor_Weaponsmith_idle",
+        "look": "/Game/Tripo/Vendors/Weaponsmith/Animations/CTS_Vendor_Weaponsmith_look_around.CTS_Vendor_Weaponsmith_look_around",
+        "greet": "/Game/Tripo/Vendors/Weaponsmith/Animations/CTS_Vendor_Weaponsmith_greet_01.CTS_Vendor_Weaponsmith_greet_01",
+        "agree": "/Game/Tripo/Vendors/Weaponsmith/Animations/CTS_Vendor_Weaponsmith_agree.CTS_Vendor_Weaponsmith_agree"
+      },
+      "height": 184,
+      "meshYaw": -90,
+      "stall": [
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/Market/SM_Market_Stand_01.SM_Market_Stand_01",
+          "x": -10,
+          "y": 0,
+          "yaw": 90,
+          "fit": 330
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/Furniture/SM_Table_Rectangle.SM_Table_Rectangle",
+          "x": 62,
+          "y": 0,
+          "yaw": 90,
+          "fit": 210,
+          "counter": true,
+          "fallback": "counter"
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_WeaponStand.SM_WeaponStand",
+          "x": -130,
+          "y": 120,
+          "yaw": 90,
+          "fit": 150
+        },
+        {
+          "mesh": "/Game/Medieval_Weapons/Meshes/SM_Sword_1.SM_Sword_1",
+          "x": 64.5,
+          "y": -70,
+          "pitch": 90,
+          "yaw": 90,
+          "onCounter": true,
+          "fit": 95
+        },
+        {
+          "mesh": "/Game/Medieval_Weapons/Meshes/SM_Scimtar_1.SM_Scimtar_1",
+          "x": 70.5,
+          "y": 20,
+          "pitch": 90,
+          "yaw": 80,
+          "onCounter": true,
+          "fit": 85
+        },
+        {
+          "mesh": "/Game/Medieval_Weapons/Meshes/SM_Dagger_1.SM_Dagger_1",
+          "x": 59.5,
+          "y": 95,
+          "pitch": 90,
+          "yaw": 60,
+          "onCounter": true,
+          "fit": 35
+        },
+        {
+          "mesh": "/Game/Medieval_Weapons_VOL2/Meshes/VOL2/SM_Bow.SM_Bow",
+          "x": -100,
+          "y": -150,
+          "yaw": 90,
+          "fit": 140
+        },
+        {
+          "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_Barrel_01.SM_Barrel_01",
+          "x": -20,
+          "y": -195,
+          "fit": 90
+        }
+      ],
+      "layout": {
+        "sign": {
+          "offset": [
+            -35,
+            0,
+            318
+          ],
+          "yaw": 0,
+          "width": 165
+        },
+        "stall": {
+          "offset": [
+            40,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "size": [
+            340,
+            460,
+            320
+          ],
+          "counterTop": 95
+        }
+      }
+    }
+  ],
+  "_layout": "Per vendor 'layout' = the defaults the map layout editor previews and the game uses when a TownVendors.json entry omits a sign or stall anchor: offsets are relative to the merchant (NPC) in cm, +X = the way he faces (toward customers), yaw in degrees relative to his facing. 'stall.size' = [depth (x), width (y), height (z)] of the stall footprint; a placed stall with another size scales every stall prop offset per axis and each prop uniformly. Stall prop x/y are relative to the stall anchor; 'onCounter' props stand on the counter top ('counterTop', cm, scaled by size z)."
+}

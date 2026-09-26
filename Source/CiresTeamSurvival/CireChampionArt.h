@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "Animation/AnimSingleNodeInstance.h"
 #include "CireGrip.h" // creature-anim
+#include "CireLocomotion.h" // movement-feel
 #include "CireChampionArt.generated.h"
 
 class ACireHero;
@@ -42,8 +43,17 @@ public:
     float SeatWeight = 0.f;
     // new-champions: 1 = lower arms that the body's idle keeps near T-pose (some Tripo retargets); scaled by (1 - attack weight).
     float RelaxArms = 0.f;
+    // movement-feel: visual heading / leg IK (CireLocomotion) and the stepping legs of a turn in place.
+    CireLocomotion::FPoseFeel Feel;
+    UPROPERTY(Transient) TObjectPtr<UAnimSequence> StepSequence;
+    float StepTime = 0.f;
+    float StepWeight = 0.f;
 protected:
     virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;
+    // movement-feel: vendor demo notifies (GDH BP_AddWeapon/BP_RemoveWeapon spawn a colliding SM_Spear actor on the
+    // mesh and push the capsule) never run; native notifies (sounds) still do.
+    virtual bool HandleNotify(const FAnimNotifyEvent& AnimNotifyEvent) override;
+    virtual bool ShouldTriggerAnimNotifyState(const class UAnimNotifyState* AnimNotifyState) const override;
 };
 
 /** Local presentation only. Gameplay, collision and replicated state stay on ACireHero. */
@@ -82,6 +92,7 @@ private:
     void ClearBodyParts();
     bool ApplyHumanoid(ACireHero& Hero, int32 Archetype, const FCireChampionArtDefinition& Definition);
     bool ApplyFabBody(ACireHero& Hero, const TSharedPtr<FJsonObject>& Raw); // paladin-hq
+    void ApplyStaticParts(ACireHero& Hero, const TSharedPtr<FJsonObject>& Raw); // champion-hq: segmented props (quiver)
 
     UPROPERTY(Transient) TObjectPtr<USkeletalMesh> FallbackMesh;
     UPROPERTY(Transient) TSubclassOf<UAnimInstance> FallbackAnimClass;
@@ -92,6 +103,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<UCireWeaponPresentation> Weapons;
     UPROPERTY(Transient) TObjectPtr<UCireCreatureArt> Creature;
     UPROPERTY(Transient) TArray<TObjectPtr<class USkeletalMeshComponent>> BodyParts; // paladin-hq
+    UPROPERTY(Transient) TArray<TObjectPtr<class UStaticMeshComponent>> StaticParts; // champion-hq
     FTransform FallbackTransform;
     uint8 FallbackAnimationMode = 0;
     bool bFallbackCaptured = false;
@@ -100,4 +112,15 @@ private:
     FString AttemptedProfile;
     float SmoothedSpeed = 0.f;
     uint32 LastAttackSerial = 0;
+    // movement-feel
+    CireLocomotion::FVisualTurn Turn;
+    CireLocomotion::FLegIK Legs;
+    float WarpSpeed = 0.f, SmoothedDirection = 0.f;
+    bool bFeelTicksOrdered = false;
+    UPROPERTY(Transient) TObjectPtr<UAnimSequence> StepClips[2];
+    float StepClipSpeed[2] = {0.f, 0.f};
+    void ResetFeel();
+public:
+    /** movement-feel (lab/tests): the heading the body shows and the blend play rate. */
+    float GetVisualYawOffset() const { return Turn.Offset; }
 };

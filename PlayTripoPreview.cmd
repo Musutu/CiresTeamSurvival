@@ -5,4 +5,4 @@ if not exist "%~dp0Binaries\Win64\UnrealEditor-CiresTeamSurvival.dll" (
   pause
   exit /b 1
 )
-start "Cire's Team Survival - Tripo Preview" "F:\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe" "%~dp0CiresTeamSurvival.uproject" /Game/Maps/Citadel -game -windowed -ResX=1600 -ResY=900 -CireTripoChampions
+start "Cire's Team Survival - Tripo Preview" "F:\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe" "%~dp0CiresTeamSurvival.uproject" /Game/Maps/Citadel -game -CireTripoChampions

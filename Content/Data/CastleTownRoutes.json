@@ -3,7 +3,7 @@
   "units": "centimeters",
   "frame": "castletown",
   "notes": "PROVISIONAL defaults for the Medieval Kingdom town (Docs/CastleTown.md). Realm-local centimetres (pack coordinates - CastleTown.json frameCenter), stored once and applied to both realms; team 1 mirrors team 0. Eric authors the real spots with the map layout editor (feat/dev-route-tools).",
-  "base": [13400, -8200],
+  "base": [12500, -8000],
   "bounds": { "minX": -23500, "maxX": 23500, "halfWidth": 19500 },
   "laneWidth": 520,
   "goal": { "x": 14800, "y": -4400, "depth": 1400, "width": 1400 },

@@ -6,15 +6,31 @@ class ACireGameMode;
 class ACireGameState;
 class UWorld;
 
-struct CIRESTEAMSURVIVAL_API FCireBattlefieldRoutes
+/** dev-route-tools: one authored challenge pack ("bay"): realm-local centre, arena radius and base tier. */
+struct FCireChallengeBay
+{
+    FVector2D Position = FVector2D::ZeroVector;
+    /** Arena radius in cm: the dais, the pack's spread and the town-piece clearance around it. */
+    float Radius = 450.f;
+    /** Base tier 1..10 before round promotions (LootTables.json packSchedule decides when the tier unlocks). */
+    int32 Tier = 1;
+    static constexpr float DefaultRadius = 450.f, MinRadius = 200.f, MaxRadius = 1500.f;
+    static constexpr int32 MaxTier = 10;
+    bool operator==(const FCireChallengeBay& Other) const { return Position == Other.Position && Radius == Other.Radius && Tier == Other.Tier; }
+    bool operator!=(const FCireChallengeBay& Other) const { return !(*this == Other); }
+};
+
+struct FCireBattlefieldRoutes
 {
     float MinX = -2350, MaxX = 13000, HalfWidth = 1120;
+    // Realm-local points: X along the realm, Y relative to CireLanePath::CenterY(Team). Point 0 is the wave start (the rift).
     TArray<FVector2D> LocalPoints[2];
-    // nav-paths: editable lane (road) width, castle goal zone and optional challenge bay overrides
-    // (realm-local cm). Bays[Team] is empty (computed from path length) or exactly three points (tier 1..3).
+    // nav-paths: editable lane (road) width, castle goal zone and optional challenge bay overrides (realm-local cm).
+    // dev-route-tools: Bays[Team] is empty (three automatic bays placed by path length) or 1..16 authored packs.
     float LaneWidth = 520;
     FVector2D GoalCenter = FVector2D(-1850, 0), GoalSize = FVector2D(900, 1800);
-    TArray<FVector2D> Bays[2];
+    TArray<FCireChallengeBay> Bays[2];
+    static constexpr int32 MaxBays = 16, AutoBays = 3;
     // medieval-kingdom: the pack town's frame ("frame": "castletown"; CireTownMap) and the hero base (realm-local).
     bool bTownFrame = false;
     FVector2D BaseLocal = FVector2D(-1700, 0);
@@ -35,7 +51,9 @@ namespace CireLanePath
     CIRESTEAMSURVIVAL_API void ReceiveState(ACireGameState* State);
     CIRESTEAMSURVIVAL_API uint32 Revision(const UWorld* World = nullptr);
     CIRESTEAMSURVIVAL_API float CenterY(int32 Team);
-    // medieval-kingdom: realm frames come from data (CireTownMap: CastleTown.json; procedural town (0, -/+2100)).
+    // dev-route-tools + medieval-kingdom: realm frames. The two realms share one layout authored once in realm-local
+    // coordinates; each realm maps it into the world through its origin (CireTownMap: CastleTown.json for the pack town,
+    // (0, -/+2100) for the procedural town).
     /** World XY of a realm's local origin. */
     CIRESTEAMSURVIVAL_API FVector2D RealmOrigin(int32 Team);
     /** World location -> realm-local XY. */
@@ -54,9 +72,22 @@ namespace CireLanePath
     CIRESTEAMSURVIVAL_API FVector ClampToLane(const UWorld* World, int32 Team, FVector Point, float Margin = 0);
     CIRESTEAMSURVIVAL_API FVector SpawnPosition(int32 Team, float Z = 110);
     CIRESTEAMSURVIVAL_API FVector SpawnPosition(const UWorld* World, int32 Team, float Z = 110);
-    CIRESTEAMSURVIVAL_API FVector ChallengePosition(const UWorld* World, int32 Team, int32 Tier, float Z = 110);
-    /** nav-paths: realm-local challenge bay of a route document (override or computed from path length). */
-    CIRESTEAMSURVIVAL_API FVector2D BayPoint(const FCireBattlefieldRoutes& Routes, int32 Team, int32 Tier);
+    /** World centre of challenge pack Bay (1..BayCount). */
+    CIRESTEAMSURVIVAL_API FVector ChallengePosition(const UWorld* World, int32 Team, int32 Bay, float Z = 110);
+    /** nav-paths: realm-local challenge bay of a route document (override or computed from path length). Bay is 1-based. */
+    CIRESTEAMSURVIVAL_API FVector2D BayPoint(const FCireBattlefieldRoutes& Routes, int32 Team, int32 Bay);
+    // dev-route-tools: 1..16 challenge packs per realm, each with its own radius and tier.
+    /** Packs in the realm: the authored count, or 3 automatic bays when none are authored. */
+    CIRESTEAMSURVIVAL_API int32 BayCount(const FCireBattlefieldRoutes& Routes, int32 Team);
+    CIRESTEAMSURVIVAL_API int32 BayCount(const UWorld* World, int32 Team);
+    /** Pack Bay (1..BayCount): authored, or the automatic bay (default radius, tier = bay number). */
+    CIRESTEAMSURVIVAL_API FCireChallengeBay BayAt(const FCireBattlefieldRoutes& Routes, int32 Team, int32 Bay);
+    /** The three automatic bays (75 / 50 / 25 % of the path from the wave start). */
+    CIRESTEAMSURVIVAL_API TArray<FCireChallengeBay> AutoBays(const FCireBattlefieldRoutes& Routes, int32 Team);
+    CIRESTEAMSURVIVAL_API float ChallengeRadius(const UWorld* World, int32 Team, int32 Bay);
+    CIRESTEAMSURVIVAL_API int32 ChallengeTier(const UWorld* World, int32 Team, int32 Bay);
+    /** Polyline length in cm. */
+    CIRESTEAMSURVIVAL_API double PathLength(const TArray<FVector2D>& Points);
     // Route queries for wave/boss/HUD code (world space, current replicated route of that world).
     /** Ordered marching waypoints from the breach spawn to the castle gate. */
     CIRESTEAMSURVIVAL_API TArray<FVector> RoutePoints(const UWorld* World, int32 Team, float Z = 0);

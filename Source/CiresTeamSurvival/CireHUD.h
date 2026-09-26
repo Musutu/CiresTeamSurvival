@@ -8,6 +8,7 @@
 #include "CireUIStyle.h"
 #include "CireEffects.h"
 #include "CireWaves.h" // wave-director
+#include "CireSummonsBar.h" // fix/summons
 #include "CireHUD.generated.h"
 
 class ACireHero;
@@ -51,10 +52,17 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void DrawHUD() override;
     bool IsEditingLayout() const { return bEditLayout; }
-    bool IsBlockingGameplayInput() const { return bEditLayout || bSettings || bQuickKeybind || bRouteEditor; } // nav-paths: + route editor
+    bool IsBlockingGameplayInput() const { return bEditLayout || bSettings || bQuickKeybind || bRouteEditor || (bLayoutEditor && !IsLayoutWalkView()); } // nav-paths: + route editor; dev-route-tools: + layout editor map view
     // nav-paths: in-world route editor (F8 > Developer > Paths; CireRouteEditorHUD.cpp, Docs/Navigation.md).
     bool IsRouteEditorOpen() const { return bRouteEditor; }
     void OpenRouteEditor(bool bOpen);
+    // dev-route-tools: the map layout editor (-CireRouteEdit; CireLayoutEditorHUD.cpp, Docs/MapLayout.md).
+    bool IsLayoutEditorOpen() const { return bLayoutEditor; }
+    void OpenLayoutEditor(bool bOpen);
+    /** Walk view: the champion walks the town (gameplay movement stays live). Map view: the top-down editor camera. */
+    bool IsLayoutWalkView() const;
+    /** Gallery access to the editor state (CireLayoutEditorState.h). */
+    struct FCireLayoutEditorState* LayoutEditorState() const { return LayoutEditor.Get(); }
 #if !UE_BUILD_SHIPPING
     /** Gallery/tests: frame the editor camera and hold a waypoint drag at a world point (bRelease ends it). */
     void DebugRouteView(const FVector& Focus, float Distance, float Pitch, float Yaw);
@@ -98,6 +106,11 @@ public:
     void DebugSetPointer(FVector2D Logical) { DebugPointer=Logical; }
     bool DebugCalloutActive(FName& OutId) const { if(!EffectCallouts.Active.IsSet())return false; OutId=EffectCallouts.Active->Id; return true; }
     const FString& DebugLastTooltipTitle() const { return LastTooltipTitle; }
+    /** fix/summons: gallery hook, draw these summons-bar entries instead of the live ones (bOn=false restores). */
+    void DebugSummons(const TArray<FCireSummonBarEntry>& Units,bool bOn) { DebugSummonEntries=Units;bDebugSummons=bOn; }
+    int32 DebugSummonsDrawn() const { return LastSummonsDrawn; }
+    TArray<FCireSummonBarEntry> DebugSummonEntries;
+    bool bDebugSummons = false;
     FVector2D DebugPointer = FVector2D(-1,-1);
     FString LastTooltipTitle;
     FCireUIRect PanelRectForTest(FName Id) const { return PanelRect(Id); }
@@ -191,6 +204,7 @@ private:
     void DrawMeters(ACireHero* Hero, ACireController* Controller);
     void DrawCombatText(ACireHero* Hero, ACireController* Controller);
     void DrawNameplates(ACireHero* Hero);
+    void DrawVendorPlates(ACireHero* Hero); // vendors: merchant plates + interact prompt
     void DrawStatuses(AActor* Actor,float X,float Y,float Size,int32 MaxIcons=4);
     FString EffectSigil(FName Id,const struct FCireEffectInfo& I);
     FString StatusIconId(const struct FCireEffectInfo& I);
@@ -210,6 +224,8 @@ private:
     TMap<FString, FVector2D> OverheadSeen;
     void DrawPet(ACireHero* Hero,ACireController* Controller);
     void DrawCompanion(ACireHero* Hero,ACireController* Controller,const struct FCirePetDef& Def); // pets: CireHUDPets.cpp
+    void DrawSummonsBar(ACireHero* Hero,ACireController* Controller,const TArray<FCireSummonBarEntry>& Units,float Y0); // fix/summons: CireHUDSummons.cpp
+    int32 LastSummonsDrawn = 0; // fix/summons: entries drawn last frame (gallery checks)
     void Tip(const FString& Title,const FString& Body,float X,float Y,float W,float H);
     /** readability: Tip with a rich spec (buff icons, items). */
     void RichTip(const FCireTooltipSpec& Spec,float X,float Y,float W,float H);
@@ -224,6 +240,12 @@ private:
     void TickRouteEditor();
     void DrawRouteMinimap(int32 Team,TFunctionRef<FVector2D(FVector,int32)> Map);
     bool bRouteEditor=false,bMinimapNav=false;
+    // dev-route-tools: map layout editor state and the screen rects its panels cover (pointer-over-interface).
+    void TickLayoutEditor();
+    bool LayoutEditorEscape();
+    bool bLayoutEditor=false;
+    TSharedPtr<struct FCireLayoutEditorState> LayoutEditor;
+    TArray<FCireUIRect> LayoutUIRects;
     TSharedPtr<struct FCireRouteEditorState> RouteEditor;
     // wave-director: F8 > Waves live wave composer (CireWaveEditor.cpp).
     void DrawWaveEditor(float X,float Y);
@@ -301,13 +323,12 @@ private:
     float LastTooltipBodyFontSize=0;
 #endif
     int32 OptionsTab=0,InterfacePage=0;
-    bool bVideoLoaded=false,bVideoPending=false;
-    FIntPoint VideoResolution=FIntPoint(1920,1080),PreviousResolution;
-    int32 VideoMode=1,VideoQuality=2,PreviousMode=1;
-    float VideoFPS=120,PreviousFPS=120;
-    bool bVideoVSync=true,bPreviousVSync=true;
-    Scalability::FQualityLevels PreviousQuality;
-    double VideoDeadline=0;
+    // video-crash: the Video tab's draft values; applying goes through CireVideo (next tick, never mid-draw).
+    bool bVideoLoaded=false;
+    FIntPoint VideoResolution=FIntPoint(1920,1080);
+    int32 VideoMode=1,VideoQuality=2;
+    float VideoFPS=120,VideoScale=100;
+    bool bVideoVSync=true;
     float MX=0, MY=0, Scale=1, ViewW=1280, ViewH=720;
     FVector2D Origin=FVector2D::ZeroVector;
     FVector2D Stretch=FVector2D(1,1);

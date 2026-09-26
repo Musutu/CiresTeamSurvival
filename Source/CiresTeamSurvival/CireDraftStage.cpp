@@ -21,6 +21,12 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "RenderingThread.h"
+#include "Scalability.h"
+#include "UnrealEngine.h"
+#include "Engine/Texture.h"
+#if WITH_EDITOR
+#include "ShaderCompiler.h"
+#endif
 #include "RHIGPUReadback.h"
 #include "TextureResource.h"
 #include <atomic>
@@ -33,7 +39,12 @@ struct FDraftMeter
     TUniquePtr<FRHIGPUTextureReadback> Color,Depth;
     std::atomic<int32> State{0}; // 0 idle, 1 copy in flight, 2 result ready
     int32 Width=0,Height=0;float MaxDepth=0;
-    float Median=0,High=0;int32 Count=0;
+    // video-crash: size the staging textures were created for. FRHIGPUTextureReadback keeps its first staging
+    // texture ("assume every enqueue happens on a texture of the same size"), so after the window grew and the
+    // preview target with it, copying the bigger target into the old staging texture failed the GPU command list
+    // (D3D12 CloseCommandList E_INVALIDARG, a fatal RHI error) and the CPU read overran the mapped buffer.
+    int32 CopyWidth=0,CopyHeight=0;
+    float Median=0,High=0,Clip=0;int32 Count=0;
 };
 
 namespace
@@ -46,8 +57,19 @@ constexpr float CaptureFov=30.f;
 // champ-select-hq: manual exposure base (stops). Metering adds a per-champion trim on top.
 constexpr float BaseExposureBias=-3.9f;
 // Metering targets on the tone-mapped (sRGB byte) luma of the champion's own pixels.
-constexpr float MeterTargetMedian=122.f,MeterTargetHigh=238.f,MeterFloorMedian=92.f;
+// video-crash: a notch darker than the first tuning (122/238/92): in the real game the Iron Warden's polished plate
+// metered to median 97 with 2.5% of its pixels clipped and read as glowing on the dark painted backdrop.
+constexpr float MeterTargetMedian=110.f,MeterTargetHigh=232.f,MeterFloorMedian=84.f;
+// Clipped share of the figure's pixels above which the highlights win over the mid-tone floor.
+constexpr float MeterMaxClipShare=.012f;
+// Keyed by profile and the scalability levels it was metered under (shadows, AO, reflections and
+// post-processing change how bright the same body renders).
 TMap<FString,float>& MeteredExposure(){static TMap<FString,float> Cache;return Cache;}
+FString MeterKey(const FString& Id)
+{
+    const Scalability::FQualityLevels Q=Scalability::GetQualityLevels();
+    return FString::Printf(TEXT("%s|%d%d%d%d%d%d"),*Id,Q.ShadowQuality,Q.PostProcessQuality,Q.ReflectionQuality,Q.EffectsQuality,Q.GlobalIlluminationQuality,Q.TextureQuality);
+}
 
 UStaticMesh* Mesh(const TCHAR* Path){return LoadObject<UStaticMesh>(nullptr,Path);}
 UMaterialInterface* Material(const TCHAR* Path){return LoadObject<UMaterialInterface>(nullptr,Path);}
@@ -201,6 +223,14 @@ void ACireDraftStage::ApplyLook()
     PP.bOverride_ColorContrast=true;PP.ColorContrast=FVector4(1.f,1.f,1.f,1.10f);
     PP.bOverride_ColorGammaShadows=true;PP.ColorGammaShadows=FVector4(1.f,1.f,1.f,.94f);
     PP.bOverride_AmbientOcclusionIntensity=true;PP.AmbientOcclusionIntensity=.6f;
+    // video-crash: unbound world grades (town, arena) also blend into scene captures. Pin everything they set that
+    // the look above does not: no tonemapper sharpen (this capture has no TAA and is supersampled; sharpening made
+    // armour and skin sparkle), neutral white balance and gains (the town grade's cool 6900 K would tint the figure).
+    PP.bOverride_Sharpen=true;PP.Sharpen=0.f;
+    PP.bOverride_WhiteTemp=true;PP.WhiteTemp=6500.f;PP.bOverride_WhiteTint=true;PP.WhiteTint=0.f;
+    PP.bOverride_ColorSaturationShadows=true;PP.ColorSaturationShadows=FVector4(1.f,1.f,1.f,1.f);
+    PP.bOverride_ColorGain=true;PP.ColorGain=FVector4(1.f,1.f,1.f,1.f);
+    PP.bOverride_ColorGainShadows=true;PP.ColorGainShadows=FVector4(1.f,1.f,1.f,1.f);
 }
 
 void ACireDraftStage::FitStage(float Height)
@@ -280,8 +310,9 @@ void ACireDraftStage::ShowProfile(const FString& Id)
     RefreshCutoutParts();
     // Exposure: the live cutout preview meters itself (cached per champion); portraits and the
     // stage-backdrop fallback keep the stored table.
-    bMetered=false;MeterPasses=0;MeterRequestFrame=0;MeterSettleFrame=0;MeterMedian=MeterHigh=0.f;
-    if(const float* Cached=MeteredExposure().Find(Id);Cached&&bCutout&&!PortraitTarget){SetExposureOffset(*Cached);bMetered=true;}
+    bMetered=false;bShownMetered=false;MeterPasses=0;MeterRequestFrame=0;MeterSettleFrame=0;MeterMedian=MeterHigh=0.f;SettledAt=0;MeterClip=0.f;
+    MeterQualityKey=MeterKey(Id);
+    if(const float* Cached=MeteredExposure().Find(MeterQualityKey);Cached&&bCutout&&!PortraitTarget){SetExposureOffset(*Cached);bMetered=bShownMetered=true;}
     else SetExposureOffset(bCutout&&!PortraitTarget?0.f:StoredExposure(Id));
     // Ask the streamer for full-resolution body/weapon textures immediately (the preview is a close-up);
     // Tick re-arms this while the champion is shown so an idle screen never drops to blurry mips.
@@ -313,7 +344,30 @@ FBox ACireDraftStage::BodyBounds() const
     return Box;
 }
 
-bool ACireDraftStage::IsPreviewReady() const {return IsValid(Preview)&&bFramed&&SecondsShown()>.35f&&FramesShown()>6&&(bMetered||PortraitTarget||!bCutout);}
+// bShownMetered: once a champion was metered it stays on screen while a preset change re-meters it.
+bool ACireDraftStage::IsPreviewReady() const {return IsValid(Preview)&&bFramed&&SecondsShown()>.35f&&FramesShown()>6&&(bMetered||bShownMetered||PortraitTarget||!bCutout);}
+bool ACireDraftStage::IsContentSettled() const
+{
+    // video-crash: meter only the finished look. At startup the preview renders while its meshes build
+    // (AssetCompile), shaders compile (default material) and PSOs precache (parts not drawn yet); an exposure
+    // metered then was cached for the session and the champion stayed too bright or too dark.
+    if(!IsValid(Preview))return false;
+#if WITH_EDITOR
+    if(GShaderCompilingManager&&GShaderCompilingManager->IsCompiling())return false;
+#endif
+    TArray<UPrimitiveComponent*> Parts;Preview->GetComponents(Parts);
+    TArray<UTexture*> Textures;
+    for(UPrimitiveComponent* Part:Parts)
+    {
+        if(!Part||!Part->IsRegistered()||!Part->IsVisible())continue;
+        if(Part->IsPSOPrecaching())return false;
+        if(const auto* Skinned=Cast<USkinnedMeshComponent>(Part);Skinned&&Skinned->GetSkinnedAsset()&&Skinned->GetSkinnedAsset()->IsCompiling())return false;
+        if(const auto* Static=Cast<UStaticMeshComponent>(Part);Static&&Static->GetStaticMesh()&&Static->GetStaticMesh()->IsCompiling())return false;
+        Textures.Reset();Part->GetUsedTextures(Textures,GetCachedScalabilityCVars().MaterialQualityLevel);
+        for(UTexture* T:Textures)if(T&&T->HasPendingInitOrStreaming())return false;
+    }
+    return true;
+}
 float ACireDraftStage::SecondsShown() const {return ProfileId.IsEmpty()?0.f:static_cast<float>(FPlatformTime::Seconds()-ShownAt);}
 float ACireDraftStage::StoredExposure(const FString& Id)
 {
@@ -542,12 +596,24 @@ void ACireDraftStage::ForceTopDetail(AActor* Actor)
 
 void ACireDraftStage::UpdateMetering()
 {
+    // A preset change (Options > Video) changes how bright the body renders: meter it again, keep showing it.
+    if(bMetered&&bCutout&&!PortraitTarget&&MeterKey(ProfileId)!=MeterQualityKey)
+    {
+        MeterQualityKey=MeterKey(ProfileId);
+        if(const float* Cached=MeteredExposure().Find(MeterQualityKey)){SetExposureOffset(*Cached);return;}
+        bMetered=false;MeterPasses=0;MeterSettleFrame=GFrameCounter+4;SettledAt=0;
+        UE_LOG(LogCireDraftStage,Log,TEXT("CIRE_DRAFT_METER remeter id=%s key=%s"),*ProfileId,*MeterQualityKey);
+    }
     if(bMetered)return;
     if(!bCutout||PortraitTarget||!Target||!DepthTarget||!DepthCapture||!DepthCapture->bCaptureEveryFrame){bMetered=true;return;}
+    // Wait (up to 15 s) for the finished look before measuring anything.
+    if(!IsContentSettled()&&SecondsShown()<15.f){SettledAt=0;return;}
+    const double NowSeconds=FPlatformTime::Seconds();
+    if(SettledAt==0){SettledAt=NowSeconds;MeterSettleFrame=FMath::Max(MeterSettleFrame,GFrameCounter+3);}
     // Never hold the preview back for long: a body that cannot be metered shows at its last exposure.
-    if(SecondsShown()>3.f&&FramesShown()>150)
+    if(NowSeconds-SettledAt>3.0&&FramesShown()>150)
     {
-        bMetered=true;MeteredExposure().Add(ProfileId,ExposureOffset);
+        bMetered=bShownMetered=true;MeteredExposure().Add(MeterQualityKey,ExposureOffset);
         UE_LOG(LogCireDraftStage,Warning,TEXT("CIRE_DRAFT_METER timeout id=%s offset=%.2f"),*ProfileId,ExposureOffset);return;
     }
     if(!Meter)Meter=MakeShared<FDraftMeter,ESPMode::ThreadSafe>();
@@ -563,6 +629,10 @@ void ACireDraftStage::UpdateMetering()
         {
             FTextureRenderTargetResource* C=ColorRT->GetRenderTargetResource();FTextureRenderTargetResource* D=DepthRT->GetRenderTargetResource();
             if(!C||!D||!C->GetRenderTargetTexture()||!D->GetRenderTargetTexture()){Shared->Count=0;Shared->State=2;return;}
+            const FIntVector CSize=C->GetRenderTargetTexture()->GetSizeXYZ(),DSize=D->GetRenderTargetTexture()->GetSizeXYZ();
+            if(CSize.X!=DSize.X||CSize.Y!=DSize.Y){Shared->Count=-1;Shared->State=2;return;} // mid-resize: measure next time
+            if(CSize.X!=Shared->CopyWidth||CSize.Y!=Shared->CopyHeight){Shared->Color.Reset();Shared->Depth.Reset();} // new size: new staging
+            Shared->CopyWidth=CSize.X;Shared->CopyHeight=CSize.Y;
             if(!Shared->Color)Shared->Color=MakeUnique<FRHIGPUTextureReadback>(TEXT("CireDraftMeterColor"));
             if(!Shared->Depth)Shared->Depth=MakeUnique<FRHIGPUTextureReadback>(TEXT("CireDraftMeterDepth"));
             Shared->Color->EnqueueCopy(RHICmdList,C->GetRenderTargetTexture());
@@ -581,8 +651,9 @@ void ACireDraftStage::UpdateMetering()
             const FColor* C=static_cast<const FColor*>(R.Color->Lock(CPitch));
             const float* D=static_cast<const float*>(R.Depth->Lock(DPitch));
             uint32 Histogram[256]={};int64 Count=0;
-            if(C&&D&&CPitch>=R.Width&&DPitch>=R.Width)
-                for(int32 Y=0;Y<R.Height;Y+=2)for(int32 X=0;X<R.Width;X+=2)
+            const int32 W=R.CopyWidth,H=R.CopyHeight; // what was copied, not what the game thread asked for
+            if(C&&D&&W>0&&H>0&&CPitch>=W&&DPitch>=W)
+                for(int32 Y=0;Y<H;Y+=2)for(int32 X=0;X<W;X+=2)
                 {
                     const FColor& P=C[Y*CPitch+X];
                     // Champion pixels only: opaque (post-process alpha is inverse opacity) and near.
@@ -593,22 +664,28 @@ void ACireDraftStage::UpdateMetering()
             if(D)R.Depth->Unlock();
             const auto Percentile=[&](double Q){const int64 Want=int64(Count*Q);int64 Run=0;for(int32 I=0;I<256;++I){Run+=Histogram[I];if(Run>Want)return float(I);}return 255.f;};
             R.Count=int32(Count);R.Median=Count?Percentile(.5):0.f;R.High=Count?Percentile(.97):0.f;
+            R.Clip=Count?float(Histogram[253]+Histogram[254]+Histogram[255])/float(Count):0.f;
             R.State=2;
         });
         return;
     }
     // State 2: step the exposure toward the targets (the tone curve compresses highlights, hence the gain).
-    M.State=0;++MeterPasses;MeterMedian=M.Median;MeterHigh=M.High;
-    if(M.Count<400){bMetered=true;MeteredExposure().Add(ProfileId,ExposureOffset);return;}
+    M.State=0;
+    if(M.Count<0){MeterSettleFrame=GFrameCounter+2;return;} // skipped (targets mid-resize): retry
+    ++MeterPasses;MeterMedian=M.Median;MeterHigh=M.High;
+    MeterClip=M.Clip;
+    if(M.Count<400){bMetered=bShownMetered=true;MeteredExposure().Add(MeterQualityKey,ExposureOffset);return;}
     const float Up=FMath::Log2(MeterTargetMedian/FMath::Max(M.Median,2.f));
     // Highlights pull the exposure down, but never below a lit mid-tone: a few specular glints or
     // white hair may clip; a dark, muddy champion is worse.
     const float Down=M.High>=252.f?-.8f:FMath::Log2(MeterTargetHigh/FMath::Max(M.High,2.f))*1.8f;
-    const float FloorStep=FMath::Log2(MeterFloorMedian/FMath::Max(M.Median,2.f));
+    // More than ~1% of the body clipped (polished plate, a pale shield) reads as a glowing cut-out: then the
+    // highlights may pull the mid-tones a little under the floor (never more than half a stop).
+    const float FloorStep=FMath::Log2(MeterFloorMedian/FMath::Max(M.Median,2.f))-(M.Clip>MeterMaxClipShare?.5f:0.f);
     const float Delta=FMath::Clamp(FMath::Min(Up,FMath::Max(Down,FloorStep)),-2.f,1.5f);
-    UE_LOG(LogCireDraftStage,Log,TEXT("CIRE_DRAFT_METER id=%s pass=%d pixels=%d median=%.0f p97=%.0f offset=%.2f step=%.2f"),*ProfileId,MeterPasses,M.Count,M.Median,M.High,ExposureOffset,Delta);
+    UE_LOG(LogCireDraftStage,Log,TEXT("CIRE_DRAFT_METER id=%s pass=%d pixels=%d median=%.0f p97=%.0f clip=%.4f offset=%.2f step=%.2f"),*ProfileId,MeterPasses,M.Count,M.Median,M.High,M.Clip,ExposureOffset,Delta);
     if(FMath::Abs(Delta)<.12f||MeterPasses>=6||(ExposureOffset<=-4.f&&Delta<0)||(ExposureOffset>=3.f&&Delta>0))
-    {bMetered=true;MeteredExposure().Add(ProfileId,ExposureOffset);return;}
+    {bMetered=bShownMetered=true;MeteredExposure().Add(MeterQualityKey,ExposureOffset);return;}
     SetExposureOffset(ExposureOffset+Delta*.85f);MeterSettleFrame=GFrameCounter+3;
 }
 

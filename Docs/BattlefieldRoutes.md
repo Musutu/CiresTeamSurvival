@@ -2,6 +2,26 @@
 
 `Content/Data/BattlefieldRoutes.json` is the authoritative route authoring file. Distances are Unreal centimeters. Each team has its own ordered list of local XY points; local Y is relative to that team's realm center (Ember -2100, Dusk +2100). The first point is the wave spawn and the last point must reach the defended castle gate at local (-1850, 0).
 
+## Challenge packs: 1 to 16 per realm, each with a radius and a tier (dev-route-tools)
+
+- A lane's optional `bays` list holds **1-16 packs**. Each pack is `{ "x", "y", "radius", "tier" }`:
+  - realm-local cm
+  - radius 200-1500 cm (default 450)
+  - tier 1-10 (default: its position)
+- The legacy `[x, y]` pairs are still read (tier = position, default radius).
+- With no `bays` list, the realm gets the three automatic bays at 75 / 50 / 25 % of the path.
+- Packs must stay 2 m apart, inside the realm, clear of the breach and the goal zone.
+- `CireLanePath::BayCount`, `BayAt`, `ChallengeRadius` and `ChallengeTier` serve them, and `ChallengePosition(World, Team, Bay)` takes the pack number.
+- The radius sizes the dais, the pack's spread and the town-piece clearance.
+- The tier replaces "tier = bay number" in the pack schedule. `Cires::Items::RouteSchedule` gives each pack the unlock of its tier's `LootTables.json` entry (tiers without an entry unlock at round = tier), then the usual promotions apply.
+- Pack ids are `round * 100 + realm * 50 + bay`.
+- The packs, their daises and the breach rift rebuild live on every route edit.
+
+Both realms share one layout, so identical realms are written once, as `"route": { "points", "bays" }`, instead of two
+`"lanes"`. Both forms are read; a document may not contain both. Points are realm-local and reach the world through the
+realm frame (`CireLanePath::ToWorld` / `ToLocal` / `RealmOrigin`). The map layout editor (`Docs/MapLayout.md`) authors
+routes and packs.
+
 ## World scale (September 25): a three-times-longer realm
 
 Eric asked for a world three times the size. The realm now spans **X -2350..43700** (460 m, three times the old

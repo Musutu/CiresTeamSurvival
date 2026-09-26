@@ -1,7 +1,8 @@
 // balance: calm ground presentation for construct pylon fields (Aegis, Haste, Gravity, Disruption, Aether Nexus and the
 // Aetheri monster pylons). A pylon field is a harmless persistent zone that often overlaps others; drawn with the generic
 // active-zone painter, 3-4 stacked pylons turned the ground near-opaque. Rules (ground-telegraph rules):
-//   - fill 15-25% opacity, set by the ground-telegraph intensity slider (0.3 -> 15%, 1 -> 25%, default 0.6 -> 19%);
+//   - fill 5-25% opacity, set by the ground-telegraph intensity slider (0.1 -> 5%, 1 -> 25%, default 0.3 -> ~9.4%;
+//     telegraphs 2026-09-26: half the previous default of ~19%);
 //   - overlap cap: N overlapping fields share that budget, so the stacked fill never exceeds the single-field fill;
 //   - a readable rim (never below 40% alpha) and no runes, ripples or detonation on the fill;
 //   - rising particles are budgeted per overlap group.
@@ -13,9 +14,9 @@ struct FCireGroundMesh;
 
 namespace CirePylonField
 {
-    constexpr float MinFill = .15f, MaxFill = .25f;       // single-field fill opacity range (intensity 0..1)
+    constexpr float MinFill = .05f, MaxFill = .25f;       // single-field fill opacity range (intensity 0..1); telegraphs: min .15 -> .05
     constexpr float MinEdge = .4f, MaxEdge = .7f;         // rim opacity range
-    constexpr float FillEmissiveCap = .9f, EdgeEmissiveCap = 1.2f; // hue-preserving brightness caps (no bloom white-out)
+    constexpr float FillEmissiveCap = .6f, EdgeEmissiveCap = .95f; // hue-preserving brightness caps (no bloom white-out); telegraphs: .9/1.2 -> .6/.95
     constexpr int32 MaxCountedOverlaps = 8;
 
     /** cire.PylonFieldCalm (default 1); 0 restores the generic zone painter for A/B captures. */

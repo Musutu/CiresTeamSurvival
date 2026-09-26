@@ -10,6 +10,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Materials/MaterialInterface.h"
+#include "CireAbilityVFX.h" // telegraphs: shared ground brightness
 #include "Net/UnrealNetwork.h"
 #include "ProceduralMeshComponent.h"
 
@@ -420,6 +421,9 @@ void ACireAreaEffect::RebuildVisual()
         Vertices.Add(FVector(P.X, P.Y, 4)); Normals.Add(FVector::UpVector);
         UV.Add(P / MaxDimension); Colors.Add(FLinearColor(Base.R, Base.G, Base.B, Base.A * (bActive ? .8f : .5f)));
     }
+    // telegraphs: the fallback flat mesh (drawn when the presentation cap is reached) follows the same brightness slider.
+    const float Intensity = CireAbilityVFX::GroundIntensity(GetWorld());
+    CireAbilityVFX::Temper(Colors, 0, Intensity, 1.f);
     GroundMesh->CreateMeshSection_LinearColor(0, Vertices, FillTriangles, Normals, UV, Colors, TArray<FProcMeshTangent>(), false);
     GroundMesh->SetMaterial(0, Material);
     // Independent edge quads work for convex and concave outlines, including the
@@ -439,6 +443,7 @@ void ACireAreaEffect::RebuildVisual()
         }
         RimTriangles.Append({First, First + 1, First + 2, First, First + 2, First + 3});
     }
+    CireAbilityVFX::Temper(Colors, 0, Intensity, 1.f);
     GroundMesh->CreateMeshSection_LinearColor(1, Vertices, RimTriangles, Normals, UV, Colors, TArray<FProcMeshTangent>(), false);
     GroundMesh->SetMaterial(1, Material);
 }

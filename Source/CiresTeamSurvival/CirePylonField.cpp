@@ -12,7 +12,7 @@
 namespace
 {
 // A/B switch for reviews: 0 draws pylon fields with the generic active-zone painter (the previous look).
-TAutoConsoleVariable<int32> CVarCalmPylons(TEXT("cire.PylonFieldCalm"), 1, TEXT("1: calm pylon fields (15-25% fill shared across overlaps, readable rim). 0: previous generic zone painter."));
+TAutoConsoleVariable<int32> CVarCalmPylons(TEXT("cire.PylonFieldCalm"), 1, TEXT("1: calm pylon fields (5-25% fill shared across overlaps, readable rim). 0: previous generic zone painter."));
 }
 
 bool CirePylonField::Enabled() { return CVarCalmPylons.GetValueOnAnyThread() != 0; }
@@ -41,8 +41,8 @@ int32 CirePylonField::CountOverlaps(const ACireAreaEffect* Area)
 
 float CirePylonField::Intensity(const UWorld* World)
 {
-    // The ground-telegraph intensity slider (Options, 0.3..1, default 0.6), normalised to 0..1.
-    return FMath::Clamp((CireAbilityVFX::GroundIntensity(World) - .3f) / .7f, 0.f, 1.f);
+    // The ground-telegraph intensity slider (Options, 0.1..1, default 0.3), normalised to 0..1.
+    return FMath::Clamp((CireAbilityVFX::GroundIntensity(World) - CireAbilityVFX::MinGroundIntensity) / (1.f - CireAbilityVFX::MinGroundIntensity), 0.f, 1.f);
 }
 
 float CirePylonField::TargetFill(float InIntensity) { return FMath::Lerp(MinFill, MaxFill, FMath::Clamp(InIntensity, 0.f, 1.f)); }
@@ -96,7 +96,7 @@ bool CirePylonField::RunTests(TArray<FString>& Failures)
     auto Check = [&Failures](bool bOk, const FString& What) { if (!bOk) Failures.Add(What); };
     for (float I : {0.f, .25f, .5f, .75f, 1.f})
     {
-        Check(TargetFill(I) >= MinFill - 1e-4f && TargetFill(I) <= MaxFill + 1e-4f, FString::Printf(TEXT("pylon fill %.2f inside 15-25%% at intensity %.2f"), TargetFill(I), I));
+        Check(TargetFill(I) >= MinFill - 1e-4f && TargetFill(I) <= MaxFill + 1e-4f, FString::Printf(TEXT("pylon fill %.2f inside 5-25%% at intensity %.2f"), TargetFill(I), I));
         for (int32 N = 1; N <= MaxCountedOverlaps; ++N)
         {
             const float Layer = LayerFill(I, N);

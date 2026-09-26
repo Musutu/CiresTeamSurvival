@@ -3,10 +3,13 @@
 // Validation is live: route rules (CireLanePath::Validate), navmesh reachability of every segment
 // for both agent sizes, and the town builder's route-clearance rule (which props a segment would
 // remove). Applying goes through CireLanePath::ApplyLive (server-authoritative).
+// dev-route-tools: validation now covers 1..16 challenge packs; authoring moved to the map layout editor
+// (CireMapLayout.h, CireLayoutEditorHUD.cpp, Docs/MapLayout.md). RunTests covers both.
 #include "CoreMinimal.h"
 #include "CireLanePath.h"
 
 class UWorld;
+class ACireGameMode;
 
 enum class ECireRouteReach : uint8
 {
@@ -33,8 +36,9 @@ struct CIRESTEAMSURVIVAL_API FCireRouteValidation
     bool bRulesOk = false, bNavAvailable = false;
     FString RulesError;
     TArray<FCireRouteSegmentCheck> Segments[2];
-    ECireRouteReach BayReach[2][3] = {};
-    int32 BayConflicts[2][3] = {};
+    // dev-route-tools: one entry per challenge pack (1..16, or the three automatic bays).
+    TArray<ECireRouteReach> BayReach[2];
+    TArray<int32> BayConflicts[2];
     int32 Unreachable = 0, Detours = 0, Conflicts = 0;
     uint32 NavRevision = 0;
     double Ms = 0.0;
@@ -55,6 +59,18 @@ namespace CireRouteEditor
     CIRESTEAMSURVIVAL_API bool Delete(FCireBattlefieldRoutes& Draft, int32 Team, int32 Index, bool bLinked);
     /** Move a waypoint to a realm-local point (mirrored to the other realm when bLinked). */
     CIRESTEAMSURVIVAL_API void MovePoint(FCireBattlefieldRoutes& Draft, int32 Team, int32 Index, const FVector2D& Local, bool bLinked);
-    /** Move a challenge bay (materialises the three computed bays as overrides first). */
-    CIRESTEAMSURVIVAL_API void MoveBay(const UWorld* World, FCireBattlefieldRoutes& Draft, int32 Team, int32 Tier, const FVector2D& Local, bool bLinked);
+    /** Move a challenge bay (materialises the automatic bays as authored packs first). Bay is 1-based. */
+    CIRESTEAMSURVIVAL_API void MoveBay(const UWorld* World, FCireBattlefieldRoutes& Draft, int32 Team, int32 Bay, const FVector2D& Local, bool bLinked);
+
+    // ---- dev-route-tools: readouts for the map layout editor (CireLayoutEditorHUD.cpp) ----
+    /** Typical wave march speed (cm/s): the mean MoveSpeed of the wave composition; OutMin/OutMax give the range. */
+    CIRESTEAMSURVIVAL_API float MarchSpeed(float* OutMin = nullptr, float* OutMax = nullptr);
+    /** "m:ss" */
+    CIRESTEAMSURVIVAL_API FString FormatWalkTime(double Seconds);
+#if !UE_BUILD_SHIPPING
+    /** Native checks (CireRouteToolsTests.cpp): the 1..16 challenge pack generalisation (parse, rules, JSON, replication,
+     *  pack spawning, schedules), the realm frames, and the map layout model (typed team-owned markers, mirroring, links,
+     *  renumbering, re-chaining, vendors, validation per team, documents, compile). Logs CIRE_ROUTE_TOOLS_PASS. */
+    CIRESTEAMSURVIVAL_API bool RunTests(ACireGameMode* Mode);
+#endif
 }

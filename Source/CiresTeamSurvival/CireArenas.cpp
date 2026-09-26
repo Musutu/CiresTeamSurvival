@@ -560,7 +560,16 @@ void CireArenas::ServerPrepare(ACireGameMode* Mode)
 {
     if (!Mode) return;
     FServerState& S = GServer.FindOrAdd(Mode->GetWorld());
-    const int32 Next = PickNext(S.Last);
+    int32 Next = PickNext(S.Last);
+#if !UE_BUILD_SHIPPING
+    // development: -CireArena=<id> pins every pick to one arena (per-arena smoke reproduction)
+    if (FString Forced; FParse::Value(FCommandLine::Get(), TEXT("CireArena="), Forced))
+    {
+        const int32 Found = Pool().Arenas.IndexOfByPredicate([&Forced](const FArena& A) { return A.Id.ToString().Equals(Forced, ESearchCase::IgnoreCase); });
+        if (Found != INDEX_NONE) Next = Found;
+        else UE_LOG(LogCireArenas, Warning, TEXT("CIRE_ARENA_FORCE_UNKNOWN id=%s (random pick kept)"), *Forced);
+    }
+#endif
     S.Last = Next; S.bPending = true;
     Mode->ArenaIndex = Next;
     if (auto* State = Mode->GetGameState<ACireGameState>()) State->ArenaIndex = Next;
@@ -860,6 +869,7 @@ void ACireArenaStage::BuildLighting()
     S.bOverride_WhiteTemp = true; S.WhiteTemp = L.Temperature;
     S.bOverride_BloomIntensity = true; S.BloomIntensity = L.Bloom;
     S.bOverride_VignetteIntensity = true; S.VignetteIntensity = L.Vignette;
+    S.bOverride_Sharpen = true; S.Sharpen = .6f; // video-crash: was the global r.Tonemapper.Sharpen=0.6
     Keep(Post);
 }
 

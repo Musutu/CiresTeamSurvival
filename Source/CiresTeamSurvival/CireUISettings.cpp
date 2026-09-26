@@ -134,7 +134,7 @@ void FCireUISettings::Reset()
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
     bSmartCast=true; bMouseoverCast=false; bRightClickCancelsAim=true; bPressAgainToCast=true; bAutoStopToCast=true; // feat/camera-movement
     OtherEffectsIntensity=1.f; // aura-vfx
-    GroundTelegraphIntensity=.6f; // ability-vfx
+    GroundTelegraphIntensity=.3f; // ability-vfx; telegraphs: default halved (0.6 -> 0.3)
     UITheme=CireUITheme::DefaultId().IsNone()?FString(TEXT("GildedCitadel")):CireUITheme::DefaultId().ToString(); // ui-themes
     bShowStats=false; bShowLootLog=false; // progression-shop; wow-ui: closed by default (C toggles) to keep the screen clean
 }
@@ -254,7 +254,7 @@ void FCireUISettings::SanitizePreferences()
     ThreatWarningPercent=SafeFloat(ThreatWarningPercent,90.f,60.f,100.f);
     OverheadStatusMode=FMath::Clamp(OverheadStatusMode,0,2);
     OtherEffectsIntensity=SafeFloat(OtherEffectsIntensity,1.f,0.f,1.f); // aura-vfx
-    GroundTelegraphIntensity=SafeFloat(GroundTelegraphIntensity,.6f,.3f,1.f); // ability-vfx
+    GroundTelegraphIntensity=SafeFloat(GroundTelegraphIntensity,.3f,.1f,1.f); // ability-vfx; telegraphs: 0.1..1
 }
 
 void FCireUISettings::Load(const FString& Filename)
@@ -317,7 +317,13 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_FLOAT(UIScale); CIRE_LOAD_FLOAT(TooltipOpacity); CIRE_LOAD_FLOAT(TooltipDelay); CIRE_LOAD_FLOAT(SCTSpeed);
     CIRE_LOAD_FLOAT(SCTFadeSeconds); CIRE_LOAD_FLOAT(ThreatWarningPercent);
     CIRE_LOAD_FLOAT(OtherEffectsIntensity); // aura-vfx: absent in older profiles, keeps the default
-    CIRE_LOAD_FLOAT(GroundTelegraphIntensity); // ability-vfx
+    // ability-vfx; telegraphs: the slider moved to a 0.1..1 scale whose default (0.3) is half the old default (0.6).
+    // Profiles written before that carry only the old key: halve it so every saved choice keeps its relative place.
+    if (!Config.GetFloat(PreferencesSection, TEXT("GroundTelegraphLevel"), GroundTelegraphIntensity))
+    {
+        float Legacy = 0.f;
+        if (Config.GetFloat(PreferencesSection, TEXT("GroundTelegraphIntensity"), Legacy)) GroundTelegraphIntensity = Legacy * .5f;
+    }
 #undef CIRE_LOAD_FLOAT
     Config.GetInt(PreferencesSection,TEXT("TooltipMode"),TooltipMode); Config.GetInt(PreferencesSection,TEXT("StatusFilter"),StatusFilter);
     Config.GetInt(PreferencesSection,TEXT("SCTDirection"),SCTDirection);
@@ -417,7 +423,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_FLOAT(UIScale); CIRE_SAVE_FLOAT(TooltipOpacity); CIRE_SAVE_FLOAT(TooltipDelay); CIRE_SAVE_FLOAT(SCTSpeed);
     CIRE_SAVE_FLOAT(SCTFadeSeconds); CIRE_SAVE_FLOAT(ThreatWarningPercent);
     CIRE_SAVE_FLOAT(OtherEffectsIntensity); // aura-vfx
-    CIRE_SAVE_FLOAT(GroundTelegraphIntensity); // ability-vfx
+    Config.SetFloat(PreferencesSection,TEXT("GroundTelegraphLevel"),GroundTelegraphIntensity); // ability-vfx; telegraphs: new 0.1..1 scale key
 #undef CIRE_SAVE_FLOAT
     Config.SetString(PreferencesSection,TEXT("SCTDirection"),*FString::FromInt(SCTDirection));
     Config.SetString(PreferencesSection,TEXT("OverheadStatusMode"),*FString::FromInt(OverheadStatusMode));

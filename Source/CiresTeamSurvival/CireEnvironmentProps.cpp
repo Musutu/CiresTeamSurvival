@@ -325,7 +325,9 @@ bool Safe(const UWorld* World,int32 Team,const FBox& Box,const FTransform& T,ECl
     if(Clearance==EClearance::None)return true;
     const FVector Spawn=CireLanePath::SpawnPosition(World,Team,0);
     if(BoxHitsPoint(Box,T,FVector2D(Spawn),SpawnMargin))return false;
-    for(int32 Tier=1;Tier<=3;++Tier)if(BoxHitsPoint(Box,T,FVector2D(CireLanePath::ChallengePosition(World,Team,Tier,0)),BayMargin))return false;
+    // dev-route-tools: every challenge pack (1..16) keeps its own radius clear.
+    for(int32 Bay=1,Count=CireLanePath::BayCount(World,Team);Bay<=Count;++Bay)
+        if(BoxHitsPoint(Box,T,FVector2D(CireLanePath::ChallengePosition(World,Team,Bay,0)),CireLanePath::ChallengeRadius(World,Team,Bay)))return false;
     if(Clearance==EClearance::Bays)return true;
     const auto& Points=CireLanePath::Get(World).LocalPoints[Team];const float CY=CireLanePath::CenterY(Team);
     // world-scale: the route is three times longer; skip segments that cannot reach the footprint before sampling them.
@@ -487,16 +489,16 @@ int32 CireEnvironmentProps::RouteConflicts(const UWorld* World,int32 Team,const 
     }
     return Count;
 }
-int32 CireEnvironmentProps::BayConflicts(const UWorld* World,int32 Team,const FVector2D& LocalBay,TArray<FName>* Slots)
+int32 CireEnvironmentProps::BayConflicts(const UWorld* World,int32 Team,const FVector2D& LocalBay,TArray<FName>* Slots,float Radius)
 {
     if(!LoadTown()||Team<0||Team>1)return 0;
-    const FVector2D Bay(LocalBay.X,LocalBay.Y+CireLanePath::CenterY(Team));
+    const FVector2D Bay(CireLanePath::ToWorld(Team,LocalBay));
     int32 Count=0;
     for(const FPlacement& P:Town.Placements)
     {
         const FSlot& Slot=Town.Slots[P.Slot];
         if(Slot.bMaterial||!Slot.Mesh.IsValid()||Slot.Clearance==EClearance::None)continue;
-        if(BoxHitsPoint(Slot.LocalBox,WorldTransform(P,Team),Bay,BayMargin)){++Count;if(Slots)Slots->AddUnique(P.Slot);}
+        if(BoxHitsPoint(Slot.LocalBox,WorldTransform(P,Team),Bay,FMath::IsFinite(Radius)&&Radius>0?Radius:BayMargin)){++Count;if(Slots)Slots->AddUnique(P.Slot);}
     }
     return Count;
 }

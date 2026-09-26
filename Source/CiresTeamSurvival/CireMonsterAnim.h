@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
 #include "CireGrip.h"
+#include "CireLocomotion.h" // movement-feel
 #include "CireMonsterAnim.generated.h"
 
 class UAnimSequence;
@@ -79,6 +80,8 @@ public:
     bool bLastPoseRejected = false;
     /** world-dressing: keep the root joint at its reference transform (glTF animals key their armature proxy root). */
     bool bLockRootToReference = false;
+    /** movement-feel: visual heading and leg IK applied after the layers. */
+    CireLocomotion::FPoseFeel Feel;
 protected:
     virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;
 };

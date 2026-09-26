@@ -1,33 +1,87 @@
 {
-  "schemaVersion": 1,
-  "frame": "castletown",
-  "notes": "PROVISIONAL vendor spots in the Medieval Kingdom town (Docs/CastleTown.md), consumed by feat/vendors. Realm-local centimetres: world = local + CastleTown.json realms[team].offset.xy + frameCenter, and z = the ground under the spot (CireLanePath::ToWorld). Stored once, used by both realms (every team gets all three vendors). Each spot is at one of the pack's own market stalls near the castle, so the stall reads as that vendor's shop. Eric re-places them with the map layout editor (feat/dev-route-tools).",
-  "vendors": [
-    {
-      "id": "arcane",
-      "name": "Arcane Shop",
-      "stats": ["INT"],
-      "local": [12021, -8368],
-      "yaw": -135,
-      "stall": "BP_MarketStand_03 in SL_Courtyard (pack 6021, -5768)"
-    },
-    {
-      "id": "armory",
-      "name": "Armory",
-      "stats": ["STR"],
-      "roles": ["tank"],
-      "local": [12890, -3474],
-      "yaw": -94,
-      "stall": "BP_MarketStand_01 in PL_CastleTown (pack 6890, -874)"
-    },
-    {
-      "id": "weaponsmith",
-      "name": "Weaponsmith",
-      "stats": ["AGI"],
-      "roles": ["dps", "melee"],
-      "local": [11692, -2502],
-      "yaw": -48,
-      "stall": "BP_Anvil_01 and weapon stands in PL_CastleTown (pack 5692, 98)"
-    }
-  ]
+ "schemaVersion": 1,
+ "units": "centimeters",
+ "frame": "castletown",
+ "provisional": true,
+ "_comment": "PROVISIONAL merchant spots for the Medieval Kingdom town (Docs/CastleTown.md), same schema the map layout editor writes (feat/dev-route-tools). Realm-local centimetres in the town frame (pack coordinates - CastleTown.json frameCenter), z = height above the ground; the same spots in both realms. They stand in the castle courtyard around the hero base (12500, -8000), inside the 900 cm town shopping radius; arcane uses the pack's courtyard market stall. Only read when the pack town is the map (frame castletown); the procedural town keeps TownVendors.provisional.json. Eric re-places them with the layout editor.",
+ "vendors": [
+  {
+   "id": "arcane_0",
+   "vendorId": "arcane",
+   "name": "Arcane Shop",
+   "team": 0,
+   "npc": {
+    "pos": [
+     12021,
+     -8368
+    ],
+    "yaw": -135
+   }
+  },
+  {
+   "id": "armory_0",
+   "vendorId": "armory",
+   "name": "Armory",
+   "team": 0,
+   "npc": {
+    "pos": [
+     12250,
+     -7500
+    ],
+    "yaw": -90
+   }
+  },
+  {
+   "id": "weaponsmith_0",
+   "vendorId": "weaponsmith",
+   "name": "Weaponsmith",
+   "team": 0,
+   "npc": {
+    "pos": [
+     12900,
+     -7550
+    ],
+    "yaw": -60
+   }
+  },
+  {
+   "id": "arcane_1",
+   "vendorId": "arcane",
+   "name": "Arcane Shop",
+   "team": 1,
+   "npc": {
+    "pos": [
+     12021,
+     -8368
+    ],
+    "yaw": -135
+   }
+  },
+  {
+   "id": "armory_1",
+   "vendorId": "armory",
+   "name": "Armory",
+   "team": 1,
+   "npc": {
+    "pos": [
+     12250,
+     -7500
+    ],
+    "yaw": -90
+   }
+  },
+  {
+   "id": "weaponsmith_1",
+   "vendorId": "weaponsmith",
+   "name": "Weaponsmith",
+   "team": 1,
+   "npc": {
+    "pos": [
+     12900,
+     -7550
+    ],
+    "yaw": -60
+   }
+  }
+ ]
 }

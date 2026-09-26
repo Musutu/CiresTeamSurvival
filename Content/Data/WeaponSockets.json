@@ -1,0 +1,473 @@
+{
+ "schemaVersion": 1,
+ "description": "Animation-authored weapon grips of the Fab animation packs (Tools/MeasureMannySockets.py; Docs/WeaponLoadouts.md 'Grip model'). sets.<set>.<hand>: grip frame in UE5-mannequin bone space (cm): point, tip (handle -> business end), edge; shields: point = strap, tip = up, edge = face out. sets.<set>.offHand: second-hand bone relative to the main hand bone. calibration: one retargeted clip per set and its mannequin source. carry: side carry of the staffs (carryAt, carryUp, oneHand; overrides WeaponGrips.json). locomotionSets: body folder -> the set of its idle/locomotion clips (picks the off-hand relation).",
+ "sets": {
+  "sword_shield": {
+   "hand_r": {
+    "bone": "hand_r",
+    "point": [
+     -7.2342,
+     2.2062,
+     -2.8979
+    ],
+    "tip": [
+     -0.1754,
+     -0.0212,
+     0.9843
+    ],
+    "edge": [
+     -0.9608,
+     0.2219,
+     -0.1664
+    ],
+    "source": "SK_Mannequin:Sword + SM_Sword"
+   },
+   "hand_l": {
+    "bone": "hand_l",
+    "point": [
+     -2.1375,
+     -5.5835,
+     7.2008
+    ],
+    "tip": [
+     0.0338,
+     -0.0335,
+     -0.9989
+    ],
+    "edge": [
+     -0.2719,
+     0.9614,
+     -0.0415
+    ],
+    "source": "SK_Mannequin:Shield + Shield_Heater",
+    "shield": true
+   }
+  },
+  "one_hand": {
+   "hand_r": {
+    "bone": "hand_r",
+    "point": [
+     -7.2342,
+     2.2062,
+     -2.8979
+    ],
+    "tip": [
+     -0.1754,
+     -0.0212,
+     0.9843
+    ],
+    "edge": [
+     -0.9608,
+     0.2219,
+     -0.1664
+    ],
+    "source": "SK_Mannequin_Sword:Weapon + SM_Sword"
+   }
+  },
+  "two_hand": {
+   "hand_r": {
+    "bone": "hand_r",
+    "point": [
+     -6.5385,
+     2.2873,
+     -6.837
+    ],
+    "tip": [
+     -0.1754,
+     -0.0212,
+     0.9843
+    ],
+    "edge": [
+     -0.9608,
+     0.2219,
+     -0.1664
+    ],
+    "source": "SK_Mannequin:Weapon + SM_Sword"
+   },
+   "offHand": {
+    "main": "hand_r",
+    "loc": [
+     1.7957,
+     6.0836,
+     -11.7941
+    ],
+    "quat": [
+     0.05694,
+     -0.99653,
+     0.03644,
+     0.04865
+    ]
+   }
+  },
+  "dual": {
+   "hand_r": {
+    "bone": "hand_r",
+    "point": [
+     -7.2342,
+     2.2062,
+     -2.8979
+    ],
+    "tip": [
+     -0.1754,
+     -0.0212,
+     0.9843
+    ],
+    "edge": [
+     -0.9608,
+     0.2219,
+     -0.1664
+    ],
+    "source": "SK_Mannequin:Sword_r + SM_Sword"
+   },
+   "hand_l": {
+    "bone": "hand_l",
+    "point": [
+     7.6999,
+     -2.6936,
+     2.7092
+    ],
+    "tip": [
+     0.1147,
+     0.0697,
+     -0.991
+    ],
+    "edge": [
+     0.9684,
+     -0.2301,
+     0.0959
+    ],
+    "source": "SK_Mannequin:Sword_l + SM_Sword"
+   }
+  },
+  "spear": {
+   "hand_r": {
+    "bone": "hand_r",
+    "point": [
+     -3.3975,
+     0.9913,
+     -14.6785
+    ],
+    "tip": [
+     -0.2754,
+     0.0891,
+     0.9572
+    ],
+    "edge": [
+     0.9344,
+     -0.2093,
+     0.2883
+    ],
+    "source": "SK_Mannequin:Weapon_r + SM_Spear"
+   },
+   "offHand": {
+    "main": "hand_r",
+    "loc": [
+     -15.7051,
+     11.748,
+     42.1299
+    ],
+    "quat": [
+     0.21131,
+     -0.9673,
+     0.1398,
+     -0.01125
+    ]
+   }
+  },
+  "axe": {
+   "hand_r": {
+    "bone": "hand_r",
+    "point": [
+     -4.7585,
+     2.0244,
+     -14.9691
+    ],
+    "tip": [
+     -0.171,
+     0.0301,
+     0.9848
+    ],
+    "edge": [
+     -0.955,
+     0.2406,
+     -0.1732
+    ],
+    "source": "SK_Mannequin:Axe_r + Axe_small"
+   }
+  },
+  "throw": {
+   "hand_r": {
+    "bone": "hand_r",
+    "point": [
+     -7.5801,
+     2.7015,
+     -2.074
+    ],
+    "tip": [
+     -0.1265,
+     0.0938,
+     0.9875
+    ],
+    "edge": [
+     0.9777,
+     -0.1565,
+     0.1401
+    ],
+    "source": "SK_Mannequin:Dagger_r + SM_Dagger"
+   },
+   "hand_l": {
+    "bone": "hand_l",
+    "point": [
+     6.4839,
+     -2.5246,
+     2.749
+    ],
+    "tip": [
+     0.202,
+     -0.0457,
+     -0.9783
+    ],
+    "edge": [
+     -0.9526,
+     0.2229,
+     -0.2071
+    ],
+    "source": "SK_Mannequin:Dagger_l + SM_Dagger"
+   }
+  },
+  "greatsword": {
+   "hand_r": {
+    "bone": "hand_r",
+    "point": [
+     -6.4103,
+     1.879,
+     4.0016
+    ],
+    "tip": [
+     -0.1023,
+     -0.0735,
+     0.992
+    ],
+    "edge": [
+     -0.9895,
+     0.1104,
+     -0.0938
+    ],
+    "source": "SK_Mannequin:GreatSword + SM_GreatSword"
+   }
+  },
+  "katana": {
+   "hand_r": {
+    "bone": "hand_r",
+    "point": [
+     -9.4718,
+     2.5578,
+     16.449
+    ],
+    "tip": [
+     -0.1739,
+     -0.0586,
+     0.983
+    ],
+    "edge": [
+     0.1097,
+     0.9909,
+     0.0785
+    ],
+    "source": "SK_Mannequin:Katana + SM_Katana"
+   }
+  },
+  "gun": {
+   "hand_r": {
+    "bone": "hand_r",
+    "point": [
+     -2.8598,
+     4.021,
+     -3.7737
+    ],
+    "tip": [
+     -0.6329,
+     -0.1669,
+     0.756
+    ],
+    "edge": [
+     -0.7702,
+     0.2345,
+     -0.5931
+    ],
+    "source": "SKM_Manny:Sword_Weapon_RSocket + Sword"
+   },
+   "hand_l": {
+    "bone": "hand_l",
+    "point": [
+     6.2397,
+     0.2266,
+     0.2073
+    ],
+    "tip": [
+     0.1905,
+     0.1231,
+     -0.9739
+    ],
+    "edge": [
+     -0.9695,
+     0.1792,
+     -0.167
+    ],
+    "source": "SKM_Manny:Gun_Weapon_LSocket + Gun"
+   }
+  },
+  "crossbow": {
+   "hand_l": {
+    "bone": "hand_l",
+    "point": [
+     6.2386,
+     0.2268,
+     0.2072
+    ],
+    "tip": [
+     0.3601,
+     0.3806,
+     -0.8517
+    ],
+    "edge": [
+     -0.1423,
+     -0.8799,
+     -0.4534
+    ],
+    "source": "w_crossbow bone (hand_l) + Crossbow",
+    "grip": "stock"
+   }
+  }
+ },
+ "calibration": [
+  {
+   "clip": "sword_shield_attack3",
+   "source": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Attack3_Stage1_IP.AS_SwordAndShieldAnimV1_Attack3_Stage1_IP"
+  },
+  {
+   "clip": "one_hand_attack1",
+   "source": "/Game/GDHBundle/OneHandSword/OneHandSwordV1/Animation/IP/AS_OneHandedSwordAnimV1_Attack1_Stage1_IP.AS_OneHandedSwordAnimV1_Attack1_Stage1_IP"
+  },
+  {
+   "clip": "two_hand_attack2",
+   "source": "/Game/GDHBundle/TwoHandSword/TwoHandedSwordAnimationsV1/Animation/IP/AS_TwoHandedSwordAnimationV1_AttackCombo2_Stage1_IP.AS_TwoHandedSwordAnimationV1_AttackCombo2_Stage1_IP"
+  },
+  {
+   "clip": "dual_attack1",
+   "source": "/Game/GDHBundle/DualSword/DualSwordAnimationV1/Animation/IP/AS_DualSwordAnimV1_Attack1_Stage1_IP.AS_DualSwordAnimV1_Attack1_Stage1_IP"
+  },
+  {
+   "clip": "bow_attack1",
+   "source": "/Game/GDHBundle/ArcheryCombatAnimV1/Animation/Character/IP/AS_ArcheryAnimV1_Attack1_IP.AS_ArcheryAnimV1_Attack1_IP"
+  },
+  {
+   "clip": "spell_attack1",
+   "source": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Attack1_IP.AS_SpellCombatAnimationV1_Attack1_IP"
+  },
+  {
+   "clip": "spear_attack1",
+   "source": "/Game/GDHBundle/Spear/SpearCombatAnimationV1/Animation/IP/AS_SpearCombatAnimationV1_AttackCombo1_Stage1_IP.AS_SpearCombatAnimationV1_AttackCombo1_Stage1_IP"
+  },
+  {
+   "clip": "gun_attack1",
+   "source": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/01_Combo_Attack_01/AS_Combo_Attack_01_01_Seq.AS_Combo_Attack_01_01_Seq"
+  },
+  {
+   "clip": "unarmed_attack1",
+   "source": "/Game/GDHBundle/Unarmed/UnarmedFightingAnimationV1/Animation/IP/AS_UnarmedFightingAnimationsV1_1_IP.AS_UnarmedFightingAnimationsV1_1_IP"
+  },
+  {
+   "clip": "crossbow_attack1",
+   "source": "/Game/CrossbowPackAnim/Animation/UE5/Attack/Crossbow_Attack_01.Crossbow_Attack_01"
+  },
+  {
+   "clip": "axe_attack1",
+   "source": "/Game/GDHBundle/AxeV1/Animation/IP/AS_AxeCombatAnimV1_Attack3_Stage1_IP.AS_AxeCombatAnimV1_Attack3_Stage1_IP"
+  },
+  {
+   "clip": "throw_attack1",
+   "source": "/Game/GDHBundle/DaggerCombatAnimationV1/Animation/IP/AS_DaggerCombatAnimationV1_Throw1_IP.AS_DaggerCombatAnimationV1_Throw1_IP"
+  }
+ ],
+ "carry": {
+  "SM_ArcaneStaff": {
+   "carryAt": [
+    0.22,
+    -0.12,
+    0.74
+   ],
+   "carryUp": [
+    0.1,
+    0.0,
+    1.0
+   ],
+   "oneHand": true
+  },
+  "SM_RiftStaff": {
+   "carryAt": [
+    0.22,
+    -0.12,
+    0.74
+   ],
+   "carryUp": [
+    0.1,
+    0.0,
+    1.0
+   ],
+   "oneHand": true
+  },
+  "SM_EmberStaff": {
+   "carryAt": [
+    0.22,
+    -0.12,
+    0.74
+   ],
+   "carryUp": [
+    0.1,
+    0.0,
+    1.0
+   ],
+   "oneHand": true
+  },
+  "SM_GroveStaff": {
+   "carryAt": [
+    0.22,
+    -0.12,
+    0.74
+   ],
+   "carryUp": [
+    0.1,
+    0.0,
+    1.0
+   ],
+   "oneHand": true
+  },
+  "SM_LanternStaff": {
+   "carryAt": [
+    0.22,
+    -0.12,
+    0.74
+   ],
+   "carryUp": [
+    0.1,
+    0.0,
+    1.0
+   ],
+   "oneHand": true
+  },
+  "SM_AetherStaff": {
+   "carryAt": [
+    0.22,
+    -0.12,
+    0.74
+   ],
+   "carryUp": [
+    0.1,
+    0.0,
+    1.0
+   ],
+   "oneHand": true
+  }
+ }
+}

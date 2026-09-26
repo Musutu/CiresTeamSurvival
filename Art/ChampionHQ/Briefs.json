@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Champion HQ pass (feat/champion-hq): per-champion identity briefs used for the turnaround reference sheets (Tripo Studio image tool, GPT Image 2.5, 4K, the painted draft portrait Art/DraftPortraits/Painted/<id>.png uploaded as the identity reference) and the Tripo multi-view image-to-3D generations. Weapons are never part of the body; they attach as separate props.",
+  "sheetTemplate": "Character turnaround reference sheet for a AAA 3D game hero model. The SAME character from the reference portrait (same face, hair and outfit) shown four times side by side on a plain flat light-grey background, left to right: 1 FRONT view facing the viewer, 2 RIGHT profile turned so the character faces the RIGHT edge of the image, 3 BACK view, 4 LEFT profile turned so the character faces the LEFT edge of the image. Each full body from head to feet, same scale, evenly spaced, feet on one shared baseline, generous gaps, nothing overlapping. Pose: neutral A-pose, arms straight and angled 40 degrees down and away from the body so the hands are clear of the hips, hands open and empty with fingers slightly apart, legs straight, feet shoulder-width apart. Character: {character} Art style: high-end stylized realism like a modern AAA fantasy action RPG hero, crisp clean readable shapes, vibrant saturated colour identity ({palette}), rich hand-crafted detail, clean PBR materials. Even flat studio lighting, no cast shadows, no ground, no text, no labels, no weapons in hands, no props, no background scenery.",
+  "champions": {
+    "ranger": {
+      "palette": "forest green, bright steel, warm copper",
+      "emissive": null,
+      "character": "the Ash Ranger, an athletic adult woman archer-scout, brown hair tied back in a short braid, determined face; polished steel breastplate with a round bronze medallion, riveted steel pauldrons and vambraces, fitted ash-grey leather jerkin, deep forest-green hooded half-cape with the hood down, rich green cloth tassets over dark leather trousers, knee-high leather boots with steel greaves, quiver strapped on the back, belt pouches, copper buckles.",
+      "weapon": "longbow"
+    },
+    "scholar": {
+      "palette": "jade teal, ivory, burnished gold",
+      "emissive": "pale jade runes",
+      "character": "the Veil Scholar, a lean adult man healer-archivist with short swept brown hair and a calm stern face; jade-teal high-collared scholar coat with long split skirts to the shins, ivory silk veil-scarf draped over the shoulders, brown scale-leather chest harness with crossed straps and gold medallion clasps, ivory sleeves with gold-embroidered runes, leather bracers, a satchel of scrolls at the hip, a small closed book chained to the belt, soft leather boots.",
+      "weapon": "arcane focus / tome"
+    },
+    "lancer": {
+      "palette": "dusk crimson, blackened steel, amber gold",
+      "emissive": null,
+      "character": "the Dusk Lancer, a lean athletic adult man skirmisher with short dark brown hair and a sharp weathered face; segmented blackened steel pauldrons and bracers with amber-gold edging, dark brown leather brigandine with rows of rivets, a crimson sash and a split crimson tabard to the knees, fitted dark trousers, armoured boots with knee cops, a short crimson cloak pinned at one shoulder.",
+      "weapon": "long runed lance"
+    },
+    "summoner": {
+      "palette": "rift violet, crimson, dark steel",
+      "emissive": "violet rift gems and chain runes",
+      "character": "the Rift Summoner, an adult man binder of spirits with short brown hair and an intense face; dark steel pauldrons set with glowing violet gemstones, a deep crimson high collar, dark leather harness with a round brass seal medallion, long layered robes of deep violet and black split at the front, spectral silver chains wrapped around the forearms and waist ending in small violet crystal locks, leather gloves, tall boots.",
+      "weapon": "summoning focus"
+    },
+    "wizard": {
+      "palette": "royal blue, ember orange, silver",
+      "emissive": "ember-orange runes",
+      "character": "the Cinder Arcanist, an athletic adult man battle mage with short brown hair and a focused face; royal-blue battle coat with silver-rimmed armoured shoulders and a silver chest plate with a four-point star emblem, long split coat skirts to the knees with ember-orange embroidered runes along the hems, dark leather belt with small gem pouches, dark fitted trousers, tall boots with silver knee guards.",
+      "weapon": "runic staff"
+    },
+    "gunblade": {
+      "palette": "oxblood red, black leather, polished brass",
+      "emissive": null,
+      "character": "the Gunblade bounty hunter, a rugged adult man with a short dark beard under a wide-brimmed black leather hat with a brass cross badge; long black leather coat with oxblood-red lining and a short shoulder cape, brass-buckled bandolier of cartridges across the chest, oxblood waistcoat, leather gloves, belt with pistol holster and ledger pouch, dark trousers, tall buckled boots.",
+      "weapon": "falchion + flintlock"
+    },
+    "witch_slayer": {
+      "palette": "emerald green, teal arcane glow, dark leather",
+      "emissive": "teal gem",
+      "character": "the Witch Slayer, a lean adult hunter whose lower face is hidden by a dark cloth mask, under a tall pointed emerald-green wide-brim hat set with a glowing teal gemstone; long emerald-green leather greatcoat with dark trim and silver buckles, layered collar, crossed leather straps holding small glass vials, silver witch-ward charms at the belt, fingerless gloves, tall dark boots.",
+      "weapon": "arcane blunderbuss + spectral blade"
+    },
+    "huntress": {
+      "palette": "crimson red, dark leather, bone white",
+      "emissive": null,
+      "character": "the Glaive Huntress, a lithe sylvan woman whose face is hidden by a smooth bone-white mask under a deep dark-brown hood; crimson scarf and cowl, dark brown leather corset armour with riveted steel cups, crimson cloth sash and long crimson back cloak, bracers and shin guards of dark leather and steel, a baldric with a curved glaive holster on the back, soft leather boots.",
+      "weapon": "glaive"
+    },
+    "aetheri_artificer": {
+      "palette": "pale gold, pearl white, blue-violet energy",
+      "emissive": "blue-violet energy seams and visor",
+      "character": "the Aetheri Artificer, a tall slender luminous crystal-race being in sleek pale-gold and pearl-white alloy armour, an elongated crested helm with a glowing blue-violet visor slit and swept-back gold fins, faceted violet crystal inlays on chest and shoulders, glowing blue-violet energy seams between the plates, a small floating crystal focus orbiting beside the right shoulder, segmented gauntlets, long tabard of white cloth with gold trim.",
+      "weapon": "aether staff"
+    },
+    "aetheri_warden": {
+      "palette": "burnished gold, pearl white, blue-violet energy",
+      "emissive": "blue-violet psionic core and seams",
+      "character": "the Aetheri Warden, a tall broad armoured crystal-race guardian in heavy burnished-gold and pearl-white alloy plate, crested helm with sharp gold fins and a glowing blue-violet visor, massive rounded pauldrons, a glowing violet psionic core set in the chest and in each gauntlet, blue-violet energy seams, layered armoured skirt, heavy armoured boots.",
+      "weapon": "aether halberd"
+    },
+    "dryad": {
+      "palette": "living leaf green, warm bark brown, blossom pink",
+      "emissive": "soft green sap glow",
+      "character": "the Thornweave Dryad, a graceful woman of living wood with smooth carved bark skin, a wooden face with pointed ears and a crown of thorny twigs and fresh leaves, clusters of bright green leaves and small pink blossoms growing over her shoulders, chest and hips as armour, vine wraps on the arms, root-like feet, glowing green sap in the bark cracks.",
+      "weapon": "wooden staff"
+    },
+    "dwarf_miner": {
+      "palette": "rust red, polished brass, ore blue",
+      "emissive": "warm lantern amber",
+      "character": "the Deepdelve Miner, a short stocky powerful dwarf with a huge braided ginger beard and a dented steel miner helmet with a small brass lantern; rust-red leather coat with fur-lined collar over heavy chainmail, brass-riveted leather shoulder pads, thick leather work gloves, a wide belt with brass buckles and small glowing blue ore crystals in pouches, reinforced trousers, stout iron-capped boots.",
+      "weapon": "mining pick"
+    },
+    "orc_chieftain": {
+      "palette": "war red, black iron, bone ivory",
+      "emissive": null,
+      "character": "the Blood-Oath Chieftain, a massive muscular orc warlord with olive-grey skin, small lower tusks, a black topknot and a scarred face; heavy black iron pauldrons with spiked rims, a carved ram-skull bone talisman on the chest, black iron cuirass over chainmail, blood-red war cloth and a fur mantle, iron bracers, a wide belt with bone trophies, heavy iron boots.",
+      "weapon": "war axe + clan banner"
+    },
+    "drakish_footman": {
+      "palette": "crimson, blackened steel, ember orange",
+      "emissive": "ember-orange scale edges",
+      "character": "the Drakish Footman, a powerful adult man dragon-pact infantryman with short black hair, amber eyes and a stern face; blackened steel lamellar armour engraved with overlapping dragon scales edged in ember-orange, crimson dragon-scale pauldrons, a crimson tabard with a black dragon emblem, articulated steel gauntlets and knee plates, heavy armoured boots.",
+      "weapon": "sword + shield"
+    },
+    "keeper_of_light": {
+      "palette": "ivory, radiant gold, warm sunlight",
+      "emissive": "golden sun relic",
+      "character": "the Keeper of the Light, an elderly dignified man with short silver hair and a neat silver beard; ivory and cream layered vestment robes with gold embroidery, a gold sun-shaped relic on the chest, engraved gold-trimmed bronze shoulder guards, a wide gold sash, long flowing split robe skirts to the ankles, soft leather boots.",
+      "weapon": "lantern staff"
+    },
+    "troll_berserker": {
+      "palette": "cobalt-blue skin, blood red, bone",
+      "emissive": null,
+      "character": "the Red-Moon Berserker, a tall lean muscular troll with cobalt-blue skin, long pointed ears, large lower tusks, a fierce face and two long braids; bare muscular chest crossed by blood-red leather harness straps with a round iron buckle, a blood-red leather shoulder guard on one side, bone and bead ornaments, ritual red wraps on the forearms, a red loincloth over dark leather trousers, wrapped shins, bare large feet with three toes.",
+      "weapon": "twin axes"
+    },
+    "ether_golem_tank": {
+      "palette": "granite grey, cyan ether glow",
+      "emissive": "cyan ether joints and runes",
+      "character": "the Granite Construct, a huge hulking stone golem built from massive carved granite boulders, broad shoulders, small head sunk between the shoulders with glowing cyan eyes, glowing cyan ether light shining through every joint and carved rune on the chest, thick stone arms and huge stone fists, short thick stone legs.",
+      "weapon": "fists"
+    },
+    "ether_golem_support": {
+      "palette": "moss green, mossy stone, emerald glow",
+      "emissive": "emerald eyes and runes",
+      "character": "the Verdant Construct, a tall stone golem covered in thick bright moss and living vines with green leaves, glowing emerald eyes, small white flowers and ferns growing on the shoulders, glowing emerald rune lines on the chest stone, slimmer graceful stone limbs.",
+      "weapon": "arcane"
+    },
+    "ether_golem_bruiser": {
+      "palette": "obsidian black rock, fel green fire",
+      "emissive": "fel-green crystals and cracks",
+      "character": "the Felfire Construct, a hulking siege golem of cracked dark obsidian rock with jagged fel-green crystals erupting from the shoulders and back, glowing fel-green fire burning inside every crack, glowing green eyes, massive oversized striking arms with crystal-studded fists.",
+      "weapon": "fists"
+    },
+    "totemic_behemoth": {
+      "palette": "warm ochre, bronze, turquoise tribal paint",
+      "emissive": null,
+      "character": "the Totemic Behemoth, a massive upright bipedal elephant-rhino warrior with wrinkled grey-brown hide, huge curved ivory tusks, large ears, a bronze riveted war helm, turquoise tribal paint stripes, carved stone plate armour on shoulders and chest, bronze bands on the tusks and wrists, a thick leather war skirt, huge feet.",
+      "weapon": "massive totem"
+    },
+    "whisp": {
+      "palette": "porcelain ivory, gold filigree, pale green glow",
+      "emissive": "pale green-gold spirit glow",
+      "character": "the Lantern Whisp, a small floating spirit: a serene porcelain-white mask face framed by swirling gold filigree ornaments like flames, a glowing pale green-gold spirit core beneath the mask, long flowing ribbons of pale green light trailing downward, no body and no legs.",
+      "weapon": null
+    }
+  },
+  "summons": {
+    "oathbound_guardian": {
+      "kind": "humanoid summon (Rift Summoner, commandable)",
+      "prompt": "Turnaround reference sheet, the same character four times side by side (front, right profile facing right, back, left profile facing left), full body, neutral A-pose, hands open and empty. The Oathbound Guardian: a towering spectral knight summoned from a rift, heavy dark steel plate armour with glowing violet rune seams, a closed great-helm with a glowing violet visor slit, ghostly translucent violet mist trailing from the joints, silver rift chains wrapped around the arms and torso, a tattered violet tabard. High-end stylized realism like a modern AAA fantasy action RPG, crisp clean readable shapes, vibrant saturated colours, rich hand-crafted detail, clean PBR materials. Even flat studio lighting, plain light-grey background, no shadows, no ground, no text, no labels."
+    },
+    "spectral_companion": {
+      "kind": "humanoid summon x3 (Spectral Pack)",
+      "prompt": "Turnaround reference sheet, the same character four times side by side (front, right profile facing right, back, left profile facing left), full body, neutral A-pose, hands open and empty. A Spectral Companion: a lean ghostly rift-wraith hunter, hooded, a pale bone-white mask with glowing cyan-violet eyes, tattered layered spectral robes of deep violet and teal fading to translucent wisps at the hem, light leather bracers, long clawed fingers. High-end stylized realism like a modern AAA fantasy action RPG, crisp clean readable shapes, vibrant saturated colours, rich hand-crafted detail, clean PBR materials. Even flat studio lighting, plain light-grey background, no shadows, no ground, no text, no labels."
+    },
+    "constructs": {
+      "kind": "static constructs (Aetheri Artificer / Warden, Witch Slayer)",
+      "style": "pale gold and pearl-white alloy with faceted glowing blue-violet crystal, matching the Aetheri champions",
+      "items": {
+        "AetherTurret": "a compact floating energy turret: a pale gold and white alloy tripod base with a rotating head holding a long glowing blue-violet crystal barrel",
+        "AetherObelisk": "a tall siege obelisk: a tapered four-sided pale gold and white alloy monolith with a huge glowing blue-violet crystal core at the top and energy seams",
+        "SkitterBomb": "a small four-legged mechanical skitter bomb drone: a round pale gold alloy shell with a glowing blue-violet crystal eye and spindly legs",
+        "AetherTrap": "a flat round ground mine: a pale gold alloy disc with a faceted blue-violet crystal in the centre and engraved rune rings",
+        "AetherPylon": "a pylon: an ornate pale gold and white alloy pillar base holding a tall floating faceted blue-violet crystal with a gold halo ring",
+        "SpiritLantern": "a witch-hunter spirit lantern trap: an iron post with a hanging ornate brass lantern holding a glowing teal spirit flame, silver ward charms",
+        "Pavise": "a tall standing pavise tower shield planted in the ground: steel-rimmed wood painted in crimson and gold with a holy sun emblem"
+      }
+    }
+  }
+}

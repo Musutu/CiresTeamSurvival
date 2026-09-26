@@ -126,7 +126,7 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintTelegraph(FCireGroundMesh& G,c
     R.FillBounds=FBox2D(Boundary);
     const bool bConvex=Convex(Spec);const FVector2D Pivot=PivotOf(Spec,Boundary);
     const float Size=MinDimension(Spec,Boundary);
-    const float Feather=FMath::Clamp(Size*.2f,10.f,70.f);
+    const float Feather=FMath::Clamp(Size*.12f,8.f,42.f); // telegraphs: dense edge band 40% narrower (was 20% of size, 10..70 cm): less ground covered
     auto A=[&](FLinearColor C,float Scale=1.f){C.A*=Alpha*Scale;return C;};
     // 1. Soft fill: faint interior, denser toward the edge (reads as a disc/lane, not a flat sticker).
     // With runes the fill steps back so the glyphs carry the colour.
@@ -219,7 +219,7 @@ CireAbilityVFX::FPaintResult CireAbilityVFX::PaintActive(FCireGroundMesh& G,cons
     if(Boundary.Num()<3||Alpha<=.001f)return R;
     R.FillBounds=FBox2D(Boundary);
     const bool bConvex=Convex(Spec);const FVector2D Pivot=PivotOf(Spec,Boundary);
-    const float Size=MinDimension(Spec,Boundary);const float Feather=FMath::Clamp(Size*.22f,12.f,80.f);
+    const float Size=MinDimension(Spec,Boundary);const float Feather=FMath::Clamp(Size*.14f,10.f,48.f); // telegraphs: was 22%, 12..80 cm
     const FLinearColor C=Color.GetClamped(0,4);
     auto A=[&](float Opacity,float Bright=1.f){FLinearColor X=C*Bright;X.A=FMath::Clamp(Opacity*Alpha,0.f,1.f);return X;};
     const float Breathe=.82f+.18f*FMath::Sin(Time*2*PI*.9f);
@@ -277,12 +277,17 @@ void CireAbilityVFX::PaintShock(FCireGroundMesh& G,FVector2D Center,float Radius
 float CireAbilityVFX::GroundIntensity(const UWorld* World)
 {
     const auto* PC=World?World->GetFirstPlayerController():nullptr;const auto* HUD=PC?Cast<ACireHUD>(PC->GetHUD()):nullptr;
-    return HUD?FMath::Clamp(HUD->UISettings.GroundTelegraphIntensity,.3f,1.f):.6f;
+    return HUD?FMath::Clamp(HUD->UISettings.GroundTelegraphIntensity,MinGroundIntensity,1.f):DefaultGroundIntensity;
+}
+float CireAbilityVFX::FabGroundBrightness(float Intensity)
+{
+    // The old default (0.6) is the vendor's stock brightness; the new default (0.3) halves it.
+    return FMath::Clamp(Intensity/LegacyDefaultGroundIntensity,.15f,1.f);
 }
 void CireAbilityVFX::Temper(TArray<FLinearColor>& Colors,int32 From,float Intensity,float Overlap)
 {
-    Intensity=FMath::Clamp(Intensity,.1f,1.f);Overlap=FMath::Clamp(Overlap,.25f,1.f);
-    const float FillScale=Intensity*Overlap,LineScale=FMath::Sqrt(Intensity)*.95f*FMath::Pow(Overlap,.75f);
+    Intensity=FMath::Clamp(Intensity,MinGroundIntensity,1.f);Overlap=FMath::Clamp(Overlap,.25f,1.f);
+    const float FillScale=Intensity*Overlap,LineScale=FMath::Max(RimAlphaFloor,FMath::Sqrt(Intensity)*.95f)*FMath::Pow(Overlap,.75f);
     for(int32 J=FMath::Max(0,From);J<Colors.Num();++J)
     {
         FLinearColor& C=Colors[J];

@@ -318,15 +318,44 @@ def tripo_rows() -> dict:
     return {c["profileId"]: c for c in json.loads(TRIPO.read_text(encoding="utf-8"))["champions"] if c.get("status") == "ready"}
 
 
+HQ = DATA / "ChampionArt.hq.json"
+
+
+def hq_rows() -> dict:
+    """champion-hq: the HQ bodies (Tools/WriteChampionHQArtRows.py), when delivered and ready."""
+    if not HQ.is_file():
+        return {}
+    out = {}
+    for c in json.loads(HQ.read_text(encoding="utf-8"))["champions"]:
+        if c.get("status") == "ready":
+            for profile in c.get("profileIds", [c["profileId"]]):
+                out[profile] = c
+    return out
+
+
 def final_bindings() -> list:
     """Tripo bodies replace the temporary ones (status ready: attack clips + grips, no tint). Every champion fights on foot:
-    the Huntress uses her Tripo body with normal locomotion and her sabercat is a companion pet (Content/Data/Pets.json)."""
+    the Huntress uses her Tripo body with normal locomotion and her sabercat is a companion pet (Content/Data/Pets.json).
+    champion-hq: an HQ body replaces the Tripo one, which stays as the row's "fallback"."""
     tripo = tripo_rows()
+    hq = hq_rows()
     out = []
     for row in copy.deepcopy(BINDINGS):
         t = tripo.get(row["profileId"])
-        if not t:
+        h = hq.get(row["profileId"])
+        if not t and not h:
             out.append(row)
+            continue
+        if h:
+            bound = {k: h[k] for k in BINDING_KEYS}
+            bound["yaw"] = h.get("yaw", -90)
+            bound["note"] = "champion-hq: Tripo H3.1 multi-view HQ body (Art/ChampionHQ/TripoChampionHQ.json); fallback = the tripo-races body."
+            if t:
+                bound["fallback"] = {k: t[k] for k in ("mesh", "locomotion", "attack", "heightCm")}
+                if row["profileId"] in RELAX_ARMS:
+                    bound["fallback"]["relaxArms"] = True
+            bound["tripoSlot"] = dict(row["tripoSlot"], delivered=h["mesh"])
+            out.append(bound)
             continue
         bound = {k: t[k] for k in BINDING_KEYS}
         if row["profileId"] in RELAX_ARMS:

@@ -246,7 +246,7 @@ void ACireHUD::TickRouteEditor()
             }
         }
         // Challenge bays (purple diamonds) with reachability rings, and the castle goal zone.
-        for (int32 Tier = 1; Tier <= 3; ++Tier)
+        for (int32 Tier = 1, Bays = CireLanePath::BayCount(Draft, Team); Tier <= Bays; ++Tier) // dev-route-tools: 1..16 packs
         {
             FVector2D P;
             if (!Project(WorldOf(Team, CireLanePath::BayPoint(Draft, Team, Tier)), P)) continue;
@@ -258,8 +258,8 @@ void ACireHUD::TickRouteEditor()
             Tri(FVector2D(P.X, P.Y - R), FVector2D(P.X - R, P.Y), FVector2D(P.X, P.Y + R), C);
             if (bActive)
             {
-                Circle(P.X, P.Y, R + 4, CireRouteEditor::ReachColor(V.BayReach[Team][Tier - 1]), 2.f);
-                const int32 Conflicts = V.BayConflicts[Team][Tier - 1];
+                Circle(P.X, P.Y, R + 4, CireRouteEditor::ReachColor(V.BayReach[Team].IsValidIndex(Tier - 1) ? V.BayReach[Team][Tier - 1] : ECireRouteReach::Unknown), 2.f);
+                const int32 Conflicts = V.BayConflicts[Team].IsValidIndex(Tier - 1) ? V.BayConflicts[Team][Tier - 1] : 0;
                 TextFx(Conflicts > 0 ? FString::Printf(TEXT("BAY %d | %d pieces"), Tier, Conflicts) : FString::Printf(TEXT("BAY %d"), Tier), P.X + R + 4, P.Y - 7, 9.f,
                     Conflicts > 0 ? Orange : Parchment, ECireFont::Bold, true);
             }
@@ -336,7 +336,7 @@ void ACireHUD::TickRouteEditor()
         const FString Out = Segs.IsValidIndex(E.SelIndex) ? FString::Printf(TEXT("out %.0f m %s"), Segs[E.SelIndex].Direct / 100.f, CireRouteEditor::ReachLabel(Segs[E.SelIndex].Reach)) : FString(TEXT("goal"));
         Selected = FString::Printf(TEXT("WAYPOINT %d  (%.0f, %.0f)  |  %s  |  %s"), E.SelIndex, Points[E.SelIndex].X, Points[E.SelIndex].Y, *In, *Out);
     }
-    else if (E.SelKind == 2) { const FVector2D B = CireLanePath::BayPoint(Draft, E.Team, E.SelIndex + 1); Selected = FString::Printf(TEXT("CHALLENGE BAY %d  (%.0f, %.0f)  |  %s"), E.SelIndex + 1, B.X, B.Y, CireRouteEditor::ReachLabel(V.BayReach[E.Team][E.SelIndex])); }
+    else if (E.SelKind == 2) { const FVector2D B = CireLanePath::BayPoint(Draft, E.Team, E.SelIndex + 1); Selected = FString::Printf(TEXT("CHALLENGE BAY %d  (%.0f, %.0f)  |  %s"), E.SelIndex + 1, B.X, B.Y, CireRouteEditor::ReachLabel(V.BayReach[E.Team].IsValidIndex(E.SelIndex) ? V.BayReach[E.Team][E.SelIndex] : ECireRouteReach::Unknown)); }
     else if (E.SelKind == 3) Selected = FString::Printf(TEXT("CASTLE GOAL ZONE  (%.0f, %.0f)  %.0f x %.0f cm"), Draft.GoalCenter.X, Draft.GoalCenter.Y, Draft.GoalSize.X, Draft.GoalSize.Y);
     Painter().Rect(L, Y - 2, W, 30, FLinearColor(0, 0, 0, .35f));
     Wrapped(Selected, L + 4, Y, W - 8, 8.5f, Parchment, 2); Y += 34;
@@ -505,6 +505,8 @@ void ACireHUD::DrawRoutePage(float X, float Y)
     const bool bNav = NavigationShowFlag(World);
     if (Button(bNav ? TEXT("WORLD NAVMESH: ON") : TEXT("WORLD NAVMESH: OFF"), L + 186, B, 170, TEXT("Engine navmesh debug draw in the game view."), bNav)) SetNavigationShowFlag(World, !bNav);
     if (Button(bMinimapNav ? TEXT("MINIMAP NAV: ON") : TEXT("MINIMAP NAV: OFF"), L + 362, B, 150, TEXT("Draw navmesh coverage on the minimap."), bMinimapNav)) bMinimapNav = !bMinimapNav;
+    // dev-route-tools: the map layout editor (setters, team-owned mirrored markers). RouteEditor.cmd opens it as a clean edit mode.
+    if (Button(TEXT("MAP LAYOUT EDITOR"), L + 518, B, 170, TEXT("Author spawns, monster paths, challenge packs, vendors, the objective and more; RouteEditor.cmd opens it with every game system paused."), false, Teal)) { OpenLayoutEditor(true); return; }
     FString Error;
     if (Button(TEXT("APPLY DRAFT"), L, B + 30, 120, TEXT("Apply the draft live (server-authoritative)."), false, Teal))
         DeveloperMessage = CireLanePath::ApplyLive(World, E.Draft, &Error) ? TEXT("Route applied live.") : Error;

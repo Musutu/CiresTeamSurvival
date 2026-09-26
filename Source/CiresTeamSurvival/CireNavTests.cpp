@@ -85,11 +85,12 @@ bool CireNav::RunTests(ACireGameMode* Mode)
             const FCireNavPath Path = bOk ? FindPath(World, A, B, 46.f, false) : FCireNavPath();
             Check(Path.bValid && !Path.bPartial, FString::Printf(TEXT("team %d: hero spawn to mid-route path"), Team));
         }
-        for (int32 Tier = 1; Tier <= 3; ++Tier)
+        for (int32 Bay = 1, Bays = CireLanePath::BayCount(World, Team); Bay <= Bays; ++Bay) // dev-route-tools: 1..16 packs
         {
             float Len = 0;
-            const ECireRouteReach Reach = CireRouteEditor::Reach(World, CireLanePath::PointAlongRoute(World, Team, 1.f - Tier * .25f, 60), CireLanePath::ChallengePosition(World, Team, Tier, 60), Len);
-            Check(Reach == ECireRouteReach::Direct || Reach == ECireRouteReach::Detour, FString::Printf(TEXT("team %d: challenge bay %d reachable from the route (%s)"), Team, Tier, CireRouteEditor::ReachLabel(Reach)));
+            const FVector Pack = CireLanePath::ChallengePosition(World, Team, Bay, 60);
+            const ECireRouteReach Reach = CireRouteEditor::Reach(World, CireLanePath::PointAlongRoute(World, Team, CireLanePath::RouteProgress(World, Team, Pack), 60), Pack, Len);
+            Check(Reach == ECireRouteReach::Direct || Reach == ECireRouteReach::Detour, FString::Printf(TEXT("team %d: challenge bay %d reachable from the route (%s)"), Team, Bay, CireRouteEditor::ReachLabel(Reach)));
         }
     }
 

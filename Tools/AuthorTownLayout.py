@@ -22,6 +22,10 @@ DATA = ROOT / "Content/Data"
 MESHES = json.loads((ROOT / "Art/Environment/Town/Meshes/TownMeshes.json").read_text())["meshes"]
 IMPORT = json.loads((ROOT / "Art/Environment/Town/ImportReport.json").read_text())
 ROUTES = json.loads((DATA / "BattlefieldRoutes.json").read_text())
+# dev-route-tools: a route authored once for both realms ("route") reads as the two legacy lanes.
+if "route" in ROUTES:
+    _shared = ROUTES.pop("route")
+    ROUTES["lanes"] = [{"team": _t, **_shared} for _t in (0, 1)]
 # world-scale (September 25): the realm is three times as long. The castle end (goal, hero base, bailey) and the
 # original market / lanes / square keep their coordinates; the old gate road, town wall and breach move out by
 # GATE_SHIFT and seven new districts fill the gap. This script now owns the route and writes BattlefieldRoutes.json

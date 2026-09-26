@@ -311,3 +311,73 @@ A talent or skill would work like this:
 | Gallery | `RunNewChampionsGallery --only huntress_close,combat_huntress,pet_roar,hud_pet`: 8 captures |
 
 The analyzed rig is logged as `CIRE_PET_RIG ... legs FL=bone_4 FR=bone_8 RL=bone_19 RR=bone_24 spine=3 neck=3 tail=4`.
+
+## Summons and constructs
+
+Timed summons (`ACireSummon`) and constructs (`ACireConstruct`) follow the same owner-power rules as the companion: monsters can target them, they fight on their own, they scale off the owner's primary stat, and they inherit the owner's cooldown reduction and attack speed.
+
+### How a summon picks its fight
+
+`ACireSummon::ChooseFightTarget` runs on the server every tick. It checks these in order and takes the first match:
+
+1. **Ordered attack.** A target ordered with the ATTACK command, or the target the summon was cast on. It is kept until that target dies or leaves the leash.
+2. **Current target.** The summon keeps fighting its current target while that target is valid, so it doesn't switch back and forth.
+3. **Assist.** The owner's selected hostile target, within 20 m. A neutral challenge pack counts only once it is engaged.
+4. **Defend.** The nearest enemy within 11 m that is attacking the owner, this summon or another of the owner's summons. This includes whoever last hit the summon.
+5. **Guard.** Any non-neutral hostile within 9 m of the summon or of its owner.
+
+Two commands change this:
+
+- **Stay** (hold) fights only enemies in reach and never walks off its spot.
+- **Move** ignores fights until the summon arrives.
+
+Summons walk on the navmesh (`CireNav::Steer`). Their reach includes the target's body radius, so they can hit big bosses.
+
+**Root cause of the playtest bug** ("Oathbound Guardian had no pet bar and did not engage"): only non-commandable summons (Spectral Pack) assisted the owner's target. A commandable guardian fought only a target ordered from the old summons panel. Cast without a target, or once its first target died, it followed its owner forever. It also had no defend or retaliate logic, and it moved in a straight line.
+
+### Threat
+
+The guardian uses the knight profile, so its damage generates **tank threat (5×)**. Its hits pull a monster off its owner, and it holds that monster against the owner's damage. The Mechanical Tank also taunts and slams. A summon's kit taunts only if the skill says so.
+
+### Audit (fix/summons)
+
+| Unit | Acquires targets | Attacks | Targetable by monsters | Scales (primary / CDR / attack speed) | Summons bar |
+|---|---|---|---|---|---|
+| Oathbound Guardian | yes (was: only on HUD order) | yes | yes (proximity aggro and threat) | damage and health off primary (health was flat); attack speed inherited | yes, with commands |
+| Spectral Pack | yes (was: cast target only, then idle) | yes | yes | damage and health off primary; attack speed inherited | yes |
+| Spectral Hunt | yes (was: cast target only) | yes | yes | damage and health off primary; attack speed inherited | yes |
+| Mechanical Tank | yes (protects allies, then generic) | yes, plus slam and taunt | yes | health and damage off primary; CDR on taunt and slam; attack speed inherited | yes |
+| Photon Turret / Warp Obelisk | yes (nearest in range) | yes | yes (smash, construct threat) | damage off primary; interval from attack speed | yes |
+| Skitter Swarm | yes (seek) | explodes | yes | damage off primary | yes |
+| Arc Mine, Stasis Snare, Spirit Lantern | trigger radius | detonates | yes | damage off primary | yes |
+| Pylons (Aegis, Haste, Gravity, Disruption, Nexus) | field | no (buff or debuff field) | yes | magnitude by skill level | yes |
+| Pavise, Summoned Wall, Protection Dome | n/a | no | yes | health off primary | yes |
+| Ashfang (companion) | yes (stances) | yes | yes | yes | own frame, and the summons bar stacks under it |
+
+`CireSummons::RunEngagementSmoke` (in `RunExpansionChecks --only native`) covers every fighting unit in this table. Each one must deal damage within 6 simulated seconds of an enemy entering its range. The smoke also checks:
+
+- the guardian cast without a target (the playtest path);
+- the guardian defending its owner, assisting its owner, holding position and retaliating;
+- the pack re-engaging after its first target dies;
+- monster aggro on summons, and the guardian holding threat;
+- primary-stat scaling and attack-speed inheritance;
+- the summons-bar data.
+
+## Summons bar
+
+The `Pet` panel (under the focus frame) shows a **summons bar** for every active summon and construct, from `CireSummonsBar::Collect`.
+
+**Layout.** With up to three units, each unit is a named row with:
+
+- its painted ability icon;
+- its name;
+- the time left (orange under 5 s);
+- a health bar.
+
+With more units, the bar switches to compact icon tiles: five per row, each with the timer on the icon and a health strip, plus a "+N" badge after 10 units.
+
+**Companion.** A champion with a companion sees the companion frame first, with the summons bar stacked under it.
+
+**Commands.** When a commandable summon is out, the header shows **ATTACK / FOLLOW / STAY** buttons. The pet Attack, Follow and Stay keys (`Y`/`U`/`I`) also order it. Shift + left click on the ground still moves it.
+
+**Captures.** `Tools/RunWowUIGallery.py` stages `31_summons_bar_rows` and `32_summons_bar_tiles`.
