@@ -28,6 +28,7 @@ def main() -> int:
     parser.add_argument("--profiles", default="")
     parser.add_argument("--out", default="")
     parser.add_argument("--no-tripo", action="store_true", help="omit -CireTripoChampions (the mannequin 'before' bodies)")
+    parser.add_argument("--before", action="store_true", help="-CireChampionHQOff: capture each row's fallback (previous) body")
     parser.add_argument("--timeout", type=int, default=1600)
     parser.add_argument("--editor", type=Path, default=Path("F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"))
     args = parser.parse_args()
@@ -38,6 +39,8 @@ def main() -> int:
                "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-nosplash", f"-abslog={log}"]
     if not args.no_tripo:
         command.append("-CireTripoChampions")
+    if args.before:
+        command.append("-CireChampionHQOff")
     if args.profiles:
         command.append(f"-CireChampionHQProfiles={args.profiles}")
     if args.out:

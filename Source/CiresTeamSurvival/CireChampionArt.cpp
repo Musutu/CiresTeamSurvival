@@ -503,7 +503,10 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
         if (UBlendSpace* FabBlend = Body ? CireFabAnimation::Locomotion(Body, CireFabAnimation::FolderFor(Body)) : nullptr; FabBlend && HasMatchingLocomotion(Body, FabBlend)) Blend = FabBlend;
         return HasMatchingLocomotion(Body, Blend);
     };
-    if (!Resolve(*Chosen))
+    // champion-hq: -CireChampionHQOff forces every row's "fallback" body (before/after review captures).
+    static const bool bHQOff = FParse::Param(FCommandLine::Get(), TEXT("CireChampionHQOff"));
+    const bool bForceFallback = bHQOff && Profile && Profile->Raw.IsValid() && Profile->Raw->HasField(TEXT("fallback"));
+    if (bForceFallback || !Resolve(*Chosen))
     {
         const TSharedPtr<FJsonObject>* Fallback = nullptr;
         double FallbackHeight = 0;
