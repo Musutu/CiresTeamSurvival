@@ -16,6 +16,7 @@
 #include "CireKeybindings.h"
 #include "CireDeveloperTools.h"
 #include "CireLayoutRuntime.h" // layout-wiring
+#include "CireTownTrim.h" // town-trim
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/Canvas.h"
@@ -89,6 +90,7 @@ void CireLayoutEditor::RunValidation(UWorld* World, FCireLayoutEditorState& E, b
         };
     }
     E.Issues = ML::Validate(E.Layout, &Checks);
+    E.Issues.Append(CireTownTrim::EdgeIssues(E.Layout)); // town-trim: markers within the trim margin of the bounds edge
     E.bIssuesDirty = false; E.bNavChecked = bNav && Checks.OnNavmesh != nullptr;
     // Walk length per path and realm: navmesh path lengths when checked, straight segments otherwise.
     for (const FCireMapMarker& M : E.Layout.Markers)
@@ -265,6 +267,7 @@ void ACireHUD::OpenLayoutEditor(bool bOpen)
     else
     {
         CireLayoutEditor::StopPreview(E);
+        CireTownTrim::StopPreview(); // town-trim: the whole town again
         CireLayoutEditor::Autosave(E, World ? World->GetRealTimeSeconds() : 0, true);
         if (PlayerOwner) PlayerOwner->SetViewTarget(E.PreviousView.IsValid() ? E.PreviousView.Get() : PlayerOwner->GetPawn());
         if (E.Camera.IsValid()) E.Camera->Destroy();
@@ -401,9 +404,11 @@ void ACireHUD::TickLayoutEditor()
     LayoutUIRects.Add({InspX, InspY, InspW, InspH});
     const float CmdW = 12 * 80.f + 11 * 4.f, CmdX = ViewW * .5f - CmdW * .5f;
     LayoutUIRects.Add({CmdX, CmdY, CmdW, CmdH});
+    LayoutUIRects.Add({CmdX + CmdW, CmdY, 2 * 84.f, CmdH}); // town-trim: REALM and PREVIEW TRIM
     bool bOverUI = false;
     for (const FCireUIRect& R : LayoutUIRects) bOverUI |= MX >= R.X && MX <= R.X + R.W && MY >= R.Y && MY <= R.Y + R.H;
 
+    CireTownTrim::TickEditor(World, Canvas, L, E.Realm); // town-trim: red veil outside the Play Bounds, live PREVIEW TRIM
     // ---- world gizmos ----------------------------------------------------------------------------------------------
     E.Hover.Reset();
     float HoverDistance = 18.f;
@@ -950,6 +955,9 @@ void ACireHUD::TickLayoutEditor()
         if (Button(TEXT("LOAD"), X, CmdY, W, TEXT("Load a named layout into the draft."), true, E.bLoadList)) E.bLoadList = !E.bLoadList; X += W + 4;
         if (Button(E.bWalk ? TEXT("MAP VIEW  M") : TEXT("WALK  M"), X, CmdY, W, TEXT("Walk view (your champion) or map view (top-down camera)."))) SwitchView(); X += W + 4;
         if (Button(TEXT("REALM  G"), X, CmdY, W, TEXT("Go to the other realm (same layout, the other team's copy)."))) SwitchRealm();
+        X += W + 4; // town-trim: hide what a match cuts outside the Play Bounds (reversible; the editor always loads the whole town)
+        if (Button(CireTownTrim::IsPreviewing() ? TEXT("TRIM: SHOWN") : TEXT("PREVIEW TRIM"), X, CmdY, W, TEXT("PREVIEW TRIM: hide everything a match cuts outside the Play Bounds (red) plus the trim margin (amber), in both realms. Nothing is lost: click again to bring it all back. Matches load only what is inside."), CireTownTrim::IsPreviewing() || CireTownTrim::LayoutPolygon(L).Num() >= 3, CireTownTrim::IsPreviewing(), CireUIColors::Red))
+            Say(CireTownTrim::TogglePreview(World, L) ? TEXT("Preview trim: what a match cuts is hidden (click again to show it).") : TEXT("Preview trim off: the whole town is shown."));
     }
 
     // ---- panel: marker list ---------------------------------------------------------------------------------------

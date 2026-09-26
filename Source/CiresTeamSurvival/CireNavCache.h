@@ -24,6 +24,8 @@ namespace CireNavCache
     /** After the bounds are registered (NS->Tick): attach the cached tiles. On a miss or any mismatch the lock is released
         and false is returned; the caller then builds as usual. */
     bool FinishLoad(UWorld* World, UNavigationSystemV1* NS, double& OutMs, int32& OutTiles);
+    /** town-trim: the cache key of this process (tests: the Play Bounds trim is part of it). */
+    CIRESTEAMSURVIVAL_API FString Key();
     /** After a full build: write the tiles for the next start. */
     void Save(UWorld* World, UNavigationSystemV1* NS);
 }

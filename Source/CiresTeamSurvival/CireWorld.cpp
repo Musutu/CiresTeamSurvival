@@ -3,6 +3,7 @@
 #include "CireLanePath.h"
 #include "CireTownMap.h"
 #include "CireTownPerf.h" // town-perf
+#include "CireTownShots.h" // town-trim
 #include "CireArenas.h" // medieval-kingdom
 #include "Net/UnrealNetwork.h"
 #include "CireEnvironmentProps.h"
@@ -233,6 +234,7 @@ void ACireWorld::BeginPlay() {
     // (server/standalone only; clients have no navigation system).
     if(HasAuthority()){TRACE_CPUPROFILER_EVENT_SCOPE(CireWorld_NavInitialize);CireNav::Initialize(GetWorld());}
     if(HasAuthority())CireTownPerf::Initialize(GetWorld()); // town-perf: -CireTownPerfProbe
+    if(HasAuthority())CireTownShots::Initialize(GetWorld()); // town-trim: -CireTownShots before/after captures
 }
 void ACireWorld::SyncGoalZones() {
     // nav-paths: the castle leak zone follows the editable goal zone (BattlefieldRoutes.json "goal").

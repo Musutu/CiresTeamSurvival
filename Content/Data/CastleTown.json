@@ -47,6 +47,19 @@
     }
   ],
   "performance": { "packLightShadows": false, "packFxRadius": 5000, "parallelStreaming": false, "restoreRendererCvars": true, "openDoors": false },
+  "trim": {
+    "notes": "town-trim (Docs/CastleTown.md 'Trim to Play Bounds'): with a Play Bounds polygon in MapLayout.json, everything entirely outside it plus margin (cm) is not loaded, not rendered and not in the navmesh, in both realms. backdrop: off (cut everything), low (keep the landscape plus landmarks at least landmarkHeight tall or landmarkSize long, and the backdropLevels / backdropLevelInstances, as silhouettes: no collision, shadows, tick, lights or particles), full (keep every outside actor as a silhouette). backdropRange 0 = any distance. The layout editor and explore mode always load the whole town.",
+    "enabled": true,
+    "margin": 1500,
+    "backdrop": "low",
+    "landmarkHeight": 1800,
+    "landmarkSize": 4000,
+    "backdropRange": 0,
+    "navCell": 4000,
+    "backdropLevels": ["SL_Landscape", "SL_Mountain"],
+    "backdropLevelInstances": ["Castle", "Tower", "Gate"],
+    "keepLandscape": true
+  },
   "defaultMap": true,
   "routes": "Data/CastleTownRoutes.json",
   "explore": {
