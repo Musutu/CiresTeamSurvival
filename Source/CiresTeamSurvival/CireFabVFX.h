@@ -7,12 +7,16 @@
 // resolves the caller keeps the procedural presentation (ACireSpellVisual / CireAuraVisuals), which
 // is always drawn anyway. A clean clone without the packs therefore builds, runs and tests unchanged.
 //
+// fab-coverage: "abilities.<skill id>.<role>" gives one ability its own signature system ahead of the school set,
+// and a candidate may be a Cascade UParticleSystem (Kakky FX Variety Pack) as well as a Niagara system: both are
+// UFXSystemAssets and spawn as UFXSystemComponents.
+//
 // cire.FabVFX 0 (or -CireNoFabVFX) turns the overlay off for A/B captures.
 #include "CoreMinimal.h"
 #include "CireAbilityShapes.h"
 
-class UNiagaraSystem;
-class UNiagaraComponent;
+class UFXSystemAsset;
+class UFXSystemComponent;
 class USceneComponent;
 class UWorld;
 
@@ -34,20 +38,24 @@ namespace CireFabVFX
     // The configured entry for a school/role, or nullptr when the data has none.
     CIRESTEAMSURVIVAL_API const FEntry* Find(ECireSchool School, ERole Role);
     CIRESTEAMSURVIVAL_API const FEntry* FindBuff(const FString& Key);
-    // kits-complete: a skill's own overlay ("abilities.<id>.<role>"); Skill may be the ability id or its display name.
+    // fab-coverage: the ability's own entry for this role ("abilities.<id>.<role>"), or nullptr.
     CIRESTEAMSURVIVAL_API const FEntry* FindAbility(FName Skill, ERole Role);
-    // First candidate whose package exists and loads as a Niagara system; cached. Never logs for missing packs.
-    CIRESTEAMSURVIVAL_API UNiagaraSystem* Resolve(const FEntry* Entry);
-    CIRESTEAMSURVIVAL_API UNiagaraSystem* ResolveSchool(ECireSchool School, ERole Role, float* OutScale = nullptr);
+    // The ability's own entry when it resolves locally, else the school set (Find). Used by every spell presentation.
+    CIRESTEAMSURVIVAL_API const FEntry* FindFor(FName Skill, ECireSchool School, ERole Role);
+    // First candidate whose package exists and loads as a Niagara or Cascade system; cached. Never logs for missing packs.
+    CIRESTEAMSURVIVAL_API UFXSystemAsset* Resolve(const FEntry* Entry);
+    CIRESTEAMSURVIVAL_API UFXSystemAsset* ResolveSchool(ECireSchool School, ERole Role, float* OutScale = nullptr);
 
     // Spawners (nullptr when the overlay is off or the pack is missing).
-    CIRESTEAMSURVIVAL_API UNiagaraComponent* SpawnAttached(UNiagaraSystem* System, USceneComponent* Parent, FVector Offset, float Scale, bool bAutoDestroy);
-    CIRESTEAMSURVIVAL_API UNiagaraComponent* SpawnAt(UWorld* World, UNiagaraSystem* System, FVector Location, FRotator Rotation, float Scale);
+    CIRESTEAMSURVIVAL_API UFXSystemComponent* SpawnAttached(UFXSystemAsset* System, USceneComponent* Parent, FVector Offset, float Scale, bool bAutoDestroy);
+    CIRESTEAMSURVIVAL_API UFXSystemComponent* SpawnAt(UWorld* World, UFXSystemAsset* System, FVector Location, FRotator Rotation, float Scale);
     // Tints the common Lord Enot / UrtanoVFX / SoftTofu colour user parameters when present.
-    CIRESTEAMSURVIVAL_API void ApplyTint(UNiagaraComponent* Component, FLinearColor Tint);
+    CIRESTEAMSURVIVAL_API void ApplyTint(UFXSystemComponent* Component, FLinearColor Tint);
+    // Stops emitting and lets the live particles finish, then destroys the component (Niagara or Cascade).
+    CIRESTEAMSURVIVAL_API void Release(UFXSystemComponent* Component);
 
-    // Diagnostics: how many school/role slots resolve right now (0 on a clean clone).
-    struct FCoverage { int32 Configured = 0, Resolved = 0; TArray<FString> Missing; };
+    // Diagnostics: how many school/role/buff/ability slots resolve right now (0 on a clean clone).
+    struct FCoverage { int32 Configured = 0, Resolved = 0, Abilities = 0, AbilitySlots = 0, AbilitySlotsResolved = 0, Cascade = 0; TArray<FString> Missing; };
     CIRESTEAMSURVIVAL_API FCoverage Coverage();
 
 #if !UE_BUILD_SHIPPING

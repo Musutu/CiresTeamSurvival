@@ -1,7 +1,9 @@
 #include "CireLoot.h"
+#include "CireMonsterExpansion.h" // monster-expansion
 #include "CireWaves.h" // wave-director economy hooks (UnitFlags)
 // progression-shop: see CireLoot.h, Docs/Progression.md.
 #include "CireGame.h"
+#include "CireAudio.h" // fab-coverage: chest land / open cues
 #include "CireItems.h"
 #include "CireLanePath.h"
 #include "CireNPCArchetypes.h"
@@ -188,8 +190,10 @@ bool CireLoot::ParseJson(const FString& Json, FCireLootData& Out, FString& Error
     const TSharedPtr<FJsonObject> SourceObject = Sources ? *Sources : TSharedPtr<FJsonObject>();
     if (!ParseSources(SourceObject, TEXT("packCompletion"), Out.PackCompletion, Error) ||
         !ParseSources(SourceObject, TEXT("packLeader"), Out.PackLeader, Error) ||
-        !ParseSources(SourceObject, TEXT("laneBoss"), Out.LaneBoss, Error)) return false;
-    for (const TArray<FCireLootSource>* List : {&Out.PackCompletion, &Out.PackLeader, &Out.LaneBoss})
+        !ParseSources(SourceObject, TEXT("laneBoss"), Out.LaneBoss, Error) ||
+        !ParseSources(SourceObject, TEXT("rareSpawn"), Out.RareSpawn, Error) || // monster-expansion
+        !ParseSources(SourceObject, TEXT("bonusWave"), Out.BonusWave, Error)) return false;
+    for (const TArray<FCireLootSource>* List : {&Out.PackCompletion, &Out.PackLeader, &Out.LaneBoss, &Out.RareSpawn, &Out.BonusWave})
         for (const auto& Source : *List)
             if (!Out.Tables.Contains(Source.Table)) { Error = TEXT("Loot source uses unknown table ") + Source.Table; return false; }
     Out.bValid = true;
@@ -296,6 +300,9 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
     }
     if (bLeader) Merge(TableFor(D.PackLeader, Tier, Round), Tier, MakeSeed(Monster->PackId, 2));
     if (bPackCompleted) Merge(TableFor(D.PackCompletion, Tier, Round), Tier, MakeSeed(Monster->PackId, 3));
+    // monster-expansion: Rare Spawns and Bonus Loot Wave creatures carry their own (much better) tables.
+    const TArray<FCireLootSource>* Special = Monster->SpecialSpawn == 1 ? &D.RareSpawn : Monster->SpecialSpawn == 2 ? &D.BonusWave : nullptr;
+    if (Special && Monster->PackId < 0) { Tier = FMath::Clamp(1 + (Round - 1) / 2, 1, 10); Merge(TableFor(*Special, Tier, Round), Tier, MakeSeed(Monster->GetUniqueID(), 4)); }
     if (!D.bPersonal)
     {
         // Server option: the old shared team chest with lowest-loot-score rotation.
@@ -310,6 +317,7 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
     if (Monster->PackId < 0 && Monster->IsLaneBoss()) Rolls.Add({TableFor(D.LaneBoss, Tier, Round), Tier});
     if (bLeader) Rolls.Add({TableFor(D.PackLeader, Tier, Round), Tier});
     if (bPackCompleted) Rolls.Add({TableFor(D.PackCompletion, Tier, Round), Tier});
+    if (Special && Monster->PackId < 0) Rolls.Add({TableFor(*Special, Tier, Round), Tier}); // monster-expansion
     Rolls.RemoveAll([](const FSourceRoll& R) { return R.Table == nullptr; });
     if (Rolls.Num() == 0) return;
     const FVector Where = Monster->GetActorLocation();
@@ -317,6 +325,8 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
     const double Share = CI::PersonalItemShare(Eligible.Num(), D.PersonalFactor);
     const FString SourceName = Monster->GetNPCDisplayName();
     const FString Why = bPackCompleted ? FString::Printf(TEXT("Personal loot: you helped clear a Tier %d pack (%s)"), Tier, *SourceName)
+        : Monster->SpecialSpawn == 1 ? FString::Printf(TEXT("Personal loot: you helped slay a rare (%s)"), *SourceName) // monster-expansion
+        : Monster->SpecialSpawn == 2 ? FString::Printf(TEXT("Personal loot: you caught a bonus-wave treasure creature (%s)"), *SourceName)
         : FString::Printf(TEXT("Personal loot from %s"), *SourceName);
     const uint64 Base = MakeSeed(static_cast<uint64>(Monster->GetUniqueID()), Round);
     for (int32 Index = 0; Index < Eligible.Num(); ++Index)
@@ -369,7 +379,7 @@ void CireLoot::NoteContribution(AActor* Source, AActor* Target)
     auto* Monster = Cast<ACireMonster>(Target);
     ACireHero* Hero = Cast<ACireHero>(Source);
     if (auto* Summon = Cast<ACireSummon>(Source)) Hero = Summon->GetOwnerHero();
-    if (!Monster || !Hero || !Monster->HasAuthority() || (Monster->PackId < 0 && !Monster->IsLaneBoss())) return;
+    if (!Monster || !Hero || !Monster->HasAuthority() || (Monster->PackId < 0 && !Monster->IsLaneBoss() && Monster->SpecialSpawn == 0)) return; // monster-expansion: rares/bonus
     Contributions.FindOrAdd(SourceKey(Monster)).Add(Hero);
 }
 
@@ -405,6 +415,9 @@ int32 CireLoot::BountyWave(ACireGameMode* Mode, const ACireMonster* Monster)
 
 int32 CireLoot::KillBounty(ACireGameMode* Mode, const ACireMonster* Monster, float RewardMultiplier)
 {
+    // monster-expansion: a Rare Spawn / Bonus Loot creature pays its configured number of mob values (Waves.json).
+    if (Monster && Monster->SpecialSpawn != 0 && Monster->PackId < 0)
+        return FMath::Max(0, FMath::RoundToInt(CI::MobValue(Get().Economy, BountyWave(Mode, Monster)) * CireMonsterExpansion::BountyMobValues(Monster) * RewardMultiplier));
     return CI::KillGold(Get().Economy, BountyKindOf(Monster), BountyWave(Mode, Monster), RewardMultiplier);
 }
 
@@ -961,10 +974,13 @@ void ACireLootDrop::Tick(float DeltaSeconds)
             Body->SetRelativeLocation(FVector(0, 0, 23 + Drop)); BandA->SetRelativeLocation(FVector(-24, 0, 28 + Drop));
             BandB->SetRelativeLocation(FVector(24, 0, 28 + Drop)); Lock->SetRelativeLocation(FVector(46, 0, 36 + Drop));
             Hinge->SetRelativeLocation(FVector(-45, 0, 46 + Drop));
+            // fab-coverage: the landing thump, once, only for viewers who can see this chest.
+            if (!bLandSoundPlayed && Age >= .45f) { bLandSoundPlayed = true; if (!IsHidden() && Age < 2.f) CireAudio::PlayCue(this, TEXT("loot_chest_land"), GetActorLocation()); }
         }
         else
         {
             if (OpenedAt < 0) OpenedAt = Now;
+            if (!bOpenSoundPlayed) { bOpenSoundPlayed = true; if (!IsHidden()) CireAudio::PlayCue(this, TEXT("loot_chest_open"), GetActorLocation()); } // fab-coverage
             const float T = FMath::Clamp((Now - OpenedAt) / .45f, 0.f, 1.f);
             Hinge->SetRelativeRotation(FRotator(-72.f * FMath::InterpEaseOut(0.f, 1.f, T, 2.f), 0, 0));
             const float Fade = FMath::Clamp(1.f - (Now - OpenedAt - .4f) / 2.5f, 0.f, 1.f);

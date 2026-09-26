@@ -22,6 +22,12 @@
       "end": 1.023,
       "recoverRate": 1.2
     },
+    "bow_cast": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
+      "recoverRate": 1.2
+    },
     "bow_death": {
       "start": 0.0,
       "contact": 0.1,
@@ -46,6 +52,24 @@
       "end": 1.267,
       "recoverRate": 1.0
     },
+    "bow_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
+    "bow_skill1": {
+      "start": 0.0,
+      "contact": 0.622,
+      "end": 1.447,
+      "recoverRate": 1.2
+    },
+    "bow_skill2": {
+      "start": 0.0,
+      "contact": 0.817,
+      "end": 1.272,
+      "recoverRate": 1.2
+    },
     "crossbow_attack1": {
       "start": 0.0,
       "contact": 0.067,
@@ -62,6 +86,12 @@
       "start": 0.0,
       "contact": 0.647,
       "end": 0.767,
+      "recoverRate": 1.2
+    },
+    "crossbow_cast": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
       "recoverRate": 1.2
     },
     "crossbow_death": {
@@ -88,6 +118,12 @@
       "end": 0.9,
       "recoverRate": 1.0
     },
+    "crossbow_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
     "dual_attack1": {
       "start": 0.0,
       "contact": 0.733,
@@ -110,6 +146,12 @@
       "start": 0.0,
       "contact": 0.65,
       "end": 0.8,
+      "recoverRate": 1.2
+    },
+    "dual_cast": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
       "recoverRate": 1.2
     },
     "dual_death": {
@@ -136,6 +178,30 @@
       "end": 0.833,
       "recoverRate": 1.0
     },
+    "dual_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
+    "dual_skill1": {
+      "start": 0.0,
+      "contact": 0.467,
+      "end": 0.667,
+      "recoverRate": 1.2
+    },
+    "dual_skill2": {
+      "start": 0.0,
+      "contact": 0.4,
+      "end": 0.667,
+      "recoverRate": 1.2
+    },
+    "dual_skill3": {
+      "start": 0.0,
+      "contact": 1.267,
+      "end": 1.943,
+      "recoverRate": 1.2
+    },
     "gun_attack1": {
       "start": 0.0,
       "contact": 0.219,
@@ -152,6 +218,12 @@
       "start": 0.0,
       "contact": 0.283,
       "end": 1.368,
+      "recoverRate": 1.2
+    },
+    "gun_cast": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
       "recoverRate": 1.2
     },
     "gun_death": {
@@ -171,6 +243,36 @@
       "contact": 0.1,
       "end": 2.0,
       "recoverRate": 1.0
+    },
+    "gun_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 1.167,
+      "recoverRate": 1.0
+    },
+    "gun_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
+    "gun_skill1": {
+      "start": 0.0,
+      "contact": 0.35,
+      "end": 1.33,
+      "recoverRate": 1.2
+    },
+    "gun_skill2": {
+      "start": 0.0,
+      "contact": 1.306,
+      "end": 2.9,
+      "recoverRate": 1.2
+    },
+    "gun_skill3": {
+      "start": 0.0,
+      "contact": 0.872,
+      "end": 2.07,
+      "recoverRate": 1.2
     },
     "one_hand_attack1": {
       "start": 0.0,
@@ -194,6 +296,12 @@
       "start": 0.0,
       "contact": 0.317,
       "end": 0.433,
+      "recoverRate": 1.2
+    },
+    "one_hand_cast": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
       "recoverRate": 1.2
     },
     "one_hand_death": {
@@ -220,6 +328,30 @@
       "end": 1.067,
       "recoverRate": 1.0
     },
+    "one_hand_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
+    "one_hand_skill1": {
+      "start": 0.0,
+      "contact": 0.96,
+      "end": 1.361,
+      "recoverRate": 1.2
+    },
+    "one_hand_skill2": {
+      "start": 0.0,
+      "contact": 0.583,
+      "end": 0.933,
+      "recoverRate": 1.2
+    },
+    "one_hand_skill3": {
+      "start": 0.0,
+      "contact": 1.36,
+      "end": 1.995,
+      "recoverRate": 1.2
+    },
     "spear_attack1": {
       "start": 0.0,
       "contact": 0.417,
@@ -244,6 +376,12 @@
       "end": 0.9,
       "recoverRate": 1.2
     },
+    "spear_cast": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
+      "recoverRate": 1.2
+    },
     "spear_death": {
       "start": 0.0,
       "contact": 0.1,
@@ -261,6 +399,36 @@
       "contact": 0.1,
       "end": 2.0,
       "recoverRate": 1.0
+    },
+    "spear_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 0.933,
+      "recoverRate": 1.0
+    },
+    "spear_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
+    "spear_skill1": {
+      "start": 0.0,
+      "contact": 0.267,
+      "end": 0.333,
+      "recoverRate": 1.2
+    },
+    "spear_skill2": {
+      "start": 0.0,
+      "contact": 0.533,
+      "end": 0.667,
+      "recoverRate": 1.2
+    },
+    "spear_skill3": {
+      "start": 0.0,
+      "contact": 0.5,
+      "end": 0.667,
+      "recoverRate": 1.2
     },
     "spell_attack1": {
       "start": 0.0,
@@ -322,6 +490,30 @@
       "end": 0.9,
       "recoverRate": 1.0
     },
+    "spell_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
+    "spell_skill1": {
+      "start": 0.0,
+      "contact": 0.453,
+      "end": 1.933,
+      "recoverRate": 1.2
+    },
+    "spell_skill2": {
+      "start": 0.0,
+      "contact": 2.295,
+      "end": 2.998,
+      "recoverRate": 1.2
+    },
+    "spell_skill3": {
+      "start": 0.0,
+      "contact": 0.722,
+      "end": 1.827,
+      "recoverRate": 1.2
+    },
     "sword_shield_attack1": {
       "start": 0.0,
       "contact": 3.394,
@@ -364,6 +556,12 @@
       "end": 1.067,
       "recoverRate": 1.2
     },
+    "sword_shield_cast": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
+      "recoverRate": 1.2
+    },
     "sword_shield_death": {
       "start": 0.0,
       "contact": 0.1,
@@ -388,6 +586,42 @@
       "end": 0.9,
       "recoverRate": 1.0
     },
+    "sword_shield_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
+    "sword_shield_skill1": {
+      "start": 0.0,
+      "contact": 3.394,
+      "end": 4.635,
+      "recoverRate": 1.2
+    },
+    "sword_shield_skill2": {
+      "start": 0.0,
+      "contact": 1.659,
+      "end": 2.668,
+      "recoverRate": 1.2
+    },
+    "sword_shield_skill3": {
+      "start": 0.0,
+      "contact": 1.283,
+      "end": 2.952,
+      "recoverRate": 1.2
+    },
+    "throw_attack1": {
+      "start": 0.0,
+      "contact": 0.391,
+      "end": 0.741,
+      "recoverRate": 1.2
+    },
+    "throw_attack2": {
+      "start": 0.0,
+      "contact": 0.476,
+      "end": 0.826,
+      "recoverRate": 1.2
+    },
     "two_hand_attack2": {
       "start": 0.0,
       "contact": 1.017,
@@ -404,6 +638,12 @@
       "start": 0.0,
       "contact": 0.253,
       "end": 1.149,
+      "recoverRate": 1.2
+    },
+    "two_hand_cast": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
       "recoverRate": 1.2
     },
     "two_hand_death": {
@@ -430,6 +670,30 @@
       "end": 0.833,
       "recoverRate": 1.0
     },
+    "two_hand_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
+    "two_hand_skill1": {
+      "start": 0.0,
+      "contact": 0.783,
+      "end": 0.933,
+      "recoverRate": 1.2
+    },
+    "two_hand_skill2": {
+      "start": 0.0,
+      "contact": 0.962,
+      "end": 1.3,
+      "recoverRate": 1.2
+    },
+    "two_hand_skill3": {
+      "start": 0.0,
+      "contact": 0.433,
+      "end": 0.667,
+      "recoverRate": 1.2
+    },
     "unarmed_attack1": {
       "start": 0.0,
       "contact": 1.533,
@@ -454,6 +718,12 @@
       "end": 3.149,
       "recoverRate": 1.2
     },
+    "unarmed_cast": {
+      "start": 0.0,
+      "contact": 1.533,
+      "end": 2.91,
+      "recoverRate": 1.2
+    },
     "unarmed_death": {
       "start": 0.0,
       "contact": 0.1,
@@ -471,6 +741,36 @@
       "contact": 0.1,
       "end": 2.0,
       "recoverRate": 1.0
+    },
+    "unarmed_roll": {
+      "start": 0.0,
+      "contact": 0.1,
+      "end": 1.367,
+      "recoverRate": 1.0
+    },
+    "unarmed_shout": {
+      "start": 0.0,
+      "contact": 1.108,
+      "end": 1.966,
+      "recoverRate": 1.2
+    },
+    "unarmed_skill1": {
+      "start": 0.0,
+      "contact": 2.058,
+      "end": 3.464,
+      "recoverRate": 1.2
+    },
+    "unarmed_skill2": {
+      "start": 0.0,
+      "contact": 2.2,
+      "end": 3.273,
+      "recoverRate": 1.2
+    },
+    "unarmed_skill3": {
+      "start": 0.0,
+      "contact": 1.133,
+      "end": 2.02,
+      "recoverRate": 1.2
     }
   },
   "replace": {
@@ -482,10 +782,15 @@
         "sword_shield_attack10"
       ],
       "ability": [
-        "sword_shield_attack3",
-        "sword_shield_attack4",
-        "sword_shield_attack6",
-        "sword_shield_attack10"
+        "sword_shield_skill1",
+        "sword_shield_skill2",
+        "sword_shield_skill3"
+      ],
+      "spell": [
+        "sword_shield_cast"
+      ],
+      "shout": [
+        "sword_shield_shout"
       ],
       "hit": [
         "sword_shield_hit"
@@ -508,10 +813,15 @@
         "sword_shield_attack10"
       ],
       "ability": [
-        "sword_shield_attack3",
-        "sword_shield_attack4",
-        "sword_shield_attack6",
-        "sword_shield_attack10"
+        "sword_shield_skill1",
+        "sword_shield_skill2",
+        "sword_shield_skill3"
+      ],
+      "spell": [
+        "sword_shield_cast"
+      ],
+      "shout": [
+        "sword_shield_shout"
       ],
       "hit": [
         "sword_shield_hit"
@@ -534,10 +844,15 @@
         "sword_shield_attack10"
       ],
       "ability": [
-        "sword_shield_attack3",
-        "sword_shield_attack4",
-        "sword_shield_attack6",
-        "sword_shield_attack10"
+        "sword_shield_skill1",
+        "sword_shield_skill2",
+        "sword_shield_skill3"
+      ],
+      "spell": [
+        "sword_shield_cast"
+      ],
+      "shout": [
+        "sword_shield_shout"
       ],
       "hit": [
         "sword_shield_hit"
@@ -560,10 +875,15 @@
         "sword_shield_attack10"
       ],
       "ability": [
-        "sword_shield_attack3",
-        "sword_shield_attack4",
-        "sword_shield_attack6",
-        "sword_shield_attack10"
+        "sword_shield_skill1",
+        "sword_shield_skill2",
+        "sword_shield_skill3"
+      ],
+      "spell": [
+        "sword_shield_cast"
+      ],
+      "shout": [
+        "sword_shield_shout"
       ],
       "hit": [
         "sword_shield_hit"
@@ -586,10 +906,15 @@
         "one_hand_attack7"
       ],
       "ability": [
-        "one_hand_attack1",
-        "one_hand_attack3",
-        "one_hand_attack6",
-        "one_hand_attack7"
+        "one_hand_skill1",
+        "one_hand_skill2",
+        "one_hand_skill3"
+      ],
+      "spell": [
+        "one_hand_cast"
+      ],
+      "shout": [
+        "one_hand_shout"
       ],
       "hit": [
         "one_hand_hit"
@@ -612,10 +937,15 @@
         "one_hand_attack7"
       ],
       "ability": [
-        "one_hand_attack1",
-        "one_hand_attack3",
-        "one_hand_attack6",
-        "one_hand_attack7"
+        "one_hand_skill1",
+        "one_hand_skill2",
+        "one_hand_skill3"
+      ],
+      "spell": [
+        "one_hand_cast"
+      ],
+      "shout": [
+        "one_hand_shout"
       ],
       "hit": [
         "one_hand_hit"
@@ -637,9 +967,15 @@
         "two_hand_attack4"
       ],
       "ability": [
-        "two_hand_attack2",
-        "two_hand_attack3",
-        "two_hand_attack4"
+        "two_hand_skill1",
+        "two_hand_skill2",
+        "two_hand_skill3"
+      ],
+      "spell": [
+        "two_hand_cast"
+      ],
+      "shout": [
+        "two_hand_shout"
       ],
       "hit": [
         "two_hand_hit"
@@ -661,9 +997,15 @@
         "two_hand_attack4"
       ],
       "ability": [
-        "two_hand_attack2",
-        "two_hand_attack3",
-        "two_hand_attack4"
+        "two_hand_skill1",
+        "two_hand_skill2",
+        "two_hand_skill3"
+      ],
+      "spell": [
+        "two_hand_cast"
+      ],
+      "shout": [
+        "two_hand_shout"
       ],
       "hit": [
         "two_hand_hit"
@@ -686,10 +1028,15 @@
         "dual_attack4"
       ],
       "ability": [
-        "dual_attack1",
-        "dual_attack2",
-        "dual_attack3",
-        "dual_attack4"
+        "dual_skill1",
+        "dual_skill2",
+        "dual_skill3"
+      ],
+      "spell": [
+        "dual_cast"
+      ],
+      "shout": [
+        "dual_shout"
       ],
       "hit": [
         "dual_hit"
@@ -712,10 +1059,15 @@
         "dual_attack4"
       ],
       "ability": [
-        "dual_attack1",
-        "dual_attack2",
-        "dual_attack3",
-        "dual_attack4"
+        "dual_skill1",
+        "dual_skill2",
+        "dual_skill3"
+      ],
+      "spell": [
+        "dual_cast"
+      ],
+      "shout": [
+        "dual_shout"
       ],
       "hit": [
         "dual_hit"
@@ -737,9 +1089,14 @@
         "bow_attack3"
       ],
       "ability": [
-        "bow_attack1",
-        "bow_attack2",
-        "bow_attack3"
+        "bow_skill1",
+        "bow_skill2"
+      ],
+      "spell": [
+        "bow_cast"
+      ],
+      "shout": [
+        "bow_shout"
       ],
       "hit": [
         "bow_hit"
@@ -763,19 +1120,18 @@
         "spell_attack8"
       ],
       "ability": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8"
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3"
       ],
       "spell": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8",
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3",
         "spell_heal"
+      ],
+      "shout": [
+        "spell_shout"
       ],
       "hit": [
         "spell_hit"
@@ -799,19 +1155,18 @@
         "spell_attack8"
       ],
       "ability": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8"
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3"
       ],
       "spell": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8",
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3",
         "spell_heal"
+      ],
+      "shout": [
+        "spell_shout"
       ],
       "hit": [
         "spell_hit"
@@ -835,19 +1190,18 @@
         "spell_attack8"
       ],
       "ability": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8"
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3"
       ],
       "spell": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8",
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3",
         "spell_heal"
+      ],
+      "shout": [
+        "spell_shout"
       ],
       "hit": [
         "spell_hit"
@@ -871,19 +1225,18 @@
         "spell_attack8"
       ],
       "ability": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8"
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3"
       ],
       "spell": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8",
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3",
         "spell_heal"
+      ],
+      "shout": [
+        "spell_shout"
       ],
       "hit": [
         "spell_hit"
@@ -907,19 +1260,18 @@
         "spell_attack8"
       ],
       "ability": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8"
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3"
       ],
       "spell": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8",
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3",
         "spell_heal"
+      ],
+      "shout": [
+        "spell_shout"
       ],
       "hit": [
         "spell_hit"
@@ -943,19 +1295,18 @@
         "spell_attack8"
       ],
       "ability": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8"
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3"
       ],
       "spell": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8",
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3",
         "spell_heal"
+      ],
+      "shout": [
+        "spell_shout"
       ],
       "hit": [
         "spell_hit"
@@ -979,19 +1330,18 @@
         "spell_attack8"
       ],
       "ability": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8"
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3"
       ],
       "spell": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8",
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3",
         "spell_heal"
+      ],
+      "shout": [
+        "spell_shout"
       ],
       "hit": [
         "spell_hit"
@@ -1015,19 +1365,18 @@
         "spell_attack8"
       ],
       "ability": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8"
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3"
       ],
       "spell": [
-        "spell_attack1",
-        "spell_attack2",
-        "spell_attack4",
-        "spell_attack6",
-        "spell_attack8",
+        "spell_skill1",
+        "spell_skill2",
+        "spell_skill3",
         "spell_heal"
+      ],
+      "shout": [
+        "spell_shout"
       ],
       "hit": [
         "spell_hit"
@@ -1050,16 +1399,24 @@
         "spear_attack4"
       ],
       "ability": [
-        "spear_attack1",
-        "spear_attack2",
-        "spear_attack3",
-        "spear_attack4"
+        "spear_skill1",
+        "spear_skill2",
+        "spear_skill3"
+      ],
+      "spell": [
+        "spear_cast"
+      ],
+      "shout": [
+        "spear_shout"
       ],
       "hit": [
         "spear_hit"
       ],
       "death": [
         "spear_death"
+      ],
+      "roll": [
+        "spear_roll"
       ],
       "jump": [
         "spear_jump"
@@ -1073,16 +1430,24 @@
         "spear_attack4"
       ],
       "ability": [
-        "spear_attack1",
-        "spear_attack2",
-        "spear_attack3",
-        "spear_attack4"
+        "spear_skill1",
+        "spear_skill2",
+        "spear_skill3"
+      ],
+      "spell": [
+        "spear_cast"
+      ],
+      "shout": [
+        "spear_shout"
       ],
       "hit": [
         "spear_hit"
       ],
       "death": [
         "spear_death"
+      ],
+      "roll": [
+        "spear_roll"
       ],
       "jump": [
         "spear_jump"
@@ -1096,16 +1461,24 @@
         "spear_attack4"
       ],
       "ability": [
-        "spear_attack1",
-        "spear_attack2",
-        "spear_attack3",
-        "spear_attack4"
+        "spear_skill1",
+        "spear_skill2",
+        "spear_skill3"
+      ],
+      "spell": [
+        "spear_cast"
+      ],
+      "shout": [
+        "spear_shout"
       ],
       "hit": [
         "spear_hit"
       ],
       "death": [
         "spear_death"
+      ],
+      "roll": [
+        "spear_roll"
       ],
       "jump": [
         "spear_jump"
@@ -1118,15 +1491,24 @@
         "gun_attack4"
       ],
       "ability": [
-        "gun_attack1",
-        "gun_attack2",
-        "gun_attack4"
+        "gun_skill1",
+        "gun_skill2",
+        "gun_skill3"
+      ],
+      "spell": [
+        "gun_cast"
+      ],
+      "shout": [
+        "gun_shout"
       ],
       "hit": [
         "gun_hit"
       ],
       "death": [
         "gun_death"
+      ],
+      "roll": [
+        "gun_roll"
       ],
       "jump": [
         "gun_jump"
@@ -1139,15 +1521,24 @@
         "gun_attack4"
       ],
       "ability": [
-        "gun_attack1",
-        "gun_attack2",
-        "gun_attack4"
+        "gun_skill1",
+        "gun_skill2",
+        "gun_skill3"
+      ],
+      "spell": [
+        "gun_cast"
+      ],
+      "shout": [
+        "gun_shout"
       ],
       "hit": [
         "gun_hit"
       ],
       "death": [
         "gun_death"
+      ],
+      "roll": [
+        "gun_roll"
       ],
       "jump": [
         "gun_jump"
@@ -1161,16 +1552,24 @@
         "unarmed_attack4"
       ],
       "ability": [
-        "unarmed_attack1",
-        "unarmed_attack2",
-        "unarmed_attack3",
-        "unarmed_attack4"
+        "unarmed_skill1",
+        "unarmed_skill2",
+        "unarmed_skill3"
+      ],
+      "spell": [
+        "unarmed_cast"
+      ],
+      "shout": [
+        "unarmed_shout"
       ],
       "hit": [
         "unarmed_hit"
       ],
       "death": [
         "unarmed_death"
+      ],
+      "roll": [
+        "unarmed_roll"
       ],
       "jump": [
         "unarmed_jump"
@@ -1198,7 +1597,45 @@
       ],
       "jump": [
         "crossbow_jump"
+      ],
+      "spell": [
+        "bow_cast"
+      ],
+      "shout": [
+        "bow_shout"
+      ]
+    },
+    "style:troll_ranged": {
+      "attack": [
+        "throw_attack1",
+        "throw_attack2"
+      ],
+      "ability": [
+        "dual_skill1",
+        "dual_skill2",
+        "dual_skill3"
+      ],
+      "spell": [
+        "dual_cast"
+      ],
+      "shout": [
+        "dual_shout"
+      ],
+      "hit": [
+        "dual_hit"
+      ],
+      "death": [
+        "dual_death"
+      ],
+      "roll": [
+        "dual_roll"
+      ],
+      "jump": [
+        "dual_jump"
       ]
     }
+  },
+  "bodies": {
+    "/Game/Polyphoria/Polyphoria/CharacterParts_HeavyArmour/Meshes/UE5/Male/UpperBody/SK_ma_pala_combine_a.SK_ma_pala_combine_a": "PolyPaladin"
   }
 }

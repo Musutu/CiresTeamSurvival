@@ -8,6 +8,10 @@ UNiagaraSystem, so emitters or a wrong guess simply fall through to the next one
 
 Hand edits survive: an entry with "locked": true is never rewritten.
 
+fab-coverage: Tools/FabAbilityVFXTable.py adds "abilities.<id>.<role>" (one signature system per champion ability and
+role, tried before the school set) and one state overlay per BuffVisuals effect. Kakky FX Variety Pack (FXVarietyPack)
+ships Cascade P_ky_* systems; CireFabVFX spawns those as well as Niagara.
+
 Usage (any Python 3):
   python Tools/MapFabVFX.py            # write Content/Data/FabVFX.json
   python Tools/MapFabVFX.py --report   # print what it found, write nothing
@@ -134,7 +138,9 @@ DEDICATED = {
                "area": ["AreaBuff"], "aura": ["Aura_Nature"]},
     "life": {"area": ["AreaBuff"]},
     # Physical hits: restrained realistic blood (low intensity) - dark-fantasy, not splatter.
-    "steel": {"impact": ["Slash_Low", "BloodBurst_Low"]},
+    # fab-coverage: steel also gets a crisp white wind slash on the caster and a wind arrow for thrown/shot weapons,
+    # so physical skills without their own signature are not bare procedural (one steel slot existed before).
+    "steel": {"impact": ["Slash_Low", "BloodBurst_Low"], "cast": ["Air_Magic_Slash1"], "projectile": ["Air_Magic_Arrow1"]},
     "blood": {"impact": ["BloodBurst_Med"]},
 }
 # Exact status effects (BuffVisuals ids) -> State VFX Niagara loops.
@@ -222,6 +228,47 @@ def build(found, existing):
     return schools, buffs
 
 
+def build_abilities(found, existing):
+    """fab-coverage: per-ability signatures and per-buff overlays from Tools/FabAbilityVFXTable.py."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("FabAbilityVFXTable", str(Path(__file__).with_name("FabAbilityVFXTable.py")))
+    table = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(table)
+    by_stem = {}
+    for f in found:
+        by_stem.setdefault(f["path"].rsplit(".", 1)[1].replace("NS_", "", 1), f["path"])
+    missing = []
+
+    def entry(value, role):
+        stem, scale = (value if isinstance(value, tuple) else (value, None))
+        if stem not in by_stem:
+            missing.append(stem)
+            return None
+        path = by_stem[stem]
+        if scale is None:
+            scale = table.ROLE_SCALE.get(role, 1.0) * (table.CASCADE_SCALE if stem.startswith("P_ky_") else 1.0)
+        return {"paths": [path], "scale": round(scale, 3)}
+    abilities = {}
+    for ability, roles in table.ABILITY_VFX.items():
+        row = {}
+        for key, value in roles.items():
+            e = entry(value, table.ROLE[key])
+            if e:
+                row[table.ROLE[key]] = e
+        if row:
+            abilities[ability] = row
+    buffs = {}
+    for buff, value in table.BUFF_VFX.items():
+        e = entry(value, "aura")
+        if e:
+            buffs[buff] = e
+    for ability, roles in (existing.get("abilities") or {}).items():
+        for role, e in roles.items():
+            if isinstance(e, dict) and e.get("locked"):
+                abilities.setdefault(ability, {})[role] = e
+    return abilities, buffs, sorted(set(missing))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--report", action="store_true")
@@ -230,6 +277,14 @@ def main() -> int:
     found = scan(main_tree)
     existing = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
     schools, buffs = build(found, existing)
+    abilities, ability_buffs, missing_stems = build_abilities(found, existing)
+    for key, e in ability_buffs.items():
+        if not (isinstance(buffs.get(key), dict) and buffs[key].get("locked")):
+            buffs[key] = e
+    print("ability signatures: %d abilities, %d role slots; buff overlays: %d" % (
+        len(abilities), sum(len(r) for r in abilities.values()), len(buffs)))
+    for stem in missing_stems:
+        print("  missing stem (pack not installed or renamed): " + stem)
     unclassified = [f["rel"] for f in found if not (f["school"] and f["role"])]
     print("systems found: %d, classified: %d, slots: %d, buff rows: %d" % (
         len(found), len(found) - len(unclassified), sum(len(r) for r in schools.values()), len(buffs)))
@@ -244,9 +299,8 @@ def main() -> int:
         "notes": existing.get("notes", ""),
         "schools": schools,
         "buffs": buffs,
+        "abilities": abilities,
     }
-    if existing.get("abilities"):  # kits-complete: per-ability overlays (Tools/MapKitVFX.py) are hand-authored; keep them
-        data["abilities"] = existing["abilities"]
     OUT.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     print("wrote " + str(OUT))
     return 0

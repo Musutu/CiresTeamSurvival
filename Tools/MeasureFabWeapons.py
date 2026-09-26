@@ -9,6 +9,9 @@ along it into 2 cm bins with the cross-section size per bin. From that profile:
   * shields: thinnest axis is the face normal; the strap sits on the back face centre;
   * crossbow: stock is the long axis; grip at the rear third; muzzle end = edge.
 Keys in the output are full object paths (the packs reuse armory names like SM_WarHammer).
+paladin-hq: Tools/BuildFabPaladins.py WEAPONS gives single champions their own prop per token (the Polyphoria
+plate-body champions carry the set's sword and heater shield), written to WeaponLoadouts.fab.json "profiles" with an
+optional material spec (UCireChampionArt::ApplyMaterialSpec); every other profile keeps "overrides".
 Run: UnrealEditor-Cmd <project> -run=pythonscript -script=<abs>/Tools/MeasureFabWeapons.py -unattended -nullrhi
 Marker CIRE_FAB_WEAPONS_PASS; report Saved/FabWeapons.json.
 """
@@ -32,6 +35,13 @@ WEAPONS = {
     "WarAxe": (V1 + "/SM_Axe_1", "head", {"tilt": 25}),
     "ThrowingAxe": (V2 + "/SM_ThrowingAxe", "head", {"tilt": 25}),
 }
+
+
+def load_profile_weapons():
+    """paladin-hq: profile -> token -> (mesh, grip kind, extra grip fields, material spec by slot)."""
+    ns = {"CIRE_IMPORT_ONLY": True, "__file__": str(ROOT / "Tools/BuildFabPaladins.py")}
+    exec(compile((ROOT / "Tools/BuildFabPaladins.py").read_text(encoding="utf-8"), "BuildFabPaladins.py", "exec"), ns)
+    return ns["WEAPONS"]
 
 
 def verts(mesh):
@@ -135,6 +145,21 @@ def main():
             weapons[obj] = grip
             overrides[token] = {"mesh": obj, **({"scale": scale} if scale else {})}
             report[token] = {"mesh": obj, "kind": kind, **info, "grip": grip}
+        profiles = {}
+        for profile, tokens in load_profile_weapons().items():
+            for token, (path, kind, extra, materials) in tokens.items():
+                if not u.EditorAssetLibrary.does_asset_exist(path):
+                    report["%s/%s" % (profile, token)] = {"skipped": "pack not installed"}; continue
+                obj = "%s.%s" % (path, path.rsplit("/", 1)[1])
+                extra = dict(extra)
+                scale = extra.pop("scale", None)
+                if obj not in weapons:
+                    info, grip = measure(path, kind)
+                    grip.update(extra)
+                    weapons[obj] = grip
+                    report["%s/%s" % (profile, token)] = {"mesh": obj, "kind": kind, **info, "grip": grip}
+                profiles.setdefault(profile, {})[token] = {"mesh": obj, **({"scale": scale} if scale else {}),
+                                                           **({"materials": materials} if materials else {})}
         (ROOT / "Content/Data/WeaponGrips.fab.json").write_text(json.dumps({
             "schemaVersion": 1,
             "description": "Grip data for Fab weapon meshes (Tools/MeasureFabWeapons.py); keys are full object paths. Same fields as WeaponGrips.json.",
@@ -142,7 +167,7 @@ def main():
         (ROOT / "Content/Data/WeaponLoadouts.fab.json").write_text(json.dumps({
             "schemaVersion": 1,
             "description": "Fab weapon props that replace a WeaponLoadouts.json asset token when the pack mesh exists locally (Docs/FabIntegration.md). Otherwise the token's own prop is used.",
-            "overrides": overrides}, indent=1) + "\n", encoding="utf-8")
+            "overrides": overrides, "profiles": profiles}, indent=1) + "\n", encoding="utf-8")
         u.log("CIRE_FAB_WEAPONS_PASS weapons=%d" % len(weapons))
     except Exception as error:
         import traceback

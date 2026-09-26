@@ -21,7 +21,7 @@ class BalanceTests(unittest.TestCase):
         for kind in ('basic','bruiser','caster','ranged'):
             h1,d1=enemy_stats(self.data['globals'],1,kind);h40,d40=enemy_stats(self.data['globals'],40,kind)
             self.assertGreater(h40,h1);self.assertEqual(d1,d40)
-        tank=hero_stats(10,'tank');self.assertEqual(tank['stats'],[38,19,19]);self.assertEqual(tank['maxHealth'],950)
+        tank=hero_stats(10,'tank');self.assertEqual(tank['stats'],[38,19,19]);self.assertEqual(tank['maxHealth'],680);self.assertEqual(hero_stats(1,'tank')['maxHealth'],500);self.assertEqual(hero_stats(1,'healer')['maxHealth'],250)
         ranger=hero_stats(10,'ranger');self.assertEqual(ranger['baseDamage'],50);self.assertAlmostEqual(ranger['attackInterval'],1.5/1.38)
 
     def test_health_increase_delays_kill_without_changing_base_damage(self):

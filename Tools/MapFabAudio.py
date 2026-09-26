@@ -225,6 +225,121 @@ RULES: "OrderedDict[str, list]" = OrderedDict([
     ("sting.death", [(UI, r"WAV_Fantasy_UI_Dark_Stinger_Low_0\d_stereo")]),
 ])
 
+# fab-coverage (Eric, polish stage): a fitting pack sound is the PRIMARY sound for every cue, including cues that already
+# "worked" on shipped CC0 / synthesized sounds; the shipped sounds stay only as the clean-clone / -CireNoFab fallback.
+# Several takes per cue, and each cue draws on a different variant family so no one clip repeats everywhere.
+# Deliberately NOT mapped (no fitting pack sound; they keep their shipped recording - see Docs/FabCoverage.md):
+# creature / war vocals (war cry, roars, growls, snarls, heartbeat loops), war horns and war drums under the banner stings,
+# the district ambience beds / one-shots / prop emitters, and footsteps (no footstep takes in any installed pack).
+def ui(stem: str):
+    return (UI, "WAV_Fantasy_UI_" + stem + r"_(mono|stereo)")
+
+
+def ms(stem: str):
+    return (MS, stem + "_wav")
+
+
+RULES.update([
+    # ---- variety for combat cues that had one or two takes ----
+    ("weapon.axe.throw", [(CS, r"Whoosh_Metal_[23]_\d+"), (CS, r"Whoosh_4_\d+")]),
+    ("weapon.bow.impact", [(CS, r"Arrow_Hit_1_\d+"), (CS, r"Stab_3_\d+")]),
+    ("weapon.crossbow.impact", [(CS, r"Arrow_Hit_1_\d+"), (CS, r"Stab_4_\d+"), (CS, r"Generic_Hit_2_\d+")]),
+    ("debuff.expire", [ms(r"Positive_Magic_Effect_7"), ms(r"Positive_Magic_Effect_6-\d")]),
+    ("cc.stun.end", [ms(r"Wind_Magic_Spell_6-1"), ms(r"Wind_Magic_Spell_1-\d")]),
+    ("cc.silence.end", [ms(r"Positive_Magic_Effect_7"), ui(r"Light_Star_Subtle_Buzz_0\d")]),
+    ("loot_magic", [ui(r"Gen_Item_Obtained"), ui(r"Light_Reward_Obtained_01")]),
+    ("loot_rare", [ui(r"Gen_Reward_Obtained"), ui(r"Light_Reward_Obtained_0[23]")]),
+    # ---- ability presentation cues that still played CC0 ----
+    ("spell.physical.channel", [ms(r"Wind_Loop_1")]),
+    ("spell.earth.channel", [ms(r"Wind_Loop_1")]),
+    ("ability.wall", [ms(r"Debris_\d+"), ms(r"Special_Hit_3-\d")]),
+    ("combat.whiz", [(CS, r"Whoosh_[12]_\d+")]),
+    # ---- deaths (vocals stay CC0; the pack adds the body) ----
+    ("death.player", [(CS, r"Body_Fall_1_\d+")]),
+    ("death.golem", [ms(r"Debris_\d+"), (CS, r"Body_Fall_2_\d+")]),
+    ("death.ethereal", [ms(r"Wind_Magic_Spell_9-\d"), ms(r"Negative_Magic_Effect_9-\d")]),
+    ("death.creature.body", [(CS, r"Body_Fall_2_\d+"), (CS, r"Bone_2_\d+")]),
+    ("death.boss.body", [(CS, r"Body_Fall_[12]_\d+"), ui(r"Dark_Boom_Hit_0\d")]),
+    # ---- aura / buff / stance / item signatures (BuffVisuals.json) ----
+    ("buff.iron_guard.start", [(SB, r"SH_Block_Deflect_[D-F]0\d")]),
+    ("buff.iron_guard.end", [ms(r"Negative_Magic_Effect_2-\d")]),
+    ("buff.guarded.start", [(CS, r"Shield_Metal_2_\d+"), ms(r"Positive_Magic_Effect_4-\d")]),
+    ("buff.guardians_oath.start", [ms(r"Positive_Magic_Effect_5-\d")]),
+    ("buff.mass_aegis.start", [ms(r"Positive_Magic_Effect_5-\d"), ms(r"Arcane_Magic_Spell_7-\d")]),
+    ("buff.mass_aegis.end", [ms(r"Negative_Magic_Effect_2-\d")]),
+    ("item.oathshield.start", [ms(r"Positive_Magic_Effect_6-\d")]),
+    ("item.oathshield.end", [ms(r"Negative_Magic_Effect_7-1")]),
+    ("stance.shield_wall.start", [(SB, r"SH_Block_Deflect_[P-Q]0\d"), (CS, r"Shield_Metal_2_\d+")]),
+    ("stance.shield_wall.end", [ms(r"Negative_Magic_Effect_7-1"), ms(r"Negative_Magic_Effect_2-\d")]),
+    ("buff.challenge_of_iron.start", [(CS, r"Metal_Weapon_Clash_1_\d+")]),
+    ("buff.challenge_of_iron.hit", [(CS, r"Metal_Weapon_Clash_2_\d+")]),
+    ("buff.rallied.hit", [(CS, r"Draw_Weapon_Metal_2_\d+")]),
+    ("buff.war_cry.hit", [(SB, r"SH_Block_Deflect_[J-L]0\d")]),
+    ("debuff.provoked.start", [(SB, r"SH_Block_Deflect_[M-O]0\d")]),
+    ("passive.battle_rhythm.hit", [(CS, r"Metal_Weapon_Clash_2_\d+")]),
+    ("buff.bastion_of_dawn.start", [ms(r"Positive_Magic_Effect_1-\d"), ms(r"Positive_Magic_Effect_7")]),
+    ("buff.bastion_of_dawn.hit", [ui(r"Light_Star_Hit_Subtle_0\d")]),
+    ("buff.blessing.start", [ms(r"Positive_Magic_Effect_2-\d")]),
+    ("buff.blessing.hit", [ui(r"Light_Star_Twinkle_0\d")]),
+    ("buff.sanctuary.start", [ms(r"Positive_Magic_Effect_7"), ui(r"Light_Notification_Bell_0[12]")]),
+    ("buff.regeneration.start", [ms(r"Positive_Magic_Effect_8-[4-6]")]),
+    ("buff.wellspring.start", [ms(r"Water_Magic_Spell_1-[2-5]")]),
+    ("buff.blood_rage.hit", [(CS, r"Blood___Gore_\d_\d+"), (CS, r"Blood_Drop_\d+")]),
+    ("stance.blood_frenzy.hit", [(CS, r"Blood___Gore_\d_\d+"), (CS, r"Blood_Drop_\d+")]),
+    ("buff.frost_weapon.start", [ms(r"Freeze_1-\d")]),
+    ("buff.frost_weapon.hit", [ms(r"Frost_Magic_Spell_5-[2-8]")]),
+    ("debuff.frost_bind.start", [ms(r"Frost_Magic_Spell_2-[2-4]"), ms(r"Freeze_1-\d")]),
+    ("debuff.frost_bind.end", [ms(r"Frost_Magic_Spell_6-[23]")]),
+    ("cc.slow.end", [ms(r"Frost_Magic_Spell_7-2"), ms(r"Frost_Magic_Spell_6-[23]")]),
+    ("cc.root.end", [(CS, r"Shield_Wood_1_\d+"), ms(r"Nature_Magic_Spell_4-[4-6]")]),
+    ("debuff.poisoned.loop", [ms(r"Nature_Loop_2-3")]),
+    ("debuff.shield_slam.start", [(CS, r"Generic_Hit_3_\d+"), ms(r"Special_Hit_1-\d")]),
+    ("item.borrowed_time.start", [ms(r"Arcane_Magic_Spell_1-\d")]),
+    ("item.borrowed_time.end", [ui(r"Light_Star_Subtle_Delay_0\d")]),
+    ("item.mana_restore.start", [ms(r"Water_Magic_Spell_2-\d")]),
+    ("item.mana_restore.loop", [ms(r"Water_Loop_1")]),
+    ("item.scatter.start", [ms(r"Wind_Magic_Spell_2-\d")]),
+    ("item.toll_of_the_grave.start", [ui(r"Dark_Bell_0\d")]),
+    ("stance.enraged.hit", [ms(r"Fire_Burn_1-\d")]),
+    ("stance.siege_fury.start", [ms(r"Fire_Magic_Spell_7-\d")]),
+    ("stance.siege_fury.hit", [ms(r"Fire_Burn_1-\d")]),
+    ("stance.siege_fury.loop", [ms(r"Fire_Loop_1")]),
+    ("aura_swing", [(CS, r"Whoosh_Metal_2_\d+")]),
+    # ---- monster race auras and casts ----
+    ("npc.aether.start", [ms(r"Arcane_Magic_Spell_5-\d")]),
+    ("npc.aether.cast", [ms(r"Arcane_Magic_Spell_8-\d")]),
+    ("npc.cleave.start", [(CS, r"Draw_Weapon_Metal_1_\d+")]),
+    ("npc.fire.start", [ms(r"Fire_Burn_1-\d")]),
+    ("npc.fire.cast", [ms(r"Fire_Magic_Spell_8-\d")]),
+    ("npc.grove.cast", [ms(r"Nature_Magic_Spell_7-\d")]),
+    ("npc.heal.cast", [ms(r"Positive_Magic_Effect_8-[1-3]")]),
+    ("npc.ink.start", [(CS, r"Blood_Drop_\d+"), ms(r"Water_Magic_Spell_9-\d")]),
+    ("npc.mind.cast", [ms(r"Dark_Magic_Spell_6-\d")]),
+    ("npc.profane.start", [ms(r"Dark_Magic_Spell_8-\d")]),
+    ("npc.rune.start", [ms(r"Arcane_Magic_Spell_3-\d")]),
+    ("npc.spores.start", [ms(r"Nature_Magic_Spell_5-\d")]),
+    ("npc.thorns.start", [ms(r"Nature_Magic_Spell_4-[1-3]")]),
+    ("npc.tide.start", [ms(r"Water_Magic_Spell_5-\d")]),
+    ("npc.tide.cast", [ms(r"Water_Magic_Spell_7-\d")]),
+    ("npc.void.start", [ms(r"Dark_Magic_Spell_4-\d")]),
+    ("npc.void.cast", [ms(r"Dark_Magic_Spell_9-\d")]),
+    ("npc.ward.start", [ms(r"Arcane_Magic_Spell_4-\d")]),
+    # ---- loot, chest, shop, level-up, banners, teleport ----
+    ("loot_shine", [ui(r"Light_Star_Twinkle_0\d"), ui(r"Light_Star_Hit_Subtle_0\d")]),
+    ("loot_choir", [ui(r"Light_Success_0\d")]),
+    ("loot_chest_land", [(CS, r"Shield_Wood_2_\d+"), (CS, r"Wood_Weapon_Handle_1_\d+")]),
+    ("loot_chest_open", [ui(r"Gen_Inventory_Open_Bag"), ui(r"Gen_Inventory_Whoosh_0\d")]),
+    ("coins_buy", [ui(r"Light_Purchase_v\d")]),
+    ("coins_sell", [ui(r"Light_Purchase_v\d"), ui(r"Gen_Swap_High_0\d")]),
+    ("level_up", [ui(r"Gen_New_Skill_Unlocked"), ui(r"Gen_Skill_Upgrade")]),
+    ("banner_prep", [ui(r"Light_Notification_Bell_0[34]")]),
+    ("banner_cleared", [ui(r"Gen_Notification_Impact_Bell_0\d")]),
+    ("banner_recovery", [ui(r"Light_Notification_Bell_Long_0\d")]),
+    ("banner_custom", [ui(r"Dark_Notification_0\d")]),
+    ("teleport_channel", [ms(r"Arcane_Loop_1")]),
+    ("teleport_arrive", [ms(r"Arcane_Magic_Spell_6-\d"), ui(r"Light_Whoosh_Enter")]),
+])
+
 # Loudness trims for pack members (linear, applied instead of nothing). Filled from the probe's levels / by ear.
 DEFAULT_TUNING = OrderedDict([
     ("weapon.pistol.shot", {"packVolume": .8}), ("weapon.pistol.heavy", {"packVolume": .8}), ("weapon.blunderbuss.shot", {"packVolume": .75}),
@@ -234,6 +349,17 @@ DEFAULT_TUNING = OrderedDict([
     ("spell.lightning.projectile", {"packVolume": .8, "packPitch": [1.15, 1.25]}), ("weapon.arrow.flight", {"packVolume": .6, "packPitch": [1.6, 1.8]}),
     ("combat.block", {"packVolume": 1.3, "packPitch": [.96, 1.04]}), ("combat.deflect", {"packVolume": 1.2, "packPitch": [.96, 1.06]}),
     ("ui_hover", {"packVolume": .7}), ("cc.polymorph.start", {"packVolume": 1.4}),
+    # fab-coverage trims: loops sit low under combat, UI-kit twinkles/bells tamed in the world, bodies pitched heavier.
+    ("spell.physical.channel", {"packVolume": .55, "packPitch": [.9, 1.0]}), ("spell.earth.channel", {"packVolume": .6, "packPitch": [.7, .78]}),
+    ("debuff.poisoned.loop", {"packVolume": .5}), ("item.mana_restore.loop", {"packVolume": .45, "packPitch": [1.1, 1.2]}),
+    ("stance.siege_fury.loop", {"packVolume": .5}), ("teleport_channel", {"packVolume": .6}),
+    ("buff.blessing.hit", {"packVolume": 2.2}), ("buff.bastion_of_dawn.hit", {"packVolume": 1.8}), ("loot_shine", {"packVolume": 1.2}),
+    ("buff.sanctuary.start", {"packVolume": .8}), ("item.toll_of_the_grave.start", {"packVolume": .8, "packPitch": [.85, .92]}),
+    ("combat.whiz", {"packVolume": .6, "packPitch": [1.2, 1.35]}), ("aura_swing", {"packVolume": .7, "packPitch": [1.05, 1.15]}),
+    ("death.boss.body", {"packVolume": .9, "packPitch": [.8, .9]}), ("death.creature.body", {"packVolume": .8, "packPitch": [.85, .95]}),
+    ("death.golem", {"packPitch": [.7, .8]}), ("loot_chest_land", {"packVolume": .8, "packPitch": [.8, .9]}),
+    ("coins_sell", {"packPitch": [.88, .94]}), ("banner_custom", {"packVolume": .8}),
+    ("buff.blood_rage.hit", {"packVolume": .6}), ("stance.blood_frenzy.hit", {"packVolume": .6}), ("npc.ink.start", {"packVolume": .7}),
 ])
 
 
@@ -296,7 +422,8 @@ def main() -> int:
             cues[cue] = members
         elif any(listing.get(r[0][0]) for r in rules):
             unmatched.append(cue)
-    tuning = previous.get("tuning") or DEFAULT_TUNING
+    tuning = OrderedDict(DEFAULT_TUNING)
+    tuning.update(previous.get("tuning") or {})
     out = OrderedDict([
         ("_comment", "Fab audio pack -> cue map written by Tools/MapFabAudio.py. Object paths only: the packs are licensed and stay local "
                      "(gitignored, junctioned into worktrees by Tools/LinkFabContent.py). Tools/BuildAudioEvents.py copies these into "

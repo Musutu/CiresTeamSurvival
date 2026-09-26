@@ -131,6 +131,13 @@ bool ReadBindings()
         if(!Check((*O)->TryGetStringField(TEXT("profileId"),B.Id) && CireChampionRoster::Find(B.Id) && !Seen.Contains(B.Id),TEXT("ready profile is unique and exists in the roster")))return false;
         Seen.Add(B.Id);
         if(!Requested.IsEmpty() && !Requested.Contains(B.Id))continue;
+        // paladin-hq: a Fab plate body (ChampionArtBindings.fab.json "humanoid") replaces this Tripo row when installed;
+        // its captures live in RunMonsterGallery.py --only pala_ (this gallery asserts the committed Tripo assets).
+        {
+            FString FabMesh;float FabHeight=0,FabScale=1;
+            if(!B.bCustom&&UCireChampionArt::FabHumanoidBody(B.Id,FabMesh,FabHeight,FabScale))
+            {UE_LOG(LogTemp,Display,TEXT("CIRE_BATCH_ART_SKIP %s wears the Fab plate body %s"),*B.Id,*FabMesh);continue;}
+        }
         if(B.bCustom)
         {
             if(!Check(UCireCreatureArt::Handles(B.Id)&&(*O)->TryGetStringField(TEXT("mesh"),B.Mesh)&&B.Mesh.StartsWith(TEXT("/Game/"))&&

@@ -95,6 +95,13 @@ use those PNGs in place of the procedural renders (`--procedural` ignores them),
 `T_status_<stun|silence|root|slow|heal_cut|taunt|disarm|fear|armor_break|poison|curse>` (buff/debuff
 frames, `ACireHUD::StatusIconId`), `T_role_<tank|damage|support|hybrid>` (unit-frame portraits when
 no champion portrait is drawn, >= 24px) and `T_Item_gold|teleport|challenge` (toasts).
+Every buff / debuff / stance / aura id in `BuffModifiers.json` / `BuffVisuals.json` also has its own painted
+`T_<effect id>` (sheets `Art/Icons/ChatGPT/buffs_*.png`; lower-case file names, the lookup is case-insensitive), so
+`ACireHUD::DrawEffectIcon` no longer borrows another ability's art; `T_role_caster`, `T_role1`, `T_role0`, `T_role2`
+and `T_basic` cover the NPC tooltip role and melee-attack icons. To add more: slice a sheet into
+`Art/Icons/ChatGPT/Abilities`, copy just the new PNGs to a folder and run `Tools/ImportDraftPortraits.py` with
+`CIRE_DRAFT_PORTRAIT_DIR=<folder> CIRE_UI_TEXTURE_DEST=/Game/UI/Abilities CIRE_UI_TEXTURE_PREFIX=T_` (a full
+`RunAbilityIcons.py` also works but reimports every texture).
 `Tools/IconContactSheet.py DIR OUT.png` renders a 64/40px review sheet. Licences:
 `Content/UI/Items/LICENSES.md`, `Content/UI/Abilities/LICENSES.md`.
 
@@ -113,3 +120,21 @@ The kit is skinnable: `Docs/UIThemes.md`. The palette's themed block (`Gold`, `P
 `Ink`, `Card`, `Hover`, ...) is written by `CireUITheme::SetActive`; the painters draw the active
 theme's atlas pieces (nine-slice frames, slots, rings, bars, banners). New themed calls: `CastBar`,
 `PortraitRing`, `Medallion`, `MinimapFrame`, `Divider`, `Ornament`, `BarFrame`, `HasThemeArt`.
+
+## Readability (feat/ui-readability, Eric's 2026-09-25 playtest)
+
+- **Text size**: every canvas text size goes through `CireUIStyle::ReadableSize` (design size x1.15,
+  floor 8.5 units, about 12.75 px at 1080p / 100%). `Painter::Text`, `TextWidth`, `Fit` and `Wrapped`
+  apply it, so measurement always matches drawing. Layouts that step lines use `ReadableSize(Size)`.
+  The Options UI-scale slider still multiplies everything.
+- **Buttons**: `CireUIStyle::Button` draws a dark readable face over the whole button and the theme's
+  painted button piece only as a thin rim (corner cell about 1.2 x `clamp(H*.2, 3.5, 7)`). The label is
+  centred in the face, outlined and shadowed, at least 10 design units, shrinks to fit narrow buttons,
+  and uses the numbers face for keys, bold for mixed case and the heading face for caps.
+- **Tooltips**: `FCireTooltipSpec` + `CireUIStyle::RichTooltip`: icon or portrait, name in its
+  rarity / school / reaction colour, a tag, a type line, ornamental dividers, section headers, symbol
+  stat lines (green gains, red losses) and a footer. Abilities (scaling math and effects), items
+  (`CireShopUI::ItemTooltipSpec`), buffs, units and plain tips (`TooltipFromText`) all use it.
+- **Armory**: bevelled rarity cards (`CireUIStyle::BevelCard`), icon tabs for categories and stat
+  filters, a recommended-by-role row, the recipe tree panel and a buy / sell / error feedback strip. The
+  ALL ITEMS card size is solved so every tier fits above the bag strip.

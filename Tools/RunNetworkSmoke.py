@@ -75,7 +75,7 @@ def main() -> int:
     server_log, client_log = output / "server.log", output / "client.log"
     common = ["-nullrhi", "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-ExecCmds=t.MaxFPS 60"]
     server_command = [str(args.editor), str(args.project.resolve()), "/Game/Maps/Citadel", "-server", f"-port={args.port}",
-                      "-CireNetServerProbe", f"-abslog={server_log}", *common]
+                      "-CireNetServerProbe", f"-CireNetProbeTimeout={args.startup_timeout + args.probe_timeout:.0f}", f"-abslog={server_log}", *common]
     client_command = [str(args.editor), str(args.project.resolve()), f"127.0.0.1:{args.port}", "-game",
                       "-CireClientProbe", f"-abslog={client_log}", *common]
     server = client = None

@@ -118,8 +118,7 @@ float CirePolymorph::Apply(AActor* Target, float Seconds, AActor* Source, int32 
     CireBuffs::Apply(Target, PolymorphedId, Duration, Source, Critter + 1);
     if (auto* M = Cast<ACireMonster>(Target))
     {
-        CireNPCCombat::Interrupt(M);
-        CireThreat::Clear(M);
+        CireNPCCombat::Interrupt(M); // rules-conformance: the threat table is frozen, not cleared
         M->GetCharacterMovement()->StopMovementImmediately();
     }
     Poof(Target);
@@ -146,8 +145,8 @@ bool CirePolymorph::TickMonster(ACireMonster* M, float DeltaSeconds)
         if (Wanders().Remove(M) > 0) M->GetCharacterMovement()->MaxWalkSpeed = M->BaseMoveSpeed;
         return false;
     }
-    // A harmless critter: no threat, no attacks, no casts; it pecks/hops around slowly.
-    CireThreat::Clear(M);
+    // A harmless critter: no attacks, no casts; it pecks/hops around slowly. rules-conformance: it keeps its
+    // threat table (threat is lost only on death or an explicit ability), so it resumes on the same target.
     M->bEngaged = false;
     FWander& W = Wanders().FindOrAdd(M);
     W.Change -= DeltaSeconds;
@@ -290,7 +289,7 @@ bool CirePolymorph::RunSmoke(ACireGameMode* Mode)
     Check(Seen.Num() == static_cast<int32>(ECritter::Count), TEXT("the critter is picked at random per cast (all three seen)"));
     Apply(M, 8.f, Mage, 1);
     Check(CritterOf(M) == 1 && CritterName(1) == TEXT("Piglet"), TEXT("critter is carried by the replicated buff record"));
-    // No attacks or casts while polymorphed; it wanders and has no threat.
+    // No attacks or casts while polymorphed; it wanders and keeps its threat table.
     Mage->SetActorLocation(M->GetActorLocation() + FVector(120, 0, 0));
     M->Damage = 80;
     const float HealthBefore = Mage->Health;

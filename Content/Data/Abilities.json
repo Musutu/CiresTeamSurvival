@@ -1511,8 +1511,8 @@
    "castWhileMoving": true,
    "section": "attack",
    "effectTags": [
-    "Execute",
     "Armor Break",
+    "Execute",
     "Damage"
    ]
   },

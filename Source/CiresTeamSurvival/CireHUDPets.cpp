@@ -32,29 +32,32 @@ void ACireHUD::DrawCompanion(ACireHero* Hero, ACireController* Controller, const
     CireUIStyle::PortraitRing(P, 27, 30, 19, bAlive ? FLinearColor::White : FLinearColor(.5f, .5f, .5f, 1));
     CireUIStyle::Medallion(P, 12, 48, 9.f, FString::FromInt(Pet ? Pet->Level : Hero->Level), CireUIColors::BrightGold);
     const ECirePetStance Stance = Pet ? Pet->Stance : static_cast<ECirePetStance>(FMath::Min<uint8>(Hero->PetStance, 2));
-    P.Text(Def.DisplayName.ToUpper(), 54, 5, 13, bAlive ? CireUIColors::Parchment : Muted, ECireFont::Heading);
+    // readability: larger outlined name / order line / health value; statuses move up beside the name so the
+    // command keys get their own row above the order buttons.
+    P.Text(P.Fit(Def.DisplayName.ToUpper(), 13, 92, ECireFont::Heading), 54, 4, 13, bAlive ? CireUIColors::Parchment : Muted, ECireFont::Heading, true, true);
     const FString Order = !Pet ? TEXT("AWAY") : Pet->bDead ? TEXT("FALLEN") : Pet->Order == ECirePetOrder::Attack ? TEXT("ATTACKING") :
         Pet->Order == ECirePetOrder::Stay ? TEXT("STAYING") : TEXT("FOLLOWING");
-    Label(FString::Printf(TEXT("%s  /  %s  /  %s"), *Def.Family.ToUpper(), *CirePets::StanceName(Stance).ToUpper(), *Order), 54, 21, 8, Muted);
+    P.Text(P.Fit(FString::Printf(TEXT("%s  /  %s  /  %s"), *Def.Family.ToUpper(), *CirePets::StanceName(Stance).ToUpper(), *Order), 8.5f, 188, ECireFont::Heading), 54, 20, 8.5f,
+        bAlive ? CireUIColors::Parchment * FLinearColor(.82f, .82f, .82f, 1) : Muted, ECireFont::Heading, true, true);
     const auto& Keys = UISettings.Keybindings;
     auto Key = [&Keys](ECirePetCommand C) { return Keys.Label(CirePets::CommandAction(C)); };
     const FCirePetRules& Rules = CirePets::Rules();
     if (bAlive)
     {
-        CireUIStyle::Bar(P, 54, 33, 186, 13, PetFraction(Pet->Health, Pet->MaxHealth), FLinearColor(.10f, .70f, .14f, 1), &BarTrails.FindOrAdd(0xBE70), Now,
-            FString::Printf(TEXT("%.0f / %.0f"), Pet->Health, Pet->MaxHealth), 9.f);
-        DrawStatuses(Pet, 54, 49, 11, 8);
+        CireUIStyle::Bar(P, 54, 32, 186, 15, PetFraction(Pet->Health, Pet->MaxHealth), FLinearColor(.10f, .70f, .14f, 1), &BarTrails.FindOrAdd(0xBE70), Now,
+            FString::Printf(TEXT("%.0f / %.0f"), Pet->Health, Pet->MaxHealth), 10.f);
+        DrawStatuses(Pet, 152, 4, 12, 6);
         Tip(Def.DisplayName, FString::Printf(TEXT("%s Attack %.0f every %.1fs. Scales with your level, health and primary attribute. Stance: %s."),
             *Def.Description, Pet->CurrentDamage(), Def.AttackSeconds, *CirePets::StanceName(Stance)), 0, 0, 250, 50);
     }
     else
     {
         const float Revive = FMath::Max(0.f, Hero->PetReviveReadyAt - Server), Return = FMath::Max(0.f, Hero->PetResummonAt - Server);
-        CireUIStyle::Bar(P, 54, 33, 186, 13, 0.f, Muted, &BarTrails.FindOrAdd(0xBE70), Now, Pet ? TEXT("FALLEN") : TEXT("RESTING"), 9.f);
+        CireUIStyle::Bar(P, 54, 32, 186, 15, 0.f, Muted, &BarTrails.FindOrAdd(0xBE70), Now, Pet ? TEXT("FALLEN") : TEXT("RESTING"), 10.f);
         const FString Line = Pet ? (Revive > 0 ? FString::Printf(TEXT("Revive in %.0fs  -  returns in %.0fs"), Revive, Return) :
             FString::Printf(TEXT("%s revive now  -  returns in %.0fs"), *Key(ECirePetCommand::Revive), Return)) :
             (Return > 0 ? FString::Printf(TEXT("Returns in %.0fs"), Return) : FString::Printf(TEXT("%s call"), *Key(ECirePetCommand::Revive)));
-        Label(Line, 54, 49, 9, CireUIColors::Orange);
+        P.Text(P.Fit(Line, 9.5f, 188, ECireFont::Body), 54, 48, 9.5f, CireUIColors::Orange, ECireFont::Body, true, true);
         Tip(TEXT("Companion down"), FString::Printf(TEXT("Revive the corpse (within %.0fm) at %.0f%% health, once every %.0fs, or wait: it returns at full health %.0fs after falling."),
             Rules.ReviveRange / 100.f, Rules.ReviveHealthFraction * 100.f, Rules.ReviveCooldown, Rules.ResummonCooldown), 0, 0, 250, 62);
     }
@@ -67,12 +70,12 @@ void ACireHUD::DrawCompanion(ACireHero* Hero, ACireController* Controller, const
         TEXT("Your companion returns to your side and resumes its stance."), TEXT("Your companion holds this spot. It still fights anything that reaches it unless Passive.")};
     for (int32 I = 0; I < 3; ++I)
     {
-        const float X = 8 + I * 56, Y = 64, W = 52, H = 20;
+        const float X = 8 + I * 56, Y = 64, W = 52, H = 22;
         const bool bActive = bAlive && ((I == 0 && Pet->Order == ECirePetOrder::Attack) || (I == 1 && Pet->Order == ECirePetOrder::Follow) || (I == 2 && Pet->Order == ECirePetOrder::Stay));
         const bool bOver = Hit(X, Y, W, H);
         CireUIStyle::Button(P, X, Y, W, H, OrderNames[I], !bAlive ? ECireButtonState::Disabled : bActive ? ECireButtonState::Selected : bOver ? ECireButtonState::Hover : ECireButtonState::Normal, Accent, 8.5f);
         const FString K = Key(Orders[I]);
-        P.Text(K, X + W - 3 - P.TextWidth(K, 7, ECireFont::Numbers), Y - 9, 7, Muted, ECireFont::Numbers);
+        if (bAlive) P.Text(K, X + W - 2 - P.TextWidth(K, 7.5f, ECireFont::Numbers), Y - 14, 7.5f, CireUIColors::Parchment * .85f, ECireFont::Numbers, true, false);
         Tip(FString::Printf(TEXT("%s (%s)"), OrderNames[I], *K), OrderHelp[I], X, Y, W, H);
         if (bAlive && bInteractive && Clicked && bOver) Send(Orders[I]);
     }
@@ -106,7 +109,7 @@ void ACireHUD::DrawCompanion(ACireHero* Hero, ACireController* Controller, const
         TEXT("Assists your target and defends you and itself."), TEXT("Never attacks on its own: only your attack orders and skills.")};
     for (int32 I = 0; I < 3; ++I)
     {
-        const float X = 8 + I * 78, Y = 91, W = 74, H = 16; const bool bOver = Hit(X, Y, W, H);
+        const float X = 8 + I * 78, Y = 90, W = 74, H = 19; const bool bOver = Hit(X, Y, W, H);
         const ECirePetStance S = static_cast<ECirePetStance>(I);
         CireUIStyle::Button(P, X, Y, W, H, CirePets::StanceName(S).ToUpper(), Stance == S ? ECireButtonState::Selected : bOver ? ECireButtonState::Hover : ECireButtonState::Normal, Accent, 7.5f);
         Tip(CirePets::StanceName(S) + TEXT(" (") + Key(Stances[I]) + TEXT(")"), StanceHelp[I], X, Y, W, H);

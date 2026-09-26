@@ -62,10 +62,14 @@ bool ValidProgression(const Progression& progression)
         progression.DraftRole != SkillDraftRole::Damage && progression.DraftRole != SkillDraftRole::Support) return false;
     if ((progression.SecondaryRoles & ~RoleAll) != 0 ||
         (progression.DraftRole == SkillDraftRole::Any && progression.SecondaryRoles != RoleNone)) return false;
+    if (progression.Schedule != SkillSchedule::Draft && progression.Schedule != SkillSchedule::Shop) return false;
     const auto count = static_cast<int>(progression.LearnedSkills.size());
+    // The level breakpoint schedule only binds Classic Draft; Skill Shop skills are bought
+    // in any number at any level (Eric's ruling: Skill Shop mode still levels up).
+    const bool drafted = progression.Schedule == SkillSchedule::Draft;
     if (count > MaxSkills || progression.Level < 1 ||
-        progression.NextAugmentLevel != BreakpointForSkill(count) ||
-        (count > 0 && progression.Level < BreakpointForSkill(count - 1)) || progression.Stats.Strength < 0 ||
+        (drafted && progression.NextAugmentLevel != BreakpointForSkill(count)) ||
+        (drafted && count > 0 && progression.Level < BreakpointForSkill(count - 1)) || progression.Stats.Strength < 0 ||
         progression.Stats.Agility < 0 || progression.Stats.Intelligence < 0 ||
         (progression.Primary != PrimaryStat::Strength &&
          progression.Primary != PrimaryStat::Agility &&
@@ -114,6 +118,11 @@ bool OnlyPassiveRemains(const Progression& progression)
 }
 } // namespace
 
+double StartingBaseHealth(int startingStrength)
+{
+    return std::max(0, startingStrength) * (LegacyHealthPerStrength - HealthPerStrength);
+}
+
 DerivedStats CalculateStats(const StatBlock& stats, PrimaryStat primary,
                            const CombatTuning& tuning)
 {
@@ -123,7 +132,9 @@ DerivedStats CalculateStats(const StatBlock& stats, PrimaryStat primary,
     const double damageStat = primary == PrimaryStat::Agility ? agility :
         primary == PrimaryStat::Intelligence ? intelligence : strength;
     DerivedStats result;
-    result.MaxHealth = Nonnegative(tuning.BaseHealth) + strength * 25.0;
+    result.MaxHealth = Nonnegative(tuning.BaseHealth) + strength * HealthPerStrength;
+    result.Armor = strength * ArmorPerStrength;
+    result.Ward = strength * WardPerStrength;
     result.MaxMana = Nonnegative(tuning.BaseMana) + intelligence * 30.0;
     result.MaxEnergy = Nonnegative(tuning.MaxEnergy);
     result.AttackSpeedMultiplier = 1.0 + agility * 0.01;
@@ -176,9 +187,21 @@ int CountSkills(const Progression& progression, SkillKind kind)
 
 bool HasPendingAugment(const Progression& progression)
 {
+    if (progression.Schedule == SkillSchedule::Shop)
+        return ValidProgression(progression) && progression.LearnedSkills.empty() &&
+            progression.NextAugmentLevel == BreakpointForSkill(0) && progression.Level >= progression.NextAugmentLevel;
     return ValidProgression(progression) &&
         progression.LearnedSkills.size() < static_cast<std::size_t>(MaxSkills) &&
         progression.Level >= progression.NextAugmentLevel;
+}
+
+bool AddPurchasedSkill(Progression& progression, const SkillDefinition& skill)
+{
+    if (progression.Schedule != SkillSchedule::Shop || !ValidProgression(progression) ||
+        skill.Id.empty() || !ValidKind(skill.Kind) || !HasCapacity(progression, skill.Kind) ||
+        AlreadyLearned(progression, skill.Id)) return false;
+    progression.LearnedSkills.push_back(skill);
+    return true;
 }
 
 bool AugmentOffer::IsValid() const

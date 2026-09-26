@@ -445,6 +445,20 @@ void CireItems::OnDamageDealt(AActor* Source, AActor* Target, float Applied, con
             if (Other != Target) CireCombat::ApplyDamage(Hero, Other, Applied * static_cast<float>(T.SplashPercent / 100.), TEXT("Howling Cleave"));
 }
 
+float CireItems::StrengthDefense(const ACireHero* Hero, bool bPhysical)
+{
+    if (!Hero || Hero->IsA<ACireSummon>()) return 0.f;
+    return static_cast<float>(FMath::Max(0, Hero->Strength) * (bPhysical ? Cires::ArmorPerStrength : Cires::WardPerStrength));
+}
+
+float CireItems::AfterStrengthDefense(const ACireHero* Hero, float Amount, bool bPhysical)
+{
+    // No inventory check: clients see other players without their inventory component, the server always has one.
+    if (!Hero || !FMath::IsFinite(Amount) || Amount <= 0) return Amount;
+    const double Defense = static_cast<double>(StrengthDefense(Hero, bPhysical)) * CireKits::DefenseMultiplier(Hero);
+    return Amount * (1.f - static_cast<float>(Mitigation(Defense)));
+}
+
 float CireItems::ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FString& AbilityName, float Amount)
 {
     UCireInventory* Inventory = InventoryOf(Hero);
@@ -452,10 +466,17 @@ float CireItems::ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FSt
     const Totals& T = Inventory->Totals();
     const bool bPhysical = IsBasicAttack(Causer, AbilityName);
     // champion-draft: armor break; scaling-kits: party armour / MR aura, shield-tank -10% and Vulnerability.
-    Amount *= 1.f - static_cast<float>(Mitigation((T.Stats.Get(bPhysical ? ItemStat::Armor : ItemStat::Ward) + CireKits::FlatDefense(Hero, bPhysical)) * (bPhysical ? CireCrowdControl::ArmorMultiplier(Hero) : 1.f) * CireKits::DefenseMultiplier(Hero)));
+    // str-scaling: STR adds 0.1 armor and 0.1 ward per point on top of items and auras.
+    Amount *= 1.f - static_cast<float>(Mitigation((T.Stats.Get(bPhysical ? ItemStat::Armor : ItemStat::Ward) + StrengthDefense(Hero, bPhysical) + CireKits::FlatDefense(Hero, bPhysical)) * (bPhysical ? CireCrowdControl::ArmorMultiplier(Hero) : 1.f) * CireKits::DefenseMultiplier(Hero)));
     // items-v2: completed-item mitigation specials (percent, then flat block per hit).
     Amount = static_cast<float>(ApplyItemMitigation(Amount, T.Stats.Get(ItemStat::DamageReduction), T.Stats.Get(ItemStat::DamageBlock)));
     const double Now = Inventory->Now();
+    // rules-conformance: HitGuard ("reduce instances of incoming damage"): each hit spends a guard charge.
+    if (T.HitGuardCharges > 0 && Amount > 0 && SpendCharge(Inventory->HitGuardState, T.HitGuardCharges, FMath::Max(.5, T.HitGuardRecharge), Now))
+    {
+        Amount = static_cast<float>(ApplyHitGuard(Amount, T.HitGuardPercent, T.HitGuardFlat));
+        ++Inventory->HitGuardSpent;
+    }
     for (const auto& Buff : Inventory->Buffs)
         if (Buff.EndsAt > Now)
             if (const ItemDef* Item = Find(Buff.Id); Item && Item->Use.Kind == EffectKind::SelfBarrier)

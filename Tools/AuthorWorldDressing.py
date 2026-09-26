@@ -276,12 +276,17 @@ def overlaps(box, pad=0):
     return any(box[0] < o[2] + pad and box[2] > o[0] - pad and box[1] < o[3] + pad and box[3] > o[1] - pad for o in OCCUPIED)
 
 
+FILL_PAD = 15
+
+
 def put(sid, x, y, yaw=0.0, scale=1.0, z=0.0, mode=None, avoid=None, why_tag=""):
     """Place a row if it passes the clearance rules. Colliding pieces also avoid other colliding pieces."""
     why = valid(sid, x, y, yaw, scale, mode)
     box = aabb(sid, x, y, yaw, scale)
     collide = SLOTS[sid]["collision"]
-    if not why and mode is None and (avoid if avoid is not None else collide) and overlaps(box, 15):
+    # world-scale: bots now cross the whole town, so the random fill pass keeps a hero-wide (96 cm + margin) gap between
+    # colliding pieces: no pinch points a capsule can wedge into. Hand-placed dressing keeps the original 15 cm.
+    if not why and mode is None and (avoid if avoid is not None else collide) and overlaps(box, FILL_PAD if collide else 15):
         why = "overlap"
     if why:
         DROPPED.append(f"{sid} ({x:.0f},{y:.0f}) {why} {why_tag}")
@@ -403,13 +408,23 @@ def chimney_top(name):
 HOUSES = {"house_shop", "house_planks", "cottage_thatch", "cottage_slate", "townhouse_row", "townhouse_row_b", "warehouse",
           "house_a", "house_b", "house_c", "tavern"}
 WALLSAFE = {sid for sid in HOUSES if sid not in OVERRIDDEN}
-DISTRICTS = json.loads((DATA / "TownLayout.json").read_text())["districts"]
+_LAYOUT_DOC = json.loads((DATA / "TownLayout.json").read_text())
+DISTRICTS = _LAYOUT_DOC["districts"]
+S = _LAYOUT_DOC.get("gateShift", 0)  # world-scale: the gate road, town wall and breach moved out by this much
 
 
 def district(x):
     for d in DISTRICTS:
         if d["minX"] <= x < d["maxX"]:
             return d["id"]
+    return None
+
+
+def style(x):
+    """world-scale: the dressing style of the district at x (market / yard / square / farm / wall / breach)."""
+    for d in DISTRICTS:
+        if d["minX"] <= x < d["maxX"]:
+            return d.get("style", d["id"])
     return None
 
 
@@ -428,6 +443,7 @@ for row, mesh in buildings((None, "outer")):
     lo, hi = TOWN_MESHES[mesh]["boundsMin"], TOWN_MESHES[mesh]["boundsMax"]
     half_w = (hi[1] - lo[1]) / 2
     d = district(x)
+    st = style(x)
     anchor = (x, y, yaw)
     used = []
 
@@ -447,17 +463,17 @@ for row, mesh in buildings((None, "outer")):
         return put(sid, px, py, yaw, z=z, mode=mode)
 
     if mode is None:  # street-facing rows: laundry first (widest), then trade signs and banners
-        if d in ("residential", "market", "gate", "square") and rng.random() < .75 and (u := slot_u(390)) is not None:
+        if st in ("yard", "market", "square") and rng.random() < .75 and (u := slot_u(390)) is not None:
             wall(rng.choice(["dress_laundry", "dress_laundry_short"]), u, 330)
-        if d in ("market", "gate", "square", "residential") and rng.random() < .8 and (u := slot_u(40)) is not None:
+        if st in ("market", "square", "yard") and rng.random() < .8 and (u := slot_u(40)) is not None:
             wall(rng.choice(SIGNS), u, 330)
-        if d in ("market", "square", "gate") and rng.random() < .5 and (u := slot_u(110)) is not None:
+        if st in ("market", "square") and rng.random() < .5 and (u := slot_u(110)) is not None:
             wall(rng.choice(["dress_banner_red", "dress_banner_pale"]), u, 520)
     # grime streaks under the eaves / windows and ivy climbing the ground floor
     for _ in range(2):
         if rng.random() < .75 and (u := slot_u(260)) is not None:
             wall("dress_grime", u, rng.uniform(260, 420), .5)
-    if rng.random() < (.75 if d in ("residential", "square", "castle", "approach") else .5) and (u := slot_u(240)) is not None:
+    if rng.random() < (.75 if (st in ("yard", "square", "farm") or d in ("castle", "approach")) else .5) and (u := slot_u(240)) is not None:
         wall(rng.choice(["dress_ivy_tall", "dress_ivy_low"]), u, 0, 1.5)
     if mode == "outer":
         continue  # the far rows only get weathering: nobody walks there
@@ -473,7 +489,7 @@ for row, mesh in buildings((None, "outer")):
             put("dress_bench", *local(anchor, fx + 45, u), yaw + 90)
         elif pick < .5:
             put("dress_broom", *local(anchor, fx + 12, u), yaw + rng.uniform(-20, 20))
-        elif pick < .6 and d == "residential":
+        elif pick < .6 and st == "yard":
             put("dress_spinning_wheel", *local(anchor, fx + 70, u), yaw + rng.uniform(40, 140))
         elif pick < .7:
             put("dress_flowerpot", px, py, rng.uniform(0, 360), scale=1.6)
@@ -582,6 +598,8 @@ if hall:
     put("hay_sacks", hx + 250, hy + 260, 0)
     for lx in (-350, 350):
         put("dress_chandelier", hx + lx, hy, 0, z=560, scale=1.6)
+    # world-scale: the hall is dressed; the fill pass must not wedge more colliding pieces into it.
+    OCCUPIED.append((hx - 700, hy - 450, hx + 700, hy + 450))
 # puddles and litter where carts churn the ground
 for k in range(10):
     x = rng.uniform(5700, 8800)
@@ -672,12 +690,12 @@ for k in range(8):
 
 # ---- gate road and breach: puddles, litter, crows on the gibbet, torches on the town gate
 for k in range(10):
-    put(rng.choice(["dress_puddle_a", "dress_puddle_b"]), rng.uniform(8900, 13500), rng.uniform(-1100, 1100), rng.uniform(0, 360),
+    put(rng.choice(["dress_puddle_a", "dress_puddle_b"]), rng.uniform(8900, 13500) + S, rng.uniform(-1100, 1100), rng.uniform(0, 360),
         scale=rng.uniform(.8, 1.4), z=2.5)
 for k in range(12):
-    put("dress_litter", rng.uniform(8900, 15000), rng.uniform(-1500, 1500), rng.uniform(0, 360), scale=rng.uniform(.8, 1.4), z=1.2)
+    put("dress_litter", rng.uniform(8900, 15000) + S, rng.uniform(-1500, 1500), rng.uniform(0, 360), scale=rng.uniform(.8, 1.4), z=1.2)
 for k in range(16):
-    put(rng.choice(["dress_branches", "dress_roots", "dress_nettles", "dress_weeds"]), rng.uniform(11700, 15500), rng.uniform(-1800, 1800),
+    put(rng.choice(["dress_branches", "dress_roots", "dress_nettles", "dress_weeds"]), rng.uniform(11700, 15500) + S, rng.uniform(-1800, 1800),
         rng.uniform(0, 360), scale=rng.uniform(1.2, 2.4))
 tgate = next((r for r in BASE_LAYOUT if r["slot"] == "gatehouse"), None)
 if tgate and "gatehouse" not in OVERRIDDEN:
@@ -690,9 +708,10 @@ if tgate and "gatehouse" not in OVERRIDDEN:
         if bx is not None and abs((ray_x("SM_Town_Gatehouse", u, 300, -1) or bx) - bx) < 3:
             put("dress_torch", *local((tgate["x"], tgate["y"], 0), bx - 1, u), 180, z=300)
 for k in range(5):
-    put("dress_crow", rng.uniform(11300, 11500), rng.uniform(-1900, 1900), rng.uniform(0, 360), z=860)
+    put("dress_crow", rng.uniform(11300, 11500) + S, rng.uniform(-1900, 1900), rng.uniform(0, 360), z=860)
 # circling crows: over the breach, the gibbet, the castle keep and the residential roofs
-for x, y, z in ((12800, 0, 2100), (11900, 1150, 1500), (-3600, 0, 3600), (4300, 0, 2300), (8000, -600, 2700)):
+for x, y, z in ((12800 + S, 0, 2100), (11900 + S, 1150, 1500), (-3600, 0, 3600), (4300, 0, 2300), (8000, -600, 2700),
+                (20000, 0, 2500), (32000, 600, 2200), (37500, -400, 2400), (15300, 800, 2600)):  # world-scale: over the new districts too
     put("dress_crow_flock", x, y, rng.uniform(0, 360), scale=rng.uniform(.9, 1.2), z=z)
 
 def route_y(px):
@@ -773,10 +792,36 @@ def cluster_square(x, y, yaw):
     return put("dress_barrel", x, y, 0)
 
 
-for district_id, (x0, x1), step, chance, fn in (("market", (5650, 8850), 380, .8, cluster_market),
-                                                 ("residential", (3050, 5550), 430, .7, cluster_yard),
-                                                 ("square", (350, 2950), 470, .55, cluster_square),
-                                                 ("gate", (8950, 11000), 520, .5, cluster_market)):
+def cluster_farm(x, y, yaw):
+    """world-scale: the outer farmsteads: straw, sacks, water barrels, weeds by the walls."""
+    r = rng.random()
+    if r < .35:
+        return put("dress_haypile", x, y, rng.uniform(0, 360), scale=rng.uniform(.8, 1.2))
+    if r < .55:
+        return put("hay_sacks", x, y, yaw)
+    if r < .7:
+        ok = put("dress_barrel", x, y, rng.uniform(0, 360))
+        if ok:
+            put("dress_bucket", *local((x, y, yaw), 50, 30), rng.uniform(0, 360))
+        return ok
+    for k in range(3):
+        put(rng.choice(["dress_nettles", "dress_weeds", "dress_sorrel"]), x + rng.uniform(-90, 90), y + rng.uniform(-90, 90),
+            rng.uniform(0, 360), scale=rng.uniform(1.6, 2.6))
+    return True
+
+
+# world-scale: the fill pass walks every district by its style (the original four keep their spacing and density).
+STYLE_FILL = {"market": (380, .8, cluster_market), "yard": (430, .7, cluster_yard), "square": (470, .55, cluster_square), "farm": (560, .45, cluster_farm)}
+FILL = []
+for dd in DISTRICTS:
+    if dd.get("style") not in STYLE_FILL:
+        continue
+    step, chance, fn = STYLE_FILL[dd["style"]]
+    if dd["id"] == "gate":
+        step, chance = 520, .5
+    FILL.append((dd["id"], (dd["minX"] + 50, min(dd["maxX"], dd["minX"] + 2100 if dd["id"] == "gate" else dd["maxX"]) - 50), step, chance, fn))
+FILL_PAD = 110
+for district_id, (x0, x1), step, chance, fn in FILL:
     x = x0
     while x < x1:
         y = -1150.0

@@ -28,6 +28,8 @@ struct CIRESTEAMSURVIVAL_API FCireLootData
     Cires::Items::LootScaling Scaling;
     Cires::Items::PackSchedule Schedule;
     TArray<FCireLootSource> PackCompletion, PackLeader, LaneBoss;
+    // monster-expansion: personal chests from Rare Spawns and Bonus Loot Wave creatures (by round).
+    TArray<FCireLootSource> RareSpawn, BonusWave;
     float PickupRadius = 320.f;
     bool bAutoCollectOnPrep = true;
     // Personal loot (default): every eligible player gets an independent roll and a chest only they see.
@@ -171,4 +173,5 @@ private:
     UFUNCTION() void OnRep_Opened();
     void BuildGlow();
     int32 BuiltRarity = -1;
+    bool bLandSoundPlayed = false, bOpenSoundPlayed = false; // fab-coverage: client-side one-shots
 };

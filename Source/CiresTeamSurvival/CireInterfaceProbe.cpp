@@ -1,4 +1,5 @@
 #include "CireInterfaceProbe.h"
+#include "CireItems.h" // str-scaling: STR armor/ward in expected damage
 #include "CireGame.h"
 #include "CireCombatEvents.h"
 #include "CireSelection.h"
@@ -23,6 +24,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogCireInterface, Log, All);
 namespace {
 struct FServerFixture {
     double Started = 0, StageStarted = 0;
+    double ClientsJoined = 0; // world-scale: the 75 s stage budget starts once both remote clients have joined
     int32 Stage = 0;
     int32 Acks[5] = {0,0,0,0,0};
     bool bCombatSent = false, bDone = false;
@@ -86,7 +88,10 @@ bool HasTripoChampionArt(const ACireHero* Hero, FString& Reason) {
     const auto* Asset=Mesh->GetSkeletalMeshAsset();
     const auto* SingleNode=Mesh->GetSingleNodeInstance();
     const auto* Blend=SingleNode?Cast<UBlendSpace>(SingleNode->GetAnimationAsset()):nullptr;
-    const FString Expected=FString::Printf(TEXT("/Game/TripoModels/%s/%s.%s"),Names[Hero->Archetype],Names[Hero->Archetype],Names[Hero->Archetype]);
+    FString Expected=FString::Printf(TEXT("/Game/TripoModels/%s/%s.%s"),Names[Hero->Archetype],Names[Hero->Archetype],Names[Hero->Archetype]);
+    // paladin-hq: with the Polyphoria pack installed the profile wears its Fab plate body (ChampionArtBindings.fab.json).
+    FString FabMesh;float FabHeight=0,FabScale=1;const bool bFab=UCireChampionArt::FabHumanoidBody(Hero->ChampionProfileId,FabMesh,FabHeight,FabScale);
+    if(bFab)Expected=FabMesh;
     if(!Asset||Asset->GetPathName()!=Expected||!Blend||!Asset->GetSkeleton()||Blend->GetSkeleton()!=Asset->GetSkeleton())
         return Reject(TEXT("Tripo mesh or locomotion skeleton does not match"));
     if(Blend->GetNumberOfBlendSamples()<3)return Reject(TEXT("locomotion sample set is incomplete"));
@@ -98,8 +103,10 @@ bool HasTripoChampionArt(const ACireHero* Hero, FString& Reason) {
     const double CapsuleFeet=Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     const double Height=2.0*Bounds.BoxExtent.Z*Mesh->GetComponentScale().Z;
     if(Mesh->GetComponentTransform().ContainsNaN()||Feet.ContainsNaN()||!FMath::IsFinite(CapsuleFeet)||
-        !FMath::IsNearlyEqual(Feet.Z,CapsuleFeet,3.0)||!FMath::IsNearlyEqual(Height,static_cast<double>(Heights[Hero->Archetype])*Hero->GetActorScale3D().Z,0.5)) // tank body scale (MovementTuning TankBodyScale) enlarges mesh and capsule together
+        !FMath::IsNearlyEqual(Feet.Z,CapsuleFeet,3.0)||(bFab?!FMath::IsNearlyEqual(Mesh->GetComponentScale().Z,static_cast<double>(FabScale)*Hero->GetActorScale3D().Z,.001):
+        !FMath::IsNearlyEqual(Height,static_cast<double>(Heights[Hero->Archetype])*Hero->GetActorScale3D().Z,0.5))) // tank body scale (MovementTuning TankBodyScale) enlarges mesh and capsule together
         return Reject(TEXT("Tripo feet or height do not align with the unchanged capsule"));
+    if(bFab)return Hero->ChampionArt->GetBodyParts().Num()>0||Reject(TEXT("Fab plate body has no parts")); // its identity materials are data-driven overrides
     if(Mesh->GetNumMaterials()!=Asset->GetMaterials().Num())return Reject(TEXT("Tripo material slots changed"));
     for(int32 Index=0;Index<Asset->GetMaterials().Num();++Index)
         if(!Mesh->GetMaterial(Index)||Mesh->GetMaterial(Index)!=Asset->GetMaterials()[Index].MaterialInterface)
@@ -130,7 +137,6 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
         if (Mode->GetNetMode() != NM_DedicatedServer) { Fail(TEXT("SERVER"), TEXT("requires dedicated server")); Server.bDone=true; return true; }
         UE_LOG(LogCireInterface, Display, TEXT("CIRE_INTERFACE_SERVER_READY dedicated=1 clients=2"));
     }
-    if (Now-Server.Started>75) { Fail(TEXT("SERVER"), TEXT("stage or client acknowledgement timeout")); Server.bDone=true; return true; }
     auto* State = Mode->GetGameState<ACireGameState>();
     ACireHero* Players[2] = {nullptr,nullptr};
     ACireController* Controllers[2] = {nullptr,nullptr};
@@ -139,6 +145,10 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
         auto* Hero=Controller?Cast<ACireHero>(Controller->GetPawn()):nullptr;
         if(Hero&&Hero->bDrafted&&Hero->TeamId>=0&&Hero->TeamId<2) {Players[Hero->TeamId]=Hero;Controllers[Hero->TeamId]=Controller;}
     }
+    // world-scale: two cold client editors can take ~50 s to boot on a busy machine; the stages themselves keep their 75 s
+    // budget, counted from when both clients have joined (with a 180 s cap on waiting for them).
+    if (Players[0] && Players[1] && !Server.ClientsJoined) Server.ClientsJoined = Now;
+    if (Server.ClientsJoined ? Now-Server.ClientsJoined>75 : Now-Server.Started>180) { Fail(TEXT("SERVER"), TEXT("stage or client acknowledgement timeout")); Server.bDone=true; return true; }
     if (Server.Stage==0) {
         if (!Players[0] || !Players[1]) return true;
         Mode->SpawnBots();
@@ -193,7 +203,7 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
         if(!Server.bCombatSent&&Players[0]->Target==Players[1]&&Players[1]->Target==Players[0]) {
             const float Damage=CireCombat::ApplyDamage(Players[0],Players[1],17,TEXT("Interface probe strike"));
             const float Heal=CireCombat::ApplyHealing(Players[1],Players[1],9,TEXT("Interface probe heal"));
-            if(!FMath::IsNearlyEqual(Damage,17.f)||!FMath::IsNearlyEqual(Heal,9.f)) {
+            if(!FMath::IsNearlyEqual(Damage,CireItems::AfterStrengthDefense(Players[1],17.f,false))||!FMath::IsNearlyEqual(Heal,9.f)) {
                 Fail(TEXT("SERVER"),TEXT("arena combat fixture wrong effective amounts"));Server.bDone=true;return true;
             }
             Players[0]->ForceNetUpdate();Players[1]->ForceNetUpdate();Server.bCombatSent=true;
@@ -358,13 +368,14 @@ bool CireInterfaceProbe::TickClient(ACireController* Controller) {
             }
     } else if(Client.Step==5&&Client.Enemy.IsValid()&&Hero->Target==Client.Enemy.Get()&&Now-Client.StepStarted>1.1) {
         if(!HasPrivateRing(Controller,true)){Abort(TEXT("enemy selection ring missing or not private"));return true;}
-        const bool DamageEvent=Controller->CombatEvents.ContainsByPredicate([Hero](const FCireCombatEvent& Event){return Event.AbilityName==TEXT("Interface probe strike")&&!Event.bHealing&&FMath::IsNearlyEqual(Event.Amount,17.f)&&
+        const float Struck=CireItems::AfterStrengthDefense(Hero->TeamId==1?Hero:Client.Enemy.Get(),17.f,false); // str-scaling: the team-1 target has STR ward
+        const bool DamageEvent=Controller->CombatEvents.ContainsByPredicate([Hero,Struck](const FCireCombatEvent& Event){return Event.AbilityName==TEXT("Interface probe strike")&&!Event.bHealing&&FMath::IsNearlyEqual(Event.Amount,Struck,.01f)&&
             !Event.Source&&!Event.Target&&Event.bLocalSource==(Hero->TeamId==0)&&Event.bLocalTarget==(Hero->TeamId==1)&&Event.Sequence>0;});
         const bool HealEvent=Controller->CombatEvents.ContainsByPredicate([Hero](const FCireCombatEvent& Event){return Event.AbilityName==TEXT("Interface probe heal")&&Event.bHealing&&FMath::IsNearlyEqual(Event.Amount,9.f)&&
             !Event.Source&&!Event.Target&&Event.bLocalSource==(Hero->TeamId==1)&&Event.bLocalTarget==(Hero->TeamId==1)&&Event.Sequence>0;});
         const auto* Attacker=Hero->TeamId==0?Hero:Client.Enemy.Get();
         const auto* Healer=Hero->TeamId==1?Hero:Client.Enemy.Get();
-        if(DamageEvent&&HealEvent&&FMath::IsNearlyEqual(Attacker->DamageDone,30.f)&&FMath::IsNearlyEqual(Healer->HealingDone,9.f)) {
+        if(DamageEvent&&HealEvent&&FMath::IsNearlyEqual(Attacker->DamageDone,13.f+Struck,.01f)&&FMath::IsNearlyEqual(Healer->HealingDone,9.f)) {
             Controller->ServerSendChat(TEXT("CIRE_PROBE_ACK_ARENA"),true);Client.Step=6;Client.StepStarted=Now;
             UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_CLIENT_ARENA_PASS team=%d opponents=5 target_rpc=1 damage_event=17 heal_event=9 meter_replication=1 recipient_flags=1 no_actor_refs=1"),Hero->TeamId);
         }

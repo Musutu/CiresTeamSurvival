@@ -20,8 +20,21 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "RenderingThread.h"
+#include "RHIGPUReadback.h"
+#include "TextureResource.h"
+#include <atomic>
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireDraftStage,Log,All);
+
+// champ-select-hq: async readback of the preview's colour + depth for exposure metering.
+struct FDraftMeter
+{
+    TUniquePtr<FRHIGPUTextureReadback> Color,Depth;
+    std::atomic<int32> State{0}; // 0 idle, 1 copy in flight, 2 result ready
+    int32 Width=0,Height=0;float MaxDepth=0;
+    float Median=0,High=0;int32 Count=0;
+};
 
 namespace
 {
@@ -30,6 +43,11 @@ namespace
 const FVector StageOrigin(0.f,0.f,90000.f);
 constexpr int32 PreviewWidth=720,PreviewHeight=960;
 constexpr float CaptureFov=30.f;
+// champ-select-hq: manual exposure base (stops). Metering adds a per-champion trim on top.
+constexpr float BaseExposureBias=-3.9f;
+// Metering targets on the tone-mapped (sRGB byte) luma of the champion's own pixels.
+constexpr float MeterTargetMedian=122.f,MeterTargetHigh=238.f,MeterFloorMedian=92.f;
+TMap<FString,float>& MeteredExposure(){static TMap<FString,float> Cache;return Cache;}
 
 UStaticMesh* Mesh(const TCHAR* Path){return LoadObject<UStaticMesh>(nullptr,Path);}
 UMaterialInterface* Material(const TCHAR* Path){return LoadObject<UMaterialInterface>(nullptr,Path);}
@@ -110,19 +128,7 @@ void ACireDraftStage::BuildStage()
     // Crisp stills: no temporal AA (no history smear or ghosting while the champion idles);
     // the draft screen supersamples the target instead (SetPreviewHeight).
     Capture->ShowFlags.SetTemporalAA(false);
-    auto& PP=Capture->PostProcessSettings;Capture->PostProcessBlendWeight=1.f;
-    PP.bOverride_AutoExposureMethod=true;PP.AutoExposureMethod=EAutoExposureMethod::AEM_Manual;
-    PP.bOverride_AutoExposureApplyPhysicalCameraExposure=true;PP.AutoExposureApplyPhysicalCameraExposure=false;
-    PP.bOverride_AutoExposureBias=true;PP.AutoExposureBias=-2.1f;
-    PP.bOverride_DynamicGlobalIlluminationMethod=true;PP.DynamicGlobalIlluminationMethod=EDynamicGlobalIlluminationMethod::None;
-    PP.bOverride_ReflectionMethod=true;PP.ReflectionMethod=EReflectionMethod::ScreenSpace;
-    PP.bOverride_BloomIntensity=true;PP.BloomIntensity=.18f;
-    PP.bOverride_VignetteIntensity=true;PP.VignetteIntensity=.55f;
-    PP.bOverride_MotionBlurAmount=true;PP.MotionBlurAmount=0.f;
-    // Full-strength colour and a touch of contrast so PBR materials read true, not flat.
-    PP.bOverride_ColorSaturation=true;PP.ColorSaturation=FVector4(1.06f,1.06f,1.06f,1.f);
-    PP.bOverride_ColorContrast=true;PP.ColorContrast=FVector4(1.08f,1.08f,1.08f,1.f);
-    PP.bOverride_SceneFringeIntensity=true;PP.SceneFringeIntensity=0.f;
+    ApplyLook();
     Capture->RegisterComponent();AddInstanceComponent(Capture);
     Capture->ShowOnlyActors.Add(this);
     // Cutout depth: same camera, scene depth only (see SetCutout / GetDepthTarget).
@@ -152,12 +158,49 @@ void ACireDraftStage::BuildStage()
         Embers.Add(Prop(this,*FString::Printf(TEXT("StageEmber%d"),I),Sphere,Ember,false));
         FireLights.Add(Light<UPointLightComponent>(this,*FString::Printf(TEXT("StageFire%d"),I),FLinearColor(1.f,.42f,.12f),2600.f,900.f,false));
     }
-    KeyLight=Light<USpotLightComponent>(this,TEXT("StageKey"),FLinearColor(1.f,.90f,.78f),5200.f,2600.f,true);
-    RimLight=Light<USpotLightComponent>(this,TEXT("StageRim"),FLinearColor(.52f,.68f,1.f),11000.f,2600.f,false);
-    FillLight=Light<UPointLightComponent>(this,TEXT("StageFill"),FLinearColor(.55f,.60f,.72f),450.f,2400.f,false);
-    Cast<USpotLightComponent>(KeyLight)->SetOuterConeAngle(26.f);Cast<USpotLightComponent>(KeyLight)->SetInnerConeAngle(10.f);
-    Cast<USpotLightComponent>(RimLight)->SetOuterConeAngle(30.f);Cast<USpotLightComponent>(RimLight)->SetInnerConeAngle(10.f);
+    // champ-select-hq: cinematic three-point rig (+ kicker). Key: soft, warm-neutral, 40 deg off the
+    // camera and 35 deg up, the only shadow caster. Fill: broad and cool from the other side at ~1:4 so
+    // shadows keep colour instead of going black. Rim + kicker: two back lights in the scene's colour
+    // that trace the silhouette and separate the champion from the painted background.
+    KeyLight=Light<USpotLightComponent>(this,TEXT("StageKey"),FLinearColor(1.f,.95f,.88f),5200.f,2600.f,true);
+    RimLight=Light<USpotLightComponent>(this,TEXT("StageRim"),FLinearColor(.52f,.68f,1.f),9000.f,2600.f,false);
+    FillLight=Light<USpotLightComponent>(this,TEXT("StageFill"),FLinearColor(.62f,.68f,.82f),1500.f,2400.f,false);
+    KickerLight=Light<USpotLightComponent>(this,TEXT("StageKicker"),FLinearColor(1.f,.72f,.45f),6000.f,2400.f,false);
+    Cast<USpotLightComponent>(KeyLight)->SetOuterConeAngle(34.f);Cast<USpotLightComponent>(KeyLight)->SetInnerConeAngle(14.f);
+    Cast<USpotLightComponent>(RimLight)->SetOuterConeAngle(30.f);Cast<USpotLightComponent>(RimLight)->SetInnerConeAngle(12.f);
+    Cast<USpotLightComponent>(FillLight)->SetOuterConeAngle(44.f);Cast<USpotLightComponent>(FillLight)->SetInnerConeAngle(20.f);
+    Cast<USpotLightComponent>(KickerLight)->SetOuterConeAngle(30.f);Cast<USpotLightComponent>(KickerLight)->SetInnerConeAngle(12.f);
+    // Soft sources: broad highlights on armour instead of pin-point hot spots, soft shadow edges.
+    const auto Soft=[](ULocalLightComponent* L,float Radius){if(auto* P=Cast<UPointLightComponent>(L)){P->SetSourceRadius(Radius);P->SetUseInverseSquaredFalloff(true);}};
+    Soft(KeyLight,34.f);Soft(FillLight,80.f);Soft(RimLight,12.f);Soft(KickerLight,12.f);
     FitStage(185.f);
+}
+
+void ACireDraftStage::ApplyLook()
+{
+    // champ-select-hq: fixed manual exposure (no eye adaptation pumping between champions) and a
+    // vibrant, contrasty grade: deeper toe so shadows read as shadows, saturation lifted mostly in
+    // the mid-tones and highlights so skin, cloth and enamel colours pop without neon shadows.
+    if(!Capture)return;
+    auto& PP=Capture->PostProcessSettings;Capture->PostProcessBlendWeight=1.f;
+    PP.bOverride_AutoExposureMethod=true;PP.AutoExposureMethod=EAutoExposureMethod::AEM_Manual;
+    PP.bOverride_AutoExposureApplyPhysicalCameraExposure=true;PP.AutoExposureApplyPhysicalCameraExposure=false;
+    PP.bOverride_AutoExposureBias=true;PP.AutoExposureBias=BaseExposureBias+ExposureOffset;
+    PP.bOverride_DynamicGlobalIlluminationMethod=true;PP.DynamicGlobalIlluminationMethod=EDynamicGlobalIlluminationMethod::None;
+    PP.bOverride_ReflectionMethod=true;PP.ReflectionMethod=EReflectionMethod::ScreenSpace;
+    PP.bOverride_BloomIntensity=true;PP.BloomIntensity=.12f;
+    PP.bOverride_BloomThreshold=true;PP.BloomThreshold=1.2f;
+    PP.bOverride_VignetteIntensity=true;PP.VignetteIntensity=bCutout?0.f:.55f;
+    PP.bOverride_MotionBlurAmount=true;PP.MotionBlurAmount=0.f;
+    PP.bOverride_SceneFringeIntensity=true;PP.SceneFringeIntensity=0.f;
+    PP.bOverride_FilmToe=true;PP.FilmToe=.60f;
+    PP.bOverride_FilmShoulder=true;PP.FilmShoulder=.30f;
+    PP.bOverride_ColorSaturation=true;PP.ColorSaturation=FVector4(1.10f,1.10f,1.10f,1.10f);
+    PP.bOverride_ColorSaturationMidtones=true;PP.ColorSaturationMidtones=FVector4(1.f,1.f,1.f,1.08f);
+    PP.bOverride_ColorSaturationHighlights=true;PP.ColorSaturationHighlights=FVector4(1.f,1.f,1.f,1.12f);
+    PP.bOverride_ColorContrast=true;PP.ColorContrast=FVector4(1.f,1.f,1.f,1.10f);
+    PP.bOverride_ColorGammaShadows=true;PP.ColorGammaShadows=FVector4(1.f,1.f,1.f,.94f);
+    PP.bOverride_AmbientOcclusionIntensity=true;PP.AmbientOcclusionIntensity=.6f;
 }
 
 void ACireDraftStage::FitStage(float Height)
@@ -189,10 +232,17 @@ void ACireDraftStage::FitStage(float Height)
     }
     const FVector Chest(0,0,BodyHeight*.70f+14.f*S);
     const auto Aim=[&](ULocalLightComponent* L,const FVector& At){L->SetRelativeLocation(At);L->SetRelativeRotation((Chest-At).Rotation());};
-    Aim(KeyLight,FVector(420.f,300.f,BodyHeight+300.f)*FVector(S,S,1));
-    Aim(RimLight,FVector(-340.f*S,-230.f*S,BodyHeight+260.f));
-    FillLight->SetRelativeLocation(FVector(460.f*S,-360.f*S,BodyHeight*.45f));
-    KeyLight->SetAttenuationRadius(1050.f*S);RimLight->SetAttenuationRadius(1000.f*S);FillLight->SetAttenuationRadius(1100.f*S);
+    // The camera looks from +X (slightly +Y). Key camera-right and high, fill camera-left at chest
+    // height, rim behind-left high, kicker behind-right low (catches the far edge of the silhouette).
+    const float D=FMath::Max(BodyHeight*1.9f,380.f);
+    Aim(KeyLight,FVector(D*.72f,D*.62f,BodyHeight*.70f+D*.62f));
+    Aim(FillLight,FVector(D*.85f,-D*.72f,BodyHeight*.62f+D*.12f));
+    Aim(RimLight,FVector(-D*.78f,-D*.55f,BodyHeight*.70f+D*.55f));
+    Aim(KickerLight,FVector(-D*.70f,D*.70f,BodyHeight*.55f+D*.18f));
+    for(ULocalLightComponent* L:{KeyLight.Get(),RimLight.Get(),FillLight.Get(),KickerLight.Get()})L->SetAttenuationRadius(D*2.6f);
+    // Inverse-square: scale lumens with distance squared so the rig reads the same on a gnome or a behemoth.
+    const float K=FMath::Square(D/380.f);
+    KeyLight->SetIntensity(5200.f*K);FillLight->SetIntensity(2000.f*K);RimLight->SetIntensity(15000.f*K);KickerLight->SetIntensity(9000.f*K);
 }
 
 void ACireDraftStage::DestroyPreview()
@@ -228,9 +278,15 @@ void ACireDraftStage::ShowProfile(const FString& Id)
     Hero->ChampionArt->UpdateVisuals(*Hero,.016f);
     Preview=Hero;Capture->ShowOnlyActors.AddUnique(Hero);
     RefreshCutoutParts();
-    SetExposureOffset(StoredExposure(Id));
-    // Ask the streamer for full-resolution body/weapon textures immediately (the preview is a close-up).
-    Hero->PrestreamTextures(20.f,true);
+    // Exposure: the live cutout preview meters itself (cached per champion); portraits and the
+    // stage-backdrop fallback keep the stored table.
+    bMetered=false;MeterPasses=0;MeterRequestFrame=0;MeterSettleFrame=0;MeterMedian=MeterHigh=0.f;
+    if(const float* Cached=MeteredExposure().Find(Id);Cached&&bCutout&&!PortraitTarget){SetExposureOffset(*Cached);bMetered=true;}
+    else SetExposureOffset(bCutout&&!PortraitTarget?0.f:StoredExposure(Id));
+    // Ask the streamer for full-resolution body/weapon textures immediately (the preview is a close-up);
+    // Tick re-arms this while the champion is shown so an idle screen never drops to blurry mips.
+    Hero->PrestreamTextures(15.f,true);LastPrestream=FPlatformTime::Seconds();
+    ForceTopDetail(Hero);
     // Stand on the dais: the capsule bottom sits on its top face.
     const float Half=Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     Hero->SetActorLocation(StageOrigin+FVector(0,0,14.f*StageScale+Half));
@@ -246,13 +302,18 @@ FBox ACireDraftStage::BodyBounds() const
     {
         if(!C||!C->IsRegistered()||!C->IsVisible()||C->bHiddenInGame||C->IsA<UCapsuleComponent>())continue;
         if(const auto* Skeletal=Cast<USkeletalMeshComponent>(C);Skeletal&&!Skeletal->GetSkeletalMeshAsset())continue;
+        // champ-select-hq: only what the camera shows (body, weapons, gear on the skeleton), never
+        // helper geometry such as ground auras, rings or selection meshes the hero carries.
+        bool bBody=C->IsA<USkeletalMeshComponent>();
+        for(const USceneComponent* Up=C->GetAttachParent();Up&&!bBody;Up=Up->GetAttachParent())bBody=Up->IsA<USkeletalMeshComponent>();
+        if(!bBody||!(C->IsA<USkeletalMeshComponent>()||C->IsA<UStaticMeshComponent>()))continue;
         const FBox Part=C->Bounds.GetBox();
         if(Part.IsValid&&Part.GetExtent().GetMax()<1000.f)Box+=Part;
     }
     return Box;
 }
 
-bool ACireDraftStage::IsPreviewReady() const {return IsValid(Preview)&&bFramed&&SecondsShown()>.35f&&FramesShown()>6;}
+bool ACireDraftStage::IsPreviewReady() const {return IsValid(Preview)&&bFramed&&SecondsShown()>.35f&&FramesShown()>6&&(bMetered||PortraitTarget||!bCutout);}
 float ACireDraftStage::SecondsShown() const {return ProfileId.IsEmpty()?0.f:static_cast<float>(FPlatformTime::Seconds()-ShownAt);}
 float ACireDraftStage::StoredExposure(const FString& Id)
 {
@@ -268,8 +329,8 @@ float ACireDraftStage::StoredExposure(const FString& Id)
 }
 void ACireDraftStage::SetExposureOffset(float Stops)
 {
-    ExposureOffset=FMath::Clamp(Stops,-3.f,2.f);
-    if(Capture){Capture->PostProcessSettings.AutoExposureBias=-2.1f+ExposureOffset;}
+    ExposureOffset=FMath::Clamp(Stops,-4.f,3.f);
+    if(Capture){Capture->PostProcessSettings.AutoExposureBias=BaseExposureBias+ExposureOffset;}
 }
 void ACireDraftStage::SetTurntable(bool bInSpin,float FixedYaw){bSpin=bInSpin;if(!bSpin)Yaw=FixedYaw;}
 
@@ -322,16 +383,54 @@ void ACireDraftStage::FrameCamera(float DeltaSeconds,bool bSnap)
         Capture->SetWorldLocationAndRotation(BustView,(CameraFocus-BustView).Rotation());
         bFramed=true;return;
     }
-    // Framing is driven by height, capped horizontally, with room for long bodies (centaur, behemoth).
-    const float HalfV=Height*.5f*1.10f+14.f;
-    const float Reach=FMath::Min(Radius,Height*.42f+20.f);
-    const float Distance=FMath::Max(HalfV/TanV,Reach/TanH)+Reach*.3f;
-    const FVector Focus(Center.X,Center.Y,FloorZ+Height*.47f);
+    // Framing is driven by height; horizontally the camera backs off only as far as the body's real
+    // on-screen width needs (box corners projected through the camera, so perspective on a long bear or
+    // centaur walking toward the lens is accounted for). The screen shows the middle ~92% x 86%.
+    const FRotator ViewRot(-7.f,188.f,0);
+    const FVector Fwd=ViewRot.Vector(),Right=FRotationMatrix(ViewRot).GetUnitAxis(EAxis::Y);
+    // Skinned bounds are padded (often 2-3x the body): use the bones plus a flesh margin; props
+    // (weapons, shields) keep their tight static-mesh bounds.
+    FBox Tight(ForceInit);
+    {
+        TArray<UPrimitiveComponent*> Parts;Preview->GetComponents(Parts);
+        for(UPrimitiveComponent* C:Parts)
+        {
+            if(!C||!C->IsRegistered()||!C->IsVisible()||C->bHiddenInGame)continue;
+            bool bBody=C->IsA<USkeletalMeshComponent>();
+            for(const USceneComponent* Up=C->GetAttachParent();Up&&!bBody;Up=Up->GetAttachParent())bBody=Up->IsA<USkeletalMeshComponent>();
+            if(!bBody)continue;
+            if(auto* Sk=Cast<USkeletalMeshComponent>(C))
+            {
+                if(!Sk->GetSkeletalMeshAsset()||Sk->GetNumBones()<4){if(C->Bounds.BoxExtent.GetMax()<1000.f)Tight+=C->Bounds.GetBox();continue;}
+                FBox Bones(ForceInit);for(int32 I=0;I<Sk->GetNumBones();++I)Bones+=Sk->GetBoneTransform(I).GetLocation();
+                Tight+=Bones.ExpandBy(FVector(Height*.10f,Height*.10f,0.f));
+            }
+            else if(C->IsA<UStaticMeshComponent>()&&C->Bounds.BoxExtent.GetMax()<1000.f)Tight+=C->Bounds.GetBox();
+        }
+    }
+    if(!Tight.IsValid)Tight=Box;
+    // Nothing above the frame: raised staffs, shields and tall heads (behemoth) are kept in view too.
+    const float FitTop=FMath::Max(Top,FMath::Min(Tight.Max.Z+Height*.05f,FloorZ+Height*1.6f));
+    const FVector Focus(Center.X,Center.Y,FloorZ+(FitTop-FloorZ)*.47f);
+    float Distance=((FitTop-FloorZ)*.5f*1.10f+14.f)/TanV;
+    const FVector Up=FRotationMatrix(ViewRot).GetUnitAxis(EAxis::Z);
+    for(const float X:{Tight.Min.X,Tight.Max.X})for(const float Y:{Tight.Min.Y,Tight.Max.Y})for(const float Z:{FloorZ,FitTop})
+    {
+        const FVector P=FVector(X,Y,Z)-Focus;
+        Distance=FMath::Max(Distance,FMath::Abs(FVector::DotProduct(P,Right))/(TanH*.86f)-FVector::DotProduct(P,Fwd));
+        Distance=FMath::Max(Distance,FMath::Abs(FVector::DotProduct(P,Up))/(TanV*.80f)-FVector::DotProduct(P,Fwd));
+    }
+    Distance+=10.f;
     const float Alpha=bSnap||!bFramed?1.f:FMath::Clamp(DeltaSeconds*3.f,0.f,1.f);
     CameraFocus=FMath::Lerp(CameraFocus,Focus,Alpha);CameraDistance=FMath::Lerp(CameraDistance,Distance,Alpha);
     // Camera sits in front of the champion (+X), a little to its left and above, looking back at it.
     const FVector View=CameraFocus-FRotator(-7.f,188.f,0).Vector()*CameraDistance;
     Capture->SetWorldLocationAndRotation(View,(CameraFocus-View).Rotation());
+    {   // Where the ground under the champion lands in the render (the HUD puts the contact shadow there).
+        const FRotator Look=(CameraFocus-View).Rotation();const FMatrix Basis=FRotationMatrix(Look);
+        const FVector P=FVector(Center.X,Center.Y,FloorZ)-View;const float Depth=FVector::DotProduct(P,Basis.GetUnitAxis(EAxis::X));
+        if(Depth>1.f)FeetV=.5f-FVector::DotProduct(P,Basis.GetUnitAxis(EAxis::Z))/(Depth*TanV)*.5f;
+    }
     bFramed=true;
 }
 
@@ -381,8 +480,10 @@ void ACireDraftStage::RefreshCutoutParts()
 }
 void ACireDraftStage::SetPreviewHeight(int32 Pixels)
 {
-    Pixels=FMath::Clamp(Pixels,960,2560)&~7;
-    if(!Target||FMath::Abs(static_cast<int32>(Target->SizeY)-Pixels)<Pixels/8)return;
+    Pixels=FMath::Clamp(Pixels,960,3200)&~7;
+    // Grow whenever the screen needs more pixels (never show an upscaled figure); shrink only on big changes.
+    const int32 Have=static_cast<int32>(Target?Target->SizeY:0);
+    if(!Target||(Pixels<=Have&&Have-Pixels<Pixels/3))return;
     const int32 W=(Pixels*3/4)&~7;
     Target->InitAutoFormat(W,Pixels);Target->UpdateResourceImmediate(true);
     if(DepthTarget){DepthTarget->InitAutoFormat(W,Pixels);DepthTarget->UpdateResourceImmediate(true);}
@@ -392,13 +493,14 @@ void ACireDraftStage::SetMood(const FLinearColor& Key,const FLinearColor& Rim,co
     if(KeyLight)KeyLight->SetLightColor(Key);
     if(RimLight)RimLight->SetLightColor(Rim);
     if(FillLight)FillLight->SetLightColor(Fill);
+    if(KickerLight)KickerLight->SetLightColor(FMath::Lerp(Rim,Key,.35f));
 }
 void ACireDraftStage::SetCutout(bool bEnable)
 {
     if(bCutout==bEnable)return;
     bCutout=bEnable;RetainPropagateAlpha(bEnable);
     if(Target){Target->ClearColor=bEnable?FLinearColor(0,0,0,0):FLinearColor(.006f,.007f,.009f,1);Target->UpdateResourceImmediate(true);}
-    if(Capture){Capture->PostProcessSettings.bOverride_VignetteIntensity=true;Capture->PostProcessSettings.VignetteIntensity=bEnable?0.f:.55f;}
+    ApplyLook();
     SetPortraitTarget(PortraitTarget);
 }
 
@@ -408,11 +510,11 @@ void ACireDraftStage::Tick(float DeltaSeconds)
     // Frame-based so a long asset-load hitch never tears down a live draft screen.
     if(LastTouchedFrame>0&&GFrameCounter>LastTouchedFrame+4){Destroy();return;}
     if(!IsValid(Preview)){if(Capture)Capture->bCaptureEveryFrame=false;if(DepthCapture)DepthCapture->bCaptureEveryFrame=false;return;}
+    const double Now=FPlatformTime::Seconds();
     Capture->bCaptureEveryFrame=true;
     if(bSpin)Yaw=FMath::Fmod(Yaw+DeltaSeconds*11.f+360.f,360.f);
     Preview->SetActorRotation(FRotator(0,Yaw,0));
     // Occasional weapon flourish so the preview reads as the unit's real attack style.
-    const double Now=FPlatformTime::Seconds();
     if(bSpin&&SecondsShown()>1.4f&&Now-LastAttackAt>7.0)
     {
         LastAttackAt=Now;Preview->AttackSerial=Preview->AttackSerial+1;Preview->AttackDuration=.65f;
@@ -422,6 +524,92 @@ void ACireDraftStage::Tick(float DeltaSeconds)
     Preview->ChampionArt->UpdateVisuals(*Preview,DeltaSeconds);
     if(bCutout&&!PortraitTarget)RefreshCutoutParts(); // weapons and gear attach after the body loads
     FrameCamera(DeltaSeconds,false);
+    if(Now-LastPrestream>5.0){LastPrestream=Now;Preview->PrestreamTextures(15.f,true);ForceTopDetail(Preview);} // gear attaches after spawn
+    UpdateMetering();
+}
+
+void ACireDraftStage::ForceTopDetail(AActor* Actor)
+{
+    // Highest-detail geometry regardless of what the (far away) player camera would pick.
+    if(!Actor)return;
+    TArray<UPrimitiveComponent*> Parts;Actor->GetComponents(Parts);
+    for(UPrimitiveComponent* Part:Parts)
+    {
+        if(auto* Skinned=Cast<USkinnedMeshComponent>(Part)){if(Skinned->GetForcedLOD()!=1)Skinned->SetForcedLOD(1);}
+        else if(auto* Static=Cast<UStaticMeshComponent>(Part)){if(Static->ForcedLodModel!=1)Static->SetForcedLodModel(1);}
+    }
+}
+
+void ACireDraftStage::UpdateMetering()
+{
+    if(bMetered)return;
+    if(!bCutout||PortraitTarget||!Target||!DepthTarget||!DepthCapture||!DepthCapture->bCaptureEveryFrame){bMetered=true;return;}
+    // Never hold the preview back for long: a body that cannot be metered shows at its last exposure.
+    if(SecondsShown()>3.f&&FramesShown()>150)
+    {
+        bMetered=true;MeteredExposure().Add(ProfileId,ExposureOffset);
+        UE_LOG(LogCireDraftStage,Warning,TEXT("CIRE_DRAFT_METER timeout id=%s offset=%.2f"),*ProfileId,ExposureOffset);return;
+    }
+    if(!Meter)Meter=MakeShared<FDraftMeter,ESPMode::ThreadSafe>();
+    FDraftMeter& M=*Meter;
+    const int32 State=M.State.load();
+    if(State==0)
+    {
+        // Measure once the body is framed, animated and has rendered at the current exposure.
+        if(!bFramed||FramesShown()<8||SecondsShown()<.25f||GFrameCounter<MeterSettleFrame)return;
+        if(Target->SizeX!=DepthTarget->SizeX||Target->SizeY!=DepthTarget->SizeY)return;
+        M.Width=Target->SizeX;M.Height=Target->SizeY;M.MaxDepth=GetCutoutMaxDepth();M.State=1;MeterRequestFrame=GFrameCounter;
+        ENQUEUE_RENDER_COMMAND(CireDraftMeterCopy)([Shared=Meter,ColorRT=Target.Get(),DepthRT=DepthTarget.Get()](FRHICommandListImmediate& RHICmdList)
+        {
+            FTextureRenderTargetResource* C=ColorRT->GetRenderTargetResource();FTextureRenderTargetResource* D=DepthRT->GetRenderTargetResource();
+            if(!C||!D||!C->GetRenderTargetTexture()||!D->GetRenderTargetTexture()){Shared->Count=0;Shared->State=2;return;}
+            if(!Shared->Color)Shared->Color=MakeUnique<FRHIGPUTextureReadback>(TEXT("CireDraftMeterColor"));
+            if(!Shared->Depth)Shared->Depth=MakeUnique<FRHIGPUTextureReadback>(TEXT("CireDraftMeterDepth"));
+            Shared->Color->EnqueueCopy(RHICmdList,C->GetRenderTargetTexture());
+            Shared->Depth->EnqueueCopy(RHICmdList,D->GetRenderTargetTexture());
+        });
+        return;
+    }
+    if(State==1)
+    {
+        if(GFrameCounter>MeterRequestFrame+90){M.State=0;MeterSettleFrame=GFrameCounter+2;UE_LOG(LogCireDraftStage,Log,TEXT("CIRE_DRAFT_METER retry id=%s"),*ProfileId);return;} // lost readback: retry
+        ENQUEUE_RENDER_COMMAND(CireDraftMeterRead)([Shared=Meter](FRHICommandListImmediate&)
+        {
+            FDraftMeter& R=*Shared;
+            if(R.State.load()!=1||!R.Color||!R.Depth||!R.Color->IsReady()||!R.Depth->IsReady())return;
+            int32 CPitch=0,DPitch=0;
+            const FColor* C=static_cast<const FColor*>(R.Color->Lock(CPitch));
+            const float* D=static_cast<const float*>(R.Depth->Lock(DPitch));
+            uint32 Histogram[256]={};int64 Count=0;
+            if(C&&D&&CPitch>=R.Width&&DPitch>=R.Width)
+                for(int32 Y=0;Y<R.Height;Y+=2)for(int32 X=0;X<R.Width;X+=2)
+                {
+                    const FColor& P=C[Y*CPitch+X];
+                    // Champion pixels only: opaque (post-process alpha is inverse opacity) and near.
+                    if(P.A>=128||D[Y*DPitch+X]>=R.MaxDepth-120.f)continue;
+                    ++Histogram[FMath::Clamp(FMath::RoundToInt(.2126f*P.R+.7152f*P.G+.0722f*P.B),0,255)];++Count;
+                }
+            if(C)R.Color->Unlock();
+            if(D)R.Depth->Unlock();
+            const auto Percentile=[&](double Q){const int64 Want=int64(Count*Q);int64 Run=0;for(int32 I=0;I<256;++I){Run+=Histogram[I];if(Run>Want)return float(I);}return 255.f;};
+            R.Count=int32(Count);R.Median=Count?Percentile(.5):0.f;R.High=Count?Percentile(.97):0.f;
+            R.State=2;
+        });
+        return;
+    }
+    // State 2: step the exposure toward the targets (the tone curve compresses highlights, hence the gain).
+    M.State=0;++MeterPasses;MeterMedian=M.Median;MeterHigh=M.High;
+    if(M.Count<400){bMetered=true;MeteredExposure().Add(ProfileId,ExposureOffset);return;}
+    const float Up=FMath::Log2(MeterTargetMedian/FMath::Max(M.Median,2.f));
+    // Highlights pull the exposure down, but never below a lit mid-tone: a few specular glints or
+    // white hair may clip; a dark, muddy champion is worse.
+    const float Down=M.High>=252.f?-.8f:FMath::Log2(MeterTargetHigh/FMath::Max(M.High,2.f))*1.8f;
+    const float FloorStep=FMath::Log2(MeterFloorMedian/FMath::Max(M.Median,2.f));
+    const float Delta=FMath::Clamp(FMath::Min(Up,FMath::Max(Down,FloorStep)),-2.f,1.5f);
+    UE_LOG(LogCireDraftStage,Log,TEXT("CIRE_DRAFT_METER id=%s pass=%d pixels=%d median=%.0f p97=%.0f offset=%.2f step=%.2f"),*ProfileId,MeterPasses,M.Count,M.Median,M.High,ExposureOffset,Delta);
+    if(FMath::Abs(Delta)<.12f||MeterPasses>=6||(ExposureOffset<=-4.f&&Delta<0)||(ExposureOffset>=3.f&&Delta>0))
+    {bMetered=true;MeteredExposure().Add(ProfileId,ExposureOffset);return;}
+    SetExposureOffset(ExposureOffset+Delta*.85f);MeterSettleFrame=GFrameCounter+3;
 }
 
 void ACireDraftStage::EndPlay(const EEndPlayReason::Type Reason)

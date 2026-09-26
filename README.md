@@ -52,7 +52,7 @@ The ultimate has a dedicated Q slot. Standalone developer tools under **F9 → D
 
 - Replicated heroes, monsters, team state, countdown, health, resources, progression, and skill offers; combat/purchases/rewards resolve on the server.
 - Seventeen regular active skill prototypes, four passive prototypes, and four ultimate prototypes, including healing, guarding, taunting monsters/bots, slowing, ranged attacks, cleaves and five authored ground areas.
-- STR +25 HP, INT +30 MP, AGI +1% attack speed per point; each level gives +2 primary and +1 to each other stat. Primary stat adds one basic-attack damage per point; the prototype has 12 weapon damage.
+- STR +10 HP and +0.1 armor / spell ward (plus a flat base of 15 x starting STR, so level-1 HP is unchanged), INT +30 MP, AGI +1% attack speed per point; each level gives +2 primary and +1 to each other stat. Primary stat adds one basic-attack damage per point; the prototype has 12 weapon damage.
 - Mana, regenerating energy, and pure cooldown reduction capped at 60%. Cooldown reduction does not increase damage.
 - Three challenge tiers per battlefield, group-clear rewards, rare relic rolls and Greater Stat Tomes; town XP/stat/gear/CDR purchases.
 - Three simple arena variants sharing one clear combat footprint. These are layout placeholders for future distinct arenas.

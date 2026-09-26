@@ -196,6 +196,25 @@ review. `--mannequin` omits `-CireTripoChampions`. Without that flag the game
 (and therefore the live preview) shows the fallback mannequin bodies, while the
 portrait textures always show the Tripo bodies they were rendered from.
 
+#### Hero showcase render (champ-select-hq, 2026-09-25)
+
+Eric's playtest verdict on the live preview was "too bright, washed out, fuzzy, looks like 2000". Measured
+causes and fixes (`CireDraftStage.cpp`, `Tools/BuildDraftSelectContent.py`):
+
+| Cause (measured) | Fix |
+|---|---|
+| Exposure ~2 stops hot: 97th-percentile luma 245-255 (clipped) on most bodies; the centaur and pale stone bodies rendered near-white; `Exposure.json` trims were bust-framed guesses | Base bias -3.9 and **live metering**: after the body settles the stage reads its own colour + depth (async `FRHIGPUTextureReadback`, no hitch), measures the champion's pixels only and steps the manual exposure until p97 sits just under white and the median is lit (floor 92). Cached per champion; `CIRE_DRAFT_METER` logs each pass. |
+| No anti-aliasing: TAA off on the capture and the 720x960 target shown at ~1.5x with plain bilinear (texel skipping, stair-stepped silhouettes, sparkly specular) | Target is **2x the on-screen size**; `M_DraftCutout` resolves a **4x4 tap grid per screen pixel** in HLSL (coverage from alpha x depth mask, so the lower half, where only depth separates figure and far ground, is anti-aliased too) |
+| Dark fringe: premultiplied edge colour composited as straight colour | Compositor un-premultiplies (sum colour / sum coverage) |
+| Soft look after resolve | Unsharp mask against the one-pixel ring (`Sharpen` 0.45), exact sRGB encode (was pow 1/2.2, which lifted blacks) |
+| Flat, grey lighting: one white spot key + 450 lm fill, no separation from the painting | Three-point rig + kicker: soft warm key 40 deg off camera (only shadow caster), cool broad fill ~1:4, rim and kicker behind in the scene's mood colour; inverse-square and scaled with body size. Grade: FilmToe .60, contrast 1.10, saturation 1.10 (+ mid/high boosts), AO .6 |
+| Framing zoomed out on long bodies / cut off on others: skinned bounds are padded 2-3x | Horizontal and vertical fit by projecting **bone** bounds (+ flesh margin) and prop bounds through the camera; raised staffs, shields and tall heads stay in view |
+| Idle-screen blur risk: `PrestreamTextures(20 s)` expired on a champion left on screen | Re-armed every 5 s; skinned/static parts forced to LOD 0 while shown |
+
+The HUD places a layered contact shadow where the stage reports the floor (`GetFeetV`). Debug:
+`-CireDraftDumpFigure` writes `<shot>.figure.png` / `.depth.png` beside each gallery capture and the gallery
+log records the figure's screen box, UV window, target size and metered exposure.
+
 `PrimaryStat`, `PrimaryAttribute`, `BasicAttackRange`, `BaseAttackSeconds`,
 `BasicAttackStyle`, `IsRangedBasicAttack`, `HasChampionRole` and
 `DamageThreatMultiplier` are the gameplay accessors. The selected snapshot keeps

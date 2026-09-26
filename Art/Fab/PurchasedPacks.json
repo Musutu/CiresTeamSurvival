@@ -230,8 +230,8 @@
   }
  ],
  "alsoInstalled": {
-  "Monster": "Khornes 'Monster' (free pass): idle/walk/run/jump only, no attack clips - not used",
+  "Monster": "Khornes 'Monster' (free pass): idle/walk/run/jump only, no attack clips - handed to the monster-expansion agent",
   "Polyphoria": "Paladin RPG Set (MetaHuman heavy armour parts) - not a Wood Monster; MetaHuman assembly needs the editor",
-  "FXVarietyPack": "Kakky FX Variety Pack (free pass) - not mapped yet"
+  "FXVarietyPack": "Kakky FX Variety Pack (free pass): 21 Cascade P_ky_* systems mapped as per-ability spell VFX (fab-coverage, Tools/FabAbilityVFXTable.py); CireFabVFX spawns Cascade as well as Niagara"
  }
 }

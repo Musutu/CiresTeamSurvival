@@ -75,6 +75,7 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     // kits-complete: utility skills and passives ("potency"): headline effect +PotencyPerPoint % per PRIMARY point, max +PotencyCap %.
     float PotencyPerPoint = 0, PotencyCap = 0;
     FString Requires;                    // "shield" (shield users only), "ranged" (ranged basic attack), empty
+    float ThreatScale = 1.f;             // rules-conformance: <1 = the cast drops (0) or reduces the caster's threat on every monster
     FName Level15Bonus;                  // dot, healCut, stun, slow, damageAmp, vulnerability, purge (actives/ultimates)
     FString Level15Special, Level15Label, Level15Trigger; // special: mechSlam, artilleryBomb, headshotTriple; trigger: hit|pulse
     FName Aura15;                        // passives: attackSpeed, doubleAttack, crit, ... (team aura at level 15)

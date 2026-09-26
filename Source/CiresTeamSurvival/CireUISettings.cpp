@@ -19,6 +19,15 @@ const FOldDefault OldDefaults[] = {
     {TEXT("Focus"), 796, 111, 218, 123}, {TEXT("Boss"), 1040, 242, 220, 150}, {TEXT("Threat"), 1040, 398, 220, 124},
     {TEXT("Meter"), 956, 526, 304, 174}, {TEXT("Pet"), 20, 426, 250, 90}, {TEXT("CombatLog"), 956, 362, 304, 150},
     {TEXT("Stats"), 282, 166, 176, 238}};
+// Defaults retired within a schema: a saved rectangle still equal to one of these was
+// never moved by the player, so it adopts the current default. Moved panels keep theirs.
+const FOldDefault RetiredDefaults[] = {
+    {TEXT("Pet"), 290, 306, 250, 112}}; // pets merge: its right edge crossed into the screen centre
+bool MatchesDefault(const FCireUIRect& R, const FOldDefault& Old)
+{
+    return FMath::IsNearlyEqual(R.X, Old.X / ReferenceWidth, .002f) && FMath::IsNearlyEqual(R.Y, Old.Y / ReferenceHeight, .002f)
+        && FMath::IsNearlyEqual(R.W, Old.W / ReferenceWidth, .002f) && FMath::IsNearlyEqual(R.H, Old.H / ReferenceHeight, .002f);
+}
 const TCHAR* PreferencesSection = TEXT("CireUI.Preferences");
 
 float SafeFloat(float Value, float Default, float Minimum, float Maximum)
@@ -49,13 +58,14 @@ void FCireUISettings::Reset()
 {
     Panels.Reset();
     PanelIds.Reset();
-    auto Add = [this](const TCHAR* Id, float X, float Y, float W, float H)
+    auto Add = [this](const TCHAR* Id, float X, float Y, float W, float H, int32 AnchorOverride = -1)
     {
         FPanelLayout Layout;
         Layout.Normalized = {X / ReferenceWidth, Y / ReferenceHeight,
             W / ReferenceWidth, H / ReferenceHeight};
         Layout.MinimumSize = FVector2D(FMath::Max(60.f, W * .65f), FMath::Max(36.f, H * .65f));
-        Layout.Anchor = AnchorFor(X / ReferenceWidth, Y / ReferenceHeight, (X + W) / ReferenceWidth, (Y + H) / ReferenceHeight);
+        Layout.Anchor = AnchorOverride >= 0 ? AnchorOverride
+            : AnchorFor(X / ReferenceWidth, Y / ReferenceHeight, (X + W) / ReferenceWidth, (Y + H) / ReferenceHeight);
         Panels.Add(FName(Id), Layout);
         PanelIds.Add(FName(Id));
     };
@@ -75,7 +85,10 @@ void FCireUISettings::Reset()
     // The WoW-style default tooltip grows up/left from this panel's lower-right
     // corner: right of the reticle, above the action bar and meter.
     Add(TEXT("Tooltip"), 690.f, 368.f, 340.f, 150.f);
-    Add(TEXT("Pet"), 290.f, 306.f, 250.f, 112.f); // under the focus frame; the bag bar owns 20,420. pets: companion frame
+    // pets: companion frame, WoW-style with the unit frames: under the focus frame, right edge
+    // aligned with it (clear of the screen centre), between the party frames and the centre,
+    // above the bag bar (20,420). Hangs from the top so it stays with target/focus on 4:3.
+    Add(TEXT("Pet"), 258.f, 304.f, 250.f, 112.f, 0);
     // Right column under the minimap: boss frames, then threat, then the damage meter.
     Add(TEXT("Boss"), 1040.f, 208.f, 220.f, 150.f);
     Add(TEXT("Threat"), 1040.f, 372.f, 220.f, 124.f);
@@ -321,6 +334,7 @@ void FCireUISettings::Load(const FString& Filename)
         const FString Section = PanelSection(Entry.Key);
         FCireUIRect& R = Entry.Value.Normalized;
         const FCireUIRect Default = R;
+        const int32 DefaultAnchor = Entry.Value.Anchor;
         Config.GetFloat(*Section, TEXT("X"), R.X);
         Config.GetFloat(*Section, TEXT("Y"), R.Y);
         Config.GetFloat(*Section, TEXT("Width"), R.W);
@@ -339,12 +353,17 @@ void FCireUISettings::Load(const FString& Filename)
         // still the old default (the player never moved that panel).
         if (Version < 5)
             for (const FOldDefault& Old : OldDefaults)
-                if (Entry.Key == FName(Old.Id) && FMath::IsNearlyEqual(R.X, Old.X / ReferenceWidth, .002f) && FMath::IsNearlyEqual(R.Y, Old.Y / ReferenceHeight, .002f)
-                    && FMath::IsNearlyEqual(R.W, Old.W / ReferenceWidth, .002f) && FMath::IsNearlyEqual(R.H, Old.H / ReferenceHeight, .002f))
+                if (Entry.Key == FName(Old.Id) && MatchesDefault(R, Old))
                 {
                     R = Default;
-                    Entry.Value.Anchor = AnchorFor(R.X, R.Y, R.X + R.W, R.Y + R.H);
+                    Entry.Value.Anchor = DefaultAnchor;
                 }
+        for (const FOldDefault& Old : RetiredDefaults)
+            if (Entry.Key == FName(Old.Id) && MatchesDefault(R, Old))
+            {
+                R = Default;
+                Entry.Value.Anchor = DefaultAnchor;
+            }
     }
 }
 

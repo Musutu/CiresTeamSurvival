@@ -38,6 +38,9 @@ struct FGallery
     double Started=0,Ready=-1;
     int32 CapturedStage=-1,Checks=0;
     bool bPass=true,bDone=false,bEscortMoving=false;
+    // world-scale: one view per authored district (breach to castle), then the full-realm overview and the escort.
+    struct FView { FVector Target,View; FString Title,File; };
+    TArray<FView> Views;
 } Gallery;
 void Check(bool Value,const TCHAR* Label)
 {
@@ -128,6 +131,8 @@ void CheckEnvironment(UWorld* World)
         }
     }
 }
+float Routes0MinX(UWorld* World){return CireLanePath::Get(World).MinX;}
+float Routes0MaxX(UWorld* World){return CireLanePath::Get(World).MaxX;}
 bool Build(ACireGameMode* Mode,ACireController* Controller)
 {
     UWorld* World=Mode->GetWorld();auto* Player=Cast<ACireHero>(Controller->GetPawn());if(!Player)return Fail(TEXT("controller pawn is not a CireHero"));
@@ -161,7 +166,24 @@ bool Build(ACireGameMode* Mode,ACireController* Controller)
     Check(Escort->bArmoredEscort && FMath::IsNearlyEqual(Escort->Health,BaseHealth*CireLanePath::Get(World).EscortHealthMultiplier),TEXT("gallery escort uses actual authored escort health"));
     Gallery.Controller=Controller;Controller->SetViewTarget(Gallery.Camera.Get());Gallery.Ready=FPlatformTime::Seconds();
     CheckEnvironment(World);
-    UE_LOG(LogCireEnvironmentGallery,Display,TEXT("CIRE_ENVIRONMENT_GALLERY_READY views=%d route_clearance=45x90 medieval_town=1"),7);return true;
+    {
+        // world-scale: frame every district from a raised three-quarter view looking along the road toward the castle.
+        const float Y=CireLanePath::CenterY(0);int32 Index=0;
+        for(const auto& D:CireEnvironmentProps::Districts())
+        {
+            const float MidX=FMath::Clamp((FMath::Max(D.MinX,Routes0MinX(World))+FMath::Min(D.MaxX,Routes0MaxX(World)))*.5f,-2600.f,Routes0MaxX(World)-600.f);
+            const FVector Road=CireLanePath::PointAlongRoute(World,0,CireLanePath::RouteProgress(World,0,FVector(MidX,Y,0)),0);
+            const bool bCastle=D.Id==TEXT("castle");
+            const FVector Target=bCastle?FVector(-1150,Y,820):Road+FVector(0,0,180);
+            const FVector View=bCastle?FVector(1650,Y+750,760):Target+FVector(2400,(Index%2?1:-1)*1100.f,1050);
+            Gallery.Views.Add({Target,View,FString::Printf(TEXT("%02d  %s"),Index+1,*D.Name.ToUpper()),FString::Printf(TEXT("%02d_%s.png"),Index+1,*D.Id.ToString())});
+            ++Index;
+        }
+        const float MaxX=Routes0MaxX(World);
+        Gallery.Views.Add({FVector(MaxX*.45f,Y,0),FVector(-9000,Y-9000,14000),FString::Printf(TEXT("%02d  PRIVATE REALM / FULL TOWN OVERVIEW"),Index+1),FString::Printf(TEXT("%02d_overview.png"),Index+1)});++Index;
+        Gallery.Views.Add({FVector::ZeroVector,FVector::ZeroVector,FString::Printf(TEXT("%02d  ARMORED ESCORT ON THE MARCH ROAD"),Index+1),FString::Printf(TEXT("%02d_armored_escort.png"),Index+1)});
+    }
+    UE_LOG(LogCireEnvironmentGallery,Display,TEXT("CIRE_ENVIRONMENT_GALLERY_READY views=%d route_clearance=45x90 medieval_town=1"),Gallery.Views.Num());return true;
 }
 }
 bool CireEnvironmentGallery::Initialize(ACireGameMode* Mode)
@@ -176,7 +198,7 @@ bool CireEnvironmentGallery::Initialize(ACireGameMode* Mode)
 bool CireEnvironmentGallery::Tick(ACireGameMode* Mode)
 {
     if(Gallery.Mode.Get()!=Mode)return false;if(Gallery.bDone)return true;
-    if(FPlatformTime::Seconds()-Gallery.Started>330){Fail(TEXT("gallery exceeded 330 seconds waiting for setup, shaders or captures"));Finish(false);return true;}
+    if(FPlatformTime::Seconds()-Gallery.Started>560){Fail(TEXT("gallery exceeded 560 seconds waiting for setup, shaders or captures"));Finish(false);return true;}
     if(Gallery.Ready<0)
     {
         auto* Controller=Cast<ACireController>(Mode->GetWorld()->GetFirstPlayerController());
@@ -188,30 +210,20 @@ bool CireEnvironmentGallery::Tick(ACireGameMode* Mode)
     // Hold the clock while shaders compile so captures never show placeholder materials.
     if(GShaderCompilingManager&&GShaderCompilingManager->GetNumRemainingJobs()>0&&FPlatformTime::Seconds()-Gallery.Started<240)
     {Gallery.Ready=FPlatformTime::Seconds();return true;}
-    constexpr int32 Views=7;
+    const int32 Views=Gallery.Views.Num();
     const double Age=FPlatformTime::Seconds()-Gallery.Ready;const int32 Stage=FMath::Clamp(FMath::FloorToInt((Age-8)/5),0,Views-1);
-    const auto& Routes=CireLanePath::Get(Mode->GetWorld());FVector Target,View;const float Y=CireLanePath::CenterY(0);
-    const TCHAR* Titles[]={TEXT("01  TOWN GATE / BREACH FIELDS"),TEXT("02  MARKET DISTRICT"),TEXT("03  COOPER'S LANES / RESIDENTIAL"),
-        TEXT("04  TOWN SQUARE"),TEXT("05  CASTLE GATE / DEFENDED LEAK ZONE"),TEXT("06  PRIVATE REALM / FULL TOWN OVERVIEW"),TEXT("07  ARMORED ESCORT ON THE MARCH ROAD")};
-    switch(Stage)
+    FVector Target=Gallery.Views[Stage].Target,View=Gallery.Views[Stage].View;
+    if(Stage==Views-1)
     {
-    case 0: Target=FVector(11200,Y,560);View=FVector(14700,Y+1350,980);break;
-    case 1: Target=FVector(6900,Y+150,120);View=FVector(8900,Y-950,820);break;
-    case 2: Target=FVector(3900,Y-350,260);View=FVector(5750,Y+500,720);break;
-    case 3: Target=FVector(1650,Y-150,230);View=FVector(3500,Y+1000,900);break;
-    case 4: Target=FVector(-1150,Y,820);View=FVector(1650,Y+750,760);break;
-    case 5: Target=FVector(6200,Y,0);View=FVector(-5200,Y-3400,6200);break;
-    default:
         if(!Gallery.bEscortMoving){Gallery.Escort->SetActorTickEnabled(true);Gallery.bEscortMoving=true;}
         Target=Gallery.Escort->GetActorLocation()+FVector(0,0,30);View=Target+FVector(-530,-550,240);
     }
     Gallery.Camera->SetActorLocation(View);Gallery.Camera->SetActorRotation((Target-View).Rotation());
-    Gallery.Label->SetText(FText::FromString(Titles[Stage]));
+    Gallery.Label->SetText(FText::FromString(Gallery.Views[Stage].Title));
     if(Age>=7+Stage*5&&Age<7.3+Stage*5)IStreamingManager::Get().StreamAllResources(1.f);
     if(Age>=10+Stage*5 && Stage>Gallery.CapturedStage)
     {
-        const TCHAR* Names[]={TEXT("01_gate.png"),TEXT("02_market.png"),TEXT("03_residential.png"),TEXT("04_square.png"),TEXT("05_castle.png"),TEXT("06_overview.png"),TEXT("07_armored_escort.png")};
-        const FString File=FPaths::Combine(Gallery.Directory,Names[Stage]);FScreenshotRequest::RequestScreenshot(File,false,false,false,FIntRect(),true);
+        const FString File=FPaths::Combine(Gallery.Directory,Gallery.Views[Stage].File);FScreenshotRequest::RequestScreenshot(File,false,false,false,FIntRect(),true);
         Gallery.Captures.Add(File);Gallery.CapturedStage=Stage;
         if(Stage==Views-1)
         {

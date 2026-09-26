@@ -208,6 +208,9 @@ public:
     // wave-director: neutral challenge pack (yellow nameplate) until a player attacks it (CireWaves.h).
     UPROPERTY(Replicated) bool bNeutral = false;
     UPROPERTY(Replicated) int32 LeakCostOverride = 0;
+    // monster-expansion: 1 = Rare Spawn, 2 = Bonus Loot Wave creature (CireMonsterExpansion.h). Server: escape time of a bonus creature.
+    UPROPERTY(Replicated) uint8 SpecialSpawn = 0;
+    float SpecialEscapeAt = 0;
     uint32 LaneRouteRevision = 0;
     int32 LaneWaypointIndex = 0;
     float EscortCollisionRefreshAt = 0;

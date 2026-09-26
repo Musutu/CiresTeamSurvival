@@ -559,7 +559,7 @@ def classify(rec, summons, constructs):
     heal = bool(re.search(r"(?<![a-z])heal(ing|s|ed)?(?![a-z])", label + " " + text)) and "damage" not in label
     deals = ("damage" in label and "reduction" not in label) or bool(re.search(r"(\{effect\}|\d)[^.]{0,24}damage", text)) and "less damage" not in text
     tags = []
-    for t in sorted(types, key=lambda t: list(CC_TAGS).index(t) if t in CC_TAGS else 99):
+    for t in sorted(types, key=lambda t: (list(CC_TAGS).index(t) if t in CC_TAGS else 99, t)):  # name breaks ties: set order varies per run
         tag = CC_TAGS.get(t) or OTHER_TAGS.get(t)
         if tag and tag not in tags:
             tags.append(tag)

@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireUITheme.h"
 #include "CireGame.h"
 #include "CireSummon.h"
 #include "CirePets.h" // pets
@@ -40,16 +41,31 @@ void ACireHUD::DrawStatuses(AActor* Actor,float X,float Y,float Size,int32 MaxIc
         const float At=X+Index*(Size+3);
         const float Remaining=E.End>Now?E.End-Now:-1.f,Total=E.End>E.Start?E.End-E.Start:0.f;
         DrawEffectIcon(E,I,At,Y,Size,Remaining,Total);
-        FString Body=CireEffects::Symbols(I,Remaining);
-        if(Remaining>0)Body+=(Body.IsEmpty()?TEXT(""):TEXT("  ·  "))+CireEffects::DurationText(Remaining)+TEXT(" left");
-        else if(I.Kind==ECireEffectKind::Passive)Body+=(Body.IsEmpty()?TEXT(""):TEXT("  ·  "))+FString(TEXT("Passive"));
-        if(E.Stacks>1)Body+=FString::Printf(TEXT("  ·  %d stacks"),E.Stacks);
-        Body+=TEXT("\n")+I.Line;
-        const TCHAR* Types[]={TEXT(""),TEXT("Magic"),TEXT("Poison"),TEXT("Curse"),TEXT("Disease"),TEXT("Physical")};
-        if(I.Dispel!=ECireDispel::None)Body+=FString(TEXT("\n"))+Types[static_cast<int32>(I.Dispel)]+(I.Dispel==ECireDispel::Physical?TEXT(" (cannot be dispelled)"):TEXT(" (dispellable)"));
-        if(E.Id==TEXT("poisoned"))Body+=TEXT("\nLeave the poisoned area to remove it.");
-        if(E.bFromLocalPlayer)Body+=TEXT("\nApplied by you.");
-        Tip(I.Name,Body,At,Y,Size,Size);
+        // readability: rich buff card: its icon, name in the buff / dispel colour, BUFF / DEBUFF tag and type,
+        // the symbol line ("DEF +40%"), time left and stacks, the description, dispel and source notes.
+        if(Hit(At,Y,Size,Size))
+        {
+            const TCHAR* Types[]={TEXT(""),TEXT("Magic"),TEXT("Poison"),TEXT("Curse"),TEXT("Disease"),TEXT("Physical")};
+            const FLinearColor Border=CireEffects::BorderColor(I);
+            FCireTooltipSpec T;
+            T.Icon=CireUIStyle::FindAbilityIcon(E.Id.ToString());
+            if(!T.Icon)T.Icon=CireUIStyle::FindAbilityIcon(StatusIconId(I));
+            if(!T.Icon)T.Icon=CireUIStyle::FindAbilityIcon(EffectSigil(E.Id,I));
+            T.Sigil=EffectSigil(E.Id,I);T.IconTint=Border;
+            T.Title=I.Name;T.TitleColor=FMath::Lerp(Border,FLinearColor::White,.25f);T.Accent=Border*.85f;
+            T.Tag=I.IsHarmful()?TEXT("DEBUFF"):I.Kind==ECireEffectKind::Passive?TEXT("PASSIVE"):TEXT("BUFF");
+            T.TagColor=I.IsHarmful()?FLinearColor(1.f,.45f,.4f,1):FLinearColor(.5f,1.f,.55f,1);
+            T.Subtitle=I.Dispel!=ECireDispel::None?FString(Types[static_cast<int32>(I.Dispel)])+(I.Dispel==ECireDispel::Physical?TEXT("  ·  cannot be dispelled"):TEXT("  ·  dispellable")):FString();
+            const FString Symbols=CireEffects::Symbols(I,Remaining);
+            if(!Symbols.IsEmpty())T.Stat(Symbols,CireUIStyle::StatColor(Symbols));
+            FString Time=Remaining>0?CireEffects::DurationText(Remaining)+TEXT(" left"):I.Kind==ECireEffectKind::Passive?FString(TEXT("Passive")):FString();
+            if(E.Stacks>1)Time+=FString::Printf(TEXT("%s%d stacks"),Time.IsEmpty()?TEXT(""):TEXT("  ·  "),E.Stacks);
+            if(!Time.IsEmpty())T.Text(Time,Remaining>0&&Remaining<3.f?FLinearColor(1.f,.5f,.4f,1):FLinearColor(1.f,.86f,.5f,1));
+            T.Divider();T.Text(I.Line);
+            if(E.Id==TEXT("poisoned"))T.Text(TEXT("Leave the poisoned area to remove it."),FLinearColor(.61f,.9f,.3f,1));
+            if(E.bFromLocalPlayer)T.Footer=TEXT("Applied by you.");
+            RichTip(T,At,Y,Size,Size);
+        }
     }
     if(Effects.Num()>Visible)
     {
@@ -132,7 +148,12 @@ void ACireHUD::DrawEffectIcon(const FCireActiveEffect& E,const FCireEffectInfo& 
     }
     if(Total>0&&Remaining>0)CireUIStyle::CooldownSweep(P,X+1,Y+1,Size-2,1.f-Remaining/Total);
     const float W=E.bFromLocalPlayer?2.f:1.3f;
-    P.Line(X,Y,X+Size,Y,Border,W);P.Line(X,Y+Size,X+Size,Y+Size,Border,W);P.Line(X,Y,X,Y+Size,Border,W);P.Line(X+Size,Y,X+Size,Y+Size,Border,W);
+    // hud-art: the theme's painted buff border, tinted toward the dispel colour (the colour stays readable);
+    // plain dispel-coloured lines when the theme has no border art or the icon is tiny.
+    const float BO=Size*.1f;
+    if(!(Size>=16&&CireUIStyle::HasThemeArt()&&CireUITheme::Draw(P,ECireThemePiece::BuffBorder,X-BO,Y-BO,Size+2*BO,Size+2*BO,FMath::Lerp(FLinearColor::White,Border,.6f)*FLinearColor(1.2f,1.2f,1.2f,1))))
+    {P.Line(X,Y,X+Size,Y,Border,W);P.Line(X,Y+Size,X+Size,Y+Size,Border,W);P.Line(X,Y,X,Y+Size,Border,W);P.Line(X+Size,Y,X+Size,Y+Size,Border,W);}
+    else if(E.bFromLocalPlayer)P.Line(X+1,Y+Size-1,X+Size-1,Y+Size-1,Border,1.5f);
     if(E.Stacks>1)P.Text(FString::FromInt(E.Stacks),X+Size-P.TextWidth(FString::FromInt(E.Stacks),Size*.42f,ECireFont::Numbers)-1,Y+Size*.5f,Size*.42f,FLinearColor::White,ECireFont::Numbers,true,false);
     if(UISettings.bShowStatusDurations&&Remaining>0&&Size>=15)
     {

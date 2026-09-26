@@ -196,7 +196,7 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
                     if (FCString::Strcmp(Role, TEXT("walk")) == 0 || FCString::Strcmp(Role, TEXT("run")) == 0)
                         Check((P.PelvisOffset - Idle.PelvisOffset).Size() < 45.f * Scale, // fab-integration: relative to the idle stance anchor // tripo-races: winged/tailed bodies fit their run drift less tightly (up to ~40cm at scale 1)
                              Where + FString::Printf(TEXT(" in place (pelvis %.1fcm off)"), P.PelvisOffset.Size()));
-                    if (FCString::Strcmp(Role, TEXT("death")) == 0 && Step == 4)
+                    if (FCString::Strcmp(Role, TEXT("death")) == 0 && Step == 4 && !Body.bSpectral) // monster-expansion: spirits rise and sink away
                         Check(P.HeadZ - Bottom < .45f * Height, Where + FString::Printf(TEXT(" lies down (head %.0f)"), P.HeadZ - Bottom));
                 }
             const FVector2D Speeds = Presentation->GroundSpeeds();

@@ -689,7 +689,12 @@ void ItemsV2Rules()
     CHECK(!StatAllowed(ItemStat::AttackDamage, ItemTier::Legendary) && !StatAllowed(ItemStat::SpellPower, ItemTier::Basic));
     CHECK(!StatAllowed(ItemStat::Strength, ItemTier::Basic) && !StatAllowed(ItemStat::Intelligence, ItemTier::Legendary));
     CHECK(!StatAllowed(ItemStat::DamageReduction, ItemTier::Epic) && StatAllowed(ItemStat::DamageReduction, ItemTier::Legendary));
-    CHECK(!StatAllowed(ItemStat::CritChance, ItemTier::Basic) && StatAllowed(ItemStat::Lifesteal, ItemTier::Legendary));
+    // rules-conformance: attack speed, CDR, regen, crit and lifesteal are rejected everywhere; move speed only on boots.
+    CHECK(!StatAllowed(ItemStat::CritChance, ItemTier::Legendary) && !StatAllowed(ItemStat::Lifesteal, ItemTier::Legendary));
+    CHECK(!StatAllowed(ItemStat::AttackSpeed, ItemTier::Basic) && !StatAllowed(ItemStat::CooldownReduction, ItemTier::Legendary));
+    CHECK(!StatAllowed(ItemStat::ManaRegen, ItemTier::Epic) && !StatAllowed(ItemStat::HealthRegen, ItemTier::Legendary) && !StatAllowed(ItemStat::EnergyRegen, ItemTier::Basic));
+    CHECK(!StatAllowed(ItemStat::MoveSpeed, ItemTier::Legendary) && StatAllowed(ItemStat::MoveSpeed, ItemTier::Basic, true) && StatAllowed(ItemStat::MoveSpeed, ItemTier::Legendary, true));
+    CHECK(!StatAllowed(ItemStat::AttackSpeed, ItemTier::Legendary, true));
     Catalog policy;
     auto band = Make("band", ItemTier::Basic, 150); band.Stats[ItemStat::Primary] = 5; band.Stats[ItemStat::Health] = 100;
     auto plate = Make("plate", ItemTier::Legendary, 300, {"band"}); plate.Stats[ItemStat::DamageReduction] = 6; plate.Stats[ItemStat::DamageBlock] = 10;
@@ -700,6 +705,40 @@ void ItemsV2Rules()
     policy.Items[0].Stats[ItemStat::AttackDamage] = 0; policy.Items[0].Stats[ItemStat::DamageBlock] = 4;
     CHECK(!ValidateStatPolicy(policy).empty());
     policy.Items[0].Stats[ItemStat::DamageBlock] = 0;
+    policy.Items[0].Stats[ItemStat::AttackSpeed] = 10;
+    CHECK(ValidateStatPolicy(policy).find("attackSpeed") != std::string::npos);
+    policy.Items[0].Stats[ItemStat::AttackSpeed] = 0; policy.Items[0].Stats[ItemStat::MoveSpeed] = 8;
+    CHECK(ValidateStatPolicy(policy).find("moveSpeed") != std::string::npos);
+    policy.Items[0].UniqueGroup = "boots";
+    CHECK(ValidateStatPolicy(policy).empty());
+    policy.Items[0].UniqueGroup.clear(); policy.Items[0].Stats[ItemStat::MoveSpeed] = 0;
+    policy.Items[1].Use.Kind = EffectKind::Elixir; policy.Items[1].Use.Buff[ItemStat::CooldownReduction] = 5;
+    CHECK(ValidateStatPolicy(policy).find("buff") != std::string::npos);
+    policy.Items[1].Use = Effect{};
+    // HitGuard ("reduce instances of incoming damage"): completed items only; lifesteal passives are rejected.
+    Passive guard; guard.Kind = PassiveKind::HitGuard; guard.Name = "Parry"; guard.Amount = 35; guard.Count = 2; guard.Cooldown = 8;
+    policy.Items[0].Passives = {guard};
+    CHECK(ValidateStatPolicy(policy).find("damage-reduction passive") != std::string::npos);
+    policy.Items[0].Passives.clear(); policy.Items[1].Passives = {guard};
+    CHECK(ValidateStatPolicy(policy).empty());
+    Passive leech; leech.Kind = PassiveKind::AbilityLifesteal; leech.Name = "Leech"; leech.Amount = 6;
+    policy.Items[1].Passives.push_back(leech);
+    CHECK(!ValidateStatPolicy(policy).empty());
+    policy.Items[1].Passives = {guard};
+    {
+        PassiveKind parsed{};
+        CHECK(ParsePassiveKind("hitGuard", parsed) && parsed == PassiveKind::HitGuard);
+        Inventory guardBag; guardBag.Equipment[1].Id = "plate";
+        const Totals gt = ComputeTotals(policy, guardBag);
+        CHECK(gt.HitGuardCharges == 2 && Near(gt.HitGuardPercent, 35) && Near(gt.HitGuardFlat, 0) && Near(gt.HitGuardRecharge, 8));
+        CHECK(Near(ApplyHitGuard(100, 35, 0), 65) && Near(ApplyHitGuard(30, 0, 40), 0) && Near(ApplyHitGuard(100, 20, 10), 70));
+        CHECK(Near(ApplyHitGuard(100, 500, 0), 100 - MaxHitGuardPercent) && Near(ApplyHitGuard(-4, 35, 0), 0) && Near(ApplyHitGuard(50, -10, -10), 50));
+        // Charges: two hits reduced back to back, the third is not; one charge returns after the recharge.
+        ChargeState charges;
+        CHECK(SpendCharge(charges, 2, 8, 100) && SpendCharge(charges, 2, 8, 100.5) && !SpendCharge(charges, 2, 8, 101));
+        CHECK(AvailableCharges(charges, 2, 8, 108.1) == 1 && AvailableCharges(charges, 2, 8, 116.2) == 2);
+    }
+    policy.Items[1].Passives.clear();
     // Primary items feed totals like any stat.
     Inventory primaryBag; primaryBag.Equipment[0].Id = "band"; primaryBag.Equipment[1].Id = "plate";
     const Totals pt = ComputeTotals(policy, primaryBag);

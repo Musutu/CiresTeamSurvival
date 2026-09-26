@@ -144,7 +144,12 @@ def main() -> int:
     if a.check:
         return 0
     data = json.loads(OUT.read_text(encoding="utf-8"))
-    data["abilities"] = {sid: {role: {"paths": [found[n]], "scale": 1.0} for role, n in roles.items()} for sid, roles in KIT_VFX.items()}
+    # Merge into the fab-coverage table (Tools/FabAbilityVFXTable.py via MapFabVFX.py): the kit pick wins for its own
+    # roles and is locked so a MapFabVFX.py rerun keeps it; the table's other roles and abilities stay.
+    abilities = data.setdefault("abilities", {})
+    for sid, roles in KIT_VFX.items():
+        for role, n in roles.items():
+            abilities.setdefault(sid, {})[role] = {"paths": [found[n]], "scale": 1.0, "locked": True}
     for key, n in KIT_BUFF_VFX.items():
         data.setdefault("buffs", {})[key] = {"paths": [found[n]], "scale": 1.0, "locked": True}
     OUT.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")

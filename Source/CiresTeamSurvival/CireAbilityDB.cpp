@@ -86,6 +86,8 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
         }
         // scaling-kits: primary-stat scaling, shield/ranged gating, level-15 bonus / aura.
         D.Requires=Str(J,TEXT("requires"));
+        // rules-conformance: an ability whose text says it drops/reduces threat carries "threatScale" (0 = drop, 0.5 = -50%).
+        if(J->HasField(TEXT("threatScale"))){D.ThreatScale=Num(J,TEXT("threatScale"));if(D.ThreatScale<0||D.ThreatScale>1)return Fail(TEXT("threatScale must be 0..1: ")+D.Id);}
         const TSharedPtr<FJsonObject>* Scaling=nullptr;
         if(J->TryGetObjectField(TEXT("scaling"),Scaling))
         {

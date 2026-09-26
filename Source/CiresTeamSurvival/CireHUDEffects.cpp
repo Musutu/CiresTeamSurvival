@@ -278,7 +278,7 @@ void ACireHUD::DrawOverheadStatus(const AActor* Unit, float CX, float BottomY, f
     float X = CX - Total * .5f;
     for (int32 K = 0; K < Shown; ++K)
     {
-        const FChip& C = Chips[K]; const float W = Widths[K], H = C.bCC ? 17.f : 13.f, Y = BottomY - H;
+        const FChip& C = Chips[K]; const float W = Widths[K], H = C.bCC ? 19.f : 15.f, Y = BottomY - H; // readability: chips fit the larger text
         const FString Key = FString::Printf(TEXT("%u:%s"), Unit->GetUniqueID(), *C.Id.ToString());
         FVector2D& Seen = OverheadSeen.FindOrAdd(Key); if (Seen.X <= 0.0 || Real - Seen.Y > 1.0) Seen.X = Real; Seen.Y = Real; // re-applied -> pops again
         const float Pop = 1.f + .35f * FMath::Clamp(1.f - static_cast<float>(Real - Seen.X) / .22f, 0.f, 1.f);
@@ -299,7 +299,7 @@ void ACireHUD::DrawOverheadStatus(const AActor* Unit, float CX, float BottomY, f
             TX = PX + 2 * R + 7;
         }
         const float TS = (C.bCC ? 10.5f : 9.f) * Pop;
-        if (!C.Label.IsEmpty()) P.Text(C.Label, TX, PY + (PH - TS) * .5f - 1.f, TS, C.bCC ? C.Color * 1.2f : FLinearColor(1.f, .96f, .88f, 1), ECireFont::Heading, true, false);
+        if (!C.Label.IsEmpty()) P.Text(C.Label, TX, PY + (PH - CireUIStyle::ReadableSize(TS) * 1.28f) * .5f, TS, C.bCC ? C.Color * 1.2f : FLinearColor(1.f, .96f, .88f, 1), ECireFont::Heading, true, false);
         if (C.Arrow)
         {
             const float AX = PX + PW - 7, AY = PY + PH * .5f, S = 3.2f * Pop;
