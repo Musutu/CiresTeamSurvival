@@ -151,7 +151,7 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
             if (auto* State = World->GetGameState<ACireGameState>())
             {
                 const TArray<float>& L = State->LaneLayout;
-                Check(L.Num() == 5 + 2 * (1 + 5 * 4) && FMath::RoundToInt(L[5]) == 5 && FMath::IsNearlyEqual(L[6 + 4 * 3 + 2], 600.f) && FMath::RoundToInt(L[6 + 4 * 3 + 3]) == 3,
+                Check(L.Num() == 5 + 2 * (1 + 5 * 4) + 3 /* medieval-kingdom: town frame + base tail */ && FMath::RoundToInt(L[5]) == 5 && FMath::IsNearlyEqual(L[6 + 4 * 3 + 2], 600.f) && FMath::RoundToInt(L[6 + 4 * 3 + 3]) == 3,
                     TEXT("packs replicate with x, y, radius and tier"));
             }
             if (Town)
