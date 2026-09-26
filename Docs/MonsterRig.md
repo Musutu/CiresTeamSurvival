@@ -20,7 +20,8 @@ and moves the parts Tripo gave no bones to (tentacles, vines) **in the skin mate
 3. **Runtime** (`CireMonsterArt`): basic swings rotate attack -> attackAlt -> attack3 by the replicated swing serial;
    cone -> heavy, charge/pull -> heavy2, self circle -> ground_slam|heavy2, rally/enrage/provoke -> shout, other
    casts -> cast; rank-scaled readable wind-ups (`cire.Monsters.SwingReadability`, normal .3-.5 s, elite .38-.6 s,
-   boss .55-.85 s); directional gait layer (strafe L/R, back-pedal, side steps when turning in place); feet floor
+   boss .55-.85 s); directional gait layer (strafe L/R, back-pedal, side steps; only the fallback when
+   movement-feel (cire.Locomotion) is off, since its travel warp and reversed gait own that); feet floor
    clamp (the pelvis lifts so a retargeted lunge or low gait never sinks the lowest foot below the idle stance).
 4. **Skin sway** - `M_CireMonsterSkin` (`Tools/BuildRaceSkinMaterial.py`, patched in place when the asset exists)
    has a world-position-offset sway on the *pre-skinned* position: up to two ellipsoid regions per body

@@ -930,6 +930,14 @@ void UCireMonsterArt::UpdateDirectionalGait(float DeltaTime, const ACireMonster&
 {
     // monster-rig: the set's strafe / back-pedal clips when the body moves off its facing, and short side steps
     // when it turns on the spot, so a monster circling or backing off never glides on its forward cycle.
+    // movement-feel owns this when it is on (travel warp, reversed gait for backpedals, stepped turns): the set's
+    // directional clips would double the lower-body turn, so this layer is only the fallback (cire.Locomotion 0).
+    if (CireLocomotion::Enabled())
+    {
+        Anim.SideAlpha = 0.f; Anim.Side.Sequence = nullptr;
+        LastYaw = static_cast<float>(Monster.GetActorRotation().Yaw); SmoothedYawRate = 0.f;
+        return;
+    }
     const float Yaw = static_cast<float>(Monster.GetActorRotation().Yaw);
     const float YawRate = DeltaTime > KINDA_SMALL_NUMBER ? FMath::FindDeltaAngleDegrees(LastYaw, Yaw) / DeltaTime : 0.f;
     LastYaw = Yaw;

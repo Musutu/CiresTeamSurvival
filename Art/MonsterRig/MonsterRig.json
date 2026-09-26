@@ -31,7 +31,8 @@
   "Tentacle sway in-engine: M_CireMonsterSkin WPO on PreSkinnedPosition, 2 ellipsoid regions (SwayCenterA/B, SwayRadiiA/B, SwayBandA/B=rootZ,tipZ,amount), SwaySpeed/SwayWave, SwayDebug mask via VertexInterpolator (PreSkinnedPosition is VS-only). Builder patches the existing asset in place (delete refused: referenced; the LFS-lockable file is read-only -> chmod u+w). Data MonsterArt.json bodies.<Variant>.sway, applied in CireRaces::ApplySkin; cvar cire.Monsters.SwayDebug.",
   "Sway tuned with the new face_<unit> gallery stage (--cvars cire.Monsters.SwayDebug=1): beards on AbyssalStalker, DeepspawnThrall, CoralshellGuardian, Tidecaller, Barbspitter, DrownedProphet (+skirt), MindLeech skirt, Maw upright tentacles (tipZ above rootZ), Vinelasher whips (both arms), ElderOakheart moss beard. WitheredMatron dropped (knee-length open gown: the hem mask caught her legs). Motion verified with an exaggerated 25 cm amount (beard visibly swept), then restored.",
   "Grounding fix: native checks failed AbyssalStalker attack (feet -10/-19 cm) and BarkhideWarden walk/run (-14 cm) on the retargeted sets. CireMonsterAnim now lifts the pelvis so the lowest foot never goes below the idle stance floor while moving/acting (never while dying). CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418.",
-  "Segmentation: none needed for drowned/blightwood (fused weapons weighted to the holding hand). Candidates elsewhere: TuskedBehemothHQ leg-bound 4%, GravemawPackLeader/DrakkariAshwing/EmberWhelp/FeralMammoth far >7%, DeepforgeRunesmith arm-bound low 10%."
+  "Segmentation: none needed for drowned/blightwood (fused weapons weighted to the holding hand). Candidates elsewhere: TuskedBehemothHQ leg-bound 4%, GravemawPackLeader/DrakkariAshwing/EmberWhelp/FeralMammoth far >7%, DeepforgeRunesmith arm-bound low 10%.",
+  "Merged main ab81c6c (interface-stall, summons, champion-hq, video-crash, telegraphs, weapon-grips, movement-feel, vendors, dev-route-tools). No conflicts. Reconciled with movement-feel: its travel warp / reversed backpedal gait / stepped turns now own directional locomotion, so the set's strafe/back-pedal/side-step layer (UpdateDirectionalGait) only runs as the fallback when cire.Locomotion is off (both at once double-turned the legs). The pelvis-lift grounding runs before movement-feel's pose feel/leg IK. Grounding checks re-run: CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418."
  ],
  "nextSteps": [
   "1. Remaining races: run -CireFabAnimMonsterSets per race (-CireFabAnimOnly=<variants>), review races_<race> + close_<units> galleries, add sway where the body has hanging parts (e.g. void RiftGazer eye stalks, VoidbornHerald tentacles).",
@@ -39,9 +40,6 @@
   "3. Gates after each race; commit per race."
  ],
  "gates": {
-  "build": "Result: Succeeded (Saved/AgentLogs/feat-monster-rig-build-final-*.log, -Project=F:\\CiresTeamSurvival-agents\\cts-monster-rig)",
-  "expansion": "RunExpansionChecks --timeout 240 --port 17160: native PASS (CIRE_COMBAT_EXPANSION_PASS, CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418), replay PASS, network PASS. Earlier replay/network timeouts were machine load (10 other editors, 90 s cold asset-registry gather counted inside the probe's 90 s budget).",
-  "network": "RunNetworkSmoke --port 17166 --startup-timeout 120 --probe-timeout 90: CIRE_NET_SERVER_PASS heroes=10 teams=5/5, CIRE_NETWORK_SMOKE_PASS",
-  "interface": "RunInterfaceSmoke --port 17168/17169 --startup-timeout 120 --probe-timeout 120: FAIL twice at the known prep->arena chat stall (server never logs CHAT_PASS; fixed by 2d1be99 on fix/interface-stall, not on this branch). With 2d1be99 cherry-picked uncommitted: CIRE_INTERFACE_SMOKE_PASS (port 17167); then reverted and rebuilt."
+  "merge-checkpoint": "expansion native/replay/network PASS (CIRE_COMBAT_EXPANSION_PASS, CIRE_REPLAY_INTEGRATION_PASS); network CIRE_NET_SERVER_PASS heroes=10 teams=5/5 + CIRE_NETWORK_SMOKE_PASS; interface CIRE_INTERFACE_SMOKE_PASS without any patch (logs Saved/AgentLogs/*-merge-*)"
  }
 }
