@@ -396,8 +396,8 @@
     }
    },
    "gallery": "Saved/MonsterGallery/20260926-100236",
-   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
-   "note": "10/10 NPCMeshes bodies retargeted (BarbedHunterB crossbow 11 roles by design, the rest 15). Segmentation candidate GravemawPackLeader (far 12.4% on spine_02) checked close up (face_gravemaw_pack_leader): it is the wolf-pelt cape, which stretches into a long band on the two-hand swing but reads as a flowing pelt, not torn geometry; logged, not segmented (Tripo re-segment would be the fix if Eric wants it). HollowShieldbearer thumb 'far' flag = the shield in the hand, fine."
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS (after the keepTripo fix)",
+   "note": "10/10 NPCMeshes bodies retargeted (BarbedHunterB crossbow 11 roles by design, the rest 15). Segmentation candidate GravemawPackLeader (far 12.4% on spine_02) checked close up (face_gravemaw_pack_leader): it is the wolf-pelt cape, which stretches into a long band on the two-hand swing but reads as a flowing pelt, not torn geometry; logged, not segmented (Tripo re-segment would be the fix if Eric wants it). HollowShieldbearer thumb 'far' flag = the shield in the hand, fine. First native run FAILED 'pack leader height ratio 1.43 (archetype scale 1.70)': the two-hand set idle is a deep crouch, so the boss no longer stood 1.7x the infantry. Fix: FabAnimMap monsterSets.keepTripo (per-body roles kept from the Tripo library); GravemawPackLeader keeps its upright Tripo idle, uses the set's attacks/gait."
   }
  }
 }

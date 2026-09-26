@@ -1832,6 +1832,7 @@
   }
  },
  "monsterSets": {
+    "keepTripo": {"_comment": "roles a body keeps from its own Tripo library: the Pack Leader boss keeps its upright idle (drawn 1.7x the infantry; the two-hand set idle is a deep crouch)", "GravemawPackLeader": ["idle"]},
   "_comment": "monster-rig: weapon-matched Fab sets for the Tripo monster bodies (Tools/RetargetFabAnimations.py -CireFabAnimMonsterSets). assign: body variant -> set ('' = keep the Tripo library clips). roles: set -> monster role -> clip id in 'clips' or 'loco:<key>' in 'locomotion' (locomotionOf picks another set's loops).",
   "locomotionOf": {
    "crossbow": "bow"

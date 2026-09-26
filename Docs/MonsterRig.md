@@ -15,7 +15,8 @@ and moves the parts Tripo gave no bones to (tentacles, vines) **in the skin mate
    Fab clip). `Tools/RetargetFabAnimations.py -CireFabAnimMonsterSets -CireFabAnimOnly=A+B` retargets idle, walk
    f/b/l/r, run, attack/attackAlt/attack3, heavy/heavy2, cast, shout, hit, death onto each body
    (`/Game/FabDerived/Anim/<Variant>Set`, local only: Fab-licensed) and writes `Content/Data/MonsterFabClips.json`
-   `variants.<Variant>.{set, roles, walkSpeedCm, runSpeedCm}`. At runtime the set roles replace the Tripo roles;
+   `variants.<Variant>.{set, roles, walkSpeedCm, runSpeedCm}` (`monsterSets.keepTripo`: roles a body keeps from its
+   Tripo library, e.g. the Pack Leader boss keeps its upright idle). At runtime the set roles replace the Tripo roles;
    a missing package (clean clone, `-CireNoFab`) keeps the Tripo library.
 3. **Runtime** (`CireMonsterArt`): basic swings rotate attack -> attackAlt -> attack3 by the replicated swing serial;
    cone -> heavy, charge/pull -> heavy2, self circle -> ground_slam|heavy2, rally/enrage/provoke -> shout, other
