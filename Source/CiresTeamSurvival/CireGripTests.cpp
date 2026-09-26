@@ -210,7 +210,8 @@ bool CireGrip::RunSmoke(ACireGameMode* Mode)
         {TEXT("troll_berserker_melee"), TEXT("troll_melee"), TEXT("throwing axes")}, {TEXT("troll_berserker_melee"), TEXT("dual_daggers"), TEXT("daggers")},
         {TEXT("paladin_holy"), TEXT("paladin"), TEXT("flail+shield")}, {TEXT("dwarf_miner"), TEXT("miner"), TEXT("pick")},
         {TEXT("totemic_behemoth"), TEXT("behemoth"), TEXT("totem")}, {TEXT("lancer"), TEXT("lancer"), TEXT("lance")},
-        {TEXT("gunblade"), TEXT("tripo_gunblade"), TEXT("gunblade")}}; // weapon-grips: Gun & Sword set
+        {TEXT("gunblade"), TEXT("tripo_gunblade"), TEXT("gunblade")}, // weapon-grips: Gun & Sword set
+        {TEXT("aetheri_warden"), TEXT("aetheri_warden"), TEXT("halberd")}}; // weapon-grips: second hand on the halberd at rest
     float Y = -1000.f;
     for (const FCase& Case : Cases)
     {
