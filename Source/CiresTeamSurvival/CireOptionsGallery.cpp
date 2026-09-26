@@ -421,7 +421,7 @@ bool CireOptionsGallery::Tick(ACireGameMode* Mode)
 {
     if(CireWowUIGallery::Tick(Mode))return true;
     if(G.Mode.Get()!=Mode)return false;if(G.bDone)return true;
-    if(FPlatformTime::Seconds()-G.Start>60){Finish(false);return true;}
+    if(FPlatformTime::Seconds()-(G.Ready>0?G.Ready:G.Start)>(G.Ready>0?60:120)){Finish(false);return true;} // budget counts from ready (map load varies under load)
     if(G.Ready<0)
     {
         auto* PC=Cast<ACireController>(Mode->GetWorld()->GetFirstPlayerController());auto* HUD=PC?Cast<ACireHUD>(PC->GetHUD()):nullptr;
