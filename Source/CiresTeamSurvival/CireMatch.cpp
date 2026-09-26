@@ -34,6 +34,7 @@
 #include "CireConstruct.h"
 #include "CireSummon.h"
 #include "CireKitsGallery.h" // scaling-kits
+#include "CireGripGallery.h" // weapon-grips
 #include "CireSpellGallery.h"
 #include "CireAuraGallery.h" // aura-vfx
 #include "CireAbilityVFXGallery.h" // ability-vfx
@@ -246,6 +247,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireNewChampionsGallery::Initialize(this); // new-champions
     if(!bFeedbackPreview)bFeedbackPreview = CireChampionHQGallery::Initialize(this); // champion-hq
     if(!bFeedbackPreview)bFeedbackPreview = CireKitsGallery::Initialize(this); // scaling-kits
+    if(!bFeedbackPreview)bFeedbackPreview = CireGripGallery::Initialize(this); // weapon-grips
     if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
     CireNPCNetProbe::InitializeServer(this);
 #endif
@@ -501,6 +503,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireNewChampionsGallery::Tick(this)) return; // new-champions
     if(CireChampionHQGallery::Tick(this)) return; // champion-hq
     if(CireKitsGallery::Tick(this)) return; // scaling-kits
+    if(CireGripGallery::Tick(this)) return; // weapon-grips
     if(CireShopFixtures::Tick(this)) return; // progression-shop
     if(CireNPCNetProbe::TickServer(this)) return;
     if(CireExpansionNetProbe::TickServer(this)) return;

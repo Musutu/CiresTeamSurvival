@@ -3,12 +3,13 @@
 Sets (GDH All Animation Bundle unless noted), each with attacks (rotating combo), hit, death, roll, jump and an
 8-direction walk/run locomotion set on the same weapon stance:
   sword_shield  GDH SwordShield V1        warden, footman, paladin, hammer_shield
-  one_hand      GDH OneHandSword V1       miner, chieftain
-  two_hand      GDH TwoHandSword V1       aetheri_warden, behemoth
+  one_hand      GDH OneHandSword V1       miner, chieftain locomotion (their swings come from "axe")
+  axe           GDH AxeV1                 miner (pick-hammer), chieftain (war axe): weapon-grips extra set, strikes only
+  two_hand      GDH TwoHandSword V1       behemoth
   dual          GDH DualSword V1          troll_melee, dual_daggers
   bow           GDH Archery V1            ranger
   spell         GDH SpellCombat V1        scholar, summoner, wizard, dryad, keeper, artificer, witch_slayer
-  spear         GDH Spear V1              lancer, huntress (glaive)
+  spear         GDH Spear V1              lancer, huntress (glaive), aetheri_warden (halberd: extra set on its body)
   gun           Gun & Sword (9CG)         gunblade (melee combo; the ranged shot keeps the Tripo clip)
   unarmed       GDH Unarmed V1 + Male Locomotion Set   ether golems
   crossbow      Crossbow Animation Set (2DragoH)   ranger_crossbow (extra set on the Ranger body: shots, hit, death,
@@ -57,7 +58,9 @@ SETS["sword_shield"] = (
     {**{"attack%d" % i: "%s/IP/AS_SwordAndShieldAnimV1_Attack%d_Stage1_IP" % (ss, i) for i in (3, 4, 6, 10)},
      "hit": ss + "/RM/AS_SwordAndShieldAnimV1_Defense_Hit_Fw_RM", "death": G + "OneHandSword/OneHandSwordV1/Animation/RM/AS_OneHandedSwordAnimV1_DeathV1_RM",
      "roll": ss + "/RM/AS_SwordAndShieldAnimV1_Roll_Fw_RM", "jump": JUMP},
-    {"idle": ss + "/IP/AS_SwordAndShieldAnimV1_Idle1_IP",
+    # weapon-grips: Idle2 stands upright with the shield lowered at the side; Idle1 is a deep guard crouch with the
+    # shield across the chest and face (Eric: "the knight's shield is in his face"). The shield rises in blocks/skills.
+    {"idle": ss + "/IP/AS_SwordAndShieldAnimV1_Idle2_IP",
      **{"%s_%s" % (g.lower(), k): "%s/IP/AS_SwordAndShieldAnimV1_%s_%s_Loopable_IP" % (ss, g, d) for g in ("Walk", "Run") for k, d in DIRS8.items()}})
 oh = G + "OneHandSword/OneHandSwordV1/Animation"
 SETS["one_hand"] = (
@@ -173,12 +176,20 @@ for _name, (_clips, _loco) in SETS.items():
         _clips["cast"] = CAST
     if _name in ROLLS and "roll" not in _clips:
         _clips["roll"] = ROLLS[_name]
+# weapon-grips: GDH AxeV1 for the axe and pick-hammer champions (the one-hand sword set swung them like swords).
+ax = G + "AxeV1/Animation"
+SETS["axe"] = (
+    {**{"attack%d" % n: "%s/IP/AS_AxeCombatAnimV1_Attack%d_Stage1_IP" % (ax, i) for n, i in enumerate((3, 7, 8, 9), 1)},
+     "hit": ax + "/RM/AS_AxeCombatAnimV1_Hit_Fw_RM", "death": ax + "/RM/AS_AxeCombatAnimV1_Death_Fw_RM",
+     "roll": ax + "/RM/AS_AxeCombatAnimV1_Flip_Fw_RM", "jump": JUMP, "shout": SHOUT, "cast": CAST,
+     **{"skill%d" % n: p for n, p in enumerate(standalone(ax, "AS_AxeCombatAnimV1_", ["Attack1", "Attack5", "Attack12"]), 1)}},
+    {})
 dg = G + "DaggerCombatAnimationV1/Animation/IP"
 SETS["throw"] = ({"attack1": dg + "/AS_DaggerCombatAnimationV1_Throw1_IP", "attack2": dg + "/AS_DaggerCombatAnimationV1_Throw2_IP"}, {})
 
 STYLES = {  # WeaponLoadouts preset -> set
     "warden": "sword_shield", "footman": "sword_shield", "paladin": "sword_shield", "hammer_shield": "sword_shield",
-    "miner": "one_hand", "chieftain": "one_hand", "aetheri_warden": "two_hand", "behemoth": "two_hand",
+    "miner": "axe", "chieftain": "axe", "aetheri_warden": "spear", "behemoth": "two_hand",  # weapon-grips: axe / polearm sets
     "troll_melee": "dual", "dual_daggers": "dual", "ranger": "bow",
     "scholar": "spell", "summoner": "spell", "wizard": "spell", "dryad": "spell", "keeper": "spell", "artificer": "spell",
     "witch_slayer": "spell", "tripo_witch_slayer": "spell", "lancer": "spear", "huntress": "spear", "tripo_huntress": "spear",
@@ -190,6 +201,8 @@ INHERIT = {"ranger_crossbow": "bow"}  # style on an extra set -> the body's base
 EXTRA_SETS = {  # body folder -> additional sets retargeted onto it (alternate loadouts; clips only, no locomotion)
     "Ranger": ["crossbow"],
     "troll_berserker_melee": ["throw"],  # fab-coverage: the ranged troll shares this body
+    # weapon-grips: the right swing for the weapon, keeping the body's locomotion (one-handed / two-handed stance)
+    "dwarf_miner": ["axe"], "orc_chieftain": ["axe"], "TripoAetheriWarden": ["spear"],
 }
 BODIES = {  # ChampionAttacks02 body folder -> set (its drafted profile's preset)
     "Warden": "sword_shield", "drakish_footman": "sword_shield", "paladin_holy": "sword_shield",

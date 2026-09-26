@@ -140,7 +140,9 @@ pick, totem, lance) and the kept monster props (dagger, axe, sword+shield, bow),
 handle axis through the palm centre (<= 0.35 r + 1.2 cm), handle point in the fist (<= 2.5 cm along), handle
 orientation equal to the authored tilt (+-6 deg), every finger's middle joint outside the handle (>= 0.6 r) yet
 wrapping it (<= r + 5.5 cm), knuckles and wrist clear of the handle (>= 0.8 r), second hand on its grip line and
-carried weapons upright in idle, shields on the forearm, finite poses. `CIRE_GRIP_PASS checks=674 grips=50`.
+carried weapons upright in idle, shields on the forearm, finite poses. weapon-grips adds the gunblade case, and props
+on an animation-authored grip (Docs/WeaponLoadouts.md "Grip model") are checked against the Fab clip's grip frame
+instead of the tilt. `CIRE_GRIP_PASS checks=791 grips=54`.
 Close-ups: `Tools/RunMonsterGallery.py --only hand_,grips_,styles_`.
 
 ## Tests and evidence

@@ -727,6 +727,10 @@ void UCireChampionArt::UpdateVisuals(ACireHero& Hero, float DeltaSeconds)
         {
             Combat->Hands = Weapons->GripHands;
             Combat->Hands.TwoHandWeight = Weapons->GripHands.bTwoHand || Weapons->GripHands.bCarry ? 1.f - Combat->AttackWeight : 0.f;
+            // weapon-grips: a carried staff stays upright at the side while the other hand casts (the spell clips
+            // swung it through the torso); only rolls and deaths let go of the carry.
+            if (Weapons->GripHands.bCarry && CireChampionActions::MotionFor(Hero) == TEXT("cast"))
+                Combat->Hands.CarryWeight = Hero.bDead || Combat->RollProgress >= 0.f || (Hero.Mobility && Hero.Mobility->IsRolling()) ? 0.f : 1.f;
         }
     }
 }
