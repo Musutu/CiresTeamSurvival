@@ -253,7 +253,9 @@ void ACireController::PlayerTick(float Dt) {
         else if(WasInputKeyJustPressed(EKeys::BackSpace)&&!ChatDraft.IsEmpty())ChatDraft.LeftChopInline(1);
         return;
     }
-    if(Keys.WasPressed(this,TEXT("OpenChat"))) {CireTargeting::Cancel(this);BeginChat();return;}
+    // Enter also confirms text in the layout editor (marker names) and other input-owning panels: opening chat on the same
+    // press left an invisible chat line capturing input, so the champion could not move. No chat in route edit mode at all.
+    if(Keys.WasPressed(this,TEXT("OpenChat"))&&!CireRouteEditMode::IsActive()&&!(Interface&&Interface->IsBlockingGameplayInput())) {CireTargeting::Cancel(this);BeginChat();return;}
     if(Keys.WasPressed(this,TEXT("ToggleLayoutEditor"))&&Interface)Interface->ToggleLayoutEditor();
     if(Keys.WasPressed(this,TEXT("ToggleOptions"))&&Interface)Interface->ToggleSettings();
     if(Keys.WasPressed(this,TEXT("ToggleDeveloperTools"))&&Interface)Interface->ToggleDeveloperTools();
