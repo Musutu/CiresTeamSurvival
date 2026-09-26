@@ -3,6 +3,7 @@
 #include "CireGame.h"
 #include "CireItems.h" // progression-shop: ready flags on the inventory
 #include "CireLanePath.h"
+#include "CireTownMap.h" // medieval-kingdom
 #include "CireLoot.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
@@ -157,7 +158,8 @@ void NudgeAlong(ACireMonster* M, float Step)
     const float Length = FMath::Max(1.f, CireLanePath::RouteLength(World, Team));
     const float Progress = CireLanePath::RouteProgress(World, Team, M->GetActorLocation());
     FVector Target = CireLanePath::PointAlongRoute(World, Team, FMath::Min(.995f, Progress + Step / Length), M->GetActorLocation().Z);
-    Target.Z = FMath::Max(Target.Z, 100.);
+    if (CireTownMap::IsActive()) Target.Z = CireTownMap::Ground(World, FVector2D(Target)) + M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 10.f; // medieval-kingdom: landscape
+    else Target.Z = FMath::Max(Target.Z, 100.);
     M->GetCharacterMovement()->StopMovementImmediately();
     M->SetActorLocation(Target, false, nullptr, ETeleportType::TeleportPhysics);
     CireLanePath::InitializeProgress(M);
@@ -299,7 +301,8 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
     auto* S = Mode->GetGameState<ACireGameState>();
     FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     // pacing: waves appear SpawnAlongRoute of the way down the road (0 = the breach gate).
-    const FVector Breach = CireLanePath::SpawnPosition(Mode->GetWorld(), Team);
+    // medieval-kingdom: bosses may have their own authored spot (route document "boss"; default the breach).
+    const FVector Breach = O.Unit.bBoss ? CireLanePath::BossSpawnPosition(Mode->GetWorld(), Team) : CireLanePath::SpawnPosition(Mode->GetWorld(), Team);
     const FVector Start = R.Config.SpawnAlongRoute > .001f ? CireLanePath::PointAlongRoute(Mode->GetWorld(), Team, R.Config.SpawnAlongRoute, Breach.Z) : Breach;
     const FVector Default = CireLanePath::ClampToLane(Mode->GetWorld(), Team, Start + FVector(((O.Slot / 3) % 2) * 90.f, ((O.Slot % 3) - 1) * 170.f, 0), 80);
     const FVector Position = CireDeveloperTools::SpawnPosition(Mode->GetWorld(), Team, O.Slot, Default);

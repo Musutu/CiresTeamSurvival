@@ -5,6 +5,7 @@
 #include "CireShopFixtures.h" // progression-shop
 #include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
+#include "CireTownMap.h" // medieval-kingdom
 #include "CireRouteEditMode.h" // dev-route-tools
 #include "CireEnvironmentGallery.h"
 #include "CireBatchArtGallery.h"
@@ -170,7 +171,8 @@ ACireGameMode::ACireGameMode() {
     HUDClass=ACireHUD::StaticClass();
     ReplaySpectatorPlayerControllerClass=ACireReplaySpectator::StaticClass();
 }
-FVector ACireGameMode::BasePosition(int32 Team) const { return FVector(-1700,Team==0?-2100:2100,110); }
+// medieval-kingdom: the base comes from the active route document (procedural town: (-1700, 0) local).
+FVector ACireGameMode::BasePosition(int32 Team) const { return CireLanePath::BasePosition(GetWorld(),Team,110); }
 FVector ACireGameMode::ArenaPosition(int32 Team,int32 Slot) const {
     return CireArenas::SpawnLocation(ArenaIndex,Team,Slot); // arenas: the picked arena's authored, mirrored spawns
 }
@@ -208,13 +210,15 @@ void ACireGameMode::BeginPlay() {
     SmokeBossLeaks = 0; SmokeCycleClearValid = false;
     if(bSmoke) {Clock=Cires::MatchClock({2,2,1}); WaveBreatherSeconds=.3f; WaveTimer=.3f; BotFillTimer=0;}
 #endif
+    CireTownMap::InitializeServer(this); // medieval-kingdom: pick the map, switch the realm frame, stream the town realms
     CireDeveloperTools::Initialize(this);
     CireSkillShop::InitializeMode(this); // progression-shop: -CireMode=SkillShop|Classic
     CireLanePath::PublishState(GetGameState<ACireGameState>());
     GetWorld()->SpawnActor<ACireWorld>();
+    CireTownMap::PlaceHeroes(this); // medieval-kingdom: champions that joined before the town streamed in
     for(int32 Team=0;Team<2;++Team) {
         auto* Goal=GetWorld()->SpawnActor<ACireTownGoal>(ACireTownGoal::StaticClass(),
-            FVector(-1850,Team==0?-2100:2100,150),FRotator::ZeroRotator);
+            CireLanePath::GoalZoneCenter(GetWorld(),Team,150),FRotator::ZeroRotator);
         if(Goal)Goal->TeamId=Team;
         else UE_LOG(LogCire,Error,TEXT("Town goal spawn failed for team %d"),Team);
     }
@@ -257,7 +261,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireRouteEditMode::InitializeServer(this); // dev-route-tools: -CireRouteEdit, nothing of the match starts
     CireNPCNetProbe::InitializeServer(this);
 #endif
-    if(!bFeedbackPreview)SpawnPacks();
+    if(!bFeedbackPreview&&!CireTownMap::IsExplore())SpawnPacks(); // medieval-kingdom: explore has no packs
     if(!bFeedbackPreview)CireBalanceLab::Initialize(this);
     if(!bFeedbackPreview)CireWaveDirector::InitializeSoak(this); // wave-director
 #if !UE_BUILD_SHIPPING
@@ -491,6 +495,7 @@ void ACireGameMode::ResolveArena() {
 }
 void ACireGameMode::Tick(float Dt) {
     Super::Tick(Dt);
+    if(CireTownMap::TickExplore(this,Dt)) return; // medieval-kingdom: -CireExplore walks the town, no match
 #if !UE_BUILD_SHIPPING
     if(CireRouteEditMode::TickServer(this,Dt)) return; // dev-route-tools: map layout edit mode: every game system stays dormant
     if(CireTooltipGallery::Tick(this)) return;
@@ -561,7 +566,7 @@ void ACireGameMode::Tick(float Dt) {
                 const auto WaveMonsters=Monsters;
                 for(auto* M:WaveMonsters) if(IsValid(M)&&M->PackId<0) {
                     if(M->bBoss)++SmokeBossLeaks;
-                    M->SetActorLocation(FVector(-1850,M->Lane==0?-2100:2100,110),false,nullptr,ETeleportType::TeleportPhysics);
+                    M->SetActorLocation(CireLanePath::GoalZoneCenter(GetWorld(),M->Lane,110),false,nullptr,ETeleportType::TeleportPhysics);
                 }
                 SmokeWaveAge=0;
             }

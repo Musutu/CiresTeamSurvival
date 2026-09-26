@@ -138,6 +138,7 @@ public:
     // progression-shop: end
 private:
     void Panel(float X, float Y, float W, float H, FLinearColor Color);
+    void DrawExploreOverlay(); // medieval-kingdom (CireTownMap.cpp)
     void Label(const FString& Text, float X, float Y, float Size, FLinearColor Color=FLinearColor::White);
     /** Crisp TTF text at its rendered pixel size with an optional 1px outline and drop shadow. */
     void TextFx(const FString& Text, float X, float Y, float Size, FLinearColor Color, ECireFont Font, bool bOutline, bool bShadow=true);

@@ -1,6 +1,7 @@
 // dev-route-tools: map layout data model (typed, team-owned, mirrored, realm-local markers). See CireMapLayout.h.
 #include "CireMapLayout.h"
 #include "CireLanePath.h"
+#include "CireTownMap.h" // medieval-kingdom
 #include "Dom/JsonObject.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformFileManager.h"
@@ -862,8 +863,9 @@ FString CireMapLayout::VendorsJson(const FCireMapLayout& L)
             *M.Id, *M.Kind.ReplaceCharWithEscapedChar(), *M.Name.ReplaceCharWithEscapedChar(), OwnerValue(M.Owner), *PairField,
             M.Position.X, M.Position.Y, M.Yaw, M.SignPos.X, M.SignPos.Y, M.SignHeight, M.SignYaw, M.StallPos.X, M.StallPos.Y, M.StallYaw, M.StallSize.X, M.StallSize.Y));
     }
-    return FString::Printf(TEXT("{\n  \"schemaVersion\": 1,\n  \"units\": \"centimeters\",\n  \"frame\": \"realm-local\",\n  \"source\": \"MapLayout.json (map layout editor)\",\n  \"vendors\": [\n%s\n  ]\n}\n"),
-        *FString::Join(Lines, TEXT(",\n")));
+    // medieval-kingdom: the frame names the town the spots belong to (CireVendors only reads its own town's file).
+    return FString::Printf(TEXT("{\n  \"schemaVersion\": 1,\n  \"units\": \"centimeters\",\n  \"frame\": \"%s\",\n  \"source\": \"MapLayout.json (map layout editor)\",\n  \"vendors\": [\n%s\n  ]\n}\n"),
+        CireTownMap::IsActive() ? TEXT("castletown") : TEXT("realm-local"), *FString::Join(Lines, TEXT(",\n")));
 }
 FString CireMapLayout::ActivePath() { return FPaths::ProjectContentDir() / TEXT("Data/MapLayout.json"); }
 FString CireMapLayout::VendorsPath() { return FPaths::ProjectContentDir() / TEXT("Data/TownVendors.json"); }
@@ -912,7 +914,9 @@ FCireMapLayout CireMapLayout::FromRoutes(const FCireBattlefieldRoutes& R)
         const TArray<FVector2D>& P = R.LocalPoints[Realm];
         if (P.Num() == 0) continue;
         // The hero base of the procedural town (local -1700, 0) facing down the road.
-        const FString Hero = Place(L, PlayerSpawn, FVector2D(-1700, 0), Team, 0.f, bSame);
+        const FString Hero = Place(L, PlayerSpawn, R.BaseLocal, Team, 0.f, bSame); // medieval-kingdom: the document's base
+        if (R.bRespawn) Place(L, Respawn, R.RespawnLocal, Team, 0.f, bSame);
+        if (R.bBossSpawn) Place(L, BossSpawn, R.BossLocal, Team, 0.f, bSame);
         const float Face = P.Num() > 1 ? FMath::RadiansToDegrees(FMath::Atan2(P[1].Y - P[0].Y, P[1].X - P[0].X)) : 180.f;
         const FString Spawn = Place(L, MonsterSpawn, P[0], Team, Face, bSame);
         SetName(L, Spawn, TEXT("The Breach"));
@@ -973,5 +977,17 @@ bool CireMapLayout::CompileRoutes(const FCireMapLayout& L, const FCireBattlefiel
         const FCireMapMarker* Other = ObjectiveOf(L, ECireMarkerOwner::Team2);
         if (Other && !SameXY(Other->Position, Goal->Position)) Notes.Add(TEXT("The T2 objective differs from T1's; today's goal zone is one realm-local spot (T1's)"));
     }
+    // medieval-kingdom: the hero base (player spawn), the respawn point and the boss spawn are one realm-local spot each in
+    // the route document (T1's marker, else a shared one); gameplay reads them through CireLanePath.
+    auto SpotOf = [&](FName Type) -> const FCireMapMarker*
+    {
+        const FCireMapMarker* SharedOne = nullptr;
+        for (const FCireMapMarker& M : L.Markers)
+            if (M.Type == Type) { if (M.Owner == ECireMarkerOwner::Team1) return &M; if (M.Owner == ECireMarkerOwner::Shared && !SharedOne) SharedOne = &M; }
+        return SharedOne;
+    };
+    if (const FCireMapMarker* M = SpotOf(PlayerSpawn)) Out.BaseLocal = M->Position;
+    if (const FCireMapMarker* M = SpotOf(Respawn)) { Out.bRespawn = true; Out.RespawnLocal = M->Position; }
+    if (const FCireMapMarker* M = SpotOf(BossSpawn)) { Out.bBossSpawn = true; Out.BossLocal = M->Position; }
     return bOk;
 }

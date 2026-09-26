@@ -165,7 +165,8 @@ FVector CireDeveloperTools::SpawnPosition(UWorld* World,int32 Team,int32 Index,F
     Index=FMath::Max(0,Index);
     const float X=S.SpawnX+(Index/2)*S.SpawnSpacing;
     const float LocalY=S.SpawnOffsetY+(Index%2==0?-S.SpawnSpread:S.SpawnSpread);
-    return CireLanePath::ClampToLane(World,Team,FVector(X,CireLanePath::CenterY(Team)+LocalY,Default.Z),80);
+    const FVector2D O=CireLanePath::RealmOrigin(Team); // medieval-kingdom: realm frame from data
+    return CireLanePath::ClampToLane(World,Team,FVector(O.X+X,O.Y+LocalY,Default.Z),80);
 }
 void CireDeveloperTools::AdjustMonster(ACireMonster* Monster)
 {

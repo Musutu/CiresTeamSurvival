@@ -31,6 +31,12 @@ struct FCireBattlefieldRoutes
     FVector2D GoalCenter = FVector2D(-1850, 0), GoalSize = FVector2D(900, 1800);
     TArray<FCireChallengeBay> Bays[2];
     static constexpr int32 MaxBays = 16, AutoBays = 3;
+    // medieval-kingdom: the pack town's frame ("frame": "castletown"; CireTownMap) and the hero base (realm-local).
+    bool bTownFrame = false;
+    FVector2D BaseLocal = FVector2D(-1700, 0);
+    // Optional spots (realm-local; unset = the old behaviour): hero respawn point (else the base) and boss spawn (else the breach).
+    bool bRespawn = false, bBossSpawn = false;
+    FVector2D RespawnLocal = FVector2D::ZeroVector, BossLocal = FVector2D::ZeroVector;
     int32 EscortEveryWaves = 4, EscortCount = 1, EscortLeakCost = 1;
     float EscortHealthMultiplier = 6, EscortMoveSpeed = 170;
 };
@@ -45,15 +51,21 @@ namespace CireLanePath
     CIRESTEAMSURVIVAL_API void ReceiveState(ACireGameState* State);
     CIRESTEAMSURVIVAL_API uint32 Revision(const UWorld* World = nullptr);
     CIRESTEAMSURVIVAL_API float CenterY(int32 Team);
-    // dev-route-tools: realm frames. The two realms share one layout authored once in realm-local coordinates; each
-    // realm maps it into the world through its origin. Stub provider here (the procedural town's (0, -/+2100));
-    // feat/medieval-kingdom supplies the pack town's data-driven frames behind the same three signatures.
+    // dev-route-tools + medieval-kingdom: realm frames. The two realms share one layout authored once in realm-local
+    // coordinates; each realm maps it into the world through its origin (CireTownMap: CastleTown.json for the pack town,
+    // (0, -/+2100) for the procedural town).
     /** World XY of a realm's local origin. */
     CIRESTEAMSURVIVAL_API FVector2D RealmOrigin(int32 Team);
     /** World location -> realm-local XY. */
     CIRESTEAMSURVIVAL_API FVector2D ToLocal(int32 Team, const FVector& World);
-    /** Realm-local XY -> world at height Z. */
+    /** Realm-local XY -> world, Z = height above the ground under that point (the pack town's landscape; 0 on the procedural town). */
     CIRESTEAMSURVIVAL_API FVector ToWorld(int32 Team, const FVector2D& Local, float Z = 0);
+    /** The team's hero base (spawn, respawn, recall), Z above the ground. */
+    CIRESTEAMSURVIVAL_API FVector BasePosition(const UWorld* World, int32 Team, float Z = 110);
+    /** Where a dead champion revives ("respawn", else the base), Z above the ground. */
+    CIRESTEAMSURVIVAL_API FVector RespawnPosition(const UWorld* World, int32 Team, float Z = 110);
+    /** Where wave bosses appear ("boss", else the breach), Z above the ground. */
+    CIRESTEAMSURVIVAL_API FVector BossSpawnPosition(const UWorld* World, int32 Team, float Z = 110);
     CIRESTEAMSURVIVAL_API bool Contains(int32 Team, const FVector& Point, float Margin = 0);
     CIRESTEAMSURVIVAL_API bool Contains(const UWorld* World, int32 Team, const FVector& Point, float Margin = 0);
     CIRESTEAMSURVIVAL_API FVector ClampToLane(int32 Team, FVector Point, float Margin = 0);
@@ -80,7 +92,7 @@ namespace CireLanePath
     /** Ordered marching waypoints from the breach spawn to the castle gate. */
     CIRESTEAMSURVIVAL_API TArray<FVector> RoutePoints(const UWorld* World, int32 Team, float Z = 0);
     CIRESTEAMSURVIVAL_API float RouteLength(const UWorld* World, int32 Team);
-    /** Point at Fraction (0 = breach spawn, 1 = castle gate) of the route's path length. */
+    /** Point at Fraction (0 = breach spawn, 1 = castle gate) of the route's path length. Z is absolute (callers pass a unit's height). */
     CIRESTEAMSURVIVAL_API FVector PointAlongRoute(const UWorld* World, int32 Team, float Fraction, float Z = 110);
     /** Path progress 0..1 of the route position nearest to Location (1 = at the castle gate). */
     CIRESTEAMSURVIVAL_API float RouteProgress(const UWorld* World, int32 Team, const FVector& Location);

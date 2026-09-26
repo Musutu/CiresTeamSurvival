@@ -2,6 +2,7 @@
 #include "CireGame.h"
 #include "CireItems.h"
 #include "CireLanePath.h"
+#include "CireTownMap.h" // medieval-kingdom
 #include "CireShopUI.h"
 #include "Animation/AnimSequence.h"
 #include "Components/CapsuleComponent.h"
@@ -250,6 +251,13 @@ bool CireVendors::Reload()
         FString SpotError;
         TArray<FCireVendorSpot> Parsed;
         if (!ParseSpots(Spots, Parsed, SpotError)) { UE_LOG(LogCireVendors, Error, TEXT("Vendors: %s: %s"), File, *SpotError); continue; }
+        // medieval-kingdom: spots are realm-local to one town. A "frame": "castletown" file only applies to the pack town
+        // (CireTownMap), any other file only to the procedural town.
+        {
+            TSharedPtr<FJsonObject> Root; FString Frame;
+            if (FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Spots), Root) && Root) Root->TryGetStringField(TEXT("frame"), Frame);
+            if ((Frame == TEXT("castletown")) != CireTownMap::IsActive()) { UE_LOG(LogCireVendors, Display, TEXT("Vendors: %s is for the other town frame (%s); skipped"), File, *Frame); continue; }
+        }
         D.Spots = MoveTemp(Parsed);
         D.SpotSource = File;
         D.bProvisional = FCString::Strstr(File, TEXT("provisional")) != nullptr;
@@ -295,7 +303,8 @@ FTransform CireVendors::SpotTransform(const FCireVendorSpot& Spot, int32 Team)
 {
     float Yaw = 0;
     const FVector2D L = MirrorY(Spot, Team, Yaw);
-    return FTransform(FRotator(0, Yaw, 0), FVector(L.X, L.Y + CireLanePath::CenterY(Team), Spot.Local.Z));
+    // medieval-kingdom: through the realm frame; Z is the height above the ground (the pack town's landscape).
+    return FTransform(FRotator(0, Yaw, 0), CireLanePath::ToWorld(Team, L, Spot.Local.Z));
 }
 
 namespace

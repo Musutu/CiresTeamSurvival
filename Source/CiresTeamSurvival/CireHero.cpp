@@ -6,6 +6,7 @@
 #include "CireRaces.h" // monster-races
 #include "CireBotPets.h"
 #include "CireGame.h"
+#include "CireLanePath.h"
 #include "CirePolymorph.h" // progression-shop: Polymorph
 #include "CireCombatEvents.h"
 #include "CireRealm.h"
@@ -717,7 +718,7 @@ void ACireHero::Tick(float DeltaSeconds)
         if (Mode->Clock.Phase() == Cires::MatchPhase::Survival)
         {
             RespawnTimer -= DeltaSeconds;
-            if (RespawnTimer <= 0) ReviveAt(Mode->BasePosition(TeamId) + FVector(0, (static_cast<int32>(GetUniqueID() % 5) - 2) * 110, 100));
+            if (RespawnTimer <= 0) ReviveAt(CireLanePath::RespawnPosition(GetWorld(), TeamId) + FVector(0, (static_cast<int32>(GetUniqueID() % 5) - 2) * 110, 100)); // medieval-kingdom: respawn spot from data
         }
         return;
     }

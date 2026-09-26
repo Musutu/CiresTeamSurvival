@@ -6,6 +6,7 @@
 #include "CireArenas.h"
 #include "CireEnvironmentProps.h"
 #include "CireLanePath.h"
+#include "CireTownMap.h" // medieval-kingdom
 #include "CireNPCCombat.h"
 #include "CireRouteEditor.h"
 #include "CireThreat.h"
@@ -348,7 +349,16 @@ bool CireNav::TickProbe(ACireGameMode* Mode, float Delta)
     {
     case 0: // wait for bots, the navmesh and survival
     {
-        if (!Mode->bBotsFilled || Mode->Heroes.Num() < 10 || !IsReady(World) || !State || State->Phase != 0) { if (Probe.Clock > 60) { Fail(TEXT("setup timed out")); Finish(); } return false; }
+        // medieval-kingdom: the pack town streams its nested Level Instances after startup and the navmesh rebuilds under them.
+        if (!Mode->bBotsFilled || Mode->Heroes.Num() < 10 || !IsReady(World) || !State || State->Phase != 0)
+        {
+            if (Probe.Clock > (CireTownMap::IsActive() ? 400.f : 60.f))
+            {
+                Fail(FString::Printf(TEXT("setup timed out (bots=%d heroes=%d navReady=%d phase=%d)"), Mode->bBotsFilled ? 1 : 0, Mode->Heroes.Num(), IsReady(World) ? 1 : 0, State ? int32(State->Phase) : -1));
+                Finish();
+            }
+            return false;
+        }
         // March test: heroes stand aside (undrafted heroes are ignored by monsters) so only pathing is measured.
         for (auto* H : Mode->Heroes) if (IsValid(H)) { H->bDrafted = false; H->Target = nullptr; H->bAutoAttack = false; }
         CireWaveDirector::RescueCounts(Mode, Probe.Nudges0, Probe.Marches0, Probe.Despawns0);

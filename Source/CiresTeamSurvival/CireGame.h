@@ -259,6 +259,9 @@ public:
     ACireWorld();
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out) const override;
+    /** medieval-kingdom: the server plays the Medieval Kingdom pack town (CireTownMap); clients stream the same realms. */
+    UPROPERTY(Replicated) bool bCastleTown = false;
     void RefreshRouteVisuals();
     uint32 RenderedRouteRevision = MAX_uint32;
     // nav-paths: the castle goal actors follow the (editable) goal zone on the server.
