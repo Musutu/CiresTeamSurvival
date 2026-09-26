@@ -323,6 +323,8 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
 
         // Vendors: NPC, sign and stall sub-handles; stall blocking a path; every vendor type per team.
         const FString Shop = ML::Place(L, ML::Vendor, FVector2D(-500, -1000), T1, 90.f);
+        // Pin the type: the default is the first entry of Vendors.json, whose order the test must not depend on.
+        Check(ML::SetKind(L, Shop, TEXT("weaponsmith")), TEXT("a vendor's type can be set"));
         const FCireMapMarker* V = ML::Find(L, Shop);
         const FCireVendorType* VT = ML::FindVendorType(V->Kind);
         Check(VT && V->SignPos.Equals(V->Position + FVector2D(-VT->SignOffset.Y, VT->SignOffset.X), .5) && V->StallPos.Equals(V->Position + FVector2D(0, VT->StallOffset.X), .5) && V->SignYaw == 90.f,
