@@ -185,3 +185,64 @@ fills. Tune it in `CastleTown.json`.
 
 **House interiors.** The houses are enterable Level Instances, but their interiors are dark. `SL_Lighting`, which
 carried the pack's interior light, is not streamed.
+
+## Performance and load (town-perf, 2026-09-26)
+
+Measured with `Tools/RunTownPerf.py` (`-CireTown -CireTownPerfProbe`): editor binaries in `-game`, like Play.cmd,
+1600x900 windowed at the default preset. The fight has 10 bot champions and ~55 monsters across both realms, and
+each realm is viewed for 30 s.
+
+| | Before | After |
+|---|---|---|
+| DAYLIGHT fps (avg / p95 frame) | 5.9-7.4 / 174-321 ms | 57.0-57.3 / 21 ms |
+| DARKNIGHT fps (avg / p95 frame) | 5.7-11.6 / 115-262 ms | 48.2-51.9 / 24-25 ms |
+| Game thread | 86-174 ms | 16-19 ms |
+| GPU | 32-44 ms | 8-10 ms |
+| Load to playable (cached navmesh) | 423-463 s | ~119 s |
+| Navmesh | 61 s build, then a 236-250 s in-game rebuild | 0.1 s attach (first start: ~65 s build, then cached) |
+
+What changed, and where it lives:
+- **`TCireActorIterator`** (`CireActorIterator.h`) replaces `TActorIterator` in runtime code. In editor-binary `-game`,
+  the engine iterator copies every actor of every loaded level (~113,000 in the town) each time it is created.
+  The monster AI and the HUD created hundreds per frame.
+- **Virtual shadow maps.** The pack's own optimizer script sets `r.Shadow.Virtual.Enable 0` while its levels load.
+  The project's values are restored after streaming (`performance.restoreRendererCvars`).
+- **Pack lights.** The pack's ~200 shadow-casting lights per realm keep their light but not their shadows
+  (`performance.packLightShadows`).
+- **Particles and cloth.** Pack particles and cloth simulate only within `performance.packFxRadius` of the camera.
+- **Per-view realm culling** (`CireTownMap::UpdateLocalView`, cvar `cire.TownRenderBothRealms`):
+  - Each viewer renders and animates only the realm its camera is in. The far realm's pack primitives, lights,
+    particles, sun, sky sphere and fills are hidden and paused.
+  - A dedicated server only stops the cosmetic ticking.
+- **Sky light.** It is re-captured from the viewed realm's own sky sphere; the old real-time capture found no sky
+  material.
+- **Load order.** The landscape's World Partition cells now stream before the navmesh is built. Before, they arrived
+  on the first frame and forced a full rebuild.
+- **Navmesh cache** (`CireNavCache.*`): `Saved/NavCache/CastleTown-<key>.navcache`, never committed.
+  - The key hashes CastleTown.json, the route and vendor files, DefaultEngine.ini, the pack's level files and
+    `NavRulesVersion`.
+  - Any change is a miss followed by a rebuild. `-CireNoNavCache` forces a build.
+- **Collision cooking.** `p.BodySetupSkipDDCThreshold=0` (DefaultEngine.ini) takes collision bodies from the local DDC
+  instead of re-cooking ~5,000 of them on every launch.
+- **Champion-select preview.** It is now released after the draft even when the draft screen was only drawn during the
+  load's first frame. The probe fails if it is still capturing.
+
+Still open:
+- **Load time.** ~88 s of the ~119 s is uncooked level streaming (physics state, package loading). Getting under 60 s
+  needs a cooked build or deferring the far realm behind champion select.
+- **Editor-build overhead.** The asset registry scan (~25-30 s) runs alongside the load on checkouts without an
+  editor-written cache.
+- **External actor errors.** The 312 "Failed to load Actor for External Actor Package" lines are 61 editor-only
+  `GroupActor` packages in the castle Level Instances. They are harmless, and no pieces are missing.
+
+Night look: per Eric (2026-09-26), both realms stay as they are for now. Darkening DARKNIGHT later is a data change
+in `realms[1].lighting`: `sunIntensity`, `skyLightIntensity`/`skyLightColor`, `exposureBias` and `torch*`.
+
+Interiors and doors: Eric (2026-09-26) deferred these, so they are off in data:
+- `performance.openDoors` would clear the closed door leaves.
+- `realms[].lighting.interiorIntensity` would place a warm fill inside every building doorway.
+
+`-CireTownDoorProbe` lists doorway walkability. The last run found 9 of 260 walkable, and clearing the leaves alone
+did not change that.
+
+Awnings, cloths, banners and flags ignore the camera channel, so the boom no longer snaps in under them.

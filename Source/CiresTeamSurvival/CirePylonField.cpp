@@ -1,5 +1,6 @@
 // balance: pylon field presentation (see CirePylonField.h).
 #include "CirePylonField.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAreaEffects.h"
 #include "CireConstruct.h"
 #include "CireAbilityVFX.h"
@@ -29,7 +30,7 @@ int32 CirePylonField::CountOverlaps(const ACireAreaEffect* Area)
     if (!IsPylonField(Area) || !Area->GetWorld()) return 1;
     int32 N = 1;
     const FVector Here = Area->GetActorLocation();
-    for (TActorIterator<ACireAreaEffect> It(Area->GetWorld()); It && N < MaxCountedOverlaps; ++It)
+    for (TCireActorIterator<ACireAreaEffect> It(Area->GetWorld()); It && N < MaxCountedOverlaps; ++It)
     {
         const ACireAreaEffect* Other = *It;
         if (Other == Area || Other->IsActorBeingDestroyed() || Other->IsHidden() || !IsPylonField(Other)) continue;

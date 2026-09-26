@@ -2,6 +2,7 @@
 // progress, detonations, projectile heads/trails, school impacts, caster flares, self shockwaves).
 // Local-only cosmetics: nothing here decides a hit, moves a unit or replicates.
 #include "NiagaraComponent.h" // fab-integration
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireFabVFX.h" // fab-coverage
 #include "CireSpellPresentation.h"
 #include "CireSpellMesh.h"
@@ -33,7 +34,7 @@ AActor* SourceAt(UWorld* World,FVector From)
 {
     if(!World||From.ContainsNaN())return nullptr;
     AActor* Best=nullptr;double BestD=FMath::Square(70.0);
-    for(TActorIterator<ACharacter> It(World);It;++It)
+    for(TCireActorIterator<ACharacter> It(World);It;++It)
     {
         if(!Cast<ACireHero>(*It)&&!Cast<ACireMonster>(*It))continue;
         if(FMath::Abs(It->GetActorLocation().Z-From.Z)>160)continue;
@@ -112,7 +113,7 @@ void ACireSpellVisual::ClassifyCue()
         Duration=FMath::Clamp(Shape.VoidSeconds,.8f,3.f)+.3f;Size=1.f;
         // The rift's caster is the champion that just landed here (its victims stand close by too).
         ACireHero* Caster=nullptr;double Best2=FMath::Square(320.0);
-        for(TActorIterator<ACireHero> It(GetWorld());It;++It){const double D=FVector::DistSquared2D(It->GetActorLocation(),Start);if(D<Best2&&!It->bDead){Best2=D;Caster=*It;}}
+        for(TCireActorIterator<ACireHero> It(GetWorld());It;++It){const double D=FVector::DistSquared2D(It->GetActorLocation(),Start);if(D<Best2&&!It->bDead){Best2=D;Caster=*It;}}
         bHostile=Caster?HostileToLocal(GetWorld(),Caster):false;
         SetActorRotation(FRotator::ZeroRotator);return;
     }
@@ -123,7 +124,7 @@ void ACireSpellVisual::ClassifyCue()
         if(NormId(Skill)==TEXT("chain_spark"))
         {
             ACireSpellVisual* Previous=nullptr;
-            for(TActorIterator<ACireSpellVisual> It(GetWorld());It;++It)
+            for(TCireActorIterator<ACireSpellVisual> It(GetWorld());It;++It)
                 if(*It!=this&&!It->IsActorBeingDestroyed()&&It->Skill==Skill&&(It->Cue==ECireSpellCue::Impact||It->Cue==ECireSpellCue::Critical)&&It->Age<.15f&&
                    (!Previous||It->GetUniqueID()>Previous->GetUniqueID()))Previous=*It;
             if(Previous&&FVector::Dist2D(Previous->End,End)>20){bChainHop=true;HopFrom=Previous->End;Mode=EMode::Impact;}
@@ -796,7 +797,7 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
     {
         OverlapCheckedAt=Age;OverlapCount=1;
         const float Mine=LastFill.bIsValid?static_cast<float>(LastFill.GetExtent().Size()):200.f;
-        for(TActorIterator<ACireSpellVisual> It(GetWorld());It;++It)
+        for(TCireActorIterator<ACireSpellVisual> It(GetWorld());It;++It)
             if(*It!=this&&!It->IsActorBeingDestroyed()&&!It->IsHidden()&&It->GetMode()==EMode::AreaFollow)
             {
                 const float Other=It->GroundFillBounds().bIsValid?static_cast<float>(It->GroundFillBounds().GetExtent().Size()):200.f;
@@ -875,7 +876,7 @@ void ACireSpellVisual::EndPlay(const EEndPlayReason::Type Reason)
 bool CireSpellPresentation::IsAreaPresented(const ACireAreaEffect* Area)
 {
     if(!IsValid(Area)||!Area->bPresentationOwnsGround)return false;
-    for(TActorIterator<ACireSpellVisual> It(Area->GetWorld());It;++It)
+    for(TCireActorIterator<ACireSpellVisual> It(Area->GetWorld());It;++It)
         if(It->GetOwner()==Area&&!It->IsActorBeingDestroyed()&&!It->IsHidden()&&It->GroundVertexCount()>0&&It->GroundMesh&&It->GroundMesh->IsVisible())return true;
     return false;
 }

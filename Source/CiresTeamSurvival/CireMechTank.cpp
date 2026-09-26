@@ -1,4 +1,5 @@
 #include "CireMechTank.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAbilityDB.h"
 #include "CireBuffs.h"
 #include "CireClassTraits.h" // kits-complete
@@ -82,7 +83,7 @@ AActor* ACireMechTank::ChooseAttackTarget() const
         Candidates.push_back(C); Units.Add(U);
     };
     for (auto* M : Mode->Monsters) if (IsValid(M)) Add(M, M->Victim);
-    for (TActorIterator<ACireHero> It(GetWorld()); It; ++It) if (!It->IsA<ACireSummon>()) Add(*It, It->Target);
+    for (TCireActorIterator<ACireHero> It(GetWorld()); It; ++It) if (!It->IsA<ACireSummon>()) Add(*It, It->Target);
     const int32 Index = K::SelectMechAttackTarget(Candidates, SummonSpec.LeashRange);
     return Units.IsValidIndex(Index) ? Units[Index] : nullptr;
 }
@@ -103,7 +104,7 @@ AActor* ACireMechTank::TryTaunt()
         C.AlreadyTaunted = M->ForcedVictim.Get() == this && M->ForcedVictimUntil > Now;
         Candidates.push_back(C); Units.Add(M);
     }
-    for (TActorIterator<ACireHero> It(GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireHero> It(GetWorld()); It; ++It)
     {
         ACireHero* E = *It;
         if (E->IsA<ACireSummon>() || !CireCombat::AreHostile(this, E)) continue;
@@ -135,7 +136,7 @@ int32 ACireMechTank::Slam()
     TArray<AActor*> Hits;
     if (auto* Mode = GetWorld()->GetAuthGameMode<ACireGameMode>())
         for (auto* M : Mode->Monsters) if (IsValid(M) && CireCombat::AreHostile(this, M) && FVector::DistSquared2D(M->GetActorLocation(), GetActorLocation()) <= FMath::Square(SlamRadius)) Hits.Add(M);
-    for (TActorIterator<ACireHero> It(GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireHero> It(GetWorld()); It; ++It)
         if (CireCombat::AreHostile(this, *It) && FVector::DistSquared2D(It->GetActorLocation(), GetActorLocation()) <= FMath::Square(SlamRadius)) Hits.Add(*It);
     for (AActor* U : Hits)
     {

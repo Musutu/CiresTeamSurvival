@@ -27,6 +27,8 @@
         "sky": "/Game/CastleTown/SkySphere/Materials/MI_sky_Day.MI_sky_Day",
         "sunPitch": -58, "sunYaw": 135, "sunIntensity": 9, "sunColor": [1.0, 0.96, 0.9],
         "exposureBias": 0.0, "saturation": 1.05, "tint": [1.0, 1.0, 1.0],
+        "skyLightIntensity": 1.0, "skyLightColor": [1.0, 1.0, 1.0],
+        "interiorIntensity": 0, "interiorRadius": 520, "interiorColor": [1.0, 0.86, 0.7],
         "torchIntensity": 0
       }
     },
@@ -38,10 +40,13 @@
         "sky": "/Game/CastleTown/SkySphere/Materials/MI_sky_Night.MI_sky_Night",
         "sunPitch": -35, "sunYaw": 215, "sunIntensity": 6.5, "sunColor": [0.66, 0.74, 1.0],
         "exposureBias": 0.5, "saturation": 0.9, "tint": [0.9, 0.93, 1.05],
+        "skyLightIntensity": 1.6, "skyLightColor": [0.75, 0.85, 1.0],
+        "interiorIntensity": 0, "interiorRadius": 520, "interiorColor": [1.0, 0.66, 0.36],
         "torchIntensity": 16000, "torchRadius": 1800, "torchColor": [1.0, 0.6, 0.28]
       }
     }
   ],
+  "performance": { "packLightShadows": false, "packFxRadius": 5000, "parallelStreaming": false, "restoreRendererCvars": true, "openDoors": false },
   "defaultMap": true,
   "routes": "Data/CastleTownRoutes.json",
   "explore": {

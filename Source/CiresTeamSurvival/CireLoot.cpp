@@ -1,4 +1,5 @@
 #include "CireLoot.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireMonsterExpansion.h" // monster-expansion
 #include "CireWaves.h" // wave-director economy hooks (UnitFlags)
 // progression-shop: see CireLoot.h, Docs/Progression.md.
@@ -252,7 +253,7 @@ ACireLootDrop* CireLoot::SpawnDrop(ACireGameMode* Mode, int32 Team, FVector Loca
     if (!Mode || Bundle.Empty()) return nullptr;
     FHitResult Hit;
     FCollisionQueryParams Query(SCENE_QUERY_STAT(CireLootGround), false);
-    for (TActorIterator<APawn> It(Mode->GetWorld()); It; ++It) Query.AddIgnoredActor(*It);
+    for (TCireActorIterator<APawn> It(Mode->GetWorld()); It; ++It) Query.AddIgnoredActor(*It);
     if (Mode->GetWorld()->LineTraceSingleByChannel(Hit, Location + FVector(0, 0, 150), Location - FVector(0, 0, 600), ECC_Visibility, Query))
         Location = Hit.ImpactPoint;
     else Location.Z -= 90.f;
@@ -636,7 +637,7 @@ int32 CireLoot::CollectAll(ACireGameMode* Mode, TMap<TWeakObjectPtr<ACireHero>, 
     int32 Count = 0;
     if (!Mode) return 0;
     TMap<TWeakObjectPtr<ACireHero>, FCireLootReport> Merged;
-    for (TActorIterator<ACireLootDrop> It(Mode->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireLootDrop> It(Mode->GetWorld()); It; ++It)
     {
         if (It->bOpened) continue;
         ACireHero* Owner = It->OwnerHero;

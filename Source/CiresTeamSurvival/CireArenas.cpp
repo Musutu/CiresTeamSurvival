@@ -1,4 +1,5 @@
 #include "CireArenas.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
@@ -945,16 +946,16 @@ void UCireArenaSubsystem::HideTown(bool bHide)
         for (auto& C : HiddenTown) if (C.IsValid()) C->SetVisibility(true);
         for (auto& A : HiddenTownActors) if (A.IsValid()) A->SetActorHiddenInGame(false);
         // world-scale: the town colour grade comes back with the town.
-        if (UWorld* W = GetWorld()) for (TActorIterator<ACireWorld> It(W); It; ++It)
+        if (UWorld* W = GetWorld()) for (TCireActorIterator<ACireWorld> It(W); It; ++It)
             for (UActorComponent* C : It->GetComponents()) if (auto* PP = Cast<UPostProcessComponent>(C)) PP->bEnabled = true;
         HiddenTown.Reset(); HiddenTownActors.Reset(); return;
     }
     UWorld* World = GetWorld(); if (!World) return;
     auto Hide = [&](USceneComponent* C) { if (C && C->IsVisible() && !Cast<ACireArenaStage>(C->GetOwner())) { C->SetVisibility(false); HiddenTown.Add(C); } };
-    for (TActorIterator<ADirectionalLight> It(World); It; ++It) Hide(It->GetLightComponent());
-    for (TActorIterator<ASkyLight> It(World); It; ++It) Hide(It->GetLightComponent());
-    for (TActorIterator<AExponentialHeightFog> It(World); It; ++It) Hide(It->GetComponent());
-    for (TActorIterator<ACireWorld> It(World); It; ++It)
+    for (TCireActorIterator<ADirectionalLight> It(World); It; ++It) Hide(It->GetLightComponent());
+    for (TCireActorIterator<ASkyLight> It(World); It; ++It) Hide(It->GetLightComponent());
+    for (TCireActorIterator<AExponentialHeightFog> It(World); It; ++It) Hide(It->GetComponent());
+    for (TCireActorIterator<ACireWorld> It(World); It; ++It)
     {
         for (UActorComponent* C : It->GetComponents()) if (C && C->GetFName() == TEXT("SkyDome")) Hide(Cast<USceneComponent>(C));
         for (UActorComponent* C : It->GetComponents()) if (auto* PP = Cast<UPostProcessComponent>(C)) PP->bEnabled = false; // world-scale: town grade off

@@ -1,4 +1,5 @@
 #include "CireSummon.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireItems.h" // items-v2
 #include "CireDeveloperTools.h"
 #include "CireAreaEffects.h"
@@ -36,7 +37,7 @@ TArray<ACireSummon*> ACireSummon::SpawnGroup(ACireHero* Source, const FCireSummo
     auto* Mode = World->GetAuthGameMode<ACireGameMode>();
     if (!Mode || !Mode->IsCombatPhase() || FVector::DistSquared2D(Source->GetActorLocation(), Point) > FMath::Square(Spec.CastRange)) return Result;
     int32 Owned = 0, Total = 0;
-    for (TActorIterator<ACireSummon> It(World); It; ++It)
+    for (TCireActorIterator<ACireSummon> It(World); It; ++It)
         if (!It->IsActorBeingDestroyed()) { ++Total; if (It->OwnerHero == Source) ++Owned; }
     if (Owned + Spec.Count > 6 || Total + Spec.Count > 48) return Result;
     TArray<FVector> Positions;
@@ -202,11 +203,11 @@ AActor* ACireSummon::ChooseFightTarget()
     auto* Mode = GetWorld()->GetAuthGameMode<ACireGameMode>();
     if (LastAttacker.IsValid() && GetWorld()->GetTimeSeconds() - LastAttackedAt < 6.f) Consider(LastAttacker.Get(), DefendRadius, this);
     if (Mode) for (auto* M : Mode->Monsters) if (IsValid(M) && Protected(M->Victim)) Consider(M, DefendRadius, OwnerHero);
-    for (TActorIterator<ACireHero> It(GetWorld()); It; ++It) if (Protected(It->Target)) Consider(*It, DefendRadius, OwnerHero);
+    for (TCireActorIterator<ACireHero> It(GetWorld()); It; ++It) if (Protected(It->Target)) Consider(*It, DefendRadius, OwnerHero);
     if (Best) return Best;
     // 5. Guard: any hostile near this summon or its owner. Neutral challenge packs are left alone.
     if (Mode) for (auto* M : Mode->Monsters) if (IsValid(M) && !M->bNeutral) { Consider(M, GuardRadius, this); Consider(M, GuardRadius, OwnerHero); }
-    for (TActorIterator<ACireHero> It(GetWorld()); It; ++It) { Consider(*It, GuardRadius, this); Consider(*It, GuardRadius, OwnerHero); }
+    for (TCireActorIterator<ACireHero> It(GetWorld()); It; ++It) { Consider(*It, GuardRadius, this); Consider(*It, GuardRadius, OwnerHero); }
     return Best;
 }
 float ACireSummon::TargetReachBonus() const
@@ -237,8 +238,8 @@ void ACireSummon::EndPlay(const EEndPlayReason::Type Reason)
     if (HasAuthority()) { CireThreat::Remove(this); ACireAreaEffect::ClearForActor(this); ACireSkillshot::ClearForActor(this); ACireConstruct::ClearForActor(this); }
     Super::EndPlay(Reason);
 }
-void ACireSummon::ClearAll(UWorld* World) { if (World) for (TActorIterator<ACireSummon> It(World); It; ++It) if (It->HasAuthority()) It->Destroy(); }
-void ACireSummon::ClearForActor(AActor* Actor) { if (IsValid(Actor)) for (TActorIterator<ACireSummon> It(Actor->GetWorld()); It; ++It) if (It->HasAuthority() && It->OwnerHero == Actor) It->Destroy(); }
+void ACireSummon::ClearAll(UWorld* World) { if (World) for (TCireActorIterator<ACireSummon> It(World); It; ++It) if (It->HasAuthority()) It->Destroy(); }
+void ACireSummon::ClearForActor(AActor* Actor) { if (IsValid(Actor)) for (TCireActorIterator<ACireSummon> It(Actor->GetWorld()); It; ++It) if (It->HasAuthority() && It->OwnerHero == Actor) It->Destroy(); }
 void ACireSummon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

@@ -1,4 +1,5 @@
 #include "CireReplay.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "Engine/DemoNetDriver.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
@@ -135,7 +136,7 @@ struct FReplayProbe
         {
             bool Teams[2] = {false, false};
             auto* Viewer = World->GetFirstPlayerController();
-            for (TActorIterator<ACireHero> It(World); It; ++It)
+            for (TCireActorIterator<ACireHero> It(World); It; ++It)
             {
                 const int32 Team = It->TeamId;
                 if (Team >= 0 && Team < 2 && It->HeroName == FString::Printf(TEXT("CIRE_REPLAY_FIXTURE_%d"), Team))

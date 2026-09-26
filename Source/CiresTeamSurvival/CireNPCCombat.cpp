@@ -1,4 +1,5 @@
 #include "CireNPCCombat.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLeash.h" // layout-wiring
 #include "CireScalingKits.h" // scaling-kits
 #include "CireTechConstructs.h" // new-champions
@@ -154,7 +155,7 @@ bool SpawnArea(ACireMonster* M,const FCireNPCAbility& A,ECireAreaShape Shape,FVe
 ACireHero* FarthestHero(ACireMonster* M,const FCireNPCAbility& A)
 {
     ACireHero* Best=nullptr;double BestDistance=-1;
-    for(TActorIterator<ACireHero> It(M->GetWorld());It;++It)
+    for(TCireActorIterator<ACireHero> It(M->GetWorld());It;++It)
     {
         auto* H=*It;if(!HeroTargetable(M,H))continue;
         const double D=FVector::DistSquared2D(M->GetActorLocation(),H->GetActorLocation());
@@ -331,7 +332,7 @@ void ReleaseCast(ACireMonster* M,ACireGameMode* Mode)
          CireCombat::PlayCue(M,nullptr,A->Id,M->GetActorLocation(),Ally->GetActorLocation(),ECireSpellCue::Impact,.8f,true);}
         break;
     case ECireNPCAbilityKind::Provoke:
-        for(TActorIterator<ACireHero> It(M->GetWorld());It;++It)
+        for(TCireActorIterator<ACireHero> It(M->GetWorld());It;++It)
         {
             auto* H=*It;if(!HeroTargetable(M,H)||FVector::DistSquared2D(M->GetActorLocation(),H->GetActorLocation())>FMath::Square(A->Radius))continue;
             S->ProvokedUntil.FindOrAdd(H)=Now+A->Duration; CireBuffs::Apply(H,TEXT("npc_tank_provoke_debuff"),A->Duration,M); // aura-vfx
@@ -385,7 +386,7 @@ FVector CireNPCCombat::RouteDestination(ACireMonster* M){return CireLanePath::Ne
 bool CireNPCCombat::ReachedGoal(ACireMonster* M)
 {
     if(!IsValid(M))return false;
-    for(TActorIterator<ACireTownGoal> It(M->GetWorld());It;++It)
+    for(TCireActorIterator<ACireTownGoal> It(M->GetWorld());It;++It)
         if(It->TeamId==M->Lane&&It->ContainsLocation(M->GetActorLocation()))return true;
     return false;
 }
@@ -454,7 +455,7 @@ void CireNPCCombat::Interrupt(ACireMonster* M)
     if(auto* S=St(M)){S->DashUntil=0;S->KiteUntil=0;}
     // Interrupt owns only this caster's spells. Clearing every membership here
     // would also forgive accumulated poison from hostile player-owned areas.
-    for(TActorIterator<ACireAreaEffect> It(M->GetWorld());It;++It)if(It->GetOwner()==M)It->Destroy();
+    for(TCireActorIterator<ACireAreaEffect> It(M->GetWorld());It;++It)if(It->GetOwner()==M)It->Destroy();
     ACireSkillshot::ClearForActor(M);
 }
 
@@ -583,7 +584,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     if(!M->Victim&&(M->Threat.IsEmpty()||CireLeash::Applies(M))&&!CireWaveDirector::AggroSuppressed(M)) // wave-director: dropped/unreachable targets
     {
         ACireHero* Closest=nullptr;double Best=FMath::Square(700.f);
-        for(TActorIterator<ACireHero> It(M->GetWorld());It;++It)
+        for(TCireActorIterator<ACireHero> It(M->GetWorld());It;++It)
         {
             auto* H=*It;if(H->bDead||!H->bDrafted||H->Health<=0||H->TeamId!=M->Lane||!CireRealm::CanObserve(H,M)||!CireLeash::CanPursue(M,H))continue;
             const double Distance=FVector::DistSquared2D(M->GetActorLocation(),H->GetActorLocation());
@@ -733,7 +734,7 @@ bool CireNPCCombat::RunSmoke(ACireGameMode* Mode)
     CireThreat::Engage(M,Tank);M->AttackTimer=0;M->AbilityTimer=0;const float Before=Tank->Health;
     Tick(M,.01f);Check(M->CastingAbility==TEXT("npc_bruiser_slam"),TEXT("bruiser begins a telegraphed cone"));
     ACireAreaEffect* Warning=nullptr;
-    for(TActorIterator<ACireAreaEffect> It(Mode->GetWorld());It;++It)if(It->GetOwner()==M&&!It->IsActorBeingDestroyed()){Warning=*It;Actors.Add(*It);break;}
+    for(TCireActorIterator<ACireAreaEffect> It(Mode->GetWorld());It;++It)if(It->GetOwner()==M&&!It->IsActorBeingDestroyed()){Warning=*It;Actors.Add(*It);break;}
     if(Warning)Warning->Tick(.5f);
     Check(Warning&&!Warning->IsActive()&&Tank->Health==Before,TEXT("warning remains harmless before impact"));
     Interrupt(M);Check(M->CastingAbility.IsEmpty()&&Warning&&Warning->IsActorBeingDestroyed(),TEXT("interrupt cancels windup and its warning"));
@@ -742,7 +743,7 @@ bool CireNPCCombat::RunSmoke(ACireGameMode* Mode)
     Check(M->bPendingSkillshot&&M->CastingAbility==TEXT("npc_shadow_bolt")&&M->CastEndsAt>M->CastStartedAt&&Tank->Health==Before,TEXT("caster winds up without direct damage"));
     Tank->SetActorLocation(Ground+FVector(500,200,92));M->CastEndsAt=Mode->GetWorld()->GetTimeSeconds()-.01f;Tick(M,.01f);
     ACireSkillshot* Shot=nullptr;
-    for(TActorIterator<ACireSkillshot> It(Mode->GetWorld());It;++It)if(It->GetSourceActor()==M&&!It->IsActorBeingDestroyed()){Shot=*It;Actors.Add(*It);break;}
+    for(TCireActorIterator<ACireSkillshot> It(Mode->GetWorld());It;++It)if(It->GetSourceActor()==M&&!It->IsActorBeingDestroyed()){Shot=*It;Actors.Add(*It);break;}
     Check(Shot&&Shot->ShotSpec.WarningSeconds==0&&Shot->ShotSpec.Damage==M->Damage&&Shot->Velocity.GetSafeNormal2D().Equals((LockedAim-M->GetActorLocation()).GetSafeNormal2D(),.01f),TEXT("cast releases fixed-direction projectile with fixed damage"));
     Interrupt(M);Tank->SetActorLocation(Ground+FVector(500,0,92));CireThreat::Engage(M,Tank);M->AbilityTimer=0;M->AttackTimer=10;Tick(M,.01f);
     Check(M->CastingAbility==TEXT("npc_blight_pool"),TEXT("caster secondary starts warned poison pool"));Interrupt(M);

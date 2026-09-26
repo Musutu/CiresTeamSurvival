@@ -9,6 +9,7 @@
 // transforms (the distance-field ensures of Eric's crash reports) and proves an apply requested
 // inside the HUD draw is deferred. The runner fails on any ensure, crash or CIRE_VIDEO_CYCLE_FAIL.
 #include "CireVideoSettings.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #if !UE_BUILD_SHIPPING
 #include "CireDraftStage.h"
 #include "CireGame.h"
@@ -81,7 +82,7 @@ TArray<FStep> BuildSteps(const TCHAR* Prefix, bool bFull)
 
 ACireDraftStage* FindStage(UWorld* W)
 {
-    for (TActorIterator<ACireDraftStage> It(W); It; ++It) if (!It->IsActorBeingDestroyed()) return *It;
+    for (TCireActorIterator<ACireDraftStage> It(W); It; ++It) if (!It->IsActorBeingDestroyed()) return *It;
     return nullptr;
 }
 

@@ -1,4 +1,5 @@
 #include "CireAudio.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "CireHUD.h"
 #include "CireUISettings.h"
@@ -697,7 +698,7 @@ void UCireAudioSubsystem::Tick(float DeltaTime)
     const CireMusic::FData& MusicData = CireMusic::Data();
     FCireMusicInputs In;
     In.Phase = State ? State->Phase : 0;
-    for(TActorIterator<ACireMonster> It(World); It; ++It)
+    for(TCireActorIterator<ACireMonster> It(World); It; ++It)
     {
         const ACireMonster* M = *It;
         if(!IsValid(M) || M->Health <= 0.f || (Team >= 0 && M->Lane >= 0 && M->Lane != Team)) continue;
@@ -746,7 +747,7 @@ void UCireAudioSubsystem::DetectEvents(float Dt)
     const FVector Body = Hero ? Hero->GetActorLocation() : FVector::ZeroVector;
 
     // Pack Leader / lane boss: roar when it first engages (or first appears, for lane bosses); growl on each cast.
-    for(TActorIterator<ACireMonster> It(World); It; ++It)
+    for(TCireActorIterator<ACireMonster> It(World); It; ++It)
     {
         ACireMonster* M = *It;
         if(!IsValid(M) || M->Health <= 0.f || M->GetNPCClassification() != ECireNPCClass::Boss) continue;

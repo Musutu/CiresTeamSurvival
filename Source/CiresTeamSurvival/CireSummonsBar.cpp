@@ -1,5 +1,6 @@
 // fix/summons: summons-bar data (see CireSummonsBar.h).
 #include "CireSummonsBar.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAbilityDB.h"
 #include "CireConstruct.h"
 #include "CireGame.h"
@@ -72,7 +73,7 @@ FString CireSummonsBar::NameFor(const ACireConstruct* C)
 bool CireSummonsBar::HasCommandable(const ACireHero* Owner)
 {
     if (!IsValid(Owner)) return false;
-    for (TActorIterator<ACireSummon> It(Owner->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireSummon> It(Owner->GetWorld()); It; ++It)
         if (It->GetOwnerHero() == Owner && It->bCommandable && !It->bDead && !It->IsActorBeingDestroyed() && !It->IsA<ACirePet>()) return true;
     return false;
 }
@@ -81,7 +82,7 @@ TArray<FCireSummonBarEntry> CireSummonsBar::Collect(const ACireHero* Owner, floa
 {
     TArray<FCireSummonBarEntry> Out;
     if (!IsValid(Owner) || !Owner->GetWorld()) return Out;
-    for (TActorIterator<ACireSummon> It(Owner->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireSummon> It(Owner->GetWorld()); It; ++It)
     {
         const ACireSummon* S = *It;
         if (S->GetOwnerHero() != Owner || S->bDead || S->IsActorBeingDestroyed() || S->IsA<ACirePet>()) continue;
@@ -94,7 +95,7 @@ TArray<FCireSummonBarEntry> CireSummonsBar::Collect(const ACireHero* Owner, floa
         E.bCommandable = S->bCommandable; E.bFights = true; E.State = StateOf(S);
         Out.Add(E);
     }
-    for (TActorIterator<ACireConstruct> It(Owner->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireConstruct> It(Owner->GetWorld()); It; ++It)
     {
         const ACireConstruct* C = *It;
         if (!OwnedBy(C, Owner)) continue;

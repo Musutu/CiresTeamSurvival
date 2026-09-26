@@ -1,4 +1,5 @@
 #include "CireTargeting.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireSignatureSkills.h" // new-champions
 #include "CireTechConstructs.h" // new-champions
 #include "CireAbilityDB.h" // new-champions
@@ -549,7 +550,7 @@ bool CireTargeting::RunRuntimeSmoke(ACireGameMode* Mode)
     auto* Obstacle=Box(Aim+FVector(0,0,80),FVector(20,20,80));
     Check(Obstacle&&!ValidateGround(Hero,TEXT("summoned_wall"),Aim,Center,Heading,Reason),TEXT("occupied construct footprint rejected"));
     if(Obstacle)Obstacle->SetActorEnableCollision(false);
-    auto AreaCount=[&](){int32 N=0;for(TActorIterator<ACireAreaEffect> It(Mode->GetWorld());It;++It)if(!It->IsActorBeingDestroyed())++N;return N;};
+    auto AreaCount=[&](){int32 N=0;for(TCireActorIterator<ACireAreaEffect> It(Mode->GetWorld());It;++It)if(!It->IsActorBeingDestroyed())++N;return N;};
     const int32 Before=AreaCount();const float ManaBefore=Hero->Mana;
     Request(Controller,0);const auto Armed=Snapshot(Controller);
     Check(Armed.bActive&&Armed.Slot==0&&FMath::IsNearlyEqual(Armed.Range,Describe(TEXT("venom_ground")).Range),TEXT("request arms selected skill and publishes its casting range"));
@@ -570,7 +571,7 @@ bool CireTargeting::RunRuntimeSmoke(ACireGameMode* Mode)
     Check(AreaCount()==Before&&Hero->Mana==ManaBefore&&Hero->Cooldowns[0]==0,TEXT("authoritative RPC rejects invalid aim without payment"));
     Controller->ServerCastAt_Implementation(0,Aim);
     Check(AreaCount()==Before+1&&Hero->Mana<ManaBefore&&Hero->Cooldowns[0]>0,TEXT("confirmed authoritative aim creates one paid native ground effect"));
-    bool Found=false;for(TActorIterator<ACireAreaEffect> It(Mode->GetWorld());It;++It)
+    bool Found=false;for(TCireActorIterator<ACireAreaEffect> It(Mode->GetWorld());It;++It)
         if(!It->IsActorBeingDestroyed()&&FVector::DistSquared2D(It->GetActorLocation(),Aim)<1&&FMath::Abs(It->GetActorLocation().Z-Aim.Z)<20)
         {Found=true;Check(!It->IsActive(),TEXT("confirmed ground effect remains harmless during warning"));}
     Check(Found,TEXT("ground actor appears at confirmed cursor location"));
@@ -584,7 +585,7 @@ bool CireTargeting::RunRuntimeSmoke(ACireGameMode* Mode)
         Check(Near&&Far&&Behind&&OtherRealm,TEXT("tab fixture monsters spawned"));
         // Park unrelated world monsters in the other realm for the duration of the tab fixture.
         TArray<TPair<TWeakObjectPtr<ACireMonster>,int32>> Parked;
-        for(TActorIterator<ACireMonster> It(Mode->GetWorld());It;++It)
+        for(TCireActorIterator<ACireMonster> It(Mode->GetWorld());It;++It)
             if(*It!=Near&&*It!=Far&&*It!=Behind&&*It!=OtherRealm&&It->Lane==0){Parked.Add({*It,It->Lane});It->Lane=1;}
         ON_SCOPE_EXIT{for(auto& Entry:Parked)if(Entry.Key.IsValid())Entry.Key->Lane=Entry.Value;};
         if(Near&&Far&&Behind&&OtherRealm)

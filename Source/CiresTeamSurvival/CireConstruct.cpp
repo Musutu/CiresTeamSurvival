@@ -1,4 +1,5 @@
 #include "CireConstruct.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLanePath.h" // medieval-kingdom: goal zone from data
 #include "CireItems.h" // items-v2
 #include "CireDeveloperTools.h"
@@ -162,7 +163,7 @@ ACireConstruct* ACireConstruct::SpawnFor(AActor* Source, const FCireConstructSpe
     if (Name.Len() > 80 || !ValidatePlacementFor(Source, Spec, Ground, Heading)) return nullptr;
     int32 Total = 0, Owned = 0, OwnedTech = 0;
     TArray<ACireConstruct*> SameRecipe;
-    for (TActorIterator<ACireConstruct> It(Source->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireConstruct> It(Source->GetWorld()); It; ++It)
         if (!It->IsActorBeingDestroyed())
         {
             ++Total;
@@ -275,7 +276,7 @@ bool ACireConstruct::BlocksMovementOf(AActor* Mover) const
 }
 void ACireConstruct::RefreshMovementExceptions()
 {
-    for (TActorIterator<ACharacter> It(GetWorld()); It; ++It)
+    for (TCireActorIterator<ACharacter> It(GetWorld()); It; ++It)
     {
         ACharacter* Character = *It;
         const bool bIgnore = !BlocksMovementOf(Character);
@@ -331,7 +332,7 @@ ACireConstruct* ACireConstruct::FindBlockingConstruct(AActor* Mover, FVector Des
     float Radius = 35.f;
     if (auto* Character = Cast<ACharacter>(Mover)) Radius = Character->GetCapsuleComponent()->GetScaledCapsuleRadius();
     ACireConstruct* Nearest = nullptr; float NearestT = 2.f;
-    for (TActorIterator<ACireConstruct> It(Mover->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireConstruct> It(Mover->GetWorld()); It; ++It)
     {
         if (It->IsActorBeingDestroyed() || !It->BlocksMovementOf(Mover)) continue;
         const FTransform T = It->GetActorTransform();
@@ -355,8 +356,8 @@ ACireConstruct* ACireConstruct::FindBlockingConstruct(AActor* Mover, FVector Des
     }
     return Nearest;
 }
-void ACireConstruct::ClearAll(UWorld* World) { if (World) for (TActorIterator<ACireConstruct> It(World); It; ++It) if (It->HasAuthority()) It->Destroy(); }
-void ACireConstruct::ClearForActor(AActor* Actor) { if (IsValid(Actor)) for (TActorIterator<ACireConstruct> It(Actor->GetWorld()); It; ++It) if (It->HasAuthority() && It->SourceUnit == Actor) It->Destroy(); }
+void ACireConstruct::ClearAll(UWorld* World) { if (World) for (TCireActorIterator<ACireConstruct> It(World); It; ++It) if (It->HasAuthority()) It->Destroy(); }
+void ACireConstruct::ClearForActor(AActor* Actor) { if (IsValid(Actor)) for (TCireActorIterator<ACireConstruct> It(Actor->GetWorld()); It; ++It) if (It->HasAuthority() && It->SourceUnit == Actor) It->Destroy(); }
 void ACireConstruct::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);

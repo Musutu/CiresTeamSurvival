@@ -7,6 +7,7 @@
 // ACireHUD while the local hero is undrafted; a short "LOCKED IN" outro plays
 // over the opening-ability offer after the lock is confirmed.
 #include "CireHUD.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireChampionRoster.h"
 #include "CireChampionProfiles.h"
 #include "CireDraftStage.h"
@@ -694,7 +695,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     // Team: a human teammate's lock blocks that champion; bot picks never do.
     TArray<ACireHero*> Mates;
     TMap<FString,const ACireHero*> Picked;
-    if(World)for(TActorIterator<ACireHero> It(World);It;++It)
+    if(World)for(TCireActorIterator<ACireHero> It(World);It;++It)
     {
         ACireHero* Other=*It;
         if(Other==Hero||Other->IsA<ACireSummon>()||Other->TeamId<0||Other->TeamId!=Hero->TeamId)continue;

@@ -1,5 +1,6 @@
 // wave-director: authoritative wave runtime, neutral challenge packs and bot lane defence.
 #include "CireWaves.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "CireItems.h" // progression-shop: ready flags on the inventory
 #include "CireLanePath.h"
@@ -147,7 +148,7 @@ void Ghost(ACireMonster* M, FTrack& T)
     const float Time = Now(M);
     if (T.GhostRefreshAt > Time) return;
     T.GhostRefreshAt = Time + 1.f;
-    for (TActorIterator<ACharacter> It(M->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACharacter> It(M->GetWorld()); It; ++It)
         if (*It != M && (Cast<ACireHero>(*It) || Cast<ACireMonster>(*It)))
             M->GetCapsuleComponent()->IgnoreActorWhenMoving(*It, true);
 }

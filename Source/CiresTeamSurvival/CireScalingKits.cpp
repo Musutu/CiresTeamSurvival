@@ -1,4 +1,5 @@
 #include "CireScalingKits.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAbilityDB.h"
 #include "CireBuffs.h"
 #include "CireClassTraits.h"
@@ -74,7 +75,7 @@ template<typename F> void ForHostilesNear(ACireHero* H,FVector Center,float Radi
     auto* Mode=ModeOf(H);if(!Mode)return;
     TArray<AActor*> Hits;
     for(auto* M:Mode->Monsters)if(IsValid(M)&&CireCombat::AreHostile(H,M)&&FVector::DistSquared2D(M->GetActorLocation(),Center)<=FMath::Square(Radius))Hits.Add(M);
-    for(TActorIterator<ACireHero> It(H->GetWorld());It;++It)if(CireCombat::AreHostile(H,*It)&&FVector::DistSquared2D(It->GetActorLocation(),Center)<=FMath::Square(Radius))Hits.Add(*It);
+    for(TCireActorIterator<ACireHero> It(H->GetWorld());It;++It)if(CireCombat::AreHostile(H,*It)&&FVector::DistSquared2D(It->GetActorLocation(),Center)<=FMath::Square(Radius))Hits.Add(*It);
     for(AActor* A:Hits)Fn(A);
 }
 
@@ -250,7 +251,7 @@ float CireKits::ModifyIncomingDamage(ACireHero* H,AActor* Causer,const FString& 
     }
     // Pavise cover: an allied pavise within 3m that stands between the hero and the attacker.
     if(IsValid(Causer))
-        for(TActorIterator<ACireConstruct> It(H->GetWorld());It;++It)
+        for(TCireActorIterator<ACireConstruct> It(H->GetWorld());It;++It)
         {
             if(It->IsActorBeingDestroyed()||It->GetDisplayName()!=PaviseName||It->OriginTeam!=H->TeamId)continue;
             const FVector P=It->GetActorLocation();
@@ -383,7 +384,7 @@ K::AuraTotals CireKits::PartyAuras(const ACireHero* H)
 {
     std::vector<K::Aura> List;
     if(!H||!H->GetWorld())return K::SumAuras(List);
-    for(TActorIterator<ACireHero> It(H->GetWorld());It;++It)
+    for(TCireActorIterator<ACireHero> It(H->GetWorld());It;++It)
     {
         const ACireHero* P=*It;
         if(P->IsA<ACireSummon>()||!P->bDrafted||P->bDead||P->TeamId!=H->TeamId||P->TeamId<0)continue;
@@ -492,12 +493,12 @@ bool CireKits::Cast(ACireHero* H,int32 Slot,const FString& Id)
     ACireMechTank* Mech=nullptr;ACireConstruct* Barrier=nullptr;
     if(Id==TEXT("mechanical_tank"))
     {
-        for(TActorIterator<ACireMechTank> It(H->GetWorld());It;++It)if(It->GetOwnerHero()==H)It->Destroy(); // one mech per owner
+        for(TCireActorIterator<ACireMechTank> It(H->GetWorld());It;++It)if(It->GetOwnerHero()==H)It->Destroy(); // one mech per owner
         FString Why;Mech=ACireMechTank::SpawnFor(H,Aim,&Why);if(!Mech)return Fail(TEXT("No room for the Mechanical Tank there."));
     }
     else if(Id==TEXT("pavise"))
     {
-        for(TActorIterator<ACireConstruct> It(H->GetWorld());It;++It)if(It->GetSourceActor()==H&&It->GetDisplayName()==PaviseName)It->Destroy(); // one pavise per owner
+        for(TCireActorIterator<ACireConstruct> It(H->GetWorld());It;++It)if(It->GetSourceActor()==H&&It->GetDisplayName()==PaviseName)It->Destroy(); // one pavise per owner
         FCireConstructSpec S;S.Kind=ECireConstructKind::Wall;S.MaxHealth=FMath::Min(20000.f,Amount(H,Id)*Power);S.LifetimeSeconds=12.f;
         S.Width=260.f;S.Depth=40.f;S.Height=200.f;S.ManaCost=0;S.EnergyCost=Energy;S.CooldownSeconds=D->Base.Cooldown;S.CastRange=D->Range+50.f;
         S.bBlockMovement=false;S.bBlockProjectiles=true;S.bDestructible=true;S.bBlockFriendly=false;S.Color=FLinearColor(.55f,.6f,.68f,.9f);
@@ -598,7 +599,7 @@ void UCireKitsSubsystem::Tick(float Dt)
 void UCireKitsSubsystem::RefreshAuras()
 {
     UWorld* W=GetWorld();if(!W)return;
-    for(TActorIterator<ACireHero> It(W);It;++It)
+    for(TCireActorIterator<ACireHero> It(W);It;++It)
     {
         ACireHero* H=*It;if(H->IsA<ACireSummon>()||!H->bDrafted||H->bDead)continue;
         const auto T=CireKits::PartyAuras(H);

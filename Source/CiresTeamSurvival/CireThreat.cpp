@@ -1,4 +1,5 @@
 #include "CireThreat.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLeash.h" // layout-wiring
 #include "CireGame.h"
 #include "CireNPCState.h"
@@ -71,7 +72,7 @@ void CireThreat::Scale(ACireMonster* M,ACireHero* H,float Multiplier){
 }
 void CireThreat::ScaleAll(ACireHero* H,float Multiplier){
     if(!H||!H->HasAuthority()||!H->GetWorld()||!FMath::IsFinite(Multiplier)||Multiplier<0)return;
-    for(TActorIterator<ACireMonster> It(H->GetWorld());It;++It)
+    for(TCireActorIterator<ACireMonster> It(H->GetWorld());It;++It)
     {
         ACireMonster* M=*It;float* Value=M->Threat.Find(H);if(!Value)continue;
         if(Multiplier<=0.f){M->Threat.Remove(H);if(M->ForcedVictim==H)M->ForcedVictim.Reset();}
@@ -143,5 +144,5 @@ void CireThreat::Clear(ACireMonster* M){
 }
 void CireThreat::Remove(ACireHero* H){
     if(!H||!H->HasAuthority())return;
-    for(TActorIterator<ACireMonster> It(H->GetWorld());It;++It){It->Threat.Remove(H);if(It->ForcedVictim==H)It->ForcedVictim.Reset();Select(*It);}
+    for(TCireActorIterator<ACireMonster> It(H->GetWorld());It;++It){It->Threat.Remove(H);if(It->ForcedVictim==H)It->ForcedVictim.Reset();Select(*It);}
 }

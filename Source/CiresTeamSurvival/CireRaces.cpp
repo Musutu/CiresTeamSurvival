@@ -1,6 +1,7 @@
 // monster-races: race data, ranks, per-match skill draws, wave-gated unlocks, race-skill riders and the
 // race/rank skin. See CireRaces.h and Docs/Races.md.
 #include "CireRaces.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireTechConstructs.h" // new-champions
 #include "CireGame.h"
 #include "CireNPCState.h"
@@ -514,7 +515,7 @@ int32 CireRaces::OnAbilityReleased(ACireMonster* M, const FCireNPCAbility& A, FV
     const FVector Toward = (Aim - From).GetSafeNormal2D();
     const float Scale = TierDuration(M);
     int32 Affected = 0;
-    for (TActorIterator<ACireHero> It(M->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireHero> It(M->GetWorld()); It; ++It)
     {
         ACireHero* H = *It;
         if (!Targetable(M, H)) continue;

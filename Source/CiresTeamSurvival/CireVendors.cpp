@@ -1,4 +1,5 @@
 #include "CireVendors.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "CireItems.h"
 #include "CireLanePath.h"
@@ -376,7 +377,7 @@ ACireVendor* CireVendors::NearestInRange(const ACireHero* Hero, float Slack)
     if (!Hero || !Hero->GetWorld()) return nullptr;
     ACireVendor* Best = nullptr;
     float BestDist = Get().InteractRange + Slack;
-    for (TActorIterator<ACireVendor> It(Hero->GetWorld()); It; ++It)
+    for (TCireActorIterator<ACireVendor> It(Hero->GetWorld()); It; ++It)
     {
         if (It->Team != Hero->TeamId) continue;
         const float Dist = FVector::Dist2D(It->InteractPoint(), Hero->GetActorLocation());
@@ -406,7 +407,7 @@ void CireVendors::OnPurchased(const UWorld* World, FName ItemId)
     const FName Seller = VendorOf(ItemId);
     ACireVendor* Best = nullptr;
     float BestDist = 3000.f;
-    for (TActorIterator<ACireVendor> It(World); It; ++It)
+    for (TCireActorIterator<ACireVendor> It(World); It; ++It)
     {
         if (It->Team != Hero->TeamId || (!Seller.IsNone() && It->VendorId != Seller)) continue;
         const float Dist = FVector::Dist2D(It->GetActorLocation(), Hero->GetActorLocation());
@@ -635,7 +636,7 @@ bool CireVendors::RunSmoke(ACireGameMode* Mode)
     }
     // The spawned merchants: six (three per realm), each with a stall and a sign.
     TArray<ACireVendor*> Vendors;
-    for (TActorIterator<ACireVendor> It(Mode->GetWorld()); It; ++It) Vendors.Add(*It);
+    for (TCireActorIterator<ACireVendor> It(Mode->GetWorld()); It; ++It) Vendors.Add(*It);
     Check(Vendors.Num() == 6, TEXT("six merchants spawned (three per realm)"));
     bool bStalls = Vendors.Num() > 0, bSigns = Vendors.Num() > 0, bBodies = Vendors.Num() > 0;
     for (ACireVendor* V : Vendors) { bStalls &= V->StallParts.Num() > 0; bSigns &= V->SignBoard->GetStaticMesh() != nullptr; bBodies &= V->bHasBody; }

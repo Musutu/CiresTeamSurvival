@@ -1,6 +1,8 @@
 #include "CireGame.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLanePath.h"
 #include "CireTownMap.h"
+#include "CireTownPerf.h" // town-perf
 #include "CireArenas.h" // medieval-kingdom
 #include "Net/UnrealNetwork.h"
 #include "CireEnvironmentProps.h"
@@ -113,7 +115,7 @@ void ACireWorld::BeginPlay() {
     RouteArrows=Make(TEXT("CireRouteArrows"),Cube,Mat(TEXT("stone_material"),StoneMaterial),false,false);
     BayDais=Disc;BreachRift=Rift; // dev-route-tools
     BayStone=Make(TEXT("ChallengeStone"),Cube,Mat(TEXT("stone_material"),StoneMaterial),true);
-    RefreshRouteVisuals();
+    {TRACE_CPUPROFILER_EVENT_SCOPE(CireWorld_RouteVisuals);RefreshRouteVisuals();}
     auto Text=[&](const FString& Str,FVector P,float Size,FColor Color,FRotator Rotation=FRotator(0,180,0)) {
         auto* T=NewObject<UTextRenderComponent>(this); T->SetupAttachment(RootComponent);
         T->SetWorldLocation(P); T->SetWorldRotation(Rotation); T->SetText(FText::FromString(Str));
@@ -182,7 +184,7 @@ void ACireWorld::BeginPlay() {
     // The sun sets behind the breach (+X), straight down both lanes, so the Sundering Cliff never
     // shades one team's realm more than the other's and the gate is silhouetted against the dusk.
     // world-scale (art direction "vibrant, fun and crisp"): a higher, whiter golden-hour sun instead of the murky dusk.
-    if(bTown)CireTownMap::BuildRealmLighting(this); // medieval-kingdom: Daylight / Darknight suns on lighting channels 0 / 1, pack sky spheres
+    if(bTown){TRACE_CPUPROFILER_EVENT_SCOPE(CireTown_BuildRealmLighting);CireTownMap::BuildRealmLighting(this);} // medieval-kingdom: Daylight / Darknight suns on lighting channels 0 / 1, pack sky spheres
     else {
     auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,3000),FRotator(-30,180,0));
     Sun->GetLightComponent()->SetIntensity(7.0f); Sun->GetLightComponent()->SetLightColor(FLinearColor(1.f,.92f,.80f));
@@ -225,17 +227,18 @@ void ACireWorld::BeginPlay() {
         S.bOverride_Sharpen=true;S.Sharpen=.6f;
         Grade->RegisterComponent();AddInstanceComponent(Grade);
     }
-    CireEnvironmentProps::Build(this);
-    CireVendors::SpawnAll(this); // vendors: the three town merchants, stalls and signs (every peer, like the props)
+    {TRACE_CPUPROFILER_EVENT_SCOPE(CireWorld_EnvironmentProps);CireEnvironmentProps::Build(this);}
+    {TRACE_CPUPROFILER_EVENT_SCOPE(CireWorld_Vendors);CireVendors::SpawnAll(this);} // vendors: the three town merchants, stalls and signs (every peer, like the props)
     // nav-paths: the navmesh is generated once the town, its props and the collision floor exist
     // (server/standalone only; clients have no navigation system).
-    if(HasAuthority())CireNav::Initialize(GetWorld());
+    if(HasAuthority()){TRACE_CPUPROFILER_EVENT_SCOPE(CireWorld_NavInitialize);CireNav::Initialize(GetWorld());}
+    if(HasAuthority())CireTownPerf::Initialize(GetWorld()); // town-perf: -CireTownPerfProbe
 }
 void ACireWorld::SyncGoalZones() {
     // nav-paths: the castle leak zone follows the editable goal zone (BattlefieldRoutes.json "goal").
     if(!HasAuthority())return;
     const FVector2D Extent=CireLanePath::GoalZoneExtent(GetWorld());
-    for(TActorIterator<ACireTownGoal> It(GetWorld());It;++It) {
+    for(TCireActorIterator<ACireTownGoal> It(GetWorld());It;++It) {
         const FVector Center=CireLanePath::GoalZoneCenter(GetWorld(),It->TeamId,150);
         if(!It->GetActorLocation().Equals(Center,1.))It->SetActorLocation(Center);
         // medieval-kingdom: in the pack town the leak zone is a tall column (the castle stands on a hill, the ground trace
@@ -249,6 +252,7 @@ void ACireWorld::SyncGoalZones() {
 void ACireWorld::Tick(float DeltaSeconds) {
     Super::Tick(DeltaSeconds);
     if(bCastleTown&&GetWorld()->GetTimeSeconds()<30.f)CireTownMap::PrepareRealmLevels(GetWorld()); // medieval-kingdom: late Level Instances
+    if(bCastleTown)CireTownMap::UpdateLocalView(GetWorld()); // town-perf: render only the realm the local camera is in
     if(RenderedRouteRevision!=CireLanePath::Revision(GetWorld())){RefreshRouteVisuals();CireEnvironmentProps::Refresh(this);CireNav::InvalidatePaths(GetWorld());}
     SyncGoalZones(); // nav-paths: cheap (two actors); also covers a goal authored in the JSON at startup
 }

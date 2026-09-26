@@ -1,4 +1,5 @@
 #include "CireCrowdControl.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CirePolymorph.h" // progression-shop
 #include "CireScalingKits.h" // scaling-kits
 #include "CireMobility.h" // feat/camera-movement
@@ -64,7 +65,7 @@ template<typename Fn> void ForEachHostileNear(ACireHero* Source,FVector Center,f
     TArray<AActor*> Units;
     for(auto* M:Mode->Monsters)if(IsValid(M)&&M->Health>0)Units.Add(M);
     for(auto* H:Mode->Heroes)if(IsValid(H)&&!H->bDead)Units.Add(H);
-    for(TActorIterator<ACireSummon> It(Source->GetWorld());It;++It)if(!It->bDead)Units.AddUnique(*It);
+    for(TCireActorIterator<ACireSummon> It(Source->GetWorld());It;++It)if(!It->bDead)Units.AddUnique(*It);
     for(AActor* U:Units)
     {
         if(!Source->IsHostile(U))continue;

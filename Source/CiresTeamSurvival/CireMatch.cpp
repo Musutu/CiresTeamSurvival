@@ -1,4 +1,5 @@
 #include "CireLayoutWiring.h" // layout-wiring
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLayoutRuntime.h" // layout-wiring
 #include "CireBalanceLab.h"
 #include "CireChampionProfiles.h"
@@ -102,7 +103,7 @@ void TickServerProbe(ACireGameMode* Mode) {
             // town-goal volume "leaks" on its first overlap and is destroyed, so the client never sees it.
             // The join spot shifts with bot collision pushes, which made +450 cm intermittently too close.
             const auto NearGoal=[&](const FVector& Spot) {
-                for(TActorIterator<ACireTownGoal> It(Mode->GetWorld());It;++It) if(It->TeamId==Hero->TeamId)
+                for(TCireActorIterator<ACireTownGoal> It(Mode->GetWorld());It;++It) if(It->TeamId==Hero->TeamId)
                     for(const FVector& Margin:{FVector::ZeroVector,FVector(250,0,0),FVector(-250,0,0),FVector(0,250,0),FVector(0,-250,0)})
                         if(It->ContainsLocation(Spot+Margin))return true;
                 return false;

@@ -3,6 +3,7 @@
 // Everything here is local presentation; it reads replicated/authoritative state and
 // never changes combat rules.
 #include "CireHUD.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireUITheme.h" // ui-themes
 #include "CireArenas.h" // arenas
 #include "CireGame.h"
@@ -519,7 +520,7 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
     if(!Hero||(!UISettings.bShowBossFrames&&!bEditLayout))return;
     const auto* State=GetWorld()->GetGameState<ACireGameState>();const bool bArena=State&&State->Phase==2;
     TArray<ACireMonster*> Units;TMap<int32,ACireMonster*> PackLeaders;
-    for(TActorIterator<ACireMonster> It(GetWorld());It;++It)
+    for(TCireActorIterator<ACireMonster> It(GetWorld());It;++It)
     {
         ACireMonster* M=*It;if(bArena||M->Health<=0||M->Lane!=Hero->TeamId)continue;
         const float Dist=FVector::Dist2D(M->GetActorLocation(),Hero->GetActorLocation());
@@ -594,7 +595,7 @@ void ACireHUD::DrawThreatMeter(ACireHero* Hero,ACireController* Controller)
     if(!Source)
     {
         double Best=MAX_dbl;
-        for(TActorIterator<ACireMonster> It(GetWorld());It;++It)
+        for(TCireActorIterator<ACireMonster> It(GetWorld());It;++It)
         {
             if(It->Health<=0||It->Lane!=Hero->TeamId||!IsValid(It->Victim))continue;
             const double D=FVector::DistSquared(It->GetActorLocation(),Hero->GetActorLocation())*(It->Victim==Hero?.25:1.);
@@ -662,7 +663,7 @@ void ACireHUD::UpdateThreatAlerts(ACireHero* Hero)
     if(!Hero||!UISettings.bThreatWarnings||IsTank(Hero))return;
     const double Now=GetWorld()->GetRealTimeSeconds();
     if(Now-LastThreatWarning<5.0)return;
-    for(TActorIterator<ACireMonster> It(GetWorld());It;++It)
+    for(TCireActorIterator<ACireMonster> It(GetWorld());It;++It)
     {
         ACireMonster* M=*It;
         if(M->Health<=0||M->Lane!=Hero->TeamId||M->bArmoredEscort||!IsValid(M->Victim)||M->Victim==Hero)continue;
@@ -740,7 +741,7 @@ void ACireHUD::UpdateLevelUps(ACireHero* Hero)
 {
     const double Now=GetWorld()->GetRealTimeSeconds();
     for(auto It=SeenLevels.CreateIterator();It;++It)if(!It.Key().IsValid())It.RemoveCurrent();
-    for(TActorIterator<ACireHero> It(GetWorld());It;++It)
+    for(TCireActorIterator<ACireHero> It(GetWorld());It;++It)
     {
         ACireHero* H=*It;if(Cast<ACireSummon>(H))continue;
         int32* Seen=SeenLevels.Find(H);
@@ -872,8 +873,8 @@ void ACireHUD::UpdateHoverUnit(ACireHero* Hero)
         const float Depth=FVector::DistSquared(Camera,Loc);
         if(Depth<BestDepth){BestDepth=Depth;HoverUnit=A;}
     };
-    for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(!It->bDead&&(bArena||It->TeamId==Hero->TeamId))Consider(*It);
-    for(TActorIterator<ACireMonster> It(GetWorld());It;++It)if(It->Health>0&&!bArena&&It->Lane==Hero->TeamId)Consider(*It);
+    for(TCireActorIterator<ACireHero> It(GetWorld());It;++It)if(!It->bDead&&(bArena||It->TeamId==Hero->TeamId))Consider(*It);
+    for(TCireActorIterator<ACireMonster> It(GetWorld());It;++It)if(It->Health>0&&!bArena&&It->Lane==Hero->TeamId)Consider(*It);
 }
 void ACireHUD::TooltipBox(float X,float Y,float W,float H,FLinearColor Border)
 {
@@ -1273,12 +1274,12 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         if(PlayerOwner->ProjectWorldLocationToScreen(Hero->GetActorLocation()+FVector(0,0,125),Screen,false))
             DrawOverheadStatus(Hero,Screen.X/Scale,Screen.Y/Scale,1.f,true);
     }
-    for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(bArena||It->TeamId==Hero->TeamId)
+    for(TCireActorIterator<ACireHero> It(GetWorld());It;++It)if(bArena||It->TeamId==Hero->TeamId)
         Plate(*It,It->HeroName,It->Health,It->MaxHealth,It->TeamId==Hero->TeamId?Friendly*.85f:Hostile,120,nullptr);
-    for(TActorIterator<ACireMonster> It(GetWorld());It;++It)if(!bArena&&It->Lane==Hero->TeamId)
+    for(TCireActorIterator<ACireMonster> It(GetWorld());It;++It)if(!bArena&&It->Lane==Hero->TeamId)
         Plate(*It,It->LeashState==2?It->GetNPCDisplayName()+TEXT("  (evading)"):It->GetNPCDisplayName(), // layout-wiring: leash return
             It->Health,It->MaxHealth,It->bNeutral?Neutral*.95f:It->bArmoredEscort?Silver*.8f:Hostile*.9f,100,*It); // wave-director: neutral = yellow
-    for(TActorIterator<ACireConstruct> It(GetWorld());It;++It)if(It->CanObserve(PlayerOwner))
+    for(TCireActorIterator<ACireConstruct> It(GetWorld());It;++It)if(It->CanObserve(PlayerOwner))
         Plate(*It,It->GetDisplayName(),It->Health,It->MaxHealth,It->OriginTeam==Hero->TeamId?Friendly*.85f:Hostile,It->ConstructSpec.Height*.5f+25,nullptr);
     LayoutAndDraw();
     DrawVendorPlates(Hero);
@@ -1294,7 +1295,7 @@ void ACireHUD::DrawVendorPlates(ACireHero* Hero)
     const auto& Data=CireVendors::Get();
     ACireVendor* Near=CireVendors::NearestInRange(Hero);
     const float Pulse=.5f+.5f*FMath::Sin(GetWorld()->GetRealTimeSeconds()*4.f);
-    for(TActorIterator<ACireVendor> It(GetWorld());It;++It)
+    for(TCireActorIterator<ACireVendor> It(GetWorld());It;++It)
     {
         if(It->Team!=Hero->TeamId)continue;
         const FCireVendorDef* Def=CireVendors::Find(It->VendorId);if(!Def)continue;
@@ -1383,7 +1384,7 @@ void ACireHUD::UpdateBanners(ACireHero* Hero,ACireGameState* State)
     }
     // Bosses and challenge tiers appearing in your lane.
     for(auto It=BannerSeenBosses.CreateIterator();It;++It)if(!It->IsValid())It.RemoveCurrent();
-    for(TActorIterator<ACireMonster> It(GetWorld());It;++It)
+    for(TCireActorIterator<ACireMonster> It(GetWorld());It;++It)
     {
         ACireMonster* M=*It;
         if(M->Health<=0||M->Lane!=Hero->TeamId||M->GetNPCClassification()!=ECireNPCClass::Boss||BannerSeenBosses.Contains(M))continue;
