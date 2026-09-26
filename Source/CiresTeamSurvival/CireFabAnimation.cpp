@@ -25,6 +25,7 @@ struct FFabData
     TMap<FString, CireChampionActions::FWindow> Windows;
     TMap<FString, TMap<FString, TArray<FString>>> Replace; // "style:x" / "motion:y" -> kind -> clips
     TMap<FString, FString> Bodies;                          // mesh object path -> folder (ChampionAttacks02.json)
+    TMap<FString, FString> LocomotionOverride;              // weapon-grips: folder -> body-specific BlendSpace (Warden spear clones)
     bool bLocomotion = true;
 };
 FFabData GFab;
@@ -54,6 +55,14 @@ const FFabData& Data()
     const TSharedPtr<FJsonObject>* FabBodies = nullptr;
     if (Root->TryGetObjectField(TEXT("bodies"), FabBodies))
         for (const auto& Pair : (*FabBodies)->Values) { FString Folder; if (Pair.Value->TryGetString(Folder) && !Folder.Contains(TEXT("/")) && !Folder.Contains(TEXT(".."))) GFab.Bodies.Add(FString(Pair.Key.ToView()), Folder); }
+    // weapon-grips: a body-specific locomotion BlendSpace (Tools/BuildWardenSpearLocomotion.py) replaces the shared one.
+    const TSharedPtr<FJsonObject>* Overrides = nullptr;
+    if (Root->TryGetObjectField(TEXT("locomotionOverride"), Overrides))
+        for (const auto& Pair : (*Overrides)->Values)
+        {
+            FString Path;
+            if (Pair.Value->TryGetString(Path) && Path.StartsWith(TEXT("/Game/")) && !Path.Contains(TEXT(".."))) GFab.LocomotionOverride.Add(FString(Pair.Key.ToView()), Path);
+        }
     const TSharedPtr<FJsonObject>* Clips = nullptr;
     if (Root->TryGetObjectField(TEXT("clips"), Clips))
         for (const auto& Pair : (*Clips)->Values)
@@ -146,6 +155,19 @@ bool CireFabAnimation::Pick(const USkeletalMesh* Body, const FString& Folder, co
 UBlendSpace* CireFabAnimation::Locomotion(const USkeletalMesh* Body, const FString& Folder)
 {
     if (!Body || Folder.IsEmpty() || !Enabled() || !Data().bLocomotion) return nullptr;
+    if (const FString* Override = Data().LocomotionOverride.Find(Folder))
+    {
+        const FString Asset = FPackageName::GetShortName(*Override);
+        UBlendSpace* Own = LoadIfPresent<UBlendSpace>(FString::Printf(TEXT("%s.%s"), **Override, *Asset));
+        static TSet<FString> Logged;
+        if (!Logged.Contains(Folder))
+        {
+            Logged.Add(Folder);
+            UE_LOG(LogCireFabAnim, Log, TEXT("CIRE_FAB_ANIM_LOCOMOTION_OVERRIDE folder=%s blend=%s loaded=%d skeleton=%d"), *Folder, **Override, Own ? 1 : 0,
+                Own && Own->GetSkeleton() == Body->GetSkeleton() ? 1 : 0);
+        }
+        if (Own && Own->GetSkeleton() == Body->GetSkeleton()) return Own; // else the shared BlendSpace below
+    }
     const FString Name = TEXT("BS_Fab_Locomotion_") + Folder;
     UBlendSpace* Blend = LoadIfPresent<UBlendSpace>(FString::Printf(TEXT("%s/%s/%s.%s"), *Data().Root, *Folder, *Name, *Name));
     return Blend && Blend->GetSkeleton() == Body->GetSkeleton() ? Blend : nullptr;

@@ -36,7 +36,7 @@ struct FSocketData
     TArray<TPair<FString, FString>> CalibrationClips; // Fab clip name -> mannequin source clip
 };
 FSocketData GData;
-TMap<TWeakObjectPtr<const USkeletalMesh>, FCalibration> GCalibrations;
+TMap<TPair<TWeakObjectPtr<const USkeletalMesh>, FString>, FCalibration> GCalibrations; // (body, preferred set)
 
 FVector Vec(const TSharedPtr<FJsonObject>& O, const TCHAR* Key, const FVector& Default)
 {
@@ -170,14 +170,20 @@ bool CireWeaponSockets::OffHand(const FString& Set, FName MainHand, FTransform& 
     return true;
 }
 
-const CireWeaponSockets::FCalibration& CireWeaponSockets::Calibration(const USkeletalMesh& Body)
+const CireWeaponSockets::FCalibration& CireWeaponSockets::Calibration(const USkeletalMesh& Body, const FString& Set)
 {
-    if (const FCalibration* Found = GCalibrations.Find(&Body)) return *Found;
-    FCalibration& Out = GCalibrations.Add(&Body);
+    const TPair<TWeakObjectPtr<const USkeletalMesh>, FString> Key(&Body, Set);
+    if (const FCalibration* Found = GCalibrations.Find(Key)) return *Found;
+    FCalibration& Out = GCalibrations.Add(Key);
     const FString Folder = CireFabAnimation::FolderFor(&Body);
     if (Folder.IsEmpty()) return Out;
     static const TArray<FName> Bones = {TEXT("hand_r"), TEXT("hand_l"), TEXT("lowerarm_r"), TEXT("lowerarm_l")};
-    for (const auto& Pair : Data().CalibrationClips)
+    // The set's own calibration clip first, then any other the body has.
+    TArray<TPair<FString, FString>> Clips = Data().CalibrationClips;
+    if (!Set.IsEmpty())
+        Clips.StableSort([&Set](const TPair<FString, FString>& A, const TPair<FString, FString>& B)
+            { return A.Key.StartsWith(Set + TEXT("_")) && !B.Key.StartsWith(Set + TEXT("_")); });
+    for (const auto& Pair : Clips)
     {
         UAnimSequence* Target = CireFabAnimation::Find(&Body, Folder, Pair.Key);
         UAnimSequence* Source = Target ? LoadIfPresent<UAnimSequence>(Pair.Value) : nullptr;
@@ -219,7 +225,7 @@ bool CireWeaponSockets::Intended(const USkeletalMesh& Body, const FString& Set, 
 {
     OutFrame = Frame(Set, Hand);
     if (!OutFrame.bValid) return false;
-    const FCalibration& Cal = Calibration(Body);
+    const FCalibration& Cal = Calibration(Body, Set);
     const FQuat* Q = Cal.bValid ? Cal.Q.Find(OutFrame.Bone) : nullptr;
     const FReferenceSkeleton& Ref = Body.GetRefSkeleton();
     if (!Q || Ref.FindBoneIndex(OutFrame.Bone) == INDEX_NONE) return false;
@@ -235,7 +241,7 @@ bool CireWeaponSockets::IntendedOffHand(const USkeletalMesh& Body, const FString
 {
     FTransform Off;
     if (!OffHand(Set, MainHand, Off)) return false;
-    const FCalibration& Cal = Calibration(Body);
+    const FCalibration& Cal = Calibration(Body, Set);
     const FName OffHandBone = MainHand == TEXT("hand_r") ? FName(TEXT("hand_l")) : FName(TEXT("hand_r"));
     const FQuat* QMain = Cal.bValid ? Cal.Q.Find(MainHand) : nullptr;
     const FQuat* QOff = Cal.bValid ? Cal.Q.Find(OffHandBone) : nullptr;

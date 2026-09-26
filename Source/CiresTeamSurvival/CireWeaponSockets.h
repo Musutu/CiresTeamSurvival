@@ -53,8 +53,12 @@ namespace CireWeaponSockets
     CIRESTEAMSURVIVAL_API FHandFrame Frame(const FString& Set, FName Hand);
     /** Second-hand target of a two-handed set: off-hand bone frame relative to the main hand bone (mannequin cm). */
     CIRESTEAMSURVIVAL_API bool OffHand(const FString& Set, FName MainHand, FTransform& OutOffInMain);
-    /** Cached per body; invalid when the body has no calibration clip. */
-    CIRESTEAMSURVIVAL_API const FCalibration& Calibration(const USkeletalMesh& Body);
+    /**
+     * Cached per body and set; invalid when the body has no calibration clip. Each Fab set is retargeted with its own
+     * retargeter (one per source skeleton), so the set's own clip is measured first (the Aetheri Warden plays the Spear
+     * set but also has two-handed clips: calibrating on those put the halberd's second-hand target 130 cm away).
+     */
+    CIRESTEAMSURVIVAL_API const FCalibration& Calibration(const USkeletalMesh& Body, const FString& Set = FString());
     /**
      * The intended grip frame (X = edge, Z = tip; origin = grip point) in the component space of Body's bind pose, mesh
      * units. False when the set has no authored frame for Hand or the body is not calibrated.

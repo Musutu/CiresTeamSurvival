@@ -71,6 +71,7 @@ def main() -> int:
     parser.add_argument("--preset", default="", help="preview loadouts to render, e.g. ranger:ranger_crossbow")
     parser.add_argument("--legacy", action="store_true", help="render the old bind-pose grips (before captures)")
     parser.add_argument("--no-fab", action="store_true", help="hide the local Fab packs")
+    parser.add_argument("--hq-off", action="store_true", help="render the fallback (Fab-clip) champion bodies instead of the HQ ones")
     parser.add_argument("--pylib", default=None, help="directory with Pillow for the contact sheets")
     parser.add_argument("--editor", type=Path, default=Path("F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"))
     parser.add_argument("--timeout", type=int, default=1500)
@@ -84,6 +85,8 @@ def main() -> int:
         command.append("-CireLegacyGrips")
     if args.no_fab:
         command.append("-CireNoFab")
+    if args.hq_off:
+        command.append("-CireChampionHQOff")
     if args.only:
         command.append(f"-CireGripGalleryOnly={args.only}")
     if args.preset:

@@ -87,7 +87,7 @@ axes pointed about 135-150 degrees backwards in every Fab clip (`bindTipDev` bel
 | Ranged Troll | troll_ranged | throw (11.3 deg) | throwing axes @r/@l authored (49 / 147, 33 / 164) | - |
 | Lancer | lancer | spear (2.6 deg) | spear @r authored, two-handed (30 / 169) | 0.0 cm |
 | Totemic Behemoth | behemoth | two_hand (13.5 deg) | totem @r authored, two-handed (25 / 4) | 4.1 cm |
-| Aetheri Warden | aetheri_warden | spear (12.7 deg) | halberd @r authored, two-handed (20 / 166) | 65 cm (gap, below) |
+| Aetheri Warden | aetheri_warden | spear (12.7 deg) | halberd @r authored, two-handed (20 / 166) | 0.0 cm with the Warden spear clone (was 65 cm; see below) |
 | Huntress | tripo_huntress | spear (1.4 deg) | glaive @r authored, two-handed (39 / 168); launcher @l bind | - |
 | **Gunblade** | tripo_gunblade | **gun (1.7 deg)** | **sword @r authored (11 / 10); pistol @l authored (17 / 172)** | - |
 | **Ranger (crossbow preview)** | ranger_crossbow | **crossbow** (bow_attack1 calibration, 3.1 deg) | **crossbow @l authored, stock hold (82 / 89)** | - |
@@ -100,14 +100,50 @@ The crossbow row comes from `python Tools/RunGripGallery.py --only ranger --pres
 authors: the Crossbow pack holds the stock in the left hand, as the preset lists it. The grip test now fails any
 held prop that stays on the bind grip while its set authors that hand.
 
+**After the champion-hq merge (main a3b53d6 / ee29d6d).** The HQ champion bodies (`/Game/Tripo/ChampionsHQ`, folders
+`HQ<Name>`) play their own Tripo clips, authored on their bind pose, so they keep the bind grip (`set=-`, `mode=bind`)
+and the 145-degree Fab-clip bug does not apply to them. Only the Polyphoria plate body (knight, both paladins) plays
+Fab clips on current main, and it keeps the authored sword, mace and shield grips above. Full gallery on the merged
+tree: `Saved/GripGallery/20260926-084204-after`. The HQ Warden carries its halberd upright with the second hand on
+the shaft (0.0 cm from target at idle and run). The table rows for the other bodies describe the Fab-clip bodies,
+which are still the fallback when the HQ art is missing.
+
+**Aetheri Warden spear locomotion (Fab-clip body).** The 65 cm second-hand gap had two causes:
+* **Static locomotion.** The Warden's Tripo BlendSpace (`BS_Idle_Walk_Run_AetheriWarden`) evaluates to a static pose
+  at runtime. So does every duplicate of it, including the shared `BS_Fab_Locomotion_TripoAetheriWarden`: idle and run
+  rendered the same frame, and the main hand sat at the same place (130 cm from the off shoulder, 65 cm arm).
+* **Wrong set.** The shared locomotion carried two-handed (greatsword) clips while the Warden attacks with the Spear
+  set.
+
+`Tools/BuildWardenSpearLocomotion.py` fixes both in a Warden-only folder. It changes nothing shared: all 1611 shared
+files have the same SHA-1 and mtime before and after.
+* It clones the Spear set's idle and 8-way walk/run onto `TripoAetheriWarden`
+  (`/Game/FabDerived/Warden/Warden_Spear/A_Warden_Spear_loco_*`).
+* It builds `BS_Fab_Locomotion_Warden_Spear` on the lancer's proven BlendSpace, retargeted onto the Warden
+  (`_template`, the paladin-hq `make_template` route).
+* `FabAnimations.json` `locomotionOverride` points only that body folder at the clone (`CireFabAnimation::Locomotion`).
+* Like all of FabDerived it is derived from the Fab packs, so it stays local (gitignored). The main checkout needs one
+  run of the tool.
+
+Second hand from its grip target (`RunGripGallery.py --only aetheri_warden --hq-off`):
+
+| State | Before | After |
+| --- | --- | --- |
+| Idle | 65.0 cm | 0.0 cm |
+| Run | 65.0 cm | 0.0 cm |
+| Attacks (hand released by design) | 17.7 / 26.6 cm | 17.7 / 26.7 cm |
+
+Captures: `Saved/GripGallery/20260926-092053-after`.
+
+Calibration is now per body and set (`CireWeaponSockets::Calibration(Body, Set)`, the set's own clip first), because
+every Fab set is retargeted with its own retargeter. The miner and chieftain now calibrate on `axe_attack1` and the
+ranged troll on `throw_attack1`; their grips were unchanged in the gallery. The live HQ Warden needs none of this: it
+plays its own Tripo clips with the second hand on the shaft (0.0 cm).
+
 **Open gaps.**
 * **Crossbow at rest.** The Ranger idles and runs on the bow locomotion (the Crossbow pack ships no locomotion), so
   between shots the authored left-hand hold leaves the crossbow hanging diagonally. The old upright carry only
   existed on the bind grip. Windup and contact are shouldered and aimed correctly.
-* **Aetheri Warden.** It idles on the two-handed (greatsword) clips but attacks with the Spear set. The halberd is
-  rigid in the hand, so it follows the spear grip, and the greatsword idle's second hand cannot reach it (65 cm).
-  Fix: retarget the Spear locomotion onto `TripoAetheriWarden` (`Art/Fab/FabAnimMap.json` `bodies`, then
-  `Tools/RetargetFabAnimations.py`). This rewrites shared `/Game/FabDerived` assets, so it is a coordinator decision.
 * **Staffs, bow and the Witch Slayer's blunderbuss** keep the bind grip. No owned pack authors a staff, a bow socket
   or a musket. Fab candidates (not bought): "Essential Magic Staff Animation Pack" and "Blunderbuss Musket Rifle
   Animation Pack". A mace-specific set would be "700+ Mace/Hammer Combat Animations"; today the paladin mace plays

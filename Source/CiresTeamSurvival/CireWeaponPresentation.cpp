@@ -7,6 +7,7 @@
 #include "CireChampionActions.h" // weapon-grips: motion class for the Fab set
 #include "CireWeaponSockets.h" // weapon-grips: animation-authored grips
 #include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimSingleNodeInstance.h" // weapon-grips: gallery metrics
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
 #include "Engine/SkeletalMesh.h"
@@ -515,8 +516,15 @@ FString CireWeapons::DescribeGrips(const ACireHero& Hero)
     FString Out=FString::Printf(TEXT("loadout=%s set=%s legacy=%d"),*Weapons->GetEquippedLoadout(),Weapons->GetGripSet().IsEmpty()?TEXT("-"):*Weapons->GetGripSet(),LegacyGrips()?1:0);
     if(const auto* Mesh=Body->GetSkeletalMeshAsset())
     {
-        const auto& Cal=CireWeaponSockets::Calibration(*Mesh);
+        const auto& Cal=CireWeaponSockets::Calibration(*Mesh,Weapons->GetGripSet());
         Out+=Cal.bValid?FString::Printf(TEXT(" calib=%s spread=%.1f scale=%.3f"),*Cal.Clip,Cal.SpreadDeg,Cal.Scale):FString(TEXT(" calib=none"));
+    }
+    if(UAnimSingleNodeInstance* Single=const_cast<USkeletalMeshComponent*>(Body)->GetSingleNodeInstance())
+    {   // weapon-grips: what the body plays (locomotion BlendSpace and its input) for the gallery metrics
+        const FVector In=Single->GetFilterLastOutput();
+        Out+=FString::Printf(TEXT(" anim=%s blendIn=%.0f,%.0f"),Single->GetAnimationAsset()?*Single->GetAnimationAsset()->GetName():TEXT("-"),In.X,In.Y);
+        if(const auto* Combat=Cast<UCireCombatAnimInstance>(Single))
+            Out+=FString::Printf(TEXT(" action=%s actionWeight=%.2f"),Combat->AttackSequence?*Combat->AttackSequence->GetName():TEXT("-"),Combat->AttackWeight);
     }
     for(const auto& Info:Weapons->GetGripInfo())
     {
@@ -532,7 +540,10 @@ FString CireWeapons::DescribeGrips(const ACireHero& Hero)
     {
         const FTransform Main=Body->GetBoneTransform(Hands.Arm[Hands.MainSide][2]);
         const FVector Target=(Hands.OffHandInMain*Main).GetLocation(),Off=Body->GetBoneTransform(Hands.Arm[1-Hands.MainSide][2]).GetLocation();
-        Out+=FString::Printf(TEXT(" | offHandFromTarget=%.1fcm"),FVector::Dist(Target,Off));
+        const int32 OffSide=1-Hands.MainSide;
+        const FVector Shoulder=Body->GetBoneTransform(Hands.Arm[OffSide][0]).GetLocation(),Elbow=Body->GetBoneTransform(Hands.Arm[OffSide][1]).GetLocation();
+        const float Arm=static_cast<float>(FVector::Dist(Shoulder,Elbow)+FVector::Dist(Elbow,Off));
+        Out+=FString::Printf(TEXT(" | offHandFromTarget=%.1fcm targetFromShoulder=%.1fcm arm=%.1fcm"),FVector::Dist(Target,Off),FVector::Dist(Target,Shoulder),Arm);
     }
     return Out;
 }
