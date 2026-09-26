@@ -36,3 +36,17 @@ crash reports (`Saved/Crashes/UECC-...-3FDECC3D..._0000/_0001/_0002`) were repro
 * The knight's sword shows mostly its hilt in the preview; not investigated here (the mesh and its render data are
   clean, so it is most likely the grip pose in the champion-art weapon data).
 * Low preset: plate reads darker than at Epic (no screen-space reflections, the capture has no sky light by design).
+
+## Verification after the F: move (2026-09-26, rebuilt from this branch)
+
+Build `CiresTeamSurvivalEditor Win64 Development`: Result: Succeeded (bUseUnity=false).
+
+* `RunVideoCycle.py`: PASS, 108/108 checks, 23 shots, no engine failures (draft + match phases),
+  `Saved/VideoCycle/20260926T064652992408Z_rebuilt2/`. A first attempt ended early with `ViewportClosed`
+  (the window was closed externally mid-transition into the match; no ensure/crash, 71/71 checks up to then).
+* `RunVideoCycle.py --persist`: PASS (1280x720 mode=2 quality=2 scale=80 fps=90 survived the relaunch).
+* `RunExpansionChecks.py --timeout 240`: CIRE_COMBAT_EXPANSION_PASS, all 4 stages passed.
+* `RunNetworkSmoke.py --startup-timeout 120 --probe-timeout 90`: CIRE_NET_SERVER_PASS / CIRE_NETWORK_SMOKE_PASS.
+* `RunInterfaceSmoke.py --startup-timeout 120 --probe-timeout 120`: CIRE_INTERFACE_SMOKE_PASS on the second run.
+  The first run hit the known arena-validation stall (~775 ms hitch after the chat stage) that
+  `fix/interface-stall` fixes; nothing in this branch touches it.
