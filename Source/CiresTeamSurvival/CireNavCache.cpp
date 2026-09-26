@@ -1,6 +1,8 @@
 // town-perf: CireNavCache.h
 #include "CireNavCache.h"
 #include "CireTownMap.h"
+#include "CireTownTrim.h" // town-trim
+#include "CireTownWater.h" // town-trim
 #include "HAL/FileManager.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Compression.h"
@@ -52,6 +54,7 @@ FString CacheKey()
         FString Body; FFileHelper::LoadFileToString(Body, *(FPaths::ProjectContentDir() / File)); Text += Body;
     }
     { FString Ini; FFileHelper::LoadFileToString(Ini, *(FPaths::ProjectConfigDir() / TEXT("DefaultEngine.ini"))); Text += Ini; }
+    Text += CireTownTrim::Signature() + CireTownWater::NavSignature(); // town-trim: the Play Bounds, margin and backdrop ("" without a trim: the old key)
     for (const FString& Level : CireTownMap::Def().Levels)
     {
         FString File;
@@ -60,6 +63,10 @@ FString CacheKey()
     }
     return FMD5::HashAnsiString(*Text);
 }
+}
+FString CireNavCache::Key() { return CacheKey(); }
+namespace
+{
 FString CachePath() { return FPaths::ProjectSavedDir() / TEXT("NavCache") / (TEXT("CastleTown-") + CacheKey() + TEXT(".navcache")); }
 TArray<ARecastNavMesh*> Meshes(UNavigationSystemV1* NS)
 {
@@ -168,9 +175,11 @@ void CireNavCache::Save(UWorld* World, UNavigationSystemV1* NS)
     Out << FileMagic << Version << Count << RawSize;
     File.Append(Packed);
     const FString Path = CachePath();
-    // One cache per key; older keys (other layouts, older builds) are removed so the folder never grows.
+    // One cache per key; only the newest few keys are kept (town-trim: e.g. trimmed and untrimmed, or the last Play
+    // Bounds edits), so the folder never grows.
     TArray<FString> Old; IFileManager::Get().FindFiles(Old, *(FPaths::GetPath(Path) / TEXT("CastleTown-*.navcache")), true, false);
-    for (const FString& Name : Old) IFileManager::Get().Delete(*(FPaths::GetPath(Path) / Name));
+    Old.Sort([&](const FString& A, const FString& B) { return IFileManager::Get().GetTimeStamp(*(FPaths::GetPath(Path) / A)) > IFileManager::Get().GetTimeStamp(*(FPaths::GetPath(Path) / B)); });
+    for (int32 I = 3; I < Old.Num(); ++I) IFileManager::Get().Delete(*(FPaths::GetPath(Path) / Old[I]));
     IFileManager::Get().MakeDirectory(*FPaths::GetPath(Path), true);
     const bool bOk = FFileHelper::SaveArrayToFile(File, *Path);
     UE_LOG(LogCireNavCache, Display, TEXT("CIRE_NAV_CACHE_SAVED ok=%d tiles=%d raw_mb=%.1f file_mb=%.1f ms=%.0f file=%s"), bOk ? 1 : 0, Tiles, Raw.Num() / 1048576.0, File.Num() / 1048576.0,

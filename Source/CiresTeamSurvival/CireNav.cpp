@@ -5,6 +5,10 @@
 #include "CireLanePath.h"
 #include "CireTownMap.h" // medieval-kingdom
 #include "CireNavCache.h" // town-perf
+#include "CireTownTrim.h" // town-trim
+#include "CireTownWater.h" // town-trim
+#include "NavModifierVolume.h"
+#include "NavAreas/NavArea_Null.h"
 #include "CireArenas.h"
 #include "Components/BrushComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -86,6 +90,25 @@ void EnsureAvoidance(ACharacter* A)
     Move->AvoidanceConsiderationRadius = 280.f;
     Move->AvoidanceWeight = Cast<ACireMonster>(A) ? .5f : .3f;
     Move->SetAvoidanceEnabled(true);
+}
+AActor* SpawnNullArea(UWorld* World, const FBox& Box)
+{
+    // town-trim: a runtime nav modifier volume (NavArea_Null) over deep water, sized like SpawnBounds' volumes.
+    FActorSpawnParameters Params; Params.bDeferConstruction = true; Params.ObjectFlags |= RF_Transient;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    const FTransform At(Box.GetCenter());
+    auto* Volume = World->SpawnActor<ANavModifierVolume>(ANavModifierVolume::StaticClass(), At, Params);
+    if (!Volume) return nullptr;
+    UBrushComponent* Brush = Volume->GetBrushComponent();
+    auto* Setup = NewObject<UBodySetup>(Brush, NAME_None, RF_Transient);
+    const FVector Size = Box.GetSize();
+    Setup->AggGeom.BoxElems.Add(FKBoxElem(Size.X, Size.Y, Size.Z));
+    Brush->BrushBodySetup = Setup;
+    Volume->SetAreaClass(UNavArea_Null::StaticClass());
+    Volume->FinishSpawning(At);
+    Brush->UpdateBounds();
+    if (auto* NS = Sys(World)) NS->UpdateActorInNavOctree(*Volume);
+    return Volume;
 }
 AActor* SpawnBounds(UWorld* World, const FBox& Box, const TCHAR* Label)
 {
@@ -179,6 +202,10 @@ void CireNav::Initialize(UWorld* World)
         // The whole realm floor from the castle ward's edge wall to past the breach, stopping short of the Sundering Cliff.
         FBox Box(FVector(O.X + R.MinX - (bTown ? 300.f : 3200.f), O.Y - R.HalfWidth - 300.f, ZR.X), FVector(O.X + R.MaxX + 400.f, O.Y + R.HalfWidth + 300.f, ZR.Y));
         if (!bTown) { if (Team == 0) Box.Max.Y = FMath::Min(Box.Max.Y, -150.); else Box.Min.Y = FMath::Max(Box.Min.Y, 150.); }
+        if (bTown) for (const FBox& Deep : CireTownWater::DeepWaterBoxes(World, Team, FBox2D(FVector2D(Box.Min) - O, FVector2D(Box.Max) - O))) // town-trim: deep water is not walkable
+            if (AActor* V = SpawnNullArea(World, Deep)) N.Volumes.Add(V);
+        TArray<FBox> Trimmed; // town-trim: only the Play Bounds (plus margin), rasterized into a few boxes
+        if (CireTownTrim::NavBoxes(Team, Box, Trimmed)) { for (const FBox& T : Trimmed) if (AActor* V = SpawnBounds(World, T, Team == 0 ? TEXT("CireNavBounds_Ember") : TEXT("CireNavBounds_Dusk"))) N.Volumes.Add(V); continue; }
         if (AActor* V = SpawnBounds(World, Box, Team == 0 ? TEXT("CireNavBounds_Ember") : TEXT("CireNavBounds_Dusk"))) N.Volumes.Add(V);
     }
     {

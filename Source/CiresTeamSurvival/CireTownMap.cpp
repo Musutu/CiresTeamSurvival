@@ -4,6 +4,8 @@
 #include "CireHUD.h"
 #include "CireLanePath.h"
 #include "CireNPCCombat.h"
+#include "CireTownTrim.h" // town-trim
+#include "CireTownWater.h" // town-trim
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "UnrealClient.h"
@@ -165,6 +167,7 @@ void Parse(FCireTownDef& D)
             Num(*Light, TEXT("interiorIntensity"), L.InteriorIntensity); Num(*Light, TEXT("interiorRadius"), L.InteriorRadius); Col(*Light, TEXT("interiorColor"), L.InteriorColor);
             Num(*Light, TEXT("skyLightIntensity"), L.SkyLightIntensity); Col(*Light, TEXT("skyLightColor"), L.SkyLightColor); // town-perf
             Num(*Light, TEXT("torchIntensity"), L.TorchIntensity); Num(*Light, TEXT("torchRadius"), L.TorchRadius); Col(*Light, TEXT("torchColor"), L.TorchColor);
+            Num(*Light, TEXT("castleScale"), L.CastleScale); // town-trim
         }
     }
     if (const TSharedPtr<FJsonObject>* Perf = nullptr; Root->TryGetObjectField(TEXT("performance"), Perf) && Perf) // town-perf
@@ -191,6 +194,40 @@ void Parse(FCireTownDef& D)
                 if (M && M->TryGetObject(O) && O && (*O)->TryGetStringField(TEXT("name"), L.Name) && Vec2(*O, TEXT("at"), L.Local)) D.Landmarks.Add(L);
             }
     }
+    // town-trim: castle interior fill lights and the capture views.
+    auto Views = [](const TSharedPtr<FJsonObject>& O, TArray<FCireTownView>& Out)
+    {
+        const TArray<TSharedPtr<FJsonValue>>* List = nullptr;
+        if (!O->TryGetArrayField(TEXT("views"), List) || !List) return;
+        for (const auto& V : *List)
+        {
+            const TSharedPtr<FJsonObject>* VO = nullptr; FCireTownView View;
+            if (!V || !V->TryGetObject(VO) || !VO) continue;
+            (*VO)->TryGetStringField(TEXT("name"), View.Name);
+            const TSharedPtr<FJsonValue>* From = (*VO)->Values.Find(TEXT("from")); const TSharedPtr<FJsonValue>* At = (*VO)->Values.Find(TEXT("at"));
+            if (From && At && Vec3(*From, View.From) && Vec3(*At, View.At)) Out.Add(View);
+        }
+    };
+    if (const TSharedPtr<FJsonObject>* Castle = nullptr; Root->TryGetObjectField(TEXT("castleInterior"), Castle) && Castle)
+    {
+        FCireCastleLights& C = D.Castle;
+        double X = 0;
+        if ((*Castle)->TryGetNumberField(TEXT("intensity"), X) && FMath::IsFinite(X)) C.Intensity = float(FMath::Max(0.0, X));
+        if ((*Castle)->TryGetNumberField(TEXT("radius"), X) && FMath::IsFinite(X)) C.Radius = float(FMath::Max(100.0, X));
+        if ((*Castle)->TryGetNumberField(TEXT("sourceRadius"), X) && FMath::IsFinite(X)) C.SourceRadius = float(FMath::Max(0.0, X));
+        const TArray<TSharedPtr<FJsonValue>>* A = nullptr;
+        if ((*Castle)->TryGetArrayField(TEXT("color"), A) && A && A->Num() == 3) C.Color = FLinearColor(float((*A)[0]->AsNumber()), float((*A)[1]->AsNumber()), float((*A)[2]->AsNumber()));
+        for (const TCHAR* Key : {TEXT("anchors"), TEXT("yards")})
+            if ((*Castle)->TryGetArrayField(Key, A) && A)
+                for (const auto& V : *A)
+                {
+                    const TArray<TSharedPtr<FJsonValue>>* P = nullptr;
+                    if (V && V->TryGetArray(P) && P && P->Num() >= 3)
+                        (FCString::Strcmp(Key, TEXT("yards")) == 0 ? C.Yards : C.Anchors).Add(FVector4((*P)[0]->AsNumber(), (*P)[1]->AsNumber(), (*P)[2]->AsNumber(), P->Num() >= 4 ? (*P)[3]->AsNumber() : 0.0));
+                }
+        Views(*Castle, C.Views);
+    }
+    if (const TSharedPtr<FJsonObject>* Water = nullptr; Root->TryGetObjectField(TEXT("water"), Water) && Water) Views(*Water, D.WaterViews);
     // The realms must never overlap: separated by more than the town's own footprint.
     if (FVector2D::Distance(FVector2D(D.Offsets[0]), FVector2D(D.Offsets[1])) < 10000.) { D.Error = TEXT("realm offsets must be at least 100 m apart"); return; }
     D.bValid = true;
@@ -324,6 +361,8 @@ int32 CireTownMap::PrepareRealmLevels(UWorld* World)
     {
         if (!Level || Level == World->PersistentLevel || !Level->bIsVisible || PreparedLevels.Contains(Level)) continue;
         PreparedLevels.Add(Level); ++NewLevels;
+        CireTownTrim::TrimLevel(World, Level); // town-trim: outside the Play Bounds: destroyed or kept as backdrop
+        CireTownWater::PrepareLevel(World, Level); // town-trim: the pack's ocean, re-centred on this realm's water zone
         TArray<AActor*> Doomed;
         for (AActor* A : Level->Actors)
         {
@@ -379,6 +418,7 @@ bool CireTownMap::LoadRealms(UWorld* World)
     const double Started = FPlatformTime::Seconds();
     const auto& D = Def();
     SaveRendererCvars(); // town-perf
+    CireTownTrim::BeginLoad(World); // town-trim: freeze the Play Bounds this town is trimmed to
     int32 Count = 0;
     for (int32 Team = 0; Team < 2; ++Team)
         for (const FString& Level : D.Levels)
@@ -392,6 +432,7 @@ bool CireTownMap::LoadRealms(UWorld* World)
             }
             // Deterministic names: server and clients must stream the same level package names.
             const FString Name = FString::Printf(TEXT("%s_CireRealm%d"), *FPackageName::GetShortName(Level), Team);
+            if (!CireTownTrim::ShouldLoadSublevel(Level, D.Offsets[Team])) { Entry.Levels.Add(nullptr); continue; } // town-trim: entirely outside
             bool bOk = false;
             ULevelStreamingDynamic* S = ULevelStreamingDynamic::LoadLevelInstance(World, Level, D.Offsets[Team], FRotator::ZeroRotator, bOk, Name);
             if (!bOk || !S) { UE_LOG(LogCireTown, Error, TEXT("CIRE_TOWN_LEVEL_FAIL %s realm=%d"), *Level, Team); continue; }
@@ -407,6 +448,7 @@ bool CireTownMap::LoadRealms(UWorld* World)
     for (; Passes < 12; ++Passes)
     {
         const int32 Before = World->GetStreamingLevels().Num();
+        CireTownTrim::FilterLevelInstances(World); // town-trim: drop queued Level Instances entirely outside the Play Bounds
         if (auto* LevelInstances = World->GetSubsystem<ULevelInstanceSubsystem>()) LevelInstances->OnUpdateStreamingState();
         // town-perf: SL_Landscape is a World Partition level; its cells (the terrain, water) otherwise stream in on the first
         // frame, after the navmesh was built without the ground, and dirty both realms for a second full rebuild.
@@ -424,6 +466,7 @@ bool CireTownMap::LoadRealms(UWorld* World)
     if (!Added.IsValid())
         Added = FWorldDelegates::LevelAddedToWorld.AddLambda([](ULevel* Level, UWorld* In) { if (Level && In && bActive && Loaded.Contains(In)) CireTownMap::PrepareRealmLevels(In); });
     CireTownMap::PrepareRealmLevels(World);
+    CireTownTrim::LogSummary(World); // town-trim
     int32 Visible = 0;
     for (const auto& S : Entry.Levels) if (S.IsValid() && S->GetLoadedLevel() && S->GetLoadedLevel()->bIsVisible) ++Visible;
     LoadMs = (FPlatformTime::Seconds() - Started) * 1000.0; // town-perf
@@ -634,7 +677,30 @@ void CireTownMap::BuildRealmLighting(AActor* Owner)
             }
         }
     }
-    UE_LOG(LogCireTown, Display, TEXT("CIRE_TOWN_LIGHTING realms=%s/%s sky_radius=%.0f separation=%.0f torch_fills=%d interior_fills=%d"), *D.Lighting[0].Name, *D.Lighting[1].Name, SkyRadius, Separation, Fills, Interior);
+    // town-trim: the castle interior (keep, courtyards, gate passages) was too dark to find the way (Eric, playtest). Warm,
+    // non-shadowing fills at the "castleInterior" anchors, the same realm-local spots in both realms, each realm's copy on
+    // its own lighting channel and in its RealmVisuals (hidden with the far realm). Tagged for the before/after captures.
+    int32 CastleFills = 0;
+    for (int32 Team = 0; Team < 2 && D.Castle.Intensity > 0; ++Team)
+        for (int32 K = 0; K < D.Castle.Anchors.Num() + D.Castle.Yards.Num(); ++K)
+        {
+            const bool bYard = K >= D.Castle.Anchors.Num();
+            const FVector4& Anchor = bYard ? D.Castle.Yards[K - D.Castle.Anchors.Num()] : D.Castle.Anchors[K];
+            FVector At = FVector(CireLanePath::RealmOrigin(Team), D.Offsets[Team].Z) + FVector(Anchor.X, Anchor.Y, Anchor.Z);
+            if (bYard) At.Z = Ground(World, FVector2D(At)) + Anchor.Z; // open yards: above the ground under them
+            if (APointLight* Fill = World->SpawnActor<APointLight>(At, FRotator::ZeroRotator))
+            {
+                UPointLightComponent* C = Fill->PointLightComponent;
+                C->SetMobility(EComponentMobility::Movable);
+                C->SetIntensity(D.Castle.Intensity * D.Lighting[Team].CastleScale * (bYard ? 1.5f : 1.f)); C->SetLightColor(D.Castle.Color);
+                C->SetAttenuationRadius(Anchor.W > 0 ? float(Anchor.W) : D.Castle.Radius); C->SetSourceRadius(D.Castle.SourceRadius);
+                C->SetCastShadows(false); C->bAffectTranslucentLighting = false;
+                C->LightingChannels.bChannel0 = Team == 0; C->LightingChannels.bChannel1 = Team == 1; C->MarkRenderStateDirty();
+                Fill->Tags.Add(TEXT("CireCastleFill"));
+                RealmVisuals[Team].Fills.Add(Fill); ++CastleFills;
+            }
+        }
+    UE_LOG(LogCireTown, Display, TEXT("CIRE_TOWN_LIGHTING realms=%s/%s sky_radius=%.0f separation=%.0f torch_fills=%d interior_fills=%d castle_fills=%d"), *D.Lighting[0].Name, *D.Lighting[1].Name, SkyRadius, Separation, Fills, Interior, CastleFills);
 }
 
 
@@ -814,6 +880,8 @@ void ApplySky(UWorld* World, FViewState& V, int32 Realm)
 void CireTownMap::UpdateLocalView(UWorld* World)
 {
     if (!bActive || !World || !World->IsGameWorld()) return;
+    CireTownTrim::Tick(World); // town-trim: warn when the match's Play Bounds differ from the trimmed town
+    CireTownWater::Tick(World); // town-trim: oceans whose water zone registered late
     // The pack's optimizer may run again as late Level Instances begin play: keep the project's shadow settings.
     if (Def().bRestoreRendererCvars && !HasParam(TEXT("CireTownPackShadowCvars")) && World->GetNetMode() != NM_DedicatedServer && RestoreRendererCvars())
         UE_LOG(LogCireTown, Display, TEXT("CIRE_TOWN_RENDERER_RESTORED late"));

@@ -45,7 +45,7 @@ bar 1**'s bindings, so they follow the player's keybinding settings. The default
 | 7 | Boss / Pack Leader Spawn | pillar + facing arrow | named |
 | 8 | Rift / Portal / Arena Entrance | ring + facing arrow | where teams go to PvP |
 | 9 | Respawn Point / Graveyard | pillar + facing arrow | where dead heroes come back |
-| 0 | Play Bounds | polygon | one shared polygon; each press adds a corner |
+| 0 | Play Bounds | polygon (red veil outside, amber margin) | one shared polygon; each press adds a corner; the town is trimmed to it in matches |
 | Shift+1 | No-Spawn / Blocker Zone | crossed ring | radius |
 | Shift+2 | Recall Point | pillar + ring + facing arrow | named, radius; where Recall (Teleport to Base) takes the team's heroes (the nearest one) |
 
@@ -123,6 +123,7 @@ Default offsets come from the vendor type: the sign 150 cm to the side at 250 cm
 | Path weight | | WEIGHT - + (inspector, monster path) |
 | Save as / Load a named layout | | SAVE AS / LOAD |
 | Walk / map view | **M** | |
+| Preview the trim (hide what a match cuts outside the Play Bounds; click again to show it all) | | PREVIEW TRIM |
 | Other realm | **G** | REALM |
 
 **Panels:**
@@ -146,7 +147,8 @@ Validation runs lightly on every edit. **VALIDATE** adds the navmesh checks. It 
   - a path that doesn't start at a spawn
   - a path that doesn't reach **its target team's** objective, following merges (the objective must stand in the path's own realm)
 - **Mirrored pairs:** a missing twin, or a twin out of sync.
-- **Bounds:** markers outside the play bounds.
+- **Bounds:** markers outside the play bounds. Markers inside but within the trim margin (`CastleTown.json` `trim.margin`,
+  15 m) of the edge get a note: the town is cut just past the border, so their surroundings may look cut off.
 - **Navmesh:** markers off the navmesh (reported per realm), and path segments no monster can walk.
 - **Vendors:** an unknown vendor type, a vendor type missing from a team, a stall standing in a monster path, and a sign clipping into town geometry.
 - **Challenge packs:** a tier outside 1-4, a radius outside 2-15 m, or a composition that breaks the rules (1-2 tanks, 1-2 healers, 1-3 DPS, 3-6 monsters). There is no pack limit.
@@ -200,7 +202,7 @@ launch (a draft authored on the other map is left alone). Named layouts are kept
 | Player Spawn | Hero spawn points per team, in order (one per hero slot), with the marker's facing; more heroes than markers share them with a spread. The first T1 spawn is also the base (shop radius, recall). |
 | Respawn | A dead hero revives at the respawn marker nearest to where he fell (WoW graveyards). |
 | Rift / Portal | The arena portal of each realm (a violet ring and ARENA PORTAL label); heroes come back from the arena through it. Only the first rift per team is used (Validate notes extras). |
-| Play Bounds | The third-person camera stays inside the polygon (the boom shortens at the edge). A hero outside it is told OUT OF BOUNDS and pulled back inside after 3 s; a monster outside it (and off its path) is set back onto its path. |
+| Play Bounds | The third-person camera stays inside the polygon (the boom shortens at the edge). A hero outside it is told OUT OF BOUNDS and pulled back inside after 3 s; a monster outside it (and off its path) is set back onto its path. **The town is trimmed to it** in both realms: whatever lies entirely outside the polygon plus 15 m is not loaded, not rendered and not in the navmesh (Docs/CastleTown.md "Trim to Play Bounds"). No Play Bounds: nothing is trimmed. |
 | Shop / Vendor | `TownVendors.json` (per realm: T1 merchants in DAYLIGHT, T2 in DARKNIGHT, shared in both). |
 | No-Spawn / Blocker | Editor guide only (Validate notes it). |
 

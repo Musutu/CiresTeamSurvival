@@ -43,6 +43,25 @@ struct CIRESTEAMSURVIVAL_API FCireRealmLighting
     FLinearColor SkyLightColor = FLinearColor::White;
     float InteriorIntensity = 0.f, InteriorRadius = 480.f;       // town-perf: fill inside every building doorway (0 = none)
     FLinearColor InteriorColor = FLinearColor(1.f, .78f, .55f);
+    float CastleScale = 1.f;                            // town-trim: this realm's castle interior fill (x castleInterior.intensity)
+};
+
+/** town-trim: a camera view, realm-local XY with Z relative to the realm offset (Tools/RunTownShots.py). */
+struct CIRESTEAMSURVIVAL_API FCireTownView
+{
+    FString Name;
+    FVector From = FVector::ZeroVector, At = FVector::ZeroVector;
+};
+
+/** town-trim ("castleInterior"): warm, non-shadowing fill lights inside the castle (keep, courtyards, gate passages), at
+    realm-local anchors mirrored to both realms, each realm on its own lighting channel. */
+struct CIRESTEAMSURVIVAL_API FCireCastleLights
+{
+    float Intensity = 0.f, Radius = 1400.f, SourceRadius = 30.f;
+    FLinearColor Color = FLinearColor(1.f, .72f, .45f);
+    TArray<FVector4> Anchors;          // x, y (realm-local), z (relative to the realm offset), radius (0 = Radius)
+    TArray<FVector4> Yards;            // open courtyards: x, y (realm-local), height above the ground, radius
+    TArray<FCireTownView> Views;       // before/after captures
 };
 
 /** town-perf: a pack doorway (door leaf, frame or wall piece with a door). */
@@ -78,6 +97,8 @@ struct CIRESTEAMSURVIVAL_API FCireTownDef
     bool bOpenDoors = false;           // clear the pack's closed door leaves (off: Eric 2026-09-26, interiors later)
     FVector2D ExploreStart = FVector2D::ZeroVector;
     TArray<FCireTownLandmark> Landmarks;
+    FCireCastleLights Castle;          // town-trim
+    TArray<FCireTownView> WaterViews;  // town-trim: water before/after captures ("water.views")
 };
 
 namespace CireTownMap
