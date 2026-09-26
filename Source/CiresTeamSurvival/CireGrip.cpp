@@ -80,6 +80,22 @@ const FData& Data()
             if (W.Axis.IsNearlyZero() || W.Edge.IsNearlyZero() || FMath::Abs(FVector::DotProduct(W.Axis, W.Edge)) > .95f) continue;
             GData.Weapons.Add(W.Mesh, W);
         }
+    // weapon-grips: WeaponSockets.json "carry" overrides the carry of a prop (mesh name): carryAt, carryUp and oneHand
+    // (the second hand lets go while carrying, so a staff is held low at the side instead of across the body).
+    {
+        FString SocketText; TSharedPtr<FJsonObject> SocketRoot; const TSharedPtr<FJsonObject>* Carry = nullptr;
+        if (FFileHelper::LoadFileToString(SocketText, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/WeaponSockets.json"))) &&
+            FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(SocketText), SocketRoot) && SocketRoot && SocketRoot->TryGetObjectField(TEXT("carry"), Carry))
+            for (const auto& Pair : (*Carry)->Values)
+            {
+                const TSharedPtr<FJsonObject>* O = nullptr; FWeapon* W = GData.Weapons.Find(FString(Pair.Key.ToView()));
+                if (!W || !Pair.Value->TryGetObject(O)) continue;
+                W->CarryAt = ReadVector(*O, TEXT("carryAt"), W->CarryAt);
+                W->CarryUp = ReadVector(*O, TEXT("carryUp"), W->CarryUp);
+                bool bOneHand = false;
+                if ((*O)->TryGetBoolField(TEXT("oneHand"), bOneHand) && bOneHand) W->bTwoHand = false;
+            }
+    }
     const TArray<TSharedPtr<FJsonValue>>* Swap = nullptr;
     if (Root->TryGetArrayField(TEXT("swapHandPresets"), Swap))
         for (const auto& V : *Swap) GData.SwapPresets.Add(V->AsString());
@@ -167,10 +183,11 @@ void Emit(const FChain& C, FHandPose& Out)
 
 struct FPoseKey
 {
-    const USkeletalMesh* Mesh; bool bRight; EHand Type; int32 Radius;
-    bool operator==(const FPoseKey& O) const { return Mesh == O.Mesh && bRight == O.bRight && Type == O.Type && Radius == O.Radius; }
-    friend uint32 GetTypeHash(const FPoseKey& K) { return HashCombine(HashCombine(GetTypeHash(K.Mesh), K.Radius), (uint32)K.Type * 2 + K.bRight); }
+    const USkeletalMesh* Mesh; bool bRight; EHand Type; int32 Radius; FIntVector Axis = FIntVector::ZeroValue; // weapon-grips: given handle axis
+    bool operator==(const FPoseKey& O) const { return Mesh == O.Mesh && bRight == O.bRight && Type == O.Type && Radius == O.Radius && Axis == O.Axis; }
+    friend uint32 GetTypeHash(const FPoseKey& K) { return HashCombine(HashCombine(HashCombine(GetTypeHash(K.Mesh), K.Radius), (uint32)K.Type * 2 + K.bRight), GetTypeHash(K.Axis)); }
 };
+CireGrip::FHandPose BuildPose(const USkeletalMesh& Body, bool bRight, EHand Type, float RadiusMesh, const FVector* AxisOverride);
 }
 
 FTransform CireGrip::ReferenceComponent(const FReferenceSkeleton& Skeleton, FName Bone)
@@ -194,8 +211,22 @@ bool CireGrip::SwapsHands(const FString& Preset) { return Data().SwapPresets.Con
 
 CireGrip::FHandPose CireGrip::BuildHandPose(const USkeletalMesh& Body, bool bRight, EHand Type, float RadiusMesh)
 {
+    return BuildPose(Body, bRight, Type, RadiusMesh, nullptr);
+}
+CireGrip::FHandPose CireGrip::BuildHandPoseAlong(const USkeletalMesh& Body, bool bRight, EHand Type, float RadiusMesh, const FVector& AxisComponent)
+{
+    const FVector Axis = AxisComponent.GetSafeNormal();
+    FHandPose Out = Axis.IsNearlyZero() ? BuildPose(Body, bRight, Type, RadiusMesh, nullptr) : BuildPose(Body, bRight, Type, RadiusMesh, &Axis);
+    Out.bAnimMapped = !Axis.IsNearlyZero();
+    return Out;
+}
+namespace
+{
+CireGrip::FHandPose BuildPose(const USkeletalMesh& Body, bool bRight, EHand Type, float RadiusMesh, const FVector* AxisOverride)
+{
     static TMap<FPoseKey, FHandPose> Cache;
-    const FPoseKey Key{&Body, bRight, Type, FMath::RoundToInt(RadiusMesh * 200.f)};
+    FPoseKey Key{&Body, bRight, Type, FMath::RoundToInt(RadiusMesh * 200.f)};
+    if (AxisOverride) Key.Axis = FIntVector(FMath::RoundToInt(AxisOverride->X * 500.f), FMath::RoundToInt(AxisOverride->Y * 500.f), FMath::RoundToInt(AxisOverride->Z * 500.f));
     if (const FHandPose* Found = Cache.Find(Key)) return *Found;
     FHandPose Out; Out.Type = Type; Out.RadiusMesh = RadiusMesh;
     const FReferenceSkeleton& S = Body.GetRefSkeleton();
@@ -216,7 +247,7 @@ CireGrip::FHandPose CireGrip::BuildHandPose(const USkeletalMesh& Body, bool bRig
     // Handle axis from the palm: across the fingers (pinky -> index), leaning toward the wrist on the pinky
     // side like a real power grip, tangent to the finger roots on the palm side at the wrapped radius.
     const double Rt = FMath::Max(.05, (double)RadiusMesh);
-    FVector Axis = (Palm.T + Palm.A * .27).GetSafeNormal();
+    FVector Axis = AxisOverride ? *AxisOverride : (Palm.T + Palm.A * .27).GetSafeNormal();
     FVector Origin = Knuckles + Palm.N * Rt + Palm.A * (Rt * .15);
     if (Type == EHand::Pinch) Origin = Knuckles + Palm.N * Rt;
     // Cupped hands: no finger root may sit inside the handle; lift the axis off the lowest knuckle.
@@ -301,6 +332,7 @@ CireGrip::FHandPose CireGrip::BuildHandPose(const USkeletalMesh& Body, bool bRig
     Out.bValid = true;
     return Cache.Add(Key, Out);
 }
+}
 
 CireGrip::FPlacement CireGrip::Place(const USkeletalMesh& Body, FName Bone, const FWeapon& Weapon, float PropScale, float MeshScale)
 {
@@ -361,10 +393,11 @@ CireGrip::FPlacement CireGrip::Place(const USkeletalMesh& Body, FName Bone, cons
         Lateral = (Lateral - Forward * FVector::DotProduct(Lateral, Forward)).GetSafeNormal();
         // Two-handed weapons are carried nearer the midline so the second hand reaches its grip (WeaponGrips.json carryAt).
         const FVector Grip = Shoulder + Forward * (Weapon.CarryAt.X * Arm) - FVector::UpVector * (Weapon.CarryAt.Z * Arm) - Lateral * (Weapon.CarryAt.Y * Arm);
-        const FVector Up = (FVector::UpVector + Forward * .12f).GetSafeNormal();
+        const FVector Up = (Forward * Weapon.CarryUp.X + Lateral * Weapon.CarryUp.Y + FVector::UpVector * Weapon.CarryUp.Z).GetSafeNormal(); // weapon-grips
         const FTransform Target(FRotationMatrix::MakeFromZX(Up, Forward).ToQuat(), Grip, FVector::OneVector);
         const FTransform HandTarget = Lateral.IsNearlyZero() ? FTransform::Identity : Out.Pose.GripInHand.Inverse() * Target;
         Out.CarryInChest = HandTarget.GetRelativeTransform(ReferenceComponent(S, TEXT("spine_03")));
+        Out.CarryRot = HandTarget.GetRotation(); // weapon-grips
         Out.bCarry = !Lateral.IsNearlyZero() && !Out.CarryInChest.ContainsNaN();
     }
     if (Weapon.bTwoHand && !Weapon.bShield)
@@ -421,6 +454,7 @@ void CireGrip::AddToHands(const USkeletalMesh& Body, const FPlacement& P, FHands
     {
         Hands.bCarry = true; Hands.MainSide = Side; Hands.CarryInChest = P.CarryInChest; Hands.TwoHandWeight = 1.f;
         Hands.Chest = S.FindBoneIndex(TEXT("spine_03"));
+        Hands.CarryRot = P.CarryRot; Hands.bCarryRot = true; // weapon-grips
     }
 }
 
@@ -506,10 +540,13 @@ void CireGrip::TwistSpine(FCompactPose& Pose, float Degrees)
 void CireGrip::Apply(FCompactPose& Pose, const FHands& Hands)
 {
     const FBoneContainer& Bones = Pose.GetBoneContainer();
-    if (Hands.bCarry && Hands.Chest != INDEX_NONE && Hands.TwoHandWeight > KINDA_SMALL_NUMBER)
+    const float CarryWeight = Hands.CarryWeight >= 0.f ? Hands.CarryWeight : Hands.TwoHandWeight; // weapon-grips
+    if (Hands.bCarry && Hands.Chest != INDEX_NONE && CarryWeight > KINDA_SMALL_NUMBER)
     {
-        const FTransform Target = Hands.CarryInChest * ComponentBone(Pose, Hands.Chest);
-        if (!Target.ContainsNaN()) TwoBoneIK(Pose, Hands.Arm[Hands.MainSide], Target, FMath::Clamp(Hands.TwoHandWeight, 0.f, 1.f));
+        FTransform Target = Hands.CarryInChest * ComponentBone(Pose, Hands.Chest);
+        // weapon-grips: the carried prop keeps its upright bind direction when the chest bends into a cast.
+        if (Hands.bCarryRot) Target.SetRotation(Hands.CarryRot);
+        if (!Target.ContainsNaN()) TwoBoneIK(Pose, Hands.Arm[Hands.MainSide], Target, FMath::Clamp(CarryWeight, 0.f, 1.f));
     }
     if (Hands.bTwoHand && Hands.TwoHandWeight > KINDA_SMALL_NUMBER)
     {

@@ -255,6 +255,7 @@
         0,
         1
       ],
+      "carryAt": [0.38, 0.0, 0.64],
       "carry": true
     },
     "SM_RiftStaff": {
@@ -284,6 +285,7 @@
         0,
         1
       ],
+      "carryAt": [0.38, 0.0, 0.64],
       "carry": true
     },
     "SM_EmberStaff": {
@@ -313,6 +315,7 @@
         0,
         1
       ],
+      "carryAt": [0.38, 0.0, 0.64],
       "carry": true
     },
     "SM_GroveStaff": {
@@ -342,6 +345,7 @@
         0,
         1
       ],
+      "carryAt": [0.38, 0.0, 0.64],
       "carry": true
     },
     "SM_LanternStaff": {
@@ -371,6 +375,7 @@
         0,
         1
       ],
+      "carryAt": [0.38, 0.0, 0.64],
       "carry": true
     },
     "SM_Crossbow": {
@@ -579,6 +584,7 @@
         0,
         1
       ],
+      "carryAt": [0.38, 0.0, 0.64],
       "carry": true
     },
     "SM_AetherHalberd": {

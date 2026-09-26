@@ -4,6 +4,8 @@
 #include "CireGame.h"
 #include "CireChampionRoster.h"
 #include "CireChampionArt.h" // paladin-hq: prop material specs
+#include "CireChampionActions.h" // weapon-grips: motion class for the Fab set
+#include "CireWeaponSockets.h" // weapon-grips: animation-authored grips
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -211,7 +213,7 @@ bool CireWeapons::RunValidationSmoke(bool bRequireAssets)
 void UCireWeaponPresentation::Clear()
 {
     for(UStaticMeshComponent* Part:Parts)if(Part)Part->DestroyComponent();
-    Parts.Reset();BowStrings.Reset();Primary=nullptr;Arrow=nullptr;EquippedMesh=nullptr;
+    Parts.Reset();BowStrings.Reset();Primary=nullptr;Arrow=nullptr;EquippedMesh=nullptr;GripInfo.Reset();GripSet.Reset(); // weapon-grips
     GripHands=CireGrip::FHands();DrawPose=CireGrip::FHandPose(); // creature-anim
     EquippedProfile.Reset();EquippedLoadout.Reset();Motion.Reset();AppliedRevision=INDEX_NONE;PrimarySize=1;
 }
@@ -264,7 +266,7 @@ FString CireWeaponFab::ResolveMesh(const FString& Token,const FString& Fallback,
     InOutSize*=W->Scale;return W->Mesh;
 }
 UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FString& AssetPath,FName BoneName,
-    const FVector& OffsetCm,const FRotator& Rotation,float Size)
+    const FVector& OffsetCm,const FRotator& Rotation,float Size,bool bPrimary)
 {
     auto* Body=Hero.GetMesh();
     if(!Body||!Body->GetSkeletalMeshAsset()||Body->GetBoneIndex(BoneName)==INDEX_NONE)return nullptr;
@@ -306,6 +308,8 @@ UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FStr
         GripOffset+=BoneReference.InverseTransformVector(Upright.RotateVector(OffsetCm)/BodyScale);
     Part->SetRelativeLocation(GripOffset);Part->SetWorldScale3D(FVector(Size));
     // creature-anim: with grip data the handle sits inside the curled fist (CireGrip); shields strap onto the forearm.
+    FGripInfo Info;Info.Part=Part;Info.Bone=BoneName;Info.Mode=TEXT("offset"); // weapon-grips
+    Info.LengthCm=static_cast<float>(Asset->GetBounds().BoxExtent.GetMax()*2*Size);
     if(const auto* Grip=CireGrip::FindWeapon(Asset))
     {
         const CireGrip::FPlacement Placement=CireGrip::Place(Mesh,BoneName,*Grip,Size,static_cast<float>(Body->GetRelativeScale3D().X));
@@ -314,10 +318,81 @@ UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FStr
             Part->SetAbsolute(false,false,false);
             Part->AttachToComponent(Body,FAttachmentTransformRules::KeepRelativeTransform,Placement.Bone);
             Part->SetRelativeTransform(Placement.Relative);
-            CireGrip::AddToHands(Mesh,Placement,GripHands);
+            Info.Mode=TEXT("bind");Info.Bone=Placement.Bone;
+        }
+        // weapon-grips: a body playing Fab clips holds the prop the way the clip was authored (CireWeaponSockets).
+        if(!PlaceAuthored(Hero,*Part,*Grip,BoneName,Size,bPrimary,Info)&&Placement.bValid)CireGrip::AddToHands(Mesh,Placement,GripHands);
+    }
+    GripInfo.Add(Info);
+    Part->SetVisibility(Body->IsVisible());Parts.Add(Part);return Part;
+}
+namespace
+{
+float AngleDeg(const FVector& A,const FVector& B){return static_cast<float>(FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(A.GetSafeNormal(),B.GetSafeNormal()),-1.,1.))));}
+}
+bool UCireWeaponPresentation::PlaceAuthored(ACireHero& Hero,UStaticMeshComponent& Part,const CireGrip::FWeapon& Grip,FName BoneName,float Size,bool bPrimary,FGripInfo& Info)
+{
+    USkeletalMeshComponent* Body=Hero.GetMesh();
+    if(GripSet.IsEmpty()||Grip.bAmmo||!Part.GetStaticMesh()||!Body||!Body->GetSkeletalMeshAsset()||(BoneName!=TEXT("hand_l")&&BoneName!=TEXT("hand_r")))return false;
+    const USkeletalMesh& Mesh=*Body->GetSkeletalMeshAsset();
+    FTransform Intended;CireWeaponSockets::FHandFrame Frame;
+    if(!CireWeaponSockets::Intended(Mesh,GripSet,BoneName,Intended,Frame)||Frame.bShield!=Grip.bShield)return false;
+    const FReferenceSkeleton& Ref=Mesh.GetRefSkeleton();
+    const FTransform PropGrip=CireWeaponSockets::PropFrame(*Part.GetStaticMesh(),Grip.Handle,Grip.Axis,Grip.Edge,Grip.bShield);
+    Info.Set=GripSet;
+    {   // How far the bind-pose placement is from the authored one (rigid on the hand, so the same in every frame).
+        const FTransform Current=Part.GetRelativeTransform()*CireGrip::ReferenceComponent(Ref,Part.GetAttachSocketName());
+        const FQuat Now=Current.GetRotation()*PropGrip.GetRotation();
+        Info.TipDeviationDeg=AngleDeg(Now.GetAxisZ(),Intended.GetRotation().GetAxisZ());
+        Info.EdgeDeviationDeg=AngleDeg(Now.GetAxisX(),Intended.GetRotation().GetAxisX());
+    }
+    if(CireWeaponSockets::Legacy())return false;
+    const float MeshScale=static_cast<float>(Body->GetRelativeScale3D().X);
+    if(MeshScale<=UE_SMALL_NUMBER)return false;
+    const float S=Size/MeshScale; // mesh units per prop centimetre
+    const bool bRight=BoneName==TEXT("hand_r");
+    const FString Side=bRight?TEXT("_r"):TEXT("_l");
+    const FName M1(*(TEXT("middle_01")+Side)),M2(*(TEXT("middle_02")+Side));
+    const bool bFingers=Ref.FindBoneIndex(M1)!=INDEX_NONE&&Ref.FindBoneIndex(M2)!=INDEX_NONE;
+    const float Finger=bFingers?.3f*static_cast<float>((CireGrip::ReferenceComponent(Ref,M2).GetLocation()-CireGrip::ReferenceComponent(Ref,M1).GetLocation()).Size()):.4f;
+    CireGrip::FPlacement P;P.Bone=Frame.Bone;
+    FVector Point=Intended.GetLocation();
+    const FVector Axis=Intended.GetRotation().GetAxisZ();
+    // Fingers close on the handle: its authored direction runs through the palm centre of this hand (CireGrip curl).
+    if(Grip.bShield)P.Pose=CireGrip::BuildHandPose(Mesh,bRight,CireGrip::EHand::Power,1.3f*S+Finger);
+    else
+    {
+        P.Pose=CireGrip::BuildHandPoseAlong(Mesh,bRight,CireGrip::EHand::Power,Grip.RadiusCm*S+Finger,Axis);
+        if(P.Pose.bValid)Point=P.Pose.GripComponent.GetLocation();
+    }
+    const FQuat Rot=(Intended.GetRotation()*PropGrip.GetRotation().Inverse()).GetNormalized();
+    P.Component=FTransform(Rot,Point-Rot.RotateVector(PropGrip.GetLocation()*S),FVector(S));
+    P.Relative=P.Component.GetRelativeTransform(CireGrip::ReferenceComponent(Ref,P.Bone));
+    P.bValid=!P.Relative.ContainsNaN();
+    if(!P.bValid)return false;
+    // Two-handed sets: the second hand goes where the clip puts it, slid onto this prop's handle line.
+    FTransform OffInMain;
+    if(bPrimary&&!Grip.bShield&&P.Pose.bValid&&CireWeaponSockets::IntendedOffHand(Mesh,GripSet,BoneName,OffInMain))
+    {
+        const FName OffBone=bRight?FName(TEXT("hand_l")):FName(TEXT("hand_r"));
+        const FTransform MainRef=CireGrip::ReferenceComponent(Ref,BoneName),OffRef=CireGrip::ReferenceComponent(Ref,OffBone);
+        FTransform OffComponent=OffInMain*MainRef;
+        const FVector AxisInOff=OffComponent.GetRotation().UnrotateVector(Axis);
+        P.OffPose=CireGrip::BuildHandPoseAlong(Mesh,!bRight,CireGrip::EHand::Power,Grip.RadiusCm*S+Finger,OffRef.GetRotation().RotateVector(AxisInOff));
+        if(P.OffPose.bValid)
+        {
+            const FVector Palm=(P.OffPose.GripInHand*OffComponent).GetLocation();
+            const FVector Away=(Palm-Point)-Axis*FVector::DotProduct(Palm-Point,Axis);
+            OffComponent.AddToTranslation(-Away);
+            P.OffHandInMain=OffComponent.GetRelativeTransform(MainRef);P.OffHandBone=OffBone;P.bTwoHand=!P.OffHandInMain.ContainsNaN();
         }
     }
-    Part->SetVisibility(Body->IsVisible());Parts.Add(Part);return Part;
+    Part.SetAbsolute(false,false,false);
+    Part.AttachToComponent(Body,FAttachmentTransformRules::KeepRelativeTransform,P.Bone);
+    Part.SetRelativeTransform(P.Relative);
+    CireGrip::AddToHands(Mesh,P,GripHands);
+    Info.Mode=TEXT("authored");Info.Bone=P.Bone;Info.bTwoHand=P.bTwoHand;
+    return true;
 }
 void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
 {
@@ -333,6 +408,7 @@ void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
     {TArray<FString> Ids;Alt.ParseIntoArray(Ids,TEXT(","),true);if(Ids.Contains(Profile))EquippedLoadout=(*Options)[1];}
 #endif
     const FLoadout* Loadout=Database.Presets.Find(EquippedLoadout);if(!Loadout)return;Motion=Loadout->Motion;
+    GripSet=CireWeaponSockets::SetFor(Hero.GetMesh()->GetSkeletalMeshAsset(),EquippedLoadout,CireChampionActions::MotionFor(Hero)); // weapon-grips
     for(const auto& Spec:Loadout->Parts)
     {
         // creature-anim: presets whose Tripo clips hold the weapon in the other hand swap their hand props.
@@ -340,7 +416,7 @@ void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
         if(CireGrip::SwapsHands(EquippedLoadout))Bone=Bone==TEXT("hand_l")?FName(TEXT("hand_r")):Bone==TEXT("hand_r")?FName(TEXT("hand_l")):Bone;
         float FabSize=Spec.Size;TSharedPtr<FJsonObject> PropMaterials;bool bProfileProp=false;
         const FString Mesh=CireWeaponFab::ResolveMesh(Profile,Spec.Token,Spec.Asset,FabSize,PropMaterials,bProfileProp); // fab-integration, paladin-hq
-        auto* Part=Attach(Hero,Mesh,Bone,Spec.Offset,Spec.Rotation,FabSize);if(!Part)continue;
+        auto* Part=Attach(Hero,Mesh,Bone,Spec.Offset,Spec.Rotation,FabSize,Spec.Role==TEXT("primary"));if(!Part)continue;
         if(PropMaterials.IsValid())UCireChampionArt::ApplyMaterialSpec(Part,PropMaterials,&Hero); // paladin-hq
         if(bProfileProp)Part->SetForcedLodModel(1); // paladin-hq: hero props stay on LOD 0 (the set's shield has broken reduction LODs)
         if(Spec.bHideOnRelease)Part->ComponentTags.Add(ReleaseTag);
@@ -389,6 +465,69 @@ void UCireWeaponPresentation::Update(ACireHero& Hero,float AttackElapsed)
         BowStrings[I]->SetWorldLocation((Tip+Nock)*.5);BowStrings[I]->SetWorldRotation(FRotationMatrix::MakeFromZ(Segment).ToQuat());
         BowStrings[I]->SetWorldScale3D(FVector(.005*PrimarySize,.005*PrimarySize,Segment.Size()/100));
     }
+}
+
+bool CireWeapons::LegacyGrips(){return CireWeaponSockets::Legacy();}
+namespace
+{
+/** Standing height from the skeleton (head bone above the lower foot, plus the skull), else the mesh bounds. */
+float SkeletonHeight(const USkeletalMeshComponent& Body)
+{
+    if(Body.GetBoneIndex(TEXT("head"))!=INDEX_NONE&&Body.GetBoneIndex(TEXT("foot_l"))!=INDEX_NONE&&Body.GetBoneIndex(TEXT("foot_r"))!=INDEX_NONE)
+        return static_cast<float>((Body.GetSocketLocation(TEXT("head")).Z-FMath::Min(Body.GetSocketLocation(TEXT("foot_l")).Z,Body.GetSocketLocation(TEXT("foot_r")).Z))*1.1);
+    return static_cast<float>(Body.CalcBounds(Body.GetComponentTransform()).BoxExtent.Z*2);
+}
+/** Closest approach (cm) of a long prop's centre line to the torso and to the legs in the current pose. */
+void Clearance(const USkeletalMeshComponent& Body,const UStaticMeshComponent& Part,float& OutTorso,float& OutLegs)
+{
+    OutTorso=OutLegs=-1.f;
+    const FBox Box=Part.GetStaticMesh()->GetBoundingBox();const FVector Extent=Box.GetExtent(),Centre=Box.GetCenter();
+    const int32 Long=Extent.X>=Extent.Y&&Extent.X>=Extent.Z?0:Extent.Y>=Extent.Z?1:2;
+    FVector Half=FVector::ZeroVector;Half[Long]=Extent[Long]*.92; // the very ends are ornaments / butt caps
+    const FVector A=Part.GetComponentTransform().TransformPosition(Centre-Half),B=Part.GetComponentTransform().TransformPosition(Centre+Half);
+    auto Dist=[&](FName From,FName To)->float
+    {
+        if(Body.GetBoneIndex(From)==INDEX_NONE||Body.GetBoneIndex(To)==INDEX_NONE)return -1.f;
+        FVector P,Q;FMath::SegmentDistToSegmentSafe(A,B,Body.GetSocketLocation(From),Body.GetSocketLocation(To),P,Q);return static_cast<float>(FVector::Dist(P,Q));
+    };
+    auto Min=[](float X,float Y){return X<0?Y:Y<0?X:FMath::Min(X,Y);};
+    OutTorso=Dist(TEXT("pelvis"),TEXT("neck_01"));
+    for(const TCHAR* S:{TEXT("_l"),TEXT("_r")})
+    {
+        OutLegs=Min(OutLegs,Dist(FName(FString(TEXT("thigh"))+S),FName(FString(TEXT("calf"))+S)));
+        OutLegs=Min(OutLegs,Dist(FName(FString(TEXT("calf"))+S),FName(FString(TEXT("foot"))+S)));
+    }
+}
+}
+FString CireWeapons::DescribeGrips(const ACireHero& Hero)
+{
+    const auto* Weapons=Hero.FindComponentByClass<UCireWeaponPresentation>();
+    const USkeletalMeshComponent* Body=Hero.GetMesh();
+    if(!Weapons||!Body)return TEXT("props=none");
+    const float Height=FMath::Max(1.f,SkeletonHeight(*Body));
+    FString Out=FString::Printf(TEXT("loadout=%s set=%s legacy=%d"),*Weapons->GetEquippedLoadout(),Weapons->GetGripSet().IsEmpty()?TEXT("-"):*Weapons->GetGripSet(),LegacyGrips()?1:0);
+    if(const auto* Mesh=Body->GetSkeletalMeshAsset())
+    {
+        const auto& Cal=CireWeaponSockets::Calibration(*Mesh);
+        Out+=Cal.bValid?FString::Printf(TEXT(" calib=%s spread=%.1f scale=%.3f"),*Cal.Clip,Cal.SpreadDeg,Cal.Scale):FString(TEXT(" calib=none"));
+    }
+    for(const auto& Info:Weapons->GetGripInfo())
+    {
+        const UStaticMeshComponent* Part=Info.Part.Get();
+        if(!Part||!Part->GetStaticMesh())continue;
+        Out+=FString::Printf(TEXT(" | %s@%s mode=%s bindTipDev=%.0f bindEdgeDev=%.0f len=%.0fcm(%.2fxbody) twoHand=%d hidden=%d"),*Part->GetStaticMesh()->GetName(),*Part->GetAttachSocketName().ToString(),
+            *Info.Mode,Info.TipDeviationDeg,Info.EdgeDeviationDeg,Info.LengthCm,Info.LengthCm/Height,Info.bTwoHand?1:0,Part->bHiddenInGame?1:0);
+        if(Info.LengthCm>=100.f&&Part->GetAttachSocketName().ToString().StartsWith(TEXT("hand_")))
+        {float Torso,Legs;Clearance(*Body,*Part,Torso,Legs);Out+=FString::Printf(TEXT(" clearTorso=%.0fcm clearLegs=%.0fcm"),Torso,Legs);}
+    }
+    const auto& Hands=Weapons->GripHands;
+    if(Hands.bTwoHand&&Hands.Arm[Hands.MainSide][2]!=INDEX_NONE&&Hands.Arm[1-Hands.MainSide][2]!=INDEX_NONE)
+    {
+        const FTransform Main=Body->GetBoneTransform(Hands.Arm[Hands.MainSide][2]);
+        const FVector Target=(Hands.OffHandInMain*Main).GetLocation(),Off=Body->GetBoneTransform(Hands.Arm[1-Hands.MainSide][2]).GetLocation();
+        Out+=FString::Printf(TEXT(" | offHandFromTarget=%.1fcm"),FVector::Dist(Target,Off));
+    }
+    return Out;
 }
 
 #if !UE_BUILD_SHIPPING
