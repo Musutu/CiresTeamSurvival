@@ -305,9 +305,10 @@ FString CireSkillShop::BuyBlocker(const ACireHero* Hero, const FString& Id)
 {
     FString Why;
     if (!IsOpen(Hero, &Why)) return Why;
-    if (!CireKits::MeetsRequirement(Hero, Id, &Why)) return Why; // scaling-kits: shield / ranged skills
     const CI::ShopSkillKind Kind = KindOf(Id);
     const bool bAllowed = CatalogFor(Hero).ContainsByPredicate([&](const FCireShopSkill& S) { return S.Id == Id; });
+    // kits-complete: a skill outside this champion's list says so first; the shield / ranged requirement explains in-list gates.
+    if (bAllowed && !CireKits::MeetsRequirement(Hero, Id, &Why)) return Why; // scaling-kits: shield / ranged skills
     int32 Price = 0;
     const int32 Wave = CurrentWave(Hero->GetWorld());
     switch (CI::CheckSkillBuy(Get().Rules, CireLoot::Get().Economy, Kind, OwnedOfKind(Hero, Kind), OwnedOfKind(Hero, CI::ShopSkillKind::Active),

@@ -704,12 +704,7 @@ bool CireShopFixtures::TickClient(ACireController* Controller)
     case 14:
     {
         // Skill Shop through the Server RPCs: the host put us in the prep of wave 7 with 500 gold.
-        if (!(State->Phase == 1 && State->Wave == 7 && Hero->Gold == 500 && State->ProgressionMode == 1))
-        {
-            static double LastWait = 0; const double T = FPlatformTime::Seconds();
-            if (T - LastWait > 5) { LastWait = T; UE_LOG(LogCireShopFixtures, Display, TEXT("CIRE_SHOP_NET_CLIENT_SKILLSHOP_WAIT phase=%d wave=%d gold=%d mode=%d"), State->Phase, State->Wave, Hero->Gold, State->ProgressionMode); }
-            return true;
-        }
+        if (!(State->Phase == 1 && State->Wave == 7 && Hero->Gold == 500 && State->ProgressionMode == 1)) return true;
         const TArray<FCireShopSkill> Catalog = CireSkillShop::CatalogFor(Hero);
         const FCireShopSkill* Pick = Catalog.FindByPredicate([&](const FCireShopSkill& K) { return K.Kind == Cires::Items::ShopSkillKind::Active && CireSkillShop::BuyBlocker(Hero, K.Id).IsEmpty(); });
         FString Outside;
