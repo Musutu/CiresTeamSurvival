@@ -225,6 +225,75 @@ situational), all items under ALL ITEMS as tier-coloured cards, larger text, sam
   `Tools/ImportPolymorphCritters.py`); the Piglet reuses the imported Pig. Icon id for the 2D art agent:
   `polymorph` (`/Game/UI/Abilities/T_polymorph`); a procedural placeholder is drawn until it exists.
 
+## Strength scaling (Eric's ruling, 25 September 2026)
+
+"Reduce the health gained from STR to 10 per point, and 0.1 to magic resist and armor per point."
+
+| | Before | Now |
+| --- | --- | --- |
+| Health per STR | 25 | **10** |
+| Armor per STR | 0 | **0.1** (basic attacks) |
+| Spell ward per STR | 0 | **0.1** (abilities; ward is the game's magic resist) |
+| Flat base health | 0 | **15 x starting STR**, fixed at draft |
+
+`MaxHealth = BaseHealth + 10 x STR + item health`. Armor and ward from STR add to item armor/ward (and
+party auras) in `CireItems::ModifyIncomingDamage`, so they use the usual `x / (x + 100)` mitigation.
+Summons and pets get no STR defense. Tests and network probes that expect exact hit amounts use
+`CireItems::AfterStrengthDefense(hero, amount)`. Constants live in `Rules/CiresRules.h` (`HealthPerStrength`,
+`ArmorPerStrength`, `WardPerStrength`); the flat base is `Cires::StartingBaseHealth(startingSTR)` =
+`(25 - 10) x startingSTR`, stored in `Progression.BaseHealth` by `DraftProfile` and the legacy `Draft`.
+
+**Why a per-champion base from the starting STR:** it keeps every champion's level-1 health exactly as
+before without a hand-kept table, and it follows the roster data if a champion's STR is re-authored.
+The roster only uses two starting values, so in practice the base is 300 for STR champions (all tanks
+plus the Ether Golem Bruiser) and 150 for everyone else. Level growth, tomes and items (`+primary` on a
+STR champion, `+strength`) only use the new 10 health per point.
+
+Health by level (no items). Each level gives +2 primary and +1 other stats.
+
+| Champion | STR at L1 / L10 / L25 | Before L1 / L10 / L25 | Now L1 / L10 / L25 | STR armor and ward at L25 |
+| --- | --- | --- | --- | --- |
+| Tank (STR primary, e.g. Iron Warden) | 20 / 38 / 68 | 500 / 950 / 1700 | 500 / 680 / 980 | 6.8 (6.4%) |
+| DPS (AGI or INT primary, e.g. Ranger) | 10 / 19 / 34 | 250 / 475 / 850 | 250 / 340 / 490 | 3.4 (3.3%) |
+| Support (INT primary, e.g. Scholar) | 10 / 19 / 34 | 250 / 475 / 850 | 250 / 340 / 490 | 3.4 (3.3%) |
+
+Health from L1 to L25 now grows ×1.96 instead of ×3.4. Mana (30 per INT) and attack speed (1% per AGI)
+are unchanged; they share only `CalculateStats` with STR.
+
+**Where it shows:** the character sheet (STR row, Armor and Spell Ward rows with the STR share), the
+Player frame help, and the champion-select combat-style line (level-1 HP).
+
+### Measurements
+
+Balance lab (`Tools/RunBalanceLab.py --waves 1,10,15,25 --seconds 90`, hero level = wave, 5 bots):
+with the default 5 enemies and with `--enemies 15`, every case was won with no champion deaths before
+and after, and fight length and DPS barely moved (15 enemies: 64 / 79 / 71 / 90 s timeout before,
+62 / 74 / 74 / 81 s after). Measured max health matched the table above.
+
+Champion lab (`Tools/RunChampionLab.py --waves 3,10,20 --repeats 1`): 33 cases, 0 failures, no deaths.
+Tank damage taken stays low (knight 3.6 DTPS). The band flags (Summoner, Aetheri Artificer, Scholar
+HPS at low waves) are the same ones listed in BalanceFindings.md. They come from DPS or HPS, which STR
+health does not change, and they were not tuned here.
+
+Bots-only pacing soak (`Tools/RunPacingSoak.py --cycles 3`, three runs each; the soak now logs champion
+deaths, level and max health per cleared wave):
+
+| Build | Match | Lives left (both teams) | Champion deaths (waves 10-15) | Mean wave 10-15 | Champion level / max HP at wave 15 |
+| --- | --- | --- | --- | --- | --- |
+| before | 27.7 min | 147 | 8.3 (3.3) | 105 s | 1 / 377 |
+| after | 26.2 min | 140 | 8.3 (5.0) | 92 s | 1 / 383 |
+| before + level fix (experiment) | 24.1 min | 142 | 2.0 (0.3) | 75 s | 12.6 / 785 |
+| after + level fix (experiment) | 22.7 min | 135 | 2.3 (0.7) | 73 s | 12.0 / 539 |
+
+**Champions never level in the Skill Shop mode.** In the normal soak every champion is still level 1 at
+wave 15. Buying a skill in the Skill Shop adds it to `Progression.LearnedSkills` without moving
+`NextAugmentLevel`, so the draft-mode check in `ValidProgression` fails and `Cires::GainLevels` refuses
+every later level. This bug is older than this change and is **not fixed here**. For the two
+"level fix" rows, `GrantExperience` levelled a copy of the progression with the learned skills
+cleared (Skill Shop mode only). That patch was not committed. With levels working, waves 10-15 are not
+lethal after the rescale (0.7 champion deaths per match against 0.3, within run-to-run noise;
+the unfixed runs vary from 1 to 15 deaths). Wave damage in Waves.json was therefore not changed.
+
 ## Decisions for Eric to review
 
 1. Unlock pacing (bay 2 in cycle 2, bay 3 mid-cycle 3, promotions every 2 rounds from round 4, cap 8).

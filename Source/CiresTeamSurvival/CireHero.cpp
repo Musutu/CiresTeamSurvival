@@ -220,6 +220,7 @@ void ACireHero::Draft(int32 Choice)
     if (Choice == 0) Progression.Stats.Strength = 20;
     if (Choice == 1 || Choice == 3) Progression.Stats.Agility = 20;
     if (Choice == 2 || Choice == 4) Progression.Stats.Intelligence = 20;
+    Progression.BaseHealth = Cires::StartingBaseHealth(Progression.Stats.Strength); // str-scaling: keep level-1 health
     HeroName = Choice == 0 ? TEXT("Iron Warden") : Choice == 1 ? TEXT("Ash Ranger") : Choice == 3 ? TEXT("Lancer") : Choice==4?TEXT("Rift Summoner"):TEXT("Veil Scholar");
     bDrafted = true;
     Recalculate(true);
@@ -244,6 +245,7 @@ void ACireHero::Recalculate(bool bFill)
     Intelligence = Attributes.Intelligence;
     Cires::CombatTuning Tuning;
     Tuning.WeaponDamage = 12;
+    Tuning.BaseHealth = Progression.BaseHealth; // str-scaling: flat base from the starting STR
     Tuning.PureCooldownReduction = CireItems::CooldownReductionFor(this, CDR);
     const auto Stats = Cires::CalculateStats(Attributes, Progression.Primary, Tuning);
     MaxHealth = static_cast<float>(Stats.MaxHealth);

@@ -149,7 +149,7 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     const float BaseAD = Hero->AttackDamage();
     const float OxPrimary = StatOf("gauntlet_of_the_ox", CI::ItemStat::Primary), OxHealth = StatOf("gauntlet_of_the_ox", CI::ItemStat::Health);
     Check(Inv->Buy(N(TEXT("gauntlet_of_the_ox")), Message) && Hero->Strength == BaseStrength + FMath::RoundToInt(OxPrimary) &&
-        FMath::IsNearlyEqual(Hero->MaxHealth, BaseHealth + Shard + OxHealth + 25.f * OxPrimary), TEXT("primary stat lands on STR with its derived health"));
+        FMath::IsNearlyEqual(Hero->MaxHealth, BaseHealth + Shard + OxHealth + static_cast<float>(Cires::HealthPerStrength) * OxPrimary), TEXT("primary stat lands on STR with its derived health (10 per point)"));
     Check(FMath::IsNearlyEqual(Hero->AttackDamage(), BaseAD + OxPrimary), TEXT("primary attribute from items adds attack damage"));
     const float SwordPrimary = StatOf("rusted_longsword", CI::ItemStat::Primary);
     Check(Inv->Buy(N(TEXT("rusted_longsword")), Message) && FMath::IsNearlyEqual(Hero->AttackDamage(), BaseAD + OxPrimary + SwordPrimary), TEXT("adaptive primary stat applied"));
@@ -216,9 +216,9 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     for (auto& Cell : Inv->Equipment) Cell = FCireItemSlot();
     Inv->Equipment[0].Id = N(TEXT("gravewarden_bulwark"));
     Inv->Invalidate();
-    const float BulwarkArmor = StatOf("gravewarden_bulwark", CI::ItemStat::Armor) * CireKits::DefenseMultiplier(Hero), /* scaling-kits: shield tanks -10% */ Block = StatOf("gravewarden_bulwark", CI::ItemStat::DamageBlock);
+    const float BulwarkArmor = (StatOf("gravewarden_bulwark", CI::ItemStat::Armor) + CireItems::StrengthDefense(Hero, true)) * CireKits::DefenseMultiplier(Hero), /* str-scaling: + STR armor */ /* scaling-kits: shield tanks -10% */ Block = StatOf("gravewarden_bulwark", CI::ItemStat::DamageBlock);
     Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Monster attack"), 100.f), 100.f * (1.f - BulwarkArmor / (BulwarkArmor + 100.f)) - Block, .01f), TEXT("armor mitigates basic attacks, then the block"));
-    Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), 100.f - Block), TEXT("armor does not mitigate spells (the block does)"));
+    Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), CireItems::AfterStrengthDefense(Hero, 100.f, false) - Block, .01f), TEXT("armor does not mitigate spells (STR ward and the block do)"));
     // rules-conformance: HitGuard ("reduce instances of incoming damage"), Sanguine Sabre's Blood Parry.
     {
         Inv->Equipment[0] = FCireItemSlot(); Inv->Equipment[1].Id = N(TEXT("sanguine_sabre")); Inv->Invalidate(); Inv->HitGuardState = CI::ChargeState();
@@ -227,9 +227,9 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
         const int32 Charges = Sabre && !Sabre->Passives.empty() ? Sabre->Passives[0].Count : 0;
         const int32 Spent = Inv->HitGuardSpent;
         bool bGuarded = Parry > 0 && Charges == 2;
-        for (int32 Hit = 0; Hit < Charges; ++Hit) bGuarded &= FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), 100.f * (1.f - Parry / 100.f), .01f);
+        for (int32 Hit = 0; Hit < Charges; ++Hit) bGuarded &= FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), CireItems::AfterStrengthDefense(Hero, 100.f, false) * (1.f - Parry / 100.f), .01f);
         Check(bGuarded && Inv->HitGuardSpent == Spent + Charges, TEXT("hit guard reduces the next hits by its percent"));
-        Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), 100.f), TEXT("hit guard runs out of charges"));
+        Check(FMath::IsNearlyEqual(ModifyIncomingDamage(Hero, Target, TEXT("Shadow Bolt"), 100.f), CireItems::AfterStrengthDefense(Hero, 100.f, false), .01f), TEXT("hit guard runs out of charges"));
         Hero->Health = 100;
         OnDamageDealt(Hero, Target, 100.f, TEXT("sword strike"));
         Check(FMath::IsNearlyEqual(Hero->Health, 100.f), TEXT("items grant no lifesteal"));

@@ -111,6 +111,7 @@ bool ACireHero::DraftProfile(const FString& Id)
     Progression.DraftRole=CireChampionProfiles::DraftRole(this);
     Progression.SecondaryRoles=CireChampionProfiles::SecondaryRoles(this);
     Progression.Stats={Profile->Strength,Profile->Agility,Profile->Intelligence};
+    Progression.BaseHealth=Cires::StartingBaseHealth(Profile->Strength); // str-scaling: level-1 health unchanged, growth 10/STR
     HeroName=Profile->DisplayName;Skills.Reset();Cooldowns.Reset();Offers.Reset();CurrentOffer={};
     bDrafted=true;Recalculate(true);
     // One starting skill point: the opening offer (primary-role actives) is ready immediately;
@@ -227,12 +228,14 @@ bool CireChampionProfiles::RunSmoke(ACireGameMode* Mode)
         Check(H->Progression.DraftRole==DraftRole(H)&&H->Progression.DraftRole!=Cires::SkillDraftRole::Any,TEXT("draft snapshots an explicit gameplay role bucket"));
         Check(H->Progression.DraftRole==PrimaryRole(Profile)&&Cires::EffectiveRoleMask(H->Progression)==ProfileRoleMask(Profile),TEXT("draft snapshots primary plus hybrid roles"));
         Check(H->Strength==Profile.Strength&&H->Agility==Profile.Agility&&H->Intelligence==Profile.Intelligence&&
-            H->MaxHealth==Profile.Strength*25.f&&H->MaxMana==Profile.Intelligence*30.f,TEXT("authored base stats preserve native per-point formula"));
+            H->MaxHealth==Profile.Strength*25.f&&H->MaxMana==Profile.Intelligence*30.f,TEXT("level-1 health and mana unchanged by the STR rescale"));
+        Check(FMath::IsNearlyEqual(H->MaxHealth,static_cast<float>(Cires::StartingBaseHealth(Profile.Strength)+Profile.Strength*Cires::HealthPerStrength)),TEXT("health = starting-STR base + 10 per STR point"));
         Check(H->BasicAttackRange()==Profile.BasicAttackRange&&H->BaseAttackSeconds()==Profile.AttackSeconds&&
             H->BasicAttackStyle()==Profile.AttackStyle,TEXT("attack profile matches authored range timing and style"));
         Check(H->DamageThreatMultiplier()==(Profile.ThreatRole==TEXT("tank")?CireSkillTuning::Get().TankDamageThreatMultiplier:CireSkillTuning::Get().DpsDamageThreatMultiplier),TEXT("threat uses gameplay role instead of body"));
-        const int32 PrimaryBefore=H->PrimaryAttribute();
+        const int32 PrimaryBefore=H->PrimaryAttribute();const float HealthBefore=H->MaxHealth;const int32 StrengthBefore=H->Strength;
         Cires::GainLevels(H->Progression);H->Recalculate(true);
+        Check(FMath::IsNearlyEqual(H->MaxHealth-HealthBefore,(H->Strength-StrengthBefore)*10.f),TEXT("a level adds 10 health per STR point gained"));
         Check(H->PrimaryAttribute()==PrimaryBefore+2&&H->Level==2&&
             FMath::IsNearlyEqual(H->AttackDamage(),(12.f+H->PrimaryAttribute())*Mode->Power(0)),TEXT("level growth and basic damage use authored primary"));
         Check(!H->DraftProfile(TEXT("knight"))&&H->ChampionProfileId==Profile.Id,TEXT("redraft cannot replace profile"));

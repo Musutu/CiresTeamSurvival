@@ -114,6 +114,11 @@ bool OnlyPassiveRemains(const Progression& progression)
 }
 } // namespace
 
+double StartingBaseHealth(int startingStrength)
+{
+    return std::max(0, startingStrength) * (LegacyHealthPerStrength - HealthPerStrength);
+}
+
 DerivedStats CalculateStats(const StatBlock& stats, PrimaryStat primary,
                            const CombatTuning& tuning)
 {
@@ -123,7 +128,9 @@ DerivedStats CalculateStats(const StatBlock& stats, PrimaryStat primary,
     const double damageStat = primary == PrimaryStat::Agility ? agility :
         primary == PrimaryStat::Intelligence ? intelligence : strength;
     DerivedStats result;
-    result.MaxHealth = Nonnegative(tuning.BaseHealth) + strength * 25.0;
+    result.MaxHealth = Nonnegative(tuning.BaseHealth) + strength * HealthPerStrength;
+    result.Armor = strength * ArmorPerStrength;
+    result.Ward = strength * WardPerStrength;
     result.MaxMana = Nonnegative(tuning.BaseMana) + intelligence * 30.0;
     result.MaxEnergy = Nonnegative(tuning.MaxEnergy);
     result.AttackSpeedMultiplier = 1.0 + agility * 0.01;

@@ -54,7 +54,35 @@ void StatRules()
     tuning.WeaponDamage = 7;
     tuning.PureCooldownReduction = 0.25;
     const auto stats = CalculateStats({12, 15, 20}, PrimaryStat::Intelligence, tuning);
-    CHECK(Near(stats.MaxHealth, 300));
+    // str-scaling (Eric, 2026-09-25): 10 health, 0.1 armor and 0.1 ward per STR point.
+    CHECK(Near(stats.MaxHealth, 120));
+    CHECK(Near(stats.Armor, 1.2));
+    CHECK(Near(stats.Ward, 1.2));
+    CHECK(Near(StartingBaseHealth(20), 300));
+    CHECK(Near(StartingBaseHealth(10), 150));
+    CHECK(Near(StartingBaseHealth(-5), 0));
+    {
+        // Level-1 health is unchanged from the old 25-per-STR formula; only growth changed.
+        for (const int startStrength : {10, 20})
+        {
+            CombatTuning champion;
+            champion.BaseHealth = StartingBaseHealth(startStrength);
+            CHECK(Near(CalculateStats({startStrength, 10, 10}, PrimaryStat::Strength, champion).MaxHealth, startStrength * 25.0));
+        }
+        Progression tank;
+        tank.Primary = PrimaryStat::Strength;
+        tank.Stats = {20, 10, 10};
+        tank.BaseHealth = StartingBaseHealth(20);
+        CHECK(GainLevels(tank, 24));
+        CombatTuning tankTuning;
+        tankTuning.BaseHealth = tank.BaseHealth;
+        const auto level25 = CalculateStats(tank.Stats, tank.Primary, tankTuning);
+        CHECK(tank.Stats.Strength == 68);
+        CHECK(Near(level25.MaxHealth, 980));   // was 1700 at 25 per point
+        CHECK(Near(level25.Armor, 6.8));
+        CHECK(Near(level25.Ward, 6.8));
+        CHECK(Near(tank.BaseHealth, 300));     // level growth never changes the flat base
+    }
     CHECK(Near(stats.MaxMana, 600));
     CHECK(Near(stats.MaxEnergy, 100));
     CHECK(Near(stats.BasicAttackDamage, 27));

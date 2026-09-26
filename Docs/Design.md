@@ -45,7 +45,9 @@ Use a single source of truth for base values, level gains, equipment, tomes, and
 
 ```text
 Attribute = ChampionBase + LevelGrowth + Equipment + PermanentMatchTomes
-MaxHP = BaseHP + 25 * STR
+MaxHP = BaseHP + 10 * STR          (BaseHP = 15 * starting STR: level-1 HP kept from the old 25/point rule)
+Armor = ItemArmor + 0.1 * STR
+Ward = ItemWard + 0.1 * STR
 MaxMP = BaseMP + 30 * INT
 BasicAttackDamage = BaseAttackDamage + PrimaryAttribute
 AttackPeriod = BaseAttackPeriod / (1 + AGI / 100 + OtherAttackSpeedBonus)

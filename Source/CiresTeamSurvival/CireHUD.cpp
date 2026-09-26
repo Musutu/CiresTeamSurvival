@@ -108,7 +108,7 @@ void ACireHUD::UsePanel(FName Id,float W,float H)
     Origin=FVector2D(R.X,R.Y); Stretch=FVector2D(R.W/W,R.H/H);
     VisiblePanels.AddUnique(Id);
     static const TMap<FName,FString> Help={
-        {TEXT("Player"),TEXT("Your character: green health, blue mana (INT grants 30 each), gold energy for physical abilities. Left click to target yourself. STR grants 25 health, AGI 1% attack speed per point; your primary attribute adds basic attack damage.")},
+        {TEXT("Player"),TEXT("Your character: green health, blue mana (INT grants 30 each), gold energy for physical abilities. Left click to target yourself. STR grants 10 health and 0.1 armor and spell ward, AGI 1% attack speed per point; your primary attribute adds basic attack damage.")},
         {TEXT("Party"),TEXT("Your four teammates. Left click a frame to target for healing or support. The + button sets a focus target. Hover status icons for duration and removal rules.")},
         {TEXT("Match"),TEXT("Three cleared PvE waves lead to town preparation, arena PvP, then recovery. Each team begins with 100 lives. Normal leaks cost one life; bosses cost ten.")},
         {TEXT("Minimap"),TEXT("Your team's separate PvE lane and town entrance. The enemy realm stays obscured during PvE. Teams can fight only after teleporting to a shared arena.")},
