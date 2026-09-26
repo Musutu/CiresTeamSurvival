@@ -5,6 +5,7 @@
 #include "CireShopFixtures.h" // progression-shop
 #include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
+#include "CireRouteEditMode.h" // dev-route-tools
 #include "CireEnvironmentGallery.h"
 #include "CireBatchArtGallery.h"
 #include "CireTooltipGallery.h"
@@ -229,6 +230,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireNewChampionsGallery::Initialize(this); // new-champions
     if(!bFeedbackPreview)bFeedbackPreview = CireKitsGallery::Initialize(this); // scaling-kits
     if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
+    if(!bFeedbackPreview)bFeedbackPreview = CireRouteEditMode::InitializeServer(this); // dev-route-tools: -CireRouteEdit, nothing of the match starts
     CireNPCNetProbe::InitializeServer(this);
 #endif
     if(!bFeedbackPreview)SpawnPacks();
@@ -466,6 +468,7 @@ void ACireGameMode::ResolveArena() {
 void ACireGameMode::Tick(float Dt) {
     Super::Tick(Dt);
 #if !UE_BUILD_SHIPPING
+    if(CireRouteEditMode::TickServer(this,Dt)) return; // dev-route-tools: map layout edit mode: every game system stays dormant
     if(CireTooltipGallery::Tick(this)) return;
     if(CireBatchArtGallery::Tick(this)) return;
     if(CireEnvironmentGallery::Tick(this)) return;

@@ -9,6 +9,7 @@
 #include "CireAudio.h" // audio:
 #include "CireLoot.h" // progression-shop
 #include "CireLanePath.h"
+#include "CireRouteEditor.h" // dev-route-tools
 #include "CireChampionRoster.h"
 #include "CireChampionProfiles.h"
 #include "CireDeveloperTools.h"
@@ -111,6 +112,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireArenas::RunSmoke(Mode)&&Good; // arenas: data, symmetry, paths, random no-repeat pick, build and cleanup
     Good=CireWaveDirector::RunTests(Mode)&&Good; // wave-director: data, templates, live edits, escort, stuck/failsafe, neutral packs, bots
     Good=CireNav::RunTests(Mode)&&Good; // nav-paths: navmesh coverage, paths, prop carving, arenas, path editor
+    Good=CireRouteEditor::RunTests(Mode)&&Good; // dev-route-tools: 1..16 packs, map layout model, mirroring, validation
     Good=CireFabAnimation::RunTests()&&Good; // fab-integration: optional Fab champion clips + fallback
     Good=CireFabVFX::RunTests(Mode->GetWorld())&&Good; // fab-integration: optional Fab Niagara data + clean-clone fallback
     Good=UCireCreatureArt::RunFabChampionSmoke(Mode->GetWorld())&&Good; // fab-integration: Fab bear / centaur champion bodies + fallback

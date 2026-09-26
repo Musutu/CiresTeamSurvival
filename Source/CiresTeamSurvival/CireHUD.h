@@ -51,10 +51,17 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void DrawHUD() override;
     bool IsEditingLayout() const { return bEditLayout; }
-    bool IsBlockingGameplayInput() const { return bEditLayout || bSettings || bQuickKeybind || bRouteEditor; } // nav-paths: + route editor
+    bool IsBlockingGameplayInput() const { return bEditLayout || bSettings || bQuickKeybind || bRouteEditor || (bLayoutEditor && !IsLayoutWalkView()); } // nav-paths: + route editor; dev-route-tools: + layout editor map view
     // nav-paths: in-world route editor (F8 > Developer > Paths; CireRouteEditorHUD.cpp, Docs/Navigation.md).
     bool IsRouteEditorOpen() const { return bRouteEditor; }
     void OpenRouteEditor(bool bOpen);
+    // dev-route-tools: the map layout editor (-CireRouteEdit; CireLayoutEditorHUD.cpp, Docs/MapLayout.md).
+    bool IsLayoutEditorOpen() const { return bLayoutEditor; }
+    void OpenLayoutEditor(bool bOpen);
+    /** Walk view: the champion walks the town (gameplay movement stays live). Map view: the top-down editor camera. */
+    bool IsLayoutWalkView() const;
+    /** Gallery access to the editor state (CireLayoutEditorState.h). */
+    struct FCireLayoutEditorState* LayoutEditorState() const { return LayoutEditor.Get(); }
 #if !UE_BUILD_SHIPPING
     /** Gallery/tests: frame the editor camera and hold a waypoint drag at a world point (bRelease ends it). */
     void DebugRouteView(const FVector& Focus, float Distance, float Pitch, float Yaw);
@@ -223,6 +230,12 @@ private:
     void TickRouteEditor();
     void DrawRouteMinimap(int32 Team,TFunctionRef<FVector2D(FVector,int32)> Map);
     bool bRouteEditor=false,bMinimapNav=false;
+    // dev-route-tools: map layout editor state and the screen rects its panels cover (pointer-over-interface).
+    void TickLayoutEditor();
+    bool LayoutEditorEscape();
+    bool bLayoutEditor=false;
+    TSharedPtr<struct FCireLayoutEditorState> LayoutEditor;
+    TArray<FCireUIRect> LayoutUIRects;
     TSharedPtr<struct FCireRouteEditorState> RouteEditor;
     // wave-director: F8 > Waves live wave composer (CireWaveEditor.cpp).
     void DrawWaveEditor(float X,float Y);
