@@ -10897,7 +10897,7 @@
     "effect": 190,
     "manaCost": 45,
     "energyCost": 0,
-    "cooldown": 9,
+    "cooldown": 7,
     "castTime": 1.2,
     "range": 1000,
     "radius": 100,
@@ -10963,7 +10963,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 40,
+    "effect": 20,
     "manaCost": 45,
     "energyCost": 0,
     "cooldown": 18,
@@ -11005,8 +11005,8 @@
    "category": "construct",
    "scaling": {
     "component": "shield",
-    "base": 40,
-    "primary": 1.0
+    "base": 20,
+    "primary": 0.3
    },
    "level15": {
     "bonus": "purge",

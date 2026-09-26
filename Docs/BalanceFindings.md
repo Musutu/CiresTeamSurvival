@@ -123,3 +123,29 @@ cell. Still outside the band: Keeper of Light at waves 10/20 (consistently low: 
 allies), Orc Chieftain and Dwarf Miner at wave 20 (tank DPS, low by design for a support tank), Holy Paladin at wave
 10, Dryad at wave 20, Centaur at wave 3, Behemoth at wave 3 (1.28). The knight fixture sits at 0.6-0.7 of the tank
 median: the roster tanks out-damage it, and it was not tuned here.
+
+## Keeper of Light tune — 26 September 2026 (feat/kits-complete, after the F: move)
+
+Rebuilt on F: and re-ran `RunChampionLab.py --waves 3,10,20 --repeats 2 --parallel 3` (162 cases, 0 failures).
+Keeper of Light sat at 0.73 / 0.59 / 0.76 of the healer HPS median. There were two causes:
+
+- **Dawn Beam aimed at the enemy.** Without an aimed point (bots and quick-cast), the beam ran from the Keeper toward
+  its hostile target, so it mostly healed the Keeper itself at full health. It now turns toward the most wounded ally
+  below 85% health (`CireKitSkills.cpp`, `EKit::Beam`, the only user is `keeper_dawn_beam`). An aimed cast is unchanged.
+  This alone moved the Keeper to 1.01 / 0.66 / 0.74.
+- **The Lantern Ward barrier soaked the damage the Keeper's heals needed.** The ward refreshes a barrier on everyone
+  within 4.5 m every 3 s, so Keeper teams took the least damage of any healer's (team DTPS 3.0-4.0 against 3.5-9). The
+  ward barrier per pulse drops from 40 + 1.0 x INT to 20 + 0.3 x INT, and that budget moves into Dawn Beam (cooldown
+  9 -> 7 s). Data only: `Tools/ChampionKits.py` -> `Content/Data/Abilities.json`.
+
+| Keeper of Light (HPS vs healer median) | w3 / w10 / w20 |
+| --- | --- |
+| Before (`champions-before-20260926-013746-e417d8`) | 0.73 / 0.59 / 0.76 |
+| Beam smart-cast only (healers-only run) | 1.01 / 0.66 / 0.74 |
+| + ward 20 + 0.5, beam 7 s (healers-only run) | 1.18 / 0.95 / 0.63 |
+| + ward 20 + 0.3 (healers-only run) | 1.17 / 0.85 / 0.82 |
+| Final, full lab (`champions-after-20260926-040821-2cd88f`) | 1.12 / 0.91 / 0.89 |
+
+No other champion's data or code changed. Differences elsewhere between the before and after runs are run-to-run
+noise, since healer HPS is bounded by missing health. The Holy Paladin and the Aetheri Warden stay above the band
+(1.4-2.2), as they did before this pass.

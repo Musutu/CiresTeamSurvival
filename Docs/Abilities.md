@@ -140,8 +140,8 @@ Native gameplay in `CireSignatureSkills` / `CireTechConstructs` (Docs/NewChampio
 | Moon Glaive (`moon_glaive`) | huntress | DPS | passive | physical | passive | - | 0s | 60 / 75 / 85 % bounce damage |  |
 | Glaive Storm (`glaive_storm`) | huntress | DPS | ultimate | physical | self | 70 EN | 75s | 45 / 59 / 77 damage per tick |  |
 | Beacon of Return (`keeper_beacon`) | keeper_of_light | HEAL | active | holy | aim | 35 MP | 16s | 25 / 35 / 45 % move speed | Move +25% |
-| Dawn Beam (`keeper_dawn_beam`) | keeper_of_light | HEAL | active | holy | aim | 45 MP | 9s | 190 / 268 / 362 healing | Healing -30% |
-| Lantern Ward (`keeper_lantern_ward`) | keeper_of_light | HEAL | active | holy | aim | 45 MP | 18s | 40 / 57 / 76 barrier per pulse | Barrier construct |
+| Dawn Beam (`keeper_dawn_beam`) | keeper_of_light | HEAL | active | holy | aim | 45 MP | 7s | 190 / 268 / 362 healing | Healing -30% |
+| Lantern Ward (`keeper_lantern_ward`) | keeper_of_light | HEAL | active | holy | aim | 45 MP | 18s | 20 / 28 / 38 barrier per pulse | Barrier construct |
 | Last Light (`keeper_last_light`) | keeper_of_light | HEAL | passive | holy | passive | - | 0s | 80 / 101 / 128 barrier health |  |
 | Sunrise Vigil (`keeper_sunrise`) | keeper_of_light | HEAL | ultimate | holy | self | 130 MP | 90s | 90 / 118 / 154 healing per second | cleanse |
 | Taunting Tumble (`taunting_tumble`) | knight, bear, paladin_righteous, dwarf_miner, ether_golem_tank, ether_golem_bruiser, orc_chieftain, totemic_behemoth, drakish_footman | TANK | active | physical | self | 25 EN | 18s | 3 / 4 / 6 s taunt | taunt, DEF +20% |

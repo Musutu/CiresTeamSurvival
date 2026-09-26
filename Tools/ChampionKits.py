@@ -220,12 +220,15 @@ KIT_SIGNATURES = {
                              "Cast 1s: for 8s a grove aura travels with you (6m): allies inside regenerate {effect} health per second and move 15% faster.",
                              [fx("haste", "area", 8, 0.15, 600, label="Move +15%")], {"scaling": S("heal", 30, 0.45)}),
     # ================================================================ Keeper of Light (support, INT)
-    "keeper_dawn_beam": ("Dawn Beam", ["heal"], "active", "holy", "aim", 1.2, 45, 0, 9, 190, "healing", 1000, 100, 4,
+    # Balance lab 2026-09-26: the Lantern Ward's always-on barrier soaked most incoming damage, leaving little for the
+    # Keeper's heals (HPS 0.73/0.59/0.76 of the healer median). The ward barrier is halved and scales less (40+1.0 -> 20+0.3
+    # per INT), and that budget moves into Dawn Beam (cooldown 9 -> 7), which now also smart-casts toward the most wounded ally.
+    "keeper_dawn_beam": ("Dawn Beam", ["heal"], "active", "holy", "aim", 1.2, 45, 0, 7, 190, "healing", 1000, 100, 4,
                          "Cast 1.2s: a warned beam of dawn (10m x 2m): allies in it are healed for {effect}; enemies take 40% of it as holy damage and receive 30% less healing for 4s.",
                          [fx("healCut", "area", 4.0, 0.3, label="Healing -30%")], {"section": "defensive"}),
-    "keeper_lantern_ward": ("Lantern Ward", ["heal"], "active", "holy", "aim", 0, 45, 0, 18, 40, "barrier per pulse", 800, 450, 12,
+    "keeper_lantern_ward": ("Lantern Ward", ["heal"], "active", "holy", "aim", 0, 45, 0, 18, 20, "barrier per pulse", 800, 450, 12,
                             "Place a destructible Lantern Ward (12s): every 3s allies within 4.5m gain a {effect} barrier (refreshed; barriers never stack).",
-                            [fx("shield", "area", 0, 0, 450, label="Barrier")], dict(CONSTRUCT, scaling=S("shield", 40, 1.0))),
+                            [fx("shield", "area", 0, 0, 450, label="Barrier")], dict(CONSTRUCT, scaling=S("shield", 20, 0.3))),
     "keeper_beacon": ("Beacon of Return", ["heal"], "active", "holy", "aim", 0, 35, 0, 16, 25, "% move speed", 1000, 400, 8,
                       "Raise a Beacon of Return (4m) for 8s: allies inside move {effect}% faster and regenerate 1.5% of their max health per second.",
                       [fx("haste", "area", 0, 0.25, 400, label="Move +25%")], {"curve": {"effectCap": 45}, "section": "defensive"}),

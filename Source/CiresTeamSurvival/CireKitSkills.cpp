@@ -691,6 +691,14 @@ bool CireKitSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     }
     case EKit::Beam:
     {
+        // Smart cast (quick-cast / bots): with no aimed point the beam turns toward the most wounded ally who needs it,
+        // not down the line to the hostile target (balance lab: most Dawn Beams were landing on full-health allies).
+        if (!Hero->bHasCastAim)
+            if (ACireHero* A = PickAlly(Hero, Range, false); A && HealthFraction(A) < .85f)
+            {
+                const FVector ToAlly = (A->GetActorLocation() - Origin).GetSafeNormal2D();
+                if (!ToAlly.IsNearlyZero()) Direction = ToAlly;
+            }
         const FVector End = Origin + Direction * Range;
         const float Half = FMath::Max(50.f, Def->Radius);
         for (ACireHero* A : Allies(Hero, Origin + Direction * Range * .5f, Range * .5f + Half))
