@@ -33,6 +33,7 @@ SLOTS: dict = {}
 # Fab packs from Eric's library that are Unreal-format only (Docs/FAB-ADD-TO-PROJECT.md, "Arenas"). After "Add to
 # Project", put the real object paths of the meshes you want here and rerun this script: they are tried before the
 # CC0/original art, per slot, and the arena switches over automatically. Empty lists keep the current art.
+CT_BEECH = lambda n: f"/Game/CastleTown/Scanned_Foliage/Foliage/EuropeanBeech/Meshes/{n}.{n}"
 FAB_OVERRIDES = {
     "well": [],              # e.g. Fab "Old Stone Well" (website download, fab-assets pipeline)
     "basalt_tall": [],       # Iceland Collections: basalt column assemblies
@@ -40,8 +41,15 @@ FAB_OVERRIDES = {
     "arch": [],              # Moab Desert Collections: arch / hoodoo assemblies
     "hoodoo": [],
     "canyon_wall": [],       # Moab Desert Collections: cliff assemblies
-    "glade_tree": [],        # European Hornbeam: mature trees
-    "glade_tree_young": [],
+    "glade_tree": [CT_BEECH("SM_EuropeanBeech_L_02")],        # world-scale: Medieval Kingdom scanned beech (Fab, local-only)
+    "glade_tree_young": [CT_BEECH("SM_EuropeanBeech_M_01")],
+    "oak": [CT_BEECH("SM_EuropeanBeech_L_02")],
+    "young_tree": [CT_BEECH("SM_EuropeanBeech_M_01")],
+    "stump": [CT_BEECH("SM_EuropeanBeech_Stump_01")],
+    "forest_log": [CT_BEECH("SM_EuropeanBeech_Log_01")],
+    "forest_shrub": [CT_BEECH("SM_EuropeanBeech_S_01")],
+    "sapling": [CT_BEECH("SM_EuropeanBeech_XS_01")],
+    "grass_tuft": ["/Game/CastleTown/Scanned_Foliage/Foliage/WildGrass/Meshes/SM_WildGrass_S_01.SM_WildGrass_S_01"],
     "column": [],            # Underwater World: ruin columns
     "ruin_arch": [],
     "kelp": [],
@@ -223,30 +231,63 @@ slot("jerrycan", [prop("metal_jerrycan_1k")], footprint=(35, 17, 46), fit="unifo
 
 
 # ============================================================ arena builder
+# world-scale (Eric, September 25: "PvP arenas about 2x the size"): every arena's playable floor is K times as long and
+# wide. Layouts are still authored in the original 52 x 40 m coordinates; add() scales positions (never piece sizes) and
+# scatter regions by K. fill() then re-adds the original in-bounds pieces at their 1x positions, so the inner half keeps
+# the cover it had and the outer ring carries the same pattern spread out: twice the line-of-sight blockers per arena.
+K = 2.0
+SCATTER_DENSITY = 2.0      # scatter counts (area is K*K larger; far rings are allowed to thin out)
+NO_FILL = ("patch_", "glow_", "ground_", "sea", "gantry", "light_shaft")
+GROUND_REACH = 27500       # half of the 560 m open-air ground plate, minus a margin
+
+
 class Arena:
     def __init__(self, aid, name, theme, subtitle, half=(2600, 2000)):
         self.d = {"id": aid, "name": name, "theme": theme, "subtitle": subtitle, "enabled": True, "weight": 1.0,
-                  "halfExtents": list(half), "spawns": {}, "pieces": [], "scatter": []}
-        self.half = half
-        ember = [[-half[0] + 350, y] for y in (-600, -300, 0, 300, 600)]
+                  "halfExtents": [half[0] * K, half[1] * K], "spawns": {}, "pieces": [], "scatter": []}
+        self.half = half  # authoring (1x) half extents
+        ember = [[-half[0] * K + 350, y] for y in (-600, -300, 0, 300, 600)]
         self.d["spawns"] = {"ember": ember, "dusk": [[-x, y] for x, y in ember]}
+        self.raw = []
 
-    def add(self, s, x, y, z=0.0, yaw=0.0, scale=1.0, blocker=False):
+    def add(self, s, x, y, z=0.0, yaw=0.0, scale=1.0, blocker=False, unscaled=False):
         assert s in SLOTS, s
         sc = scale if isinstance(scale, (list, tuple)) else (scale, scale, scale)
+        if not unscaled:
+            self.raw.append((s, x, y, z, yaw, scale, blocker))
+            x, y = x * K, y * K
         self.d["pieces"].append([s, round(x, 1), round(y, 1), round(z, 1), round(yaw, 2), sc[0], sc[1], sc[2], 1 if blocker else 0])
+
+    def fill(self, skip=()):
+        """Re-add the original layout's pieces inside the 1x bounds at their 1x positions (not the exact centre piece)."""
+        hx, hy = self.half
+        for s, x, y, z, yaw, scale, blocker in list(self.raw):
+            if abs(x) > hx or abs(y) > hy or (abs(x) < 1 and abs(y) < 1) or s.startswith(NO_FILL) or s in skip:
+                continue
+            self.add(s, x, y, z, yaw, scale, blocker, unscaled=True)
 
     def pair(self, s, x, y, z=0.0, yaw=0.0, scale=1.0, blocker=False):
         """Piece plus its mirror twin across the centre line (x -> -x, yaw -> 180 - yaw)."""
         self.add(s, x, y, z, yaw, scale, blocker)
         self.add(s, -x, y, z, 180.0 - yaw, scale, blocker)
 
-    def scatter(self, s, region, count, seed, scale=(1, 1), outside=False, margin=0, clearance=0, exclude=(), z=0, z_jitter=0, random_yaw=True, tilt=False):
-        self.d["scatter"].append({"slot": s, "region": list(region), "count": count, "seed": seed, "scale": list(scale), "outside": outside,
-                                  "margin": margin, "clearance": clearance, "exclude": [list(e) for e in exclude], "z": z, "zJitter": z_jitter,
-                                  "randomYaw": random_yaw, "tilt": tilt})
+    def scatter(self, s, region, count, seed, scale=(1, 1), outside=False, margin=0, clearance=0, exclude=(), z=0, z_jitter=0, random_yaw=True, tilt=False,
+                density=None):
+        # keep scatter on the 560 m ground plate (a larger plate renders black under distance-field lighting)
+        reg = [max(-GROUND_REACH, min(GROUND_REACH, v * K)) for v in region]
+        exc = [[v * K for v in e] for e in exclude]
+        if any(e[0] <= reg[0] and e[1] <= reg[1] and e[2] >= reg[2] and e[3] >= reg[3] for e in exc) or reg[0] >= reg[2] or reg[1] >= reg[3]:
+            return  # the scaled region fell entirely off the plate
+        self.d["scatter"].append({"slot": s, "region": reg, "count": int(count * (SCATTER_DENSITY if density is None else density)),
+                                  "seed": seed, "scale": list(scale), "outside": outside, "margin": margin, "clearance": clearance,
+                                  "exclude": exc, "z": z, "zJitter": z_jitter, "randomYaw": random_yaw, "tilt": tilt})
 
     def set(self, **kw):
+        if "groundSize" in kw and kw["groundSize"] < 20000:
+            kw["groundSize"] = kw["groundSize"] * K  # the hangar deck grows with the floor; open-air plates are already 560 m
+        for light in kw.get("lighting", {}).get("lights", []):
+            light["at"] = [light["at"][0] * K, light["at"][1] * K, light["at"][2]]
+            light["radius"] = round(light["radius"] * 1.6)
         self.d.update(kw)
         return self
 
@@ -289,13 +330,13 @@ a.add("hay_square", 1360, -1040, yaw=-20)
 # Pollen and chaff drifting in the low sun
 a.scatter("pollen", (-4200, -3600, 4200, 3600), 3200, 15, scale=(1.5, 3.0), z=330, z_jitter=320)
 # Field boundary: split-rail fences behind the spawns, a low stone wall on the field side
-for y in range(-1850, 1851, 412):
-    a.add("fence", -H[0] - 120, y)
-    a.add("fence", H[0] + 120, y, yaw=180)
+for y in range(-1850, 1851, 206):  # world-scale: half the authored step = the same 4 m rail spacing on the doubled edge
+    a.add("fence", -H[0] - 120 / K, y)
+    a.add("fence", H[0] + 120 / K, y, yaw=180)
 # Farmstead and landmarks outside the fight
 MILL = (7800, 3600, 200.0)  # seen from the Ember side over the wheat; the barn is seen from the Dusk side
 a.add("windmill", MILL[0], MILL[1], yaw=MILL[2])
-hub = (MILL[0] + math.cos(math.radians(MILL[2])) * 440, MILL[1] + math.sin(math.radians(MILL[2])) * 440)
+hub = (MILL[0] + math.cos(math.radians(MILL[2])) * 440 / K, MILL[1] + math.sin(math.radians(MILL[2])) * 440 / K)  # sails stay on the tower
 a.add("windmill_sails", hub[0], hub[1], z=1460, yaw=MILL[2])
 a.add("barn", -7400, -3800, yaw=20)
 a.add("hay_pyramid", -5600, -2900, yaw=20)
@@ -313,15 +354,16 @@ a.add("field_rock", 3600, 2500, yaw=-20, scale=0.8)
 a.add("tree_stump", -3900, -2300, yaw=10)
 # Standing wheat all around the harvested arena, dense close in, thinner toward the horizon
 a.scatter("wheat", (-7000, -6500, 7000, 6500), 21000, 11, scale=(0.85, 1.25), outside=True, margin=90, tilt=True,
-          exclude=[(-3100, -2250, 3100, 2250), (-9200, -5400, -4600, -800), (7000, 2800, 8700, 4400)])
+          exclude=[(-3100, -2250, 3100, 2250), (-9200, -5400, -4600, -800), (7000, 2800, 8700, 4400)], density=2.2)
 a.scatter("wheat", (-14000, -14000, 14000, 14000), 21000, 12, scale=(0.9, 1.3), outside=True, margin=90, tilt=True,
-          exclude=[(-7000, -6500, 7000, 6500), (-9200, -5400, -4600, -800), (7000, 2800, 8700, 4400)])
+          exclude=[(-7000, -6500, 7000, 6500), (-9200, -5400, -4600, -800), (7000, 2800, 8700, 4400)], density=1.3)
 a.add("patch_track", -6900, -3100, z=-1.3, yaw=20, scale=(42, 34, 1))  # the barnyard
 a.scatter("wheat", (-26000, -26000, 26000, 26000), 9000, 16, scale=(1.5, 2.2), outside=True, margin=90,
-          exclude=[(-14000, -14000, 14000, 14000)])  # sparse, larger clumps out to the horizon
+          exclude=[(-14000, -14000, 14000, 14000)], density=1.2)  # sparse, larger clumps out to the horizon
 # Stubble inside the harvested fight area and around the fences
-a.scatter("stubble", (-H[0], -H[1], H[0], H[1]), 5200, 13, scale=(0.8, 1.4), clearance=40)
+a.scatter("stubble", (-H[0], -H[1], H[0], H[1]), 5200, 13, scale=(0.8, 1.4), clearance=40, density=3.5)
 a.scatter("stubble", (-3100, -2250, 3100, 2250), 1800, 14, scale=(0.8, 1.4), outside=True)
+a.fill()  # world-scale: the original bales, stacks, stooks and walls again at 1x (twice the farm cover)
 a.set(ground="ground_stubble", groundSize=56000, ambience="arena_fields", music="MUS_Crusade",
       minimap={"ground": [0.30, 0.22, 0.09], "blocker": [0.86, 0.66, 0.30], "accent": [1.0, 0.82, 0.42]},
       lighting={"sunPitch": -10.0, "sunYaw": 90.0, "sunIntensity": 7.5, "sunColor": [1.0, 0.70, 0.42], "sunSourceAngle": 1.2,
@@ -356,9 +398,9 @@ a.pair("basalt_steps", -300, 1650, yaw=-25, scale=0.7, blocker=True)
 a.add("sea", 0, 24400, z=4, scale=(700, 400, 1))
 for k, (x, y, s, r) in enumerate(((-4200, 13000, 1.4, 20), (1500, 17000, 1.9, -35), (7800, 12500, 1.2, 70), (-10500, 16000, 1.6, 5), (12500, 20000, 2.2, 40))):
     a.add("basalt_stack", x, y, z=-60, yaw=r, scale=s)
-for k, x in enumerate(range(-15000, 15001, 1950)):  # a black basalt column cliff behind the lava field to the south
+for k, x in enumerate(range(-15000, 15001, 975)):  # a black basalt column cliff behind the lava field to the south (world-scale: 2x count)
     a.add("basalt_cliff", x, -6400 - (k % 3) * 180, z=-20, yaw=-90 + ((k * 7) % 11 - 5), scale=(1.0, 1.0, 0.9 + 0.15 * ((k * 5) % 4)))
-for k, x in enumerate(range(-9000, 9001, 1500)):  # the waterline: low lava shelves half in the sea
+for k, x in enumerate(range(-9000, 9001, 750)):  # the waterline: low lava shelves half in the sea (world-scale: 2x count)
     a.add("lava_cluster", x + (k % 2) * 400, 4250 + (k % 3) * 160, z=-20, yaw=k * 53.0, scale=(2.2, 1.8, 1.4))
 a.pair("lava_ridge", -4200, -2600, yaw=25, scale=1.4)
 a.pair("lava_cluster", -3300, 1600, yaw=10, scale=1.6)
@@ -375,6 +417,7 @@ a.scatter("beach_pebbles", (-8000, 2100, 8000, 4200), 70, 23, scale=(0.6, 1.2), 
 a.scatter("lyme_grass", (-9000, 2150, 9000, 3000), 900, 24, scale=(0.8, 1.6), outside=True, margin=80)
 a.scatter("lyme_grass", (-9000, -6000, 9000, -2150), 500, 25, scale=(0.7, 1.3), outside=True, margin=80)
 a.scatter("beach_pebbles", (-H[0], -H[1], H[0], H[1]), 26, 26, scale=(0.25, 0.5), clearance=80)
+a.fill()
 a.set(ground="ground_blacksand", groundSize=56000, ambience="arena_iceland", music="MUS_OppressiveGloom",
       minimap={"ground": [0.07, 0.08, 0.09], "blocker": [0.42, 0.48, 0.44], "accent": [0.62, 0.80, 0.58]},
       lighting={"sunPitch": -38.0, "sunYaw": 90.0, "sunIntensity": 4.2, "sunColor": [0.86, 0.92, 1.0], "sunSourceAngle": 6.0,
@@ -406,7 +449,7 @@ a.pair("red_boulder", -350, 1000, yaw=80, scale=0.8, blocker=True)
 a.pair("red_boulder", -380, -1000, yaw=10, scale=0.8, blocker=True)
 # Canyon walls to the north and south, open ends with distant mesas
 for side in (1, -1):
-    for k, x in enumerate((-7400, -4500, -1500, 1500, 4500, 7400)):
+    for k, x in enumerate([-7400 + 1480 * i for i in range(11)]):  # world-scale: twice the wall sections on the doubled rim
         a.add("canyon_wall", x, side * (H[1] + 850 + 90 * (k % 2)), yaw=90 * side, scale=(1.0, 1.02, 0.85 + 0.12 * ((k + side) % 3)))
 for k, (x, y, r, s) in enumerate(((-12500, 1800, 180, 1.2), (-13500, -3800, 190, 0.9), (12500, -1200, 0, 1.1), (13800, 4200, -10, 0.8))):
     a.add("canyon_wall", x, y, yaw=r, scale=(1.0, 1.4, s))
@@ -420,6 +463,7 @@ a.scatter("scrub_0", (-9000, -2700, 9000, 2700), 160, 32, scale=(1.0, 1.8), clea
 a.scatter("scrub_1", (-9000, -2700, 9000, 2700), 160, 33, scale=(1.0, 1.8), clearance=100)
 a.scatter("scrub_2", (-9000, -2700, 9000, 2700), 140, 34, scale=(1.0, 1.8), clearance=100)
 a.scatter("red_boulder", (-12000, -2700, 12000, 2700), 70, 36, scale=(0.4, 1.3), outside=True, margin=250)
+a.fill()
 a.set(ground="ground_redsoil", groundSize=56000, ambience="arena_moab", music="MUS_FiveArmies",
       minimap={"ground": [0.30, 0.13, 0.07], "blocker": [0.82, 0.42, 0.24], "accent": [1.0, 0.62, 0.35]},
       lighting={"sunPitch": -52.0, "sunYaw": 90.0, "sunIntensity": 11.0, "sunColor": [1.0, 0.93, 0.82], "sunSourceAngle": 0.55,
@@ -460,6 +504,7 @@ a.scatter("grass_tuft", (-H[0], -H[1], H[0], H[1]), 900, 46, scale=(1.5, 3.0), c
 a.scatter("sapling", (-7000, -7000, 7000, 7000), 400, 47, scale=(2.0, 4.0), outside=True, margin=60)
 a.scatter("forest_log", (-8000, -8000, 8000, 8000), 40, 48, scale=(0.7, 1.3), outside=True, margin=250)
 a.scatter("forest_rock", (-8000, -8000, 8000, 8000), 60, 49, scale=(0.6, 1.5), outside=True, margin=200)
+a.fill()
 a.set(ground="ground_forest", groundSize=56000, ambience="arena_hornbeam", music="MUS_DeathandAxes",
       minimap={"ground": [0.09, 0.13, 0.06], "blocker": [0.40, 0.48, 0.30], "accent": [0.62, 0.86, 0.42]},
       lighting={"sunPitch": -40.0, "sunYaw": 90.0, "sunIntensity": 7.0, "sunColor": [1.0, 0.94, 0.80], "sunSourceAngle": 0.8,
@@ -513,6 +558,7 @@ a.scatter("coral_gold", (-7000, -7000, 7000, 7000), 160, 55, scale=(0.8, 1.6), c
 a.scatter("sea_rock", (-10000, -10000, 10000, 10000), 90, 56, scale=(0.4, 1.4), outside=True, margin=400)
 a.scatter("shell", (-H[0], -H[1], H[0], H[1]), 60, 57, scale=(1.0, 2.0), clearance=60)
 a.scatter("motes", (-5000, -5000, 5000, 5000), 6000, 58, scale=(1.2, 2.6), z=450, z_jitter=440)
+a.fill()
 a.set(ground="ground_seabed", groundSize=56000, ambience="arena_underwater", music="MUS_BlackVortex",
       minimap={"ground": [0.03, 0.10, 0.12], "blocker": [0.40, 0.58, 0.56], "accent": [0.45, 0.92, 0.90]},
       lighting={"sunPitch": -72.0, "sunYaw": 90.0, "sunIntensity": 5.5, "sunColor": [0.62, 0.92, 0.95], "sunSourceAngle": 2.0,
@@ -537,7 +583,7 @@ a.pair("container_rust", -950, -1520, yaw=90, blocker=True)
 a.pair("dropship", -1500, 420, yaw=90, scale=0.62, blocker=True)
 a.pair("proxy_box", -1500, -700, scale=(2.5, 2.5, 3.0), blocker=True)
 a.pair("cargo_crate", -1540, -660, yaw=5)
-a.pair("cargo_crate", -1460, -740, z=150, yaw=20)
+a.pair("cargo_crate", -1540 + 80 / K, -660 - 80 / K, z=150, yaw=20)  # stacked on the crate below
 a.pair("cargo_crate", -620, 170 + 800, yaw=10, blocker=True)
 a.pair("cargo_crate", -680, -1000, yaw=-15, blocker=True)
 a.pair("deck_barrier", -1000, -300, yaw=0, blocker=True)
@@ -558,23 +604,24 @@ for k in range(24):  # landing ring around the centre containers
     ang = 2 * math.pi * (k + 0.5) / 24
     a.add("glow_amber", math.cos(ang) * 1150, math.sin(ang) * 1150, z=0.35, yaw=math.degrees(ang) + 90, scale=(2.6, 0.08, 1))
 for y in (-1990, 1990):
-    a.add("glow_strip", 0, y, z=0.3, scale=(52, 0.08, 1))
+    a.add("glow_strip", 0, y, z=0.3, scale=(52 * K, 0.08, 1))
 for x in (-2590, 2590):
-    a.add("glow_amber", x, 0, z=0.3, scale=(0.08, 40, 1))
-a.add("patch_hangar", -2200, 0, z=-0.5, scale=(9, 40, 1))
-a.add("patch_hangar", 2200, 0, z=-0.5, scale=(9, 40, 1))
+    a.add("glow_amber", x, 0, z=0.3, scale=(0.08, 40 * K, 1))
+a.add("patch_hangar", -2200, 0, z=-0.5, scale=(9 * K, 40 * K, 1))
+a.add("patch_hangar", 2200, 0, z=-0.5, scale=(9 * K, 40 * K, 1))
 # The hangar: bulkheads behind the spawns, open sides onto space, gantry overhead, towers on the skyline
-for y in (-2600, -1600, -600, 400, 1400, 2400):
-    a.add("bulkhead", -H[0] - 380, y + 100, yaw=0)
-    a.add("bulkhead", H[0] + 380, y + 100, yaw=180)
-for x in range(-2400, 2401, 300):
-    a.add("deck_barrier", x, H[1] + 150, yaw=90)
-    a.add("deck_barrier", x, -H[1] - 150, yaw=90)
-a.add("gantry", 0, 0, z=1250, yaw=0, scale=(4.6, 1.0, 1.0))
+for y in range(-2600, 2401, 500):  # world-scale: half the step = the same bulkhead spacing on the doubled wall
+    a.add("bulkhead", -H[0] - 380 / K, y + 100, yaw=0)
+    a.add("bulkhead", H[0] + 380 / K, y + 100, yaw=180)
+for x in range(-2400, 2401, 150):
+    a.add("deck_barrier", x, H[1] + 150 / K, yaw=90)
+    a.add("deck_barrier", x, -H[1] - 150 / K, yaw=90)
+a.add("gantry", 0, 0, z=1250, yaw=0, scale=(4.6 * K, 1.0, 1.0))
 for k, (x, y, s, r) in enumerate(((-9000, 14000, 1.2, 0), (7000, 17000, 1.5, 30), (15000, 6000, 1.0, 60), (-16000, -3000, 1.3, 10), (4000, -16000, 1.6, 45))):
     a.add("station_tower", x, y, z=-3000, yaw=r, scale=s)
 a.pair("pylon", -2400, 2350)
 a.pair("pylon", -2400, -2350)
+a.fill(skip=("bulkhead",))
 a.set(ground="ground_deck", groundSize=7400, ambience="arena_station", music="MUS_Killers",
       minimap={"ground": [0.06, 0.08, 0.11], "blocker": [0.35, 0.55, 0.75], "accent": [0.35, 0.85, 1.0]},
       lighting={"sunPitch": -34.0, "sunYaw": 90.0, "sunIntensity": 8.5, "sunColor": [1.0, 0.96, 0.9], "sunSourceAngle": 0.4,

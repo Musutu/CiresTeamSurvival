@@ -118,6 +118,13 @@ struct CIRESTEAMSURVIVAL_API FCireWaveConfig
     /** Pacing (Waves.json "pacing"): where on the route waves appear (0 = breach gate, 0.7 max), the march-speed
      *  multiplier while a wave unit is not fighting, the first wave's delay and the phase clock after a cycle. */
     float SpawnAlongRoute = 0.f, MarchSpeedMultiplier = 1.4f, FirstWaveDelay = 8.f; // balance (pacing): march 1.25 -> 1.4
+    /** world-scale (the realm is 3x longer, pacing must not triple): while no living defender of its lane is within
+     *  RallyRadius cm, a marching wave unit moves at RallySpeed x its base speed (never below MarchSpeedMultiplier), so
+     *  columns cross the empty outer districts quickly and slow to the normal march as they meet the heroes.
+     *  MarcherSpeed: non-attacking marchers (armored waves, escortees) never stop to fight, so they always move at this
+     *  multiple (about hero running speed) and still reach the castle inside the stall failsafe on the long road.
+     *  BotHoldAt is the route fraction (0 = rift, 1 = castle gate) where idle bots hold their defensive line. */
+    float RallySpeed = 3.f, RallyRadius = 2500.f, BotHoldAt = .2f, MarcherSpeed = 3.f;
     float PrepSeconds = 25.f, ArenaSeconds = 60.f, RecoverySeconds = 8.f; // balance (pacing): prep 30 -> 25, recovery 10 -> 8
     /** Breather ends early (1 s) once every human player has pressed Ready; bots are always ready. */
     bool bEarlyContinue = true;

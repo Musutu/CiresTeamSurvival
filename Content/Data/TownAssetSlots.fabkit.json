@@ -46,13 +46,6 @@
    "source": "Medieval Kingdom (Hivemind, Fab)",
    "fit": "none"
   },
-  "fire_pit": {
-   "kind": "mesh",
-   "mesh": "/Game/CastleTown/Static_Mesh/Props/SM_FirePit_01.SM_FirePit_01",
-   "status": "imported",
-   "source": "Medieval Kingdom (Hivemind, Fab)",
-   "fit": "none"
-  },
   "hanging_lantern": {
    "kind": "mesh",
    "mesh": "/Game/CastleTown/Static_Mesh/Props/Lanterns/SM_Lantern_Hanging.SM_Lantern_Hanging",

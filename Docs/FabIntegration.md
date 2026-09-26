@@ -173,6 +173,16 @@ clips without rebuilding an existing locomotion BlendSpace.
 Switches: `-CireNoFab` hides every overlay (VFX, animation, creatures, weapons, town) for before/after captures; the galleries
 take `--no-fab` (ability VFX, monster, new champions, environment).
 
+## World scale (September 25)
+
+| Pack (Content folder) | Integrated into | Tool / data |
+|---|---|---|
+| Medieval Kingdom (`CastleTown`) scanned foliage and Hills | town trees (European beech, silver fir), bushes, stumps, logs, wild grass, wild carrot flowers, eagle ferns, backdrop mountains (static components + CC0 mossy-rock material) | `Tools/MeasureFabWorld.py` (measure) -> `Tools/BuildFabWorldSlots.py` -> `TownAssetSlots.fabworld.json` |
+| Medieval Kingdom (`CastleTown`) scanned foliage | Sunlit Fields and Hornbeam Glade trees, saplings, shrubs, stumps, logs, grass tufts | `Tools/AuthorArenas.py` `FAB_OVERRIDES` -> `Arenas.json` |
+
+`-CireNoFab` now also skips Fab-pack candidates in the arenas (`CireArenas`). Not used: the Medieval Kingdom large rocks (their
+material cannot draw on instanced meshes) and the modular building kits (walls/roofs, no whole houses).
+
 ## Monster expansion (every remaining pack creature)
 
 `Tools/InventoryCreatures.py` lists every creature mesh in the packs; `Tools/BuildFabExpansionCreatures.py` brings the unused

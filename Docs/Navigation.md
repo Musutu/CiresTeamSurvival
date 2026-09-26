@@ -157,3 +157,16 @@ why. Like the rest of F8 it only exists in development standalone sessions.
   See `Docs/Waves.md` for the before/after numbers.
 - Validation before apply uses the current navmesh; pieces the clearance rule would remove still
   block it until the rebuild after apply.
+
+## World scale (September 25)
+
+* The realm navmeshes grew with the 460 m realm: 702 + 702 tiles (Hero + Large), built in 2.2-2.7 s at match start (was
+  252 + 252 in 1.2 s).
+* `DefaultMaxSearchNodes` / `DefaultMaxHierarchicalSearchNodes` = 16384 (`Config/DefaultEngine.ini`; the engine default is
+  2048). Bots now chase waves from the castle to the far districts (495 m of road); with the default budget the A* search
+  gave up and every bot walked to the same partial-path end and waited there.
+* The timed march probe scales its limit with the route: probe marchers walk at their base speed (they are not wave units),
+  so the limit is max(240 s, route length / 100 cm/s * 0.8), about 400 s on the new road.
+* `CireLanePath::NextWaypoint` advances a unit's waypoint index to the segment it is actually on (never backward). Escort
+  guards walking beside their escortee, or units chasing forward, used to keep a stale index and walk back to it after the
+  escortee leaked: on the 495 m road that walk-back reached the stall failsafe.

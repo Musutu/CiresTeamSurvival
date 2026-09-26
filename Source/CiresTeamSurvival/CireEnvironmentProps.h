@@ -34,6 +34,10 @@ namespace CireEnvironmentProps
     struct FPlacedProp { int32 Team = 0; FName Slot; FTransform Transform; FBox LocalBox = FBox(ForceInit); bool bCollision = false; };
     CIRESTEAMSURVIVAL_API TArray<FPlacedProp> PlacedProps(const ACireWorld* WorldActor);
     struct FTownDistrict { FName Id; FString Name; float MinX = 0, MaxX = 0; };
+    /** world-scale: an authored world-aligned ground surface (TownLayout.json "surfaces"): material slot, realm-local centre X,
+     *  length along X, width across (0 = the full realm floor) and centre Y. */
+    struct FTownSurface { FName Slot; float X = 0, Length = 0, Width = 0, Y = 0; };
+    CIRESTEAMSURVIVAL_API const TArray<FTownSurface>& Surfaces();
     /** Authored districts ordered from the monster breach to the castle. */
     CIRESTEAMSURVIVAL_API const TArray<FTownDistrict>& Districts();
     /** District id containing a world location in the given team's realm, or NAME_None. */

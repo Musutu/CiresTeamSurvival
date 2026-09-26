@@ -8,6 +8,7 @@
 #include "Components/PointLightComponent.h"
 #include "Dom/JsonObject.h"
 #include "Engine/StaticMesh.h"
+#include "PhysicsEngine/BodySetup.h" // world-scale: collision proxies
 #include "Engine/World.h"
 #include "HAL/FileManager.h"
 #include "Materials/MaterialInterface.h"
@@ -25,7 +26,8 @@ float RouteMarginFor(const UWorld* World){return CireLanePath::LaneWidth(World)*
 constexpr float BayMargin=450.f;     // challenge pack arena around each bay centre
 constexpr float SpawnMargin=420.f;
 constexpr float DividerMargin=60.f;  // nothing may cross into the gap between the two realms
-constexpr int32 MaxLightsPerTeam=56;
+constexpr int32 MaxLightsPerTeam=140; // world-scale: 3x longer realm (lights fade out beyond LightDrawDistance)
+constexpr float LightDrawDistance=9000.f,LightFadeRange=2500.f;
 
 struct FCandidate
 {
@@ -44,6 +46,7 @@ struct FSlot
     TWeakObjectPtr<UStaticMesh> Mesh;TArray<TWeakObjectPtr<UStaticMesh>> Parts;TWeakObjectPtr<UMaterialInterface> Material,MeshMaterial;FTransform Local=FTransform::Identity;
     FBox LocalBox=FBox(ForceInit);FString ResolvedSource;
     float CullStart=0,CullEnd=0; // world-dressing: HISM cull distances (cm), 0 = never culled
+    bool bStatic=false; // world-scale: "component": "static" = one plain mesh component per placement (huge backdrop meshes)
 };
 struct FPlacement {FName Slot;FVector Location=FVector::ZeroVector;float Yaw=0,Scale=1;uint8 Mode=0;/*0 raw,1 outer,2 inner*/};
 struct FPlaced {int32 Team=0;FName Slot;FTransform Transform;FBox Box;EClearance Clearance=EClearance::Route;};
@@ -51,11 +54,15 @@ struct FWorldTown
 {
     TMap<FName,TArray<TWeakObjectPtr<UHierarchicalInstancedStaticMeshComponent>>> Components;
     TArray<TWeakObjectPtr<UPointLightComponent>> Lights;TArray<FPlaced> Placed;int32 Visible=0,Suppressed=0;
+    TArray<TWeakObjectPtr<UStaticMeshComponent>> Statics; // world-scale: "component": "static" slots
+    // world-scale: invisible box proxies for colliding slots whose mesh has no collision body (arena-kit hay bales, windmill).
+    TMap<FName,TWeakObjectPtr<UInstancedStaticMeshComponent>> Proxies;
 };
 struct FTownData
 {
     bool bLoaded=false,bValid=false;TMap<FName,FSlot> Slots;TArray<FPlacement> Placements;
     TArray<CireEnvironmentProps::FTownDistrict> Districts;
+    TArray<CireEnvironmentProps::FTownSurface> Surfaces; // world-scale
 } Town;
 TMap<TWeakObjectPtr<ACireWorld>,FWorldTown> Worlds;
 
@@ -153,6 +160,7 @@ bool MergeManifest(const FString& File,int32 DefaultPriority,const FString& Defa
             FString MeshSlot;if(O->TryGetStringField(TEXT("meshSlot"),MeshSlot))Slot.MeshSlot=FName(*MeshSlot);
             O->TryGetBoolField(TEXT("collision"),Slot.bCollision);O->TryGetBoolField(TEXT("castShadow"),Slot.bShadow);
             O->TryGetBoolField(TEXT("requiresPassage"),Slot.bRequiresPassage);
+            FString Component;if(O->TryGetStringField(TEXT("component"),Component))Slot.bStatic=Component==TEXT("static"); // world-scale
             if(!Vec(O,TEXT("footprint"),Slot.Footprint,0,20000)){UE_LOG(LogCireTown,Warning,TEXT("Slot %s footprint invalid in %s"),*Id.ToString(),*File);Slot.Footprint=FVector::ZeroVector;}
             FString Clear;if(O->TryGetStringField(TEXT("clearance"),Clear))Slot.Clearance=Clear==TEXT("none")?EClearance::None:Clear==TEXT("bays")?EClearance::Bays:EClearance::Route;
             const TSharedPtr<FJsonObject>* Light=nullptr;
@@ -239,8 +247,17 @@ bool LoadTown()
     if(Root->TryGetArrayField(TEXT("districts"),Districts))for(const auto& V:*Districts)
     {
         const auto O=V->AsObject();CireEnvironmentProps::FTownDistrict D;FString Id;
-        if(!O||!O->TryGetStringField(TEXT("id"),Id)||!O->TryGetStringField(TEXT("name"),D.Name)||!Num(O,TEXT("minX"),D.MinX,-30000,30000)||!Num(O,TEXT("maxX"),D.MaxX,-30000,30000)||D.MaxX<=D.MinX)continue;
+        if(!O||!O->TryGetStringField(TEXT("id"),Id)||!O->TryGetStringField(TEXT("name"),D.Name)||!Num(O,TEXT("minX"),D.MinX,-80000,80000)||!Num(O,TEXT("maxX"),D.MaxX,-80000,80000)||D.MaxX<=D.MinX)continue;
         D.Id=FName(*Id);Town.Districts.Add(D);
+    }
+    // world-scale: world-aligned ground surfaces per district ({slot, x, length, width[, y]}; width 0 = full realm floor).
+    const TArray<TSharedPtr<FJsonValue>>* Surfaces=nullptr;
+    if(Root->TryGetArrayField(TEXT("surfaces"),Surfaces))for(const auto& V:*Surfaces)
+    {
+        const auto O=V->AsObject();CireEnvironmentProps::FTownSurface S;FString Slot;
+        if(!O||!O->TryGetStringField(TEXT("slot"),Slot)||!Num(O,TEXT("x"),S.X,-80000,80000)||!Num(O,TEXT("length"),S.Length,10,100000)||
+           !Num(O,TEXT("width"),S.Width,0,20000)||!Num(O,TEXT("y"),S.Y,-5000,5000)||Town.Surfaces.Num()>=64)continue;
+        S.Slot=FName(*Slot);Town.Surfaces.Add(S);
     }
     int32 Rejected=0;
     for(const auto& V:*Placements)
@@ -248,7 +265,7 @@ bool LoadTown()
         const auto O=V->AsObject();FPlacement P;FString Slot,Mode;
         if(!O||!O->TryGetStringField(TEXT("slot"),Slot)){++Rejected;continue;}
         P.Slot=FName(*Slot);float X=0,Y=0,Z=0;
-        if(!Town.Slots.Contains(P.Slot)||Town.Slots[P.Slot].bMaterial||!Num(O,TEXT("x"),X,-30000,30000)||!Num(O,TEXT("y"),Y,-6000,6000)||
+        if(!Town.Slots.Contains(P.Slot)||Town.Slots[P.Slot].bMaterial||!Num(O,TEXT("x"),X,-80000,80000)||!Num(O,TEXT("y"),Y,-40000,40000)||
            !Num(O,TEXT("z"),Z,-500,5000)||!Num(O,TEXT("yaw"),P.Yaw,-720,720)||!Num(O,TEXT("scale"),P.Scale,.05,20)){++Rejected;continue;}
         if(O->TryGetStringField(TEXT("mode"),Mode))P.Mode=Mode==TEXT("outer")?1:Mode==TEXT("inner")?2:0;
         P.Location=FVector(X,Y,Z);Town.Placements.Add(P);
@@ -271,7 +288,7 @@ bool LoadTown()
                 const auto O=V->AsObject();FPlacement P;FString Slot,Mode;float X=0,Y=0,Z=0;
                 if(!O||!O->TryGetStringField(TEXT("slot"),Slot)){++Bad;continue;}
                 P.Slot=FName(*Slot);
-                if(!Town.Slots.Contains(P.Slot)||Town.Slots[P.Slot].bMaterial||!Num(O,TEXT("x"),X,-30000,30000)||!Num(O,TEXT("y"),Y,-6000,6000)||
+                if(!Town.Slots.Contains(P.Slot)||Town.Slots[P.Slot].bMaterial||!Num(O,TEXT("x"),X,-80000,80000)||!Num(O,TEXT("y"),Y,-40000,40000)||
                    !Num(O,TEXT("z"),Z,-500,5000)||!Num(O,TEXT("yaw"),P.Yaw,-720,720)||!Num(O,TEXT("scale"),P.Scale,.05,20)){++Bad;continue;}
                 if(O->TryGetStringField(TEXT("mode"),Mode))P.Mode=Mode==TEXT("outer")?1:Mode==TEXT("inner")?2:0;
                 P.Location=FVector(X,Y,Z);Town.Placements.Add(P);++Added;
@@ -310,9 +327,17 @@ bool Safe(const UWorld* World,int32 Team,const FBox& Box,const FTransform& T,ECl
     for(int32 Tier=1;Tier<=3;++Tier)if(BoxHitsPoint(Box,T,FVector2D(CireLanePath::ChallengePosition(World,Team,Tier,0)),BayMargin))return false;
     if(Clearance==EClearance::Bays)return true;
     const auto& Points=CireLanePath::Get(World).LocalPoints[Team];const float CY=CireLanePath::CenterY(Team);
+    // world-scale: the route is three times longer; skip segments that cannot reach the footprint before sampling them.
+    const float Reach=FMath::Max(FMath::Max(FVector2D(Box.Min).Size(),FVector2D(Box.Max).Size()),FMath::Max(FVector2D(Box.Min.X,Box.Max.Y).Size(),FVector2D(Box.Max.X,Box.Min.Y).Size()))
+        *static_cast<float>(T.GetScale3D().GetMax())+RouteMarginFor(World)+5.f;
+    const FVector2D Centre(T.GetLocation());
     for(int32 I=1;I<Points.Num();++I)
     {
         const FVector2D A(Points[I-1].X,Points[I-1].Y+CY),B(Points[I].X,Points[I].Y+CY);
+        {
+            const FVector2D AB=B-A;const double Alpha=FMath::Clamp(FVector2D::DotProduct(Centre-A,AB)/FMath::Max(1.,AB.SizeSquared()),0.,1.);
+            if(FVector2D::DistSquared(Centre,A+AB*Alpha)>FMath::Square(Reach))continue;
+        }
         const int32 Steps=FMath::Max(1,FMath::CeilToInt(FVector2D::Distance(A,B)/40.f));
         const float RouteMargin=RouteMarginFor(World);
         for(int32 S=0;S<=Steps;++S)if(BoxHitsPoint(Box,T,FMath::Lerp(A,B,S/static_cast<double>(Steps)),RouteMargin))return false;
@@ -330,6 +355,8 @@ void CireEnvironmentProps::Build(ACireWorld* WorldActor)
     FWorldTown& Data=Worlds.FindOrAdd(WorldActor);
     for(auto& Pair:Data.Components)for(auto& C:Pair.Value)if(C.IsValid())C->DestroyComponent();
     Data.Components.Reset();
+    for(auto& Pair:Data.Proxies)if(Pair.Value.IsValid())Pair.Value->DestroyComponent();
+    Data.Proxies.Reset();
     // Material overlays (e.g. a Fab plaster) replace the matching mesh slot on every town mesh.
     TArray<const FSlot*> MaterialOverrides;
     for(const auto& Pair:Town.Slots)if(Pair.Value.bMaterial&&Pair.Value.Material.IsValid()&&!Pair.Value.MeshSlot.IsNone()&&Pair.Value.ResolvedSource!=TEXT("base")&&Pair.Value.ResolvedSource!=TEXT("fallback"))
@@ -337,6 +364,7 @@ void CireEnvironmentProps::Build(ACireWorld* WorldActor)
     for(const auto& Pair:Town.Slots)
     {
         const FSlot& Slot=Pair.Value;if(Slot.bMaterial||!Slot.Mesh.IsValid())continue;
+        if(Slot.bStatic){Data.Components.FindOrAdd(Slot.Id);continue;} // world-scale: placed as plain components in Refresh
         TArray<UStaticMesh*> Meshes={Slot.Mesh.Get()};for(const auto& Part:Slot.Parts)if(Part.IsValid())Meshes.Add(Part.Get());
         for(int32 Index=0;Index<Meshes.Num();++Index)
         {
@@ -352,6 +380,21 @@ void CireEnvironmentProps::Build(ACireWorld* WorldActor)
         if(Slot.MeshMaterial.IsValid())for(int32 I=0;I<C->GetNumMaterials();++I)C->SetMaterial(I,Slot.MeshMaterial.Get());
         WorldActor->AddInstanceComponent(C);C->RegisterComponent();Data.Components.FindOrAdd(Slot.Id).Add(C);
         }
+        // world-scale: a colliding slot whose mesh has no collision body would neither block units nor carve the navmesh;
+        // give it an invisible box of its footprint instead (same idea as the arenas' blocker proxies).
+        const UBodySetup* Body=Slot.Mesh->GetBodySetup();
+        const bool bHasBody=Body&&(Body->AggGeom.GetElementCount()>0||Body->CollisionTraceFlag==CTF_UseComplexAsSimple);
+        if(Slot.bCollision&&!bHasBody)
+        {
+            auto* P=NewObject<UInstancedStaticMeshComponent>(WorldActor,*FString::Printf(TEXT("TownProxy_%s"),*Slot.Id.ToString()));
+            P->SetupAttachment(WorldActor->GetRootComponent());P->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")));
+            P->SetMobility(EComponentMobility::Movable);P->SetHiddenInGame(true);P->SetVisibility(false);P->SetCastShadow(false);
+            P->SetCollisionObjectType(ECC_WorldStatic);P->SetCollisionResponseToAllChannels(ECR_Block);P->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+            P->SetGenerateOverlapEvents(false);P->SetCanEverAffectNavigation(true);
+            P->ComponentTags.Add(TEXT("CireWorldProp"));P->ComponentTags.Add(TEXT("CireTown"));P->ComponentTags.Add(TEXT("CireTownProxy"));
+            WorldActor->AddInstanceComponent(P);P->RegisterComponent();Data.Proxies.Add(Slot.Id,P);
+            UE_LOG(LogCireTown,Display,TEXT("CIRE_TOWN_COLLISION_PROXY slot=%s (mesh %s has no collision body)"),*Slot.Id.ToString(),*Slot.Mesh->GetName());
+        }
     }
     Refresh(WorldActor);
 }
@@ -360,7 +403,11 @@ void CireEnvironmentProps::Refresh(ACireWorld* WorldActor)
     auto* Data=Worlds.Find(WorldActor);if(!Data||!Town.bValid)return;
     UWorld* World=WorldActor->GetWorld();
     for(auto& Pair:Data->Components)for(auto& C:Pair.Value)if(C.IsValid())C->ClearInstances();
+    for(auto& Pair:Data->Proxies)if(Pair.Value.IsValid())Pair.Value->ClearInstances(); // world-scale
+    TMap<FName,TArray<FTransform>> ProxyBatches;
     for(auto& L:Data->Lights)if(L.IsValid())L->DestroyComponent();
+    for(auto& M:Data->Statics)if(M.IsValid())M->DestroyComponent(); // world-scale
+    Data->Statics.Reset();
     CireWorldDressing::ResetFlicker(WorldActor); // world-dressing
     Data->Lights.Reset();Data->Placed.Reset();Data->Visible=Data->Suppressed=0;
     int32 Lights[2]={0,0};
@@ -372,20 +419,38 @@ void CireEnvironmentProps::Refresh(ACireWorld* WorldActor)
         {
             const FTransform T=WorldTransform(P,Team);
             if(!Safe(World,Team,Slot.LocalBox,T,Slot.Clearance)){++Data->Suppressed;continue;}
-            Batches.FindOrAdd(P.Slot).Add(Slot.Local*T);
+            if(Slot.bStatic)
+            {
+                // world-scale: huge backdrop meshes (mountains) whose vendor materials lack the instanced-mesh usage flag.
+                TArray<UStaticMesh*> Meshes={Slot.Mesh.Get()};for(const auto& Part:Slot.Parts)if(Part.IsValid())Meshes.Add(Part.Get());
+                for(UStaticMesh* Mesh:Meshes)
+                {
+                    auto* C=NewObject<UStaticMeshComponent>(WorldActor);C->SetupAttachment(WorldActor->GetRootComponent());C->SetStaticMesh(Mesh);
+                    C->SetMobility(EComponentMobility::Movable);C->SetWorldTransform(Slot.Local*T);C->SetCastShadow(Slot.bShadow);
+                    C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCanEverAffectNavigation(false);C->bAffectDistanceFieldLighting=false;
+                    C->ComponentTags.Add(TEXT("CireWorldProp"));C->ComponentTags.Add(TEXT("CireTown"));C->ComponentTags.Add(Slot.Id);
+                    if(Slot.MeshMaterial.IsValid())for(int32 I=0;I<C->GetNumMaterials();++I)C->SetMaterial(I,Slot.MeshMaterial.Get());
+                    C->RegisterComponent();WorldActor->AddInstanceComponent(C);Data->Statics.Add(C);
+                }
+            }
+            else Batches.FindOrAdd(P.Slot).Add(Slot.Local*T);
+            if(Data->Proxies.Contains(P.Slot)&&Slot.LocalBox.IsValid) // world-scale: the footprint box as an invisible blocker
+                ProxyBatches.FindOrAdd(P.Slot).Add(FTransform(FRotator::ZeroRotator,Slot.LocalBox.GetCenter(),Slot.LocalBox.GetSize()/100.f)*T);
             Data->Placed.Add({Team,P.Slot,T,Slot.LocalBox,Slot.Clearance});++Data->Visible;
             if(Slot.Light.bEnabled&&Lights[Team]<MaxLightsPerTeam)
             {
                 auto* L=NewObject<UPointLightComponent>(WorldActor);L->SetupAttachment(WorldActor->GetRootComponent());
                 L->SetWorldLocation(T.TransformPosition(Slot.Light.Offset));L->SetIntensity(Slot.Light.Intensity);
                 L->SetLightColor(Slot.Light.Color);L->SetAttenuationRadius(Slot.Light.Radius);L->SetCastShadows(false);
-                L->SetSourceRadius(8.f);L->RegisterComponent();WorldActor->AddInstanceComponent(L);
+                L->SetSourceRadius(8.f);L->MaxDrawDistance=LightDrawDistance;L->MaxDistanceFadeRange=LightFadeRange; // world-scale
+                L->RegisterComponent();WorldActor->AddInstanceComponent(L);
                 Data->Lights.Add(L);++Lights[Team];
                 if(Slot.Light.Flicker>0)CireWorldDressing::AddFlicker(WorldActor,L,Slot.Light.Flicker); // world-dressing
             }
         }
     }
     for(auto& Pair:Batches)for(auto& C:Data->Components[Pair.Key])if(C.IsValid())C->AddInstances(Pair.Value,false,true);
+    for(auto& Pair:ProxyBatches)if(auto* P=Data->Proxies.FindRef(Pair.Key).Get())P->AddInstances(Pair.Value,false,true); // world-scale
     CireNav::RefreshActor(WorldActor); // nav-paths: re-placed pieces carve the navmesh (live route edits)
     UE_LOG(LogCireTown,Display,TEXT("CIRE_ENVIRONMENT_PROPS_READY instances=%d suppressed_for_route_clearance=%d slots=%d lights=%d"),
         Data->Visible,Data->Suppressed,Data->Components.Num(),Data->Lights.Num());
@@ -445,6 +510,7 @@ TArray<CireEnvironmentProps::FPlacedProp> CireEnvironmentProps::PlacedProps(cons
     return Out;
 }
 const TArray<CireEnvironmentProps::FTownDistrict>& CireEnvironmentProps::Districts(){LoadTown();return Town.Districts;}
+const TArray<CireEnvironmentProps::FTownSurface>& CireEnvironmentProps::Surfaces(){LoadTown();return Town.Surfaces;}
 FName CireEnvironmentProps::DistrictAt(const UWorld* World,int32 Team,const FVector& Location)
 {
     if(Team<0||Team>1||!CireLanePath::Contains(World,Team,Location,0))return NAME_None;
