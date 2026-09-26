@@ -14,6 +14,7 @@ KNOWN={id:kind.lower() for id,kind in re.findall(r'\{"([a-z_]+)",\s*"[^"]+",\s*S
 import sys;sys.path.insert(0,str(ROOT/'Tools'))
 import BuildAbilityDB
 SIGNATURE={id:row[2] for id,row in BuildAbilityDB.NEW_CHAMPION_SKILLS.items()}
+SIGNATURE.update({id:row[2] for id,row in BuildAbilityDB.KIT_SIGNATURES.items()})  # kits-complete: CireKitSkills
 NEW_CHAMPIONS=('gunblade','witch_slayer','huntress','aetheri_artificer','aetheri_warden')
 
 class RosterTests(unittest.TestCase):
@@ -57,11 +58,17 @@ class RosterTests(unittest.TestCase):
         self.assertEqual(sum(c['familyId']=='paladin' for c in PROFILES.values()),2)
         self.assertEqual(sum(c['familyId']=='ether_golem' for c in PROFILES.values()),3)
         self.assertEqual(sum(c['familyId']=='troll_berserker' for c in PROFILES.values()),2)
-    def test_dragon_sequence_explicitly_planned(self):
+    def test_dragon_sequence_implemented_as_authored(self):
         s=next(s for s in PROFILES['drakish_footman']['actives'] if s['id']=='drakish_dragon_oath')
-        self.assertEqual(s['status'],'planned')
+        self.assertEqual(s['status'],'implemented')  # kits-complete: CireKitSkills (Dragon Oath)
         for phrase in ('exactly two','furthest','weak fireball','threat','Timed dragon form'):
             self.assertIn(phrase,s['mechanic'])
+        text=BuildAbilityDB.KIT_SIGNATURES['drakish_dragon_oath'][14]
+        for phrase in ('two basic attacks','furthest enemy','fireball','taunts','human form'):
+            self.assertIn(phrase,text)
+    def test_every_roster_skill_is_implemented(self):
+        for c in PROFILES.values():
+            for s in c['actives']+[c['passive'],c['ultimate']]:self.assertEqual(s['status'],'implemented',s['id'])
     def test_source_preserved_and_art_not_claimed(self):
         source=Path(DATA['source']['path'])
         if source.exists():self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(),DATA['source']['sha256'])

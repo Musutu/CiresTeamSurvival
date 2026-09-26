@@ -157,7 +157,7 @@ energy. The HUD hint reads "DODGE 2/2".
 
 ## Ultimate upgrades (Sigil of Apotheosis)
 
-Every ultimate (16 implemented, 11 planned) has an `ultimateUpgrade` in `Content/Data/Abilities.json`,
+Every ultimate (all 27 implemented; kits-complete) has an `ultimateUpgrade` in `Content/Data/Abilities.json`,
 authored in `Tools/UltimateUpgrades.py` and merged by `Tools/BuildAbilityDB.py`. The upgrade *adds*
 an effect; the ultimate's own numbers are unchanged. Primitives: `partyBuff` (item stat keys, e.g. a
 party armor/ward aura), `barrier`, `heal`, `restore` (mana/energy), `cleanse`, `stun`, `silence`,
@@ -352,7 +352,7 @@ follows the `constructor` build and the Summoner the `summoner` build.
 5. **Heals** (Reliquary 1,000, Chalice 200) are boosted by healing modifiers (team power, Censer), so
    the numbers are floors. Party shields do not stack; the stronger one wins.
 6. **Ultimate upgrades** fire when the ultimate is cast (delayed to the impact for Starfall, Seismic
-   Reprisal and Hexbane); planned ultimates carry data-ready upgrades.
+   Reprisal and Hexbane); the roster-kit ultimates (kits-complete) fire theirs too.
 7. Earlier decisions still open: shopping during waves (closed), sell ratio 60%, undo scope, the
    armor/ward split and 75% cap, teleport channel, lantern ward.
 

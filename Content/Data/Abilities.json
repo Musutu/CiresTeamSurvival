@@ -201,15 +201,11 @@
    "champions": [
     "knight",
     "paladin_righteous",
-    "ether_golem_tank",
-    "orc_chieftain",
     "drakish_footman"
    ],
    "signatureOf": [
     "knight",
     "paladin_righteous",
-    "ether_golem_tank",
-    "orc_chieftain",
     "drakish_footman"
    ],
    "requires": "shield",
@@ -1400,6 +1396,8 @@
     "knight",
     "lancer",
     "paladin_righteous",
+    "ether_golem_tank",
+    "orc_chieftain",
     "troll_berserker_melee"
    ],
    "scaling": {
@@ -1513,8 +1511,8 @@
    "castWhileMoving": true,
    "section": "attack",
    "effectTags": [
-    "Armor Break",
     "Execute",
+    "Armor Break",
     "Damage"
    ]
   },
@@ -2852,8 +2850,8 @@
    },
    "section": "ultimate",
    "effectTags": [
-    "Guard",
-    "Cleanse"
+    "Cleanse",
+    "Guard"
    ]
   },
   "wellspring": {
@@ -4528,8 +4526,8 @@
    "castWhileMoving": true,
    "section": "defensive",
    "effectTags": [
-    "Guard",
-    "Cleanse"
+    "Cleanse",
+    "Guard"
    ]
   },
   "price_on_every_soul": {
@@ -6955,7 +6953,7 @@
    "targeting": "enemy",
    "castTime": 0,
    "base": {
-    "effect": 60,
+    "effect": 35,
     "manaCost": 0,
     "energyCost": 20,
     "cooldown": 8,
@@ -6996,8 +6994,8 @@
    "section": "attack",
    "scaling": {
     "component": "damage",
-    "base": 60,
-    "primary": 1.6
+    "base": 35,
+    "primary": 0.8
    },
    "level15": {
     "bonus": "damageAmp",
@@ -7022,7 +7020,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 30,
+    "effect": 20,
     "manaCost": 0,
     "energyCost": 25,
     "cooldown": 12,
@@ -7080,8 +7078,8 @@
    "section": "control",
    "scaling": {
     "component": "damage",
-    "base": 30,
-    "primary": 1.16
+    "base": 20,
+    "primary": 0.7
    },
    "level15": {
     "bonus": "damageAmp",
@@ -7108,7 +7106,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 55,
+    "effect": 40,
     "manaCost": 0,
     "energyCost": 30,
     "cooldown": 14,
@@ -7160,8 +7158,8 @@
    },
    "scaling": {
     "component": "damage",
-    "base": 55,
-    "primary": 1.16
+    "base": 40,
+    "primary": 0.8
    },
    "level15": {
     "bonus": "damageAmp",
@@ -7313,7 +7311,7 @@
    "targeting": "self",
    "castTime": 0,
    "base": {
-    "effect": 140,
+    "effect": 80,
     "manaCost": 0,
     "energyCost": 50,
     "cooldown": 80,
@@ -7361,8 +7359,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 140,
-    "primary": 2.8
+    "base": 80,
+    "primary": 1.6
    },
    "level15": {
     "bonus": "damageAmp",
@@ -7405,7 +7403,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 55,
+    "effect": 90,
     "manaCost": 0,
     "energyCost": 25,
     "cooldown": 9,
@@ -7454,8 +7452,8 @@
    "section": "attack",
    "scaling": {
     "component": "damage",
-    "base": 55,
-    "primary": 1.26
+    "base": 90,
+    "primary": 2
    },
    "level15": {
     "bonus": "purge",
@@ -7574,7 +7572,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Strike an enemy with the censer for {effect} holy damage; the impact releases a healing pulse that restores allies within 4.5m of the target for 60% of the damage dealt.",
+   "description": "Strike an enemy with the censer for {effect} holy damage; the impact releases a healing pulse that restores allies within 4.5m of the target for 15% of the damage dealt.",
    "effects": [],
    "champions": [
     "paladin_holy"
@@ -7610,7 +7608,7 @@
    "targeting": "aim",
    "castTime": 1.0,
    "base": {
-    "effect": 110,
+    "effect": 50,
     "manaCost": 40,
     "energyCost": 0,
     "cooldown": 7,
@@ -7642,8 +7640,8 @@
    ],
    "scaling": {
     "component": "heal",
-    "base": 110,
-    "primary": 2.1
+    "base": 50,
+    "primary": 1.6
    },
    "level15": {
     "bonus": "purge",
@@ -7668,7 +7666,7 @@
    "targeting": "enemy",
    "castTime": 0,
    "base": {
-    "effect": 55,
+    "effect": 110,
     "manaCost": 0,
     "energyCost": 20,
     "cooldown": 8,
@@ -7710,8 +7708,8 @@
    "section": "attack",
    "scaling": {
     "component": "damage",
-    "base": 55,
-    "primary": 1.6
+    "base": 110,
+    "primary": 2.2
    },
    "level15": {
     "bonus": "stun",
@@ -7736,7 +7734,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 70,
+    "effect": 130,
     "manaCost": 0,
     "energyCost": 30,
     "cooldown": 12,
@@ -7785,8 +7783,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 70,
-    "primary": 1.16
+    "base": 130,
+    "primary": 1.6
    },
    "level15": {
     "bonus": "stun",
@@ -7939,7 +7937,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 140,
+    "effect": 180,
     "manaCost": 0,
     "energyCost": 50,
     "cooldown": 80,
@@ -7988,8 +7986,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 140,
-    "primary": 2.8
+    "base": 180,
+    "primary": 3
    },
    "level15": {
     "bonus": "stun",
@@ -8029,7 +8027,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 60,
+    "effect": 28,
     "manaCost": 0,
     "energyCost": 25,
     "cooldown": 9,
@@ -8078,8 +8076,8 @@
    "section": "control",
    "scaling": {
     "component": "damage",
-    "base": 60,
-    "primary": 1.26
+    "base": 28,
+    "primary": 0.7
    },
    "level15": {
     "bonus": "stun",
@@ -8105,7 +8103,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 40,
+    "effect": 25,
     "manaCost": 0,
     "energyCost": 25,
     "cooldown": 14,
@@ -8146,8 +8144,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 40,
-    "primary": 1.54
+    "base": 25,
+    "primary": 0.7
    },
    "level15": {
     "bonus": "purge",
@@ -8237,7 +8235,7 @@
    "targeting": "self",
    "castTime": 0,
    "base": {
-    "effect": 120,
+    "effect": 60,
     "manaCost": 0,
     "energyCost": 50,
     "cooldown": 85,
@@ -8273,8 +8271,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 120,
-    "primary": 2.8
+    "base": 60,
+    "primary": 1.6
    },
    "level15": {
     "bonus": "purge",
@@ -8314,7 +8312,7 @@
    "targeting": "aim",
    "castTime": 1.5,
    "base": {
-    "effect": 28,
+    "effect": 55,
     "manaCost": 55,
     "energyCost": 0,
     "cooldown": 14,
@@ -8346,8 +8344,8 @@
    ],
    "scaling": {
     "component": "heal",
-    "base": 28,
-    "primary": 0.45
+    "base": 55,
+    "primary": 0.8
    },
    "level15": {
     "bonus": "slow",
@@ -8394,7 +8392,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Cast 1s: cover an ally in living granite: a {effect} barrier for 8s; while it holds they regenerate 1.5% of their max health per second.",
+   "description": "Cast 1s: cover an ally in living granite: a {effect} barrier for 8s; while it holds they regenerate 2% of their max health per second.",
    "effects": [
     {
      "type": "shield",
@@ -8439,7 +8437,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 75,
+    "effect": 65,
     "manaCost": 0,
     "energyCost": 25,
     "cooldown": 8,
@@ -8472,8 +8470,8 @@
    "section": "attack",
    "scaling": {
     "component": "damage",
-    "base": 75,
-    "primary": 1.12
+    "base": 65,
+    "primary": 1
    },
    "level15": {
     "bonus": "dot",
@@ -8557,7 +8555,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 50,
+    "effect": 200,
     "manaCost": 0,
     "energyCost": 30,
     "cooldown": 12,
@@ -8598,7 +8596,7 @@
    "section": "control",
    "scaling": {
     "component": "damage",
-    "base": 50,
+    "base": 200,
     "primary": 2.2
    },
    "level15": {
@@ -8847,7 +8845,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 60,
+    "effect": 40,
     "manaCost": 0,
     "energyCost": 25,
     "cooldown": 9,
@@ -8888,8 +8886,8 @@
    "section": "control",
    "scaling": {
     "component": "damage",
-    "base": 60,
-    "primary": 1.26
+    "base": 40,
+    "primary": 0.8
    },
    "level15": {
     "bonus": "stun",
@@ -8914,7 +8912,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 65,
+    "effect": 45,
     "manaCost": 0,
     "energyCost": 30,
     "cooldown": 14,
@@ -8955,8 +8953,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 65,
-    "primary": 1.54
+    "base": 45,
+    "primary": 0.9
    },
    "level15": {
     "bonus": "stun",
@@ -9098,7 +9096,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 150,
+    "effect": 100,
     "manaCost": 0,
     "energyCost": 50,
     "cooldown": 80,
@@ -9139,8 +9137,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 150,
-    "primary": 2.8
+    "base": 100,
+    "primary": 2
    },
    "level15": {
     "bonus": "stun",
@@ -9184,7 +9182,7 @@
    "targeting": "self",
    "castTime": 0,
    "base": {
-    "effect": 60,
+    "effect": 30,
     "manaCost": 0,
     "energyCost": 35,
     "cooldown": 16,
@@ -9217,8 +9215,8 @@
    "section": "attack",
    "scaling": {
     "component": "damage",
-    "base": 60,
-    "primary": 1.54
+    "base": 30,
+    "primary": 0.7
    },
    "level15": {
     "bonus": "dot",
@@ -9311,7 +9309,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 45,
+    "effect": 30,
     "manaCost": 0,
     "energyCost": 25,
     "cooldown": 12,
@@ -9354,8 +9352,8 @@
    "section": "control",
    "scaling": {
     "component": "damage",
-    "base": 45,
-    "primary": 1.16
+    "base": 30,
+    "primary": 0.7
    },
    "level15": {
     "bonus": "dot",
@@ -9437,7 +9435,7 @@
    "targeting": "self",
    "castTime": 0,
    "base": {
-    "effect": 130,
+    "effect": 80,
     "manaCost": 0,
     "energyCost": 50,
     "cooldown": 80,
@@ -9478,8 +9476,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 130,
-    "primary": 2.8
+    "base": 80,
+    "primary": 1.8
    },
    "level15": {
     "bonus": "dot",
@@ -9522,7 +9520,7 @@
    "targeting": "enemy",
    "castTime": 0,
    "base": {
-    "effect": 30,
+    "effect": 42,
     "manaCost": 0,
     "energyCost": 30,
     "cooldown": 9,
@@ -9554,8 +9552,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 30,
-    "primary": 0.45
+    "base": 42,
+    "primary": 0.6
    },
    "level15": {
     "bonus": "damageAmp",
@@ -9580,7 +9578,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 70,
+    "effect": 80,
     "manaCost": 0,
     "energyCost": 30,
     "cooldown": 12,
@@ -9623,8 +9621,8 @@
    },
    "scaling": {
     "component": "damage",
-    "base": 70,
-    "primary": 1.54
+    "base": 80,
+    "primary": 1.6
    },
    "level15": {
     "bonus": "damageAmp",
@@ -9799,7 +9797,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 70,
+    "effect": 90,
     "manaCost": 0,
     "energyCost": 25,
     "cooldown": 7,
@@ -9831,8 +9829,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 70,
-    "primary": 1.1
+    "base": 90,
+    "primary": 1.3
    },
    "level15": {
     "bonus": "damageAmp",
@@ -9857,7 +9855,7 @@
    "targeting": "aim",
    "castTime": 0,
    "base": {
-    "effect": 55,
+    "effect": 70,
     "manaCost": 0,
     "energyCost": 30,
     "cooldown": 11,
@@ -9889,8 +9887,8 @@
    ],
    "scaling": {
     "component": "damage",
-    "base": 55,
-    "primary": 1.0
+    "base": 70,
+    "primary": 1.2
    },
    "level15": {
     "bonus": "damageAmp",
@@ -10254,7 +10252,7 @@
    "targeting": "aim",
    "castTime": 1.0,
    "base": {
-    "effect": 100,
+    "effect": 120,
     "manaCost": 35,
     "energyCost": 0,
     "cooldown": 6,
@@ -10286,7 +10284,7 @@
    ],
    "scaling": {
     "component": "heal",
-    "base": 100,
+    "base": 120,
     "primary": 1.8
    },
    "level15": {
@@ -10312,7 +10310,7 @@
    "targeting": "ally",
    "castTime": 0.5,
    "base": {
-    "effect": 30,
+    "effect": 36,
     "manaCost": 45,
     "energyCost": 0,
     "cooldown": 12,
@@ -10344,8 +10342,8 @@
    ],
    "scaling": {
     "component": "heal",
-    "base": 30,
-    "primary": 0.45
+    "base": 36,
+    "primary": 0.55
    },
    "level15": {
     "bonus": "purge",
@@ -10485,7 +10483,7 @@
    "targeting": "self",
    "castTime": 1.5,
    "base": {
-    "effect": 60,
+    "effect": 70,
     "manaCost": 120,
     "energyCost": 0,
     "cooldown": 85,
@@ -10517,8 +10515,8 @@
    ],
    "scaling": {
     "component": "heal",
-    "base": 60,
-    "primary": 0.7
+    "base": 70,
+    "primary": 0.8
    },
    "level15": {
     "bonus": "purge",
@@ -10584,7 +10582,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Hurl a root-tipped javelin: the first enemy hit takes {effect} damage and a healing bloom (2.5m) grows there for 3s, healing allies inside for 50% of the damage.",
+   "description": "Hurl a root-tipped javelin: the first enemy hit takes {effect} damage and a healing bloom (2.5m) grows there for 3s, healing allies inside for 100% of the damage.",
    "effects": [],
    "champions": [
     "evergrove_centaur"
@@ -10808,7 +10806,7 @@
    "targeting": "self",
    "castTime": 1.0,
    "base": {
-    "effect": 30,
+    "effect": 45,
     "manaCost": 110,
     "energyCost": 0,
     "cooldown": 80,
@@ -10849,8 +10847,8 @@
    ],
    "scaling": {
     "component": "heal",
-    "base": 30,
-    "primary": 0.45
+    "base": 45,
+    "primary": 0.6
    },
    "level15": {
     "bonus": "slow",
@@ -10896,7 +10894,7 @@
    "targeting": "aim",
    "castTime": 1.2,
    "base": {
-    "effect": 110,
+    "effect": 190,
     "manaCost": 45,
     "energyCost": 0,
     "cooldown": 9,
@@ -10938,7 +10936,7 @@
    "section": "defensive",
    "scaling": {
     "component": "heal",
-    "base": 110,
+    "base": 190,
     "primary": 2.7
    },
    "level15": {
@@ -11056,7 +11054,7 @@
    },
    "status": "implemented",
    "signatureOnly": true,
-   "description": "Raise a Beacon of Return (4m) for 8s: allies inside move {effect}% faster and regenerate 1% of their max health per second.",
+   "description": "Raise a Beacon of Return (4m) for 8s: allies inside move {effect}% faster and regenerate 1.5% of their max health per second.",
    "effects": [
     {
      "type": "haste",
@@ -11158,7 +11156,7 @@
    "targeting": "self",
    "castTime": 2.0,
    "base": {
-    "effect": 40,
+    "effect": 90,
     "manaCost": 130,
     "energyCost": 0,
     "cooldown": 90,
@@ -11198,8 +11196,8 @@
    ],
    "scaling": {
     "component": "heal",
-    "base": 40,
-    "primary": 0.6
+    "base": 90,
+    "primary": 1.1
    },
    "level15": {
     "bonus": "purge",
@@ -13838,7 +13836,7 @@
     "iron_guard",
     "war_cry",
     "summoned_wall",
-    "shield_slam",
+    "second_wind",
     "golem_construct_core",
     "golem_worldstone",
     "taunting_tumble"
@@ -13849,7 +13847,7 @@
     "iron_guard",
     "war_cry",
     "summoned_wall",
-    "shield_slam",
+    "second_wind",
     "golem_construct_core",
     "golem_worldstone",
     "taunting_tumble",
@@ -13858,7 +13856,6 @@
     "shadow_step",
     "protection_dome",
     "oathbound_guardian",
-    "second_wind",
     "decimating_strike",
     "stone_skin",
     "battle_rhythm",
@@ -13875,7 +13872,7 @@
     "iron_guard",
     "war_cry",
     "summoned_wall",
-    "shield_slam",
+    "second_wind",
     "golem_construct_core",
     "golem_worldstone",
     "taunting_tumble",
@@ -13884,7 +13881,6 @@
     "shadow_step",
     "protection_dome",
     "oathbound_guardian",
-    "second_wind",
     "decimating_strike",
     "stone_skin",
     "battle_rhythm",
@@ -14097,7 +14093,7 @@
     "war_cry",
     "iron_guard",
     "cleaving_strike",
-    "shield_slam",
+    "second_wind",
     "chieftain_courage",
     "chieftain_earthshout",
     "decimating_strike",
@@ -14117,7 +14113,7 @@
     "war_cry",
     "iron_guard",
     "cleaving_strike",
-    "shield_slam",
+    "second_wind",
     "chieftain_courage",
     "chieftain_earthshout",
     "decimating_strike",
@@ -14140,7 +14136,6 @@
     "protection_dome",
     "oathbound_guardian",
     "polymorph",
-    "second_wind",
     "stone_skin",
     "battle_rhythm",
     "deep_reserves",
@@ -14160,7 +14155,7 @@
     "war_cry",
     "iron_guard",
     "cleaving_strike",
-    "shield_slam",
+    "second_wind",
     "chieftain_courage",
     "chieftain_earthshout",
     "decimating_strike",
@@ -14183,7 +14178,6 @@
     "protection_dome",
     "oathbound_guardian",
     "polymorph",
-    "second_wind",
     "stone_skin",
     "battle_rhythm",
     "deep_reserves",
@@ -16198,7 +16192,7 @@
    "mods": [
     {
      "stat": "HP Regen",
-     "value": 1.5,
+     "value": 2,
      "unit": "%"
     }
    ],
@@ -16442,7 +16436,7 @@
     },
     {
      "stat": "HP Regen",
-     "value": 1,
+     "value": 1.5,
      "unit": "%"
     }
    ],

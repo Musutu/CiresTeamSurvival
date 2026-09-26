@@ -917,12 +917,12 @@
           "delivery": "construct"
         },
         {
-          "id": "shield_slam",
-          "displayName": "Shield Slam",
+          "id": "second_wind",
+          "displayName": "Second Wind",
           "status": "implemented",
-          "mechanic": "Melee strength strike, two-second slow and monster threat.",
+          "mechanic": "Cast 1s: the golem mends only itself for a share of its maximum health.",
           "vfxFamily": "holy",
-          "delivery": "targeted"
+          "delivery": "self"
         }
       ],
       "passive": {
@@ -1199,12 +1199,12 @@
           "delivery": "ground_circle"
         },
         {
-          "id": "shield_slam",
-          "displayName": "Shield Slam",
+          "id": "second_wind",
+          "displayName": "Second Wind",
           "status": "implemented",
-          "mechanic": "Melee strength strike, two-second slow and monster threat.",
+          "mechanic": "Cast 1s: the chieftain heals only himself for a share of his maximum health.",
           "vfxFamily": "holy",
-          "delivery": "targeted"
+          "delivery": "self"
         }
       ],
       "passive": {

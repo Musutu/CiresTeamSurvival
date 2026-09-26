@@ -21,9 +21,13 @@ import time
 import uuid
 from RunBalanceLab import EDITOR_ENV, ROOT, stop_owned
 
-DPS = ['ranger', 'lancer', 'summoner', 'wizard', 'gunblade', 'witch_slayer', 'huntress', 'aetheri_artificer']
-HEALERS = ['scholar', 'aetheri_warden']
-TANK_TESTS = [('aetheri_warden', 0)]  # the Warden's tank hybrid in the knight's slot
+DPS = ['ranger', 'lancer', 'summoner', 'wizard', 'gunblade', 'witch_slayer', 'huntress', 'aetheri_artificer',
+       'troll_berserker_melee', 'troll_berserker_ranged', 'ether_golem_bruiser']  # kits-complete: roster kits
+HEALERS = ['scholar', 'aetheri_warden', 'paladin_holy', 'ether_golem_support', 'dryad', 'whisp', 'evergrove_centaur', 'keeper_of_light']
+# kits-complete: roster tanks take the knight's slot; tanks compare damage output and survivability against the tank median.
+ROSTER_TANKS = ['bear', 'paladin_righteous', 'dwarf_miner', 'ether_golem_tank', 'orc_chieftain', 'totemic_behemoth', 'drakish_footman']
+TANK_TESTS = [('aetheri_warden', 0)] + [(c, 0) for c in ROSTER_TANKS]  # the Warden's tank hybrid in the knight's slot
+TANKS = ['knight'] + [c + '@tank' for c in ROSTER_TANKS]
 BAND = (0.8, 1.25)
 
 
@@ -114,6 +118,13 @@ def summarize(rows):
                                petTargetShare=median(r.get('petTargetShare', 0) for r in own), tankShare=median(r.get('tankShare', 0) for r in own))
         dps_median = median(stats[c]['dps'] for c in DPS if c in stats)
         heal_median = median(stats[c]['hps'] for c in HEALERS if c in stats)
+        tank_dps_median = median(stats[c]['dps'] for c in TANKS if c in stats)
+        # Survivability: share of max health lost per second (lower is sturdier); the ratio is median / own, so > 1 = sturdier.
+        for c in TANKS:
+            if c in stats:
+                own = [r for r in per[c] if r['labChampion']] or per[c]
+                stats[c]['hpLossPerSecond'] = median(r['dtps'] / max(1.0, r['maxHealth']) for r in own)
+        tank_loss_median = median(stats[c]['hpLossPerSecond'] for c in TANKS if c in stats)
         flags = {}
         for name, s in stats.items():
             f = []
@@ -123,10 +134,16 @@ def summarize(rows):
             if name in HEALERS and heal_median > 0:
                 s['hpsVsRole'] = s['hps'] / heal_median
                 if not BAND[0] <= s['hpsVsRole'] <= BAND[1]: f.append('hps_outside_role_band')
+            if name in TANKS and tank_dps_median > 0:
+                s['dpsVsRole'] = s['dps'] / tank_dps_median
+                if not BAND[0] <= s['dpsVsRole'] <= BAND[1]: f.append('tank_dps_outside_role_band')
+                if s.get('hpLossPerSecond', 0) > 0 and tank_loss_median > 0:
+                    s['survivalVsRole'] = tank_loss_median / s['hpLossPerSecond']
+                    if not BAND[0] <= s['survivalVsRole'] <= BAND[1]: f.append('tank_survival_outside_role_band')
             if s['deaths'] > .34: f.append('dies_often')
             flags[name] = f
             s['flags'] = f
-        out[wave] = dict(stats=stats, dpsMedian=dps_median, healMedian=heal_median)
+        out[wave] = dict(stats=stats, dpsMedian=dps_median, healMedian=heal_median, tankDpsMedian=tank_dps_median, tankLossMedian=tank_loss_median)
     return out
 
 
@@ -137,10 +154,12 @@ def write(output, rows):
     lines = ['# Champion balance lab', '', f'Role band {BAND[0]}-{BAND[1]} x role median. DTPS = health lost per second (net of same-frame healing).', '']
     for wave, block in summary.items():
         lines += [f'## Wave / level {wave}', '', f"DPS role median {block['dpsMedian']:.1f}, healer HPS median {block['healMedian']:.1f}", '',
-                  '| Champion | n | DPS | vs role | HPS | DTPS | deaths | team DTPS | fight s | wins | flags |', '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|']
+                  f"Tank DPS median {block['tankDpsMedian']:.1f} (tanks also show survival vs the tank median: >1 = sturdier)", '',
+                  '| Champion | n | DPS | vs role | survival | HPS | DTPS | deaths | team DTPS | fight s | wins | flags |', '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|']
         for name, s in sorted(block['stats'].items()):
             ratio = s.get('dpsVsRole', s.get('hpsVsRole'))
-            lines.append(f"| {name} | {s['samples']} | {s['dps']:.1f} | {'' if ratio is None else f'{ratio:.2f}'} | {s['hps']:.1f} | {s['dtps']:.1f} | "
+            surv = s.get('survivalVsRole')
+            lines.append(f"| {name} | {s['samples']} | {s['dps']:.1f} | {'' if ratio is None else f'{ratio:.2f}'} | {'' if surv is None else f'{surv:.2f}'} | {s['hps']:.1f} | {s['dtps']:.1f} | "
                          f"{s['deaths']:.0%} | {s['teamDtps']:.1f} | {s['teamSeconds']:.1f} | {s['wins']} | {', '.join(s['flags']) or '-'} |")
         pets = [(n, s) for n, s in sorted(block['stats'].items()) if s.get('petDtps') or s.get('petTargetShare')]
         if pets:

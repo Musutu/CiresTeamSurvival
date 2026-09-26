@@ -55,7 +55,7 @@ ULTIMATE_UPGRADES = {
                        center="target"),
     "aether_nexus": UP("Resonant Field", "Allies within 9 m of you restore 20% of their max mana and gain a shield absorbing 150 for 10 s.",
                        [FX("restore", radius=900, magnitude=0.2), FX("barrier", radius=900, duration=10, amount=150)]),
-    # ---- planned ultimates (fire as soon as their casts land)
+    # ---- roster-kit ultimates (kits-complete: CireKitSkills)
     "bear_colossus": UP("Den Mother", "Allies within 8 m gain +40 armor for 8 s.",
                         [FX("partyBuff", radius=800, duration=8, stats=dict(armor=40))]),
     "miner_mountain": UP("Rockfall", "Enemies within 4 m of the ring are stunned for 1 s.",

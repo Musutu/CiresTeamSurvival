@@ -12,6 +12,9 @@ and one ultimate are thematic draft examples, not an automatic starting kit.
 be cast until implemented. Visual recipe support alone does not implement a
 skill. Current Knight/Warden, Ranger, Scholar, Lancer and Summoner examples use
 existing implemented skills. Shared skills deliberately remain reusable.
+kits-complete (2026-09-25): no roster skill is planned any more. The 63 former
+planned signature skills are native in `CireKitSkills` (see Docs/Abilities.md,
+"Roster champion kits").
 
 | Profile ID | Character / selection | Primary role | Hybrid roles | Primary | Basic style | Difficulty |
 |---|---|---|---|---|---|---|
@@ -48,8 +51,10 @@ the primary role only.
 
 The Drakish proposal explicitly provides a timed dragon transformation, exactly
 two cleaving attacks, then a weak fireball aimed at the furthest valid enemy to
-gain ranged threat. Its minor burn is not intended as a high-damage spell. This
-sequence remains marked planned until its gameplay state machine exists.
+gain ranged threat. Its minor burn is not intended as a high-damage spell. The
+sequence is implemented (`drakish_dragon_oath` in CireKitSkills: a Dragon Form
+buff with two cleaving slashes, then the threat fireball at the furthest enemy;
+Ember Memory adds the minor burn).
 
 Base attributes preserve the current 20 primary / 10 secondary values. No
 per-point stat formula or progression cap is changed. Basic range is explicitly

@@ -901,11 +901,30 @@ def docs(db):
         cc = ", ".join(e.get("label", e["type"]) for e in a["effects"]) + (" construct" if a.get("category") == "construct" else "")
         lines.append(f"| {a['name']} (`{sid}`) | {', '.join(a['signatureOf'])} | {'/'.join(a['types'])} | {a['kind']} | {a['school']} | {a['targeting']} | {cost} | {b['cooldown']:g}s | "
                      f"{b['effect']:g} / {l10['effect']:.0f} / {l50['effect']:.0f} {a['effectLabel']} | {cc} |")
-    lines += ["", "## Planned signature skills", "", "| Skill | Champion | Type | Kind | School | Target | Notes |", "|---|---|---|---|---|---|---|"]
-    for sid, a in sorted(db["abilities"].items()):
-        if a["status"] == "planned":
-            extra = ", ".join(e.get("label", e["type"]) for e in a["effects"]) + (" void zones" if "void" in a else "")
-            lines.append(f"| {a['name']} (`{sid}`) | {', '.join(a['signatureOf'])} | {'/'.join(a['types'])} | {a['kind']} | {a['school']} | {a['targeting']} | {extra} |")
+    planned = [sid for sid, a in db["abilities"].items() if a["status"] == "planned"]
+    lines += ["", "## Roster champion kits (kits-complete)", "",
+              f"All {len(db['abilities']) - len(planned)} of {len(db['abilities'])} abilities are implemented ({len(planned)} planned). The 63 signature skills of",
+              "Bear, both Paladins, Dwarf Miner, the three Ether Golems, Orc Chieftain, Totemic Behemoth, Drakish Footman, both Troll",
+              "Berserkers, Dryad, Whisp, Evergrove Centaur and Keeper of Light are native in `CireKitSkills` (data: `Tools/ChampionKits.py`),",
+              "routed through `CireSignatureSkills`. Every one is castable, sold in the Skill Shop section listed above, server-authoritative",
+              "(replicated buff records, areas, skillshots, constructs, summons, barriers), telegraphed with its true hit shape",
+              "(`CireKitSkills::DescribeShape`), dressed with its own Fab Niagara overlay (`Tools/MapKitVFX.py`, FabVFX.json",
+              "`abilities`) and a purchased-pack sound set (AudioEvents.json). Buff records have signature visuals (BuffVisuals.json) and",
+              "modifier summaries (`Tools/ChampionKitBuffs.py`).", "",
+              "| Delivery | Skills |", "|---|---|",
+              "| Targeted strike (melee reach) | Gravewood Maul, Pickfall, Merciful Censer (heals allies near the target for 60% of the hit) |",
+              "| Warned cone from the caster | Deepwood Roar, Righteous Flail, Granite Fist, Felfire Fist, Totem Sweep, Wing Rebuke |",
+              "| Warned ground circle / line | Ether Anchor, Root Snare, Heart of the Mountain; Faultline, Ancestral Stampede, Thornweave (persistent) |",
+              "| Movement | Rootbreaker Charge (stops at walls / first enemy, void rift), Tuskbreaker (through the lane), Bloodbound Leap (void rift) |",
+              "| Hook / skillshots | Chieftain Hook (drags the first enemy), Twin Throw (two forked axes), Returning Axes (out and back), Grove Javelin (healing bloom) |",
+              "| Heals (cast or channel) | Ironroot Slumber (channel), Pilgrim Light and Guiding Mote (orb to the first ally on the line), Seed Mend (delayed bloom), "
+              "Spirit Tether, Fey Trail motes, Verdant Bloom / Grove Renewal zones, Dawn Beam, Kindred Constellation, Spring March, Sunrise Vigil |",
+              "| Barriers | Relic Vow (30% of the ally's damage redirected to the paladin), Living Granite, Earthshout, Lantern Ward pulses, Orehide, Last Light |",
+              "| Constructs | Deep Lantern (DR field), Blood-Oath Banner (rally field), Lantern Ward (barrier pulses), Totem Bulwark (barricade + cover) |",
+              "| Self states | Ether Furnace, Scale Guard (thorns), Dragon Oath (two cleaving slashes, then a threat fireball), Red Moon Frenzy, Elder of the Deepwood |",
+              "| Summon | Herd Call (spectral grove stag) |", "",
+              "Smart casting: ally skills fall back to the most wounded ally in range; ground heals centre on that ally when nothing is aimed.",
+              "Bots skip heals and buffs that would be wasted (`CireKitSkills::BotWantsCast`).", ""]
     lines += ["", "## Universal primary-stat scaling and the power pass (scaling-kits)", "",
               "Every ability's damage, heal, shield and DoT is `base + coefficient x PRIMARY`, where PRIMARY is the caster's",
               "primary stat (STR, AGI or INT) whatever the ability's school or role: a tank's damaging stun scales with STR, a",
@@ -925,7 +944,20 @@ def docs(db):
               "| Hard control (stun / interrupt actives) | x0.75 |",
               "| Summons (per hit) | packs 0.4, guardian 0.5, ultimate hunters 0.6, Mechanical Tank 0.6 |",
               "| Constructs (per shot) | the recipe's coefficient (turret 0.35, mine 1.2, obelisk 1.0...) |", "",
-              "Bounded check (`python Tools/BuildAbilityDB.py --sim`): 30 s of rotation at primary 40, level 1, no items.", ""]
+              "Bounded check (`python Tools/BuildAbilityDB.py --sim`): 30 s of rotation at primary 40, level 1, no items.", "",
+              "### Potency: utility skills and passives (kits-complete)", "",
+              "Abilities without a damage / heal / shield component still scale with PRIMARY (Eric: every ability, summon and construct",
+              "scales off the primary stat). Their headline magnitude (damage reduction %, buff %, range, taunt / guard seconds, polymorph",
+              f"seconds, gold, construct health...) is multiplied by **potency = 1 + {POTENCY_PER_POINT:g}% x PRIMARY, capped at +{POTENCY_CAP:g}%**",
+              "(`CireKits::Potency` / `CireKits::ScaledEffect`, on top of the skill-level curve). Tooltips add",
+              "\"Potency: x1.12 from Primary (STR 30): +0.4% per point, max +40%\".", "",
+              f"Crowd-control durations from any ability (stun, silence, slow, heal cut, armour break, taunt, root) are multiplied by",
+              f"**1 + {CONTROL_PER_POINT:g}% x PRIMARY, capped at +{CONTROL_CAP:g}%** (`CireKits::ControlScale`); PvP diminishing returns still apply.", "",
+              "### Heals have cast times", "",
+              "Every heal carries a cast (Second Wind, Bastion of Dawn and Last Stand now 1 s) or is a channel / heal over time",
+              "(Ironroot Slumber, tethers, zones). Roll-triggered reactions (Shield Tumble, Evasive Stance, Fleet Recovery) keep their instant",
+              "trigger: a cast bar would defeat the point of a dodge reaction, so Shield Tumble and Evasive Stance heal over 3 s with a",
+              "visible Tumbling Mend aura instead (the first pulse lands at once).", ""]
     lines += sim_table(db)
     lines += ["", "## Level 15 bonuses (actives) and team auras (passives)", "",
               "At skill level 15 every active gains one extra mechanic and every passive grants a party-wide aura (Headshot instead",
@@ -936,8 +968,8 @@ def docs(db):
             continue
         l15 = a.get("aura15", a.get("level15", {})).get("label", "")
         lines.append(f"| {a['name']} (`{sid}`) | {a['kind']} | {l15} |")
-    lines += ["", "Planned signature skills receive the bonus that fits their school (fire/poison DoT, cold/nature/tide slow,",
-              "earth/storm stun, holy/arcane purge, shadow heal-cut, void Vulnerability, physical damage amp); planned passives",
+    lines += ["", "Roster kit skills take the bonus that fits their school (fire/poison DoT, cold/nature/tide slow,",
+              "earth/storm stun, holy/arcane purge, shadow heal-cut, void Vulnerability, physical damage amp); their passives",
               "cycle through the aura list."]
     lines += ["", "## Ultimate upgrades (Sigil of Apotheosis)", "",
               "Carrying the path-defining unique **Sigil of Apotheosis** adds one extra effect to your ultimate (numbers unchanged).",
@@ -947,7 +979,10 @@ def docs(db):
         if a.get("ultimateUpgrade"):
             u = a["ultimateUpgrade"]
             lines.append(f"| {a['name']} (`{sid}`{', planned' if a['status'] == 'planned' else ''}) | {u['name']} | {u['text']} |")
-    lines += ["", "## Champion identity kits", "", "| Champion | Roles | Signature | Implemented purchasable |", "|---|---|---|---|"]
+    lines += ["", "## Champion identity kits", "", "Shield skills (`requires: shield`: Shield Slam, Bash, Toss, Wall, Pavise, Mechanical Tank) are sold only to "
+              "shield bearers (" + ", ".join(db["shieldChampions"]) + "); a shieldless tank's opening offer never contains one. "
+              "The Support opening offer is heals only (Restoring Light, Sanctuary, Purify, Second Wind).", "",
+              "| Champion | Roles | Signature | Implemented purchasable |", "|---|---|---|---|"]
     for cid, c in db["champions"].items():
         lines.append(f"| {c['name']} (`{cid}`) | {'/'.join(c['roles'])} | {', '.join(c['signature'])} | {len(c['purchasableImplemented'])} |")
     return "\n".join(lines) + "\n"

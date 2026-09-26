@@ -358,7 +358,7 @@ bool CireKitSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
         const float Applied = CireCombat::ApplyStrike(Hero, Target, Amount, Name);
         if (Id == TEXT("paladin_holy_flail") && Applied > 0)
             for (ACireHero* A : Allies(Hero, Target->GetActorLocation(), Def->Radius > 0 ? Def->Radius : 450.f))
-                CireCombat::ApplyHealing(Hero, A, Applied * .6f, Name);
+                CireCombat::ApplyHealing(Hero, A, Applied * .15f, Name); // 15% of the censer hit (balance lab)
         Aim = Target->GetActorLocation(); break;
     }
     case EKit::Cone:
@@ -510,8 +510,8 @@ bool CireKitSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
         CireBuffs::Apply(Ally, Id == TEXT("paladin_relic_vow") ? RelicVowId : GraniteId, Duration, Hero, 30);
         if (Id == TEXT("golem_living_granite") && S)
         {
-            // 1.5% of max health per second while the barrier holds (checked by the tick).
-            UCireKitSkillsSubsystem::FHot X; X.Source = Hero; X.Target = Ally; X.Name = Name; X.PerTick = Ally->MaxHealth * .015f; X.Ticks = FMath::RoundToInt(Duration);
+            // 2% of max health per second while the barrier holds (checked by the tick).
+            UCireKitSkillsSubsystem::FHot X; X.Source = Hero; X.Target = Ally; X.Name = Name; X.PerTick = Ally->MaxHealth * .02f; // balance lab: 2%/s X.Ticks = FMath::RoundToInt(Duration);
             X.Buff = GraniteId; S->Hots.Add(X);
         }
         CireCombat::PlayCue(Hero, Ally, FName(*Id), Origin, Ally->GetActorLocation(), ECireSpellCue::Impact, 1.f, false);
@@ -1006,7 +1006,7 @@ void CireKitSkills::OnAbilityHit(AActor* Source, AActor* Target, const FString& 
         const float Duration = Seconds(H->GetWorld(), D->Duration > 0 ? D->Duration : 3.f);
         ACireAreaEffect* Area = Field(H, *D, ECireAreaShape::Circle, At, FRotator::ZeroRotator, 250.f, 0, 0, Duration, 0.f, true);
         UCireKitSkillsSubsystem::FZone Z; Z.Owner = H; Z.Area = Area; Z.Id = D->Id; Z.Name = D->Name; Z.Kind = UCireKitSkillsSubsystem::EZone::Bloom;
-        Z.Center = At; Z.Radius = 250.f; Z.PerSecond = Applied * .5f / FMath::Max(1.f, Duration); Z.StartsAt = Now(H->GetWorld()); Z.EndsAt = Z.StartsAt + Duration; Z.Interval = 1.f;
+        Z.Center = At; Z.Radius = 250.f; Z.PerSecond = Applied / FMath::Max(1.f, Duration); // 100% of the javelin hit over the bloom (balance lab) Z.StartsAt = Now(H->GetWorld()); Z.EndsAt = Z.StartsAt + Duration; Z.Interval = 1.f;
         S->Zones.Add(Z);
     }
 }
@@ -1230,7 +1230,7 @@ void UCireKitSkillsSubsystem::Tick(float Dt)
             case EZone::Haste: CireBuffs::Apply(A, TrailId, Hold, H, Percent(Z.Magnitude)); break;
             case EZone::Beacon:
                 CireBuffs::Apply(A, BeaconId, Hold, H, Percent(Z.Magnitude));
-                CireCombat::ApplyHealing(H, A, A->MaxHealth * .01f * Z.Interval, Z.Name);
+                CireCombat::ApplyHealing(H, A, A->MaxHealth * .015f * Z.Interval, Z.Name); // 1.5% max health per second (balance lab)
                 break;
             default: break;
             }
@@ -1288,7 +1288,7 @@ void UCireKitSkillsSubsystem::Tick(float Dt)
         C.Timer -= Dt; if (C.Timer > 0) continue; C.Timer += .5f;
         CireCombat::ApplyHealing(H, H, C.PerTick, C.Name);
     }
-    // ---- dragon form expiry: the fireball still flies if the slashes were not used
+    // ---- dragon form expiry: back to human form when the window closes
     for (auto It = Dragons.CreateIterator(); It; ++It)
     {
         ACireHero* H = It.Key().Get();

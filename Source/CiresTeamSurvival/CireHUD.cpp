@@ -1,4 +1,6 @@
 #include "CireHUD.h"
+#include "CireScalingKits.h" // kits-complete
+#include "CireKitSkills.h" // kits-complete
 #include "CireSkillShop.h" // progression-shop: ready gate caption
 #include "GameFramework/GameStateBase.h" // items-v2
 #include "CireItems.h" // items-v2
@@ -289,7 +291,7 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
     else if(ManaFrac<.25f&&Hero->MaxMana>0){const float P=.5f+.5f*FMath::Sin(RealNow*5.f);Panel(BX-2,53,BW+4,17,FLinearColor(.3f,.45f,1.f,.25f+.3f*P));}
     Bar(BX+Shake,55,BW,13,ManaFrac,Blue);
     const float ItemManaRegen=Inv?static_cast<float>(Inv->Totals().Stats.Get(Cires::Items::ItemStat::ManaRegen)):0.f;
-    const float ManaRegenNow=CireItems::BaseManaRegen(Hero,Hero->HasSkill(TEXT("deep_reserves"))?1.5f:1.f)+ItemManaRegen;
+    const float ManaRegenNow=CireItems::BaseManaRegen(Hero,(Hero->HasSkill(TEXT("deep_reserves"))?1.f+CireKits::ScaledEffect(Hero,TEXT("deep_reserves"),50.f)/100.f:1.f)*CireKitSkills::ResourceRegenMultiplier(Hero)) /* kits-complete: same regen as the server */+ItemManaRegen;
     Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Mana,Hero->MaxMana),BX+7+Shake,55,10,Parchment);
     const FString RegenText=FString::Printf(TEXT("+%.1f/s"),ManaRegenNow);Label(RegenText,BX+BW-TextWidth(RegenText,9)-5+Shake,56,9,FLinearColor(.72f,.84f,1.f,1));
     if(bManaFlash){const FString Warn=FString::Printf(TEXT("NOT ENOUGH MANA  %.0f / %.0f"),Hero->Mana,Inv->ResourceFailNeed);
