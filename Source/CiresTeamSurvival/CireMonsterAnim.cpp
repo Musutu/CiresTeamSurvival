@@ -165,6 +165,7 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
     CireGrip::FHands Hands;
     UCireMonsterAnimInstance* Owner = nullptr;
     bool bLockRoot = false; // world-dressing
+    CireLocomotion::FPoseFeel Feel; // movement-feel
 
     virtual void PreUpdate(UAnimInstance* Instance, float DeltaSeconds) override
     {
@@ -177,6 +178,7 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
         RunAlpha = FMath::Clamp(Monster->RunAlpha, 0.f, 1.f);
         Hands = Monster->Hands;
         bLockRoot = Monster->bLockRootToReference; // world-dressing
+        Feel = Monster->Feel; Feel.Resolve(Monster->GetSkelMeshComponent()); // movement-feel
     }
 
     static bool Sample(const FLayerCopy& Layer, FPoseContext& Into)
@@ -234,6 +236,7 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
             const FCompactPoseBoneIndex Root(0);
             Output.Pose[Root] = Output.Pose.GetRefPose(Root);
         }
+        CireLocomotion::ApplyPoseFeel(Output.Pose, Feel); // movement-feel: visual heading, leg IK
         const bool bSane = PoseIsSane(Output.Pose);
         if (!bSane) Output.ResetToRefPose();
         if (Owner) Owner->bLastPoseRejected = !bSane;

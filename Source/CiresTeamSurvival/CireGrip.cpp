@@ -486,6 +486,11 @@ void TwoBoneIK(FCompactPose& Pose, const int32 Chain[3], const FTransform& Targe
 }
 }
 
+void CireGrip::SolveTwoBone(FCompactPose& Pose, const int32 Chain[3], const FTransform& Target, float Weight)
+{
+    if (Weight > KINDA_SMALL_NUMBER && !Target.ContainsNaN()) TwoBoneIK(Pose, Chain, Target, FMath::Min(Weight, 1.f));
+}
+
 void CireGrip::TwistSpine(FCompactPose& Pose, float Degrees)
 {
     if (FMath::Abs(Degrees) < .05f || !FMath::IsFinite(Degrees)) return;
