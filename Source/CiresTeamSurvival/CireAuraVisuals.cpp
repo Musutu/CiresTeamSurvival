@@ -12,6 +12,7 @@
 #include "CireAttackSystem.h"
 #include "CireItems.h"
 #include "CireAudio.h"
+#include "CireAbilityVFX.h" // vfx-scale: spell-effect scale for buff / aura layers and strikes
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PointLightComponent.h"
@@ -339,7 +340,7 @@ void UCireAuraComponent::UpdateFabAuras(bool bAllowed,int32& Budget,float Intens
     {
         if(FabAuras.Contains(Pair.Key)||!Unit||!Unit->GetRootComponent())continue;
         const auto* Def=CireAuraData::Find(Pair.Key);const auto* Entry=FabAuraEntry(*Def);
-        const float Scale=Entry->Scale*FMath::Lerp(.75f,1.f,FMath::Clamp(Intensity,0.f,1.f));
+        const float Scale=Entry->Scale*FMath::Lerp(.75f,1.f,FMath::Clamp(Intensity,0.f,1.f))*CireAbilityVFX::SpellEffectScale(GetWorld()); // vfx-scale
         UFXSystemComponent* FX=CireFabVFX::SpawnAttached(Pair.Value,Unit->GetRootComponent(),FVector(0,0,-88.f),Scale,false);
         CireFabVFX::ApplyTint(FX,Entry->Tint);
         if(FX)FabAuras.Add(Pair.Key,FX);
@@ -492,6 +493,7 @@ int32 UCireAuraComponent::Render(float LocalNow,float Anim,float ServerNow,int32
     TArray<const FCireAuraInstance*> Order;for(const auto& I:Instances)Order.Add(&I);
     Order.Sort([](const FCireAuraInstance& A,const FCireAuraInstance& B){const auto* X=CireAuraData::Find(A.Id);const auto* Y=CireAuraData::Find(B.Id);return (X?X->Priority:0)>(Y?Y->Priority:0);});
     int32 Layers=0;float RimAlpha=0;const FCireAuraDef* LightDef=nullptr;float LightAlpha=0;
+    const float EffectScale=CireAbilityVFX::SpellEffectScale(GetWorld()); // vfx-scale
     const uint32 UnitSeed=GetTypeHash(Unit->GetFName());
     const bool bHostile=[&]{
         const auto* Local=GetWorld()->GetFirstPlayerController();const auto* Viewer=Local?Cast<ACireHero>(Local->GetPawn()):nullptr;
@@ -532,7 +534,13 @@ int32 UCireAuraComponent::Render(float LocalNow,float Anim,float ServerNow,int32
             float LayerAlpha=1;
             if(Layer.bBurstOnly){const float Window=FMath::Max(Def->Burst,.2f)+.5f;if(Age>Window)continue;LayerAlpha=1-Age/Window;}
             C.Alpha=Alpha*LayerAlpha;
-            CireAuraShapes::DrawLayer(Layer,C,B);++Layers;++Drawn;
+            // vfx-scale: buff / aura layers grow with the spell-effect scale, except hand and weapon glows (they sit on the
+            // body and would swallow the hands and forearms), link tethers (they join two real units) and overhead marks
+            // (status readouts, not spell art).
+            if(CireAuraVisuals::ScalesWithSpellEffects(Layer.Shape)&&!FMath::IsNearlyEqual(EffectScale,1.f))
+            {FCireAuraLayer Grown=Layer;Grown.Size*=EffectScale;CireAuraShapes::DrawLayer(Grown,C,B);}
+            else CireAuraShapes::DrawLayer(Layer,C,B);
+            ++Layers;++Drawn;
         }
         if(Def->bAllegianceRim)RimAlpha=FMath::Max(RimAlpha,FMath::Min(Alpha,1.f));
         if(Def->Light>0&&(!LightDef||Def->Priority>LightDef->Priority)){LightDef=Def;LightAlpha=FMath::Min(Alpha,1.f);}
@@ -576,7 +584,8 @@ bool ACireAuraStrike::IsCollisionFree() const
 }
 void ACireAuraStrike::Configure(EMode InMode,const FCireAuraAttack& Attack,FVector InFrom,FVector InTo,float InScale,float InMirror)
 {
-    Mode=InMode;Style=Attack;From=InFrom;To=InTo;Scale=FMath::Clamp(InScale,.4f,3.f);Mirror=InMirror>=0?1.f:-1.f;Age=0;
+    // vfx-scale: empowered-attack swipes, hits, muzzles and trails grow with the spell-effect scale.
+    Mode=InMode;Style=Attack;From=InFrom;To=InTo;Scale=FMath::Clamp(InScale,.4f,3.f)*CireAbilityVFX::SpellEffectScale(GetWorld());Mirror=InMirror>=0?1.f:-1.f;Age=0;
     Duration=Mode==EMode::Swipe?.45f:Mode==EMode::Hit?.6f:Mode==EMode::Muzzle?.3f:30.f;
     OriginPhase=CireSkillRuntime::Phase(GetWorld());
     Core->SetMaterial(0,CoreMaterial());Soft->SetMaterial(0,SoftMaterial());
@@ -828,6 +837,10 @@ void UCireAuraSubsystem::UpdateNow(float LocalOverride)
 // ---------------------------------------------------------------------------
 // Public helpers
 // ---------------------------------------------------------------------------
+bool CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape Shape)
+{
+    return Shape!=ECireAuraShape::Hands&&Shape!=ECireAuraShape::Weapon&&Shape!=ECireAuraShape::Tether&&Shape!=ECireAuraShape::Glyph;
+}
 UCireAuraSubsystem* CireAuraVisuals::Get(const UWorld* World){return World?World->GetSubsystem<UCireAuraSubsystem>():nullptr;}
 UCireAuraComponent* CireAuraVisuals::Attach(AActor* Unit)
 {

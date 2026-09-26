@@ -34,6 +34,10 @@
 #include "NiagaraSystem.h"
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
+#include "HAL/IConsoleManager.h" // vfx-scale
+#include "CireAuraShapes.h" // vfx-scale
+#include "CireAuraVisuals.h"
+#include <limits>
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireAbilityVFX,Log,All);
 
@@ -721,6 +725,104 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
         const FString Path=FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("ShapeAudit"),TEXT("shape_audit.json"));
         Check(FFileHelper::SaveStringToFile(Json,*Path),TEXT("shape audit written"));
         UE_LOG(LogCireAbilityVFX,Display,TEXT("CIRE_SHAPE_AUDIT entries=%d squares=%d not_round=%d path=%s"),Audited,Squares,NotRound,*FPaths::ConvertRelativePathToFull(Path));
+    }
+    // ---------------------------------------------------------------- 12. vfx-scale: decorative spell effects +30%, true footprints unchanged
+    // Eric 2026-09-26: "spell effect sizes increased 30% across the board". Decorative geometry grows with the design value in
+    // Content/Data/VFXTuning.json (1.3) x the player's Options multiplier; ground telegraphs, zones and void zones keep the true size.
+    PurgeNew();
+    {
+        ReloadVFXTuning();
+        Check(FMath::IsNearlyEqual(DesignSpellEffectScale(),1.3f,.001f),FString::Printf(TEXT("design spell-effect scale from VFXTuning.json is 1.3 (%.2f)"),DesignSpellEffectScale()));
+        Check(FMath::IsNearlyEqual(SpellEffectScaleFor(1.f),DesignSpellEffectScale())&&FMath::IsNearlyEqual(SpellEffectScaleFor(std::numeric_limits<float>::quiet_NaN()),DesignSpellEffectScale()),
+            TEXT("player multiplier 1 (or garbage) = the design scale"));
+        Check(FMath::IsNearlyEqual(SpellEffectScaleFor(10.f),MaxSpellEffectScale)&&FMath::IsNearlyEqual(SpellEffectScaleFor(.01f),MinSpellEffectScale),TEXT("effective scale clamped 0.5..2"));
+        Check(FMath::IsNearlyEqual(FCireUISettings().SpellEffectSize,1.f),TEXT("new profiles use the design size"));
+        {
+            const FString Dir=FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("Temp"));IFileManager::Get().MakeDirectory(*Dir,true);
+            const FString Ini=FPaths::Combine(Dir,TEXT("CireSpellEffectSizeTest.ini"));IFileManager::Get().Delete(*Ini);
+            FCireUISettings A;A.Load(Ini);Check(FMath::IsNearlyEqual(A.SpellEffectSize,1.f),TEXT("profile without the key keeps the design size"));
+            A.SpellEffectSize=.8f;A.Save();FCireUISettings B;B.Load(Ini);
+            Check(FMath::IsNearlyEqual(B.SpellEffectSize,.8f,.001f),TEXT("spell effect size round-trips through the profile"));
+            B.SpellEffectSize=99.f;B.Save();FCireUISettings D;D.Load(Ini);
+            Check(D.SpellEffectSize<=4.f&&FMath::IsNearlyEqual(SpellEffectScaleFor(D.SpellEffectSize),MaxSpellEffectScale),TEXT("an out-of-range profile value is clamped"));
+            IFileManager::Get().Delete(*Ini);
+        }
+        IConsoleVariable* Force=IConsoleManager::Get().FindConsoleVariable(TEXT("cire.SpellEffectScale"));
+        Check(Force!=nullptr,TEXT("cire.SpellEffectScale console override exists"));
+        if(Force)
+        {
+            ON_SCOPE_EXIT{Force->Set(0.f,ECVF_SetByCode);};
+            auto SetScale=[&](float K){Force->Set(K,ECVF_SetByCode);};
+            auto Extent=[](const FBox& B){return B.IsValid?static_cast<float>(FMath::Max(B.GetSize().X,B.GetSize().Y)):0.f;};
+            auto GroundReach=[](const ACireSpellVisual* V){float R=0;for(const FVector& P:V->GetGroundVertices())R=FMath::Max(R,static_cast<float>(FVector2D(P.X,P.Y).Size()));return R;};
+            // (a) impact burst at a point: the modeled core grows by exactly the scale about the impact point.
+            if(auto* Hit=CireSpellPresentation::Play(World,TEXT("drowned_rend"),Hero->GetActorLocation()+FVector(300,0,0),Hero->GetActorLocation()+FVector(600,0,0),ECireSpellCue::Impact,1,false))
+            {
+                SetScale(1.f);Hit->SetPreviewAge(.2f);const float Before=Extent(Hit->CoreBounds()),SplashBefore=GroundReach(Hit);
+                SetScale(1.3f);Hit->SetPreviewAge(.2f);const float After=Extent(Hit->CoreBounds()),SplashAfter=GroundReach(Hit);
+                Check(Before>1&&FMath::IsNearlyEqual(After/Before,1.3f,.02f)&&FMath::IsNearlyEqual(Hit->EffectScale(),1.3f),
+                    FString::Printf(TEXT("impact burst grows 30%% (%.0f -> %.0f cm)"),Before,After));
+                UE_LOG(LogCireAbilityVFX,Display,TEXT("CIRE_VFX_SCALE impact core %.1f -> %.1f cm, splash %.1f -> %.1f cm"),Before,After,SplashBefore,SplashAfter);
+                Check(SplashBefore>1&&FMath::IsNearlyEqual(SplashAfter/SplashBefore,1.3f,.05f),FString::Printf(TEXT("decorative impact splash grows too (%.0f -> %.0f cm)"),SplashBefore,SplashAfter));
+                Hit->Destroy();
+            }
+            // (b) self circle (War Cry): the decorative ring grows, the ground shockwave still reaches the TRUE radius.
+            if(auto* Cry=CireSpellPresentation::Play(World,TEXT("war_cry"),Hero->GetActorLocation(),Hero->GetActorLocation(),ECireSpellCue::Cast,1,false))
+            {
+                const float True=CireAbilityShapes::Describe(TEXT("war_cry")).Radius;
+                SetScale(1.f);Cry->SetPreviewAge(.9f);const float Before=Extent(Cry->CoreBounds()),RingBefore=GroundReach(Cry);
+                SetScale(1.3f);Cry->SetPreviewAge(.9f);const float After=Extent(Cry->CoreBounds()),RingAfter=GroundReach(Cry);
+                UE_LOG(LogCireAbilityVFX,Display,TEXT("CIRE_VFX_SCALE war_cry core %.1f -> %.1f cm, ground wave %.1f / %.1f cm (true %.0f)"),Before,After,RingBefore,RingAfter,True);
+                Check(Cry->GetMode()==ACireSpellVisual::EMode::SelfShock&&Before>1&&After>Before*1.2f,FString::Printf(TEXT("war cry decorative ring grows (%.0f -> %.0f cm)"),Before,After));
+                Check(FMath::IsNearlyEqual(RingBefore,RingAfter,1.f)&&RingAfter<=True+30.f&&RingAfter>=True*.9f,
+                    FString::Printf(TEXT("war cry ground shockwave keeps its true radius %.0f (%.0f / %.0f)"),True,RingBefore,RingAfter));
+                Cry->Destroy();
+            }
+            // (c) caster flare: grows about the hand, never drifts off it.
+            if(auto* Flare=CireSpellPresentation::Play(World,TEXT("ember_lance"),Hero->GetActorLocation(),Hero->GetActorLocation()+FVector(600,0,0),ECireSpellCue::Cast,1,false))
+            {
+                SetScale(1.f);Flare->SetPreviewAge(.2f);const FBox A=Flare->CoreBounds();
+                SetScale(1.3f);Flare->SetPreviewAge(.2f);const FBox B=Flare->CoreBounds();
+                const FVector Hand(30,0,34);
+                Check(A.IsValid&&B.IsValid&&Extent(B)>Extent(A)*1.2f&&B.IsInside(Hand),
+                    FString::Printf(TEXT("caster flare grows about the hand (%.0f -> %.0f cm)"),Extent(A),Extent(B)));
+                Flare->Destroy();
+            }
+            // (d) lingering zone: the telegraph and its particles stay inside the TRUE zone at any effect scale.
+            {
+                FCireAreaSpec Spec;Spec.Shape=ECireAreaShape::Circle;Spec.Radius=300;Spec.WarningSeconds=0;Spec.DurationSeconds=30;Spec.AbilityName=TEXT("Venom Ground");
+                if(ACireAreaEffect* Area=ACireAreaEffect::Spawn(Hero,Spec,Hero->GetActorLocation()+FVector(500,0,-88),FRotator::ZeroRotator))
+                {
+                    if(ACireSpellVisual* Zone=CireSpellPresentation::FollowArea(Area))
+                    {
+                        SetScale(1.f);Pump(Zone,.2f);const float Before=GroundReach(Zone);
+                        SetScale(1.3f);Pump(Zone,.2f);const float After=GroundReach(Zone);
+                        const FBox Core=Zone->CoreBounds();float Particles=0;
+                        if(Core.IsValid)Particles=static_cast<float>(FMath::Max(FMath::Max(FMath::Abs(Core.Min.X),FMath::Abs(Core.Max.X)),FMath::Max(FMath::Abs(Core.Min.Y),FMath::Abs(Core.Max.Y))));
+                        Check(FMath::IsNearlyEqual(Zone->DecorScale(),1.f)&&Before>1&&FMath::IsNearlyEqual(Before,After,1.f)&&After<=Spec.Radius+30.f,
+                            FString::Printf(TEXT("zone telegraph keeps the true radius %.0f at scale 1.3 (%.0f / %.0f)"),Spec.Radius,Before,After));
+                        UE_LOG(LogCireAbilityVFX,Display,TEXT("CIRE_VFX_SCALE zone ground %.1f / %.1f cm, particles reach %.1f cm (true %.0f)"),Before,After,Particles,Spec.Radius);
+                        Check(Particles<=Spec.Radius+40.f,FString::Printf(TEXT("zone particles stay inside the true zone at scale 1.3 (reach %.0f)"),Particles));
+                        Zone->Destroy();
+                    }
+                    Area->Destroy();
+                }
+                else Check(false,TEXT("test zone spawned"));
+            }
+            // (e) buff / aura layers: body and ground layers grow, hand / weapon glows, tethers and overhead marks do not.
+            {
+                Check(CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Ring)&&CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Shell)&&
+                    !CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Hands)&&!CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Weapon)&&
+                    !CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Tether)&&!CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Glyph),
+                    TEXT("aura layers that grow: everything but hand / weapon glows, tethers and overhead marks"));
+                TArray<FVector> CV,SV;TArray<int32> CI,SI;TArray<FLinearColor> CC,SC;TArray<FVector2D> SUV;
+                auto RingReach=[&](float Size){CireAuraShapes::FBuffers Buf{CV,CI,CC,SV,SI,SC,SUV};Buf.Reset();CireAuraShapes::FContext Ctx;
+                    FCireAuraLayer L;L.Shape=ECireAuraShape::Ring;L.Size=Size;CireAuraShapes::DrawLayer(L,Ctx,Buf);
+                    float R=0;for(const FVector& P:CV)R=FMath::Max(R,static_cast<float>(FVector2D(P.X,P.Y).Size()));return R;};
+                const float R1=RingReach(1.f),R13=RingReach(1.3f);
+                Check(R1>1&&FMath::IsNearlyEqual(R13/R1,1.3f,.05f),FString::Printf(TEXT("aura ring grows with its size (%.0f -> %.0f cm)"),R1,R13));
+            }
+        }
     }
     UE_LOG(LogCireAbilityVFX,Display,TEXT("CIRE_ABILITY_VFX_TESTS_%s checks=%d failed=%d"),S.Failed==0?TEXT("PASS"):TEXT("FAIL"),S.Checks,S.Failed);
     return S.Failed==0;

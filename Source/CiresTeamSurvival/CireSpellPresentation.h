@@ -57,6 +57,11 @@ public:
     bool IsFadingOut() const { return FadeOutAt>=0; }
     const FCireHitShape& GetShape() const { return Shape; }
     FVector2D VoidRadiiDrawn() const { return LastVoidRadii; }
+    // vfx-scale: the decorative spell-effect scale this visual drew with (CireAbilityVFX::SpellEffectScale), and the part of it
+    // applied to the modeled core / soft geometry (1 for true footprints: zones, void zones; projectiles scale their head inside).
+    float EffectScale() const { return FxScale; }
+    float DecorScale() const;
+    FBox CoreBounds() const; // local-space bounds of the modeled core + soft geometry (tests, galleries)
     int32 VoidIconsDrawn() const { return LastVoidIcons; }
 private:
     FName Skill;
@@ -65,6 +70,12 @@ private:
     ECireSpellCue Cue = ECireSpellCue::Cast;
     int32 Family = 0;
     float Age = 0, Duration = 1, Size = 1;
+    float FxScale = 1; // vfx-scale
+    // vfx-scale: from these core/soft vertex indices on, decorative geometry scales by Scale about Pivot (actor space).
+    // A scale of 1 pins geometry that joins real positions (chain bolts, hop arcs, the storm cast lightning).
+    struct FScaleMark { int32 Core = 0, Soft = 0; FVector Pivot = FVector::ZeroVector; float Scale = 1.f; };
+    TArray<FScaleMark, TInlineAllocator<4>> ScaleMarks;
+    void MarkScale(const FCireSpellMesh& M, const FCireSoftMesh& Soft, FVector Pivot, float Scale);
     int32 LastVertexCount = 0;
     int32 OriginPhase = INDEX_NONE;
     bool bPreview = false, bFollowArea = false;

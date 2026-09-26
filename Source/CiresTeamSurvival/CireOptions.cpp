@@ -13,6 +13,7 @@
 #include "Misc/Parse.h"
 #include "CireVideoSettings.h" // video-crash: deferred, crash-safe video apply
 #include "CireAudio.h" // audio: UI cues, Options > Audio buses and music credits
+#include "CireAbilityVFX.h" // vfx-scale: Options > Video > Spell effect size
 
 namespace
 {
@@ -319,17 +320,25 @@ void ACireHUD::DrawSettings()
         Toggle(TEXT("Motion blur"),UISettings.bMotionBlur,R,Top+166,TEXT("Controls local camera motion blur. Off preserves clarity during fast turns."));
         Slider(TEXT("Ground telegraph intensity"),UISettings.GroundTelegraphIntensity,.1f,1,.05f,R,Top+242,TEXT("Brightness of ground telegraphs, aim previews, lingering zones and Fab ground effects (fill, rim and runes). Default 0.3 keeps the ground visible through them; enemy warnings keep a readable rim at the lowest setting.")); // ability-vfx; telegraphs: 0.1..1, default 0.3
         Slider(TEXT("Ally / other units' effects"),UISettings.OtherEffectsIntensity,0,1,.05f,R,Top+196,TEXT("Strength of buff auras, rage swirls and empowered-attack trails on units other than you. 0 keeps only overhead marks. Your own effects stay full.")); // aura-vfx
+        {
+            // vfx-scale: shows the effective size (the design value from VFXTuning.json at 1.0 in the profile); the profile keeps
+            // the player's choice relative to the design value, so a later retune of the data moves everyone who never touched it.
+            const float Design=CireAbilityVFX::DesignSpellEffectScale();float Shown=CireAbilityVFX::SpellEffectScaleFor(UISettings.SpellEffectSize);const float Was=Shown;
+            Slider(TEXT("Spell effect size"),Shown,CireAbilityVFX::MinSpellEffectScale,CireAbilityVFX::MaxSpellEffectScale,.05f,R,Top+288,
+                FString::Printf(TEXT("Size of spell and skill visuals: projectiles, impacts, cast flares, buff auras and empowered-attack effects. Ground telegraphs and zones always keep the true hit size. Default %.2f."),Design),true,false);
+            if(Shown!=Was){UISettings.SpellEffectSize=Shown/FMath::Max(.01f,Design);UISettings.Save();}
+        }
         FCireVideoState Draft;Draft.Resolution=VideoResolution;Draft.WindowMode=VideoMode;Draft.Quality=VideoQuality;Draft.bVSync=bVideoVSync;Draft.FrameRateLimit=VideoFPS;Draft.RenderScale=VideoScale;
         if(bBusy)Label(TEXT("Applying..."),L,Top+239,14,Gold);
         else if(!bPending&&Button(TEXT("APPLY (PREVIEW)"),L,Top+235,286,TEXT("Applies the settings now, no restart needed. Keep them within 15 seconds or they are restored.")))
             CireVideo::RequestPreview(Draft,15.0);
         if(bPending&&!bBusy)
         {
-            Label(FString::Printf(TEXT("Keep these settings? Reverting in %ds"),FMath::Max(0,FMath::CeilToInt(CireVideo::SecondsToRevert()))),L,Top+299,14,Gold);
-            if(Button(TEXT("KEEP CHANGES"),L,Top+337,286,TEXT("Saves these video settings; the next launch starts with them.")))CireVideo::RequestKeep();
-            if(Button(TEXT("REVERT NOW"),R,Top+337,286))RevertVideoPreview();
+            Label(FString::Printf(TEXT("Keep these settings? Reverting in %ds"),FMath::Max(0,FMath::CeilToInt(CireVideo::SecondsToRevert()))),L,Top+344,14,Gold);
+            if(Button(TEXT("KEEP CHANGES"),L,Top+374,286,TEXT("Saves these video settings; the next launch starts with them.")))CireVideo::RequestKeep();
+            if(Button(TEXT("REVERT NOW"),R,Top+374,286))RevertVideoPreview();
         }
-        else if(!bPending)Wrapped(TEXT("Everything here applies instantly, without a restart. A preview is saved once you press Keep (or Save & Close); Escape or waiting 15 seconds restores the previous resolution, window mode, quality, render scale, VSync and frame cap."),L,Top+318,593,12,Muted,4);
+        else if(!bPending)Wrapped(TEXT("Everything here applies instantly, without a restart. A preview is saved once you press Keep (or Save & Close); Escape or waiting 15 seconds restores the previous resolution, window mode, quality, render scale, VSync and frame cap."),L,Top+350,593,12,Muted,4);
     }
     else if(OptionsTab==3)
     {

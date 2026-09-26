@@ -12,6 +12,11 @@
 #include "Misc/Parse.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "Dom/JsonObject.h" // vfx-scale: VFXTuning.json
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 using namespace CireSpellMesh;
 
@@ -278,6 +283,38 @@ float CireAbilityVFX::GroundIntensity(const UWorld* World)
 {
     const auto* PC=World?World->GetFirstPlayerController():nullptr;const auto* HUD=PC?Cast<ACireHUD>(PC->GetHUD()):nullptr;
     return HUD?FMath::Clamp(HUD->UISettings.GroundTelegraphIntensity,MinGroundIntensity,1.f):DefaultGroundIntensity;
+}
+// vfx-scale: design value from Content/Data/VFXTuning.json, the player's multiplier from Options, a console override for A/B.
+static TAutoConsoleVariable<float> CVarCireSpellEffectScale(TEXT("cire.SpellEffectScale"),0.f,
+    TEXT(">0: force this decorative spell-effect scale (A/B captures). 0: Content/Data/VFXTuning.json x Options > Video > Spell effect size."));
+namespace
+{
+float GDesignSpellEffectScale=-1.f;
+}
+void CireAbilityVFX::ReloadVFXTuning()
+{
+    GDesignSpellEffectScale=DefaultSpellEffectScale;
+    FString Text;TSharedPtr<FJsonObject> Root;double Value=0;
+    if(FFileHelper::LoadFileToString(Text,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/VFXTuning.json")))&&
+       FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Root)&&Root.IsValid()&&Root->TryGetNumberField(TEXT("spellEffectScale"),Value)&&FMath::IsFinite(Value))
+        GDesignSpellEffectScale=FMath::Clamp(static_cast<float>(Value),MinSpellEffectScale,MaxSpellEffectScale);
+}
+float CireAbilityVFX::DesignSpellEffectScale()
+{
+    if(GDesignSpellEffectScale<0)ReloadVFXTuning();
+    return GDesignSpellEffectScale;
+}
+float CireAbilityVFX::SpellEffectScaleFor(float PlayerMultiplier)
+{
+    if(!FMath::IsFinite(PlayerMultiplier)||PlayerMultiplier<=0)PlayerMultiplier=1.f;
+    return FMath::Clamp(DesignSpellEffectScale()*PlayerMultiplier,MinSpellEffectScale,MaxSpellEffectScale);
+}
+float CireAbilityVFX::SpellEffectScale(const UWorld* World)
+{
+    const float Forced=CVarCireSpellEffectScale.GetValueOnAnyThread();
+    if(FMath::IsFinite(Forced)&&Forced>0)return FMath::Clamp(Forced,.1f,4.f);
+    const auto* PC=World?World->GetFirstPlayerController():nullptr;const auto* HUD=PC?Cast<ACireHUD>(PC->GetHUD()):nullptr;
+    return SpellEffectScaleFor(HUD?HUD->UISettings.SpellEffectSize:1.f);
 }
 float CireAbilityVFX::FabGroundBrightness(float Intensity)
 {

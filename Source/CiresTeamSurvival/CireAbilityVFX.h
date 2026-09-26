@@ -104,6 +104,21 @@ namespace CireAbilityVFX
     // Fab ground-effect overlays (Niagara "area" role) follow the same slider: 1 = their stock look at the old default.
     CIRESTEAMSURVIVAL_API float FabGroundBrightness(float Intensity);
 
+    // vfx-scale (2026-09-26, Eric: "spell effect sizes increased 30% across the board"): one multiplier for every DECORATIVE
+    // spell / skill visual (projectile heads, impacts, cast flares, self pulses, buff and aura layers, empowered-attack strikes,
+    // Fab cast / projectile / impact / aura systems). True hit footprints never scale: ground telegraphs, lingering zones, the
+    // shockwave to a self circle's true radius, void zones, lanes and fitted Fab ground overlays keep their real size.
+    //   design value : Content/Data/VFXTuning.json "spellEffectScale" (default 1.3)
+    //   player value : Options > Video > Spell effect size (FCireUISettings::SpellEffectSize, saved relative to the design value)
+    //   override     : cire.SpellEffectScale <x> (0 = off), for A/B captures
+    constexpr float DefaultSpellEffectScale = 1.3f, MinSpellEffectScale = .5f, MaxSpellEffectScale = 2.f;
+    CIRESTEAMSURVIVAL_API float DesignSpellEffectScale();
+    CIRESTEAMSURVIVAL_API void ReloadVFXTuning();
+    // Effective scale for a player multiplier (1 = the design value), clamped to Min..MaxSpellEffectScale.
+    CIRESTEAMSURVIVAL_API float SpellEffectScaleFor(float PlayerMultiplier);
+    // Effective scale for the local viewer (no HUD: the design value). The console override wins when set.
+    CIRESTEAMSURVIVAL_API float SpellEffectScale(const UWorld* World);
+
     // Local impact camera kick (UISettings.bImpactCameraShake); only near the local champion.
     CIRESTEAMSURVIVAL_API void ImpactShake(UWorld* World, FVector At, float Strength);
 

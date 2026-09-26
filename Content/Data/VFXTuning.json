@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "profile": "CireVFXTuning",
+  "notes": "Presentation only. spellEffectScale multiplies every decorative spell / skill visual (projectile heads, impacts, cast flares, self pulses, buff and aura layers, empowered-attack strikes, Fab Niagara cast / projectile / impact / aura systems). Ground telegraphs, lingering zones, void zones and every other true hit footprint keep their real size. Options > Video > Spell effect size shows the effective value (this value by default); a player's own choice is saved relative to it, so retuning here moves everyone. Clamped 0.5-2.0. Eric 2026-09-26: +30%.",
+  "spellEffectScale": 1.3
+}

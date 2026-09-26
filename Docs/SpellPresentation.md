@@ -103,3 +103,27 @@ telegraph cannot drift from what actually hits. See [AbilityVFXAudit.md](Ability
 
 Audit harness: `Tools/RunAbilityVFXGallery.py` (see the audit doc). Native suite:
 `CireAbilityVFX::RunTests`, part of `Tools/RunExpansionChecks.py --only native`.
+
+## Spell effect size (vfx-scale, 2026-09-26)
+
+Eric: "spell effect sizes increased 30% across the board, skill visual effects increased 30% across the board."
+
+- One multiplier, `spellEffectScale` in `Content/Data/VFXTuning.json` (default **1.3**), scales every DECORATIVE spell and
+  skill visual: projectile heads and wake width, impact bursts and their ground splash, caster release flares and monster
+  wind-ups (grown about the hand, so they never drift off it), self buffs and unit marks (grown from the unit's feet, so
+  ground rings stay on the ground), chain-strike marks, legacy school casts, buff / aura layers and empowered-attack
+  strikes (`CireAuraVisuals`), and every Fab Niagara / Cascade cast, projectile, impact and aura system.
+- Options > Video > **Spell effect size** (0.5-2.0) shows the effective value; the profile stores the player's choice
+  relative to the data value (`SpellEffectSize`, 1 = the data value), so retuning the data moves everyone who kept the default.
+- Never scaled (true hit footprints, Eric's telegraph rule): ground telegraphs and aim previews, lingering zones and their
+  particles (sampled inside the real zone), the shockwave that reaches a self circle's true radius, instant circles on a
+  target, the chain hop radius, skillshot lanes and the ground glow under a projectile, void zones (stun / slow radii and
+  motes), fitted Fab ground overlays, wall / protection-cage trims, chain bolts and hop arcs (they join real units).
+- Not scaled by judgement: hand and weapon glow layers (they sit on the body and would swallow the hands), link tethers,
+  overhead status marks, and the rare / bonus creature glow (not a spell).
+- Brightness is unchanged: ground effects still follow Options > Video > Ground telegraph intensity (default 0.3).
+- `cire.SpellEffectScale <x>` forces a scale for A/B captures (0 = data x Options); `Tools/RunAbilityVFXGallery.py
+  --effect-scale 1` captures the original size. Evidence: `Saved/AbilityVFX/compare-20260926T222026Z` (top 1.0, bottom 1.3).
+- Tests: `CireAbilityVFX::RunTests` section 12 (data value, clamps, profile round-trip, impact grows exactly 30%, War Cry's
+  ground wave keeps its true radius, flares stay on the hand, zones and their particles stay inside the true radius, aura
+  layer selection).
