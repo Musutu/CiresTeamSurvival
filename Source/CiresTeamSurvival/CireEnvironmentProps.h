@@ -30,7 +30,7 @@ namespace CireEnvironmentProps
     /** Town pieces a route segment (realm-local points) would suppress under the route-clearance rule at LaneWidth. */
     CIRESTEAMSURVIVAL_API int32 RouteConflicts(const UWorld* World, int32 Team, const FVector2D& LocalA, const FVector2D& LocalB, float LaneWidth, TArray<FName>* Slots = nullptr);
     /** Town pieces a challenge bay (realm-local) would suppress (450 cm bay clearance). */
-    CIRESTEAMSURVIVAL_API int32 BayConflicts(const UWorld* World, int32 Team, const FVector2D& LocalBay, TArray<FName>* Slots = nullptr);
+    CIRESTEAMSURVIVAL_API int32 BayConflicts(const UWorld* World, int32 Team, const FVector2D& LocalBay, TArray<FName>* Slots = nullptr, float Radius = 450.f); // dev-route-tools: per-pack radius
     struct FPlacedProp { int32 Team = 0; FName Slot; FTransform Transform; FBox LocalBox = FBox(ForceInit); bool bCollision = false; };
     CIRESTEAMSURVIVAL_API TArray<FPlacedProp> PlacedProps(const ACireWorld* WorldActor);
     struct FTownDistrict { FName Id; FString Name; float MinX = 0, MaxX = 0; };

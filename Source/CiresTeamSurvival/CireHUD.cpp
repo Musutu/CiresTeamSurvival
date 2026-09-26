@@ -182,6 +182,7 @@ bool ACireHUD::IsPointerOverInterface() const
     if(!PlayerOwner||!PlayerOwner->GetMousePosition(CursorX,CursorY))return true;
     CursorX/=Scale;CursorY/=Scale;
     if(IsDeveloperLauncherVisible()){const auto R=DeveloperLauncherRect();if(CursorX>=R.X&&CursorX<=R.X+R.W&&CursorY>=R.Y&&CursorY<=R.Y+R.H)return true;}
+    if(bLayoutEditor)for(const FCireUIRect& R:LayoutUIRects)if(CursorX>=R.X&&CursorX<=R.X+R.W&&CursorY>=R.Y&&CursorY<=R.Y+R.H)return true; // dev-route-tools
     for(FName Id:VisiblePanels) {
         if(Id==TEXT("CombatText")||Id==TEXT("Tooltip"))continue;
         const auto R=PanelRect(Id);
@@ -199,7 +200,7 @@ void ACireHUD::ToggleDeveloperTools()
     if(bEditLayout)ToggleLayoutEditor();
     RevertVideoPreview();bSettings=true;OptionsTab=5;DeveloperPage=5;bVideoLoaded=false;
 }
-bool ACireHUD::HandleEscape() { if(bQuickKeybind){ToggleQuickKeybind();return true;}if(bRouteEditor&&!bSettings){OpenRouteEditor(false);return true;}/* nav-paths */if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
+bool ACireHUD::HandleEscape() { if(bQuickKeybind){ToggleQuickKeybind();return true;}if(bLayoutEditor&&!bSettings&&LayoutEditorEscape())return true;/* dev-route-tools */if(bRouteEditor&&!bSettings){OpenRouteEditor(false);return true;}/* nav-paths */if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
 void ACireHUD::HandleMouseWheel(float Delta)
 {
     if(bSettings&&OptionsTab==0&&ControlsPage==1){KeybindScroll=FMath::Max(0,KeybindScroll+(Delta>0?-2:2));return;}
@@ -476,8 +477,8 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
             DrawRouteMinimap(Team,Map); // nav-paths: navmesh coverage and the path editor draft
             const auto Base=Map(CireLanePath::GoalZoneCenter(GetWorld(),Team,0),Team); // nav-paths: editable goal zone
             Panel(Base.X-12,Base.Y-3,24,6,Teal);Label(TEXT("KEEP"),X+32,139,8,Teal);
-            for(int32 Tier=1;Tier<=3;++Tier) {
-                const auto P=Map(CireLanePath::ChallengePosition(GetWorld(),Team,Tier),Team);
+            for(int32 Bay=1,Bays=CireLanePath::BayCount(GetWorld(),Team);Bay<=Bays;++Bay) { // dev-route-tools: 1..16 packs
+                const auto P=Map(CireLanePath::ChallengePosition(GetWorld(),Team,Bay),Team);
                 Line(P.X,P.Y-4,P.X+4,P.Y,Gold);Line(P.X+4,P.Y,P.X,P.Y+4,Gold);Line(P.X,P.Y+4,P.X-4,P.Y,Gold);Line(P.X-4,P.Y,P.X,P.Y-4,Gold);
             }
         }
@@ -699,6 +700,8 @@ void ACireHUD::DrawHUD()
     if(!Hero){Label(TEXT("Joining the battlefield..."),ViewW*.5f-130,ViewH*.5f,20,Parchment);return;}
     // nav-paths: the in-world path editor replaces the gameplay HUD (minimap, editor overlay, toolbar, F8).
     if(bRouteEditor){DrawMinimap(Hero,State);ResetTransform();TickRouteEditor();ResetTransform();DrawSettings();DrawTooltip();ResetTransform();return;}
+    // dev-route-tools: the map layout editor replaces the whole gameplay HUD (edit mode: no combat UI at all).
+    if(bLayoutEditor){ResetTransform();TickLayoutEditor();ResetTransform();DrawSettings();DrawTooltip();ResetTransform();return;}
     UpdateLevelUps(Hero);UpdateThreatAlerts(Hero);UpdateBanners(Hero,State);UpdateEffectCallouts(Hero);
     if(LastTargetSeen.Get()!=Hero->Target){if(IsValid(Hero->Target)&&!bModal)PlayWowSound(4,.55f);LastTargetSeen=Hero->Target;TargetChangedAt=GetWorld()->GetRealTimeSeconds();}
     if(!bModal)DrawNameplates(Hero);

@@ -266,6 +266,12 @@ public:
     UPROPERTY() TObjectPtr<class UInstancedStaticMeshComponent> RouteRoad;
     UPROPERTY() TObjectPtr<class UInstancedStaticMeshComponent> RouteEdge;
     UPROPERTY() TObjectPtr<class UInstancedStaticMeshComponent> RouteArrows;
+    // dev-route-tools: challenge packs (1..16, each with its radius) and the breach rift follow live route edits.
+    UPROPERTY() TObjectPtr<class UInstancedStaticMeshComponent> BayDais;
+    UPROPERTY() TObjectPtr<class UInstancedStaticMeshComponent> BayStone;
+    UPROPERTY() TObjectPtr<class UInstancedStaticMeshComponent> BreachRift;
+    UPROPERTY() TArray<TObjectPtr<class UTextRenderComponent>> RouteLabels;
+    UPROPERTY() TArray<TObjectPtr<AActor>> RouteLights;
 };
 
 UCLASS()

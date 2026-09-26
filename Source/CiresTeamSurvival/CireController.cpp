@@ -31,6 +31,7 @@
 #include "CirePets.h" // pets
 #include "CireSummonsBar.h" // fix/summons
 #include "CirePlaySession.h"
+#include "CireRouteEditMode.h" // dev-route-tools
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireNetClient, Log, All);
@@ -266,6 +267,16 @@ void ACireController::PlayerTick(float Dt) {
         if(bOverUI&&WasInputKeyJustPressed(EKeys::MouseScrollUp))Interface->HandleMouseWheel(1);
         if(bOverUI&&WasInputKeyJustPressed(EKeys::MouseScrollDown))Interface->HandleMouseWheel(-1);
         if(Interface->IsBlockingGameplayInput()){CireTargeting::Cancel(this);return;}
+    }
+    // dev-route-tools: map layout editor (edit mode, or its walk view): walk, run and jump only; the editor reads its
+    // own keys (setter skills on action bar 1, commands) in the HUD. No targeting, casting, shop or items.
+    if(CireRouteEditMode::IsActive()||(Interface&&Interface->IsLayoutEditorOpen())) {
+        CireTargeting::Cancel(this);
+        if(!H->bDead&&H->bDrafted) {
+            if(Keys.WasPressed(this,TEXT("Jump")))H->Jump();
+            if(H->Mobility&&Keys.WasPressed(this,TEXT("ToggleWalk"))){H->Mobility->bWalking=!H->Mobility->bWalking;H->Mobility->ServerSetWalk(H->Mobility->bWalking);}
+        }
+        return;
     }
     if(Keys.WasPressed(this,TEXT("ToggleHelp")))bHelp=!bHelp;
     if(Keys.WasPressed(this,TEXT("ToggleShop")))bShop=!bShop;

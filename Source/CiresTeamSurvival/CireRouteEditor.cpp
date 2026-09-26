@@ -1,12 +1,17 @@
 // nav-paths: path editor model: live validation (rules, navmesh reachability, route clearance) and draft edits.
+// dev-route-tools: authoring operations on the shared route, undo history, readout helpers and the draft file.
 #include "CireRouteEditor.h"
 #include "CireEnvironmentProps.h"
 #include "CireNav.h"
+#include "CireNPCArchetypes.h"
 #include "Engine/World.h"
+#include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 namespace
 {
-FVector WorldOf(int32 Team, const FVector2D& Local, float Z = 60.f) { return FVector(Local.X, Local.Y + CireLanePath::CenterY(Team), Z); }
+FVector WorldOf(int32 Team, const FVector2D& Local, float Z = 60.f) { return CireLanePath::ToWorld(Team, Local, Z); }
 ECireRouteReach Worst(ECireRouteReach A, ECireRouteReach B) { return static_cast<uint8>(A) >= static_cast<uint8>(B) ? A : B; }
 }
 
@@ -54,22 +59,25 @@ FCireRouteValidation CireRouteEditor::Validate(const UWorld* World, const FCireB
             V.Conflicts += S.PropConflicts;
             V.Segments[Team].Add(MoveTemp(S));
         }
-        for (int32 Tier = 1; Tier <= 3 && Points.Num() > 1; ++Tier)
+        // dev-route-tools: every pack (1..16, or the three automatic bays).
+        const int32 Count = Points.Num() > 1 ? CireLanePath::BayCount(Draft, Team) : 0;
+        for (int32 Bay = 1; Bay <= Count; ++Bay)
         {
-            const FVector2D Bay = CireLanePath::BayPoint(Draft, Team, Tier);
+            const FCireChallengeBay Pack = CireLanePath::BayAt(Draft, Team, Bay);
             // A pack must be able to walk home from the lane: path from the nearest route point to the bay.
             FVector2D Nearest = Points[0]; double Best = TNumericLimits<double>::Max();
             for (int32 I = 0; I + 1 < Points.Num(); ++I)
             {
                 const FVector2D Seg = Points[I + 1] - Points[I];
-                const double T = FMath::Clamp(FVector2D::DotProduct(Bay - Points[I], Seg) / FMath::Max(1., Seg.SizeSquared()), 0., 1.);
+                const double T = FMath::Clamp(FVector2D::DotProduct(Pack.Position - Points[I], Seg) / FMath::Max(1., Seg.SizeSquared()), 0., 1.);
                 const FVector2D P = Points[I] + Seg * T;
-                if (FVector2D::DistSquared(P, Bay) < Best) { Best = FVector2D::DistSquared(P, Bay); Nearest = P; }
+                if (FVector2D::DistSquared(P, Pack.Position) < Best) { Best = FVector2D::DistSquared(P, Pack.Position); Nearest = P; }
             }
             float Length = 0;
-            V.BayReach[Team][Tier - 1] = Reach(World, WorldOf(Team, Nearest), WorldOf(Team, Bay), Length);
-            V.BayConflicts[Team][Tier - 1] = CireEnvironmentProps::BayConflicts(World, Team, Bay);
-            if (V.BayReach[Team][Tier - 1] == ECireRouteReach::None || V.BayReach[Team][Tier - 1] == ECireRouteReach::Partial) ++V.Unreachable;
+            const ECireRouteReach BayReach = Reach(World, WorldOf(Team, Nearest), WorldOf(Team, Pack.Position), Length);
+            V.BayReach[Team].Add(BayReach);
+            V.BayConflicts[Team].Add(CireEnvironmentProps::BayConflicts(World, Team, Pack.Position, nullptr, Pack.Radius));
+            if (BayReach == ECireRouteReach::None || BayReach == ECireRouteReach::Partial) ++V.Unreachable;
         }
     }
     V.Ms = (FPlatformTime::Seconds() - Started) * 1000.0;
@@ -132,16 +140,32 @@ void CireRouteEditor::MovePoint(FCireBattlefieldRoutes& D, int32 Team, int32 Ind
     D.LocalPoints[Team][Index] = Local;
     if (bLinked) D.LocalPoints[1 - Team] = D.LocalPoints[Team];
 }
-void CireRouteEditor::MoveBay(const UWorld*, FCireBattlefieldRoutes& D, int32 Team, int32 Tier, const FVector2D& Local, bool bLinked)
+void CireRouteEditor::MoveBay(const UWorld*, FCireBattlefieldRoutes& D, int32 Team, int32 Bay, const FVector2D& Local, bool bLinked)
 {
-    Team = FMath::Clamp(Team, 0, 1); Tier = FMath::Clamp(Tier, 1, 3);
+    Team = FMath::Clamp(Team, 0, 1);
+    // dev-route-tools: dragging an automatic bay turns the three into authored packs first.
     for (int32 T = 0; T < 2; ++T)
-        if (D.Bays[T].Num() != 3)
-        {
-            TArray<FVector2D> Bays;
-            for (int32 I = 1; I <= 3; ++I) Bays.Add(CireLanePath::BayPoint(D, T, I));
-            D.Bays[T] = Bays;
-        }
-    D.Bays[Team][Tier - 1] = Local;
+        if (D.Bays[T].Num() == 0) D.Bays[T] = CireLanePath::AutoBays(D, T);
+    if (!D.Bays[Team].IsValidIndex(Bay - 1)) return;
+    D.Bays[Team][Bay - 1].Position = Local;
     if (bLinked) D.Bays[1 - Team] = D.Bays[Team];
+}
+
+// ---------------------------------------------------------------------------------------------- dev-route-tools
+float CireRouteEditor::MarchSpeed(float* OutMin, float* OutMax)
+{
+    const auto& Db = CireNPCArchetypes::Get();
+    float Sum = 0, Min = TNumericLimits<float>::Max(), Max = 0; int32 Count = 0;
+    for (const FName Id : Db.WaveComposition)
+        if (const FCireNPCArchetype* A = CireNPCArchetypes::Find(Id))
+            if (A->MoveSpeed > 1.f) { Sum += A->MoveSpeed; Min = FMath::Min(Min, A->MoveSpeed); Max = FMath::Max(Max, A->MoveSpeed); ++Count; }
+    const float Typical = Count > 0 ? Sum / Count : 200.f;
+    if (OutMin) *OutMin = Count > 0 ? Min : Typical;
+    if (OutMax) *OutMax = Count > 0 ? Max : Typical;
+    return Typical;
+}
+FString CireRouteEditor::FormatWalkTime(double Seconds)
+{
+    const int32 Total = FMath::Max(0, FMath::RoundToInt(FMath::IsFinite(Seconds) ? Seconds : 0.));
+    return FString::Printf(TEXT("%d:%02d"), Total / 60, Total % 60);
 }

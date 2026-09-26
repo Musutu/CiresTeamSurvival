@@ -593,7 +593,7 @@ int BayTier(const PackSchedule& schedule, int bay, int round, int waveInCycle)
     {
         if (entry.Bay != bay) continue;
         if (round < entry.UnlockRound || (round == entry.UnlockRound && waveInCycle < entry.UnlockWave)) return 0;
-        int tier = std::max(1, bay);
+        int tier = std::max(1, entry.BaseTier > 0 ? entry.BaseTier : bay);
         if (schedule.PromotionEveryRounds > 0 && round >= schedule.PromotionStartRound)
             tier += 1 + (round - schedule.PromotionStartRound) / schedule.PromotionEveryRounds;
         return std::clamp(tier, 1, std::clamp(schedule.MaxTier, 1, 10));
@@ -610,11 +610,12 @@ bool BayUnlocksAt(const PackSchedule& schedule, int bay, int round, int waveInCy
 
 std::string ValidateSchedule(const PackSchedule& schedule)
 {
-    if (schedule.Bays.empty() || schedule.Bays.size() > 3) return "packSchedule needs 1-3 bays";
+    if (schedule.Bays.empty() || schedule.Bays.size() > static_cast<std::size_t>(MaxPackBays)) return "packSchedule needs 1-16 bays";
     for (std::size_t index = 0; index < schedule.Bays.size(); ++index)
     {
         const auto& bay = schedule.Bays[index];
-        if (bay.Bay < 1 || bay.Bay > 3) return "pack bay must be 1-3";
+        if (bay.Bay < 1 || bay.Bay > MaxPackBays) return "pack bay must be 1-16";
+        if (bay.BaseTier < 0 || bay.BaseTier > 10) return "pack bay tier must be 1-10";
         if (bay.UnlockRound < 1 || bay.UnlockRound > 100 || bay.UnlockWave < 1 || bay.UnlockWave > 10) return "pack bay unlock out of range";
         for (std::size_t other = index + 1; other < schedule.Bays.size(); ++other)
             if (schedule.Bays[other].Bay == bay.Bay) return "duplicate pack bay";
@@ -622,6 +623,25 @@ std::string ValidateSchedule(const PackSchedule& schedule)
     if (schedule.MaxTier < 1 || schedule.MaxTier > 10 || schedule.PromotionEveryRounds < 0 || schedule.PromotionStartRound < 1)
         return "pack promotion settings out of range";
     return {};
+}
+
+PackSchedule RouteSchedule(const PackSchedule& base, const std::vector<int>& bayTiers)
+{
+    PackSchedule out = base;
+    out.Bays.clear();
+    const std::size_t count = std::min(bayTiers.size(), static_cast<std::size_t>(MaxPackBays));
+    for (std::size_t index = 0; index < count; ++index)
+    {
+        PackBay bay;
+        bay.Bay = static_cast<int>(index) + 1;
+        bay.BaseTier = std::clamp(bayTiers[index], 1, 10);
+        bay.UnlockRound = bay.BaseTier;
+        bay.UnlockWave = 1;
+        for (const auto& entry : base.Bays)
+            if ((entry.BaseTier > 0 ? entry.BaseTier : entry.Bay) == bay.BaseTier) { bay.UnlockRound = entry.UnlockRound; bay.UnlockWave = entry.UnlockWave; break; }
+        out.Bays.push_back(bay);
+    }
+    return out;
 }
 
 // ------------------------------------------------------------------ teleport

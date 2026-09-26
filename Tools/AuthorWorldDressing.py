@@ -39,6 +39,10 @@ TOWN_IMPORT = json.loads((ROOT / "Art/Environment/Town/ImportReport.json").read_
 ARENA_IMPORT = json.loads((ROOT / "Art/Arenas/ImportReport.json").read_text())
 TOWN_MESHES = {m["name"]: m for m in json.loads((ROOT / "Art/Environment/Town/Meshes/TownMeshes.json").read_text())["meshes"]}
 ROUTES = json.loads((DATA / "BattlefieldRoutes.json").read_text())
+# dev-route-tools: a route authored once for both realms ("route") reads as the two legacy lanes.
+if "route" in ROUTES:
+    _shared = ROUTES.pop("route")
+    ROUTES["lanes"] = [{"team": _t, **_shared} for _t in (0, 1)]
 ROUTE = [tuple(p) for p in ROUTES["lanes"][0]["points"]]
 HW = ROUTES["bounds"]["halfWidth"]
 ROUTE_MARGIN, BAY_MARGIN, SPAWN_MARGIN = ROUTES.get("laneWidth", 520) / 2 + 70, 450, 420
