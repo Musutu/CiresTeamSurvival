@@ -1,5 +1,6 @@
 // layout-wiring: the wave leash / snap-back. See CireLeash.h.
 #include "CireLeash.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireNav.h"
@@ -52,7 +53,7 @@ void BeginReturn(ACireMonster* M, const FCireLeashRules& R, float PathDistance, 
     M->bEngaged = false;
     CireNav::Forget(M);
     if (R.bUntargetableWhileReturning)
-        for (TActorIterator<ACireHero> It(M->GetWorld()); It; ++It) if (It->Target == M) It->Target = nullptr;
+        for (TCireActorIterator<ACireHero> It(M->GetWorld()); It; ++It) if (It->Target == M) It->Target = nullptr;
     SetState(M, ECireLeashState::Return);
     UE_LOG(LogCireLeash, Display, TEXT("CIRE_LEASH_RETURN %s lane=%d path=%d why=%s off_path=%.0f radius=%.0f to=(%.0f,%.0f) threat_holders=%d"), *M->GetNPCDisplayName(), M->Lane,
         M->LanePath, Why, PathDistance, CireLeash::RadiusFor(R, M), M->LeashReturnPoint.X, M->LeashReturnPoint.Y, M->Threat.Num());

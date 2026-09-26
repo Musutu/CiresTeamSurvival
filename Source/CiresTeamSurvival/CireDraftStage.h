@@ -68,7 +68,9 @@ public:
     float GetCutoutMaxDepth() const { return CameraDistance+650.f*StageScale; }
     // The owner calls this every frame it shows the stage; an untouched stage
     // (draft screen closed, HUD gone) destroys itself and its preview hero.
-    void Touch() { LastTouchedFrame = GFrameCounter; }
+    // town-perf: +1 so a stage touched only during a long first frame (the town loads inside frame 0) still counts as
+    // touched and is cleaned up once the draft screen closes; it used to keep capturing for the whole match.
+    void Touch() { LastTouchedFrame = GFrameCounter + 1; }
     // Rendered frames since the current profile was shown (TAA/animation settling).
     uint64 FramesShown() const { return ProfileId.IsEmpty() ? 0 : GFrameCounter - ShownFrame; }
     virtual void Tick(float DeltaSeconds) override;

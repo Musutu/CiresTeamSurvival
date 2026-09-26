@@ -1,5 +1,6 @@
 // layout-wiring: the map layout at match time. See CireLayoutRuntime.h.
 #include "CireLayoutRuntime.h"
+#include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireMapLayout.h"
@@ -74,13 +75,13 @@ float CireLayoutRuntime::ClampBoom(const ACireHero* H, const FVector& Pivot, con
 int32 CireLayoutRuntime::RespawnVendors(UWorld* World)
 {
     if (!World) return 0;
-    for (TActorIterator<ACireVendor> It(World); It; ++It) It->Destroy();
+    for (TCireActorIterator<ACireVendor> It(World); It; ++It) It->Destroy();
     ACireWorld* Owner = nullptr;
-    for (TActorIterator<ACireWorld> It(World); It; ++It) { Owner = *It; break; }
+    for (TCireActorIterator<ACireWorld> It(World); It; ++It) { Owner = *It; break; }
     if (!Owner) return 0;
     CireVendors::SpawnAll(Owner); // re-reads Vendors.json and TownVendors.json
     int32 Count = 0;
-    for (TActorIterator<ACireVendor> It(World); It; ++It) ++Count;
+    for (TCireActorIterator<ACireVendor> It(World); It; ++It) ++Count;
     return Count;
 }
 

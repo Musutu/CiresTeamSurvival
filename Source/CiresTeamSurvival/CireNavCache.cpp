@@ -23,7 +23,7 @@ namespace
 {
 constexpr uint32 Magic = 0x43524E43; // "CRNC"
 constexpr int32 FormatVersion = 1;
-constexpr int32 NavRulesVersion = 1;
+constexpr int32 NavRulesVersion = 3; // 2: door leaves rule, 3: rule off by default
 bool bLocked = false;
 
 // Two engine helpers the cache needs are protected. Naming them through a derived type yields ordinary member pointers

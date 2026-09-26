@@ -41,6 +41,18 @@ struct CIRESTEAMSURVIVAL_API FCireRealmLighting
     FLinearColor TorchColor = FLinearColor(1.f, .62f, .3f);
     float SkyLightIntensity = 1.f;                      // town-perf: the realm's sky light, captured from its own sky sphere
     FLinearColor SkyLightColor = FLinearColor::White;
+    float InteriorIntensity = 0.f, InteriorRadius = 480.f;       // town-perf: fill inside every building doorway (0 = none)
+    FLinearColor InteriorColor = FLinearColor(1.f, .78f, .55f);
+};
+
+/** town-perf: a pack doorway (door leaf, frame or wall piece with a door). */
+struct CIRESTEAMSURVIVAL_API FCireDoorway
+{
+    FString Mesh, Level;
+    int32 Realm = 0;
+    FVector Center = FVector::ZeroVector;          // the threshold (floor height)
+    FVector Through = FVector::ForwardVector;     // horizontal, pointing inside when bRoofed
+    bool bRoofed = false, bLeaf = false;          // exactly one side under a roof: a building door
 };
 
 struct CIRESTEAMSURVIVAL_API FCireTownDef
@@ -61,8 +73,9 @@ struct CIRESTEAMSURVIVAL_API FCireTownDef
     // this many cm of the camera (0 = everywhere).
     bool bPackLightShadows = true;
     float PackFxRadius = 0.f;
-    bool bParallelStreaming = false;
-    bool bRestoreRendererCvars = true; // undo the pack optimizer's r.Shadow.Virtual.* overrides after streaming   // request every level before one flush (else one blocking flush per level)
+    bool bParallelStreaming = false;   // request every level before one flush (else one blocking flush per level)
+    bool bRestoreRendererCvars = true; // undo the pack optimizer's r.Shadow.Virtual.* overrides after streaming
+    bool bOpenDoors = false;           // clear the pack's closed door leaves (off: Eric 2026-09-26, interiors later)
     FVector2D ExploreStart = FVector2D::ZeroVector;
     TArray<FCireTownLandmark> Landmarks;
 };
@@ -106,6 +119,8 @@ namespace CireTownMap
         cire.TownRenderBothRealms 1 turns it off for profiling. */
     CIRESTEAMSURVIVAL_API void UpdateLocalView(UWorld* World);
     CIRESTEAMSURVIVAL_API int32 ViewRealm(const UWorld* World);
+    /** town-perf: every pack doorway of the loaded realms (interior fill lights, -CireTownDoorProbe). */
+    CIRESTEAMSURVIVAL_API void FindDoorways(UWorld* World, TArray<FCireDoorway>& Out);
     /** Keep a moving actor's lighting channel on the realm it stands in (heroes, monsters). */
     CIRESTEAMSURVIVAL_API void ApplyActorRealm(AActor* Actor);
     /** Which realm copy a world location belongs to (nearest realm origin). */

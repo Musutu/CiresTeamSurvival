@@ -48,6 +48,7 @@ struct FPerf
     int32 Stage = 0;              // 0 wait playable, 1 wait bots, 2 realm 0, 3 realm 1, 4 done
     double StageAt = 0, LastReal = 0, PlayableSeconds = -1, NextTopUp = 0, WaitStarted = 0;
     bool bShot = false, bProfiled = false;
+    int32 DraftStagesLeft = 0; // the champion-select preview must be gone once everyone is drafted
     FRealmStats Realms[2];
     FString Directory;
     TArray<FString> Lines;
@@ -118,6 +119,7 @@ void Report()
         if (R.Samples.Num() < 30 || Fps < TargetAvgFps) { bPass = false; Why += FString::Printf(TEXT(" realm%d_fps=%.1f<%.0f"), R.Team, Fps, TargetAvgFps); }
         if (P95 > TargetP95Ms) { bPass = false; Why += FString::Printf(TEXT(" realm%d_p95=%.1fms>%.1fms"), R.Team, P95, TargetP95Ms); }
     }
+    if (GPerf.DraftStagesLeft > 0) { bPass = false; Why += FString::Printf(TEXT(" draft_preview_still_capturing=%d"), GPerf.DraftStagesLeft); }
     Note(FString::Printf(TEXT("CIRE_TOWN_PERF_%s %s%s"), bPass ? TEXT("PASS") : TEXT("FAIL"), *Summary, *Why));
     IFileManager::Get().MakeDirectory(*GPerf.Directory, true);
     FFileHelper::SaveStringToFile(FString::Join(GPerf.Lines, TEXT("\n")) + TEXT("\n"), *(GPerf.Directory / TEXT("perf.txt")));
@@ -147,41 +149,13 @@ struct FDoorProbe
 };
 FDoorProbe GDoors;
 
-bool Roofed(UWorld* World, const FVector& At)
-{
-    // Inside a building: something solid overhead within 8 m.
-    FHitResult Hit; FCollisionQueryParams Params(SCENE_QUERY_STAT(CireDoorRoof), true);
-    return World->LineTraceSingleByChannel(Hit, At + FVector(0, 0, 120), At + FVector(0, 0, 800), ECC_Visibility, Params);
-}
 void GatherDoors(UWorld* World)
 {
-    // Every pack mesh with "Door" in its name (door frames, doorways, castle wall doors, door leaves), one per 1.5 m.
-    for (ULevel* Level : World->GetLevels())
+    TArray<FCireDoorway> Found; CireTownMap::FindDoorways(World, Found);
+    for (const FCireDoorway& W : Found)
     {
-        if (!Level || Level == World->PersistentLevel || !Level->bIsVisible) continue;
-        for (AActor* A : Level->Actors)
-        {
-            if (!A) continue;
-            TInlineComponentArray<UStaticMeshComponent*> Meshes(A);
-            for (UStaticMeshComponent* C : Meshes)
-            {
-                const UStaticMesh* SM = C->GetStaticMesh();
-                if (!SM || !SM->GetName().Contains(TEXT("Door")) || !C->IsCollisionEnabled()) continue;
-                const FBoxSphereBounds Local = SM->GetBounds();
-                const FVector Scale = C->GetComponentScale().GetAbs();
-                const FVector Ext = Local.BoxExtent * Scale;
-                if (Ext.Z < 80.f) continue;                                  // trims, handles, hinges
-                const FTransform T = C->GetComponentTransform();
-                FDoor D; D.Mesh = SM->GetName(); D.Level = Level->GetOuter() ? Level->GetOuter()->GetName() : TEXT("?");
-                D.Center = T.TransformPosition(Local.Origin); D.Realm = CireTownMap::RealmAt(D.Center);
-                FVector Axis = T.GetUnitAxis(Ext.X <= Ext.Y ? EAxis::X : EAxis::Y); Axis.Z = 0;
-                D.Through = Axis.GetSafeNormal();
-                D.Center.Z -= Ext.Z;                                          // the threshold
-                bool bDup = false;
-                for (const FDoor& O : GDoors.Doors) if (FVector::DistSquared(O.Center, D.Center) < 150.f * 150.f) { bDup = true; break; }
-                if (!bDup && !D.Through.IsNearlyZero()) GDoors.Doors.Add(D);
-            }
-        }
+        FDoor D; D.Mesh = W.Mesh + (W.bLeaf ? TEXT(" (leaf)") : TEXT("")); D.Level = W.Level; D.Realm = W.Realm; D.Center = W.Center; D.Through = W.Through; D.bRoofed = W.bRoofed;
+        GDoors.Doors.Add(D);
     }
 }
 void TestDoors(UWorld* World)
@@ -195,9 +169,7 @@ void TestDoors(UWorld* World)
             const FVector Probe = D.Center + D.Through * (S == 0 ? -170.f : 170.f) + FVector(0, 0, 60);
             bOk[S] = CireNav::Project(World, Probe, P[S], FVector(70, 70, 140), Radius);
         }
-        const bool bRoof0 = Roofed(World, D.Center - D.Through * 170.f), bRoof1 = Roofed(World, D.Center + D.Through * 170.f);
-        const int32 In = bRoof1 && !bRoof0 ? 1 : 0;                        // the roofed side is the inside
-        D.bRoofed = bRoof0 || bRoof1;
+        const int32 In = 1; // FindDoorways: Through points inside
         D.Inside = P[In]; D.Outside = P[1 - In];
         D.bNav = bOk[0] && bOk[1];
         if (!bOk[0] && !bOk[1]) { D.Why = TEXT("no navmesh on either side"); continue; }
@@ -242,6 +214,7 @@ bool TickDoors(ACireGameMode* Mode, double Now)
     if (GDoors.Shot < 0)
     {
         const double Started = FPlatformTime::Seconds();
+        { FString Info; for (TCireActorIterator<ACireDraftStage> It(World); It; ++It) Info += FString::Printf(TEXT(" begun=%d tick=%d registered=%d"), It->HasActorBegunPlay() ? 1 : 0, It->IsActorTickEnabled() ? 1 : 0, It->PrimaryActorTick.IsTickFunctionRegistered() ? 1 : 0); Note(TEXT("CIRE_TOWN_PERF_DRAFT_STAGES") + Info); }
         GatherDoors(World); TestDoors(World); WriteDoors();
         Note(FString::Printf(TEXT("CIRE_TOWN_DOORS_TESTED doors=%d ms=%.0f"), GDoors.Doors.Num(), (FPlatformTime::Seconds() - Started) * 1000.0));
         // Interior shots: walkable roofed doors in realm 0 spread over the town, the same view in realm 1.
@@ -265,16 +238,17 @@ bool TickDoors(ACireGameMode* Mode, double Now)
             for (int32 R = 0; R < 2; ++R)
                 GDoors.Shots.Add({FString::Printf(TEXT("interior_%02d_%.0f_%.0f_realm%d"), K, L.X, L.Y, R), R, From + (R ? Shift : FVector::ZeroVector), To + (R ? Shift : FVector::ZeroVector), 88.f});
         }
-        // Street views (night readability): the hero base, the castle goal approach, the authored landmarks.
+        // Street views (night readability): along the march route, looking down the street toward the next waypoint.
+        for (int32 R = 0; R < 2; ++R)
         {
-            const auto& Routes = CireLanePath::Get(World);
-            TArray<TPair<FString, FVector2D>> Spots = {{TEXT("base"), Routes.BaseLocal}};
-            for (const auto& M : CireTownMap::Def().Landmarks) Spots.Add({M.Name.Replace(TEXT(" "), TEXT("_")), M.Local});
-            for (const auto& Spot : Spots)
-                for (int32 R = 0; R < 2; ++R)
-                    GDoors.Shots.Add({FString::Printf(TEXT("street_%s_realm%d"), *Spot.Key, R), R,
-                        CireLanePath::ToWorld(R, Spot.Value + FVector2D(-700, -700), 380.f), CireLanePath::ToWorld(R, Spot.Value, 120.f), 75.f});
+            const TArray<FVector> Route = CireLanePath::RoutePoints(World, R, 0.f);
+            for (int32 K = 1; K + 1 < Route.Num(); K += 2)
+            {
+                const FVector Dir = (Route[K + 1] - Route[K]).GetSafeNormal2D();
+                GDoors.Shots.Add({FString::Printf(TEXT("street_route%02d_realm%d"), K, R), R, Route[K] - Dir * 500.f + FVector(0, 0, 420.f), Route[K] + Dir * 900.f + FVector(0, 0, 80.f), 80.f});
+            }
         }
+        GDoors.Shots.Sort([](const FShot& A, const FShot& B) { return A.Name < B.Name; });
         FActorSpawnParameters Params; Params.ObjectFlags |= RF_Transient;
         GDoors.Camera = World->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), FTransform::Identity, Params);
         if (GDoors.Camera.IsValid())
@@ -338,6 +312,14 @@ bool Tick(float)
                 CireTownMap::LastLoadMs(), CireNav::Stats(World).InitialBuildMs, CireNav::Stats(World).Tiles[0], CireNav::Stats(World).Tiles[1],
                 CireNav::Stats(World).Rebuilds, CireNav::Stats(World).LastRebuildMs,
                 CireTownMap::LoadedLevels(World), World->GetStreamingLevels().Num()));
+            for (int32 T = 0; T < 2; ++T)
+            {
+                // Outdoor walkability: navmesh coverage of the realm's play bounds (400 cm cells; buildings and cliffs are
+                // legitimately uncovered, so this is a regression figure, compared run to run and realm to realm).
+                const CireNav::FCoverage& C = CireNav::RealmCoverage(World, T);
+                int32 On = 0; for (uint8 B : C.Cells) On += B ? 1 : 0;
+                Note(FString::Printf(TEXT("CIRE_TOWN_PERF_NAV_COVERAGE realm=%d cells=%d on_nav=%d pct=%.1f"), T, C.Cells.Num(), On, C.Cells.Num() ? 100.0 * On / C.Cells.Num() : 0.0));
+            }
             GPerf.Stage = FParse::Param(FCommandLine::Get(), TEXT("CireTownDoorProbe")) ? 20 : 1; GPerf.WaitStarted = Now;
             if (GPerf.Stage == 1 && FParse::Param(FCommandLine::Get(), TEXT("CireTownPerfLoadOnly")))
             {
@@ -360,7 +342,7 @@ bool Tick(float)
             CireTownMap::LogSceneStats(World, TEXT("fight"));
             {   // Diagnostics: the champion-select preview stage should be gone once everyone is drafted.
                 int32 Stages = 0; FString Info;
-                for (TCireActorIterator<ACireDraftStage> It(World); It; ++It) { ++Stages; Info += FString::Printf(TEXT(" frames_shown=%llu"), It->FramesShown()); }
+                for (TCireActorIterator<ACireDraftStage> It(World); It; ++It) { ++Stages; Info += FString::Printf(TEXT(" frames_shown=%llu begun=%d tick=%d registered=%d"), It->FramesShown(), It->HasActorBegunPlay() ? 1 : 0, It->IsActorTickEnabled() ? 1 : 0, It->PrimaryActorTick.IsTickFunctionRegistered() ? 1 : 0); }
                 Note(FString::Printf(TEXT("CIRE_TOWN_PERF_DRAFT_STAGES count=%d%s"), Stages, *Info));
             }
             MoveLocalHero(Mode, 0);
@@ -397,7 +379,7 @@ bool Tick(float)
         }
         if (Age < WarmSeconds + MeasureSeconds) return true;
         TRACE_END_REGION(Team == 0 ? TEXT("CireTownFight0") : TEXT("CireTownFight1"));
-        { int32 Stages = 0; for (TCireActorIterator<ACireDraftStage> It(World); It; ++It) ++Stages; Note(FString::Printf(TEXT("CIRE_TOWN_PERF_DRAFT_STAGES realm=%d count=%d"), Team, Stages)); }
+        { int32 Stages = 0; for (TCireActorIterator<ACireDraftStage> It(World); It; ++It) ++Stages; Note(FString::Printf(TEXT("CIRE_TOWN_PERF_DRAFT_STAGES realm=%d count=%d"), Team, Stages)); GPerf.DraftStagesLeft += Stages; }
         {
             const FCireNavStats& N = CireNav::Stats(World); const double F = FMath::Max(1, R.Samples.Num());
             R.Nav = FString::Printf(TEXT("nav_queries_per_frame=%.2f nav_query_avg_ms=%.3f nav_query_peak_ms=%.1f steer_ms_per_frame=%.2f deferred=%d"),

@@ -73,6 +73,19 @@ void SaveRendererCvars()
     for (const TCHAR* Name : PackRendererCvars)
         if (IConsoleVariable* V = IConsoleManager::Get().FindConsoleVariable(Name)) ProjectRendererCvars.Add(Name, V->GetString());
 }
+// town-perf / doors: a closed door leaf is a thin, door-sized slab ("SM_Door_01"), not a wall piece with an opening
+// ("SM_Wall_Door_01") or a frame. Eric's ruling: the houses stay enterable, so leaves are cleared at load (hidden, no
+// collision, no navigation) on every peer, before the navmesh is built.
+bool IsDoorLeaf(const UStaticMeshComponent* C)
+{
+    const UStaticMesh* SM = C ? C->GetStaticMesh() : nullptr;
+    if (!SM) return false;
+    const FString Name = SM->GetName();
+    if (!Name.Contains(TEXT("Door")) || Name.Contains(TEXT("Frame")) || Name.Contains(TEXT("Wall")) || Name.Contains(TEXT("Way"))) return false;
+    const FVector E = SM->GetBounds().BoxExtent * C->GetComponentScale().GetAbs();
+    const float Thin = FMath::Min(E.X, E.Y), Wide = FMath::Max(E.X, E.Y);
+    return Thin <= 15.f && Wide >= 30.f && Wide <= 110.f && E.Z >= 85.f && E.Z <= 160.f;
+}
 int32 RestoreRendererCvars()
 {
     int32 Restored = 0;
@@ -102,7 +115,8 @@ void Parse(FCireTownDef& D)
 {
     D = FCireTownDef();
     FString Json;
-    const FString Path = FPaths::ProjectContentDir() / TEXT("Data/CastleTown.json");
+    FString Path = FPaths::ProjectContentDir() / TEXT("Data/CastleTown.json");
+    FParse::Value(FCommandLine::Get(), TEXT("CireTownJson="), Path); // town-perf: before/after captures with another look
     if (!FFileHelper::LoadFileToString(Json, *Path)) { D.Error = TEXT("CastleTown.json could not be read"); return; }
     TSharedPtr<FJsonObject> Root;
     if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Root) || !Root) { D.Error = TEXT("CastleTown.json is not valid JSON"); return; }
@@ -148,6 +162,7 @@ void Parse(FCireTownDef& D)
             Num(*Light, TEXT("sunPitch"), L.SunPitch); Num(*Light, TEXT("sunYaw"), L.SunYaw); Num(*Light, TEXT("sunIntensity"), L.SunIntensity);
             Col(*Light, TEXT("sunColor"), L.SunColor);
             Num(*Light, TEXT("exposureBias"), L.ExposureBias); Num(*Light, TEXT("saturation"), L.Saturation); Col(*Light, TEXT("tint"), L.Tint);
+            Num(*Light, TEXT("interiorIntensity"), L.InteriorIntensity); Num(*Light, TEXT("interiorRadius"), L.InteriorRadius); Col(*Light, TEXT("interiorColor"), L.InteriorColor);
             Num(*Light, TEXT("skyLightIntensity"), L.SkyLightIntensity); Col(*Light, TEXT("skyLightColor"), L.SkyLightColor); // town-perf
             Num(*Light, TEXT("torchIntensity"), L.TorchIntensity); Num(*Light, TEXT("torchRadius"), L.TorchRadius); Col(*Light, TEXT("torchColor"), L.TorchColor);
         }
@@ -157,6 +172,7 @@ void Parse(FCireTownDef& D)
         (*Perf)->TryGetBoolField(TEXT("packLightShadows"), D.bPackLightShadows);
         (*Perf)->TryGetBoolField(TEXT("parallelStreaming"), D.bParallelStreaming);
         (*Perf)->TryGetBoolField(TEXT("restoreRendererCvars"), D.bRestoreRendererCvars);
+        (*Perf)->TryGetBoolField(TEXT("openDoors"), D.bOpenDoors);
         if (FParse::Param(FCommandLine::Get(), TEXT("CireTownSerialLoad"))) D.bParallelStreaming = false;
         if (FParse::Param(FCommandLine::Get(), TEXT("CireTownLegacyLook"))) D.bPackLightShadows = true; // before/after captures
         double Radius = 0; if ((*Perf)->TryGetNumberField(TEXT("packFxRadius"), Radius) && FMath::IsFinite(Radius)) D.PackFxRadius = float(FMath::Max(0.0, Radius));
@@ -303,7 +319,7 @@ int32 CireTownMap::PrepareRealmLevels(UWorld* World)
     if (!World || !bActive) return 0;
     static const TSet<FString> Strip = {TEXT("SkyAtmosphere"), TEXT("PostProcessVolume"), TEXT("CineCameraActor"), TEXT("LevelSequenceActor"),
         TEXT("PlayerStart"), TEXT("BP_Optimizer_C"), TEXT("DirectionalLight"), TEXT("SkyLight"), TEXT("ExponentialHeightFog"), TEXT("VolumetricCloud")};
-    int32 NewLevels = 0, Channelled = 0, Lights = 0, Removed = 0, NavMuted = 0, Unshadowed = 0;
+    int32 NewLevels = 0, Channelled = 0, Lights = 0, Removed = 0, NavMuted = 0, Unshadowed = 0, DoorsOpened = 0, CameraClear = 0;
     for (ULevel* Level : World->GetLevels())
     {
         if (!Level || Level == World->PersistentLevel || !Level->bIsVisible || PreparedLevels.Contains(Level)) continue;
@@ -327,6 +343,20 @@ int32 CireTownMap::PrepareRealmLevels(UWorld* World)
                 else if (auto* Prim = Cast<UPrimitiveComponent>(C))
                 {
                     if (bRealm1) { Prim->SetLightingChannels(false, true, false); ++Channelled; }
+                    // town-perf: market awnings, cloths, canopies, banners and flags overhang the streets; the camera boom
+                    // (collision test on ECC_Camera) snapped in under them. They still block units and projectiles.
+                    if (const auto* SMC = Cast<UStaticMeshComponent>(Prim); (SMC && SMC->GetStaticMesh()) || Prim->IsA<USkinnedMeshComponent>())
+                    {
+                        const FString Mesh = SMC && SMC->GetStaticMesh() ? SMC->GetStaticMesh()->GetName() : Prim->GetName();
+                        for (const TCHAR* Word : {TEXT("Cloth"), TEXT("Awning"), TEXT("Canopy"), TEXT("Tarp"), TEXT("Banner"), TEXT("Flag"), TEXT("Tent")})
+                            if (Mesh.Contains(Word)) { Prim->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore); ++CameraClear; break; }
+                    }
+                    if (Def().bOpenDoors && IsDoorLeaf(Cast<UStaticMeshComponent>(Prim)))
+                    {
+                        Prim->SetCollisionEnabled(ECollisionEnabled::NoCollision); Prim->SetCanEverAffectNavigation(false);
+                        Prim->SetVisibility(false); Prim->SetHiddenInGame(true); ++DoorsOpened;
+                        continue;
+                    }
                     // Swaying banners, ropes, chains and flags would keep the runtime navmesh dirty forever.
                     if (Prim->Mobility == EComponentMobility::Movable && Prim->CanEverAffectNavigation()) { Prim->SetCanEverAffectNavigation(false); ++NavMuted; }
                 }
@@ -338,7 +368,7 @@ int32 CireTownMap::PrepareRealmLevels(UWorld* World)
     if (Def().bRestoreRendererCvars && !HasParam(TEXT("CireTownPackShadowCvars")))
         if (const int32 Restored = RestoreRendererCvars()) UE_LOG(LogCireTown, Display, TEXT("CIRE_TOWN_RENDERER_RESTORED cvars=%d (the pack's optimizer had turned virtual shadow maps off)"), Restored);
     if (NewLevels > 0)
-        UE_LOG(LogCireTown, Display, TEXT("CIRE_TOWN_REALM_PREPARED levels=%d realm1_primitives=%d realm1_lights=%d removed=%d movable_nav_off=%d lights_unshadowed=%d"), NewLevels, Channelled, Lights, Removed, NavMuted, Unshadowed);
+        UE_LOG(LogCireTown, Display, TEXT("CIRE_TOWN_REALM_PREPARED levels=%d realm1_primitives=%d realm1_lights=%d removed=%d movable_nav_off=%d lights_unshadowed=%d doors_opened=%d camera_clear=%d"), NewLevels, Channelled, Lights, Removed, NavMuted, Unshadowed, DoorsOpened, CameraClear);
     return NewLevels;
 }
 bool CireTownMap::LoadRealms(UWorld* World)
@@ -577,7 +607,78 @@ void CireTownMap::BuildRealmLighting(AActor* Owner)
             }
         }
     }
-    UE_LOG(LogCireTown, Display, TEXT("CIRE_TOWN_LIGHTING realms=%s/%s sky_radius=%.0f separation=%.0f torch_fills=%d"), *D.Lighting[0].Name, *D.Lighting[1].Name, SkyRadius, Separation, Fills);
+    // town-perf: interior fill. The pack's interior light lived in SL_Lighting (never streamed), so the houses were black
+    // inside. One warm, non-shadowing point light just inside every building doorway (the side with a roof), in both
+    // realms at the same spot; each realm sets its own brightness and colour (warmer at night).
+    int32 Interior = 0;
+    {
+        TArray<FCireDoorway> Doors; FindDoorways(World, Doors);
+        TArray<FVector> Placed[2];
+        for (const FCireDoorway& Door : Doors)
+        {
+            const int32 Team = FMath::Clamp(Door.Realm, 0, 1);
+            const FCireRealmLighting& L = D.Lighting[Team];
+            if (!Door.bRoofed || L.InteriorIntensity <= 0) continue;
+            const FVector At = Door.Center + Door.Through * 260.f + FVector(0, 0, 220.f);
+            bool bNear = false; for (const FVector& P : Placed[Team]) if (FVector::DistSquared(P, At) < FMath::Square(450.f)) { bNear = true; break; }
+            if (bNear) continue;
+            Placed[Team].Add(At);
+            if (APointLight* Fill = World->SpawnActor<APointLight>(At, FRotator::ZeroRotator))
+            {
+                UPointLightComponent* C = Fill->PointLightComponent;
+                C->SetMobility(EComponentMobility::Movable);
+                C->SetIntensity(L.InteriorIntensity); C->SetLightColor(L.InteriorColor); C->SetAttenuationRadius(L.InteriorRadius);
+                C->SetCastShadows(false); C->SetSourceRadius(20.f);
+                C->LightingChannels.bChannel0 = Team == 0; C->LightingChannels.bChannel1 = Team == 1; C->MarkRenderStateDirty();
+                RealmVisuals[Team].Fills.Add(Fill); ++Interior;
+            }
+        }
+    }
+    UE_LOG(LogCireTown, Display, TEXT("CIRE_TOWN_LIGHTING realms=%s/%s sky_radius=%.0f separation=%.0f torch_fills=%d interior_fills=%d"), *D.Lighting[0].Name, *D.Lighting[1].Name, SkyRadius, Separation, Fills, Interior);
+}
+
+
+// ------------------------------------------------------------------ town-perf: doorways (interior light, door probe)
+void CireTownMap::FindDoorways(UWorld* World, TArray<FCireDoorway>& Out)
+{
+    // Every pack mesh with "Door" in its name (door leaves, frames, wall pieces with a door, castle wall doors), one per
+    // 1.5 m. The side with something solid overhead is the inside.
+    Out.Reset();
+    if (!World || !bActive) return;
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(CireDoorRoof), true);
+    auto Roofed = [&](const FVector& At) { FHitResult Hit; return World->LineTraceSingleByChannel(Hit, At + FVector(0, 0, 120), At + FVector(0, 0, 800), ECC_Visibility, Params); };
+    for (ULevel* Level : World->GetLevels())
+    {
+        if (!Level || Level == World->PersistentLevel || !Level->bIsVisible) continue;
+        for (AActor* A : Level->Actors)
+        {
+            if (!A) continue;
+            TInlineComponentArray<UStaticMeshComponent*> Meshes(A);
+            for (UStaticMeshComponent* C : Meshes)
+            {
+                const UStaticMesh* SM = C->GetStaticMesh();
+                if (!SM || !SM->GetName().Contains(TEXT("Door"))) continue;
+                const FBoxSphereBounds Local = SM->GetBounds();
+                const FVector Ext = Local.BoxExtent * C->GetComponentScale().GetAbs();
+                if (Ext.Z < 80.f) continue; // trims, handles, hinges
+                const FTransform T = C->GetComponentTransform();
+                FCireDoorway D; D.Mesh = SM->GetName(); D.Level = Level->GetOuter() ? Level->GetOuter()->GetName() : TEXT("?");
+                D.bLeaf = IsDoorLeaf(C);
+                D.Center = T.TransformPosition(Local.Origin); D.Realm = RealmAt(D.Center);
+                FVector Axis = T.GetUnitAxis(Ext.X <= Ext.Y ? EAxis::X : EAxis::Y); Axis.Z = 0;
+                D.Through = Axis.GetSafeNormal();
+                D.Center.Z -= Ext.Z; // the threshold
+                if (D.Through.IsNearlyZero()) continue;
+                bool bDup = false;
+                for (const FCireDoorway& O : Out) if (FVector::DistSquared(O.Center, D.Center) < 150.f * 150.f) { bDup = true; break; }
+                if (bDup) continue;
+                const bool bA = Roofed(D.Center - D.Through * 170.f), bB = Roofed(D.Center + D.Through * 170.f);
+                D.bRoofed = bA != bB;           // exactly one side covered: a building's door, not an arch or a gate passage
+                if (bA && !bB) D.Through = -D.Through; // Through points inside
+                Out.Add(D);
+            }
+        }
+    }
 }
 
 // ------------------------------------------------------------------ town-perf: per-view realm culling
