@@ -112,3 +112,70 @@ drop-in `ChampionArtBindings.json` row (`status: "ready"`: mesh, `locomotion` Bl
   `WeaponGrips.json` (`CTS_Prop_*`). `loadoutPresets` in the mapping file are ready-made presets.
 - The Huntress's sabercat (`CTS_Mount_HuntressSabercat`) is rigged but has no clips; see the row's `mount.note`.
 - Review render: `Tools/RenderTripoChampionLineup.py` (Saved/TripoChampionLineup/<stamp>/).
+
+## Champion HQ bodies (champion-hq, 2026-09-25)
+
+Eric's brief: "really high quality playable characters ... AAA, vibrant, crisp". Every playable champion except the Fab
+creatures (Bear, Evergrove Centaur) and the Polyphoria plate trio (knight, paladin_righteous, paladin_holy) gets a new
+Tripo body. Pipeline, per champion:
+
+1. **Reference sheet.** Tripo Studio image tool, GPT Image 2.5, 16:9, 4K, with the painted draft portrait
+   (`Art/DraftPortraits/Painted/<id>.png`) uploaded as the identity reference. Prompt = `Art/ChampionHQ/Briefs.json`
+   `sheetTemplate` with the champion's `character` / `palette` (front, right profile, back, A-pose, no weapons).
+   The sheet is cut in the page into front / right / back crops (GPT draws both profiles facing right, so the Left slot
+   stays empty; Tripo's convention is "left = the character's left arm").
+2. **Model.** HD Model, multi-view, H3.1 Best Quality, Ultra Mesh Quality, 8K PBR (exported at 4K), Remove Lighting,
+   **Quad topology 50k faces (~100k triangles)**: 70 credits.
+3. **Rig + clips.** Humanoid auto-rig on the **UE5 Mannequin** preset (20 credits); free presets idle, walk, run, slash,
+   hit_to_body_01, fall, cast_a_spell (+ library clips such as "Archery Aim" for the Ranger).
+4. **Transfer.** DCC Bridge "Send To Unreal" into the Bridge editor (`Tools/OpenTripoBridgeHQ.py`, stop with
+   `Saved/TripoBridgeHQStop.request`) as `/Game/TripoModels/CTS_ChampHQ_<Folder>`.
+5. **Integrate.** `python Tools/RunChampionHQIntegration.py` (skeleton core-redirect wrapper around
+   `Tools/IntegrateChampionHQ.py`): moves to `/Game/Tripo/ChampionsHQ/<Folder>/`, character texture group capped at 4096
+   with mips, `<export>_HQ` material instance on **`M_CireHero_PBR`** (`Tools/BuildHeroMaterial.py`), 4 LODs
+   (100/50/25/12 %), stable clip names. `CIRE_CHAMPION_HQ_ONLY=a,b` limits it. Optional skin / emissive masks:
+   `python Tools/ChampionHQMaskTextures.py --pylib Saved/pylib`, then integrate again.
+6. **Motion.** `python Tools/WriteChampionHQArtRows.py` writes `Content/Data/ChampionArt.hq.json`; then with
+   `CIRE_CHAMPION_ART_FILES=ChampionArt.hq.json`: `Tools/BuildTripoChampionMotion.py` (idle/walk/run BlendSpace; the new
+   Tripo exports bake walk/run in place, so ground speeds default to 110 / 395 cm/s scaled by height) and
+   `Tools/RetargetChampionAttacks.py -CireChampionAttacksAdd` (slash / cast / war cry + bow/crossbow extras into
+   `ChampionAttacks02/HQ<Folder>`).
+7. **Publish.** `python Tools/WriteChampionHQBindings.py` (`--check` for staleness) writes the ChampionArtBindings rows
+   (new-champions rows through `Tools/AuthorNewChampions.py`), each keeping the previous body as `"fallback"`, and adds
+   the bodies to `ChampionAttacks02.json`.
+
+**Summons, constructs, pets.** Same pipeline; export names decide the destination. Summons: `CTS_ChampHQ_Summon<Name>`
+(UE5 preset rig) -> `SummonArt.json` rows `summon:<id>` (WriteChampionHQArtRows `SUMMONS`). Constructs: static
+`SM_<Kind>` in folder `Constructs/<Kind>` (AetherTurret, AetherObelisk, AetherPylon, AetherTrap, SkitterBomb,
+SpiritLantern), picked up by `CireTechConstructs` AuthoredHQ; the Pavise shield is placed by `CireConstruct`. The
+Ashfang sabercat body is the `Pets.json` art mesh. Review: `python Tools/RunChampionHQGallery.py --profiles
+summon:oathbound_guardian,...`; `--before` renders every row's fallback body (`-CireChampionHQOff`) for before/after
+sheets (`Tools/ChampionHQContactSheet.py --before A --after B`).
+
+**Fused props.** Sheets are weapon-free, so weapons are WeaponLoadouts props. A prop Tripo segments off a body
+(Detailed segmentation needs a triangulated copy; Quick Cap closes the hole; re-rig needs < ~100k faces) is sent
+unrigged and listed in the HQ row as `"staticParts": [{"mesh", "bone"}]`; `UCireChampionArt::ApplyStaticParts`
+places it on that bone's bind pose (optional `offsetCm` / `rotation`).
+
+**M_CireHero_PBR.** Default Lit. Colour = lerp(luminance, BaseColor, 1 + Vibrance) x Brightness x ColorTint; roughness
+remapped RoughnessMin..Max and pulled toward MetalRoughness on metal; NormalStrength; emissive = BaseColor x
+MaskTex.G x EmissiveColor x EmissiveIntensity plus a thin fresnel RimColor (RimStrength). Per-champion values are the
+`look` blocks in `Art/ChampionHQ/TripoChampionHQ.json` `exports`.
+
+**Runtime.** `UCireChampionArt` now (a) honours a binding row's `"yaw"` (Tripo UE5-preset rigs face +Y; their toe bones
+do not give a reliable forward axis) and (b) falls back to the row's `"fallback"` body when the primary mesh, BlendSpace
+or skeleton pairing is missing. Summons (`ACireSummon`, not pets) first look up `summon:<name>` in
+`Content/Data/SummonArt.json` (oathbound_guardian, spectral_companion, mechanical_tank) and otherwise keep their
+archetype body.
+
+**BlendSpace fix.** A BlendSpace whose samples are written from Python keeps a stale runtime triangulation, so at rest it
+evaluated a walk frame (HQ Ranger) or T-pose arms (the tripo-races bodies, hence their `relaxArms`). The game module's
+`UCireEditorAnimTools::ResampleBlendSpace` (Python: `unreal.CireEditorAnimTools.resample_blend_space`) rebuilds it;
+`BuildTripoChampionMotion.py` calls it.
+
+**Review.** `python Tools/RunChampionHQGallery.py [--profiles a,b] [--no-tripo]` renders the lineup and per champion
+raw clip / idle / run / attack (contact) / cast (release) / war-cry captures to `Saved/ChampionHQ/Gallery/<stamp>`;
+`Tools/ChampionHQContactSheet.py` tiles them (also `--before DIR --after DIR`).
+
+**Launchers.** `Play.cmd`, `HostLAN.cmd` and `JoinLAN.cmd` pass `-CireTripoChampions`, so a normal launch shows the
+champion bodies (without it every champion and summon was the fallback mannequin).

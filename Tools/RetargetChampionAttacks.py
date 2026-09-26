@@ -115,6 +115,9 @@ def added_targets():
     """tripo-races: new Tripo champion bodies (ChampionArt.tripo.json rows carrying attacksFolder)."""
     root = Path(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_dir()))
     rows = json.loads((root / "Content/Data/ChampionArt.tripo.json").read_text(encoding="utf-8"))["champions"]
+    hq = root / "Content/Data/ChampionArt.hq.json"  # champion-hq bodies
+    if hq.exists():
+        rows += json.loads(hq.read_text(encoding="utf-8"))["champions"]
     out = {}
     for row in rows:
         folder = row.get("attacksFolder")

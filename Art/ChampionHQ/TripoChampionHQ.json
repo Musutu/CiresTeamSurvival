@@ -1,0 +1,1310 @@
+{
+  "schemaVersion": 1,
+  "batch": "champion-hq",
+  "createdUtc": "2026-09-25",
+  "operator": "Claude (feat/champion-hq worktree)",
+  "provider": "Tripo Studio (Eric's logged-in Chrome session)",
+  "pipeline": [
+    "Reference sheet: Tripo image tool, GPT Image 2.5, 16:9, 4K, 1 image, the painted draft portrait Art/DraftPortraits/Painted/<id>.png as the identity reference, prompt = Art/ChampionHQ/Briefs.json sheetTemplate (free: 0 credits, 21/1000 free image quota used).",
+    "Sheet cut in-page into FRONT / RIGHT profile / BACK crops (GPT drew both profiles facing image-right, so the LEFT slot is left empty; Tripo: 'left means the left arm of the character').",
+    "Model: HD Model, multi-view (front/right/back), H3.1 Best Quality, Ultra Mesh Quality, 8K PBR texture, Remove Lighting, Quad topology 50,000 faces (~100k triangles): 70 credits.",
+    "Rig: Humanoid auto-rig, UE5 Mannequin preset (20 credits); preset clips retarget free. Export: FBX (Blender axis preset), 4K textures, skeleton + all clips, DCC Bridge 'Send To Unreal'."
+  ],
+  "balanceLog": [
+    {
+      "when": "start (Eric logged in)",
+      "balance": 17776
+    },
+    {
+      "when": "after ranger candidate A",
+      "balance": 17706
+    },
+    {
+      "when": "after 21 candidate-A generations",
+      "balance": 16306
+    },
+    {
+      "when": "after 20 UE5-preset auto-rigs (free preset clips)",
+      "balance": 15906
+    },
+    {
+      "when": "after 9 summon/construct/hound generations + 3 rigs",
+      "balance": 15216
+    },
+    {
+      "when": "after Ranger quiver segmentation attempts (triangulate 5, balanced seg 40, detailed seg 40)",
+      "balance": 15131
+    }
+  ],
+  "items": [
+    {
+      "id": "ranger",
+      "candidate": "A",
+      "taskId": "cef02274-77e8-4392-8577-75ef501ca2b5",
+      "url": "https://studio.tripo3d.ai/workspace/generate/cef02274-77e8-4392-8577-75ef501ca2b5",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "scholar",
+      "candidate": "A",
+      "taskId": "7b594a18-8034-43bd-8299-d931d70010a4",
+      "url": "https://studio.tripo3d.ai/workspace/generate/7b594a18-8034-43bd-8299-d931d70010a4",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "lancer",
+      "candidate": "A",
+      "taskId": "dc78a24b-60af-411f-b266-949977667fb7",
+      "url": "https://studio.tripo3d.ai/workspace/generate/dc78a24b-60af-411f-b266-949977667fb7",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "summoner",
+      "candidate": "A",
+      "taskId": "c287791e-5e56-488d-853c-2ddc7e15c0b2",
+      "url": "https://studio.tripo3d.ai/workspace/generate/c287791e-5e56-488d-853c-2ddc7e15c0b2",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "wizard",
+      "candidate": "A",
+      "taskId": "813c96fc-7c22-48c5-a011-9155fd82d984",
+      "url": "https://studio.tripo3d.ai/workspace/generate/813c96fc-7c22-48c5-a011-9155fd82d984",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "gunblade",
+      "candidate": "A",
+      "taskId": "6921d652-9bc7-4696-9fea-f6c173e2bf2e",
+      "url": "https://studio.tripo3d.ai/workspace/generate/6921d652-9bc7-4696-9fea-f6c173e2bf2e",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "witch_slayer",
+      "candidate": "A",
+      "taskId": "637fc8a7-54f4-456b-adb4-3c63ab0b9ca7",
+      "url": "https://studio.tripo3d.ai/workspace/generate/637fc8a7-54f4-456b-adb4-3c63ab0b9ca7",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "huntress",
+      "candidate": "A",
+      "taskId": "c238a155-9a8f-429c-a02c-ea7adda800fc",
+      "url": "https://studio.tripo3d.ai/workspace/generate/c238a155-9a8f-429c-a02c-ea7adda800fc",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "aetheri_artificer",
+      "candidate": "A",
+      "taskId": "eeb27151-ab74-45c8-b599-0ed626037563",
+      "url": "https://studio.tripo3d.ai/workspace/generate/eeb27151-ab74-45c8-b599-0ed626037563",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "aetheri_warden",
+      "candidate": "A",
+      "taskId": "6a790157-a502-42ce-8a18-f61025318431",
+      "url": "https://studio.tripo3d.ai/workspace/generate/6a790157-a502-42ce-8a18-f61025318431",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "dryad",
+      "candidate": "A",
+      "taskId": "07701621-9d69-46cc-8f0f-891684397bb1",
+      "url": "https://studio.tripo3d.ai/workspace/generate/07701621-9d69-46cc-8f0f-891684397bb1",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "dwarf_miner",
+      "candidate": "A",
+      "taskId": "6bfce2cf-7751-4aa3-aa9e-ad432e2ed28f",
+      "url": "https://studio.tripo3d.ai/workspace/generate/6bfce2cf-7751-4aa3-aa9e-ad432e2ed28f",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "orc_chieftain",
+      "candidate": "A",
+      "taskId": "e6611d72-be1a-49e0-b21d-9d6aff4ce782",
+      "url": "https://studio.tripo3d.ai/workspace/generate/e6611d72-be1a-49e0-b21d-9d6aff4ce782",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "drakish_footman",
+      "candidate": "A",
+      "taskId": "7735705d-e89c-4757-ac4b-91e653cbf929",
+      "url": "https://studio.tripo3d.ai/workspace/generate/7735705d-e89c-4757-ac4b-91e653cbf929",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "keeper_of_light",
+      "candidate": "A",
+      "taskId": "c37cb748-5fd7-4df1-9a78-aee439b33f16",
+      "url": "https://studio.tripo3d.ai/workspace/generate/c37cb748-5fd7-4df1-9a78-aee439b33f16",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "troll_berserker",
+      "candidate": "A",
+      "taskId": "4b6f2aeb-6ba0-400e-bde2-e39210960bb1",
+      "url": "https://studio.tripo3d.ai/workspace/generate/4b6f2aeb-6ba0-400e-bde2-e39210960bb1",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "ether_golem_tank",
+      "candidate": "A",
+      "taskId": "4c5f4163-4fb5-4a6c-a595-81cbba12d91b",
+      "url": "https://studio.tripo3d.ai/workspace/generate/4c5f4163-4fb5-4a6c-a595-81cbba12d91b",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "ether_golem_support",
+      "candidate": "A",
+      "taskId": "ed93d7b0-2f29-46cf-a74c-ae70844143c3",
+      "url": "https://studio.tripo3d.ai/workspace/generate/ed93d7b0-2f29-46cf-a74c-ae70844143c3",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "ether_golem_bruiser",
+      "candidate": "A",
+      "taskId": "4386b32f-0434-4a22-b55f-de7cafb9bde4",
+      "url": "https://studio.tripo3d.ai/workspace/generate/4386b32f-0434-4a22-b55f-de7cafb9bde4",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "whisp",
+      "candidate": "A",
+      "taskId": "495b00b8-f389-4f54-8d07-cbc04b2b81e0",
+      "url": "https://studio.tripo3d.ai/workspace/generate/495b00b8-f389-4f54-8d07-cbc04b2b81e0",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "creditsTotal": 70,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "totemic_behemoth",
+      "candidate": "A",
+      "taskId": "041c6098-dfd3-4abf-b96a-ac9be8809046",
+      "url": "https://studio.tripo3d.ai/workspace/generate/041c6098-dfd3-4abf-b96a-ac9be8809046",
+      "generateCredits": 70,
+      "settings": "multiview F/R/B, H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, quad 50k",
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20
+      },
+      "clips": "idle, walk, run, slash, hit_to_body_01, fall, cast_a_spell (free presets)",
+      "creditsTotal": 90,
+      "status": "bound-reviewed",
+      "review": "2026-09-26: integrated, bound (fallback = previous body), before/after gallery + champion-select reviewed; clear step up, no re-candidate needed"
+    },
+    {
+      "id": "mechanical_tank",
+      "candidate": "reuse",
+      "taskId": "48b4d4ce-49fc-4585-bc23-3c799e4f76fb",
+      "url": "https://studio.tripo3d.ai/workspace/generate/48b4d4ce-49fc-4585-bc23-3c799e4f76fb",
+      "generateCredits": 0,
+      "creditsTotal": 0,
+      "note": "art-3d agent's model (generated + rigged there, credits logged in Art/TripoArt3D.json); exported here, no new spend",
+      "status": "bound",
+      "review": "SummonArt.json summon:mechanical_tank"
+    },
+    {
+      "id": "pet_sabercat",
+      "candidate": "reuse",
+      "taskId": "05281f2f-78d2-4730-ab2f-60c0a773cd08",
+      "url": "https://studio.tripo3d.ai/workspace/generate/05281f2f-78d2-4730-ab2f-60c0a773cd08",
+      "generateCredits": 0,
+      "creditsTotal": 0,
+      "note": "art-3d agent's HQ sabercat (Other rig, no clips); exported here, no new spend",
+      "status": "bound-reviewed",
+      "review": "Pets.json art mesh -> HQ body (quadruped_procedural, wolf fallback)"
+    },
+    {
+      "id": "pavise",
+      "candidate": "reuse",
+      "taskId": "f992e832-9db7-4ada-b39d-4bbe38018311",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f992e832-9db7-4ada-b39d-4bbe38018311",
+      "generateCredits": 0,
+      "creditsTotal": 0,
+      "note": "art-3d agent's pavise prop; exported here, no new spend",
+      "status": "bound",
+      "review": "CireConstruct: Construct: Pavise plants the HQ shield (uniform scale to 200 cm)"
+    },
+    {
+      "id": "oathbound_guardian",
+      "candidate": "A",
+      "taskId": "f0322f98-c662-49b2-b023-d23476edf9c9",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f0322f98-c662-49b2-b023-d23476edf9c9",
+      "generateCredits": 70,
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20,
+        "status": "complete (preset clips available in Animate)"
+      },
+      "creditsTotal": 90,
+      "note": "clean: helm, chains, tabard, hands all intact; quad 53k faces",
+      "status": "bound",
+      "review": "SummonArt.json summon:oathbound_guardian"
+    },
+    {
+      "id": "spectral_companion",
+      "candidate": "A",
+      "taskId": "e670ba9c-9d0a-48cb-8df1-404c0ac76769",
+      "url": "https://studio.tripo3d.ai/workspace/generate/e670ba9c-9d0a-48cb-8df1-404c0ac76769",
+      "generateCredits": 70,
+      "rig": {
+        "type": "Humanoid",
+        "preset": "UE5 Mannequin",
+        "credits": 20,
+        "status": "complete (preset clips available in Animate)"
+      },
+      "creditsTotal": 90,
+      "note": "clean: mask, hood, tattered robes, clawed hands intact; quad 52.5k faces",
+      "status": "bound",
+      "review": "SummonArt.json summon:spectral_companion"
+    },
+    {
+      "id": "AetherTurret",
+      "candidate": "A",
+      "taskId": "ae144b5f-328f-4d16-bcca-c5d797eba87d",
+      "url": "https://studio.tripo3d.ai/workspace/generate/ae144b5f-328f-4d16-bcca-c5d797eba87d",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "single-image from sheet side view (front/back sheet views drew barrel pointing up); result clean: tripod, eye head, long crystal barrel; quad 44.8k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
+    },
+    {
+      "id": "AetherObelisk",
+      "candidate": "A",
+      "taskId": "5fdf9f79-74d5-4766-b1ac-6bf539bdfc52",
+      "url": "https://studio.tripo3d.ai/workspace/generate/5fdf9f79-74d5-4766-b1ac-6bf539bdfc52",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "clean, consistent with sheet; quad 45.9k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
+    },
+    {
+      "id": "SkitterBomb",
+      "candidate": "A",
+      "taskId": "f3fefe84-58f2-4b55-87b0-3d9265a274f7",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f3fefe84-58f2-4b55-87b0-3d9265a274f7",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "clean: shell, crystal eye, legs; quad 43.3k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
+    },
+    {
+      "id": "AetherTrap",
+      "candidate": "A",
+      "taskId": "f70b640d-b8f1-41b4-b210-57601e63dc83",
+      "url": "https://studio.tripo3d.ai/workspace/generate/f70b640d-b8f1-41b4-b210-57601e63dc83",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "single-image from sheet 3/4 view; clean disc + crystal but crystal is a bipyramid poking ~as far BELOW the disc as above (sink into ground or trim); quad 42.3k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
+    },
+    {
+      "id": "AetherPylon",
+      "candidate": "A",
+      "taskId": "795482b1-5e08-40b2-9c43-99af28e87539",
+      "url": "https://studio.tripo3d.ai/workspace/generate/795482b1-5e08-40b2-9c43-99af28e87539",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "clean: base, crystal, halo ring; quad 48k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
+    },
+    {
+      "id": "SpiritLantern",
+      "candidate": "A",
+      "taskId": "57bfe937-0b0c-430b-80c3-4d46f0414708",
+      "url": "https://studio.tripo3d.ai/workspace/generate/57bfe937-0b0c-430b-80c3-4d46f0414708",
+      "generateCredits": 70,
+      "rig": null,
+      "creditsTotal": 70,
+      "note": "clean: post, arm, lantern with teal flame glass, charms; quad 51.8k faces",
+      "status": "bound-reviewed",
+      "review": "CireTechConstructs AuthoredHQ /Game/Tripo/ChampionsHQ/Constructs/<Kind>/SM_<Kind>; NewChampionsGallery constructs_* reviewed"
+    },
+    {
+      "id": "grave_hound",
+      "candidate": "A",
+      "taskId": "cc40227d-7391-4186-bdff-cf4048b8a515",
+      "url": "https://studio.tripo3d.ai/workspace/generate/cc40227d-7391-4186-bdff-cf4048b8a515",
+      "generateCredits": 70,
+      "rig": {
+        "type": "Other (auto quadruped skeleton: spine, neck, 4 legs, tail)",
+        "preset": null,
+        "credits": 20,
+        "status": "complete"
+      },
+      "creditsTotal": 90,
+      "note": "clean: skull, glowing teal eyes, ribcage, tattered hide, 4 legs intact; quad 49k faces",
+      "status": "integrated-unbound",
+      "review": "Tripo 'Other' rig with only a Walk clip; the grave_hound race keeps the Fab Barghest (full clip set). Bind once idle/attack clips exist."
+    }
+  ],
+  "notes": [
+    "dryad: the first attempt never started (front slot upload raced the delete click, no charge); resubmitted as 07701621.",
+    "golem slash retargets (GolemVerdant, GolemFelfire) and SummonGuardian slash fail the ChampionAttacks02 body-order check; those bodies use their native Tripo slash.",
+    "Staff carry: the six two-handed staffs carry at [0.38, 0.0, 0.64] (WeaponGrips.json) so the HQ faces are not hidden behind the staff."
+  ],
+  "exports": {
+    "ranger": {
+      "export": "CTS_ChampHQ_Ranger",
+      "folder": "Ranger",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.35,
+          0.85,
+          0.45
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15
+      }
+    },
+    "scholar": {
+      "export": "CTS_ChampHQ_Scholar",
+      "folder": "Scholar",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.35,
+          0.95,
+          0.85
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.4,
+          1.0,
+          0.8
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "lancer": {
+      "export": "CTS_ChampHQ_Lancer",
+      "folder": "Lancer",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          1.0,
+          0.45,
+          0.25
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15
+      }
+    },
+    "summoner": {
+      "export": "CTS_ChampHQ_Summoner",
+      "folder": "Summoner",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.7,
+          0.35,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.75,
+          0.35,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "wizard": {
+      "export": "CTS_ChampHQ_Wizard",
+      "folder": "Wizard",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.35,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          1.0,
+          0.45,
+          0.12
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "gunblade": {
+      "export": "CTS_ChampHQ_Gunblade",
+      "folder": "Gunblade",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          1.0,
+          0.35,
+          0.25
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15
+      }
+    },
+    "witch_slayer": {
+      "export": "CTS_ChampHQ_WitchSlayer",
+      "folder": "WitchSlayer",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.25,
+          1.0,
+          0.8
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.2,
+          1.0,
+          0.85
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "huntress": {
+      "export": "CTS_ChampHQ_Huntress",
+      "folder": "Huntress",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          1.0,
+          0.3,
+          0.25
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15
+      }
+    },
+    "aetheri_artificer": {
+      "export": "CTS_ChampHQ_AetheriArtificer",
+      "folder": "AetheriArtificer",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.6,
+          0.5,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.45,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "aetheri_warden": {
+      "export": "CTS_ChampHQ_AetheriWarden",
+      "folder": "AetheriWarden",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.6,
+          0.5,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.45,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "dryad": {
+      "export": "CTS_ChampHQ_Dryad",
+      "folder": "Dryad",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.5,
+          1.0,
+          0.4
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.45,
+          1.0,
+          0.35
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "dwarf_miner": {
+      "export": "CTS_ChampHQ_DwarfMiner",
+      "folder": "DwarfMiner",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          1.0,
+          0.6,
+          0.3
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.3,
+          0.65,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "orc_chieftain": {
+      "export": "CTS_ChampHQ_OrcChieftain",
+      "folder": "OrcChieftain",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          1.0,
+          0.3,
+          0.2
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15
+      }
+    },
+    "drakish_footman": {
+      "export": "CTS_ChampHQ_DrakishFootman",
+      "folder": "DrakishFootman",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          1.0,
+          0.45,
+          0.15
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          1.0,
+          0.4,
+          0.1
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "keeper_of_light": {
+      "export": "CTS_ChampHQ_KeeperOfLight",
+      "folder": "KeeperOfLight",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          1.0,
+          0.85,
+          0.5
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          1.0,
+          0.8,
+          0.4
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "troll_berserker": {
+      "export": "CTS_ChampHQ_TrollBerserker",
+      "folder": "TrollBerserker",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.4,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15
+      }
+    },
+    "ether_golem_tank": {
+      "export": "CTS_ChampHQ_GolemGranite",
+      "folder": "GolemGranite",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.3,
+          0.9,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.25,
+          0.85,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "ether_golem_support": {
+      "export": "CTS_ChampHQ_GolemVerdant",
+      "folder": "GolemVerdant",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.35,
+          1.0,
+          0.5
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.3,
+          1.0,
+          0.45
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "ether_golem_bruiser": {
+      "export": "CTS_ChampHQ_GolemFelfire",
+      "folder": "GolemFelfire",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.45,
+          1.0,
+          0.2
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.4,
+          1.0,
+          0.15
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "totemic_behemoth": {
+      "export": "CTS_ChampHQ_TotemicBehemoth",
+      "folder": "TotemicBehemoth",
+      "kind": "champion",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.3,
+          0.9,
+          0.8
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15
+      }
+    },
+    "whisp": {
+      "export": "CTS_ChampHQ_Whisp",
+      "folder": "Whisp",
+      "kind": "static champion (custom_ready spirit, procedural motion)",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.7,
+          1.0,
+          0.6
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.7,
+          1.0,
+          0.55
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "mechanical_tank": {
+      "export": "CTS_ChampHQ_SummonMechTank",
+      "folder": "SummonMechTank",
+      "kind": "summon",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          1.0,
+          0.55,
+          0.2
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          1.0,
+          0.45,
+          0.1
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "pet_sabercat": {
+      "export": "CTS_ChampHQ_PetSabercat",
+      "folder": "PetSabercat",
+      "kind": "pet",
+      "lods": true,
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          1.0,
+          0.6,
+          0.3
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15
+      }
+    },
+    "pavise": {
+      "export": "CTS_ChampHQ_Pavise",
+      "folder": "Constructs/Pavise",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimStrength": 0.0,
+        "NormalStrength": 1.15
+      }
+    },
+    "oathbound_guardian": {
+      "export": "CTS_ChampHQ_SummonGuardian",
+      "folder": "SummonGuardian",
+      "kind": "summon",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.7,
+          0.4,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.65,
+          0.3,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "spectral_companion": {
+      "export": "CTS_ChampHQ_SummonSpectral",
+      "folder": "SummonSpectral",
+      "kind": "summon",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.4,
+          0.9,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.45,
+          0.85,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "grave_hound": {
+      "export": "CTS_ChampHQ_GraveHound",
+      "folder": "GraveHound",
+      "kind": "creature",
+      "lods": true,
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.4,
+          1.0,
+          0.8
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.35,
+          1.0,
+          0.8
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "AetherTurret": {
+      "export": "SM_AetherTurret",
+      "folder": "Constructs/AetherTurret",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "AetherObelisk": {
+      "export": "SM_AetherObelisk",
+      "folder": "Constructs/AetherObelisk",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "SkitterBomb": {
+      "export": "SM_SkitterBomb",
+      "folder": "Constructs/SkitterBomb",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "AetherTrap": {
+      "export": "SM_AetherTrap",
+      "folder": "Constructs/AetherTrap",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "AetherPylon": {
+      "export": "SM_AetherPylon",
+      "folder": "Constructs/AetherPylon",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.55,
+          0.6,
+          1.0
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    },
+    "SpiritLantern": {
+      "export": "SM_SpiritLantern",
+      "folder": "Constructs/SpiritLantern",
+      "kind": "construct",
+      "look": {
+        "Vibrance": 0.3,
+        "Brightness": 1.05,
+        "RimColor": [
+          0.4,
+          1.0,
+          0.9
+        ],
+        "RimStrength": 0.1,
+        "RimExponent": 4.0,
+        "NormalStrength": 1.15,
+        "EmissiveColor": [
+          0.3,
+          1.0,
+          0.85
+        ],
+        "EmissiveIntensity": 6.0
+      }
+    }
+  },
+  "uprightIdle": {
+    "problem": "Polyphoria paladin sword-and-shield idle is a deep hunched crouch.",
+    "measured": "frame-0 head height / reference-pose head height and head-over-pelvis lean (Tools probe on the owned packs)",
+    "best": [
+      {
+        "clip": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Idle2_IP",
+        "headRatio": 0.989,
+        "leanCm": 7.9,
+        "note": "upright sword-and-shield hero idle (V2_Idle2 / V3_Idle2 are the same motion)"
+      },
+      {
+        "clip": "/Game/Gun_and_Sword/Animations/Sequence/01_Idle/01_Idle/AS_Idle_Seq",
+        "headRatio": 0.987,
+        "leanCm": 0.6,
+        "note": "most upright; relaxed one-hand sword idle"
+      },
+      {
+        "clip": "/Game/MaleLocomotionSet/Animations/Mannequin/RootMotion/Idle/A_Idle",
+        "headRatio": 0.982,
+        "leanCm": 10.0,
+        "note": "neutral unarmed idle"
+      }
+    ],
+    "avoid": [
+      "AS_SwordAndShieldAnimV1_Idle1_IP / V2_Idle1 (head 0.895, pelvis 0.853: crouched guard)"
+    ],
+    "status": "noted for reuse; not applied (paladins are owned by main)"
+  },
+  "fusedPartsAudit": {
+    "date": "2026-09-26",
+    "result": "Champion sheets were weapon-free by brief, so every HQ weapon, shield and staff is already a separate prop (WeaponLoadouts.json, closed-hand CireGrip). Capes, coats and hoods are skinned cloth on the UE5 rig and move with it. The only fused prop is the Ranger's quiver.",
+    "skeleton": "All 20 HQ humanoid champions plus the Oathbound Guardian and Spectral Companion use Tripo's Humanoid UE5 Mannequin preset (UE5 bone names: hand_r, index_01_r, spine_03...). The GDH / Gun & Sword / Crossbow sets retarget through the IK rigs (RetargetChampionAttacks). The golems and behemoth also use the humanoid preset. The grave hound uses Tripo's 'Other' quadruped rig.",
+    "rangerQuiver": {
+      "status": "blocked: needs Eric",
+      "done": [
+        "Quad models cannot be segmented, so a triangulated copy was made (5 credits)",
+        "Detailed segmentation isolated the quiver as tripo_part_7 (arrows) + tripo_part_16 (tube) on 2b9fbccc-3f9e-4ffd-90d5-9598f0d209fa (40 + 40 credits)",
+        "Deleting the quiver left an open strip on the back; Fill Parts > Quick Cap (free) closed it (version 09-26 00:02, 140,255 faces; the patch has a smeared texture that the re-attached quiver hides)"
+      ],
+      "blocker": "Auto Rig refuses 140k faces ('Polygon Limit Exceeded'). Retopo (Triangle, Smart Mesh off, ~90,000, 5 credits) is needed first; the agent's auto-mode permission check blocked typing the count, so Eric must run that step or allow it.",
+      "then": [
+        "Rig on Humanoid UE5 Mannequin (20) with idle/walk/run/slash/hit_to_body_01/fall/cast_a_spell + the Archery bow clip, and send it via DCC Bridge as CTS_ChampHQ_RangerB",
+        "Quiver: save the 23:53 history version as a new model, keep only parts 7 + 16, and send it unrigged as SM_RangerQuiver (keep its position)",
+        "Add exports rows (ranger -> export CTS_ChampHQ_RangerB, folder RangerB; SM_RangerQuiver -> folder Props/RangerQuiver, kind prop), run the pipeline --only, point WriteChampionHQArtRows 'ranger' at folder RangerB, and add to the ranger row: \"staticParts\": [{\"mesh\": \"/Game/Tripo/ChampionsHQ/Props/RangerQuiver/SM_RangerQuiver.SM_RangerQuiver\", \"bone\": \"spine_03\"}] (UCireChampionArt::ApplyStaticParts places a mesh-space part on its bone's bind pose; use offsetCm/rotation if Tripo recentred the part)"
+      ]
+    }
+  },
+  "nextSteps": [
+    "Ranger quiver split: see fusedPartsAudit.rangerQuiver (needs Eric's retopo step).",
+    "Grave hound (cc40227d) is integrated at /Game/Tripo/ChampionsHQ/GraveHound but unbound: it only has a Walk clip. The grave_hound race keeps the Fab Barghest (full clip set). This belongs to the monster/NPC job.",
+    "Pavise HQ body is wired in CireConstruct (Construct: Pavise) but was not captured; KitsGallery has no pavise shot.",
+    "Upright hero idle for the paladins: see uprightIdle (not applied; paladins are owned by main).",
+    "Monster/NPC package (segmentation, UE5 re-rig, non-humanoid rigs with drowned_deep squid-folk first, HD re-texture) is a separate job and was not started."
+  ]
+}

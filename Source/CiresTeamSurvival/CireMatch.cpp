@@ -43,6 +43,7 @@
 #include "CireNPCPackPreview.h"
 #include "CireMonsterGallery.h" // creature-anim
 #include "CireNewChampionsGallery.h" // new-champions
+#include "CireChampionHQGallery.h" // champion-hq
 #include "CireNPCNetProbe.h"
 #include "CireNav.h" // nav-paths
 #include "CireArenas.h" // arenas
@@ -243,6 +244,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireNPCPackPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireMonsterGallery::Initialize(this); // creature-anim
     if(!bFeedbackPreview)bFeedbackPreview = CireNewChampionsGallery::Initialize(this); // new-champions
+    if(!bFeedbackPreview)bFeedbackPreview = CireChampionHQGallery::Initialize(this); // champion-hq
     if(!bFeedbackPreview)bFeedbackPreview = CireKitsGallery::Initialize(this); // scaling-kits
     if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
     CireNPCNetProbe::InitializeServer(this);
@@ -497,6 +499,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireNPCPackPreview::Tick(this)) return;
     if(CireMonsterGallery::Tick(this)) return; // creature-anim
     if(CireNewChampionsGallery::Tick(this)) return; // new-champions
+    if(CireChampionHQGallery::Tick(this)) return; // champion-hq
     if(CireKitsGallery::Tick(this)) return; // scaling-kits
     if(CireShopFixtures::Tick(this)) return; // progression-shop
     if(CireNPCNetProbe::TickServer(this)) return;

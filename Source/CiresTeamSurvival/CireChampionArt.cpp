@@ -2,6 +2,9 @@
 #include "CireFabAnimation.h" // fab-integration
 #include "CireGame.h"
 #include "CirePets.h" // pets
+#include "CireSummon.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h" // champion-hq: summon bodies
 #include "CireWeaponPresentation.h"
 #include "CireCreatureArt.h"
 #include "CireChampionActions.h" // creature-anim
@@ -294,6 +297,22 @@ const FChampionArtDefinition* ProfileArt(const FString& Id);
 /** fab-integration: the committed binding, ignoring the Fab overlay (fallback when a Fab body fails to apply). */
 const FChampionArtDefinition* BaseProfileArt(const FString& Id);
 
+// champion-hq: summons (ACireSummon, not pets) look up "summon:<name slug>" (e.g. summon:oathbound_guardian) in
+// SummonArt.json first; their gameplay profile (knight / scholar / ether_golem_tank) only picks the fallback body.
+FString SummonArtKey(const ACireHero& Hero)
+{
+    if(!Hero.IsA<ACireSummon>()||Hero.ChampionProfileId.StartsWith(TEXT("pet:"))||Hero.HeroName.IsEmpty())return FString();
+    return TEXT("summon:")+Hero.HeroName.ToLower().Replace(TEXT(" "),TEXT("_")).Replace(TEXT("-"),TEXT("_"));
+}
+const FChampionArtDefinition* BaseProfileArt(const FString& Id);
+const FChampionArtDefinition* ArtFor(const ACireHero& Hero)
+{
+    const FString Key=SummonArtKey(Hero);
+    if(!Key.IsEmpty())if(const FChampionArtDefinition* Summon=BaseProfileArt(Key))return Summon;
+    return ProfileArt(Hero.ChampionProfileId);
+}
+FString ArtAttemptKey(const ACireHero& Hero){return Hero.ChampionProfileId+TEXT("|")+SummonArtKey(Hero);}
+
 const FChampionArtDefinition* ProfileArt(const FString& Id)
 {
     if(!Id.StartsWith(TEXT("pet:")))if(const auto* Fab=FabProfileArt(Id))return Fab; // fab-integration
@@ -313,6 +332,30 @@ const FChampionArtDefinition* BaseProfileArt(const FString& Id)
            !Pet->Art->TryGetNumberField(TEXT("heightCm"),Height)||Height<20||Height>400)return nullptr;
         D.HeightCm=static_cast<float>(Height);D.Raw=Pet->Art;
         return &PetBindings.Add(Id,MoveTemp(D));
+    }
+    // champion-hq: summoned units (key "summon:<id>", set by ACireSummon / ACireMechTank) read Content/Data/SummonArt.json
+    // rows with the ChampionArtBindings "ready" shape (mesh, locomotion, attack, heightCm, optional yaw / fallback).
+    // No row: nullptr, and the summon keeps its archetype body (Definitions[] / Manny), exactly as before.
+    if(Id.StartsWith(TEXT("summon:")))
+    {
+        static bool bSummonsLoaded=false;
+        static TMap<FString,FChampionArtDefinition> SummonBindings;
+        if(!bSummonsLoaded)
+        {
+            bSummonsLoaded=true;FString Json;TSharedPtr<FJsonObject> Root;const TArray<TSharedPtr<FJsonValue>>* Rows=nullptr;double Version=0;
+            if(FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/SummonArt.json")))&&
+               FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),Root)&&Root&&Root->TryGetNumberField(TEXT("schemaVersion"),Version)&&Version==1&&
+               Root->TryGetArrayField(TEXT("summons"),Rows))
+                for(const auto& Row:*Rows)
+                {
+                    const TSharedPtr<FJsonObject>* O=nullptr;FString Key,Status;FChampionArtDefinition D;double Height=0;
+                    if(!Row->TryGetObject(O)||!(*O)->TryGetStringField(TEXT("id"),Key)||!(*O)->TryGetStringField(TEXT("status"),Status)||Status!=TEXT("ready")||
+                       !(*O)->TryGetStringField(TEXT("mesh"),D.MeshPath)||!(*O)->TryGetStringField(TEXT("locomotion"),D.LocomotionPath)||
+                       !(*O)->TryGetStringField(TEXT("attack"),D.AttackPath)||!(*O)->TryGetNumberField(TEXT("heightCm"),Height)||Height<40||Height>500)continue;
+                    D.HeightCm=static_cast<float>(Height);D.Raw=*O;SummonBindings.Add(TEXT("summon:")+Key,MoveTemp(D));
+                }
+        }
+        return SummonBindings.Find(Id);
     }
 
     static bool bLoaded=false;
@@ -435,7 +478,7 @@ void UCireChampionArt::RestoreFallback(ACireHero& Hero)
 bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
 {
     if (Archetype < 0 || Archetype >= UE_ARRAY_COUNT(Definitions)) return false;
-    const auto* Profile=ProfileArt(Hero.ChampionProfileId);
+    const auto* Profile=ArtFor(Hero); // champion-hq: summon bodies first
     if(IsCreatureProfile(Hero.ChampionProfileId))
     {
         CaptureFallback(Hero);
@@ -476,19 +519,59 @@ bool UCireChampionArt::Apply(ACireHero& Hero, int32 Archetype)
     return ApplyHumanoid(Hero, Archetype, Profile ? *Profile : Definitions[Archetype]);
 }
 
-bool UCireChampionArt::ApplyHumanoid(ACireHero& Hero, int32 Archetype, const FChampionArtDefinition& Definition)
+bool UCireChampionArt::ApplyHumanoid(ACireHero& Hero, int32 Archetype, const FChampionArtDefinition& Requested)
 {
-    const FChampionArtDefinition* Profile = Definition.Raw.IsValid() ? &Definition : nullptr;
-    const bool bFabHumanoid = Definition.Motion == TEXT("humanoid");
-    auto* Body = LoadObject<USkeletalMesh>(nullptr, *Definition.MeshPath);
-    auto* Blend = LoadObject<UBlendSpace>(nullptr, *Definition.LocomotionPath);
-    // fab-integration: locomotion retargeted from the Fab packs (true strafe/backpedal) when installed for this body.
-    if (UBlendSpace* FabBlend = CireFabAnimation::Locomotion(Body, CireFabAnimation::FolderFor(Body)); FabBlend && HasMatchingLocomotion(Body, FabBlend)) Blend = FabBlend;
-    if (!HasMatchingLocomotion(Body, Blend))
+    const FChampionArtDefinition* Profile = Requested.Raw.IsValid() ? &Requested : nullptr;
+    // champion-hq: a binding row may carry a "fallback" body (the previous art); it is used when the primary body,
+    // its locomotion or its skeleton pairing is unavailable, so a missing HQ import never drops to the mannequin.
+    FChampionArtDefinition FallbackDefinition;
+    const FChampionArtDefinition* Chosen = &Requested;
+    USkeletalMesh* Body = nullptr;
+    UBlendSpace* Blend = nullptr;
+    const auto Resolve = [&Body, &Blend](const FChampionArtDefinition& D)
     {
-        UE_LOG(LogCireChampionArt, Warning, TEXT("Keeping original hero art: missing or mismatched locomotion for archetype %d (%s)."), Archetype, *Definition.LocomotionPath);
-        return false;
+        const auto Exists = [](const FString& Path)
+        {
+            const FString Package = FPackageName::ObjectPathToPackageName(Path);
+            return FPackageName::IsValidLongPackageName(Package) && FPackageName::DoesPackageExist(Package);
+        };
+        Body = Exists(D.MeshPath) ? LoadObject<USkeletalMesh>(nullptr, *D.MeshPath) : nullptr;
+        Blend = Exists(D.LocomotionPath) ? LoadObject<UBlendSpace>(nullptr, *D.LocomotionPath) : nullptr;
+        // fab-integration: locomotion retargeted from the Fab packs (true strafe/backpedal) when installed for this body.
+        if (UBlendSpace* FabBlend = Body ? CireFabAnimation::Locomotion(Body, CireFabAnimation::FolderFor(Body)) : nullptr; FabBlend && HasMatchingLocomotion(Body, FabBlend)) Blend = FabBlend;
+        return HasMatchingLocomotion(Body, Blend);
+    };
+    // champion-hq: -CireChampionHQOff forces every row's "fallback" body (before/after review captures).
+    static const bool bHQOff = FParse::Param(FCommandLine::Get(), TEXT("CireChampionHQOff"));
+    const bool bForceFallback = bHQOff && Profile && Profile->Raw.IsValid() && Profile->Raw->HasField(TEXT("fallback"));
+    if (bForceFallback || !Resolve(*Chosen))
+    {
+        const TSharedPtr<FJsonObject>* Fallback = nullptr;
+        double FallbackHeight = 0;
+        if (Profile && Profile->Raw.IsValid() && Profile->Raw->TryGetObjectField(TEXT("fallback"), Fallback) &&
+            (*Fallback)->TryGetStringField(TEXT("mesh"), FallbackDefinition.MeshPath) &&
+            (*Fallback)->TryGetStringField(TEXT("locomotion"), FallbackDefinition.LocomotionPath) &&
+            (*Fallback)->TryGetStringField(TEXT("attack"), FallbackDefinition.AttackPath) &&
+            (*Fallback)->TryGetNumberField(TEXT("heightCm"), FallbackHeight) && FallbackHeight >= 80 && FallbackHeight <= 400)
+        {
+            FallbackDefinition.HeightCm = static_cast<float>(FallbackHeight);
+            FallbackDefinition.Raw = *Fallback;
+            if (Resolve(FallbackDefinition))
+            {
+                UE_LOG(LogCireChampionArt, Warning, TEXT("%s: primary body unavailable (%s); using its fallback body (%s)."),
+                    *Hero.ChampionProfileId, *Chosen->MeshPath, *FallbackDefinition.MeshPath);
+                Chosen = &FallbackDefinition;
+            }
+        }
+        if (Chosen != &FallbackDefinition)
+        {
+            UE_LOG(LogCireChampionArt, Warning, TEXT("Keeping original hero art: missing or mismatched locomotion for archetype %d (%s)."), Archetype, *Chosen->LocomotionPath);
+            return false;
+        }
+        Profile = Chosen; // relaxArms / tint follow the body actually in use
     }
+    const auto& Definition = *Chosen;
+    const bool bFabHumanoid = Definition.Motion == TEXT("humanoid"); // paladin-hq (of the body actually in use)
     const FBoxSphereBounds Bounds = Body->GetImportedBounds();
     const double Height = Bounds.BoxExtent.Z * 2.0;
     if (!FMath::IsFinite(Height) || Height < 20.0 || Height > 1000.0) return false;
@@ -504,7 +587,10 @@ bool UCireChampionArt::ApplyHumanoid(ACireHero& Hero, int32 Archetype, const FCh
     }
     if (!FMath::IsFinite(Bottom)) return false;
     float FacingYaw = 0.f;
-    if (!GetFacingYaw(*Body, FacingYaw))
+    double YawOverride = 0.0; // champion-hq: Tripo UE5-preset rigs face +Y; their toe bones do not give a clean forward axis
+    if (Definition.Raw.IsValid() && Definition.Raw->TryGetNumberField(TEXT("yaw"), YawOverride) && FMath::IsFinite(YawOverride))
+        FacingYaw = static_cast<float>(YawOverride);
+    else if (!GetFacingYaw(*Body, FacingYaw))
     {
         UE_LOG(LogCireChampionArt, Warning, TEXT("Keeping original hero art: cannot establish foot-facing axis for %s."), *Body->GetName());
         return false;
@@ -529,6 +615,7 @@ bool UCireChampionArt::ApplyHumanoid(ACireHero& Hero, int32 Archetype, const FCh
         Combat->RelaxArms = bRelax ? 1.f : 0.f;
     }
     Mesh->SetOverlayMaterial(Overlay);
+    ApplyStaticParts(Hero, Definition.Raw); // champion-hq: segmented props (quiver)
     // paladin-hq: leader-posed parts (head, helmet, armour pieces) and the per-champion material identity.
     if (bFabHumanoid && !ApplyFabBody(Hero, Definition.Raw))
     {
@@ -579,11 +666,11 @@ void UCireChampionArt::UpdateVisuals(ACireHero& Hero, float DeltaSeconds)
         AttemptedProfile.Reset();
         return;
     }
-    if (AttemptedArchetype != Hero.Archetype || AttemptedProfile != Hero.ChampionProfileId)
+    if (AttemptedArchetype != Hero.Archetype || AttemptedProfile != ArtAttemptKey(Hero))
     {
         RestoreFallback(Hero);
         AttemptedArchetype = Hero.Archetype;
-        AttemptedProfile = Hero.ChampionProfileId;
+        AttemptedProfile = ArtAttemptKey(Hero);
         Apply(Hero, Hero.Archetype);
     }
     if(IsApplied() && IsCreatureProfile(Hero.ChampionProfileId))
@@ -660,7 +747,7 @@ bool UCireChampionArt::EffectiveCreatureBinding(const FString& ProfileId,FString
 }
 bool UCireChampionArt::DebugApply(ACireHero& Hero)
 {
-    RestoreFallback(Hero);AttemptedArchetype=Hero.Archetype;AttemptedProfile=Hero.ChampionProfileId;
+    RestoreFallback(Hero);AttemptedArchetype=Hero.Archetype;AttemptedProfile=ArtAttemptKey(Hero);
     return Apply(Hero,Hero.Archetype);
 }
 bool UCireChampionArt::TintBody(USkeletalMeshComponent* Mesh,UObject* Outer,FLinearColor Base,FLinearColor Accent,float Strength,FLinearColor Rim)
@@ -746,6 +833,45 @@ void UCireChampionArt::ClearBodyParts()
 {
     for (USkeletalMeshComponent* Part : BodyParts) if (Part) Part->DestroyComponent();
     BodyParts.Reset();
+    for (UStaticMeshComponent* Part : StaticParts) if (Part) Part->DestroyComponent(); // champion-hq
+    StaticParts.Reset();
+}
+
+// champion-hq: "staticParts" of an HQ row are props Tripo segmented off the body (the Ranger's quiver). Each row gives
+// "mesh" (a static mesh authored in the body's own mesh space), "bone"; the part follows that bone from its bind pose.
+// Optional "offsetCm" / "rotation" nudge it in bone space. A missing asset only drops that part.
+void UCireChampionArt::ApplyStaticParts(ACireHero& Hero, const TSharedPtr<FJsonObject>& Raw)
+{
+    USkeletalMeshComponent* Leader = Hero.GetMesh();
+    const TArray<TSharedPtr<FJsonValue>>* Parts = nullptr;
+    if (!Leader || !Leader->GetSkeletalMeshAsset() || !Raw.IsValid() || !Raw->TryGetArrayField(TEXT("staticParts"), Parts)) return;
+    const FReferenceSkeleton& Ref = Leader->GetSkeletalMeshAsset()->GetRefSkeleton();
+    for (const auto& Value : *Parts)
+    {
+        const TSharedPtr<FJsonObject>* Row = nullptr; FString Path, Bone;
+        if (!Value->TryGetObject(Row) || !(*Row)->TryGetStringField(TEXT("mesh"), Path) || !(*Row)->TryGetStringField(TEXT("bone"), Bone)) continue;
+        UStaticMesh* Asset = LoadObject<UStaticMesh>(nullptr, *Path, nullptr, LOAD_Quiet | LOAD_NoWarn);
+        int32 Index = Ref.FindBoneIndex(FName(*Bone));
+        if (!Asset || Index == INDEX_NONE) { UE_LOG(LogCireChampionArt, Warning, TEXT("HQ static part skipped: %s on %s"), *Path, *Bone); continue; }
+        FTransform BoneInMesh = FTransform::Identity; // bind pose of the bone in mesh space
+        for (int32 I = Index; I != INDEX_NONE; I = Ref.GetParentIndex(I)) BoneInMesh = BoneInMesh * Ref.GetRefBonePose()[I];
+        FTransform Relative = BoneInMesh.Inverse();
+        const TArray<TSharedPtr<FJsonValue>>* V = nullptr;
+        if ((*Row)->TryGetArrayField(TEXT("offsetCm"), V) && V->Num() == 3) Relative.AddToTranslation(FVector((*V)[0]->AsNumber(), (*V)[1]->AsNumber(), (*V)[2]->AsNumber()));
+        if ((*Row)->TryGetArrayField(TEXT("rotation"), V) && V->Num() == 3) Relative.ConcatenateRotation(FRotator((*V)[0]->AsNumber(), (*V)[1]->AsNumber(), (*V)[2]->AsNumber()).Quaternion());
+        auto* Part = NewObject<UStaticMeshComponent>(&Hero, NAME_None, RF_Transient);
+        Hero.AddInstanceComponent(Part);
+        Part->SetupAttachment(Leader, FName(*Bone));
+        Part->SetStaticMesh(Asset);
+        Part->SetCollisionEnabled(ECollisionEnabled::NoCollision); Part->SetGenerateOverlapEvents(false);
+        Part->SetCanEverAffectNavigation(false); Part->SetCastShadow(true);
+        Part->ComponentTags.AddUnique(TEXT("CireBodyPart"));
+        Part->RegisterComponent();
+        Part->SetRelativeTransform(Relative);
+        Part->SetOverlayMaterial(Leader->GetOverlayMaterial());
+        Part->SetVisibility(Leader->IsVisible());
+        StaticParts.Add(Part);
+    }
 }
 
 bool UCireChampionArt::ApplyFabBody(ACireHero& Hero, const TSharedPtr<FJsonObject>& Raw)
