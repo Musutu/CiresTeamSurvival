@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "_comment": "dev-route-tools: the map layout editor's setter table (Docs/MapLayout.md). One entry per setter, in action-bar order: bar 1 slots 1-6 and 9-12 (keys 1-6, 7-0 by default), then bar 2. gizmo: pillar | ring | path | polygon | zone. defaultTeam 0 = shared (else the team whose realm the marker is placed in). Code falls back to the same built-in table when this file is missing or malformed.",
   "types": [
-    { "id": "playerSpawn", "name": "Player Spawn", "label": "Spawn", "icon": "chieftain_banner", "color": [0.35, 0.75, 1.0], "gizmo": "pillar", "facing": true, "radius": true, "defaultRadius": 120, "maxPerOwner": 10 },
+    { "id": "playerSpawn", "name": "Player Spawn", "label": "Spawn", "icon": "chieftain_banner", "color": [0.35, 0.75, 1.0], "gizmo": "pillar", "facing": true, "radius": true, "defaultRadius": 120, "maxPerOwner": 0 },
     { "id": "monsterSpawn", "name": "Monster Spawn", "label": "Monsters", "icon": "spectral_hunt", "color": [0.86, 0.32, 0.92], "gizmo": "pillar", "facing": true, "named": true, "target": true, "defaultRadius": 200 },
     { "id": "monsterPath", "name": "Monster Path", "label": "Path", "icon": "centaur_trailblaze", "color": [1.0, 0.62, 0.18], "gizmo": "path", "named": true, "target": true, "points": true, "defaultRadius": 0 },
-    { "id": "challengePack", "name": "Challenge Pack", "label": "Pack", "icon": "challenge_of_iron", "color": [0.66, 0.46, 0.83], "gizmo": "ring", "radius": true, "tier": true, "defaultRadius": 450, "maxPerOwner": 16 },
+    { "id": "challengePack", "name": "Challenge Pack", "label": "Pack", "icon": "challenge_of_iron", "color": [0.66, 0.46, 0.83], "gizmo": "ring", "radius": true, "tier": true, "defaultRadius": 450, "maxPerOwner": 0 },
     { "id": "vendor", "name": "Shop / Vendor", "label": "Vendor", "icon": "price_on_every_soul", "color": [1.0, 0.82, 0.3], "gizmo": "pillar", "facing": true, "named": true, "defaultRadius": 120, "kinds": ["weaponsmith", "armory", "arcane"] },
     { "id": "objective", "name": "Objective / Castle Defend Point", "label": "Objective", "icon": "keeper_beacon", "color": [0.2, 0.86, 0.7], "gizmo": "ring", "radius": true, "defaultRadius": 450, "maxPerOwner": 1 },
     { "id": "bossSpawn", "name": "Boss / Pack Leader Spawn", "label": "Boss", "icon": "chieftain_courage", "color": [0.95, 0.26, 0.2], "gizmo": "pillar", "facing": true, "named": true, "defaultRadius": 200 },
