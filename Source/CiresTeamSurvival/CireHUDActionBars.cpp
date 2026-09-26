@@ -12,6 +12,7 @@
 #include "CireSkillTuning.h"
 #include "CireNPCState.h"
 #include "CireUIStyle.h"
+#include "CireSkillShop.h" // XP tooltip follows the progression mode
 #include "CireItems.h"
 #include "CireAbilityDB.h" // items-v2
 #include "CireSkillShop.h" // items-v2
@@ -196,7 +197,10 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
     // Experience bar (WoW purple), level on hover.
     const float Need = 120.f + FMath::Max(0, Hero->Level) * 60.f;
     CireUIStyle::Bar(P, 12, 7, 560, 8, Hero->Experience / Need, FLinearColor(.55f, .3f, .85f, 1), &BarTrails.FindOrAdd(0xE0E0), Now);
-    Tip(FString::Printf(TEXT("Level %d"), Hero->Level), FString::Printf(TEXT("Experience %d / %.0f to level %d. Levels grant +2 primary and +1 other attributes, and new ability choices."), Hero->Experience, Need, Hero->Level + 1), 12, 5, 560, 12);
+    // Skill Shop mode: levels only raise attributes; skills come from the shop between waves.
+    const bool bShopMode = CireSkillShop::IsSkillShopMode(Hero->GetWorld());
+    Tip(FString::Printf(TEXT("Level %d"), Hero->Level), FString::Printf(TEXT("Experience %d / %.0f to level %d. Levels grant +2 primary and +1 other attributes%s"), Hero->Experience, Need, Hero->Level + 1,
+        bShopMode ? TEXT(". New skills come from the Skill Shop between waves.") : TEXT(", and new ability choices.")), 12, 5, 560, 12);
     // Auto-attack button.
     {
         FCireIconSlot Attack; Attack.IconId = TEXT("basic"); Attack.Kind = ECireSlotKind::Attack; Attack.Tint = FLinearColor(.95f, .8f, .5f, 1);

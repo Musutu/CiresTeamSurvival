@@ -856,6 +856,104 @@ void RewardRules()
 }
 } // namespace
 
+// Skill Shop mode (Eric's ruling: it still levels up, and levels give the minor stat increases).
+// Bought skills are independent of the level breakpoints; Classic Draft keeps its validation.
+void SkillScheduleRules()
+{
+    const auto pool = StarterSkillPool();
+    auto byKind = [&](SkillKind kind, std::size_t skip) {
+        std::vector<SkillDefinition> out;
+        for (const auto& s : pool) if (s.Kind == kind) out.push_back(s);
+        return out.at(skip % out.size());
+    };
+    std::vector<SkillDefinition> actives;
+    for (const auto& s : pool) if (s.Kind == SkillKind::Active) actives.push_back(s);
+
+    // --- Skill Shop: free opening pick, then purchases, then levels 1 -> 25 with correct stats.
+    for (const auto primary : {PrimaryStat::Strength, PrimaryStat::Agility, PrimaryStat::Intelligence})
+    {
+        Progression shop;
+        shop.Schedule = SkillSchedule::Shop;
+        shop.Primary = primary;
+        shop.Stats = {primary == PrimaryStat::Strength ? 20 : 10, primary == PrimaryStat::Agility ? 20 : 10,
+                      primary == PrimaryStat::Intelligence ? 20 : 10};
+        shop.BaseHealth = StartingBaseHealth(shop.Stats.Strength);
+        const StatBlock start = shop.Stats;
+        CHECK(HasPendingAugment(shop));                       // the free opening pick
+        shop = Opened(shop, pool, 1);
+        CHECK(shop.LearnedSkills.size() == 1 && shop.NextAugmentLevel == 3);
+        CHECK(!HasPendingAugment(shop));                      // no level offers in Skill Shop mode
+        // Buy five more actives, a passive and an ultimate at level 1: the learned count far
+        // outruns the level-1 breakpoint, which a Classic Draft progression would reject.
+        int bought = 0;
+        for (const auto& skill : actives)
+        {
+            if (bought == 5) break;
+            if (AddPurchasedSkill(shop, skill)) ++bought;
+        }
+        CHECK(bought == 5);
+        CHECK(AddPurchasedSkill(shop, byKind(SkillKind::Passive, 0)));
+        CHECK(AddPurchasedSkill(shop, byKind(SkillKind::Ultimate, 0)));
+        CHECK(static_cast<int>(shop.LearnedSkills.size()) == MaxSkills && shop.Level == 1);
+        CHECK(!AddPurchasedSkill(shop, byKind(SkillKind::Passive, 1)));   // capacity still enforced
+        CHECK(!AddPurchasedSkill(shop, shop.LearnedSkills.front()));     // no duplicates
+        CHECK(!HasPendingAugment(shop) && !GenerateAugmentOffer(shop, pool, 7).IsValid());
+        for (int level = 2; level <= 25; ++level)
+        {
+            CHECK(GainLevels(shop));
+            CHECK(shop.Level == level);
+        }
+        const int grown = 24;
+        CHECK(shop.Stats.Strength == start.Strength + grown * (primary == PrimaryStat::Strength ? 2 : 1));
+        CHECK(shop.Stats.Agility == start.Agility + grown * (primary == PrimaryStat::Agility ? 2 : 1));
+        CHECK(shop.Stats.Intelligence == start.Intelligence + grown * (primary == PrimaryStat::Intelligence ? 2 : 1));
+        CombatTuning tuning;
+        tuning.BaseHealth = shop.BaseHealth;
+        const auto derived = CalculateStats(shop.Stats, shop.Primary, tuning);
+        CHECK(Near(derived.MaxHealth, primary == PrimaryStat::Strength ? 980 : 490));
+        CHECK(Near(derived.MaxMana, shop.Stats.Intelligence * 30.0));
+        CHECK(Near(derived.Armor, shop.Stats.Strength * 0.1) && Near(derived.Ward, shop.Stats.Strength * 0.1));
+        // The same purchases under the Classic Draft schedule would have stalled every level.
+        Progression stalled = shop;
+        stalled.Schedule = SkillSchedule::Draft;
+        stalled.Level = 1;
+        CHECK(!GainLevels(stalled));
+    }
+    {
+        // Skills bought mid-game (level 4, three skills) keep levelling; no offer ever appears.
+        Progression shop;
+        shop.Schedule = SkillSchedule::Shop;
+        shop = Opened(shop, pool, 2);
+        CHECK(GainLevels(shop, 3) && shop.Level == 4);
+        CHECK(AddPurchasedSkill(shop, actives.at(10)) || AddPurchasedSkill(shop, actives.at(11)));
+        CHECK(AddPurchasedSkill(shop, actives.at(12)) || AddPurchasedSkill(shop, actives.at(13)));
+        CHECK(shop.LearnedSkills.size() == 3 && !HasPendingAugment(shop));
+        CHECK(GainLevels(shop, 20) && shop.Level == 24);
+        // Buying before the opening pick is also fine; the free opening offer then no longer applies.
+        Progression early;
+        early.Schedule = SkillSchedule::Shop;
+        CHECK(AddPurchasedSkill(early, actives.at(0)) && !HasPendingAugment(early) && GainLevels(early, 5));
+    }
+
+    // --- Classic Draft validation is unchanged.
+    {
+        Progression draft;   // default schedule
+        CHECK(draft.Schedule == SkillSchedule::Draft);
+        CHECK(!AddPurchasedSkill(draft, actives.at(0)));      // purchases are Skill Shop only
+        draft = Opened(draft, pool, 3);
+        CHECK(draft.NextAugmentLevel == 3 && GainLevels(draft, 2) && HasPendingAugment(draft));
+        Progression pushed = draft;
+        pushed.LearnedSkills.push_back(actives.at(15));       // skill outside the breakpoint schedule
+        CHECK(!GainLevels(pushed) && !HasPendingAugment(pushed));
+        Progression skipped = draft;
+        skipped.NextAugmentLevel = 6;                           // skipped breakpoint
+        CHECK(!GainLevels(skipped));
+        Progression bad = draft;
+        bad.Schedule = static_cast<SkillSchedule>(9);
+        CHECK(!GainLevels(bad) && !HasPendingAugment(bad));
+    }
+}
+
 int main()
 {
     StatRules();
@@ -868,6 +966,7 @@ int main()
     RollRules();
     ClockRules();
     RewardRules();
+    SkillScheduleRules();
     std::cout << Assertions << " assertions; " << Failures << " failures\n";
     return Failures == 0 ? 0 : 1;
 }

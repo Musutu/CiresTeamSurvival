@@ -70,6 +70,13 @@ struct SkillDefinition
     SkillKind Kind = SkillKind::Active;
 };
 
+// How a champion gains learned skills. Draft (Classic Draft mode): one offer per level
+// breakpoint (1, 3, 6 ... 21), so the learned count is tied to the level. Shop (Skill Shop
+// mode, the default): the opening skill is a free offer, later skills are bought between
+// waves in any order, so the learned count is independent of level and NextAugmentLevel.
+// Levels always grow stats in both modes.
+enum class SkillSchedule : std::uint8_t { Draft, Shop };
+
 struct Progression
 {
     int Level = 1;
@@ -82,7 +89,9 @@ struct Progression
     // Flat health on top of STR x HealthPerStrength, set once at draft from the
     // starting STR (StartingBaseHealth); level growth never changes it.
     double BaseHealth = 0.0;
+    SkillSchedule Schedule = SkillSchedule::Draft;
     // Every champion starts with one skill point: the opening choice is due at level 1.
+    // Draft schedule only: Shop champions keep it at the opening value it had when they bought.
     int NextAugmentLevel = 1;
     std::vector<SkillDefinition> LearnedSkills;
 };
@@ -103,7 +112,11 @@ bool GainLevels(Progression& progression, int count = 1);
 bool HasPassive(const Progression& progression);
 bool HasUltimate(const Progression& progression);
 int CountSkills(const Progression& progression, SkillKind kind);
+// Draft: a level breakpoint is unclaimed. Shop: only the free opening pick (no skills yet).
 bool HasPendingAugment(const Progression& progression);
+// Skill Shop purchase: validates the progression, the category capacity and uniqueness, then
+// appends the skill without touching the level schedule. Draft progressions are refused.
+bool AddPurchasedSkill(Progression& progression, const SkillDefinition& skill);
 
 struct AugmentOffer
 {

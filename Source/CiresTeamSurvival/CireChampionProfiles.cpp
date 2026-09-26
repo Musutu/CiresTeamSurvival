@@ -1,6 +1,7 @@
 #include "CireChampionProfiles.h"
 #include "CireScalingKits.h" // scaling-kits
 #include "CireChampionRoster.h"
+#include "CireSkillShop.h" // Skill Shop schedule sync
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
 #include "CireGame.h"
 #include "CireSkillTuning.h"
@@ -112,6 +113,7 @@ bool ACireHero::DraftProfile(const FString& Id)
     Progression.SecondaryRoles=CireChampionProfiles::SecondaryRoles(this);
     Progression.Stats={Profile->Strength,Profile->Agility,Profile->Intelligence};
     Progression.BaseHealth=Cires::StartingBaseHealth(Profile->Strength); // str-scaling: level-1 health unchanged, growth 10/STR
+    CireSkillShop::SyncSchedule(this); // Skill Shop purchases never block level-ups
     HeroName=Profile->DisplayName;Skills.Reset();Cooldowns.Reset();Offers.Reset();CurrentOffer={};
     bDrafted=true;Recalculate(true);
     // One starting skill point: the opening offer (primary-role actives) is ready immediately;
