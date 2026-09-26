@@ -615,12 +615,26 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             FCireGroundMesh G(V,I,C);
             PaintTelegraph(G,Spec,ThemedStyle(ETone::Hostile,FCireHitShape()),1.f,0.f,1.f,PaintPulse|PaintProgress|PaintCenter);
             PaintActive(G,Spec,FLinearColor(1,.5f,.2f,1),0.f,1.f,0.f,true);
+            // Painted boundary per direction: cast 72 rays from the centre and keep the farthest crossing of any triangle
+            // edge. (Sampling the farthest *vertex* per angular bin read ~1.31 for true circles whenever the rim had fewer
+            // vertices than bins: the empty bins fell back to the inner rune band.) A tessellated circle reads ~1.00, a square 1.41.
             constexpr int32 Bins=72;float Max[Bins]={};
-            for(const FVector& P:G.V)
-            {
-                const FVector2D D=FVector2D(P.X,P.Y)-Center;if(D.IsNearlyZero())continue;
-                const int32 B=FMath::Clamp(FMath::FloorToInt((FMath::Atan2(D.Y,D.X)+PI)/(2*PI)*Bins),0,Bins-1);Max[B]=FMath::Max(Max[B],static_cast<float>(D.Size()));
-            }
+            float Far=0;for(const FVector& P:G.V)Far=FMath::Max(Far,static_cast<float>((FVector2D(P.X,P.Y)-Center).Size()));
+            const auto Cross=[](const FVector2D& A,const FVector2D& B){return A.X*B.Y-A.Y*B.X;};
+            for(int32 T=0;T+2<G.I.Num();T+=3)
+                for(int32 E=0;E<3;++E)
+                {
+                    const FVector& P0=G.V[G.I[T+E]];const FVector& P1=G.V[G.I[T+(E+1)%3]];
+                    const FVector2D A=FVector2D(P0.X,P0.Y)-Center,Seg=FVector2D(P1.X,P1.Y)-FVector2D(P0.X,P0.Y);
+                    if(FMath::Max(A.Size(),(A+Seg).Size())<Far*.5f)continue; // interior detail cannot be the boundary
+                    for(int32 B=0;B<Bins;++B)
+                    {
+                        const float Ang=(B+.5f)/Bins*2*PI-PI;const FVector2D Dir(FMath::Cos(Ang),FMath::Sin(Ang));
+                        const float Den=Cross(Dir,Seg);if(FMath::Abs(Den)<KINDA_SMALL_NUMBER)continue;
+                        const float Tt=Cross(A,Seg)/Den,Ss=Cross(A,Dir)/Den;
+                        if(Tt>0&&Ss>=-1e-4f&&Ss<=1.0001f)Max[B]=FMath::Max(Max[B],Tt);
+                    }
+                }
             float Lo=MAX_flt,Hi=0;for(float M:Max)if(M>0){Lo=FMath::Min(Lo,M);Hi=FMath::Max(Hi,M);}
             return Hi>0?Hi/Lo:0.f;
         };
