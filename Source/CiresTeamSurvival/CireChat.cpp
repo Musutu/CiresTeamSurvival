@@ -34,13 +34,19 @@ void ACireController::SubmitChat() {
 void ACireController::ServerSendChat_Implementation(const FString& Message, bool bTeamOnly) {
     const auto* Hero = Cast<ACireHero>(GetPawn());
     if (!Hero || Message.Len() > 180 || !GetWorld()) return;
-    const double Now = GetWorld()->GetTimeSeconds();
-    if (Now - LastChatTime < 0.75) return;
+    // Spam guard: a burst of up to three lines, refilled at one line per 0.75 s. Measured in real server time: world
+    // time is capped at 0.4 s per frame (MaxUndilatedFrameTime), so after a server hitch two lines sent more than a
+    // second apart used to land "0.74 s" apart in world time and the second was silently dropped. Two lines sent
+    // apart can also reach the server in the same frame after a hitch, which the burst allowance absorbs.
+    const double Now = GetWorld()->GetRealTimeSeconds();
+    ChatAllowance = FMath::Min(3.0, ChatAllowance + FMath::Max(0.0, Now - LastChatTime) / 0.75);
+    LastChatTime = Now;
+    if (ChatAllowance < 1.0) return;
     FString Clean;
     for (TCHAR InputCharacter : Message) if (InputCharacter >= 32 && InputCharacter != 127) Clean.AppendChar(InputCharacter);
     Clean.TrimStartAndEndInline();
     if (Clean.IsEmpty()) return;
-    LastChatTime = Now;
+    ChatAllowance -= 1.0;
 #if !UE_BUILD_SHIPPING
     CireInterfaceProbe::ObserveChat(this, Clean);
 #endif
