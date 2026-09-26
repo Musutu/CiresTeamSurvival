@@ -140,3 +140,42 @@ position and draws the provisional route, breach, goal and pack spots in the wor
 3. It prints `CIRE_EXPLORE_CAPTURE_PASS` when every marcher leaks into the castle.
 
 The navmesh march test also runs on the town: `-CireNavProbe -CireTown`.
+
+## Status and findings (2026-09-26)
+
+Measured on this machine, in a windowed `-game` run:
+
+| Stage | Time |
+|---|---|
+| Streaming both realms | 80-145 s, 20 levels plus 300 nested Level Instances |
+| First navmesh build | 50-85 s, 4,626 tiles per agent |
+| Total time to playable | about 3.5 minutes |
+
+The first run is slower still while shaders and distance fields build.
+
+**Frame time.** The town nav probe's performance window (10 heroes, 40 monsters, both realms loaded) averaged
+146 ms per frame. Performance is an open item: candidates are LODs, Nanite, the second realm's Niagara, and
+not streaming the realm that is not being viewed.
+
+**Waves reach the castle.** `-CireTown -CireNavProbe` marched 10 marchers per realm down the provisional route, and all
+20 left the field at the castle goal. That run used 16 stuck nudges, 6 rescue marches and 4 rescue despawns, so the
+probe's strict no-stall checks still fail.
+
+**Where the provisional route stalls.** These spots are realm-local and also tell Eric where not to route:
+
+| Spot | Pack coordinates | Nudges | Cause |
+|---|---|---|---|
+| (-3500, 6000) | about (-9500, 8600) | Most: 8-11 per run | North market. Market stalls, carts and an anvil crowd the lane. |
+| (-1500, 8000) | | Some | The next street along; stalls by the anvil. |
+| (-16500, -1000) | | Some | The breach itself: the spawn crowd on uneven ground. |
+| (14500, -4000) | | Some | Inside the castle goal zone: arrivals queue at the keep. |
+
+A march without the wave director's rescue (the explore capture column) left 3 units stuck for good at the north
+market.
+
+**Night lighting.** The Darknight sky, with its stars and the pack's night HDRI, reads well. Facades are still dark
+silhouettes. The sky light is shared by both realms, so the night side relies on its moon, the grade and the torch
+fills. Tune it in `CastleTown.json`.
+
+**House interiors.** The houses are enterable Level Instances, but their interiors are dark. `SL_Lighting`, which
+carried the pack's interior light, is not streamed.

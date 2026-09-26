@@ -238,7 +238,11 @@ void ACireWorld::SyncGoalZones() {
     for(TActorIterator<ACireTownGoal> It(GetWorld());It;++It) {
         const FVector Center=CireLanePath::GoalZoneCenter(GetWorld(),It->TeamId,150);
         if(!It->GetActorLocation().Equals(Center,1.))It->SetActorLocation(Center);
-        if(It->GoalVolume&&!FVector2D(It->GoalVolume->GetUnscaledBoxExtent()).Equals(Extent,1.))It->GoalVolume->SetBoxExtent(FVector(Extent.X,Extent.Y,250));
+        // medieval-kingdom: in the pack town the leak zone is a tall column (the castle stands on a hill, the ground trace
+        // under the goal may find a roof or an upper floor).
+        const float HalfZ=bCastleTown?4000.f:250.f;
+        if(It->GoalVolume&&(!FVector2D(It->GoalVolume->GetUnscaledBoxExtent()).Equals(Extent,1.)||!FMath::IsNearlyEqual(It->GoalVolume->GetUnscaledBoxExtent().Z,HalfZ,1.)))
+            It->GoalVolume->SetBoxExtent(FVector(Extent.X,Extent.Y,HalfZ));
     }
 }
 

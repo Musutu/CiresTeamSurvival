@@ -310,13 +310,15 @@ float CireTownMap::Ground(const UWorld* World, const FVector2D& XY)
     float Z = D.Offsets[Team].Z;
     if (World && LoadedLevels(World) > 0)
     {
-        FHitResult Hit;
+        // Top-down, every static hit: the ground is the first walkable surface (skips pitched roofs, canopies and walls).
+        TArray<FHitResult> Hits;
         FCollisionQueryParams Params(SCENE_QUERY_STAT(CireTownGround), false);
-        if (World->LineTraceSingleByObjectType(Hit, FVector(XY, Range.Y), FVector(XY, Range.X), FCollisionObjectQueryParams(ECC_WorldStatic), Params))
-        {
-            Z = Hit.ImpactPoint.Z;
-            GroundCache.Add(Key, Z);
-        }
+        World->LineTraceMultiByObjectType(Hits, FVector(XY, Range.Y), FVector(XY, Range.X), FCollisionObjectQueryParams(ECC_WorldStatic), Params);
+        Hits.Sort([](const FHitResult& A, const FHitResult& B) { return A.ImpactPoint.Z > B.ImpactPoint.Z; });
+        const FHitResult* Pick = nullptr;
+        for (const FHitResult& H : Hits) if (H.ImpactNormal.Z >= .7f) { Pick = &H; break; }
+        if (!Pick && Hits.Num()) Pick = &Hits[0];
+        if (Pick) { Z = Pick->ImpactPoint.Z; GroundCache.Add(Key, Z); }
     }
     return Z;
 }
