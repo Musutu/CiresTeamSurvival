@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "branch": "feat/monster-rig",
  "operator": "Claude (monster-rig worktree)",
- "status": "drowned_deep + blightwood DONE (sets retargeted, tentacle/vine sway in the skin material); other races assigned, not retargeted; built; gates: see gates",
+ "status": "drowned_deep + blightwood DONE and committed (603d557); other races assigned, not retargeted",
  "credits": {
   "observedBalanceAtStart": 14961,
   "observedBalanceAtPause": 14941,
@@ -37,5 +37,11 @@
   "1. Remaining races: run -CireFabAnimMonsterSets per race (-CireFabAnimOnly=<variants>), review races_<race> + close_<units> galleries, add sway where the body has hanging parts (e.g. void RiftGazer eye stalks, VoidbornHerald tentacles).",
   "2. Segmentation candidates from the audit (above) when their race comes up.",
   "3. Gates after each race; commit per race."
- ]
+ ],
+ "gates": {
+  "build": "Result: Succeeded (Saved/AgentLogs/feat-monster-rig-build-final-*.log, -Project=F:\\CiresTeamSurvival-agents\\cts-monster-rig)",
+  "expansion": "RunExpansionChecks --timeout 240 --port 17160: native PASS (CIRE_COMBAT_EXPANSION_PASS, CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418), replay PASS, network PASS. Earlier replay/network timeouts were machine load (10 other editors, 90 s cold asset-registry gather counted inside the probe's 90 s budget).",
+  "network": "RunNetworkSmoke --port 17166 --startup-timeout 120 --probe-timeout 90: CIRE_NET_SERVER_PASS heroes=10 teams=5/5, CIRE_NETWORK_SMOKE_PASS",
+  "interface": "RunInterfaceSmoke --port 17168/17169 --startup-timeout 120 --probe-timeout 120: FAIL twice at the known prep->arena chat stall (server never logs CHAT_PASS; fixed by 2d1be99 on fix/interface-stall, not on this branch). With 2d1be99 cherry-picked uncommitted: CIRE_INTERFACE_SMOKE_PASS (port 17167); then reverted and rebuilt."
+ }
 }
