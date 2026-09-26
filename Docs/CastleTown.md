@@ -16,8 +16,13 @@ gate, the full castle, some buildings) keep their actors as One File Per Actor p
 `Content/__ExternalActors__/CastleTown` and `Content/__ExternalObjects__/CastleTown`, which "Add to Project" did not
 copy into the main checkout.
 
-Copy both folders from the Epic vault cache
-(`C:/ProgramData/Epic/EpicGamesLauncher/VaultCache/ModularM43deebcc3fd4V1/data/Content/`). Both paths are gitignored.
+To install them, run `Tools/LinkFabContent.py`, or `Tools/InstallFabExternals.py` on its own. It:
+- finds the pack in the Epic launcher VaultCache
+  (`C:/ProgramData/Epic/EpicGamesLauncher/VaultCache/<entry>/data/Content/`);
+- copies the missing external files into the main checkout, never overwriting;
+- junctions the folders into every worktree.
+
+Both paths are gitignored. `--check` reports without writing.
 
 Without them:
 - The town has no terrain and floats over the void.

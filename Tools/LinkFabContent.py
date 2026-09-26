@@ -14,7 +14,9 @@ What it does:
   * writes each pack folder to the shared `.git/info/exclude` (it applies to
     every worktree at once) so nothing can be committed even before the
     committed .gitignore block lists it;
-  * creates the missing junctions in each worktree (or only --worktree PATH).
+  * creates the missing junctions in each worktree (or only --worktree PATH);
+  * installs packs' __ExternalActors__/__ExternalObjects__ data from the Epic VaultCache into the main checkout and
+    junctions it into the worktrees (Tools/InstallFabExternals.py).
 
 Safe to rerun. It never deletes or overwrites a real directory, and it never
 copies licensed files.
@@ -172,6 +174,10 @@ def main() -> int:
                 problems += 1
             if not msg.startswith(("ok", "keep")):
                 print(msg)
+    # One-File-Per-Actor data the launcher's "Add to Project" leaves in its VaultCache (e.g. CastleTown's landscape).
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import InstallFabExternals
+    problems += InstallFabExternals.run(main_tree, targets, args.check)
     print("done" if not problems else f"{problems} problem(s)")
     return 1 if problems else 0
 
