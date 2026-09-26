@@ -10,6 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerInput.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "CireLayoutRuntime.h" // layout-wiring
 #include "InputCoreTypes.h"
 #if !UE_BUILD_SHIPPING
 #include "Components/BoxComponent.h"
@@ -238,7 +239,7 @@ CireCamera::FResult CireCamera::Tick(ACireController* C, ACireHero* H, float Dt,
     // Pivot just above the shoulders; scaled tanks get a proportionally taller pivot.
     Arm->SocketOffset = FVector::ZeroVector;
     Arm->TargetOffset = FVector(0, 0, H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * .85f);
-    Arm->TargetArmLength = S.Boom;
+    Arm->TargetArmLength = CireLayoutRuntime::ClampBoom(H, Pivot, FRotator(S.Pitch, S.Yaw, 0), S.Boom); // layout-wiring: Play Bounds
     return Result;
 }
 

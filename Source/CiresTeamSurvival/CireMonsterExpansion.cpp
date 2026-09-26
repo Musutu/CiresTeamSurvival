@@ -196,9 +196,10 @@ bool CireMonsterExpansion::TickSpecial(ACireMonster* M, ACireGameMode* Mode, flo
     {
         Movement->MaxWalkSpeed = M->BaseMoveSpeed * 1.15f * Slowed;
         const FVector Away = (From - Near->GetActorLocation()).GetSafeNormal2D();
-        const float Length = FMath::Max(1.f, CireLanePath::RouteLength(World, M->Lane));
-        const float Progress = CireLanePath::RouteProgress(World, M->Lane, From);
-        const FVector Back = (CireLanePath::PointAlongRoute(World, M->Lane, FMath::Max(0.f, Progress - 700.f / Length), From.Z) - From).GetSafeNormal2D();
+        // layout-wiring: along the creature's own path.
+        const float Length = FMath::Max(1.f, CireLanePath::PathLengthOf(World, M->Lane, M->LanePath));
+        const float Progress = CireLanePath::PathProgress(World, M->Lane, M->LanePath, From);
+        const FVector Back = (CireLanePath::PointAlongPath(World, M->Lane, M->LanePath, FMath::Max(0.f, Progress - 700.f / Length), From.Z) - From).GetSafeNormal2D();
         FVector Dir = (Away * .65f + Back * .35f).GetSafeNormal2D();
         if (Dir.IsNearlyZero()) Dir = Away.IsNearlyZero() ? FVector(1, 0, 0) : Away;
         const FVector Goal = CireLanePath::ClampToLane(World, M->Lane, From + Dir * 600.f, 120.f);

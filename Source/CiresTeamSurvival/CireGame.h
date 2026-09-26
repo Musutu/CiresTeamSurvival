@@ -214,6 +214,15 @@ public:
     uint32 LaneRouteRevision = 0;
     int32 LaneWaypointIndex = 0;
     float EscortCollisionRefreshAt = 0;
+    // layout-wiring: the march path this unit walks (index into its realm's paths; 0 = the primary route) and the leash
+    // (CireLeash.h). LeashState replicates so every peer can show an evading unit: 0 march, 1 chase, 2 returning.
+    int32 LanePath = 0;
+    bool bPathLeash = false;
+    UPROPERTY(Replicated) uint8 LeashState = 0;
+    FVector2D LeashAnchor = FVector2D::ZeroVector, LeashReturnPoint = FVector2D::ZeroVector;
+    bool bLeashAnchored = false;
+    float LeashReturnStarted = 0, LeashReengageAt = 0, LeashReturnBest = 0, LeashReturnBestAt = 0;
+    int32 LeashReturns = 0;
     UPROPERTY(Replicated) float Health = 120;
     UPROPERTY(Replicated) float MaxHealth = 120;
     UPROPERTY(Replicated) int32 PoisonAreaCount = 0;

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "_comment": "layout-wiring: the wave LEASH / SNAP-BACK (Docs/MapLayout.md 'Leash'). A wave unit only pursues heroes within radius - pursuitMargin of its own path. Pulled farther from its path than its rank's radius (cm), or left standing more than disengageDistance off the path when its target leaves the zone, it gives up and walks back to the path point it left (returnTo 'anchor', or 'nearest'), returnSpeedMultiplier x faster, immune while returning (the WoW evade; untargetable also clears heroes' target on it) and regenerating regenPerSecond of its max health per second, then marches on. Threat is never removed by the leash (Eric: only death drops threat): holders outside the zone keep their threat and are simply not chased. A marching unit without a target is never leashed, so a unit stuck at a market stall is handled by the wave director's stuck rescue instead. cire.Leash reload re-reads this file.",
+  "enabled": true,
+  "radius": { "normal": 1800, "elite": 2400, "boss": 3200 },
+  "pursuitMargin": 300,
+  "disengageDistance": 700,
+  "returnTo": "anchor",
+  "returnSpeedMultiplier": 1.6,
+  "immuneWhileReturning": true,
+  "untargetableWhileReturning": false,
+  "regenPerSecond": 0.2,
+  "healOnArrive": false,
+  "resumeRadius": 200,
+  "reengageSeconds": 2.0,
+  "maxReturnSeconds": 15,
+  "stuckReturnSeconds": 4
+}

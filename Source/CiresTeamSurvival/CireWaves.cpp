@@ -13,6 +13,7 @@
 #include "CireDeveloperTools.h"
 #include "CireNav.h" // nav-paths
 #include "CireMonsterExpansion.h" // monster-expansion
+#include "CireLeash.h" // layout-wiring
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -71,6 +72,9 @@ struct FRuntime
     TMap<TWeakObjectPtr<ACireHero>, FBotState> Bots;
     int32 LeakCostSpawned[2] = {0, 0};
     int32 BossesSpawned = 0;
+    // layout-wiring: per realm, the running slot of the path split and the boss spot rotation.
+    int32 PathSlot[2] = {0, 0}, BossSlot[2] = {0, 0};
+    TMap<int32, int32> PathSpawned[2]; // path index -> units sent down it (probes and the F8 readout)
     int32 Nudges = 0, Marches = 0, Despawns = 0; // nav-paths: rescue totals for the navigation probe
     TSet<TWeakObjectPtr<ACireHero>> Ready; // breather Ready presses since the last wave started
     int32 LastWaveNumber = 0;
@@ -150,14 +154,14 @@ void Unghost(ACireMonster* M)
 {
     if (M && M->GetCapsuleComponent()) M->GetCapsuleComponent()->ClearMoveIgnoreActors();
 }
-/** Teleport a unit onto its route, Step cm closer to the castle than its nearest route point. */
+/** Teleport a unit onto its route, Step cm closer to the castle than its nearest route point. layout-wiring: its OWN path. */
 void NudgeAlong(ACireMonster* M, float Step)
 {
     UWorld* World = M->GetWorld();
     const int32 Team = FMath::Clamp(M->Lane, 0, 1);
-    const float Length = FMath::Max(1.f, CireLanePath::RouteLength(World, Team));
-    const float Progress = CireLanePath::RouteProgress(World, Team, M->GetActorLocation());
-    FVector Target = CireLanePath::PointAlongRoute(World, Team, FMath::Min(.995f, Progress + Step / Length), M->GetActorLocation().Z);
+    const float Length = FMath::Max(1.f, CireLanePath::PathLengthOf(World, Team, M->LanePath));
+    const float Progress = CireLanePath::PathProgress(World, Team, M->LanePath, M->GetActorLocation());
+    FVector Target = CireLanePath::PointAlongPath(World, Team, M->LanePath, FMath::Min(.995f, Progress + Step / Length), M->GetActorLocation().Z);
     if (CireTownMap::IsActive()) Target.Z = CireTownMap::Ground(World, FVector2D(Target)) + M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 10.f; // medieval-kingdom: landscape
     else Target.Z = FMath::Max(Target.Z, 100.);
     M->GetCharacterMovement()->StopMovementImmediately();
@@ -300,15 +304,43 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
 {
     auto* S = Mode->GetGameState<ACireGameState>();
     FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    // layout-wiring: every Monster Spawn of the realm owns its paths; units are split across all of them deterministically
+    // (CireLanePath::PathForSlot: spawns share a wave evenly, each spawn splits evenly or by path weight). Bosses appear at
+    // the Boss markers in turn (else the route's "boss" spot, else the breach) and march the path that starts nearest.
+    UWorld* World = Mode->GetWorld();
+    const FCireBattlefieldRoutes& Routes = CireLanePath::Get(World);
+    int32 Path = 0;
+    FVector Breach;
+    if (O.Unit.bBoss)
+    {
+        Breach = CireLanePath::BossSpawnAt(World, Team, R.BossSlot[Team]++);
+        Path = CireLanePath::NearestPathStart(Routes, Team, CireLanePath::ToLocal(Team, Breach));
+    }
+    else
+    {
+        // Guards of an escort wave march the path of the escortee they defend.
+        const ACireMonster* Escortee = nullptr;
+        if (!O.Unit.bNonAttacking)
+            for (const auto& Pair : R.Tracks)
+                if (Pair.Value.Serial == O.Serial && Pair.Value.bEscortee && AliveUnit(Pair.Key.Get()) && Pair.Key->Lane == Team) { Escortee = Pair.Key.Get(); break; }
+        Path = Escortee ? Escortee->LanePath : CireLanePath::PathForSlot(Routes, Team, R.PathSlot[Team]++);
+        Breach = CireLanePath::PathStart(World, Team, Path);
+    }
     // pacing: waves appear SpawnAlongRoute of the way down the road (0 = the breach gate).
-    // medieval-kingdom: bosses may have their own authored spot (route document "boss"; default the breach).
-    const FVector Breach = O.Unit.bBoss ? CireLanePath::BossSpawnPosition(Mode->GetWorld(), Team) : CireLanePath::SpawnPosition(Mode->GetWorld(), Team);
-    const FVector Start = R.Config.SpawnAlongRoute > .001f ? CireLanePath::PointAlongRoute(Mode->GetWorld(), Team, R.Config.SpawnAlongRoute, Breach.Z) : Breach;
-    const FVector Default = CireLanePath::ClampToLane(Mode->GetWorld(), Team, Start + FVector(((O.Slot / 3) % 2) * 90.f, ((O.Slot % 3) - 1) * 170.f, 0), 80);
+    const FVector Start = R.Config.SpawnAlongRoute > .001f ? CireLanePath::PointAlongPath(World, Team, Path, R.Config.SpawnAlongRoute, Breach.Z) : Breach;
+    // The column forms up behind the spawn, turned to the path's first leg (a spawn facing its street).
+    const TArray<FVector2D>& Points = CireLanePath::PathPoints(Routes, Team, Path);
+    const FVector2D Ahead = Points.Num() > 1 ? (Points[1] - Points[0]).GetSafeNormal() : FVector2D(-1, 0);
+    const FVector2D Right(-Ahead.Y, Ahead.X);
+    const int32 Row = (O.Slot / 3) % 2, File = (O.Slot % 3) - 1;
+    const FVector2D Offset = -Ahead * (Row * 90.f) + Right * (File * 170.f);
+    const FVector Default = CireLanePath::ClampToLane(World, Team, Start + FVector(Offset, 0), 80);
     const FVector Position = CireDeveloperTools::SpawnPosition(Mode->GetWorld(), Team, O.Slot, Default);
-    auto* M = Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(), Position, FRotator(0, 180, 0), Params);
+    auto* M = Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(), Position, FRotator(0, FMath::RadiansToDegrees(FMath::Atan2(Ahead.Y, Ahead.X)), 0), Params);
     if (!M) { UE_LOG(LogCireWaves, Error, TEXT("CIRE_WAVES_SPAWN_FAILED archetype=%s"), *O.Unit.Archetype.ToString()); return nullptr; }
     M->Lane = Team;
+    M->LanePath = Path; M->bPathLeash = true; // layout-wiring: its own path, and the leash that snaps it back to it
+    R.PathSpawned[Team].FindOrAdd(Path)++;
     const FCireWaveUnit& U = O.Unit;
     const int32 GlobalWave = S ? S->Wave : 1;
     CireNPCCombat::ConfigureArchetype(M, U.Archetype, GlobalWave, 0, Mode->Clock.Round(), U.bBoss);
@@ -477,7 +509,8 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
         // Stall failsafe: leftovers WITH NO THREAT march to the castle; after a grace period they despawn.
         // rules-conformance (Eric: threat is lost only on death or an explicit ability): a unit that holds
         // threat keeps fighting past the stall limit, and a marching unit that is attacked stops and fights.
-        const bool bHasThreat = IsValid(M->Victim) || !M->Threat.IsEmpty();
+        // layout-wiring: threat a leashed unit cannot pursue (its holders stand outside the leash zone) does not hold it back.
+        const bool bHasThreat = IsValid(M->Victim) || (!M->Threat.IsEmpty() && !CireLeash::Applies(M));
         if (C.bStallFailsafe && !NoRescue() && Age > C.MaxWaveSeconds)
         {
             if (bHasThreat)
@@ -504,6 +537,13 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
         // Outside its realm (knocked back, launched): return to the route.
         if (!NoRescue() && (!CireLanePath::Contains(World, M->Lane, M->GetActorLocation(), 0) || M->GetActorLocation().Z < -500))
         { NudgeAlong(M, 0); T.Anchor = M->GetActorLocation(); T.StuckFor = 0; continue; }
+        // layout-wiring: the Play Bounds polygon flags a unit that left the playable town; it is set back onto its path.
+        if (!NoRescue() && !CireLanePath::InsidePlayBounds(World, M->Lane, M->GetActorLocation()) && CireLanePath::DistanceToUnitPath(M, M->GetActorLocation()) > 300.f)
+        {
+            UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_OUT_OF_BOUNDS %s lane=%d at=(%.0f,%.0f): back onto its path"), *M->GetNPCDisplayName(), M->Lane, M->GetActorLocation().X, M->GetActorLocation().Y);
+            if (CireLeash::IsReturning(M)) CireLeash::Rescue(M); else NudgeAlong(M, 0);
+            T.Anchor = M->GetActorLocation(); T.StuckFor = 0; continue;
+        }
         // Stuck detection, sampled once per second.
         if (Time < T.SampleAt) continue;
         T.SampleAt = Time + 1.f;
@@ -525,7 +565,13 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
             continue;
         }
         const FVector From = M->GetActorLocation();
-        const bool bChasing = bHasThreat;
+        // layout-wiring: a unit stuck on its way back to its path is set down at its return point (the leash rescue).
+        if (CireLeash::IsReturning(M))
+        {
+            CireLeash::Rescue(M); ++T.Nudges; ++R.Nudges; T.StuckFor = 0; T.Anchor = M->GetActorLocation();
+            continue;
+        }
+        const bool bChasing = bHasThreat && (IsValid(M->Victim) || !CireLeash::Applies(M)); // layout-wiring: a leashed unit may hold threat it does not pursue
         if (bChasing)
         {
             // rules-conformance: a stuck chaser keeps its target; it repaths (to the nearest reachable point)
@@ -611,6 +657,11 @@ void CireWaveDirector::SuppressAggro(ACireMonster* M, float Seconds)
 {
     FRuntime* R = M ? Find(M->GetWorld()) : nullptr;
     if (FTrack* T = R ? R->Tracks.Find(TWeakObjectPtr<ACireMonster>(M)) : nullptr) T->SuppressUntil = FMath::Max(T->SuppressUntil, Now(M) + Seconds);
+}
+TMap<int32, int32> CireWaveDirector::PathSpawnCounts(const ACireGameMode* Mode, int32 Team)
+{
+    const FRuntime* R = Mode ? Find(Mode->GetWorld()) : nullptr;
+    return R ? R->PathSpawned[FMath::Clamp(Team, 0, 1)] : TMap<int32, int32>();
 }
 void CireWaveDirector::RescueCounts(const ACireGameMode* Mode, int32& Nudges, int32& Marches, int32& Despawns)
 {
