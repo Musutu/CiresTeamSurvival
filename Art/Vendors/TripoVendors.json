@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "_comment": "vendors: Tripo generation log for the three town merchants (Eric: log every attempt, the defects and the credits). Pipeline per merchant: ChatGPT turnaround sheet (Art/Vendors/cts_vendor_<id>_ref*.png) -> Tools/ProcessVendorArt.py --views crops (front / right / back, plus left on 4-view sheets) -> Tripo Studio HD Model, multi-view, H3.1 Best Quality, Ultra Mesh, 8K PBR, Remove Lighting, Quad 50k (70 credits) -> 4-VIEW CHECK before rigging (Tools/RunVendorGallery.py --meshes: front/right/back/left + face + back of head: one face, palms and thumbs the right way, no mirrored or fused parts) -> Humanoid auto-rig on the UE5 Mannequin preset (20 credits) -> free presets idle, greet_01, agree, look_around -> Studio Export (FBX, Blender preset, 4K, all clips) named CTS_Vendor_<Folder> -> unzip to Saved/TripoExports/<Folder> -> Tools/ImportVendorFbx.py (see _transfer) -> SECOND CHECK after rigging (Tools/RunVendorGallery.py: idle + greet with both hands from the front and each hand from its side: no wrist twist, inverted hands, tearing or backward fingers). Retry rule (Eric 2026-09-26): up to 2 retries (3 attempts); if none passes, ship the best and record its remaining defects; a Janus face or backwards hands on the best attempt is flagged to Eric.",
+  "balanceBefore": 14846,
+  "exports": {
+    "arcane": {
+      "export": "CTS_Vendor_Arcane",
+      "folder": "Arcane"
+    },
+    "armory": {
+      "export": "CTS_Vendor_Armory",
+      "folder": "Armory"
+    },
+    "weaponsmith": {
+      "export": "CTS_Vendor_Weaponsmith",
+      "folder": "Weaponsmith"
+    }
+  },
+  "attempts": [
+    {
+      "vendor": "arcane",
+      "attempt": 1,
+      "tripoTask": "d2fc49bf-7137-431e-8701-4be4c56a61ef",
+      "reference": "cts_vendor_arcane_ref.png (front, right, back)",
+      "model": 70,
+      "rig": 20,
+      "clips": [
+        "idle",
+        "greet_01",
+        "agree",
+        "look_around"
+      ],
+      "status": "rigged; shipped as CTS_Vendor_Arcane",
+      "defects": [],
+      "preRigCheck": "done after rigging on the reference pose (Saved/Vendors/Check1): one face, back of the head is hair only, hands natural",
+      "note": "the first clip batch only kept idle (clips applied while retargeting are dropped); greet_01, agree and look_around were re-applied (free presets)",
+      "postRigCheck": "PASS: idle and greet_01, hands natural, no tearing (Saved/Vendors/Final/sheet_CTS_Vendor_Arcane.png)"
+    },
+    {
+      "vendor": "armory",
+      "attempt": 1,
+      "tripoTask": "c53e3969-6185-49db-97da-925b2d961490",
+      "reference": "cts_vendor_armory_ref.png (front, right, back)",
+      "model": 70,
+      "rig": 20,
+      "clips": [
+        "idle",
+        "greet_01",
+        "agree",
+        "look_around"
+      ],
+      "status": "REJECTED, not shipped",
+      "defects": [
+        "Eric: hands backwards",
+        "Eric: a face on the back of the head (Janus)",
+        "root cause in the reference sheet: pronated hands (palms facing back) and an ambiguous back view"
+      ]
+    },
+    {
+      "vendor": "armory",
+      "attempt": 2,
+      "tripoTask": "8e485d4f-c6af-49d4-99c6-d5d1a3a3cc4b",
+      "reference": "cts_vendor_armory_ref_v2.png (new ChatGPT sheet: front, left, right, back; palms to the thighs, thumbs forward, back of the bald head only)",
+      "model": 70,
+      "rig": 20,
+      "status": "rigged; shipped as CTS_Vendor_Armory",
+      "defects": [
+        "minor: dark, hard-edged eye-socket shading baked into the face texture (visible only in close-ups; reads as a heavy brow at gameplay distance)"
+      ],
+      "clips": [
+        "idle",
+        "greet_01",
+        "agree",
+        "look_around"
+      ],
+      "preRigCheck": "PASS (Saved/Vendors/CheckArmory2: one face, back of the bald head only, gloved hands palm-to-thigh with thumbs forward from the side, backs of the hands from behind)",
+      "postRigCheck": "PASS: idle and greet_01, both hands from the front and each side: no wrist twist, no inverted hands, no tearing (Saved/Vendors/Final/sheet_CTS_Vendor_Armory.png)"
+    },
+    {
+      "vendor": "weaponsmith",
+      "attempt": 1,
+      "tripoTask": "01f5e21a-cecf-4d4d-9eb3-8bcc6d5b2812",
+      "reference": "cts_vendor_weaponsmith_ref.png (front, right, back)",
+      "model": 70,
+      "rig": 20,
+      "clips": [
+        "idle",
+        "greet_01",
+        "agree",
+        "look_around"
+      ],
+      "status": "rigged; shipped as CTS_Vendor_Weaponsmith",
+      "defects": [
+        "hard sun shadows from the hair across the face in close-ups (lighting, not texture)"
+      ],
+      "preRigCheck": "done after rigging on the reference pose (Saved/Vendors/Check1): one face, back of the head is hair only, hands natural",
+      "postRigCheck": "PASS: idle and greet_01, hands natural, no tearing (Saved/Vendors/Final/sheet_CTS_Vendor_Weaponsmith.png)"
+    }
+  ],
+  "_transfer": "The DCC Bridge 'Send To Unreal' could not be driven reliably (the Studio page only sends once the Unreal toggle in the DCC Bridge popover is on, and even then nothing arrived); the bodies came in through Studio 'Export' (FBX, Blender preset, 4K, all four clips) -> Saved/TripoExports/<Folder> (not committed) -> Tools/ImportVendorFbx.py (commandlet) into /Game/Tripo/Vendors/<Folder>, clips tidied to CTS_Vendor_<Folder>_<clip>. The pre-rig check imports the unrigged export as a static mesh under /Game/Tripo/VendorChecks (not committed).",
+  "_textures": "Imported textures: no mips, never streamed (Tripo atlases have no island padding); the Tripo normal map is rendered at weight 0 on the FBX legacy-Phong instance because it does not match the FBX tangent frame (sharp dark patches along UV islands on the faces, either green convention).",
+  "balanceAfter": 14486,
+  "creditsSpent": 360
+}

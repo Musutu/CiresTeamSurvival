@@ -4,6 +4,7 @@
 #include "CireGame.h"
 #include "CireChampionRoster.h"
 #include "CireShopUI.h" // progression-shop: Skill Shop key
+#include "CireVendors.h" // vendors: Interact key and merchant clicks
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireShopFixtures.h" // progression-shop
 #include "CireItems.h" // progression-shop
@@ -268,6 +269,11 @@ void ACireController::PlayerTick(float Dt) {
     }
     if(Keys.WasPressed(this,TEXT("ToggleHelp")))bHelp=!bHelp;
     if(Keys.WasPressed(this,TEXT("ToggleShop")))bShop=!bShop;
+    if(Keys.WasPressed(this,TEXT("Interact"))&&H->bDrafted) { // vendors: open the merchant you stand at (again: close)
+        ACireVendor* Near=CireVendors::NearestInRange(H);
+        if(bShop&&Near&&CireShopUI::CurrentVendor()==Near->VendorId)bShop=false;
+        else if(!CireVendors::Interact(this,Near))H->Notice=FString::Printf(TEXT("No merchant in reach. %s opens every merchant's wares."),*Keys.Label(TEXT("ToggleShop")));
+    }
     if(Keys.WasPressed(this,TEXT("TargetNextEnemy")))CycleTargetDirected(this,false,false);
     if(Keys.WasPressed(this,TEXT("TargetPreviousEnemy")))CycleTargetDirected(this,false,true);
     if(Keys.WasPressed(this,TEXT("TargetNextAlly")))CycleTarget(true);
@@ -326,6 +332,10 @@ void ACireController::PlayerTick(float Dt) {
             // feat/camera-movement: clicking empty ground keeps the target (a quick camera tap while
             // strafing must never drop it); Escape clears it.
             if((Cast<ACireHero>(Selected)||Cast<ACireMonster>(Selected)||Cast<ACireConstruct>(Selected))&&CireRealm::CanObserve(H,Selected))ServerAction(0,0,Selected);
+            else if(auto* Vendor=Cast<ACireVendor>(Selected);Vendor&&Vendor->Team==H->TeamId) { // vendors: click a merchant to trade
+                if(CireVendors::NearestInRange(H,250.f)==Vendor)CireVendors::Interact(this,Vendor);
+                else if(const FCireVendorDef* Def=CireVendors::Find(Vendor->VendorId))H->Notice=FString::Printf(TEXT("Walk up to %s's stall to trade."),*Def->Keeper);
+            }
         }
     }
     if(H->bDead||!H->bDrafted||bShop||CireCrowdControl::IsStunned(H))return; // champion-draft: stunned: no movement, jump or dodge

@@ -143,11 +143,50 @@ else counts as an ability for armor/ward. Item actives that used to scale with I
 Oathshield) now scale with the primary stat.
 
 
+## Merchants (vendors, 26 September 2026)
+
+Eric's ruling: three shop NPCs split the items by stat, each a simple model that reads as a shop selling its
+stat's goods. `Content/Data/Vendors.json` + `CireVendors.*` (`ACireVendor`), art in `Art/Vendors`.
+
+| Merchant | Keeper | Stat | Sells (Vendors.json `rules`, first match wins) |
+|---|---|---|---|
+| **Arcane Emporium** (violet) | Magister Orvane | INT | spell, mana, heal, support, summon, construct, AoE, control, tomes |
+| **Armory** (crimson) | Brannoc Ironvow | STR / tanks | armour first, then ward, defence, block, health |
+| **Weaponsmith** (green) | Kaelen Swiftbrand | AGI / DPS / melee bruisers | attack, crit, execute first; then speed and boots |
+
+* Every purchasable item belongs to exactly one merchant (`overrides` pin an item; `fallback` = Armory); items
+  tagged with a `shared` tag (consumables: potions, elixirs, tomes) are sold by all three.
+* **B still opens every merchant at once** (the ALL MERCHANTS tab, buy anywhere in prep). Walking up to a stall
+  shows a prompt under the merchant's nameplate; **J** (Interact) or a click on him opens the shop on his tab.
+  Tabs across the top of the shop switch merchants; on ALL MERCHANTS each card carries the seller's emblem, and
+  the recipe panel names who sells the selected item. RECOMMENDED shows the whole role build.
+* Buying is unchanged and server-enforced (town radius / prep / recovery rules): the merchants are local,
+  identical on every peer (collision included) and purely presentational. The seller nods (`agree` clip) when
+  you buy from him and greets you (`greet_01`) when you open his tab; he idles and looks around otherwise, and
+  turns up to 35 degrees toward a champion who walks up.
+* Nameplates: keeper name in the shop colour, `<Shop>` under it, the emblem above. Minimap: emblem discs.
+* Placement is data: `Content/Data/TownVendors.json` (written by the town layout / Eric's map layout editor
+  "Place Vendor"), else `TownVendors.provisional.json`. Schema per entry: `vendorId`, `team`, `npc {pos, yaw}`,
+  `sign {pos, yaw}`, `stall {pos, yaw, size [depth, width, height]}`, realm-local cm (y relative to the team's
+  realm centre), yaw 0 = facing +X. `sign` / `stall` may be omitted: each merchant's Vendors.json `layout`
+  holds the default offsets from the NPC (for the editor's preview too). A placed stall with another size
+  scales the prop offsets per axis and each prop uniformly. The provisional spots stand in the castle bailey
+  around the Teleport-to-Base landing, inside the 900 cm town radius.
+* Stalls are dressed from the packs Eric owns (Medieval Kingdom market stand, bookshelf, anvil, weapon stand,
+  cauldron, chest; Medieval Weapons swords, shields and bow), each prop fitted to a size in cm; a missing
+  stand falls back to a plain counter. The hanging sign is the ChatGPT sign board on an unlit masked card.
+* Bodies: Tripo HD multi-view from the ChatGPT turnaround sheets, UE5-Mannequin rig, free preset clips; every
+  attempt, check and credit is logged in `Art/Vendors/TripoVendors.json`. Review with
+  `Tools/RunVendorGallery.py` (4-view turnaround, face / back of head, idle and greet hand close-ups, stalls,
+  nameplate, every shop tab) and `Tools/VendorContactSheet.py`.
+* Checks: `CireVendors::RunSmoke` in the expansion probe (`CIRE_VENDORS_PASS`).
+
 ## Keys (rebindable, `CireKeybindings`)
 
 | Action | Default |
 |---|---|
-| Shop | **B** |
+| Shop: every merchant's wares at once (buy anywhere in prep) | **B** |
+| Interact: open the merchant you stand at on his tab (press again to close); a left click on the merchant does the same | **J** |
 | Teleport to Base (merged town recall, action 8) | **G** |
 | Character stats window | **C** |
 | Consumable belt 1 / 2 / 3 | **Z / X / V** |

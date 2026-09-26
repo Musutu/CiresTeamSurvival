@@ -21,7 +21,7 @@ drawn by the HUD (wow-ui) on top of the API below.
 | | PetStanceAggressive / PetStanceDefensive / PetStancePassive | Shift+Y / Shift+U / Shift+I |
 | Targeting | TargetNextEnemy / TargetPreviousEnemy | Tab / Shift+Tab |
 | | TargetNextAlly / TargetSelf | F / F1 |
-| Interface | OpenChat, ToggleShop, ToggleSkillShop, ToggleHelp, ToggleStats, ToggleLootLog | Enter, B, K, H, C, L |
+| Interface | OpenChat, ToggleShop, Interact, ToggleSkillShop, ToggleHelp, ToggleStats, ToggleLootLog | Enter, B, J, K, H, C, L |
 | | RecallToTown (moved off R) | G |
 | | ToggleOptions, ToggleLayoutEditor, ToggleDeveloperTools | F9, F10, F8 |
 | | RosterPreviousPage / RosterNextPage (draft screen) | Page Up, Left / Page Down, Right |

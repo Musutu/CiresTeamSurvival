@@ -16,6 +16,8 @@
 #include "CireEffects.h"
 #include "CireBuffs.h"
 #include "CireEnvironmentProps.h"
+#include "CireVendors.h" // vendors: merchant nameplates
+#include "CireShopUI.h"
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -1278,6 +1280,47 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
     for(TActorIterator<ACireConstruct> It(GetWorld());It;++It)if(It->CanObserve(PlayerOwner))
         Plate(*It,It->GetDisplayName(),It->Health,It->MaxHealth,It->OriginTeam==Hero->TeamId?Friendly*.85f:Hostile,It->ConstructSpec.Height*.5f+25,nullptr);
     LayoutAndDraw();
+    DrawVendorPlates(Hero);
+}
+
+// vendors: WoW-style merchant plates: emblem, keeper name in the shop colour, <Shop name> under it, and the
+// interact prompt when the champion stands at the counter.
+void ACireHUD::DrawVendorPlates(ACireHero* Hero)
+{
+    if(!Hero||!Hero->bDrafted)return;
+    const auto* State=GetWorld()->GetGameState<ACireGameState>();if(State&&State->Phase==2)return;
+    const auto* Controller=Cast<ACireController>(PlayerOwner);
+    const auto& Data=CireVendors::Get();
+    ACireVendor* Near=CireVendors::NearestInRange(Hero);
+    const float Pulse=.5f+.5f*FMath::Sin(GetWorld()->GetRealTimeSeconds()*4.f);
+    for(TActorIterator<ACireVendor> It(GetWorld());It;++It)
+    {
+        if(It->Team!=Hero->TeamId)continue;
+        const FCireVendorDef* Def=CireVendors::Find(It->VendorId);if(!Def)continue;
+        const float Dist=FVector::Dist(Hero->GetActorLocation(),It->GetActorLocation());
+        if(Dist>Data.NameplateRange)continue;
+        FVector2D Screen;if(!PlayerOwner->ProjectWorldLocationToScreen(It->PlateAnchor(),Screen,false))continue;
+        const float X=Screen.X/Scale,Y=Screen.Y/Scale;if(X<35||X>ViewW-35||Y<90||Y>ViewH-160)continue;
+        {const FBox2D Box(FVector2D(X-90,Y-44),FVector2D(X+90,Y+36));bool bUnder=false;for(const FBox2D& B:LastPanelBoxes)if(Box.Intersect(B))bUnder=true;if(bUnder)continue;}
+        const float Fade=FMath::Clamp(1.5f-Dist/Data.NameplateRange,.55f,1.f);
+        FCireUIPainter P=Painter();P.Alpha=Fade;
+        const float R=Dist<1400.f?15.f:11.f;
+        P.Disc(X,Y-R-27,R+2,Def->Accent,32);
+        if(UTexture2D* Emblem=CireVendors::Emblem(Def->Id))P.TexDisc(Emblem,X,Y-R-27,R,FLinearColor::White);
+        const FString Name=Def->Keeper,Title=FString::Printf(TEXT("<%s>"),*Def->Name);
+        const FLinearColor NameColor=FMath::Lerp(Def->Accent,FLinearColor::White,.3f)*FLinearColor(1,1,1,Fade);
+        TextFx(Name,X-TextWidthFont(Name,13,ECireFont::Bold)*.5f,Y-19,13,NameColor,ECireFont::Bold,true,false);
+        TextFx(Title,X-TextWidthFont(Title,10.5f,ECireFont::Heading)*.5f,Y-1,10.5f,FLinearColor(.86f,.82f,.72f,Fade),ECireFont::Heading,true,false);
+        if(*It==Near&&Controller&&!Controller->bShop)
+        {
+            const FString Key=UISettings.Keybindings.Label(TEXT("Interact"));
+            const FString Prompt=FString::Printf(TEXT("[%s]  Trade: %s  ·  %s"),*Key,*Def->StatLabel,*Def->Stat);
+            const float PW=TextWidthFont(Prompt,11.5f,ECireFont::Heading)+24,PX=X-PW*.5f,PY=Y+17;
+            CireUIStyle::Capsule(P,PX-1.5f,PY-1.5f,PW+3,23,1.f,Def->Accent*FLinearColor(1,1,1,.55f+.4f*Pulse));
+            CireUIStyle::Capsule(P,PX,PY,PW,20,1.f,FLinearColor(.02f,.02f,.03f,.9f));
+            TextFx(Prompt,PX+12,PY+1.5f,11.5f,FLinearColor(1.f,.93f,.72f,1),ECireFont::Heading,true,false);
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

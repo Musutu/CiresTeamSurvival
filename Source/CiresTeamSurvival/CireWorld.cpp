@@ -1,6 +1,7 @@
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireEnvironmentProps.h"
+#include "CireVendors.h"
 #include "CireNav.h" // nav-paths
 #include "CireTownGoal.h" // nav-paths
 #include "Components/BoxComponent.h" // nav-paths
@@ -225,6 +226,7 @@ void ACireWorld::BeginPlay() {
         Grade->RegisterComponent();AddInstanceComponent(Grade);
     }
     CireEnvironmentProps::Build(this);
+    CireVendors::SpawnAll(this); // vendors: the three town merchants, stalls and signs (every peer, like the props)
     // nav-paths: the navmesh is generated once the town, its props and the collision floor exist
     // (server/standalone only; clients have no navigation system).
     if(HasAuthority())CireNav::Initialize(GetWorld());

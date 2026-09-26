@@ -51,6 +51,7 @@
 #include "CireArenas.h" // arenas
 #include "CireArenaGallery.h" // arenas
 #include "CireWaves.h" // wave-director
+#include "CireVendorGallery.h" // vendors
 
 DEFINE_LOG_CATEGORY_STATIC(LogCire, Log, All);
 
@@ -251,6 +252,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireKitsGallery::Initialize(this); // scaling-kits
     if(!bFeedbackPreview)bFeedbackPreview = CireGripGallery::Initialize(this); // weapon-grips
     if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
+    if(!bFeedbackPreview)bFeedbackPreview = CireVendorGallery::Initialize(this); // vendors
     CireNPCNetProbe::InitializeServer(this);
 #endif
     if(!bFeedbackPreview)SpawnPacks();
@@ -508,6 +510,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireKitsGallery::Tick(this)) return; // scaling-kits
     if(CireGripGallery::Tick(this)) return; // weapon-grips
     if(CireShopFixtures::Tick(this)) return; // progression-shop
+    if(CireVendorGallery::Tick(this)) return; // vendors
     if(CireNPCNetProbe::TickServer(this)) return;
     if(CireExpansionNetProbe::TickServer(this)) return;
     if(CireInterfaceProbe::TickServer(this)) return;

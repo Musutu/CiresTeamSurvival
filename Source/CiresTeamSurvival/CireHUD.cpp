@@ -6,6 +6,7 @@
 #include "CireArenas.h" // arenas
 #include "CireShopUI.h" // progression-shop
 #include "CireLoot.h" // progression-shop: minimap chest markers
+#include "CireVendors.h" // vendors: minimap merchant icons
 #include "CireKeybindings.h"
 #include "CireLanePath.h"
 #include "CireGame.h"
@@ -494,6 +495,15 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
         if(It->bOpened||It->OwnerHero!=Hero)continue;
         const auto P=Map(It->GetActorLocation(),Hero->TeamId);const FLinearColor C=ACireLootDrop::RarityColor(It->Rarity);
         Panel(P.X-4,P.Y-3,9,7,Ink);Panel(P.X-3,P.Y-2,7,5,C);Line(P.X-3,P.Y,P.X+4,P.Y,Ink,1);
+    }
+    // vendors: the three merchants' emblems in your realm's town.
+    if(!Arena)for(TActorIterator<ACireVendor> It(GetWorld());It;++It) {
+        if(It->Team!=Hero->TeamId)continue;
+        const FCireVendorDef* Def=CireVendors::Find(It->VendorId);if(!Def)continue;
+        const auto P=Map(It->GetActorLocation(),Hero->TeamId);
+        FCireUIPainter MP=Painter();
+        MP.Disc(P.X,P.Y,5.2f,Ink,16);MP.Disc(P.X,P.Y,4.6f,Def->Accent,16);
+        if(UTexture2D* Emblem=CireVendors::Emblem(Def->Id))MP.TexDisc(Emblem,P.X,P.Y,3.8f,FLinearColor::White,0,0,1,1,16);
     }
     for(TActorIterator<ACireHero> It(GetWorld());It;++It) {
         if(It->bDead||(!Arena&&It->TeamId!=Hero->TeamId))continue;

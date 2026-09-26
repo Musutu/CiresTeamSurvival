@@ -23,6 +23,10 @@ namespace CireShopUI
     CIRESTEAMSURVIVAL_API void DrawStatsWindow(ACireHUD& HUD, ACireHero* Hero);
     // Skill Shop tab (K): opens the shop on the skill tab, or closes it.
     CIRESTEAMSURVIVAL_API void ToggleSkillShop(ACireController* Controller);
+    // vendors: opens the item shop on one merchant's tab (Interact key / click on a merchant). B opens every merchant.
+    CIRESTEAMSURVIVAL_API void OpenVendor(ACireController* Controller, FName VendorId);
+    // vendors: the merchant tab shown (NAME_None = every merchant).
+    CIRESTEAMSURVIVAL_API FName CurrentVendor();
     // Personal loot history (toggle: L), newest first.
     CIRESTEAMSURVIVAL_API void DrawLootLog(ACireHUD& HUD, ACireHero* Hero);
 
@@ -52,6 +56,8 @@ namespace CireShopUI
     CIRESTEAMSURVIVAL_API void DebugSkillTab(const FString& SkillId);
     CIRESTEAMSURVIVAL_API void DebugSkillFilter(int32 Filter); // new-champions: 0 all, 1 Constructs
     CIRESTEAMSURVIVAL_API void DebugItemTab();
+    /** vendors gallery: show one merchant's tab (NAME_None = every merchant). */
+    CIRESTEAMSURVIVAL_API void DebugVendor(FName VendorId);
     /** items-v2 gallery: set the stat filter mask (bit 0 = Path Uniques). */
     CIRESTEAMSURVIVAL_API void DebugFilter(uint32 Mask);
     CIRESTEAMSURVIVAL_API FVector2D DebugSkillGridPos(const FString& SkillId);

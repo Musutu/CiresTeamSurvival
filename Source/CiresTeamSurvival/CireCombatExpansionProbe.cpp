@@ -40,6 +40,7 @@
 #include "CireTechConstructs.h" // new-champions
 #include "CireSignatureSkills.h" // new-champions
 #include "CirePets.h" // pets
+#include "CireVendors.h" // vendors
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireExpansion,Log,All);
@@ -109,6 +110,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireAudio::RunAudioSmoke(Mode->GetWorld())&&Good; // audio: settings, buses, data, armour classes, music, cadence
     Good=CireAuraVisuals::RunSmoke(Mode)&&Good; // aura-vfx
     Good=CireProgression::RunSmoke(Mode)&&Good; // progression-shop: items, shop, loot, gating, teleport, NPC pause
+    Good=CireVendors::RunSmoke(Mode)&&Good; // vendors: merchants, item split, placements, stalls, interact range
     Good=CireArenas::RunSmoke(Mode)&&Good; // arenas: data, symmetry, paths, random no-repeat pick, build and cleanup
     Good=CireWaveDirector::RunTests(Mode)&&Good; // wave-director: data, templates, live edits, escort, stuck/failsafe, neutral packs, bots
     Good=CireNav::RunTests(Mode)&&Good; // nav-paths: navmesh coverage, paths, prop carving, arenas, path editor
