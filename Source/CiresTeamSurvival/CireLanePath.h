@@ -1,22 +1,35 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "CireJunglePacks.h"
 
 class ACireMonster;
 class ACireGameMode;
 class ACireGameState;
 class UWorld;
 
-/** dev-route-tools: one authored challenge pack ("bay"): realm-local centre, arena radius and base tier. */
+/** dev-route-tools: one authored challenge pack ("bay"): realm-local centre, arena radius and base tier.
+ *  jungle-packs: plus its pack type (race or mixed), composition override and seed (Docs/JunglePacks.md). */
 struct FCireChallengeBay
 {
     FVector2D Position = FVector2D::ZeroVector;
     /** Arena radius in cm: the dais, the pack's spread and the town-piece clearance around it. */
     float Radius = 450.f;
-    /** Base tier 1..10 before round promotions (LootTables.json packSchedule decides when the tier unlocks). */
+    /** Tier 1..4 (abilities per monster, stat and reward curve; JunglePacks.json decides when the tier unlocks). */
     int32 Tier = 1;
+    /** jungle-packs: race id or "mixed". */
+    FName PackType = CireJunglePacks::Mixed;
+    /** jungle-packs: composition override (all zero = automatic from Seed, PackType and Tier). */
+    FCirePackComposition Comp = {0, 0, 0};
+    /** jungle-packs: composition / member seed (0 = from the position). */
+    uint32 Seed = 0;
     static constexpr float DefaultRadius = 450.f, MinRadius = 200.f, MaxRadius = 1500.f;
-    static constexpr int32 MaxTier = 10;
-    bool operator==(const FCireChallengeBay& Other) const { return Position == Other.Position && Radius == Other.Radius && Tier == Other.Tier; }
+    static constexpr int32 MaxTier = CireJunglePacks::MaxTier;
+    bool HasCompOverride() const { return Comp.Tanks > 0 || Comp.Healers > 0 || Comp.Dps > 0; }
+    uint32 EffectiveSeed() const { return Seed != 0 ? Seed : CireJunglePacks::SeedFor(Position); }
+    /** The composition this pack spawns. */
+    FCirePackComposition Composition() const { return CireJunglePacks::Resolve(HasCompOverride() ? &Comp : nullptr, EffectiveSeed(), PackType, Tier); }
+    bool operator==(const FCireChallengeBay& Other) const
+    { return Position == Other.Position && Radius == Other.Radius && Tier == Other.Tier && PackType == Other.PackType && Comp == Other.Comp && Seed == Other.Seed; }
     bool operator!=(const FCireChallengeBay& Other) const { return !(*this == Other); }
 };
 
@@ -48,11 +61,12 @@ struct FCireBattlefieldRoutes
     // Realm-local points: X along the realm, Y relative to CireLanePath::CenterY(Team). Point 0 is the wave start (the rift).
     TArray<FVector2D> LocalPoints[2];
     // nav-paths: editable lane (road) width, castle goal zone and optional challenge bay overrides (realm-local cm).
-    // dev-route-tools: Bays[Team] is empty (three automatic bays placed by path length) or 1..16 authored packs.
+    // dev-route-tools: Bays[Team] is empty (three automatic bays placed by path length) or the authored packs.
+    // jungle-packs: any number of authored packs (they replicate in the compact GameState::LanePacks chunks).
     float LaneWidth = 520;
     FVector2D GoalCenter = FVector2D(-1850, 0), GoalSize = FVector2D(900, 1800);
     TArray<FCireChallengeBay> Bays[2];
-    static constexpr int32 MaxBays = 16, AutoBays = 3;
+    static constexpr int32 AutoBays = 3;
     // medieval-kingdom: the pack town's frame ("frame": "castletown"; CireTownMap) and the hero base (realm-local).
     bool bTownFrame = false;
     FVector2D BaseLocal = FVector2D(-1700, 0);
@@ -69,11 +83,14 @@ struct FCireBattlefieldRoutes
     TArray<FCireRoutePath> Paths[2];
     /** Player Spawn (hero spawn + facing), Respawn, Boss / Pack Leader Spawn and Rift / Portal markers. */
     TArray<FCireRouteSpot> PlayerSpawns[2], Respawns[2], Bosses[2], Rifts[2];
+    /** jungle-packs: Recall Point markers (server only: Recall / Teleport to Base goes to the nearest one of the team). */
+    TArray<FCireRouteSpot> Recalls[2];
     /** Play Bounds polygon (realm-local, shared by both realms; empty = the rectangular realm bounds only). */
     TArray<FVector2D> PlayBounds;
     /** The layout this document was compiled from ("" = the route file alone). */
     FString LayoutName;
-    static constexpr int32 MaxPaths = 16, MaxSpawns = 16, MaxSpots = 16;
+    /** jungle-packs: raised from 16; the replication budget (CompileForRuntime) is the practical limit. */
+    static constexpr int32 MaxPaths = 64, MaxSpawns = 64, MaxSpots = 64;
 };
 
 namespace CireLanePath
@@ -111,7 +128,7 @@ namespace CireLanePath
     CIRESTEAMSURVIVAL_API FVector ChallengePosition(const UWorld* World, int32 Team, int32 Bay, float Z = 110);
     /** nav-paths: realm-local challenge bay of a route document (override or computed from path length). Bay is 1-based. */
     CIRESTEAMSURVIVAL_API FVector2D BayPoint(const FCireBattlefieldRoutes& Routes, int32 Team, int32 Bay);
-    // dev-route-tools: 1..16 challenge packs per realm, each with its own radius and tier.
+    // dev-route-tools + jungle-packs: any number of challenge packs per realm, each with its own radius, tier, type and composition.
     /** Packs in the realm: the authored count, or 3 automatic bays when none are authored. */
     CIRESTEAMSURVIVAL_API int32 BayCount(const FCireBattlefieldRoutes& Routes, int32 Team);
     CIRESTEAMSURVIVAL_API int32 BayCount(const UWorld* World, int32 Team);
@@ -199,6 +216,13 @@ namespace CireLanePath
     /** Pack an extras block into the replicated float layout / unpack it (exposed for the replication test). */
     CIRESTEAMSURVIVAL_API void PackExtras(const FCireBattlefieldRoutes& Routes, TArray<float>& Out);
     CIRESTEAMSURVIVAL_API bool UnpackExtras(const TArray<float>& In, int32 At, FCireBattlefieldRoutes& Out);
+    /** jungle-packs: the packs of both realms as compact int chunks (3 ints per pack; realm 1 sent once when identical),
+     *  stamped with the route revision, and back. Chunks keep every replicated array far inside the engine budget. */
+    CIRESTEAMSURVIVAL_API void PackBays(const FCireBattlefieldRoutes& Routes, uint32 Revision, TArray<TArray<int32>>& OutChunks);
+    CIRESTEAMSURVIVAL_API bool UnpackBays(const TArray<TArray<int32>>& Chunks, uint32& OutRevision, TArray<FCireChallengeBay> OutBays[2]);
+    /** jungle-packs: where Recall takes a hero: the Recall Point of his team nearest to Near (else the base / respawn). */
+    CIRESTEAMSURVIVAL_API FVector RecallNear(const UWorld* World, int32 Team, const FVector& Near, float Z = 110);
+    CIRESTEAMSURVIVAL_API bool HasRecallPoint(const UWorld* World, int32 Team);
     /** The startup document: the route file (CastleTownRoutes.json / BattlefieldRoutes.json, the provisional default) with
      *  Content/Data/MapLayout.json compiled on top when it belongs to the active map frame. */
     CIRESTEAMSURVIVAL_API bool LoadActive(FCireBattlefieldRoutes& Out, FString* Error = nullptr, FString* Source = nullptr);

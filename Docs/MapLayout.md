@@ -39,7 +39,7 @@ bar 1**'s bindings, so they follow the player's keybinding settings. The default
 | 1 | Player Spawn | pillar + ring + facing arrow | up to 10 per team (one per hero slot), radius = spawn area |
 | 2 | Monster Spawn | pillar + facing arrow | named; target team; links to its paths |
 | 3 | Monster Path | chained line with direction chevrons | named; starts at a monster spawn; ends in the target's objective or **merges** into another path; label shows length and walk time |
-| 4 | Challenge Pack | ring (radius) | numbered per team (PACK n), radius 2-15 m, tier 1-10; 16 per team at most |
+| 4 | Challenge Pack | ring (radius) | numbered per team (PACK n), radius 2-15 m, tier 1-4, pack type (race or Mixed), composition; **no limit** (Docs/JunglePacks.md) |
 | 5 | Shop / Vendor | NPC silhouette + sign + stall | vendor type from `Vendors.json` (built-in: weaponsmith, armory, arcane); sign and stall are separate handles |
 | 6 | Objective / Castle Defend Point | ring | one per team: where waves head and what they attack |
 | 7 | Boss / Pack Leader Spawn | pillar + facing arrow | named |
@@ -47,6 +47,14 @@ bar 1**'s bindings, so they follow the player's keybinding settings. The default
 | 9 | Respawn Point / Graveyard | pillar + facing arrow | where dead heroes come back |
 | 0 | Play Bounds | polygon | one shared polygon; each press adds a corner |
 | Shift+1 | No-Spawn / Blocker Zone | crossed ring | radius |
+| Shift+2 | Recall Point | pillar + ring + facing arrow | named, radius; where Recall (Teleport to Base) takes the team's heroes (the nearest one) |
+
+**No marker limits** (jungle-packs, Eric: "unlimited of any type"). Every setter places as many markers as you like.
+Where the game only reads some of them, Validate says so:
+
+- more than one Objective per team is an error: the game runs one goal zone
+- more than one Play Bounds polygon is an error: the game reads the first
+- more than 10 Player Spawns per team is a note: one per hero slot
 
 ### Placing markers
 
@@ -95,7 +103,10 @@ Default offsets come from the vendor type: the sign 150 cm to the side at 250 cm
 | Remove | **X** / Delete (packs renumber; a path re-chains its neighbours) | REMOVE |
 | Rotate | **,** / **.** (Shift: 45 degrees) | FACING - + |
 | Radius | **[** / **]** | RADIUS - + |
-| Tier | **-** / **=** | TIER - + |
+| Tier (1-4) | **-** / **=** (also sets the next pack's tier) | TIER T1-T4; NEXT TIER when nothing is selected |
+| Retier many packs | | COPY TO ALL PACKS / COPY WITHIN 30 m (inspector, pack) |
+| Pack type (race / Mixed) | **K** (on a pack) | PACK TYPE < > |
+| Pack composition | | TANKS / HEALERS / DPS - +, AUTO |
 | Owner (T1 / T2 / Shared) | **O** | T1 T2 SHARED |
 | Target team | **T** | WAVES ATTACK |
 | Mirror to the other team | **Y** | MIRROR |
@@ -138,7 +149,7 @@ Validation runs lightly on every edit. **VALIDATE** adds the navmesh checks. It 
 - **Bounds:** markers outside the play bounds.
 - **Navmesh:** markers off the navmesh (reported per realm), and path segments no monster can walk.
 - **Vendors:** an unknown vendor type, a vendor type missing from a team, a stall standing in a monster path, and a sign clipping into town geometry.
-- **Challenge packs:** a tier outside 1-10, a radius outside 2-15 m, or more than 16 packs per team.
+- **Challenge packs:** a tier outside 1-4, a radius outside 2-15 m, or a composition that breaks the rules (1-2 tanks, 1-2 healers, 1-3 DPS, 3-6 monsters). There is no pack limit.
 - **Runtime rules** (layout-wiring): Validate compiles the layout exactly as a match loads it and runs the route rules
   the match enforces, so whatever the game cannot use is flagged: points outside the realm, paths that end outside the
   goal zone or enter it early, too many paths or spawns, too much data to replicate ("The game cannot run this layout:
@@ -183,7 +194,8 @@ launch (a draft authored on the other map is left alone). Named layouts are kept
 | Monster Path | **Every path marches.** A spawn owns the paths that start at it. A path that merges into another continues along it to the objective. A path that ends short of the objective is closed into it (the compile notes say so). |
 | Split | A wave is shared evenly by the spawns; each spawn splits its share **evenly** across its paths or **by path weight** (inspector: SPLIT, and each path's WEIGHT, 0..100; 0 = no units). The split is deterministic (largest-deficit apportionment), so every stretch of a wave keeps the shares: 3 paths at 1/4, 1/4, 1/2 give 2 / 2 / 4 of 8 units, every time. Escort guards march their escortee's path. |
 | Boss / Pack Leader Spawn | Wave bosses appear at the boss markers in turn and march the path that starts nearest to them (no marker: the route's `boss` spot, else the breach). |
-| Challenge Pack | 1..16 per realm, with radius and tier (Docs/BattlefieldRoutes.md). |
+| Challenge Pack | Every pack of the realm (no limit), with its radius, tier (1-4), pack type and composition: a jungle camp of 3-6 monsters of its race in formation (Docs/JunglePacks.md). |
+| Recall Point | Recall / Teleport to Base takes a hero to the nearest Recall Point of his team (none: the base). |
 | Objective | The goal zone the waves attack (a square of the objective's diameter; an unchanged radius keeps the route file's zone). One zone for both realms: Validate flags T1 and T2 objectives that differ. |
 | Player Spawn | Hero spawn points per team, in order (one per hero slot), with the marker's facing; more heroes than markers share them with a spread. The first T1 spawn is also the base (shop radius, recall). |
 | Respawn | A dead hero revives at the respawn marker nearest to where he fell (WoW graveyards). |
@@ -193,7 +205,9 @@ launch (a draft authored on the other map is left alone). Named layouts are kept
 | No-Spawn / Blocker | Editor guide only (Validate notes it). |
 
 Paths, spawns and spots replicate to clients with the route (a tagged block at the end of `LaneLayout`; mirrored realms
-are sent once). Validate refuses a layout whose block would pass the engine's replication array budget.
+are sent once). Validate refuses a layout whose block would pass the engine's replication array budget. Challenge packs
+are not in that block: they replicate in `LanePacks`, compact int chunks of three ints per pack, so any number of packs
+reaches the clients (Docs/JunglePacks.md).
 
 ## Leash (snap-back)
 
@@ -241,7 +255,7 @@ are optional):
   "markers": [
     { "id": "monsterSpawn_4", "type": "monsterSpawn", "name": "The Breach", "team": 1, "target": 1, "x": 43200, "y": 0, "yaw": 180, "split": "weighted", "mirror": true, "pair": "monsterSpawn_5" },
     { "id": "monsterPath_8", "type": "monsterPath", "name": "Main road", "team": 1, "target": 1, "points": [[41500,0],[40800,-550]], "weight": 2, "from": "monsterSpawn_4", "mirror": true, "pair": "monsterPath_9" },
-    { "id": "challengePack_12", "type": "challengePack", "team": 1, "x": 6600, "y": -900, "radius": 380, "tier": 2, "mirror": true, "pair": "challengePack_13" },
+    { "id": "challengePack_12", "type": "challengePack", "team": 1, "x": 6600, "y": -900, "radius": 380, "tier": 2, "pack": "drowned_deep", "comp": [2,1,3], "mirror": true, "pair": "challengePack_13" },
     { "id": "vendor_14", "type": "vendor", "name": "", "team": 1, "x": 5200, "y": -1000, "yaw": 90, "kind": "weaponsmith",
       "sign": { "x": 5050, "y": -1000, "yaw": 90, "height": 250 }, "stall": { "x": 5200, "y": -860, "yaw": 90, "width": 220, "depth": 120 }, "mirror": true, "pair": "vendor_15" }
   ] }
@@ -260,15 +274,19 @@ are optional):
 
 `Vendors.json` (from `feat/vendors`, optional here): `"vendors": [{ "id", "name", "sign": { "offset": [forward, right], "height" }, "stall": { "offset": [forward, right], "size": [width, depth] } }]`.
 
-`BattlefieldRoutes.json` changes are described in `Docs/BattlefieldRoutes.md` (1-16 challenge packs, the shared `"route"` form).
+`BattlefieldRoutes.json` changes are described in `Docs/BattlefieldRoutes.md` (any number of challenge packs, the shared `"route"` form).
 
 ## Checks and captures
 
 - `CireRouteEditor::RunTests` (part of `-CireCombatExpansionProbe`, logs `CIRE_ROUTE_TOOLS_PASS`) covers:
-  - the 1-16 pack generalisation: parse, rules, writer, replication, live visuals, spawning and pack ids
+  - the pack generalisation: parse, rules, writer, replication, live visuals, spawning and pack ids
+  - jungle-packs: 120 packs per team placed, numbered and renumbered, 3,000 packs through the chunked replication,
+    119 packs per realm compiled and applied live, pack types and compositions synced to twins, legacy packs loading
+    as Mixed, and `CireJunglePacks::RunTests` (tiers, compositions, pool, loadouts)
   - the realm frames
   - the layout model: typed markers, owners and targets, mirroring and sync, links, merges, renumbering, re-chaining, vendors, per-team validation, JSON and compile
-- `Tests/ItemRulesTests.cpp` covers `RouteSchedule` for 1-16 packs.
+- `Tests/ItemRulesTests.cpp` covers `RouteSchedule` with any number of packs (150 in the test).
+- `Tools/RunJunglePackProbe.py` (`-CireJungleProbe`, town by default): 40 packs of mixed tiers and types in both realms, spawned and checked (`CIRE_JUNGLE_PROBE_PASS`).
 - `CireLeash::RunTests` (logs `CIRE_LEASH_TESTS_PASS`): the leash state machine (kite past the radius -> return ->
   resume; a target leaving the zone; stuck is not kited), the rules file, and a world fixture (pursuit zone, threat kept,
   immunity, regen, return speed, re-engage delay, stuck-return rescue, packs and fixtures unleashed).

@@ -1,4 +1,5 @@
 #include "CireNPCArchetypes.h"
+#include "CireJunglePacks.h"
 #include "CireMonsterExpansion.h" // monster-expansion
 #include "CireSkillTuning.h"
 #include "CireRaces.h" // monster-races
@@ -284,6 +285,7 @@ bool CireNPCArchetypes::Reload(FString* OutError)
         if(!CireRaces::MergeInto(Candidate,RaceError)){UE_LOG(LogCireNPCData,Error,TEXT("CIRE_RACE_DATA_ERROR %s"),*RaceError);}
         // monster-expansion: Bestiary.json creatures (rares, bonus loot creatures, race variants).
         else if(!CireMonsterExpansion::MergeInto(Candidate,RaceError)){UE_LOG(LogCireNPCData,Error,TEXT("CIRE_BESTIARY_DATA_ERROR %s"),*RaceError);}
+        else CireJunglePacks::MergeInto(Candidate); // jungle-packs: top every pack unit's kit up to the tier-4 floor
     }
     if(!Error.IsEmpty())
     {

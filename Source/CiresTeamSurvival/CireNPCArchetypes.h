@@ -73,6 +73,7 @@ struct CIRESTEAMSURVIVAL_API FCireNPCAbility
     FName Buff;                    // BuffVisuals.json id shown on champions hit (or allies buffed)
     FName Cue;                     // AudioCues.json id played when the cast starts
     bool bCore = false;            // always in the kit once skills unlock (never drawn out of the pool)
+    bool bBorrowed = false;        // jungle-packs: copied from a race-mate to reach the pack kit floor (packs only, never waves)
     bool HasRiders() const { return Root>0||Silence>0||Slow>0||Knockback>0||!Buff.IsNone(); }
 };
 

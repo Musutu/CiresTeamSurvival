@@ -6,6 +6,8 @@
 #include "CireGame.h"
 #include "CireAudio.h" // fab-coverage: chest land / open cues
 #include "CireItems.h"
+#include "CireJunglePacks.h" // jungle-packs
+#include "CireNav.h"
 #include "CireLanePath.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
@@ -419,6 +421,8 @@ int32 CireLoot::KillBounty(ACireGameMode* Mode, const ACireMonster* Monster, flo
     // monster-expansion: a Rare Spawn / Bonus Loot creature pays its configured number of mob values (Waves.json).
     if (Monster && Monster->SpecialSpawn != 0 && Monster->PackId < 0)
         return FMath::Max(0, FMath::RoundToInt(CI::MobValue(Get().Economy, BountyWave(Mode, Monster)) * CireMonsterExpansion::BountyMobValues(Monster) * RewardMultiplier));
+    // jungle-packs: pack units pay the tier's gold multiplier (JunglePacks.json tiers[].gold).
+    if (Monster && Monster->PackId >= 0) RewardMultiplier *= CireJunglePacks::TierRules(Monster->Tier).Gold;
     return CI::KillGold(Get().Economy, BountyKindOf(Monster), BountyWave(Mode, Monster), RewardMultiplier);
 }
 
@@ -668,32 +672,51 @@ int32 CireLoot::CollectAll(ACireGameMode* Mode, TMap<TWeakObjectPtr<ACireHero>, 
 void CireProgression::SpawnBay(ACireGameMode* Mode, int32 Team, int32 Bay, int32 Tier)
 {
     if (!Mode || Tier <= 0) return;
+    UWorld* World = Mode->GetWorld();
     const int32 Round = Mode->Clock.Round();
-    const auto& NPCs = CireNPCArchetypes::Get();
     const int32 Wave = Mode->GetGameState<ACireGameState>() ? Mode->GetGameState<ACireGameState>()->Wave : 0;
-    const FVector Center = CireLanePath::ChallengePosition(Mode->GetWorld(), Team, Bay);
-    // dev-route-tools: the pack spreads with its arena radius (450 cm keeps the original 110 cm spacing).
-    const float Spread = CireLanePath::ChallengeRadius(Mode->GetWorld(), Team, Bay) / FCireChallengeBay::DefaultRadius;
-    const float Spacing = FMath::Clamp(110.f * Spread, 80.f, 220.f), LeaderOffset = FMath::Clamp(260.f * Spread, 180.f, 520.f);
-    const int32 Members = NPCs.PackMembers.Num();
-    const bool bLeader = Tier >= NPCs.PackLeaderFromTier;
     const int32 PackId = CireProgression::PackIdFor(Round, Team, Bay);
     for (ACireMonster* Existing : Mode->Monsters) if (IsValid(Existing) && Existing->PackId == PackId) return; // already spawned
-    for (int32 I = 0; I < Members + (bLeader ? 1 : 0); ++I)
+    // jungle-packs: the pack's race (or Mixed), tier (1..4) and composition (3..6: tanks, healers, DPS), in formation.
+    Tier = CireJunglePacks::ClampTier(Tier);
+    const FCireChallengeBay Pack = CireLanePath::BayAt(CireLanePath::Get(World), Team, Bay);
+    const uint32 Seed = Pack.EffectiveSeed();
+    const FCirePackComposition Comp = CireJunglePacks::Resolve(Pack.HasCompOverride() ? &Pack.Comp : nullptr, Seed, Pack.PackType, Tier);
+    TArray<ECirePackRole> Roles;
+    const TArray<FName> Members = CireJunglePacks::Members(Seed, Pack.PackType, Comp, &Roles);
+    const FVector Center = CireLanePath::ChallengePosition(World, Team, Bay);
+    const float Radius = CireLanePath::ChallengeRadius(World, Team, Bay);
+    const FCireJungleRules& Jungle = CireJunglePacks::Rules();
+    int32 Spawned = 0, OffNav = 0;
+    for (int32 I = 0; I < Members.Num(); ++I)
     {
-        const bool bIsLeader = I == Members;
+        const bool bIsLeader = I == 0; // the first tank leads the pack (pack-leader bounty and loot)
+        const FVector2D Offset = CireJunglePacks::FormationOffset(I, Roles, Radius, Seed);
+        FVector P = Center + FVector(Offset.X, Offset.Y, 0.f);
+        FVector OnNav;
+        if (CireNav::Project(World, P, OnNav, FVector(220, 220, 600))) P = FVector(OnNav.X, OnNav.Y, OnNav.Z + 100.f);
+        else if (CireNav::Project(World, Center, OnNav, FVector(400, 400, 600))) { P = FVector(OnNav.X, OnNav.Y, OnNav.Z + 100.f); ++OffNav; }
+        else ++OffNav;
         FActorSpawnParameters Params;
         Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        const FVector P = Center + (bIsLeader ? FVector(LeaderOffset, 0, 40) : FVector((I - (Members - 1) * .5f) * Spacing, 0, 0));
-        auto* M = Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(), P, FRotator::ZeroRotator, Params);
+        auto* M = World->SpawnActor<ACireMonster>(ACireMonster::StaticClass(), P, FRotator(0.f, FMath::RadiansToDegrees(FMath::Atan2(-Offset.Y, -Offset.X)), 0.f), Params);
         if (!M) { UE_LOG(LogCireLoot, Error, TEXT("Challenge pack spawn failed")); continue; }
         M->Lane = Team; M->Tier = Tier; M->PackId = PackId; M->SpawnPosition = P;
-        CireNPCCombat::ConfigureArchetype(M, bIsLeader ? NPCs.PackLeader : NPCs.PackMembers[I], Wave, Tier, Round);
-        CireRaces::ApplyPackUnit(M, Tier, bIsLeader, Wave); // monster-races: elite/champion/warlord colours and drawn skills
-        M->MonsterName = FString::Printf(TEXT("Challenge %d | %s"), Tier, *M->MonsterName);
+        CireNPCCombat::ConfigureArchetype(M, Members[I], Wave, Tier, Round);
+        CireRaces::ApplyPackUnit(M, Tier, bIsLeader, Wave); // monster-races: elite/champion/warlord colours
+        CireJunglePacks::ApplyTier(M, Tier, static_cast<int32>(Seed ^ static_cast<uint32>(I))); // jungle-packs: 2 / 3 / 5 / full kit
+        if (bIsLeader && M->NPCState)
+        {
+            M->NPCState->Classification = ECireNPCClass::Boss; // pack-leader bounty, loot and frame
+            M->MaxHealth = M->Health = FMath::Clamp(M->MaxHealth * Jungle.LeaderHealth, 1.f, 1.e9f);
+        }
+        const FString Role = CireJunglePacks::RoleName(Roles.IsValidIndex(I) ? Roles[I] : ECirePackRole::Dps);
+        M->MonsterName = FString::Printf(TEXT("%s T%d %s | %s"), bIsLeader ? TEXT("Pack Leader") : TEXT("Jungle"), Tier, *Role, *M->GetNPCDisplayName());
         Mode->Monsters.Add(M);
+        ++Spawned;
     }
-    UE_LOG(LogCireLoot, Display, TEXT("CIRE_PACK_SPAWN round=%d team=%d bay=%d tier=%d leader=%d"), Round, Team, Bay, Tier, bLeader ? 1 : 0);
+    UE_LOG(LogCireLoot, Display, TEXT("CIRE_PACK_SPAWN round=%d team=%d bay=%d tier=%d type=%s comp=%d/%d/%d spawned=%d offnav=%d leader=1"), Round, Team, Bay, Tier,
+        *Pack.PackType.ToString(), Comp.Tanks, Comp.Healers, Comp.Dps, Spawned, OffNav);
 }
 
 namespace
@@ -711,17 +734,26 @@ FString BayWhere(const UWorld* World, int32 Team, int32 Bay)
     const float Progress = CireLanePath::RouteProgress(World, Team, CireLanePath::ChallengePosition(World, Team, Bay));
     return Progress >= .66f ? TEXT("near the town road") : Progress >= .33f ? TEXT("midway along the route") : TEXT("deep along the route, near the monster gate");
 }
-// dev-route-tools: a realm's pack schedule: its packs (authored 1..16, or the three automatic bays) with their tiers.
-CI::PackSchedule ScheduleFor(const UWorld* World, int32 Team)
-{
-    std::vector<int> Tiers;
-    for (int32 Bay = 1, Count = CireLanePath::BayCount(World, Team); Bay <= Count; ++Bay) Tiers.push_back(CireLanePath::ChallengeTier(World, Team, Bay));
-    return CI::RouteSchedule(CireLoot::Get().Schedule, Tiers);
+CI::PackSchedule ScheduleFor(const UWorld* World, int32 Team) { return CireProgression::JungleSchedule(World, Team); }
 }
+// dev-route-tools + jungle-packs: a realm's pack schedule: every pack (authored, or the three automatic bays) with its tier;
+// a tier unlocks at JunglePacks.json's round / wave for it; promotions (LootTables.json) cap at tier 4.
+Cires::Items::PackSchedule CireProgression::JungleSchedule(const UWorld* World, int32 Team)
+{
+    CI::PackSchedule Base = CireLoot::Get().Schedule;
+    Base.Bays.clear();
+    for (const FCirePackTier& T : CireJunglePacks::Rules().Tiers) Base.Bays.push_back({T.Tier, T.UnlockRound, T.UnlockWave, 0});
+    Base.MaxTier = FMath::Min(Base.MaxTier, CireJunglePacks::MaxTier);
+    std::vector<int> Tiers;
+    const int32 Count = CireLanePath::BayCount(World, Team);
+    Tiers.reserve(Count);
+    for (int32 Bay = 1; Bay <= Count; ++Bay) Tiers.push_back(CireLanePath::ChallengeTier(World, Team, Bay));
+    return CI::RouteSchedule(Base, Tiers);
 }
 
-int32 CireProgression::PackIdFor(int32 Round, int32 Team, int32 Bay) { return Round * 100 + FMath::Clamp(Team, 0, 1) * 50 + FMath::Clamp(Bay, 0, 49); }
-int32 CireProgression::PackBayOf(int32 PackId) { return PackId >= 0 ? PackId % 50 : 0; }
+// jungle-packs: unique for any number of packs: round x 100000 + realm x 50000 + bay (bays 0..49999).
+int32 CireProgression::PackIdFor(int32 Round, int32 Team, int32 Bay) { return FMath::Clamp(Round, 0, 20000) * 100000 + FMath::Clamp(Team, 0, 1) * 50000 + FMath::Clamp(Bay, 0, 49999); }
+int32 CireProgression::PackBayOf(int32 PackId) { return PackId >= 0 ? PackId % 50000 : 0; }
 
 void CireProgression::SpawnPacks(ACireGameMode* Mode, int32 WaveInCycle)
 {
@@ -729,6 +761,7 @@ void CireProgression::SpawnPacks(ACireGameMode* Mode, int32 WaveInCycle)
     const int32 Round = Mode->Clock.Round();
     UWorld* World = Mode->GetWorld();
     TArray<FString> News;
+    CireJunglePacks::PrewarmBodies(World); // jungle-packs: every race the packs may draw loads in the background
     // dev-route-tools: each realm's packs (1..16) with their authored tiers; identical realms announce once.
     for (int32 Team = 0; Team < 2; ++Team)
     {

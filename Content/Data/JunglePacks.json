@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "_comment": "jungle-packs (Docs/JunglePacks.md): challenge packs as jungle mobs. tiers[i]: abilities = non-basic abilities each pack monster uses (\"full\" = its complete kit), health / damage = multipliers on top of the challenge curve (health already grows 1 + 0.65 x (tier - 1) in Cires::ChallengeHealthMultiplier), gold = multiplier on every pack kill's bounty, unlockRound / unlockWave = when packs of that tier first appear (round = match cycle). kitFloor: every pack unit's complete kit is topped up to at least this many abilities from its race (so T4 > T3). leader.healthMultiplier: the pack's first tank leads it. families: creatures outside every race borrow abilities from this race (they only appear in Mixed packs). exclude: never in packs (non-combat bonus creatures).",
+  "tiers": [
+    { "tier": 1, "abilities": 2, "health": 1.0, "damage": 1.0, "gold": 1.0, "unlockRound": 1, "unlockWave": 1 },
+    { "tier": 2, "abilities": 3, "health": 1.0, "damage": 1.1, "gold": 1.5, "unlockRound": 1, "unlockWave": 3 },
+    { "tier": 3, "abilities": 5, "health": 1.0, "damage": 1.25, "gold": 2.25, "unlockRound": 2, "unlockWave": 1 },
+    { "tier": 4, "abilities": "full", "health": 1.0, "damage": 1.4, "gold": 3.0, "unlockRound": 3, "unlockWave": 1 }
+  ],
+  "kitFloor": 6,
+  "leader": { "healthMultiplier": 1.5 },
+  "families": { "storm_griffon": "feral_kin", "frostfang_alpha": "feral_kin", "cinder_drake": "drakkari" },
+  "exclude": [ "treasure_goblin", "gilded_stag" ]
+}

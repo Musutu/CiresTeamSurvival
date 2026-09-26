@@ -361,10 +361,10 @@ int PickFairRecipient(const std::vector<Recipient>& members, bool needsRoom, std
 // ---------------------------------------------------------------- challenge packs
 // dev-route-tools: BaseTier is the tier a route-authored bay hosts before promotions (0 = its bay number).
 struct PackBay { int Bay = 1; int UnlockRound = 1; int UnlockWave = 1; int BaseTier = 0; };
-constexpr int MaxPackBays = 16;
+constexpr int MaxPackBays = 16; // the base LootTables schedule; routes (jungle-packs) author any number
 struct PackSchedule
 {
-    std::vector<PackBay> Bays;          // bay 1 is nearest town, deeper bays sit toward the spawn (1..16 bays)
+    std::vector<PackBay> Bays;          // bay 1 is nearest town, deeper bays sit toward the spawn (any number of bays)
     int PromotionStartRound = 4;        // from this round every bay's tier rises
     int PromotionEveryRounds = 2;       // ... by one every N rounds
     int MaxTier = 8;
@@ -374,7 +374,7 @@ int BayTier(const PackSchedule& schedule, int bay, int round, int waveInCycle);
 // True when the bay first becomes available exactly at this round/wave.
 bool BayUnlocksAt(const PackSchedule& schedule, int bay, int round, int waveInCycle);
 std::string ValidateSchedule(const PackSchedule& schedule);
-// dev-route-tools: the schedule for a route that authors its own packs (BattlefieldRoutes.json, 1..16 bays, each with a tier).
+// dev-route-tools: the schedule for a route that authors its own packs (any number of bays, each with a tier).
 // Bay i+1 hosts bayTiers[i]. A tier appears when the base schedule's entry for that tier unlocks (entries are keyed by
 // bay number = tier), and tiers the base schedule does not list unlock at round = tier, wave 1. Tiers are clamped to 1..10.
 PackSchedule RouteSchedule(const PackSchedule& base, const std::vector<int>& bayTiers);

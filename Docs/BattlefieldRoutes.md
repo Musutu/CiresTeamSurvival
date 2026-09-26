@@ -2,20 +2,26 @@
 
 `Content/Data/BattlefieldRoutes.json` is the authoritative route authoring file. Distances are Unreal centimeters. Each team has its own ordered list of local XY points; local Y is relative to that team's realm center (Ember -2100, Dusk +2100). The first point is the wave spawn and the last point must reach the defended castle gate at local (-1850, 0).
 
-## Challenge packs: 1 to 16 per realm, each with a radius and a tier (dev-route-tools)
+## Challenge packs: any number per realm, each with a radius, tier, type and composition (dev-route-tools, jungle-packs)
 
-- A lane's optional `bays` list holds **1-16 packs**. Each pack is `{ "x", "y", "radius", "tier" }`:
-  - realm-local cm
-  - radius 200-1500 cm (default 450)
-  - tier 1-10 (default: its position)
+- A lane's optional `bays` list holds **any number of packs** (jungle-packs removed the 16 cap). Each pack is an object:
+  - `x`, `y`: realm-local cm
+  - `radius`: 200-1500 cm (default 450)
+  - `tier`: 1-4 (default: its position; older files' tiers 5-10 read as 4)
+  - optional `pack`: a race id, or `mixed` (the default)
+  - optional `comp`: `[tanks, healers, dps]`, clamped to the rules
+  - optional `seed`
 - The legacy `[x, y]` pairs are still read (tier = position, default radius).
 - With no `bays` list, the realm gets the three automatic bays at 75 / 50 / 25 % of the path.
 - Packs must stay 2 m apart, inside the realm, clear of the breach and the goal zone.
 - `CireLanePath::BayCount`, `BayAt`, `ChallengeRadius` and `ChallengeTier` serve them, and `ChallengePosition(World, Team, Bay)` takes the pack number.
-- The radius sizes the dais, the pack's spread and the town-piece clearance.
-- The tier replaces "tier = bay number" in the pack schedule. `Cires::Items::RouteSchedule` gives each pack the unlock of its tier's `LootTables.json` entry (tiers without an entry unlock at round = tier), then the usual promotions apply.
-- Pack ids are `round * 100 + realm * 50 + bay`.
+- The radius sizes the dais, the pack's formation and the town-piece clearance.
+- The tier replaces "tier = bay number" in the pack schedule. `CireProgression::JungleSchedule` unlocks each tier at its
+  `JunglePacks.json` round / wave. The usual `LootTables.json` promotions apply, capped at tier 4.
+- Pack ids are `round * 100000 + realm * 50000 + bay`.
+- The packs replicate in `ACireGameState::LanePacks` (compact int chunks; see Docs/JunglePacks.md).
 - The packs, their daises and the breach rift rebuild live on every route edit.
+- What a pack spawns (race, 3-6 monsters by role, the tier's abilities, formation) is in `Docs/JunglePacks.md`.
 
 **Many paths (layout-wiring).** A route document can carry every monster path and spawn of a realm (compiled from the map
 layout editor's `MapLayout.json`, Docs/MapLayout.md "What the game reads"): `CireLanePath::PathCount`, `PathPoints`,

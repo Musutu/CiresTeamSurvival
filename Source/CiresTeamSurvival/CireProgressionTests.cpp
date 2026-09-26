@@ -5,6 +5,7 @@
 #include "CireItems.h"
 #include "CireScalingKits.h" // scaling-kits
 #include "CireLoot.h"
+#include "CireLanePath.h" // jungle-packs: recall points
 #include "CireSkillShop.h"
 #include "CireGame.h"
 #include "CireNPCArchetypes.h"
@@ -263,32 +264,30 @@ bool CireProgression::RunSmoke(ACireGameMode* Mode)
     const auto& Loot = CireLoot::Get();
     Check(Loot.bValid && Loot.Tables.Num() >= 6 && Loot.Schedule.Bays.size() == 3, TEXT("LootTables.json loads tables and the pack schedule"));
 
-    // ---- challenge gating: tiers unlock in later cycles and sit deeper along the route
-    auto PackTiers = [&]() { TMap<int32, int32> Bays; for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->PackId >= 0 && M->Lane == 0) Bays.Add(M->PackId % 50, M->Tier); return Bays; };
+    // ---- challenge gating (jungle-packs: JunglePacks.json unlocks T1 at cycle 1 wave 1, T2 at cycle 1 wave 3, T3 at cycle 2,
+    // T4 at cycle 3; LootTables.json promotions cap at tier 4): tiers unlock as the match advances and sit deeper along the route
+    auto PackTiers = [&]() { TMap<int32, int32> Bays; for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->PackId >= 0 && M->Lane == 0) Bays.Add(CireProgression::PackBayOf(M->PackId), M->Tier); return Bays; };
     auto ClearPacks = [&]() { for (ACireMonster* M : Mode->Monsters) if (IsValid(M)) { F.Spawned.AddUnique(M); M->Destroy(); } Mode->Monsters.Reset(); };
     F.Round(1); CireProgression::SpawnPacks(Mode, 1);
     TMap<int32, int32> Bays = PackTiers();
-    Check(Bays.Num() == 1 && Bays.FindRef(1) == 1, TEXT("cycle 1 offers only the tier-1 outpost nearest town"));
+    Check(Bays.Num() == 1 && Bays.FindRef(1) == 1, TEXT("cycle 1 opens with only the tier-1 outpost nearest town"));
+    CireProgression::OnWaveSpawned(Mode, 3); Bays = PackTiers();
+    Check(Bays.Num() == 2 && Bays.FindRef(2) == 2, TEXT("the tier-2 bay appears when wave 3 of cycle 1 spawns"));
     ClearPacks();
     F.Round(2); CireProgression::SpawnPacks(Mode, 1); Bays = PackTiers();
-    Check(Bays.Num() == 2 && Bays.FindRef(2) == 2, TEXT("cycle 2 unlocks the tier-2 bay"));
-    ClearPacks();
-    F.Round(3); CireProgression::SpawnPacks(Mode, 1); Bays = PackTiers();
-    Check(Bays.Num() == 2, TEXT("cycle 3 tier-3 bay waits for wave 2"));
-    CireProgression::OnWaveSpawned(Mode, 2); Bays = PackTiers();
-    Check(Bays.Num() == 3 && Bays.FindRef(3) == 3, TEXT("tier-3 bay appears when wave 2 spawns"));
+    Check(Bays.Num() == 3 && Bays.FindRef(3) == 3, TEXT("cycle 2 opens the tier-3 bay"));
     ClearPacks();
     F.Round(6); CireProgression::SpawnPacks(Mode, 1); Bays = PackTiers();
-    Check(Bays.FindRef(1) == 3 && Bays.FindRef(2) == 4 && Bays.FindRef(3) == 5, TEXT("later cycles promote every bay"));
+    Check(Bays.FindRef(1) == 3 && Bays.FindRef(2) == 4 && Bays.FindRef(3) == 4, TEXT("later cycles promote every bay, capped at tier 4"));
     const FVector Town = Mode->BasePosition(0);
     float Distances[4] = {0, 0, 0, 0};
-    for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && M->PackId >= 0) Distances[M->PackId % 50] = FVector::Dist2D(M->SpawnPosition, Town);
+    for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && M->PackId >= 0) Distances[FMath::Clamp(CireProgression::PackBayOf(M->PackId), 0, 3)] = FVector::Dist2D(M->SpawnPosition, Town);
     Check(Distances[1] < Distances[2] && Distances[2] < Distances[3], TEXT("deeper bays sit farther from town"));
     bool bLeaders = true;
     for (int32 Bay = 1; Bay <= 3; ++Bay)
     {
         int32 Leaders = 0;
-        for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && M->PackId % 50 == Bay && M->GetNPCClassification() == ECireNPCClass::Boss) ++Leaders;
+        for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Lane == 0 && CireProgression::PackBayOf(M->PackId) == Bay && M->PackId >= 0 && M->GetNPCClassification() == ECireNPCClass::Boss) ++Leaders;
         bLeaders &= Leaders == 1;
     }
     Check(bLeaders, TEXT("every pack has one Pack Leader"));
@@ -424,6 +423,44 @@ bool CireProgression::RunSmoke(ACireGameMode* Mode)
     Traveler->SetActorLocation(Mode->BasePosition(0) + FVector(4000, 0, 0));
     Inv->Teleport();
     Check(!Inv->IsChanneling() && Traveler->Notice.Contains(TEXT("recharging")), TEXT("teleport on cooldown is refused"));
+    // jungle-packs: Recall goes to the NEAREST Recall Point of the hero's team; a team without one goes to the base.
+    {
+        UWorld* RW = Mode->GetWorld();
+        const FCireBattlefieldRoutes Before = CireLanePath::Get(RW);
+        ON_SCOPE_EXIT { FString Ignore; CireLanePath::ApplyLive(RW, Before, &Ignore); };
+        const FVector2D BaseLocal = CireLanePath::ToLocal(0, Mode->BasePosition(0));
+        FCireRouteSpot Near, Far; Near.Position = BaseLocal + FVector2D(2600, 300); Far.Position = BaseLocal + FVector2D(-600, -300);
+        FCireBattlefieldRoutes WithPoints = Before;
+        WithPoints.Recalls[0] = {Far, Near}; WithPoints.Recalls[1].Reset();
+        FString Why;
+        Check(CireLanePath::ApplyLive(RW, WithPoints, &Why) && CireLanePath::HasRecallPoint(RW, 0) && !CireLanePath::HasRecallPoint(RW, 1), *(TEXT("recall points apply live: ") + Why));
+        auto RecallFrom = [&](const FVector2D& Local)
+        {
+            Traveler->SetActorLocation(CireLanePath::ToWorld(0, Local, 110.f), false, nullptr, ETeleportType::TeleportPhysics);
+            Inv->TeleportReadyAt = 0;
+            Inv->Teleport();
+            const bool bChannel = Inv->IsChanneling();
+            Inv->CompleteTeleportNow();
+            return bChannel;
+        };
+        const bool bNearChannel = RecallFrom(Near.Position + FVector2D(1800, 0));
+        Check(bNearChannel && FVector::Dist2D(Traveler->GetActorLocation(), CireLanePath::ToWorld(0, Near.Position, 0)) < 250 && Traveler->Notice.Contains(TEXT("recall point")) &&
+            FMath::IsNearlyEqual(Inv->TeleportCooldownRemaining(), static_cast<float>(CireItems::Get().Teleport.CooldownSeconds), 1.f), TEXT("recall channels, lands at the nearest recall point and starts the 2 min cooldown"));
+        RecallFrom(Far.Position + FVector2D(-1800, 0));
+        Check(FVector::Dist2D(Traveler->GetActorLocation(), CireLanePath::ToWorld(0, Far.Position, 0)) < 250, TEXT("the nearest recall point wins"));
+        Check(CireItems::RecallDestination(Traveler).Equals(CireLanePath::RecallNear(RW, 0, Traveler->GetActorLocation(), 110.f), 1.) , TEXT("RecallDestination is the team's nearest point"));
+        // Damage still interrupts the channel (no cooldown spent) with recall points in play.
+        Traveler->SetActorLocation(CireLanePath::ToWorld(0, Near.Position + FVector2D(1800, 0), 110.f), false, nullptr, ETeleportType::TeleportPhysics);
+        Inv->TeleportReadyAt = 0; Inv->Teleport();
+        CireItems::OnHeroDamaged(Traveler, M, TEXT("Monster attack"), 10.f);
+        Check(!Inv->IsChanneling() && Inv->TeleportCooldownRemaining() <= 0, TEXT("damage interrupts a recall to a recall point"));
+        // The other team's points are not ours: team 0 without points falls back to the base.
+        WithPoints.Recalls[1] = WithPoints.Recalls[0]; WithPoints.Recalls[0].Reset();
+        CireLanePath::ApplyLive(RW, WithPoints, &Why);
+        RecallFrom(BaseLocal + FVector2D(4000, 0));
+        Check(FVector::Dist2D(Traveler->GetActorLocation(), Mode->BasePosition(0)) < 500 && Traveler->Notice.Contains(TEXT("town")), TEXT("no recall point for the team: recall reaches the base"));
+        Check(CireItems::Get().Teleport.CooldownSeconds == 120. && CireItems::Get().Teleport.ChannelSeconds > 0., TEXT("the 120 s cooldown and the channel come from Items.json"));
+    }
     F.Prep();
     Inv->Teleport();
     Check(FVector::Dist2D(Traveler->GetActorLocation(), Mode->BasePosition(0)) < 300, TEXT("prep recall is instant and ignores the cooldown"));

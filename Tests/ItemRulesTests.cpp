@@ -493,7 +493,7 @@ void PackScheduleRules()
     CHECK(!ValidateSchedule(PackSchedule{}).empty());
 }
 
-// dev-route-tools: route-authored packs (1..16 bays, each with its own tier).
+// dev-route-tools: route-authored packs (jungle-packs: any number of bays, each with its own tier).
 void RoutePackScheduleRules()
 {
     PackSchedule base;
@@ -527,13 +527,15 @@ void RoutePackScheduleRules()
     CHECK(BayTier(sixteen, 3, 3, 1) == 0 && BayTier(sixteen, 3, 3, 2) == 3); // tier 3 keeps its wave-2 unlock
     CHECK(BayTier(sixteen, 6, 6, 1) == 8 && BayTier(sixteen, 6, 40, 1) == 8); // tier 6 + 2 promotions, capped at 8
     for (int bay = 1; bay <= 16; ++bay) CHECK(BayTier(sixteen, bay, 30, 1) >= 1);
-    // More than sixteen tiers are cut to sixteen; tiers are clamped to 1..10.
-    std::vector<int> many(20, 12);
-    const PackSchedule clipped = RouteSchedule(base, many);
-    CHECK(clipped.Bays.size() == 16 && clipped.Bays[0].BaseTier == 10 && ValidateSchedule(clipped).empty());
+    // jungle-packs: no cap: 150 packs keep 150 bays; tiers are clamped to 1..10.
+    std::vector<int> many(150, 12);
+    const PackSchedule uncapped = RouteSchedule(base, many);
+    CHECK(uncapped.Bays.size() == 150 && uncapped.Bays[0].BaseTier == 10 && uncapped.Bays[149].Bay == 150 && ValidateSchedule(uncapped).empty());
     PackSchedule bad = sixteen;
     bad.Bays.push_back({17, 1, 1});
-    CHECK(!ValidateSchedule(bad).empty());           // 17 bays
+    CHECK(ValidateSchedule(bad).empty());            // 17 bays are fine now
+    bad.Bays.push_back({3, 1, 1});
+    CHECK(!ValidateSchedule(bad).empty());           // a duplicate bay is not
     bad = sixteen;
     bad.Bays[4].BaseTier = 11;
     CHECK(!ValidateSchedule(bad).empty());

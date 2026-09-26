@@ -298,7 +298,7 @@ void ProcessFeedback(ACireHUD& HUD, ACireHero* Hero)
             Play(HUD, TEXT("S_LootPickup"), .7f);
             break;
         case ECireShopAction::Teleport:
-            AddToast(F.bOk ? TEXT("Teleport to Base") : TEXT("Teleport"), F.Message, TEXT("teleport"), F.bOk ? Teal : Orange, 3.f);
+            AddToast(F.bOk ? TEXT("Recall") : TEXT("Recall"), F.Message, TEXT("teleport"), F.bOk ? Teal : Orange, 3.f);
             if (F.bOk && F.Slot == 2) Play(HUD, TEXT("S_TeleportArrive"));
             else if (F.bOk && F.Slot == 0) Play(HUD, TEXT("S_TeleportChannel"), .7f);
             break;
@@ -1449,13 +1449,13 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
         }
         const FString Key = KeyLabel(HUD, TEXT("RecallToTown"));
         P.Text(Key, X + S - 4 - P.TextWidth(Key, 9, ECireFont::Numbers), Y + 2, 9, Parchment, ECireFont::Numbers, true, false);
-        P.Text(TEXT("TELEPORT"), X - 3, Y - 12, 8, bFree ? Teal : Gold, ECireFont::Heading);
+        P.Text(TEXT("RECALL"), X - 3, Y - 12, 8, bFree ? Teal : Gold, ECireFont::Heading);
         if (bOver) HoverFrame(P, X, Y, S, FLinearColor(.55f, .92f, 1.f, 1));
         if (bOver)
         {
-            HoverTitle = FString::Printf(TEXT("Teleport to Base  [%s]"), *Key);
-            HoverBody = bFree ? TEXT("Prep / recovery: instant and free recall to your town.")
-                : FString::Printf(TEXT("Channel %.0f s, then return to town. Taking damage or moving cancels it (no cooldown spent). %.0f s cooldown after a successful teleport. Sealed during the arena.%s"),
+            HoverTitle = FString::Printf(TEXT("Recall  [%s]"), *Key);
+            HoverBody = bFree ? TEXT("Prep / recovery: instant and free recall to your recall point (or your base).")
+                : FString::Printf(TEXT("Channel %.0f s, then return to your team's nearest recall point (or your base). Taking damage or moving cancels it (no cooldown spent). %.0f s cooldown after a successful recall. Sealed during the arena.%s"),
                     CireItems::Get().Teleport.ChannelSeconds, Cooldown, Remaining > 0 ? *FString::Printf(TEXT("\nReady in %.0f s."), Remaining) : TEXT(""));
             if (HUD.HasClick() && Controller) { HUD.TakeClick(); Controller->ServerAction(8, 0, nullptr); }
         }
