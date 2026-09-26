@@ -58,6 +58,8 @@ public:
     // new-champions: turrets fire faster while overcharged (server time).
     UPROPERTY(Replicated) float OverchargedUntil = 0.f;
     UPROPERTY(Replicated) uint8 ShotSerial = 0;          // turret bolts fired (client recoil pulse)
+    // fix/summons: server time the construct expires (summons-bar duration timer on every client).
+    UPROPERTY(Replicated) float ExpiresServerTime = 0.f;
     UPROPERTY(VisibleAnywhere) TObjectPtr<UBoxComponent> CollisionBox;
     UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> BodyMesh;
     // new-champions: tech construct presentation (energy core, crystal, ring); hidden for walls.

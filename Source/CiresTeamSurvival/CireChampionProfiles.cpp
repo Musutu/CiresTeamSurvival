@@ -131,7 +131,7 @@ int32 ACireHero::PrimaryAttribute() const
 }
 float ACireHero::BasicAttackRange() const
 {
-    if(const auto* Summon=::Cast<ACireSummon>(this))return Summon->SummonSpec.AttackRange;
+    if(const auto* Summon=::Cast<ACireSummon>(this))return Summon->SummonSpec.AttackRange+Summon->TargetReachBonus(); // fix/summons: reach big bodies
     return CireKits::BasicRange(this,ProfileBasicAttackRange>0?ProfileBasicAttackRange:Archetype==0?220.f:Archetype==1?1500.f:Archetype==3?1300.f:1200.f); // scaling-kits: range skills
 }
 float ACireHero::BaseAttackSeconds() const {return ProfileAttackSeconds>0?ProfileAttackSeconds:1.5f;}
@@ -144,6 +144,7 @@ bool ACireHero::IsRangedBasicAttack() const
 {
     // The authored roster uses 220 cm contact attacks and 1200..1500 cm targeted
     // projectiles. Summons retain their explicit attack range too.
+    if(const auto* Summon=::Cast<ACireSummon>(this))return Summon->SummonSpec.AttackRange>300.f; // fix/summons: body reach never turns a melee summon ranged
     return BasicAttackRange()>300.f;
 }
 bool ACireHero::HasChampionRole(const FString& RoleName) const

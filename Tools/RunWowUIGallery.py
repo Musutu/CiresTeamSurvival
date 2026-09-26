@@ -14,7 +14,7 @@ import struct
 import subprocess
 import time
 
-STAGES = 30
+STAGES = 32  # fix/summons: + summons bar rows / tiles
 
 
 # AutoSDK is off on this machine, so every editor boot otherwise runs "Build.bat -Mode=ValidatePlatforms"

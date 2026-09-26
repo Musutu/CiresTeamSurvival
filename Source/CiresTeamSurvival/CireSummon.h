@@ -26,6 +26,19 @@ public:
     static void ClearForActor(AActor* Actor);
     bool Command(ECireSummonCommand NewCommand, FVector Point, AActor* NewTarget = nullptr);
     ACireHero* GetOwnerHero() const { return OwnerHero; }
+    // fix/summons: autonomous engagement (Docs/Pets.md "Summons and constructs"). Every fighting summon
+    // keeps an ordered target, then assists the owner's target, then defends the owner, itself and the
+    // owner's other summons, then engages any hostile near itself or the owner (never a neutral pack).
+    // Hold fights only what is in reach; Move ignores fights until it arrives. Server only.
+    virtual AActor* ChooseFightTarget();
+    /** Extra reach against the current target's body (capsule radius), so big units can be hit. */
+    float TargetReachBonus() const;
+    /** Ability DB id that created this unit (HUD icon / tooltip); empty falls back by kind. */
+    UPROPERTY(Replicated) FName SourceSkill;
+    /** Engagement radii (cm): assist the owner's target / defend the owner / guard around owner and self. */
+    static constexpr float AssistRange = 2000.f;
+    static constexpr float DefendRadius = 1100.f;
+    static constexpr float GuardRadius = 900.f;
     UPROPERTY(Replicated) TObjectPtr<ACireHero> OwnerHero;
     UPROPERTY(Replicated) FCireSummonSpec SummonSpec;
     UPROPERTY(Replicated) bool bCommandable = false;
@@ -35,11 +48,15 @@ public:
     UPROPERTY(Replicated) int32 OriginPhase = INDEX_NONE;
 private:
     float Age = 0;
+    TWeakObjectPtr<AActor> LastAttacker; // fix/summons: retaliation memory (server)
+    float LastAttackedAt = -100.f;
 };
 
 namespace CireSummons
 {
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSummonSmoke(ACireGameMode* Mode);
+    /** fix/summons: every fighting summon/construct deals damage within N s; targetability, threat, scaling, summons bar. */
+    CIRESTEAMSURVIVAL_API bool RunEngagementSmoke(ACireGameMode* Mode);
 #endif
 }

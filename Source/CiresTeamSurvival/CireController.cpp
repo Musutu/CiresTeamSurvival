@@ -26,6 +26,7 @@
 #include "CireCamera.h"
 #include "CireKeybindings.h"
 #include "CirePets.h" // pets
+#include "CireSummonsBar.h" // fix/summons
 #include "CirePlaySession.h"
 
 #if !UE_BUILD_SHIPPING
@@ -289,6 +290,13 @@ void ACireController::PlayerTick(float Dt) {
     if(H->bDrafted&&!bShop&&CirePets::ForOwner(H))
         for(uint8 Command=0;Command<static_cast<uint8>(ECirePetCommand::Count);++Command)
             if(Keys.WasPressed(this,CirePets::CommandAction(static_cast<ECirePetCommand>(Command))))ServerPetCommand(Command);
+    // fix/summons: the pet attack / follow / stay keys also order commandable summons (the Oathbound Guardian).
+    if(H->bDrafted&&!bShop&&CireSummonsBar::HasCommandable(H))
+    {
+        if(Keys.WasPressed(this,CirePets::CommandAction(ECirePetCommand::Attack)))ServerSummonCommand(2,H->Target,H->GetActorLocation());
+        if(Keys.WasPressed(this,CirePets::CommandAction(ECirePetCommand::Follow)))ServerSummonCommand(0,nullptr,H->GetActorLocation());
+        if(Keys.WasPressed(this,CirePets::CommandAction(ECirePetCommand::Stay)))ServerSummonCommand(3,nullptr,H->GetActorLocation());
+    }
     const bool bOfferModal=H->Offers.Num()>0&&(!Interface||Interface->IsSkillOfferOpen()); // champion-draft
     if(H->bDrafted&&!bShop&&!bOfferModal&&WasInputKeyJustPressed(EKeys::LeftMouseButton)
         &&!bAimInputConsumed&&!CireTargeting::Snapshot(this).bActive&&(!Interface||!Interface->IsPointerOverInterface())

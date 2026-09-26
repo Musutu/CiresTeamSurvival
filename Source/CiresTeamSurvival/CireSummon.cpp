@@ -8,6 +8,9 @@
 #include "CireCombatEvents.h"
 #include "CireThreat.h"
 #include "CireScalingKits.h" // scaling-kits
+#include "CireCrowdControl.h" // fix/summons
+#include "CireNav.h" // fix/summons: navmesh steering
+#include "CireRealm.h" // fix/summons
 #include "Components/CapsuleComponent.h"
 #include "Engine/OverlapResult.h"
 #include "EngineUtils.h"
@@ -73,7 +76,9 @@ TArray<ACireSummon*> ACireSummon::SpawnGroup(ACireHero* Source, const FCireSummo
         Unit->OriginPhase = CireSkillRuntime::Phase(World); Unit->ExpiresServerTime = World->GetTimeSeconds() + Spec.DurationSeconds;
         Unit->Draft(Spec.ArchetypeVisual);
         Unit->HeroName = Spec.bCommandable ? TEXT("Oathbound Guardian") : TEXT("Spectral Companion");
-        Unit->MaxHealth = Unit->Health = Spec.Health * CireItems::SummonMultiplier(Source); // items-v2: Soulbinder's Crook
+        // fix/summons: health also scales off the owner's PRIMARY stat (+2% per point), on top of items-v2 Soulbinder's Crook.
+        Unit->MaxHealth = Unit->Health = FMath::Min(100000.f, Spec.Health * CireItems::SummonMultiplier(Source) * (1.f + .02f * FMath::Max(0, CireKits::PrimaryOf(Source))));
+        Unit->SourceSkill = Spec.bCommandable ? FName(TEXT("oathbound_guardian")) : FName(TEXT("spectral_pack"));
         Unit->Gold = 0; Unit->Skills.Reset(); Unit->Offers.Reset(); Unit->Cooldowns.Reset();
         Unit->Target = CireCombat::AreHostile(Source, TargetActor) ? TargetActor : nullptr;
         Unit->CurrentCommand = Unit->Target ? ECireSummonCommand::Attack : ECireSummonCommand::Follow;
@@ -113,29 +118,34 @@ void ACireSummon::Tick(float Delta)
     Super::Tick(Delta);
     GetCharacterMovement()->MaxWalkSpeed = SummonSpec.MoveSpeed * (SlowUntil > GetWorld()->GetTimeSeconds() ? .65f : 1.f);
     if (!HasAuthority()) return;
+    if (CireCrowdControl::IsStunned(this)) { GetCharacterMovement()->MaxWalkSpeed = 0.f; return; }
+    // Leash: a summon dragged too far from its owner drops its fight and comes back.
     if (FVector::DistSquared2D(GetActorLocation(), OwnerHero->GetActorLocation()) > FMath::Square(SummonSpec.LeashRange))
-    { CurrentCommand = ECireSummonCommand::Follow; Target = nullptr; PendingAttackTarget.Reset(); }
-    if (CurrentCommand == ECireSummonCommand::Attack && (!CireCombat::AreHostile(this, Target) ||
-        FVector::DistSquared2D(OwnerHero->GetActorLocation(), Target->GetActorLocation()) > FMath::Square(SummonSpec.LeashRange)))
-    { CurrentCommand = ECireSummonCommand::Follow; Target = nullptr; PendingAttackTarget.Reset(); }
-    if (!bCommandable && CurrentCommand != ECireSummonCommand::Attack && CireCombat::AreHostile(this, OwnerHero->Target) &&
-        FVector::DistSquared2D(OwnerHero->GetActorLocation(), OwnerHero->Target->GetActorLocation()) <= FMath::Square(SummonSpec.LeashRange))
-    { CurrentCommand = ECireSummonCommand::Attack; Target = OwnerHero->Target; }
+    { if (CurrentCommand == ECireSummonCommand::Attack || CurrentCommand == ECireSummonCommand::Move) CurrentCommand = ECireSummonCommand::Follow; Target = nullptr; PendingAttackTarget.Reset(); }
+    // fix/summons: every summon picks its own fight (ordered target, assist, defend, guard). Before this,
+    // a commandable guardian only fought a target ordered from the HUD, so it idled beside its owner.
+    AActor* Fight = CurrentCommand == ECireSummonCommand::Move ? nullptr : ChooseFightTarget();
+    if (Fight != Target) PendingAttackTarget.Reset();
+    Target = Fight;
+    const float Reach = SummonSpec.AttackRange + TargetReachBonus();
     FVector Destination = GetActorLocation(); float StopRange = 70.f;
-    if (CurrentCommand == ECireSummonCommand::Follow) { Destination = OwnerHero->GetActorLocation(); StopRange = 170.f; }
+    if (IsValid(Fight)) { Destination = Fight->GetActorLocation(); StopRange = Reach * .85f; }
     else if (CurrentCommand == ECireSummonCommand::Move) Destination = MoveDestination;
-    else if (CurrentCommand == ECireSummonCommand::Attack && IsValid(Target)) { Destination = Target->GetActorLocation(); StopRange = SummonSpec.AttackRange * .85f; }
-    if (auto* Wall = ACireConstruct::FindBlockingConstruct(this, Destination); Wall && Wall->CanBeDamagedBy(this))
-    { Target = Wall; CurrentCommand = ECireSummonCommand::Attack; Destination = Wall->GetActorLocation(); StopRange = SummonSpec.AttackRange * .85f; }
+    else if (CurrentCommand == ECireSummonCommand::Follow) { Destination = OwnerHero->GetActorLocation(); StopRange = 170.f; }
+    if (IsValid(Fight) && CurrentCommand == ECireSummonCommand::Hold && FVector::DistSquared2D(Destination, GetActorLocation()) > FMath::Square(Reach))
+    { Destination = GetActorLocation(); StopRange = 70.f; } // holding: never walks off its spot
+    if (IsValid(Fight))
+        if (auto* Wall = ACireConstruct::FindBlockingConstruct(this, Destination); Wall && Wall->CanBeDamagedBy(this))
+        { Fight = Wall; Target = Wall; Destination = Wall->GetActorLocation(); StopRange = (SummonSpec.AttackRange + TargetReachBonus()) * .85f; }
     const FVector Direction = (Destination - GetActorLocation()).GetSafeNormal2D();
-    if (FVector::DistSquared2D(Destination, GetActorLocation()) > FMath::Square(StopRange)) AddMovementInput(Direction);
+    if (FVector::DistSquared2D(Destination, GetActorLocation()) > FMath::Square(StopRange)) AddMovementInput(CireNav::Steer(this, Destination));
     else
     {
         GetCharacterMovement()->StopMovementImmediately();
         if (CurrentCommand == ECireSummonCommand::Move) CurrentCommand = ECireSummonCommand::Hold;
-        if (CurrentCommand == ECireSummonCommand::Attack && IsValid(Target))
+        if (IsValid(Fight))
         {
-            SetActorRotation(Direction.Rotation());
+            if (!Direction.IsNearlyZero()) SetActorRotation(Direction.Rotation());
             const uint32 PreviousSerial = AttackSerial;
             BasicAttack();
             if (AttackSerial != PreviousSerial)
@@ -144,7 +154,66 @@ void ACireSummon::Tick(float Delta)
                 BasicTimer = CireKits::InheritedInterval(this, BaseAttackSeconds()); // scaling-kits: the owner's attack speed drives the summon
             }
         }
+        else if (CurrentCommand == ECireSummonCommand::Follow)
+            SetActorRotation(FMath::RInterpTo(GetActorRotation(), FRotator(0, OwnerHero->GetActorRotation().Yaw, 0), Delta, 4.f));
     }
+}
+AActor* ACireSummon::ChooseFightTarget()
+{
+    if (!IsValid(OwnerHero)) return nullptr;
+    const float Leash = SummonSpec.LeashRange;
+    auto Valid = [&](AActor* A)
+    {
+        return IsValid(A) && CireCombat::AreHostile(this, A) && CireCombat::IsAlive(A) && CireRealm::CanObserve(OwnerHero, A) &&
+            FVector::DistSquared2D(OwnerHero->GetActorLocation(), A->GetActorLocation()) <= FMath::Square(Leash);
+    };
+    auto Dist = [](const AActor* A, const AActor* B) { return static_cast<float>(FVector::Dist2D(A->GetActorLocation(), B->GetActorLocation())); };
+    auto Body = [](const AActor* A) { const auto* C = ::Cast<ACharacter>(A); return C ? C->GetCapsuleComponent()->GetScaledCapsuleRadius() : 0.f; };
+    const bool bHold = CurrentCommand == ECireSummonCommand::Hold;
+    const float Reach = SummonSpec.AttackRange + 60.f;
+    auto InReach = [&](AActor* A) { return !bHold || Dist(this, A) <= Reach + Body(A); };
+    // 1. An ordered attack (HUD / keybind command, or the target the summon was cast on).
+    if (CurrentCommand == ECireSummonCommand::Attack)
+    {
+        if (Valid(Target)) return Target;
+        CurrentCommand = ECireSummonCommand::Follow; Target = nullptr;
+    }
+    // 2. Keep fighting the current target while it is valid (no ping-pong between targets).
+    if (Valid(Target) && !::Cast<ACireConstruct>(Target) && InReach(Target)) return Target;
+    // 3. Assist: whatever hostile unit the owner has selected, within the assist range (a neutral pack only once engaged).
+    AActor* OwnerTarget = OwnerHero->Target;
+    const auto* OwnerMonster = ::Cast<ACireMonster>(OwnerTarget);
+    if (Valid(OwnerTarget) && Dist(OwnerHero, OwnerTarget) <= AssistRange && InReach(OwnerTarget) &&
+        (!OwnerMonster || !OwnerMonster->bNeutral || OwnerMonster->bEngaged)) return OwnerTarget;
+    // 4. Defend: the nearest enemy attacking the owner, this summon, or another of the owner's units.
+    auto Protected = [&](const AActor* Victim)
+    {
+        if (!Victim) return false;
+        if (Victim == OwnerHero || Victim == this) return true;
+        const auto* Ally = ::Cast<ACireSummon>(Victim); return Ally && Ally->OwnerHero == OwnerHero;
+    };
+    AActor* Best = nullptr; float BestDistance = TNumericLimits<float>::Max();
+    auto Consider = [&](AActor* A, float Radius, const AActor* From)
+    {
+        if (!Valid(A) || !InReach(A)) return;
+        const float D = Dist(From, A);
+        if (D <= Radius && D < BestDistance) { Best = A; BestDistance = D; }
+    };
+    auto* Mode = GetWorld()->GetAuthGameMode<ACireGameMode>();
+    if (LastAttacker.IsValid() && GetWorld()->GetTimeSeconds() - LastAttackedAt < 6.f) Consider(LastAttacker.Get(), DefendRadius, this);
+    if (Mode) for (auto* M : Mode->Monsters) if (IsValid(M) && Protected(M->Victim)) Consider(M, DefendRadius, OwnerHero);
+    for (TActorIterator<ACireHero> It(GetWorld()); It; ++It) if (Protected(It->Target)) Consider(*It, DefendRadius, OwnerHero);
+    if (Best) return Best;
+    // 5. Guard: any hostile near this summon or its owner. Neutral challenge packs are left alone.
+    if (Mode) for (auto* M : Mode->Monsters) if (IsValid(M) && !M->bNeutral) { Consider(M, GuardRadius, this); Consider(M, GuardRadius, OwnerHero); }
+    for (TActorIterator<ACireHero> It(GetWorld()); It; ++It) { Consider(*It, GuardRadius, this); Consider(*It, GuardRadius, OwnerHero); }
+    return Best;
+}
+float ACireSummon::TargetReachBonus() const
+{
+    if (const auto* C = ::Cast<ACharacter>(Target)) return C->GetCapsuleComponent()->GetScaledCapsuleRadius();
+    if (const auto* W = ::Cast<ACireConstruct>(Target)) return FMath::Max(W->ConstructSpec.Width, W->ConstructSpec.Depth) * .5f;
+    return 0.f;
 }
 float ACireSummon::TakeDamage(float Amount, const FDamageEvent& Event, AController*, AActor* Causer)
 {
@@ -152,6 +221,7 @@ float ACireSummon::TakeDamage(float Amount, const FDamageEvent& Event, AControll
     if (ShieldUntil > GetWorld()->GetTimeSeconds()) Amount *= .6f;
     const float Applied = FMath::Min(Health, Amount); Health -= Applied;
     CireCombat::BroadcastDamage(Causer, this, Applied, Event); ForceNetUpdate();
+    if (IsValid(Causer)) { AActor* Source = Causer; if (auto* C = ::Cast<ACireConstruct>(Causer)) Source = C->GetSourceActor(); LastAttacker = Source; LastAttackedAt = GetWorld()->GetTimeSeconds(); } // fix/summons: retaliate
     if (Health <= 0)
     {
         bDead = true; PendingAttackTarget.Reset(); Target = nullptr; bAutoAttack = false;
@@ -174,4 +244,5 @@ void ACireSummon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ACireSummon, OwnerHero); DOREPLIFETIME(ACireSummon, SummonSpec); DOREPLIFETIME(ACireSummon, bCommandable);
     DOREPLIFETIME(ACireSummon, CurrentCommand); DOREPLIFETIME(ACireSummon, MoveDestination); DOREPLIFETIME(ACireSummon, ExpiresServerTime); DOREPLIFETIME(ACireSummon, OriginPhase);
+    DOREPLIFETIME(ACireSummon, SourceSkill); // fix/summons
 }
