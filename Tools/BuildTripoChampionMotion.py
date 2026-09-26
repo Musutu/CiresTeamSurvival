@@ -105,6 +105,10 @@ def build_blend(row, lancer, report):
     for k in ("walk", "run"):
         clips[k], raw_speed = in_place(native[k], mesh, "%s/%s_%s_inplace" % (folder, base, k))
         speeds[k] = round(raw_speed * scale, 1)
+        # champion-hq: newer Tripo exports bake walk/run in place (no pelvis travel). Use the tripo-races bodies'
+        # measured ground speeds, scaled by height, so the BlendSpace keeps distinct idle / walk / run samples.
+        if speeds[k] < 20.0:
+            speeds[k] = round({"walk": 110.0, "run": 395.0}[k] * row["heightCm"] / 180.0, 1)
     file = ROOT / "Content" / (path[len("/Game/"):] + ".uasset")
     if file.exists():
         file.chmod(file.stat().st_mode | stat.S_IWRITE)
@@ -128,6 +132,10 @@ def build_blend(row, lancer, report):
         samples.append(n)
         layout.append([k, round(v.x, 1), round(v.y, 1)])
     blend.set_editor_property("sample_data", samples)
+    # champion-hq: rebuild the runtime triangulation (set_editor_property alone leaves it stale, so the body stood in a
+    # walk frame / T-pose arms at rest). UCireEditorAnimTools is the game module's editor helper.
+    if hasattr(unreal, "CireEditorAnimTools") and not unreal.CireEditorAnimTools.resample_blend_space(blend):
+        raise RuntimeError("BlendSpace triangulation failed " + path)
     lib.save_loaded_asset(blend, False)
     report[row["profileId"]] = {"blend": path, "samples": layout, "speeds": speeds, "scale": round(scale, 4),
                                 "clips": {k: pelvis_track(c, mesh) for k, c in clips.items()},
@@ -152,7 +160,17 @@ def prop_profile(path):
 
 def main():
     report = {"bodies": {}, "props": {}}
-    data = json.loads((ROOT / "Content/Data/ChampionArt.tripo.json").read_text(encoding="utf-8"))
+    # champion-hq: CIRE_CHAMPION_ART_FILES=ChampionArt.hq.json (comma list) builds other row files; CIRE_CHAMPION_ART_ONLY
+    # limits the rows to those profile ids. Default: the tripo-races file, as before.
+    import os
+    files = [f for f in os.environ.get("CIRE_CHAMPION_ART_FILES", "ChampionArt.tripo.json").split(",") if f]
+    only = [s for s in os.environ.get("CIRE_CHAMPION_ART_ONLY", "").split(",") if s]
+    data = {"champions": [], "props": {}}
+    for f in files:
+        part = json.loads((ROOT / "Content/Data" / f).read_text(encoding="utf-8"))
+        data["champions"] += [r for r in part.get("champions", []) if not only or r["profileId"] in only]
+        if not only:
+            data["props"].update(part.get("props", {}))
     lancer = unreal.load_asset(LANCER_BS)
     report["lancer"] = {"params": [[str(p.get_editor_property("display_name")), p.get_editor_property("min"), p.get_editor_property("max")]
                                    for p in lancer.get_editor_property("blend_parameters")][:2]}

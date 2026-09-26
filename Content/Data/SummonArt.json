@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "description": "champion-hq: bodies for summoned units. UCireChampionArt looks up 'summon:<id>' (id = the summon's HeroName in snake case: oathbound_guardian, spectral_companion, mechanical_tank) before the summon's gameplay profile. Rows use the ChampionArtBindings 'ready' shape (mesh, locomotion, attack, heightCm, optional yaw / fallback). A missing or non-ready row keeps the previous body. Written by Tools/WriteChampionHQBindings.py.",
+  "summons": [
+    {
+      "id": "mechanical_tank",
+      "status": "ready",
+      "mesh": "/Game/Tripo/ChampionsHQ/SummonMechTank/CTS_ChampHQ_SummonMechTank.CTS_ChampHQ_SummonMechTank",
+      "locomotion": "/Game/Tripo/ChampionsHQ/SummonMechTank/Animations/BS_Idle_Walk_Run_SummonMechTank.BS_Idle_Walk_Run_SummonMechTank",
+      "attack": "/Game/Tripo/ChampionsHQ/SummonMechTank/Animations/CTS_ChampHQ_SummonMechTank_slash.CTS_ChampHQ_SummonMechTank_slash",
+      "heightCm": 190,
+      "yaw": -90,
+      "note": "champion-hq HQ summon body; no row = the summon's archetype body"
+    }
+  ]
+}
