@@ -15,6 +15,7 @@
 #include "CireRouteEditor.h"
 #include "CireKeybindings.h"
 #include "CireDeveloperTools.h"
+#include "CireLayoutRuntime.h" // layout-wiring
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/Canvas.h"
@@ -68,6 +69,9 @@ void CireLayoutEditor::RunValidation(UWorld* World, FCireLayoutEditorState& E, b
 {
     E.WalkLength[0].Reset(); E.WalkLength[1].Reset();
     FCireLayoutChecks Checks;
+    // layout-wiring: the runtime check on every validation: compile the layout exactly as a match loads it (over the route
+    // file, the provisional default) and run the route rules the match enforces, so Validate flags what the game cannot use.
+    Checks.Runtime = [World](const FCireMapLayout& Layout, TArray<FString>& Notes, FString& Error) { return CireLayoutEditor::CompileForRuntime(World, Layout, nullptr, Notes, Error); };
     if (bNav && World && CireNav::HasNavigation(World))
     {
         Checks.OnNavmesh = [World](int32 Realm, const FVector2D& Local)
@@ -84,7 +88,7 @@ void CireLayoutEditor::RunValidation(UWorld* World, FCireLayoutEditorState& E, b
             return !World->OverlapAnyTestByChannel(CireLanePath::ToWorld(Realm, Local, Height), FQuat::Identity, ECC_WorldStatic, FCollisionShape::MakeBox(FVector(12, 55, 35)), Params);
         };
     }
-    E.Issues = ML::Validate(E.Layout, bNav ? &Checks : nullptr);
+    E.Issues = ML::Validate(E.Layout, &Checks);
     E.bIssuesDirty = false; E.bNavChecked = bNav && Checks.OnNavmesh != nullptr;
     // Walk length per path and realm: navmesh path lengths when checked, straight segments otherwise.
     for (const FCireMapMarker& M : E.Layout.Markers)
@@ -175,29 +179,49 @@ void CireLayoutEditor::TickPreview(UWorld* World, FCireLayoutEditorState& E, flo
     }
     if (!bAny && Now - E.PreviewStarted > 1) { for (FCireLayoutWalker& W : E.Walkers) if (W.Unit.IsValid() && Now - W.Finished > 3) W.Unit->Destroy(); }
 }
+bool CireLayoutEditor::CompileForRuntime(UWorld* World, const FCireMapLayout& Layout, FCireBattlefieldRoutes* OutRoutes, TArray<FString>& Notes, FString& Error)
+{
+    // The same base a match starts from: the route file (CastleTownRoutes.json in the town), else the live document.
+    FCireBattlefieldRoutes Base;
+    if (!CireLanePath::LoadFile(Base)) Base = CireLanePath::Get(World);
+    FCireBattlefieldRoutes Compiled;
+    if (!ML::CompileRoutes(Layout, Base, Compiled, Notes)) { Error = TEXT("a realm has no complete monster path (spawn -> path -> objective)"); return false; }
+    if (!CireLanePath::Validate(Compiled, Error)) return false;
+    // Every path, spawn and spot replicates to the clients in one float array; keep it inside the engine's array budget.
+    TArray<float> Packed; CireLanePath::PackExtras(Compiled, Packed);
+    if (Packed.Num() + 2 * 64 * 2 + 150 > 2000) { Error = FString::Printf(TEXT("too many path points for the network (%d values); remove points or paths"), Packed.Num()); return false; }
+    if (OutRoutes) *OutRoutes = MoveTemp(Compiled);
+    Error.Reset();
+    return true;
+}
 bool CireLayoutEditor::Apply(UWorld* World, FCireLayoutEditorState& E, FString& Out)
 {
     FString Error;
     TArray<FString> Parts;
+    // layout-wiring: MapLayout.json is the one source of truth. Every match compiles it at startup over the route file
+    // (CastleTownRoutes.json in the town: the provisional default, never overwritten by Apply).
+    E.Layout.Map = ML::ActiveMap();
     if (!ML::Save(E.Layout, ML::ActivePath(), &Error)) { Out = Error; return false; }
     Parts.Add(TEXT("MapLayout.json saved"));
     if (ML::OfType(E.Layout, ML::Vendor).Num() > 0)
     {
-        if (FFileHelper::SaveStringToFile(ML::VendorsJson(E.Layout), *ML::VendorsPath(), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM)) Parts.Add(TEXT("TownVendors.json written"));
+        if (FFileHelper::SaveStringToFile(ML::VendorsJson(E.Layout), *ML::VendorsPath(), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+            Parts.Add(FString::Printf(TEXT("TownVendors.json written, %d merchants re-placed"), CireLayoutRuntime::RespawnVendors(World)));
         else Parts.Add(TEXT("TownVendors.json could not be written"));
     }
     TArray<FString> Notes; FCireBattlefieldRoutes Routes;
-    const bool bCompiled = ML::CompileRoutes(E.Layout, CireLanePath::Get(World), Routes, Notes);
     bool bLive = false;
-    if (bCompiled)
+    if (CompileForRuntime(World, E.Layout, &Routes, Notes, Error))
     {
         if (CireLanePath::ApplyLive(World, Routes, &Error))
         {
             bLive = true;
-            Parts.Add(CireLanePath::SaveFile(Routes, &Error) ? FString::Printf(TEXT("live and saved to %s"), *FPaths::GetCleanFilename(CireLanePath::DataPath())) : Error);
+            Parts.Add(FString::Printf(TEXT("live: %d/%d paths, %d/%d spawns; the next match (or Alt+F5 in a match) runs it"), CireLanePath::PathCount(Routes, 0), CireLanePath::PathCount(Routes, 1),
+                CireLanePath::SpawnSpots(Routes, 0).Num(), CireLanePath::SpawnSpots(Routes, 1).Num()));
         }
-        else Parts.Add(FString::Printf(TEXT("march routes not applied: %s"), *Error));
+        else Parts.Add(FString::Printf(TEXT("not applied live: %s"), *Error));
     }
+    else Parts.Add(FString::Printf(TEXT("the game cannot run it yet (%s); matches keep the route file until it validates"), *Error));
     for (const FString& N : Notes) Parts.Add(N);
     Out = FString::Join(Parts, TEXT(" | "));
     return bLive;
@@ -206,9 +230,10 @@ void CireLayoutEditor::Load(UWorld* World, FCireLayoutEditorState& E)
 {
     FString Error;
     const double Now = World ? World->GetRealTimeSeconds() : 0;
-    if (ML::Load(E.Layout, ML::DraftPath(), &Error)) Say(E, TEXT("Restored your autosaved draft (Saved/MapLayoutDraft.json)."), Now);
-    else if (ML::Load(E.Layout, ML::ActivePath(), &Error)) Say(E, TEXT("Loaded the active layout (Content/Data/MapLayout.json)."), Now);
-    else { E.Layout = ML::FromRoutes(CireLanePath::Get(World)); Say(E, TEXT("Started from the current march route: spawn, path, objective and packs."), Now); }
+    // layout-wiring: a layout belongs to one map (the town or the procedural town); another map's draft is left alone.
+    if (ML::Load(E.Layout, ML::DraftPath(), &Error) && ML::MatchesActiveMap(E.Layout)) Say(E, TEXT("Restored your autosaved draft (Saved/MapLayoutDraft.json)."), Now);
+    else if (ML::Load(E.Layout, ML::ActivePath(), &Error) && ML::MatchesActiveMap(E.Layout)) Say(E, TEXT("Loaded the active layout (Content/Data/MapLayout.json)."), Now);
+    else { E.Layout = ML::FromRoutes(CireLanePath::Get(World)); E.Layout.Map = ML::ActiveMap(); Say(E, TEXT("Started from the current march route: spawn, path, objective and packs."), Now); }
     E.History.Reset(); E.bLoaded = true; E.bIssuesDirty = true;
 }
 void CireLayoutEditor::Autosave(FCireLayoutEditorState& E, double Now, bool bForce)
@@ -711,6 +736,17 @@ void ACireHUD::TickLayoutEditor()
         CireLayoutEditor::Autosave(E, Now, true);
         Say((bLive ? TEXT("APPLIED: ") : TEXT("SAVED (not live): ")) + Result);
     };
+    // layout-wiring: TEST THIS LAYOUT: Apply, then a real match on it in a new window.
+    auto DoTest = [&]()
+    {
+        FString Result;
+        CireLayoutEditor::RunValidation(World, E, false);
+        if (!CireLayoutEditor::Apply(World, E, Result)) { E.bShowIssues = true; Say(TEXT("NOT LAUNCHED: ") + Result); return; }
+        CireLayoutEditor::Autosave(E, Now, true);
+        FString Launch;
+        CireLayoutRuntime::LaunchTestMatch(Launch);
+        Say(Launch);
+    };
     auto DoNew = [&]()
     {
         if (Edit([&](FCireMapLayout& X) { const FString Name = X.Name; X = FCireMapLayout(); X.Name = Name; return true; }))
@@ -726,8 +762,10 @@ void ACireHUD::TickLayoutEditor()
     auto DoValidate = [&]()
     {
         CireLayoutEditor::RunValidation(World, E, true); E.bShowIssues = true;
-        const int32 Errors = E.Issues.Num();
-        Say(Errors == 0 ? FString(TEXT("VALID: both teams have spawns, paths reach their objectives, everything is on the navmesh.")) : FString::Printf(TEXT("%d problems found (listed on the right)."), Errors));
+        int32 Errors = 0; for (const FCireLayoutIssue& I : E.Issues) Errors += I.bError ? 1 : 0;
+        const int32 Notes = E.Issues.Num() - Errors;
+        Say(Errors == 0 ? FString::Printf(TEXT("VALID: the game can run it (spawns, paths to the objective, navmesh, runtime rules)%s."), Notes ? *FString::Printf(TEXT("; %d notes on the right"), Notes) : TEXT(""))
+            : FString::Printf(TEXT("%d problems found (listed on the right)."), Errors));
     };
     auto SwitchView = [&]()
     {
@@ -807,7 +845,7 @@ void ACireHUD::TickLayoutEditor()
         if (Pressed(EKeys::Hyphen)) StepTier(-1);
         if (Pressed(EKeys::Equals)) StepTier(1);
         if (Pressed(EKeys::O)) CycleOwner();
-        if (Pressed(EKeys::T)) ToggleTarget();
+        if (Pressed(EKeys::T) && !bCtrl) ToggleTarget();
         if (Pressed(EKeys::Y)) ToggleMirror();
         if (Pressed(EKeys::K)) CycleKind();
         if (Pressed(EKeys::N) && !bCtrl && SelectedMarker()) { E.Naming = 1; E.NameBuffer = SelectedMarker()->Name; }
@@ -815,6 +853,7 @@ void ACireHUD::TickLayoutEditor()
         if (Pressed(EKeys::V)) DoValidate();
         if (Pressed(EKeys::P)) { if (E.bPreview) { CireLayoutEditor::StopPreview(E); Say(TEXT("Preview stopped.")); } else CireLayoutEditor::StartPreview(World, E); }
         if (bCtrl && Pressed(EKeys::S)) DoApply();
+        if (bCtrl && Pressed(EKeys::T)) DoTest(); // layout-wiring
         if (Pressed(EKeys::M)) SwitchView();
         if (Pressed(EKeys::G)) SwitchRealm();
         if (Pressed(EKeys::F) && bCursor)
@@ -905,7 +944,8 @@ void ACireHUD::TickLayoutEditor()
         if (Button(TEXT("VALIDATE  V"), X, CmdY, W, TEXT("Check both teams: player spawns, monster spawns that target them, paths reaching their objective, mirrored pairs in sync, markers inside the bounds and on the navmesh, vendor stalls and signs."), true, E.bShowIssues, CireUIColors::Teal)) DoValidate(); X += W + 4;
         if (Button(E.bPreview ? TEXT("STOP  P") : TEXT("PREVIEW  P"), X, CmdY, W, TEXT("Walk a monster down every path in both realms, on the navmesh, at the wave march speed."), true, E.bPreview, CireUIColors::Teal))
         { if (E.bPreview) CireLayoutEditor::StopPreview(E); else CireLayoutEditor::StartPreview(World, E); } X += W + 4;
-        if (Button(TEXT("APPLY  ^S"), X, CmdY, W, TEXT("Write MapLayout.json and TownVendors.json, compile each team's march route and packs and apply them live (saved to the route file)."), true, false, CireUIColors::Teal)) DoApply(); X += W + 4;
+        if (Button(TEXT("APPLY  ^S"), X, CmdY, W, TEXT("Write MapLayout.json (every match loads it) and TownVendors.json, re-place the merchants and apply every path, spawn, pack and spot live."), true, false, CireUIColors::Teal)) DoApply(); X += W + 4;
+        if (Button(TEXT("TEST  ^T"), X, CmdY, W, TEXT("TEST THIS LAYOUT: Apply, then launch a real match on it in a new window (waves, packs, vendors, bots)."), true, false, CireUIColors::Gold)) DoTest(); X += W + 4;
         if (Button(TEXT("SAVE AS"), X, CmdY, W, TEXT("Save this layout under a name (Content/Data/MapLayouts)."))) { E.Naming = 2; E.NameBuffer = L.Name; } X += W + 4;
         if (Button(TEXT("LOAD"), X, CmdY, W, TEXT("Load a named layout into the draft."), true, E.bLoadList)) E.bLoadList = !E.bLoadList; X += W + 4;
         if (Button(E.bWalk ? TEXT("MAP VIEW  M") : TEXT("WALK  M"), X, CmdY, W, TEXT("Walk view (your champion) or map view (top-down camera)."))) SwitchView(); X += W + 4;
@@ -1050,6 +1090,11 @@ void ACireHUD::TickLayoutEditor()
         }
         if (M->Type == ML::MonsterSpawn)
         {
+            // layout-wiring: how this spawn splits its units across its paths.
+            const FString SpawnId = M->Id; const bool bWeighted = M->bSplitWeighted;
+            if (Button(bWeighted ? TEXT("SPLIT: BY PATH WEIGHT") : TEXT("SPLIT: EVEN ACROSS PATHS"), IX, Y, IW, TEXT("Even: every path of this spawn gets the same share of its units. By weight: each path's WEIGHT sets its share."), true, bWeighted, CireUIColors::Gold))
+                Edit([&](FCireMapLayout& X) { return ML::SetSplit(X, SpawnId, !bWeighted); });
+            Y += 26;
             const auto Links = ML::PathsFrom(L, M->Id);
             Wrapped(Links.Num() == 0 ? FString(TEXT("No path yet: NEW PATH starts one here.")) : FString::Printf(TEXT("Paths: %s"), *FString::JoinBy(Links, TEXT(", "), [](const FCireMapMarker* P) { return P->Name; })), IX, Y, IW, 8.5f, Links.Num() ? CireUIColors::Parchment : CireUIColors::Orange, 2);
             Y += 26;
@@ -1065,6 +1110,15 @@ void ACireHUD::TickLayoutEditor()
                 !M->MergeInto.IsEmpty() ? *FString::Printf(TEXT("merges into %s"), ML::Find(L, M->MergeInto) ? *ML::Find(L, M->MergeInto)->Name : TEXT("?")) : bReaches ? TEXT("reaches the objective") : TEXT("open end"),
                 M->Points.Num()), IX, Y, IW, 8.5f, bReaches || !M->MergeInto.IsEmpty() ? CireUIColors::Parchment : CireUIColors::Orange, 2);
             Y += 26;
+            {
+                const FString PathId = M->Id; const float Weight = M->Weight;
+                const FCireMapMarker* Spawn = M->From.IsEmpty() ? nullptr : ML::Find(L, M->From);
+                Stepper(TEXT("WEIGHT"), FString::Printf(TEXT("%.1f%s"), Weight, Spawn && !Spawn->bSplitWeighted ? TEXT(" (even)") : TEXT("")), Y,
+                    [&]() { Edit([&](FCireMapLayout& X) { return ML::SetWeight(X, PathId, FMath::Max(0.f, Weight - .5f)); }); },
+                    [&]() { Edit([&](FCireMapLayout& X) { return ML::SetWeight(X, PathId, Weight + .5f); }); },
+                    TEXT("This path's share of its spawn's units when the spawn splits by weight (0 = no units)."));
+                Y += 26;
+            }
             if (Button(E.ChainId == M->Id ? TEXT("CHAINING (Enter ends)") : TEXT("CONTINUE THIS PATH"), IX, Y, IW, TEXT("Chain more points onto this path."), !ML::PathClosed(L, M->Id), E.ChainId == M->Id, CireUIColors::Teal))
             { E.ChainId = M->Id; E.Armed = ML::MonsterPath; }
             Y += 28;

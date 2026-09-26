@@ -97,6 +97,12 @@ Every spot is stored once, in realm-local coordinates. Lanes are team-owned (tea
 
 When the town is active, `CireLanePath::DataPath()` points at this file, so the F8 path editor saves here.
 
+**One source of truth (layout-wiring).** This file is the *provisional default*. The map layout editor's
+`Content/Data/MapLayout.json` (written by Apply, `"map": "castletown"`) is compiled over it at every match start and
+wins: its Player Spawn, Respawn and Boss markers replace `base`, `respawn` and `boss`, its paths, spawns and packs replace
+`lanes`, its objective replaces `goal`. What a layout does not author (realm bounds, lane width, escort tuning) still comes
+from here. Apply never rewrites this file. See Docs/MapLayout.md "What the game reads".
+
 ### `Content/Data/TownVendors.json`: vendor spots (PROVISIONAL)
 
 This file holds realm-local spots for the three stat shops: Arcane (INT), Armory (STR and tanks), and Weaponsmith

@@ -1,3 +1,5 @@
+#include "CireLayoutWiring.h" // layout-wiring
+#include "CireLayoutRuntime.h" // layout-wiring
 #include "CireBalanceLab.h"
 #include "CireChampionProfiles.h"
 #include "CireChampionRoster.h"
@@ -236,6 +238,7 @@ void ACireGameMode::BeginPlay() {
     if(!bSmoke&&!bProbeTimer)WaveTimer=CireWaveDirector::Config(GetWorld()).FirstWaveDelay;
     S->NextWaveSeconds=WaveTimer;
     S->Announcement=TEXT("Hold the gates. Challenge the outposts. Survive together.");
+    if(CireLayoutRuntime::IsLayoutTest())S->Announcement=FString::Printf(TEXT("LAYOUT TEST | %s"),*CireLanePath::ActiveSource()); // layout-wiring
     bool bFeedbackPreview = false;
 #if !UE_BUILD_SHIPPING
     bFeedbackPreview = CireTooltipGallery::Initialize(this);
@@ -266,6 +269,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)CireWaveDirector::InitializeSoak(this); // wave-director
 #if !UE_BUILD_SHIPPING
     if(!bFeedbackPreview)CireNav::InitializeProbe(this); // nav-paths: -CireNavProbe march + performance probe
+    if(!bFeedbackPreview)CireLayoutWiring::InitializeProbe(this); // layout-wiring: -CireLayoutProbe town march + kite
 #endif
     UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / %.0fs prep / %.0fs arena / %.0fs recovery | server authority"),S->WavesPerCycle,Clock.GetDurations().Intermission,Clock.GetDurations().Arena,RecoverySeconds);
 #if !UE_BUILD_SHIPPING
@@ -294,8 +298,10 @@ void ACireGameMode::HandleStartingNewPlayer_Implementation(APlayerController* P)
         return;
     }
     FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-    auto* H=GetWorld()->SpawnActor<ACireHero>(ACireHero::StaticClass(),BasePosition(Team)+FVector(0,Counts[Team]*140,0),FRotator::ZeroRotator,Params);
-    H->TeamId=Team; H->HomePosition=BasePosition(Team); Heroes.Add(H); P->Possess(H);
+    // layout-wiring: Player Spawn markers (one per hero slot, with facing); the base when none are authored.
+    const FTransform Spawn=CireLanePath::PlayerSpawnTransform(GetWorld(),Team,Counts[Team]);
+    auto* H=GetWorld()->SpawnActor<ACireHero>(ACireHero::StaticClass(),Spawn.GetLocation(),Spawn.Rotator(),Params);
+    H->TeamId=Team; H->HomePosition=BasePosition(Team); Heroes.Add(H); P->Possess(H); P->SetControlRotation(Spawn.Rotator());
     if(Clock.Phase()==Cires::MatchPhase::Arena) H->ReviveAt(ArenaPosition(Team,Counts[Team]));
 }
 void ACireGameMode::PostLogin(APlayerController* P) { Super::PostLogin(P); }
@@ -337,7 +343,8 @@ void ACireGameMode::SpawnBots() {
         int Count=0; for(auto* H:Heroes) if(H->TeamId==Team)++Count;
         for(int I=Count;I<5;++I) {
             FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-            auto* H=GetWorld()->SpawnActor<ACireHero>(ACireHero::StaticClass(),BasePosition(Team)+FVector(250,I*150-300,0),FRotator::ZeroRotator,Params);
+            const FTransform Spawn=CireLanePath::PlayerSpawnTransform(GetWorld(),Team,I); // layout-wiring: Player Spawn markers
+            auto* H=GetWorld()->SpawnActor<ACireHero>(ACireHero::StaticClass(),CireLanePath::Get(GetWorld()).PlayerSpawns[Team].Num()>0?Spawn.GetLocation():BasePosition(Team)+FVector(250,I*150-300,0),Spawn.Rotator(),Params);
             H->TeamId=Team; H->bBot=true; H->HomePosition=BasePosition(Team); H->Draft(I%3);
             H->HomePosition=BasePosition(Team)+FVector(250,I*180-360,0);
             H->HeroName=FString::Printf(TEXT("%s %d"),Team==0?TEXT("Ember"):TEXT("Dusk"),I+1);
@@ -455,7 +462,9 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
         }
     } else if(NewPhase==4) {
         for(auto* H:Heroes) if(IsValid(H)) {
-            H->ReviveAt(BasePosition(H->TeamId)+FVector(300,Heroes.IndexOfByKey(H)%5*110-220,0));
+            // layout-wiring: back from the arena through the realm's Rift / Portal when one is authored, else at the base.
+            FTransform Rift;const FVector Spread(300,Heroes.IndexOfByKey(H)%5*110-220,0);
+            H->ReviveAt(CireLanePath::RiftTransform(GetWorld(),H->TeamId,Rift,110)?Rift.GetLocation()+Rift.GetRotation().RotateVector(Spread*.6f):BasePosition(H->TeamId)+Spread);
             H->Target=nullptr;
         }
         S->Announcement+=TEXT(" | Recovery: regroup at your gate.");
@@ -527,6 +536,7 @@ void ACireGameMode::Tick(float Dt) {
     CireWaveDirector::TickGallery(this); // wave-director: -CireWaveGallery captures
     if(CireNav::TickGallery(this)) return; // nav-paths: -CireNavGallery captures
     CireNav::TickProbe(this,Dt); // nav-paths: -CireNavProbe
+    CireLayoutWiring::TickProbe(this,Dt); // layout-wiring: -CireLayoutProbe
 #endif
     auto* S=GetGameState<ACireGameState>(); if(!S) return;
     TickDraftTimer(); // champion-select

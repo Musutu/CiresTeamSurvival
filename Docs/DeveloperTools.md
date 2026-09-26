@@ -50,3 +50,13 @@ Validation includes native phase-duration semantics and
 queries and elapsed-time preservation. Runtime recordings and balance metrics
 must be checked in a built Unreal session; a successful source build alone does
 not validate their playback or measured balance.
+
+## Map layout at match time (layout-wiring)
+
+- Every match loads `Content/Data/MapLayout.json` (the map layout editor's Apply) over the route file. The log line
+  `CIRE_LAYOUT_ACTIVE` says what it runs; `cire.Layout` prints it in the console.
+- **Alt+F5** (host or standalone) or `cire.Layout restart` re-reads the layout and restarts the match on it: routes,
+  spots, packs, merchants, waves, lives and heroes. No rebuild, no map reload.
+- `-CireUseMapLayout` forces the layout in a developer run; `-CireNoMapLayout` ignores it. Probes and galleries ignore it
+  by default (their fixtures use the shipped route files).
+- `cire.Leash reload` re-reads `Content/Data/MonsterLeash.json` (the wave leash, Docs/MapLayout.md "Leash").

@@ -1,4 +1,5 @@
 #include "CireThreat.h"
+#include "CireLeash.h" // layout-wiring
 #include "CireGame.h"
 #include "CireNPCState.h"
 #include "CireSkillTuning.h"
@@ -94,9 +95,11 @@ ACireHero* CireThreat::Select(ACireMonster* M){
     ACireHero* Old=M->Victim;
     const bool bWasForced=M->NPCState&&M->NPCState->bForcedLastSelect;
     // The current target keeps aggro at any distance; the 22 m range only gates gaining threat.
-    ACireHero* Current=CanHold(M,M->Victim)&&M->Threat.Contains(M->Victim)?M->Victim:nullptr;
+    // layout-wiring: a path-leashed wave unit only SELECTS holders inside its leash zone (CireLeash::CanPursue); the table
+    // itself keeps everyone (threat is lost only on death).
+    ACireHero* Current=CanHold(M,M->Victim)&&M->Threat.Contains(M->Victim)&&CireLeash::CanPursue(M,M->Victim)?M->Victim:nullptr;
     ACireHero* Best=Current;bool bForced=false;
-    if(Eligible(M,M->ForcedVictim.Get())&&M->ForcedVictimUntil>M->GetWorld()->GetTimeSeconds()){Best=M->ForcedVictim.Get();bForced=true;}
+    if(Eligible(M,M->ForcedVictim.Get())&&M->ForcedVictimUntil>M->GetWorld()->GetTimeSeconds()&&CireLeash::CanPursue(M,M->ForcedVictim.Get())){Best=M->ForcedVictim.Get();bForced=true;}
     else {
         M->ForcedVictim.Reset();
         if(Current)
@@ -105,14 +108,14 @@ ACireHero* CireThreat::Select(ACireMonster* M){
             const float Held=M->Threat.FindRef(Current);float BestValue=Held;
             for(const auto& Pair:M->Threat)
             {
-                ACireHero* H=Pair.Key.Get();if(H==Current)continue;
+                ACireHero* H=Pair.Key.Get();if(H==Current||!CireLeash::CanPursue(M,H))continue;
                 if(Pair.Value>Held*PullRatio(M,H)&&Pair.Value>BestValue){Best=H;BestValue=Pair.Value;}
             }
         }
         else
         {
             float Top=0;
-            for(const auto& Pair:M->Threat)if(Pair.Value>Top){Best=Pair.Key.Get();Top=Pair.Value;}
+            for(const auto& Pair:M->Threat)if(Pair.Value>Top&&CireLeash::CanPursue(M,Pair.Key.Get())){Best=Pair.Key.Get();Top=Pair.Value;}
         }
     }
     if(M->NPCState)M->NPCState->bForcedLastSelect=bForced;

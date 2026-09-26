@@ -20,6 +20,28 @@ struct FCireChallengeBay
     bool operator!=(const FCireChallengeBay& Other) const { return !(*this == Other); }
 };
 
+/** layout-wiring: a march path of one realm (realm-local, spawn to goal, merges already followed). */
+struct FCireRoutePath
+{
+    TArray<FVector2D> Points;
+    /** Share of its spawn's units when the spawn splits by weight (MapLayout "weight"). */
+    float Weight = 1.f;
+    /** Index into FCireBattlefieldRoutes::Spawns[Team] (the spawn that owns this path). */
+    int32 Spawn = 0;
+    FString Id, Name;
+    bool operator==(const FCireRoutePath& O) const { return Points == O.Points && Weight == O.Weight && Spawn == O.Spawn && Id == O.Id && Name == O.Name; }
+};
+/** layout-wiring: an authored spot of one realm (realm-local position, facing, radius). */
+struct FCireRouteSpot
+{
+    FVector2D Position = FVector2D::ZeroVector;
+    float Yaw = 0.f, Radius = 0.f;
+    /** Monster spawns: split units across the owned paths by path weight (false = evenly). */
+    bool bWeighted = false;
+    FString Id, Name;
+    bool operator==(const FCireRouteSpot& O) const { return Position == O.Position && Yaw == O.Yaw && Radius == O.Radius && bWeighted == O.bWeighted && Id == O.Id && Name == O.Name; }
+};
+
 struct FCireBattlefieldRoutes
 {
     float MinX = -2350, MaxX = 13000, HalfWidth = 1120;
@@ -39,6 +61,19 @@ struct FCireBattlefieldRoutes
     FVector2D RespawnLocal = FVector2D::ZeroVector, BossLocal = FVector2D::ZeroVector;
     int32 EscortEveryWaves = 4, EscortCount = 1, EscortLeakCost = 1;
     float EscortHealthMultiplier = 6, EscortMoveSpeed = 170;
+    // layout-wiring: the map layout editor's markers, compiled per realm (CireMapLayout::CompileRoutes). Empty arrays
+    // keep the old single-route behaviour (one spawn at LocalPoints[Team][0], one path = LocalPoints[Team]).
+    /** Monster spawns (Monster Spawn markers that target the realm's team). */
+    TArray<FCireRouteSpot> Spawns[2];
+    /** Every march path. When set, Paths[Team][0].Points == LocalPoints[Team] (LocalPoints stays the primary route). */
+    TArray<FCireRoutePath> Paths[2];
+    /** Player Spawn (hero spawn + facing), Respawn, Boss / Pack Leader Spawn and Rift / Portal markers. */
+    TArray<FCireRouteSpot> PlayerSpawns[2], Respawns[2], Bosses[2], Rifts[2];
+    /** Play Bounds polygon (realm-local, shared by both realms; empty = the rectangular realm bounds only). */
+    TArray<FVector2D> PlayBounds;
+    /** The layout this document was compiled from ("" = the route file alone). */
+    FString LayoutName;
+    static constexpr int32 MaxPaths = 16, MaxSpawns = 16, MaxSpots = 16;
 };
 
 namespace CireLanePath
@@ -120,6 +155,55 @@ namespace CireLanePath
     CIRESTEAMSURVIVAL_API bool ShouldSpawnEscort(const UWorld* World, int32 Wave);
     CIRESTEAMSURVIVAL_API void ConfigureEscort(ACireMonster* Monster);
     CIRESTEAMSURVIVAL_API void RefreshEscortCollision(ACireMonster* Monster);
+    // ---- layout-wiring: multi-path waves and the map layout markers (Docs/MapLayout.md "What the game reads") ----
+    /** March paths in the realm (>= 1). */
+    CIRESTEAMSURVIVAL_API int32 PathCount(const FCireBattlefieldRoutes& Routes, int32 Team);
+    CIRESTEAMSURVIVAL_API int32 PathCount(const UWorld* World, int32 Team);
+    /** Realm-local points of path Path (0 = LocalPoints[Team], the primary route). */
+    CIRESTEAMSURVIVAL_API const TArray<FVector2D>& PathPoints(const FCireBattlefieldRoutes& Routes, int32 Team, int32 Path);
+    /** Monster spawns of the realm (>= 1: the primary route's first point when none are authored). */
+    CIRESTEAMSURVIVAL_API TArray<FCireRouteSpot> SpawnSpots(const FCireBattlefieldRoutes& Routes, int32 Team);
+    /** Paths a spawn owns (indices into PathPoints). */
+    CIRESTEAMSURVIVAL_API TArray<int32> PathsOfSpawn(const FCireBattlefieldRoutes& Routes, int32 Team, int32 Spawn);
+    /** Each path's share of a wave (sums to 1): spawns split evenly, each spawn splits across its paths evenly or by weight. */
+    CIRESTEAMSURVIVAL_API TArray<double> PathShares(const FCireBattlefieldRoutes& Routes, int32 Team);
+    /** Deterministic split: the path unit Slot (0, 1, 2 ... in spawn order) marches down. Largest-deficit apportionment of
+     *  PathShares, so every prefix of a wave is as close to the shares as whole units allow. */
+    CIRESTEAMSURVIVAL_API int32 PathForSlot(const FCireBattlefieldRoutes& Routes, int32 Team, int32 Slot);
+    /** The path whose start is nearest to a realm-local spot (bosses march the path next to their spawn). */
+    CIRESTEAMSURVIVAL_API int32 NearestPathStart(const FCireBattlefieldRoutes& Routes, int32 Team, const FVector2D& Local);
+    /** World start of a path (its spawn), Z above the ground. */
+    CIRESTEAMSURVIVAL_API FVector PathStart(const UWorld* World, int32 Team, int32 Path, float Z = 110);
+    CIRESTEAMSURVIVAL_API float PathLengthOf(const UWorld* World, int32 Team, int32 Path);
+    CIRESTEAMSURVIVAL_API FVector PointAlongPath(const UWorld* World, int32 Team, int32 Path, float Fraction, float Z = 110);
+    CIRESTEAMSURVIVAL_API float PathProgress(const UWorld* World, int32 Team, int32 Path, const FVector& Location);
+    /** Nearest realm-local point of a polyline and its distance (cm). */
+    CIRESTEAMSURVIVAL_API FVector2D NearestOnPolyline(const TArray<FVector2D>& Points, const FVector2D& Local, double* OutDistance = nullptr);
+    /** A unit's own march path (its Lane and LanePath). */
+    CIRESTEAMSURVIVAL_API const TArray<FVector2D>& UnitPath(const ACireMonster* Monster);
+    /** Distance (cm, planar) from a world location to a unit's march path. */
+    CIRESTEAMSURVIVAL_API float DistanceToUnitPath(const ACireMonster* Monster, const FVector& Location);
+    /** Hero spawn Slot of a team (Player Spawn markers in order, cycling; else the base with a small spread), with facing. */
+    CIRESTEAMSURVIVAL_API FTransform PlayerSpawnTransform(const UWorld* World, int32 Team, int32 Slot, float Z = 110);
+    /** Where a dead hero revives: the Respawn marker nearest to Near (else "respawn", else the base). */
+    CIRESTEAMSURVIVAL_API FVector RespawnNear(const UWorld* World, int32 Team, const FVector& Near, float Z = 110);
+    /** Boss spawn Index (Boss markers cycle; else "boss", else the breach). */
+    CIRESTEAMSURVIVAL_API FVector BossSpawnAt(const UWorld* World, int32 Team, int32 Index, float Z = 110);
+    /** The realm's Rift / Portal (the PvP transition point). False when none is authored. */
+    CIRESTEAMSURVIVAL_API bool RiftTransform(const UWorld* World, int32 Team, FTransform& Out, float Z = 0);
+    /** Play Bounds polygon test (realm-local); true when no polygon is authored. */
+    CIRESTEAMSURVIVAL_API bool InsidePlayBounds(const FCireBattlefieldRoutes& Routes, const FVector2D& Local);
+    CIRESTEAMSURVIVAL_API bool InsidePlayBounds(const UWorld* World, int32 Team, const FVector& Location);
+    /** Nearest point inside the play bounds (world, same Z). Unchanged when inside or no polygon. */
+    CIRESTEAMSURVIVAL_API FVector ClampToPlayBounds(const UWorld* World, int32 Team, const FVector& Location, float Margin = 0);
+    /** Pack an extras block into the replicated float layout / unpack it (exposed for the replication test). */
+    CIRESTEAMSURVIVAL_API void PackExtras(const FCireBattlefieldRoutes& Routes, TArray<float>& Out);
+    CIRESTEAMSURVIVAL_API bool UnpackExtras(const TArray<float>& In, int32 At, FCireBattlefieldRoutes& Out);
+    /** The startup document: the route file (CastleTownRoutes.json / BattlefieldRoutes.json, the provisional default) with
+     *  Content/Data/MapLayout.json compiled on top when it belongs to the active map frame. */
+    CIRESTEAMSURVIVAL_API bool LoadActive(FCireBattlefieldRoutes& Out, FString* Error = nullptr, FString* Source = nullptr);
+    /** Where the active document came from ("MapLayout.json over CastleTownRoutes.json", ...). */
+    CIRESTEAMSURVIVAL_API FString ActiveSource();
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSmoke(ACireGameMode* Mode);
 #endif

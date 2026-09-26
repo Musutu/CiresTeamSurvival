@@ -100,8 +100,11 @@ namespace CireLayoutEditor
     CIRESTEAMSURVIVAL_API void StartPreview(UWorld* World, FCireLayoutEditorState& E);
     CIRESTEAMSURVIVAL_API void StopPreview(FCireLayoutEditorState& E);
     CIRESTEAMSURVIVAL_API void TickPreview(UWorld* World, FCireLayoutEditorState& E, float DeltaSeconds);
-    /** Apply: MapLayout.json + TownVendors.json, then the compiled march routes and packs applied live and saved. */
+    /** Apply: MapLayout.json (the one source of truth every match loads) + TownVendors.json, the merchants re-placed, and
+     *  the compiled paths, spawns, packs and spots applied live. The route file (CastleTownRoutes.json) is not touched. */
     CIRESTEAMSURVIVAL_API bool Apply(UWorld* World, FCireLayoutEditorState& E, FString& OutMessage);
+    /** layout-wiring: compile a layout exactly as a match will (over the route file) and run the runtime's rules. */
+    CIRESTEAMSURVIVAL_API bool CompileForRuntime(UWorld* World, const FCireMapLayout& Layout, struct FCireBattlefieldRoutes* OutRoutes, TArray<FString>& Notes, FString& Error);
     CIRESTEAMSURVIVAL_API void Load(UWorld* World, FCireLayoutEditorState& E);
     CIRESTEAMSURVIVAL_API void Autosave(FCireLayoutEditorState& E, double Now, bool bForce = false);
 }

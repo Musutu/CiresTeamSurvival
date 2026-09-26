@@ -44,6 +44,23 @@ const FCireMarkerType& TypeOrDefault(FName Id)
     const FCireMarkerType* T = CireMapLayout::FindType(Id);
     return T ? *T : Fallback;
 }
+/** layout-wiring: JSON string escaping. FString::ReplaceCharWithEscapedChar also escapes apostrophes (backslash-quote), which is not
+ *  JSON: a marker named "Tanners' lane" used to make the whole saved layout unreadable. */
+FString JsonEscape(const FString& In)
+{
+    FString Out; Out.Reserve(In.Len() + 8);
+    for (const TCHAR C : In)
+    {
+        if (C == TEXT('"')) Out += TEXT("\\\"");
+        else if (C == TEXT('\\')) Out += TEXT("\\\\");
+        else if (C == TEXT('\n')) Out += TEXT("\\n");
+        else if (C == TEXT('\r')) Out += TEXT("\\r");
+        else if (C == TEXT('\t')) Out += TEXT("\\t");
+        else if (C < 0x20) Out += FString::Printf(TEXT("\\u%04x"), static_cast<int32>(C));
+        else Out.AppendChar(C);
+    }
+    return Out;
+}
 bool SameXY(const FVector2D& A, const FVector2D& B) { return FVector2D::DistSquared(A, B) <= 1.; }
 FString MapLink(const FCireMapLayout& L, const FString& LinkId)
 {
@@ -369,6 +386,7 @@ void CireMapLayout::SyncTwin(FCireMapLayout& L, const FString& Id)
     T->Tier = Source.Tier; T->Kind = Source.Kind; T->Points = Source.Points; T->bMirror = true; T->Pair = Source.Id;
     T->SignPos = Source.SignPos; T->SignYaw = Source.SignYaw; T->SignHeight = Source.SignHeight;
     T->StallPos = Source.StallPos; T->StallYaw = Source.StallYaw; T->StallSize = Source.StallSize;
+    T->Weight = Source.Weight; T->bSplitWeighted = Source.bSplitWeighted; // layout-wiring
     T->Owner = OtherTeam(Source.Owner);
     T->Target = IsTeam(Source.Target) ? OtherTeam(Source.Target) : Source.Target;
     T->From = MapLink(L, Source.From); T->MergeInto = MapLink(L, Source.MergeInto);
@@ -455,6 +473,16 @@ bool CireMapLayout::SetKind(FCireMapLayout& L, const FString& Id, const FString&
     M->Kind = Kind.Left(32).TrimStartAndEnd().ToLower();
     if (M->Type == Vendor) ApplyVendorDefaults(*M);
     SyncTwin(L, Id); return true;
+}
+bool CireMapLayout::SetWeight(FCireMapLayout& L, const FString& Id, float Weight)
+{
+    FCireMapMarker* M = Find(L, Id); if (!M || M->Type != MonsterPath || !FMath::IsFinite(Weight)) return false;
+    M->Weight = FMath::Clamp(FMath::RoundToFloat(Weight * 10.f) / 10.f, 0.f, 100.f); SyncTwin(L, Id); return true;
+}
+bool CireMapLayout::SetSplit(FCireMapLayout& L, const FString& Id, bool bWeighted)
+{
+    FCireMapMarker* M = Find(L, Id); if (!M || M->Type != MonsterSpawn) return false;
+    M->bSplitWeighted = bWeighted; SyncTwin(L, Id); return true;
 }
 bool CireMapLayout::MovePart(FCireMapLayout& L, const FString& Id, ECireVendorPart Part, const FVector2D& Local)
 {
@@ -706,7 +734,7 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
                     T->Name == M.Name && T->Points == M.Points && T->Target == (IsTeam(M.Target) ? OtherTeam(M.Target) : M.Target) &&
                     T->From == MapLink(L, M.From) && T->MergeInto == MapLink(L, M.MergeInto) &&
                     SameXY(T->SignPos, M.SignPos) && SameXY(T->StallPos, M.StallPos) && T->SignYaw == M.SignYaw && T->StallYaw == M.StallYaw &&
-                    T->SignHeight == M.SignHeight && T->StallSize == M.StallSize;
+                    T->SignHeight == M.SignHeight && T->StallSize == M.StallSize && T->Weight == M.Weight && T->bSplitWeighted == M.bSplitWeighted;
                 if (!bSync) Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s is out of sync with its mirrored twin"), *Label));
             }
         }
@@ -730,6 +758,37 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
             }
         }
     }
+    // layout-wiring: the runtime's rules, so Validate flags whatever a match cannot use.
+    for (const FCireMapMarker& M : L.Markers)
+    {
+        const FString Label = DisplayLabel(L, M);
+        // Waves march in the realm they spawn in and attack that realm's team.
+        if ((M.Type == MonsterSpawn || M.Type == MonsterPath) && IsTeam(M.Owner) && IsTeam(M.Target) && M.Target != M.Owner)
+            Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s stands in %s's realm but targets %s: waves attack the team of the realm they march in"), *Label, *TeamTag(M.Owner), *TeamTag(M.Target)));
+        if (M.Type == MonsterPath && !M.From.IsEmpty() && Find(L, M.From) && Find(L, M.From)->Target != M.Target)
+            Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s targets another team than its spawn"), *Label));
+        if (M.Type == MonsterPath && WalkPolyline(L, M.Id).Num() > 64)
+            Issue(false, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s has %d points once merged; the game thins it to 64"), *Label, WalkPolyline(L, M.Id).Num()));
+        if (M.Type == Blocker)
+            Issue(false, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s: blocker zones are editor guides; the game does not read them yet"), *Label));
+    }
+    for (const ECireMarkerOwner Team : {ECireMarkerOwner::Team1, ECireMarkerOwner::Team2})
+    {
+        int32 Rifts = 0;
+        for (const FCireMapMarker& M : L.Markers) Rifts += M.Type == Rift && (M.Owner == Team || M.Owner == ECireMarkerOwner::Shared) ? 1 : 0;
+        if (Rifts > 1) Issue(false, OwnerValue(Team), FString(), FString::Printf(TEXT("%s has %d rifts; the game uses the first as the arena portal"), *TeamTag(Team), Rifts));
+    }
+    {
+        const FCireMapMarker* A = ObjectiveOf(L, ECireMarkerOwner::Team1); const FCireMapMarker* B = ObjectiveOf(L, ECireMarkerOwner::Team2);
+        if (A && B && (!SameXY(A->Position, B->Position) || !FMath::IsNearlyEqual(A->Radius, B->Radius, 1.f)))
+            Issue(true, 0, B->Id, TEXT("The T1 and T2 objectives differ: the game runs one castle goal zone at the same realm-local spot in both realms"));
+    }
+    if (Checks && Checks->Runtime)
+    {
+        TArray<FString> Notes; FString Error;
+        if (!Checks->Runtime(L, Notes, Error)) Issue(true, 0, FString(), FString::Printf(TEXT("The game cannot run this layout: %s"), *Error));
+        for (const FString& N : Notes) Issue(false, 0, FString(), N);
+    }
     return Out;
 }
 
@@ -741,7 +800,7 @@ FString CireMapLayout::ToJson(const FCireMapLayout& L)
         const double R = FMath::RoundToDouble(V * 10.) / 10.;
         return FMath::IsNearlyEqual(R, FMath::RoundToDouble(R)) ? FString::Printf(TEXT("%lld"), static_cast<long long>(FMath::RoundToDouble(R))) : FString::Printf(TEXT("%.1f"), R);
     };
-    auto Q = [](const FString& S) { return FString::Printf(TEXT("\"%s\""), *S.ReplaceCharWithEscapedChar()); };
+    auto Q = [](const FString& S) { return FString::Printf(TEXT("\"%s\""), *JsonEscape(S)); };
     TArray<FString> Lines;
     for (const FCireMapMarker& M : L.Markers)
     {
@@ -767,14 +826,16 @@ FString CireMapLayout::ToJson(const FCireMapLayout& L)
             F.Add(FString::Printf(TEXT("\"sign\": { \"x\": %s, \"y\": %s, \"yaw\": %s, \"height\": %s }"), *N(M.SignPos.X), *N(M.SignPos.Y), *N(M.SignYaw), *N(M.SignHeight)));
             F.Add(FString::Printf(TEXT("\"stall\": { \"x\": %s, \"y\": %s, \"yaw\": %s, \"width\": %s, \"depth\": %s }"), *N(M.StallPos.X), *N(M.StallPos.Y), *N(M.StallYaw), *N(M.StallSize.X), *N(M.StallSize.Y)));
         }
+        if (M.Type == MonsterPath && M.Weight != 1.f) F.Add(FString::Printf(TEXT("\"weight\": %s"), *N(M.Weight))); // layout-wiring
+        if (M.Type == MonsterSpawn && M.bSplitWeighted) F.Add(TEXT("\"split\": \"weighted\""));
         if (!M.From.IsEmpty()) F.Add(FString::Printf(TEXT("\"from\": %s"), *Q(M.From)));
         if (!M.MergeInto.IsEmpty()) F.Add(FString::Printf(TEXT("\"mergeInto\": %s"), *Q(M.MergeInto)));
         F.Add(FString::Printf(TEXT("\"mirror\": %s"), M.bMirror ? TEXT("true") : TEXT("false")));
         if (!M.Pair.IsEmpty()) F.Add(FString::Printf(TEXT("\"pair\": %s"), *Q(M.Pair)));
         Lines.Add(TEXT("    { ") + FString::Join(F, TEXT(", ")) + TEXT(" }"));
     }
-    return FString::Printf(TEXT("{\n  \"schemaVersion\": 1,\n  \"units\": \"centimeters\",\n  \"frame\": \"realm-local\",\n  \"name\": %s,\n  \"markers\": [\n%s\n  ]\n}\n"),
-        *Q(L.Name), *FString::Join(Lines, TEXT(",\n")));
+    return FString::Printf(TEXT("{\n  \"schemaVersion\": 1,\n  \"units\": \"centimeters\",\n  \"frame\": \"realm-local\",\n  \"map\": %s,\n  \"name\": %s,\n  \"markers\": [\n%s\n  ]\n}\n"),
+        *Q(L.Map.IsEmpty() ? ActiveMap() : L.Map), *Q(L.Name), *FString::Join(Lines, TEXT(",\n")));
 }
 bool CireMapLayout::ParseJson(const FString& Json, FCireMapLayout& Out, FString& Error)
 {
@@ -789,6 +850,7 @@ bool CireMapLayout::ParseJson(const FString& Json, FCireMapLayout& Out, FString&
     if (!Root->TryGetArrayField(TEXT("markers"), List) || !List) return Fail(TEXT("The map layout needs a markers array"));
     FCireMapLayout L;
     Root->TryGetStringField(TEXT("name"), L.Name);
+    Root->TryGetStringField(TEXT("map"), L.Map); // layout-wiring
     TSet<FString> Ids;
     for (const auto& Value : *List)
     {
@@ -822,6 +884,9 @@ bool CireMapLayout::ParseJson(const FString& Json, FCireMapLayout& Out, FString&
         if (O->TryGetNumberField(TEXT("yaw"), Yaw)) M.Yaw = static_cast<float>(Yaw);
         if (O->TryGetNumberField(TEXT("radius"), Radius)) M.Radius = static_cast<float>(Radius);
         if (O->TryGetNumberField(TEXT("tier"), Tier)) M.Tier = static_cast<int32>(Tier);
+        // layout-wiring: path weight and spawn split.
+        if (double Weight = 1; O->TryGetNumberField(TEXT("weight"), Weight)) M.Weight = FMath::IsFinite(Weight) ? FMath::Clamp(static_cast<float>(Weight), 0.f, 100.f) : 1.f;
+        if (FString Split; O->TryGetStringField(TEXT("split"), Split)) M.bSplitWeighted = Split == TEXT("weighted");
         if (M.Type == Vendor)
         {
             ApplyVendorDefaults(M);
@@ -860,13 +925,17 @@ FString CireMapLayout::VendorsJson(const FCireMapLayout& L)
             TEXT("      \"npc\": { \"pos\": [%.0f, %.0f], \"yaw\": %.0f },\n")
             TEXT("      \"sign\": { \"pos\": [%.0f, %.0f, %.0f], \"yaw\": %.0f },\n")
             TEXT("      \"stall\": { \"pos\": [%.0f, %.0f], \"yaw\": %.0f, \"size\": [%.0f, %.0f] } }"),
-            *M.Id, *M.Kind.ReplaceCharWithEscapedChar(), *M.Name.ReplaceCharWithEscapedChar(), OwnerValue(M.Owner), *PairField,
+            // layout-wiring: "team" is the REALM the merchant stands in (CireVendors: 0 DAYLIGHT, 1 DARKNIGHT, -1 both), not
+            // the editor's owner number (1 / 2 / 0 shared), which used to put T1's merchants in the night realm.
+            *M.Id, *JsonEscape(M.Kind), *JsonEscape(M.Name), M.Owner == ECireMarkerOwner::Shared ? -1 : RealmOf(M.Owner), *PairField,
             M.Position.X, M.Position.Y, M.Yaw, M.SignPos.X, M.SignPos.Y, M.SignHeight, M.SignYaw, M.StallPos.X, M.StallPos.Y, M.StallYaw, M.StallSize.X, M.StallSize.Y));
     }
     // medieval-kingdom: the frame names the town the spots belong to (CireVendors only reads its own town's file).
     return FString::Printf(TEXT("{\n  \"schemaVersion\": 1,\n  \"units\": \"centimeters\",\n  \"frame\": \"%s\",\n  \"source\": \"MapLayout.json (map layout editor)\",\n  \"vendors\": [\n%s\n  ]\n}\n"),
         CireTownMap::IsActive() ? TEXT("castletown") : TEXT("realm-local"), *FString::Join(Lines, TEXT(",\n")));
 }
+FString CireMapLayout::ActiveMap() { return CireTownMap::IsActive() ? TEXT("castletown") : TEXT("procedural"); }
+bool CireMapLayout::MatchesActiveMap(const FCireMapLayout& L) { return (L.Map.IsEmpty() ? FString(TEXT("procedural")) : L.Map) == ActiveMap(); }
 FString CireMapLayout::ActivePath() { return FPaths::ProjectContentDir() / TEXT("Data/MapLayout.json"); }
 FString CireMapLayout::VendorsPath() { return FPaths::ProjectContentDir() / TEXT("Data/TownVendors.json"); }
 FString CireMapLayout::DraftPath() { return FPaths::ProjectSavedDir() / TEXT("MapLayoutDraft.json"); }
@@ -939,46 +1008,116 @@ FCireMapLayout CireMapLayout::FromRoutes(const FCireBattlefieldRoutes& R)
     }
     return L;
 }
+namespace
+{
+/** Close a walk into the goal zone: cut it where it first enters the zone (plus the runtime's 100 cm margin) and end at the
+ *  zone's centre; drop points closer than 60 cm; thin to 64 points keeping both ends. */
+TArray<FVector2D> CloseIntoGoal(const TArray<FVector2D>& Walk, const FVector2D& GoalCenter, const FVector2D& GoalHalf, bool* bOutClosed = nullptr)
+{
+    auto InGoal = [&](const FVector2D& P, double Margin) { return FMath::Abs(P.X - GoalCenter.X) <= GoalHalf.X + Margin && FMath::Abs(P.Y - GoalCenter.Y) <= GoalHalf.Y + Margin; };
+    TArray<FVector2D> Out;
+    bool bEnded = false;
+    for (const FVector2D& P : Walk)
+    {
+        // The runtime lets only the final point enter the zone (and its 100 cm margin): the first point inside the zone
+        // ends the path; points in the margin ring are skipped.
+        if (InGoal(P, 0.)) { if (Out.Num() > 0 && FVector2D::Distance(Out.Last(), P) < 50.) Out.Pop(); Out.Add(P); bEnded = true; break; }
+        if (InGoal(P, 100.)) continue;
+        if (Out.Num() == 0 || FVector2D::Distance(Out.Last(), P) >= 50.) Out.Add(P);
+    }
+    if (bOutClosed) *bOutClosed = !bEnded;
+    if (!bEnded)
+    {
+        if (Out.Num() > 0 && FVector2D::Distance(Out.Last(), GoalCenter) < 50.) Out.Pop();
+        Out.Add(GoalCenter);
+    }
+    while (Out.Num() > 64)
+    {
+        TArray<FVector2D> Thin; Thin.Add(Out[0]);
+        for (int32 I = 1; I + 1 < Out.Num(); ++I) if (I % 2 == 0) Thin.Add(Out[I]);
+        Thin.Add(Out.Last());
+        Out = MoveTemp(Thin);
+    }
+    return Out;
+}
+}
 bool CireMapLayout::CompileRoutes(const FCireMapLayout& L, const FCireBattlefieldRoutes& Base, FCireBattlefieldRoutes& Out, TArray<FString>& Notes)
 {
     Out = Base;
     bool bOk = true;
+    // The objective first: every path ends in the goal zone (one realm-local zone for both realms: T1's objective, else
+    // T2's or a shared one; Validate flags a differing T2 objective).
+    const FCireMapMarker* Goal = ObjectiveOf(L, ECireMarkerOwner::Team1);
+    if (!Goal) Goal = ObjectiveOf(L, ECireMarkerOwner::Team2);
+    if (Goal)
+    {
+        Out.GoalCenter = Goal->Position;
+        // The zone is the objective's square; the town frame allows 3..40 m, the procedural town keeps its ranges.
+        // An unchanged radius keeps the route file's zone (e.g. the procedural castle gate's 9 x 18 m).
+        if (!FMath::IsNearlyEqual(Goal->Radius, static_cast<float>(FMath::Min(Base.GoalSize.X, Base.GoalSize.Y) * .5), 1.f))
+        {
+            const float Side = FMath::Clamp(Goal->Radius * 2.f, 400.f, Out.bTownFrame ? 4000.f : 1600.f);
+            Out.GoalSize = FVector2D(Side, Side);
+        }
+        const FCireMapMarker* Other = ObjectiveOf(L, ECireMarkerOwner::Team2);
+        if (Other && !SameXY(Other->Position, Goal->Position)) Notes.Add(TEXT("The T2 objective differs from T1's; the game uses one goal zone (T1's) in both realms"));
+    }
+    const FVector2D GoalHalf = Out.GoalSize * .5;
+    auto Spot = [](const FCireMapMarker& M) { FCireRouteSpot S; S.Position = M.Position; S.Yaw = M.Yaw; S.Radius = M.Radius; S.Id = M.Id; S.Name = M.Name; return S; };
     for (int32 Realm = 0; Realm < 2; ++Realm)
     {
         const ECireMarkerOwner Team = TeamOfRealm(Realm);
-        TArray<const FCireMapMarker*> Paths;
-        for (const FCireMapMarker& M : L.Markers) if (M.Type == MonsterPath && M.Target == Team && ShownInRealm(M, Realm)) Paths.Add(&M);
-        TArray<FVector2D> March;
-        if (Paths.Num() > 0)
+        const FString Tag = TeamTag(Team);
+        Out.Spawns[Realm].Reset(); Out.Paths[Realm].Reset();
+        // Spawns that target this realm's team and stand in its realm, each with every path that starts at it.
+        for (const FCireMapMarker& S : L.Markers)
         {
-            bool bReaches = false;
-            March = WalkPolyline(L, Paths[0]->Id, &bReaches);
-            const FCireMapMarker* Goal = ObjectiveOf(L, Team);
-            if (!bReaches && Goal) { March.Add(Goal->Position); Notes.Add(FString::Printf(TEXT("%s: %s was closed into the objective"), *TeamTag(Team), *DisplayLabel(L, *Paths[0]))); }
-            if (Paths.Num() > 1) Notes.Add(FString::Printf(TEXT("%s: %d more paths are kept in MapLayout.json; today's waves march down %s"), *TeamTag(Team), Paths.Num() - 1, *DisplayLabel(L, *Paths[0])));
+            if (S.Type != MonsterSpawn || S.Target != Team || !ShownInRealm(S, Realm)) continue;
+            TArray<const FCireMapMarker*> Owned;
+            for (const FCireMapMarker* P : PathsFrom(L, S.Id)) if (P->Target == Team && ShownInRealm(*P, Realm)) Owned.Add(P);
+            if (Owned.Num() == 0) { Notes.Add(FString::Printf(TEXT("%s: %s has no path and spawns nothing"), *Tag, *DisplayLabel(L, S))); continue; }
+            if (Out.Spawns[Realm].Num() >= FCireBattlefieldRoutes::MaxSpawns) { Notes.Add(FString::Printf(TEXT("%s: monster spawns past 16 were left out"), *Tag)); break; }
+            FCireRouteSpot Spawn = Spot(S); Spawn.bWeighted = S.bSplitWeighted;
+            const int32 SpawnIndex = Out.Spawns[Realm].Add(Spawn);
+            for (const FCireMapMarker* P : Owned)
+            {
+                if (Out.Paths[Realm].Num() >= FCireBattlefieldRoutes::MaxPaths) { Notes.Add(FString::Printf(TEXT("%s: monster paths past 16 were left out"), *Tag)); break; }
+                bool bReaches = false, bClosed = false;
+                const TArray<FVector2D> Walk = WalkPolyline(L, P->Id, &bReaches);
+                if (Walk.Num() < 2) { Notes.Add(FString::Printf(TEXT("%s: %s has no points yet"), *Tag, *DisplayLabel(L, *P))); continue; }
+                FCireRoutePath Path; Path.Points = CloseIntoGoal(Walk, Out.GoalCenter, GoalHalf, &bClosed);
+                if (Path.Points.Num() < 2) { Notes.Add(FString::Printf(TEXT("%s: %s starts inside the objective"), *Tag, *DisplayLabel(L, *P))); continue; }
+                if (!bReaches) Notes.Add(FString::Printf(TEXT("%s: %s was closed into the objective"), *Tag, *DisplayLabel(L, *P)));
+                if (Walk.Num() > 64) Notes.Add(FString::Printf(TEXT("%s: %s was thinned to 64 points"), *Tag, *DisplayLabel(L, *P)));
+                Path.Weight = P->Weight; Path.Spawn = SpawnIndex; Path.Id = P->Id; Path.Name = P->Name;
+                Out.Paths[Realm].Add(MoveTemp(Path));
+            }
         }
+        // The primary route (LocalPoints) is path 0; the single-route systems (bots, HUD, automatic bays) read it.
+        TArray<FVector2D> March = Out.Paths[Realm].Num() > 0 ? Out.Paths[Realm][0].Points : TArray<FVector2D>();
         if (March.Num() == 2) March.Insert((March[0] + March[1]) * .5, 1);
-        if (March.Num() < 3) { bOk = false; Notes.Add(FString::Printf(TEXT("%s has no monster path to march down"), *TeamTag(Team))); }
-        if (March.Num() > 64) { March.SetNum(64); Notes.Add(FString::Printf(TEXT("%s: the march route was cut to 64 points"), *TeamTag(Team))); }
-        if (March.Num() >= 3) Out.LocalPoints[Realm] = March;
+        if (March.Num() < 3) { bOk = false; Notes.Add(FString::Printf(TEXT("%s has no monster path to march down"), *Tag)); Out.Spawns[Realm].Reset(); Out.Paths[Realm].Reset(); }
+        else { Out.LocalPoints[Realm] = March; Out.Paths[Realm][0].Points = March; }
         TArray<FCireChallengeBay> Bays;
         for (const FCireMapMarker& M : L.Markers)
             if (M.Type == ChallengePack && ShownInRealm(M, Realm))
             {
-                if (Bays.Num() >= FCireBattlefieldRoutes::MaxBays) { Notes.Add(FString::Printf(TEXT("%s: challenge packs past 16 were left out"), *TeamTag(Team))); break; }
+                if (Bays.Num() >= FCireBattlefieldRoutes::MaxBays) { Notes.Add(FString::Printf(TEXT("%s: challenge packs past 16 were left out"), *Tag)); break; }
                 FCireChallengeBay Bay; Bay.Position = M.Position; Bay.Radius = FMath::Clamp(M.Radius, FCireChallengeBay::MinRadius, FCireChallengeBay::MaxRadius);
                 Bay.Tier = FMath::Clamp(M.Tier, 1, FCireChallengeBay::MaxTier); Bays.Add(Bay);
             }
         Out.Bays[Realm] = Bays;
+        // Hero spawns (with facing), respawns, boss spawns and rifts of this realm.
+        auto Collect = [&](FName Type, TArray<FCireRouteSpot>& List)
+        {
+            List.Reset();
+            for (const FCireMapMarker& M : L.Markers) if (M.Type == Type && ShownInRealm(M, Realm) && List.Num() < FCireBattlefieldRoutes::MaxSpots) List.Add(Spot(M));
+        };
+        Collect(PlayerSpawn, Out.PlayerSpawns[Realm]); Collect(Respawn, Out.Respawns[Realm]);
+        Collect(BossSpawn, Out.Bosses[Realm]); Collect(Rift, Out.Rifts[Realm]);
     }
-    if (const FCireMapMarker* Goal = ObjectiveOf(L, ECireMarkerOwner::Team1))
-    {
-        Out.GoalCenter = Goal->Position;
-        const FCireMapMarker* Other = ObjectiveOf(L, ECireMarkerOwner::Team2);
-        if (Other && !SameXY(Other->Position, Goal->Position)) Notes.Add(TEXT("The T2 objective differs from T1's; today's goal zone is one realm-local spot (T1's)"));
-    }
-    // medieval-kingdom: the hero base (player spawn), the respawn point and the boss spawn are one realm-local spot each in
-    // the route document (T1's marker, else a shared one); gameplay reads them through CireLanePath.
+    // medieval-kingdom: the hero base (shop radius, recall, bots' home) is T1's first player spawn (else a shared one); the
+    // single respawn / boss spots stay for documents without markers. layout-wiring: markers drive each realm directly.
     auto SpotOf = [&](FName Type) -> const FCireMapMarker*
     {
         const FCireMapMarker* SharedOne = nullptr;
@@ -989,5 +1128,8 @@ bool CireMapLayout::CompileRoutes(const FCireMapLayout& L, const FCireBattlefiel
     if (const FCireMapMarker* M = SpotOf(PlayerSpawn)) Out.BaseLocal = M->Position;
     if (const FCireMapMarker* M = SpotOf(Respawn)) { Out.bRespawn = true; Out.RespawnLocal = M->Position; }
     if (const FCireMapMarker* M = SpotOf(BossSpawn)) { Out.bBossSpawn = true; Out.BossLocal = M->Position; }
+    Out.PlayBounds.Reset();
+    for (const FCireMapMarker& M : L.Markers) if (M.Type == PlayBounds && M.Points.Num() >= 3) { Out.PlayBounds = M.Points; break; }
+    Out.LayoutName = L.Name;
     return bOk;
 }
