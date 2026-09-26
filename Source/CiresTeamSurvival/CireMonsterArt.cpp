@@ -34,6 +34,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogCireMonsterArt, Log, All);
 
 namespace
 {
+TAutoConsoleVariable<int32> CVarSwingReadability(TEXT("cire.Monsters.SwingReadability"), 1,
+    TEXT("monster-rig: 1 = melee wind-ups scale with rank (normal .3-.5 s, elite .38-.6 s, boss .55-.85 s); 0 = flat .22-.5 s."));
 TAutoConsoleVariable<int32> CVarSwingWindup(TEXT("cire.Monsters.SwingWindup"), 1,
     TEXT("1: monster melee blows land on the swing's contact frame (default). 0: legacy instant hits."));
 TAutoConsoleVariable<int32> CVarTripoBodies(TEXT("cire.Monsters.TripoBodies"), 1,
@@ -42,7 +44,10 @@ TAutoConsoleVariable<int32> CVarTripoBodies(TEXT("cire.Monsters.TripoBodies"), 1
 CireMonsterArt::FData GData;
 bool GLoaded = false;
 int32 GCorpses = 0;
-const TCHAR* const Roles[] = {TEXT("idle"), TEXT("walk"), TEXT("run"), TEXT("attack"), TEXT("attackAlt"), TEXT("hit"), TEXT("death")};
+// monster-rig: walk_b/walk_l/walk_r (strafe, back-pedal, turn steps), attack3 (third swing of the rotation), heavy/heavy2
+// (telegraphed skill strikes), cast, shout, stagger come from the weapon-matched Fab sets (MonsterFabClips.json "roles").
+const TCHAR* const Roles[] = {TEXT("idle"), TEXT("walk"), TEXT("run"), TEXT("attack"), TEXT("attackAlt"), TEXT("hit"), TEXT("death"),
+    TEXT("walk_b"), TEXT("walk_l"), TEXT("walk_r"), TEXT("attack3"), TEXT("heavy"), TEXT("heavy2"), TEXT("cast"), TEXT("shout"), TEXT("stagger")};
 
 template<class T> T* LoadIfPresent(const FString& Path)
 {
@@ -279,8 +284,30 @@ void Load()
                     CireMonsterArt::FBody& Body = BodyPair.Value;
                     const TSharedPtr<FJsonObject>* Clips = nullptr;
                     if (Body.bFab || !(*Variants)->TryGetObjectField(Body.Variant, Clips)) continue;
+                    // monster-rig: a weapon-matched set replaces the generic Tripo roles (same skeleton: retargeted
+                    // onto this body). In-place set locomotion carries its natural speeds (raw mesh cm/s).
+                    const TSharedPtr<FJsonObject>* SetRoles = nullptr;
+                    if ((*Clips)->TryGetObjectField(TEXT("roles"), SetRoles))
+                    {
+                        int32 Replaced = 0;
+                        for (const auto& Role : (*SetRoles)->Values)
+                        {
+                            FString Path; const FString Name(Role.Key.ToView());
+                            if (!Role.Value->TryGetString(Path) || !Path.StartsWith(TEXT("/Game/"))) continue;
+                            if (!FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))) continue;
+                            Body.Roles.Add(Name, Path); ++Replaced; ++Added;
+                        }
+                        double Walk = 0, Run = 0;
+                        if (Replaced && Body.Roles.Contains(TEXT("walk")) && (*Clips)->TryGetNumberField(TEXT("walkSpeedCm"), Walk) && Walk > 1.)
+                        {
+                            Body.WalkSpeedCm = static_cast<float>(Walk);
+                            if ((*Clips)->TryGetNumberField(TEXT("runSpeedCm"), Run) && Run > Walk) Body.RunSpeedCm = static_cast<float>(Run);
+                        }
+                        Body.FabSet = (*Clips)->GetStringField(TEXT("set"));
+                    }
                     for (const auto& Clip : (*Clips)->Values)
                     {
+                        if (Clip.Value->Type != EJson::String) continue;
                         FString Path; const FString Name(Clip.Key.ToView());
                         if (Body.Clips.Contains(Name) || !Clip.Value->TryGetString(Path) || !Path.StartsWith(TEXT("/Game/"))) continue;
                         if (!FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))) continue;
@@ -371,6 +398,32 @@ void Load()
                     for (const auto& Value : *Drops) { FString Bone; if (Value->TryGetString(Bone)) Body.DropPropBones.Add(FName(*Bone)); }
                 FString Override;
                 if ((*BodyRule)->TryGetStringField(TEXT("mesh"), Override) && Override.StartsWith(TEXT("/Game/"))) Body.MeshOverride = Override;
+                // monster-rig: skin sway regions (tentacles/vines Tripo's humanoid rig gave no bones).
+                const TSharedPtr<FJsonObject>* Sway = nullptr;
+                if ((*BodyRule)->TryGetObjectField(TEXT("sway"), Sway))
+                {
+                    double N = 0;
+                    if ((*Sway)->TryGetNumberField(TEXT("speed"), N) && FMath::IsFinite(N)) Body.SwaySpeed = FMath::Clamp(static_cast<float>(N), 0.f, 10.f);
+                    if ((*Sway)->TryGetNumberField(TEXT("wave"), N) && FMath::IsFinite(N)) Body.SwayWave = FMath::Clamp(static_cast<float>(N), 0.f, 10.f);
+                    auto Vec = [](const TSharedPtr<FJsonObject>& R, const TCHAR* Key, FVector& Out)
+                    {
+                        const TArray<TSharedPtr<FJsonValue>>* V = nullptr;
+                        if (R->TryGetArrayField(Key, V) && V->Num() == 3) Out = FVector((*V)[0]->AsNumber(), (*V)[1]->AsNumber(), (*V)[2]->AsNumber());
+                    };
+                    const TArray<TSharedPtr<FJsonValue>>* Regions = nullptr;
+                    if ((*Sway)->TryGetArrayField(TEXT("regions"), Regions))
+                        for (const auto& Value : *Regions)
+                        {
+                            const TSharedPtr<FJsonObject>* R = nullptr; CireMonsterArt::FSwayRegion Region; double V = 0;
+                            if (!Value->TryGetObject(R) || Body.Sway.Num() >= 2) continue;
+                            Vec(*R, TEXT("center"), Region.Center); Vec(*R, TEXT("radii"), Region.Radii);
+                            if ((*R)->TryGetNumberField(TEXT("rootZ"), V)) Region.Root = static_cast<float>(V);
+                            if ((*R)->TryGetNumberField(TEXT("tipZ"), V)) Region.Tip = static_cast<float>(V);
+                            if ((*R)->TryGetNumberField(TEXT("amount"), V)) Region.Amount = FMath::Clamp(static_cast<float>(V), 0.f, 40.f);
+                            Region.Radii = Region.Radii.ComponentMax(FVector(.1));
+                            if (Region.Amount > 0.f && FMath::Abs(Region.Root - Region.Tip) > .5f) Body.Sway.Add(Region);
+                        }
+                }
                 const TSharedPtr<FJsonObject>* Adjust = nullptr;
                 if ((*BodyRule)->TryGetObjectField(TEXT("props"), Adjust))
                     for (const auto& Prop : (*Adjust)->Values)
@@ -482,7 +535,17 @@ bool UCireMonsterArt::StartSwing(ACireHero* Victim, float Amount, const FString&
     if (!GetOwner() || !GetOwner()->HasAuthority() || !Victim || CVarSwingWindup.GetValueOnGameThread() == 0) return false;
     const float Now = GetWorld()->GetTimeSeconds();
     // A quarter-to-a-third of the attack period, capped so fast (rallied/enraged) swings stay snappy.
+    // monster-rig (readability): the wind-up grows with how hard the blow lands. Elites read a little longer and
+    // bosses clearly longer, so a heavy hit is always visible before it connects (cire.Monsters.SwingReadability 0: old).
     SwingWindup = FMath::Clamp(Period * .3f, .22f, .5f);
+    if (CVarSwingReadability.GetValueOnGameThread() != 0)
+        if (const auto* Monster = Cast<ACireMonster>(GetOwner()))
+            if (const FCireNPCArchetype* Archetype = Monster->NPCState ? Monster->NPCState->Archetype() : nullptr)
+            {
+                const bool bBoss = Archetype->Classification == ECireNPCClass::Boss, bElite = Archetype->Classification == ECireNPCClass::Elite;
+                const float Min = bBoss ? .55f : bElite ? .38f : .3f, Max = bBoss ? .85f : bElite ? .6f : .5f;
+                SwingWindup = FMath::Clamp(Period * (bBoss ? .4f : .33f), Min, Max);
+            }
     SwingStartedAt = Now; ++SwingSerial;
     PendingVictim = Victim; PendingAmount = Amount; PendingReach = Reach; PendingName = AttackName;
     PendingReleaseAt = Now + SwingWindup; bSwingPending = true;
@@ -648,6 +711,7 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
         const CireAnimClips::FClipInfo& Stance = CireAnimClips::Analyze(Anim->Idle.Sequence);
         Anim->Walk.PelvisTarget = Anim->Run.PelvisTarget = Stance.bValid ? Stance.DriftOffset : Stance.ReferencePelvis;
         Anim->Action = FCireAnimLayer(); Anim->Death = FCireAnimLayer();
+        Anim->Side = FCireAnimLayer(); Anim->Side.bRemoveDrift = true; Anim->Side.PelvisTarget = Anim->Walk.PelvisTarget; Anim->SideAlpha = 0.f;
         Anim->MoveAlpha = Anim->RunAlpha = 0.f;
     }
     else { RestoreFallback(); return false; }
@@ -761,6 +825,7 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
     }
     AppliedReskinBody = Body.ReskinTextures.IsEmpty() ? CireMonsterArt::FBody() : Body; // monster-expansion
     bAppliedSpectral = Body.bSpectral;
+    AppliedSwayRegions = Body.Sway; AppliedSwaySpeed = Body.SwaySpeed; AppliedSwayWave = Body.SwayWave; // monster-rig
     bTripoApplied = true; AppliedArchetype = Archetype.Id; AppliedVariant = Body.Variant; AppliedMeshScale = Body.MeshScale;
     AppliedWalkRaw = Body.WalkSpeedCm / FMath::Max(.01f, Body.MeshScale); AppliedRunRaw = Body.RunSpeedCm / FMath::Max(.01f, Body.MeshScale); // world-dressing
     Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = -1.f; // a cast already under way is picked up mid-bar
@@ -841,18 +906,65 @@ UAnimSequence* UCireMonsterArt::ClipForAbility(FName AbilityId) const
             if (UAnimSequence* Clip = NamedClip(*Name)) return Clip;
     const FCireNPCAbility* Ability = Archetype ? Archetype->FindAbility(AbilityId) : nullptr;
     UAnimSequence* Attack = RoleClip(TEXT("attack"));
-    UAnimSequence* Cast = NamedClip(TEXT("cast_a_spell"));
-    UAnimSequence* Shout = NamedClip(TEXT("war_cry"));
+    // monster-rig: weapon-matched set clips first (a telegraphed heavy strike for cones/charges, the set's cast and
+    // shout), then the Tripo library clips.
+    UAnimSequence* Cast = RoleClip(TEXT("cast")) ? RoleClip(TEXT("cast")) : NamedClip(TEXT("cast_a_spell"));
+    UAnimSequence* Shout = RoleClip(TEXT("shout")) ? RoleClip(TEXT("shout")) : NamedClip(TEXT("war_cry"));
+    UAnimSequence* Heavy = RoleClip(TEXT("heavy")) ? RoleClip(TEXT("heavy")) : Attack;
+    UAnimSequence* Heavy2 = RoleClip(TEXT("heavy2")) ? RoleClip(TEXT("heavy2")) : Heavy;
     if (!Ability) return Cast ? Cast : Attack;
     switch (Ability->Kind)
     {
     case ECireNPCAbilityKind::Projectile: return Attack;
-    case ECireNPCAbilityKind::Cone: case ECireNPCAbilityKind::Charge: case ECireNPCAbilityKind::Melee: return Attack;
-    case ECireNPCAbilityKind::SelfCircle: if (auto* Slam = NamedClip(TEXT("ground_slam"))) return Slam; return Attack;
+    case ECireNPCAbilityKind::Melee: return Attack;
+    case ECireNPCAbilityKind::Cone: return Heavy;
+    case ECireNPCAbilityKind::Charge: case ECireNPCAbilityKind::Pull: return Heavy2;
+    case ECireNPCAbilityKind::SelfCircle: if (auto* Slam = NamedClip(TEXT("ground_slam"))) return Slam; return Heavy2;
     case ECireNPCAbilityKind::Rally: case ECireNPCAbilityKind::Enrage: case ECireNPCAbilityKind::Provoke:
         return Shout ? Shout : Cast ? Cast : Attack;
     default: return Cast ? Cast : Shout ? Shout : Attack;
     }
+}
+
+void UCireMonsterArt::UpdateDirectionalGait(float DeltaTime, const ACireMonster& Monster, UCireMonsterAnimInstance& Anim, float WalkSpeed)
+{
+    // monster-rig: the set's strafe / back-pedal clips when the body moves off its facing, and short side steps
+    // when it turns on the spot, so a monster circling or backing off never glides on its forward cycle.
+    // movement-feel owns this when it is on (travel warp, reversed gait for backpedals, stepped turns): the set's
+    // directional clips would double the lower-body turn, so this layer is only the fallback (cire.Locomotion 0).
+    if (CireLocomotion::Enabled())
+    {
+        Anim.SideAlpha = 0.f; Anim.Side.Sequence = nullptr;
+        LastYaw = static_cast<float>(Monster.GetActorRotation().Yaw); SmoothedYawRate = 0.f;
+        return;
+    }
+    const float Yaw = static_cast<float>(Monster.GetActorRotation().Yaw);
+    const float YawRate = DeltaTime > KINDA_SMALL_NUMBER ? FMath::FindDeltaAngleDegrees(LastYaw, Yaw) / DeltaTime : 0.f;
+    LastYaw = Yaw;
+    SmoothedYawRate = FMath::FInterpTo(SmoothedYawRate, YawRate, DeltaTime, 6.f);
+    UAnimSequence* Target = nullptr;
+    float Alpha = 0.f;
+    const FVector Velocity = Monster.Health > 0 ? Monster.GetVelocity() : FVector::ZeroVector;
+    if (Velocity.Size2D() > WalkSpeed * .2f)
+    {
+        const float Angle = FMath::FindDeltaAngleDegrees(Yaw, static_cast<float>(Velocity.Rotation().Yaw)); // + = moving to its right
+        const float Abs = FMath::Abs(Angle);
+        if (Abs > 115.f) { Target = RoleClip(TEXT("walk_b")); Alpha = FMath::Clamp((Abs - 115.f) / 30.f, 0.f, 1.f); }
+        if (!Target) { Target = RoleClip(Angle > 0.f ? TEXT("walk_r") : TEXT("walk_l")); Alpha = FMath::Clamp((FMath::Min(Abs, 180.f - Abs) - 30.f) / 45.f, 0.f, 1.f); }
+    }
+    else if (Monster.Health > 0 && FMath::Abs(SmoothedYawRate) > 50.f && !Current.Sequence)
+    {
+        // Turning in place: side-step toward the turn, the step rate following the yaw rate.
+        Target = RoleClip(SmoothedYawRate > 0.f ? TEXT("walk_r") : TEXT("walk_l"));
+        Alpha = FMath::Clamp((FMath::Abs(SmoothedYawRate) - 50.f) / 90.f, 0.f, 1.f);
+        if (Target) Anim.MoveAlpha = FMath::Max(Anim.MoveAlpha, .7f * Alpha);
+        Phase = FMath::Frac(Phase + DeltaTime * FMath::Clamp(FMath::Abs(SmoothedYawRate) / 180.f, .4f, 1.4f) / FMath::Max(.1f, Target ? Target->GetPlayLength() : 1.f));
+    }
+    if (Target && Target != Anim.Side.Sequence && Anim.SideAlpha < .05f) Anim.Side.Sequence = Target;
+    const float Goal = Target == Anim.Side.Sequence ? Alpha : 0.f; // change clips only after fading out
+    Anim.SideAlpha = FMath::FInterpTo(Anim.SideAlpha, Goal, DeltaTime, 7.f);
+    if (UAnimSequence* SideClip = Anim.Side.Sequence)
+        Anim.Side.Time = FMath::Frac(Phase + CireAnimClips::Analyze(SideClip).LeftFootApexPhase) * SideClip->GetPlayLength();
 }
 
 void UCireMonsterArt::StartAction(UAnimSequence* Sequence, double StartedAt, float Windup, float Weight, float LowerBody, bool bCast)
@@ -940,12 +1052,17 @@ void UCireMonsterArt::UpdatePresentation(float DeltaTime)
     if (WalkClip) Anim->Walk.Time = FMath::Frac(Phase + WalkInfo.LeftFootApexPhase) * WalkLength;
     if (RunClip) Anim->Run.Time = FMath::Frac(Phase + RunInfo.LeftFootApexPhase) * RunLength;
     if (UAnimSequence* Idle = Anim->Idle.Sequence) { IdleTime = FMath::Fmod(IdleTime + DeltaTime, Idle->GetPlayLength()); Anim->Idle.Time = IdleTime; }
+    UpdateDirectionalGait(DeltaTime, *Monster, *Anim, WalkSpeed);
 
     // ---- triggers: melee swing, cast bar, hit reaction ----
     if (SwingSerial != SeenSwingSerial)
     {
         SeenSwingSerial = SwingSerial;
-        if (UAnimSequence* Attack = RoleClip(TEXT("attack")))
+        // monster-rig: basic swings rotate through the set's attacks (same order on every client: the serial replicates).
+        UAnimSequence* Swings[3] = {RoleClip(TEXT("attack")), RoleClip(TEXT("attackAlt")), RoleClip(TEXT("attack3"))};
+        int32 NumSwings = 0;
+        for (UAnimSequence* Swing : Swings) if (Swing) Swings[NumSwings++] = Swing;
+        if (UAnimSequence* Attack = NumSwings ? Swings[SwingSerial % NumSwings] : nullptr)
         {
             const bool bRanged = CireNPCArchetypes::IsRangedRole(Monster->GetNPCRole()); // monster-races: supports shoot too
             if (!bRanged) StartAction(Attack, SwingStartedAt, SwingWindup, 1.f, 1.f, false);
@@ -1037,7 +1154,7 @@ bool UCireMonsterArt::PoseForTest(const FString& Role, float Normalized, float M
     if (!Monster || !Anim || !bTripoApplied) return false;
     bFrozen = true;
     Normalized = FMath::Clamp(Normalized, 0.f, 1.f);
-    Anim->MoveAlpha = 0.f; Anim->RunAlpha = 0.f;
+    Anim->MoveAlpha = 0.f; Anim->RunAlpha = 0.f; Anim->SideAlpha = 0.f;
     Anim->Action = FCireAnimLayer(); Anim->Death = FCireAnimLayer();
     if (Role == TEXT("idle")) Anim->Idle.Time = Normalized * Anim->Idle.Sequence->GetPlayLength();
     else if (Role == TEXT("walk") || Role == TEXT("run"))

@@ -1,0 +1,45 @@
+{
+ "schemaVersion": 1,
+ "branch": "feat/monster-rig",
+ "operator": "Claude (monster-rig worktree)",
+ "status": "drowned_deep + blightwood DONE and committed (603d557); other races assigned, not retargeted",
+ "credits": {
+  "observedBalanceAtStart": 14961,
+  "observedBalanceAtPause": 14941,
+  "spentByThisAgent": 20,
+  "ledger": [
+   {
+    "what": "Mind Leech (task f1c39f59-396c-4832-bddd-ed3d28dce72e) re-rig with rig type 'Other' to probe for tentacle chains",
+    "credits": 20,
+    "result": "Tripo auto-detected a biped anyway (same legs-in-skirt skeleton, no tentacle bones). Not exported. Conclusion: Studio's 'Other' rig does not give tentacle chains on these bodies; tentacle motion must be procedural."
+   }
+  ],
+  "note": "Other agents spend from the same Tripo balance concurrently; this ledger counts only this agent's spend. No Tripo credits spent this session (sway is in-engine)."
+ },
+ "inFlightTripoTasks": [],
+ "done": [
+  "Worktree checked out, Fab content linked (Tools/LinkFabContent.py --include-fab).",
+  "Tools/AuditMonsterRig.py (editor, GeometryScripting): per-body bones/UE5 naming, islands, leg-bound-high / arm-bound-low / far-from-bone weighting anomalies -> Saved/MonsterRigAudit.json. Not run yet.",
+  "Finding: all 60 race bodies + HQ rows are Tripo Humanoid rigs on the UE5 Mannequin preset (61 bones) with 6-9 generic Tripo clips; so the humanoid step is 'give them weapon-matched sets', not a re-rig.",
+  "Art/Fab/FabAnimMap.json monsterSets: role maps per Fab set (one_hand, two_hand, dual, sword_shield, spell, bow, spear, gun, unarmed, crossbow) and 77 body->set assignments.",
+  "Tools/RetargetFabAnimations.py -CireFabAnimMonsterSets: retargets each body's set (idle, walk f/b/l/r, run, attack/attackAlt/attack3, heavy/heavy2, cast, shout, hit, death) to /Game/FabDerived/Anim/<Variant>Set and writes MonsterFabClips.json variants.<V>.{set, roles, walkSpeedCm, runSpeedCm}.",
+  "C++ (uncompiled): CireMonsterArt roles extended; MonsterFabClips 'roles' override Tripo roles + in-place speeds; basic swings rotate attack/attackAlt/attack3 by SwingSerial; ClipForAbility maps cone->heavy, charge/pull->heavy2, selfCircle->ground_slam|heavy2, rally/enrage/provoke->shout, other casts->cast; rank-scaled readable wind-ups (cvar cire.Monsters.SwingReadability, normal .3-.5 s, elite .38-.6 s, boss .55-.85 s); UCireMonsterAnimInstance Side layer + UpdateDirectionalGait (strafe L/R, back-pedal, turn-in-place side steps).",
+  "2026-09-26 (F:): WIP built clean (Result: Succeeded, no compile errors). Fixed Tools/RetargetFabAnimations.py syntax error (literal newline in a string, main_monster_sets).",
+  "AuditMonsterRig.py run on 82 bodies (Saved/MonsterRigAudit.json). Fix: bind positions now come from GeometryScript bone info WorldTransform (an unregistered SkeletalMeshComponent returned identity bones, so every vertex read as 'far'). New -CireRigAuditPoints dumps bind-pose samples for region picking. Table in Docs/MonsterRig.md.",
+  "drowned_deep: -CireFabAnimMonsterSets on all 8 bodies, PASS 8/8, 15 roles each (AbyssalStalker dual 232/358 cm/s, DeepspawnThrall two_hand, CoralshellGuardian sword_shield, Tidecaller/Barbspitter/MindLeech/DrownedProphet spell, MawOfTheDeep two_hand).",
+  "blightwood: same, PASS 8/8 (Vinelasher one_hand, SaplingBrute two_hand, BarkhideWarden sword_shield, RotbloomShaman/Thornspitter/WitheredMatron spell, Sporeling/ElderOakheart unarmed).",
+  "Tentacle sway in-engine: M_CireMonsterSkin WPO on PreSkinnedPosition, 2 ellipsoid regions (SwayCenterA/B, SwayRadiiA/B, SwayBandA/B=rootZ,tipZ,amount), SwaySpeed/SwayWave, SwayDebug mask via VertexInterpolator (PreSkinnedPosition is VS-only). Builder patches the existing asset in place (delete refused: referenced; the LFS-lockable file is read-only -> chmod u+w). Data MonsterArt.json bodies.<Variant>.sway, applied in CireRaces::ApplySkin; cvar cire.Monsters.SwayDebug.",
+  "Sway tuned with the new face_<unit> gallery stage (--cvars cire.Monsters.SwayDebug=1): beards on AbyssalStalker, DeepspawnThrall, CoralshellGuardian, Tidecaller, Barbspitter, DrownedProphet (+skirt), MindLeech skirt, Maw upright tentacles (tipZ above rootZ), Vinelasher whips (both arms), ElderOakheart moss beard. WitheredMatron dropped (knee-length open gown: the hem mask caught her legs). Motion verified with an exaggerated 25 cm amount (beard visibly swept), then restored.",
+  "Grounding fix: native checks failed AbyssalStalker attack (feet -10/-19 cm) and BarkhideWarden walk/run (-14 cm) on the retargeted sets. CireMonsterAnim now lifts the pelvis so the lowest foot never goes below the idle stance floor while moving/acting (never while dying). CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418.",
+  "Segmentation: none needed for drowned/blightwood (fused weapons weighted to the holding hand). Candidates elsewhere: TuskedBehemothHQ leg-bound 4%, GravemawPackLeader/DrakkariAshwing/EmberWhelp/FeralMammoth far >7%, DeepforgeRunesmith arm-bound low 10%.",
+  "Merged main ab81c6c (interface-stall, summons, champion-hq, video-crash, telegraphs, weapon-grips, movement-feel, vendors, dev-route-tools). No conflicts. Reconciled with movement-feel: its travel warp / reversed backpedal gait / stepped turns now own directional locomotion, so the set's strafe/back-pedal/side-step layer (UpdateDirectionalGait) only runs as the fallback when cire.Locomotion is off (both at once double-turned the legs). The pelvis-lift grounding runs before movement-feel's pose feel/leg IK. Grounding checks re-run: CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418."
+ ],
+ "nextSteps": [
+  "1. Remaining races: run -CireFabAnimMonsterSets per race (-CireFabAnimOnly=<variants>), review races_<race> + close_<units> galleries, add sway where the body has hanging parts (e.g. void RiftGazer eye stalks, VoidbornHerald tentacles).",
+  "2. Segmentation candidates from the audit (above) when their race comes up.",
+  "3. Gates after each race; commit per race."
+ ],
+ "gates": {
+  "merge-checkpoint": "expansion native/replay/network PASS (CIRE_COMBAT_EXPANSION_PASS, CIRE_REPLAY_INTEGRATION_PASS); network CIRE_NET_SERVER_PASS heroes=10 teams=5/5 + CIRE_NETWORK_SMOKE_PASS; interface CIRE_INTERFACE_SMOKE_PASS without any patch (logs Saved/AgentLogs/*-merge-*)"
+ }
+}

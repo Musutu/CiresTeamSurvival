@@ -30,6 +30,38 @@ FCompactPoseBoneIndex CompactIndex(const FBoneContainer& Bones, const TCHAR* Nam
     return Index == INDEX_NONE ? FCompactPoseBoneIndex(INDEX_NONE) : Bones.MakeCompactPoseIndex(FMeshPoseBoneIndex(Index));
 }
 
+// monster-rig: lowest foot (foot/ball bones) of a pose in component space; false when the body has no such bones.
+bool LowestFoot(const FCompactPose& Pose, float& OutZ)
+{
+    const FBoneContainer& Bones = Pose.GetBoneContainer();
+    FCSPose<FCompactPose> Space;
+    Space.InitPose(Pose);
+    bool bAny = false; OutZ = TNumericLimits<float>::Max();
+    for (const TCHAR* Name : {TEXT("foot_l"), TEXT("foot_r"), TEXT("ball_l"), TEXT("ball_r")})
+    {
+        const FCompactPoseBoneIndex Bone = CompactIndex(Bones, Name);
+        if (!Bone.IsValid()) continue;
+        OutZ = FMath::Min(OutZ, static_cast<float>(Space.GetComponentSpaceTransform(Bone).GetLocation().Z)); bAny = true;
+    }
+    return bAny;
+}
+
+// monster-rig: retargeted Fab clips (lunges, low guards, sword-and-shield gait) can sink the feet below the stance
+// floor on bodies with shorter legs; lift the pelvis so the lowest foot never goes below the idle stance's.
+void KeepFeetOnFloor(FCompactPose& Pose, float FloorZ)
+{
+    float Z = 0.f;
+    if (!LowestFoot(Pose, Z) || Z >= FloorZ - .5f) return;
+    const FBoneContainer& Bones = Pose.GetBoneContainer();
+    const FCompactPoseBoneIndex Pelvis = CompactIndex(Bones, TEXT("pelvis"));
+    if (!Pelvis.IsValid()) return;
+    FCSPose<FCompactPose> Space;
+    Space.InitPose(Pose);
+    const FCompactPoseBoneIndex Parent = Bones.GetParentBoneIndex(Pelvis);
+    const FTransform ParentSpace = Parent.IsValid() ? Space.GetComponentSpaceTransform(Parent) : FTransform::Identity;
+    Pose[Pelvis].AddToTranslation(ParentSpace.InverseTransformVector(FVector(0, 0, FloorZ - Z)));
+}
+
 bool PoseIsSane(const FCompactPose& Pose)
 {
     for (const FCompactPoseBoneIndex Bone : Pose.ForEachBoneIndex())
@@ -168,8 +200,8 @@ struct FLayerCopy
 struct FCireMonsterAnimProxy : public FAnimInstanceProxy
 {
     explicit FCireMonsterAnimProxy(UAnimInstance* Instance) : FAnimInstanceProxy(Instance) {}
-    FLayerCopy Idle, Walk, Run, Action, Death;
-    float MoveAlpha = 0.f, RunAlpha = 0.f;
+    FLayerCopy Idle, Walk, Run, Action, Death, Side;
+    float MoveAlpha = 0.f, RunAlpha = 0.f, SideAlpha = 0.f;
     CireGrip::FHands Hands;
     UCireMonsterAnimInstance* Owner = nullptr;
     bool bLockRoot = false; // world-dressing
@@ -181,7 +213,8 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
         auto* Monster = CastChecked<UCireMonsterAnimInstance>(Instance);
         Owner = Monster;
         Idle.Copy(Monster->Idle); Walk.Copy(Monster->Walk); Run.Copy(Monster->Run);
-        Action.Copy(Monster->Action); Death.Copy(Monster->Death);
+        Action.Copy(Monster->Action); Death.Copy(Monster->Death); Side.Copy(Monster->Side);
+        SideAlpha = FMath::Clamp(Monster->SideAlpha, 0.f, 1.f);
         MoveAlpha = FMath::Clamp(Monster->MoveAlpha, 0.f, 1.f);
         RunAlpha = FMath::Clamp(Monster->RunAlpha, 0.f, 1.f);
         Hands = Monster->Hands;
@@ -220,6 +253,8 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
     virtual bool Evaluate(FPoseContext& Output) override
     {
         if (!Sample(Idle, Output)) Output.ResetToRefPose();
+        float FloorZ = 0.f;
+        const bool bFloor = !bLockRoot && LowestFoot(Output.Pose, FloorZ); // monster-rig: the idle stance's floor
         if (MoveAlpha > KINDA_SMALL_NUMBER && (Walk.Sequence || Run.Sequence))
         {
             FPoseContext Moving(Output);
@@ -233,10 +268,21 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
                 FAnimationRuntime::BlendTwoPosesTogetherInPlace(MovingData, RunningData, 1.f - RunAlpha);
             }
             else Sample(RunAlpha >= .5f && Run.Sequence ? Run : Walk.Sequence ? Walk : Run, Moving);
+            if (Side.Sequence && SideAlpha > KINDA_SMALL_NUMBER) // monster-rig: strafe / back-pedal / turn step
+            {
+                FPoseContext Sideways(Output);
+                if (Sample(Side, Sideways))
+                {
+                    FAnimationPoseData MovingData(Moving), SideData(Sideways);
+                    FAnimationRuntime::BlendTwoPosesTogetherInPlace(MovingData, SideData, 1.f - SideAlpha);
+                }
+            }
             FAnimationPoseData OutputData(Output), MovingData(Moving);
             FAnimationRuntime::BlendTwoPosesTogetherInPlace(OutputData, MovingData, 1.f - MoveAlpha);
         }
         Overlay(Output, Action);
+        if (bFloor && (MoveAlpha > KINDA_SMALL_NUMBER || Action.Weight > KINDA_SMALL_NUMBER) && Death.Weight <= KINDA_SMALL_NUMBER)
+            KeepFeetOnFloor(Output.Pose, FloorZ);
         Overlay(Output, Death);
         if (Hands.Any()) CireGrip::Apply(Output.Pose, Hands);
         if (bLockRoot && Output.Pose.GetNumBones() > 0) // world-dressing: the armature proxy root stays at its bind transform

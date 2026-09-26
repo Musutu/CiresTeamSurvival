@@ -27,6 +27,11 @@ struct FCireNPCArchetype;
 namespace CireMonsterArt
 {
     struct FClipWindow { float Start = 0.f, Contact = 0.f, End = 0.f, RecoverRate = 1.f; };
+    /** monster-rig: a region of the body that sways in the skin material (tentacle beards, skirt tentacles, vines).
+     *  Raw mesh space (pre-skinned, the audit's units): an ellipsoid Center/Radii, the sway growing from height Root
+     *  (still) to height Tip (full Amount world cm); Tip above Root for upright tentacles. Bones Tripo never gave these
+     *  parts move procedurally instead. */
+    struct FSwayRegion { FVector Center = FVector::ZeroVector, Radii = FVector::OneVector; float Root = 0.f, Tip = 0.f, Amount = 0.f; };
     struct FBody
     {
         FString Variant, MeshPath, BakedWeapon;
@@ -65,6 +70,11 @@ namespace CireMonsterArt
         float ReskinTintStrength = 0.f, ReskinRimStrength = 0.f, ReskinBody = 0.f;
         /** monster-expansion: a hovering spirit (the lich): its death rises and fades instead of lying down; the corpse sinks deep. */
         bool bSpectral = false;
+        /** monster-rig: the weapon-matched Fab set whose clips replaced the Tripo roles ("" = generic Tripo library). */
+        FString FabSet;
+        /** monster-rig: skin-material sway regions (MonsterArt.json bodies.<Variant>.sway); at most two. */
+        TArray<FSwayRegion> Sway;
+        float SwaySpeed = 1.6f, SwayWave = 1.f;
     };
     struct FArchetypeArt
     {
@@ -132,6 +142,9 @@ public:
     /** monster-expansion: the applied Fab body asks for the race skin (reskinned creature); null when it keeps its materials. */
     const CireMonsterArt::FBody* AppliedReskin() const { return bTripoApplied && !AppliedReskinBody.ReskinTextures.IsEmpty() ? &AppliedReskinBody : nullptr; }
     bool HasRoleClip(const FString& Role) const { return RoleClip(Role) != nullptr; }
+    /** monster-rig: the applied body's skin sway regions (tentacles / vines); empty for rigid bodies. */
+    const TArray<CireMonsterArt::FSwayRegion>& AppliedSway() const { return AppliedSwayRegions; }
+    float AppliedSwaySpeed = 1.6f, AppliedSwayWave = 1.f;
     const FString& GetAppliedVariant() const { return AppliedVariant; }
     UCireMonsterAnimInstance* GetMonsterAnim() const;
     /** Development/tests: force a variant index (-1 = seed). Re-applies the body. */
@@ -168,6 +181,8 @@ private:
     void RestoreFallback();
     void CaptureFallback();
     void UpdatePresentation(float DeltaTime);
+    void UpdateDirectionalGait(float DeltaTime, const ACireMonster& Monster, UCireMonsterAnimInstance& Anim, float WalkSpeed);
+    float LastYaw = 0.f, SmoothedYawRate = 0.f;
     void UpdateRim();
     void StartAction(UAnimSequence* Sequence, double StartedAt, float Windup, float Weight, float LowerBody, bool bCast);
     UAnimSequence* RoleClip(const FString& Role) const;
@@ -186,6 +201,7 @@ private:
     FTransform FallbackTransform;
     CireMonsterArt::FBody AppliedReskinBody; // monster-expansion
     bool bAppliedSpectral = false;
+    TArray<CireMonsterArt::FSwayRegion> AppliedSwayRegions; // monster-rig
     bool bFallbackCaptured = false;
     bool bTripoApplied = false;
     bool bFabApplied = false;

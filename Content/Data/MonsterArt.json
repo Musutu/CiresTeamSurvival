@@ -45,6 +45,16 @@
     "voidborn_devourer": { "abilityClips": {"void_titan_slam": "ground_slam", "void_singularity": "ground_slam", "void_devourer_hunger": "war_cry", "void_breath": "fire_breath", "void_devour": "slash"} }
   },
   "bodies": {
+    "AbyssalStalker": { "sway": {"speed": 1.9, "wave": 0.8, "note": "short tentacle beard", "regions": [{"center": [0.2, 5, 82], "radii": [6, 7, 8], "rootZ": 88, "tipZ": 76, "amount": 3}]} },
+    "DeepspawnThrall": { "sway": {"speed": 1.3, "wave": 0.6, "note": "thick hanging tentacle beard", "regions": [{"center": [1.7, 7, 69], "radii": [9, 9, 11], "rootZ": 76, "tipZ": 60, "amount": 4}]} },
+    "CoralshellGuardian": { "sway": {"speed": 1.8, "wave": 0.8, "note": "short face tentacles under the helm", "regions": [{"center": [0.2, 9, 63], "radii": [15, 10, 14], "rootZ": 74, "tipZ": 51, "amount": 3}]} },
+    "Tidecaller": { "sway": {"speed": 1.4, "wave": 0.7, "note": "long drooping tentacle beard", "regions": [{"center": [1, 6, 79], "radii": [7, 7, 7], "rootZ": 85, "tipZ": 72, "amount": 3}]} },
+    "BarbspitterHQ": { "sway": {"speed": 2.2, "wave": 1.0, "note": "small tentacles around the siphon mouth", "regions": [{"center": [0.5, 14, 77], "radii": [8, 7, 10], "rootZ": 86, "tipZ": 67, "amount": 2.5}]} },
+    "MindLeech": { "sway": {"speed": 1.5, "wave": 0.9, "note": "tentacle skirt to the ground (legs inside)", "regions": [{"center": [0, 2, 25], "radii": [26, 26, 19], "rootZ": 42, "tipZ": 6, "amount": 3.5}]} },
+    "DrownedProphet": { "sway": {"speed": 1.2, "wave": 0.7, "note": "mass of long beard tentacles + dragging tentacle skirt", "regions": [{"center": [0.7, 4, 70], "radii": [8, 9, 13], "rootZ": 80, "tipZ": 58, "amount": 4.5}, {"center": [0.5, -3, 17], "radii": [26, 26, 12], "rootZ": 29, "tipZ": 5, "amount": 3}]} },
+    "MawOfTheDeep": { "sway": {"speed": 1.1, "wave": 0.6, "note": "long thick tentacles ringing the maw (upright: tip above root)", "regions": [{"center": [0.2, 2, 90], "radii": [34, 28, 16], "rootZ": 80, "tipZ": 104, "amount": 6}]} },
+    "Vinelasher": { "sway": {"speed": 1.7, "wave": 0.9, "note": "thorn-vine whips hanging from both forearms (T-pose: arms out, whips down to the knees)", "regions": [{"center": [42, 4, 45], "radii": [13, 13, 37], "rootZ": 80, "tipZ": 12, "amount": 5}, {"center": [-42, 4, 45], "radii": [13, 13, 37], "rootZ": 80, "tipZ": 12, "amount": 5}]} },
+    "ElderOakheart": { "sway": {"speed": 0.9, "wave": 0.5, "note": "long hanging grey moss beard", "regions": [{"center": [0.6, 8, 75], "radii": [11, 11, 13], "rootZ": 86, "tipZ": 62, "amount": 3}]} },
     "BlightCaster":       { "dropPropBones": ["hand_r"], "note": "bone staff is part of the mesh" },
     "BlightCasterB":      { "dropPropBones": ["hand_r"], "note": "iron sceptre is part of the mesh" },
     "BarbedHunterB":      { "dropPropBones": ["hand_l", "hand_r"], "note": "crossbow is part of the mesh" },
