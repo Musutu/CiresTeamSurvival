@@ -48,6 +48,7 @@ bar 1**'s bindings, so they follow the player's keybinding settings. The default
 | 0 | Play Bounds | polygon (red veil outside, amber margin) | one shared polygon; each press adds a corner; the town is trimmed to it in matches |
 | Shift+1 | No-Spawn / Blocker Zone | crossed ring | radius |
 | Shift+2 | Recall Point | pillar + ring + facing arrow | named, radius; where Recall (Teleport to Base) takes the team's heroes (the nearest one) |
+| Shift+3 | Zone / Area | polygon | named, shared by default; each press adds a corner; entering it shows the zone text and its monster tier (Docs/Zones.md) |
 
 **No marker limits** (jungle-packs, Eric: "unlimited of any type"). Every setter places as many markers as you like.
 Where the game only reads some of them, Validate says so:
@@ -205,6 +206,7 @@ launch (a draft authored on the other map is left alone). Named layouts are kept
 | Play Bounds | The third-person camera stays inside the polygon (the boom shortens at the edge). A hero outside it is told OUT OF BOUNDS and pulled back inside after 3 s; a monster outside it (and off its path) is set back onto its path. **The town is trimmed to it** in both realms: whatever lies entirely outside the polygon plus 15 m is not loaded, not rendered and not in the navmesh (Docs/CastleTown.md "Trim to Play Bounds"). No Play Bounds: nothing is trimmed. |
 | Shop / Vendor | `TownVendors.json` (per realm: T1 merchants in DAYLIGHT, T2 in DARKNIGHT, shared in both). |
 | No-Spawn / Blocker | Editor guide only (Validate notes it). |
+| Zone / Area | The zone text ("ENTERING / Market Plaza / Monster Tier: 1") when a hero enters it, local to each player. Any Zone marker replaces the defaults in `TownZones.json` (Docs/Zones.md). |
 
 Paths, spawns and spots replicate to clients with the route (a tagged block at the end of `LaneLayout`; mirrored realms
 are sent once). Validate refuses a layout whose block would pass the engine's replication array budget. Challenge packs

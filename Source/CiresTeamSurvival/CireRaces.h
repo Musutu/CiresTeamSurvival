@@ -163,6 +163,12 @@ namespace CireRaces
     // ---- presentation (clients / listen server) ----
     /** Race palette + rank colours on the monster's body (Tripo skin MIDs, or the mannequin tint). */
     CIRESTEAMSURVIVAL_API bool ApplySkin(ACireMonster* Monster);
+    /** tier-readability: rank colours on monster bodies (armour tint, body tint, emissive glow, fresnel rim). Off by default
+     *  (cire.RankBodyColours 0, Eric 2026-09-26: "I would rather they didn't glow"): ranks and pack tiers read in the UI
+     *  (T1..T4 on the nameplate and frames); bodies keep their race palette and reskin. Rare / bonus spawns keep their colour. */
+    CIRESTEAMSURVIVAL_API bool RankBodyColours();
+    /** The rank style a monster's body is skinned with (the Normal style when rank body colours are off). */
+    CIRESTEAMSURVIVAL_API FCireRankStyle BodyStyle(const ACireMonster* Monster);
     /** True when the race skin material is on the body (it then carries the rank rim itself). */
     CIRESTEAMSURVIVAL_API bool HasSkin(const ACireMonster* Monster);
     /** Cast started (seen on a client): plays the ability's audio cue. */

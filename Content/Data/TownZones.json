@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "notes": "tier-readability (Docs/Zones.md): default named zones per map, realm-local centimetres (the same frame as MapLayout.json), shared by both realms. Entering a zone shows the WoW zone text with its name and 'Monster Tier: X', the most common tier of the challenge packs inside it (ties go to the higher tier). A layout with Zone markers (map layout editor, Shift+3) replaces these for its map; the editor's USE DEFAULT ZONES button copies these into the layout so they can be renamed and redrawn. The first zone containing a point wins. The castletown zones were derived from Eric's layout v2 pack clusters and the explore landmarks (CastleTown.json); the procedural town without an entry uses its TownLayout.json districts.",
+  "maps": {
+    "castletown": [
+      { "id": "castle_keep", "name": "Castle Keep", "points": [[3500, -20000], [30000, -20000], [30000, 0], [3500, 0]] },
+      { "id": "smithy_row", "name": "Smithy Row", "points": [[-6500, -20000], [3500, -20000], [3500, 1500], [-6500, 1500]] },
+      { "id": "west_gate", "name": "West Gate Road", "points": [[-11000, -20000], [-6500, -20000], [-6500, 2500], [-11000, 2500]] },
+      { "id": "breach", "name": "The Breach", "points": [[-30000, -20000], [-11000, -20000], [-11000, 4000], [-30000, 4000]] },
+      { "id": "north_market", "name": "North Market", "points": [[-30000, 4000], [-11000, 4000], [-11000, 2500], [-6500, 2500], [-6500, 1500], [3500, 1500], [3500, 9500], [-30000, 9500]] },
+      { "id": "market_plaza", "name": "Market Plaza", "points": [[3500, 0], [30000, 0], [30000, 9500], [3500, 9500]] },
+      { "id": "western_fields", "name": "The Western Fields", "points": [[-30000, 9500], [0, 9500], [0, 30000], [-30000, 30000]] },
+      { "id": "eastern_fields", "name": "The Eastern Fields", "points": [[0, 9500], [30000, 9500], [30000, 30000], [0, 30000]] }
+    ]
+  }
+}

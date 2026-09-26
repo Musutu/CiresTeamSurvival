@@ -176,7 +176,9 @@ The extra slots go to DPS twice as often as to tanks or healers. A role at its m
 **Members.** For each role slot, the unit is drawn from the type's pool of that role (a seeded shuffle, cycling).
 
 - The spawn order is tanks, then healers, then DPS.
-- The **first tank is the Pack Leader**. It gets warlord colours, the boss frame, the pack-leader bounty and loot, and x1.5 health.
+- The **first tank is the Pack Leader**. It gets the boss frame, the pack-leader bounty and loot, and x1.5 health.
+- **Tier readability** (Docs/Zones.md): pack monsters do not glow. Their tier shows as `T1`..`T4` next to the name on
+  the nameplate, the frames and the tooltip, with a tier-coloured border (silver, green, blue, gold).
 
 **Formation** (inside the pack radius, turned by the seed):
 

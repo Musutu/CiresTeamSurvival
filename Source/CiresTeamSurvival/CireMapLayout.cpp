@@ -24,6 +24,7 @@ const FName CireMapLayout::Respawn(TEXT("respawn"));
 const FName CireMapLayout::PlayBounds(TEXT("playBounds"));
 const FName CireMapLayout::Blocker(TEXT("blocker"));
 const FName CireMapLayout::RecallPoint(TEXT("recallPoint")); // jungle-packs
+const FName CireMapLayout::Zone(TEXT("zone")); // tier-readability: named area (zone text + monster tier), CireZones.h
 
 namespace
 {
@@ -126,6 +127,8 @@ TArray<FCireMarkerType> CireMapLayout::BuiltInTypes()
     { auto& M = Add(Blocker, TEXT("No-Spawn / Blocker Zone"), TEXT("Blocker"), TEXT("summoned_wall"), FLinearColor(.85f, .22f, .22f), ECireGizmo::Zone); M.bRadius = true; M.DefaultRadius = 400.f; }
     // jungle-packs: where Recall (Teleport to Base) takes a hero: the nearest Recall Point of his team.
     { auto& M = Add(RecallPoint, TEXT("Recall Point"), TEXT("Recall"), TEXT("warp_obelisk"), FLinearColor(.45f, .95f, 1.f), ECireGizmo::Pillar); M.bFacing = true; M.bNamed = true; M.bRadius = true; M.DefaultRadius = 200.f; }
+    // tier-readability: a named area of the town; entering it shows the zone text and its monster tier (CireZones.h).
+    { auto& M = Add(Zone, TEXT("Zone / Area"), TEXT("Zone"), TEXT("ashen_square"), FLinearColor(.55f, .85f, .55f), ECireGizmo::Polygon); M.bPoints = true; M.bNamed = true; M.DefaultOwner = ECireMarkerOwner::Shared; M.DefaultRadius = 0.f; }
     return T;
 }
 
@@ -290,6 +293,7 @@ FString CireMapLayout::DisplayLabel(const FCireMapLayout& L, const FCireMapMarke
     if (M.Type == Vendor) return FString::Printf(TEXT("%s %s"), *Team, *(M.Name.IsEmpty() ? M.Kind.Left(1).ToUpper() + M.Kind.Mid(1) : M.Name));
     if (M.Type == Objective) return FString::Printf(TEXT("%s Objective"), *Team);
     if (M.Type == PlayBounds) return TEXT("Play Bounds");
+    if (M.Type == Zone) return FString::Printf(TEXT("Zone %d%s"), Number(L, M.Id), *Named);
     const FString Stem = M.Owner == ECireMarkerOwner::Shared ? T.Label : Team + TEXT(" ") + T.Label;
     return FString::Printf(TEXT("%s %d%s"), *Stem, Number(L, M.Id), *Named);
 }
@@ -780,6 +784,7 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
             }
         }
         if (M.Type == PlayBounds) { if (M.Points.Num() < 3) Issue(true, 0, M.Id, TEXT("Play bounds need at least 3 points")); continue; }
+        if (M.Type == Zone) { if (M.Points.Num() < 3) Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s needs at least 3 corners"), *Label)); continue; } // tier-readability
         for (int32 Realm = 0; Realm < 2; ++Realm)
         {
             if (!ShownInRealm(M, Realm)) continue;

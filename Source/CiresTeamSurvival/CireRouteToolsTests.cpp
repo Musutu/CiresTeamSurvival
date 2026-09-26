@@ -6,6 +6,9 @@
 #include "CireLoot.h"
 #include "CireMapLayout.h"
 #include "CireJunglePacks.h"
+#include "CireZones.h"
+#include "CireRaces.h"
+#include "CireMonsterArt.h"
 #include "CireLayoutEditorState.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCState.h"
@@ -215,7 +218,7 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
             const CI::PackSchedule Schedule = CireProgression::JungleSchedule(World, 0); // jungle-packs: tiers unlock per JunglePacks.json
             TSet<int32> Expected, Seen[2];
             for (int32 Bay = 1; Bay <= 5; ++Bay) if (CI::BayTier(Schedule, Bay, Mode->Clock.Round(), 1) > 0) Expected.Add(Bay);
-            bool bPlaced = true, bComposed = true;
+            bool bPlaced = true, bComposed = true, bTierPlates = true, bNoGlow = true;
             TMap<int32, TArray<ACireMonster*>> ByPack;
             for (ACireMonster* M : Mode->Monsters)
             {
@@ -237,10 +240,15 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
                     (Role == ECirePackRole::Tank ? Got.Tanks : Role == ECirePackRole::Healer ? Got.Healers : Got.Dps) += 1;
                     Leaders += M->GetNPCClassification() == ECireNPCClass::Boss ? 1 : 0;
                     bComposed &= M->NPCState->Loadout.Num() == CireJunglePacks::AbilityCount(M->Tier, CireJunglePacks::KitSize(*A));
+                    // tier-readability: the tier reads as "T#" next to the name, and the body carries no rank glow.
+                    bTierPlates &= CireZones::TierOf(M) == M->Tier && CireZones::NameplateLabel(M->GetNPCDisplayName(), CireZones::TierOf(M)).EndsWith(FString::Printf(TEXT("  T%d"), M->Tier));
+                    bNoGlow &= UCireMonsterArt::RimFor(M).A <= 0.f && !CireRaces::RankBodyColours();
                 }
                 bComposed &= CireJunglePacks::IsValid(Got) && Leaders == 1;
             }
             Check(bComposed, TEXT("every spawned pack follows the composition rules, has one leader and its tier's ability count"));
+            Check(bTierPlates, TEXT("every pack monster's nameplate shows its tier (T1..T4) next to its name"));
+            Check(bNoGlow, TEXT("pack monsters (leaders included) carry no rank / elite / boss rim glow"));
             Check(Expected.Num() > 0 && Seen[0].Num() == Expected.Num() && Seen[1].Num() == Expected.Num() && Seen[0].Includes(Expected), FString::Printf(TEXT("unlocked packs spawn in both realms (%d expected, %d / %d)"), Expected.Num(), Seen[0].Num(), Seen[1].Num()));
             Check(bPlaced, TEXT("every pack member stands inside its pack's arena"));
             Check(CireProgression::PackIdFor(3, 1, 4000) != CireProgression::PackIdFor(3, 0, 4000) && CireProgression::PackBayOf(CireProgression::PackIdFor(3, 1, 4000)) == 4000 &&
@@ -472,6 +480,8 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
     {
         TArray<FString> Failures;
         Check(CireJunglePacks::RunTests(Failures), TEXT("jungle pack rules: ") + FString::Join(Failures, TEXT(" / ")));
+        TArray<FString> ZoneFailures; // tier-readability: tier tags, colours, zone tiers, zone markers
+        Check(CireZones::RunTests(ZoneFailures), TEXT("tier readability and zones: ") + FString::Join(ZoneFailures, TEXT(" / ")));
         FCireMapLayout L;
         // A minimal valid layout per team, then 120 mirrored packs per team (240 markers), no cap anywhere.
         // Built on the route file the runtime compiles over (procedural or town frame), so it is valid on either map.
