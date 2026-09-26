@@ -29,7 +29,7 @@ Challenge tiers 1–10 increase health, damage, XP, gold, rare-drop chance, and 
 
 ## Runtime combat
 
-`CireHero.cpp` implements server-authoritative damage, mana/energy costs, cooldowns, maximum-one-passive skill acquisition, shop purchases, level gains, bot behavior, pack aggro/leashing, and ten-second PvE revival. Arena deaths wait for the next phase. Human movement uses Unreal character movement replication. Healing and hostile-target selection work with replicated phase/team data on clients. Slows replicate their server-time expiry to support client movement prediction.
+`CireHero.cpp` implements server-authoritative damage, mana/energy costs, cooldowns, maximum-one-passive skill acquisition, shop purchases, level gains, bot behavior, pack aggro/reset (no leash), and ten-second PvE revival. Arena deaths wait for the next phase. Human movement uses Unreal character movement replication. Healing and hostile-target selection work with replicated phase/team data on clients. Slows replicate their server-time expiry to support client movement prediction.
 
 The starter skills provide melee and ranged damage, a four-target chain spell, radial cleave, slowing, a dash, monster/bot taunts, damage reduction, direct healing, group healing, and slow cleansing. Taunts affect monster and bot decisions; they do not force a human player's selected target. Passive choices provide 10% damage reduction, 20% faster basic attacks, 50% extra resource regeneration, or 25% stronger healing. Colored replicated debug traces are temporary ability feedback. Animation montages, production VFX, resistances/damage-school interactions, threat tables, cast interruption, and complete combat prediction remain future work.
 

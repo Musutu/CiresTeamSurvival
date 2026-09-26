@@ -138,6 +138,18 @@ bool CireItems::RunV2Smoke(ACireGameMode* Mode)
         Check(PathKinds.FindRef(static_cast<int32>(Kind)) == 1, FString::Printf(TEXT("exactly one path unique of kind %d"), static_cast<int32>(Kind)));
     Check(GroupUses.Num() == 4, TEXT("party shield, +250 armor aura, 1000 target heal and 200 area heal items exist"));
     Check(bDodgeBoots && bSpeedBoots, TEXT("double-dash boots and speed boots exist"));
+    // rules-conformance: completed items carry damage-reduction effects, including "reduce the next hits".
+    int32 HitGuards = 0, Mitigation = 0;
+    for (const auto& Item : D.Catalog.Items)
+    {
+        for (const auto& P : Item.Passives) HitGuards += P.Kind == CI::PassiveKind::HitGuard && Item.Tier == CI::ItemTier::Legendary;
+        Mitigation += Item.Stats.Get(CI::ItemStat::DamageReduction) > 0 || Item.Stats.Get(CI::ItemStat::DamageBlock) > 0;
+        for (const CI::ItemStat Banned : {CI::ItemStat::AttackSpeed, CI::ItemStat::CooldownReduction, CI::ItemStat::CritChance, CI::ItemStat::Lifesteal,
+                                          CI::ItemStat::HealthRegen, CI::ItemStat::ManaRegen, CI::ItemStat::EnergyRegen})
+            Check(Item.Stats.Get(Banned) == 0 && Item.Use.Buff.Get(Banned) == 0, TEXT("no attack speed / CDR / crit / lifesteal / regen: ") + FString(UTF8_TO_TCHAR(Item.Id.c_str())));
+        Check(Item.Stats.Get(CI::ItemStat::MoveSpeed) == 0 || Item.UniqueGroup == "boots", TEXT("move speed only on boots: ") + FString(UTF8_TO_TCHAR(Item.Id.c_str())));
+    }
+    Check(HitGuards >= 2 && Mitigation >= 3, FString::Printf(TEXT("completed items add damage reduction (%d hit guards, %d DR/block)"), HitGuards, Mitigation));
     for (const TCHAR* Role : {TEXT("tank"), TEXT("physical"), TEXT("caster"), TEXT("support"), TEXT("summoner"), TEXT("constructor")})
     {
         const auto* Lists = D.Recommended.Find(Role);
@@ -317,8 +329,10 @@ bool CireItems::RunV2Smoke(ACireGameMode* Mode)
     const uint8 Kind = Caster->Inventory->ResourceFailKind;
     Check(Dry < 90.f, FString::Printf(TEXT("spamming runs a caster dry (%.0f s)"), Dry));
     Check(Notice.StartsWith(TEXT("Not enough mana (")) && Kind == 1, FString::Printf(TEXT("clear 'Not enough mana (x / y)' feedback and HUD flash (%s, kind %d)"), *Notice, Kind));
-    const float DryWithItems = SecondsToDry(8.f);
-    Check(DryWithItems > Dry * 1.3f, FString::Printf(TEXT("mana regen items matter (%.0f s -> %.0f s)"), Dry, DryWithItems));
+    // rules-conformance: items grant flat mana (no regen stat); a bigger pool also raises the % regen.
+    Give(Caster, {TEXT("heart_of_cataclysm")});
+    const float DryWithItems = SecondsToDry(0.f);
+    Check(DryWithItems > Dry * 1.3f, FString::Printf(TEXT("mana items matter (%.0f s -> %.0f s)"), Dry, DryWithItems));
     Give(Caster, {TEXT("moonwell_codex")});
     Caster->Mana = Caster->MaxMana;
     const float Pool = Caster->Mana;

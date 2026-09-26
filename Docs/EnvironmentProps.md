@@ -217,3 +217,11 @@ districts and new limits are in `Docs/BattlefieldRoutes.md` ("World scale"); pac
   soak. The navmesh search budget was raised for 495 m paths (`Docs/Navigation.md`).
 * **Evidence.** `Tools/RunEnvironmentGallery.py` now captures one view per district (14) plus the overview and the escort:
   16 PNGs, 165 checks. `--no-fab` renders the clean-clone look.
+* **Collision proxies.** A colliding slot whose mesh has no collision body (the arena kit's round hay bale and windmill, which
+  the arenas never needed to collide) gets an invisible box of its footprint (`TownProxy_<slot>`, logged as
+  `CIRE_TOWN_COLLISION_PROXY`): it blocks units and carves the navmesh like any colliding town piece.
+* **Meadow** re-tinted to a richer natural green (`MI_TownW_Meadow` tint 0.11 / 0.25 / 0.065, saturation 1.1); the first
+  pass read as lime. The grey Medieval Kingdom crates and buckets use the pack's own tiling wood/metal materials, which are
+  bound, load and have the instanced usage flag, so they were left as they are. The one real binding problem was the Fab fire
+  pit: its material lacks the instanced-mesh usage flag and drew as the grey default material, so `fire_pit` was removed from
+  `Tools/BuildFabTownSlots.py` and keeps its Poly Haven art.

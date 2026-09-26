@@ -68,6 +68,16 @@ void CireThreat::Scale(ACireMonster* M,ACireHero* H,float Multiplier){
     if(float* Value=M->Threat.Find(H))*Value=FMath::Min(1.e9f,*Value*Multiplier);
     Select(M);
 }
+void CireThreat::ScaleAll(ACireHero* H,float Multiplier){
+    if(!H||!H->HasAuthority()||!H->GetWorld()||!FMath::IsFinite(Multiplier)||Multiplier<0)return;
+    for(TActorIterator<ACireMonster> It(H->GetWorld());It;++It)
+    {
+        ACireMonster* M=*It;float* Value=M->Threat.Find(H);if(!Value)continue;
+        if(Multiplier<=0.f){M->Threat.Remove(H);if(M->ForcedVictim==H)M->ForcedVictim.Reset();}
+        else *Value=FMath::Min(1.e9f,*Value*Multiplier);
+        Select(M);
+    }
+}
 float CireThreat::PullRatio(const ACireMonster* M,const ACireHero* H){
     if(!M||!H)return Rules().RangedPullRatio;
     return FVector::DistSquared2D(M->GetActorLocation(),H->GetActorLocation())<=FMath::Square(Rules().MeleeRangeCm)?Rules().MeleePullRatio:Rules().RangedPullRatio;

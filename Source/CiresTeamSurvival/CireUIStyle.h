@@ -77,6 +77,8 @@ struct CIRESTEAMSURVIVAL_API FCireUIPainter
     void Disc(float X, float Y, float R, FLinearColor Color, int32 Sides = 28) const;
     void Circle(float X, float Y, float R, FLinearColor Color, float Width = 1.f, int32 Sides = 36) const;
     void Tri(FVector2D A, FVector2D B, FVector2D C, FLinearColor Color) const;
+    /** Texture clipped to a disc (triangle fan): round portraits without square corners. */
+    void TexDisc(UTexture2D* Texture, float CX, float CY, float R, FLinearColor Color, float U0 = 0, float V0 = 0, float U1 = 1, float V1 = 1, int32 Sides = 40) const;
     void Tex(UTexture2D* Texture, float X, float Y, float W, float H, FLinearColor Color,
         float U0 = 0.f, float V0 = 0.f, float U1 = 1.f, float V1 = 1.f, bool bAdditive = false) const;
     /** 9-slice: Corner is the logical corner size; SourceCorner the corner fraction of the texture. */
@@ -186,6 +188,15 @@ namespace CireUIStyle
     // ui-themes: themed pieces (CireUITheme). Each falls back to procedural drawing without theme art.
     /** Ornate portrait ring around a circle of radius R (drawn over the portrait). */
     CIRESTEAMSURVIVAL_API void PortraitRing(const FCireUIPainter& P, float CX, float CY, float R, FLinearColor Tint = FLinearColor::White);
+    /** Painted champion portrait (/Game/UI/Draft/Portraits/T_Portrait_<id>), cached; null when missing. */
+    /** hud-art: how far (logical units) the active theme's panel corner ornament reaches into a Panel/Unit
+     *  frame of this size; captions in a corner start past it (0 without theme art). */
+    CIRESTEAMSURVIVAL_API float FrameCornerClear(float W, float H);
+    CIRESTEAMSURVIVAL_API UTexture2D* ChampionPortrait(const FString& ProfileId);
+    /** hud-art: a champion portrait inside the theme's portrait ring (face crop, round, crisp); false = no art. */
+    CIRESTEAMSURVIVAL_API bool PortraitFace(const FCireUIPainter& P, const FString& ProfileId, float CX, float CY, float R, bool bDead = false);
+    /** hud-art: small role badge (the theme's ring as a medallion with the role emblem) on a portrait. */
+    CIRESTEAMSURVIVAL_API void RoleBadge(const FCireUIPainter& P, float CX, float CY, float R, const FString& SigilId, FLinearColor Tint, const FString& PaintedIcon = FString());
     /** Small round medallion (level / tier badge) with centred text. */
     CIRESTEAMSURVIVAL_API void Medallion(const FCireUIPainter& P, float CX, float CY, float R, const FString& Text, FLinearColor TextColor);
     /** Minimap border (drawn over the map area). */

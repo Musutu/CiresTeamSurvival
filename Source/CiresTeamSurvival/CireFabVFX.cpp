@@ -10,6 +10,9 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 
 namespace
@@ -22,7 +25,8 @@ struct FTable
     bool bLoaded = false;
     TMap<FString, CireFabVFX::FEntry> Schools; // "<school>.<role>"
     TMap<FString, CireFabVFX::FEntry> Buffs;
-    TMap<FString, TWeakObjectPtr<UNiagaraSystem>> Resolved;
+    TMap<FString, CireFabVFX::FEntry> Abilities; // fab-coverage: "<skill id>.<role>"
+    TMap<FString, TWeakObjectPtr<UFXSystemAsset>> Resolved;
     TSet<FString> Unresolvable;
 };
 FTable& Table() { static FTable T; return T; }
@@ -60,6 +64,15 @@ void Load()
                 {
                     CireFabVFX::FEntry E=ParseEntry(R.Value);
                     if(E.Candidates.Num())T.Schools.Add(FString(S.Key.ToView()).ToLower()+TEXT(".")+FString(R.Key.ToView()).ToLower(),MoveTemp(E));
+                }
+    const TSharedPtr<FJsonObject>* Abilities=nullptr; // fab-coverage
+    if(Root->TryGetObjectField(TEXT("abilities"),Abilities))
+        for(const auto& A:(*Abilities)->Values)
+            if(const TSharedPtr<FJsonObject> Roles=A.Value->AsObject())
+                for(const auto& R:Roles->Values)
+                {
+                    CireFabVFX::FEntry E=ParseEntry(R.Value);
+                    if(E.Candidates.Num())T.Abilities.Add(FString(A.Key.ToView()).ToLower()+TEXT(".")+FString(R.Key.ToView()).ToLower(),MoveTemp(E));
                 }
     const TSharedPtr<FJsonObject>* Buffs=nullptr;
     if(Root->TryGetObjectField(TEXT("buffs"),Buffs))
@@ -105,57 +118,99 @@ const CireFabVFX::FEntry* CireFabVFX::FindBuff(const FString& Key)
     return Loaded().Buffs.Find(Key.ToLower());
 }
 
-UNiagaraSystem* CireFabVFX::Resolve(const FEntry* Entry)
+const CireFabVFX::FEntry* CireFabVFX::FindAbility(FName Skill, ERole Role)
+{
+    if(Skill.IsNone())return nullptr;
+    return Loaded().Abilities.Find(Skill.ToString().ToLower()+TEXT(".")+RoleName(Role));
+}
+
+const CireFabVFX::FEntry* CireFabVFX::FindFor(FName Skill, ECireSchool School, ERole Role)
+{
+    // The ability's signature system when its pack is installed, else the school's shared set.
+    if(const FEntry* Own=FindAbility(Skill,Role);Own&&Resolve(Own))return Own;
+    return Find(School,Role);
+}
+
+UFXSystemAsset* CireFabVFX::Resolve(const FEntry* Entry)
 {
     if(!Entry)return nullptr;
     FTable& T=Loaded();
     for(const FString& Path:Entry->Candidates)
     {
-        if(const TWeakObjectPtr<UNiagaraSystem>* Hit=T.Resolved.Find(Path);Hit&&Hit->IsValid())return Hit->Get();
+        if(const TWeakObjectPtr<UFXSystemAsset>* Hit=T.Resolved.Find(Path);Hit&&Hit->IsValid())return Hit->Get();
         if(T.Unresolvable.Contains(Path))continue;
-        UNiagaraSystem* System=PackagePresent(Path)?LoadObject<UNiagaraSystem>(nullptr,*Path,nullptr,LOAD_NoWarn|LOAD_Quiet):nullptr;
-        if(System){T.Resolved.Add(Path,System);return System;}
+        // Niagara (Lord Enot, UrtanoVFX, SoftTofu, Hivemind) or Cascade (Kakky FX Variety Pack) system.
+        UFXSystemAsset* System=PackagePresent(Path)?LoadObject<UFXSystemAsset>(nullptr,*Path,nullptr,LOAD_NoWarn|LOAD_Quiet):nullptr;
+        if(System&&(System->IsA<UNiagaraSystem>()||System->IsA<UParticleSystem>())){T.Resolved.Add(Path,System);return System;}
         T.Unresolvable.Add(Path);
     }
     return nullptr;
 }
 
-UNiagaraSystem* CireFabVFX::ResolveSchool(ECireSchool School, ERole Role, float* OutScale)
+UFXSystemAsset* CireFabVFX::ResolveSchool(ECireSchool School, ERole Role, float* OutScale)
 {
     if(!Enabled())return nullptr;
     const FEntry* E=Find(School,Role);
-    UNiagaraSystem* S=Resolve(E);
+    UFXSystemAsset* S=Resolve(E);
     if(OutScale)*OutScale=E?E->Scale:1.f;
     return S;
 }
 
-UNiagaraComponent* CireFabVFX::SpawnAttached(UNiagaraSystem* System, USceneComponent* Parent, FVector Offset, float Scale, bool bAutoDestroy)
+UFXSystemComponent* CireFabVFX::SpawnAttached(UFXSystemAsset* System, USceneComponent* Parent, FVector Offset, float Scale, bool bAutoDestroy)
 {
     if(!System||!Parent||!Enabled())return nullptr;
-    UNiagaraComponent* C=UNiagaraFunctionLibrary::SpawnSystemAttached(System,Parent,NAME_None,Offset,FRotator::ZeroRotator,
-        FVector(Scale),EAttachLocation::KeepRelativeOffset,bAutoDestroy,ENCPoolMethod::None,true,true);
-    return C;
+    if(UNiagaraSystem* Niagara=Cast<UNiagaraSystem>(System))
+        return UNiagaraFunctionLibrary::SpawnSystemAttached(Niagara,Parent,NAME_None,Offset,FRotator::ZeroRotator,
+            FVector(Scale),EAttachLocation::KeepRelativeOffset,bAutoDestroy,ENCPoolMethod::None,true,true);
+    if(UParticleSystem* Cascade=Cast<UParticleSystem>(System))
+        return UGameplayStatics::SpawnEmitterAttached(Cascade,Parent,NAME_None,Offset,FRotator::ZeroRotator,FVector(Scale),
+            EAttachLocation::KeepRelativeOffset,bAutoDestroy,EPSCPoolMethod::None,true);
+    return nullptr;
 }
 
-UNiagaraComponent* CireFabVFX::SpawnAt(UWorld* World, UNiagaraSystem* System, FVector Location, FRotator Rotation, float Scale)
+UFXSystemComponent* CireFabVFX::SpawnAt(UWorld* World, UFXSystemAsset* System, FVector Location, FRotator Rotation, float Scale)
 {
     if(!System||!World||!Enabled())return nullptr;
-    return UNiagaraFunctionLibrary::SpawnSystemAtLocation(World,System,Location,Rotation,FVector(Scale),true,true,ENCPoolMethod::AutoRelease,true);
+    if(UNiagaraSystem* Niagara=Cast<UNiagaraSystem>(System))
+        return UNiagaraFunctionLibrary::SpawnSystemAtLocation(World,Niagara,Location,Rotation,FVector(Scale),true,true,ENCPoolMethod::AutoRelease,true);
+    if(UParticleSystem* Cascade=Cast<UParticleSystem>(System))
+        return UGameplayStatics::SpawnEmitterAtLocation(World,Cascade,FTransform(Rotation,Location,FVector(Scale)),true,EPSCPoolMethod::AutoRelease,true);
+    return nullptr;
 }
 
-void CireFabVFX::ApplyTint(UNiagaraComponent* Component, FLinearColor Tint)
+void CireFabVFX::ApplyTint(UFXSystemComponent* Component, FLinearColor Tint)
 {
     if(!Component||Tint.A<=0)return;
     // Vendor packs expose colour under different user parameter names; setting an absent one is a no-op.
     static const FName Names[]={TEXT("Color"),TEXT("Colour"),TEXT("MainColor"),TEXT("Main Color"),TEXT("User.Color"),TEXT("Tint")};
-    for(const FName& N:Names)Component->SetVariableLinearColor(N,Tint);
+    for(const FName& N:Names)Component->SetColorParameter(N,Tint);
+}
+
+void CireFabVFX::Release(UFXSystemComponent* Component)
+{
+    if(!Component)return;
+    // Pooled components (SpawnAt: auto-release) return to the pool on completion; auto-destroy is only for
+    // unpooled ones (Niagara ensures !bAutoDestroy || PoolingMethod == None).
+    if(UNiagaraComponent* Niagara=Cast<UNiagaraComponent>(Component)){if(Niagara->PoolingMethod==ENCPoolMethod::None)Niagara->SetAutoDestroy(true);}
+    else if(UParticleSystemComponent* Cascade=Cast<UParticleSystemComponent>(Component)){if(Cascade->PoolingMethod==EPSCPoolMethod::None)Cascade->bAutoDestroy=true;}
+    Component->Deactivate();
 }
 
 CireFabVFX::FCoverage CireFabVFX::Coverage()
 {
     FCoverage C;FTable& T=Loaded();
-    for(const auto& Pair:T.Schools){++C.Configured;if(Resolve(&Pair.Value))++C.Resolved;else C.Missing.Add(Pair.Key);}
-    for(const auto& Pair:T.Buffs){++C.Configured;if(Resolve(&Pair.Value))++C.Resolved;else C.Missing.Add(TEXT("buff.")+Pair.Key);}
+    auto Count=[&](const FEntry& E,const FString& Key){++C.Configured;if(UFXSystemAsset* S=Resolve(&E)){++C.Resolved;C.Cascade+=S->IsA<UParticleSystem>()?1:0;}else C.Missing.Add(Key);};
+    for(const auto& Pair:T.Schools)Count(Pair.Value,Pair.Key);
+    for(const auto& Pair:T.Buffs)Count(Pair.Value,TEXT("buff.")+Pair.Key);
+    TSet<FString> Ids;
+    for(const auto& Pair:T.Abilities)
+    {
+        int32 Dot=INDEX_NONE;Pair.Key.FindLastChar(TEXT('.'),Dot);
+        Ids.Add(Dot==INDEX_NONE?Pair.Key:Pair.Key.Left(Dot));
+        ++C.AbilitySlots;if(Resolve(&Pair.Value))++C.AbilitySlotsResolved;
+        Count(Pair.Value,TEXT("ability.")+Pair.Key);
+    }
+    C.Abilities=Ids.Num();
     return C;
 }
 
@@ -175,8 +230,23 @@ bool CireFabVFX::RunTests(UWorld* World)
         Check(P.StartsWith(TEXT("/Game/"))&&P.Contains(TEXT(".")),*FString::Printf(TEXT("bad path %s in %s"),*P,*Pair.Key));
     for(const auto& Pair:Table().Buffs)for(const FString& P:Pair.Value.Candidates)
         Check(P.StartsWith(TEXT("/Game/"))&&P.Contains(TEXT(".")),*FString::Printf(TEXT("bad path %s in buff %s"),*P,*Pair.Key));
+    // fab-coverage: per-ability signatures use the same path rules, and an ability entry that does not
+    // resolve must fall back to the school set rather than to nothing.
+    for(const auto& Pair:Table().Abilities)for(const FString& P:Pair.Value.Candidates)
+        Check(P.StartsWith(TEXT("/Game/"))&&P.Contains(TEXT(".")),*FString::Printf(TEXT("bad path %s in ability %s"),*P,*Pair.Key));
+    {
+        FTable& T=Table();
+        FEntry Missing;Missing.Candidates.Add(TEXT("/Game/__NoSuchFabPack__/NS_Missing.NS_Missing"));
+        T.Abilities.Add(TEXT("__fab_probe__.cast"),Missing);
+        Check(FindAbility(TEXT("__fab_probe__"),ERole::Cast)!=nullptr,TEXT("ability entry found"));
+        Check(FindFor(TEXT("__fab_probe__"),ECireSchool::Fire,ERole::Cast)==Find(ECireSchool::Fire,ERole::Cast),TEXT("unresolved ability entry falls back to the school"));
+        Check(FindAbility(NAME_None,ERole::Cast)==nullptr,TEXT("no skill, no ability entry"));
+        T.Abilities.Remove(TEXT("__fab_probe__.cast"));
+    }
+    Release(nullptr);
     const FCoverage Cov=Coverage();
-    UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_VFX coverage %d/%d slots resolve (packs present: %s)"),Cov.Resolved,Cov.Configured,Cov.Resolved>0?TEXT("yes"):TEXT("no"));
+    UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_VFX coverage %d/%d slots resolve (packs present: %s); abilities %d with %d/%d own slots resolving; %d Cascade"),
+        Cov.Resolved,Cov.Configured,Cov.Resolved>0?TEXT("yes"):TEXT("no"),Cov.Abilities,Cov.AbilitySlotsResolved,Cov.AbilitySlots,Cov.Cascade);
     UE_LOG(LogTemp,Display,TEXT("%s"),bOk?TEXT("CIRE_FAB_VFX_TESTS_PASS"):TEXT("CIRE_FAB_VFX_TESTS_FAIL"));
     return bOk;
 }

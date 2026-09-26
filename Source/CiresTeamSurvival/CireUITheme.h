@@ -27,7 +27,12 @@ enum class ECireThemePiece : uint8
     Divider,      // horizontal divider with a centre ornament (horizontal 3-slice)
     Ornament,     // top-centre crest / medallion
     BarFill,      // grayscale glossy fill, tinted per resource
-    Count
+    // hud-art: optional state/extra pieces (a theme without them falls back to the base piece + tint).
+    SlotHover, SlotPressed, SlotCooldown, SlotDisabled,
+    Button, ButtonHover, ButtonPressed, ButtonDisabled,
+    BuffBorder,
+    Count,
+    RequiredCount = SlotHover // pieces every theme must provide
 };
 
 struct FCireThemePiece

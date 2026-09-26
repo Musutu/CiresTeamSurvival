@@ -32,7 +32,7 @@ def instance(name, parent_path, scalars, vectors):
 
 
 made = [
-    instance("MI_TownW_Meadow", f"{ARENA}/MI_ArenaW_Stubble", {"Saturation": 1.0, "MacroVariation": .6},
-             {"Tint": (0.30, 0.47, 0.17)}),
+    instance("MI_TownW_Meadow", f"{ARENA}/MI_ArenaW_Stubble", {"Saturation": 1.1, "MacroVariation": .6},
+             {"Tint": (0.11, 0.25, 0.065)}),  # rich natural green (the first pass read as lime)
 ]
 u.log(f"CIRE_WORLD_SCALE_MATERIALS_DONE {made}")

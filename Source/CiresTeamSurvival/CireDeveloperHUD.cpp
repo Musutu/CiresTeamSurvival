@@ -68,7 +68,7 @@ void ACireHUD::DrawDeveloperPanel(float X,float Y)
     const int32 PageIds[]={5,0,1,7,8,9,2,6,3,4};
     for(int32 I=0;I<10;++I){if(DeveloperPage==PageIds[I])Panel(X+I*62-2,Y-3,62,31,Hover);if(Button(Pages[I],X+I*62,Y,59))DeveloperPage=PageIds[I];}
     if(DeveloperPage==9){DrawEconomyPage(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+418,595,10,Gold,2);return;}
-    if(DeveloperPage==7){DrawWaveEditor(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+418,595,10,Gold,2);return;}
+    if(DeveloperPage==7){DrawWaveEditor(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+444,595,10,Gold,2);return;} // monster-expansion: one more row (rares, bonus wave)
     if(DeveloperPage==8){DrawRoutePage(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+418,595,10,Gold,2);return;}
     const float L=X,R=X+310,T=Y+48;
     FString Error;

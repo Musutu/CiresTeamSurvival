@@ -116,7 +116,7 @@ public:
     /** fab-integration: optional Niagara signature per active effect from the Fab State/VFX packs (Content/Data/FabVFX.json
      *  "buffs"). Purely additive over the procedural layers; nothing spawns when the packs are not installed. */
     void UpdateFabAuras(bool bAllowed,int32& Budget,float Intensity);
-    TMap<FName,TWeakObjectPtr<class UNiagaraComponent>> FabAuras;
+    TMap<FName,TWeakObjectPtr<class UFXSystemComponent>> FabAuras;
     // Attack bookkeeping (subsystem).
     uint32 LastAttackSerial=0;
     bool bAttackPrimed=false;

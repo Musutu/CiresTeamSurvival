@@ -56,6 +56,14 @@ namespace CireMonsterArt
         TArray<FString> Parts;
         /** Socket name -> bone, added to the mesh in memory when the body is applied (head, pelvis, hand_r...). */
         TMap<FName, FName> Sockets;
+        /** monster-expansion: skeletal props on their own skeleton, attached to a socket/bone (the skeleton archer's bow). */
+        TArray<TPair<FString, FName>> Attachments;
+        /** monster-expansion: Fab reskin through M_CireMonsterSkin (slot -> texture parameter -> vendor texture). */
+        TMap<int32, TMap<FName, FString>> ReskinTextures;
+        FLinearColor ReskinTint = FLinearColor::White, ReskinRim = FLinearColor::Black;
+        float ReskinTintStrength = 0.f, ReskinRimStrength = 0.f, ReskinBody = 0.f;
+        /** monster-expansion: a hovering spirit (the lich): its death rises and fades instead of lying down; the corpse sinks deep. */
+        bool bSpectral = false;
     };
     struct FArchetypeArt
     {
@@ -120,6 +128,8 @@ public:
     bool IsTripoApplied() const { return bTripoApplied; }
     /** fab-integration: the applied body is a Fab pack body (keeps its authored materials; rank shows as the rim overlay). */
     bool IsFabApplied() const { return bTripoApplied && bFabApplied; }
+    /** monster-expansion: the applied Fab body asks for the race skin (reskinned creature); null when it keeps its materials. */
+    const CireMonsterArt::FBody* AppliedReskin() const { return bTripoApplied && !AppliedReskinBody.ReskinTextures.IsEmpty() ? &AppliedReskinBody : nullptr; }
     bool HasRoleClip(const FString& Role) const { return RoleClip(Role) != nullptr; }
     const FString& GetAppliedVariant() const { return AppliedVariant; }
     UCireMonsterAnimInstance* GetMonsterAnim() const;
@@ -173,6 +183,8 @@ private:
     UPROPERTY(Transient) TArray<TObjectPtr<USkeletalMeshComponent>> BodyParts; // fab-integration: leader-pose parts
     void ClearBodyParts();
     FTransform FallbackTransform;
+    CireMonsterArt::FBody AppliedReskinBody; // monster-expansion
+    bool bAppliedSpectral = false;
     bool bFallbackCaptured = false;
     bool bTripoApplied = false;
     bool bFabApplied = false;

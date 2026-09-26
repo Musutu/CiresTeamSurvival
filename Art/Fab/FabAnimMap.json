@@ -41,6 +41,31 @@
    "set": "sword_shield",
    "kind": "jump"
   },
+  "sword_shield_skill1": {
+   "path": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Attack1_IP.AS_SwordAndShieldAnimV1_Attack1_IP",
+   "set": "sword_shield",
+   "kind": "skill1"
+  },
+  "sword_shield_skill2": {
+   "path": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Attack2_IP.AS_SwordAndShieldAnimV1_Attack2_IP",
+   "set": "sword_shield",
+   "kind": "skill2"
+  },
+  "sword_shield_skill3": {
+   "path": "/Game/GDHBundle/SwordShield/SwordShieldAnimV1/Animation/IP/AS_SwordAndShieldAnimV1_Attack5_IP.AS_SwordAndShieldAnimV1_Attack5_IP",
+   "set": "sword_shield",
+   "kind": "skill3"
+  },
+  "sword_shield_shout": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+   "set": "sword_shield",
+   "kind": "shout"
+  },
+  "sword_shield_cast": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Heal_IP.AS_SpellCombatAnimationV1_Heal_IP",
+   "set": "sword_shield",
+   "kind": "cast"
+  },
   "one_hand_attack1": {
    "path": "/Game/GDHBundle/OneHandSword/OneHandSwordV1/Animation/IP/AS_OneHandedSwordAnimV1_Attack1_Stage1_IP.AS_OneHandedSwordAnimV1_Attack1_Stage1_IP",
    "set": "one_hand",
@@ -81,6 +106,31 @@
    "set": "one_hand",
    "kind": "jump"
   },
+  "one_hand_skill1": {
+   "path": "/Game/GDHBundle/OneHandSword/OneHandSwordV1/Animation/IP/AS_OneHandedSwordAnimV1_Attack2_IP.AS_OneHandedSwordAnimV1_Attack2_IP",
+   "set": "one_hand",
+   "kind": "skill1"
+  },
+  "one_hand_skill2": {
+   "path": "/Game/GDHBundle/OneHandSword/OneHandSwordV1/Animation/IP/AS_OneHandedSwordAnimV1_Attack4_IP.AS_OneHandedSwordAnimV1_Attack4_IP",
+   "set": "one_hand",
+   "kind": "skill2"
+  },
+  "one_hand_skill3": {
+   "path": "/Game/GDHBundle/OneHandSword/OneHandSwordV1/Animation/IP/AS_OneHandedSwordAnimV1_Attack5_IP.AS_OneHandedSwordAnimV1_Attack5_IP",
+   "set": "one_hand",
+   "kind": "skill3"
+  },
+  "one_hand_shout": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+   "set": "one_hand",
+   "kind": "shout"
+  },
+  "one_hand_cast": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Heal_IP.AS_SpellCombatAnimationV1_Heal_IP",
+   "set": "one_hand",
+   "kind": "cast"
+  },
   "two_hand_attack2": {
    "path": "/Game/GDHBundle/TwoHandSword/TwoHandedSwordAnimationsV1/Animation/IP/AS_TwoHandedSwordAnimationV1_AttackCombo2_Stage1_IP.AS_TwoHandedSwordAnimationV1_AttackCombo2_Stage1_IP",
    "set": "two_hand",
@@ -115,6 +165,31 @@
    "path": "/Game/MaleLocomotionSet/Animations/Mannequin/InPlace/Jump/A_INP_JumpIdle_inAir.A_INP_JumpIdle_inAir",
    "set": "two_hand",
    "kind": "jump"
+  },
+  "two_hand_skill1": {
+   "path": "/Game/GDHBundle/TwoHandSword/TwoHandedSwordAnimationsV1/Animation/IP/AS_TwoHandedSwordAnimationV1_AttackCombo5_Stage1_IP.AS_TwoHandedSwordAnimationV1_AttackCombo5_Stage1_IP",
+   "set": "two_hand",
+   "kind": "skill1"
+  },
+  "two_hand_skill2": {
+   "path": "/Game/GDHBundle/TwoHandSword/TwoHandedSwordAnimationsV1/Animation/IP/AS_TwoHandedSwordAnimationV1_AttackCombo6_Stage1_IP.AS_TwoHandedSwordAnimationV1_AttackCombo6_Stage1_IP",
+   "set": "two_hand",
+   "kind": "skill2"
+  },
+  "two_hand_skill3": {
+   "path": "/Game/GDHBundle/TwoHandSword/TwoHandedSwordAnimationsV1/Animation/IP/AS_TwoHandedSwordAnimationV1_AttackCombo7_Stage1_IP.AS_TwoHandedSwordAnimationV1_AttackCombo7_Stage1_IP",
+   "set": "two_hand",
+   "kind": "skill3"
+  },
+  "two_hand_shout": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+   "set": "two_hand",
+   "kind": "shout"
+  },
+  "two_hand_cast": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Heal_IP.AS_SpellCombatAnimationV1_Heal_IP",
+   "set": "two_hand",
+   "kind": "cast"
   },
   "dual_attack1": {
    "path": "/Game/GDHBundle/DualSword/DualSwordAnimationV1/Animation/IP/AS_DualSwordAnimV1_Attack1_Stage1_IP.AS_DualSwordAnimV1_Attack1_Stage1_IP",
@@ -156,6 +231,31 @@
    "set": "dual",
    "kind": "jump"
   },
+  "dual_skill1": {
+   "path": "/Game/GDHBundle/DualSword/DualSwordAnimationV1/Animation/IP/AS_DualSwordAnimV1_Attack5_Stage1_IP.AS_DualSwordAnimV1_Attack5_Stage1_IP",
+   "set": "dual",
+   "kind": "skill1"
+  },
+  "dual_skill2": {
+   "path": "/Game/GDHBundle/DualSword/DualSwordAnimationV1/Animation/IP/AS_DualSwordAnimV1_Attack6_Stage1_IP.AS_DualSwordAnimV1_Attack6_Stage1_IP",
+   "set": "dual",
+   "kind": "skill2"
+  },
+  "dual_skill3": {
+   "path": "/Game/GDHBundle/DualSword/DualSwordAnimationV1/Animation/IP/AS_DualSwordAnimV1_Attack7_IP.AS_DualSwordAnimV1_Attack7_IP",
+   "set": "dual",
+   "kind": "skill3"
+  },
+  "dual_shout": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+   "set": "dual",
+   "kind": "shout"
+  },
+  "dual_cast": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Heal_IP.AS_SpellCombatAnimationV1_Heal_IP",
+   "set": "dual",
+   "kind": "cast"
+  },
   "bow_attack1": {
    "path": "/Game/GDHBundle/ArcheryCombatAnimV1/Animation/Character/IP/AS_ArcheryAnimV1_Attack1_IP.AS_ArcheryAnimV1_Attack1_IP",
    "set": "bow",
@@ -190,6 +290,26 @@
    "path": "/Game/MaleLocomotionSet/Animations/Mannequin/InPlace/Jump/A_INP_JumpIdle_inAir.A_INP_JumpIdle_inAir",
    "set": "bow",
    "kind": "jump"
+  },
+  "bow_skill1": {
+   "path": "/Game/GDHBundle/ArcheryCombatAnimV1/Animation/Character/IP/AS_ArcheryAnimV1_Attack1_Charged_IP.AS_ArcheryAnimV1_Attack1_Charged_IP",
+   "set": "bow",
+   "kind": "skill1"
+  },
+  "bow_skill2": {
+   "path": "/Game/GDHBundle/ArcheryCombatAnimV1/Animation/Character/IP/AS_ArcheryAnimV1_Attack5_IP.AS_ArcheryAnimV1_Attack5_IP",
+   "set": "bow",
+   "kind": "skill2"
+  },
+  "bow_shout": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+   "set": "bow",
+   "kind": "shout"
+  },
+  "bow_cast": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Heal_IP.AS_SpellCombatAnimationV1_Heal_IP",
+   "set": "bow",
+   "kind": "cast"
   },
   "spell_attack1": {
    "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Attack1_IP.AS_SpellCombatAnimationV1_Attack1_IP",
@@ -241,6 +361,26 @@
    "set": "spell",
    "kind": "jump"
   },
+  "spell_skill1": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Attack10_IP.AS_SpellCombatAnimationV1_Attack10_IP",
+   "set": "spell",
+   "kind": "skill1"
+  },
+  "spell_skill2": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Attack12_IP.AS_SpellCombatAnimationV1_Attack12_IP",
+   "set": "spell",
+   "kind": "skill2"
+  },
+  "spell_skill3": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Attack14_IP.AS_SpellCombatAnimationV1_Attack14_IP",
+   "set": "spell",
+   "kind": "skill3"
+  },
+  "spell_shout": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+   "set": "spell",
+   "kind": "shout"
+  },
   "spear_attack1": {
    "path": "/Game/GDHBundle/Spear/SpearCombatAnimationV1/Animation/IP/AS_SpearCombatAnimationV1_AttackCombo1_Stage1_IP.AS_SpearCombatAnimationV1_AttackCombo1_Stage1_IP",
    "set": "spear",
@@ -275,6 +415,36 @@
    "path": "/Game/MaleLocomotionSet/Animations/Mannequin/InPlace/Jump/A_INP_JumpIdle_inAir.A_INP_JumpIdle_inAir",
    "set": "spear",
    "kind": "jump"
+  },
+  "spear_skill1": {
+   "path": "/Game/GDHBundle/Spear/SpearCombatAnimationV1/Animation/IP/AS_SpearCombatAnimationV1_AttackCombo5_Stage1_IP.AS_SpearCombatAnimationV1_AttackCombo5_Stage1_IP",
+   "set": "spear",
+   "kind": "skill1"
+  },
+  "spear_skill2": {
+   "path": "/Game/GDHBundle/Spear/SpearCombatAnimationV1/Animation/IP/AS_SpearCombatAnimationV1_AttackCombo6_Stage1_IP.AS_SpearCombatAnimationV1_AttackCombo6_Stage1_IP",
+   "set": "spear",
+   "kind": "skill2"
+  },
+  "spear_skill3": {
+   "path": "/Game/GDHBundle/Spear/SpearCombatAnimationV1/Animation/IP/AS_SpearCombatAnimationV1_AttackCombo7_Stage1_IP.AS_SpearCombatAnimationV1_AttackCombo7_Stage1_IP",
+   "set": "spear",
+   "kind": "skill3"
+  },
+  "spear_shout": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+   "set": "spear",
+   "kind": "shout"
+  },
+  "spear_cast": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Heal_IP.AS_SpellCombatAnimationV1_Heal_IP",
+   "set": "spear",
+   "kind": "cast"
+  },
+  "spear_roll": {
+   "path": "/Game/GDHBundle/Spear/SpearCombatAnimationV2/Animation/RM/AS_SpearCombatAnimationV2_Roll_Fw_RM.AS_SpearCombatAnimationV2_Roll_Fw_RM",
+   "set": "spear",
+   "kind": "roll"
   },
   "gun_attack1": {
    "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/01_Combo_Attack_01/AS_Combo_Attack_01_01_Seq.AS_Combo_Attack_01_01_Seq",
@@ -311,6 +481,36 @@
    "set": "gun",
    "kind": "jump"
   },
+  "gun_skill1": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/10_Skill_Attack/AS_Skill_02_Seq.AS_Skill_02_Seq",
+   "set": "gun",
+   "kind": "skill1"
+  },
+  "gun_skill2": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/10_Skill_Attack/AS_Skill_03_Seq.AS_Skill_03_Seq",
+   "set": "gun",
+   "kind": "skill2"
+  },
+  "gun_skill3": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/10_Skill_Attack/AS_Skill_04_Seq.AS_Skill_04_Seq",
+   "set": "gun",
+   "kind": "skill3"
+  },
+  "gun_shout": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+   "set": "gun",
+   "kind": "shout"
+  },
+  "gun_cast": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Heal_IP.AS_SpellCombatAnimationV1_Heal_IP",
+   "set": "gun",
+   "kind": "cast"
+  },
+  "gun_roll": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/07_Roll/02_Roll_Combat/01_RM/AS_Roll_Combat_F_0_Seq.AS_Roll_Combat_F_0_Seq",
+   "set": "gun",
+   "kind": "roll"
+  },
   "unarmed_attack1": {
    "path": "/Game/GDHBundle/Unarmed/UnarmedFightingAnimationV1/Animation/IP/AS_UnarmedFightingAnimationsV1_1_IP.AS_UnarmedFightingAnimationsV1_1_IP",
    "set": "unarmed",
@@ -346,6 +546,36 @@
    "set": "unarmed",
    "kind": "jump"
   },
+  "unarmed_skill1": {
+   "path": "/Game/GDHBundle/Unarmed/UnarmedFightingAnimationV1/Animation/IP/AS_UnarmedFightingAnimationsV1_5_IP.AS_UnarmedFightingAnimationsV1_5_IP",
+   "set": "unarmed",
+   "kind": "skill1"
+  },
+  "unarmed_skill2": {
+   "path": "/Game/GDHBundle/Unarmed/UnarmedFightingAnimationV1/Animation/IP/AS_UnarmedFightingAnimationsV1_6_IP.AS_UnarmedFightingAnimationsV1_6_IP",
+   "set": "unarmed",
+   "kind": "skill2"
+  },
+  "unarmed_skill3": {
+   "path": "/Game/GDHBundle/Unarmed/UnarmedFightingAnimationV1/Animation/IP/AS_UnarmedFightingAnimationsV1_7_IP.AS_UnarmedFightingAnimationsV1_7_IP",
+   "set": "unarmed",
+   "kind": "skill3"
+  },
+  "unarmed_shout": {
+   "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+   "set": "unarmed",
+   "kind": "shout"
+  },
+  "unarmed_cast": {
+   "path": "/Game/GDHBundle/SpellCombatAnimV1/Animation/IP/AS_SpellCombatAnimationV1_Heal_IP.AS_SpellCombatAnimationV1_Heal_IP",
+   "set": "unarmed",
+   "kind": "cast"
+  },
+  "unarmed_roll": {
+   "path": "/Game/GDHBundle/Unarmed/UnarmedFightingAnimationV2/Animation/RM/AS_UnarmedFightingAnimationsV2_Roll_Fw_RM.AS_UnarmedFightingAnimationsV2_Roll_Fw_RM",
+   "set": "unarmed",
+   "kind": "roll"
+  },
   "crossbow_attack1": {
    "path": "/Game/CrossbowPackAnim/Animation/UE5/Attack/Crossbow_Attack_01.Crossbow_Attack_01",
    "set": "crossbow",
@@ -380,6 +610,16 @@
    "path": "/Game/MaleLocomotionSet/Animations/Mannequin/InPlace/Jump/A_INP_JumpIdle_inAir.A_INP_JumpIdle_inAir",
    "set": "crossbow",
    "kind": "jump"
+  },
+  "throw_attack1": {
+   "path": "/Game/GDHBundle/DaggerCombatAnimationV1/Animation/IP/AS_DaggerCombatAnimationV1_Throw1_IP.AS_DaggerCombatAnimationV1_Throw1_IP",
+   "set": "throw",
+   "kind": "attack"
+  },
+  "throw_attack2": {
+   "path": "/Game/GDHBundle/DaggerCombatAnimationV1/Animation/IP/AS_DaggerCombatAnimationV1_Throw2_IP.AS_DaggerCombatAnimationV1_Throw2_IP",
+   "set": "throw",
+   "kind": "attack"
   }
  },
  "locomotion": {
@@ -582,7 +822,71 @@
  "extraSets": {
   "Ranger": [
    "crossbow"
+  ],
+  "troll_berserker_melee": [
+   "throw"
   ]
+ },
+ "monsters": {
+  "clips": {
+   "monster_war_cry": {
+    "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/12_Buff/AS_Buff_Seq.AS_Buff_Seq",
+    "kind": "shout"
+   },
+   "monster_ground_slam": {
+    "path": "/Game/Gun_and_Sword/Animations/Sequence/02_Attack/14_Attack_Air_to_Floor_01/AS_Attack_Air_to_Floor_01_End_Seq.AS_Attack_Air_to_Floor_01_End_Seq",
+    "kind": "attack"
+   }
+  },
+  "bodies": {
+   "/Game/Tripo/Races/drowned_deep/AbyssalStalker/CTS_Race_AbyssalStalker.CTS_Race_AbyssalStalker": "AbyssalStalker",
+   "/Game/Tripo/Races/drowned_deep/DeepspawnThrall/CTS_Race_DeepspawnThrall.CTS_Race_DeepspawnThrall": "DeepspawnThrall",
+   "/Game/Tripo/Races/drowned_deep/CoralshellGuardian/CTS_Race_CoralshellGuardian.CTS_Race_CoralshellGuardian": "CoralshellGuardian",
+   "/Game/Tripo/Races/drowned_deep/MindLeech/CTS_Race_MindLeech.CTS_Race_MindLeech": "MindLeech",
+   "/Game/Tripo/Races/drowned_deep/DrownedProphet/CTS_Race_DrownedProphet.CTS_Race_DrownedProphet": "DrownedProphet",
+   "/Game/Tripo/Races/drowned_deep/MawOfTheDeep/CTS_Race_MawOfTheDeep.CTS_Race_MawOfTheDeep": "MawOfTheDeep",
+   "/Game/Tripo/Races/blightwood/Vinelasher/CTS_Race_Vinelasher.CTS_Race_Vinelasher": "Vinelasher",
+   "/Game/Tripo/Races/blightwood/SaplingBrute/CTS_Race_SaplingBrute.CTS_Race_SaplingBrute": "SaplingBrute",
+   "/Game/Tripo/Races/blightwood/BarkhideWarden/CTS_Race_BarkhideWarden.CTS_Race_BarkhideWarden": "BarkhideWarden",
+   "/Game/Tripo/Races/blightwood/Sporeling/CTS_Race_Sporeling.CTS_Race_Sporeling": "Sporeling",
+   "/Game/Tripo/Races/blightwood/WitheredMatron/CTS_Race_WitheredMatron.CTS_Race_WitheredMatron": "WitheredMatron",
+   "/Game/Tripo/Monsters/IronboundBruiserV2/CTS_Monster_IronboundBruiserV2.CTS_Monster_IronboundBruiserV2": "IronboundBruiserV2",
+   "/Game/Tripo/Monsters/IronboundBruiser/CTS_Monster_IronboundBruiser.CTS_Monster_IronboundBruiser": "IronboundBruiser",
+   "/Game/Tripo/Monsters/BarbedHunter/CTS_Monster_BarbedHunter.CTS_Monster_BarbedHunter": "BarbedHunter",
+   "/Game/Tripo/Monsters/BarbedHunterB/CTS_Monster_BarbedHunterB.CTS_Monster_BarbedHunterB": "BarbedHunterB",
+   "/Game/Tripo/Monsters/HollowSiegebreaker/CTS_Boss_HollowSiegebreaker.CTS_Boss_HollowSiegebreaker": "HollowSiegebreaker",
+   "/Game/Tripo/Races/ironhide/IronhideGrunt/CTS_Race_IronhideGrunt.CTS_Race_IronhideGrunt": "IronhideGrunt",
+   "/Game/Tripo/Races/ironhide/RedmoonRavager/CTS_Race_RedmoonRavager.CTS_Race_RedmoonRavager": "RedmoonRavager",
+   "/Game/Tripo/Races/ironhide/IronhideBulwark/CTS_Race_IronhideBulwark.CTS_Race_IronhideBulwark": "IronhideBulwark",
+   "/Game/Tripo/Races/ironhide/RedmoonAxethrower/CTS_Race_RedmoonAxethrower.CTS_Race_RedmoonAxethrower": "RedmoonAxethrower",
+   "/Game/Tripo/Races/ironhide/IronhideDrummerHQ/CTS_Race_IronhideDrummerHQ.CTS_Race_IronhideDrummerHQ": "IronhideDrummerHQ",
+   "/Game/Tripo/Races/drakkari/DrakkariScalebreaker/CTS_Race_DrakkariScalebreaker.CTS_Race_DrakkariScalebreaker": "DrakkariScalebreaker",
+   "/Game/Tripo/Races/drakkari/DrakkariScaleguard/CTS_Race_DrakkariScaleguard.CTS_Race_DrakkariScaleguard": "DrakkariScaleguard",
+   "/Game/Tripo/Races/drakkari/DrakkariWingshot/CTS_Race_DrakkariWingshot.CTS_Race_DrakkariWingshot": "DrakkariWingshot",
+   "/Game/Tripo/Races/drakkari/EmberWhelp/CTS_Race_EmberWhelp.CTS_Race_EmberWhelp": "EmberWhelp",
+   "/Game/Tripo/Races/drakkari/DrakkariBroodmother/CTS_Race_DrakkariBroodmother.CTS_Race_DrakkariBroodmother": "DrakkariBroodmother",
+   "/Game/Tripo/Races/stoneborn/RuneSentinelHQ/CTS_Race_RuneSentinelHQ.CTS_Race_RuneSentinelHQ": "RuneSentinelHQ",
+   "/Game/Tripo/Races/stoneborn/GraniteCrusherHQ/CTS_Race_GraniteCrusherHQ.CTS_Race_GraniteCrusherHQ": "GraniteCrusherHQ",
+   "/Game/Tripo/Races/stoneborn/BastionGolem/CTS_Race_BastionGolem.CTS_Race_BastionGolem": "BastionGolem",
+   "/Game/Tripo/Races/stoneborn/EtherMote/CTS_Race_EtherMote.CTS_Race_EtherMote": "EtherMote",
+   "/Game/Tripo/Races/feral_kin/WerebearMaulerHQ/CTS_Race_WerebearMaulerHQ.CTS_Race_WerebearMaulerHQ": "WerebearMaulerHQ",
+   "/Game/Tripo/Races/feral_kin/TuskedBehemothHQ/CTS_Race_TuskedBehemothHQ.CTS_Race_TuskedBehemothHQ": "TuskedBehemothHQ",
+   "/Game/Tripo/Races/fallen_order/FallenSquire/CTS_Race_FallenSquire.CTS_Race_FallenSquire": "FallenSquire",
+   "/Game/Tripo/Races/fallen_order/DreadKnight/CTS_Race_DreadKnight.CTS_Race_DreadKnight": "DreadKnight",
+   "/Game/Tripo/Races/fallen_order/OathbreakerTemplar/CTS_Race_OathbreakerTemplar.CTS_Race_OathbreakerTemplar": "OathbreakerTemplar",
+   "/Game/Tripo/Races/fallen_order/FallenInquisitorCrossbow/CTS_Race_FallenInquisitorCrossbow.CTS_Race_FallenInquisitorCrossbow": "FallenInquisitorCrossbow",
+   "/Game/Tripo/Races/fallen_order/Flagellant/CTS_Race_Flagellant.CTS_Race_Flagellant": "Flagellant",
+   "/Game/Tripo/Races/fallen_order/FallenHighInquisitor/CTS_Race_FallenHighInquisitor.CTS_Race_FallenHighInquisitor": "FallenHighInquisitor",
+   "/Game/Tripo/Races/voidborn/VoidRavager/CTS_Race_VoidRavager.CTS_Race_VoidRavager": "VoidRavager",
+   "/Game/Tripo/Races/voidborn/NullWardenHQ/CTS_Race_NullWardenHQ.CTS_Race_NullWardenHQ": "NullWardenHQ",
+   "/Game/Tripo/Races/voidborn/Voidling/CTS_Race_Voidling.CTS_Race_Voidling": "Voidling",
+   "/Game/Tripo/Races/voidborn/VoidbornHerald/CTS_Race_VoidbornHerald.CTS_Race_VoidbornHerald": "VoidbornHerald",
+   "/Game/Tripo/Races/aetheri/AetheriWarframe/CTS_Race_AetheriWarframe.CTS_Race_AetheriWarframe": "AetheriWarframe",
+   "/Game/Tripo/Races/aetheri/AetheriBulwark/CTS_Race_AetheriBulwark.CTS_Race_AetheriBulwark": "AetheriBulwark",
+   "/Game/Tripo/Races/aetheri/SkitterDrone/CTS_Race_SkitterDrone.CTS_Race_SkitterDrone": "SkitterDrone",
+   "/Game/Tripo/Races/aetheri/AetheriHierarch/CTS_Race_AetheriHierarch.CTS_Race_AetheriHierarch": "AetheriHierarch",
+   "/Game/Tripo/Races/aetheri/AetheriColossus/CTS_Race_AetheriColossusB.CTS_Race_AetheriColossusB": "AetheriColossusB"
+  }
  },
  "replace": {
   "style:warden": {
@@ -593,10 +897,15 @@
     "sword_shield_attack10"
    ],
    "ability": [
-    "sword_shield_attack3",
-    "sword_shield_attack4",
-    "sword_shield_attack6",
-    "sword_shield_attack10"
+    "sword_shield_skill1",
+    "sword_shield_skill2",
+    "sword_shield_skill3"
+   ],
+   "spell": [
+    "sword_shield_cast"
+   ],
+   "shout": [
+    "sword_shield_shout"
    ],
    "hit": [
     "sword_shield_hit"
@@ -619,10 +928,15 @@
     "sword_shield_attack10"
    ],
    "ability": [
-    "sword_shield_attack3",
-    "sword_shield_attack4",
-    "sword_shield_attack6",
-    "sword_shield_attack10"
+    "sword_shield_skill1",
+    "sword_shield_skill2",
+    "sword_shield_skill3"
+   ],
+   "spell": [
+    "sword_shield_cast"
+   ],
+   "shout": [
+    "sword_shield_shout"
    ],
    "hit": [
     "sword_shield_hit"
@@ -645,10 +959,15 @@
     "sword_shield_attack10"
    ],
    "ability": [
-    "sword_shield_attack3",
-    "sword_shield_attack4",
-    "sword_shield_attack6",
-    "sword_shield_attack10"
+    "sword_shield_skill1",
+    "sword_shield_skill2",
+    "sword_shield_skill3"
+   ],
+   "spell": [
+    "sword_shield_cast"
+   ],
+   "shout": [
+    "sword_shield_shout"
    ],
    "hit": [
     "sword_shield_hit"
@@ -671,10 +990,15 @@
     "sword_shield_attack10"
    ],
    "ability": [
-    "sword_shield_attack3",
-    "sword_shield_attack4",
-    "sword_shield_attack6",
-    "sword_shield_attack10"
+    "sword_shield_skill1",
+    "sword_shield_skill2",
+    "sword_shield_skill3"
+   ],
+   "spell": [
+    "sword_shield_cast"
+   ],
+   "shout": [
+    "sword_shield_shout"
    ],
    "hit": [
     "sword_shield_hit"
@@ -697,10 +1021,15 @@
     "one_hand_attack7"
    ],
    "ability": [
-    "one_hand_attack1",
-    "one_hand_attack3",
-    "one_hand_attack6",
-    "one_hand_attack7"
+    "one_hand_skill1",
+    "one_hand_skill2",
+    "one_hand_skill3"
+   ],
+   "spell": [
+    "one_hand_cast"
+   ],
+   "shout": [
+    "one_hand_shout"
    ],
    "hit": [
     "one_hand_hit"
@@ -723,10 +1052,15 @@
     "one_hand_attack7"
    ],
    "ability": [
-    "one_hand_attack1",
-    "one_hand_attack3",
-    "one_hand_attack6",
-    "one_hand_attack7"
+    "one_hand_skill1",
+    "one_hand_skill2",
+    "one_hand_skill3"
+   ],
+   "spell": [
+    "one_hand_cast"
+   ],
+   "shout": [
+    "one_hand_shout"
    ],
    "hit": [
     "one_hand_hit"
@@ -748,9 +1082,15 @@
     "two_hand_attack4"
    ],
    "ability": [
-    "two_hand_attack2",
-    "two_hand_attack3",
-    "two_hand_attack4"
+    "two_hand_skill1",
+    "two_hand_skill2",
+    "two_hand_skill3"
+   ],
+   "spell": [
+    "two_hand_cast"
+   ],
+   "shout": [
+    "two_hand_shout"
    ],
    "hit": [
     "two_hand_hit"
@@ -772,9 +1112,15 @@
     "two_hand_attack4"
    ],
    "ability": [
-    "two_hand_attack2",
-    "two_hand_attack3",
-    "two_hand_attack4"
+    "two_hand_skill1",
+    "two_hand_skill2",
+    "two_hand_skill3"
+   ],
+   "spell": [
+    "two_hand_cast"
+   ],
+   "shout": [
+    "two_hand_shout"
    ],
    "hit": [
     "two_hand_hit"
@@ -797,10 +1143,15 @@
     "dual_attack4"
    ],
    "ability": [
-    "dual_attack1",
-    "dual_attack2",
-    "dual_attack3",
-    "dual_attack4"
+    "dual_skill1",
+    "dual_skill2",
+    "dual_skill3"
+   ],
+   "spell": [
+    "dual_cast"
+   ],
+   "shout": [
+    "dual_shout"
    ],
    "hit": [
     "dual_hit"
@@ -823,10 +1174,15 @@
     "dual_attack4"
    ],
    "ability": [
-    "dual_attack1",
-    "dual_attack2",
-    "dual_attack3",
-    "dual_attack4"
+    "dual_skill1",
+    "dual_skill2",
+    "dual_skill3"
+   ],
+   "spell": [
+    "dual_cast"
+   ],
+   "shout": [
+    "dual_shout"
    ],
    "hit": [
     "dual_hit"
@@ -848,9 +1204,14 @@
     "bow_attack3"
    ],
    "ability": [
-    "bow_attack1",
-    "bow_attack2",
-    "bow_attack3"
+    "bow_skill1",
+    "bow_skill2"
+   ],
+   "spell": [
+    "bow_cast"
+   ],
+   "shout": [
+    "bow_shout"
    ],
    "hit": [
     "bow_hit"
@@ -874,19 +1235,18 @@
     "spell_attack8"
    ],
    "ability": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8"
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3"
    ],
    "spell": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8",
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3",
     "spell_heal"
+   ],
+   "shout": [
+    "spell_shout"
    ],
    "hit": [
     "spell_hit"
@@ -910,19 +1270,18 @@
     "spell_attack8"
    ],
    "ability": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8"
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3"
    ],
    "spell": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8",
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3",
     "spell_heal"
+   ],
+   "shout": [
+    "spell_shout"
    ],
    "hit": [
     "spell_hit"
@@ -946,19 +1305,18 @@
     "spell_attack8"
    ],
    "ability": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8"
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3"
    ],
    "spell": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8",
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3",
     "spell_heal"
+   ],
+   "shout": [
+    "spell_shout"
    ],
    "hit": [
     "spell_hit"
@@ -982,19 +1340,18 @@
     "spell_attack8"
    ],
    "ability": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8"
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3"
    ],
    "spell": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8",
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3",
     "spell_heal"
+   ],
+   "shout": [
+    "spell_shout"
    ],
    "hit": [
     "spell_hit"
@@ -1018,19 +1375,18 @@
     "spell_attack8"
    ],
    "ability": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8"
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3"
    ],
    "spell": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8",
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3",
     "spell_heal"
+   ],
+   "shout": [
+    "spell_shout"
    ],
    "hit": [
     "spell_hit"
@@ -1054,19 +1410,18 @@
     "spell_attack8"
    ],
    "ability": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8"
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3"
    ],
    "spell": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8",
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3",
     "spell_heal"
+   ],
+   "shout": [
+    "spell_shout"
    ],
    "hit": [
     "spell_hit"
@@ -1090,19 +1445,18 @@
     "spell_attack8"
    ],
    "ability": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8"
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3"
    ],
    "spell": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8",
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3",
     "spell_heal"
+   ],
+   "shout": [
+    "spell_shout"
    ],
    "hit": [
     "spell_hit"
@@ -1126,19 +1480,18 @@
     "spell_attack8"
    ],
    "ability": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8"
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3"
    ],
    "spell": [
-    "spell_attack1",
-    "spell_attack2",
-    "spell_attack4",
-    "spell_attack6",
-    "spell_attack8",
+    "spell_skill1",
+    "spell_skill2",
+    "spell_skill3",
     "spell_heal"
+   ],
+   "shout": [
+    "spell_shout"
    ],
    "hit": [
     "spell_hit"
@@ -1161,16 +1514,24 @@
     "spear_attack4"
    ],
    "ability": [
-    "spear_attack1",
-    "spear_attack2",
-    "spear_attack3",
-    "spear_attack4"
+    "spear_skill1",
+    "spear_skill2",
+    "spear_skill3"
+   ],
+   "spell": [
+    "spear_cast"
+   ],
+   "shout": [
+    "spear_shout"
    ],
    "hit": [
     "spear_hit"
    ],
    "death": [
     "spear_death"
+   ],
+   "roll": [
+    "spear_roll"
    ],
    "jump": [
     "spear_jump"
@@ -1184,16 +1545,24 @@
     "spear_attack4"
    ],
    "ability": [
-    "spear_attack1",
-    "spear_attack2",
-    "spear_attack3",
-    "spear_attack4"
+    "spear_skill1",
+    "spear_skill2",
+    "spear_skill3"
+   ],
+   "spell": [
+    "spear_cast"
+   ],
+   "shout": [
+    "spear_shout"
    ],
    "hit": [
     "spear_hit"
    ],
    "death": [
     "spear_death"
+   ],
+   "roll": [
+    "spear_roll"
    ],
    "jump": [
     "spear_jump"
@@ -1207,16 +1576,24 @@
     "spear_attack4"
    ],
    "ability": [
-    "spear_attack1",
-    "spear_attack2",
-    "spear_attack3",
-    "spear_attack4"
+    "spear_skill1",
+    "spear_skill2",
+    "spear_skill3"
+   ],
+   "spell": [
+    "spear_cast"
+   ],
+   "shout": [
+    "spear_shout"
    ],
    "hit": [
     "spear_hit"
    ],
    "death": [
     "spear_death"
+   ],
+   "roll": [
+    "spear_roll"
    ],
    "jump": [
     "spear_jump"
@@ -1230,16 +1607,24 @@
     "gun_attack4"
    ],
    "ability": [
-    "gun_attack1",
-    "gun_attack2",
-    "gun_attack3",
-    "gun_attack4"
+    "gun_skill1",
+    "gun_skill2",
+    "gun_skill3"
+   ],
+   "spell": [
+    "gun_cast"
+   ],
+   "shout": [
+    "gun_shout"
    ],
    "hit": [
     "gun_hit"
    ],
    "death": [
     "gun_death"
+   ],
+   "roll": [
+    "gun_roll"
    ],
    "jump": [
     "gun_jump"
@@ -1253,16 +1638,24 @@
     "gun_attack4"
    ],
    "ability": [
-    "gun_attack1",
-    "gun_attack2",
-    "gun_attack3",
-    "gun_attack4"
+    "gun_skill1",
+    "gun_skill2",
+    "gun_skill3"
+   ],
+   "spell": [
+    "gun_cast"
+   ],
+   "shout": [
+    "gun_shout"
    ],
    "hit": [
     "gun_hit"
    ],
    "death": [
     "gun_death"
+   ],
+   "roll": [
+    "gun_roll"
    ],
    "jump": [
     "gun_jump"
@@ -1276,16 +1669,24 @@
     "unarmed_attack4"
    ],
    "ability": [
-    "unarmed_attack1",
-    "unarmed_attack2",
-    "unarmed_attack3",
-    "unarmed_attack4"
+    "unarmed_skill1",
+    "unarmed_skill2",
+    "unarmed_skill3"
+   ],
+   "spell": [
+    "unarmed_cast"
+   ],
+   "shout": [
+    "unarmed_shout"
    ],
    "hit": [
     "unarmed_hit"
    ],
    "death": [
     "unarmed_death"
+   ],
+   "roll": [
+    "unarmed_roll"
    ],
    "jump": [
     "unarmed_jump"
@@ -1313,6 +1714,41 @@
    ],
    "jump": [
     "crossbow_jump"
+   ],
+   "spell": [
+    "bow_cast"
+   ],
+   "shout": [
+    "bow_shout"
+   ]
+  },
+  "style:troll_ranged": {
+   "attack": [
+    "throw_attack1",
+    "throw_attack2"
+   ],
+   "ability": [
+    "dual_skill1",
+    "dual_skill2",
+    "dual_skill3"
+   ],
+   "spell": [
+    "dual_cast"
+   ],
+   "shout": [
+    "dual_shout"
+   ],
+   "hit": [
+    "dual_hit"
+   ],
+   "death": [
+    "dual_death"
+   ],
+   "roll": [
+    "dual_roll"
+   ],
+   "jump": [
+    "dual_jump"
    ]
   }
  }

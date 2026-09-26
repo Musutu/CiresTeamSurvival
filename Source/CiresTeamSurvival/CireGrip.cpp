@@ -46,9 +46,10 @@ const FData& Data()
     // fab-integration: WeaponGrips.fab.json (Fab weapon meshes, keyed by full object path) merges in after the base file.
     TArray<TSharedPtr<FJsonObject>> Sources;
     if (Root->TryGetObjectField(TEXT("weapons"), Weapons)) Sources.Add(*Weapons);
+    for (const TCHAR* FabFile : {TEXT("Data/WeaponGrips.fab.json"), TEXT("Data/WeaponGrips.fabx.json")}) // monster-expansion: + the bestiary creatures' weapons
     {
         FString FabText; TSharedPtr<FJsonObject> FabRoot; const TSharedPtr<FJsonObject>* FabWeapons = nullptr;
-        if (FFileHelper::LoadFileToString(FabText, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/WeaponGrips.fab.json"))) &&
+        if (FFileHelper::LoadFileToString(FabText, *FPaths::Combine(FPaths::ProjectContentDir(), FabFile)) &&
             FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(FabText), FabRoot) && FabRoot && FabRoot->TryGetObjectField(TEXT("weapons"), FabWeapons))
             Sources.Add(*FabWeapons);
     }

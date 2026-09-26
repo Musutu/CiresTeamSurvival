@@ -64,7 +64,7 @@ Target selection, range, line of sight, team, resource cost, cooldown, death sta
 
 ## Waves, challenges, and economy
 
-Start with a single route per team and one symmetric test arena. A wave table mixes advancing melee monsters with ranged/support enemies; later waves add recognizable mechanics rather than only increasing health. Challenge packs occupy side pockets along the advance toward the spawn. They use leash boundaries and clear difficulty tiers, reward only a completed server-recorded encounter, and cannot be farmed by repeatedly disengaging. Running a challenge costs time and defensive coverage.
+Start with a single route per team and one symmetric test arena. A wave table mixes advancing melee monsters with ranged/support enemies; later waves add recognizable mechanics rather than only increasing health. Challenge packs occupy side pockets along the advance toward the spawn. They keep their threat at any distance (no leash, Eric's ruling) and reset only when every threat holder is dead; they have clear difficulty tiers, reward only a completed server-recorded encounter, and cannot be farmed by repeatedly disengaging. Running a challenge costs time and defensive coverage.
 
 For the first balance pass, share wave XP/currency across the team so healing and tanking progress. Challenge rewards use personal rolls with equal eligible participation; detailed distribution remains a tuning decision. Town purchases are atomic: validate phase, proximity, price, inventory, and prerequisites, then debit and grant once. EXP tomes must process every crossed skill breakpoint. Stat tomes are permanent for the current match, while account power progression is outside this design.
 

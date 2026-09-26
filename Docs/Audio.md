@@ -216,6 +216,13 @@ Buffs and crowd control come from `BuffVisuals.json` "sound" (every row now has 
   forces the fallback; the native smoke checks both paths, so a clean clone passes with no Fab content.
 * Storage follows `Docs/FAB-PURCHASED.md`: the folders live only in the main checkout, are listed in the
   purchased-packs `.gitignore` block and `.git/info/exclude`, and `Tools/LinkFabContent.py` junctions them into worktrees.
+* **Pack sounds are primary** (Eric, polish stage): wherever an installed pack has a fitting sound it plays instead of the
+  shipped CC0 or synthesized one, including aura / buff / stance / item signatures, monster race casts, loot, chest land and
+  open (`loot_chest_land` / `loot_chest_open`, played by `ACireLootDrop` for viewers who can see the chest), coins, level-up,
+  bells under the banners, custom banners (`banner_custom`) and teleport. Each cue draws several takes from its own variant
+  family. Creature and boss deaths keep their vocal and gain a pack body-fall layer (`death.creature.body`, `death.boss.body`).
+  The cues that still play shipped sounds, and why, are listed in `Docs/FabCoverage.md` (vocals, war horns and drums,
+  ambience, footsteps: the installed packs have none).
 * Regenerate after changing rules or data: `python Tools/MapFabAudio.py && python Tools/BuildAudioEvents.py`
   (`--check` fails on stale files or an ability without a sound set).
 

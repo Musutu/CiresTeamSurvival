@@ -4,6 +4,7 @@
 #include "CireGame.h"
 #include "CireCombatEvents.h"
 #include "CireLanePath.h"
+#include "CireLoot.h"
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
 #include "CireThreat.h"
@@ -27,9 +28,31 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
     {
         FCireWaveConfig D = Defaults(); FString Error;
         Check(Validate(D, &Error, false), TEXT("built-in defaults are valid without clamping"));
-        Check(D.Waves.Num() == 5 && D.WavesPerCycle == 5 && D.Waves[0].Type == ECireWaveType::Normal && D.Waves[1].Type == ECireWaveType::Normal &&
+        Check(D.Waves.Num() == 15 && D.WavesPerCycle == 5 && D.bCampaignOrder && D.Waves[0].Type == ECireWaveType::Normal && D.Waves[1].Type == ECireWaveType::Normal &&
             D.Waves[2].Type == ECireWaveType::Armored && D.Waves[3].Type == ECireWaveType::ArmoredEscort && D.Waves[4].Type == ECireWaveType::Boss,
-            TEXT("default progression is normal, normal, armored, armored escort, boss"));
+            TEXT("default cycle 1 is normal, normal, armored, armored escort, boss"));
+        // rules-conformance: the default match plays every wave type, with an Armored Escort and a boss in every cycle.
+        {
+            TSet<int32> Types; bool bEscortAndBossEachCycle = true;
+            for (int32 Cycle = 0; Cycle < D.Cycles; ++Cycle)
+            {
+                bool bEscort = false, bBoss = false;
+                for (int32 Wave = 0; Wave < D.WavesPerCycle; ++Wave)
+                {
+                    const ECireWaveType Type = ResolveWave(D, Wave, Cycle).Type;
+                    Types.Add(static_cast<int32>(Type)); bEscort |= Type == ECireWaveType::ArmoredEscort; bBoss |= Type == ECireWaveType::Boss;
+                }
+                bEscortAndBossEachCycle &= bEscort && bBoss;
+            }
+            bool bAllTypes = true;
+            for (const ECireWaveType Type : {ECireWaveType::Normal, ECireWaveType::Armored, ECireWaveType::ArmoredEscort, ECireWaveType::Boss, ECireWaveType::CasterPack,
+                                             ECireWaveType::MeleePack, ECireWaveType::RangedPack, ECireWaveType::HybridPack})
+                bAllTypes &= Types.Contains(static_cast<int32>(Type));
+            Check(bAllTypes && bEscortAndBossEachCycle, TEXT("the default match plays Caster/Melee/Ranged/Hybrid packs, and every cycle an Armored Escort and a boss"));
+            Check(FMath::IsNearlyEqual(D.SpawnAlongRoute, 0.f), TEXT("waves spawn at the rift"));
+            FCireWaveConfig Loop = D; Loop.bCampaignOrder = false;
+            Check(ResolveWave(Loop, 0, 1).Label == D.Waves[0].Label && ResolveWave(D, 0, 1).Label == D.Waves[5].Label, TEXT("waveOrder: cycle replays the list, campaign continues it"));
+        }
         FCireWaveConfig Round; Check(ParseJson(ToJson(D), Round, Error) && Round == D, TEXT("JSON round trip preserves every field"));
         FCireWaveConfig File; Check(LoadFile(File, &Error) && File == D, TEXT("Content/Data/Waves.json matches the built-in defaults"));
         FCireWaveConfig Out = D;
@@ -51,8 +74,8 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
             TEXT("clamping pulls every value into its sane limit"));
         FCireWaveConfig Scaled = D; Scaled.CycleHealthGrowth = .5f; Scaled.CycleExtraUnits = 1;
         const FCireWaveDef Late = ResolveWave(Scaled, 0, 2);
-        Check(FMath::IsNearlyEqual(Late.Units[0].HealthScale, D.Waves[0].Units[0].HealthScale * 2.f) && Late.Units[0].Count == D.Waves[0].Units[0].Count + 2 &&
-            ResolveWave(Scaled, 7, 0).Label == D.Waves[2].Label, TEXT("cycle scaling and wave wrap-around resolve deterministically"));
+        Check(FMath::IsNearlyEqual(Late.Units[0].HealthScale, D.Waves[WaveIndex(D, 0, 2)].Units[0].HealthScale * 2.f) && Late.Units[0].Count == D.Waves[WaveIndex(D, 0, 2)].Units[0].Count + 2 &&
+            ResolveWave(Scaled, 7, 0).Label == D.Waves[7].Label && ResolveWave(Scaled, 1, 3).Label == D.Waves[1].Label, TEXT("cycle scaling and wave wrap-around resolve deterministically"));
         FCireWaveConfig Huge = D; Huge.CycleExtraUnits = 5;
         Check(ResolveWave(Huge, 1, 60).UnitsPerLane() <= 30, TEXT("looping growth never exceeds the per-lane spawn budget"));
     }
@@ -174,6 +197,13 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
             int32 Defending = 0;
             for (auto* M : Lane0(0)) if (M != Escortee && M->Threat.Contains(Hero)) ++Defending;
             Check(Defending == 4 && Escortee->Threat.IsEmpty(), TEXT("guards turn on the escortee's attacker; the escortee never retaliates"));
+            // rules-conformance: the escort wave's rewardMultiplier (x1.25) scales XP only; gold is exactly the bounty ruling (armored x2).
+            Hero->Gold = 0;
+            const int32 Bounty = CireLoot::KillBounty(Mode, Escortee);
+            Check(FMath::IsNearlyEqual(RewardMultiplier(Escortee), 1.25f) && Bounty == 2 * CireLoot::MobValueNow(Mode->GetWorld()), TEXT("escortee bounty is 2x the mob value"));
+            Mode->MonsterKilled(Escortee, Hero);
+            Check(Hero->Gold == Bounty, *FString::Printf(TEXT("the wave reward multiplier never stacks on kill gold (%d of %d)"), Hero->Gold, Bounty));
+            Escortee->Health = 0; Escortee->Destroy();
         }
         KillWaves();
         Mode->Heroes.Reset();
@@ -252,6 +282,48 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
             Check(!IsValid(M) || M->IsActorBeingDestroyed(), TEXT("after the grace period leftovers despawn"));
             Check(!IsWaveActive(Mode) && !BlocksNextWave(Mode) && !Mode->Monsters.Contains(M), TEXT("the stall failsafe always releases the cycle"));
         }
+    }
+    // ---------------------------------------------------------------- rules-conformance: threat is never dropped
+    // (Eric: threat is lost only when a unit dies or an ability says so; no leash, no distance drop, no stuck drop;
+    // the stall failsafe only moves units that hold no threat).
+    {
+        FCireWaveConfig C = Defaults(); C.WavesPerCycle = 1; C.MaxWaveSeconds = 30; C.FailsafeGraceSeconds = 5; C.StuckSeconds = 2;
+        FCireWaveDef W; W.Label = TEXT("Threat probe"); W.Type = ECireWaveType::Custom; W.SpawnInterval = 0; W.Units = {Unit(TEXT("hollow_infantry"), 1)};
+        C.Waves = {W};
+        Mode->CycleWavesSpawned = 0; State->CycleWavesDone = 0;
+        Check(ApplyLive(Mode, C) && StartWave(Mode), TEXT("threat probe wave starts"));
+        SpawnAll();
+        ACireMonster* M = Lane0(0).Num() ? Lane0(0)[0] : nullptr;
+        FActorSpawnParameters HeroParams; HeroParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        auto* Hero = M ? Mode->GetWorld()->SpawnActor<ACireHero>(M->GetActorLocation() + FVector(-200, 0, 0), FRotator::ZeroRotator, HeroParams) : nullptr;
+        if (M && Hero)
+        {
+            Actors.Add(Hero); Hero->SetActorTickEnabled(false); Hero->TeamId = 0; Hero->Draft(2); Mode->Heroes.Add(Hero);
+            CireThreat::AddRaw(M, Hero, 50.f);
+            Check(M->Victim == Hero, TEXT("threat probe: the unit targets the hero"));
+            Hero->SetActorLocation(M->GetActorLocation() + FVector(-6000, 2500, 0), false, nullptr, ETeleportType::TeleportPhysics);
+            for (int32 I = 0; I < 5; ++I) { DebugAge(Mode, 1.1f); TickSurvival(Mode, .01f); }
+            Check(M->Victim == Hero && M->Threat.Contains(Hero) && !AggroSuppressed(M), TEXT("no lane leash or stuck drop: a victim 65 m away keeps its threat"));
+            DebugAge(Mode, 31.f); TickSurvival(Mode, .01f);
+            Check(!IsForcedMarch(M) && M->Victim == Hero && IsValid(M) && !M->IsActorBeingDestroyed(), TEXT("a unit holding threat keeps fighting past the stall limit"));
+            Hero->bDead = true; CireThreat::Select(M);
+            Check(M->Threat.IsEmpty() && M->Victim == nullptr, TEXT("threat is lost when the threat holder dies"));
+            TickSurvival(Mode, .01f);
+            Check(IsForcedMarch(M), TEXT("the stall failsafe marches only units that hold no threat"));
+            Hero->bDead = false;
+            Hero->SetActorLocation(M->GetActorLocation() + FVector(-200, 0, 0), false, nullptr, ETeleportType::TeleportPhysics);
+            CireThreat::Damage(M, Hero, 20.f);
+            TickSurvival(Mode, .01f);
+            Check(!IsForcedMarch(M) && M->Threat.Contains(Hero), TEXT("an attacked marcher keeps the new threat and turns to fight"));
+            // Explicit ability hooks are the only other way to lose threat.
+            const float Held = M->Threat.FindRef(Hero);
+            CireThreat::ScaleAll(Hero, .5f);
+            Check(Held > 0 && FMath::IsNearlyEqual(M->Threat.FindRef(Hero), Held * .5f, .01f), TEXT("an ability can reduce threat by a percent (ScaleAll)"));
+            CireThreat::ScaleAll(Hero, 0.f);
+            Check(!M->Threat.Contains(Hero) && M->Victim != Hero, TEXT("an ability can drop threat entirely (ScaleAll 0)"));
+        }
+        KillWaves();
+        Mode->Heroes.Reset();
     }
     // ---------------------------------------------------------------- neutral challenge packs and bots
     {

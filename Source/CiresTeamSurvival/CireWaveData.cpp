@@ -13,9 +13,9 @@
 namespace
 {
 const TCHAR* TypeIds[] = {TEXT("normal"), TEXT("armored"), TEXT("armored_escort"), TEXT("boss"), TEXT("caster_pack"),
-    TEXT("melee_pack"), TEXT("ranged_pack"), TEXT("hybrid_pack"), TEXT("custom")};
+    TEXT("melee_pack"), TEXT("ranged_pack"), TEXT("hybrid_pack"), TEXT("custom"), TEXT("bonus_loot")};
 const TCHAR* TypeLabels[] = {TEXT("Normal"), TEXT("Armored"), TEXT("Armored Escort"), TEXT("Boss"), TEXT("Caster Pack"),
-    TEXT("Melee Pack"), TEXT("Ranged Pack"), TEXT("Hybrid Pack"), TEXT("Custom")};
+    TEXT("Melee Pack"), TEXT("Ranged Pack"), TEXT("Hybrid Pack"), TEXT("Custom"), TEXT("Bonus Loot")};
 static_assert(UE_ARRAY_COUNT(TypeIds) == static_cast<int32>(ECireWaveType::Count), "wave type table");
 
 FCireWaveUnit Unit(const TCHAR* Id, int32 Count, float Health = 1.f, float Damage = 1.f)
@@ -38,7 +38,19 @@ bool FCireWaveUnit::operator==(const FCireWaveUnit& O) const
     return Archetype == O.Archetype && Count == O.Count && Near(HealthScale, O.HealthScale) && Near(DamageScale, O.DamageScale) &&
         Near(SizeScale, O.SizeScale) && bElite == O.bElite && bNonAttacking == O.bNonAttacking && bEscortee == O.bEscortee &&
         bBoss == O.bBoss && LeakCost == O.LeakCost && Slot == O.Slot && Rank == O.Rank && Palette == O.Palette && SkillCount == O.SkillCount && // monster-races
-        SkillTier == O.SkillTier;
+        SkillTier == O.SkillTier && bRare == O.bRare; // monster-expansion
+}
+bool FCireRareSpawnRules::operator==(const FCireRareSpawnRules& O) const
+{
+    return bEnabled == O.bEnabled && Near(Chance, O.Chance) && FromWave == O.FromWave && MaxPerCycle == O.MaxPerCycle && Near(Health, O.Health) &&
+        Near(Damage, O.Damage) && Near(Size, O.Size) && Near(Bounty, O.Bounty) && Pool == O.Pool;
+}
+FCireBonusWaveRules::FCireBonusWaveRules() { Wave = CireWaveDirector::BonusTemplate(); }
+bool FCireBonusWaveRules::operator==(const FCireBonusWaveRules& O) const
+{
+    return bEnabled == O.bEnabled && Near(Chance, O.Chance) && FromWave == O.FromWave && MaxPerCycle == O.MaxPerCycle &&
+        Near(ExtraBreatherSeconds, O.ExtraBreatherSeconds) && Near(EscapeSeconds, O.EscapeSeconds) && Near(FleeRadius, O.FleeRadius) &&
+        Near(Bounty, O.Bounty) && Wave == O.Wave;
 }
 int32 FCireWaveDef::UnitsPerLane() const { int32 N = 0; for (const auto& U : Units) N += U.Count; return N; }
 bool FCireWaveDef::operator==(const FCireWaveDef& O) const
@@ -55,7 +67,8 @@ bool FCireWaveConfig::operator==(const FCireWaveConfig& O) const
         Near(SpawnAlongRoute, O.SpawnAlongRoute) && Near(MarchSpeedMultiplier, O.MarchSpeedMultiplier) && Near(FirstWaveDelay, O.FirstWaveDelay) && // pacing
         Near(RallySpeed, O.RallySpeed) && Near(RallyRadius, O.RallyRadius) && Near(BotHoldAt, O.BotHoldAt) && Near(MarcherSpeed, O.MarcherSpeed) && // world-scale
         Near(PrepSeconds, O.PrepSeconds) && Near(ArenaSeconds, O.ArenaSeconds) && Near(RecoverySeconds, O.RecoverySeconds) && bEarlyContinue == O.bEarlyContinue &&
-        Skills == O.Skills && Campaign == O.Campaign; // monster-races
+        Skills == O.Skills && Campaign == O.Campaign && bCampaignOrder == O.bCampaignOrder &&
+        Rare == O.Rare && Bonus == O.Bonus; // monster-races, rules-conformance, monster-expansion
 }
 
 const TCHAR* CireWaveDirector::TypeName(ECireWaveType Type)
@@ -126,11 +139,25 @@ FCireWaveDef CireWaveDirector::Template(ECireWaveType Type)
         W.Units = {Unit(TEXT("hollow_shieldbearer"), 1), Unit(TEXT("hollow_infantry"), 1), Unit(TEXT("ironbound_bruiser"), 1),
                    Unit(TEXT("blight_caster"), 1), Unit(TEXT("barbed_hunter"), 1), Unit(TEXT("grave_hound"), 2)};
         break;
+    case ECireWaveType::BonusLoot: // monster-expansion
+        W = CireWaveDirector::BonusTemplate();
+        break;
     default:
         W.Type = ECireWaveType::Custom;
         W.Units = {Unit(TEXT("hollow_infantry"), 4)};
         break;
     }
+    return W;
+}
+
+// monster-expansion: the Goblin Hoard. Treasure goblins and a gilded stag flee down the lane; they never fight back and
+// never cost lives, and escape after bonusWave.escapeSeconds. Bestiary.json creatures (fallback bodies without the packs).
+FCireWaveDef CireWaveDirector::BonusTemplate()
+{
+    FCireWaveDef W; W.Type = ECireWaveType::BonusLoot; W.Label = TEXT("Goblin Hoard"); W.SpawnInterval = .35f; W.bMustClear = false;
+    FCireWaveUnit Goblin; Goblin.Archetype = TEXT("treasure_goblin"); Goblin.Count = 3; Goblin.HealthScale = .8f;
+    FCireWaveUnit Stag; Stag.Archetype = TEXT("gilded_stag"); Stag.Count = 1; Stag.HealthScale = 1.1f;
+    W.Units = {Goblin, Stag};
     return W;
 }
 
@@ -144,12 +171,46 @@ FCireWaveConfig CireWaveDirector::Defaults()
                  Unit(TEXT("barbed_hunter"), 1, .85f, 1.45f), Unit(TEXT("blight_caster"), 1, .85f, 1.45f)};
     // monster-races: wave 2 brings the race's special unit (hollow: grave hounds).
     Two.Units.Add(Unit(TEXT("grave_hound"), 2, .85f, 1.45f));
-    C.Waves = {One, Two, Template(ECireWaveType::Armored), Template(ECireWaveType::ArmoredEscort), Template(ECireWaveType::Boss)};
-    C.WavesPerCycle = C.Waves.Num();
-    // Start on the hollow basics, bring in Eric's favourites (Blightwood, then the Drowned Deep), then the other races,
-    // then mixed hosts. Each cycle ends on one of its race's two bosses (colossus on odd cycles, warlord on even).
-    C.Campaign.RaceRotation = {TEXT("hollow"), TEXT("blightwood"), TEXT("drowned_deep"), TEXT("ironhide"), TEXT("hollow+blightwood"), TEXT("stoneborn"),
-        TEXT("drakkari"), TEXT("drowned_deep+voidborn"), TEXT("feral_kin"), TEXT("fallen_order"), TEXT("voidborn"), TEXT("ironhide+drakkari")};
+    // rules-conformance: the default match is a 15-wave campaign played in order (waveOrder "campaign"): cycle 1 is the
+    // tuned opening (normal, normal, armored, armored escort, boss); cycles 2 and 3 open with the Melee / Caster and
+    // Ranged / Hybrid packs, and every cycle keeps its armored march, its Armored Escort and its boss.
+    auto Pack = [](ECireWaveType Type, const TCHAR* Label, TArray<FCireWaveUnit> Units)
+    { FCireWaveDef W = Template(Type); W.Label = Label; W.Units = MoveTemp(Units); return W; };
+    // pacing (bots-only soak): threat is never dropped any more (no leash, no failsafe on fighting units), and later
+    // cycles carry champion ranks, mythic bosses and more monster skills, so cycles 2 and 3 carry less health per unit
+    // (Eric: tune the pace with wave HP, not spawn points).
+    const FCireWaveDef Melee = Pack(ECireWaveType::MeleePack, TEXT("Shield Wall"), {Unit(TEXT("hollow_shieldbearer"), 1, .8f, 1.35f),
+        Unit(TEXT("hollow_infantry"), 3, .8f, 1.35f), Unit(TEXT("ironbound_bruiser"), 3, .8f, 1.35f)});
+    const FCireWaveDef Caster = Pack(ECireWaveType::CasterPack, TEXT("Hex Circle"), {Unit(TEXT("hollow_shieldbearer"), 1, .75f, 1.35f),
+        Unit(TEXT("blight_caster"), 5, .75f, 1.35f)});
+    const FCireWaveDef Ranged = Pack(ECireWaveType::RangedPack, TEXT("Arrow Storm"), {Unit(TEXT("hollow_shieldbearer"), 1, .7f, 1.35f),
+        Unit(TEXT("barbed_hunter"), 5, .7f, 1.35f)});
+    const FCireWaveDef Hybrid = Pack(ECireWaveType::HybridPack, TEXT("Warband"), {Unit(TEXT("hollow_shieldbearer"), 1, .6f, 1.4f),
+        Unit(TEXT("hollow_infantry"), 2, .6f, 1.4f), Unit(TEXT("ironbound_bruiser"), 2, .6f, 1.4f), Unit(TEXT("blight_caster"), 1, .6f, 1.4f),
+        Unit(TEXT("barbed_hunter"), 1, .6f, 1.4f), Unit(TEXT("grave_hound"), 2, .6f, 1.4f)});
+    const FCireWaveDef Armored = Template(ECireWaveType::Armored), Escort = Template(ECireWaveType::ArmoredEscort), Boss = Template(ECireWaveType::Boss);
+    FCireWaveDef MidEscort = Escort, MidBoss = Boss, LateEscort = Escort, LateBoss = Boss;
+    for (auto& U : MidEscort.Units) if (!U.bEscortee) U.HealthScale = .85f;
+    for (auto& U : MidBoss.Units) if (!U.bBoss) U.HealthScale = .85f;
+    for (auto& U : LateEscort.Units) U.HealthScale = U.bEscortee ? 3.f : .7f;
+    for (auto& U : LateBoss.Units) U.HealthScale = U.bBoss ? .2f : .7f;
+    C.Waves = {One, Two, Armored, Escort, Boss,
+               Melee, Caster, Armored, MidEscort, MidBoss,
+               Ranged, Hybrid, Armored, LateEscort, LateBoss};
+    C.WavesPerCycle = 5;
+    C.bCampaignOrder = true;
+    // rules-conformance: the race changes every wave (campaign.rotateEvery "wave"), so a default 3-cycle match fields all
+    // ten races: the hollow open the breach, Eric's favourites (Blightwood, the Drowned Deep) arrive early and return as
+    // the cycle-2 and cycle-3 bosses, and the Aetheri (the construct race) show up in cycles 2 and 3.
+    C.Campaign.RaceRotation = {TEXT("hollow"), TEXT("blightwood"), TEXT("ironhide"), TEXT("drowned_deep"), TEXT("hollow"),
+        TEXT("stoneborn"), TEXT("aetheri"), TEXT("feral_kin"), TEXT("drakkari"), TEXT("blightwood"),
+        TEXT("voidborn"), TEXT("fallen_order"), TEXT("aetheri+ironhide"), TEXT("stoneborn+feral_kin"), TEXT("drowned_deep")};
+    C.Campaign.bRotatePerWave = true;
+    // rules-conformance: every rank is reachable in 3 cycles (veteran from cycle 2; elite and champion, alternating, in cycle 3).
+    C.Campaign.VeteranFromCycle = 2; C.Campaign.EliteFromCycle = 3; C.Campaign.ChampionFromCycle = 3;
+    // monster-expansion: rare creatures drawn from the purchased creature packs (Bestiary.json), and the goblin hoard.
+    C.Rare.Pool = {TEXT("lich_revenant"), TEXT("storm_griffon"), TEXT("cinder_drake"), TEXT("frostfang_alpha"), TEXT("horned_brute")};
+    C.Bonus.Wave = BonusTemplate();
     return C;
 }
 
@@ -216,6 +277,33 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
         if (Bosses > 3) return Fail(FString::Printf(TEXT("Wave %d has %d lane bosses; the limit is 3."), WI + 1, Bosses));
         (void)Attackers;
     }
+    // monster-expansion: rare spawns and the bonus loot wave.
+    {
+        auto& Rr = C.Rare;
+        Rr.Chance = ClampF(Rr.Chance, 0, 1, .3f); Rr.FromWave = FMath::Clamp(Rr.FromWave, 1, 200); Rr.MaxPerCycle = FMath::Clamp(Rr.MaxPerCycle, 0, 10);
+        Rr.Health = ClampF(Rr.Health, .2f, 20, 3); Rr.Damage = ClampF(Rr.Damage, .1f, 10, 1.3f); Rr.Size = ClampF(Rr.Size, .5f, 2.5f, 1.15f);
+        Rr.Bounty = ClampF(Rr.Bounty, 0, 100, 5);
+        if (Rr.Pool.Num() > 16) Rr.Pool.SetNum(16);
+        Rr.Pool.RemoveAll([](FName Id) { return !CireNPCArchetypes::Find(Id); }); // a missing Bestiary.json never takes the waves down
+        auto& B = C.Bonus;
+        B.Chance = ClampF(B.Chance, 0, 1, .4f); B.FromWave = FMath::Clamp(B.FromWave, 1, 200); B.MaxPerCycle = FMath::Clamp(B.MaxPerCycle, 0, 5);
+        B.ExtraBreatherSeconds = ClampF(B.ExtraBreatherSeconds, 0, 60, 6); B.EscapeSeconds = ClampF(B.EscapeSeconds, 5, 120, 26);
+        B.FleeRadius = ClampF(B.FleeRadius, 0, 3000, 950); B.Bounty = ClampF(B.Bounty, 0, 100, 4);
+        B.Wave.Type = ECireWaveType::BonusLoot; B.Wave.bMustClear = false; B.Wave.Race = NAME_None;
+        B.Wave.Label = B.Wave.Label.Left(40).TrimStartAndEnd(); if (B.Wave.Label.IsEmpty()) B.Wave.Label = TEXT("Bonus Loot");
+        B.Wave.SpawnInterval = ClampF(B.Wave.SpawnInterval, 0, 5, .35f); B.Wave.DelayBefore = 0; B.Wave.RewardMultiplier = ClampF(B.Wave.RewardMultiplier, 0, 10, 1);
+        if (B.Wave.Units.IsEmpty()) B.Wave.Units = BonusTemplate().Units; // default-constructed configs (tests, SPAWN NOW probes)
+        if (B.Wave.Units.Num() > 8) return Fail(TEXT("bonusWave has more than 8 composition rows."));
+        B.Wave.Units.RemoveAll([](const FCireWaveUnit& U) { return U.Archetype.IsNone() || !CireNPCArchetypes::Find(U.Archetype); });
+        int32 Total = 0;
+        for (auto& U : B.Wave.Units)
+        {
+            U.Count = FMath::Clamp(U.Count, 1, 10); U.HealthScale = ClampF(U.HealthScale, .1f, 20, 1); U.DamageScale = ClampF(U.DamageScale, .05f, 10, 1);
+            U.SizeScale = ClampF(U.SizeScale, .5f, 3, 1); U.bBoss = false; U.bEscortee = false; U.bRare = false; U.LeakCost = 0; U.Slot = NAME_None;
+            Total += U.Count;
+        }
+        if (Total > 12) return Fail(TEXT("bonusWave spawns at most 12 creatures per lane."));
+    }
     // monster-races: skill schedule and campaign.
     {
         auto& S = C.Skills;
@@ -263,6 +351,15 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
     C.BreatherSeconds = static_cast<float>(Num(Root, TEXT("breatherSeconds"), C.BreatherSeconds));
     C.WavesPerCycle = static_cast<int32>(Num(Root, TEXT("wavesPerCycle"), C.WavesPerCycle));
     C.Cycles = static_cast<int32>(Num(Root, TEXT("cycles"), C.Cycles));
+    {
+        FString Order; // rules-conformance: "campaign" plays Waves[] straight through the match; "cycle" replays it every cycle
+        if (Root->TryGetStringField(TEXT("waveOrder"), Order))
+        {
+            if (Order == TEXT("campaign")) C.bCampaignOrder = true;
+            else if (Order == TEXT("cycle")) C.bCampaignOrder = false;
+            else { Error = TEXT("waveOrder must be \"campaign\" or \"cycle\"."); return false; }
+        }
+    }
     const TSharedPtr<FJsonObject>* Scaling = nullptr;
     if (Root->TryGetObjectField(TEXT("cycleScaling"), Scaling) && Scaling)
     {
@@ -327,14 +424,18 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
         K.ChampionFromCycle = static_cast<int32>(Num(*Campaign, TEXT("championFromCycle"), K.ChampionFromCycle));
         K.MythicBossFromCycle = static_cast<int32>(Num(*Campaign, TEXT("mythicBossFromCycle"), K.MythicBossFromCycle));
         K.PromoteEvery = static_cast<int32>(Num(*Campaign, TEXT("promoteEvery"), K.PromoteEvery));
+        FString Every; // rules-conformance: the rotation advances per "wave" or per "cycle"
+        if ((*Campaign)->TryGetStringField(TEXT("rotateEvery"), Every))
+        {
+            if (Every == TEXT("wave")) K.bRotatePerWave = true;
+            else if (Every == TEXT("cycle")) K.bRotatePerWave = false;
+            else { Error = TEXT("campaign.rotateEvery must be \"wave\" or \"cycle\"."); return false; }
+        }
     }
-    const TArray<TSharedPtr<FJsonValue>>* Waves = nullptr;
-    if (!Root->TryGetArrayField(TEXT("waves"), Waves) || !Waves) { Error = TEXT("Waves.json needs a \"waves\" array."); return false; }
-    for (const auto& Value : *Waves)
+    // monster-expansion: one wave object parser shared by waves[] and bonusWave.wave.
+    auto ParseWave = [&](const TSharedPtr<FJsonObject>& WObj, FCireWaveDef& W) -> bool
     {
-        const TSharedPtr<FJsonObject>* WO = nullptr;
-        if (!Value || !Value->TryGetObject(WO) || !WO) { Error = TEXT("Every wave must be an object."); return false; }
-        FCireWaveDef W;
+        const TSharedPtr<FJsonObject>* WO = &WObj;
         FString TypeText = TEXT("custom");
         (*WO)->TryGetStringField(TEXT("type"), TypeText);
         if (!ParseType(TypeText, W.Type)) { Error = FString::Printf(TEXT("Unknown wave type '%s'."), *TypeText); return false; }
@@ -361,6 +462,7 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
             U.bNonAttacking = Flag(*UO, TEXT("nonAttacking"), false);
             U.bEscortee = Flag(*UO, TEXT("escortee"), false);
             U.bBoss = Flag(*UO, TEXT("boss"), false);
+            U.bRare = Flag(*UO, TEXT("rare"), false); // monster-expansion
             U.LeakCost = static_cast<int32>(Num(*UO, TEXT("leakCost"), 0));
             // monster-races
             FString Text;
@@ -371,6 +473,53 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
             U.SkillTier = static_cast<int32>(Num(*UO, TEXT("skillTier"), 0));
             W.Units.Add(U);
         }
+        return true;
+    };
+    // monster-expansion: rare spawns and the bonus loot wave (absent = defaults, so older files keep working).
+    const FCireWaveConfig Builtin = CireWaveDirector::Defaults();
+    C.Rare = Builtin.Rare; C.Bonus = Builtin.Bonus;
+    const TSharedPtr<FJsonObject>* RareObj = nullptr;
+    if (Root->TryGetObjectField(TEXT("rareSpawn"), RareObj) && RareObj)
+    {
+        auto& Rr = C.Rare;
+        Rr.bEnabled = Flag(*RareObj, TEXT("enabled"), Rr.bEnabled);
+        Rr.Chance = static_cast<float>(Num(*RareObj, TEXT("chance"), Rr.Chance));
+        Rr.FromWave = static_cast<int32>(Num(*RareObj, TEXT("fromWave"), Rr.FromWave));
+        Rr.MaxPerCycle = static_cast<int32>(Num(*RareObj, TEXT("maxPerCycle"), Rr.MaxPerCycle));
+        Rr.Health = static_cast<float>(Num(*RareObj, TEXT("health"), Rr.Health));
+        Rr.Damage = static_cast<float>(Num(*RareObj, TEXT("damage"), Rr.Damage));
+        Rr.Size = static_cast<float>(Num(*RareObj, TEXT("size"), Rr.Size));
+        Rr.Bounty = static_cast<float>(Num(*RareObj, TEXT("bounty"), Rr.Bounty));
+        const TArray<TSharedPtr<FJsonValue>>* Pool = nullptr;
+        if ((*RareObj)->TryGetArrayField(TEXT("pool"), Pool) && Pool)
+        {
+            Rr.Pool.Reset();
+            for (const auto& V : *Pool) { FString Id; if (V->TryGetString(Id) && !Id.IsEmpty()) Rr.Pool.Add(FName(*Id)); }
+        }
+    }
+    const TSharedPtr<FJsonObject>* BonusObj = nullptr;
+    if (Root->TryGetObjectField(TEXT("bonusWave"), BonusObj) && BonusObj)
+    {
+        auto& B = C.Bonus;
+        B.bEnabled = Flag(*BonusObj, TEXT("enabled"), B.bEnabled);
+        B.Chance = static_cast<float>(Num(*BonusObj, TEXT("chance"), B.Chance));
+        B.FromWave = static_cast<int32>(Num(*BonusObj, TEXT("fromWave"), B.FromWave));
+        B.MaxPerCycle = static_cast<int32>(Num(*BonusObj, TEXT("maxPerCycle"), B.MaxPerCycle));
+        B.ExtraBreatherSeconds = static_cast<float>(Num(*BonusObj, TEXT("extraBreatherSeconds"), B.ExtraBreatherSeconds));
+        B.EscapeSeconds = static_cast<float>(Num(*BonusObj, TEXT("escapeSeconds"), B.EscapeSeconds));
+        B.FleeRadius = static_cast<float>(Num(*BonusObj, TEXT("fleeRadius"), B.FleeRadius));
+        B.Bounty = static_cast<float>(Num(*BonusObj, TEXT("bounty"), B.Bounty));
+        const TSharedPtr<FJsonObject>* WaveObj = nullptr;
+        if ((*BonusObj)->TryGetObjectField(TEXT("wave"), WaveObj) && WaveObj) { FCireWaveDef W; if (!ParseWave(*WaveObj, W)) return false; B.Wave = W; }
+    }
+    const TArray<TSharedPtr<FJsonValue>>* Waves = nullptr;
+    if (!Root->TryGetArrayField(TEXT("waves"), Waves) || !Waves) { Error = TEXT("Waves.json needs a \"waves\" array."); return false; }
+    for (const auto& Value : *Waves)
+    {
+        const TSharedPtr<FJsonObject>* WO = nullptr;
+        if (!Value || !Value->TryGetObject(WO) || !WO) { Error = TEXT("Every wave must be an object."); return false; }
+        FCireWaveDef W;
+        if (!ParseWave(*WO, W)) return false;
         C.Waves.Add(MoveTemp(W));
     }
     if (!Validate(C, &Error, true)) return false;
@@ -387,6 +536,7 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     Root->SetNumberField(TEXT("breatherSeconds"), C.BreatherSeconds);
     Root->SetNumberField(TEXT("wavesPerCycle"), C.WavesPerCycle);
     Root->SetNumberField(TEXT("cycles"), C.Cycles);
+    Root->SetStringField(TEXT("waveOrder"), C.bCampaignOrder ? TEXT("campaign") : TEXT("cycle")); // rules-conformance
     auto Scaling = MakeShared<FJsonObject>();
     Scaling->SetNumberField(TEXT("healthGrowth"), C.CycleHealthGrowth);
     Scaling->SetNumberField(TEXT("damageGrowth"), C.CycleDamageGrowth);
@@ -426,7 +576,7 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     Skills->SetNumberField(TEXT("tierDuration"), C.Skills.TierDuration);
     Root->SetObjectField(TEXT("skillProgression"), Skills);
     auto Campaign = MakeShared<FJsonObject>();
-    Campaign->SetStringField(TEXT("_comment"), TEXT("Race per cycle (wraps; 'a+b' mixes races row by row). Rows with a slot follow the wave's race. The second lap reskins with palette variant 1, and so on."));
+    Campaign->SetStringField(TEXT("_comment"), TEXT("Race per wave or per cycle (rotateEvery; wraps; 'a+b' mixes races row by row). Rows with a slot follow the wave's race. The second lap reskins with palette variant 1, and so on."));
     TArray<TSharedPtr<FJsonValue>> Rotation;
     for (const FString& Race : C.Campaign.RaceRotation) Rotation.Add(MakeShared<FJsonValueString>(Race));
     Campaign->SetArrayField(TEXT("raceRotation"), Rotation);
@@ -436,9 +586,9 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
     Campaign->SetNumberField(TEXT("championFromCycle"), C.Campaign.ChampionFromCycle);
     Campaign->SetNumberField(TEXT("mythicBossFromCycle"), C.Campaign.MythicBossFromCycle);
     Campaign->SetNumberField(TEXT("promoteEvery"), C.Campaign.PromoteEvery);
+    Campaign->SetStringField(TEXT("rotateEvery"), C.Campaign.bRotatePerWave ? TEXT("wave") : TEXT("cycle")); // rules-conformance
     Root->SetObjectField(TEXT("campaign"), Campaign);
-    TArray<TSharedPtr<FJsonValue>> Waves;
-    for (const auto& W : C.Waves)
+    auto WaveJson = [](const FCireWaveDef& W)
     {
         auto WO = MakeShared<FJsonObject>();
         WO->SetStringField(TEXT("label"), W.Label);
@@ -468,11 +618,43 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
             if (U.Palette >= 0) UO->SetNumberField(TEXT("palette"), U.Palette);
             if (U.SkillCount >= 0) UO->SetNumberField(TEXT("skills"), U.SkillCount);
             if (U.SkillTier > 0) UO->SetNumberField(TEXT("skillTier"), U.SkillTier);
+            if (U.bRare) UO->SetBoolField(TEXT("rare"), true); // monster-expansion
             Units.Add(MakeShared<FJsonValueObject>(UO));
         }
         WO->SetArrayField(TEXT("units"), Units);
-        Waves.Add(MakeShared<FJsonValueObject>(WO));
+        return WO;
+    };
+    // monster-expansion: rare spawns and the bonus loot wave.
+    {
+        auto Rare = MakeShared<FJsonObject>();
+        Rare->SetStringField(TEXT("_comment"), TEXT("Rare Spawn: from fromWave, each normal/pack wave has `chance` to add one rare creature from `pool` (both lanes, at most maxPerCycle per cycle). It glows, wears a 'Rare' plate, is tougher (health/damage/size x) and pays `bounty` mob values plus a personal rare chest (LootTables.json sources.rareSpawn). Docs/MonsterExpansion.md."));
+        Rare->SetBoolField(TEXT("enabled"), C.Rare.bEnabled);
+        Rare->SetNumberField(TEXT("chance"), C.Rare.Chance);
+        Rare->SetNumberField(TEXT("fromWave"), C.Rare.FromWave);
+        Rare->SetNumberField(TEXT("maxPerCycle"), C.Rare.MaxPerCycle);
+        Rare->SetNumberField(TEXT("health"), C.Rare.Health);
+        Rare->SetNumberField(TEXT("damage"), C.Rare.Damage);
+        Rare->SetNumberField(TEXT("size"), C.Rare.Size);
+        Rare->SetNumberField(TEXT("bounty"), C.Rare.Bounty);
+        TArray<TSharedPtr<FJsonValue>> Pool;
+        for (const FName Id : C.Rare.Pool) Pool.Add(MakeShared<FJsonValueString>(Id.ToString()));
+        Rare->SetArrayField(TEXT("pool"), Pool);
+        Root->SetObjectField(TEXT("rareSpawn"), Rare);
+        auto Bonus = MakeShared<FJsonObject>();
+        Bonus->SetStringField(TEXT("_comment"), TEXT("Bonus Loot Wave: after a cleared wave (never the cycle's last), from fromWave, `chance` to run `wave` during the breather (at most maxPerCycle). Its creatures flee champions closer than fleeRadius, never attack, never cost lives and escape after escapeSeconds. Each pays `bounty` mob values plus a personal chest (LootTables.json sources.bonusWave). The breather grows by extraBreatherSeconds only when it runs. Docs/MonsterExpansion.md."));
+        Bonus->SetBoolField(TEXT("enabled"), C.Bonus.bEnabled);
+        Bonus->SetNumberField(TEXT("chance"), C.Bonus.Chance);
+        Bonus->SetNumberField(TEXT("fromWave"), C.Bonus.FromWave);
+        Bonus->SetNumberField(TEXT("maxPerCycle"), C.Bonus.MaxPerCycle);
+        Bonus->SetNumberField(TEXT("extraBreatherSeconds"), C.Bonus.ExtraBreatherSeconds);
+        Bonus->SetNumberField(TEXT("escapeSeconds"), C.Bonus.EscapeSeconds);
+        Bonus->SetNumberField(TEXT("fleeRadius"), C.Bonus.FleeRadius);
+        Bonus->SetNumberField(TEXT("bounty"), C.Bonus.Bounty);
+        Bonus->SetObjectField(TEXT("wave"), WaveJson(C.Bonus.Wave));
+        Root->SetObjectField(TEXT("bonusWave"), Bonus);
     }
+    TArray<TSharedPtr<FJsonValue>> Waves;
+    for (const auto& W : C.Waves) Waves.Add(MakeShared<FJsonValueObject>(WaveJson(W)));
     Root->SetArrayField(TEXT("waves"), Waves);
     FString Out;
     auto Writer = TJsonWriterFactory<TCHAR, TPrettyJsonPrintPolicy<TCHAR>>::Create(&Out);

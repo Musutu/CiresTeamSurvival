@@ -24,6 +24,9 @@ void AddRaw(ACireMonster* Monster, ACireHero* Hero, float Amount);
 void Transfer(ACireMonster* Monster, ACireHero* From, ACireHero* To, float Fraction);
 // Multiplies a hero's threat on this monster (e.g. 0.5 for a fade).
 void Scale(ACireMonster* Monster, ACireHero* Hero, float Multiplier);
+// rules-conformance: an ability that explicitly drops/reduces threat: multiplies the hero's threat on every
+// monster (0 drops it entirely, 0.5 = "reduce threat by 50%"). Ability DB field "threatScale" (applied on cast).
+void ScaleAll(ACireHero* Hero, float Multiplier);
 // Pull threshold multiplier a challenger needs against the current target.
 float PullRatio(const ACireMonster* Monster, const ACireHero* Challenger);
 // Idle decay and replicated table refresh; called from the NPC tick.

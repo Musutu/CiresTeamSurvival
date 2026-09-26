@@ -44,3 +44,13 @@ Any future `T_<id>` without a painted PNG falls back to original procedural art 
 
 Rebuild and import both: `python Tools/RunAbilityIcons.py --pylib <dir with Pillow>`
 (`--procedural` ignores the painted overrides).
+
+## Buff, debuff and monster-state icons (fab-coverage)
+
+Every buff / debuff / stance / aura in `Content/Data/BuffModifiers.json` and `BuffVisuals.json` that had no art of its
+own (it borrowed another ability's icon) now has a painted icon, **generated for Eric via ChatGPT (OpenAI),
+2026-09-25**: item and pylon fields, the twelve level-15 party auras, the monster race debuffs (`npc_*`), boss stances,
+marks, `role_caster` / `role1` (NPC caster / ranged role) and `basic` (NPC melee attack). Sources:
+`Art/Icons/ChatGPT/buffs_*.png` (3x3) and `npc_basic_attack.png` (single), sliced by `Tools/SliceIconSheet.py`.
+`armor_broken`, `polymorphed`, `role0` and `role2` reuse the painted `status_armor_break`, `polymorph`, `role_tank` and
+`role_support` art. The HUD finds them by effect id (`ACireHUD::DrawEffectIcon` -> `CireUIStyle::FindAbilityIcon`).

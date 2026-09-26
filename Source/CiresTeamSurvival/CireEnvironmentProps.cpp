@@ -8,6 +8,7 @@
 #include "Components/PointLightComponent.h"
 #include "Dom/JsonObject.h"
 #include "Engine/StaticMesh.h"
+#include "PhysicsEngine/BodySetup.h" // world-scale: collision proxies
 #include "Engine/World.h"
 #include "HAL/FileManager.h"
 #include "Materials/MaterialInterface.h"
@@ -54,6 +55,8 @@ struct FWorldTown
     TMap<FName,TArray<TWeakObjectPtr<UHierarchicalInstancedStaticMeshComponent>>> Components;
     TArray<TWeakObjectPtr<UPointLightComponent>> Lights;TArray<FPlaced> Placed;int32 Visible=0,Suppressed=0;
     TArray<TWeakObjectPtr<UStaticMeshComponent>> Statics; // world-scale: "component": "static" slots
+    // world-scale: invisible box proxies for colliding slots whose mesh has no collision body (arena-kit hay bales, windmill).
+    TMap<FName,TWeakObjectPtr<UInstancedStaticMeshComponent>> Proxies;
 };
 struct FTownData
 {
@@ -352,6 +355,8 @@ void CireEnvironmentProps::Build(ACireWorld* WorldActor)
     FWorldTown& Data=Worlds.FindOrAdd(WorldActor);
     for(auto& Pair:Data.Components)for(auto& C:Pair.Value)if(C.IsValid())C->DestroyComponent();
     Data.Components.Reset();
+    for(auto& Pair:Data.Proxies)if(Pair.Value.IsValid())Pair.Value->DestroyComponent();
+    Data.Proxies.Reset();
     // Material overlays (e.g. a Fab plaster) replace the matching mesh slot on every town mesh.
     TArray<const FSlot*> MaterialOverrides;
     for(const auto& Pair:Town.Slots)if(Pair.Value.bMaterial&&Pair.Value.Material.IsValid()&&!Pair.Value.MeshSlot.IsNone()&&Pair.Value.ResolvedSource!=TEXT("base")&&Pair.Value.ResolvedSource!=TEXT("fallback"))
@@ -375,6 +380,21 @@ void CireEnvironmentProps::Build(ACireWorld* WorldActor)
         if(Slot.MeshMaterial.IsValid())for(int32 I=0;I<C->GetNumMaterials();++I)C->SetMaterial(I,Slot.MeshMaterial.Get());
         WorldActor->AddInstanceComponent(C);C->RegisterComponent();Data.Components.FindOrAdd(Slot.Id).Add(C);
         }
+        // world-scale: a colliding slot whose mesh has no collision body would neither block units nor carve the navmesh;
+        // give it an invisible box of its footprint instead (same idea as the arenas' blocker proxies).
+        const UBodySetup* Body=Slot.Mesh->GetBodySetup();
+        const bool bHasBody=Body&&(Body->AggGeom.GetElementCount()>0||Body->CollisionTraceFlag==CTF_UseComplexAsSimple);
+        if(Slot.bCollision&&!bHasBody)
+        {
+            auto* P=NewObject<UInstancedStaticMeshComponent>(WorldActor,*FString::Printf(TEXT("TownProxy_%s"),*Slot.Id.ToString()));
+            P->SetupAttachment(WorldActor->GetRootComponent());P->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")));
+            P->SetMobility(EComponentMobility::Movable);P->SetHiddenInGame(true);P->SetVisibility(false);P->SetCastShadow(false);
+            P->SetCollisionObjectType(ECC_WorldStatic);P->SetCollisionResponseToAllChannels(ECR_Block);P->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+            P->SetGenerateOverlapEvents(false);P->SetCanEverAffectNavigation(true);
+            P->ComponentTags.Add(TEXT("CireWorldProp"));P->ComponentTags.Add(TEXT("CireTown"));P->ComponentTags.Add(TEXT("CireTownProxy"));
+            WorldActor->AddInstanceComponent(P);P->RegisterComponent();Data.Proxies.Add(Slot.Id,P);
+            UE_LOG(LogCireTown,Display,TEXT("CIRE_TOWN_COLLISION_PROXY slot=%s (mesh %s has no collision body)"),*Slot.Id.ToString(),*Slot.Mesh->GetName());
+        }
     }
     Refresh(WorldActor);
 }
@@ -383,6 +403,8 @@ void CireEnvironmentProps::Refresh(ACireWorld* WorldActor)
     auto* Data=Worlds.Find(WorldActor);if(!Data||!Town.bValid)return;
     UWorld* World=WorldActor->GetWorld();
     for(auto& Pair:Data->Components)for(auto& C:Pair.Value)if(C.IsValid())C->ClearInstances();
+    for(auto& Pair:Data->Proxies)if(Pair.Value.IsValid())Pair.Value->ClearInstances(); // world-scale
+    TMap<FName,TArray<FTransform>> ProxyBatches;
     for(auto& L:Data->Lights)if(L.IsValid())L->DestroyComponent();
     for(auto& M:Data->Statics)if(M.IsValid())M->DestroyComponent(); // world-scale
     Data->Statics.Reset();
@@ -412,6 +434,8 @@ void CireEnvironmentProps::Refresh(ACireWorld* WorldActor)
                 }
             }
             else Batches.FindOrAdd(P.Slot).Add(Slot.Local*T);
+            if(Data->Proxies.Contains(P.Slot)&&Slot.LocalBox.IsValid) // world-scale: the footprint box as an invisible blocker
+                ProxyBatches.FindOrAdd(P.Slot).Add(FTransform(FRotator::ZeroRotator,Slot.LocalBox.GetCenter(),Slot.LocalBox.GetSize()/100.f)*T);
             Data->Placed.Add({Team,P.Slot,T,Slot.LocalBox,Slot.Clearance});++Data->Visible;
             if(Slot.Light.bEnabled&&Lights[Team]<MaxLightsPerTeam)
             {
@@ -426,6 +450,7 @@ void CireEnvironmentProps::Refresh(ACireWorld* WorldActor)
         }
     }
     for(auto& Pair:Batches)for(auto& C:Data->Components[Pair.Key])if(C.IsValid())C->AddInstances(Pair.Value,false,true);
+    for(auto& Pair:ProxyBatches)if(auto* P=Data->Proxies.FindRef(Pair.Key).Get())P->AddInstances(Pair.Value,false,true); // world-scale
     CireNav::RefreshActor(WorldActor); // nav-paths: re-placed pieces carve the navmesh (live route edits)
     UE_LOG(LogCireTown,Display,TEXT("CIRE_ENVIRONMENT_PROPS_READY instances=%d suppressed_for_route_clearance=%d slots=%d lights=%d"),
         Data->Visible,Data->Suppressed,Data->Components.Num(),Data->Lights.Num());

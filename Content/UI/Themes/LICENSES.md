@@ -16,3 +16,14 @@ assets are included.
 caps, slot/ring crops, a mirrored tileable panel fill) into `<Theme>/src/*.png`, packs each theme into
 one atlas (`T_<Theme>_Atlas`) plus a fill (`T_<Theme>_Fill`) and imports them as UI textures. The
 UI-only reference mockups (`ui_only_*.png`) are also ChatGPT generations for Eric (same date).
+
+**Per-piece frame art (hud-art, 2026-09-25):** every piece in `Art/UI/Themes/ChatGPT/Pieces/<key>/` was
+generated individually for Eric via ChatGPT image generation in his own account (same ownership as
+above) and is processed by `Tools/BuildHUDArt.py` into the theme atlases.
+
+All four themes (Gilded Citadel, Ironbound, Arcane Veil, Verdant Bloom) now have the full 14-piece set in
+`Pieces/gilded`, `Pieces/ironbound`, `Pieces/arcane` and `Pieces/verdant` (2026-09-25, ChatGPT image
+generation in Eric's account, prompted with his approved `ui_only_*` concept as the style reference).
+The files are the original generated PNGs (downloaded at full resolution from his conversations), not
+screenshots; no third-party images are included.
+
