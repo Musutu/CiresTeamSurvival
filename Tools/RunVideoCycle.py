@@ -30,7 +30,7 @@ ENGINE_FAILURES = [
     ("df_precision", re.compile(r"precision loss while converting matrix")),
     ("non_invertible", re.compile(r"non-invertible matrix|InverseFast")),
     ("fatal", re.compile(r"Fatal error|Unhandled Exception|EXCEPTION_ACCESS_VIOLATION|Assertion failed")),
-    ("render_sanity", re.compile(r"CIRE_RENDER_SANITY_BAD")),
+    ("render_sanity", re.compile(r"CIRE_RENDER_SANITY_BAD|CIRE_RENDER_SANITY_REPAIRED|found NaN in Bounds")),
     ("apply_during_draw", re.compile(r"CIRE_VIDEO_APPLY_DURING_DRAW")),
 ]
 
