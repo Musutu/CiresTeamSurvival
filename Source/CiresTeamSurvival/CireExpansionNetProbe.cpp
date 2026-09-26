@@ -293,7 +293,7 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
         if (Counts.Wall[Team] != 1 || Counts.Shot[Team] != 1 || Counts.Summon[Team] != 1 || !Counts.OwnShot) return true;
         if (Counts.OwnShot->HasAuthority() || !FMath::IsNearlyEqual(Counts.OwnShot->ShotSpec.Speed, 100.f)) { Abort(TEXT("projectile authority/spec did not replicate")); return true; }
         bool bSummonOwnerReady = false;
-        for (TActorIterator<ACireSummon> It(Controller->GetWorld()); It; ++It) if (It->TeamId == Team && It->GetOwnerHero() == Hero && It->bCommandable && It->Health == 100) bSummonOwnerReady = true;
+        for (TActorIterator<ACireSummon> It(Controller->GetWorld()); It; ++It) if (It->TeamId == Team && It->GetOwnerHero() == Hero && It->bCommandable && It->Health == It->MaxHealth && It->MaxHealth >= 100) bSummonOwnerReady = true; // fix/summons: health scales off the owner's primary
         if (!bSummonOwnerReady) return true;
         bool bWallReady = false;
         for (TActorIterator<ACireConstruct> It(Controller->GetWorld()); It; ++It)
@@ -350,7 +350,7 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
         // aura-vfx: an arena buff record on the team-1 hero reaches both clients (opponents are observable in the arena).
         bool bArenaBuff = false; for (TActorIterator<ACireHero> It(Controller->GetWorld()); It; ++It) if (!Cast<ACireSummon>(*It) && It->TeamId == 1 && CireBuffs::IsActive(*It, TEXT("bastion_of_dawn"))) bArenaBuff = true;
         if (!bArenaBuff) return true;
-        if (bHealth && Counts.Wall[0] == 0 && Counts.Wall[1] == 1 && Counts.FirstSummon && Counts.FirstSummon->Health == 90 &&
+        if (bHealth && Counts.Wall[0] == 0 && Counts.Wall[1] == 1 && Counts.FirstSummon && Counts.FirstSummon->Health == Counts.FirstSummon->MaxHealth - 10 /* fix/summons: primary-scaled health */ &&
             Counts.FirstPet && FMath::IsNearlyEqual(Counts.FirstPet->Health, Counts.FirstPet->MaxHealth - 17.f, .05f) /* pets: enemy champion damage replicated */) Ack();
     }
     else if(Client.Stage==8||Client.Stage==9)
