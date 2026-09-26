@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "provisional": true,
+  "_comment": "vendors: PROVISIONAL merchant placements, used only while Content/Data/TownVendors.json does not exist. The real file is written by Eric's map layout editor ('Place Vendor', feat/dev-route-tools) with this exact schema: one entry per vendor and team, realm-local centimetres (x along the lane, y relative to that team's realm centre, z above the town floor), yaw in degrees (0 = facing +X, toward the town gate). npc = where the merchant stands and faces; sign = the hanging sign board's centre and facing; stall = the stall footprint centre, facing and size [depth, width, height] (the stall props scale to it). sign / stall may be omitted: the vendor's Vendors.json 'layout' defaults (offsets from the npc) are used. These placeholders sit in the castle bailey around the Teleport-to-Base landing (-1700, 0), inside the 900 cm town shopping radius.",
+  "units": "centimeters",
+  "space": "realm-local",
+  "vendors": [
+    {"vendorId": "arcane", "team": 0, "npc": {"pos": [-2200, -520, 0], "yaw": 43}},
+    {"vendorId": "armory", "team": 0, "npc": {"pos": [-2380, 0, 0], "yaw": 0}},
+    {"vendorId": "weaponsmith", "team": 0, "npc": {"pos": [-2200, 520, 0], "yaw": -43}},
+    {"vendorId": "arcane", "team": 1, "npc": {"pos": [-2200, -520, 0], "yaw": 43}},
+    {"vendorId": "armory", "team": 1, "npc": {"pos": [-2380, 0, 0], "yaw": 0}},
+    {"vendorId": "weaponsmith", "team": 1, "npc": {"pos": [-2200, 520, 0], "yaw": -43}}
+  ]
+}
