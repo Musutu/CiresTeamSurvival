@@ -98,7 +98,9 @@ void CireShopUI::DrawStatsWindow(ACireHUD& HUD, ACireHero* Hero)
     const float AD = Hero->AttackDamage();
     const float Rhythm = Hero->HasSkill(TEXT("battle_rhythm")) ? 1.2f : 1.f;
     const float AttackSpeed = (1.f + Hero->Agility * .01f + static_cast<float>(T.Stats.Get(CI::ItemStat::AttackSpeed)) / 100.f) * Rhythm / FMath::Max(.1f, Hero->BaseAttackSeconds());
-    const float Armor = static_cast<float>(T.Stats.Get(CI::ItemStat::Armor)), Ward = static_cast<float>(T.Stats.Get(CI::ItemStat::Ward));
+    // str-scaling: STR adds 0.1 armor and 0.1 spell ward per point on top of items.
+    const float StrArmor = CireItems::StrengthDefense(Hero, true), StrWard = CireItems::StrengthDefense(Hero, false);
+    const float Armor = static_cast<float>(T.Stats.Get(CI::ItemStat::Armor)) + StrArmor, Ward = static_cast<float>(T.Stats.Get(CI::ItemStat::Ward)) + StrWard;
     const float Speed = Hero->GetCharacterMovement() ? Hero->GetCharacterMovement()->MaxWalkSpeed : 0.f;
     const float RegenMult = Hero->HasSkill(TEXT("deep_reserves")) ? 1.5f : 1.f;
     const float ManaRegen = CireItems::BaseManaRegen(Hero, RegenMult) + static_cast<float>(T.Stats.Get(CI::ItemStat::ManaRegen)); // items-v2
@@ -119,10 +121,10 @@ void CireShopUI::DrawStatsWindow(ACireHUD& HUD, ACireHero* Hero)
     Rows.Add({TEXT("Spell Power"), Num(T.Stats.Get(CI::ItemStat::SpellPower)) + TEXT("%"), TEXT("Spell Power"),
         FString::Printf(TEXT("Abilities and item actives deal and heal %.0f%% more.%s%s"), T.Stats.Get(CI::ItemStat::SpellPower),
             *ItemSources(Hero, CI::ItemStat::SpellPower, true), T.HealAmp > 0 ? *FString::Printf(TEXT("\nHealing also +%.0f%% (Consecrated Mending)."), T.HealAmp) : TEXT("")), FLinearColor(.7f, .5f, 1.f, 1)});
-    Rows.Add({TEXT("Armor"), FString::Printf(TEXT("%.0f  (%.0f%%)"), Armor, CI::Mitigation(Armor) * 100), TEXT("Armor"),
-        FString::Printf(TEXT("Reduces basic-attack damage taken by armor / (armor + 100) = %.0f%% (max 75%%).%s"), CI::Mitigation(Armor) * 100, *ItemSources(Hero, CI::ItemStat::Armor, false)), FLinearColor(.85f, .7f, .4f, 1)});
-    Rows.Add({TEXT("Spell Ward"), FString::Printf(TEXT("%.0f  (%.0f%%)"), Ward, CI::Mitigation(Ward) * 100), TEXT("Spell Ward"),
-        FString::Printf(TEXT("Reduces ability damage taken by ward / (ward + 100) = %.0f%% (max 75%%).%s"), CI::Mitigation(Ward) * 100, *ItemSources(Hero, CI::ItemStat::Ward, false)), FLinearColor(.45f, .7f, 1.f, 1)});
+    Rows.Add({TEXT("Armor"), FString::Printf(TEXT("%.1f  (%.0f%%)"), Armor, CI::Mitigation(Armor) * 100), TEXT("Armor"),
+        FString::Printf(TEXT("Reduces basic-attack damage taken by armor / (armor + 100) = %.0f%% (max 75%%).\nSTR %d x 0.1 = %.1f + items %.0f.%s"), CI::Mitigation(Armor) * 100, Hero->Strength, StrArmor, Armor - StrArmor, *ItemSources(Hero, CI::ItemStat::Armor, false)), FLinearColor(.85f, .7f, .4f, 1)});
+    Rows.Add({TEXT("Spell Ward"), FString::Printf(TEXT("%.1f  (%.0f%%)"), Ward, CI::Mitigation(Ward) * 100), TEXT("Spell Ward"),
+        FString::Printf(TEXT("Reduces ability damage taken by ward / (ward + 100) = %.0f%% (max 75%%).\nSTR %d x 0.1 = %.1f + items %.0f.%s"), CI::Mitigation(Ward) * 100, Hero->Strength, StrWard, Ward - StrWard, *ItemSources(Hero, CI::ItemStat::Ward, false)), FLinearColor(.45f, .7f, 1.f, 1)});
     Rows.Add({TEXT("Attack Speed"), Num(AttackSpeed, 2) + TEXT("/s"), TEXT("Attack Speed"),
         FString::Printf(TEXT("%.2f attacks per second = (1 + AGI %d%% + items %.0f%%)%s / %.2f s base swing.%s"), AttackSpeed, Hero->Agility,
             T.Stats.Get(CI::ItemStat::AttackSpeed), Rhythm > 1 ? TEXT(" x 1.20 Battle Rhythm") : TEXT(""), Hero->BaseAttackSeconds(), *ItemSources(Hero, CI::ItemStat::AttackSpeed, true)), FLinearColor(1.f, .85f, .35f, 1)});
@@ -148,7 +150,7 @@ void CireShopUI::DrawStatsWindow(ACireHUD& HUD, ACireHero* Hero)
             T.Stats.Get(CI::ItemStat::EnergyRegen), EnergyRegen, *ItemSources(Hero, CI::ItemStat::ManaRegen, false)), Mana});
     const bool bSTR = Hero->PrimaryStat() == Cires::PrimaryStat::Strength, bAGI = Hero->PrimaryStat() == Cires::PrimaryStat::Agility, bINT = !bSTR && !bAGI;
     Rows.Add({bSTR ? TEXT("STR (primary)") : TEXT("Strength"), FString::FromInt(Hero->Strength), TEXT("Strength"),
-        AttributeBody(Hero->Strength, CI::ItemStat::Strength, bSTR, bSTR ? TEXT("+25 health per point; primary: +1 attack damage per point.") : TEXT("+25 health per point.")), FLinearColor(.95f, .45f, .35f, 1)});
+        AttributeBody(Hero->Strength, CI::ItemStat::Strength, bSTR, bSTR ? TEXT("+10 health, +0.1 armor and +0.1 spell ward per point; primary: +1 attack damage per point.") : TEXT("+10 health, +0.1 armor and +0.1 spell ward per point.")), FLinearColor(.95f, .45f, .35f, 1)});
     Rows.Add({bAGI ? TEXT("AGI (primary)") : TEXT("Agility"), FString::FromInt(Hero->Agility), TEXT("Agility"),
         AttributeBody(Hero->Agility, CI::ItemStat::Agility, bAGI, bAGI ? TEXT("+1% attack speed per point; primary: +1 attack damage per point.") : TEXT("+1% attack speed per point.")), FLinearColor(.45f, .9f, .45f, 1)});
     Rows.Add({bINT ? TEXT("INT (primary)") : TEXT("Intelligence"), FString::FromInt(Hero->Intelligence), TEXT("Intelligence"),

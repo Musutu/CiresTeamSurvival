@@ -13,9 +13,14 @@
 #include "CireAbilityIcons.h"
 #include "CireClassTraits.h"
 #include "CireUIStyle.h"
+#include "CireWeaponPresentation.h"
+#include "Dom/JsonObject.h"
 #include "CireUITheme.h"
 #include "CireGame.h"
 #include "CireSummon.h"
+#include "CireItems.h"    // rules-conformance: game-mode picker (host RPC on the hero's inventory)
+#include "CireShopArt.h"  // rules-conformance: scroll / crest icons for the mode picker
+#include "CireSkillShop.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "EngineFontServices.h"
@@ -106,6 +111,16 @@ FString StyleLabel(const FString& Style)
     if(Style==TEXT("axes"))return TEXT("Axes");
     if(Style==TEXT("arcane"))return TEXT("Arcane focus");
     FString Result=Style;if(!Result.IsEmpty())Result[0]=FChar::ToUpper(Result[0]);return Result;
+}
+// The weapon the champion actually carries: a per-champion Fab prop (e.g. the paladins' flanged maces on the
+// "Flail" token) names it; without the pack the roster attack style is shown.
+FString WeaponLabel(const FCireChampionProfile& P)
+{
+    float Size=1.f;TSharedPtr<FJsonObject> Materials;bool bProfileProp=false;
+    const FString Mesh=CireWeaponFab::ResolveMesh(P.Id,StyleLabel(P.AttackStyle),FString(),Size,Materials,bProfileProp);
+    if(bProfileProp)for(const TCHAR* Kind:{TEXT("Mace"),TEXT("Sword"),TEXT("Axe"),TEXT("Hammer"),TEXT("Spear"),TEXT("Dagger")})
+        if(FPackageName::GetShortName(Mesh).Contains(Kind))return Kind;
+    return StyleLabel(P.AttackStyle);
 }
 const TCHAR* DifficultyWord(int32 D){return D<=1?TEXT("EASY"):D==2?TEXT("MODERATE"):TEXT("HARD");}
 TArray<Cires::SkillDraftRole> HybridRoles(const FCireChampionProfile& P)
@@ -204,6 +219,7 @@ struct FDraftUI
     FGalleryFixture Gallery;
     bool bInitialized=false;
     FRect FigurePx;float FigureUV[4]={0,0,1,1}; // last live figure draw (gallery diagnostics)
+    uint8 LastMode=255;double ModeFlashAt=-100; // rules-conformance: game-mode picker feedback (any client sees the host's change)
 };
 TMap<TWeakObjectPtr<const ACireHUD>,FDraftUI> States;
 FDraftUI& StateFor(const ACireHUD* HUD)
@@ -908,6 +924,62 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 X-=14;
             }
         }
+        // rules-conformance: GAME MODE picker (Eric: "Skill Shop" vs "Classic Draft", default Skill Shop). The host picks
+        // (UCireInventory::ServerSetProgressionMode, host-only, before the first wave); the choice replicates on
+        // ACireGameState::ProgressionMode, so every client's picker shows it and flashes when it changes.
+        {
+            const ACireGameState* GS=World?World->GetGameState<ACireGameState>():nullptr;
+            const bool bShopMode=!GS||GS->ProgressionMode!=0;
+            const bool bHost=World&&World->GetNetMode()!=NM_Client;
+            const bool bModeLocked=GS&&(GS->Wave>0||GS->Phase!=0);
+            const uint8 ModeNow=bShopMode?1:0;
+            if(S.LastMode!=ModeNow){if(S.LastMode!=255){S.ModeFlashAt=Now;PlayWowSound(4,.5f);}S.LastMode=ModeNow;}
+            const float CapS=9.5f,BS=10.5f,PY=M+LH(11,ECireFont::Heading)+5;
+            const float BH=FMath::Clamp(FMath::Min(BodyY-M-LH(11,ECireFont::Heading)-14,RingCY-7.f-PY),24.f,40.f),IconS=BH-8; // stays above the header rule
+            static const TCHAR* ModeNames[2]={TEXT("SKILL SHOP"),TEXT("CLASSIC DRAFT")};
+            static const TCHAR* ModeBlurbs[2]={
+                TEXT("Default. Skills are bought and levelled in the Skill Shop that opens after every cleared wave; levelling up only raises your stats."),
+                TEXT("Level-up draft: at each level breakpoint you pick a new skill from a role-matched offer.")};
+            const FString Cap=TEXT("GAME MODE");
+            const float MinX=MidX+TW(TEXT("CHOOSE YOUR CHAMPION"),TitleSize,ECireFont::Display)*.5f+16;
+            float SegW[2];for(int32 I=0;I<2;++I)SegW[I]=IconS+TW(ModeNames[I],BS,ECireFont::Heading)+24;
+            const float CapW=TW(Cap,CapS,ECireFont::Heading)+12;
+            bool bCaption=true,bLabels=true;
+            if(LX+CW-(CapW+SegW[0]+SegW[1]+4)<MinX)bCaption=false;
+            if(LX+CW-(SegW[0]+SegW[1]+4)<MinX){bLabels=false;SegW[0]=SegW[1]=IconS+14;}
+            const float ModeW=(bCaption?CapW:0.f)+SegW[0]+SegW[1]+4;
+            float X=LX+CW-ModeW;
+            if(X>=MinX)
+            {
+                const FRect Whole{X,PY,ModeW,BH};
+                if(bCaption){Txt(Cap,X,PY+(BH-LH(CapS,ECireFont::Heading))*.5f,CapS,Gold,Whole,ECireFont::Heading);X+=CapW;}
+                for(int32 I=0;I<2;++I)
+                {
+                    const FRect R{X,PY,SegW[I],BH};X+=SegW[I]+4;
+                    const bool bOn=(I==0)==bShopMode,bCan=Interactive&&bHost&&!bModeLocked&&Hero->Inventory!=nullptr;
+                    const bool bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H);
+                    const float FlashAge=static_cast<float>(Now-S.ModeFlashAt);
+                    if(bOn&&FlashAge<.9f)CireUIStyle::Glow(Pen(),R.X-8,R.Y-8,R.W+16,R.H+16,FLinearColor(1.f,.8f,.35f,.55f*(1.f-FlashAge/.9f)));
+                    Panel(R.X,R.Y,R.W,R.H,bOn?SRGB(46,36,14,242):bOver&&bCan?SRGB(24,30,42,235):SRGB(10,14,22,215));
+                    Outline(R,1,bOn?Gold:bOver&&bCan?WithAlpha(Gold,.8f):WithAlpha(GoldDim,.9f));
+                    if(bOn){Outline(R.Inset(2),1,WithAlpha(Gold,.3f));Panel(R.X+R.W*.25f,R.B()-2,R.W*.5f,2,BrightGold);Diamond(R.X+R.W*.5f,R.B(),3,BrightGold);}
+                    UTexture2D* Glyph=I==0?CireShopArt::ScrollTexture(CireShopArt::EScroll::Golden):CireShopArt::CrestTexture(CireShopArt::EScroll::Prismatic);
+                    if(Glyph)Tex(Glyph,FRect{R.X+6,R.Y+4,IconS,IconS},0,0,1,1,FLinearColor(1,1,1,bOn?1.f:.5f),true);
+                    else Icon(I==0?TEXT("role2"):TEXT("role1"),R.X+6,R.Y+4,IconS,bOn?BrightGold:Muted);
+                    if(bLabels)Line(ModeNames[I],R.X+IconS+14,R.Y+(BH-LH(BS,ECireFont::Heading))*.5f,R.W-IconS-18,BS,bOn?Text:bOver&&bCan?Gold:Muted,R,ECireFont::Heading);
+                    if(!bOn&&!bCan&&(!bHost||bModeLocked)){const float LkX=R.R()-9,LkY=R.Y+7;Panel(LkX-3,LkY+2,7,5,Muted);Circle(LkX+.5f,LkY+1,2.5f,Muted,1.f,10);} // lock: not yours to change
+                    if(bOver&&Clicked&&bCan&&!bOn)
+                    {
+                        Hero->Inventory->ServerSetProgressionMode(I==0?1:0);
+                        PlayWowSound(4,.45f);Clicked=false;
+                    }
+                    const FString Why=!bHost?FString(TEXT("Only the host picks the game mode; everyone sees the choice here.")):bModeLocked?FString(TEXT("Locked: the mode is fixed once the first wave starts.")):
+                        bOn?FString(TEXT("Selected for this match.")):FString(TEXT("Click to play this mode (the whole team switches)."));
+                    Tip(FString(I==0?TEXT("Skill Shop"):TEXT("Classic Draft"))+(bOn?TEXT("  (selected)"):TEXT("")),
+                        FString(ModeBlurbs[I])+TEXT("\n")+Why,R.X,R.Y,R.W,R.H);
+                }
+            }
+        }
     }
 
     // ---------- Roster panel: role tabs, scope dropdown, search, card grid ----------
@@ -1162,7 +1234,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 {TEXT("DIFFICULTY"),Capitalized(FString(DifficultyWord(Shown->Difficulty)).ToLower()),Gold,Shown->Difficulty},
                 {TEXT("PRIMARY STAT"),Capitalized(PrimaryName(Shown->PrimaryStat).ToLower()),PrimeCol,0},
                 {TEXT("ATTACK RANGE"),FString::Printf(TEXT("%s  %.1f m"),bRanged?TEXT("Ranged"):TEXT("Melee"),Shown->BasicAttackRange/100.f),Text,0},
-                {TEXT("WEAPON"),FString::Printf(TEXT("%s  %.1f s"),*StyleLabel(Shown->AttackStyle),Shown->AttackSeconds),Text,0}};
+                {TEXT("WEAPON"),FString::Printf(TEXT("%s  %.1f s"),*WeaponLabel(*Shown),Shown->AttackSeconds),Text,0}};
             for(int32 I=0;I<4;++I)
             {
                 const FRect C{R.X+(I%2)*(CellW+8),Y+(I/2)*(CellH+6),CellW,CellH};
@@ -1251,15 +1323,20 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             }
             const bool bRanged=Shown->BasicAttackRange>300;
             Line(TEXT("COMBAT STYLE"),L.X,Y+2,L.W,HS,Gold,L,ECireFont::Display);
-            Line(FString::Printf(TEXT("%s  |  %s  |  %.1f m  |  %.1f s"),bRanged?TEXT("RANGED"):TEXT("MELEE"),*StyleLabel(Shown->AttackStyle),Shown->BasicAttackRange/100.f,Shown->AttackSeconds),L.X,Y+2+HL+2,L.W,BS,Text,L,ECireFont::Body);
+            // str-scaling: level-1 health (starting-STR base + 10 per STR point); growth is +10 health per STR point.
+            const double StartHealth=Cires::StartingBaseHealth(Shown->Strength)+Shown->Strength*Cires::HealthPerStrength;
+            Line(FString::Printf(TEXT("%s  |  %s  |  %.1f m  |  %.1f s  |  %.0f HP"),bRanged?TEXT("RANGED"):TEXT("MELEE"),*WeaponLabel(*Shown),Shown->BasicAttackRange/100.f,Shown->AttackSeconds,StartHealth),L.X,Y+2+HL+2,L.W,BS,Text,L,ECireFont::Body);
             Panel(Rr.X-10,Rr.Y,1,Rr.H,WithAlpha(Gold,.25f));
             float RY=Rr.Y;
             Line(TEXT("OPENING ABILITY"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;
             RY+=Para(FString::Printf(TEXT("Right after lock-in you choose 1 of 4 %s actives. Passives and ultimates come from level 3."),RoleName(ShownPrimary)),Rr.X,RY,Rr.W,BS,ThemeUI(222,216,200),FMath::FloorToInt((Rr.B()-RY)/BL*.6f),Rr,ECireFont::Body)+8;
             if(RY+HL+BL<=Rr.B())
             {
-                Line(TEXT("SKILL SHOP"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;
-                Para(TEXT("Earn and buy more skills from your role's pool as you level."),Rr.X,RY,Rr.W,BS,ThemeUI(222,216,200),FMath::FloorToInt((Rr.B()-RY)/BL),Rr,ECireFont::Body);
+                const ACireGameState* ModeGS=World?World->GetGameState<ACireGameState>():nullptr;
+                const bool bShopMode=!ModeGS||ModeGS->ProgressionMode!=0; // rules-conformance: follows the picked game mode
+                Line(bShopMode?TEXT("SKILL SHOP"):TEXT("CLASSIC DRAFT"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;
+                Para(bShopMode?TEXT("Buy and level more skills from your role's pool after every cleared wave."):TEXT("New skill offers from your role's pool arrive as you level."),
+                    Rr.X,RY,Rr.W,BS,ThemeUI(222,216,200),FMath::FloorToInt((Rr.B()-RY)/BL),Rr,ECireFont::Body);
             }
         }
         else if(S.InfoTab==1)
@@ -1293,7 +1370,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         {
             float Y=Body.Y;
             if(!Shown->Lore.IsEmpty())Y+=Para(TEXT("\"")+Shown->Lore+TEXT("\""),Body.X,Y,Body.W,14.f*TK,ThemeUI(226,190,120),3,Body,ECireFont::Body)+12;
-            const FString Facts=FString::Printf(TEXT("%s  |  %s  |  %s"),*Shown->ClassType,*Capitalized(Shown->Race),*StyleLabel(Shown->AttackStyle));
+            const FString Facts=FString::Printf(TEXT("%s  |  %s  |  %s"),*Shown->ClassType,*Capitalized(Shown->Race),*WeaponLabel(*Shown));
             Line(Facts,Body.X,Y,Body.W,12.5f*TK,Text,Body,ECireFont::Body);Y+=LH(12.5f*TK,ECireFont::Body)+10;
             Para(Playstyle(*Shown),Body.X,Y,Body.W,BS,ThemeUI(206,200,186),FMath::FloorToInt((Body.B()-Y)/BL),Body,ECireFont::Body);
         }

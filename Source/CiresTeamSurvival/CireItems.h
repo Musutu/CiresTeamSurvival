@@ -61,6 +61,11 @@ namespace CireItems
     // ---- combat hooks (CireCombatEvents / ACireHero::TakeDamage) ----
     CIRESTEAMSURVIVAL_API float ModifyOutgoingDamage(AActor* Source, AActor* Target, float Amount, const FString& AbilityName);
     CIRESTEAMSURVIVAL_API void OnDamageDealt(AActor* Source, AActor* Target, float Applied, const FString& AbilityName);
+    // str-scaling: armor (bPhysical) or spell ward a champion gets from STR (0.1 per point; summons get none).
+    CIRESTEAMSURVIVAL_API float StrengthDefense(const ACireHero* Hero, bool bPhysical);
+    // A hit after STR armor/ward alone, computed exactly as ModifyIncomingDamage does when the hero has no
+    // item defense, auras or armor break. Test fixtures use it for expected amounts.
+    CIRESTEAMSURVIVAL_API float AfterStrengthDefense(const ACireHero* Hero, float Amount, bool bPhysical = true);
     CIRESTEAMSURVIVAL_API float ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FString& AbilityName, float Amount);
     CIRESTEAMSURVIVAL_API void OnHeroDamaged(ACireHero* Hero, AActor* Causer, const FString& AbilityName, float Taken);
     CIRESTEAMSURVIVAL_API float HealingMultiplier(const ACireHero* Source, const FString& AbilityName = FString());
@@ -251,6 +256,8 @@ public:
     float ItemCDRApplied = 0;
     int32 BasicHitCounter = 0;
     float LowHealthReadyAt = 0;
+    Cires::Items::ChargeState HitGuardState;   // rules-conformance: HitGuard charges (server)
+    int32 HitGuardSpent = 0;                   // hits reduced by HitGuard (tests / diagnostics)
     float BarrierUntil = 0, BarrierReduction = 0;
     float HasteUntil = 0, HasteAmount = 0;
     TArray<FCireRestore> Restores;

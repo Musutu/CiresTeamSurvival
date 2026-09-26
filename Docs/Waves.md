@@ -24,13 +24,15 @@ Challenge packs never count toward a clear.
 ```jsonc
 {
   "schemaVersion": 1,
-  "breatherSeconds": 15,         // cleared wave -> next spawn: the Skill Shop window (0..120)
+  "breatherSeconds": 12,         // cleared wave -> next spawn: the Skill Shop window (0..120)
   "wavesPerCycle": 5,            //                                      (1..10)
-  "cycles": 0,                   // 0 = loop forever with scaling; N = match ends after cycle N, most lives wins (0..50)
-  "cycleScaling": { "healthGrowth": 0.10, "damageGrowth": 0.10, "extraUnits": 0 },  // per completed cycle
-  "failsafe": { "enabled": true, "maxWaveSeconds": 120, "action": "march", "graceSeconds": 30, "stuckSeconds": 5 },
-  "pacing": { "spawnAlongRoute": 0.3, "marchSpeed": 1.25, "firstWaveDelay": 8, "earlyContinue": true,
-              "prepSeconds": 30, "arenaSeconds": 60, "recoverySeconds": 10 },
+  "cycles": 3,                   // 0 = loop forever with scaling; N = match ends after cycle N, most lives wins (0..50)
+  "waveOrder": "campaign",       // "campaign": waves[] is played straight through the match (cycle 2 starts at
+                                 // waves[wavesPerCycle]) and wraps; "cycle": every cycle replays waves[] from the start
+  "cycleScaling": { "healthGrowth": 0.08, "damageGrowth": 0.10, "extraUnits": 0 },  // per completed cycle
+  "failsafe": { "enabled": true, "maxWaveSeconds": 100, "action": "march", "graceSeconds": 20, "stuckSeconds": 5 },
+  "pacing": { "spawnAlongRoute": 0.0, "marchSpeed": 1.4, "firstWaveDelay": 8, "earlyContinue": true,
+              "prepSeconds": 25, "arenaSeconds": 60, "recoverySeconds": 8 },  // spawnAlongRoute 0 = at the rift (Eric)
   "waves": [
     { "label": "Breach Vanguard", "type": "normal", "spawnInterval": 0.6, "delayBefore": 0,
       "mustClear": true, "rewardMultiplier": 1,
@@ -43,7 +45,7 @@ Challenge packs never count toward a clear.
 Counts are **per lane** (both teams get the same wave). Limits (validated and clamped;
 structural errors reject the whole file and keep the previous config): 1–20 waves,
 1–8 rows per wave, count 1–20, at most 30 units per lane and 3 bosses per wave, health
-×0.1–20, damage ×0.05–10, size ×0.5–3, spawn interval 0–5 s, delay 0–120 s, reward ×0–10,
+×0.1–20, damage ×0.05–10, size ×0.5–3, spawn interval 0–5 s, delay 0–120 s, reward (XP only) ×0–10,
 leak cost 0–100, stall limit 30–900 s, grace 5–300 s, stuck 1–30 s. Archetypes must exist
 in `NPCArchetypes.json`.
 
@@ -79,7 +81,25 @@ is superseded: escorts are now an authored wave type. Its route data is still us
 
 ### Default progression and difficulty curve
 
-Eric's example: **1 Normal, 2 Normal, 3 Armored, 4 Armored Escort, 5 Boss**, as one
+**Rules conformance (25 September 2026):** the default match is a 15-wave campaign played in order
+(`waveOrder: "campaign"`), so every wave type appears in a default 3-cycle match and every cycle keeps
+its armored march, its **Armored Escort** and its boss:
+
+| Cycle | Wave 1 | Wave 2 | Wave 3 | Wave 4 | Wave 5 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Breach Vanguard (normal, hollow) | Breach Column (normal, Blightwood) | Iron Procession (armored, Ironhide) | Armored Escort (Drowned Deep) | Siege Host (boss, hollow) |
+| 2 | Shield Wall (**melee pack**, Stoneborn) | Hex Circle (**caster pack**, Aetheri) | Iron Procession (Feral Kin) | Armored Escort (Drakkari) | Siege Host (Blightwood boss) |
+| 3 | Arrow Storm (**ranged pack**, Voidborn) | Warband (**hybrid pack**, Fallen Order) | Iron Procession (Aetheri + Ironhide) | Armored Escort (Stoneborn + Feral Kin) | Siege Host (mythic Drowned Deep boss) |
+
+The race changes **every wave** (`campaign.rotateEvery: "wave"`), so all ten races, the Aetheri
+included, appear in a default match. Pack waves are shieldbearer-fronted and differ in composition:
+melee = tank + 3 line + 3 bruisers; caster = tank + 5 casters; ranged = tank + 5 hunters; hybrid = one of
+everything plus hounds. Cycle 2 and 3 rows carry less health per unit than cycle 1 (×0.6-0.85, late
+escort ×3 / ×0.7, late boss ×0.2) because those cycles add champion ranks, mythic bosses, more monster
+skills and threat that is never dropped; the bots-only soak stays on the old pace (below).
+
+The earlier default (kept as `waveOrder: "cycle"` for custom files) replayed Eric's example cycle:
+**1 Normal, 2 Normal, 3 Armored, 4 Armored Escort, 5 Boss**, as one
 5-wave cycle. The previous 3-wave cycle would have split it across two cycles and put
 the boss mid-cycle. With five waves per cycle, each cycle ends on its boss, and prep and
 arena follow the hardest wave.
@@ -112,7 +132,7 @@ globals row). The route shape itself stays in F8 → Paths.
 
 | Knob | Before | Now | Why |
 | --- | --- | --- | --- |
-| `spawnAlongRoute` | 0 (breach gate) | 0 (reverted: Eric wants spawns at the rift; tune pace with wave HP/speed instead) — briefly 0.30 | The route is about 155 m, so an unopposed walk took about 75 s before any fight. Waves now appear 30% of the way down the road. That is roughly 108 m of walking, and the challenge bays stay placed along the full route |
+| `spawnAlongRoute` | 0 (breach gate) | **0 (at the rift)**; it was 0.30 for one pass, then reverted | The route is about 155 m, so an unopposed walk takes about 75 s at base speed. For one pass waves appeared 30% of the way down the road; Eric ruled that waves spawn at the rift, so pace is tuned with wave health and march speed instead |
 | `marchSpeed` | 1 | 1.25 | Wave units (bosses included) walk 25% faster while they have no victim. Chase and combat speed are unchanged |
 | spawn interval | 0.6 / 1.2 / 0.5 / 0.7 s | 0.4 / 0.8 / 0.5 / 0.5 s | The column arrives together instead of trickling in |
 | `breatherSeconds` | 8 s | **15 s** | The Skill Shop opens after every cleared wave (progression-shop); 15 s is enough to buy, and Ready-up ends it early |
@@ -167,6 +187,64 @@ failsafe; early waves hit harder instead of dying faster.
 The longest waves are the wave-2 slot and the boss wave in cycles 2-3, held by one or two stragglers
 until the failsafe marches them; the tighter failsafe turns that dead time into leaked lives.
 
+### World scale (feat/world-scale, September 25): a 3x longer road, pacing about +12%
+
+The town is three times as long (`Docs/BattlefieldRoutes.md`): the road from the rift to the castle gate is 495 m (was 159 m).
+Spawns stay at the rift (`spawnAlongRoute` 0). Pace comes from four new `pacing` knobs (data, `Waves.json`, defaults in
+`FCireWaveConfig`):
+
+| Knob | Value | Meaning |
+| --- | --- | --- |
+| `rallySpeed` | 3.0 | A marching wave unit with no living defender of its lane within `rallyRadius` moves at 3x its base speed (never below `marchSpeed`): columns cross the empty outer districts quickly and slow to the normal march (`marchSpeed` 1.4) as they meet the heroes. Fights happen at the old speeds. |
+| `rallyRadius` | 2500 cm | 25 m, about the edge of the gameplay camera's view, so the hurry is mostly seen on the minimap. |
+| `marcherSpeed` | 3.0 | Non-attacking marchers (armored waves, escortees) never stop to fight, so they always move at 3x base (about a running hero; the escortee stays just below hero speed so it can be caught). Escort guards walking beside their escortee keep the same pace, so the escort does not break formation. Without it the marchers needed 170 s for the road, hit the 100 s failsafe and were despawned instead of leaking: armored waves became harmless and took 122 s each. |
+| `botHoldAt` | 0.2 | Idle bots hold 20% of the way from the rift (Brookfield Hamlet, about 100 m inside the town gate, the same distance from the rift as the old 0.8 line was) instead of 0.8, which on the long road is 100 m in front of the castle. Bots still charge any wave unit in their lane. |
+
+Two bugs the long road exposed were fixed on the way: every bot's A* search ran out of nodes on 495 m paths, so all ten bots
+walked to the same partial-path end (a pinch point in the market hall) and stood there (`Docs/Navigation.md`); and a unit
+carried forward off its march (escort guards beside their escortee) walked back to its stale waypoint, up to 300 m, until the
+failsafe (`CireLanePath::NextWaypoint` now only ever advances progress to where the unit is).
+
+Soak, bots only, 3 cycles, `python Tools/RunPacingSoak.py --cycles 3` (files `Saved/WaveSoak/pacing-ws-*`):
+
+| Run | Match | Mean / longest wave | Lives left (Ember / Dusk) |
+| --- | --- | --- | --- |
+| Before (main 5cc5732, `ws-before-1`; `after-round3` on feat/balance was 26.6) | **26.5 min** | 84 / 123 s | 68 / 68 |
+| 3x road, march 1.4 only (`ws-after-1`, bots stuck) | 36.2 min | 122 / 123 s | 100 / 94 |
+| + rally 2.8, bot line 0.5, nav search budget (`ws-after-2`) | 31.6 min | 103 / 123 s | 99 / 100 |
+| + marcher pace 3.0 (`ws-after-3`, `ws-after-4`) | 28.8, 30.1 min | 93-97 / 123 s | 75-78 / 76-78 |
+| rally 3.0, bot line 0.35, marchers 3.2 (`ws-tune-a`, `-a2`, `ws-final-1`) | 29.3, 29.2, 29.6 min | 94-96 / 123 s | 71-76 / 71-72 |
+| **Final: rally 3.0, bot line 0.35, marchers 3.0, guards keep pace, waypoint fix (`ws-final-4`, `-5`)** | **30.2, 29.6 min (mean 29.9, +12.8%)** | 95-97 / 123 s | 70-75 / 75-78 |
+
+**After merging main (rules-conformance 15-wave campaign, monster-expansion rare/bonus spawns; main's own baseline
+about 25.6 min):** `ws-merged-1` (bot line 0.35, rally radius 30 m) 29.8 min; **`ws-merged-2` / `ws-merged-3` (bot line 0.2, rally radius
+25 m, now the defaults) 28.8 / 30.8 min, mean 29.8 min: about +16% over main (run-to-run noise is about ±1 min)**. Same picture: armored / escort waves and the long-road chases carry the
+difference; no further design changes were made (Eric decides faster-than-hero marchers, a shorter failsafe or fewer waves).
+
+Where the extra ~3 minutes go: normal and boss waves are within noise of before (contact still happens quickly); **armored
+and escort waves take 80-100 s instead of 60-80 s** because their non-attacking marchers must physically walk 495 m and are
+kept at or below hero running speed so the heroes can still catch and kill them; and the 2x arenas run about 5-10 s longer
+per fight (~0.4 min per match). Trade-off, stated plainly: the bots-only match is about 12% longer than before, not within
+10%. Closing the rest would need marchers faster than a running hero (`marcherSpeed` 3.5+: escorts that cannot be chased
+down), a shorter failsafe, or fewer/tougher-but-shorter waves; none of those is a march-speed tune without changing how the
+waves feel, so they are left for Eric to decide. Units far from any hero move at up to 3x their base speed; a player who
+runs out to meet a column sees it slow to the usual march as it comes within 30 m.
+
+**Rules conformance (`feat/rules-conformance`, `Tools/RunPacingSoak.py --cycles 3`, bots only):** no leash,
+no stuck/unreachable threat drops, failsafe only on units without threat, the 15-wave campaign with
+pack waves and a race per wave, champion ranks in cycle 3, and the cycle 2/3 health trim.
+
+| Run | Cycle lengths | Longest wave | Lives (Ember / Dusk) | Match |
+| --- | --- | --- | --- | --- |
+| before (main, run 1) | 8.1, 8.4, 9.2 min | 123 s | 76 / 70 | 25.7 min |
+| before (main, run 2) | 7.6, 8.0, 9.1 min | 122 s | 71 / 71 | 24.8 min |
+| after, first pass (no health trim) | 8.0, 8.6, 12.1 min | 162 s | 70 / 68 | 28.7 min |
+| **after, final (run 1)** | **7.8, 9.3, 9.2 min** | **128 s** | **73 / 71** | **26.4 min** |
+| **after, final (run 2)** | **7.8, 8.0, 9.0 min** | **137 s** | **71 / 71** | **24.8 min** |
+
+Mean 25.6 min against 25.25 min before (+1.4%; −3.8% against the 26.6 min reference). Without the leash
+a unit chases a retreating bot across the map, so single waves vary more (up to about 2.5 min).
+
 ### Skill Shop breather and Ready-up
 
 `breatherSeconds` is the window between a cleared wave and the next spawn. The progression-shop Skill
@@ -184,7 +262,8 @@ Presses reset when a wave starts or the phase changes.
 ### Economy hook (monster gold)
 
 Eric's rule: 1 gold per mob at the start, +1 every 3 waves, armored ×2, bosses ×10. progression-shop
-implements the gold; the wave director exposes the inputs:
+implements the gold; the wave director exposes the inputs. The wave's `rewardMultiplier` (escort ×1.25,
+boss ×1.5) scales **XP only**; it no longer stacks on gold (`ACireGameMode::MonsterKilled`).
 
 ```cpp
 #include "CireWaves.h"
@@ -220,13 +299,15 @@ Full bible: `Docs/Races.md`. Waves.json gains three things:
   attacks only, bosses included. Then 1 skill, +1 every `unlockEveryWaves`, up to `maxSkills`; ranks add skills (elite +1,
   champion +1, warlord +2, mythic +3). Tier II/III every `tierEveryWaves` (+20% damage, -10% cooldown, +15% control per tier).
   Challenge packs are the exception: optional elite camps always fight with skills at the current count and tier.
-- **Race per wave.** A row with a `slot` (line, bruiser, tank, caster, ranged, special, warlord, colossus, boss) takes that
+- **Race per wave.** `campaign.rotateEvery` picks the rotation step: `"wave"` (default since rules-conformance: rotation
+  index = cycle × wavesPerCycle + wave) or `"cycle"` (one entry per cycle). A row with a `slot` (line, bruiser, tank, caster, ranged, special, warlord, colossus, boss) takes that
   slot's unit from the wave's race; `archetype` keeps the hollow unit as the default. `boss` alternates the race's colossus
   (odd cycles) and warlord (even cycles). A wave's `race` overrides the rotation; `a+b` rotation entries mix races row by row.
-- **Default campaign.** Cycle 1 hollow basics, cycle 2 Blightwood, cycle 3 the Drowned Deep, then Ironhide, a mixed
-  Hollow + Blightwood host, Stoneborn, Drakkari, Drowned + Voidborn, Feral Kin, Fallen Order, Voidborn, Ironhide + Drakkari.
-  Every cycle ends on one of its race's bosses; bosses are mythic from cycle 3. From cycle 2 every 4th normal attacker is
-  promoted (veteran, elite from cycle 3, champion from cycle 4). The second lap of the rotation reskins with palette 1.
+- **Default campaign (rules-conformance).** One race per wave: hollow, Blightwood, Ironhide, Drowned Deep, hollow (boss);
+  Stoneborn, Aetheri, Feral Kin, Drakkari, Blightwood (boss); Voidborn, Fallen Order, Aetheri + Ironhide, Stoneborn +
+  Feral Kin, Drowned Deep (boss). Every cycle ends on a race boss; bosses are mythic from cycle 3. From cycle 2 every 4th
+  normal attacker is promoted: veteran in cycle 2, then from cycle 3 elite and **champion alternating** (champions were
+  unreachable before: `championFromCycle` 4 with 3 cycles). The second lap of the rotation reskins with palette 1.
 - **Ranks.** `rank` normal/veteran/elite/champion/warlord/mythic sets colour, stats and extra skills (the legacy `elite`
   flag is rank elite). `palette` picks a race reskin set (-1 = the rotation lap). `skills` / `skillTier` override the schedule.
 
@@ -243,19 +324,27 @@ timeout, so the cycle stopped forever. `-CireWaveNoRescue` reproduces it (wave 1
 
 Protection layers, per wave unit, every server tick:
 
-1. **Lane leash**: a wave unit drops a victim more than 18 m away and returns to the route.
+Eric's threat ruling applies to every layer: **threat is lost only when a unit dies or an ability says
+so**. There is no lane leash (the old 18 m leash is gone) and no layer drops a target.
+
+1. **No leash**: a wave unit chases its threat holder at any distance. A victim the navmesh cannot
+   reach is kept: the unit holds at the nearest reachable point of its partial path.
 2. **Stuck detection**: sampled every second. A unit that moves under 60 cm for `stuckSeconds`
    while not attacking, casting, paused or escorting is **nudged** onto its route 4.5 m closer
-   to the castle (routes are kept clear of props), dropping any unreachable victim for 6 s.
-   A unit knocked outside its realm is returned to the route.
-3. **Stall failsafe**: `maxWaveSeconds` after a wave's last spawn, its leftovers stop
-   fighting, ghost through characters and **march** to the castle (a leak costs lives).
-   After `graceSeconds` anything still alive despawns. `action: "despawn"` skips the march.
+   to the castle (routes are kept clear of props) **only when it holds no threat**; a stuck
+   chaser keeps its target and repaths (`CIRE_WAVES_STUCK_REPATH`).
+   A unit knocked outside its realm is returned to the route (threat kept).
+3. **Stall failsafe**: `maxWaveSeconds` after a wave's last spawn, leftovers that hold **no threat**
+   ghost through characters and **march** to the castle (a leak costs lives); after
+   `graceSeconds` they despawn. `action: "despawn"` skips the march. A unit that holds threat
+   keeps fighting, and a marcher that is attacked stops marching and fights.
 4. **Bot steering**: bots that stop making progress detour along the road, or sidestep if
    they are already on it (`CireWaveDirector::BotSteer`).
 
 Phases after prep, arena and recovery are clock-driven. Only survival waits on an objective,
-and with the failsafe on it can never exceed roughly `maxWaveSeconds + graceSeconds` per wave.
+and with the failsafe on a wave that nobody is fighting can never exceed roughly `maxWaveSeconds +
+graceSeconds`. A wave whose units hold threat lasts until they or their threat holders die (bots-only soak:
+longest wave about 2.5 min).
 
 ## Neutral challenge packs
 
@@ -313,7 +402,9 @@ shows the replicated current and next wave.
   -CireWaveSoakCycles=N [-CireWaveSoakPlayer=idle] [-CireWaveNoRescue] -nullrhi -benchmark
   -fps=30 -CireWaveSoakSummary=<file>`. It logs every spawn, clear, phase change and
   failsafe, dumps each unit's state when a wave outlives 150 s, and ends with
-  `CIRE_WAVE_SOAK_PASS|FAIL`.
+  `CIRE_WAVE_SOAK_PASS|FAIL`. Each `CIRE_WAVE_SOAK_CLEAR` also carries the champion deaths during that
+  wave and the mean champion level and max health (summons and pets excluded); the final line
+  carries `hero_deaths`. `Tools/RunPacingSoak.py` prints both.
 - `-CireSmoke` now computes its expected lives and boss leaks from what the director spawned.
 - Captures: `-CireWaveGallery -RenderOffscreen -ForceRes -windowed -ResX=1920 -ResY=1080` writes the
   Waves editor, a neutral (yellow) pack and the same pack provoked to `Saved/WaveGallery/<stamp>/`.
@@ -336,3 +427,18 @@ to 55-80. Lives lost and wave length are within run-to-run noise. What still tri
 the cycle 3-4 boss wave: the stall reports show every unit engaged in melee with a tank that the
 healer keeps up and a Siegebreaker losing health too slowly (for example 13.7k of 23.4k left at
 210 s), which is bot damage output against cycle scaling, not pathing.
+
+## Rare Spawns and the Bonus Loot Wave (monster-expansion)
+
+Two optional blocks, both edited live in F8 -> Waves (bottom row, the `$` row flag, TYPE *Bonus Loot* and EDIT BONUS):
+
+- `rareSpawn`: from `fromWave`, each Normal / pack / Custom wave has `chance` to bring one rare creature from `pool` (same in
+  both lanes, seeded per match and wave, at most `maxPerCycle` per cycle). Rares are at least Elite, get `health` / `damage` /
+  `size` on top, wear the Rare colour, aura and "Rare" plate, pay `bounty` mob values and drop a personal chest.
+- `bonusWave`: after a cleared wave (never the cycle's last), from `fromWave`, `chance` to run `wave` (type `bonus_loot`,
+  default the Goblin Hoard) during the breather, at most `maxPerCycle` per cycle. Its creatures flee champions closer than
+  `fleeRadius`, never attack, never cost lives, never block the next wave and escape after `escapeSeconds`. The breather grows
+  by `extraBreatherSeconds` only when it runs. Each creature pays `bounty` mob values plus a personal purse.
+
+Only the live match flow (`ACireGameMode::SpawnWave` -> `StartWave(Mode, true)`) rolls rares and race variants; smoke runs
+never do. `FCireWaveUnitInfo` gains `bRare` / `bBonus`. Details, numbers and the creatures: `Docs/MonsterExpansion.md`.

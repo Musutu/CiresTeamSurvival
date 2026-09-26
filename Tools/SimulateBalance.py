@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ROLES = ['tank', 'healer', 'ranger', 'lancer', 'summoner']
 KINDS = ['basic', 'bruiser', 'caster', 'ranged']
 CONSTANTS = {'weaponDamage': 12, 'baseAttackInterval': 1.5, 'agilityAttackSpeedPerPoint': .01,
-             'healthPerStrength': 25, 'manaPerIntelligence': 30, 'manaRegenFraction': .015,
+             'healthPerStrength': 10, 'legacyHealthPerStrength': 25, 'defensePerStrength': .1, 'manaPerIntelligence': 30, 'manaRegenFraction': .015,
              'energyRegen': 9, 'baseMissChance': .05, 'dodgeChance': .05,
              'healingBase': 90, 'healingPerIntelligence': 3, 'healingManaCost': 45, 'healingCooldown': 6,
              'enemyMeleeInterval': 1.8, 'enemyRangedInterval': 3.2,
@@ -39,9 +39,13 @@ def hero_stats(level, role):
     if int(level) != level or role not in ROLES: raise ValueError('Invalid hero level/role')
     primary = 0 if role == 'tank' else 1 if role in ('ranger', 'lancer') else 2
     stats = [10 + (level - 1) * (2 if i == primary else 1) + (10 if i == primary else 0) for i in range(3)]
-    health, mana = stats[0] * CONSTANTS['healthPerStrength'], stats[2] * CONSTANTS['manaPerIntelligence']
+    # str-scaling: flat base (25 - 10) x starting STR keeps level-1 health; each STR adds 10 health and 0.1 armor/ward.
+    start_strength = 20 if primary == 0 else 10
+    base_health = start_strength * (CONSTANTS['legacyHealthPerStrength'] - CONSTANTS['healthPerStrength'])
+    health, mana = base_health + stats[0] * CONSTANTS['healthPerStrength'], stats[2] * CONSTANTS['manaPerIntelligence']
+    defense = stats[0] * CONSTANTS['defensePerStrength']
     return {'role': role, 'stats': stats, 'health': health, 'maxHealth': health, 'mana': mana, 'maxMana': mana,
-            'energy': 100., 'baseDamage': CONSTANTS['weaponDamage'] + stats[primary],
+            'energy': 100., 'mitigation': defense / (defense + 100), 'baseDamage': CONSTANTS['weaponDamage'] + stats[primary],
             'attackInterval': CONSTANTS['baseAttackInterval'] / (1 + stats[1] * CONSTANTS['agilityAttackSpeedPerPoint']),
             'basicNext': .25, 'spellNext': {}, 'gcd': 0., 'damage': 0., 'healing': 0., 'healingThreat': 0.}
 
@@ -90,7 +94,7 @@ def simulate(bundle, wave=1, level=1, enemy_count=5, seconds=180., projectile_co
             _, _, who, target, raw, enemy = heapq.heappop(queue)
             if enemy:
                 if enemies[who]['health'] > 0 and heroes[target]['health'] > 0:
-                    applied = min(heroes[target]['health'], raw); heroes[target]['health'] -= applied; damage_taken += applied
+                    applied = min(heroes[target]['health'], raw * (1 - heroes[target]['mitigation'])); heroes[target]['health'] -= applied; damage_taken += applied
             else: damage_enemy(who, target, raw)
         living_enemies = [i for i, e in enumerate(enemies) if e['health'] > 1e-8]
         living_heroes = [i for i, h in enumerate(heroes) if h['health'] > 1e-8]

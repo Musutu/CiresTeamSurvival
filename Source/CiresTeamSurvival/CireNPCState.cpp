@@ -243,7 +243,7 @@ ECireNPCClass ACireMonster::GetNPCClassification() const
 }
 FString ACireMonster::GetNPCDisplayName() const
 {
-    if(bArmoredEscort)return MonsterName;
+    if(bArmoredEscort||SpecialSpawn!=0)return MonsterName; // monster-expansion: "Rare Storm Griffon"
     if(const auto* A=NPCState?NPCState->Archetype():nullptr)return A->DisplayName;
     return MonsterName;
 }

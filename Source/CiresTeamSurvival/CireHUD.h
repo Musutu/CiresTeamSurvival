@@ -37,6 +37,10 @@ struct FCireLevelBurst
     bool bLocal = false;
 };
 
+/** Target / focus frame caption (classification, rank, relation); exposed for the interface smoke. */
+CIRESTEAMSURVIVAL_API FString CireUnitFrameHeader(bool bMonster, bool bHero, bool bSelf, int32 Reaction, int32 Class, int32 Rank, bool bLaneBoss,
+    const FString& RoleName, const FString& RankLabel, bool bFocus);
+
 UCLASS()
 class CIRESTEAMSURVIVAL_API ACireHUD : public AHUD
 {
@@ -109,7 +113,9 @@ public:
     bool IsModalOpen() const { return bModal; }
     void RegisterPanel(FName Id) { VisiblePanels.AddUnique(Id); }
     FCireUIRect LayoutRect(FName Id) const { return PanelRect(Id); }
-    void SetTooltip(const FString& Title,const FString& Body) { TooltipTitle=Title; TooltipBody=Body; }
+    void SetTooltip(const FString& Title,const FString& Body) { TooltipTitle=Title; TooltipBody=Body; bRichTip=false; }
+    /** readability: a rich (WoW-style) tooltip for the hovered element; replaces the plain title/body. */
+    void SetRichTooltip(const FCireTooltipSpec& Spec) { RichTipSpec=Spec; TooltipTitle=Spec.Title; TooltipBody.Reset(); bRichTip=true; }
     void PlayInterfaceSound(int32 Index,float Volume=1.f) { PlayWowSound(Index,Volume); }
     // F8 > Economy page (CireEconomyPage.cpp).
     void DrawEconomyPage(float X,float Y);
@@ -204,6 +210,10 @@ private:
     void DrawPet(ACireHero* Hero,ACireController* Controller);
     void DrawCompanion(ACireHero* Hero,ACireController* Controller,const struct FCirePetDef& Def); // pets: CireHUDPets.cpp
     void Tip(const FString& Title,const FString& Body,float X,float Y,float W,float H);
+    /** readability: Tip with a rich spec (buff icons, items). */
+    void RichTip(const FCireTooltipSpec& Spec,float X,float Y,float W,float H);
+    /** readability: places and draws a rich tooltip (WoW anchor rules), records the debug rect. */
+    void DrawRichTooltip(const FCireTooltipSpec& Spec,FVector2D Cursor,float Width,bool bUseRegion);
     void DrawTooltip();
     void PlayUIFeedback();
     void DrawDiagnostics();
@@ -219,6 +229,7 @@ private:
     FCireWaveConfig WaveDraft;
     bool bWaveDraftLoaded=false;
     int32 WaveSelected=0,WaveListScroll=0;
+    bool bWaveEditBonus=false; // monster-expansion: the F8 Waves page edits the bonus loot wave
     bool bBreatherReadyLocal=false; int32 BreatherReadyWave=-1; // wave-director: breather Ready button
     void DrawDeveloperLauncher();
     FCireUIRect DeveloperLauncherRect() const;
@@ -245,6 +256,8 @@ private:
     float LabSeconds=60;
     FString DeveloperMessage;
     FString TooltipTitle,TooltipBody;
+    FCireTooltipSpec RichTipSpec; // readability
+    bool bRichTip=false;
     FString TooltipAbility;
     FString EditHelpTitle, EditHelpBody; // panel descriptions, shown only in F10 layout editing
     FCireUIRect TooltipRegion; // logical rect of the element whose Tip() won this frame

@@ -355,16 +355,27 @@ bool CireRaces::RunSmoke(ACireGameMode* Mode)
         Check(bAllBlight, TEXT("the editor's per-wave race picks the Blightwood"));
         Check(bSkilled, TEXT("wave 10 monsters have tier-II skills"));
         KillAll();
-        // Default campaign: hollow first, then Blightwood and the Drowned Deep, each cycle ending on a race boss.
+        // Default campaign (rules-conformance): the race changes every wave, so the default 3-cycle match fields all ten
+        // races (the Aetheri included); hollow open the breach and each cycle still ends on a race boss.
         const FCireWaveConfig Def = CireWaveDirector::Defaults();
         auto BossOf = [&](int32 Cycle) { for (const auto& U : CireWaveDirector::ResolveWave(Def, 4, Cycle).Units) if (U.bBoss) return U.Archetype; return FName(); };
         Check(CireWaveDirector::ResolveWave(Def, 0, 0).Units[0].Archetype == TEXT("hollow_infantry"), TEXT("cycle 1 starts on the hollow basics"));
-        Check(CireRaces::RaceOf(CireWaveDirector::ResolveWave(Def, 0, 1).Units[0].Archetype) == TEXT("blightwood") &&
-            CireRaces::RaceOf(CireWaveDirector::ResolveWave(Def, 0, 2).Units[0].Archetype) == TEXT("drowned_deep"), TEXT("cycles 2 and 3 bring the Blightwood and the Drowned Deep"));
+        TSet<FName> Seen;
+        for (int32 Cycle = 0; Cycle < FMath::Max(1, Def.Cycles); ++Cycle)
+            for (int32 Wave = 0; Wave < Def.WavesPerCycle; ++Wave)
+                for (const auto& U : CireWaveDirector::ResolveWave(Def, Wave, Cycle).Units) Seen.Add(CireRaces::RaceOf(U.Archetype));
+        bool bEveryRace = Get().Order.Num() >= 10;
+        for (const FName Race : Get().Order) bEveryRace &= Seen.Contains(Race);
+        Check(bEveryRace && Seen.Contains(TEXT("aetheri")), *FString::Printf(TEXT("a default %d-cycle match fields every race, the Aetheri included (%d of %d)"), Def.Cycles, Seen.Num(), Get().Order.Num()));
+        Check(CireRaces::RaceOf(CireWaveDirector::ResolveWave(Def, 1, 0).Units[0].Archetype) == TEXT("blightwood") &&
+            CireRaces::RaceOf(CireWaveDirector::ResolveWave(Def, 3, 0).Units[0].Archetype) == TEXT("drowned_deep"), TEXT("cycle 1 already brings the Blightwood and the Drowned Deep"));
         Check(BossOf(0) == TEXT("hollow_siegebreaker") && BossOf(1) == TEXT("withered_matron") && BossOf(2) == TEXT("maw_of_the_deep"), TEXT("each cycle ends on one of its race's bosses"));
-        const FCireWaveDef Mixed = CireWaveDirector::ResolveWave(Def, 0, 4);
-        Check(CireRaces::RaceOf(Mixed.Units[0].Archetype) == TEXT("hollow") && CireRaces::RaceOf(Mixed.Units[1].Archetype) == TEXT("blightwood"), TEXT("mixed cycles alternate races row by row"));
-        Check(CireWaveDirector::ResolveWave(Def, 0, 12).Units[0].Palette == 1, TEXT("the second rotation lap reskins with palette 1"));
+        const FCireWaveDef Mixed = CireWaveDirector::ResolveWave(Def, 3, 2);
+        Check(Mixed.Units.Num() >= 2 && CireRaces::RaceOf(Mixed.Units[0].Archetype) == TEXT("stoneborn") && CireRaces::RaceOf(Mixed.Units[1].Archetype) == TEXT("feral_kin"),
+            TEXT("mixed rotation entries alternate races row by row"));
+        Check(CireWaveDirector::ResolveWave(Def, 0, 3).Units[0].Palette == 1, TEXT("the second rotation lap reskins with palette 1"));
+        Check(Def.Campaign.ChampionFromCycle > 0 && Def.Campaign.ChampionFromCycle <= Def.Cycles && Def.Campaign.EliteFromCycle <= Def.Cycles &&
+            Def.Campaign.VeteranFromCycle <= Def.Cycles, TEXT("every promotion rank (veteran, elite, champion) is reachable in the default match"));
         bool bMythic = false; for (const auto& U : CireWaveDirector::ResolveWave(Def, 4, 2).Units) bMythic |= U.bBoss && U.Rank == ECireNPCRank::Mythic;
         Check(bMythic, TEXT("cycle 3 bosses are mythic"));
     }

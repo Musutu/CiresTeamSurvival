@@ -490,7 +490,8 @@
     128,
     184,
     100
-   ]
+   ],
+   "materialOverride": "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
   },
   "rock_1": {
    "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock01.rock_moss_set_01_rock01",
@@ -499,7 +500,8 @@
     224,
     336,
     148
-   ]
+   ],
+   "materialOverride": "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
   },
   "rock_2": {
    "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock02.rock_moss_set_01_rock02",
@@ -508,7 +510,8 @@
     266,
     326,
     126
-   ]
+   ],
+   "materialOverride": "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
   },
   "rock_3": {
    "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock03.rock_moss_set_01_rock03",
@@ -517,7 +520,8 @@
     210,
     208,
     110
-   ]
+   ],
+   "materialOverride": "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
   },
   "rock_4": {
    "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock04.rock_moss_set_01_rock04",
@@ -526,7 +530,8 @@
     212,
     196,
     176
-   ]
+   ],
+   "materialOverride": "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
   },
   "rock_5": {
    "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock05.rock_moss_set_01_rock05",
@@ -535,7 +540,8 @@
     182,
     300,
     120
-   ]
+   ],
+   "materialOverride": "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
   },
   "rock_6": {
    "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock06.rock_moss_set_01_rock06",
@@ -544,7 +550,8 @@
     212,
     276,
     126
-   ]
+   ],
+   "materialOverride": "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
   },
   "shrub_1": {
    "mesh": "/Game/Environment/Town/Props/shrub_02/shrub_02_1k/StaticMeshes/shrub_02_a.shrub_02_a",
@@ -624,6 +631,205 @@
    "clearance": "bays",
    "materialOverride": "/Game/Environment/Town/Materials/MI_Town_Bark.MI_Town_Bark"
   },
+  "tree_leafy": {
+   "mesh": "/Game/Arenas/Trees/island_tree_01/SM_island_tree_01.SM_island_tree_01",
+   "cullDistance": [
+    30000,
+    36000
+   ],
+   "fit": "footprint",
+   "footprint": [
+    760,
+    760,
+    1150
+   ],
+   "collision": false,
+   "clearance": "bays",
+   "note": "Leafy broadleaf tree (CC0 Poly Haven island_tree_01); the Fab overlay swaps in a European beech."
+  },
+  "tree_young": {
+   "mesh": "/Game/Arenas/Trees/tree_small_02/SM_tree_small_02.SM_tree_small_02",
+   "cullDistance": [
+    26000,
+    32000
+   ],
+   "fit": "footprint",
+   "footprint": [
+    480,
+    560,
+    820
+   ],
+   "collision": false,
+   "clearance": "bays"
+  },
+  "tree_fir": {
+   "mesh": "/Game/Arenas/Trees/tree_small_02/SM_tree_small_02.SM_tree_small_02",
+   "cullDistance": [
+    30000,
+    36000
+   ],
+   "fit": "footprint",
+   "footprint": [
+    520,
+    560,
+    1300
+   ],
+   "collision": false,
+   "clearance": "bays",
+   "note": "Conifer slot; the CC0 fallback is the small broadleaf, the Fab overlay swaps in a silver fir."
+  },
+  "grass_clump": {
+   "mesh": "/Game/Arenas/Props/grass_medium_02/grass_medium_02_1k/StaticMeshes/grass_medium_02_e.grass_medium_02_e",
+   "cullDistance": [
+    5000,
+    6500
+   ],
+   "fit": "footprint",
+   "footprint": [
+    40,
+    44,
+    40
+   ],
+   "collision": false,
+   "castShadow": false
+  },
+  "wildflowers": {
+   "mesh": "/Game/Arenas/Props/wild_rooibos_bush/wild_rooibos_bush_1k/StaticMeshes/wild_rooibos_bush_a.wild_rooibos_bush_a",
+   "cullDistance": [
+    5000,
+    6500
+   ],
+   "fit": "footprint",
+   "footprint": [
+    70,
+    84,
+    54
+   ],
+   "collision": false,
+   "castShadow": false
+  },
+  "wheat": {
+   "mesh": "/Game/Arenas/Meshes/SM_Arena_WheatClump.SM_Arena_WheatClump",
+   "cullDistance": [
+    7000,
+    9000
+   ],
+   "fit": "footprint",
+   "footprint": [
+    104,
+    110,
+    139
+   ],
+   "collision": false,
+   "castShadow": false
+  },
+  "hay_round": {
+   "mesh": "/Game/Arenas/Meshes/SM_Arena_HayBaleRound.SM_Arena_HayBaleRound",
+   "fit": "footprint",
+   "footprint": [
+    161,
+    156,
+    161
+   ]
+  },
+  "hay_bale_stack": {
+   "mesh": "/Game/Arenas/Meshes/SM_Arena_HayStack.SM_Arena_HayStack",
+   "fit": "footprint",
+   "footprint": [
+    122,
+    340,
+    228
+   ]
+  },
+  "stook": {
+   "mesh": "/Game/Arenas/Meshes/SM_Arena_Stook.SM_Arena_Stook",
+   "cullDistance": [
+    9000,
+    12000
+   ],
+   "fit": "footprint",
+   "footprint": [
+    81,
+    121,
+    153
+   ],
+   "collision": false
+  },
+  "scarecrow": {
+   "mesh": "/Game/Arenas/Meshes/SM_Arena_Scarecrow.SM_Arena_Scarecrow",
+   "cullDistance": [
+    9000,
+    12000
+   ],
+   "fit": "footprint",
+   "footprint": [
+    68,
+    190,
+    236
+   ],
+   "collision": false
+  },
+  "hay_wagon": {
+   "mesh": "/Game/Arenas/Meshes/SM_Arena_HayWagon.SM_Arena_HayWagon",
+   "fit": "footprint",
+   "footprint": [
+    557,
+    240,
+    276
+   ]
+  },
+  "barn": {
+   "mesh": "/Game/Arenas/Meshes/SM_Arena_Barn.SM_Arena_Barn",
+   "fit": "footprint",
+   "footprint": [
+    1500,
+    1040,
+    998
+   ]
+  },
+  "windmill": {
+   "mesh": "/Game/Arenas/Meshes/SM_Arena_Windmill.SM_Arena_Windmill",
+   "fit": "footprint",
+   "footprint": [
+    870,
+    860,
+    1700
+   ]
+  },
+  "windmill_sails": {
+   "mesh": "/Game/Arenas/Meshes/SM_Arena_WindmillSails.SM_Arena_WindmillSails",
+   "fit": "footprint",
+   "footprint": [
+    60,
+    2226,
+    2226
+   ],
+   "collision": false,
+   "clearance": "none"
+  },
+  "field_wall": {
+   "mesh": "/Game/Arenas/Meshes/SM_Arena_StoneWall.SM_Arena_StoneWall",
+   "fit": "footprint",
+   "footprint": [
+    76,
+    401,
+    148
+   ]
+  },
+  "mountain": {
+   "mesh": "/Game/Environment/Town/Props/rock_moss_set_01/rock_moss_set_01_1k/StaticMeshes/rock_moss_set_01_rock02.rock_moss_set_01_rock02",
+   "fit": "footprint",
+   "footprint": [
+    30000,
+    30000,
+    9000
+   ],
+   "collision": false,
+   "clearance": "none",
+   "note": "Backdrop mountain; CC0 fallback is a scaled moss rock, the Fab overlay swaps in the Medieval Kingdom mountains.",
+   "component": "static",
+   "materialOverride": "/Game/Arenas/Materials/MI_ArenaB_ForestRock.MI_ArenaB_ForestRock"
+  },
   "cobblestone_material": {
    "kind": "material",
    "material": "/Game/Environment/Town/Materials/MI_TownW_Cobble.MI_TownW_Cobble",
@@ -642,6 +848,11 @@
   "field_material": {
    "kind": "material",
    "material": "/Game/Environment/Town/Materials/MI_TownW_Field.MI_TownW_Field",
+   "note": "world-aligned surface on scaled cubes"
+  },
+  "meadow_material": {
+   "kind": "material",
+   "material": "/Game/Environment/Town/Materials/MI_TownW_Meadow.MI_TownW_Meadow",
    "note": "world-aligned surface on scaled cubes"
   },
   "flagstone_material": {

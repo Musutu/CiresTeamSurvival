@@ -5,7 +5,8 @@ Input  Art/Fab/FabAnimMap.json (committed; object paths + timing only):
   "locomotion": {"idle": path, "walk_f", "walk_b", "walk_l", "walk_r", "walk_fl", "walk_fr", "walk_bl", "walk_br",
                  "run_f", "run_b", "run_l", "run_r", "run_fl", "run_fr", "run_bl", "run_br"}   (any subset; *_f required)
   "replace":    copied verbatim to Content/Data/FabAnimations.json (style/motion -> kind -> clips)
-Bodies  every mesh in Content/Data/ChampionAttacks02.json "bodies" (mesh -> folder), or --only Folder,Folder.
+Bodies  every mesh in Content/Data/ChampionAttacks02.json "bodies" (mesh -> folder) plus FabAnimMap.json "fabBodies"
+        (paladin-hq: Fab champion bodies such as the Polyphoria plate body), or --only Folder,Folder.
 Output  /Game/FabDerived/Anim/<Folder>/A_<Folder>_<clip>, .../BS_Fab_Locomotion_<Folder>,
         IK rigs + retargeters in /Game/FabDerived/Rigs/<Folder>. /Game/FabDerived is derived from licensed
         packs: gitignored, lives in the main checkout and is junctioned into every worktree (Tools/LinkFabContent.py).
@@ -123,7 +124,9 @@ def validate(anim, mesh):
                 require(all(math.isfinite(x) for x in v3(tr.translation)), "non-finite " + n)
                 require(max(abs(x) for x in v3(tr.translation)) < 400, n + " outside sane bounds")
             root = unreal.AnimPoseExtensions.get_bone_pose(p, "root", unreal.AnimPoseSpaces.LOCAL)
-            require(max(abs(x - 100) for x in v3(root.scale3d)) < .01, "root scale lost")
+            # Tripo bodies import with a root scale of 100; Fab bodies (paladin-hq: Polyphoria) are real centimetres.
+            ref = unreal.AnimPoseExtensions.get_ref_bone_pose(p, "root", unreal.AnimPoseSpaces.LOCAL)
+            require(max(abs(x - y) for x, y in zip(v3(root.scale3d), v3(ref.scale3d))) < .01, "root scale lost")
     return {"length": round(length, 3)}
 
 
@@ -240,9 +243,56 @@ def retarget_body(folder, mesh, sources, locomotion, report, keep):
     return done
 
 
+TEMPLATES = {}  # paladin-hq: body mesh path -> template BlendSpace retargeted onto a Fab body (make_template)
+
+
+def make_template(folder, mesh, report):
+    """paladin-hq: a Fab body has no locomotion BlendSpace of its own. Batch-retarget the lancer's proven one (with its
+    clips) onto the body, so build_locomotion can duplicate it on the right skeleton and swap in the Fab clips."""
+    tpl_dir = "%s/%s/_template" % (OUT, folder)
+    rig_dir = "%s/%s" % (RIGS, folder)
+    lancer_mesh = unreal.load_asset("/Game/Art/Characters/TripoBatch/Batch01/Bodies/lancer/SK_lancer")
+    lancer_bs = unreal.load_asset(LANCER_BS)
+    require(isinstance(lancer_mesh, unreal.SkeletalMesh) and isinstance(lancer_bs, unreal.BlendSpace), "lancer template missing")
+    if lib.does_directory_exist(tpl_dir):
+        lib.delete_directory(tpl_dir)
+    for name in ("IK_Tpl_Src", "IK_" + folder + "_Tpl", "RTG_Tpl"):
+        writable_delete("%s/%s" % (rig_dir, name))
+    src_rig = RT.create_asset("IK_Tpl_Src", rig_dir, unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
+    RT.configure_rig(src_rig, lancer_mesh)
+    dst_rig = RT.create_asset("IK_" + folder + "_Tpl", rig_dir, unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
+    RT.configure_rig(dst_rig, mesh)
+    rtg = RT.create_asset("RTG_Tpl", rig_dir, unreal.IKRetargeter, unreal.IKRetargetFactory())
+    RT.configure_retargeter(rtg, src_rig, dst_rig, lancer_mesh, mesh)
+    for asset in (src_rig, dst_rig, rtg):
+        lib.save_loaded_asset(asset, False)
+    inputs = unreal.IKRetargetBatchOperationInputs()
+    for key, value in {
+        "assets_to_retarget": [lib.find_asset_data(LANCER_BS)], "source_mesh": lancer_mesh, "target_mesh": mesh,
+        "ik_retarget_asset": rtg, "target_path": tpl_dir, "suffix": "", "prefix": "", "use_source_path": False,
+        "include_referenced_assets": True, "overwrite_existing_files": True,
+    }.items():
+        try:
+            inputs.set_editor_property(key, value)
+        except Exception:
+            pass
+    for d in unreal.IKRetargetBatchOperation.run_batch_retarget(inputs):
+        a = d.get_asset()
+        if isinstance(a, unreal.BlendSpace):
+            lib.save_loaded_asset(a, False)
+            require(a.get_editor_property("skeleton") == mesh.get_editor_property("skeleton"), "template skeleton differs")
+            TEMPLATES[path_of(mesh)] = path_of(a)
+            report[folder]["template"] = path_of(a)
+            return path_of(a)
+        lib.save_loaded_asset(a, False)
+    raise RuntimeError("lancer BlendSpace did not retarget onto " + folder)
+
+
 def body_locomotion(mesh_path):
     """The body's own, proven locomotion BlendSpace (ChampionArtBindings / ChampionArt.tripo.json / Preview02)."""
     mesh_path = mesh_path.split(".")[0]
+    if mesh_path in TEMPLATES:
+        return TEMPLATES[mesh_path]
     for name, rel in (("ChampionArtBindings.json", "bindings"), ("ChampionArt.tripo.json", "champions")):
         data = json.loads((ROOT / "Content/Data" / name).read_text(encoding="utf-8"))
         for row in data.get(rel, []):
@@ -403,6 +453,8 @@ def main():
     try:
         cfg = json.loads((ROOT / "Art/Fab/FabAnimMap.json").read_text(encoding="utf-8"))
         bodies = json.loads((ROOT / "Content/Data/ChampionAttacks02.json").read_text(encoding="utf-8"))["bodies"]
+        fab_bodies = dict(cfg.get("fabBodies", {}))  # paladin-hq
+        bodies = {**bodies, **fab_bodies}
         loaded, windows, speeds_by_set, missing = {}, {}, {}, []
 
         def src(path):
@@ -442,6 +494,8 @@ def main():
             loco = {k: src(p) for k, p in cfg["locomotion"].get(set_name, {}).items() if src(p)}
             try:
                 done = retarget_body(folder, mesh, sources, loco, report["bodies"], keep)
+                if mesh_path in fab_bodies and not (keep and lib.does_asset_exist("%s/%s/BS_Fab_Locomotion_%s" % (OUT, folder, folder))):
+                    make_template(folder, mesh, report["bodies"])  # paladin-hq
                 ok_clips.update(c for c in done if not c.startswith("loco_"))
                 report["bodies"][folder]["set"] = set_name
                 # -CireFabAnimKeep adds clips (e.g. an extra set) without rebuilding a locomotion BlendSpace that exists.
@@ -454,6 +508,8 @@ def main():
         merged = dict(data.get("clips", {}))
         merged.update({c: windows[c] for c in ok_clips if c in windows})
         data["clips"] = dict(sorted(merged.items()))
+        # paladin-hq: Fab bodies outside ChampionAttacks02 (CireFabAnimation::FolderFor reads these too).
+        data["bodies"] = dict(sorted(fab_bodies.items()))
         # Only clips that retargeted onto at least one body (and so have timing) may be named in a replacement.
         data["replace"] = {row: {kind: [c for c in clips if c in data["clips"]] for kind, clips in kinds.items()}
                            for row, kinds in cfg.get("replace", {}).items()}

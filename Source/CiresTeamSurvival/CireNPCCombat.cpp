@@ -22,6 +22,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CireBuffs.h" // aura-vfx
+#include "CireMonsterExpansion.h" // monster-expansion
 #include "CireMonsterArt.h" // creature-anim
 #include "CireWaves.h" // wave-director
 #include "CireNav.h" // nav-paths: navmesh steering
@@ -521,6 +522,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     M->AttackTimer=FMath::Max(0.f,M->AttackTimer-Delta*CireKits::MonsterAttackRate(M)); // scaling-kits: Mech slam -10% attack speedM->AbilityTimer=FMath::Max(0.f,M->AbilityTimer-Delta);
     if(M->MonsterArt)M->MonsterArt->ReleaseSwing(Now); // creature-anim: a committed swing lands on its contact frame
     if(S)S->RefreshStatusFlags(Now);
+    if(CireMonsterExpansion::TickSpecial(M,Mode,Delta))return; // monster-expansion: bonus loot creatures flee and escape
     // wave-director: neutral challenge packs stand at their camp and never pick a fight;
     // a player's attack (CireWaveDirector::AllowDamage) turns the whole pack hostile.
     if(M->bNeutral)
@@ -532,11 +534,12 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         else Movement->StopMovementImmediately();
         return;
     }
-    // wave-director: the stall failsafe's forced march behaves like an armored marcher.
-    if(M->bArmoredEscort||CireWaveDirector::IsForcedMarch(M))
+    // wave-director: the stall failsafe's forced march behaves like an armored marcher. rules-conformance: only a
+    // unit with NO threat marches; one that is attacked keeps its threat and fights (the director ends the march).
+    if(M->bArmoredEscort||(CireWaveDirector::IsForcedMarch(M)&&M->Threat.IsEmpty()&&!M->Victim))
     {
         if(!M->CastingAbility.IsEmpty())Interrupt(M);
-        if(!M->Threat.IsEmpty()||M->Victim)CireThreat::Clear(M);
+        if(M->bArmoredEscort&&(!M->Threat.IsEmpty()||M->Victim))CireThreat::Clear(M); // escortees never fight (no threat table)
         M->bEngaged=false;
         CireLanePath::RefreshEscortCollision(M);MarchLane(M,Mode);return;
     }
@@ -613,14 +616,10 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         }
         if(Distance>Reach||!bSight)
         {
-            // nav-paths: path to the victim (around houses, into line of sight). A victim the navmesh cannot
-            // reach is dropped by wave units (they return to the lane) and makes a pack reset home.
+            // nav-paths: path to the victim (around houses, into line of sight). rules-conformance: a victim the
+            // navmesh cannot reach is KEPT (threat is lost only on death or an explicit ability): Steer follows the
+            // partial path and holds at the nearest reachable point until the victim comes back into reach.
             M->AddMovementInput(CireNav::Steer(M,Victim->GetActorLocation()));
-            if(CireNav::GoalUnreachable(M,2.5f))
-            {
-                if(M->PackId>=0)StartLeash(M);
-                else{CireThreat::Clear(M);CireWaveDirector::SuppressAggro(M,6.f);}
-            }
             return;
         }
         Movement->StopMovementImmediately();M->SetActorRotation(Direction.Rotation());
@@ -762,6 +761,7 @@ bool CireNPCCombat::RunSmoke(ACireGameMode* Mode)
     bPassed=RunRolesSmoke(Mode)&&bPassed;
     bPassed=CireMonsterArt::RunSmoke(Mode)&&bPassed; // creature-anim
     bPassed=CireRaces::RunSmoke(Mode)&&bPassed; // monster-races
+    bPassed=CireMonsterExpansion::RunSmoke(Mode)&&bPassed; // monster-expansion
     return bPassed;
 }
 #endif

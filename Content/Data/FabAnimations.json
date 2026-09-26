@@ -1634,5 +1634,8 @@
         "dual_jump"
       ]
     }
+  },
+  "bodies": {
+    "/Game/Polyphoria/Polyphoria/CharacterParts_HeavyArmour/Meshes/UE5/Male/UpperBody/SK_ma_pala_combine_a.SK_ma_pala_combine_a": "PolyPaladin"
   }
 }

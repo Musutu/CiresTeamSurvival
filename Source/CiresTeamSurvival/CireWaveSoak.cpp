@@ -6,6 +6,7 @@
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireLoot.h"
+#include "CireSummon.h"
 #include "CireMonsterArt.h"
 #include "CireNPCState.h"
 #include "Engine/World.h"
@@ -29,13 +30,16 @@ struct FSoak
 {
     bool bEnabled = false, bDone = false, bPlayerConverted = false;
     int32 TargetCycles = 3;
-    float LimitSeconds = 3600, Elapsed = 0, NextReport = 0, NextStallDump = 0;
+    float LimitSeconds = 3600, Elapsed = 0, NextReport = 0, NextStallDump = 0, DumpAfter = 150; // world-scale: -CireWaveSoakDumpAfter=<s>
     int32 LastPhase = -1, LastWave = 0, LastCleared = 0, Transitions = 0;
     float WaveSpawnedAt = 0, LongestWave = 0, LongestPhaseWait = 0, PhaseEnteredAt = 0;
     int32 WavesSpawned = 0, WavesCleared = 0, StallDumps = 0, Failsafes = 0;
     TArray<FString> Lines;
     TMap<FString, int32> TypeCounts;
     float MeanLevelSeen = 1.f, CycleStartedAt = 0; // pacing: power spikes and cycle length
+    // str-scaling: champion deaths during survival (alive -> dead), total and per wave, for lethality comparisons.
+    TMap<TWeakObjectPtr<ACireHero>, bool> WasDead;
+    int32 HeroDeaths = 0, DeathsAtWaveSpawn = 0;
 };
 FSoak Soak;
 
@@ -69,6 +73,8 @@ void CireWaveDirector::InitializeSoak(ACireGameMode* Mode)
     if (!Soak.bEnabled) return;
     FParse::Value(FCommandLine::Get(), TEXT("CireWaveSoakCycles="), Soak.TargetCycles);
     FParse::Value(FCommandLine::Get(), TEXT("CireWaveSoakSeconds="), Soak.LimitSeconds);
+    FParse::Value(FCommandLine::Get(), TEXT("CireWaveSoakDumpAfter="), Soak.DumpAfter); // world-scale: earlier stall reports for diagnosis
+    Soak.DumpAfter = FMath::Clamp(Soak.DumpAfter, 10.f, 3600.f);
     Soak.TargetCycles = FMath::Clamp(Soak.TargetCycles, 1, 20);
     Soak.LimitSeconds = FMath::Clamp(Soak.LimitSeconds, 60.f, 6. * 3600.);
     Mode->BotFillTimer = 0;
@@ -153,9 +159,17 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
         }
         Soak.LastPhase = S->Phase; Soak.PhaseEnteredAt = Now;
     }
+    for (auto* H : Mode->Heroes)
+        if (IsValid(H) && H->bDrafted && !H->IsA<ACireSummon>()) // champions only: summons and pets die by design
+        {
+            bool& bWas = Soak.WasDead.FindOrAdd(H, H->bDead);
+            if (H->bDead && !bWas && S->Phase == 0) ++Soak.HeroDeaths; // wave (survival) deaths only, not arena PvP
+            bWas = H->bDead;
+        }
     if (S->Wave != Soak.LastWave)
     {
-        Soak.LastWave = S->Wave; ++Soak.WavesSpawned; Soak.WaveSpawnedAt = Now; Soak.NextStallDump = Now + 150;
+        Soak.DeathsAtWaveSpawn = Soak.HeroDeaths;
+        Soak.LastWave = S->Wave; ++Soak.WavesSpawned; Soak.WaveSpawnedAt = Now; Soak.NextStallDump = Now + Soak.DumpAfter;
         const FString Type = CireWaveDirector::CurrentWaveType(Mode);
         Soak.TypeCounts.FindOrAdd(Type)++;
         Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_SPAWN wave=%d type=%s round=%d t=%.1f"), S->Wave, *Type, S->Round, Now));
@@ -166,14 +180,17 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
         {
             ++Soak.WavesCleared;
             Soak.LongestWave = FMath::Max(Soak.LongestWave, Now - Soak.WaveSpawnedAt);
-            Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_CLEAR wave=%d took=%.1f lives=%d/%d"), S->Wave, Now - Soak.WaveSpawnedAt, S->EmberLives, S->DuskLives));
+            float LevelSum = 0, HealthSum = 0; int32 Champions = 0;
+            for (auto* H : Mode->Heroes) if (IsValid(H) && H->bDrafted && !H->IsA<ACireSummon>()) { LevelSum += H->Level; HealthSum += H->MaxHealth; ++Champions; }
+            Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_CLEAR wave=%d took=%.1f lives=%d/%d deaths=%d level=%.1f max_health=%.0f"), S->Wave, Now - Soak.WaveSpawnedAt, S->EmberLives, S->DuskLives,
+                Soak.HeroDeaths - Soak.DeathsAtWaveSpawn, Champions ? LevelSum / Champions : 0.f, Champions ? HealthSum / Champions : 0.f));
         }
         Soak.LastCleared = S->CycleWavesDone;
     }
     // Pacing evidence: every time the mean hero level rises a whole level, and each full cycle's length.
     {
         float Sum = 0; int32 N = 0;
-        for (auto* H : Mode->Heroes) if (IsValid(H) && H->bDrafted) { Sum += H->Level; ++N; }
+        for (auto* H : Mode->Heroes) if (IsValid(H) && H->bDrafted && !H->IsA<ACireSummon>()) { Sum += H->Level; ++N; }
         const float Mean = N ? Sum / N : 1.f;
         if (FMath::FloorToFloat(Mean) > FMath::FloorToFloat(Soak.MeanLevelSeen))
             Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_LEVEL mean=%.2f t=%.1f wave=%d"), Mean, Now, S->Wave));
@@ -209,9 +226,9 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
         { const FCireRaceStats R = CireRaces::Stats(); // monster-races: race skill usage over the soak
           Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_RACES skill_casts=%d rider_hits=%d summoned=%d first_skill_wave=%d earliest_cast_wave=%d races=%s"),
               R.Casts, R.RiderHits, R.Summoned, CireWaveDirector::Config(Mode->GetWorld()).Skills.FirstSkillWave, R.EarliestCastWave, *R.Races)); }
-        Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_%s rounds=%d spawned=%d cleared=%d transitions=%d longest_wave=%.1f stall_dumps=%d rescues=%d lives=%d/%d t=%.0f types=%s"),
+        Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_%s rounds=%d spawned=%d cleared=%d transitions=%d longest_wave=%.1f stall_dumps=%d rescues=%d lives=%d/%d hero_deaths=%d t=%.0f types=%s"),
             bPass ? TEXT("PASS") : TEXT("FAIL"), S->Round - 1, Soak.WavesSpawned, Soak.WavesCleared, Soak.Transitions, Soak.LongestWave, Soak.StallDumps, Soak.Failsafes,
-            S->EmberLives, S->DuskLives, Now, *Types.TrimEnd()));
+            S->EmberLives, S->DuskLives, Soak.HeroDeaths, Now, *Types.TrimEnd()));
         FString Path;
         if (!FParse::Value(FCommandLine::Get(), TEXT("CireWaveSoakSummary="), Path))
             Path = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("WaveSoak"), FDateTime::Now().ToString(TEXT("%Y%m%d-%H%M%S")) + TEXT(".txt"));

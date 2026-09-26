@@ -35,6 +35,10 @@ subsequent spawns. Invalid native loads preserve the last valid configuration.
 
 ## Values and semantics
 
+- Champion attributes are native rules, not this file (`Rules/CiresRules.h`): each STR gives 10 health,
+  0.1 armor and 0.1 spell ward (25 health before 25 September 2026), each INT 30 mana, each AGI 1% attack
+  speed. A flat base of 15 x starting STR keeps level-1 health unchanged; see Progression.md
+  "Strength scaling". NPC damage below was not retuned for it.
 - Globals: crit chance `.05`, crit multiplier `1.5`; tank damage threat `5`, other
   damage threat `1`, effective healing threat `.4` distributed among engaged foes.
   NPC damage is fixed by type: basic `18`, bruiser `24`, caster `14`, ranged `16`,

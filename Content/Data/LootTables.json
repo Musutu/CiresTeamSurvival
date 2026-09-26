@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "_comment": "progression-shop: challenge-pack gating and bonus-drop tables (design proposal). Chances are per entry and independent; gold/XP grow +25% per tier above 1, chances +8% relative per tier, then x team loot bonus. See Docs/Progression.md. Gold entries are multiplied by the current mob value (economy.lootGoldInMobValues).",
+  "_comment": "progression-shop: challenge-pack gating and bonus-drop tables (design proposal). Chances are per entry and independent; gold/XP grow +25% per tier above 1, chances +8% relative per tier, then x team loot bonus. See Docs/Progression.md. Gold entries are multiplied by the current mob value (economy.lootGoldInMobValues). monster-expansion: sources.rareSpawn / sources.bonusWave are the personal chests of Rare Spawns and Bonus Loot Wave creatures (Docs/MonsterExpansion.md).",
   "scaling": {
     "goldPerTier": 0.25,
     "chancePerTier": 0.08,
@@ -84,6 +84,26 @@
       {
         "minRound": 4,
         "table": "boss_late"
+      }
+    ],
+    "rareSpawn": [
+      {
+        "minRound": 1,
+        "table": "rare_cache"
+      },
+      {
+        "minRound": 3,
+        "table": "rare_hoard"
+      }
+    ],
+    "bonusWave": [
+      {
+        "minRound": 1,
+        "table": "bonus_purse"
+      },
+      {
+        "minRound": 3,
+        "table": "bonus_hoard"
       }
     ]
   },
@@ -415,6 +435,179 @@
             "stoneheart",
             "voidglass_orb",
             "aegis_of_the_last_oath"
+          ]
+        }
+      ]
+    },
+    "rare_cache": {
+      "label": "Rare trophy",
+      "entries": [
+        {
+          "type": "gold",
+          "chance": 1,
+          "min": 4,
+          "max": 6
+        },
+        {
+          "type": "experience",
+          "chance": 0.8,
+          "min": 180,
+          "max": 180
+        },
+        {
+          "type": "primaryTome",
+          "chance": 0.45,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "type": "item",
+          "chance": 0.6,
+          "pool": [
+            "gauntlet_of_the_ox",
+            "rusted_longsword",
+            "sandglass_charm",
+            "road_worn_boots",
+            "hexweave_cloak",
+            "boiled_jerkin",
+            "nightglass_shard"
+          ]
+        },
+        {
+          "type": "item",
+          "chance": 0.2,
+          "pool": [
+            "serrated_cleaver",
+            "grimoire_of_whispers",
+            "chainmail_of_the_fallen",
+            "bloodletter",
+            "mantle_of_ash"
+          ]
+        }
+      ]
+    },
+    "rare_hoard": {
+      "label": "Rare hoard",
+      "entries": [
+        {
+          "type": "gold",
+          "chance": 1,
+          "min": 6,
+          "max": 9
+        },
+        {
+          "type": "experience",
+          "chance": 0.9,
+          "min": 300,
+          "max": 300
+        },
+        {
+          "type": "primaryTome",
+          "chance": 0.55,
+          "min": 2,
+          "max": 3
+        },
+        {
+          "type": "item",
+          "chance": 0.45,
+          "pool": [
+            "serrated_cleaver",
+            "grimoire_of_whispers",
+            "chainmail_of_the_fallen",
+            "bloodletter",
+            "mantle_of_ash"
+          ]
+        },
+        {
+          "type": "item",
+          "chance": 0.1,
+          "pool": [
+            "nightfall_reaver",
+            "sanguine_sabre",
+            "heart_of_cataclysm",
+            "gravewarden_bulwark",
+            "censer_of_dawn",
+            "stoneheart",
+            "voidglass_orb",
+            "aegis_of_the_last_oath"
+          ]
+        }
+      ]
+    },
+    "bonus_purse": {
+      "label": "Goblin purse",
+      "entries": [
+        {
+          "type": "gold",
+          "chance": 1,
+          "min": 2,
+          "max": 3
+        },
+        {
+          "type": "primaryTome",
+          "chance": 0.15,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "type": "item",
+          "chance": 0.3,
+          "pool": [
+            "vial_of_crimson",
+            "aether_phial",
+            "watchers_lantern",
+            "elixir_of_iron",
+            "elixir_of_wrath",
+            "elixir_of_black_sorcery"
+          ]
+        },
+        {
+          "type": "item",
+          "chance": 0.08,
+          "pool": [
+            "gauntlet_of_the_ox",
+            "bone_dagger",
+            "ashwood_wand",
+            "nightglass_shard",
+            "road_worn_boots"
+          ]
+        }
+      ]
+    },
+    "bonus_hoard": {
+      "label": "Goblin hoard",
+      "entries": [
+        {
+          "type": "gold",
+          "chance": 1,
+          "min": 3,
+          "max": 5
+        },
+        {
+          "type": "primaryTome",
+          "chance": 0.2,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "type": "item",
+          "chance": 0.3,
+          "pool": [
+            "elixir_of_iron",
+            "elixir_of_wrath",
+            "elixir_of_black_sorcery",
+            "aether_phial"
+          ]
+        },
+        {
+          "type": "item",
+          "chance": 0.1,
+          "pool": [
+            "rusted_longsword",
+            "sandglass_charm",
+            "pilgrims_idol",
+            "gauntlet_of_the_ox",
+            "hexweave_cloak"
           ]
         }
       ]

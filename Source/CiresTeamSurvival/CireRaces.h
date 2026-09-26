@@ -80,6 +80,9 @@ struct CIRESTEAMSURVIVAL_API FCireCampaign
     /** From these cycles (1-based), every Nth normal wave unit is promoted. 0 disables a tier. */
     int32 VeteranFromCycle = 2, EliteFromCycle = 3, ChampionFromCycle = 4, MythicBossFromCycle = 3;
     int32 PromoteEvery = 4;
+    /** rules-conformance: "wave" = the rotation advances every wave (so a 3-cycle match shows every race);
+     *  "cycle" (default) = one rotation entry per cycle. */
+    bool bRotatePerWave = false;
     bool operator==(const FCireCampaign& O) const;
 };
 

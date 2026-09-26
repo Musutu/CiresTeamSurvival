@@ -59,6 +59,7 @@ struct FCireServerProbe {
     bool ActionsVerified=false;
     bool Done=false;
     double Started=0;
+    double Timeout=40; // -CireNetProbeTimeout=N: client boot under build load can exceed 40 s
     FVector MovementOrigin=FVector::ZeroVector;
     TWeakObjectPtr<ACireHero> PlayerPawn;
     TWeakObjectPtr<ACireMonster> Target;
@@ -77,7 +78,7 @@ void TickServerProbe(ACireGameMode* Mode) {
         UE_LOG(LogCire,Error,TEXT("CIRE_NET_SERVER_FAIL reason=%s"),Reason);
         Probe.Done=true;FPlatformMisc::RequestExitWithStatus(false,1);
     };
-    if(FPlatformTime::Seconds()-Probe.Started>40) {Fail(TEXT("client actions or disconnect timed out"));return;}
+    if(FPlatformTime::Seconds()-Probe.Started>Probe.Timeout) {Fail(TEXT("client actions or disconnect timed out"));return;}
     if(!Probe.PlayerPawn.IsValid()) {
         for(auto* Hero:Mode->Heroes) {
             if(!IsValid(Hero)||Hero->bBot||!Hero->IsPlayerControlled())continue;
@@ -169,6 +170,7 @@ void ACireGameMode::BeginPlay() {
     ServerProbe.Enabled=GetNetMode()==NM_DedicatedServer&&FParse::Param(FCommandLine::Get(),TEXT("CireNetServerProbe"));
     if(ServerProbe.Enabled) {
         ServerProbe.Started=FPlatformTime::Seconds();
+        FParse::Value(FCommandLine::Get(),TEXT("CireNetProbeTimeout="),ServerProbe.Timeout);ServerProbe.Timeout=FMath::Clamp(ServerProbe.Timeout,10.0,300.0);
         BotFillTimer=60;WaveTimer=60; // leave a fresh champion for the remote draft test
     }
 #endif
@@ -239,7 +241,7 @@ void ACireGameMode::BeginPlay() {
 #endif
     UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / %.0fs prep / %.0fs arena / %.0fs recovery | server authority"),S->WavesPerCycle,Clock.GetDurations().Intermission,Clock.GetDurations().Arena,RecoverySeconds);
 #if !UE_BUILD_SHIPPING
-    if(ServerProbe.Enabled)UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_READY dedicated=1 timeout=40"));
+    if(ServerProbe.Enabled)UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_READY dedicated=1 timeout=%.0f"),ServerProbe.Timeout);
     if(FParse::Param(FCommandLine::Get(),TEXT("CireCombatFeaturesProbe")))
         FPlatformMisc::RequestExitWithStatus(false,CireCombatFeatures::Run(this)?0:1);
     if(FParse::Param(FCommandLine::Get(),TEXT("CireCombatExpansionProbe")))
@@ -319,7 +321,7 @@ void ACireGameMode::SpawnBots() {
 }
 void ACireGameMode::SpawnWave() {
     // wave-director: composition, types, spawn pacing and scaling come from Waves.json (CireWaves.h).
-    if(!CireWaveDirector::StartWave(this)) return;
+    if(!CireWaveDirector::StartWave(this,true)) return; // monster-expansion: the live flow rolls rares and race variants
     auto* S=GetGameState<ACireGameState>();
     UE_LOG(LogCire,Display,TEXT("CIRE WAVE SPAWN round=%d wave=%d cycle=%d/%d type=%s"),S->Round,S->Wave,CycleWavesSpawned,S->WavesPerCycle,*CireWaveDirector::CurrentWaveType(this));
     CireProgression::OnWaveSpawned(this,CycleWavesSpawned); // progression-shop: mid-cycle challenge unlocks
@@ -334,10 +336,11 @@ void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
 }
 void ACireGameMode::MonsterKilled(ACireMonster* M,ACireHero* Killer) {
     if(!IsValid(M)||!IsValid(Killer)||Killer->TeamId!=M->Lane) return;
-    const float Reward=M->PackId<0?CireWaveDirector::RewardMultiplier(M):1.f; // wave-director: per-wave reward multiplier
-    // progression-shop: gold is the playtest-2 kill bounty (CireLoot::AwardKillGold); XP unchanged.
+    const float Reward=M->PackId<0?CireWaveDirector::RewardMultiplier(M):1.f; // wave-director: per-wave reward multiplier (XP only)
     AwardTeam(M->Lane,FMath::RoundToInt((45+GetGameState<ACireGameState>()->Round*4)*Reward),0);
-    CireLoot::AwardKillGold(this,M,Reward);
+    // rules-conformance: gold is exactly Eric's bounty ruling (mob 1 +1 every 3 waves, armored x2, boss x10,
+    // challenge packs x10, leader another x10). The wave rewardMultiplier no longer stacks on gold.
+    CireLoot::AwardKillGold(this,M);
     // progression-shop: pack completion, Pack Leaders and lane bosses roll data-driven loot tables
     // into a glowing auto-pickup chest (CireLoot). The old flat stat/rare reward is replaced.
     bool bPackCompleted=false;
@@ -355,6 +358,8 @@ void ACireGameMode::Leak(ACireMonster* M) {
         ||M->Lane<0||M->Lane>1||Clock.Phase()!=Cires::MatchPhase::Survival) return;
     auto* S=GetGameState<ACireGameState>();
     if(!S) return;
+    // monster-expansion: a bonus loot creature reaching the town escapes with its loot; it never costs lives.
+    if(M->SpecialSpawn==2){Monsters.Remove(M);CireWaveDirector::Forget(M);UE_LOG(LogCire,Display,TEXT("CIRE_BONUS_ESCAPE %s lane=%d at the gate"),*M->GetNPCDisplayName(),M->Lane);M->Destroy();return;}
     // Remove first: overlapping collision components must not debit the same creep twice.
     Monsters.Remove(M);
     CireWaveDirector::Forget(M); // wave-director
@@ -540,6 +545,7 @@ void ACireGameMode::Tick(float Dt) {
                 // wave-director: breather plus the next wave's authored delay.
                 const auto& Waves=CireWaveDirector::Config(GetWorld());
                 WaveTimer=WaveBreatherSeconds+(bSmoke||Waves.Waves.IsEmpty()?0.f:CireWaveDirector::ResolveWave(Waves,CycleWavesSpawned,Clock.Round()-1).DelayBefore);
+                WaveTimer+=CireWaveDirector::OnWaveCleared(this,S->CycleWavesDone); // monster-expansion: an occasional bonus loot wave
 #if !UE_BUILD_SHIPPING
                 if(bSmoke)++SmokeClearedWaves;
 #endif

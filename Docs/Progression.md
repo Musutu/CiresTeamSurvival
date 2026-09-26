@@ -124,7 +124,10 @@ Kill gold is data (`LootTables.json -> economy`) and live-editable in **F8 > Eco
 
 * Wave kills pay **every teammate** the full bounty; pack kills pay every eligible teammate (helped or
   alive within `distribution.eligibleRadius`). Wave units are valued at the wave they **spawned** in
-  (`CireWaveDirector::UnitFlags`), not the wave running when they die; the wave's `rewardMultiplier` applies.
+  (`CireWaveDirector::UnitFlags`), not the wave running when they die. The wave's `rewardMultiplier` (escort x1.25,
+  boss x1.5) scales **XP only** (rules-conformance): it used to stack on gold, so a boss paid 15x instead of 10x.
+* Eric's message said "wave 6 boss is 3 x 10 = 300 gold"; the formula he gave (mob value 3 at wave 6, boss 10x)
+  gives **30**, which is what the game pays. Open question for Eric (a 100x boss, or a typo).
 * Every bounty floats as "+3g" over the kill (bigger for bosses/leaders, with a toast).
 * Loot-table gold is in mob values too (`lootGoldInMobValues`). Item prices were rescaled x1.2.
 
@@ -149,6 +152,12 @@ The progression mode is a server-authoritative, replicated setting on `ACireGame
 (1 = **Skill Shop**, default; 0 = **Classic Draft**, the old level-up skill offers).
 
 * Command line: `-CireMode=SkillShop` or `-CireMode=Classic`.
+* **Champion select (player-facing):** a GAME MODE picker in the header, right of the title: two icon buttons,
+  SKILL SHOP (golden scroll) and CLASSIC DRAFT (prismatic crest), in the draft's gold-filigree style. The host (or a
+  standalone player) clicks one; `UCireInventory::ServerSetProgressionMode` applies it on the server and the choice
+  replicates on `ACireGameState::ProgressionMode`, so every client's picker shows it, glows and chimes when it changes,
+  and shows a lock for players who cannot change it. It locks once the first wave starts. The Overview tab's
+  "Skill Shop / Classic Draft" paragraph follows the chosen mode.
 * F8 > Economy: SKILL SHOP / CLASSIC DRAFT buttons (host or standalone, before the first wave).
 * API for a champion-select picker (`CireSkillShop.h`):
   `IsSkillShopMode(World)`, `ModeName(bSkillShop)`, `SetMode(GameMode, bSkillShop, &Why)` (server, before
@@ -159,7 +168,7 @@ In Skill Shop mode:
 
 * The free opening role-skill pick stays. Level-ups then only raise stats (+2 primary, +1 other); no skill offers.
 * The shop opens by itself (skills tab) **after every cleared wave** during the wave director's breather
-  (`Waves.json breatherSeconds`, 15 s; READY UP inside the shop ends it early), and **when prep begins**.
+  (`Waves.json breatherSeconds`, 12 s; READY UP inside the shop ends it early), and **when prep begins**.
   It is also open during prep and recovery. `K` toggles it; `B` is the item shop.
 * It lists every skill the champion can buy: `CireAbilityDB::PurchasableSkills(profile)` (implemented
   skills), or the role pool for heroes without a profile. Buy new skills or level owned ones with **no cap**.
@@ -209,12 +218,113 @@ situational), all items under ALL ITEMS as tier-coloured cards, larger text, sam
   on top of the wave director's breather/ready-up; Classic Draft keeps the timed breather with early ready-up.
 * **Polymorph** (`polymorph`, Crowd Control active, arcane, caster DPS and supports, 1.5 s cast, 50 mana,
   20 s cooldown): turns the target into a Chicken, a Piglet or a Frog (random per cast) for 8 s (+ per level,
-  capped at 12 s). The critter cannot attack or cast, loses its threat table and wanders slowly; any damage
+  capped at 12 s). The critter cannot attack or cast and wanders slowly; it keeps its threat table (threat ruling); any damage
   breaks it. Lane bosses and Pack Leaders are immune, elites get half, champions (PvP) at most 3 s with the
   crowd-control diminishing returns. It shows a poof cue and the `polymorphed` buff row ("Polymorphed").
   Code: `CirePolymorph.*`. Critters are CC0 Quaternius models (Art/Creatures/Free/PROVENANCE_Critters.md,
   `Tools/ImportPolymorphCritters.py`); the Piglet reuses the imported Pig. Icon id for the 2D art agent:
   `polymorph` (`/Game/UI/Abilities/T_polymorph`); a procedural placeholder is drawn until it exists.
+
+## Strength scaling (Eric's ruling, 25 September 2026)
+
+"Reduce the health gained from STR to 10 per point, and 0.1 to magic resist and armor per point."
+
+| | Before | Now |
+| --- | --- | --- |
+| Health per STR | 25 | **10** |
+| Armor per STR | 0 | **0.1** (basic attacks) |
+| Spell ward per STR | 0 | **0.1** (abilities; ward is the game's magic resist) |
+| Flat base health | 0 | **15 x starting STR**, fixed at draft |
+
+`MaxHealth = BaseHealth + 10 x STR + item health`. Armor and ward from STR add to item armor/ward (and
+party auras) in `CireItems::ModifyIncomingDamage`, so they use the usual `x / (x + 100)` mitigation.
+Summons and pets get no STR defense. Tests and network probes that expect exact hit amounts use
+`CireItems::AfterStrengthDefense(hero, amount)`. Constants live in `Rules/CiresRules.h` (`HealthPerStrength`,
+`ArmorPerStrength`, `WardPerStrength`); the flat base is `Cires::StartingBaseHealth(startingSTR)` =
+`(25 - 10) x startingSTR`, stored in `Progression.BaseHealth` by `DraftProfile` and the legacy `Draft`.
+
+**Why a per-champion base from the starting STR:** it keeps every champion's level-1 health exactly as
+before without a hand-kept table, and it follows the roster data if a champion's STR is re-authored.
+The roster only uses two starting values, so in practice the base is 300 for STR champions (all tanks
+plus the Ether Golem Bruiser) and 150 for everyone else. Level growth, tomes and items (`+primary` on a
+STR champion, `+strength`) only use the new 10 health per point.
+
+Health by level (no items). Each level gives +2 primary and +1 other stats.
+
+| Champion | STR at L1 / L10 / L25 | Before L1 / L10 / L25 | Now L1 / L10 / L25 | STR armor and ward at L25 |
+| --- | --- | --- | --- | --- |
+| Tank (STR primary, e.g. Iron Warden) | 20 / 38 / 68 | 500 / 950 / 1700 | 500 / 680 / 980 | 6.8 (6.4%) |
+| DPS (AGI or INT primary, e.g. Ranger) | 10 / 19 / 34 | 250 / 475 / 850 | 250 / 340 / 490 | 3.4 (3.3%) |
+| Support (INT primary, e.g. Scholar) | 10 / 19 / 34 | 250 / 475 / 850 | 250 / 340 / 490 | 3.4 (3.3%) |
+
+Health from L1 to L25 now grows ×1.96 instead of ×3.4. Mana (30 per INT) and attack speed (1% per AGI)
+are unchanged; they share only `CalculateStats` with STR.
+
+**Where it shows:** the character sheet (STR row, Armor and Spell Ward rows with the STR share), the
+Player frame help, and the champion-select combat-style line (level-1 HP).
+
+### Measurements
+
+Balance lab (`Tools/RunBalanceLab.py --waves 1,10,15,25 --seconds 90`, hero level = wave, 5 bots):
+with the default 5 enemies and with `--enemies 15`, every case was won with no champion deaths before
+and after, and fight length and DPS barely moved (15 enemies: 64 / 79 / 71 / 90 s timeout before,
+62 / 74 / 74 / 81 s after). Measured max health matched the table above.
+
+Champion lab (`Tools/RunChampionLab.py --waves 3,10,20 --repeats 1`): 33 cases, 0 failures, no deaths.
+Tank damage taken stays low (knight 3.6 DTPS). The band flags (Summoner, Aetheri Artificer, Scholar
+HPS at low waves) are the same ones listed in BalanceFindings.md. They come from DPS or HPS, which STR
+health does not change, and they were not tuned here.
+
+Bots-only pacing soak (`Tools/RunPacingSoak.py --cycles 3`, three runs each; the soak now logs champion
+deaths, level and max health per cleared wave):
+
+| Build | Match | Lives left (both teams) | Champion deaths (waves 10-15) | Mean wave 10-15 | Champion level / max HP at wave 15 |
+| --- | --- | --- | --- | --- | --- |
+| before | 27.7 min | 147 | 8.3 (3.3) | 105 s | 1 / 377 |
+| after | 26.2 min | 140 | 8.3 (5.0) | 92 s | 1 / 383 |
+| before + level fix (experiment) | 24.1 min | 142 | 2.0 (0.3) | 75 s | 12.6 / 785 |
+| after + level fix (experiment) | 22.7 min | 135 | 2.3 (0.7) | 73 s | 12.0 / 539 |
+
+**Skill Shop levelling bug (fixed on this branch).** Before the fix, champions never levelled in
+Skill Shop mode. Buying a skill added it to `Progression.LearnedSkills` without moving
+`NextAugmentLevel`, so the Classic Draft check in `ValidProgression` failed and `Cires::GainLevels`
+refused every later level. The "level fix" rows above used a temporary patch (level a copy with the
+learned skills cleared) to measure the STR change. The real fix is described under "Skill Shop
+schedule" below. With levels working, waves 10-15 stay survivable after the rescale (0.7 champion
+deaths per match against 0.3, within run-to-run noise), so Waves.json was not changed.
+
+### Skill Shop schedule (Eric's ruling: Skill Shop mode still levels up)
+
+`Cires::Progression::Schedule` is `SkillSchedule::Draft` (Classic Draft) or `SkillSchedule::Shop`.
+
+- **Draft** is unchanged: the learned count is tied to the breakpoints (1, 3, 6 ... 21).
+  `ValidProgression` rejects a skill outside the schedule, and such a progression cannot level.
+- **Shop** keeps the capacity, uniqueness, stat and role checks but drops the breakpoint link.
+  `HasPendingAugment` is true only for the free opening pick. `Cires::AddPurchasedSkill` validates
+  and appends a bought skill; it refuses Draft progressions. Levels always grant +2 primary / +1
+  other stats.
+- `CireSkillShop::SyncSchedule(hero)` matches the schedule to the game mode. It runs at draft, on a
+  mode change (before wave 1), on every purchase and before levelling. Switching back to Classic
+  re-derives `NextAugmentLevel`.
+- The level-up banner and the XP bar are driven by the replicated `Level`/`Experience` in both modes.
+  The XP-bar tooltip and the level-up notice now say where skills come from in each mode.
+
+Tests: `Tests/RulesTests.cpp` `SkillScheduleRules` (Shop: all 8 skills bought at level 1, then levels
+1 to 25 with exact stats and HP; Classic: out-of-schedule and skipped-breakpoint progressions still
+refuse to level) and `CIRE_SKILLSHOP_PASS` (a champion with bought skills levels, with +2/+1 stats and
+10 HP per STR).
+
+Bots-only soak after merging main (3x world scale), three runs each, STR rescale in both:
+
+| Build | Match | Lives left (both teams) | Champion deaths (waves 10-15) | Mean wave 10-15 | Level / max HP at wave 15 |
+| --- | --- | --- | --- | --- | --- |
+| merged main, levelling bug | 29.5 min | 155 | 4.0 (2.3) | 105 s | 1 / 370 |
+| **with the Skill Shop fix** | **25.9 min** | **157** | **0 (0)** | **81 s** | **12.4 / 536** |
+
+With levels, bots clear waves 10-15 about 24 s faster and no champion dies in any of the three runs.
+The waves still take about 80 s and still cost lives (about 43 of 200 per match), so they are not
+trivially easy, and Waves.json was not retuned. If playtests find the late waves too soft, raise
+the late wave rows' `health` and `damage` before anything else.
 
 ## Decisions for Eric to review
 
@@ -226,7 +336,7 @@ situational), all items under ALL ITEMS as tier-coloured cards, larger text, sam
 6. Economy: packs dominate income (a Pack Leader is 100 mob values, paid to every eligible teammate).
    Teams that skip packs stay poor; lower `packLeaderMultiplier` if that is too swingy.
 7. Skill prices and slot pacing (above); auto-open only when something is affordable.
-8. The breather is the wave director's 15 s; the previous 20 s change in this branch was reverted.
+8. The breather is the wave director's 12 s (pacing lowered it from 15 s); the previous 20 s change in this branch was reverted.
 
 ## Verification
 
