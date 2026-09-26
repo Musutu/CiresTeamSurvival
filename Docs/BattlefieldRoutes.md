@@ -17,6 +17,13 @@
 - Pack ids are `round * 100 + realm * 50 + bay`.
 - The packs, their daises and the breach rift rebuild live on every route edit.
 
+**Many paths (layout-wiring).** A route document can carry every monster path and spawn of a realm (compiled from the map
+layout editor's `MapLayout.json`, Docs/MapLayout.md "What the game reads"): `CireLanePath::PathCount`, `PathPoints`,
+`SpawnSpots`, `PathForSlot` (the deterministic split), `PathProgress` / `PointAlongPath`, and per unit `UnitPath` /
+`DistanceToUnitPath`. Path 0 is always `LocalPoints` (the primary route that bots, the HUD and the automatic bays read);
+each monster remembers its own path (`ACireMonster::LanePath`), so marching, the stuck nudge and the leash all follow it.
+Extra paths obey the same rules as the route (inside the realm, 50 cm apart, only the last point in the goal zone).
+
 Both realms share one layout, so identical realms are written once, as `"route": { "points", "bays" }`, instead of two
 `"lanes"`. Both forms are read; a document may not contain both. Points are realm-local and reach the world through the
 realm frame (`CireLanePath::ToWorld` / `ToLocal` / `RealmOrigin`). The map layout editor (`Docs/MapLayout.md`) authors

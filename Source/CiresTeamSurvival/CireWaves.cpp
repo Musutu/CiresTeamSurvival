@@ -35,6 +35,7 @@ struct FTrack
     float SampleAt = 0, StuckFor = 0, SuppressUntil = 0, GhostRefreshAt = 0, ForcedAt = 0;
     int32 Nudges = 0;
     bool bForcedMarch = false;
+    float BestProgress = -1.f, BestProgressAt = 0.f; // layout-wiring: cm along its own path, and when it last improved
     FCireWaveUnitInfo Info; // economy hook
 };
 struct FWaveRecord
@@ -334,7 +335,15 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
     const FVector2D Right(-Ahead.Y, Ahead.X);
     const int32 Row = (O.Slot / 3) % 2, File = (O.Slot % 3) - 1;
     const FVector2D Offset = -Ahead * (Row * 90.f) + Right * (File * 170.f);
-    const FVector Default = CireLanePath::ClampToLane(World, Team, Start + FVector(Offset, 0), 80);
+    FVector Default = CireLanePath::ClampToLane(World, Team, Start + FVector(Offset, 0), 80);
+    // layout-wiring: a spawn Eric places in a narrow alley must not form its column inside a wall. The formation slot is
+    // put on the navmesh next to it, else the unit stands on the spawn itself.
+    if (CireNav::HasNavigation(World))
+    {
+        FVector OnNav;
+        if (CireNav::Project(World, Default, OnNav, FVector(120, 120, 400), 45.f)) Default = FVector(OnNav.X, OnNav.Y, FMath::Max(Default.Z, OnNav.Z + 100.f));
+        else if (CireNav::Project(World, Start, OnNav, FVector(200, 200, 400), 45.f)) Default = FVector(OnNav.X, OnNav.Y, FMath::Max(Start.Z, OnNav.Z + 100.f));
+    }
     const FVector Position = CireDeveloperTools::SpawnPosition(Mode->GetWorld(), Team, O.Slot, Default);
     auto* M = Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(), Position, FRotator(0, FMath::RadiansToDegrees(FMath::Atan2(Ahead.Y, Ahead.X)), 0), Params);
     if (!M) { UE_LOG(LogCireWaves, Error, TEXT("CIRE_WAVES_SPAWN_FAILED archetype=%s"), *O.Unit.Archetype.ToString()); return nullptr; }
@@ -552,6 +561,23 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
             FVector::DistSquared2D(M->GetActorLocation(), M->Victim->GetActorLocation()) <= FMath::Square(Reach(M) + 120.f);
         const bool bGuardWaiting = T.bGuard && T.Charge.IsValid() && AliveUnit(T.Charge.Get()) &&
             FVector::DistSquared2D(M->GetActorLocation(), T.Charge->GetActorLocation()) < FMath::Square(320.f);
+        // layout-wiring: a marcher that keeps moving without getting anywhere (circling a market stall, looping on a navmesh
+        // detour, wandering off its path) is stuck too: after three stuck periods without progress along its own path it
+        // gets the same nudge. Fighting, returning (leash), paused and escort-guard units are left alone.
+        if (!bPaused && !IsValid(M->Victim) && !bGuardWaiting && !CireLeash::IsReturning(M) && M->SpecialSpawn != 2)
+        {
+            const float Along = CireLanePath::PathProgress(World, M->Lane, M->LanePath, M->GetActorLocation()) * CireLanePath::PathLengthOf(World, M->Lane, M->LanePath);
+            if (T.BestProgress < 0.f || Along > T.BestProgress + 100.f) { T.BestProgress = FMath::Max(T.BestProgress, Along); T.BestProgressAt = Time; }
+            else if (Time - T.BestProgressAt > C.StuckSeconds * 3.f && !NoRescue())
+            {
+                const FVector From = M->GetActorLocation();
+                NudgeAlong(M, 450.f);
+                ++T.Nudges; ++R.Nudges; T.StuckFor = 0; T.Anchor = M->GetActorLocation(); T.BestProgressAt = Time;
+                UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_STALL_NUDGE %s lane=%d path=%d from=(%.0f,%.0f) to=(%.0f,%.0f) off_path=%.0f (moving without progress)"), *M->GetNPCDisplayName(), M->Lane,
+                    M->LanePath, From.X, From.Y, M->GetActorLocation().X, M->GetActorLocation().Y, CireLanePath::DistanceToUnitPath(M, From));
+                continue;
+            }
+        }
         if (bPaused || bFighting || bGuardWaiting || FVector::DistSquared2D(M->GetActorLocation(), T.Anchor) > FMath::Square(60.f))
         { T.Anchor = M->GetActorLocation(); T.StuckFor = 0; continue; }
         T.StuckFor += 1.f;

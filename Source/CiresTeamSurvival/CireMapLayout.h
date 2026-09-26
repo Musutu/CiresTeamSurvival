@@ -11,11 +11,11 @@
 // a twin for the other team at the same realm-local spot in the other realm (Pair links the two). Turning Mirror off
 // on a marker breaks the pair so the layout can be asymmetric on purpose.
 //
-// Apply compiles the layout into the live route document (BattlefieldRoutes, CireLanePath) for the systems that run
-// today: per realm, the first monster path that targets that realm's team becomes its march route (spawn -> path ->
-// objective, following merges), its challenge packs become the realm's packs and the Team 1 objective sets the goal
-// zone. Every marker is also written to Content/Data/MapLayout.json for the systems that read it next (vendors,
-// spawns, respawn, rift, bounds), and the vendor markers to Content/Data/TownVendors.json.
+// Apply writes Content/Data/MapLayout.json (the one source of truth: every match compiles it over the route file at
+// startup, CireLanePath::LoadActive) and the vendor markers to Content/Data/TownVendors.json, and applies the compiled
+// document live. layout-wiring: the compile carries every monster spawn and path of each realm (merges followed), the
+// packs, the objective (goal zone), player spawns, respawns, boss spawns, rifts and the play bounds (Docs/MapLayout.md
+// "What the game reads").
 #include "CoreMinimal.h"
 
 struct FCireBattlefieldRoutes;

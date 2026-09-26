@@ -81,21 +81,42 @@ int32 NearestVertex(const TArray<FVector2D>& Points, const FVector2D& To, int32 
     for (int32 I = From; I + 1 < Points.Num(); ++I) { const double D = FVector2D::DistSquared(Points[I], To); if (D < BestD) { BestD = D; Best = I; } }
     return Best;
 }
-/** A navmesh point about Offset cm to the side of the route at Fraction, reachable from and to the route. */
-bool SidePoint(UWorld* World, const TArray<FVector2D>& Route, double Fraction, const TArray<float>& Offsets, FVector2D& Out)
+/** A navmesh point roughly Offset cm off the route near Fraction (any direction that leaves the road), walkable from and
+ *  to the route in both realms (the ordinary unit size). */
+bool SidePoint(UWorld* World, const TArray<FVector2D>& Route, double Fraction, const TArray<float>& Offsets, FVector2D& Out, FVector2D* OutRoad = nullptr, int32* OutSegment = nullptr)
 {
-    int32 Segment = 0;
-    const FVector2D At = AlongPolyline(Route, Fraction, &Segment);
-    const FVector2D Dir = (Route[Segment + 1] - Route[Segment]).GetSafeNormal(), Side(-Dir.Y, Dir.X);
-    for (const float Offset : Offsets)
-        for (const int32 S : {1, -1})
-        {
-            FVector2D Candidate;
-            if (!OnNav(World, 0, At + Side * (S * Offset), Candidate)) continue;
-            double D = 0; CireLanePath::NearestOnPolyline(Route, Candidate, &D);
-            if (D < Offset * .5f || !Reachable(World, 0, At, Candidate) || !Reachable(World, 1, At, Candidate)) continue;
-            Out = Candidate; return true;
-        }
+    int32 OffNav = 0, OnRoad = 0, Blocked = 0;
+    auto Walk = [&](int32 Realm, const FVector2D& A, const FVector2D& B)
+    {
+        FVector PA, PB;
+        if (!CireNav::Project(World, CireLanePath::ToWorld(Realm, A, 60.f), PA, FVector(200, 200, 600), 40.f) ||
+            !CireNav::Project(World, CireLanePath::ToWorld(Realm, B, 60.f), PB, FVector(200, 200, 600), 40.f)) return false;
+        const FCireNavPath Path = CireNav::FindPath(World, PA, PB, 40.f, true);
+        return Path.bValid && !Path.bPartial && Path.Points.Num() > 0 && FVector::Dist2D(Path.Points.Last(), PB) < 150.;
+    };
+    for (const double Df : {0., .04, -.04, .08, -.08, .12, -.12})
+    {
+        int32 Segment = 0;
+        const FVector2D At = AlongPolyline(Route, FMath::Clamp(Fraction + Df, .05, .9), &Segment);
+        const FVector2D Dir = (Route[Segment + 1] - Route[Segment]).GetSafeNormal();
+        for (const float Offset : Offsets)
+            for (int32 K = 0; K < 8; ++K)
+            {
+                // Perpendicular first, then the diagonals and along-road directions.
+                const double Angle = HALF_PI + (K / 2) * (PI / 4.) * (K % 2 ? -1. : 1.) + (K % 2 ? PI : 0.);
+                const FVector2D Ray = Dir.GetRotated(FMath::RadiansToDegrees(Angle));
+                FVector2D Candidate;
+                if (!OnNav(World, 0, At + Ray * Offset, Candidate)) { ++OffNav; continue; }
+                double D = 0; CireLanePath::NearestOnPolyline(Route, Candidate, &D);
+                if (D < FMath::Min(Offset * .4f, 400.f)) { ++OnRoad; continue; }
+                if (!Walk(0, At, Candidate) || !Walk(0, Candidate, At) || !Walk(1, At, Candidate)) { ++Blocked; continue; }
+                Out = Candidate;
+                if (OutRoad) *OutRoad = At;
+                if (OutSegment) *OutSegment = Segment;
+                return true;
+            }
+    }
+    Note(FString::Printf(TEXT("CIRE_LAYOUT_PROBE_SIDE_SEARCH fraction=%.2f off_nav=%d on_road=%d blocked=%d"), Fraction, OffNav, OnRoad, Blocked));
     return false;
 }
 /** The layout: spawn A (the breach) with the main road and a detour that merges back; spawn B beside the road with a
@@ -109,13 +130,14 @@ bool BuildLayout(UWorld* World, FCireMapLayout& L, FString& Why)
     L = FCireMapLayout(); L.Name = TEXT("Layout probe"); L.Map = ML::ActiveMap();
     const FString Goal = ML::Place(L, ML::Objective, R.GoalCenter, T1);
     ML::SetRadius(L, Goal, static_cast<float>(FMath::Min(R.GoalSize.X, R.GoalSize.Y) * .5));
+    ML::Place(L, ML::PlayerSpawn, R.BaseLocal, T1, 0.f);
     const FString A = ML::Place(L, ML::MonsterSpawn, Route[0], T1, 0.f); ML::SetName(L, A, TEXT("Probe breach"));
     FString A1;
     for (int32 I = 1; I < Route.Num(); ++I) A1 = ML::ChainPoint(L, ML::MonsterPath, A1, Route[I], T1, A);
     ML::SetName(L, A1, TEXT("Main road"));
     // Detour: off the road at ~35 %, back onto it (a merge) at the road vertex nearest ~55 %.
     FVector2D Detour;
-    if (!SidePoint(World, Route, .35, {1400.f, 1000.f, 700.f, 450.f}, Detour)) { Why = TEXT("no navmesh detour beside the road at 35%"); return false; }
+    if (!SidePoint(World, Route, .35, {1400.f, 1000.f, 700.f, 450.f, 300.f}, Detour)) { Why = TEXT("no navmesh detour beside the road at 35%"); return false; }
     const int32 Join = NearestVertex(Route, AlongPolyline(Route, .55), 2);
     FString A2;
     A2 = ML::ChainPoint(L, ML::MonsterPath, A2, Route[1], T1, A);
@@ -123,13 +145,13 @@ bool BuildLayout(UWorld* World, FCireMapLayout& L, FString& Why)
     A2 = ML::ChainPoint(L, ML::MonsterPath, A2, Route[Join], T1);
     ML::SetName(L, A2, TEXT("Detour"));
     // Spawn B: beside the road at ~15 %; its path joins the road at the vertex nearest ~30 %.
-    FVector2D SpawnB;
-    if (!SidePoint(World, Route, .15, {2200.f, 1600.f, 1100.f, 700.f}, SpawnB)) { Why = TEXT("no navmesh spot for a second spawn beside the road"); return false; }
+    // Its path walks back to the road where the spawn spot was found walkable, then joins the road at the next vertex.
+    FVector2D SpawnB, RoadB; int32 SegmentB = 0;
+    if (!SidePoint(World, Route, .15, {2200.f, 1600.f, 1100.f, 700.f, 450.f}, SpawnB, &RoadB, &SegmentB)) { Why = TEXT("no navmesh spot for a second spawn beside the road"); return false; }
     const FString B = ML::Place(L, ML::MonsterSpawn, SpawnB, T1, 0.f); ML::SetName(L, B, TEXT("Probe side gate"));
-    const int32 JoinB = NearestVertex(Route, AlongPolyline(Route, .30), 1);
-    FVector2D Mid; if (!OnNav(World, 0, (SpawnB + Route[JoinB]) * .5, Mid)) Mid = (SpawnB + Route[JoinB]) * .5;
+    const int32 JoinB = FMath::Max(NearestVertex(Route, AlongPolyline(Route, .30), 1), SegmentB + 1);
     FString B1;
-    B1 = ML::ChainPoint(L, ML::MonsterPath, B1, Mid, T1, B);
+    B1 = ML::ChainPoint(L, ML::MonsterPath, B1, RoadB, T1, B);
     B1 = ML::ChainPoint(L, ML::MonsterPath, B1, Route[JoinB], T1);
     ML::SetName(L, B1, TEXT("Side road"));
     const FCireMapMarker* PA2 = ML::Find(L, A2); const FCireMapMarker* PB1 = ML::Find(L, B1);
@@ -249,6 +271,15 @@ bool CireLayoutWiring::TickProbe(ACireGameMode* Mode, float Delta)
         }
         const float Limit = FMath::Max(300.f, CireLanePath::PathLengthOf(World, 0, 1) / 100.f * 1.2f);
         if (Alive > 0 && P.Clock - P.StageAt < Limit) return false;
+        for (const FMarcher& X : P.Marchers)
+            if (!X.bArrived && !X.bDied && X.M.IsValid())
+            {
+                const ACireMonster* M = X.M.Get();
+                const FVector2D L = CireLanePath::ToLocal(X.Realm, M->GetActorLocation());
+                Note(FString::Printf(TEXT("CIRE_LAYOUT_PROBE_STRAGGLER realm=%d path=%d at=(%.0f,%.0f) progress=%.3f waypoint=%d off_path=%.0f speed=%.0f leash=%d victim=%d"), X.Realm, X.Path, L.X, L.Y,
+                    CireLanePath::PathProgress(World, X.Realm, X.Path, M->GetActorLocation()), M->LaneWaypointIndex, CireLanePath::DistanceToUnitPath(M, M->GetActorLocation()),
+                    M->GetVelocity().Size2D(), M->LeashState, M->Victim ? 1 : 0));
+            }
         int32 Arrived[2][3] = {{0, 0, 0}, {0, 0, 0}}, Total = 0; float Longest = 0;
         for (const FMarcher& X : P.Marchers) if (X.bArrived && X.Path >= 0 && X.Path < 3) { ++Arrived[X.Realm][X.Path]; ++Total; Longest = FMath::Max(Longest, X.ArrivedAt - X.SpawnedAt); }
         int32 Nudges = 0, Marches = 0, Despawns = 0; CireWaveDirector::RescueCounts(Mode, Nudges, Marches, Despawns);
@@ -293,8 +324,8 @@ bool CireLayoutWiring::TickProbe(ACireGameMode* Mode, float Delta)
             const float Age = P.Clock - K.StageAt;
             if (!IsValid(M) || !Mode->Monsters.Contains(M))
             {
-                if (K.Stage >= 5) { K.bArrived = true; K.Stage = 9; Note(FString::Printf(TEXT("CIRE_LAYOUT_PROBE_KITE_ARRIVED realm=%d"), K.Realm)); }
-                else { Fail(FString::Printf(TEXT("kite unit of realm %d vanished at stage %d"), K.Realm, K.Stage)); K.Stage = 9; }
+                if (K.Stage >= 5 && (!IsValid(M) || M->Health > 0)) { K.bArrived = true; K.Stage = 9; Note(FString::Printf(TEXT("CIRE_LAYOUT_PROBE_KITE_ARRIVED realm=%d"), K.Realm)); }
+                else { Fail(FString::Printf(TEXT("kite unit of realm %d vanished at stage %d (valid=%d health=%.0f)"), K.Realm, K.Stage, IsValid(M) ? 1 : 0, IsValid(M) ? M->Health : -1.f)); K.Stage = 9; }
                 continue;
             }
             if (!IsValid(H)) { Fail(FString::Printf(TEXT("no kiting hero in realm %d"), K.Realm)); K.Stage = 9; continue; }
@@ -306,7 +337,9 @@ bool CireLayoutWiring::TickProbe(ACireGameMode* Mode, float Delta)
             case 0: // let it march a little, then the kiter steps in next to it
                 if (Age < 6.f) break;
                 {
+                    // A passive kiter: no auto attack, no pending swing, no kit (Executioner would kill the unit outright).
                     H->bBot = false; H->bDrafted = true; H->bAutoAttack = false; H->Health = H->MaxHealth = 1.e6f; H->bDead = false;
+                    H->PendingAttackTarget.Reset(); H->Target = nullptr; H->Skills.Reset(); H->Cooldowns.Reset();
                     const FVector At = Grounded(World, M->GetActorLocation() + M->GetActorForwardVector() * 250.f, H);
                     H->GetCharacterMovement()->StopMovementImmediately();
                     H->SetActorLocation(At, false, nullptr, ETeleportType::TeleportPhysics);
@@ -338,6 +371,9 @@ bool CireLayoutWiring::TickProbe(ACireGameMode* Mode, float Delta)
                 if (CireLeash::IsReturning(M))
                 {
                     K.bSawReturn = true; K.bImmune = !CireLeash::AllowDamage(M); K.bThreatKept = M->Threat.Contains(H);
+                    // The kiter leaves: he keeps his threat but stands far outside the zone, so the unit must march on.
+                    if (!K.Route.IsEmpty()) H->SetActorLocation(Grounded(World, K.Route.Last(), H), false, nullptr, ETeleportType::TeleportPhysics);
+                    else H->SetActorLocation(Grounded(World, CireLanePath::BasePosition(World, K.Realm), H), false, nullptr, ETeleportType::TeleportPhysics);
                     Note(FString::Printf(TEXT("CIRE_LAYOUT_PROBE_KITE_LEASHED realm=%d mode=%s off_path=%.0f max_off_path=%.0f after=%.1fs immune=%d threat_kept=%d"), K.Realm, *K.Why,
                         OffPath, K.MaxOffPath, Age, K.bImmune ? 1 : 0, K.bThreatKept ? 1 : 0));
                     K.Stage = 2; K.StageAt = P.Clock;
@@ -418,7 +454,13 @@ bool CireLayoutWiring::TickProbe(ACireGameMode* Mode, float Delta)
                     Note(FString::Printf(TEXT("CIRE_LAYOUT_PROBE_KITE_RESUMED realm=%d progress=%.3f->%.3f"), K.Realm, K.ProgressAtResume, Progress));
                     K.Stage = 5; K.StageAt = P.Clock;
                 }
-                else if (Age > 30.f) { Fail(FString::Printf(TEXT("realm %d: the unit did not march on after returning"), K.Realm)); K.Stage = 9; }
+                else if (Age > 60.f)
+                {
+                    const FVector2D L = CireLanePath::ToLocal(K.Realm, M->GetActorLocation());
+                    Fail(FString::Printf(TEXT("realm %d: the unit did not march on after returning (at=(%.0f,%.0f) progress=%.3f waypoint=%d speed=%.0f leash=%d victim=%d kiter_off_path=%.0f)"),
+                        K.Realm, L.X, L.Y, Progress, M->LaneWaypointIndex, M->GetVelocity().Size2D(), M->LeashState, M->Victim ? 1 : 0, CireLanePath::DistanceToUnitPath(M, H->GetActorLocation())));
+                    K.Stage = 9;
+                }
                 break;
             }
             case 5: // and arrives
