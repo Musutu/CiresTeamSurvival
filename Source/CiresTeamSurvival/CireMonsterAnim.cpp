@@ -284,6 +284,8 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
         if (bFloor && (MoveAlpha > KINDA_SMALL_NUMBER || Action.Weight > KINDA_SMALL_NUMBER) && Death.Weight <= KINDA_SMALL_NUMBER)
             KeepFeetOnFloor(Output.Pose, FloorZ);
         Overlay(Output, Death);
+        // A retargeted fall (the gun set's) can drive the feet through the floor too; a fallen body's feet rest on it.
+        if (bFloor && Death.Weight > KINDA_SMALL_NUMBER) KeepFeetOnFloor(Output.Pose, FloorZ);
         if (Hands.Any()) CireGrip::Apply(Output.Pose, Hands);
         if (bLockRoot && Output.Pose.GetNumBones() > 0) // world-dressing: the armature proxy root stays at its bind transform
         {

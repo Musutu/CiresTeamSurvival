@@ -27,19 +27,164 @@
   },
   "AetheriBulwark": {
    "war_cry": "/Game/FabDerived/Anim/AetheriBulwark/A_AetheriBulwark_monster_war_cry.A_AetheriBulwark_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/AetheriBulwark/A_AetheriBulwark_monster_ground_slam.A_AetheriBulwark_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/AetheriBulwark/A_AetheriBulwark_monster_ground_slam.A_AetheriBulwark_monster_ground_slam",
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_idle.A_AetheriBulwarkSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_walk_f.A_AetheriBulwarkSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_walk_b.A_AetheriBulwarkSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_walk_l.A_AetheriBulwarkSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_walk_r.A_AetheriBulwarkSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_loco_run_f.A_AetheriBulwarkSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_attack3.A_AetheriBulwarkSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_attack4.A_AetheriBulwarkSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_attack6.A_AetheriBulwarkSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_hit.A_AetheriBulwarkSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_death.A_AetheriBulwarkSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_skill1.A_AetheriBulwarkSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_skill2.A_AetheriBulwarkSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_cast.A_AetheriBulwarkSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/AetheriBulwarkSet/A_AetheriBulwarkSet_sword_shield_shout.A_AetheriBulwarkSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 178.7,
+   "runSpeedCm": 385.2
   },
   "AetheriColossusB": {
    "war_cry": "/Game/FabDerived/Anim/AetheriColossusB/A_AetheriColossusB_monster_war_cry.A_AetheriColossusB_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/AetheriColossusB/A_AetheriColossusB_monster_ground_slam.A_AetheriColossusB_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/AetheriColossusB/A_AetheriColossusB_monster_ground_slam.A_AetheriColossusB_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_idle.A_AetheriColossusBSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_walk_f.A_AetheriColossusBSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_walk_b.A_AetheriColossusBSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_walk_l.A_AetheriColossusBSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_walk_r.A_AetheriColossusBSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_loco_run_f.A_AetheriColossusBSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_attack1.A_AetheriColossusBSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_attack2.A_AetheriColossusBSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_attack3.A_AetheriColossusBSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_hit.A_AetheriColossusBSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_death.A_AetheriColossusBSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_skill1.A_AetheriColossusBSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_skill2.A_AetheriColossusBSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_cast.A_AetheriColossusBSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/AetheriColossusBSet/A_AetheriColossusBSet_unarmed_shout.A_AetheriColossusBSet_unarmed_shout"
+   },
+   "walkSpeedCm": 242.0,
+   "runSpeedCm": 393.0
+  },
+  "AetheriEngineer": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_idle.A_AetheriEngineerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_walk_f.A_AetheriEngineerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_walk_b.A_AetheriEngineerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_walk_l.A_AetheriEngineerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_walk_r.A_AetheriEngineerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_loco_run_f.A_AetheriEngineerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_attack1.A_AetheriEngineerSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_attack2.A_AetheriEngineerSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_attack4.A_AetheriEngineerSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_hit.A_AetheriEngineerSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_death.A_AetheriEngineerSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_skill1.A_AetheriEngineerSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_skill2.A_AetheriEngineerSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_heal.A_AetheriEngineerSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/AetheriEngineerSet/A_AetheriEngineerSet_spell_shout.A_AetheriEngineerSet_spell_shout"
+   },
+   "walkSpeedCm": 183.4,
+   "runSpeedCm": 318.6
   },
   "AetheriHierarch": {
    "war_cry": "/Game/FabDerived/Anim/AetheriHierarch/A_AetheriHierarch_monster_war_cry.A_AetheriHierarch_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/AetheriHierarch/A_AetheriHierarch_monster_ground_slam.A_AetheriHierarch_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/AetheriHierarch/A_AetheriHierarch_monster_ground_slam.A_AetheriHierarch_monster_ground_slam",
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_idle.A_AetheriHierarchSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_walk_f.A_AetheriHierarchSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_walk_b.A_AetheriHierarchSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_walk_l.A_AetheriHierarchSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_walk_r.A_AetheriHierarchSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_loco_run_f.A_AetheriHierarchSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_attack1.A_AetheriHierarchSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_attack2.A_AetheriHierarchSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_attack4.A_AetheriHierarchSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_hit.A_AetheriHierarchSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_death.A_AetheriHierarchSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_skill1.A_AetheriHierarchSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_skill2.A_AetheriHierarchSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_heal.A_AetheriHierarchSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/AetheriHierarchSet/A_AetheriHierarchSet_spell_shout.A_AetheriHierarchSet_spell_shout"
+   },
+   "walkSpeedCm": 216.2,
+   "runSpeedCm": 363.0
+  },
+  "AetheriLancer": {
+   "set": "gun",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_idle.A_AetheriLancerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_walk_f.A_AetheriLancerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_walk_b.A_AetheriLancerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_walk_l.A_AetheriLancerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_walk_r.A_AetheriLancerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_loco_run_f.A_AetheriLancerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_attack1.A_AetheriLancerSet_gun_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_attack2.A_AetheriLancerSet_gun_attack2",
+    "hit": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_hit.A_AetheriLancerSet_gun_hit",
+    "death": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_death.A_AetheriLancerSet_gun_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_skill1.A_AetheriLancerSet_gun_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_skill2.A_AetheriLancerSet_gun_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_cast.A_AetheriLancerSet_gun_cast",
+    "shout": "/Game/FabDerived/Anim/AetheriLancerSet/A_AetheriLancerSet_gun_shout.A_AetheriLancerSet_gun_shout"
+   },
+   "walkSpeedCm": 171.8,
+   "runSpeedCm": 277.7
+  },
+  "AetheriPhaseblade": {
+   "set": "dual",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_idle.A_AetheriPhasebladeSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_walk_f.A_AetheriPhasebladeSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_walk_b.A_AetheriPhasebladeSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_walk_l.A_AetheriPhasebladeSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_walk_r.A_AetheriPhasebladeSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_loco_run_f.A_AetheriPhasebladeSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_attack1.A_AetheriPhasebladeSet_dual_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_attack2.A_AetheriPhasebladeSet_dual_attack2",
+    "attack3": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_attack3.A_AetheriPhasebladeSet_dual_attack3",
+    "hit": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_hit.A_AetheriPhasebladeSet_dual_hit",
+    "death": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_death.A_AetheriPhasebladeSet_dual_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_skill1.A_AetheriPhasebladeSet_dual_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_skill2.A_AetheriPhasebladeSet_dual_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_cast.A_AetheriPhasebladeSet_dual_cast",
+    "shout": "/Game/FabDerived/Anim/AetheriPhasebladeSet/A_AetheriPhasebladeSet_dual_shout.A_AetheriPhasebladeSet_dual_shout"
+   },
+   "walkSpeedCm": 214.1,
+   "runSpeedCm": 316.9
   },
   "AetheriWarframe": {
    "war_cry": "/Game/FabDerived/Anim/AetheriWarframe/A_AetheriWarframe_monster_war_cry.A_AetheriWarframe_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/AetheriWarframe/A_AetheriWarframe_monster_ground_slam.A_AetheriWarframe_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/AetheriWarframe/A_AetheriWarframe_monster_ground_slam.A_AetheriWarframe_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_idle.A_AetheriWarframeSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_walk_f.A_AetheriWarframeSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_walk_b.A_AetheriWarframeSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_walk_l.A_AetheriWarframeSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_walk_r.A_AetheriWarframeSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_loco_run_f.A_AetheriWarframeSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_attack1.A_AetheriWarframeSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_attack2.A_AetheriWarframeSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_attack3.A_AetheriWarframeSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_hit.A_AetheriWarframeSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_death.A_AetheriWarframeSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_skill1.A_AetheriWarframeSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_skill2.A_AetheriWarframeSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_cast.A_AetheriWarframeSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/AetheriWarframeSet/A_AetheriWarframeSet_unarmed_shout.A_AetheriWarframeSet_unarmed_shout"
+   },
+   "walkSpeedCm": 226.6,
+   "runSpeedCm": 364.1
   },
   "BarbedHunter": {
    "war_cry": "/Game/FabDerived/Anim/BarbedHunter/A_BarbedHunter_monster_war_cry.A_BarbedHunter_monster_war_cry",
@@ -959,7 +1104,27 @@
   },
   "SkitterDrone": {
    "war_cry": "/Game/FabDerived/Anim/SkitterDrone/A_SkitterDrone_monster_war_cry.A_SkitterDrone_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/SkitterDrone/A_SkitterDrone_monster_ground_slam.A_SkitterDrone_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/SkitterDrone/A_SkitterDrone_monster_ground_slam.A_SkitterDrone_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_idle.A_SkitterDroneSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_walk_f.A_SkitterDroneSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_walk_b.A_SkitterDroneSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_walk_l.A_SkitterDroneSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_walk_r.A_SkitterDroneSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_loco_run_f.A_SkitterDroneSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_attack1.A_SkitterDroneSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_attack2.A_SkitterDroneSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_attack3.A_SkitterDroneSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_hit.A_SkitterDroneSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_death.A_SkitterDroneSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_skill1.A_SkitterDroneSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_skill2.A_SkitterDroneSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_cast.A_SkitterDroneSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/SkitterDroneSet/A_SkitterDroneSet_unarmed_shout.A_SkitterDroneSet_unarmed_shout"
+   },
+   "walkSpeedCm": 97.9,
+   "runSpeedCm": 152.7
   },
   "Sporeling": {
    "war_cry": "/Game/FabDerived/Anim/Sporeling/A_Sporeling_monster_war_cry.A_Sporeling_monster_war_cry",
@@ -1600,6 +1765,60 @@
    "contact": 0.1,
    "end": 1.167,
    "recoverRate": 1.0
+  },
+  "gun_attack1": {
+   "start": 0.0,
+   "contact": 0.219,
+   "end": 1.232,
+   "recoverRate": 1.2
+  },
+  "gun_attack2": {
+   "start": 0.0,
+   "contact": 0.354,
+   "end": 1.273,
+   "recoverRate": 1.2
+  },
+  "gun_attack3": {
+   "start": 0.0,
+   "contact": 0.8,
+   "end": 1.64,
+   "recoverRate": 1.2
+  },
+  "gun_hit": {
+   "start": 0.0,
+   "contact": 0.12,
+   "end": 0.833,
+   "recoverRate": 1.0
+  },
+  "gun_death": {
+   "start": 0.0,
+   "contact": 0.1,
+   "end": 2.667,
+   "recoverRate": 1.0
+  },
+  "gun_skill1": {
+   "start": 0.0,
+   "contact": 0.35,
+   "end": 1.33,
+   "recoverRate": 1.2
+  },
+  "gun_skill2": {
+   "start": 0.0,
+   "contact": 1.306,
+   "end": 2.9,
+   "recoverRate": 1.2
+  },
+  "gun_cast": {
+   "start": 0.0,
+   "contact": 1.533,
+   "end": 2.91,
+   "recoverRate": 1.2
+  },
+  "gun_shout": {
+   "start": 0.0,
+   "contact": 1.108,
+   "end": 1.966,
+   "recoverRate": 1.2
   }
  }
 }

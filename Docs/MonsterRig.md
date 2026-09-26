@@ -22,7 +22,7 @@ and moves the parts Tripo gave no bones to (tentacles, vines) **in the skin mate
    casts -> cast; rank-scaled readable wind-ups (`cire.Monsters.SwingReadability`, normal .3-.5 s, elite .38-.6 s,
    boss .55-.85 s); directional gait layer (strafe L/R, back-pedal, side steps; only the fallback when
    movement-feel (cire.Locomotion) is off, since its travel warp and reversed gait own that); feet floor
-   clamp (the pelvis lifts so a retargeted lunge or low gait never sinks the lowest foot below the idle stance).
+   clamp (the pelvis lifts so a retargeted lunge, low gait or fall never sinks the lowest foot below the idle stance).
 4. **Skin sway** - `M_CireMonsterSkin` (`Tools/BuildRaceSkinMaterial.py`, patched in place when the asset exists)
    has a world-position-offset sway on the *pre-skinned* position: up to two ellipsoid regions per body
    (`SwayCenterA/B`, `SwayRadiiA/B`, `SwayBandA/B` = rootZ, tipZ, amount cm) plus `SwaySpeed`/`SwayWave`, all
@@ -42,6 +42,7 @@ and moves the parts Tripo gave no bones to (tentacles, vines) **in the skin mate
 | voidborn | RiftStalkerHQ dual, VoidRavager unarmed, NullWardenHQ unarmed, RiftWeaverHQ spell, RiftGazer spell, Voidling unarmed, VoidbornHerald spell, VoidbornDevourer unarmed | 8/8 retargeted, 15 roles each. Sway: Rift Gazer upright eye stalks (face mask Saved/MonsterGallery/20260926-091949). Herald is robe-only (no sway). Gallery grounded; audit flags minor (VoidbornHerald far 2% on the staff hand). |
 | drakkari | DrakkariWhelpguard one_hand, DrakkariScalebreaker two_hand, DrakkariScaleguard sword_shield, DrakkariFlamecallerHQ spell, DrakkariWingshot bow, EmberWhelp unarmed, DrakkariBroodmother spell, DrakkariAshwing two_hand | 8/8 retargeted, 15 roles each. Segmentation candidates DrakkariAshwing (far 13.6%) and EmberWhelp (far 11.9%) checked close up (Saved/MonsterGallery/20260926-092643): the flags are folded wings weighted to upperarm/clavicle and the whelp's tail on thigh_l; no visible stretch, so not segmented. Broodmother wings likewise. No hanging parts to sway. |
 | fallen_order | FallenSquire one_hand, DreadKnight two_hand, OathbreakerTemplar sword_shield, BlightedChaplain spell, FallenInquisitorCrossbow crossbow, Flagellant dual, FallenHighInquisitor spell, FallenCrusader two_hand | 8/8 retargeted (crossbow set maps 11 roles by design, the rest 15). Gallery: sword+shield, two-hand, dual, crossbow and spell poses read, grounded. No hanging parts to sway; no visible audit artifacts (FallenCrusader clavicle 'far' flags are its pauldrons). |
+| aetheri | AetheriPhaseblade dual, AetheriWarframe unarmed, AetheriBulwark sword_shield, AetheriEngineer spell, AetheriLancer gun, SkitterDrone unarmed, AetheriHierarch spell, AetheriColossusB unarmed | 8/8 retargeted (15 roles; AetheriLancer 14: the retarget validator rejected gun_attack3, 'body order broken at 0.33s', so its swing rotation uses attack/attackAlt). Lancer's gun death sank the feet 10-20 cm: the feet-floor clamp now also holds through deaths (every 'lies down' check still passes). No hanging parts to sway; AetheriHierarch/Lancer audit flags are staff/lance hands, no visible stretch. |
 | other races | assigned in `monsterSets.assign`, not yet retargeted | - |
 
 Segmentation: none needed for drowned/blightwood - every fused weapon is weighted to the hand that holds it
