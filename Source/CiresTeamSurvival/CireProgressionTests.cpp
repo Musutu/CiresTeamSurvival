@@ -423,6 +423,44 @@ bool CireProgression::RunSmoke(ACireGameMode* Mode)
     Traveler->SetActorLocation(Mode->BasePosition(0) + FVector(4000, 0, 0));
     Inv->Teleport();
     Check(!Inv->IsChanneling() && Traveler->Notice.Contains(TEXT("recharging")), TEXT("teleport on cooldown is refused"));
+    // jungle-packs: Recall goes to the NEAREST Recall Point of the hero's team; a team without one goes to the base.
+    {
+        UWorld* RW = Mode->GetWorld();
+        const FCireBattlefieldRoutes Before = CireLanePath::Get(RW);
+        ON_SCOPE_EXIT { FString Ignore; CireLanePath::ApplyLive(RW, Before, &Ignore); };
+        const FVector2D BaseLocal = CireLanePath::ToLocal(0, Mode->BasePosition(0));
+        FCireRouteSpot Near, Far; Near.Position = BaseLocal + FVector2D(2600, 300); Far.Position = BaseLocal + FVector2D(-600, -300);
+        FCireBattlefieldRoutes WithPoints = Before;
+        WithPoints.Recalls[0] = {Far, Near}; WithPoints.Recalls[1].Reset();
+        FString Why;
+        Check(CireLanePath::ApplyLive(RW, WithPoints, &Why) && CireLanePath::HasRecallPoint(RW, 0) && !CireLanePath::HasRecallPoint(RW, 1), *(TEXT("recall points apply live: ") + Why));
+        auto RecallFrom = [&](const FVector2D& Local)
+        {
+            Traveler->SetActorLocation(CireLanePath::ToWorld(0, Local, 110.f), false, nullptr, ETeleportType::TeleportPhysics);
+            Inv->TeleportReadyAt = 0;
+            Inv->Teleport();
+            const bool bChannel = Inv->IsChanneling();
+            Inv->CompleteTeleportNow();
+            return bChannel;
+        };
+        const bool bNearChannel = RecallFrom(Near.Position + FVector2D(1800, 0));
+        Check(bNearChannel && FVector::Dist2D(Traveler->GetActorLocation(), CireLanePath::ToWorld(0, Near.Position, 0)) < 250 && Traveler->Notice.Contains(TEXT("recall point")) &&
+            FMath::IsNearlyEqual(Inv->TeleportCooldownRemaining(), static_cast<float>(CireItems::Get().Teleport.CooldownSeconds), 1.f), TEXT("recall channels, lands at the nearest recall point and starts the 2 min cooldown"));
+        RecallFrom(Far.Position + FVector2D(-1800, 0));
+        Check(FVector::Dist2D(Traveler->GetActorLocation(), CireLanePath::ToWorld(0, Far.Position, 0)) < 250, TEXT("the nearest recall point wins"));
+        Check(CireItems::RecallDestination(Traveler).Equals(CireLanePath::RecallNear(RW, 0, Traveler->GetActorLocation(), 110.f), 1.) , TEXT("RecallDestination is the team's nearest point"));
+        // Damage still interrupts the channel (no cooldown spent) with recall points in play.
+        Traveler->SetActorLocation(CireLanePath::ToWorld(0, Near.Position + FVector2D(1800, 0), 110.f), false, nullptr, ETeleportType::TeleportPhysics);
+        Inv->TeleportReadyAt = 0; Inv->Teleport();
+        CireItems::OnHeroDamaged(Traveler, M, TEXT("Monster attack"), 10.f);
+        Check(!Inv->IsChanneling() && Inv->TeleportCooldownRemaining() <= 0, TEXT("damage interrupts a recall to a recall point"));
+        // The other team's points are not ours: team 0 without points falls back to the base.
+        WithPoints.Recalls[1] = WithPoints.Recalls[0]; WithPoints.Recalls[0].Reset();
+        CireLanePath::ApplyLive(RW, WithPoints, &Why);
+        RecallFrom(BaseLocal + FVector2D(4000, 0));
+        Check(FVector::Dist2D(Traveler->GetActorLocation(), Mode->BasePosition(0)) < 500 && Traveler->Notice.Contains(TEXT("town")), TEXT("no recall point for the team: recall reaches the base"));
+        Check(CireItems::Get().Teleport.CooldownSeconds == 120. && CireItems::Get().Teleport.ChannelSeconds > 0., TEXT("the 120 s cooldown and the channel come from Items.json"));
+    }
     F.Prep();
     Inv->Teleport();
     Check(FVector::Dist2D(Traveler->GetActorLocation(), Mode->BasePosition(0)) < 300, TEXT("prep recall is instant and ignores the cooldown"));

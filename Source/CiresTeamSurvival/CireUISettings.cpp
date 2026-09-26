@@ -78,7 +78,7 @@ void FCireUISettings::Reset()
     Add(TEXT("Focus"), 290.f, 176.f, 218.f, 123.f);
     Add(TEXT("Minimap"), 1040.f, 20.f, 220.f, 178.f);
     Add(TEXT("Chat"), 20.f, 528.f, 306.f, 172.f);
-    Add(TEXT("Skills"), 344.f, 545.f, 584.f, 155.f);
+    Add(TEXT("Skills"), 336.f, 545.f, 632.f, 155.f); // jungle-packs: 48 px wider for the Recall button
     Add(TEXT("Meter"), 1040.f, 566.f, 220.f, 134.f);
     Add(TEXT("CombatLog"), 1040.f, 412.f, 220.f, 140.f);
     Add(TEXT("CombatText"), 425.f, 240.f, 430.f, 220.f);

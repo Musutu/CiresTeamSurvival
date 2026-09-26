@@ -6,6 +6,7 @@
 #include "CireBuffs.h" // aura-vfx
 // progression-shop: see CireItems.h, Docs/Items.md.
 #include "CireGame.h"
+#include "CireLanePath.h" // jungle-packs: recall points
 #include "CireCombatEvents.h"
 #include "CireThreat.h"
 #include "CireSummon.h"
@@ -532,6 +533,19 @@ ShopAccess CireItems::ShopAccessFor(const ACireHero* Hero)
     return CheckShopAccess(Get().Shop, static_cast<int>(Mode->Clock.Phase()), Distance, Hero->bDead);
 }
 
+FVector CireItems::RecallDestination(const ACireHero* Hero, bool* bOutRecallPoint)
+{
+    if (bOutRecallPoint) *bOutRecallPoint = false;
+    const UWorld* World = Hero ? Hero->GetWorld() : nullptr;
+    auto* Mode = World ? World->GetAuthGameMode<ACireGameMode>() : nullptr;
+    if (!Hero || !World) return FVector::ZeroVector;
+    if (CireLanePath::HasRecallPoint(World, Hero->TeamId))
+    {
+        if (bOutRecallPoint) *bOutRecallPoint = true;
+        return CireLanePath::RecallNear(World, Hero->TeamId, Hero->GetActorLocation(), 110.f);
+    }
+    return Mode ? Mode->BasePosition(Hero->TeamId) : CireLanePath::BasePosition(World, Hero->TeamId, 110.f);
+}
 void CireItems::RequestTeleport(ACireHero* Hero)
 {
     if (UCireInventory* Inventory = InventoryOf(Hero)) Inventory->Teleport();
@@ -1162,23 +1176,26 @@ void UCireInventory::Teleport()
     switch (Result)
     {
     case TeleportStart::Instant:
-        Owner->ReviveAt(Mode->BasePosition(Owner->TeamId));
-        Message = TEXT("Recalled to town.");
+    {
+        bool bPoint = false;
+        Owner->ReviveAt(CireItems::RecallDestination(Owner, &bPoint)); // jungle-packs: the nearest Recall Point (else the base)
+        Message = bPoint ? TEXT("Recalled to the recall point.") : TEXT("Recalled to town.");
         break;
+    }
     case TeleportStart::Channeling:
         TeleportChannelStart = static_cast<float>(State.ChannelStart);
         TeleportChannelEnd = static_cast<float>(State.ChannelEnd);
         ChannelOrigin = Owner->GetActorLocation();
-        Message = FString::Printf(TEXT("Teleporting to base... %.0fs (damage or moving cancels)"), Rules.ChannelSeconds);
+        Message = FString::Printf(TEXT("Recalling... %.0fs (damage or moving cancels)"), Rules.ChannelSeconds);
         break;
     case TeleportStart::OnCooldown:
-        Message = FString::Printf(TEXT("Teleport to Base recharging: %.0fs."), TeleportCooldownRemaining());
+        Message = FString::Printf(TEXT("Recall recharging: %.0fs."), TeleportCooldownRemaining());
         break;
     case TeleportStart::AlreadyChanneling:
         InterruptTeleport(TEXT("Teleport cancelled."));
         return;
     default:
-        Message = Owner->bDead ? TEXT("The fallen cannot teleport.") : TEXT("Teleport to Base is sealed during the arena.");
+        Message = Owner->bDead ? TEXT("The fallen cannot recall.") : TEXT("Recall is sealed during the arena.");
         break;
     }
     Owner->Notice = Message;
@@ -1260,10 +1277,13 @@ void UCireInventory::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
                 CireThreat::Remove(Owner);
                 Owner->Target = nullptr;
                 Owner->GetCharacterMovement()->StopMovementImmediately();
-                const FVector Spot = Mode->BasePosition(Owner->TeamId) + FVector(120, (static_cast<int32>(Owner->GetUniqueID() % 5) - 2) * 110, 0);
+                // jungle-packs: the nearest Recall Point of the hero's team (else the base), with a small per-hero spread.
+                bool bPoint = false;
+                const FVector Spot = CireItems::RecallDestination(Owner, &bPoint) + FVector(bPoint ? 0 : 120, (static_cast<int32>(Owner->GetUniqueID() % 5) - 2) * (bPoint ? 70 : 110), 0);
                 Owner->SetActorLocation(Spot, false, nullptr, ETeleportType::TeleportPhysics);
-                Owner->Notice = TEXT("Arrived at town.");
-                SendFeedback(ECireShopAction::Teleport, true, NAME_None, 2, false, 0, TEXT("Arrived at town."));
+                const TCHAR* Arrived = bPoint ? TEXT("Recalled: you stand at the recall point.") : TEXT("Arrived at town.");
+                Owner->Notice = Arrived;
+                SendFeedback(ECireShopAction::Teleport, true, NAME_None, 2, false, 0, Arrived);
             }
         }
     }

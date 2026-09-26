@@ -375,5 +375,5 @@ Why a marker type and not a vendor sub-handle:
   - recall points compile
   - extra objectives and Play Bounds are explained by Validate
 - **`Tests/ItemRulesTests.cpp`:** `RouteSchedule` with 150 bays.
-- **`CireItems` Recall checks:** targeting, cooldown and the channel interrupt (see the Recall section of the report, `CIRE_RECALL_PASS`).
+- **Recall checks** (in `CireProgression::RunSmoke`, `CIRE_PROGRESSION_PASS`, part of the expansion gate): the channel, damage and movement interrupts, the nearest Recall Point of the team, the fallback to the base when the team has none, and the 120 s cooldown from Items.json.
 - **Town probe** (`Tools/RunJunglePackProbe.py`, `-CireJungleProbe`): 40 packs of mixed tiers and types in both realms on the town, every composition valid, no errors (`CIRE_JUNGLE_PROBE_PASS`).
