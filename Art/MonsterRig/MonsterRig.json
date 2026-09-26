@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "branch": "feat/monster-rig",
  "operator": "Claude (monster-rig worktree)",
- "status": "24 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
+ "status": "32 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
  "credits": {
   "observedBalanceAtStart": 14961,
   "observedBalanceAtPause": 14941,
@@ -89,6 +89,53 @@
    "gallery": "Saved/MonsterGallery/20260926-091314",
    "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
    "note": "8/8 retargeted, 15 roles each. Gallery: weapon poses read (axes, sword+shield, dual, two-hand club, spell), grounded. No hanging parts to sway; no audit flags."
+  },
+  "voidborn": {
+   "bodies": {
+    "RiftStalkerHQ": {
+     "set": "dual",
+     "walkSpeedCm": 241.5,
+     "runSpeedCm": 365.2
+    },
+    "VoidRavager": {
+     "set": "unarmed",
+     "walkSpeedCm": 196.0,
+     "runSpeedCm": 316.3
+    },
+    "NullWardenHQ": {
+     "set": "unarmed",
+     "walkSpeedCm": 179.4,
+     "runSpeedCm": 291.3
+    },
+    "RiftWeaverHQ": {
+     "set": "spell",
+     "walkSpeedCm": 216.6,
+     "runSpeedCm": 353.2
+    },
+    "RiftGazer": {
+     "set": "spell",
+     "walkSpeedCm": 170.5,
+     "runSpeedCm": 309.6
+    },
+    "Voidling": {
+     "set": "unarmed",
+     "walkSpeedCm": 70.7,
+     "runSpeedCm": 112.9
+    },
+    "VoidbornHerald": {
+     "set": "spell",
+     "walkSpeedCm": 155.9,
+     "runSpeedCm": 268.5
+    },
+    "VoidbornDevourer": {
+     "set": "unarmed",
+     "walkSpeedCm": 206.6,
+     "runSpeedCm": 326.4
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-091819",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "8/8 retargeted, 15 roles each. Sway: Rift Gazer upright eye stalks (face mask Saved/MonsterGallery/20260926-091949). Herald is robe-only (no sway). Gallery grounded; audit flags minor (VoidbornHerald far 2% on the staff hand)."
   }
  }
 }
