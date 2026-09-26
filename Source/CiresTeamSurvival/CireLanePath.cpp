@@ -239,6 +239,44 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
     if (!Validate(Candidate,Error)) return false;
     Out = MoveTemp(Candidate); Error.Reset(); return true;
 }
+// layout-wiring: the map layout's extra paths, spawns and spots follow the same realm and goal rules as the route.
+static bool ValidateExtras(const FCireBattlefieldRoutes& R, FString& Error, TFunctionRef<bool(const FVector2D&, double)> Inside)
+{
+    auto Fail = [&](const TCHAR* Reason) { Error = Reason; return false; };
+    auto Finite2 = [](const FVector2D& P) { return FMath::IsFinite(P.X) && FMath::IsFinite(P.Y); };
+    const FVector2D GoalHalf = R.GoalSize * .5;
+    auto InGoal = [&](const FVector2D& P, double Margin)
+    { return FMath::Abs(P.X - R.GoalCenter.X) <= GoalHalf.X + Margin && FMath::Abs(P.Y - R.GoalCenter.Y) <= GoalHalf.Y + Margin; };
+    for (int32 Team = 0; Team < 2; ++Team)
+    {
+        if (R.Paths[Team].Num() > FCireBattlefieldRoutes::MaxPaths) return Fail(TEXT("A realm may march at most 16 monster paths"));
+        if (R.Spawns[Team].Num() > FCireBattlefieldRoutes::MaxSpawns) return Fail(TEXT("A realm may have at most 16 monster spawns"));
+        for (const FCireRouteSpot& S : R.Spawns[Team]) if (!Finite2(S.Position) || !Inside(S.Position, 100)) return Fail(TEXT("Monster spawns must be inside their realm"));
+        for (int32 P = 1; P < R.Paths[Team].Num(); ++P)
+        {
+            const FCireRoutePath& Path = R.Paths[Team][P];
+            if (Path.Points.Num() < 2 || Path.Points.Num() > 64) return Fail(TEXT("Every monster path needs 2..64 points"));
+            if (!FMath::IsFinite(Path.Weight) || Path.Weight < 0 || Path.Weight > 100) return Fail(TEXT("Path weights must be 0..100"));
+            if (R.Spawns[Team].Num() > 0 && !R.Spawns[Team].IsValidIndex(Path.Spawn)) return Fail(TEXT("Every monster path must start at a monster spawn"));
+            for (int32 I = 0; I < Path.Points.Num(); ++I)
+            {
+                if (!Finite2(Path.Points[I]) || !Inside(Path.Points[I], 100)) return Fail(TEXT("Route points must be finite and inside their realm with unit clearance"));
+                if (I > 0 && FVector2D::DistSquared(Path.Points[I - 1], Path.Points[I]) < 2500) return Fail(TEXT("Adjacent route points must be at least 50 cm apart"));
+                if (I + 1 < Path.Points.Num() && InGoal(Path.Points[I], 100)) return Fail(TEXT("Only the final point may enter the town defense zone"));
+            }
+            if (!InGoal(Path.Points.Last(), 0)) return Fail(TEXT("Every monster path must end inside the castle goal zone"));
+        }
+        for (const TArray<FCireRouteSpot>* List : {&R.PlayerSpawns[Team], &R.Respawns[Team], &R.Bosses[Team], &R.Rifts[Team]})
+        {
+            if (List->Num() > FCireBattlefieldRoutes::MaxSpots) return Fail(TEXT("At most 16 spots of a kind per realm"));
+            for (const FCireRouteSpot& S : *List) if (!Finite2(S.Position) || !FMath::IsFinite(S.Yaw) || !FMath::IsFinite(S.Radius) || !Inside(S.Position, 0))
+                return Fail(TEXT("Player spawns, respawns, boss spawns and rifts must be inside the realm"));
+        }
+    }
+    if (R.PlayBounds.Num() > 0 && (R.PlayBounds.Num() < 3 || R.PlayBounds.Num() > 64)) return Fail(TEXT("Play bounds need 3..64 corners"));
+    for (const FVector2D& P : R.PlayBounds) if (!Finite2(P)) return Fail(TEXT("Play bounds must be finite"));
+    return true;
+}
 // medieval-kingdom: the pack town's rules. Its frame is centred on the town, so the route may run in any
 // direction; the realms are separated by distance (CastleTown.json offsets), not by a cliff at Y = 0.
 static bool ValidateTown(const FCireBattlefieldRoutes& R, FString& Error)
@@ -287,6 +325,7 @@ static bool ValidateTown(const FCireBattlefieldRoutes& R, FString& Error)
     if (R.EscortEveryWaves < 0 || R.EscortEveryWaves > 100 || R.EscortCount < 1 || R.EscortCount > 4 || R.EscortLeakCost < 1 || R.EscortLeakCost > 100 ||
         !(R.EscortHealthMultiplier >= 1 && R.EscortHealthMultiplier <= 50) || !(R.EscortMoveSpeed >= 50 && R.EscortMoveSpeed <= 500))
         return Fail(TEXT("Invalid armored escort schedule or stats"));
+    if (!ValidateExtras(R, Error, [&](const FVector2D& P, double Margin) { return Inside(P, Margin); })) return false;
     Error.Reset(); return true;
 }
 // nav-paths: semantic rules shared by the JSON loader and the live path editor.
@@ -338,6 +377,8 @@ bool CireLanePath::Validate(const FCireBattlefieldRoutes& R, FString& Error)
     if (R.EscortEveryWaves < 0 || R.EscortEveryWaves > 100 || R.EscortCount < 1 || R.EscortCount > 4 || R.EscortLeakCost < 1 || R.EscortLeakCost > 100 ||
         !(R.EscortHealthMultiplier >= 1 && R.EscortHealthMultiplier <= 50) || !(R.EscortMoveSpeed >= 50 && R.EscortMoveSpeed <= 500))
         return Fail(TEXT("Invalid armored escort schedule or stats"));
+    auto InsideRealm = [&](const FVector2D& P, double Margin) { return P.X >= R.MinX + Margin && P.X <= R.MaxX - Margin && FMath::Abs(P.Y) <= R.HalfWidth - Margin; };
+    if (!ValidateExtras(R, Error, InsideRealm)) return false;
     Error.Reset(); return true;
 }
 FCireBattlefieldRoutes CireLanePath::TownDefaults()
@@ -359,7 +400,11 @@ bool CireLanePath::SameLayout(const FCireBattlefieldRoutes& A, const FCireBattle
         A.EscortEveryWaves == B.EscortEveryWaves && A.EscortCount == B.EscortCount && A.EscortLeakCost == B.EscortLeakCost &&
         A.EscortHealthMultiplier == B.EscortHealthMultiplier && A.EscortMoveSpeed == B.EscortMoveSpeed &&
         A.bTownFrame == B.bTownFrame && A.BaseLocal == B.BaseLocal && A.bRespawn == B.bRespawn && A.RespawnLocal == B.RespawnLocal &&
-        A.bBossSpawn == B.bBossSpawn && A.BossLocal == B.BossLocal;
+        A.bBossSpawn == B.bBossSpawn && A.BossLocal == B.BossLocal &&
+        // layout-wiring
+        A.Spawns[0] == B.Spawns[0] && A.Spawns[1] == B.Spawns[1] && A.Paths[0] == B.Paths[0] && A.Paths[1] == B.Paths[1] &&
+        A.PlayerSpawns[0] == B.PlayerSpawns[0] && A.PlayerSpawns[1] == B.PlayerSpawns[1] && A.Respawns[0] == B.Respawns[0] && A.Respawns[1] == B.Respawns[1] &&
+        A.Bosses[0] == B.Bosses[0] && A.Bosses[1] == B.Bosses[1] && A.Rifts[0] == B.Rifts[0] && A.Rifts[1] == B.Rifts[1] && A.PlayBounds == B.PlayBounds;
 }
 FString CireLanePath::DataPath()
 {
@@ -468,8 +513,9 @@ FVector2D CireLanePath::GoalZoneExtent(const UWorld* World) { return Get(World).
 float CireLanePath::LaneWidth(const UWorld* World) { return Get(World).LaneWidth; }
 bool CireLanePath::Reload(FString* Error)
 {
-    FString Json, Why; FCireBattlefieldRoutes Candidate; bLoaded = true;
-    if (!FFileHelper::LoadFileToString(Json,*DataPath()) || !ParseJson(Json,Candidate,Why))
+    FString Why; FCireBattlefieldRoutes Candidate; bLoaded = true;
+    // layout-wiring: the route file plus the map layout editor's MapLayout.json (one source of truth, CireLanePathLayout.cpp).
+    if (!LoadActive(Candidate,&Why))
     {
         if (Why.IsEmpty()) Why = TEXT("BattlefieldRoutes.json could not be read");
         if (Error) *Error = Why;
@@ -483,10 +529,9 @@ bool CireLanePath::Reload(FString* Error)
 }
 bool CireLanePath::Reload(UWorld* World,FString* Error)
 {
-    FString Why,Json;FCireBattlefieldRoutes Candidate;
+    FString Why;FCireBattlefieldRoutes Candidate;
     if (!World || !World->GetAuthGameMode<ACireGameMode>()) Why=TEXT("Only the authoritative match may reload routes");
-    else if (!FFileHelper::LoadFileToString(Json,*DataPath())) Why=TEXT("BattlefieldRoutes.json could not be read");
-    else if (ParseJson(Json,Candidate,Why))
+    else if (LoadActive(Candidate,&Why)) // layout-wiring: route file + MapLayout.json
     {
         const auto& Old=Get(World);
         if (Candidate.MinX!=Old.MinX || Candidate.MaxX!=Old.MaxX || Candidate.HalfWidth!=Old.HalfWidth) Why=TEXT("Lane bounds changes require a match restart; live reload supports paths and escort tuning");
@@ -510,6 +555,8 @@ void CireLanePath::PublishState(ACireGameState* State)
     // dev-route-tools: per realm the pack count, then x, y, radius and tier of each authored pack.
     for(int32 Team=0;Team<2;++Team){L.Add(R.Bays[Team].Num());for(const FCireChallengeBay& B:R.Bays[Team]){L.Add(B.Position.X);L.Add(B.Position.Y);L.Add(B.Radius);L.Add(B.Tier);}}
     L.Add(R.bTownFrame?1.f:0.f);L.Add(R.BaseLocal.X);L.Add(R.BaseLocal.Y); // medieval-kingdom
+    PackExtras(R,L); // layout-wiring: every monster path, spawn, hero/boss/respawn/rift spot and the play bounds
+    if(L.Num()>2000)UE_LOG(LogCireLanePath,Warning,TEXT("CIRE_LANE_LAYOUT_LARGE floats=%d (replication arrays cap near 2048; simplify the layout's paths)"),L.Num());
     State->ForceNetUpdate();
 }
 void CireLanePath::ReceiveState(ACireGameState* State)
@@ -540,7 +587,12 @@ void CireLanePath::ReceiveState(ACireGameState* State)
         {
             Entry.Data.LaneWidth=L[0];Entry.Data.GoalCenter=FVector2D(L[1],L[2]);Entry.Data.GoalSize=FVector2D(L[3],L[4]);
             Entry.Data.Bays[0]=Bays[0];Entry.Data.Bays[1]=Bays[1];
-            if(At+3<=L.Num()){Entry.Data.bTownFrame=L[At]>.5f;Entry.Data.BaseLocal=FVector2D(L[At+1],L[At+2]);} // medieval-kingdom
+            if(At+3<=L.Num()){Entry.Data.bTownFrame=L[At]>.5f;Entry.Data.BaseLocal=FVector2D(L[At+1],L[At+2]);At+=3;} // medieval-kingdom
+            // layout-wiring: the extras block (paths, spawns, spots, bounds); a malformed block keeps the single route.
+            FCireBattlefieldRoutes Extras=Entry.Data;
+            for(int32 Team=0;Team<2;++Team){Extras.Spawns[Team].Reset();Extras.Paths[Team].Reset();Extras.PlayerSpawns[Team].Reset();Extras.Respawns[Team].Reset();Extras.Bosses[Team].Reset();Extras.Rifts[Team].Reset();}
+            Extras.PlayBounds.Reset();
+            if(UnpackExtras(L,At,Extras))Entry.Data=MoveTemp(Extras);
         }
     }
     Entry.ReceivedVersion=State->LaneRouteVersion;++Entry.Revision;
@@ -676,16 +728,16 @@ FVector CireLanePath::GoalPosition(const UWorld* World,int32 Team,float Z)
 void CireLanePath::InitializeProgress(ACireMonster* M)
 {
     if (!IsValid(M) || !M->HasAuthority() || M->Lane < 0 || M->Lane > 1) return;
-    const auto& R = Get(M->GetWorld()); const FVector P = M->GetActorLocation();
-    M->LaneWaypointIndex = ProjectNext(R.LocalPoints[M->Lane],ToLocal(M->Lane,P));
+    const FVector P = M->GetActorLocation();
+    // layout-wiring: each unit walks its own path (LanePath) of its realm.
+    M->LaneWaypointIndex = ProjectNext(UnitPath(M),ToLocal(M->Lane,P));
     M->LaneRouteRevision = Revision(M->GetWorld());
 }
 FVector CireLanePath::NextWaypoint(ACireMonster* M)
 {
     if (!IsValid(M) || M->Lane < 0 || M->Lane > 1) return FVector::ZeroVector;
-    const auto& R = Get(M->GetWorld());
-    if (M->LaneRouteRevision != Revision(M->GetWorld()) || M->LaneWaypointIndex < 1 || M->LaneWaypointIndex >= R.LocalPoints[M->Lane].Num()) InitializeProgress(M);
-    const auto& Points = R.LocalPoints[M->Lane]; const FVector P = M->GetActorLocation();
+    if (M->LaneRouteRevision != Revision(M->GetWorld()) || M->LaneWaypointIndex < 1 || M->LaneWaypointIndex >= UnitPath(M).Num()) InitializeProgress(M);
+    const auto& Points = UnitPath(M); const FVector P = M->GetActorLocation();
     const FVector2D Local=ToLocal(M->Lane,P);
     // world-scale: a unit carried forward off its march (escort guards walking beside their escortee, a chase) resumes
     // from where it now is instead of walking back to a stale waypoint; on the 495 m road that walk-back reached the

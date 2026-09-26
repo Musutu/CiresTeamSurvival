@@ -29,7 +29,9 @@
 #include "CireSummon.h"
 #include "CireThreat.h"
 #include "CireNPCCombat.h"
-#include "CireWaves.h" // wave-director
+#include "CireWaves.h"
+#include "CireLeash.h" // layout-wiring
+#include "CireLayoutRuntime.h" // layout-wiring // wave-director
 #include "CireNav.h" // nav-paths
 #include "CireNPCState.h"
 #include "CireStatusVisual.h"
@@ -719,10 +721,12 @@ void ACireHero::Tick(float DeltaSeconds)
         if (Mode->Clock.Phase() == Cires::MatchPhase::Survival)
         {
             RespawnTimer -= DeltaSeconds;
-            if (RespawnTimer <= 0) ReviveAt(CireLanePath::RespawnPosition(GetWorld(), TeamId) + FVector(0, (static_cast<int32>(GetUniqueID() % 5) - 2) * 110, 100)); // medieval-kingdom: respawn spot from data
+            // layout-wiring: the Respawn marker nearest to where the hero fell (WoW graveyards); else the route's respawn spot.
+            if (RespawnTimer <= 0) ReviveAt(CireLanePath::RespawnNear(GetWorld(), TeamId, GetActorLocation()) + FVector(0, (static_cast<int32>(GetUniqueID() % 5) - 2) * 110, 100));
         }
         return;
     }
+    CireLayoutRuntime::TickHero(this, DeltaSeconds); // layout-wiring: Play Bounds
     if (PendingAttackTarget.IsValid()) {
         AttackReleaseTimer -= DeltaSeconds;
         if (AttackReleaseTimer <= 0) {
@@ -981,6 +985,7 @@ void ACireMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ACireMonster, bBoss);
     DOREPLIFETIME(ACireMonster, bArmoredEscort);
     DOREPLIFETIME(ACireMonster, bNeutral); // wave-director
+    DOREPLIFETIME(ACireMonster, LeashState); // layout-wiring: evading units read on every peer
     DOREPLIFETIME(ACireMonster, LeakCostOverride);
     DOREPLIFETIME(ACireMonster, Health);
     DOREPLIFETIME(ACireMonster, MaxHealth);
@@ -995,6 +1000,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
     if (!HasAuthority() || !Mode || !Attacker || !Attacker->IsHostile(this) || Health <= 0 ||
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
     if (!CireWaveDirector::AllowDamage(this, Attacker)) return 0; // wave-director: neutral packs ignore bots; a player's hit aggroes the pack
+    if (!CireLeash::AllowDamage(this)) return 0; // layout-wiring: a unit evading back to its path is immune
     if (CirePolymorph::IsPolymorphed(this)) { UE_LOG(LogTemp, Display, TEXT("CIRE_POLYMORPH_DAMAGED by %s amount=%.1f"), *GetNameSafe(Causer), Amount); }
     CirePolymorph::Break(this); // progression-shop: any damage breaks Polymorph
     Amount = CireNPCCombat::ModifyIncomingDamage(this, Attacker, Amount); // npc-boss: armor/guard/shield wall/provoke

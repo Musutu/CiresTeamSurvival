@@ -1,5 +1,6 @@
 #include "CireNPCCombat.h"
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
+#include "CireLeash.h" // layout-wiring
 #include "CireScalingKits.h" // scaling-kits
 #include "CireTechConstructs.h" // new-champions
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
@@ -544,6 +545,9 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         M->bEngaged=false;
         CireLanePath::RefreshEscortCollision(M);MarchLane(M,Mode);return;
     }
+    // layout-wiring: the path leash (CireLeash.h). A wave unit kited too far from its path gives up and walks back to it,
+    // evading and regenerating; while it returns the leash owns the unit.
+    if(CireLeash::Tick(M,Delta))return;
     // No distance leash: packs keep their threat and chase until they or every threat holder dies.
     if(M->LeashTimer>0)
     {
@@ -576,12 +580,13 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     }
     CireThreat::Tick(M,Delta);
     CireThreat::Select(M);
-    if(!M->Victim&&M->Threat.IsEmpty()&&!CireWaveDirector::AggroSuppressed(M)) // wave-director: dropped/unreachable targets
+    // layout-wiring: a leashed unit whose holders all stand outside its zone may still take a new target on its path.
+    if(!M->Victim&&(M->Threat.IsEmpty()||CireLeash::Applies(M))&&!CireWaveDirector::AggroSuppressed(M)) // wave-director: dropped/unreachable targets
     {
         ACireHero* Closest=nullptr;double Best=FMath::Square(700.f);
         for(TCireActorIterator<ACireHero> It(M->GetWorld());It;++It)
         {
-            auto* H=*It;if(H->bDead||!H->bDrafted||H->Health<=0||H->TeamId!=M->Lane||!CireRealm::CanObserve(H,M))continue;
+            auto* H=*It;if(H->bDead||!H->bDrafted||H->Health<=0||H->TeamId!=M->Lane||!CireRealm::CanObserve(H,M)||!CireLeash::CanPursue(M,H))continue;
             const double Distance=FVector::DistSquared2D(M->GetActorLocation(),H->GetActorLocation());
             if(Distance<Best&&ClearSight(M,H)){Closest=H;Best=Distance;}
         }
@@ -652,7 +657,8 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         const FVector Beside=Charge->GetActorLocation()+Offset;
         if(FVector::DistSquared2D(M->GetActorLocation(),Beside)>FMath::Square(260.f)){M->AddMovementInput(CireNav::Steer(M,Beside));return;} // nav-paths
         const UWorld* World=M->GetWorld();
-        if(CireLanePath::RouteProgress(World,M->Lane,M->GetActorLocation())>CireLanePath::RouteProgress(World,Charge->Lane,Charge->GetActorLocation())+.01f)
+        // layout-wiring: both measured along the escortee's own path.
+        if(CireLanePath::PathProgress(World,M->Lane,Charge->LanePath,M->GetActorLocation())>CireLanePath::PathProgress(World,Charge->Lane,Charge->LanePath,Charge->GetActorLocation())+.01f)
         {Movement->StopMovementImmediately();return;}
     }
     MarchLane(M,Mode);

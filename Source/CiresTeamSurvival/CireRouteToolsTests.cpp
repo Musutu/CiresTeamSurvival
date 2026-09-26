@@ -151,7 +151,8 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
             if (auto* State = World->GetGameState<ACireGameState>())
             {
                 const TArray<float>& L = State->LaneLayout;
-                Check(L.Num() == 5 + 2 * (1 + 5 * 4) + 3 /* medieval-kingdom: town frame + base tail */ && FMath::RoundToInt(L[5]) == 5 && FMath::IsNearlyEqual(L[6 + 4 * 3 + 2], 600.f) && FMath::RoundToInt(L[6 + 4 * 3 + 3]) == 3,
+                TArray<float> Extras; CireLanePath::PackExtras(Five, Extras); // layout-wiring: the map layout extras ride at the end
+                Check(L.Num() == 5 + 2 * (1 + 5 * 4) + 3 /* medieval-kingdom: town frame + base tail */ + Extras.Num() && FMath::RoundToInt(L[5]) == 5 && FMath::IsNearlyEqual(L[6 + 4 * 3 + 2], 600.f) && FMath::RoundToInt(L[6 + 4 * 3 + 3]) == 3,
                     TEXT("packs replicate with x, y, radius and tier"));
             }
             if (Town)
@@ -375,14 +376,15 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
         Check(!ML::ParseJson(TEXT("{ \"schemaVersion\": 1, \"units\": \"centimeters\", \"markers\": [ { \"id\": \"a\", \"type\": \"vendor\", \"x\": 0, \"y\": 0, \"team\": 3 } ] }"), Round, Error), TEXT("team 3 is rejected"));
         Check(ML::SanitizeName(TEXT(" Castle Town v2! ")) == TEXT("Castle_Town_v2"), TEXT("layout names become safe file names"));
 
-        // Compile: each team's first path is its march route (spawn -> path -> objective), packs keep radius and tier.
+        // Compile: each team's first path is its march route (layout-wiring: and every other path marches too) (spawn -> path -> objective), packs keep radius and tier.
         FCireBattlefieldRoutes Compiled; TArray<FString> Notes;
         const bool bCompiled = ML::CompileRoutes(L, CireLanePath::Get(World), Compiled, Notes);
         Check(bCompiled && Compiled.LocalPoints[0].Num() == 4 && Compiled.LocalPoints[0][0] == FVector2D(9000, 0) && Compiled.LocalPoints[0].Last() == FVector2D(-1800, 0) &&
             Compiled.LocalPoints[1] == Compiled.LocalPoints[0], TEXT("the layout compiles into both realms' march routes"));
         Check(Compiled.Bays[0].Num() == 2 && Compiled.Bays[0][1].Tier == 1 && Compiled.Bays[0][1].Radius == FCireChallengeBay::MaxRadius && Compiled.GoalCenter == FVector2D(-1850, 0),
             TEXT("packs and the goal zone compile with their radius and tier"));
-        Check(Notes.ContainsByPredicate([](const FString& N) { return N.Contains(TEXT("more paths")); }), TEXT("extra paths are reported, not dropped silently"));
+        // layout-wiring: every path now compiles (it used to be reported and dropped).
+        Check(Compiled.Paths[0].Num() >= 1 && Compiled.Paths[0][0].Points == Compiled.LocalPoints[0], TEXT("every path compiles; path 0 is the march route"));
     }
     {
         // The current route seeds a layout and compiles back to the same march.

@@ -2,6 +2,8 @@
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLocomotionLab.h" // movement-feel
 #include "CireWaves.h" // wave-director
+#include "CireLayoutRuntime.h" // layout-wiring
+#include "CireTownMap.h" // layout-wiring
 #include "CireGame.h"
 #include "CireChampionRoster.h"
 #include "CireShopUI.h" // progression-shop: Skill Shop key
@@ -255,6 +257,10 @@ void ACireController::PlayerTick(float Dt) {
     if(Keys.WasPressed(this,TEXT("ToggleLayoutEditor"))&&Interface)Interface->ToggleLayoutEditor();
     if(Keys.WasPressed(this,TEXT("ToggleOptions"))&&Interface)Interface->ToggleSettings();
     if(Keys.WasPressed(this,TEXT("ToggleDeveloperTools"))&&Interface)Interface->ToggleDeveloperTools();
+#if !UE_BUILD_SHIPPING
+    // layout-wiring: Alt+F5 restarts the match on the applied map layout (host / standalone).
+    if(WasInputKeyJustPressed(EKeys::F5)&&(IsInputKeyDown(EKeys::LeftAlt)||IsInputKeyDown(EKeys::RightAlt))&&!CireTownMap::IsExplore())CireLayoutRuntime::RequestRestart(this);
+#endif
     if(WasInputKeyJustPressed(EKeys::Escape)) {
         if(bAimInputConsumed)return;
         if(bSummonMoveTargeting){bSummonMoveTargeting=false;H->Notice=TEXT("Summon order cancelled.");return;}

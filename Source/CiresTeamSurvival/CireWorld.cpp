@@ -262,8 +262,8 @@ void ACireWorld::RefreshRouteVisuals() {
     const auto& R=CireLanePath::Get(GetWorld());
     auto Add=[](UInstancedStaticMeshComponent* C,FVector P,FVector Size,FRotator Rot=FRotator::ZeroRotator){C->AddInstance(FTransform(Rot,P,Size/100.f));};
     const float RoadWidth=R.LaneWidth; // nav-paths: editable lane width (was a fixed 520 cm)
-    for(int Team=0;Team<2&&!bCastleTown;++Team) { // medieval-kingdom: the pack town marches on its own streets
-        const auto& Points=R.LocalPoints[Team];
+    for(int Team=0;Team<2&&!bCastleTown;++Team) for(int32 PathIndex=0;PathIndex<CireLanePath::PathCount(R,Team);++PathIndex) { // medieval-kingdom: the pack town marches on its own streets
+        const auto& Points=CireLanePath::PathPoints(R,Team,PathIndex); // layout-wiring: every monster path gets its road
         for(int I=1;I<Points.Num();++I) {
             const FVector A(Points[I-1]+CireLanePath::RealmOrigin(Team),0);
             const FVector B(Points[I]+CireLanePath::RealmOrigin(Team),0);
@@ -308,7 +308,19 @@ void ACireWorld::RefreshRouteVisuals() {
                 Text(FString::Printf(TEXT("CHALLENGE  %d"),Pack.Tier),P+FVector(0,0,380),40,FColor(220,171,75));
                 Light(P+FVector(0,0,300),FLinearColor(1.f,.55f,.25f),5000,FMath::Max(700.f,Pack.Radius*1.5f));
             }
-            const FVector Spawn=CireLanePath::SpawnPosition(GetWorld(),Team,0);
+            // layout-wiring: a breach at every Monster Spawn of the realm, and the arena portal at its Rift marker.
+            FTransform Portal;
+            if(CireLanePath::RiftTransform(GetWorld(),Team,Portal,0)) {
+                const FVector At=Portal.GetLocation();
+                for(int32 K=0;K<12;++K) {
+                    const float A=K*PI/6.f,Radius=FMath::Clamp(static_cast<float>(Portal.GetScale3D().X),100.f,600.f);
+                    Add(BreachRift,At+FVector(0,FMath::Cos(A)*Radius*.5f,160+FMath::Sin(A)*Radius*.5f),FVector(8,16,Radius*.28f),FRotator(0,Portal.Rotator().Yaw+90,FMath::RadiansToDegrees(A)));
+                }
+                Light(At+FVector(0,0,200),FLinearColor(.45f,.3f,1.f),12000,1200);
+                Text(TEXT("ARENA PORTAL"),At+FVector(0,0,520),50,FColor(170,140,255));
+            }
+            for(const FCireRouteSpot& SpawnSpot:CireLanePath::SpawnSpots(R,Team)) {
+            const FVector Spawn=CireLanePath::ToWorld(Team,SpawnSpot.Position,0);
             // The breach: a glowing rift in the dead fields beyond the town gate.
             // A jagged, burning crack hanging in the air: narrow zig-zag shards rather than a slab.
             FVector Prev=Spawn+FVector(430,0,20);
@@ -322,7 +334,8 @@ void ACireWorld::RefreshRouteVisuals() {
                 Prev=Next;
             }
             Light(Spawn+FVector(300,0,220),FLinearColor(1.f,.25f,.08f),16000,1400);
-            Text(TEXT("THE BREACH"),Spawn+FVector(380,0,560),60,FColor(228,155,137));
+            Text(SpawnSpot.Name.IsEmpty()?FString(TEXT("THE BREACH")):SpawnSpot.Name.ToUpper(),Spawn+FVector(380,0,560),60,FColor(228,155,137));
+            }
         }
     }
     RenderedRouteRevision=CireLanePath::Revision(GetWorld());

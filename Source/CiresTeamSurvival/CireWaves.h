@@ -231,6 +231,8 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API ACireMonster* EscortCharge(const ACireMonster* Monster);
     /** nav-paths: the unit may not acquire victims for Seconds (its victim was unreachable on the navmesh). */
     CIRESTEAMSURVIVAL_API void SuppressAggro(ACireMonster* Monster, float Seconds);
+    /** layout-wiring: units sent down each path of a realm this match (path index -> count). */
+    CIRESTEAMSURVIVAL_API TMap<int32, int32> PathSpawnCounts(const ACireGameMode* Mode, int32 Team);
     /** nav-paths: stuck nudges, failsafe marches and failsafe despawns so far in this world. */
     CIRESTEAMSURVIVAL_API void RescueCounts(const ACireGameMode* Mode, int32& Nudges, int32& Marches, int32& Despawns);
     /** Clears the director's per-monster bookkeeping (death/leak/despawn). */

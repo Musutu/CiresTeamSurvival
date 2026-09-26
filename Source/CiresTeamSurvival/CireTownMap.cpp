@@ -452,7 +452,10 @@ void CireTownMap::PlaceHeroes(ACireGameMode* Mode)
         const int32 Team = FMath::Clamp(H->TeamId, 0, 1);
         H->HomePosition = Mode->BasePosition(Team);
         H->GetCharacterMovement()->StopMovementImmediately();
-        H->SetActorLocation(H->HomePosition + FVector(0, Slot[Team]++ * 140.f, 0), false, nullptr, ETeleportType::TeleportPhysics);
+        // layout-wiring: the Player Spawn markers (with facing) when authored.
+        const FTransform Spawn = CireLanePath::PlayerSpawnTransform(Mode->GetWorld(), Team, Slot[Team]++);
+        H->SetActorLocation(Spawn.GetLocation(), false, nullptr, ETeleportType::TeleportPhysics);
+        H->SetActorRotation(Spawn.Rotator());
     }
 }
 

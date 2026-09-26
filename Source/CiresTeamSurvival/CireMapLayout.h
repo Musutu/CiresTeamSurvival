@@ -11,11 +11,11 @@
 // a twin for the other team at the same realm-local spot in the other realm (Pair links the two). Turning Mirror off
 // on a marker breaks the pair so the layout can be asymmetric on purpose.
 //
-// Apply compiles the layout into the live route document (BattlefieldRoutes, CireLanePath) for the systems that run
-// today: per realm, the first monster path that targets that realm's team becomes its march route (spawn -> path ->
-// objective, following merges), its challenge packs become the realm's packs and the Team 1 objective sets the goal
-// zone. Every marker is also written to Content/Data/MapLayout.json for the systems that read it next (vendors,
-// spawns, respawn, rift, bounds), and the vendor markers to Content/Data/TownVendors.json.
+// Apply writes Content/Data/MapLayout.json (the one source of truth: every match compiles it over the route file at
+// startup, CireLanePath::LoadActive) and the vendor markers to Content/Data/TownVendors.json, and applies the compiled
+// document live. layout-wiring: the compile carries every monster spawn and path of each realm (merges followed), the
+// packs, the objective (goal zone), player spawns, respawns, boss spawns, rifts and the play bounds (Docs/MapLayout.md
+// "What the game reads").
 #include "CoreMinimal.h"
 
 struct FCireBattlefieldRoutes;
@@ -68,6 +68,10 @@ struct CIRESTEAMSURVIVAL_API FCireMapMarker
      *  width x depth), both sub-handles of the vendor group. Kind is the vendor type (Vendors.json id). */
     FVector2D SignPos = FVector2D::ZeroVector, StallPos = FVector2D::ZeroVector, StallSize = FVector2D(220, 120);
     float SignYaw = 0.f, SignHeight = 250.f, StallYaw = 0.f;
+    /** layout-wiring: Monster Path share of its spawn's units when the spawn splits by weight (JSON "weight", default 1). */
+    float Weight = 1.f;
+    /** layout-wiring: Monster Spawn: split its units across its paths by path weight (JSON "split": "weighted") or evenly. */
+    bool bSplitWeighted = false;
 };
 
 /** Vendor sub-handles. */
@@ -86,6 +90,8 @@ struct CIRESTEAMSURVIVAL_API FCireVendorType
 struct CIRESTEAMSURVIVAL_API FCireMapLayout
 {
     FString Name = TEXT("Untitled");
+    /** layout-wiring: the map the layout was authored on ("castletown" or "procedural"); a layout only drives its own map. */
+    FString Map;
     TArray<FCireMapMarker> Markers;
     int32 NextId = 1;
 };
@@ -108,6 +114,9 @@ struct CIRESTEAMSURVIVAL_API FCireLayoutChecks
     TFunction<bool(int32, const FVector2D&, const FVector2D&)> Walkable;
     /** Realm, sign anchor, height above the ground -> the sign has room (no world geometry inside it). */
     TFunction<bool(int32, const FVector2D&, float)> SignClear;
+    /** layout-wiring: compile the layout the way the game will run it (CompileRoutes + the route rules the match enforces).
+     *  Returns false with Error when the runtime would reject it; Notes are reported as warnings. */
+    TFunction<bool(const FCireMapLayout&, TArray<FString>&, FString&)> Runtime;
 };
 
 namespace CireMapLayout
@@ -172,6 +181,9 @@ namespace CireMapLayout
     CIRESTEAMSURVIVAL_API bool SetName(FCireMapLayout& Layout, const FString& Id, const FString& Name);
     /** Vendor type change: the sign and stall move to that type's default spots. */
     CIRESTEAMSURVIVAL_API bool SetKind(FCireMapLayout& Layout, const FString& Id, const FString& Kind);
+    /** layout-wiring: a path's weight (0..100) and a spawn's split mode (by path weight, or even). */
+    CIRESTEAMSURVIVAL_API bool SetWeight(FCireMapLayout& Layout, const FString& Id, float Weight);
+    CIRESTEAMSURVIVAL_API bool SetSplit(FCireMapLayout& Layout, const FString& Id, bool bWeighted);
     /** Vendor sub-handles: move / rotate the sign or the stall on its own (Npc moves the whole group). */
     CIRESTEAMSURVIVAL_API bool MovePart(FCireMapLayout& Layout, const FString& Id, ECireVendorPart Part, const FVector2D& Local);
     CIRESTEAMSURVIVAL_API bool SetPartYaw(FCireMapLayout& Layout, const FString& Id, ECireVendorPart Part, float Yaw);
@@ -218,12 +230,18 @@ namespace CireMapLayout
     CIRESTEAMSURVIVAL_API TArray<FString> ListNamed();
     CIRESTEAMSURVIVAL_API bool Save(const FCireMapLayout& Layout, const FString& Path, FString* Error = nullptr);
     CIRESTEAMSURVIVAL_API bool Load(FCireMapLayout& Layout, const FString& Path, FString* Error = nullptr);
+    /** layout-wiring: "castletown" or "procedural" for the running map. */
+    CIRESTEAMSURVIVAL_API FString ActiveMap();
+    /** The layout belongs to the running map (no "map" key = the procedural town, where the editor started). */
+    CIRESTEAMSURVIVAL_API bool MatchesActiveMap(const FCireMapLayout& Layout);
 
     // ---- the live route document ------------------------------------------------------------------------------------
     /** Seed a layout from a route document: per realm a monster spawn at the wave start, its path, the objective at
      *  the goal zone and the challenge packs (identical realms become mirrored pairs). */
     CIRESTEAMSURVIVAL_API FCireMapLayout FromRoutes(const FCireBattlefieldRoutes& Routes);
-    /** Compile into a route document (bounds, lane width and escort tuning from Base). Notes lists what could not be
-     *  expressed (e.g. more paths than the one march route per realm). Returns false when a realm has no path. */
+    /** Compile into a route document (bounds, lane width and escort tuning from Base). layout-wiring: per realm every monster
+     *  spawn that targets the realm's team and every path from it (merges followed, closed into the objective), the
+     *  challenge packs, the objective (goal zone), player spawns, respawns, boss spawns, rifts and the play bounds.
+     *  Notes lists adjustments and what the runtime ignores. Returns false when a realm has no path. */
     CIRESTEAMSURVIVAL_API bool CompileRoutes(const FCireMapLayout& Layout, const FCireBattlefieldRoutes& Base, FCireBattlefieldRoutes& Out, TArray<FString>& Notes);
 }

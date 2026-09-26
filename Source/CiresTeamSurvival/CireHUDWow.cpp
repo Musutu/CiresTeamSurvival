@@ -230,7 +230,7 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
         }
         U.Victim=M->Victim;
         if(IsValid(M->Victim))U.VictimLine=M->Victim==Self?TEXT("You"):M->Victim->HeroName;
-        else U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the pack"):M->bArmoredEscort?TEXT("Marching on your keep"):M->LeashTimer>0?TEXT("Returning to camp"):TEXT("Advancing toward town"); // wave-director
+        else U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the pack"):M->bArmoredEscort?TEXT("Marching on your keep"):M->LeashTimer>0?TEXT("Returning to camp"):M->LeashState==2?TEXT("Evading: returning to its path"):TEXT("Advancing toward town"); // wave-director; layout-wiring: leash
         if(M->NPCState)
         {
             const FCireNPCCastInfo Cast=M->NPCState->CastInfo();
@@ -1277,7 +1277,8 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
     for(TCireActorIterator<ACireHero> It(GetWorld());It;++It)if(bArena||It->TeamId==Hero->TeamId)
         Plate(*It,It->HeroName,It->Health,It->MaxHealth,It->TeamId==Hero->TeamId?Friendly*.85f:Hostile,120,nullptr);
     for(TCireActorIterator<ACireMonster> It(GetWorld());It;++It)if(!bArena&&It->Lane==Hero->TeamId)
-        Plate(*It,It->GetNPCDisplayName(),It->Health,It->MaxHealth,It->bNeutral?Neutral*.95f:It->bArmoredEscort?Silver*.8f:Hostile*.9f,100,*It); // wave-director: neutral = yellow
+        Plate(*It,It->LeashState==2?It->GetNPCDisplayName()+TEXT("  (evading)"):It->GetNPCDisplayName(), // layout-wiring: leash return
+            It->Health,It->MaxHealth,It->bNeutral?Neutral*.95f:It->bArmoredEscort?Silver*.8f:Hostile*.9f,100,*It); // wave-director: neutral = yellow
     for(TCireActorIterator<ACireConstruct> It(GetWorld());It;++It)if(It->CanObserve(PlayerOwner))
         Plate(*It,It->GetDisplayName(),It->Health,It->MaxHealth,It->OriginTeam==Hero->TeamId?Friendly*.85f:Hostile,It->ConstructSpec.Height*.5f+25,nullptr);
     LayoutAndDraw();
