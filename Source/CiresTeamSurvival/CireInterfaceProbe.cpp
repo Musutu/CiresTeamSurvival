@@ -23,6 +23,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogCireInterface, Log, All);
 namespace {
 struct FServerFixture {
     double Started = 0, StageStarted = 0;
+    double ClientsJoined = 0; // world-scale: the 75 s stage budget starts once both remote clients have joined
     int32 Stage = 0;
     int32 Acks[5] = {0,0,0,0,0};
     bool bCombatSent = false, bDone = false;
@@ -135,7 +136,6 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
         if (Mode->GetNetMode() != NM_DedicatedServer) { Fail(TEXT("SERVER"), TEXT("requires dedicated server")); Server.bDone=true; return true; }
         UE_LOG(LogCireInterface, Display, TEXT("CIRE_INTERFACE_SERVER_READY dedicated=1 clients=2"));
     }
-    if (Now-Server.Started>75) { Fail(TEXT("SERVER"), TEXT("stage or client acknowledgement timeout")); Server.bDone=true; return true; }
     auto* State = Mode->GetGameState<ACireGameState>();
     ACireHero* Players[2] = {nullptr,nullptr};
     ACireController* Controllers[2] = {nullptr,nullptr};
@@ -144,6 +144,10 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
         auto* Hero=Controller?Cast<ACireHero>(Controller->GetPawn()):nullptr;
         if(Hero&&Hero->bDrafted&&Hero->TeamId>=0&&Hero->TeamId<2) {Players[Hero->TeamId]=Hero;Controllers[Hero->TeamId]=Controller;}
     }
+    // world-scale: two cold client editors can take ~50 s to boot on a busy machine; the stages themselves keep their 75 s
+    // budget, counted from when both clients have joined (with a 180 s cap on waiting for them).
+    if (Players[0] && Players[1] && !Server.ClientsJoined) Server.ClientsJoined = Now;
+    if (Server.ClientsJoined ? Now-Server.ClientsJoined>75 : Now-Server.Started>180) { Fail(TEXT("SERVER"), TEXT("stage or client acknowledgement timeout")); Server.bDone=true; return true; }
     if (Server.Stage==0) {
         if (!Players[0] || !Players[1]) return true;
         Mode->SpawnBots();

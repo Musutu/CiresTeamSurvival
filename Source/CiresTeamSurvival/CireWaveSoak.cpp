@@ -29,7 +29,7 @@ struct FSoak
 {
     bool bEnabled = false, bDone = false, bPlayerConverted = false;
     int32 TargetCycles = 3;
-    float LimitSeconds = 3600, Elapsed = 0, NextReport = 0, NextStallDump = 0;
+    float LimitSeconds = 3600, Elapsed = 0, NextReport = 0, NextStallDump = 0, DumpAfter = 150; // world-scale: -CireWaveSoakDumpAfter=<s>
     int32 LastPhase = -1, LastWave = 0, LastCleared = 0, Transitions = 0;
     float WaveSpawnedAt = 0, LongestWave = 0, LongestPhaseWait = 0, PhaseEnteredAt = 0;
     int32 WavesSpawned = 0, WavesCleared = 0, StallDumps = 0, Failsafes = 0;
@@ -69,6 +69,8 @@ void CireWaveDirector::InitializeSoak(ACireGameMode* Mode)
     if (!Soak.bEnabled) return;
     FParse::Value(FCommandLine::Get(), TEXT("CireWaveSoakCycles="), Soak.TargetCycles);
     FParse::Value(FCommandLine::Get(), TEXT("CireWaveSoakSeconds="), Soak.LimitSeconds);
+    FParse::Value(FCommandLine::Get(), TEXT("CireWaveSoakDumpAfter="), Soak.DumpAfter); // world-scale: earlier stall reports for diagnosis
+    Soak.DumpAfter = FMath::Clamp(Soak.DumpAfter, 10.f, 3600.f);
     Soak.TargetCycles = FMath::Clamp(Soak.TargetCycles, 1, 20);
     Soak.LimitSeconds = FMath::Clamp(Soak.LimitSeconds, 60.f, 6. * 3600.);
     Mode->BotFillTimer = 0;
@@ -155,7 +157,7 @@ bool CireWaveDirector::TickSoak(ACireGameMode* Mode, float Delta)
     }
     if (S->Wave != Soak.LastWave)
     {
-        Soak.LastWave = S->Wave; ++Soak.WavesSpawned; Soak.WaveSpawnedAt = Now; Soak.NextStallDump = Now + 150;
+        Soak.LastWave = S->Wave; ++Soak.WavesSpawned; Soak.WaveSpawnedAt = Now; Soak.NextStallDump = Now + Soak.DumpAfter;
         const FString Type = CireWaveDirector::CurrentWaveType(Mode);
         Soak.TypeCounts.FindOrAdd(Type)++;
         Log(FString::Printf(TEXT("CIRE_WAVE_SOAK_SPAWN wave=%d type=%s round=%d t=%.1f"), S->Wave, *Type, S->Round, Now));

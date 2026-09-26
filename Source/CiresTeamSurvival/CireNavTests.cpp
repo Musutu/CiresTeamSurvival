@@ -381,7 +381,10 @@ bool CireNav::TickProbe(ACireGameMode* Mode, float Delta)
             const bool bStill = M->GetVelocity().Size2D() < 15.f && M->CastingAbility.IsEmpty();
             U.Still = bStill ? U.Still + Delta : 0.f; U.MaxStill = FMath::Max(U.MaxStill, U.Still);
         }
-        if (Alive > 0 && Probe.Clock - Probe.StageAt < 240) return false;
+        // world-scale: probe marchers walk at their base speed (they are not wave units, so no pacing multipliers); the
+        // time limit follows the route length (240 s for the original 159 m road, ~400 s for the 495 m one).
+        const float MarchLimit = FMath::Max(240.f, CireLanePath::RouteLength(World, 0) / 100.f * .8f);
+        if (Alive > 0 && Probe.Clock - Probe.StageAt < MarchLimit) return false;
         int32 Nudges = 0, Marches = 0, Despawns = 0; CireWaveDirector::RescueCounts(Mode, Nudges, Marches, Despawns);
         int32 Leaked = 0; float Longest = 0, Sum = 0, MaxStill = 0;
         for (const auto& U : Probe.Units) if (U.bLeaked) { ++Leaked; Longest = FMath::Max(Longest, U.LeakedAt - U.SpawnedAt); Sum += U.LeakedAt - U.SpawnedAt; MaxStill = FMath::Max(MaxStill, U.MaxStill); }
@@ -389,7 +392,7 @@ bool CireNav::TickProbe(ACireGameMode* Mode, float Delta)
         Note(FString::Printf(TEXT("CIRE_NAV_PROBE_MARCH leaked=%d/%d avg=%.1f longest=%.1f max_still=%.1f nudges=%d failsafe=%d queries=%d partial=%d failed=%d fallbacks=%d unsticks=%d lives=%d/%d"),
             Leaked, Probe.Units.Num(), Leaked ? Sum / Leaked : 0.f, Longest, MaxStill, Nudges - Probe.Nudges0, (Marches - Probe.Marches0) + (Despawns - Probe.Despawns0),
             S.Queries, S.Partial, S.Failed, S.Fallbacks, S.Unsticks, State ? State->EmberLives : 0, State ? State->DuskLives : 0));
-        if (Leaked != Probe.Units.Num()) Fail(FString::Printf(TEXT("only %d/%d marchers reached the castle within 240 s"), Leaked, Probe.Units.Num()));
+        if (Leaked != Probe.Units.Num()) Fail(FString::Printf(TEXT("only %d/%d marchers reached the castle within %.0f s"), Leaked, Probe.Units.Num(), MarchLimit));
         if (Nudges != Probe.Nudges0) Fail(FString::Printf(TEXT("%d stuck nudges during the march (straight-line stalls)"), Nudges - Probe.Nudges0));
         if (MaxStill > 4.f) Fail(FString::Printf(TEXT("a marcher stood still for %.1f s"), MaxStill));
         Probe.Summary = FString::Printf(TEXT("march=%d/%d avg=%.1fs longest=%.1fs nudges=%d"), Leaked, Probe.Units.Num(), Leaked ? Sum / Leaked : 0.f, Longest, Nudges - Probe.Nudges0);

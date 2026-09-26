@@ -16,12 +16,14 @@ MAIN = Path(subprocess.run(["git", "worktree", "list", "--porcelain"], cwd=REPO,
 KIT = MAIN / "Content" / "CastleTown" / "Static_Mesh"
 PICK = {
     "crate": "SM_Crate_A_01", "crate_long": "SM_CargoCrate_01", "barrel": "SM_Barrel_01", "barrel_wine": "SM_Large_Keg",
-    "bucket": "SM_Bucket_01", "stool": "SM_Stool", "fire_pit": "SM_FirePit_01",
+    "bucket": "SM_Bucket_01", "stool": "SM_Stool",
     "hanging_lantern": "SM_Lantern_Hanging", "castle_door": "SM_Castle_Door", "shield": "SM_Shield_01", "axe": "SM_Axe_01",
     "jug": "SM_Flagon_01", "pot": "SM_Pot", "apple": "SM_Apple", "cart": "SM_Cart",
     "fence": "SM_Fence_01a",
 }
 FOOTPRINT_FIT = {"cart"}
+# world-scale: SM_FirePit_01's vendor material (MI_FirePit_A_01) lacks the instanced-static-mesh usage flag, so it rendered as
+# the grey default material in the town's instanced components; the fire pit keeps its Poly Haven art.
 # Reviewed on the environment gallery: the Fab market stand is a bare frame (the striped stalls read better) and the
 # larger Fab table hides the goods placed on it, so market_stall_a and table keep their current art.
 
