@@ -169,21 +169,167 @@
    "walkSpeedCm": 175.6,
    "runSpeedCm": 306.7
   },
+  "DrakkariAshwing": {
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_idle.A_DrakkariAshwingSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_walk_f.A_DrakkariAshwingSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_walk_b.A_DrakkariAshwingSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_walk_l.A_DrakkariAshwingSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_walk_r.A_DrakkariAshwingSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_loco_run_f.A_DrakkariAshwingSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_attack2.A_DrakkariAshwingSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_attack3.A_DrakkariAshwingSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_attack4.A_DrakkariAshwingSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_hit.A_DrakkariAshwingSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_death.A_DrakkariAshwingSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_skill1.A_DrakkariAshwingSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_skill2.A_DrakkariAshwingSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_cast.A_DrakkariAshwingSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/DrakkariAshwingSet/A_DrakkariAshwingSet_two_hand_shout.A_DrakkariAshwingSet_two_hand_shout"
+   },
+   "walkSpeedCm": 199.8,
+   "runSpeedCm": 351.2
+  },
   "DrakkariBroodmother": {
    "war_cry": "/Game/FabDerived/Anim/DrakkariBroodmother/A_DrakkariBroodmother_monster_war_cry.A_DrakkariBroodmother_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/DrakkariBroodmother/A_DrakkariBroodmother_monster_ground_slam.A_DrakkariBroodmother_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/DrakkariBroodmother/A_DrakkariBroodmother_monster_ground_slam.A_DrakkariBroodmother_monster_ground_slam",
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_idle.A_DrakkariBroodmotherSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_walk_f.A_DrakkariBroodmotherSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_walk_b.A_DrakkariBroodmotherSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_walk_l.A_DrakkariBroodmotherSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_walk_r.A_DrakkariBroodmotherSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_loco_run_f.A_DrakkariBroodmotherSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_attack1.A_DrakkariBroodmotherSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_attack2.A_DrakkariBroodmotherSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_attack4.A_DrakkariBroodmotherSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_hit.A_DrakkariBroodmotherSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_death.A_DrakkariBroodmotherSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_skill1.A_DrakkariBroodmotherSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_skill2.A_DrakkariBroodmotherSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_heal.A_DrakkariBroodmotherSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/DrakkariBroodmotherSet/A_DrakkariBroodmotherSet_spell_shout.A_DrakkariBroodmotherSet_spell_shout"
+   },
+   "walkSpeedCm": 200.1,
+   "runSpeedCm": 363.9
+  },
+  "DrakkariFlamecallerHQ": {
+   "set": "spell",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_idle.A_DrakkariFlamecallerHQSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_walk_f.A_DrakkariFlamecallerHQSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_walk_b.A_DrakkariFlamecallerHQSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_walk_l.A_DrakkariFlamecallerHQSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_walk_r.A_DrakkariFlamecallerHQSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_loco_run_f.A_DrakkariFlamecallerHQSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_attack1.A_DrakkariFlamecallerHQSet_spell_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_attack2.A_DrakkariFlamecallerHQSet_spell_attack2",
+    "attack3": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_attack4.A_DrakkariFlamecallerHQSet_spell_attack4",
+    "hit": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_hit.A_DrakkariFlamecallerHQSet_spell_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_death.A_DrakkariFlamecallerHQSet_spell_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_skill1.A_DrakkariFlamecallerHQSet_spell_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_skill2.A_DrakkariFlamecallerHQSet_spell_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_heal.A_DrakkariFlamecallerHQSet_spell_heal",
+    "shout": "/Game/FabDerived/Anim/DrakkariFlamecallerHQSet/A_DrakkariFlamecallerHQSet_spell_shout.A_DrakkariFlamecallerHQSet_spell_shout"
+   },
+   "walkSpeedCm": 149.0,
+   "runSpeedCm": 262.2
   },
   "DrakkariScalebreaker": {
    "war_cry": "/Game/FabDerived/Anim/DrakkariScalebreaker/A_DrakkariScalebreaker_monster_war_cry.A_DrakkariScalebreaker_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/DrakkariScalebreaker/A_DrakkariScalebreaker_monster_ground_slam.A_DrakkariScalebreaker_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/DrakkariScalebreaker/A_DrakkariScalebreaker_monster_ground_slam.A_DrakkariScalebreaker_monster_ground_slam",
+   "set": "two_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_idle.A_DrakkariScalebreakerSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_walk_f.A_DrakkariScalebreakerSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_walk_b.A_DrakkariScalebreakerSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_walk_l.A_DrakkariScalebreakerSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_walk_r.A_DrakkariScalebreakerSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_loco_run_f.A_DrakkariScalebreakerSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_attack2.A_DrakkariScalebreakerSet_two_hand_attack2",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_attack3.A_DrakkariScalebreakerSet_two_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_attack4.A_DrakkariScalebreakerSet_two_hand_attack4",
+    "hit": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_hit.A_DrakkariScalebreakerSet_two_hand_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_death.A_DrakkariScalebreakerSet_two_hand_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_skill1.A_DrakkariScalebreakerSet_two_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_skill2.A_DrakkariScalebreakerSet_two_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_cast.A_DrakkariScalebreakerSet_two_hand_cast",
+    "shout": "/Game/FabDerived/Anim/DrakkariScalebreakerSet/A_DrakkariScalebreakerSet_two_hand_shout.A_DrakkariScalebreakerSet_two_hand_shout"
+   },
+   "walkSpeedCm": 183.5,
+   "runSpeedCm": 328.4
   },
   "DrakkariScaleguard": {
    "war_cry": "/Game/FabDerived/Anim/DrakkariScaleguard/A_DrakkariScaleguard_monster_war_cry.A_DrakkariScaleguard_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/DrakkariScaleguard/A_DrakkariScaleguard_monster_ground_slam.A_DrakkariScaleguard_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/DrakkariScaleguard/A_DrakkariScaleguard_monster_ground_slam.A_DrakkariScaleguard_monster_ground_slam",
+   "set": "sword_shield",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_idle.A_DrakkariScaleguardSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_walk_f.A_DrakkariScaleguardSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_walk_b.A_DrakkariScaleguardSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_walk_l.A_DrakkariScaleguardSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_walk_r.A_DrakkariScaleguardSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_loco_run_f.A_DrakkariScaleguardSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_attack3.A_DrakkariScaleguardSet_sword_shield_attack3",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_attack4.A_DrakkariScaleguardSet_sword_shield_attack4",
+    "attack3": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_attack6.A_DrakkariScaleguardSet_sword_shield_attack6",
+    "hit": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_hit.A_DrakkariScaleguardSet_sword_shield_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_death.A_DrakkariScaleguardSet_sword_shield_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_skill1.A_DrakkariScaleguardSet_sword_shield_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_skill2.A_DrakkariScaleguardSet_sword_shield_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_cast.A_DrakkariScaleguardSet_sword_shield_cast",
+    "shout": "/Game/FabDerived/Anim/DrakkariScaleguardSet/A_DrakkariScaleguardSet_sword_shield_shout.A_DrakkariScaleguardSet_sword_shield_shout"
+   },
+   "walkSpeedCm": 160.8,
+   "runSpeedCm": 355.3
+  },
+  "DrakkariWhelpguard": {
+   "set": "one_hand",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_idle.A_DrakkariWhelpguardSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_walk_f.A_DrakkariWhelpguardSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_walk_b.A_DrakkariWhelpguardSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_walk_l.A_DrakkariWhelpguardSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_walk_r.A_DrakkariWhelpguardSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_loco_run_f.A_DrakkariWhelpguardSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_attack1.A_DrakkariWhelpguardSet_one_hand_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_attack3.A_DrakkariWhelpguardSet_one_hand_attack3",
+    "attack3": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_attack6.A_DrakkariWhelpguardSet_one_hand_attack6",
+    "hit": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_hit.A_DrakkariWhelpguardSet_one_hand_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_death.A_DrakkariWhelpguardSet_one_hand_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_skill1.A_DrakkariWhelpguardSet_one_hand_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_skill2.A_DrakkariWhelpguardSet_one_hand_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_cast.A_DrakkariWhelpguardSet_one_hand_cast",
+    "shout": "/Game/FabDerived/Anim/DrakkariWhelpguardSet/A_DrakkariWhelpguardSet_one_hand_shout.A_DrakkariWhelpguardSet_one_hand_shout"
+   },
+   "walkSpeedCm": 193.3,
+   "runSpeedCm": 308.6
   },
   "DrakkariWingshot": {
    "war_cry": "/Game/FabDerived/Anim/DrakkariWingshot/A_DrakkariWingshot_monster_war_cry.A_DrakkariWingshot_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/DrakkariWingshot/A_DrakkariWingshot_monster_ground_slam.A_DrakkariWingshot_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/DrakkariWingshot/A_DrakkariWingshot_monster_ground_slam.A_DrakkariWingshot_monster_ground_slam",
+   "set": "bow",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_idle.A_DrakkariWingshotSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_walk_f.A_DrakkariWingshotSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_walk_b.A_DrakkariWingshotSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_walk_l.A_DrakkariWingshotSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_walk_r.A_DrakkariWingshotSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_loco_run_f.A_DrakkariWingshotSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_attack1.A_DrakkariWingshotSet_bow_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_attack2.A_DrakkariWingshotSet_bow_attack2",
+    "attack3": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_attack3.A_DrakkariWingshotSet_bow_attack3",
+    "hit": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_hit.A_DrakkariWingshotSet_bow_hit",
+    "death": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_death.A_DrakkariWingshotSet_bow_death",
+    "heavy": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_skill1.A_DrakkariWingshotSet_bow_skill1",
+    "heavy2": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_skill2.A_DrakkariWingshotSet_bow_skill2",
+    "cast": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_cast.A_DrakkariWingshotSet_bow_cast",
+    "shout": "/Game/FabDerived/Anim/DrakkariWingshotSet/A_DrakkariWingshotSet_bow_shout.A_DrakkariWingshotSet_bow_shout"
+   },
+   "walkSpeedCm": 207.8,
+   "runSpeedCm": 290.1
   },
   "DreadKnight": {
    "war_cry": "/Game/FabDerived/Anim/DreadKnight/A_DreadKnight_monster_war_cry.A_DreadKnight_monster_war_cry",
@@ -237,7 +383,27 @@
   },
   "EmberWhelp": {
    "war_cry": "/Game/FabDerived/Anim/EmberWhelp/A_EmberWhelp_monster_war_cry.A_EmberWhelp_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/EmberWhelp/A_EmberWhelp_monster_ground_slam.A_EmberWhelp_monster_ground_slam"
+   "ground_slam": "/Game/FabDerived/Anim/EmberWhelp/A_EmberWhelp_monster_ground_slam.A_EmberWhelp_monster_ground_slam",
+   "set": "unarmed",
+   "roles": {
+    "idle": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_idle.A_EmberWhelpSet_loco_idle",
+    "walk": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_walk_f.A_EmberWhelpSet_loco_walk_f",
+    "walk_b": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_walk_b.A_EmberWhelpSet_loco_walk_b",
+    "walk_l": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_walk_l.A_EmberWhelpSet_loco_walk_l",
+    "walk_r": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_walk_r.A_EmberWhelpSet_loco_walk_r",
+    "run": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_loco_run_f.A_EmberWhelpSet_loco_run_f",
+    "attack": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_attack1.A_EmberWhelpSet_unarmed_attack1",
+    "attackAlt": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_attack2.A_EmberWhelpSet_unarmed_attack2",
+    "attack3": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_attack3.A_EmberWhelpSet_unarmed_attack3",
+    "hit": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_hit.A_EmberWhelpSet_unarmed_hit",
+    "death": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_death.A_EmberWhelpSet_unarmed_death",
+    "heavy": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_skill1.A_EmberWhelpSet_unarmed_skill1",
+    "heavy2": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_skill2.A_EmberWhelpSet_unarmed_skill2",
+    "cast": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_cast.A_EmberWhelpSet_unarmed_cast",
+    "shout": "/Game/FabDerived/Anim/EmberWhelpSet/A_EmberWhelpSet_unarmed_shout.A_EmberWhelpSet_unarmed_shout"
+   },
+   "walkSpeedCm": 69.3,
+   "runSpeedCm": 109.7
   },
   "EtherMote": {
    "war_cry": "/Game/FabDerived/Anim/EtherMote/A_EtherMote_monster_war_cry.A_EtherMote_monster_war_cry",
@@ -1186,6 +1352,60 @@
    "recoverRate": 1.2
   },
   "one_hand_shout": {
+   "start": 0.0,
+   "contact": 1.108,
+   "end": 1.966,
+   "recoverRate": 1.2
+  },
+  "bow_attack1": {
+   "start": 0.0,
+   "contact": 0.658,
+   "end": 1.201,
+   "recoverRate": 1.2
+  },
+  "bow_attack2": {
+   "start": 0.0,
+   "contact": 0.267,
+   "end": 1.457,
+   "recoverRate": 1.2
+  },
+  "bow_attack3": {
+   "start": 0.0,
+   "contact": 0.456,
+   "end": 1.023,
+   "recoverRate": 1.2
+  },
+  "bow_hit": {
+   "start": 0.0,
+   "contact": 0.12,
+   "end": 0.667,
+   "recoverRate": 1.0
+  },
+  "bow_death": {
+   "start": 0.0,
+   "contact": 0.1,
+   "end": 0.767,
+   "recoverRate": 1.0
+  },
+  "bow_skill1": {
+   "start": 0.0,
+   "contact": 0.622,
+   "end": 1.447,
+   "recoverRate": 1.2
+  },
+  "bow_skill2": {
+   "start": 0.0,
+   "contact": 0.817,
+   "end": 1.272,
+   "recoverRate": 1.2
+  },
+  "bow_cast": {
+   "start": 0.0,
+   "contact": 1.533,
+   "end": 2.91,
+   "recoverRate": 1.2
+  },
+  "bow_shout": {
    "start": 0.0,
    "contact": 1.108,
    "end": 1.966,

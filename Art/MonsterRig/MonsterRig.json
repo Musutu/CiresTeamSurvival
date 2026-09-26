@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "branch": "feat/monster-rig",
  "operator": "Claude (monster-rig worktree)",
- "status": "32 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
+ "status": "40 of 76 assigned bodies have their weapon-matched set (race-by-race; see races)",
  "credits": {
   "observedBalanceAtStart": 14961,
   "observedBalanceAtPause": 14941,
@@ -136,6 +136,53 @@
    "gallery": "Saved/MonsterGallery/20260926-091819",
    "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
    "note": "8/8 retargeted, 15 roles each. Sway: Rift Gazer upright eye stalks (face mask Saved/MonsterGallery/20260926-091949). Herald is robe-only (no sway). Gallery grounded; audit flags minor (VoidbornHerald far 2% on the staff hand)."
+  },
+  "drakkari": {
+   "bodies": {
+    "DrakkariWhelpguard": {
+     "set": "one_hand",
+     "walkSpeedCm": 193.3,
+     "runSpeedCm": 308.6
+    },
+    "DrakkariScalebreaker": {
+     "set": "two_hand",
+     "walkSpeedCm": 183.5,
+     "runSpeedCm": 328.4
+    },
+    "DrakkariScaleguard": {
+     "set": "sword_shield",
+     "walkSpeedCm": 160.8,
+     "runSpeedCm": 355.3
+    },
+    "DrakkariFlamecallerHQ": {
+     "set": "spell",
+     "walkSpeedCm": 149.0,
+     "runSpeedCm": 262.2
+    },
+    "DrakkariWingshot": {
+     "set": "bow",
+     "walkSpeedCm": 207.8,
+     "runSpeedCm": 290.1
+    },
+    "EmberWhelp": {
+     "set": "unarmed",
+     "walkSpeedCm": 69.3,
+     "runSpeedCm": 109.7
+    },
+    "DrakkariBroodmother": {
+     "set": "spell",
+     "walkSpeedCm": 200.1,
+     "runSpeedCm": 363.9
+    },
+    "DrakkariAshwing": {
+     "set": "two_hand",
+     "walkSpeedCm": 199.8,
+     "runSpeedCm": 351.2
+    }
+   },
+   "gallery": "Saved/MonsterGallery/20260926-092517",
+   "native": "CIRE_MONSTER_ART_PASS checks=11572 bodies=93 poses=2418; CIRE_COMBAT_EXPANSION_PASS",
+   "note": "8/8 retargeted, 15 roles each. Segmentation candidates DrakkariAshwing (far 13.6%) and EmberWhelp (far 11.9%) checked close up (Saved/MonsterGallery/20260926-092643): the flags are folded wings weighted to upperarm/clavicle and the whelp's tail on thigh_l; no visible stretch, so not segmented. Broodmother wings likewise. No hanging parts to sway."
   }
  }
 }
