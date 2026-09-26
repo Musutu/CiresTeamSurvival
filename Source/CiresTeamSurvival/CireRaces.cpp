@@ -605,19 +605,32 @@ void ApplySway(const ACireMonster* M, UMaterialInstanceDynamic* MID)
 }
 }
 
+namespace
+{
+TAutoConsoleVariable<int32> CVarRankBodyColours(TEXT("cire.RankBodyColours"), 0,
+    TEXT("tier-readability: 1 = monsters wear their rank colour on the body (armour tint, glow, rim), the old look. 0 (default) = ranks and pack tiers read in the UI only."));
+}
+bool CireRaces::RankBodyColours() { return CVarRankBodyColours.GetValueOnAnyThread() != 0; }
+FCireRankStyle CireRaces::BodyStyle(const ACireMonster* M)
+{
+    FCireRankStyle Style = Rank(RankBodyColours() ? RankOf(M) : ECireNPCRank::Normal);
+    // monster-expansion: a special spawn keeps its rank stats but takes the special colour with a strong rim and glow.
+    if (M && M->SpecialSpawn != 0)
+    {
+        Style.Color = Style.Trim = CireMonsterExpansion::SpecialColor(M->SpecialSpawn);
+        Style.Rim = FMath::Max(Style.Rim, 2.4f); Style.Glow = FMath::Max(Style.Glow, 2.5f); Style.BodyTint = FMath::Max(Style.BodyTint, .1f);
+    }
+    return Style;
+}
+
 bool CireRaces::ApplySkin(ACireMonster* M)
 {
     if (!IsValid(M) || M->GetNetMode() == NM_DedicatedServer || !M->GetMesh()) return false;
     const auto* S = St(M); const auto* A = Arch(M);
     if (!S || !A) return false;
     const FCireRace* Race = FindRace(A->RaceId);
-    // monster-expansion: a special spawn keeps its rank stats but takes the special colour with a strong rim and glow.
-    FCireRankStyle Style = Rank(RankOf(M));
-    if (M->SpecialSpawn != 0)
-    {
-        Style.Color = Style.Trim = CireMonsterExpansion::SpecialColor(M->SpecialSpawn);
-        Style.Rim = FMath::Max(Style.Rim, 2.4f); Style.Glow = FMath::Max(Style.Glow, 2.5f); Style.BodyTint = FMath::Max(Style.BodyTint, .1f);
-    }
+    const FCireRankStyle Style = BodyStyle(M); // tier-readability: the Normal style unless cire.RankBodyColours 1
+    const bool bRankTinted = M->SpecialSpawn != 0 || (RankBodyColours() && RankOf(M) != ECireNPCRank::Normal);
     const FCireRacePalette Palette = Race ? Race->Palette(S->PaletteIndex) : FCireRacePalette();
     // A unit drawn on its own art keeps its authored colours on its base palette; borrowed bodies and reskin sets recolour.
     const bool bOwnBody = A->FallbackBody.IsNone() || A->FallbackBody == A->Id || CireMonsterArt::HasOwnBody(A->Id);
@@ -642,7 +655,7 @@ bool CireRaces::ApplySkin(ACireMonster* M)
                         if (UTexture* Texture = LoadObject<UTexture>(nullptr, *Tex.Value)) MID->SetTextureParameterValue(Tex.Key, Texture);
                     Mesh->SetMaterial(Slot.Key, MID);
                 }
-                const FLinearColor Rim = M->SpecialSpawn != 0 || RankOf(M) != ECireNPCRank::Normal ? Style.Color : Reskin->ReskinRim;
+                const FLinearColor Rim = bRankTinted ? Style.Color : Reskin->ReskinRim;
                 MID->SetVectorParameterValue(TEXT("RaceTint"), Reskin->ReskinTint);
                 MID->SetScalarParameterValue(TEXT("RaceTintStrength"), Reskin->ReskinTintStrength);
                 MID->SetScalarParameterValue(TEXT("RaceAccentStrength"), 0.f);
@@ -694,8 +707,8 @@ bool CireRaces::ApplySkin(ACireMonster* M)
         }
         return true;
     }
-    // Mannequin fallback: race base colour, pulled toward the rank colour.
-    const FLinearColor Tint = RankOf(M) == ECireNPCRank::Normal ? (Race ? Palette.Base : A->Tint) :
+    // Mannequin fallback: race base colour, pulled toward the rank colour (rank body colours on, or a special spawn).
+    const FLinearColor Tint = !bRankTinted ? (Race ? Palette.Base : A->Tint) :
         FLinearColor::LerpUsingHSV(Race ? Palette.Base : A->Tint, Style.Color, .55f);
     for (int32 I = 0; I < Mesh->GetNumMaterials(); ++I)
         if (auto* Dynamic = Mesh->CreateDynamicMaterialInstance(I))

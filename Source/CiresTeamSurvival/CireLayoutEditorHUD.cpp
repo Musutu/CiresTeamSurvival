@@ -17,6 +17,7 @@
 #include "CireDeveloperTools.h"
 #include "CireLayoutRuntime.h" // layout-wiring
 #include "CireTownTrim.h" // town-trim
+#include "CireZones.h" // tier-readability: zones and their monster tier
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/Canvas.h"
@@ -44,6 +45,15 @@ FName SetterAction(int32 Index)
     return NAME_None;
 }
 FVector2D FacingDir(float YawDeg) { const double R = FMath::DegreesToRadians(YawDeg); return FVector2D(FMath::Cos(R), FMath::Sin(R)); }
+/** tier-readability: the layout's challenge packs of a realm (for zone tiers). */
+TArray<FCireChallengeBay> LayoutPacks(const FCireMapLayout& L, int32 Realm)
+{
+    TArray<FCireChallengeBay> Out;
+    for (const FCireMapMarker& M : L.Markers)
+        if (M.Type == ML::ChallengePack && ML::ShownInRealm(M, Realm)) { FCireChallengeBay& B = Out.AddDefaulted_GetRef(); B.Position = M.Position; B.Tier = FMath::Clamp(M.Tier, 1, 4); }
+    return Out;
+}
+FCireZone ZoneOf(const FCireMapMarker& M) { FCireZone Z; Z.Id = M.Id; Z.Name = M.Name; Z.Polygon = M.Points; return Z; }
 }
 
 // ================================================================================================= actions
@@ -544,6 +554,13 @@ void ACireHUD::TickLayoutEditor()
                         !M.MergeInto.IsEmpty() ? TEXT("  merges") : ML::PathClosed(L, M.Id) ? TEXT("") : TEXT("  (open)"));
                 }
                 LabelAt = CireLanePath::ToWorld(Realm, P.Num() ? P[0] : M.Position, 160.f);
+                if (M.Type == ML::Zone && P.Num() >= 3)
+                {
+                    // tier-readability: a zone's label sits at its centre with the monster tier its packs give it.
+                    FVector2D Centre = FVector2D::ZeroVector; for (const FVector2D& V : P) Centre += V; Centre /= P.Num();
+                    LabelAt = CireLanePath::ToWorld(Realm, Centre, 260.f);
+                    Caption += TEXT("  |  ") + CireZones::TierLine(CireZones::ZoneTier(ZoneOf(M), LayoutPacks(L, Realm)));
+                }
                 break;
             }
             case ECireGizmo::Ring:
@@ -1203,6 +1220,22 @@ void ACireHUD::TickLayoutEditor()
             { E.Naming = 1; E.NameBuffer = M->Name; }
             Y += 26;
         }
+        if (M->Type == ML::Zone)
+        {
+            // tier-readability: what the zone text will say, and the packs behind it.
+            const int32 ZoneRealm = M->Owner == ECireMarkerOwner::Shared ? ViewRealm : ML::RealmOf(M->Owner);
+            const TArray<FCireChallengeBay> Packs = LayoutPacks(L, ZoneRealm);
+            const TArray<int32> Counts = CireZones::TierCounts(ZoneOf(*M), Packs);
+            Wrapped(FString::Printf(TEXT("Zone text: \"%s\"  /  %s"), M->Name.IsEmpty() ? TEXT("(unnamed: RENAME it)") : *M->Name, *CireZones::TierLine(CireZones::ZoneTier(ZoneOf(*M), Packs))),
+                IX, Y, IW, 9.f, CireUIColors::BrightGold, 2);
+            Y += 28;
+            Label(FString::Printf(TEXT("Packs inside: T1 %d  T2 %d  T3 %d  T4 %d  (%d corners; the first zone containing a spot wins)"), Counts[1], Counts[2], Counts[3], Counts[4], M->Points.Num()),
+                IX, Y, 8.f, CireUIColors::Muted);
+            Y += 16;
+            if (Button(E.ChainId == M->Id ? TEXT("CHAINING (Enter ends)") : TEXT("ADD CORNERS"), IX, Y, IW, TEXT("Chain more corners onto this zone."), true, E.ChainId == M->Id, CireUIColors::Teal))
+            { E.ChainId = M->Id; E.Armed = ML::Zone; }
+            Y += 28;
+        }
         if (M->Type == ML::MonsterSpawn)
         {
             // layout-wiring: how this spawn splits its units across its paths.
@@ -1264,6 +1297,28 @@ void ACireHUD::TickLayoutEditor()
                 if (Button(TEXT("<"), IX + 96, Y, 22, TEXT("Previous race (K cycles)."))) StepPackType(-1);
                 Label(CireJunglePacks::TypeLabel(E.NextPackType), IX + 166 - TextWidth(CireJunglePacks::TypeLabel(E.NextPackType), 9.f) * .5f, Y + 5, 9.f, CireUIColors::Parchment);
                 if (Button(TEXT(">"), IX + 214, Y, 22, TEXT("Next race (K cycles)."))) StepPackType(1);
+                Y += 26;
+            }
+            if (T && T->Id == ML::Zone)
+            {
+                // tier-readability: start from the town's default zones (TownZones.json), then rename / redraw them.
+                const TArray<FCireZone> Defaults = CireZones::Defaults(L.Map.IsEmpty() ? ML::ActiveMap() : L.Map);
+                const bool bNone = ML::OfType(L, ML::Zone).Num() == 0;
+                if (Button(FString::Printf(TEXT("USE DEFAULT ZONES (%d)"), Defaults.Num()), IX, Y, IW, TEXT("Add the town's default zones (Content/Data/TownZones.json) as Zone markers you can rename (N) and redraw. Without any Zone marker the game uses those defaults anyway."), bNone && Defaults.Num() > 0, false, CireUIColors::Teal))
+                {
+                    Edit([&](FCireMapLayout& X)
+                    {
+                        for (const FCireZone& Z : Defaults)
+                        {
+                            FString Id;
+                            for (const FVector2D& V : Z.Polygon) Id = ML::ChainPoint(X, ML::Zone, Id, V, ECireMarkerOwner::Shared);
+                            if (!Id.IsEmpty()) ML::SetName(X, Id, Z.Name);
+                        }
+                        return Defaults.Num() > 0;
+                    });
+                    E.ChainId.Reset();
+                    Say(FString::Printf(TEXT("%d default zones added: select one to rename (N) or move its corners."), Defaults.Num()));
+                }
                 Y += 26;
             }
         }
