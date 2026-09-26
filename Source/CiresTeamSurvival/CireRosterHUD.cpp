@@ -1323,7 +1323,9 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             }
             const bool bRanged=Shown->BasicAttackRange>300;
             Line(TEXT("COMBAT STYLE"),L.X,Y+2,L.W,HS,Gold,L,ECireFont::Display);
-            Line(FString::Printf(TEXT("%s  |  %s  |  %.1f m  |  %.1f s"),bRanged?TEXT("RANGED"):TEXT("MELEE"),*WeaponLabel(*Shown),Shown->BasicAttackRange/100.f,Shown->AttackSeconds),L.X,Y+2+HL+2,L.W,BS,Text,L,ECireFont::Body);
+            // str-scaling: level-1 health (starting-STR base + 10 per STR point); growth is +10 health per STR point.
+            const double StartHealth=Cires::StartingBaseHealth(Shown->Strength)+Shown->Strength*Cires::HealthPerStrength;
+            Line(FString::Printf(TEXT("%s  |  %s  |  %.1f m  |  %.1f s  |  %.0f HP"),bRanged?TEXT("RANGED"):TEXT("MELEE"),*WeaponLabel(*Shown),Shown->BasicAttackRange/100.f,Shown->AttackSeconds,StartHealth),L.X,Y+2+HL+2,L.W,BS,Text,L,ECireFont::Body);
             Panel(Rr.X-10,Rr.Y,1,Rr.H,WithAlpha(Gold,.25f));
             float RY=Rr.Y;
             Line(TEXT("OPENING ABILITY"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;

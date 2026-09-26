@@ -84,6 +84,8 @@ struct FShopState
     // Stats window drag
     bool bDragging = false; FVector2D DragOffset = FVector2D::ZeroVector;
     double DebugNow = -1;
+    // readability: the last buy / sell / undo / error, shown as a strip above the BUY button.
+    FString LastEvent; FLinearColor LastEventColor = FLinearColor::White; double LastEventAt = -10; bool bLastEventError = false;
 };
 FShopState State;
 bool bSuppressFlash = false;
@@ -153,6 +155,7 @@ void ShowError(ACireHUD& HUD, FName Id, int32 Slot, bool bBelt, const FString& R
 {
     State.Shake.Id = Id; State.Shake.Slot = Slot; State.Shake.bBelt = bBelt; State.Shake.Start = Now(); State.Shake.bError = true;
     State.ShakeReason = Reason;
+    State.LastEvent = Reason; State.LastEventColor = FLinearColor(1.f, .42f, .36f, 1); State.LastEventAt = Now(); State.bLastEventError = true;
     AddToast(TEXT("Cannot do that"), Reason, Id, Red, 3.2f);
     Play(HUD, Reason.Contains(TEXT("gold")) ? TEXT("S_ShopErrorGold") : TEXT("S_ShopError"), .8f); // audio: not-enough-gold has its own cue
 }
@@ -242,6 +245,7 @@ void ProcessFeedback(ACireHUD& HUD, ACireHero* Hero)
                 State.Flies.Add(Fly);
             }
             AddToast(TEXT("Purchased"), FString::Printf(TEXT("%s   %dg"), *CireItems::DisplayName(F.ItemId), F.GoldDelta), F.ItemId, Accent, 3.f);
+            State.LastEvent = FString::Printf(TEXT("BOUGHT  %s   %dg"), *CireItems::DisplayName(F.ItemId), F.GoldDelta); State.LastEventColor = FLinearColor(.5f, 1.f, .55f, 1); State.LastEventAt = Now(); State.bLastEventError = false;
             Play(HUD, TEXT("S_ShopBuy"));
             State.PendingId = NAME_None;
             break;
@@ -256,11 +260,13 @@ void ProcessFeedback(ACireHUD& HUD, ACireHero* Hero)
             }
             if (State.SelectedSlot == F.Slot && State.bSelectedBelt == F.bBelt) State.SelectedSlot = -1;
             AddToast(TEXT("Sold"), FString::Printf(TEXT("%s   +%dg"), *CireItems::DisplayName(F.ItemId), F.GoldDelta), F.ItemId, Gold, 3.f);
+            State.LastEvent = FString::Printf(TEXT("SOLD  %s   +%dg"), *CireItems::DisplayName(F.ItemId), F.GoldDelta); State.LastEventColor = BrightGold; State.LastEventAt = Now(); State.bLastEventError = false;
             Play(HUD, TEXT("S_ShopSell"));
             break;
         case ECireShopAction::Undo:
             if (!F.bOk) { ShowError(HUD, NAME_None, -1, false, F.Message); break; }
             AddToast(TEXT("Undone"), F.Message.Replace(TEXT("Undone: "), TEXT("")), NAME_None, Teal, 3.f);
+            State.LastEvent = TEXT("UNDONE  ") + F.Message.Replace(TEXT("Undone: "), TEXT("")); State.LastEventColor = FLinearColor(.45f, .95f, .85f, 1); State.LastEventAt = Now(); State.bLastEventError = false;
             Play(HUD, TEXT("S_ShopUndo"));
             break;
         case ECireShopAction::Use:
@@ -461,11 +467,9 @@ void FlashOver(const FCireUIPainter& P, float X, float Y, float S, float Amount)
 // Kit button with this screen's hover/selection treatment (flat highlight + gold rule).
 void ShopButton(const FCireUIPainter& P, float X, float Y, float W, float H, const FString& Label, bool bHover, bool bSelected, bool bDisabled, FLinearColor Accent, float Size)
 {
-    CireUIStyle::Button(P, X, Y, W, H, Label, bDisabled ? ECireButtonState::Disabled : ECireButtonState::Normal, Accent, Size);
-    if (bDisabled) return;
-    if (bHover || bSelected) P.Rect(X + 3, Y + 3, W - 6, H - 6, FLinearColor(1.f, .92f, .7f, bSelected ? .10f : .06f));
-    if (bSelected) { P.Rect(X + 6, Y + H - 4, W - 12, 2, BrightGold); P.Line(X + 6, Y + 3, X + W - 6, Y + 3, Gold * FLinearColor(1, 1, 1, .6f), 1.f); }
-    else if (bHover) P.Rect(X + 10, Y + H - 4, W - 20, 1.5f, Accent);
+    // readability: the kit button draws the hover / selected states itself (readable face, accent bar).
+    CireUIStyle::Button(P, X, Y, W, H, Label, bDisabled ? ECireButtonState::Disabled : bSelected ? ECireButtonState::Selected : bHover ? ECireButtonState::Hover : ECireButtonState::Normal,
+        bSelected ? BrightGold : Accent, Size);
 }
 // WoW-style personal loot window: what you got, why, and where it went.
 void DrawLootWindow(ACireHUD& HUD, const FCireUIPainter& Base, FVector2D View, double T)
@@ -606,7 +610,7 @@ int32 CentredWrap(const FCireUIPainter& P, const FString& Text, float CX, float 
     for (int32 I = 0; I < Lines.Num(); ++I)
     {
         const FString Line = P.Fit(Lines[I], Size, Width, Font);
-        P.Text(Line, CX - P.TextWidth(Line, Size, Font) * .5f, Y + I * (Size + Gap), Size, Color, Font, false, false);
+        P.Text(Line, CX - P.TextWidth(Line, Size, Font) * .5f, Y + I * (CireUIStyle::ReadableSize(Size) * 1.12f + Gap), Size, Color, Font, false, false);
     }
     return Lines.Num();
 }
@@ -1249,6 +1253,55 @@ FString CireShopUI::ItemTooltip(FName ItemId, int32 PriceForYou)
     return Body;
 }
 
+// readability: the rich item card (icon, name in its tier colour, tier tag, price line, symbol stat lines,
+// the one-line effect, UNIQUE PASSIVE / ACTIVE sections, the recipe, lore; Extra is the footer).
+FCireTooltipSpec CireShopUI::ItemTooltipSpec(FName ItemId, int32 PriceForYou, const FString& Extra)
+{
+    FCireTooltipSpec T;
+    const CI::ItemDef* Item = CireItems::Find(ItemId);
+    if (!Item) return T;
+    const auto& D = CireItems::Get();
+    const bool bPath = IsPathUnique(*Item);
+    const FLinearColor TC = bPath ? FLinearColor(1.f, .62f, .22f, 1) : TierColor(static_cast<int32>(Item->Tier));
+    T.Icon = FindItemIcon(ItemId); T.Sigil = ItemId.ToString(); T.IconTint = TC;
+    T.IconKind = Item->Tier == CI::ItemTier::Legendary ? ECireSlotKind::Ultimate : ECireSlotKind::Normal;
+    T.Title = CireItems::DisplayName(ItemId); T.TitleColor = FMath::Lerp(TC, FLinearColor::White, .15f); T.Accent = TC;
+    T.Tag = bPath ? TEXT("PATH UNIQUE") : FString(UTF8_TO_TCHAR(CI::TierName(Item->Tier))).ToUpper(); T.TagColor = TC;
+    FString Sub = FString::Printf(TEXT("Cost %dg"), Item->TotalCost);
+    if (!Item->Components.empty()) Sub += FString::Printf(TEXT("  ·  recipe %dg"), Item->RecipeCost);
+    if (PriceForYou >= 0 && PriceForYou != Item->TotalCost && Item->Purchasable) Sub += FString::Printf(TEXT("  ·  your price %dg"), PriceForYou);
+    if (!Item->Purchasable) Sub += TEXT("  ·  loot only");
+    T.Subtitle = Sub; T.SubtitleColor = FLinearColor(1.f, .84f, .4f, 1);
+    TArray<FString> Stats; StatLines(ItemId).ParseIntoArrayLines(Stats);
+    for (const FString& Line : Stats) T.Stat(Line, CireUIStyle::StatColor(Line));
+    if (const FString* Effect = D.EffectLine.Find(ItemId)) { if (Stats.Num()) T.Divider(); T.Text(*Effect, bPath ? FLinearColor(1.f, .72f, .35f, 1) : FLinearColor(1.f, .86f, .5f, 1)); }
+    if (const auto* Passives = D.PassiveText.Find(ItemId))
+        for (const FString& Line : *Passives) { T.Divider(); T.Header(TEXT("UNIQUE PASSIVE"), BrightGold); T.Text(Line); }
+    if (const FString* Use = D.UseText.Find(ItemId); Use && !Use->IsEmpty())
+    { T.Divider(); T.Header(Item->Belt || Item->Instant ? TEXT("USE") : TEXT("ACTIVE"), FLinearColor(.4f, .92f, .82f, 1)); T.Text(*Use); }
+    if (!Item->Components.empty())
+    {
+        TArray<FString> Parts;
+        for (const std::string& Part : Item->Components) Parts.Add(CireItems::DisplayName(ToName(Part)));
+        T.Divider(); T.Header(TEXT("RECIPE"), CireShopArt::Filigree);
+        T.Text(FString::Join(Parts, TEXT("  +  ")) + FString::Printf(TEXT("  +  %dg"), Item->RecipeCost), FLinearColor(.84f, .86f, .88f, 1), 10.f);
+    }
+    if (!Item->UniqueGroup.empty()) T.Text(FString::Printf(TEXT("Only one %s may be carried."), UTF8_TO_TCHAR(CI::UniqueGroupLabel(Item->UniqueGroup).c_str())), Muted * 1.3f, 9.5f);
+    else if (Item->Unique) T.Text(TEXT("Unique: you may carry only one."), Muted * 1.3f, 9.5f);
+    if (!Item->Lore.empty()) T.Text(Str(Item->Lore), FLinearColor(.62f, .64f, .66f, 1), 9.5f);
+    T.Footer = Extra;
+    return T;
+}
+
+void CireShopUI::TipItem(ACireHUD& HUD, FName ItemId, int32 PriceForYou, const FString& Extra)
+{
+    const FCireTooltipSpec Spec = ItemTooltipSpec(ItemId, PriceForYou, Extra);
+    HUD.SetRichTooltip(Spec);
+#if !UE_BUILD_SHIPPING
+    if (VirtualPointer.X >= 0) HUD.DebugTooltip(Spec.Title, FString(), VirtualPointer + FVector2D(18, 18));
+#endif
+}
+
 // ------------------------------------------------------------------ HUD elements (bag bar)
 void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller, ACireGameState* GameState)
 {
@@ -1307,6 +1360,7 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
     P.Text(TEXT("BELT"), 10, 55, 9, Gold, ECireFont::Heading);
     const float STime = ServerTime(HUD);
     FString HoverTitle, HoverBody;
+    FName HoverItem; FString HoverExtra; // readability: rich item card for bag / belt slots
     auto SlotLogic = [&](int32 Index, bool bBelt, float X, float Y, float S, const FString& Key)
     {
         const auto& Cells = bBelt ? Hero->Inventory->Belt : Hero->Inventory->Equipment;
@@ -1327,8 +1381,8 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
         State.HudSlotPos[Index + (bBelt ? 6 : 0)] = P.Origin + FVector2D(X, Y) * P.Stretch;
         if (bOver && Item)
         {
-            HoverTitle = CireItems::DisplayName(Cell.Id);
-            HoverBody = ItemTooltip(Cell.Id) + (Item->Use.IsSet() && !Item->Instant ? TEXT("\nClick to use.") : TEXT(""));
+            HoverItem = Cell.Id; HoverTitle.Reset();
+            HoverExtra = Item->Use.IsSet() && !Item->Instant ? TEXT("Click or press its key to use.") : TEXT("");
             if (HUD.HasClick() && Item->Use.IsSet() && !Item->Instant) { HUD.TakeClick(); Hero->Inventory->ServerUse(Index, bBelt); }
         }
         else if (bOver) { HoverTitle = bBelt ? TEXT("Consumable belt") : TEXT("Bag slot"); HoverBody = bBelt ? TEXT("Potions, elixirs and lantern wards stack here. Buy them in the shop.") : TEXT("Six item slots. Components combine into completed items automatically when you buy the recipe."); }
@@ -1395,7 +1449,8 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
             if (HUD.HasClick() && Controller) { HUD.TakeClick(); Controller->ServerAction(8, 0, nullptr); }
         }
     }
-    if (!HoverTitle.IsEmpty()) Tip(HUD, HoverTitle, HoverBody);
+    if (!HoverItem.IsNone()) TipItem(HUD, HoverItem, -1, HoverExtra);
+    else if (!HoverTitle.IsEmpty()) Tip(HUD, HoverTitle, HoverBody);
 
     // Loot chest labels in the world (your lane only; relevancy already filters).
     if (APlayerController* PC = HUD.GetOwningPlayerController())
@@ -1488,39 +1543,64 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     }
 
     const float Top = Y + 84, StripH = 88, Bottom = Y + H - StripH - 10;
-    // Left column: browse + stat filters.
+    // readability: left column = category tabs with painted icons, then stat filters, each with the painted
+    // icon of an item that carries the stat (the ChatGPT item art), in bevelled rows.
     const float LX = X + 22, LW = 176;
-    CireShopArt::Spaced(P, TEXT("BROWSE"), LX + LW * .5f, Top, 8.f, .4f, Filigree, ECireFont::Display, true, false);
-    const TCHAR* Categories[] = {TEXT("RECOMMENDED BUILD"), TEXT("ALL ITEMS")};
+    CireShopArt::Spaced(P, TEXT("BROWSE"), LX + LW * .5f, Top - 4, 8.f, .4f, Filigree, ECireFont::Display, true, false);
+    const TCHAR* Categories[] = {TEXT("RECOMMENDED"), TEXT("ALL ITEMS")};
+    const TCHAR* CategoryHelp[] = {TEXT("The build for your role: starter, core and situational items in buying order."), TEXT("Every item by tier. Filters below narrow it by stat.")};
+    const FName RoleCore = [&]() { if (const auto* Lists = D.Recommended.Find(RoleKey); Lists && Lists->Num() > 1 && (*Lists)[1].Num()) return (*Lists)[1][0]; return FName(TEXT("nightfall_reaver")); }();
+    const FName CategoryIcons[] = {RoleCore, FName(TEXT("gold"))};
+    auto IconTab = [&](float TX, float TY, float TW, float TH, const FString& Label, UTexture2D* Icon, bool bSelected, FLinearColor Accent, float Size) -> bool
+    {
+        const bool bOver = bInteractive && In(M, TX, TY, TW, TH);
+        const float C = FMath::Min(8.f, TH * .3f);
+        if (bSelected || bOver) CireUIStyle::Glow(P, TX, TY, TW, TH, Accent * FLinearColor(1, 1, 1, bSelected ? .3f : .16f));
+        CireUIStyle::Bevel(P, TX, TY, TW, TH, C, bSelected ? Accent * FLinearColor(.9f, .9f, .9f, 1) : Filigree * FLinearColor(.55f, .55f, .55f, 1));
+        CireUIStyle::Bevel(P, TX + 1.5f, TY + 1.5f, TW - 3, TH - 3, C - .6f, bSelected ? FLinearColor(.16f, .12f, .05f, .98f) : bOver ? Hover * 1.4f : FLinearColor(.035f, .035f, .04f, .96f));
+        if (bSelected) P.Rect(TX + C, TY + TH - 4, TW - 2 * C, 2, Accent);
+        const float IS = TH - 8;
+        if (Icon) { P.Rect(TX + 5, TY + 4, IS, IS, FLinearColor(0, 0, 0, .8f)); P.Tex(Icon, TX + 6, TY + 5, IS - 2, IS - 2, FLinearColor::White); }
+        else CireShopArt::Diamond(P, TX + 5 + IS * .5f, TY + TH * .5f, IS * .28f, bSelected ? BrightGold : Filigree, bSelected);
+        const float LXt = TX + IS + 12;
+        const FString Fitted = P.Fit(Label, Size, TW - (LXt - TX) - 6, ECireFont::Heading);
+        P.Text(Fitted, LXt, TY + (TH - CireUIStyle::ReadableSize(Size) * 1.28f) * .5f, Size, bSelected ? FLinearColor(1.f, .9f, .6f, 1) : bOver ? FLinearColor(1, .97f, .9f, 1) : Parchment * .9f, ECireFont::Heading, true, true);
+        return bOver;
+    };
     for (int32 Index = 0; Index < 2; ++Index)
     {
-        const float BY = Top + 16 + Index * 32;
-        const bool bOver = In(M, LX, BY, LW, 27);
-        ShopButton(P, LX, BY, LW, 27, Categories[Index], bOver, State.Category == Index, false, Gold, 10.5f);
-        if (Click(LX, BY, LW, 27)) { State.Category = Index; Play(HUD, TEXT("S_ShopTab"), .4f); }
+        const float BY = Top + 12 + Index * 40;
+        if (IconTab(LX, BY, LW, 34, Categories[Index], FindItemIcon(CategoryIcons[Index]), State.Category == Index, BrightGold, 10.5f))
+            CireShopUI::Tip(HUD, Categories[Index], CategoryHelp[Index]);
+        if (Click(LX, BY, LW, 34)) { State.Category = Index; Play(HUD, TEXT("S_ShopTab"), .4f); }
     }
-    CireShopArt::Rule(P, LX + 6, LX + LW - 6, Top + 90, Filigree * FLinearColor(1, 1, 1, .5f));
-    CireShopArt::Spaced(P, TEXT("FILTER BY STAT"), LX + LW * .5f, Top + 98, 7.5f, .34f, Filigree, ECireFont::Display, true, false);
-    const float RowH = FMath::Min(24.f, (Bottom - (Top + 116) - 30) / FilterCount);
+    CireShopArt::Rule(P, LX + 6, LX + LW - 6, Top + 98, Filigree * FLinearColor(1, 1, 1, .5f));
+    CireShopArt::Spaced(P, TEXT("FILTER BY STAT"), LX + LW * .5f, Top + 104, 7.5f, .34f, Filigree, ECireFont::Display, true, false);
+    static TMap<FName, FName> FilterIcon; // tag -> first catalogue item that has it and a painted icon
+    const float RowH = FMath::Min(26.f, (Bottom - (Top + 122) - 30) / FilterCount);
     for (int32 Index = 0; Index < FilterCount; ++Index)
     {
-        const float BY = Top + 114 + Index * RowH;
+        const float BY = Top + 122 + Index * RowH;
         const bool bOn = (State.Filters & (1u << Index)) != 0;
-        const bool bOver = In(M, LX, BY, LW, RowH - 2);
-        P.Rect(LX, BY, LW, RowH - 2, bOn ? FLinearColor(.16f, .13f, .06f, .95f) : bOver ? Hover : FLinearColor(.03f, .03f, .035f, .8f));
-        CireShopArt::Diamond(P, LX + 11, BY + (RowH - 2) * .5f, 4.5f, bOn ? BrightGold : Filigree * FLinearColor(1, 1, 1, .5f), bOn);
-        P.Text(FilterNames[Index], LX + 24, BY + (RowH - 2 - 11.5f) * .5f - 1, 11.5f, bOn ? Parchment : Parchment * .78f, ECireFont::Body);
-        if (Click(LX, BY, LW, RowH - 2)) { State.Filters ^= 1u << Index; State.Category = 1; }
+        const FName Tag(FilterTags[Index]);
+        if (!FilterIcon.Contains(Tag))
+        {
+            FName Found;
+            for (const FName Id : D.Order) if (const CI::ItemDef* Item = CireItems::Find(Id); Item && Item->HasTag(Utf8(Tag)) && FindItemIcon(Id)) { Found = Id; break; }
+            FilterIcon.Add(Tag, Found);
+        }
+        IconTab(LX, BY, LW, RowH - 3, FilterNames[Index], FindItemIcon(FilterIcon[Tag]), bOn, Gold, 10.5f);
+        if (Click(LX, BY, LW, RowH - 3)) { State.Filters ^= 1u << Index; State.Category = 1; Play(HUD, TEXT("S_ShopTab"), .3f); }
     }
     if (State.Filters != 0)
     {
-        const float BY = Top + 114 + FilterCount * RowH + 4;
-        const bool bOver = In(M, LX, BY, LW, 22);
-        ShopButton(P, LX, BY, LW, 22, TEXT("CLEAR FILTERS"), bOver, false, false, Muted, 9);
-        if (Click(LX, BY, LW, 22)) State.Filters = 0;
+        const float BY = Top + 122 + FilterCount * RowH + 3;
+        const bool bOver = In(M, LX, BY, LW, 24);
+        ShopButton(P, LX, BY, LW, 24, TEXT("CLEAR FILTERS"), bOver, false, false, Muted, 9);
+        if (Click(LX, BY, LW, 24)) State.Filters = 0;
     }
 
-    // Centre: tier-coloured item cards; recommended build first (starter -> core -> situational).
+    // Centre: bevelled item cards with rarity glows; recommended build first (starter -> core -> situational).
     const float DWd = 372, DX = X + W - 22 - DWd;
     const float GX = LX + LW + 18, GW = DX - 16 - GX, GY = Top;
     CireShopArt::Divider(P, GX - 9, Top - 4, Bottom, Filigree * FLinearColor(1, 1, 1, .45f));
@@ -1535,7 +1615,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
             if ((State.Filters & (1u << Index)) && Item.HasTag(Utf8(FName(FilterTags[Index])))) return true;
         return false;
     };
-    // One item card: tier frame, icon, optional name, price plate; hover lifts it.
+    // One item card: bevelled rarity card, painted icon, optional name, price plate; hover lifts it.
     auto DrawCard = [&](FName Id, float IX, float IY, float CW, float CH, bool bNamed)
     {
         const CI::ItemDef* Item = CireItems::Find(Id);
@@ -1544,39 +1624,33 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         const int32 Price = PriceFor(Hero, Id);
         const bool bAffordable = Hero->Gold >= Price;
         const bool bOwned = Rules.CountOf(Item->Id) > 0;
-        const FLinearColor TC = TierColor(static_cast<int32>(Item->Tier));
+        const bool bPath = IsPathUnique(*Item);
+        const FLinearColor TC = bPath ? FLinearColor(1.f, .62f, .22f, 1) : TierColor(static_cast<int32>(Item->Tier));
         const float Lift = bOver ? 3.f : 0.f;
         const float CX0 = IX + ShakeOffset(Id), CY0 = IY - Lift;
-        if (State.Selected == Id) CireShopArt::Glow(P, CX0 - CW * .35f, CY0 - CH * .25f, CW * 1.7f, CH * 1.5f, FLinearColor(1.f, .75f, .3f, 1) * .35f);
-        if (bOver) CireShopArt::Glow(P, CX0 - CW * .3f, CY0 - CH * .2f, CW * 1.6f, CH * 1.4f, TC * .3f);
-        P.Rect(CX0, CY0, CW, CH, FLinearColor(.03f, .027f, .026f, .97f));
-        P.Rect(CX0 + 1, CY0 + 1, CW - 2, CH * .5f, TC * FLinearColor(.14f, .14f, .14f, .8f));
-        const FLinearColor Edge = TC * FLinearColor(1, 1, 1, bAffordable ? .95f : .5f);
-        P.Line(CX0, CY0, CX0 + CW, CY0, Edge, 1.4f); P.Line(CX0, CY0 + CH, CX0 + CW, CY0 + CH, Edge, 1.4f);
-        P.Line(CX0, CY0, CX0, CY0 + CH, Edge, 1.4f); P.Line(CX0 + CW, CY0, CX0 + CW, CY0 + CH, Edge, 1.4f);
-        CireShopArt::Diamond(P, CX0 + CW * .5f, CY0, 3.f, Edge);
-        const float S = bNamed ? FMath::Min(CW - 22, 52.f) : FMath::Min3(CW - 14, 44.f, CH - 27.f);
-        DrawItemIcon(P, Id, CX0 + (CW - S) * .5f, CY0 + 7, S, bOver, 0, 0, 0, FString(), !bAffordable);
-        if (ShakeOffset(Id) != 0.f) Border(P, CX0 - 1, CY0 - 1, CW + 2, CH + 2, FLinearColor(1.f, .25f, .2f, 1), 2.5f);
+        CireUIStyle::BevelCard(P, CX0, CY0, CW, CH, TC, bOver, State.Selected == Id, !bAffordable);
+        const float PS = bNamed ? 12.f : 9.5f, PEff = CireUIStyle::ReadableSize(PS), PlateH = PEff * 1.28f + 2;
+        const float S = bNamed ? FMath::Min(CW - 26, 50.f) : FMath::Max(20.f, FMath::Min3(CW - 10, 46.f, CH - PlateH - 6));
+        DrawItemIcon(P, Id, CX0 + (CW - S) * .5f, CY0 + 6, S, bOver, 0, 0, 0, FString(), !bAffordable);
+        if (ShakeOffset(Id) != 0.f) CireUIStyle::BevelOutline(P, CX0 - 2, CY0 - 2, CW + 4, CH + 4, 9.f, FLinearColor(1.f, .25f, .2f, 1), 2.5f);
         if (bOwned)
         {
             const float OX = CX0 + CW - 9, OY = CY0 + 9;
-            P.Disc(OX, OY, 6.5f, FLinearColor(.08f, .4f, .15f, 1), 12);
-            P.Line(OX - 3, OY, OX, OY + 3, Parchment, 1.5f); P.Line(OX, OY + 3, OX + 4, OY - 4, Parchment, 1.5f);
+            P.Disc(OX, OY, 7.f, FLinearColor(0, 0, 0, .8f), 14); P.Disc(OX, OY, 6.f, FLinearColor(.1f, .5f, .2f, 1), 14);
+            P.Line(OX - 3, OY, OX, OY + 3, FLinearColor::White, 1.6f); P.Line(OX, OY + 3, OX + 4, OY - 4, FLinearColor::White, 1.6f);
         }
-        if (IsPathUnique(*Item)) // items-v2: path-defining unique ribbon
+        if (bPath) // items-v2: path-defining unique ribbon
         {
             const FLinearColor PathGold(1.f, .62f, .22f, 1);
-            P.Rect(CX0 + 2, CY0 + 2, 26, 11, FLinearColor(.25f, .1f, .02f, .92f));
-            P.Text(TEXT("PATH"), CX0 + 4, CY0 + 2, 8.f, PathGold, ECireFont::Bold);
-            Border(P, CX0 + 1, CY0 + 1, CW - 2, CH - 2, PathGold * FLinearColor(1, 1, 1, .55f), 1.2f);
+            const float RW = P.TextWidth(TEXT("PATH"), 7.5f, ECireFont::Heading) + 8;
+            CireUIStyle::Bevel(P, CX0 + 3, CY0 + 3, RW, 13, 3, FLinearColor(.3f, .12f, .02f, .95f));
+            P.Text(TEXT("PATH"), CX0 + 7, CY0 + 2.5f, 7.5f, PathGold, ECireFont::Heading, true, false);
         }
-        if (bNamed) CentredWrap(P, CireItems::DisplayName(Id), CX0 + CW * .5f, CY0 + S + 12, CW - 8, 9.5f, TC * 1.1f, ECireFont::Bold, 2, 0.5f);
+        if (bNamed) { const int32 NameLines = FMath::Clamp(FMath::FloorToInt((CH - S - 11 - PlateH - 6) / (CireUIStyle::ReadableSize(9.5f) * 1.12f)), 1, 2); CentredWrap(P, CireItems::DisplayName(Id), CX0 + CW * .5f, CY0 + S + 10, CW - 10, 9.5f, FMath::Lerp(TC, FLinearColor::White, .2f), ECireFont::Bold, NameLines, 0.f); }
         const FString Cost = FString::Printf(TEXT("%dg"), Price);
         const FLinearColor CostColor = bAffordable ? (Price < Item->TotalCost ? FLinearColor(.55f, 1.f, .5f, 1) : BrightGold) : FLinearColor(1.f, .42f, .38f, 1);
-        const float PS = bNamed ? 12.f : 11.f;
-        P.Rect(CX0 + 3, CY0 + CH - PS - 6, CW - 6, PS + 4, FLinearColor(0, 0, 0, .45f));
-        P.Text(Cost, CX0 + (CW - P.TextWidth(Cost, PS, ECireFont::Numbers)) * .5f, CY0 + CH - PS - 5, PS, CostColor, ECireFont::Numbers, true, false);
+        CireUIStyle::Bevel(P, CX0 + 4, CY0 + CH - PlateH - 4, CW - 8, PlateH, 4.f, FLinearColor(0, 0, 0, .62f));
+        P.Text(Cost, CX0 + (CW - P.TextWidth(Cost, PS, ECireFont::Numbers)) * .5f, CY0 + CH - PlateH - 3, PS, CostColor, ECireFont::Numbers, true, false);
         State.GridPos.Add(Id, FVector2D(CX0 + (CW - S) * .5f, CY0 + 7));
         if (bOver) HoverId = Id;
         if (bOver && HUD.HasClick())
@@ -1591,23 +1665,25 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     };
     if (State.Category == 0)
     {
-        CireShopArt::Spaced(P, FString::Printf(TEXT("RECOMMENDED BUILD  ·  %s"), *RoleCaption), GX + GW * .5f, CY, 9.f, .3f, FLinearColor(.95f, .83f, .58f, 1), ECireFont::Display, true, false);
-        CY += 20;
+        CireShopArt::Spaced(P, FString::Printf(TEXT("RECOMMENDED BUILD  ·  %s"), *RoleCaption), GX + GW * .5f, CY - 4, 9.f, .3f, FLinearColor(.95f, .83f, .58f, 1), ECireFont::Display, true, false);
+        CY += 18;
         if (const auto* Lists = D.Recommended.Find(RoleKey))
         {
             const TCHAR* Names[] = {TEXT("I  ·  STARTER"), TEXT("II  ·  CORE BUILD"), TEXT("III  ·  SITUATIONAL")};
             const TCHAR* Hints[] = {TEXT("buy these first"), TEXT("build them in this order"), TEXT("when the match asks for it")};
             const FLinearColor Colors[] = {FLinearColor(.5f, .9f, .55f, 1), Orange, Silver};
-            const float CW = 96, CH = 118, Gap = 22;
+            const float CW = 96, Gap = 20;
+            const int32 PerRow = FMath::Max(1, FMath::FloorToInt((GW + Gap) / (CW + Gap)));
+            int32 RowsNeeded = 0; for (int32 Index = 0; Index < Lists->Num() && Index < 3; ++Index) RowsNeeded += FMath::DivideAndRoundUp((*Lists)[Index].Num(), PerRow);
+            const float CH = FMath::Clamp((Bottom - CY - 40.f - FMath::Min(3, Lists->Num()) * 24.f) / FMath::Max(1, RowsNeeded) - 8.f, 96.f, 126.f);
             for (int32 Index = 0; Index < Lists->Num() && Index < 3; ++Index)
             {
                 const TArray<FName>& Ids = (*Lists)[Index];
                 const float NW = CireShopArt::SpacedWidth(P, Names[Index], 8.5f, .3f);
                 CireShopArt::Spaced(P, Names[Index], GX + 4, CY, 8.5f, .3f, Colors[Index], ECireFont::Display, false, false);
-                P.Text(Hints[Index], GX + 12 + NW, CY, 10, Muted * 1.3f, ECireFont::Body);
-                CireShopArt::Rule(P, GX + 20 + NW + P.TextWidth(Hints[Index], 10, ECireFont::Body), GX + GW - 4, CY + 6, Colors[Index] * FLinearColor(1, 1, 1, .5f));
-                CY += 18;
-                const int32 PerRow = FMath::Max(1, FMath::FloorToInt((GW + Gap) / (CW + Gap)));
+                P.Text(Hints[Index], GX + 20 + NW, CY - 1, 10, Muted * 1.4f, ECireFont::Body);
+                CireShopArt::Rule(P, GX + 28 + NW + P.TextWidth(Hints[Index], 10, ECireFont::Body), GX + GW - 4, CY + 7, Colors[Index] * FLinearColor(1, 1, 1, .5f));
+                CY += 22;
                 for (int32 Item = 0; Item < Ids.Num(); ++Item)
                 {
                     const float IX = GX + 4 + (Item % PerRow) * (CW + Gap), IY = CY + (Item / PerRow) * (CH + 8);
@@ -1616,15 +1692,16 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
                     {
                         // Build-order chevron between consecutive cards.
                         const float AX = IX + CW + Gap * .5f, AY = IY + CH * .42f;
-                        P.Line(AX - 4, AY - 5, AX + 2, AY, Colors[Index], 1.8f); P.Line(AX - 4, AY + 5, AX + 2, AY, Colors[Index], 1.8f);
-                        CireShopArt::Diamond(P, AX - 7, AY, 1.6f, Colors[Index]);
+                        P.Line(AX - 4, AY - 5, AX + 2, AY, Colors[Index], 2.f); P.Line(AX - 4, AY + 5, AX + 2, AY, Colors[Index], 2.f);
+                        CireShopArt::Diamond(P, AX - 7, AY, 1.8f, Colors[Index]);
                     }
                 }
-                CY += FMath::DivideAndRoundUp(Ids.Num(), PerRow) * (CH + 8) + 6;
+                CY += FMath::DivideAndRoundUp(Ids.Num(), PerRow) * (CH + 8) + 4;
             }
         }
-        P.Wrapped(TEXT("Every item is still available under ALL ITEMS. Items build from components: owned parts are consumed and discounted (green price)."),
-            GX + 6, CY, GW - 12, 10, Muted * 1.3f, 2);
+        if (CY + 30 < Bottom)
+            P.Wrapped(TEXT("Every item is still available under ALL ITEMS. Items build from components: owned parts are consumed and discounted (green price)."),
+                GX + 6, CY, GW - 12, 10, Muted * 1.4f, 2);
     }
     else
     {
@@ -1632,27 +1709,58 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         for (const FName Id : D.Order)
             if (const CI::ItemDef* Item = CireItems::Find(Id); Item && Item->Purchasable && Matches(*Item)) Tiers[IsPathUnique(*Item) ? 4 : static_cast<int32>(Item->Tier)].Add(Id);
         const TCHAR* Names[] = {TEXT("CONSUMABLES & TOMES"), TEXT("BASIC COMPONENTS"), TEXT("EPIC COMPONENTS"), TEXT("LEGENDARY"), TEXT("PATH-DEFINING UNIQUES  ·  ONE PER CHAMPION")};
-        const float CW = 58, Gap = 5;
-        const int32 PerRow = FMath::Max(1, FMath::FloorToInt((GW + Gap) / (CW + Gap)));
-        // Card height fits every tier in the column (no scrolling, no pagination).
-        int32 Rows = 0, Sections = 0;
-        for (int32 Tier = 0; Tier < 5; ++Tier) if (Tiers[Tier].Num() > 0) { Rows += FMath::DivideAndRoundUp(Tiers[Tier].Num(), PerRow); ++Sections; }
-        const float CH = FMath::Clamp((Bottom - CY - Sections * 19.f) / FMath::Max(1, Rows) - Gap, 54.f, 76.f);
+        // readability: solve the card size so every tier AND a recommended-by-role row fit the column (no scrolling,
+        // no pagination, no spill into the bag strip): the widest card whose height stays near square wins.
+        const float Gap = 6;
+        TArray<FName> RoleItems;
+        if (State.Filters == 0)
+            if (const auto* Lists = D.Recommended.Find(RoleKey))
+                for (int32 List = 0; List < Lists->Num() && List < 2; ++List)
+                    for (const FName Id : (*Lists)[List]) RoleItems.AddUnique(Id);
+        float CW = 46, CH = 50; int32 PerRow = 1, Rows = 0, Sections = 0; bool bRecRow = false;
+        for (int32 Pass = 0; Pass < 2; ++Pass) // pass 0 with the recommended row, pass 1 without
+        {
+            bool bFound = false;
+            for (float TryW = 64; TryW >= 44; TryW -= 2)
+            {
+                const int32 N = FMath::Max(1, FMath::FloorToInt((GW + Gap) / (TryW + Gap)));
+                int32 R = 0, Sec = 0;
+                for (int32 Tier = 0; Tier < 5; ++Tier) if (Tiers[Tier].Num() > 0) { R += FMath::DivideAndRoundUp(Tiers[Tier].Num(), N); ++Sec; }
+                const bool bRec = Pass == 0 && RoleItems.Num() > 0;
+                const float Avail = Bottom - CY - Sec * 20.f - (bRec ? 26.f : 0.f);
+                const float TryH = Avail / FMath::Max(1, R + (bRec ? 1 : 0)) - Gap;
+                if (TryH >= TryW * .92f || TryW <= 44) { CW = TryW; CH = FMath::Min(TryH, TryW * 1.25f); PerRow = N; Rows = R; Sections = Sec; bRecRow = bRec; bFound = TryH >= 40.f; break; }
+            }
+            if (bFound) break;
+        }
+        TArray<FName> Recommended;
+        for (const FName Id : RoleItems) if (Recommended.Num() < PerRow) Recommended.Add(Id);
+        const float RecH = CH;
+        if (bRecRow)
+        {
+            const FString Caption = FString::Printf(TEXT("RECOMMENDED FOR YOUR ROLE  ·  %s"), *RoleCaption);
+            const float NW = CireShopArt::SpacedWidth(P, Caption, 8.f, .3f);
+            CireShopArt::Spaced(P, Caption, GX + 4, CY - 2, 8.f, .3f, BrightGold, ECireFont::Display, false, false);
+            CireShopArt::Rule(P, GX + 14 + NW, GX + GW - 4, CY + 5, BrightGold * FLinearColor(1, 1, 1, .45f));
+            CY += 18;
+            for (int32 Index = 0; Index < Recommended.Num(); ++Index) DrawCard(Recommended[Index], GX + 2 + Index * (CW + Gap), CY, CW, RecH, false);
+            CY += RecH + 8;
+        }
         for (int32 Tier : {0, 1, 2, 4, 3})
         {
             if (Tiers[Tier].Num() == 0) continue;
             const FLinearColor TC = Tier == 4 ? FLinearColor(1.f, .62f, .22f, 1) : TierColor(Tier);
             const float NW = CireShopArt::SpacedWidth(P, Names[Tier], 8.f, .3f);
-            CireShopArt::Spaced(P, Names[Tier], GX + 4, CY, 8.f, .3f, TC, ECireFont::Display, false, false);
+            CireShopArt::Spaced(P, Names[Tier], GX + 4, CY - 2, 8.f, .3f, TC, ECireFont::Display, false, false);
             CireShopArt::Rule(P, GX + 14 + NW, GX + GW - 4, CY + 5, TC * FLinearColor(1, 1, 1, .45f));
-            CY += 15;
+            CY += 16;
             for (int32 Index = 0; Index < Tiers[Tier].Num(); ++Index)
                 DrawCard(Tiers[Tier][Index], GX + 2 + (Index % PerRow) * (CW + Gap), CY + (Index / PerRow) * (CH + Gap), CW, CH, false);
             CY += FMath::DivideAndRoundUp(Tiers[Tier].Num(), PerRow) * (CH + Gap) + 4;
         }
         if (Tiers[0].Num() + Tiers[1].Num() + Tiers[2].Num() + Tiers[3].Num() + Tiers[4].Num() == 0) P.Text(TEXT("No item matches every filter."), GX + 8, CY, 12, Muted);
     }
-    if (!HoverId.IsNone()) Tip(HUD, CireItems::DisplayName(HoverId), ItemTooltip(HoverId, PriceFor(Hero, HoverId)));
+    if (!HoverId.IsNone()) TipItem(HUD, HoverId, PriceFor(Hero, HoverId), TEXT("Click to inspect  ·  double or right-click to buy"));
 
     // Right: selected item detail with its build path.
     const float DY = Top, DHt = Bottom - Top;
@@ -1666,107 +1774,149 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     }
     if (const CI::ItemDef* Item = CireItems::Find(Shown))
     {
-        const FLinearColor Tier = TierColor(static_cast<int32>(Item->Tier));
-        // Build tree: item -> components -> their components.
-        const float TreeY = DY + 6;
-        const float RootX = DX + DWd * .5f - 24;
-        State.DetailIconPos = FVector2D(RootX, TreeY);
-        CireShopArt::Glow(P, RootX - 30, TreeY - 24, 108, 96, Tier * .3f);
-        DrawItemIcon(P, Shown, RootX + ShakeOffset(Shown), TreeY, 48, false);
+        const bool bPathItem = IsPathUnique(*Item);
+        const FLinearColor Tier = bPathItem ? FLinearColor(1.f, .62f, .22f, 1) : TierColor(static_cast<int32>(Item->Tier));
         const int32 Count = static_cast<int32>(Item->Components.size());
-        const float ChildStep = Count > 0 ? FMath::Min(96.f, (DWd - 40) / Count) : 0;
+        // readability: the recipe tree panel (components -> completed): the finished item on top in a rarity card,
+        // its components below with their price or an OWNED check, their own parts under them, arrows upward.
+        const float PanelH = Count > 0 ? 196.f : 92.f;
+        CireUIStyle::Frame(P, DX - 2, DY - 2, DWd + 4, PanelH, Gold, ECireFrame::Inset);
+        CireShopArt::Spaced(P, TEXT("RECIPE"), DX + 8, DY + 2, 7.5f, .34f, Filigree, ECireFont::Display, false, false);
+        {
+            const FString Flow = Count > 0 ? TEXT("COMPONENTS  »  COMPLETED") : TEXT("BASE COMPONENT");
+            const float FW = CireShopArt::SpacedWidth(P, Flow, 7.f, .25f);
+            CireShopArt::Spaced(P, Flow, DX + DWd - 8 - FW, DY + 2.5f, 7.f, .25f, Muted * 1.4f, ECireFont::Display, false, false);
+        }
+        const float RootS = 48, TreeY = DY + 22;
+        const float RootX = DX + DWd * .5f - RootS * .5f;
+        State.DetailIconPos = FVector2D(RootX, TreeY);
+        CireUIStyle::BevelCard(P, RootX - 7, TreeY - 5, RootS + 14, RootS + 10, Tier, false, true, false);
+        DrawItemIcon(P, Shown, RootX + ShakeOffset(Shown), TreeY, RootS, false);
+        if (Count == 0)
+        {
+            const FString Note = Item->Purchasable ? TEXT("Buy it as it is, or keep it for a recipe below.") : TEXT("Loot only.");
+            P.Text(Note, DX + (DWd - P.TextWidth(Note, 9.5f, ECireFont::Body)) * .5f, TreeY + RootS + 8, 9.5f, Muted * 1.4f, ECireFont::Body, false, true);
+        }
+        const float ChildS = 38, ChildStep = Count > 0 ? FMath::Min(100.f, (DWd - 30) / Count) : 0;
         TArray<FName> Owned;
         for (const auto& Cell : Hero->Inventory->Equipment) if (!Cell.Id.IsNone()) Owned.Add(Cell.Id);
+        const float Bus = TreeY + RootS + 13, CYc = TreeY + RootS + 24;
+        if (Count > 0)
+        {
+            // Arrow into the finished item.
+            const float AX = RootX + RootS * .5f;
+            P.Line(AX, Bus, AX, TreeY + RootS + 6, Filigree * .85f, 2.f);
+            P.Tri(FVector2D(AX - 5, TreeY + RootS + 9), FVector2D(AX + 5, TreeY + RootS + 9), FVector2D(AX, TreeY + RootS + 4), Filigree);
+        }
         for (int32 Index = 0; Index < Count; ++Index)
         {
             const FName Child = ToName(Item->Components[Index]);
-            const float CX = DX + DWd * .5f + (Index - (Count - 1) * .5f) * ChildStep - 18, CYc = TreeY + 66;
-            P.Line(RootX + 24, TreeY + 48, RootX + 24, TreeY + 57, Filigree * .7f, 1.5f);
-            P.Line(RootX + 24, TreeY + 57, CX + 18, TreeY + 57, Filigree * .7f, 1.5f);
-            P.Line(CX + 18, TreeY + 57, CX + 18, CYc, Filigree * .7f, 1.5f);
+            const float CX = DX + DWd * .5f + (Index - (Count - 1) * .5f) * ChildStep - ChildS * .5f;
+            P.Line(CX + ChildS * .5f, CYc, CX + ChildS * .5f, Bus, Filigree * .7f, 1.6f);
+            P.Line(FMath::Min(CX + ChildS * .5f, RootX + RootS * .5f), Bus, FMath::Max(CX + ChildS * .5f, RootX + RootS * .5f), Bus, Filigree * .7f, 1.6f);
             const bool bHave = Owned.Contains(Child);
             if (bHave) Owned.RemoveSingle(Child);
-            const bool bOver = bInteractive && In(M, CX, CYc, 36, 36);
-            DrawItemIcon(P, Child, CX, CYc, 36, bOver, 0, 0, 0, FString(), !bHave);
-            if (bHave) P.Rect(CX, CYc + 38, 36, 2, FLinearColor(.4f, 1.f, .45f, 1));
-            if (bOver) { Tip(HUD, CireItems::DisplayName(Child), ItemTooltip(Child, PriceFor(Hero, Child)) + (bHave ? TEXT("\nOwned: consumed by the recipe.") : TEXT(""))); if (HUD.HasClick()) { HUD.TakeClick(); State.Selected = Child; State.SelectedSlot = -1; } }
+            const bool bOver = bInteractive && In(M, CX, CYc, ChildS, ChildS);
+            DrawItemIcon(P, Child, CX, CYc, ChildS, bOver, 0, 0, 0, FString(), !bHave);
+            // Price or OWNED under the component.
+            const FString Tag = bHave ? FString(TEXT("OWNED")) : FString::Printf(TEXT("%dg"), PriceFor(Hero, Child));
+            const ECireFont TagFont = bHave ? ECireFont::Heading : ECireFont::Numbers;
+            const float TW = P.TextWidth(Tag, 8.5f, TagFont);
+            P.Text(Tag, CX + (ChildS - TW) * .5f, CYc + ChildS + 1, 8.5f, bHave ? FLinearColor(.45f, 1.f, .5f, 1) : BrightGold, TagFont, true, false);
+            if (bOver) { TipItem(HUD, Child, PriceFor(Hero, Child), bHave ? TEXT("Owned: consumed by the recipe.") : TEXT("Click to inspect this component.")); if (HUD.HasClick()) { HUD.TakeClick(); State.Selected = Child; State.SelectedSlot = -1; } }
             if (const CI::ItemDef* Sub = CireItems::Find(Child))
             {
                 const int32 SubCount = static_cast<int32>(Sub->Components.size());
                 for (int32 S = 0; S < SubCount; ++S)
                 {
                     const FName Grand = ToName(Sub->Components[S]);
-                    const float GXs = CX + 18 + (S - (SubCount - 1) * .5f) * 30 - 13, GYs = CYc + 52;
-                    P.Line(CX + 18, CYc + 40, GXs + 13, GYs, Filigree * .45f, 1.f);
+                    const float GXs = CX + ChildS * .5f + (S - (SubCount - 1) * .5f) * 30 - 13, GYs = CYc + ChildS + 20;
+                    P.Line(CX + ChildS * .5f, CYc + ChildS + 15, GXs + 13, GYs, Filigree * .45f, 1.f);
                     const bool bGrand = Owned.Contains(Grand) || bHave;
                     if (Owned.Contains(Grand) && !bHave) Owned.RemoveSingle(Grand);
                     const bool bOverGrand = bInteractive && In(M, GXs, GYs, 26, 26);
                     DrawItemIcon(P, Grand, GXs, GYs, 26, bOverGrand, 0, 0, 0, FString(), !bGrand);
-                    if (bOverGrand) { Tip(HUD, CireItems::DisplayName(Grand), ItemTooltip(Grand, PriceFor(Hero, Grand))); if (HUD.HasClick()) { HUD.TakeClick(); State.Selected = Grand; State.SelectedSlot = -1; } }
+                    if (bOverGrand) { TipItem(HUD, Grand, PriceFor(Hero, Grand), TEXT("Click to inspect this component.")); if (HUD.HasClick()) { HUD.TakeClick(); State.Selected = Grand; State.SelectedSlot = -1; } }
                 }
             }
         }
-        float TY = TreeY + (Count > 0 ? 154 : 60);
-        P.Text(P.Fit(CireItems::DisplayName(Shown), 17, DWd - 20, ECireFont::Bold), DX + 10, TY, 17, Tier, ECireFont::Bold);
-        TY += 22;
+        // Text: name, tier + cost, your price, effect, symbol stat lines, passive / active sections, lore.
+        const std::vector<std::string> Into = D.Catalog.BuildsInto(Item->Id);
+        const float ButtonY = DY + DHt - 40, StripY = ButtonY - 24, IntoY = StripY - 54;
+        const float TextLimit = Into.empty() ? StripY - 4 : IntoY - 4;
+        float TY = DY + PanelH + 6;
+        auto Step = [](float Size) { return CireUIStyle::ReadableSize(Size) * 1.22f + 1.f; };
+        auto Room = [&](float Need) { return TY + Need <= TextLimit; };
+        P.Text(P.Fit(CireItems::DisplayName(Shown), 17, DWd - 20, ECireFont::Bold), DX + 10, TY, 17, FMath::Lerp(Tier, FLinearColor::White, .15f), ECireFont::Bold, true, true);
+        TY += Step(17);
         const int32 Price = PriceFor(Hero, Shown);
-        FString CostLine = FString::Printf(TEXT("%s  ·  COST %dg"), *FString(UTF8_TO_TCHAR(CI::TierName(Item->Tier))).ToUpper(), Item->TotalCost);
-        if (Count > 0) CostLine += FString::Printf(TEXT("  (RECIPE %dg)"), Item->RecipeCost);
-        CireShopArt::Spaced(P, CostLine, DX + 10, TY, 7.5f, .22f, Filigree, ECireFont::Display, false, false);
-        TY += 15;
-        if (Price != Item->TotalCost && Item->Purchasable) { P.Text(FString::Printf(TEXT("Your price: %dg (owned parts count)"), Price), DX + 10, TY, 11.5f, FLinearColor(.55f, 1.f, .5f, 1), ECireFont::Bold); TY += 17; }
-        if (const FString* Effect = D.EffectLine.Find(Shown)) // items-v2: the one-line effect
-        { TY += P.Wrapped(*Effect, DX + 10, TY, DWd - 20, 11.5f, IsPathUnique(*Item) ? FLinearColor(1.f, .7f, .32f, 1) : Parchment, 2) * 15 + 2; }
+        FString CostLine = FString::Printf(TEXT("%s  ·  COST %dg"), bPathItem ? TEXT("PATH UNIQUE") : *FString(UTF8_TO_TCHAR(CI::TierName(Item->Tier))).ToUpper(), Item->TotalCost);
+        if (Count > 0) CostLine += FString::Printf(TEXT("  ·  RECIPE %dg"), Item->RecipeCost);
+        CireShopArt::Spaced(P, CostLine, DX + 10, TY, 7.5f, .2f, Filigree, ECireFont::Display, false, false);
+        TY += Step(7.5f) + 2;
+        if (Price != Item->TotalCost && Item->Purchasable && Room(Step(11.5f))) { P.Text(FString::Printf(TEXT("Your price: %dg (owned parts count)"), Price), DX + 10, TY, 11.5f, FLinearColor(.55f, 1.f, .5f, 1), ECireFont::Bold, true, true); TY += Step(11.5f); }
         TArray<FString> Lines;
         StatLines(Shown).ParseIntoArrayLines(Lines);
-        for (const FString& Line : Lines) { P.Text(Line, DX + 10, TY, 12.5f, FLinearColor(.45f, .95f, .5f, 1), ECireFont::Bold); TY += 16; }
-        if (const auto* Passives = D.PassiveText.Find(Shown))
-            for (const FString& Line : *Passives)
-            {
-                CireShopArt::Spaced(P, TEXT("UNIQUE PASSIVE"), DX + 10, TY + 3, 7.f, .3f, BrightGold, ECireFont::Display, false, false);
-                TY += 14 + (P.Wrapped(Line, DX + 10, TY + 14, DWd - 20, 11, Parchment, 3) * 15);
-            }
-        if (const FString* Use = D.UseText.Find(Shown); Use && !Use->IsEmpty())
+        for (const FString& Line : Lines) { if (!Room(Step(12.5f))) break; P.Text(Line, DX + 10, TY, 12.5f, CireUIStyle::StatColor(Line), ECireFont::Bold, true, true); TY += Step(12.5f); }
+        if (const FString* Effect = D.EffectLine.Find(Shown); Effect && Room(Step(11))) // items-v2: the one-line effect
+        { TY += 2; TY += P.Wrapped(*Effect, DX + 10, TY, DWd - 20, 11, bPathItem ? FLinearColor(1.f, .72f, .35f, 1) : FLinearColor(1.f, .86f, .5f, 1), FMath::Max(1, FMath::FloorToInt((TextLimit - TY) / (CireUIStyle::ReadableSize(11) + 3))), ECireFont::Body, 3.f) * (CireUIStyle::ReadableSize(11) + 3); }
+        auto Section = [&](const TCHAR* Header, FLinearColor Color, const FString& Body)
         {
-            CireShopArt::Spaced(P, Item->Belt || Item->Instant ? TEXT("USE") : TEXT("ACTIVE  ·  CLICK THE BAG SLOT OR PRESS ITS KEY"), DX + 10, TY + 3, 7.f, .25f, Teal, ECireFont::Display, false, false);
-            TY += 14 + (P.Wrapped(*Use, DX + 10, TY + 14, DWd - 20, 11, Parchment, 3) * 15);
-        }
-        if (Item->Unique || !Item->UniqueGroup.empty())
-        { P.Text(IsPathUnique(*Item) ? TEXT("Path-defining unique: one per champion.") : !Item->UniqueGroup.empty() ? TEXT("Only one pair of boots.") : TEXT("Unique: carry only one."),
-            DX + 10, TY + 2, 10.5f, IsPathUnique(*Item) ? FLinearColor(1.f, .62f, .22f, 1) : Muted * 1.3f, ECireFont::Body); TY += 15; }
-        if (!Item->Lore.empty() && TY < DY + DHt - 116) P.Wrapped(Str(Item->Lore), DX + 10, TY + 4, DWd - 20, 10, Muted * 1.2f, 2);
-        const std::vector<std::string> Into = D.Catalog.BuildsInto(Item->Id);
+            if (!Room(Step(7.5f) + Step(11))) return;
+            CireShopArt::Spaced(P, Header, DX + 10, TY + 4, 7.5f, .3f, Color, ECireFont::Display, false, false);
+            TY += Step(7.5f) + 4;
+            const int32 MaxLines = FMath::Max(1, FMath::FloorToInt((TextLimit - TY) / (CireUIStyle::ReadableSize(11) + 3)));
+            TY += P.Wrapped(Body, DX + 10, TY, DWd - 20, 11, Parchment, FMath::Min(3, MaxLines), ECireFont::Body, 3.f) * (CireUIStyle::ReadableSize(11) + 3);
+        };
+        if (const auto* Passives = D.PassiveText.Find(Shown))
+            for (const FString& Line : *Passives) Section(TEXT("UNIQUE PASSIVE"), BrightGold, Line);
+        if (const FString* Use = D.UseText.Find(Shown); Use && !Use->IsEmpty())
+            Section(Item->Belt || Item->Instant ? TEXT("USE") : TEXT("ACTIVE  ·  CLICK THE BAG SLOT OR PRESS ITS KEY"), Teal, *Use);
+        if ((Item->Unique || !Item->UniqueGroup.empty()) && Room(Step(10.5f)))
+        { P.Text(bPathItem ? TEXT("Path-defining unique: one per champion.") : !Item->UniqueGroup.empty() ? TEXT("Only one pair of boots.") : TEXT("Unique: carry only one."),
+            DX + 10, TY + 2, 10.5f, bPathItem ? FLinearColor(1.f, .62f, .22f, 1) : Muted * 1.4f, ECireFont::Body, false, true); TY += Step(10.5f); }
+        if (!Item->Lore.empty() && Room(Step(10) * 2)) P.Wrapped(Str(Item->Lore), DX + 10, TY + 4, DWd - 20, 10, Muted * 1.3f, 2);
         if (!Into.empty())
         {
-            const float BY = DY + DHt - 100;
-            CireShopArt::Spaced(P, TEXT("BUILDS INTO"), DX + 10, BY, 7.f, .3f, Filigree, ECireFont::Display, false, false);
+            CireShopArt::Spaced(P, TEXT("BUILDS INTO"), DX + 10, IntoY, 7.f, .3f, Filigree, ECireFont::Display, false, false);
             for (int32 Index = 0; Index < static_cast<int32>(Into.size()) && Index < 9; ++Index)
             {
                 const FName Parent = ToName(Into[Index]);
-                const float IX = DX + 10 + Index * 38, IY = BY + 13;
+                const float IX = DX + 10 + Index * 39, IY = IntoY + 16;
                 const bool bOver = bInteractive && In(M, IX, IY, 34, 34);
                 DrawItemIcon(P, Parent, IX, IY, 34, bOver);
-                if (bOver) { Tip(HUD, CireItems::DisplayName(Parent), ItemTooltip(Parent, PriceFor(Hero, Parent))); if (HUD.HasClick()) { HUD.TakeClick(); State.Selected = Parent; State.SelectedSlot = -1; } }
+                if (bOver) { TipItem(HUD, Parent, PriceFor(Hero, Parent), TEXT("Click to inspect what this builds into.")); if (HUD.HasClick()) { HUD.TakeClick(); State.Selected = Parent; State.SelectedSlot = -1; } }
             }
         }
-        const float BY = DY + DHt - 42;
+        // Feedback strip: the last purchase / sale / undo / error, fading after a few seconds.
+        {
+            const float Age = static_cast<float>(Now() - State.LastEventAt);
+            if (!State.LastEvent.IsEmpty() && Age >= 0 && Age < 4.f)
+            {
+                FCireUIPainter Q = P; Q.Alpha *= FMath::Clamp((4.f - Age) / .6f, 0.f, 1.f) * FMath::Clamp(Age / .12f, 0.f, 1.f);
+                CireUIStyle::Bevel(Q, DX + 8, StripY, DWd - 16, 21, 5, State.LastEventColor * FLinearColor(.28f, .28f, .28f, .9f));
+                CireUIStyle::BevelOutline(Q, DX + 8, StripY, DWd - 16, 21, 5, State.LastEventColor * FLinearColor(1, 1, 1, .85f), 1.2f);
+                const FString Msg = Q.Fit(State.LastEvent, 10, DWd - 30, ECireFont::Bold);
+                Q.Text(Msg, DX + (DWd - Q.TextWidth(Msg, 10, ECireFont::Bold)) * .5f, StripY + (21 - CireUIStyle::ReadableSize(10) * 1.28f) * .5f, 10, FMath::Lerp(State.LastEventColor, FLinearColor::White, .25f), ECireFont::Bold, true, true);
+            }
+        }
         if (SellSlot >= 0)
         {
             const CI::Slot SlotRule = {Utf8(Shown), bSellBelt ? Hero->Inventory->Belt[SellSlot].Charges : 1, 0};
             const int32 Value = CI::SellValue(D.Catalog, SlotRule, D.Shop);
-            const bool bOver = In(M, DX + 8, BY, DWd - 16, 36);
-            ShopButton(P, DX + 8 + ShakeOffset(NAME_None, SellSlot, bSellBelt), BY, DWd - 16, 36, FString::Printf(TEXT("SELL  +%dg"), Value), bOver, false, false, Orange, 14);
-            if (Click(DX + 8, BY, DWd - 16, 36)) RequestSell(HUD, Hero, GameState, SellSlot, bSellBelt);
+            const bool bOver = In(M, DX + 8, ButtonY, DWd - 16, 38);
+            ShopButton(P, DX + 8 + ShakeOffset(NAME_None, SellSlot, bSellBelt), ButtonY, DWd - 16, 38, FString::Printf(TEXT("SELL  +%dg"), Value), bOver, false, false, Orange, 14);
+            if (Click(DX + 8, ButtonY, DWd - 16, 38)) RequestSell(HUD, Hero, GameState, SellSlot, bSellBelt);
         }
         else if (Item->Purchasable)
         {
             const CI::PurchasePlan Plan = CI::PlanPurchase(D.Catalog, Rules, Item->Id, Hero->Gold);
-            const bool bOver = In(M, DX + 8, BY, DWd - 16, 36);
+            const bool bOver = In(M, DX + 8, ButtonY, DWd - 16, 38);
             const FString Label = Plan.Ok ? FString::Printf(TEXT("BUY  %dg"), Plan.Cost) : FString::Printf(TEXT("BUY  %dg  ·  %s"), Price, Plan.Error.find("gold") != std::string::npos ? TEXT("NEED GOLD") : TEXT("UNAVAILABLE"));
-            ShopButton(P, DX + 8 + ShakeOffset(Shown), BY, DWd - 16, 36, Label, bOver, false, !Plan.Ok, BrightGold, 14);
-            if (Click(DX + 8, BY, DWd - 16, 36)) RequestBuy(HUD, Hero, GameState, Shown, State.DetailIconPos);
+            ShopButton(P, DX + 8 + ShakeOffset(Shown), ButtonY, DWd - 16, 38, Label, bOver, false, !Plan.Ok, BrightGold, 14);
+            if (Click(DX + 8, ButtonY, DWd - 16, 38)) RequestBuy(HUD, Hero, GameState, Shown, State.DetailIconPos);
         }
-        else P.Text(TEXT("Loot only: drops from challenge chests and bosses."), DX + 10, BY + 10, 11, Muted * 1.3f);
+        else P.Text(TEXT("Loot only: drops from challenge chests and bosses."), DX + 10, ButtonY + 10, 11, Muted * 1.4f, ECireFont::Body, false, true);
     }
 
     // Bottom strip: bag + belt, undo, hotkeys.
@@ -1800,7 +1950,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         State.SlotPos[Index] = FVector2D(IX, IY);
         if (!bOver || Cell.Id.IsNone()) continue;
         const CI::Slot SlotRule = {Utf8(Cell.Id), Cell.Charges, 0};
-        Tip(HUD, CireItems::DisplayName(Cell.Id), ItemTooltip(Cell.Id) + FString::Printf(TEXT("\nSells for %dg (right-click)."), CI::SellValue(D.Catalog, SlotRule, D.Shop)));
+        TipItem(HUD, Cell.Id, -1, FString::Printf(TEXT("Sells for %dg  ·  right-click to sell"), CI::SellValue(D.Catalog, SlotRule, D.Shop)));
         if (HUD.HasClick()) { HUD.TakeClick(); State.SelectedSlot = SlotIndex; State.bSelectedBelt = bBelt; }
         if (bRightClick) RequestSell(HUD, Hero, GameState, SlotIndex, bBelt);
     }

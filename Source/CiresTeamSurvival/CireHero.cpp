@@ -220,6 +220,8 @@ void ACireHero::Draft(int32 Choice)
     if (Choice == 0) Progression.Stats.Strength = 20;
     if (Choice == 1 || Choice == 3) Progression.Stats.Agility = 20;
     if (Choice == 2 || Choice == 4) Progression.Stats.Intelligence = 20;
+    Progression.BaseHealth = Cires::StartingBaseHealth(Progression.Stats.Strength); // str-scaling: keep level-1 health
+    CireSkillShop::SyncSchedule(this); // Skill Shop purchases never block level-ups
     HeroName = Choice == 0 ? TEXT("Iron Warden") : Choice == 1 ? TEXT("Ash Ranger") : Choice == 3 ? TEXT("Lancer") : Choice==4?TEXT("Rift Summoner"):TEXT("Veil Scholar");
     bDrafted = true;
     Recalculate(true);
@@ -244,6 +246,7 @@ void ACireHero::Recalculate(bool bFill)
     Intelligence = Attributes.Intelligence;
     Cires::CombatTuning Tuning;
     Tuning.WeaponDamage = 12;
+    Tuning.BaseHealth = Progression.BaseHealth; // str-scaling: flat base from the starting STR
     Tuning.PureCooldownReduction = CireItems::CooldownReductionFor(this, CDR);
     const auto Stats = Cires::CalculateStats(Attributes, Progression.Primary, Tuning);
     MaxHealth = static_cast<float>(Stats.MaxHealth);
@@ -259,6 +262,7 @@ void ACireHero::GrantExperience(int32 Amount)
 {
     if (!HasAuthority() || !bDrafted || Amount <= 0) return;
     Experience = static_cast<int32>(FMath::Min<int64>(MAX_int32, static_cast<int64>(Experience) + Amount));
+    CireSkillShop::SyncSchedule(this); // bought skills must not stall levels (Skill Shop mode still levels up)
     bool bLeveled = false;
     while (Progression.Level < 10000 && static_cast<int64>(Experience) >= 120LL + Progression.Level * 60LL)
     {
@@ -270,7 +274,9 @@ void ACireHero::GrantExperience(int32 Amount)
     if (bLeveled)
     {
         Recalculate(false);
-        Notice = FString::Printf(TEXT("Level %d: +2 primary, +1 other stats. New skills: Skill Shop between waves."), Level);
+        Notice = CireSkillShop::IsSkillShopMode(GetWorld())
+            ? FString::Printf(TEXT("Level %d: +2 primary, +1 other stats. New skills: Skill Shop between waves."), Level)
+            : FString::Printf(TEXT("Level %d: +2 primary, +1 other stats."), Level);
         RefreshOffer();
     }
 }

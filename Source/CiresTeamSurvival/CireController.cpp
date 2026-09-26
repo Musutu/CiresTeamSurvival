@@ -71,7 +71,7 @@ bool TickClientProbe(ACireController* Controller) {
         Probe.Step=2;Probe.StepStarted=Now;
     } else if(Probe.Step==2&&Hero->bDrafted) {
         if(Hero->Archetype!=2||Hero->Skills.Num()!=0||Hero->Cooldowns.Num()!=0||
-            !FMath::IsNearlyEqual(Hero->MaxHealth,Hero->Strength*25.f)||
+            !FMath::IsNearlyEqual(Hero->MaxHealth,Hero->Strength*25.f)|| // level 1: base 15 x STR + 10 x STR (str-scaling)
             !FMath::IsNearlyEqual(Hero->MaxMana,Hero->Intelligence*30.f)) {Fail(TEXT("draft or stat replication mismatch"));return true;}
         Probe.MovementOrigin=Hero->GetActorLocation();
         Probe.Step=5;Probe.StepStarted=Now;

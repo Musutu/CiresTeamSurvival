@@ -1,6 +1,7 @@
 #include "CireExpansionNetProbe.h"
 #include "CireGame.h"
 #include "CireClassTraits.h" // champion-draft: class-trait-aware expectations
+#include "CireItems.h" // str-scaling: STR armor/ward in expected damage
 #include "CireCombatEvents.h"
 #include "CireSkillshot.h"
 #include "CireConstruct.h"
@@ -204,7 +205,7 @@ bool CireExpansionNetProbe::TickServer(ACireGameMode* Mode)
     {
         Players[0]->CriticalChance = 1; Players[0]->CriticalMultiplier = 2;
         const float Critical = CireCombat::ApplyStrike(Players[0], Players[1], 10, TEXT("CIRE_EXP_PVP_CRIT")); Players[0]->CriticalChance = 0;
-        if (Critical != CireClassTraits::ModifyIncomingDamage(Players[1], 20) || !Server.Walls[0].IsValid() || !Server.Summons[0].IsValid() ||
+        if (Critical != CireClassTraits::ModifyIncomingDamage(Players[1], CireItems::AfterStrengthDefense(Players[1], 20, false)) || !Server.Walls[0].IsValid() || !Server.Summons[0].IsValid() ||
             CireCombat::ApplyDamage(Players[0], Server.Walls[0].Get(), 10, TEXT("forbidden friendly wall")) != 0 ||
             CireCombat::ApplyDamage(Players[1], Server.Walls[0].Get(), 1000, TEXT("CIRE_EXP_WALL_BREAK")) != 200 ||
             CireCombat::ApplyDamage(Players[1], Server.Summons[0].Get(), 10, TEXT("CIRE_EXP_SUMMON_HIT")) != 10 ||
@@ -218,7 +219,7 @@ bool CireExpansionNetProbe::TickServer(ACireGameMode* Mode)
     }
     else if (Server.Stage == 5 && Server.Acks == 3)
     {
-        if (!FMath::IsNearlyEqual(Players[1]->Health, 1000.f - CireClassTraits::ModifyIncomingDamage(Players[1], 20) - CireClassTraits::ModifyIncomingDamage(Players[1], 30))) { Abort(TEXT("server final PvP health does not match clients")); return true; }
+        if (!FMath::IsNearlyEqual(Players[1]->Health, 1000.f - CireClassTraits::ModifyIncomingDamage(Players[1], CireItems::AfterStrengthDefense(Players[1], 20, false)) - CireClassTraits::ModifyIncomingDamage(Players[1], CireItems::AfterStrengthDefense(Players[1], 30, false)))) { Abort(TEXT("server final PvP health does not match clients")); return true; }
         // Both clients have the real arena floor. Exercise owner input and
         // simulated proxy movement without the elevated server-only platform.
         const float Y=Mode->ArenaPosition(0,2).Y;
@@ -343,10 +344,10 @@ bool CireExpansionNetProbe::TickClient(ACireController* Controller)
         if (!Critical || !Impact) return true;
         const ACireHero* PvPTarget = nullptr; // champion-draft: expected amounts follow the target's class trait
         for (TActorIterator<ACireHero> It(Controller->GetWorld()); It; ++It) if (!Cast<ACireSummon>(*It) && It->TeamId == 1) PvPTarget = *It;
-        if (!Critical->bCritical || Critical->Amount != CireClassTraits::ModifyIncomingDamage(PvPTarget, 20) || Impact->bCritical || Impact->Amount != CireClassTraits::ModifyIncomingDamage(PvPTarget, 30) ||
+        if (!Critical->bCritical || Critical->Amount != CireClassTraits::ModifyIncomingDamage(PvPTarget, CireItems::AfterStrengthDefense(PvPTarget, 20, false)) || Impact->bCritical || Impact->Amount != CireClassTraits::ModifyIncomingDamage(PvPTarget, CireItems::AfterStrengthDefense(PvPTarget, 30, false)) ||
             Impact->bLocalSource != (Team == 0) || Impact->bLocalTarget != (Team == 1)) { Abort(TEXT("PvP critical/projectile telemetry payload mismatch")); return true; }
         bool bHealth = false;
-        for (TActorIterator<ACireHero> It(Controller->GetWorld()); It; ++It) if (!Cast<ACireSummon>(*It) && It->TeamId == 1 && It->Health == 1000.f - CireClassTraits::ModifyIncomingDamage(*It, 20) - CireClassTraits::ModifyIncomingDamage(*It, 30)) bHealth = true;
+        for (TActorIterator<ACireHero> It(Controller->GetWorld()); It; ++It) if (!Cast<ACireSummon>(*It) && It->TeamId == 1 && It->Health == 1000.f - CireClassTraits::ModifyIncomingDamage(*It, CireItems::AfterStrengthDefense(*It, 20, false)) - CireClassTraits::ModifyIncomingDamage(*It, CireItems::AfterStrengthDefense(*It, 30, false))) bHealth = true;
         // aura-vfx: an arena buff record on the team-1 hero reaches both clients (opponents are observable in the arena).
         bool bArenaBuff = false; for (TActorIterator<ACireHero> It(Controller->GetWorld()); It; ++It) if (!Cast<ACireSummon>(*It) && It->TeamId == 1 && CireBuffs::IsActive(*It, TEXT("bastion_of_dawn"))) bArenaBuff = true;
         if (!bArenaBuff) return true;

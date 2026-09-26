@@ -108,7 +108,7 @@ void ACireHUD::UsePanel(FName Id,float W,float H)
     Origin=FVector2D(R.X,R.Y); Stretch=FVector2D(R.W/W,R.H/H);
     VisiblePanels.AddUnique(Id);
     static const TMap<FName,FString> Help={
-        {TEXT("Player"),TEXT("Your character: green health, blue mana (INT grants 30 each), gold energy for physical abilities. Left click to target yourself. STR grants 25 health, AGI 1% attack speed per point; your primary attribute adds basic attack damage.")},
+        {TEXT("Player"),TEXT("Your character: green health, blue mana (INT grants 30 each), gold energy for physical abilities. Left click to target yourself. STR grants 10 health and 0.1 armor and spell ward, AGI 1% attack speed per point; your primary attribute adds basic attack damage.")},
         {TEXT("Party"),TEXT("Your four teammates. Left click a frame to target for healing or support. The + button sets a focus target. Hover status icons for duration and removal rules.")},
         {TEXT("Match"),TEXT("Three cleared PvE waves lead to town preparation, arena PvP, then recovery. Each team begins with 100 lives. Normal leaks cost one life; bosses cost ten.")},
         {TEXT("Minimap"),TEXT("Your team's separate PvE lane and town entrance. The enemy realm stays obscured during PvE. Teams can fight only after teleporting to a shared arena.")},
@@ -132,10 +132,10 @@ void ACireHUD::Wrapped(const FString& Text,float X,float Y,float Width,float Siz
     for(const FString& Word:Words) {
         const FString Next=Row.IsEmpty()?Word:Row+TEXT(" ")+Word;
         if(!Row.IsEmpty()&&TextWidth(Next,Size)>Width) {
-            Label(Row,X,Y+Count*(Size+4),Size,Color); if(++Count>=MaxLines)return; Row=Word;
+            Label(Row,X,Y+Count*(CireUIStyle::ReadableSize(Size)+4),Size,Color); if(++Count>=MaxLines)return; Row=Word;
         } else Row=Next;
     }
-    if(!Row.IsEmpty()&&Count<MaxLines)Label(Row,X,Y+Count*(Size+4),Size,Color);
+    if(!Row.IsEmpty()&&Count<MaxLines)Label(Row,X,Y+Count*(CireUIStyle::ReadableSize(Size)+4),Size,Color);
 }
 void ACireHUD::Line(float X1,float Y1,float X2,float Y2,FLinearColor Color,float Width)
 {
@@ -275,10 +275,11 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
     const int32 Poisoned=PoisonCount(Hero);
     // ui-themes: the themed layout gives the larger portrait ring room (bars start further right).
     const float BX=bThemed?88.f:66.f,BW=bThemed?160.f:182.f;
-    Label(ShortName(Hero->HeroName,Poisoned>0?12:23),BX,8,14,Parchment);
+    // readability: bigger outlined name and centred, outlined health / mana values.
+    TextFx(Painter().Fit(Hero->HeroName,15,Poisoned>0?BW-86:BW,ECireFont::Bold),BX,6,15,Parchment,ECireFont::Bold,true,true);
     if(Poisoned>0){Panel(165,8,84,17,Card);Label(PoisonLabel(Poisoned),170,10,9,Poison);}
     Bar(BX,31,BW,20,Fraction(Hero->Health,Hero->MaxHealth),LifeGreen);
-    Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Health,Hero->MaxHealth),BX+7,33,12,Parchment);
+    {const FString HP=FString::Printf(TEXT("%.0f / %.0f"),Hero->Health,Hero->MaxHealth);TextFx(HP,BX+(BW-TextWidthFont(HP,12.5f,ECireFont::Numbers))*.5f,31+(20-CireUIStyle::ReadableSize(12.5f)*1.28f)*.5f,12.5f,FLinearColor::White,ECireFont::Numbers,true,false);}
     // items-v2: absorb shield (party shields, ultimate upgrades) overlays the health bar.
     const UCireInventory* Inv=Hero->Inventory.Get();
     const float WorldNowS=GetWorld()->GetGameState()?GetWorld()->GetGameState()->GetServerWorldTimeSeconds():GetWorld()->GetTimeSeconds();
@@ -295,18 +296,19 @@ void ACireHUD::DrawPlayer(ACireHero* Hero)
     const float ManaFrac=Fraction(Hero->Mana,Hero->MaxMana);
     if(bManaFlash)Panel(BX-3+Shake,52,BW+6,19,FLinearColor(1.f,.12f,.08f,.75f*Flash));
     else if(ManaFrac<.25f&&Hero->MaxMana>0){const float P=.5f+.5f*FMath::Sin(RealNow*5.f);Panel(BX-2,53,BW+4,17,FLinearColor(.3f,.45f,1.f,.25f+.3f*P));}
-    Bar(BX+Shake,55,BW,13,ManaFrac,Blue);
+    Bar(BX+Shake,54,BW,15,ManaFrac,Blue);
     const float ItemManaRegen=Inv?static_cast<float>(Inv->Totals().Stats.Get(Cires::Items::ItemStat::ManaRegen)):0.f;
     const float ManaRegenNow=CireItems::BaseManaRegen(Hero,Hero->HasSkill(TEXT("deep_reserves"))?1.5f:1.f)+ItemManaRegen;
-    Label(FString::Printf(TEXT("%.0f / %.0f"),Hero->Mana,Hero->MaxMana),BX+7+Shake,55,10,Parchment);
-    const FString RegenText=FString::Printf(TEXT("+%.1f/s"),ManaRegenNow);Label(RegenText,BX+BW-TextWidth(RegenText,9)-5+Shake,56,9,FLinearColor(.72f,.84f,1.f,1));
+    const float ManaTY=54+(15-CireUIStyle::ReadableSize(10.5f)*1.28f)*.5f;
+    TextFx(FString::Printf(TEXT("%.0f / %.0f"),Hero->Mana,Hero->MaxMana),BX+7+Shake,ManaTY,10.5f,FLinearColor::White,ECireFont::Numbers,true,false);
+    const FString RegenText=FString::Printf(TEXT("+%.1f/s"),ManaRegenNow);TextFx(RegenText,BX+BW-TextWidthFont(RegenText,9.5f,ECireFont::Numbers)-6+Shake,ManaTY+.5f,9.5f,FLinearColor(.8f,.9f,1.f,1),ECireFont::Numbers,true,false);
     if(bManaFlash){const FString Warn=FString::Printf(TEXT("NOT ENOUGH MANA  %.0f / %.0f"),Hero->Mana,Inv->ResourceFailNeed);
         Label(Warn,(ViewW-TextWidth(Warn,16))*.5f+Shake,ViewH-236,16,FLinearColor(.55f,.72f,1.f,Flash));}
     else if(Flash>0&&Inv&&Inv->ResourceFailKind==2){const FString Warn=FString::Printf(TEXT("NOT ENOUGH ENERGY  %.0f / %.0f"),Hero->Energy,Inv->ResourceFailNeed);
         Label(Warn,(ViewW-TextWidth(Warn,16))*.5f,ViewH-236,16,FLinearColor(1.f,.85f,.25f,Flash));}
     Bar(BX,72,BW,5,Hero->Energy/100.f,CireUIColors::Energy); // energy stays yellow in every theme
-    Label(FString::Printf(TEXT("STR %d  AGI %d  INT %d"),Hero->Strength,Hero->Agility,Hero->Intelligence),10,116,10,Muted);
-    if(Aggro==0)Label(FString::Printf(TEXT("EN %.0f"),Hero->Energy),210,116,10,Gold);
+    TextFx(FString::Printf(TEXT("STR %d   AGI %d   INT %d"),Hero->Strength,Hero->Agility,Hero->Intelligence),10,112,10.5f,Parchment*FLinearColor(.9f,.9f,.9f,1),ECireFont::Numbers,true,true);
+    if(Aggro==0){const FString EN=FString::Printf(TEXT("EN %.0f"),Hero->Energy);TextFx(EN,252-TextWidthFont(EN,10.5f,ECireFont::Numbers),112,10.5f,CireUIColors::Energy,ECireFont::Numbers,true,true);}
     // (Health/mana/energy help text now lives in the F10 panel description; no gameplay popups.)
     DrawStatuses(Hero,BX,83,24,bThemed?4:5);
     if(Clicked&&Hit(0,0,260,132)&&!bModal&&!bSettings&&!bEditLayout){if(auto* C=Cast<ACireController>(PlayerOwner))C->ServerAction(0,0,Hero);Clicked=false;}
@@ -316,8 +318,9 @@ void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
     UsePanel(TEXT("Party"),210,248);
     const bool bThemedParty=CireUIStyle::HasThemeArt();
     if(bThemedParty)CireUIStyle::Frame(Painter(),-4,-6,218,256,Gold,ECireFrame::Unit); // ui-themes: the company panel around the rows
-    Label(Hero->TeamId==0?TEXT("EMBER COMPANY"):TEXT("DUSK COMPANY"),bThemedParty?6:1,0,10,bThemedParty?Parchment:Gold);
-    Label(TEXT("PARTY / 5"),152,0,9,Muted);
+    // readability: larger outlined captions, names, HP values and level medallions on every row.
+    TextFx(Hero->TeamId==0?TEXT("EMBER COMPANY"):TEXT("DUSK COMPANY"),bThemedParty?8:1,2,10.5f,bThemedParty?Parchment:Gold,ECireFont::Heading,true,true);
+    {const FString Count=TEXT("PARTY / 5");TextFx(Count,202-TextWidthFont(Count,9,ECireFont::Heading),3,9,Parchment*.75f,ECireFont::Heading,true,true);}
     TArray<ACireHero*> Allies;
     for(TActorIterator<ACireHero> It(GetWorld());It;++It)if(*It!=Hero&&It->TeamId==Hero->TeamId&&!Cast<ACireSummon>(*It))Allies.Add(*It);
     Allies.Sort([](const ACireHero& A,const ACireHero& B){return A.GetName()<B.GetName();});
@@ -346,14 +349,19 @@ void ACireHUD::DrawParty(ACireHero* Hero,ACireController* Controller)
             if(bFace)CireUIStyle::RoleBadge(Painter(),19.f+12.f,Y+37.f,6.f,FString::Printf(TEXT("role%d"),Ally->Archetype),Ally->bDead?Muted:RoleColor(Ally->Archetype)*1.1f+FLinearColor(.08f,.08f,.08f,0));
         }
         else Icon(FString::Printf(TEXT("role%d"),Ally->Archetype),4,Y+10,29,Ally->bDead?Muted:RoleColor(Ally->Archetype));
-        Label(ShortName(Ally->HeroName,18),39,Y+4,11,Ally->bDead?Muted:Parchment);
-        Label(FString::FromInt(Ally->Level),158,Y+4,10,Gold);
-        Bar(39,Y+21,130,13,Fraction(Ally->Health,Ally->MaxHealth),Ally->bDead?Muted:LifeGreen);
-        Label(Ally->bDead?TEXT("FALLEN"):FString::Printf(TEXT("%.0f%%"),Fraction(Ally->Health,Ally->MaxHealth)*100),42,Y+20,9,Parchment);
+        TextFx(Painter().Fit(Ally->HeroName,12.5f,142,ECireFont::Bold),39,Y+1,12.5f,Ally->bDead?Muted:Parchment,ECireFont::Bold,true,true);
+        if(bThemedParty)CireUIStyle::Medallion(Painter(),6.5f,Y+40.f,7.5f,FString::FromInt(Ally->Level),CireUIColors::BrightGold);
+        else TextFx(FString::FromInt(Ally->Level),158,Y+3,11,Gold,ECireFont::Numbers,true,true);
+        Bar(39,Y+20,130,15,Fraction(Ally->Health,Ally->MaxHealth),Ally->bDead?Muted:LifeGreen);
+        {
+            const FString HP=Ally->bDead?FString(TEXT("FALLEN")):FString::Printf(TEXT("%.0f / %.0f"),Ally->Health,Ally->MaxHealth);
+            const ECireFont HF=Ally->bDead?ECireFont::Heading:ECireFont::Numbers;
+            TextFx(HP,39+(130-TextWidthFont(HP,10,HF))*.5f,Y+20+(15-CireUIStyle::ReadableSize(10)*1.28f)*.5f,10,FLinearColor::White,HF,true,false);
+        }
         const int32 Poisoned=PoisonCount(Ally);
-        Bar(39,Y+37,Poisoned>0?60:130,5,Fraction(Ally->Mana,Ally->MaxMana),Blue);
-        if(Poisoned>0)Label(PoisonLabel(Poisoned),104,Y+35,8,Poison);
-        Panel(186,Y+3,20,17,Focus?Gold:Card);Label(Focus?TEXT("*"):TEXT("+"),191,Y+2,13,Focus?Ink:Gold);
+        Bar(39,Y+38,Poisoned>0?60:130,6,Fraction(Ally->Mana,Ally->MaxMana),Blue);
+        if(Poisoned>0)TextFx(PoisonLabel(Poisoned),104,Y+35,8,Poison,ECireFont::Heading,true,false);
+        Panel(186,Y+3,20,17,Focus?Gold:Card);TextFx(Focus?TEXT("*"):TEXT("+"),196-TextWidthFont(Focus?TEXT("*"):TEXT("+"),13,ECireFont::Bold)*.5f,Y+1,13,Focus?Ink:Gold,ECireFont::Bold,false,true);
         UnitTip(Ally,0,Y,184,49);
         Tip(TEXT("Focus teammate"),TEXT("Keep a second persistent unit frame for this teammate. Click the focus frame to make them your current target."),186,Y+3,20,17);
         DrawStatuses(Ally,172,Y+24,15,2);
@@ -671,7 +679,7 @@ void ACireHUD::DrawHUD()
     Clicked=PlayerOwner->WasInputKeyJustPressed(EKeys::LeftMouseButton)&&!PlayerOwner->IsInputKeyDown(EKeys::RightMouseButton);
     auto* Controller=Cast<ACireController>(PlayerOwner);auto* Hero=Cast<ACireHero>(PlayerOwner->GetPawn());auto* State=GetWorld()->GetGameState<ACireGameState>();
     bModal=Hero&&((!Hero->bDrafted||(Hero->Offers.Num()>0&&IsSkillOfferOpen())||(Controller&&Controller->bShop))||(State&&State->Phase==3));
-    TooltipTitle.Reset();TooltipBody.Reset();TooltipUnit.Reset();TooltipAbility.Reset();TooltipRegion={0,0,0,0};EditHelpTitle.Reset();EditHelpBody.Reset();
+    TooltipTitle.Reset();TooltipBody.Reset();bRichTip=false;TooltipUnit.Reset();TooltipAbility.Reset();TooltipRegion={0,0,0,0};EditHelpTitle.Reset();EditHelpBody.Reset();
     LastPanelBoxes.Reset();
     for(FName Id:VisiblePanels)if(Id!=TEXT("CombatText")&&Id!=TEXT("Tooltip")){const FCireUIRect R=PanelRect(Id);LastPanelBoxes.Emplace(FVector2D(R.X,R.Y),FVector2D(R.X+R.W,R.Y+R.H));}
     LayoutInteraction();VisiblePanels.Reset();ResetTransform();

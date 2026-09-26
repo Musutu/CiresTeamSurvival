@@ -189,6 +189,23 @@ bool CireSkillShop::RunSmoke(ACireGameMode* Mode)
     for (const FCireShopSkill& Skill : Catalog) if (Skill.Kind == CI::ShopSkillKind::Active && !T->Skills.Contains(Skill.Id) && Buy(T, Skill.Id, Message)) ++Bought;
     Check(OwnedOfKind(T, CI::ShopSkillKind::Active) == CI::SlotsAvailable(Get().Rules, CI::ShopSkillKind::Active, 7) && Message.Contains(TEXT("wave 9")),
         TEXT("active slots gate the kit (4 at wave 7, next at wave 9)"));
+    {
+        // Eric's ruling: Skill Shop mode still levels up. Bought skills sit outside the level
+        // breakpoints (Cires::SkillSchedule::Shop) and must never stall level-ups.
+        const int32 LevelBefore = T->Progression.Level, StrBefore = T->Strength, AgiBefore = T->Agility, IntBefore = T->Intelligence;
+        const float HealthBefore = T->MaxHealth;
+        Check(T->Progression.Schedule == Cires::SkillSchedule::Shop && T->Progression.LearnedSkills.size() >= 3 &&
+            static_cast<int32>(T->Progression.LearnedSkills.size()) > LevelBefore, TEXT("Skill Shop purchases outrun the level breakpoints"));
+        T->GrantExperience(20000);
+        const int32 Gained = T->Progression.Level - LevelBefore;
+        const bool bStr = T->PrimaryStat() == Cires::PrimaryStat::Strength;
+        Check(Gained >= 5 && T->Level == T->Progression.Level, TEXT("Skill Shop champion with bought skills levels up"));
+        Check(T->Strength - StrBefore == Gained * (bStr ? 2 : 1) && T->Agility - AgiBefore >= Gained && T->Intelligence - IntBefore >= Gained,
+            TEXT("each Skill Shop level gives +2 primary and +1 other stats"));
+        Check(FMath::IsNearlyEqual(T->MaxHealth - HealthBefore, (T->Strength - StrBefore) * static_cast<float>(Cires::HealthPerStrength), .5f),
+            TEXT("Skill Shop levels add 10 health per STR point"));
+        Check(T->Offers.Num() == 0, TEXT("Skill Shop levels still offer no skills"));
+    }
     // Access windows: prep, breather, recovery open; mid-wave closed.
     S->Phase = 0; S->NextWaveSeconds = 0;
     Check(!IsOpen(T, &Why) && Why.Contains(TEXT("between waves")), TEXT("closed while a wave is running"));

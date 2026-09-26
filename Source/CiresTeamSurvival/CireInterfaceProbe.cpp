@@ -1,4 +1,5 @@
 #include "CireInterfaceProbe.h"
+#include "CireItems.h" // str-scaling: STR armor/ward in expected damage
 #include "CireGame.h"
 #include "CireCombatEvents.h"
 #include "CireSelection.h"
@@ -202,7 +203,7 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
         if(!Server.bCombatSent&&Players[0]->Target==Players[1]&&Players[1]->Target==Players[0]) {
             const float Damage=CireCombat::ApplyDamage(Players[0],Players[1],17,TEXT("Interface probe strike"));
             const float Heal=CireCombat::ApplyHealing(Players[1],Players[1],9,TEXT("Interface probe heal"));
-            if(!FMath::IsNearlyEqual(Damage,17.f)||!FMath::IsNearlyEqual(Heal,9.f)) {
+            if(!FMath::IsNearlyEqual(Damage,CireItems::AfterStrengthDefense(Players[1],17.f,false))||!FMath::IsNearlyEqual(Heal,9.f)) {
                 Fail(TEXT("SERVER"),TEXT("arena combat fixture wrong effective amounts"));Server.bDone=true;return true;
             }
             Players[0]->ForceNetUpdate();Players[1]->ForceNetUpdate();Server.bCombatSent=true;
@@ -367,13 +368,14 @@ bool CireInterfaceProbe::TickClient(ACireController* Controller) {
             }
     } else if(Client.Step==5&&Client.Enemy.IsValid()&&Hero->Target==Client.Enemy.Get()&&Now-Client.StepStarted>1.1) {
         if(!HasPrivateRing(Controller,true)){Abort(TEXT("enemy selection ring missing or not private"));return true;}
-        const bool DamageEvent=Controller->CombatEvents.ContainsByPredicate([Hero](const FCireCombatEvent& Event){return Event.AbilityName==TEXT("Interface probe strike")&&!Event.bHealing&&FMath::IsNearlyEqual(Event.Amount,17.f)&&
+        const float Struck=CireItems::AfterStrengthDefense(Hero->TeamId==1?Hero:Client.Enemy.Get(),17.f,false); // str-scaling: the team-1 target has STR ward
+        const bool DamageEvent=Controller->CombatEvents.ContainsByPredicate([Hero,Struck](const FCireCombatEvent& Event){return Event.AbilityName==TEXT("Interface probe strike")&&!Event.bHealing&&FMath::IsNearlyEqual(Event.Amount,Struck,.01f)&&
             !Event.Source&&!Event.Target&&Event.bLocalSource==(Hero->TeamId==0)&&Event.bLocalTarget==(Hero->TeamId==1)&&Event.Sequence>0;});
         const bool HealEvent=Controller->CombatEvents.ContainsByPredicate([Hero](const FCireCombatEvent& Event){return Event.AbilityName==TEXT("Interface probe heal")&&Event.bHealing&&FMath::IsNearlyEqual(Event.Amount,9.f)&&
             !Event.Source&&!Event.Target&&Event.bLocalSource==(Hero->TeamId==1)&&Event.bLocalTarget==(Hero->TeamId==1)&&Event.Sequence>0;});
         const auto* Attacker=Hero->TeamId==0?Hero:Client.Enemy.Get();
         const auto* Healer=Hero->TeamId==1?Hero:Client.Enemy.Get();
-        if(DamageEvent&&HealEvent&&FMath::IsNearlyEqual(Attacker->DamageDone,30.f)&&FMath::IsNearlyEqual(Healer->HealingDone,9.f)) {
+        if(DamageEvent&&HealEvent&&FMath::IsNearlyEqual(Attacker->DamageDone,13.f+Struck,.01f)&&FMath::IsNearlyEqual(Healer->HealingDone,9.f)) {
             Controller->ServerSendChat(TEXT("CIRE_PROBE_ACK_ARENA"),true);Client.Step=6;Client.StepStarted=Now;
             UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_CLIENT_ARENA_PASS team=%d opponents=5 target_rpc=1 damage_event=17 heal_event=9 meter_replication=1 recipient_flags=1 no_actor_refs=1"),Hero->TeamId);
         }

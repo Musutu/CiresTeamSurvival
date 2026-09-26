@@ -246,6 +246,17 @@ void CireSkillShop::InitializeMode(ACireGameMode* Mode)
     UE_LOG(LogCireSkillShop, Display, TEXT("CIRE_PROGRESSION_MODE %s"), *ModeName(S->ProgressionMode != 0));
 }
 
+void CireSkillShop::SyncSchedule(ACireHero* Hero)
+{
+    if (!Hero || !Hero->HasAuthority()) return;
+    const auto Wanted = IsSkillShopMode(Hero->GetWorld()) ? Cires::SkillSchedule::Shop : Cires::SkillSchedule::Draft;
+    auto& P = Hero->Progression;
+    if (P.Schedule == Wanted) return;
+    P.Schedule = Wanted;
+    // Classic Draft ties the learned count to the breakpoints again (mode changes happen before wave 1).
+    if (Wanted == Cires::SkillSchedule::Draft) P.NextAugmentLevel = Cires::BreakpointForSkill(static_cast<int>(P.LearnedSkills.size()));
+}
+
 bool CireSkillShop::SetMode(ACireGameMode* Mode, bool bSkillShop, FString* Why)
 {
     auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
@@ -253,6 +264,7 @@ bool CireSkillShop::SetMode(ACireGameMode* Mode, bool bSkillShop, FString* Why)
     if (S->Wave > 0 || S->Phase != 0) { if (Why) *Why = TEXT("The progression mode can only change before the first wave."); return false; }
     S->ProgressionMode = bSkillShop ? 1 : 0;
     S->ForceNetUpdate();
+    for (ACireHero* Hero : Mode->Heroes) if (IsValid(Hero)) SyncSchedule(Hero);
     // Heroes that already drafted keep a consistent flow: Classic re-offers pending breakpoints.
     if (!bSkillShop) for (ACireHero* Hero : Mode->Heroes) if (IsValid(Hero)) Hero->RefreshOffer();
     UE_LOG(LogCireSkillShop, Display, TEXT("CIRE_PROGRESSION_MODE %s (changed)"), *ModeName(bSkillShop));
@@ -336,12 +348,18 @@ bool CireSkillShop::Buy(ACireHero* Hero, const FString& Id, FString& Message)
     if (!Message.IsEmpty()) { Hero->Notice = Message; Feedback(Hero, ECireShopAction::SkillBuy, false, Id, -1, 0, Message); return false; }
     if (Hero->Skills.Num() >= Cires::MaxSkills) { Message = TEXT("Your skill book is full."); Feedback(Hero, ECireShopAction::SkillBuy, false, Id, -1, 0, Message); return false; }
     const int32 Price = BuyPrice(Hero, Id);
+    const CI::ShopSkillKind Kind = KindOf(Id);
+    // Shop purchases never count against the level breakpoints (Cires::SkillSchedule::Shop).
+    SyncSchedule(Hero);
+    if (!Cires::AddPurchasedSkill(Hero->Progression, {Utf8(Id), Utf8(ACireHero::SkillName(Id)),
+        Kind == CI::ShopSkillKind::Ultimate ? Cires::SkillKind::Ultimate : Kind == CI::ShopSkillKind::Passive ? Cires::SkillKind::Passive : Cires::SkillKind::Active}))
+    {
+        Message = TEXT("You cannot learn that skill now."); Hero->Notice = Message;
+        Feedback(Hero, ECireShopAction::SkillBuy, false, Id, -1, 0, Message); return false;
+    }
     Hero->Gold -= Price;
     Hero->Skills.Add(Id);
     Hero->Cooldowns.Add(0);
-    const CI::ShopSkillKind Kind = KindOf(Id);
-    Hero->Progression.LearnedSkills.push_back({Utf8(Id), Utf8(ACireHero::SkillName(Id)),
-        Kind == CI::ShopSkillKind::Ultimate ? Cires::SkillKind::Ultimate : Kind == CI::ShopSkillKind::Passive ? Cires::SkillKind::Passive : Cires::SkillKind::Active});
     Hero->Inventory->SkillRanks.RemoveAll([&](const FCireSkillRank& R) { return R.Id == Id; });
     FCireSkillRank Rank; Rank.Id = Id; Rank.Level = 1;
     Hero->Inventory->SkillRanks.Add(Rank);

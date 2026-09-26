@@ -359,7 +359,7 @@ void Capture(int32 Stage)
         if(Stage==1)
         {
             const FCireUIRect A=HUD->UISettings.GetRect(TEXT("Tooltip"),View);
-            Check(FMath::IsNearlyEqual(R.X+R.W,A.X+A.W,.6f)&&FMath::IsNearlyEqual(R.Y+R.H,A.Y+A.H,.6f),TEXT("WoW anchor: tooltip grows from the anchor's lower-right corner"));
+            Check(FMath::IsNearlyEqual(R.X+R.W,A.X+A.W,.6f)&&FMath::IsNearlyEqual(R.Y+R.H,A.Y+A.H,.6f),FString::Printf(TEXT("WoW anchor: tooltip grows from the anchor's lower-right corner (tooltip %.1f,%.1f %.1fx%.1f anchor %.1f,%.1f %.1fx%.1f)"),R.X,R.Y,R.W,R.H,A.X,A.Y,A.W,A.H));
         }
     }
     const FString File=FPaths::Combine(W.Directory,FString(Stages[Stage].Name)+TEXT(".png"));
@@ -421,7 +421,7 @@ bool CireOptionsGallery::Tick(ACireGameMode* Mode)
 {
     if(CireWowUIGallery::Tick(Mode))return true;
     if(G.Mode.Get()!=Mode)return false;if(G.bDone)return true;
-    if(FPlatformTime::Seconds()-G.Start>60){Finish(false);return true;}
+    if(FPlatformTime::Seconds()-(G.Ready>0?G.Ready:G.Start)>(G.Ready>0?60:120)){Finish(false);return true;} // budget counts from ready (map load varies under load)
     if(G.Ready<0)
     {
         auto* PC=Cast<ACireController>(Mode->GetWorld()->GetFirstPlayerController());auto* HUD=PC?Cast<ACireHUD>(PC->GetHUD()):nullptr;
