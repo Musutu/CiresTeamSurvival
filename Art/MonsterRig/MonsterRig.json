@@ -1,0 +1,34 @@
+{
+ "schemaVersion": 1,
+ "branch": "feat/monster-rig",
+ "operator": "Claude (monster-rig worktree)",
+ "status": "paused for the C: -> F: project move (2026-09-26); WIP commit, NOT built yet",
+ "credits": {
+  "observedBalanceAtStart": 14961,
+  "observedBalanceAtPause": 14941,
+  "spentByThisAgent": 20,
+  "ledger": [
+   {"what": "Mind Leech (task f1c39f59-396c-4832-bddd-ed3d28dce72e) re-rig with rig type 'Other' to probe for tentacle chains", "credits": 20,
+    "result": "Tripo auto-detected a biped anyway (same legs-in-skirt skeleton, no tentacle bones). Not exported. Conclusion: Studio's 'Other' rig does not give tentacle chains on these bodies; tentacle motion must be procedural."}
+  ],
+  "note": "Other agents spend from the same Tripo balance concurrently; this ledger counts only this agent's spend."
+ },
+ "inFlightTripoTasks": [],
+ "done": [
+  "Worktree checked out, Fab content linked (Tools/LinkFabContent.py --include-fab).",
+  "Tools/AuditMonsterRig.py (editor, GeometryScripting): per-body bones/UE5 naming, islands, leg-bound-high / arm-bound-low / far-from-bone weighting anomalies -> Saved/MonsterRigAudit.json. Not run yet.",
+  "Finding: all 60 race bodies + HQ rows are Tripo Humanoid rigs on the UE5 Mannequin preset (61 bones) with 6-9 generic Tripo clips; so the humanoid step is 'give them weapon-matched sets', not a re-rig.",
+  "Art/Fab/FabAnimMap.json monsterSets: role maps per Fab set (one_hand, two_hand, dual, sword_shield, spell, bow, spear, gun, unarmed, crossbow) and 77 body->set assignments.",
+  "Tools/RetargetFabAnimations.py -CireFabAnimMonsterSets: retargets each body's set (idle, walk f/b/l/r, run, attack/attackAlt/attack3, heavy/heavy2, cast, shout, hit, death) to /Game/FabDerived/Anim/<Variant>Set and writes MonsterFabClips.json variants.<V>.{set, roles, walkSpeedCm, runSpeedCm}.",
+  "C++ (uncompiled): CireMonsterArt roles extended; MonsterFabClips 'roles' override Tripo roles + in-place speeds; basic swings rotate attack/attackAlt/attack3 by SwingSerial; ClipForAbility maps cone->heavy, charge/pull->heavy2, selfCircle->ground_slam|heavy2, rally/enrage/provoke->shout, other casts->cast; rank-scaled readable wind-ups (cvar cire.Monsters.SwingReadability, normal .3-.5 s, elite .38-.6 s, boss .55-.85 s); UCireMonsterAnimInstance Side layer + UpdateDirectionalGait (strafe L/R, back-pedal, turn-in-place side steps)."
+ ],
+ "nextSteps": [
+  "1. Build (Build.bat ... -WaitMutex); fix compile errors in CireMonsterArt.cpp/.h and CireMonsterAnim.cpp/.h (new: UpdateDirectionalGait, Side layer, CVarSwingReadability, FBody::FabSet; ACireMonster/UCireMonsterAnimInstance must be complete types where used).",
+  "2. Run Tools/AuditMonsterRig.py (-EnablePlugins=GeometryScripting -nullrhi) and write the audit table into Docs/MonsterRig.md (per body: rig, clips, fused parts from RaceMeshes bakedWeapon, weighting anomalies).",
+  "3. drowned_deep first: UnrealEditor-Cmd ... -run=pythonscript -script=<abs>/Tools/RetargetFabAnimations.py -CireFabAnimMonsterSets -CireFabAnimOnly=AbyssalStalker+DeepspawnThrall+CoralshellGuardian+Tidecaller+BarbspitterHQ+MindLeech+DrownedProphet+MawOfTheDeep; check Saved/FabAnimMonsterSets-*.json (walkSpeedCm sanity vs Tripo walk ~125 cm/s).",
+  "4. Tentacle secondary motion (planned): add a WPO sway to M_CireMonsterSkin in Tools/BuildRaceSkinMaterial.py (Custom node on PreSkinnedPosition: mask = saturate((SwayTop-z)/(SwayTop-SwayBottom)) * radial mask around SwayCenter; sin wave * SwayAmount), params default 0; per-variant 'sway' block in MonsterArt.json bodies, set in CireRaces::ApplySkin. Targets: tentacle beards (all drowned), Mind Leech skirt tentacles, Maw's mouth tentacles; then blightwood vines.",
+  "5. Tripo segmentation for fused weapons where the audit shows stretch (Gravemaw axe already reweighted); staticParts/props via the champion grip system.",
+  "6. Galleries: python Tools/RunMonsterGallery.py --only races_drowned_deep,close_<units> before/after; commit per race.",
+  "7. Gates: RunExpansionChecks --timeout 240 --port 8701; RunNetworkSmoke --port 8711 --startup-timeout 120 --probe-timeout 90; RunNPCChecks; RunMonsterGallery; RunInterfaceSmoke --port 8721 --startup-timeout 120 --probe-timeout 120 (known prep->arena stall: report, do not chase)."
+ ]
+}

@@ -70,6 +70,9 @@ public:
     UPROPERTY(Transient) FCireAnimLayer Run;
     UPROPERTY(Transient) FCireAnimLayer Action;
     UPROPERTY(Transient) FCireAnimLayer Death;
+    /** monster-rig: directional gait (strafe left/right, back-pedal, turn-in-place steps) blended over the forward cycle. */
+    UPROPERTY(Transient) FCireAnimLayer Side;
+    float SideAlpha = 0.f;
     /** 0..1 blend from idle to moving, and inside moving from walk to run. */
     float MoveAlpha = 0.f;
     float RunAlpha = 0.f;

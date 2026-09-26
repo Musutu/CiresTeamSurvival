@@ -64,6 +64,8 @@ namespace CireMonsterArt
         float ReskinTintStrength = 0.f, ReskinRimStrength = 0.f, ReskinBody = 0.f;
         /** monster-expansion: a hovering spirit (the lich): its death rises and fades instead of lying down; the corpse sinks deep. */
         bool bSpectral = false;
+        /** monster-rig: the weapon-matched Fab set whose clips replaced the Tripo roles ("" = generic Tripo library). */
+        FString FabSet;
     };
     struct FArchetypeArt
     {
@@ -167,6 +169,8 @@ private:
     void RestoreFallback();
     void CaptureFallback();
     void UpdatePresentation(float DeltaTime);
+    void UpdateDirectionalGait(float DeltaTime, const ACireMonster& Monster, UCireMonsterAnimInstance& Anim, float WalkSpeed);
+    float LastYaw = 0.f, SmoothedYawRate = 0.f;
     void UpdateRim();
     void StartAction(UAnimSequence* Sequence, double StartedAt, float Windup, float Weight, float LowerBody, bool bCast);
     UAnimSequence* RoleClip(const FString& Role) const;

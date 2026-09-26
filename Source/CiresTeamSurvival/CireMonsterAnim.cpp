@@ -160,8 +160,8 @@ struct FLayerCopy
 struct FCireMonsterAnimProxy : public FAnimInstanceProxy
 {
     explicit FCireMonsterAnimProxy(UAnimInstance* Instance) : FAnimInstanceProxy(Instance) {}
-    FLayerCopy Idle, Walk, Run, Action, Death;
-    float MoveAlpha = 0.f, RunAlpha = 0.f;
+    FLayerCopy Idle, Walk, Run, Action, Death, Side;
+    float MoveAlpha = 0.f, RunAlpha = 0.f, SideAlpha = 0.f;
     CireGrip::FHands Hands;
     UCireMonsterAnimInstance* Owner = nullptr;
     bool bLockRoot = false; // world-dressing
@@ -172,7 +172,8 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
         auto* Monster = CastChecked<UCireMonsterAnimInstance>(Instance);
         Owner = Monster;
         Idle.Copy(Monster->Idle); Walk.Copy(Monster->Walk); Run.Copy(Monster->Run);
-        Action.Copy(Monster->Action); Death.Copy(Monster->Death);
+        Action.Copy(Monster->Action); Death.Copy(Monster->Death); Side.Copy(Monster->Side);
+        SideAlpha = FMath::Clamp(Monster->SideAlpha, 0.f, 1.f);
         MoveAlpha = FMath::Clamp(Monster->MoveAlpha, 0.f, 1.f);
         RunAlpha = FMath::Clamp(Monster->RunAlpha, 0.f, 1.f);
         Hands = Monster->Hands;
@@ -223,6 +224,15 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
                 FAnimationRuntime::BlendTwoPosesTogetherInPlace(MovingData, RunningData, 1.f - RunAlpha);
             }
             else Sample(RunAlpha >= .5f && Run.Sequence ? Run : Walk.Sequence ? Walk : Run, Moving);
+            if (Side.Sequence && SideAlpha > KINDA_SMALL_NUMBER) // monster-rig: strafe / back-pedal / turn step
+            {
+                FPoseContext Sideways(Output);
+                if (Sample(Side, Sideways))
+                {
+                    FAnimationPoseData MovingData(Moving), SideData(Sideways);
+                    FAnimationRuntime::BlendTwoPosesTogetherInPlace(MovingData, SideData, 1.f - SideAlpha);
+                }
+            }
             FAnimationPoseData OutputData(Output), MovingData(Moving);
             FAnimationRuntime::BlendTwoPosesTogetherInPlace(OutputData, MovingData, 1.f - MoveAlpha);
         }

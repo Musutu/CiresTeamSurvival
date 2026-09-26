@@ -22,6 +22,7 @@ runtime falls back to the ChampionAttacks02 clip for that body.
 Run: UnrealEditor-Cmd <project> -run=pythonscript -script=<abs>/Tools/RetargetFabAnimations.py -unattended -nullrhi
      -CireFabAnimOnly=Warden+lancer   (optional subset)   -CireFabAnimKeep (reuse existing outputs)
      -CireFabAnimMonsters             (fab-coverage: shout + slam onto Tripo monster bodies -> MonsterFabClips.json)
+     -CireFabAnimMonsterSets          (monster-rig: weapon-matched sets onto Tripo monster bodies -> MonsterFabClips.json roles)
 Report: Saved/FabAnimRetarget.json. Log marker CIRE_FAB_ANIM_RETARGET_PASS / _PARTIAL / _FAIL.
 """
 import importlib.util
@@ -438,9 +439,106 @@ def main_monsters(cmd, started):
         (ROOT / "Saved/FabAnimMonsters.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
 
 
+def main_monster_sets(cmd, started):
+    """monster-rig: -CireFabAnimMonsterSets retargets a weapon-matched Fab set (idle, walk f/b/l/r, run, three attacks,
+    two telegraphed heavy strikes, cast, shout, hit, death) onto each Tripo monster body in FabAnimMap "monsterSets.assign"
+    (variant -> set) and writes Content/Data/MonsterFabClips.json variants.<Variant>: {"set", "roles": {role: clip},
+    "walkSpeedCm", "runSpeedCm"} (speeds at the body's meshScale, measured from the in-place loops' foot sweep).
+    Outputs: /Game/FabDerived/Anim/<Variant>Set/A_<Variant>Set_<clip>. -CireFabAnimOnly=A+B limits the bodies."""
+    only = None
+    for token in cmd.split():
+        if token.lower().startswith("-cirefabanimonly="):
+            only = set(token.split("=", 1)[1].split("+"))
+    keep = "-cirefabanimkeep" in cmd.lower()
+    report = {"output": OUT, "bodies": {}, "status": "failed"}
+    try:
+        cfg = json.loads((ROOT / "Art/Fab/FabAnimMap.json").read_text(encoding="utf-8"))
+        ms = cfg["monsterSets"]
+        loaded, windows = {}, {}
+
+        def src(path):
+            if path not in loaded:
+                anim = unreal.load_asset(path.split(".")[0])
+                loaded[path] = (anim, source_mesh_for(anim.get_editor_property("skeleton"), "/Game/" + path.split("/")[2]))                     if isinstance(anim, unreal.AnimSequence) else None
+            return loaded[path]
+        bodies = {}
+        for file in ("RaceMeshes.tripo.json", "NPCMeshes.tripo.json"):
+            data = json.loads((ROOT / "Content/Data" / file).read_text(encoding="utf-8"))
+            for arch, row in data.get("archetypes", {}).items():
+                for r in [row] + [a for a in (row.get("alternates") or []) if isinstance(a, dict)]:
+                    name = r.get("variant") or r["mesh"].rsplit(".", 1)[1].split("_", 2)[-1]
+                    bodies.setdefault(name, (r["mesh"], float(r.get("meshScale", 1.0))))
+        data_path = ROOT / "Content/Data/MonsterFabClips.json"
+        data = json.loads(data_path.read_text(encoding="utf-8")) if data_path.exists() else {}
+        variants = data.get("variants", {})
+        windows = data.get("windows", {})
+        for variant, set_name in sorted(ms["assign"].items()):
+            if (only and variant not in only) or not set_name:
+                continue
+            entry = report["bodies"].setdefault(variant, {"set": set_name})
+            try:
+                mesh_path, mesh_scale = bodies[variant]
+                mesh = unreal.load_asset(mesh_path.split(".")[0])
+                require(isinstance(mesh, unreal.SkeletalMesh), "body missing " + mesh_path)
+                role_map = ms["roles"][set_name]
+                sources, loco = {}, {}
+                for role, ref in role_map.items():
+                    if ref.startswith("loco:"):
+                        key = ref[5:]
+                        path = cfg["locomotion"][ms.get("locomotionOf", {}).get(set_name, set_name)][key]
+                        s = src(path)
+                        if s:
+                            loco[key] = s
+                    else:
+                        row = cfg["clips"][ref]
+                        s = src(row["path"])
+                        if s:
+                            sources[ref] = s
+                            if ref not in windows:
+                                windows[ref] = measure_window(s[0], s[1], row.get("kind", "attack"))
+                folder = variant + "Set"
+                done = retarget_body(folder, mesh, sources, loco, report["bodies"], keep)
+                roles = {}
+                for role, ref in role_map.items():
+                    clip = "loco_" + ref[5:] if ref.startswith("loco:") else ref
+                    if clip in done:
+                        roles[role] = "%s.%s" % (done[clip], done[clip].rsplit("/", 1)[1])
+                row = {k: v for k, v in variants.get(variant, {}).items() if k not in ("set", "roles", "walkSpeedCm", "runSpeedCm")}
+                if "idle" in roles and "walk" in roles and "attack" in roles:
+                    row.update({"set": set_name, "roles": roles})
+                    walk = unreal.load_asset(done["loco_walk_f"])
+                    row["walkSpeedCm"] = round(foot_speed(walk, mesh) * mesh_scale, 1)
+                    if "loco_run_f" in done:
+                        row["runSpeedCm"] = round(foot_speed(unreal.load_asset(done["loco_run_f"]), mesh) * mesh_scale, 1)
+                    entry.update({"roles": len(roles), "walkSpeedCm": row["walkSpeedCm"], "runSpeedCm": row.get("runSpeedCm")})
+                else:
+                    entry["error"] = "core roles failed: " + ",".join(sorted(roles))
+                variants[variant] = row
+            except Exception:
+                entry["error"] = traceback.format_exc()
+        data["variants"] = dict(sorted(variants.items()))
+        data["windows"] = windows
+        data.setdefault("_comment", "")
+        data_path.write_text(json.dumps(data, indent=1) + "
+", encoding="utf-8")
+        errors = sum(len(b.get("errors", {})) + ("error" in b) for b in report["bodies"].values())
+        report["status"] = "pass" if not errors else "partial"
+        unreal.log("CIRE_FAB_ANIM_MONSTER_SETS_%s bodies=%d errors=%d" % ("PASS" if not errors else "PARTIAL", len(report["bodies"]), errors))
+    except Exception as error:
+        report["error"] = traceback.format_exc()
+        unreal.log_error("CIRE_FAB_ANIM_MONSTER_SETS_FAIL " + str(error))
+    finally:
+        report["seconds"] = round(time.monotonic() - started, 1)
+        (ROOT / "Saved").mkdir(parents=True, exist_ok=True)
+        name = "FabAnimMonsterSets%s.json" % ("-" + "+".join(sorted(only)) if only else "")
+        (ROOT / "Saved" / name).write_text(json.dumps(report, indent=1), encoding="utf-8")
+
+
 def main():
     started = time.monotonic()
     cmd = unreal.SystemLibrary.get_command_line()
+    if "-cirefabanimmonstersets" in cmd.lower():
+        return main_monster_sets(cmd, started)
     if "-cirefabanimmonsters" in cmd.lower():
         return main_monsters(cmd, started)
     only = None
