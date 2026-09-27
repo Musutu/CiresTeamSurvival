@@ -240,16 +240,32 @@ def build_abilities(found, existing):
     missing = []
 
     def entry(value, role):
-        stem, scale = (value if isinstance(value, tuple) else (value, None))
+        # pack-usage: a value is a stem, (stem, scale) or {"s": stem, "scale":, "tint": [r,g,b], "strength": 0..1}
+        tint, strength = None, None
+        if isinstance(value, dict):
+            stem, scale, tint, strength = value["s"], value.get("scale"), value.get("tint"), value.get("strength")
+        else:
+            stem, scale = (value if isinstance(value, tuple) else (value, None))
         if stem not in by_stem:
             missing.append(stem)
             return None
         path = by_stem[stem]
         if scale is None:
             scale = table.ROLE_SCALE.get(role, 1.0) * (table.CASCADE_SCALE if stem.startswith("P_ky_") else 1.0)
-        return {"paths": [path], "scale": round(scale, 3)}
+        e = {"paths": [path], "scale": round(scale, 3)}
+        if tint:
+            e["tint"] = [round(float(c), 3) for c in tint[:3]]
+            if strength is not None and strength < 1:
+                e["tintStrength"] = round(float(strength), 3)
+        return e
     abilities = {}
-    for ability, roles in table.ABILITY_VFX.items():
+    # pack-usage: monster abilities, hit / kill signatures and events join the champion table (Tools/FabMonsterVFXTable.py).
+    spec_m = importlib.util.spec_from_file_location("FabMonsterVFXTable", str(Path(__file__).with_name("FabMonsterVFXTable.py")))
+    monsters = importlib.util.module_from_spec(spec_m)
+    spec_m.loader.exec_module(monsters)
+    combined = list(table.ABILITY_VFX.items()) + list(monsters.build_monster_table().items())
+    combined += list(monsters.HIT_VFX.items()) + list(monsters.KILL_VFX.items()) + list(monsters.EVENT_VFX.items())
+    for ability, roles in combined:
         row = {}
         for key, value in roles.items():
             e = entry(value, table.ROLE[key])
