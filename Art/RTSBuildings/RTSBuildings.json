@@ -347,6 +347,20 @@
             "glb": "Art/RTSBuildings/drowned_deep/models/tower.glb",
             "qaMethod": "Blender headless render of the exported GLB: front, right, back, left (15 deg up) + top"
           }
+        },
+        "builder": {
+          "model": {
+            "taskId": "7f43c6da-d483-4f88-8b85-4a3c432a7ba2",
+            "creditsSpent": 65,
+            "settings": "H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, triangle 50k",
+            "attempts": [
+              {
+                "taskId": "7f43c6da-d483-4f88-8b85-4a3c432a7ba2",
+                "credits": 65,
+                "balanceAfter": 13101
+              }
+            ]
+          }
         }
       },
       "conceptBy": "chatgpt",
@@ -361,7 +375,19 @@
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game objective monument, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera. This is a team's core objective (like the enemy castle in Castle Fight): it must look imposing, important and taller than any normal building, and clearly be one of two rival monuments. Subject: \"Duskborn Obelisk\". The DUSKBORN Obelisk, the twilight team's monument: a tall, proud four-sided obelisk of warm pale sandstone and polished gold, tapering to a pointed gold capstone, with a glowing twilight amber-and-violet crystal set near the top and a large golden setting-sun disc halo with radiating rays behind it; flowing violet-and-amber glowing runes up its faces, gold wing-like fins at its base corners, violet banners hanging from gold crossbars, a wide stepped sandstone-and-gold plinth with glowing amber braziers at its four corners. Warm, noble, hopeful dusk colours: amber, gold, rose-violet, soft lavender. Framing for 3D-model conversion: exactly ONE monument, centred, the whole monument in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own broad square stepped plinth base. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image.",
           "concept": "Art/RTSBuildings/obelisks/concepts/duskborn.png",
           "conceptStatus": "approved",
-          "conceptAttempts": 1
+          "conceptAttempts": 1,
+          "model": {
+            "taskId": "0577c95b-cdf1-4783-8f13-cc745e943954",
+            "creditsSpent": 65,
+            "settings": "H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, triangle 150k (objective: highest quality)",
+            "attempts": [
+              {
+                "taskId": "0577c95b-cdf1-4783-8f13-cc745e943954",
+                "credits": 65,
+                "balanceAfter": 12971
+              }
+            ]
+          }
         },
         "darkborn": {
           "name": "Darkborn Obelisk",
@@ -369,7 +395,19 @@
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game objective monument, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera. This is a team's core objective (like the enemy castle in Castle Fight): it must look imposing, important and taller than any normal building, and clearly be one of two rival monuments. Subject: \"Darkborn Obelisk\". The DARKBORN Obelisk, the night team's monument: a tall, menacing jagged obelisk of glossy black obsidian and black iron, splitting at the top into sharp broken shards around a floating crimson void orb crackling with red energy, deep crimson glowing cracks and runes running down its faces, curved black iron spikes and horns jutting from its sides, chains hanging between iron spikes, a wide stepped black basalt plinth with crimson-fire braziers at its four corners. Cold, sinister night colours: black, deep crimson, blood red, a touch of dark violet void. Framing for 3D-model conversion: exactly ONE monument, centred, the whole monument in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own broad square stepped plinth base. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. Make it the clear visual rival of the Duskborn Obelisk made earlier in this chat: similar height and plinth size, opposite mood and palette.",
           "concept": "Art/RTSBuildings/obelisks/concepts/darkborn.png",
           "conceptStatus": "approved",
-          "conceptAttempts": 1
+          "conceptAttempts": 1,
+          "model": {
+            "taskId": "2f99eac6-c137-4b60-87de-26ceb468c2f7",
+            "creditsSpent": 65,
+            "settings": "H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, triangle 150k (objective: highest quality)",
+            "attempts": [
+              {
+                "taskId": "2f99eac6-c137-4b60-87de-26ceb468c2f7",
+                "credits": 65,
+                "balanceAfter": 12906
+              }
+            ]
+          }
         }
       },
       "displayName": "Team Obelisks",
@@ -396,73 +434,85 @@
           "name": "Heart of the Rotting Grove",
           "role": "Main Hall",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Heart of the Rotting Grove\" (Main Hall). The race's seat and the largest building: a colossal hollow ancient tree-fortress with a massive gnarled trunk, a wide antler-like branching crown with a few sickly leaves, a huge glowing amber-green heartwood core visible through bark fissures, mushroom-cap roof tiers, a big root-arch main gate, rusted iron bands around the trunk. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/main_hall.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/main_hall.png",
+          "conceptStatus": "saved-unreviewed"
         },
         "income": {
           "name": "Sporefall Grove",
           "role": "Income",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Sporefall Grove\" (Income). An income building: a cluster of giant glowing red-and-yellow mushroom caps growing from a rotting stump, a small bark hut underneath, drifting glowing spores, baskets of harvested mushrooms and seed pods, a rusty iron sap tap dripping lime-green sap into a barrel. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. Keep the same palette, materials, rendering and plinth as the earlier buildings in this chat, BUT give this building its own distinct silhouette, massing and gate shape so it is instantly recognisable as a different building type from the top-down RTS camera; its role must read at a glance.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/income.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/income.png",
+          "conceptStatus": "saved-unreviewed"
         },
         "builder_shop": {
           "name": "Rootwright's Burrow",
           "role": "Builder Item Shop",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Rootwright's Burrow\" (Builder Item Shop). A workshop selling builder tools: a squat stump workshop under a bracket-fungus awning, rusted iron saws, axes and pruning hooks hanging on vine racks, a chopping-block stump with a hatchet, stacks of bark planks, a hanging glowing seed-pod lantern. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. Keep the same palette, materials, rendering and plinth as the earlier buildings in this chat, BUT give this building its own distinct silhouette, massing and gate shape so it is instantly recognisable as a different building type from the top-down RTS camera; its role must read at a glance.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/builder_shop.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/builder_shop.png",
+          "conceptStatus": "saved-unreviewed"
         },
         "barracks": {
           "name": "Bramblegate Barracks",
           "role": "Barracks (melee infantry)",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Bramblegate Barracks\" (Barracks (melee infantry)). A melee barracks: a sturdy hollow-log longhouse wrapped in thorny briar coils, crude tree-stump clubs and thorn whips racked outside, sharpened stake palisade corners, a wide root-arch gate glowing green. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. Keep the same palette, materials, rendering and plinth as the earlier buildings in this chat, BUT give this building its own distinct silhouette, massing and gate shape so it is instantly recognisable as a different building type from the top-down RTS camera; its role must read at a glance.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/barracks.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/barracks.png",
+          "conceptStatus": "saved-unreviewed"
         },
         "archer_range": {
           "name": "Thornspitter Nursery",
           "role": "Archer Range (ranged units)",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Thornspitter Nursery\" (Archer Range (ranged units)). A ranged-unit building: a tall open structure of giant veined green-and-crimson pitcher plants with lidded thorny mouths on the roof, bundles of long thorns bristling like quivers, a round bark target stuck with thorns attached to its side. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. The attached image is this race's Main Hall, for STYLE REFERENCE ONLY: match its palette, materials, rendering and plinth exactly, BUT design a completely different building with its own distinct silhouette, massing and gate shape so it is instantly recognisable as a different building type from the top-down RTS camera; its role must read at a glance. Do not copy the Main Hall's shape.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/archer_range.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/archer_range.png",
+          "conceptStatus": "pending"
         },
         "knight_school": {
           "name": "Barkhide Bulwark",
           "role": "Knight School (elite heavy units)",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Barkhide Bulwark\" (Knight School (elite heavy units)). An elite heavy-unit hall: a thick squat oak fortress armoured with overlapping shield-like dark bark plates bound by rusted iron rivets and bands, a heavy moss mantle roof, massive root buttresses, a reinforced iron-banded root gate. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. The attached image is this race's Main Hall, for STYLE REFERENCE ONLY: match its palette, materials, rendering and plinth exactly, BUT design a completely different building with its own distinct silhouette, massing and gate shape so it is instantly recognisable as a different building type from the top-down RTS camera; its role must read at a glance. Do not copy the Main Hall's shape.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/knight_school.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/knight_school.png",
+          "conceptStatus": "saved-unreviewed"
         },
         "arcane_well": {
           "name": "Rotbloom Sanctum",
           "role": "Arcane Well (casters, mana)",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Rotbloom Sanctum\" (Arcane Well (casters, mana)). A magic building: a twisted tree-well crowned by an enormous drooping rotten flower bloom with a glowing sickly green core, floating glowing spores and seed pods orbiting it, a pool of luminous green sap at its base, crooked fungal staffs planted around it. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. The attached image is this race's Main Hall, for STYLE REFERENCE ONLY: match its palette, materials, rendering and plinth exactly, BUT design a completely different building with its own distinct silhouette, massing and gate shape so it is instantly recognisable as a different building type from the top-down RTS camera; its role must read at a glance. Do not copy the Main Hall's shape.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/arcane_well.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/arcane_well.png",
+          "conceptStatus": "saved-unreviewed"
         },
         "beast_trainer": {
           "name": "Briarwolf Warren",
           "role": "Beast Trainer (creatures)",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Briarwolf Warren\" (Beast Trainer (creatures)). A beast-taming building: a round pen of woven thorny roots and bent saplings, a big bark kennel-den with a mossy roof, bone and branch feeding troughs, heavy rusted iron chains staked into the roots, claw marks on the bark. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. The attached image is this race's Main Hall, for STYLE REFERENCE ONLY: match its palette, materials, rendering and plinth exactly, BUT design a completely different building with its own distinct silhouette, massing and gate shape so it is instantly recognisable as a different building type from the top-down RTS camera; its role must read at a glance. Do not copy the Main Hall's shape.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/beast_trainer.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/beast_trainer.png",
+          "conceptStatus": "saved-unreviewed"
         },
         "siege_workshop": {
           "name": "Treefall Siegeworks",
           "role": "Siege Workshop (siege engines)",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Treefall Siegeworks\" (Siege Workshop (siege engines)). A siege workshop: a big open-sided workshop of logs and bark planks with a mushroom-cap roof, a giant half-built bent-tree catapult arm loaded with a glowing spore-pod boulder beside it, rope and rusted iron winches, stacked logs. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. The attached image is this race's Main Hall, for STYLE REFERENCE ONLY: match its palette, materials, rendering and plinth exactly, BUT design a completely different building with its own distinct silhouette, massing and gate shape so it is instantly recognisable as a different building type from the top-down RTS camera; its role must read at a glance. Do not copy the Main Hall's shape.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/siege_workshop.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/siege_workshop.png",
+          "conceptStatus": "saved-unreviewed"
         },
         "tower": {
           "name": "Thornwatch Treant",
           "role": "Tower (defensive)",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Thornwatch Treant\" (Tower (defensive)). A defensive tower: a tall narrow gnarled dead tree-tower with a watching knotted bark face and glowing green eyes, a crown of sharp thorns at the top around a glowing spore pod, thorny branches pointing outward, compact square root base. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. The attached image is this race's Main Hall, for STYLE REFERENCE ONLY: match its palette, materials, rendering and plinth exactly, BUT design a completely different building with its own distinct silhouette, massing and gate shape so it is instantly recognisable as a different building type from the top-down RTS camera; its role must read at a glance. Do not copy the Main Hall's shape.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/tower.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/tower.png",
+          "conceptStatus": "pending"
         },
         "temple": {
           "name": "Shrine of the Withered Matron",
           "role": "Temple (healers, support)",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style RTS game building asset, vibrant and fun, crisp clean shapes, chunky exaggerated readable silhouette for a top-down RTS camera, compact roughly square footprint that packs neatly on a build grid. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Shrine of the Withered Matron\" (Temple (healers, support)). A healer/support temple: a graceful arched shrine of intertwined pale ash-wood branches with a canopy of dead lilies and violet-grey blossoms, a healing spring of glowing green sap in a moss basin at the front, hanging lantern pods, gentle glow. Framing for 3D-model conversion: exactly ONE building, centred, the whole building in frame with generous empty margin on all sides, 3/4 elevated view looking down about 35 degrees from the front-left corner, standing on its own compact square plinth base; a clear spawn doorway/gate faces the viewer. Plain flat light-grey background, no ground plane, no scenery, no characters or creatures, no text, no letters, no logos, no UI. Soft even studio lighting. Square image. The attached image is this race's Main Hall, for STYLE REFERENCE ONLY: match its palette, materials, rendering and plinth exactly, BUT design a completely different building with its own distinct silhouette, massing and gate shape so it is instantly recognisable as a different building type from the top-down RTS camera; its role must read at a glance. Do not copy the Main Hall's shape.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/temple.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/temple.png",
+          "conceptStatus": "pending"
         },
         "builder": {
           "name": "Sproutling Woodwright",
           "role": "Builder (worker, immune)",
           "prompt": "Generate an image. Stylised hand-painted Warcraft 3 / World of Warcraft style game character, vibrant and fun, crisp clean shapes, chunky readable silhouette. Race style, The Blightwood (the old forest woke sick: treants, briars and spore-things): living, grown architecture of gnarled dark-brown bark and twisted roots rather than built walls; palette of dark bark brown and ash grey, mossy olive and sickly green, glowing lime-yellow-green sap and spore light, amber heartwood, crimson accents from berries and rotbloom flowers, rusted iron bands; motifs of thorny briar coils, bracket fungus shelves and red-spotted mushroom caps, drooping rotten flower blooms, glowing seed pods, hanging moss, antler-like branch crowns, rusted iron nails and bands binding the wood; roofs are mushroom caps, leafy bark canopies and thorn crowns; square plinth of tangled roots over a mossy stone slab; spawn gate is a hollow knot-hole or root arch in the trunk glowing green inside. Subject: \"Sproutling Woodwright\". The race's worker: a small sturdy sapling treant builder with pale ash-wood and grey bark body, a knotted wooden face with bright amber eyes, a little red-spotted mushroom cap growing on its head like a hard hat, twig arms, short root legs, a rusted iron hatchet and a mallet hanging from a vine belt, a bark satchel of seeds and nails on its hip, a coil of vine rope over one shoulder. Framing for 3D-model conversion: exactly ONE character, full body head to feet in frame with margin, front view facing the camera, symmetrical A-pose (arms angled down and out about 45 degrees, legs slightly apart), tools strapped to the body or held without covering the body, plain flat light-grey background, no ground, no scenery, no text. Soft even studio lighting. Square image. The attached image is this race's Main Hall, for STYLE REFERENCE ONLY: match its art style, rendering and race palette on the character.",
-          "concept": "Art/RTSBuildings/blightwood/concepts/builder.png"
+          "concept": "Art/RTSBuildings/blightwood/concepts/builder.png",
+          "conceptStatus": "pending"
         }
       },
       "conceptBy": "chatgpt",
@@ -491,6 +541,48 @@
                 "taskId": "9a27647a-33da-49db-99ae-4bcfddc08eb2",
                 "credits": 55,
                 "balanceAfter": 13166
+              }
+            ]
+          }
+        },
+        "builder_shop": {
+          "model": {
+            "taskId": "95df3815-9d63-4047-a059-9f6e6aa2e2e2",
+            "creditsSpent": 55,
+            "settings": "H3.1 Best, Ultra Mesh, 4K PBR, remove lighting, triangle 50k",
+            "attempts": [
+              {
+                "taskId": "95df3815-9d63-4047-a059-9f6e6aa2e2e2",
+                "credits": 55,
+                "balanceAfter": 12851
+              }
+            ]
+          }
+        },
+        "barracks": {
+          "model": {
+            "taskId": "037f6a72-5049-4acb-9cde-a4ea4cff143e",
+            "creditsSpent": 55,
+            "settings": "H3.1 Best, Ultra Mesh, 4K PBR, remove lighting, triangle 50k",
+            "attempts": [
+              {
+                "taskId": "037f6a72-5049-4acb-9cde-a4ea4cff143e",
+                "credits": 55,
+                "balanceAfter": 12796
+              }
+            ]
+          }
+        },
+        "knight_school": {
+          "model": {
+            "taskId": "3de5734b-6b25-425d-b358-ab27e3c12a41",
+            "creditsSpent": 55,
+            "settings": "H3.1 Best, Ultra Mesh, 4K PBR, remove lighting, triangle 50k",
+            "attempts": [
+              {
+                "taskId": "3de5734b-6b25-425d-b358-ab27e3c12a41",
+                "credits": 55,
+                "balanceAfter": 12741
               }
             ]
           }
@@ -685,7 +777,13 @@
                 "credits": 55,
                 "balanceAfter": 13826
               }
-            ]
+            ],
+            "faces": 48061,
+            "qa": "pass",
+            "qaNotes": "Bear-head fur longhouse with crossed-tusk gate, tree on roof, standing stones; clean closed plinth, no floaters; back gate mirrored from the front (reads fine).",
+            "turnaround": "Art/RTSBuildings/feral_kin/qa/main_hall_turnaround.png",
+            "glb": "Art/RTSBuildings/feral_kin/models/main_hall.glb",
+            "qaMethod": "Blender headless render of the exported GLB: front, right, back, left (15 deg up) + top"
           }
         },
         "income": {
@@ -708,7 +806,13 @@
                 "credits": 55,
                 "balanceAfter": 13771
               }
-            ]
+            ],
+            "faces": 48492,
+            "qa": "pass",
+            "qaNotes": "Fur-domed hunter's hut with tusk gate, meat racks, fire pit; clean all round, square stone plinth, no floaters.",
+            "turnaround": "Art/RTSBuildings/feral_kin/qa/income_turnaround.png",
+            "glb": "Art/RTSBuildings/feral_kin/models/income.glb",
+            "qaMethod": "Blender headless render of the exported GLB: front, right, back, left (15 deg up) + top"
           }
         },
         "builder_shop": {
@@ -731,7 +835,13 @@
                 "credits": 55,
                 "balanceAfter": 13716
               }
-            ]
+            ],
+            "faces": 47655,
+            "qa": "pass",
+            "qaNotes": "Round log-and-hide workshop with tusk gate, bear/wolf totems, tool racks and carving bench at the back; clean plinth, no floaters; tiny pseudo-text squiggle baked on one crate (right side, negligible).",
+            "turnaround": "Art/RTSBuildings/feral_kin/qa/builder_shop_turnaround.png",
+            "glb": "Art/RTSBuildings/feral_kin/models/builder_shop.glb",
+            "qaMethod": "Blender headless render of the exported GLB: front, right, back, left (15 deg up) + top"
           }
         },
         "barracks": {
@@ -754,7 +864,13 @@
                 "credits": 55,
                 "balanceAfter": 13661
               }
-            ]
+            ],
+            "faces": 46556,
+            "qa": "pass",
+            "qaNotes": "Skull-and-tusk gated war lodge with claw-mark hides and spear fences; plain log back wall; clean plinth, no floaters.",
+            "turnaround": "Art/RTSBuildings/feral_kin/qa/barracks_turnaround.png",
+            "glb": "Art/RTSBuildings/feral_kin/models/barracks.glb",
+            "qaMethod": "Blender headless render of the exported GLB: front, right, back, left (15 deg up) + top"
           }
         },
         "archer_range": {
@@ -777,7 +893,13 @@
                 "credits": 55,
                 "balanceAfter": 13606
               }
-            ]
+            ],
+            "faces": 46036,
+            "qa": "pass",
+            "qaNotes": "Antler-crowned hide tipi with tusk gate, target, quivers and bow racks; lattice fences all round; clean plinth, no floaters.",
+            "turnaround": "Art/RTSBuildings/feral_kin/qa/archer_range_turnaround.png",
+            "glb": "Art/RTSBuildings/feral_kin/models/archer_range.glb",
+            "qaMethod": "Blender headless render of the exported GLB: front, right, back, left (15 deg up) + top"
           }
         },
         "knight_school": {
@@ -800,7 +922,13 @@
                 "credits": 55,
                 "balanceAfter": 13551
               }
-            ]
+            ],
+            "faces": 47363,
+            "qa": "pass",
+            "qaNotes": "Heavy horned-skull lodge armoured with stone-capped tusks and shield stones; very chunky, reads elite; clean plinth, no floaters.",
+            "turnaround": "Art/RTSBuildings/feral_kin/qa/knight_school_turnaround.png",
+            "glb": "Art/RTSBuildings/feral_kin/models/knight_school.glb",
+            "qaMethod": "Blender headless render of the exported GLB: front, right, back, left (15 deg up) + top"
           }
         },
         "arcane_well": {
@@ -927,7 +1055,19 @@
           "conceptTool": "Tripo Image, GPT Image 2.5, 1:1",
           "conceptStatus": "done",
           "conceptAttempts": 1,
-          "conceptNotes": "Tripo GPT Image 2.5, no reference image, picked 1st of 2 (clean A-pose, open empty hands, tools on belt, logs on back)."
+          "conceptNotes": "Tripo GPT Image 2.5, no reference image, picked 1st of 2 (clean A-pose, open empty hands, tools on belt, logs on back).",
+          "model": {
+            "taskId": "bc95543b-b5a9-403d-b59e-3ffc6b878d98",
+            "creditsSpent": 65,
+            "settings": "H3.1 Best, Ultra Mesh, 8K PBR, remove lighting, triangle 50k",
+            "attempts": [
+              {
+                "taskId": "bc95543b-b5a9-403d-b59e-3ffc6b878d98",
+                "credits": 65,
+                "balanceAfter": 13036
+              }
+            ]
+          }
         }
       }
     }
@@ -1051,6 +1191,38 @@
       {
         "when": "blightwood income submitted",
         "balance": 13166
+      },
+      {
+        "when": "drowned_deep builder submitted",
+        "balance": 13101
+      },
+      {
+        "when": "feral_kin builder submitted",
+        "balance": 13036
+      },
+      {
+        "when": "obelisks duskborn submitted",
+        "balance": 12971
+      },
+      {
+        "when": "obelisks darkborn submitted",
+        "balance": 12906
+      },
+      {
+        "when": "blightwood builder_shop submitted",
+        "balance": 12851
+      },
+      {
+        "when": "blightwood barracks submitted",
+        "balance": 12796
+      },
+      {
+        "when": "blightwood knight_school submitted",
+        "balance": 12741
+      },
+      {
+        "when": "stop at usage limit 2026-09-27",
+        "balance": 12741
       }
     ],
     "plan": {
@@ -1077,6 +1249,7 @@
     },
     "exportBlocker": null,
     "export": "Eric approved: Tripo Export (GLB, 4K) as a normal Chrome download into C:/Users/Eric/Downloads, then moved at once to <race>/models/<slot>.glb and the C: copy deleted (Tools: rts-modeler/take.sh; only files named rtsm_<race>_<slot>*.glb exported by this agent, younger than 30 min). Export costs no credits.",
-    "conceptPricing": "Tripo Image tool (GPT Image 2.5 / Nano Banana): 0 credits while the account's free image quota lasts (32/1000 used on 2026-09-26; list price would be about 10-15 per image). Concepts therefore do not touch the 11,975 mesh plan."
+    "conceptPricing": "Tripo Image tool (GPT Image 2.5 / Nano Banana): 0 credits while the account's free image quota lasts (32/1000 used on 2026-09-26; list price would be about 10-15 per image). Concepts therefore do not touch the 11,975 mesh plan.",
+    "resume": "Art/RTSBuildings/RESUME-models.md"
   }
 }
