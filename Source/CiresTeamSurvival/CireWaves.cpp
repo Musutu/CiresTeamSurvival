@@ -15,6 +15,7 @@
 #include "CireNav.h" // nav-paths
 #include "CireMonsterExpansion.h" // monster-expansion
 #include "CireLeash.h" // layout-wiring
+#include "CireOutdoorBosses.h" // outdoor-bosses
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -325,7 +326,15 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
     const FCireBattlefieldRoutes& Routes = CireLanePath::Get(World);
     int32 Path = 0;
     FVector Breach;
-    if (O.Unit.bBoss)
+    const FCireOutdoorBossRules& Outdoor = CireOutdoorBosses::Rules();
+    if (O.Unit.bBoss && Outdoor.bEnabled && !Outdoor.bWaveBossesAtMarkers && Routes.Bosses[Team].Num() > 0)
+    {
+        // outdoor-bosses: the Boss markers are the world bosses' lairs; a wave boss comes through its wave's spawn, taking
+        // the realm's paths in turn.
+        Path = FMath::Abs(R.BossSlot[Team]++) % FMath::Max(1, CireLanePath::PathCount(Routes, Team));
+        Breach = CireLanePath::PathStart(World, Team, Path);
+    }
+    else if (O.Unit.bBoss)
     {
         Breach = CireLanePath::BossSpawnAt(World, Team, R.BossSlot[Team]++);
         Path = CireLanePath::NearestPathStart(Routes, Team, CireLanePath::ToLocal(Team, Breach));

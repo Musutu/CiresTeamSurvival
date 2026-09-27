@@ -18,6 +18,8 @@
 #include "CireLayoutRuntime.h" // layout-wiring
 #include "CireTownTrim.h" // town-trim
 #include "CireZones.h" // tier-readability: zones and their monster tier
+#include "CireOutdoorBosses.h" // outdoor-bosses
+#include "CireLeash.h" // outdoor-bosses: the boss leash radius
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/Canvas.h"
@@ -142,14 +144,42 @@ void CireLayoutEditor::Say(FCireLayoutEditorState& E, const FString& Message, do
 void CireLayoutEditor::RunValidation(UWorld* World, FCireLayoutEditorState& E, bool bNav)
 {
     E.WalkLength[0].Reset(); E.WalkLength[1].Reset();
+    FCireLayoutChecks Checks = WorldChecks(World, E.Layout, bNav);
+    E.Issues = ML::Validate(E.Layout, &Checks);
+    E.Issues.Append(CireTownTrim::EdgeIssues(E.Layout)); // town-trim: markers within the trim margin of the bounds edge
+    if (World)
+    {
+        // outdoor-bosses: the navmesh was built for the realm this session started with; Play Bounds drawn past it need a restart.
+        FCireBattlefieldRoutes Want; if (!CireLanePath::LoadFile(Want)) Want = CireLanePath::Get(World);
+        Want.PlayBounds = CireTownTrim::LayoutPolygon(E.Layout); CireLanePath::GrowRealmToPlayBounds(Want);
+        const FCireBattlefieldRoutes& Live = CireLanePath::Get(World);
+        if (Want.MinX < Live.MinX || Want.MaxX > Live.MaxX || Want.HalfWidth > Live.HalfWidth)
+            E.Issues.Add({false, 0, FString(), TEXT("The Play Bounds reach past the navmesh built when this session started: APPLY, then restart the editor (or the match) to build it there. Markers out there read off the navmesh until then.")});
+    }
+    E.bIssuesDirty = false; E.bNavChecked = bNav && Checks.OnNavmesh != nullptr;
+    FinishValidation(World, E);
+}
+bool CireLayoutEditor::MarkerOnNavmesh(UWorld* World, int32 Realm, const FVector2D& Local)
+{
+    FVector Out;
+    return World && CireNav::Project(World, CireLanePath::ToWorld(Realm, Local, 60.f), Out, FVector(120, 120, 400), 40.f);
+}
+FCireLayoutChecks CireLayoutEditor::WorldChecks(UWorld* World, const FCireMapLayout& Layout, bool bNav)
+{
     FCireLayoutChecks Checks;
     // layout-wiring: the runtime check on every validation: compile the layout exactly as a match loads it (over the route
     // file, the provisional default) and run the route rules the match enforces, so Validate flags what the game cannot use.
     Checks.Runtime = [World](const FCireMapLayout& Layout, TArray<FString>& Notes, FString& Error) { return CireLayoutEditor::CompileForRuntime(World, Layout, nullptr, Notes, Error); };
+    {
+        // outdoor-bosses: the realm a match builds for this layout (the route file's bounds grown to the Play Bounds).
+        FCireBattlefieldRoutes Realm; if (!CireLanePath::LoadFile(Realm) && World) Realm = CireLanePath::Get(World);
+        Realm.PlayBounds = CireTownTrim::LayoutPolygon(Layout); CireLanePath::GrowRealmToPlayBounds(Realm);
+        const float MinX = Realm.MinX, MaxX = Realm.MaxX, Half = Realm.HalfWidth;
+        Checks.InsideRealm = [MinX, MaxX, Half](const FVector2D& P) { return P.X >= MinX && P.X <= MaxX && FMath::Abs(P.Y) <= Half; };
+    }
     if (bNav && World && CireNav::HasNavigation(World))
     {
-        Checks.OnNavmesh = [World](int32 Realm, const FVector2D& Local)
-        { FVector Out; return CireNav::Project(World, CireLanePath::ToWorld(Realm, Local, 60.f), Out, FVector(120, 120, 400), 40.f); };
+        Checks.OnNavmesh = [World](int32 Realm, const FVector2D& Local) { return MarkerOnNavmesh(World, Realm, Local); };
         Checks.Walkable = [World](int32 Realm, const FVector2D& A, const FVector2D& B)
         {
             float Length = 0;
@@ -162,9 +192,10 @@ void CireLayoutEditor::RunValidation(UWorld* World, FCireLayoutEditorState& E, b
             return !World->OverlapAnyTestByChannel(CireLanePath::ToWorld(Realm, Local, Height), FQuat::Identity, ECC_WorldStatic, FCollisionShape::MakeBox(FVector(12, 55, 35)), Params);
         };
     }
-    E.Issues = ML::Validate(E.Layout, &Checks);
-    E.Issues.Append(CireTownTrim::EdgeIssues(E.Layout)); // town-trim: markers within the trim margin of the bounds edge
-    E.bIssuesDirty = false; E.bNavChecked = bNav && Checks.OnNavmesh != nullptr;
+    return Checks;
+}
+void CireLayoutEditor::FinishValidation(UWorld* World, FCireLayoutEditorState& E)
+{
     // Walk length per path and realm: navmesh path lengths when checked, straight segments otherwise.
     for (const FCireMapMarker& M : E.Layout.Markers)
     {
@@ -812,9 +843,23 @@ void ACireHUD::TickLayoutEditor()
         const FString Id = M->Id;
         Edit([&](FCireMapLayout& X) { return ML::SetComposition(X, Id, C); });
     };
+    // outdoor-bosses: step the selected Boss marker through the race bosses (from the one it holds now, AUTO included).
+    auto StepBoss = [&](int32 Delta)
+    {
+        const FCireMapMarker* M = SelectedMarker();
+        if (!M || M->Type != ML::BossSpawn) return;
+        const TArray<FName> Bosses = CireOutdoorBosses::BossIds();
+        if (Bosses.IsEmpty()) return;
+        const int32 Index = Bosses.IndexOfByKey(CireOutdoorBosses::ResolveMarker(L, *M));
+        const FName Next = Bosses[((Index < 0 ? 0 : Index + Delta) % Bosses.Num() + Bosses.Num()) % Bosses.Num()];
+        const FString Id = M->Id;
+        Edit([&](FCireMapLayout& X) { return ML::SetKind(X, Id, Next.ToString()); });
+        Say(FString::Printf(TEXT("%s now holds %s (both realms)."), *ML::DisplayLabel(L, *M), *CireOutdoorBosses::BossName(Next)));
+    };
     auto CycleKind = [&]()
     {
         const FCireMapMarker* M = SelectedMarker();
+        if (M && M->Type == ML::BossSpawn) { StepBoss(1); return; } // outdoor-bosses: K cycles the boss
         if ((M && M->Type == ML::ChallengePack) || (!M && E.Armed == ML::ChallengePack)) { StepPackType(1); return; } // jungle-packs: K cycles the pack type
         if (!M || M->Type != ML::Vendor) return;
         const TArray<FCireVendorType>& VT = ML::VendorTypes();
@@ -1201,6 +1246,26 @@ void ACireHUD::TickLayoutEditor()
             { const int32 N = CireLayoutEditor::CopyPackToOthers(E, 0.f, Now); Say(FString::Printf(TEXT("%d packs now match this one."), N)); }
             if (Button(TEXT("COPY WITHIN 30 m"), IX + IW * .5f + 2, Y, IW * .5f - 2, TEXT("Same, only for this team's packs within 30 m of this one."), true, false, CireUIColors::Teal))
             { const int32 N = CireLayoutEditor::CopyPackToOthers(E, 3000.f, Now); Say(FString::Printf(TEXT("%d nearby packs now match this one."), N)); }
+            Y += 28;
+        }
+        if (M->Type == ML::BossSpawn)
+        {
+            // outdoor-bosses: which race boss lives here (Docs/OutdoorBosses.md). Mirrored twins follow.
+            bool bOwn = false;
+            const FName Boss = CireOutdoorBosses::ResolveMarker(L, *M, &bOwn);
+            TextFx(TEXT("OUTDOOR BOSS"), IX, Y + 2, 8.f, CireUIColors::Gold, ECireFont::Bold, true);
+            if (Button(TEXT("AUTO"), IX + IW - 56, Y - 2, 56, TEXT("Let Content/Data/OutdoorBosses.json pick this marker's boss (byMarker by name, else the roster in marker order)."), bOwn, !bOwn, CireUIColors::Teal))
+            { const FString BossMarker = M->Id; Edit([&](FCireMapLayout& X) { return ML::SetKind(X, BossMarker, FString()); }); }
+            Y += 22;
+            if (Button(TEXT("<"), IX, Y, 26, TEXT("Previous race boss (K cycles forward)."))) StepBoss(-1);
+            const FString Value = FString::Printf(TEXT("%s%s"), *CireOutdoorBosses::BossName(Boss).Left(26), bOwn ? TEXT("") : TEXT("  (auto)"));
+            Painter().Rect(IX + 30, Y, IW - 60, 22, FLinearColor(0, 0, 0, .45f));
+            Label(Value, IX + IW * .5f - TextWidth(Value, 9.f) * .5f, Y + 5, 9.f, bOwn ? CireUIColors::BrightGold : CireUIColors::Parchment);
+            if (Button(TEXT(">"), IX + IW - 26, Y, 26, TEXT("Next race boss (K)."))) StepBoss(1);
+            Y += 26;
+            const FCireOutdoorBossRules& Rules = CireOutdoorBosses::Rules();
+            Wrapped(FString::Printf(TEXT("Always there, neutral until attacked, leashed %.0f m to this marker; boss bounty and loot; %s."), CireLeash::Rules().RadiusBoss / 100.f,
+                Rules.RespawnSeconds > 0 ? *FString::Printf(TEXT("returns %.0f min after it dies"), Rules.RespawnSeconds / 60.f) : TEXT("stays dead for the match once slain")), IX, Y, IW, 8.f, CireUIColors::Muted, 2);
             Y += 28;
         }
         if (M->Type == ML::Vendor)

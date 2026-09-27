@@ -3,6 +3,7 @@
 // Everything here is local presentation; it reads replicated/authoritative state and
 // never changes combat rules.
 #include "CireHUD.h"
+#include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireUITheme.h" // ui-themes
 #include "CireArenas.h" // arenas
@@ -217,7 +218,8 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
         U.Class=Class==ECireNPCClass::Boss?3:Class==ECireNPCClass::Elite?2:M->bArmoredEscort?1:0;
         const TCHAR* ClassWords[]={TEXT(""),TEXT("Armored "),TEXT("Elite "),TEXT("Boss ")};
         U.ClassName=FString(ClassWords[U.Class])+U.RoleName+(M->Tier>0?FString::Printf(TEXT(" (Tier %d)"),M->Tier):FString());
-        U.Subtitle=M->IsLaneBoss()?TEXT("<Siege Host>"):U.Class==3?TEXT("<Pack Leader>"):M->bArmoredEscort?TEXT("<Armored Escort>"):M->PackId>=0?TEXT("<Roaming Pack>"):TEXT("<Breach Horde>");
+        const bool bWorldBoss=CireOutdoorBosses::IsOutdoorBoss(M); // outdoor-bosses
+        U.Subtitle=M->IsLaneBoss()?TEXT("<Siege Host>"):bWorldBoss?TEXT("<World Boss>"):U.Class==3?TEXT("<Pack Leader>"):M->bArmoredEscort?TEXT("<Armored Escort>"):M->PackId>=0?TEXT("<Roaming Pack>"):TEXT("<Breach Horde>");
         // monster-races: rank colour and label, race in the subtitle, skill tier in the class line.
         {
             const ECireNPCRank Rank=CireRaces::RankOf(M);const FCireRankStyle& Style=CireRaces::Rank(Rank);
@@ -237,6 +239,7 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
         }
         U.Victim=M->Victim;
         if(IsValid(M->Victim))U.VictimLine=M->Victim==Self?TEXT("You"):M->Victim->HeroName;
+        else if(bWorldBoss)U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the world boss"):M->LeashState==2?TEXT("Evading: returning to its lair"):TEXT("Guarding its lair"); // outdoor-bosses
         else U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the pack"):M->bArmoredEscort?TEXT("Marching on your keep"):M->LeashTimer>0?TEXT("Returning to camp"):M->LeashState==2?TEXT("Evading: returning to its path"):TEXT("Advancing toward town"); // wave-director; layout-wiring: leash
         if(M->NPCState)
         {
@@ -1430,7 +1433,7 @@ void ACireHUD::UpdateBanners(ACireHero* Hero,ACireGameState* State)
         ACireMonster* M=*It;
         if(M->Health<=0||M->Lane!=Hero->TeamId||M->GetNPCClassification()!=ECireNPCClass::Boss||BannerSeenBosses.Contains(M))continue;
         BannerSeenBosses.Add(M);
-        if(bFirst)continue;
+        if(bFirst||CireOutdoorBosses::IsOutdoorBoss(M))continue; // outdoor-bosses: world bosses are always there (their return is announced)
         if(M->IsLaneBoss())CireBanners::Show(ECireBanner::BossSpawned,M->GetNPCDisplayName(),TEXT("A boss marches on your keep. If it leaks, you lose 10 lives."));
         else if(M->Tier>BannerSeenChallengeTier)
             CireBanners::Show(ECireBanner::ChallengeUnlocked,FString::Printf(TEXT("Challenge Tier %d"),M->Tier),M->GetNPCDisplayName()+TEXT(" guards the outpost. Clear the pack for rare rewards."));

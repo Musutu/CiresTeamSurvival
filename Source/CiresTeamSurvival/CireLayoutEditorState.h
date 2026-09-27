@@ -98,6 +98,13 @@ namespace CireLayoutEditor
     CIRESTEAMSURVIVAL_API void Say(FCireLayoutEditorState& E, const FString& Message, double Now);
     /** Validate the draft; bNav adds navmesh, walkability and sign-room checks in this world. */
     CIRESTEAMSURVIVAL_API void RunValidation(UWorld* World, FCireLayoutEditorState& E, bool bNav);
+    /** outdoor-bosses: the world checks Validate runs (runtime compile, realm bounds, and with bNav the navmesh, walkability
+     *  and sign checks), shared with the town probes so a probe checks exactly what the editor's VALIDATE checks. */
+    CIRESTEAMSURVIVAL_API FCireLayoutChecks WorldChecks(UWorld* World, const FCireMapLayout& Layout, bool bNav);
+    /** The editor's navmesh test for a marker: realm-local point -> on the navmesh of that realm. */
+    CIRESTEAMSURVIVAL_API bool MarkerOnNavmesh(UWorld* World, int32 Realm, const FVector2D& Local);
+    /** Walk lengths per path (navmesh lengths after a nav validation) and the validation time. */
+    CIRESTEAMSURVIVAL_API void FinishValidation(UWorld* World, FCireLayoutEditorState& E);
     /** Preview: a monster walks every monster path in every realm it shows in. */
     CIRESTEAMSURVIVAL_API void StartPreview(UWorld* World, FCireLayoutEditorState& E);
     CIRESTEAMSURVIVAL_API void StopPreview(FCireLayoutEditorState& E);

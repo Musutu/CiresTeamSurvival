@@ -124,6 +124,8 @@ struct CIRESTEAMSURVIVAL_API FCireLayoutChecks
     /** layout-wiring: compile the layout the way the game will run it (CompileRoutes + the route rules the match enforces).
      *  Returns false with Error when the runtime would reject it; Notes are reported as warnings. */
     TFunction<bool(const FCireMapLayout&, TArray<FString>&, FString&)> Runtime;
+    /** outdoor-bosses: realm-local point -> inside the realm the game builds (its navmesh volume and spawn rules). */
+    TFunction<bool(const FVector2D&)> InsideRealm;
 };
 
 namespace CireMapLayout

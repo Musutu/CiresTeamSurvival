@@ -6,6 +6,7 @@
 #include "CireLanePath.h"
 #include "CireMapLayout.h"
 #include "CireNPCCombat.h"
+#include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireRouteEditMode.h"
 #include "CireThreat.h"
 #include "CireTownMap.h"
@@ -97,6 +98,7 @@ bool CireLayoutRuntime::RestartOnLayout(ACireGameMode* Mode, FString& Out)
     for (int32 I = Mode->Monsters.Num() - 1; I >= 0; --I)
         if (ACireMonster* M = Mode->Monsters[I]; IsValid(M)) { CireWaveDirector::Forget(M); CireThreat::Clear(M); CireNPCCombat::Interrupt(M); M->Destroy(); }
     Mode->Monsters.Reset(); Mode->RewardedPacks.Reset();
+    CireOutdoorBosses::Reset(Mode); // outdoor-bosses: every world boss comes back with the new layout
     // The match starts over on the new layout: survival, round 1, full lives, the first wave's delay.
     Mode->Clock = Cires::MatchClock(Mode->Clock.GetDurations());
     Mode->CycleWavesSpawned = 0; Mode->bCyclesComplete = false;

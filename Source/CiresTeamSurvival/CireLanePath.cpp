@@ -337,6 +337,21 @@ static bool ValidateTown(const FCireBattlefieldRoutes& R, FString& Error)
     Error.Reset(); return true;
 }
 // nav-paths: semantic rules shared by the JSON loader and the live path editor.
+bool CireLanePath::GrowRealmToPlayBounds(FCireBattlefieldRoutes& R)
+{
+    if (!R.bTownFrame || R.PlayBounds.Num() < 3) return false;
+    FBox2D Box(ForceInit);
+    for (const FVector2D& P : R.PlayBounds) if (FMath::IsFinite(P.X) && FMath::IsFinite(P.Y)) Box += P;
+    if (!Box.bIsValid) return false;
+    // The trim keeps the polygon plus its margin (CastleTown.json trim.margin, 15 m); 5 m more keeps units clear of the edge.
+    constexpr double Pad = 2000., Step = 2500., Limit = 60000.;
+    auto Up = [&](double V) { return FMath::Min(Limit, FMath::CeilToDouble(FMath::Max(0., V) / Step) * Step); };
+    const float MinX = static_cast<float>(-Up(-(Box.Min.X - Pad))), MaxX = static_cast<float>(Up(Box.Max.X + Pad));
+    const float Half = static_cast<float>(Up(FMath::Max(FMath::Abs(Box.Min.Y), FMath::Abs(Box.Max.Y)) + Pad));
+    const bool bGrew = MinX < R.MinX || MaxX > R.MaxX || Half > R.HalfWidth;
+    R.MinX = FMath::Min(R.MinX, MinX); R.MaxX = FMath::Max(R.MaxX, MaxX); R.HalfWidth = FMath::Max(R.HalfWidth, Half);
+    return bGrew;
+}
 bool CireLanePath::Validate(const FCireBattlefieldRoutes& R, FString& Error)
 {
     auto Fail = [&](const TCHAR* Reason) { Error = Reason; return false; };

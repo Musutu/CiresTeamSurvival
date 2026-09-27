@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // kits-complete
 #include "CireKitSkills.h" // kits-complete
@@ -491,6 +492,7 @@ void ACireHUD::DrawMinimap(ACireHero* Hero,ACireGameState* State)
         if(Arena||It->Health<=0||It->Lane!=Hero->TeamId)continue;
         const auto P=Map(It->GetActorLocation(),It->Lane);
         if(It->bBoss){Panel(P.X-3,P.Y-3,7,7,Gold);Panel(P.X-2,P.Y-2,5,5,Red);}
+        else if(CireOutdoorBosses::IsOutdoorBoss(*It)){Panel(P.X-4,P.Y-4,9,9,Gold);Panel(P.X-3,P.Y-3,7,7,It->bNeutral?FLinearColor(.95f,.8f,.2f,1):Purple);} // outdoor-bosses: world boss lairs
         else if(It->bArmoredEscort){Panel(P.X-3,P.Y-3,6,6,Gold);Panel(P.X-1,P.Y-1,2,2,Ink);}
         else Panel(P.X-1,P.Y-1,3,3,It->PackId>=0?Purple:Red);
     }
