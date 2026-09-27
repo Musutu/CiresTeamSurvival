@@ -1,6 +1,8 @@
 """Render every themed arena: an overview, a gameplay-camera shot and a vista, 1920x1080 each.
 
 Usage: python Tools/RunArenaGallery.py [--only sunlit_fields,black_shore] [--fallback]
+       python Tools/RunArenaGallery.py --portal-views   (one 512x512 view per arena, no Fab art, copied to Art/Arenas/PortalViews)
+       python Tools/RunArenaGallery.py --portals        (every arena's shadow portal in town, gameplay + close-up)
 Writes Saved/ArenaGallery/<stamp>/*.png and Saved/ArenaGalleryChecks/<stamp>/report.json
 (frame time per shot included; the capture runs offscreen, so treat it as indicative).
 """
@@ -34,17 +36,24 @@ def main() -> int:
     parser.add_argument("--verbose", action="store_true", help="log every resolved arena slot")
     parser.add_argument("--skip", default="", help="development: slot ids to leave out")
     parser.add_argument("--view", default="", help="development: extra close-up, arena-local 'x,y,z,tx,ty,tz'")
+    parser.add_argument("--portal-views", action="store_true", help="arena-portal: render the square view each portal shows")
+    parser.add_argument("--portals", action="store_true", help="arena-portal: render every arena's shadow portal in town")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     folder = root / "Saved/ArenaGalleryChecks" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     folder.mkdir(parents=True)
     log = folder / "gallery.log"
     flag = f"-CireArenaGallery={args.only.replace(',', '+')}" if args.only else "-CireArenaGallery"
+    res = (512, 512) if args.portal_views else (1920, 1080)
+    if args.portals:
+        flag = "-CirePortalGallery"
     command = ["F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe", str(root / "CiresTeamSurvival.uproject"),
-               "/Game/Maps/Citadel", "-game", flag, "-RenderOffscreen", "-ForceRes", "-ResX=1920", "-ResY=1080",
+               "/Game/Maps/Citadel", "-game", flag, "-RenderOffscreen", "-ForceRes", f"-ResX={res[0]}", f"-ResY={res[1]}",
                "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding", "-CireNoReplay", "-ExecCmds=t.MaxFPS 60", f"-abslog={log}"]
     if args.fallback:
         command.append("-CireArenaGalleryFallback")
+    if args.portal_views:
+        command += ["-CireArenaGalleryPortalView", "-CireNoFab"]  # the committed views never contain licensed Fab art
     if args.view:
         command.append("-CireArenaGalleryView=" + args.view.replace(",", "_"))
     if args.skip:
@@ -79,9 +88,16 @@ def main() -> int:
                 header = stream.read(24)
             valid = len(header) == 24 and header[:8] == b"\x89PNG\r\n\x1a\n"
             size = struct.unpack(">II", header[16:24]) if valid else (0, 0)
-            passed = passed and size == (1920, 1080) and path.stat().st_size > 10000
+            passed = passed and size == res and path.stat().st_size > 10000
             captures.append(dict(path=str(path), width=size[0], height=size[1], bytes=path.stat().st_size, frameMs=shots.get(str(path))))
         passed = passed and len(captures) == int(match.group(1))
+    if passed and args.portal_views:
+        views = root / "Art/Arenas/PortalViews"
+        views.mkdir(parents=True, exist_ok=True)
+        for c in captures:
+            m = re.match(r"\d+_(.+)_portalview\.png$", Path(c["path"]).name)
+            if m:
+                (views / f"{m.group(1)}.png").write_bytes(Path(c["path"]).read_bytes())
     report = dict(passed=bool(passed), exitCode=code, seconds=round(time.monotonic() - started, 2), failure=failure, errors=errors,
                   log=str(log), captures=captures)
     (folder / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

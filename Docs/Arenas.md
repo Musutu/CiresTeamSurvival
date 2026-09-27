@@ -174,3 +174,65 @@ Fab (local only): `FAB_OVERRIDES` now puts the Medieval Kingdom scanned European
 the Hornbeam Glade's trees, saplings, shrubs, stumps and logs, and its wild grass on the glade's grass tufts. `CireArenas`
 skips candidates inside the Fab pack folders when `-CireNoFab` is set, so a machine with the packs can render the clean-clone
 look. Captures: `Tools/RunArenaGallery.py` (the overview and plan cameras now rise with the half extents).
+
+## Shadow portals (September 26)
+
+Eric: "when it is time for arena, a shadow portal opens for all players that teleports them to the arena that was chosen, the
+portal should match the arena so players have an instant knowledge of the arena they are going to."
+
+**Flow (server-authoritative, `CireArenaPortal.h/.cpp`).**
+
+1. The prep banner still names the arena ("The portal opens onto ..."). When the prep minute reaches `portal.leadSeconds`
+   (12 s), the server opens one **shadow portal beside every human champion**: 3.3 m ahead and to one side of them (so it
+   is in the default camera view), on open ground with headroom, inside the Play Bounds, facing them. Each client raises a
+   **SHADOW PORTAL** banner (arena style) with the arena's name, and the HUD draws a merchant-style plate over the ring: the
+   arena's name, `<Shadow Portal>`, and near it a prompt capsule "Walk in to enter · drawn through in 0:08".
+2. **Walking in** (a server trigger overlap) takes that champion straight to its arena spawn slot (the same slot the arena
+   phase would give it). It waits there for the rest of the minute: its client shows the arena, lighting, ambience and music
+   early; the town Play Bounds leash and the realm lane clamp skip it; it can still shop (B). Bots never use the portals.
+3. **When the minute ends** the arena phase moves everyone else exactly as before, so nobody is ever left behind. The town
+   portals fold shut, and a matching **arrival rift** opens behind each team's spawn line for 4 s.
+4. **Recovery** sends everyone back as before; a matching **return rift** opens at each team's return point (the realm's
+   Rift marker, else the gate) for 6 s.
+
+**Look (per arena, data-driven).** `Content/Data/Arenas.json` (written by `Tools/AuthorArenas.py`, `PORTAL` and
+`PORTAL_LOOKS`) has a top-level `portal` block (lead time, ring radius/height, placement offset, rift durations, materials,
+optional Shadow_Magic Niagara layers, sound cues) and a `portal` look in every arena:
+
+| Arena | View inside the ring | Tint | Motes |
+| --- | --- | --- | --- |
+| The Sunlit Fields | wheat, bales, windmill | gold | wheat chaff spiralling out |
+| The Black Shore | basalt and black sand under overcast | ice blue | snow blown out of the ring |
+| Redrock Canyon | red sandstone and the arch | red-orange | a stream of red grit |
+| Hornbeam Glade | the hornbeam clearing | green | tumbling leaves |
+| The Drowned Sanctum | columns, arch and light shafts under water | teal | rising bubbles |
+| Star Station Hangar | the hangar deck, dropships, the blue planet | blue | twinkling stars |
+
+- The **view** is a square capture of the arena from behind the Ember spawn line (`Tools/RunArenaGallery.py --portal-views`,
+  rendered with `-CireNoFab` so no licensed art is baked into it; sources in `Art/Arenas/PortalViews`), imported as
+  `/Game/Arenas/Portal/T_PortalView_<id>` by `Tools/BuildArenaPortalContent.py`.
+- `M_ArenaPortal` (same script) draws the view with a slow inward swirl, a dark shadow band and a wobbling edge, thin tinted
+  filaments and an inner lip in the arena's tint; it flashes when someone steps through. `M_ArenaPortalMote` is the additive
+  speck material for the motes (instanced spheres animated per style on the client).
+- The **Shadow_Magic** pack (local Fab, never committed) adds a swirling ring (`NS_Shadow_Magic_Area4`, stood upright), a
+  shadow pool at the base (`Area2`), an opening burst (`Shield_Splash2`) and a swallow burst when someone steps in
+  (`Shield_Splash1`), all previously unused. Without the pack the portal is complete from the committed material alone.
+- **Sound**: `arena_portal_open` (Dark Magic Spell 8), the `arena_portal_loop` hum (Dark Loop 1) and `arena_portal_enter`
+  (Dark Magic Spell 6) from the Magic Spell SFX pack, falling back to the shipped teleport sounds (`AudioCues.json`).
+
+**Replication.** `ACireArenaPortal` is a replicated, always-relevant actor carrying only the arena index, kind (entry, arrival,
+return), team, collapse flag and a swallow multicast; every client builds the visuals from the data. A dedicated server builds
+none of them.
+
+**Checks.**
+- Native (`CIRE_ARENA_PORTAL_TESTS_PASS`, in `RunExpansionChecks --only native`): the portal data parses, every themed arena
+  has its own look, view texture and motes style (six styles), both materials and all three cues exist, and a portal builds,
+  opens and collapses for every arena.
+- Interface smoke (`Tools/RunInterfaceSmoke.py`): the server opens a portal beside both remote champions
+  (`CIRE_INTERFACE_SERVER_PORTAL_OPEN_PASS`); each client sees its own portal named and themed after the replicated pick
+  (`CIRE_INTERFACE_CLIENT_PORTAL_OPEN_PASS`); Ember's champion walks into its portal and lands in the arena during prep
+  (`..._PORTAL_ENTER_PASS`); at the arena phase all 10 champions stand in the chosen arena, both town portals fold and both
+  arrival rifts open (`CIRE_INTERFACE_SERVER_PORTAL_PASS`); each client is in the arena with it shown
+  (`CIRE_INTERFACE_CLIENT_PORTAL_PASS`).
+- Review: `Tools/RunArenaGallery.py --portals` renders every arena's portal in town (gameplay framing with the HUD plate,
+  and a near-straight close-up) into `Saved/PortalGallery/<stamp>`.

@@ -205,6 +205,7 @@ private:
     void DrawCombatText(ACireHero* Hero, ACireController* Controller);
     void DrawNameplates(ACireHero* Hero);
     void DrawVendorPlates(ACireHero* Hero); // vendors: merchant plates + interact prompt
+    void DrawPortalPlates(ACireHero* Hero); // arena-portal: shadow portal plates + countdown prompt
     void DrawStatuses(AActor* Actor,float X,float Y,float Size,int32 MaxIcons=4);
     FString EffectSigil(FName Id,const struct FCireEffectInfo& I);
     FString StatusIconId(const struct FCireEffectInfo& I);

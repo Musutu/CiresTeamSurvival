@@ -2,6 +2,7 @@
 #include "CireLayoutRuntime.h"
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
+#include "CireArenaPortal.h" // arena-portal
 #include "CireLanePath.h"
 #include "CireMapLayout.h"
 #include "CireNPCCombat.h"
@@ -37,6 +38,7 @@ void CireLayoutRuntime::TickHero(ACireHero* H, float Delta)
     // The town phases only: the arena is elsewhere and recovery teleports heroes home.
     const auto Phase = Mode->Clock.Phase();
     if (Phase != Cires::MatchPhase::Survival && Phase != Cires::MatchPhase::Intermission) { OutOfBounds.Remove(H); return; }
+    if (CireArenaPortal::IsStaged(H)) { OutOfBounds.Remove(H); return; } // arena-portal: stepped through the shadow portal early
     const int32 Team = FMath::Clamp(H->TeamId, 0, 1);
     if (CireLanePath::InsidePlayBounds(H->GetWorld(), Team, H->GetActorLocation())) { OutOfBounds.Remove(H); return; }
     float& Seconds = OutOfBounds.FindOrAdd(H);
