@@ -28,6 +28,10 @@ Run: UnrealEditor-Cmd <project> -run=pythonscript -script=Tools/RetargetChampion
      (-CireChampionAttacksRebuild deletes and rebuilds only /Game/Art/Characters/ChampionAttacks02)
      (-CireChampionAttacksAdd is additive: only the Tripo champion bodies in Content/Data/ChampionArt.tripo.json
       whose <attacksFolder> does not exist yet; the template is the body's own native idle. Existing clips are untouched.)
+     (blender-rig: -CireChampionAttacksOnly=HQRanger,HQGunblade rebuilds just those attacksFolder bodies (tripo/hq rows).
+      An arm-chain bind alignment (A = rotation taking the target bind bone direction onto the source's) was tried for
+      the HQ Ranger's bent right arm and made it worse (bow hand in the face, 117 backwards-elbow samples vs 13), so it
+      was removed; see Docs/RigAudit.md.)
 Report: Saved/ChampionAttacks02Build.json
 """
 import json
@@ -95,6 +99,12 @@ def qnorm(q):
 def rot(q, v): return qm(qm(q, (v[0], v[1], v[2], 0.0)), qinv(q))[:3]
 
 
+ONLY = ""
+for _arg in unreal.SystemLibrary.get_command_line().split():
+    if _arg.lower().startswith("-cirechampionattacksonly="):
+        ONLY = _arg.split("=", 1)[1].strip('"')
+
+
 def targets():
     root = Path(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_dir()))
     bindings = json.loads((root / "Content/Data/ChampionArtBindings.json").read_text(encoding="utf-8"))
@@ -119,9 +129,12 @@ def added_targets():
     if hq.exists():
         rows += json.loads(hq.read_text(encoding="utf-8"))["champions"]
     out = {}
+    only = [f for f in ONLY.split(",") if f]
     for row in rows:
         folder = row.get("attacksFolder")
-        if folder and not unreal.EditorAssetLibrary.does_directory_exist("%s/%s" % (OUT, folder)):
+        if only and folder not in only:
+            continue
+        if folder and (only or not unreal.EditorAssetLibrary.does_directory_exist("%s/%s" % (OUT, folder))):
             out[folder] = (row["mesh"].split(".")[0], row["animations"]["idle"].split(".")[0])
             if row.get("attacksExtra"):
                 EXTRA[folder] = list(row["attacksExtra"])
@@ -283,9 +296,10 @@ def validate(anim, mesh):
 def main():
     started = time.monotonic()
     rebuild = "-cirechampionattacksrebuild" in unreal.SystemLibrary.get_command_line().lower()
-    additive = "-cirechampionattacksadd" in unreal.SystemLibrary.get_command_line().lower()
+    additive = "-cirechampionattacksadd" in unreal.SystemLibrary.get_command_line().lower() or bool(ONLY)
     lib = unreal.EditorAssetLibrary
     report = {"output": OUT, "method": "bind-pose-offset FK transfer (the IK retargeter collapsed the pelvis with root scale 100)",
+              "only": ONLY,
               "targets": {}, "created": [], "original_assets_saved": False}
     saved = Path(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_saved_dir()))
     content = Path(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_content_dir()))
@@ -295,6 +309,9 @@ def main():
             for file in (content / "Art/Characters/ChampionAttacks02").rglob("*.uasset"):
                 file.chmod(file.stat().st_mode | stat.S_IWRITE)
             require(lib.delete_directory(OUT), "could not clear " + OUT)
+        for folder in [f for f in ONLY.split(",") if f]:  # lockable LFS files are checked out read-only
+            for file in (content / "Art/Characters/ChampionAttacks02" / folder).rglob("*.uasset"):
+                file.chmod(file.stat().st_mode | stat.S_IWRITE)
         sources = {c: (unreal.load_asset(m), unreal.load_asset(a)) for c, (m, a) in CLIPS.items()}
         for c, (m, a) in sources.items():
             require(isinstance(m, unreal.SkeletalMesh) and isinstance(a, unreal.AnimSequence), "missing source " + c)
@@ -327,7 +344,7 @@ def main():
         unreal.log_error("CIRE_CHAMPION_ATTACKS02_FAIL " + str(error))
     finally:
         report["seconds"] = round(time.monotonic() - started, 1)
-        (saved / ("ChampionAttacks02Build%s.json" % ("-Add" if additive else ""))).write_text(json.dumps(report, indent=1), encoding="utf-8")
+        (saved / ("ChampionAttacks02Build%s.json" % (("-Only-" + ONLY.replace(",", "+")) if ONLY else "-Add" if additive else ""))).write_text(json.dumps(report, indent=1), encoding="utf-8")
 
 
 main()

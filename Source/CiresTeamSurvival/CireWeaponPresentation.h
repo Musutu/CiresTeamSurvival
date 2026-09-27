@@ -23,6 +23,17 @@ namespace CireWeapons
     /** weapon-grips: one line per held prop (mesh, bone, grip mode and set, deviation from the animation's authored
      *  grip, length against the body) for galleries and tests. */
     CIRESTEAMSURVIVAL_API FString DescribeGrips(const ACireHero& Hero);
+    /** blender-rig: index (0..2) of the prop-space axis a handle direction runs along (within ~8 degrees), else INDEX_NONE. */
+    CIRESTEAMSURVIVAL_API int32 PrincipalAxis(const FVector& Axis);
+    /** blender-rig: prop-space stretch by Factor along the handle axis, anchored at the handle point (identity if not principal). */
+    CIRESTEAMSURVIVAL_API FTransform HandleStretch(const CireGrip::FWeapon& Grip, float Factor);
+    /**
+     * blender-rig: the handle axis pointed at the prop's business end (blade, head, spike). WeaponGrips.fab.json lists the
+     * Fab meshes' axes by their modelling direction, so on the bind grip SM_Sword_1, SM_Axe_1, SM_Dagger_1 and SM_WarHammer
+     * came out pommel-first (tip behind the fist at idle). Flips Axis when the far end along it is clearly the shorter one
+     * (the other side at least twice as long); symmetric grips (bows) and pistol grips keep the data's direction.
+     */
+    CIRESTEAMSURVIVAL_API FVector BusinessAxis(const class UStaticMesh& Mesh, const CireGrip::FWeapon& Grip);
 }
 
 /** Original local prototype equipment. Visual-only and parented to the visible champion. */
@@ -54,6 +65,9 @@ public:
     {
         TWeakObjectPtr<UStaticMeshComponent> Part; FName Bone; FString Mode, Set;
         float TipDeviationDeg=-1.f, EdgeDeviationDeg=-1.f, LengthCm=0.f; bool bTwoHand=false;
+        float Size=1.f, Girth=1.f; // blender-rig: prop scale along the handle axis, and the cross-section factor (girth) of it
+        FString SizeClass;         // blender-rig: WeaponLoadouts.json sizeClasses key ("one_hand", "mace", ...)
+        float BaseSize=1.f;        // blender-rig: the size before the class (and its cap) applied
     };
     const TArray<FGripInfo>& GetGripInfo() const { return GripInfo; }
     const FString& GetGripSet() const { return GripSet; }
@@ -63,7 +77,7 @@ public:
 #endif
 private:
     UStaticMeshComponent* Attach(ACireHero& Hero,const FString& AssetPath,FName BoneName,
-        const FVector& OffsetCm,const FRotator& Rotation,float Size,bool bPrimary=false);
+        const FVector& OffsetCm,const FRotator& Rotation,float Size,bool bPrimary=false,float Girth=1.f,float MaxBodyFraction=0.f,float MinSize=0.f);
     /** weapon-grips: places Part on the animation-authored grip of GripSet; false keeps the bind-pose grip. */
     bool PlaceAuthored(ACireHero& Hero,UStaticMeshComponent& Part,const CireGrip::FWeapon& Grip,FName BoneName,float Size,bool bPrimary,FGripInfo& Info);
     TArray<FGripInfo> GripInfo;

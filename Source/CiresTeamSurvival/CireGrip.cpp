@@ -1,4 +1,5 @@
 #include "CireGrip.h"
+#include "CireRigAudit.h" // blender-rig
 
 #include "BonePose.h"
 #include "Dom/JsonObject.h"
@@ -473,6 +474,36 @@ namespace
 {
 FQuat Between(const FVector& From, const FVector& To) { return FQuat::FindBetweenNormals(From.GetSafeNormal(), To.GetSafeNormal()); }
 
+/** blender-rig: the body frame of the current pose and the upper arm's anatomical front, for arm IK (Docs/RigAudit.md). */
+struct FAnatomy { FVector Forward, Up, Outward, AntLocal; };
+bool ArmAnatomy(const FCompactPose& Pose, const int32 Chain[3], FAnatomy& Out)
+{
+    const FReferenceSkeleton& Ref = Pose.GetBoneContainer().GetReferenceSkeleton();
+    if (!Ref.IsValidIndex(Chain[0]) || !Ref.IsValidIndex(Chain[1]) || !Ref.GetBoneName(Chain[0]).ToString().StartsWith(TEXT("upperarm"))) return false;
+    FVector BindForward;
+    if (!Ref.IsValidIndex(Chain[2]) || !CireRigAudit::AnteriorLocal(Ref, Chain[0], Chain[1], Chain[2], Out.AntLocal, &BindForward)) return false;
+    const FTransform UpperBind = CireGrip::ReferenceComponent(Ref, Ref.GetBoneName(Chain[0]));
+    // Current body frame: the chest's bind-relative rotation carries the bind forward/up (root yaw, leans, casts).
+    FName ChestName = TEXT("spine_03");
+    int32 Chest = Ref.FindBoneIndex(ChestName);
+    if (Chest == INDEX_NONE) { ChestName = TEXT("pelvis"); Chest = Ref.FindBoneIndex(ChestName); }
+    FQuat Turn = FQuat::Identity;
+    FVector ChestNow = UpperBind.GetLocation();
+    if (Chest != INDEX_NONE)
+    {
+        const FTransform Now = CireGrip::ComponentBone(Pose, Chest);
+        Turn = Now.GetRotation() * CireGrip::ReferenceComponent(Ref, ChestName).GetRotation().Inverse();
+        ChestNow = Now.GetLocation();
+    }
+    Out.Forward = Turn.RotateVector(BindForward).GetSafeNormal();
+    Out.Up = Turn.RotateVector(FVector::UpVector).GetSafeNormal();
+    const FVector Shoulder = CireGrip::ComponentBone(Pose, Chain[0]).GetLocation();
+    FVector Outward = Shoulder - ChestNow;
+    Outward = Outward - Out.Forward * FVector::DotProduct(Outward, Out.Forward) - Out.Up * FVector::DotProduct(Outward, Out.Up);
+    Out.Outward = Outward.GetSafeNormal();
+    return true;
+}
+
 /** Places Hand at Target (component space) by bending Upper/Lower, then sets the hand's rotation. */
 void TwoBoneIK(FCompactPose& Pose, const int32 Chain[3], const FTransform& Target, float Weight)
 {
@@ -500,11 +531,35 @@ void TwoBoneIK(FCompactPose& Pose, const int32 Chain[3], const FTransform& Targe
     FVector Bend = (B - A) - Dir * FVector::DotProduct(B - A, Dir);
     if (Bend.IsNearlyZero()) Bend = FVector::UpVector - Dir * FVector::DotProduct(FVector::UpVector, Dir);
     Bend.Normalize();
+    // blender-rig: arms bend the anatomical way. The pose's own elbow offset is ambiguous when the arm is nearly straight
+    // (Tripo idle arms), and following it folded the carry and off-hand IK arms backwards (lancer elbow -153 deg).
+    // The elbow tip goes behind, below and outside the shoulder-to-hand line; then the humerus is twisted so its
+    // anatomical front faces the forearm (the elbow's hinge), which keeps the skinned elbow and wrist from reading reversed.
+    FAnatomy Anat;
+    const bool bArm = ArmAnatomy(Pose, Chain, Anat);
+    if (bArm)
+    {
+        FVector Pole = -Anat.Forward - Anat.Up * .6 + Anat.Outward * .45;
+        Pole = Pole - Dir * FVector::DotProduct(Pole, Dir);
+        if (Pole.Normalize()) Bend = Pole;
+    }
     const double Along = (L1 * L1 - L2 * L2 + D * D) / (2.0 * D);
     const FVector Elbow = A + Dir * Along + Bend * FMath::Sqrt(FMath::Max(0.0, L1 * L1 - Along * Along));
     const FVector Wrist = A + Dir * D;
     // Upper arm: swing its direction onto the new elbow.
-    const FQuat UpperWorld = Between(B - A, Elbow - A) * Up.GetRotation();
+    FQuat UpperWorld = Between(B - A, Elbow - A) * Up.GetRotation();
+    if (bArm)
+    {   // blender-rig: twist about the humerus so its bind-pose front (AntLocal) faces the forearm's flexion side.
+        const FVector Axis = (Elbow - A).GetSafeNormal();
+        FVector Flex = (Wrist - Elbow) - Axis * FVector::DotProduct(Wrist - Elbow, Axis);
+        FVector Ant = UpperWorld.RotateVector(Anat.AntLocal);
+        Ant = Ant - Axis * FVector::DotProduct(Ant, Axis);
+        if (Flex.Size() > .05 * L2 && Flex.Normalize() && Ant.Normalize())
+        {
+            const double Angle = FMath::Atan2(FVector::DotProduct(FVector::CrossProduct(Ant, Flex), Axis), FVector::DotProduct(Ant, Flex));
+            UpperWorld = (FQuat(Axis, Angle) * UpperWorld).GetNormalized();
+        }
+    }
     const FTransform UpperParentCS = CireGrip::ComponentBone(Pose, Bones.MakeMeshPoseIndex(UpperParent).GetInt());
     Pose[I[0]].SetRotation((UpperParentCS.GetRotation().Inverse() * UpperWorld).GetNormalized());
     // Lower arm (after the upper arm moved).

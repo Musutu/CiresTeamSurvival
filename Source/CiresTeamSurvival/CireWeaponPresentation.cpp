@@ -24,7 +24,9 @@ namespace
 struct FPart
 {
     FString Asset,Role,Token;FName Bone;FVector Offset=FVector::ZeroVector;FRotator Rotation=FRotator::ZeroRotator;
-    float Size=1;bool bHideOnRelease=false;
+    float Size=1;float Girth=1;bool bHideOnRelease=false; // blender-rig: girth = cross-section / length scale
+    FString SizeClass; // blender-rig
+    float MaxBodyFraction=0.f,BaseSize=1.f; // blender-rig: size-class cap (prop length / body height) and the size before the class
 };
 struct FLoadout {FString Motion;TArray<FPart> Parts;};
 struct FDatabase
@@ -87,6 +89,18 @@ bool Parse(const FString& Text,FDatabase& Out,FString& Error)
        (*Presets)->Values.Num()>64||(*Profiles)->Values.Num()>128)
         return Bad(TEXT("Expected schemaVersion 1, presets and profiles"));
     FDatabase Candidate;
+    // blender-rig: "sizeClasses": {"one_hand": {"scale": 2, "girth": .7}, ...}; a part's "sizeClass" multiplies its scale
+    // and sets its girth, so one knob resizes every one-handed weapon (Eric, 2026-09-26: 1H weapons and maces 2x).
+    TMap<FString,TPair<double,double>> SizeClasses;TMap<FString,double> SizeCaps;
+    if(const TSharedPtr<FJsonObject>* Classes=nullptr;Root->TryGetObjectField(TEXT("sizeClasses"),Classes))
+        for(const auto& Pair:(*Classes)->Values)
+        {
+            const TSharedPtr<FJsonObject>* Row=nullptr;double Scale=1,Girth=1;
+            if(!Pair.Value->TryGetObject(Row)||!(*Row)->TryGetNumberField(TEXT("scale"),Scale)||!FMath::IsFinite(Scale)||Scale<.35||Scale>4)return Bad(TEXT("Invalid size class: ")+FString(Pair.Key.ToView()));
+            if((*Row)->HasField(TEXT("girth"))&&(!(*Row)->TryGetNumberField(TEXT("girth"),Girth)||!FMath::IsFinite(Girth)||Girth<.4||Girth>1))return Bad(TEXT("Size class girth must be .4..1"));
+            SizeClasses.Add(FString(Pair.Key.ToView()),TPair<double,double>(Scale,Girth));
+            double Cap=0;if((*Row)->TryGetNumberField(TEXT("maxBodyFraction"),Cap)&&FMath::IsFinite(Cap)&&Cap>.1&&Cap<=2)SizeCaps.Add(FString(Pair.Key.ToView()),Cap);
+        }
     for(const auto& Pair:(*Presets)->Values)
     {
         const FString Key(Pair.Key.ToView());
@@ -108,8 +122,20 @@ bool Parse(const FString& Text,FDatabase& Out,FString& Error)
             if(!ReadVector(*PartRow,TEXT("offsetCm"),Part.Offset,100)||!ReadVector(*PartRow,TEXT("rotation"),Rotation,360))return Bad(TEXT("Invalid grip offset/rotation"));
             Part.Rotation=FRotator(Rotation.X,Rotation.Y,Rotation.Z);
             double Size=1;
-            if((*PartRow)->HasField(TEXT("scale"))&&(!(*PartRow)->TryGetNumberField(TEXT("scale"),Size)||!FMath::IsFinite(Size)||Size<.35||Size>2))return Bad(TEXT("Weapon scale must be .35..2"));
+            if((*PartRow)->HasField(TEXT("scale"))&&(!(*PartRow)->TryGetNumberField(TEXT("scale"),Size)||!FMath::IsFinite(Size)||Size<.35||Size>4))return Bad(TEXT("Weapon scale must be .35..4"));
             Part.Size=Size;
+            // blender-rig: "girth" (.4..1) thins the cross-section of an upscaled prop, so a 2x weapon keeps a handle the fist
+            // closes around (the length scales by "scale", the handle radius and blade width by scale * girth).
+            double Girth=1;
+            if((*PartRow)->HasField(TEXT("girth"))&&(!(*PartRow)->TryGetNumberField(TEXT("girth"),Girth)||!FMath::IsFinite(Girth)||Girth<.4||Girth>1))return Bad(TEXT("Weapon girth must be .4..1"));
+            Part.Girth=Girth;
+            if(FString SizeClass;(*PartRow)->TryGetStringField(TEXT("sizeClass"),SizeClass))
+            {
+                const auto* Class=SizeClasses.Find(SizeClass);if(!Class)return Bad(TEXT("Unknown size class: ")+SizeClass);
+                Part.BaseSize=Part.Size;Part.Size*=Class->Key;Part.Girth*=Class->Value;Part.SizeClass=SizeClass;
+                if(const double* Cap=SizeCaps.Find(SizeClass))Part.MaxBodyFraction=*Cap;
+                if(Part.Size>4||Part.Girth<.4)return Bad(TEXT("Size class makes the part scale exceed 4 or its girth drop below .4"));
+            }
             if((*PartRow)->HasField(TEXT("hideOnRelease"))&&!(*PartRow)->TryGetBoolField(TEXT("hideOnRelease"),Part.bHideOnRelease))return Bad(TEXT("Invalid release visibility"));
             if((*PartRow)->HasField(TEXT("role"))&&!(*PartRow)->TryGetStringField(TEXT("role"),Part.Role))return Bad(TEXT("Invalid weapon part role"));
             if(!Part.Role.IsEmpty()&&Part.Role!=TEXT("primary")&&Part.Role!=TEXT("ammunition"))return Bad(TEXT("Unsupported weapon part role"));
@@ -267,7 +293,7 @@ FString CireWeaponFab::ResolveMesh(const FString& Token,const FString& Fallback,
     InOutSize*=W->Scale;return W->Mesh;
 }
 UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FString& AssetPath,FName BoneName,
-    const FVector& OffsetCm,const FRotator& Rotation,float Size,bool bPrimary)
+    const FVector& OffsetCm,const FRotator& Rotation,float Size,bool bPrimary,float Girth,float MaxBodyFraction,float MinSize)
 {
     auto* Body=Hero.GetMesh();
     if(!Body||!Body->GetSkeletalMeshAsset()||Body->GetBoneIndex(BoneName)==INDEX_NONE)return nullptr;
@@ -275,6 +301,15 @@ UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FStr
     if(Body->GetBoneIndex(TEXT("hand_l"))==INDEX_NONE||Body->GetBoneIndex(TEXT("hand_r"))==INDEX_NONE)return nullptr;
     auto* Asset=LoadObject<UStaticMesh>(nullptr,*AssetPath);
     if(!Asset){UE_LOG(LogTemp,Warning,TEXT("CIRE_WEAPON_ASSET_MISSING %s"),*AssetPath);return nullptr;}
+    if(MaxBodyFraction>0.f)
+    {   // blender-rig: a size class never makes a prop longer than MaxBodyFraction of the body's bind height (a 2x knight
+        // sword would be a 1.8 m greatsword), and never shrinks it below its size before the class.
+        const USkeletalMesh& Ref=*Body->GetSkeletalMeshAsset();
+        const float Head=static_cast<float>(ReferenceBone(Ref,TEXT("head")).GetLocation().Z),Foot=static_cast<float>(FMath::Min(ReferenceBone(Ref,TEXT("foot_l")).GetLocation().Z,ReferenceBone(Ref,TEXT("foot_r")).GetLocation().Z));
+        const float Height=(Head-Foot)*1.1f*static_cast<float>(Body->GetComponentScale().Z);
+        const float Length=static_cast<float>(Asset->GetBounds().BoxExtent.GetMax()*2);
+        if(Height>50.f&&Length>1.f&&Length*Size>MaxBodyFraction*Height)Size=FMath::Max(MinSize,MaxBodyFraction*Height/Length);
+    }
     auto* Part=NewObject<UStaticMeshComponent>(&Hero);Hero.AddInstanceComponent(Part);
     Part->SetupAttachment(Body,BoneName);Part->SetStaticMesh(Asset);Part->RegisterComponent();VisualOnly(*Part);
     const USkeletalMesh& Mesh=*Body->GetSkeletalMeshAsset();
@@ -310,10 +345,20 @@ UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FStr
     Part->SetRelativeLocation(GripOffset);Part->SetWorldScale3D(FVector(Size));
     // creature-anim: with grip data the handle sits inside the curled fist (CireGrip); shields strap onto the forearm.
     FGripInfo Info;Info.Part=Part;Info.Bone=BoneName;Info.Mode=TEXT("offset"); // weapon-grips
-    Info.LengthCm=static_cast<float>(Asset->GetBounds().BoxExtent.GetMax()*2*Size);
+    Info.LengthCm=static_cast<float>(Asset->GetBounds().BoxExtent.GetMax()*2*Size);Info.Size=Size;Info.BaseSize=MinSize>0.f?MinSize:Size;
     if(const auto* Grip=CireGrip::FindWeapon(Asset))
     {
-        const CireGrip::FPlacement Placement=CireGrip::Place(Mesh,BoneName,*Grip,Size,static_cast<float>(Body->GetRelativeScale3D().X));
+        // blender-rig: an upscaled prop is placed (and the fingers curl) at its thinner cross-section scale, then stretched along
+        // its handle axis about the handle point, so the grip stays closed at the handle while the weapon grows.
+        const int32 AxisIndex=CireWeapons::PrincipalAxis(Grip->Axis);
+        if(Girth<.999f&&(AxisIndex==INDEX_NONE||Grip->bShield||!Grip->OffHand.IsNearlyZero()))Girth=1.f;
+        const float Thick=Size*Girth;Info.Girth=Girth;
+        CireGrip::FWeapon Pointed=*Grip;Pointed.Axis=CireWeapons::BusinessAxis(*Asset,*Grip); // blender-rig: business end on the thumb side
+        // blender-rig: an upscaled one-hander of 1.2 m or more no longer hangs from a straight arm at rest (its head went
+        // through the floor): it is carried upright at the side, tip forward, and the attack clips take it from there.
+        if(!Pointed.bCarry&&!Pointed.bShield&&!Pointed.bAmmo&&Pointed.OffHand.IsNearlyZero()&&Girth<.999f&&Info.LengthCm>=120.f)
+        {Pointed.bCarry=true;Pointed.CarryAt=FVector(.24f,-.08f,.72f);Pointed.CarryUp=FVector(.45f,.2f,1.f);}
+        const CireGrip::FPlacement Placement=CireGrip::Place(Mesh,BoneName,Pointed,Thick,static_cast<float>(Body->GetRelativeScale3D().X));
         if(Placement.bValid)
         {
             Part->SetAbsolute(false,false,false);
@@ -322,7 +367,9 @@ UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FStr
             Info.Mode=TEXT("bind");Info.Bone=Placement.Bone;
         }
         // weapon-grips: a body playing Fab clips holds the prop the way the clip was authored (CireWeaponSockets).
-        if(!PlaceAuthored(Hero,*Part,*Grip,BoneName,Size,bPrimary,Info)&&Placement.bValid)CireGrip::AddToHands(Mesh,Placement,GripHands);
+        if(!PlaceAuthored(Hero,*Part,*Grip,BoneName,Thick,bPrimary,Info)&&Placement.bValid)CireGrip::AddToHands(Mesh,Placement,GripHands);
+        if(Girth<.999f&&Info.Mode!=TEXT("offset"))Part->SetRelativeTransform(CireWeapons::HandleStretch(*Grip,1.f/Girth)*Part->GetRelativeTransform());
+        else if(Girth<.999f)Part->SetWorldScale3D(FVector(Size));
     }
     GripInfo.Add(Info);
     Part->SetVisibility(Body->IsVisible());Parts.Add(Part);return Part;
@@ -420,7 +467,9 @@ void UCireWeaponPresentation::Apply(ACireHero& Hero,int32 Archetype)
         if(CireGrip::SwapsHands(EquippedLoadout)&&!bAuthoredHand)Bone=Bone==TEXT("hand_l")?FName(TEXT("hand_r")):Bone==TEXT("hand_r")?FName(TEXT("hand_l")):Bone;
         float FabSize=Spec.Size;TSharedPtr<FJsonObject> PropMaterials;bool bProfileProp=false;
         const FString Mesh=CireWeaponFab::ResolveMesh(Profile,Spec.Token,Spec.Asset,FabSize,PropMaterials,bProfileProp); // fab-integration, paladin-hq
-        auto* Part=Attach(Hero,Mesh,Bone,Spec.Offset,Spec.Rotation,FabSize,Spec.Role==TEXT("primary"));if(!Part)continue;
+        const float FabFactor=Spec.Size>0.f?FabSize/Spec.Size:1.f;
+        auto* Part=Attach(Hero,Mesh,Bone,Spec.Offset,Spec.Rotation,FabSize,Spec.Role==TEXT("primary"),Spec.Girth,Spec.MaxBodyFraction,Spec.BaseSize*FabFactor);if(!Part)continue;
+        if(!GripInfo.IsEmpty()&&GripInfo.Last().Part.Get()==Part)GripInfo.Last().SizeClass=Spec.SizeClass; // blender-rig
         if(PropMaterials.IsValid())UCireChampionArt::ApplyMaterialSpec(Part,PropMaterials,&Hero); // paladin-hq
         if(bProfileProp)Part->SetForcedLodModel(1); // paladin-hq: hero props stay on LOD 0 (the set's shield has broken reduction LODs)
         if(Spec.bHideOnRelease)Part->ComponentTags.Add(ReleaseTag);
@@ -507,6 +556,32 @@ void Clearance(const USkeletalMeshComponent& Body,const UStaticMeshComponent& Pa
     }
 }
 }
+int32 CireWeapons::PrincipalAxis(const FVector& Axis)
+{
+    const FVector A=Axis.GetSafeNormal().GetAbs();
+    for(int32 I=0;I<3;++I)if(A[I]>.99)return I;
+    return INDEX_NONE;
+}
+FTransform CireWeapons::HandleStretch(const CireGrip::FWeapon& Grip,float Factor)
+{
+    const int32 I=PrincipalAxis(Grip.Axis);
+    if(I==INDEX_NONE||!FMath::IsFinite(Factor)||Factor<=0.f)return FTransform::Identity;
+    FVector K=FVector::OneVector;K[I]=Factor;
+    return FTransform(FQuat::Identity,Grip.Handle-Grip.Handle*K,K);
+}
+FVector CireWeapons::BusinessAxis(const UStaticMesh& Mesh,const CireGrip::FWeapon& Grip)
+{
+    const FVector Axis=Grip.Axis.GetSafeNormal();
+    if(Grip.bShield||Grip.bAmmo||Axis.IsNearlyZero())return Axis;
+    const FBox Box=Mesh.GetBoundingBox();
+    double Far=-1.e9,Near=1.e9;
+    for(int32 I=0;I<8;++I)
+    {
+        const FVector Corner((I&1)?Box.Max.X:Box.Min.X,(I&2)?Box.Max.Y:Box.Min.Y,(I&4)?Box.Max.Z:Box.Min.Z);
+        const double D=FVector::DotProduct(Corner-Grip.Handle,Axis);Far=FMath::Max(Far,D);Near=FMath::Min(Near,D);
+    }
+    return -Near>2.0*FMath::Max(Far,1.0)?-Axis:Axis;
+}
 FString CireWeapons::DescribeGrips(const ACireHero& Hero)
 {
     const auto* Weapons=Hero.FindComponentByClass<UCireWeaponPresentation>();
@@ -532,6 +607,30 @@ FString CireWeapons::DescribeGrips(const ACireHero& Hero)
         if(!Part||!Part->GetStaticMesh())continue;
         Out+=FString::Printf(TEXT(" | %s@%s mode=%s bindTipDev=%.0f bindEdgeDev=%.0f len=%.0fcm(%.2fxbody) twoHand=%d hidden=%d"),*Part->GetStaticMesh()->GetName(),*Part->GetAttachSocketName().ToString(),
             *Info.Mode,Info.TipDeviationDeg,Info.EdgeDeviationDeg,Info.LengthCm,Info.LengthCm/Height,Info.bTwoHand?1:0,Part->bHiddenInGame?1:0);
+        Out+=FString::Printf(TEXT(" size=%.2f base=%.2f girth=%.2f class=%s"),Info.Size,Info.BaseSize,Info.Girth,Info.SizeClass.IsEmpty()?TEXT("-"):*Info.SizeClass); // blender-rig
+        if(const CireGrip::FWeapon* G=CireGrip::FindWeapon(Part->GetStaticMesh());G&&!G->bAmmo&&!G->bShield)
+        {   // blender-rig: where the business end points in the champion's frame (forward, right, up)
+            const FTransform Frame=CireWeaponSockets::PropFrame(*Part->GetStaticMesh(),G->Handle,G->Axis,G->Edge,false);
+            const FVector Tip=Part->GetComponentTransform().TransformVectorNoScale(Frame.GetRotation().GetAxisZ()).GetSafeNormal();
+            Out+=FString::Printf(TEXT(" tipF=%.2f tipR=%.2f tipU=%.2f"),FVector::DotProduct(Tip,Hero.GetActorForwardVector()),FVector::DotProduct(Tip,Hero.GetActorRightVector()),Tip.Z);
+            if(!G->OffHand.IsNearlyZero()&&!G->OffAxis.IsNearlyZero())
+            {   // muzzle / fore-grip direction (crossbow, blunderbuss, launchers)
+                const FVector M=Part->GetComponentTransform().TransformVectorNoScale(G->OffAxis).GetSafeNormal();
+                Out+=FString::Printf(TEXT(" offF=%.2f offU=%.2f"),FVector::DotProduct(M,Hero.GetActorForwardVector()),M.Z);
+            }
+        }
+        {   // blender-rig: the handle point stays in the closed fist after scaling (palm grip point vs. prop handle, world cm)
+            const FString Socket=Part->GetAttachSocketName().ToString();
+            const int32 Side=Socket.EndsWith(TEXT("_r"))?1:Socket.EndsWith(TEXT("_l"))?0:INDEX_NONE;
+            const CireGrip::FWeapon* Grip=CireGrip::FindWeapon(Part->GetStaticMesh());
+            const auto& P=Side==INDEX_NONE?Weapons->GripHands.Pose[0]:Weapons->GripHands.Pose[Side];
+            if(Side!=INDEX_NONE&&Grip&&!Grip->bShield&&!Grip->bAmmo&&P.bValid&&P.Hand!=INDEX_NONE&&Socket.StartsWith(TEXT("hand_")))
+            {
+                const FVector Palm=(P.GripInHand*Body->GetBoneTransform(P.Hand)).GetLocation();
+                const FVector Handle=Part->GetComponentTransform().TransformPosition(Grip->Handle);
+                Out+=FString::Printf(TEXT(" handleGap=%.1fcm"),FVector::Dist(Palm,Handle));
+            }
+        }
         if(Info.LengthCm>=100.f&&Part->GetAttachSocketName().ToString().StartsWith(TEXT("hand_")))
         {float Torso,Legs;Clearance(*Body,*Part,Torso,Legs);Out+=FString::Printf(TEXT(" clearTorso=%.0fcm clearLegs=%.0fcm"),Torso,Legs);}
     }

@@ -205,6 +205,9 @@ def validate_loadouts(models):
         for p in row["parts"]:
             require(p["asset"] in known and p["bone"] in ("hand_l","hand_r","pelvis","spine_03"),"Unknown prop or bone")
             size=p.get("scale",1);require(math.isfinite(size) and .35<=size<=2,"Bad weapon scale")
+            if "sizeClass" in p:  # blender-rig: WeaponLoadouts.json sizeClasses (runtime scale = scale * class scale, <= 4)
+                cls=data.get("sizeClasses",{}).get(p["sizeClass"]);require(cls is not None,"Unknown size class")
+                require(size*cls["scale"]<=4 and .4<=cls.get("girth",1)<=1,"Bad size class")
             for field,maximum in (("offsetCm",100),("rotation",360)):
                 v=p.get(field,[0,0,0]);require(len(v)==3 and all(math.isfinite(n) and abs(n)<=maximum for n in v),"Invalid grip vector")
     for profile,preset in data["profiles"].items():
