@@ -3,6 +3,8 @@
 #include "CireGame.h"
 #include "CireCombatEvents.h"
 #include "CireSelection.h"
+#include "CireArenaPortal.h" // arena-portal
+#include "CireArenas.h" // arena-portal
 #include "CireChampionArt.h"
 #include "Animation/AnimSequence.h"
 #include "Animation/AnimSingleNodeInstance.h"
@@ -192,10 +194,39 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
         }
         UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_SERVER_SELECTION_PASS replicated_selection_rings=0"));
         Mode->Clock.BeginIntermission();Mode->ChangePhase(1);
+        // arena-portal: the shadow portals open beside both human champions (the lead-time trigger is skipped here).
+        const int32 Opened=CireArenaPortal::ServerOpen(Mode);
+        const auto Entry=CireArenaPortal::Portals(Mode->GetWorld(),0);
+        bool bPortalsRight=Opened==2&&Entry.Num()==2;
+        for(const auto* Portal:Entry)bPortalsRight&=Portal->ArenaIndex==Mode->ArenaIndex&&(Portal->TeamId==0||Portal->TeamId==1)&&
+            FVector::Dist2D(Portal->GetActorLocation(),Players[Portal->TeamId]->GetActorLocation())<700.f;
+        if(!bPortalsRight){Fail(TEXT("SERVER"),TEXT("shadow portals did not open beside both champions"));Server.bDone=true;return true;}
+        UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_SERVER_PORTAL_OPEN_PASS portals=%d arena=%s"),Opened,*CireArenas::Get(Mode->ArenaIndex)->Id.ToString());
         State->Announcement=TEXT("CIRE_INTERFACE_PREP");State->ForceNetUpdate();
         Server.Stage=2;Server.StageStarted=Now;
     } else if (Server.Stage==2 && Server.Acks[1]==3) {
+        // arena-portal: Ember's champion walks into its portal (a real trigger overlap) during prep.
+        ACireArenaPortal* Mine=nullptr;
+        for(auto* Portal:CireArenaPortal::Portals(Mode->GetWorld(),0))if(Portal->TeamId==0)Mine=Portal;
+        if(!Mine){Fail(TEXT("SERVER"),TEXT("Ember portal missing"));Server.bDone=true;return true;}
+        Players[0]->SetActorLocation(Mine->GetActorLocation()+FVector(0,0,Players[0]->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+5),false,nullptr,ETeleportType::TeleportPhysics);
+        Server.Stage=20;Server.StageStarted=Now;
+    } else if (Server.Stage==20) {
+        const bool bStaged=CireArenaPortal::IsStaged(Players[0])&&CireArenas::InBounds(Mode->GetWorld(),Players[0]->GetActorLocation());
+        if(!bStaged){if(Now-Server.StageStarted>3){Fail(TEXT("SERVER"),TEXT("walking into the portal did not take the champion to the arena"));Server.bDone=true;}return true;}
+        UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_SERVER_PORTAL_ENTER_PASS hero=%s at=%s"),*Players[0]->HeroName,*Players[0]->GetActorLocation().ToString());
         Mode->Clock.Advance(60);Mode->ChangePhase(2);
+        // Everyone else is drawn through: every drafted champion (2 humans + 8 bots) now stands in the chosen arena.
+        int32 InArena=0,Drafted=0;
+        for(auto* H:Mode->Heroes)if(IsValid(H)&&H->bDrafted){++Drafted;InArena+=CireArenas::InBounds(Mode->GetWorld(),H->GetActorLocation())?1:0;}
+        int32 Collapsing=0;for(auto* Portal:CireArenaPortal::Portals(Mode->GetWorld(),0))Collapsing+=Portal->bCollapsing?1:0;
+        const int32 Arrivals=CireArenaPortal::Portals(Mode->GetWorld(),1).Num();
+        if(Drafted!=10||InArena!=Drafted||Collapsing!=2||Arrivals!=2||CireArenaPortal::IsStaged(Players[0])) {
+            UE_LOG(LogCireInterface,Error,TEXT("CIRE_INTERFACE_SERVER_PORTAL_OBSERVED drafted=%d in_arena=%d collapsing=%d arrivals=%d"),Drafted,InArena,Collapsing,Arrivals);
+            Fail(TEXT("SERVER"),TEXT("the portal did not pull every champion into the chosen arena"));Server.bDone=true;return true;
+        }
+        UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_SERVER_PORTAL_PASS arena=%s pulled=%d walked_in=1 entry_collapsed=%d arrival_rifts=%d"),
+            *CireArenas::Get(Mode->ArenaIndex)->Id.ToString(),InArena,Collapsing,Arrivals);
         State->Announcement=TEXT("CIRE_INTERFACE_ARENA");State->ForceNetUpdate();
         Server.Stage=3;Server.StageStarted=Now;
     } else if (Server.Stage==3) {
@@ -360,8 +391,20 @@ bool CireInterfaceProbe::TickClient(ACireController* Controller) {
         }
     } else if(Client.Step==3&&State->Announcement==TEXT("CIRE_INTERFACE_PREP")&&Now-Client.StepStarted>1.1) {
         if(State->Phase!=1||Opposing!=0){Abort(TEXT("preparation realm visibility wrong"));return true;}
+        // arena-portal: this client sees its own shadow portal, themed and named after the replicated arena pick.
+        const ACireArenaPortal* Mine=nullptr;
+        for(auto* Portal:CireArenaPortal::Portals(Controller->GetWorld(),0))if(Portal->TeamId==Hero->TeamId)Mine=Portal;
+        if(!Mine||!Mine->bVisualsBuilt)return true; // still replicating
+        if(Mine->ArenaIndex!=State->ArenaIndex||Mine->LabelText!=CireArenas::DisplayName(State->ArenaIndex)||!Mine->bHasView||!Mine->DiscMID||
+            !Mine->Motes||Mine->Motes->GetInstanceCount()!=CireArenaPortal::LookFor(State->ArenaIndex).MoteCount||
+            FVector::Dist2D(Mine->GetActorLocation(),Hero->GetActorLocation())>700.f){Abort(TEXT("shadow portal visuals do not match the chosen arena"));return true;}
+        UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_CLIENT_PORTAL_OPEN_PASS team=%d arena=\"%s\" view=1 motes=%d"),Hero->TeamId,*Mine->LabelText,Mine->Motes->GetInstanceCount());
         Controller->ServerSendChat(TEXT("CIRE_PROBE_ACK_PREP"),true);Client.Step=4;Client.StepStarted=Now;
-    } else if(Client.Step==4&&State->Announcement==TEXT("CIRE_INTERFACE_ARENA")&&Own==5&&Opposing==5) {
+    } else if(Client.Step==4&&State->Announcement==TEXT("CIRE_INTERFACE_ARENA")&&Own==5&&Opposing==5&&
+        CireArenas::InBounds(Controller->GetWorld(),Hero->GetActorLocation())&&!CireArenaPortal::Portals(Controller->GetWorld(),1).IsEmpty()) {
+        // arena-portal: drawn through into the chosen arena (the arrival rift is there too).
+        if(!CireArenas::Stage(Controller->GetWorld())||!CireArenas::Stage(Controller->GetWorld())->bShown){Abort(TEXT("arrived but the arena is not shown"));return true;}
+        if(!Client.Enemy.IsValid())UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_CLIENT_PORTAL_PASS team=%d in_arena=1 arena=\"%s\" arrival_rift=1"),Hero->TeamId,*CireArenas::DisplayName(State->ArenaIndex));
         for(TActorIterator<ACireHero> It(Controller->GetWorld());It;++It)
             if(It->TeamId!=Hero->TeamId&&!It->bBot&&Hero->IsHostile(*It)) {
                 Client.Enemy=*It;Controller->ServerAction(0,0,*It);Client.Step=5;Client.StepStarted=Now;break;

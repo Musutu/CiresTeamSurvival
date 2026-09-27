@@ -3,6 +3,7 @@
 #include "CireLanePath.h"
 #include "CireTownMap.h"
 #include "CireConstruct.h"
+#include "CireArenaPortal.h" // arena-portal
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -30,7 +31,7 @@ void UpdateVisibility(AActor* Subject) {
     // The server maintains physical realm boundaries as well as damage restrictions.
     if (auto* Hero = Cast<ACireHero>(Subject); Hero && Hero->HasAuthority() && Hero->TeamId >= 0) {
         auto* Mode = Hero->GetWorld()->GetAuthGameMode<ACireGameMode>();
-        if (Mode && Mode->Clock.Phase() != Cires::MatchPhase::Arena) {
+        if (Mode && Mode->Clock.Phase() != Cires::MatchPhase::Arena && !CireArenaPortal::IsStaged(Hero)) { // arena-portal: stepped through early
             const FVector Location = Hero->GetActorLocation();
             if (!CireLanePath::Contains(Hero->GetWorld(),Hero->TeamId,Location)) {
                 FVector Safe=CireLanePath::ClampToLane(Hero->GetWorld(),Hero->TeamId,Location,80);

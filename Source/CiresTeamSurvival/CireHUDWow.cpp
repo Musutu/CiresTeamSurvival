@@ -1315,6 +1315,7 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         Plate(*It,It->GetDisplayName(),It->Health,It->MaxHealth,It->OriginTeam==Hero->TeamId?Friendly*.85f:Hostile,It->ConstructSpec.Height*.5f+25,nullptr);
     LayoutAndDraw();
     DrawVendorPlates(Hero);
+    DrawPortalPlates(Hero); // arena-portal
 }
 
 // vendors: WoW-style merchant plates: emblem, keeper name in the shop colour, <Shop name> under it, and the

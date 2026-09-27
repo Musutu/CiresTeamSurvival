@@ -6,6 +6,47 @@
   60000,
   0
  ],
+ "portal": {
+  "leadSeconds": 12,
+  "radius": 150,
+  "height": 175,
+  "offset": 330,
+  "arrivalSeconds": 4,
+  "returnSeconds": 6,
+  "discMaterial": "/Game/Arenas/Portal/M_ArenaPortal.M_ArenaPortal",
+  "moteMaterial": "/Game/Arenas/Portal/M_ArenaPortalMote.M_ArenaPortalMote",
+  "vfx": {
+   "ring": {
+    "candidates": [
+     "/Game/Shadow_Magic/VFX_Niagara/NS_Shadow_Magic_Area4.NS_Shadow_Magic_Area4"
+    ],
+    "scale": 1.0
+   },
+   "base": {
+    "candidates": [
+     "/Game/Shadow_Magic/VFX_Niagara/NS_Shadow_Magic_Area2.NS_Shadow_Magic_Area2"
+    ],
+    "scale": 0.8
+   },
+   "open": {
+    "candidates": [
+     "/Game/Shadow_Magic/VFX_Niagara/NS_Shadow_Magic_Shield_Splash2.NS_Shadow_Magic_Shield_Splash2"
+    ],
+    "scale": 1.0
+   },
+   "enter": {
+    "candidates": [
+     "/Game/Shadow_Magic/VFX_Niagara/NS_Shadow_Magic_Shield_Splash1.NS_Shadow_Magic_Shield_Splash1"
+    ],
+    "scale": 1.0
+   }
+  },
+  "sounds": {
+   "open": "arena_portal_open",
+   "loop": "arena_portal_loop",
+   "enter": "arena_portal_enter"
+  }
+ },
  "slots": {
   "proxy_box": {
    "candidates": [],
@@ -3753,6 +3794,26 @@
      0.97,
      0.92
     ]
+   },
+   "portal": {
+    "view": "/Game/Arenas/Portal/T_PortalView_sunlit_fields.T_PortalView_sunlit_fields",
+    "tint": [
+     1.0,
+     0.62,
+     0.2
+    ],
+    "accent": [
+     1.0,
+     0.84,
+     0.46
+    ],
+    "motes": "wheat",
+    "moteColor": [
+     1.0,
+     0.78,
+     0.32
+    ],
+    "moteCount": 64
    }
   },
   {
@@ -5328,6 +5389,26 @@
      1.0,
      1.03
     ]
+   },
+   "portal": {
+    "view": "/Game/Arenas/Portal/T_PortalView_black_shore.T_PortalView_black_shore",
+    "tint": [
+     0.5,
+     0.78,
+     1.0
+    ],
+    "accent": [
+     0.8,
+     0.92,
+     1.0
+    ],
+    "motes": "snow",
+    "moteColor": [
+     0.92,
+     0.97,
+     1.0
+    ],
+    "moteCount": 72
    }
   },
   {
@@ -6426,6 +6507,26 @@
      1.0,
      0.96
     ]
+   },
+   "portal": {
+    "view": "/Game/Arenas/Portal/T_PortalView_redrock_canyon.T_PortalView_redrock_canyon",
+    "tint": [
+     1.0,
+     0.34,
+     0.12
+    ],
+    "accent": [
+     1.0,
+     0.62,
+     0.38
+    ],
+    "motes": "sand",
+    "moteColor": [
+     1.0,
+     0.42,
+     0.18
+    ],
+    "moteCount": 80
    }
   },
   {
@@ -7525,6 +7626,26 @@
     "vignette": 0.5,
     "lightFunction": "/Game/Arenas/Materials/MI_Arena_Dapple.MI_Arena_Dapple",
     "lightFunctionScale": 900.0
+   },
+   "portal": {
+    "view": "/Game/Arenas/Portal/T_PortalView_hornbeam_glade.T_PortalView_hornbeam_glade",
+    "tint": [
+     0.42,
+     0.9,
+     0.3
+    ],
+    "accent": [
+     0.7,
+     0.95,
+     0.5
+    ],
+    "motes": "leaves",
+    "moteColor": [
+     0.62,
+     0.85,
+     0.25
+    ],
+    "moteCount": 44
    }
   },
   {
@@ -8791,6 +8912,26 @@
       "radius": 4160
      }
     ]
+   },
+   "portal": {
+    "view": "/Game/Arenas/Portal/T_PortalView_drowned_sanctum.T_PortalView_drowned_sanctum",
+    "tint": [
+     0.16,
+     0.86,
+     0.88
+    ],
+    "accent": [
+     0.5,
+     1.0,
+     0.95
+    ],
+    "motes": "bubbles",
+    "moteColor": [
+     0.55,
+     0.95,
+     1.0
+    ],
+    "moteCount": 56
    }
   },
   {
@@ -11229,6 +11370,26 @@
       "radius": 2880
      }
     ]
+   },
+   "portal": {
+    "view": "/Game/Arenas/Portal/T_PortalView_star_station.T_PortalView_star_station",
+    "tint": [
+     0.4,
+     0.55,
+     1.0
+    ],
+    "accent": [
+     0.62,
+     0.86,
+     1.0
+    ],
+    "motes": "stars",
+    "moteColor": [
+     0.85,
+     0.92,
+     1.0
+    ],
+    "moteCount": 70
    }
   }
  ]

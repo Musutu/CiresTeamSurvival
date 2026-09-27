@@ -34,6 +34,7 @@ struct FGallery
     bool bDebugView = false; FVector DebugFrom = FVector::ZeroVector, DebugTo = FVector::ZeroVector;
     double Started = 0, StageAt = 0, FrameSum = 0; int32 FrameCount = 0;
     bool bPass = true, bDone = false;
+    bool bPortalView = false; // arena-portal: -CireArenaGalleryPortalView renders one square view per arena for its shadow portal
 } G;
 
 void Finish(bool bPass)
@@ -93,7 +94,7 @@ void BeginArena(ACireGameMode* Mode)
     const FVector Mid[] = {FVector(-H.X * .35f, H.Y * .25f, 0), FVector(H.X * .25f, -H.Y * .15f, 0), FVector(-H.X * .5f, -H.Y * .45f, 0),
                            FVector(H.X * .45f, H.Y * .4f, 0), FVector(-H.X * .15f, -H.Y * .7f, 0), FVector(H.X * .6f, -H.Y * .6f, 0)};
     for (int32 I = 0; I < 6; ++I) Place(Extra(World, I), O + Mid[I], I % 2 == 0 ? 0.f : 180.f);
-    G.Stage = 0; G.StageAt = FPlatformTime::Seconds(); G.FrameSum = 0; G.FrameCount = 0;
+    G.Stage = G.bPortalView ? 10 : 0; G.StageAt = FPlatformTime::Seconds(); G.FrameSum = 0; G.FrameCount = 0;
     UE_LOG(LogCireArenaGallery, Display, TEXT("CIRE_ARENA_GALLERY_ARENA index=%d id=%s"), Index, *A->Id.ToString());
 }
 
@@ -137,6 +138,7 @@ bool CireArenaGallery::Initialize(ACireGameMode* Mode)
         TArray<FString> N; View.ParseIntoArray(N, TEXT("_"));
         if (N.Num() == 6) { G.bDebugView = true; G.DebugFrom = FVector(FCString::Atof(*N[0]), FCString::Atof(*N[1]), FCString::Atof(*N[2])); G.DebugTo = FVector(FCString::Atof(*N[3]), FCString::Atof(*N[4]), FCString::Atof(*N[5])); }
     }
+    G.bPortalView = FParse::Param(FCommandLine::Get(), TEXT("CireArenaGalleryPortalView"));
     Mode->bBotsFilled = true; Mode->BotFillTimer = MAX_flt; Mode->WaveTimer = MAX_flt;
     if (G.Arenas.IsEmpty()) { UE_LOG(LogCireArenaGallery, Error, TEXT("CIRE_ARENA_GALLERY_ERROR no arenas match")); Finish(false); }
     return true;
@@ -158,7 +160,7 @@ bool CireArenaGallery::Tick(ACireGameMode* Mode)
         Hero->GetCharacterMovement()->StopMovementImmediately(); Hero->GetCharacterMovement()->DisableMovement();
         C->SetIgnoreMoveInput(true); C->SetIgnoreLookInput(true); C->bShowMouseCursor = false;
         G.Camera = World->SpawnActor<ACameraActor>();
-        auto* Cam = G.Camera->GetCameraComponent(); Cam->SetAspectRatio(16.f / 9.f); Cam->bConstrainAspectRatio = true;
+        auto* Cam = G.Camera->GetCameraComponent(); Cam->SetAspectRatio(G.bPortalView ? 1.f : 16.f / 9.f); Cam->bConstrainAspectRatio = true;
         Cam->PostProcessSettings.bOverride_MotionBlurAmount = true; Cam->PostProcessSettings.MotionBlurAmount = 0;
         C->SetViewTarget(G.Camera.Get());
         // Put the authoritative clock in the arena phase (the gallery holds the match tick, so it stays there):
@@ -209,6 +211,17 @@ bool CireArenaGallery::Tick(ACireGameMode* Mode)
         if (Age > 1 && Age < 1.3) IStreamingManager::Get().StreamAllResources(1.f);
         if (Age > 3) { Capture(TEXT("plan")); G.Stage = G.bDebugView ? 4 : 5; G.StageAt = Now; }
     }
+    else if (G.Stage == 10)
+    {
+        // arena-portal: the view through the shadow portal, from behind the Ember spawn line at eye height toward the
+        // central cover, champions out of frame (they are placed mid-field for the other shots).
+        G.Controller->GetHUD()->bShowHUD = false;
+        for (auto& E : G.Extras) if (E.IsValid()) E->SetActorHiddenInGame(true);
+        if (APawn* Player = G.Controller->GetPawn()) Player->SetActorHiddenInGame(true);
+        Look(O + FVector(-H.X * .92f, H.Y * .18f, 420), O + FVector(H.X * .05f, -H.Y * .05f, 120), 78);
+        if (Age > 1 && Age < 1.3) IStreamingManager::Get().StreamAllResources(1.f);
+        if (Age > 4) { Capture(TEXT("portalview")); G.Stage = 5; G.StageAt = Now; }
+    }
     else if (G.Stage == 4)
     {
         Look(O + G.DebugFrom, O + G.DebugTo, 60);
@@ -223,7 +236,7 @@ bool CireArenaGallery::Tick(ACireGameMode* Mode)
             CireArenas::ReleaseForce(World);
             bool bFiles = true;
             for (const FShot& S : G.Shots) bFiles &= IFileManager::Get().FileSize(*S.File) > 10000;
-            Finish(G.bPass && bFiles && G.Shots.Num() == G.Arenas.Num() * (G.bDebugView ? 5 : 4));
+            Finish(G.bPass && bFiles && G.Shots.Num() == G.Arenas.Num() * (G.bPortalView ? 1 : G.bDebugView ? 5 : 4));
             return true;
         }
         BeginArena(Mode);

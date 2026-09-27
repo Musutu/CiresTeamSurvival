@@ -46,6 +46,7 @@
 #include "CireSignatureSkills.h" // new-champions
 #include "CirePets.h" // pets
 #include "CireVendors.h" // vendors
+#include "CireArenaPortal.h" // arena-portal
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireExpansion,Log,All);
@@ -117,6 +118,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireProgression::RunSmoke(Mode)&&Good; // progression-shop: items, shop, loot, gating, teleport, NPC pause
     Good=CireVendors::RunSmoke(Mode)&&Good; // vendors: merchants, item split, placements, stalls, interact range
     Good=CireArenas::RunSmoke(Mode)&&Good; // arenas: data, symmetry, paths, random no-repeat pick, build and cleanup
+    Good=CireArenaPortal::RunTests(Mode->GetWorld())&&Good; // arena-portal: per-arena looks, view textures, cues, visuals open/collapse
     Good=CireWaveDirector::RunTests(Mode)&&Good; // wave-director: data, templates, live edits, escort, stuck/failsafe, neutral packs, bots
     Good=CireNav::RunTests(Mode)&&Good; // nav-paths: navmesh coverage, paths, prop carving, arenas, path editor
     Good=CireRouteEditor::RunTests(Mode)&&Good; // dev-route-tools: 1..16 packs, map layout model, mirroring, validation

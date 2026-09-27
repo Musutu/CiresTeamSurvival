@@ -750,6 +750,41 @@ def validate(arena):
     return errs, frac, tall
 
 
+# ------------------------------------------------------------ shadow portals (CireArenaPortal, Docs/Arenas.md "Shadow portals")
+# The dark rift that opens beside every champion at the end of the prep minute. Its inner view (a square capture of the
+# arena, Tools/RunArenaGallery.py --portal-views, imported by Tools/BuildArenaPortalContent.py), tint and motes tell the
+# players where they are going before they step through. The Shadow_Magic Niagara layers are an optional local Fab overlay.
+SHADOW = "/Game/Shadow_Magic/VFX_Niagara/"
+PORTAL = {
+    "leadSeconds": 12, "radius": 150, "height": 175, "offset": 330, "arrivalSeconds": 4, "returnSeconds": 6,
+    "discMaterial": "/Game/Arenas/Portal/M_ArenaPortal.M_ArenaPortal",
+    "moteMaterial": "/Game/Arenas/Portal/M_ArenaPortalMote.M_ArenaPortalMote",
+    "vfx": {
+        "ring": {"candidates": [SHADOW + "NS_Shadow_Magic_Area4.NS_Shadow_Magic_Area4"], "scale": 1.0},
+        "base": {"candidates": [SHADOW + "NS_Shadow_Magic_Area2.NS_Shadow_Magic_Area2"], "scale": 0.8},
+        "open": {"candidates": [SHADOW + "NS_Shadow_Magic_Shield_Splash2.NS_Shadow_Magic_Shield_Splash2"], "scale": 1.0},
+        "enter": {"candidates": [SHADOW + "NS_Shadow_Magic_Shield_Splash1.NS_Shadow_Magic_Shield_Splash1"], "scale": 1.0},
+    },
+    "sounds": {"open": "arena_portal_open", "loop": "arena_portal_loop", "enter": "arena_portal_enter"},
+}
+
+
+def portal_view(aid):
+    return f"/Game/Arenas/Portal/T_PortalView_{aid}.T_PortalView_{aid}"
+
+
+PORTAL_LOOKS = {
+    "sunlit_fields": {"tint": [1.0, 0.62, 0.20], "accent": [1.0, 0.84, 0.46], "motes": "wheat", "moteColor": [1.0, 0.78, 0.32], "moteCount": 64},
+    "black_shore": {"tint": [0.50, 0.78, 1.0], "accent": [0.80, 0.92, 1.0], "motes": "snow", "moteColor": [0.92, 0.97, 1.0], "moteCount": 72},
+    "redrock_canyon": {"tint": [1.0, 0.34, 0.12], "accent": [1.0, 0.62, 0.38], "motes": "sand", "moteColor": [1.0, 0.42, 0.18], "moteCount": 80},
+    "hornbeam_glade": {"tint": [0.42, 0.90, 0.30], "accent": [0.70, 0.95, 0.50], "motes": "leaves", "moteColor": [0.62, 0.85, 0.25], "moteCount": 44},
+    "drowned_sanctum": {"tint": [0.16, 0.86, 0.88], "accent": [0.50, 1.0, 0.95], "motes": "bubbles", "moteColor": [0.55, 0.95, 1.0], "moteCount": 56},
+    "star_station": {"tint": [0.40, 0.55, 1.0], "accent": [0.62, 0.86, 1.0], "motes": "stars", "moteColor": [0.85, 0.92, 1.0], "moteCount": 70},
+}
+for _a in ARENAS:
+    _a.d["portal"] = {"view": portal_view(_a.d["id"]), **PORTAL_LOOKS[_a.d["id"]]}
+
+
 def main() -> int:
     bad = False
     for x in ARENAS:
@@ -766,7 +801,7 @@ def main() -> int:
                     "All arenas share the footprint at 'origin'; arena-local X runs from Ember (west) to Dusk (east). Piece rows: "
                     "[slot, x, y, z, yaw, scaleX, scaleY, scaleZ, blocker]. Blockers get an invisible collision proxy matching the slot footprint "
                     "and must be mirror-symmetric; slots list candidates in priority order (Fab packs, then CC0/original, then an engine shape).",
-           "origin": [0, 60000, 0], "slots": SLOTS, "arenas": [x.d for x in ARENAS]}
+           "origin": [0, 60000, 0], "portal": PORTAL, "slots": SLOTS, "arenas": [x.d for x in ARENAS]}
     OUT.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     total = sum(len(x.d["pieces"]) for x in ARENAS)
     print(f"CIRE_ARENA_AUTHOR_PASS arenas={len(ARENAS)} slots={len(SLOTS)} pieces={total} bytes={OUT.stat().st_size}")

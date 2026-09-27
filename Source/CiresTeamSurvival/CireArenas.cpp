@@ -24,6 +24,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "CireNav.h" // nav-paths
+#include "CireArenaPortal.h" // arena-portal
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireArenas, Log, All);
 
@@ -547,13 +548,13 @@ FName CireArenas::ActiveAmbience(const UWorld* World)
 {
     const auto* State = World ? World->GetGameState<ACireGameState>() : nullptr;
     const FArena* A = Current(World);
-    return A && State && State->Phase == 2 ? A->Ambience : NAME_None;
+    return A && State && (State->Phase == 2 || CireArenaPortal::LocalViewInArena(World)) ? A->Ambience : NAME_None; // arena-portal
 }
 FString CireArenas::ActiveMusic(const UWorld* World)
 {
     const auto* State = World ? World->GetGameState<ACireGameState>() : nullptr;
     const FArena* A = Current(World);
-    return A && State && State->Phase == 2 ? A->Music : FString();
+    return A && State && (State->Phase == 2 || CireArenaPortal::LocalViewInArena(World)) ? A->Music : FString(); // arena-portal
 }
 
 // =================================================================== server flow
@@ -903,7 +904,8 @@ void UCireArenaSubsystem::Tick(float DeltaTime)
     if (bForced) { Want = ForcedIndex; bShow = bForcedShow; }
     else if (const auto* State = World->GetGameState<ACireGameState>())
     {
-        if (State->Phase == 1 || State->Phase == 2) { Want = CireArenas::CurrentIndex(World); bShow = State->Phase == 2; }
+        // arena-portal: a champion that stepped through the shadow portal early sees the arena during the rest of prep
+        if (State->Phase == 1 || State->Phase == 2) { Want = CireArenas::CurrentIndex(World); bShow = State->Phase == 2 || CireArenaPortal::LocalViewInArena(World); }
     }
     Apply(Want, bShow);
 }

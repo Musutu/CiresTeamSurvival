@@ -56,6 +56,7 @@
 #include "CireNav.h" // nav-paths
 #include "CireArenas.h" // arenas
 #include "CireArenaGallery.h" // arenas
+#include "CireArenaPortal.h" // arena-portal
 #include "CireWaves.h" // wave-director
 #include "CireVendorGallery.h" // vendors
 
@@ -248,6 +249,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireBatchArtGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireEnvironmentGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireArenaGallery::Initialize(this); // arenas
+    if(!bFeedbackPreview)bFeedbackPreview = CireArenaPortal::GalleryInitialize(this); // arena-portal
     if(!bFeedbackPreview)bFeedbackPreview = CireOptionsGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireSpellGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireAuraGallery::Initialize(this); // aura-vfx
@@ -491,6 +493,7 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
         }
     }
     if(NewPhase!=1&&NewPhase!=2)CireArenas::Sync(GetWorld()); // arenas: recovery/survival/finish clean the arena up
+    CireArenaPortal::OnPhaseChanged(this,NewPhase); // arena-portal: collapse/pull (2), return rifts (4), clear (0/1)
     UE_LOG(LogCire,Display,TEXT("CIRE PHASE %d ROUND %d HEROES %d"),NewPhase,Clock.Round(),Heroes.Num());
 }
 void ACireGameMode::ResolveArena() {
@@ -517,6 +520,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireBatchArtGallery::Tick(this)) return;
     if(CireEnvironmentGallery::Tick(this)) return;
     if(CireArenaGallery::Tick(this)) return; // arenas
+    if(CireArenaPortal::GalleryTick(this)) return; // arena-portal
     if(CireBalanceLab::Tick(this,Dt)) return;
     if(CireOptionsGallery::Tick(this)) return;
     if(CireSpellGallery::Tick(this)) return;
@@ -570,6 +574,7 @@ void ACireGameMode::Tick(float Dt) {
         else ChangePhase(static_cast<int32>(Event.To));
     }
     S->Phase=static_cast<int32>(Clock.Phase()); S->SecondsLeft=static_cast<float>(Clock.RemainingSeconds()); S->Round=Clock.Round();
+    CireArenaPortal::TickServer(this); // arena-portal: shadow portals open as the prep minute runs down
     if(S->Phase==0) {
         Monsters.RemoveAll([](auto* M){return !IsValid(M);});
         // wave-director: spawn queue, stuck detection and the stall failsafe run before the
