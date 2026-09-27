@@ -40,7 +40,7 @@ def import_any(path: str | Path):
     before = set(bpy.data.objects)
     ext = path.suffix.lower()
     if ext == ".fbx":
-        bpy.ops.import_scene.fbx(filepath=str(path), use_anim=False, ignore_leaf_bones=True, automatic_bone_orientation=False,
+        bpy.ops.import_scene.fbx(filepath=str(path), use_anim=False, ignore_leaf_bones=False, automatic_bone_orientation=False,  # ignore_leaf_bones drops real leaves (head)
                                  use_prepost_rot=True)
     elif ext in (".glb", ".gltf"):
         bpy.ops.import_scene.gltf(filepath=str(path))
@@ -118,3 +118,17 @@ def angle_deg(a: Vector, b: Vector) -> float:
     if a.length < 1e-9 or b.length < 1e-9:
         return 0.0
     return math.degrees(a.angle(b))
+
+
+def export_static_fbx(path: str | Path, objects) -> Path:
+    """Static mesh FBX for UE (no armature), same unit/axis settings as export_ue_fbx."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in objects:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = objects[0]
+    bpy.ops.export_scene.fbx(filepath=str(path), use_selection=True, apply_scale_options="FBX_SCALE_UNITS", global_scale=1.0,
+                             axis_forward="-Y", axis_up="Z", mesh_smooth_type="FACE", object_types={"MESH"}, bake_anim=False,
+                             path_mode="COPY", embed_textures=False)
+    return path

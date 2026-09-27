@@ -144,7 +144,9 @@ void MeasureBody(FChecker& C, const FString& Tag, USkeletalMeshComponent* Body, 
         }
         else
         {
-            C.Check(FMath::Abs(Angle - FMath::Abs(W->TiltDeg)) <= 6.0, FString::Printf(TEXT("%s handle orientation %.1f deg (tilt %.0f)"), *Where, Angle, W->TiltDeg));
+            // blender-rig: a carried stock prop may be spun muzzle-forward about its handle (same line, reversed).
+            const double Held = W->bCarry && !W->OffHand.IsNearlyZero() ? FMath::Min(Angle, 180.0 - Angle) : Angle;
+            C.Check(FMath::Abs(Held - FMath::Abs(W->TiltDeg)) <= 6.0, FString::Printf(TEXT("%s handle orientation %.1f deg (tilt %.0f)"), *Where, Held, W->TiltDeg));
             // blender-rig: the blade/head leaves the fist on the thumb side (Eric: "sometimes the weapon isn't the right
             // direction"): the prop's far end along the handle is where the grip frame's tip points.
             const FTransform Tip = CireWeaponSockets::PropFrame(*Part->GetStaticMesh(), W->Handle, W->Axis, W->Edge, false);
@@ -257,12 +259,20 @@ bool CireGrip::RunSmoke(ACireGameMode* Mode)
                 FString::Printf(TEXT("%s %s takes the %s clip grip (mode %s)"), *Tag, *Info.Part->GetStaticMesh()->GetName(), *Weapons->GetGripSet(), *Info.Mode));
         }
         USkeletalMeshComponent* Mesh = H->GetMesh();
-        // Idle.
-        H->ChampionArt->UpdateVisuals(*H, 0.f); Refresh(Mesh);
+        // Idle (a few presentation ticks: the carried-stock muzzle check runs on the settled carry).
+        for (int32 Tick = 0; Tick < 6; ++Tick) { H->ChampionArt->UpdateVisuals(*H, 0.f); Refresh(Mesh); }
         auto* Anim = Cast<UCireCombatAnimInstance>(Mesh->GetAnimInstance());
         C.Check(Anim != nullptr, Tag + TEXT(" champion anim instance"));
         if (!Anim) continue;
         MeasureBody(C, Tag + TEXT(" idle"), Mesh, Parts, Anim->Hands, true, Authored);
+        // blender-rig: carried stock props (crossbow, blunderbuss, launchers) rest muzzle-forward.
+        for (UStaticMeshComponent* Part : Parts)
+        {
+            const CireGrip::FWeapon* W = Part ? CireGrip::FindWeapon(Part->GetStaticMesh()) : nullptr;
+            if (!W || !W->bCarry || W->OffHand.IsNearlyZero() || W->OffAxis.IsNearlyZero() || !Part->GetAttachSocketName().ToString().StartsWith(TEXT("hand_")) || Authored.Contains(Part)) continue;
+            const double F = FVector::DotProduct(Part->GetComponentTransform().TransformVectorNoScale(W->OffAxis).GetSafeNormal(), H->GetActorForwardVector());
+            C.Check(F > 0.0, FString::Printf(TEXT("%s %s muzzle forward at rest (%.2f)"), *Tag, *Part->GetStaticMesh()->GetName(), F));
+        }
         // blender-rig: elbows bend the natural way with the grip IK applied (carry and second-hand arms included).
         for (const bool bRight : {false, true})
         {

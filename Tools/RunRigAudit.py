@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent
 def summarize(path: Path) -> str:
     data = json.loads(path.read_text(encoding="utf-8"))
     lines = []
-    for cat in ("champion", "npc", "monster"):
+    for cat in ("champion", "npc", "monster", "explicit"):
         rows = [b for b in data["bodies"] if b["category"] == cat]
         bad = [b for b in rows if b["hyperSamples"]]
         lines.append(f"== {cat}: {len(rows)} bodies, {len(bad)} with backwards/folded elbows (twist is reported, not failed)")
@@ -40,6 +40,7 @@ def summarize(path: Path) -> str:
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--only", default="")
+    p.add_argument("--meshes", default="", help="explicit skeletal mesh object paths (comma separated), category 'explicit'")
     p.add_argument("--summary", type=Path, default=None, help="only summarize an existing Saved/RigAudit json")
     p.add_argument("--editor", type=Path, default=Path("F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"))
     p.add_argument("--timeout", type=int, default=3600)
@@ -53,6 +54,8 @@ def main() -> int:
            "-nullrhi", "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-nosplash", f"-abslog={log}"]
     if a.only:
         cmd.append(f"-CireRigAuditOnly={a.only}")
+    if a.meshes:
+        cmd.append(f"-CireRigAuditMeshes={a.meshes}")
     creation = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
     child = subprocess.Popen(cmd, cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation,
                              env={**os.environ, "UE_SKIP_UBT_SDK_SETUP": "1"})
@@ -67,6 +70,9 @@ def main() -> int:
         return 1
     print(m.group(0).strip())
     print(summarize(Path(m.group(1).strip())))
+    for line in text.splitlines():
+        if "CIRE_RIG_AUDIT_BIND" in line:
+            print(line[line.index("CIRE_RIG_AUDIT_BIND"):])
     return 0
 
 

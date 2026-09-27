@@ -55,6 +55,8 @@ public:
     void Update(ACireHero& Hero, float AttackElapsed);
     void Clear();
     const FString& GetEquippedLoadout() const { return EquippedLoadout; }
+    /** blender-rig: motion of the equipped loadout (a preview loadout such as ranger_crossbow included). */
+    const FString& GetEquippedMotion() const { return Motion; }
     int32 GetPartCount() const { return Parts.Num(); }
     // creature-anim: closed hands around the held props and the two-hand setup (CireGrip), read by CireChampionArt.
     CireGrip::FHands GripHands;
@@ -68,6 +70,8 @@ public:
         float Size=1.f, Girth=1.f; // blender-rig: prop scale along the handle axis, and the cross-section factor (girth) of it
         FString SizeClass;         // blender-rig: WeaponLoadouts.json sizeClasses key ("one_hand", "mace", ...)
         float BaseSize=1.f;        // blender-rig: the size before the class (and its cap) applied
+        bool bMuzzleSpun=false;    // blender-rig: carried stock prop turned muzzle-forward
+        bool bMuzzleCheck=false; int32 MuzzleFrames=0; FVector MuzzleAxis=FVector::ForwardVector, HandleAxis=FVector::UpVector, Handle=FVector::ZeroVector;
     };
     const TArray<FGripInfo>& GetGripInfo() const { return GripInfo; }
     const FString& GetGripSet() const { return GripSet; }

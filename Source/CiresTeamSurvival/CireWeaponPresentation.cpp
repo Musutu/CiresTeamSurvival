@@ -2,6 +2,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/PackageName.h"
 #include "CireGame.h"
+#include "CireMobility.h" // blender-rig: roll state for the muzzle check
 #include "CireChampionRoster.h"
 #include "CireChampionArt.h" // paladin-hq: prop material specs
 #include "CireChampionActions.h" // weapon-grips: motion class for the Fab set
@@ -358,7 +359,11 @@ UStaticMeshComponent* UCireWeaponPresentation::Attach(ACireHero& Hero,const FStr
         // through the floor): it is carried upright at the side, tip forward, and the attack clips take it from there.
         if(!Pointed.bCarry&&!Pointed.bShield&&!Pointed.bAmmo&&Pointed.OffHand.IsNearlyZero()&&Girth<.999f&&Info.LengthCm>=120.f)
         {Pointed.bCarry=true;Pointed.CarryAt=FVector(.24f,-.08f,.72f);Pointed.CarryUp=FVector(.45f,.2f,1.f);}
-        const CireGrip::FPlacement Placement=CireGrip::Place(Mesh,BoneName,Pointed,Thick,static_cast<float>(Body->GetRelativeScale3D().X));
+        CireGrip::FPlacement Placement=CireGrip::Place(Mesh,BoneName,Pointed,Thick,static_cast<float>(Body->GetRelativeScale3D().X));
+        // blender-rig: a carried stock-gripped prop (crossbow, blunderbuss, launcher) must rest muzzle forward; Update()
+        // checks the real idle carry pose once and spins it about its handle if the muzzle points back.
+        Info.bMuzzleCheck=Placement.bValid&&Placement.bCarry&&!Pointed.OffHand.IsNearlyZero()&&!Pointed.OffAxis.IsNearlyZero();
+        Info.MuzzleAxis=Pointed.OffAxis.GetSafeNormal();Info.HandleAxis=Pointed.Axis.GetSafeNormal();Info.Handle=Pointed.Handle;
         if(Placement.bValid)
         {
             Part->SetAbsolute(false,false,false);
@@ -503,6 +508,18 @@ void UCireWeaponPresentation::Update(ACireHero& Hero,float AttackElapsed)
         Part->SetHiddenInGame(bHidden||(Part->ComponentHasTag(ReleaseTag)&&AttackElapsed>=ReleaseAt&&AttackElapsed<.53f));
     }
     if(Arrow)Arrow->SetHiddenInGame(bHidden||AttackElapsed>=ReleaseAt);
+    for(FGripInfo& Info:GripInfo)
+    {   // blender-rig: one-shot muzzle check on the settled idle carry (see Attach)
+        UStaticMeshComponent* Part=Info.Part.Get();
+        if(!Info.bMuzzleCheck||!Part||AttackElapsed>=0.f||Hero.bDead||(Hero.Mobility&&Hero.Mobility->IsRolling()))continue;
+        if(++Info.MuzzleFrames<4)continue;
+        Info.bMuzzleCheck=false;
+        const FVector Muzzle=Part->GetComponentTransform().TransformVectorNoScale(Info.MuzzleAxis);
+        if(FVector::DotProduct(Muzzle,Hero.GetActorForwardVector())>=0.)continue;
+        const FQuat Spin(Info.HandleAxis,PI);
+        Part->SetRelativeTransform(FTransform(Spin,Info.Handle-Spin.RotateVector(Info.Handle),FVector::OneVector)*Part->GetRelativeTransform());
+        Info.bMuzzleSpun=true;
+    }
     if(Motion!=TEXT("bow")||!Primary)return;
     const bool bDrawing=AttackElapsed>=0&&AttackElapsed<ReleaseAt;const FTransform Bow=Primary->GetComponentTransform();
     FVector Nock=bDrawing?Hero.GetMesh()->GetSocketLocation(TEXT("hand_r")):Bow.TransformPosition(FVector(-9,0,0));
@@ -572,7 +589,8 @@ FTransform CireWeapons::HandleStretch(const CireGrip::FWeapon& Grip,float Factor
 FVector CireWeapons::BusinessAxis(const UStaticMesh& Mesh,const CireGrip::FWeapon& Grip)
 {
     const FVector Axis=Grip.Axis.GetSafeNormal();
-    if(Grip.bShield||Grip.bAmmo||Axis.IsNearlyZero())return Axis;
+    // Props with a second grip (crossbow, blunderbuss, launchers): the axis is the stock's, and the muzzle is OffAxis.
+    if(Grip.bShield||Grip.bAmmo||Axis.IsNearlyZero()||!Grip.OffHand.IsNearlyZero())return Axis;
     const FBox Box=Mesh.GetBoundingBox();
     double Far=-1.e9,Near=1.e9;
     for(int32 I=0;I<8;++I)
@@ -605,8 +623,8 @@ FString CireWeapons::DescribeGrips(const ACireHero& Hero)
     {
         const UStaticMeshComponent* Part=Info.Part.Get();
         if(!Part||!Part->GetStaticMesh())continue;
-        Out+=FString::Printf(TEXT(" | %s@%s mode=%s bindTipDev=%.0f bindEdgeDev=%.0f len=%.0fcm(%.2fxbody) twoHand=%d hidden=%d"),*Part->GetStaticMesh()->GetName(),*Part->GetAttachSocketName().ToString(),
-            *Info.Mode,Info.TipDeviationDeg,Info.EdgeDeviationDeg,Info.LengthCm,Info.LengthCm/Height,Info.bTwoHand?1:0,Part->bHiddenInGame?1:0);
+        Out+=FString::Printf(TEXT(" | %s@%s mode=%s bindTipDev=%.0f bindEdgeDev=%.0f len=%.0fcm(%.2fxbody) twoHand=%d hidden=%d muzzleSpun=%d"),*Part->GetStaticMesh()->GetName(),*Part->GetAttachSocketName().ToString(),
+            *Info.Mode,Info.TipDeviationDeg,Info.EdgeDeviationDeg,Info.LengthCm,Info.LengthCm/Height,Info.bTwoHand?1:0,Part->bHiddenInGame?1:0,Info.bMuzzleSpun?1:0);
         Out+=FString::Printf(TEXT(" size=%.2f base=%.2f girth=%.2f class=%s"),Info.Size,Info.BaseSize,Info.Girth,Info.SizeClass.IsEmpty()?TEXT("-"):*Info.SizeClass); // blender-rig
         if(const CireGrip::FWeapon* G=CireGrip::FindWeapon(Part->GetStaticMesh());G&&!G->bAmmo&&!G->bShield)
         {   // blender-rig: where the business end points in the champion's frame (forward, right, up)

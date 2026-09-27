@@ -29,6 +29,7 @@ struct FData
     TMap<FString, CireChampionActions::FWindow> Windows;
     TMap<FString, TMap<FString, FString>> Motions;       // motion -> kind -> clip
     TMap<FString, FString> ProfileMotion;                // profile id -> motion (WeaponLoadouts.json)
+    TMap<FString, FString> ProfilePreset;                // blender-rig: profile id -> default preset
     TSet<FString> Shouts, Spells;
     float MaxWindupRate = 2.4f;
     struct FStyle { FString Clip; float Twist = 0.f; };
@@ -95,7 +96,10 @@ const FData& Data()
             {
                 FString Preset, Motion; const TSharedPtr<FJsonObject>* Row = nullptr;
                 if (Pair.Value->TryGetString(Preset) && (*Presets)->TryGetObjectField(Preset, Row) && (*Row)->TryGetStringField(TEXT("motion"), Motion))
+                {
                     GData.ProfileMotion.Add(FString(Pair.Key.ToView()), Motion);
+                    GData.ProfilePreset.Add(FString(Pair.Key.ToView()), Preset);
+                }
             }
     }
     UE_LOG(LogCireChampionActions, Log, TEXT("CIRE_CHAMPION_ACTIONS_DATA bodies=%d windows=%d motions=%d profiles=%d"),
@@ -140,6 +144,10 @@ FString CireChampionActions::MotionFor(const ACireHero& Hero)
         const TCHAR* Legacy[] = {TEXT("knight"), TEXT("ranger"), TEXT("scholar"), TEXT("lancer"), TEXT("summoner")};
         Profile = Hero.Archetype >= 0 && Hero.Archetype < UE_ARRAY_COUNT(Legacy) ? Legacy[Hero.Archetype] : TEXT("knight");
     }
+    // blender-rig: a previewed loadout (the Ranger's crossbow) plays its own motion, not the profile default.
+    if (const auto* Weapons = Hero.FindComponentByClass<UCireWeaponPresentation>(); Weapons && !Weapons->GetEquippedMotion().IsEmpty() &&
+        Weapons->GetEquippedLoadout() != Data().ProfilePreset.FindRef(Profile) && !Data().ProfilePreset.FindRef(Profile).IsEmpty())
+        return Weapons->GetEquippedMotion();
     const FString* Motion = Data().ProfileMotion.Find(Profile);
     return Motion ? *Motion : FString(TEXT("melee"));
 }
