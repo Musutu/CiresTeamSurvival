@@ -13,6 +13,7 @@
   "offset": 330,
   "arrivalSeconds": 4,
   "returnSeconds": 6,
+  "countdownSeconds": 5,
   "discMaterial": "/Game/Arenas/Portal/M_ArenaPortal.M_ArenaPortal",
   "moteMaterial": "/Game/Arenas/Portal/M_ArenaPortalMote.M_ArenaPortalMote",
   "vfx": {

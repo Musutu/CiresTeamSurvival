@@ -756,7 +756,7 @@ def validate(arena):
 # players where they are going before they step through. The Shadow_Magic Niagara layers are an optional local Fab overlay.
 SHADOW = "/Game/Shadow_Magic/VFX_Niagara/"
 PORTAL = {
-    "leadSeconds": 12, "radius": 150, "height": 175, "offset": 330, "arrivalSeconds": 4, "returnSeconds": 6,
+    "leadSeconds": 12, "radius": 150, "height": 175, "offset": 330, "arrivalSeconds": 4, "returnSeconds": 6, "countdownSeconds": 5,
     "discMaterial": "/Game/Arenas/Portal/M_ArenaPortal.M_ArenaPortal",
     "moteMaterial": "/Game/Arenas/Portal/M_ArenaPortalMote.M_ArenaPortalMote",
     "vfx": {

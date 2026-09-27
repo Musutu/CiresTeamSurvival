@@ -40,6 +40,7 @@ bool GPortalLoaded = false;
 struct FPortalServer
 {
     bool bOpened = false;
+    bool bAllThrough = false;
     TSet<TWeakObjectPtr<ACireHero>> Staged;
 };
 TMap<TWeakObjectPtr<UWorld>, FPortalServer> GPortalServer;
@@ -88,6 +89,7 @@ void LoadConfig(FConfig& C)
         C.Offset = FMath::Clamp(PNum(P, TEXT("offset"), C.Offset), 150.f, 900.f);
         C.ArrivalSeconds = FMath::Clamp(PNum(P, TEXT("arrivalSeconds"), C.ArrivalSeconds), 1.f, 30.f);
         C.ReturnSeconds = FMath::Clamp(PNum(P, TEXT("returnSeconds"), C.ReturnSeconds), 1.f, 30.f);
+        C.CountdownSeconds = FMath::Clamp(PNum(P, TEXT("countdownSeconds"), C.CountdownSeconds), 1.f, 30.f);
         C.DiscMaterial = PStr(P, TEXT("discMaterial"), C.DiscMaterial);
         C.MoteMaterial = PStr(P, TEXT("moteMaterial"), C.MoteMaterial);
         const TSharedPtr<FJsonObject>* VO = nullptr;
@@ -226,6 +228,10 @@ bool CireArenaPortal::IsStaged(const ACireHero* Hero)
     const FPortalServer* S = Hero ? ServerState(Hero->GetWorld()) : nullptr;
     return S && S->Staged.Contains(const_cast<ACireHero*>(Hero));
 }
+bool CireArenaPortal::AllThrough(const UWorld* World)
+{
+    const FPortalServer* S = ServerState(World); return S && S->bAllThrough;
+}
 TArray<ACireArenaPortal*> CireArenaPortal::Portals(UWorld* World, int32 Kind)
 {
     TArray<ACireArenaPortal*> Out;
@@ -235,7 +241,7 @@ TArray<ACireArenaPortal*> CireArenaPortal::Portals(UWorld* World, int32 Kind)
 void CireArenaPortal::ServerClear(UWorld* World)
 {
     for (ACireArenaPortal* P : Portals(World)) P->Destroy();
-    if (FPortalServer* S = ServerState(World)) { S->bOpened = false; S->Staged.Reset(); }
+    if (FPortalServer* S = ServerState(World)) { S->bOpened = false; S->bAllThrough = false; S->Staged.Reset(); }
 }
 
 void CireArenaPortal::TickServer(ACireGameMode* Mode)
@@ -293,6 +299,25 @@ bool CireArenaPortal::ServerEnter(ACireGameMode* Mode, ACireHero* Hero, ACireAre
     Hero->ForceNetUpdate();
     UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_PORTAL_ENTER hero=%s team=%d arena=%s at=%s"), *Hero->HeroName, Hero->TeamId,
         *CireArenas::Get(Mode->ArenaIndex)->Id.ToString(), *To.ToString());
+    // Eric: once every human is through, the arena does not wait for the rest of the prep minute: a short countdown starts.
+    FPortalServer& S = GPortalServer.FindOrAdd(World);
+    int32 Humans = 0, InArena = 0;
+    for (ACireHero* H : Mode->Heroes) if (IsValid(H) && !H->bBot && H->bDrafted && H->TeamId >= 0 && H->TeamId < 2) { ++Humans; InArena += S.Staged.Contains(H) ? 1 : 0; }
+    if (!S.bAllThrough && Humans > 0 && InArena == Humans)
+    {
+        S.bAllThrough = true;
+        const float Countdown = Config().CountdownSeconds;
+        const double Left = Mode->Clock.RemainingSeconds();
+        if (Left > Countdown) Mode->Clock.Advance(Left - Countdown); // stays in prep: the phase change fires when the countdown ends
+        if (auto* State = Mode->GetGameState<ACireGameState>())
+        {
+            State->SecondsLeft = static_cast<float>(Mode->Clock.RemainingSeconds());
+            State->Announcement = FString::Printf(TEXT("ALL THROUGH | %s | The arena begins in %.0f seconds."), *CireArenas::DisplayName(Mode->ArenaIndex), FMath::CeilToFloat(State->SecondsLeft));
+            State->ForceNetUpdate();
+        }
+        for (ACireArenaPortal* P : Portals(World)) { P->bAllThrough = true; P->ForceNetUpdate(); P->OnRep_AllThrough(); }
+        UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_PORTAL_ALL_THROUGH humans=%d prep_left_before=%.1f countdown=%.1f"), Humans, Left, Mode->Clock.RemainingSeconds());
+    }
     return true;
 }
 
@@ -308,7 +333,7 @@ void CireArenaPortal::OnPhaseChanged(ACireGameMode* Mode, int32 NewPhase)
         int32 Collapsed = 0;
         for (ACireArenaPortal* P : Portals(World)) { P->Collapse(.8f); ++Collapsed; }
         const int32 Staged = S.Staged.Num();
-        S.Staged.Reset(); S.bOpened = false;
+        S.Staged.Reset(); S.bOpened = false; S.bAllThrough = false;
         if (!CireArenas::Get(Mode->ArenaIndex)) return;
         for (int32 Team = 0; Team < 2; ++Team)
         {
@@ -323,7 +348,7 @@ void CireArenaPortal::OnPhaseChanged(ACireGameMode* Mode, int32 NewPhase)
     else if (NewPhase == 4)
     {
         for (ACireArenaPortal* P : Portals(World)) P->Collapse(.5f);
-        S.Staged.Reset(); S.bOpened = false;
+        S.Staged.Reset(); S.bOpened = false; S.bAllThrough = false;
         if (!CireArenas::Get(Mode->ArenaIndex)) return;
         for (int32 Team = 0; Team < 2; ++Team)
         {
@@ -370,7 +395,7 @@ void ACireArenaPortal::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ACireArenaPortal, ArenaIndex); DOREPLIFETIME(ACireArenaPortal, Kind); DOREPLIFETIME(ACireArenaPortal, TeamId);
-    DOREPLIFETIME(ACireArenaPortal, ForHeroName); DOREPLIFETIME(ACireArenaPortal, bCollapsing); DOREPLIFETIME(ACireArenaPortal, Entered);
+    DOREPLIFETIME(ACireArenaPortal, ForHeroName); DOREPLIFETIME(ACireArenaPortal, bCollapsing); DOREPLIFETIME(ACireArenaPortal, Entered); DOREPLIFETIME(ACireArenaPortal, bAllThrough);
 }
 
 void ACireArenaPortal::BeginPlay()
@@ -393,6 +418,17 @@ void ACireArenaPortal::EndPlay(const EEndPlayReason::Type Reason)
 }
 
 void ACireArenaPortal::OnRep_Setup() { if (HasActorBegunPlay() && GetNetMode() != NM_DedicatedServer) BuildVisuals(); }
+void ACireArenaPortal::OnRep_AllThrough()
+{
+    if (!bAllThrough || GetNetMode() == NM_DedicatedServer || !GetWorld()) return;
+    static TWeakObjectPtr<UWorld> ShownWorld; static double ShownAt = -100;
+    const double Now = GetWorld()->GetTimeSeconds();
+    if (ShownWorld.Get() == GetWorld() && Now - ShownAt < 20) return; // one banner per countdown, however many portals replicate
+    ShownWorld = GetWorld(); ShownAt = Now;
+    const int32 Seconds = FMath::RoundToInt(Config().CountdownSeconds);
+    CireBanners::Show(ECireBanner::Arena, CireArenas::DisplayName(ArenaIndex), FString::Printf(TEXT("Every champion is through. The fight begins in %d seconds."), Seconds), TEXT("ALL THROUGH"));
+    UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_PORTAL_COUNTDOWN_BANNER seconds=%d"), Seconds);
+}
 void ACireArenaPortal::OnRep_Collapse()
 {
     if (!bCollapsing) return;
@@ -606,6 +642,7 @@ bool CireArenaPortal::RunTests(UWorld* World)
     const FConfig& C = Config(true);
     Check(C.Errors.IsEmpty(), TEXT("portal data parses without errors"));
     Check(C.LeadSeconds >= 5 && C.LeadSeconds <= 30, TEXT("lead time between 5 and 30 s"));
+    Check(C.CountdownSeconds >= 2 && C.CountdownSeconds < C.LeadSeconds, TEXT("all-through countdown shorter than the lead time"));
     TSet<int32> Styles; TSet<FString> Views;
     for (int32 Index : CireArenas::Rotation())
     {
