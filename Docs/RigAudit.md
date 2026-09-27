@@ -139,6 +139,59 @@ Captures:
 * **`Tools/RetargetChampionAttacks.py -CireChampionAttacksOnly=<folders>`** rebuilds single HQ bodies' transferred
   clips.
 
+## Blender round-trip (wave 2)
+
+**The pipeline:** export from UE, re-bind in Blender, re-import onto the existing skeleton. It is proven on the HQ
+Ranger.
+
+1. **Export.** `Tools/ExportForBlender.py` must run in the full editor.
+2. **Re-bind.** `Tools/Blender/rebind.py`:
+   * Poses the spine, arms and legs onto straight reference directions. `--ref` takes a UE bind-point JSON, e.g. the
+     transfer's source rig.
+   * Twists each upper arm and thigh about its own axis so its real hinge front, read from the original bend, faces the
+     body's front. A shortest-arc straighten alone keeps the captured frame's twist, and every bind-based tool then reads
+     the elbow backwards.
+   * Applies the armature deformation to the mesh and makes that pose the rest pose.
+   * The skin is unchanged for any animated pose, so the body's own Tripo clips look identical.
+   * **Handedness:** UE is left-handed and the FBX conversion mirrors one axis. The body frame is built as
+     `up x left` in UE coordinates and `left x up` in Blender's.
+3. **Import.** `Tools/ImportFromBlender.py` imports onto the given Skeleton, with no new skeleton, materials or
+   animations. It keeps the replaced asset's slot materials, because the FBX import resets them to WorldGridMaterial.
+   A dest under `/Game/_BlenderRoundTrip` is a dry run.
+4. **Check.** `RunRigAudit.py --meshes <dry-run path>` sweeps the body's own clips on the candidate before it replaces
+   anything.
+
+**Verified.** An identity round-trip reproduces the bind exactly (pelvis, hands and feet within 0.01 cm; same clip
+results). It also found and fixed Blender's `ignore_leaf_bones` dropping the `head` bone.
+
+**HQ Ranger.**
+* **Cause.** The Tripo bridge import kept an animation frame (mid-run) as the reference pose: right elbow bent 57 deg,
+  legs mid-stride.
+* **Fix.** Re-bound in Blender onto IronboundBruiserV2's straight bind directions (the source rig of the FK transfer),
+  in about 5 s. The mesh was replaced in place, and its 5 ChampionAttacks02 clips were re-transferred.
+* **Result.** 0 backwards-elbow samples across all 15 clips (`attack_crossbow` was -50 deg in 13 samples before).
+* **Captures.**
+  * `Saved/AgentLogs/ranger-blender/` (before/after renders, re-bind report)
+  * `ranger-rebind-bow/`
+  * `ranger-rebind-crossbow/`
+
+**Also fixed on the way:**
+* **Crossbow motion.** The crossbow preview now plays its own motion (`attack_crossbow`). It used to play the profile
+  default, the bow.
+* **Muzzle direction.**
+  * Carried stock props (crossbow, blunderbuss, launchers) rest muzzle-forward. The crossbow was carried with its limbs
+    through the torso (`offF` -0.98 → +0.98).
+  * `BusinessAxis` no longer flips props with a second grip.
+  * `CireGripTests` checks the muzzle.
+
+**Ranger quiver.** It is fused into the one body island, and the UV layout has 2,756 islands, so neither loose parts nor
+UV islands isolate it. A clean cut needs a mask: Tripo's detailed segmentation (parts 7 + 16 on 2b9fbccc) or a hand-drawn
+selection. The 90k decimate is moot: the UE body is already 92.6k tris, and the 140k figure was the Tripo source's.
+`Tools/Blender/parts.py` lists and splits parts once a mask exists.
+
+**Skeleton asset.** The re-import updates the mesh's reference pose. The shared Skeleton asset on disk was not re-saved.
+Every Ranger clip keys every bone, so nothing reads the skeleton's reference pose for this body.
+
 ## Not done / needs Eric
 
 * **Ranger B re-rig with straight arms.** The HQ Ranger's right arm is bound bent 59 deg, which drives the crossbow

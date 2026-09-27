@@ -201,6 +201,12 @@ bool CireRigAudit::Initialize(ACireGameMode* Mode)
             else if (Data.AssetClassPath == UAnimSequence::StaticClass()->GetClassPathName()) Referenced.Add(Path);
         }
     }
+    // Explicit meshes (-CireRigAuditMeshes=<object path,...>), e.g. a Blender round-trip import before it replaces a body.
+    if (FString Extra; FParse::Value(FCommandLine::Get(), TEXT("CireRigAuditMeshes="), Extra, false))
+    {
+        TArray<FString> Paths; Extra.ParseIntoArray(Paths, TEXT(","), true);
+        for (const FString& P : Paths) BodyCategory.Add(P, TEXT("explicit"));
+    }
     // 2. Clips by skeleton: referenced ones plus the derived/Tripo folders.
     TMap<FString, TArray<FString>> BySkeleton;
     auto AddClip = [&BySkeleton](const FAssetData& Data)
@@ -286,6 +292,13 @@ bool CireRigAudit::Initialize(ACireGameMode* Mode)
         Defective += Hyper > 0;
         UE_LOG(LogCireRigAudit, Display, TEXT("CIRE_RIG_AUDIT_BODY %s cat=%s clips=%d samples=%d hyper=%d twist=%d worstElbow=%.1f(%s) worstTwist=%.1f(%s) bind=%.1f/%.1f"),
             *Pair.Key, *Pair.Value, Clips ? Clips->Num() : 0, Samples, Hyper, Twisted, WorstElbow, *WorstElbowClip, WorstTwist, *WorstTwistClip, BindL, BindR);
+        {   // bind positions of a few bones (component space, cm) to compare a round-tripped body against its original
+            FString Points;
+            for (const TCHAR* N : {TEXT("pelvis"), TEXT("head"), TEXT("hand_l"), TEXT("hand_r"), TEXT("foot_l"), TEXT("foot_r")})
+                if (Ref.FindBoneIndex(N) != INDEX_NONE) Points += FString::Printf(TEXT(" %s=%s"), N, *CireGrip::ReferenceComponent(Ref, N).GetLocation().ToCompactString());
+            Row->SetStringField(TEXT("bindPoints"), Points.TrimStart());
+            UE_LOG(LogCireRigAudit, Display, TEXT("CIRE_RIG_AUDIT_BIND %s%s"), *Pair.Key, *Points);
+        }
         Rows.Add(MakeShared<FJsonValueObject>(Row));
         if (Bodies % 20 == 0) CollectGarbage(RF_NoFlags);
     }
