@@ -157,7 +157,7 @@ void ACireGameState::OnRepLaneRoutes() { CireLanePath::ReceiveState(this); }
 void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ACireGameState,Phase); DOREPLIFETIME(ACireGameState,SecondsLeft);
-    DOREPLIFETIME(ACireGameState,Round); DOREPLIFETIME(ACireGameState,Wave);
+    DOREPLIFETIME(ACireGameState,Round); DOREPLIFETIME(ACireGameState,Wave); DOREPLIFETIME(ACireGameState,bSuddenDeath); // outdoor-bosses
     DOREPLIFETIME(ACireGameState,CycleWavesDone); DOREPLIFETIME(ACireGameState,WavesPerCycle);
     DOREPLIFETIME(ACireGameState,NextWaveSeconds);
     DOREPLIFETIME(ACireGameState,MonsterSkillSeed); DOREPLIFETIME(ACireGameState,WaveRace); // monster-races

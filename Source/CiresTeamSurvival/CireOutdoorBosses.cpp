@@ -36,7 +36,7 @@ constexpr int32 RealmBlock = 50000, BossBlock = 40000, MaxBosses = 10000;
  *  return time (< 0: it stays dead). */
 struct FRuntime
 {
-    bool bSpawned = false;
+    bool bSpawned = false, bSuddenDeath = false;
     double Clock = 0, ScanIn = 0;
     TMap<int32, double> ReturnAt;
 };
@@ -82,12 +82,27 @@ bool CireOutdoorBosses::ParseJson(const FString& Json, FCireOutdoorBossRules& Ou
     double Schema = 0;
     if (!Root->TryGetNumberField(TEXT("schemaVersion"), Schema) || Schema != 1) { Error = TEXT("OutdoorBosses.json needs schemaVersion 1"); return false; }
     FCireOutdoorBossRules R;
-    double Respawn = R.RespawnSeconds, Wave = R.StrengthWave, Health = R.HealthMultiplier, Damage = R.DamageMultiplier, Tier = R.LootTier, Gold = R.GoldMultiplier;
+    double Respawn = R.RespawnSeconds, Wave = R.StrengthWave, Damage = R.DamageMultiplier, Tier = R.LootTier, Gold = R.GoldMultiplier;
+    double Sudden = R.SuddenDeathMinutes, Aggro = R.HostileAggroRadius, Base = R.BaseHealth;
+    if (!Num(Root, TEXT("suddenDeathMinutes"), Sudden, 0, 1440, Error) || !Num(Root, TEXT("hostileAggroRadius"), Aggro, 300, 5000, Error) ||
+        !Num(Root, TEXT("baseHealth"), Base, 100, 10000000, Error) || !Flag(Root, TEXT("suddenDeathHostile"), R.bSuddenDeathHostile, Error)) return false;
+    R.SuddenDeathMinutes = static_cast<float>(Sudden); R.HostileAggroRadius = static_cast<float>(Aggro); R.BaseHealth = static_cast<float>(Base);
+    if (const TSharedPtr<FJsonObject>* Hp = nullptr; Root->TryGetObjectField(TEXT("bossHealth"), Hp) && Hp)
+    {
+        for (const auto& Pair : (*Hp)->Values)
+        {
+            double V = 0;
+            if (!Pair.Value.IsValid() || Pair.Value->Type != EJson::Number || !Pair.Value->TryGetNumber(V) || !FMath::IsFinite(V) || V < .05 || V > 100)
+            { Error = FString::Printf(TEXT("bossHealth \"%s\" must be a multiplier 0.05..100"), *FString(Pair.Key)); return false; }
+            R.BossHealth.Add(FName(*FString(Pair.Key).TrimStartAndEnd().ToLower()), static_cast<float>(V));
+        }
+    }
+    else if (Root->HasField(TEXT("bossHealth"))) { Error = TEXT("bossHealth is { \"boss id\": multiplier }"); return false; }
     if (!Flag(Root, TEXT("enabled"), R.bEnabled, Error) || !Flag(Root, TEXT("waveBossesAtMarkers"), R.bWaveBossesAtMarkers, Error) ||
         !Num(Root, TEXT("respawnSeconds"), Respawn, -1, 36000, Error) || !Num(Root, TEXT("strengthWave"), Wave, 1, 1000, Error) ||
-        !Num(Root, TEXT("healthMultiplier"), Health, .05, 100, Error) || !Num(Root, TEXT("damageMultiplier"), Damage, .05, 100, Error) ||
+        !Num(Root, TEXT("damageMultiplier"), Damage, .05, 100, Error) ||
         !Num(Root, TEXT("lootTier"), Tier, 1, 10, Error) || !Num(Root, TEXT("goldMultiplier"), Gold, 0, 100, Error)) return false;
-    R.RespawnSeconds = static_cast<float>(Respawn); R.StrengthWave = FMath::RoundToInt32(Wave); R.HealthMultiplier = static_cast<float>(Health);
+    R.RespawnSeconds = static_cast<float>(Respawn); R.StrengthWave = FMath::RoundToInt32(Wave);
     R.DamageMultiplier = static_cast<float>(Damage); R.LootTier = FMath::RoundToInt32(Tier); R.GoldMultiplier = static_cast<float>(Gold);
     if (const TSharedPtr<FJsonObject>* By = nullptr; Root->TryGetObjectField(TEXT("byMarker"), By) && By)
     {
@@ -122,8 +137,10 @@ bool CireOutdoorBosses::Reload(FString* Error)
     float Respawn = 0; // probes: -CireOutdoorBossRespawn=<seconds>
     if (FParse::Value(FCommandLine::Get(), TEXT("CireOutdoorBossRespawn="), Respawn)) GRules.RespawnSeconds = Respawn;
 #endif
-    UE_LOG(LogCireOutdoorBosses, Display, TEXT("CIRE_OUTDOOR_BOSS_RULES enabled=%d respawn=%.0fs waveBossesAtMarkers=%d strengthWave=%d health=x%.2f damage=x%.2f lootTier=%d gold=x%.2f byMarker=%d roster=%d"),
-        GRules.bEnabled ? 1 : 0, GRules.RespawnSeconds, GRules.bWaveBossesAtMarkers ? 1 : 0, GRules.StrengthWave, GRules.HealthMultiplier, GRules.DamageMultiplier, GRules.LootTier,
+    float Sudden = 0; // probes: -CireOutdoorBossSuddenDeath=<minutes>
+    if (FParse::Value(FCommandLine::Get(), TEXT("CireOutdoorBossSuddenDeath="), Sudden)) GRules.SuddenDeathMinutes = Sudden;
+    UE_LOG(LogCireOutdoorBosses, Display, TEXT("CIRE_OUTDOOR_BOSS_RULES enabled=%d respawn=%.0fs suddenDeath=%.1fmin hostile=%d waveBossesAtMarkers=%d baseHealth=%.0f damage=x%.2f lootTier=%d gold=x%.2f byMarker=%d roster=%d"),
+        GRules.bEnabled ? 1 : 0, GRules.RespawnSeconds, GRules.SuddenDeathMinutes, GRules.bSuddenDeathHostile ? 1 : 0, GRules.bWaveBossesAtMarkers ? 1 : 0, GRules.BaseHealth, GRules.DamageMultiplier, GRules.LootTier,
         GRules.GoldMultiplier, GRules.ByMarker.Num(), GRules.Roster.Num());
     if (Error) Error->Reset();
     return true;
@@ -160,6 +177,11 @@ FName CireOutdoorBosses::Resolve(const FString& Kind, const FString& MarkerName,
     if (Roster.IsEmpty()) Roster = BossIds();
     return Roster.IsEmpty() ? NAME_None : Roster[FMath::Abs(Index) % Roster.Num()];
 }
+float CireOutdoorBosses::HealthFor(FName BossId, float MarkerScale, const FCireOutdoorBossRules& R)
+{
+    const float* Boss = R.BossHealth.Find(BossId);
+    return FMath::Clamp(R.BaseHealth * (Boss ? *Boss : 1.f) * FMath::Clamp(FMath::IsFinite(MarkerScale) ? MarkerScale : 1.f, .1f, 20.f), 1.f, 1.e9f);
+}
 FName CireOutdoorBosses::ResolveSpot(const FCireBattlefieldRoutes& Routes, int32 Realm, int32 Index)
 {
     const TArray<FCireRouteSpot>& Spots = Routes.Bosses[FMath::Clamp(Realm, 0, 1)];
@@ -188,7 +210,7 @@ int32 CireOutdoorBosses::IndexOf(int32 PackId) { return IsOutdoorPackId(PackId) 
 bool CireOutdoorBosses::IsOutdoorBoss(const ACireMonster* M) { return IsValid(M) && IsOutdoorPackId(M->PackId); }
 
 // ================================================================================================= runtime
-ACireMonster* CireOutdoorBosses::SpawnOne(ACireGameMode* Mode, int32 Realm, int32 Index)
+ACireMonster* CireOutdoorBosses::SpawnOne(ACireGameMode* Mode, int32 Realm, int32 Index, bool bHostile)
 {
     if (!Mode || !Mode->HasAuthority() || !Rules().bEnabled) return nullptr;
     UWorld* World = Mode->GetWorld();
@@ -222,7 +244,7 @@ ACireMonster* CireOutdoorBosses::SpawnOne(ACireGameMode* Mode, int32 Realm, int3
     const FCireSkillProgression& Skills = CireWaveDirector::Config(World).Skills;
     CireRaces::ApplyLoadout(M, Skills, Wave, 99, FMath::Max(1, Skills.MaxTier)); // its complete kit at the top skill tier
     M->Tier = FMath::Clamp(R.LootTier, 1, 10);
-    M->MaxHealth = M->Health = FMath::Clamp(M->MaxHealth * R.HealthMultiplier, 1.f, 1.e9f);
+    M->MaxHealth = M->Health = HealthFor(BossId, Spot.HealthScale, R); // Eric: 10,000 flat x the boss's and the marker's multipliers
     M->Damage = FMath::Clamp(M->Damage * R.DamageMultiplier, 1.f, 100000.f);
     M->MonsterName = FString::Printf(TEXT("BOSS | %s"), *A->DisplayName);
     // Stand on the lair floor at its real (scaled) size, and remember home: the leash anchor and the pack-reset spot.
@@ -230,13 +252,15 @@ ACireMonster* CireOutdoorBosses::SpawnOne(ACireGameMode* Mode, int32 Realm, int3
     M->SetActorLocation(Floor + FVector(0, 0, Half + 15.f), false, nullptr, ETeleportType::TeleportPhysics);
     M->SpawnPosition = M->GetActorLocation();
     M->bHomeLeash = true; M->LeashHome = Spot.Position;
-    CireWaveDirector::MakeNeutral(M); // neutral until a player attacks it; bots never do
+    M->bAlwaysHostile = bHostile;
+    if (!bHostile) CireWaveDirector::MakeNeutral(M); // neutral until a player attacks it; bots never do
+    else M->bNeutral = false; // sudden death: aggroes champions on sight
     M->ForceNetUpdate();
     Mode->Monsters.Add(M);
     Mode->RewardedPacks.Remove(PackId);
     RuntimeOf(World).ReturnAt.Remove(PackId);
-    UE_LOG(LogCireOutdoorBosses, Display, TEXT("CIRE_OUTDOOR_BOSS_SPAWN realm=%d index=%d marker=\"%s\" boss=%s health=%.0f damage=%.0f tier=%d at=(%.0f,%.0f) onnav=%d"), Realm, Index,
-        *MarkerName(Spot, Index), *BossId.ToString(), M->MaxHealth, M->Damage, M->Tier, Spot.Position.X, Spot.Position.Y, bOnNav ? 1 : 0);
+    UE_LOG(LogCireOutdoorBosses, Display, TEXT("CIRE_OUTDOOR_BOSS_SPAWN realm=%d index=%d marker=\"%s\" boss=%s health=%.0f damage=%.0f tier=%d at=(%.0f,%.0f) onnav=%d hostile=%d"), Realm, Index,
+        *MarkerName(Spot, Index), *BossId.ToString(), M->MaxHealth, M->Damage, M->Tier, Spot.Position.X, Spot.Position.Y, bOnNav ? 1 : 0, bHostile ? 1 : 0);
     return M;
 }
 int32 CireOutdoorBosses::SpawnAll(ACireGameMode* Mode)
@@ -274,6 +298,7 @@ void CireOutdoorBosses::Tick(ACireGameMode* Mode, float Delta)
     FRuntime& Run = RuntimeOf(Mode->GetWorld());
     Run.Clock += Delta;
     if (!Run.bSpawned || !Rules().bEnabled || (Run.ScanIn -= Delta) > 0) return;
+    if (!Run.bSuddenDeath && Rules().SuddenDeathMinutes > 0 && Run.Clock >= Rules().SuddenDeathMinutes * 60.) { BeginSuddenDeath(Mode); return; }
     Run.ScanIn = 1.;
     const FCireBattlefieldRoutes& Routes = CireLanePath::Get(Mode->GetWorld());
     for (int32 Realm = 0; Realm < 2; ++Realm)
@@ -284,7 +309,7 @@ void CireOutdoorBosses::Tick(ACireGameMode* Mode, float Delta)
             const double* At = Run.ReturnAt.Find(PackId);
             if (!At) { const float Respawn = Rules().RespawnSeconds; Run.ReturnAt.Add(PackId, Respawn > 0 ? Run.Clock + Respawn : -1.); continue; } // gone without a kill
             if (*At < 0 || Run.Clock < *At) continue;
-            if (ACireMonster* M = SpawnOne(Mode, Realm, Index))
+            if (ACireMonster* M = SpawnOne(Mode, Realm, Index, Run.bSuddenDeath && Rules().bSuddenDeathHostile))
                 Announce(Mode, FString::Printf(TEXT("WORLD BOSS | %s has returned to its lair (%s, %s)"), *M->GetNPCDisplayName(), *MarkerName(Routes.Bosses[Realm][Index], Index),
                     Realm == 0 ? TEXT("Daylight") : TEXT("Darknight")));
             else Run.ReturnAt.Remove(PackId);
@@ -294,8 +319,38 @@ void CireOutdoorBosses::Reset(ACireGameMode* Mode)
 {
     if (!Mode) return;
     FRuntime& Run = RuntimeOf(Mode->GetWorld());
-    Run.ReturnAt.Reset(); Run.ScanIn = 0;
+    Run.ReturnAt.Reset(); Run.ScanIn = 0; Run.Clock = 0; Run.bSuddenDeath = false;
+    if (auto* State = Mode->GetGameState<ACireGameState>()) State->bSuddenDeath = false;
 }
+int32 CireOutdoorBosses::BeginSuddenDeath(ACireGameMode* Mode)
+{
+    if (!Mode || !Mode->HasAuthority()) return 0;
+    FRuntime& Run = RuntimeOf(Mode->GetWorld());
+    if (Run.bSuddenDeath) return 0;
+    Run.bSuddenDeath = true;
+    const bool bHostile = Rules().bSuddenDeathHostile;
+    const FCireBattlefieldRoutes& Routes = CireLanePath::Get(Mode->GetWorld());
+    int32 Returned = 0;
+    for (int32 Realm = 0; Realm < 2; ++Realm)
+        for (int32 Index = 0; Index < FMath::Min(Routes.Bosses[Realm].Num(), MaxBosses); ++Index)
+        {
+            const int32 PackId = PackIdFor(Realm, Index);
+            if (ACireMonster* Alive = AliveBoss(Mode, PackId))
+            {
+                // The living ones join the hunt too, so every world boss behaves the same once sudden death begins.
+                if (bHostile) { Alive->bAlwaysHostile = true; Alive->bNeutral = false; Alive->ForceNetUpdate(); }
+                continue;
+            }
+            Run.ReturnAt.Remove(PackId);
+            Returned += SpawnOne(Mode, Realm, Index, bHostile) ? 1 : 0;
+        }
+    if (auto* State = Mode->GetGameState<ACireGameState>()) { State->bSuddenDeath = true; State->ForceNetUpdate(); }
+    Announce(Mode, FString::Printf(TEXT("SUDDEN DEATH | The world bosses return%s (%d risen)"), bHostile ? TEXT(" and hunt every champion near their lairs") : TEXT(""), Returned));
+    UE_LOG(LogCireOutdoorBosses, Display, TEXT("CIRE_OUTDOOR_BOSS_SUDDEN_DEATH at=%.0fs returned=%d hostile=%d"), Run.Clock, Returned, bHostile ? 1 : 0);
+    return Returned;
+}
+bool CireOutdoorBosses::IsSuddenDeath(const ACireGameMode* Mode) { return Mode && RuntimeOf(Mode->GetWorld()).bSuddenDeath; }
+double CireOutdoorBosses::MatchSeconds(const ACireGameMode* Mode) { return Mode ? RuntimeOf(Mode->GetWorld()).Clock : 0.; }
 float CireOutdoorBosses::RespawnIn(const ACireGameMode* Mode, int32 PackId)
 {
     if (!Mode) return -1.f;
@@ -325,7 +380,14 @@ bool CireOutdoorBosses::RunTests(ACireGameMode* Mode)
     TSet<FName> Six;
     for (int32 I = 1; I <= 6; ++I) if (const FName* Id = File.ByMarker.Find(FString::Printf(TEXT("Boss %d"), I))) Six.Add(*Id);
     Check(Six.Num() == 6, TEXT("Boss 1..6 each hold a different boss"));
-    Check(File.RespawnSeconds == 300.f && !File.bWaveBossesAtMarkers && File.bEnabled, TEXT("defaults: respawn after 5 minutes, wave bosses at their spawn"));
+    Check(File.RespawnSeconds == 0.f && File.SuddenDeathMinutes == 60.f && File.bSuddenDeathHostile && File.BaseHealth == 10000.f && !File.bWaveBossesAtMarkers && File.bEnabled,
+        TEXT("Eric's defaults: 10,000 HP, a slain boss stays dead, sudden death at 60 minutes brings them back hostile, wave bosses with their waves"));
+    {
+        FCireOutdoorBossRules Hp; Hp.BaseHealth = 10000.f; Hp.BossHealth.Add(TEXT("some_boss"), 1.5f);
+        Check(FMath::IsNearlyEqual(HealthFor(TEXT("other_boss"), 1.f, Hp), 10000.f) && FMath::IsNearlyEqual(HealthFor(TEXT("some_boss"), 1.f, Hp), 15000.f) &&
+            FMath::IsNearlyEqual(HealthFor(TEXT("some_boss"), 2.f, Hp), 30000.f) && FMath::IsNearlyEqual(HealthFor(TEXT("other_boss"), .5f, Hp), 5000.f),
+            TEXT("health = 10,000 x the boss's multiplier x the marker's HP x"));
+    }
     FCireOutdoorBossRules Bad;
     Check(!ParseJson(TEXT("{\"schemaVersion\":1,\"respawnSeconds\":\"soon\"}"), Bad, Error) && !ParseJson(TEXT("{\"schemaVersion\":1,\"byMarker\":{\"Boss 1\":3}}"), Bad, Error) &&
         !ParseJson(TEXT("{\"schemaVersion\":2}"), Bad, Error), TEXT("bad files are rejected"));
@@ -345,7 +407,8 @@ bool CireOutdoorBosses::RunTests(ACireGameMode* Mode)
     // ---- the world: three Boss spots per realm on the current route ----
     const FCireBattlefieldRoutes Saved = CireLanePath::Get(World);
     const FCireOutdoorBossRules SavedRules = GRules; const bool bSavedLoaded = bRulesLoaded;
-    FCireOutdoorBossRules Test = File; Test.RespawnSeconds = 5.f; Test.ByMarker.Reset(); Test.Roster = {Bosses[0], Bosses[2], Bosses[4]};
+    FCireOutdoorBossRules Test = File; Test.RespawnSeconds = 5.f; Test.SuddenDeathMinutes = 0.f; Test.ByMarker.Reset(); Test.Roster = {Bosses[0], Bosses[2], Bosses[4]};
+    Test.BossHealth.Reset(); Test.BossHealth.Add(Bosses[4], 1.5f);
     GRules = Test; bRulesLoaded = true;
     const TArray<ACireMonster*> SavedMonsters = Mode->Monsters;
     TArray<AActor*> Spawned;
@@ -358,6 +421,7 @@ bool CireOutdoorBosses::RunTests(ACireGameMode* Mode)
         {
             FCireRouteSpot S; S.Position = Route[FMath::Clamp(1 + I, 0, Route.Num() - 1)]; S.Yaw = 90.f; S.Name = FString::Printf(TEXT("Lair %d"), I + 1);
             if (I == 1) S.Kind = Bosses[6].ToString(); // the marker's own pick
+            if (I == 2) S.HealthScale = 2.f; // the marker's HP x
             Doc.Bosses[Realm].Add(S);
         }
     }
@@ -392,6 +456,12 @@ bool CireOutdoorBosses::RunTests(ACireGameMode* Mode)
         Check(Kinds.Num() == 3, TEXT("each spot holds a different boss"));
         Check(bSame, TEXT("both realms hold the same boss on the same marker (the marker's own pick, else the roster)"));
         Check(bShape, TEXT("a world boss: neutral, boss-classified, never a lane boss (no leak), its tier, leashed to its lair"));
+        if (Lairs[0].Num() == 3)
+        {
+            TMap<int32, float> Health; for (ACireMonster* M : Lairs[0]) Health.Add(IndexOf(M->PackId), M->MaxHealth);
+            Check(FMath::IsNearlyEqual(Health.FindRef(0), 10000.f) && FMath::IsNearlyEqual(Health.FindRef(1), 10000.f) && FMath::IsNearlyEqual(Health.FindRef(2), 30000.f),
+                FString::Printf(TEXT("spawned health: 10,000 flat, x1.5 boss x2 marker = 30,000 (got %.0f / %.0f / %.0f)"), Health.FindRef(0), Health.FindRef(1), Health.FindRef(2)));
+        }
         if (Lairs[0].Num() == 3 && Lairs[1].Num() == 3)
         {
             ACireMonster* Boss = Lairs[0][0];
@@ -451,6 +521,40 @@ bool CireOutdoorBosses::RunTests(ACireGameMode* Mode)
             Tick(Mode, 1.1f); Tick(Mode, 4.f);
             if (ACireMonster* Again = AliveBoss(Mode, PackId)) { Spawned.AddUnique(Again); Again->SetActorTickEnabled(false); }
             Check(AliveBoss(Mode, PackId) != nullptr, TEXT("a boss gone without a kill comes back on its timer"));
+            // SUDDEN DEATH: stays dead (respawn 0) until the match clock passes suddenDeathMinutes; then every dead boss returns HOSTILE.
+            GRules.RespawnSeconds = 0.f;
+            if (ACireMonster* Dead = AliveBoss(Mode, PackId)) { OnKilled(Mode, Dead); Mode->Monsters.Remove(Dead); Dead->Destroy(); }
+            GRules.SuddenDeathMinutes = static_cast<float>((Run.Clock + 120.) / 60.);
+            Tick(Mode, 60.f); Tick(Mode, 1.f);
+            Check(!AliveBoss(Mode, PackId) && !IsSuddenDeath(Mode), TEXT("a slain boss stays dead before sudden death"));
+            Tick(Mode, 70.f); Tick(Mode, 1.f);
+            auto* GameState = Mode->GetGameState<ACireGameState>();
+            ACireMonster* Risen = AliveBoss(Mode, PackId);
+            if (Risen) { Spawned.AddUnique(Risen); Risen->SetActorTickEnabled(false); }
+            Check(IsSuddenDeath(Mode) && GameState && GameState->bSuddenDeath, TEXT("sudden death begins at suddenDeathMinutes (replicated for the banner)"));
+            Check(Risen && Risen->bAlwaysHostile && !Risen->bNeutral && Risen->bHomeLeash, TEXT("the sudden-death boss returns at its lair, HOSTILE, still leashed"));
+            bool bAllHostile = true;
+            for (int32 Realm = 0; Realm < 2; ++Realm) for (int32 I = 0; I < 3; ++I) { ACireMonster* B = AliveBoss(Mode, PackIdFor(Realm, I)); bAllHostile &= B && !B->bNeutral && B->bAlwaysHostile; }
+            Check(bAllHostile, TEXT("every world boss is hostile in sudden death"));
+            if (Risen)
+            {
+                CireWaveDirector::OnPackReset(Risen);
+                Check(!Risen->bNeutral, TEXT("a sudden-death boss resets hostile (never neutral again)"));
+                for (AActor* A : Spawned) if (auto* Earlier = Cast<ACireHero>(A)) Earlier->SetActorLocation(Earlier->GetActorLocation() + FVector(0, 0, 200000)); // the earlier fixture heroes leave
+                FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+                const FVector NearLair = Risen->GetActorLocation() + FVector(1000.f, 0, 0); // farther than the 7 m pack acquisition, inside the hostile radius
+                if (auto* Hunter = World->SpawnActor<ACireHero>(NearLair, FRotator::ZeroRotator, SP))
+                {
+                    Spawned.Add(Hunter); Hunter->TeamId = 0; Hunter->Draft(0); Hunter->SetActorTickEnabled(false); Hunter->bBot = true; Hunter->Health = Hunter->MaxHealth = 5000;
+                    Check(CireWaveDirector::AllowDamage(Risen, Hunter), TEXT("a hostile boss can be fought by anyone"));
+                    Risen->Victim = nullptr; CireThreat::Clear(Risen); Risen->LeashReengageAt = 0; Risen->LeashState = 0;
+                    const auto SavedClock = Mode->Clock; Mode->Clock = Cires::MatchClock(); // survival: NPCs act
+                    CireNPCCombat::Tick(Risen, .05f);
+                    Mode->Clock = SavedClock;
+                    Check(IsValid(Risen->Victim) && Risen->Victim->TeamId == Risen->Lane && FVector::Dist2D(Risen->GetActorLocation(), Risen->Victim->GetActorLocation()) <= GRules.HostileAggroRadius + 1.f, FString::Printf(TEXT("a hostile boss aggroes a champion within its hostile radius on sight (victim=%s threat=%d)"), *GetNameSafe(Risen->Victim), Risen->Threat.Num()));
+                }
+            }
+            Check(BeginSuddenDeath(Mode) == 0, TEXT("sudden death happens once per match"));
             // Disabled: no new world bosses.
             GRules.bEnabled = false;
             Check(SpawnAll(Mode) == 0, TEXT("disabled: no world bosses spawn"));

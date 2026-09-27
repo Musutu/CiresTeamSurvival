@@ -78,6 +78,8 @@ struct CIRESTEAMSURVIVAL_API FCireMapMarker
      *  (JSON "comp": [tanks, healers, dps]; all zero = the automatic composition from the pack's seed, type and tier). */
     FName PackType = CireJunglePacks::Mixed;
     FCirePackComposition Comp = {0, 0, 0};
+    /** outdoor-bosses: Boss Spawn: health multiplier of this marker's boss (JSON "hp", default 1). */
+    float HealthScale = 1.f;
     bool HasCompOverride() const { return Comp.Tanks > 0 || Comp.Healers > 0 || Comp.Dps > 0; }
 };
 
@@ -196,6 +198,8 @@ namespace CireMapLayout
     CIRESTEAMSURVIVAL_API bool SetName(FCireMapLayout& Layout, const FString& Id, const FString& Name);
     /** Vendor type change: the sign and stall move to that type's default spots. */
     CIRESTEAMSURVIVAL_API bool SetKind(FCireMapLayout& Layout, const FString& Id, const FString& Kind);
+    /** outdoor-bosses: a Boss marker's health multiplier (0.1..20, twin follows). */
+    CIRESTEAMSURVIVAL_API bool SetHealthScale(FCireMapLayout& Layout, const FString& Id, float Scale);
     /** layout-wiring: a path's weight (0..100) and a spawn's split mode (by path weight, or even). */
     CIRESTEAMSURVIVAL_API bool SetWeight(FCireMapLayout& Layout, const FString& Id, float Weight);
     CIRESTEAMSURVIVAL_API bool SetSplit(FCireMapLayout& Layout, const FString& Id, bool bWeighted);

@@ -17,9 +17,11 @@ Code: `Source/CiresTeamSurvival/CireOutdoorBosses.{h,cpp}` (rules, spawn, respaw
 - **Always there.** World bosses persist across wave cycles (the jungle packs refresh each cycle; the bosses do not).
 - **Neutral until attacked** (the challenge-elite ruling): yellow nameplate, "Neutral: attack to provoke the world boss".
   Bots and wave monsters never engage it; a player's hit turns it hostile.
-- **Boss-grade.** It is configured like a wave boss of at least wave `strengthWave` (12, or the live wave when later) with its
-  race's complete kit at the top skill tier, the warlord colours and the boss frame, times `healthMultiplier` (1.5) and
-  `damageMultiplier` (1.0). It is never a lane boss: it never marches and never costs lives. Its nameplate reads
+- **Health: 10,000 flat** (Eric, 2026-09-26) x the boss's multiplier (`OutdoorBosses.json` `bossHealth`, per boss id) x the
+  marker's **HP x** (layout editor inspector: HP x - + under OUTDOOR BOSS, or `[` `]` with the Boss marker selected; steps
+  of 0.25, 0.1..20, saved as the marker's `"hp"`, mirrored to the twin). The inspector shows the resulting HEALTH. Damage
+  and skills are a wave boss's at wave `strengthWave` (12, or the live wave when later), with its race's complete kit, the
+  warlord colours and the boss frame. It is never a lane boss: it never marches and never costs lives. Its nameplate reads
   `<Race | World Boss>` with its tier (`lootTier`, T4).
 - **Bounty:** Eric's boss value, 10x the current mob value (`CI::BountyKind::Boss`), times `goldMultiplier` (1.0), shared by
   the teammates who fought it (like the packs).
@@ -55,17 +57,30 @@ different race each:
 
 Validate flags a marker holding an unknown boss (error) and two markers of a realm holding the same boss (note).
 
-## Respawn
+## Death and SUDDEN DEATH
 
-`respawnSeconds` (default **300**: a slain boss returns to its marker 5 minutes after it dies, neutral and at full
-strength, with a "WORLD BOSS | ... has returned to its lair" announcement). `0` = it stays dead for the match. A new wave
-cycle never revives a boss early; a boss that vanished without a kill comes back on the same timer. `cire.Layout restart`
-(Alt+F5) brings every boss back.
+A slain world boss **stays dead** (`respawnSeconds`: 0, Eric's ruling; a positive value would bring it back after that long).
+A new wave cycle never revives it.
+
+**SUDDEN DEATH** begins when the match passes `suddenDeathMinutes` (60; 0 = never), once per match:
+
+- every dead world boss returns at its marker, at full health;
+- with `suddenDeathHostile` (true) the returned bosses, and the ones still alive, are **hostile**: never neutral again,
+  they attack any champion (players and bots) who comes within `hostileAggroRadius` (15 m, twice the 7 m of an ordinary
+  unit) and anyone may fight them;
+- they stay **leashed to their lair** (the boss radius, 32 m): they chase only inside it, evade home when kited out, and
+  after every threat holder dies they walk home and reset, still hostile;
+- it is telegraphed on every screen: the banner "SUDDEN DEATH - the world bosses return" and the announcement
+  "SUDDEN DEATH | The world bosses return and hunt every champion near their lairs"; their target line reads "SUDDEN
+  DEATH: hunting champions near its lair".
+
+The match clock is the time the match has run (counted by the boss runtime from the first survival tick; Alt+F5
+`cire.Layout restart` resets it and brings every boss back neutral).
 
 ## Wave bosses
 
-`waveBossesAtMarkers` (default **false**): the Boss markers are the world bosses' lairs, so a wave boss comes through its
-wave's own monster spawn (the realm's paths in turn) instead of spawning at a Boss marker. `true` restores the old rule
+Confirmed by Eric: wave bosses stay with their waves; the world bosses are additional. `waveBossesAtMarkers` (default
+**false**): a wave boss comes through its wave's own monster spawn (the realm's paths in turn) instead of spawning at a Boss marker. `true` restores the old rule
 (at the Boss markers in turn, marching the nearest path). Rare Spawns and Bonus Loot creatures are untouched.
 
 ## The navmesh fix ("outside of play area" / "off the navmesh")
@@ -96,7 +111,9 @@ realm. The runtime rules also reject spots outside the realm ("boss spawns must 
   parsing, marker resolution (own pick > byMarker > roster), the pack-id block (never a jungle pack or fixture id), three
   Boss spots per realm spawning one different boss each (the same in both realms), neutral, boss-classified, never a lane
   boss, the boss bounty, bots never provoke it while a player does, the lair leash (boss radius, evade home immune with
-  threat kept, waits at home), respawn after the timer, "stays dead" with 0, no early revive on a new cycle.
+  threat kept, waits at home), health 10,000 x boss x marker (30,000 for x1.5 x2), stays dead, sudden death at the
+  configured time bringing every boss back hostile (replicated flag for the banner, resets hostile, aggroes a champion
+  within the hostile radius), once per match.
 - `CireLayoutWiring::RunTests` (`CIRE_LAYOUT_WIRING_PASS`): the marker's boss mirrors, round-trips and compiles in both
   realms; Validate flags unknown and duplicate bosses and markers outside the realm; the realm grows to the Play Bounds
   (Eric's polygon -> x -30000..35000, y +-27500), never shrinks, never for the procedural town; wave bosses spawn at their

@@ -239,7 +239,7 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
         }
         U.Victim=M->Victim;
         if(IsValid(M->Victim))U.VictimLine=M->Victim==Self?TEXT("You"):M->Victim->HeroName;
-        else if(bWorldBoss)U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the world boss"):M->LeashState==2?TEXT("Evading: returning to its lair"):TEXT("Guarding its lair"); // outdoor-bosses
+        else if(bWorldBoss)U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the world boss"):M->GetWorld()&&M->GetWorld()->GetGameState<ACireGameState>()&&M->GetWorld()->GetGameState<ACireGameState>()->bSuddenDeath?TEXT("SUDDEN DEATH: hunting champions near its lair"):M->LeashState==2?TEXT("Evading: returning to its lair"):TEXT("Guarding its lair"); // outdoor-bosses
         else U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the pack"):M->bArmoredEscort?TEXT("Marching on your keep"):M->LeashTimer>0?TEXT("Returning to camp"):M->LeashState==2?TEXT("Evading: returning to its path"):TEXT("Advancing toward town"); // wave-director; layout-wiring: leash
         if(M->NPCState)
         {
@@ -1421,6 +1421,9 @@ void ACireHUD::UpdateBanners(ACireHero* Hero,ACireGameState* State)
 {
     if(!Hero||!State)return;
     const bool bFirst=BannerSeenPhase<0;
+    // outdoor-bosses: SUDDEN DEATH, telegraphed once when it begins.
+    if(State->bSuddenDeath&&!bBannerSuddenDeath){bBannerSuddenDeath=true;if(!bFirst)CireBanners::Show(ECireBanner::BossSpawned,TEXT("SUDDEN DEATH \u2014 the world bosses return"),TEXT("Every fallen world boss rises at its lair, hostile: they attack any champion who comes near."),TEXT("SUDDEN DEATH"));}
+    else if(!State->bSuddenDeath)bBannerSuddenDeath=false;
     if(!bFirst&&State->Phase!=BannerSeenPhase)
     {
         const int32 Seconds=FMath::Max(0,FMath::RoundToInt(State->SecondsLeft));
