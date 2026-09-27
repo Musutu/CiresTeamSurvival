@@ -38,6 +38,8 @@ public:
     UPROPERTY(Replicated) float SecondsLeft = 300;
     UPROPERTY(Replicated) int32 Round = 1;
     UPROPERTY(Replicated) int32 Wave = 0;
+    // outdoor-bosses: SUDDEN DEATH has begun (the world bosses returned hostile); clients raise the banner on the change.
+    UPROPERTY(Replicated) bool bSuddenDeath = false;
     UPROPERTY(Replicated) int32 CycleWavesDone = 0;
     UPROPERTY(Replicated) int32 WavesPerCycle = 3;
     UPROPERTY(Replicated) float NextWaveSeconds = 0;
@@ -236,6 +238,8 @@ public:
     int32 LeashReturns = 0;
     // outdoor-bosses: an outdoor boss is leashed to its lair (the Boss marker, realm-local) instead of a path (CireOutdoorBosses.h).
     bool bHomeLeash = false;
+    /** outdoor-bosses: sudden death: never neutral again (aggroes champions on sight, still leashed to its lair). */
+    bool bAlwaysHostile = false;
     FVector2D LeashHome = FVector2D::ZeroVector;
     UPROPERTY(Replicated) float Health = 120;
     UPROPERTY(Replicated) float MaxHealth = 120;

@@ -512,7 +512,7 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
     UWorld* World = Mode->GetWorld();
     // Challenge packs start neutral the first time the director sees them.
     for (auto* M : Mode->Monsters)
-        if (IsValid(M) && M->PackId >= 0 && !R.SeenPacks.Contains(M)) { R.SeenPacks.Add(M); MakeNeutral(M); }
+        if (IsValid(M) && M->PackId >= 0 && !R.SeenPacks.Contains(M)) { R.SeenPacks.Add(M); if (!M->bAlwaysHostile) MakeNeutral(M); } // outdoor-bosses: sudden-death bosses stay hostile
     // Spawn queue: one slot per interval, both lanes together.
     if (!R.Queue.IsEmpty())
     {
@@ -803,7 +803,7 @@ void CireWaveDirector::OnMonsterDamaged(ACireMonster* M, ACireHero* Attacker)
 }
 void CireWaveDirector::OnPackReset(ACireMonster* M)
 {
-    if (IsValid(M) && M->PackId >= 0) MakeNeutral(M);
+    if (IsValid(M) && M->PackId >= 0 && !M->bAlwaysHostile) MakeNeutral(M); // outdoor-bosses: a sudden-death boss resets hostile
 }
 
 // ---------------------------------------------------------------- bots
