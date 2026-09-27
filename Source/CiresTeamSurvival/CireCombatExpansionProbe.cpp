@@ -1,5 +1,6 @@
 #include "CireCombatExpansionProbe.h"
 #include "CireLeash.h" // layout-wiring
+#include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireLayoutWiring.h" // layout-wiring
 #include "CireTownTrim.h" // town-trim
 #include "CireKitSkills.h" // kits-complete
@@ -121,6 +122,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireNav::RunTests(Mode)&&Good; // nav-paths: navmesh coverage, paths, prop carving, arenas, path editor
     Good=CireRouteEditor::RunTests(Mode)&&Good; // dev-route-tools: 1..16 packs, map layout model, mirroring, validation
     Good=CireLeash::RunTests(Mode)&&Good; // layout-wiring: the leash state machine (kited -> return -> resume; stuck != kited), immunity, regen, threat kept
+    Good=CireOutdoorBosses::RunTests(Mode)&&Good; // outdoor-bosses: data, marker resolution, spawn per Boss spot in both realms, neutral, bounty, lair leash, respawn
     Good=CireLayoutWiring::RunTests(Mode)&&Good; // layout-wiring: path split, multi-path compile, marker-driven spawns, realm transforms, replication
     Good=CireTownTrim::RunTests(Mode)&&Good; // town-trim: point-in-polygon with margin, inside/straddling/outside, realm mirroring, nav cache key, no bounds = no trim
     Good=CireFabAnimation::RunTests()&&Good; // fab-integration: optional Fab champion clips + fallback

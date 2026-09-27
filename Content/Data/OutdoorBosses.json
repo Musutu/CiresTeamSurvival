@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "_comment": "outdoor-bosses (Docs/OutdoorBosses.md): Eric's Boss markers in MapLayout.json are WORLD BOSSES, always there, one different race boss per marker, the same boss in both realms. Which boss: the marker's own \"kind\" (layout editor inspector: OUTDOOR BOSS < >), else byMarker (marker name -> boss id), else roster in marker order. Boss ids are the race bosses of Races.json (warlord / colossus of each race). respawnSeconds: a slain boss returns to its marker after this long (0 = it stays dead for the match). waveBossesAtMarkers: false = wave bosses spawn at their wave's monster spawn (the markers are the world bosses' lairs). strengthWave: configured like a wave boss of at least this global wave (the live wave when later), times healthMultiplier / damageMultiplier. lootTier: the challenge tier the boss shows and its pack-completion loot rolls at (it also rolls the lane-boss table). goldMultiplier: on the boss bounty (10x the current mob value). The leash is MonsterLeash.json's boss radius around the marker. cire.OutdoorBosses reload re-reads this file.",
+  "enabled": true,
+  "respawnSeconds": 300,
+  "waveBossesAtMarkers": false,
+  "strengthWave": 12,
+  "healthMultiplier": 1.5,
+  "damageMultiplier": 1.0,
+  "lootTier": 4,
+  "goldMultiplier": 1.0,
+  "byMarker": {
+    "Boss 1": "maw_of_the_deep",
+    "Boss 2": "elder_oakheart",
+    "Boss 3": "drakkari_ashwing",
+    "Boss 4": "stoneborn_colossus",
+    "Boss 5": "voidborn_devourer",
+    "Boss 6": "feral_ursoth"
+  },
+  "roster": [
+    "maw_of_the_deep", "elder_oakheart", "drakkari_ashwing", "stoneborn_colossus", "voidborn_devourer", "feral_ursoth",
+    "withered_matron", "drowned_prophet", "ironhide_juggernaut", "fallen_crusader", "aetheri_colossus", "voidborn_herald",
+    "drakkari_broodmother", "stoneborn_forgelord", "feral_mammoth", "fallen_high_inquisitor", "aetheri_hierarch", "ironhide_warchief",
+    "hollow_siegebreaker", "gravemaw_pack_leader"
+  ]
+}

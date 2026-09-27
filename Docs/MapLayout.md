@@ -42,7 +42,7 @@ bar 1**'s bindings, so they follow the player's keybinding settings. The default
 | 4 | Challenge Pack | ring (radius) | numbered per team (PACK n), radius 2-15 m, tier 1-4, pack type (race or Mixed), composition; **no limit** (Docs/JunglePacks.md) |
 | 5 | Shop / Vendor | NPC silhouette + sign + stall | vendor type from `Vendors.json` (built-in: weaponsmith, armory, arcane); sign and stall are separate handles |
 | 6 | Objective / Castle Defend Point | ring | one per team: where waves head and what they attack |
-| 7 | Boss / Pack Leader Spawn | pillar + facing arrow | named |
+| 7 | Outdoor Boss | pillar + facing arrow | named; the race boss that lives there (inspector OUTDOOR BOSS < >, K cycles, AUTO), Docs/OutdoorBosses.md |
 | 8 | Rift / Portal / Arena Entrance | ring + facing arrow | where teams go to PvP |
 | 9 | Respawn Point / Graveyard | pillar + facing arrow | where dead heroes come back |
 | 0 | Play Bounds | polygon (red veil outside, amber margin) | one shared polygon; each press adds a corner; the town is trimmed to it in matches |
@@ -106,6 +106,7 @@ Default offsets come from the vendor type: the sign 150 cm to the side at 250 cm
 | Tier (1-4) | **-** / **=** (also sets the next pack's tier) | TIER T1-T4; NEXT TIER when nothing is selected |
 | Retier many packs | | COPY TO ALL PACKS / COPY WITHIN 30 m (inspector, pack) |
 | Pack type (race / Mixed) | **K** (on a pack) | PACK TYPE < > |
+| Outdoor boss (race boss / AUTO) | **K** (on a Boss marker) | OUTDOOR BOSS < >, AUTO |
 | Pack composition | | TANKS / HEALERS / DPS - +, AUTO |
 | Owner (T1 / T2 / Shared) | **O** | T1 T2 SHARED |
 | Target team | **T** | WAVES ATTACK |
@@ -147,6 +148,10 @@ Validation runs lightly on every edit. **VALIDATE** adds the navmesh checks. It 
   - a path that doesn't start at a spawn
   - a path that doesn't reach **its target team's** objective, following merges (the objective must stand in the path's own realm)
 - **Mirrored pairs:** a missing twin, or a twin out of sync.
+- **Realm:** markers inside the Play Bounds but outside the realm a match builds (its navmesh volume): "outside the realm the
+  game builds". The realm grows to cover the Play Bounds (Docs/OutdoorBosses.md "The navmesh fix"); drawing the Play
+  Bounds past the navmesh this editor session built adds a note to Apply and restart.
+- **Outdoor bosses:** a Boss marker holding an unknown boss (error), two markers of a realm holding the same boss (note).
 - **Bounds:** markers outside the play bounds. Markers inside but within the trim margin (`CastleTown.json` `trim.margin`,
   15 m) of the edge get a note: the town is cut just past the border, so their surroundings may look cut off.
 - **Navmesh:** markers off the navmesh (reported per realm), and path segments no monster can walk.
@@ -195,7 +200,7 @@ launch (a draft authored on the other map is left alone). Named layouts are kept
 | Monster Spawn | Every spawn that targets a realm's team spawns that realm's waves. Its breach (rift crack, light, its name) is drawn at the spawn. |
 | Monster Path | **Every path marches.** A spawn owns the paths that start at it. A path that merges into another continues along it to the objective. A path that ends short of the objective is closed into it (the compile notes say so). |
 | Split | A wave is shared evenly by the spawns; each spawn splits its share **evenly** across its paths or **by path weight** (inspector: SPLIT, and each path's WEIGHT, 0..100; 0 = no units). The split is deterministic (largest-deficit apportionment), so every stretch of a wave keeps the shares: 3 paths at 1/4, 1/4, 1/2 give 2 / 2 / 4 of 8 units, every time. Escort guards march their escortee's path. |
-| Boss / Pack Leader Spawn | Wave bosses appear at the boss markers in turn and march the path that starts nearest to them (no marker: the route's `boss` spot, else the breach). |
+| Outdoor Boss | A **world boss** in each realm, always there: one different race boss per marker (the marker's pick, else `OutdoorBosses.json`), neutral until a player attacks it, leashed to the marker (boss radius), boss bounty and loot, back 5 minutes after it dies (Docs/OutdoorBosses.md). Wave bosses come through their wave's spawn (`waveBossesAtMarkers`: true restores the old rule: at the Boss markers in turn). |
 | Challenge Pack | Every pack of the realm (no limit), with its radius, tier (1-4), pack type and composition: a jungle camp of 3-6 monsters of its race in formation (Docs/JunglePacks.md). |
 | Recall Point | Recall / Teleport to Base takes a hero to the nearest Recall Point of his team (none: the base). |
 | Objective | The goal zone the waves attack (a square of the objective's diameter; an unchanged radius keeps the route file's zone). One zone for both realms: Validate flags T1 and T2 objectives that differ. |
@@ -246,6 +251,9 @@ column inside a wall. A unit stuck on its way back is set down at its return poi
 
 Units the director did not put on a path (challenge packs, armored escorts, forced marchers, bonus creatures, test
 fixtures) keep their old behaviour: packs return to camp, the rest chase without a leash.
+
+**World bosses** (Docs/OutdoorBosses.md) carry the same leash anchored at their Boss marker instead of a path: the boss
+radius around the lair, the evade home keeping threat, and a pack-style reset only once every threat holder is dead.
 
 ## Files
 

@@ -7,6 +7,7 @@
 #include "CireGame.h"
 #include "CireLanePath.h"
 #include "CireLeash.h"
+#include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireMapLayout.h"
 #include "CireNPCArchetypes.h"
 #include "CireVendors.h"
@@ -176,6 +177,45 @@ bool CireLayoutWiring::RunTests(ACireGameMode* Mode)
             TEXT("Apply writes T1's merchants to the DAYLIGHT realm (0) and T2's to DARKNIGHT (1)"));
     }
 
+    // ---------------------------------------------------------------- outdoor-bosses: the boss a marker holds, the realm and the validator
+    {
+        FCireMapLayout B = L;
+        const TArray<const FCireMapMarker*> BossMarkers = ML::OfType(B, ML::BossSpawn, ECireMarkerOwner::Team1);
+        const FString BossId = BossMarkers.Num() ? BossMarkers[0]->Id : FString();
+        const TArray<FName> Roster = CireOutdoorBosses::BossIds();
+        const FName Pick = Roster.Num() > 3 ? Roster[3] : NAME_None;
+        Check(ML::SetKind(B, BossId, Pick.ToString()) && ML::Find(B, ML::Find(B, BossId)->Pair)->Kind == Pick.ToString(), TEXT("a Boss marker's boss mirrors to its twin"));
+        FCireMapLayout BossRound; FString BossParse;
+        Check(ML::ParseJson(ML::ToJson(B), BossRound, BossParse) && ML::Find(BossRound, BossId) && ML::Find(BossRound, BossId)->Kind == Pick.ToString(), TEXT("the boss survives the JSON round trip"));
+        FCireBattlefieldRoutes BC; TArray<FString> BossNotes;
+        Check(ML::CompileRoutes(B, Base, BC, BossNotes) && BC.Bosses[0].Num() == 1 && BC.Bosses[1].Num() == 1 && BC.Bosses[0][0].Kind == Pick.ToString() && BC.Bosses[1][0].Kind == Pick.ToString() &&
+            CireOutdoorBosses::ResolveSpot(BC, 1, 0) == Pick && CireOutdoorBosses::ResolveMarker(B, *ML::Find(B, BossId)) == Pick, TEXT("both realms compile the marker's boss"));
+        Check(ML::DisplayLabel(B, *ML::Find(B, BossId)).Contains(CireOutdoorBosses::BossName(Pick)), TEXT("the marker's label names its boss"));
+        ML::SetKind(B, BossId, TEXT("not_a_boss"));
+        bool bUnknown = false; for (const FCireLayoutIssue& I : ML::Validate(B)) bUnknown |= I.bError && I.MarkerId == BossId && I.Message.Contains(TEXT("unknown boss"));
+        Check(bUnknown, TEXT("Validate flags a Boss marker holding an unknown boss"));
+        ML::SetKind(B, BossId, Pick.ToString());
+        const FString Second = ML::Place(B, ML::BossSpawn, FVector2D(30000, 200), ECireMarkerOwner::Team1, 0.f);
+        ML::SetKind(B, Second, Pick.ToString());
+        bool bSameNote = false; for (const FCireLayoutIssue& I : ML::Validate(B)) bSameNote |= !I.bError && I.MarkerId == Second && I.Message.Contains(TEXT("same boss"));
+        Check(bSameNote, TEXT("two markers holding the same boss get a note (each marker should be a different boss)"));
+        // The realm grows to cover the Play Bounds (the town frame only), in 25 m steps, never shrinking.
+        FCireBattlefieldRoutes Town; Town.bTownFrame = true; Town.MinX = -23500; Town.MaxX = 23500; Town.HalfWidth = 19500;
+        Town.PlayBounds = {FVector2D(-26219.8, -952.3), FVector2D(9782.2, 24937.4), FVector2D(31935.8, -3500.1), FVector2D(1573.8, -17410.1)};
+        Check(CireLanePath::GrowRealmToPlayBounds(Town) && Town.MinX == -30000.f && Town.MaxX == 35000.f && Town.HalfWidth == 27500.f,
+            FString::Printf(TEXT("the town realm grows to the Play Bounds plus margin (%.0f..%.0f, +-%.0f)"), Town.MinX, Town.MaxX, Town.HalfWidth));
+        Check(!CireLanePath::GrowRealmToPlayBounds(Town), TEXT("the same polygon keeps the same realm (no restart needed)"));
+        FCireBattlefieldRoutes Small = Town; Small.PlayBounds = {FVector2D(-100, -100), FVector2D(100, -100), FVector2D(0, 100)};
+        Check(!CireLanePath::GrowRealmToPlayBounds(Small) && Small.MinX == Town.MinX && Small.HalfWidth == Town.HalfWidth, TEXT("a smaller polygon never shrinks the realm"));
+        FCireBattlefieldRoutes Proc = Base; Proc.PlayBounds = Town.PlayBounds;
+        Check(!CireLanePath::GrowRealmToPlayBounds(Proc) && Proc.HalfWidth == Base.HalfWidth, TEXT("the procedural realm is never grown"));
+        // The editor's realm check: a marker inside the Play Bounds but outside the realm is named as such (not "off the navmesh").
+        FCireLayoutChecks RealmOnly;
+        RealmOnly.InsideRealm = [](const FVector2D& P) { return P.X <= 20000; };
+        bool bOutside = false; for (const FCireLayoutIssue& I : ML::Validate(B, &RealmOnly)) bOutside |= I.bError && I.MarkerId == Second && I.Message.Contains(TEXT("outside the realm the game builds"));
+        Check(bOutside, TEXT("Validate names a marker outside the realm the game builds"));
+    }
+
     // ---------------------------------------------------------------- marker-driven spawns in the world
     if (bCompiled)
     {
@@ -238,20 +278,32 @@ bool CireLayoutWiring::RunTests(ACireGameMode* Mode)
             Check(bHeading, TEXT("every unit steers along its own path"));
             const TMap<int32, int32> Counts = CireWaveDirector::PathSpawnCounts(Mode, 0);
             Check(Counts.FindRef(2) == 4, TEXT("the director reports units per path"));
-            // A boss appears at the Boss marker and marches the path that starts nearest to it.
+            // outdoor-bosses: with outdoor bosses on (the default) the Boss markers are world-boss lairs, so a wave boss comes
+            // through its wave's spawn (path 0 first); "waveBossesAtMarkers": true restores the old rule: at the Boss marker,
+            // marching the path that starts nearest to it.
             FCireWaveDef BossWave = Wave; BossWave.Label = TEXT("Layout wiring boss");
             FCireWaveUnit Boss; Boss.Archetype = CireNPCArchetypes::Get().WaveBoss; Boss.bBoss = true; Boss.Count = 1; BossWave.Units = {Boss};
-            const int32 Before = Mode->Monsters.Num();
-            Check(CireWaveDirector::SpawnNow(Mode, BossWave, &Error), TEXT("the boss wave queues: ") + Error);
-            for (int32 I = 0; I < 16 && CireWaveDirector::HasPendingSpawns(Mode); ++I) CireWaveDirector::TickSurvival(Mode, 1.f);
-            bool bBossOk = Mode->Monsters.Num() == Before + 2;
-            for (int32 I = Before; I < Mode->Monsters.Num(); ++I)
+            for (const bool bAtMarkers : {false, true})
             {
-                ACireMonster* M = Mode->Monsters[I]; if (!IsValid(M)) { bBossOk = false; continue; }
-                Spawned.AddUnique(M); M->SetActorTickEnabled(false);
-                bBossOk &= M->bBoss && M->LanePath == 0 && FVector2D::Distance(CireLanePath::ToLocal(M->Lane, M->GetActorLocation()), FVector2D(41000, -500)) < 400.;
+                FCireOutdoorBossRules Rules = CireOutdoorBosses::Rules(); Rules.bEnabled = true; Rules.bWaveBossesAtMarkers = bAtMarkers;
+                CireOutdoorBosses::OverrideRules(&Rules);
+                CireWaveDirector::Initialize(Mode);
+                const int32 Before = Mode->Monsters.Num();
+                Check(CireWaveDirector::SpawnNow(Mode, BossWave, &Error), TEXT("the boss wave queues: ") + Error);
+                for (int32 I = 0; I < 16 && CireWaveDirector::HasPendingSpawns(Mode); ++I) CireWaveDirector::TickSurvival(Mode, 1.f);
+                bool bBossOk = Mode->Monsters.Num() == Before + 2;
+                for (int32 I = Before; I < Mode->Monsters.Num(); ++I)
+                {
+                    ACireMonster* M = Mode->Monsters[I]; if (!IsValid(M)) { bBossOk = false; continue; }
+                    Spawned.AddUnique(M); M->SetActorTickEnabled(false);
+                    const FVector2D At = CireLanePath::ToLocal(M->Lane, M->GetActorLocation());
+                    const FVector2D Want = bAtMarkers ? FVector2D(41000, -500) : CireLanePath::PathPoints(CireLanePath::Get(World), M->Lane, 0)[0];
+                    bBossOk &= M->bBoss && M->LanePath == 0 && FVector2D::Distance(At, Want) < 400. && !CireOutdoorBosses::IsOutdoorBoss(M);
+                }
+                Check(bBossOk, bAtMarkers ? TEXT("waveBossesAtMarkers: wave bosses spawn at the Boss marker of each realm and march the nearest path")
+                    : TEXT("outdoor bosses on: wave bosses spawn at their wave's spawn (the Boss markers are world-boss lairs) and march path 0"));
             }
-            Check(bBossOk, TEXT("bosses spawn at the Boss marker of each realm and march the nearest path"));
+            CireOutdoorBosses::OverrideRules(nullptr);
         }
     }
     UE_LOG(LogCireLayoutWiring, Display, TEXT("CIRE_LAYOUT_WIRING_%s checks=%d"), Check.bPass ? TEXT("PASS") : TEXT("FAIL"), Check.Count);

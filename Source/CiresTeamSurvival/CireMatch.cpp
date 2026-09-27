@@ -1,3 +1,4 @@
+#include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireLayoutWiring.h" // layout-wiring
 #include "CireJunglePacks.h" // jungle-packs
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
@@ -275,6 +276,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)CireLayoutWiring::InitializeProbe(this); // layout-wiring: -CireLayoutProbe town march + kite
 #if !UE_BUILD_SHIPPING
     if(!bFeedbackPreview)CireJunglePacks::InitializeProbe(this); // jungle-packs: -CireJungleProbe
+    if(!bFeedbackPreview)CireOutdoorBosses::InitializeProbe(this); // outdoor-bosses: -CireOutdoorBossProbe
 #endif
 #endif
     UE_LOG(LogCire,Display,TEXT("CIRE MATCH READY | 5v5 | %d cleared waves / %.0fs prep / %.0fs arena / %.0fs recovery | server authority"),S->WavesPerCycle,Clock.GetDurations().Intermission,Clock.GetDurations().Arena,RecoverySeconds);
@@ -371,6 +373,7 @@ void ACireGameMode::SpawnPacks() {
     // progression-shop: challenge packs are progression content. Bays unlock by round/wave
     // (LootTables.json packSchedule), deeper bays hold higher tiers, and tiers rise in later cycles.
     CireProgression::SpawnPacks(this,1);
+    CireOutdoorBosses::SpawnAll(this); // outdoor-bosses: one world boss per Boss marker in each realm (the living ones are kept)
 }
 void ACireGameMode::AwardTeam(int32 Team,int32 XP,int32 GoldAmount) {
     for(auto* H:Heroes) if(IsValid(H)&&H->TeamId==Team) { H->GrantExperience(XP); H->Gold+=GoldAmount; }
@@ -391,6 +394,7 @@ void ACireGameMode::MonsterKilled(ACireMonster* M,ACireHero* Killer) {
         if(!Remaining) {RewardedPacks.Add(M->PackId);bPackCompleted=true;}
     }
     CireLoot::OnMonsterKilled(this,M,Killer,bPackCompleted);
+    CireOutdoorBosses::OnKilled(this,M); // outdoor-bosses: its respawn timer (or it stays dead)
     CireWaveDirector::Forget(M); // wave-director
     Monsters.Remove(M);
 }
@@ -478,7 +482,8 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
         CycleWavesSpawned=0; S->CycleWavesDone=0;
         S->Announcement=TEXT("DEFEND THE GATES | A new wave cycle begins.");
         // Completed wave creeps are gone; optional challenge packs refresh each cycle.
-        for(int I=Monsters.Num()-1;I>=0;--I) if(IsValid(Monsters[I])&&Monsters[I]->PackId>=0) {Monsters[I]->Destroy();Monsters.RemoveAt(I);}
+        // outdoor-bosses: world bosses persist across cycles (they live and respawn on their own timer).
+        for(int I=Monsters.Num()-1;I>=0;--I) if(IsValid(Monsters[I])&&Monsters[I]->PackId>=0&&!CireOutdoorBosses::IsOutdoorBoss(Monsters[I])) {Monsters[I]->Destroy();Monsters.RemoveAt(I);}
         RewardedPacks.Reset();
         SpawnPacks(); WaveTimer=0;
         // wave-director: the first wave's authored delay, and the finite cycle count.
@@ -545,6 +550,7 @@ void ACireGameMode::Tick(float Dt) {
     CireLayoutWiring::TickProbe(this,Dt); // layout-wiring: -CireLayoutProbe
 #if !UE_BUILD_SHIPPING
     CireJunglePacks::TickProbe(this,Dt); // jungle-packs: -CireJungleProbe
+    CireOutdoorBosses::TickProbe(this,Dt); // outdoor-bosses: -CireOutdoorBossProbe
 #endif
 #endif
     auto* S=GetGameState<ACireGameState>(); if(!S) return;
@@ -564,6 +570,7 @@ void ACireGameMode::Tick(float Dt) {
             Args.Contains(TEXT("CireSmoke"))||Args.Contains(TEXT("CireExpansionNet"))||Args.Contains(TEXT("CireNoReplay"));
         if(!Test)if(auto* Replay=CireReplay::Get(GetWorld()))Replay->StartRecording();
     }
+    CireOutdoorBosses::Tick(this,Dt); // outdoor-bosses: respawn timers
     const auto& Dev=CireDeveloperTools::Get(GetWorld());
     for(const auto& Event:Clock.Advance(Dev.bEnabled&&Dev.bFreezePhaseClock?0.f:Dt)) {
         if(Event.ArenaTimedOut) ResolveArena();
