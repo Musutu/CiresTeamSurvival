@@ -215,6 +215,32 @@
     "npc.ink.start": {
       "packVolume": 0.7
     },
+    "ui_toast": {
+      "packVolume": 0.55
+    },
+    "ui_shop_close": {
+      "packVolume": 0.8
+    },
+    "banner_wave": {
+      "packVolume": 0.9
+    },
+    "banner_arena": {
+      "packVolume": 0.9,
+      "packPitch": [
+        0.9,
+        0.96
+      ]
+    },
+    "banner_boss": {
+      "packVolume": 0.9,
+      "packPitch": [
+        0.85,
+        0.92
+      ]
+    },
+    "banner_challenge": {
+      "packVolume": 0.8
+    },
     "weapon.mace.impact": {
       "packVolume": 1.7
     },
@@ -1152,7 +1178,12 @@
       "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_3-1_wav",
       "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_3-2_wav",
       "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_3-3_wav",
-      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_3-4_wav"
+      "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_3-4_wav",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Feedback_Digital_Subtle_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Feedback_Digital_Subtle_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Feedback_Digital_Subtle_03_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Feedback_Digital_Subtle_04_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Feedback_Digital_Subtle_05_mono"
     ],
     "aura_heal": [
       "/Game/Magic_Spell_SFX_Pack_Vol1/General_Spells_and_Effects/wav/Positive_Magic_Effect_8-1_wav",
@@ -1235,25 +1266,39 @@
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Generic_Click_01_mono",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Generic_Click_02_mono",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Select_01_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Select_02_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Select_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Click_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Click_02_mono"
     ],
     "ui_hover": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Hover_01_mono",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Hover_02_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Hover_04_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Hover_04_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Hover_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Hover_03_mono"
     ],
     "ui_skill_hover": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Hover_03_stereo",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Hover_05_stereo"
     ],
     "ui_open": [
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Inventory_Window_Open_stereo"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Inventory_Window_Open_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Inventory_Window_Open_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Inventory_Window_Open_stereo"
     ],
     "ui_close": [
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Inventory_Window_Close_stereo"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Inventory_Window_Close_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Inventory_Window_Close_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Inventory_Window_Close_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Inventory_Window_Close_02_stereo"
     ],
     "ui_confirm": [
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Confirm_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Confirm_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Button_Confirm_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Button_Confirm_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Button_Confirm_03_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Button_Confirm_04_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Button_Confirm_05_mono"
     ],
     "ui_tab": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Toggle_01A_mono",
@@ -1263,11 +1308,14 @@
     ],
     "ui_undo": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Unequip_v1_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Unequip_v2_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Unequip_v2_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Skill_Unequip_mono"
     ],
     "ui_ready": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Success_01_stereo",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Success_02_stereo"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Success_02_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Success_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Success_02_stereo"
     ],
     "ui_ready_bell": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Bell_01_mono",
@@ -1279,24 +1327,34 @@
     ],
     "ui_error": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Error_01_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Error_02_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Error_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Error_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Error_02_mono"
     ],
     "ui_error_mana": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Tree_Error_mono"
     ],
     "ui_error_gold": [
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Item_Error_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Item_Error_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Item_Error_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Item_Error_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Item_Error_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Item_Error_03_mono"
     ],
     "ui_target": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Ping_01_mono",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Ping_02_stereo",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Ping_03_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Ping_04_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Ping_04_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Ping_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Ping_02_mono"
     ],
     "ui_threat": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Alert_02_mono",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Alert_03_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Alert_04_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Alert_04_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Alert_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Alert_02_mono"
     ],
     "ui_aggro_lost": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Discard_Thud_Bass_01_mono",
@@ -1305,29 +1363,39 @@
     ],
     "ui_skill_buy": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Attribute_Upgrade_v1_stereo",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Attribute_Upgrade_v2_stereo"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Attribute_Upgrade_v2_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Skill_Attribute_Upgrade_mono"
     ],
     "ui_skill_offer": [
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Window_Open_stereo"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Window_Open_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Skill_Window_Open_stereo"
     ],
     "ui_skill_learned": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Equip_v1_stereo",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Equip_v2_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Equip_v2_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Skill_Equip_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Skill_Equip_mono"
     ],
     "ui_buy_confirm": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Item_Upgrade_Success_v1_stereo",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Item_Upgrade_Success_v2_stereo"
     ],
     "ui_sell_confirm": [
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Item_Discard_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Item_Discard_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Item_Discard_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Item_Discard_mono"
     ],
     "loot_pickup": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Reward_Obtained_Small_01_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Reward_Obtained_Small_02_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Reward_Obtained_Small_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Cute_Fantasy_UI/WAV_Fantasy_UI_Cute_Item_Collect_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Cute_Fantasy_UI/WAV_Fantasy_UI_Cute_Item_Collect_02_mono"
     ],
     "loot_common": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Reward_Obtained_Small_01_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Reward_Obtained_Small_02_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Reward_Obtained_Small_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Cute_Fantasy_UI/WAV_Fantasy_UI_Cute_Item_Collect_03_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Cute_Fantasy_UI/WAV_Fantasy_UI_Cute_Item_Collect_04_mono"
     ],
     "loot_magic": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Item_Obtained_stereo",
@@ -1339,7 +1407,8 @@
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Reward_Obtained_03_stereo"
     ],
     "loot_epic": [
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_Epic_01_stereo"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_Epic_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Reward_Obtained_stereo"
     ],
     "sting.levelup": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Skill_Attribute_Add_mono"
@@ -1815,7 +1884,8 @@
     ],
     "coins_buy": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Purchase_v1_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Purchase_v2_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Purchase_v2_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Item_Upgrade_Success_stereo"
     ],
     "coins_sell": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Purchase_v1_mono",
@@ -1825,15 +1895,22 @@
     ],
     "level_up": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_New_Skill_Unlocked_stereo",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Skill_Upgrade_stereo"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Skill_Upgrade_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Skill_Unlock_Beep_Single_mono"
     ],
     "banner_prep": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Notification_Bell_03_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Notification_Bell_04_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Notification_Bell_04_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Cute_Fantasy_UI/WAV_Fantasy_UI_Cute_Notification_Bell_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Cute_Fantasy_UI/WAV_Fantasy_UI_Cute_Notification_Bell_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Cute_Fantasy_UI/WAV_Fantasy_UI_Cute_Notification_Bell_03_mono"
     ],
     "banner_cleared": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Impact_Bell_01_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Impact_Bell_02_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Impact_Bell_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Notification_Bell_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Notification_Bell_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Notification_Bell_03_mono"
     ],
     "banner_recovery": [
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Notification_Bell_Long_01_mono",
@@ -1843,7 +1920,10 @@
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_01_mono",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_02_mono",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_03_mono",
-      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_04_mono"
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_04_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_03_stereo"
     ],
     "teleport_channel": [
       "/Game/Magic_Spell_SFX_Pack_Vol1/Additional_and_Loops/wav/Arcane_Loop_1_wav"
@@ -1853,6 +1933,53 @@
       "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_6-2_wav",
       "/Game/Magic_Spell_SFX_Pack_Vol1/Arcane/wav/Arcane_Magic_Spell_6-3_wav",
       "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Whoosh_Enter_stereo"
+    ],
+    "ui_shop_close": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Inventory_Window_Close_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Inventory_Window_Exit_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Light_Fantasy_UI/WAV_Fantasy_UI_Light_Whoosh_Exit_stereo"
+    ],
+    "ui_toast": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Short_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Short_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_Tonal_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Notification_Tonal_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Ceramic_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Ceramic_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Ceramic_03_mono"
+    ],
+    "banner_wave": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Hit_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Hit_02_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Hit_03_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Hit_04_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Hit_05_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Impact_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Impact_02_mono"
+    ],
+    "banner_boss": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Pad_Long_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Boom_Pad_Long_02_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Error_Boom_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Error_Boom_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Error_Boom_03_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Dark_Fantasy_UI/WAV_Fantasy_UI_Dark_Error_Boom_04_mono"
+    ],
+    "banner_arena": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Notification_Ethnic_Drum_01v1_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Notification_Ethnic_Drum_01v2_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Notification_Ethnic_Drum_01v3_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Thud_Wood_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Thud_Wood_02_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Thud_Wood_03_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Thud_Wood_04_stereo"
+    ],
+    "banner_challenge": [
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Impact_01_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Generic_Fantasy_UI/WAV_Fantasy_UI_Gen_Notification_Impact_02_mono",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Transition_Hit_01_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Transition_Hit_02_stereo",
+      "/Game/Fantasy_UI_SFX_Pack/WAVs/Oriental_Fantasy_UI/WAV_Fantasy_UI_Oriental_Transition_Hit_03_stereo"
     ]
   }
 }

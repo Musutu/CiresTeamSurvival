@@ -3,7 +3,8 @@
 Every champion ability in Content/Data/Abilities.json gets its own signature system for the presentation roles
 it actually shows (CireFabVFX::FindFor tries "abilities.<id>.<role>" before the shared school set), and every
 BuffVisuals effect gets its own looping state overlay. Values are system stems as they appear in the packs
-(NS_ prefix dropped; Kakky FX Variety Pack Cascade systems keep their P_ky_ name), optionally (stem, scale).
+(NS_ prefix dropped; Kakky FX Variety Pack Cascade systems keep their P_ky_ name), optionally (stem, scale) or {"s": stem, "scale":, "tint": [r,g,b], "strength": 0..1} (pack-usage: recolour variants,
+so two abilities of one champion never share a look; heals read green, protection blue-white).
 
 Roles: c = cast (caster flare / heal flash on the target), p = projectile (follows the missile), i = impact,
 a = live area (scaled by the zone radius; telegraphs never get an overlay, so warnings stay dim).
@@ -19,40 +20,40 @@ Reviewed in Tools/RunAbilityVFXGallery.py / RunAuraGallery.py captures and delib
 
 ABILITY_VFX = {
     # --- Iron Warden (knight) ---
-    "shield_slam": {"c": "Light_Magic_Slash1", "i": "Light_Magic_Hit2"},
+    "shield_slam": {"c": "Earth_Spells_Slash", "i": "Earth_Spells_Hit3"},  # pack-usage: the paladin flail owns the holy slash
     "iron_guard": {"c": "Earth_Magic_Buff"},
     "war_cry": {"c": "Fire_Magic_Shockwave", "a": "Blood_Magic_Area1"},
-    "cleaving_strike": {"c": "Air_Magic_Slash3", "i": "Slash_Med", "a": "Air_Magic_AOE"},
+    "cleaving_strike": {"c": "Earth_Spells_Slash3", "i": {"s": "Air_Magic_Hit4", "tint": [1.0, 0.9, 0.6]}, "a": "Air_Magic_AOE"},
     "second_wind": {"c": "AreaBuff_Applied"},
     "protection_dome": {"c": "Light_Magic_Shield", "a": ("Light_Magic_Shield", 1.3)},
-    "bastion_of_dawn": {"c": "Light_Magic_Sword_Circle", "a": "Light_Magic_AOE1"},
+    "bastion_of_dawn": {"c": "Light_Magic_Sword_Circle", "a": {"s": "Light_Magic_AOE1", "tint": [1.0, 0.8, 0.3]}},
     "decimating_strike": {"c": "Dark_Magic_Slash2", "i": "Slash_High"},
-    "executioners_verdict": {"c": "Dark_Magic_Slash1", "i": "Blood_Magic_Explo"},
+    "executioners_verdict": {"c": "Dark_Magic_Slash1", "i": "Blood_Magic_Crystal4"},
     "last_stand": {"c": "Blood_Magic_Shield"},
     "challenge_of_iron": {"c": "Earth_Magic_Shockwave"},
-    "seismic_reprisal": {"c": "Earth_Magic_Spike3", "i": "Earth_Spells_Hit2", "a": "Earth_Magic_Meteors2"},
+    "seismic_reprisal": {"c": "Earth_Magic_Spike3", "i": "Earth_Magic_Stone3", "a": "Earth_Magic_Meteors2"},
     # --- Ranger ---
-    "piercing_shot": {"c": "Air_Magic_Muzzle3", "p": "Air_Magic_Arrow2", "i": "Air_Magic_Hit3"},
+    "piercing_shot": {"c": {"s": "Air_Magic_Muzzle3", "tint": [0.75, 0.85, 1.0]}, "p": "Air_Magic_Arrow2", "i": "Air_Magic_Hit3"},
     "frost_bind": {"c": "Ice_Magic_Muzzle", "p": "Ice_Magic_Spear", "i": "Ice_Magic_SpearSplash"},
     "shadow_step": {"c": "Shadow_Magic_Blink2", "i": "Shadow_Magic_Hit2"},
-    "venom_ground": {"c": "Posion_Magic_Wave1", "a": "Posion_Magic_Area2", "i": "Posion_Magic_Explosion2"},
+    "venom_ground": {"c": "Posion_Magic_Wave1", "a": {"s": "Posion_Magic_Area2", "tint": [0.6, 0.9, 0.1]}, "i": {"s": "Posion_Magic_Explosion2", "tint": [0.6, 0.9, 0.1]}},
     "grave_line": {"c": "Shadow_Magic_Line_Attack1", "a": "Shadow_Magic_Area_Line_Attack1", "i": "Shadow_Magic_Hit3"},
     "spectral_pack": {"c": "Shadow_Magic_Buff2", "i": "Dark_Magic_Hit_Orb"},
     "spectral_hunt": {"c": "Shadow_Magic_Mass_Projectile1", "p": "Shadow_Magic_Projectile2", "i": "Shadow_Magic_Explosion2"},
     "blight_sigil": {"c": "Posion_Magic_SpikeArea", "a": "Posion_Magic_Area3"},
     # --- Veil Scholar ---
-    "restoring_light": {"c": "Light_Magic_Heal", "i": "Light_Magic_Heal_Hit"},
-    "sanctuary": {"c": "Light_Magic_Circle", "a": "Light_Magic_Top_Area"},
+    "restoring_light": {"c": "Light_Magic_Heal", "i": {"s": "Light_Magic_Heal_Hit", "tint": [0.4, 1.0, 0.6]}},  # heals read green
+    "sanctuary": {"c": {"s": "Light_Magic_Circle", "tint": [0.5, 0.9, 1.0]}, "a": {"s": "Light_Magic_Top_Area", "tint": [0.5, 0.9, 1.0]}},  # protection reads blue-white
     "purify": {"c": "Light_Magic_Blink1"},
     "chain_spark": {"c": "Lightning_Magic_Blink2", "p": "Lightning_Magic_Projectile2", "i": "Lightning_Magic_Shield_Splash"},
-    "ember_lance": {"c": "Fire_Magic_Muzzle", "p": "Fire_Magic_Projectile3", "i": "Fire_Magic_SpearSplash"},
-    "renewal": {"c": "P_ky_healAura", "a": "Light_Magic_Area_Beam"},
+    "ember_lance": {"c": {"s": "Fire_Magic_Muzzle", "tint": [1.0, 0.15, 0.05], "strength": 0.8}, "p": "Fire_Magic_Projectile3", "i": "Fire_Magic_SpearSplash"},
+    "renewal": {"c": "P_ky_healAura", "a": {"s": "Light_Magic_Area_Beam", "tint": [0.4, 1.0, 0.6]}},
     "polymorph": {"c": "Air_Magic_Muzzle2", "i": "Air_Magic_Splash"},
     "starfall": {"c": "Air_Magic_Tornado1", "a": "P_ky_shootingStar1", "i": "Air_Magic_Hit4"},
     "mass_aegis": {"c": "Water_Magic_Shield"},
     "wellspring": {"c": "Water_Magic_Waterflow1", "i": "P_ky_waterBallHit", "a": "Water_Magic_Area2"},
     # --- Lancer / Summoner ---
-    "ashen_square": {"c": "Fire_Magic_Buff", "a": "Fire_Magic_Arena", "i": "Fire_Magic_Hit"},
+    "ashen_square": {"c": "Fire_Magic_Buff", "a": "Fire_Magic_Arena", "i": {"s": "Fire_Magic_Explosion", "tint": [0.55, 0.5, 0.5], "strength": 0.7}},  # ashen
     "oathbound_guardian": {"c": "Dark_Magic_Top2", "i": "Dark_Magic_Circle"},
     "summoned_wall": {"c": "Earth_Spells_Wall1", "a": "Earth_Spells_Wall2"},
     "cataclysm": {"c": "Fire_Magic_Circle", "i": "P_ky_explosion", "a": "P_ky_fireStorm"},
@@ -124,7 +125,7 @@ ABILITY_VFX = {
     # --- Gunblade ---
     "silver_shot": {"c": "P_ky_shotShockwave", "p": "Light_Magic_Projectile3", "i": "BulletHit_Med"},
     "hex_mark": {"c": "Shadow_Magic_Circle2", "i": "Dark_Magic_Debuff"},
-    "powder_flask": {"c": "Fire_Magic_Muzzle", "p": "Fire_Magic_Projectile4", "i": "Fire_Magic_Explosion", "a": "Fire_Magic_AOE"},
+    "powder_flask": {"c": "Fire_Magic_Orb", "p": "Fire_Magic_Projectile4", "i": "Fire_Magic_Explosion", "a": "Fire_Magic_AOE"},
     "blade_flurry": {"c": "Air_Magic_Blades", "i": "Slash_Low"},
     "hunters_stride": {"c": "Lightning_Magic_Dash", "a": "Lightning_Magic_Line1"},
     "warding_talisman": {"c": "Light_Magic_Shield_Splash"},
@@ -151,7 +152,7 @@ ABILITY_VFX = {
     "skitter_swarm": {"c": "Lightning_Magic_Blink1", "i": "Lightning_Magic_Blink2", "a": "Lightning_Magic_Area"},
     "arc_mine": {"c": "Lightning_Magic_Orb3", "i": "Lightning_Magic_Shockwave", "a": "Lightning_Magic_Tunder_Area"},
     "disruption_pylon": {"c": "Lightning_Magic_Orb", "a": "Lightning_Magic_Tunder_Circle1"},
-    "phase_lance": {"c": "Lightning_Magic_Blink1", "p": ("Air_Magic_Projectile2", 0.55), "i": "P_ky_ThunderBallHit"},
+    "phase_lance": {"c": {"s": "Lightning_Magic_Blink1", "tint": [0.9, 0.3, 1.0]}, "p": ("Air_Magic_Projectile2", 0.55), "i": "P_ky_ThunderBallHit"},
     "overcharge": {"c": "Lightning_Magic_Buff2"},
     "warp_obelisk": {"c": "Lightning_Magic_Tornado", "p": "Lightning_Magic_Laser", "a": "Lightning_Magic_Tornado_Area"},
     # --- Aetheri Warden ---
@@ -168,13 +169,13 @@ ABILITY_VFX = {
     "shield_wall": {"c": "Ice_Magic_Sheild"},
     "pavise": {"c": "Earth_Magic_Earth_Wall1", "a": "Earth_Magic_Earth_Wall1"},
     "mechanical_tank": {"c": "Earth_Magic_Stoneflow", "a": "Earth_Magic_Shockwave"},
-    "artillery": {"c": "Fire_Magic_Buff"},
+    "artillery": {"c": {"s": "Fire_Magic_Buff", "tint": [1.0, 0.55, 0.1]}},
     "eagle_eye": {"c": "Wing_Nature"},
     "longshot": {"c": "Air_Magic_Muzzle1"},
     # --- Dodge-roll skills (actives) ---
-    "tumble_strike": {"c": "Air_Magic_Slash5", "i": "Slash_Low"},
-    "mine_layer": {"c": "Earth_Magic_Muzzle", "a": "Earth_Magic_Spike4"},
-    "taunting_tumble": {"c": "Fire_Magic_Shockwave"},
+    "tumble_strike": {"c": "Air_Magic_Slash5", "i": "Slash_Med"},
+    "mine_layer": {"c": "Earth_Spells_Orb", "a": "Earth_Magic_Spike4"},
+    "taunting_tumble": {"c": "Earth_Spells_Shockwave"},
     "shield_tumble": {"c": "Light_Magic_Shield_Splash"},
     "venom_tumble": {"c": "Posion_Magic_Dash", "a": "Posion_Magic_PoisonFlow"},
     "shadow_dance": {"c": "Shadow_Magic_Dash1"},
@@ -182,9 +183,9 @@ ABILITY_VFX = {
     # --- Passives with a visible proc or trail ---
     "ember_wake": {"a": "Fire_Magic_Flame3"},
     "frost_wake": {"a": "Ice_Magic_Circle2"},
-    "executioner": {"i": "Slash_High"},
-    "headshot": {"i": "BulletHit_High"},
-    "moon_glaive": {"p": "Air_Magic_Wind_Blade", "i": "Air_Magic_Hit1"},
+    "executioner": {"i": "Blood_Magic_Explo2"},
+    "headshot": {"i": ("BrainBurst", 0.7)},
+    "moon_glaive": {"p": {"s": "Air_Magic_Wind_Blade", "tint": [0.6, 0.8, 1.0]}, "i": {"s": "Air_Magic_Hit1", "tint": [0.6, 0.8, 1.0]}},
     "drakish_ember_memory": {"p": "Fire_Magic_Projectile2", "i": "Fire_Magic_Hit"},
 }
 

@@ -16,6 +16,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "CireAbilityDB.h" // kits-complete: display-name lookups
+#include "CireRaces.h" // pack-usage: monster-ability coverage test
+#include "CireNPCArchetypes.h"
 
 namespace
 {
@@ -49,6 +51,7 @@ CireFabVFX::FEntry ParseEntry(const TSharedPtr<FJsonValue>& Value)
     const TArray<TSharedPtr<FJsonValue>>* Tint=nullptr;
     if(O->TryGetArrayField(TEXT("tint"),Tint)&&Tint->Num()>=3)
         E.Tint=FLinearColor((*Tint)[0]->AsNumber(),(*Tint)[1]->AsNumber(),(*Tint)[2]->AsNumber(),1);
+    double Strength=1;if(O->TryGetNumberField(TEXT("tintStrength"),Strength))E.TintStrength=FMath::Clamp(static_cast<float>(Strength),0.f,1.f); // pack-usage
     return E;
 }
 
@@ -203,6 +206,46 @@ void CireFabVFX::ApplyTint(UFXSystemComponent* Component, FLinearColor Tint)
     for(const FName& N:Names)Component->SetColorParameter(N,Tint);
 }
 
+int32 CireFabVFX::Recolor(UFXSystemComponent* Component, FLinearColor Tint, float Strength)
+{
+    UNiagaraComponent* Niagara=Cast<UNiagaraComponent>(Component);
+    UNiagaraSystem* System=Niagara?Niagara->GetAsset():nullptr;
+    if(!System||Tint.A<=0||!FMath::IsFinite(Strength)||Strength<=0)return 0;
+    Strength=FMath::Min(Strength,1.f);
+    const FLinearColor Want=FLinearColor(Tint.R,Tint.G,Tint.B,1).LinearRGBToHSV(); // R=hue 0..360, G=saturation, B=value
+    const FNiagaraUserRedirectionParameterStore& Store=System->GetExposedParameters();
+    TArray<FNiagaraVariable> Params;Store.GetUserParameters(Params);
+    int32 Changed=0;
+    for(const FNiagaraVariable& P:Params)
+    {
+        if(P.GetType()!=FNiagaraTypeDefinition::GetColorDef())continue;
+        const FLinearColor C=Store.GetParameterValue<FLinearColor>(P);
+        const float Value=FMath::Max3(C.R,C.G,C.B);
+        if(!FMath::IsFinite(Value)||Value<=0)continue;
+        FLinearColor HSV=FLinearColor(C.R/Value,C.G/Value,C.B/Value,1).LinearRGBToHSV(); // normalised: HDR intensity kept in Value
+        if(HSV.G<.12f)continue; // white / grey flashes and smoke stay neutral: the read of the burst is kept
+        // Hue moves the short way round the wheel; saturation never drops below the source's own.
+        float Delta=Want.R-HSV.R;if(Delta>180)Delta-=360;if(Delta<-180)Delta+=360;
+        HSV.R=FMath::Fmod(HSV.R+Delta*Strength+360.f,360.f);
+        HSV.G=FMath::Lerp(HSV.G,FMath::Max(HSV.G,Want.G),Strength);
+        FLinearColor Out=HSV.HSVToLinearRGB();
+        Out.R*=Value;Out.G*=Value;Out.B*=Value;Out.A=C.A;
+        Niagara->SetVariableLinearColor(P.GetName(),Out);++Changed;
+    }
+    return Changed;
+}
+
+void CireFabVFX::ApplyEntryTint(UFXSystemComponent* Component, const FEntry& Entry)
+{
+    if(!Component||Entry.Tint.A<=0)return;
+    Recolor(Component,Entry.Tint,Entry.TintStrength);
+}
+
+const CireFabVFX::FEntry* CireFabVFX::FindKey(const FString& Key, ERole Role)
+{
+    return Key.IsEmpty()?nullptr:Loaded().Abilities.Find(Key.ToLower()+TEXT(".")+RoleName(Role));
+}
+
 void CireFabVFX::Release(UFXSystemComponent* Component)
 {
     if(!Component)return;
@@ -327,6 +370,47 @@ bool CireFabVFX::RunTests(UWorld* World)
         T.Abilities.Remove(TEXT("__fab_probe__.cast"));
     }
     Release(nullptr);
+    // pack-usage: recolour variants, hit / kill / level-up signatures and full monster-ability coverage are data.
+    {
+        FEntry Tinted;Tinted.Tint=FLinearColor(1,0,0,1);
+        Check(Recolor(nullptr,Tinted.Tint,1.f)==0,TEXT("recolour of no component changes nothing"));
+        ApplyEntryTint(nullptr,Tinted);
+        Check(FindKey(TEXT(""),ERole::Impact)==nullptr,TEXT("empty key finds nothing"));
+        for(const auto& Pair:Table().Abilities)
+        {
+            const FEntry& E=Pair.Value;
+            Check(FMath::IsFinite(E.Tint.R)&&FMath::IsFinite(E.Tint.G)&&FMath::IsFinite(E.Tint.B)&&E.Tint.GetMin()>=0,*FString::Printf(TEXT("tint of %s is a colour"),*Pair.Key));
+            Check(E.TintStrength>=0&&E.TintStrength<=1,*FString::Printf(TEXT("tint strength of %s in 0..1"),*Pair.Key));
+        }
+        for(const TCHAR* Key:{TEXT("hit.flesh"),TEXT("hit.armor"),TEXT("hit.stone"),TEXT("hit.wood"),TEXT("hit.none"),TEXT("hit.flesh.crit"),
+            TEXT("kill.humanoid"),TEXT("kill.creature"),TEXT("kill.golem"),TEXT("kill.ethereal"),TEXT("kill.boss")})
+            Check(FindKey(Key,ERole::Impact)!=nullptr,*FString::Printf(TEXT("hit / kill signature %s in FabVFX.json"),Key));
+        Check(FindKey(TEXT("level_up"),ERole::Cast)!=nullptr,TEXT("level_up flourish in FabVFX.json"));
+        // Every monster race ability owns a signature (at least one role), and within one unit no two abilities share the same
+        // cast look (system + tint): "no two nearby spells look alike".
+        int32 Monsters=0,Covered=0;TArray<FString> Missing,Twins;
+        for(const FName Race:CireRaces::Get().Order)if(const auto* R=CireRaces::FindRace(Race))
+            for(const FName Unit:R->Units)if(const auto* A=CireNPCArchetypes::Find(Unit))
+            {
+                TSet<FString> Looks;
+                for(const FCireNPCAbility& Ab:A->Abilities)
+                {
+                    if(Ab.bBasic)continue; // basic melee / bolts take the hit signatures (weapon x body), not a per-ability look
+                    ++Monsters;bool bAny=false;
+                    for(int32 I=0;I<static_cast<int32>(ERole::Count);++I)if(FindAbility(Ab.Id,static_cast<ERole>(I)))bAny=true;
+                    if(bAny)++Covered;else if(Missing.Num()<12)Missing.Add(Ab.Id.ToString());
+                    if(const FEntry* C=FindAbility(Ab.Id,ERole::Cast);C&&C->Candidates.Num())
+                    {
+                        const FString Look=C->Candidates[0]+C->Tint.ToString();
+                        if(Looks.Contains(Look)){if(Twins.Num()<12)Twins.Add(Unit.ToString()+TEXT("/")+Ab.Id.ToString());}
+                        else Looks.Add(Look);
+                    }
+                }
+            }
+        Check(Monsters>0&&Covered==Monsters,*FString::Printf(TEXT("every monster ability has a Fab signature (%d/%d; missing: %s)"),Covered,Monsters,*FString::Join(Missing,TEXT(", "))));
+        Check(Twins.IsEmpty(),*FString::Printf(TEXT("no two abilities of one unit share a cast look (%s)"),*FString::Join(Twins,TEXT(", "))));
+        UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_VFX monster abilities with a signature: %d/%d"),Covered,Monsters);
+    }
     const FCoverage Cov=Coverage();
     UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_VFX coverage %d/%d slots resolve (packs present: %s); abilities %d with %d/%d own slots resolving; %d Cascade"),
         Cov.Resolved,Cov.Configured,Cov.Resolved>0?TEXT("yes"):TEXT("no"),Cov.Abilities,Cov.AbilitySlotsResolved,Cov.AbilitySlots,Cov.Cascade);

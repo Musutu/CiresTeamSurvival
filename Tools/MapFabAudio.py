@@ -340,6 +340,50 @@ RULES.update([
     ("teleport_arrive", [ms(r"Arcane_Magic_Spell_6-\d"), ui(r"Light_Whoosh_Enter")]),
 ])
 
+# pack-usage (Eric: purchased pack sounds win everywhere): the remaining UI moments and more takes per cue so menus, the
+# loot window, toasts, vendors, the Skill Shop, the ready check and the banners all draw on the Fantasy UI kit. The Dark set
+# stays the base menu voice; Generic / Light takes widen the variety; the Oriental drums carry the arena banner.
+RULES.update([
+    ("ui_open", [ui(r"Dark_Inventory_Window_Open"), ui(r"Gen_Inventory_Window_Open"), ui(r"Light_Inventory_Window_Open")]),
+    ("ui_close", [ui(r"Dark_Inventory_Window_Close"), ui(r"Gen_Inventory_Window_Close"), ui(r"Light_Inventory_Window_Close_0\d")]),
+    ("ui_shop_close", [ui(r"Dark_Inventory_Window_Close"), ui(r"Gen_Inventory_Window_Exit"), ui(r"Light_Whoosh_Exit")]),
+    ("ui_toast", [ui(r"Gen_Notification_Short_0\d"), ui(r"Dark_Notification_Tonal_0\d"), ui(r"Gen_Notification_Ceramic_0\d")]),
+    ("ui_click", [ui(r"Dark_Generic_Click_0\d"), ui(r"Dark_Select_0\d"), ui(r"Gen_Click_0\d")]),
+    ("ui_hover", [ui(r"Dark_Hover_0[124]"), ui(r"Gen_Hover_0\d")]),
+    ("ui_confirm", [ui(r"Gen_Confirm"), ui(r"Light_Button_Confirm_0\d")]),
+    ("ui_tab", [ui(r"Dark_Toggle_0\d[AB]"), ui(r"Gen_Toggle_0\d")]),
+    ("ui_error", [ui(r"Dark_Error_0[12]"), ui(r"Gen_Error_0\d")]),
+    ("ui_error_gold", [ui(r"Dark_Item_Error"), ui(r"Gen_Item_Error"), ui(r"Light_Item_Error_0\d")]),
+    ("ui_undo", [ui(r"Dark_Skill_Unequip_v\d"), ui(r"Gen_Skill_Unequip")]),
+    ("ui_skill_offer", [ui(r"Dark_Skill_Window_Open"), ui(r"Gen_Skill_Window_Open")]),
+    ("ui_skill_learned", [ui(r"Dark_Skill_Equip_v\d"), ui(r"Gen_Skill_Equip"), ui(r"Light_Skill_Equip")]),
+    ("ui_skill_buy", [ui(r"Dark_Skill_Attribute_Upgrade_v\d"), ui(r"Gen_Skill_Attribute_Upgrade"), ui(r"Light_Skill_Attribute_Upgrade_0\d")]),
+    ("ui_ready", [ui(r"Dark_Success_0\d"), ui(r"Gen_Success_0\d")]),
+    ("ui_threat", [ui(r"Dark_Alert_0[234]"), ui(r"Gen_Alert_0\d")]),
+    ("ui_target", [ui(r"Dark_Ping_0\d"), ui(r"Light_Ping_0[12]")]),
+    ("level_up", [ui(r"Gen_New_Skill_Unlocked"), ui(r"Gen_Skill_Upgrade"), ui(r"Light_Skill_Unlock_Beep_Single")]),
+    ("loot_pickup", [ui(r"Gen_Reward_Obtained_Small_0\d"), ui(r"Cute_Item_Collect_0[12]")]),
+    ("loot_common", [ui(r"Gen_Reward_Obtained_Small_0\d"), ui(r"Cute_Item_Collect_0[34]")]),
+    ("loot_epic", [ui(r"Dark_Notification_Epic_01"), ui(r"Oriental_Reward_Obtained"), ui(r"Cute_Reward_Obtained")]),
+    ("coins_buy", [ui(r"Light_Purchase_v\d"), ui(r"Gen_Item_Upgrade_Success")]),
+    ("ui_buy_confirm", [ui(r"Dark_Item_Upgrade_Success_v\d"), ui(r"Light_Item_Upgrade_Success_0\d")]),
+    ("ui_sell_confirm", [ui(r"Dark_Item_Discard"), ui(r"Gen_Item_Discard"), ui(r"Light_Item_Discard")]),
+    ("banner_wave", [ui(r"Dark_Boom_Hit_0\d"), ui(r"Gen_Notification_Impact_0\d")]),
+    ("banner_boss", [ui(r"Dark_Boom_Pad_Long_0\d"), ui(r"Dark_Error_Boom_0\d")]),
+    ("banner_arena", [ui(r"Oriental_Notification_Ethnic_Drum_01v\d"), ui(r"Oriental_Thud_Wood_0\d")]),
+    ("banner_challenge", [ui(r"Gen_Notification_Impact_0\d"), ui(r"Oriental_Transition_Hit_0\d")]),
+    ("banner_cleared", [ui(r"Gen_Notification_Impact_Bell_0\d"), ui(r"Oriental_Notification_Bell_0[1-3]")]),
+    ("banner_recovery", [ui(r"Light_Notification_Bell_Long_0\d"), ui(r"Gen_Notification_Flute")]),
+    ("banner_prep", [ui(r"Light_Notification_Bell_0[34]"), ui(r"Cute_Notification_Bell_0\d")]),
+    ("banner_custom", [ui(r"Dark_Notification_0\d"), ui(r"Gen_Notification_0\d")]),
+    ("aura_apply", [(MS, num("Positive_Magic_Effect", 1, 3)), ui(r"Light_Feedback_Digital_Subtle_0\d")]),
+])
+DEFAULT_TUNING_EXTRA = OrderedDict([
+    ("ui_toast", {"packVolume": .55}), ("ui_shop_close", {"packVolume": .8}), ("banner_wave", {"packVolume": .9}),
+    ("banner_arena", {"packVolume": .9, "packPitch": [.9, .96]}), ("banner_boss", {"packVolume": .9, "packPitch": [.85, .92]}),
+    ("banner_challenge", {"packVolume": .8}),
+])
+
 # Loudness trims for pack members (linear, applied instead of nothing). Filled from the probe's levels / by ear.
 DEFAULT_TUNING = OrderedDict([
     ("weapon.pistol.shot", {"packVolume": .8}), ("weapon.pistol.heavy", {"packVolume": .8}), ("weapon.blunderbuss.shot", {"packVolume": .75}),
@@ -423,6 +467,7 @@ def main() -> int:
         elif any(listing.get(r[0][0]) for r in rules):
             unmatched.append(cue)
     tuning = OrderedDict(DEFAULT_TUNING)
+    tuning.update(DEFAULT_TUNING_EXTRA)
     tuning.update(previous.get("tuning") or {})
     out = OrderedDict([
         ("_comment", "Fab audio pack -> cue map written by Tools/MapFabAudio.py. Object paths only: the packs are licensed and stay local "

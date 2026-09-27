@@ -348,7 +348,7 @@ void UCireAuraComponent::UpdateFabAuras(bool bAllowed,int32& Budget,float Intens
         const auto* Def=CireAuraData::Find(Pair.Key);const auto* Entry=FabAuraEntry(*Def);
         const float Scale=Entry->Scale*FMath::Lerp(.75f,1.f,FMath::Clamp(Intensity,0.f,1.f))*CireAbilityVFX::AuraLayerScale(GetWorld()); // vfx-scale: aura size (1.1)
         UFXSystemComponent* FX=CireFabVFX::SpawnAttached(Pair.Value,Unit->GetRootComponent(),FVector(0,0,-88.f),Scale,false);
-        CireFabVFX::ApplyTint(FX,Entry->Tint);
+        CireFabVFX::ApplyEntryTint(FX,*Entry); // pack-usage: recolour variants
         if(FX)FabAuras.Add(Pair.Key,FX);
     }
 }

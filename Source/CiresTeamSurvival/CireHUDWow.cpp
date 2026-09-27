@@ -36,6 +36,8 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Sound/SoundBase.h"
 #include "CireAudio.h" // audio: recorded cues for level-up, aggro and phase banners
+#include "CireFabVFX.h" // pack-usage: level-up flourish
+#include "CireAbilityVFX.h" // pack-usage: spell-effect scale
 #include "UObject/ConstructorHelpers.h"
 
 namespace
@@ -825,6 +827,11 @@ void ACireHUD::UpdateLevelUps(ACireHero* Hero)
         if(H->Level>*Seen&&H->bDrafted&&UISettings.bLevelUpEffect)
         {
             LevelBursts.Add({H,H->Level,Now,H==Hero});
+            // pack-usage: a Fab level-up flourish on the champion (FabVFX.json abilities "level_up".cast) beside the procedural burst.
+            if(CireFabVFX::Enabled()&&H->GetRootComponent())
+                if(const auto* E=CireFabVFX::FindKey(TEXT("level_up"),CireFabVFX::ERole::Cast))
+                    if(UFXSystemAsset* S=CireFabVFX::Resolve(E))
+                        CireFabVFX::ApplyEntryTint(CireFabVFX::SpawnAttached(S,H->GetRootComponent(),FVector(0,0,-88.f),E->Scale*CireAbilityVFX::SpellEffectScale(GetWorld()),true),*E);
             if(H==Hero){PlayWowSound(0,1.f);CireBanners::Show(ECireBanner::LevelUp,FString::Printf(TEXT("Level %d"),H->Level),TEXT("+2 primary attribute  /  +1 to the others"));}
         }
         *Seen=H->Level;
