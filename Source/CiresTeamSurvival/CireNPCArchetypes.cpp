@@ -1,4 +1,5 @@
 #include "CireNPCArchetypes.h"
+#include "CireAbilityShapes.h" // aoe-scale
 #include "CireJunglePacks.h"
 #include "CireMonsterExpansion.h" // monster-expansion
 #include "CireSkillTuning.h"
@@ -99,6 +100,8 @@ bool ParseAbility(const TSharedPtr<FJsonObject>& O,FCireNPCAbility& A,FString& E
         Number(O,TEXT("healthThreshold"),A.HealthThreshold,0,1,Error,Where)&&Number(O,TEXT("initialCooldown"),A.InitialCooldown,0,600,Error,Where)&&
         Color(O,TEXT("color"),A.Color,Error,Where);
     if(!bNumbers)return false;
+    // aoe-scale: monster circles, cones, lines and charge widths grow like the champions' (lengths / ranges stay).
+    A.Radius=CireAbilityShapes::AoE(A.Radius);A.Width=CireAbilityShapes::AoE(A.Width);
     // monster-races: riders, summons and presentation ids.
     {
         float Count=1;FString Text;

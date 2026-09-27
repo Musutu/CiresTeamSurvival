@@ -79,8 +79,27 @@ namespace CireAbilityShapes
     CIRESTEAMSURVIVAL_API const FCireNPCArchetype* FindOwner(FName AbilityId, const FCireNPCAbility** OutAbility = nullptr);
     // Every implemented champion ability id (actives, ultimates, passives, role skills) and basic attack style.
     CIRESTEAMSURVIVAL_API TArray<FName> ChampionAbilityIds();
-    // Hard-coded champion radii (CireHero.cpp) mirrored here; the behavioural tests cast each one against
-    // dummies just inside and outside this radius, so any drift fails loudly.
-    constexpr float CleaveRadius = 320.f, WarCryRadius = 850.f, SanctuaryRadius = 600.f, BastionRadius = 650.f,
-        RenewalRadius = 1000.f, CataclysmRadius = 550.f, ChainRadius = 500.f;
+    // aoe-scale (Eric 2026-09-26: "AoE hit radius +30% ... keep it coupled to the visuals"): GAMEPLAY area-of-effect hit
+    // radii grow by Content/Data/VFXTuning.json "aoeRadiusScale" (1.3): ground zones, self / target circles and cones,
+    // line-area and skillshot widths, teleport / portal rings, chain hops, splash and trigger radii, for champions and
+    // monsters alike. Ranges, lane lengths and cast ranges do not change. The scale is applied where each radius ORIGINATES
+    // (the Ability Database, NPC ability, CombatTuning and AstraAbilities loaders, the tech construct recipes and the
+    // champion constants below), so the hit test and the telegraph (Describe / aim preview / zone painter) read the same
+    // grown value and always agree. Data only: the Options slider and the presentation cvars never change it.
+    constexpr float DefaultAoERadiusScale = 1.3f, MinAoERadiusScale = .5f, MaxAoERadiusScale = 2.f;
+    CIRESTEAMSURVIVAL_API float AoERadiusScale();
+    // Radius x AoERadiusScale() (an authored / base radius -> the gameplay radius).
+    inline float AoE(float Radius) { return Radius * AoERadiusScale(); }
+
+    // Hard-coded champion radii (CireHero.cpp reads these); the behavioural tests cast each one against dummies just
+    // inside and outside this radius, so any drift fails loudly. The *Base values are the authored sizes before aoe-scale.
+    constexpr float CleaveRadiusBase = 320.f, WarCryRadiusBase = 850.f, SanctuaryRadiusBase = 600.f, BastionRadiusBase = 650.f,
+        RenewalRadiusBase = 1000.f, CataclysmRadiusBase = 550.f, ChainRadiusBase = 500.f;
+    inline float CleaveRadius() { return AoE(CleaveRadiusBase); }
+    inline float WarCryRadius() { return AoE(WarCryRadiusBase); }
+    inline float SanctuaryRadius() { return AoE(SanctuaryRadiusBase); }
+    inline float BastionRadius() { return AoE(BastionRadiusBase); }
+    inline float RenewalRadius() { return AoE(RenewalRadiusBase); }
+    inline float CataclysmRadius() { return AoE(CataclysmRadiusBase); }
+    inline float ChainRadius() { return AoE(ChainRadiusBase); }
 }

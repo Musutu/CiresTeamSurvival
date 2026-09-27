@@ -1,5 +1,6 @@
 // new-champions: Aetheri Constructs (see CireTechConstructs.h, Docs/NewChampions.md).
 #include "CireTechConstructs.h"
+#include "CireAbilityShapes.h" // aoe-scale
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireKitSkills.h" // kits-complete
 #include "CireScalingKits.h" // scaling-kits
@@ -82,6 +83,8 @@ TArray<FCireTechRecipe> BuildRecipes()
       X.Interval = .5f; X.Radius = 500; X.Magnitude = .25f; X.Limit = 1; X.bMonster = true; Out.Add(X); }
     { auto X = R(TEXT("npc_stasis_mine"), TEXT("Stasis Mine"), K::Trap, TEXT("stasis"), 60, 25, 50, 20, Violet);
       X.Damage = 1; X.Trigger = 150; X.Radius = 170; X.Magnitude = 1.2f; X.Limit = 3; X.bMonster = true; Out.Add(X); }
+    // aoe-scale: field, trigger and splash radii grow (turret Range is reach and stays).
+    for (FCireTechRecipe& X : Out) { X.Trigger = CireAbilityShapes::AoE(X.Trigger); X.Radius = CireAbilityShapes::AoE(X.Radius); X.Splash = CireAbilityShapes::AoE(X.Splash); }
     return Out;
 }
 

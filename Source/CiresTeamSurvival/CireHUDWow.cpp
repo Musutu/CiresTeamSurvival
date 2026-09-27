@@ -349,6 +349,50 @@ FString CireUnitFrameHeader(bool bMonster,bool bHero,bool bSelf,int32 Reaction,i
     if(bHero)return Prefix+(bSelf?TEXT("YOU"):Reaction==2?TEXT("ALLY"):TEXT("ENEMY"))+TEXT("  /  ")+Role;
     return Prefix+TEXT("CONSTRUCT");
 }
+// vfx-scale (Eric 2026-09-26): special monsters no longer glow; their state is a small icon after the name / T# tag, in the
+// same place and size as the tier tag: rare (violet gem), bonus loot (gold coin), boss (red skull), enraged (orange flame).
+float ACireHUD::MonsterBadgesWidth(const ACireMonster* Monster,float S)
+{
+    const int32 N=CireZones::BadgesOf(Monster).Num();return N>0?N*(S+3.f)+1.f:0.f;
+}
+float ACireHUD::DrawMonsterBadges(const ACireMonster* Monster,float X,float CY,float S,float Alpha)
+{
+    const TArray<CireZones::EBadge> Badges=CireZones::BadgesOf(Monster);
+    if(Badges.IsEmpty()||Alpha<=.01f)return Badges.Num()>0?MonsterBadgesWidth(Monster,S):0.f;
+    const FLinearColor Fade(1,1,1,Alpha);
+    float PX=X+1.f;
+    for(const CireZones::EBadge B:Badges)
+    {
+        const float R=S*.5f,CX=PX+R;const FLinearColor C=CireZones::BadgeColor(B)*Fade,Dark=FLinearColor(.03f,.03f,.04f,.82f*Alpha);
+        Disc(CX,CY,R,Dark,20);Circle(CX,CY,R,C*FLinearColor(.8f,.8f,.8f,1),1.f,20);
+        switch(B)
+        {
+        case CireZones::EBadge::Rare: // faceted gem
+            Tri(FVector2D(CX,CY-R*.72f),FVector2D(CX+R*.6f,CY-R*.1f),FVector2D(CX-R*.6f,CY-R*.1f),C);
+            Tri(FVector2D(CX-R*.6f,CY-R*.1f),FVector2D(CX+R*.6f,CY-R*.1f),FVector2D(CX,CY+R*.72f),C*FLinearColor(.7f,.7f,.7f,1));
+            Tri(FVector2D(CX,CY-R*.5f),FVector2D(CX+R*.22f,CY-R*.12f),FVector2D(CX-R*.22f,CY-R*.12f),FLinearColor(1,1,1,.7f*Alpha));
+            break;
+        case CireZones::EBadge::BonusLoot: // coin
+            Disc(CX,CY,R*.62f,C,16);Circle(CX,CY,R*.44f,FLinearColor(.45f,.3f,.02f,Alpha),1.f,16);
+            Line(CX,CY-R*.3f,CX,CY+R*.3f,FLinearColor(.45f,.3f,.02f,Alpha),1.4f);
+            break;
+        case CireZones::EBadge::Boss: // skull
+            Disc(CX,CY-R*.12f,R*.52f,C,14);Panel(CX-R*.3f,CY+R*.22f,R*.6f,R*.34f,C);
+            Disc(CX-R*.2f,CY-R*.15f,R*.14f,Dark,8);Disc(CX+R*.2f,CY-R*.15f,R*.14f,Dark,8);
+            break;
+        case CireZones::EBadge::Enraged: // flame
+            Tri(FVector2D(CX,CY-R*.8f),FVector2D(CX+R*.5f,CY+R*.2f),FVector2D(CX-R*.5f,CY+R*.2f),C);
+            Disc(CX,CY+R*.22f,R*.48f,C,14);
+            Tri(FVector2D(CX+R*.05f,CY-R*.25f),FVector2D(CX+R*.26f,CY+R*.3f),FVector2D(CX-R*.2f,CY+R*.3f),FLinearColor(1.f,.9f,.35f,Alpha));
+            Disc(CX,CY+R*.32f,R*.22f,FLinearColor(1.f,.9f,.35f,Alpha),10);
+            break;
+        default:break;
+        }
+        ++BadgeIconsDrawn;PX+=S+3.f;
+    }
+    return MonsterBadgesWidth(Monster,S);
+}
+
 void ACireHUD::DrawPortrait(AActor* Actor,float CX,float CY,float R,bool bSmall)
 {
     const auto* Self=Cast<ACireHero>(PlayerOwner?PlayerOwner->GetPawn():nullptr);
@@ -462,9 +506,12 @@ void ACireHUD::DrawUnit(AActor* Actor,const FString& Caption,bool bFocus)
     {
         // tier-readability: "T3" next to the name, in the tier colour.
         const float NS=bFocus?11.f:13.f;const FString Tag=CireZones::TierTag(U.PackTier);const float TagW=Tag.IsEmpty()?0.f:TextWidthFont(Tag,NS,ECireFont::Numbers)+6.f;
-        const FString Shown=Painter().Fit(U.Name,NS,BW-8-TagW,ECireFont::Bold);
+        const float IconS=NH-4.f,IconW=MonsterBadgesWidth(Mob,IconS); // vfx-scale: rare / bonus / boss / enraged icons
+        const FString Shown=Painter().Fit(U.Name,NS,BW-8-TagW-IconW,ECireFont::Bold);
         TextFx(Shown,14,NY+(bFocus?1.f:1.5f),NS,FLinearColor::White,ECireFont::Bold,true,false);
-        if(!Tag.IsEmpty())TextFx(Tag,14+TextWidthFont(Shown,NS,ECireFont::Bold)+6.f,NY+(bFocus?1.f:1.5f),NS,TierC,ECireFont::Numbers,true,false);
+        const float AfterName=14+TextWidthFont(Shown,NS,ECireFont::Bold)+6.f;
+        if(!Tag.IsEmpty())TextFx(Tag,AfterName,NY+(bFocus?1.f:1.5f),NS,TierC,ECireFont::Numbers,true,false);
+        if(IconW>0)DrawMonsterBadges(Mob,AfterName+TagW-(Tag.IsEmpty()?2.f:3.f),NY+NH*.5f,IconS);
     }
     const float HY=NY+NH+2,HH=bFocus?14.f:18.f;
     const float HF=Frac(U.HP,U.MaxHP);
@@ -580,9 +627,12 @@ void ACireHUD::DrawBossFrames(ACireHero* Hero,ACireController* Controller)
         {
             // tier-readability: pack leaders carry their pack's "T#" after the name, in the tier colour.
             const FString Tag=CireZones::TierTag(CireZones::TierOf(M));const float TagW=Tag.IsEmpty()?0.f:TextWidthFont(Tag,10.5f,ECireFont::Numbers)+5.f;
-            const FString Shown=Painter().Fit(M->GetNPCDisplayName(),10.5f,(bEnraged||bIsFocus?118.f:150.f)-TagW,ECireFont::Bold);
+            const float IconW=MonsterBadgesWidth(M,11.f); // vfx-scale: rare / bonus / boss / enraged icons
+            const FString Shown=Painter().Fit(M->GetNPCDisplayName(),10.5f,(bEnraged||bIsFocus?118.f:150.f)-TagW-IconW,ECireFont::Bold);
             TextFx(Shown,30,Y+3,10.5f,bSkull?FLinearColor(1.f,.45f,.35f,1):WowGold,ECireFont::Bold,true,false);
-            if(!Tag.IsEmpty())TextFx(Tag,30+TextWidthFont(Shown,10.5f,ECireFont::Bold)+5.f,Y+3,10.5f,CireZones::TierColor(M->Tier),ECireFont::Numbers,true,false);
+            const float AfterName=30+TextWidthFont(Shown,10.5f,ECireFont::Bold)+5.f;
+            if(!Tag.IsEmpty())TextFx(Tag,AfterName,Y+3,10.5f,CireZones::TierColor(M->Tier),ECireFont::Numbers,true,false);
+            if(IconW>0)DrawMonsterBadges(M,AfterName+TagW-2.f,Y+9.5f,11.f);
         }
         if(bEnraged)TextFx(TEXT("ENRAGED"),152,Y+4.5f,7.5f,Hostile,ECireFont::Heading,true,false);
         else if(bIsFocus)TextFx(TEXT("FOCUS"),156,Y+4.5f,7.5f,FLinearColor(.4f,.8f,1.f,1),ECireFont::Heading,true,false);
@@ -1230,9 +1280,11 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
             const FLinearColor NameColor=PackTier==0&&Mob&&!Mob->bNeutral&&CireRaces::RankOf(Mob)!=ECireNPCRank::Normal?CireRaces::RankColor(Mob)*.8f+FLinearColor(.2f,.2f,.2f,.2f):Color;
             const FString Tag=CireZones::TierTag(PackTier);
             const float NameW=TextWidthFont(Label,NS,ECireFont::Bold),TagW=Tag.IsEmpty()?0.f:TextWidthFont(Tag,NS,ECireFont::Numbers)+4.f;
-            const float LX=X-(NameW+TagW)*.5f;
+            const float IconS=CireUIStyle::ReadableSize(NS)*.95f,IconW=MonsterBadgesWidth(Mob,IconS); // vfx-scale: special-state icons
+            const float LX=X-(NameW+TagW+IconW)*.5f;
             TextFx(Label,LX,Y-NS-5.f,NS,(Selected?FLinearColor::White:NameColor)*FLinearColor(1,1,1,Fade),ECireFont::Bold,true,false);
             if(!Tag.IsEmpty())TextFx(Tag,LX+NameW+4.f,Y-NS-5.f,NS,TierC*FLinearColor(1,1,1,Fade),ECireFont::Numbers,true,false);
+            if(IconW>0)DrawMonsterBadges(Mob,LX+NameW+TagW+2.f,Y-NS-5.f+CireUIStyle::ReadableSize(NS)*.55f,IconS,Fade);
         }
         const float HF=Frac(HP,MaxHP);
         FCireUIPainter NP=Painter();NP.Alpha=Fade;

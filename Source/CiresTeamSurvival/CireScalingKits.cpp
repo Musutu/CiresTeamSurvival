@@ -1,4 +1,5 @@
 #include "CireScalingKits.h"
+#include "CireAbilityShapes.h" // aoe-scale
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAbilityDB.h"
 #include "CireBuffs.h"
@@ -84,7 +85,7 @@ bool IsAreaAbility(const FString& Name)
 {
     if(GAreaDepth>0)return true;
     const FCireAbilityDef* D=CireAbilityDB::FindByName(Name);
-    return D&&D->Radius>50&&D->ScaleComponent!=TEXT("summon");
+    return D&&D->Radius>CireAbilityShapes::AoE(50.f)&&D->ScaleComponent!=TEXT("summon"); // aoe-scale: same classification as before
 }
 }
 
@@ -372,7 +373,7 @@ void CireKits::OnSkillCast(ACireHero* H,const FString& Id)
     FVector Center=H->GetActorLocation();
     if(D->Targeting==TEXT("aim")&&H->bHasCastAim)Center=H->CastAimPoint;
     else if((D->Targeting==TEXT("ally")||D->Targeting==TEXT("enemy"))&&IsValid(H->Target))Center=H->Target->GetActorLocation();
-    const float Radius=FMath::Clamp(D->Radius>50?D->Radius:450.f,300.f,900.f);
+    const float Radius=FMath::Clamp(D->Radius>CireAbilityShapes::AoE(50.f)?D->Radius:CireAbilityShapes::AoE(450.f),CireAbilityShapes::AoE(300.f),CireAbilityShapes::AoE(900.f)); // aoe-scale
     const float Hit=Amount(H,Id);
     ForHostilesNear(H,Center,Radius,[&](AActor* U){ApplyLevel15(H,*D,U,Hit);});
     CireCombat::PlayCue(H,nullptr,FName(*Id),H->GetActorLocation(),Center,ECireSpellCue::Impact,Radius/450.f,false);

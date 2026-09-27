@@ -173,6 +173,15 @@ private:
     // ---- WoW-style frames and feedback (CireHUDWow.cpp) ----
     void DrawPortrait(AActor* Actor, float CX, float CY, float R, bool bSmall);
     void DrawBossFrames(ACireHero* Hero, ACireController* Controller);
+public:
+    /** vfx-scale: special-state icons (rare, bonus loot, boss, enraged; CireZones::BadgesOf) drawn left to right from X,
+     *  centred on CY, each S px. Returns the width used (0 when the unit has none). Replaces the old body glows. */
+    float DrawMonsterBadges(const class ACireMonster* Monster, float X, float CY, float S, float Alpha = 1.f);
+    /** Width DrawMonsterBadges would use (layout). */
+    static float MonsterBadgesWidth(const class ACireMonster* Monster, float S);
+    /** Badge icons drawn since the counter was last reset (tests). */
+    int32 BadgeIconsDrawn = 0;
+private:
     void DrawThreatMeter(ACireHero* Hero, ACireController* Controller);
     void UpdateThreatAlerts(ACireHero* Hero);
     void OnAggroEvent(const struct FCireAggroEvent& Event);

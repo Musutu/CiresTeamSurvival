@@ -127,3 +127,26 @@ Eric: "spell effect sizes increased 30% across the board, skill visual effects i
 - Tests: `CireAbilityVFX::RunTests` section 12 (data value, clamps, profile round-trip, impact grows exactly 30%, War Cry's
   ground wave keeps its true radius, flares stay on the hand, zones and their particles stay inside the true radius, aura
   layer selection).
+
+### Follow-up (Eric, 2026-09-26): hit radii +30%, aura sizes, no special monster glows
+
+- **AoE hit radius +30% (gameplay).** `aoeRadiusScale` in `VFXTuning.json` (1.3) grows every area-of-effect hit radius where it
+  originates: Ability Database `base.radius`, void (teleport / portal) rings and ultimate-upgrade radii (`CireAbilityDB`),
+  monster ability radius and width (`CireNPCArchetypes::ParseAbility`, so Races / Bestiary / NPCArchetypes), skillshot
+  collision radius (= lane width; not `basic_*` attacks) and role-skill radii (`CireSkillTuning`), AstraAbilities areas incl.
+  custom polygons (`CireAbilityLibrary`), tech-construct field / trigger / splash radii, and the champion constants in
+  `CireAbilityShapes.h` that `CireHero.cpp` now reads (War Cry 1105, Cleave 416, Sanctuary 780, Bastion 845, Renewal 1300,
+  Cataclysm 715, chain hop 650). Because hit tests and `CireAbilityShapes::Describe` / the aim preview / the zone painter read
+  the same grown value, every telegraph still equals its hit shape. Cones grow in reach with their radius; ranges, cast
+  ranges and lane lengths do not change. `CireAbilityShapes::AoERadiusScale()`.
+- **The Options slider is cosmetic only.** Spell effect size and `cire.SpellEffectScale` feed only the presentation helpers;
+  `AoERadiusScale` reads the data file alone (tested: forcing the effect scale to 2 leaves every hit radius unchanged).
+- **Aura sizes.** Buff / aura layers and Fab auras use `auraLayerScale` 1.1; hand / weapon glow layers `handGlowScale` 1.2;
+  tethers and overhead marks 1.0. Both follow the player's Spell effect size relative to the design value.
+- **No special monster glows.** Rare and bonus-loot creatures, lane bosses and enraged monsters wear no rim, special skin colour
+  or Fab aura (`UCireMonsterArt::RimFor`, `CireRaces::BodyStyle`; the old look only with `cire.RankBodyColours 1`). An enrage
+  that is the monster's own skill keeps its spell visual; other enraged states show only the badge. Their state is an icon
+  after the name / T# tag on nameplates, target / focus frames and boss frames (`CireZones::BadgesOf`,
+  `ACireHUD::DrawMonsterBadges`): rare violet gem, bonus loot gold coin, boss red skull, enraged orange flame.
+- Not yet scaled (no telegraph drawn, so nothing can mismatch): literal radii in roll skills, kit passives / hooks, the mech
+  tank slam, Moon Glaive bounce, artillery bomb and item use / passive radii.

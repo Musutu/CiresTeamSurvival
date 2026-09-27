@@ -118,6 +118,14 @@ namespace CireAbilityVFX
     CIRESTEAMSURVIVAL_API float SpellEffectScaleFor(float PlayerMultiplier);
     // Effective scale for the local viewer (no HUD: the design value). The console override wins when set.
     CIRESTEAMSURVIVAL_API float SpellEffectScale(const UWorld* World);
+    // Eric 2026-09-26 follow-up: buff / aura layers grow less (VFXTuning.json "auraLayerScale", 1.1) and hand / weapon glow
+    // layers a little (VFXTuning.json "handGlowScale", 1.2). Both follow the player's Spell effect size relative to the design
+    // value (and the console override the same way).
+    constexpr float DefaultAuraLayerScale = 1.1f, DefaultHandGlowScale = 1.2f;
+    CIRESTEAMSURVIVAL_API float DesignAuraLayerScale();
+    CIRESTEAMSURVIVAL_API float DesignHandGlowScale();
+    CIRESTEAMSURVIVAL_API float AuraLayerScale(const UWorld* World);
+    CIRESTEAMSURVIVAL_API float HandGlowScale(const UWorld* World);
 
     // Local impact camera kick (UISettings.bImpactCameraShake); only near the local champion.
     CIRESTEAMSURVIVAL_API void ImpactShake(UWorld* World, FVector At, float Strength);

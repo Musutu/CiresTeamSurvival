@@ -213,7 +213,8 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
         {
             for(auto* M:AddedMonsters)if(IsValid(M))M->SetActorLocation(Stage+FVector(-3000,0,92));
             const FVector Center=bAroundTarget?Stage+FVector(700,0,0):Stage;
-            ACireMonster* Target=bAroundTarget?MakeMonster(Center,TEXT("hollow_infantry")):nullptr;
+            // aoe-scale: self circles now reach past their cast range, so a self cast selects a dummy in melee reach.
+            ACireMonster* Target=MakeMonster(bAroundTarget?Center:Center+FVector(120,0,0),TEXT("hollow_infantry"));
             auto* In=MakeMonster(Center+FVector(0,Radius-25.f,0),TEXT("hollow_infantry"));
             auto* Out=MakeMonster(Center+FVector(0,-(Radius+25.f),0),TEXT("hollow_infantry"));
             if(!In||!Out)return;
@@ -224,10 +225,10 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             else Check(In->Health<InBefore&&Out->Health==OutBefore,Name+FString::Printf(TEXT(" hits inside its drawn %.0f cm radius only"),Radius));
             PurgeNew();
         };
-        HitRing(TEXT("cleaving_strike"),CireAbilityShapes::CleaveRadius,false);
-        HitRing(TEXT("war_cry"),CireAbilityShapes::WarCryRadius,false);
-        HitRing(TEXT("cataclysm"),CireAbilityShapes::CataclysmRadius,true);
-        HitRing(TEXT("chain_spark"),CireAbilityShapes::ChainRadius,true);
+        HitRing(TEXT("cleaving_strike"),CireAbilityShapes::CleaveRadius(),false);
+        HitRing(TEXT("war_cry"),CireAbilityShapes::WarCryRadius(),false);
+        HitRing(TEXT("cataclysm"),CireAbilityShapes::CataclysmRadius(),true);
+        HitRing(TEXT("chain_spark"),CireAbilityShapes::ChainRadius(),true);
         auto HealRing=[&](const TCHAR* Id,float Radius)
         {
             auto* In=MakeHero(Stage+FVector(0,Radius-25.f,0),0,TEXT("knight"));auto* Out=MakeHero(Stage+FVector(0,-(Radius+25.f),0),0,TEXT("knight"));
@@ -237,9 +238,9 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             Check(bInside&&!bOutside,FString(Id)+FString::Printf(TEXT(" reaches allies inside its drawn %.0f cm radius only"),Radius));
             PurgeNew();In->SetActorLocation(Stage+FVector(-4000,0,92));Out->SetActorLocation(Stage+FVector(-4000,300,92));
         };
-        HealRing(TEXT("sanctuary"),CireAbilityShapes::SanctuaryRadius);
-        HealRing(TEXT("bastion_of_dawn"),CireAbilityShapes::BastionRadius);
-        HealRing(TEXT("renewal"),CireAbilityShapes::RenewalRadius);
+        HealRing(TEXT("sanctuary"),CireAbilityShapes::SanctuaryRadius());
+        HealRing(TEXT("bastion_of_dawn"),CireAbilityShapes::BastionRadius());
+        HealRing(TEXT("renewal"),CireAbilityShapes::RenewalRadius());
         for(auto* M:AddedMonsters)if(IsValid(M))M->SetActorLocation(Stage+FVector(-3000,0,92));
     }
 
@@ -713,7 +714,7 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
         Check(Audited>=274&&Squares==0&&NotRound==0,FString::Printf(TEXT("shape audit: %d entries, %d square ground shapes, %d circles not painted round"),Audited,Squares,NotRound));
         // Ashen Ward (the one authored square AoE) is now a circle of its database radius.
         const FCireHitShape Ashen=CireAbilityShapes::Describe(TEXT("ashen_square"));
-        Check(Ashen.Kind==ECireHitShape::Circle&&FMath::IsNearlyEqual(Ashen.Radius,280.f,1.f),
+        Check(Ashen.Kind==ECireHitShape::Circle&&FMath::IsNearlyEqual(Ashen.Radius,CireAbilityShapes::AoE(280.f),1.f),
             FString::Printf(TEXT("Ashen Ward is a %.0f cm circle (%s)"),Ashen.Radius,*CireAbilityShapes::ShapeName(Ashen.Kind)));
         {
             FCireAreaSpec Sq;Sq.Shape=ECireAreaShape::Square;Sq.Width=400;
@@ -809,18 +810,42 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
                 }
                 else Check(false,TEXT("test zone spawned"));
             }
-            // (e) buff / aura layers: body and ground layers grow, hand / weapon glows, tethers and overhead marks do not.
+            // (f) aoe-scale: GAMEPLAY hit radii grow 30% with the art, and the telegraph reads the same value. The Options /
+            // presentation scale never changes a hit area.
             {
-                Check(CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Ring)&&CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Shell)&&
-                    !CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Hands)&&!CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Weapon)&&
-                    !CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Tether)&&!CireAuraVisuals::ScalesWithSpellEffects(ECireAuraShape::Glyph),
-                    TEXT("aura layers that grow: everything but hand / weapon glows, tethers and overhead marks"));
+                using namespace CireAbilityShapes;
+                Check(FMath::IsNearlyEqual(AoERadiusScale(),1.3f,.001f),FString::Printf(TEXT("aoeRadiusScale from VFXTuning.json is 1.3 (%.2f)"),AoERadiusScale()));
+                Check(FMath::IsNearlyEqual(WarCryRadius(),1105.f,1.f)&&FMath::IsNearlyEqual(ChainRadius(),650.f,1.f)&&FMath::IsNearlyEqual(Describe(TEXT("war_cry")).Radius,WarCryRadius()),
+                    FString::Printf(TEXT("War Cry hits and telegraphs 1105 cm (was 850): %.0f"),Describe(TEXT("war_cry")).Radius));
+                const FCireSkillshotSpec* Lance=CireSkillTuning::FindSkillshot(TEXT("ember_lance"));
+                const FCireSkillshotSpec* Arrow=CireSkillTuning::FindSkillshot(TEXT("basic_arrow"));
+                Check(Lance&&FMath::IsNearlyEqual(Lance->Radius,39.f,.5f)&&FMath::IsNearlyEqual(Describe(TEXT("ember_lance")).Width,Lance->Radius*2.f)&&
+                    FMath::IsNearlyEqual(Describe(TEXT("ember_lance")).Length,FMath::Min(Lance->MaxRange,Lance->Speed*Lance->LifetimeSeconds)),
+                    TEXT("Ember Lance lane 30% wider (39 cm collision radius), length unchanged, telegraph = collision"));
+                Check(Arrow&&FMath::IsNearlyEqual(Arrow->Radius,12.f,.5f),TEXT("basic attack projectiles are not AoE and keep their size"));
+                if(const FCireAbilityDef* Step=CireAbilityDB::Find(TEXT("shadow_step"));Step&&Step->Void.bValid)
+                    Check(FMath::IsNearlyEqual(Describe(TEXT("shadow_step")).VoidOuter,Step->Void.OuterRadius),TEXT("teleport rings: telegraph = the grown hit rings"));
+                const float Before=Describe(TEXT("war_cry")).Radius;SetScale(2.f);
+                Check(FMath::IsNearlyEqual(Describe(TEXT("war_cry")).Radius,Before)&&FMath::IsNearlyEqual(WarCryRadius(),Before),TEXT("spell effect size never changes a hit radius"));
+                SetScale(0.f);
+            }
+            // (e) buff / aura layers: 1.1x, hand / weapon glows 1.2x (Eric's follow-up), tethers and overhead marks unscaled.
+            {
+                Check(FMath::IsNearlyEqual(DesignAuraLayerScale(),1.1f,.001f)&&FMath::IsNearlyEqual(DesignHandGlowScale(),1.2f,.001f),
+                    FString::Printf(TEXT("aura layers 1.1, hand / weapon glows 1.2 from VFXTuning.json (%.2f / %.2f)"),DesignAuraLayerScale(),DesignHandGlowScale()));
+                SetScale(DesignSpellEffectScale());
+                Check(FMath::IsNearlyEqual(AuraLayerScale(World),1.1f,.01f)&&FMath::IsNearlyEqual(HandGlowScale(World),1.2f,.01f),TEXT("live aura / hand scales at the design size"));
+                using CireAuraVisuals::LayerScale;
+                Check(FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Ring,1.1f,1.2f),1.1f)&&FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Shell,1.1f,1.2f),1.1f)&&
+                    FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Hands,1.1f,1.2f),1.2f)&&FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Weapon,1.1f,1.2f),1.2f)&&
+                    FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Tether,1.1f,1.2f),1.f)&&FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Glyph,1.1f,1.2f),1.f),
+                    TEXT("aura layers 1.1, hand / weapon glows 1.2, tethers and overhead marks unscaled"));
                 TArray<FVector> CV,SV;TArray<int32> CI,SI;TArray<FLinearColor> CC,SC;TArray<FVector2D> SUV;
                 auto RingReach=[&](float Size){CireAuraShapes::FBuffers Buf{CV,CI,CC,SV,SI,SC,SUV};Buf.Reset();CireAuraShapes::FContext Ctx;
                     FCireAuraLayer L;L.Shape=ECireAuraShape::Ring;L.Size=Size;CireAuraShapes::DrawLayer(L,Ctx,Buf);
                     float R=0;for(const FVector& P:CV)R=FMath::Max(R,static_cast<float>(FVector2D(P.X,P.Y).Size()));return R;};
-                const float R1=RingReach(1.f),R13=RingReach(1.3f);
-                Check(R1>1&&FMath::IsNearlyEqual(R13/R1,1.3f,.05f),FString::Printf(TEXT("aura ring grows with its size (%.0f -> %.0f cm)"),R1,R13));
+                const float R1=RingReach(1.f),R11=RingReach(1.1f);
+                Check(R1>1&&FMath::IsNearlyEqual(R11/R1,1.1f,.03f),FString::Printf(TEXT("aura ring grows 10%% (%.0f -> %.0f cm)"),R1,R11));
             }
         }
     }
