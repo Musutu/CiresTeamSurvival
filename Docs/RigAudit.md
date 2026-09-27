@@ -103,6 +103,17 @@ Resulting lengths (idle gallery, body height in brackets):
 | Summoner (166) | dagger | 26 cm | 52 cm (2x) |
 | Gunblade (165) | sword / pistol | 92 / 40 cm | 123 cm (cap) / 60 cm |
 
+**Monsters and vendors.** Monster hand props share `BusinessAxis`. The 12 `grips_*` stages of
+`RunMonsterGallery.py` show every monster weapon blade-forward in a closed fist after the change. Monster props were
+not resized: Eric's 2x request was about the classes, meaning the champions. Vendors hold no weapons, and their arms are
+clean in the sweep.
+
+Captures:
+* `Saved/AgentLogs/grip-gallery-after/` (all 27 champions, sheets and metrics)
+* `Saved/AgentLogs/rig-before/` (before)
+* `Saved/AgentLogs/monster-grips-after/`
+* `Saved/AgentLogs/rigaudit-all-bodies.txt` (143-body sweep)
+
 ## Tests and tools
 
 * **`CireGripTests`** (native, in RunExpansionChecks):
