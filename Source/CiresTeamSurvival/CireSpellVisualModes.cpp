@@ -311,6 +311,7 @@ bool ACireSpellVisual::RebuildModes(FCireSpellMesh& M,FCireSoftMesh& Soft,float 
         // Wind-up: motes spiral into the caster's hands while the telegraph fills.
         const float Charge=FMath::Clamp(Age/FMath::Max(Duration-.18f,.1f),0.f,1.f);
         const FVector Hand(28,0,38);
+        MarkScale(M,Soft,Hand,DecorScale()); // vfx-scale: the wind-up grows about the hand, never drifts off it
         FLinearColor C=bHostile&&Mode==EMode::Lane?FLinearColor(2.2f,.8f,.12f,Fade):Main;
         for(int32 J=0;J<10;++J)
         {
@@ -327,6 +328,7 @@ bool ACireSpellVisual::RebuildModes(FCireSpellMesh& M,FCireSoftMesh& Soft,float 
     {
         // Release flare at the hands, pointed along the aim: spark fan + soft bloom.
         const FVector Hand(30,0,34);
+        MarkScale(M,Soft,Hand,DecorScale()); // vfx-scale: the release flare grows about the hand
         Soft.Glow(Hand,26.f+Expand*34.f,WithAlpha(Glow,Glow.A*1.6f));
         M.Star(Hand,8.f*(1-T)+3.f,Core,Age*3.f);
         for(int32 J=0;J<9;++J)
@@ -342,8 +344,10 @@ bool ACireSpellVisual::RebuildModes(FCireSpellMesh& M,FCireSoftMesh& Soft,float 
         const FVector A=GetActorTransform().InverseTransformPosition(Start)+FVector(0,0,20),B=FVector(0,0,10);
         const int32 Seed=static_cast<int32>(Age*14.f);
         FLinearColor Bright=FMath::Lerp(Tint,FLinearColor(2.6f,2.6f,3.f,1),.55f);Bright.A=Fade;
+        MarkScale(M,Soft,FVector::ZeroVector,1.f); // vfx-scale: the bolt joins the caster and the victim
         M.Bolt(A,B,3.2f,Bright,Seed,26.f,14);M.Bolt(A,B,1.2f,WithAlpha(Tint,Fade*.7f),Seed+7,40.f,12);
         for(int32 J=1;J<14;J+=3){const FVector P=FMath::Lerp(A,B,J/14.f);Soft.Glow(P,20,WithAlpha(Tint*.6f,.25f*Fade));}
+        MarkScale(M,Soft,B,DecorScale()); // the strike on the victim grows
         Soft.Glow(B,52.f,WithAlpha(Tint*.7f,.3f*Fade));M.Star(B,14.f*(1-T)+4.f,Core,Age*5.f);
         return true;
     }
@@ -439,7 +443,8 @@ void ACireSpellVisual::DrawAreaParticles(FCireSpellMesh& M,FCireSoftMesh& Soft,f
 void ACireSpellVisual::DrawProjectile(FCireSpellMesh& M,FCireSoftMesh& Soft)
 {
     // Readability floor: thin collision spheres (arrows, 18 cm piercing shot) still get a visible head.
-    const float R=FMath::Clamp(FMath::Max(float(FollowBounds.X),20.f),4.f,80.f);
+    // vfx-scale: the head and the wake's width grow with the spell-effect scale; the wake itself stays on the real path.
+    const float R=FMath::Clamp(FMath::Max(float(FollowBounds.X),20.f),4.f,80.f)*FxScale;
     const ECireSchool School=Shape.School;
     const float Flicker=.85f+.15f*FMath::Sin(Age*37.f);
     FLinearColor Core=FMath::Lerp(Tint,FLinearColor(2.6f,2.5f,2.3f,1),.5f);Core.A=.95f;
@@ -541,11 +546,13 @@ void ACireSpellVisual::DrawImpact(FCireSpellMesh& M,FCireSoftMesh& Soft,float T,
     }
     if(bChainHop)
     {
+        MarkScale(M,Soft,FVector::ZeroVector,1.f); // vfx-scale: the hop arc joins the two victims
         // Hop arc from the previous chain victim, bright for the first 0.25 s.
         const FVector A=GetActorTransform().InverseTransformPosition(HopFrom)+FVector(0,0,10);
         const float Arc=FMath::Clamp(1-Life/.3f,0.f,1.f);
         FLinearColor Bright=FMath::Lerp(Tint,FLinearColor(2.6f,2.6f,3.f,1),.55f);Bright.A=Arc;
         if(Arc>0){M.Bolt(A,FVector(0,0,10),2.6f,Bright,static_cast<int32>(Life*14.f)+3,22.f,12);M.Bolt(A,FVector(0,0,10),1.f,WithAlpha(Tint,Arc*.7f),static_cast<int32>(Life*14.f)+9,34.f,10);}
+        MarkScale(M,Soft,FVector::ZeroVector,DecorScale());
     }
     Soft.Glow(FVector::ZeroVector,40+70*Flash+E*25,WithAlpha(Tint*.9f,(.18f+.5f*Flash)*Fade));
     if(Flash>0)Soft.Glow(FVector::ZeroVector,26*Flash+8,WithAlpha(FLinearColor(2.5f,2.4f,2.2f,1),.7f*Flash));
@@ -699,7 +706,9 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
     case EMode::SelfShock:
     {
         const auto Theme=CireAbilityVFX::ThemeFor(Shape);
-        CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,FMath::Max(40.f,Shape.Radius),Shape.bHeal?CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal):Tint,
+        // A self circle's wave reaches its TRUE radius; a personal pulse (Self, no hit area) is decorative and grows (vfx-scale).
+        const float ShockRadius=Shape.Kind==ECireHitShape::Self?Shape.Radius*FxScale:FMath::Max(40.f,Shape.Radius);
+        CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,ShockRadius,Shape.bHeal?CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal):Tint,
             FMath::Clamp(Age/(Shape.bHeal||Shape.bBuff?.8f:.55f),0.f,1.f),Fade,&Theme);
         break;
     }
@@ -720,8 +729,9 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
         else
         {
             const auto Theme=CireAbilityVFX::ThemeFor(Shape);
-            CireAbilityVFX::PaintRuneRing(G,FVector2D::ZeroVector,90.f,Theme,Age,.9f*Alpha);
-            FLinearColor C=Theme.Glyph;C.A=.5f*Alpha;G.Ring(FVector2D::ZeroVector,40.f+60.f*Progress,2.f,6.f,C,40);
+            // vfx-scale: a unit / self cast's rune ring is decorative (no hit area on the ground) and grows.
+            CireAbilityVFX::PaintRuneRing(G,FVector2D::ZeroVector,90.f*FxScale,Theme,Age,.9f*Alpha);
+            FLinearColor C=Theme.Glyph;C.A=.5f*Alpha;G.Ring(FVector2D::ZeroVector,(40.f+60.f*Progress)*FxScale,2.f,6.f,C,40);
         }
         break;
     }
@@ -754,7 +764,7 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
             FLinearColor C=Tint;C.A=.75f*Fade*(1-FMath::Clamp((Age-.25f)/.5f,0.f,1.f));
             if(From.Size()>60.f&&C.A>0)G.Stroke(From,FMath::Lerp(From,FVector2D::ZeroVector,Ease(U)),3.5f,9.f,C,.5f);
             const auto Theme=CireAbilityVFX::ThemeFor(Shape);
-            CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,Shape.bHeal?95.f:75.f,Shape.bHeal?CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal):Tint,
+            CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,(Shape.bHeal?95.f:75.f)*FxScale,Shape.bHeal?CireAbilityVFX::RuneColor(CireAbilityVFX::ERuneSet::Heal):Tint,
                 FMath::Clamp(Age/(Shape.bHeal?.8f:.5f),0.f,1.f),Fade,&Theme);
         }
         break;
@@ -762,24 +772,24 @@ void ACireSpellVisual::RebuildGround(float T,float Fade)
     {
         FLinearColor C=Tint;C.A=.5f*Fade;G.Ring(FVector2D::ZeroVector,Shape.Radius>0?Shape.Radius:500.f,1.8f,6.f,C,64);
         const auto Theme=CireAbilityVFX::ThemeFor(Shape);
-        CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,90.f,Tint,FMath::Clamp(Age/.4f,0.f,1.f),Fade,&Theme);
+        CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,90.f*FxScale,Tint,FMath::Clamp(Age/.4f,0.f,1.f),Fade,&Theme); // vfx-scale: the strike mark (the hop ring above is true)
         break;
     }
     case EMode::CasterFlare:
-        CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,85.f,Tint,FMath::Clamp(Age/.45f,0.f,1.f),Fade*.8f);
+        CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,85.f*FxScale,Tint,FMath::Clamp(Age/.45f,0.f,1.f),Fade*.8f); // vfx-scale: release flash at the feet
         break;
     case EMode::Gather:
     {
         const float Charge=FMath::Clamp(Age/FMath::Max(Duration-.12f,.1f),0.f,1.f);
         FLinearColor C=Tint;C.A=(.35f+.4f*Charge)*Fade;
-        G.Ring(FVector2D::ZeroVector,70.f-20.f*Charge,2.f,7.f,C,40);
+        G.Ring(FVector2D::ZeroVector,(70.f-20.f*Charge)*FxScale,2.f,7.f,C,40); // vfx-scale: wind-up marks at the caster's feet
         // School rune ring gathering at the caster's feet (heal casts show the green/gold cross runes).
         const auto Theme=CireAbilityVFX::ThemeFor(Shape);
-        CireAbilityVFX::PaintRuneRing(G,FVector2D::ZeroVector,95.f-25.f*Charge,Theme,Age,(.5f+.4f*Charge)*Fade);
+        CireAbilityVFX::PaintRuneRing(G,FVector2D::ZeroVector,(95.f-25.f*Charge)*FxScale,Theme,Age,(.5f+.4f*Charge)*Fade);
         break;
     }
     case EMode::Impact:
-        if(Size>=.5f)CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,70.f*FMath::Clamp(Size,.5f,2.f),Tint,FMath::Clamp(Age/.5f,0.f,1.f),Fade*.75f);
+        if(Size>=.5f)CireAbilityVFX::PaintShock(G,FVector2D::ZeroVector,70.f*FMath::Clamp(Size,.5f,2.f)*FxScale,Tint,FMath::Clamp(Age/.5f,0.f,1.f),Fade*.75f);
         break;
     default:break;
     }

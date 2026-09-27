@@ -2,6 +2,7 @@
 #include "CireMapLayout.h"
 #include "CireLanePath.h"
 #include "CireTownMap.h" // medieval-kingdom
+#include "CireOutdoorBosses.h" // outdoor-bosses
 #include "Dom/JsonObject.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformFileManager.h"
@@ -120,7 +121,7 @@ TArray<FCireMarkerType> CireMapLayout::BuiltInTypes()
     { auto& M = Add(ChallengePack, TEXT("Challenge Pack"), TEXT("Pack"), TEXT("challenge_of_iron"), FLinearColor(.66f, .46f, .83f), ECireGizmo::Ring); M.bRadius = true; M.bTier = true; M.DefaultRadius = 450.f; } // jungle-packs: unlimited
     { auto& M = Add(Vendor, TEXT("Shop / Vendor"), TEXT("Vendor"), TEXT("price_on_every_soul"), FLinearColor(1.f, .82f, .3f), ECireGizmo::Pillar); M.bFacing = true; M.bNamed = true; M.bKind = true; M.DefaultRadius = 120.f; M.Kinds = {TEXT("weaponsmith"), TEXT("armory"), TEXT("arcane")}; }
     { auto& M = Add(Objective, TEXT("Objective / Castle Defend Point"), TEXT("Objective"), TEXT("keeper_beacon"), FLinearColor(.2f, .86f, .7f), ECireGizmo::Ring); M.bRadius = true; M.DefaultRadius = 450.f; M.MaxPerOwner = 1; }
-    { auto& M = Add(BossSpawn, TEXT("Boss / Pack Leader Spawn"), TEXT("Boss"), TEXT("chieftain_courage"), FLinearColor(.95f, .26f, .2f), ECireGizmo::Pillar); M.bFacing = true; M.bNamed = true; M.DefaultRadius = 200.f; }
+    { auto& M = Add(BossSpawn, TEXT("Outdoor Boss"), TEXT("Boss"), TEXT("chieftain_courage"), FLinearColor(.95f, .26f, .2f), ECireGizmo::Pillar); M.bFacing = true; M.bNamed = true; M.DefaultRadius = 200.f; }
     { auto& M = Add(Rift, TEXT("Rift / Portal / Arena Entrance"), TEXT("Rift"), TEXT("banishment"), FLinearColor(.56f, .36f, 1.f), ECireGizmo::Ring); M.bFacing = true; M.bNamed = true; M.bRadius = true; M.DefaultRadius = 250.f; }
     { auto& M = Add(Respawn, TEXT("Respawn Point / Graveyard"), TEXT("Respawn"), TEXT("keeper_last_light"), FLinearColor(.92f, .95f, .6f), ECireGizmo::Pillar); M.bFacing = true; M.DefaultRadius = 150.f; }
     { auto& M = Add(PlayBounds, TEXT("Play Bounds"), TEXT("Bounds"), TEXT("ashen_square"), FLinearColor(.9f, .9f, .92f), ECireGizmo::Polygon); M.bPoints = true; M.DefaultOwner = ECireMarkerOwner::Shared; M.MaxPerOwner = 1; M.DefaultRadius = 0.f; }
@@ -294,6 +295,11 @@ FString CireMapLayout::DisplayLabel(const FCireMapLayout& L, const FCireMapMarke
     if (M.Type == Objective) return FString::Printf(TEXT("%s Objective"), *Team);
     if (M.Type == PlayBounds) return TEXT("Play Bounds");
     if (M.Type == Zone) return FString::Printf(TEXT("Zone %d%s"), Number(L, M.Id), *Named);
+    if (M.Type == BossSpawn) // outdoor-bosses: "T1 Boss 3  Boss 3 : Maw of the Deep"
+    {
+        const FString Stem = M.Owner == ECireMarkerOwner::Shared ? T.Label : Team + TEXT(" ") + T.Label;
+        return FString::Printf(TEXT("%s %d%s : %s"), *Stem, Number(L, M.Id), *Named, *CireOutdoorBosses::BossName(CireOutdoorBosses::ResolveMarker(L, M)));
+    }
     const FString Stem = M.Owner == ECireMarkerOwner::Shared ? T.Label : Team + TEXT(" ") + T.Label;
     return FString::Printf(TEXT("%s %d%s"), *Stem, Number(L, M.Id), *Named);
 }
@@ -762,6 +768,9 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
                     if (ShownInRealm(M, Realm) && !Checks->SignClear(Realm, M.SignPos, M.SignHeight))
                     { Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s: the sign clips into the town (%s)"), *Label, *RealmName(Realm))); break; }
         }
+        // outdoor-bosses: a Boss Spawn marker names a race boss (or nothing: OutdoorBosses.json decides).
+        if (M.Type == BossSpawn && !M.Kind.IsEmpty() && !CireOutdoorBosses::IsBossId(FName(*M.Kind)))
+            Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s holds an unknown boss (%s); pick one in the inspector or AUTO"), *Label, *M.Kind));
         if (M.Type == ChallengePack && (M.Tier < 1 || M.Tier > FCireChallengeBay::MaxTier || M.Radius < FCireChallengeBay::MinRadius || M.Radius > FCireChallengeBay::MaxRadius))
             Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s needs a tier 1..4 and a radius of 2..15 m"), *Label));
         if (M.Type == ChallengePack && M.HasCompOverride() && !CireJunglePacks::IsValid(M.Comp))
@@ -792,6 +801,9 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
             for (const FVector2D& P : Spots)
             {
                 if (!InsideBounds(L, P, Realm)) { Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s is outside the play bounds"), *Label)); break; }
+                // outdoor-bosses: inside the Play Bounds but outside the realm the game builds: no navmesh, nothing spawns there.
+                if (Checks && Checks->InsideRealm && M.Type != Blocker && !Checks->InsideRealm(P))
+                { Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s is outside the realm the game builds (no navmesh, nothing spawns there): draw the Play Bounds around it"), *Label)); break; }
                 if (Checks && Checks->OnNavmesh && M.Type != Blocker && !Checks->OnNavmesh(Realm, P))
                 { Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s is off the navmesh (%s)"), *Label, *RealmName(Realm))); break; }
             }
@@ -823,6 +835,19 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
         int32 Rifts = 0;
         for (const FCireMapMarker& M : L.Markers) Rifts += M.Type == Rift && (M.Owner == Team || M.Owner == ECireMarkerOwner::Shared) ? 1 : 0;
         if (Rifts > 1) Issue(false, OwnerValue(Team), FString(), FString::Printf(TEXT("%s has %d rifts; the game uses the first as the arena portal"), *TeamTag(Team), Rifts));
+    }
+    // outdoor-bosses: Eric's rule is one DIFFERENT boss per marker; two markers of a realm holding the same boss get a note.
+    for (int32 Realm = 0; Realm < 2; ++Realm)
+    {
+        TMap<FName, FString> Seen;
+        for (const FCireMapMarker& M : L.Markers)
+        {
+            if (M.Type != BossSpawn || !ShownInRealm(M, Realm)) continue;
+            const FName Boss = CireOutdoorBosses::ResolveMarker(L, M);
+            if (const FString* First = Seen.Find(Boss))
+                Issue(false, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s holds the same boss as %s (%s): each marker should be a different boss"), *DisplayLabel(L, M), **First, *CireOutdoorBosses::BossName(Boss)));
+            else Seen.Add(Boss, DisplayLabel(L, M));
+        }
     }
     {
         const FCireMapMarker* A = ObjectiveOf(L, ECireMarkerOwner::Team1); const FCireMapMarker* B = ObjectiveOf(L, ECireMarkerOwner::Team2);
@@ -1124,7 +1149,7 @@ bool CireMapLayout::CompileRoutes(const FCireMapLayout& L, const FCireBattlefiel
         if (Other && !SameXY(Other->Position, Goal->Position)) Notes.Add(TEXT("The T2 objective differs from T1's; the game uses one goal zone (T1's) in both realms"));
     }
     const FVector2D GoalHalf = Out.GoalSize * .5;
-    auto Spot = [](const FCireMapMarker& M) { FCireRouteSpot S; S.Position = M.Position; S.Yaw = M.Yaw; S.Radius = M.Radius; S.Id = M.Id; S.Name = M.Name; return S; };
+    auto Spot = [](const FCireMapMarker& M) { FCireRouteSpot S; S.Position = M.Position; S.Yaw = M.Yaw; S.Radius = M.Radius; S.Id = M.Id; S.Name = M.Name; if (M.Type == BossSpawn) S.Kind = M.Kind; /* outdoor-bosses */ return S; };
     for (int32 Realm = 0; Realm < 2; ++Realm)
     {
         const ECireMarkerOwner Team = TeamOfRealm(Realm);
@@ -1194,6 +1219,10 @@ bool CireMapLayout::CompileRoutes(const FCireMapLayout& L, const FCireBattlefiel
     if (const FCireMapMarker* M = SpotOf(BossSpawn)) { Out.bBossSpawn = true; Out.BossLocal = M->Position; }
     Out.PlayBounds.Reset();
     for (const FCireMapMarker& M : L.Markers) if (M.Type == PlayBounds && M.Points.Num() >= 3) { Out.PlayBounds = M.Points; break; }
+    // outdoor-bosses: the realm (the navmesh volume, and the "inside the realm" rules) always covers the Play Bounds. The route
+    // file's provisional bounds stopped short of Eric's polygon, so Boss 4 and Boss 5 stood inside the Play Bounds but outside
+    // the realm: no navmesh there and "boss spawns must be inside the realm", although a hero could walk there.
+    CireLanePath::GrowRealmToPlayBounds(Out);
     Out.LayoutName = L.Name;
     return bOk;
 }

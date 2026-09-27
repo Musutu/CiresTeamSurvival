@@ -35,6 +35,14 @@ FVector WorldAt(const ACireMonster* M, const FVector2D& Local)
     const FVector2D O = CireLanePath::RealmOrigin(FMath::Clamp(M->Lane, 0, 1));
     return FVector(Local.X + O.X, Local.Y + O.Y, M->GetActorLocation().Z);
 }
+// outdoor-bosses: an outdoor boss is leashed to its lair (a point) instead of a path; everything else is the same leash.
+bool HomeLeashed(const ACireMonster* M) { return IsValid(M) && M->bHomeLeash; }
+/** Realm-local distance from a point to the unit's zone anchor: its path, or its lair. */
+double ZoneDistance(const ACireMonster* M, const FVector& Location)
+{
+    if (HomeLeashed(M)) return FVector2D::Distance(CireLanePath::ToLocal(FMath::Clamp(M->Lane, 0, 1), Location), M->LeashHome);
+    return CireLanePath::DistanceToUnitPath(M, Location);
+}
 void SetState(ACireMonster* M, ECireLeashState S)
 {
     if (M->LeashState != static_cast<uint8>(S)) { M->LeashState = static_cast<uint8>(S); M->ForceNetUpdate(); }
@@ -42,8 +50,8 @@ void SetState(ACireMonster* M, ECireLeashState S)
 void BeginReturn(ACireMonster* M, const FCireLeashRules& R, float PathDistance, const TCHAR* Why)
 {
     const FVector2D Here = LocalOf(M);
-    const FVector2D Nearest = CireLanePath::NearestOnPolyline(CireLanePath::UnitPath(M), Here);
-    M->LeashReturnPoint = R.bReturnToAnchor && M->bLeashAnchored ? M->LeashAnchor : Nearest;
+    const FVector2D Nearest = HomeLeashed(M) ? M->LeashHome : CireLanePath::NearestOnPolyline(CireLanePath::UnitPath(M), Here);
+    M->LeashReturnPoint = HomeLeashed(M) ? M->LeashHome : R.bReturnToAnchor && M->bLeashAnchored ? M->LeashAnchor : Nearest; // outdoor-bosses: home is the lair
     M->LeashReturnStarted = NowOf(M);
     M->LeashReturnBest = static_cast<float>(FVector2D::Distance(Here, M->LeashReturnPoint)); M->LeashReturnBestAt = M->LeashReturnStarted;
     ++M->LeashReturns; ++GReturns;
@@ -66,7 +74,8 @@ void EndReturn(ACireMonster* M, const FCireLeashRules& R, const TCHAR* How)
     SetState(M, ECireLeashState::March);
     ++GArrivals;
     CireNav::Forget(M);
-    CireLanePath::InitializeProgress(M); // resume from the return point (progress never moves backward)
+    if (HomeLeashed(M)) { if (auto* Movement = M->GetCharacterMovement()) { Movement->StopMovementImmediately(); Movement->MaxWalkSpeed = FMath::Max(M->BaseMoveSpeed, 1.f); } }
+    else CireLanePath::InitializeProgress(M); // resume from the return point (progress never moves backward)
     M->ForceNetUpdate();
     UE_LOG(LogCireLeash, Display, TEXT("CIRE_LEASH_RESUMED %s lane=%d path=%d how=%s at=(%.0f,%.0f) health=%.0f/%.0f threat_holders=%d"), *M->GetNPCDisplayName(), M->Lane, M->LanePath, How,
         LocalOf(M).X, LocalOf(M).Y, M->Health, M->MaxHealth, M->Threat.Num());
@@ -151,6 +160,7 @@ ECireLeashState CireLeash::Step(const FCireLeashRules& R, const FCireLeashInput&
 
 bool CireLeash::Applies(const ACireMonster* M)
 {
+    if (HomeLeashed(M)) return Rules().bEnabled && M->Lane >= 0 && M->Lane < 2 && M->Health > 0; // outdoor-bosses: leashed to the lair
     return IsValid(M) && M->bPathLeash && Rules().bEnabled && M->PackId < 0 && M->Lane >= 0 && M->Lane < 2 && !M->bArmoredEscort && M->SpecialSpawn != 2 &&
         !CireWaveDirector::IsForcedMarch(M) && M->Health > 0;
 }
@@ -167,7 +177,7 @@ bool CireLeash::CanPursue(const ACireMonster* M, const ACireHero* H)
     if (!Applies(M) || !H) return true;
     if (M->LeashState == static_cast<uint8>(ECireLeashState::Return) || NowOf(M) < M->LeashReengageAt) return false;
     const FCireLeashRules& R = Rules();
-    return CireLanePath::DistanceToUnitPath(M, H->GetActorLocation()) <= RadiusFor(R, M) - R.PursuitMargin;
+    return ZoneDistance(M, H->GetActorLocation()) <= RadiusFor(R, M) - R.PursuitMargin;
 }
 bool CireLeash::IsReturning(const ACireMonster* M) { return IsValid(M) && M->LeashState == static_cast<uint8>(ECireLeashState::Return); }
 bool CireLeash::AllowDamage(const ACireMonster* M) { return !(IsReturning(M) && Rules().bImmuneWhileReturning); }
@@ -184,12 +194,13 @@ bool CireLeash::Tick(ACireMonster* M, float Delta)
     const float Now = NowOf(M);
     const FVector2D Here = LocalOf(M);
     double PathDistance = 0;
-    const FVector2D OnPath = CireLanePath::NearestOnPolyline(CireLanePath::UnitPath(M), Here, &PathDistance);
+    const FVector2D OnPath = HomeLeashed(M) ? M->LeashHome : CireLanePath::NearestOnPolyline(CireLanePath::UnitPath(M), Here, &PathDistance);
+    if (HomeLeashed(M)) PathDistance = FVector2D::Distance(Here, M->LeashHome); // outdoor-bosses: distance from the lair
     FCireLeashInput In;
     In.State = static_cast<ECireLeashState>(FMath::Min<uint8>(M->LeashState, 2));
     In.PathDistance = static_cast<float>(PathDistance);
     In.bHasTarget = IsValid(M->Victim) && !M->Victim->bDead && M->Victim->Health > 0;
-    In.bTargetInZone = In.bHasTarget && CireLanePath::DistanceToUnitPath(M, M->Victim->GetActorLocation()) <= RadiusFor(R, M) - R.PursuitMargin;
+    In.bTargetInZone = In.bHasTarget && ZoneDistance(M, M->Victim->GetActorLocation()) <= RadiusFor(R, M) - R.PursuitMargin;
     In.Radius = RadiusFor(R, M);
     In.DistanceToReturn = static_cast<float>(FVector2D::Distance(Here, M->LeashReturnPoint));
     const ECireLeashState Next = Step(R, In);

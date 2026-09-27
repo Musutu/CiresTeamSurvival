@@ -36,6 +36,7 @@
 #include "CireNPCState.h"
 #include "CireStatusVisual.h"
 #include "CireBuffs.h" // aura-vfx
+#include "CireAbilityShapes.h" // aoe-scale: champion AoE radii
 #include "CireItems.h" // progression-shop
 #include "CireScalingKits.h" // scaling-kits
 #include "CireAbilityDB.h" // scaling-kits
@@ -489,20 +490,21 @@ void ACireHero::Cast(int32 Slot)
         TauntUntil = Now + CireDeveloperTools::EffectSeconds(GetWorld(),TauntSeconds); CireBuffs::Apply(this,TEXT("war_cry"),CireDeveloperTools::EffectSeconds(GetWorld(),TauntSeconds),this); // aura-vfx
         ShieldUntil = FMath::Max(ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),3.f));
         for (auto* Monster : Mode->Monsters)
-            if (IsHostile(Monster) && InRange(Monster, 850)) CireThreat::Taunt(Monster,this,TauntSeconds);
+            if (IsHostile(Monster) && InRange(Monster, CireAbilityShapes::WarCryRadius())) CireThreat::Taunt(Monster,this,TauntSeconds); // aoe-scale
         for (auto* Enemy : Mode->Heroes)
-            if (IsHostile(Enemy) && InRange(Enemy, 850) && Enemy->bBot) Enemy->Target = this;
+            if (IsHostile(Enemy) && InRange(Enemy, CireAbilityShapes::WarCryRadius()) && Enemy->bBot) Enemy->Target = this;
     }
     else if (Id == TEXT("chain_spark"))
     {
         TArray<AActor*> Chain;
         Chain.Add(Target);
         const FVector Center = Target->GetActorLocation();
+        const double HopSquared = FMath::Square(static_cast<double>(CireAbilityShapes::ChainRadius())); // aoe-scale (was 500 cm)
         for (auto* Monster : Mode->Monsters)
-            if (IsHostile(Monster) && Monster != Target && FVector::DistSquared2D(Center, Monster->GetActorLocation()) < 250000 && Chain.Num() < 4)
+            if (IsHostile(Monster) && Monster != Target && FVector::DistSquared2D(Center, Monster->GetActorLocation()) < HopSquared && Chain.Num() < 4)
                 Chain.Add(Monster);
         for (auto* Enemy : Mode->Heroes)
-            if (IsHostile(Enemy) && Enemy != Target && FVector::DistSquared2D(Center, Enemy->GetActorLocation()) < 250000 && Chain.Num() < 4)
+            if (IsHostile(Enemy) && Enemy != Target && FVector::DistSquared2D(Center, Enemy->GetActorLocation()) < HopSquared && Chain.Num() < 4)
                 Chain.Add(Enemy);
         for (auto* Victim : Chain) if (ClearSight(this, Victim)) Hit(Victim, CireKits::Amount(this, Id, 40, 1.5f), FLinearColor(0.45f, 0.6f, 1.f));
     }
@@ -515,8 +517,8 @@ void ACireHero::Cast(int32 Slot)
     else if (Id == TEXT("cleaving_strike"))
     {
         TArray<AActor*> Victims;
-        for (auto* Monster : Mode->Monsters) if (IsHostile(Monster) && InRange(Monster, 320)) Victims.Add(Monster);
-        for (auto* Enemy : Mode->Heroes) if (IsHostile(Enemy) && InRange(Enemy, 320)) Victims.Add(Enemy);
+        for (auto* Monster : Mode->Monsters) if (IsHostile(Monster) && InRange(Monster, CireAbilityShapes::CleaveRadius())) Victims.Add(Monster); // aoe-scale
+        for (auto* Enemy : Mode->Heroes) if (IsHostile(Enemy) && InRange(Enemy, CireAbilityShapes::CleaveRadius())) Victims.Add(Enemy);
         for (auto* Victim : Victims) if (ClearSight(this, Victim)) Hit(Victim, CireKits::Amount(this, Id, 35, 1.5f), FLinearColor(1.f, 0.7f, 0.3f));
     }
     else if (Id == TEXT("piercing_shot")) Hit(Target, CireKits::Amount(this, Id, 40, 1.75f), FLinearColor(1.f, 0.9f, 0.35f));
@@ -532,7 +534,7 @@ void ACireHero::Cast(int32 Slot)
     else if (Id == TEXT("sanctuary"))
     {
         for (auto* Friend : Mode->Heroes)
-            if (IsValid(Friend) && !Friend->bDead && Friend->TeamId == TeamId && InRange(Friend, 600) && ClearSight(this, Friend))
+            if (IsValid(Friend) && !Friend->bDead && Friend->TeamId == TeamId && InRange(Friend, CireAbilityShapes::SanctuaryRadius()) && ClearSight(this, Friend)) // aoe-scale
             {
                 CireCombat::ApplyHealing(this, Friend, CireKits::Amount(this, Id, 45, 1.5f) * Power, SkillName(Id));
                 Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),3.f)); CireBuffs::Apply(Friend,TEXT("sanctuary"),CireDeveloperTools::EffectSeconds(GetWorld(),3.f),this); // aura-vfx
@@ -548,7 +550,7 @@ void ACireHero::Cast(int32 Slot)
         CireCombat::ApplyHealing(this, this, (MaxHealth * 0.30f + CireKits::Amount(this, Id)) * Power, SkillName(Id));
         for (auto* Friend : Mode->Heroes)
             if (IsValid(Friend) && Friend->bDrafted && !Friend->bDead && Friend->TeamId == TeamId &&
-                InRange(Friend, 650) && ClearSight(this, Friend))
+                InRange(Friend, CireAbilityShapes::BastionRadius()) && ClearSight(this, Friend)) // aoe-scale
             {
                 Friend->ShieldUntil = FMath::Max(Friend->ShieldUntil, Now + CireDeveloperTools::EffectSeconds(GetWorld(),8.f)); CireBuffs::Apply(Friend,TEXT("bastion_of_dawn"),CireDeveloperTools::EffectSeconds(GetWorld(),8.f),this); // aura-vfx
             }
@@ -563,7 +565,7 @@ void ACireHero::Cast(int32 Slot)
         const auto Collect = [&](AActor* Candidate)
         {
             if (Candidate != Target && IsHostile(Candidate) && Victims.Num() < 12 &&
-                FVector::DistSquared2D(Center, Candidate->GetActorLocation()) <= FMath::Square(550.f))
+                FVector::DistSquared2D(Center, Candidate->GetActorLocation()) <= FMath::Square(CireAbilityShapes::CataclysmRadius())) // aoe-scale
                 Victims.Add(Candidate);
         };
         for (auto* Monster : Mode->Monsters) Collect(Monster);
@@ -583,7 +585,7 @@ void ACireHero::Cast(int32 Slot)
     {
         for (auto* Friend : Mode->Heroes)
             if (IsValid(Friend) && Friend->bDrafted && !Friend->bDead && Friend->TeamId == TeamId &&
-                InRange(Friend, 1000) && ClearSight(this, Friend))
+                InRange(Friend, CireAbilityShapes::RenewalRadius()) && ClearSight(this, Friend)) // aoe-scale
             {
                 Friend->SlowUntil = 0;
                 CireCombat::ApplyHealing(this, Friend, CireKits::Amount(this, Id, 200, 4.f) * Power, SkillName(Id));
@@ -842,7 +844,7 @@ void ACireHero::BotThink(float DeltaSeconds)
                 {
                     ACireHero* Wounded = nullptr;
                     float Lowest = 0.80f;
-                    float HealingRange=Skills[Slot]==TEXT("sanctuary")?600.f:Skills[Slot]==TEXT("renewal")?1000.f:1200.f;
+                    float HealingRange=Skills[Slot]==TEXT("sanctuary")?CireAbilityShapes::SanctuaryRadius():Skills[Slot]==TEXT("renewal")?CireAbilityShapes::RenewalRadius():1200.f; // aoe-scale
                     if(Skills[Slot]==TEXT("wellspring"))if(const auto* Recipe=CireSkillTuning::FindRoleSkill(Skills[Slot]))HealingRange=Recipe->CastRange;
                     for (auto* Friend : Mode->Heroes)
                         if (IsValid(Friend) && !Friend->bDead && Friend->bDrafted && Friend->TeamId == TeamId && InRange(Friend, HealingRange) &&
@@ -858,7 +860,7 @@ void ACireHero::BotThink(float DeltaSeconds)
                 }
                 else if ((Skills[Slot] != TEXT("iron_guard") || Health < MaxHealth * 0.85f) &&
                          (Skills[Slot] != TEXT("bastion_of_dawn") || Health < MaxHealth * 0.80f) &&
-                         (Skills[Slot] != TEXT("war_cry") || InRange(Target, 750))) Cast(Slot);
+                         (Skills[Slot] != TEXT("war_cry") || InRange(Target, CireAbilityShapes::AoE(750.f)))) Cast(Slot); // aoe-scale
             }
         }
     }

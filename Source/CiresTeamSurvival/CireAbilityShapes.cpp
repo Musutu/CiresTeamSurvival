@@ -383,13 +383,13 @@ FCireHitShape DescribeRaw(FName Id,const FCireNPCArchetype* Caster)
         if(S==TEXT("spectral_hunt")){R.Kind=ECireHitShape::Unit;R.LingerSeconds=1.6f;return R;}
         R.Kind=ECireHitShape::Self;R.bHostileOnly=false;R.LingerSeconds=1.f;return R; // second_wind, last_stand
     }
-    if(S==TEXT("cleaving_strike")){Circle(CleaveRadius,true);R.LingerSeconds=.6f;return R;}
-    if(S==TEXT("war_cry")){Circle(WarCryRadius,true);R.LingerSeconds=1.f;return R;}
-    if(S==TEXT("sanctuary")){Circle(SanctuaryRadius,true);R.bHostileOnly=false;R.LingerSeconds=1.f;return R;}
-    if(S==TEXT("bastion_of_dawn")){Circle(BastionRadius,true);R.bHostileOnly=false;R.LingerSeconds=1.f;return R;}
-    if(S==TEXT("renewal")){Circle(RenewalRadius,true);R.bHostileOnly=false;R.LingerSeconds=1.f;return R;}
-    if(S==TEXT("cataclysm")){Circle(CataclysmRadius,false);R.LingerSeconds=1.2f;return R;}
-    if(S==TEXT("chain_spark")){R.Kind=ECireHitShape::Chain;R.Radius=ChainRadius;R.bAtTarget=true;R.LingerSeconds=.6f;return R;}
+    if(S==TEXT("cleaving_strike")){Circle(CleaveRadius(),true);R.LingerSeconds=.6f;return R;}
+    if(S==TEXT("war_cry")){Circle(WarCryRadius(),true);R.LingerSeconds=1.f;return R;}
+    if(S==TEXT("sanctuary")){Circle(SanctuaryRadius(),true);R.bHostileOnly=false;R.LingerSeconds=1.f;return R;}
+    if(S==TEXT("bastion_of_dawn")){Circle(BastionRadius(),true);R.bHostileOnly=false;R.LingerSeconds=1.f;return R;}
+    if(S==TEXT("renewal")){Circle(RenewalRadius(),true);R.bHostileOnly=false;R.LingerSeconds=1.f;return R;}
+    if(S==TEXT("cataclysm")){Circle(CataclysmRadius(),false);R.LingerSeconds=1.2f;return R;}
+    if(S==TEXT("chain_spark")){R.Kind=ECireHitShape::Chain;R.Radius=ChainRadius();R.bAtTarget=true;R.LingerSeconds=.6f;return R;}
     if(S==TEXT("iron_guard")){R.Kind=ECireHitShape::Self;R.bHostileOnly=false;R.LingerSeconds=1.f;return R;}
     if(S==TEXT("restoring_light")||S==TEXT("purify")){R.Kind=ECireHitShape::Unit;R.bHostileOnly=false;R.LingerSeconds=.8f;return R;}
     if(S==TEXT("shield_slam")||S==TEXT("shadow_step")||S==TEXT("executioners_verdict")){R.Kind=ECireHitShape::Unit;R.LingerSeconds=.6f;return R;}

@@ -1,4 +1,5 @@
 #include "CireSkillTuning.h"
+#include "CireAbilityShapes.h" // aoe-scale
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -136,6 +137,7 @@ bool CireSkillTuning::ParseJson(const FString& Json, FCireTuningData& Out, FStri
             !Policy(J,TEXT("worldCollision"),S.WorldCollision) || !Policy(J,TEXT("playerCollision"),S.PlayerCollision) ||
             !Policy(J,TEXT("monsterCollision"),S.MonsterCollision) || !Policy(J,TEXT("protectionCollision"),S.ProtectionCollision) ||
             !Policy(J,TEXT("wallCollision"),S.WallCollision) || !Color(J,S.Color)) return Fail(TEXT("Invalid skillshot ID, bounds, collision policy or appearance"));
+        if (!Key.StartsWith(TEXT("basic_"))) S.Radius = CireAbilityShapes::AoE(S.Radius); // aoe-scale: skillshot lanes 30% wider (basic attacks unchanged)
         Candidate.Skillshots.Add(Key, MoveTemp(S));
     }
     for (const auto& Entry : *Constructs)
@@ -198,6 +200,7 @@ bool CireSkillTuning::ParseJson(const FString& Json, FCireTuningData& Out, FStri
                 return Fail(TEXT("Invalid role skill ID, costs, duration or effect strength"));
             if((Key==TEXT("seismic_reprisal")||Key==TEXT("starfall"))&&(S.Radius<20||S.WarningSeconds<.2f))return Fail(TEXT("Area ultimates require radius >=20 and warning >=0.2 seconds"));
             if(Key==TEXT("spectral_hunt")&&(S.DurationSeconds<.1f||S.CastRange<50))return Fail(TEXT("Spectral Hunt requires a positive lifetime and cast range"));
+            S.Radius=CireAbilityShapes::AoE(S.Radius); // aoe-scale
             Seen.Add(Key);Candidate.RoleSkills.Add(Key,S);
         }
     }

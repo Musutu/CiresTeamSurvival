@@ -8,7 +8,7 @@
     { "id": "challengePack", "name": "Challenge Pack", "label": "Pack", "icon": "challenge_of_iron", "color": [0.66, 0.46, 0.83], "gizmo": "ring", "radius": true, "tier": true, "defaultRadius": 450 },
     { "id": "vendor", "name": "Shop / Vendor", "label": "Vendor", "icon": "price_on_every_soul", "color": [1.0, 0.82, 0.3], "gizmo": "pillar", "facing": true, "named": true, "defaultRadius": 120, "kinds": ["weaponsmith", "armory", "arcane"] },
     { "id": "objective", "name": "Objective / Castle Defend Point", "label": "Objective", "icon": "keeper_beacon", "color": [0.2, 0.86, 0.7], "gizmo": "ring", "radius": true, "defaultRadius": 450, "maxPerOwner": 1 },
-    { "id": "bossSpawn", "name": "Boss / Pack Leader Spawn", "label": "Boss", "icon": "chieftain_courage", "color": [0.95, 0.26, 0.2], "gizmo": "pillar", "facing": true, "named": true, "defaultRadius": 200 },
+    { "id": "bossSpawn", "name": "Outdoor Boss", "label": "Boss", "icon": "chieftain_courage", "color": [0.95, 0.26, 0.2], "gizmo": "pillar", "facing": true, "named": true, "defaultRadius": 200 },
     { "id": "rift", "name": "Rift / Portal / Arena Entrance", "label": "Rift", "icon": "banishment", "color": [0.56, 0.36, 1.0], "gizmo": "ring", "facing": true, "named": true, "radius": true, "defaultRadius": 250 },
     { "id": "respawn", "name": "Respawn Point / Graveyard", "label": "Respawn", "icon": "keeper_last_light", "color": [0.92, 0.95, 0.6], "gizmo": "pillar", "facing": true, "defaultRadius": 150 },
     { "id": "playBounds", "name": "Play Bounds", "label": "Bounds", "icon": "ashen_square", "color": [0.9, 0.9, 0.92], "gizmo": "polygon", "points": true, "defaultTeam": 0, "maxPerOwner": 1, "defaultRadius": 0 },

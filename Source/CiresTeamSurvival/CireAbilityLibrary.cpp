@@ -1,4 +1,5 @@
 #include "CireAbilityLibrary.h"
+#include "CireAbilityShapes.h" // aoe-scale
 #include "CireScalingKits.h" // scaling-kits
 #include "CireSkillShop.h" // progression-shop: per-level cast scaling
 #include "CireDeveloperTools.h"
@@ -58,6 +59,9 @@ void Load(){
             if(!P->TryGetArray(XY)||XY->Num()!=2||!(*XY)[0]->TryGetNumber(X)||!(*XY)[1]->TryGetNumber(Y)||!FMath::IsFinite(X)||!FMath::IsFinite(Y)){Valid=false;break;}
             S.CustomPolygon.Add(FVector2D(X,Y));}
         S.AbilityName=A.Name;
+        // aoe-scale: radius (circle / cone), line width and custom polygons grow; line length stays (it is reach).
+        S.Radius=CireAbilityShapes::AoE(S.Radius);S.Width=CireAbilityShapes::AoE(S.Width);
+        for(FVector2D& P:S.CustomPolygon)P*=CireAbilityShapes::AoERadiusScale();
         if(Valid&&ACireAreaEffect::ValidateSpec(S))Abilities.Add(A.Id,A);
     }
     UE_LOG(LogCireAbilityLibrary,Display,TEXT("CIRE_ASTRA_ABILITIES_LOADED count=%d path=%s"),Abilities.Num(),*Path);

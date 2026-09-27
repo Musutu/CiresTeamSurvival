@@ -234,6 +234,9 @@ public:
     bool bLeashAnchored = false;
     float LeashReturnStarted = 0, LeashReengageAt = 0, LeashReturnBest = 0, LeashReturnBestAt = 0;
     int32 LeashReturns = 0;
+    // outdoor-bosses: an outdoor boss is leashed to its lair (the Boss marker, realm-local) instead of a path (CireOutdoorBosses.h).
+    bool bHomeLeash = false;
+    FVector2D LeashHome = FVector2D::ZeroVector;
     UPROPERTY(Replicated) float Health = 120;
     UPROPERTY(Replicated) float MaxHealth = 120;
     UPROPERTY(Replicated) int32 PoisonAreaCount = 0;

@@ -1,5 +1,6 @@
 // town-perf: CireNavCache.h
 #include "CireNavCache.h"
+#include "CireLanePath.h" // outdoor-bosses: realm bounds in the key
 #include "CireTownMap.h"
 #include "CireTownTrim.h" // town-trim
 #include "CireTownWater.h" // town-trim
@@ -25,7 +26,7 @@ namespace
 {
 constexpr uint32 Magic = 0x43524E43; // "CRNC"
 constexpr int32 FormatVersion = 1;
-constexpr int32 NavRulesVersion = 3; // 2: door leaves rule, 3: rule off by default
+constexpr int32 NavRulesVersion = 4; // 2: door leaves rule, 3: rule off by default, 4: realm bounds grow to the Play Bounds (outdoor-bosses)
 bool bLocked = false;
 
 // Two engine helpers the cache needs are protected. Naming them through a derived type yields ordinary member pointers
@@ -54,6 +55,10 @@ FString CacheKey()
         FString Body; FFileHelper::LoadFileToString(Body, *(FPaths::ProjectContentDir() / File)); Text += Body;
     }
     { FString Ini; FFileHelper::LoadFileToString(Ini, *(FPaths::ProjectConfigDir() / TEXT("DefaultEngine.ini"))); Text += Ini; }
+    { // outdoor-bosses: the realm bounds (the navmesh volumes) follow the layout's Play Bounds, not only the route file
+        const FCireBattlefieldRoutes& R = CireLanePath::Get(nullptr);
+        Text += FString::Printf(TEXT("realm=%.0f,%.0f,%.0f;"), R.MinX, R.MaxX, R.HalfWidth);
+    }
     Text += CireTownTrim::Signature() + CireTownWater::NavSignature(); // town-trim: the Play Bounds, margin and backdrop ("" without a trim: the old key)
     for (const FString& Level : CireTownMap::Def().Levels)
     {

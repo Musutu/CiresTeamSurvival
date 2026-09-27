@@ -262,6 +262,8 @@ void UCireExpansionPresenter::Tick(float DeltaTime)
                 CireRaces::ApplySkin(M); // the rare / bonus colour on reskinned and Tripo bodies (the rim follows RankColor)
                 const FLinearColor Color = CireMonsterExpansion::SpecialColor(S.Special);
                 float Scale = 1.f;
+                // vfx-scale: no special glow by default (a badge on the nameplate / frames instead); the old aura with cire.RankBodyColours 1.
+                if (CireRaces::RankBodyColours())
                 if (UFXSystemAsset* System = CireFabVFX::ResolveSchool(S.Special == 2 ? ECireSchool::Holy : ECireSchool::Arcane, CireFabVFX::ERole::Aura, &Scale))
                     if (UFXSystemComponent* Aura = CireFabVFX::SpawnAttached(System, M->GetMesh(), FVector::ZeroVector, Scale * .8f, false))
                     { CireFabVFX::ApplyTint(Aura, Color); S.Aura = Aura; }

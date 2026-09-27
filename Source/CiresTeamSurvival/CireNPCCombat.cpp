@@ -649,6 +649,14 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         }
         return;
     }
+    // outdoor-bosses: a boss whose living threat holders all stand outside its lair's leash zone waits at home with its threat
+    // (only death drops threat); once every holder is dead it resets like a pack (home, full health, neutral again).
+    if(M->bHomeLeash&&M->PackId>=0&&!M->Threat.IsEmpty())
+    {
+        if(FVector::DistSquared2D(M->GetActorLocation(),M->SpawnPosition)>FMath::Square(150.f))M->AddMovementInput(CireNav::Steer(M,M->SpawnPosition));
+        else Movement->StopMovementImmediately();
+        return;
+    }
     if(M->PackId>=0){if(M->bEngaged)StartLeash(M);return;}
     // wave-director: escort guards walk beside their escortee instead of racing ahead.
     if(const ACireMonster* Charge=CireWaveDirector::EscortCharge(M))

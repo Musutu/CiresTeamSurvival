@@ -12,6 +12,7 @@
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
+#include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireRaces.h" // monster-races
 #include "CireSummon.h"
 #include "Components/PointLightComponent.h"
@@ -295,12 +296,16 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
         Bundle.Items.insert(Bundle.Items.end(), Part.Items.begin(), Part.Items.end());
         if (Label.IsEmpty() || RollTier >= Tier) Label = UTF8_TO_TCHAR(Table->Label.c_str());
     };
-    const bool bLeader = Monster->PackId >= 0 && Monster->GetNPCClassification() == ECireNPCClass::Boss;
+    // outdoor-bosses: a world boss rolls the lane-boss table (boss-grade) plus the challenge-pack completion table at its tier.
+    const bool bOutdoor = CireOutdoorBosses::IsOutdoorBoss(Monster);
+    const int32 BossTier = FMath::Clamp(1 + (Round - 1) / 2, 1, 10);
+    const bool bLeader = Monster->PackId >= 0 && !bOutdoor && Monster->GetNPCClassification() == ECireNPCClass::Boss;
     if (Monster->PackId < 0 && Monster->IsLaneBoss())
     {
-        Tier = FMath::Clamp(1 + (Round - 1) / 2, 1, 10);
+        Tier = BossTier;
         Merge(TableFor(D.LaneBoss, Tier, Round), Tier, MakeSeed(Round, 1000 + Monster->Lane));
     }
+    if (bOutdoor) Merge(TableFor(D.LaneBoss, BossTier, Round), BossTier, MakeSeed(Monster->PackId, 5));
     if (bLeader) Merge(TableFor(D.PackLeader, Tier, Round), Tier, MakeSeed(Monster->PackId, 2));
     if (bPackCompleted) Merge(TableFor(D.PackCompletion, Tier, Round), Tier, MakeSeed(Monster->PackId, 3));
     // monster-expansion: Rare Spawns and Bonus Loot Wave creatures carry their own (much better) tables.
@@ -318,6 +323,7 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
     struct FSourceRoll { const CI::LootTable* Table; int32 Tier; };
     TArray<FSourceRoll> Rolls;
     if (Monster->PackId < 0 && Monster->IsLaneBoss()) Rolls.Add({TableFor(D.LaneBoss, Tier, Round), Tier});
+    if (bOutdoor) Rolls.Add({TableFor(D.LaneBoss, BossTier, Round), BossTier}); // outdoor-bosses
     if (bLeader) Rolls.Add({TableFor(D.PackLeader, Tier, Round), Tier});
     if (bPackCompleted) Rolls.Add({TableFor(D.PackCompletion, Tier, Round), Tier});
     if (Special && Monster->PackId < 0) Rolls.Add({TableFor(*Special, Tier, Round), Tier}); // monster-expansion
@@ -327,7 +333,8 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
     const TArray<ACireHero*> Eligible = EligibleFor(Mode, Monster, Where);
     const double Share = CI::PersonalItemShare(Eligible.Num(), D.PersonalFactor);
     const FString SourceName = Monster->GetNPCDisplayName();
-    const FString Why = bPackCompleted ? FString::Printf(TEXT("Personal loot: you helped clear a Tier %d pack (%s)"), Tier, *SourceName)
+    const FString Why = bOutdoor ? FString::Printf(TEXT("Personal loot: you helped slay a world boss (%s)"), *SourceName) // outdoor-bosses
+        : bPackCompleted ? FString::Printf(TEXT("Personal loot: you helped clear a Tier %d pack (%s)"), Tier, *SourceName)
         : Monster->SpecialSpawn == 1 ? FString::Printf(TEXT("Personal loot: you helped slay a rare (%s)"), *SourceName) // monster-expansion
         : Monster->SpecialSpawn == 2 ? FString::Printf(TEXT("Personal loot: you caught a bonus-wave treasure creature (%s)"), *SourceName)
         : FString::Printf(TEXT("Personal loot from %s"), *SourceName);
@@ -395,6 +402,7 @@ int32 CireLoot::MobValueNow(const UWorld* World)
 CI::BountyKind CireLoot::BountyKindOf(const ACireMonster* Monster)
 {
     if (!Monster) return CI::BountyKind::Mob;
+    if (CireOutdoorBosses::IsOutdoorBoss(Monster)) return CI::BountyKind::Boss; // outdoor-bosses: a boss is worth 10x the mob value
     if (Monster->PackId >= 0) return Monster->GetNPCClassification() == ECireNPCClass::Boss ? CI::BountyKind::PackLeader : CI::BountyKind::PackUnit;
     // Wave units: the wave director's spawn-time flags (valid inside MonsterKilled).
     const FCireWaveUnitInfo Info = CireWaveDirector::UnitFlags(Monster);
@@ -422,7 +430,8 @@ int32 CireLoot::KillBounty(ACireGameMode* Mode, const ACireMonster* Monster, flo
     if (Monster && Monster->SpecialSpawn != 0 && Monster->PackId < 0)
         return FMath::Max(0, FMath::RoundToInt(CI::MobValue(Get().Economy, BountyWave(Mode, Monster)) * CireMonsterExpansion::BountyMobValues(Monster) * RewardMultiplier));
     // jungle-packs: pack units pay the tier's gold multiplier (JunglePacks.json tiers[].gold).
-    if (Monster && Monster->PackId >= 0) RewardMultiplier *= CireJunglePacks::TierRules(Monster->Tier).Gold;
+    if (CireOutdoorBosses::IsOutdoorBoss(Monster)) RewardMultiplier *= CireOutdoorBosses::Rules().GoldMultiplier; // outdoor-bosses
+    else if (Monster && Monster->PackId >= 0) RewardMultiplier *= CireJunglePacks::TierRules(Monster->Tier).Gold;
     return CI::KillGold(Get().Economy, BountyKindOf(Monster), BountyWave(Mode, Monster), RewardMultiplier);
 }
 
@@ -432,7 +441,7 @@ int32 CireLoot::AwardKillGold(ACireGameMode* Mode, ACireMonster* Monster, float 
     const int32 Gold = KillBounty(Mode, Monster, RewardMultiplier);
     if (Gold <= 0) return 0;
     const CI::BountyKind Kind = BountyKindOf(Monster);
-    const bool bPack = Kind == CI::BountyKind::PackUnit || Kind == CI::BountyKind::PackLeader;
+    const bool bPack = Kind == CI::BountyKind::PackUnit || Kind == CI::BountyKind::PackLeader || CireOutdoorBosses::IsOutdoorBoss(Monster); // outdoor-bosses: those who fought it
     // Wave kills: the whole team shares the lane bounty (every teammate gets the full value).
     // Challenge packs: every eligible teammate (helped, or alive within the eligibility radius).
     const TArray<ACireHero*> Recipients = bPack ? EligibleFor(Mode, Monster, Monster->GetActorLocation()) : TeamOf(Mode, Monster->Lane);

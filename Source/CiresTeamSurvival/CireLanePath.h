@@ -52,7 +52,9 @@ struct FCireRouteSpot
     /** Monster spawns: split units across the owned paths by path weight (false = evenly). */
     bool bWeighted = false;
     FString Id, Name;
-    bool operator==(const FCireRouteSpot& O) const { return Position == O.Position && Yaw == O.Yaw && Radius == O.Radius && bWeighted == O.bWeighted && Id == O.Id && Name == O.Name; }
+    /** outdoor-bosses: Boss spawns: the boss archetype the marker holds (empty: OutdoorBosses.json decides). Server only. */
+    FString Kind;
+    bool operator==(const FCireRouteSpot& O) const { return Position == O.Position && Yaw == O.Yaw && Radius == O.Radius && bWeighted == O.bWeighted && Id == O.Id && Name == O.Name && Kind == O.Kind; }
 };
 
 struct FCireBattlefieldRoutes
@@ -157,6 +159,10 @@ namespace CireLanePath
     CIRESTEAMSURVIVAL_API FCireBattlefieldRoutes TownDefaults();
     /** Every semantic rule ParseJson enforces (bounds, clearance, goal zone, bays, escort ranges). */
     CIRESTEAMSURVIVAL_API bool Validate(const FCireBattlefieldRoutes& Routes, FString& Error);
+    /** outdoor-bosses: the town realm grows (never shrinks) to cover the Play Bounds plus the trim margin and a clearance,
+     *  rounded up to 25 m steps so small polygon edits keep the same bounds (bounds changes need a restart: the navmesh volume).
+     *  Procedural routes and documents without Play Bounds are unchanged. Returns true when the bounds grew. */
+    CIRESTEAMSURVIVAL_API bool GrowRealmToPlayBounds(FCireBattlefieldRoutes& Routes);
     CIRESTEAMSURVIVAL_API FString ToJson(const FCireBattlefieldRoutes& Routes);
     CIRESTEAMSURVIVAL_API FString DataPath();
     CIRESTEAMSURVIVAL_API bool LoadFile(FCireBattlefieldRoutes& Out, FString* Error = nullptr, const FString& Path = FString());

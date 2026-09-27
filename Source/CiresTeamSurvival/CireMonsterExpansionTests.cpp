@@ -9,6 +9,7 @@
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
 #include "CireRaces.h"
+#include "CireZones.h" // vfx-scale: special-state badges
 #include "CireThreat.h"
 #include "CireWaves.h"
 #include "Rules/CireItemRules.h"
@@ -146,6 +147,10 @@ bool CireMonsterExpansion::RunSmoke(ACireGameMode* Mode)
             Check(CireRaces::RankOf(R) >= ECireNPCRank::Elite && CireRaces::RankColor(R).Equals(SpecialColor(1)), TEXT("the rare is at least elite and wears the rare colour"));
             const FCireWaveUnitInfo Info = CireWaveDirector::UnitFlags(R);
             Check(Info.bValid && Info.bRare && !Info.bBonus, TEXT("economy hook flags the rare"));
+            // vfx-scale (Eric 2026-09-26): special monsters no longer glow; the rare state is an icon on the nameplate / frames.
+            Check(UCireMonsterArt::RimFor(R).A <= 0.f && CireRaces::BodyStyle(R).Glow <= CireRaces::Rank(ECireNPCRank::Normal).Glow + .001f &&
+                !CireRaces::BodyStyle(R).Color.Equals(SpecialColor(1), .01f), TEXT("the rare wears no special rim, glow or skin colour"));
+            Check(CireZones::BadgesOf(R).Contains(CireZones::EBadge::Rare) && !CireZones::BadgesOf(R).Contains(CireZones::EBadge::BonusLoot), TEXT("the rare shows a RARE badge instead"));
             ACireMonster* Baseline = World->SpawnActor<ACireMonster>(FVector(0, 2100, 3200), FRotator::ZeroRotator, Params);
             if (Baseline) { Actors.Add(Baseline); Baseline->SetActorTickEnabled(false); CireNPCCombat::ConfigureArchetype(Baseline, R->NPCState->ArchetypeId, State->Wave, 0, 1); }
             Check(Baseline && R->MaxHealth > Baseline->MaxHealth * 2.f && R->Damage > Baseline->Damage, TEXT("the rare is much tougher than its plain archetype"));

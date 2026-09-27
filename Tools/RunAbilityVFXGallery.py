@@ -158,6 +158,7 @@ def main() -> int:
     parser.add_argument("--legacy", action="store_true", help="capture the previous presentation (-CireLegacyVFX) for before/after")
     parser.add_argument("--no-fab", action="store_true", help="fab-integration: hide the Fab Niagara/animation overlays (-CireNoFabVFX -CireNoFabAnim) for before/after")
     parser.add_argument("--alt-loadout", default="", help="fab-integration: profiles cast with their second weapon loadout (e.g. ranger = crossbow)")
+    parser.add_argument("--effect-scale", type=float, default=0.0, help="vfx-scale: force cire.SpellEffectScale (1 = the original art size, 1.3 = the design value) for before/after")
     parser.add_argument("--in-pillow", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.compare or args.compose:
@@ -177,7 +178,7 @@ def main() -> int:
     command = [str(EDITOR), str(ROOT / "CiresTeamSurvival.uproject"), "/Game/Maps/Citadel", "-game", "-CireAbilityVFXGallery",
                f"-CireVFXSet={args.set}", f"-CireVFXTag={args.tag}", "-CireTripoChampions", "-RenderOffscreen", "-ForceRes",
                f"-ResX={width}", f"-ResY={height}", "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding",
-               "-ExecCmds=t.MaxFPS 30,r.AntiAliasingMethod 1", f"-abslog={log}"]
+               "-ExecCmds=t.MaxFPS 30,r.AntiAliasingMethod 1" + (f",cire.SpellEffectScale {args.effect_scale}" if args.effect_scale > 0 else ""), f"-abslog={log}"]
     if args.camera == "gameplay":
         command += ["-CireVFXCamera=gameplay", f"-CireVFXPitch={args.pitch}"]
     if args.db:

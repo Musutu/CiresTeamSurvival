@@ -220,6 +220,9 @@ namespace CireAuraVisuals
     CIRESTEAMSURVIVAL_API void PlaySoundCue(const FString& CueId,AActor* Unit,const FVector* Location=nullptr);
     /** Attached loops playing (or wanted, when no audio device exists) across all units; capped by MaxLoops. */
     constexpr int32 MaxLoops=4;
+    /** vfx-scale: size multiplier of an aura layer: hand / weapon glows take HandScale (1.2), tethers and overhead glyphs
+     *  never scale, every other layer takes AuraScale (1.1). */
+    CIRESTEAMSURVIVAL_API float LayerScale(ECireAuraShape Shape, float AuraScale, float HandScale);
     /** fab-integration: Niagara aura overlays alive at once (nearest/most important units first). */
     constexpr int32 MaxFabAuras=8;
 #if !UE_BUILD_SHIPPING
