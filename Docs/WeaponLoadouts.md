@@ -186,3 +186,11 @@ plays its own Tripo clips with the second hand on the shaft (0.0 cm).
   * The index finger may sit 1.5 cm looser, because the authored handle line is not the palm's natural axis
     (chieftain axe, behemoth totem).
 * `CIRE_GRIP_PASS checks=791 grips=54`.
+
+## Size classes, weapon direction, arm IK (blender-rig)
+
+`sizeClasses` in `WeaponLoadouts.json` (`one_hand`, `mace`: 2x, girth .8, capped at 3/4 of the body height; `pistol`
+1.5x) and a part's `sizeClass` scale one-handed weapons and maces (Eric, 2026-09-26). Props are stretched along their
+handle about the handle point, so the fist stays closed on the handle. Bind grips hold the business end on the thumb side
+(`CireWeapons::BusinessAxis`), and the carry / second-hand arm IK bends elbows the anatomical way. Details, before/after
+lengths and the diagnosis table: `Docs/RigAudit.md`.

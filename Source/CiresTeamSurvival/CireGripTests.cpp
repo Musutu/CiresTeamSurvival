@@ -12,6 +12,7 @@
 #include "CireNPCState.h"
 #include "CireWeaponPresentation.h"
 #include "CireWeaponSockets.h" // weapon-grips
+#include "CireRigAudit.h" // blender-rig
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -74,10 +75,15 @@ void MeasureBody(FChecker& C, const FString& Tag, USkeletalMeshComponent* Body, 
         const FString Where = Tag + TEXT(" ") + Part->GetStaticMesh()->GetName();
         const FTransform T = Part->GetComponentTransform();
         C.Check(!T.ContainsNaN(), Where + TEXT(" transform finite"));
-        const float Scale = static_cast<float>(T.GetScale3D().X);
+        // blender-rig: an upscaled prop is stretched along its handle axis only; the handle radius follows the cross-section.
+        const int32 LongAxis = CireWeapons::PrincipalAxis(W->Axis);
+        const FVector S3 = T.GetScale3D();
+        const float Scale = static_cast<float>(LongAxis == INDEX_NONE ? S3.X : FMath::Min(S3[(LongAxis + 1) % 3], S3[(LongAxis + 2) % 3]));
         const float R = W->RadiusCm * Scale;
         FVector P = T.TransformPosition(W->Handle);
-        FVector D = T.TransformVectorNoScale(W->Axis).GetSafeNormal();
+        // blender-rig: the bind grip holds the business end on the thumb side (CireWeapons::BusinessAxis).
+        const FVector Business = Part->GetStaticMesh() ? CireWeapons::BusinessAxis(*Part->GetStaticMesh(), *W) : W->Axis;
+        FVector D = T.TransformVectorNoScale(Business).GetSafeNormal();
         const FName Socket = Part->GetAttachSocketName();
         // weapon-grips: an authored prop is gripped where its Fab set holds it (a crossbow by the fore-end).
         const FString* Set = Authored.Find(Part);
@@ -136,7 +142,18 @@ void MeasureBody(FChecker& C, const FString& Tag, USkeletalMeshComponent* Body, 
                 C.Check(Tip <= 3.0 && Edge <= 3.0, FString::Printf(TEXT("%s tip/edge follow the %s clip grip (tip %.1f, edge %.1f deg)"), *Where, **Set, Tip, Edge));
             }
         }
-        else C.Check(FMath::Abs(Angle - FMath::Abs(W->TiltDeg)) <= 6.0, FString::Printf(TEXT("%s handle orientation %.1f deg (tilt %.0f)"), *Where, Angle, W->TiltDeg));
+        else
+        {
+            C.Check(FMath::Abs(Angle - FMath::Abs(W->TiltDeg)) <= 6.0, FString::Printf(TEXT("%s handle orientation %.1f deg (tilt %.0f)"), *Where, Angle, W->TiltDeg));
+            // blender-rig: the blade/head leaves the fist on the thumb side (Eric: "sometimes the weapon isn't the right
+            // direction"): the prop's far end along the handle is where the grip frame's tip points.
+            const FTransform Tip = CireWeaponSockets::PropFrame(*Part->GetStaticMesh(), W->Handle, W->Axis, W->Edge, false);
+            const FVector TipWorld = T.TransformVectorNoScale(Tip.GetRotation().GetAxisZ()).GetSafeNormal();
+            // Checked where the prop is clearly one-ended (the bounds and BusinessAxis agree), i.e. not a centre-gripped bow.
+            const bool bOneEnded = FVector::DotProduct(Tip.GetRotation().GetAxisZ(), Business) > 0.f;
+            if (!W->bCarry && W->OffHand.IsNearlyZero() && bOneEnded)
+                C.Check(FVector::DotProduct(TipWorld, Grip.GetRotation().GetAxisZ()) > .5, FString::Printf(TEXT("%s business end on the thumb side (%.2f)"), *Where, FVector::DotProduct(TipWorld, Grip.GetRotation().GetAxisZ())));
+        }
         for (const TCHAR* Finger : {TEXT("index"), TEXT("middle"), TEXT("ring"), TEXT("pinky")})
         {
             const FName Joint(FString::Printf(TEXT("%s_02%s"), Finger, Side));
@@ -246,11 +263,42 @@ bool CireGrip::RunSmoke(ACireGameMode* Mode)
         C.Check(Anim != nullptr, Tag + TEXT(" champion anim instance"));
         if (!Anim) continue;
         MeasureBody(C, Tag + TEXT(" idle"), Mesh, Parts, Anim->Hands, true, Authored);
+        // blender-rig: elbows bend the natural way with the grip IK applied (carry and second-hand arms included).
+        for (const bool bRight : {false, true})
+        {
+            const CireRigAudit::FArm Arm = CireRigAudit::Measure(*Mesh, bRight);
+            C.Check(!CireRigAudit::IsDefect(Arm), FString::Printf(TEXT("%s idle %s elbow bends forward (%.1f deg)"), *Tag, bRight ? TEXT("right") : TEXT("left"), Arm.ElbowDeg));
+        }
+        // blender-rig: size classes (WeaponLoadouts.json sizeClasses): 2x one-handed weapons and maces, stretched along the handle.
+        for (const auto& Info : Weapons->GetGripInfo())
+        {
+            const UStaticMeshComponent* Part = Info.Part.Get();
+            const CireGrip::FWeapon* W = Part ? CireGrip::FindWeapon(Part->GetStaticMesh()) : nullptr;
+            if (!W || Info.SizeClass.IsEmpty()) continue;
+            // 2x, unless the class cap (3/4 of the bind body height) bites: then exactly at the cap, never above it.
+            const FReferenceSkeleton& RefSk = Mesh->GetSkeletalMeshAsset()->GetRefSkeleton();
+            const float BodyCm = 1.1f * static_cast<float>(Mesh->GetComponentScale().Z) * static_cast<float>(CireGrip::ReferenceComponent(RefSk, TEXT("head")).GetLocation().Z -
+                FMath::Min(CireGrip::ReferenceComponent(RefSk, TEXT("foot_l")).GetLocation().Z, CireGrip::ReferenceComponent(RefSk, TEXT("foot_r")).GetLocation().Z));
+            const bool bDoubled = Info.Size >= 1.99f * Info.BaseSize, bAtCap = FMath::Abs(Info.LengthCm - .75f * BodyCm) <= 1.5f;
+            C.Check(Info.SizeClass != TEXT("one_hand") && Info.SizeClass != TEXT("mace") || ((bDoubled || bAtCap) && Info.Size > Info.BaseSize && Info.LengthCm <= .75f * BodyCm + 1.5f),
+                FString::Printf(TEXT("%s %s size class %s: %.2fx, %.0fcm on a %.0fcm body (2x or the 3/4 cap)"), *Tag, *Part->GetStaticMesh()->GetName(), *Info.SizeClass,
+                    Info.Size / FMath::Max(.01f, Info.BaseSize), Info.LengthCm, BodyCm));
+            const int32 Long = CireWeapons::PrincipalAxis(W->Axis);
+            if (Long == INDEX_NONE || Info.Girth >= .999f) continue;
+            const FVector S3 = Part->GetComponentTransform().GetScale3D();
+            const double Ratio = S3[(Long + 1) % 3] / FMath::Max(1.e-4, S3[Long]);
+            C.Check(FMath::Abs(Ratio - Info.Girth) < .02, FString::Printf(TEXT("%s %s stretched along its handle (cross/long %.2f, girth %.2f)"), *Tag, *Part->GetStaticMesh()->GetName(), Ratio, Info.Girth));
+        }
         // Mid-attack: the style's clip held at contact.
         const FString Clip = CireChampionActions::ClipName(*H, TEXT("attack"));
         C.Check(CireChampionActions::Hold(*H, Clip, 1.f), Tag + TEXT(" holds ") + Clip);
         H->ChampionArt->UpdateVisuals(*H, 0.f); Refresh(Mesh);
         MeasureBody(C, Tag + TEXT(" attack"), Mesh, Parts, Anim->Hands, false, Authored);
+        for (const bool bRight : {false, true})
+        {
+            const CireRigAudit::FArm Arm = CireRigAudit::Measure(*Mesh, bRight);
+            C.Check(!CireRigAudit::IsDefect(Arm), FString::Printf(TEXT("%s attack %s elbow bends forward (%.1f deg)"), *Tag, bRight ? TEXT("right") : TEXT("left"), Arm.ElbowDeg));
+        }
         C.Check(Anim->AttackWeight > .9f, Tag + TEXT(" attack pose applied"));
     }
     // Monsters: the props they keep.

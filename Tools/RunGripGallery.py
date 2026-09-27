@@ -1,7 +1,8 @@
 """Render the weapon-grip review gallery (Source/CiresTeamSurvival/CireGripGallery.cpp) and build contact sheets.
 
-Every armed champion is posed alone in six states (idle, run, attack windup, attack contact, cast, dodge roll), each
-captured full-body and as a close-up of the weapon hand. Captures land in Saved/GripGallery/<stamp>-after (or -before
+Every armed champion (with --all: every champion) is posed alone in six states (idle, run, attack windup, attack
+contact, cast, dodge roll), each captured full-body, as a close-up of the weapon hand and as a front view of the upper
+body (arms: elbows and wrists). The metric lines carry the rig audit (CireRigAudit: signed elbow flexion, hand twist). Captures land in Saved/GripGallery/<stamp>-after (or -before
 with --legacy, which renders the old bind-pose grips). With Pillow available (--pylib <dir> or on sys.path) one
 contact sheet per champion is written next to them: <nn>_<profile>_sheet.png, full-body row over the hand row.
 The metric lines (CIRE_GRIP_GALLERY_METRIC) are copied to metrics.txt for the Docs/WeaponLoadouts.md table.
@@ -39,16 +40,16 @@ def contact_sheets(directory: Path, pylib: str | None) -> list[Path]:
         return []
     groups: dict[str, dict[tuple[int, str], Path]] = {}
     for png in directory.glob("*.png"):
-        m = re.fullmatch(r"(\d\d_[a-z0-9_]+?)_(\d)_([a-z]+)_(wide|hand)\.png", png.name)
+        m = re.fullmatch(r"(\d\d_[a-z0-9_]+?)_(\d)_([a-z]+)_(wide|hand|arms)\.png", png.name)
         if m:
             groups.setdefault(m.group(1), {})[(int(m.group(2)), m.group(4))] = png
     sheets = []
     tile_w, tile_h, label = 480, 270, 22
     for key, tiles in sorted(groups.items()):
-        sheet = Image.new("RGB", (tile_w * len(STATES), (tile_h + label) * 2 + 34), (18, 18, 22))
+        sheet = Image.new("RGB", (tile_w * len(STATES), (tile_h + label) * 3 + 34), (18, 18, 22))
         draw = ImageDraw.Draw(sheet)
         draw.text((8, 8), key[3:] + ("  (before: bind-pose grips)" if directory.name.endswith("before") else "  (after)"), fill=(245, 220, 170))
-        for row, view in enumerate(("wide", "hand")):
+        for row, view in enumerate(("wide", "hand", "arms")):
             for col, state in enumerate(STATES):
                 path = tiles.get((col, view))
                 x, y = col * tile_w, 34 + row * (tile_h + label)
@@ -72,6 +73,8 @@ def main() -> int:
     parser.add_argument("--legacy", action="store_true", help="render the old bind-pose grips (before captures)")
     parser.add_argument("--no-fab", action="store_true", help="hide the local Fab packs")
     parser.add_argument("--hq-off", action="store_true", help="render the fallback (Fab-clip) champion bodies instead of the HQ ones")
+    parser.add_argument("--all", action="store_true", help="also render unarmed champions (rig audit: elbows and wrists)")
+    parser.add_argument("--out-copy", type=Path, default=None, help="copy the sheets and metrics here (e.g. Saved/AgentLogs/...)")
     parser.add_argument("--pylib", default=None, help="directory with Pillow for the contact sheets")
     parser.add_argument("--editor", type=Path, default=Path("F:/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"))
     parser.add_argument("--timeout", type=int, default=1500)
@@ -87,6 +90,8 @@ def main() -> int:
         command.append("-CireNoFab")
     if args.hq_off:
         command.append("-CireChampionHQOff")
+    if args.all:
+        command.append("-CireGripGalleryAll")
     if args.only:
         command.append(f"-CireGripGalleryOnly={args.only}")
     if args.preset:
@@ -113,6 +118,12 @@ def main() -> int:
         for sheet in contact_sheets(directory, args.pylib):
             print("sheet", sheet)
         print("metrics", directory / "metrics.txt")
+        if args.out_copy:
+            import shutil
+            args.out_copy.mkdir(parents=True, exist_ok=True)
+            for f in list(directory.glob("*_sheet.png")) + [directory / "metrics.txt"]:
+                shutil.copy2(f, args.out_copy / f.name)
+            print("copied to", args.out_copy)
     passed = code == 0 and "CIRE_GRIP_GALLERY_PASS" in text
     print("GRIP GALLERY", "PASS" if passed else f"FAIL (exit {code})")
     return 0 if passed else 1

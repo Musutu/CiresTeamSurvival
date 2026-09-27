@@ -1,6 +1,11 @@
 {
   "schemaVersion": 1,
   "artStatus": "original local prototype props; no gameplay/stat changes",
+  "sizeClasses": {
+    "one_hand": {"scale": 2.0, "girth": 0.8, "maxBodyFraction": 0.75, "note": "blender-rig (Eric 2026-09-26): one-handed swords, axes, daggers 2x long, capped at 3/4 of the body height (a 2x knight sword would be a 1.8 m greatsword); girth keeps the handle closable (cross-section 1.6x)"},
+    "mace": {"scale": 2.0, "girth": 0.8, "maxBodyFraction": 0.75, "note": "maces, hammers, flails, pick-hammer: 2x, capped at 3/4 of the body height"},
+    "pistol": {"scale": 1.5, "girth": 1.0, "note": "off-hand pistols: 1.5x uniform (the grip axis is slanted, so no girth; 2x opened the fist)"}
+  },
   "presets": {
     "tripo_huntress": {"motion": "throw", "parts": [
       {"asset": "hunter/Glaive", "bone": "hand_r", "role": "primary", "hideOnRelease": true},
@@ -9,8 +14,8 @@
       {"asset": "tripo/WitchSlayerBlunderbuss", "bone": "hand_l", "role": "primary", "scale": 0.86},
       {"asset": "tripo/WitchSlayerBlade", "bone": "pelvis", "offsetCm": [0, -18, -4], "rotation": [160, 0, 0], "scale": 0.9}]},
     "tripo_gunblade": {"motion": "melee", "parts": [
-      {"asset": "tripo/GunbladeSword", "bone": "hand_r", "role": "primary", "scale": 0.94},
-      {"asset": "tripo/GunbladePistol", "bone": "hand_l", "scale": 0.41}]},
+      {"asset": "tripo/GunbladeSword", "bone": "hand_r", "sizeClass": "one_hand", "role": "primary", "scale": 0.94},
+      {"asset": "tripo/GunbladePistol", "bone": "hand_l", "sizeClass": "pistol", "scale": 0.41}]},
     "aetheri_warden": {"motion": "melee", "parts": [
       {"asset": "hunter/AetherHalberd", "bone": "hand_r", "role": "primary"}]},
     "artificer": {"motion": "cast", "parts": [
@@ -22,10 +27,10 @@
       {"asset": "hunter/ArcaneBlunderbuss", "bone": "hand_l", "role": "primary"},
       {"asset": "hunter/SpectralBlade", "bone": "pelvis", "offsetCm": [0, -18, -4], "rotation": [160, 0, 0], "scale": 0.9}]},
     "gunblade": {"motion": "melee", "parts": [
-      {"asset": "hunter/Falchion", "bone": "hand_r", "role": "primary"},
-      {"asset": "hunter/Flintlock", "bone": "hand_l"}]},
+      {"asset": "hunter/Falchion", "bone": "hand_r", "sizeClass": "one_hand", "role": "primary"},
+      {"asset": "hunter/Flintlock", "bone": "hand_l", "sizeClass": "pistol"}]},
     "warden": {"motion": "melee", "parts": [
-      {"asset": "legacy/Sword", "bone": "hand_r", "role": "primary"},
+      {"asset": "legacy/Sword", "bone": "hand_r", "sizeClass": "one_hand", "role": "primary"},
       {"asset": "legacy/Shield", "bone": "hand_l"}]},
     "ranger": {"motion": "bow", "parts": [
       {"asset": "legacy/Bow", "bone": "hand_l", "role": "primary"},
@@ -38,29 +43,29 @@
       {"asset": "ArcaneStaff", "bone": "hand_l", "role": "primary"}]},
     "summoner": {"motion": "cast", "parts": [
       {"asset": "RiftStaff", "bone": "hand_l", "role": "primary"},
-      {"asset": "Dagger", "bone": "hand_r", "scale": 0.85}]},
+      {"asset": "Dagger", "bone": "hand_r", "sizeClass": "one_hand", "scale": 0.85}]},
     "lancer": {"motion": "throw", "parts": [
       {"asset": "legacy/Lance", "bone": "hand_r", "role": "primary", "hideOnRelease": true}]},
     "paladin": {"motion": "melee", "parts": [
-      {"asset": "Flail", "bone": "hand_r", "role": "primary"},
+      {"asset": "Flail", "bone": "hand_r", "sizeClass": "mace", "role": "primary"},
       {"asset": "legacy/Shield", "bone": "hand_l"}]},
     "miner": {"motion": "melee", "parts": [
-      {"asset": "PickHammer", "bone": "hand_r", "role": "primary", "scale": 0.85}]},
+      {"asset": "PickHammer", "bone": "hand_r", "sizeClass": "mace", "role": "primary", "scale": 0.85}]},
     "chieftain": {"motion": "melee", "parts": [
-      {"asset": "WarAxe", "bone": "hand_r", "role": "primary", "scale": 1.1}]},
+      {"asset": "WarAxe", "bone": "hand_r", "sizeClass": "one_hand", "role": "primary", "scale": 1.1}]},
     "behemoth": {"motion": "melee", "parts": [
       {"asset": "Totem", "bone": "hand_r", "role": "primary", "scale": 1.25}]},
     "footman": {"motion": "melee", "parts": [
-      {"asset": "legacy/Sword", "bone": "hand_r", "role": "primary"},
+      {"asset": "legacy/Sword", "bone": "hand_r", "sizeClass": "one_hand", "role": "primary"},
       {"asset": "legacy/Shield", "bone": "hand_l"}]},
     "wizard": {"motion": "cast", "parts": [
       {"asset": "EmberStaff", "bone": "hand_l", "role": "primary"}]},
     "troll_melee": {"motion": "melee", "parts": [
-      {"asset": "ThrowingAxe", "bone": "hand_r", "role": "primary"},
-      {"asset": "ThrowingAxe", "bone": "hand_l"}]},
+      {"asset": "ThrowingAxe", "bone": "hand_r", "sizeClass": "one_hand", "role": "primary"},
+      {"asset": "ThrowingAxe", "bone": "hand_l", "sizeClass": "one_hand"}]},
     "troll_ranged": {"motion": "throw", "parts": [
-      {"asset": "ThrowingAxe", "bone": "hand_r", "role": "primary", "hideOnRelease": true},
-      {"asset": "ThrowingAxe", "bone": "hand_l", "hideOnRelease": true}]},
+      {"asset": "ThrowingAxe", "bone": "hand_r", "sizeClass": "one_hand", "role": "primary", "hideOnRelease": true},
+      {"asset": "ThrowingAxe", "bone": "hand_l", "sizeClass": "one_hand", "hideOnRelease": true}]},
     "dryad": {"motion": "cast", "parts": [
       {"asset": "GroveStaff", "bone": "hand_l", "role": "primary"}]},
     "keeper": {"motion": "cast", "parts": [
@@ -68,11 +73,11 @@
     "centaur": {"motion": "throw", "parts": [
       {"asset": "legacy/Lance", "bone": "hand_r", "role": "primary", "hideOnRelease": true}]},
     "hammer_shield": {"motion": "melee", "parts": [
-      {"asset": "WarHammer", "bone": "hand_r", "role": "primary"},
+      {"asset": "WarHammer", "bone": "hand_r", "sizeClass": "mace", "role": "primary"},
       {"asset": "legacy/Shield", "bone": "hand_l"}]},
     "dual_daggers": {"motion": "melee", "parts": [
-      {"asset": "Dagger", "bone": "hand_r", "role": "primary"},
-      {"asset": "Dagger", "bone": "hand_l"}]},
+      {"asset": "Dagger", "bone": "hand_r", "sizeClass": "one_hand", "role": "primary"},
+      {"asset": "Dagger", "bone": "hand_l", "sizeClass": "one_hand"}]},
     "unarmed": {"motion": "none", "parts": []}
   },
   "previewOptions": {

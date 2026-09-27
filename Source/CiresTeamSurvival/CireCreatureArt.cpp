@@ -13,6 +13,7 @@
 #include "KismetProceduralMeshLibrary.h"
 #include "CireChampionArt.h" // new-champions: rider combat layer
 #include "CireGrip.h" // new-champions: prop grips
+#include "CireWeaponPresentation.h" // blender-rig: CireWeapons::BusinessAxis
 #include "CireMonsterAnim.h" // new-champions: native monster / mount clips
 #include "CireChampionActions.h" // fab-integration: skill kinds and release leads
 #include "Animation/AnimSequence.h"
@@ -529,7 +530,8 @@ void UCireCreatureArt::AttachProps(ACireHero& Hero,USkeletalMeshComponent* Body,
         auto* Part=NewObject<UStaticMeshComponent>(&Hero);Hero.AddInstanceComponent(Part);
         Part->SetStaticMesh(PropMesh);Prepare(*Part);Part->SetCastShadow(true);Part->ComponentTags.AddUnique(TEXT("CireWeaponProp"));
         const CireGrip::FWeapon* Grip=(Bone==TEXT("hand_l")||Bone==TEXT("hand_r"))?CireGrip::FindWeapon(PropMesh):nullptr;
-        const CireGrip::FPlacement Placement=Grip?CireGrip::Place(Skeletal,Bone,*Grip,1.f,BodyScale):CireGrip::FPlacement();
+        CireGrip::FWeapon Pointed=Grip?*Grip:CireGrip::FWeapon();if(Grip)Pointed.Axis=CireWeapons::BusinessAxis(*PropMesh,*Grip); // blender-rig
+        const CireGrip::FPlacement Placement=Grip?CireGrip::Place(Skeletal,Bone,Pointed,1.f,BodyScale):CireGrip::FPlacement();
         if(Placement.bValid){Part->SetupAttachment(Body,Placement.Bone);Part->SetRelativeTransform(Placement.Relative);}
         else
         {

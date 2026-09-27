@@ -6,6 +6,7 @@
 #include "CireChampionRoster.h"
 #include "CireFabAnimation.h"
 #include "CireMobility.h"
+#include "CireRigAudit.h" // blender-rig
 #include "CireWeaponPresentation.h"
 #include "Animation/AnimSequence.h"
 #include "Animation/AnimSingleNodeInstance.h"
@@ -42,7 +43,7 @@ namespace
 {
 const TCHAR* States[] = {TEXT("idle"), TEXT("run"), TEXT("windup"), TEXT("contact"), TEXT("cast"), TEXT("roll")};
 constexpr int32 NumStates = UE_ARRAY_COUNT(States);
-const TCHAR* Views[] = {TEXT("wide"), TEXT("hand")};
+const TCHAR* Views[] = {TEXT("wide"), TEXT("hand"), TEXT("arms")}; // blender-rig: arms = front view of the upper body (elbows, wrists)
 constexpr int32 NumViews = UE_ARRAY_COUNT(Views);
 const FVector Stage(3000, 6000, 9000); // clear of the map and of other galleries' stages
 
@@ -219,6 +220,15 @@ void Frame(ACireHero& H, int32 View)
         G.Fill->SetActorLocation(Center + FVector(420, 260, 220));
         return;
     }
+    if (View == 2)
+    {   // blender-rig: upper body from the front-right, close enough to read elbows and wrists
+        const FVector Center = Feet + FVector(0, 0, G.BodyHeight * .66f);
+        const FVector Direction = (H.GetActorForwardVector() + H.GetActorRightVector() * .35f + FVector(0, 0, .12f)).GetSafeNormal();
+        const float Distance = FMath::Max(G.BodyHeight, 120.f) * .8f / FMath::Tan(FMath::DegreesToRadians(20.f));
+        Camera->SetFieldOfView(40); Camera->SetWorldLocation(Center + Direction * Distance); Camera->SetWorldRotation((-Direction).Rotation());
+        G.Fill->SetActorLocation(Center + Direction * 300.f + FVector(0, 0, 150));
+        return;
+    }
     UStaticMeshComponent* Prop = PrimaryProp(H);
     const FName Bone = Prop ? Prop->GetAttachSocketName() : FName(TEXT("hand_r"));
     FName Hand = Bone.ToString().EndsWith(TEXT("_l")) ? FName(TEXT("hand_l")) : FName(TEXT("hand_r"));
@@ -240,8 +250,10 @@ void Capture(ACireHero& H, int32 State, int32 View)
     auto* Combat = Cast<UCireCombatAnimInstance>(H.GetMesh()->GetAnimInstance());
     const FString Clip = Combat && Combat->AttackSequence && Combat->AttackWeight > .5f ? Combat->AttackSequence->GetName() : FString(TEXT("locomotion"));
     USkeletalMesh* Body = H.GetMesh()->GetSkeletalMeshAsset();
-    UE_LOG(LogCireGripGallery, Display, TEXT("CIRE_GRIP_GALLERY_METRIC profile=%s state=%s folder=%s style=%s clip=%s height=%.1f %s"), *Id, States[State],
-        *CireFabAnimation::FolderFor(Body), *CireChampionActions::StyleName(H), *Clip, G.BodyHeight, *CireWeapons::DescribeGrips(H));
+    int32 ArmDefects = 0;
+    const FString Arms = CireRigAudit::Describe(*H.GetMesh(), &ArmDefects); // blender-rig
+    UE_LOG(LogCireGripGallery, Display, TEXT("CIRE_GRIP_GALLERY_METRIC profile=%s state=%s folder=%s style=%s clip=%s height=%.1f %s %s"), *Id, States[State],
+        *CireFabAnimation::FolderFor(Body), *CireChampionActions::StyleName(H), *Clip, G.BodyHeight, *CireWeapons::DescribeGrips(H), *Arms);
 }
 }
 
@@ -283,7 +295,7 @@ bool CireGripGallery::Tick(ACireGameMode* Mode)
             ++G.Champion; G.Step = 0;
             if (G.Champion >= G.Profiles.Num()) { Finish(); return true; }
             if (!SpawnChampion(Mode)) continue;
-            if (PrimaryProp(*G.Hero.Get())) break;
+            if (PrimaryProp(*G.Hero.Get()) || FParse::Param(FCommandLine::Get(), TEXT("CireGripGalleryAll"))) break; // blender-rig: -CireGripGalleryAll keeps unarmed bodies
             UE_LOG(LogCireGripGallery, Display, TEXT("CIRE_GRIP_GALLERY_SKIP %s holds no prop"), *G.Profiles[G.Champion]);
         }
         G.StepStarted = Now + 2.0; G.Requested = -1;

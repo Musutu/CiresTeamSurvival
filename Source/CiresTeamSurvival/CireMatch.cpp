@@ -41,6 +41,7 @@
 #include "CireSummon.h"
 #include "CireKitsGallery.h" // scaling-kits
 #include "CireGripGallery.h" // weapon-grips
+#include "CireRigAudit.h" // blender-rig
 #include "CireSpellGallery.h"
 #include "CireAuraGallery.h" // aura-vfx
 #include "CireAbilityVFXGallery.h" // ability-vfx
@@ -262,6 +263,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireChampionHQGallery::Initialize(this); // champion-hq
     if(!bFeedbackPreview)bFeedbackPreview = CireKitsGallery::Initialize(this); // scaling-kits
     if(!bFeedbackPreview)bFeedbackPreview = CireGripGallery::Initialize(this); // weapon-grips
+    if(!bFeedbackPreview)bFeedbackPreview = CireRigAudit::Initialize(this); // blender-rig: -CireRigAudit sweeps the clips of every body, then exits
     if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
     if(!bFeedbackPreview)bFeedbackPreview = CireVendorGallery::Initialize(this); // vendors
     if(!bFeedbackPreview)bFeedbackPreview = CireRouteEditMode::InitializeServer(this); // dev-route-tools: -CireRouteEdit, nothing of the match starts

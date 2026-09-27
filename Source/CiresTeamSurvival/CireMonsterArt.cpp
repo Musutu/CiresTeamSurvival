@@ -2,6 +2,7 @@
 #include "CireFabAnimation.h" // fab-coverage
 
 #include "CireMonsterAnim.h"
+#include "CireWeaponPresentation.h" // blender-rig: CireWeapons::BusinessAxis
 #include "CireGame.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCState.h"
@@ -741,7 +742,8 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
             {
                 // Handle inside the curled fist (CireGrip); shields strap onto the forearm.
                 const float Size = Prop.Scale * (Body.PropScale.Contains(Prop.Bone) ? Body.PropScale[Prop.Bone] : 1.f);
-                const CireGrip::FPlacement Placement = CireGrip::Place(Skeletal, Prop.Bone, *Grip, Size, Body.MeshScale);
+                CireGrip::FWeapon Pointed = *Grip; Pointed.Axis = CireWeapons::BusinessAxis(*PropMesh, *Grip); // blender-rig: business end on the thumb side
+                const CireGrip::FPlacement Placement = CireGrip::Place(Skeletal, Prop.Bone, Pointed, Size, Body.MeshScale);
                 if (Placement.bValid)
                 {
                     Part->SetupAttachment(Mesh, Placement.Bone);
