@@ -50,6 +50,7 @@ namespace CireArenaPortal
         float Radius = 150.f, Height = 175.f;           // ring radius and centre height above the ground (cm)
         float Offset = 330.f;                           // distance from the champion when it opens
         float ArrivalSeconds = 4.f, ReturnSeconds = 6.f;
+        float CountdownSeconds = 5.f;                   // once every human is through, prep ends this many seconds later
         FString DiscMaterial = TEXT("/Game/Arenas/Portal/M_ArenaPortal.M_ArenaPortal");
         FString MoteMaterial = TEXT("/Game/Arenas/Portal/M_ArenaPortalMote.M_ArenaPortalMote");
         TArray<FString> RingVFX, BaseVFX, OpenVFX, EnterVFX; // optional Shadow_Magic Niagara layers (local Fab pack)
@@ -76,6 +77,8 @@ namespace CireArenaPortal
     CIRESTEAMSURVIVAL_API void OnPhaseChanged(ACireGameMode* Mode, int32 NewPhase);
     /** True while a champion that stepped through early waits in the arena for the prep minute to end. */
     CIRESTEAMSURVIVAL_API bool IsStaged(const ACireHero* Hero);
+    /** True once every human champion stepped through this prep (the prep minute was cut to the countdown). */
+    CIRESTEAMSURVIVAL_API bool AllThrough(const UWorld* World);
     /** Arena spawn slot of a champion: the same ordering ACireGameMode::ChangePhase(2) uses. */
     CIRESTEAMSURVIVAL_API int32 SpawnSlot(const ACireGameMode* Mode, const ACireHero* Hero);
     CIRESTEAMSURVIVAL_API void ServerClear(UWorld* World);
@@ -112,6 +115,8 @@ public:
     UPROPERTY(Replicated) FString ForHeroName;                          // the champion it opened for (label only)
     UPROPERTY(ReplicatedUsing = OnRep_Collapse) bool bCollapsing = false;
     UPROPERTY(Replicated) int32 Entered = 0;                            // champions that stepped through early
+    UPROPERTY(ReplicatedUsing = OnRep_AllThrough) bool bAllThrough = false; // every human is through: the arena countdown runs
+    UFUNCTION() void OnRep_AllThrough();
 
     UFUNCTION() void OnRep_Setup();
     UFUNCTION() void OnRep_Collapse();

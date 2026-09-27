@@ -190,6 +190,9 @@ portal should match the arena so players have an instant knowledge of the arena 
 2. **Walking in** (a server trigger overlap) takes that champion straight to its arena spawn slot (the same slot the arena
    phase would give it). It waits there for the rest of the minute: its client shows the arena, lighting, ambience and music
    early; the town Play Bounds leash and the realm lane clamp skip it; it can still shop (B). Bots never use the portals.
+   **Everyone through (Eric, September 27):** when every human champion has stepped through, the prep minute is cut to
+   `portal.countdownSeconds` (5 s): an **ALL THROUGH** banner names the arena and the match clock counts down, then the arena
+   phase begins as usual. Bots do not count; they are pulled through.
 3. **When the minute ends** the arena phase moves everyone else exactly as before, so nobody is ever left behind. The town
    portals fold shut, and a matching **arrival rift** opens behind each team's spawn line for 4 s.
 4. **Recovery** sends everyone back as before; a matching **return rift** opens at each team's return point (the realm's

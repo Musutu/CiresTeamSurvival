@@ -34,6 +34,7 @@ struct FServerFixture {
 struct FClientFixture {
     double Started = 0, StepStarted = 0;
     double ArtWaitStarted = 0;
+    double ArenaSeenAt = 0; // arena-portal
     int32 Step = 0;
     bool bDraftSent = false, bDone = false, bArtWaitLogged = false;
     TWeakObjectPtr<ACireHero> Enemy;
@@ -205,7 +206,7 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
         State->Announcement=TEXT("CIRE_INTERFACE_PREP");State->ForceNetUpdate();
         Server.Stage=2;Server.StageStarted=Now;
     } else if (Server.Stage==2 && Server.Acks[1]==3) {
-        // arena-portal: Ember's champion walks into its portal (a real trigger overlap) during prep.
+        // arena-portal: Ember's champion walks into its portal (a real trigger overlap) during prep; prep keeps running.
         ACireArenaPortal* Mine=nullptr;
         for(auto* Portal:CireArenaPortal::Portals(Mode->GetWorld(),0))if(Portal->TeamId==0)Mine=Portal;
         if(!Mine){Fail(TEXT("SERVER"),TEXT("Ember portal missing"));Server.bDone=true;return true;}
@@ -214,8 +215,25 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
     } else if (Server.Stage==20) {
         const bool bStaged=CireArenaPortal::IsStaged(Players[0])&&CireArenas::InBounds(Mode->GetWorld(),Players[0]->GetActorLocation());
         if(!bStaged){if(Now-Server.StageStarted>3){Fail(TEXT("SERVER"),TEXT("walking into the portal did not take the champion to the arena"));Server.bDone=true;}return true;}
-        UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_SERVER_PORTAL_ENTER_PASS hero=%s at=%s"),*Players[0]->HeroName,*Players[0]->GetActorLocation().ToString());
-        Mode->Clock.Advance(60);Mode->ChangePhase(2);
+        if(CireArenaPortal::AllThrough(Mode->GetWorld())||Mode->Clock.RemainingSeconds()<=CireArenaPortal::Config().CountdownSeconds+1.){Fail(TEXT("SERVER"),TEXT("prep was cut short before every human was through"));Server.bDone=true;return true;}
+        UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_SERVER_PORTAL_ENTER_PASS hero=%s at=%s prep_left=%.1f"),*Players[0]->HeroName,*Players[0]->GetActorLocation().ToString(),Mode->Clock.RemainingSeconds());
+        // Dusk's champion (the last human) walks in too: prep ends early into the data-driven countdown.
+        ACireArenaPortal* Theirs=nullptr;
+        for(auto* Portal:CireArenaPortal::Portals(Mode->GetWorld(),0))if(Portal->TeamId==1)Theirs=Portal;
+        if(!Theirs){Fail(TEXT("SERVER"),TEXT("Dusk portal missing"));Server.bDone=true;return true;}
+        Players[1]->SetActorLocation(Theirs->GetActorLocation()+FVector(0,0,Players[1]->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+5),false,nullptr,ETeleportType::TeleportPhysics);
+        Server.Stage=21;Server.StageStarted=Now;
+    } else if (Server.Stage==21) {
+        if(!CireArenaPortal::AllThrough(Mode->GetWorld())){if(Now-Server.StageStarted>3){Fail(TEXT("SERVER"),TEXT("all humans through did not start the arena countdown"));Server.bDone=true;}return true;}
+        const float Countdown=CireArenaPortal::Config().CountdownSeconds;
+        bool bFlagged=true;for(auto* Portal:CireArenaPortal::Portals(Mode->GetWorld(),0))bFlagged&=Portal->bAllThrough;
+        if(Mode->Clock.Phase()!=Cires::MatchPhase::Intermission||Mode->Clock.RemainingSeconds()>Countdown+.01||Mode->Clock.RemainingSeconds()<Countdown-1.||!bFlagged||!State->Announcement.StartsWith(TEXT("ALL THROUGH"))) {
+            Fail(TEXT("SERVER"),TEXT("the all-through countdown is wrong"));Server.bDone=true;return true;
+        }
+        UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_SERVER_PORTAL_COUNTDOWN_PASS humans=2 prep_left=%.1f countdown=%.1f"),Mode->Clock.RemainingSeconds(),Countdown);
+        // The match tick is held by this probe: run the countdown out on the real clock, which fires the arena phase.
+        for(const auto& Event:Mode->Clock.Advance(Mode->Clock.RemainingSeconds()+.01))if(!Event.ArenaTimedOut)Mode->ChangePhase(static_cast<int32>(Event.To));
+        if(Mode->Clock.Phase()!=Cires::MatchPhase::Arena){Fail(TEXT("SERVER"),TEXT("countdown did not begin the arena"));Server.bDone=true;return true;}
         // Everyone else is drawn through: every drafted champion (2 humans + 8 bots) now stands in the chosen arena.
         int32 InArena=0,Drafted=0;
         for(auto* H:Mode->Heroes)if(IsValid(H)&&H->bDrafted){++Drafted;InArena+=CireArenas::InBounds(Mode->GetWorld(),H->GetActorLocation())?1:0;}
@@ -403,7 +421,12 @@ bool CireInterfaceProbe::TickClient(ACireController* Controller) {
     } else if(Client.Step==4&&State->Announcement==TEXT("CIRE_INTERFACE_ARENA")&&Own==5&&Opposing==5&&
         CireArenas::InBounds(Controller->GetWorld(),Hero->GetActorLocation())&&!CireArenaPortal::Portals(Controller->GetWorld(),1).IsEmpty()) {
         // arena-portal: drawn through into the chosen arena (the arrival rift is there too).
-        if(!CireArenas::Stage(Controller->GetWorld())||!CireArenas::Stage(Controller->GetWorld())->bShown){Abort(TEXT("arrived but the arena is not shown"));return true;}
+        // The arena subsystem ticks separately from this probe: give the reveal a few frames after the replicated move.
+        if(!CireArenas::Stage(Controller->GetWorld())||!CireArenas::Stage(Controller->GetWorld())->bShown) {
+            if(!Client.ArenaSeenAt)Client.ArenaSeenAt=Now;
+            if(Now-Client.ArenaSeenAt>5){Abort(TEXT("arrived but the arena is not shown"));}
+            return true;
+        }
         if(!Client.Enemy.IsValid())UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_CLIENT_PORTAL_PASS team=%d in_arena=1 arena=\"%s\" arrival_rift=1"),Hero->TeamId,*CireArenas::DisplayName(State->ArenaIndex));
         for(TActorIterator<ACireHero> It(Controller->GetWorld());It;++It)
             if(It->TeamId!=Hero->TeamId&&!It->bBot&&Hero->IsHostile(*It)) {
