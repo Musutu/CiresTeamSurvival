@@ -41,7 +41,15 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Spiral2",
+    "Color_Wind"
+   ],
+   "reach": 1
   },
   {
    "stem": "Air_Magic_Air_Wall",
@@ -53,7 +61,15 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Wall",
+    "Color_Wind"
+   ],
+   "reach": 734
   },
   {
    "stem": "Air_Magic_Airflow",
@@ -65,7 +81,15 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Wind"
+   ],
+   "reach": 424
   },
   {
    "stem": "Air_Magic_AOE",
@@ -77,7 +101,17 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Core1",
+    "Color_Core2",
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Spiral2"
+   ],
+   "reach": 958
   },
   {
    "stem": "Air_Magic_Arrow1",
@@ -89,7 +123,14 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Arrow",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Trail"
+   ],
+   "reach": 306
   },
   {
    "stem": "Air_Magic_Arrow2",
@@ -101,7 +142,16 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Arrow",
+    "Color_Circle",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Spiral2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Air_Magic_Arrow3",
@@ -113,7 +163,19 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Arrow",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Sparks4_Death",
+    "Color_Sparks5_Death",
+    "Color_Spiral1",
+    "Color_Spiral2_Death",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Air_Magic_Arrow4",
@@ -125,7 +187,18 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Arrow",
+    "Color_Circle",
+    "Color_Plane",
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Spiral2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Air_Magic_Aura",
@@ -137,7 +210,14 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Spiral2"
+   ],
+   "reach": 307
   },
   {
    "stem": "Air_Magic_Blades",
@@ -149,7 +229,18 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Blade_L",
+    "Color_Blade_R",
+    "Color_Circle",
+    "Color_Flash",
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Spiral2"
+   ],
+   "reach": 434
   },
   {
    "stem": "Air_Magic_Buff",
@@ -161,7 +252,16 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Spiral2"
+   ],
+   "reach": 570
   },
   {
    "stem": "Air_Magic_Dash",
@@ -173,7 +273,15 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Spiral2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Air_Magic_Hit1",
@@ -185,7 +293,13 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 418
   },
   {
    "stem": "Air_Magic_Hit2",
@@ -197,7 +311,14 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 395
   },
   {
    "stem": "Air_Magic_Hit3",
@@ -209,7 +330,14 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Orb",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 514
   },
   {
    "stem": "Air_Magic_Hit4",
@@ -221,7 +349,15 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Arrow",
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 418
   },
   {
    "stem": "Air_Magic_Muzzle1",
@@ -233,7 +369,13 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 270
   },
   {
    "stem": "Air_Magic_Muzzle2",
@@ -245,7 +387,13 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 300
   },
   {
    "stem": "Air_Magic_Muzzle3",
@@ -257,7 +405,13 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 545
   },
   {
    "stem": "Air_Magic_Muzzle4",
@@ -269,7 +423,14 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 270
   },
   {
    "stem": "Air_Magic_Orb",
@@ -281,7 +442,15 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Orb",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Spiral2"
+   ],
+   "reach": 151
   },
   {
    "stem": "Air_Magic_Projectile1",
@@ -293,7 +462,15 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Orb",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 122
   },
   {
    "stem": "Air_Magic_Projectile2",
@@ -305,7 +482,13 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh",
+    "Color_Spiral1",
+    "Color_Trail"
+   ],
+   "reach": 315
   },
   {
    "stem": "Air_Magic_Shield",
@@ -317,7 +500,15 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Shield",
+    "Color_Spiral1",
+    "Color_Spiral2",
+    "Color_Wind"
+   ],
+   "reach": 433
   },
   {
    "stem": "Air_Magic_Slash1",
@@ -329,7 +520,17 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray1",
+    "Color_Ray2",
+    "Color_Slash1",
+    "Color_Slash2",
+    "Color_Slash3",
+    "Color_Slash4",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Air_Magic_Slash2",
@@ -341,7 +542,17 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash1",
+    "Color_Slash2",
+    "Color_Slash3",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Sparks4"
+   ],
+   "reach": 1
   },
   {
    "stem": "Air_Magic_Slash3",
@@ -353,7 +564,19 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Cylinder",
+    "Color_Ray1",
+    "Color_Slash1",
+    "Color_Slash2",
+    "Color_Slash3",
+    "Color_Slash4",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 622
   },
   {
    "stem": "Air_Magic_Slash4",
@@ -365,7 +588,13 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 394
   },
   {
    "stem": "Air_Magic_Slash5",
@@ -377,7 +606,13 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 312
   },
   {
    "stem": "Air_Magic_Splash",
@@ -389,7 +624,12 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Spiral1"
+   ],
+   "reach": 423
   },
   {
    "stem": "Air_Magic_Target",
@@ -401,7 +641,15 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Arrow",
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Air_Magic_Tornado1",
@@ -413,7 +661,17 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Cylinder",
+    "Color_Plane",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Spiral2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Air_Magic_Tornado2",
@@ -425,7 +683,19 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Sparks4",
+    "Color_Spiral1",
+    "Color_Spiral2",
+    "Color_Spiral3"
+   ],
+   "reach": 1
   },
   {
    "stem": "Air_Magic_Tornado3",
@@ -437,7 +707,14 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 428
   },
   {
    "stem": "Air_Magic_Wind_Blade",
@@ -449,7 +726,15 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Wind"
+   ],
+   "reach": 493
   },
   {
    "stem": "Earth_Magic_Aura",
@@ -461,7 +746,14 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Wave"
+   ],
+   "reach": 578
   },
   {
    "stem": "Earth_Magic_Buff",
@@ -473,7 +765,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Wave"
+   ],
+   "reach": 951
   },
   {
    "stem": "Earth_Magic_Circle1",
@@ -485,7 +785,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Crack",
+    "Color_Plane",
+    "Color_Ray",
+    "Color_Slash1",
+    "Color_Wave"
+   ],
+   "reach": 778
   },
   {
    "stem": "Earth_Magic_Dash",
@@ -497,7 +806,12 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Earth_Wall1",
@@ -509,7 +823,11 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Earth_Wall2",
@@ -521,7 +839,11 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Flow",
@@ -533,7 +855,13 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 431
   },
   {
    "stem": "Earth_Magic_Hit",
@@ -545,7 +873,13 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh",
+    "Color_Sparks1"
+   ],
+   "reach": 578
   },
   {
    "stem": "Earth_Magic_Meteor",
@@ -557,7 +891,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Crack",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Trail",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Meteors1",
@@ -569,7 +912,14 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1",
+    "Color_Trail",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Meteors2",
@@ -581,7 +931,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Crack",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Trail",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Muzzle",
@@ -593,7 +952,12 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks1"
+   ],
+   "reach": 318
   },
   {
    "stem": "Earth_Magic_Orb",
@@ -605,7 +969,14 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Orb",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 124
   },
   {
    "stem": "Earth_Magic_Projectile",
@@ -617,7 +988,12 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh",
+    "Color_Trail"
+   ],
+   "reach": 300
   },
   {
    "stem": "Earth_Magic_Shield",
@@ -629,7 +1005,13 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Shield",
+    "Color_Spiral1"
+   ],
+   "reach": 440
   },
   {
    "stem": "Earth_Magic_Shockwave",
@@ -641,7 +1023,11 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Wave"
+   ],
+   "reach": 933
   },
   {
    "stem": "Earth_Magic_Slash1",
@@ -653,7 +1039,12 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Sparks1"
+   ],
+   "reach": 311
   },
   {
    "stem": "Earth_Magic_Slash2",
@@ -665,7 +1056,12 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Sparks2"
+   ],
+   "reach": 321
   },
   {
    "stem": "Earth_Magic_Spike1",
@@ -677,7 +1073,12 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Spike2",
@@ -689,7 +1090,13 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Spike3",
@@ -701,7 +1108,12 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1"
+   ],
+   "reach": 1297
   },
   {
    "stem": "Earth_Magic_Spike4",
@@ -713,7 +1125,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Crack",
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Spike5",
@@ -725,7 +1145,14 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Plane",
+    "Color_Ray",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Spike6",
@@ -737,7 +1164,12 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1"
+   ],
+   "reach": 604
   },
   {
    "stem": "Earth_Magic_Splash",
@@ -749,7 +1181,13 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Shield",
+    "Color_Spiral1",
+    "Color_Wave"
+   ],
+   "reach": 933
   },
   {
    "stem": "Earth_Magic_Stone1",
@@ -761,7 +1199,12 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Wave"
+   ],
+   "reach": 555
   },
   {
    "stem": "Earth_Magic_Stone2",
@@ -773,7 +1216,12 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 3383
   },
   {
    "stem": "Earth_Magic_Stone3",
@@ -785,7 +1233,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Ray1",
+    "Color_Ray2",
+    "Color_Slash1",
+    "Color_Slash3",
+    "Color_Slash4",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Stoneflow",
@@ -797,7 +1255,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Crack",
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Magic_Target",
@@ -809,7 +1275,13 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks2",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Fire_Magic_AOE",
@@ -821,7 +1293,12 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Sparks"
+   ],
+   "reach": 625
   },
   {
    "stem": "Fire_Magic_Arena",
@@ -833,7 +1310,15 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Cylinder",
+    "Color_Flame",
+    "Color_Sparks",
+    "Color_Wave"
+   ],
+   "reach": 622
   },
   {
    "stem": "Fire_Magic_Aura",
@@ -845,7 +1330,12 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks",
+    "Color_Spiral"
+   ],
+   "reach": 319
   },
   {
    "stem": "Fire_Magic_Buff",
@@ -857,7 +1347,14 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral",
+    "Color_Wave"
+   ],
+   "reach": 701
   },
   {
    "stem": "Fire_Magic_Circle",
@@ -869,7 +1366,15 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Cylinder",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Stone"
+   ],
+   "reach": 233
   },
   {
    "stem": "Fire_Magic_Dash",
@@ -881,7 +1386,13 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Dash",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 393
   },
   {
    "stem": "Fire_Magic_Dash2",
@@ -893,7 +1404,13 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Fire_Magic_Explosion",
@@ -905,7 +1422,14 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 594
   },
   {
    "stem": "Fire_Magic_Flame1",
@@ -917,7 +1441,14 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Flame",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 771
   },
   {
    "stem": "Fire_Magic_Flame2",
@@ -929,7 +1460,13 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 1309
   },
   {
    "stem": "Fire_Magic_Flame3",
@@ -941,7 +1478,13 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 1242
   },
   {
    "stem": "Fire_Magic_Flamethrower",
@@ -953,7 +1496,11 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks"
+   ],
+   "reach": 828
   },
   {
    "stem": "Fire_Magic_FrontSplash",
@@ -965,7 +1512,15 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Stone"
+   ],
+   "reach": 1
   },
   {
    "stem": "Fire_Magic_Hit",
@@ -977,7 +1532,13 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Flash",
+    "Color_Sparks"
+   ],
+   "reach": 179
   },
   {
    "stem": "Fire_Magic_Muzzle",
@@ -989,7 +1550,12 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks"
+   ],
+   "reach": 238
   },
   {
    "stem": "Fire_Magic_Orb",
@@ -1001,7 +1567,14 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Orb",
+    "Color_Plasma",
+    "Color_Slash",
+    "Color_Sparks"
+   ],
+   "reach": 129
   },
   {
    "stem": "Fire_Magic_Projectile",
@@ -1013,7 +1586,14 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Projectile1",
+    "Color_Projectile2",
+    "Color_Sparks",
+    "Color_Trail"
+   ],
+   "reach": 143
   },
   {
    "stem": "Fire_Magic_Projectile2",
@@ -1025,7 +1605,16 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Stone",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Fire_Magic_Projectile3",
@@ -1037,7 +1626,16 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral",
+    "Color_Stone",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Fire_Magic_Projectile4",
@@ -1049,7 +1647,16 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Stone",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Fire_Magic_Projectile5",
@@ -1061,7 +1668,17 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral",
+    "Color_Stone",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Fire_Magic_Sheild",
@@ -1073,7 +1690,14 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ring",
+    "Color_Shield",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 384
   },
   {
    "stem": "Fire_Magic_Shockwave",
@@ -1085,7 +1709,13 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Cylinder",
+    "Color_Sparks1"
+   ],
+   "reach": 412
   },
   {
    "stem": "Fire_Magic_Slash1",
@@ -1097,7 +1727,14 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Wave"
+   ],
+   "reach": 490
   },
   {
    "stem": "Fire_Magic_Slash2",
@@ -1109,7 +1746,14 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Wave"
+   ],
+   "reach": 362
   },
   {
    "stem": "Fire_Magic_SpearSplash",
@@ -1121,7 +1765,14 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral"
+   ],
+   "reach": 1368
   },
   {
    "stem": "Fire_Magic_Spike1",
@@ -1133,7 +1784,17 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Stone1",
+    "Color_Stone2",
+    "Color_Stone3"
+   ],
+   "reach": 1
   },
   {
    "stem": "Fire_Magic_Spike2",
@@ -1145,7 +1806,17 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Stone1",
+    "Color_Stone2",
+    "Color_Stone3"
+   ],
+   "reach": 1182
   },
   {
    "stem": "Fire_Magic_Splash",
@@ -1157,7 +1828,14 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ring",
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 484
   },
   {
    "stem": "Fire_Magic_Target",
@@ -1169,7 +1847,15 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Stone",
+    "Color_Trail"
+   ],
+   "reach": 805
   },
   {
    "stem": "Fire_Magic_Wall",
@@ -1181,7 +1867,16 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Box",
+    "Color_Crack",
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Stone"
+   ],
+   "reach": 301
   },
   {
    "stem": "Ice_Magic_Arena",
@@ -1193,7 +1888,15 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Cylinder",
+    "Color_Plane",
+    "Color_Sparks",
+    "Color_Stone"
+   ],
+   "reach": 653
   },
   {
    "stem": "Ice_Magic_Aura",
@@ -1205,7 +1908,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks",
+    "Color_Spiral"
+   ],
+   "reach": 297
   },
   {
    "stem": "Ice_Magic_Buff",
@@ -1217,7 +1926,14 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral"
+   ],
+   "reach": 576
   },
   {
    "stem": "Ice_Magic_Circle1",
@@ -1229,7 +1945,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Spiral",
+    "Color_Stone"
+   ],
+   "reach": 810
   },
   {
    "stem": "Ice_Magic_Circle2",
@@ -1241,7 +1963,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Plane",
+    "Color_Stone"
+   ],
+   "reach": 964
   },
   {
    "stem": "Ice_Magic_Circle3",
@@ -1253,7 +1981,15 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Plane",
+    "Color_Sparks2",
+    "Color_Spiral",
+    "Color_Stone"
+   ],
+   "reach": 700
   },
   {
    "stem": "Ice_Magic_Circle4",
@@ -1265,7 +2001,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Plane",
+    "Color_Stone"
+   ],
+   "reach": 342
   },
   {
    "stem": "Ice_Magic_Dash",
@@ -1277,7 +2019,14 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Slash",
+    "Color_Sparks",
+    "Color_Stone"
+   ],
+   "reach": 1
   },
   {
    "stem": "Ice_Magic_FrontSpike",
@@ -1289,7 +2038,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks",
+    "Color_Stone"
+   ],
+   "reach": 770
   },
   {
    "stem": "Ice_Magic_Frozen",
@@ -1301,7 +2056,11 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane"
+   ],
+   "reach": 1
   },
   {
    "stem": "Ice_Magic_Hit",
@@ -1313,7 +2072,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks",
+    "Color_Stone"
+   ],
+   "reach": 244
   },
   {
    "stem": "Ice_Magic_IceSpike",
@@ -1325,7 +2090,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks",
+    "Color_Stone"
+   ],
+   "reach": 475
   },
   {
    "stem": "Ice_Magic_IceSpike2",
@@ -1337,7 +2108,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks",
+    "Color_Stone"
+   ],
+   "reach": 691
   },
   {
    "stem": "Ice_Magic_Muzzle",
@@ -1349,7 +2126,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Cylinder",
+    "Color_Flash",
+    "Color_Ray"
+   ],
+   "reach": 668
   },
   {
    "stem": "Ice_Magic_Orb",
@@ -1361,7 +2144,15 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Orb",
+    "Color_Plasma",
+    "Color_Slash",
+    "Color_Sparks",
+    "Color_Stone"
+   ],
+   "reach": 249
   },
   {
    "stem": "Ice_Magic_Projectile",
@@ -1373,7 +2164,14 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Projectile1",
+    "Color_Projectile2",
+    "Color_Sparks",
+    "Color_Trail"
+   ],
+   "reach": 149
   },
   {
    "stem": "Ice_Magic_Sheild",
@@ -1385,7 +2183,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Shield",
+    "Color_Slash",
+    "Color_Sparks1"
+   ],
+   "reach": 197
   },
   {
    "stem": "Ice_Magic_Sheild2",
@@ -1397,7 +2201,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Shield",
+    "Color_Slash",
+    "Color_Stone"
+   ],
+   "reach": 242
   },
   {
    "stem": "Ice_Magic_Shockwave",
@@ -1409,7 +2219,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Slash",
+    "Color_Sparks1"
+   ],
+   "reach": 536
   },
   {
    "stem": "Ice_Magic_Slash1",
@@ -1421,7 +2237,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 463
   },
   {
    "stem": "Ice_Magic_Slash2",
@@ -1433,7 +2255,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 368
   },
   {
    "stem": "Ice_Magic_Snowstorm",
@@ -1445,7 +2273,15 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Ray",
+    "Color_Sparks",
+    "Color_Spiral",
+    "Color_Stone"
+   ],
+   "reach": 1
   },
   {
    "stem": "Ice_Magic_Snowstorm1",
@@ -1457,7 +2293,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Slash",
+    "Color_Sparks"
+   ],
+   "reach": 569
   },
   {
    "stem": "Ice_Magic_Snowstorm2",
@@ -1469,7 +2311,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Slash",
+    "Color_Sparks"
+   ],
+   "reach": 45
   },
   {
    "stem": "Ice_Magic_Spear",
@@ -1481,7 +2329,16 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spear",
+    "Color_Stone"
+   ],
+   "reach": 1
   },
   {
    "stem": "Ice_Magic_SpearSplash",
@@ -1493,7 +2350,16 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Spear",
+    "Color_Spiral",
+    "Color_Splash"
+   ],
+   "reach": 2367
   },
   {
    "stem": "Ice_Magic_Splash",
@@ -1505,7 +2371,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Shield",
+    "Color_Slash",
+    "Color_Sparks1"
+   ],
+   "reach": 531
   },
   {
    "stem": "Ice_Magic_Target",
@@ -1517,7 +2389,15 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Stone",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Ice_Magic_Wall",
@@ -1529,7 +2409,13 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Stone"
+   ],
+   "reach": 687
   },
   {
    "stem": "Blood_Magic_Area1",
@@ -1541,7 +2427,13 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 691
   },
   {
    "stem": "Blood_Magic_Area2",
@@ -1553,7 +2445,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 557
   },
   {
    "stem": "Blood_Magic_Area3",
@@ -1565,7 +2464,15 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Wave1"
+   ],
+   "reach": 622
   },
   {
    "stem": "Blood_Magic_Aura",
@@ -1577,7 +2484,13 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Wave1"
+   ],
+   "reach": 415
   },
   {
    "stem": "Blood_Magic_Beam1",
@@ -1589,7 +2502,17 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Splash2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Blood_Magic_Beam2",
@@ -1601,7 +2524,16 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Splash1"
+   ],
+   "reach": 558
   },
   {
    "stem": "Blood_Magic_Buff",
@@ -1613,7 +2545,13 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 476
   },
   {
    "stem": "Blood_Magic_Crystal1",
@@ -1625,7 +2563,15 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 381
   },
   {
    "stem": "Blood_Magic_Crystal2",
@@ -1637,7 +2583,16 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Splash1"
+   ],
+   "reach": 477
   },
   {
    "stem": "Blood_Magic_Crystal3",
@@ -1649,7 +2604,13 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Mesh1",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Blood_Magic_Crystal4",
@@ -1661,7 +2622,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Mesh1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 588
   },
   {
    "stem": "Blood_Magic_Crystal5",
@@ -1673,7 +2641,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Mesh1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 768
   },
   {
    "stem": "Blood_Magic_Crystal6",
@@ -1685,7 +2660,17 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Blood_Magic_Dash",
@@ -1697,7 +2682,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Blood_Magic_Debuff",
@@ -1709,7 +2701,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Marker",
+    "Color_Mesh1",
+    "Color_Sparks1"
+   ],
+   "reach": 385
   },
   {
    "stem": "Blood_Magic_Explo",
@@ -1721,7 +2720,16 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Splash2",
+    "Color_Wave1"
+   ],
+   "reach": 311
   },
   {
    "stem": "Blood_Magic_Explo2",
@@ -1733,7 +2741,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 621
   },
   {
    "stem": "Blood_Magic_Hit",
@@ -1745,7 +2760,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Flash2",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 353
   },
   {
    "stem": "Blood_Magic_Marker",
@@ -1757,7 +2779,13 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Marker",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 242
   },
   {
    "stem": "Blood_Magic_Muzzle",
@@ -1769,7 +2797,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 445
   },
   {
    "stem": "Blood_Magic_Orb",
@@ -1781,7 +2816,16 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Splash1"
+   ],
+   "reach": 86
   },
   {
    "stem": "Blood_Magic_Projectile1",
@@ -1793,7 +2837,15 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 440
   },
   {
    "stem": "Blood_Magic_Projectile2",
@@ -1805,7 +2857,19 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Flash2",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Mesh4",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Splash2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Blood_Magic_Projectile3",
@@ -1817,7 +2881,17 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Splash1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Blood_Magic_Projectile4",
@@ -1829,7 +2903,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 334
   },
   {
    "stem": "Blood_Magic_Rain",
@@ -1841,7 +2922,15 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Splash1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Blood_Magic_Shield",
@@ -1853,7 +2942,15 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 479
   },
   {
    "stem": "Blood_Magic_Shield_Splash",
@@ -1865,7 +2962,15 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 471
   },
   {
    "stem": "Blood_Magic_Slash1",
@@ -1877,7 +2982,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 552
   },
   {
    "stem": "Blood_Magic_Slash2",
@@ -1889,7 +3001,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 380
   },
   {
    "stem": "Blood_Magic_Spike1",
@@ -1901,7 +3020,15 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Mesh1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 793
   },
   {
    "stem": "Blood_Magic_Spike2",
@@ -1913,7 +3040,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 414
   },
   {
    "stem": "Blood_Magic_Spike3",
@@ -1925,7 +3059,14 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 665
   },
   {
    "stem": "Blood_Magic_Target",
@@ -1937,7 +3078,16 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Blood_Magic_Tornado",
@@ -1949,7 +3099,15 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Spiral2",
+    "Color_Splash1"
+   ],
+   "reach": 467
   },
   {
    "stem": "Blood_Magic_Wall1",
@@ -1961,7 +3119,16 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 467
   },
   {
    "stem": "Blood_Magic_Wall2",
@@ -1973,7 +3140,15 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 616
   },
   {
    "stem": "Posion_Magic_Area1",
@@ -1985,7 +3160,12 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 699
   },
   {
    "stem": "Posion_Magic_Area2",
@@ -1997,7 +3177,16 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Trail",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_Area3",
@@ -2009,7 +3198,16 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Trail",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_AreaWave",
@@ -2021,7 +3219,12 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 1153
   },
   {
    "stem": "Posion_Magic_Aura",
@@ -2033,7 +3236,15 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Trail",
+    "Color_Wave1",
+    "Color_Wave2"
+   ],
+   "reach": 311
   },
   {
    "stem": "Posion_Magic_Beam",
@@ -2045,7 +3256,16 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 1662
   },
   {
    "stem": "Posion_Magic_Buff",
@@ -2057,7 +3277,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Wave1",
+    "Color_Wave2"
+   ],
+   "reach": 888
   },
   {
    "stem": "Posion_Magic_Dash",
@@ -2069,7 +3296,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_Debuff",
@@ -2081,7 +3315,11 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1"
+   ],
+   "reach": 344
   },
   {
    "stem": "Posion_Magic_Explosion1",
@@ -2093,7 +3331,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_Explosion2",
@@ -2105,7 +3350,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 563
   },
   {
    "stem": "Posion_Magic_Explosion3",
@@ -2117,7 +3369,13 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 778
   },
   {
    "stem": "Posion_Magic_Hit",
@@ -2129,7 +3387,12 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Sparks1"
+   ],
+   "reach": 592
   },
   {
    "stem": "Posion_Magic_Orb",
@@ -2141,7 +3404,15 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 163
   },
   {
    "stem": "Posion_Magic_PoisonFlow",
@@ -2153,7 +3424,13 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_Projectile1",
@@ -2165,7 +3442,16 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_Projectile2",
@@ -2177,7 +3463,17 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Trail",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_Projectile3",
@@ -2189,7 +3485,16 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Trail",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_Projectile4",
@@ -2201,7 +3506,17 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_Projectile5",
@@ -2213,7 +3528,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Trail"
+   ],
+   "reach": 400
   },
   {
    "stem": "Posion_Magic_Projectile6",
@@ -2225,7 +3547,13 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Trail"
+   ],
+   "reach": 376
   },
   {
    "stem": "Posion_Magic_Rain",
@@ -2237,7 +3565,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Plane",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 467
   },
   {
    "stem": "Posion_Magic_Shield",
@@ -2249,7 +3584,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_Shild_Splash",
@@ -2261,7 +3603,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 563
   },
   {
    "stem": "Posion_Magic_Slash1",
@@ -2273,7 +3622,15 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 506
   },
   {
    "stem": "Posion_Magic_Slash2",
@@ -2285,7 +3642,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 397
   },
   {
    "stem": "Posion_Magic_Spike1",
@@ -2297,7 +3661,13 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Sparks1"
+   ],
+   "reach": 277
   },
   {
    "stem": "Posion_Magic_Spike2",
@@ -2309,7 +3679,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_SpikeArea",
@@ -2321,7 +3698,14 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Sparks1"
+   ],
+   "reach": 778
   },
   {
    "stem": "Posion_Magic_SpikeHit",
@@ -2333,7 +3717,15 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 788
   },
   {
    "stem": "Posion_Magic_Target",
@@ -2345,7 +3737,15 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Posion_Magic_Wave1",
@@ -2357,7 +3757,12 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 552
   },
   {
    "stem": "Water_Magic_Area1",
@@ -2369,7 +3774,15 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Spiral",
+    "Color_Splash1",
+    "Color_Wave1",
+    "Color_Wave2"
+   ],
+   "reach": 544
   },
   {
    "stem": "Water_Magic_Area2",
@@ -2381,7 +3794,15 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Wave1",
+    "Color_Wave2"
+   ],
+   "reach": 407
   },
   {
    "stem": "Water_Magic_Area3",
@@ -2393,7 +3814,17 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Circle",
+    "Color_Cylinder",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1",
+    "Color_Wave2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Water_Magic_Aura",
@@ -2405,7 +3836,15 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Wave1"
+   ],
+   "reach": 410
   },
   {
    "stem": "Water_Magic_Buff",
@@ -2417,7 +3856,17 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Cylinder1",
+    "Color_Cylinder2",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 520
   },
   {
    "stem": "Water_Magic_Dash",
@@ -2429,7 +3878,16 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Mesh1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Splash2",
+    "Color_Wave1"
+   ],
+   "reach": 687
   },
   {
    "stem": "Water_Magic_Hit",
@@ -2441,7 +3899,15 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 267
   },
   {
    "stem": "Water_Magic_Muzzle",
@@ -2453,7 +3919,14 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Flash",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 298
   },
   {
    "stem": "Water_Magic_Orb",
@@ -2465,7 +3938,16 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Orb",
+    "Color_Smoke1",
+    "Color_Spiral",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 110
   },
   {
    "stem": "Water_Magic_Projectile1",
@@ -2477,7 +3959,19 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Cylinder",
+    "Color_Flash",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Spark",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Water_Magic_Projectile2",
@@ -2489,7 +3983,17 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble1",
+    "Color_Bubble2",
+    "Color_Cylinder",
+    "Color_Flash",
+    "Color_Spark",
+    "Color_Splash1",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Water_Magic_Projectile3",
@@ -2501,7 +4005,19 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Flash",
+    "Color_Orb1",
+    "Color_Orb2",
+    "Color_Spark",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Splash2",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Water_Magic_Projectile4",
@@ -2513,7 +4029,18 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Cylinder",
+    "Color_Flash",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Trail"
+   ],
+   "reach": 211
   },
   {
    "stem": "Water_Magic_Shield",
@@ -2525,7 +4052,15 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Shield",
+    "Color_Sparks1",
+    "Color_Wave1",
+    "Color_Wave2"
+   ],
+   "reach": 384
   },
   {
    "stem": "Water_Magic_ShieldSplash",
@@ -2537,7 +4072,15 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Shield",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 621
   },
   {
    "stem": "Water_Magic_Shockwave",
@@ -2549,7 +4092,15 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Splash2",
+    "Color_Wave1"
+   ],
+   "reach": 632
   },
   {
    "stem": "Water_Magic_Slash1",
@@ -2561,7 +4112,14 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 434
   },
   {
    "stem": "Water_Magic_Slash2",
@@ -2573,7 +4131,14 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 518
   },
   {
    "stem": "Water_Magic_Slash3",
@@ -2585,7 +4150,15 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Slash",
+    "Color_Splash1",
+    "Color_Splash2",
+    "Color_Wave1"
+   ],
+   "reach": 376
   },
   {
    "stem": "Water_Magic_Splash1",
@@ -2597,7 +4170,13 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Cylinder1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 302
   },
   {
    "stem": "Water_Magic_Splash2",
@@ -2609,7 +4188,16 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Circle",
+    "Color_Cylinder",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral"
+   ],
+   "reach": 612
   },
   {
    "stem": "Water_Magic_Splash3",
@@ -2621,7 +4209,14 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Cylinder",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 430
   },
   {
    "stem": "Water_Magic_Splash4",
@@ -2633,7 +4228,16 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Cylinder",
+    "Color_Cylinder2",
+    "Color_Splash1",
+    "Color_Splash2",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Water_Magic_TargetBubble",
@@ -2645,7 +4249,16 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble1",
+    "Color_Bubble2",
+    "Color_Flash",
+    "Color_Smoke1",
+    "Color_Spark",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Water_Magic_Wall",
@@ -2657,7 +4270,15 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Smoke1",
+    "Color_Splash1",
+    "Color_Wall",
+    "Color_Wave1"
+   ],
+   "reach": 288
   },
   {
    "stem": "Water_Magic_Wall2",
@@ -2669,7 +4290,14 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Mesh",
+    "Color_Smoke1",
+    "Color_Splash1"
+   ],
+   "reach": 732
   },
   {
    "stem": "Water_Magic_Waterflow1",
@@ -2681,7 +4309,16 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Circle",
+    "Color_Cylinder",
+    "Color_Smoke1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 873
   },
   {
    "stem": "Water_Magic_Waterflow2",
@@ -2693,7 +4330,17 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Bubble2",
+    "Color_Bubble3",
+    "Color_Circle",
+    "Color_Flash",
+    "Color_Smoke1",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Water_Magic_Waterstep",
@@ -2705,7 +4352,13 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Water_Magic_Wave1",
@@ -2717,7 +4370,15 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Bubble",
+    "Color_Mesh1",
+    "Color_Splash1",
+    "Color_Splash2",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Dark_Flame_Burst",
@@ -2729,7 +4390,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Splash1"
+   ],
+   "reach": 952
   },
   {
    "stem": "Dark_Magic_AOE",
@@ -2741,7 +4410,16 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Fragment1",
+    "Color_Slash1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 544
   },
   {
    "stem": "Dark_Magic_AOE2",
@@ -2753,7 +4431,14 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 622
   },
   {
    "stem": "Dark_Magic_Area_Line",
@@ -2765,7 +4450,18 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Crack2",
+    "Color_Fragment1",
+    "Color_Ray1",
+    "Color_Ray2",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 294
   },
   {
    "stem": "Dark_Magic_Area_Splash1",
@@ -2777,7 +4473,17 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Crack1",
+    "Color_Fragment1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 622
   },
   {
    "stem": "Dark_Magic_Aura",
@@ -2789,7 +4495,14 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Plane1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 670
   },
   {
    "stem": "Dark_Magic_Blink1",
@@ -2801,7 +4514,14 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 706
   },
   {
    "stem": "Dark_Magic_Blink2",
@@ -2813,7 +4533,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Fragment1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 551
   },
   {
    "stem": "Dark_Magic_Buff",
@@ -2825,7 +4553,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Plane1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 370
   },
   {
    "stem": "Dark_Magic_Circle",
@@ -2837,7 +4573,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Cylinder1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 673
   },
   {
    "stem": "Dark_Magic_Cone1",
@@ -2849,7 +4593,18 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Crack2",
+    "Color_Fragment1",
+    "Color_Ray1",
+    "Color_Ray2",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 1239
   },
   {
    "stem": "Dark_Magic_Dark_Flame",
@@ -2861,7 +4616,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Splash1"
+   ],
+   "reach": 601
   },
   {
    "stem": "Dark_Magic_Dash",
@@ -2873,7 +4636,14 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Fragment1",
+    "Color_Smoke1",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Dark_Magic_Debuff",
@@ -2885,7 +4655,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Cylinder1",
+    "Color_Fragment1",
+    "Color_Plane1",
+    "Color_Smoke1",
+    "Color_Sparks1"
+   ],
+   "reach": 467
   },
   {
    "stem": "Dark_Magic_DOT",
@@ -2897,7 +4675,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Plane1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 223
   },
   {
    "stem": "Dark_Magic_Hit",
@@ -2909,7 +4695,14 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 640
   },
   {
    "stem": "Dark_Magic_Hit_Orb",
@@ -2921,7 +4714,16 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Fragment1",
+    "Color_Orb1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 303
   },
   {
    "stem": "Dark_Magic_Line1",
@@ -2933,7 +4735,18 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Crack2",
+    "Color_Fragment1",
+    "Color_Ray1",
+    "Color_Ray2",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Dark_Magic_Line_Splash1",
@@ -2945,7 +4758,17 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Fragment1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Dark_Magic_Orb",
@@ -2957,7 +4780,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Orb1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 260
   },
   {
    "stem": "Dark_Magic_Orb2",
@@ -2969,7 +4800,16 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Orb1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Trail1"
+   ],
+   "reach": 207
   },
   {
    "stem": "Dark_Magic_Projectile1",
@@ -2981,7 +4821,17 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Fragment1",
+    "Color_Projectile1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Trail1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Dark_Magic_Projectile1_Base",
@@ -3005,7 +4855,19 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Flash1",
+    "Color_Fragment1",
+    "Color_Projectile1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Splash1",
+    "Color_Trail1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Dark_Magic_Shield",
@@ -3017,7 +4879,14 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Shield1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 274
   },
   {
    "stem": "Dark_Magic_Shield_Splash",
@@ -3029,7 +4898,16 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Shield1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 1051
   },
   {
    "stem": "Dark_Magic_Slash1",
@@ -3041,7 +4919,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 519
   },
   {
    "stem": "Dark_Magic_Slash2",
@@ -3053,7 +4939,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 409
   },
   {
    "stem": "Dark_Magic_Splash1",
@@ -3065,7 +4959,16 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Fragment1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Splash1",
+    "Color_Wave1"
+   ],
+   "reach": 944
   },
   {
    "stem": "Dark_Magic_Target",
@@ -3077,7 +4980,18 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Dark_Magic_Top",
@@ -3089,7 +5003,19 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Flash1",
+    "Color_Fragment1",
+    "Color_Orb1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Trail1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Dark_Magic_Top2",
@@ -3101,7 +5027,19 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Flash1",
+    "Color_Fragment1",
+    "Color_Orb1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Trail1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Dark_Magic_Wall1",
@@ -3113,7 +5051,15 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Fragment1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1"
+   ],
+   "reach": 694
   },
   {
    "stem": "Dark_Magic_Wall2",
@@ -3125,7 +5071,16 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Fragment1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 841
   },
   {
    "stem": "Light_Magic_AOE1",
@@ -3137,7 +5092,17 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Flash1",
+    "Color_Glow1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Trail1"
+   ],
+   "reach": 467
   },
   {
    "stem": "Light_Magic_Area_Beam",
@@ -3149,7 +5114,14 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 803
   },
   {
    "stem": "Light_Magic_Aura",
@@ -3161,7 +5133,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Plane1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 709
   },
   {
    "stem": "Light_Magic_Beam",
@@ -3173,7 +5153,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 2230
   },
   {
    "stem": "Light_Magic_Blink1",
@@ -3185,7 +5173,14 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Glow1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 962
   },
   {
    "stem": "Light_Magic_Blink2",
@@ -3197,7 +5192,14 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Glow1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 660
   },
   {
    "stem": "Light_Magic_Buff",
@@ -3209,7 +5211,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Plane1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 709
   },
   {
    "stem": "Light_Magic_Circle",
@@ -3221,7 +5231,16 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Cylinder1",
+    "Color_Fragment1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 770
   },
   {
    "stem": "Light_Magic_Dash",
@@ -3233,7 +5252,14 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Light_Magic_Explosion1",
@@ -3245,7 +5271,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Ray",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 615
   },
   {
    "stem": "Light_Magic_Heal",
@@ -3257,7 +5291,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Fragment2",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 690
   },
   {
    "stem": "Light_Magic_Heal_Hit",
@@ -3269,7 +5311,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Fragment2",
+    "Color_Glow1",
+    "Color_Smoke1",
+    "Color_Sparks1"
+   ],
+   "reach": 576
   },
   {
    "stem": "Light_Magic_Hit1",
@@ -3281,7 +5331,14 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Fragment1",
+    "Color_Smoke1",
+    "Color_Sparks1"
+   ],
+   "reach": 656
   },
   {
    "stem": "Light_Magic_Hit2",
@@ -3293,7 +5350,13 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Smoke1",
+    "Color_Sparks1"
+   ],
+   "reach": 613
   },
   {
    "stem": "Light_Magic_Hit3",
@@ -3305,7 +5368,14 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Fragment1",
+    "Color_Smoke1",
+    "Color_Sparks1"
+   ],
+   "reach": 262
   },
   {
    "stem": "Light_Magic_Orb2",
@@ -3317,7 +5387,16 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Glow1",
+    "Color_Orb1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Trail1"
+   ],
+   "reach": 461
   },
   {
    "stem": "Light_Magic_Orb_Base",
@@ -3341,7 +5420,20 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Core1",
+    "Color_Flash1",
+    "Color_Glow1",
+    "Color_Glow2",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trail1",
+    "Color_Trail2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Light_Magic_Projectile1_Base",
@@ -3365,7 +5457,22 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Core1",
+    "Color_Flash1",
+    "Color_Glow1",
+    "Color_Glow2",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Trail1",
+    "Color_Trail2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Light_Magic_Projectile2",
@@ -3377,7 +5484,21 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Fragment1",
+    "Color_Fragment2",
+    "Color_Glow1",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sword1",
+    "Color_Trail1",
+    "Color_Trail2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Light_Magic_Projectile2_Base",
@@ -3401,7 +5522,22 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Flash1",
+    "Color_Fragment1",
+    "Color_Fragment2",
+    "Color_Glow1",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sword1",
+    "Color_Trail1",
+    "Color_Trail2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Light_Magic_Projectile3",
@@ -3413,7 +5549,17 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Core1",
+    "Color_Core2",
+    "Color_Glow1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trail1",
+    "Color_Trail2"
+   ],
+   "reach": 341
   },
   {
    "stem": "Light_Magic_Projectile3_Base",
@@ -3437,7 +5583,16 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Core1",
+    "Color_Core2",
+    "Color_Glow1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trail1"
+   ],
+   "reach": 299
   },
   {
    "stem": "Light_Magic_Projectile4_Base",
@@ -3461,7 +5616,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Glow1",
+    "Color_Sparks1",
+    "Color_Sphere1",
+    "Color_Spiral1"
+   ],
+   "reach": 889
   },
   {
    "stem": "Light_Magic_Shield_Splash",
@@ -3473,7 +5636,16 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Glow1",
+    "Color_Plane1",
+    "Color_Sparks1",
+    "Color_Sphere1",
+    "Color_Spiral1"
+   ],
+   "reach": 1476
   },
   {
    "stem": "Light_Magic_Slash1",
@@ -3485,7 +5657,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 611
   },
   {
    "stem": "Light_Magic_Slash2",
@@ -3497,7 +5677,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 319
   },
   {
    "stem": "Light_Magic_Sword_AOE",
@@ -3509,7 +5697,16 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Crack1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Sword1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Light_Magic_Sword_Area",
@@ -3521,7 +5718,16 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Fragment1",
+    "Color_Plane1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Sword1",
+    "Color_Wave1"
+   ],
+   "reach": 177
   },
   {
    "stem": "Light_Magic_Sword_Circle",
@@ -3533,7 +5739,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sword1"
+   ],
+   "reach": 930
   },
   {
    "stem": "Light_Magic_Sword_Line",
@@ -3545,7 +5759,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sword1"
+   ],
+   "reach": 373
   },
   {
    "stem": "Light_Magic_Sword_Line2",
@@ -3557,7 +5779,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Sword1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Light_Magic_Sword_Line_Area1",
@@ -3569,7 +5799,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sword1"
+   ],
+   "reach": 860
   },
   {
    "stem": "Light_Magic_Sword_Line_Area2",
@@ -3581,7 +5819,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Ray1",
+    "Color_Sparks1",
+    "Color_Sword1",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Light_Magic_Sword_Wall",
@@ -3593,7 +5839,15 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sword1"
+   ],
+   "reach": 605
   },
   {
    "stem": "Light_Magic_Target",
@@ -3605,7 +5859,16 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Fragment1",
+    "Color_Mesh1",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Light_Magic_Top",
@@ -3617,7 +5880,18 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Flash1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sphere1",
+    "Color_Trail1",
+    "Color_Wave1"
+   ],
+   "reach": 1188
   },
   {
    "stem": "Light_Magic_Top_Area",
@@ -3629,7 +5903,18 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Flash1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sphere1",
+    "Color_Trail1",
+    "Color_Wave1"
+   ],
+   "reach": 451
   },
   {
    "stem": "Lightning_Magic_Area",
@@ -3641,7 +5926,15 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Wave1"
+   ],
+   "reach": 594
   },
   {
    "stem": "Lightning_Magic_Aura1",
@@ -3653,7 +5946,13 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 294
   },
   {
    "stem": "Lightning_Magic_Aura2",
@@ -3665,7 +5964,15 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3"
+   ],
+   "reach": 409
   },
   {
    "stem": "Lightning_Magic_Beam",
@@ -3677,7 +5984,17 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Blink1",
@@ -3689,7 +6006,13 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Smoke1",
+    "Color_Sparks1"
+   ],
+   "reach": 487
   },
   {
    "stem": "Lightning_Magic_Blink2",
@@ -3701,7 +6024,14 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 471
   },
   {
    "stem": "Lightning_Magic_Buff1",
@@ -3713,7 +6043,15 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Wave1"
+   ],
+   "reach": 755
   },
   {
    "stem": "Lightning_Magic_Buff2",
@@ -3725,7 +6063,16 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Wave1"
+   ],
+   "reach": 622
   },
   {
    "stem": "Lightning_Magic_Cone1",
@@ -3737,7 +6084,19 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Flash1",
+    "Color_Mesh1",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Cone_Lightning1",
@@ -3749,7 +6108,13 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3"
+   ],
+   "reach": 629
   },
   {
    "stem": "Lightning_Magic_Dash",
@@ -3761,7 +6126,15 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trail1"
+   ],
+   "reach": 174
   },
   {
    "stem": "Lightning_Magic_Laser",
@@ -3773,7 +6146,15 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Trail1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Lightning1",
@@ -3785,7 +6166,13 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3"
+   ],
+   "reach": 510
   },
   {
    "stem": "Lightning_Magic_Lightning2",
@@ -3797,7 +6184,15 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3"
+   ],
+   "reach": 156
   },
   {
    "stem": "Lightning_Magic_Line1",
@@ -3809,7 +6204,15 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Wave1"
+   ],
+   "reach": 653
   },
   {
    "stem": "Lightning_Magic_Line2",
@@ -3821,7 +6224,18 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Flash1",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Wave1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Orb",
@@ -3833,7 +6247,15 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Mesh1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 282
   },
   {
    "stem": "Lightning_Magic_Orb2",
@@ -3845,7 +6267,18 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Sparks4",
+    "Color_Trail1"
+   ],
+   "reach": 284
   },
   {
    "stem": "Lightning_Magic_Orb3",
@@ -3857,7 +6290,18 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Flash1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 467
   },
   {
    "stem": "Lightning_Magic_Projectile1",
@@ -3869,7 +6313,20 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Core",
+    "Color_Flash1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Sparks4",
+    "Color_Trail1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Projectile2",
@@ -3881,7 +6338,15 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Trail1"
+   ],
+   "reach": 809
   },
   {
    "stem": "Lightning_Magic_Projectile3",
@@ -3893,7 +6358,17 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Shield",
@@ -3905,7 +6380,14 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke1",
+    "Color_Sparks1"
+   ],
+   "reach": 319
   },
   {
    "stem": "Lightning_Magic_Shield_Splash",
@@ -3917,7 +6399,16 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Wave1"
+   ],
+   "reach": 705
   },
   {
    "stem": "Lightning_Magic_Shockwave",
@@ -3929,7 +6420,14 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Wave1"
+   ],
+   "reach": 903
   },
   {
    "stem": "Lightning_Magic_Slash1",
@@ -3941,7 +6439,14 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 585
   },
   {
    "stem": "Lightning_Magic_Slash2",
@@ -3953,7 +6458,14 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 466
   },
   {
    "stem": "Lightning_Magic_Slash_Aura",
@@ -3965,7 +6477,13 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Smoke1",
+    "Color_Sparks1"
+   ],
+   "reach": 419
   },
   {
    "stem": "Lightning_Magic_Target",
@@ -3977,7 +6495,17 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Tornado",
@@ -3989,7 +6517,18 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Tornado_Area",
@@ -4001,7 +6540,19 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Spiral1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Tornado_Line",
@@ -4013,7 +6564,20 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Mesh4",
+    "Color_Smoke1",
+    "Color_Smoke2",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Tunder",
@@ -4025,7 +6589,17 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Flash1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3",
+    "Color_Trail1"
+   ],
+   "reach": 844
   },
   {
    "stem": "Lightning_Magic_Tunder2",
@@ -4037,7 +6611,18 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle1",
+    "Color_Crack1",
+    "Color_Flash1",
+    "Color_Mesh1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Tunder_Area",
@@ -4049,7 +6634,16 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Flash1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3"
+   ],
+   "reach": 1
   },
   {
    "stem": "Lightning_Magic_Tunder_Circle1",
@@ -4061,7 +6655,14 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trail1"
+   ],
+   "reach": 775
   },
   {
    "stem": "Lightning_Magic_Tunder_Line",
@@ -4073,7 +6674,17 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack1",
+    "Color_Flash1",
+    "Color_Ray1",
+    "Color_Smoke1",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3"
+   ],
+   "reach": 1
   },
   {
    "stem": "Shadow_Magic_Area1",
@@ -4085,7 +6696,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Trace",
+    "Color_Wave"
+   ],
+   "reach": 1305
   },
   {
    "stem": "Shadow_Magic_Area2",
@@ -4097,7 +6717,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Trace",
+    "Color_Wave"
+   ],
+   "reach": 1386
   },
   {
    "stem": "Shadow_Magic_Area3",
@@ -4109,7 +6737,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace",
+    "Color_Wave"
+   ],
+   "reach": 819
   },
   {
    "stem": "Shadow_Magic_Area4",
@@ -4121,7 +6759,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace",
+    "Color_Trail",
+    "Color_Wave"
+   ],
+   "reach": 1051
   },
   {
    "stem": "Shadow_Magic_Area_Line_Attack1",
@@ -4133,7 +6781,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Trace"
+   ],
+   "reach": 753
   },
   {
    "stem": "Shadow_Magic_Area_Line_Attack2",
@@ -4145,7 +6801,14 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Trace"
+   ],
+   "reach": 599
   },
   {
    "stem": "Shadow_Magic_Area_Line_Attack3",
@@ -4157,7 +6820,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace"
+   ],
+   "reach": 1
   },
   {
    "stem": "Shadow_Magic_Area_Line_Attack4",
@@ -4169,7 +6841,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace",
+    "Color_Trail",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Shadow_Magic_Attack1",
@@ -4181,7 +6863,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace"
+   ],
+   "reach": 1015
   },
   {
    "stem": "Shadow_Magic_Attack2",
@@ -4193,7 +6884,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace"
+   ],
+   "reach": 973
   },
   {
    "stem": "Shadow_Magic_Attack3",
@@ -4205,7 +6905,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace"
+   ],
+   "reach": 669
   },
   {
    "stem": "Shadow_Magic_Attack4",
@@ -4217,7 +6927,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Cone",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Spiral2",
+    "Color_Trace"
+   ],
+   "reach": 741
   },
   {
    "stem": "Shadow_Magic_Attack5",
@@ -4229,7 +6949,18 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace"
+   ],
+   "reach": 778
   },
   {
    "stem": "Shadow_Magic_Aura1",
@@ -4241,7 +6972,14 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 585
   },
   {
    "stem": "Shadow_Magic_Aura2",
@@ -4253,7 +6991,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Wave"
+   ],
+   "reach": 843
   },
   {
    "stem": "Shadow_Magic_Blink1",
@@ -4265,7 +7012,13 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 592
   },
   {
    "stem": "Shadow_Magic_Blink2",
@@ -4277,7 +7030,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Orb1",
+    "Color_Orb2",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 625
   },
   {
    "stem": "Shadow_Magic_Buff1",
@@ -4289,7 +7051,14 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 850
   },
   {
    "stem": "Shadow_Magic_Buff2",
@@ -4301,7 +7070,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Wave"
+   ],
+   "reach": 764
   },
   {
    "stem": "Shadow_Magic_Circle1",
@@ -4313,7 +7091,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Cylinder",
+    "Color_Ray",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 1097
   },
   {
    "stem": "Shadow_Magic_Circle2",
@@ -4325,7 +7111,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Wave"
+   ],
+   "reach": 894
   },
   {
    "stem": "Shadow_Magic_Cone1",
@@ -4337,7 +7131,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Trace",
+    "Color_Wave"
+   ],
+   "reach": 857
   },
   {
    "stem": "Shadow_Magic_Cone2",
@@ -4349,7 +7152,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Trace",
+    "Color_Wave"
+   ],
+   "reach": 1347
   },
   {
    "stem": "Shadow_Magic_Cone3",
@@ -4361,7 +7172,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace",
+    "Color_Wave"
+   ],
+   "reach": 1146
   },
   {
    "stem": "Shadow_Magic_Cone4",
@@ -4373,7 +7194,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Shadow_Magic_Dash1",
@@ -4385,7 +7215,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Trace"
+   ],
+   "reach": 1
   },
   {
    "stem": "Shadow_Magic_Dash2",
@@ -4397,7 +7235,13 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Trail"
+   ],
+   "reach": 246
   },
   {
    "stem": "Shadow_Magic_Explosion1",
@@ -4409,7 +7253,18 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Orb1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Trace",
+    "Color_Wave"
+   ],
+   "reach": 1620
   },
   {
    "stem": "Shadow_Magic_Explosion2",
@@ -4421,7 +7276,19 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Orb1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Trace",
+    "Color_Wave"
+   ],
+   "reach": 1617
   },
   {
    "stem": "Shadow_Magic_Hit1",
@@ -4433,7 +7300,14 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 1084
   },
   {
    "stem": "Shadow_Magic_Hit2",
@@ -4445,7 +7319,14 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 953
   },
   {
    "stem": "Shadow_Magic_Hit3",
@@ -4457,7 +7338,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Orb1",
+    "Color_Orb2",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 1020
   },
   {
    "stem": "Shadow_Magic_Line_Attack1",
@@ -4469,7 +7360,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Trace"
+   ],
+   "reach": 1595
   },
   {
    "stem": "Shadow_Magic_Line_Attack2",
@@ -4481,7 +7380,14 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Trace"
+   ],
+   "reach": 1143
   },
   {
    "stem": "Shadow_Magic_Line_Attack3",
@@ -4493,7 +7399,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace"
+   ],
+   "reach": 658
   },
   {
    "stem": "Shadow_Magic_Line_Attack4",
@@ -4505,7 +7420,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace",
+    "Color_Trail",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Shadow_Magic_Line_Attack5",
@@ -4517,7 +7442,14 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Trace"
+   ],
+   "reach": 912
   },
   {
    "stem": "Shadow_Magic_Mass_Projectile1",
@@ -4529,7 +7461,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Flash",
+    "Color_REF",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Shadow_Magic_Orb1",
@@ -4541,7 +7483,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Orb1",
+    "Color_Orb2",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 233
   },
   {
    "stem": "Shadow_Magic_Orb1_Base",
@@ -4565,7 +7517,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Orb1",
+    "Color_Orb2",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 219
   },
   {
    "stem": "Shadow_Magic_Orb2_Base",
@@ -4589,7 +7551,16 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_REF",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Shadow_Magic_Projectile1_Base",
@@ -4613,7 +7584,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Shadow_Magic_Projectile2_Base",
@@ -4637,7 +7618,21 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Orb1",
+    "Color_Orb1_D",
+    "Color_Orb2",
+    "Color_Orb2_D",
+    "Color_REF",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Shadow_Magic_Projectile3_Base",
@@ -4661,7 +7656,19 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Cone",
+    "Color_Cylinder",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Spiral2"
+   ],
+   "reach": 228
   },
   {
    "stem": "Shadow_Magic_Shield1",
@@ -4673,7 +7680,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Shield",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Trace"
+   ],
+   "reach": 642
   },
   {
    "stem": "Shadow_Magic_Shield1_Base",
@@ -4697,7 +7712,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Shield",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Wave"
+   ],
+   "reach": 730
   },
   {
    "stem": "Shadow_Magic_Shield2_Base",
@@ -4721,7 +7744,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Shield",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Trace"
+   ],
+   "reach": 1018
   },
   {
    "stem": "Shadow_Magic_Shield_Splash2",
@@ -4733,7 +7764,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Shield",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Wave"
+   ],
+   "reach": 1244
   },
   {
    "stem": "Shadow_Magic_Slash1",
@@ -4745,7 +7784,15 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1",
+    "Color_Trail"
+   ],
+   "reach": 312
   },
   {
    "stem": "Shadow_Magic_Slash2",
@@ -4757,7 +7804,14 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 312
   },
   {
    "stem": "Shadow_Magic_Slash3",
@@ -4769,7 +7823,14 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 399
   },
   {
    "stem": "Shadow_Magic_Wall1",
@@ -4781,7 +7842,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace"
+   ],
+   "reach": 929
   },
   {
    "stem": "Shadow_Magic_Wall2",
@@ -4793,7 +7864,17 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Trace"
+   ],
+   "reach": 1580
   },
   {
    "stem": "Earth_Spells_Arena",
@@ -4805,7 +7886,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Mesh1",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Wave"
+   ],
+   "reach": 778
   },
   {
    "stem": "Earth_Spells_Attack1",
@@ -4817,7 +7907,19 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Mesh4",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 1088
   },
   {
    "stem": "Earth_Spells_Attack2",
@@ -4829,7 +7931,19 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Mesh4",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Attack_Up",
@@ -4841,7 +7955,19 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Orb",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 273
   },
   {
    "stem": "Earth_Spells_Attack_Up2",
@@ -4853,7 +7979,19 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Orb",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 860
   },
   {
    "stem": "Earth_Spells_Aura",
@@ -4865,7 +8003,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Glow",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Wave"
+   ],
+   "reach": 974
   },
   {
    "stem": "Earth_Spells_Buff",
@@ -4877,7 +8024,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Wave"
+   ],
+   "reach": 1063
   },
   {
    "stem": "Earth_Spells_Circle",
@@ -4889,7 +8044,14 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Wave"
+   ],
+   "reach": 704
   },
   {
    "stem": "Earth_Spells_Cone",
@@ -4901,7 +8063,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Cylinder",
+    "Color_Mesh1",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral"
+   ],
+   "reach": 2655
   },
   {
    "stem": "Earth_Spells_Explosion",
@@ -4913,7 +8084,18 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Orb",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Hit1",
@@ -4925,7 +8107,14 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral"
+   ],
+   "reach": 407
   },
   {
    "stem": "Earth_Spells_Hit2",
@@ -4937,7 +8126,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral"
+   ],
+   "reach": 441
   },
   {
    "stem": "Earth_Spells_Hit3",
@@ -4949,7 +8146,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Orb",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral"
+   ],
+   "reach": 443
   },
   {
    "stem": "Earth_Spells_Meteorites",
@@ -4961,7 +8166,19 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Trail",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Meteorites_Line",
@@ -4973,7 +8190,18 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Orb",
@@ -4985,7 +8213,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Glow",
+    "Color_Mesh1",
+    "Color_Orb",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral"
+   ],
+   "reach": 267
   },
   {
    "stem": "Earth_Spells_Projectile1",
@@ -4997,7 +8234,18 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Projectile1_Base",
@@ -5021,7 +8269,18 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Trail"
+   ],
+   "reach": 564
   },
   {
    "stem": "Earth_Spells_Projectile3",
@@ -5033,7 +8292,20 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Orb1",
+    "Color_Orb2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Projectile3_Base",
@@ -5057,7 +8329,19 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Flash",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Shield",
@@ -5069,7 +8353,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Shield",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Wave"
+   ],
+   "reach": 663
   },
   {
    "stem": "Earth_Spells_Shield_Splash",
@@ -5081,7 +8374,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Shield",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Trail",
+    "Color_Wave"
+   ],
+   "reach": 933
   },
   {
    "stem": "Earth_Spells_Shockwave",
@@ -5093,7 +8396,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Slash",
@@ -5105,7 +8418,14 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Trail"
+   ],
+   "reach": 381
   },
   {
    "stem": "Earth_Spells_Slash2",
@@ -5117,7 +8437,14 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Slash",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Slash3",
@@ -5129,7 +8456,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Slash",
+    "Color_Sparks1",
+    "Color_Spiral",
+    "Color_Trail"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Spike1",
@@ -5141,7 +8476,18 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Mesh4",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1011
   },
   {
    "stem": "Earth_Spells_Spike2",
@@ -5153,7 +8499,18 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Circle",
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Spike3",
@@ -5165,7 +8522,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 1343
   },
   {
    "stem": "Earth_Spells_Spike_Cone",
@@ -5177,7 +8544,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1328
   },
   {
    "stem": "Earth_Spells_Spike_Line",
@@ -5189,7 +8565,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1543
   },
   {
    "stem": "Earth_Spells_Wall1",
@@ -5201,7 +8586,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Wall2",
@@ -5213,7 +8608,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Area2",
@@ -5225,7 +8630,18 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Area3",
@@ -5237,7 +8653,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Area_Spike_Line1",
@@ -5249,7 +8675,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1542
   },
   {
    "stem": "Earth_Spells_Area_Spike_Line2",
@@ -5261,7 +8695,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 668
   },
   {
    "stem": "Earth_Spells_Area_Spike_Line3",
@@ -5273,7 +8715,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1222
   },
   {
    "stem": "Earth_Spells_Area_Spike_Line4",
@@ -5285,7 +8735,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Cone2",
@@ -5297,7 +8757,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 2123
   },
   {
    "stem": "Earth_Spells_Cone3",
@@ -5309,7 +8779,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1534
   },
   {
    "stem": "Earth_Spells_Spike_Line1_v2",
@@ -5321,7 +8799,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Spike_Line2",
@@ -5333,7 +8819,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1471
   },
   {
    "stem": "Earth_Spells_Spike_Line3",
@@ -5345,7 +8839,15 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1595
   },
   {
    "stem": "Earth_Spells_Spike_Line4",
@@ -5357,7 +8859,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Wave"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Wall3",
@@ -5369,7 +8881,17 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Mesh3",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 1
   },
   {
    "stem": "Earth_Spells_Wall4",
@@ -5381,7 +8903,16 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Crack",
+    "Color_Mesh1",
+    "Color_Mesh2",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 791
   },
   {
    "stem": "AreaBuff",
@@ -5393,7 +8924,14 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Floor",
+    "Color_Leaf",
+    "Maximum_Color",
+    "Minimum_Color"
+   ],
+   "reach": 1000
   },
   {
    "stem": "AreaBuff_Applied",
@@ -5405,7 +8943,14 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Butterfly",
+    "Color_Leaf",
+    "Maximum_Color",
+    "Minimum_Color"
+   ],
+   "reach": 1000
   },
   {
    "stem": "Aura_Nature",
@@ -5417,7 +8962,12 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color",
+    "Color_Leaf"
+   ],
+   "reach": 1000
   },
   {
    "stem": "Wing_Nature",
@@ -5429,7 +8979,11 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color"
+   ],
+   "reach": 100
   },
   {
    "stem": "HealBeam",
@@ -5441,7 +8995,14 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color",
+    "Color001",
+    "Maximum_Color",
+    "Minimum_Color"
+   ],
+   "reach": 1000
   },
   {
    "stem": "Explosion_Cast_Nature",
@@ -5453,7 +9014,12 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color",
+    "Color001"
+   ],
+   "reach": 100
   },
   {
    "stem": "Explosion_Grenade_Nature",
@@ -5465,7 +9031,16 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color",
+    "Color001",
+    "Color_Floor",
+    "Color_Flower",
+    "Color_Leaf",
+    "Color_Wood"
+   ],
+   "reach": 100
   },
   {
    "stem": "Explosion_Nature",
@@ -5477,7 +9052,14 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color",
+    "Color001",
+    "Color_Floor",
+    "Color_Leaf"
+   ],
+   "reach": 1000
   },
   {
    "stem": "Explosion_Small_Nature",
@@ -5489,7 +9071,13 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color",
+    "Color2",
+    "Color_Leaf"
+   ],
+   "reach": 1000
   },
   {
    "stem": "Projectile_Grenade_Big_Nature",
@@ -5501,7 +9089,13 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color",
+    "Color001",
+    "Color_Leaf"
+   ],
+   "reach": 1000
   },
   {
    "stem": "Projectile_Grenade_Nature",
@@ -5513,7 +9107,15 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color",
+    "Color001",
+    "Color_Leaf",
+    "Maximum_Color",
+    "Minimum_Color"
+   ],
+   "reach": 1000
   },
   {
    "stem": "Ribbon_Nature",
@@ -5525,7 +9127,13 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color",
+    "Maximum_Color",
+    "Minimum_Color"
+   ],
+   "reach": 1000
   },
   {
    "stem": "TextureParticle_Forest",
@@ -5537,7 +9145,11 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color"
+   ],
+   "reach": 100
   },
   {
    "stem": "Vine_attack1",
@@ -5549,7 +9161,13 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Floor",
+    "Color_flower",
+    "Color_Leaf"
+   ],
+   "reach": 1000
   },
   {
    "stem": "Vine_attack2",
@@ -5561,7 +9179,12 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Leaf",
+    "Color_Vine"
+   ],
+   "reach": 1500
   },
   {
    "stem": "Vine_Barrior",
@@ -5573,7 +9196,12 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "FlowerColor",
+    "Vine_Color"
+   ],
+   "reach": 1000
   },
   {
    "stem": "RoundedVine_Forest",
@@ -5585,7 +9213,14 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color",
+    "Color001",
+    "Color_Floor",
+    "Color_Leaf"
+   ],
+   "reach": 1000
   },
   {
    "stem": "Wood_Hide_Forest",
@@ -5597,7 +9232,14 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Floor",
+    "Color_Flower",
+    "Color_Leaf",
+    "Color_Wood"
+   ],
+   "reach": 1000
   },
   {
    "stem": "State_VFX_Bleed1",
@@ -5609,7 +9251,13 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 196
   },
   {
    "stem": "State_VFX_Blind1",
@@ -5621,7 +9269,14 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Marker",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 145
   },
   {
    "stem": "State_VFX_Burn1",
@@ -5633,7 +9288,14 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 825
   },
   {
    "stem": "State_VFX_Charm1",
@@ -5645,7 +9307,14 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 344
   },
   {
    "stem": "State_VFX_Cursed1",
@@ -5657,7 +9326,16 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Marker",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 188
   },
   {
    "stem": "State_VFX_Freeze1",
@@ -5669,7 +9347,13 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 262
   },
   {
    "stem": "State_VFX_Heal1",
@@ -5681,7 +9365,15 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 683
   },
   {
    "stem": "State_VFX_Mana1",
@@ -5693,7 +9385,15 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Spiral1"
+   ],
+   "reach": 791
   },
   {
    "stem": "State_VFX_Poison1",
@@ -5705,7 +9405,13 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 245
   },
   {
    "stem": "State_VFX_Root1",
@@ -5717,7 +9423,14 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Mesh1",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 293
   },
   {
    "stem": "State_VFX_Shock1",
@@ -5729,7 +9442,13 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Sparks2",
+    "Color_Sparks3"
+   ],
+   "reach": 224
   },
   {
    "stem": "State_VFX_Silence1",
@@ -5741,7 +9460,14 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Marker",
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Spiral1"
+   ],
+   "reach": 241
   },
   {
    "stem": "State_VFX_Sleep1",
@@ -5753,7 +9479,13 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Smoke",
+    "Color_Sparks1",
+    "Color_Sparks2"
+   ],
+   "reach": 152
   },
   {
    "stem": "State_VFX_Slow1",
@@ -5765,7 +9497,14 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Flash",
+    "Color_Ray",
+    "Color_Smoke",
+    "Color_Sparks1"
+   ],
+   "reach": 475
   },
   {
    "stem": "Stun1",
@@ -5777,7 +9516,14 @@
    "school": "state",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [
+    "Color_Sparks1",
+    "Color_Spiral1",
+    "Color_Star",
+    "Color_Trail"
+   ],
+   "reach": 96
   },
   {
    "stem": "P_ky_aquaStorm",
@@ -5789,7 +9535,9 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 466
   },
   {
    "stem": "P_ky_darkStorm",
@@ -5801,7 +9549,9 @@
    "school": "",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 529
   },
   {
    "stem": "P_ky_explosion",
@@ -5813,7 +9563,9 @@
    "school": "",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 1055
   },
   {
    "stem": "P_ky_fireBall",
@@ -5825,7 +9577,9 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 600
   },
   {
    "stem": "P_ky_fireStorm",
@@ -5837,7 +9591,9 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 566
   },
   {
    "stem": "P_ky_healAura",
@@ -5849,7 +9605,9 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 381
   },
   {
    "stem": "P_ky_hit1",
@@ -5861,7 +9619,9 @@
    "school": "",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 783
   },
   {
    "stem": "P_ky_hit2",
@@ -5873,7 +9633,9 @@
    "school": "",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 477
   },
   {
    "stem": "P_ky_laser01",
@@ -5885,7 +9647,9 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 314
   },
   {
    "stem": "P_ky_lightning1",
@@ -5897,7 +9661,9 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 1056
   },
   {
    "stem": "P_ky_lightning2",
@@ -5909,7 +9675,9 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 1064
   },
   {
    "stem": "P_ky_lightning3",
@@ -5921,7 +9689,9 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 1496
   },
   {
    "stem": "P_ky_magicCircle1",
@@ -5933,7 +9703,9 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 483
   },
   {
    "stem": "P_ky_shootingStar1",
@@ -5945,7 +9717,9 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 491
   },
   {
    "stem": "P_ky_shotShockwave",
@@ -5957,7 +9731,9 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 600
   },
   {
    "stem": "P_ky_storm",
@@ -5969,7 +9745,9 @@
    "school": "",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 527
   },
   {
    "stem": "P_ky_thunderBall",
@@ -5981,7 +9759,9 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 600
   },
   {
    "stem": "P_ky_ThunderBallHit",
@@ -5993,7 +9773,9 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 1254
   },
   {
    "stem": "P_ky_thunderStorm",
@@ -6005,7 +9787,9 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 873
   },
   {
    "stem": "P_ky_waterBall",
@@ -6017,7 +9801,9 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 600
   },
   {
    "stem": "P_ky_waterBallHit",
@@ -6029,7 +9815,9 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 2254
   },
   {
    "stem": "AmputatedHead",
@@ -6041,7 +9829,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 200
   },
   {
    "stem": "AmputatedLimbs",
@@ -6053,7 +9843,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 145
   },
   {
    "stem": "Artery_High",
@@ -6065,7 +9857,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 194
   },
   {
    "stem": "Artery_Low",
@@ -6077,7 +9871,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 76
   },
   {
    "stem": "Artery_Med",
@@ -6089,7 +9885,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 90
   },
   {
    "stem": "BrainBurst",
@@ -6101,7 +9899,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 247
   },
   {
    "stem": "SphericalDecalSplatter",
@@ -6113,7 +9913,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 1
   },
   {
    "stem": "SphericalDecalSplatter_Extreme",
@@ -6125,7 +9927,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 354
   },
   {
    "stem": "BloodBurst_Extreme",
@@ -6137,7 +9941,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 382
   },
   {
    "stem": "BloodBurst_High",
@@ -6149,7 +9955,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 331
   },
   {
    "stem": "BloodBurst_Low",
@@ -6161,7 +9969,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 200
   },
   {
    "stem": "BloodBurst_Med",
@@ -6173,7 +9983,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 220
   },
   {
    "stem": "Dripping_High",
@@ -6185,7 +9997,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 500
   },
   {
    "stem": "Dripping_Low",
@@ -6197,7 +10011,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 500
   },
   {
    "stem": "Dripping_Med",
@@ -6209,7 +10025,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 500
   },
   {
    "stem": "Dripping_Splash_High",
@@ -6221,7 +10039,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 63
   },
   {
    "stem": "Dripping_Splash_Low",
@@ -6233,7 +10053,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 24
   },
   {
    "stem": "Dripping_Splash_Mid",
@@ -6245,7 +10067,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 37
   },
   {
    "stem": "Dripping_Dynamic",
@@ -6257,7 +10081,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 35
   },
   {
    "stem": "BulletHit_High",
@@ -6269,7 +10095,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 319
   },
   {
    "stem": "BulletHit_Low",
@@ -6281,7 +10109,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 69
   },
   {
    "stem": "BulletHit_Med",
@@ -6293,7 +10123,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 144
   },
   {
    "stem": "BulletHit_Sample",
@@ -6305,7 +10137,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 318
   },
   {
    "stem": "Slash_High",
@@ -6317,7 +10151,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 421
   },
   {
    "stem": "Slash_Low",
@@ -6329,7 +10165,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 200
   },
   {
    "stem": "Slash_Med",
@@ -6341,7 +10179,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 253
   },
   {
    "stem": "BloodSplash_High",
@@ -6353,7 +10193,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 394
   },
   {
    "stem": "BloodSplash_Low",
@@ -6365,7 +10207,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 200
   },
   {
    "stem": "BloodSplash_Med",
@@ -6377,7 +10221,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 347
   },
   {
    "stem": "Splatter_Directional_01_Decal",
@@ -6389,7 +10235,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 1
   },
   {
    "stem": "Splatter_Directional_02_Decal",
@@ -6401,7 +10249,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 275
   },
   {
    "stem": "Splatter_Omni_01_Decal",
@@ -6413,7 +10263,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 37
   },
   {
    "stem": "Splatter_Omni_02_Decal",
@@ -6425,7 +10277,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 157
   },
   {
    "stem": "Splatter_Omni_03_Decal",
@@ -6437,7 +10291,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 130
   },
   {
    "stem": "Splatter_Omni_04_Decal",
@@ -6449,7 +10305,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 183
   },
   {
    "stem": "Stab_High",
@@ -6461,7 +10319,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 321
   },
   {
    "stem": "Stab_Low",
@@ -6473,7 +10333,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 276
   },
   {
    "stem": "Stab_Med",
@@ -6485,7 +10347,9 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": ""
+   "look": "",
+   "colors": [],
+   "reach": 302
   }
  ]
 }
