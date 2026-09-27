@@ -146,6 +146,9 @@ public:
     float OtherEffectsIntensity = 1.f;
     /** ability-vfx: ground telegraph / zone brightness (fill, rim and runes), 0.1..1. */
     float GroundTelegraphIntensity = .3f; // telegraphs: 0.1..1, default 0.3 (half of the old 0.6 look); saved as GroundTelegraphLevel
+    /** vfx-scale: the player's multiplier on the design spell-effect scale (Content/Data/VFXTuning.json, 1.3). 1 = the design size;
+     *  Options > Video > Spell effect size shows the effective value (CireAbilityVFX::SpellEffectScaleFor). Decorative visuals only. */
+    float SpellEffectSize = 1.f;
     /** Extra WoW action bars (bar 1 is always shown) and the drag lock (Shift-drag when locked). */
     bool bShowActionBar2 = true;
     bool bShowActionBar3 = false;

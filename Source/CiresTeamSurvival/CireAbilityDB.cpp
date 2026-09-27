@@ -1,4 +1,5 @@
 #include "CireAbilityDB.h"
+#include "CireAbilityShapes.h" // aoe-scale
 #include "CireChampionProfiles.h"
 #include "CireChampionRoster.h"
 #include "Dom/JsonObject.h"
@@ -66,6 +67,7 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
         Cv.CostRampLevels=Num(*C,TEXT("costRampLevels"),Cv.CostRampLevels);Cv.CooldownFloorFraction=Num(*C,TEXT("cooldownFloorFraction"),Cv.CooldownFloorFraction);
         Cv.CooldownDecayLevels=Num(*C,TEXT("cooldownDecayLevels"),Cv.CooldownDecayLevels);Cv.MinCooldownSeconds=Num(*C,TEXT("minCooldownSeconds"),Cv.MinCooldownSeconds);
         if(!Cires::Abilities::ValidBase(D.Base)||!Cires::Abilities::ValidCurve(D.Curve))return Fail(TEXT("Invalid base numbers or curve: ")+D.Id);
+        D.Radius=CireAbilityShapes::AoE(D.Radius); // aoe-scale: every consumer (hit tests and telegraphs) reads the grown radius
         const TArray<TSharedPtr<FJsonValue>>* Effects=nullptr;
         if(J->TryGetArrayField(TEXT("effects"),Effects))for(const auto& V:*Effects)
         {
@@ -83,6 +85,7 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
             Z.SelfHealMaxHealthFraction=Num(*Void,TEXT("selfHealMaxHealthFraction"));
             Z.bValid=Z.InnerRadius>0&&Z.OuterRadius>Z.InnerRadius&&Z.OuterRadius<=3000&&Z.InnerDuration>=0&&Z.OuterMagnitude>=0&&Z.OuterMagnitude<=1;
             if(!Z.bValid)return Fail(TEXT("Invalid void zone: ")+D.Id);
+            Z.InnerRadius=CireAbilityShapes::AoE(Z.InnerRadius);Z.OuterRadius=CireAbilityShapes::AoE(Z.OuterRadius); // aoe-scale: teleport / portal rings
         }
         // scaling-kits: primary-stat scaling, shield/ranged gating, level-15 bonus / aura.
         D.Requires=Str(J,TEXT("requires"));
@@ -121,6 +124,7 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
                 const TSharedPtr<FJsonObject>* Stats=nullptr;
                 if((*E)->TryGetObjectField(TEXT("stats"),Stats))for(const auto& StatPair:(*Stats)->Values)X.Stats.Add(FString(StatPair.Key),static_cast<float>(StatPair.Value->AsNumber()));
                 if(X.Type.IsNone()||X.Radius<0||X.Radius>3000||X.Duration<0||X.Duration>60||X.Magnitude<0||X.Magnitude>1)return Fail(TEXT("Invalid ultimateUpgrade effect: ")+D.Id);
+                X.Radius=CireAbilityShapes::AoE(X.Radius); // aoe-scale
                 U.Effects.Add(MoveTemp(X));
             }
             U.bValid=D.IsUltimate()&&U.Effects.Num()>0;

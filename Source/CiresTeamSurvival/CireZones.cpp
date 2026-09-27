@@ -1,6 +1,7 @@
 // tier-readability: pack tier presentation and named town zones (CireZones.h, Docs/Zones.md).
 #include "CireZones.h"
 #include "CireGame.h"
+#include "CireNPCState.h" // vfx-scale: enraged badge
 #include "CireLanePath.h"
 #include "CireMapLayout.h"
 #include "CireEnvironmentProps.h"
@@ -33,6 +34,45 @@ FLinearColor CireZones::TierColor(int32 Tier)
 FString CireZones::NameplateLabel(const FString& Name, int32 Tier)
 {
     return Tier > 0 ? FString::Printf(TEXT("%s  %s"), *Name, *TierTag(Tier)) : Name;
+}
+// vfx-scale: special-state badges replace the rare / bonus / boss / enrage body glows.
+TArray<CireZones::EBadge> CireZones::Badges(uint8 SpecialSpawn, bool bBoss, bool bEnraged)
+{
+    TArray<EBadge> Out;
+    if (SpecialSpawn == 1) Out.Add(EBadge::Rare);
+    if (SpecialSpawn == 2) Out.Add(EBadge::BonusLoot);
+    if (bBoss) Out.Add(EBadge::Boss);
+    if (bEnraged) Out.Add(EBadge::Enraged);
+    return Out;
+}
+TArray<CireZones::EBadge> CireZones::BadgesOf(const ACireMonster* M)
+{
+    if (!M) return {};
+    const bool bBoss = M->IsLaneBoss() || M->GetNPCClassification() == ECireNPCClass::Boss;
+    const bool bEnraged = M->NPCState && M->NPCState->HasStatus(CireNPCStatus::Enraged);
+    return Badges(M->SpecialSpawn, bBoss, bEnraged);
+}
+FString CireZones::BadgeName(EBadge Badge)
+{
+    switch (Badge)
+    {
+    case EBadge::Rare: return TEXT("RARE");
+    case EBadge::BonusLoot: return TEXT("BONUS LOOT");
+    case EBadge::Boss: return TEXT("BOSS");
+    case EBadge::Enraged: return TEXT("ENRAGED");
+    default: return FString();
+    }
+}
+FLinearColor CireZones::BadgeColor(EBadge Badge)
+{
+    switch (Badge)
+    {
+    case EBadge::Rare: return FLinearColor(.72f, .45f, 1.f, 1.f);     // rare: violet (distinct from the T3 blue)
+    case EBadge::BonusLoot: return FLinearColor(1.f, .80f, .18f, 1.f); // bonus loot: coin gold
+    case EBadge::Boss: return FLinearColor(1.f, .28f, .22f, 1.f);      // boss: skull red
+    case EBadge::Enraged: return FLinearColor(1.f, .45f, .08f, 1.f);   // enraged: flame orange
+    default: return FLinearColor::White;
+    }
 }
 FString CireZones::FrameHeader(int32 Tier, bool bLeader, const FString& RoleName)
 {
@@ -175,6 +215,11 @@ bool CireZones::RunTests(TArray<FString>& Failures)
     // Tier presentation.
     Check(TierTag(1) == TEXT("T1") && TierTag(4) == TEXT("T4") && TierTag(0).IsEmpty() && TierTag(9) == TEXT("T4"), TEXT("tier tags T1..T4"));
     Check(NameplateLabel(TEXT("Grave Hound"), 3) == TEXT("Grave Hound  T3") && NameplateLabel(TEXT("Grave Hound"), 0) == TEXT("Grave Hound"), TEXT("nameplate shows T# next to the name"));
+    // vfx-scale: special states read as badges (icons), in a fixed order.
+    Check(Badges(0, false, false).IsEmpty() && Badges(1, false, false) == TArray<EBadge>({EBadge::Rare}) && Badges(2, true, true) == TArray<EBadge>({EBadge::BonusLoot, EBadge::Boss, EBadge::Enraged}),
+        TEXT("badges: rare, bonus loot, boss, enraged"));
+    Check(BadgesOf(nullptr).IsEmpty() && BadgeName(EBadge::BonusLoot) == TEXT("BONUS LOOT") && !BadgeColor(EBadge::Rare).Equals(TierColor(3), .1f) && !BadgeColor(EBadge::Boss).Equals(BadgeColor(EBadge::Enraged), .05f),
+        TEXT("badge names and colours are distinct"));
     Check(FrameHeader(2, false, TEXT("Tank")) == TEXT("T2 PACK  /  TANK") && FrameHeader(4, true, TEXT("Healer")) == TEXT("T4 PACK LEADER  /  HEALER"), TEXT("frame header"));
     bool bDistinct = true;
     for (int32 A = 1; A <= 4; ++A) for (int32 B = A + 1; B <= 4; ++B) bDistinct &= !TierColor(A).Equals(TierColor(B), .05f);

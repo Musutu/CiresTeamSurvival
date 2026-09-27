@@ -258,6 +258,12 @@ void ACireSpellVisual::Rebuild()
     FLinearColor Core=FMath::Lerp(Tint,FLinearColor(2.3f,2.3f,2.1f,1),.4f);Core.A=Fade*.85f;
     const FString Id=Normalize(Skill);
     const float Expand=1-FMath::Square(1-T);
+    // vfx-scale: decorative geometry grows with the spell-effect scale. Casts on a unit grow from its feet (rings stay on the
+    // ground, helices grow taller); impacts, criticals and launches grow about their point. Modes add marks for hand pivots
+    // and for geometry that joins real positions (chain bolts, hop arcs), which never scales.
+    FxScale=CireAbilityVFX::SpellEffectScale(GetWorld());ScaleMarks.Reset();
+    const bool bAtPoint=Cue==ECireSpellCue::Impact||Cue==ECireSpellCue::Critical||Cue==ECireSpellCue::Launch;
+    MarkScale(M,Soft,bAtPoint?FVector::ZeroVector:FVector(0,0,GroundZ),DecorScale());
     if(RebuildModes(M,Soft,T,Fade,Expand)) {} // ability-vfx: telegraphs, projectiles, impacts, flares
     else if(bFollowArea && FollowedArea.IsValid())
     {
@@ -299,7 +305,7 @@ void ACireSpellVisual::Rebuild()
     }
     else if(Cue==ECireSpellCue::Projectile)
     {
-        const float R=FMath::Clamp(float(FollowBounds.X),4.f,80.f);
+        const float R=FMath::Clamp(float(FollowBounds.X),4.f,80.f)*FxScale; // vfx-scale: the head grows, the wake stays on the real path
         // A faceted head and tapered wake follow actual authoritative movement;
         // no interpolation towards a target and no invisible homing here.
         M.Tube(FVector(-R,0,0),FVector(R*1.7f,0,0),R*.36f,Core,6);
@@ -476,6 +482,7 @@ void ACireSpellVisual::Rebuild()
     else if(Family==Storm && Cue==ECireSpellCue::Cast)
     {
         const FVector A=GetActorTransform().InverseTransformPosition(Start),B=GetActorTransform().InverseTransformPosition(End);
+        MarkScale(M,Soft,FVector::ZeroVector,1.f); // vfx-scale: the bolt joins the caster and the target
         for(int32 Branch=0;Branch<2;++Branch)
         {
             FVector Prev=A;
@@ -488,6 +495,7 @@ void ACireSpellVisual::Rebuild()
                 if(Branch==0&&J%3==0)Soft.Glow(P,12,Glow);
             }
         }
+        MarkScale(M,Soft,FVector(0,0,GroundZ),DecorScale());
         M.Ring(22+Expand*52,3,2,Main);
     }
     else if(Family==Frost)
@@ -559,6 +567,15 @@ void ACireSpellVisual::Rebuild()
         }
     }
     if(!bFollowArea && Size!=1){for(auto& V:M.V)V*=Size;for(auto& V:Soft.V)V*=Size;}
+    // vfx-scale: apply each mark to its vertex range, about its pivot (pivots follow the cue size above).
+    for(int32 K=0;K<ScaleMarks.Num();++K)
+    {
+        const FScaleMark& Mark=ScaleMarks[K];if(FMath::IsNearlyEqual(Mark.Scale,1.f))continue;
+        const int32 CoreEnd=K+1<ScaleMarks.Num()?ScaleMarks[K+1].Core:M.V.Num(),SoftEnd=K+1<ScaleMarks.Num()?ScaleMarks[K+1].Soft:Soft.V.Num();
+        const FVector P=Mark.Pivot*(bFollowArea?1.f:Size);
+        for(int32 J=Mark.Core;J<CoreEnd;++J)M.V[J]=P+(M.V[J]-P)*Mark.Scale;
+        for(int32 J=Mark.Soft;J<SoftEnd;++J)Soft.V[J]=P+(Soft.V[J]-P)*Mark.Scale;
+    }
     LastVertexCount=M.V.Num()+Soft.V.Num();
     RebuildGround(T,Fade); // ability-vfx
     // All indices are sequential triangles. A stable topology can update its
@@ -575,8 +592,29 @@ void ACireSpellVisual::Rebuild()
     const bool bLit=bLightGranted&&!IsHidden()&&Fade>.01f;
     Light->SetVisibility(bLit);Light->SetLightColor(Tint.GetClamped(0,1));
     Light->SetIntensity(bLit?(Family==Fire?85.f:45.f)*Fade*(.92f+.08f*FMath::Sin(Age*9)):0);
-    Light->SetAttenuationRadius(FMath::Clamp(280*Size,140.f,600.f));
+    Light->SetAttenuationRadius(FMath::Clamp(280*Size*DecorScale(),140.f,600.f));
     UpdateFabVFX(); // fab-integration
+}
+
+// vfx-scale: true footprints (zones, void zones) and geometry that follows a real actor's shape (wall trims, the protection
+// cage) keep scale 1; projectiles scale their head inside DrawProjectile so the wake stays on the recorded path.
+float ACireSpellVisual::DecorScale() const
+{
+    if(bFollowArea||Mode==EMode::AreaFollow||Mode==EMode::VoidZone)return 1.f;
+    if(Cue==ECireSpellCue::Projectile||Cue==ECireSpellCue::Wall||Cue==ECireSpellCue::Protection)return 1.f;
+    return FxScale;
+}
+void ACireSpellVisual::MarkScale(const FCireSpellMesh& M,const FCireSoftMesh& Soft,FVector Pivot,float Scale)
+{
+    FScaleMark Mark;Mark.Core=M.V.Num();Mark.Soft=Soft.V.Num();Mark.Pivot=Pivot;Mark.Scale=FMath::IsFinite(Scale)&&Scale>0?Scale:1.f;
+    if(ScaleMarks.Num()&&ScaleMarks.Last().Core==Mark.Core&&ScaleMarks.Last().Soft==Mark.Soft)ScaleMarks.Last()=Mark;else ScaleMarks.Add(Mark);
+}
+FBox ACireSpellVisual::CoreBounds() const
+{
+    FBox Box(ForceInit);
+    for(const FVector& P:ScratchVertices)Box+=P;
+    for(const FVector& P:SoftVertices)Box+=P;
+    return Box;
 }
 
 // fab-integration: one Niagara overlay per presentation, chosen by school and role from Content/Data/FabVFX.json.
@@ -623,7 +661,9 @@ void ACireSpellVisual::UpdateFabVFX()
         UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_NONE skill=%s role=%s why=%s"),*AbilityKey.ToString(),*CireFabVFX::RoleName(FabRole),*FabSkipReason);
         bFabGround=false;return; // pack not installed / nothing curated: the procedural presentation carries the cue alone
     }
-    float Scale=Entry->Scale*Extra*(bFollowArea?1.f:Size);
+    // vfx-scale: every decorative Fab system (cast, projectile, impact, unit mark) grows with the spell-effect scale; a
+    // ground overlay is fitted to the true zone radius instead (below) and never grows.
+    float Scale=Entry->Scale*Extra*(bFollowArea?1.f:Size)*(bFabGround?1.f:FxScale);
     if(bFabGround)Scale=FMath::Clamp(FabTargetRadius*CireFabVFX::GroundFitFraction/FMath::Max(1.f,CireFabVFX::NativeGroundRadius(System)),.02f,5.f);
     UFXSystemComponent* C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)
         :CireFabVFX::SpawnAt(GetWorld(),System,GetActorLocation(),GetActorRotation(),Scale);

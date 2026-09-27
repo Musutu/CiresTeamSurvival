@@ -40,6 +40,20 @@ namespace CireZones
     /** Target / focus frame caption of a pack monster: "T3 PACK  /  TANK", "T3 PACK LEADER  /  TANK". */
     CIRESTEAMSURVIVAL_API FString FrameHeader(int32 Tier, bool bLeader, const FString& RoleName);
 
+    // ---- special-state badges (vfx-scale, Eric 2026-09-26: "remove special monster glows ... show those states with icons") --
+    // Rare spawns, bonus-loot creatures, lane bosses and enraged monsters no longer glow (no overlay rim, no special skin
+    // colour, no Fab aura); the HUD draws a small icon after the name / T# tag instead, on the nameplate, the target and focus
+    // frames and the boss frames. Order is fixed: rare, bonus loot, boss, enraged.
+    enum class EBadge : uint8 { Rare, BonusLoot, Boss, Enraged, Count };
+    /** Badges for a state (SpecialSpawn 1 = rare, 2 = bonus loot). */
+    CIRESTEAMSURVIVAL_API TArray<EBadge> Badges(uint8 SpecialSpawn, bool bBoss, bool bEnraged);
+    /** Badges of a live monster (nullptr: none). Boss = a lane boss or a boss-class monster. */
+    CIRESTEAMSURVIVAL_API TArray<EBadge> BadgesOf(const ACireMonster* Monster);
+    /** "RARE", "BONUS LOOT", "BOSS", "ENRAGED" (tooltips, the unit tooltip tag). */
+    CIRESTEAMSURVIVAL_API FString BadgeName(EBadge Badge);
+    /** Icon colour: rare violet-blue, bonus loot gold, boss red, enraged orange-red. */
+    CIRESTEAMSURVIVAL_API FLinearColor BadgeColor(EBadge Badge);
+
     // ---- zones --------------------------------------------------------------------------------------------------------
     CIRESTEAMSURVIVAL_API bool InsidePolygon(const TArray<FVector2D>& Polygon, const FVector2D& Point);
     /** Most common tier (1..4) in the list; ties go to the higher tier; 0 when the list is empty. */

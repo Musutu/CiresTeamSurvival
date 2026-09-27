@@ -12,6 +12,7 @@
 #include "CireAttackSystem.h"
 #include "CireItems.h"
 #include "CireAudio.h"
+#include "CireAbilityVFX.h" // vfx-scale: spell-effect scale for buff / aura layers and strikes
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PointLightComponent.h"
@@ -246,8 +247,14 @@ float UnitScale(const AActor* Unit)
 FName EnrageId(const ACireMonster* Monster)
 {
     if(const auto* Archetype=Monster&&Monster->NPCState?Monster->NPCState->Archetype():nullptr)
-        for(const auto& Ability:Archetype->Abilities)if(Ability.Kind==ECireNPCAbilityKind::Enrage&&CireAuraData::Find(Ability.Id))return Ability.Id;
-    return TEXT("enraged");
+    {
+        bool bSkill=false;
+        for(const auto& Ability:Archetype->Abilities)if(Ability.Kind==ECireNPCAbilityKind::Enrage){bSkill=true;if(CireAuraData::Find(Ability.Id))return Ability.Id;}
+        if(bSkill)return TEXT("enraged"); // the monster's own enrage skill keeps its spell visual
+    }
+    // vfx-scale (Eric 2026-09-26: "remove ... the enrage glow"): an enraged state that is not the monster's own skill (boss
+    // enrage timers, scripted states) shows the ENRAGED badge on the nameplate / frames instead of a body glow.
+    return NAME_None;
 }
 FName ProvokeId(const ACireMonster* Monster)
 {
@@ -339,7 +346,7 @@ void UCireAuraComponent::UpdateFabAuras(bool bAllowed,int32& Budget,float Intens
     {
         if(FabAuras.Contains(Pair.Key)||!Unit||!Unit->GetRootComponent())continue;
         const auto* Def=CireAuraData::Find(Pair.Key);const auto* Entry=FabAuraEntry(*Def);
-        const float Scale=Entry->Scale*FMath::Lerp(.75f,1.f,FMath::Clamp(Intensity,0.f,1.f));
+        const float Scale=Entry->Scale*FMath::Lerp(.75f,1.f,FMath::Clamp(Intensity,0.f,1.f))*CireAbilityVFX::AuraLayerScale(GetWorld()); // vfx-scale: aura size (1.1)
         UFXSystemComponent* FX=CireFabVFX::SpawnAttached(Pair.Value,Unit->GetRootComponent(),FVector(0,0,-88.f),Scale,false);
         CireFabVFX::ApplyTint(FX,Entry->Tint);
         if(FX)FabAuras.Add(Pair.Key,FX);
@@ -410,7 +417,7 @@ void UCireAuraComponent::Synchronize(float ServerNow,float LocalNow)
         if(Monster&&Monster->NPCState)
         {
             const auto* S=Monster->NPCState.Get();
-            if(S->HasStatus(CireNPCStatus::Enraged))Want(Desired,EnrageId(Monster),ServerNow,0,1,nullptr);
+            if(S->HasStatus(CireNPCStatus::Enraged))if(const FName Enrage=EnrageId(Monster);!Enrage.IsNone())Want(Desired,Enrage,ServerNow,0,1,nullptr);
             if(S->HasStatus(CireNPCStatus::Rallied))Want(Desired,TEXT("rallied"),ServerNow,0,1,nullptr);
             if(S->HasStatus(CireNPCStatus::ShieldWall))Want(Desired,TEXT("npc_tank_wall"),ServerNow,0,1,nullptr);
             if(S->HasStatus(CireNPCStatus::Guarded))Want(Desired,TEXT("npc_tank_guard"),ServerNow,0,1,nullptr);
@@ -492,6 +499,7 @@ int32 UCireAuraComponent::Render(float LocalNow,float Anim,float ServerNow,int32
     TArray<const FCireAuraInstance*> Order;for(const auto& I:Instances)Order.Add(&I);
     Order.Sort([](const FCireAuraInstance& A,const FCireAuraInstance& B){const auto* X=CireAuraData::Find(A.Id);const auto* Y=CireAuraData::Find(B.Id);return (X?X->Priority:0)>(Y?Y->Priority:0);});
     int32 Layers=0;float RimAlpha=0;const FCireAuraDef* LightDef=nullptr;float LightAlpha=0;
+    const float AuraScale=CireAbilityVFX::AuraLayerScale(GetWorld()),HandScale=CireAbilityVFX::HandGlowScale(GetWorld()); // vfx-scale
     const uint32 UnitSeed=GetTypeHash(Unit->GetFName());
     const bool bHostile=[&]{
         const auto* Local=GetWorld()->GetFirstPlayerController();const auto* Viewer=Local?Cast<ACireHero>(Local->GetPawn()):nullptr;
@@ -532,7 +540,12 @@ int32 UCireAuraComponent::Render(float LocalNow,float Anim,float ServerNow,int32
             float LayerAlpha=1;
             if(Layer.bBurstOnly){const float Window=FMath::Max(Def->Burst,.2f)+.5f;if(Age>Window)continue;LayerAlpha=1-Age/Window;}
             C.Alpha=Alpha*LayerAlpha;
-            CireAuraShapes::DrawLayer(Layer,C,B);++Layers;++Drawn;
+            // vfx-scale: buff / aura layers grow 10%, hand and weapon glows 20% (Eric), link tethers (they join two real
+            // units) and overhead marks (status readouts) not at all.
+            if(const float K=CireAuraVisuals::LayerScale(Layer.Shape,AuraScale,HandScale);!FMath::IsNearlyEqual(K,1.f))
+            {FCireAuraLayer Grown=Layer;Grown.Size*=K;CireAuraShapes::DrawLayer(Grown,C,B);}
+            else CireAuraShapes::DrawLayer(Layer,C,B);
+            ++Layers;++Drawn;
         }
         if(Def->bAllegianceRim)RimAlpha=FMath::Max(RimAlpha,FMath::Min(Alpha,1.f));
         if(Def->Light>0&&(!LightDef||Def->Priority>LightDef->Priority)){LightDef=Def;LightAlpha=FMath::Min(Alpha,1.f);}
@@ -576,7 +589,8 @@ bool ACireAuraStrike::IsCollisionFree() const
 }
 void ACireAuraStrike::Configure(EMode InMode,const FCireAuraAttack& Attack,FVector InFrom,FVector InTo,float InScale,float InMirror)
 {
-    Mode=InMode;Style=Attack;From=InFrom;To=InTo;Scale=FMath::Clamp(InScale,.4f,3.f);Mirror=InMirror>=0?1.f:-1.f;Age=0;
+    // vfx-scale: empowered-attack swipes, hits, muzzles and trails grow with the spell-effect scale.
+    Mode=InMode;Style=Attack;From=InFrom;To=InTo;Scale=FMath::Clamp(InScale,.4f,3.f)*CireAbilityVFX::SpellEffectScale(GetWorld());Mirror=InMirror>=0?1.f:-1.f;Age=0;
     Duration=Mode==EMode::Swipe?.45f:Mode==EMode::Hit?.6f:Mode==EMode::Muzzle?.3f:30.f;
     OriginPhase=CireSkillRuntime::Phase(GetWorld());
     Core->SetMaterial(0,CoreMaterial());Soft->SetMaterial(0,SoftMaterial());
@@ -828,6 +842,12 @@ void UCireAuraSubsystem::UpdateNow(float LocalOverride)
 // ---------------------------------------------------------------------------
 // Public helpers
 // ---------------------------------------------------------------------------
+float CireAuraVisuals::LayerScale(ECireAuraShape Shape,float AuraScale,float HandScale)
+{
+    if(Shape==ECireAuraShape::Hands||Shape==ECireAuraShape::Weapon)return HandScale;
+    if(Shape==ECireAuraShape::Tether||Shape==ECireAuraShape::Glyph)return 1.f;
+    return AuraScale;
+}
 UCireAuraSubsystem* CireAuraVisuals::Get(const UWorld* World){return World?World->GetSubsystem<UCireAuraSubsystem>():nullptr;}
 UCireAuraComponent* CireAuraVisuals::Attach(AActor* Unit)
 {

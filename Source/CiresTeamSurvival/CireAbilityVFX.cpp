@@ -12,6 +12,11 @@
 #include "Misc/Parse.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "Dom/JsonObject.h" // vfx-scale: VFXTuning.json
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 using namespace CireSpellMesh;
 
@@ -278,6 +283,54 @@ float CireAbilityVFX::GroundIntensity(const UWorld* World)
 {
     const auto* PC=World?World->GetFirstPlayerController():nullptr;const auto* HUD=PC?Cast<ACireHUD>(PC->GetHUD()):nullptr;
     return HUD?FMath::Clamp(HUD->UISettings.GroundTelegraphIntensity,MinGroundIntensity,1.f):DefaultGroundIntensity;
+}
+// vfx-scale: design value from Content/Data/VFXTuning.json, the player's multiplier from Options, a console override for A/B.
+static TAutoConsoleVariable<float> CVarCireSpellEffectScale(TEXT("cire.SpellEffectScale"),0.f,
+    TEXT(">0: force this decorative spell-effect scale (A/B captures). 0: Content/Data/VFXTuning.json x Options > Video > Spell effect size."));
+namespace
+{
+float GDesignSpellEffectScale=-1.f,GDesignAuraLayerScale=CireAbilityVFX::DefaultAuraLayerScale,GDesignHandGlowScale=CireAbilityVFX::DefaultHandGlowScale;
+float GDesignAoERadiusScale=1.3f;
+}
+void CireAbilityVFX::ReloadVFXTuning()
+{
+    GDesignSpellEffectScale=DefaultSpellEffectScale;GDesignAuraLayerScale=DefaultAuraLayerScale;GDesignHandGlowScale=DefaultHandGlowScale;
+    GDesignAoERadiusScale=CireAbilityShapes::DefaultAoERadiusScale;
+    FString Text;TSharedPtr<FJsonObject> Root;
+    if(!FFileHelper::LoadFileToString(Text,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/VFXTuning.json")))||
+       !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Root)||!Root.IsValid())return;
+    auto Read=[&](const TCHAR* Key,float& Out,float Min,float Max){double Value=0;if(Root->TryGetNumberField(Key,Value)&&FMath::IsFinite(Value))Out=FMath::Clamp(static_cast<float>(Value),Min,Max);};
+    Read(TEXT("spellEffectScale"),GDesignSpellEffectScale,MinSpellEffectScale,MaxSpellEffectScale);
+    Read(TEXT("auraLayerScale"),GDesignAuraLayerScale,MinSpellEffectScale,MaxSpellEffectScale);
+    Read(TEXT("handGlowScale"),GDesignHandGlowScale,MinSpellEffectScale,MaxSpellEffectScale);
+    Read(TEXT("aoeRadiusScale"),GDesignAoERadiusScale,CireAbilityShapes::MinAoERadiusScale,CireAbilityShapes::MaxAoERadiusScale);
+}
+float CireAbilityShapes::AoERadiusScale(){CireAbilityVFX::DesignSpellEffectScale();return GDesignAoERadiusScale;} // aoe-scale
+float CireAbilityVFX::DesignAuraLayerScale(){DesignSpellEffectScale();return GDesignAuraLayerScale;}
+float CireAbilityVFX::DesignHandGlowScale(){DesignSpellEffectScale();return GDesignHandGlowScale;}
+namespace
+{
+// The player's (or the console override's) choice relative to the design spell-effect scale.
+float RelativeEffectSize(const UWorld* World){return CireAbilityVFX::SpellEffectScale(World)/FMath::Max(.01f,CireAbilityVFX::DesignSpellEffectScale());}
+}
+float CireAbilityVFX::AuraLayerScale(const UWorld* World){return FMath::Clamp(DesignAuraLayerScale()*RelativeEffectSize(World),.25f,4.f);}
+float CireAbilityVFX::HandGlowScale(const UWorld* World){return FMath::Clamp(DesignHandGlowScale()*RelativeEffectSize(World),.25f,4.f);}
+float CireAbilityVFX::DesignSpellEffectScale()
+{
+    if(GDesignSpellEffectScale<0)ReloadVFXTuning();
+    return GDesignSpellEffectScale;
+}
+float CireAbilityVFX::SpellEffectScaleFor(float PlayerMultiplier)
+{
+    if(!FMath::IsFinite(PlayerMultiplier)||PlayerMultiplier<=0)PlayerMultiplier=1.f;
+    return FMath::Clamp(DesignSpellEffectScale()*PlayerMultiplier,MinSpellEffectScale,MaxSpellEffectScale);
+}
+float CireAbilityVFX::SpellEffectScale(const UWorld* World)
+{
+    const float Forced=CVarCireSpellEffectScale.GetValueOnAnyThread();
+    if(FMath::IsFinite(Forced)&&Forced>0)return FMath::Clamp(Forced,.1f,4.f);
+    const auto* PC=World?World->GetFirstPlayerController():nullptr;const auto* HUD=PC?Cast<ACireHUD>(PC->GetHUD()):nullptr;
+    return SpellEffectScaleFor(HUD?HUD->UISettings.SpellEffectSize:1.f);
 }
 float CireAbilityVFX::FabGroundBrightness(float Intensity)
 {

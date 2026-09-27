@@ -615,7 +615,8 @@ FCireRankStyle CireRaces::BodyStyle(const ACireMonster* M)
 {
     FCireRankStyle Style = Rank(RankBodyColours() ? RankOf(M) : ECireNPCRank::Normal);
     // monster-expansion: a special spawn keeps its rank stats but takes the special colour with a strong rim and glow.
-    if (M && M->SpecialSpawn != 0)
+    // vfx-scale: only in the old look (cire.RankBodyColours 1); by default rares / bonus creatures show a badge instead.
+    if (M && M->SpecialSpawn != 0 && RankBodyColours())
     {
         Style.Color = Style.Trim = CireMonsterExpansion::SpecialColor(M->SpecialSpawn);
         Style.Rim = FMath::Max(Style.Rim, 2.4f); Style.Glow = FMath::Max(Style.Glow, 2.5f); Style.BodyTint = FMath::Max(Style.BodyTint, .1f);
@@ -630,7 +631,7 @@ bool CireRaces::ApplySkin(ACireMonster* M)
     if (!S || !A) return false;
     const FCireRace* Race = FindRace(A->RaceId);
     const FCireRankStyle Style = BodyStyle(M); // tier-readability: the Normal style unless cire.RankBodyColours 1
-    const bool bRankTinted = M->SpecialSpawn != 0 || (RankBodyColours() && RankOf(M) != ECireNPCRank::Normal);
+    const bool bRankTinted = RankBodyColours() && (M->SpecialSpawn != 0 || RankOf(M) != ECireNPCRank::Normal); // vfx-scale: no special glow
     const FCireRacePalette Palette = Race ? Race->Palette(S->PaletteIndex) : FCireRacePalette();
     // A unit drawn on its own art keeps its authored colours on its base palette; borrowed bodies and reskin sets recolour.
     const bool bOwnBody = A->FallbackBody.IsNone() || A->FallbackBody == A->Id || CireMonsterArt::HasOwnBody(A->Id);

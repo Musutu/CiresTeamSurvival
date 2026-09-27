@@ -19,7 +19,7 @@ organization and usability.
 | Interface / Combat | Floating numbers, personal SCT, damage/healing/incoming/outgoing filters, critical markers, text sizes, combat log and meters |
 | Interface / Tooltips | Enable tooltips, cursor/fixed/radial position, offset angle and distance with a lock, status filters and remaining duration |
 | Interface / Chat | Player-chat visibility, font size/color, entry to panel layout editing |
-| Video | Resolution, fullscreen/borderless/windowed, Unreal scalability preset (Low to Cinematic), render scale (screen percentage), VSync, frame cap, bloom and motion blur |
+| Video | Resolution, fullscreen/borderless/windowed, Unreal scalability preset (Low to Cinematic), render scale (screen percentage), VSync, frame cap, bloom and motion blur, impact camera shake, ally effects, ground telegraph intensity, spell effect size |
 | Audio | Master, combat SFX, interface feedback, mute, real UI sound test |
 | System | FPS/frame time, PlayerState latency, local profile path, local-default reset |
 | Developer (development standalone) | Validated live match/combat overrides, balance lab, local replay recording/browser; see `DeveloperTools.md` |

@@ -871,12 +871,14 @@ FLinearColor UCireMonsterArt::RimFor(const ACireMonster* Monster)
     if (!Monster) return FLinearColor::Transparent;
     const auto& D = CireMonsterArt::Data();
     const ECireNPCClass Class = Monster->GetNPCClassification();
+    // vfx-scale (Eric 2026-09-26: "remove special monster glows"): no rim for rares, bonus-loot creatures, lane bosses or
+    // enraged monsters either; those states are icons on the nameplate and frames (CireZones::BadgesOf). The old look
+    // (rank, elite, boss, enrage and special rims) only comes back with cire.RankBodyColours 1.
+    if (!CireRaces::RankBodyColours()) return FLinearColor::Transparent;
     if (Monster->NPCState && Monster->NPCState->HasStatus(CireNPCStatus::Enraged)) return D.EnragedRim;
     // monster-races: the race skin carries the rank rim itself; without it the overlay rim shows the rank colour.
     if (CireRaces::HasSkin(Monster)) return FLinearColor::Transparent;
     if (Monster->SpecialSpawn != 0) return CireRaces::RankColor(Monster) * 1.2f; // monster-expansion: rares and bonus creatures
-    // tier-readability (Eric: "I would rather they didn't glow"): ranks, elites and pack leaders show in the UI only.
-    if (!CireRaces::RankBodyColours()) return Monster->IsLaneBoss() ? D.BossRim : FLinearColor::Transparent;
     const ECireNPCRank RankValue = CireRaces::RankOf(Monster);
     return RankValue != ECireNPCRank::Normal ? CireRaces::RankColor(Monster) * 1.2f :
         Class == ECireNPCClass::Boss ? D.BossRim : Class == ECireNPCClass::Elite ? D.EliteRim : FLinearColor::Transparent;
