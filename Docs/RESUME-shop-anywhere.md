@@ -1,6 +1,6 @@
 # RESUME: feat/shop-anywhere (Playtest 6, section F)
 
-Worktree `F:\CiresTeamSurvival-agents\cts-shop-anywhere`, ports 17550-17559.
+Worktree `F:\CiresTeamSurvival-agents\cts-shop-anywhere`, ports 17550-17559 (first session), 17850-17899 (post-crash session).
 
 ## Done
 - **Buy anytime, anywhere (server-authoritative).**
@@ -46,6 +46,7 @@ Worktree `F:\CiresTeamSurvival-agents\cts-shop-anywhere`, ports 17550-17559.
   - `CireSkillShopTests`: with anytime on, a mid-wave level-up charges the location price.
   - `CireOptionsTests`: both toggles round-trip.
   - Interface probe, on each remote client at the last step: `CIRE_INTERFACE_CLIENT_SHOP_CONFIRM_PASS`. It checks that the dialog appears out of town (item and skill) and that Cancel sends nothing. It stays silent in town and at a merchant. "Don't show this again" suppresses it next time, and Options off suppresses it. The run is dry, nothing is bought, and settings are restored.
+  - Network probe (`CireController.cpp` client / `CireMatch.cpp` server): the rejected-action check now uses an unaffordable buy (rusted longsword, 170g, above the starting 120g even at -10%), since mid-wave buying is legal. The server then moves the champion out of town along the route and funds 500g. The client buys the Sandglass Charm mid-wave and must be charged exactly 165g (+10%) with the out-of-town notice (`CIRE_NET_CLIENT_FIELD_BUY_PASS`). The server checks after the bot takeover that the charm and gold stuck. The client probe timeout went from 30 to 45 s.
   - The classic-rules checks in `CireItems::RunSmoke` (CireProgressionTests) and in the Skill Shop tests pin `shopAnywhere = false` / `anytime = false` for their duration.
 
 ## Not done / Next
@@ -74,16 +75,10 @@ Worktree `F:\CiresTeamSurvival-agents\cts-shop-anywhere`, ports 17550-17559.
 - `CireProgressionTests.cpp`: pins the classic rules for `CireItems::RunSmoke`.
 - Data: `Content/Data/Vendors.json` (`pricing` block), `Content/Data/SkillShop.json` (`access.anytime`).
 
-## Gate logs (branch = main 25ad73dc + this work; main has not moved)
+## Gate logs (branch = main 8b323888 merged in as 4f59bbbf + this work)
+- Merge: conflicts in `CireController.cpp` (main's ability-tuner client check now runs at the rejection step, before the shop-anywhere field-buy steps) and `CireHUD.cpp` (Esc chain: tuner, then quick keybind, then shop confirm). Both resolved additively.
 - Build: Succeeded (`Saved/shopany-build.log`).
-- Native: **PASS**, `Saved/ExpansionChecks/20260928T043320959136Z/report.json`.
-  - VENDORS 49 checks, SKILLSHOP 72, ITEMS 49, OPTIONS_SETTINGS 53, COMBAT_EXPANSION_PASS.
-  - The earlier run printed every PASS but its editor hung on exit (timeout at 240 s). The rerun at 480 s passed.
-- Interface: **PASS**, `Saved/InterfaceSmoke/20260928T044709173208Z/report.json`.
-  - Both clients logged `CIRE_INTERFACE_CLIENT_SHOP_CONFIRM_PASS` (item and skill learn/level dialogs, cancel, town/vendor silent, don't-show, options-off, live skill quote).
-  - Two earlier attempts failed with a server readiness timeout and a client-ack timeout; the clients were still booting.
-- Network: **NOT PASSED (environmental)**, 7 attempts, e.g. `Saved/NetworkSmoke/20260928T050523952170Z/`.
-  - Each time the client stalls after Browse, inside the first-boot AssetRegistry gather. There's no discovery cache because the NTFS journal is off on F:, and CPU load is about 90% with about 13 agents.
-  - `RunNetworkSmoke.py` caps the probe at 90 s, so the client never connects. The client log never reaches game code.
-  - Rerun when the machine is quieter: `python Tools/RunNetworkSmoke.py --port 1755x --startup-timeout 120 --probe-timeout 90`.
-- Note: F: ran out of disk (0 GB free) during one build around 04:25. It recovered on its own (179 GB free at 05:05).
+- Native: **PASS**, `Saved/ExpansionChecks/20260928T074248254470Z/report.json` (VENDORS 49, SKILLSHOP 72, COMBAT_EXPANSION_PASS).
+- Network: **PASS** on the first try, `Saved/NetworkSmoke/20260928T074248236957Z/report.json`. The field buy charged 165g against the 150g list price, and the server kept the charm and 335g after the bot takeover.
+- Interface: **PASS**, `Saved/InterfaceSmoke/20260928T074401488566Z/report.json`. Both clients logged `CIRE_INTERFACE_CLIENT_SHOP_CONFIRM_PASS`.
+- The earlier network failures (first session, 7 attempts) were environmental: the client stalled in the AssetRegistry gather under load.
