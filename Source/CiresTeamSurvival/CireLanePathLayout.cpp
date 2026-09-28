@@ -4,6 +4,7 @@
 #include "CireLanePath.h"
 #include "CireGame.h"
 #include "CireMapLayout.h"
+#include "CireProfiles.h" // game-profiles
 #include "CireTownMap.h"
 #include "Engine/World.h"
 #include "Misc/CommandLine.h"
@@ -355,7 +356,7 @@ bool CireLanePath::LoadActive(FCireBattlefieldRoutes& Out, FString* Error, FStri
     // One source of truth: the map layout editor's MapLayout.json (Apply writes it). The route file is the provisional
     // default and supplies what the layout does not author (realm bounds, lane width, escort tuning).
     FCireMapLayout Layout; FString LayoutError;
-    const FString LayoutPath = CireMapLayout::ActivePath();
+    const FString LayoutPath = CireGameProfiles::RuntimeLayoutPath(); // game-profiles: MapLayout.json, or the game type's named layout
     if (!DeveloperRun() && FPaths::FileExists(LayoutPath))
     {
         if (!CireMapLayout::Load(Layout, LayoutPath, &LayoutError))

@@ -37,6 +37,8 @@
 #include "CireSummonsBar.h" // fix/summons
 #include "CirePlaySession.h"
 #include "CireRouteEditMode.h" // dev-route-tools
+#include "CireProfileBar.h" // game-profiles
+#include "CireProfiles.h" // game-profiles
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireNetClient, Log, All);
@@ -153,6 +155,8 @@ bool TickClientProbe(ACireController* Controller) {
         if(!Valid) {Fail(TEXT("invalid action mutated authoritative state"));return true;}
         {FString TunerWhy;const bool bTuned=CireAbilityTuner::VerifyNetProbeOnClient(Controller,&TunerWhy); // ability-tuner: the server's override replicated
          UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_TUNER %s %s"),bTuned?TEXT("PASS"):TEXT("FAIL"),*TunerWhy);if(!bTuned){Fail(TEXT("ability tuner override did not replicate"));return true;}}
+        {FString ProfWhy;const bool bProf=CireGameProfiles::VerifyNetProbe(Controller->GetWorld(),&ProfWhy); // game-profiles: the game type's profiles are live on this client
+         UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_PROFILES %s %s"),bProf?TEXT("PASS"):TEXT("FAIL"),*ProfWhy);if(!bProf){Fail(TEXT("game type profiles not applied on the client"));return true;}}
         UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_REJECTION_PASS team=%d phase=%d gold=%d skills=%d target_replicated=1 rejection_ack=1"),Hero->TeamId,State->Phase,Hero->Gold,Hero->Skills.Num());
         Probe.Step=7;Probe.StepStarted=Now;
     } else if(Probe.Step==7&&Hero->Gold>=300&&!CireVendors::InTown(Hero)) {
@@ -265,6 +269,7 @@ void ACireController::PlayerTick(float Dt) {
     }
     // ability-tuner: a focused Ability Tuner text box owns the keyboard.
     if(CireAbilityTunerUI::OwnsKeyboard()){CireTargeting::Cancel(this);CireAbilityTunerUI::TickKeys(this);return;}
+    if(CireProfileUI::OwnsKeyboard())return; // game-profiles: the F8 PROFILE name box owns the keyboard
     // champion-select: while the draft search box is focused it owns the keyboard.
     if(bDraftSearch) {
         if(H->bDrafted){bDraftSearch=false;}

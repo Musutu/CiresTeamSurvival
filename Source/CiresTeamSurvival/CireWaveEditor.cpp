@@ -18,6 +18,7 @@ const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment,
 const FLinearColor Teal(.2f, .71f, .59f, 1), Row(.045f, .06f, .07f, .96f), RowSelected(.1f, .13f, .12f, 1), Red(.75f, .2f, .23f, 1);
 // waves-modes: the "MODES & SCALE" sub-page replaces the wave composer pane (dev UI, one HUD per client).
 bool bWaveModesPage = false;
+bool bWaveBundleView = false; // game-profiles: MODES & SCALE shows the game type bundle instead of scale & damage
 
 TArray<FName> ArchetypeIds()
 {
@@ -139,7 +140,15 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     {
         const float EX = L + 190, EW = 410;
         FCireWaveDef& W = WaveDraft.Waves[WaveSelected];
-        CireUIStyle::Header(Painter(), EX, T + 16, EW, TEXT("MODES & LIVE SCALE"), Teal, 10.f);
+        CireUIStyle::Header(Painter(), EX, T + 16, EW, bWaveBundleView ? TEXT("GAME TYPE BUNDLE") : TEXT("MODES & LIVE SCALE"), Teal, 10.f);
+        // game-profiles: the selected preset's bundle (the profile each editor uses in that game type) + SAVE CURRENT AS GAME TYPE.
+        if (Button(bWaveBundleView ? TEXT("SCALE & DAMAGE") : TEXT("PROFILES BUNDLE"), EX + EW - 118, T + 18, 118, 18,
+            TEXT("Switch between the live scale / wave damage settings and the game type's bundle: which layout, ability tuning, hero kits, economy, packs, movement, match, spacing and world edit profile it plays with."),
+            true, bWaveBundleView, Teal))
+            bWaveBundleView = !bWaveBundleView;
+        if (bWaveBundleView) DrawGameTypeBundle(EX, T + 46, EW);
+        else
+        {
         // Live scale: applies at once to the living wave monsters (and every later spawn).
         auto& S = WaveDraft.Live;
         StepF(TEXT("LIVE HEALTH x"), S.Health, .05f, .1f, 10, EX, T + 56, 94, 2, TEXT(""), TEXT("Every wave monster's health (living ones keep their health fraction)."));
@@ -182,6 +191,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
             for (auto& X : WaveDraft.Waves) X.bDealsDamage = false;
         if (Button(TEXT("ALL ON"), EX + 336, T + 164, 74, 20, TEXT("Damage on for every wave (Standard).")))
             for (auto& X : WaveDraft.Waves) X.bDealsDamage = true;
+        } // game-profiles: end of the scale & damage view
         // Presets: load into the draft, save, and play (host, before the first wave).
         Label(TEXT("PRESETS"), EX, T + 196, 8.5f, Muted);
         const TArray<FCireWavePreset>& Presets = CireWaveDirector::Presets();

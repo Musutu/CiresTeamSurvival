@@ -68,6 +68,7 @@ void ACireHUD::DrawDeveloperPanel(float X,float Y)
     const TCHAR* Pages[]={TEXT("Quick start"),TEXT("Match"),TEXT("Spawn/stats"),TEXT("Waves"),TEXT("Paths"),TEXT("Economy"),TEXT("Packs"),TEXT("Effects"),TEXT("Movement"),TEXT("Balance lab"),TEXT("Replays")};
     const int32 PageIds[]={5,0,1,7,8,9,10,2,6,3,4};
     for(int32 I=0;I<11;++I){if(DeveloperPage==PageIds[I])Panel(X+I*56-2,Y-3,56,31,Hover);if(Button(Pages[I],X+I*56,Y,53))DeveloperPage=PageIds[I];}
+    DrawProfileFooter(X,Y+457); // game-profiles: the PROFILE bar (named profiles) under the Match / Spawn / Effects / Economy / Packs / Movement pages
     if(DeveloperPage==10){DrawPackStatsPage(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+418,595,10,Gold,2);return;}
     if(DeveloperPage==9){DrawEconomyPage(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+418,595,10,Gold,2);return;}
     if(DeveloperPage==7){DrawWaveEditor(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+444,595,10,Gold,2);return;} // monster-expansion: one more row (rares, bonus wave)
