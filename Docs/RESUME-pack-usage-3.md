@@ -65,4 +65,8 @@ Gallery: python Tools/RunAbilityVFXGallery.py --set champion --tag after-packusa
 
 ## Gate logs
 
-(filled in below as they run)
+- BLOCKED 2026-09-28: F: has 0.1 GB free; the rebuild failed at link with LNK1106 "disk full". The first build of this
+  branch (before the swirl test was added) did succeed. Commits: 104b4612 (ratings), 107ab96f (code + data), ad8ee1e6 (audit).
+- To resume once space is freed: build, then the three gates on port 17500, then the galleries
+  (`--set champion --tag after-packusage3`, `--set voidborn`, `--set hollow`, `--set stoneborn`) and `--compare` against
+  `cts-pack-usage-2/Saved/AbilityVFX/before-packusage2-*` (copy those first if the pack-usage-2 worktree gets cleaned).
