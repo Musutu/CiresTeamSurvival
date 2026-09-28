@@ -44,6 +44,7 @@ struct FCireClientProbe {
     double StepStarted = 0;
     int32 Step = 0;
     int32 Gold = 0;
+    int32 FieldPrice = 0; // shop-anywhere: expected out-of-town price of the mid-wave buy
     bool Done = false;
     FVector MovementOrigin=FVector::ZeroVector;
     bool bStrafeStarted=false;
@@ -63,7 +64,7 @@ bool TickClientProbe(ACireController* Controller) {
         UE_LOG(LogCireNetClient,Error,TEXT("CIRE_NET_CLIENT_FAIL step=%d reason=%s"),Probe.Step,Reason);
         Probe.Done=true;FPlatformMisc::RequestExitWithStatus(false,1);
     };
-    if(Now-Probe.Started>30) {Fail(TEXT("remote probe timed out"));return true;}
+    if(Now-Probe.Started>45) {Fail(TEXT("remote probe timed out"));return true;}
     auto* Hero=Cast<ACireHero>(Controller->GetPawn());
     auto* State=Controller->GetWorld()->GetGameState<ACireGameState>();
     if(!Hero||!State) return true;
@@ -127,7 +128,14 @@ bool TickClientProbe(ACireController* Controller) {
         }
     } else if(Probe.Step==3&&Probe.Selected.IsValid()&&Hero->Target==Probe.Selected.Get()) {
         Probe.Gold=Hero->Gold;
-        Controller->ServerAction(4,0,nullptr); // valid item, forbidden survival phase
+        // shop-anywhere: buying is allowed mid-wave now, so the invalid buy is an unaffordable one (longsword,
+        // above the starting gold even with the -10% vendor discount).
+        {
+            const auto* Sword=CireItems::Find(CireItems::LegacyItem(2));
+            const int32 Cheapest=Sword?CireVendors::ApplyZone(Sword->TotalCost,ECirePriceZone::Vendor,CireVendors::Pricing()):0;
+            if(Cheapest<=Hero->Gold){Fail(TEXT("probe item is affordable: the unaffordable-buy check needs a pricier item"));return true;}
+        }
+        Controller->ServerAction(4,2,nullptr); // valid item, not enough gold (rejected in any phase)
         Controller->ServerAction(2,5,nullptr); // empty skill slot
         Controller->ServerAction(2,-1,nullptr); // invalid skill index
         Controller->ServerAction(3,99,nullptr); // invalid offer index
@@ -135,13 +143,29 @@ bool TickClientProbe(ACireController* Controller) {
         Controller->ServerAction(0,0,nullptr); // invalid target must preserve selection
         Probe.Step=4;Probe.StepStarted=Now;
         UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_TARGET_PASS hostile=1 actor=%s"),*Hero->Target->GetName());
-    } else if(Probe.Step==4&&Now-Probe.StepStarted>1.0&&Hero->Notice.Contains(TEXT("intermission"))) {
+    } else if(Probe.Step==4&&Now-Probe.StepStarted>1.0&&Hero->Notice.Contains(TEXT("Not enough gold"))) {
         const bool Valid=Hero->Gold==Probe.Gold&&Hero->GearRank==0&&Hero->Archetype==2&&
             Hero->Skills.Num()==0&&Hero->Cooldowns.Num()==0&&FMath::IsNearlyZero(Hero->CDR)&&
             FMath::IsNearlyEqual(Hero->Mana,Hero->MaxMana)&&FMath::IsNearlyEqual(Hero->Energy,100.f)&&
             Hero->Target==Probe.Selected.Get()&&Hero->IsHostile(Hero->Target);
         if(!Valid) {Fail(TEXT("invalid action mutated authoritative state"));return true;}
-        UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_PASS team=%d phase=%d gold=%d skills=%d target_replicated=1 rejection_ack=1"),Hero->TeamId,State->Phase,Hero->Gold,Hero->Skills.Num());
+        UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_REJECTION_PASS team=%d phase=%d gold=%d skills=%d target_replicated=1 rejection_ack=1"),Hero->TeamId,State->Phase,Hero->Gold,Hero->Skills.Num());
+        Probe.Step=7;Probe.StepStarted=Now;
+    } else if(Probe.Step==7&&Hero->Gold>=300&&!CireVendors::InTown(Hero)) {
+        // shop-anywhere: the server moved us out of town and funded a buy; buying mid-wave succeeds at +10%.
+        const auto* Charm=CireItems::Find(CireItems::LegacyItem(3));
+        const FCirePriceQuote Q=CireVendors::QuoteItem(Hero,CireItems::LegacyItem(3),Charm?Charm->TotalCost:0);
+        if(!Charm||Q.Zone!=ECirePriceZone::Field||Q.Price!=CireVendors::ApplyZone(Charm->TotalCost,ECirePriceZone::Field,CireVendors::Pricing())||Q.Price<=Charm->TotalCost)
+        {Fail(TEXT("out-of-town quote is not the +10% price"));return true;}
+        Probe.Gold=Hero->Gold;Probe.FieldPrice=Q.Price;
+        Controller->ServerAction(4,3,nullptr); // sandglass charm, mid-wave, out of town
+        Probe.Step=8;Probe.StepStarted=Now;
+    } else if(Probe.Step==8&&Hero->Gold!=Probe.Gold) {
+        if(State->Phase!=0||Hero->Gold!=Probe.Gold-Probe.FieldPrice||!Hero->Notice.Contains(TEXT("out-of-town"))) {
+            UE_LOG(LogCireNetClient,Error,TEXT("CIRE_NET_CLIENT_FIELD_BUY gold=%d->%d expected=-%d phase=%d notice=%s"),Probe.Gold,Hero->Gold,Probe.FieldPrice,State->Phase,*Hero->Notice);
+            Fail(TEXT("mid-wave out-of-town buy was not charged +10%"));return true;}
+        UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_FIELD_BUY_PASS phase=%d price=%d list=%d notice=\"%s\""),State->Phase,Probe.FieldPrice,CireItems::Find(CireItems::LegacyItem(3))->TotalCost,*Hero->Notice);
+        UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_PASS team=%d phase=%d gold=%d skills=%d target_replicated=1 rejection_ack=1 field_buy=1"),Hero->TeamId,State->Phase,Hero->Gold,Hero->Skills.Num());
         Probe.Done=true;FPlatformMisc::RequestExitWithStatus(false,0);
     }
     return true;

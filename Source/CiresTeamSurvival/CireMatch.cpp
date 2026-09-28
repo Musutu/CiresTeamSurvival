@@ -28,6 +28,8 @@
 #include "Misc/Parse.h"
 #include "CireCombatEvents.h"
 #include "CireInterfaceProbe.h"
+#include "CireItems.h" // shop-anywhere: network probe buys
+#include "CireVendors.h" // shop-anywhere: out-of-town price
 #include "CireExpansionNetProbe.h"
 #include "CireTownGoal.h"
 #include "CireFeedbackPreview.h"
@@ -76,6 +78,8 @@ struct FCireServerProbe {
     FVector MovementOrigin=FVector::ZeroVector;
     TWeakObjectPtr<ACireHero> PlayerPawn;
     TWeakObjectPtr<ACireMonster> Target;
+    int32 FieldGold=120; // shop-anywhere: gold expected after the client's out-of-town buy
+    double VerifiedAt=0; bool bFieldReady=false;
 };
 FCireServerProbe ServerProbe;
 int32 SmokePhaseMask = 0;
@@ -132,19 +136,37 @@ void TickServerProbe(ACireGameMode* Mode) {
     }
     auto* Hero=Probe.PlayerPawn.Get();
     if(!Probe.ActionsVerified&&!Probe.Target.IsValid()) {Fail(TEXT("probe target fixture was destroyed before the client selected it"));return;}
-    if(!Probe.ActionsVerified&&Hero->bDrafted&&Hero->Target==Probe.Target.Get()&&Hero->Notice.Contains(TEXT("intermission"))) {
+    if(!Probe.ActionsVerified&&Hero->bDrafted&&Hero->Target==Probe.Target.Get()&&Hero->Notice.Contains(TEXT("Not enough gold"))) { // shop-anywhere: unaffordable buy
         const bool Valid=Hero->Archetype==2&&Hero->Gold==120&&Hero->Skills.Num()==0&&Hero->Cooldowns.Num()==0&&
             Hero->GearRank==0&&FMath::IsNearlyZero(Hero->CDR)&&Hero->Level==1&&
             FVector::Dist2D(Probe.MovementOrigin,Hero->GetActorLocation())>=100;
         if(!Valid) {Fail(TEXT("server validation state mismatch"));return;}
         Probe.ActionsVerified=true;
         UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_ACTIONS_PASS draft=2 gold=120 skills=0 illegal_shop_rejected=1 movement_cm=%.1f"),FVector::Dist2D(Probe.MovementOrigin,Hero->GetActorLocation()));
+        Probe.VerifiedAt=FPlatformTime::Seconds();
+    }
+    // shop-anywhere: 1.5 s later (the client has checked its rejected actions left gold untouched), move the champion out of town along the
+    // monster route and fund one purchase; the client buys mid-wave and must be charged the +10% out-of-town price.
+    if(Probe.ActionsVerified&&!Probe.bFieldReady&&FPlatformTime::Seconds()-Probe.VerifiedAt>1.5&&!Hero->bBot) {
+        Probe.bFieldReady=true;
+        bool bField=false;
+        for(const float Fraction:{.2f,.3f,.4f,.5f,.15f,.1f,.6f}) {
+            Hero->SetActorLocation(CireLanePath::PointAlongRoute(Mode->GetWorld(),Hero->TeamId,Fraction,110),false,nullptr,ETeleportType::TeleportPhysics);
+            if(!CireVendors::InTown(Hero)){bField=true;break;}
+        }
+        if(!bField) {Fail(TEXT("no out-of-town point on the route for the shop-anywhere check"));return;}
+        Hero->Gold=500;
+        const FName Charm=CireItems::LegacyItem(3);
+        const auto* CharmDef=CireItems::Find(Charm);
+        Probe.FieldGold=500-(CharmDef?CireVendors::QuoteItem(Hero,Charm,CharmDef->TotalCost).Price:0);
+        UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_FIELD_READY at=%s phase=%d expected_gold=%d"),*Hero->GetActorLocation().ToString(),static_cast<int32>(Mode->Clock.Phase()),Probe.FieldGold);
     }
     if(Probe.ActionsVerified&&Hero->bBot&&!Hero->IsPlayerControlled()) {
         int32 Counts[2]={0,0};
         for(auto* Member:Mode->Heroes) if(IsValid(Member)&&Member->TeamId>=0&&Member->TeamId<2)++Counts[Member->TeamId];
         const bool Valid=Mode->Heroes.Contains(Hero)&&Mode->Heroes.Num()==10&&Counts[0]==5&&Counts[1]==5&&
-            Hero->bDrafted&&Hero->Archetype==2&&Hero->Level==1&&Hero->Gold==120;
+            Hero->bDrafted&&Hero->Archetype==2&&Hero->Level==1&&Hero->Gold==Probe.FieldGold&&Probe.FieldGold<500&& // shop-anywhere: the mid-wave out-of-town buy stuck
+            Hero->Inventory&&Hero->Inventory->ToRules().CountOf("sandglass_charm")==1;
         if(!Valid) {Fail(TEXT("disconnect did not preserve champion/team membership"));return;}
         UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_PASS heroes=%d teams=%d/%d preserved_pawn=%s level=%d bot=1"),Mode->Heroes.Num(),Counts[0],Counts[1],*Hero->GetName(),Hero->Level);
         Probe.Done=true;FPlatformMisc::RequestExitWithStatus(false,0);
